@@ -1,5 +1,5 @@
 C
-C      $Id: cn05f.f,v 1.7 2010-03-15 03:55:58 haley Exp $
+C      $Id: cn05f.f,v 1.8 2010-03-15 15:28:53 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -93,10 +93,6 @@ C
 
       character*7  wks_type
 C
-C Define the workstation type
-C
-      wks_type = "ncgm"
-C
 C Open the netCDF file.
 C
       call gngpat(filename,'data',ierr)
@@ -121,6 +117,8 @@ C
       call NhlFRLSetString(srlist,'appDefaultParent','True',ierr)
       call NhlFRLSetString(srlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'cn05',NhlFAppClass,0,srlist,ierr)
+
+      wks_type = "ncgm"
 
       if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C

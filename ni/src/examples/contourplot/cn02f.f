@@ -1,5 +1,5 @@
 C
-C     $Id: cn02f.f,v 1.7 2010-03-15 03:55:58 haley Exp $
+C     $Id: cn02f.f,v 1.8 2010-03-15 15:28:53 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -46,16 +46,9 @@ C
       integer count, itmp
       character*7  wks_type
 C
-C Define the workstation type
-C
-      wks_type = "x11"
-C
 C Default is to display output to an X workstation
 C
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+      wks_type = "x11"
 C
 C Create a simple bull's eye pattern test data set
 C     

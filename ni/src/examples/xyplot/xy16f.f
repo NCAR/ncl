@@ -1,5 +1,5 @@
 C
-C      $Id: xy16f.f,v 1.6 2010-03-15 02:06:27 haley Exp $
+C      $Id: xy16f.f,v 1.7 2010-03-15 15:28:53 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -91,10 +91,6 @@ C
 C Define the workstation type
 C
       wks_type = "x11"
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
 C
 C Create Application object.
 C
