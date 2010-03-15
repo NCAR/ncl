@@ -1,5 +1,5 @@
 C
-C      $Id: pr05f.f,v 1.4 2003-03-04 20:34:20 grubin Exp $
+C      $Id: pr05f.f,v 1.5 2010-03-15 04:38:49 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -29,6 +29,8 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXWorkstationClass
       external NhlFMapPlotClass
       external NhlFGraphicStyleClass
@@ -39,12 +41,12 @@ C
       real px(5),py(5)
       character*13 projection(3)
       data projection/'orthographic','mollweide','stereographic'/
-      integer NCGM, X11, PS, PDF
+      character*7  wks_type
+C
+C Define the workstation type
+C
+      wks_type = "x11"
 
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
 C
 C Initialize the high level utility library
 C
@@ -61,7 +63,7 @@ C
       call NhlFCreate(appid,'pr05',NhlFappClass,
      1     0,rlist,ierr)
 
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C  Create a meta file workstation.
 C   
@@ -70,7 +72,7 @@ C
          call NhlFCreate(wid,'pr05Work',NhlFncgmWorkstationClass,
      1        0,rlist,ierr)
     
-      else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C  Create an X workstation.
 C   
@@ -79,7 +81,7 @@ C
          call NhlFCreate(wid,'pr05Work',NhlFxWorkstationClass,
      1        appid,rlist,ierr)
     
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C  Create a PS workstation.
 C   
@@ -88,7 +90,7 @@ C
          call NhlFCreate(wid,'pr05Work',NhlFpsWorkstationClass,
      1        appid,rlist,ierr)
 
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C  Create a PDF workstation.
 C   

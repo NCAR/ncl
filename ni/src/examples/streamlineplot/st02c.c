@@ -1,5 +1,5 @@
 /*
- *      $Id: st02c.c,v 1.2 2003-03-03 16:33:53 grubin Exp $
+ *      $Id: st02c.c,v 1.3 2010-03-15 04:42:34 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -30,6 +30,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/StreamlinePlot.h>
 
@@ -40,7 +42,7 @@
 
 main(int argc, char *argv[])
 {
-    int NCGM=0, X11=1, PS=0, PDF=0;
+    char const *wks_type = "x11";
     int appid,wid,stid,vfid;
     int rlist,grlist;
     int len_dims[2];
@@ -78,7 +80,7 @@ main(int argc, char *argv[])
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"st02",NhlappClass,NhlDEFAULT_APP,rlist);
 
-    if (NCGM) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create a meta file workstation.
  */
@@ -87,7 +89,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"st02Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else if (X11) {
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  * Create an X workstation.
  */
@@ -96,7 +98,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"st02Work",NhlxWorkstationClass,appid,rlist);
     }
 
-    else if (PS) {
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a PS workstation.
  */
@@ -104,7 +106,7 @@ main(int argc, char *argv[])
         NhlRLSetString(rlist,NhlNwkPSFileName,"st02c.ps");
         NhlCreate(&wid,"st02Work",NhlpsWorkstationClass,appid,rlist);
     }
-    else if (PDF) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PDF workstation.
  */

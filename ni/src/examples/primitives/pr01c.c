@@ -36,13 +36,15 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/LogLinPlot.h>
 #include <ncarg/hlu/GraphicStyle.h>
 
 main(int argc, char *argv[])
 {
-    int NCGM=0, X11=1, PS=0, PDF=0;
+    char const *wks_type = "x11";
     int rlist,grlist;
     int appid,wid,cid,gsid,id;
     int i;
@@ -78,7 +80,7 @@ main(int argc, char *argv[])
 
 /*; Choose to display output to an X11 workstation.(set above)*/
 
-    if (NCGM) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create a meta file workstation.
  */
@@ -87,7 +89,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"pr01Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else if (X11) {
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  * Create an X workstation.
  */
@@ -96,7 +98,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"pr01Work",NhlxWorkstationClass,appid,rlist);
     }
 
-    else if (PS) {
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a PS workstation.
  */
@@ -104,7 +106,7 @@ main(int argc, char *argv[])
         NhlRLSetString(rlist,NhlNwkPSFileName,"pr01c.ps");
         NhlCreate(&wid,"pr01Work",NhlpsWorkstationClass,appid,rlist);
     }
-    else if (PDF) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PDF workstation.
  */

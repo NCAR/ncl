@@ -1,5 +1,5 @@
 /*
- *      $Id: st04c.c,v 1.6 2003-03-03 16:33:53 grubin Exp $
+ *      $Id: st04c.c,v 1.7 2010-03-15 04:42:34 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -47,6 +47,10 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/StreamlinePlot.h>
 #include <ncarg/hlu/VectorPlot.h>
@@ -76,7 +80,6 @@ char *cdffiles[6] = {"Ustorm.cdf","Vstorm.cdf","Pstorm.cdf","Tstorm.cdf","U500st
 
 main(int argc, char *argv[])
 {
-    int NCGM=1, X11=0, PS=0, PDF=0;
     int i, j, time, d, h;
     int appid, wid, cnid, vcid, stid, txid, amid, mpid, tmid, stdmid;
     long stid_len;
@@ -95,6 +98,8 @@ main(int argc, char *argv[])
     const char *dir = _NGGetNCARGEnv("data");
     char hour[3], day[3], mainstring[17];
     extern void get_2d_array(float *, long, long, int, int, long);
+    char const *wks_type = "x11";
+
 /*
  * Initialize the high level utility library
  */
@@ -108,7 +113,7 @@ main(int argc, char *argv[])
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlCreate(&appid,"st04",NhlappClass,NhlDEFAULT_APP,rlist);
 
-    if (NCGM == 1) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create a meta file workstation.
  */
@@ -118,7 +123,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"st04Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else if (X11) {
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  * Create an X workstation.
  */
@@ -128,7 +133,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"st04Work",NhlxWorkstationClass,appid,rlist);
     }
 
-    else if (PS) {
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a PS workstation.
  */
@@ -137,7 +142,7 @@ main(int argc, char *argv[])
         NhlRLSetString(rlist,NhlNwkColorMap,"temp1");
         NhlCreate(&wid,"st04Work",NhlpsWorkstationClass,appid,rlist);
     }
-    else if (PDF) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PDF workstation.
  */

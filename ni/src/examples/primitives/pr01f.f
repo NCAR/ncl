@@ -32,6 +32,8 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXWorkstationClass
       external NhlFMapPlotClass
       external NhlFVectorFieldClass
@@ -46,12 +48,12 @@ C
       real X(N),Y(N)
       real U(M),V(M)
       real PX(K),PY(K)
-      integer NCGM, X11, PS, PDF
+      character*7  wks_type
+C
+C Define the workstation type
+C
+      wks_type = "x11"
 
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
 C
 C These are the polyline points /*a square*/
 C
@@ -111,7 +113,7 @@ C
 
 C  Choose to display output to an X11 workstation.(set above)*/
 
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C  Create a meta file workstation.
 C
@@ -120,7 +122,7 @@ C
       call NhlFCreate(wid,'pr01Work',NhlFncgmWorkstationClass,
      1     appid,rlist,ierr)
     
-      else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C  Create an X workstation.
 C
@@ -130,7 +132,7 @@ C
      1            appid,rlist,ierr)
     
 
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C  Create a PS workstation.
 C
@@ -139,7 +141,7 @@ C
       call NhlFCreate(wid,'pr01Work',NhlFpsWorkstationClass,
      1    appid,rlist,ierr)
 
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C  Create a PDF workstation.
 C

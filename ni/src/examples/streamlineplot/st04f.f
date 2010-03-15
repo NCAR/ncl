@@ -1,5 +1,5 @@
 C
-C      $Id: st04f.f,v 1.8 2008-08-03 18:38:33 fred Exp $
+C      $Id: st04f.f,v 1.9 2010-03-15 04:42:34 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -42,6 +42,8 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXWorkstationClass
       external NhlFVectorFieldClass
       external NhlFVectorPlotClass
@@ -63,7 +65,7 @@ C
       parameter(ITIMESTEPS=20)
       parameter(NLAT=33,NLON=36)
 
-      integer NCGM, X11, PS, PDF
+      character*7  wks_type
       integer i, j, k, d, h
       integer appid, wid, cnid, vcid, stid, txid, amid, mpid, tmid
       integer vfield, vfield2, sfield, sfield2
@@ -88,10 +90,11 @@ C
       data cdflens/10,10,10,10,13,13/
       integer flen
 
-      NCGM=1
-      X11=0
-      PS=0
-      PDF=0
+C
+C Define the workstation type
+C
+      wks_type = "ncgm"
+
 C
 C Initialize the high level utility library
 C
@@ -108,7 +111,7 @@ C
       call NhlFRLSetString(rlist,'appDefaultParent','True',ierr)
       call NhlFCreate(appid,'st04',NhlFappClass,0,rlist,ierr)
 
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create an NCGM workstation.
 C
@@ -117,7 +120,7 @@ C
          call NhlFRLSetString(rlist,'wkColorMap','temp1',ierr)
          call NhlFCreate(wid,'st04Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
-      else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an xworkstation object.
 C
@@ -126,7 +129,7 @@ C
          call NhlFRLSetString(rlist,'wkColorMap','temp1',ierr)
          call NhlFCreate(wid,'st04Work',NhlFXWorkstationClass,
      +        0,rlist,ierr)
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PostScript workstation.
 C
@@ -135,7 +138,7 @@ C
          call NhlFRLSetString(rlist,'wkPSFileName','./st04f.ps',ierr)
          call NhlFCreate(wid,'st04Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF workstation.
 C

@@ -51,12 +51,9 @@ end create
 ;
 ; Default is to display output to an X workstation
 ;
-NCGM=0
-X11=1
-PS=0
-PDF=0
+wks_type = "x11"
 
-if (NCGM.eq.1) then
+if (str_lower(wks_type).eq."ncgm")
 ;
 ; Create an NCGM workstation.
 ;
@@ -64,7 +61,7 @@ if (NCGM.eq.1) then
     "wkMetaName" : "./st01n.ncgm"
   end create
 else
-  if (X11.eq.1) then
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an X workstation.
 ;
@@ -72,7 +69,7 @@ else
       "wkPause" : True
     end create
   else
-    if (PS .eq. 1) then
+    if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PS workstation.
 ;
@@ -80,7 +77,7 @@ else
         "wkPSFileName" : "./st01n.ps"
       end create
     else
-      if (PDF .eq. 1) then
+      if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDF workstation.
 ;
