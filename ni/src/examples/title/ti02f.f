@@ -22,18 +22,17 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXWorkstationClass
 
       integer appid, wid, pid
       integer rlist, ierr
-      integer NCGM, X11, PS, PDF
+      character*7  wks_type
 C
 C Default is to create an X workstation.
 C
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+      wks_type = "x11"
 C
 C Initialize the high level utility library
 C
@@ -50,7 +49,7 @@ C
       call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
       call NhlFCreate(appid,'ti02',NhlFAppClass,0,rlist,ierr)
 
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create an NCGM workstation object.
 C
@@ -58,7 +57,7 @@ C
          call NhlFRLSetstring(rlist,'wkMetaName','./ti02f.ncgm',ierr)
          call NhlFCreate(wid,'ti02Work',NhlFNcgmWorkstationClass,0,
      $        rlist,ierr)
-      else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an xworkstation object.
 C
@@ -66,7 +65,7 @@ C
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
          call NhlFCreate(wid,'ti02Work',NhlFXWorkstationClass,
      1        0,rlist,ierr)
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PS object.
 C
@@ -74,7 +73,7 @@ C
          call NhlFRLSetstring(rlist,'wkPSFileName','./ti02f.ps',ierr)
          call NhlFCreate(wid,'ti02Work',NhlFPSWorkstationClass,0,
      $        rlist,ierr)
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF object.
 C
