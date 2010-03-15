@@ -102,6 +102,26 @@ C
          call NhlFRLSetString(rlist,'wkPDFFileName','./ap01f.pdf',ierr)
          call NhlFCreate(workid,'x',
      &        NhlFPDFWorkstationClass,0,rlist,ierr)
+      elseif (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     &        wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS or PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName','./ap01f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(workid,'x',
+     &        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr)
+      elseif (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     &        wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName','./ap01f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(workid,'x',
+     &        NhlFcairoImageWorkstationClass,0,rlist,ierr)
       endif
 
 C
