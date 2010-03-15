@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.265 2010-02-22 18:14:25 shea Exp $
+;      $Id: contributed.ncl,v 1.266 2010-03-15 16:42:14 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -11467,6 +11467,7 @@ begin
     end if
     if (rankx.eq.4) then
         copy_VarCoords(x(0,0,:,:), xReturn(0,0,:,:))
+
     end if
     if (rankx.eq.5) then
         copy_VarCoords(x(:,0,0,:,:), xReturn(:,0,0,:,:))
@@ -11476,7 +11477,6 @@ begin
 
     return( xReturn ) 
 end
- 
 ;**********************************************************
 undef("merge_levels_sfc")
 function merge_levels_sfc (x, xsfc, levind[1]:integer)
@@ -11745,4 +11745,42 @@ begin
   copy_VarAtts(x, xNew)
 
   return(xNew)
+end
+; --------------------------
+undef("time_to_newtime")
+function time_to_newtime(time[*]:numeric, new_time_units[1]:string)
+; change a "udunits" recognized time unit to a new (different)\
+; "udunits" recognized time unit.
+;
+; Example:
+;  TIME = time_to_newtime(time, "days since 1950-01-01 00:00" ) ; Time(time) 
+;  time = time_to_newtime(time, "hours since 1800-01-01 00:00") ; time(time) 
+begin
+  ntim   = dimsizes(time)
+  date   = ut_calendar( time, 0)
+ ;print(date(:,0)+"  "+date(:,1)+"  "+date(:,2)+"  "+date(:,3))
+  TIME   = ut_inv_calendar(toint(date(:,0)),toint(date(:,1)) \
+                          ,toint(date(:,2)),toint(date(:,3)) \
+                          ,toint(date(:,4)),todouble(date(:,5)),new_time_units, 0)
+  TIME!0 = "time"
+  TIME@calendar = "gregorian"
+                          ; delete attributes that may no longer be appropriate
+  if (isatt(TIME,"actual_range")) then
+     delete(TIME@actual_range)
+  end if
+  if (isatt(TIME,"delta_t")) then
+     delete(TIME@delta_t)
+  end if
+  if (isatt(TIME,"avg_period")) then
+     delete(TIME@avg_period)
+  end if
+  if (isatt(TIME,"prev_avg_period")) then
+     delete(TIME@prev_avg_period)
+  end if
+
+  if (typeof(time).eq."float") then
+      return(dble2flt(TIME))     ; retain meta data 
+  else
+      return(TIME)
+  end if
 end
