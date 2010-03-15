@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.266 2010-03-15 16:42:14 shea Exp $
+;      $Id: contributed.ncl,v 1.267 2010-03-15 17:38:26 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -11762,8 +11762,9 @@ begin
   TIME   = ut_inv_calendar(toint(date(:,0)),toint(date(:,1)) \
                           ,toint(date(:,2)),toint(date(:,3)) \
                           ,toint(date(:,4)),todouble(date(:,5)),new_time_units, 0)
-  TIME!0 = "time"
   TIME@calendar = "gregorian"
+  TIME!0        = "time"
+  TIME&time     =  TIME
                           ; delete attributes that may no longer be appropriate
   if (isatt(TIME,"actual_range")) then
      delete(TIME@actual_range)
