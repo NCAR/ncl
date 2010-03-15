@@ -1,5 +1,5 @@
 /*
- *      $Id: mp06c.c,v 1.2 2003-03-04 17:17:57 grubin Exp $
+ *      $Id: mp06c.c,v 1.3 2010-03-15 04:18:34 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,6 +28,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/MapPlot.h>
 
@@ -64,7 +66,7 @@ main(int argc, char *argv[])
 {
     int wid,appid,mapid;
     int i, rlist;
-    int NCGM=0, X11=1, PS=0, PDF=0;
+    char const *wks_type = "x11";
 /*
  * Initialize the high level utility library
  */
@@ -76,7 +78,7 @@ main(int argc, char *argv[])
     NhlRLClear(rlist);
     NhlCreate(&appid,"mp06",NhlappClass,NhlDEFAULT_APP,rlist);
 
-    if (NCGM) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create a meta file workstation
  */
@@ -85,7 +87,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"mp06Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else if (X11) {
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  * Create an X workstation
  */
@@ -93,7 +95,7 @@ main(int argc, char *argv[])
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"mp06Work",NhlxWorkstationClass,appid,rlist);
     }
-    else if (PS) {
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a PS workstation.
  */
@@ -102,7 +104,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"mp06Work",
                   NhlpsWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else if (PDF) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PDF workstation.
  */

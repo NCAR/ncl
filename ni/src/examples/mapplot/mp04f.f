@@ -40,7 +40,7 @@ C
       data ret/-1/
       integer appid,wid,mapid,rlist,grlist
       integer i
-      integer NCGM, X11, PS, PDF
+      character*7  wks_type
 
       data name/'Los Angeles','Seattle','Toronto','New York','Miami',
      1 'Mexico City','London','Jakarta','Moscow','New Delhi',
@@ -56,13 +56,12 @@ C
      1 106.75,37.7,77.217,-43.283,31.25,-58.4167,116.4167,139.67,3.28,
      1 36.833,151.167,-74.083,-77.05,18.4667,88.35,121.4167,72.85,
      1 -105.017/
+
 C
 C Default is to create a metafile.
 C
-      NCGM=1
-      X11=0
-      PS=0
-      PDF=0
+      wks_type = "ncgm"
+
 C
 C Initialize the high level utility library
 C
@@ -79,7 +78,8 @@ C
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
       call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
       call NhlFCreate(appid,'mp04',NhlFAppClass,0,rlist,ierr)
-      if( NCGM.eq.1 ) then
+
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create a meta file workstation
 C
@@ -87,7 +87,7 @@ C
          call NhlFRLSetstring(rlist,'wkMetaName','./mp04f.ncgm',ierr)
          call NhlFCreate(wid,'mp04Work',NhlFNcgmWorkstationClass,
      1        0,rlist,ierr)
-      else if (X11.eq.1) then
+      else  if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an X workstation
 C
@@ -95,7 +95,7 @@ C
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
          call NhlFCreate(wid,'mp04Work',NhlFXWorkstationClass,0,
      1        rlist,ierr)
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PS object.
 C
@@ -103,7 +103,7 @@ C
          call NhlFRLSetstring(rlist,'wkPSFileName','./mp04f.ps',ierr)
          call NhlFCreate(wid,'mp04Work',NhlFPSWorkstationClass,
      1        0,rlist,ierr)
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF object.
 C

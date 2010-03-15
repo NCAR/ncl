@@ -1,5 +1,5 @@
 C     
-C     $Id: mp07f.f,v 1.2 2003-03-04 17:17:58 grubin Exp $
+C     $Id: mp07f.f,v 1.3 2010-03-15 04:18:34 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -54,14 +54,11 @@ C
 
       integer appid,wks,mapid
       integer rlist
-      integer NCGM, X11, PS, PDF
+      character*7  wks_type
 C
 C Default is to display output to an X workstation
 C
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+      wks_type = "x11"
 C
 C Initialize the high level utility library
 C
@@ -74,7 +71,7 @@ C
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'mp07',NhlFAppClass,0,rlist,ierr)
 
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create an NCGM workstation.
 C
@@ -82,14 +79,14 @@ C
          call NhlFRLSetstring(rlist,'wkMetaName','./mp07f.ncgm',ierr)
          call NhlFCreate(wks,'mp07Work',NhlFNcgmWorkstationClass,0,
      1        rlist,ierr)
-      else  if (X11.eq.1) then
+      else  if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an X workstation
 C
          call NhlFRLClear(rlist)
          call NhlFCreate(wks,'mp07Work',NhlFXWorkstationClass,0,
      1     rlist,ierr)
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PS object.
 C
@@ -97,7 +94,7 @@ C
          call NhlFRLSetstring(rlist,'wkPSFileName','./mp07f.ps',ierr)
          call NhlFCreate(wks,'mp07Work',NhlFPSWorkstationClass,0,
      1        rlist,ierr)
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF object.
 C

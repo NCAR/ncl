@@ -26,6 +26,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/MapPlot.h>
 
@@ -48,7 +50,6 @@ main(int argc, char *argv[])
     int rlist,grlist;
     int i, num_am_ids;
     int *am_ids;
-    int NCGM=1, X11=0, PS=0, PDF=0;
 
     Anno_List anno_list[] = {
     {"Los Angeles",34.0,-118.28},
@@ -79,6 +80,7 @@ main(int argc, char *argv[])
     };
 
     int text_ids[NhlNumber(anno_list)];
+    char const *wks_type = "ncgm";
     
 /*
  * Initialize the high level utility library
@@ -97,7 +99,7 @@ main(int argc, char *argv[])
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlCreate(&appid,"mp04",NhlappClass,NhlDEFAULT_APP,rlist);
 
-    if (NCGM) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create a meta file workstation.
  */
@@ -106,7 +108,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"mp04Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else if (X11) {
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  * Create an X workstation.
  */
@@ -115,7 +117,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"mp04Work",
                   NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else if (PS) {
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a PS workstation.
  */
@@ -124,7 +126,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"mp04Work",
                   NhlpsWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else if (PDF) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PDF workstation.
  */
