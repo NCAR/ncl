@@ -58,13 +58,10 @@ cmap = (/ (/1.00,1.00,1.00/), \  ; white
 ;
 ; Change the output to an X11 window
 ;
-  NCGM=0
-  X11=1
-  PS=0
-  PDF=0
+wks_type = "x11"
 ;                 ncl supports if-then and if-then-else logic.
 ;
-  if (NCGM .eq. 1) then
+  if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object.
 ;
@@ -73,7 +70,7 @@ cmap = (/ (/1.00,1.00,1.00/), \  ; white
 	"wkColorMap" : cmap                ; assign the new color map
       end create
   else
-    if (X11 .eq. 1) then
+    if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
@@ -81,7 +78,7 @@ cmap = (/ (/1.00,1.00,1.00/), \  ; white
 	"wkColorMap" : cmap                     ; assign the new color map
       end create
     else
-      if (PS .eq. 1) then
+      if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
@@ -90,7 +87,7 @@ cmap = (/ (/1.00,1.00,1.00/), \  ; white
 	"wkColorMap" : cmap              ; assign the new color map
         end create
       else
-        if (PDF .eq. 1) then
+        if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;

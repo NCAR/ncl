@@ -1,5 +1,5 @@
 /*
-**      $Id: cn10c.c,v 1.8 2003-02-28 22:19:25 grubin Exp $
+**      $Id: cn10c.c,v 1.9 2010-03-15 03:55:58 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -37,6 +37,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/XyPlot.h>
@@ -73,7 +75,7 @@ main()
     char    filename[256];
     const char *dir = _NGGetNCARGEnv("data");
 
-    int NCGM=0, X11=1, PS=0, PDF=0;
+    char const *wks_type = "x11";
 /*
  * Initialize the HLU library and set up resource template.
  */
@@ -124,7 +126,7 @@ main()
     NhlRLSetString(srlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"cn10",NhlappClass,NhlDEFAULT_APP,srlist);
 
-    if (NCGM) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create a meta file object.
  */
@@ -134,7 +136,7 @@ main()
         NhlCreate(&work_id,"cn10Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,srlist);
     }
-    else if (X11) {
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  * Create an XWorkstation object.
  */
@@ -144,7 +146,7 @@ main()
         NhlCreate(&work_id,"cn10Work",NhlxWorkstationClass,
               NhlDEFAULT_APP,srlist);
     }
-    else if (PS) {
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a PS workstation.
  */
@@ -154,7 +156,7 @@ main()
         NhlCreate(&work_id,"cn10Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,srlist);
     }
-    else if (PDF) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PDF workstation.
  */

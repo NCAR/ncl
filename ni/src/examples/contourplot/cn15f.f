@@ -1,5 +1,5 @@
 C
-C      $Id: cn15f.f,v 1.9 2005-05-09 03:02:04 haley Exp $
+C      $Id: cn15f.f,v 1.10 2010-03-15 03:55:58 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -25,6 +25,8 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXWorkstationClass
       external NhlFScalarFieldClass
       external NhlFTextItemClass
@@ -78,11 +80,6 @@ C
 C Output to all three workstations.
 C
       integer ncgm1, x1, ps1, pdf1
-      integer NCGM, X11, PS, PDF
-      NCGM=1
-      X11=1
-      PS=1
-      PDF=1
 C
 C Generate a color map.
 C

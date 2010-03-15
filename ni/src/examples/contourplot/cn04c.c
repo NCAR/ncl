@@ -1,5 +1,5 @@
 /*
- *      $Id: cn04c.c,v 1.7 2003-04-10 23:39:25 fred Exp $
+ *      $Id: cn04c.c,v 1.8 2010-03-15 03:55:58 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -36,6 +36,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/TextItem.h>
@@ -61,7 +63,7 @@ main(int argc, char *argv[])
 
     extern void bndary();
     extern void gendat (float *,int,int,int,int,int,float,float);
-    int NCGM=0, X11=1, PS=0, PDF=0;
+    char const *wks_type = "x11";
 /*
  * This program emulates the output of cpex02 with a few differences:
  * 1. Because the information label is implemented as an HLU Annotation
@@ -86,7 +88,7 @@ main(int argc, char *argv[])
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"cn04",NhlappClass,NhlDEFAULT_APP,rlist);
 
-    if (NCGM) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create a meta file workstation.
  */
@@ -95,7 +97,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"cn04Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
-    else if (X11) {
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  * Create an X workstation.
  */
@@ -104,7 +106,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"cn04Work",
                   NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else if (PS) {
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a meta file workstation.
  */
@@ -113,7 +115,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"cn04Work",
                   NhlpsWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
-    else if (PDF) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a meta file workstation.
  */

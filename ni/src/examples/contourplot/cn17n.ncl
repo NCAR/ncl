@@ -82,12 +82,9 @@ begin
 ;
 ; Output to an X11 workstation
 ;
-  NCGM=0
-  X11=1
-  PS=0
-  PDF=0
+wks_type = "x11"
 
-  if (NCGM.eq.1) then
+  if (str_lower(wks_type).eq."ncgm")
 ;
 ; Create an ncgmWorkstation object.
 ;
@@ -96,7 +93,7 @@ begin
       "wkColorMap" : cmap
     end create
   else
-    if (X11.eq.1) then
+    if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
@@ -105,7 +102,7 @@ begin
         "wkPause" : "True"
       end create
     else 
-      if (PS .eq. 1) then
+      if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
@@ -114,7 +111,7 @@ begin
           "wkColorMap" : cmap
         end create
       else 
-        if (PDF .eq. 1) then
+        if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;

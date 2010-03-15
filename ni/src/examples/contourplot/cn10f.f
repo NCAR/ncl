@@ -1,5 +1,5 @@
 C
-C      $Id: cn10f.f,v 1.6 2003-02-28 22:19:25 grubin Exp $
+C      $Id: cn10f.f,v 1.7 2010-03-15 03:55:58 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -31,6 +31,8 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXWorkstationClass
       external NhlFScalarFieldClass
       external NhlFCoordArraysClass
@@ -63,14 +65,12 @@ C
       character*256 filename
       character*50 recname
 
-      integer NCGM, X11, PS, PDF
+      character*7  wks_type
 C
-C Default is to an X workstation.
+C Define the workstation type
 C
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+      wks_type = "x11"
+C
 C
 C Initialize the HLU library and set up resource template.
 C
@@ -176,7 +176,7 @@ C
       call NhlFRLSetString(srlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'cn10',NhlFAppClass,0,srlist,ierr)
 
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create an NCGM workstation.
 C
@@ -186,7 +186,7 @@ C
      +        ierr)
          call NhlFCreate(work_id,'cn10Work',
      +        NhlFNcgmWorkstationClass,0,srlist,ierr)
-      else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an xworkstation object.
 C
@@ -196,7 +196,7 @@ C
      +        ierr)
          call NhlFCreate(work_id,'cn10Work',NhlFXWorkstationClass,
      +        0,srlist,ierr)
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PostScript workstation.
 C
@@ -206,7 +206,7 @@ C
      +        ierr)
          call NhlFCreate(work_id,'cn10Work',
      +        NhlFPSWorkstationClass,0,srlist,ierr)
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF workstation.
 C

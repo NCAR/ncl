@@ -1,5 +1,5 @@
 /*
- *      $Id: cn16c.c,v 1.5 2005-05-09 03:02:04 haley Exp $
+ *      $Id: cn16c.c,v 1.6 2010-03-15 03:55:58 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -30,6 +30,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/ScalarField.h>
@@ -76,7 +78,7 @@ main()
 /*
  * Default is to create an X11 window.
  */
-  int NCGM=0, X11=1, PS=0, PDF=0;
+  char const *wks_type = "x11";
 
 /*
  * Initialize the HLU library and set up resource template.
@@ -90,7 +92,7 @@ main()
   NhlRLSetString(srlist,NhlNappUsrDir,"./");
   NhlCreate(&appid,"cn16",NhlappClass,0,srlist);
 
-  if (NCGM) {
+  if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create an NCGM workstation.
  */
@@ -98,7 +100,7 @@ main()
     NhlRLSetString(srlist,"wkMetaName","./cn16c.ncgm");
     NhlCreate(&wid,"cn16Work",NhlncgmWorkstationClass,0,srlist);
   }
-  else if (X11) {
+  else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  * Create an XWorkstation object.
  */
@@ -106,7 +108,7 @@ main()
     NhlRLSetString(srlist,"wkPause","True");
     NhlCreate(&wid,"cn16Work",NhlxWorkstationClass,0,srlist);
   }
-  else if (PS) {
+  else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a PostScript workstation.
  */
@@ -114,7 +116,7 @@ main()
     NhlRLSetString(srlist,"wkPSFileName","./cn16c.ps");
     NhlCreate(&wid,"cn16Work",NhlpsWorkstationClass,0,srlist);
   }
-  else if (PDF) {
+  else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PDF workstation.
  */

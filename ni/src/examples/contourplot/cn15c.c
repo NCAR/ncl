@@ -1,5 +1,5 @@
 /*
- *      $Id: cn15c.c,v 1.9 2005-05-09 03:02:04 haley Exp $
+ *      $Id: cn15c.c,v 1.10 2010-03-15 03:55:58 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,6 +26,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/TextItem.h>
@@ -87,7 +89,6 @@ main()
  * Output to all four workstations.
  */
     int ncgm1,x1,ps1, pdf1;
-    int NCGM=1, X11=1, PS=1, PDF=1;
     int nlt, nln, zonal, ksst;
     float sstzon;
 /*

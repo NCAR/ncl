@@ -1,5 +1,5 @@
 /*
-**      $Id: cn05c.c,v 1.7 2003-02-28 22:19:25 grubin Exp $
+**      $Id: cn05c.c,v 1.8 2010-03-15 03:55:58 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -31,6 +31,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/ScalarField.h>
@@ -81,7 +83,7 @@ main()
 /*
  * Default is to create an NCGM file.
  */
-    int NCGM=1, X11=0, PS=0, PDF=0;
+    char const *wks_type = "ncgm";
 /*
  * Open the netCDF file.
  */
@@ -100,7 +102,7 @@ main()
     NhlRLSetString(srlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"cn05",NhlappClass,NhlDEFAULT_APP,srlist);
 
-    if (NCGM) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create a meta file object.
  */
@@ -109,7 +111,7 @@ main()
         NhlCreate(&workid,"cn05Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,srlist);
     }
-    else if (X11) {
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  * Create an XWorkstation object.
  */
@@ -118,7 +120,7 @@ main()
         NhlCreate(&workid,"cn05Work",NhlxWorkstationClass,
               NhlDEFAULT_APP,srlist);
     }
-    else if (PS) {
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a PS workstation.
  */
@@ -127,7 +129,7 @@ main()
         NhlCreate(&workid,"cn05Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,srlist);
     }
-    else if (PDF) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PDF workstation.
  */

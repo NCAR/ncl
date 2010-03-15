@@ -56,12 +56,9 @@ cmap = (/ (/0.0, 0.0, 0.0/), \
 	 (/0.5, 0.5, 1.0/), \
 	 (/1.0, 0.0, 0.5/) /)
 
-NCGM=1
-X11=0
-PS=0
-PDF=0
+wks_type = "ncgm"
 
-if (NCGM.eq.1) then
+if (str_lower(wks_type).eq."ncgm")
 ;
 ; Open NCGM workstation.
 ;
@@ -70,7 +67,7 @@ if (NCGM.eq.1) then
     "wkColorMap" : cmap
   end create
 else
-  if (X11.eq.1) then
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an X workstation.
 ;
@@ -79,7 +76,7 @@ else
       "wkColorMap" : cmap
     end create
   else
-    if (PS .eq. 1) then
+    if (str_lower(wks_type).eq."ps") then
 ;
 ; Open PS workstation.
 ;
@@ -88,7 +85,7 @@ else
         "wkColorMap" : cmap
       end create
     else
-      if (PDF .eq. 1) then
+      if (str_lower(wks_type).eq."pdf") then
 ;
 ; Open PDF workstation.
 ;

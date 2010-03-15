@@ -113,12 +113,9 @@ mfile =  addfile (datafile,"r")
 ;
 ; Default is to create an NCGM file.
 ;
-NCGM=1
-X11=0
-PS=0
-PDF=0
+wks_type = "ncgm"
 
-if (NCGM.eq.1) then
+if (str_lower(wks_type).eq."ncgm")
 ;
 ; Create an ncgm workstation.
 ;
@@ -126,7 +123,7 @@ if (NCGM.eq.1) then
     "wkMetaName" : "./cn05n.ncgm"
   end create
 else
-  if (X11.eq.1) then
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an X workstation.
 ;
@@ -134,7 +131,7 @@ else
       "wkPause" : True
     end create
   else
-    if (PS .eq. 1) then
+    if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PS workstation.
 ;
@@ -142,7 +139,7 @@ else
         "wkPSFileName" : "./cn05n.ps"
       end create
     else
-      if (PDF .eq. 1) then
+      if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDF workstation.
 ;

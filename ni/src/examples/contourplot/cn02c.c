@@ -1,5 +1,5 @@
 /*
- *      $Id: cn02c.c,v 1.7 2003-02-28 22:19:25 grubin Exp $
+ *      $Id: cn02c.c,v 1.8 2010-03-15 03:55:58 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -35,6 +35,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/ContourPlot.h>
 
@@ -51,7 +53,7 @@ main(int argc, char *argv[])
     float   *fscales;
     int *colors;
     int     count, itmp;
-    int NCGM=0, X11=1, PS=0, PDF=0;
+    char const *wks_type = "x11";
 
 /* create a simple bull's eye pattern test data set */
 
@@ -78,7 +80,7 @@ main(int argc, char *argv[])
     NhlRLSetString(srlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"cn02",NhlappClass,NhlDEFAULT_APP,srlist);
 
-    if (NCGM) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create a meta file workstation.
  */
@@ -87,7 +89,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"cn02Work",
                   NhlncgmWorkstationClass,appid,srlist);
     }
-    else if (X11) {
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  * Create an X workstation.
  */
@@ -95,7 +97,7 @@ main(int argc, char *argv[])
         NhlRLSetInteger(srlist,NhlNwkPause,True);
         NhlCreate(&wid,"cn02Work",NhlxWorkstationClass,appid,srlist);
     }
-    else if (PS) {
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a PS workstation.
  */
@@ -103,7 +105,7 @@ main(int argc, char *argv[])
         NhlRLSetString(srlist,NhlNwkPSFileName,"./cn02c.ps");
         NhlCreate(&wid,"cn02Work",NhlpsWorkstationClass,appid,srlist);
     }
-    else if (PDF) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PDF workstation.
  */

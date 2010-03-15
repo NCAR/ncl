@@ -63,13 +63,6 @@ begin
   	 (/0.66,0.66,0.66/), \ ; light gray
   	 (/0.40,0.40,0.40/) /) ; dark gray
 ;
-; Output to all three workstations.
-;
-  NCGM=1
-  X11=1
-  PS=1
-  PDF=1
-;
 ; Create an ncgmWorkstation object.
 ;
   ncgm = create "cn15Work" ncgmWorkstationClass defaultapp

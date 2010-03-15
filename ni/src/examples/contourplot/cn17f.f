@@ -1,5 +1,5 @@
 C
-C      $Id: cn17f.f,v 1.3 2003-02-28 22:19:26 grubin Exp $
+C      $Id: cn17f.f,v 1.4 2010-03-15 03:55:58 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -199,13 +199,11 @@ c Declare variables for defining color map.
 c
       integer length(2)
       real   cmap(3,NCOLORS)
+      character*7  wks_type
 c
 c Default is to display to an x11 window.
 c
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+      wks_type = "x11"
 C     
 C Initialize the HLU library and set up resource template.
 C
@@ -250,7 +248,8 @@ C
       end do
       length(1) = 3
       length(2) = NCOLORS
-      if (NCGM.eq.1) then
+
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create an NCGM workstation.
 C
@@ -260,7 +259,7 @@ C
      +        ierr)
          call NhlFCreate(workid,'cn17Work',NhlFNcgmWorkstationClass,
      +        0,srlist,ierr) 
-      else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an X workstation.
 C
@@ -270,7 +269,7 @@ C
      +        ierr)
          call NhlFCreate(workid,'cn17Work',NhlFXWorkstationClass,
      +        0,srlist,ierr) 
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PS object.
 C
@@ -280,7 +279,7 @@ C
      +        ierr)
          call NhlFCreate(workid,'cn17Work',NhlFPSWorkstationClass,
      +        0,srlist,ierr)
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF object.
 C
