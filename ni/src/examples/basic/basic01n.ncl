@@ -1,4 +1,4 @@
-; $Id: basic01n.ncl,v 1.11 2003-02-28 21:43:14 grubin Exp $
+; $Id: basic01n.ncl,v 1.12 2010-03-15 03:11:23 haley Exp $
 ;
 ; This example demonstrates how to draw a contour plot using mostly
 ; defaults.  Note: no data is used in this example, so the output appears
@@ -34,12 +34,9 @@ begin
 ;
 ; Default is to display output to an X workstation
 ;
-NCGM=0
-X11=1
-PS=0
-PDF=0
+wks_type = "x11"
 
-if (NCGM.eq.1) then
+if (str_lower(wks_type).eq."ncgm")
 ;
 ; Create an NCGM workstation.
 ;
@@ -47,7 +44,7 @@ if (NCGM.eq.1) then
         "wkMetaName" : "./basic01n.ncgm"
   end create
 else
-  if (X11.eq.1) then
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an X workstation.
 ;
@@ -55,7 +52,7 @@ else
         "wkPause" : "True"
   end create
   else
-    if (PS .eq. 1) then
+    if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PS workstation.
 ;
@@ -63,7 +60,7 @@ else
         "wkPSFileName" : "./basic01n.ps"
       end create
     else
-      if (PDF .eq. 1) then
+      if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDF workstation.
 ;

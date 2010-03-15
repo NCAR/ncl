@@ -1,5 +1,5 @@
 C
-C $Id: basic02f.f,v 1.13 2003-02-28 21:43:13 grubin Exp $
+C $Id: basic02f.f,v 1.14 2010-03-15 03:11:23 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -33,11 +33,17 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXWorkstationClass
       external NhlFContourPlotClass
 
       integer appid,wks,con1,rlist,ierr
-      integer NCGM, X11, PS, PDF
+      character*7  wks_type
+C
+C Define the workstation type
+C
+      wks_type = "x11"
 C
 C Initialize the graphics libraries and create a resource list that
 C is normally used to assign name/value pairs within objects.  Then
@@ -57,15 +63,7 @@ C Choose the type of output you want to create.  You may write your
 C output to an NCGM, file, X workstation window, or a PostScript file. 
 C 
 
-C
-C Default is to display output to an X workstation
-C
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
-
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create an NCGM workstation.
 C
@@ -73,7 +71,7 @@ C
          call NhlFRLSetstring(rlist,'wkMetaName','./basic02f.ncgm',ierr)
          call NhlFCreate(wks,"wks",NhlFNcgmWorkstationClass,0,
      1        rlist,ierr)
-      else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an X workstation.
 C
@@ -81,7 +79,7 @@ C
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
          call NhlFCreate(wks,"wks",NhlFXWorkstationClass,0,
      1        rlist,ierr)
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PS object.
 C
@@ -92,7 +90,7 @@ C
 C
 C Create a PDF object.
 C
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPDFFileName','./basic02f.pdf',
      1        ierr)

@@ -49,15 +49,14 @@ C
       real k
       character*50 string
 
-      integer NCGM,X11,PS
+      character*7  wks_type
+C
+C Define the workstation type
+C
+      wks_type = "x11"
+
       num_fonts = 31
       num_lines = 18
-C
-C Set the display. Default is to display output to an X workstation.
-C
-      NCGM=0
-      X11=1
-      PS=0
 C
 C Initialize the high level utility library and create application.
 C
@@ -69,7 +68,7 @@ C
       call NhlFRLSetString(rlist,'appDefaultParent','True',ierr)
       call NhlFCreate(appid,'basic09',NhlFAppClass,0,rlist,ierr)
 
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create a metafile workstation.
 C
@@ -80,7 +79,7 @@ C
      &        NhlFNcgmWorkstationClass,0,rlist,ierr)
       endif
 
-      if (X11 .eq. 1) then
+      if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an X workstation.         
 C      
@@ -90,7 +89,7 @@ C
      &        0,rlist,ierr)
       endif
 
-      if (PS .eq. 1) then
+      if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PS workstation.
 C

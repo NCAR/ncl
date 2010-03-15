@@ -1,5 +1,5 @@
 /*
- * $Id: basic02c.c,v 1.11 2003-02-28 21:43:13 grubin Exp $
+ * $Id: basic02c.c,v 1.12 2010-03-15 03:11:23 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,6 +32,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/hlu.h>
@@ -40,7 +42,7 @@ main()
 {
     int appid,wks,con1,rlist;
 
-    int NCGM=0, X11=1, PS=0, PDF=0;
+    char const *wks_type = "x11";
 
 /*
  * Initialize the graphics libraries and create a resource list that
@@ -60,7 +62,7 @@ main()
  * Choose the type of output you want to create.  You may write your
  * output to an NCGM file, X workstation window, or a PostScript file. 
  */
-    if (NCGM) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create a meta file workstation.
  */
@@ -69,7 +71,7 @@ main()
         NhlCreate(&wks,"wks",NhlncgmWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
-    else if (X11) {
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  * Create an X workstation.
  */
@@ -77,7 +79,7 @@ main()
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else if (PS) {
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a PS workstation.
  */
@@ -86,7 +88,7 @@ main()
         NhlCreate(&wks,"wks",NhlpsWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
-    else if (PDF) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PDF workstation.
  */

@@ -21,6 +21,8 @@ C
       external NhlFAppClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFTextItemClass

@@ -1,4 +1,4 @@
-; $Id: basic05n.ncl,v 1.13 2003-02-28 21:43:14 grubin Exp $
+; $Id: basic05n.ncl,v 1.14 2010-03-15 03:11:23 haley Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -34,12 +34,9 @@ colorindices = ispan(1,232,1)
 ;
 ; Set the display. Default is to display output to an X workstation
 ;
-NCGM=0
-X11=1
-PS=0
-PDF=0
+wks_type = "x11"
 
-if (NCGM .eq. 1) then
+if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object with default colormap.
 ;
@@ -49,7 +46,7 @@ if (NCGM .eq. 1) then
                                       ; this assignment is redundant.
   end create
 else
-  if (X11 .eq. 1) then
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object with default colormap.
 ;
@@ -61,7 +58,7 @@ else
                                       ; this assignment is redundant.
     end create
   else
-    if (PS .eq. 1) then
+    if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
@@ -71,7 +68,7 @@ else
                                        ; this assignment is redundant.
       end create
     else
-      if (PDF .eq. 1) then
+      if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;

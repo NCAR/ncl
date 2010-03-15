@@ -51,7 +51,7 @@ main()
 /*
  * Set the display. Default is to display output to an X workstation.
  */
-    int NCGM=0, X11=1, PS=0;
+    char const *wks_type = "x11";
 
 /*
  * Initialize the high level utility library and create application.
@@ -65,8 +65,7 @@ main()
     NhlCreate(&appid,"basic08",NhlappClass,NhlDEFAULT_APP,rlist);
 
 
-    if (NCGM)
-      {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
       /*
        * Create a metafile workstation with the default colormap.
        */
@@ -76,8 +75,7 @@ main()
                     NhlDEFAULT_APP,rlist);
       }
     
-    if (X11)
-      {
+    if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
       /*
        * Create an X workstation.
        */
@@ -87,8 +85,7 @@ main()
                    NhlDEFAULT_APP,rlist);
      }
 
-    if (PS)
-      {
+    if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
       /*
        * Create a PS workstation.
        */

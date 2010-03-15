@@ -1,5 +1,5 @@
 ;
-; $Id: basic09n.ncl,v 1.6 1998-06-01 16:00:11 haley Exp $
+; $Id: basic09n.ncl,v 1.7 2010-03-15 03:11:23 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -23,15 +23,9 @@
 
 begin
 
+wks_type = "x11"
 
-;
-; Set the display. Default is to display output to an X workstation
-;
-NCGM=0
-X11=1
-PS=0
-
-if (NCGM .eq. 1) then
+if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object.
 ;
@@ -39,7 +33,7 @@ if (NCGM .eq. 1) then
       "wkMetaName" : "basic09n.ncgm"
   end create
 else
-  if (X11 .eq. 1) then
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
@@ -47,7 +41,7 @@ else
       "wkPause" : "True"
     end create
   else
-    if (PS .eq. 1) then
+    if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;

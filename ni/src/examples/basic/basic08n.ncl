@@ -1,4 +1,4 @@
-; $Id: basic08n.ncl,v 1.3 1998-04-23 22:19:45 ethan Exp $
+; $Id: basic08n.ncl,v 1.4 2010-03-15 03:11:23 haley Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -134,14 +134,9 @@ begin
 ; Main program.  
 ;
 
-;
-; Set the display. Default is to display output to an X workstation.
-;
-NCGM=0
-X11=1
-PS=0
+  wks_type = "x11"
 
-  if (NCGM .eq. 1) then
+  if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object with default colormap.
 ;
@@ -149,7 +144,7 @@ PS=0
         "wkMetaName" : "basic08n.ncgm"
     end create
   else
-    if (X11 .eq. 1) then
+    if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an X11 output workstation and use the above color map.
 ;
@@ -157,7 +152,7 @@ PS=0
         "wkPause" : "True"
     end create
     else
-      if (PS .eq. 1) then
+      if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;

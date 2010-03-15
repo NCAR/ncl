@@ -35,16 +35,14 @@ C
       
       integer appid,rlist,grlist
       integer wid,gid,ll_id,cn_id
-      integer NCGM,X11,PS
+      character*7  wks_type
       integer ierr
 
       real x(5),y(5)
 C
-C Set the display. Default is to display output to an X workstation.
+C Define the workstation type
 C
-      NCGM=0
-      X11=1
-      PS=0
+      wks_type = "x11"
 C
 C Initialize the high level utility library and create application.
 C
@@ -57,7 +55,7 @@ C
       call NhlFRLSetString(rlist,'appDefaultParent','True',ierr)
       call NhlFCreate(appid,'basic08',NhlFAppClass,0,rlist,ierr)
 
-      if (NCGM .eq. 1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create a metafile workstation with the default colormap.
 C
@@ -68,7 +66,7 @@ C
      &        NhlfNcgmWorkstationClass,0,rlist,ierr)
       endif
 
-      if (X11 .eq. 1) then
+      if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an X workstation.         
 C      
@@ -78,7 +76,7 @@ C
      &        0,rlist,ierr)
       endif
 
-      if (PS .eq. 1) then
+      if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PS workstation.
 C
