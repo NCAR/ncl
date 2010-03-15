@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ng4ex.csh,v 1.12 2007-10-26 16:01:47 haley Exp $
+#   $Id: ng4ex.csh,v 1.13 2010-03-15 01:58:26 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -429,9 +429,15 @@ unset NCGM
 unset X11
 unset PS
 unset PDF
+unset NEWPS
+unset PNG
+unset NEWPDF
+
 set ncarbd_flag
 set ngmathbd_flag
 set num_set = 0
+
+set ws_type = "x11"
 
 while ($#argv > 0)
 
@@ -498,6 +504,19 @@ while ($#argv > 0)
         @ num_set += 1
       else if ("$ws_type" == "pdf" || "$ws_type" == "PDF") then
         set PDF
+        @ num_set += 1
+      else if ("$ws_type" == "newps" || "$ws_type" == "NEWPS") then
+        set NEWPS
+	set cairo
+        @ num_set += 1
+      else if ("$ws_type" == "png"    || "$ws_type" == "PNG" || \
+               "$ws_type" == "newpng" || "$ws_type" == "NEWPNG") then
+        set PNG
+	set cairo
+        @ num_set += 1
+      else if ("$ws_type" == "newpdf" || "$ws_type" == "NEWPDF") then
+        set NEWPDF
+	set cairo
         @ num_set += 1
       else
         echo ""
@@ -698,13 +717,15 @@ foreach name ($names)
 #**************************************************#
 #                                                  #
 # If the "-unique" option was selected and the     #
-# NCGM/PS/PDF already exists, don't generate it    #
-# again.                                           #
-#                                                  #
+# NCGM/PS/PDF already exists, don't generate       #
+# it again.                                        #
 #**************************************************#
 if ($?NCGM && $?Unique && -f $name.ncgm) goto theend
 if ($?PS && $?Unique && -f $name.ps) goto theend
 if ($?PDF && $?Unique && -f $name.pdf) goto theend
+if ($?NEWPS && $?Unique && -f $name.ps) goto theend
+if ($?NEWPDF && $?Unique && -f $name.pdf) goto theend
+if ($?PNG && $?Unique && -f $name.000001.png) goto theend
 
 #*********************************************#
 #                                             #
@@ -905,7 +926,7 @@ switch($name)
         echo "libraries Xm and Xt to be loaded during the link phase."
         echo ""
         echo "The output will be displayed to an X11 window, and an"
-        echo "NCGM/PS/PDF file may or may not be produced."
+        echo "NCGM/PS/PDF/PNG file may or may not be produced."
         echo ""
         set comp_flags = ($comp_flags "-XmXt")
         if ("$name" == "xy12c") set ascdata_file = "xy12c.asc"
@@ -1022,62 +1043,20 @@ end
 #                                         #
 # Modify example if we explicity want to  #
 # output to an NCGM file, an XWorkstation,#
-# a PS file, or a PDF file.  If a type is #
-# explicitly requested, then turn the     #
-# other types off.                        #
+# a PS file, a PDF file, or PNG file.     #
+# If a type is explicitly requested, then #
+# turn the other types off.               #
 #                                         #
 #*****************************************#
-if ($?NCGM) then
-  ed << EOF - ./$src_file >& /dev/null
-g/NCGM=0/s//NCGM=1/g
+ed << EOF - ./$src_file >& /dev/null
+g/wks_type = "x11"/s//wks_type = "$ws_type"/g
 w
 q
 EOF
-else if ("$num_set" == "1") then
-  ed << EOF - ./$src_file >& /dev/null
-g/NCGM=1/s//NCGM=0/g
-w
-q
-EOF
-endif
 
-if ($?X11) then
-  ed << EOF - ./$src_file >& /dev/null
-g/X11=0/s//X11=1/g
-w
-q
-EOF
-else if ("$num_set" == "1") then
-  ed << EOF - ./$src_file >& /dev/null
-g/X11=1/s//X11=0/g
-w
-q
-EOF
-endif
-
-if ($?PS) then
-  ed << EOF - ./$src_file >& /dev/null
-g/PS=0/s//PS=1/g
-w
-q
-EOF
-else if ("$num_set" == "1") then
-  ed << EOF - ./$src_file >& /dev/null
-g/PS=1/s//PS=0/g
-w
-q
-EOF
-endif
-
-if ($?PDF) then
-  ed << EOF - ./$src_file >& /dev/null
-g/PDF=0/s//PDF=1/g
-w
-q
-EOF
-else if ("$num_set" == "1") then
-  ed << EOF - ./$src_file >& /dev/null
-g/PDF=1/s//PDF=0/g
+if ($?nprog) then
+ed << EOF - ./$src_file >& /dev/null
+g/wks_type = "x11"/s//wks_type = "$ws_type"/g
 w
 q
 EOF
@@ -1124,9 +1103,17 @@ if (! $?NoRunOption) then
     if ($?fprog || $?cprog) then   
       echo "Compiling and linking..."
       if ($?cprog) then
-        nhlcc -o $name $src_file $comp_flags
+        if ($?cairo) then
+          nhlcc_cairo -o $name $src_file $comp_flags
+        else
+          nhlcc -o $name $src_file $comp_flags
+       endif
       else
-        nhlf77 -o $name $src_file $comp_flags
+        if ($?cairo) then
+          nhlf77_cairo -o $name $src_file $comp_flags
+        else
+          nhlf77 -o $name $src_file $comp_flags
+        endif
       endif
       if ($status != 0) then
           echo ""
@@ -1161,16 +1148,36 @@ if (! $?NoRunOption) then
       echo "    Metafile is named $name.ncgm."
       echo ""
     endif
-    if( -e $name.ps ) then
+    if( -e $name.ps  && ("$ws_type" == "ps" || "$ws_type" == "PS")) then
       echo ""
       echo "    Example $name produced a PostScript file."
       echo "    PS file is named $name.ps."
       echo ""
     endif
-    if( -e $name.pdf ) then
+    if( -e $name.ps  && ("$ws_type" == "newps" || "$ws_type" == "NEWPS")) then
+      echo ""
+      echo "    Example $name produced a cairo PostScript file."
+      echo "    PS file is named $name.ps."
+      echo ""
+    endif
+    if( -e $name.pdf  && ("$ws_type" == "pdf" || "$ws_type" == "PDF")) then
       echo ""
       echo "    Example $name produced a PDF file."
       echo "    PDF file is named $name.pdf."
+      echo ""
+    endif
+    if( -e $name.pdf  && ("$ws_type" == "newpdf" || "$ws_type" == "NEWPDF")) then
+      echo ""
+      echo "    Example $name produced a cairo PDF file."
+      echo "    PDF file is named $name.pdf."
+      echo ""
+    endif
+
+    if( -e $name.000001.png  && ("$ws_type" == "newpng" || "$ws_type" == "NEWPNG" || \
+                          "$ws_type" == "png" || "$ws_type" == "PNG")) then
+      echo ""
+      echo "    Example $name produced one or more cairo PNG files."
+      echo "    First PNG file is named $name.000001.png, and so on."
       echo ""
     endif
 endif
