@@ -37,6 +37,8 @@ C ;;********* see resource file vc05.res ******
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXWorkstationClass
       external NhlFMapPlotClass
       external NhlFVectorFieldClass
@@ -51,12 +53,9 @@ C ;;********* see resource file vc05.res ******
       integer len_dims(2) 
       real x,y
       integer i,j
-      integer NCGM, X11, PS, PDF
+      character*7  wks_type
 
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+      wks_type = "x11"
 
       DO 100 i= 1,25
          DO 200 j= 1,25
@@ -90,45 +89,44 @@ C  to cooler to hotter colors.
       call NhlFCreate(appid,'vc05',NhlFAppClass,0,
      1    srlist,ierr)
 
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 
 C Create a meta file workstation.
-      call NhlFRLClear(srlist)
-      call NhlFRLSetstring(srlist,'wkMetaName','./vc05f.ncgm',ierr)
-      call NhlFCreate(wid,'vc05Work',NhlFNcgmWorkstationClass,0,
-     1srlist,ierr)
+         call NhlFRLClear(srlist)
+         call NhlFRLSetstring(srlist,'wkMetaName','./vc05f.ncgm',ierr)
+         call NhlFCreate(wid,'vc05Work',NhlFNcgmWorkstationClass,0,
+     1        srlist,ierr)
  
-        else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 
 C Create an X workstation.
 
-      call NhlFRLClear(srlist)
-      call NhlFRLSetstring(srlist,'wkPause','true',ierr)
+         call NhlFRLClear(srlist)
+         call NhlFRLSetstring(srlist,'wkPause','true',ierr)
 
 C ;;********* see resource file vc05.res ******
 C       call NhlFRLSetstring(srlist,'wkColorMap', 'temp1',ierr)
 C 
-
-      call NhlFCreate(wid,'vc05Work',NhlFxWorkstationClass,
-     1     0,srlist,ierr)
+         call NhlFCreate(wid,'vc05Work',NhlFxWorkstationClass,
+     1        0,srlist,ierr)
     
-      else if (PS .eq. 1) then
-
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
+         
 C Create a PS  workstation.
 
-      call NhlFRLClear(srlist)
-      call NhlFRLSetstring(srlist,'wkPSFileName','./vc05f.ps',ierr)
-      call NhlFCreate(wid,'vc05Work',NhlFPSWorkstationClass,
-     1     0,srlist,ierr)
+         call NhlFRLClear(srlist)
+         call NhlFRLSetstring(srlist,'wkPSFileName','./vc05f.ps',ierr)
+         call NhlFCreate(wid,'vc05Work',NhlFPSWorkstationClass,
+     1        0,srlist,ierr)
 
-      else if (PDF .eq. 1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 
 C Create a PDF  workstation.
 
-      call NhlFRLClear(srlist)
-      call NhlFRLSetstring(srlist,'wkPDFFileName','./vc05f.pdf',ierr)
-      call NhlFCreate(wid,'vc05Work',NhlFPDFWorkstationClass,
-     1     0,srlist,ierr)
+         call NhlFRLClear(srlist)
+         call NhlFRLSetstring(srlist,'wkPDFFileName','./vc05f.pdf',ierr)
+         call NhlFCreate(wid,'vc05Work',NhlFPDFWorkstationClass,
+     1        0,srlist,ierr)
       endif
 
 

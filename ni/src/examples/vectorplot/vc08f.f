@@ -1,5 +1,5 @@
 C
-C  $Id: vc08f.f,v 1.2 2003-03-03 20:20:54 grubin Exp $
+C  $Id: vc08f.f,v 1.3 2010-03-15 15:19:47 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -24,6 +24,8 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXWorkstationClass
       external NhlFVectorPlotClass
       external NhlFVectorFieldClass
@@ -31,7 +33,7 @@ C
       external NhlFTextItemClass
       parameter(NLON = 129, NLAT = 64)
       
-      integer NCGM, X11, PS, PDF
+      character*7  wks_type
       integer appid,wid,vcid,vfield,mapid,txid1,txid2
       integer rlist
       real U(NLON,NLAT),V(NLON,NLAT)
@@ -74,12 +76,9 @@ C
 C
 C Default is to create an X11 window.
 C
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+      wks_type = "x11"
 
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create an NCGM workstation.
 C
@@ -88,7 +87,7 @@ C
       call NhlFRLSetString(rlist,'wkMetaName','./vc08f.ncgm',ierr)
       call NhlFCreate(wid,'vc08Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
-      else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an xworkstation object.
 C
@@ -97,7 +96,7 @@ C
       call NhlFRLSetString(rlist,'wkPause','True',ierr)
       call NhlFCreate(wid,'vc08Work',NhlFXWorkstationClass,
      +        0,rlist,ierr)
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PostScript workstation.
 C
@@ -106,7 +105,7 @@ C
       call NhlFRLSetString(rlist,'wkPSFileName','./vc08f.ps',ierr)
       call NhlFCreate(wid,'vc08Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF workstation.
 C

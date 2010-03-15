@@ -49,6 +49,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/VectorField.h>
 #include <ncarg/hlu/VectorPlot.h>
 #include <ncarg/hlu/MapPlot.h>
@@ -64,7 +66,7 @@ main(int argc, char *argv[])
     int         srlist;
     float       x,y;
     int         i,j;
-    int         NCGM=0, X11=1, PS=0, PDF=0;
+    char const *wks_type = "x11";
 
 
 for( i= 0;i < 25; i++){
@@ -100,7 +102,7 @@ for( i= 0;i < 25; i++){
     NhlRLSetString(srlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"vc05",NhlappClass,NhlDEFAULT_APP,srlist);
 
-    if (NCGM) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create a meta file workstation.
  */
@@ -109,7 +111,7 @@ for( i= 0;i < 25; i++){
         NhlCreate(&wid,"vc05Work",
                   NhlncgmWorkstationClass,0,srlist);
     }
-    else if (X11) {
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  * Create an X workstation.
  */
@@ -123,7 +125,7 @@ for( i= 0;i < 25; i++){
         NhlCreate(&wid,"vc05Work",NhlxWorkstationClass,0,srlist);
     }
 
-    else if (PS) {
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a PS workstation.
  */
@@ -131,7 +133,7 @@ for( i= 0;i < 25; i++){
         NhlRLSetString(srlist,NhlNwkPSFileName,"./vc05c.ps");
         NhlCreate(&wid,"vc05Work",NhlpsWorkstationClass,0,srlist);
     }
-    else if (PDF) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PDF workstation.
  */

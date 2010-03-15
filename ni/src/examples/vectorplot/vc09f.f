@@ -1,5 +1,5 @@
 C
-C  $Id: vc09f.f,v 1.5 2003-03-06 18:14:23 haley Exp $
+C  $Id: vc09f.f,v 1.6 2010-03-15 15:19:47 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -29,6 +29,8 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXWorkstationClass
       external NhlFVectorFieldClass
       external NhlFVectorPlotClass
@@ -40,12 +42,13 @@ C
       parameter(TIMESTEPS=64)
       parameter(NLAT=33,NLON=36)
 
-      integer ZOOM, NCGM, X11, PS, PDF
+      integer ZOOM
       integer appid, wid, vfield, sfield, sfield2
       integer mapid, cnid, vcid, tiid1, tiid2,txid1
       integer u_id, v_id, p_id, t_id, lat_id, lon_id, titl_id, tim_id
       integer uf, vf, pf, tf, latlen, lonlen, timlen, flen
       integer start(3), count (3), len_dims (2), timestep (64)
+      character*7  wks_type
 
       real lon (NLON), lat(NLAT)
       real U(NLON,NLAT), V(NLON,NLAT), P(NLON,NLAT), T(NLON,NLAT)
@@ -73,11 +76,7 @@ C
 C
 C Output to an ncgm.
 C
-
-      NCGM=1
-      X11=0
-      PS=0
-      PDF=0
+      wks_type = "ncgm"
 
       call NhlFInitialize
       call NhlFRLCreate (rlist,  'setrl')
@@ -95,8 +94,7 @@ C
 C
 C Create an ncgmWorkstation object.
 C
-
-      if (NCGM .eq. 1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkMetaName', './vc09f.ncgm', 
      +        ierr)
@@ -107,7 +105,7 @@ C
 C
 C Create an XWorkstation object.
 C
-      else if (X11 .eq. 1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkPause', 'True', ierr)
          call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
@@ -117,8 +115,7 @@ C
 C
 C Create a PSWorkstation object.
 C
-
-      else if (PS .eq. 1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkPSFileName', 'vc09f.ps', ierr)
          call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
@@ -127,8 +124,7 @@ C
 C
 C Create a PDFWorkstation object.
 C
-
-      else if (PDF .eq. 1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkPDFFileName', 'vc09f.pdf',
      +        ierr)

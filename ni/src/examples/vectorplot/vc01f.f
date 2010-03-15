@@ -1,5 +1,5 @@
 C
-C      $Id: vc01f.f,v 1.2 2003-03-03 20:20:54 grubin Exp $
+C      $Id: vc01f.f,v 1.3 2010-03-15 15:19:47 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -24,6 +24,8 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXWorkstationClass
       external NhlFVectorFieldClass
       external NhlFVectorPlotClass
@@ -31,17 +33,14 @@ C
       parameter(M=30,N=25)
       parameter(PI=3.14159)
 
-      integer NCGM, X11, PS, PDF
+      character*7  wks_type
       integer appid,wid,vcid,vfid
       integer rlist
       integer len_dims(2)
       real U(M,N),V(M,N)
       real igrid, jgrid
       integer i,j
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+
 C
 C Generate vector data arrays
 C
@@ -67,8 +66,9 @@ C
       call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'vc01',NhlFappClass,0,rlist,ierr)
 
+      wks_type = "x11"
 
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create an NCGM workstation.
 C
@@ -76,7 +76,7 @@ C
          call NhlFRLSetstring(rlist,'wkMetaName','./vc01f.ncgm',ierr)
          call NhlFCreate(wid,'vc01Work',NhlFNcgmWorkstationClass,
      1     0,rlist,ierr)
-      else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an X workstation.
 C
@@ -84,7 +84,7 @@ C
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
          call NhlFCreate(wid,'vc01Work',NhlFXWorkstationClass,
      1        0,rlist,ierr) 
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PS object.
 C
@@ -92,7 +92,7 @@ C
          call NhlFRLSetstring(rlist,'wkPSFileName','./vc01f.ps',ierr)
          call NhlFCreate(wid,'vc01Work',NhlFPSWorkstationClass,
      1        0,rlist,ierr)
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF object.
 C

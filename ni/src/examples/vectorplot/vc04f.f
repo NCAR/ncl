@@ -28,12 +28,14 @@ C
        external NhlFNcgmWorkstationClass
        external NhlFPSWorkstationClass
        external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
        external NhlFXWorkstationClass
        external NhlFVectorPlotClass
        external NhlFVectorFieldClass
 
        parameter(LL=37,MM=37,NN=2)
-       integer NCGM, X11, PS, PDF
+       character*7  wks_type
        integer appid,wid,vcid,vfid
        integer rlist,grlist
        integer len_dims(3)
@@ -70,12 +72,9 @@ C
 C
 C Default is to create an X11 window.
 C
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+      wks_type = "x11"
 
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create an NCGM workstation.
 C
@@ -84,7 +83,7 @@ C
          call NhlFCreate(wid,'vc04Work',
 
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
-      else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an xworkstation object.
 C
@@ -92,7 +91,7 @@ C
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
          call NhlFCreate(wid,'vc04Work',NhlFXWorkstationClass,
      +        0,rlist,ierr)
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PostScript workstation.
 C
@@ -100,7 +99,7 @@ C
          call NhlFRLSetString(rlist,'wkPSFileName','./vc04f.ps',ierr)
          call NhlFCreate(wid,'vc04Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF workstation.
 C

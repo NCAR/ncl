@@ -40,16 +40,12 @@ begin
 ;
 ; Output to an ncgm.
 ;
-
-  NCGM=1
-  X11=0
-  PS=0
-  PDF=0
+  wks_type = "ncgm"
 
 ;
 ; Create an ncgmWorkstation object.
 ;
-  if (NCGM .eq. 1) then
+  if (str_lower(wks_type).eq."ncgm") then
       wid = create "vc09Work" ncgmWorkstationClass defaultapp
         "wkMetaName" : "./vc09n.ncgm"
         "wkColorMap" : "temp1"
@@ -58,7 +54,7 @@ begin
 ;
 ; Create an XWorkstation object.
 ;
-    if (X11 .eq. 1) then
+    if (str_lower(wks_type).eq."x11") then
       wid = create "vc09Work" xWorkstationClass defaultapp
             "wkPause" : True
             "wkColorMap" : "temp1"
@@ -67,7 +63,7 @@ begin
 ;
 ; Create a PSWorkstation object.
 ;
-      if (PS .eq. 1) then
+      if (str_lower(wks_type).eq."ps") then
         wid = create "vc09Work" psWorkstationClass defaultapp
           "wkPSFileName" : "vc09n.ps"
           "wkColorMap" : "temp1"
@@ -76,7 +72,7 @@ begin
 ;
 ; Create a PDFWorkstation object.
 ;
-        if (PDF .eq. 1) then
+        if (str_lower(wks_type).eq."pdf") then
           wid = create "vc09Work" pdfWorkstationClass defaultapp
             "wkPDFFileName" : "vc09n.pdf"
             "wkColorMap" : "temp1"

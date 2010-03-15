@@ -58,12 +58,9 @@ end create
 ; of colors so that vectors of increasing magnitude will move from cooler
 ; to warmer colors.
 
-NCGM=0
-X11=1
-PS=0
-PDF=0
+wks_type = "x11"
 
-if (NCGM.eq.1) then
+if (str_lower(wks_type).eq."ncgm")
 ;
 ; Create an NCGM workstation.
 ;
@@ -72,7 +69,7 @@ if (NCGM.eq.1) then
     "wkColorMap" : "temp1"
   end create
 else
-  if (X11.eq.1) then
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an X workstation.
 ;
@@ -82,7 +79,7 @@ else
 ;;;     "wkColorMap" : "temp1"
     end create
   else
-    if (PS .eq. 1) then
+    if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PS workstation.
 ;
@@ -91,7 +88,7 @@ else
         "wkColorMap" : "temp1"
       end create
     else
-      if (PDF .eq. 1) then
+      if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDF workstation.
 ;

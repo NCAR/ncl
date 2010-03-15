@@ -1,5 +1,5 @@
 /*
- *      $Id: vc09c.c,v 1.4 2003-03-03 20:20:54 grubin Exp $
+ *      $Id: vc09c.c,v 1.5 2010-03-15 15:19:47 haley Exp $
  */
 /************************************************************************
  *                                                                      *
@@ -32,6 +32,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/VectorPlot.h>
 #include <ncarg/hlu/ScalarField.h>
@@ -52,7 +54,7 @@ int main ()
  *
  */
 
-    int ZOOM=0, NCGM=1, X11=0, PS=0, PDF=0;
+    int ZOOM=0;
 
     int i, j, k, u_id, v_id, p_id, t_id, len_dims [2], *time, *timestep;
     int rlist, uf, vf, pf, tf, tim_id, lat_id, lon_id, tit_id;
@@ -68,6 +70,7 @@ int main ()
     char title [256];
     const char *dir = _NGGetNCARGEnv ("data");
     extern void get_2d_array(float *, long, long, int, int, long);
+    const char *wks_type = "ncgm";
 
 /*
  *  Create an application object.  It will look for a resource file
@@ -86,7 +89,7 @@ int main ()
  *  Create an ncgmWorkstation object.
  */
 
-    if (NCGM) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
        NhlRLClear (rlist);
        NhlRLSetString (rlist, NhlNwkMetaName, "./vc09c.ncgm");
        NhlRLSetString (rlist, NhlNwkColorMap, "temp1");
@@ -99,7 +102,7 @@ int main ()
  *  Create an XWorkstation object.
  */
 
-    if (X11) {
+    if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
       NhlRLClear (rlist);
       NhlRLSetString (rlist, NhlNwkPause, "True");
       NhlRLSetString (rlist, NhlNwkColorMap, "temp1");
@@ -112,7 +115,7 @@ int main ()
  *  Create a PSWorkstation object.
  */
 
-    if (PS) {
+    if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
        NhlRLClear (rlist);
        NhlRLSetString (rlist, NhlNwkPSFileName, "vc09c.ps");
 	   NhlRLSetString (rlist, NhlNwkColorMap, "temp1");
@@ -125,7 +128,7 @@ int main ()
  *  Create a PDFWorkstation object.
  */
 
-    if (PDF) {
+    if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
        NhlRLClear (rlist);
        NhlRLSetString (rlist, NhlNwkPDFFileName, "vc09c.pdf");
 	   NhlRLSetString (rlist, NhlNwkColorMap, "temp1");
