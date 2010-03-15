@@ -25,16 +25,17 @@ C
       external NhlFXWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFTextItemClass
 
       integer appid,workid,textid
       integer rlist,ierr
-      integer NCGM, X11, PS, PDF
-
-      NCGM=0
-      X11=1
-      PS= 0
-      PDF=0
+      CHARACTER*7  wks_type
+C
+C Define the workstation type
+C
+      wks_type = "x11"
 
 C
 C Initialize the HLU library.
@@ -67,7 +68,7 @@ C Since the appDefaultParent resource was set to True for
 C 'ap01', we can use either 0 or appid as the Parent id.
 C They mean the same thing.
 C
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create a metafile workstation.
 C
@@ -76,7 +77,7 @@ C
          call NhlFCreate(workid,'x',
      &        NhlFNcgmWorkstationClass,0,rlist,ierr)
 
-      elseif (X11.eq.1) then
+      elseif (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an X workstation.
 C
@@ -85,7 +86,7 @@ C
          call NhlFCreate(workid,'x',
      &        NhlFXWorkstationClass,0,rlist,ierr)
 
-      elseif (PS.eq.1) then
+      elseif (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PS workstation.
 C
@@ -93,7 +94,7 @@ C
          call NhlFRLSetString(rlist,'wkPSFileName','./ap01f.ps',ierr)
          call NhlFCreate(workid,'x',
      &        NhlFPSWorkstationClass,0,rlist,ierr)
-      elseif (PDF.eq.1) then
+      elseif (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF workstation.
 C
