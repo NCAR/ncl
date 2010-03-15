@@ -1,5 +1,5 @@
 ;
-;      $Id: nm11n.ncl,v 1.4 2010-03-15 04:34:53 haley Exp $
+;      $Id: nm11n.ncl,v 1.5 2010-03-15 22:49:24 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -97,39 +97,56 @@ if (str_lower(wks_type).eq."ncgm") then
 ; Create an ncgmWorkstation object.
 ;
   xworkid = create "nm11Work" ncgmWorkstationClass defaultapp
-      "wkMetaName" : "nm11n.ncgm"
-      "wkColorMap" : cmap
+    "wkMetaName" : "nm11n.ncgm"
+    "wkColorMap" : cmap
   end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
   xworkid = create "nm11Work" xWorkstationClass defaultapp
-      "wkPause" : True
-      "wkColorMap" : cmap
+    "wkPause" : True
+    "wkColorMap" : cmap
   end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-      xworkid = create "nm11Work" psWorkstationClass defaultapp
-        "wkPSFileName" : "nm11n.ps"
-        "wkColorMap" : cmap
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  xworkid = create "nm11Work" psWorkstationClass defaultapp
+    "wkPSFileName" : "nm11n.ps"
+    "wkColorMap" : cmap
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-        xworkid = create "nm11Work" pdfWorkstationClass defaultapp
-          "wkPDFFileName" : "nm11n.pdf"
-          "wkColorMap" : cmap
-        end create
-      end if
-    end if
-  end if
+  xworkid = create "nm11Work" pdfWorkstationClass defaultapp
+    "wkPDFFileName" : "nm11n.pdf"
+    "wkColorMap" : cmap
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  xworkid = create "nm11Work" documentWorkstationClass defaultapp
+    "wkFileName" : "nm11n"
+    "wkFormat" : wks_type
+    "wkColorMap" : cmap
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  xworkid = create "nm11Work" imageWorkstationClass defaultapp
+    "wkFileName" : "nm11n"
+    "wkFormat" : wks_type
+    "wkColorMap" : cmap
+  end create
 end if
 
 ;

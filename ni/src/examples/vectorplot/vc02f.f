@@ -1,5 +1,5 @@
 C
-C      $Id: vc02f.f,v 1.4 2010-03-15 15:19:47 haley Exp $
+C      $Id: vc02f.f,v 1.5 2010-03-15 22:49:25 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -102,6 +102,26 @@ C
          call NhlFRLSetstring(rlist,'wkPDFFileName','./vc02f.pdf',ierr)
          call NhlFCreate(wid,'vc02Work',NhlFPDFWorkstationClass,
      1        0,rlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetstring(rlist,'wkFileName','./vc02f',ierr)
+         call NhlFCreate(wid,'vc02Work',
+     1        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetstring(rlist,'wkFileName','./vc02f',ierr)
+         call NhlFCreate(wid,'vc02Work',
+     1        NhlFCairoImageWorkstationClass,0,rlist,ierr)
       endif
 C
 C Create a VectorField data object using the data set defined above.

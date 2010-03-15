@@ -1,5 +1,5 @@
 C
-C     $Id: xy14f.f,v 1.5 2010-03-15 02:06:27 haley Exp $
+C     $Id: xy14f.f,v 1.6 2010-03-15 22:49:25 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -114,6 +114,26 @@ C
          call NhlFRLSetString(srlist,'wkPDFFileName','./xy14f.pdf',ierr)
          call NhlFCreate(xworkid,'xy14Work',
      +        NhlFPDFWorkstationClass,0,srlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a PS/PDF cairo workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkFileName','./xy14f',ierr)
+         call NhlFRLSetString(srlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(xworkid,'xy14Work',
+     +        NhlFCairoPSPDFWorkstationClass,0,srlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a PNG cairo workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkFileName','./xy14f',ierr)
+         call NhlFRLSetString(srlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(xworkid,'xy14Work',
+     +        NhlFCairoImageWorkstationClass,0,srlist,ierr)
       endif
 C
 C Create X-axis values and convert data to Fahrenheit.

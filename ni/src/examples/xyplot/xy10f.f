@@ -1,5 +1,5 @@
 C
-C      $Id: xy10f.f,v 1.10 2010-03-15 02:06:27 haley Exp $
+C      $Id: xy10f.f,v 1.11 2010-03-15 22:49:25 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -106,6 +106,26 @@ C
          call NhlFRLSetString(rlist,'wkPDFFileName','./xy10f.pdf',ierr)
          call NhlFCreate(xworkid,'xy10Work',
      +        NhlFPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName','./xy10f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(xworkid,'xy10Work',
+     +        NhlFcairoPSPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName','./xy10f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(xworkid,'xy10Work',
+     +        NhlFcairoImageWorkstationClass,0,rlist,ierr)
       endif
 C
 C Open the netCDF file.

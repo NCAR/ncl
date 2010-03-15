@@ -110,33 +110,48 @@ begin
     wid = create "natgrids" ncgmWorkstationClass defaultapp
         "wkMetaName" : "nm03n.ncgm"
     end create
-  else
-    if (str_lower(wks_type).eq."x11") then
+  end if
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
-      wid = create "natgrids" xWorkstationClass defaultapp
-        "wkPause" : "True"
-      end create
-    else
-      if (str_lower(wks_type).eq."ps") then
+    wid = create "natgrids" xWorkstationClass defaultapp
+      "wkPause" : "True"
+    end create
+  end if
+  if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-        wid = create "natgrids" psWorkstationClass defaultapp
-          "wkPSFileName" : "nm03n.ps"
-        end create
-      else
-        if (str_lower(wks_type).eq."pdf") then
+    wid = create "natgrids" psWorkstationClass defaultapp
+      "wkPSFileName" : "nm03n.ps"
+    end create
+  end if
+  if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-          wid = create "natgrids" pdfWorkstationClass defaultapp
-            "wkPDFFileName" : "nm03n.pdf"
-          end create
-        end if
-      end if
-    end if
+    wid = create "natgrids" pdfWorkstationClass defaultapp
+      "wkPDFFileName" : "nm03n.pdf"
+    end create
+  end if
+  if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+    wid = create "natgrids" documentWorkstationClass defaultapp
+      "wkFileName" : "nm03n"
+      "wkFormat" : wks_type
+    end create
+  end if
+  if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+    wid = create "natgrids" imageWorkstationClass defaultapp
+      "wkFileName" : "nm03n"
+      "wkFormat" : wks_type
+    end create
   end if
 
   getvalues wid

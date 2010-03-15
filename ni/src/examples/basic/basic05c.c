@@ -1,5 +1,5 @@
 /*
- * $Id: basic05c.c,v 1.11 2010-03-15 03:11:23 haley Exp $
+ * $Id: basic05c.c,v 1.12 2010-03-15 22:49:23 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -120,6 +120,34 @@ main()
         NhlRLSetString(rlist,"wkColorMap","default");
         NhlRLSetString(rlist,NhlNwkPDFFileName,"./basic05c.pdf");
         NhlCreate(&wks,"wks",NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(rlist);
+/*
+ * Set Colormap to default. Note, this assignment is redundant
+ */
+        NhlRLSetString(rlist,"wkColorMap","default");
+        NhlRLSetString(rlist,NhlNwkFileName,"./basic05c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wks,"wks",NhlcairoPSPDFWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(rlist);
+/*
+ * Set Colormap to default. Note, this assignment is redundant
+ */
+        NhlRLSetString(rlist,"wkColorMap","default");
+        NhlRLSetString(rlist,NhlNwkFileName,"./basic05c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wks,"wks",NhlcairoImageWorkstationClass,NhlDEFAULT_APP,rlist);
     }
 
 /*

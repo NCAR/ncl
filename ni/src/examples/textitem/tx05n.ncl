@@ -1,5 +1,5 @@
 ;
-;   $Id: tx05n.ncl,v 1.9 2010-03-15 04:49:32 haley Exp $
+;   $Id: tx05n.ncl,v 1.10 2010-03-15 22:49:24 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -45,36 +45,53 @@ if (str_lower(wks_type).eq."ncgm") then
       "wkMetaName"         : "tx05n.ncgm"
       "wkColorMap"         : cmap
   end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
-    workstation_id = create "tx05Work"  xWorkstationClass defaultapp
-      "wkPause"            : True
-      "wkColorMap"         : cmap
-    end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+  workstation_id = create "tx05Work"  xWorkstationClass defaultapp
+    "wkPause"            : True
+    "wkColorMap"         : cmap
+  end create
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-      workstation_id = create "tx05Work" psWorkstationClass defaultapp
-        "wkPSFileName"       : "tx05n.ps"
-        "wkColorMap"         : cmap
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  workstation_id = create "tx05Work" psWorkstationClass defaultapp
+    "wkPSFileName"       : "tx05n.ps"
+    "wkColorMap"         : cmap
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-        workstation_id = create "tx05Work" pdfWorkstationClass defaultapp
-          "wkPDFFileName"       : "tx05n.pdf"
-          "wkColorMap"         : cmap
-        end create
-      end if
-    end if
-  end if
+  workstation_id = create "tx05Work" pdfWorkstationClass defaultapp
+    "wkPDFFileName"       : "tx05n.pdf"
+    "wkColorMap"         : cmap
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  workstation_id = create "tx05Work" documentWorkstationClass defaultapp
+    "wkFileName"       : "tx05n"
+    "wkFormat"       : wks_type
+    "wkColorMap"         : cmap
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  workstation_id = create "tx05Work" imageWorkstationClass defaultapp
+    "wkFileName"       : "tx05n"
+    "wkFormat"       : wks_type
+    "wkColorMap"         : cmap
+  end create
 end if
 
 ;

@@ -96,6 +96,26 @@ C
          call NhlFRLSetstring(rlist,'wkPDFFileName','./lb02f.pdf',ierr)
          call NhlFCreate(wid,'lb02Work',
      $        NhlFPDFWorkstationClass,0,rlist,ierr) 
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkFileName','./lb02f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(wid,'lb02Work',
+     $        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr) 
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkFileName','./lb02f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(wid,'lb02Work',
+     $        NhlFCairoImageWorkstationClass,0,rlist,ierr) 
       endif
 C
 C Create a plot with 16 color indices (Every other one of the default

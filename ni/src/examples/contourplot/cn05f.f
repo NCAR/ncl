@@ -1,5 +1,5 @@
 C
-C      $Id: cn05f.f,v 1.8 2010-03-15 15:28:53 haley Exp $
+C      $Id: cn05f.f,v 1.9 2010-03-15 22:49:23 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -153,6 +153,28 @@ C
      +        ierr)
          call NhlFCreate(workid,'cn05Work',
      +        NhlFPDFWorkstationClass,0,srlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkFileName','./cn05f',
+     +        ierr)
+         call NhlFRLSetString(srlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(workid,'cn05Work',
+     +        NhlFCairoPSPDFWorkstationClass,0,srlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkFileName','./cn05f',
+     +        ierr)
+         call NhlFRLSetString(srlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(workid,'cn05Work',
+     +        NhlFCairoImageWorkstationClass,0,srlist,ierr)
       endif
 C
 C Assign the colormap to the workstation.

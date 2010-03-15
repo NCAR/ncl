@@ -92,36 +92,53 @@ wks_type = "x11"
       "wkMetaName" : "./cn17n.ncgm"
       "wkColorMap" : cmap
     end create
-  else
-    if (str_lower(wks_type).eq."x11") then
+end if
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
-      wid = create "cn17Work" xWorkstationClass defaultapp
-        "wkColorMap" : cmap
+    wid = create "cn17Work" xWorkstationClass defaultapp
+      "wkColorMap" : cmap
         "wkPause" : "True"
-      end create
-    else 
-      if (str_lower(wks_type).eq."ps") then
+    end create
+  end if
+  if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-        wid = create "cn17Work" psWorkstationClass defaultapp
-          "wkPSFileName" : "./cn17n.ps"
-          "wkColorMap" : cmap
-        end create
-      else 
-        if (str_lower(wks_type).eq."pdf") then
+    wid = create "cn17Work" psWorkstationClass defaultapp
+      "wkPSFileName" : "./cn17n.ps"
+      "wkColorMap" : cmap
+    end create
+  end if
+  if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-          wid = create "cn17Work" pdfWorkstationClass defaultapp
-            "wkPDFFileName" : "./cn17n.pdf"
-            "wkColorMap" : cmap
-          end create
-        end if
-      end if
-    end if
+    wid = create "cn17Work" pdfWorkstationClass defaultapp
+      "wkPDFFileName" : "./cn17n.pdf"
+      "wkColorMap" : cmap
+    end create
+  end if
+  if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+    wid = create "cn17Work" documentWorkstationClass defaultapp
+      "wkFileName" : "./cn17n"
+      "wkFormat" : wks_type
+      "wkColorMap" : cmap
+    end create
+  end if
+  if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+    wid = create "cn17Work" imageWorkstationClass defaultapp
+      "wkFileName" : "./cn17n"
+      "wkFormat" : wks_type
+      "wkColorMap" : cmap
+    end create
   end if
 ;
 ; Create a "great" circle in lat/lon coordinates. We don't want to draw

@@ -1,5 +1,5 @@
 C
-C      $Id: cn17f.f,v 1.4 2010-03-15 03:55:58 haley Exp $
+C      $Id: cn17f.f,v 1.5 2010-03-15 22:49:23 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -38,6 +38,8 @@ C
       external nhlfncgmworkstationclass
       external nhlfpsworkstationclass
       external nhlfpdfworkstationclass
+      external nhlfcairopspdfworkstationclass
+      external nhlfcairoimageworkstationclass
       external nhlfscalarfieldclass
       external nhlftextitemclass
       external nhlfcontourplotclass
@@ -289,6 +291,30 @@ C
      +        ierr)
          call NhlFCreate(workid,'cn17Work',NhlFPDFWorkstationClass,
      +        0,srlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF object.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetstring(srlist,'wkFileName','./cn17f',ierr)
+         call NhlFRLSetstring(srlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
+     +        ierr)
+         call NhlFCreate(workid,'cn17Work',
+     +        NhlFcairoPSPDFWorkstationClass,0,srlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG object.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetstring(srlist,'wkFileName','./cn17f',ierr)
+         call NhlFRLSetstring(srlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
+     +        ierr)
+         call NhlFCreate(workid,'cn17Work',
+     +        NhlFcairoImageWorkstationClass,0,srlist,ierr)
       endif
 C
 C Create a "great" circle in lat/lon coordinates. We don't want to draw

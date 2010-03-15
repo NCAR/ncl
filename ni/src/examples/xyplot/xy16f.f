@@ -1,5 +1,5 @@
 C
-C      $Id: xy16f.f,v 1.7 2010-03-15 15:28:53 haley Exp $
+C      $Id: xy16f.f,v 1.8 2010-03-15 22:49:25 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -141,6 +141,26 @@ C
          call NhlFRLSetString(srlist,'wkPDFFileName','./xy16f.pdf',ierr)
          call NhlFCreate(xworkid,'xy16Work',
      +        NhlFPDFWorkstationClass,0,srlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkFileName','./xy16f',ierr)
+         call NhlFRLSetString(srlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(xworkid,'xy16Work',
+     +        NhlFCairoPSPDFWorkstationClass,0,srlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkFileName','./xy16f',ierr)
+         call NhlFRLSetString(srlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(xworkid,'xy16Work',
+     +        NhlFCairoImageWorkstationClass,0,srlist,ierr)
       endif
 C
 C  xy.asc has 4 vars of length 129 longitudes, lon, u, v, t

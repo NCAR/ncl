@@ -1,5 +1,5 @@
 /*
- *      $Id: vc09c.c,v 1.5 2010-03-15 15:19:47 haley Exp $
+ *      $Id: vc09c.c,v 1.6 2010-03-15 22:49:25 haley Exp $
  */
 /************************************************************************
  *                                                                      *
@@ -96,43 +96,59 @@ int main ()
        NhlCreate (&wid, "vc09Work", NhlncgmWorkstationClass,
                    NhlDEFAULT_APP, rlist);
     }
-    else
-
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  *  Create an XWorkstation object.
  */
-
-    if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
       NhlRLClear (rlist);
       NhlRLSetString (rlist, NhlNwkPause, "True");
       NhlRLSetString (rlist, NhlNwkColorMap, "temp1");
       NhlCreate (&wid, "vc09Work", NhlxWorkstationClass,
                    NhlDEFAULT_APP, rlist);
     }
-    else
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 
 /*
  *  Create a PSWorkstation object.
  */
-
-    if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
        NhlRLClear (rlist);
        NhlRLSetString (rlist, NhlNwkPSFileName, "vc09c.ps");
 	   NhlRLSetString (rlist, NhlNwkColorMap, "temp1");
        NhlCreate (&wid, "vc09Work", NhlpsWorkstationClass,
                    NhlDEFAULT_APP, rlist);
     }
-    else
-
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  *  Create a PDFWorkstation object.
  */
-
-    if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
        NhlRLClear (rlist);
        NhlRLSetString (rlist, NhlNwkPDFFileName, "vc09c.pdf");
 	   NhlRLSetString (rlist, NhlNwkColorMap, "temp1");
        NhlCreate (&wid, "vc09Work", NhlpdfWorkstationClass,
+                   NhlDEFAULT_APP, rlist);
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ *  Create a cairo PS/PDF Workstation object.
+ */
+       NhlRLClear (rlist);
+       NhlRLSetString (rlist, NhlNwkFileName, "vc09c");
+       NhlRLSetString (rlist, NhlNwkFormat,(char*)wks_type);
+	   NhlRLSetString (rlist, NhlNwkColorMap, "temp1");
+       NhlCreate (&wid, "vc09Work", NhlcairoPSPDFWorkstationClass,
+                   NhlDEFAULT_APP, rlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ *  Create a cairo PNG Workstation object.
+ */
+       NhlRLClear (rlist);
+       NhlRLSetString (rlist, NhlNwkFileName, "vc09c");
+       NhlRLSetString (rlist, NhlNwkFormat,(char*)wks_type);
+	   NhlRLSetString (rlist, NhlNwkColorMap, "temp1");
+       NhlCreate (&wid, "vc09Work", NhlcairoImageWorkstationClass,
                    NhlDEFAULT_APP, rlist);
     }
 

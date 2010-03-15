@@ -56,40 +56,57 @@ if (str_lower(wks_type).eq."ncgm")
 ;
 ; Open NCGM workstation.
 ;
-    wks = create "cn06Work" ncgmWorkstationClass defaultapp 
-        "wkMetaName" : "cn06n.ncgm"
-        "wkColorMap" : cmap
-    end create
-else
-  if (str_lower(wks_type).eq."x11") then
+  wks = create "cn06Work" ncgmWorkstationClass defaultapp 
+      "wkMetaName" : "cn06n.ncgm"
+      "wkColorMap" : cmap
+  end create
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an X workstation.
 ;
-    wks = create "cn06Work" xWorkstationClass defaultapp
-      "wkPause" : True
-      "wkColorMap" : cmap
-    end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+  wks = create "cn06Work" xWorkstationClass defaultapp
+    "wkPause" : True
+    "wkColorMap" : cmap
+  end create
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Open PS workstation.
 ;
-      wks = create "cn06Work" psWorkstationClass defaultapp 
-        "wkPSFileName" : "cn06n.ps"
-        "wkColorMap" : cmap
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  wks = create "cn06Work" psWorkstationClass defaultapp 
+    "wkPSFileName" : "cn06n.ps"
+    "wkColorMap" : cmap
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Open PDF workstation.
 ;
-        wks = create "cn06Work" pdfWorkstationClass defaultapp 
-          "wkPDFFileName" : "cn06n.pdf"
-          "wkColorMap" : cmap
-        end create
-      end if
-    end if
-  end if
+  wks = create "cn06Work" pdfWorkstationClass defaultapp 
+    "wkPDFFileName" : "cn06n.pdf"
+    "wkColorMap" : cmap
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Open cairo PS/PDF workstation.
+;
+  wks = create "cn06Work" documentWorkstationClass defaultapp 
+    "wkFileName" : "cn06n"
+    "wkFormat" : wks_type
+    "wkColorMap" : cmap
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Open cairo PNG workstation.
+;
+  wks = create "cn06Work" imageWorkstationClass defaultapp 
+    "wkFileName" : "cn06n"
+    "wkFormat" : wks_type
+    "wkColorMap" : cmap
+  end create
 end if
 
 ;

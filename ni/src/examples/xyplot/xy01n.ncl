@@ -1,5 +1,5 @@
 ;
-;      $Id: xy01n.ncl,v 1.17 2010-03-15 02:06:27 haley Exp $
+;      $Id: xy01n.ncl,v 1.18 2010-03-15 22:49:25 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -90,6 +90,15 @@ if (str_lower(wks_type).eq."pdf") then
 ;
   xworkid = create "xy01Work" pdfWorkstationClass defaultapp
     "wkPDFFileName" : "xy01n.pdf"
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  xworkid = create "xy01Work" documentWorkstationClass defaultapp
+    "wkFileName" : "xy01n"
+    "wkFormat" : wks_type
   end create
 end if
 

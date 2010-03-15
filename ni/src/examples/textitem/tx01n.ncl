@@ -1,5 +1,5 @@
 ;
-;   $Id: tx01n.ncl,v 1.11 2010-03-15 04:49:32 haley Exp $
+;   $Id: tx01n.ncl,v 1.12 2010-03-15 22:49:24 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -48,33 +48,48 @@ if (str_lower(wks_type).eq."ncgm") then
   wid = create "tx01Work" ncgmWorkstationClass defaultapp
       "wkMetaName"         : "tx01n.ncgm"
   end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
-    wid = create "tx01Work" xWorkstationClass defaultapp
-      "wkPause" : True
-    end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+  wid = create "tx01Work" xWorkstationClass defaultapp
+    "wkPause" : True
+  end create
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-      wid = create "tx01Work" psWorkstationClass defaultapp
-        "wkPSFileName"  : "tx01n.ps"
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  wid = create "tx01Work" psWorkstationClass defaultapp
+    "wkPSFileName"  : "tx01n.ps"
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-        wid = create "tx01Work" pdfWorkstationClass defaultapp
-          "wkPDFFileName"  : "tx01n.pdf"
-        end create
-      end if
-    end if
-  end if
+  wid = create "tx01Work" pdfWorkstationClass defaultapp
+    "wkPDFFileName"  : "tx01n.pdf"
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  wid = create "tx01Work" documentWorkstationClass defaultapp
+    "wkFileName"  : "tx01n"
+    "wkFormat"  : wks_type
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  wid = create "tx01Work" imageWorkstationClass defaultapp
+    "wkFileName"  : "tx01n"
+    "wkFormat"  : wks_type
+  end create
 end if
 
 ;

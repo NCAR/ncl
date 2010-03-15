@@ -1,5 +1,5 @@
 C
-C  $Id: vc08f.f,v 1.3 2010-03-15 15:19:47 haley Exp $
+C  $Id: vc08f.f,v 1.4 2010-03-15 22:49:25 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -114,6 +114,28 @@ C
       call NhlFRLSetString(rlist,'wkPDFFileName','./vc08f.pdf',ierr)
       call NhlFCreate(wid,'vc08Work',
      +        NhlFPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkColorMap','uniform',ierr)
+      call NhlFRLSetString(rlist,'wkFileName','./vc08f',ierr)
+      call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+      call NhlFCreate(wid,'vc08Work',
+     +        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkColorMap','uniform',ierr)
+      call NhlFRLSetString(rlist,'wkFileName','./vc08f',ierr)
+      call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+      call NhlFCreate(wid,'vc08Work',
+     +        NhlFCairoImageWorkstationClass,0,rlist,ierr)
       endif
 C
 C Get netCDF file information.

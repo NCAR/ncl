@@ -1,5 +1,5 @@
 ;
-;      $Id: tx04n.ncl,v 1.10 2010-03-15 04:49:32 haley Exp $
+;      $Id: tx04n.ncl,v 1.11 2010-03-15 22:49:24 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -47,33 +47,48 @@ if (str_lower(wks_type).eq."ncgm") then
     workstation_id = create "tx04Work"  ncgmWorkstationClass defaultapp
       "wkMetaName" : "tx04n.ncgm"
     end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
-    workstation_id = create "tx04Work"  xWorkstationClass defaultapp
-      "wkPause"            : True
-    end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+  workstation_id = create "tx04Work"  xWorkstationClass defaultapp
+    "wkPause"            : True
+  end create
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-      workstation_id = create "tx04Work"  psWorkstationClass defaultapp
-        "wkPSFileName" : "tx04n.ps"
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  workstation_id = create "tx04Work"  psWorkstationClass defaultapp
+    "wkPSFileName" : "tx04n.ps"
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-        workstation_id = create "tx04Work"  pdfWorkstationClass defaultapp
-          "wkPDFFileName" : "tx04n.pdf"
-        end create
-      end if
-    end if
-  end if
+  workstation_id = create "tx04Work"  pdfWorkstationClass defaultapp
+    "wkPDFFileName" : "tx04n.pdf"
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  workstation_id = create "tx04Work"  documentWorkstationClass defaultapp
+    "wkFileName" : "tx04n"
+    "wkFormat" : wks_type
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  workstation_id = create "tx04Work"  imageWorkstationClass defaultapp
+    "wkFileName" : "tx04n"
+    "wkFormat" : wks_type
+  end create
 end if
 
 ;

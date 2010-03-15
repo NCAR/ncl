@@ -1,5 +1,5 @@
 /*
- *      $Id: cn12c.c,v 1.4 2010-03-15 03:55:58 haley Exp $
+ *      $Id: cn12c.c,v 1.5 2010-03-15 22:49:23 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -126,6 +126,28 @@ main(int argc, char *argv[])
         NhlRLSetString(rlist,NhlNwkPDFFileName,"./cn12c.pdf");
         NhlCreate(&wid,"cn12Work",
                   NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist); 
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./cn12c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"cn12Work",
+                  NhlcairoPSPDFWorkstationClass,NhlDEFAULT_APP,rlist); 
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./cn12c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"cn12Work",
+                  NhlcairoImageWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
 /*
  * Call the routine 'gendat' to create an array of contour data.

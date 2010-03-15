@@ -98,6 +98,26 @@ C
          call NhlFRLSetstring(rlist,'wkPDFFileName','./lg03f.pdf',ierr)
          call NhlFCreate(wid,'lg03Work',
      1       NhlFPDFWorkstationClass,0,rlist,ierr) 
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     1         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkFileName','./lg03f',ierr)
+         call NhlFRLSetstring(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(wid,'lg03Work',
+     1       NhlFCairoPSPDFWorkstationClass,0,rlist,ierr) 
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     1         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkFileName','./lg03f',ierr)
+         call NhlFRLSetstring(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(wid,'lg03Work',
+     1       NhlFCairoImageWorkstationClass,0,rlist,ierr) 
       endif
 C
 C Specify the viewport extent of the object.

@@ -108,6 +108,28 @@ main()
         NhlCreate(&wid,"lb02Work",NhlpdfWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./lb02c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"lb02Work",NhlcairoPSPDFWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./lb02c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"lb02Work",NhlcairoImageWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+    }
 /*
  * Create a plot with 16 color indices (Every 6th one of the default
  * workstation colormap.

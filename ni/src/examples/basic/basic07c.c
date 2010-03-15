@@ -22,8 +22,6 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
-#include <ncarg/hlu/CairoWorkstation.h>
-#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/TextItem.h>

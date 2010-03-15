@@ -44,36 +44,51 @@ if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object.
 ;
- xworkid = create "xy16Work" ncgmWorkstationClass defaultapp
+  xworkid = create "xy16Work" ncgmWorkstationClass defaultapp
       "wkMetaName" : "xy16n.ncgm"
   end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Set up an X11 output workstation.
 ;
-    xworkid = create "xy16Work" xWorkstationClass defaultapp
-      "wkPause" : True
-    end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+  xworkid = create "xy16Work" xWorkstationClass defaultapp
+    "wkPause" : True
+  end create
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-      xworkid = create "xy16Work" psWorkstationClass defaultapp
-        "wkPSFileName" : "xy16n.ps"
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  xworkid = create "xy16Work" psWorkstationClass defaultapp
+    "wkPSFileName" : "xy16n.ps"
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-        xworkid = create "xy16Work" pdfWorkstationClass defaultapp
-          "wkPDFFileName" : "xy16n.pdf"
-        end create
-      end if
-    end if
-  end if
+  xworkid = create "xy16Work" pdfWorkstationClass defaultapp
+    "wkPDFFileName" : "xy16n.pdf"
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  xworkid = create "xy16Work" documentWorkstationClass defaultapp
+    "wkFileName" : "xy16n"
+    "wkFormat" : wks_type
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  xworkid = create "xy16Work" imageWorkstationClass defaultapp
+    "wkFileName" : "xy16n"
+    "wkFormat" : wks_type
+  end create
 end if
 
 ;

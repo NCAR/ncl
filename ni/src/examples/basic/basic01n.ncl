@@ -1,4 +1,4 @@
-; $Id: basic01n.ncl,v 1.12 2010-03-15 03:11:23 haley Exp $
+; $Id: basic01n.ncl,v 1.13 2010-03-15 22:49:23 haley Exp $
 ;
 ; This example demonstrates how to draw a contour plot using mostly
 ; defaults.  Note: no data is used in this example, so the output appears
@@ -41,35 +41,50 @@ if (str_lower(wks_type).eq."ncgm")
 ; Create an NCGM workstation.
 ;
   wks = create "wks" ncgmWorkstationClass defaultapp 
-        "wkMetaName" : "./basic01n.ncgm"
+    "wkMetaName" : "./basic01n.ncgm"
   end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an X workstation.
 ;
   wks = create "wks" xWorkstationClass defaultapp 
-        "wkPause" : "True"
+    "wkPause" : "True"
   end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PS workstation.
 ;
-      wks = create "wks" psWorkstationClass defaultapp 
-        "wkPSFileName" : "./basic01n.ps"
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  wks = create "wks" psWorkstationClass defaultapp 
+    "wkPSFileName" : "./basic01n.ps"
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDF workstation.
 ;
-        wks = create "wks" pdfWorkstationClass defaultapp 
-          "wkPDFFileName" : "./basic01n.pdf"
-        end create
-      end if
-    end if
-  end if
+  wks = create "wks" pdfWorkstationClass defaultapp 
+    "wkPDFFileName" : "./basic01n.pdf"
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  wks = create "wks" documentWorkstationClass defaultapp
+    "wkFileName" : "basic01n"
+    "wkFormat"   : wks_type
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  wks = create "wks" imageWorkstationClass defaultapp
+    "wkFileName" : "basic01n"
+    "wkFormat"   : wks_type
+  end create
 end if
 
 

@@ -1,5 +1,5 @@
 C
-C     $Id: cn01f.f,v 1.11 2010-03-15 15:28:53 haley Exp $
+C     $Id: cn01f.f,v 1.12 2010-03-15 22:49:23 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -106,6 +106,26 @@ C
          call NhlFRLClear(srlist)
          call NhlFRLSetstring(srlist,'wkPDFFileName','./cn01f.pdf',ierr)
          call NhlFCreate(wid,'cn01Work',NhlFPDFWorkstationClass,
+     1     0,srlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF object.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetstring(srlist,'wkFileName','./cn01f',ierr)
+         call NhlFRLSetstring(srlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(wid,'cn01Work',NhlFCairoPSPDFWorkstationClass,
+     1     0,srlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG object.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetstring(srlist,'wkFileName','./cn01f',ierr)
+         call NhlFRLSetstring(srlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(wid,'cn01Work',NhlFCairoImageWorkstationClass,
      1     0,srlist,ierr)
       endif
 C

@@ -1,5 +1,5 @@
 ;
-;      $Id: xy15n.ncl,v 1.6 2010-03-15 02:06:27 haley Exp $
+;      $Id: xy15n.ncl,v 1.7 2010-03-15 22:49:25 haley Exp $
 ;
 ;***********************************************************************
 ;                                                                      *
@@ -64,36 +64,51 @@ if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object.
 ;
- xworkid = create "xy15Work" ncgmWorkstationClass defaultapp
-      "wkMetaName" : "xy15n.ncgm"
+  xworkid = create "xy15Work" ncgmWorkstationClass defaultapp
+    "wkMetaName" : "xy15n.ncgm"
   end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Set up an X11 output workstation.
 ;
-    xworkid = create "xy15Work" xWorkstationClass defaultapp
-      "wkPause" : True
-    end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+  xworkid = create "xy15Work" xWorkstationClass defaultapp
+    "wkPause" : True
+  end create
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-      xworkid = create "xy15Work" psWorkstationClass defaultapp
-        "wkPSFileName" : "xy15n.ps"
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  xworkid = create "xy15Work" psWorkstationClass defaultapp
+    "wkPSFileName" : "xy15n.ps"
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-        xworkid = create "xy15Work" pdfWorkstationClass defaultapp
-          "wkPDFFileName" : "xy15n.pdf"
-        end create
-      end if
-    end if
-  end if
+  xworkid = create "xy15Work" pdfWorkstationClass defaultapp
+    "wkPDFFileName" : "xy15n.pdf"
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  xworkid = create "xy15Work" documentWorkstationClass defaultapp
+    "wkFileName" : "xy15n"
+    "wkFormat" : wks_type
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  xworkid = create "xy15Work" imageWorkstationClass defaultapp
+    "wkFileName" : "xy15n"
+    "wkFormat" : wks_type
+  end create
 end if
 ;
 ; Define 4 separate CoordArrays objects - one for each XYPlot. 

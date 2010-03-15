@@ -31,11 +31,9 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
-#include <ncarg/hlu/CairoWorkstation.h>
-#include <ncarg/hlu/ImageWorkstation.h>
-#include <ncarg/hlu/CairoWorkstation.h>
-#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 #include <ncarg/hlu/TickMark.h>
@@ -125,6 +123,30 @@ main()
         NhlRLSetString(rlist,NhlNwkPDFFileName,"./basic06c.pdf");
         NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,dims);
         NhlCreate(&xwork_id,"simple",NhlpdfWorkstationClass,
+              NhlDEFAULT_APP,rlist);
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+    /*
+     * Create a cairo PS/PDF workstation.
+     */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./basic06c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,dims);
+        NhlCreate(&xwork_id,"simple",NhlcairoPSPDFWorkstationClass,
+              NhlDEFAULT_APP,rlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+    /*
+     * Create a cairo PNG workstation.
+     */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./basic06c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,dims);
+        NhlCreate(&xwork_id,"simple",NhlcairoImageWorkstationClass,
               NhlDEFAULT_APP,rlist);
     }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: xy17c.c,v 1.8 2010-03-15 02:06:27 haley Exp $
+ *      $Id: xy17c.c,v 1.9 2010-03-15 22:49:25 haley Exp $
  */
 /***********************************************************************
  *                                                                     *
@@ -142,6 +142,26 @@ void main ()
       NhlRLClear (rlist);
       NhlRLSetString (rlist, NhlNwkPDFFileName, "xy17c.pdf");
       NhlCreate (&wks, "xy17Work", NhlpdfWorkstationClass, 0, rlist);
+   }
+   else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+            !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ *  Open cairo PS/PDF workstation. 
+ */
+      NhlRLClear (rlist);
+      NhlRLSetString (rlist, NhlNwkFileName, "xy17c");
+      NhlRLSetString (rlist, NhlNwkFormat, (char*)wks_type);
+      NhlCreate (&wks, "xy17Work", NhlcairoPSPDFWorkstationClass, 0, rlist);
+   }
+   else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+            !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ *  Open cairo PNG workstation. 
+ */
+      NhlRLClear (rlist);
+      NhlRLSetString (rlist, NhlNwkFileName, "xy17c");
+      NhlRLSetString (rlist, NhlNwkFormat, (char*)wks_type);
+      NhlCreate (&wks, "xy17Work", NhlcairoImageWorkstationClass, 0, rlist);
    }
 
 /*

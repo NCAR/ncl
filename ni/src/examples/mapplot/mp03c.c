@@ -1,5 +1,5 @@
 /*
- *      $Id: mp03c.c,v 1.10 2010-03-15 04:18:34 haley Exp $
+ *      $Id: mp03c.c,v 1.11 2010-03-15 22:49:24 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -100,6 +100,26 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPDFFileName,"mp03c.pdf");
         NhlCreate(&wid,"mp03Work",NhlpdfWorkstationClass,appid,rlist);
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"mp03c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"mp03Work",NhlcairoPSPDFWorkstationClass,appid,rlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"mp03c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"mp03Work",NhlcairoImageWorkstationClass,appid,rlist);
     }
 
 /*

@@ -31,36 +31,53 @@ wks_type = "x11"
 	"wkColorMap" : "uniform"
 	"wkMetaName" : "./vc08n.ncgm"
       end create
-  else
-    if (str_lower(wks_type).eq."x11") then
+  end if
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
-      wid = create "vc08Work" xWorkstationClass defaultapp
-	"wkColorMap" : "uniform"
-	"wkPause" : True
-      end create
-    else
-      if (str_lower(wks_type).eq."ps") then
+    wid = create "vc08Work" xWorkstationClass defaultapp
+      "wkColorMap" : "uniform"
+      "wkPause" : True
+    end create
+  end if
+  if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-	wid = create "vc08Work" psWorkstationClass defaultapp
-	  "wkColorMap" : "uniform"
-	  "wkPSFileName" : "./vc08n.ps"
-	end create
-      else
-        if (str_lower(wks_type).eq."pdf") then
+    wid = create "vc08Work" psWorkstationClass defaultapp
+      "wkColorMap" : "uniform"
+      "wkPSFileName" : "./vc08n.ps"
+    end create
+  end if
+  if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-	  wid = create "vc08Work" pdfWorkstationClass defaultapp
-	    "wkColorMap" : "uniform"
-	    "wkPDFFileName" : "./vc08n.pdf"
-	  end create
-        end if
-      end if
-    end if
+    wid = create "vc08Work" pdfWorkstationClass defaultapp
+      "wkColorMap" : "uniform"
+      "wkPDFFileName" : "./vc08n.pdf"
+    end create
+  end if
+  if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+    wid = create "vc08Work" documentWorkstationClass defaultapp
+      "wkColorMap" : "uniform"
+      "wkFileName" : "./vc08n"
+      "wkFormat" : wks_type
+    end create
+  end if
+  if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+    wid = create "vc08Work" imageWorkstationClass defaultapp
+      "wkColorMap" : "uniform"
+      "wkFileName" : "./vc08n"
+      "wkFormat" : wks_type
+    end create
   end if
 ;
 ; Read the input data and create a data object.

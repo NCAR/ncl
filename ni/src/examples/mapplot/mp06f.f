@@ -1,5 +1,5 @@
 C     
-C     $Id: mp06f.f,v 1.3 2010-03-15 04:18:34 haley Exp $
+C     $Id: mp06f.f,v 1.4 2010-03-15 22:49:24 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -25,6 +25,8 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFMapPlotClass
 
       integer appid,wid,mapid
@@ -108,6 +110,26 @@ C
          call NhlFRLSetstring(rlist,'wkPDFFileName','./mp06f.pdf',ierr)
          call NhlFCreate(wid,'mp06Work',NhlFPDFWorkstationClass,0,
      1        rlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetstring(rlist,'wkFileName','./mp06f',ierr)
+         call NhlFCreate(wid,'mp06Work',
+     1        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetstring(rlist,'wkFileName','./mp06f',ierr)
+         call NhlFCreate(wid,'mp06Work',
+     1        NhlFCairoImageWorkstationClass,0,rlist,ierr)
       endif
 
 C

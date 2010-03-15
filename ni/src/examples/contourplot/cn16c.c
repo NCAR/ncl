@@ -1,5 +1,5 @@
 /*
- *      $Id: cn16c.c,v 1.6 2010-03-15 03:55:58 haley Exp $
+ *      $Id: cn16c.c,v 1.7 2010-03-15 22:49:23 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -123,6 +123,26 @@ main()
     NhlRLClear(srlist);
     NhlRLSetString(srlist,"wkPDFFileName","./cn16c.pdf");
     NhlCreate(&wid,"cn16Work",NhlpdfWorkstationClass,0,srlist);
+  }
+  else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+           !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+    NhlRLClear(srlist);
+    NhlRLSetString(srlist,"wkFileName","./cn16c");
+    NhlRLSetString(srlist,"wkFormat",(char*)wks_type);
+    NhlCreate(&wid,"cn16Work",NhlcairoPSPDFWorkstationClass,0,srlist);
+  }
+  else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+           !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+    NhlRLClear(srlist);
+    NhlRLSetString(srlist,"wkFileName","./cn16c");
+    NhlRLSetString(srlist,"wkFormat",(char*)wks_type);
+    NhlCreate(&wid,"cn16Work",NhlcairoImageWorkstationClass,0,srlist);
   }
 /*
  * Read NCL created NetCDF file containing U and V wind components.

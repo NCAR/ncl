@@ -1,5 +1,5 @@
 /*
- *      $Id: st02c.c,v 1.3 2010-03-15 04:42:34 haley Exp $
+ *      $Id: st02c.c,v 1.4 2010-03-15 22:49:24 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -113,6 +113,26 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPDFFileName,"st02c.pdf");
         NhlCreate(&wid,"st02Work",NhlpdfWorkstationClass,appid,rlist);
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"st02c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"st02Work",NhlcairoPSPDFWorkstationClass,appid,rlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"st02c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"st02Work",NhlcairoImageWorkstationClass,appid,rlist);
     }
 /*
  * Create a VectorField data object using the data set defined above.

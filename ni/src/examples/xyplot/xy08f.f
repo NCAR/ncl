@@ -1,5 +1,5 @@
 C
-C      $Id: xy08f.f,v 1.5 2010-03-15 02:06:27 haley Exp $
+C      $Id: xy08f.f,v 1.6 2010-03-15 22:49:25 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -144,6 +144,28 @@ C
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,clen,ierr)
          call NhlFCreate(xworkid,'xy08Work',
      +        NhlFPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName','./xy08f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,clen,ierr)
+         call NhlFCreate(xworkid,'xy08Work',
+     +        NhlFcairoPSPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName','./xy08f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,clen,ierr)
+         call NhlFCreate(xworkid,'xy08Work',
+     +        NhlFcairoImageWorkstationClass,0,rlist,ierr)
       endif
 C
 C Create NCURVE CoordArray objects which define the data for the XyPlot

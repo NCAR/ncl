@@ -1,5 +1,5 @@
 C
-C      $Id: xy17f.f,v 1.8 2010-03-15 02:06:27 haley Exp $
+C      $Id: xy17f.f,v 1.9 2010-03-15 22:49:25 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -150,6 +150,30 @@ C
          call NhlFRLSetString (rlist, 'wkPDFFileName', 
      +                         'xy17f.pdf', ierr)
          call NhlFCreate (wks, 'xy17Work', NhlFPDFWorkstationClass, 
+     +                    0, rlist, ierr)
+      endif
+C
+C  Open cairo PS/PDF workstation. 
+C
+      if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +    wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+         call NhlFRLClear (rlist)
+         call NhlFRLSetString (rlist, 'wkFileName', 
+     +                         'xy17f', ierr)
+         call NhlFRLSetString (rlist, 'wkFormat',wks_type,ierr) 
+         call NhlFCreate (wks,'xy17Work',NhlFCairoPSPDFWorkstationClass, 
+     +                    0, rlist, ierr)
+      endif
+C
+C  Open cairo PNG workstation. 
+C
+      if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +    wks_type.eq."png".or.wks_type.eq."PNG") then
+         call NhlFRLClear (rlist)
+         call NhlFRLSetString (rlist, 'wkFileName', 
+     +                         'xy17f', ierr)
+         call NhlFRLSetString (rlist, 'wkFormat',wks_type,ierr) 
+         call NhlFCreate (wks,'xy17Work',NhlFCairoImageWorkstationClass, 
      +                    0, rlist, ierr)
       endif
 

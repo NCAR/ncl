@@ -73,33 +73,48 @@ if (str_lower(wks_type).eq."ncgm")
   wid = create "pr01Work" ncgmWorkstationClass defaultapp
     "wkMetaName" : "./pr01n.ncgm"
   end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an X workstation.
 ;
-    wid = create "pr01Work" xWorkstationClass defaultapp
-      "wkPause" : True
-    end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+  wid = create "pr01Work" xWorkstationClass defaultapp
+    "wkPause" : True
+  end create
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PS workstation.
 ;
-      wid = create "pr01Work" psWorkstationClass defaultapp
-        "wkPSFileName" : "./pr01n.ps"
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  wid = create "pr01Work" psWorkstationClass defaultapp
+    "wkPSFileName" : "./pr01n.ps"
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDF workstation.
 ;
-        wid = create "pr01Work" pdfWorkstationClass defaultapp
-          "wkPDFFileName" : "./pr01n.pdf"
-        end create
-      end if
-    end if
-  end if
+  wid = create "pr01Work" pdfWorkstationClass defaultapp
+    "wkPDFFileName" : "./pr01n.pdf"
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  wid = create "pr01Work" documentWorkstationClass defaultapp
+    "wkFileName" : "./pr01n"
+    "wkFormat" : wks_type
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  wid = create "pr01Work" imageWorkstationClass defaultapp
+    "wkFileName" : "./pr01n"
+    "wkFormat" : wks_type
+  end create
 end if
 
 ; Create a blank plot object to place the primitives on.

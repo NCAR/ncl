@@ -60,33 +60,48 @@ if (str_lower(wks_type).eq."ncgm") then
   wid = create "dsgrid" ncgmWorkstationClass defaultapp
       "wkMetaName" : "nm05n.ncgm"
   end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
-    wid = create "dsgrid" xWorkstationClass defaultapp
-      "wkPause" : "True"
-    end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+  wid = create "dsgrid" xWorkstationClass defaultapp
+    "wkPause" : "True"
+  end create
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-      wid = create "dsgrid" psWorkstationClass defaultapp
-        "wkPSFileName" : "nm05n.ps"
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  wid = create "dsgrid" psWorkstationClass defaultapp
+    "wkPSFileName" : "nm05n.ps"
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-        wid = create "dsgrid" pdfWorkstationClass defaultapp
-          "wkPDFFileName" : "nm05n.pdf"
-        end create
-      end if
-    end if
-  end if
+  wid = create "dsgrid" pdfWorkstationClass defaultapp
+    "wkPDFFileName" : "nm05n.pdf"
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  wid = create "dsgrid" documentWorkstationClass defaultapp
+    "wkFileName" : "nm05n"
+    "wkFormat" : wks_type
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  wid = create "dsgrid" imageWorkstationClass defaultapp
+    "wkFileName" : "nm05n"
+    "wkFormat" : wks_type
+  end create
 end if
 
 tdez2d(wid, xo, yo, output, rho, theta, phi, 6)

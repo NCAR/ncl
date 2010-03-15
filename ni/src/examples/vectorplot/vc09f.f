@@ -1,5 +1,5 @@
 C
-C  $Id: vc09f.f,v 1.6 2010-03-15 15:19:47 haley Exp $
+C  $Id: vc09f.f,v 1.7 2010-03-15 22:49:25 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -122,7 +122,7 @@ C
          call NhlFCreate (wid, 'vc09Work', NhlFPSWorkstationClass, 0,
      +        rlist,  ierr)
 C
-C Create a PDFWorkstation object.
+C Create a PDF Workstation object.
 C
       else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
          call NhlFRLClear (rlist)
@@ -131,6 +131,32 @@ C
          call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
          call NhlFCreate (wid, 'vc09Work', NhlFPDFWorkstationClass, 0,
      +        rlist, ierr)
+C
+C Create a cairo PS/PDF Workstation object.
+C
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+         call NhlFRLClear (rlist)
+         call NhlFRLSetString (rlist, 'wkFileName', 'vc09f',
+     +        ierr)
+         call NhlFRLSetString (rlist, 'wkFormat', wks_type,
+     +        ierr)
+         call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
+         call NhlFCreate (wid, 'vc09Work',
+     +        NhlFCairoPSPDFWorkstationClass, 0, rlist, ierr)
+C
+C Create a cairo PNG Workstation object.
+C
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+         call NhlFRLClear (rlist)
+         call NhlFRLSetString (rlist, 'wkFileName', 'vc09f',
+     +        ierr)
+         call NhlFRLSetString (rlist, 'wkFormat', wks_type,
+     +        ierr)
+         call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
+         call NhlFCreate (wid, 'vc09Work',
+     +        NhlFCairoImageWorkstationClass, 0, rlist, ierr)
       end if
 
       call gngpat (dir, 'data', ierr)

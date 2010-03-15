@@ -1,5 +1,5 @@
 C
-C      $Id: cn13f.f,v 1.7 2010-03-15 03:55:58 haley Exp $
+C      $Id: cn13f.f,v 1.8 2010-03-15 22:49:23 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -26,6 +26,8 @@ C
       external nhlfncgmworkstationclass
       external nhlfpsworkstationclass
       external nhlfpdfworkstationclass
+      external nhlfcairopspdfworkstationclass
+      external nhlfcairoimageworkstationclass
       external nhlfscalarfieldclass
       external nhlfcontourplotclass
       external nhlfmapplotclass
@@ -119,6 +121,30 @@ C
      +        ierr)
          call NhlFCreate(workid,'cn13Work',NhlFPDFWorkstationClass,
      +        0,srlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF object.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetstring(srlist,'wkFileName','./cn13f',ierr)
+         call NhlFRLSetstring(srlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
+     +        ierr)
+         call NhlFCreate(workid,'cn13Work',
+     +        NhlFCairoPSPDFWorkstationClass,0,srlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG object.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetstring(srlist,'wkFileName','./cn13f',ierr)
+         call NhlFRLSetstring(srlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
+     +        ierr)
+         call NhlFCreate(workid,'cn13Work',
+     +        NhlFCairoImageWorkstationClass,0,srlist,ierr)
       endif
 C
 C Create a MapPlot object.

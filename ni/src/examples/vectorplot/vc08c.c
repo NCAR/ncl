@@ -1,5 +1,5 @@
 /*
- *      $Id: vc08c.c,v 1.6 2010-03-15 15:19:47 haley Exp $
+ *      $Id: vc08c.c,v 1.7 2010-03-15 22:49:25 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -126,6 +126,28 @@ main()
         NhlRLSetString(rlist,NhlNwkColorMap,"uniform");
         NhlRLSetString(rlist,NhlNwkPDFFileName,"vc08c.pdf");
         NhlCreate(&wid,"vc08Work",NhlpdfWorkstationClass,appid,rlist);
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkColorMap,"uniform");
+        NhlRLSetString(rlist,NhlNwkFileName,"vc08c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"vc08Work",NhlcairoPSPDFWorkstationClass,appid,rlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkColorMap,"uniform");
+        NhlRLSetString(rlist,NhlNwkFileName,"vc08c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"vc08Work",NhlcairoImageWorkstationClass,appid,rlist);
     }
 /*
  * Get netCDF file information.

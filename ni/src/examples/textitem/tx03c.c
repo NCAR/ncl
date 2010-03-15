@@ -88,6 +88,28 @@ main()
         NhlCreate(&wid,"tx03Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,srlist);
     }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkFileName,"./tx03c");
+        NhlRLSetString(srlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"tx03Work",NhlcairoPSPDFWorkstationClass,
+                  NhlDEFAULT_APP,srlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkFileName,"./tx03c");
+        NhlRLSetString(srlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"tx03Work",NhlcairoImageWorkstationClass,
+                  NhlDEFAULT_APP,srlist);
+    }
 /*
  * Get the number of colors in the default color table.
  */

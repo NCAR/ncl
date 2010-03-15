@@ -1,5 +1,5 @@
 C
-C      $Id: xy15f.f,v 1.4 2010-03-15 02:06:27 haley Exp $
+C      $Id: xy15f.f,v 1.5 2010-03-15 22:49:25 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -114,6 +114,26 @@ C
          call NhlFRLSetString(rlist,'wkPDFFileName','./xy15f.pdf',ierr)
          call NhlFCreate(xworkid,'xy15Work',
      +        NhlFPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName','./xy15f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(xworkid,'xy15Work',
+     +        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName','./xy15f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(xworkid,'xy15Work',
+     +        NhlFCairoImageWorkstationClass,0,rlist,ierr)
       endif
 C
 C Define 4 separate CoordArrays objects - one for each XYPlot. 

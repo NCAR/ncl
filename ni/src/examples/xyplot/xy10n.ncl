@@ -1,5 +1,5 @@
 ;
-;      $Id: xy10n.ncl,v 1.7 2010-03-15 02:06:27 haley Exp $
+;      $Id: xy10n.ncl,v 1.8 2010-03-15 22:49:25 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -95,33 +95,48 @@ if (str_lower(wks_type).eq."ncgm") then
   xworkid = create "xy10Work" ncgmWorkstationClass defaultapp
       "wkMetaName" : "xy10n.ncgm"
   end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an X workstation
 ;
-    xworkid = create "xy10Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
-    end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+  xworkid = create "xy10Work" xWorkstationClass defaultapp
+    "wkPause" : "True"
+  end create
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-      xworkid = create "xy10Work" psWorkstationClass defaultapp
-        "wkPSFileName" : "xy10n.ps"
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  xworkid = create "xy10Work" psWorkstationClass defaultapp
+    "wkPSFileName" : "xy10n.ps"
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-        xworkid = create "xy10Work" pdfWorkstationClass defaultapp
-          "wkPDFFileName" : "xy10n.pdf"
-        end create
-      end if
-    end if
-  end if
+  xworkid = create "xy10Work" pdfWorkstationClass defaultapp
+    "wkPDFFileName" : "xy10n.pdf"
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  xworkid = create "xy10Work" documentWorkstationClass defaultapp
+    "wkFileName" : "xy10n"
+    "wkFormat" : wks_type
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  xworkid = create "xy10Work" imageWorkstationClass defaultapp
+    "wkFileName" : "xy10n"
+    "wkFormat" : wks_type
+  end create
 end if
 
 ;

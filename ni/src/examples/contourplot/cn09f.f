@@ -1,5 +1,5 @@
 C
-C      $Id: cn09f.f,v 1.8 2010-03-15 03:55:58 haley Exp $
+C      $Id: cn09f.f,v 1.9 2010-03-15 22:49:23 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -173,6 +173,30 @@ C
          call NhlFRLSetString(srlist,'wkPDFFileName','./cn09f.pdf',ierr)
          call NhlFCreate(workid,'cn09Work',
      +        NhlFPDFWorkstationClass,0,srlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,count,
+     +        ierr)
+         call NhlFRLSetString(srlist,'wkFileName','./cn09f',ierr)
+         call NhlFRLSetString(srlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(workid,'cn09Work',
+     +        NhlFCairoPSPDFWorkstationClass,0,srlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,count,
+     +        ierr)
+         call NhlFRLSetString(srlist,'wkFileName','./cn09f',ierr)
+         call NhlFRLSetString(srlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(workid,'cn09Work',
+     +        NhlFCairoImageWorkstationClass,0,srlist,ierr)
       endif
 C
 C Open data file containing surface pressure data for

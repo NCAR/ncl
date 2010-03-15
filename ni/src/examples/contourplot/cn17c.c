@@ -1,5 +1,5 @@
 /*
- *      $Id: cn17c.c,v 1.5 2010-03-15 03:55:58 haley Exp $
+ *      $Id: cn17c.c,v 1.6 2010-03-15 22:49:23 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -230,6 +230,28 @@ main()
       NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
       NhlRLSetString(srlist,NhlNwkPDFFileName,"./cn17c.pdf");
       NhlCreate(&wid,"cn17Work",NhlpdfWorkstationClass,0,srlist);
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+      NhlRLClear(srlist);
+      NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
+      NhlRLSetString(srlist,NhlNwkFileName,"./cn17c");
+      NhlRLSetString(srlist,NhlNwkFormat,(char*)wks_type);
+      NhlCreate(&wid,"cn17Work",NhlcairoPSPDFWorkstationClass,0,srlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+      NhlRLClear(srlist);
+      NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
+      NhlRLSetString(srlist,NhlNwkFileName,"./cn17c");
+      NhlRLSetString(srlist,NhlNwkFormat,(char*)wks_type);
+      NhlCreate(&wid,"cn17Work",NhlcairoImageWorkstationClass,0,srlist);
     }
 /*
  * Create a "great" circle in lat/lon coordinates. We don't want to draw

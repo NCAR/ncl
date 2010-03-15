@@ -1,5 +1,5 @@
 /*
- *      $Id: mp05c.c,v 1.3 2010-03-15 04:18:34 haley Exp $
+ *      $Id: mp05c.c,v 1.4 2010-03-15 22:49:24 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -82,12 +82,34 @@ main(int argc, char *argv[])
     }
     else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
- * Create a PDf workstation.
+ * Create a PDF workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPDFFileName,"./mp05c.pdf");
         NhlCreate(&wid,"mp05Work",
                   NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./mp05c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"mp05Work",
+                  NhlcairoPSPDFWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./mp05c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"mp05Work",
+                  NhlcairoImageWorkstationClass,NhlDEFAULT_APP,rlist);
     }
 /*
  * Create a TextItem object.

@@ -125,6 +125,34 @@ C
         call NhlFCreate(xwork_id,'simple',
      1        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
+      if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     &    wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName',
+     &        './basic06f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',
+     1         cmap,2,dims,ierr)
+         call NhlFCreate(xwork_id,'simple',
+     &        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr)
+      endif
+      if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     &    wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName',
+     &        './basic06f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',
+     1         cmap,2,dims,ierr)
+         call NhlFCreate(xwork_id,'simple',
+     &        NhlFCairoImageWorkstationClass,0,rlist,ierr)
+      endif
 C
 C Create data object for an XyPlot
 C

@@ -21,6 +21,9 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFXWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFTextItemClass
 C
 C  List of available fonts (by number and name)
@@ -97,6 +100,40 @@ C
          call NhlFRLSetString(rlist,'wkPSFileName',
      &        './basic09f.ps',ierr)
          call NhlFCreate(wid,'wks',NhlFPSWorkstationClass,
+     &        0,rlist,ierr)
+      endif
+      if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPDFFileName',
+     &        './basic09f.pdf',ierr)
+         call NhlFCreate(wid,'wks',NhlFPDFWorkstationClass,
+     &        0,rlist,ierr)
+      endif
+      if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     &    wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName',
+     &        './basic09f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(wid,'wks',NhlFCairoPSPDFWorkstationClass,
+     &        0,rlist,ierr)
+      endif
+      if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     &    wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName',
+     &        './basic09f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(wid,'wks',NhlFCairoImageWorkstationClass,
      &        0,rlist,ierr)
       endif
 C

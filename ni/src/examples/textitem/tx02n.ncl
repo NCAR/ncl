@@ -1,5 +1,5 @@
 ;
-;   $Id: tx02n.ncl,v 1.11 2010-03-15 04:49:32 haley Exp $
+;   $Id: tx02n.ncl,v 1.12 2010-03-15 22:49:24 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -49,33 +49,48 @@ if (str_lower(wks_type).eq."ncgm") then
   wid = create "tx02Work" ncgmWorkstationClass defaultapp
       "wkMetaName"         : "tx02n.ncgm"
   end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
-    wid = create "tx02Work" xWorkstationClass defaultapp
-      "wkPause" : True
-    end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+  wid = create "tx02Work" xWorkstationClass defaultapp
+    "wkPause" : True
+  end create
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-      wid = create "tx02Work" psWorkstationClass defaultapp
-        "wkPSFileName"         : "tx02n.ps"
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  wid = create "tx02Work" psWorkstationClass defaultapp
+    "wkPSFileName"         : "tx02n.ps"
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-        wid = create "tx02Work" pdfWorkstationClass defaultapp
-          "wkPDFFileName"         : "tx02n.pdf"
-        end create
-      end if
-    end if
-  end if
+  wid = create "tx02Work" pdfWorkstationClass defaultapp
+    "wkPDFFileName"         : "tx02n.pdf"
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  wid = create "tx02Work" documentWorkstationClass defaultapp
+    "wkFileName"         : "tx02n"
+    "wkFormat"         : wks_type
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  wid = create "tx02Work" imageWorkstationClass defaultapp
+    "wkFileName"         : "tx02n"
+    "wkFormat"         : wks_type
+  end create
 end if
 
 ;

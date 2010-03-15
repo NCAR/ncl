@@ -135,6 +135,28 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"mp04Work",
                   NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist);
     }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"mp04c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"mp04Work",
+                  NhlcairoPSPDFWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"mp04c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"mp04Work",
+                  NhlcairoImageWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
 /*
  * AnnoManager objects allow the PlotManager to manipulate any View class
  * object as an annotation a uniform fashion. They allow

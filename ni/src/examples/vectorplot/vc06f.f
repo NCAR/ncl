@@ -1,5 +1,5 @@
 C
-C  $Id: vc06f.f,v 1.7 2010-03-15 15:19:47 haley Exp $
+C  $Id: vc06f.f,v 1.8 2010-03-15 22:49:25 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -155,6 +155,26 @@ C
       call NhlFRLSetString(rlist,'wkPDFFileName','./vc06f.pdf',ierr)
       call NhlFCreate(wid,'vc06Work',
      +        NhlFPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkFileName','./vc06f',ierr)
+      call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+      call NhlFCreate(wid,'vc06Work',
+     +        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkFileName','./vc06f',ierr)
+      call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+      call NhlFCreate(wid,'vc06Work',
+     +        NhlFCairoImageWorkstationClass,0,rlist,ierr)
       endif
 C
 C Create a VectorField data object using the data set defined above.

@@ -65,6 +65,24 @@ C
          call NhlFRLSetString(list,'wkPDFFileName','./tx08f.pdf',ierr)
          call NhlFCreate(ixwk,'tx08Work',NhlFPDFWorkstationClass,0,
      1        list,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+         call NhlFRLSetString(list,'wkFormat',wks_type,ierr)
+         call NhlFRLSetString(list,'wkFileName','./tx08f',ierr)
+         call NhlFCreate(ixwk,'tx08Work',
+     1        NhlFCairoPSPDFWorkstationClass,0,list,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLSetString(list,'wkFormat',wks_type,ierr)
+         call NhlFRLSetString(list,'wkFileName','./tx08f',ierr)
+         call NhlFCreate(ixwk,'tx08Work',
+     1        NhlFCairoImageWorkstationClass,0,list,ierr)
       endif
 C
 C Create Plot object - no data, just illustration annotations.

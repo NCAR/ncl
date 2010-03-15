@@ -1,5 +1,5 @@
 /*
-**      $Id: xy01c.c,v 1.16 2010-03-15 02:06:27 haley Exp $
+**      $Id: xy01c.c,v 1.17 2010-03-15 22:49:25 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -120,7 +120,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkFileName,"xy01c");
-        NhlRLSetString(rlist,NhlNwkFormat,wks_type);
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
         NhlCreate(&xworkid,"xy01Work",NhlcairoPSPDFWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }       
@@ -131,7 +131,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkFileName,"xy01c");
-        NhlRLSetString(rlist,NhlNwkFormat,wks_type);
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
         NhlCreate(&xworkid,"xy01Work",NhlcairoImageWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }       

@@ -40,21 +40,21 @@ spd = sqrt(u*u+v*v)             ; compute the wind speed
 ;
 ncolors = 16
 cmap = (/ (/1.00,1.00,1.00/), \  ; white
-	 (/0.00,0.00,0.00/), \  ; black
-	 (/0.00,0.00,1.00/), \  ; blue
-	 (/0.20,0.56,0.80/), \  ; sky blue
-	 (/0.00,1.00,1.00/), \  ; cyan
-	 (/0.50,0.00,1.00/), \  ; blue magenta
-	 (/0.00,1.00,0.00/), \  ; green
-	 (/0.14,0.56,0.14/), \  ; forest green
-	 (/1.00,1.00,0.00/), \  ; yellow
-	 (/1.00,0.50,0.00/), \  ; orange
-	 (/1.00,0.00,1.00/), \ ; magenta
-	 (/1.00,0.00,0.00/), \ ; red
-	 (/0.65,0.16,0.16/), \ ; brown
-	 (/0.86,0.58,0.44/), \ ; tan
-	 (/0.66,0.66,0.66/), \ ; light gray
-	 (/0.40,0.40,0.40/) /) ; dark gray
+         (/0.00,0.00,0.00/), \  ; black
+         (/0.00,0.00,1.00/), \  ; blue
+         (/0.20,0.56,0.80/), \  ; sky blue
+         (/0.00,1.00,1.00/), \  ; cyan
+         (/0.50,0.00,1.00/), \  ; blue magenta
+         (/0.00,1.00,0.00/), \  ; green
+         (/0.14,0.56,0.14/), \  ; forest green
+         (/1.00,1.00,0.00/), \  ; yellow
+         (/1.00,0.50,0.00/), \  ; orange
+         (/1.00,0.00,1.00/), \ ; magenta
+         (/1.00,0.00,0.00/), \ ; red
+         (/0.65,0.16,0.16/), \ ; brown
+         (/0.86,0.58,0.44/), \ ; tan
+         (/0.66,0.66,0.66/), \ ; light gray
+         (/0.40,0.40,0.40/) /) ; dark gray
 ;
 ; Change the output to an X11 window
 ;
@@ -65,39 +65,56 @@ wks_type = "x11"
 ;
 ; Create an ncgmWorkstation object.
 ;
-      wks = create "cn14Work" ncgmWorkstationClass defaultapp
-	"wkMetaName" : "./cn14n.ncgm"      ; name the ncgm
-	"wkColorMap" : cmap                ; assign the new color map
-      end create
-  else
-    if (str_lower(wks_type).eq."x11") then
+    wks = create "cn14Work" ncgmWorkstationClass defaultapp
+      "wkMetaName" : "./cn14n.ncgm"      ; name the ncgm
+      "wkColorMap" : cmap                ; assign the new color map
+    end create
+  end if
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
-      wks = create "cn14Work" xWorkstationClass defaultapp
-	"wkColorMap" : cmap                     ; assign the new color map
-      end create
-    else
-      if (str_lower(wks_type).eq."ps") then
+    wks = create "cn14Work" xWorkstationClass defaultapp
+      "wkColorMap" : cmap                     ; assign the new color map
+    end create
+  end if
+  if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-	wks = create "cn14Work" psWorkstationClass defaultapp
-	"wkPSFileName" : "./cn14n.ps"      ; name the PostScript file
-	"wkColorMap" : cmap              ; assign the new color map
-        end create
-      else
-        if (str_lower(wks_type).eq."pdf") then
+    wks = create "cn14Work" psWorkstationClass defaultapp
+      "wkPSFileName" : "./cn14n.ps"      ; name the PostScript file
+      "wkColorMap" : cmap              ; assign the new color map
+    end create
+  end if
+  if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-	  wks = create "cn14Work" pdfWorkstationClass defaultapp
-	  "wkPDFFileName" : "./cn14n.pdf"      ; name the PDF file
-	  "wkColorMap" : cmap              ; assign the new color map
-          end create
-        end if
-      end if
-    end if
+    wks = create "cn14Work" pdfWorkstationClass defaultapp
+      "wkPDFFileName" : "./cn14n.pdf"      ; name the PDF file
+      "wkColorMap" : cmap              ; assign the new color map
+    end create
+  end if
+  if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+    wks = create "cn14Work" documentWorkstationClass defaultapp
+      "wkFileName" : "./cn14n"      ; name the PDF file
+      "wkFormat" : wks_type
+      "wkColorMap" : cmap              ; assign the new color map
+    end create
+  end if
+  if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+    wks = create "cn14Work" imageWorkstationClass defaultapp
+      "wkFileName" : "./cn14n"      ; name the PDF file
+      "wkFormat" : wks_type
+      "wkColorMap" : cmap              ; assign the new color map
+    end create
   end if
 ;
 ;    Create the data object needed by ContourPlot.

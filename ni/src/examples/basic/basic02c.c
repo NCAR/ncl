@@ -1,5 +1,5 @@
 /*
- * $Id: basic02c.c,v 1.12 2010-03-15 03:11:23 haley Exp $
+ * $Id: basic02c.c,v 1.13 2010-03-15 22:49:23 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -54,7 +54,7 @@ main()
     rlist = NhlRLCreate(NhlSETRL);
 
     NhlRLClear(rlist);
-    NhlCreate(&appid,"basic01",NhlappClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&appid,"basic02",NhlappClass,NhlDEFAULT_APP,rlist);
 /*
  * ###########
  * # FRAME 1 #
@@ -95,6 +95,28 @@ main()
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPDFFileName,"./basic02c.pdf");
         NhlCreate(&wks,"wks",NhlpdfWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./basic02c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wks,"wks",NhlcairoPSPDFWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./basic02c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wks,"wks",NhlcairoImageWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
 

@@ -73,19 +73,7 @@ zo2 = onedtond(zo,(/nx,ny/))
 ; Create workstation object.
 ;
   wks_type = "ncgm"
- 
-  if (str_lower(wks_type).eq."ncgm") then
-    wid = gsn_open_wks("ncgm","nm19n")
-  end if
-  if (str_lower(wks_type).eq."x11") then
-    wid = gsn_open_wks("x11","nm19n")
-  end if
-  if (str_lower(wks_type).eq."ps") then
-    wid = gsn_open_wks("ps","nm19n")
-  end if
-  if (str_lower(wks_type).eq."pdf") then
-    wid = gsn_open_wks("pdf","nm19n")
-  end if
+  wid = gsn_open_wks(wks_type,"nm19n")
 
 ;
 ;  Draw plot.

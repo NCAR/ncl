@@ -1,5 +1,5 @@
 /*
-**      $Id: cn13c.c,v 1.7 2010-03-15 03:55:58 haley Exp $
+**      $Id: cn13c.c,v 1.8 2010-03-15 22:49:23 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -126,6 +126,30 @@ main()
         NhlRLSetString(srlist,NhlNwkPDFFileName,"./cn13c.pdf");
         NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
         NhlCreate(&workid,"cn13Work",NhlpdfWorkstationClass,
+                  NhlDEFAULT_APP,srlist);
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkFileName,"./cn13c");
+        NhlRLSetString(srlist,NhlNwkFormat,(char*)wks_type);
+        NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
+        NhlCreate(&workid,"cn13Work",NhlcairoPSPDFWorkstationClass,
+                  NhlDEFAULT_APP,srlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkFileName,"./cn13c");
+        NhlRLSetString(srlist,NhlNwkFormat,(char*)wks_type);
+        NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
+        NhlCreate(&workid,"cn13Work",NhlcairoImageWorkstationClass,
                   NhlDEFAULT_APP,srlist);
     }
 /*

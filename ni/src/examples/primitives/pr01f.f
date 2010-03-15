@@ -150,6 +150,28 @@ C
       call NhlFCreate(wid,'pr01Work',NhlFpdfWorkstationClass,
      1    appid,rlist,ierr)
 
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C  Create a cairo PS/PDF workstation.
+C
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+      call NhlFRLSetString(rlist,'wkFileName','./pr01f',ierr)
+      call NhlFCreate(wid,'pr01Work',
+     1    NhlFCairoPSpdfWorkstationClass,appid,rlist,ierr)
+
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C  Create a cairo PNG workstation.
+C
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+      call NhlFRLSetString(rlist,'wkFileName','./pr01f',ierr)
+      call NhlFCreate(wid,'pr01Work',
+     1    NhlFCairoImageWorkstationClass,appid,rlist,ierr)
+
       endif    
 
 C  Create a blank plot object to draw the primitives on.*/

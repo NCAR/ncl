@@ -101,6 +101,32 @@ C
      &       bkg_color,3,ierr)
         call NhlFCreate(wid,'tx05Work',NhlFpdfWorkstationClass,
      &       0,rlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+        call NhlFRLClear(rlist)
+        call NhlFRLSetString(rlist,'wkFileName',
+     &       './tx05f',ierr)
+        call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+        call NhlFRLSetFloatArray(rlist,'wkBackgroundColor',
+     &       bkg_color,3,ierr)
+        call NhlFCreate(wid,'tx05Work',
+     &       NhlFCairoPSpdfWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+        call NhlFRLClear(rlist)
+        call NhlFRLSetString(rlist,'wkFileName',
+     &       './tx05f',ierr)
+        call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+        call NhlFRLSetFloatArray(rlist,'wkBackgroundColor',
+     &       bkg_color,3,ierr)
+        call NhlFCreate(wid,'tx05Work',
+     &       NhlFCairoImageWorkstationClass,0,rlist,ierr)
       endif
 C
 C Create a TextItem object.

@@ -66,19 +66,7 @@ begin
 ; Create workstation object.
 ;
   wks_type = "ncgm"
- 
-  if (str_lower(wks_type).eq."ncgm") then
-    wid = gsn_open_wks("ncgm","nm16n")
-  end if
-  if (str_lower(wks_type).eq."x11") then
-    wid = gsn_open_wks("x11","nm16n")
-  end if
-  if (str_lower(wks_type).eq."ps") then
-    wid = gsn_open_wks("ps","nm16n")
-  end if
-  if (str_lower(wks_type).eq."pdf") then
-    wid = gsn_open_wks("pdf","nm16n")
-  end if
+  wid = gsn_open_wks(wks_type,"nm16n")
 
 ;
 ;  Draw plot of approximated function.

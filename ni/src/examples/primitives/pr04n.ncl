@@ -1,5 +1,5 @@
 ;
-;      $Id: pr04n.ncl,v 1.6 2010-03-15 04:38:49 haley Exp $
+;      $Id: pr04n.ncl,v 1.7 2010-03-15 22:49:24 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -63,33 +63,48 @@ if (str_lower(wks_type).eq."ncgm") then
   wid = create "pr04Work" ncgmWorkstationClass defaultapp
       "wkMetaName" : "pr04n.ncgm"
   end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
-  wid = create "pr04Work" xWorkstationClass defaultapp
-      "wkPause" : True
-  end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+wid = create "pr04Work" xWorkstationClass defaultapp
+    "wkPause" : True
+end create
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-      wid = create "pr04Work" psWorkstationClass defaultapp
-        "wkPSFileName" : "pr04n.ps"
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  wid = create "pr04Work" psWorkstationClass defaultapp
+    "wkPSFileName" : "pr04n.ps"
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-        wid = create "pr04Work" pdfWorkstationClass defaultapp
-          "wkPDFFileName" : "pr04n.pdf"
-        end create
-      end if
-    end if
-  end if
+  wid = create "pr04Work" pdfWorkstationClass defaultapp
+    "wkPDFFileName" : "pr04n.pdf"
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  wid = create "pr04Work" documentWorkstationClass defaultapp
+    "wkFileName" : "pr04n"
+    "wkFormat" : wks_type
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  wid = create "pr04Work" imageWorkstationClass defaultapp
+    "wkFileName" : "pr04n"
+    "wkFormat" : wks_type
+  end create
 end if
 
 ;

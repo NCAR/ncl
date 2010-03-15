@@ -50,36 +50,53 @@ begin
         "wkMetaName" : "./vc09n.ncgm"
         "wkColorMap" : "temp1"
       end create
-  else
+  end if
 ;
 ; Create an XWorkstation object.
 ;
-    if (str_lower(wks_type).eq."x11") then
-      wid = create "vc09Work" xWorkstationClass defaultapp
-            "wkPause" : True
-            "wkColorMap" : "temp1"
-      end create
-    else
+  if (str_lower(wks_type).eq."x11") then
+    wid = create "vc09Work" xWorkstationClass defaultapp
+          "wkPause" : True
+          "wkColorMap" : "temp1"
+    end create
+  end if
 ;
 ; Create a PSWorkstation object.
 ;
-      if (str_lower(wks_type).eq."ps") then
-        wid = create "vc09Work" psWorkstationClass defaultapp
-          "wkPSFileName" : "vc09n.ps"
-          "wkColorMap" : "temp1"
-        end create
-      else
+  if (str_lower(wks_type).eq."ps") then
+    wid = create "vc09Work" psWorkstationClass defaultapp
+      "wkPSFileName" : "vc09n.ps"
+      "wkColorMap" : "temp1"
+    end create
+  end if
 ;
 ; Create a PDFWorkstation object.
 ;
-        if (str_lower(wks_type).eq."pdf") then
-          wid = create "vc09Work" pdfWorkstationClass defaultapp
-            "wkPDFFileName" : "vc09n.pdf"
-            "wkColorMap" : "temp1"
-          end create
-        end if
-      end if
-    end if
+  if (str_lower(wks_type).eq."pdf") then
+    wid = create "vc09Work" pdfWorkstationClass defaultapp
+      "wkPDFFileName" : "vc09n.pdf"
+      "wkColorMap" : "temp1"
+    end create
+  end if
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+    wid = create "vc09Work" documentWorkstationClass defaultapp
+      "wkFileName" : "vc09n"
+      "wkFormat" : wks_type
+      "wkColorMap" : "temp1"
+    end create
+  end if
+;
+; Create a cairo PNG Workstation object.
+;
+  if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+    wid = create "vc09Work" imageWorkstationClass defaultapp
+      "wkFileName" : "vc09n"
+      "wkFormat" : wks_type
+      "wkColorMap" : "temp1"
+    end create
   end if
 
 dir = "./"

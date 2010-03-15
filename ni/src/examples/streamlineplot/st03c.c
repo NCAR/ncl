@@ -1,5 +1,5 @@
 /*
- *      $Id: st03c.c,v 1.6 2010-03-15 04:42:34 haley Exp $
+ *      $Id: st03c.c,v 1.7 2010-03-15 22:49:24 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -105,6 +105,26 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPDFFileName,"st03c.pdf");
         NhlCreate(&wid,"st03Work",NhlpdfWorkstationClass,appid,rlist);
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"st03c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"st03Work",NhlcairoPSPDFWorkstationClass,appid,rlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"st03c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"st03Work",NhlcairoImageWorkstationClass,appid,rlist);
     }
 /*
  * Open the netCDF file.

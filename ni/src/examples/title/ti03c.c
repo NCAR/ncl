@@ -102,6 +102,30 @@ main()
         NhlCreate(&wid,"ti03Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF Workstation object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./ti03c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
+        NhlCreate(&wid,"ti03Work",NhlcairoPSPDFWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG Workstation object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./ti03c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
+        NhlCreate(&wid,"ti03Work",NhlcairoImageWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
 /*
  * Specify the viewport extent of the object.
  */

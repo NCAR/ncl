@@ -1,5 +1,5 @@
 C
-C      $Id: cn14f.f,v 1.4 2010-03-15 03:55:58 haley Exp $
+C      $Id: cn14f.f,v 1.5 2010-03-15 22:49:23 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -169,6 +169,26 @@ C
          call NhlFRLSetString(srlist,'wkPDFFileName','./cn14f.pdf',ierr)
          call NhlFCreate(workid,'cn14Work',
      +        NhlFPDFWorkstationClass,0,srlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkFileName','./cn14f',ierr)
+         call NhlFRLSetString(srlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(workid,'cn14Work',
+     +        NhlFCairoPSPDFWorkstationClass,0,srlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkFileName','./cn14f',ierr)
+         call NhlFRLSetString(srlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(workid,'cn14Work',
+     +        NhlFCairoImageWorkstationClass,0,srlist,ierr)
       endif
 C
 C Set color map resource.

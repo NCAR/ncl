@@ -1,5 +1,5 @@
 /*
- *      $Id: cn04c.c,v 1.8 2010-03-15 03:55:58 haley Exp $
+ *      $Id: cn04c.c,v 1.9 2010-03-15 22:49:23 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -108,7 +108,7 @@ main(int argc, char *argv[])
     }
     else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
- * Create a meta file workstation.
+ * Create a PS workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./cn04c.ps");
@@ -117,12 +117,34 @@ main(int argc, char *argv[])
     }
     else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
- * Create a meta file workstation.
+ * Create a PDF workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPDFFileName,"./cn04c.pdf");
         NhlCreate(&wid,"cn04Work",
                   NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist); 
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./cn04c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"cn04Work",
+                  NhlcairoPSPDFWorkstationClass,NhlDEFAULT_APP,rlist); 
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./cn04c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"cn04Work",
+                  NhlcairoImageWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
 /*
  * Call the Fortran routine 'GENDAT' to create the first array of contour

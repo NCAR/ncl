@@ -1,5 +1,5 @@
 ;
-;      $Id: nm21n.ncl,v 1.7 2010-03-15 04:34:53 haley Exp $
+;      $Id: nm21n.ncl,v 1.8 2010-03-15 22:49:24 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -415,19 +415,7 @@ begin
          /)
 
   wks_type = "ncgm"
-
-  if (str_lower(wks_type).eq."ncgm") then
-    wks = gsn_open_wks("ncgm","nm21n")
-  end if
-  if (str_lower(wks_type).eq."x11") then
-    wks = gsn_open_wks("x11","nm21n")
-  end if
-  if (str_lower(wks_type).eq."ps") then
-    wks = gsn_open_wks("ps","nm21n")
-  end if
-  if (str_lower(wks_type).eq."pdf") then
-    wks = gsn_open_wks("pdf","nm21n")
-  end if
+  wks = gsn_open_wks(wks_type,"nm21n")
   gsn_define_colormap(wks,cmap)
 
 ;

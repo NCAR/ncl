@@ -82,6 +82,26 @@ C
          call NhlFRLSetstring(rlist,'wkPDFFileName','./tx02f.pdf',ierr)
          call NhlFCreate(wid,'tx02Work',NhlFPDFWorkstationClass,0,
      $        rlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetstring(rlist,'wkFileName','./tx02f',ierr)
+         call NhlFCreate(wid,'tx02Work',
+     $        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetstring(rlist,'wkFileName','./tx02f',ierr)
+         call NhlFCreate(wid,'tx02Work',
+     $        NhlFCairoImageWorkstationClass,0,rlist,ierr)
       endif
 C
 C Create a TextItem object.

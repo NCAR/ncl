@@ -1,5 +1,5 @@
 ;
-;      $Id: xy02n.ncl,v 1.16 2010-03-15 02:06:27 haley Exp $
+;      $Id: xy02n.ncl,v 1.17 2010-03-15 22:49:25 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -61,35 +61,50 @@ if (str_lower(wks_type).eq."ncgm") then
 ; Create an ncgmWorkstation object.
 ;
   xworkid = create "xy02Work" ncgmWorkstationClass defaultapp
-      "wkMetaName" : "xy02n.ncgm"
+    "wkMetaName" : "xy02n.ncgm"
   end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
-    xworkid = create "xy02Work" xWorkstationClass defaultapp
-      "wkPause" : True
-    end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+  xworkid = create "xy02Work" xWorkstationClass defaultapp
+    "wkPause" : True
+  end create
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-      xworkid = create "xy02Work" psWorkstationClass defaultapp
-        "wkPSFileName" : "xy02n.ps"
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  xworkid = create "xy02Work" psWorkstationClass defaultapp
+    "wkPSFileName" : "xy02n.ps"
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-        xworkid = create "xy02Work" pdfWorkstationClass defaultapp
-          "wkPDFFileName" : "xy02n.pdf"
-        end create
-      end if
-    end if
-  end if
+  xworkid = create "xy02Work" pdfWorkstationClass defaultapp
+    "wkPDFFileName" : "xy02n.pdf"
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  xworkid = create "xy02Work" documentWorkstationClass defaultapp
+    "wkFileName" : "xy02n"
+    "wkFormat" : wks_type
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  xworkid = create "xy02Work" imageWorkstationClass defaultapp
+    "wkFileName" : "xy02n"
+    "wkFormat" : wks_type
+  end create
 end if
 
 ;

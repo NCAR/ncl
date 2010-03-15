@@ -84,39 +84,58 @@ if (str_lower(wks_type).eq."ncgm") then
       "wkColorMap"         : cmap
       "wkBackgroundColor"  : (/ 1., 1., 1. /)
   end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
-    workstation_id = create "moundx"  xWorkstationClass defaultapp
-      "wkPause"            : True
-      "wkColorMap"         : cmap
-      "wkBackgroundColor"  : (/ 1., 1., 1. /)
-    end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+  workstation_id = create "moundx"  xWorkstationClass defaultapp
+    "wkPause"            : True
+    "wkColorMap"         : cmap
+    "wkBackgroundColor"  : (/ 1., 1., 1. /)
+  end create
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create an PSWorkstation object.
 ;
-      workstation_id = create "moundp" psWorkstationClass defaultapp
-        "wkPSFileName"       : "cn10n.ps"
-        "wkColorMap"         : cmap
-        "wkBackgroundColor"  : (/ 1., 1., 1. /)
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  workstation_id = create "moundp" psWorkstationClass defaultapp
+    "wkPSFileName"       : "cn10n.ps"
+    "wkColorMap"         : cmap
+    "wkBackgroundColor"  : (/ 1., 1., 1. /)
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create an PDFWorkstation object.
 ;
-        workstation_id = create "moundp" pdfWorkstationClass defaultapp
-          "wkPDFFileName"       : "cn10n.pdf"
-          "wkColorMap"         : cmap
-          "wkBackgroundColor"  : (/ 1., 1., 1. /)
-        end create
-      end if
-    end if
-  end if
+  workstation_id = create "moundp" pdfWorkstationClass defaultapp
+    "wkPDFFileName"       : "cn10n.pdf"
+    "wkColorMap"         : cmap
+    "wkBackgroundColor"  : (/ 1., 1., 1. /)
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  workstation_id = create "moundp" documentWorkstationClass defaultapp
+    "wkFileName"       : "cn10n"
+    "wkFormat" : wks_type
+    "wkColorMap"         : cmap
+    "wkBackgroundColor"  : (/ 1., 1., 1. /)
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  workstation_id = create "moundp" imageWorkstationClass defaultapp
+    "wkFileName"       : "cn10n"
+    "wkFormat" : wks_type
+    "wkColorMap"         : cmap
+    "wkBackgroundColor"  : (/ 1., 1., 1. /)
+  end create
 end if
 
 ;

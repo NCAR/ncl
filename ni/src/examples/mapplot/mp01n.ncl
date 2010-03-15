@@ -36,41 +36,56 @@ begin
 ;
 wks_type = "x11"
 
-    if (str_lower(wks_type).eq."ncgm") then
+  if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object.
 ;
-        wid = create "mp01Work" ncgmWorkstationClass defaultapp
-            "wkMetaName" : "mp01n.ncgm"
-        end create
-    else
-      if (str_lower(wks_type).eq."x11") then
+    wid = create "mp01Work" ncgmWorkstationClass defaultapp
+          "wkMetaName" : "mp01n.ncgm"
+    end create
+  end if
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
-        wid = create "mp01Work" xWorkstationClass defaultapp
-            "wkPause" : True
-        end create
-      else
-        if (str_lower(wks_type).eq."ps") then
+     wid = create "mp01Work" xWorkstationClass defaultapp
+       "wkPause" : True
+     end create
+  end if
+  if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-          wid = create "mp01Work" psWorkstationClass defaultapp
-            "wkPSFileName" : "mp01n.ps"
-          end create
-        else
-          if (str_lower(wks_type).eq."pdf") then
+    wid = create "mp01Work" psWorkstationClass defaultapp
+      "wkPSFileName" : "mp01n.ps"
+    end create
+  end if
+  if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-            wid = create "mp01Work" pdfWorkstationClass defaultapp
-              "wkPDFFileName" : "mp01n.pdf"
-            end create
-          end if
-        end if
-      end if
-    end if
+    wid = create "mp01Work" pdfWorkstationClass defaultapp
+      "wkPDFFileName" : "mp01n.pdf"
+    end create
+  end if
+  if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+    wid = create "mp01Work" documentWorkstationClass defaultapp
+      "wkFileName" : "mp01n"
+      "wkFormat" : wks_type
+    end create
+  end if
+  if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+    wid = create "mp01Work" imageWorkstationClass defaultapp
+      "wkFileName" : "mp01n"
+      "wkFormat" : wks_type
+    end create
+  end if
 
 ;
 ; Draw the default MapPlot object

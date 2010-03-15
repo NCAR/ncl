@@ -61,33 +61,48 @@ if (str_lower(wks_type).eq."ncgm")
   wid = create "vc01Work" ncgmWorkstationClass defaultapp
     "wkMetaName" : "./vc01n.ncgm"
   end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an X workstation.
 ;
-    wid = create "vc01Work" xWorkstationClass defaultapp
-      "wkPause" : True
-    end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+  wid = create "vc01Work" xWorkstationClass defaultapp
+    "wkPause" : True
+  end create
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PS workstation.
 ;
-      wid = create "vc01Work" psWorkstationClass defaultapp
-        "wkPSFileName" : "./vc01n.ps"
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  wid = create "vc01Work" psWorkstationClass defaultapp
+    "wkPSFileName" : "./vc01n.ps"
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDF workstation.
 ;
-        wid = create "vc01Work" pdfWorkstationClass defaultapp
-          "wkPDFFileName" : "./vc01n.pdf"
-        end create
-      end if
-    end if
-  end if
+  wid = create "vc01Work" pdfWorkstationClass defaultapp
+    "wkPDFFileName" : "./vc01n.pdf"
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  wid = create "vc01Work" documentWorkstationClass defaultapp
+    "wkFileName" : "./vc01n"
+    "wkFormat" : wks_type
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  wid = create "vc01Work" imageWorkstationClass defaultapp
+    "wkFileName" : "./vc01n"
+    "wkFormat" : wks_type
+  end create
 end if
 
 ;

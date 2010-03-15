@@ -68,37 +68,54 @@ if (str_lower(wks_type).eq."ncgm")
     "wkMetaName" : "./vc05n.ncgm"
     "wkColorMap" : "temp1"
   end create
-else
-  if (str_lower(wks_type).eq."x11") then
+end if
+if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an X workstation.
 ;
-    wid = create "vc05Work" xWorkstationClass defaultapp
-      "wkPause" : True
+  wid = create "vc05Work" xWorkstationClass defaultapp
+    "wkPause" : True
 ;;;*******see resource file vc05.res ******
 ;;;     "wkColorMap" : "temp1"
-    end create
-  else
-    if (str_lower(wks_type).eq."ps") then
+  end create
+end if
+if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PS workstation.
 ;
-      wid = create "vc05Work" psWorkstationClass defaultapp
-        "wkPSFileName" : "./vc05n.ps"
-        "wkColorMap" : "temp1"
-      end create
-    else
-      if (str_lower(wks_type).eq."pdf") then
+  wid = create "vc05Work" psWorkstationClass defaultapp
+    "wkPSFileName" : "./vc05n.ps"
+    "wkColorMap" : "temp1"
+  end create
+end if
+if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDF workstation.
 ;
-        wid = create "vc05Work" pdfWorkstationClass defaultapp
-          "wkPDFFileName" : "./vc05n.pdf"
-          "wkColorMap" : "temp1"
-        end create
-      end if
-    end if
-  end if
+  wid = create "vc05Work" pdfWorkstationClass defaultapp
+    "wkPDFFileName" : "./vc05n.pdf"
+    "wkColorMap" : "temp1"
+  end create
+end if
+if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+  wid = create "vc05Work" documentWorkstationClass defaultapp
+    "wkFileName" : "./vc05n"
+    "wkFormat" : wks_type
+    "wkColorMap" : "temp1"
+  end create
+end if
+if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+  wid = create "vc05Work" imageWorkstationClass defaultapp
+    "wkFileName" : "./vc05n"
+    "wkFormat" : wks_type
+    "wkColorMap" : "temp1"
+  end create
 end if
 
 ; BEGIN CREATING 1st FRAME

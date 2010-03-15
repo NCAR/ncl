@@ -1,5 +1,5 @@
 C
-C $Id: basic05f.f,v 1.13 2010-03-15 03:11:23 haley Exp $
+C $Id: basic05f.f,v 1.14 2010-03-15 22:49:23 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -115,6 +115,40 @@ C Set Colormap to default. Note, this assignment is redundant
 
         call NhlFCreate(wks,'wks',
      1        NhlFPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     1         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF object.
+C
+        call NhlFRLClear(rlist)
+
+        call NhlFRLSetstring(rlist,'wkFileName','./basic05f',
+     1        ierr)
+        call NhlFRLSetstring(rlist,'wkFormat',wks_type,
+     1        ierr)
+
+C Set Colormap to default. Note, this assignment is redundant
+        call NhlFRLSetString(rlist,'wkColorMap','default',ierr)
+
+        call NhlFCreate(wks,'wks',
+     1        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     1         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG object.
+C
+        call NhlFRLClear(rlist)
+
+        call NhlFRLSetstring(rlist,'wkFileName','./basic05f',
+     1        ierr)
+        call NhlFRLSetstring(rlist,'wkFormat',wks_type,
+     1        ierr)
+
+C Set Colormap to default. Note, this assignment is redundant
+        call NhlFRLSetString(rlist,'wkColorMap','default',ierr)
+
+        call NhlFCreate(wks,'wks',
+     1        NhlFCairoImageWorkstationClass,0,rlist,ierr)
       endif
 
 C Initialize labels for the colormap entries

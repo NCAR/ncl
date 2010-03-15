@@ -1,5 +1,5 @@
 C
-C     $Id: cn11f.f,v 1.3 2010-03-15 03:55:58 haley Exp $
+C     $Id: cn11f.f,v 1.4 2010-03-15 22:49:23 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -122,6 +122,26 @@ C
          call NhlFRLSetstring(rlist,'wkPDFFileName','./cn11f.pdf',ierr)
          call NhlFCreate(wid,'cn11Work',
      1        NhlFPDFWorkstationClass,0,rlist,ierr) 
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkFileName','./cn11f',ierr)
+         call NhlFRLSetstring(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(wid,'cn11Work',
+     1        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr) 
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkFileName','./cn11f',ierr)
+         call NhlFRLSetstring(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(wid,'cn11Work',
+     1        NhlFCairoImageWorkstationClass,0,rlist,ierr) 
       endif
 C  
 C  retrieve gks workstation id from the workstation object

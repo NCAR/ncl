@@ -141,6 +141,26 @@ for( i= 0;i < 25; i++){
         NhlRLSetString(srlist,NhlNwkPDFFileName,"./vc05c.pdf");
         NhlCreate(&wid,"vc05Work",NhlpdfWorkstationClass,0,srlist);
     }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkFileName,"./vc05c");
+        NhlRLSetString(srlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"vc05Work",NhlcairoPSPDFWorkstationClass,0,srlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkFileName,"./vc05c");
+        NhlRLSetString(srlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"vc05Work",NhlcairoImageWorkstationClass,0,srlist);
+    }
 
 /*
 ; BEGIN CREATING 1st FRAME

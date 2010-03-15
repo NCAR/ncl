@@ -73,36 +73,53 @@ TIMESTEPS = 20
          "wkMetaName" : "./st04n.ncgm"
          "wkColorMap" : "temp1"
       end create
-  else
-    if (str_lower(wks_type).eq."x11") then
+  end if
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
-      wid = create "st04Work" xWorkstationClass defaultapp
-          "wkPause" : True
-          "wkColorMap" : "temp1"
-      end create
-    else
-      if (str_lower(wks_type).eq."ps") then
+    wid = create "st04Work" xWorkstationClass defaultapp
+       "wkPause" : True
+       "wkColorMap" : "temp1"
+    end create
+  end if
+  if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-        wid = create "st04Work" psWorkstationClass defaultapp
-         "wkPSFileName" : "./st04n.ps"
-         "wkColorMap"   : "temp1"
-        end create
-      else
-        if (str_lower(wks_type).eq."pdf") then
+    wid = create "st04Work" psWorkstationClass defaultapp
+     "wkPSFileName" : "./st04n.ps"
+     "wkColorMap"   : "temp1"
+    end create
+  end if
+  if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
-          wid = create "st04Work" pdfWorkstationClass defaultapp
-           "wkPDFFileName" : "./st04n.pdf"
-           "wkColorMap"    : "temp1"
-          end create
-        end if
-      end if
-    end if
+    wid = create "st04Work" pdfWorkstationClass defaultapp
+     "wkPDFFileName" : "./st04n.pdf"
+     "wkColorMap"    : "temp1"
+    end create
+  end if
+  if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+    wid = create "st04Work" documentWorkstationClass defaultapp
+     "wkFileName" : "./st04n"
+     "wkFormat" : wks_type
+     "wkColorMap"    : "temp1"
+    end create
+  end if
+  if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+    wid = create "st04Work" imageWorkstationClass defaultapp
+     "wkFileName" : "./st04n"
+     "wkFormat" : wks_type
+     "wkColorMap"    : "temp1"
+    end create
   end if
 
 ;

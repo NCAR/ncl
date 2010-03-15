@@ -1,5 +1,5 @@
 C
-C      $Id: xy06f.f,v 1.13 2010-03-15 02:06:27 haley Exp $
+C      $Id: xy06f.f,v 1.14 2010-03-15 22:49:25 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -168,6 +168,30 @@ C
      +        ierr)
          call NhlFCreate(xworkid,'xy06Work',
      +        NhlFPDfWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName','./xy06f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,length,
+     +        ierr)
+         call NhlFCreate(xworkid,'xy06Work',
+     +        NhlFcairoPSPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName','./xy06f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,length,
+     +        ierr)
+         call NhlFCreate(xworkid,'xy06Work',
+     +        NhlFcairoImageWorkstationClass,0,rlist,ierr)
       endif
 C
 C We need to initialize a non-constant dummy array for our Data

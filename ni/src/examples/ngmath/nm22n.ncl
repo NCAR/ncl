@@ -1,5 +1,5 @@
 ;
-;      $Id: nm22n.ncl,v 1.4 2010-03-15 04:34:53 haley Exp $
+;      $Id: nm22n.ncl,v 1.5 2010-03-15 22:49:24 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -62,19 +62,7 @@ begin
 ; Create workstation object.
 ;
   wks_type = "ncgm"
- 
-  if (str_lower(wks_type).eq."ncgm") then
-    wid = gsn_open_wks("ncgm","nm22n")
-  end if
-  if (str_lower(wks_type).eq."x11") then
-    wid = gsn_open_wks("x11","nm22n")
-  end if
-  if (str_lower(wks_type).eq."ps") then
-    wid = gsn_open_wks("ps","nm22n")
-  end if
-  if (str_lower(wks_type).eq."pdf") then
-    wid = gsn_open_wks("pdf","nm22n")
-  end if
+  wid = gsn_open_wks(wks_type,"nm22n")
 
 ;
 ;  Draw plot of approximated function.

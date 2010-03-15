@@ -83,6 +83,26 @@ C
          call NhlFRLSetString(srlist,'wkPDFFileName','./tx03f.pdf',ierr)
          call NhlFCreate(wid,'tx03Work',NhlFPDFWorkstationClass,0,
      1        srlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a cairo PS/PDF object.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetString(srlist,'wkFileName','./tx03f',ierr)
+         call NhlFCreate(wid,'tx03Work',
+     1        NhlFCairoPSPDFWorkstationClass,0,srlist,ierr)
+      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
+     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG object.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkFormat',wks_type,ierr)
+         call NhlFRLSetString(srlist,'wkFileName','./tx03f',ierr)
+         call NhlFCreate(wid,'tx03Work',
+     1        NhlFCairoImageWorkstationClass,0,srlist,ierr)
       endif
 C
 C Get the number of colors in the default color table.

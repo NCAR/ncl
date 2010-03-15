@@ -1,5 +1,5 @@
 /*
- *      $Id: cn03c.c,v 1.7 2010-03-15 03:55:58 haley Exp $
+ *      $Id: cn03c.c,v 1.8 2010-03-15 22:49:23 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -126,6 +126,28 @@ main()
         NhlRLSetString(rlist,NhlNwkPDFFileName,"./cn03c.pdf");
         NhlCreate(&wid,"cn03Work",
                   NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist); 
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./cn03c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"cn03Work",
+                  NhlcairoPSPDFWorkstationClass,NhlDEFAULT_APP,rlist); 
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./cn03c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wid,"cn03Work",
+                  NhlcairoImageWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
 /*
  * Create a scalar field data object with a linear X dimension representing

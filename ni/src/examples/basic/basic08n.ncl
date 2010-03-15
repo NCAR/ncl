@@ -1,4 +1,4 @@
-; $Id: basic08n.ncl,v 1.4 2010-03-15 03:11:23 haley Exp $
+; $Id: basic08n.ncl,v 1.5 2010-03-15 22:49:23 haley Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -143,24 +143,48 @@ begin
     wid = create "basic08" ncgmWorkstationClass defaultapp
         "wkMetaName" : "basic08n.ncgm"
     end create
-  else
-    if (str_lower(wks_type).eq."x11") then
+  end if
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an X11 output workstation and use the above color map.
 ;
     wid = create "basic08" xWorkstationClass defaultapp
-        "wkPause" : "True"
+      "wkPause" : "True"
     end create
-    else
-      if (str_lower(wks_type).eq."ps") then
+  end if
+  if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
-        wid = create "basic08" psWorkstationClass defaultapp
-          "wkPSFileName"   : "basic08n.ps"
-        end create
-      end if
-    end if
+    wid = create "basic08" psWorkstationClass defaultapp
+      "wkPSFileName"   : "basic08n.ps"
+    end create
+  end if
+  if (str_lower(wks_type).eq."pdf") then
+;
+; Create a PDFWorkstation object.
+;
+    wid = create "basic08" pdfWorkstationClass defaultapp
+      "wkPDFFileName"   : "basic08n.pdf"
+    end create
+  end if
+  if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+;
+; Create a cairo PS/PDF Workstation object.
+;
+    wid = create "basic08" documentWorkstationClass defaultapp
+      "wkFileName" : "basic08n"
+      "wkFormat"   : wks_type
+    end create
+  end if
+  if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+;
+; Create a cairo PNG Workstation object.
+;
+    wid = create "basic08" imageWorkstationClass defaultapp
+      "wkFileName" : "basic08n"
+      "wkFormat"   : wks_type
+    end create
   end if
 
 ;

@@ -1,5 +1,5 @@
 /*
- *      $Id: mp07c.c,v 1.3 2010-03-15 04:18:34 haley Exp $
+ *      $Id: mp07c.c,v 1.4 2010-03-15 22:49:24 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -108,6 +108,28 @@ main(int argc, char *argv[])
         NhlRLSetString(rlist,NhlNwkPDFFileName,"./mp07c.pdf");
         NhlCreate(&wks,"mp07Work",
                   NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./mp07c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wks,"mp07Work",
+                  NhlcairoPSPDFWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkFileName,"./mp07c");
+        NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
+        NhlCreate(&wks,"mp07Work",
+                  NhlcairoImageWorkstationClass,NhlDEFAULT_APP,rlist);
     }
 /*
  * Create and draw a map with all mainland US counties outlined.

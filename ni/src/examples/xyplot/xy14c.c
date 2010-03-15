@@ -1,5 +1,5 @@
 /*
-**      $Id: xy14c.c,v 1.6 2010-03-15 02:06:27 haley Exp $
+**      $Id: xy14c.c,v 1.7 2010-03-15 22:49:25 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -120,6 +120,28 @@ main()
         NhlRLClear(srlist);
         NhlRLSetString(srlist,NhlNwkPDFFileName,"./xy14c.pdf");
         NhlCreate(&work_id,"xy14Work",NhlpdfWorkstationClass,
+                  NhlDEFAULT_APP,srlist);
+    }
+    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
+             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+/*
+ * Create a cairo PS/PDF workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkFileName,"./xy14c");
+        NhlRLSetString(srlist,NhlNwkFormat, (char*)wks_type);
+        NhlCreate(&work_id,"xy14Work",NhlcairoPSPDFWorkstationClass,
+                  NhlDEFAULT_APP,srlist);
+    }
+    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
+             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+/*
+ * Create a cairo PNG workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkFileName,"./xy14c");
+        NhlRLSetString(srlist,NhlNwkFormat, (char*)wks_type);
+        NhlCreate(&work_id,"xy14Work",NhlcairoImageWorkstationClass,
                   NhlDEFAULT_APP,srlist);
     }
 /*
