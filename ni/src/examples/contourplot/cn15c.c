@@ -1,5 +1,5 @@
 /*
- *      $Id: cn15c.c,v 1.10 2010-03-15 03:55:58 haley Exp $
+ *      $Id: cn15c.c,v 1.11 2010-03-15 22:47:24 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -19,7 +19,8 @@
  *
  *   Description:    Combines a contour plot and an xy plot on a
  *                   single frame.  Output goes to an X11 window,
- *                   an NCGM, *and* a PostScript file.
+ *                   an NCGM, PostScript file, a PDF file, a cairo
+ *                   PS file, a cairo PDF file, and a cairo PNG file.
  */
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/App.h>
@@ -88,7 +89,7 @@ main()
 /*
  * Output to all four workstations.
  */
-    int ncgm1,x1,ps1, pdf1;
+    int ncgm1, x1, ps1, pdf1, ps2, pdf2, png1;
     int nlt, nln, zonal, ksst;
     float sstzon;
 /*
@@ -204,6 +205,50 @@ main()
       NhlRLSetInteger(srlist,NhlNwkDeviceUpperY,700);
       NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
       NhlCreate(&pdf1,"cn15Work",NhlpdfWorkstationClass,0,srlist);
+/*
+ * Create a cairo PostScript workstation.
+ */
+      NhlRLClear(srlist);
+      NhlRLSetString(srlist,NhlNwkFileName,"./cn15c.cairo");
+      NhlRLSetString(srlist,NhlNwkFormat,"newps");
+/*
+ * Since the plots are beside each other, use landscape mode and the
+ * PostScript resources for positioning the plot on the paper.
+ */
+      NhlRLSetString(srlist,NhlNwkOrientation,"landscape");
+      NhlRLSetInteger(srlist,NhlNwkDeviceLowerX,0);
+      NhlRLSetInteger(srlist,NhlNwkDeviceLowerY,60);
+      NhlRLSetInteger(srlist,NhlNwkDeviceUpperX,600);
+      NhlRLSetInteger(srlist,NhlNwkDeviceUpperY,700);
+      NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
+      NhlCreate(&ps2,"cn15Work",NhlcairoPSPDFWorkstationClass,0,srlist);
+/*
+ * Create a cairo PDF workstation.
+ */
+      NhlRLClear(srlist);
+      NhlRLSetString(srlist,NhlNwkFileName,"./cn15c.cairo");
+      NhlRLSetString(srlist,NhlNwkFormat,"newpdf");
+/*
+ * Since the plots are beside each other, use landscape mode and the
+ * PostScript resources for positioning the plot on the paper.
+ */
+      NhlRLSetString(srlist,NhlNwkOrientation,"landscape");
+      NhlRLSetInteger(srlist,NhlNwkDeviceLowerX,0);
+      NhlRLSetInteger(srlist,NhlNwkDeviceLowerY,60);
+      NhlRLSetInteger(srlist,NhlNwkDeviceUpperX,600);
+      NhlRLSetInteger(srlist,NhlNwkDeviceUpperY,700);
+      NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
+      NhlCreate(&pdf2,"cn15Work",NhlcairoPSPDFWorkstationClass,0,srlist);
+/*
+ * Create a cairo PNG workstation.
+ */
+/*
+      NhlRLClear(srlist);
+      NhlRLSetString(srlist,NhlNwkFileName,"./cn15c.cairo");
+      NhlRLSetString(srlist,NhlNwkFormat,"png");
+      NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
+      NhlCreate(&png1,"cn15Work",NhlcairoImageWorkstationClass,0,srlist);
+*/
 /*
  * Open and read NetCDF file.
  */
@@ -470,6 +515,61 @@ main()
       NhlDraw(xy_plot);
       NhlDraw(tx);
       NhlFrame(pdf1);
+/*
+ * Reassign the workstation to save cairo PS.
+ */
+      NhlChangeWorkstation (ice,ps2);
+      NhlChangeWorkstation (cn,ps2);
+      NhlChangeWorkstation (mp,ps2);
+      NhlChangeWorkstation (xy_plot,ps2);
+      NhlChangeWorkstation (tx,ps2);
+/*
+ * Draw all objects to cairo PS.
+ */
+      NhlDraw(ice);
+      NhlDraw(cn);
+      NhlDraw(mp);
+      NhlDraw(xy_plot);
+      NhlDraw(tx);
+      NhlFrame(ps2);
+/*
+ * Reassign the workstation to save cairo PDF.
+ */
+      NhlChangeWorkstation (ice,pdf2);
+      NhlChangeWorkstation (cn,pdf2);
+      NhlChangeWorkstation (mp,pdf2);
+      NhlChangeWorkstation (xy_plot,pdf2);
+      NhlChangeWorkstation (tx,pdf2);
+/*
+ * Draw all objects to cairo PDF.
+ */
+      NhlDraw(ice);
+      NhlDraw(cn);
+      NhlDraw(mp);
+      NhlDraw(xy_plot);
+      NhlDraw(tx);
+      NhlFrame(pdf2);
+/*
+ * Reassign the workstation to save cairo PNG.
+ */
+/*
+      NhlChangeWorkstation (ice,png1);
+      NhlChangeWorkstation (cn,png1);
+      NhlChangeWorkstation (mp,png1);
+      NhlChangeWorkstation (xy_plot,png1);
+      NhlChangeWorkstation (tx,png1);
+*/
+/*
+ * Draw all objects to cairo PNG.
+ */
+/*
+      NhlDraw(ice);
+      NhlDraw(cn);
+      NhlDraw(mp);
+      NhlDraw(xy_plot);
+      NhlDraw(tx);
+      NhlFrame(png1);
+*/
  /*
   * Remove resources
   */
@@ -477,6 +577,11 @@ main()
       NhlDestroy(x1);
       NhlDestroy(ps1);
       NhlDestroy(pdf1);
+      NhlDestroy(ps2);
+      NhlDestroy(pdf2);
+      /*
+      NhlDestroy(png1);
+      */
       NhlDestroy(appid);
 
 }

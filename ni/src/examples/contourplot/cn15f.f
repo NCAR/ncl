@@ -1,5 +1,5 @@
 C
-C      $Id: cn15f.f,v 1.10 2010-03-15 03:55:58 haley Exp $
+C      $Id: cn15f.f,v 1.11 2010-03-15 22:47:24 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -77,9 +77,9 @@ C
       character*256 filename
       character*50 recname
 C
-C Output to all three workstations.
+C Output to several workstations.
 C
-      integer ncgm1, x1, ps1, pdf1
+      integer ncgm1, x1, ps1, pdf1, ps2, pdf2, png1
 C
 C Generate a color map.
 C
@@ -202,6 +202,54 @@ C
      +     ierr)
       call NhlFCreate(pdf1,'cn15Work',
      +     NhlFPDFWorkstationClass,0,srlist,ierr)
+C
+C Create a cairo PostScript workstation.
+C
+      call NhlFRLClear(srlist)
+      call NhlFRLSetString(srlist,'wkFileName','./cn15f.cairo',ierr)
+      call NhlFRLSetString(srlist,'wkFormat','newps',ierr)
+C
+C Since the plots are beside each other, use landscape mode and the
+C PostScript resources for positioning the plot on the paper.
+C
+      call NhlFRLSetString(srlist,'wkOrientation','landscape',ierr)
+      call NhlFRLSetInteger(srlist,'wkDeviceLowerX',0,ierr)
+      call NhlFRLSetInteger(srlist,'wkDeviceLowerY',60,ierr)
+      call NhlFRLSetInteger(srlist,'wkDeviceUpperX',600,ierr)
+      call NhlFRLSetInteger(srlist,'wkDeviceUpperY',700,ierr)
+      call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
+     +     ierr)
+      call NhlFCreate(ps2,'cn15Work',
+     +     NhlFCairoPSPDFWorkstationClass,0,srlist,ierr)
+C
+C Create a cairo PDF workstation.
+C
+      call NhlFRLClear(srlist)
+      call NhlFRLSetString(srlist,'wkFileName','./cn15f.cairo',ierr)
+      call NhlFRLSetString(srlist,'wkFormat','newpdf',ierr)
+C
+C Since the plots are beside each other, use landscape mode and the
+C PostScript resources for positioning the plot on the paper.
+C
+      call NhlFRLSetString(srlist,'wkOrientation','landscape',ierr)
+      call NhlFRLSetInteger(srlist,'wkDeviceLowerX',0,ierr)
+      call NhlFRLSetInteger(srlist,'wkDeviceLowerY',60,ierr)
+      call NhlFRLSetInteger(srlist,'wkDeviceUpperX',600,ierr)
+      call NhlFRLSetInteger(srlist,'wkDeviceUpperY',700,ierr)
+      call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
+     +     ierr)
+      call NhlFCreate(pdf2,'cn15Work',
+     +     NhlFCairoPSPDFWorkstationClass,0,srlist,ierr)
+C
+C Create a cairo PNG workstation.
+C
+C      call NhlFRLClear(srlist)
+C      call NhlFRLSetString(srlist,'wkFileName','./cn15f.cairo',ierr)
+C      call NhlFRLSetString(srlist,'wkFormat','png',ierr)
+C      call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
+C     +     ierr)
+C      call NhlFCreate(png1,'cn15Work',
+C     +     NhlFCairoImageWorkstationClass,0,srlist,ierr)
 C
 C Open and read NetCDF file.
 C
@@ -500,12 +548,69 @@ C
       call NhlFFrame(pdf1,ierr)
 
 C
+C Reassign the workstation to save cairo PS.
+C
+      call NhlFChangeWorkstation (ice,ps2,ierr)
+      call NhlFChangeWorkstation (cn,ps2,ierr)
+      call NhlFChangeWorkstation (mp,ps2,ierr)
+      call NhlFChangeWorkstation (xy_plot,ps2,ierr)
+      call NhlFChangeWorkstation (tx,ps2,ierr)
+C
+C Draw all objects to cairo PostScript.
+C
+      call NhlFDraw(ice,ierr)
+      call NhlFDraw(cn,ierr)
+      call NhlFDraw(mp,ierr)
+      call NhlFDraw(xy_plot,ierr)
+      call NhlFDraw(tx,ierr)
+      call NhlFFrame(ps2,ierr)
+
+C
+C Reassign the workstation to save cairo PDF.
+C
+      call NhlFChangeWorkstation (ice,pdf2,ierr)
+      call NhlFChangeWorkstation (cn,pdf2,ierr)
+      call NhlFChangeWorkstation (mp,pdf2,ierr)
+      call NhlFChangeWorkstation (xy_plot,pdf2,ierr)
+      call NhlFChangeWorkstation (tx,pdf2,ierr)
+C
+C Draw all objects to cairo PDF.
+C
+      call NhlFDraw(ice,ierr)
+      call NhlFDraw(cn,ierr)
+      call NhlFDraw(mp,ierr)
+      call NhlFDraw(xy_plot,ierr)
+      call NhlFDraw(tx,ierr)
+      call NhlFFrame(pdf2,ierr)
+
+C
+C Reassign the workstation to save cairo PNG.
+C
+C      call NhlFChangeWorkstation (ice,png1,ierr)
+C      call NhlFChangeWorkstation (cn,png1,ierr)
+C      call NhlFChangeWorkstation (mp,png1,ierr)
+C      call NhlFChangeWorkstation (xy_plot,png1,ierr)
+C      call NhlFChangeWorkstation (tx,png1,ierr)
+C
+C Draw all objects to cairo PNG.
+C
+C      call NhlFDraw(ice,ierr)
+C      call NhlFDraw(cn,ierr)
+C      call NhlFDraw(mp,ierr)
+C      call NhlFDraw(xy_plot,ierr)
+C      call NhlFDraw(tx,ierr)
+C      call NhlFFrame(png1,ierr)
+
+C
 C Cleanup
 C
       call NhlFDestroy(ncgm1,ierr)
       call NhlFDestroy(x1,ierr)
       call NhlFDestroy(ps1,ierr)
+      call NhlFDestroy(ps2,ierr)
       call NhlFDestroy(pdf1,ierr)
+      call NhlFDestroy(pdf2,ierr)
+C      call NhlFDestroy(png1,ierr)
       call NhlFDestroy(appid,ierr)
       stop
       end

@@ -78,7 +78,7 @@ begin
 ;
 ; Create a PSWorkstation object.
 ;
-   ps = create "cn15Work" psWorkstationClass defaultapp
+   ps1 = create "cn15Work" psWorkstationClass defaultapp
     "wkVisualType" : "color"
     "wkPSFileName" : "./cn15n.ps"      ; name the PostScript file
     "wkColorMap"   : cmap              ; assign the new color map
@@ -95,7 +95,7 @@ begin
 ;
 ; Create a PDFWorkstation object.
 ;
-   pdf = create "cn15Work" pdfWorkstationClass defaultapp
+   pdf1 = create "cn15Work" pdfWorkstationClass defaultapp
     "wkVisualType"  : "color"
     "wkPDFFileName" : "./cn15n.pdf"      ; name the PDF file
     "wkColorMap"    : cmap               ; assign the new color map
@@ -109,6 +109,48 @@ begin
     "wkDeviceUpperX" : 600
     "wkDeviceUpperY" : 700
   end create
+;
+; Create a cairo PS Workstation object.
+;
+   ps2 = create "cn15Work" documentWorkstationClass defaultapp
+    "wkFileName"   : "./cn15n.cairo"   ; name the PostScript file
+    "wkFormat"     : "newps"
+    "wkColorMap"   : cmap              ; assign the new color map
+;
+; Since the plots are beside each other, use landscape mode and the
+; PostScript/PDF resources for positioning the plot on the paper.
+;
+    "wkOrientation"  : "landscape"
+    "wkDeviceLowerX" :   0
+    "wkDeviceLowerY" :  60  
+    "wkDeviceUpperX" : 600
+    "wkDeviceUpperY" : 700
+  end create
+;
+; Create a cairo PDF Workstation object.
+;
+   pdf2 = create "cn15Work" documentWorkstationClass defaultapp
+    "wkFileName"   : "./cn15n.cairo"   ; name the PDF file
+    "wkFormat"     : "newpdf"
+    "wkColorMap"   : cmap              ; assign the new color map
+;
+; Since the plots are beside each other, use landscape mode and the
+; PostScript/PDF resources for positioning the plot on the paper.
+;
+    "wkOrientation"  : "landscape"
+    "wkDeviceLowerX" :   0
+    "wkDeviceLowerY" :  60  
+    "wkDeviceUpperX" : 600
+    "wkDeviceUpperY" : 700
+  end create
+;
+; Create a cairo PNG Workstation object.
+;
+;   png1 = create "cn15Work" imageWorkstationClass defaultapp
+;    "wkFileName"   : "./cn15n.cairo"   ; name the PNG file
+;    "wkFormat"     : "png"
+;    "wkColorMap"   : cmap              ; assign the new color map
+;  end create
 ;
 ; Create a ContourPlot object.
 ;
@@ -294,11 +336,11 @@ begin
 ;
 ; Reassign the workstation to save PS.
 ;
-  NhlChangeWorkstation (ice,ps)
-  NhlChangeWorkstation (cn,ps)
-  NhlChangeWorkstation (mp,ps)
-  NhlChangeWorkstation (xy_plot,ps)
-  NhlChangeWorkstation (tx,ps)
+  NhlChangeWorkstation (ice,ps1)
+  NhlChangeWorkstation (cn,ps1)
+  NhlChangeWorkstation (mp,ps1)
+  NhlChangeWorkstation (xy_plot,ps1)
+  NhlChangeWorkstation (tx,ps1)
 ;
 ; Draw all objects to PostScript.
 ;
@@ -307,15 +349,15 @@ begin
   draw(mp)
   draw(xy_plot)
   draw(tx)
-  frame(ps)
+  frame(ps1)
 ;
 ; Reassign the workstation to save PDF.
 ;
-  NhlChangeWorkstation (ice,pdf)
-  NhlChangeWorkstation (cn,pdf)
-  NhlChangeWorkstation (mp,pdf)
-  NhlChangeWorkstation (xy_plot,pdf)
-  NhlChangeWorkstation (tx,pdf)
+  NhlChangeWorkstation (ice,pdf1)
+  NhlChangeWorkstation (cn,pdf1)
+  NhlChangeWorkstation (mp,pdf1)
+  NhlChangeWorkstation (xy_plot,pdf1)
+  NhlChangeWorkstation (tx,pdf1)
 ;
 ; Draw all objects to PDF.
 ;
@@ -324,5 +366,58 @@ begin
   draw(mp)
   draw(xy_plot)
   draw(tx)
-  frame(pdf)
+  frame(pdf1)
+
+;
+; Reassign the workstation to save cairo PS
+;
+  NhlChangeWorkstation (ice,ps2)
+  NhlChangeWorkstation (cn,ps2)
+  NhlChangeWorkstation (mp,ps2)
+  NhlChangeWorkstation (xy_plot,ps2)
+  NhlChangeWorkstation (tx,ps2)
+;
+; Draw all objects to cairo PS.
+;
+  draw(ice)
+  draw(cn)
+  draw(mp)
+  draw(xy_plot)
+  draw(tx)
+  frame(ps2)
+
+;
+; Reassign the workstation to save cairo PDF
+;
+  NhlChangeWorkstation (ice,pdf2)
+  NhlChangeWorkstation (cn,pdf2)
+  NhlChangeWorkstation (mp,pdf2)
+  NhlChangeWorkstation (xy_plot,pdf2)
+  NhlChangeWorkstation (tx,pdf2)
+;
+; Draw all objects to cairo PDF.
+;
+  draw(ice)
+  draw(cn)
+  draw(mp)
+  draw(xy_plot)
+  draw(tx)
+  frame(pdf2)
+;
+; Reassign the workstation to save cairo PNG
+;
+;  NhlChangeWorkstation (ice,png1)
+;  NhlChangeWorkstation (cn,png1)
+;  NhlChangeWorkstation (mp,png1)
+;  NhlChangeWorkstation (xy_plot,png1)
+;  NhlChangeWorkstation (tx,png1)
+;
+; Draw all objects to cairo PNG.
+;
+;  draw(ice)
+;  draw(cn)
+;  draw(mp)
+;  draw(xy_plot)
+;  draw(tx)
+;  frame(png1)
 end
