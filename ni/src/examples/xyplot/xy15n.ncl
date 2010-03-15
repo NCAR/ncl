@@ -1,5 +1,5 @@
 ;
-;      $Id: xy15n.ncl,v 1.5 2003-03-03 21:31:22 grubin Exp $
+;      $Id: xy15n.ncl,v 1.6 2010-03-15 02:06:27 haley Exp $
 ;
 ;***********************************************************************
 ;                                                                      *
@@ -58,12 +58,9 @@ end create
 ;
 ; Default is to display output to an X workstation
 ;
-NCGM=0
-X11=1
-PS=0
-PDF=0
+wks_type = "x11"
 
-if (NCGM .eq. 1) then
+if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object.
 ;
@@ -71,7 +68,7 @@ if (NCGM .eq. 1) then
       "wkMetaName" : "xy15n.ncgm"
   end create
 else
-  if (X11 .eq. 1) then
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Set up an X11 output workstation.
 ;
@@ -79,7 +76,7 @@ else
       "wkPause" : True
     end create
   else
-    if (PS .eq. 1) then
+    if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
@@ -87,7 +84,7 @@ else
         "wkPSFileName" : "xy15n.ps"
       end create
     else
-      if (PDF .eq. 1) then
+      if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;

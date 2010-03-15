@@ -1,5 +1,5 @@
 ;
-;      $Id: xy07n.ncl,v 1.5 2003-03-03 21:31:21 grubin Exp $
+;      $Id: xy07n.ncl,v 1.6 2010-03-15 02:06:27 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -87,10 +87,7 @@ end create
 ;
 ; Default is to display output to an X workstation
 ;
-NCGM=0
-X11=1
-PS=0
-PDF=0
+wks_type = "x11"
 
 ;
 ; Modify the color map.  Color indices '0' and '1' are the background
@@ -102,7 +99,7 @@ cmap(1,:) = (/0.0, 0.0, 0.0/)
 cmap(2,:) = (/1.0, 0.0, 0.0/)
 cmap(3,:) = (/0.0, 0.0, 1.0/)
 
-if (NCGM .eq. 1) then
+if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object.
 ;
@@ -111,7 +108,7 @@ if (NCGM .eq. 1) then
       "wkColorMap" : cmap
   end create
 else
-  if (X11 .eq. 1) then
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
@@ -120,7 +117,7 @@ else
       "wkColorMap" : cmap
     end create
   else
-    if (PS .eq. 1) then
+    if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
@@ -129,7 +126,7 @@ else
         "wkColorMap" : cmap
       end create
     else
-      if (PDF .eq. 1) then
+      if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;

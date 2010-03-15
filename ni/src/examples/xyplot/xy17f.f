@@ -1,5 +1,5 @@
 C
-C      $Id: xy17f.f,v 1.7 2003-03-03 21:31:21 grubin Exp $
+C      $Id: xy17f.f,v 1.8 2010-03-15 02:06:27 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -26,13 +26,15 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXWorkstationClass
       external NhlFXyPlotClass
       external NhlFCoordArraysClass
 
       parameter (ncurve=3, npts=129) 
 
-      integer NCGM, X11, PS, PDF
+      CHARACTER*7  wks_type
 
       integer i, rlist, wks, appid, field1, field2, field3
       integer xy1, xy2, xy3, grlist
@@ -55,10 +57,11 @@ C
       data y2lab /'10.', '20.', '30.', '40.', '50.', '60.'/
       data y3lab /'-20.', '-10.', '0.', '10.', '20.'/
 
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+
+C
+C Define the workstation type
+C
+      wks_type = "x11"
 C
 C  Read ASCII file xy.asc
 C
@@ -109,38 +112,40 @@ C
 C  If NCGM=1, then open NCGM workstation. 
 C
 
-      if (NCGM .eq. 1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkMetaName', 
      +                         'xy17f.ncgm', ierr)
          call NhlFCreate (wks, 'xy17Work', NhlFNcgmWorkstationClass, 0,
      +                    rlist, ierr)
 
+      endif
+
 C
 C  Create an X workstation. 
 C
 
-      else if (X11 .eq. 1) then
+      if (wks_type.eq."x11".or.wks_type.eq."X11") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkPause', 'True', ierr)
          call NhlFCreate (wks, 'xy17Work', NhlFXWorkstationClass,
      +                    0, rlist, ierr)
+      endif
 
 C
 C  Open PS workstation. 
 C
-
-      else if (PS .eq. 1) then
+      if (wks_type.eq."ps".or.wks_type.eq."PS") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkPSFileName', 
      +                         'xy17f.ps', ierr)
          call NhlFCreate (wks, 'xy17Work', NhlFPSWorkstationClass, 
      +                    0, rlist, ierr)
+      endif
 C
 C  Open PDF workstation. 
 C
-
-      else if (PDF .eq. 1) then
+      if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkPDFFileName', 
      +                         'xy17f.pdf', ierr)

@@ -1,5 +1,5 @@
 
-;      $Id: xy06n.ncl,v 1.10 1998-04-15 21:40:48 ethan Exp $
+;      $Id: xy06n.ncl,v 1.11 2010-03-15 02:06:27 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -83,7 +83,7 @@ cmap = (/ (/0.00,0.00,0.00/), \
 ;
 ; Default is to display output to an X workstation
 ;
-NCGM=0
+wks_type = "x11"
 
 ;
 ; Create application object.  The application name is used to 
@@ -95,7 +95,7 @@ appid = create "xy06" appClass defaultapp
    "appUsrDir" : "./"
 end create
 
-if (NCGM .eq. 1) then
+if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object.
 ;
@@ -104,13 +104,35 @@ if (NCGM .eq. 1) then
       "wkColorMap" : cmap
   end create
 else
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an X workstation
 ;
-  xworkid = create "xy06Work" xWorkstationClass defaultapp
+    xworkid = create "xy06Work" xWorkstationClass defaultapp
       "wkPause" : True
       "wkColorMap" : cmap
-  end create
+    end create
+  else
+    if (str_lower(wks_type).eq."ps") then
+;
+; Create a PSWorkstation object.
+;
+      xworkid = create "xy06Work" psWorkstationClass defaultapp
+        "wkPSFileName" : "xy06n.ps"
+        "wkColorMap" : cmap
+      end create
+    else
+      if (str_lower(wks_type).eq."pdf") then
+;
+; Create a PDFWorkstation object.
+;
+        xworkid = create "xy06Work" pdfWorkstationClass defaultapp
+          "wkPDFFileName" : "xy06n.pdf"
+          "wkColorMap" : cmap
+        end create
+      end if
+    end if
+  end if
 end if
 
 ;

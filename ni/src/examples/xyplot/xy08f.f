@@ -1,5 +1,5 @@
 C
-C      $Id: xy08f.f,v 1.4 2003-03-03 21:31:21 grubin Exp $
+C      $Id: xy08f.f,v 1.5 2010-03-15 02:06:27 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -31,6 +31,8 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFCoordArraysClass
       external NhlFXyPlotClass
 
@@ -65,14 +67,12 @@ C
      +          0.00,0.00,0.00,
      +          0.00,0.00,1.00/
 
-      integer NCGM, X11, PS, PDF
+      CHARACTER*7  wks_type
 C
-C Default is to an X workstation.
+C Define the workstation type
 C
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+      wks_type = "x11"
+C
 C
 C Fill the data arrays.
 C
@@ -108,7 +108,7 @@ C
       call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'xy08',NhlFAppClass,0,rlist,ierr)
 
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create an NCGM workstation.
 C
@@ -117,7 +117,7 @@ C
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,clen,ierr)
          call NhlFCreate(xworkid,'xy08Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
-      else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an xworkstation object.
 C
@@ -126,7 +126,7 @@ C
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,clen,ierr)
          call NhlFCreate(xworkid,'xy08Work',NhlFXWorkstationClass,
      +                0,rlist,ierr)
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PS workstation.
 C
@@ -135,7 +135,7 @@ C
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,clen,ierr)
          call NhlFCreate(xworkid,'xy08Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF workstation.
 C

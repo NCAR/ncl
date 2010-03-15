@@ -1,5 +1,5 @@
 /*
-**      $Id: xy08c.c,v 1.5 2003-03-03 21:31:21 grubin Exp $
+**      $Id: xy08c.c,v 1.6 2010-03-15 02:06:27 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -31,6 +31,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrTable.h>
 #include <ncarg/hlu/TickMark.h>
@@ -57,7 +59,7 @@ main()
     float   cmap[NCOLORS][3];
     FILE    *fp;
 
-    int NCGM=0, X11=1, PS=0, PDF=0;
+    char const *wks_type = "x11";
 /*
  * Fill the data arrays.
  */
@@ -107,7 +109,7 @@ main()
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"xy08",NhlappClass,NhlDEFAULT_APP,0);
 
-    if (NCGM) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create a meta file object.
  */
@@ -117,7 +119,7 @@ main()
         NhlCreate(&xworkid,"xy08Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else if (X11) {
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  * Create an XWorkstation object.
  */
@@ -127,7 +129,7 @@ main()
         NhlCreate(&xworkid,"xy08Work",NhlxWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else if (PS) {
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a PS workstation.
  */
@@ -137,7 +139,7 @@ main()
         NhlCreate(&xworkid,"xy08Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else if (PDF) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PDF workstation.
  */

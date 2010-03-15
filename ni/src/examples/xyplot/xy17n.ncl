@@ -70,12 +70,12 @@ t   = x1_y3(3:515:4)
 
 y = (/u, v, (t - 273.15) * 9.0 / 5.0 + 32.0/)
 
-NCGM=0
-X11=1
-PS=0
-PDF=0
+;
+; Default is to display output to an X workstation
+;
+wks_type = "x11"
 
-if (NCGM.eq.1) then
+if(str_lower(wks_type).eq."ncgm") then
 ;
 ; Open NCGM workstation.
 ;
@@ -83,7 +83,7 @@ if (NCGM.eq.1) then
       "wkMetaName" : "xy17n.ncgm"
     end create
 else
-  if (X11.eq.1) then
+  if(str_lower(wks_type).eq."x11") then
 ;
 ; Create an X workstation.
 ;
@@ -91,7 +91,8 @@ else
       "wkPause" : True
     end create
   else
-    if (PS .eq. 1) then
+    if(str_lower(wks_type).eq."ps") then
+
 ;
 ; Open PS workstation.
 ;
@@ -99,7 +100,7 @@ else
     "wkPSFileName" : "xy17n.ps"
       end create
     else
-      if (PDF .eq. 1) then
+      if(str_lower(wks_type).eq."pdf") then
 ;
 ; Open PDF workstation.
 ;

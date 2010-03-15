@@ -1,5 +1,5 @@
 C
-C      $Id: xy16f.f,v 1.5 2003-03-03 21:31:21 grubin Exp $
+C      $Id: xy16f.f,v 1.6 2010-03-15 02:06:27 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -48,6 +48,8 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXWorkstationClass
       external NhlFCoordArraysClass
       external NhlFXyPlotClass
@@ -84,7 +86,11 @@ C
 C Indicate whether we want output to go to NCGM, X11 window or
 C PS file.
 C
-      integer NCGM, X11, PS, PDF
+      CHARACTER*7  wks_type
+C
+C Define the workstation type
+C
+      wks_type = "x11"
       NCGM=0
       X11=1
       PS=0
@@ -110,12 +116,12 @@ C
 C
 C Create an NCGM workstation.
 C
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
          call NhlFRLClear(srlist)
          call NhlFRLSetString(srlist,'wkMetaName','./xy16f.ncgm',ierr)
          call NhlFCreate(xworkid,'xy16Work',
      +        NhlFNcgmWorkstationClass,0,srlist,ierr)
-      else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an xworkstation object.
 C
@@ -123,7 +129,7 @@ C
          call NhlFRLSetString(srlist,'wkPause','True',ierr)
          call NhlFCreate(xworkid,'xy16Work',NhlFXWorkstationClass,
      +        0,srlist,ierr)
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PostScript workstation.
 C
@@ -131,7 +137,7 @@ C
          call NhlFRLSetString(srlist,'wkPSFileName','./xy16f.ps',ierr)
          call NhlFCreate(xworkid,'xy16Work',
      +        NhlFPSWorkstationClass,0,srlist,ierr)
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF workstation.
 C

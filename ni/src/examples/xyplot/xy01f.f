@@ -1,5 +1,5 @@
 C
-C      $Id: xy01f.f,v 1.14 2003-03-03 21:31:21 grubin Exp $
+C      $Id: xy01f.f,v 1.15 2010-03-15 02:06:27 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -32,6 +32,8 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXyPlotClass
       external NhlFCoordArraysClass
 C
@@ -43,14 +45,9 @@ C
       integer appid,xworkid,plotid,dataid
       integer rlist, i
       real   ydra(NPTS), theta
-      integer NCGM, X11, PS, PDF
-C
-C Default is to an X workstation.
-C
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+      CHARACTER*7  wks_type
+
+      wks_type = "x11"
 
 C
 C Initialize some data for the XY plot.
@@ -74,7 +71,7 @@ C
       call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'xy01',NhlFAppClass,0,rlist,ierr)
 
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create an NCGM workstation.
 C
@@ -82,7 +79,7 @@ C
          call NhlFRLSetString(rlist,'wkMetaName','./xy01f.ncgm',ierr)
          call NhlFCreate(xworkid,'xy01Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
-      else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an xworkstation object.
 C
@@ -90,7 +87,7 @@ C
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
          call NhlFCreate(xworkid,'xy01Work',NhlFXWorkstationClass,
      +        0,rlist,ierr)
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PS workstation.
 C
@@ -98,7 +95,7 @@ C
          call NhlFRLSetString(rlist,'wkPSFileName','./xy01f.ps',ierr)
          call NhlFCreate(xworkid,'xy01Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF workstation.
 C
@@ -106,6 +103,26 @@ C
          call NhlFRLSetString(rlist,'wkPDFFileName','./xy01f.pdf',ierr)
          call NhlFCreate(xworkid,'xy01Work',
      +        NhlFPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
+     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+C
+C Create a PS/PDF cairo workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName','./xy01f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(xworkid,'xy01Work',
+     +        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr)
+      else if (wks_type.eq."png".or.wks_type.eq."PNG".or.
+     +         wks_type.eq."newpng".or.wks_type.eq."NEWPNG") then
+C
+C Create a PNG image workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName','./xy01f',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(xworkid,'xy01Work',
+     +        NhlFCairoImageWorkstationClass,0,rlist,ierr)
       endif
 C
 C Define the data object.  Since only the Y values are specified here,
