@@ -47,16 +47,9 @@ C
 
       character*7  wks_type
 C
-C Define the workstation type
-C
-      wks_type = "x11"
-C
 C Default is to display output to an X workstation
 C
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+      wks_type = "x11"
 C
 C Initialize the high level utility library
 C
