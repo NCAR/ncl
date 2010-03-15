@@ -1,5 +1,5 @@
 ;
-;    $Id: tx03n.ncl,v 1.11 2003-03-03 17:27:02 grubin Exp $
+;    $Id: tx03n.ncl,v 1.12 2010-03-15 04:49:32 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -40,12 +40,9 @@ end create
 ;
 ; Default is to create a metafile.
 ;
-NCGM=1
-X11=0
-PS=0
-PDF=0
+wks_type = "ncgm"
 
-if (NCGM .eq. 1) then
+if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object.
 ;
@@ -53,7 +50,7 @@ if (NCGM .eq. 1) then
       "wkMetaName"         : "tx03n.ncgm"
   end create
 else
-  if (X11 .eq. 1) then
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
@@ -61,7 +58,7 @@ else
       "wkPause" : True
     end create
   else
-    if (PS .eq. 1) then
+    if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
@@ -69,7 +66,7 @@ else
         "wkPSFileName"         : "tx03n.ps"
       end create
     else
-      if (PDF .eq. 1) then
+      if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;

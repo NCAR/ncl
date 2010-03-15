@@ -1,5 +1,5 @@
 /*
- *  $Id: tx05c.c,v 1.6 2003-03-03 17:27:02 grubin Exp $
+ *  $Id: tx05c.c,v 1.7 2010-03-15 04:49:32 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -30,6 +30,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 
 #define MAX(A,B)       (((A) > (B)) ? (A) : (B))
 
@@ -39,7 +41,7 @@ main()
     float height, angle, dtr=0.017453292519943;
     float bkg_color[] = {1., 1., 1.};
     float x_coord, y_coord;
-    int NCGM=0, X11=1, PS=0, PDF=0;
+    char const *wks_type = "x11";
 /*
  *  Initialize.
  */ 
@@ -47,7 +49,7 @@ main()
     NhlOpen();
     rlist = NhlRLCreate(NhlSETRL);
 
-    if (NCGM) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create a meta file workstation.
  */
@@ -57,7 +59,7 @@ main()
         NhlCreate(&wid,"tx05Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else if (X11) {
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  *  Create an XWorkstation object.
  */
@@ -67,7 +69,7 @@ main()
         NhlCreate(&wid,"tx05Work",
                   NhlxWorkstationClass,NhlDEFAULT_APP, rlist);
     }
-    else if (PS) {
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a PS workstation.
  */
@@ -77,7 +79,7 @@ main()
         NhlCreate(&wid,"tx05Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else if (PDF) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PDF workstation.
  */

@@ -1,5 +1,5 @@
 /*
- *  $Id: tx06c.c,v 1.5 2003-03-03 17:27:02 grubin Exp $
+ *  $Id: tx06c.c,v 1.6 2010-03-15 04:49:32 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -29,6 +29,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 
 main()
 {
@@ -40,7 +42,7 @@ main()
     float bkg_color[] = {1., 1., 1.};
     int   just;
     NhlBoundingBox  t_box;
-    int NCGM=0, X11=1, PS=0, PDF=0;
+    char const *wks_type = "x11";
 
 /*
  *  Initialize and set up application context.
@@ -50,7 +52,7 @@ main()
     rlist = NhlRLCreate(NhlSETRL);
     NhlRLClear(rlist);
 
-    if (NCGM) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create a meta file workstation.
  */
@@ -60,7 +62,7 @@ main()
         NhlCreate(&wid,"tx06Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else if (X11) {
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  * Create an XWorkstation object.
  */
@@ -70,7 +72,7 @@ main()
         NhlCreate(&wid,"tx06Work",
                   NhlxWorkstationClass,NhlDEFAULT_APP, rlist);
     }
-    else if (PS) {
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a PS workstation.
  */
@@ -80,7 +82,7 @@ main()
         NhlCreate(&wid,"tx06Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else if (PDF) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PDF workstation.
  */

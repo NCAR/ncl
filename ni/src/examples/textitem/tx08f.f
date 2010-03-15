@@ -23,43 +23,42 @@ C
       external NhlFNCGMWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXyPlotClass
       external NhlFTextItemClass
-      integer NCGM, X11, PS, PDF
+      character*7  wks_type
 C
 C Default is output to an X11 window.
 C
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+      wks_type = "x11"
 C
 C Create application.
 C
       call NhlFOpen
       call NhlFRLCreate(list,'setrl')
       call NhlFRLClear(list)
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create an NCGM workstation.
 C
          call NhlFRLSetString(list,'wkMetaName','./tx08f.ncgm',ierr)
          call NhlFCreate(ixwk,'tx08Work',NhlFNcgmWorkstationClass,0,
      1        list,ierr)
-      else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an X workstation.
 C
          call NhlFCreate(ixwk,'tx08Work',NhlFXWorkstationClass,
      +        0,list,ier)
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PS workstation.
 C
          call NhlFRLSetString(list,'wkPSFileName','./tx08f.ps',ierr)
          call NhlFCreate(ixwk,'tx08Work',NhlFPSWorkstationClass,0,
      1        list,ierr)
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF workstation.
 C

@@ -1,5 +1,5 @@
 ;
-;   $Id: tx08n.ncl,v 1.2 2003-03-03 17:27:02 grubin Exp $
+;   $Id: tx08n.ncl,v 1.3 2010-03-15 04:49:32 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -25,27 +25,24 @@
 ;
 begin
 
-NCGM=0
-X11=1
-PS=0
-PDF=0
+wks_type = "x11"
 
 ;
 ; Create application.
 ;
 
-if (NCGM .eq. 1) then
+if (str_lower(wks_type).eq."ncgm") then
   ixwk = create "tx08Work"  ncgmWorkstationClass defaultapp
     "wkMetaName"         : "tx08n.ncgm"
   end create
 else
-  if (X11 .eq. 1) then
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
     ixwk = create "tx08Work" xWorkstationClass defaultapp end create
   else
-    if (PS .eq. 1) then
+    if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
@@ -53,7 +50,7 @@ else
         "wkPSFileName"       : "tx08n.ps"
       end create
     else
-      if (PDF .eq. 1) then
+      if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;

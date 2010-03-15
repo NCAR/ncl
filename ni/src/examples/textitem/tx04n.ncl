@@ -1,5 +1,5 @@
 ;
-;      $Id: tx04n.ncl,v 1.9 2003-03-03 17:27:02 grubin Exp $
+;      $Id: tx04n.ncl,v 1.10 2010-03-15 04:49:32 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -38,12 +38,9 @@ end create
 ;
 ; Default output is to an X workstation. 
 ;
-NCGM=0
-X11=1
-PS=0
-PDF=0
+wks_type = "x11"
 
-if (NCGM .eq. 1) then
+if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object.
 ;
@@ -51,7 +48,7 @@ if (NCGM .eq. 1) then
       "wkMetaName" : "tx04n.ncgm"
     end create
 else
-  if (X11 .eq. 1) then
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
@@ -59,7 +56,7 @@ else
       "wkPause"            : True
     end create
   else
-    if (PS .eq. 1) then
+    if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
@@ -67,7 +64,7 @@ else
         "wkPSFileName" : "tx04n.ps"
       end create
     else
-      if (PDF .eq. 1) then
+      if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;

@@ -27,6 +27,8 @@ C
       external NhlFXWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFTextItemClass
 
       integer   appid, wid, pid, rlist, ierr
@@ -35,7 +37,7 @@ C
       real bkg_color(3)
       integer just
       real bb_top,bb_bottom,bb_left,bb_right
-      integer NCGM, X11, PS, PDF
+      character*7  wks_type
 
       data labels/'Top Left','Center Left','Bottom Left',
      &     'Top Center','Center Center','Bottom Center',
@@ -48,10 +50,7 @@ C
 C
 C Set the display.  Default is to display output to an X workstation.
 C
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+      wks_type = "x11"
 C
 C  Initialize the high level utility library and create application.
 C 
@@ -63,7 +62,7 @@ C
       call NhlFRLSetString(rlist,'appDefaultParent','True',ierr)
       call NhlFCreate(appid,'tx06f',NhlFAppClass,0,rlist,ierr)
 
-      if (NCGM .eq. 1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create a meta file workstation.
 C
@@ -74,7 +73,7 @@ C
         call NhlFCreate(wid,'tx06Work',NhlFNcgmWorkstationClass,
      &       0,rlist,ierr)
     
-      else if (X11 .eq. 1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an XWorkstation object.
 C
@@ -85,7 +84,7 @@ C
         call NhlFCreate(wid,'tx06Work',
      &       NhlFxWorkstationClass,0,rlist,ierr)
 
-      else if (PS .eq. 1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PS workstation.
 C
@@ -95,7 +94,7 @@ C
      &       bkg_color,3,ierr)
         call NhlFCreate(wid,'tx06Work',NhlFpsWorkstationClass,
      &       0,rlist,ierr)
-      else if (PDF .eq. 1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF workstation.
 C

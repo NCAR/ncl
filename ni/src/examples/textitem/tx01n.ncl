@@ -1,5 +1,5 @@
 ;
-;   $Id: tx01n.ncl,v 1.10 2003-03-04 17:33:53 haley Exp $
+;   $Id: tx01n.ncl,v 1.11 2010-03-15 04:49:32 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -39,12 +39,9 @@ end create
 ;
 ; Default is to display output to an X workstation
 ;
-NCGM=0
-X11=1
-PS=0
-PDF=0
+wks_type = "x11"
 
-if (NCGM .eq. 1) then
+if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object.
 ;
@@ -52,7 +49,7 @@ if (NCGM .eq. 1) then
       "wkMetaName"         : "tx01n.ncgm"
   end create
 else
-  if (X11 .eq. 1) then
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
@@ -60,7 +57,7 @@ else
       "wkPause" : True
     end create
   else
-    if (PS .eq. 1) then
+    if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
@@ -68,7 +65,7 @@ else
         "wkPSFileName"  : "tx01n.ps"
       end create
     else
-      if (PDF .eq. 1) then
+      if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;
