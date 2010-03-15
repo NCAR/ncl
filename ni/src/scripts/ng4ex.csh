@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ng4ex.csh,v 1.13 2010-03-15 01:58:26 haley Exp $
+#   $Id: ng4ex.csh,v 1.14 2010-03-15 03:55:32 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -492,6 +492,7 @@ while ($#argv > 0)
 
     case "-W":
       shift
+      set change_ws_type
       set ws_type = $1
       if ("$ws_type" == "NCGM" || "$ws_type" == "ncgm") then
         set NCGM
@@ -1048,15 +1049,34 @@ end
 # turn the other types off.               #
 #                                         #
 #*****************************************#
+if ($?cprog && $?change_ws_type) then
 ed << EOF - ./$src_file >& /dev/null
-g/wks_type = "x11"/s//wks_type = "$ws_type"/g
+/wks_type =/d
+i
+  char const *wks_type = "$ws_type";
+.
 w
 q
 EOF
+endif
 
-if ($?nprog) then
+if ($?fprog && $?change_ws_type) then
 ed << EOF - ./$src_file >& /dev/null
-g/wks_type = "x11"/s//wks_type = "$ws_type"/g
+/wks_type =/d
+i
+      wks_type = "$ws_type"
+.
+w
+q
+EOF
+endif
+
+if ($?nprog && $?change_ws_type) then
+ed << EOF - ./$src_file >& /dev/null
+/wks_type = "
+c
+wks_type = "$ws_type"
+.
 w
 q
 EOF

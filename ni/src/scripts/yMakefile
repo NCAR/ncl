@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.13 2010-03-14 19:47:22 haley Exp $
+#	$Id: yMakefile,v 1.14 2010-03-15 03:55:32 haley Exp $
 #
 
 #ifdef BuildCAIRO
@@ -26,7 +26,7 @@ nhlf77: nhlf77.csh Makefile
 	-e 's+SED_CAIROLIB++' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
-	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
+	-e 's+SED_NCDFLIBS+$(NCDFLIBS) $(NETCDF4LIB) -lz+' \
 	-e 's+SED_HDFLIB+$(HDFLIB)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
@@ -46,7 +46,7 @@ nhlf90: nhlf77.csh Makefile
 	-e 's+SED_CAIROLIB++' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
-	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
+	-e 's+SED_NCDFLIBS+$(NCDFLIBS) $(NETCDF4LIB) -lz+' \
 	-e 's+SED_HDFLIB+$(HDFLIB)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
@@ -66,7 +66,7 @@ nhlcc: nhlcc.csh Makefile
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XTOOLLIB+$(XTOOLLIB)+' \
 	-e 's+SED_XMOTIFLIB+$(XMOTIFLIB)+' \
-	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
+	-e 's+SED_NCDFLIBS+$(NCDFLIBS) $(NETCDF4LIB) -lz+' \
 	-e 's+SED_HDFLIB+$(HDFLIB)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
 	-e 's+SED_CAIROLIB++' \
@@ -92,7 +92,7 @@ nhlf77_cairo: nhlf77.csh Makefile
 	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
-	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
+	-e 's+SED_NCDFLIBS+$(NCDFLIBS) $(NETCDF4LIB) -lz+' \
 	-e 's+SED_HDFLIB+$(HDFLIB)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
@@ -112,7 +112,7 @@ nhlf90_cairo: nhlf77.csh Makefile
 	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
-	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
+	-e 's+SED_NCDFLIBS+$(NCDFLIBS) $(NETCDF4LIB) -lz+' \
 	-e 's+SED_HDFLIB+$(HDFLIB)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
@@ -132,7 +132,7 @@ nhlcc_cairo: nhlcc.csh Makefile
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XTOOLLIB+$(XTOOLLIB)+' \
 	-e 's+SED_XMOTIFLIB+$(XMOTIFLIB)+' \
-	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
+	-e 's+SED_NCDFLIBS+$(NCDFLIBS) $(NETCDF4LIB) -lz+' \
 	-e 's+SED_HDFLIB+$(HDFLIB)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
 	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
