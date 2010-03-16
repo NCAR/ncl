@@ -1,13 +1,10 @@
 C NCLFORTSTART
-      SUBROUTINE ZROTEOF(NV,NF,V,ND, EVAL, ROTPCV, ROTVAR, VMSG, IOPT,
-     +                   KFLAG)
+      SUBROUTINE ZROTEOF (NV,NF,V,ND, EVAL, ROTPCV, ROTVAR, VMSG, IOPT,
+     +                    KFLAG)
       IMPLICIT NONE
       INTEGER  NV,NF,ND, IOPT, KFLAG
       DOUBLE PRECISION V(ND,NF),EVAL(NF),ROTPCV(NF),ROTVAR(NF), VMSG
 C NCLEND
-c ***********
-c Jiang Ling code ... different stopping criteria
-c ***********
       INTEGER N,M
       DOUBLE PRECISION A(NV),B(NV),C(NV), TVAR
 
@@ -46,7 +43,7 @@ C Scale the input eigenvector matrix
       IF (KFLAG.EQ.0) THEN
           CALL ZVORS(NV,NF,V,A,B,C,ND) 
       ELSE
-          CALL ZVORSMSG(NV,NF,V,A,B,C,ND,VMSG) 
+          CALL VORSMSG(NV,NF,V,A,B,C,ND,VMSG) 
       END IF  
 
       DO N=1,NF
@@ -95,8 +92,7 @@ c ------------------------------------
       DOUBLE PRECISION T,PI,TWOPI,REPS,AA,BB,CC,DD,XN,XD,Y,CY,SY,TEMP
 
       DOUBLE PRECISION DSUMFR,DSCPFR
-c Jian Ling
-      double precision cv, cvl
+      DOUBLE PRECISION VC, VCL, X1, X2, X3
 
 c +++ very old fortran 66 ++++ used arithmetic "if"
 c         I have made some minor changes made
@@ -141,6 +137,10 @@ c Fortran Programming for the Behavioral Sciences
 c Holt, Rinehart, Winston, 1967
 c pp 214-215
 
+
+C      write(*,*) NF,ND,NV
+
+
       T = NV
       PI = 4.D0*ATAN(1.D0)
       TWOPI = 2.D0*PI
@@ -156,24 +156,30 @@ C normalize the rows of v
               V(I,J) = V(I,J)/B(I)
           END DO
       END DO
-
-c Jiang Ling mods
-      cv   = 0.0d0
-      cvl  = 0.0d0
-      do i =1,ND
-         cv = cv + (sum(V(:,1)**2))**2
-      end do
-      cv = sum(V**4) - cv/nd
+      
+      
+      
+      X1 = 0
+      X3 = 0
+      
+      DO J = 1, NF
+         X2 = 0
+         DO I = 1, ND
+            X1 = X1 + V(I,J)**4
+            X2 = X2 + V(I,J)**2
+         END DO         
+         X3 = X3 + X2**2
+      END DO
+      
+      VC = X1 - X3 / ND
+      
 
    10 CONTINUE
-
-c Jiang Ling mods
-c "do while" is generally not recommended"
-c djs do while(.true.)
-
-      cvl = cv
-
-      KR = 0
+      
+      DO WHILE(.true.)
+      
+      VCL = VC
+      
       DO M = 1,NF
           DO N = M,NF
               IF (M.NE.N) THEN
@@ -198,11 +204,7 @@ c compute angle of rotation
                   END IF
                   Y = Y/4.0D0
 
-c Jian Ling commented this out
-c c c             IF (ABS(Y).LT.REPS) GO TO 1002
-
 c count rotations
-                  KR = KR + 1
                   CY = COS(Y)
                   SY = SIN(Y)
 c rotate the axis
@@ -212,25 +214,28 @@ c rotate the axis
                       V(I,M) = TEMP
                   END DO
               END IF
- 1002         CONTINUE
           END DO
       END DO
-
-c Jian Ling commented this out
-c c c IF (KR.GT.0) GO TO 10
-
-c Jian Ling code additions
-      cv = 0.0d0
-      do i =1,ND
-         cv = cv + (sum(V(:,1)**2))**2
-      end do
-      cv = sum(V**4) - cv/ND
-
-c djs if (abs(cvl-cv).lt.1.0d-5) then
-      if (abs(cvl-cv).lt.REPS) then
-          return
-      end if
-
+     
+      X1 = 0
+      X3 = 0
+      
+      DO J = 1, NF
+         X2 = 0
+         DO I = 1, ND
+            X1 = X1 + V(I,J)**4
+            X2 = X2 + V(I,J)**2
+         END DO         
+         X3 = X3 + X2**2
+      END DO
+      
+      VC = X1 - X3 / ND      
+      
+      
+      IF(ABS(VC-VCL) .lt. 1E-5) EXIT      
+      
+      END DO
+      
 c denormailize rows of v
       DO J = 1,NF
           DO I = 1,NV
@@ -244,46 +249,6 @@ c              but the % variation is in A(NF) [a subset of A]
       DO I = 1,NV
 C % communitalities
           B(I) = B(I)*B(I)*100.D0
-      END DO
-
-      RETURN
-      END
-C ------------
-      SUBROUTINE ZVORSMSG(NV,NF,V,A,B,C,ND,VMSG)
-      IMPLICIT NONE
-      INTEGER NV,NF,ND
-      DOUBLE PRECISION V(ND,NF),A(NV),B(NV),C(NV), VMSG
-
-c local
-      INTEGER N,M, NVTMP
-      DOUBLE PRECISION VTMP(ND,NF)
-
-      DO N=1,NF
-        DO M=1,ND
-           VTMP(M,N) = VMSG
-        END DO
-      END DO
-
-      DO N=1,NF
-         NVTMP = 0
-        DO M=1,ND
-           IF (V(M,N).NE.VMSG) THEN
-               NVTMP = NVTMP+1 
-               VTMP(NVTMP,N) = V(M,N)
-           END IF
-        END DO
-      END DO
-
-      CALL ZVORS(NVTMP,NF,VTMP,A,B,C,ND) 
-
-      DO N=1,NF
-         NVTMP = 0
-        DO M=1,ND
-           IF (V(M,N).NE.VMSG) THEN
-               NVTMP = NVTMP+1 
-               V(M,N) = VTMP(NVTMP,N)
-           END IF
-        END DO
       END DO
 
       RETURN
