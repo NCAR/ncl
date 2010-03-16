@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS.c,v 1.12 2009-04-16 17:51:51 dbrown Exp $
+ *      $Id: NclHDFEOS.c,v 1.13 2010-03-16 20:32:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -393,7 +393,10 @@ NclBasicDataTypes type;
 static void HDFEOSIntFileAddAtt(HDFEOSFileRecord *the_file,NclQuark sw_ncl_name,NclQuark att_ncl_name,void *value,int n_elem, NclBasicDataTypes type)
 {
 	HDFEOSAttInqRecList *tmp_node = (HDFEOSAttInqRecList*)NclMalloc(sizeof(HDFEOSAttInqRecList));
+	int buflen = 1000;
 	char buffer[1000];
+	char *bufp;
+	int allocated = 0;
 	NrmQuark *tmp_quark;
 
 	strcpy(buffer,NrmQuarkToString(att_ncl_name));
@@ -408,13 +411,22 @@ static void HDFEOSIntFileAddAtt(HDFEOSFileRecord *the_file,NclQuark sw_ncl_name,
 		tmp_node->att_inq->n_elem = n_elem;
 	} else {
 		tmp_node->att_inq->type = NCL_string;
-		memcpy(buffer,value,n_elem);
-		buffer[n_elem] = '\0';
+		if (n_elem + 1 > buflen) {
+			bufp = NclMalloc(n_elem + 1);
+			allocated = 1;
+		}
+		else {
+			bufp =  &buffer[0];
+		}
+		memcpy(bufp,value,n_elem);
+		bufp[n_elem] = '\0';
 		tmp_quark = (NclQuark*)NclMalloc(sizeof(NclQuark));	
-		*tmp_quark = NrmStringToQuark(buffer);
+		*tmp_quark = NrmStringToQuark(bufp);
 		tmp_node->att_inq->value = (void*)tmp_quark;
 		tmp_node->att_inq->n_elem = 1;
 		NclFree(value);
+		if (allocated)
+			NclFree(bufp);
 	}
 	tmp_node->next = the_file->att_int_list;
 	the_file->att_int_list = tmp_node;
