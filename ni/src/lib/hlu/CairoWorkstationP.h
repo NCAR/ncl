@@ -1,5 +1,5 @@
 /*
- *  $Id: CairoWorkstationP.h,v 1.4 2010-02-09 23:12:44 brownrig Exp $
+ *  $Id: CairoWorkstationP.h,v 1.5 2010-03-16 20:32:30 brownrig Exp $
  */
 
 # ifndef    _NCairoWorkstationP_h
@@ -17,6 +17,7 @@
 # define    CPS         (40)
 # define    CPNG        (41)
 # define    CPDF        (42)
+# define    CTIFF       (43)
 
 /* We are creating distinct workstation objects for PS/PDF versus image-based cairo output formats.
  * However, we'll use common methods and structs. In the struct below, some fields are applicable
