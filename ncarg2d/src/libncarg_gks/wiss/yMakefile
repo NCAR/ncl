@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1996-10-25 21:41:38 boote Exp $
+#	$Id: yMakefile,v 1.6 2010-03-16 01:59:21 haley Exp $
 #
 
 MYNAME	= wiss
@@ -22,6 +22,11 @@ OBJECTS = $(GENERIC_OBJS)
 PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
 PartialLibraryTarget(libbasegks.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
+
+#ifdef BuildCAIRO
+PartialLibraryTarget(libncarg_gks_cairo.a,$(OBJECTS))
+#endif
+
 
 gwelod.o : gwelod.f \
    gwiins.h \

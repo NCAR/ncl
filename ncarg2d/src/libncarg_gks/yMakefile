@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.15 2008-02-07 00:20:28 haley Exp $
+#	$Id: yMakefile,v 1.16 2010-03-16 01:59:21 haley Exp $
 #
 #
 #	Makefile for the NCAR GKS library
@@ -12,6 +12,10 @@ INCLUDES    = gks.h
 
 PartialLibraryRoot(libncarg_gks.a,$(SUBDIRS))
 PartialSourceLibraryRoot(srcncarg_gks.a,$(SUBDIRS))
+
+#ifdef BuildCAIRO
+PartialLibraryRoot(libncarg_gks_cairo.a,$(SUBDIRS))
+#endif
 
 BuildIncludes($(INCLUDES),ncarg,..)
 InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH))

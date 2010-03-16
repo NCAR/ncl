@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1 1997-03-05 19:13:36 haley Exp $
+#	$Id: yMakefile,v 1.2 2010-03-16 01:59:21 haley Exp $
 #
 
 MYNAME	= awiC
@@ -54,4 +54,9 @@ EXTRA_CDEFINES = $(OS_DEF) $(MAJOR_DEF)
 
 PartialLibraryTarget(libncarg_gks.a,$(OBJS))
 PartialLibraryTarget(libbasegks.a,$(OBJS))
+
+#ifdef BuildCAIRO
+PartialLibraryTarget(libncarg_gks_cairo.a,$(OBJS))
+#endif
+
 DependTarget($(SRCS))

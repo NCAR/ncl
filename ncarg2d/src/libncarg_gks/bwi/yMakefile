@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.12 2003-02-13 23:58:24 fred Exp $
+#	$Id: yMakefile,v 1.13 2010-03-16 01:59:21 haley Exp $
 #
 
 MYNAME	= bwi
@@ -32,6 +32,11 @@ OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS)
 PartialLibraryTarget(libncarg_gks.a, $(OBJECTS))
 PartialLibraryTarget(libbasegks.a, $(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
+
+#ifdef BuildCAIRO
+PartialLibraryTarget(libncarg_gks_cairo.a, $(OBJECTS))
+#endif
+
 DependTarget(wks.c)
 
 g01bkd.o : g01bkd.f \

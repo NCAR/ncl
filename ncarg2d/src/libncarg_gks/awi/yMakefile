@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.26 2005-06-07 17:48:40 haley Exp $
+#	$Id: yMakefile,v 1.27 2010-03-16 01:59:21 haley Exp $
 #
 
 MYNAME	= awi
@@ -81,6 +81,11 @@ ROBJ_OBJ = ggkwdr_stub.o
 PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
 PartialLibraryTarget(libbasegks.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
+
+#ifdef BuildCAIRO
+PartialLibraryTarget(libncarg_gks_cairo.a,$(OBJECTS))
+#endif
+
 DependTarget($(ROBJ_SRC))
 InstallTarget($(ROBJ_OBJ),$(INSTALL_LIB),$(ROBJPATH))
 CleanFilesTarget($(ROBJ_OBJ))
