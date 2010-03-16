@@ -76,7 +76,10 @@ C There is some discussion about whether the humidities
 C should be allowed to be above 100%. Right now, we're
 C leaving the code as is. We may eventually comment
 C this line out, or create another function.
-      IF (DRELHUM.GT.100.D0) DRELHUM = 100.D0
+C
+C Dennis decided to comment this line out for V5.2.0.
+C
+C      IF (DRELHUM.GT.100.D0) DRELHUM = 100.D0
       IF (DRELHUM.LT.0.D0)   DRELHUM = 0.0001D0
 
       RETURN
