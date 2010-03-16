@@ -146,11 +146,11 @@ begin
 ;
 ; Create a cairo PNG Workstation object.
 ;
-;   png1 = create "cn15Work" imageWorkstationClass defaultapp
-;    "wkFileName"   : "./cn15n.cairo"   ; name the PNG file
-;    "wkFormat"     : "png"
-;    "wkColorMap"   : cmap              ; assign the new color map
-;  end create
+   png1 = create "cn15Work" imageWorkstationClass defaultapp
+    "wkFileName"   : "./cn15n.cairo"   ; name the PNG file
+    "wkFormat"     : "png"
+    "wkColorMap"   : cmap              ; assign the new color map
+  end create
 ;
 ; Create a ContourPlot object.
 ;
@@ -406,18 +406,18 @@ begin
 ;
 ; Reassign the workstation to save cairo PNG
 ;
-;  NhlChangeWorkstation (ice,png1)
-;  NhlChangeWorkstation (cn,png1)
-;  NhlChangeWorkstation (mp,png1)
-;  NhlChangeWorkstation (xy_plot,png1)
-;  NhlChangeWorkstation (tx,png1)
+  NhlChangeWorkstation (ice,png1)
+  NhlChangeWorkstation (cn,png1)
+  NhlChangeWorkstation (mp,png1)
+  NhlChangeWorkstation (xy_plot,png1)
+  NhlChangeWorkstation (tx,png1)
 ;
 ; Draw all objects to cairo PNG.
 ;
-;  draw(ice)
-;  draw(cn)
-;  draw(mp)
-;  draw(xy_plot)
-;  draw(tx)
-;  frame(png1)
+  draw(ice)
+  draw(cn)
+  draw(mp)
+  draw(xy_plot)
+  draw(tx)
+  frame(png1)
 end

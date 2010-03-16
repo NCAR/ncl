@@ -1,5 +1,5 @@
 /*
- *      $Id: cn15c.c,v 1.11 2010-03-15 22:47:24 haley Exp $
+ *      $Id: cn15c.c,v 1.12 2010-03-16 21:00:45 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -242,13 +242,11 @@ main()
 /*
  * Create a cairo PNG workstation.
  */
-/*
       NhlRLClear(srlist);
       NhlRLSetString(srlist,NhlNwkFileName,"./cn15c.cairo");
       NhlRLSetString(srlist,NhlNwkFormat,"png");
       NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
       NhlCreate(&png1,"cn15Work",NhlcairoImageWorkstationClass,0,srlist);
-*/
 /*
  * Open and read NetCDF file.
  */
@@ -552,24 +550,20 @@ main()
 /*
  * Reassign the workstation to save cairo PNG.
  */
-/*
       NhlChangeWorkstation (ice,png1);
       NhlChangeWorkstation (cn,png1);
       NhlChangeWorkstation (mp,png1);
       NhlChangeWorkstation (xy_plot,png1);
       NhlChangeWorkstation (tx,png1);
-*/
 /*
  * Draw all objects to cairo PNG.
  */
-/*
       NhlDraw(ice);
       NhlDraw(cn);
       NhlDraw(mp);
       NhlDraw(xy_plot);
       NhlDraw(tx);
       NhlFrame(png1);
-*/
  /*
   * Remove resources
   */
@@ -579,9 +573,7 @@ main()
       NhlDestroy(pdf1);
       NhlDestroy(ps2);
       NhlDestroy(pdf2);
-      /*
       NhlDestroy(png1);
-      */
       NhlDestroy(appid);
 
 }

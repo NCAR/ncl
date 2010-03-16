@@ -1,5 +1,5 @@
 C
-C      $Id: cn15f.f,v 1.11 2010-03-15 22:47:24 haley Exp $
+C      $Id: cn15f.f,v 1.12 2010-03-16 21:00:45 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -243,13 +243,13 @@ C
 C
 C Create a cairo PNG workstation.
 C
-C      call NhlFRLClear(srlist)
-C      call NhlFRLSetString(srlist,'wkFileName','./cn15f.cairo',ierr)
-C      call NhlFRLSetString(srlist,'wkFormat','png',ierr)
-C      call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
-C     +     ierr)
-C      call NhlFCreate(png1,'cn15Work',
-C     +     NhlFCairoImageWorkstationClass,0,srlist,ierr)
+      call NhlFRLClear(srlist)
+      call NhlFRLSetString(srlist,'wkFileName','./cn15f.cairo',ierr)
+      call NhlFRLSetString(srlist,'wkFormat','png',ierr)
+      call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
+     +     ierr)
+      call NhlFCreate(png1,'cn15Work',
+     +     NhlFCairoImageWorkstationClass,0,srlist,ierr)
 C
 C Open and read NetCDF file.
 C
@@ -586,20 +586,20 @@ C
 C
 C Reassign the workstation to save cairo PNG.
 C
-C      call NhlFChangeWorkstation (ice,png1,ierr)
-C      call NhlFChangeWorkstation (cn,png1,ierr)
-C      call NhlFChangeWorkstation (mp,png1,ierr)
-C      call NhlFChangeWorkstation (xy_plot,png1,ierr)
-C      call NhlFChangeWorkstation (tx,png1,ierr)
+      call NhlFChangeWorkstation (ice,png1,ierr)
+      call NhlFChangeWorkstation (cn,png1,ierr)
+      call NhlFChangeWorkstation (mp,png1,ierr)
+      call NhlFChangeWorkstation (xy_plot,png1,ierr)
+      call NhlFChangeWorkstation (tx,png1,ierr)
 C
 C Draw all objects to cairo PNG.
 C
-C      call NhlFDraw(ice,ierr)
-C      call NhlFDraw(cn,ierr)
-C      call NhlFDraw(mp,ierr)
-C      call NhlFDraw(xy_plot,ierr)
-C      call NhlFDraw(tx,ierr)
-C      call NhlFFrame(png1,ierr)
+      call NhlFDraw(ice,ierr)
+      call NhlFDraw(cn,ierr)
+      call NhlFDraw(mp,ierr)
+      call NhlFDraw(xy_plot,ierr)
+      call NhlFDraw(tx,ierr)
+      call NhlFFrame(png1,ierr)
 
 C
 C Cleanup
@@ -610,7 +610,7 @@ C
       call NhlFDestroy(ps2,ierr)
       call NhlFDestroy(pdf1,ierr)
       call NhlFDestroy(pdf2,ierr)
-C      call NhlFDestroy(png1,ierr)
+      call NhlFDestroy(png1,ierr)
       call NhlFDestroy(appid,ierr)
       stop
       end
