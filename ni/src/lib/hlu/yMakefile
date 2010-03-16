@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.82 2010-02-09 23:12:44 brownrig Exp $
+#      $Id: yMakefile,v 1.83 2010-03-16 02:00:10 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -19,6 +19,7 @@
 #
 #	Description:	yMakefile for ncarg/ni/src/lib/hlu
 MYNAME		= libhlu
+MYNAME_CAIRO	= libhlu_cairo
 
 #ifdef BuildPNG
 PNG_DEF = -DBuildPNG
@@ -38,13 +39,7 @@ TRIANGLE_OBJ = triangle.o
 #define TRIANGLE_OBJ
 #endif 
 
-#ifdef BuildCAIRO
-CAIRO_DEF = -DBuildCAIRO
-#else
-#define CAIRO_DEF
-#endif
-
-EXTRA_CDEFINES	=	$(OS_DEF) $(TRIANGLE_DEF) $(PNG_DEF) $(CAIRO_DEF)
+EXTRA_CDEFINES	=	$(OS_DEF) $(TRIANGLE_DEF) $(PNG_DEF)
 
 HDRS1   	= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		CoordApprox.h Error.h ErrorI.h ErrorP.h IrregularTransObj.h \
@@ -111,10 +106,11 @@ CSRCS2          = MapPlot.c XyPlot.c ResList.c Workspace.c Fortran.c Futil.c \
 		cmpf.c nicevals.c \
 	        PDFWorkstation.c CnRenderer.c CnStdRenderer.c \
 		CnTriMeshRenderer.c TriMeshTransObj.c ImageWorkstation.c \
-		MeshScalarField.c CairoWorkstation.c \
-		pageutil.c
+		MeshScalarField.c pageutil.c
 
-CSRCS            = $(CSRCS1) $(CSRCS2) $(TRIANGLE_SRC)
+DUMCAIROSRCS	 = CairoWorkstation.c
+
+CSRCS            = $(CSRCS1) $(CSRCS2) $(TRIANGLE_SRC) $(DUMCAIROSRCS)
 
 COBJS1    	= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -137,10 +133,11 @@ COBJS2          = ScalarField.o AnnoManager.o Format.o App.o PSWorkstation.o \
 		cmpf.o nicevals.o \
 	        PDFWorkstation.o CnRenderer.o CnStdRenderer.o \
 		CnTriMeshRenderer.o TriMeshTransObj.o ImageWorkstation.o \
-		MeshScalarField.o CairoWorkstation.o \
-		pageutil.o
+		MeshScalarField.o pageutil.o
 
-COBJS           = $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ) 
+DUMCAIROOBJS	= CairoWorkstation.o
+
+HLUCOBJS	= $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ) $(DUMCAIROOBJS)
 
 FSRCS		= DATACOMMF.f ERRORF.f HLUF.f PLOTMANAGERF.f RLGEN.f RLSET.f \
 		RLGET.f TRANSFORMF.f VIEWF.f WORKSPACEF.f WORKSTATIONF.f \
@@ -156,10 +153,29 @@ FOBJS		= DATACOMMF.o ERRORF.o HLUF.o PLOTMANAGERF.o RLGEN.o RLSET.o \
 		search.o sscal.o saxpy.o sgefa.o terp1.o gerhnd.o \
 		trmrectgrid.o
 
-OBJS		= $(COBJS) $(FOBJS)
+LIBHOBJS	= $(HLUCOBJS) $(FOBJS)
 
-BuildSharedLibTarget(libNGhlu,$(OBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
-LibraryTarget($(MYNAME),$(OBJS))
+BuildSharedLibTarget(libNGhlu,$(LIBHOBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
+LibraryTarget($(MYNAME),$(LIBHOBJS))
+
+#ifdef BuildCAIRO
+CAIROOBJS	= CairoWorkstation_cairo.o
+HLUCCOBJS	= $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ) $(CAIROOBJS)
+LIBHCOBJS	= $(HLUCCOBJS) $(FOBJS)
+
+CAIRO_DEFINES   =  -DBuildCAIRO
+
+CairoWorkstation_cairo.o: CairoWorkstation_cairo.c
+        $(CC) $(CCOPTIONS) $(ALLDEFINES) $(CAIRO_DEFINES) -c CairoWorkstation_cairo.c
+
+LibraryTarget($(MYNAME_CAIRO),$(LIBHCOBJS))
+
+CairoWorkstation_cairo.c: CairoWorkstation.c
+	$(LN) CairoWorkstation.c CairoWorkstation_cairo.c
+
+CleanFilesTarget(CairoWorkstation_cairo.c CairoWorkstation_cairo.o)
+#endif
+
 BuildIncludes($(HDRS),ncarg/hlu,../..)
 InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
 InstallTarget(sysresfile,$(INSTALL_INC),$(LIBNCARGPATH))
