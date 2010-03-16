@@ -1,5 +1,5 @@
 /*
- *      $Id: CairoWorkstation.c,v 1.5 2010-02-09 23:12:44 brownrig Exp $
+ *      $Id: CairoWorkstation.c,v 1.6 2010-03-16 19:31:46 brownrig Exp $
  */
 
 # include   <stdio.h>
@@ -10,7 +10,8 @@
 
 # define    Oset(field)     NhlOffset(NhlCairoWorkstationLayerRec, cairo.field)
 
-static NhlResource resources[] = {
+/* resources for the PS-PDF Workstation */
+static NhlResource resourcesPSPDFWS[] = {
 		/* Begin-documented-resources */
 
     {NhlNwkFormat,NhlCwkFormat,NhlTCairoFormat,sizeof(NhlCairoFormat),
@@ -52,6 +53,36 @@ static NhlResource resources[] = {
         sizeof(int),Oset(upper_y),NhlTImmediate,
         (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
 
+/* End-documented-resources */
+};
+
+/* Resources for the Image Workstation */
+static NhlResource resourcesImageWS[] = {
+        /* Begin-documented-resources */
+
+    {NhlNwkFormat,NhlCwkFormat,NhlTCairoFormat,sizeof(NhlCairoFormat),
+        Oset(format),NhlTImmediate,(NhlPointer)NhlCPNG,
+        _NhlRES_NOSACCESS,NULL},
+    {NhlNwkFileName,NhlCwkFileName,NhlTString,
+        sizeof(NhlString),Oset(filename),NhlTImmediate,
+        (NhlPointer)NULL,_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
+    {NhlNwkOrientation,NhlCwkOrientation,NhlTWorkOrientation,
+        sizeof(NhlWorkOrientation),Oset(orientation),NhlTImmediate,
+        (NhlPointer)NhlPORTRAIT,_NhlRES_DEFAULT,NULL},
+
+    {NhlNwkDeviceLowerX,NhlCwkDeviceLowerX,NhlTInteger,
+        sizeof(int),Oset(lower_x),NhlTImmediate,
+        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+    {NhlNwkDeviceLowerY,NhlCwkDeviceLowerY,NhlTInteger,
+        sizeof(int),Oset(lower_y),NhlTImmediate,
+        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+    {NhlNwkDeviceUpperX,NhlCwkDeviceUpperX,NhlTInteger,
+        sizeof(int),Oset(upper_x),NhlTImmediate,
+        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+    {NhlNwkDeviceUpperY,NhlCwkDeviceUpperY,NhlTInteger,
+        sizeof(int),Oset(upper_y),NhlTImmediate,
+        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+
     /* Resources for image-based output formats. We'll use the existing NGC_PIXCONFIG struct
      * for this purpose, but not all of its fields will be utilized.
      */
@@ -64,47 +95,7 @@ static NhlResource resources[] = {
     {NhlNwkHeight,NhlCwkHeight,NhlTInteger,sizeof(int),
         Oset(pixconfig.height),NhlTImmediate,
         (NhlPointer)1024,_NhlRES_DEFAULT,NULL},
-
-#if 0
-    {NhlNwkVisualType,NhlCwkVisualType,NhlTVisualType,sizeof(NhlVisualType),
-        Oset(visual),NhlTImmediate,(NhlPointer)NhlCOLOR,
-        _NhlRES_NOSACCESS,NULL},
-    {NhlNwkOrientation,NhlCwkOrientation,NhlTWorkOrientation,
-        sizeof(NhlWorkOrientation),Oset(orientation),NhlTImmediate,
-        (NhlPointer)NhlPORTRAIT,_NhlRES_DEFAULT,NULL},
-    {NhlNwkPDFResolution,NhlCwkPDFResolution,NhlTInteger,
-        sizeof(int),Oset(resolution),NhlTImmediate,
-        (NhlPointer)1800,_NhlRES_NOSACCESS,NULL},
-    {NhlNwkDeviceLowerX,NhlCwkDeviceLowerX,NhlTInteger,
-        sizeof(int),Oset(lower_x),NhlTImmediate,
-        (NhlPointer)36,_NhlRES_DEFAULT,NULL},
-    {NhlNwkDeviceLowerY,NhlCwkDeviceLowerY,NhlTInteger,
-        sizeof(int),Oset(lower_y),NhlTImmediate,
-        (NhlPointer)126,_NhlRES_DEFAULT,NULL},
-    {NhlNwkDeviceUpperX,NhlCwkDeviceUpperX,NhlTInteger,
-        sizeof(int),Oset(upper_x),NhlTImmediate,
-        (NhlPointer)576,_NhlRES_DEFAULT,NULL},
-    {NhlNwkDeviceUpperY,NhlCwkDeviceUpperY,NhlTInteger,
-        sizeof(int),Oset(upper_y),NhlTImmediate,
-        (NhlPointer)666,_NhlRES_DEFAULT,NULL},
-    {NhlNwkFullBackground,NhlCwkFullBackground,NhlTBoolean,
-        sizeof(NhlBoolean),Oset(full_background),NhlTImmediate,
-        (NhlPointer)False,_NhlRES_DEFAULT,NULL},
-    {NhlNwkColorModel,NhlCwkColorModel,NhlTColorModel,
-        sizeof(NhlColorModel),
-        Oset(color_model),NhlTImmediate,(NhlPointer)NhlRGB,
-        _NhlRES_NOSACCESS,NULL},
-    {NhlNwkSuppressBackground,NhlCwkSuppressBackground,NhlTBoolean,
-        sizeof(NhlBoolean),Oset(suppress_background),NhlTImmediate,
-        (NhlPointer)False,_NhlRES_NOSACCESS,NULL},
-    {NhlNwkSuppressBBInfo,NhlCwkSuppressBBInfo,NhlTBoolean,
-        sizeof(NhlBoolean),Oset(suppress_bbinfo),NhlTImmediate,
-        (NhlPointer)False,_NhlRES_NOSACCESS,NULL},
-
-/* End-documented-resources */
-#endif
 };
-
 
 /*
  * CairoWorkstation base_class method declarations
@@ -174,8 +165,8 @@ NhlCairoWorkstationClassRec NhlcairoPSPDFWorkstationClassRec = {
         /* superclass           */  (NhlClass)&NhlworkstationClassRec,
         /* cvt_table            */  NULL,
 
-        /* layer_resources      */  resources,
-        /* num_resources        */  NhlNumber(resources),
+        /* layer_resources      */  resourcesPSPDFWS,
+        /* num_resources        */  NhlNumber(resourcesPSPDFWS),
         /* all_resources        */  NULL,
         /* callbacks            */  NULL,
         /* num_callbacks        */  0,
@@ -238,8 +229,8 @@ NhlCairoWorkstationClassRec NhlcairoImageWorkstationClassRec = {
         /* superclass           */  (NhlClass)&NhlworkstationClassRec,
         /* cvt_table            */  NULL,
 
-        /* layer_resources      */  resources,
-        /* num_resources        */  NhlNumber(resources),
+        /* layer_resources      */  resourcesImageWS,
+        /* num_resources        */  NhlNumber(resourcesImageWS),
         /* all_resources        */  NULL,
         /* callbacks            */  NULL,
         /* num_callbacks        */  0,
@@ -374,7 +365,8 @@ CairoWorkstationClassInitialize(void)
 
     _NhlEnumVals    imageFormats[] = {
         {NhlCPNG,    "NEWPNG"},
-        {NhlCPNG,    "PNG"}
+        {NhlCPNG,    "PNG"},
+        {NhlCTIFF,   "TIFF"}
     };
 
     _NhlEnumVals    orientvals[] = {
@@ -440,6 +432,9 @@ static NhlErrorTypes CairoWorkstationInitialize(NhlClass lclass, NhlLayer req, N
     	break;
     case NhlCPDF:
         newCairo->work.gkswkstype = CPDF;
+        break;
+    case NhlCTIFF:
+        newCairo->work.gkswkstype = CTIFF;
         break;
     default:
         NhlPError(NhlWARNING, NhlEUNKNOWN,
