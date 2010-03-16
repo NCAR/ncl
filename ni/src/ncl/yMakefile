@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.170 2010-02-26 17:30:55 haley Exp $
+#      $Id: yMakefile,v 1.171 2010-03-16 02:01:01 haley Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2010-02-26 17:30:55 $
+#	Date:		$Date: 2010-03-16 02:01:01 $
 #
 #	Description:	
 #
@@ -141,8 +141,14 @@ EXTRA_CDEFINES = $(OS1_DEF) $(MAJOR_DEF) $(NETCDF4_DEFS) $(HDFEOS_DEFS) $(HDFEOS
 
 API_DEFS	=	-DMAKEAPI
 
+
+#ifdef BuildCAIRO
+PROG_LIBS	=	$(NFPLIBS) $(HLUCAIROLIBS) $(NCARGCAIROLIBS) $(NGMATHLIB)
+DEPLIBS		=	$(DEPNFPLIBS) $(DEPHLUCAIROLIBS) $(DEPNCARGCAIROLIBS) $(DEPNGMATHLIB)
+#else
 PROG_LIBS	=	$(NFPLIBS) $(HLULIBS) $(NCARGLIBS) $(NGMATHLIB)
 DEPLIBS		=	$(DEPNFPLIBS) $(DEPHLULIBS) $(DEPNCARGLIBS) $(DEPNGMATHLIB)
+#endif
 
 #if defined(CYGWIN)
 EXTRA_CLDFLAGS = $(DEV_LIB_SEARCH) $(EXTRA_EXPORT_FLAGS) -Wl,-stack,0x400000
