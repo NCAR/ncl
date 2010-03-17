@@ -1,7 +1,0 @@
-#
-#	$Id: yMakefile,v 1.2 1994-10-31 03:53:39 haley Exp $
-#
-
-EXAMPLES = c_bnchmk.c
-
-InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
