@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.30 2010-03-14 19:52:46 haley Exp $
+#   $Id: check_files,v 1.31 2010-03-17 16:06:35 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -1401,6 +1401,7 @@ lib/ncarg/nclex/xyplot/xy15n.ncl
 lib/ncarg/nclex/xyplot/xy16n.ncl
 lib/ncarg/nclex/xyplot/xy17n.ncl
 lib/ncarg/nclscripts/contrib/calendar_decode2.ncl
+lib/ncarg/nclscripts/contrib/kf_filter.ncl
 lib/ncarg/nclscripts/contrib/run_cor.ncl
 lib/ncarg/nclscripts/contrib/time_axis_labels.ncl
 lib/ncarg/nclscripts/contrib/ut_string.ncl
