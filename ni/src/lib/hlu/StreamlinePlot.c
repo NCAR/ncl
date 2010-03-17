@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.72 2009-04-13 23:20:24 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.72.6.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,7 @@
 #include <ncarg/hlu/SphericalTransObjP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
+#include <ncarg/hlu/color.h>
 
 #define	Oset(field)	NhlOffset(NhlStreamlinePlotDataDepLayerRec,stdata.field)
 static NhlResource data_resources[] = {
@@ -109,6 +110,9 @@ static NhlResource resources[] = {
 	{NhlNstLineColor, NhlCLineColor, NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(line_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNstLineOpacityF, NhlCLineOpacityF, NhlTFloat,
+		sizeof(float),Oset(line_opacity),
+		NhlTString,_NhlUSET("1.0"),0,NULL},
 
 	{NhlNstNoDataLabelOn,NhlCAnnotationLabelsOn,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(zerof_lbl.string2_on),
@@ -2939,6 +2943,9 @@ static NhlErrorTypes stDraw
 		c_stseti("CLR",_NhlGetGksCi(stl->base.wkptr,
 					    clr[stp->level_count]));
 	}
+
+	/* set streamline opacity */
+	_NhlSetLineOpacity(stl, stp->line_opacity);
 
 	/* set up the workspace */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: SubStylesP.h,v 1.3 2003-06-04 19:04:23 dbrown Exp $
+ *      $Id: SubStylesP.h,v 1.3.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,7 @@ typedef struct __NhlLineStyleInfo{
         NhlDashIndex	dash_pattern;
         float		line_dash_seglen;
         NhlColorIndex	line_color;
+        float		line_opacity;
         float		line_thickness;
         NhlString	line_label_string;
 	NhlFont		line_label_font;
@@ -84,6 +85,7 @@ extern NhlLineStyleClassRec		NhllineStyleClassRec;
 typedef struct __NhlFillStyleInfo{
 	NhlFillIndex	fill_index;
 	NhlColorIndex	fill_color;
+	float           fill_opacity;
 	NhlColorIndex   fill_background;
 	float		fill_scale_factor;
 	float		fill_line_thickness;
@@ -132,6 +134,7 @@ extern NhlFillStyleClassRec		NhlfillStyleClassRec;
 typedef struct __NhlMarkerStyleInfo{
 	NhlMarkerIndex	marker_index;
 	NhlColorIndex	marker_color;
+	float			marker_opacity;
 	float		marker_size;
 	float		marker_thickness;
 } _NhlMarkerStyleInfo;
@@ -176,6 +179,7 @@ typedef struct __NhlTextStyleInfo{
 	NhlTextDirection	direction;
 	NhlFont			font;
 	int			font_color;
+	float			font_opacity;
 	float			font_height;
 	float			font_aspect;
 	float 			font_thickness;

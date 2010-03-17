@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.89 2009-04-13 23:20:24 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.89.6.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,7 @@
 #include <ncarg/hlu/SphericalTransObjP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
+#include <ncarg/hlu/color.h>
 
 #define	Oset(field)	NhlOffset(NhlVectorPlotDataDepLayerRec,vcdata.field)
 static NhlResource data_resources[] = {
@@ -75,6 +76,9 @@ static NhlResource resources[] = {
  	{NhlNvcGlyphStyle,NhlCvcGlyphStyle,NhlTVectorGlyphStyle,
          	sizeof(NhlVectorGlyphStyle),Oset(glyph_style),
          	NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+    {NhlNvcGlyphOpacityF,NhlCvcGlyphOpacityF,NhlTFloat,
+    	sizeof(float),Oset(glyph_opacity),
+    	NhlTString,_NhlUSET("1.0"),0,NULL},
 
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(min_distance_set),NhlTImmediate,
@@ -1769,6 +1773,7 @@ CurlyVectorInitialize
 	NhlRLSetInteger(rlist,NhlNstLineStartStride,1);
 	NhlRLSetInteger(rlist,NhlNstStreamlineDrawOrder,vcp->vector_order);
 	NhlRLSetInteger(rlist,NhlNstLineColor,vcp->l_arrow_color);
+	NhlRLSetFloat(rlist,NhlNstLineOpacityF,vcp->glyph_opacity);
 	NhlRLSetInteger(rlist,NhlNstMonoLineColor,vcp->mono_l_arrow_color);
 	NhlRLSetInteger(rlist,
 			NhlNstLevelSelectionMode,vcp->level_selection_mode);
@@ -4032,6 +4037,7 @@ static NhlErrorTypes vcDraw
                 }
                         
         }
+
 	if (all_mono) {
 		c_vvseti("CTV",0);
 	}
@@ -4070,6 +4076,10 @@ static NhlErrorTypes vcDraw
 	}
 
 	c_vvsetr("VMD",vcp->min_distance / vcl->view.width);
+
+	/* Set opacity... */
+	_NhlSetLineOpacity(vcl, vcp->glyph_opacity);
+	_NhlSetFillOpacity(vcl, vcp->glyph_opacity);
 
 	/* set up a workspace if required */
 

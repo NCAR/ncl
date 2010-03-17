@@ -1,5 +1,5 @@
 /*
- *      $Id: CnStdRenderer.c,v 1.15 2009-09-11 19:25:39 dbrown Exp $
+ *      $Id: CnStdRenderer.c,v 1.15.4.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -1861,6 +1861,7 @@ int (_NHLCALLF(hlucpfill,HLUCPFILL))
 			NhlVASetValues(Cnl->base.wkptr->base.id,
 				       _NhlNwkFillIndex, pat_ix,
 				       _NhlNwkFillColor, col_ix,
+				       _NhlNwkFillOpacityF, Cnp->fill_opacity,
 				       _NhlNwkFillScaleFactorF,fscale,
 				       _NhlNwkFillBackground,
 				       Cnp->fill_background_color,

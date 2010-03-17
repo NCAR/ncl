@@ -1,5 +1,5 @@
 /*
- *      $Id: Palette.c,v 1.10 2002-02-22 18:12:38 haley Exp $
+ *      $Id: Palette.c,v 1.10.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -1001,7 +1001,8 @@ CvtGenArrayToCmap
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
 	}
 
-	if((gen->num_dimensions != 2) || (gen->len_dimensions[1] != 3)){
+	if((gen->num_dimensions != 2) ||
+			!(gen->len_dimensions[1] == 3 || gen->len_dimensions[1] ==4)) {
 		if((gen->num_elements == 1) &&
 			(gen->size <= sizeof(NhlArgVal)) && (gen->size > 0)){
 			NrmValue	val;

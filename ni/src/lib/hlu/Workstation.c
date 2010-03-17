@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.108 2008-11-11 01:38:00 dbrown Exp $
+ *      $Id: Workstation.c,v 1.108.8.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -50,6 +50,7 @@
 #include <ncarg/hlu/ErrorI.h>
 #include <ncarg/hlu/TransformI.h>
 #include <ncarg/hlu/LogLinPlot.h>
+#include <ncarg/hlu/color.h>
 
 #define DEBUG_NCGM 0
 /* 
@@ -241,7 +242,11 @@ static NhlResource resources[] = {
 	{NhlNwkLineColor,NhlCwkLineColor,NhlTColorIndex,sizeof(NhlColorIndex),
 		POset(line_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),
-         	_NhlRES_DEFAULT|_NhlRES_PRIVATE,NULL},
+        _NhlRES_DEFAULT|_NhlRES_PRIVATE,NULL},
+    {NhlNwkLineOpacityF,NhlCwkLineOpacityF,NhlTFloat,
+    	sizeof(float),POset(line_opacity),NhlTString,
+    	_NhlUSET("1.0"),
+    	_NhlRES_DEFAULT|_NhlRES_PRIVATE,NULL},
 	{NhlNwkLineThicknessF,NhlCwkLineThicknessF,NhlTFloat,sizeof(float),
 		POset(line_thickness),NhlTString,_NhlUSET("1.0"),
 		_NhlRES_DEFAULT|_NhlRES_PRIVATE,NULL},
@@ -286,6 +291,10 @@ static NhlResource resources[] = {
 		sizeof(NhlColorIndex),POset(marker_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),
          	_NhlRES_DEFAULT|_NhlRES_PRIVATE,NULL},
+    {NhlNwkMarkerOpacityF,NhlCwkMarkerOpacityF,NhlTFloat,
+    	sizeof(float),POset(marker_opacity),NhlTString,
+    	_NhlUSET("1.0"),
+    	_NhlRES_DEFAULT|_NhlRES_PRIVATE,NULL},
 	{NhlNwkMarkerSizeF,NhlCwkMarkerSizeF,NhlTFloat,sizeof(float),
 		POset(marker_size),NhlTString,
 		 _NhlUSET("0.007"),_NhlRES_DEFAULT|_NhlRES_PRIVATE,NULL},
@@ -319,6 +328,10 @@ static NhlResource resources[] = {
 		 sizeof(NhlColorIndex),POset(line_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),
          	_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
+   	{_NhlNwkLineOpacityF,_NhlCwkLineOpacityF,NhlTFloat,
+   		sizeof(float),POset(line_opacity),NhlTString,
+   		_NhlUSET("1.0"),
+   		_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNwkLineThicknessF,_NhlCwkLineThicknessF,NhlTFloat,sizeof(float),
 		POset(line_thickness),NhlTString,
 		 _NhlUSET("1.0"),_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
@@ -365,6 +378,10 @@ static NhlResource resources[] = {
 		sizeof(NhlColorIndex),POset(marker_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),
          	_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
+    {_NhlNwkMarkerOpacityF,_NhlCwkMarkerOpacityF,NhlTFloat,
+    	sizeof(float),POset(marker_opacity),NhlTString,
+    	_NhlUSET("1.0"),
+    	_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNwkMarkerSizeF,_NhlCwkMarkerSizeF,NhlTFloat,sizeof(float),
 		POset(marker_size),NhlTString,_NhlUSET("0.007"),
          	_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
@@ -382,6 +399,10 @@ static NhlResource resources[] = {
 		 sizeof(NhlColorIndex),POset(fill_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),
          	_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
+	{_NhlNwkFillOpacityF,_NhlCwkFillOpacityF,NhlTFloat,
+		sizeof(float),POset(fill_opacity),NhlTString,
+		_NhlUSET("1.0"),
+		_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNwkFillBackground,_NhlCwkFillBackground,NhlTColorIndex,
 		sizeof(NhlColorIndex),POset(fill_background),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlTRANSPARENT),
@@ -949,6 +970,8 @@ CvtStringToColorIndex
 		return _NhlReConvertData(intQ,to->typeQ,&val,to);
 	}
 
+
+	/***** RLB
 	for(i=1;i<nargs;i++){
 		if(_NhlCmpString(args[i].data.strval,s1) == 0){
 			tmp = args[i].size;
@@ -962,7 +985,7 @@ CvtStringToColorIndex
 								s1,&rgb) &&
 		FindCIMatch(wl,rgb,&tmp))
 			set = True;
-
+//******* NOT SURE WHAT CASE THIS WAS INTENDED TO HANDLE ?????
 	if(!set){
 		sgen = _NhlStringToStringGenArray(s1);
 		if(sgen){
@@ -977,6 +1000,22 @@ CvtStringToColorIndex
 								func,s1);
 		to->size = 0;
 		return NhlFATAL;
+	}
+********/
+
+	if (!set) {
+		if (!_NhlLookupColor((NhlWorkstationClass)wl->base.layer_class, s1, &rgb)) {
+			NhlPError(NhlFATAL, NhlEUNKNOWN,
+					"%s: Unable to convert string \"%s\" to requested type",
+					func, s1);
+			to->size = 0;
+			return NhlFATAL;
+		}
+
+		tmp = ALPHA_OPAQUE |
+				((rgb.red   / 256) << 16) |
+				((rgb.green / 256) <<  8) |
+				((rgb.blue  / 256));
 	}
 
 	_NhlSetVal(int,sizeof(int),tmp);
@@ -1104,11 +1143,14 @@ CvtStringGenArrayToColorIndexGenArray
 					break;
 				}
 			}
-			if(!set &&
-				_NhlLookupColor((NhlWorkstationClass)
-						wl->base.layer_class,s1,&rgb) &&
-				FindCIMatch(wl,rgb,&tint[i]))
-					set = True;
+			if(!set && _NhlLookupColor((NhlWorkstationClass)wl->base.layer_class,s1,&rgb)) {
+			/* recall that these are 16-bit color-components, whereas we want 8-bit components */
+				tint[i] = ALPHA_OPAQUE |
+						((rgb.red   / 256) << 16) |
+						((rgb.green / 256) << 8) |
+						((rgb.blue  / 256));
+				set = True;
+			}
 		}
 
 		if(!set){
@@ -1662,11 +1704,10 @@ CvtColorDefinitionGenArrayToColorIndexGenArray
 		rgb.red = *(fptr+(3*i)) * 65535;
 		rgb.green = *(fptr+(3*i)+1) * 65535;
 		rgb.blue = *(fptr+(3*i)+2) * 65535;
-		if(!FindCIMatch(wl,rgb,&iptr[i])){
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"%s:Unable to find color match",func);
-			return NhlFATAL;
-		}
+		iptr[i] = ALPHA_OPAQUE |
+				((rgb.red   / 256) << 16) |
+				((rgb.green / 256) << 8) |
+				((rgb.blue  / 256));
 	}
 
 	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
@@ -1710,7 +1751,7 @@ CvtColorDefinitionGenArrayToColorIndex
 	NhlErrorTypes		ret = NhlNOERROR;
 	float			*fptr;
 	int			tint;
-	NGRGB			rgb;
+	int			r, g, b, a;
 
 	if(nargs != 1){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1736,7 +1777,8 @@ CvtColorDefinitionGenArrayToColorIndex
 		return NhlFATAL;
 	}
 
-	if((fgen->num_dimensions != 1) || (fgen->len_dimensions[0] != 3)){
+	if((fgen->num_dimensions != 1) ||
+			!(fgen->len_dimensions[0] == 3 || fgen->len_dimensions[0] == 4)) {
 		if((fgen->num_elements == 1) &&
 			(fgen->size <= sizeof(NhlArgVal)) && (fgen->size > 0)){
 
@@ -1765,15 +1807,13 @@ CvtColorDefinitionGenArrayToColorIndex
 	 * a ColorIndex Type
 	 */
 	fptr = fgen->data;
-
-	rgb.red = *(fptr) * 65535;
-	rgb.green = *(fptr+1) * 65535;
-	rgb.blue = *(fptr+2) * 65535;
-	if(!FindCIMatch(wl,rgb,&tint)){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"%s:Unable to find color match",func);
-		return NhlFATAL;
-	}
+	r = (int)(*(fptr) * 255) << 16;
+	g = (int)(*(fptr+1) * 255) << 8;
+	b = (int)(*(fptr+2) * 255);
+	a = (fgen->len_dimensions[0] == 4) ?
+			(int)(*(fptr+3) * 64) << 24 | ALPHA_MASK :
+			ALPHA_OPAQUE;
+	tint = a | r | g | b;
 
 	_NhlSetVal(int,sizeof(int),tint);
 }
@@ -4312,6 +4352,7 @@ WorkstationFill
 	Gint			err_ind;
 	Gint			fill_color;
 	Gint			fill_background;
+	Gfloat          fill_opacity;
 	
 	/* 
  * Create or enlarge the workspace arrays as required
@@ -4360,6 +4401,8 @@ WorkstationFill
 	ginq_linewidth(&err_ind, &save_linewidth);
 	ginq_fill_int_style(&err_ind, &save_fillstyle);
 	ginq_linetype(&err_ind, &save_linetype);
+    fill_opacity = _NhlGetFillOpacity(l);
+    _NhlSetFillOpacity(l, wkfp->fill_opacity);
         switch (wkfp->fill_color) {
             case NhlTRANSPARENT:
                     fill_color = NhlTRANSPARENT;
@@ -4467,6 +4510,7 @@ WorkstationFill
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
+    _NhlSetFillOpacity(l, wkfp->fill_opacity);
 	return(NhlNOERROR);
 
 }
@@ -5037,6 +5081,10 @@ int _NhlGetGksCi
 			func,ci);
 		return pcmap[NhlFOREGROUND].ci;
 	}
+
+	/* do nothing if "ci" is an ARGB color */
+	if (( ci & ALPHA_MASK) > 0)
+		return ci;
 
 	if(ci > maxi){
 		ci = ci % maxi;
@@ -5796,6 +5844,8 @@ _NhlSetLineInfo
 			    plot->base.wkptr,wklp->line_color));
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	}
+
+	_NhlSetLineOpacity(wl, wklp->line_opacity);
 
         if (wklp->line_label_string != NULL) {
 		float	pwidth, pheight, height;
@@ -6858,6 +6908,11 @@ _NhlSetMarkerInfo
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	c_pcseti("CC",marker_color);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+
+	/* NOTE we set both line and marker opacities, as many (all?) markers are implemented as lines */
+	_NhlSetLineOpacity(tinst, mkp->marker_opacity);
+	_NhlSetMarkerOpacity(tinst, mkp->marker_opacity);
+
 
 #if 0
 /*

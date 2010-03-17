@@ -1,5 +1,5 @@
 /*
- *      $Id: SubStyles.c,v 1.7 2003-06-04 19:04:23 dbrown Exp $
+ *      $Id: SubStyles.c,v 1.7.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,9 @@ static NhlResource lineresources[] = {
 	{NhlNgsLineColor,NhlCLineColor,NhlTColorIndex,sizeof(NhlColorIndex),
 		Oset(line_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_DEFAULT,NULL},
+	{NhlNgsLineOpacityF,NhlCLineOpacityF,NhlTFloat,
+		sizeof(float),Oset(line_opacity),NhlTString,
+		_NhlUSET("1.0"),_NhlRES_DEFAULT,NULL},
 	{NhlNgsLineThicknessF,NhlCLineThicknessF,NhlTFloat,sizeof(float),
 		Oset(line_thickness),NhlTString,_NhlUSET("1.0"),
 		_NhlRES_DEFAULT,NULL},
@@ -418,6 +421,9 @@ static NhlResource fillresources[] = {
 	{NhlNgsFillColor,NhlCFillColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(fill_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_DEFAULT,NULL},
+	{NhlNgsFillOpacityF,NhlCFillOpacityF,NhlTFloat,
+		 sizeof(float),Oset(fill_opacity),NhlTString,
+		 _NhlUSET("1.0"),_NhlRES_DEFAULT,NULL},
 	{NhlNgsFillBackgroundColor,NhlCFillBackgroundColor,NhlTColorIndex,
 		sizeof(NhlColorIndex),Oset(fill_background),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlTRANSPARENT),_NhlRES_DEFAULT,NULL},
@@ -592,6 +598,9 @@ static NhlResource markerresources[] = {
 	{NhlNgsMarkerColor,NhlCMarkerColor,NhlTColorIndex,
 		sizeof(NhlColorIndex),Oset(marker_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_DEFAULT,NULL},
+	{NhlNgsMarkerOpacityF,NhlCMarkerOpacityF,NhlTFloat,
+		sizeof(float),Oset(marker_opacity),NhlTString,
+		_NhlUSET("1.0"),_NhlRES_DEFAULT,NULL},
 	{NhlNgsMarkerSizeF,NhlCMarkerSizeF,NhlTFloat,sizeof(float),
 		Oset(marker_size),NhlTString,
 		 _NhlUSET("0.007"),_NhlRES_DEFAULT,NULL},
@@ -754,6 +763,9 @@ static NhlResource textresources[] = {
 	{NhlNgsFontColor,NhlCFontColor,NhlTColorIndex,sizeof(NhlColorIndex),
 		Oset(font_color),
 		NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+	{NhlNgsFontOpacityF,NhlCFontOpacityF,NhlTFloat,
+		sizeof(float),Oset(font_opacity),NhlTString,
+		_NhlUSET("1.0"),_NhlRES_DEFAULT,NULL},
 	{NhlNgsFontHeightF, NhlCFontHeightF, NhlTFloat, sizeof(float),
 		Oset(font_height),
 		NhlTString,_NhlUSET("0.015") ,0,NULL},

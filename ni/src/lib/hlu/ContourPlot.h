@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.21 2007-10-26 23:36:27 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.21.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -144,6 +144,7 @@ typedef enum _NhlcnFillMode {
 #define NhlNcnMonoFillColor		"cnMonoFillColor"
 #define NhlNcnFillColor			"cnFillColor"
 #define NhlNcnFillColors		"cnFillColors"
+#define NhlNcnFillOpacityF		"cnFillOpacityF"
 #define NhlNcnMonoFillPattern		"cnMonoFillPattern"
 #define NhlNcnFillPattern		"cnFillPattern"
 #define NhlNcnFillPatterns		"cnFillPatterns"
@@ -356,6 +357,7 @@ typedef enum _NhlcnFillMode {
 #define NhlCcnLevelFlags		"CnLevelFlags"
 #define NhlCcnMonoFillColor		"CnMonoFillColor"
 #define NhlCcnFillColors		"CnFillColors"
+#define NhlCcnFillOpacityF      "CnFillOpacityF"
 #define NhlCcnMonoFillPattern		"CnMonoFillPattern"
 #define NhlCcnFillPatterns		"CnFillPatterns"
 #define NhlCcnMonoFillScale		"CnMonoFillScale"

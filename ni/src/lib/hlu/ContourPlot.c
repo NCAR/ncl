@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.147 2009-04-13 23:15:28 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.147.6.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -239,6 +239,9 @@ static NhlResource resources[] = {
 		 sizeof(NhlPointer),Oset(fill_colors),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNcnFillOpacityF, NhlCcnFillOpacityF, NhlTFloat,
+		sizeof(float),Oset(fill_opacity),
+		NhlTString,_NhlUSET("1.0"),0,NULL},
 	{NhlNcnMonoFillPattern, NhlCcnMonoFillPattern, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(mono_fill_pattern),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},

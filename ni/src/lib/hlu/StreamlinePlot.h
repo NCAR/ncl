@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.h,v 1.7 2001-06-13 23:53:54 dbrown Exp $
+ *      $Id: StreamlinePlot.h,v 1.7.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -43,6 +43,7 @@
 #define NhlNstLineThicknessF		"stLineThicknessF"	/* LWD */
 #define NhlNstMonoLineColor		"stMonoLineColor"
 #define NhlNstLineColor			"stLineColor"
+#define NhlNstLineOpacityF      "stLineOpacityF"
 #define NhlNstArrowLengthF		"stArrowLengthF"	/* ARL */
 #define NhlNstStepSizeF			"stStepSizeF"		/* DFM */
 #define NhlNstMinStepFactorF		"stMinStepFactorF"    	/* CDS */

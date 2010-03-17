@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.83 2010-03-16 02:00:10 haley Exp $
+#      $Id: yMakefile,v 1.83.2.1 2010-03-17 20:47:07 brownrig Exp $
 #
 #########################################################################
 #                                                                       #
@@ -81,7 +81,7 @@ HDRS2           = FortranP.h ScalarField.h ScalarFieldP.h ScalarFieldFloatP.h \
 		ImageWorkstation.h ImageWorkstationP.h \
 		MeshScalarField.h MeshScalarFieldP.h \
 		CairoWorkstation.h CairoWorkstationP.h \
-		pageutil.h
+		pageutil.h color.h
 
 HDRS            = $(HDRS1) $(HDRS2) $(TRIANGLE_HDR) 
 
@@ -106,7 +106,7 @@ CSRCS2          = MapPlot.c XyPlot.c ResList.c Workspace.c Fortran.c Futil.c \
 		cmpf.c nicevals.c \
 	        PDFWorkstation.c CnRenderer.c CnStdRenderer.c \
 		CnTriMeshRenderer.c TriMeshTransObj.c ImageWorkstation.c \
-		MeshScalarField.c pageutil.c
+		MeshScalarField.c pageutil.c color.c
 
 DUMCAIROSRCS	 = CairoWorkstation.c
 
@@ -133,7 +133,7 @@ COBJS2          = ScalarField.o AnnoManager.o Format.o App.o PSWorkstation.o \
 		cmpf.o nicevals.o \
 	        PDFWorkstation.o CnRenderer.o CnStdRenderer.o \
 		CnTriMeshRenderer.o TriMeshTransObj.o ImageWorkstation.o \
-		MeshScalarField.o pageutil.o
+		MeshScalarField.o pageutil.o color.o
 
 DUMCAIROOBJS	= CairoWorkstation.o
 
