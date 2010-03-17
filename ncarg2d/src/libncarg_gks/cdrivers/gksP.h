@@ -1,5 +1,5 @@
 /*
- *      $Id: gksP.h,v 1.8 2008-07-23 17:29:43 haley Exp $
+ *      $Id: gksP.h,v 1.8.8.1 2010-03-17 20:53:30 brownrig Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -41,11 +41,19 @@
 #define	NGESC_CNATIVE	-1450
 
 #define	NGC_XGETXPIX	1
-#define	NGC_XFREECI	2
+#define	NGC_XFREECI	    2
 #define NGC_XALLOCCOLOR	3
 #define NGC_XSIZECHG	4
 #define NGC_XWINCONFIG	5
 #define NGC_PIXCONFIG	6
+#define NGC_SETALPHA    7
+#define NGC_GETALPHA    8
+
+/* opcodes for setting opacity attributes */
+#define NGC_LINEALPHA   0
+#define NGC_FILLALPHA   1
+#define NGC_MARKERALPHA 2
+#define NGC_TEXTALPHA   3
 
 typedef struct {
 	int		type;
@@ -114,6 +122,13 @@ typedef struct {
 typedef struct {
 	int		type;
 	int		work_id;
+	int     graphicAttrib;
+	float   alpha;
+} _NGCAlpha;
+
+typedef struct {
+	int		type;
+	int		work_id;
 } _NGCAny;
 
 typedef union _NGCescapeRec_ {
@@ -125,6 +140,7 @@ typedef union _NGCescapeRec_ {
 	_NGCXGetSizeChg	xgetsizechg;
 	_NGCXWinConfig	xwinconfig;
 	_NGCPixConfig   pixconfig;
+	_NGCAlpha       alphaconfig;
 } _NGCesc;
 
 /*

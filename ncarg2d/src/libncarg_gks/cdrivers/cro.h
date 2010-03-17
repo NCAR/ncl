@@ -1,5 +1,5 @@
 /*
- *      $Id: cro.h,v 1.4 2010-01-07 23:07:17 brownrig Exp $
+ *      $Id: cro.h,v 1.4.2.1 2010-03-17 20:53:30 brownrig Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -133,6 +133,7 @@
 #define CPS 				40  /* cairo Postscript  */
 #define CPNG				41  /* cairo PNG         */
 #define CPDF                42  /* cairo PDF         */
+#define CDPY                44  /* cairo native display */
 
 typedef enum {MONO, COLOR} cro_color;
 
@@ -190,14 +191,17 @@ typedef struct  CROattribute_ {
         float   linewidth;
         int     linewidth_set;      /*  Linewidth actually existing in file  */
         unsigned int line_colr_ind;
+        float   line_alpha;
         int     marker_type;
         float   marker_size;
         unsigned int marker_colr_ind;
+        float   marker_alpha;
         int     text_font;
         int     text_prec;
         float   char_expan;
         float   char_space;
         unsigned int text_colr_ind;
+        float   text_alpha;
         float   char_ht;
         float   char_up_vec_x;
         float   char_up_vec_y;
@@ -209,6 +213,7 @@ typedef struct  CROattribute_ {
         int     fill_int_style;
         int     fill_style_ind;
         unsigned int fill_colr_ind;
+        float   fill_alpha;
         int     clip_ind;
         unsigned int cro_colr_ind;  /*  Index of current CRO color */
         int     norm_tran;          /*  GKS normalization transformation number */

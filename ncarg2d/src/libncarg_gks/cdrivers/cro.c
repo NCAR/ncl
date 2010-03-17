@@ -1,5 +1,5 @@
 /*
- *      $Id: cro.c,v 1.15 2010-02-09 23:16:19 brownrig Exp $
+ *      $Id: cro.c,v 1.15.2.1 2010-03-17 20:53:30 brownrig Exp $
  */
 /*
  *
@@ -43,6 +43,8 @@
 #define PI 3.1415926
 #define RINT(A) ((A) > 0 ? (int) ((A) + 0.5) : -(int) (0.5 - (A)))
 #define NUM_CONTEXT 20  /* number of allowable contexts */
+#define ARGB_MASK 0x40000000
+#define ALPHA_BLEND(a1, a2) (a1 * a2)
 
 static char *getFileNameRoot(int, char*, char*);
 static char *getCPSFileName(int, char *);
@@ -52,7 +54,7 @@ static void setSurfaceTransform(CROddp *psa);
 static void CROinit(CROddp *, int *);
 static void CROpict_init(GKSC *gksc);
 static unsigned int pack_argb(struct color_value);
-static struct color_value unpack_argb(unsigned int);
+static struct color_value unpack_argb(unsigned int*, unsigned int);
 static int ccompar(const void *p1, const void *p2);
 static void cascsrt(float xa[], int ip[], int n);
 static float *csort_array;
@@ -62,6 +64,9 @@ static void reverse_chrs(char*);
  * are declared external for this, the PS, and the PDF drivers. Leaving it for now.  --RLB 1/2010.
  */
 void cro_SoftFill(GKSC *gksc, float angle, float spl);
+
+extern cairo_surface_t* croCreateNativeDisplaySurface(CROddp* psa);
+extern void croX11Pause(cairo_surface_t* surface);
 
 /*
  *  Globals
@@ -111,7 +116,7 @@ void CROpict_init(GKSC *gksc) {
     /*
      *  Get the background color and set the source to the background color.
      */
-    cval = unpack_argb((psa->ctable)[0]);
+    cval = unpack_argb(psa->ctable, 0);
     cairo_set_source_rgba(cairo_context[context_index(psa->wks_id)], cval.red,
             cval.green, cval.blue, cval.alpha);
 
@@ -396,7 +401,7 @@ int cro_Cellarray(GKSC *gksc) {
         printf("cro_Text: can only retrieve current color for solid patterns\n");
         return (1);
     }
-    cval = unpack_argb((psa->ctable)[psa->attributes.text_colr_ind]);
+    cval = unpack_argb(psa->ctable, psa->attributes.text_colr_ind);
 
     if (psa->pict_empty) {
         CROpict_init(gksc);
@@ -465,7 +470,9 @@ int cro_ClearWorkstation(GKSC *gksc) {
 
     if (psa->wks_type == CPS || psa->wks_type == CPDF) {
         cairo_surface_flush(cairo_surface[context_index(psa->wks_id)]);
-    } else if (psa->wks_type == CPNG) {
+
+    }
+    else if (psa->wks_type == CPNG) {
         outputFile = getCPNGFileName(psa->wks_id, psa->frame_count,
                 psa->output_file);
         cairo_surface_write_to_png(cairo_surface[context_index(psa->wks_id)],
@@ -473,6 +480,11 @@ int cro_ClearWorkstation(GKSC *gksc) {
         psa->frame_count++;
         free(outputFile);
     }
+#if 0
+    else if (psa->wks_type == CDPY) {
+    	croX11Pause(cairo_surface[context_index(psa->wks_id)]);
+    }
+#endif
 
     psa->pict_empty = TRUE;
 
@@ -515,6 +527,7 @@ int cro_Esc(GKSC *gksc) {
     int *iptr = (int *) gksc->i.list;
     _NGCesc *cesc = (_NGCesc*) gksc->native;
     _NGCPixConfig *pixconf;
+    _NGCAlpha* alphaConfig;
 
     int escape_id = iptr[0], plflag;
     float rscale, logox, logoy, logos;
@@ -580,6 +593,40 @@ int cro_Esc(GKSC *gksc) {
             psa->image_width = pixconf->width;
             psa->image_height = pixconf->height;
             break;
+        case NGC_SETALPHA:
+        	alphaConfig = (_NGCAlpha*) cesc;
+        	switch (alphaConfig->graphicAttrib) {
+        	case NGC_LINEALPHA:
+        		psa->attributes.line_alpha = alphaConfig->alpha;
+        		break;
+        	case NGC_FILLALPHA:
+        		psa->attributes.fill_alpha = alphaConfig->alpha;
+        		break;
+        	case NGC_MARKERALPHA:
+        		psa->attributes.marker_alpha = alphaConfig->alpha;
+        		break;
+        	case NGC_TEXTALPHA:
+        		psa->attributes.text_alpha = alphaConfig->alpha;
+        		break;
+        	}
+        	break;
+        case NGC_GETALPHA:
+        	alphaConfig = (_NGCAlpha*) cesc;
+        	switch (alphaConfig->graphicAttrib) {
+        	case NGC_LINEALPHA:
+        		alphaConfig->alpha = psa->attributes.line_alpha;
+        		break;
+			case NGC_FILLALPHA:
+				alphaConfig->alpha = psa->attributes.fill_alpha;
+				break;
+			case NGC_MARKERALPHA:
+				alphaConfig->alpha = psa->attributes.marker_alpha;
+				break;
+            case NGC_TEXTALPHA:
+            	alphaConfig->alpha = psa->attributes.text_alpha;
+            	break;
+            }
+        	break;
         }
     }
 
@@ -609,9 +656,9 @@ int cro_FillArea(GKSC *gksc) {
     cairo_set_line_width(cairo_context[context_index(psa->wks_id)], 1.1
             * (psa->dspace.yspan) * (psa->sfill_spacing));
 
-    cval = unpack_argb((psa->ctable)[psa->attributes.fill_colr_ind]);
+    cval = unpack_argb(psa->ctable, psa->attributes.fill_colr_ind);
     cairo_set_source_rgba(cairo_context[context_index(psa->wks_id)], cval.red,
-            cval.green, cval.blue, cval.alpha);
+            cval.green, cval.blue, ALPHA_BLEND(cval.alpha, psa->attributes.fill_alpha));
 
     switch (psa->attributes.fill_int_style) {
     case HOLLOW_FILL: /* Put out polyline */
@@ -730,7 +777,7 @@ int cro_GetColorRepresentation(GKSC *gksc) {
         printf("Got to cro_GetColorRepresentation\n");
     }
 
-    cval = unpack_argb((psa->ctable)[index]);
+    cval = unpack_argb(psa->ctable, index);
 
     rgbptr[0].r = cval.red;
     rgbptr[0].g = cval.green;
@@ -815,6 +862,34 @@ int cro_OpenWorkstation(GKSC *gksc) {
         add_context_index(context_num, orig_wks_id);
     }
 
+#if 0
+    else if (psa->wks_type == CDPY) {
+    psa->wks_type = CDPY;
+	cairo_surface[context_num] = croCreateNativeDisplaySurface(psa);
+	cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
+	add_context_index(context_num, orig_wks_id);
+
+	psa->image_width = cairo_xlib_surface_get_width(cairo_surface[context_num]);
+	psa->image_height = cairo_xlib_surface_get_height(
+			cairo_surface[context_num]);
+
+	/* THIS IS SOMEWHAT MESSED UP AND NEEDS TO BE RETHOUGHT -- SEE CROInit() */
+	psa->dspace.llx = 10;
+	psa->dspace.urx = psa->image_width - 10;
+	psa->dspace.lly = 10;
+	psa->dspace.ury = psa->image_height - 10;
+
+	psa->dspace.xspan = ((psa->dspace.urx) - (psa->dspace.llx));
+	psa->dspace.yspan = ((psa->dspace.ury) - (psa->dspace.lly));
+
+	psa->cro_clip.llx = psa->dspace.llx;
+	psa->cro_clip.lly = psa->dspace.lly;
+	psa->cro_clip.urx = psa->dspace.urx;
+	psa->cro_clip.ury = psa->dspace.ury;
+
+    }
+#endif
+
     /*
      *  Set fill rule to even/odd.
      */
@@ -825,7 +900,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
      */
     cairo_set_line_cap(cairo_context[context_num], CAIRO_LINE_CAP_ROUND);
     cairo_set_line_join(cairo_context[context_num], CAIRO_LINE_JOIN_ROUND);
-    cairo_surface_destroy(cairo_surface[context_num]);
+    /****RLB NO -- DON'T THINK WE WANT TO DO THIS ---  cairo_surface_destroy(cairo_surface[context_num]); */
 
     /*
      *  Set the default linewidth.
@@ -891,9 +966,9 @@ int cro_Polyline(GKSC *gksc) {
     /*
      *  Set the dash pattern based on the line type.
      */
-    cval = unpack_argb((psa->ctable)[psa->attributes.line_colr_ind]);
+    cval = unpack_argb(psa->ctable, psa->attributes.line_colr_ind);
     cairo_set_source_rgba(cairo_context[context_index(psa->wks_id)], cval.red,
-            cval.green, cval.blue, cval.alpha);
+            cval.green, cval.blue, ALPHA_BLEND(cval.alpha, psa->attributes.line_alpha));
 
     cairo_set_line_width(cairo_context[context_index(psa->wks_id)],
             (psa->nominal_width_scale) * (psa->attributes.linewidth));
@@ -959,9 +1034,9 @@ int cro_Polymarker(GKSC *gksc) {
      *  markers.
      */
     current_line_color = psa->attributes.line_colr_ind;
-    cval = unpack_argb((psa->ctable)[psa->attributes.marker_colr_ind]);
+    cval = unpack_argb(psa->ctable, psa->attributes.marker_colr_ind);
     cairo_set_source_rgba(cairo_context[context_index(psa->wks_id)], cval.red,
-            cval.green, cval.blue, cval.alpha);
+            cval.green, cval.blue, ALPHA_BLEND(cval.alpha, psa->attributes.marker_alpha));
 
     /*
      *  Get the current setting for line cap and set it to round so that
@@ -1249,6 +1324,9 @@ int cro_SetColorRepresentation(GKSC *gksc) {
     if (getenv("CRO_TRACE")) {
         printf("Got to cro_SetColorRepresentation\n");
     }
+
+    if ((index & ARGB_MASK) > 0)
+    	return;   /* value is a 32-bit color, not an index */
 
     if (psa->max_color < index + 1) {
         psa->ctable = (unsigned int*) realloc(psa->ctable, (index + 1)
@@ -1642,9 +1720,9 @@ int cro_Text(GKSC *gksc) {
     /*
      *  Character color.
      */
-    cval = unpack_argb((psa->ctable)[psa->attributes.text_colr_ind]);
+    cval = unpack_argb(psa->ctable, psa->attributes.text_colr_ind);
     cairo_set_source_rgba(cairo_context[context_index(psa->wks_id)], cval.red,
-            cval.green, cval.blue, cval.alpha);
+            cval.green, cval.blue, ALPHA_BLEND(cval.alpha, psa->attributes.text_alpha));
 
     /*
      *  Set the horizontal alignment for the "NORMAL" settings.
@@ -2128,6 +2206,7 @@ static void CROinit(CROddp *psa, int *coords) {
         printf("Got to CROinit\n");
     }
 
+    psa->output_file = NULL;
     psa->hatch_spacing = CRO_HATCH_SPACING;
     psa->path_size = MAX_PATH;
     psa->line_join = ROUND;
@@ -2155,14 +2234,17 @@ static void CROinit(CROddp *psa, int *coords) {
     psa->attributes.linewidth = LINEWIDTH_DEFAULT;
     psa->attributes.linewidth_set = LINEWIDTH_DEFAULT;
     psa->attributes.line_colr_ind = LINE_COLR_DEFAULT;
+    psa->attributes.line_alpha = 1.0;
     psa->attributes.marker_type = MARKER_TYPE_DEFAULT;
     psa->attributes.marker_size = MARKER_SIZE_DEFAULT;
     psa->attributes.marker_colr_ind = MARKER_COLR_IND_DEFAULT;
+    psa->attributes.marker_alpha = 1.0;
     psa->attributes.text_font = TEXT_FONT_DEFAULT;
     psa->attributes.text_prec = TEXT_PREC_DEFAULT;
     psa->attributes.char_expan = CHAR_EXPAN_DEFAULT;
     psa->attributes.char_space = CHAR_SPACE_DEFAULT;
     psa->attributes.text_colr_ind = TEXT_COLR_IND_DEFAULT;
+    psa->attributes.text_alpha = 1.0;
     psa->attributes.char_ht = CHAR_HT_DEFAULT;
     psa->attributes.char_up_vec_x = CHAR_UP_VEC_X_DEFAULT;
     psa->attributes.char_up_vec_y = CHAR_UP_VEC_Y_DEFAULT;
@@ -2174,6 +2256,7 @@ static void CROinit(CROddp *psa, int *coords) {
     psa->attributes.fill_int_style = FILL_INT_STYLE_DEFAULT;
     psa->attributes.fill_style_ind = FILL_STYLE_IND_DEFAULT;
     psa->attributes.fill_colr_ind = FILL_COLR_IND_DEFAULT;
+    psa->attributes.fill_alpha = 1.0;
     psa->attributes.cro_colr_ind = CRO_COLR_IND_DEFAULT;
     psa->attributes.clip_ind = CLIP_IND_DEFAULT;
 
@@ -2239,7 +2322,7 @@ unsigned int pack_argb(struct color_value cval) {
      */
     int ir, ig, ib, ia;
     unsigned int rval;
-    ia = (int) (cval.alpha * 255.);
+    ia = (int) (cval.alpha * 63.);
     ir = (int) (cval.red * 255.);
     ig = (int) (cval.green * 255.);
     ib = (int) (cval.blue * 255.);
@@ -2251,12 +2334,17 @@ unsigned int pack_argb(struct color_value cval) {
 }
 
 
-struct color_value unpack_argb(unsigned int argb) {
+struct color_value unpack_argb(unsigned int* ctable, unsigned int index) {
     struct color_value cval;
-    cval.blue = ((float) (argb & 255) / 255.);
-    cval.green = ((float) ((argb >> 8) & 255) / 255.);
-    cval.red = ((float) ((argb >> 16) & 255) / 255.);
-    cval.alpha = ((float) ((argb >> 24) & 255) / 255.);
+
+    unsigned int argb = ((index & ARGB_MASK) > 0)
+    		? index            /* ARGB color... */
+			: ctable[index];   /* color-index */
+    cval.alpha = ((0x3F000000 & argb) >> 24) / 63.;   /* recall alpha is encoded with a limited dynamic range */
+    cval.red   = ((0x00FF0000 & argb) >> 16) / 255.;
+    cval.green = ((0x0000FF00 & argb) >>  8) / 255.;
+    cval.blue  = ((0x000000FF & argb))       / 255.;
+
     return cval;
 }
 

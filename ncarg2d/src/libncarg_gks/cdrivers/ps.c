@@ -1,5 +1,5 @@
 /*
- *      $Id: ps.c,v 1.41 2010-02-17 02:35:07 fred Exp $
+ *      $Id: ps.c,v 1.41.2.1 2010-03-17 20:53:30 brownrig Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -8499,6 +8499,8 @@ int ps_Esc(gksc)
 
 
         switch (escape_id) {
+        case -1450:    /* C-escapes are not implemented here */
+				break;
         case -1510:    /* Save color setting before segment copy */
                 if (psa->pict_empty) {
                         PSpreamble(psa, FOR_PICTURE);

@@ -1,5 +1,5 @@
 /*
- *      $Id: xcontrol.c,v 1.27 2008-11-20 00:32:28 dbrown Exp $
+ *      $Id: xcontrol.c,v 1.27.8.1 2010-03-17 20:53:31 brownrig Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1199,6 +1199,9 @@ X11_Esc
                         if(xi->size_change)
                                 (*xi->size_change)(xi->sref,xi->dim);
                         break;
+                case NGC_SETALPHA:   /* alpha get/set ignored here */
+                case NGC_GETALPHA:
+						break;
                 default:
                         return ERR_INV_ESCAPE;
                 }
