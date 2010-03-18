@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.234 2010-03-05 22:53:56 haley Exp $
+;      $Id: gsn_code.ncl,v 1.235 2010-03-18 21:07:32 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -7866,7 +7866,7 @@ begin
 ; Compute min, max, and step necessary to later get "nice" values for
 ; the percentages.
 ;
-    xnpts = npts*1.
+    xnpts = get_res_value(res2,"gsnHistogramNptsForPercent",npts)*1.
     if(horizontal) then
       nicevals = nice_mnmxintvl(res2@trXMinF,min((/100., \
                                 100.*(res2@trXMaxF/xnpts)/)),7,False)
@@ -7886,8 +7886,8 @@ begin
 ; Calculate the bin values that correspond to these percentages.
 ; These are the values we'll use for the tick marks.
 ;
-    bins_at_pnice  = 0.01 * (npts * pnice)
-    bins_at_pmnice = 0.01 * (npts * pmnice)
+    bins_at_pnice  = 0.01 * (xnpts * pnice)
+    bins_at_pmnice = 0.01 * (xnpts * pmnice)
 ;
 ; Set some resources to control tickmarks.
 ;
