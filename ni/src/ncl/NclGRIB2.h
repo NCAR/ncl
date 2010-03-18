@@ -373,6 +373,7 @@ typedef struct _g2prodParams {
     int    num_timerange_spec_time_interval_calc;
     int    total_num_missing_data_vals;
     int    typeof_stat_proc;
+    int    spatial_proc;
     char    *stat_proc;
     int    typeof_incr_betw_fields;
     char    *incr_betw_fields;
@@ -635,6 +636,7 @@ struct _Grib2RecordInqRec {
     int time_period;
     int forecast_time_units;
     int time_period_units;
+    int spatial_proc;
 
     int level_indicator;
     float level0;

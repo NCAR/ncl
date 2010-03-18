@@ -3475,10 +3475,13 @@ Grib2FileRecord *therec;
 		}
 
 		if (step->traits.stat_proc_type != -1) {
-			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-			att_list_ptr->next = step->theatts;
-			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-			att_list_ptr->att_inq->name = NrmStringToQuark("statistical_process_duration");
+			/* the statistical process duration attribute only makes sense if the process occurs over time -- not space */
+			if (grib_rec->spatial_proc < 0) { 
+				att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+				att_list_ptr->next = step->theatts;
+				att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+				att_list_ptr->att_inq->name = NrmStringToQuark("statistical_process_duration");
+			}
 			if (step->forecast_time_isatt || ! step->forecast_time_iszero) {
 				if (step->forecast_time_iszero) {
 					sprintf(buf,"initial time to forecast time");
@@ -3499,14 +3502,16 @@ Grib2FileRecord *therec;
 				sprintf(buf,"initial time to forecast time");
 				AppendStatProcInfoToVarName(step,True);
 			}
-			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			*tmp_string = NrmStringToQuark(buf);
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
-				_NclCreateVal(NULL, NULL,
-					      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
-					      PERMANENT, NULL, nclTypestringClass);
-			step->theatts = att_list_ptr;
-			step->n_atts++;
+			if (grib_rec->spatial_proc < 0) {
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				*tmp_string = NrmStringToQuark(buf);
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+					_NclCreateVal(NULL, NULL,
+						      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+						      PERMANENT, NULL, nclTypestringClass);
+				step->theatts = att_list_ptr;
+				step->n_atts++;
+			}
 
 			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 			att_list_ptr->next = step->theatts;
@@ -6812,6 +6817,7 @@ static void _g2SetFileDimsAndCoordVars
 		case 42:
 		case 43:
 		case 110:
+		case 204:
 			/* 
 			 * We do not have code to produce coordinates for these grids, but at least
 			 * we can know the data dimensions and can therefore provide the data.
@@ -8871,7 +8877,7 @@ static void *Grib2OpenFile
                         /* FALLTHROUGH */
 
 		    case 254:
-			    /* EUMETSAT - fallthrought */
+			    /* EUMETSAT - fallthrough */
                     case 98:
                         /* ECMWF */
                         center = "ecmwf";
@@ -9656,6 +9662,7 @@ static void *Grib2OpenFile
              * by the Product Definition Templates (PDTs).
              */
             g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = -1;
+	    g2rec[nrecs]->sec4[i]->prod_params->spatial_proc = -1;
             g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done = 0;
             switch (g2rec[nrecs]->sec4[i]->pds_num) {
                 case 0:
@@ -10041,7 +10048,20 @@ static void *Grib2OpenFile
                      * layer, in a continuous or non-continuous time interval.
                      */
                     break;
-
+		    
+                case 15:
+                    /*
+                     * Average, accumulation, extreme values or other statistically-processed 
+		     * values over a spatial area at a horizontal level 
+		     * or in a horizontal layer at a point in time
+                     */
+                    /* table 4.10: Type of Statistical Processing */
+                    g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = g2fld->ipdtmpl[15];
+                    g2rec[nrecs]->sec4[i]->prod_params->stat_proc = NULL;
+		    g2rec[nrecs]->sec4[i]->prod_params->spatial_proc = g2fld->ipdtmpl[16];
+		    /* todo: provide info on type of spatial processing */
+		    break;
+		    
                 case 20:
                     /*
                      * Radar product.
@@ -10539,6 +10559,7 @@ static void *Grib2OpenFile
 		    );
 
             g2inqrec->var_name_q = NrmNULLQUARK;
+	    g2inqrec->spatial_proc = g2rec[i]->sec4[j]->prod_params->spatial_proc;
 
             /* Ensembles */
             g2inqrec->is_ensemble = 0;
