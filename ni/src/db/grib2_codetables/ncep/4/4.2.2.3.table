@@ -1,21 +1,34 @@
-# Product Discipline 2: Land surface products, Parameter Category 3: Soil Products
-0:0:Soil type:index (see GRIB 2 code table 4.213):SOTYP
-1:1:Upper layer soil temperature:K:ULTSOIL
-2:2:Upper layer soil moisture:kg m-3:ULSOILM
-3:3:Lower layer soil moisture:kg m-3:LLSOILM
-4:4:Bottom layer soil temperature:K:BLTSOIL
+# GRIBv2 - Table 4.2-2-3 Land Surface - Soil
+0:0:Soil type:Code Table 4.213:SOTYP
+1:1:Upper layer soil temperature:K:UPLST
+2:2:Upper layer soil moisture:kg m-3:UPLSM
+3:3:Lower layer soil moisture:kg m-3:LOWLSM
+4:4:Bottom layer soil temperature:K:BOTLST
 5:5:Liquid volumetric soil moisture (non-frozen):Proportion:SOILL
 6:6:Number of soil layers in root zone:Numeric:RLYRS
 7:7:Transpiration stress-onset (soil moisture):Proportion:SMREF
 8:8:Direct evaporation cease (soil moisture):Proportion:SMDRY
 9:9:Soil porosity:Proportion:POROS
-# 10-191 Reserved
-#192-254 Reserved for local use
-192:192:Liquid volumetric soil moisture (non-frozen):Proportion:SOILL
+10:10:Liquid volumetric soil moisture (non-frozen):m3m-3:LIQVSM
+11:11:Volumetric transpiration stree-onset(soil moisture):m3m-3:VOLTSO
+12:12:Transpiration stree-onset(soil moisture):kg m-3:TRANSO
+13:13:Volumetric direct evaporation cease(soil moisture):m3m-3:VOLDEC
+14:14:Direct evaporation cease(soil moisture):kg m-3:DIREC
+15:15:Soil porosity:m3m-3:SOILP
+16:16:Volumetric saturation of soil moisture:m3m-3:VSOSM
+17:17:Saturation of soil moisture:kgm-3:SATOSM
+# 18-191:18-191:Reserved:-:
+# 192-254:192-254:Reserved for Local Use:-:
+192:192:Liquid volumetric soil moisture (non frozen):Proportion:SOILL
 193:193:Number of soil layers in root zone:non-dim:RLYRS
-194:194:Surface Slope Type:Index:SLTYP
+194:194:Surface slope type:Index:SLTYP
 195:195:Transpiration stress-onset (soil moisture):Proportion:SMREF
 196:196:Direct evaporation cease (soil moisture):Proportion:SMDRY
 197:197:Soil porosity:Proportion:POROS
-255:255:Missing
-
+198:198:Direct evaporation from bare soil:W m-2:EVBS
+199:199:Land surface precipitation accumulation:kg m-2:LSPA
+200:200:Bare soil surface skin temperature:K:BARET
+201:201:Average surface skin temperature:K:AVSFT
+202:202:Effective radiative skin temperature:K:RADT
+203:203:Field capacity:fraction:FLDCP
+255:255:Missing:-:

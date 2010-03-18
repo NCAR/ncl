@@ -30,11 +30,13 @@
 # 111-119 Reserved
 120:120:Azimuth-range projection
 # 121-999 Reserved
+204:204:Curvilinear orthogonal grids
 1000:1000:Cross-section grid, with points equally spaced on the horizontal
 # 1001-1099 Reserved
 1100:1100:Hovmuller diagram grid, with points equally spaced on the horizontal
 # 1101-1199 Reserved
 1200:1200:Time section grid
 # 1201-32767 Reserved
+32768:32768:Rotated latitude/longitude (Arakawa Staggered E-Grid)
 # 32768-65534 Reserved for local use
 65535:65535:Missing

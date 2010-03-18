@@ -1,18 +1,16 @@
 # CODE TABLE 5.0, Data Representation Template Number
 0:0:Grid point data - simple packing
-1:1:Matrix value - simple packing
+1:1:Matrix value at grid point - simple packing
 2:2:Grid point data - complex packing
 3:3:Grid point data - complex packing and spatial differencing
-4:4:Grid point data - raw packing 
+4:4:Grid point data - IEEE floating point data
 # 5-39  Reserved
-40:40:JPEG2000 Packing
-41:41:PNG Packing
+40:40:Grid point data -JPEG2000 compression
+41:41:Grid point data - PNG compression
 # 42-49  Reserved
-50:50:Spectral data -simple packing
-51:51:Spherical harmonics data - complex packing
-# 52-191:Reserved
-# 192-254 Reserved for local use
-255:255:Missing
-# 256-65535  Reserved
-40000:40000:JPEG2000 Packing
-40010:40010:PNG Packing
+50:50:Spectral data - simple packing
+51:51:Spectral data - complex packing
+61:61:Grid point data - simple packing with logarithm pre-processing
+200:200:Run length packing with level values
+#49151-65534:Reserved for local use
+65535:65535:Missing

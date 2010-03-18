@@ -1,9 +1,14 @@
-# Product Discipline 10: Oceanographic products, Parameter Category 4: Sub-surface Properties
+# GRIBv2 - Table 4.2-10-4 Oceanographic - Sub-Surface Properties
 0:0:Main thermocline depth:m:MTHD
 1:1:Main thermocline anomaly:m:MTHA
 2:2:Transient thermocline depth:m:TTHDP
 3:3:Salinity:kg kg-1:SALTY
-# 4-191 Reserved
-#192-254 Reserved for local use
-255:255:Missing
-
+# 4-191:4-191:Reserved:-:
+# 192-254:192-254:Reserved for Local Use:-:
+192:192:3-d temperature:deg c:WTMPC
+193:193:3-d salinity:-:SALIN
+194:194:Barotropic kinectic energy:J kg-1:BKENG
+195:195:Geometric depth below sea surface:m:DBSS
+196:196:Interface depths:m:INTFD
+197:197:Ocean heat content:J m-2:OHC
+255:255:Missing:-:

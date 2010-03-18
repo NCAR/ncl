@@ -9,7 +9,10 @@
 7:7:Tropopause:none:TRO
 8:sfc:Nominal top of the atmosphere:none:NTAT
 9:9:Sea bottom:none:SEAB
-# 10-19 Reserved
+10:10:Entire Atmosphere:none:EATM
+11:11:Cumulonimbus Base:m:CB
+12:12:Cumulonimbus Top:m:CT
+# 13-19 Reserved
 20:20:Isothermal level:K:TMPL
 #21-99 Reserved
 100:pl:Isobaric surface:Pa:ISBL
@@ -42,6 +45,8 @@
 213:213:Low cloud top level:none:LCTL
 214:214:Low cloud layer:none:LCY
 215:215:Cloud ceiling:none:CCL
+220:220:Planetary boundary layer:none:PBL
+221:221:Layer between two hybrid levels:none:HYBY
 222:222:Middle cloud bottom level:none:MCBL
 223:223:Middle cloud top level:none:MCTL
 224:224:Middle cloud layer:none:MCY
@@ -52,6 +57,9 @@
 236:236:Layer between two depths below ocean surface:none:OLYR
 237:237:Bottom of Ocean Mixed Layer (m):m:OBML
 238:238:Bottom of Ocean Isothermal Layer:m:OBIL
+239:239:Layer Ocean Surface and 26C Ocean Isothermal Level:none:S26CY
+240:240:Ocean Mixed Layer:none:OMXL
+241:241:Ordered Sequence of Data:none:OSEQD
 242:242:Convective cloud bottom level:none:CCBL
 243:243:Convective cloud top level:none:CCTL
 244:244:Convective cloud:none:CCY

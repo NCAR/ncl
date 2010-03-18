@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.1 2006-12-01 16:43:09 grubin Exp $
+#      $Id: yMakefile,v 1.2 2010-03-18 01:39:21 dbrown Exp $
 #
 #########################################################################
 #                                                                       #
@@ -19,7 +19,7 @@
 #
 #       Description:   yMakefile for ncarg/ni/src/db/grib2_codetables/ecmwf/5
 
-TABLES = 5.0.table 5.1.table 5.2.table 5.3.table 5.40.table 5.40000.table \
-		 5.5.table 5.6.table 5.7.table 5.8.table
+TABLES = 5.0.table 5.1.table 5.2.table 5.3.table 5.4.table 5.40.table \
+		 5.5.table 5.6.table 5.7.table 
 
 InstallTarget($(TABLES),$(INSTALL_LIB),$(GRIB2CODETABLEROOT)/ecmwf/5)

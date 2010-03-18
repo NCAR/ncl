@@ -8,6 +8,10 @@
 6:6:Forecast error
 7:7:Analysis error
 8:8:Observation
-# 9-191 Reserved
+9:9:Climatological
+10:10:Probability-Weighted Forecast
+# 11-191 Reserved
 # 192-254  Reserved for local use
+192:192:Forecast Confidence Indicator
+193:193:Bias Corrected Ensemble Forecast
 255:255:Missing

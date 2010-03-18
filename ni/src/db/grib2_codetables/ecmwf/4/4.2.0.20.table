@@ -1,0 +1,36 @@
+# GRIBv2 - Table 4.2-0-20 Meteorological - Atmospheric chemical constituents
+
+0:0:Mass density (concentration):kg m-3:MASSDEN
+1:1:Column-integrated mass density:kg m-2:COLMD
+2:2:Mass mixing ratio (mass fraction in air):kg kg-1:MASSMR
+3:3:Atmosphere emission mass flux:kg m-2s-1:AEMFLX
+4:4:Atmosphere net production mass flux:kg m-2s-1:ANPMFLX
+5:5:Atmosphere net production and emision mass flux:kg m-2s-1:ANPEMFLX
+6:6:Surface dry deposition mass flux:kg m-2s-1:SDDMFLX
+7:7:Surface wet deposition mass flux:kg m-2s-1:SWDMFLX
+8:8:Atmosphere re-emission mass flux:kg m-2s-1:AREMFLX
+# 9-49:9-49:Reserved:-:
+
+50:50:Amount in atmosphere:mol:AIA
+51:51:Concentration in air:mol m-3:CONAIR
+52:52:Volume mixing ratio (fraction in air):mol mol-1:VMXR
+53:53:Chemical gross production rate of concentration:mol m-3s-1:CGPRC
+54:54:Chemical gross destruction rate of concentration:mol m-3s-1:CGDRC
+55:55:Surface flux:mol m-2s-1:SFLUX
+56:56:Changes of amount in atmosphere:mol s-1:COAIA
+57:57:Total yearly average burden of the atmosphere:mol:TYABA
+58:58:Total yearly average atmospheric loss:mol s-1:TYAAL
+# 59 - 99:59 - 99:Reserved:-:
+
+100:100:Surface area density (aerosol):m-1:SADEN
+101:101:Atmosphere optical thickness:m:AOTK
+# 102 - 130:102 - 130:Reserved:-:
+
+131:131:Nitrogen dioxide (NO2) tropospheric column:mol cm-2:NO2TROP
+132:132:Nitrogen dioxide (NO2) vertical column density:mol cm-2:NO2VCD
+133:133:Bromine monoxide (BrO) vertical column density:mol cm-2:BROVCD
+134:134:Formaldehyde (HCHO) vertical column density:mol cm-2:HCHOVCD
+# 135 - 191:135 - 191:Reserved:-:
+
+# 192-254:192-254:Reserved for Local Use:-:
+

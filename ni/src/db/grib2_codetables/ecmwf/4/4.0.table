@@ -14,8 +14,14 @@
 12:12:Derived forecasts based in all ensemble members at a horizontal level or in a horizontal layer, in a continuous or non-continuous interval
 13:13:Derived forecasts based on a cluster of ensemble members over a rectangular area, at a horizontal level or in a horizontal layer, in a continuous or non-continuous interval
 14:14:Derived forecasts based on a cluster of ensemble members over a circular area, at a horizontal level or in a horizontal layer, in a continuous or non-continuous interval
+15:15:Average, accumulation, extreme values or other statistically-processed values over a spatial area at a horizontal level or in a horizontal layer at a point in time.
 20:20:Radar product
 30:30:Satellite product
+31:31:Satellite product
+40:40:Analysis or forecast at a horizontal level or in a horizontal layer at a point in time for atmospheric chemical constituents.
+41:41:Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for atmospheric chemical constituents.
+42:42:Average, accumulation, and/or extreme values or other statistically processed values at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval for atmospheric chemical constituents.
+43:43:Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer, in a continuous or non-continuous time interval for atmospheric chemical constituents.
 254:254:CCITT IA5 character string
 1000:1000:Cross section of analysis and forecast at a point in time
 1001:1001:Cross section of averaged or otherwise statistically processed analysis or forecast over a range of time

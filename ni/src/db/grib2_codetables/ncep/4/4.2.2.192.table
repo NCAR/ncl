@@ -1,0 +1,7 @@
+# GRIBv2 - Table 4.2-2-192 Land Surface - Fire Weather
+# 0-191:0-191:Reserved:-:
+# 192-254:192-254:Reserved for Local Use:-:
+192:192:Fire outlook critical risk area:%:FIRECRA
+193:193:Fire outlook extreme critical risk area:%:FIREXCRA
+194:194:Fire outlook dry lightning area:%:FIREDLA
+255:255:Missing:-:

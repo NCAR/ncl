@@ -1,9 +1,16 @@
-# Product Discipline 0 - Meteorological products, Parameter Category 16: Forecast Radar Imagery
-# 0-191 Reserved    
-# 192-254 Reserved for Local Use
-192:192:Derived radar reflectivity backscatter from rain:mm6 m-3:REFZR
-193:193:Derived radar reflectivity backscatter from ice:mm6 m-3:REFZI
-194:194:Derived radar reflectivity backscatter from parameterized convection:mm6 m-3:REFZC
-195:195:Derived radar reflectivity:dB:REFD
-196:196:Maximum/Composite radar reflectivity:dB:REFC
-255:255:Missing
+# GRIBv2 - Table 4.2-0-16 Meteorological - Forecast Radar Imagery
+0:0:Equivalent radar reflectivity factor for rain:mm6m-3:REFZR
+1:1:Equivalent radar reflectivity factor for snow:mm6m-3:REFZI
+2:2:Equivalent radar reflectivity factor for parameterized convection:mm6m-3:REFZC
+3:3:Echo top :m:RETOP
+4:4:Reflectivity:dB:REFD
+5:5:Composite reflectivity:dB:REFC
+# 6-191:6-191:Reserved:-:
+# 192-254:192-254:Reserved for Local Use:-:
+192:192:Equivalent radar reflectivity factor for rain:mm6/m3:REFZR
+193:193:Equivalent radar reflectivity factor for snow:mm6/m3:REFZI
+194:194:Equivalent radar reflectivity factor for parameterized convection:mm6/m3:REFZC
+195:195:Reflectivity:dB:REFD
+196:196:Composite reflectivity:dB:REFC
+197:197:Echo top :m:RETOP
+255:255:Missing:-:
