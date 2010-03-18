@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.108.8.1 2010-03-17 20:47:07 brownrig Exp $
+ *      $Id: Workstation.c,v 1.108.8.2 2010-03-18 21:08:33 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -970,6 +970,10 @@ CvtStringToColorIndex
 		return _NhlReConvertData(intQ,to->typeQ,&val,to);
 	}
 
+	if (strcasecmp(s1, "transparent") == 0) {
+		tmp = NhlTRANSPARENT;
+		set = True;
+	}
 
 	/***** RLB
 	for(i=1;i<nargs;i++){
