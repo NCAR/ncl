@@ -1,5 +1,5 @@
 /*
- *      $Id: CairoWorkstation.c,v 1.6 2010-03-16 19:31:46 brownrig Exp $
+ *      $Id: CairoWorkstation.c,v 1.7 2010-03-18 20:55:03 brownrig Exp $
  */
 
 # include   <stdio.h>
@@ -492,7 +492,7 @@ static NhlErrorTypes CairoWorkstationInitialize(NhlClass lclass, NhlLayer req, N
     }
     strcpy(cairo->filename,tfname);
 
-    if (cairo->paper_size) {
+    if ((newCairo->work.gkswkstype == CPS || newCairo->work.gkswkstype == CPDF) && cairo->paper_size) {
         char* tmpStr = cairo->paper_size;
         cairo->paper_size = NhlMalloc(strlen(tmpStr) + 1);
         if (!cairo->paper_size) {
