@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncl_files,v 1.29 2010-03-17 16:06:35 haley Exp $
+#   $Id: check_ncl_files,v 1.30 2010-03-18 15:36:00 haley Exp $
 #
 # Use check_files instead! This one is just for NCL and hasn't
 # been updated in awhile
@@ -495,6 +495,7 @@ lib/ncarg/grib2_codetables/ecmwf/4/4.10.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.12.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.13.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.14.table
+lib/ncarg/grib2_codetables/ecmwf/4/4.15.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.0.0.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.0.1.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.0.13.table
@@ -506,7 +507,9 @@ lib/ncarg/grib2_codetables/ecmwf/4/4.2.0.18.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.0.19.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.0.190.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.0.191.table
+lib/ncarg/grib2_codetables/ecmwf/4/4.2.0.192.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.0.2.table
+lib/ncarg/grib2_codetables/ecmwf/4/4.2.0.20.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.0.3.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.0.4.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.0.5.table
@@ -516,13 +519,16 @@ lib/ncarg/grib2_codetables/ecmwf/4/4.2.1.0.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.1.1.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.10.0.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.10.1.table
+lib/ncarg/grib2_codetables/ecmwf/4/4.2.10.191.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.10.2.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.10.3.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.10.4.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.2.0.table
+lib/ncarg/grib2_codetables/ecmwf/4/4.2.2.192.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.2.3.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.3.0.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.3.1.table
+lib/ncarg/grib2_codetables/ecmwf/4/4.2.3.192.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.201.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.202.table
@@ -543,6 +549,8 @@ lib/ncarg/grib2_codetables/ecmwf/4/4.217.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.220.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.221.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.222.table
+lib/ncarg/grib2_codetables/ecmwf/4/4.223.table
+lib/ncarg/grib2_codetables/ecmwf/4/4.230.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.3.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.4.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.5.table
@@ -554,12 +562,11 @@ lib/ncarg/grib2_codetables/ecmwf/5/5.0.table
 lib/ncarg/grib2_codetables/ecmwf/5/5.1.table
 lib/ncarg/grib2_codetables/ecmwf/5/5.2.table
 lib/ncarg/grib2_codetables/ecmwf/5/5.3.table
+lib/ncarg/grib2_codetables/ecmwf/5/5.4.table
 lib/ncarg/grib2_codetables/ecmwf/5/5.40.table
-lib/ncarg/grib2_codetables/ecmwf/5/5.40000.table
 lib/ncarg/grib2_codetables/ecmwf/5/5.5.table
 lib/ncarg/grib2_codetables/ecmwf/5/5.6.table
 lib/ncarg/grib2_codetables/ecmwf/5/5.7.table
-lib/ncarg/grib2_codetables/ecmwf/5/5.8.table
 lib/ncarg/grib2_codetables/ecmwf/6/6.0.table
 lib/ncarg/grib2_codetables/fsl/0/0.0.table
 lib/ncarg/grib2_codetables/fsl/1/1.0.table
@@ -774,6 +781,7 @@ lib/ncarg/grib2_codetables/ncep/4/4.10.table
 lib/ncarg/grib2_codetables/ncep/4/4.12.table
 lib/ncarg/grib2_codetables/ncep/4/4.13.table
 lib/ncarg/grib2_codetables/ncep/4/4.14.table
+lib/ncarg/grib2_codetables/ncep/4/4.15.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.0.0.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.0.1.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.0.13.table
@@ -785,7 +793,9 @@ lib/ncarg/grib2_codetables/ncep/4/4.2.0.18.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.0.19.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.0.190.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.0.191.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.0.192.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.0.2.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.0.20.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.0.3.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.0.4.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.0.5.table
@@ -795,13 +805,16 @@ lib/ncarg/grib2_codetables/ncep/4/4.2.1.0.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.1.1.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.10.0.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.10.1.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.10.191.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.10.2.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.10.3.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.10.4.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.2.0.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.2.192.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.2.3.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.3.0.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.3.1.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.3.192.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.table
 lib/ncarg/grib2_codetables/ncep/4/4.201.table
 lib/ncarg/grib2_codetables/ncep/4/4.202.table
@@ -822,6 +835,8 @@ lib/ncarg/grib2_codetables/ncep/4/4.217.table
 lib/ncarg/grib2_codetables/ncep/4/4.220.table
 lib/ncarg/grib2_codetables/ncep/4/4.221.table
 lib/ncarg/grib2_codetables/ncep/4/4.222.table
+lib/ncarg/grib2_codetables/ncep/4/4.223.table
+lib/ncarg/grib2_codetables/ncep/4/4.230.table
 lib/ncarg/grib2_codetables/ncep/4/4.3.table
 lib/ncarg/grib2_codetables/ncep/4/4.4.table
 lib/ncarg/grib2_codetables/ncep/4/4.5.table
@@ -833,12 +848,11 @@ lib/ncarg/grib2_codetables/ncep/5/5.0.table
 lib/ncarg/grib2_codetables/ncep/5/5.1.table
 lib/ncarg/grib2_codetables/ncep/5/5.2.table
 lib/ncarg/grib2_codetables/ncep/5/5.3.table
+lib/ncarg/grib2_codetables/ncep/5/5.4.table
 lib/ncarg/grib2_codetables/ncep/5/5.40.table
-lib/ncarg/grib2_codetables/ncep/5/5.40000.table
 lib/ncarg/grib2_codetables/ncep/5/5.5.table
 lib/ncarg/grib2_codetables/ncep/5/5.6.table
 lib/ncarg/grib2_codetables/ncep/5/5.7.table
-lib/ncarg/grib2_codetables/ncep/5/5.8.table
 lib/ncarg/grib2_codetables/ncep/6/6.0.table
 lib/ncarg/grib2_codetables/tigge/0/0.0.table
 lib/ncarg/grib2_codetables/tigge/1/1.0.table
