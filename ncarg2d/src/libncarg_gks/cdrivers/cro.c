@@ -1,5 +1,5 @@
 /*
- *      $Id: cro.c,v 1.15.2.1 2010-03-17 20:53:30 brownrig Exp $
+ *      $Id: cro.c,v 1.15.2.2 2010-03-18 21:10:12 brownrig Exp $
  */
 /*
  *
@@ -900,7 +900,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
      */
     cairo_set_line_cap(cairo_context[context_num], CAIRO_LINE_CAP_ROUND);
     cairo_set_line_join(cairo_context[context_num], CAIRO_LINE_JOIN_ROUND);
-    /****RLB NO -- DON'T THINK WE WANT TO DO THIS ---  cairo_surface_destroy(cairo_surface[context_num]); */
+    cairo_surface_destroy(cairo_surface[context_num]);
 
     /*
      *  Set the default linewidth.
@@ -2322,7 +2322,7 @@ unsigned int pack_argb(struct color_value cval) {
      */
     int ir, ig, ib, ia;
     unsigned int rval;
-    ia = (int) (cval.alpha * 63.);
+    ia = (int) (cval.alpha * 255.);
     ir = (int) (cval.red * 255.);
     ig = (int) (cval.green * 255.);
     ib = (int) (cval.blue * 255.);
