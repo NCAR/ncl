@@ -122,7 +122,8 @@ extern void NGCALLF(dshsgc,DSHSGC)(int *,int *,int *,int *,double *,int
 *,int *,double *,double *,int *,int *,double *,int *,double *,int *,int
 *);
 
-extern void NGCALLF(dshsgcr42,DSHSGCR42)(double *,double *,double *);
+extern void NGCALLF(dshsgcr42,DSHSGCR42)(double *,double *,double *,double *,
+					 int *);
 
 extern void NGCALLF(dslapec,DSLAPEC)(int *,int *,int *,int
 *,double *,int *,int *,double *,double *, int *,int *,double *,int
@@ -18964,7 +18965,8 @@ NhlErrorTypes shsgc_R42_W( void )
 /*
  * various
  */
-  int i, index_ab, index_g, ret;
+  double *work;
+  int i, index_ab, index_g, ret, lwork, nlat=108;
   int size_leftmost, size_rightmost_g, size_rightmost_ab;
 
 /*
@@ -19046,6 +19048,15 @@ NhlErrorTypes shsgc_R42_W( void )
   }
 
 /*
+ * Allocate space for work array.
+ */
+  lwork = 4*nlat*(nlat+1)+2;
+  work  = (double*)calloc(lwork,sizeof(double));
+  if(work == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc_R42: Unable to allocate memory for work array");
+    return(NhlFATAL);
+  }
+/*
  * Allocate space for temporary input array. The temporary array
  * tmp_g is just big enough to hold a 2-dimensional subsection of the
  * g array (which is always size 108 x 128).
@@ -19108,7 +19119,7 @@ NhlErrorTypes shsgc_R42_W( void )
       tmp_g = &((double*)g)[index_g];
     }
 
-    NGCALLF(dshsgcr42,DSHSGCR42)(tmp_a,tmp_b,tmp_g);
+    NGCALLF(dshsgcr42,DSHSGCR42)(tmp_a,tmp_b,tmp_g,work,&lwork);
 
     if(type_g == NCL_float) {
       coerce_output_float_only(g,tmp_g,size_rightmost_g,index_g);
@@ -19125,6 +19136,8 @@ NhlErrorTypes shsgc_R42_W( void )
 
   ret = NclReturnValue(g,ndims_a,dsizes_g,NULL,type_g,0);
   NclFree(dsizes_g);
+  NclFree(work);
+
   return(ret);
 }
 
