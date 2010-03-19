@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.89 2009-04-13 23:20:24 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.90 2010-03-19 22:44:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5568,7 +5568,7 @@ static NhlErrorTypes ManageLabelBar
 	    vcp->zero_field != ovcp->zero_field ||
 	    vcp->data_init != ovcp->data_init) {
 
-		if ( vcp->zero_field) {
+		if ( vcp->zero_field && vcp->display_labelbar < NhlFORCEALWAYS) {
 			e_text = "%s: zero field: turning Labelbar off";
 			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlINFO);

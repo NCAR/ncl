@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.72 2009-04-13 23:20:24 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.73 2010-03-19 22:44:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4152,7 +4152,7 @@ static NhlErrorTypes ManageLabelBar
 	    stp->zero_field != ostp->zero_field ||
 	    stp->data_init != ostp->data_init) {
 
-		if ( stp->zero_field) {
+		if ( stp->zero_field && stp->display_labelbar < NhlFORCEALWAYS) {
 			e_text = "%s: zero field: turning Labelbar off";
 			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlINFO);

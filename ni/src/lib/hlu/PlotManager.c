@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.73 2010-01-29 21:03:57 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.74 2010-03-19 22:44:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -667,7 +667,9 @@ PlotManagerClassInitialize
 		{NhlNOCREATE,		"NoCreate"},
 		{NhlNEVER,		"Never"},
 		{NhlCONDITIONAL,	"Conditional"},
-		{NhlALWAYS,		"Always"}
+		{NhlALWAYS,		"Always"},
+		{NhlFORCEALWAYS,	"ForceAlways"},
+
         };
 
         _NhlRegisterEnumType(NhlviewClass,NhlTAnnotationDisplayMode,

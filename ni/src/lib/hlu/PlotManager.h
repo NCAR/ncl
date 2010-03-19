@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.h,v 1.6 2000-02-16 01:43:30 dbrown Exp $
+ *      $Id: PlotManager.h,v 1.7 2010-03-19 22:44:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@
 #include <ncarg/hlu/AnnoManager.h>
 
 typedef enum _NhlAnnotationDisplayMode {
-	NhlNOCREATE = -1,NhlNEVER = 0, NhlALWAYS = 1, NhlCONDITIONAL
+	NhlNOCREATE = -1,NhlNEVER = 0, NhlALWAYS = 1, NhlCONDITIONAL,NhlFORCEALWAYS
 } NhlAnnotationDisplayMode;
 
 #define NhlTAnnotationDisplayMode        "AnnotationDisplayMode"

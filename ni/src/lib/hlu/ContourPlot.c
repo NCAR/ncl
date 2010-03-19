@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.147 2009-04-13 23:15:28 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.148 2010-03-19 22:44:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6041,7 +6041,7 @@ static NhlErrorTypes ManageLabelBar
 	    cnp->const_field != ocnp->const_field ||
 	    cnp->data_init != ocnp->data_init) {
 
-		if ( cnp->const_field) {
+		if ( cnp->const_field && cnp->display_labelbar < NhlFORCEALWAYS) {
 			e_text = "%s: constant field: turning Labelbar off";
 			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlINFO);
