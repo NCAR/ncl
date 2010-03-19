@@ -4,7 +4,9 @@
 extern void NGCALLF(dobjanlx,DOBJANLX)(double *, double *, double *, int *, 
                                        int *, double *, int *, int *, double *,
                                        double *, double *, int *, double *, 
-                                       double *, double *, logical *, int *);
+                                       double *, double *, logical *, 
+				       double *, double *, double *, int *,
+				       double *, int *, int *);
 
 #define NSCANMX 10
 
@@ -97,10 +99,10 @@ NhlErrorTypes obj_anal_ic_W( void )
 /*
  * Various
  */
-  double pmsg;
+  double pmsg, *work, *zval, *zlat, *zlon;
   int npts, ntim, mlon, nlat, nscan;
-  int index_pval, index_grid, ier;;
-  int i, size_output, ret;
+  int index_pval, index_grid, ier;
+  int *ip, i, size_output, lwork, ret;
 
 /*
  * Retrieve parameters.
@@ -307,6 +309,20 @@ NhlErrorTypes obj_anal_ic_W( void )
   }
 
 /* 
+ * Allocate space for work arrays
+ */
+  lwork = 2*npts;
+  work = (double *)calloc(lwork,sizeof(double));
+  zval = (double *)calloc(npts*ntim,sizeof(double));
+  zlat = (double *)calloc(npts,sizeof(double));
+  zlon = (double *)calloc(npts,sizeof(double));
+  ip   = (int *)calloc(npts,sizeof(int));
+  if(work==NULL || zval==NULL || zlat==NULL || zlon==NULL || ip==NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"obj_anal_ic: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+
+/* 
  * Allocate space for output array.
  */
   if(type_grid != NCL_double) {
@@ -423,7 +439,8 @@ NhlErrorTypes obj_anal_ic_W( void )
   NGCALLF(dobjanlx,DOBJANLX)(tmp_plon, tmp_plat, tmp_pval, &ntim, &npts,
                              tmp_grid, &mlon, &nlat, 
                              &missing_dbl_pval.doubleval, &pmsg, tmp_rscan,
-                             &nscan, tmp_glat, tmp_glon, wgts, opt, &ier);
+                             &nscan, tmp_glat, tmp_glon, wgts, opt, zval, zlat,
+			     zlon,ip,work,&lwork,&ier);
 
 /*
  * Coerce output back to float if necessary.
@@ -443,6 +460,12 @@ NhlErrorTypes obj_anal_ic_W( void )
   if(type_rscan != NCL_double) NclFree(tmp_rscan);
   if(type_grid  != NCL_double) NclFree(tmp_grid);
   if(!set_wgts || (set_wgts && type_wgts != NCL_double)) NclFree(wgts);
+  NclFree(work);
+  NclFree(ip);
+  NclFree(zval);
+  NclFree(zlat);
+  NclFree(zlon);
+
 /*
  * Return value back to NCL script.
  */
