@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.18 2010-03-18 23:14:29 haley Exp $
+#   $Id: create_dist,v 1.19 2010-03-19 02:48:31 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -309,7 +309,7 @@ if ($?NCLONLY || $?NCARGNCL) then
 
   set ncl_inc_files = ""
 
-  set ncl_inc_dirs  = "ncarg/hlu ncarg/ncl"
+  set ncl_inc_dirs  = "ncarg/hlu ncarg/ncl ncarg/nio"
 
   set ncl_lib_files = "libnclapi.a ncarg/sysresfile libhlu_cairo.a libhlu.a libncl.a libnio.a libnfp.a libnfpfort.a libblas_ncl.a libfftpack5_dp.a liblapack_ncl.a libsphere3.1_dp.a"
 
