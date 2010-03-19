@@ -1,6 +1,6 @@
 # GRIBv2 - Table 4.2-0-190 Meteorological - ASCII
 
-0:0:Arbitrary text string:CCITTIA5:
+0:0:Arbitrary text string:CCITTIA5:ARBTXT
 # 1-191:1-191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:
