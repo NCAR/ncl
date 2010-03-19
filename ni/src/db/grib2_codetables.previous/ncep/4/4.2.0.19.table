@@ -1,0 +1,66 @@
+# Product Discipline 0: Meteorological products, Parameter Category 19: Physical atmospheric properties
+0:0:Visibility:m:VIS
+1:1:Albedo:%:ALBDO
+2:2:Thunderstorm probability:%:TSTM
+3:3:mixed layer depth:m:MIXHT
+4:4:Volcanic ash (Code table 4.206)
+5:5:Icing top:m:ICETOP
+6:6:Icing base:m:ICEBAS
+7:7:Icing
+8:8:Turbulence top:m:TRBTOP
+9:9:Turbulence base:m:TRBBAS
+10:10:Turbulence (Code table 4.208)
+11:11:Turbulent kinetic energy:J kg-1:TKE
+12:12:Planetary boundary layer regime (Code table 4.209):PBLREG
+13:13:Contrail intensity
+14:14:Contrail engine type
+15:15:Contrail top:m:CNTRLTOP
+16:16:Contrail base:m:CNTRLBAS
+17:17:Maximum snow albedo:%:MXSALB
+18:18:Snow free albedo:%:SNFALB
+19:19:Snow Albedo:%:SALBD
+# 19-191 Reserved
+#192-254 Reserved for local use
+192:192:Maximum Snow Albedo:%:MXSALB
+193:193:Snow-Free Albedo:%:SNFALB
+194:194:Slight risk convective outlook:categorical:
+195:195:Moderate risk convective outlook
+196:196:High risk convective outlook
+197:197:Tornado probability:%:TRNDPROB
+198:198:Hail probability:%:HAILPROB
+199:199:Wind Probability:%:WINDPROB
+200:200:Significant Tornado probability:%:SIGTRNDPROB
+201:201:Significant Hail probability:%:SIGHAILPROB
+202:202:Significant Wind probability:%:SIGWINDPROB
+203:203:Categorical Thunderstorm (1-yes, 0-no):categorical:TSTMC
+204:204:Number of mixed layers next to surface:integer:MIXLY
+205:205:Flight Category:FLGHT
+206:206:Confidence - Ceiling:CICEL
+207:207:Confidence - Visibility:CIVIS
+208:208:Confidence - Flight Category:CIFLT
+209:209:Low-Level aviation interest:LAVNI
+210:210:High-Level aviation interest:HAVNI
+211:211:Visible, Black Sky Albedo:SBSALB
+212:212:Visible, White Sky Albedo:SWSALB
+213:213:Near IR, Black Sky Albedo:NBSALB
+214:214:Near IR, White Sky Albedo:NWSALB
+215:215:Total Probability of Severe Thunderstorms (Days 2,3):PRSVR
+216:216:Total Probability of Extreme Severe Thunderstorms (Days 2,3):%:PRSIGSV
+217:217:Mean Icing Potential:kg m-2:MEI
+218:218:Maximum Icing Potential:kg m-2:MAIP
+219:219:Mean in-Cloud Turbulence Potential:kg m-2:MECTP
+220:220:Max in-Cloud Turbulence Potential:kg m-2:MACTP
+221:221:Mean Cloud Air Turbulence Potential:kg m-2:MECAT
+222:222:Maximum Cloud Air Turbulence Potential:kg m-2:MACAT
+223:223:Cumulonimbus Horizontal Exten:%:CBHE
+224:224:Pressure at Cumulonimbus Bas:Pa:PCBB
+225:225:Pressure at Cumulonimbus To:Pa:PCBT
+226:226:Pressure at Embedded Cumulonimbus Bas:Pa:PECBB
+227:227:Pressure at Embedded Cumulonimbus To:Pa:PECBT
+228:228:ICAO Height at Cumulonimbus Bas:m:HCBB
+229:229:ICAO Height at Cumulonimbus To:m:HCBT
+230:230:ICAO Height at Embedded Cumulonimbus Bas:m:HECBB
+231:231:ICAO Height at Embedded Cumulonimbus To:m:HECBT
+232:232:Volcanic Ash Forecast Transport and Dispersion:log10(kg/m3):VAFTD
+255:255:Missing
+

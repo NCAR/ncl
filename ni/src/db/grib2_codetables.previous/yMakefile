@@ -1,0 +1,33 @@
+#
+#      $Id: yMakefile,v 1.1 2010-03-19 18:36:04 dbrown Exp $
+#
+#########################################################################
+#                                                                       #
+#               Copyright (C) 2006                                      #
+#       University Corporation for Atmospheric Research                 #
+#               All Rights Reserved                                     #
+#                                                                       #
+#########################################################################
+#
+#       File:		yMakefile
+#
+#       Author:     Jeff W. Boote
+#                   National Center for Atmospheric Research
+#                   POB 3000, Boulder, Colorado
+#
+#       Date:
+#
+#Description:   yMakefile for ncarg/ni/src/db/grib2_codetables
+
+#if !defined(CRAY)
+#define	IHaveSubdirs
+SUBDIRS = ecmwf ncep tigge
+#endif
+
+TABLES	 = centers.table
+
+GRIB2_CODETABLE_PATH = $(LIBNCARGPATH)/grib2_codetables.previous
+
+INSTALL_GRIB2_CODETABLE = $(INSTALL_LIB)
+
+InstallTarget($(TABLES),$(INSTALL_LIB),$(GRIB2CODETABLEROOT).previous)

@@ -1,0 +1,28 @@
+# Product Discipline 0: Meteorological products, Parameter Category 0: Temperature
+0:0:Temperature on an isobaric level:K:T
+#0:0:Surface air temperature:K:2T
+#0:0:Surface air maximum temperature:K:MX2T6
+#0:0:Surface air minimum temperature:K:MN2T6
+1:1:Virtual temperature:K:VTMP
+2:2:Potential temperature:K:PT
+3:3:Pseudo-adiabatic potential temperature or equivalent potential temperature:K:EPT
+4:4:Maximum temperature:K:TMAX
+5:5:Minimum temperature:K:TMIN
+6:6:Surface air dew point temperature:K:2D
+7:7:Dew point depression or deficit:K:DEPR
+8:8:Lapse rate:K m-1:LAPR
+9:9:Temperature anomaly:K:TMPA
+10:10:Time integrated surface latent heat flux:W m-2 s:SLHF
+11:11:Time integrated surface sensible heat flux:W m-2 s:SSHF
+12:12:Heat index:K:HX
+13:13:Wind chill factor:K:WCHL
+14:14:Minimum dew point depression:K:MDEPR
+15:15:Virtual potential temperature:K:VPTMP
+16:16:Snow phase change heat flux:W m-2:SNOHF
+17:17:Skin Temperature (Proposal from ECMWF, not WMO approved):K:SKT
+#18-191 Reserved
+#192-254 Reserved for local use
+192:192:Snow Phase Change Heat Flux:W m-2:SNOHF
+193:193:Temperature tendency by all radiation:K s-1:TTRAD
+255:255:Missing
+

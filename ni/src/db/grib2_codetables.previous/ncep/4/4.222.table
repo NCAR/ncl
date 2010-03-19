@@ -1,0 +1,6 @@
+# CODE TABLE 4.222, Categorical Result (NCEP)
+0:0:No
+1:1:Yes
+#4-191 Reserved
+#192-254 Reserved for local use
+255:255:Missing

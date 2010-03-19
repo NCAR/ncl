@@ -1,0 +1,9 @@
+# Product Discipline 0: Meteorological products, Parameter Category 191: Miscellaneous
+0:0:Seconds prior to initial reference time (defined in Section 1):TSEC:s
+# 1-191 Reserved
+# 192-254 Reserved for local use
+192:192:Latitude (-90 to +90):deg:NLAT
+193:193:East Longitude (0 - 360):deg:ELON
+194:194:Seconds prior to initial reference time:s:TSEC
+255:255:Missing
+

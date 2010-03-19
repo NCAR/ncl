@@ -1,0 +1,10 @@
+# Product Discipline 0: Meteorological products, Parameter Category 14: Trace Gases
+0:0:Total ozone:Dobson:TOZNE
+1:1:Ozone mixing ratio:kg kg-1:O3MR
+# 2-191 Reserved
+#192-254 Reserved for local use
+192:192:Ozone Mixing Ratio:kg kg-1:O3MR
+193:193:Ozone Concentration (PPB):PPB:OZCON
+194:194:Categorical Ozone Concentration:Non-Dim:OZCAT
+255:255:Missing
+

@@ -1,0 +1,26 @@
+#
+#      $Id: yMakefile,v 1.1 2010-03-19 18:36:08 dbrown Exp $
+#
+#########################################################################
+#                                                                       #
+#               Copyright (C) 2006                                      #
+#       University Corporation for Atmospheric Research                 #
+#               All Rights Reserved                                     #
+#                                                                       #
+#########################################################################
+#
+#       File:		yMakefile
+#
+#       Author:     Jeff W. Boote
+#                   National Center for Atmospheric Research
+#                   POB 3000, Boulder, Colorado
+#
+#       Date:
+#
+#       Description:   yMakefile for ncarg/ni/src/db/grib2_codetables/tigge/3
+
+TABLES = 3.0.table 3.1.table 3.2.table 3.3.table 3.4.table 3.5.table 3.6.table \
+		 3.7.table 3.8.table 3.9.table 3.10.table 3.11.table 3.15.table \
+		 3.20.table 3.21.table
+
+InstallTarget($(TABLES),$(INSTALL_LIB),$(GRIB2CODETABLEROOT).previous/tigge/3)

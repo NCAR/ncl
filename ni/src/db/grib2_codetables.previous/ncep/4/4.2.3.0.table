@@ -1,0 +1,14 @@
+# Product discipline 3: Space products, Parameter Category 0: Image format products
+0:0:Scaled radiance:Numeric:SCRAD
+1:1:Scaled albedo:Numeric:SCALBDO
+2:2:Scaled brightness temperature:Numeric:SCTBRGT
+3:3:Scaled precipitable water:Numeric:SCPRECW
+4:4:Scaled lifted index:Numeric:SCLIX
+5:5:Scaled cloud top pressure:Numeric:SCCTOPPRES
+6:6:Scaled skin temperature:Numeric:SCTSKIN
+7:7:Cloud mask (Code table 4.217)
+8:8:Pixel scene type (Code table 4.218)
+# 9-191 Reserved
+#192-254 Reserved for local use
+255:255:Missing
+
