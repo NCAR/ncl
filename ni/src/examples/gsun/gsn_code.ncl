@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.235 2010-03-18 21:07:32 haley Exp $
+;      $Id: gsn_code.ncl,v 1.236 2010-03-21 18:40:16 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3493,14 +3493,18 @@ begin
 
     if (lower_case(type2).eq."newps".or.lower_case(type2).eq."newpdf" \
           .or.lower_case(type2).eq."newpng".or.lower_case(type2).eq."png") then
-      cairo_file = get_res_value(type2,"wkCairoFileName", res_file)
+      cairo_file = get_res_value(type2,"wkFileName", res_file)
+; Additional possibility for cairo image files
+      if (lower_case(type2).eq."newpng".or.lower_case(type2).eq."png") then
+        cairo_file = get_res_value(type2,"wkImageFileName", cairo_file)
+      end if
       cairo_file@res_file = res_file
       wks = gsn_open_cairo(type2, res_dir+cairo_file)
       valid_type = True
     end if
 
     if (lower_case(type2).eq."xwd") then
-      image_file = get_res_value(type2,"wkImageFileName", res_file)
+      image_file = get_res_value(type2,"wkFileName", res_file)
       image_file@res_file = res_file
       wks = gsn_open_image(type2, res_dir+image_file)
       valid_type = True
