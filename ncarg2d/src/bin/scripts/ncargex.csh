@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.171 2010-03-14 21:35:06 haley Exp $
+#   $Id: ncargex.csh,v 1.172 2010-03-21 21:18:35 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -1499,7 +1499,7 @@ else
 endif
 
 # Is this a cairo workstation?
-if ("$ws_type" >= 40 || "$ws_type" <= "42" ) set cairo
+if ("$ws_type" >= 40 && "$ws_type" <= "42" ) set cairo
 
 #******************************************#
 #                                          #
