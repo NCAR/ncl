@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.236 2010-03-21 18:40:16 haley Exp $
+;      $Id: gsn_code.ncl,v 1.237 2010-03-21 22:13:58 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3104,6 +3104,51 @@ begin
   return(labelbar_object)
 end
 
+
+;***********************************************************************;
+; Function to determine if a cairo PS is being requested.               ;
+;***********************************************************************;
+function is_cairo_ps(wtype)
+local lwtype, cpsenv
+begin
+  lwtype = lower_case(wtype)
+  cpsenv = getenv("NCARG_CAIRO_PS")
+  if(lwtype.eq."newps".or.(lwtype.eq."ps".and..not.ismissing(cpsenv))) then
+    return(True)
+  else
+    return(False)
+  end if
+end
+
+;***********************************************************************;
+; Function to determine if a cairo PDF is being requested.              ;
+;***********************************************************************;
+function is_cairo_pdf(wtype)
+local lwtype, cpdfenv
+begin
+  lwtype  = lower_case(wtype)
+  cpdfenv = getenv("NCARG_CAIRO_PDF")
+  if(lwtype.eq."newpdf".or.(lwtype.eq."pdf".and..not.ismissing(cpdfenv))) then
+    return(True)
+  else
+    return(False)
+  end if
+end
+
+;***********************************************************************;
+; Function to determine if a cairo PNG is being requested.              ;
+;***********************************************************************;
+function is_cairo_png(wtype)
+local lwtype
+begin
+  lwtype = lower_case(wtype)
+  if(lwtype.eq."newpng".or.lwtype.eq."png") then
+    return(True)
+  else
+    return(False)
+  end if
+end
+
 ;***********************************************************************;
 ; Function : gsn_open_ps                                                ;
 ;               name : name of PostScript file                          ;
@@ -3284,7 +3329,6 @@ end
 undef("gsn_open_cairo")
 function gsn_open_cairo(type:string, name[1]:string)
 local cairo, res_file, wkres, wkresnew, names, i
-
 begin
 ;
 ; If there are resources, copy them over to a logical variable,
@@ -3313,14 +3357,19 @@ begin
 ;
 ; We need to distinguish between PS/PDF versus image-based output formats
 ;
-    if (type.eq."newps".or.type.eq."newpdf")
+    if (is_cairo_ps(type).or.is_cairo_pdf(type)) then
         resltn   = get_res_value(wkresnew,"wkPDFResolution",1800)
         paperSize   = get_res_value(wkresnew,"wkPaperSize","")
         paperW = get_res_value(wkresnew,"wkPaperWidthF", -1.)
         paperH = get_res_value(wkresnew,"wkPaperHeightF", -1.)
+        if(is_cairo_ps(type)) then
+          newtype = "newps"    ; Can't use "ps" for cairo PS yet
+        else
+          newtype = "newpdf"   ; Can't use "pdf" for cairo PDF yet
+        end if
         cairo = create res_file documentWorkstationClass defaultapp
           "wkFileName"        : name
-          "wkFormat"          : type
+          "wkFormat"          : newtype
           "wkPDFResolution"   : resltn
           "wkPaperSize"       : paperSize
           "wkPaperWidthF"      : paperW
@@ -3418,9 +3467,11 @@ function gsn_open_wks(type[1]:string,name[1]:string)
 local i, wks, appusrdir, name_char, not_found, res_file, res_dir
 begin
     type2   = type          ; Make copy of type and its resources
+    type2  = lower_case(type)
     res_dir = "./"          ; Default resource directory.
     res_file = "gsnapp"     ; Default resource file name.
     valid_type = False      ; Is type valid?
+
 ;
 ; Parse "name" to get the directory and the file prefix.
 ;
@@ -3455,7 +3506,7 @@ begin
 ;
     wks = new(1,graphic,"No_FillValue")
 
-    if (lower_case(type2).eq."x11") then
+    if (type2.eq."x11") then
       x_file = res_file
       if (isatt(type2,"wkColorMap"))
         x_file@wkColorMap = type2@wkColorMap
@@ -3464,15 +3515,15 @@ begin
       valid_type = True
     end if
 
-    if (lower_case(type2).eq."ps".or.lower_case(type2).eq."eps".or. \
-        lower_case(type2).eq."epsi") then
+    if (type2.eq."ps".or.type2.eq."eps".or. \
+        type2.eq."epsi") then
       ps_file = get_res_value(type2,"wkPSFileName",res_file + "." + type2)
       ps_file@res_file = res_file
       wks = gsn_open_ps(type2,res_dir+ps_file)
       valid_type = True
     end if
 
-    if (lower_case(type2).eq."ncgm") then
+    if (type2.eq."ncgm") then
       ncgm_file = get_res_value(type2,"wkMetaName",res_file + ".ncgm")
       ncgm_file = res_dir + ncgm_file
       ncgm_file@res_file = res_file
@@ -3483,7 +3534,7 @@ begin
       valid_type = True
     end if
 
-    if (lower_case(type2).eq."pdf") then
+    if (type2.eq."pdf") then
       pdf_file = get_res_value(type2,"wkPDFFileName", \
                                res_file + "." + type2)
       pdf_file@res_file = res_file
@@ -3491,11 +3542,9 @@ begin
       valid_type = True
     end if
 
-    if (lower_case(type2).eq."newps".or.lower_case(type2).eq."newpdf" \
-          .or.lower_case(type2).eq."newpng".or.lower_case(type2).eq."png") then
+    if (is_cairo_ps(type2).or.is_cairo_pdf(type2).or.is_cairo_png(type2)) then
       cairo_file = get_res_value(type2,"wkFileName", res_file)
-; Additional possibility for cairo image files
-      if (lower_case(type2).eq."newpng".or.lower_case(type2).eq."png") then
+      if (is_cairo_png(type2)) then
         cairo_file = get_res_value(type2,"wkImageFileName", cairo_file)
       end if
       cairo_file@res_file = res_file
@@ -3503,7 +3552,7 @@ begin
       valid_type = True
     end if
 
-    if (lower_case(type2).eq."xwd") then
+    if (type2.eq."xwd") then
       image_file = get_res_value(type2,"wkFileName", res_file)
       image_file@res_file = res_file
       wks = gsn_open_image(type2, res_dir+image_file)
