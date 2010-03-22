@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.237 2010-03-21 22:13:58 haley Exp $
+;      $Id: gsn_code.ncl,v 1.238 2010-03-22 01:59:53 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2399,7 +2399,11 @@ end
 ;                        default is 0.5)                               ;
 ;                                                                      ;
 ; In V5.2.0, new paper size resources were added, and this function    ;
-; was updated to recognize them.                                       ;
+; was updated to recognize them (wkPaperSize, wkPaperWidthF,           ;
+;    and wkPaperHeightF).                                              ;
+;                                                                      ;
+; gsnPaperWidth and gsnPaperHeight are considered deprecated, but      ;
+; still recognized.                                                    ;
 ;                                                                      ;
 ;                                                                      ;
 ;**********************************************************************;
@@ -2852,8 +2856,11 @@ function get_bb_res(res:logical)
 begin
   maxbb                = get_res_value(res,"gsnMaximize", False) 
   maxbb@gsnPaperMargin = get_res_value(res,"gsnPaperMargin",0.5)
-  maxbb@gsnPaperHeight = get_res_value(res,"gsnPaperHeight",11.0)
-  maxbb@gsnPaperWidth  = get_res_value(res,"gsnPaperWidth",8.5)
+;
+; No longer set these two, because they will be retrieved later.
+;
+;  maxbb@gsnPaperHeight = get_res_value(res,"gsnPaperHeight",11.0)
+;  maxbb@gsnPaperWidth  = get_res_value(res,"gsnPaperWidth",8.5)
   maxbb@gsnBoxMargin   = get_res_value(res,"gsnBoxMargin",0.02)
   maxbb@gsnDebug       = get_res_value(res,"gsnDebug",False)
 ;
@@ -3367,6 +3374,7 @@ begin
         else
           newtype = "newpdf"   ; Can't use "pdf" for cairo PDF yet
         end if
+
         cairo = create res_file documentWorkstationClass defaultapp
           "wkFileName"        : name
           "wkFormat"          : newtype
