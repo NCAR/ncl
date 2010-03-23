@@ -6333,8 +6333,8 @@ NhlErrorTypes wrf_helicity_W( void )
 /*
  * Set up some attributes ("description" and "units") to return.
  */
-  cdescription = (char *)calloc(18,sizeof(char));
-  strcpy(cdescription,"Relative Helicity");
+  cdescription = (char *)calloc(24,sizeof(char));
+  strcpy(cdescription,"Storm Relative Helicity");
   description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
 

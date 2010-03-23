@@ -890,8 +890,17 @@ static int utInvCalendar2_noleap_inner( int year, int month, int day, int hour, 
 	tmp_tval = (double)sep_seconds_i + sep_seconds_f;
 	*value = cv_convert_double( conv_seconds_to_user_units, tmp_tval );
 
+#ifdef DEBUG
+	printf( "utInvCalendar2_noleap_inner: tmp_tval = %g\n", tmp_tval);
+	printf( "utInvCalendar2_noleap_inner: *value   = %g\n", *value);
+#endif
+
 	tmp_tval = sep_days;
 	*value += cv_convert_double( conv_days_to_user_units, tmp_tval );
+#ifdef DEBUG
+	printf( "utInvCalendar2_noleap_inner: tmp_tval = %g\n", tmp_tval);
+	printf( "utInvCalendar2_noleap_inner: *value   = %g\n", *value);
+#endif
 
 	/* Apply sign */
 	if( ! units_earlier )

@@ -689,8 +689,15 @@ int utInvCalendar_noleap_inner( int year, int month, int day, int hour, int minu
 	err = utConvert( &udu_origin_zero, unit, &slope, &intercept );	/* udu_origin_zero has units of 'seconds' */
 	*value = (sep_seconds_i * slope) + (sep_seconds_f * slope);
 
+#ifdef DEBUG
+	printf( "utInvCalendar_noleap_inner: that separation in users units for the origin time is %lf\n", *value );
+#endif
 	err = utConvert( &udu_days, unit, &slope, &intercept );	/* udu_days has units of 'days' */
 	*value += sep_days * slope;
+
+#ifdef DEBUG
+	printf( "utInvCalendar_noleap_inner: that separation in users units is %lf\n", *value );
+#endif
 
 	/* Apply sign */
 	if( ! units_earlier )
