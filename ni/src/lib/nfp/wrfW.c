@@ -86,7 +86,7 @@ extern void NGCALLF(dcapecalc3d,DCAPECALC3D)(double *prs, double *tmk,
                                              int *i3dflag, int *ter_follow,
                                              char *,int);
 
-extern void NGCALLF(dcalrelhl,DCALRELHL)(double *u, double *v, double *ght,
+extern void NGCALLF(dcalrelhl,DCALRELHL)(double *u, double *v, double *z,
                                          double *ter, double *top, 
                                          double *sreh, int *miy, int *mjx,
                                          int *mkzh);
@@ -5972,10 +5972,10 @@ NhlErrorTypes wrf_helicity_W( void )
 /*
  * Argument # 2
  */
-  void *ght;
-  double *tmp_ght;
-  int ndims_ght, dsizes_ght[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_ght;
+  void *z;
+  double *tmp_z;
+  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_z;
 
 /*
  * Argument # 3
@@ -6068,27 +6068,27 @@ NhlErrorTypes wrf_helicity_W( void )
 /*
  * Get argument # 2
  */
-  ght = (void*)NclGetArgValue(
+  z = (void*)NclGetArgValue(
            2,
            5,
-           &ndims_ght,
-           dsizes_ght,
+           &ndims_z,
+           dsizes_z,
            NULL,
            NULL,
-           &type_ght,
+           &type_z,
            DONT_CARE);
 
 /*
  * Error checking on dimension sizes.
  */
-  if(ndims_u != ndims_v || ndims_u != ndims_ght) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: u, v, and ght must have the same dimensions");
+  if(ndims_u != ndims_v || ndims_u != ndims_z) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: u, v, and z must have the same dimensions");
     return(NhlFATAL);
   }
 
   for(i = 0; i < ndims_u; i++) {
-    if(dsizes_u[i] != dsizes_v[i] || dsizes_u[i] != dsizes_ght[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: u, v, and ght must have the same dimensions");
+    if(dsizes_u[i] != dsizes_v[i] || dsizes_u[i] != dsizes_z[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: u, v, and z must have the same dimensions");
       return(NhlFATAL);
     }
   }
@@ -6110,12 +6110,12 @@ NhlErrorTypes wrf_helicity_W( void )
  * Error checking on dimensions.
  */
   if(ndims_ter != (ndims_u-1)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: ter must have one fewer dimension sizes than u, v, ght");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: ter must have one fewer dimension sizes than u, v, z");
     return(NhlFATAL);
   }
 
   if(dsizes_ter[ndims_ter-2] != mjx || dsizes_ter[ndims_ter-1] != miy) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: The rightmost two dimensions of ter must be the same as the rightmost two dimensions of u, v, ght");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: The rightmost two dimensions of ter must be the same as the rightmost two dimensions of u, v, z");
     return(NhlFATAL);
   }
 
@@ -6124,7 +6124,7 @@ NhlErrorTypes wrf_helicity_W( void )
  */
   for(i = 0; i < ndims_ter-2; i++) {
     if(dsizes_ter[i] != dsizes_u[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: The leftmost dimensions of ter and u, v, ght must be the same");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: The leftmost dimensions of ter and u, v, z must be the same");
     }
   }
 
@@ -6190,12 +6190,12 @@ NhlErrorTypes wrf_helicity_W( void )
   }
 
 /*
- * Allocate space for tmp_ght.
+ * Allocate space for tmp_z.
  */
-  if(type_ght != NCL_double) {
-    tmp_ght = (double *)calloc(mxyz,sizeof(double));
-    if(tmp_ght == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: Unable to allocate memory for coercing ght to double");
+  if(type_z != NCL_double) {
+    tmp_z = (double *)calloc(mxyz,sizeof(double));
+    if(tmp_z == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: Unable to allocate memory for coercing z to double");
       return(NhlFATAL);
     }
   }
@@ -6214,8 +6214,8 @@ NhlErrorTypes wrf_helicity_W( void )
 /*
  * The output type defaults to float, unless any input arrays are double.
  */
-  if(type_u   == NCL_double || type_v   == NCL_double || 
-     type_ght == NCL_double || type_ter == NCL_double) {
+  if(type_u == NCL_double || type_v   == NCL_double || 
+     type_z == NCL_double || type_ter == NCL_double) {
     type_sreh     = NCL_double;
     type_obj_sreh = nclTypedoubleClass;
   }
@@ -6269,13 +6269,13 @@ NhlErrorTypes wrf_helicity_W( void )
     }
 
 /*
- * Coerce subsection of ght (tmp_ght) to double if necessary.
+ * Coerce subsection of z (tmp_z) to double if necessary.
  */
-    if(type_ght != NCL_double) {
-      coerce_subset_input_double(ght,tmp_ght,index_u,type_ght,mxyz,0,NULL,NULL);
+    if(type_z != NCL_double) {
+      coerce_subset_input_double(z,tmp_z,index_u,type_z,mxyz,0,NULL,NULL);
     }
     else {
-      tmp_ght = &((double*)ght)[index_u];
+      tmp_z = &((double*)z)[index_u];
     }
 
 /*
@@ -6294,7 +6294,7 @@ NhlErrorTypes wrf_helicity_W( void )
  */
     if(type_sreh == NCL_double) tmp_sreh = &((double*)sreh)[index_ter];
 
-    NGCALLF(dcalrelhl,DCALRELHL)(tmp_u, tmp_v, tmp_ght, tmp_ter, tmp_top,
+    NGCALLF(dcalrelhl,DCALRELHL)(tmp_u, tmp_v, tmp_z, tmp_ter, tmp_top,
                                  tmp_sreh, &miy, &mjx, &mkzh);
 
     if(type_sreh != NCL_double) {
@@ -6309,7 +6309,7 @@ NhlErrorTypes wrf_helicity_W( void )
  */
   if(type_u    != NCL_double) NclFree(tmp_u);
   if(type_v    != NCL_double) NclFree(tmp_v);
-  if(type_ght  != NCL_double) NclFree(tmp_ght);
+  if(type_z    != NCL_double) NclFree(tmp_z);
   if(type_ter  != NCL_double) NclFree(tmp_ter);
   if(type_sreh != NCL_double) NclFree(tmp_sreh);
 
