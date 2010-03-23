@@ -6282,7 +6282,7 @@ NhlErrorTypes wrf_helicity_W( void )
  * Coerce subsection of ter (tmp_ter) to double if necessary.
  */
     if(type_ter != NCL_double) {
-      coerce_subset_input_double(ter,tmp_ter,index_u,type_ter,mxy,0,NULL,NULL);
+      coerce_subset_input_double(ter,tmp_ter,index_ter,type_ter,mxy,0,NULL,NULL);
     }
     else {
       tmp_ter = &((double*)ter)[index_ter];
