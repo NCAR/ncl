@@ -1,5 +1,5 @@
 C NCLFORTSTART
-      subroutine dcal_relhl(u, v, ght, ter, top, sreh, miy, mjx, mkzh)
+      subroutine dcalrelhl(u, v, ght, ter, top, sreh, miy, mjx, mkzh)
       implicit none
       integer miy, mjx, mkzh
       double precision u(miy,mjx,mkzh), v(miy,mjx,mkzh), 
