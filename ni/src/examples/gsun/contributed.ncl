@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.267 2010-03-15 17:38:26 shea Exp $
+;      $Id: contributed.ncl,v 1.268 2010-03-23 17:53:22 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -926,8 +926,8 @@ undef ("changeCaseChar")
 function changeCaseChar (x:string)
 
 begin
-  print("changeCaseChar: this function has been deprecated.")
-  print("                Will use str_switch.")
+;  print("changeCaseChar: this function has been deprecated.")
+;  print("                Will use str_switch.")
   return(str_switch(x))
 end
 ; *****************************************************************
@@ -3939,7 +3939,7 @@ begin
       fo!nD = xo!0                              ; if present, use xo name
   else 
       if (isdimnamed(fi,nD)) then
-          fo!nD = changeCaseChar(fi!nD)         ; if present, use same name
+          fo!nD = str_switch(fi!nD)             ; if present, use same name
       else                                      ; but change case [contributed]
           fo!nD = "X"                           ; default dimension name
       end if                
@@ -3978,7 +3978,7 @@ begin
       fo!nD = xo!0                              ; if present, use xo name
   else 
       if (isdimnamed(fi,nD)) then
-          fo!nD = changeCaseChar(fi!nD)         ; if present, use same name
+          fo!nD = str_switch(fi!nD)             ; if present, use same name
       else                                      ; but change case [contributed]
           fo!nD = "X"                           ; default dimension name
       end if                
@@ -4020,7 +4020,7 @@ begin
   else 
       do nD=nDim-2,nDim-1                       ; two rightmost dimensions
          if (.not.ismissing(fi!nD)) then
-             fo!nD = changeCaseChar(fi!nD)      ; if present, use same name
+             fo!nD = str_switch(fi!nD)          ; if present, use same name
          end if                                 ; but change case
       end do
   end if
@@ -4108,7 +4108,7 @@ begin
   else
       do nD=nDim-2,nDim-1                  ; two rightmost dimensions
          if (.not.ismissing(fi!nD)) then
-             fo!nD = changeCaseChar(fi!nD) ; if present, use same name
+             fo!nD = str_switch(fi!nD)     ; if present, use same name
          end if                            ; but change case
       end do
   end if
