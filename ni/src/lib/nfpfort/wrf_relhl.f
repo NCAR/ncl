@@ -48,7 +48,7 @@ C
 	  va = sv / sdh
 	  asp = sqrt(ua*ua + va*va)
 	  if (ua .eq. 0.d0 .and. va .eq. 0.d0) then
-	    adr = 0.
+	    adr = 0.d0
 	  else
 	    adr = dpr * (pi + atan2(ua,va))
 	  endif
