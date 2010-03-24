@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.141 2010-02-27 01:24:28 dbrown Exp $
+ *      $Id: Execute.c,v 1.142 2010-03-24 23:00:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -546,6 +546,10 @@ void CallLIST_READ_FILEVAR_OP(void) {
 
 	/* get the selected files from the file list */
 	newlist =_NclListSelect(list,sel_ptr);
+	if (! newlist) {
+		estatus = NhlFATAL;
+                return;
+	}
 
 	if (sel.sel_type == Ncl_VECSUBSCR) {
 		NclFree(sel.u.vec.ind);
@@ -1393,6 +1397,9 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			estatus = NhlFATAL;
 		}
 	}
+	else {
+               estatus = NhlFATAL;
+        }
 
  fatal_err:  /* could also be totally benign */
 
