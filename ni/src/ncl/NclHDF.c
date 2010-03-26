@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.36 2010-02-19 22:58:52 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.37 2010-03-26 20:05:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -546,6 +546,7 @@ static void ProcessDuplicateNames
 	ProcessVgroups(tmp,NrmQuarkToString(tmp->file_path_q));
 	for (varp = tmp->vars; varp != NULL; varp = varp->next) {
 		char vgid_string[12];
+		char *cp;
 		int dup_count = 0;
 		if (varp->var_inq->name != NrmNULLQUARK)
 			continue;
@@ -597,13 +598,19 @@ static void ProcessDuplicateNames
 			}
 
 		}
+		cp = &vgid_string[0];
 		if (varp->var_inq->vg_ref > 0) {
 			sprintf(vgid_string,"%d",varp->var_inq->vg_ref);
 		}
-		else {
-			sprintf(vgid_string,"%d",dup_count);
+		else if (dup_count > 0) {
+			/* this is the first instance so call it 0 */ 
+			sprintf(vgid_string,"%d",0);
 		}
-		varp->var_inq->name = HDFToNCLName(NrmQuarkToString(varp->var_inq->hdf_name),vgid_string,True);
+		else { /* no dups for this variable and no group name either */
+			sprintf(vgid_string,"");
+			cp = NULL;
+		}
+		varp->var_inq->name = HDFToNCLName(NrmQuarkToString(varp->var_inq->hdf_name),cp,True);
 		if (varp->var_inq->var_path != NrmNULLQUARK) {
 			int i;
 			HDFAttInqRecList **atlp;
