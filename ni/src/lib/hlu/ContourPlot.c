@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.148 2010-03-19 22:44:25 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.149 2010-03-27 18:58:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6079,7 +6079,7 @@ static NhlErrorTypes ManageLabelBar
 		cnp->lbar_labels_set = True;
 	}
 
-	if (cnp->const_field) return ret;
+	if (cnp->const_field && cnp->display_labelbar < NhlFORCEALWAYS) return ret;
 	
         if (! (cnp->explicit_lbar_labels_on && cnp->lbar_alignment_set)) {
 		if (init || cnp->lbar_end_style != ocnp->lbar_end_style ||

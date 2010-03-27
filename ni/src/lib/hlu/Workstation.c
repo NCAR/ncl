@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.108 2008-11-11 01:38:00 dbrown Exp $
+ *      $Id: Workstation.c,v 1.109 2010-03-27 18:58:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5356,6 +5356,7 @@ _NhlDeactivateWorkstation
 	NhlWorkstationClassPart	*wc =
 		&((NhlWorkstationClass)wks->base.layer_class)->work_class;
 
+        NhlUpdateWorkstation(wks->base.id);
 	if(_NhlIsWorkstation(wks))
 		return (*(wc->deactivate_work))(wks);
 

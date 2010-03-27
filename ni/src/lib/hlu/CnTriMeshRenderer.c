@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRenderer.c,v 1.16 2009-10-30 00:16:28 dbrown Exp $
+ *      $Id: CnTriMeshRenderer.c,v 1.17 2010-03-27 18:58:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2681,7 +2681,7 @@ static NhlErrorTypes CnTriMeshRender
 	}
 	else {
 		tmp->ezmap = 0;
-		c_ctseti("MAP",0);
+		c_ctseti("MAP",NhlcnTRIMESHMAPVAL);
 	}
 
 	c_ctseti("WSO", 3);		/* error recovery on */
@@ -4611,6 +4611,7 @@ void   (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
 			OverlayInvMapXY(&Cnl->trans,xinp,yinp,xotp,yotp);
 	}
 	else {
+		/* I don't know if this branch is ever taken any more */
 		if (*imap > 0) {
 			ytmp = rtod*asin(*zinp/
 					 sqrt(*xinp * *xinp + *yinp * *yinp +
