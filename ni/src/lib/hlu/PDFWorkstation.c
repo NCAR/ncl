@@ -1,5 +1,5 @@
 /*
- *      $Id: PDFWorkstation.c,v 1.4 2010-02-09 23:12:44 brownrig Exp $
+ *      $Id: PDFWorkstation.c,v 1.5 2010-03-29 16:30:03 brownrig Exp $
  */
 
 # include   <stdio.h>
@@ -48,7 +48,7 @@ static NhlResource resources[] = {
      */
     {NhlNwkPaperSize,NhlCwkPaperSize,NhlTString,
         sizeof(NhlString),Oset(paper_size),NhlTImmediate,
-        NULL,_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
+        _NhlUSET(PAGEUTIL_DEFAULT_PAPERSIZE),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
     {NhlNwkPaperWidthF, NhlCwkPaperWidthF, NhlTFloat,
         sizeof(float), Oset(page_width), NhlTString,
         _NhlUSET("-1."), _NhlRES_DEFAULT, NULL},
