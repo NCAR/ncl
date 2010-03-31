@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.90 2010-03-19 22:44:25 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.91 2010-03-31 00:52:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5605,7 +5605,7 @@ static NhlErrorTypes ManageLabelBar
 		ovcp->lbar_labels = NULL;
 		vcp->lbar_labels_set = True;
 	}
-	if (vcp->zero_field)
+	if (vcp->zero_field && vcp->display_labelbar < NhlFORCEALWAYS)
 		return ret;
 
 	sip=(vcp->use_scalar_array && vcp->scalar_data_init) ?
@@ -8370,7 +8370,7 @@ static NhlErrorTypes    SetupLevelsManual
 		do_automatic = True;
 	}
                 
-	if (vcp->level_spacing <= 0.0 && vcp->level_count > 1) {
+	if (vcp->level_spacing <= 0.0) {
 	e_text = "%s: Invalid level spacing value: using AUTOMATICLEVELS mode";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ret = MIN(ret,NhlWARNING);
@@ -8392,7 +8392,7 @@ static NhlErrorTypes    SetupLevelsManual
 	if (vcp->max_level_set) {
 		lmax = vcp->max_level_val;
 	}
-        else if (vcp->zero_field || spacing == 0.0) {
+        else if (spacing == 0.0) {
                 vcp->max_level_val = lmax = vcp->min_level_val;
 	}
 	else if (lmin + Nhl_vcMAX_LEVELS * spacing < vcp->zmax) {
@@ -8409,10 +8409,14 @@ static NhlErrorTypes    SetupLevelsManual
 			}
 			break;
 		}
+		if (vcp->zero_field && ! vcp->max_level_set) {
+			while (lmax <= vcp->zmax)
+				lmax += spacing;
+		}
 		vcp->max_level_val = lmax;
 	}
 
-	if (vcp->zero_field || spacing == 0.0) {
+	if (spacing == 0.0) {
 		count = 1;
 	}
 	else if (count == 0) {

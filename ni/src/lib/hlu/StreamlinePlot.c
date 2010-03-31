@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.73 2010-03-19 22:44:25 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.74 2010-03-31 00:52:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4189,7 +4189,7 @@ static NhlErrorTypes ManageLabelBar
 		ostp->lbar_labels = NULL;
 		stp->lbar_labels_set = True;
 	}
-	if (stp->zero_field)
+	if (stp->zero_field && stp->display_labelbar < NhlFORCEALWAYS)
 		return ret;
 
 	sip= &stp->scale;
@@ -6279,10 +6279,14 @@ static NhlErrorTypes    SetupLevelsManual
 			lmax -= spacing;
 		}
 		lmax = MAX(lmin,lmax);
+		if (stp->zero_field && ! stp->max_level_set) {
+			while (lmax <= stp->zmax)
+				lmax += spacing;
+		}
 		stp->max_level_val = lmax;
 	}
 
-	if (stp->zero_field || spacing == 0.0) {
+	if (spacing == 0.0) {
 		count = 1;
 	}
 	else {
