@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.172 2010-03-21 21:18:35 haley Exp $
+#   $Id: ncargex.csh,v 1.173 2010-04-02 16:54:51 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -73,7 +73,7 @@ endif
 # value.                                          #
 #                                                 #
 #*************************************************#
-set file_types     = (ncgm x11 text ps eps epsi pdf cps cpng cpdf)
+set file_types     = (ncgm x11 text ps eps epsi pdf newps png newpdf)
 set orient_types = (port land)
 set color_types  = (color mono)
 set ws_types = (                                                   \
@@ -87,7 +87,7 @@ set ws_types = (                                                   \
                 "ps.land.color" "eps.land.color" "epsi.land.color" \
                 "ps.land.mono"  "eps.land.mono"  "epsi.land.mono"  \
                 "" "" "" "" "" "" "" ""                            \
-                "cps.port.color" "cpng.port.color" "cpdf.port.color" \
+                "newps.port.color" "png.port.color" "newpdf.port.color" \
                )
 set suffix_names = (                                               \
                 "ncgm"                                             \
