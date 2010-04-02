@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlf77.csh,v 1.5 2010-04-02 17:29:43 haley Exp $
+#	$Id: nhlf77.csh,v 1.6 2010-04-02 17:52:38 haley Exp $
 #
 
 #*********************************************#
@@ -34,11 +34,11 @@ set incpath = "-I$incdir $sysincdir"
 #
 set libncarg    = "-lncarg"
 set libgks      = "-lSED_LIBNCARG_GKS"
-set libcgks     = "-lSED_LIBNCARG_GKS_CAIRO"
+set libcgks     = "-lSED_LIBNCARG_CGKS"
 set libmath     = ""
 set libncarg_c  = "-lncarg_c"
 set libhlu      = "-lSED_LIBHLU"
-set libchlu    = "-lSED_LIBHLU_CAIRO"
+set libchlu    = "-lSED_LIBCHLU"
 set ncarbd      = "$ro/libncarbd.o"
 set ngmathbd    = "$ro/libngmathbd.o"
 set extra_libs
