@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncl_files,v 1.30 2010-03-18 15:36:00 haley Exp $
+#   $Id: check_ncl_files,v 1.31 2010-04-02 19:30:54 haley Exp $
 #
 # Use check_files instead! This one is just for NCL and hasn't
 # been updated in awhile
@@ -39,11 +39,8 @@ bin/ncl_filedump
 bin/ncl_grib2nc
 bin/ng4ex
 bin/nhlcc
-bin/nhlcc_cairo
 bin/nhlf77
-bin/nhlf77_cairo
 bin/nhlf90
-bin/nhlf90_cairo
 bin/psplit
 bin/scrip_check_input
 bin/WRAPIT

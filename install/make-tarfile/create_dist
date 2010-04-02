@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.19 2010-03-19 02:48:31 haley Exp $
+#   $Id: create_dist,v 1.20 2010-04-02 19:30:54 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -305,7 +305,7 @@ set common_lib_dirs  = "ncarg/database ncarg/fontcaps ncarg/graphcaps ncarg/ngww
 # Set files specific to NCL.
 #
 if ($?NCLONLY || $?NCARGNCL) then
-  set ncl_bin_files = "ng4ex nhlcc nhlcc_cairo nhlf77 nhlf77_cairo nhlf90 nhlf90_cairo ncl$exe_sfx wrapit77$exe_sfx WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc scrip_check_input MakeNcl"
+  set ncl_bin_files = "ng4ex nhlcc nhlf77 nhlf90  ncl$exe_sfx wrapit77$exe_sfx WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc scrip_check_input MakeNcl"
 
   set ncl_inc_files = ""
 
@@ -320,7 +320,7 @@ endif
 # Set files specific to NCARG.
 #
 if ($?NCARGONLY || $?NCARGNCL) then
-  set ncarg_bin_files = "ConvertMapData$exe_sfx WriteLineFile$exe_sfx WriteNameFile$exe_sfx WritePlotcharData$exe_sfx cgm2ncgm$exe_sfx ctlib ezmapdemo$exe_sfx fcaps findg$exe_sfx fontc$exe_sfx gcaps graphc$exe_sfx ncargcc ncargcc_cairo ncargex ncargf77 ncargf77_cairo ncargf90 ncargf90_cairo ncargfile ncargrun ncargversion ncargworld$exe_sfx ncarlogo2ps$exe_sfx ncarvversion ncgm2cgm$exe_sfx ncgmstat$exe_sfx nnalg$exe_sfx pre2ncgm pre2ncgm.prog psblack$exe_sfx psplit$exe_sfx pswhite$exe_sfx pwritxnt$exe_sfx ras2ccir601$exe_sfx rascat$exe_sfx rasgetpal$exe_sfx rasls$exe_sfx rassplit$exe_sfx rasstat$exe_sfx rasview$exe_sfx tdpackdemo$exe_sfx tgks0a$exe_sfx tlocal$exe_sfx"
+  set ncarg_bin_files = "ConvertMapData$exe_sfx WriteLineFile$exe_sfx WriteNameFile$exe_sfx WritePlotcharData$exe_sfx cgm2ncgm$exe_sfx ctlib ezmapdemo$exe_sfx fcaps findg$exe_sfx fontc$exe_sfx gcaps graphc$exe_sfx ncargcc ncargex ncargf77 ncargf90 ncargfile ncargrun ncargversion ncargworld$exe_sfx ncarlogo2ps$exe_sfx ncarvversion ncgm2cgm$exe_sfx ncgmstat$exe_sfx nnalg$exe_sfx pre2ncgm pre2ncgm.prog psblack$exe_sfx psplit$exe_sfx pswhite$exe_sfx pwritxnt$exe_sfx ras2ccir601$exe_sfx rascat$exe_sfx rasgetpal$exe_sfx rasls$exe_sfx rassplit$exe_sfx rasstat$exe_sfx rasview$exe_sfx tdpackdemo$exe_sfx tgks0a$exe_sfx tlocal$exe_sfx"
 
   set ncarg_inc_files = "ncarg/cgm_tools.h ncarg/cgmdef.h ncarg/ctrans.h ncarg/gksP.h ncarg/ncarg_ras.h ncarg/ngmath.h"
 
@@ -410,15 +410,13 @@ endif
 # and nhlf90 and remove *~ files that shouldn't be there.
 #
 if ($?NCLONLY) then
-  emacs bin/nhlcc bin/nhlf77 bin/nhlf90 bin/nhlcc_cairo bin/nhlf77_cairo bin/nhlf90_cairo 
+  emacs bin/nhlcc bin/nhlf77 bin/nhlf90
 else if ($?NCARGONLY) then
-  emacs bin/ncargcc bin/ncargf77 bin/ncargf90 bin/ncargcc_cairo bin/ncargf77_cairo bin/ncargf90_cairo
-  chmod gou+x bin/ncargcc bin/ncargf77 bin/ncargf90 bin/ncargcc_cairo bin/ncargf77_cairo bin/ncargf90_cairo
+  emacs bin/ncargcc bin/ncargf77 bin/ncargf90
+  chmod gou+x bin/ncargcc bin/ncargf77 bin/ncargf90
 else
   emacs bin/nhlcc bin/nhlf77 bin/nhlf90 bin/ncargcc bin/ncargf77 bin/ncargf90
-  emacs bin/nhlcc_cairo bin/nhlf77_cairo bin/nhlf90_cairo bin/ncargcc_cairo bin/ncargf77_cairo bin/ncargf90_cairo
   chmod gou+x bin/nhlcc bin/nhlf77 bin/nhlf90 bin/ncargcc bin/ncargf77 bin/ncargf90
-  chmod gou+x bin/nhlcc_cairo bin/nhlf77_cairo bin/nhlf90_cairo bin/ncargcc_cairo bin/ncargf77_cairo bin/ncargf90_cairo
 endif
 /bin/rm bin/*~
 /bin/rm lib/ncarg/xapp/Idt.bak

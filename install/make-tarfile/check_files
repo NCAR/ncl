@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.32 2010-03-18 15:35:59 haley Exp $
+#   $Id: check_files,v 1.33 2010-04-02 19:30:54 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -225,11 +225,8 @@ bin/ncl_filedump
 bin/ncl_grib2nc
 bin/ng4ex
 bin/nhlcc
-bin/nhlcc_cairo
 bin/nhlf77
-bin/nhlf77_cairo
 bin/nhlf90
-bin/nhlf90_cairo
 bin/scrip_check_input
 bin/wrapit77
 include/ncarg/hlu/AnnoManager.h
@@ -1516,12 +1513,9 @@ bin/fontc
 bin/gcaps
 bin/graphc
 bin/ncargcc
-bin/ncargcc_cairo
 bin/ncargex
 bin/ncargf77
-bin/ncargf77_cairo
 bin/ncargf90
-bin/ncargf90_cairo
 bin/ncargfile
 bin/ncargrun
 bin/ncargversion
