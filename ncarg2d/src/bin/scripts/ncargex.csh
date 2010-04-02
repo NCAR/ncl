@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.173 2010-04-02 16:54:51 haley Exp $
+#   $Id: ncargex.csh,v 1.174 2010-04-02 17:13:35 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -778,6 +778,7 @@ set list_cps = (c_pgkex21)
 set X11_option
 set ncarbd_flag
 set ngmathbd_flag
+set cairo_flag
 
 #*******************************#
 #                               #
@@ -1231,6 +1232,11 @@ invalid:
       shift
       breaksw
 
+    case "-cairo":
+      shift
+      set cairo_flag = "-cairo"
+      breaksw
+
     case "-ncarbd":
       shift
       set ncarbd_flag = "-ncarbd"
@@ -1499,7 +1505,7 @@ else
 endif
 
 # Is this a cairo workstation?
-if ("$ws_type" >= 40 && "$ws_type" <= "42" ) set cairo
+if ("$ws_type" >= 40 && "$ws_type" <= "42" ) set cairo_flag = "-cairo"
 
 #******************************************#
 #                                          #
@@ -1511,19 +1517,11 @@ unset cprog
 if ( `expr "$name" : "c_.*"`) then 
   set cprog
   set prog_type = "C"
-  if ( $?cairo) then
-    set comp_script = "ncargcc_cairo"
-  else
-    set comp_script = "ncargcc"
-  endif
+  set comp_script = "ncargcc"
 else
   set fprog
   set prog_type = "Fortran"
-  if ( $?cairo) then
-    set comp_script = "ncargf77_cairo"
-  else
-    set comp_script = "ncargf77"
-  endif
+  set comp_script = "ncargf77"
 endif
 
 #***************#
@@ -1629,7 +1627,7 @@ if ($?Unique && -f $graphic_file) goto theend
 # Set initial compiler flags #
 #                            #
 #****************************#
-set comp_flags = ($ncarbd_flag $ngmathbd_flag $xoption)
+set comp_flags = ($cairo_flag $ncarbd_flag $ngmathbd_flag $xoption)
 
 #**********************************#
 #                                  #

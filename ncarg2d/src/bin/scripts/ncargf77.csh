@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.39 2010-03-14 19:32:15 haley Exp $
+#   $Id: ncargf77.csh,v 1.40 2010-04-02 17:13:35 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -47,6 +47,7 @@ set stub_file   = ""
 #
 set libncarg  =  "-lncarg"
 set libgks     = "-lSED_LIBNCARG_GKS"
+set libcgks    = "-lSED_LIBNCARG_GKS_CAIRO"
 set libncarg_c = "-lncarg_c"
 set libmath  = ""
 
@@ -57,12 +58,17 @@ set quick    = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
 set super    = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 
 set robjs
+unset CAIRO_LD
 unset NGMATH_LD
 unset NGMATH_BLOCKD_LD
 
 foreach arg ($argv)
 
     switch ($arg)
+
+    case "-cairo":
+      set CAIRO_LD
+      breaksw
 
     case "-ngmath":
       set libmath     = "-lngmath"
@@ -188,8 +194,14 @@ if ($?NGMATH_LD && $?NGMATH_BLOCKD_LD) then
   set robjs = "$robjs $ngmathbd"
 endif
 
-set ncarg_libs  = "$libncarg $libgks $libncarg_c $libmath"
-set newargv = "$newargv $stub_file $libpath $ctrans_libs $robjs $ncarg_libs $xlib $cairolib $libextra"
+if ($?CAIRO_LD) then
+  set ncarg_libs  = "$libncarg $libcgks $libncarg_c $libmath"
+  set newargv = "$newargv $stub_file $libpath $ctrans_libs $robjs $ncarg_libs $xlib $cairolib $libextra"
+else
+  set ncarg_libs  = "$libncarg $libgks $libncarg_c $libmath"
+  set newargv = "$newargv $stub_file $libpath $ctrans_libs $robjs $ncarg_libs $xlib $libextra"
+endif
+
 
 echo $newargv
 eval $newargv
