@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlf77.csh,v 1.4 2010-03-14 19:47:22 haley Exp $
+#	$Id: nhlf77.csh,v 1.5 2010-04-02 17:29:43 haley Exp $
 #
 
 #*********************************************#
@@ -34,19 +34,26 @@ set incpath = "-I$incdir $sysincdir"
 #
 set libncarg    = "-lncarg"
 set libgks      = "-lSED_LIBNCARG_GKS"
+set libcgks     = "-lSED_LIBNCARG_GKS_CAIRO"
 set libmath     = ""
 set libncarg_c  = "-lncarg_c"
 set libhlu      = "-lSED_LIBHLU"
+set libchlu    = "-lSED_LIBHLU_CAIRO"
 set ncarbd      = "$ro/libncarbd.o"
 set ngmathbd    = "$ro/libngmathbd.o"
 set extra_libs
 
 set robjs
+unset CAIRO_LD
 unset NGMATH_LD
 unset NGMATH_BLOCKD_LD
 
 foreach arg ($argv)
   switch ($arg)
+
+  case "-cairo":
+    set CAIRO_LD
+    breaksw
 
   case "-ngmath":
     set libmath     = "-lngmath"
@@ -85,9 +92,14 @@ if ($?NGMATH_LD && $?NGMATH_BLOCKD_LD) then
   set robjs = "$robjs $ngmathbd"
 endif
 
-set ncarg_libs = "$libhlu $libncarg $libgks $libncarg_c $libmath"
+if ($?CAIRO_LD) then
+  set ncarg_libs = "$libchlu $libncarg $libcgks $libncarg_c $libmath"
+  set newargv = "$newargv $libpath $incpath $extra_libs $robjs $ncarg_libs $xlibs $cairolib $f77libs"
+else
+  set ncarg_libs = "$libhlu $libncarg $libgks $libncarg_c $libmath"
+  set newargv = "$newargv $libpath $incpath $extra_libs $robjs $ncarg_libs $xlibs $f77libs"
+endif
 
-set newargv = "$newargv $libpath $incpath $extra_libs $robjs $ncarg_libs $xlibs $cairolib $f77libs"
 
 echo $newargv
 eval $newargv

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ng4ex.csh,v 1.14 2010-03-15 03:55:32 haley Exp $
+#   $Id: ng4ex.csh,v 1.15 2010-04-02 17:29:43 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -433,6 +433,7 @@ unset NEWPS
 unset PNG
 unset NEWPDF
 
+set cairo_flag
 set ncarbd_flag
 set ngmathbd_flag
 set num_set = 0
@@ -508,16 +509,16 @@ while ($#argv > 0)
         @ num_set += 1
       else if ("$ws_type" == "newps" || "$ws_type" == "NEWPS") then
         set NEWPS
-	set cairo
+	set cairo_flag = "-cairo"
         @ num_set += 1
       else if ("$ws_type" == "png"    || "$ws_type" == "PNG" || \
                "$ws_type" == "newpng" || "$ws_type" == "NEWPNG") then
         set PNG
-	set cairo
+	set cairo_flag = "-cairo"
         @ num_set += 1
       else if ("$ws_type" == "newpdf" || "$ws_type" == "NEWPDF") then
         set NEWPDF
-	set cairo
+	set cairo_flag = "-cairo"
         @ num_set += 1
       else
         echo ""
@@ -534,6 +535,11 @@ while ($#argv > 0)
       shift
       breaksw
         
+    case "-cairo":
+      shift
+      set cairo_flag = "-cairo"
+      breaksw
+
     case "-ncarbd":
       shift
       set ncarbd_flag = "-ncarbd"
@@ -821,7 +827,7 @@ set inc_file
 set ascdata_file
 set bindata_file
 set ncl_file
-set comp_flags = ($ncarbd_flag $ngmathbd_flag)
+set comp_flags = ($cairo_flag $ncarbd_flag $ngmathbd_flag)
 set generic_name = `expr $name : '\(.*[0-9][0-9]\).*'`
 set prog_type = `expr $name : '.*[0-9][0-9]\(.\)'`
 set resfile_dir = "$res_dir/$obj_dir"
@@ -1123,17 +1129,9 @@ if (! $?NoRunOption) then
     if ($?fprog || $?cprog) then   
       echo "Compiling and linking..."
       if ($?cprog) then
-        if ($?cairo) then
-          nhlcc_cairo -o $name $src_file $comp_flags
-        else
-          nhlcc -o $name $src_file $comp_flags
-       endif
+        nhlcc -o $name $src_file $comp_flags
       else
-        if ($?cairo) then
-          nhlf77_cairo -o $name $src_file $comp_flags
-        else
-          nhlf77 -o $name $src_file $comp_flags
-        endif
+        nhlf77 -o $name $src_file $comp_flags
       endif
       if ($status != 0) then
           echo ""
