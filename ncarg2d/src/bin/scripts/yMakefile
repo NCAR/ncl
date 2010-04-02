@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.55 2010-04-02 17:13:35 haley Exp $
+#	$Id: yMakefile,v 1.56 2010-04-02 17:49:55 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
@@ -32,7 +32,7 @@ ncargf77: ncargf77.csh Makefile
 	@sed \
 	-e 's+SED_FC+$(F77)+' \
 	-e 's+SED_LIBNCARG_GKS+ncarg_gks+' \
-	-e 's+SED_LIBNCARG_GKS_CAIRO+ncarg_gks_cairo+' \
+	-e 's+SED_LIBNCARG_CGKS+ncarg_gks_cairo+' \
 	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
 	-e 's+SED_LDFLAGS+$(FC_LDOPTIONS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
@@ -48,7 +48,7 @@ ncargf90: ncargf77.csh Makefile
 	@sed \
 	-e 's+SED_FC+$(F77)+' \
 	-e 's+SED_LIBNCARG_GKS+ncarg_gks+' \
-	-e 's+SED_LIBNCARG_GKS_CAIRO+ncarg_gks_cairo+' \
+	-e 's+SED_LIBNCARG_CGKS+ncarg_gks_cairo+' \
 	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
 	-e 's+SED_LDFLAGS+$(FC_LDOPTIONS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
@@ -64,7 +64,7 @@ ncargcc: ncargcc.csh Makefile
 	@sed \
 	-e 's+SED_CC+$(CC)+' \
 	-e 's+SED_LIBNCARG_GKS+ncarg_gks+' \
-	-e 's+SED_LIBNCARG_GKS_CAIRO+ncarg_gks_cairo+' \
+	-e 's+SED_LIBNCARG_CGKS+ncarg_gks_cairo+' \
 	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
 	-e 's+SED_STDDEF+$(STD_DEFINES)+' \
 	-e 's+SED_PROJDEF+$(PROJECTDEFINES)+' \
