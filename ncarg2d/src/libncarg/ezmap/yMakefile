@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.24 2008-09-04 20:02:20 kennison Exp $
+#       $Id: yMakefile,v 1.25 2010-04-02 19:37:50 haley Exp $
 #
 
 MYNAME	= ezmap
@@ -56,10 +56,10 @@ UNIX_SRCS = mpdbdi.f
 
 UNIX_OBJS = mpdbdi.o
 
-#ifdef BuildPNG
+#if defined(BuildPNG) || defined(BuildCAIRO)
 PNG_SRCS        =  mapnga.c mapngb.c
 PNG_OBJS        =  mapnga.o mapngb.o
-EXTRA_CDEFINES   = -DBuildPNG
+EXTRA_CDEFINES   = -DBuildPNG -DBuildCAIRO
 #else
 #define PNG_SRCS
 #define PNG_OBJS
