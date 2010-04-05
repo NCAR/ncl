@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_convert2nc,v 1.21 2009-12-15 00:17:22 dbrown Exp $
+#       $Id: ncl_convert2nc,v 1.22 2010-04-05 22:37:28 dbrown Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -42,8 +42,8 @@
 #       [-v var1[,...]]       user specified subset of variables [default: all variables]
 #       [-L]                  support for writing large (>2Gb) netCDF files [default: no largefile support]
 #       [-nc4c]               output a NetCDF 4 classic format file
-#       [-cl] <compression level>  compression level 0 - 9 [ default 0 - only meaningful for NetCDF 4 output]
-#       [-th] <size in megabytes> theshold size: variables larger than specified size will be written incrementally
+#       [-cl compression_level]  compression level 0 - 9 [ default 0 - only meaningful for NetCDF 4 output]
+#       [-th size_in_megabytes] theshold size: variables larger than specified size will be written incrementally
 #                             in order to limit in-core memory requirements; 0 (the default) means no threshold
 #       [-c comment]          text to be included in netCDF file attribute [default: no comment]
 #       [-l]                  list information about each variable as it is copied
@@ -1462,7 +1462,8 @@ exit 1
 
 USAGE:
 echo "${progname} inputFile(s) OPTIONS"
-echo "  inputFile(s)          name(s) of data file(s) [required] [valid types: GRIB1 GRIB2 HDF HDF-EOS NETCDF]"
+echo "  inputFile(s)          name(s) of data file(s) [required]"
+echo "                        [valid types: GRIB1 GRIB2 HDF HDF-EOS netCDF shapefile]"
 echo "  [-i input_directory]  location of input file(s)  [default: current directory]"
 echo "  [-o output_directory] location of output file(s) [default: current directory]"
 echo "  [-e extension]        file type, defined by extension, to convert [example: grb]"
@@ -1482,11 +1483,12 @@ echo "  [-v var1[,...]]       user specified subset of variables [default: all v
 echo "                        ncl_filedump can be used to determine desired variable names"
 echo "  [-L]                  support for writing large (>2Gb) netCDF files [default: no largefile support]"
 echo "  [-nc4c]               output a NetCDF 4 classic format file"
-echo "  [-cl] <compression level>  compression level 0 - 9 [ default 0 - only meaningful for NetCDF 4 output]"
-echo "  [-th] <size in megabytes> theshold size: variables larger than specified size will be written incrementally"
+echo "  [-cl compression_level]  compression level 0 - 9 [ default 0 - only meaningful for NetCDF 4 output]"
+echo "  [-th size_in_megabytes] theshold size: variables larger than specified size will be written incrementally"
 echo "                        in order to limit in-core memory requirements; 0 (the default) means no threshold"
 echo "  [-c comment]          text to be included in netCDF file attribute [default: no comment]"
 echo "  [-l]                  list some information about each variable as it is copied"
 echo "  [-d]                  upon exit: print contents of each netCDF file [like ncdump -h]"
-echo "  [-B] <file>           suppress informational messages; redirect messages to <file> if present [default: /dev/null]"
+echo "  [-B] <file>           suppress informational messages; redirect messages to <file> if present"
+echo "                        [default: /dev/null]"
 echo "  [-h]                  this usage message"
