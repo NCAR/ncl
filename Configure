@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.57 2010-02-18 21:23:17 haley Exp $
+#      $Id: Configure,v 1.58 2010-04-07 14:55:50 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2010-02-18 21:23:17 $
+#	$Date: 2010-04-07 14:55:50 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -790,7 +790,7 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
   endif
 
   echo ""
-  echo "Build HDF-EOS5 support (optional) into NCL ($buildhdfeos)"
+  echo "Build HDF-EOS5 support (optional) into NCL ($buildhdfeos5)"
   echo "(Requires the external HDF-EOS5 library available from"
   echo "ftp://edhs1.gsfc.nasa.gov/pub) "
   echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
