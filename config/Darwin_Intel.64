@@ -16,7 +16,13 @@
  *                       whatever directory contains "libgfortran.so".
  */
 #define HdfDefines  -DDARWIN
-#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped -D__UNIXOS2__
+
+/*
+ * The -D_DARWIN_C_SOURCE is to fix a bug with signal.h that affects the
+ * build of $NCARG/ncarview/src/bin/idt/commands.o. Hopefully it will be
+ * fixed and we can remove it.
+ */
+#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped -D__UNIXOS2__ -D_DARWIN_C_SOURCE
 #define ByteSwapped
 #define Cstatic 
 #define Cdynamic 
