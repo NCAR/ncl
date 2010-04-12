@@ -12,6 +12,7 @@
 
 #include "NclDataDefs.h"
 #include "NclMdInc.h"
+#include "TypeSupport.h"
 #include "NclHLUObj.h"
 #include "NclBuiltInSupport.h"
 #include "Machine.h"
