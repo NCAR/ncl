@@ -24,7 +24,6 @@
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
 #define ExeSuffix exe
-#define ExtraExportFlags -rdynamic
 
 #define	ArchRecLibSearch	
 #define	ArchRecIncSearch
