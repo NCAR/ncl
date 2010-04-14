@@ -1,1 +1,0 @@
-*ndvDirectoryTitle : Xy Plots

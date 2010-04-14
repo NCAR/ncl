@@ -1,2 +1,0 @@
-*ndvDirectoryTitle : Default Plot Styles
-
