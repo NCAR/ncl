@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.80 2010-01-27 00:20:21 dbrown Exp $
+ *      $Id: NclVar.c,v 1.81 2010-04-14 21:29:48 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -65,13 +65,6 @@ static struct _NclDataRec *VarValRead(
 	struct _NclVarRec * /* self*/,
 	struct _NclSelectionRecord * /*sel_ptr*/,
 	NclScalar * /*new_missing*/
-#endif
-);
-
-static NhlErrorTypes VarPrint(
-#if	NhlNeedProto
-struct	_NclObjRec*	/*self*/,
-FILE	*		/*fp*/
 #endif
 );
 
@@ -149,7 +142,6 @@ long                     /*dim_num*/,
 char    *               /*dim_name*/
 #endif
 );
-
 
 static int VarIsACoord(
 #if     NhlNeedProto
@@ -417,7 +409,7 @@ NclStatus requested;
 }
 */
 
-static NhlErrorTypes VarPrint
+NhlErrorTypes VarPrintVarSummary
 #if	NhlNeedProto
 (NclObj theobj,FILE *fp)
 #else
@@ -609,8 +601,29 @@ FILE *fp;
 	}
 	ret0 = _NclPrint(_NclGetObj(self->var.att_id),fp);
 	
-	if((self != NULL) && (thevalue != NULL) &&(ret > NhlWARNING)) {
-		ret0 = _NclPrint((NclObj)thevalue,fp);
+	return(ret0);
+}
+
+NhlErrorTypes VarPrint
+#if	NhlNeedProto
+(NclObj theobj,FILE *fp)
+#else
+(theobj,fp)
+NclObj theobj;
+FILE *fp;
+#endif
+{
+	NclVar self = (NclVar) theobj;
+	NclMultiDValData thevalue = NULL;
+	NhlErrorTypes ret0 = NhlNOERROR;
+
+	VarPrintVarSummary(theobj, fp);
+
+	thevalue = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
+	
+	if((self != NULL) && (thevalue != NULL)) {
+		if(thevalue->multidval.data_type)
+			ret0 = _NclPrint((NclObj)thevalue,fp);
 	}
 	return(ret0);
 }
@@ -1248,7 +1261,6 @@ char *dim_name;
 		return(NhlFATAL);
 	}
 }
-
 
 static int VarIsACoord
 #if	NhlNeedProto

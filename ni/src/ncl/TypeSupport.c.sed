@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeSupport.c.sed,v 1.6 2009-07-10 19:54:06 huangwei Exp $
+ *      $Id: TypeSupport.c.sed,v 1.7 2010-04-14 21:29:48 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -56,6 +56,8 @@ NhlErrorTypes _NclInitTypeClasses
 	_NclInitClass(nclTypeuintClass);
 	_NclInitClass(nclTypeulongClass);
 	_NclInitClass(nclTypeuint64Class);
+	_NclInitClass(nclTypeint8Class);
+	_NclInitClass(nclTypeuint8Class);
 	return(NhlNOERROR);
 }
 
@@ -129,6 +131,10 @@ NclObjTypes obj_type_enum;
 		return((NclTypeClass)nclTypeulongClass);
 	case Ncl_Typeuint64:
 		return((NclTypeClass)nclTypeuint64Class);
+	case Ncl_Typeint8:
+		return((NclTypeClass)nclTypeint8Class);
+	case Ncl_Typeuint8:
+		return((NclTypeClass)nclTypeuint8Class);
 	default:
 		return((NclTypeClass)nclTypeClass);
 	}

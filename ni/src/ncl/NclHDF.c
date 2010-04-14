@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.37 2010-03-26 20:05:05 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.38 2010-04-14 21:29:47 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -782,8 +782,15 @@ int wr_status;
 			status = SDgetinfo(sds_id,buffer,
 					   &n_dims,
 					   dim_sizes,
-					   &((*stepvlptr)->var_inq->hdf_type),
-					   &n_atts);
+					   &((*stepvlptr)->var_inq->data_type),
+					   &((*stepvlptr)->var_inq->natts));
+                      /*
+                        fprintf(stdout, "file: %s, line, %d\n", __FILE__, __LINE__);
+                        fprintf(stdout, "\t(*stepvlptr)->var_inq->data_type: %ld\n", (long) (*stepvlptr)->var_inq->data_type);
+                        fprintf(stdout, "\tdim_sizes[0]: %d \n", dim_sizes[0]);
+                        fprintf(stdout, "\t(*stepvlptr)->var_inq->n_dims: %ld \n", (long) (*stepvlptr)->var_inq->n_dims);
+                        fprintf(stdout, "\t(*stepvlptr)->var_inq->natts): %ld \n", (long) (*stepvlptr)->var_inq->natts);
+                       */
 
 			for(j = 0; j < ((*stepvlptr)->var_inq->n_dims); j++) {
 				tmp_size = 0;
@@ -2440,38 +2447,45 @@ NclFormatFunctionRec HDFRec = {
 /* NclCreateFileFunc	   create_file; */		HDFCreateFile,
 /* NclOpenFileFunc         open_file; */		HDFOpenFile,
 /* NclFreeFileRecFunc      free_file_rec; */		HDFFreeFileRec,
-/* NclGetVarNamesFu_nc      get_var_names; */		HDFGetVarNames,
-/* NclGetVarInfoFusd_nc       get_var_info; */		HDFGetVarInfo,
-/* NclGetDimNamesFusd_nc      get_dim_names; */		HDFGetDimNames,
-/* NclGetDimInfoFusd_nc       get_dim_info; */		HDFGetDimInfo,
-/* NclGetAttNamesFusd_nc      get_att_names; */		HDFGetAttNames,
-/* NclGetAttInfoFusd_nc       get_att_info; */		HDFGetAttInfo,
-/* NclGetVarAttNamesFusd_nc   get_var_att_names; */	HDFGetVarAttNames,
-/* NclGetVarAttInfoFusd_nc    get_var_att_info; */		HDFGetVarAttInfo,
-/* NclGetCoordInfoFusd_nc     get_coord_info; */		HDFGetCoordInfo,
-/* NclReadCoordFusd_nc        read_coord; */		HDFReadCoord,
-/* NclReadCoordFusd_nc        read_coord; */		NULL,
-/* NclReadVarFusd_nc          read_var; */			HDFReadVar,
-/* NclReadVarFusd_nc          read_var; */			NULL,
-/* NclReadAttFusd_nc          read_att; */			HDFReadAtt,
-/* NclReadVarAttFusd_nc       read_var_att; */		HDFReadVarAtt,
-/* NclWriteCoordFusd_nc       write_coord; */		HDFWriteCoord,
-/* NclWriteCoordFusd_nc       write_coord; */		NULL,
-/* NclWriteVarFusd_nc         write_var; */		HDFWriteVar,
-/* NclWriteVarFusd_nc         write_var; */		NULL,
-/* NclWriteAttFusd_nc         write_att; */		HDFWriteAtt,
-/* NclWriteVarAttFusd_nc      write_var_att; */		HDFWriteVarAtt,
-/* NclAddDimFusd_nc           add_dim; */			HDFAddDim,
-/* NclAddDimFusd_nc           rename_dim; */		HDFRenameDim,
-/* NclAddVarFusd_nc           add_var; */			HDFAddVar,
-/* NclAddVarFusd_nc           add_coord_var; */		HDFAddCoordVar,
-/* NclAddAttFusd_nc           add_att; */			HDFAddAtt,
-/* NclAddVarAttFusd_nc        add_var_att; */		HDFAddVarAtt,
-/* NclMapFormatTypeToNcl   map_format_type_to_sd_ncl; */	HDFMapToNcl,
-/* NclMapNclTypeToFormat   map_sd_ncl_type_to_format; */	HDFMapFromNcl,
-/* NclDelAttFusd_nc           del_att; */			HDFDelAtt,
-/* NclDelVarAttFusd_nc        del_var_att; */		HDFDelVarAtt,
-/* NclSetOptionFunc           set_option;  */           NULL
+/* NclGetVarNamesFunc      get_var_names; */		HDFGetVarNames,
+/* NclGetVarInfoFunc       get_var_info; */		HDFGetVarInfo,
+/* NclGetDimNamesFunc      get_dim_names; */		HDFGetDimNames,
+/* NclGetDimInfoFunc       get_dim_info; */		HDFGetDimInfo,
+/* NclGetAttNamesFunc      get_att_names; */		HDFGetAttNames,
+/* NclGetAttInfoFunc       get_att_info; */		HDFGetAttInfo,
+/* NclGetVarAttNamesFunc   get_var_att_names; */	HDFGetVarAttNames,
+/* NclGetVarAttInfoFunc    get_var_att_info; */		HDFGetVarAttInfo,
+/* NclGetCoordInfoFunc     get_coord_info; */		HDFGetCoordInfo,
+/* NclReadCoordFunc        read_coord; */		HDFReadCoord,
+/* NclReadCoordFunc        read_coord; */		NULL,
+/* NclReadVarFunc          read_var; */			HDFReadVar,
+/* NclReadVarFunc          read_var; */			NULL,
+/* NclReadAttFunc          read_att; */			HDFReadAtt,
+/* NclReadVarAttFunc       read_var_att; */		HDFReadVarAtt,
+/* NclWriteCoordFunc       write_coord; */		HDFWriteCoord,
+/* NclWriteCoordFunc       write_coord; */		NULL,
+/* NclWriteVarFunc         write_var; */		HDFWriteVar,
+/* NclWriteVarFunc         write_var; */		NULL,
+/* NclWriteAttFunc         write_att; */		HDFWriteAtt,
+/* NclWriteVarAttFunc      write_var_att; */		HDFWriteVarAtt,
+/* NclAddDimFunc           add_dim; */			HDFAddDim,
+/* NclAddChunkDimFunc      add_chunk_dim; */		NULL,
+/* NclRenameDimFunc        rename_dim; */		HDFRenameDim,
+/* NclAddVarFunc           add_var; */			HDFAddVar,
+/* NclAddVarChunkFunc      add_var_chunk; */		NULL,
+/* NclSetVarCompressLevelFunc set_var_compress_level; */ NULL,
+/* NclAddVarFunc           add_coord_var; */		HDFAddCoordVar,
+/* NclAddAttFunc           add_att; */			HDFAddAtt,
+/* NclAddVarAttFunc        add_var_att; */		HDFAddVarAtt,
+/* NclMapFormatTypeToNcl   map_format_type_to_ncl; */	HDFMapToNcl,
+/* NclMapNclTypeToFormat   map_ncl_type_to_format; */	HDFMapFromNcl,
+/* NclDelAttFunc           del_att; */			HDFDelAtt,
+/* NclDelVarAttFunc        del_var_att; */		HDFDelVarAtt,
+/* NclGetGrpNamesFunc      get_grp_names; */		NULL,
+/* NclGetGrpInfoFunc       get_grp_info; */		NULL,
+/* NclGetGrpAttNamesFunc   get_grp_att_names; */	NULL, 
+/* NclGetGrpAttInfoFunc    get_grp_att_info; */		NULL,
+/* NclSetOptionFunc        set_option;  */		NULL
 };
 NclFormatFunctionRecPtr HDFAddFileFormat 
 #if	NhlNeedProto

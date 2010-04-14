@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.30 2010-02-07 01:34:26 haley Exp $
+ *      $Id: userAddFuncs.c,v 1.31 2010-04-14 21:29:48 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2991,7 +2991,6 @@ NhlErrorTypes _Nclstr_match
 
     return NclReturnValue(output_strs, 1, &output_str_size, ( has_missing ? &ret_missing : NULL ), NCL_string, 0);
 }
-
 
 #ifdef __cplusplus
 }

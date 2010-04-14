@@ -1,5 +1,5 @@
 /*
- *      $Id: NclOGR.c,v 1.2 2009-05-06 17:24:33 brownrig Exp $
+ *      $Id: NclOGR.c,v 1.3 2010-04-14 21:29:48 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -1365,8 +1365,11 @@ NclFormatFunctionRec OGRRec = {
 /* NclWriteAttFunc         write_att; */		NULL,
 /* NclWriteVarAttFunc      write_var_att; */		NULL,
 /* NclAddDimFunc           add_dim; */			NULL,
-/* NclAddDimFunc           rename_dim; */		NULL,
+/* NclAddChunkDimFunc      add_chunk_dim; */		NULL,
+/* NclRenameDimFunc        rename_dim; */		NULL,
 /* NclAddVarFunc           add_var; */			NULL,
+/* NclAddVarChunkFunc      add_var_chunk; */		NULL,
+/* NclSetVarCompressLevelFunc set_var_compress_level; */ NULL,
 /* NclAddVarFunc           add_coord_var; */		NULL,
 /* NclAddAttFunc           add_att; */			NULL,
 /* NclAddVarAttFunc        add_var_att; */		NULL,
@@ -1374,6 +1377,10 @@ NclFormatFunctionRec OGRRec = {
 /* NclMapNclTypeToFormat   map_ncl_type_to_format; */	NULL,
 /* NclDelAttFunc           del_att; */			NULL,
 /* NclDelVarAttFunc        del_var_att; */		NULL,
+/* NclGetGrpNamesFunc      get_grp_names; */            NULL,
+/* NclGetGrpInfoFunc       get_grp_info; */             NULL,
+/* NclGetGrpAttNamesFunc   get_grp_att_names; */        NULL, 
+/* NclGetGrpAttInfoFunc    get_grp_att_info; */         NULL,
 /* NclSetOptionFunc        set_option;  */              NULL
 };
 

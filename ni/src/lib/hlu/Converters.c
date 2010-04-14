@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.57 2009-12-31 18:01:29 huangwei Exp $
+ *      $Id: Converters.c,v 1.58 2010-04-14 21:29:47 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -1359,6 +1359,8 @@ _ToType(ftype,FTYPE,fext,unsigned long,Ulong)				\
 _ToType(ftype,FTYPE,fext,unsigned short,Ushort)				\
 _ToType(ftype,FTYPE,fext,long long,Int64)				\
 _ToType(ftype,FTYPE,fext,unsigned long long,Uint64)			\
+_ToType(ftype,FTYPE,fext,char,Int8)					\
+_ToType(ftype,FTYPE,fext,unsigned char,Uint8)				\
 _ToType(ftype,FTYPE,fext,short,Short)
 
 /*
@@ -1378,6 +1380,8 @@ _FromType(unsigned int,Uint,uint)
 _FromType(unsigned long,Ulong,ulong)
 _FromType(unsigned short,Ushort,ushort)
 _FromType(unsigned long long,Uint64,uint64)
+_FromType(char,Int8,int8)
+_FromType(unsigned char,Uint8,uint8)
 
 #undef _ToType
 #undef _FromType
@@ -1621,7 +1625,7 @@ CvtArgs
                 return NhlFATAL;
         }
 
-        sprintf(buff,"%lld",from->data.intval);
+        sprintf(buff,"%lld",from->data.int64val);
         tstring = NhlConvertMalloc(sizeof(char) * (strlen(buff)+1));
         if(tstring == NULL){
                 NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -1650,6 +1654,62 @@ CvtArgs
         }
 
         sprintf(buff,"%llu",from->data.uint64val);
+        tstring = NhlConvertMalloc(sizeof(char) * (strlen(buff)+1));
+        if(tstring == NULL){
+                NHLPERROR((NhlFATAL,ENOMEM,NULL));
+                to->size = 0;
+                return NhlFATAL;
+        }
+        strcpy(tstring,buff);
+
+        _NhlSetVal(NhlString,sizeof(NhlString),tstring);
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtInt8ToString
+CvtArgs
+{
+        char            func[] = "NhlCvtInt8ToString";
+        char            buff[_NhlMAXLINELEN];
+        NhlString       tstring;
+        NhlErrorTypes   ret = NhlNOERROR;
+
+        if(nargs != 0){
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                        "%s:Called with improper number of args",func);
+                return NhlFATAL;
+        }
+
+        sprintf(buff,"%d",from->data.int8val);
+        tstring = NhlConvertMalloc(sizeof(char) * (strlen(buff)+1));
+        if(tstring == NULL){
+                NHLPERROR((NhlFATAL,ENOMEM,NULL));
+                to->size = 0;
+                return NhlFATAL;
+        }
+        strcpy(tstring,buff);
+
+        _NhlSetVal(NhlString,sizeof(NhlString),tstring);
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtUint8ToString
+CvtArgs
+{
+        char            func[] = "NhlCvtUint8ToString";
+        char            buff[_NhlMAXLINELEN];
+        NhlString       tstring;
+        NhlErrorTypes   ret = NhlNOERROR;
+
+        if(nargs != 0){
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                        "%s:Called with improper number of args",func);
+                return NhlFATAL;
+        }
+
+        sprintf(buff,"%u",from->data.uint8val);
         tstring = NhlConvertMalloc(sizeof(char) * (strlen(buff)+1));
         if(tstring == NULL){
                 NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2092,6 +2152,82 @@ CvtArgs
         }
 
         _NhlSetVal(unsigned long long,sizeof(unsigned long long),tmp);
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtStringToInt8
+CvtArgs
+{
+        char            func[] = "NhlCvtStringToInt8";
+        long long       tmp;
+        NhlString       t2=NULL;
+        NrmValue        val;
+        NhlGenArray     sgen;
+        NhlErrorTypes   ret = NhlNOERROR;
+
+        if(nargs != 0){
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                "%s:Called with improper number of args",func);
+                to->size = 0;
+                return NhlFATAL;
+        }
+
+        sgen = _NhlStringToStringGenArray(from->data.strval);
+        if(sgen){
+                val.size = sizeof(NhlGenArray);
+                val.data.ptrval = sgen;
+                return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
+        }
+
+        tmp = local_strtoll(from->data.strval,&t2,10);
+
+        if(!tmp && (from->data.strval == t2)){
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:Can't Convert \"%s\"",
+                        func,from->data.strval);
+                to->size = 0;
+                return NhlFATAL;
+        }
+
+        _NhlSetVal(char,sizeof(char),tmp);
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtStringToUint8
+CvtArgs
+{
+        char            func[] = "NhlCvtStringToUint8";
+        unsigned long long       tmp;
+        NhlString       t2=NULL;
+        NrmValue        val;
+        NhlGenArray     sgen;
+        NhlErrorTypes   ret = NhlNOERROR;
+
+        if(nargs != 0){
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                "%s:Called with improper number of args",func);
+                to->size = 0;
+                return NhlFATAL;
+        }
+
+        sgen = _NhlStringToStringGenArray(from->data.strval);
+        if(sgen){
+                val.size = sizeof(NhlGenArray);
+                val.data.ptrval = sgen;
+                return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
+        }
+
+        tmp = (unsigned long long) strtoull(from->data.strval,&t2,10);
+
+        if(!tmp && (from->data.strval == t2)){
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:Can't Convert \"%s\"",
+                        func,from->data.strval);
+                to->size = 0;
+                return NhlFATAL;
+        }
+
+        _NhlSetVal(unsigned char,sizeof(unsigned char),tmp);
 }
 
 /*ARGSUSED*/
@@ -2581,6 +2717,8 @@ _ToArrType(ftype,FTYPE,fext,int,Integer)				\
 _ToArrType(ftype,FTYPE,fext,long,Long)					\
 _ToArrType(ftype,FTYPE,fext,long long,Int64)				\
 _ToArrType(ftype,FTYPE,fext,unsigned long long,Uint64)			\
+_ToArrType(ftype,FTYPE,fext,char,Int8)					\
+_ToArrType(ftype,FTYPE,fext,unsigned char,Uint8)			\
 _ToArrType(ftype,FTYPE,fext,unsigned long,Ulong)			\
 _ToArrType(ftype,FTYPE,fext,unsigned int,Uint)				\
 _ToArrType(ftype,FTYPE,fext,unsigned short,Ushort)			\
@@ -2603,6 +2741,8 @@ _FromArrType(unsigned long long,Uint64,uint64)
 _FromArrType(unsigned long,Ulong,ulong)
 _FromArrType(unsigned int,Uint,uint)
 _FromArrType(unsigned short,Ushort,ushort)
+_FromArrType(char,Int8,int8)
+_FromArrType(unsigned char,Uint8,uint8)
 
 #undef _ToArrType
 #undef _FromArrType
@@ -3125,7 +3265,113 @@ CvtArgs
         }
 
         for(i=0;i < fromgen->num_elements;i++){
-                sprintf(buff,"%lld",fromval[i]);
+                sprintf(buff,"%llu",fromval[i]);
+                toval[i] = NhlConvertMalloc(sizeof(char) * (strlen(buff) + 1));
+                if(toval[i] == NULL){
+                        NhlPError(NhlFATAL,ENOMEM,"%s",func);
+                        return NhlFATAL;
+                }
+                strcpy(toval[i],buff);
+        }
+
+        _NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtInt8GenArrayToStringGenArray
+CvtArgs
+{
+        NhlGenArray     togen,fromgen;
+        long long       *fromval;
+        NhlString       *toval;
+        int             i;
+        char            func[] = "NhlCvtInt8GenArrayToStringGenArray";
+        char            buff[_NhlMAXLINELEN];
+        NhlErrorTypes   ret = NhlNOERROR;
+
+        if(nargs != 0){
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                        "%s:Called with improper number of args",func);
+                return NhlFATAL;
+        }
+
+        fromgen = from->data.ptrval;
+
+        if(!fromgen){
+                _NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+        }
+        fromval = fromgen->data;
+
+        toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
+                                                        fromgen->num_elements);
+        if(toval == NULL){
+                NhlPError(NhlFATAL,ENOMEM,"%s",func);
+                return NhlFATAL;
+        }
+
+        togen = _NhlConvertCreateGenArray(toval,NhlTString,sizeof(NhlString),
+                        fromgen->num_dimensions,fromgen->len_dimensions);
+        if(togen == NULL){
+                NhlPError(NhlFATAL,ENOMEM,"%s",func);
+                return NhlFATAL;
+        }
+
+        for(i=0;i < fromgen->num_elements;i++){
+                sprintf(buff,"%d",fromval[i]);
+                toval[i] = NhlConvertMalloc(sizeof(char) * (strlen(buff) + 1));
+                if(toval[i] == NULL){
+                        NhlPError(NhlFATAL,ENOMEM,"%s",func);
+                        return NhlFATAL;
+                }
+                strcpy(toval[i],buff);
+        }
+
+        _NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtUint8GenArrayToStringGenArray
+CvtArgs
+{
+        NhlGenArray     togen,fromgen;
+        unsigned long long       *fromval;
+        NhlString       *toval;
+        int             i;
+        char            func[] = "NhlCvtUint8GenArrayToStringGenArray";
+        char            buff[_NhlMAXLINELEN];
+        NhlErrorTypes   ret = NhlNOERROR;
+
+        if(nargs != 0){
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                        "%s:Called with improper number of args",func);
+                return NhlFATAL;
+        }
+
+        fromgen = from->data.ptrval;
+
+        if(!fromgen){
+                _NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+        }
+        fromval = fromgen->data;
+
+        toval = (NhlString *)NhlConvertMalloc(sizeof(NhlString) *
+                                                        fromgen->num_elements);
+        if(toval == NULL){
+                NhlPError(NhlFATAL,ENOMEM,"%s",func);
+                return NhlFATAL;
+        }
+
+        togen = _NhlConvertCreateGenArray(toval,NhlTString,sizeof(NhlString),
+                        fromgen->num_dimensions,fromgen->len_dimensions);
+        if(togen == NULL){
+                NhlPError(NhlFATAL,ENOMEM,"%s",func);
+                return NhlFATAL;
+        }
+
+        for(i=0;i < fromgen->num_elements;i++){
+                sprintf(buff,"%u",fromval[i]);
                 toval[i] = NhlConvertMalloc(sizeof(char) * (strlen(buff) + 1));
                 if(toval[i] == NULL){
                         NhlPError(NhlFATAL,ENOMEM,"%s",func);
@@ -3786,6 +4032,115 @@ CvtArgs
 
 /*ARGSUSED*/
 static NhlErrorTypes
+NhlCvtStringGenArrayToInt8GenArray
+CvtArgs
+{
+        NhlGenArray     togen,fromgen;
+        NhlString       *fromval;
+        char            *toval;
+        int             i;
+        char            func[] = "NhlCvtStringGenArrayToInt8GenArray";
+        NhlErrorTypes   ret = NhlNOERROR;
+
+        if(nargs != 0){
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                        "%s:Called with improper number of args",func);
+                return NhlFATAL;
+        }
+
+        fromgen = from->data.ptrval;
+
+        if(!fromgen){
+                _NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+        }
+        fromval = fromgen->data;
+
+        toval = (char *)NhlConvertMalloc(sizeof(char) * fromgen->num_elements);
+        if(toval == NULL){
+                NhlPError(NhlFATAL,ENOMEM,"%s",func);
+                return NhlFATAL;
+        }
+
+        togen = _NhlConvertCreateGenArray(toval,NhlTInt8,sizeof(char),
+                        fromgen->num_dimensions,fromgen->len_dimensions);
+        if(togen == NULL){
+                NhlPError(NhlFATAL,ENOMEM,"%s",func);
+                return NhlFATAL;
+        }
+
+        for(i=0;i < fromgen->num_elements;i++){
+                char    *t2;
+
+                t2=NULL;
+
+                toval[i] = local_strtoll(fromval[i],&t2,10);
+                if(!toval[i] && (fromval[i] == t2)){
+                        NhlPError(NhlWARNING,NhlEUNKNOWN,
+                                "%s:Can't Convert \"%s\"",func,fromval[i]);
+                        to->size = 0;
+                        return NhlFATAL;
+                }
+        }
+
+        _NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtStringGenArrayToUint8GenArray
+CvtArgs
+{
+        NhlGenArray     togen,fromgen;
+        NhlString       *fromval;
+        unsigned char   *toval;
+        int             i;
+        char            func[] = "NhlCvtStringGenArrayToUint8GenArray";
+        NhlErrorTypes   ret = NhlNOERROR;
+
+        if(nargs != 0){
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                        "%s:Called with improper number of args",func);
+                return NhlFATAL;
+        }
+
+        fromgen = from->data.ptrval;
+
+        if(!fromgen){
+                _NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fromgen);
+        }
+        fromval = fromgen->data;
+
+        toval = (unsigned char *)NhlConvertMalloc(sizeof(unsigned char) * fromgen->num_elements);
+        if(toval == NULL){
+                NhlPError(NhlFATAL,ENOMEM,"%s",func);
+                return NhlFATAL;
+        }
+
+        togen = _NhlConvertCreateGenArray(toval,NhlTUint8,sizeof(unsigned char),
+                        fromgen->num_dimensions,fromgen->len_dimensions);
+        if(togen == NULL){
+                NhlPError(NhlFATAL,ENOMEM,"%s",func);
+                return NhlFATAL;
+        }
+
+        for(i=0;i < fromgen->num_elements;i++){
+                char    *t2;
+
+                t2=NULL;
+                toval[i] = strtoull(fromval[i],&t2,10);
+                if(!toval[i] && (fromval[i] == t2)){
+                        NhlPError(NhlWARNING,NhlEUNKNOWN,
+                                "%s:Can't Convert \"%s\"",func,fromval[i]);
+                        to->size = 0;
+                        return NhlFATAL;
+                }
+        }
+
+        _NhlSetVal(NhlGenArray,sizeof(NhlGenArray),togen);
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes
 NhlCvtStringGenArrayToShortGenArray
 CvtArgs
 {
@@ -4119,14 +4474,16 @@ _NhlConvertersInitialize
 	/*
 	 * Create hierarchy
 	 */
-	(void)_NhlRegisterTypes(NhlTScalar,NhlTByte,NhlTCharacter,NhlTShort,
+	(void)_NhlRegisterTypes(NhlTScalar,NhlTByte,NhlTCharacter,
+		NhlTInt8,NhlTUint8,NhlTShort,
 		NhlTUshort, NhlTUint, NhlTUlong, NhlTInt64, NhlTUint64,
 		NhlTLong,NhlTFloat,NhlTDouble,NhlTInteger,NhlTString,NhlTQuark,
 								NULL);
 	(void)_NhlRegisterTypes(NhlTInteger,NhlTEnum,NULL);
 
 	(void)_NhlRegisterTypes(NhlTGenArray,NhlTByteGenArray,
-		NhlTCharacterGenArray,NhlTShortGenArray,NhlTLongGenArray,
+		NhlTCharacterGenArray,NhlTInt8GenArray,NhlTUint8GenArray,
+		NhlTShortGenArray,NhlTLongGenArray,
                 NhlTUshortGenArray, NhlTUintGenArray, NhlTUlongGenArray,
                 NhlTInt64GenArray, NhlTUint64GenArray,
 		NhlTFloatGenArray,NhlTDoubleGenArray,NhlTIntegerGenArray,
@@ -4155,6 +4512,8 @@ _NhlConvertersInitialize
 	_Reg(FROM,Ulong)	\
 	_Reg(FROM,Uint64)	\
 	_Reg(FROM,Int64)	\
+	_Reg(FROM,Uint8)	\
+	_Reg(FROM,Int8)		\
 	_Reg(FROM,String)
 
 	/*
@@ -4167,6 +4526,8 @@ _NhlConvertersInitialize
 	_RegToAll(Ulong)
 	_RegToAll(Uint64)
 	_RegToAll(Int64)
+	_RegToAll(Uint8)
+	_RegToAll(Int8)
 	_RegToAll(Byte)
 	_RegToAll(Character)
 	_RegToAll(Double)
@@ -4196,6 +4557,8 @@ _NhlConvertersInitialize
 	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTUshort,NhlTQuark,NhlTScalar);
 	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTInt64,NhlTQuark,NhlTScalar);
 	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTUint64,NhlTQuark,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTInt8,NhlTQuark,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTUint8,NhlTQuark,NhlTScalar);
 	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTString,NhlTQuark,NhlTScalar);
 
 
@@ -4215,6 +4578,8 @@ _NhlConvertersInitialize
 	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTUlong,NhlTGenArray,NhlTScalar);
 	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTInt64,NhlTGenArray,NhlTScalar);
 	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTUint64,NhlTGenArray,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTInt8,NhlTGenArray,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTUint8,NhlTGenArray,NhlTScalar);
 	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTShort,NhlTGenArray,NhlTScalar);
 	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTUshort,NhlTGenArray,NhlTScalar);
 	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTString,NhlTGenArray,NhlTScalar);
@@ -4236,6 +4601,8 @@ _NhlConvertersInitialize
 								NhlTGenArray);
 	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTInt64GenArray,NhlTScalar,
 								NhlTGenArray);
+	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTInt8GenArray,NhlTScalar,
+								NhlTGenArray);
 	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTShortGenArray,NhlTScalar,
 								NhlTGenArray);
 	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTStringGenArray,NhlTScalar,
@@ -4243,6 +4610,8 @@ _NhlConvertersInitialize
 	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTIntegerGenArray,NhlTScalar,
 								NhlTGenArray);
 	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTUint64GenArray,NhlTScalar,
+								NhlTGenArray);
+	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTUint8GenArray,NhlTScalar,
 								NhlTGenArray);
 	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTUlongGenArray,NhlTScalar,
 								NhlTGenArray);
@@ -4270,6 +4639,8 @@ _NhlConvertersInitialize
 								NhlTGenArray);
 	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTInt64GenArray,NhlTGenArray,
 								NhlTGenArray);
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTInt8GenArray,NhlTGenArray,
+								NhlTGenArray);
 	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTShortGenArray,NhlTGenArray,
 								NhlTGenArray);
 	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTStringGenArray,NhlTGenArray,
@@ -4283,6 +4654,8 @@ _NhlConvertersInitialize
 	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTUlongGenArray,NhlTGenArray,
 								NhlTGenArray);
 	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTUint64GenArray,NhlTGenArray,
+								NhlTGenArray);
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTUint8GenArray,NhlTGenArray,
 								NhlTGenArray);
 
 	(void)NhlRegisterConverter(NULL,NhlTGenArray,NhlTVariable,
@@ -4301,10 +4674,12 @@ _NhlConvertersInitialize
 	_RegArr(FROM,Long)	\
 	_RegArr(FROM,Short)	\
 	_RegArr(FROM,Int64)	\
+	_RegArr(FROM,Int8)	\
 	_RegArr(FROM,Ushort)	\
 	_RegArr(FROM,Uint)	\
 	_RegArr(FROM,Ulong)	\
 	_RegArr(FROM,Uint64)	\
+	_RegArr(FROM,Uint8)	\
 	_RegArr(FROM,String)
 
 	/*
@@ -4314,9 +4689,11 @@ _NhlConvertersInitialize
 	 */
 	_RegArrToAll(Ushort)
 	_RegArrToAll(Int64)
+	_RegArrToAll(Int8)
 	_RegArrToAll(Uint)
 	_RegArrToAll(Ulong)
 	_RegArrToAll(Uint64)
+	_RegArrToAll(Uint8)
 	_RegArrToAll(Byte)
 	_RegArrToAll(Character)
 	_RegArrToAll(Double)
@@ -4347,6 +4724,8 @@ _NhlConvertersInitialize
 						NhlTQuarkGenArray,NhlTGenArray);
 	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTInt64GenArray,
 						NhlTQuarkGenArray,NhlTGenArray);
+	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTInt8GenArray,
+						NhlTQuarkGenArray,NhlTGenArray);
 	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTUshortGenArray,
 						NhlTQuarkGenArray,NhlTGenArray);
 	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTUintGenArray,
@@ -4354,6 +4733,8 @@ _NhlConvertersInitialize
 	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTUlongGenArray,
 						NhlTQuarkGenArray,NhlTGenArray);
 	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTUint64GenArray,
+						NhlTQuarkGenArray,NhlTGenArray);
+	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTUint8GenArray,
 						NhlTQuarkGenArray,NhlTGenArray);
 	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTStringGenArray,
 						NhlTQuarkGenArray,NhlTGenArray);

@@ -1,7 +1,12 @@
 #!/bin/csh -f
 #
-#	$Id: gcaps,v 1.14 1992-07-31 21:08:14 clyne Exp $
+#	$Id: gcaps,v 1.15 2010-04-14 21:29:47 huangwei Exp $
 #
+#                Copyright (C)  2000
+#        University Corporation for Atmospheric Research
+#                All Rights Reserved
+#
+# The use of this Software is governed by a License Agreement.
 #
 #	Name		gcaps
 #
@@ -13,8 +18,8 @@
 #			directory.
 # 
 
-set version = 3.2alpha1.1
-set dir = `ncargpar GRAPHCAPDIR`
+set version = "5.2.0"
+set dir = `ncargpath graphcaps`
 if ($status != 0) then
 	exit 1
 endif
@@ -43,6 +48,6 @@ end
 
 echo ""
 echo "The following device specifiers are also valid:"
-foreach device ("" sun xwd nrif hdf CTXT    X11 xbfr)
+foreach device ("" sun xwd nrif hdf avs sgi hppcl CTXT 	 X11)
 	echo "	$device"
 end

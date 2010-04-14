@@ -12,10 +12,12 @@ extern "C" {
 #include "defs.h"
 #include <errno.h>
 #include "Symbol.h"
+#include "NclList.h"
 #include "NclDataDefs.h"
 #include "Machine.h"
 #include "NclFile.h"
 #include "NclVar.h"
+#include "NclList.h"
 #include "NclCoordVar.h"
 #include "VarSupport.h"
 #include "DataSupport.h"
@@ -397,6 +399,9 @@ NhlErrorTypes _NclBuildArray
 	} else if(obj_type & Ncl_Typeobj) {
 		must_be_numeric =-1;
 		result_type = Ncl_Typeobj;
+	} else if(obj_type & Ncl_Typegroup) {
+		must_be_numeric =-2;
+		result_type = Ncl_Typegroup;
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: attempt to build array out of illegal data type or undefined element, can't continue");
 		_NclCleanUpStack(n_items);
@@ -460,6 +465,9 @@ NhlErrorTypes _NclBuildArray
 			}
 		} else if((must_be_numeric == -1)&&
 			(obj_type & Ncl_Typeobj )) {
+			result_type = obj_type;
+		} else if((must_be_numeric == -2)&&
+			(obj_type & Ncl_Typegroup )) {
 			result_type = obj_type;
 		} else {
 /*
@@ -792,6 +800,50 @@ NhlErrorTypes _NclBuildArray
 	else 
 		return(NhlFATAL);
 }
+
+NhlErrorTypes _NclBuildListVar
+#if	NhlNeedProto
+(int n_items,NclStackEntry *result)
+#else
+(n_items,result)
+	int n_items;
+	NclStackEntry *result;
+#endif
+{
+	NclStackEntry data;
+	NclStackEntry *data_ptr;
+	int i;
+	int dim_sizes[NCL_MAX_DIMENSIONS];
+        int ndims = 1;
+
+	NclList thelist;
+	obj *id;
+
+	thelist =(NclList)_NclListCreate(NULL,NULL,0,0,(NCL_CONCAT|NCL_FIFO));
+	id = (obj*)NclMalloc(sizeof(obj));
+	*id = thelist->obj.id;
+	_NclListSetType((NclObj)thelist,NCL_FIFO);
+
+        dim_sizes[0] = n_items;
+	result->kind = NclStk_VAL;
+	result->u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,
+				(Ncl_List | Ncl_MultiDVallistData | Ncl_ListVar | Ncl_Typelist),id,NULL,
+				ndims,dim_sizes,TEMPORARY,NULL);
+
+	for(i = n_items - 1; i > -1; i--)
+	{
+		data_ptr = _NclPeek(i);
+		ListPush((NclObj)thelist, (NclObj)(data_ptr->u.data_obj));
+	}
+
+	_NclPlaceReturn(*result);
+
+	if(result->u.data_obj != NULL) 
+		return(NhlNOERROR);
+	else 
+		return(NhlFATAL);
+}
+
 NhlErrorTypes _NclBuildConcatArray
 #if	NhlNeedProto
 (int n_items,NclStackEntry *result)
@@ -874,6 +926,9 @@ NhlErrorTypes _NclBuildConcatArray
 	} else if(obj_type & Ncl_Typeobj) {
 		must_be_numeric =-1;
 		result_type = Ncl_Typeobj;
+	} else if(obj_type & Ncl_Typegroup) {
+		must_be_numeric =-2;
+		result_type = Ncl_Typegroup;
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildConcatArray: attempt to build array out of illegal data type or undefined element, can't continue");
 		_NclCleanUpStack(n_items);
@@ -936,6 +991,9 @@ NhlErrorTypes _NclBuildConcatArray
 			}
 		} else if((must_be_numeric == -1)&&
 			(obj_type & Ncl_Typeobj )) {
+			result_type = obj_type;
+		} else if((must_be_numeric == -2)&&
+			(obj_type & Ncl_Typegroup )) {
 			result_type = obj_type;
 		} else {
 /*

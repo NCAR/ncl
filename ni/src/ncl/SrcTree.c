@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.46 2009-07-28 16:29:41 huangwei Exp $
+ *      $Id: SrcTree.c,v 1.47 2010-04-14 21:29:48 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -43,32 +43,92 @@ int cur_node_list_size = NCL_SRC_TREE_NODE_LIST_SIZE;
 * SrcTree.h
 */
 
-char *src_tree_names[] = {"Ncl_BLOCK", "Ncl_RETURN", "Ncl_IFTHEN",
-                        "Ncl_IFTHENELSE", "Ncl_VISBLKSET", "Ncl_VISBLKGET",
-			"Ncl_VISBLKCREATE", "Ncl_DOFROMTO",
-                        "Ncl_DOFROMTOSTRIDE",  "Ncl_INTRINSICPROCCALL",
-                        "Ncl_EXTERNALPROCCALL", "Ncl_PROCCALL", "Ncl_FUNCDEF",
-                        "Ncl_EXTERNFUNCDEF",    "Ncl_LOCALVARDEC",
-                        "Ncl_DIMSIZELISTNODE","Ncl_PROCDEF","Ncl_EXTERNPROCDEF",
-                        "Ncl_ASSIGN", "Ncl_IDNREF", "Ncl_INTSUBSCRIPT",
-                        "Ncl_COORDSUBSCRIPT", "Ncl_SINGLEINDEX",
-                        "Ncl_RANGEINDEX", "Ncl_NEGEXPR", "Ncl_NOTEXPR",
-                        "Ncl_MODEXPR", "Ncl_OREXPR", "Ncl_ANDEXPR",
-                        "Ncl_XOREXPR", "Ncl_LTSELECTEXPR", "Ncl_GTSELECTEXPR",
-                        "Ncl_PLUSEXPR", "Ncl_MINUSEXPR", "Ncl_MULEXPR",
-                        "Ncl_MATMULEXPR", "Ncl_DIVEXPR", "Ncl_EXPEXPR",
-                        "Ncl_LEEXPR", "Ncl_GEEXPR", "Ncl_GTEXPR", "Ncl_LTEXPR",
-                        "Ncl_EQEXPR", "Ncl_NEEXPR", "Ncl_REAL", "Ncl_INT",
-                        "Ncl_STRING",  "Ncl_INTRINSICFUNCCALL",
-                        "Ncl_EXTERNFUNCCALL", "Ncl_FUNCCALL", "Ncl_ARRAY",
-                        "Ncl_ROWLIST","Ncl_ROWCOLUMNNODE","Ncl_DOWHILE",
-			"Ncl_VAR", "Ncl_VARDIM", "Ncl_VARATT",
-                        "Ncl_VARCOORD", "Ncl_FILEVAR", "Ncl_IDNEXPR",
-			"Ncl_RESOURCE","Ncl_GETRESOURCE", "Ncl_OBJ",
-			"Ncl_BREAK", "Ncl_CONTINUE","Ncl_FILEVARATT",
+char *src_tree_names[] = {"Ncl_BLOCK",
+			"Ncl_RETURN",
+			"Ncl_IFTHEN",
+			"Ncl_IFTHENELSE",
+			"Ncl_VISBLKSET",
+			"Ncl_VISBLKGET",
+			"Ncl_VISBLKCREATE",
+			"Ncl_DOFROMTO",
+			"Ncl_DOFROMTOSTRIDE",
+			"Ncl_INTRINSICPROCCALL",
+			"Ncl_EXTERNALPROCCALL",
+			"Ncl_PROCCALL",
+			"Ncl_FUNCDEF",
+			"Ncl_EXTERNFUNCDEF",
+			"Ncl_LOCALVARDEC",
+			"Ncl_DIMSIZELISTNODE",
+			"Ncl_PROCDEF",
+			"Ncl_EXTERNPROCDEF",
+			"Ncl_ASSIGN",
+			"Ncl_IDNREF",
+			"Ncl_INTSUBSCRIPT",
+			"Ncl_COORDSUBSCRIPT",
+			"Ncl_SINGLEINDEX",
+			"Ncl_RANGEINDEX",
+			"Ncl_NEGEXPR",
+			"Ncl_NOTEXPR",
+			"Ncl_MODEXPR",
+			"Ncl_OREXPR",
+			"Ncl_ANDEXPR",
+			"Ncl_XOREXPR",
+			"Ncl_LTSELECTEXPR",
+			"Ncl_GTSELECTEXPR",
+			"Ncl_PLUSEXPR",
+			"Ncl_MINUSEXPR",
+			"Ncl_MULEXPR",
+			"Ncl_MATMULEXPR",
+			"Ncl_DIVEXPR",
+			"Ncl_EXPEXPR",
+			"Ncl_LEEXPR",
+			"Ncl_GEEXPR",
+			"Ncl_GTEXPR",
+			"Ncl_LTEXPR",
+			"Ncl_EQEXPR",
+			"Ncl_NEEXPR",
+			"Ncl_REAL",
+			"Ncl_INT",
+			"Ncl_STRING",
+			"Ncl_INTRINSICFUNCCALL",
+			"Ncl_EXTERNFUNCCALL",
+			"Ncl_FUNCCALL",
+			"Ncl_ARRAY",
+			"Ncl_ROWLIST",
+			"Ncl_ROWCOLUMNNODE",
+			"Ncl_DOWHILE",
+			"Ncl_VAR",
+			"Ncl_VARDIM",
+			"Ncl_VARATT",
+			"Ncl_VARCOORD",
+			"Ncl_FILEVAR",
+			"Ncl_IDNEXPR",
+			"Ncl_RESOURCE",
+			"Ncl_GETRESOURCE",
+			"Ncl_OBJ",
+			"Ncl_BREAK",
+			"Ncl_CONTINUE",
+			"Ncl_FILEVARATT",
 			"Ncl_FILEVARDIM",
-			"Ncl_FILECOORD","Ncl_NEW","Ncl_LOGICAL","Ncl_VARCOORDATT","Ncl_FILECOORDATT","Ncl_WILDCARDINDEX","Ncl_NULLNODE",
-			  "Ncl_LIST","Ncl_EXPRNEW","Ncl_FILEVARLIST"
+			"Ncl_FILEVARCOORD",
+			"Ncl_NEW",
+			"Ncl_LOGICAL",
+			"Ncl_VARCOORDATT",
+			"Ncl_FILEVARCOORDATT",
+			"Ncl_WILDCARDINDEX",
+			"Ncl_NULLNODE",
+			"Ncl_LIST",
+			"Ncl_EXPRNEW",
+			"Ncl_FILEVARLIST",
+			"Ncl_GROUP",
+			"Ncl_FILEGROUP",
+			"Ncl_FILEGROUPATT",
+			"Ncl_FILEGROUPDIM",
+			"Ncl_FILEGROUPCOORD",
+			"Ncl_FILEGROUPCOORDATT",
+			"Ncl_FILEGROUPLIST",
+			"Ncl_LISTVAR",
+			"Ncl_WILLNOTBEUSED"
 			};
 /*
 * These are the string equivalents of the attribute tags assigned to 
@@ -703,6 +763,7 @@ NclSrcListNode * block_stmnt_list;
 	tmp->dir_sym = _NclAddUniqueSym("L_DIR_",VAR);
 	tmp->end_sym = _NclAddUniqueSym("L_END_",VAR);
 	_NclRegisterNode((NclGenericNode*)tmp);
+
 	return((void*)tmp);
 }
 
@@ -1647,9 +1708,7 @@ void *_NclMakeIdnExpr
 	void *idn_ref_node;
 #endif
 {
-
 	NclIdnExpr *tmp = (NclIdnExpr*)NclMalloc((unsigned)sizeof(NclIdnExpr));
-	
 	tmp->kind = Ncl_IDNEXPR;
 	tmp->name = src_tree_names[Ncl_IDNEXPR];
 	tmp->line = cur_line_number;
@@ -1794,7 +1853,7 @@ char* string_rep;
 	tmp->len = -1;
 	tmp->int_type = 'i';
 	if (string_rep != NULL) { 
-		char *type = strpbrk(string_rep,"bBhHiIlLqQ");
+		char *type = strpbrk(string_rep,"bBcChHiIlLqQ");
 		if (type) {
 			tmp->int_type = *type;
 			tmp->len = strlen(string_rep) - 1;
@@ -1882,6 +1941,7 @@ char * str;
 	}
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);
+
 	return((void*)tmp);
 }
 
@@ -1965,6 +2025,26 @@ void _NclArrayNodeDestroy
         NclFree((void*)tmp);
 }
 
+void _NclListNodeDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{	
+	NclArray *tmp = (NclArray*)thenode;
+	NclSrcListNode *step,*temp;
+        step = tmp->rcl->list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+	NclFree((void*)tmp->rcl);
+        NclFree((void*)tmp);
+}
+
 /*
  * Function:	
  *
@@ -2002,6 +2082,46 @@ NclRclList* rc_list;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
+
+/*
+ * Function:	
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void *_NclMakeListVarNode
+#if	NhlNeedProto
+(NclRclList* rc_list)
+#else
+(rc_list)
+NclRclList* rc_list;
+#endif
+{
+	NclListVar *tmp = (NclListVar*)NclMalloc((unsigned)sizeof(NclListVar));
+
+	if(tmp == NULL) {
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
+		return(NULL);
+	}
+	tmp->kind = Ncl_LISTVAR;
+	tmp->name = src_tree_names[Ncl_LISTVAR];
+	tmp->line = cur_line_number;
+	tmp->file = cur_load_file;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclListNodeDestroy;
+	tmp->rcl = rc_list;
+	tmp->ref_type = Ncl_READIT;
+	_NclRegisterNode((NclGenericNode*)tmp);
+
+	return((void*)tmp);
+}
+
 
 
 /*
@@ -2202,6 +2322,9 @@ void _NclPrintSymbol
 		break;
 	case CHARACTER:
 		fprintf(fp,"%s\t","CHARACTER");
+		break;
+	case GROUP:
+		fprintf(fp,"%s\t","GROUP");
 		break;
 	case NUMERIC:
 		fprintf(fp,"%s\t","NUMERIC");
@@ -3143,10 +3266,26 @@ if(groot != NULL) {
 			i--;	
 		}
 		break;
+		case Ncl_FILEGROUP:
+		{
+			NclFileGroup *filegroup = (NclFileGroup*)root;
+
+			putspace(i,fp);
+			fprintf(fp,"%s\n",filegroup->name);
+			i++;
+			putspace(i,fp);
+			fprintf(fp,"%s\t",ref_node_names[filegroup->ref_type]);
+			_NclPrintSymbol(filegroup->dfile,fp);
+			putspace(i,fp);
+			_NclPrintTree(filegroup->filegroupnode,fp);
+			i--;
+		}
+		break;
 		
 		default:
-		
-		fprintf(fp,"UNRECOGNIZED ENUM VALUE!\n");
+			fprintf(stdout, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);
+			fprintf(stdout, "\tUNRECOGNIZED ENUM VALUE, groot->kind: %d\n", groot->kind);
+			fprintf(fp,"UNRECOGNIZED ENUM VALUE!\n");
 			break;
 	}
 	return;
@@ -3175,6 +3314,18 @@ void _NclFileVarDestroy
 
 	NclFree((void*)tmp);
 }
+void _NclFileGroupDestroy
+#if	NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+	struct ncl_genericnode *thenode;
+#endif
+{
+	NclFileGroup* tmp = (NclFileGroup*)thenode;
+
+	NclFree((void*)tmp);
+}
 void *_NclMakeFileVarRef
 #if	NhlNeedProto
 (NclSymbol *dfile,void * filevar, NclSrcListNode * subscript_list, int type )
@@ -3199,6 +3350,32 @@ int type;
 	tmp->dfile = dfile;
         tmp->filevarnode = filevar;
 	tmp->subscript_list = subscript_list;
+	tmp->ref_type = Ncl_READIT;
+	_NclRegisterNode((NclGenericNode*)tmp);
+        return((void*)tmp);
+}
+void *_NclMakeFileGroupRef
+#if	NhlNeedProto
+(NclSymbol *dfile, void * filegroup, int type )
+#else
+(dfile, filegroup, type)
+NclSymbol * dfile;
+void* filegroup;
+int type;
+#endif
+{
+        NclFileGroup *tmp = (NclFileGroup*)NclMalloc((unsigned)sizeof(NclFileGroup));
+        if(tmp == NULL) {
+                NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
+                return(NULL);
+        }
+        tmp->kind = type;
+        tmp->name = src_tree_names[type];
+	tmp->line = cur_line_number;
+	tmp->file = cur_load_file;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclFileGroupDestroy;
+	tmp->dfile = dfile;
+        tmp->filegroupnode = filegroup;
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);
         return((void*)tmp);
@@ -3298,6 +3475,25 @@ void _NclFileVarListDestroy
         NclFree((void*)tmp);
 }
 
+void _NclFileGroupListDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclFileGroupList*tmp = (NclFileGroupList*)thenode;
+        NclSrcListNode *step,*temp;
+        step = tmp->filegroup_subscript;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+        NclFree((void*)tmp);
+}
+
 void *_NclMakeFileVarListRef
 #if	NhlNeedProto
 (NclSymbol *list, void *list_subscript, void * filevar, NclSrcListNode *filevar_subscript)
@@ -3323,6 +3519,36 @@ NclSrcListNode *filevar_subscript;
 	tmp->list_subscript = list_subscript;
 	tmp->filevar = filevar;
 	tmp->filevar_subscript = filevar_subscript;
+	tmp->ref_type = Ncl_READIT;
+	_NclRegisterNode((NclGenericNode*)tmp);
+	return((void*)tmp);
+}
+
+void *_NclMakeFileGroupListRef
+#if	NhlNeedProto
+(NclSymbol *list, void *list_subscript, void * filegroup, NclSrcListNode *filegroup_subscript)
+#else
+(list, list_subscript, filegroup, filegroup_subscript)
+NclSymbol *list;
+void *list_subscript;
+void *filegroup;
+NclSrcListNode *filegroup_subscript;
+#endif
+{
+	NclFileGroupList * tmp = (NclFileGroupList*)NclMalloc((unsigned)sizeof(NclFileGroupList));
+	if(tmp == NULL) {
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
+		return(NULL);
+	}
+	tmp->kind = Ncl_FILEGROUPLIST;
+	tmp->name = src_tree_names[Ncl_FILEVARLIST];
+	tmp->line = cur_line_number;
+	tmp->file = cur_load_file;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclFileGroupListDestroy;
+	tmp->list = list;
+	tmp->list_subscript = list_subscript;
+	tmp->filegroup = filegroup;
+	tmp->filegroup_subscript = filegroup_subscript;
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
@@ -3804,9 +4030,11 @@ void *root;
 		if (idnexpr != NULL) {
 			switch(((NclGenericRefNode*)idnexpr)->kind) {
 				case Ncl_VAR: 
+				case Ncl_GROUP: 
 				case Ncl_VARCOORD: 
 				case Ncl_FILEVAR: 
 				case Ncl_FILEVARCOORD: 
+				case Ncl_FILEGROUP: 
 					((NclGenericRefNode*)idnexpr)->ref_type = Ncl_VALONLY;
 					break;
 				default:

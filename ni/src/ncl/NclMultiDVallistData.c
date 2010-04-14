@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDVallistData.c,v 1.5 2003-05-31 00:49:42 dbrown Exp $
+ *      $Id: NclMultiDVallistData.c,v 1.6 2010-04-14 21:29:47 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,8 @@
 #include <ncarg/hlu/NresDB.h>
 #include "defs.h"
 #include <errno.h>
+#include "NclVar.h"
+#include "NclFileVar.h"
 #include "NclList.h"
 #include "NclMultiDVallistData.h"
 #include "DataSupport.h"
@@ -47,27 +49,132 @@ FILE *fp;
 	NclObjClass oc;
 	NclMultiDValData self_md = (NclMultiDValData)self;
 	NhlErrorTypes ret;
-	
+	int nv = 0;
+	NclObj cur_obj;
 
 	tmp_list = (NclList) _NclGetObj(*(obj*)self_md->multidval.val);
 
 	step = tmp_list->list.first;
 	
-	while(step != NULL) {
-		oc = _NclObjTypeToPointer(step->orig_type);
-		if(oc != NULL) {
-	 		ret = nclfprintf(fp,"\t%s\n",oc->obj_class.class_name);
-		} else {
-			ret = NhlWARNING;
+	while(step != NULL)
+	{
+	    oc = _NclObjTypeToPointer(step->orig_type);
+
+	    if(oc != NULL)
+	    {
+	 	ret = nclfprintf(fp,"\nList Elem %d:\t%s\n\n", nv, oc->obj_class.class_name);
+	    }
+	    else
+	    {
+	        ret = NhlWARNING;
+	    }
+
+            if(ret < 0)
+	    {
+                return(NhlWARNING);
+            }
+
+	    cur_obj = (NclObj)_NclGetObj(step->obj_id);
+
+	    switch(cur_obj->obj.obj_type)
+	    {
+	        case Ncl_Var:
+		{
+		    NclVar var;
+		    var = (NclVar)_NclGetObj(cur_obj->obj.id);
+		    VarPrint((NclObj)var, fp);
+		    break;
 		}
-                if(ret < 0) {
-                        return(NhlWARNING);
-                }
-		step = step->next;
+	        case Ncl_FileVar:
+		{
+		    NclFileVar fv;
+		    fv = (NclFileVar)_NclGetObj(cur_obj->obj.id);
+		    FileVarPrint((NclObj)fv, fp);
+		    break;
+		}
+	        default:
+		    fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
+		    fprintf(stderr, "\tUNRECOGANIZED cur_obj->obj.obj_type %d: %o\n", nv, cur_obj->obj.obj_type);
+	    }
+
+	    step = step->next;
+	    nv++;
+ 	    nclfprintf(fp,"\n");
 	}
+
         return(NhlNOERROR);
-	
 }
+
+NhlErrorTypes MultiDValPrintVarSummary
+#if     NhlNeedProto
+(NclObj self, FILE *fp)
+#else
+(self,fp)
+NclObj self;
+FILE *fp;
+#endif
+{
+	NclList tmp_list;
+	NclListObjList *step;
+	NclObjClass oc;
+	NclMultiDValData self_md = (NclMultiDValData)self;
+	NhlErrorTypes ret;
+	int nv = 0;
+	NclObj cur_obj;
+
+	tmp_list = (NclList) _NclGetObj(*(obj*)self_md->multidval.val);
+
+	step = tmp_list->list.first;
+	
+	while(step != NULL)
+	{
+	    oc = _NclObjTypeToPointer(step->orig_type);
+
+	    if(oc != NULL)
+	    {
+	 	ret = nclfprintf(fp,"\nList Elem %d:\t%s\n\n", nv, oc->obj_class.class_name);
+	    }
+	    else
+	    {
+	        ret = NhlWARNING;
+	    }
+
+            if(ret < 0)
+	    {
+                return(NhlWARNING);
+            }
+
+	    cur_obj = (NclObj)_NclGetObj(step->obj_id);
+
+	    switch(cur_obj->obj.obj_type)
+	    {
+	        case Ncl_Var:
+		{
+		    NclVar var;
+		    var = (NclVar)_NclGetObj(cur_obj->obj.id);
+		    VarPrintVarSummary((NclObj)var, fp);
+		    break;
+		}
+	        case Ncl_FileVar:
+		{
+		    NclFileVar fv;
+		    fv = (NclFileVar)_NclGetObj(cur_obj->obj.id);
+		    FileVarPrintVarSummary((NclObj)fv, fp);
+		    break;
+		}
+	        default:
+		    fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
+		    fprintf(stderr, "\tUNRECOGANIZED cur_obj->obj.obj_type %d: %o\n", nv, cur_obj->obj.obj_type);
+	    }
+
+	    step = step->next;
+	    nv++;
+ 	    nclfprintf(fp,"\n");
+	}
+
+        return(NhlNOERROR);
+}
+	
 static struct _NclDataRec *MultiDVal_list_ReadSection
 #if	NhlNeedProto
 (NclData self, NclSelectionRecord * sel,NclScalar *missing)

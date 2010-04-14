@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.252 2010-02-22 17:41:33 huangwei Exp $
+ *      $Id: BuiltInFuncs.c,v 1.253 2010-04-14 21:29:47 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -14850,6 +14850,92 @@ NhlErrorTypes _NclIIsUint64
         ));
 }
 
+NhlErrorTypes _NclIIsInt8
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        NclStackEntry data;
+        NclMultiDValData tmp_md = NULL;
+        logical *out_val;
+        int dimsizes = 1;
+
+        data = _NclGetArg(0,1,DONT_CARE);
+        switch(data.kind) {
+                case NclStk_VAR:
+                        tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+                        break;
+                case NclStk_VAL:
+                        tmp_md = (NclMultiDValData)data.u.data_obj;
+                        break;
+        }
+        if(tmp_md == NULL)
+                return(NhlFATAL);
+
+        out_val = (logical*)NclMalloc(sizeof(logical));
+        if(tmp_md->multidval.data_type == NCL_int8) {
+                *out_val = 1;
+        } else {
+                *out_val = 0;
+        }
+
+
+
+        return(NclReturnValue(
+                out_val,
+                1,
+                &dimsizes,
+                NULL,
+                ((NclTypeClass)nclTypelogicalClass)->type_class.data_type,
+                0
+        ));
+}
+
+NhlErrorTypes _NclIIsUint8
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        NclStackEntry data;
+        NclMultiDValData tmp_md = NULL;
+        logical *out_val;
+        int dimsizes = 1;
+
+        data = _NclGetArg(0,1,DONT_CARE);
+        switch(data.kind) {
+                case NclStk_VAR:
+                        tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+                        break;
+                case NclStk_VAL:
+                        tmp_md = (NclMultiDValData)data.u.data_obj;
+                        break;
+        }
+        if(tmp_md == NULL)
+                return(NhlFATAL);
+
+        out_val = (logical*)NclMalloc(sizeof(logical));
+        if(tmp_md->multidval.data_type == NCL_uint8) {
+                *out_val = 1;
+        } else {
+                *out_val = 0;
+        }
+
+
+
+        return(NclReturnValue(
+                out_val,
+                1,
+                &dimsizes,
+                NULL,
+                ((NclTypeClass)nclTypelogicalClass)->type_class.data_type,
+                0
+        ));
+}
+
 
 NhlErrorTypes _NclIIsByte
 #if	NhlNeedProto
@@ -16032,6 +16118,169 @@ NhlErrorTypes _NclIFileVarDef
 	}
 	return(ret0);
 }
+
+NhlErrorTypes _NclIFileVarChunkDef
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int dimsize;
+	NclScalar missing;
+	int has_missing;
+
+	int n_dims;
+	NclScalar tmp_missing;
+	int tmp_has_missing;
+
+	obj *thefile_id;
+	string *varnames;
+	int    *dimsizes;
+	int     input_dimsizes[NCL_MAX_DIMENSIONS];
+	int i;
+	NclFile thefile;
+	NhlErrorTypes ret=NhlNOERROR;
+	NhlErrorTypes ret0 = NhlNOERROR;
+
+        thefile_id = (obj *)NclGetArgValue(
+                        0,
+                        3,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+	thefile = (NclFile)_NclGetObj((int)*thefile_id);
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+
+        varnames = (string *)NclGetArgValue(
+                        1,
+                        3,
+                        &n_dims,
+                        input_dimsizes,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+	if(has_missing) {
+		for(i = 0; i < dimsize; i++) {
+			if(varnames[i] == missing.stringval)  {
+				return(NhlFATAL);
+			}
+		}
+	}
+
+        dimsizes = (int *)NclGetArgValue(
+                        2,
+                        3,
+                        &n_dims,
+                        input_dimsizes,
+                        &tmp_missing,
+                        &tmp_has_missing,
+                        NULL,
+                        0);
+
+	n_dims = input_dimsizes[0];
+	if(tmp_has_missing) {
+		for(i = 0; i < n_dims; i++) {
+			if(dimsizes[i] == tmp_missing.intval)  {
+				return(NhlFATAL);
+			}
+		}
+	}
+
+	ret = _NclFileAddVarChunk(thefile,varnames[0],n_dims,dimsizes);
+	if(ret < NhlINFO) {
+		ret0 = ret;
+	}
+	return(ret0);
+}
+
+NhlErrorTypes _NclIFileVarCompressLevelDef
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int dimsize;
+	NclScalar missing;
+	int has_missing;
+
+	int n_dims;
+	NclScalar tmp_missing;
+	int tmp_has_missing;
+
+	obj *thefile_id;
+	string *varnames;
+	int    *compress_level;
+	int     input_dimsizes[NCL_MAX_DIMENSIONS];
+	int i;
+	NclFile thefile;
+	NhlErrorTypes ret=NhlNOERROR;
+	NhlErrorTypes ret0 = NhlNOERROR;
+
+        thefile_id = (obj *)NclGetArgValue(
+                        0,
+                        3,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+	thefile = (NclFile)_NclGetObj((int)*thefile_id);
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+
+        varnames = (string *)NclGetArgValue(
+                        1,
+                        3,
+                        &n_dims,
+                        input_dimsizes,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+	if(has_missing) {
+		for(i = 0; i < dimsize; i++) {
+			if(varnames[i] == missing.stringval)  {
+				return(NhlFATAL);
+			}
+		}
+	}
+
+        compress_level = (int *)NclGetArgValue(
+                        2,
+                        3,
+                        &n_dims,
+                        input_dimsizes,
+                        &tmp_missing,
+                        &tmp_has_missing,
+                        NULL,
+                        0);
+
+	n_dims = input_dimsizes[0];
+	if(tmp_has_missing) {
+		for(i = 0; i < n_dims; i++) {
+			if(compress_level[i] == tmp_missing.intval)  {
+				return(NhlFATAL);
+			}
+		}
+	}
+
+	ret = _NclFileSetVarCompressLevel(thefile,varnames[0],compress_level[0]);
+	if(ret < NhlINFO) {
+		ret0 = ret;
+	}
+	return(ret0);
+}
+
 NhlErrorTypes _NclIFileDimDef
 #if NhlNeedProto
 (void)
@@ -16129,6 +16378,110 @@ NhlErrorTypes _NclIFileDimDef
 	}
 	for(i = 0; i < dimsize; i ++) {
 		ret = _NclFileAddDim(thefile,dimnames[i],dimsizes[i],unlimited[i]);
+		if(ret < NhlINFO) {
+			ret0 = ret;
+		}
+	}
+	return(ret0);
+}
+
+NhlErrorTypes _NclIFileChunkDimDef
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+
+	int dimsize;
+	NclScalar missing;
+	int has_missing;
+
+	int tmp_dimsize;
+	NclScalar tmp_missing;
+	int tmp_has_missing;
+
+	obj *thefile_id;
+	string *dimnames;
+	int *dimsizes;
+	logical *unlimited;
+	int i;
+	NclFile thefile;
+	NhlErrorTypes ret=NhlNOERROR;
+	NhlErrorTypes ret0 = NhlNOERROR;
+
+        thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        4,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+	thefile = (NclFile)_NclGetObj((int)*thefile_id);
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+
+        dimnames = (string*)NclGetArgValue(
+                        1,
+                        4,
+                        NULL,
+                        &dimsize,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+	if(has_missing) {
+		for(i = 0; i < dimsize; i++) {
+			if(dimnames[i] == missing.stringval)  {
+				return(NhlFATAL);
+			}
+		}
+	}
+
+        dimsizes = (int*)NclGetArgValue(
+                        2,
+                        4,
+                        NULL,
+                        &tmp_dimsize,
+                        &tmp_missing,
+                        &tmp_has_missing,
+                        NULL,
+                        0);
+
+	if(tmp_dimsize != dimsize) {
+		return(NhlFATAL);
+	} else if(tmp_has_missing) {
+		for(i = 0; i < dimsize; i++) {
+			if(dimsizes[i] == tmp_missing.intval)  {
+				return(NhlFATAL);
+			}
+		}
+	}
+
+        unlimited = (logical*)NclGetArgValue(
+                        3,
+                        4,
+                        NULL,
+                        &tmp_dimsize,
+                        &tmp_missing,
+                        &tmp_has_missing,
+                        NULL,
+                        0);
+
+	if(tmp_dimsize != dimsize) {
+		return(NhlFATAL);
+	} else if(tmp_has_missing) {
+		for(i = 0; i < dimsize; i++) {
+			if(unlimited[i] == tmp_missing.logicalval)  {
+				return(NhlFATAL);
+			}
+		}
+	}
+	for(i = 0; i < dimsize; i ++) {
+		ret = _NclFileAddChunkDim(thefile,dimnames[i],dimsizes[i],unlimited[i]);
 		if(ret < NhlINFO) {
 			ret0 = ret;
 		}
@@ -16826,6 +17179,136 @@ NhlErrorTypes _NclIprintFileVarSummary( void )
 	_NclPrintFileVarSummary(thefile,*var_string);
 	return(NhlNOERROR);
 
+}
+
+NhlErrorTypes _NclIGetFileGroups( void )
+{
+	NclFile thefile;
+	obj *thefile_id;
+	int dimsizes = 1;
+	NclObjTypes ot;
+	string *base_group_name;
+	NclQuark *selected_group_names;
+	int *depth;
+	int n_grps = 0;
+	int ndims = 1;
+        int dimsz[1];
+
+      /*
+       *fprintf(stdout, "\n\n\nhit _NclIGetFileGroups. file: %s, line: %d\n", __FILE__, __LINE__);
+       */
+
+        thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        3,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+	thefile = (NclFile)_NclGetObj((int)*thefile_id);
+
+        base_group_name = (string*)NclGetArgValue(
+                        1,
+                        3,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+
+        depth = (int*)NclGetArgValue(
+                        2,
+                        3,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+
+      /*
+       *fprintf(stdout, "\n\n\nhit _NclIGetFileGroups. file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stdout, "\tbase_group_name: <%s>\n", NrmQuarkToString(base_group_name[0]));
+       *fprintf(stdout, "\tdepth: %d\n", depth[0]);
+       */
+
+        selected_group_names = _NclGetFileGroupsList(thefile, *base_group_name, depth[0], &n_grps);
+        selected_group_names = (string *) NclRealloc(selected_group_names, sizeof(string) * n_grps);
+
+      /*
+       *fprintf(stdout, "\tn_grps: %d\n", n_grps);
+       */
+
+	dimsz[0] = n_grps;
+	return NclReturnValue((void *) selected_group_names, ndims, dimsz, NULL, NCL_string, 0);
+}
+
+NhlErrorTypes _NclIGetGroupVars( void )
+{
+	NclFile thefile;
+	obj *thefile_id;
+	int dimsizes = 1;
+	NclObjTypes ot;
+	string *base_group_name;
+	NclQuark *selected_var_names;
+	int *depth;
+	int n_vars = 0;
+	int ndims = 1;
+        int dimsz[1];
+
+      /*
+       *fprintf(stdout, "\n\n\nhit _NclIGetGroupVars. file: %s, line: %d\n", __FILE__, __LINE__);
+       */
+
+        thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        3,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+	thefile = (NclFile)_NclGetObj((int)*thefile_id);
+
+        base_group_name = (string*)NclGetArgValue(
+                        1,
+                        3,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+
+        depth = (int*)NclGetArgValue(
+                        2,
+                        3,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+
+      /*
+       *fprintf(stdout, "\n\n\nhit _NclIGetGroupVars. file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stdout, "\tbase_group_name: <%s>\n", NrmQuarkToString(base_group_name[0]));
+       *fprintf(stdout, "\tdepth: %d\n", depth[0]);
+       */
+
+        selected_var_names = _NclGetGroupVarsList(thefile, *base_group_name, depth[0], &n_vars);
+        selected_var_names = (string *) NclRealloc(selected_var_names, sizeof(string) * n_vars);
+
+      /*
+       *fprintf(stdout, "\tn_vars: %d\n", n_vars);
+       */
+
+	dimsz[0] = n_vars;
+	return NclReturnValue((void *) selected_var_names, ndims, dimsz, NULL, NCL_string, 0);
 }
 
 NhlErrorTypes _NclILoadScript( void )

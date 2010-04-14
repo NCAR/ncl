@@ -137,7 +137,7 @@ NhlArgVal udata;
 	
 }
 
-static NhlErrorTypes ListPush
+NhlErrorTypes ListPush
 #if     NhlNeedProto
 (NclObj list,NclObj theobj)
 #else
@@ -164,6 +164,8 @@ NclObj theobj;
 			tmp_obj = theobj;
 		}
 	
+		tmp_obj->obj.obj_type_mask = theobj->obj.obj_type;
+		tmp->orig_type = theobj->obj.obj_type;
 			
 		ret = _NclAddParent(tmp_obj,list);
 		tmp->cb = _NclAddCallback( tmp_obj, list, ListItemDestroyNotify,DESTROYED,NULL);

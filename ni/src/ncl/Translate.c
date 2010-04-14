@@ -1090,6 +1090,16 @@ if(groot != NULL) {
 				*(unsigned long long*)tmp_val = (unsigned long long)integer->integer;
 				tclass = (NclTypeClass) nclTypeuint64Class;
 				break;
+			case 'c':
+				tmp_val = NclMalloc(sizeof(char));
+				*(char*)tmp_val = integer->integer;
+				tclass = (NclTypeClass) nclTypeint8Class;
+				break;
+			case 'C':
+				tmp_val = NclMalloc(sizeof(unsigned char));
+				*(unsigned char*)tmp_val = (unsigned char)integer->integer;
+				tclass = (NclTypeClass) nclTypeuint8Class;
+				break;
 			}
 
 			tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0, 
@@ -1400,6 +1410,23 @@ Unneeded translations
 			}
 			_NclPutInstr(ARRAY_LIT_OP,array->line,array->file);
 			_NclPutInstr((NclValue)array->rcl->nelem,array->line,array->file);
+			break;
+		}
+		case Ncl_LISTVAR:
+		{
+			NclListVar *listvar = (NclListVar*)root;
+			
+			step = listvar->rcl->list;
+			if(step != NULL) {
+				off1 = _NclTranslate(step->node,fp);
+				step = step->next;
+			}
+			while(step != NULL) {
+				(void)_NclTranslate(step->node,fp);
+				step = step->next;	
+			}
+			_NclPutInstr(LISTVAR_LIT_OP,listvar->line,listvar->file);
+			_NclPutInstr((NclValue)listvar->rcl->nelem,listvar->line,listvar->file);
 			break;
 		}
 		case Ncl_DOWHILE:
@@ -2337,9 +2364,49 @@ Unneeded translations
 			_NclPutIntInstr(nsubs,list_op->line,list_op->file);
 			break;
 		}
-		default:
+		case Ncl_FILEGROUP:
+		{
+			NclFileGroup *filegroup = (NclFileGroup *)root;
+			int nsubs = 0;
 		
-		fprintf(stdout,"UNRECOGNIZED ENUM VALUE!\n");
+			off1 = _NclPutInstr(ISDEFINED_OP,filegroup->line,filegroup->file);
+			_NclPutInstr((NclValue)filegroup->dfile,filegroup->line,filegroup->file);
+
+			switch(filegroup->ref_type) {
+			case Ncl_VALONLY:
+				_NclTranslate(filegroup->filegroupnode,fp);
+				_NclPutInstr(FILE_GROUPVAL_OP,filegroup->line,filegroup->file);
+				_NclPutInstr((NclValue)filegroup->dfile,filegroup->line,filegroup->file);
+				_NclPutIntInstr(nsubs,filegroup->line,filegroup->file);
+				break;
+			case Ncl_READIT:	
+				_NclTranslate(filegroup->filegroupnode,fp);
+				_NclPutInstr(FILE_GROUP_OP,filegroup->line,filegroup->file);
+				_NclPutInstr((NclValue)filegroup->dfile,filegroup->line,filegroup->file);
+				_NclPutIntInstr(nsubs,filegroup->line,filegroup->file);
+				break;
+			case Ncl_WRITEIT:
+				_NclTranslate(filegroup->filegroupnode,fp);
+				_NclPutInstr(ASSIGN_FILE_GROUP_OP,filegroup->line,filegroup->file);
+				_NclPutInstr((NclValue)filegroup->dfile,filegroup->line,filegroup->file);
+				_NclPutIntInstr(nsubs,filegroup->line,filegroup->file);
+				break;
+			case Ncl_PARAMIT:
+				_NclTranslate(filegroup->filegroupnode,fp);
+				_NclPutInstr(PARAM_FILE_VAR_OP,filegroup->line,filegroup->file);
+				_NclPutInstr((NclValue)filegroup->dfile,filegroup->line,filegroup->file);
+				_NclPutIntInstr(nsubs,filegroup->line,filegroup->file);
+				break;
+			}
+			break;
+		}
+		default:
+			fprintf(stdout, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);
+			fprintf(stdout,"\tgroot->name = %s\n", groot->name);
+			fprintf(stdout,"\tgroot->file = %s\n", groot->file);
+			fprintf(stdout,"\tgroot->line = %d\n", groot->line);
+			fprintf(stdout,"\tgroot->kind = %d\n", groot->kind);
+			fprintf(stdout,"\tUNRECOGNIZED ENUM VALUE!\n");
 			break;
 	}
 	nesting--;

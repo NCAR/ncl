@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.55 2010-02-12 23:47:10 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.56 2010-04-14 21:29:47 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -69,6 +69,9 @@ struct _NetCdfVarInqRec {
 	nc_type	data_type;
 	int	n_dims;
 	int	dim[MAX_VAR_DIMS];
+	int	compress_level;
+	int	n_chunk_dims;
+	size_t	chunk_dim[MAX_VAR_DIMS];
 	int	natts;
 	NetCdfAttInqRecList *att_list;
 	void *value;
@@ -123,6 +126,9 @@ int		n_vars;
 NetCdfVarInqRecList *vars;
 int		n_dims;
 NetCdfDimInqRecList *dims;
+int		compress_level;
+int		n_chunk_dims;
+NetCdfDimInqRecList *chunk_dims;
 int		has_scalar_dim;
 int		n_file_atts;
 NetCdfAttInqRecList *file_atts;
@@ -775,7 +781,6 @@ NclQuark path;
 		format = 1;
 	}
 
-	
 	nc_ret = nc__create(NrmQuarkToString(path),mode,1024,&ChunkSizeHint,&id);
 #if NETCDF_DEBUG
 	fprintf(stderr,"nc__create(\"%s\",0x%x,1024,%d,&id);\n",NrmQuarkToString(path),mode,ChunkSizeHint);
@@ -827,6 +832,13 @@ void *therec;
 		stepdl = rec->dims;
 		NclFree(stepdl->dim_inq);
 		rec->dims= rec->dims->next;
+		NclFree(stepdl);
+	}
+	stepdl = rec->chunk_dims;
+	while(rec->chunk_dims != NULL) {
+		stepdl = rec->chunk_dims;
+		NclFree(stepdl->dim_inq);
+		rec->chunk_dims= rec->chunk_dims->next;
 		NclFree(stepdl);
 	}
 
@@ -2008,6 +2020,150 @@ void* data;
 	return(NhlFATAL);
 }
 
+static NhlErrorTypes NetAddVarChunk
+#if    NhlNeedProto
+(void* therec, NclQuark thevar, int n_chunk_dims, int *chunk_dims)
+#else
+(therec,thevar,n_chunk_dims,chunk_dims)
+void* therec;
+NclQuark thevar;
+int n_chunk_dims;
+int *chunk_dims;
+#endif
+{
+    NetCdfFileRecord* rec = (NetCdfFileRecord*)therec;
+    NetCdfVarInqRecList *stepvl = NULL;
+    int i,ret = NhlNOERROR;
+    int cdfid;
+    int nc_ret;
+    int storage = NC_CHUNKED;
+
+    if(rec->wr_status <= 0)
+    {
+        if (rec->open)
+        {
+            cdfid = rec->cdfid;
+        }
+        else
+        {
+            nc_ret = nc__open(NrmQuarkToString(rec->file_path_q),NC_WRITE,&ChunkSizeHint,&cdfid);
+            if(nc_ret != NC_NOERR)
+            {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                      "NetCdf: Could not reopen the file (%s) for writing",
+                      NrmQuarkToString(rec->file_path_q));
+                return(NhlFATAL);
+            }
+            rec->cdfid = cdfid;
+            rec->define_mode = 0;
+            rec->open = 1;
+        }
+
+        stepvl = rec->vars;
+        while(stepvl != NULL)
+        {
+            if(stepvl->var_inq->name == thevar)
+            {
+                if(n_chunk_dims != stepvl->var_inq->n_dims)
+                {    
+                    NhlPError(NhlFATAL,NhlEUNKNOWN,
+                             "Var (%s) has different chunk_dims to its dimensionality.\n",
+                              NrmQuarkToString(thevar));
+                    ret = NhlFATAL;
+                    break;
+                }
+
+                stepvl->var_inq->n_chunk_dims = n_chunk_dims;
+                for(i = 0 ; i < n_chunk_dims; i++)
+                {
+                    stepvl->var_inq->chunk_dim[i] = (size_t)chunk_dims[i];
+                }
+                nc_ret = nc_def_var_chunking(cdfid, stepvl->var_inq->varid, storage,
+                                             stepvl->var_inq->chunk_dim);
+                ret = NhlNOERROR;
+                break;
+            }
+            stepvl= stepvl->next;
+        }
+    }
+    else
+    {    
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                 "File (%s) was opened as a read only file, can not write to it",
+                  NrmQuarkToString(rec->file_path_q));
+        ret = NhlFATAL;
+    }
+
+    return(ret);
+}
+
+static NhlErrorTypes NetSetVarCompressLevel
+#if    NhlNeedProto
+(void* therec, NclQuark thevar, int compress_level)
+#else
+(therec,thevar,compress_level)
+void* therec;
+NclQuark thevar;
+int compress_level;
+#endif
+{
+    NetCdfFileRecord* rec = (NetCdfFileRecord*)therec;
+    NetCdfVarInqRecList *stepvl = NULL;
+    int i,ret = NhlNOERROR;
+    int cdfid;
+    int shuffle = 0;
+    int deflate = compress_level;
+    int deflate_level = compress_level;
+    int nc_ret;
+
+    if(rec->wr_status <= 0)
+    {
+        if (rec->open)
+        {
+            cdfid = rec->cdfid;
+        }
+        else
+        {
+            nc_ret = nc__open(NrmQuarkToString(rec->file_path_q),NC_WRITE,&ChunkSizeHint,&cdfid);
+            if(nc_ret != NC_NOERR)
+            {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                      "NetCdf: Could not reopen the file (%s) for writing",
+                      NrmQuarkToString(rec->file_path_q));
+                return(NhlFATAL);
+            }
+            rec->cdfid = cdfid;
+            rec->define_mode = 0;
+            rec->open = 1;
+        }
+
+        stepvl = rec->vars;
+        while(stepvl != NULL)
+        {
+            if(stepvl->var_inq->name == thevar)
+            {
+                stepvl->var_inq->compress_level = compress_level;
+                if(compress_level > 0)
+                    deflate = compress_level;
+                nc_ret = nc_def_var_deflate(cdfid, stepvl->var_inq->varid, shuffle,
+                                            deflate, deflate_level);
+                ret = NhlNOERROR;
+                break;
+            }
+            stepvl= stepvl->next;
+        }
+    }
+    else
+    {    
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                 "File (%s) was opened as a read only file, can not write to it",
+                  NrmQuarkToString(rec->file_path_q));
+        ret = NhlFATAL;
+    }
+
+    return(ret);
+}
+
 static NhlErrorTypes NetAddDim
 #if	NhlNeedProto
 (void* therec, NclQuark thedim, int size,int is_unlimited)
@@ -2134,6 +2290,118 @@ int is_unlimited;
 	} else {	
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) was opened as a read only file, can not write to it",NrmQuarkToString(rec->file_path_q));
 	}
+	return(NhlFATAL);
+}
+
+static NhlErrorTypes NetAddChunkDim
+#if	NhlNeedProto
+(void* therec, NclQuark thedim, int size,int is_unlimited)
+#else
+(therec, thedim, size,is_unlimited)
+void* therec;
+NclQuark thedim;
+int size;
+int is_unlimited;
+#endif
+{
+	NetCdfFileRecord *rec = (NetCdfFileRecord*) therec;
+	int cdfid;
+	int nc_ret;
+	NetCdfDimInqRecList *stepdl;
+	int ret = -1;
+	int add_scalar = 0;
+
+	wei_start("NetAddChunkDim", __FILE__, __LINE__);
+	wei_check_str("NetAddChunkDim", "thedim", NrmQuarkToString(thedim));
+	wei_check_int("NetAddChunkDim", "size", size);
+
+	if(rec->wr_status <=  0) {
+		
+		if(thedim == NrmStringToQuark("ncl_scalar")) {
+			if (size != 1) {
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"NetCdf: \"ncl_scalar\" is a reserved file dimension name in NCL, %s",
+					"this name can only represent dimensions of size 1"));
+				wei_end("NetAddChunkDim", __FILE__, __LINE__);
+				return(NhlFATAL);
+			}
+			add_scalar = 1;
+		}
+		else {
+			if (rec->open) {
+				cdfid = rec->cdfid;
+			}
+			else {
+				nc_ret = nc__open(NrmQuarkToString(rec->file_path_q),NC_WRITE,&ChunkSizeHint,&cdfid);
+#if NETCDF_DEBUG
+				fprintf(stderr,"nc__open(\"%s\",NC_WRITE,&ChunkSizeHint,&cdfid);\n",NrmQuarkToString(rec->file_path_q));
+#endif                
+				if(nc_ret != NC_NOERR) {
+					NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+						  "NetCdf: Could not reopen the file (%s) for writing",
+						  NrmQuarkToString(rec->file_path_q)));
+					wei_end("NetAddChunkDim", __FILE__, __LINE__);
+					return(NhlFATAL);
+				}
+				rec->cdfid = cdfid;
+				rec->define_mode = 0;
+				rec->open = 1;
+			}
+			if (! rec->define_mode) {
+				ncredef(cdfid);
+				rec->define_mode = 1;
+			}
+		}
+		stepdl = rec->chunk_dims;
+
+		if (add_scalar) {
+			rec->has_scalar_dim = 1;
+			rec->chunk_dims = (NetCdfDimInqRecList*)NclMalloc(
+				(unsigned) sizeof(NetCdfDimInqRecList));
+			rec->chunk_dims->dim_inq = (NetCdfDimInqRec*)NclMalloc(
+				(unsigned)sizeof(NetCdfDimInqRec));
+			rec->chunk_dims->next = stepdl;
+			rec->chunk_dims->dim_inq->dimid = -5;
+			rec->chunk_dims->dim_inq->size = 1;
+			rec->chunk_dims->dim_inq->is_unlimited = 0;
+			rec->chunk_dims->dim_inq->name = NrmStringToQuark("ncl_scalar");
+			rec->n_chunk_dims++;
+		}
+		else if(stepdl == NULL) {
+			rec->chunk_dims = (NetCdfDimInqRecList*)NclMalloc((unsigned)sizeof(NetCdfDimInqRecList));
+			rec->chunk_dims->dim_inq = (NetCdfDimInqRec*)NclMalloc((unsigned)sizeof(NetCdfDimInqRec));
+			rec->chunk_dims->dim_inq->dimid = ret;
+			rec->chunk_dims->dim_inq->name = thedim;
+			rec->chunk_dims->dim_inq->size = (long)size;
+			rec->chunk_dims->dim_inq->is_unlimited= is_unlimited;
+			if(rec->chunk_dims->dim_inq->size < 1)
+				rec->chunk_dims->dim_inq->size = (long)1;
+			rec->chunk_dims->next = NULL;
+			rec->n_chunk_dims = 1;
+		}
+		else {
+			while(stepdl->next != NULL) {
+				stepdl = stepdl->next;
+			}
+			stepdl->next = (NetCdfDimInqRecList*)NclMalloc((unsigned)sizeof(NetCdfDimInqRecList));
+			stepdl->next->dim_inq = (NetCdfDimInqRec*)NclMalloc((unsigned)sizeof(NetCdfDimInqRec));
+			stepdl->next->dim_inq->dimid = ret;
+			stepdl->next->dim_inq->name = thedim;
+			stepdl->next->dim_inq->size = (long)size;
+			stepdl->next->dim_inq->is_unlimited= is_unlimited;
+			if(stepdl->next->dim_inq->size < 1)
+				stepdl->next->dim_inq->size = (long)1;
+			stepdl->next->next = NULL;
+			rec->n_chunk_dims++;
+		}
+		wei_end("NetAddChunkDim", __FILE__, __LINE__);
+		return(NhlNOERROR);
+	} else {	
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			"File (%s) was opened as a read only file, can not write to it",
+			NrmQuarkToString(rec->file_path_q)));
+	}
+	wei_end("NetAddChunkDim", __FILE__, __LINE__);
 	return(NhlFATAL);
 }
 /*ARGSUSED*/
@@ -2272,11 +2540,13 @@ long* dim_sizes;
 				rec->vars->var_inq->name = thevar;
 				rec->vars->var_inq->data_type = *the_data_type;
 				rec->vars->var_inq->n_dims = n_dims;
+				rec->vars->var_inq->n_chunk_dims = 0;
 				rec->vars->var_inq->natts = 0;
 				rec->vars->var_inq->att_list = NULL;
 				rec->vars->var_inq->value = NULL;
 				for(i = 0 ; i< n_dims; i++) {
 					rec->vars->var_inq->dim[i] = dim_ids[i];
+					rec->vars->var_inq->chunk_dim[i] = dim_ids[i];
 				}
 			} else {
 				while(stepvl->next != NULL) {
@@ -2850,8 +3120,11 @@ NclFormatFunctionRec NetCdfRec = {
 /* NclWriteAttFunc         write_att; */		NetWriteAtt,
 /* NclWriteVarAttFunc      write_var_att; */		NetWriteVarAtt,
 /* NclAddDimFunc           add_dim; */			NetAddDim,
-/* NclAddDimFunc           rename_dim; */		NetRenameDim,
+/* NclAddChunkDimFunc      add_chunk_dim; */		NetAddChunkDim,
+/* NclRenameDimFunc        rename_dim; */		NetRenameDim,
 /* NclAddVarFunc           add_var; */			NetAddVar,
+/* NclAddVarChunkFunc      add_var_chunk; */		NetAddVarChunk,
+/* NclSetVarCompressLevelFunc set_var_compress_level; */ NetSetVarCompressLevel,
 /* NclAddVarFunc           add_coord_var; */		NULL,
 /* NclAddAttFunc           add_att; */			NetAddAtt,
 /* NclAddVarAttFunc        add_var_att; */		NetAddVarAtt,
@@ -2859,6 +3132,10 @@ NclFormatFunctionRec NetCdfRec = {
 /* NclMapNclTypeToFormat   map_ncl_type_to_format; */	NetMapFromNcl,
 /* NclDelAttFunc           del_att; */			NetDelAtt,
 /* NclDelVarAttFunc        del_var_att; */		NetDelVarAtt,
+/* NclGetGrpNamesFunc      get_grp_names; */            NULL,
+/* NclGetGrpInfoFunc       get_grp_info; */             NULL,
+/* NclGetGrpAttNamesFunc   get_grp_att_names; */        NULL, 
+/* NclGetGrpAttInfoFunc    get_grp_att_info; */         NULL,
 /* NclSetOptionFunc        set_option;  */              NetSetOption
 };
 NclFormatFunctionRecPtr NetCdfAddFileFormat 
