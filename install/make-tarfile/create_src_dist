@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_src_dist,v 1.10 2010-04-08 03:02:20 haley Exp $
+#   $Id: create_src_dist,v 1.12 2010-04-14 02:31:54 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -302,7 +302,7 @@ set tar_filename = "$tar_prefix-$version.tar"
 #
 
 set ni_stuff = "ni/src/ngi ni/src/lib/xcb ni/src/lib/ngo ni/src/ncl/.cvsignore"
-set ext_stuff = "external/fftpack5 external/sphere3.1 external/sphere3_dp"
+set ext_stuff = "external/fftpack5 external/sphere3.1 external/sphere3_dp external/g2clib-1.1.9"
 set tri_stuff = "ni/src/lib/hlu/triangle.c ni/src/lib/hlu/triangle.h"
 set stuff_to_always_remove = "pynio"
 
