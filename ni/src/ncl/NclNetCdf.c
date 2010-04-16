@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.56 2010-04-14 21:29:47 huangwei Exp $
+ *      $Id: NclNetCdf.c,v 1.57 2010-04-16 02:38:37 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -2311,10 +2311,6 @@ int is_unlimited;
 	int ret = -1;
 	int add_scalar = 0;
 
-	wei_start("NetAddChunkDim", __FILE__, __LINE__);
-	wei_check_str("NetAddChunkDim", "thedim", NrmQuarkToString(thedim));
-	wei_check_int("NetAddChunkDim", "size", size);
-
 	if(rec->wr_status <=  0) {
 		
 		if(thedim == NrmStringToQuark("ncl_scalar")) {
@@ -2322,7 +2318,6 @@ int is_unlimited;
 				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 					"NetCdf: \"ncl_scalar\" is a reserved file dimension name in NCL, %s",
 					"this name can only represent dimensions of size 1"));
-				wei_end("NetAddChunkDim", __FILE__, __LINE__);
 				return(NhlFATAL);
 			}
 			add_scalar = 1;
@@ -2340,7 +2335,6 @@ int is_unlimited;
 					NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 						  "NetCdf: Could not reopen the file (%s) for writing",
 						  NrmQuarkToString(rec->file_path_q)));
-					wei_end("NetAddChunkDim", __FILE__, __LINE__);
 					return(NhlFATAL);
 				}
 				rec->cdfid = cdfid;
@@ -2394,14 +2388,12 @@ int is_unlimited;
 			stepdl->next->next = NULL;
 			rec->n_chunk_dims++;
 		}
-		wei_end("NetAddChunkDim", __FILE__, __LINE__);
 		return(NhlNOERROR);
 	} else {	
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			"File (%s) was opened as a read only file, can not write to it",
 			NrmQuarkToString(rec->file_path_q)));
 	}
-	wei_end("NetAddChunkDim", __FILE__, __LINE__);
 	return(NhlFATAL);
 }
 /*ARGSUSED*/

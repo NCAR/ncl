@@ -379,22 +379,16 @@ int is_unlimited;
 {
 	NhlErrorTypes ret = NhlNOERROR;
 	
-	wei_start("FileAddChunkDim", __FILE__, __LINE__);
-	wei_check_str("FileAddChunkDim", "dimname", NrmQuarkToString(dimname));
-	wei_check_int("FileAddChunkDim", "dimsize", dimsize);
-
 	if(thefile->file.wr_status <= 0) {
 		if(thefile->file.format_funcs->add_chunk_dim == NULL) {
 			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 				"FileAddChunkDim: file.format_funcs->add_chunk_dim is NOT defined."));
-			wei_end("FileAddChunkDim", __FILE__, __LINE__);
 			return(NhlWARNING);
 		}
 
 		if (dimname == NrmStringToQuark("ncl_scalar")) {
 			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 				"FileAddChunkDim:\"ncl_scalar\" is a reserved file dimension name in NCL; it cannot be defined by the user"));
-			wei_end("FileAddChunkDim", __FILE__, __LINE__);
 			return(NhlWARNING);
 		}
 		if((FileIsDim(thefile,dimname)) > -1) {
@@ -405,15 +399,12 @@ int is_unlimited;
 				is_unlimited);
 			if(ret < NhlWARNING) 
 			{
-				wei_end("FileAddChunkDim", __FILE__, __LINE__);
 				return(ret);
 			}
-			wei_end("FileAddChunkDim", __FILE__, __LINE__);
 			return(NhlNOERROR);
 		} else {
 			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 				"FileAddChunkDim: Dimension %s is not defined",NrmQuarkToString(dimname)));
-			wei_end("FileAddChunkDim", __FILE__, __LINE__);
 			return(NhlWARNING);
 		}
 	} else {
@@ -421,7 +412,6 @@ int is_unlimited;
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			"FileAddChunkDim: file (%s) was opened for reading only, can not write",NrmQuarkToString(thefile->file.fname)));
 	}
-	wei_end("FileAddChunkDim", __FILE__, __LINE__);
 	return(NhlFATAL);
 }
 

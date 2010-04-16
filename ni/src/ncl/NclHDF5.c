@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF5.c,v 1.2 2010-04-14 21:29:47 huangwei Exp $
+ *      $Id: NclHDF5.c,v 1.3 2010-04-16 02:38:37 huangwei Exp $
  */
 /************************************************************************
 *                                    *
@@ -3611,14 +3611,10 @@ long *stride;
         grplist = grplist->next;
     }
 #else
-    wei_start("group in HDF5WriteVar", __FILE__, __LINE__);
-    wei_check("group in HDF5WriteVar", __FILE__, __LINE__);
-    wei_check_str("group in HDF5WriteVar", "MSG", "HAVE NOT DONE ANYTHING FOR GROUP YET!!!");
 
     fprintf(stderr, "group in HDF5WriteVar: file: %s, line: %d\n", __FILE__, __LINE__);
     fprintf(stderr, "group in HDF5WriteVar: HAVE NOT DONE ANYTHING FOR GROUP YET!!!\n\n");
     fprintf(stderr, "group in HDF5WriteVar: file: %s, line: %d\n", __FILE__, __LINE__);
-    wei_end("group in HDF5WriteVar", __FILE__, __LINE__);
 #endif
 
     return(NhlFATAL);
@@ -4402,8 +4398,6 @@ NclQuark theatt;
     hid_t fid;
     hid_t ret;
 
-    wei_start("HDF5DelAtt", __FILE__, __LINE__);
-
 #if 0
     if(rec->wr_status <= 0)
     {
@@ -4435,17 +4429,12 @@ NclQuark theatt;
                               "HDF5: Could not reopen the file (%s) for writing",
                               NrmQuarkToString(rec->file_path_q));
                         NclFree(typename);
-                        wei_end("HDF5DelAtt", __FILE__, __LINE__);
                         return(NhlFATAL);
                     }
                     rec->id = fid;
                     rec->define_mode = 0;
                     rec->open = 1;
                 }
-
-                wei_check("HDF5DelAtt", __FILE__, __LINE__);
-                wei_check_str("HDF5DelAtt", "Need to del att", "here");
-                wei_check("HDF5DelAtt", __FILE__, __LINE__);
             }
 
             if (! prev)
@@ -4465,10 +4454,8 @@ NclQuark theatt;
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF5: An error occurred while attempting to delete the attribute (%s) from file (%s)",
                       NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
-                wei_end("HDF5DelAtt", __FILE__, __LINE__);
                 return(NhlFATAL);
             }
-            wei_end("HDF5DelAtt", __FILE__, __LINE__);
             return(NhlNOERROR);
         }
     }
@@ -4478,11 +4465,9 @@ NclQuark theatt;
                   "File (%s) was opened as a read only file, can not write to it",
                    NrmQuarkToString(rec->file_path_q)));
     }
-    wei_end("HDF5DelAtt", __FILE__, __LINE__);
     return(NhlFATAL);
 #endif
 
-    wei_end("HDF5DelAtt", __FILE__, __LINE__);
     return(NhlNOERROR);
 }
 
