@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Execute.c,v 1.143 2010-04-14 21:29:47 huangwei Exp $
+ *      $Id: Execute.c,v 1.144 2010-04-20 19:01:44 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -5156,7 +5156,6 @@ void CallFILE_VARVAL_OP(void) {
 								}	
 							}
 						} else {
-							NHLPERROR((NhlFATAL,NhlEUNKNOWN,"in CallFILE_VARVAL_OP"));
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Either file (%s) isn't defined or variable (%s) is not a variable in the file",dfile->name,NrmQuarkToString(var));
 							_NclCleanUpStack(nsubs);
 							estatus = NhlFATAL;
@@ -5304,7 +5303,6 @@ void CallFILE_VAR_OP(void) {
 								}	
 							}
 						} else {
-							NHLPERROR((NhlFATAL,NhlEUNKNOWN,"in CallFILE_VAR_OP"));
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Either file (%s) isn't defined or variable (%s) is not a variable in the file",dfile->name,NrmQuarkToString(var));
 							_NclCleanUpStack(nsubs);
 							estatus = NhlFATAL;
@@ -7160,12 +7158,9 @@ NclExecuteReturnStatus _NclExecute
 		}
 
 		if(estatus < NhlINFO) {
-			fprintf(stdout, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
 			if(*fptr == NULL) {
-				NHLPERROR((estatus,NhlEUNKNOWN,"Execute: Error occurred at or near line %d\n",(cmd_line ? (*lptr): *lptr)));
 				NhlPError(estatus,NhlEUNKNOWN,"Execute: Error occurred at or near line %d\n",(cmd_line ? (*lptr): *lptr));
 			} else {
-				NHLPERROR((estatus,NhlEUNKNOWN,"Execute: Error occurred at or near line %d in file %s\n", *lptr, *fptr));
 				NhlPError(estatus,NhlEUNKNOWN,"Execute: Error occurred at or near line %d in file %s\n", *lptr, *fptr);
 			}
 			if(estatus < NhlWARNING) {
