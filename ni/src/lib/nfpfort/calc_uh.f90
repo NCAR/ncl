@@ -74,8 +74,8 @@ SUBROUTINE dcalcuh(nx,ny,nz,nzp1,zp,mapfct,dx,dy,uhmnhgt,uhmxhgt,        &
 !
 ! Integrate over depth uhminhgt to uhmxhgt AGL
 !
-  WRITE(6,'(a,f12.1,a,f12.1,a)') &
-        'Calculating UH from ',uhmnhgt,' to ',uhmxhgt,' m AGL'
+!  WRITE(6,'(a,f12.1,a,f12.1,a)') &
+!        'Calculating UH from ',uhmnhgt,' to ',uhmxhgt,' m AGL'
   DO j=2,ny-2
     DO i=2,nx-2
       zbot=zp(i,j,2)+uhmnhgt
