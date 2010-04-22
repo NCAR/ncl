@@ -5569,7 +5569,7 @@ NhlErrorTypes wrf_avo_W( void )
  * Get argument # 7
  */
   dy = (void*)NclGetArgValue(
-           6,
+           7,
            9,
            NULL,
            NULL,
@@ -5583,7 +5583,7 @@ NhlErrorTypes wrf_avo_W( void )
  * Get argument # 8
  */
   opt = (int*)NclGetArgValue(
-           7,
+           8,
            9,
            NULL,
            NULL,
@@ -6459,27 +6459,13 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
 /*
  * Argument # 4
  */
-  void *uhmnhgt;
-  double *tmp_uhmnhgt;
-  NclBasicDataTypes type_uhmnhgt;
-
-/*
- * Argument # 5
- */
-  void *uhmxhgt;
-  double *tmp_uhmxhgt;
-  NclBasicDataTypes type_uhmxhgt;
-
-/*
- * Argument # 6
- */
   void *us;
   double *tmp_us;
   int ndims_us, dsizes_us[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_us;
 
 /*
- * Argument # 7
+ * Argument # 5
  */
   void *vs;
   double *tmp_vs;
@@ -6487,12 +6473,32 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
   NclBasicDataTypes type_vs;
 
 /*
- * Argument # 8
+ * Argument # 6
  */
   void *w;
   double *tmp_w;
   int ndims_w, dsizes_w[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_w;
+
+/*
+ * Argument # 7
+ */
+  logical *opt;
+
+/*
+ * Possible attributes.
+ */
+  void *uhmnhgt, *uhmxhgt;
+  double *tmp_uhmnhgt, *tmp_uhmxhgt;
+  logical set_uhmnhgt, set_uhmxhgt;
+  NclBasicDataTypes type_uhmnhgt, type_uhmxhgt;
+
+/*
+ * Variables for retrieving attributes from "opt".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry stack_entry;
 
 /*
  * Variable for getting/setting dimension name info.
@@ -6539,7 +6545,7 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
  */
   zp = (void*)NclGetArgValue(
            0,
-           9,
+           8,
            &ndims_zp,
            dsizes_zp,
            NULL,
@@ -6565,7 +6571,7 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
  */
   mapfct = (void*)NclGetArgValue(
            1,
-           9,
+           8,
            &ndims_mapfct,
            dsizes_mapfct,
            NULL,
@@ -6589,57 +6595,9 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
 /*
  * Get argument # 2
  */
-  dx = (void*)NclGetArgValue(
-           2,
-           9,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_dx,
-           DONT_CARE);
-/*
- * Get argument # 3
- */
-  dy = (void*)NclGetArgValue(
-           3,
-           9,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_dy,
-           DONT_CARE);
-/*
- * Get argument # 4
- */
-  uhmnhgt = (void*)NclGetArgValue(
-           4,
-           9,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_uhmnhgt,
-           DONT_CARE);
-/*
- * Get argument # 5
- */
-  uhmxhgt = (void*)NclGetArgValue(
-           5,
-           9,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_uhmxhgt,
-           DONT_CARE);
-/*
- * Get argument # 6
- */
   us = (void*)NclGetArgValue(
-           6,
-           9,
+           2,
+           8,
            &ndims_us,
            dsizes_us,
            NULL,
@@ -6662,11 +6620,11 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
   nznynx = nz * nynx;
 
 /*
- * Get argument # 7
+ * Get argument # 3
  */
   vs = (void*)NclGetArgValue(
-           7,
-           9,
+           3,
+           8,
            &ndims_vs,
            dsizes_vs,
            NULL,
@@ -6686,11 +6644,11 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: The rightmost dimensions of vs must be nz x ny x ny");
   }
 /*
- * Get argument # 8
+ * Get argument # 4
  */
   w = (void*)NclGetArgValue(
+           4,
            8,
-           9,
            &ndims_w,
            dsizes_w,
            NULL,
@@ -6708,6 +6666,110 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
   return(NhlFATAL);
  }
 
+/*
+ * Get argument # 5
+ */
+  dx = (void*)NclGetArgValue(
+           5,
+           8,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_dx,
+           DONT_CARE);
+/*
+ * Get argument # 6
+ */
+  dy = (void*)NclGetArgValue(
+           6,
+           8,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_dy,
+           DONT_CARE);
+
+/*
+ * Get argument # 7
+ */
+  opt = (logical*)NclGetArgValue(
+           7,
+           8,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+
+/*
+ * Start checking for attributes attached to "opt"
+ */
+  set_uhmnhgt = set_uhmxhgt = False;
+
+  stack_entry = _NclGetArg(7, 8, DONT_CARE);
+  switch (stack_entry.kind) {
+  case NclStk_VAR:
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj == NULL) {
+        break;
+      }
+    }
+    else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+      break;
+    }
+/* 
+ * Get optional arguments.
+ */
+    if (attr_obj->att.n_atts > 0) {
+/*
+ * Get list of attributes.
+ */
+      attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them. We are looking for:
+ *
+ *  uhmnhgt or uhmxhgt
+ */
+      while (attr_list != NULL) {
+        if(!strcasecmp(attr_list->attname, "uhmnhgt")) {
+          uhmnhgt      = attr_list->attvalue->multidval.val;
+          type_uhmnhgt = attr_list->attvalue->multidval.data_type;
+          set_uhmnhgt  = True;
+        }
+        else if(!strcasecmp(attr_list->attname, "uhmxhgt")) {
+          uhmxhgt      = attr_list->attvalue->multidval.val;
+          type_uhmxhgt = attr_list->attvalue->multidval.data_type;
+          set_uhmxhgt  = True;
+        }
+        attr_list = attr_list->next;
+      }
+    default:
+      break;
+    }
+  }
+  if(set_uhmnhgt) {
+    tmp_uhmnhgt = coerce_input_double(uhmnhgt,type_uhmnhgt,1,0,NULL,NULL);
+  }
+  else {
+    type_uhmnhgt = NCL_double;
+    tmp_uhmnhgt  = (double *)calloc(1,sizeof(double));
+    *tmp_uhmnhgt = 2000.;
+  }
+  if(set_uhmxhgt) {
+    tmp_uhmxhgt = coerce_input_double(uhmxhgt,type_uhmxhgt,1,0,NULL,NULL);
+  }
+  else {
+    type_uhmxhgt = NCL_double;
+    tmp_uhmxhgt  = (double *)calloc(1,sizeof(double));
+    *tmp_uhmxhgt = 5000.;
+  }
 
 /*
  * Calculate size of leftmost dimensions.
@@ -6784,22 +6846,7 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for coercing input array to double");
     return(NhlFATAL);
   }
-/*
- * Allocate space for tmp_uhmnhgt.
- */
-  tmp_uhmnhgt = coerce_input_double(uhmnhgt,type_uhmnhgt,1,0,NULL,NULL);
-  if(tmp_uhmnhgt == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for coercing input array to double");
-    return(NhlFATAL);
-  }
-/*
- * Allocate space for tmp_uhmxhgt.
- */
-  tmp_uhmxhgt = coerce_input_double(uhmxhgt,type_uhmxhgt,1,0,NULL,NULL);
-  if(tmp_uhmxhgt == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for coercing input array to double");
-    return(NhlFATAL);
-  }
+
 /*
  * Allocate space for tmp_us.
  */
@@ -6883,7 +6930,7 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
  *
  * zp's dimension names will be used for the output.
  */
-  dim_info_zp = get_wrf_dim_info(0,9,ndims_zp,dsizes_zp);
+  dim_info_zp = get_wrf_dim_info(0,7,ndims_zp,dsizes_zp);
 
   if(dim_info_zp != NULL) {
     dim_info = malloc(sizeof(NclDimRec)*ndims_uh);
@@ -6993,12 +7040,12 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
   if(type_mapfct != NCL_double)  NclFree(tmp_mapfct);
   if(type_dx != NCL_double)      NclFree(tmp_dx);
   if(type_dy != NCL_double)      NclFree(tmp_dy);
-  if(type_uhmnhgt != NCL_double) NclFree(tmp_uhmnhgt);
-  if(type_uhmxhgt != NCL_double) NclFree(tmp_uhmxhgt);
   if(type_us != NCL_double)      NclFree(tmp_us);
   if(type_vs != NCL_double)      NclFree(tmp_vs);
   if(type_w != NCL_double)       NclFree(tmp_w);
   if(type_uh != NCL_double)      NclFree(tmp_uh);
+  if(type_uhmnhgt != NCL_double) NclFree(tmp_uhmnhgt);
+  if(type_uhmxhgt != NCL_double) NclFree(tmp_uhmxhgt);
 
 /*
  * Set up return value.
