@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.269 2010-04-16 23:09:30 shea Exp $
+;      $Id: contributed.ncl,v 1.270 2010-04-22 20:26:51 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8653,7 +8653,7 @@ begin
           end if
 
           if (nMsg.gt.0) then
-              nGood = dim_num(.not.ismissing( xTemp ) )
+              nGood = dim_num_n(.not.ismissing(xTemp), 0 )
               xAnnual(nyr,:) = mask( xAnnual(nyr,:), nGood.ge.nmos, True)  ; ?False
               print("month_to_annual: some points have missing data: nt="+nt \
                    +" nyr="+nyr+"  num(nGood)="+num(nGood.gt.0))
@@ -8689,7 +8689,7 @@ begin
           end if
 
           if (nMsg.gt.0) then
-              nGood            = dim_num(.not.ismissing( xTemp ) )          ; (lat,lon)
+              nGood            = dim_num_n(.not.ismissing(xTemp), 0 )          ; (lat,lon)
               xAnnual(nyr,:,:) = mask( xAnnual(nyr,:,:), nGood.ge.nmos, True)  ; ?False
               print("month_to_annual: some grid points have missing data: nt="+nt \
                    +" nyr="+nyr+"  num(nGood)="+num(nGood.gt.0))
@@ -8725,7 +8725,7 @@ begin
           end if
 
           if (nMsg.gt.0) then
-              nGood              = dim_num(.not.ismissing( xTemp ) )
+              nGood              = dim_num_n(.not.ismissing(xTemp), 0 )
               xAnnual(nyr,:,:,:) = mask( xAnnual(nyr,:,:,:), nGood.ge.nmos, True)
               print("month_to_annual: some grid points have missing data: nt="+nt \
                    +" nyr="+nyr+"  num(nGood)="+num(nGood.gt.0))
