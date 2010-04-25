@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.270 2010-04-22 20:26:51 shea Exp $
+;      $Id: contributed.ncl,v 1.271 2010-04-25 23:48:02 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8040,17 +8040,22 @@ end
 
 undef("readAsciiTable")
 function readAsciiTable( fName:string, ncol:integer, datatype:string, opt)
-local head, nh, xs, nrow, table
+local head, nh, xs, nrow, table, nopt
 begin
-  if (typeof(opt).eq."integer" .and. opt(0).eq.0) then
+  nopt = dimsizes(opt)
+  if (typeof(opt).eq."integer" .and. nopt.eq.1 .and. opt(0).eq.0) then
       nrow  = dimsizes(asciiread(fName, -1, "string"))  ; all rows as strings
       table = asciiread(fName, (/nrow,ncol/), datatype)
   else
-      head = readAsciiHead( fName, opt(0))
-      nh   = dimsizes(head)                 ; # header records
+      if(opt(0).gt.0) then
+        head = readAsciiHead( fName, opt(0))
+        nh   = dimsizes(head)                 ; # header records
+      else
+        nh = 0                                ; no header to read
+      end if
       xs   = asciiread(fName, -1, "string") ; all rows as strings
       nrow = dimsizes(xs)-nh                ; # rows after header
-      if (dimsizes(opt).gt.1) then
+      if (nopt.gt.1) then
           nrow = nrow - opt(1) 
       end if
 
