@@ -1,5 +1,5 @@
 /*
- *      $Id: niohlu.h,v 1.2 2009-07-17 00:47:34 dbrown Exp $
+ *      $Id: niohlu.h,v 1.3 2010-04-26 14:48:54 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #include "nioc.h"
 
 /* these are required defs from ncarg/hlu/defs.h which is not included here */
@@ -98,6 +99,8 @@
 #define NhlTUint	"Uint"
 #define NhlTUlong	"Ulong"
 #define NhlTUint64	"Uint64"
+#define NhlTInt8	"Int8"
+#define NhlTUint8	"Uint8"
 
 /* public real types supported */
 #define NhlTFloat	"Float"
@@ -129,6 +132,8 @@
 #define NhlTUintGenArray	"UintGenArray"
 #define NhlTUlongGenArray	"UlongGenArray"
 #define NhlTUint64GenArray	"Uint64GenArray"
+#define NhlTInt8GenArray	"Int8GenArray"
+#define NhlTUint8GenArray	"Uint8GenArray"
 
 #define NhlTFloatGenArray	"FloatGenArray"
 #define NhlTDoubleGenArray	"DoubleGenArray"
@@ -167,6 +172,8 @@ union _NhlType_ {
 	NhlPointer	ptrval;
 	unsigned char	byteval;
 	char		charval;
+	unsigned char	uint8val;
+	char		int8val;
 	short		shrtval;
 	int		intval;
 	long		lngval;
