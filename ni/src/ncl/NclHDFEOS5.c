@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS5.c,v 1.7 2010-04-14 21:29:47 huangwei Exp $
+ *      $Id: NclHDFEOS5.c,v 1.8 2010-04-27 16:07:11 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -291,6 +291,44 @@ static NclBasicDataTypes HDFEOS5MapTypeNumber(long typenumber){
 		 return(NCL_none);
 	
 	}
+}
+
+static char *_make_proper_string_end(const char *input_name)
+{
+    char *output_name;
+    char *name = strdup(input_name);
+    int n = strlen(name);
+    int i = strlen(name) - 1;
+    while(i)
+    {
+        if((name[i] > 32) && (name[i] < 127))
+        {
+            name[i+1] = '\0';
+            n = i+2;
+            break;
+        }
+        else
+        {
+            name[i] = '\0';
+            i--;
+        }
+    }
+    free(name);
+    output_name = (char *)malloc(n);
+    if(output_name == NULL)
+    {
+      /*
+       *fprintf(stdout, "UNABLE TO ALLOCATE MEMORY for output_name, in file: %s, line: %d\n",
+       *        __FILE__, __LINE__);
+       */
+        NhlPError(NhlWARNING,NhlEUNKNOWN,"UNABLE TO ALLOCATE MEMORY for output_name");
+        return NULL;
+    }
+
+    strncpy(output_name, name, n-2);
+    output_name[n-1] = '\0';
+
+    return output_name;
 }
 
 static void HDFEOS5ParseName
@@ -1475,8 +1513,11 @@ NclQuark path;
         int has_xdim_var = 0, has_ydim_var = 0;
         NrmQuark xdim_name = NrmNULLQUARK, ydim_name = NrmNULLQUARK;
         NrmQuark qproj_name = NrmNULLQUARK;
+        char *tmp_hdf_name;
 
-        HE5_GDid = HE5_GDattach(HE5_GDfid,NrmQuarkToString(gd_hdf_names[i]));
+        tmp_hdf_name = _make_proper_string_end(NrmQuarkToString(gd_hdf_names[i]));
+        HE5_GDid = HE5_GDattach(HE5_GDfid,tmp_hdf_name);
+        free(tmp_hdf_name);
         if(! (HE5_GDid > 0) )
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "NclHDFEOS5: An internal HDF error occurred while reading (%s) can't continue",
@@ -3316,7 +3357,7 @@ void* storage;
 	hsize_t stridei[NCL_MAX_DIMENSIONS];
 	hsize_t edgei[NCL_MAX_DIMENSIONS];
 	float tmpf;
-	
+	char *tmp_hdf_name;
 
 	thelist = thefile->vars;
 	for(i = 0; i < thefile->n_vars; i++) {
@@ -3324,7 +3365,9 @@ void* storage;
 			switch(thelist->var_inq->var_class) {
 			case GRID:
 				fid = HE5_GDopen(NrmQuarkToString(thefile->file_path_q),H5F_ACC_RDONLY);
-				did = HE5_GDattach(fid,NrmQuarkToString(thelist->var_inq->var_class_name));
+				tmp_hdf_name = _make_proper_string_end(NrmQuarkToString(thelist->var_inq->var_class_name));
+				did = HE5_GDattach(fid,tmp_hdf_name);
+				free(tmp_hdf_name);
 				for(j = 0; j < thelist->var_inq->n_dims; j++) {
 					starti[j] = (hsize_t)start[j] ;
 					stridei[j] = (hsize_t)stride[j];
