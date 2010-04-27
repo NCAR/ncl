@@ -6930,7 +6930,7 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
  *
  * zp's dimension names will be used for the output.
  */
-  dim_info_zp = get_wrf_dim_info(0,7,ndims_zp,dsizes_zp);
+  dim_info_zp = get_wrf_dim_info(0,8,ndims_zp,dsizes_zp);
 
   if(dim_info_zp != NULL) {
     dim_info = malloc(sizeof(NclDimRec)*ndims_uh);
@@ -6938,7 +6938,7 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for holding dimension information");
       return(NhlFATAL);
     }
-    for(i = 0; i < ndims_zp-3; i++) {
+    for(i = 0; i < ndims_uh-2; i++) {
       dim_info[i] = dim_info_zp[i];
     }
     dim_info[ndims_uh-1] = dim_info_zp[ndims_zp-1];
