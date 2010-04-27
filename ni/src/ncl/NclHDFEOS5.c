@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS5.c,v 1.10 2010-04-27 16:48:22 huangwei Exp $
+ *      $Id: NclHDFEOS5.c,v 1.11 2010-04-27 17:35:22 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -814,6 +814,7 @@ NclQuark path;
                 att_ncl_names = (NclQuark *)NclRealloc(att_ncl_names, sizeof(NclQuark)*max_att);
             }
 
+            buffer[str_buf_size] = '\0';
             HDFEOS5ParseName(buffer, att_hdf_names, att_ncl_names, natts);
 
             for(k = 0; k < natts; k++)
@@ -876,6 +877,7 @@ NclQuark path;
                 att_ncl_names = (NclQuark *)NclRealloc(att_ncl_names, sizeof(NclQuark)*max_att);
             }
 
+            buffer[str_buf_size] = '\0';
             HDFEOS5ParseName(buffer, att_hdf_names, att_ncl_names, ngrp_atts);
 
             for(k = 0; k < ngrp_atts; k++)
@@ -937,6 +939,7 @@ NclQuark path;
         }
 
         ndims = HE5_SWinqdims(HE5_SWid,buffer,dimsizes);
+        buffer[str_buf_size] = '\0';
         HDFEOS5ParseName(buffer,dim_hdf_names,dim_ncl_names,ndims);
 
         for(j = 0; j < ndims; j++)
@@ -1010,6 +1013,7 @@ NclQuark path;
             ngeofields = HE5_SWinqgeofields(HE5_SWid,buffer,field_ranks,NULL);
             the_file->n_vars += ngeofields;
 
+            buffer[str_buf_size] = '\0';
             HDFEOS5ParseName(buffer,var_hdf_names,var_ncl_names,ngeofields);
             for(j = 0; j < ngeofields; j++)
             {
@@ -1032,6 +1036,7 @@ NclQuark path;
                     loc_hdf_names = (NclQuark *)NclRealloc(loc_hdf_names, sizeof(NclQuark)*max_loc);
                     loc_ncl_names = (NclQuark *)NclRealloc(loc_ncl_names, sizeof(NclQuark)*max_loc);
                 }
+                buffer[str_buf_size] = '\0';
                 HDFEOS5ParseName(buffer,loc_hdf_names,loc_ncl_names,nlocatts);
 
                 if (field_ranks[j] > max_ndims)
@@ -1043,6 +1048,7 @@ NclQuark path;
                 if(HE5_SWfieldinfo(HE5_SWid,NrmQuarkToString(var_hdf_names[j]),
                            &tmp_rank,dimsizes,&tmp_type,buffer,maxdimlist) == 0)
                 {
+                    buffer[str_buf_size] = '\0';
                     HDFEOS5ParseName(buffer,tmp_hdf_names,tmp_ncl_names,tmp_rank);
                     for(k = 0; k < tmp_rank; k++)
                     {
@@ -1214,6 +1220,7 @@ NclQuark path;
 
         ndata = HE5_SWinqdatafields(HE5_SWid,buffer,field_ranks,NULL);
         the_file->n_vars += ndata;
+        buffer[str_buf_size] = '\0';
         HDFEOS5ParseName(buffer,var_hdf_names,var_ncl_names,ndata);
 
         for(j = 0; j < ndata; j++)
@@ -1236,6 +1243,7 @@ NclQuark path;
                 loc_hdf_names = (NclQuark *)NclRealloc(loc_hdf_names, sizeof(NclQuark)*max_loc);
                 loc_ncl_names = (NclQuark *)NclRealloc(loc_ncl_names, sizeof(NclQuark)*max_loc);
             }
+            buffer[str_buf_size] = '\0';
             HDFEOS5ParseName(buffer,loc_hdf_names,loc_ncl_names,nlocatts);
 
             if (field_ranks[j] > max_ndims)
@@ -1247,6 +1255,7 @@ NclQuark path;
             if(HE5_SWfieldinfo(HE5_SWid,NrmQuarkToString(var_hdf_names[j]),
                        &tmp_rank,dimsizes,&tmp_type,buffer,maxdimlist) == 0)
             {
+                buffer[str_buf_size] = '\0';
                 HDFEOS5ParseName(buffer,tmp_hdf_names,tmp_ncl_names,tmp_rank);
                 for(k = 0; k < tmp_rank; k++)
                 {
@@ -1502,6 +1511,7 @@ NclQuark path;
     ngd = HE5_GDinqgrid(NrmQuarkToString(path),buffer,&str_buf_size);
     HE5_GDfid = HE5_GDopen(NrmQuarkToString(path),H5F_ACC_RDONLY);
 
+    buffer[str_buf_size] = '\0';
     HDFEOS5ParseName(buffer,gd_hdf_names,gd_ncl_names,ngd);
     for(i = 0; i < ngd; i++)
     {
@@ -1593,6 +1603,7 @@ NclQuark path;
                 buffer = NclRealloc(buffer, cur_buf_size);
             }
             natts = HE5_GDinqattrs(HE5_GDid,buffer,&str_buf_size);
+            buffer[str_buf_size] = '\0';
             HDFEOS5ParseName(buffer,att_hdf_names,att_ncl_names,natts);
             for(k = 0; k < natts; k++)
             { 
@@ -1627,6 +1638,7 @@ NclQuark path;
                 att_ncl_names = (NclQuark *)NclRealloc(att_ncl_names, sizeof(NclQuark)*max_att);
             }
 
+            buffer[str_buf_size] = '\0';
             HDFEOS5ParseName(buffer, att_hdf_names, att_ncl_names, ngrp_atts);
 
             for(k = 0; k < ngrp_atts; k++)
@@ -1684,6 +1696,7 @@ NclQuark path;
             }
 
             ndims = HE5_GDinqdims(HE5_GDid,buffer,dimsizes);
+            buffer[str_buf_size] = '\0';
             HDFEOS5ParseName(buffer,dim_hdf_names,dim_ncl_names,ndims);
             for(j = 0; j < ndims; j++)
             {
@@ -1707,6 +1720,7 @@ NclQuark path;
         }
         ndata = HE5_GDinqfields(HE5_GDid,buffer,field_ranks,NULL);
         the_file->n_vars += ndata;
+        buffer[str_buf_size] = '\0';
         HDFEOS5ParseName(buffer,var_hdf_names,var_ncl_names,ndata);
         for(j = 0; j < ndata; j++)
         {
@@ -1732,6 +1746,7 @@ NclQuark path;
                 loc_hdf_names = (NclQuark *)NclRealloc(loc_hdf_names, sizeof(NclQuark)*max_loc);
                 loc_ncl_names = (NclQuark *)NclRealloc(loc_ncl_names, sizeof(NclQuark)*max_loc);
             }
+            buffer[str_buf_size] = '\0';
             HDFEOS5ParseName(buffer,loc_hdf_names,loc_ncl_names,nlocatts);
 
             if (field_ranks[j] > max_ndims)
@@ -1746,6 +1761,7 @@ NclQuark path;
                 has_ydim_var = 1;
             if(HE5_GDfieldinfo(HE5_GDid,NrmQuarkToString(var_hdf_names[j]),&tmp_rank,dimsizes,&tmp_type,buffer,maxdimlist) == 0)
             {
+                buffer[str_buf_size] = '\0';
                 HDFEOS5ParseName(buffer,tmp_hdf_names,tmp_ncl_names,tmp_rank);
                 for(k = 0; k < tmp_rank; k++)
                 {
@@ -2251,6 +2267,7 @@ typedef struct
     npt = HE5_PTinqpoint(NrmQuarkToString(path),buffer,&str_buf_size);
     HE5_PTfid = HE5_PTopen(NrmQuarkToString(path),H5F_ACC_RDONLY);
 
+    buffer[str_buf_size] = '\0';
     HDFEOS5ParseName(buffer, pt_hdf_names, pt_ncl_names, npt);
 
     for(pt = 0; pt < npt; pt++)
@@ -2284,6 +2301,7 @@ typedef struct
                 att_ncl_names = (NclQuark *)NclRealloc(att_ncl_names, sizeof(NclQuark)*max_att);
             }
 
+            buffer[str_buf_size] = '\0';
             HDFEOS5ParseName(buffer, att_hdf_names, att_ncl_names, natts);
 
             for(att = 0; att < natts; att++)
@@ -2383,6 +2401,7 @@ typedef struct
                 loc_hdf_names = (NclQuark *)NclRealloc(loc_hdf_names, sizeof(NclQuark)*max_loc);
                 loc_ncl_names = (NclQuark *)NclRealloc(loc_ncl_names, sizeof(NclQuark)*max_loc);
             }
+            buffer[str_buf_size] = '\0';
             HDFEOS5ParseName(buffer,loc_hdf_names,loc_ncl_names,nlocatts);
 
             for(loc = 0; loc < nlocatts; loc++)
@@ -2706,6 +2725,7 @@ NclQuark path;
     nza = HE5_ZAinqza(NrmQuarkToString(path),buffer,&str_buf_size);
     HE5_ZAfid = HE5_ZAopen(NrmQuarkToString(path),H5F_ACC_RDONLY);
 
+    buffer[str_buf_size] = '\0';
     HDFEOS5ParseName(buffer, za_hdf_names, za_ncl_names, nza);
 
     for(za = 0; za < nza; za++)
@@ -2737,6 +2757,7 @@ NclQuark path;
                 att_ncl_names = (NclQuark *)NclRealloc(att_ncl_names, sizeof(NclQuark)*max_att);
             }
 
+            buffer[str_buf_size] = '\0';
             HDFEOS5ParseName(buffer, att_hdf_names, att_ncl_names, natts);
 
             for(att = 0; att < natts; att++)
@@ -2779,6 +2800,7 @@ NclQuark path;
         }
 
         ndims = HE5_ZAinqdims(HE5_ZAid,buffer,dimsizes);
+        buffer[str_buf_size] = '\0';
         HDFEOS5ParseName(buffer,dim_hdf_names,dim_ncl_names,ndims);
 
         for(dim = 0; dim < ndims; dim++)
@@ -2812,6 +2834,7 @@ NclQuark path;
             var_ncl_names = (NclQuark *)NclRealloc(var_ncl_names, sizeof(NclQuark)*max_var);
         }
 
+        buffer[str_buf_size] = '\0';
         HDFEOS5ParseName(buffer,var_hdf_names,var_ncl_names,ndata);
 
         the_file->n_vars += ndata;
@@ -2836,6 +2859,7 @@ NclQuark path;
                 loc_hdf_names = (NclQuark *)NclRealloc(loc_hdf_names, sizeof(NclQuark)*max_loc);
                 loc_ncl_names = (NclQuark *)NclRealloc(loc_ncl_names, sizeof(NclQuark)*max_loc);
             }
+            buffer[str_buf_size] = '\0';
             HDFEOS5ParseName(buffer,loc_hdf_names,loc_ncl_names,nlocatts);
 
             if (field_ranks[nv] > max_ndims)
@@ -2847,6 +2871,7 @@ NclQuark path;
             if(HE5_ZAinfo(HE5_ZAid,NrmQuarkToString(var_hdf_names[nv]),
                        &tmp_rank,dimsizes,&tmp_type,buffer,maxdimlist) == 0)
             {
+                buffer[str_buf_size] = '\0';
                 HDFEOS5ParseName(buffer,tmp_hdf_names,tmp_ncl_names,tmp_rank);
                 for(dim = 0; dim < tmp_rank; dim++)
                 {
