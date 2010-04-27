@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS5.c,v 1.8 2010-04-27 16:07:11 huangwei Exp $
+ *      $Id: NclHDFEOS5.c,v 1.9 2010-04-27 16:26:20 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -325,7 +325,7 @@ static char *_make_proper_string_end(const char *input_name)
         return NULL;
     }
 
-    strncpy(output_name, name, n-2);
+    strncpy(output_name, name, n-1);
     output_name[n-1] = '\0';
 
     return output_name;
