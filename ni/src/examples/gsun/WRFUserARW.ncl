@@ -840,24 +840,27 @@ begin
            var = nc_file->PH
            PHB = nc_file->PHB
          else
-           var = nc_file->PH(time_in,:,:,:)
-           PHB = nc_file->PHB(time_in,:,:,:)
+           var = nc_file->PH(time,:,:,:)
+           PHB = nc_file->PHB(time,:,:,:)
          end if
 
-         var = var + PHB 
+         var = var + PHB
          z = wrf_user_unstagger(var,var@stagger)
          z@description = "Geopotential"
 
        else
-         ;; may be a met_em file - see if we can get GHT
+         ;; may be a met_em file - see if we can get GHT - data in met_em file is Height in M
          if(isfilevar(nc_file,"GHT")) then
            if ( time .eq. -1 ) then
              z = nc_file->GHT
            else
-             z = nc_file->GHT(time_in,:,:,:)
+             z = nc_file->GHT(time,:,:,:)
            end if
+           z = z * 9.81
+           z@description = "Geopotential"
+           z@units       = "m2 s-2"
          end if
-       end if  
+       end if
 
        if( any( variable .eq. (/"z","height"/) ) ) then
          z = z / 9.81
