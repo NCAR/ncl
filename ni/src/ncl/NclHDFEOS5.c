@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS5.c,v 1.11 2010-04-27 17:35:22 huangwei Exp $
+ *      $Id: NclHDFEOS5.c,v 1.12 2010-04-28 23:02:03 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -301,6 +301,12 @@ static char *_make_proper_string_end(const char *input_name)
     int i = strlen(name) - 1;
     while(i)
     {
+      /*
+       *if(((name[i] >= 'a') && (name[i] <= 'z'))
+       *|| ((name[i] >= 'A') && (name[i] <= 'Z'))
+       *|| ((name[i] >= '0') && (name[i] <= '9'))
+       *||   name[i] == '_')
+       */
         if((name[i] > 32) && (name[i] < 127))
         {
             name[i+1] = '\0';
@@ -325,9 +331,9 @@ static char *_make_proper_string_end(const char *input_name)
     }
 
     strncpy(output_name, name, n-1);
-    free(name);
     output_name[n-1] = '\0';
 
+    free(name);
     return output_name;
 }
 
@@ -3573,6 +3579,7 @@ NclFormatFunctionRec HDFEOS5Rec = {
 /* NclRenameDimFunc         rename_dim; */		NULL,
 /* NclAddVarFunc            add_var; */			NULL,
 /* NclAddVarChunkFunc       add_var_chunk; */		NULL,
+/* NclAddVarChunkCacheFunc add_var_chunk_cache; */	NULL,
 /* NclSetVarCompressLevelFunc set_var_compress_level; */ NULL,
 /* NclAddVarFunc            add_coord_var; */		NULL,
 /* NclAddAttFunc            add_att; */			NULL,

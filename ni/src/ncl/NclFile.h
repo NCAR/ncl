@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.25 2010-04-14 21:29:47 huangwei Exp $
+ *      $Id: NclFile.h,v 1.26 2010-04-28 23:02:03 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -245,6 +245,16 @@ int *    /* dims */
 #endif
 );
 
+typedef NhlErrorTypes (*NclAddFileVarChunkCacheFunc)(
+#if	NhlNeedProto
+NclFile	 /* thefile */,
+NclQuark /* var_name */,
+size_t	 /* cache_size */,
+size_t	 /* cache_nelems */,
+float    /* cache_preemption */
+#endif
+);
+
 typedef NhlErrorTypes (*NclSetFileVarCompressLevelFunc)(
 #if	NhlNeedProto
 NclFile	/*thefile*/,
@@ -309,6 +319,10 @@ typedef enum {
 	Ncl_MISSING_TO_FILL_VALUE,
 #ifdef USE_NETCDF4
 	Ncl_COMPRESSION_LEVEL,
+	Ncl_USE_CACHE,
+	Ncl_CACHE_SIZE,
+	Ncl_CACHE_NELEMS,
+	Ncl_CACHE_PREEMPTION,
 #endif
 	Ncl_DEFAULT_NCEP_PTABLE,
 	Ncl_PRINT_RECORD_INFO,
@@ -345,6 +359,7 @@ typedef struct _NclFileClassPart {
 	NclAddFileChunkDimFunc	add_chunk_dim_func;
 	NclAddFileVarFunc	add_var_func;
 	NclAddFileVarChunkFunc	add_var_chunk_func;
+	NclAddFileVarChunkCacheFunc	add_var_chunk_cache_func;
 	NclSetFileVarCompressLevelFunc	set_var_compress_level_func;
 	NclAddFileVarAttFunc	add_var_att_func;
 	NclAddFileAttFunc	add_att_func;

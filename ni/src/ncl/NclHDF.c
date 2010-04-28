@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.38 2010-04-14 21:29:47 huangwei Exp $
+ *      $Id: NclHDF.c,v 1.39 2010-04-28 23:02:03 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -2473,6 +2473,7 @@ NclFormatFunctionRec HDFRec = {
 /* NclRenameDimFunc        rename_dim; */		HDFRenameDim,
 /* NclAddVarFunc           add_var; */			HDFAddVar,
 /* NclAddVarChunkFunc      add_var_chunk; */		NULL,
+/* NclAddVarChunkCacheFunc add_var_chunk_cache; */	NULL,
 /* NclSetVarCompressLevelFunc set_var_compress_level; */ NULL,
 /* NclAddVarFunc           add_coord_var; */		HDFAddCoordVar,
 /* NclAddAttFunc           add_att; */			HDFAddAtt,

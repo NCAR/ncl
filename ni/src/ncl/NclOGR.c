@@ -1,5 +1,5 @@
 /*
- *      $Id: NclOGR.c,v 1.3 2010-04-14 21:29:48 huangwei Exp $
+ *      $Id: NclOGR.c,v 1.4 2010-04-28 23:02:03 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -1369,6 +1369,7 @@ NclFormatFunctionRec OGRRec = {
 /* NclRenameDimFunc        rename_dim; */		NULL,
 /* NclAddVarFunc           add_var; */			NULL,
 /* NclAddVarChunkFunc      add_var_chunk; */		NULL,
+/* NclAddVarChunkCacheFunc add_var_chunk_cache; */	NULL,
 /* NclSetVarCompressLevelFunc set_var_compress_level; */ NULL,
 /* NclAddVarFunc           add_coord_var; */		NULL,
 /* NclAddAttFunc           add_att; */			NULL,

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.29 2010-04-14 21:29:47 huangwei Exp $
+ *      $Id: FileSupport.c,v 1.30 2010-04-28 23:02:03 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -1335,6 +1335,34 @@ int *dims;
 	while((NclObjClass)fc != nclObjClass) {
 		if(fc->file_class.add_var_chunk_func != NULL) {
 			return((*fc->file_class.add_var_chunk_func)(thefile, varname, n_dims, dims));
+		} else {
+			fc = (NclFileClass)fc->obj_class.super_class;
+		}
+	}
+	return(NhlFATAL);
+}
+extern NhlErrorTypes _NclFileAddVarChunkCache
+#if     NhlNeedProto
+(NclFile thefile, NclQuark varname, size_t cache_size, size_t cache_nelems, float cache_preemption)
+#else
+(thefile, varname, cache_size, cache_nelems, cache_preemption)
+NclFile thefile;
+NclQuark varname;
+size_t cache_size;
+size_t cache_nelems;
+float cache_preemption;
+#endif
+{
+	NclFileClass fc = NULL;
+
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+	fc = (NclFileClass)thefile->obj.class_ptr;
+	while((NclObjClass)fc != nclObjClass) {
+		if(fc->file_class.add_var_chunk_cache_func != NULL) {
+			return((*fc->file_class.add_var_chunk_cache_func)
+				(thefile, varname, cache_size, cache_nelems, cache_preemption));
 		} else {
 			fc = (NclFileClass)fc->obj_class.super_class;
 		}

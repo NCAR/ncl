@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS.c,v 1.14 2010-04-14 21:29:47 huangwei Exp $
+ *      $Id: NclHDFEOS.c,v 1.15 2010-04-28 23:02:03 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -1979,6 +1979,7 @@ NclFormatFunctionRec HDFEOSRec = {
 /* NclRenameDimFunc        rename_dim; */		NULL,
 /* NclAddVarFunc           add_var; */			NULL,
 /* NclAddVarChunkFunc      add_var_chunk; */		NULL,
+/* NclAddVarChunkCacheFunc add_var_chunk_cache; */	NULL,
 /* NclSetVarCompressLevelFunc set_var_compress_level; */ NULL,
 /* NclAddVarFunc           add_coord_var; */		NULL,
 /* NclAddAttFunc           add_att; */			NULL,

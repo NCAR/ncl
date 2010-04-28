@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.91 2010-04-14 21:29:47 huangwei Exp $
+ *      $Id: AddBuiltIns.c,v 1.92 2010-04-28 23:02:03 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -135,6 +135,12 @@ void
 );
 
 extern NhlErrorTypes _NclIFileVarCompressLevelDef(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIFileVarChunkCacheDef(
 #if NhlNeedProto
 void
 #endif
@@ -2258,7 +2264,18 @@ void _NclAddBuiltIns
         SetArgTemplate(args,2,"integer",1,NclANY);nargs++;
         SetArgTemplate(args,3,"logical",1,NclANY);nargs++;
         NclRegisterProc(_NclIFileChunkDimDef,args,"filechunkdimdef",nargs);
-/*End: Wei added for Variable Chunking, April 8, 2010*/
+
+      /*Wei added for File Compression, April 15, 2010*/
+        nargs = 0;
+        args = NewArgs(5);
+        dimsizes[0] = 1;
+        SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+        SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,2,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,3,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,4,"float",1,dimsizes);nargs++;
+        NclRegisterProc(_NclIFileVarChunkCacheDef,args,"filevarchunkcachedef",nargs);
+/*End: Wei added*/
 
 	nargs = 0;
 	args = NewArgs(2);

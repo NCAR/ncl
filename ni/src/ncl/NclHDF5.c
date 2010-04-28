@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF5.c,v 1.3 2010-04-16 02:38:37 huangwei Exp $
+ *      $Id: NclHDF5.c,v 1.4 2010-04-28 23:02:03 huangwei Exp $
  */
 /************************************************************************
 *                                    *
@@ -3611,7 +3611,6 @@ long *stride;
         grplist = grplist->next;
     }
 #else
-
     fprintf(stderr, "group in HDF5WriteVar: file: %s, line: %d\n", __FILE__, __LINE__);
     fprintf(stderr, "group in HDF5WriteVar: HAVE NOT DONE ANYTHING FOR GROUP YET!!!\n\n");
     fprintf(stderr, "group in HDF5WriteVar: file: %s, line: %d\n", __FILE__, __LINE__);
@@ -4615,6 +4614,7 @@ NclFormatFunctionRec HDF5Rec = {
 /* NclRenameDimFunc         rename_dim; */         NULL,
 /* NclAddVarFunc            add_var; */            HDF5AddVar,
 /* NclAddVarChunkFunc       add_var_chunk; */      HDF5AddVarChunk,
+/* NclAddVarChunkCacheFunc add_var_chunk_cache; */ NULL,
 /* NclSetVarCompressLevelFunc set_var_compress_level; */ NULL,
 /* NclAddVarFunc            add_coord_var; */      HDF5AddCoordVar,
 /* NclAddAttFunc            add_att; */            HDF5AddAtt,

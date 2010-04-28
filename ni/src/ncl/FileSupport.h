@@ -1,5 +1,5 @@
 /*
- *      $Id: FileSupport.h,v 1.13 2010-04-14 21:29:47 huangwei Exp $
+ *      $Id: FileSupport.h,v 1.14 2010-04-28 23:02:03 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -305,6 +305,15 @@ NclFile /* thefile */,
 NclQuark /* varname */,
 int	 /* n_dims */,
 int *    /* dims */
+#endif
+);
+extern NhlErrorTypes _NclFileAddVarChunkCache(
+#if NhlNeedProto
+NclFile /* thefile */,
+NclQuark /* varname */,
+size_t	 /* cache_size */,
+size_t   /* cache_nelems */,
+float    /* cache_preemption */
 #endif
 );
 extern NhlErrorTypes _NclFileSetVarCompressLevel(

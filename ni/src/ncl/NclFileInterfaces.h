@@ -383,6 +383,16 @@ int * /* dims */
 #endif
 );
 
+typedef NhlErrorTypes (*NclAddVarChunkCacheFunc) (
+#if     NhlNeedProto
+void *,   /* record */
+NclQuark, /* var_name */
+size_t,   /* cache_size */
+size_t,   /* cache_nelems */
+float     /* cache_preemption */
+#endif
+);
+
 typedef NhlErrorTypes (*NclSetVarCompressLevelFunc) (
 #if     NhlNeedProto
 void*,    /* record */
@@ -521,6 +531,7 @@ NclAddChunkDimFunc 	add_chunk_dim;
 NclRenameDimFunc 	rename_dim;
 NclAddVarFunc		add_var;
 NclAddVarChunkFunc	add_var_chunk;
+NclAddVarChunkCacheFunc	add_var_chunk_cache;
 NclSetVarCompressLevelFunc  set_var_compress_level;
 NclAddVarCoordFunc	add_coord_var;
 NclAddAttFunc		add_att;

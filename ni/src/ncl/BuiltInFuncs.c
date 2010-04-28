@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.253 2010-04-14 21:29:47 huangwei Exp $
+ *      $Id: BuiltInFuncs.c,v 1.254 2010-04-28 23:02:03 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -16194,6 +16194,111 @@ NhlErrorTypes _NclIFileVarChunkDef
 	}
 
 	ret = _NclFileAddVarChunk(thefile,varnames[0],n_dims,dimsizes);
+	if(ret < NhlINFO) {
+		ret0 = ret;
+	}
+	return(ret0);
+}
+
+NhlErrorTypes _NclIFileVarChunkCacheDef
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int dimsize;
+	NclScalar missing;
+	int has_missing;
+
+	int n_dims;
+	NclScalar tmp_missing;
+	int tmp_has_missing;
+
+	string *varnames;
+	size_t *sizes;
+	size_t *elems;
+	float  *pres;
+	int     input_dimsizes[NCL_MAX_DIMENSIONS];
+	float  *preemption;
+	int i;
+	obj *thefile_id;
+	NclFile thefile;
+	NhlErrorTypes ret=NhlNOERROR;
+	NhlErrorTypes ret0 = NhlNOERROR;
+
+	size_t cache_size	= 3200000;
+	size_t cache_nelems	= 1009;
+	float  cache_preemption = 0.5;
+
+        thefile_id = (obj *)NclGetArgValue(
+                        0,
+                        5,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+	thefile = (NclFile)_NclGetObj((int)*thefile_id);
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+
+        varnames = (string *)NclGetArgValue(
+                        1,
+                        5,
+                        &n_dims,
+                        input_dimsizes,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+	if(has_missing) {
+		for(i = 0; i < dimsize; i++) {
+			if(varnames[i] == missing.stringval)  {
+				return(NhlFATAL);
+			}
+		}
+	}
+
+        sizes = (size_t *)NclGetArgValue(
+                        2,
+                        5,
+                        &n_dims,
+                        input_dimsizes,
+                        &tmp_missing,
+                        &tmp_has_missing,
+                        NULL,
+                        0);
+
+	cache_size = sizes[0];
+
+        elems = (size_t *)NclGetArgValue(
+                        3,
+                        5,
+                        &n_dims,
+                        input_dimsizes,
+                        &tmp_missing,
+                        &tmp_has_missing,
+                        NULL,
+                        0);
+
+	cache_nelems = elems[0];
+
+        pres = (float *)NclGetArgValue(
+                        4,
+                        5,
+                        &n_dims,
+                        input_dimsizes,
+                        &tmp_missing,
+                        &tmp_has_missing,
+                        NULL,
+                        0);
+
+	cache_preemption = pres[0];
+
+	ret = _NclFileAddVarChunkCache(thefile,varnames[0],cache_size,cache_nelems,cache_preemption);
 	if(ret < NhlINFO) {
 		ret0 = ret;
 	}

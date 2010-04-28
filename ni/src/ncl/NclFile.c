@@ -553,6 +553,63 @@ int *dims;
 	return(NhlFATAL);
 }
 
+static NhlErrorTypes FileAddVarChunkCache
+#if	NhlNeedProto
+(NclFile thefile, NclQuark varname, size_t cache_size, size_t cache_nelems, float cache_preemption)
+#else
+(thefile, varname, cache_size, cache_nelems, cache_preemption)
+NclFile thefile;
+NclQuark varname;
+size_t cache_size;
+size_t cache_nelems;
+float  cache_preemption;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR;
+	
+	if(thefile->file.wr_status <= 0)
+	{
+		if((FileIsVar(thefile,varname)) > -1)
+		{
+			if(thefile->file.format_funcs->add_var_chunk_cache != NULL)
+			{
+				ret = (*thefile->file.format_funcs->add_var_chunk_cache)(
+					thefile->file.private_rec,
+					varname, cache_size, cache_nelems, cache_preemption);
+				if(ret == NhlFATAL)
+				{
+					fprintf(stdout, "FileAddVarChunkCache, in file: %s, line: %d\n", __FILE__, __LINE__);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						"FileAddVarChunkCache: an error occurred while adding chunk to variable");
+				}
+			}
+			else
+			{
+				ret = NhlWARNING;
+				fprintf(stdout, "FileAddVarChunkCache, in file: %s, line: %d\n", __FILE__, __LINE__);
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"FileAddVarChunkCache: add_var_chunk_cache is not defined.");
+			}
+			return(ret);
+		}
+		else
+		{
+			fprintf(stdout, "FileAddVarChunkCache, in file: %s, line: %d\n", __FILE__, __LINE__);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"FileAddVarChunkCache: Variable %s is not defined, can not define chunk",NrmQuarkToString(varname));
+			return(NhlWARNING);
+		}
+	}
+	else
+	{
+		fprintf(stdout, "FileAddVarChunkCache, in file: %s, line: %d\n", __FILE__, __LINE__);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"FileAddVarChunkCache: file (%s) was opened for reading only, can not write",
+			NrmQuarkToString(thefile->file.fname));
+	}
+	return(NhlFATAL);
+}
+
 static NhlErrorTypes FileSetVarCompressLevel
 #if	NhlNeedProto
 (NclFile thefile, NclQuark varname, int compress_level)
@@ -1559,6 +1616,10 @@ NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* NetCDF missing to fill value option */
 #ifdef USE_NETCDF4
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },   /* NetCDF 4 compression option level */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },   /* NetCDF 4 cache switch */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 3200000, NULL },   /* NetCDF 4 cache size */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 1009, NULL },   /* NetCDF 4 cache nelems */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0.50, NULL },   /* NetCDF 4 cache preemption */
 #endif
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }, /* GRIB default NCEP parameter table */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB print record info */
@@ -1612,6 +1673,7 @@ NclFileClassRec nclFileClassRec = {
 /*NclAddFileChunkDimFunc	add_chunk_dim_func*/	FileAddChunkDim,
 /*NclAddFileVarFunc		add_var_func*/		FileAddVar,
 /*NclAddFileVarChunkFunc	add_var_chunk_func*/	FileAddVarChunk,
+/*NclAddFileVarChunkCacheFunc	add_var_chunk_cache_func*/	   FileAddVarChunkCache,
 /*NclSetFileVarCompressLevelFunc set_var_compress_level_func; */   FileSetVarCompressLevel,
 /*NclAddFileVarAttFunc		add_var_att_func*/	NULL,
 /*NclAddFileAttFunc		add_att_func*/		NULL,
@@ -1636,6 +1698,7 @@ static NhlErrorTypes InitializeFileOptions
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	logical *lval;
 	string *sval;
+	float *fval;
 	int *ival;
 	int len_dims;
 	NhlErrorTypes ret = NhlNOERROR;
@@ -1865,6 +1928,70 @@ static NhlErrorTypes InitializeFileOptions
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
 	fcp->options[Ncl_COMPRESSION_LEVEL].valid_values = NULL;
+
+	/* NetCDF 4 option use cache */
+	fcp->options[Ncl_USE_CACHE].format = NrmStringToQuark("nc");
+	fcp->options[Ncl_USE_CACHE].name = NrmStringToQuark("cachepreemption");
+	len_dims = 1;
+	fval = (float *) NclMalloc(sizeof(float));
+	*fval = 0.50;
+	fcp->options[Ncl_USE_CACHE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0.50,(void *)fval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 0;
+	fcp->options[Ncl_USE_CACHE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	fcp->options[Ncl_USE_CACHE].valid_values = NULL;
+
+	/* NetCDF 4 option cache size */
+	fcp->options[Ncl_CACHE_SIZE].format = NrmStringToQuark("nc");
+	fcp->options[Ncl_CACHE_SIZE].name = NrmStringToQuark("cachesize");
+	len_dims = 1;
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 3*1024*1025;
+	fcp->options[Ncl_CACHE_SIZE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 3*1024*1025;
+	fcp->options[Ncl_CACHE_SIZE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	fcp->options[Ncl_CACHE_SIZE].valid_values = NULL;
+
+	/* NetCDF 4 option cache nelems */
+	fcp->options[Ncl_CACHE_NELEMS].format = NrmStringToQuark("nc");
+	fcp->options[Ncl_CACHE_NELEMS].name = NrmStringToQuark("cachenelems");
+	len_dims = 1;
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 1009;
+	fcp->options[Ncl_CACHE_NELEMS].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 1009;
+	fcp->options[Ncl_CACHE_NELEMS].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	fcp->options[Ncl_CACHE_NELEMS].valid_values = NULL;
+
+	/* NetCDF 4 option cache preemption */
+	fcp->options[Ncl_CACHE_PREEMPTION].format = NrmStringToQuark("nc");
+	fcp->options[Ncl_CACHE_PREEMPTION].name = NrmStringToQuark("cachepreemption");
+	len_dims = 1;
+	fval = (float *) NclMalloc(sizeof(float));
+	*fval = 0.50;
+	fcp->options[Ncl_CACHE_PREEMPTION].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0.50,(void *)fval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
+	fval = (float*) NclMalloc(sizeof(float));
+	*fval = 0.50;
+	fcp->options[Ncl_CACHE_PREEMPTION].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0.50,(void *)fval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
+	fcp->options[Ncl_CACHE_PREEMPTION].valid_values = NULL;
 #endif
 
 	/* Grib option Default_NCEP_Ptable */

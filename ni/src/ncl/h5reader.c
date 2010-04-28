@@ -3163,9 +3163,9 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
                  *  1. long_long -- the largest native signed integer
                  * 2. unsigned long_long -- the largest native unsigned integer
                  *     3. raw format */
-                if (H5Tget_size(type)<=sizeof(long_long))
+                if (H5Tget_size(type)<=sizeof(long long))
                 {
-                    dst_size = sizeof(long_long);
+                    dst_size = sizeof(long long);
                     if (H5T_SGN_NONE==H5Tget_sign(type))
                     {
                         native = H5T_NATIVE_ULLONG;
@@ -3219,7 +3219,7 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
  	                 *strangely, unless use another pointer "copy".*/
  	                copy = value+i*dst_size;
                         fprintf(stdout,"%"H5_PRINTF_LL_WIDTH"u",
-                        *((unsigned long_long*)((void*)copy)));
+                        *((unsigned long long*)((void*)copy)));
                     }
                     else
                     {
@@ -3227,7 +3227,7 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
  	                 *strangely, unless use another pointer "copy".*/
  	                copy = value+i*dst_size;
                         fprintf(stdout,"%"H5_PRINTF_LL_WIDTH"d",
-                        *((long_long*)((void*)copy)));
+                        *((long long*)((void*)copy)));
                     }
                 }
 
