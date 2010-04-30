@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.175 2010-04-30 22:44:27 huangwei Exp $
+#      $Id: yMakefile,v 1.176 2010-04-30 23:19:57 huangwei Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2010-04-30 22:44:27 $
+#	Date:		$Date: 2010-04-30 23:19:57 $
 #
 #	Description:	
 #
@@ -596,10 +596,6 @@ NclHDFEOS5.o: NclHDFEOS5.c
 
 NclHDF5.o: NclHDF5.c
 	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclHDF5.c
-	@echo 
-
-h5check.o: h5check.c
-	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) h5check.c
 	@echo 
 
 h5reader.o: h5reader.c
