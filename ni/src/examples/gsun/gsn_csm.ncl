@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.241 2010-03-05 15:28:07 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.242 2010-04-30 14:03:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -10389,6 +10389,16 @@ begin
     end setvalues
 
     draw_and_frame(wks,xy1,calldraw,callframe,0,maxbb)
+;
+; Copy over xy2 atts, if any. This is just in case any
+; primitives were attached.
+;
+    xy2att = getvaratts(xy2)
+    if(.not.all(ismissing(xy2att))) then
+      do i=0,dimsizes(xy2att)-1
+        xy1@$xy2att(i)$ = xy2@$xy2att(i)$
+      end do
+    end if
     xy1@xy2 = xy2
     return (xy1)
  end
