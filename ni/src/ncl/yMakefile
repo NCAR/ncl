@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.173 2010-04-28 23:02:03 huangwei Exp $
+#      $Id: yMakefile,v 1.174 2010-04-30 19:40:59 huangwei Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2010-04-28 23:02:03 $
+#	Date:		$Date: 2010-04-30 19:40:59 $
 #
 #	Description:	
 #
@@ -67,15 +67,12 @@ HDFEOS5_OBJS = NclHDFEOS5.o
 
 #ifdef BuildHDF5
 HDF5_DEFS = -DBuildHDF5
-HDF5_SRCS = NclHDF5.c h5check.c h5reader.c h5writer.c
-HDF5_OBJS = NclHDF5.o h5check.o h5reader.o h5writer.o
+HDF5_SRCS = NclHDF5.c h5reader.c h5writer.c
+HDF5_OBJS = NclHDF5.o h5reader.o h5writer.o
 #else
-####define HDF5_SRCS
-####define HDF5_OBJS
-####define HDF5LIB
-HDF5_DEFS = -DBuildHDF5
-HDF5_SRCS = NclHDF5.c h5check.c h5reader.c h5writer.c
-HDF5_OBJS = NclHDF5.o h5check.o h5reader.o h5writer.o
+define HDF5_SRCS
+define HDF5_OBJS
+define HDF5LIB
 #endif
 
 #ifdef BuildGRIB2

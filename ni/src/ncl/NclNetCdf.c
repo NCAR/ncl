@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.58 2010-04-28 23:02:03 huangwei Exp $
+ *      $Id: NclNetCdf.c,v 1.59 2010-04-30 19:40:59 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -409,16 +409,11 @@ int cdfid;
 	int nv = 0;
 	int storage = NC_CHUNKED;
 
-	wei_start("_checking_nc4_chunking", __FILE__, __LINE__);
-	wei_check_int("_checking_nc4_chunking", "rec->n_chunk_dims", rec->n_chunk_dims);
-
 	if(rec->n_chunk_dims)
 	{
 		dims = (size_t *) NclMalloc(rec->n_dims*sizeof(size_t));
 		chunk_dims = (size_t *) NclMalloc(rec->n_dims*sizeof(size_t));
-		fprintf(stderr,"\tNEED TO CHECK IF CHUNKING WAS NEEDED.\n");
 
-		fprintf(stderr,"\tcheck dims.\n");
 		nd = 0;
 		file_dim_list = rec->dims;
 		chunk_dim_list = rec->chunk_dims;
@@ -431,45 +426,34 @@ int cdfid;
 			{
 				fprintf(stderr, "dim name: <%s> and chunk_dim name: <%s> are different.\n",
 					NrmQuarkToString(dim_inq->name), NrmQuarkToString(chunk_dim_inq->name));
+				fprintf(stderr, "No more file-wise chunking and compress check.\n");
+				break;
 			}
 
-			fprintf(stderr, "\tDim %d name: <%s>, id: %d, size: %ld\n",
-				nd, NrmQuarkToString(dim_inq->name),
-				dim_inq->dimid, dim_inq->size);
 			dims[dim_inq->dimid] = dim_inq->size;
 
 			chunk_dim_inq->dimid = dim_inq->dimid;
-			fprintf(stderr, "\tDim %d name: <%s>, id: %d, size: %ld\n",
-				nd, NrmQuarkToString(chunk_dim_inq->name),
-				chunk_dim_inq->dimid, chunk_dim_inq->size);
 			chunk_dims[dim_inq->dimid] = chunk_dim_inq->size;
 			nd++;
 			file_dim_list = file_dim_list->next;
 			chunk_dim_list = chunk_dim_list->next;
 		}
 
-		fprintf(stderr,"\tNEED TO CHECK IF CHUNKING WAS NEEDED.\n");
-
 		nv = 0;
         	stepvl = rec->vars;
         	while(stepvl != NULL)
         	{
 			var_inq = stepvl->var_inq;
-			fprintf(stderr, "\tVar %d: <%s>\n", nv, NrmQuarkToString(var_inq->name));
-			fprintf(stderr, "\t\tn_chunk_dims = %d, n_dims = %d\n", var_inq->n_chunk_dims, var_inq->n_dims);
             		if(var_inq->n_chunk_dims < 1)
             		{
-				fprintf(stderr, "\n\t\tNeed to set chunk for var %d: <%s>\n\n",
-					nv, NrmQuarkToString(var_inq->name));
 				for(nd = 0; nd < var_inq->n_dims; nd++)
 				{
-					fprintf(stderr, "\t\tvar_inq->dim[%d] = %d \n",
-						nd, var_inq->dim[nd]);
+					var_inq->chunk_dim[nd] = chunk_dims[var_inq->dim[nd]];
 				}
-#if 0
 				var_inq->n_chunk_dims = var_inq->n_dims;
                 		nc_ret = nc_def_var_chunking(cdfid, var_inq->varid, storage,
                                              	var_inq->chunk_dim);
+
             			if((rec->compress_level > 0) && (var_inq->compress_level < 1))
             			{
 					var_inq->compress_level = rec->compress_level;
@@ -478,7 +462,20 @@ int cdfid;
 					nc_ret = nc_def_var_deflate(cdfid, var_inq->varid, shuffle,
 								deflate, deflate_level);
             			}
-#endif
+
+				var_inq->use_cache = (int)(rec->options[NC_USE_CACHE_OPT].values);
+            			if(var_inq->use_cache)
+            			{
+					int *isv = (int *)(rec->options[NC_CACHE_SIZE_OPT].values);
+					int *iev = (int *)(rec->options[NC_CACHE_NELEMS_OPT].values);
+					float *fv = (float *)(rec->options[NC_CACHE_PREEMPTION_OPT].values);
+					var_inq->cache_size = isv[0];
+					var_inq->cache_nelems = iev[0];
+					var_inq->cache_preemption = fv[0];
+					nc_ret = nc_set_var_chunk_cache(cdfid, var_inq->varid,
+                                                		var_inq->cache_size, var_inq->cache_nelems,
+                                                		var_inq->cache_preemption);
+            			}
 			}
 			nv ++;
             		stepvl= stepvl->next;
@@ -487,7 +484,6 @@ int cdfid;
 		free(dims);
 		free(chunk_dims);
 	}
-	wei_end("_checking_nc4_chunking", __FILE__, __LINE__);
 }
 #endif                
 
