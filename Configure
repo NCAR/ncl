@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.58 2010-04-07 14:55:50 haley Exp $
+#      $Id: Configure,v 1.58.2.1 2010-05-02 16:55:13 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2010-04-07 14:55:50 $
+#	$Date: 2010-05-02 16:55:13 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -840,6 +840,8 @@ else
   set buildgrib2 = "n"
   set buildv5d = "n"
   set builddods = "n"
+  set netcdfwithdap = "n"
+  set netcdflib = ""
   set newbuildhdfeos
   set newbuildhdfeos5
   set newbuildnetcdf4
@@ -1173,7 +1175,6 @@ endif
 # 	endif
 # endif
 
-/* This is turned off for now. */
 if ($?newbuildcairo  && "$buildcairo" == "y") then
 	echo "#define BuildCAIRO 1" >> Site.local
 endif
