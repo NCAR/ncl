@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.238 2010-03-22 01:59:53 haley Exp $
+;      $Id: gsn_code.ncl,v 1.238.4.1 2010-05-02 17:01:06 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3115,6 +3115,7 @@ end
 ;***********************************************************************;
 ; Function to determine if a cairo PS is being requested.               ;
 ;***********************************************************************;
+undef("is_cairo_ps")
 function is_cairo_ps(wtype)
 local lwtype, cpsenv
 begin
@@ -3130,6 +3131,7 @@ end
 ;***********************************************************************;
 ; Function to determine if a cairo PDF is being requested.              ;
 ;***********************************************************************;
+undef("is_cairo_pdf")
 function is_cairo_pdf(wtype)
 local lwtype, cpdfenv
 begin
@@ -3145,6 +3147,7 @@ end
 ;***********************************************************************;
 ; Function to determine if a cairo PNG is being requested.              ;
 ;***********************************************************************;
+undef("is_cairo_png")
 function is_cairo_png(wtype)
 local lwtype
 begin
