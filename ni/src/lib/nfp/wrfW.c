@@ -91,6 +91,11 @@ extern void NGCALLF(dcalrelhl,DCALRELHL)(double *u, double *v, double *z,
                                          double *sreh, int *miy, int *mjx,
                                          int *mkzh);
 
+extern void NGCALLF(dcalcuh,DCALCUH)(int *, int *, int *, int *, double *, 
+                                     double *, double *, double *, double *,
+                                     double *, double *, double *, double *,
+                                     double *, double *, double *);
+
 extern NclDimRec *get_wrf_dim_info(int,int,int,int*);
 
 extern void var_zero(double *, int);
@@ -5564,7 +5569,7 @@ NhlErrorTypes wrf_avo_W( void )
  * Get argument # 7
  */
   dy = (void*)NclGetArgValue(
-           6,
+           7,
            9,
            NULL,
            NULL,
@@ -5578,7 +5583,7 @@ NhlErrorTypes wrf_avo_W( void )
  * Get argument # 8
  */
   opt = (int*)NclGetArgValue(
-           7,
+           8,
            9,
            NULL,
            NULL,
@@ -6414,6 +6419,731 @@ NhlErrorTypes wrf_helicity_W( void )
 
 }
 
+
+NhlErrorTypes wrf_updraft_helicity_W( void )
+{
+
+/*
+ * Input variables
+ */
+/*
+ * Argument # 0
+ */
+  void *zp;
+  double *tmp_zp;
+  int ndims_zp, dsizes_zp[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_zp;
+
+/*
+ * Argument # 1
+ */
+  void *mapfct;
+  double *tmp_mapfct;
+  int ndims_mapfct, dsizes_mapfct[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_mapfct;
+
+/*
+ * Argument # 2
+ */
+  void *dx;
+  double *tmp_dx;
+  NclBasicDataTypes type_dx;
+
+/*
+ * Argument # 3
+ */
+  void *dy;
+  double *tmp_dy;
+  NclBasicDataTypes type_dy;
+
+/*
+ * Argument # 4
+ */
+  void *us;
+  double *tmp_us;
+  int ndims_us, dsizes_us[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_us;
+
+/*
+ * Argument # 5
+ */
+  void *vs;
+  double *tmp_vs;
+  int ndims_vs, dsizes_vs[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_vs;
+
+/*
+ * Argument # 6
+ */
+  void *w;
+  double *tmp_w;
+  int ndims_w, dsizes_w[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_w;
+
+/*
+ * Argument # 7
+ */
+  logical *opt;
+
+/*
+ * Possible attributes.
+ */
+  void *uhmnhgt, *uhmxhgt;
+  double *tmp_uhmnhgt, *tmp_uhmxhgt;
+  logical set_uhmnhgt, set_uhmxhgt;
+  NclBasicDataTypes type_uhmnhgt, type_uhmxhgt;
+
+/*
+ * Variables for retrieving attributes from "opt".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry stack_entry;
+
+/*
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info, *dim_info_us;
+
+/*
+ * Return variable
+ */
+  void *uh;
+  double *tmp_uh;
+  int ndims_uh, *dsizes_uh;
+  NclBasicDataTypes type_uh;
+  NclObjClass type_obj_uh;
+  int att_id;
+  NclQuark *description, *units;
+  char *cdescription, *cunits;
+
+
+/*
+ * Various
+ */
+  int nx, ny, nzp1, nzp1nynx, nynx, nz, nznynx;
+  int index_zp, index_uh, index_us;
+  double *tem1, *tem2;
+  int i, ndims_leftmost, size_leftmost, size_output, ret;
+
+/*
+ * Variables for returning the output array with dimension names attached.
+ */
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+
+/*
+ * Retrieve parameters.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+/*
+ * Get argument # 0
+ */
+  zp = (void*)NclGetArgValue(
+           0,
+           8,
+           &ndims_zp,
+           dsizes_zp,
+           NULL,
+           NULL,
+           &type_zp,
+           DONT_CARE);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_zp < 3) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: The zp array must have at least 3 dimensions");
+    return(NhlFATAL);
+  }
+  nzp1 = dsizes_zp[ndims_zp-3];
+  ny   = dsizes_zp[ndims_zp-2];
+  nx   = dsizes_zp[ndims_zp-1];
+  nynx = ny * nx;
+  nzp1nynx = nynx * nzp1;
+
+/*
+ * Get argument # 1
+ */
+  mapfct = (void*)NclGetArgValue(
+           1,
+           8,
+           &ndims_mapfct,
+           dsizes_mapfct,
+           NULL,
+           NULL,
+           &type_mapfct,
+           DONT_CARE);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_mapfct != 2 && ndims_mapfct != (ndims_zp-1)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: The mapfct array must either be two-dimensional or have one fewer dimensions than zp");
+    return(NhlFATAL);
+  }
+  if(dsizes_mapfct[ndims_mapfct-2] != ny || 
+     dsizes_mapfct[ndims_mapfct-1] != nx) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: The rightmost dimensions of mapfct must be ny x nx");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get argument # 2
+ */
+  us = (void*)NclGetArgValue(
+           2,
+           8,
+           &ndims_us,
+           dsizes_us,
+           NULL,
+           NULL,
+           &type_us,
+           DONT_CARE);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_us != ndims_zp) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: The us array must have the same number of dimensions as zp");
+    return(NhlFATAL);
+  }
+  if(dsizes_us[ndims_us-2] != ny || dsizes_us[ndims_us-1] != nx) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: The rightmost dimensions of us must be nz x ny x ny");
+    return(NhlFATAL);
+  }
+  nz = dsizes_us[ndims_us-3];
+  nznynx = nz * nynx;
+
+/*
+ * Get argument # 3
+ */
+  vs = (void*)NclGetArgValue(
+           3,
+           8,
+           &ndims_vs,
+           dsizes_vs,
+           NULL,
+           NULL,
+           &type_vs,
+           DONT_CARE);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_vs != ndims_us) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: The vs array must have the same number of dimensions as us");
+    return(NhlFATAL);
+  }
+  if(dsizes_vs[ndims_vs-3] != nz || dsizes_vs[ndims_vs-2] != ny || 
+     dsizes_vs[ndims_vs-1] != nx) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: The rightmost dimensions of vs must be nz x ny x ny");
+  }
+/*
+ * Get argument # 4
+ */
+  w = (void*)NclGetArgValue(
+           4,
+           8,
+           &ndims_w,
+           dsizes_w,
+           NULL,
+           NULL,
+           &type_w,
+           DONT_CARE);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_w != ndims_zp || (dsizes_w[ndims_w-3] != nzp1 || 
+                             dsizes_w[ndims_w-2] != ny ||
+                             dsizes_w[ndims_w-1] != nx)) {
+  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: The w array must be the same dimensionality as zp");
+  return(NhlFATAL);
+ }
+
+/*
+ * Get argument # 5
+ */
+  dx = (void*)NclGetArgValue(
+           5,
+           8,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_dx,
+           DONT_CARE);
+/*
+ * Get argument # 6
+ */
+  dy = (void*)NclGetArgValue(
+           6,
+           8,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_dy,
+           DONT_CARE);
+
+/*
+ * Get argument # 7
+ */
+  opt = (logical*)NclGetArgValue(
+           7,
+           8,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+
+/*
+ * Start checking for attributes attached to "opt"
+ */
+  set_uhmnhgt = set_uhmxhgt = False;
+
+  stack_entry = _NclGetArg(7, 8, DONT_CARE);
+  switch (stack_entry.kind) {
+  case NclStk_VAR:
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj == NULL) {
+        break;
+      }
+    }
+    else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+      break;
+    }
+/* 
+ * Get optional arguments.
+ */
+    if (attr_obj->att.n_atts > 0) {
+/*
+ * Get list of attributes.
+ */
+      attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them. We are looking for:
+ *
+ *  uhmnhgt or uhmxhgt
+ */
+      while (attr_list != NULL) {
+        if(!strcasecmp(attr_list->attname, "uhmnhgt")) {
+          uhmnhgt      = attr_list->attvalue->multidval.val;
+          type_uhmnhgt = attr_list->attvalue->multidval.data_type;
+          set_uhmnhgt  = True;
+        }
+        else if(!strcasecmp(attr_list->attname, "uhmxhgt")) {
+          uhmxhgt      = attr_list->attvalue->multidval.val;
+          type_uhmxhgt = attr_list->attvalue->multidval.data_type;
+          set_uhmxhgt  = True;
+        }
+        attr_list = attr_list->next;
+      }
+    default:
+      break;
+    }
+  }
+  if(set_uhmnhgt) {
+    tmp_uhmnhgt = coerce_input_double(uhmnhgt,type_uhmnhgt,1,0,NULL,NULL);
+  }
+  else {
+    type_uhmnhgt = NCL_double;
+    tmp_uhmnhgt  = (double *)calloc(1,sizeof(double));
+    *tmp_uhmnhgt = 2000.;
+  }
+  if(set_uhmxhgt) {
+    tmp_uhmxhgt = coerce_input_double(uhmxhgt,type_uhmxhgt,1,0,NULL,NULL);
+  }
+  else {
+    type_uhmxhgt = NCL_double;
+    tmp_uhmxhgt  = (double *)calloc(1,sizeof(double));
+    *tmp_uhmxhgt = 5000.;
+  }
+
+/*
+ * Calculate size of leftmost dimensions.
+ */
+  size_leftmost  = 1;
+  ndims_leftmost = ndims_zp-3;
+  for(i = 0; i < ndims_leftmost; i++) {
+    if(dsizes_us[i] != dsizes_zp[i] || dsizes_vs[i] != dsizes_zp[i] ||
+       dsizes_w[i]  != dsizes_zp[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: The leftmost dimensions of zp, us, vs, and w must be the same");
+      return(NhlFATAL);
+    }
+    if(ndims_mapfct > 2 && dsizes_mapfct[i] != dsizes_zp[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: mapfct must either be two-dimensional or have the same leftmost dimensions as zp");
+      return(NhlFATAL);
+    }
+    size_leftmost *= dsizes_zp[i];
+  }
+
+
+/* 
+ * Allocate space for coercing input arrays.  If any of the input
+ * is already double, then we don't need to allocate space for
+ * temporary arrays, because we'll just change the pointer into
+ * the void array appropriately.
+ *
+ * Allocate space for tmp_zp.
+ */
+  if(type_zp != NCL_double) {
+    type_uh     = NCL_float;
+    type_obj_uh = nclTypefloatClass;
+
+    tmp_zp = (double *)calloc(nzp1nynx,sizeof(double));
+    if(tmp_zp == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_uh     = NCL_double;
+    type_obj_uh = nclTypedoubleClass;
+  }
+/*
+ * Allocate space for tmp_mapfct. This array can be 2D or nD. If it
+ * is 2D, go ahead and coerce the values now. Otherwise, create a temp
+ * 2D array and we'll coerce the values in the loop below along with
+ * everybody else.
+ */
+  if(ndims_mapfct = 2) {
+    tmp_mapfct = coerce_input_double(mapfct,type_mapfct,nynx,0,NULL,NULL);
+  }
+  else {
+    if(type_mapfct != NCL_double) {
+      tmp_mapfct = (double *)calloc(nynx,sizeof(double));
+      if(tmp_mapfct == NULL) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for coercing input array to double");
+        return(NhlFATAL);
+      }
+    }
+  }
+/*
+ * Allocate space for tmp_dx.
+ */
+  tmp_dx = coerce_input_double(dx,type_dx,1,0,NULL,NULL);
+  if(tmp_dx == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for coercing input array to double");
+    return(NhlFATAL);
+  }
+/*
+ * Allocate space for tmp_dy.
+ */
+  tmp_dy = coerce_input_double(dy,type_dy,1,0,NULL,NULL);
+  if(tmp_dy == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for coercing input array to double");
+    return(NhlFATAL);
+  }
+
+/*
+ * Allocate space for tmp_us.
+ */
+  if(type_us != NCL_double) {
+    tmp_us = (double *)calloc(nznynx,sizeof(double));
+    if(tmp_us == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Allocate space for tmp_vs.
+ */
+  if(type_vs != NCL_double) {
+    tmp_vs = (double *)calloc(nznynx,sizeof(double));
+    if(tmp_vs == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Allocate space for tmp_w.
+ */
+  if(type_w != NCL_double) {
+    tmp_w = (double *)calloc(nzp1nynx,sizeof(double));
+    if(tmp_w == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Calculate size of output array.
+ */
+  size_output = size_leftmost * nynx;
+
+/* 
+ * Allocate space for output array.
+ */
+  if(type_uh != NCL_double) {
+    uh = (void *)calloc(size_output, sizeof(float));
+    tmp_uh = (double *)calloc(nynx,sizeof(double));
+    if(tmp_uh == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for temporary output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    uh = (void *)calloc(size_output, sizeof(double));
+  }
+  if(uh == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Allocate space for work arrays.
+ */
+  tem1 = (void *)calloc(nznynx, sizeof(double));
+  tem2 = (void *)calloc(nznynx, sizeof(double));
+  if( tem1 == NULL || tem2 == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+
+/* 
+ * Allocate space for output dimension sizes and set them.
+ */
+  ndims_uh = ndims_leftmost + 2;
+  dsizes_uh = (int*)calloc(ndims_uh,sizeof(int));  
+  if( dsizes_uh == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+  for(i = 0; i < ndims_uh-2; i++) dsizes_uh[i] = dsizes_zp[i];
+  dsizes_uh[ndims_uh-2] = ny;
+  dsizes_uh[ndims_uh-1] = nx;
+
+/*
+ * Retrieve dimension names from "u", if any.
+ *
+ * u's dimension names will be used for the output.
+ */
+  dim_info_us = get_wrf_dim_info(2,8,ndims_us,dsizes_us);
+
+  if(dim_info_us != NULL) {
+    dim_info = malloc(sizeof(NclDimRec)*ndims_uh);
+    if(dim_info == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for holding dimension information");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_uh-2; i++) dim_info[i] = dim_info_us[i];
+    dim_info[ndims_uh-1] = dim_info_us[ndims_us-1];
+    dim_info[ndims_uh-2] = dim_info_us[ndims_us-2];
+  }
+
+/*
+ * Loop across leftmost dimensions and call the Fortran routine for each
+ * subsection of the input arrays.
+ */
+  index_zp = index_uh = index_us = 0;
+
+  for(i = 0; i < size_leftmost; i++) {
+/*
+ * Coerce subsection of zp (tmp_zp) to double if necessary.
+ */
+    if(type_zp != NCL_double) {
+      coerce_subset_input_double(zp,tmp_zp,index_zp,type_zp,nzp1nynx,
+                                 0,NULL,NULL);
+    }
+    else {
+      tmp_zp = &((double*)zp)[index_zp];
+    }
+
+/*
+ * Coerce subsection of mapfct (tmp_mapfct) to double if necessary.
+ */
+    if(ndims_mapfct > 2) {
+      if(type_mapfct != NCL_double) {
+        coerce_subset_input_double(mapfct,tmp_mapfct,index_uh,
+                                   type_mapfct,nynx,0,NULL,NULL);
+      }
+      else {
+        tmp_mapfct = &((double*)mapfct)[index_uh];
+      }
+    }
+
+/*
+ * Coerce subsection of us (tmp_us) to double if necessary.
+ */
+    if(type_us != NCL_double) {
+      coerce_subset_input_double(us,tmp_us,index_us,type_us,nznynx,
+                                 0,NULL,NULL);
+    }
+    else {
+      tmp_us = &((double*)us)[index_us];
+    }
+
+/*
+ * Coerce subsection of vs (tmp_vs) to double if necessary.
+ */
+    if(type_vs != NCL_double) {
+      coerce_subset_input_double(vs,tmp_vs,index_us,type_vs,nznynx,
+                                 0,NULL,NULL);
+    }
+    else {
+      tmp_vs = &((double*)vs)[index_us];
+    }
+
+/*
+ * Coerce subsection of w (tmp_w) to double if necessary.
+ */
+    if(type_w != NCL_double) {
+      coerce_subset_input_double(w,tmp_w,index_zp,type_w,nzp1nynx,0,NULL,NULL);
+    }
+    else {
+      tmp_w = &((double*)w)[index_zp];
+    }
+
+
+/*
+ * Point temporary output array to void output array if appropriate.
+ */
+    if(type_uh == NCL_double) tmp_uh = &((double*)uh)[index_uh];
+
+
+/*
+ * Call the Fortran routine.
+ */
+    NGCALLF(dcalcuh,DCALCUH)(&nx, &ny, &nz, &nzp1, tmp_zp, tmp_mapfct, 
+                             tmp_dx, tmp_dy, tmp_uhmnhgt, tmp_uhmxhgt, 
+                             tmp_us, tmp_vs, tmp_w, tmp_uh, tem1, tem2);
+
+/*
+ * Coerce output back to float if necessary.
+ */
+    if(type_uh == NCL_float) {
+      coerce_output_float_only(uh,tmp_uh,nynx,index_uh);
+    }
+    index_zp += nzp1nynx;
+    index_uh += nynx;
+    index_us += nznynx;
+  }
+
+/*
+ * Free unneeded memory.
+ */
+  if(type_zp != NCL_double)      NclFree(tmp_zp);
+  if(type_mapfct != NCL_double)  NclFree(tmp_mapfct);
+  if(type_dx != NCL_double)      NclFree(tmp_dx);
+  if(type_dy != NCL_double)      NclFree(tmp_dy);
+  if(type_us != NCL_double)      NclFree(tmp_us);
+  if(type_vs != NCL_double)      NclFree(tmp_vs);
+  if(type_w != NCL_double)       NclFree(tmp_w);
+  if(type_uh != NCL_double)      NclFree(tmp_uh);
+  if(type_uhmnhgt != NCL_double) NclFree(tmp_uhmnhgt);
+  if(type_uhmxhgt != NCL_double) NclFree(tmp_uhmxhgt);
+
+/*
+ * Set up return value.
+ */
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)uh,
+                            NULL,
+                            ndims_uh,
+                            dsizes_uh,
+                            TEMPORARY,
+                            NULL,
+                            type_obj_uh
+                            );
+
+/*
+ * Set up some attributes ("description" and "units") to return.
+ */
+  cdescription = (char *)calloc(17,sizeof(char));
+  strcpy(cdescription,"Updraft Helicity");
+  description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *description = NrmStringToQuark(cdescription);
+
+  cunits       = (char *)calloc(8,sizeof(char));
+  strcpy(cunits,"m-2/s-2");
+  units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *units       = NrmStringToQuark(cunits);
+
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)description,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "description",
+             att_md,
+             NULL
+             );
+    
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)units,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "units",
+             att_md,
+             NULL
+             );
+    
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          dim_info,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+}
 
 NhlErrorTypes wrf_ll_to_ij_W( void )
 {

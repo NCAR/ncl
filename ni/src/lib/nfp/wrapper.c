@@ -81,6 +81,7 @@ extern NhlErrorTypes wrf_eth_W(void);
 extern NhlErrorTypes wrf_pvo_W(void);
 extern NhlErrorTypes wrf_avo_W(void);
 extern NhlErrorTypes wrf_helicity_W(void);
+extern NhlErrorTypes wrf_updraft_helicity_W(void);
 extern NhlErrorTypes wrf_ll_to_ij_W(void);
 extern NhlErrorTypes wrf_ij_to_ll_W(void);
 extern NhlErrorTypes cape_thermo_W(void);
@@ -1590,6 +1591,26 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
         NclRegisterFunc(wrf_helicity_W,args,"wrf_helicity",nargs);
+
+/*
+ * Register "wrf_updraft_helicity".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(8);
+
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+        NclRegisterFunc(wrf_updraft_helicity_W,args,"wrf_updraft_helicity",nargs);
 
 /*
  * Register "wrf_ll_to_ij".
