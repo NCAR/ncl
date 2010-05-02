@@ -150,8 +150,11 @@ c c c real     t0, t1, t2, second
       logical  debug
 
       IER   = 0
-      debug = .true.
+      debug = .false.
 c c c t0    = second()
+
+      RE   = 6371.2200D0 
+      RAD  = 4.D0*ATAN(1.0D0)/180.D0
 
 c                     strip out missing data (kpts)
 c                     count the number of pts outside the grid (kout)
@@ -162,7 +165,7 @@ c                     count the number of pts outside the grid (kout)
 c                          initialize
       DO N = 1,NY
         DO M = 1,MX
-           DOUT(M,N) = 1.D20
+           DOUT(M,N) = 1D20
            GOUT(M,N) = ZMSG
         END DO
       END DO
@@ -229,7 +232,9 @@ c                     determine subscripts to nearest grid pt
              END DO
          END IF
         
-  30     IF (MM.GE.1 .AND. NN.GE.1) THEN
+  30     IF (MM.GE.1 .AND. MM.LE.MX .AND.
+     +       NN.GE.1 .AND. NN.LE.NY) THEN
+
 c                                     mm,nn =>  nearest grid pt
              IF (METHOD.EQ.0) THEN
                  DD = SQRT( SLPX**2 + SLPY**2 )
