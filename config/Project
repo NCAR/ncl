@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.120.4.1 2010-05-02 16:41:50 haley Exp $
+ *      $Id: Project,v 1.120.4.2 2010-05-02 17:03:08 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2010-05-02 16:41:50 $
+ *	$Date: 2010-05-02 17:03:08 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -201,7 +201,7 @@
 
 #ifdef BuildCAIRO
 #ifndef CAIROlib
-#define CAIROlib  -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz
+#define CAIROlib  -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat
 #endif
 #else
 #define CAIROlib
@@ -390,7 +390,7 @@ NGENV_DESCRIPT	= \
 		"graphcaps",NULL,"ncarg",NULL,NULL,		\
 		"colormaps",NULL,"ncarg",NULL,NULL,		\
 		"rangs","NCARG_RANGS","database",NULL,NULL,	\
-		"udunits","UDUNITS_PATH","ncarg",NULL,NULL,	\
+		"udunits","NCARG_UDUNITS","ncarg",NULL,NULL,	\
 		"psadilookup","PSADILOOKUP_PATH",NULL,NULL,NULL,\
 		"examples",NULL,"ncarg",NULL,NULL,		\
 		"hluex",NULL,"ncarg",NULL,NULL,			\
