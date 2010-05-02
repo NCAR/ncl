@@ -17,18 +17,31 @@ ut_system *utopen_ncl()
   char udunits_file[_NhlMAXFNAMELEN];
 
 /*
- *  If UDUNITS2_XML_PATH is set, then this path is used for the
- * "udunits2.xml" file. Otherwise, the path within NCL
- * ($NCARG_ROOT/lib/ncarg/udunits/) is used.
+ *  If NCARG_UDUNITS is set, then this directory is used to
+ *  look for the "udunits2.xml" file.
+ *
+ *  Otherwise, the path within NCL ($NCARG_ROOT/lib/ncarg/udunits/)
+ *  is used.
+ *
+ *  UDUNITS2_XML_PATH is not recognized internally by NCL. This is
+ *  because it could be very common for the user to have this set
+ *  for some other package, like Udunits, and this other file might
+ *  not be compatible with what NCL expects.
+ *
  */
-  path = getenv("UDUNITS2_XML_PATH");
-  if ((void *)path == (void *)NULL) {
+  path = getenv("NCARG_UDUNITS");
+  if ( (void *)path == (void *)NULL) {
     path = _NGGetNCARGEnv("udunits");
-    strcpy(udunits_file,path);
-    strcat(udunits_file,_NhlPATHDELIMITER);
-    strcat(udunits_file,"udunits2.xml");
-    setenv("UDUNITS2_XML_PATH",udunits_file,0);
   }
+  strcpy(udunits_file,path);
+  strcat(udunits_file,_NhlPATHDELIMITER);
+  strcat(udunits_file,"udunits2.xml");
+/*
+ * Internally set UDUNITS2_XML_PATH, forcing it to overwrite
+ * any setting the user might have.
+ */
+  setenv("UDUNITS2_XML_PATH",udunits_file,1);
+
   /* Turn annoying "override" errors off */
   ut_set_error_message_handler( ut_ignore );
 
