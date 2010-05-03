@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.21 2010-04-09 16:26:48 haley Exp $
+#   $Id: create_dist,v 1.21.4.1 2010-05-03 03:14:30 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -38,10 +38,13 @@
 #              -1 :  tar up just NCL (not NCAR Graphics)
 #              -2 :  tar up just NCAR Graphics (not NCL)
 #              -g :  include rangs database
-#              -c :  scp to windom.ucar.edu
+#              -c :  scp to topaz.scd.ucar.edu
 #              -v :  version number
 #              -o :  include libraries for OPeNDAP
 #              -b :  bit (32 or 64, required for AIX and IRIX64)
+#              -e :  extra string to include in tarfile name
+#              -f :  string to use in filename instead of generated one.
+#              -p :  don't prompt for stuff, just do it
 #
 #
 # Here's what various options to uname return on various systems:
@@ -87,7 +90,7 @@ set name        = `uname -n`
 set os          = `uname -s`
 set proc        = `uname -p`
 set exe_sfx     = ""
-set scpmach     = "windom.ucar.edu"
+set scpmach     = "topaz.scd.ucar.edu"
 set version     = `$rootdir/bin/ncl -V`
 
 if ("$os" == "AIX") then
@@ -107,7 +110,7 @@ else if ("$os" == "CYGWIN_NT-5.0") then
 else
   set system      = "{$os}_{$sys}"
 endif
-set tardir1     = "/fs/scd/home1/ncargd/dist/tarfiles"
+set tardir1     = "/fs/scd/home0/ncargd/dist/tarfiles"
 set tardir2     = "/fis/scd/home/ncargd"
 set extra       = ""
 
@@ -116,7 +119,7 @@ if (-e $tardir1) then
 else if (-e $tardir2) then 
   set tardir = $tardir2
 else
-  set tardir = "./"
+  set tardir = `pwd`
 endif
 
 #
@@ -124,6 +127,7 @@ endif
 #
 
 unset SCP
+set PROMPT
 set NCARGNCL
 
 while ($#argv > 0)
@@ -159,6 +163,12 @@ while ($#argv > 0)
       shift
       breaksw
 
+    case "-f":
+      shift
+      set fstring = "$1"
+      shift
+      breaksw
+
     case "-d":
       shift
       set tardir = "$1"
@@ -186,6 +196,11 @@ while ($#argv > 0)
       shift
       breaksw
 
+    case "-p":
+      unset PROMPT
+      shift
+      breaksw
+
     case "-r":
       shift
       set rootdir = "$1"
@@ -204,7 +219,7 @@ while ($#argv > 0)
 end
 
 # Set directory to scp files to.
-set scpdir  = "/fs/scd/home1/ncargd/dist/tarfiles/ncl/$version"
+set scpdir  = "/fs/scd/home0/ncargd/dist/tarfiles/ncl/$version"
 
 #
 # If -1 and -2 were specified, which is the default, then unset
@@ -228,7 +243,9 @@ if ($extra != "") then
   set system = "{$system}_{$extra}"
 endif
 
-if ($?OPENDAP) then
+if ($?fstring) then
+  set tar_filename = "$tar_prefix-$version.${fstring}.tar"
+else if ($?OPENDAP) then
   set tar_filename = "$tar_prefix-$version.${system}_opendap.tar"
 else
   set tar_filename = "$tar_prefix-$version.$system.tar"
@@ -282,7 +299,7 @@ if (-e $rootdir/lib/ncarg/database/rangs && ! $?KEEPRANGS) then
 endif
 #if ($?KEEPRANGS) then
 #  echo "Copying files to rangs dir so we can tar it up..."
-#  cp -r /fs/scd/home1/ncargd/dev/COMMON/lib/ncarg/database/rangs $rootdir/lib/ncarg/database/.
+#  cp -r /fs/scd/home0/ncargd/dev/COMMON/lib/ncarg/database/rangs $rootdir/lib/ncarg/database/.
 #endif
 
 
@@ -332,15 +349,6 @@ if ($?NCARGONLY || $?NCARGNCL) then
 endif
 
 #
-# If you have an opendap-enabled NCL, it may depend on some shared
-# libraries. This part is not well done, because these library versions
-# often.
-#
-if ($?OPENDAP) then
-  set opendap_lib_files = "libnc-dap.so libdap.so libdapclient.so libcurl.so libnc-dap.so.3 libdap.so.6 libcurl.so.4 libdapclient.so.1 libssl.so libssl.so.0.9.8 libcrypto.so libcrypto.so.0.9.8 libdap.so.4"
-endif
-
-#
 # Now start gathering up all the files and directories, depending
 # on which of the four distributions we're doing.
 #
@@ -359,10 +367,6 @@ if ($?NCLONLY || $?NCARGNCL) then
   set inc_dirs  = "$inc_dirs  $ncl_inc_dirs"
   set lib_files = "$lib_files $ncl_lib_files"
   set lib_dirs  = "$lib_dirs  $ncl_lib_dirs"
-
-  if ($?OPENDAP) then
-    set lib_files = "$lib_files $opendap_lib_files"
-  endif
 endif
 
 if ($?NCARGONLY || $?NCARGNCL) then
@@ -399,26 +403,32 @@ end
 cd $rootdir
 
 echo "Tarring up the files in $rootdir..."
-echo -n "The tar file is called $tar_filename and it will be put in $tardir. Continue? (y/n) "
-set answer="$<"
-if ("$answer" != "y") then
-  exit
+if ($?PROMPT) then
+  echo -n "The tar file is called $tar_filename and it will be put in $tardir. Continue? (y/n) "
+  set answer="$<"
+  if ("$answer" != "y") then
+    exit
+  endif
+else
+  echo "The tar file is called $tar_filename and it will be put in $tardir."
 endif
 
 #
 # Give us a chance to clean up ncargcc, ncargf77 ncargf90, nhlcc, nhlf77,
 # and nhlf90 and remove *~ files that shouldn't be there.
 #
-if ($?NCLONLY) then
-  emacs bin/nhlcc bin/nhlf77 bin/nhlf90
-else if ($?NCARGONLY) then
-  emacs bin/ncargcc bin/ncargf77 bin/ncargf90
-  chmod gou+x bin/ncargcc bin/ncargf77 bin/ncargf90
-else
-  emacs bin/nhlcc bin/nhlf77 bin/nhlf90 bin/ncargcc bin/ncargf77 bin/ncargf90
-  chmod gou+x bin/nhlcc bin/nhlf77 bin/nhlf90 bin/ncargcc bin/ncargf77 bin/ncargf90
+if ($?PROMPT) then
+  if ($?NCLONLY) then
+    emacs bin/nhlcc bin/nhlf77 bin/nhlf90
+  else if ($?NCARGONLY) then
+    emacs bin/ncargcc bin/ncargf77 bin/ncargf90
+    chmod gou+x bin/ncargcc bin/ncargf77 bin/ncargf90
+  else
+    emacs bin/nhlcc bin/nhlf77 bin/nhlf90 bin/ncargcc bin/ncargf77 bin/ncargf90
+    chmod gou+x bin/nhlcc bin/nhlf77 bin/nhlf90 bin/ncargcc bin/ncargf77 bin/ncargf90
+  endif
+  /bin/rm bin/*~
 endif
-/bin/rm bin/*~
 /bin/rm lib/ncarg/xapp/Idt.bak
 
 #
@@ -481,8 +491,8 @@ else
 endif
 
 if ($?SCP) then
-  echo "scp (via windom) or mv file to $scpdir..."
-  if ("$name" == "meeker" || "$name" == "windom" || "$name" == "longs") then
+  echo "scp (via topaz) or mv file to $scpdir..."
+  if ("$name" == "topaz.scd.ucar.edu" || "$name" == "windom" || "$name" == "longs") then
     /bin/mv $tardir/$tar_filename.gz $scpdir
   else
     scp $tardir/$tar_filename.gz $scpmach\:$scpdir
@@ -497,11 +507,13 @@ echo ""
 echo "   Options:   -r : root directory"
 echo "              -d : tar file directory"
 echo "              -s : system to tar up"
-echo "              -c : scp to windom.ucar.edu"
+echo "              -c : scp to topaz.scd.ucar.edu"
 echo "              -v : version number"
 echo "              -o : include libraries for OPeNDAP"
 echo "              -b : bit (32 or 64, required for AIX and IRIX64)"
 echo "              -e : extra string to include in tarfile name"
+echo "              -f : string to use in filename instead of generated one"
+echo "              -p : don't prompt for stuff, just do it"
 echo "              -g : include rangs directory"
 echo "              -1 : tar up NCL files only"
 echo "              -2 : tar up NCAR Graphics files only"
