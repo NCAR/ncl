@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.241.6.1 2010-05-02 17:01:06 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.241.6.2 2010-05-03 16:15:07 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -8689,7 +8689,6 @@ begin
 
 ; The default is to not add a cyclic point.
     if(get_res_value_keep(res2,"gsnAddCyclic",False)) then
-print("adding a cyclic point")
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
     else
@@ -8698,7 +8697,6 @@ print("adding a cyclic point")
     end if
 
     if(get_res_value(res2,"gsnAddCyclic",False)) then
-print("adding a cyclic point")
       datanew = gsn_add_cyclic_point(data)
     else
       datanew = data
