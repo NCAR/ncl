@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.238.4.1 2010-05-02 17:01:06 haley Exp $
+;      $Id: gsn_code.ncl,v 1.238.4.2 2010-05-03 16:12:22 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -9307,8 +9307,8 @@ begin
 
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
-    cnres = get_res_eq(res2,(/"cn","vp","tf"/))
-    vcres = get_res_ne(res2,(/"vf","sf","cn","vp"/))
+    cnres = get_res_eq(res2,(/"cn","tf"/))
+    vcres = get_res_ne(res2,(/"vf","sf","cn"/))
 
     attsetvalues_check(vfdata_object,vfres)
     attsetvalues_check(sfdata_object,sfres)
@@ -9487,8 +9487,8 @@ begin
 
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
-    cnres = get_res_eq(res2,(/"cn","vp"/))
-    stres = get_res_ne(res2,(/"vf","sf","cn","vp"/))
+    cnres = get_res_eq(res2,(/"cn"/))
+    stres = get_res_ne(res2,(/"vf","sf","cn"/))
 
     attsetvalues_check(vfdata_object,vfres)
     attsetvalues_check(sfdata_object,sfres)
