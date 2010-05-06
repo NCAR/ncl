@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.142 2010-03-24 23:00:04 dbrown Exp $
+ *      $Id: Execute.c,v 1.142.4.1 2010-05-06 18:49:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1232,7 +1232,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		if (! do_file)
 			continue;
 		if (first) {
-			int tsize;
+			long long tsize;
 			NclVar sub_agg_coord_var;
 			NclSelectionRecord sel_rec;
 			var1 = _NclFileReadVar(files[i],var,filevar_sel_ptr);
@@ -1248,7 +1248,14 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				/* need to add a dimension to the variable */
 				agg_chunk_size = tmp_md->multidval.totalsize;
 				var_offset = tmp_md->multidval.totalsize;
-				tsize = agg_chunk_size * agg_sel_count;
+				tsize = agg_chunk_size * (long long) agg_sel_count;
+				if (tsize > INT_MAX) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  "Aggregating variable %s from file list variable %s as specified would exceed maximum NCL variable size",
+						  NrmQuarkToString(var),listsym->name);
+					estatus = NhlFATAL;
+					goto fatal_err;
+				}
 				if (tsize > tmp_md->multidval.totalsize) {
 					tmp_md->multidval.val = NclRealloc(tmp_md->multidval.val,tsize);
 					if (! tmp_md->multidval.val) {
@@ -1313,7 +1320,14 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			else {
 				agg_chunk_size = tmp_md->multidval.totalsize / tmp_md->multidval.dim_sizes[0];
 				var_offset = tmp_md->multidval.totalsize;
-				tsize = agg_chunk_size * agg_sel_count;
+				tsize = agg_chunk_size * (long long) agg_sel_count;
+				if (tsize > INT_MAX) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  "Aggregating variable %s from file list variable %s as specified would exceed maximum NCL variable size",
+						  NrmQuarkToString(var),listsym->name);
+					estatus = NhlFATAL;
+					goto fatal_err;
+				}
 				if (tsize > tmp_md->multidval.totalsize) {
 					tmp_md->multidval.val = NclRealloc(tmp_md->multidval.val,tsize);
 					if (! tmp_md->multidval.val) {
