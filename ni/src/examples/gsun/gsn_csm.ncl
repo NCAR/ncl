@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.244 2010-05-06 17:18:01 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.245 2010-05-06 22:15:21 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1727,7 +1727,6 @@ begin
   txres = False   ; Text resources
   txres = get_res_eq(res,"tx")
   amres = get_res_eq(res,"am")
-  
 ;
 ; Get the height, as we use this to calculate distance of strings
 ; from top of plot.
@@ -1778,8 +1777,11 @@ begin
         fhghts(0) = get_res_value_keep(txres,"txFontHeightF",0.0)
       end if
     end if
-    colors@s0  = get_res_value_keep(left_string,"gsnLeftStringFontColor",\
-                 get_res_value_keep(left_string,"gsnStringFontColor",1))
+    if(isatt(left_string,"gsnLeftStringFontColor")) then
+      colors@s0 = get_res_value_keep(left_string,"gsnLeftStringFontColor",1)
+    else
+      colors@s0 = get_res_value_keep(left_string,"gsnStringFontColor",1)
+    end if
   end if
   if(center_string) 
     if(isatt(center_string,"gsnStringFont"))
@@ -1795,8 +1797,11 @@ begin
         fhghts(1) = get_res_value_keep(txres,"txFontHeightF",0.0)
       end if
     end if
-    colors@s1  = get_res_value_keep(center_string,"gsnCenterStringFontColor",\
-                 get_res_value_keep(center_string,"gsnStringFontColor",1))
+    if(isatt(center_string,"gsnCenterStringFontColor")) then
+      colors@s1 = get_res_value_keep(center_string,"gsnCenterStringFontColor",1)
+    else
+      colors@s1 = get_res_value_keep(center_string,"gsnStringFontColor",1)
+    end if
   end if
   if(right_string)
     if(isatt(right_string,"gsnStringFont"))
@@ -1812,8 +1817,11 @@ begin
         fhghts(2) = get_res_value_keep(txres,"txFontHeightF",0.0)
       end if
     end if
-    colors@s2  = get_res_value_keep(right_string,"gsnRightStringFontColor",\
-                 get_res_value_keep(right_string,"gsnStringFontColor",1))
+    if(isatt(right_string,"gsnRightStringFontColor")) then
+      colors@s2 = get_res_value_keep(right_string,"gsnRightStringFontColor",1)
+    else
+      colors@s2 = get_res_value_keep(right_string,"gsnStringFontColor",1)
+    end if
   end if
 ;
 ; Remove the text font height, so it doesn't get applied at the end.
