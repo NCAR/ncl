@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.243 2010-05-03 15:34:26 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.244 2010-05-06 17:18:01 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2639,16 +2639,16 @@ begin
             if(bpt.eq.0.or.(bpt.gt.0.and.(ismissing(y1(bpt-1)).or.\
                                           ismissing(y2(bpt-1)).or.\
                                           ismissing(x(bpt-1)))))
-              first(0) =  x(bpt)
-              first(1) = y2(bpt)
+              first(0) = (/ x(bpt) /)
+              first(1) = (/ y2(bpt)/)
             else
               if(fabs(y1(bpt-1)-y2(bpt-1)).le.delta)
 ;
 ; If the two points are within delta of each other, then we'll
 ; consider them to be the same point.
 ;
-                first(0) =  x(bpt-1)
-                first(1) = y1(bpt-1)
+                first(0) = (/  x(bpt-1) /)
+                first(1) = (/ y1(bpt-1) /)
               else
 ;
 ; Otherwise, find the intersection where the two curves cross.
@@ -2660,16 +2660,16 @@ begin
             if(ept.eq.(npts-1).or.(ept.lt.(npts-1).and.(ismissing(y1(ept+1)).or.\
                                                     ismissing(y2(ept+1)).or.\
                                                     ismissing(x(ept+1)))))
-              last(0) =  x(ept)
-              last(1) = y2(ept)
+              last(0) = (/  x(ept) /)
+              last(1) = (/ y2(ept) /)
             else
               if(fabs(y1(ept+1)-y2(ept+1)).le.delta)
 ;
 ; If the two points are within delta of each other, then we'll
 ; consider them to be the same point.
 ;
-                last(0) =  x(ept+1)
-                last(1) = y1(ept+1)
+                last(0) = (/  x(ept+1) /)
+                last(1) = (/ y1(ept+1) /)
               else
 ;
 ; Otherwise, find the intersection where the two curves cross.
