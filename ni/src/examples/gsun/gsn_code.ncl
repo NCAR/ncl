@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.238.4.2 2010-05-03 16:12:22 haley Exp $
+;      $Id: gsn_code.ncl,v 1.238.4.3 2010-05-06 17:13:26 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -583,7 +583,7 @@ end
 ;***********************************************************************;
 undef("get_res_value")
 function get_res_value(res,resname:string,default_val)
-local res_value
+local return_val
 begin
   if(((typeof(res).eq."logical".and.res).or.(typeof(res).ne."logical")).and.\
      .not.any(ismissing(getvaratts(res)))) then
@@ -613,7 +613,7 @@ end
 ;***********************************************************************;
 undef("get_res_value_keep")
 function get_res_value_keep(res,resname:string,default_val)
-local res_value
+local return_val
 begin
   if(((typeof(res).eq."logical".and.res).or.(typeof(res).ne."logical")).and.\
      .not.any(ismissing(getvaratts(res)))) then
