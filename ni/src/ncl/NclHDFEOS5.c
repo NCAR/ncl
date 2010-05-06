@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS5.c,v 1.12 2010-04-28 23:02:03 huangwei Exp $
+ *      $Id: NclHDFEOS5.c,v 1.13 2010-05-06 22:52:28 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -3074,6 +3074,8 @@ NclQuark var_name;
 	for (i = 0; i < thefile->n_vars; i++) {
 		if(thelist->var_inq->name == var_name) {
 			var_info->var_name_quark = var_name;
+			var_info->var_full_name_quark = var_name;
+			var_info->var_real_name_quark = var_name;
 			var_info->data_type = HDFEOS5MapTypeNumber(thelist->var_inq->typenumber);
 			var_info->num_dimensions = thelist->var_inq->n_dims;
 			for(j = 0; j < thelist->var_inq->n_dims; j++) {

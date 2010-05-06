@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.59 2010-04-30 19:40:59 huangwei Exp $
+ *      $Id: NclNetCdf.c,v 1.60 2010-05-06 22:52:28 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -1066,6 +1066,8 @@ NclQuark var_name;
 		if(stepvl->var_inq->name == var_name) {
 			tmp = (NclFVarRec*)NclMalloc((unsigned)sizeof(NclFVarRec));
 			tmp->var_name_quark = stepvl->var_inq->name;
+			tmp->var_real_name_quark = stepvl->var_inq->name;
+			tmp->var_full_name_quark = stepvl->var_inq->name;
 			tmp->data_type = NetMapToNcl((void*)&(stepvl->var_inq->data_type));
 			tmp->num_dimensions = stepvl->var_inq->n_dims;
 			for(j=0; j< stepvl->var_inq->n_dims; j++) {

@@ -1741,6 +1741,8 @@ NclQuark var_name;
 		if(var_name == vtmp->var_name_q) {
 			tmp = (NclFVarRec*)NclMalloc(sizeof(NclFVarRec));
                         tmp->var_name_quark  = vtmp->var_info.var_name_quark;
+                        tmp->var_full_name_quark  = vtmp->var_info.var_name_quark;
+                        tmp->var_real_name_quark  = vtmp->var_info.var_name_quark;
                         tmp->data_type  = vtmp->var_info.data_type;
                         tmp->num_dimensions  = vtmp->var_info.num_dimensions;
                         for(j=0;j< tmp->num_dimensions;j++) {

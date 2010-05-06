@@ -1,5 +1,5 @@
 /*
- *      $Id: NclOGR.c,v 1.4 2010-04-28 23:02:03 huangwei Exp $
+ *      $Id: NclOGR.c,v 1.5 2010-05-06 22:52:28 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -1026,6 +1026,8 @@ NclQuark var_name;
                         int j;
                         NclFVarRec *ret = (NclFVarRec*)NclMalloc(sizeof(NclFVarRec));
                         ret->var_name_quark = rec->variables[i].var_name_quark;
+                        ret->var_full_name_quark = rec->variables[i].var_name_quark;
+                        ret->var_real_name_quark = rec->variables[i].var_name_quark;
                         ret->data_type = rec->variables[i].data_type;
                         ret->num_dimensions = rec->variables[i].num_dimensions;
                         for (j=0; j<ret->num_dimensions; j++)
