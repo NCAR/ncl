@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.254 2010-04-28 23:02:03 huangwei Exp $
+ *      $Id: BuiltInFuncs.c,v 1.255 2010-05-06 18:18:40 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2176,16 +2176,13 @@ NhlErrorTypes _NclIDelete
 				case Ncl_CoordVar:
 					rlist = data.u.data_obj->obj.parents;
 					while(rlist != NULL) {
-                                                NclRefList *rnext = rlist->next;
 						pobj = _NclGetObj(rlist->pid);
 						if(pobj->obj.obj_type == Ncl_Var) {
-							/* _NclDeleteCoordVar removes the whole reference list so break immediately */
 							_NclDeleteCoordVar((NclVar)pobj,NrmQuarkToString(data.u.data_var->var.var_quark));
-							break;
 						} else {
 							_NclDelParent((NclObj)data.u.data_obj,(NclObj)pobj);
 						}
-						rlist = rnext;
+						rlist = data.u.data_obj->obj.parents;
 					}
 					break;
 				default:
