@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.268.4.2 2010-05-07 16:05:00 haley Exp $
+;      $Id: contributed.ncl,v 1.268.4.3 2010-05-07 17:37:19 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4303,7 +4303,7 @@ begin
   fo&pts        =  pts
   fo@xcoord     =  xo            ; x/longitude points
   fo@ycoord     =  yo            ; y/latitude  points
-  fo@ncl = "rgrid2points used for interpolation"
+  fo@ncl = "rcm2points used for interpolation"
 
   return (fo)
 end
