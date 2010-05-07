@@ -7583,6 +7583,8 @@ while(step != NULL) {
 	if(step->var_info.var_name_quark == var_name) {
 		tmp = (NclFVarRec*)NclMalloc(sizeof(NclFVarRec));
 		tmp->var_name_quark  = step->var_info.var_name_quark;
+		tmp->var_full_name_quark  = step->var_info.var_name_quark;
+		tmp->var_real_name_quark  = step->var_info.var_name_quark;
 		tmp->data_type  = step->var_info.data_type;
 		tmp->num_dimensions  = step->var_info.num_dimensions;
 		for(i=0;i< tmp->num_dimensions;i++) {
