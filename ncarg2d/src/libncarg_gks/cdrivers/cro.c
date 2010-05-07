@@ -1,5 +1,5 @@
 /*
- *      $Id: cro.c,v 1.15.2.2 2010-03-18 21:10:12 brownrig Exp $
+ *      $Id: cro.c,v 1.15.2.3 2010-05-07 15:51:56 brownrig Exp $
  */
 /*
  *
@@ -246,7 +246,7 @@ void CROset_dashpattern(CROddp *psa) {
 
 
 /*
- *  Return current clipping rectangle (in user corrdinates).
+ *  Return current clipping rectangle (in user coordinates).
  */
 CROClipRect GetCROClipping(CROddp *psa) {
     static CROClipRect rect;
@@ -274,7 +274,7 @@ int cro_ActivateWorkstation(GKSC *gksc) {
 
 /*
  *  Set up indexing for cell arrays.  This interpolates between
- *  the ouput image size and the cell array.
+ *  the output image size and the cell array.
  *
  *  On entry:
  *    image_height    : height of image in pixels
@@ -295,8 +295,8 @@ static void get_cell_pixel_multiples(int image_width, int image_height,
 
     /*
      * map cell array onto available pixels. Use current IEEE
-     * rounding rules to determine whether a cell boundry includes
-     * a boundry pixel or not. rows[i] and cols[j] contain
+     * rounding rules to determine whether a cell boundary includes
+     * a boundary pixel or not. rows[i] and cols[j] contain
      * the number of pixels that make up cell[i,j]
      */
     inc = (double) image_width / (double) nx;
