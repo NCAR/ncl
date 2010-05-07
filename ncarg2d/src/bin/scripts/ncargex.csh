@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.174 2010-04-02 17:13:35 haley Exp $
+#   $Id: ncargex.csh,v 1.174.4.1 2010-05-07 16:14:44 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -1775,6 +1775,7 @@ switch ($name)
 
     case mpex15:
 	set other_data_files = (Europe.png Europe.pngi)
+        set comp_flags = ($comp_flags "-lpng -lz")
     breaksw
 
     case mpexfi:
