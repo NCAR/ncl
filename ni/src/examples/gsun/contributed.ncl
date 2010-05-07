@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.268.4.1 2010-05-02 17:01:06 haley Exp $
+;      $Id: contributed.ncl,v 1.268.4.2 2010-05-07 16:05:00 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4284,7 +4284,7 @@ function rcm2points_Wrap \
 
 local fo, dimfi, nDim, pts
 begin
-  fo   = rcm2points (xi,yi,fi, xo,yo, Opt)  ; perform interpolation 
+  fo   = rcm2points (yi,xi,fi, yo,xo, Opt)  ; perform interpolation 
                                                
   dimfi= dimsizes(fi)
   nDim = dimsizes(dimsizes(fi))                 ; number of dimensions

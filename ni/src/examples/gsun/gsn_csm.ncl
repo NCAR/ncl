@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.241.6.4 2010-05-06 22:08:15 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.241.6.5 2010-05-07 16:05:00 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -585,7 +585,6 @@ begin
 ;
 ; Check for left string.
 ;
-print(res)
     if(isatt(res,"gsnLeftString")) then
       left            = True
       left@sub_string = res@gsnLeftString
@@ -1728,7 +1727,6 @@ begin
   txres = False   ; Text resources
   txres = get_res_eq(res,"tx")
   amres = get_res_eq(res,"am")
-print(left_string)  
 ;
 ; Get the height, as we use this to calculate distance of strings
 ; from top of plot.
