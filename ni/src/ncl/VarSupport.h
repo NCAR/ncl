@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.h,v 1.13 2010-04-14 21:29:48 huangwei Exp $
+ *      $Id: VarSupport.h,v 1.13 2010/04/14 21:29:48 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -247,6 +247,12 @@ extern NhlErrorTypes _NclPrintVarSummary(
 extern struct _NclApiDataList *_NclGetVarInfo2(
 #if     NhlNeedProto
 NclVar
+#endif
+);
+
+extern NhlErrorTypes _PrintListVarSummary(
+#if     NhlNeedProto
+NclObj self, FILE *fp
 #endif
 );
 
