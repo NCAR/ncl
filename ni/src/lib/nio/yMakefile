@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.6 2010-02-26 20:49:50 haley Exp $
+#      $Id: yMakefile,v 1.6.6.1 2010/05/13 00:14:54 dbrown Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -92,7 +92,7 @@ PYNIO_SRC_DIR   =   $(TOP)/pynio
 NGCALLF_DEF= -D"NGCALLF(reg,caps)=$(NGCALLF)"
 NGCALLF_DEF= 
 
-EXTRA_CDEFINES = $(OS1_DEF) $(MAJOR_DEF) $(NETCDF4_DEFS) $(HDFEOS_DEFS) $(GRIB2_DEFS) $(UDUNITS_DEFS) $(V5D_DEFS) $(NIO_DEFS) $(NGCALLF_DEF)
+EXTRA_CDEFINES = $(OS1_DEF) $(MAJOR_DEF) $(NETCDF4_DEFS) $(HDFEOS_DEFS) $(HDFEOS5_DEFS) $(GRIB2_DEFS) $(GDAL_DEFS) $(UDUNITS_DEFS) $(V5D_DEFS) $(NIO_DEFS) $(NGCALLF_DEF)
 
 GEN_HDRS	=	NclTypeobj.h NclTypelogical.h \
 			NclTypedouble.h NclTypefloat.h \
@@ -170,7 +170,7 @@ NIO_ONLY_OTHER_SRCS  =	nio_path.c.sed
 
 GEN_SRCS	=	$(GEN_TYPE_SRCS) nio_path.c
 
-CSRCS		=	$(STATIC_SRCS) $(HDFEOS_SRCS) $(HDFEOS5_SRCS) $(GRIB2_SRCS)
+CSRCS		=	$(STATIC_SRCS) $(HDFEOS_SRCS) $(HDFEOS5_SRCS) $(GRIB2_SRCS) $(GDAL_SRCS)
 
 FSRCS		=	qu2reg3.f rowina3.f scm0.f ncepcode.f
 
@@ -206,7 +206,7 @@ NIO_ONLY_FOBJS	=	llmap.o llmisc.o
 
 FOBJS		=	qu2reg3.o rowina3.o scm0.o ncepcode.o
 
-COMMON_OBJS	=	$(GEN_TYPE_OBJS) $(STATIC_OBJS) $(FOBJS) $(HDFEOS_OBJS) $(HDFEOS5_OBJS) $(GRIB2_OBJS)
+COMMON_OBJS	=	$(GEN_TYPE_OBJS) $(STATIC_OBJS) $(FOBJS) $(HDFEOS_OBJS) $(HDFEOS5_OBJS) $(GRIB2_OBJS) $(GDAL_OBJS)
 
 OBJS		=	$(COMMON_OBJS) $(NIO_ONLY_COBJS) $(NIO_ONLY_FOBJS) 
 
