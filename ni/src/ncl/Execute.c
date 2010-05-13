@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.145 2010-05-04 00:35:44 dbrown Exp $
+ *      $Id: Execute.c,v 1.145 2010/05/04 00:35:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,7 @@ extern "C" {
 #include "Machine.h"
 #include "NclFileInterfaces.h"
 #include "NclFile.h"
+#include "NclGroup.h"
 #include "NclFileVar.h"
 #include "NclHLUVar.h"
 #include "FileSupport.h"
@@ -1488,6 +1489,11 @@ void CallSET_NEXT_OP(void)
 				tmp_ptr->kind = NclStk_VAR;
 				tmp_ptr->u.data_var = (NclVar)the_obj;
 				break;
+			case Ncl_FileGroup:
+				(void)_NclChangeSymbolType(temporary,FVAR);
+				tmp_ptr->kind = NclStk_VAL;
+				tmp_ptr->u.data_var = (NclVar)the_obj;
+				break;
 			}
 		}
 	} else {
@@ -2192,6 +2198,14 @@ void CallARRAY_LIT_OP(void) {
 				NclStackEntry data;
 				ptr++;lptr++;fptr++;
 				estatus = _NclBuildArray(*ptr,&data);
+				if(estatus != NhlFATAL)
+					estatus = _NclPush(data);
+			}
+
+void CallLISTVAR_LIT_OP(void) {
+				NclStackEntry data;
+				ptr++;lptr++;fptr++;
+				estatus = _NclBuildListVar(*ptr,&data);
 				if(estatus != NhlFATAL)
 					estatus = _NclPush(data);
 			}
@@ -5319,6 +5333,107 @@ void CallFILE_VAR_OP(void) {
 				}
 			}
 
+void CallFILE_GROUP_OP(void) {
+				NclSymbol *dfile = NULL;
+				NclFile file = NULL;
+				NclFile group = NULL;
+				NclQuark group_name;
+				int nsubs = 0;
+				NclStackEntry *file_ptr = NULL;
+				NclStackEntry out_group;
+				NclStackEntry gvar;
+				NclMultiDValData value,thevalue;
+				NclMultiDValData out_md = NULL;
+				int *id = (int*)NclMalloc((unsigned)sizeof(int));
+				int dim_size = 1;
+
+				gvar = _NclPop();
+
+				switch(gvar.kind)
+				{
+					case NclStk_VAL: 
+						thevalue = gvar.u.data_obj;
+						break;
+					case NclStk_VAR:
+						thevalue = (NclMultiDValData) (gvar.u.data_var);
+						break;
+					default:
+						thevalue = NULL;
+						estatus = NhlFATAL;
+						break;
+				}
+
+				estatus = NhlFATAL;
+				out_group.kind = NclStk_NOVAL;	
+				out_group.u.data_obj = NULL;
+
+				if(thevalue == NULL)
+				{
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Group names must be scalar string values can't continue");
+					return;
+				}
+
+				group_name = *(NclQuark*)thevalue->multidval.val;
+				
+				if(gvar.u.data_obj->obj.status != PERMANENT)
+				{
+					_NclDestroyObj((NclObj)gvar.u.data_obj);
+				}
+
+				ptr++;lptr++;fptr++;
+				dfile = (NclSymbol*)*ptr;
+
+				file_ptr =  _NclRetrieveRec(dfile,READ_IT);
+				if(file_ptr == NULL)
+					return;
+
+				value = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
+				if(value == NULL)
+					return;
+
+				file = (NclFile)_NclGetObj((int)*(obj*)value->multidval.val);
+				group = _NclCreateGroup(NULL,NULL,Ncl_File,0,TEMPORARY,file,group_name);
+
+				if(group != NULL) {
+					*id = group->obj.id;
+					out_md = _NclMultiDValnclfileDataCreate(NULL,NULL,Ncl_MultiDValnclfileData,0,id,NULL,1,&dim_size,TEMPORARY,NULL);
+					if(out_md != NULL) {
+						out_group.kind = NclStk_VAL;
+						out_group.u.data_obj = out_md;
+						estatus = _NclPlaceReturn(out_group);
+					} else {
+						NclFree(id);
+						_NclDestroyObj((NclObj)group);
+					}
+				} else {
+					obj *tmp_obj = NULL; 
+					tmp_obj =(obj*) NclMalloc(((NclTypeClass)nclTypeobjClass)->type_class.size);
+					*tmp_obj = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+					out_md = _NclMultiDValnclfileDataCreate(
+							NULL,
+							NULL,
+							Ncl_MultiDValnclfileData,
+							0,
+							(void*)tmp_obj,
+							(void*)&((NclTypeClass)nclTypeobjClass)->type_class.default_mis,
+							1,
+							&dim_size,
+							TEMPORARY,
+							NULL);
+					if(out_md != NULL) {
+						out_group.kind = NclStk_VAL;
+						out_group.u.data_obj = out_md;
+						estatus = _NclPlaceReturn(out_group);
+						NclFree(id);
+					} else {
+						NclFree(id);
+						_NclDestroyObj((NclObj)group);
+					}
+				}
+
+				estatus = _NclPush(out_group);
+			}
+
 void CallASSIGN_VARATT_OP(void) {
 				NclSymbol *thesym = NULL;
 				char *attname = NULL;
@@ -6814,6 +6929,9 @@ NclExecuteReturnStatus _NclExecute
 			case ARRAY_LIT_OP : {
 				CallARRAY_LIT_OP();
 			}
+			case LISTVAR_LIT_OP : {
+				CallLISTVAR_LIT_OP();
+			}
 			break;
 			case PUSH_REAL_LIT_OP : 
 			case PUSH_LOGICAL_LIT_OP: 
@@ -7016,6 +7134,33 @@ NclExecuteReturnStatus _NclExecute
 				CallPUSHNULL();
 			}
 			break;
+			case FILE_GROUP_OP :
+				{
+					CallFILE_GROUP_OP();
+				}
+			      /*
+				fprintf(stdout, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
+				fprintf(stdout, "\tbreak *ptr: %d\n", *ptr);
+				fprintf(stdout, "\tbreak FILE_GROUP_OP: %d\n", FILE_GROUP_OP);
+			       */
+				break;
+			case FILE_GROUPVAL_OP :
+				/*
+				{
+					CallFILE_GROUPVAL_OP();
+				}
+				*/
+				fprintf(stdout, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
+				fprintf(stdout, "\tstop *ptr: %d\n", *ptr);
+				fprintf(stdout, "\tstop FILE_GROUPVAL_OP: %d\n", FILE_GROUPVAL_OP);
+				exit ( -1 );
+				break;
+			case PARAM_FILE_GROUP_OP:
+				fprintf(stdout, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
+				fprintf(stdout, "\tstop *ptr: %d\n", *ptr);
+				fprintf(stdout, "\tstop PARAM_FILE_GROUP_OP: %d\n", PARAM_FILE_GROUP_OP);
+				exit ( -1 );
+				break;
 			default:
 				break;
 		}
