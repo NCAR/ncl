@@ -1,0 +1,82 @@
+Dave Brown made additional changes to this library so it could read
+a  MET9_IR108_cosmode_0909210000.grib2 satellite file.
+See Jira ticket #NCL-293. Here's a comment from Dave:
+
+I have modified version 1.1.9 of the g2clib to allow NCL to read this file. Changes were required in 3 files. I also had to make a small change to the NCL GRIB2 reader. Here is the check-in message for NclGRIB2.c (version 1.59): 
+
+Modified Files: 
+NclGRIB2.c 
+Log Message: 
+
+This makes NCL more flexible with respect to GRIB2 rotated lat/lon grids. 
+It seems that the documentation leaves in doubt the question of whether the lat and lon 
+of the rotated south pole should be adjusted by the scale factor. Prior to the 
+check in NCL did not apply a scale factor, and I am thinking that must have 
+worked for some GRIB2 data. Now it checks the absolute value of the number to 
+see whether it makes sense without applying the scale factor. 
+
+
+Here is a diff of g2clib-1.1.9. The changes to gridtemplates.h do not directly apply to the lack of recognition of PDS template 4.31 but 
+it turns out that ECMWF and NCEP have a different idea of whether longitudes can be negative. The g2clib thinks all longitude values should be positive, and gives weird results if a longitude is negative. ECMWF, according to the templates at 
+http://nwmstest.ecmwf.int/publications/manuals/d/gribapi/fm92/grib2//show/templates 
+allows negative longitudes (although not everywhere). I think this is because it is quite inconvenient to always have to use positive longitudes when you live near the Greenwich Meredian. I should note that the WMO GRIB2 specification document (at least the versions I have read) state that longitudes should always be expressed as positive numbers. 
+
+If the past is any guide, we will not be able to get NCEP to update their code to our liking very quickly. Although I could try. 
+
+diff gridtemplates.h~ gridtemplates.h 
+52c52 
+< { 0, 19, 0, {1,1,4,1,4,1,4,4,4,4,4,-4,4,1,-4,4,4,4,1} }, 
+--- 
+> { 0, 19, 0, {1,1,4,1,4,1,4,4,4,4,4,-4,-4,1,-4,-4,4,4,1} }, 
+56c56 
+< { 2, 22, 0, {1,1,4,1,4,1,4,4,4,4,4,-4,4,1,-4,4,4,4,1,-4,4,-4} }, 
+--- 
+> { 2, 22, 0, {1,1,4,1,4,1,4,4,4,4,4,-4,-4,1,-4,-4,4,4,1,-4,4,-4} }, 
+58c58 
+< { 3, 25, 0, {1,1,4,1,4,1,4,4,4,4,4,-4,4,1,-4,4,4,4,1,-4,4,4,-4,4,-4} }, 
+--- 
+> { 3, 25, 0, {1,1,4,1,4,1,4,4,4,4,4,-4,-4,1,-4,-4,4,4,1,-4,4,4,-4,4,-4} }, 
+60c60 
+< {10, 19, 0, {1,1,4,1,4,1,4,4,4,-4,4,1,-4,-4,4,1,4,4,4} }, 
+--- 
+> {10, 19, 0, {1,1,4,1,4,1,4,4,4,-4,-4,1,-4,-4,-4,1,4,4,4} }, 
+68c68 
+< {40, 19, 0, {1,1,4,1,4,1,4,4,4,4,4,-4,4,1,-4,4,4,4,1} }, 
+--- 
+> {40, 19, 0, {1,1,4,1,4,1,4,4,4,4,4,-4,-4,1,-4,-4,4,4,1} }, 
+70c70 
+< {41, 22, 0, {1,1,4,1,4,1,4,4,4,4,4,-4,4,1,-4,4,4,4,1,-4,4,4} }, 
+--- 
+> {41, 22, 0, {1,1,4,1,4,1,4,4,4,4,4,-4,-4,1,-4,-4,4,4,1,-4,4,4} }, 
+72c72 
+< {42, 22, 0, {1,1,4,1,4,1,4,4,4,4,4,-4,4,1,-4,4,4,4,1,-4,4,-4} }, 
+--- 
+> {42, 22, 0, {1,1,4,1,4,1,4,4,4,4,4,-4,-4,1,-4,-4,4,4,1,-4,4,-4} }, 
+74c74 
+< {43, 25, 0, {1,1,4,1,4,1,4,4,4,4,4,-4,4,1,-4,4,4,4,1,-4,4,4,-4,4,-4} }, 
+--- 
+> {43, 25, 0, {1,1,4,1,4,1,4,4,4,4,4,-4,-4,1,-4,-4,4,4,1,-4,4,4,-4,4,-4} }, 
+diff pdstemplates.c~ pdstemplates.c 
+267a268,279 
+> else if ( number == 31 ) { 
+> new->extlen=list[4]*5; 
+> new->ext=(g2int *)malloc(sizeof(g2int)*new->extlen); 
+> for (i=0;i<list[4];i++) { 
+> l=i*5; 
+> new->ext[l]=2; 
+> new->ext[l+1]=2; 
+> new->ext[l+2]=2; 
+> new->ext[l+3]=1; 
+> new->ext[l+4]=4; 
+> } 
+> } 
+diff pdstemplates.h~ pdstemplates.h 
+36c36 
+< #define MAXPDSTEMP 23 // maximum number of templates 
+--- 
+> #define MAXPDSTEMP 24 // maximum number of templates 
+96a97,98 
+> // 4.31: Satellite Product 
+> {31,5,1, {1,1,1,1,1} }, 
+
+
