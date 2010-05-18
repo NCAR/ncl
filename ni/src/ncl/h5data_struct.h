@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <ncarg/hlu/NclSizeT.h>
+
 #include "hdf5.h"
 
 #ifndef FALSE
@@ -37,7 +39,10 @@
 
 #define NELMTS(X)           (sizeof(X)/sizeof(X[0]))
 
+/*
 typedef unsigned long nclH5size_t;
+*/
+typedef ncl_size_t nclH5size_t;
 
 typedef struct NclHDF5compound_component_list_t
 {
