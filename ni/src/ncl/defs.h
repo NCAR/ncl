@@ -97,7 +97,7 @@ ncl_usize_t	/* size */
 
 extern void *NclCalloc(
 #if	NhlNeedProto
-int	/* num */,
+ncl_usize_t	/* num */,
 ncl_usize_t	/* size */
 #endif
 );
