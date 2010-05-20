@@ -236,7 +236,7 @@ extern NhlGenArray NhlCreateGenArray(
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	ncl_size_t	*len_dimensions	/* number of dimensions	*/
+	int		*len_dimensions	/* number of dimensions	*/
 #endif
 );
 
@@ -254,14 +254,14 @@ extern void NhlFreeGenArray(
 
 extern void *NhlMalloc(
 #if	NhlNeedProto
-	ncl_usize_t	size
+	ng_usize_t	size
 #endif
 );
 
 extern void *NhlRealloc(
 #if	NhlNeedProto
 	void*,		/* pointer to copy		*/
-	ncl_usize_t	/* size of requested memory	*/
+	ng_usize_t	/* size of requested memory	*/
 #endif
 );
 
