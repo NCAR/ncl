@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <ncarg/hlu/NclSizeT.h>
+#include <ncarg/hlu/NgSizeT.h>
 
 #include "hdf5.h"
 
@@ -42,7 +42,7 @@
 /*
 typedef unsigned long nclH5size_t;
 */
-typedef ncl_size_t nclH5size_t;
+typedef ng_size_t nclH5size_t;
 
 typedef struct NclHDF5compound_component_list_t
 {

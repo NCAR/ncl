@@ -26,7 +26,7 @@ extern "C" {
 #ifndef _NCdefs_h
 #define _NCdefs_h
 
-#include "ncarg/hlu/NclSizeT.h"
+#include "ncarg/hlu/NgSizeT.h"
 
 #define NCL_MAX_DIMENSIONS 32
 #define NCL_MAX_FVARS 2048
@@ -54,14 +54,14 @@ typedef enum {	NORMAL = 0,
 typedef struct _NclDimRec {
         int   dim_quark;
         int   dim_num;
-        ncl_size_t   dim_size;
+        ng_size_t   dim_size;
 } NclDimRec;
 
 
 typedef void (*NclPromptFunc)(
 #if     NhlNeedProto
 void * /*user_data*/,
-ncl_size_t /*arg*/
+int /*arg*/
 #endif
 );
 
@@ -91,21 +91,21 @@ typedef struct _NclGenericVal {
 
 extern void *NclMalloc(
 #if	NhlNeedProto
-ncl_usize_t	/* size */
+ng_usize_t	/* size */
 #endif
 );
 
 extern void *NclCalloc(
 #if	NhlNeedProto
-ncl_usize_t	/* num */,
-ncl_usize_t	/* size */
+ng_usize_t	/* num */,
+ng_usize_t	/* size */
 #endif
 );
 
 extern void *NclRealloc(
 #if	NhlNeedProto
 void 	*	/* ptr */	,
-ncl_usize_t	/* size */
+ng_usize_t	/* size */
 #endif
 );
 
