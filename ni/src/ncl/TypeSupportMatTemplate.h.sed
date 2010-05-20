@@ -29,9 +29,9 @@ void* /* rhs */,
 NclScalar* /* lhs_m */,
 NclScalar* /* rhs_m */,
 int /* nlhs */,
-int* /* nrhs */,
+ng_size_t* /* nrhs */,
 int /* nlhs */,
-int* /* nrhs */
+ng_size_t* /* nrhs */
 #endif
 );
 

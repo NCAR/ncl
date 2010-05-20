@@ -37,7 +37,7 @@ int nargs;
 	char func[] = "CvtHLUGENTYPEREPToNclData";
 	void *val;
 	NclMultiDValData tmp_md;
-	int len_dimensions = 1;
+	ng_size_t len_dimensions = 1;
 	
 
 	if(nargs != 0) {
@@ -98,7 +98,8 @@ int nargs;
 {
 	NhlArgVal * tmp;
 	NclMultiDValData tmp_md;
-	int n_dims = 1,len_dims = 1;
+	int n_dims = 1;
+	ng_size_t len_dims = 1;
 
 	tmp = NclMalloc((unsigned)sizeof(NhlArgVal));
 	memcpy((void*)tmp,(void*)&from->data,sizeof(NhlArgVal));

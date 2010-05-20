@@ -169,13 +169,13 @@ void* val;
 
 NhlErrorTypes _Nclcoerce
 #if	NhlNeedProto
-(NclTypeClass to_type, void * result, void* from, int n, NclScalar* from_m, NclScalar* to_m, NclTypeClass from_type)
+(NclTypeClass to_type, void * result, void* from, ng_size_t n, NclScalar* from_m, NclScalar* to_m, NclTypeClass from_type)
 #else
-(t0_type, result, from, int n, from_m, to_m, from_type)
+(t0_type, result, from, n, from_m, to_m, from_type)
 NclTypeClass to_type;
 void * result;
 void* from;
-int n;
+ng_size_t n;
 NclScalar* from_m;
 NclScalar* to_m;
 NclTypeClass from_type;
@@ -200,14 +200,14 @@ NclTypeClass from_type;
 
 NhlErrorTypes _Nclreset_mis
 #if	NhlNeedProto
-(NclTypeClass the_type,void *val, NclScalar* old_m, NclScalar * new_m,int nval)
+(NclTypeClass the_type,void *val, NclScalar* old_m, NclScalar * new_m,ng_size_t nval)
 #else
 (the_type,val, old_m, new_m,nval)
 NclTypeClass the_type;
 void *val;
 NclScalar* old_m;
 NclScalar* new_m;
-int nval;
+ng_size_t nval;
 #endif
 {
 	NclTypeClass tmp;

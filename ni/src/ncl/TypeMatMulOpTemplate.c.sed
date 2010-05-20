@@ -22,24 +22,26 @@
  */
 NhlErrorTypes Ncl_Type_DATATYPE_mat
 #if	NhlNeedProto
-(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, int nlhs_dims,int* lhs_dimsizes, int nrhs_dims,int*rhs_dimsizes)
+(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, int nlhs_dims,ng_size_t* lhs_dimsizes, int nrhs_dims,ng_size_t*rhs_dimsizes)
 #else
-(result,lhs,rhs,lhs_m,rhs_m,nlhs,nrhs)
+(result,lhs,rhs,lhs_m,rhs_m,nlhs,lhs_dimsizes,nrhs,rhs_dimsizes)
 void *result;
 void *lhs;
 void* rhs;
 NclScalar* lhs_m;
 NclScalar* rhs_m;
 int nlhs;
+ng_size_t* lhs_dimsizes;
 int nrhs;
+ng_size_t*rhs_dimsizes;
 #endif
 {
         LOCALTYPE *ls,*rs;
 	LOCALOUTTYPE *res;
-	int stopi = 1;
-	int stopk = 1;
-	int stopj = 1;
-	int i,j,k;
+	ng_size_t stopi = 1;
+	ng_size_t stopk = 1;
+	ng_size_t stopj = 1;
+	ng_size_t i,j,k;
 
 	ls = (LOCALTYPE*)lhs;
 	rs = (LOCALTYPE*)rhs;

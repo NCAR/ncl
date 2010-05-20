@@ -55,7 +55,7 @@ int nargs;
         char func[] = "CvtNhlTStringGenArrayToNclData";
         NclQuark *val;
         NclMultiDValData tmp_md;
-        int len_dimensions = 1;
+        ng_size_t len_dimensions = 1;
 	char **strar;
 	int i;
  
@@ -118,7 +118,8 @@ int nargs;
 {
 	NclQuark *tmp;
 	NclMultiDValData tmp_md;
-	int n_dims = 1,len_dims = 1;
+	int n_dims = 1;
+	ng_size_t len_dims = 1;
 
 	tmp = NclMalloc((unsigned)sizeof(NclQuark));
 	*tmp = NrmStringToQuark((char*)(from->data.ptrval));
