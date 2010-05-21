@@ -123,6 +123,10 @@ HDFEOSDimInqRecList *dims;
 int             n_int_atts;
 HDFEOSAttInqRecList *att_int_list;
 };
+
+static NrmQuark Qmissing_val;
+static NrmQuark Qfill_val;
+
 int HDFEOSunsigned(int32 typenumber)
 {
 	switch(typenumber) {
@@ -368,7 +372,7 @@ NclBasicDataTypes type;
 
 	tmp_node->att_inq = (HDFEOSAttInqRec*)NclMalloc(sizeof(HDFEOSAttInqRec));
 	tmp_node->att_inq->name = ncl_name;
-	if(type != NCL_char) {
+	if(type != NCL_char || (tmp_node->att_inq->name == Qfill_val || tmp_node->att_inq->name == Qmissing_val)) {
 		tmp_node->att_inq->value = value;
 		tmp_node->att_inq->type = type;
 		tmp_node->att_inq->n_elem = n_elem;
@@ -538,6 +542,13 @@ NclFileFormatType *format;
 #endif
 {
 	HDFEOSFileRecord *therec = NULL;
+	static int first = 1;
+
+	if (first) {
+		Qmissing_val = NrmStringToQuark("missing_value");
+		Qfill_val = NrmStringToQuark("_FillValue");
+		first = False;
+	}
 
 	therec = (HDFEOSFileRecord*)NclCalloc(1, sizeof(HDFEOSFileRecord));
 	if (! therec) {
