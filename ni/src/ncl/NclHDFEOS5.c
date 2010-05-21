@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS5.c,v 1.6.6.1 2010-05-02 18:26:58 haley Exp $
+ *      $Id: NclHDFEOS5.c,v 1.6.6.1 2010/05/02 18:26:58 haley Exp $
  */
 /************************************************************************
 *									*
@@ -125,6 +125,9 @@ static void getHDFEOS5SwathData(HDFEOS5FileRecord *the_file, NclQuark path);
 static void getHDFEOS5GridData(HDFEOS5FileRecord *the_file, NclQuark path);
 static void getHDFEOS5PointData(HDFEOS5FileRecord *the_file, NclQuark path);
 static void getHDFEOS5ZonalAverageData(HDFEOS5FileRecord *the_file, NclQuark path);
+
+static NrmQuark Qmissing_val;
+static NrmQuark Qfill_val;
 
 int HDFEOS5unsigned(long typenumber)
 {
@@ -497,7 +500,7 @@ NclBasicDataTypes type;
 	tmp_node->att_inq = (HDFEOS5AttInqRec*)NclMalloc(sizeof(HDFEOS5AttInqRec));
 	tmp_node->att_inq->name = ncl_name;
 
-	if(type != NCL_char) {
+	if(type != NCL_char || (tmp_node->att_inq->name == Qfill_val || tmp_node->att_inq->name == Qmissing_val)) {
 		tmp_node->att_inq->value = value;
 		tmp_node->att_inq->type = type;
 		tmp_node->att_inq->n_elem = n_elem;
@@ -662,6 +665,13 @@ NclFileFormatType *format;
 #endif
 {
 	HDFEOS5FileRecord *therec = NULL;
+	static int first = 1;
+
+	if (first) {
+		Qmissing_val = NrmStringToQuark("missing_value");
+		Qfill_val = NrmStringToQuark("_FillValue");
+		first = False;
+	}
 
 	therec = (HDFEOS5FileRecord*)NclCalloc(1, sizeof(HDFEOS5FileRecord));
 	if (! therec) {
@@ -1162,6 +1172,11 @@ NclQuark path;
                             switch(HDFEOS5MapTypeNumber(att_type))
                             {
                                 case NCL_char:
+					if (loc_ncl_names[k] == Qfill_val || loc_ncl_names[k] == Qmissing_val) {
+						HDFEOS5IntAddAtt(the_file->vars->var_inq,loc_ncl_names[k],(void*)tmp_value,1,HDFEOS5MapTypeNumber(att_type));
+						break;
+					}
+					/* fall through */
                                 case NCL_string:
                                      {
                                      char *new_value = (char *)NclMalloc(att_size+1);
@@ -1306,6 +1321,11 @@ NclQuark path;
                         switch(HDFEOS5MapTypeNumber(att_type))
                         {
                             case NCL_char:
+				    if (loc_ncl_names[k] == Qfill_val || loc_ncl_names[k] == Qmissing_val) {
+					    HDFEOS5IntAddAtt(the_file->vars->var_inq,loc_ncl_names[k],(void*)tmp_value,1,HDFEOS5MapTypeNumber(att_type));
+					    break;
+				    }
+				    /* fall through */
                             case NCL_string:
                                  {
                                  char *new_value = (char *)NclMalloc(att_size+1);
@@ -1824,6 +1844,11 @@ NclQuark path;
                         switch(HDFEOS5MapTypeNumber(att_type))
                         {
                             case NCL_char:
+				    if (loc_ncl_names[k] == Qfill_val || loc_ncl_names[k] == Qmissing_val) {
+					    HDFEOS5IntAddAtt(the_file->vars->var_inq,loc_ncl_names[k],(void*)tmp_value,1,HDFEOS5MapTypeNumber(att_type));
+					    break;
+				    }
+				    /* fall through */
                             case NCL_string:
                                  {
                                  char *new_value = (char *)NclMalloc(att_size+1);
@@ -2430,6 +2455,11 @@ typedef struct
                         switch(HDFEOS5MapTypeNumber(att_type))
                         {
                             case NCL_char:
+				    if (loc_ncl_names[loc] == Qfill_val || loc_ncl_names[loc] == Qmissing_val) {
+					    HDFEOS5IntAddAtt(the_file->vars->var_inq,loc_ncl_names[loc],(void*)tmp_value,1,HDFEOS5MapTypeNumber(att_type));
+					    break;
+				    }
+				    /* fall through */
                             case NCL_string:
                                  {
                                  char *new_value = (char *)NclMalloc(att_size+1);
@@ -2922,6 +2952,11 @@ NclQuark path;
                         switch(HDFEOS5MapTypeNumber(att_type))
                         {
                             case NCL_char:
+				    if (loc_ncl_names[loc] == Qfill_val || loc_ncl_names[loc] == Qmissing_val) {
+					    HDFEOS5IntAddAtt(the_file->vars->var_inq,loc_ncl_names[loc],(void*)tmp_value,1,HDFEOS5MapTypeNumber(att_type));
+					    break;
+				    }
+				    /* fall through */
                             case NCL_string:
                                  {
                                  char *new_value = (char *)NclMalloc(att_size+1);
