@@ -782,8 +782,8 @@ int wr_status;
 			status = SDgetinfo(sds_id,buffer,
 					   &n_dims,
 					   dim_sizes,
-					   &((*stepvlptr)->var_inq->data_type),
-					   &((*stepvlptr)->var_inq->natts));
+					   &((*stepvlptr)->var_inq->hdf_type),
+					   &n_atts);
                       /*
                         fprintf(stdout, "file: %s, line, %d\n", __FILE__, __LINE__);
                         fprintf(stdout, "\t(*stepvlptr)->var_inq->data_type: %ld\n", (long) (*stepvlptr)->var_inq->data_type);

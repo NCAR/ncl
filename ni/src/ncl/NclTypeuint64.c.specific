@@ -56,18 +56,18 @@ void *val;
 
 static NhlErrorTypes Ncl_Type_uint64_coerce
 #if	NhlNeedProto
-(void * result, void* from, int n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
+(void * result, void* from, ng_size_t n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
 #else
 (result, from, n, from_m, to_m, fc)
 void * result;
 void* from;
-int n;
+ng_size_t n;
 NclScalar* from_m;
 NclScalar *to_m;
 NclTypeClass fc;
 #endif
 {
-	int i;
+	ng_size_t i;
 	unsigned long long *res = (unsigned long long*)result;
 	logical tmp;
 	NclTypeOp eq;

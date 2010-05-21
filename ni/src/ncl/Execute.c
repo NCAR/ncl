@@ -1,5 +1,3 @@
-
-
 /*
  *      $Id: Execute.c,v 1.145 2010/05/04 00:35:44 dbrown Exp $
  */
@@ -155,7 +153,7 @@ void CallTERM_LIST_OP(void) {
 	NclSymbol *temporary;
 	NclStackEntry *temporary_list_ptr;
 	NclStackEntry output;
-	int n_elements =0;
+	ng_size_t n_elements =0;
 
 	ptr++;lptr++;fptr++;
 	temporary = (NclSymbol*)(*ptr);
@@ -187,7 +185,8 @@ void CallLIST_READ_OP(void) {
 	NclStackEntry data;
 	NclList list;
 	NclList newlist;
-	int agg_subs,subs,i;
+	int agg_subs,subs;
+	ng_size_t i;
 	NclSelection *sel_ptr=NULL;
 	NclSelection sel;
 	NclSelection *agg_sel_ptr = NULL;
@@ -386,9 +385,10 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	int coords;
 	int first;
 	NclMonoTypes mono_type;
-	int dir, ix_start, ix_end;
+	int dir;
+	ng_size_t ix_start, ix_end;
 	int var_offset;
-	long var_dim_sizes[32];
+	ng_size_t var_dim_sizes[32];
         int var_ndims; /* non_aggregated natual var dim count */
 	int good_file_count;
 
@@ -671,7 +671,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			NclFile thefile = NULL;
 			int index;
 			int agg_dim;
-			int agg_dim_size;
+			ng_size_t agg_dim_size;
 
 			the_obj = _NclGetObj(the_obj_id);
 			if (the_obj && the_obj->obj.obj_type == Ncl_FileVar) {
@@ -935,7 +935,8 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			}
 			sel.u.sub.start = start;
 			sel.u.sub.stride = stride;
-			sel.u.sub.finish = (int) finish - ((int) finish - (int) start) % abs((int)stride);
+			sel.u.sub.finish = (ng_size_t) finish - ((ng_size_t) finish
+					 - (ng_size_t) start) % abs((ng_size_t)stride);
 		}
 	}
 
@@ -3208,7 +3209,8 @@ void CallASSIGN_VAR_OP(void) {
 				NclMultiDValData rhs_md = NULL;
 				NclMultiDValData tmp_md = NULL;
 				NclSelectionRecord *sel_ptr = NULL;
-				int i,nsubs;	
+				int nsubs;	
+				ng_size_t i;
 				NclSymbol *sym = NULL;
 				NhlErrorTypes ret = NhlNOERROR;
 				NhlArgVal udata;
@@ -5345,7 +5347,7 @@ void CallFILE_GROUP_OP(void) {
 				NclMultiDValData value,thevalue;
 				NclMultiDValData out_md = NULL;
 				int *id = (int*)NclMalloc((unsigned)sizeof(int));
-				int dim_size = 1;
+				ng_size_t dim_size = 1;
 
 				gvar = _NclPop();
 
@@ -6484,7 +6486,7 @@ void CallPARAM_FILEVAR_COORD_OP(void) {
 
 void CallASSIGN_VAR_VAR_OP(void) {
 				NhlErrorTypes ret = NhlNOERROR;
-				int i;
+				ng_size_t i;
 				int rhs_nsubs=0,lhs_nsubs=0;
 				NclStackEntry data;
 				NclStackEntry *rhs_var,*lhs_var;
@@ -6929,6 +6931,7 @@ NclExecuteReturnStatus _NclExecute
 			case ARRAY_LIT_OP : {
 				CallARRAY_LIT_OP();
 			}
+			break;
 			case LISTVAR_LIT_OP : {
 				CallLISTVAR_LIT_OP();
 			}

@@ -62,7 +62,7 @@ extern NhlErrorTypes _Nclcoerce(
 NclTypeClass /* to_type */,
 void * /* result */,
 void* /* from */,
-int /* n */,
+ng_size_t /* n */,
 NclScalar* /* from_m */,
 NclScalar* /* to_m */,
 NclTypeClass  /*from_type*/
@@ -75,7 +75,7 @@ NclTypeClass /* the_type*/,
 void * /*val*/,
 NclScalar* /*old_m*/,
 NclScalar* /*new_m*/,
-int /*nval*/
+ng_size_t /*nval*/
 #endif
 );
 
