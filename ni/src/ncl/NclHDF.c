@@ -782,15 +782,8 @@ int wr_status;
 			status = SDgetinfo(sds_id,buffer,
 					   &n_dims,
 					   dim_sizes,
-					   &((*stepvlptr)->var_inq->data_type),
-					   &((*stepvlptr)->var_inq->natts));
-                      /*
-                        fprintf(stdout, "file: %s, line, %d\n", __FILE__, __LINE__);
-                        fprintf(stdout, "\t(*stepvlptr)->var_inq->data_type: %ld\n", (long) (*stepvlptr)->var_inq->data_type);
-                        fprintf(stdout, "\tdim_sizes[0]: %d \n", dim_sizes[0]);
-                        fprintf(stdout, "\t(*stepvlptr)->var_inq->n_dims: %ld \n", (long) (*stepvlptr)->var_inq->n_dims);
-                        fprintf(stdout, "\t(*stepvlptr)->var_inq->natts): %ld \n", (long) (*stepvlptr)->var_inq->natts);
-                       */
+					   &((*stepvlptr)->var_inq->hdf_type),
+					   &n_atts);
 
 			for(j = 0; j < ((*stepvlptr)->var_inq->n_dims); j++) {
 				tmp_size = 0;
@@ -892,7 +885,7 @@ int wr_status;
 				tmpvlptr->var_inq->name = HDFToNCLName(NrmQuarkToString(tmpvlptr->var_inq->hdf_name),NULL,True);
 			}
 		}
-		
+
 	} else {
 		tmp->vars = NULL;
 		tmp->has_scalar_dim = 0;

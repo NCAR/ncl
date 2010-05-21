@@ -6929,6 +6929,7 @@ NclExecuteReturnStatus _NclExecute
 			case ARRAY_LIT_OP : {
 				CallARRAY_LIT_OP();
 			}
+			break;
 			case LISTVAR_LIT_OP : {
 				CallLISTVAR_LIT_OP();
 			}
