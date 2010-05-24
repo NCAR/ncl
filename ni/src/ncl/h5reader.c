@@ -112,7 +112,7 @@ herr_t _NclHDF5check_obj(const char *filename, NclHDF5group_node_t **HDF5group)
  *
  *-------------------------------------------------------------------------
  */
-NclHDF5group_node_t *_NclHDF5allocate_group(hid_t id, char *fname, char *gname, H5O_type_t type)
+NclHDF5group_node_t *_NclHDF5allocate_group(hid_t id, const char *fname, char *gname, H5O_type_t type)
 {
     NclHDF5group_node_t *group_node;
 
@@ -2411,8 +2411,8 @@ herr_t _NclHDF5dataset_attr(hid_t dset, char *name, NclHDF5dataset_node_t *datas
     unsigned    filt_flags;     /* filter flags */
     H5Z_filter_t filt_id;       /* filter identification number */
     unsigned    cd_values[20];  /* filter client data values */
-    hsize_t     cd_nelmts;      /* filter client number of values */
-    hsize_t     cd_num;         /* filter client data counter */
+    size_t      cd_nelmts;      /* filter client number of values */
+    size_t      cd_num;         /* filter client data counter */
     char        f_name[256];    /* filter/file name */
     char        s[64];          /* temporary string buffer */
     off_t       f_offset;       /* offset in external file */
@@ -3694,7 +3694,7 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
             char *csp;
             char *new_str;
 
-            osp = (int *)attr_node->value;
+            osp = (char *)attr_node->value;
 
             new_str = malloc(attr_node->nbytes);
             n = 0;
@@ -3729,7 +3729,7 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
             hsize_t *sp;
             char *new_str;
 
-            sp = (int *)attr_node->value;
+            sp = (hsize_t *)attr_node->value;
 
             j = 0;
             n = 0;

@@ -299,7 +299,7 @@ void _NclHDF5var_list(NclHDF5var_list_t **HDF5var_list, NclHDF5group_node_t *HDF
 
 NclHDF5data_t *_NclHDF5get_data_with_name(hid_t fid, char *dataset_name, NclHDF5group_node_t *HDF5group);
 
-NclHDF5group_node_t *_NclHDF5allocate_group(hid_t fid, char *fname, char *gname, H5O_type_t type);
+NclHDF5group_node_t *_NclHDF5allocate_group(hid_t fid, const char *fname, char *gname, H5O_type_t type);
 herr_t _NclHDF5recursive_check(hid_t fid, char *grp_name,
                                _NclHDF5search_obj_func_t _NclHDF5search_obj,
                                _NclHDF5search_link_func_t  _NclHDF5search_link,
