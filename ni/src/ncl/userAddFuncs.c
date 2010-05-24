@@ -79,7 +79,8 @@ NhlErrorTypes _Nclstr_fields_count
     string *strs;
     string *delim;
 
-    int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
+    int ndim_strs;
+    ng_size_t dimsz_strs[NCL_MAX_DIMENSIONS];
     int has_missing_strs;
     int has_missing_delim;
     int has_missing_ret = 0;
@@ -91,8 +92,8 @@ NhlErrorTypes _Nclstr_fields_count
     char *tmp_delim;
     char *result = NULL;
     int *fields;
-    int i;
-    int str_size = 1;
+    ng_size_t i;
+    ng_size_t str_size = 1;
     int max_length = 0;
     
     strs = (string *) NclGetArgValue(
@@ -218,7 +219,8 @@ NhlErrorTypes _Nclstr_get_field
     string *strs;
     string *delim;
 
-    int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
+    int ndim_strs;
+    ng_size_t dimsz_strs[NCL_MAX_DIMENSIONS];
     int has_missing_strs;
     int has_missing_delim;
     int has_missing_ret = 0;
@@ -226,13 +228,14 @@ NhlErrorTypes _Nclstr_get_field
     NclScalar   missing_delim;
     NclScalar   ret_missing;
   
-    int i, n;
+    ng_size_t i;
+    int n;
 
     char *tmp_str;
     char *tmp_delim;
     char *result = NULL;
     string *arraySubString;
-    int str_size;
+    ng_size_t str_size;
     int *field;
 /*
  * I didn't see how these two variables were needed, so commenting out.
@@ -395,7 +398,8 @@ NhlErrorTypes _Nclstr_split
     string *strs;
     string *delim;
 
-    int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
+    int ndim_strs;
+    ng_size_t dimsz_strs[NCL_MAX_DIMENSIONS];
     int has_missing_strs;
     int has_missing_delim;
     int has_missing_ret = 0;
@@ -516,18 +520,21 @@ NhlErrorTypes _Nclstr_get_cols
 {
     string *strs;
 
-    int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
+    int ndim_strs;
+    ng_size_t dimsz_strs[NCL_MAX_DIMENSIONS];
     int has_missing_strs;
     int has_missing = 0;
     NclScalar   missing_strs;
     NclScalar   ret_missing;
   
-    int i, m, n;
+    ng_size_t i;
+    int m, n;
 
     char *tmp_str;
     char *result;
     string *arraySubString;
-    int str_size, ms, me, ns, ne, is, ie;
+    ng_size_t str_size;
+    int ms, me, ns, ne, is, ie;
     int *startCol, sC;
     int *endCol, eC;
     int max_length = 0;
@@ -829,7 +836,8 @@ NhlErrorTypes _Nclstr_sub_str
     string *o_s;
     string *n_s;
 
-    int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
+    int ndim_str;
+    ng_size_t dimsz_str[NCL_MAX_DIMENSIONS];
     int has_missing_str;
     int has_missing_o_s;
     int has_missing_n_s;
@@ -844,9 +852,10 @@ NhlErrorTypes _Nclstr_sub_str
     char *tmp_o_s;
     char *tmp_n_s;
     string *arrayString;
-    int i, m, n, nf, nn;
-    int str_size;
-    int current_size = 0;
+    ng_size_t i;
+    ng_size_t str_size;
+    int m, n, nf, nn;
+    ng_size_t current_size = 0;
     int cols, o_s_len, n_s_len;
 
     str = (string *) NclGetArgValue(
@@ -1045,15 +1054,17 @@ NhlErrorTypes _Nclstr_is_blank
 {
     string *strs;
 
-    int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
+    int ndim_strs;
+    ng_size_t dimsz_strs[NCL_MAX_DIMENSIONS];
     int has_missing_strs = 0;
     NclScalar   missing_strs;
     NclScalar   ret_missing;
   
     char *tmp_str;
-    int n, i;
+    int n;
+    ng_size_t i;
     logical *tmp_val;
-    int str_sz = 1;
+    ng_size_t str_sz = 1;
     
     strs = (string *) NclGetArgValue(
                         0,
@@ -1156,15 +1167,17 @@ NhlErrorTypes _Nclstr_left_strip
 {
     string *str;
 
-    int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
+    int ndim_str;
+    ng_size_t dimsz_str[NCL_MAX_DIMENSIONS];
     int has_missing_str;
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
   
     char *tmp_str;
-    int i, m, n;
-    int str_size;
+    ng_size_t i;
+    int m, n;
+    ng_size_t str_size;
     int cols;
 
     string *arrayOfString;
@@ -1266,15 +1279,17 @@ NhlErrorTypes _Nclstr_right_strip
 {
     string *str;
 
-    int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
+    int ndim_str;
+    ng_size_t dimsz_str[NCL_MAX_DIMENSIONS];
     int has_missing_str;
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
   
     char *tmp_str;
-    int i, n;
-    int str_size;
+    ng_size_t i;
+    ng_size_t str_size;
+    int n;
     int cols;
 
     string *arrayOfString;
@@ -1368,15 +1383,17 @@ NhlErrorTypes _Nclstr_strip
 {
     string *str;
 
-    int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
+    int ndim_str;
+    ng_size_t dimsz_str[NCL_MAX_DIMENSIONS];
     int has_missing_str;
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
   
     char *tmp_str;
-    int i, m, n;
-    int str_size;
+    ng_size_t i;
+    int m, n;
+    ng_size_t str_size;
     int cols;
 
     string *arrayOfString;
@@ -1488,15 +1505,17 @@ NhlErrorTypes _Nclstr_squeeze
 {
     string *str;
 
-    int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
+    int ndim_str;
+    ng_size_t dimsz_str[NCL_MAX_DIMENSIONS];
     int has_missing_str;
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
   
     char *tmp_str;
-    int i, m, n;
-    int str_size;
+    ng_size_t i;
+    ng_size_t str_size;
+    int m, n;
     int cols;
 
     string *arrayOfString;
@@ -1637,7 +1656,8 @@ NhlErrorTypes _Nclstr_index_of_substr
     string *str;
     string *substr;
 
-    int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
+    int ndim_str;
+    ng_size_t dimsz_str[NCL_MAX_DIMENSIONS];
     int has_missing_str = 0;
     int has_missing_substr = 0;
     int has_missing_range = 0;
@@ -1652,9 +1672,11 @@ NhlErrorTypes _Nclstr_index_of_substr
     int *index;
     int max_count = 1;
     int cur_limit = NCL_INITIAL_STRING_LENGTH;
-    int i, m, n;
+    ng_size_t i;
+    int m, n;
     int count = 0;
-    int ndim_index, dimsz_index[NCL_MAX_DIMENSIONS];
+    int ndim_index;
+    ng_size_t dimsz_index[NCL_MAX_DIMENSIONS];
 
     ndim_index = 1;
     dimsz_index[0] = 1;
@@ -1843,15 +1865,17 @@ NhlErrorTypes _Nclstr_upper
 {
     string *str;
 
-    int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
+    int ndim_str;
+    ng_size_t dimsz_str[NCL_MAX_DIMENSIONS];
     int has_missing_str;
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
   
     char *tmp_str;
-    int i, n;
-    int str_size;
+    ng_size_t i;
+    int n;
+    ng_size_t str_size;
 
     string *arrayOfString;
     char *result;
@@ -1942,15 +1966,17 @@ NhlErrorTypes _Nclstr_lower
 {
     string *str;
 
-    int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
+    int ndim_str;
+    ng_size_t dimsz_str[NCL_MAX_DIMENSIONS];
     int has_missing_str;
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
   
     char *tmp_str;
-    int i, n;
-    int str_size;
+    ng_size_t i;
+    int n;
+    ng_size_t str_size;
 
     string *arrayOfString;
     char *result;
@@ -2041,15 +2067,17 @@ NhlErrorTypes _Nclstr_switch
 {
     string *str;
 
-    int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
+    int ndim_str;
+    ng_size_t dimsz_str[NCL_MAX_DIMENSIONS];
     int has_missing_str;
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
   
     char *tmp_str;
-    int i, n;
-    int str_size;
+    ng_size_t i;
+    int n;
+    ng_size_t str_size;
 
     string *arrayOfString;
     char *result;
@@ -2142,15 +2170,17 @@ NhlErrorTypes _Nclstr_capital
 {
     string *str;
 
-    int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
+    int ndim_str;
+    ng_size_t dimsz_str[NCL_MAX_DIMENSIONS];
     int has_missing_str;
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
   
     char *tmp_str;
-    int i, n;
-    int str_size;
+    ng_size_t i;
+    int n;
+    ng_size_t str_size;
 
     string *arrayOfString;
     char *result;
@@ -2261,7 +2291,8 @@ NhlErrorTypes _Nclstr_join
     string *strs;
     string *delim;
 
-    int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
+    int ndim_strs;
+    ng_size_t dimsz_strs[NCL_MAX_DIMENSIONS];
     int has_missing_strs;
     int has_missing_delim;
     int has_missing_ret = 0;
@@ -2269,18 +2300,20 @@ NhlErrorTypes _Nclstr_join
     NclScalar   missing_delim;
     NclScalar   ret_missing;
   
-    int i, n;
+    ng_size_t i;
+    int n;
 
-    int ndim, dimsz[1];
+    int ndim;
+    ng_size_t dimsz[1];
     char *result;
 
     char *tmp_str;
     char *tmp_delim;
     string *new_string;
-    int str_size;
+    ng_size_t str_size;
     int has_miss_field = 0;
-    int max_length = 1;
-    int total_length = 0;
+    ng_size_t max_length = 1;
+    ng_size_t total_length = 0;
     
     strs = (string *) NclGetArgValue(
                         0,
@@ -2397,23 +2430,26 @@ NhlErrorTypes _Nclstr_concat
     string *strs;
     string *delim;
 
-    int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
+    int ndim_strs;
+    ng_size_t dimsz_strs[NCL_MAX_DIMENSIONS];
     int has_missing_strs;
     int has_missing_ret = 0;
     NclScalar   missing_strs;
     NclScalar   ret_missing;
   
-    int i, n;
+    ng_size_t i;
+    int n;
 
-    int ndim, dimsz[1];
+    int ndim;
+    ng_size_t dimsz[1];
     char *result;
 
     char *tmp_str;
     string *new_string;
-    int str_size;
+    ng_size_t str_size;
     int has_miss_field = 0;
-    int max_length = 1;
-    int total_length = 0;
+    ng_size_t max_length = 1;
+    ng_size_t total_length = 0;
     
     strs = (string *) NclGetArgValue(
                         0,
@@ -2496,22 +2532,24 @@ NhlErrorTypes _Nclstr_insert
     string *strs;
     string *insert;
 
-    int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
+    int ndim_strs;
+    ng_size_t dimsz_strs[NCL_MAX_DIMENSIONS];
     int has_missing_strs;
     int has_missing_ret = 0;
     NclScalar   missing_strs;
     NclScalar   ret_missing;
   
-    int i, j, m, n;
+    ng_size_t i;
+    int j, m, n;
 
     char *tmp_str;
     char *tmp_insert;
     char *result;
     string *new_string;
-    int str_size;
+    ng_size_t str_size;
     int *position;
     int has_miss_position = 0;
-    int max_length = 0;
+    ng_size_t max_length = 0;
     
     strs = (string *) NclGetArgValue(
                         0,
@@ -2684,7 +2722,8 @@ NhlErrorTypes _Nclstr_get_comma
 ()
 #endif
 {
-    int ndim, dimsz[1];
+    int ndim;
+    ng_size_t dimsz[1];
     string *new_string;
 
     new_string = (string *) NclMalloc(sizeof(string));
@@ -2710,7 +2749,8 @@ NhlErrorTypes _Nclstr_get_space
 ()
 #endif
 {
-    int ndim, dimsz[1];
+    int ndim;
+    ng_size_t dimsz[1];
     string *new_string;
 
     new_string = (string *) NclMalloc(sizeof(string));
@@ -2736,7 +2776,8 @@ NhlErrorTypes _Nclstr_get_tab
 ()
 #endif
 {
-    int ndim, dimsz[1];
+    int ndim;
+    ng_size_t dimsz[1];
     string *new_string;
 
     new_string = (string *) NclMalloc(sizeof(string));
@@ -2762,7 +2803,8 @@ NhlErrorTypes _Nclstr_get_sq
 ()
 #endif
 {
-    int ndim, dimsz[1];
+    int ndim;
+    ng_size_t dimsz[1];
     string *new_string;
 
     new_string = (string *) NclMalloc(sizeof(string));
@@ -2788,7 +2830,8 @@ NhlErrorTypes _Nclstr_get_dq
 ()
 #endif
 {
-    int ndim, dimsz[1];
+    int ndim;
+    ng_size_t dimsz[1];
     string *new_string;
 
     new_string = (string *) NclMalloc(sizeof(string));
@@ -2814,7 +2857,8 @@ NhlErrorTypes _Nclstr_get_nl
 ()
 #endif
 {
-    int ndim, dimsz[1];
+    int ndim;
+    ng_size_t dimsz[1];
     string *new_string;
 
     new_string = (string *) NclMalloc(sizeof(string));
@@ -2843,7 +2887,8 @@ NhlErrorTypes _Nclstr_match
     string *input_strs;
     string *input_expr;
 
-    int ndim_input_strs, dimsz_input_strs[NCL_MAX_DIMENSIONS];
+    int ndim_input_strs;
+    ng_size_t dimsz_input_strs[NCL_MAX_DIMENSIONS];
     int has_missing_input_strs;
     int has_missing_input_expr;
     int has_missing = 0;
@@ -2855,9 +2900,9 @@ NhlErrorTypes _Nclstr_match
 
     char *tmp_str;
     string *output_strs;
-    int i;
-    int str_size;
-    int output_str_size = 0;
+    ng_size_t i;
+    ng_size_t str_size;
+    ng_size_t output_str_size = 0;
 
     regex_t expr;
     regmatch_t rm;
