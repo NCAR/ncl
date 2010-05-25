@@ -617,7 +617,7 @@ will need to download and install the following packages:
     * HDF-EOS 5 <ftp://edhs1.gsfc.nasa.gov/pub/> - Download version
       1.11.v1 (HDF-EOS5.1.12) or later.
 
-      Once you have the GDAL source code, you can build and install it
+      Once you have the HDF-EOS5 source code, you can build and install it
       with:
 
         ./configure --with-hdf5=/usr/local --with-zlib=/usr/local --with-szlib=/usr/local --prefix=/usr/local
