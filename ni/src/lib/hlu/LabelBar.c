@@ -961,7 +961,8 @@ static NhlErrorTypes    InitializeDynamicArrays
 	NhlLabelBarLayer	tnew = (NhlLabelBarLayer) new;
 	NhlLabelBarLayerPart *lb_p = &(tnew->labelbar);
 	NhlErrorTypes ret = NhlNOERROR, ret_1 = NhlNOERROR;
-	int i,count;
+	int i;
+    ng_size_t  count;
 	int len;
 	char number[10];
 	NhlGenArray ga;

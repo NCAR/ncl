@@ -1,5 +1,5 @@
 /*
- *      $Id: Palette.c,v 1.10 2002-02-22 18:12:38 haley Exp $
+ *      $Id: Palette.c,v 1.10.4.1 2008-03-28 20:37:36 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -1055,7 +1055,7 @@ CvtStringGenArrayToCmap
 	NhlGenArray		tgen;
 	NhlString		*sptr;
 	float			*fptr;
-	int			dimlen[2] = {0,3};
+	ng_size_t			dimlen[2] = {0,3};
 	int			i;
 	NhlErrorTypes		ret = NhlNOERROR;
 
@@ -1169,7 +1169,7 @@ PaletteInitialize
 	NhlPaletteClass		pc = (NhlPaletteClass)lc;
 	_NhlPalCmap		*cmptr = pc->pal_class.default_maps;
 	NhlPalList		list,*tmp;
-	int			dimlen[2] = {0,3};
+	ng_size_t			dimlen[2] = {0,3};
 	NhlConvertArg		arg;
 	
 	arg.addressmode = NhlLAYEROFFSET;
@@ -1438,7 +1438,7 @@ NhlPalSetColormap
 	int		cmap_len;
 #endif
 {
-	int			dimlen[2] = {0,3};
+	ng_size_t			dimlen[2] = {0,3};
 	char			func[] = "NhlPalSetColormap";
 	NhlWorkstationClass	wc;
 	NhlPaletteLayer		pl;

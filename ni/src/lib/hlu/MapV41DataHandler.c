@@ -1230,7 +1230,7 @@ static NhlGenArray BuildAreaNamesGenArray
 	char *e_text;
 	int i;
 	NhlGenArray ga;
-        int entity_rec_count;
+        ng_size_t entity_rec_count;
         v41EntityRec *entity_recs;
         v41EntityRec **long_alpha_recs;
         char lbuf[512];
@@ -1321,9 +1321,10 @@ static NhlGenArray mdhGetNewGenArray
         NhlMapDataHandlerLayerPart 	*mdhp = &mv41l->mapdh;
         NhlMapV41DataHandlerLayerPart	*mv41p = &mv41l->mapv41dh;
 	char *e_text;
-	int i, len;
+	int i;
+	ng_size_t len;
 	NhlGenArray ga;
-        int entity_rec_count;
+        ng_size_t entity_rec_count;
         v41EntityRec *entity_recs;
         v41EntityRec **long_alpha_recs;
         char lbuf[512];

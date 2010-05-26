@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.42 2004-10-05 22:50:33 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.42.4.1 2008-03-28 20:37:37 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -573,8 +573,8 @@ DataToFloatArray
 				return NULL;
 			}
 			out_ga->num_dimensions = 2;
-			if ((out_ga->len_dimensions = (int *)
-			     NhlConvertMalloc(2 * sizeof(int))) == NULL) {
+			if ((out_ga->len_dimensions = (ng_size_t *)
+			     NhlConvertMalloc(2 * sizeof(ng_size_t))) == NULL) {
 				e_text = "%s: dynamic memory allocation error";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name);
@@ -809,8 +809,8 @@ DataToFloatArrayExchDim
 			return NULL;
 		}
 		out_ga->num_dimensions = 2;
-		if ((out_ga->len_dimensions = (int *)
-		     NhlConvertMalloc(2 * sizeof(int))) == NULL) {
+		if ((out_ga->len_dimensions = (ng_size_t *)
+		     NhlConvertMalloc(2 * sizeof(ng_size_t))) == NULL) {
 			e_text = "%s: dynamic memory allocation error";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  e_text,entry_name);
@@ -1641,8 +1641,8 @@ GetSubsetBounds2D
 		return NhlFATAL;
 	}
 	out_ga->num_dimensions = 2;
-	if ((out_ga->len_dimensions = (int *)
-	     NhlConvertMalloc(2 * sizeof(int))) == NULL) {
+	if ((out_ga->len_dimensions = (ng_size_t *)
+	     NhlConvertMalloc(2 * sizeof(ng_size_t))) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  e_text,entry_name);
@@ -3656,7 +3656,7 @@ static NhlErrorTypes    ScalarFieldGetValues
         NrmQuark resQ;
 	NrmQuark typeQ = NrmNULLQUARK;
 	NhlPointer	data,value;
-	int		dlen[2];
+	ng_size_t	dlen[2];
 	int		ndim;
 	int		size;
 	NhlBoolean	nocopy = False, do_genarray;

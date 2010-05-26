@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.99 2007-09-26 22:52:19 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.99.4.1 2008-03-28 20:37:36 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -800,7 +800,7 @@ static NhlErrorTypes    mpManageDynamicArrays(
 static NhlErrorTypes    mpManageGenArray(
 #if	NhlNeedProto
 	NhlGenArray	*ga,
-	int		count,
+	ng_size_t		count,
 	NhlGenArray	copy_ga,
 	NrmQuark	type,
 	NhlPointer	init_val,
@@ -3471,7 +3471,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 static NhlErrorTypes    mpManageGenArray
 #if	NhlNeedProto
 	(NhlGenArray	*ga,
-	 int		count,
+	 ng_size_t		count,
 	 NhlGenArray	copy_ga,
 	 NrmQuark	type,
 	 NhlPointer	init_val,
@@ -3485,7 +3485,7 @@ static NhlErrorTypes    mpManageGenArray
 (ga,count,copy_ga,type,init_val,old_count,init_count,
  need_check,changed,resource_name,entry_name)
 	NhlGenArray	*ga;
-	int		count;
+	ng_size_t		count;
 	NhlGenArray	copy_ga;
 	NrmQuark	type;
 	NhlPointer	init_val;
@@ -4982,12 +4982,13 @@ static NhlErrorTypes ManageTickMarks
 		xbon = True;
 		xb_labels_on = True;
 
+		/* this is wrong -- can't just cast to a different size pointer */
 		mpp->xbvalues = NhlCreateGenArray
 			((NhlPointer)xbvalues,NhlTFloat,
-			 sizeof(float),1,&xbcount);
+			 sizeof(float),1,(ng_size_t *) &xbcount);
 		mpp->xblabels = NhlCreateGenArray
 			((NhlPointer)xblabels,NhlTString,
-			 sizeof(NhlString),1,&xbcount);
+			 sizeof(NhlString),1,(ng_size_t *) &xbcount);
 		if (! (mpp->xbvalues && mpp->xblabels)) {
 			 NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			 return NhlFATAL;
@@ -5022,10 +5023,10 @@ static NhlErrorTypes ManageTickMarks
 
 		mpp->xtvalues = NhlCreateGenArray
 			((NhlPointer)xtvalues,NhlTFloat,
-			 sizeof(float),1,&xtcount);
+			 sizeof(float),1,(ng_size_t *) &xtcount);
 		mpp->xtlabels = NhlCreateGenArray
 			((NhlPointer)xtlabels,NhlTString,
-			 sizeof(NhlString),1,&xtcount);
+			 sizeof(NhlString),1,(ng_size_t *) &xtcount);
 		if (! (mpp->xtvalues && mpp->xtlabels)) {
 			 NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			 return NhlFATAL;
@@ -5048,10 +5049,10 @@ static NhlErrorTypes ManageTickMarks
 		yl_labels_on = True;
 		mpp->ylvalues = NhlCreateGenArray
 			((NhlPointer)ylvalues,NhlTFloat,
-			 sizeof(float),1,&ylcount);
+			 sizeof(float),1,(ng_size_t *) &ylcount);
 		mpp->yllabels = NhlCreateGenArray
 			((NhlPointer)yllabels,NhlTString,
-			 sizeof(NhlString),1,&ylcount);
+			 sizeof(NhlString),1,(ng_size_t *) &ylcount);
 		if (! (mpp->ylvalues && mpp->yllabels)) {
 			 NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			 return NhlFATAL;
@@ -5086,10 +5087,10 @@ static NhlErrorTypes ManageTickMarks
 
 		mpp->yrvalues = NhlCreateGenArray
 			((NhlPointer)yrvalues,NhlTFloat,
-			 sizeof(float),1,&yrcount);
+			 sizeof(float),1,(ng_size_t *) &yrcount);
 		mpp->yrlabels = NhlCreateGenArray
 			((NhlPointer)yrlabels,NhlTString,
-			 sizeof(NhlString),1,&yrcount);
+			 sizeof(NhlString),1,(ng_size_t *) &yrcount);
 		if (! (mpp->yrvalues && mpp->yrlabels)) {
 			 NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			 return NhlFATAL;

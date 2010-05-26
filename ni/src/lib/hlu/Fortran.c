@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.16 1997-05-05 21:45:16 boote Exp $
+ *      $Id: Fortran.c,v 1.16.4.1 2008-03-28 20:37:35 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -784,9 +784,9 @@ _NHLCALLF(nhlpfrlsetstringarray,NHLPFRLSETSTRINGARRAY)
 		*err = NhlFATAL;
 		return;
 	}
-
+        /* this is wrong -- can't just cast to a different size pointer */
 	gen = _NhlCreateGenArray(table,NhlTString,sizeof(NhlString),1,
-							num_strings,False);
+							(ng_size_t *)num_strings,False);
 	if(gen == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"Unable to add string array to RL");

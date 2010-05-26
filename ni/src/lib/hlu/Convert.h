@@ -117,7 +117,7 @@ extern NhlErrorTypes NhlConvertData(
 
 extern NhlPointer NhlConvertMalloc(
 #if	NhlNeedProto
-	unsigned int	size	/* size of memory requested	*/
+	ng_usize_t	size	/* size of memory requested	*/
 #endif
 );
 

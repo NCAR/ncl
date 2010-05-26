@@ -1,5 +1,5 @@
 /*
- *      $Id: Futil.c,v 1.3 1994-12-16 20:04:13 boote Exp $
+ *      $Id: Futil.c,v 1.3.22.1 2008-03-28 20:37:35 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -373,7 +373,7 @@ _NhlCreateFGenArray
 	for(i=0;i < num_dimensions; i++)
 		lenptr[i] = len_dimensions[(num_dimensions - 1) - i];
 
-	gen = _NhlCreateGenArray(data,type,size,num_dimensions,lenptr,
+	gen = _NhlCreateGenArray(data,type,size,num_dimensions,(ng_size_t *) lenptr,
 								copy_data);
 
 	if(lenptr != stacklen)

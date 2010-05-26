@@ -1415,7 +1415,7 @@ static NhlErrorTypes	PlotManagerGetValues
 	int			*ids;
 	NhlGenArray		ga;
 	NhlpmRec		**pm_recs;
-	int			count;
+	ng_size_t	count;
 
 	for ( i = 0; i< num_args; i++ ) {
 
@@ -1433,10 +1433,10 @@ static NhlErrorTypes	PlotManagerGetValues
 			for (j = 0; j < ovp->overlay_count; j++) {
 				ids[j] = ovp->pm_recs[j]->plot->base.id; 
 			}
-			
+			/* this is wrong -- can't just cast to a different size pointer */
 			if ((ga = NhlCreateGenArray((NhlPointer)ids,
 						    NhlTInteger,sizeof(int),
-						    1,&ovp->overlay_count)) 
+						    1,(ng_size_t *) &ovp->overlay_count)) 
 			    == NULL) {
 				e_text = "%s: error creating %s GenArray";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1480,9 +1480,10 @@ static NhlErrorTypes	PlotManagerGetValues
 				*/
 			}
 			
+			/* this is wrong -- can't just cast to a different size pointer */
 			ga = NhlCreateGenArray((NhlPointer)pm_recs,
 					       NhlTPointer,sizeof(NhlpmRec *),
-					       1,&ovp->overlay_count);
+					       1, (ng_size_t *) &ovp->overlay_count);
 			if (ga == NULL) {
 				e_text = "%s: error creating %s GenArray";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -6737,7 +6738,7 @@ RemoveOverlayBase
 	NhlSArg			sargs[10];
         int			nargs = 0;
 	int			i;
-	int			count = 1;
+	ng_size_t	count = 1;
 
 /*
  * Create a GenArray of 1 element in order to set the PlotManagerRecs resource

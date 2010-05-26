@@ -5643,7 +5643,8 @@ static NhlErrorTypes ManageLabelBar
 		NhlGenArray ga;
 		NhlString *to_sp, *from_sp;
 		NhlString s;
-		int i, count;
+		int i;
+		ng_size_t count;
 		NhlBoolean copy = False;
 
 		from_sp = (NhlString *) vcp->level_strings;
@@ -7996,7 +7997,7 @@ static NhlErrorTypes    ManageGenArray
 (ga,count,copy_ga,type,init_val,old_count,init_count,
  need_check,changed,resource_name,entry_name)
 	NhlGenArray	*ga;
-	int		count;
+	ng_size_t		count;
 	NhlGenArray	copy_ga;
 	NrmQuark	type;
 	NhlPointer	init_val;
@@ -8075,8 +8076,9 @@ static NhlErrorTypes    ManageGenArray
 		}
 		memset(datap,0,count * size);
 
+		/* this is wrong -- can't just cast to a different size pointer */
 		if ((*ga = NhlCreateGenArray((NhlPointer)datap,str_type,
-					     size,1,&count)) == NULL) {
+					     size,1,(ng_size_t *)&count)) == NULL) {
 			e_text = "%s: error creating %s GenArray";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  resource_name);

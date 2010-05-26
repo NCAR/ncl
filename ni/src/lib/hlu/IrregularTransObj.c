@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.46 2004-03-11 02:00:30 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.46.4.1 2008-03-28 20:37:35 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -2783,7 +2783,8 @@ int nargs;
 {
 	NhlIrregularTransObjLayerPart* irp = 
 		(&((NhlIrregularTransObjLayer)l)->irtrans);
-	int i, count;
+	int i;
+    ng_size_t count;
 	float *fp;
 	char *e_text;
 	NhlString entry_name = "IrTransGetValues";

@@ -1,5 +1,5 @@
 /*
- *      $Id: MeshScalarField.c,v 1.8 2005-04-15 21:50:34 dbrown Exp $
+ *      $Id: MeshScalarField.c,v 1.8.4.1 2008-03-28 20:37:36 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -2790,7 +2790,7 @@ static NhlErrorTypes    MeshScalarFieldGetValues
         NrmQuark resQ;
 	NrmQuark typeQ = NrmNULLQUARK;
 	NhlPointer	data,value;
-	int		dlen[2];
+	ng_size_t		dlen[2];
 	int		ndim;
 	int		size;
 	NhlBoolean	nocopy = False, do_genarray;

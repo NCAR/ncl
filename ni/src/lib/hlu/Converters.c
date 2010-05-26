@@ -113,7 +113,7 @@ _NhlStringToStringGenArray
 	char space_buffer[80];
 	int s_p_index = 0;
 	int level_count[MAX_DIMENSIONS];
-	int dimsizes[MAX_DIMENSIONS];
+	ng_size_t dimsizes[MAX_DIMENSIONS];
 	int level = -1;
 	
 
@@ -301,7 +301,7 @@ _NhlStringToStringGenArray
 		i = 0;
 		while(dimsizes[i] != -1) i++;
 		return _NhlConvertCreateGenArray(data_ptr,NhlTString,
-						sizeof(char*),i,dimsizes);
+						sizeof(char*),i, (ng_size_t *) dimsizes);
 	} else if((state != 0)&&(level >= 0)){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"Syntax error parsing resource file array");
@@ -723,7 +723,7 @@ NhlCvtStringGenArrayToEnumGenArray
 	enumQ = NrmStringToQuark(enum_name);
 
 	tgen = _NhlConvertCreateGenArray(NULL,enum_name,sizeof(int),
-				sgen->num_dimensions,sgen->len_dimensions);
+				sgen->num_dimensions, (ng_size_t *) sgen->len_dimensions);
 	if(!tgen){
 		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",func);
 		return NhlFATAL;
@@ -2781,7 +2781,7 @@ CvtArgs
 	}
 
 	togen = _NhlConvertCreateGenArray(toval,NhlTString,sizeof(NhlString),
-			fromgen->num_dimensions,fromgen->len_dimensions);
+			fromgen->num_dimensions, (ng_size_t *) fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
@@ -2833,7 +2833,7 @@ CvtArgs
 	}
 
 	togen = _NhlConvertCreateGenArray(toval,NhlTString,sizeof(NhlString),
-			fromgen->num_dimensions,fromgen->len_dimensions);
+			fromgen->num_dimensions, (ng_size_t *) fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
@@ -2887,7 +2887,7 @@ CvtArgs
 	}
 
 	togen = _NhlConvertCreateGenArray(toval,NhlTString,sizeof(NhlString),
-			fromgen->num_dimensions,fromgen->len_dimensions);
+			fromgen->num_dimensions, (ng_size_t *) fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
@@ -2940,7 +2940,7 @@ CvtArgs
 	}
 
 	togen = _NhlConvertCreateGenArray(toval,NhlTString,sizeof(NhlString),
-			fromgen->num_dimensions,fromgen->len_dimensions);
+			fromgen->num_dimensions, (ng_size_t *) fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
@@ -2993,7 +2993,7 @@ CvtArgs
 	}
 
 	togen = _NhlConvertCreateGenArray(toval,NhlTString,sizeof(NhlString),
-			fromgen->num_dimensions,fromgen->len_dimensions);
+			fromgen->num_dimensions, (ng_size_t *) fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
@@ -3099,7 +3099,7 @@ CvtArgs
 	}
 
 	togen = _NhlConvertCreateGenArray(toval,NhlTString,sizeof(NhlString),
-			fromgen->num_dimensions,fromgen->len_dimensions);
+			fromgen->num_dimensions, (ng_size_t *) fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
@@ -3417,7 +3417,7 @@ CvtArgs
 	}
 
 	togen = _NhlConvertCreateGenArray(toval,NhlTString,sizeof(NhlString),
-			fromgen->num_dimensions,fromgen->len_dimensions);
+			fromgen->num_dimensions, (ng_size_t *) fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
@@ -3522,7 +3522,7 @@ CvtArgs
 	}
 
 	togen = _NhlConvertCreateGenArray(toval,NhlTByte,sizeof(unsigned char),
-			fromgen->num_dimensions,fromgen->len_dimensions);
+			fromgen->num_dimensions, (ng_size_t *) fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
@@ -3576,7 +3576,7 @@ CvtArgs
 	}
 
 	togen = _NhlConvertCreateGenArray(toval,NhlTCharacter,sizeof(char),
-			fromgen->num_dimensions,fromgen->len_dimensions);
+			fromgen->num_dimensions, (ng_size_t *) fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
@@ -3628,7 +3628,7 @@ CvtArgs
 	}
 
 	togen = _NhlConvertCreateGenArray(toval,NhlTDouble,sizeof(double),
-			fromgen->num_dimensions,fromgen->len_dimensions);
+			fromgen->num_dimensions, (ng_size_t *) fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
@@ -3682,7 +3682,7 @@ CvtArgs
 	}
 
 	togen = _NhlConvertCreateGenArray(toval,NhlTFloat,sizeof(float),
-			fromgen->num_dimensions,fromgen->len_dimensions);
+			fromgen->num_dimensions, (ng_size_t *) fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
@@ -3736,7 +3736,7 @@ CvtArgs
 	}
 
 	togen = _NhlConvertCreateGenArray(toval,NhlTInteger,sizeof(int),
-			fromgen->num_dimensions,fromgen->len_dimensions);
+			fromgen->num_dimensions, (ng_size_t *) fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
@@ -3844,7 +3844,7 @@ CvtArgs
 	}
 
 	togen = _NhlConvertCreateGenArray(toval,NhlTLong,sizeof(long),
-			fromgen->num_dimensions,fromgen->len_dimensions);
+			fromgen->num_dimensions, (ng_size_t *) fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
@@ -4171,7 +4171,7 @@ CvtArgs
 	}
 
 	togen = _NhlConvertCreateGenArray(toval,NhlTShort,sizeof(short),
-			fromgen->num_dimensions,fromgen->len_dimensions);
+			fromgen->num_dimensions, (ng_size_t *) fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
@@ -4302,7 +4302,7 @@ CvtArgs
 	}
 
 	togen = _NhlConvertCreateGenArray(toval,NhlTString,sizeof(NhlString),
-			fromgen->num_dimensions,fromgen->len_dimensions);
+			fromgen->num_dimensions, (ng_size_t *) fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;

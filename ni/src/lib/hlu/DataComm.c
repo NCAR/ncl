@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.47 2007-10-29 22:06:50 dbrown Exp $
+ *      $Id: DataComm.c,v 1.47.4.1 2008-03-28 20:37:34 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -1121,7 +1121,7 @@ DataCommGetValues
 	_NhlInternDataList	ilist;
 	NhlGenArray		gen;
 	int			i,j, *iarray;
-	int			len;
+	ng_size_t		len;
 	NhlBoolean		dsres;
 
 	for(i=0;i < nargs; i++){
@@ -1162,7 +1162,7 @@ DataCommGetValues
 			}
 
 			gen = _NhlCreateGenArray(iarray,NhlTObjId,sizeof(int),
-								1,&len,False);
+								1,(ng_size_t *)&len,False);
 			if(gen == NULL){
 				NHLPERROR((NhlFATAL,ENOMEM,NULL));
 				return NhlFATAL;

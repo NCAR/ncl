@@ -949,7 +949,8 @@ static NhlGenArray mdhGetNewGenArray
                 &((NhlMapV40DataHandlerClass)
                   mv40l->base.layer_class)->mapv40dh_class;
 	char *e_text;
-	int i, len;
+	int i;
+	ng_size_t len;
 	NhlGenArray ga;
         int outline_rec_count;
         mpOutlineRec *outline_recs;

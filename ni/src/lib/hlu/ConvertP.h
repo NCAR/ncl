@@ -1,5 +1,5 @@
 /*
- *      $Id: ConvertP.h,v 1.9 1997-08-06 20:18:27 boote Exp $
+ *      $Id: ConvertP.h,v 1.9.4.1 2008-03-28 20:37:34 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -87,7 +87,7 @@ _NhlConvertCreateGenArray(
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	int		*len_dimensions	/* number of dimensions	*/
+	ng_size_t	*len_dimensions	/* number of dimensions	*/
 #endif
 );
 

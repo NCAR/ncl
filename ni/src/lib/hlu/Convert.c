@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.20 1999-05-22 00:43:10 dbrown Exp $
+ *      $Id: Convert.c,v 1.20.4.1 2008-03-28 20:37:34 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -2301,11 +2301,11 @@ NhlPointer
 NhlConvertMalloc
 #if	NhlNeedProto
 (
-	unsigned int	size	/* size of memory requested	*/
+	ng_usize_t	size	/* size of memory requested	*/
 )
 #else
 (size)
-	unsigned int	size;	/* size of memory requested	*/
+	ng_usize_t	size;	/* size of memory requested	*/
 #endif
 {
 	_NhlConvertContext	context;
@@ -2330,7 +2330,7 @@ _NhlConvertCreateGenArray
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	int		*len_dimensions	/* number of dimensions	*/
+	ng_size_t		*len_dimensions	/* length of dimensions	*/
 )
 #else
 (data,type,size,num_dimensions,len_dimensions)
@@ -2338,7 +2338,7 @@ _NhlConvertCreateGenArray
 	NhlString	type;		/* type of each element	*/
 	unsigned int	size;		/* size of each element	*/
 	int		num_dimensions;	/* number of dimensions	*/
-	int		*len_dimensions;/* number of dimensions	*/
+	ng_size_t	*len_dimensions;/* length of dimensions	*/
 #endif
 {
 	return _NhlAllocCreateGenArray(data,type,size,num_dimensions,

@@ -874,7 +874,7 @@ static NhlErrorTypes    ManageDynamicArrays(
 static NhlErrorTypes    ManageGenArray(
 #if	NhlNeedProto
 	NhlGenArray	*ga,
-	int		count,
+	ng_size_t		count,
 	NhlGenArray	copy_ga,
 	NrmQuark	type,
 	NhlPointer	init_val,
@@ -4225,7 +4225,8 @@ static NhlErrorTypes ManageLabelBar
 		NhlGenArray ga;
 		NhlString *to_sp, *from_sp;
 		NhlString s;
-		int i, count;
+		int i;
+		ng_size_t count;
 		NhlBoolean copy = False;
 
 		from_sp = (NhlString *) stp->level_strings;
@@ -5859,7 +5860,7 @@ static NhlErrorTypes    ManageDynamicArrays
 static NhlErrorTypes    ManageGenArray
 #if	NhlNeedProto
 	(NhlGenArray	*ga,
-	 int		count,
+	 ng_size_t		count,
 	 NhlGenArray	copy_ga,
 	 NrmQuark	type,
 	 NhlPointer	init_val,
@@ -5873,7 +5874,7 @@ static NhlErrorTypes    ManageGenArray
 (ga,count,copy_ga,type,init_val,old_count,init_count,
  need_check,changed,resource_name,entry_name)
 	NhlGenArray	*ga;
-	int		count;
+	ng_size_t		count;
 	NhlGenArray	copy_ga;
 	NrmQuark	type;
 	NhlPointer	init_val;

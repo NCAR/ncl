@@ -1317,7 +1317,7 @@ static NhlErrorTypes    ManageDynamicArrays(
 static NhlErrorTypes    ManageGenArray(
 #if	NhlNeedProto
 	NhlGenArray	*ga,
-	int		count,
+	ng_size_t	count,
 	NhlGenArray	copy_ga,
 	NrmQuark	type,
 	NhlPointer	init_val,
@@ -6169,8 +6169,9 @@ static NhlErrorTypes ManageLabelBar
 					new_fcolors[i] = fcolors[i+1];
 				}
 				NhlFreeGenArray(cnp->lbar_fill_colors);
+				/* this is wrong -- can't just cast to a different size pointer */
 				cnp->lbar_fill_colors = NhlCreateGenArray((NhlPointer)new_fcolors,NhlTColorIndex,
-									  sizeof(int),1,&cnp->lbar_fill_count);
+									  sizeof(int),1,(ng_size_t *)&cnp->lbar_fill_count);
 				cnp->lbar_fill_colors->my_data = True;
 				ocnp->lbar_fill_colors = NULL;
 				
@@ -6183,8 +6184,9 @@ static NhlErrorTypes ManageLabelBar
 					new_fpatterns[i] = fpatterns[i+1];
 				}
 				NhlFreeGenArray(cnp->lbar_fill_patterns);
+				/* this is wrong -- can't just cast to a different size pointer */
 				cnp->lbar_fill_patterns = NhlCreateGenArray((NhlPointer)new_fpatterns,NhlTInteger,
-								sizeof(int),1,&cnp->lbar_fill_count);
+								sizeof(int),1,(ng_size_t *)&cnp->lbar_fill_count);
 				cnp->lbar_fill_patterns->my_data = True;
 				ocnp->lbar_fill_patterns = NULL;
 			}
@@ -6196,8 +6198,9 @@ static NhlErrorTypes ManageLabelBar
 					new_fscales[i] = fscales[i+1];
 				}
 				NhlFreeGenArray(cnp->lbar_fill_scales);
+				/* this is wrong -- can't just cast to a different size pointer */
 				cnp->lbar_fill_scales = NhlCreateGenArray((NhlPointer)new_fscales,NhlTFloat,
-									  sizeof(float),1,&cnp->lbar_fill_count);
+									  sizeof(float),1,(ng_size_t *)&cnp->lbar_fill_count);
 				cnp->lbar_fill_scales->my_data = True;
 				ocnp->lbar_fill_scales = NULL;
 			}
@@ -6205,7 +6208,8 @@ static NhlErrorTypes ManageLabelBar
 		else { /* NhlINCLUDEMINMAXLABELS */
 			NhlString *to_sp, *from_sp;
 			NhlString s;
-			int i, count;
+			int i;
+			ng_size_t  count;
 			float *levels = (float *) cnp->levels->data;
 			from_sp = (NhlString *) cnp->llabel_strings->data;
 			count = cnp->level_count + 2;
@@ -8010,7 +8014,8 @@ static NhlErrorTypes    ManageDynamicArrays
 	NhlContourPlotLayer	cold = (NhlContourPlotLayer) old;
 	NhlContourPlotLayerPart *ocnp = &(cold->contourplot);
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
-	int i,count;
+	int i;
+	ng_size_t  count;
 	NhlGenArray ga;
 	char *entry_name;
 	char *e_text;
@@ -8592,7 +8597,7 @@ static NhlErrorTypes    ManageDynamicArrays
 static NhlErrorTypes    ManageGenArray
 #if	NhlNeedProto
 	(NhlGenArray	*ga,
-	 int		count,
+	 ng_size_t	count,
 	 NhlGenArray	copy_ga,
 	 NrmQuark	type,
 	 NhlPointer	init_val,
@@ -8606,7 +8611,7 @@ static NhlErrorTypes    ManageGenArray
 (ga,count,copy_ga,type,init_val,old_count,init_count,
  need_check,changed,resource_name,entry_name)
 	NhlGenArray	*ga;
-	int		count;
+	ng_size_t	count;
 	NhlGenArray	copy_ga;
 	NrmQuark	type;
 	NhlPointer	init_val;

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.84 2006-04-07 18:42:35 dbrown Exp $
+ *      $Id: TickMark.c,v 1.84.4.1 2008-03-28 20:37:37 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -9553,7 +9553,7 @@ static NhlGenArray CreateGetValuesData
 	NhlString type;
 	NhlPointer data;
 	int	size;
-	int 	count;
+	ng_size_t 	count;
 	NhlTickMarkLayerPart *tmp = &((NhlTickMarkLayer)l)->tick;
 	NhlGenArray gen;
 	

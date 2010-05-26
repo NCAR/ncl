@@ -2683,7 +2683,7 @@ NhlErrorTypes NhlAddPrimitive
 		}
 		pids[0] = primitive_id;
 		gen = _NhlCreateGenArray(pids,NhlTInteger,sizeof(int),1,
-					 &count,False);
+					 (ng_size_t *) &count,False);
 		if (! gen) {
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return NhlFATAL;
