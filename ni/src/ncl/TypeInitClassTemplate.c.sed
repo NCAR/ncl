@@ -38,7 +38,6 @@ int nargs;
 	void *val;
 	NclMultiDValData tmp_md;
 	ng_size_t len_dimensions = 1;
-	
 
 	if(nargs != 0) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: called with wrong number of args",func);

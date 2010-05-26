@@ -2003,7 +2003,7 @@ int is_unlimited;
 /*ARGSUSED*/
 static NhlErrorTypes HDFAddVar
 #if	NhlNeedProto
-(void* therec, NclQuark thevar, NclBasicDataTypes data_type, int n_dims,NclQuark *dim_names, long* dim_sizes)
+(void* therec, NclQuark thevar, NclBasicDataTypes data_type, int n_dims,NclQuark *dim_names, ng_size_t* dim_sizes)
 #else
 (therec,thevar,data_type,n_dims,dim_names,dim_sizes)
 void* therec;
@@ -2011,7 +2011,7 @@ NclQuark thevar;
 NclBasicDataTypes data_type;
 int n_dims;
 NclQuark *dim_names;
-long* dim_sizes;
+ng_size_t* dim_sizes;
 #endif
 {
 	HDFFileRecord* rec = (HDFFileRecord*)therec;

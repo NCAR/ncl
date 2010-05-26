@@ -104,7 +104,7 @@ Grib2AttInqRecList **rot_att_list, int *rotatts)
 #ifdef NOTNOW
 	Grib2AttInqRecList* tmp_att_list_ptr;
 	NclQuark *tmp_string = NULL;
-	int tmp_dimsizes = 1;
+	ng_size_t tmp_dimsizes = 1;
 
 	tmp_att_list_ptr = (*lat_att_list_ptr);
 	(*lat_att_list_ptr) = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
@@ -178,13 +178,13 @@ Grib2AttInqRecList **rot_att_list, int *rotatts)
 
 void Grib2PushAtt
 #if NhlNeedProto
-(Grib2AttInqRecList **att_list_ptr,char* name,void *val,int dimsize,NclObjClass type) 
+(Grib2AttInqRecList **att_list_ptr,char* name,void *val,ng_size_t dimsize,NclObjClass type) 
 #else
 (att_list_ptr,name,val,dimsize,type) 
 Grib2AttInqRecList **att_list_ptr;
 char* name;
 void *val;
-int dimsize;
+ng_size_t dimsize;
 NclObjClass type;
 #endif
 {
@@ -389,16 +389,16 @@ void g2GetThinnedLatParams
 
 void g2GenLatLon 
 #if NhlNeedProto
-(Grib2ParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,int xsize,int ysize, float lon_start,float lat_start, float lon_dir, float lat_dir)
+(Grib2ParamList* thevarrec, float** lat, ng_size_t* n_dims_lat, ng_size_t** dimsizes_lat, float** lon, ng_size_t* n_dims_lon, ng_size_t** dimsizes_lon,int xsize,int ysize, float lon_start,float lat_start, float lon_dir, float lat_dir)
 #else
 (thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,xsize,ysize, lon_start,lat_start, lon_dir, lat_dir)
 Grib2ParamList* thevarrec;
 float** lat;
-int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t* n_dims_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
-int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t* n_dims_lon;
+ng_size_t** dimsizes_lon;
 int xsize;
 int ysize;
 float lon_start;
@@ -411,8 +411,8 @@ float lat_dir;
 
 *lat = (float*)NclMalloc(sizeof(float)*ysize);
 *lon = (float*)NclMalloc(sizeof(float)*xsize);
-    *dimsizes_lat = (int*)NclMalloc(sizeof(int));
-    *dimsizes_lon = (int*)NclMalloc(sizeof(int));
+    *dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
+    *dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
     *n_dims_lat = 1;
     *n_dims_lon = 1;
     (*dimsizes_lat)[0] = ysize;
@@ -451,7 +451,7 @@ void g2GetAtts_1
 	Grib2AttInqRecList* tmp_att_list_ptr;
 	NclQuark *tmp_string = NULL;
 	float *tmp_float = NULL;
-	int tmp_dimsizes = 1;
+	ng_size_t tmp_dimsizes = 1;
 
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -493,13 +493,13 @@ void g2GDSDimsOnlyGrid
 	Grib2ParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	Grib2AttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	Grib2AttInqRecList** lon_att_list, 
@@ -514,13 +514,13 @@ void g2GDSDimsOnlyGrid
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
 GribAttInqRecList** lon_att_list; 
@@ -565,8 +565,8 @@ int* nrotatts;
 		return;
 	}
 
-	*dimsizes_lat = (int*)NclMalloc(sizeof(int));
-	*dimsizes_lon = (int*)NclMalloc(sizeof(int));
+	*dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
+	*dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
 	*(*dimsizes_lon) = nlon;
 	*(*dimsizes_lat) = nlat;
 	*n_dims_lat = 1;
@@ -583,13 +583,13 @@ void g2GDSCEGrid
 	Grib2ParamList *thevarrec, 
 	float **lat, 
 	int *n_dims_lat, 
-	int **dimsizes_lat,
+	ng_size_t **dimsizes_lat,
 	float **lon, 
 	int *n_dims_lon, 
-	int **dimsizes_lon, 
+	ng_size_t **dimsizes_lon, 
 	float **rot, 
 	int *n_dims_rot,
-	int **dimsizes_rot, 
+	ng_size_t **dimsizes_rot, 
 	Grib2AttInqRecList **lat_att_list, 
 	int *nlatatts, 
 	Grib2AttInqRecList **lon_att_list, 
@@ -604,10 +604,10 @@ void g2GDSCEGrid
     Grib2ParamList *thevarrec; 
     float **lat; 
     int *n_dims_lat;
-    int **dimsizes_lat;
+    ng_size_t **dimsizes_lat;
     float **lon;
     int *n_dims_lon;
-    int **dimsizes_lon;
+    ng_size_t **dimsizes_lon;
     float **rot;
     int *n_dims_rot;
     int **dimsizes_rot;
@@ -715,8 +715,8 @@ void g2GDSCEGrid
             dj = -dj;
     }
 			
-    *dimsizes_lat = (int *) NclMalloc(sizeof(int));
-    *dimsizes_lon = (int *) NclMalloc(sizeof(int));
+    *dimsizes_lat = (ng_size_t *) NclMalloc(sizeof(ng_size_t));
+    *dimsizes_lon = (ng_size_t *) NclMalloc(sizeof(ng_size_t));
     *(*dimsizes_lon) = nlon;
     *(*dimsizes_lat) = nlat;
     *n_dims_lat = 1;
@@ -892,13 +892,13 @@ void g2GDSRLLGrid
 	Grib2ParamList *thevarrec, 
 	float **lat, 
 	int *n_dims_lat, 
-	int **dimsizes_lat,
+	ng_size_t **dimsizes_lat,
 	float **lon, 
 	int *n_dims_lon, 
-	int **dimsizes_lon, 
+	ng_size_t **dimsizes_lon, 
 	float **rot, 
 	int *n_dims_rot,
-	int **dimsizes_rot, 
+	ng_size_t **dimsizes_rot, 
 	Grib2AttInqRecList **lat_att_list, 
 	int *nlatatts, 
 	Grib2AttInqRecList **lon_att_list, 
@@ -913,13 +913,13 @@ void g2GDSRLLGrid
     Grib2ParamList *thevarrec; 
     float **lat; 
     int *n_dims_lat;
-    int **dimsizes_lat;
+    ng_size_t **dimsizes_lat;
     float **lon;
     int *n_dims_lon;
-    int **dimsizes_lon;
+    ng_size_t **dimsizes_lon;
     float **rot;
     int *n_dims_rot;
-    int **dimsizes_rot;
+    ng_size_t **dimsizes_rot;
     Grib2AttInqRecList **lat_att_list; 
     int *nlatatts; 
     Grib2AttInqRecList **lon_att_list; 
@@ -1079,9 +1079,8 @@ void g2GDSRLLGrid
 	    }
     }
 
-
-    *dimsizes_lat = (int*)NclMalloc(2 * sizeof(int));
-    *dimsizes_lon = (int*)NclMalloc(2 * sizeof(int));
+    *dimsizes_lat = (ng_size_t*)NclMalloc(2 * sizeof(ng_size_t));
+    *dimsizes_lon = (ng_size_t*)NclMalloc(2 * sizeof(ng_size_t));
     (*dimsizes_lon)[0] = nj;
     (*dimsizes_lon)[1] = ni;
     (*dimsizes_lat)[0] = nj;
@@ -1294,13 +1293,13 @@ void g2GDSMEGrid
 	Grib2ParamList *thevarrec, 
 	float **lat, 
 	int *n_dims_lat, 
-	int **dimsizes_lat,
+	ng_size_t **dimsizes_lat,
 	float **lon, 
 	int *n_dims_lon, 
-	int **dimsizes_lon, 
+	ng_size_t **dimsizes_lon, 
 	float **rot, 
 	int *n_dims_rot,
-	int **dimsizes_rot, 
+	ng_size_t **dimsizes_rot, 
 	Grib2AttInqRecList **lat_att_list, 
 	int *nlatatts, 
 	Grib2AttInqRecList **lon_att_list, 
@@ -1314,14 +1313,14 @@ void g2GDSMEGrid
  rot_att_list, nrotatts)
     Grib2ParamList *thevarrec; 
     float **lat; 
-    int *n_dims_lat;
-    int **dimsizes_lat;
+    ng_size_t *n_dims_lat;
+    ng_size_t **dimsizes_lat;
     float **lon;
-    int *n_dims_lon;
-    int **dimsizes_lon;
+    ng_size_t *n_dims_lon;
+    ng_size_t **dimsizes_lon;
     float **rot;
-    int *n_dims_rot;
-    int **dimsizes_rot;
+    ng_size_t *n_dims_rot;
+    ng_size_t **dimsizes_rot;
     Grib2AttInqRecList **lat_att_list; 
     int *nlatatts; 
     Grib2AttInqRecList **lon_att_list; 
@@ -1429,8 +1428,8 @@ void g2GDSMEGrid
     dlat = jdir * dj / (earth_radius * cos(latd * RadPerDeg));
     ye = 1 - log(tan(((la1 + 90.0)/ 2.0) * RadPerDeg)) / dlat;
     			
-    *dimsizes_lat = (int *) NclMalloc(sizeof(int));
-    *dimsizes_lon = (int *) NclMalloc(sizeof(int));
+    *dimsizes_lat = (ng_size_t *) NclMalloc(sizeof(ng_size_t));
+    *dimsizes_lon = (ng_size_t *) NclMalloc(sizeof(ng_size_t));
     *(*dimsizes_lon) = nlon;
     *(*dimsizes_lat) = nlat;
     *n_dims_lat = 1;
@@ -1521,13 +1520,13 @@ void g2GDSSTGrid
 	Grib2ParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	Grib2AttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	Grib2AttInqRecList** lon_att_list, 
@@ -1542,13 +1541,13 @@ void g2GDSSTGrid
 Grib2ParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 Grib2AttInqRecList** lat_att_list; 
 int* nlatatts; 
 Grib2AttInqRecList** lon_att_list; 
@@ -1615,8 +1614,8 @@ int* nrotatts;
 	*lat = (float*)NclMalloc(sizeof(float)*nx*ny);
 	*lon = (float*)NclMalloc(sizeof(float)*nx*ny);
 	*rot = (float*)NclMalloc(sizeof(float)*nx*ny);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
+        *dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t) * 2);
+        *dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t) * 2);
         *n_dims_lat = 2;
         *n_dims_lon = 2;
         (*dimsizes_lat)[0] = ny;
@@ -1769,13 +1768,13 @@ void g2GDSLCGrid
 	Grib2ParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	Grib2AttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	Grib2AttInqRecList** lon_att_list, 
@@ -1790,13 +1789,13 @@ void g2GDSLCGrid
 Grib2ParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 Grib2AttInqRecList** lat_att_list; 
 int* nlatatts; 
 Grib2AttInqRecList** lon_att_list; 
@@ -1874,8 +1873,8 @@ int* nrotatts;
 	*lat = (float*)NclMalloc(sizeof(float)*nx*ny);
 	*lon = (float*)NclMalloc(sizeof(float)*nx*ny);
 	*rot = (float*)NclMalloc(sizeof(float)*nx*ny);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
+        *dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t) * 2);
+        *dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t) * 2);
         *n_dims_lat = 2;
         *n_dims_lon = 2;
         (*dimsizes_lat)[0] = ny;
@@ -2050,13 +2049,13 @@ void g2GDSGAGrid
 	Grib2ParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	Grib2AttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	Grib2AttInqRecList** lon_att_list, 
@@ -2071,13 +2070,13 @@ void g2GDSGAGrid
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 Grib2AttInqRecList** lat_att_list; 
 int* nlatatts; 
 Grib2AttInqRecList** lon_att_list; 
@@ -2150,7 +2149,7 @@ int* nrotatts;
 	lo2 = ga->lon_last_gridpt * scale_factor;
 
 	*n_dims_lat = 1;
-	*dimsizes_lat = malloc(sizeof(int));
+	*dimsizes_lat = malloc(sizeof(ng_size_t));
 	(*dimsizes_lat)[0] = ga->npts_along_meridian;
 	nlat = 2 * ga->nparallels_pole2equator;
 
@@ -2186,7 +2185,7 @@ int* nrotatts;
 			di = (ti - lo2) / (double) (nlon - 1);
 		}
 	}
-	*dimsizes_lon = (int *) NclMalloc(sizeof(int));
+	*dimsizes_lon = (ng_size_t *) NclMalloc(sizeof(ng_size_t));
 	*(*dimsizes_lon) = nlon;
 	*n_dims_lon = 1;
 	*lon = (float *) NclMalloc((unsigned)sizeof(float) * nlon);
@@ -2364,13 +2363,13 @@ void g2GDSSHGrid
 	Grib2ParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	Grib2AttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	Grib2AttInqRecList** lon_att_list, 
@@ -2385,13 +2384,13 @@ void g2GDSSHGrid
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 Grib2AttInqRecList** lat_att_list; 
 int* nlatatts; 
 Grib2AttInqRecList** lon_att_list; 
@@ -2422,11 +2421,11 @@ int* nrotatts;
 		return;
 
 	*n_dims_lat =  1;
-	*dimsizes_lat = NclMalloc(sizeof(int));
+	*dimsizes_lat = NclMalloc(sizeof(ng_size_t));
 	*(*dimsizes_lat) = sh->k_pent_res + 1;
 	*lon = NULL;
 	*n_dims_lon= 1;
-	*dimsizes_lon= NclMalloc(sizeof(int));
+	*dimsizes_lon= NclMalloc(sizeof(ng_size_t));
 	*(*dimsizes_lon) = sh->m_pent_res + 1;
 
 	return;
@@ -2442,13 +2441,13 @@ void g2GDSSVGrid
 	Grib2ParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	Grib2AttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	Grib2AttInqRecList** lon_att_list, 
@@ -2463,13 +2462,13 @@ void g2GDSSVGrid
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t* dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
 GribAttInqRecList** lon_att_list; 
@@ -2512,8 +2511,8 @@ int* nrotatts;
 		return;
 	}
 
-	*dimsizes_lat = (int*)NclMalloc(sizeof(int));
-	*dimsizes_lon = (int*)NclMalloc(sizeof(int));
+	*dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
+	*dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
 	*(*dimsizes_lon) = nlon;
 	*(*dimsizes_lat) = nlat;
 	*n_dims_lat = 1;
@@ -2524,16 +2523,16 @@ int* nrotatts;
 
 static void _g2NewGridCache
 #if NhlNeedProto
-(Grib2FileRecord *therec,int grid_index,int grid_number,int n_dims_lat,int *dimsizes_lat,int n_dims_lon,int *dimsizes_lon)
+(Grib2FileRecord *therec,int grid_index,int grid_number,int n_dims_lat,ng_size_t *dimsizes_lat,int n_dims_lon,ng_size_t *dimsizes_lon)
 #else
 (therec,grid_index,grid_number,n_dims_lat,dimsizes_lat,n_dims_lon,dimsizes_lon)
 Grib2FileRecord *therec;
 int grid_index;
 int grid_number;
 int n_dims_lat;
-int *dimsizes_lat;
+ng_size_t *dimsizes_lat;
 int n_dims_lon;
-int *dimsizes_lon;
+ng_size_t *dimsizes_lon;
 #endif
 {
 	NclGrib2CacheList *newlist;
@@ -3401,7 +3400,7 @@ Grib2FileRecord *therec;
 	Grib2ParamList *step = NULL;
 	NclQuark *tmp_string = NULL;
 	int *tmp_int = NULL;
-	int tmp_dimsizes = 1;
+	ng_size_t tmp_dimsizes = 1;
 	Grib2RecordInqRec *grib_rec = NULL;
 	Grib2AttInqRecList *att_list_ptr= NULL;
 	Grib2AttInqRec 	*att_ptr= NULL;
@@ -4030,12 +4029,12 @@ static double  *_g2DateStringsToEncodedDoubles
 #if 	NhlNeedProto
 (
 NrmQuark *vals,
-int dimsize
+ng_size_t dimsize
 	)
 #else
 (vals,dimsize)
 NrmQuark *vals;
-int dimsize;
+ng_size_t dimsize;
 #endif
 {
 	int i;
@@ -4063,12 +4062,12 @@ static double  *_g2DateStringsToHours
 #if 	NhlNeedProto
 (
 NrmQuark *vals,
-int dimsize
+ng_size_t dimsize
 	)
 #else
 (vals,dimsize)
 NrmQuark *vals;
-int dimsize;
+ng_size_t dimsize;
 #endif
 {
 	int i;
@@ -4111,7 +4110,7 @@ Grib2FileRecord *therec;
 
 	step = therec->it_dims;
 	for (i = 0; i < therec->n_it_dims; i++) {
-		int dimsize;
+		ng_size_t dimsize;
 		NrmQuark *vals;
 		double *dates;
 		double *hours;
@@ -5240,7 +5239,8 @@ Grib2ParamList* step;
     int *ens_indexes = NULL;
     int n_tmp_ens_vals = 0;
     G2_ENS *tmp_ens_vals = NULL;
-    int total;
+/*    int total;*/
+    ng_size_t total, tmp_dim_siz = 0;
     int doff;
     char *name;
     float *lprob, *uprob;
@@ -5393,6 +5393,7 @@ Grib2ParamList* step;
 	    step->upper_probs = NULL;
 	    step->probability = NULL;
 	    if (tmp_ens_vals[0].prob_type == 0 || tmp_ens_vals[0].prob_type == 3) {
+		    tmp_dim_siz = (ng_size_t) n_tmp_ens_vals;
 		    step->probability = (NclOneDValCoordData)_NclCreateVal(
 			    NULL,
 			    NULL,
@@ -5401,13 +5402,15 @@ Grib2ParamList* step;
 			    (void*)lprob,
 			    NULL,
 			    1,
-			    (void*)&n_tmp_ens_vals,
+/*			    (void*)&n_tmp_ens_vals,*/
+			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
 			    nclTypefloatClass);
 		    NclFree(uprob);
 	    }
 	    else if (tmp_ens_vals[0].prob_type == 1 ||  tmp_ens_vals[0].prob_type == 4) {
+		    tmp_dim_siz = (ng_size_t) n_tmp_ens_vals;
 		    step->probability = (NclOneDValCoordData)_NclCreateVal(
 			    NULL,
 			    NULL,
@@ -5416,13 +5419,15 @@ Grib2ParamList* step;
 			    (void*)uprob,
 			    NULL,
 			    1,
-			    (void*)&n_tmp_ens_vals,
+/*			    (void*)&n_tmp_ens_vals,*/
+			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
 			    nclTypefloatClass);
 		    NclFree(lprob);
 	    }
 	    else if (tmp_ens_vals[0].prob_type == 2) {
+		    tmp_dim_siz = (ng_size_t) n_tmp_ens_vals;
 		    step->lower_probs = (NclMultiDValData)_NclCreateVal(
 			    NULL,
 			    NULL,
@@ -5431,7 +5436,8 @@ Grib2ParamList* step;
 			    (void*)lprob,
 			    NULL,
 			    1,
-			    (void*)&n_tmp_ens_vals,
+/*			    (void*)&n_tmp_ens_vals,*/
+			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
 			    nclTypefloatClass);
@@ -5443,7 +5449,8 @@ Grib2ParamList* step;
 			    (void*)uprob,
 			    NULL,
 			    1,
-			    (void*)&n_tmp_ens_vals,
+/*			    (void*)&n_tmp_ens_vals,*/
+			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
 			    nclTypefloatClass);
@@ -5457,6 +5464,7 @@ Grib2ParamList* step;
 		    ens_indexes[j] = j;
 	    }
 
+	    tmp_dim_siz = (ng_size_t) n_tmp_ens_vals;
 	    step->ensemble = (NclMultiDValData)_NclCreateVal(
 		    NULL,
 		    NULL,
@@ -5465,7 +5473,8 @@ Grib2ParamList* step;
 		    (void *) ens_vals_q,
 		    NULL,
 		    1,
-		    (void *) &n_tmp_ens_vals,
+/*		    (void *) &n_tmp_ens_vals,*/
+		    &tmp_dim_siz,
 		    TEMPORARY,
 		    NULL,
 		    nclTypestringClass);
@@ -5478,7 +5487,8 @@ Grib2ParamList* step;
 		    (void *) ens_indexes,
 		    NULL,
 		    1,
-		    (void *) &n_tmp_ens_vals,
+/*		    (void *) &n_tmp_ens_vals,*/
+		    &tmp_dim_siz,
 		    TEMPORARY,
 		    NULL,
 		    nclTypeintClass);
@@ -5506,7 +5516,8 @@ Grib2ParamList* step;
 		    it_vals_q[j] = g2GetItQuark(&(tmp_it_vals[j]));
     }
     if(n_tmp_it_vals > 1 || (n_tmp_it_vals > 0 && (therec->single_dims & GRIB_Initial_Time_Dims))) {
-	    step->var_info.dim_sizes[i] = n_tmp_it_vals;
+	    step->var_info.dim_sizes[i] = (ng_size_t) n_tmp_it_vals;
+	    tmp_dim_siz = (ng_size_t) n_tmp_it_vals;
 	    step->yymmddhh = (NclOneDValCoordData)_NclCreateVal(
 		    NULL,
 		    NULL,
@@ -5515,7 +5526,8 @@ Grib2ParamList* step;
 		    (void*)it_vals_q,
 		    NULL,
 		    1,
-		    (void*)&n_tmp_it_vals,
+/*		    (void*)&n_tmp_it_vals,*/
+		    &tmp_dim_siz,
 		    TEMPORARY,
 		    NULL,
 		    nclTypestringClass);
@@ -5525,6 +5537,7 @@ Grib2ParamList* step;
 	    i++;
     } else if(n_tmp_it_vals == 1) {
 	    step->yymmddhh_isatt = 1;
+	    tmp_dim_siz = (ng_size_t) n_tmp_it_vals;
 	    step->yymmddhh = (NclOneDValCoordData)_NclCreateVal(
 		    NULL,
 		    NULL,
@@ -5533,7 +5546,8 @@ Grib2ParamList* step;
 		    (void*)it_vals_q,
 		    NULL,
 		    1,
-		    (void*)&n_tmp_it_vals,
+/*		    (void*)&n_tmp_it_vals,*/
+		    &tmp_dim_siz,
 		    TEMPORARY,
 		    NULL,
 		    nclTypestringClass);
@@ -5547,7 +5561,8 @@ Grib2ParamList* step;
 */
     }
     if (n_tmp_ft_vals > 1 || (n_tmp_ft_vals > 0 && (therec->single_dims & GRIB_Forecast_Time_Dims))) {
-	    step->var_info.dim_sizes[i] = n_tmp_ft_vals;
+	    step->var_info.dim_sizes[i] = (ng_size_t) n_tmp_ft_vals;
+	    tmp_dim_siz = (ng_size_t) n_tmp_ft_vals;
 	    step->forecast_time = (NclOneDValCoordData)_NclCreateVal(
 		    NULL,
 		    NULL,
@@ -5556,13 +5571,15 @@ Grib2ParamList* step;
 		    (void*)tmp_ft_vals,
 		    NULL,
 		    1,
-		    (void*)&n_tmp_ft_vals,
+/*		    (void*)&n_tmp_ft_vals,*/
+		    &tmp_dim_siz,
 		    TEMPORARY,
 		    NULL,
 		    nclTypeintClass);
 	    step->forecast_time_isatt = 0;
 	    i++;
     } else if(n_tmp_ft_vals == 1) {
+	    tmp_dim_siz = (ng_size_t) n_tmp_ft_vals;
 	    step->forecast_time = (NclOneDValCoordData)_NclCreateVal(
 		    NULL,
 		    NULL,
@@ -5571,7 +5588,8 @@ Grib2ParamList* step;
 		    (void*)tmp_ft_vals,
 		    NULL,
 		    1,
-		    (void*)&n_tmp_ft_vals,
+/*		    (void*)&n_tmp_ft_vals,*/
+		    &tmp_dim_siz,
 		    TEMPORARY,
 		    NULL,
 		    nclTypeintClass);
@@ -5584,7 +5602,8 @@ Grib2ParamList* step;
     }
     if((tmp_lv_vals != NULL)&&(tmp_lv_vals1 == NULL)) {
 	    if (n_tmp_lv_vals > 1 || (n_tmp_lv_vals > 0 && (therec->single_dims & GRIB_Level_Dims))) {
-		    step->var_info.dim_sizes[i] = n_tmp_lv_vals;
+		    step->var_info.dim_sizes[i] = (ng_size_t) n_tmp_lv_vals;
+		    tmp_dim_siz = (ng_size_t) n_tmp_lv_vals;
 		    step->levels = (NclOneDValCoordData)_NclCreateVal(
 			    NULL,
 			    NULL,
@@ -5593,7 +5612,8 @@ Grib2ParamList* step;
 			    (void*)tmp_lv_vals,
 			    NULL,
 			    1,
-			    (void*)&n_tmp_lv_vals,
+/*			    (void*)&n_tmp_lv_vals,*/
+			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
 			    nclTypefloatClass);
@@ -5603,6 +5623,7 @@ Grib2ParamList* step;
 		    step->levels_isatt = 0;
 	    } else if (n_tmp_lv_vals == 1) {
 		    step->levels_isatt = 1;
+		    tmp_dim_siz = (ng_size_t) n_tmp_lv_vals;
 		    step->levels = (NclOneDValCoordData)_NclCreateVal(
 			    NULL,
 			    NULL,
@@ -5611,7 +5632,8 @@ Grib2ParamList* step;
 			    (void*)tmp_lv_vals,
 			    NULL,
 			    1,
-			    (void*)&n_tmp_lv_vals,
+/*			    (void*)&n_tmp_lv_vals,*/
+			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
 			    nclTypefloatClass);
@@ -5625,7 +5647,8 @@ Grib2ParamList* step;
 	    }
     } else if((tmp_lv_vals != NULL)&&(tmp_lv_vals1 != NULL)) { 
 	    if(n_tmp_lv_vals > 1 || (n_tmp_lv_vals > 0 && (therec->single_dims & GRIB_Level_Dims))) {
-		    step->var_info.dim_sizes[i] = n_tmp_lv_vals;
+		    step->var_info.dim_sizes[i] = (ng_size_t) n_tmp_lv_vals;
+		    tmp_dim_siz = (ng_size_t) n_tmp_lv_vals;
 		    step->levels = NULL;
 		    step->levels0 = (NclMultiDValData)_NclCreateVal(
 			    NULL,
@@ -5635,7 +5658,8 @@ Grib2ParamList* step;
 			    (void*)tmp_lv_vals,
 			    NULL,
 			    1,
-			    (void*)&n_tmp_lv_vals,
+/*			    (void*)&n_tmp_lv_vals,*/
+			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
 			    nclTypefloatClass);
@@ -5647,7 +5671,8 @@ Grib2ParamList* step;
 			    (void*)tmp_lv_vals1,
 			    NULL,
 			    1,
-			    (void*)&n_tmp_lv_vals,
+/*			    (void*)&n_tmp_lv_vals,*/
+			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
 			    nclTypefloatClass);
@@ -5656,6 +5681,7 @@ Grib2ParamList* step;
 		    step->levels_isatt = 0;
 	    } else if (n_tmp_lv_vals == 1) {
 		    step->levels_isatt = 1;
+		    tmp_dim_siz = (ng_size_t) n_tmp_lv_vals;
 		    step->levels = NULL;
 		    step->levels0 = (NclMultiDValData)_NclCreateVal(
 			    NULL,
@@ -5665,7 +5691,8 @@ Grib2ParamList* step;
 			    (void*)tmp_lv_vals,
 			    NULL,
 			    1,
-			    (void*)&n_tmp_lv_vals,
+/*			    (void*)&n_tmp_lv_vals,*/
+			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
 			    nclTypefloatClass);
@@ -5677,7 +5704,8 @@ Grib2ParamList* step;
 			    (void*)tmp_lv_vals1,
 			    NULL,
 			    1,
-			    (void*)&n_tmp_lv_vals,
+/*			    (void*)&n_tmp_lv_vals,*/
+			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
 			    nclTypefloatClass);
@@ -5947,9 +5975,9 @@ static void _g2SetFileDimsAndCoordVars
     int n_dims_rot = 0;
     int n_dims_level = 0;
 
-    int *dimsizes_lat = NULL;
-    int *dimsizes_lon = NULL;
-    int *dimsizes_rot = NULL;
+    ng_size_t *dimsizes_lat = NULL;
+    ng_size_t *dimsizes_lon = NULL;
+    ng_size_t *dimsizes_rot = NULL;
 
     float   *tmp_lat = NULL;
     float   *tmp_lon = NULL;
@@ -5969,8 +5997,8 @@ static void _g2SetFileDimsAndCoordVars
 
     float   *tmp_float = NULL;
 
-    int tmp_dimsizes = 1;
-    int dimsizes_level = 1;
+    ng_size_t tmp_dimsizes = 1;
+    ng_size_t dimsizes_level = 1;
     int nlonatts = 0;
     int nlatatts = 0;
     int nrotatts = 0;
@@ -8615,7 +8643,7 @@ static void *Grib2OpenFile
             lskip,
             seek = 0;
 
-    size_t  lengrib;
+    ng_size_t  lengrib;
     int nrecs = 0,
         t_nrecs = 0;
 
@@ -8726,7 +8754,7 @@ static void *Grib2OpenFile
         if (lgrib == 0)
             break;
 
-        g2buf = (unsigned char *) NclMalloc((size_t) lgrib);
+        g2buf = (unsigned char *) NclMalloc((ng_size_t) lgrib);
         if (g2buf == NULL) {
             NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not allocate memory for GRIB v2 raw data.");
@@ -10812,7 +10840,7 @@ static void *Grib2OpenFile
         _g2SetAttributeLists(g2frec);
         _g2MakeVarnamesUnique(g2frec); 
 	if ((int)(g2frec->options[GRIB_PRINT_RECORD_INFO_OPT].values) != 0) {
-	    _g2PrintRecordInfo(g2frec);
+		_g2PrintRecordInfo(g2frec);
 	}
 
         fclose(fd);
@@ -11836,7 +11864,7 @@ void* storage;
 	long *grid_start;
 	long *grid_finish;
 	long *grid_stride;
-	int n_other_dims;
+	ng_size_t n_other_dims;
 	int current_index[5] = {0,0,0,0,0};
 	int dim_offsets[5] = {-1,-1,-1,-1,-1};
 	int i,j,tg;
@@ -11847,8 +11875,8 @@ void* storage;
 	void *missing;
 	NclScalar missingv;
 	FILE* fd;
-	int grid_dim_sizes[3];
-	int n_grid_dims;
+	ng_size_t grid_dim_sizes[3];
+	ng_size_t n_grid_dims;
 	NclMultiDValData tmp_md;
 	NclSelectionRecord  sel_ptr;
 	Grib2InternalVarList *vstep;
@@ -12328,7 +12356,7 @@ static NhlErrorTypes Grib2SetOption
 		rec->options[GRIB_DEFAULT_NCEP_PTABLE_OPT].values = (void*) *(NrmQuark *)values;
 	}
 	if (option ==  NrmStringToQuark("printrecordinfo")) {
-		rec->options[GRIB_PRINT_RECORD_INFO_OPT].values = (void*) *(int *)values;
+		rec->options[GRIB_PRINT_RECORD_INFO_OPT].values = (void *) *(int *)values;
 	}
 	if (option ==  NrmStringToQuark("singleelementdimensions")) {
 		/* rec->options[GRIB_SINGLE_ELEMENT_DIMENSIONS_OPT].values = (void*) values; don't need to set this, it would need to be copied */

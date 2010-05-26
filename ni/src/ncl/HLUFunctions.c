@@ -28,10 +28,12 @@ NhlErrorTypes _NclINhlIsApp
 #endif
 {
 	int nargs = 1;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
-        int total=1;
-        int i,j=0;
+        ng_size_t total=1;
+        ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	obj *ncl_hlu_obj_ids;
@@ -99,10 +101,12 @@ NhlErrorTypes _NclINhlIsDataComm
 #endif
 {
 	int nargs = 1;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
-        int total=1;
-        int i,j=0;
+        ng_size_t total=1;
+        ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	obj *ncl_hlu_obj_ids;
@@ -169,10 +173,12 @@ NhlErrorTypes _NclINhlIsDataItem
 #endif
 {
 	int nargs = 1;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
-        int total=1;
-        int i,j=0;
+        ng_size_t total=1;
+        ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	obj *ncl_hlu_obj_ids;
@@ -239,10 +245,12 @@ NhlErrorTypes _NclINhlIsDataSpec
 #endif
 {
 	int nargs = 1;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
-        int total=1;
-        int i,j=0;
+        ng_size_t total=1;
+        ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	obj *ncl_hlu_obj_ids;
@@ -309,10 +317,12 @@ NhlErrorTypes _NclINhlIsTransform
 #endif
 {
 	int nargs = 1;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
         int total=1;
-        int i,j=0;
+        ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	obj *ncl_hlu_obj_ids;
@@ -379,10 +389,12 @@ NhlErrorTypes _NclINhlIsView
 #endif
 {
 	int nargs = 1;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
         int total=1;
-        int i,j=0;
+        ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	obj *ncl_hlu_obj_ids;
@@ -449,10 +461,12 @@ NhlErrorTypes _NclINhlIsWorkstation
 #endif
 {
 	int nargs = 1;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
         int total=1;
-        int i,j=0;
+        ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	obj *ncl_hlu_obj_ids;
@@ -519,11 +533,13 @@ NhlErrorTypes _NclIChangeWorkstation
 #endif
 {
 	int nargs = 2;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	int has_missing_wk;
 	NclBasicDataTypes type;
         int total=1;
-        int i,j=0;
+        ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	NclScalar missing_wk;
@@ -626,11 +642,17 @@ NhlErrorTypes _NclISetColor
 #endif
 {
 	int nargs = 5;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-	int n_dims_c,dimsizes_c[NCL_MAX_DIMENSIONS];
-	int n_dims_r,dimsizes_r[NCL_MAX_DIMENSIONS];
-	int n_dims_g,dimsizes_g[NCL_MAX_DIMENSIONS];
-	int n_dims_b,dimsizes_b[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	int n_dims_c;
+	ng_size_t dimsizes_c[NCL_MAX_DIMENSIONS];
+	int n_dims_r;
+	ng_size_t dimsizes_r[NCL_MAX_DIMENSIONS];
+	int n_dims_g;
+	ng_size_t dimsizes_g[NCL_MAX_DIMENSIONS];
+	int n_dims_b;
+	ng_size_t dimsizes_b[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
 	NclBasicDataTypes type_c;
 	NclBasicDataTypes type_r;
@@ -638,7 +660,7 @@ NhlErrorTypes _NclISetColor
 	NclBasicDataTypes type_b;
         int total=1;
         int total_c =1;
-        int i,j=0,k;
+        ng_size_t i,j=0,k;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	NclScalar missing_c;
@@ -789,11 +811,17 @@ NhlErrorTypes _NclINewColor
 #endif
 {
 	int nargs = 4;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-	int n_dims_c,dimsizes_c[NCL_MAX_DIMENSIONS];
-	int n_dims_r,dimsizes_r[NCL_MAX_DIMENSIONS];
-	int n_dims_g,dimsizes_g[NCL_MAX_DIMENSIONS];
-	int n_dims_b,dimsizes_b[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	int n_dims_c;
+	ng_size_t dimsizes_c[NCL_MAX_DIMENSIONS];
+	int n_dims_r;
+	ng_size_t dimsizes_r[NCL_MAX_DIMENSIONS];
+	int n_dims_g;
+	ng_size_t dimsizes_g[NCL_MAX_DIMENSIONS];
+	int n_dims_b;
+	ng_size_t dimsizes_b[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
 	NclBasicDataTypes type_c;
 	NclBasicDataTypes type_r;
@@ -802,7 +830,7 @@ NhlErrorTypes _NclINewColor
         int total=1;
         int total_c =1;
 	int m;
-        int i,j=0,k;
+        ng_size_t i,j=0,k;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	NclScalar missing_c;
@@ -950,11 +978,13 @@ NhlErrorTypes _NclIFreeColor
 #endif
 {
 	int nargs = 2;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
         int total=1;
         int total_c =1;
-        int i,j=0,k;
+        ng_size_t i,j=0,k;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	NclScalar missing_c;
@@ -1040,11 +1070,13 @@ NhlErrorTypes _NclIIsAllocatedColor
 #endif
 {
 	int nargs = 2;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
         int total=1;
         int total_c =1;
-        int i,j=0,k;
+        ng_size_t i,j=0,k;
 	logical *log_out;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
@@ -1149,10 +1181,12 @@ NhlErrorTypes _NclIGetBB
 #endif
 {
 	int nargs = 1;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
         int total=1;
-        int i,j=0;
+        ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	obj *ncl_hlu_obj_ids;
@@ -1236,14 +1270,17 @@ NhlErrorTypes _NclIAddData
 #endif
 {
 	int nargs = 3;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	int has_missing1,has_missing2;
-	int n_dims2,dimsizes2[NCL_MAX_DIMENSIONS];
+	int n_dims2;
+	ng_size_t dimsizes2[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
 	NclBasicDataTypes type2;
         int total=1;
         int total2=1;
-        int i,j=0,k=0,l;
+        ng_size_t i,j=0,k=0,l;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj *tmp_data_ptr;
 	NclScalar missing;
@@ -1252,7 +1289,8 @@ NhlErrorTypes _NclIAddData
 	obj *ncl_hlu_obj_ids;
 	string *resname;
 	obj *ncl_data_obj_ids;
-	int n_dims_ =1, len_dims[2];
+	int n_dims_ =1;
+	ng_size_t  len_dims[2];
 	struct _NclHLUObjRec *tmp_hlu;
 	NclStackEntry data_out;
 	obj *out_dspec_ids;
@@ -1388,14 +1426,17 @@ NhlErrorTypes _NclIRemoveData
 #endif
 {
 	int nargs = 3;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	int has_missing1,has_missing2;
-	int n_dims2,dimsizes2[NCL_MAX_DIMENSIONS];
+	int n_dims2;
+	ng_size_t dimsizes2[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
 	NclBasicDataTypes type2;
         int total=1;
         int total2=1;
-        int i,j=0,k=0,l;
+        ng_size_t i,j=0,k=0,l;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj *tmp_data_ptr;
 	NclScalar missing;
@@ -1491,12 +1532,14 @@ NhlErrorTypes _NclIRemoveOverlay
 #endif
 {
 	int nargs = 3;
-	int has_missing1,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
+	int has_missing1;
+	int n_dims1;
+	ng_size_t dimsizes1[NCL_MAX_DIMENSIONS];
 	int has_missing2;
 	NclBasicDataTypes type;
 	NclBasicDataTypes type1;
         int total=1;
-        int i,j=0;
+        ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj overlay_obj_ptr;
 	NclScalar missing1;
@@ -1572,12 +1615,14 @@ NhlErrorTypes _NclIAddToOverlay2
 #endif
 {
 	int nargs = 3;
-	int has_missing,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims1;
+	ng_size_t dimsizes1[NCL_MAX_DIMENSIONS];
 	int has_missing1;
 	int has_missing2;
 	NclBasicDataTypes type1;
         int total=1;
-        int i,j=0;
+        ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj *base_hlu_ptr;
 	NclHLUObj *after_hlu_ptr;
@@ -1645,10 +1690,12 @@ NhlErrorTypes _NclIAddAnnotation
 #endif
 {
 	int nargs = 2;
-	int has_missing,has_missing1,n_dims1,n_dims,dimsizes[NCL_MAX_DIMENSIONS],dimsizes1[NCL_MAX_DIMENSIONS];
+	int has_missing,has_missing1;
+	int n_dims1,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS],dimsizes1[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
-        int total=1,n_dims_ = 1, len_dims = 1;
-        int i,j=0,tmp;
+	ng_size_t total=1,n_dims_ = 1, len_dims = 1;
+	ng_size_t i,j=0,tmp;
 	obj *out_anno_ids;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj tmp_base_ptr;
@@ -1759,10 +1806,12 @@ NhlErrorTypes _NclIRemoveAnnotation
 #endif
 {
 	int nargs = 2;
-	int has_missing,has_missing1,n_dims1,n_dims,dimsizes1[NCL_MAX_DIMENSIONS],dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing,has_missing1;
+	int n_dims1,n_dims;
+	ng_size_t dimsizes1[NCL_MAX_DIMENSIONS],dimsizes[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
         int total=1;
-        int i,j=0;
+        ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj tmp_base_ptr;
 	NclScalar missing;
@@ -1836,10 +1885,12 @@ NhlErrorTypes _NclIAddPrimitive
 #endif
 {
 	int nargs = 3;
-	int has_missing,has_missing1,has_missing2,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
+	int has_missing,has_missing1,has_missing2;
+	int n_dims1;
+	ng_size_t dimsizes1[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
         int total=1;
-        int i,j=0;
+        ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj tmp_before_ptr;
 	NclHLUObj tmp_base_ptr;
@@ -1934,9 +1985,11 @@ NhlErrorTypes _NclIRemovePrimitive
 #endif
 {
 	int nargs = 2;
-	int has_missing,has_missing1,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
+	int has_missing,has_missing1;
+	int n_dims1;
+	ng_size_t dimsizes1[NCL_MAX_DIMENSIONS];
         int total=1;
-        int i,j=0;
+        ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj tmp_base_ptr;
 	NclScalar missing;
@@ -2010,10 +2063,12 @@ NhlErrorTypes _NclIUpdateData
 #endif
 {
 	int nargs = 1;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
         int total=1;
-        int i,j=0;
+        ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	obj *ncl_hlu_obj_ids;
@@ -2064,14 +2119,22 @@ NhlErrorTypes _NclIDataPolymarker
 #endif
 {
 	int nargs = 4;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-	int has_missing_,n_dims_,dimsizes_[NCL_MAX_DIMENSIONS];
-	int has_missing1,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
-	int has_missing2,n_dims2,dimsizes2[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing_;
+	int n_dims_;
+	ng_size_t dimsizes_[NCL_MAX_DIMENSIONS];
+	int has_missing1;
+	int n_dims1;
+	ng_size_t dimsizes1[NCL_MAX_DIMENSIONS];
+	int has_missing2;
+	int n_dims2;
+	ng_size_t dimsizes2[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
         int total=1;
         int total_=1;
-        int i,j=0,k=0;
+        ng_size_t i,j=0,k=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj *tmp_style_hlu_ptr;
 	NclScalar missing;
@@ -2246,14 +2309,22 @@ NhlErrorTypes _NclIDataPolygon
 #endif
 {
 	int nargs = 4;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-	int has_missing_,n_dims_,dimsizes_[NCL_MAX_DIMENSIONS];
-	int has_missing1,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
-	int has_missing2,n_dims2,dimsizes2[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing_;
+	int n_dims_;
+	ng_size_t dimsizes_[NCL_MAX_DIMENSIONS];
+	int has_missing1;
+	int n_dims1;
+	ng_size_t dimsizes1[NCL_MAX_DIMENSIONS];
+	int has_missing2;
+	int n_dims2;
+	ng_size_t dimsizes2[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
         int total=1;
         int total_=1;
-        int i,j=0,k=0;
+        ng_size_t i,j=0,k=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj *tmp_style_hlu_ptr;
 	NclScalar missing;
@@ -2428,14 +2499,22 @@ NhlErrorTypes _NclIDataPolyline
 #endif
 {
 	int nargs = 4;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-	int has_missing_,n_dims_,dimsizes_[NCL_MAX_DIMENSIONS];
-	int has_missing1,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
-	int has_missing2,n_dims2,dimsizes2[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing_;
+	int n_dims_;
+	ng_size_t dimsizes_[NCL_MAX_DIMENSIONS];
+	int has_missing1;
+	int n_dims1;
+	ng_size_t dimsizes1[NCL_MAX_DIMENSIONS];
+	int has_missing2;
+	int n_dims2;
+	ng_size_t dimsizes2[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
         int total=1;
         int total_=1;
-        int i,j=0,k=0;
+        ng_size_t i,j=0,k=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj *tmp_style_hlu_ptr;
 	NclScalar missing;
@@ -2610,14 +2689,22 @@ NhlErrorTypes _NclINDCPolygon
 #endif
 {
 	int nargs = 4;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-	int has_missing_,n_dims_,dimsizes_[NCL_MAX_DIMENSIONS];
-	int has_missing1,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
-	int has_missing2,n_dims2,dimsizes2[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing_;
+	int n_dims_;
+	ng_size_t dimsizes_[NCL_MAX_DIMENSIONS];
+	int has_missing1;
+	int n_dims1;
+	ng_size_t dimsizes1[NCL_MAX_DIMENSIONS];
+	int has_missing2;
+	int n_dims2;
+	ng_size_t dimsizes2[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
-        int total=1;
-        int total_=1;
-        int i,j=0,k=0;
+	ng_size_t total=1;
+	ng_size_t total_=1;
+        ng_size_t i,j=0,k=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj *tmp_style_hlu_ptr;
 	NclScalar missing;
@@ -2792,14 +2879,22 @@ NhlErrorTypes _NclINDCPolymarker
 #endif
 {
 	int nargs = 4;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-	int has_missing_,n_dims_,dimsizes_[NCL_MAX_DIMENSIONS];
-	int has_missing1,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
-	int has_missing2,n_dims2,dimsizes2[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing_;
+	int n_dims_;
+	ng_size_t dimsizes_[NCL_MAX_DIMENSIONS];
+	int has_missing1;
+	int n_dims1;
+	ng_size_t dimsizes1[NCL_MAX_DIMENSIONS];
+	int has_missing2;
+	int n_dims2;
+	ng_size_t dimsizes2[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
-        int total=1;
-        int total_=1;
-        int i,j=0,k=0;
+	ng_size_t total=1;
+	ng_size_t total_=1;
+	ng_size_t i,j=0,k=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj *tmp_style_hlu_ptr;
 	NclScalar missing;
@@ -2974,14 +3069,22 @@ NhlErrorTypes _NclINDCPolyline
 #endif
 {
 	int nargs = 4;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-	int has_missing_,n_dims_,dimsizes_[NCL_MAX_DIMENSIONS];
-	int has_missing1,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
-	int has_missing2,n_dims2,dimsizes2[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing_;
+	int n_dims_;
+	ng_size_t dimsizes_[NCL_MAX_DIMENSIONS];
+	int has_missing1;
+	int n_dims1;
+	ng_size_t dimsizes1[NCL_MAX_DIMENSIONS];
+	int has_missing2;
+	int n_dims2;
+	ng_size_t dimsizes2[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
-        int total=1;
-        int total_=1;
-        int i,j=0,k=0;
+	ng_size_t total=1;
+	ng_size_t total_=1;
+	ng_size_t i,j=0,k=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj *tmp_style_hlu_ptr;
 	NclScalar missing;
@@ -3157,10 +3260,12 @@ NhlErrorTypes _NclIClassName
 #endif
 {
 	int nargs = 1;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
-        int total=1;
-        int i,j=0;
+	ng_size_t total=1;
+	ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	obj *ncl_hlu_obj_ids;
@@ -3219,10 +3324,12 @@ NhlErrorTypes _NclIName
 #endif
 {
 	int nargs = 1;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
-        int total=1;
-        int i,j=0;
+	ng_size_t total=1;
+	ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	obj *ncl_hlu_obj_ids;
@@ -3280,13 +3387,14 @@ NhlErrorTypes _NclINhlGetWorkspaceObjectId
 ()
 #endif
 {
-    int n_dims_ = 1, len_dims = 1;
-    int tmp;
-    obj *out_ids;
-    struct _NclHLUObjRec *tmp_hlu;
-    NclStackEntry data_out;
-    NhlErrorTypes ret = NhlNOERROR;
-    NhlLayer tmp_layer;
+	int n_dims_ = 1;
+	ng_size_t len_dims = 1;
+	int tmp;
+	obj *out_ids;
+	struct _NclHLUObjRec *tmp_hlu;
+	NclStackEntry data_out;
+	NhlErrorTypes ret = NhlNOERROR;
+	NhlLayer tmp_layer;
 
 
 	
@@ -3310,8 +3418,9 @@ NhlErrorTypes _NclINhlAppGetDefaultParentId
 ()
 #endif
 {
-        int n_dims_ = 1, len_dims = 1;
-        int tmp;
+	int n_dims_ = 1;
+	ng_size_t len_dims = 1;
+	int tmp;
 	obj *out_ids;
 	struct _NclHLUObjRec *tmp_hlu;
 	NclStackEntry data_out;
@@ -3350,16 +3459,18 @@ NhlErrorTypes _NclINhlGetParentWorkstation
 ()
 #endif
 {
-        int nargs = 1;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-        NclBasicDataTypes type;
-        int total=1;
-        int i,j=0;
-        NclHLUObj tmp_hlu_ptr;
+	int nargs = 1;
+	int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i,j=0;
+	NclHLUObj tmp_hlu_ptr;
 	NclHLUObj tmp_hlu;
-        NclScalar missing;
-        obj *ncl_hlu_obj_ids;
-        obj *outpt;
+	NclScalar missing;
+	obj *ncl_hlu_obj_ids;
+	obj *outpt;
 	int tmp_id;
 	NclHLULookUpTable* tmp_lo;
 	NhlErrorTypes ret = NhlNOERROR;
@@ -3460,10 +3571,12 @@ NhlErrorTypes _NclINhlGetParentId
 #endif
 {
         int nargs = 1;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclBasicDataTypes type;
-        int total=1;
-        int i,j=0;
+        ng_size_t total=1;
+        ng_size_t i,j=0;
         NclHLUObj tmp_hlu_ptr;
         NclScalar missing;
         obj *ncl_hlu_obj_ids;
@@ -3581,7 +3694,7 @@ NhlErrorTypes _NclINhlPalGetDefined
 	NclReturnValue(
                 (void*)output,
                 1,
-                &num,
+                (ng_size_t *) &num,
 		NULL,
 		NCL_string,
                 0
@@ -3596,15 +3709,16 @@ NhlErrorTypes _NclISetDashPattern
 #endif
 {
 	int nargs = 3;
-	int n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	int has_missing,has_missing0,has_missing1,has_missing2;
-        int size0=1,size1=1,size2=1;
+	ng_size_t size0=1,size1=1,size2=1;
 	NclScalar missing0;
 	NclScalar missing1;
 	NclScalar missing2;
 	NclBasicDataTypes type;
 	int nwks;
-        int i,j=0;
+        ng_size_t i,j=0;
 	NclHLUObj tmp_wks;
 	NclScalar missing;
 	obj *wks_obj_ids;
@@ -3685,14 +3799,15 @@ NhlErrorTypes _NclINewDashPattern
 #endif
 {
 	int nargs = 2;
-	int n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	int has_missing,has_missing0,has_missing1;
-        int size0=1,size1=1;
+	ng_size_t size0=1,size1=1;
 	NclScalar missing0;
 	NclScalar missing1;
 	NclBasicDataTypes type;
 	int nwks;
-        int i,j=0;
+        ng_size_t i,j=0;
 	NclHLUObj tmp_wks;
 	NclScalar missing;
 	obj *wks_obj_ids;
@@ -3843,7 +3958,8 @@ NhlErrorTypes _NclISetMarker
 #endif
 {
 	int nargs = 9;
-	int n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	int has_missing,has_missing0,has_missing1,has_missing2,has_missing3,
 		has_missing4,has_missing5,has_missing6,has_missing7,has_missing8;
 	NclScalar missing0;
@@ -3857,9 +3973,9 @@ NhlErrorTypes _NclISetMarker
 	NclScalar missing8;
 	NclBasicDataTypes type4,type5,type6,type7,type8;
 	void *val4,*val5,*val6,*val7,*val8;
-        int size0,size1,size2,size3,size4,size5,size6,size7,size8;
+	ng_size_t size0,size1,size2,size3,size4,size5,size6,size7,size8;
 	int nwks;
-        int i,j=0;
+        ng_size_t i,j=0;
 	NclHLUObj tmp_wks;
 	NclScalar missing;
 	obj *wks_obj_ids;
@@ -4092,7 +4208,8 @@ NhlErrorTypes _NclINewMarker
 #endif
 {
 	int nargs = 8;
-	int n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	int has_missing,has_missing0,has_missing1,has_missing2,has_missing3,
 		has_missing4,has_missing5,has_missing6,has_missing7;
 	NclScalar missing0;
@@ -4105,9 +4222,9 @@ NhlErrorTypes _NclINewMarker
 	NclScalar missing7;
 	NclBasicDataTypes type3,type4,type5,type6,type7;
 	void *val3,*val4,*val5,*val6,*val7;
-        int size0,size1,size2,size3,size4,size5,size6,size7;
+	ng_size_t size0,size1,size2,size3,size4,size5,size6,size7;
 	int nwks;
-        int i,j=0;
+	ng_size_t i,j=0;
 	NclHLUObj tmp_wks;
 	NclScalar missing;
 	obj *wks_obj_ids;
@@ -4354,21 +4471,20 @@ NhlErrorTypes _NclINewMarker
 }
 
 NhlErrorTypes _NclINhlGetErrorObjectId
-#if	NhlNeedProto
+#if NhlNeedProto
 (void)
 #else
 ()
 #endif
 {
-    int n_dims_ = 1, len_dims = 1;
+    int n_dims_ = 1;
+    ng_size_t len_dims = 1;
     int tmp;
     obj *out_ids;
     struct _NclHLUObjRec *tmp_hlu;
     NclStackEntry data_out;
     NhlErrorTypes ret = NhlNOERROR;
-    NhlLayer tmp_layer;
-
-	
+    NhlLayer tmp_layer;                                                                                                    
     tmp = NhlGetErrorObjectId();
     tmp_layer = _NhlGetLayer(tmp);
     tmp_hlu = _NclHLUObjCreate(NULL, NULL, Ncl_HLUObj, 0, STATIC,
@@ -4393,14 +4509,15 @@ NhlErrorTypes _NclINhlGetClassResources
 #endif
 {
         int nargs = 2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclBasicDataTypes type;
         int i,j=0;
         NclScalar missing;
         void *arg0,*arg1;
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	NrmNameList resources;
-        int res_count;
+        ng_size_t res_count;
 	static int first = 1;
 	static int hlu_class_count = 26;
 	static NhlClass NhlPublicClassList[26];
@@ -4459,7 +4576,7 @@ NhlErrorTypes _NclINhlGetClassResources
 		}
 	}
 	if (! class) {
-		int count = 1;
+		ng_size_t count = 1;
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"NhlGetClassResources: Invalid class name");
 		ret = NclReturnValue(
 			(void*)&(((NclTypeClass)nclTypestringClass)->type_class.default_mis),
@@ -4518,7 +4635,7 @@ NhlErrorTypes _NclINhlGetClassResources
 			}
 		}
 		if (new_res_count == 0) {
-			int count = 1;
+			ng_size_t count = 1;
 			ret = NclReturnValue(
 				(void*)&(((NclTypeClass)nclTypestringClass)->type_class.default_mis),
 				1,
@@ -4553,3 +4670,4 @@ NhlErrorTypes _NclINhlGetClassResources
         );
 	return(ret);
 }
+

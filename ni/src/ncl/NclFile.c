@@ -326,12 +326,12 @@ NclFile thefile;
 
 static NhlErrorTypes FileAddDim
 #if  NhlNeedProto
-(NclFile thefile, NclQuark dimname, int dimsize, int is_unlimited)
+(NclFile thefile, NclQuark dimname, ng_size_t dimsize, int is_unlimited)
 #else
 (thefile, dimname, dimsize, is_unlimited)
 NclFile thefile;
 NclQuark dimname;
-int dimsize;
+ng_size_t dimsize;
 int is_unlimited;
 #endif
 {
@@ -428,7 +428,7 @@ NclQuark *dimnames;
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
-	long dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	int i,j;
 	NclTypeClass typec;
 	int dindex;
@@ -555,13 +555,13 @@ int *dims;
 
 static NhlErrorTypes FileAddVarChunkCache
 #if	NhlNeedProto
-(NclFile thefile, NclQuark varname, size_t cache_size, size_t cache_nelems, float cache_preemption)
+(NclFile thefile, NclQuark varname, ng_size_t cache_size, ng_size_t cache_nelems, float cache_preemption)
 #else
 (thefile, varname, cache_size, cache_nelems, cache_preemption)
 NclFile thefile;
 NclQuark varname;
-size_t cache_size;
-size_t cache_nelems;
+ng_size_t cache_size;
+ng_size_t cache_nelems;
 float  cache_preemption;
 #endif
 {
@@ -683,6 +683,7 @@ NhlArgVal udata;
 	NclFileAttInfoList *thelist;
 	NclMultiDValData tmp_md;
 	void *val;
+        ng_size_t  ne;
 
 	theattobj = (NclAtt)_NclGetObj(((FileCallBackRec*)udata.ptrval)->theattid);
 	thefile = (NclFile)_NclGetObj(((FileCallBackRec*)udata.ptrval)->thefileid);
@@ -711,6 +712,7 @@ NhlArgVal udata;
                                         		thelist->the_att->att_name_quark,
                                         		val
                                         		);
+                                        ne = thelist->the_att->num_elements;
                                 		tmp_md = _NclCreateMultiDVal(
                                                 		NULL,
                                                 		NULL,
@@ -719,7 +721,7 @@ NhlArgVal udata;
                                                 		val,
                                                 		NULL,
                                                 		1,
-                                                		&thelist->the_att->num_elements,
+                                                		&ne,
                                                 		TEMPORARY,
                                                 		NULL,
                                                 		_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(thelist->the_att->data_type))
@@ -744,6 +746,7 @@ NhlArgVal udata;
                                         thefile->file.file_atts[index]->att_name_quark,
                                         val
                                         );
+                                ne = thefile->file.file_atts[index]->num_elements;
                                 tmp_md = _NclCreateMultiDVal(
                                                 NULL,
                                                 NULL,
@@ -752,7 +755,7 @@ NhlArgVal udata;
                                                 val,
                                                 NULL,
                                                 1,
-                                                &thefile->file.file_atts[index]->num_elements,
+                                                &ne,
                                                 TEMPORARY,
                                                 NULL,
                                                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(thefile->file.file_atts[index]->data_type)));
@@ -779,7 +782,7 @@ NclQuark var;
         void *val;
         NclMultiDValData tmp_md;
         NhlArgVal udata;
-	
+        ng_size_t ne;	
 
 	index = FileIsVar(thefile,var);
         if(index > -1) {
@@ -798,6 +801,7 @@ NclQuark var;
 						val
 						);
 				}
+				ne = step->the_att->num_elements;
 				tmp_md = _NclCreateMultiDVal(
 						NULL,
 						NULL,
@@ -806,7 +810,7 @@ NclQuark var;
 						val,
 						NULL,
 						1,
-						&step->the_att->num_elements,
+						&ne,
 						TEMPORARY,
 						NULL,
 						_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(step->the_att->data_type))
@@ -1700,7 +1704,7 @@ static NhlErrorTypes InitializeFileOptions
 	string *sval;
 	float *fval;
 	int *ival;
-	int len_dims;
+	ng_size_t len_dims;
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md;
 	
@@ -2341,14 +2345,14 @@ NclQuark var;
 
 static void ReverseIt
 #if	NhlNeedProto
-(void *val,void* swap_space,int ndims,int *compare_sel,int *dim_sizes,int el_size)
+(void *val,void* swap_space,int ndims,int *compare_sel,ng_size_t *dim_sizes,int el_size)
 #else
 (val,swap_space,ndims,compare_sel,dim_sizes,el_size)
 void *val;
 void* swap_space;
 int ndims;
 int *compare_sel;
-int *dim_sizes;
+ng_size_t *dim_sizes;
 int el_size;
 #endif
 {
@@ -2357,7 +2361,7 @@ int el_size;
 	int block_size = el_size;
 
 	for(i = 1; i < ndims; i++) {
-		block_size *= dim_sizes[i];
+	block_size *= dim_sizes[i];
 	}
 	tmp = (char*)val;
 	if(ndims != 1) {
@@ -2415,7 +2419,7 @@ int vtype;
 	long current_index[NCL_MAX_DIMENSIONS];
 	long current_finish[NCL_MAX_DIMENSIONS];
 	int index_map[NCL_MAX_DIMENSIONS];
-	int output_dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t output_dim_sizes[NCL_MAX_DIMENSIONS];
 	int keeper[NCL_MAX_DIMENSIONS];
 	NclSelection *sel;
 	float tmpf;
@@ -3784,7 +3788,7 @@ struct _NclSelectionRecord* sel_ptr;
 			if (_NclIsAtt(att_id,"_FillValue")) {
 				tmp_att_md = _NclGetAtt(att_id,"_FillValue",NULL);
 				if (tmp_att_md->multidval.data_type != tmp_md->multidval.data_type) {
-					int tmp_size = 1;
+					ng_size_t tmp_size = 1;
 					NclScalar *tmp_mis = (NclScalar*)NclMalloc((unsigned)sizeof(NclScalar));
 					*tmp_mis = tmp_md->multidval.missing_value.value;
 					tmp_att_md = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,
@@ -3965,7 +3969,7 @@ struct _NclSelectionRecord *sel_ptr;
 	if(aindex > -1) {
 		NclMultiDValData new_tmp_md;
 		NclScalar missing_value;
-		int dim_size = 1;
+		ng_size_t dim_size = 1;
 		char *type_name;
 		NclTypeClass type_class;
 
@@ -4443,7 +4447,7 @@ int type;
 	NclMultiDValData tmp_md = NULL;
 	NclMultiDValData mis_md = NULL;
 	NclQuark new_dim_quarks[NCL_MAX_DIMENSIONS];
-	long 	new_dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t 	new_dim_sizes[NCL_MAX_DIMENSIONS];
 	
 	int has_missing = 0;
 	int update_unlimited = 0;
@@ -4472,13 +4476,14 @@ int type;
 	long current_finish[NCL_MAX_DIMENSIONS];
 	int keeper[NCL_MAX_DIMENSIONS];
 	int index_map[NCL_MAX_DIMENSIONS];
-	int selection_dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t selection_dim_sizes[NCL_MAX_DIMENSIONS];
 	NclSelection *sel;
 	float tmpf;
 	NclScalar *tmp_mis;
 	NclScalar tmp_scalar;
 	NclScalar tmp_scalar0;
-	int tmp_size = 1,tmpi;
+	ng_size_t tmp_size = 1;
+    int tmpi;
 	void *data_type;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
@@ -5387,7 +5392,7 @@ struct _NclSelectionRecord *rhs_sel_ptr;
         char *tmp_ptr;
 	NclMultiDValData tmp_md;
 	struct _NclVarRec* cvar;
-	int dimsize = -1;
+	ng_size_t dimsize = -1;
 
 	tmp_sel.n_entries = 1;
 	tmp_sel.selected_from_sym = NULL;
@@ -5815,6 +5820,8 @@ struct _NclSelectionRecord *sel_ptr;
 	void *val;
 	NclMultiDValData tmp_md;
 	NhlArgVal udata;
+        ng_size_t ne;
+
 	aindex = FileIsAtt(thefile,attname);
 	if(aindex > -1) {
 		if(thefile->file.file_atts_id != -1) {
@@ -5829,6 +5836,7 @@ struct _NclSelectionRecord *sel_ptr;
 					thefile->file.file_atts[i]->att_name_quark,
 					val
 					);
+				ne = thefile->file.file_atts[i]->num_elements;
 				tmp_md = _NclCreateMultiDVal(
 						NULL,
 						NULL,
@@ -5837,7 +5845,7 @@ struct _NclSelectionRecord *sel_ptr;
 						val,
 						NULL,
 						1,
-						&thefile->file.file_atts[i]->num_elements,
+						&ne,
 						TEMPORARY,
 						NULL,
 						_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(thefile->file.file_atts[i]->data_type)));
@@ -6036,7 +6044,7 @@ long dim_num;
 	int i;
 	int *tmpi;
 	NclQuark *tmpq;
-	int output_dim_sizes = 1;
+	ng_size_t output_dim_sizes = 1;
 	
 	
 	index = FileIsVar(thefile,var);
@@ -6142,7 +6150,7 @@ long dim_num;
 	int i = 0;
 	NclQuark *tmps;
 	int *tmpl;
-	int output_dim_sizes = 1;
+	ng_size_t output_dim_sizes = 1;
 	if(dim_name != -1) {
 		for(i =0; i< thefile->file.n_file_dims; i++) {
 			if(thefile->file.file_dim_info[i]->dim_name_quark) {

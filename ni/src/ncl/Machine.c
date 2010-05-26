@@ -1,4 +1,3 @@
-
 /*
  *      $Id: Machine.c,v 1.90 2010-04-14 21:29:47 huangwei Exp $
  */
@@ -2811,7 +2810,7 @@ void _NclDumpStack
 				if((tmp_ptr->u.data_var->var.dim_info[i].dim_quark != -1)) {
 					fprintf(file,"%s | ",NrmQuarkToString(tmp_ptr->u.data_var->var.dim_info[i].dim_quark));
 				}
-				fprintf(file,"%d]",tmp_ptr->u.data_var->var.dim_info[i].dim_size);
+				fprintf(file,"%zd]",tmp_ptr->u.data_var->var.dim_info[i].dim_size);
 				if(i !=  tmp_ptr->u.data_var->var.n_dims - 1) {
 					fprintf(file," x ");
 				}

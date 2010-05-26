@@ -311,8 +311,8 @@ extern NhlErrorTypes _NclFileAddVarChunkCache(
 #if NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* varname */,
-size_t	 /* cache_size */,
-size_t   /* cache_nelems */,
+ng_size_t	 /* cache_size */,
+ng_size_t   /* cache_nelems */,
 float    /* cache_preemption */
 #endif
 );

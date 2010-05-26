@@ -493,14 +493,14 @@ int n;
 }
 void SetArgTemplate
 #if NhlNeedProto
-(void *args, int arg_num, char *type_name, int n_dims, int *dimsizes)
+(void *args, int arg_num, char *type_name, int n_dims, ng_size_t *dimsizes)
 #else
 (args, arg_num, type_name, n_dims, dimsizes)
 void *args;
 int arg_num;
 char *type_name;
 int n_dims;
-int *dimsizes;
+ng_size_t *dimsizes;
 #endif
 {
 	NclArgTemplate* the_args = (NclArgTemplate*) &(((NclArgTemplate*)args)[arg_num]);

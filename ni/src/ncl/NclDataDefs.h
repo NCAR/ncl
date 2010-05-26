@@ -224,7 +224,7 @@ typedef struct _NclStackEntry{
 }NclStackEntry;
 
 typedef struct _NclVectorSelection{
-        int n_ind;
+        ng_size_t n_ind;
         long *ind;
         long min;
         long max;

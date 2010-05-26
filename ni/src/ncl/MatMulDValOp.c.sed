@@ -40,9 +40,9 @@ NclData result;
 	NclMissingRec themissing;
 	void *result_val;
 	int n_dims =0;
-	int dims[2];
+	ng_size_t dims[2];
 	
-	int i,total;
+	ng_size_t i,total;
 	
 
 	if((other_md == NULL)||(self_md == NULL))

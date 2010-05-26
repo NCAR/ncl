@@ -158,7 +158,7 @@ int number_of_constants = 0;
 
 static NclObj CreateConst
 #if     NhlNeedProto
-(NclObj inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, void *val, NclScalar *missing_value, int n_dims, int *dim_sizes, NclStatus status, NclSelectionRecord *sel_rec, NclTypeClass type)
+(NclObj inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, void *val, NclScalar *missing_value, int n_dims, ng_size_t *dim_sizes, NclStatus status, NclSelectionRecord *sel_rec, NclTypeClass type)
 #else
 (inst, theclass, obj_type, obj_type_mask, val, missing_value, n_dims, dim_sizes, status, sel_rec, type)
 NclObj inst;
@@ -168,7 +168,7 @@ unsigned int obj_type_mask;
 void *val;
 NclScalar *missing_value;
 int n_dims;
-int *dim_sizes;
+ng_size_t *dim_sizes;
 NclStatus status;
 NclSelectionRecord *sel_rec;
 NclTypeClass type;
@@ -269,7 +269,7 @@ int _NclTranslate
 	static int nesting = 0;
 	NclObj tmp_md = NULL;
 	void *tmp_val = NULL;
-	int dim_size = 1;
+	ng_size_t dim_size = 1;
 
 	nesting++;
 

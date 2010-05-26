@@ -1,4 +1,5 @@
 
+
 /*
  *      $Id: Symbol.h,v 1.33 2009-09-03 06:41:18 dbrown Exp $
  */
@@ -115,7 +116,7 @@ typedef struct _NclBuiltInProcInfo {
 
 typedef struct _NclArgTemplate {
 	int n_dims;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	struct _NclSymbol *arg_data_type; /* use symbol table keyword entries */
 	struct _NclSymbol *arg_sym;
 	int is_dimsizes;

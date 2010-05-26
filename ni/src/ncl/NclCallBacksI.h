@@ -31,8 +31,8 @@ typedef struct _NclVarInfoRec {
 	NclApiVarTypes 	var_type;
 	NclQuark 	var_quark;
 	int		n_dims;
-	int		dim_sizes[NCL_MAX_DIMENSIONS];
-	int		dim_quarks[NCL_MAX_DIMENSIONS];
+	ng_size_t		dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t		dim_quarks[NCL_MAX_DIMENSIONS];
 } NclVarInfoRec;
 
 typedef struct _NclVarClassInfo {

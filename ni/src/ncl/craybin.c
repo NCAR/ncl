@@ -180,7 +180,7 @@ static int 	HandleSingle
 (FILE* fd,int eoff) 
 #endif
 {
-	int n =0;
+	ng_size_t n =0;
 	unsigned char control_word[WORD_SIZE];
 	int done = 0;
 	int total = 0;
@@ -240,12 +240,12 @@ NhlErrorTypes _NclICrayBinNumRec
 	int cb_off = 0;
         int cb = 0;
         int i;
-        int dimsize = 1;
+        ng_size_t dimsize = 1;
 	long real_offset = 0;
         long end_offset = 0;
         int total = 0;
         int len;
-        int n;
+        ng_size_t n;
         int index = 0;
         char tmpc;
 	int done = 0;
@@ -358,8 +358,9 @@ NhlErrorTypes _NclICrayBinRecRead
 {
 	string *fpath;
 	int	*recnum;
-	int	*dimensions;
-	int	dimsize;
+	ng_size_t	*dimensions;
+	ng_size_t  *tmp_dsz;
+	ng_size_t	dimsize;
 	string *type;
 	NclScalar missing;
 	NclMultiDValData tmp_md;
@@ -371,11 +372,12 @@ NhlErrorTypes _NclICrayBinRecRead
 	char *cbin_buf,*tmp;
 	int cb;
 	int cb_off;
-	int i;
+	ng_size_t i;
 	int ind;
 	FILE* fd = NULL;
-	int size = 1;
-	int n;
+	ng_size_t size = 1;
+	ng_size_t tmp_size = 0;
+	ng_size_t n;
 	int cur_off = 0;
 	NhlErrorTypes ret = NhlNOERROR;
 	int done = 0;
@@ -410,7 +412,8 @@ NhlErrorTypes _NclICrayBinRecRead
 		return(NhlFATAL);
 	}
 	
-	dimensions = (int*)NclGetArgValue(
+	/*dimensions = (ng_size_t *)NclGetArgValue(*/
+	tmp_dsz = (ng_size_t *)NclGetArgValue(
 		2,
 		4,
 		NULL,
@@ -420,7 +423,9 @@ NhlErrorTypes _NclICrayBinRecRead
 		NULL,
 		0);
 
-	if(*dimensions!= -1) {
+    dimensions = (ng_size_t *) tmp_dsz;
+/*	if(*dimensions!= -1) {*/
+	if(*tmp_dsz != -1) {
 		for(i = 0; i < 	dimsize; i++) {
 			if(missing.intval == *(dimensions + i)) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"craybinrecread: dimension size contains a missing value, can't continue");
@@ -429,7 +434,8 @@ NhlErrorTypes _NclICrayBinRecRead
 			size *= dimensions[i];
 		}
 	} else {
-		size = -1;
+/*		size = -1;*/
+		tmp_size = -1;
 	}
 	type = (string*)NclGetArgValue(
 		3,

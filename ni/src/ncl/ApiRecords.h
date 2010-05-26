@@ -48,7 +48,7 @@ struct _NclApiHLUInfoRec {
 };
 typedef struct _NclApiArgTemplate {
         int n_dims;
-        int dim_sizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	NclQuark arg_data_type;
         NclQuark arg_sym;
         int is_dimsizes;

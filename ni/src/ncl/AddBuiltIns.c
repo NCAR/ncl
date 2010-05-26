@@ -1,4 +1,3 @@
-
 /*
  *      $Id: AddBuiltIns.c,v 1.92 2010-04-28 23:02:03 huangwei Exp $
  */
@@ -1000,7 +999,7 @@ void
 );
 
 extern NhlErrorTypes _NclINhlGetErrorObjectId(
-#if     NhlNeedProto
+#if NhlNeedProto
 void
 #endif
 );
@@ -1026,7 +1025,7 @@ void _NclAddBuiltIns
 #endif
 {
 	void *args;
-	int dimsizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	int nargs = 0;
 
 	args = NewArgs(1);
@@ -1854,7 +1853,7 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(2);
 	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
-	SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
 	NclRegisterFunc( _Ncl1dtond,args,"onedtond",nargs);
 
 	nargs = 0;
@@ -1862,15 +1861,21 @@ void _NclAddBuiltIns
 	dimsizes[0] = 1;
 	SetArgTemplate(args,nargs, "snumeric", 1, dimsizes);  nargs++;
 	SetArgTemplate(args,nargs, "snumeric", 1, dimsizes);  nargs++;
-	SetArgTemplate(args,nargs, "integer", 1, dimsizes);  nargs++;
+/*	SetArgTemplate(args,nargs, "integer", 1, dimsizes);  nargs++;*/
+	SetArgTemplate(args,nargs, "numeric", 1, dimsizes);  nargs++;
 	NclRegisterFunc( _Nclfspan, args, "fspan", nargs);
 
 	nargs = 0;
 	args = NewArgs(3);
 	dimsizes[0] = 1;
+/*
 	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
 	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
 	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+*/
+	SetArgTemplate(args,nargs,"numeric",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"numeric",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"numeric",1,dimsizes); nargs++;
 	NclRegisterFunc( _Nclispan,args,"ispan",nargs);
 
 	nargs = 0;
@@ -2159,8 +2164,8 @@ void _NclAddBuiltIns
 	nargs = 0;
 	NclRegisterFunc(_NclINhlAppGetDefaultParentId,args,"NhlAppGetDefaultParentId",nargs);
 
-	nargs = 0;
-	NclRegisterFunc(_NclINhlGetErrorObjectId,args,"NhlGetErrorObjectId",nargs);
+    nargs = 0;
+    NclRegisterFunc(_NclINhlGetErrorObjectId, args, "NhlGetErrorObjectId", nargs);
 
 	nargs = 0;
 	args = NewArgs(2);

@@ -1349,11 +1349,11 @@ struct _NclVarRec* self;
 			if(ret < 0) {
 				return(NhlWARNING);
 			}
-			ret = nclfprintf(fp,"Total Size: %d bytes\n",thevalue->multidval.totalsize);
+			ret = nclfprintf(fp,"Total Size: %lld bytes\n",thevalue->multidval.totalsize);
 			if(ret < 0) {
 				return(NhlWARNING);
 			}
-			ret = nclfprintf(fp,"            %d values\n",thevalue->multidval.totalelements);
+			ret = nclfprintf(fp,"            %lld values\n",thevalue->multidval.totalelements);
 			if(ret < 0) {
 				return(NhlWARNING);
 			}
@@ -1376,7 +1376,7 @@ struct _NclVarRec* self;
 						return(NhlWARNING);
 					}
 				}
-				ret = nclfprintf(fp,"%d]",self->var.dim_info[i].dim_size);
+				ret = nclfprintf(fp,"%lld]",self->var.dim_info[i].dim_size);
 				if(ret < 0) {
 					return(NhlWARNING);
 				}

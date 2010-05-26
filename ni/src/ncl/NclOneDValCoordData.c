@@ -434,14 +434,14 @@ NclScalar *new_missing;
 #endif
 {
 	NclMultiDValData self_md = (NclMultiDValData) self;
-	int *toval;
-	int *frval;
+	ng_size_t *toval;
+	ng_size_t *frval;
 	int missing;
 	NclScalar themissing;
 	NclMultiDValData output_md = NULL;
-	int i;
-	toval = (int*)NclMalloc(self_md->multidval.totalsize);
-	frval = (int*)self_md->multidval.val;
+	ng_size_t i;
+	toval = (ng_size_t *)NclMalloc(self_md->multidval.totalsize);
+	frval = (ng_size_t *)self_md->multidval.val;
 	if(toval == NULL) {
 		return(NULL);
         }
@@ -641,7 +641,7 @@ static NhlErrorTypes InitializeOneDClass
 
 struct _NclMultiDValDataRec * _NclOneDValCoordDataCreate
 #if	NhlNeedProto
-(NclObj inst,NclObjClass theclass,NclObjTypes obj_type,unsigned int obj_type_mask,void *val,NclScalar *missing_value,int n_dims, int *dim_sizes,NclStatus status,NclSelectionRecord *sel_rec,NclTypeClass type)
+(NclObj inst,NclObjClass theclass,NclObjTypes obj_type,unsigned int obj_type_mask,void *val,NclScalar *missing_value,int n_dims, ng_size_t *dim_sizes,NclStatus status,NclSelectionRecord *sel_rec,NclTypeClass type)
 #else
 (inst,theclass,obj_type,obj_type_mask, val,missing_value,n_dims,dim_sizes,status,sel_rec,type)
 NclObj inst ;
@@ -651,7 +651,7 @@ unsigned int obj_type_mask;
 void *val;
 NclScalar *missing_value;
 int n_dims;
-int *dim_sizes;
+ng_size_t *dim_sizes;
 NclStatus status;
 NclSelectionRecord *sel_rec;
 NclTypeClass type;

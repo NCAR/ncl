@@ -3525,7 +3525,7 @@ void CallCONVERT_TO_LOCAL(void) {
 								for(i = 0; i< pfinfo->theargs[arg_num].n_dims; i++) {
 									if(pfinfo->theargs[arg_num].dim_sizes[i] != -1) {
 										if(pfinfo->theargs[arg_num].dim_sizes[i] != data.u.data_var->var.dim_info[i].dim_size) {
-											NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of elements of dimension (%d) of argument (%d) is (%d) in function (%s), expected (%d) elements",i,arg_num,data.u.data_var->var.dim_info[i].dim_size,thesym->name,pfinfo->theargs[arg_num].dim_sizes[i]);
+											NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of elements of dimension (%d) of argument (%d) is (%zd) in function (%s), expected (%zd) elements",i,arg_num,data.u.data_var->var.dim_info[i].dim_size,thesym->name,pfinfo->theargs[arg_num].dim_sizes[i]);
 											estatus = NhlFATAL;
 										}
 									}
@@ -3612,7 +3612,7 @@ void CallCONVERT_TO_LOCAL(void) {
 									if(data.u.data_var->obj.status != PERMANENT) {
 										_NclDestroyObj((NclObj)data.u.data_var);
 									} 
-                                                        	} else {
+                               	  } else {
 									tmp_md = (NclMultiDValData)_NclGetObj(data.u.data_var->var.thevalue_id);
 									if(tmp_md->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 										argsym->type = VAR;
@@ -3692,7 +3692,7 @@ void CallCONVERT_TO_LOCAL(void) {
 						if(estatus != NhlFATAL) {
 							if(pfinfo->theargs[arg_num].is_dimsizes) {
 								if(pfinfo->theargs[arg_num].n_dims != data.u.data_obj->multidval.n_dims) {
-									NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) is (%d), (%d) dimensions were expected ",arg_num,thesym->name,data.u.data_obj->multidval.n_dims,pfinfo->theargs[arg_num].n_dims);
+									NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) is (%zd), (%zd) dimensions were expected ",arg_num,thesym->name,data.u.data_obj->multidval.n_dims,pfinfo->theargs[arg_num].n_dims);
 									estatus = NhlFATAL;
 	
 								} else {
@@ -3712,7 +3712,7 @@ void CallCONVERT_TO_LOCAL(void) {
 								}
 							} else if(pfinfo->theargs[arg_num].n_dims > 0) {
                                                         	if(pfinfo->theargs[arg_num].n_dims != data.u.data_obj->multidval.n_dims) {
-									NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) is (%d), (%d) dimensions were expected ",arg_num,thesym->name,data.u.data_obj->multidval.n_dims,pfinfo->theargs[arg_num].n_dims);
+									NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) is (%zd), (%zd) dimensions were expected ",arg_num,thesym->name,data.u.data_obj->multidval.n_dims,pfinfo->theargs[arg_num].n_dims);
                                                                 	estatus = NhlFATAL;
                                                         	}
                                                 	}

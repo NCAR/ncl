@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclBuiltIns.h,v 1.1 1995-01-31 22:25:59 ethan Exp $
+ *      $Id: NclBuiltIns.h,v 1.1.24.1 2008-03-28 20:37:49 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -46,7 +46,7 @@ void * /*args*/,
 int 	/* arg_num*/,
 char * 	/* type_name*/,
 int 	/* n_dims*/, 
-int *	/*dimsizes*/
+ng_size_t *	/*dimsizes*/
 #endif
 );
 extern void NclRegisterProc(

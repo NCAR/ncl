@@ -288,10 +288,10 @@ main(int argc, char **argv) {
     theoptr = NULL;
 #endif /* NCLDEBUG */
 
-    /* 
-     * Note:  child processes should use _exit() instead of exit() to avoid calling the atexit() functions prematurely 
+    /*
+     * Note: child processes should use _exit() instead of exit() to avoid calling the atexit()
+     * functions prematurely 
      */
-
 
     NhlInitialize();
     NhlVACreate(&appid, "ncl", NhlappClass, NhlDEFAULT_APP,

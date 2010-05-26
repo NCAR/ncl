@@ -299,7 +299,7 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 {	
 	NclMultiDValData vect_md;
 	long *thevector;
-	int i;
+	ng_size_t i;
 	char * v_name;
 	char * f_name;
 	int index = -1;
@@ -1343,13 +1343,13 @@ int *dims;
 }
 extern NhlErrorTypes _NclFileAddVarChunkCache
 #if     NhlNeedProto
-(NclFile thefile, NclQuark varname, size_t cache_size, size_t cache_nelems, float cache_preemption)
+(NclFile thefile, NclQuark varname, ng_size_t cache_size, ng_size_t cache_nelems, float cache_preemption)
 #else
 (thefile, varname, cache_size, cache_nelems, cache_preemption)
 NclFile thefile;
 NclQuark varname;
-size_t cache_size;
-size_t cache_nelems;
+ng_size_t cache_size;
+ng_size_t cache_nelems;
 float cache_preemption;
 #endif
 {

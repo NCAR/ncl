@@ -367,13 +367,13 @@ void GetThinnedLatParams
 
 void GribPushAtt
 #if NhlNeedProto
-(GribAttInqRecList **att_list_ptr,char* name,void *val,int dimsize,NclObjClass type) 
+(GribAttInqRecList **att_list_ptr,char* name,void *val,ng_size_t dimsize,NclObjClass type) 
 #else
 (att_list_ptr,name,val,dimsize,type) 
 GribAttInqRecList **att_list_ptr;
 char* name;
 void *val;
-int dimsize;
+ng_size_t dimsize;
 NclObjClass type;
 #endif
 {
@@ -389,22 +389,22 @@ NclObjClass type;
 
 void GetNCEPGrid
 #if NhlNeedProto
-(int *kgds, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon, float **rot)
+(int *kgds, float** lat, int* n_dims_lat, ng_size_t** dimsizes_lat, float** lon, int* n_dims_lon, ng_size_t** dimsizes_lon, float **rot)
 #else
 (kgds, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot)
 int *kgds;
 float** lat;
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float **rot;
 #endif
 {
 	int nx, ny;
 	int iopt;
-	int npts;
+	ng_size_t npts;
 	float fillval;
 	int lrot;
 	int nret;
@@ -417,8 +417,8 @@ float **rot;
 
         *lat = (float*)NclMalloc(sizeof(float) * nx * ny);
         *lon= (float*)NclMalloc(sizeof(float) * nx * ny);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
+        *dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t) * 2);
+        *dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t) * 2);
         *n_dims_lat = 2;
         *n_dims_lon = 2;
         (*dimsizes_lat)[0] = ny;
@@ -485,16 +485,16 @@ int kgds;
 */
 void GenMercator
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,float lat0, float lon0, float lat1, float lon1, float dx, float dy, float latin, int nx,int ny)
+(GribParamList* thevarrec, float** lat, int* n_dims_lat, ng_size_t** dimsizes_lat, float** lon, int* n_dims_lon, ng_size_t** dimsizes_lon,float lat0, float lon0, float lat1, float lon1, float dx, float dy, float latin, int nx,int ny)
 #else  
 (thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, lat0, lon0, lat1, lon1, dx, dy, latin, nx, ny)
 GribParamList* thevarrec;
 float** lat;
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float lat0;
 float lon0;
 float lat1;
@@ -525,8 +525,8 @@ int ny;
 	*lat = (float*)NclMalloc(sizeof(float)*ny);
 	*lon = (float*)NclMalloc(sizeof(float)*nx);
 	dummy = (float*)NclMalloc(sizeof(float)* ( nx > ny ? nx : ny));
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int));
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int));
+        *dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
+        *dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
         *n_dims_lat = 1;
         *n_dims_lon = 1;
         (*dimsizes_lat)[0] = ny;
@@ -569,10 +569,10 @@ void GetGrid_210
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -587,10 +587,10 @@ void GetGrid_210
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -617,10 +617,10 @@ void GetGrid_208
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -635,10 +635,10 @@ void GetGrid_208
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -665,10 +665,10 @@ void GetGrid_204
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -683,10 +683,10 @@ void GetGrid_204
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -728,7 +728,7 @@ int *nrotatts;
 	GribAttInqRecList* tmp_att_list_ptr;
 	NclQuark *tmp_string = NULL;
 	float *tmp_float = NULL;
-	int tmp_dimsizes = 1;
+	ng_size_t tmp_dimsizes = 1;
 
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -763,10 +763,10 @@ void GetGrid_1
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -781,10 +781,10 @@ void GetGrid_1
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -817,10 +817,10 @@ void GenLambert
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float **rot,
 	double lat0, 
 	double lat1, 
@@ -837,10 +837,10 @@ void GenLambert
 	GribParamList* thevarrec;
 	float** lat;
 	int* n_dims_lat;
-	int** dimsizes_lat;
+	ng_size_t** dimsizes_lat;
 	float** lon;
 	int* n_dims_lon;
-	int** dimsizes_lon;
+	ng_size_t** dimsizes_lon;
 	float ** rot;
 	double lat0;
 	double lat1;
@@ -872,8 +872,8 @@ void GenLambert
 	*lat = (float*)NclMalloc(sizeof(float)*nx*ny);
 	*lon = (float*)NclMalloc(sizeof(float)*nx*ny);
 	*rot = (float*)NclMalloc(sizeof(float)*nx*ny);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int)*2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int)*2);
+        *dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t)*2);
+        *dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t)*2);
         *n_dims_lat = 2;
         *n_dims_lon = 2;
         (*dimsizes_lat)[0] = ny;
@@ -1095,7 +1095,7 @@ int *nrotatts;
 	GribAttInqRecList* tmp_att_list_ptr;
 	NclQuark *tmp_string = NULL;
 	float *tmp_float = NULL;
-	int tmp_dimsizes = 1;
+	ng_size_t tmp_dimsizes = 1;
 
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -1152,7 +1152,7 @@ int *nrotatts;
 	GribAttInqRecList* tmp_att_list_ptr;
 	NclQuark *tmp_string = NULL;
 	float *tmp_float = NULL;
-	int tmp_dimsizes = 1;
+	ng_size_t tmp_dimsizes = 1;
 
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -1210,7 +1210,7 @@ int *nrotatts;
 	GribAttInqRecList* tmp_att_list_ptr;
 	NclQuark *tmp_string = NULL;
 	float *tmp_float = NULL;
-	int tmp_dimsizes = 1;
+	ng_size_t tmp_dimsizes = 1;
 
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -1267,7 +1267,7 @@ int *nrotatts;
 	GribAttInqRecList* tmp_att_list_ptr;
 	NclQuark *tmp_string = NULL;
 	float *tmp_float = NULL;
-	int tmp_dimsizes = 1;
+	ng_size_t tmp_dimsizes = 1;
 
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -1313,10 +1313,10 @@ void GetGrid_130
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -1331,10 +1331,10 @@ void GetGrid_130
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -1395,10 +1395,10 @@ void GetGrid_163
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -1413,10 +1413,10 @@ void GetGrid_163
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -1459,10 +1459,10 @@ void GetGrid_185
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -1477,10 +1477,10 @@ void GetGrid_185
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -1523,10 +1523,10 @@ void GetGrid_206
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -1541,10 +1541,10 @@ void GetGrid_206
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -1607,10 +1607,10 @@ void GetGrid_209
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -1625,10 +1625,10 @@ void GetGrid_209
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -1673,10 +1673,10 @@ void GetGrid_211
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -1691,10 +1691,10 @@ void GetGrid_211
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -1756,10 +1756,10 @@ void GetGrid_212
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -1774,10 +1774,10 @@ void GetGrid_212
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -1838,10 +1838,10 @@ void GetGrid_215
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -1856,10 +1856,10 @@ void GetGrid_215
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -1920,10 +1920,10 @@ void GetGrid_218
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -1938,10 +1938,10 @@ void GetGrid_218
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -2002,10 +2002,10 @@ void GetGrid_221
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -2020,10 +2020,10 @@ void GetGrid_221
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -2085,10 +2085,10 @@ void GetGrid_222
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -2103,10 +2103,10 @@ void GetGrid_222
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -2151,10 +2151,10 @@ void GetGrid_226
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -2169,10 +2169,10 @@ void GetGrid_226
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -2233,10 +2233,10 @@ void GetGrid_227
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -2251,10 +2251,10 @@ void GetGrid_227
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -2316,10 +2316,10 @@ void GetGrid_236
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -2334,10 +2334,10 @@ void GetGrid_236
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -2398,10 +2398,10 @@ void GetGrid_237
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -2416,10 +2416,10 @@ void GetGrid_237
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -2480,10 +2480,10 @@ void GetGrid_241
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -2498,10 +2498,10 @@ void GetGrid_241
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -2545,10 +2545,10 @@ void GetGrid_245
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -2563,10 +2563,10 @@ void GetGrid_245
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -2610,10 +2610,10 @@ void GetGrid_246
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -2628,10 +2628,10 @@ void GetGrid_246
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -2676,10 +2676,10 @@ void GetGrid_247
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -2694,10 +2694,10 @@ void GetGrid_247
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -2741,10 +2741,10 @@ void GetGrid_252
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -2759,10 +2759,10 @@ void GetGrid_252
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -2826,17 +2826,17 @@ int* nrotatts;
 */
 void GenLatLon 
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,int xsize,int ysize, float lon_start,float lat_start, float lon_dir, float lat_dir)
+(GribParamList* thevarrec, float** lat, int* n_dims_lat, ng_size_t** dimsizes_lat, float** lon, int* n_dims_lon, ng_size_t** dimsizes_lon,int xsize,int ysize, float lon_start,float lat_start, float lon_dir, float lat_dir)
 #else
 (thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,xsize,ysize, lon_start,lat_start, lon_dir, lat_dir)
 )
 GribParamList* thevarrec;
 float** lat;
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 int xsize;
 int ysize;
 float lon_start;
@@ -2849,8 +2849,8 @@ float lat_dir;
 
 	*lat = (float*)NclMalloc(sizeof(float)*ysize);
 	*lon = (float*)NclMalloc(sizeof(float)*xsize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int));
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int));
+        *dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
+        *dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
         *n_dims_lat = 1;
         *n_dims_lon = 1;
         (*dimsizes_lat)[0] = ysize;
@@ -2869,10 +2869,10 @@ void GetGrid_86
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -2887,10 +2887,10 @@ void GetGrid_86
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -2919,10 +2919,10 @@ void GetGrid_85
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -2937,10 +2937,10 @@ void GetGrid_85
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -2968,10 +2968,10 @@ void GetGrid_64
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -2986,10 +2986,10 @@ void GetGrid_64
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3009,10 +3009,10 @@ void GetGrid_63
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3027,10 +3027,10 @@ void GetGrid_63
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3050,10 +3050,10 @@ void GetGrid_62
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3068,10 +3068,10 @@ void GetGrid_62
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3091,10 +3091,10 @@ void GetGrid_61
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3109,10 +3109,10 @@ void GetGrid_61
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3132,10 +3132,10 @@ void GetGrid_50
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3150,10 +3150,10 @@ void GetGrid_50
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3173,10 +3173,10 @@ void GetGrid_45
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3191,10 +3191,10 @@ void GetGrid_45
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3223,10 +3223,10 @@ void GetGrid_34
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3241,10 +3241,10 @@ void GetGrid_34
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3273,10 +3273,10 @@ void GetGrid_33
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3291,10 +3291,10 @@ void GetGrid_33
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3323,10 +3323,10 @@ void GetGrid_30
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3341,10 +3341,10 @@ void GetGrid_30
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3372,10 +3372,10 @@ void GetGrid_29
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3390,10 +3390,10 @@ void GetGrid_29
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3421,10 +3421,10 @@ void GetGrid_26
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3439,10 +3439,10 @@ void GetGrid_26
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3462,10 +3462,10 @@ void GetGrid_25
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3480,10 +3480,10 @@ void GetGrid_25
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3503,10 +3503,10 @@ void GetGrid_24
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3521,10 +3521,10 @@ void GetGrid_24
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3544,10 +3544,10 @@ void GetGrid_23
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3562,10 +3562,10 @@ void GetGrid_23
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3585,10 +3585,10 @@ void GetGrid_22
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3603,10 +3603,10 @@ void GetGrid_22
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3627,10 +3627,10 @@ void GetGrid_21
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3645,10 +3645,10 @@ void GetGrid_21
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3670,10 +3670,10 @@ void GetGrid_4
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3688,10 +3688,10 @@ void GetGrid_4
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3720,10 +3720,10 @@ void GetGrid_3
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3738,10 +3738,10 @@ void GetGrid_3
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3770,10 +3770,10 @@ void GetGrid_2
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -3788,10 +3788,10 @@ void GetGrid_2
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -3898,10 +3898,10 @@ void GetHiResPolarStereoGrid
 	double ore,
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot
 )
 #else
@@ -3914,10 +3914,10 @@ double deg;
 double ore;
 float** lat;
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float **rot;
 #endif
 {
@@ -3929,8 +3929,8 @@ float **rot;
         *lat = (float*)NclMalloc(sizeof(float) * nx * ny);
         *lon= (float*)NclMalloc(sizeof(float) * nx * ny);
 	*rot = (float*) NclMalloc(sizeof(float) * nx * ny);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
+        *dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t) * 2);
+        *dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t) * 2);
         *n_dims_lat = 2;
         *n_dims_lon = 2;
         (*dimsizes_lat)[0] = ny;
@@ -4063,10 +4063,10 @@ void GetGrid_249
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -4081,10 +4081,10 @@ void GetGrid_249
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -4138,10 +4138,10 @@ void GetGrid_242
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -4156,10 +4156,10 @@ void GetGrid_242
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -4206,10 +4206,10 @@ void GetGrid_240
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -4224,10 +4224,10 @@ void GetGrid_240
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -4278,10 +4278,10 @@ void GetGrid_224
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -4296,10 +4296,10 @@ void GetGrid_224
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -4343,10 +4343,10 @@ void GetGrid_223
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -4361,10 +4361,10 @@ void GetGrid_223
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -4408,10 +4408,10 @@ void GetGrid_220
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -4426,10 +4426,10 @@ void GetGrid_220
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -4475,10 +4475,10 @@ void GetGrid_219
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -4493,10 +4493,10 @@ void GetGrid_219
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -4542,10 +4542,10 @@ void GetGrid_217
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -4560,10 +4560,10 @@ void GetGrid_217
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -4609,10 +4609,10 @@ void GetGrid_216
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -4627,10 +4627,10 @@ void GetGrid_216
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -4676,10 +4676,10 @@ void GetGrid_214
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -4694,10 +4694,10 @@ void GetGrid_214
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -4751,10 +4751,10 @@ void GetGrid_213
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -4769,10 +4769,10 @@ void GetGrid_213
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -4826,10 +4826,10 @@ void GetGrid_207
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -4844,10 +4844,10 @@ void GetGrid_207
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -4899,10 +4899,10 @@ void GetGrid_205
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -4917,10 +4917,10 @@ void GetGrid_205
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -4973,10 +4973,10 @@ void GetGrid_203
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -4991,10 +4991,10 @@ void GetGrid_203
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -5046,10 +5046,10 @@ void GetGrid_202
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -5064,10 +5064,10 @@ void GetGrid_202
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -5120,10 +5120,10 @@ void GetGrid_201
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -5138,10 +5138,10 @@ void GetGrid_201
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -5194,10 +5194,10 @@ void GetGrid_186
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -5212,10 +5212,10 @@ void GetGrid_186
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -5261,10 +5261,10 @@ void GetGrid_172
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -5279,10 +5279,10 @@ void GetGrid_172
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -5328,10 +5328,10 @@ void GetGrid_171
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -5346,10 +5346,10 @@ void GetGrid_171
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -5396,10 +5396,10 @@ void GetGrid_160
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -5414,10 +5414,10 @@ void GetGrid_160
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -5463,10 +5463,10 @@ void GetGrid_107
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -5481,10 +5481,10 @@ void GetGrid_107
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -5536,10 +5536,10 @@ void GetGrid_106
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -5554,10 +5554,10 @@ void GetGrid_106
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -5609,10 +5609,10 @@ void GetGrid_105
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -5627,10 +5627,10 @@ void GetGrid_105
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -5680,10 +5680,10 @@ void GetGrid_104
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -5698,10 +5698,10 @@ void GetGrid_104
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -5751,10 +5751,10 @@ void GetGrid_103
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -5769,10 +5769,10 @@ void GetGrid_103
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -5825,10 +5825,10 @@ void GetGrid_101
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -5843,10 +5843,10 @@ void GetGrid_101
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -5897,10 +5897,10 @@ void GetGrid_100
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -5915,10 +5915,10 @@ void GetGrid_100
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -5972,10 +5972,10 @@ void GetGrid_88
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -5990,10 +5990,10 @@ void GetGrid_88
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -6039,10 +6039,10 @@ void GetGrid_87
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -6057,10 +6057,10 @@ void GetGrid_87
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -6114,10 +6114,10 @@ void GetGrid_56
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -6132,10 +6132,10 @@ void GetGrid_56
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -6189,10 +6189,10 @@ void GetGrid_55
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -6207,10 +6207,10 @@ void GetGrid_55
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -6264,10 +6264,10 @@ void GetGrid_28
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -6282,10 +6282,10 @@ void GetGrid_28
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -6339,10 +6339,10 @@ void GetGrid_27
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -6357,10 +6357,10 @@ void GetGrid_27
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -6412,10 +6412,10 @@ void GetGrid_6
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -6430,10 +6430,10 @@ void GetGrid_6
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -6485,10 +6485,10 @@ void GetGrid_5
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat, 
-	int** dimsizes_lat, 
+	ng_size_t** dimsizes_lat, 
 	float** lon, 
 	int* n_dims_lon, 
-	int** dimsizes_lon, 
+	ng_size_t** dimsizes_lon, 
 	float **rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
@@ -6503,10 +6503,10 @@ void GetGrid_5
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
@@ -6592,8 +6592,8 @@ GribParamList* thevarrec;
 	int ijswap;
 	int bboff;
 	int dnum = 0;
-	int total_gpoints = 0;
-	int grid_size = 0;
+	ng_size_t total_gpoints = 0;
+	ng_size_t grid_size = 0;
 	unsigned char *bms = NULL;
 	int numeric = 0;
 	int secondary_bm;
@@ -6742,7 +6742,7 @@ GribParamList* thevarrec;
 			total = (int)(((therec->bds_size - 11) * 8 - unused_bits)/ number_of_bits);
 			if(integer) {
 				if(*outdat == NULL) {
-					data = (void*)NclMalloc((unsigned)sizeof(int)*grid_size);
+					data = (void*)NclMalloc((unsigned)sizeof(ng_size_t)*grid_size);
 				} else {
 					data = *outdat;
 				}
@@ -7538,7 +7538,7 @@ GribParamList* thevarrec;
 	float tmpb,tmpa;
 	unsigned char *bds;
 	int total = 0;
-	int grid_size = 0;
+	ng_size_t grid_size = 0;
 	void *data = NULL;
 	int isize = sizeof(int)*8;
 	unsigned int X;
@@ -7550,7 +7550,7 @@ GribParamList* thevarrec;
 	int numeric;
 	int gpoint = 0;
 	int dnum= 0;
-	int total_gpoints=0;
+	ng_size_t total_gpoints=0;
 	int ttt = 0;
 	
 
@@ -7858,10 +7858,10 @@ void GdsMEGrid
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
 	int **dimsizes_rot,
@@ -7879,10 +7879,10 @@ void GdsMEGrid
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
 int **dimsizes_rot;
@@ -8031,9 +8031,9 @@ int* nrotatts;
 	}
 
 	*n_dims_lon = 1;
-	*dimsizes_lon = (int*)NclMalloc(sizeof(int));
+	*dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
 	*(*dimsizes_lon) = ni;
-	*dimsizes_lat = (int*)NclMalloc(sizeof(int));
+	*dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
 	*n_dims_lat = 1;
 	*(*dimsizes_lat) = nj;
 	*lat = tlat;
@@ -8111,10 +8111,10 @@ void GdsGNGrid
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
 	int **dimsizes_rot,
@@ -8132,10 +8132,10 @@ void GdsGNGrid
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
 int **dimsizes_rot;
@@ -8160,10 +8160,10 @@ void GdsLEGrid
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
 	int **dimsizes_rot,
@@ -8181,10 +8181,10 @@ void GdsLEGrid
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
 int **dimsizes_rot;
@@ -8340,10 +8340,10 @@ void GdsGAGrid
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
 	int **dimsizes_rot,
@@ -8361,10 +8361,10 @@ void GdsGAGrid
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
 int **dimsizes_rot;
@@ -8714,10 +8714,10 @@ void GdsSTGrid
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
 	int **dimsizes_rot,
@@ -8735,10 +8735,10 @@ void GdsSTGrid
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
 int **dimsizes_rot;
@@ -8806,8 +8806,8 @@ int* nrotatts;
 	tmpc[1] = gds[29];
 	tmpc[2] = gds[30];
 
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
+        *dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t) * 2);
+        *dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t) * 2);
         *n_dims_lat = 2;
         *n_dims_lon = 2;
         (*dimsizes_lat)[0] = ny;
@@ -9016,13 +9016,13 @@ void GdsOLGrid
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	GribAttInqRecList** lon_att_list, 
@@ -9037,13 +9037,13 @@ void GdsOLGrid
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
 GribAttInqRecList** lon_att_list; 
@@ -9066,13 +9066,13 @@ void GdsSHGrid
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	GribAttInqRecList** lon_att_list, 
@@ -9087,13 +9087,13 @@ void GdsSHGrid
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
 GribAttInqRecList** lon_att_list; 
@@ -9124,11 +9124,11 @@ int* nrotatts;
 
 	*lat = NULL;
 	*n_dims_lat =  1;
-	*dimsizes_lat = NclMalloc(sizeof(int));
+	*dimsizes_lat = NclMalloc(sizeof(ng_size_t));
 	*(*dimsizes_lat) = j + 1;
 	*lon = NULL;
 	*n_dims_lon= 1;
-	*dimsizes_lon= NclMalloc(sizeof(int));
+	*dimsizes_lon= NclMalloc(sizeof(ng_size_t));
 	*(*dimsizes_lon) = j + 1;
 }
 
@@ -9139,13 +9139,13 @@ void GdsCEGrid
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	GribAttInqRecList** lon_att_list, 
@@ -9160,13 +9160,13 @@ void GdsCEGrid
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
 GribAttInqRecList** lon_att_list; 
@@ -9297,8 +9297,8 @@ int* nrotatts;
 		}
 	}
 			
-	*dimsizes_lat = (int*)NclMalloc(sizeof(int));
-	*dimsizes_lon = (int*)NclMalloc(sizeof(int));
+	*dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
+	*dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
 	*(*dimsizes_lon) = nlon;
 	*(*dimsizes_lat) = nlat;
 	*n_dims_lat = 1;
@@ -9385,13 +9385,13 @@ void GdsUnknownGrid
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	GribAttInqRecList** lon_att_list, 
@@ -9406,13 +9406,13 @@ void GdsUnknownGrid
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
 GribAttInqRecList** lon_att_list; 
@@ -9484,8 +9484,8 @@ int* nrotatts;
 			gds_type);
 		return;
 	}
-	*dimsizes_lat = (int*)NclMalloc(sizeof(int));
-	*dimsizes_lon = (int*)NclMalloc(sizeof(int));
+	*dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
+	*dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
 	*(*dimsizes_lon) = nlon;
 	*(*dimsizes_lat) = nlat;
 	*n_dims_lat = 1;
@@ -9563,13 +9563,13 @@ void GdsRLLGrid
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	GribAttInqRecList** lon_att_list, 
@@ -9584,13 +9584,13 @@ void GdsRLLGrid
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
 GribAttInqRecList** lon_att_list; 
@@ -9756,8 +9756,8 @@ int* nrotatts;
 	else {
 		double uxc,uyc;
 
-		*dimsizes_lat = (int*)NclMalloc(2 * sizeof(int));
-		*dimsizes_lon = (int*)NclMalloc(2 * sizeof(int));
+		*dimsizes_lat = (ng_size_t*)NclMalloc(2 * sizeof(ng_size_t));
+		*dimsizes_lon = (ng_size_t*)NclMalloc(2 * sizeof(ng_size_t));
 		(*dimsizes_lon)[0] = nj;
 		(*dimsizes_lon)[1] = ni;
 		(*dimsizes_lat)[0] = nj;
@@ -9945,13 +9945,13 @@ void GdsArakawaRLLGrid
 	GribParamList* thevarrec, 
 	float** lat, 
 	int* n_dims_lat,
-	int** dimsizes_lat,
+	ng_size_t** dimsizes_lat,
 	float** lon,
 	int* n_dims_lon,
-	int** dimsizes_lon,
+	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	GribAttInqRecList** lon_att_list, 
@@ -9966,13 +9966,13 @@ void GdsArakawaRLLGrid
 GribParamList* thevarrec; 
 float** lat; 
 int* n_dims_lat;
-int** dimsizes_lat;
+ng_size_t** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
-int** dimsizes_lon;
+ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
 GribAttInqRecList** lon_att_list; 
@@ -10088,8 +10088,8 @@ int* nrotatts;
 	kgds[9] = dj;
 	kgds[10] = UnsignedCnvtToDecimal(1,&(gds[27]));
 
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
+        *dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t) * 2);
+        *dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t) * 2);
         *n_dims_lat = 2;
         *n_dims_lon = 2;
 	/* for now at least return the native coordinates, not attempting to shift to a regular grid */
@@ -10204,13 +10204,13 @@ int* nrotatts;
 GridGDSInfoRecord grid_gds[] = {
 		GenericUnPack,GdsUnknownGrid,"Unsupported Gds Grid", /*-1*/
 		GenericUnPack,GdsCEGrid,"Cylindrical Equidistant Projection Grid", /*0*/
-/**/		GenericUnPack,GdsMEGrid,"Mercator Projection Grid", /*1*/
+		GenericUnPack,(void *)GdsMEGrid,"Mercator Projection Grid", /*1*/
 #if 0
 /**/		GenericUnPack,GdsGNGrid,"Gnomonic Projection Grid", /*2*/
 #endif
-		GenericUnPack,GdsLEGrid,"Lambert Conformal Secant or Tangent, Conical or bipolar", /*3*/
-		GenericUnPack,GdsGAGrid,"Gaussian Latitude/Longitude Grid", /*4*/
-		GenericUnPack,GdsSTGrid,"Polar Stereographic Projection Grid", /*5*/
+		GenericUnPack,(void *)GdsLEGrid,"Lambert Conformal Secant or Tangent, Conical or bipolar", /*3*/
+		GenericUnPack,(void *)GdsGAGrid,"Gaussian Latitude/Longitude Grid", /*4*/
+		GenericUnPack,(void *)GdsSTGrid,"Polar Stereographic Projection Grid", /*5*/
 #if 0
 		NULL,NULL,"Universal Transverse Mercator (UTM) Projection Grid", /*6*/
 		NULL,NULL,"Simple Polyconic Projection Grid", /*7*/
@@ -10459,7 +10459,7 @@ int *nrotatts;
 {
 	GribAttInqRecList* tmp_att_list_ptr;
 	NclQuark *tmp_string = NULL;
-	int tmp_dimsizes = 1;
+	ng_size_t tmp_dimsizes = 1;
 
 	tmp_att_list_ptr = (*lat_att_list_ptr);
 	(*lat_att_list_ptr) = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));

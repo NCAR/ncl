@@ -61,7 +61,7 @@ NhlArgVal udata;
 	int i;
 	NclRefList *plptr;
 	NclScalar *tmp_mis;
-	int dim_size = 1;
+	ng_size_t dim_size = 1;
 	int replaced = 0;
 	NclObj pobj;
 	NhlArgVal vcbdata;
@@ -152,9 +152,9 @@ static struct _NclDataRec *MultiDVal_HluObj_ReadSection
 	long multiplier[NCL_MAX_DIMENSIONS];
 	long compare_sel[NCL_MAX_DIMENSIONS];
 	long strider[NCL_MAX_DIMENSIONS];
-	int output_dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t output_dim_sizes[NCL_MAX_DIMENSIONS];
 
-	int total_elements = 1;
+	ng_size_t total_elements = 1;
 	int n_dims_input = self_md->multidval.n_dims;
 	int n_elem=0;
 	int done = 0;
@@ -460,12 +460,12 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 	long multiplier[NCL_MAX_DIMENSIONS];
 	long compare_sel[NCL_MAX_DIMENSIONS];
 	long strider[NCL_MAX_DIMENSIONS];
-	int output_dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t output_dim_sizes[NCL_MAX_DIMENSIONS];
 
-	int *dim_sizes_value = value_md->multidval.dim_sizes;
+	ng_size_t *dim_sizes_value = value_md->multidval.dim_sizes;
 	int n_dims_value = value_md->multidval.n_dims;
 	int n_dims_sel = 0;
-	int total_elements = 1;
+	ng_size_t total_elements = 1;
 	int n_dims_target = target_md->multidval.n_dims;
 	int n_elem=0;
 	int done = 0;
@@ -2079,7 +2079,7 @@ static NhlErrorTypes InitializeHLUObjDataClass
 
 struct _NclMultiDValDataRec * _NclMultiDValHLUObjDataCreate
 #if	NhlNeedProto
-(NclObj inst,NclObjClass theclass,NclObjTypes obj_type,unsigned int obj_type_mask,void *val,NclScalar *missing_value,int n_dims, int *dim_sizes,NclStatus status,NclSelectionRecord *sel_rec)
+(NclObj inst,NclObjClass theclass,NclObjTypes obj_type,unsigned int obj_type_mask,void *val,NclScalar *missing_value,int n_dims, ng_size_t *dim_sizes,NclStatus status,NclSelectionRecord *sel_rec)
 #else
 (inst,theclass,obj_type,obj_type_mask, val,missing_value,n_dims,dim_sizes,status,sel_rec)
 NclObj inst ;
@@ -2089,7 +2089,7 @@ unsigned int obj_type_mask;
 void *val;
 NclScalar *missing_value;
 int n_dims;
-int *dim_sizes;
+ng_size_t *dim_sizes;
 NclStatus status;
 NclSelectionRecord *sel_rec;
 #endif

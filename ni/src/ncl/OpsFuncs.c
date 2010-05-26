@@ -339,13 +339,13 @@ NhlErrorTypes _NclBuildArray
 	logical tmp;
 	void *value;
 	char *ptr;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	NclMultiDValData theobj,coerce_res = NULL;
 	NclStackEntry *data_ptr;
 	NclObjTypes result_type ;
 	NclObjTypes obj_type ;
 	int must_be_numeric = 1,i,j;
-	int ndims;
+	ng_size_t ndims;
 	NclScalar *mis_ptr = NULL,themissing;
 	int still_no_missing = 1;
 
@@ -859,14 +859,14 @@ NhlErrorTypes _NclBuildConcatArray
 	logical tmp;
 	void *value;
 	char *ptr;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	NclMultiDValData theobj,coerce_res = NULL;
 	NclStackEntry *data_ptr;
 	NclObjTypes result_type ;
 	NclTypeClass result_type_class;
 	NclObjTypes obj_type ;
 	int must_be_numeric = 1,i,j;
-	int ndims;
+	ng_size_t ndims;
 	NclScalar *mis_ptr = NULL,themissing;
 	int still_no_missing = 1;
 
@@ -1489,7 +1489,8 @@ NclStackEntry _NclCreateHLUObjOp
 	NclMultiDValData parent;
 #endif
 {
-	int i,j,m;
+	int i,j;
+    ng_size_t m;
 	NclStackEntry *data,*resname;
 	NclStackEntry data_out;
 	int rl_list;
@@ -1500,7 +1501,7 @@ NclStackEntry _NclCreateHLUObjOp
 	NclMultiDValData tmp2_md = NULL;
 	NclHLUObj tmp_ho = NULL;
 	int *tmp_id = NULL,tmp_ho_id;
-	int dim_size = 1;
+	ng_size_t dim_size = 1;
 	int parent_id = -1;
 	int parent_hluobj_id = -1;
 	int *ids;
@@ -1839,7 +1840,8 @@ NclMultiDValData the_hlu_data_obj;
 int nres;
 #endif
 {
-	int i,j,k,m;
+	int i,j,k;
+    ng_size_t m;
 	NclStackEntry *data,*resname;
 	int rl_list;
 	static int local_rl_list = 0;
@@ -2010,11 +2012,11 @@ NclStackEntry missing_expr;
 	NclScalar missing_val;
 	NclMultiDValData missing_md,tmp_md,size_md,tmp1_md;
 	void *tmp_val;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	short tmp_missing = NCL_DEFAULT_MISSING_VALUE;
-	long *dim_size_list,total;
+	ng_size_t *dim_size_list,total;
 	long long ll_total;
-	int i,j;
+	ng_size_t i,j;
 	char *tp;
 	NclTypeClass typec = NULL;
 	int tsize;
@@ -2098,7 +2100,7 @@ NclStackEntry missing_expr;
 		} else {
 			tmp1_md = size_md;
 		}
-		dim_size_list = (long*)tmp1_md->multidval.val;
+		dim_size_list = (ng_size_t*)tmp1_md->multidval.val;
 		if(tmp1_md->multidval.missing_value.has_missing) {
 			for(i = 0; i < tmp1_md->multidval.totalelements; i++ ) {
 				if(tmp1_md->multidval.missing_value.value.longval == dim_size_list[i]) {
@@ -2111,16 +2113,18 @@ NclStackEntry missing_expr;
 		j = 0;
 		if((tmp1_md->multidval.dim_sizes[0] == 1)&&(dim_size_list[0] > 0)) {
 			ll_total *= dim_size_list[0];
-			dim_sizes[0] = (int)dim_size_list[0];
+			dim_sizes[0] = (ng_size_t)dim_size_list[0];
 			j++;
 		} else {
 			for(i = 0; i< tmp1_md->multidval.dim_sizes[0]; i++) {
 				if(dim_size_list[i] < 1) {	
+printf("_NclNewOp: i is %d; dim_size_list[%d] is %zd, tmp1_md->multidval.dim_sizes[0] is %zd\n",
+i, i, dim_size_list[i], tmp1_md->multidval.dim_sizes[0]);
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"New: a zero or negative value has been passed in in the dimension size parameter");
 					return(NhlFATAL);
 				} else {
 					ll_total *= dim_size_list[i];
-					dim_sizes[j] = (int)dim_size_list[i];
+					dim_sizes[j] = (ng_size_t)dim_size_list[i];
 					j++;
 				}
 			}

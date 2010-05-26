@@ -575,6 +575,7 @@ int wr_status;
 	int32 nentries;
 	int32 npt,nsw,ngd,i,j,k;
 	int ngroups;
+/*	long bsize;*/
 	int32 bsize;
 	int32 *dimsizes;
 	char *tmp,*tmp2;

@@ -515,11 +515,11 @@ FILE *fp;
 	if(ret < 0) {
 		return(NhlWARNING);
 	}
-	ret = nclfprintf(fp,"Total Size: %d bytes\n",thevalue->multidval.totalsize);
+	ret = nclfprintf(fp,"Total Size: %lld bytes\n",thevalue->multidval.totalsize);
 	if(ret < 0) {
 		return(NhlWARNING);
 	}
-	ret = nclfprintf(fp,"            %d values\n",thevalue->multidval.totalelements);
+	ret = nclfprintf(fp,"            %lld values\n",thevalue->multidval.totalelements);
 	if(ret < 0) {
 		return(NhlWARNING);
 	}
@@ -542,7 +542,7 @@ FILE *fp;
 				return(NhlWARNING);
 			}
 		}
-		ret = nclfprintf(fp,"%d]",self->var.dim_info[i].dim_size);
+		ret = nclfprintf(fp,"%lld]",self->var.dim_info[i].dim_size);
 		if(ret < 0) {
 			return(NhlWARNING);
 		}
@@ -666,7 +666,7 @@ NclStatus status)
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp = NULL,tmp_md = NULL;
 	NclScalar *tmp_s = NULL;
-	int tmp_dim_size =1;
+	ng_size_t tmp_dim_size =1;
 	NclAtt tmp_att;
 
 
@@ -1116,7 +1116,7 @@ long dim_num;
 #endif
 {
 	int index;
-	int dim_size = 1;
+	ng_size_t dim_size = 1;
 	string* nameptr;
 	int *numptr;
 	char *v_name= NULL;
@@ -1304,10 +1304,10 @@ NclSelectionRecord *sel_ptr;
 	NclMultiDValData tmp_md1;
 	int i,j;
 	NclScalar *missing_ptr;
-	int miss_dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t miss_dim_sizes[NCL_MAX_DIMENSIONS];
 	NclVar self_var = (NclVar)self;
 	NclSelectionRecord mysel;
-	int theval_ndims, tmpmd_ndims;
+	ng_size_t theval_ndims, tmpmd_ndims;
 
 
 /*

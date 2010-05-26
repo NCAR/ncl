@@ -49,7 +49,7 @@
 #define NETCDF_DEBUG 0
 
 unsigned int _closest_prime(unsigned int prime_in);
-static size_t ChunkSizeHint;
+static ng_size_t ChunkSizeHint;
 
 typedef struct _NetCdfFileRecord NetCdfFileRecord;
 typedef struct _NetCdfVarInqRec NetCdfVarInqRec;
@@ -83,10 +83,10 @@ struct _NetCdfVarInqRec {
 	int	dim[MAX_VAR_DIMS];
 	int	compress_level;
 	int	n_chunk_dims;
-	size_t	chunk_dim[MAX_VAR_DIMS];
+	ng_size_t	chunk_dim[MAX_VAR_DIMS];
 	int	use_cache;
-	size_t	cache_size;
-	size_t	cache_nelems;
+	ng_size_t	cache_size;
+	ng_size_t	cache_nelems;
 	float	cache_preemption;
 	int	natts;
 	NetCdfAttInqRecList *att_list;
@@ -164,8 +164,8 @@ int             header_reserve_space;
 int             define_mode;
 int             format;
 int		use_cache;
-size_t		cache_size;
-size_t		cache_nelems;
+ng_size_t		cache_size;
+ng_size_t		cache_nelems;
 float		cache_preemption;
 };
 
@@ -398,8 +398,8 @@ int cdfid;
 	NetCdfDimInqRec *dim_inq;
 	NetCdfDimInqRec *chunk_dim_inq;
 
-	size_t *dims;
-	size_t *chunk_dims;
+	ng_size_t *dims;
+	ng_size_t *chunk_dims;
 
 	int shuffle = 0;
 	int deflate = 1;
@@ -411,8 +411,8 @@ int cdfid;
 
 	if(rec->n_chunk_dims)
 	{
-		dims = (size_t *) NclMalloc(rec->n_dims*sizeof(size_t));
-		chunk_dims = (size_t *) NclMalloc(rec->n_dims*sizeof(size_t));
+		dims = (ng_size_t *) NclMalloc(rec->n_dims*sizeof(ng_size_t));
+		chunk_dims = (ng_size_t *) NclMalloc(rec->n_dims*sizeof(ng_size_t));
 
 		nd = 0;
 		file_dim_list = rec->dims;
@@ -606,7 +606,7 @@ NclFileFormatType *format;
 {
 	static int first = True;
 	NetCdfFileRecord *therec = NULL;
-	size_t blksize = getpagesize();
+	ng_size_t blksize = getpagesize();
 
 	if (first) {
 		Qmissing_val = NrmStringToQuark("missing_value");
@@ -2238,7 +2238,7 @@ int *chunk_dims;
                 stepvl->var_inq->n_chunk_dims = n_chunk_dims;
                 for(i = 0 ; i < n_chunk_dims; i++)
                 {
-                    stepvl->var_inq->chunk_dim[i] = (size_t)chunk_dims[i];
+                    stepvl->var_inq->chunk_dim[i] = (ng_size_t)chunk_dims[i];
                 }
                 nc_ret = nc_def_var_chunking(cdfid, stepvl->var_inq->varid, storage,
                                              stepvl->var_inq->chunk_dim);
@@ -2261,13 +2261,13 @@ int *chunk_dims;
 
 static NhlErrorTypes NetAddVarChunkCache
 #if    NhlNeedProto
-(void* therec, NclQuark thevar, size_t cache_size, size_t cache_nelems, float cache_preemption)
+(void* therec, NclQuark thevar, ng_size_t cache_size, ng_size_t cache_nelems, float cache_preemption)
 #else
 (therec, thevar, cache_size, cache_nelems, cache_preemption)
 void* therec;
 NclQuark thevar;
-size_t cache_size;
-size_t cache_nelems;
+ng_size_t cache_size;
+ng_size_t cache_nelems;
 float cache_preemption;
 #endif
 {

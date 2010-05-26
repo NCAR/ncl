@@ -3,11 +3,11 @@
  *      $Id: defs.h,v 1.27 2010-04-14 21:29:48 huangwei Exp $
  */
 /************************************************************************
-*									*
-*			     Copyright (C)  1993			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
+*                                                                       *
+*                Copyright (C)  1993                                    *
+*        University Corporation for Atmospheric Research                *
+*                All Rights Reserved                                    *
+*                                                                       *
 ************************************************************************/
 /*
  *	File:		defs.h 
@@ -27,6 +27,7 @@ extern "C" {
 #define _NCdefs_h
 
 #include "ncarg/hlu/NgSizeT.h"
+#include    <stddef.h>
 
 #define NCL_MAX_DIMENSIONS 32
 #define NCL_MAX_FVARS 2048
@@ -82,10 +83,10 @@ typedef NrmQuark NclQuark;
 #define NclQuarkIsDef
 #endif
 
-typedef long NclValue;
+typedef size_t  NclValue;
 
 typedef struct _NclGenericVal {
-	int kind;
+	size_t  kind;
 	char *name;
 } NclGenericVal;
 

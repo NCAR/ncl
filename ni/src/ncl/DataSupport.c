@@ -313,11 +313,12 @@ NclMultiDValData str_md;
 #endif
 {
 	char **buffer;
-	int i,n_dims;
+	ng_size_t i;
+    int n_dims;
 	string *value;
 	int max_len,tmp_len,to;
 	char *val = NULL;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	string missingQ;
 	NhlBoolean has_missing = False;
 	NclScalar tmp_missing;
@@ -358,7 +359,7 @@ NclMultiDValData str_md;
 			val[to] = '\0';
 		}
 		else {
-			strcpy(&(val[to]),buffer[i]);
+			strcpy((char *)&(val[to]),buffer[i]);
 		}
 		to += max_len;
 	}
@@ -460,6 +461,7 @@ NclMultiDValData char_md;
 			NULL,
 			(NclTypeClass)nclTypestringClass));
 	} else {
+                ng_size_t dim_size = 1;
 		return(_NclCreateMultiDVal(
 			NULL,
 			NULL,
@@ -468,7 +470,7 @@ NclMultiDValData char_md;
 			(void*)value,
 			(has_missing ? &tmp_missing : NULL),
 			char_md->multidval.n_dims,
-			&(char_md->multidval.n_dims),
+			&dim_size,
 			TEMPORARY,
 			NULL,
 			(NclTypeClass)nclTypestringClass));
@@ -2273,7 +2275,7 @@ struct _NclMultiDValDataRec *_NclCreateFalse
 
 	if(first) {
 		int *val = (int*)NclMalloc((unsigned)sizeof(int));
-		int dim_sizes = 1;
+		ng_size_t dim_sizes = 1;
 		*val = 0;
 		tval = _NclCreateMultiDVal(
 			NULL,
@@ -2305,7 +2307,7 @@ struct _NclMultiDValDataRec *_NclCreateTrue
 
 	if(first) {
 		int *val = (int*)NclMalloc((unsigned)sizeof(int));
-		int dim_sizes = 1;
+		ng_size_t dim_sizes = 1;
 		*val = 1;
 		tval = _NclCreateMultiDVal(
 			NULL,
@@ -2334,7 +2336,7 @@ struct _NclMultiDValDataRec *_NclCreateMissing
 {
 	NclMultiDValData tval;
 	int *val = (int*)NclMalloc((unsigned)sizeof(int));
-	int dim_sizes = 1;
+	ng_size_t dim_sizes = 1;
 	*val = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 
 	tval = _NclCreateMultiDVal(
@@ -2354,7 +2356,7 @@ struct _NclMultiDValDataRec *_NclCreateMissing
 }
 struct _NclMultiDValDataRec * _NclCreateVal
 #if	NhlNeedProto
-(NclObj inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, void *val, NclScalar *missing_value, int n_dims, int *dim_sizes, NclStatus status, NclSelectionRecord *sel_rec,NclObjClass type)
+(NclObj inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, void *val, NclScalar *missing_value, int n_dims, ng_size_t *dim_sizes, NclStatus status, NclSelectionRecord *sel_rec,NclObjClass type)
 #else 
 ( inst, theclass, obj_type, obj_type_mask, val, missing_value, n_dims, dim_sizes, status, sel_rec,type)
 NclObj inst;
@@ -2364,7 +2366,7 @@ unsigned int obj_type_mask;
 void *val;
 NclScalar *missing_value;
 int n_dims;
-int *dim_sizes;
+ng_size_t *dim_sizes;
 NclStatus status;
 NclSelectionRecord *sel_rec;
 NclObjClass type;

@@ -30,7 +30,7 @@ struct _NclFVarRec {
 	NclBasicDataTypes data_type;
 	int	num_dimensions;
 /*
-	int	dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t	dim_sizes[NCL_MAX_DIMENSIONS];
 */
 	int     file_dim_num[NCL_MAX_DIMENSIONS];
 
@@ -41,7 +41,7 @@ struct _NclFVarRec {
 
 struct _NclFDimRec {
 	NclQuark dim_name_quark;
-	long dim_size;
+	ng_size_t dim_size;
 	int is_unlimited;
 };	
 
@@ -370,7 +370,7 @@ NclQuark, /*var_name */
 NclBasicDataTypes, /* data_type */
 int, /* n_dims */
 NclQuark *, /* dim_names */
-long * /* dim_sizes */
+ng_size_t * /* dim_sizes */
 #endif
 );
 
@@ -387,8 +387,8 @@ typedef NhlErrorTypes (*NclAddVarChunkCacheFunc) (
 #if     NhlNeedProto
 void *,   /* record */
 NclQuark, /* var_name */
-size_t,   /* cache_size */
-size_t,   /* cache_nelems */
+ng_size_t,   /* cache_size */
+ng_size_t,   /* cache_nelems */
 float     /* cache_preemption */
 #endif
 );

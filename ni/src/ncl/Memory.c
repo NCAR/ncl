@@ -118,7 +118,7 @@ void
 )
 #else
 (num,size)
-	 ng_usize_t	num;	/* number of elements		*/
+	ng_usize_t	num;	/* number of elements		*/
 	ng_usize_t	size;	/* size of each element		*/
 #endif
 {
