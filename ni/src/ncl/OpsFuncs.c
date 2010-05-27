@@ -2135,8 +2135,15 @@ i, i, dim_size_list[i], tmp1_md->multidval.dim_sizes[0]);
 		}
 		total = (long) ll_total;
 		ll_total *= _NclSizeOf(the_type);
+#ifdef NG32BIT
 		if (ll_total > INT_MAX) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"New: requested size of variable (%lld bytes) exceeds the current maximum allowed on this system",ll_total);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"New: requested size of variable (%lld bytes) exceeds the current maximum %d allowed on this system",INT_MAX,ll_total);
+#else
+		if (ll_total > LONG_MAX) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"New: requested size of variable (%lld bytes) exceeds the current maximum %d allowed on this system",LONG_MAX,ll_total);
+#endif
 			return(NhlFATAL);
 		}
 		tmp_val = (void*)NclMalloc((unsigned int)ll_total);
