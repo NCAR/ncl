@@ -304,7 +304,7 @@ extern NhlErrorTypes _NclFileAddVarChunk(
 NclFile /* thefile */,
 NclQuark /* varname */,
 int	 /* n_dims */,
-int *    /* dims */
+ng_size_t *    /* dims */
 #endif
 );
 extern NhlErrorTypes _NclFileAddVarChunkCache(

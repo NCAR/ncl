@@ -249,8 +249,8 @@ typedef NhlErrorTypes (*NclAddFileVarChunkCacheFunc)(
 #if	NhlNeedProto
 NclFile	 /* thefile */,
 NclQuark /* var_name */,
-size_t	 /* cache_size */,
-size_t	 /* cache_nelems */,
+ng_size_t	 /* cache_size */,
+ng_size_t	 /* cache_nelems */,
 float    /* cache_preemption */
 #endif
 );

@@ -368,12 +368,12 @@ int is_unlimited;
 
 static NhlErrorTypes FileAddChunkDim
 #if  NhlNeedProto
-(NclFile thefile, NclQuark dimname, int dimsize, int is_unlimited)
+(NclFile thefile, NclQuark dimname, ng_size_t dimsize, int is_unlimited)
 #else
 (thefile, dimname, dimsize, is_unlimited)
 NclFile thefile;
 NclQuark dimname;
-int dimsize;
+ng_size_t dimsize;
 int is_unlimited;
 #endif
 {
@@ -498,17 +498,16 @@ NclQuark *dimnames;
 
 static NhlErrorTypes FileAddVarChunk
 #if	NhlNeedProto
-(NclFile thefile, NclQuark varname, int n_dims, int *dims)
+(NclFile thefile, NclQuark varname, int n_dims, ng_size_t *dims)
 #else
 (thefile, varname, n_dims, dims)
 NclFile thefile;
 NclQuark varname;
 int n_dims;
-int *dims;
+ng_size_t *dims;
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
-	long dim_sizes[NCL_MAX_DIMENSIONS];
 	
 	if(thefile->file.wr_status <= 0)
 	{
@@ -621,7 +620,6 @@ int compress_level;
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
-	long dim_sizes[NCL_MAX_DIMENSIONS];
 	
 	if(thefile->file.wr_status <= 0)
 	{
@@ -2345,7 +2343,7 @@ NclQuark var;
 
 static void ReverseIt
 #if	NhlNeedProto
-(void *val,void* swap_space,int ndims,int *compare_sel,ng_size_t *dim_sizes,int el_size)
+(void *val,void* swap_space,int ndims,int *compare_sel,ng_size_t *dim_sizes,ng_size_t el_size)
 #else
 (val,swap_space,ndims,compare_sel,dim_sizes,el_size)
 void *val;
@@ -2353,12 +2351,12 @@ void* swap_space;
 int ndims;
 int *compare_sel;
 ng_size_t *dim_sizes;
-int el_size;
+ng_size_t el_size;
 #endif
 {
-	int i,j;
+	ng_size_t i,j;
 	char *tmp;
-	int block_size = el_size;
+	ng_size_t block_size = el_size;
 
 	for(i = 1; i < ndims; i++) {
 	block_size *= dim_sizes[i];

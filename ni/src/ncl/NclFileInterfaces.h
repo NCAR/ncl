@@ -11,7 +11,7 @@ typedef struct _NclFDimRec	NclFDimRec;
 struct _NclFAttRec {
 	NclQuark att_name_quark;
 	NclBasicDataTypes data_type;
-	int	num_elements;
+	ng_size_t	num_elements;
 };
 
 struct _NclFGrpRec {
@@ -379,7 +379,7 @@ typedef NhlErrorTypes (*NclAddVarChunkFunc) (
 void*, /* record */
 NclQuark, /*var_name */
 int, /* n_dims */
-int * /* dims */
+ng_size_t * /* dims */
 #endif
 );
 

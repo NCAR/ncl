@@ -1317,13 +1317,13 @@ NclQuark *dimnames;
 }
 extern NhlErrorTypes _NclFileAddVarChunk
 #if     NhlNeedProto
-(NclFile thefile, NclQuark varname, int n_dims, int *dims)
+(NclFile thefile, NclQuark varname, int n_dims, ng_size_t *dims)
 #else
 (thefile, varname, n_dims, dims)
 NclFile thefile;
 NclQuark varname;
 int n_dims;
-int *dims;
+ng_size_t *dims;
 #endif
 {
 	NclFileClass fc = NULL;

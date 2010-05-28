@@ -169,7 +169,7 @@ ng_size_t		cache_nelems;
 float		cache_preemption;
 };
 
-static NhlErrorTypes NetAddVarChunk(void* therec, NclQuark thevar, int n_chunk_dims, int *chunk_dims);
+static NhlErrorTypes NetAddVarChunk(void* therec, NclQuark thevar, int n_chunk_dims, ng_size_t *chunk_dims);
 
 static NclBasicDataTypes NetMapToNcl 
 #if	NhlNeedProto
@@ -2184,13 +2184,13 @@ void* data;
 
 static NhlErrorTypes NetAddVarChunk
 #if    NhlNeedProto
-(void* therec, NclQuark thevar, int n_chunk_dims, int *chunk_dims)
+(void* therec, NclQuark thevar, int n_chunk_dims, ng_size_t *chunk_dims)
 #else
 (therec,thevar,n_chunk_dims,chunk_dims)
 void* therec;
 NclQuark thevar;
 int n_chunk_dims;
-int *chunk_dims;
+ng_size_t *chunk_dims;
 #endif
 {
     NetCdfFileRecord* rec = (NetCdfFileRecord*)therec;
