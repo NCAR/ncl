@@ -30,7 +30,8 @@ NhlErrorTypes _NclFUNCNAME
 #endif
 {
 	NclScalar missing,missing2;
-	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	void *out_val;
 	float *fout_val;
 	double *dout_val;
@@ -43,8 +44,8 @@ NhlErrorTypes _NclFUNCNAME
 	short *svalue;
 	
 	NclBasicDataTypes type;
-	int total=1;
-	int i;
+	ng_size_t total=1;
+	ng_size_t i;
 
 	value = (void*)NclGetArgValue(
 			0,

@@ -24,17 +24,17 @@
 
 static NhlErrorTypes Ncl_Type_DATATYPE_reset_mis
 #if	NhlNeedProto
-(void	*val,NclScalar * old_m,NclScalar * new_m, int nval)
+(void	*val,NclScalar * old_m,NclScalar * new_m, ng_size_t nval)
 #else
 (val,old_m,new_m,nval)
 void *val;
 NclScalar * old_m;
 NclScalar * new_m;
-int nval;
+ng_size_t nval;
 #endif
 {
 	LOCALTYPE *value = (LOCALTYPE*)val;
-	int i;
+	ng_size_t i;
 
 	if((old_m == NULL)||(new_m == NULL))
 		return(NhlFATAL);
