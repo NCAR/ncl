@@ -34,8 +34,8 @@
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Vertical speed sheer:s-1:VWSH
 193:193:Horizontal momentum flux:N m-2:MFLX
-194:194:u-component storm motion:m s-1:USTM
-195:195:v-component storm motion:m s-1:VSTM
+194:194:U-component storm motion:m s-1:USTM
+195:195:V-component storm motion:m s-1:VSTM
 196:196:Drag coefficient:non-dim:CD
 197:197:Frictional velocity:m s-1:FRICV
 198:198:Latitude of u wind component of velocity:deg:LAUV
