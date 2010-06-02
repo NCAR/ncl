@@ -1,13 +1,30 @@
-# CODE TABLE 4.10, Type of statistical processing
+# GRIBv2 - Table 4.10 - Type of statistical processing
 0:0:Average
 1:1:Accumulation
 2:2:Maximum
 3:3:Minimum
-4:4:Difference (Value at the end of time range minus value at the beginning)
-5:5:Root mean square
-6:6:Standard deviation
-7:7:Covariance (Temporal variance)
-8:8:Difference (Value at the start of time range minus value at the end)
+4:4:Difference (value at the end of the time range minus value at the beginning)
+5:5:Root Mean Square
+6:6:Standard Deviation
+7:7:Covariance (temporal variance)
+8:8:Difference ( value at the beginning of the time range minus value at the end)
 9:9:Ratio
-# 192 254  Reserved for local use
+#10-191:Reserved
+#192-254:Reserved for Local Use
+192:192:Climatological Mean Value: multiple year averages of quantities which are themselves means over some period of time less than a year.
+193:193:Average of N forecasts (or initialized analyses).
+194:194:Average of N uninitialized analyses, starting at reference time.
+195:195:Average of forecast accumulations, forecasts at 24-hour intervals. 
+196:196:Average of successive forecast accumulations, forecasts at specified intervals. 
+197:197:Average of forecast averages, forecasts at 24-hour intervals. 
+198:198:Average of successive forecast averages, forecasts at specified intervals. 
+199:199:Climatological Average of N analyses, each a year apart and each of an equal specified duration.
+200:200:Climatological Average of N forecasts, each a year apart and each of an equal specified duration.
+201:201:Climatological Root Mean Square difference between N forecasts and their verifying analyses, each a year apart, each of an equal specified duration.
+202:202:Climatological Standard Deviation of N forecasts from the mean of the same N forecasts, for forecasts one year apart, each of an equal specified duration.
+203:203:Climatological Standard Deviation of N analyses from the mean of the same N analyses, for analyses one year apart, each of an equal specified duration.
+204:204:Average of forecast accumulations, each of an equal specified duration, with 6-hour intervals between forecasts.
+205:205:Average of forecast averages, each of an equal specified duration, with 6-hour intervals between forecasts.
+206:206:Average of forecast accumulations, each of an equal specified duration, with 12-hour intervals between forecasts.
+207:207:Average of forecast averages, each of an equal specified duration, with 12-hour intervals between forecasts.
 255:255:Missing
