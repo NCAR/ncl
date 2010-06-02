@@ -3112,8 +3112,8 @@ end
 ;----------------------------------------------------------------------------
 ;----------------------- Unsupported: DJS -----------------------------------
 ;----------------------------------------------------------------------------
-undef("AdvectGradient")
-function AdvectGradient (u:numeric, v:numeric, x:numeric \
+undef("advectGradient")
+function advectGradient (u:numeric, v:numeric, x:numeric \
                         ,gridType[1]:integer, con[1]:numeric \
                         ,long_name:string, units:string, iopt[1]:integer)
 ;
@@ -3144,8 +3144,10 @@ function AdvectGradient (u:numeric, v:numeric, x:numeric \
 ;   v = f->V
 ;   T = f->T
 ;               ; linear advection of temperature
-;   Tadv = advect(u,v,T,0, 1.0,"linear advection of temperature","m-K/s",0)
+;   Tadv = advectGradient(u,v,T,0, 1.0,"linear advection of temperature","m-K/s",0)
 ;
+local dimu, dimv, dimx, ranku, rankv, rankx, ier \
+    , x_grad_lon, x_grad_lat, gradsg, gradsf, advect
 begin
                              ; ERROR CHECKING
   dimu  = dimsizes(u)
@@ -3203,19 +3205,19 @@ begin
 
   if (iopt.eq.1) then
       if (rankx.eq.2) then
-          advec!0 = "lat"
-          advec!1 = "lon"
+          advect!0 = "lat"
+          advect!1 = "lon"
       end if
       if (rankx.eq.3) then
-          advec!0 = "lev"
-          advec!1 = "lat"
-          advec!2 = "lon"
+          advect!0 = "lev"
+          advect!1 = "lat"
+          advect!2 = "lon"
       end if
       if (rankx.eq.4) then
-          advec!0 = "time"
-          advec!1 = "lev"
-          advec!2 = "lat"
-          advec!3 = "lon"
+          advect!0 = "time"
+          advect!1 = "lev"
+          advect!2 = "lat"
+          advect!3 = "lon"
       end if
    end if
 
