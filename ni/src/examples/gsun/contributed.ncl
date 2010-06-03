@@ -11502,7 +11502,10 @@ begin
     yrLast = year(ntim-1)
     nyrs   = yrLast-yrStrt+1
 
-    NTIM   = 12*nyrs              ; size of monthly files
+   ;NTIM   = 12*nyrs              ; total number of months
+                                  ; "Sebi" generalization
+    NTIM   = 12*(nyrs-2)+(12-(month(0)-1))+month(ntim-1)
+
     dAvg   = dimx
     if (rankx.le.4) then
         dAvg(0)= NTIM
