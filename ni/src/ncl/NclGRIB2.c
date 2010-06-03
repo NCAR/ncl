@@ -2975,6 +2975,7 @@ Grib2RecordInqRec* grib_rec;
 {
 	int cix, fix;
 	static int month_ix = 7;
+	static NrmQuark var_name_q = NrmNULLQUARK;
 
 	for (cix = 0; cix < NhlNumber(Unit_Code_Order); cix++) {
 		if (node->forecast_time_units == Unit_Code_Order[cix])
@@ -2997,10 +2998,11 @@ Grib2RecordInqRec* grib_rec;
 		/* choose the shortest duration as the common unit */
 		node->forecast_time_units = (int)grib_rec->forecast_time_units;
 	}
-	if (fix >= month_ix) {
+	if (fix >= month_ix && grib_rec->var_name_q == var_name_q) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "NclGRIB2: Variable time unit codes representing time durations of a month or more in variable (%s): requires approximation to convert to common unit",
 			  NrmQuarkToString(grib_rec->var_name_q));
+		var_name_q = grib_rec->var_name_q;
 	}
 		
 	/* Set the variable_time_unit flag */
@@ -3476,7 +3478,32 @@ Grib2FileRecord *therec;
 
 		if (step->traits.stat_proc_type != -1) {
 			/* the statistical process duration and number in average only implemented for temporal statistical processess */
-			if (grib_rec->spatial_proc < 0) {
+			if (grib_rec->spatial_proc >= 0) {
+				AppendStatProcInfoToVarName(step,True);
+				att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+				att_list_ptr->next = step->theatts;
+				att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+				att_list_ptr->att_inq->name = NrmStringToQuark("type_of_spatial_processing");
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+						       "4.15.table",grib_rec->spatial_proc,ct) < NhlWARNING) {
+					return;
+				}
+				if (ct->descrip) {
+					*tmp_string = NrmStringToQuark(ct->descrip);
+				}
+				else {
+					sprintf(buf,"%d",grib_rec->spatial_proc);
+					*tmp_string = NrmStringToQuark(buf);
+				}
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+					_NclCreateVal(NULL, NULL,
+						      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+						      PERMANENT, NULL, nclTypestringClass);
+				step->theatts = att_list_ptr;
+				step->n_atts++;
+			}
+			else {
 				if (step->traits.stat_proc_type > 191 && step->n_grids > 0) {
 					Grib2RecordInqRecList *rec_list;
 					int rix = 0;
