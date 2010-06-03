@@ -5052,6 +5052,7 @@ GribRecordInqRec* grib_rec;
 {
 	int cix, nix;
 	static int month_ix = 7;
+	static NrmQuark var_name_q = NrmNULLQUARK;
 	/* 
 	 * These are the codes in ON388 - Table 4 - for time units arranged in order from 
 	 * short to long duration. 
@@ -5078,10 +5079,11 @@ GribRecordInqRec* grib_rec;
 		/* choose the shortest duration as the common unit */
 		node->time_unit_indicator = (int)grib_rec->pds[17];
 	}
-	if (nix >= month_ix) {
+	if (nix >= month_ix && var_name_q != grib_rec->var_name_q) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "NclGRIB: Variable time unit codes representing time durations of a month or more in variable (%s): requires approximation to convert to common unit",
 			  NrmQuarkToString(grib_rec->var_name_q));
+		var_name_q = grib_rec->var_name_q;
 	}
 		
 	/* Set the variable_time_unit flag */
