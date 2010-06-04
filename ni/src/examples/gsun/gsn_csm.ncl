@@ -4269,6 +4269,10 @@ begin
       if(left_string.or.center_string.or.right_string)
         main_zone   = main_zone+1
       end if
+;
+; Do we want thicker bar outlines?
+;
+      bar_outline_thickness = get_res_value(res2,"gsnXYBarOutlineThicknessF",1.0)
     end if                  ; Done checking special resources.
 
     res2          = True
@@ -4709,6 +4713,10 @@ begin
 
     if(yref_fill_on.and.bar_chart.and..not.bar_outline_only)
       gsres = True
+      if(bar_outline_thickness.gt.0.and.bar_outline_thickness.ne.1) then
+        gsres@gsEdgesOn        = True
+        gsres@gsEdgeThicknessF = bar_outline_thickness
+      end if
       do i=0,ncurves-1 
         var_string = unique_string("polygons"+i)
 ;
