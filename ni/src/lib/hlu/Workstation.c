@@ -1649,7 +1649,7 @@ CvtColorDefinitionGenArrayToColorIndexGenArray
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fgen);
 	}
 
-	if((fgen->num_dimensions != 2) || (fgen->len_dimensions[1] != 3)){
+	if((fgen->num_dimensions != 2) || (fgen->len_dimensions[1] != 3 && fgen->len_dimensions[1] != 4)){
 		if((fgen->num_elements == 1) &&
 			(fgen->size <= sizeof(NhlArgVal)) && (fgen->size > 0)){
 
@@ -1702,16 +1702,18 @@ CvtColorDefinitionGenArrayToColorIndexGenArray
 	tgen->data = iptr;
 	fptr = fgen->data;
 
+	int colorStride = fgen->len_dimensions[1];
 	for(i=0;i < fgen->len_dimensions[0];i++){
-		NGRGB	rgb;
-
-		rgb.red = *(fptr+(3*i)) * 65535;
-		rgb.green = *(fptr+(3*i)+1) * 65535;
-		rgb.blue = *(fptr+(3*i)+2) * 65535;
-		iptr[i] = ALPHA_OPAQUE |
-				((rgb.red   / 256) << 16) |
-				((rgb.green / 256) << 8) |
-				((rgb.blue  / 256));
+		unsigned int red = *(fptr+(colorStride*i)) * 255;
+		unsigned int green = *(fptr+(colorStride*i)+1) * 255;
+		unsigned int blue = *(fptr+(colorStride*i)+2) * 255;
+		unsigned int alpha = (fgen->len_dimensions[1] == 4)
+				? (int)(*(fptr+(colorStride*i)+3) * 63) << 24 | ALPHA_MASK
+				: ALPHA_OPAQUE;
+		iptr[i] = alpha |
+				(red   << 16) |
+				(green << 8) |
+				blue;
 	}
 
 	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
