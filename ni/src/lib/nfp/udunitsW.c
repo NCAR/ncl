@@ -17,18 +17,31 @@ ut_system *utopen_ncl()
   char udunits_file[_NhlMAXFNAMELEN];
 
 /*
- *  If UDUNITS2_XML_PATH is set, then this path is used for the
- * "udunits2.xml" file. Otherwise, the path within NCL
- * ($NCARG_ROOT/lib/ncarg/udunits/) is used.
+ *  If NCARG_UDUNITS is set, then this directory is used to
+ *  look for the "udunits2.xml" file.
+ *
+ *  Otherwise, the path within NCL ($NCARG_ROOT/lib/ncarg/udunits/)
+ *  is used.
+ *
+ *  UDUNITS2_XML_PATH is not recognized internally by NCL. This is
+ *  because it could be very common for the user to have this set
+ *  for some other package, like Udunits, and this other file might
+ *  not be compatible with what NCL expects.
+ *
  */
-  path = getenv("UDUNITS2_XML_PATH");
-  if ((void *)path == (void *)NULL) {
+  path = getenv("NCARG_UDUNITS");
+  if ( (void *)path == (void *)NULL) {
     path = _NGGetNCARGEnv("udunits");
-    strcpy(udunits_file,path);
-    strcat(udunits_file,_NhlPATHDELIMITER);
-    strcat(udunits_file,"udunits2.xml");
-    setenv("UDUNITS2_XML_PATH",udunits_file,0);
   }
+  strcpy(udunits_file,path);
+  strcat(udunits_file,_NhlPATHDELIMITER);
+  strcat(udunits_file,"udunits2.xml");
+/*
+ * Internally set UDUNITS2_XML_PATH, forcing it to overwrite
+ * any setting the user might have.
+ */
+  setenv("UDUNITS2_XML_PATH",udunits_file,1);
+
   /* Turn annoying "override" errors off */
   ut_set_error_message_handler( ut_ignore );
 
@@ -49,6 +62,56 @@ void *utclose_ncl(ut_system *us)
 {
     ut_free_system(us);
     us = NULL;
+}
+
+
+char *fix_units_for_360_bug(char *ccal, char *cunits, int *montoday,
+                            int *yrtoday)
+{
+  int clen;
+  char *cunits_change;
+  char unit_base_month[13], unit_base_year[12];
+
+  if(ccal != NULL && (!strcasecmp(ccal,"360") || 
+                      !strcasecmp(ccal,"360_day"))) {
+    clen  = strlen(cunits);
+/*
+ * Get the first part of the units string to see if it is 
+ * "months since" or "years since".
+ */
+    if(clen >= 12) {
+      strncpy(unit_base_month,cunits,12);
+      unit_base_month[12] = '\0';
+    }
+    else {
+      unit_base_month[0] = '\0';
+    }
+    if(clen >= 11) {
+      strncpy(unit_base_year,cunits,11);
+      unit_base_year[11] = '\0';
+    }
+    else {
+      unit_base_year[0] = '\0';
+    }
+    if((strcasecmp(unit_base_month,"months since")==0)) {
+      *montoday = 1;
+      cunits_change = (char*)calloc(clen-1,sizeof(char));
+      strncpy(cunits_change,"days since",10);
+      strncpy(&cunits_change[10],&cunits[12],clen-12);
+      cunits_change[clen-2] = '\0';
+      return(cunits_change);
+    }
+
+    if((strcasecmp(unit_base_year,"years since")==0)) {
+      *yrtoday = 1;
+      cunits_change = (char*)calloc(clen,sizeof(char));
+      strncpy(cunits_change,"days since",10);
+      strncpy(&cunits_change[10],&cunits[11],clen-11);
+      cunits_change[clen-1] = '\0';
+      return(cunits_change);
+    }
+  }
+  return(cunits);
 }
 
 /*
@@ -91,7 +154,7 @@ NhlErrorTypes ut_calendar_W( void )
   void *x;
   double *tmp_x;
   string *sspec;
-  char *cspec;
+  char *cspec, *cspec_orig;
   int *option;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_dx;
@@ -140,6 +203,7 @@ NhlErrorTypes ut_calendar_W( void )
  */
   int i, ret, return_missing, dsizes[1];
   int total_size_x, total_size_date, index_date;
+  int months_to_days_fix=0, years_to_days_fix=0;
   extern float truncf(float);
   ut_system *unitSystem;
 
@@ -176,6 +240,97 @@ NhlErrorTypes ut_calendar_W( void )
            NULL,
            NULL,
            1);
+
+/* 
+ * The "units" attribute of "time" must be set, otherwise missing
+ * values will be returned.
+ *
+ * The "calendar" option may optionally be set, but it must be equal to
+ * one of the recognized calendars.
+ */
+  return_missing = 0;
+
+  stack_entry = _NclGetArg(0, 2, DONT_CARE);
+  switch (stack_entry.kind) {
+  case NclStk_VAR:
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj == NULL) {
+        return_missing = 1;
+        break;
+      }
+    }
+    else {
+/*
+ * att_id == -1 ==> no attributes specified; return all missing.
+ */
+      return_missing = 1;
+      break;
+    }
+/* 
+ * Check for attributes. If none are specified, then return missing values.
+ */
+    if (attr_obj->att.n_atts == 0) {
+      return_missing = 1;
+      break;
+    }
+    else {
+/*
+ * Get list of attributes.
+ */
+      attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them.
+ */
+      while (attr_list != NULL) {
+        if ((strcmp(attr_list->attname, "calendar")) == 0) {
+          scal = (string *) attr_list->attvalue->multidval.val;
+          ccal = NrmQuarkToString(*scal);
+          if(strcasecmp(ccal,"standard") && strcasecmp(ccal,"gregorian") &&
+             strcasecmp(ccal,"noleap") && strcasecmp(ccal,"365_day") &&
+             strcasecmp(ccal,"365") && strcasecmp(ccal,"360_day") && 
+             strcasecmp(ccal,"360") ) {
+            NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
+            return_missing = 1;
+          }
+        }
+        if ((strcmp(attr_list->attname, "units")) == 0) {
+          sspec = (string *) attr_list->attvalue->multidval.val;
+        }
+        attr_list = attr_list->next;
+      }
+    }
+  default:
+    break;
+  }
+
+/*
+ * Convert sspec to character string.
+ */
+  cspec = NrmQuarkToString(*sspec);
+
+/*
+ * There's a bug in utInvCalendar2_cal that doesn't handle the
+ * 360-day calendar correctly if units are "years since" or
+ * "months since".
+ *
+ * To fix this bug, we convert these units to "days since", do the
+ * calculation as "days since", and then convert back to the original
+ * "years since" or "months since" requested units.
+ */
+  cspec_orig = (char*)calloc(strlen(cspec)+1,sizeof(char));
+  strcpy(cspec_orig,cspec);
+
+  cspec = fix_units_for_360_bug(ccal,cspec,&months_to_days_fix,
+                                &years_to_days_fix);
+/*
+ * Make sure cspec is a valid udunits string.
+ */
+  utunit = ut_parse(unit_system, cspec, UT_ASCII);
+  if(utunit == NULL) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: Invalid specification string. Missing values will be returned.");
+    return_missing = 1;
+  }
 
 /*
  * Calculate size of input array.
@@ -252,78 +407,6 @@ NhlErrorTypes ut_calendar_W( void )
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
 
 /* 
- * The "units" attribute of "time" must be set, otherwise missing
- * values will be returned.
- *
- * The "calendar" option may optionally be set, but it must be equal to
- * one of the recognized calendars.
- */
-  return_missing = 0;
-
-  stack_entry = _NclGetArg(0, 2, DONT_CARE);
-  switch (stack_entry.kind) {
-  case NclStk_VAR:
-    if (stack_entry.u.data_var->var.att_id != -1) {
-      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
-      if (attr_obj == NULL) {
-        return_missing = 1;
-        break;
-      }
-    }
-    else {
-/*
- * att_id == -1 ==> no attributes specified; return all missing.
- */
-      return_missing = 1;
-      break;
-    }
-/* 
- * Check for attributes. If none are specified, then return missing values.
- */
-    if (attr_obj->att.n_atts == 0) {
-      return_missing = 1;
-      break;
-    }
-    else {
-/*
- * Get list of attributes.
- */
-      attr_list = attr_obj->att.att_list;
-/*
- * Loop through attributes and check them.
- */
-      while (attr_list != NULL) {
-        if ((strcmp(attr_list->attname, "calendar")) == 0) {
-          scal = (string *) attr_list->attvalue->multidval.val;
-          ccal = NrmQuarkToString(*scal);
-          if(strcasecmp(ccal,"standard") && strcasecmp(ccal,"gregorian") &&
-             strcasecmp(ccal,"noleap") && strcasecmp(ccal,"365_day") &&
-             strcasecmp(ccal,"365") && strcasecmp(ccal,"360_day") && 
-             strcasecmp(ccal,"360") ) {
-            NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
-            return_missing = 1;
-          }
-        }
-        if ((strcmp(attr_list->attname, "units")) == 0) {
-          sspec = (string *) attr_list->attvalue->multidval.val;
-          cspec = NrmQuarkToString(*sspec);
-/*
- * Make sure cspec is a valid udunits string.
- */
-          utunit = ut_parse(unit_system, cspec, UT_ASCII);
-          if(utunit == NULL) {
-            NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: Invalid specification string. Missing values will be returned.");
-            return_missing = 1;
-          }
-        }
-        attr_list = attr_list->next;
-      }
-    }
-  default:
-    break;
-  }
-
-/* 
  * If we reach this point and return_missing is not 0, then either
  * "units" was invalid or wasn't set, or "calendar" was not a
  * recoginized calendar. We return all missing values in this case.
@@ -364,6 +447,21 @@ NhlErrorTypes ut_calendar_W( void )
  */
   tmp_x = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                   &missing_dx);
+
+/*
+ * This is the bug fix for 360 day calendars and a units
+ * of "years since" or "months since". We have to convert
+ * from "years since" or "months since" to "days since".
+ *
+ * See above for more information about the bug.
+ */
+  if(years_to_days_fix == 1) {
+    for(i = 0; i < total_size_x; i++ ) tmp_x[i] *= 360.;
+  }
+  if(months_to_days_fix == 1) {
+    for(i = 0; i < total_size_x; i++ ) tmp_x[i] *= 30.;
+  }
+
 
 /* 
  * Loop through each element and get the 6 values.
@@ -526,6 +624,11 @@ NhlErrorTypes ut_calendar_W( void )
   utclose_ncl(unit_system);
 
 /*
+ * Free extra units
+ */
+  NclFree(cspec_orig);
+
+/*
  * Set up variable to return.
  */
   if(has_missing_x) {
@@ -634,7 +737,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
   double *tmp_second;
   string *sspec;
   int *option;
-  char *cspec;
+  char *cspec, *cspec_orig;
   int ndims_year,   dsizes_year[NCL_MAX_DIMENSIONS],   has_missing_year;
   int ndims_month,  dsizes_month[NCL_MAX_DIMENSIONS],  has_missing_month;
   int ndims_day,    dsizes_day[NCL_MAX_DIMENSIONS],    has_missing_day;
@@ -680,6 +783,8 @@ NhlErrorTypes ut_inv_calendar_W( void )
  * various
  */
   int i, total_size_input, dsizes[1], return_missing;
+  int months_to_days_fix=0, years_to_days_fix=0;
+
 /*
  * Before we do anything, initialize the Udunits package.
  */
@@ -805,44 +910,6 @@ NhlErrorTypes ut_inv_calendar_W( void )
            NULL,
            1);
 
-/*
- * Convert sspec to character string.
- */
-  cspec = NrmQuarkToString(*sspec);
-
-/*
- * Make sure cspec is a valid udunits string.
- */
-  utunit = ut_parse(unit_system, cspec, UT_ASCII);
-  if(utunit == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Invalid specification string");
-    return(NhlFATAL);
-  }
-
-/*
- * Calculate total size of input arrays, and size and dimensions for
- * output array, and alloc memory for output array.
- */
-  total_size_input = 1;
-  for( i = 0; i < ndims_year; i++ ) total_size_input *= dsizes_year[i];
-
-  x = (double *)calloc(total_size_input,sizeof(double));
-
-  if( x == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Unable to allocate memory for output array");
-    return(NhlFATAL);
-  }
-/*
- * Create tmp array for coercing second to double if necessary.
- */
-  if(type_second != NCL_double) {
-    tmp_second = (double*)calloc(1,sizeof(double));
-    if(tmp_second == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Unable to allocate memory for coercing second array to double precision");
-      return(NhlFATAL);
-    }
-  }
-
 /* 
  * Check the "option" variable to see if it contains a "calendar"
  * attribute.
@@ -894,6 +961,59 @@ NhlErrorTypes ut_inv_calendar_W( void )
     break;
   }
 
+/*
+ * Convert sspec to character string.
+ */
+  cspec = NrmQuarkToString(*sspec);
+
+/*
+ * There's a bug in utInvCalendar2_cal that doesn't handle the
+ * 360-day calendar correctly if units are "years since" or
+ * "months since".
+ *
+ * To fix this bug, we convert these units to "days since", do the
+ * calculation as "days since", and then convert back to the original
+ * "years since" or "months since" requested units.
+ */
+  cspec_orig = (char*)calloc(strlen(cspec)+1,sizeof(char));
+  strcpy(cspec_orig,cspec);
+
+  cspec = fix_units_for_360_bug(ccal,cspec,&months_to_days_fix,
+                                &years_to_days_fix);
+
+/*
+ * Make sure cspec is a valid udunits string.
+ */
+  utunit = ut_parse(unit_system, cspec, UT_ASCII);
+  if(utunit == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Invalid specification string");
+    return(NhlFATAL);
+  }
+
+/*
+ * Calculate total size of input arrays, and size and dimensions for
+ * output array, and alloc memory for output array.
+ */
+  total_size_input = 1;
+  for( i = 0; i < ndims_year; i++ ) total_size_input *= dsizes_year[i];
+
+  x = (double *)calloc(total_size_input,sizeof(double));
+
+  if( x == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+/*
+ * Create tmp array for coercing second to double if necessary.
+ */
+  if(type_second != NCL_double) {
+    tmp_second = (double*)calloc(1,sizeof(double));
+    if(tmp_second == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Unable to allocate memory for coercing second array to double precision");
+      return(NhlFATAL);
+    }
+  }
+
 /* 
  * Loop through each data value, and call Udunits routine.
  */ 
@@ -925,6 +1045,16 @@ NhlErrorTypes ut_inv_calendar_W( void )
 
        (void)utInvCalendar2_cal(year[i],month[i],day[i],hour[i],
                                 minute[i],*tmp_second,utunit,&x[i],ccal);
+
+/*
+ * This is the bug fix for 360 day calendars and a units
+ * of "years since" or "months since". We have to convert
+ * from "days since" to the original requested units.
+ *
+ * See above for more information about the bug.
+ */
+       if(years_to_days_fix  == 1) x[i] /= 360.;
+       if(months_to_days_fix == 1) x[i] /= 30.;
     }
     else {
       x[i]  = missing_x.doubleval;
@@ -935,6 +1065,16 @@ NhlErrorTypes ut_inv_calendar_W( void )
  * Close up Udunits.
  */
   utclose_ncl(unit_system);
+
+/*
+ * Set original units back if necessary.
+ */
+  if(months_to_days_fix || years_to_days_fix) {
+    cspec = cspec_orig;
+  }
+  else {
+    NclFree(cspec_orig);
+  }
 
 /*
  * Set up variable to return.

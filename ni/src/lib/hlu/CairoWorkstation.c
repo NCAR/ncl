@@ -1,5 +1,5 @@
 /*
- *      $Id: CairoWorkstation.c,v 1.6.2.1 2010-03-18 21:07:23 brownrig Exp $
+ *      $Id: CairoWorkstation.c,v 1.8 2010-03-29 16:30:03 brownrig Exp $
  */
 
 # include   <stdio.h>
@@ -33,7 +33,7 @@ static NhlResource resourcesPSPDFWS[] = {
      */
     {NhlNwkPaperSize,NhlCwkPaperSize,NhlTString,
         sizeof(NhlString),Oset(paper_size),NhlTImmediate,
-        NULL,_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
+        _NhlUSET(PAGEUTIL_DEFAULT_PAPERSIZE),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
     {NhlNwkPaperWidthF, NhlCwkPaperWidthF, NhlTFloat,
         sizeof(float), Oset(page_width), NhlTString,
         _NhlUSET("-1."), _NhlRES_DEFAULT, NULL},

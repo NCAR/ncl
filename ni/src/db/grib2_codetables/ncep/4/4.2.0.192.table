@@ -1,0 +1,16 @@
+# GRIBv2 - Table 4.2-0-192 Meteorological - Covariance
+1:1:Covariance between zonal and meridional components of the wind. defined as [uv]-[u][v], where "[]" indicates the mean over the indicated time span.:m2/s2:COVMZ
+2:2:Covariance between izonal component of the wind and temperature. defined as [uT]-[u][T], where "[]" indicates the mean over the indicated time span.:K*m/s:COVTZ
+3:3:Covariance between meridional component of the wind and temperature. defined as [vT]-[v][T], where "[]" indicates the mean over the indicated time span.:K*m/s:COVTM
+4:4:Covariance between temperature and vertical component of the wind. defined as [wT]-[w][T], where "[]" indicates the mean over the indicated time span.:K*m/s:COVTW
+5:5:Covariance between zonal and zonal components of the wind. defined as [uu]-[u][u], where "[]" indicates the mean over the indicated time span.:m2/s2:COVZZ
+6:6:Covariance between meridional and meridional components of the wind. defined as [vv]-[v][v], where "[]" indicates the mean over the indicated time span.:m2/s2:COVMM
+7:7:Covariance between specific humidity and zonal components of the wind. defined as [uq]-[u][q], where "[]" indicates the mean over the indicated time span.:kg/kg*m/s:COVQZ
+8:8:Covariance between specific humidity and meridional components of the wind. defined as [vq]-[v][q], where "[]" indicates the mean over the indicated time span.:kg/kg*m/s:COVQM
+9:9:Covariance between temperature and vertical components of the wind. defined as [{omega}T]-[{omega}][T], where "[]" indicates the mean over the indicated time span.:K*Pa/s:COVTVV
+10:10:Covariance between specific humidity and vertical components of the wind. defined as [{omega}q]-[{omega}][q], where "[]" indicates the mean over the indicated time span.:kg/kg*Pa/s:COVQVV
+11:11:Covariance between surface pressure and surface pressure. defined as [Psfc]-[Psfc][Psfc], where "[]" indicates the mean over the indicated time span.:Pa*Pa:COVPSPS
+12:12:Covariance between specific humidity and specific humidy. defined as [qq]-[q][q], where "[]" indicates the mean over the indicated time span.:kg/kg*kg/kg:COVQQ
+13:13:Covariance between vertical and vertical components of the wind. defined as [{omega}{omega}]-[{omega}][{omega}], where "[]" indicates the mean over the indicated time span.:Pa2/s2:COVVVVV
+14:14:Covariance between temperature and temperature. defined as [TT]-[T][T], where "[]" indicates the mean over the indicated time span.:K*K:COVTT
+255:255:Missing:-:

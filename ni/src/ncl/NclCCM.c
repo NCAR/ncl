@@ -1741,6 +1741,8 @@ NclQuark var_name;
 		if(var_name == vtmp->var_name_q) {
 			tmp = (NclFVarRec*)NclMalloc(sizeof(NclFVarRec));
                         tmp->var_name_quark  = vtmp->var_info.var_name_quark;
+                        tmp->var_full_name_quark  = vtmp->var_info.var_name_quark;
+                        tmp->var_real_name_quark  = vtmp->var_info.var_name_quark;
                         tmp->data_type  = vtmp->var_info.data_type;
                         tmp->num_dimensions  = vtmp->var_info.num_dimensions;
                         for(j=0;j< tmp->num_dimensions;j++) {
@@ -2419,8 +2421,12 @@ NclFormatFunctionRec CCMRec = {
 /* NclWriteAttFunc         write_att; */		NULL,
 /* NclWriteVarAttFunc      write_var_att; */		NULL,
 /* NclAddDimFunc           add_dim; */			NULL,
-/* NclAddDimFunc           rename_dim; */		NULL,
+/* NclAddChunkDimFunc      add_chunk_dim; */		NULL,
+/* NclRenameDimFunc        rename_dim; */		NULL,
 /* NclAddVarFunc           add_var; */			NULL,
+/* NclAddVarChunkFunc      add_var_chunk; */		NULL,
+/* NclAddVarChunkCacheFunc add_var_chunk_cache; */	NULL,
+/* NclSetVarCompressLevel  set_var_compress_level; */	NULL,
 /* NclAddVarFunc           add_coord_var; */		NULL,
 /* NclAddAttFunc           add_att; */			NULL,
 /* NclAddVarAttFunc        add_var_att; */		NULL,

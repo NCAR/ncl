@@ -1,0 +1,12 @@
+# GRIBv2 - Table 4.2-3-192 Space - Forecast Satellite Imagery
+
+0:0:Simulated brightness temperature for GOES 12, channel 2:K:SBT122
+1:1:Simulated brightness temperature for GOES 12, channel 3:K:SBT123
+2:2:Simulated brightness temperature for GOES 12, channel 4:K:SBT124
+3:3:Simulated brightness temperature for GOES 12, channel 5:K:SBT125
+4:4:Simulated brightness counts for GOES 12, channel 3:Byte:SBC123
+5:5:Simulated brightness counts for GOES 12, channel 4:Byte:SBC124
+# 6-191:6-191:Reserved:-:
+
+# 192-254:192-254:Reserved for Local Use:-:
+

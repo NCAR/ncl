@@ -1,7 +1,7 @@
 C NCLFORTSTART
       subroutine dobjanlx(plon,plat,pval,ntim,npts,grid,mlon,nlat
      &                   ,xmsg,pmsg ,rscan,nscan,glat,glon,smwgt,opt
-     &                   ,ier)        
+     &                   ,zval,zlat,zlon,ip,work,lwork,ier)        
       implicit none
 c                                                                               
 c Objective Analysis via 'iterative improvement'  [driver]
@@ -34,20 +34,23 @@ c .   opt          - option flag
 c .   ier          - error code                                                 
 c                                                                               
 c                                                   INPUT
-      integer   ntim,npts,mlon,nlat,nscan,ier
+      integer   ntim,npts,mlon,nlat,nscan,lwork,ier
       double precision  plat(npts), plon(npts), pval(npts,ntim)
       double precision  rscan(nscan),glat(nlat),glon(mlon)
       double precision  smwgt(nscan), xmsg, pmsg
+      integer ip(npts)
+      double precision zval(npts,ntim),zlat(npts),zlon(npts)
+      double precision work(lwork)
       logical   opt
 c                                                   OUTPUT
       double precision  grid(mlon,nlat,ntim) 
 C NCLEND
 c                                                   DYNAMIC
-      double precision, allocatable, dimension(:,:) :: zval
-      double precision, allocatable, dimension(:)   :: zlat, zlon, work 
-      integer, allocatable, dimension(:)            :: ip
+c      double precision, allocatable, dimension(:,:) :: zval
+c      double precision, allocatable, dimension(:)   :: zlat, zlon
+c      integer, allocatable, dimension(:)            :: ip
 c                                                   DEFAULT SETTING
-      integer nscmax, kpts, lwork, k, n, nt, i, ker 
+      integer nscmax, kpts, k, n, nt, i, ker 
       parameter (nscmax=10)                                   
 c
 c 'smwgt' is being passed in by C driver here, so this 
@@ -59,12 +62,14 @@ c      data smwgt/1.0d0, 0.85d0, 0.70d0, 0.50d0, 6*0.25d0/
 
 c sort the 'plat' into ascending latitude order: ip = permutation vector
 
-      allocate (ip(npts), stat=ker)
+C allocate this inside NCL C wrapper.
+c      allocate (ip(npts), stat=ker)
       call dpsort(plat, npts, ip, 1, ker)
 
 c eliminate bad or missing locations
 
-      allocate (zlat(npts), zlon(npts), zval(npts,ntim), stat=ker)
+C allocate these inside NCL C wrapper.
+C      allocate (zlat(npts), zlon(npts), zval(npts,ntim), stat=ker)
       k = 0
       do n=1,npts
          i = ip(n)
@@ -90,8 +95,9 @@ c opt     end do
 c opt     if (ier.lt.0) return
 c opt end if
 
-      lwork = 2*kpts
-      allocate (work(lwork), stat=ker)
+C allocate this inside NCL C wrapper.
+C      lwork = 2*kpts
+C      allocate (work(lwork), stat=ker)
 
       call dobjanl(zlon,zlat,zval,ntim,kpts,grid,mlon,nlat,pmsg
      &            ,rscan,nscan,work,lwork,glat,glon,smwgt,ier)

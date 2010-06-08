@@ -1,0 +1,118 @@
+# CODE TABLE 4.230 Atmospheric Chemical or Physical Constituent Type
+0:0:Ozone:O3
+1:1:Water Vapour:H2O
+2:2:Methane:CH4
+3:3:Carbon Dioxide:CO2
+4:4:Carbon Monoxide:CO
+5:5:Nitrogen Dioxide:NO2
+6:6:Nitrous Oxide:N2O
+7:7:Formaldehyde:HCHO
+8:8:Sulphur Dioxide:SO2
+9:9:Ammonia:NH3
+10:10:Ammonium:NH4+
+11:11:Nitrogen Monoxide:NO
+12:12:Atomic Oxygen:O
+13:13:Nitrate Radical:NO3
+14:14:Hydroperoxyl Radical:HO2
+15:15:Dinitrogen Pentoxide:H2O5
+16:16:Nitrous Acid:HONO
+17:17:Nitric Acid:HNO3
+18:18:Peroxynitric Acid:HO2NO2
+19:19:Hydrogen Peroxide:H2O2
+20:20:Molecular Hydrogen:H
+21:21:Atomic Nitrogen:N
+22:22:Sulphate:SO42-
+23:23:Radon:Rn
+24:24:Elemental Mercury:Hg(O)
+25:25:Divalent Mercury:Hg2+
+26:26:Atomic Chlorine:Cl
+27:27:Chlorine Monoxide:ClO
+28:28:Dichlorine Peroxide:Cl2O2
+29:29:Hypochlorous Acid:HClO
+30:30:Chlorine Nitrate:ClONO2
+31:31:Chlorine Dioxide:ClO2
+32:32:Atomic Bromide:Br
+33:33:Bromine Monoxide:BrO
+34:34:Bromine Chloride:BrCl
+35:35:Hydrogen Bromide:HBr
+36:36:Hypobromous Acid:HBrO
+37:37:Bromine Nitrate:BrONO2
+#38:38:Reserved
+10000:10000:Hydroxyl Radical:OH
+10001:10001:Methyl Peroxy Radical:CH3O2
+10002:10002:Methyl Hydroperoxide:CH3O2H
+10004:10004:Methanol:CH3OH
+10005:10005:Formic Acid:CH3OOH
+10006:10006:Hydrogen Cyanide:HCN
+10007:10007:Aceto Nitrile:CH3CN
+10008:10008:Ethane:C2H6
+10009:10009:Ethene (= Ethylene):C2H4
+10010:10010:Ethyne (= Acetylene):C2H2
+10011:10011:Ethanol:C2H5OH
+10012:10012:Acetic Acid:C2H5OOH
+10013:10013:Peroxyacetyl Nitrate:CH3C(O)OONO2
+10014:10014:Propane:C3H8
+10015:10015:Propene:C3H6
+10016:10016:Butanes:C4H10
+10017:10017:Isoprene:C5H10
+10018:10018:Alpha Pinene:C10H16
+10019:10019:Beta Pinene:C10H16
+10020:10020:Limonene:C10H16
+10021:10021:Benzene:C6H6
+10022:10022:Toluene:C7H8
+10023:10023:Xylene:C8H10
+10500:10500:Dimethyl Sulphide:CH3SCH3
+20001:20001:Hydrogen Chloride:HCL
+20002:20002:CFC-11
+20003:20003:CFC-12
+20004:20004:CFC-113
+20005:20005:CFC-113a
+20006:20006:CFC-114
+20007:20007:CFC-115
+20008:20008:HCFC-22
+20009:20009:HCFC-141b
+20010:20010:HCFC-142b
+20011:20011:Halon-1202
+20012:20012:Halon-1211
+20013:20013:Halon-1301
+20014:20014:Halon-2402
+20015:20015:Methyl Chloride (HCC-40)
+20016:20016:Carbon Tetrachloride (HCC-10)
+20017:20017:HCC-140a:CH3CCl3
+20018:20018:Methyl Bromide (HBC-40B1)
+20019:20019:Hexachlorocyclohexane (HCH)
+20020:20020:Alpha Hexachlorocyclohexane
+20021:20021:Hexachlorobiphenyl (PCB-153)
+60000:60000:HOx Radical (OH+HO2)
+60001:60001:Total Inorganic and Organic Peroxy Radicals (HO2+RO2):RO2
+60002:60002:Passive Ozone
+60003:60003:NOx Expressed As Nitrogen:NOx
+60004:60004:All Nitrogen Oxides (NOy) Expressed As Nitrogen:NOy
+60005:60005:Total Inorganic Chlorine:Clx
+60006:60006:Total Inorganic Bromine:Brx
+60007:60007:Total Inorganic Chlorine Except HCl, ClONO2:ClOx
+60008:60008:Total Inorganic Bromine Except Hbr, BrONO2:BrOx
+60009:60009:Lumped Alkanes
+60010:60010:Lumped Alkenes
+60011:60011:Lumped Aromatic Coumpounds
+60012:60012:Lumped Terpenes
+60013:60013:Non-Methane Volatile Organic Compounds Expressed as Carbon:NMVOC
+60014:60014:Anthropogenic Non-Methane Volatile Organic Compounds Expressed as Carbon:aNMVOC
+60015:60015:Biogenic Non-Methane Volatile Organic Compounds Expressed as Carbon:bNMVOC
+60016:60016:Lumped Oxygenated Hydrocarbons:OVOC
+62000:62000:Total Aerosol
+62001:62001:Dust Dry
+62002:62002:Water In Ambient
+62003:62003:Ammonium Dry
+62004:62004:Nitrate Dry
+62005:62005:Nitric Acid Trihydrate
+62006:62006:Sulphate Dry
+62007:62007:Mercury Dry
+62008:62008:Sea Salt Dry
+62009:62009:Black Carbon Dry
+62010:62010:Particulate Organic Matter Dry
+62011:62011:Primary Particulate Organic Matter Dry
+62012:62012:Secondary Particulate Organic Matter Dry
+65535:65535:Missing
+
+

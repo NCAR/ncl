@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.36 2010-02-19 22:58:52 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.40 2010-05-06 22:52:28 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -127,6 +127,9 @@ HDFAttInqRecList *file_atts;
 };
 
 
+static NrmQuark Qmissing_val;
+static NrmQuark Qfill_val;
+
 static void HDFGetAttrVal
 #if	NhlNeedProto
 (int ncid,HDFAttInqRec* att_inq)
@@ -142,7 +145,7 @@ HDFAttInqRec* att_inq
 	if (att_inq->data_type < 1) {
 		att_inq->value = NULL;
 	}
-	else if(att_inq->data_type == NC_CHAR) {
+	else if(att_inq->data_type == NC_CHAR && !(att_inq->name == Qfill_val || att_inq->name == Qmissing_val)) {
 		tmp = (char*)NclMalloc(att_inq->len+1);
 		tmp[att_inq->len] = '\0';
 		ret = sd_ncattget(ncid,att_inq->varid,NrmQuarkToString(att_inq->name),tmp);
@@ -207,7 +210,7 @@ static void HDFCacheAttValue
 	if (att_inq->data_type < 1 || value == NULL) {
 		att_inq->value = NULL;
 	}
-	else if (att_inq->data_type == NC_CHAR) {
+	else if (att_inq->data_type == NC_CHAR && !(att_inq->name == Qfill_val || att_inq->name == Qmissing_val)) {
 		char *tmp = NclMalloc(att_inq->len + 1);
 		strncpy(tmp,value,att_inq->len);
 		tmp[att_inq->len] = '\0';
@@ -546,6 +549,7 @@ static void ProcessDuplicateNames
 	ProcessVgroups(tmp,NrmQuarkToString(tmp->file_path_q));
 	for (varp = tmp->vars; varp != NULL; varp = varp->next) {
 		char vgid_string[12];
+		char *cp;
 		int dup_count = 0;
 		if (varp->var_inq->name != NrmNULLQUARK)
 			continue;
@@ -597,13 +601,19 @@ static void ProcessDuplicateNames
 			}
 
 		}
+		cp = &vgid_string[0];
 		if (varp->var_inq->vg_ref > 0) {
 			sprintf(vgid_string,"%d",varp->var_inq->vg_ref);
 		}
-		else {
-			sprintf(vgid_string,"%d",dup_count);
+		else if (dup_count > 0) {
+			/* this is the first instance so call it 0 */ 
+			sprintf(vgid_string,"%d",0);
 		}
-		varp->var_inq->name = HDFToNCLName(NrmQuarkToString(varp->var_inq->hdf_name),vgid_string,True);
+		else { /* no dups for this variable and no group name either */
+			sprintf(vgid_string,"");
+			cp = NULL;
+		}
+		varp->var_inq->name = HDFToNCLName(NrmQuarkToString(varp->var_inq->hdf_name),cp,True);
 		if (varp->var_inq->var_path != NrmNULLQUARK) {
 			int i;
 			HDFAttInqRecList **atlp;
@@ -650,6 +660,13 @@ NclFileFormatType *format;
 #endif
 {
 	HDFFileRecord *therec = NULL;
+	static int first = 1;
+
+	if (first) {
+		Qmissing_val = NrmStringToQuark("missing_value");
+		Qfill_val = NrmStringToQuark("_FillValue");
+		first = False;
+	}
 
 	therec = (HDFFileRecord*)NclCalloc(1, sizeof(HDFFileRecord));
 	if (! therec) {
@@ -878,7 +895,7 @@ int wr_status;
 				tmpvlptr->var_inq->name = HDFToNCLName(NrmQuarkToString(tmpvlptr->var_inq->hdf_name),NULL,True);
 			}
 		}
-		
+
 	} else {
 		tmp->vars = NULL;
 		tmp->has_scalar_dim = 0;
@@ -1029,6 +1046,8 @@ NclQuark var_name;
 		if(stepvl->var_inq->name == var_name) {
 			tmp = (NclFVarRec*)NclMalloc((unsigned)sizeof(NclFVarRec));
 			tmp->var_name_quark = stepvl->var_inq->name;
+			tmp->var_full_name_quark = stepvl->var_inq->name;
+			tmp->var_real_name_quark = stepvl->var_inq->name;
 			tmp->data_type = HDFMapToNcl((void*)&(stepvl->var_inq->data_type));
 			tmp->num_dimensions = stepvl->var_inq->n_dims;
 			for(j=0; j< stepvl->var_inq->n_dims; j++) {
@@ -1149,9 +1168,9 @@ NclQuark att_name_q;
 			tmp=(NclFAttRec*)NclMalloc((unsigned)sizeof(NclFAttRec));
 			tmp->att_name_quark = att_name_q;
 /*
-* For conveniesd_nce I make all character attributes strings
+* For convenience I make all character attributes strings (except if it's the _FillValue or missing_value of a character variable)
 */
-			if(stepal->att_inq->data_type == NC_CHAR) {
+			if(stepal->att_inq->data_type == NC_CHAR && !(stepal->att_inq->name == Qfill_val || stepal->att_inq->name == Qmissing_val)) {
 				tmp->data_type = NCL_string;
 				tmp->num_elements = 1;
 			} else {
@@ -1227,7 +1246,7 @@ NclQuark theatt;
 					tmp= (NclFAttRec*)NclMalloc((unsigned)
 						sizeof(NclFAttRec));
 					tmp->att_name_quark = theatt;
-					if(stepal->att_inq->data_type == NC_CHAR) {
+					if(stepal->att_inq->data_type == NC_CHAR && !(stepal->att_inq->name == Qfill_val || stepal->att_inq->name == Qmissing_val)) {
 
 						tmp->data_type = NCL_string;
 						tmp->num_elements = 1;
@@ -1371,7 +1390,7 @@ void* storage;
 	while(stepal != NULL) {
 		if(stepal->att_inq->name == theatt) {
 			if (stepal->att_inq->value != NULL) {
-				if(stepal->att_inq->data_type == NC_CHAR) {
+				if(stepal->att_inq->data_type == NC_CHAR && !(stepal->att_inq->name == Qfill_val || stepal->att_inq->name == Qmissing_val)) {
 					*(string*)storage = *(string*)(stepal->att_inq->value);
 				} else {
 					memcpy(storage,stepal->att_inq->value,
@@ -1385,7 +1404,7 @@ void* storage;
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for reading",NrmQuarkToString(rec->file_path_q));
 				return(NULL);
 			}
-			if(stepal->att_inq->data_type == NC_CHAR) {
+			if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {
 				tmp = (char*)NclMalloc(stepal->att_inq->len+1);
 				tmp[stepal->att_inq->len] = '\0';
 				ret = sd_ncattget(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),tmp);
@@ -1443,7 +1462,7 @@ void* storage;
 						return storage;
 					}
 					if (stepal->att_inq->value != NULL) {
-						if(stepal->att_inq->data_type == NC_CHAR) {
+						if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {
 							*(string*)storage = *(string*)(stepal->att_inq->value);
 						} else {
 							memcpy(storage,stepal->att_inq->value,
@@ -1457,7 +1476,7 @@ void* storage;
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for reading",NrmQuarkToString(rec->file_path_q));
 						return(NULL);
 					}
-					if(stepal->att_inq->data_type == NC_CHAR) {
+					if(stepal->att_inq->data_type == NC_CHAR  && !(theatt == Qfill_val || theatt == Qmissing_val)) {
 	
 						tmp = (char*)NclMalloc(stepal->att_inq->len + 1);
 						tmp[stepal->att_inq->len] = '\0';
@@ -1604,7 +1623,7 @@ void *data;
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 					return(NhlFATAL);
 				}
-				if(stepal->att_inq->data_type == NC_CHAR) {
+				if(stepal->att_inq->data_type == NC_CHAR  && !(theatt == Qfill_val || theatt == Qmissing_val)) {
 					buffer = NrmQuarkToString(*(NclQuark*)data);
 					if (strlen(buffer) == 0) {
 						NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -1842,7 +1861,7 @@ void* data;
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 							return(NhlFATAL);
 						}
-						if(stepal->att_inq->data_type == NC_CHAR) {	
+						if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {	
 							int redef = 0;
 							buffer = NrmQuarkToString(*(NclQuark*)data);
 							if (strlen(buffer) == 0) {
@@ -2433,38 +2452,46 @@ NclFormatFunctionRec HDFRec = {
 /* NclCreateFileFunc	   create_file; */		HDFCreateFile,
 /* NclOpenFileFunc         open_file; */		HDFOpenFile,
 /* NclFreeFileRecFunc      free_file_rec; */		HDFFreeFileRec,
-/* NclGetVarNamesFu_nc      get_var_names; */		HDFGetVarNames,
-/* NclGetVarInfoFusd_nc       get_var_info; */		HDFGetVarInfo,
-/* NclGetDimNamesFusd_nc      get_dim_names; */		HDFGetDimNames,
-/* NclGetDimInfoFusd_nc       get_dim_info; */		HDFGetDimInfo,
-/* NclGetAttNamesFusd_nc      get_att_names; */		HDFGetAttNames,
-/* NclGetAttInfoFusd_nc       get_att_info; */		HDFGetAttInfo,
-/* NclGetVarAttNamesFusd_nc   get_var_att_names; */	HDFGetVarAttNames,
-/* NclGetVarAttInfoFusd_nc    get_var_att_info; */		HDFGetVarAttInfo,
-/* NclGetCoordInfoFusd_nc     get_coord_info; */		HDFGetCoordInfo,
-/* NclReadCoordFusd_nc        read_coord; */		HDFReadCoord,
-/* NclReadCoordFusd_nc        read_coord; */		NULL,
-/* NclReadVarFusd_nc          read_var; */			HDFReadVar,
-/* NclReadVarFusd_nc          read_var; */			NULL,
-/* NclReadAttFusd_nc          read_att; */			HDFReadAtt,
-/* NclReadVarAttFusd_nc       read_var_att; */		HDFReadVarAtt,
-/* NclWriteCoordFusd_nc       write_coord; */		HDFWriteCoord,
-/* NclWriteCoordFusd_nc       write_coord; */		NULL,
-/* NclWriteVarFusd_nc         write_var; */		HDFWriteVar,
-/* NclWriteVarFusd_nc         write_var; */		NULL,
-/* NclWriteAttFusd_nc         write_att; */		HDFWriteAtt,
-/* NclWriteVarAttFusd_nc      write_var_att; */		HDFWriteVarAtt,
-/* NclAddDimFusd_nc           add_dim; */			HDFAddDim,
-/* NclAddDimFusd_nc           rename_dim; */		HDFRenameDim,
-/* NclAddVarFusd_nc           add_var; */			HDFAddVar,
-/* NclAddVarFusd_nc           add_coord_var; */		HDFAddCoordVar,
-/* NclAddAttFusd_nc           add_att; */			HDFAddAtt,
-/* NclAddVarAttFusd_nc        add_var_att; */		HDFAddVarAtt,
-/* NclMapFormatTypeToNcl   map_format_type_to_sd_ncl; */	HDFMapToNcl,
-/* NclMapNclTypeToFormat   map_sd_ncl_type_to_format; */	HDFMapFromNcl,
-/* NclDelAttFusd_nc           del_att; */			HDFDelAtt,
-/* NclDelVarAttFusd_nc        del_var_att; */		HDFDelVarAtt,
-/* NclSetOptionFunc           set_option;  */           NULL
+/* NclGetVarNamesFunc      get_var_names; */		HDFGetVarNames,
+/* NclGetVarInfoFunc       get_var_info; */		HDFGetVarInfo,
+/* NclGetDimNamesFunc      get_dim_names; */		HDFGetDimNames,
+/* NclGetDimInfoFunc       get_dim_info; */		HDFGetDimInfo,
+/* NclGetAttNamesFunc      get_att_names; */		HDFGetAttNames,
+/* NclGetAttInfoFunc       get_att_info; */		HDFGetAttInfo,
+/* NclGetVarAttNamesFunc   get_var_att_names; */	HDFGetVarAttNames,
+/* NclGetVarAttInfoFunc    get_var_att_info; */		HDFGetVarAttInfo,
+/* NclGetCoordInfoFunc     get_coord_info; */		HDFGetCoordInfo,
+/* NclReadCoordFunc        read_coord; */		HDFReadCoord,
+/* NclReadCoordFunc        read_coord; */		NULL,
+/* NclReadVarFunc          read_var; */			HDFReadVar,
+/* NclReadVarFunc          read_var; */			NULL,
+/* NclReadAttFunc          read_att; */			HDFReadAtt,
+/* NclReadVarAttFunc       read_var_att; */		HDFReadVarAtt,
+/* NclWriteCoordFunc       write_coord; */		HDFWriteCoord,
+/* NclWriteCoordFunc       write_coord; */		NULL,
+/* NclWriteVarFunc         write_var; */		HDFWriteVar,
+/* NclWriteVarFunc         write_var; */		NULL,
+/* NclWriteAttFunc         write_att; */		HDFWriteAtt,
+/* NclWriteVarAttFunc      write_var_att; */		HDFWriteVarAtt,
+/* NclAddDimFunc           add_dim; */			HDFAddDim,
+/* NclAddChunkDimFunc      add_chunk_dim; */		NULL,
+/* NclRenameDimFunc        rename_dim; */		HDFRenameDim,
+/* NclAddVarFunc           add_var; */			HDFAddVar,
+/* NclAddVarChunkFunc      add_var_chunk; */		NULL,
+/* NclAddVarChunkCacheFunc add_var_chunk_cache; */	NULL,
+/* NclSetVarCompressLevelFunc set_var_compress_level; */ NULL,
+/* NclAddVarFunc           add_coord_var; */		HDFAddCoordVar,
+/* NclAddAttFunc           add_att; */			HDFAddAtt,
+/* NclAddVarAttFunc        add_var_att; */		HDFAddVarAtt,
+/* NclMapFormatTypeToNcl   map_format_type_to_ncl; */	HDFMapToNcl,
+/* NclMapNclTypeToFormat   map_ncl_type_to_format; */	HDFMapFromNcl,
+/* NclDelAttFunc           del_att; */			HDFDelAtt,
+/* NclDelVarAttFunc        del_var_att; */		HDFDelVarAtt,
+/* NclGetGrpNamesFunc      get_grp_names; */		NULL,
+/* NclGetGrpInfoFunc       get_grp_info; */		NULL,
+/* NclGetGrpAttNamesFunc   get_grp_att_names; */	NULL, 
+/* NclGetGrpAttInfoFunc    get_grp_att_info; */		NULL,
+/* NclSetOptionFunc        set_option;  */		NULL
 };
 NclFormatFunctionRecPtr HDFAddFileFormat 
 #if	NhlNeedProto

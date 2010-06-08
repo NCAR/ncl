@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.241 2010-03-05 15:28:07 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.245 2010/05/06 22:15:21 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1727,7 +1727,6 @@ begin
   txres = False   ; Text resources
   txres = get_res_eq(res,"tx")
   amres = get_res_eq(res,"am")
-  
 ;
 ; Get the height, as we use this to calculate distance of strings
 ; from top of plot.
@@ -1778,8 +1777,11 @@ begin
         fhghts(0) = get_res_value_keep(txres,"txFontHeightF",0.0)
       end if
     end if
-    colors@s0  = get_res_value_keep(left_string,"gsnLeftStringFontColor",\
-                 get_res_value_keep(left_string,"gsnStringFontColor",1))
+    if(isatt(left_string,"gsnLeftStringFontColor")) then
+      colors@s0 = get_res_value_keep(left_string,"gsnLeftStringFontColor",1)
+    else
+      colors@s0 = get_res_value_keep(left_string,"gsnStringFontColor",1)
+    end if
   end if
   if(center_string) 
     if(isatt(center_string,"gsnStringFont"))
@@ -1795,8 +1797,11 @@ begin
         fhghts(1) = get_res_value_keep(txres,"txFontHeightF",0.0)
       end if
     end if
-    colors@s1  = get_res_value_keep(center_string,"gsnCenterStringFontColor",\
-                 get_res_value_keep(center_string,"gsnStringFontColor",1))
+    if(isatt(center_string,"gsnCenterStringFontColor")) then
+      colors@s1 = get_res_value_keep(center_string,"gsnCenterStringFontColor",1)
+    else
+      colors@s1 = get_res_value_keep(center_string,"gsnStringFontColor",1)
+    end if
   end if
   if(right_string)
     if(isatt(right_string,"gsnStringFont"))
@@ -1812,14 +1817,21 @@ begin
         fhghts(2) = get_res_value_keep(txres,"txFontHeightF",0.0)
       end if
     end if
-    colors@s2  = get_res_value_keep(right_string,"gsnRightStringFontColor",\
-                 get_res_value_keep(right_string,"gsnStringFontColor",1))
+    if(isatt(right_string,"gsnRightStringFontColor")) then
+      colors@s2 = get_res_value_keep(right_string,"gsnRightStringFontColor",1)
+    else
+      colors@s2 = get_res_value_keep(right_string,"gsnStringFontColor",1)
+    end if
   end if
 ;
-; Remove the text font height, so it doesn't get applied at the end.
+; Remove the text font height and txString, so they don't get
+; applied at the end.
 ;
   if(isatt(txres,"txFontHeightF")) then
     delete(txres@txFontHeightF)
+  end if
+  if(isatt(txres,"txString")) then
+    delete(txres@txString)
   end if
 
   ablank = stringtocharacter(" ")
@@ -2639,16 +2651,16 @@ begin
             if(bpt.eq.0.or.(bpt.gt.0.and.(ismissing(y1(bpt-1)).or.\
                                           ismissing(y2(bpt-1)).or.\
                                           ismissing(x(bpt-1)))))
-              first(0) =  x(bpt)
-              first(1) = y2(bpt)
+              first(0) = (/ x(bpt) /)
+              first(1) = (/ y2(bpt)/)
             else
               if(fabs(y1(bpt-1)-y2(bpt-1)).le.delta)
 ;
 ; If the two points are within delta of each other, then we'll
 ; consider them to be the same point.
 ;
-                first(0) =  x(bpt-1)
-                first(1) = y1(bpt-1)
+                first(0) = (/  x(bpt-1) /)
+                first(1) = (/ y1(bpt-1) /)
               else
 ;
 ; Otherwise, find the intersection where the two curves cross.
@@ -2660,16 +2672,16 @@ begin
             if(ept.eq.(npts-1).or.(ept.lt.(npts-1).and.(ismissing(y1(ept+1)).or.\
                                                     ismissing(y2(ept+1)).or.\
                                                     ismissing(x(ept+1)))))
-              last(0) =  x(ept)
-              last(1) = y2(ept)
+              last(0) = (/  x(ept) /)
+              last(1) = (/ y2(ept) /)
             else
               if(fabs(y1(ept+1)-y2(ept+1)).le.delta)
 ;
 ; If the two points are within delta of each other, then we'll
 ; consider them to be the same point.
 ;
-                last(0) =  x(ept+1)
-                last(1) = y1(ept+1)
+                last(0) = (/  x(ept+1) /)
+                last(1) = (/ y1(ept+1) /)
               else
 ;
 ; Otherwise, find the intersection where the two curves cross.
@@ -4261,6 +4273,10 @@ begin
       if(left_string.or.center_string.or.right_string)
         main_zone   = main_zone+1
       end if
+;
+; Do we want thicker bar outlines?
+;
+      bar_outline_thickness = get_res_value(res2,"gsnXYBarOutlineThicknessF",1.0)
     end if                  ; Done checking special resources.
 
     res2          = True
@@ -4701,6 +4717,10 @@ begin
 
     if(yref_fill_on.and.bar_chart.and..not.bar_outline_only)
       gsres = True
+      if(bar_outline_thickness.gt.0.and.bar_outline_thickness.ne.1) then
+        gsres@gsEdgesOn        = True
+        gsres@gsEdgeThicknessF = bar_outline_thickness
+      end if
       do i=0,ncurves-1 
         var_string = unique_string("polygons"+i)
 ;
@@ -8689,7 +8709,6 @@ begin
 
 ; The default is to not add a cyclic point.
     if(get_res_value_keep(res2,"gsnAddCyclic",False)) then
-print("adding a cyclic point")
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
     else
@@ -8698,7 +8717,6 @@ print("adding a cyclic point")
     end if
 
     if(get_res_value(res2,"gsnAddCyclic",False)) then
-print("adding a cyclic point")
       datanew = gsn_add_cyclic_point(data)
     else
       datanew = data
@@ -10389,6 +10407,16 @@ begin
     end setvalues
 
     draw_and_frame(wks,xy1,calldraw,callframe,0,maxbb)
+;
+; Copy over xy2 atts, if any. This is just in case any
+; primitives were attached.
+;
+    xy2att = getvaratts(xy2)
+    if(.not.all(ismissing(xy2att))) then
+      do i=0,dimsizes(xy2att)-1
+        xy1@$xy2att(i)$ = xy2@$xy2att(i)$
+      end do
+    end if
     xy1@xy2 = xy2
     return (xy1)
  end

@@ -1,0 +1,37 @@
+#
+#      $Id: yMakefile,v 1.1 2010-03-19 18:36:07 dbrown Exp $
+#
+#########################################################################
+#                                                                       #
+#               Copyright (C) 2006                                      #
+#       University Corporation for Atmospheric Research                 #
+#               All Rights Reserved                                     #
+#                                                                       #
+#########################################################################
+#
+#       File:		yMakefile
+#
+#       Author:     Jeff W. Boote
+#                   National Center for Atmospheric Research
+#                   POB 3000, Boulder, Colorado
+#
+#       Date:
+#
+#       Description:   yMakefile for ncarg/ni/src/db/grib2_codetables/ncep/4
+
+TABLES = 4.0.table 4.1.table 4.2.table 4.3.table 4.4.table 4.5.table 4.6.table \
+		 4.7.table 4.8.table 4.9.table \
+		 4.10.table 4.12.table 4.13.table 4.14.table \
+		 4.2.0.0.table 4.2.0.1.table 4.2.0.13.table 4.2.0.14.table 4.2.0.15.table \
+		 4.2.0.16.table 4.2.0.17.table 4.2.0.18.table 4.2.0.19.table \
+		 4.2.0.190.table 4.2.0.191.table 4.2.0.2.table 4.2.0.3.table \
+		 4.2.0.4.table 4.2.0.5.table 4.2.0.6.table 4.2.0.7.table \
+		 4.2.1.0.table 4.2.1.1.table 4.2.10.0.table 4.2.10.1.table \
+		 4.2.10.2.table 4.2.10.3.table 4.2.10.4.table 4.2.2.0.table \
+		 4.2.2.3.table 4.2.3.0.table 4.2.3.1.table \
+		 4.201.table 4.202.table 4.203.table 4.204.table 4.205.table \
+		 4.206.table 4.207.table 4.208.table 4.209.table 4.210.table \
+		 4.211.table 4.212.table 4.213.table 4.215.table \
+		 4.216.table 4.217.table 4.220.table 4.221.table 4.222.table
+
+InstallTarget($(TABLES),$(INSTALL_LIB),$(GRIB2CODETABLEROOT).previous/ncep/4)

@@ -1,0 +1,16 @@
+# CODE TABLE 4.4, Indicator of unit of time range
+0:0:Minute
+1:1:Hour
+2:2:Day
+3:3:Month
+4:4:Year
+5:5:Decade (10 years)
+6:6:Normal (30 years)
+7:7:Century (100 years)
+10:10:3 hours
+11:11:6 hours
+12:12:12 hours
+13:13:Second
+#  14:191:Reserved
+# 192:254:Reserved for local use
+255:255:Missing

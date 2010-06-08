@@ -1,6 +1,6 @@
 # CODE TABLE 3.20, Type of horizontal line
-0:0:Rhumb
-1:1:Great circle
-# 2-191 Reserved
-# 192-254 Reserved for local use
+0:0:There is no appended list
+1:1:Numbers define number of points corresponding to full coordinate circles (i.e. parallels).  Coordinate values on each circle are multiple of the circle mesh, and extreme coordinate values given in grid definition may not be reached in all rows.
+2:2:Numbers define number of points corresponding to coordinate lines delimited by extreme coordinate values given in grid definition which are present in each row.
+# 3-254 Reserved
 255:255:Missing

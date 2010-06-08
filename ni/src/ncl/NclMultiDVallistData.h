@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDVallistData.h,v 1.1 1999-11-12 18:36:42 ethan Exp $
+ *      $Id: NclMultiDVallistData.h,v 1.2 2010/04/14 21:29:47 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -70,7 +70,5 @@ NclStatus       /*status*/,
 NclSelectionRecord * /*sel_rec*/
 #endif
 );
-
-
 
 #endif /*NclMultiDVallistData_h */

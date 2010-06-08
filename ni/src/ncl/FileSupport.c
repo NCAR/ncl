@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.28 2008-12-10 20:12:16 dbrown Exp $
+ *      $Id: FileSupport.c,v 1.30 2010-04-28 23:02:03 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -28,9 +28,11 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #endif
+#include "ncarg/hlu/Error.h"
 #include "defs.h"
 #include "NclMultiDValData.h"
 #include "NclFile.h"
+#include "NclGroup.h"
 #include "NclFileInterfaces.h"
 #include "DataSupport.h"
 #include "Symbol.h"
@@ -652,6 +654,11 @@ int _NclFileIsVar
 {
 	NclFileClass fc = NULL;
 
+      /*
+       *fprintf(stdout, "\n\n\nhit _NclFileIsVar. file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stdout, "\tvar: %s\n", NrmQuarkToString(var));
+       */
+
 	if(thefile == NULL) {
 		return(-1);
 	}
@@ -663,6 +670,44 @@ int _NclFileIsVar
 			fc = (NclFileClass)fc->obj_class.super_class;
 		}
 	}
+	return(-1);
+}
+
+int _NclFileIsGroup
+#if	NhlNeedProto
+(NclFile thefile,NclQuark group)
+#else 
+(thefile,group)
+	NclFile thefile;
+	NclQuark group;
+#endif
+{
+	NclFileClass fc = NULL;
+
+      /*
+       *fprintf(stdout, "\n\n\nhit _NclFileIsGroup. file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stdout, "\tgroup: %s\n", NrmQuarkToString(group));
+       */
+
+	if(thefile == NULL) {
+		return(-1);
+	}
+	fc = (NclFileClass)thefile->obj.class_ptr;
+	while((NclObjClass)fc != nclObjClass) {
+		if(fc->file_class.is_group!= NULL) {
+      		      /*
+        		fprintf(stdout, "\n\n\nend _NclFileIsGroup. file: %s, line: %d\n", __FILE__, __LINE__);
+        		fprintf(stdout, "\tgroup: %s\n", NrmQuarkToString(group));
+       		       */
+			return((*fc->file_class.is_group)(thefile,group));
+		} else {
+			fc = (NclFileClass)fc->obj_class.super_class;
+		}
+	}
+      /*
+        fprintf(stdout, "\n\n\nend _NclFileIsGroup. file: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stdout, "\tgroup: %s\n", NrmQuarkToString(group));
+       */
 	return(-1);
 }
 
@@ -740,6 +785,36 @@ struct _NclSelectionRecord* sel_ptr;
 	while((NclObjClass)fc != nclObjClass) {
 		if(fc->file_class.read_var_func != NULL) {
 			return((*fc->file_class.read_var_func)(thefile, var_name, sel_ptr));
+		} else {
+			fc = (NclFileClass)fc->obj_class.super_class;
+		}
+	}
+	return(NULL);
+}
+
+struct _NclFileRec *_NclFileReadGroup
+#if	NhlNeedProto
+(NclFile thefile, NclQuark group_name)
+#else 
+(thefile, group_name)
+NclFile thefile;
+NclQuark group_name;
+#endif
+{
+	NclFileClass fc = NULL;
+
+      /*
+       *fprintf(stdout, "\n\nfile: %s, line:%d\n", __FILE__, __LINE__);
+       *fprintf(stdout, "\tgroup_name: <%s>\n", NrmQuarkToString(group_name));
+       */
+
+	if(thefile == NULL) {
+		return(NULL);
+	}
+	fc = (NclFileClass)thefile->obj.class_ptr;
+	while((NclObjClass)fc != nclObjClass) {
+		if(fc->file_class.read_group_func != NULL) {
+			return((*fc->file_class.read_group_func)(thefile, group_name));
 		} else {
 			fc = (NclFileClass)fc->obj_class.super_class;
 		}
@@ -1240,6 +1315,85 @@ NclQuark *dimnames;
 	}
 	return(NhlFATAL);
 }
+extern NhlErrorTypes _NclFileAddVarChunk
+#if     NhlNeedProto
+(NclFile thefile, NclQuark varname, int n_dims, int *dims)
+#else
+(thefile, varname, n_dims, dims)
+NclFile thefile;
+NclQuark varname;
+int n_dims;
+int *dims;
+#endif
+{
+	NclFileClass fc = NULL;
+
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+	fc = (NclFileClass)thefile->obj.class_ptr;
+	while((NclObjClass)fc != nclObjClass) {
+		if(fc->file_class.add_var_chunk_func != NULL) {
+			return((*fc->file_class.add_var_chunk_func)(thefile, varname, n_dims, dims));
+		} else {
+			fc = (NclFileClass)fc->obj_class.super_class;
+		}
+	}
+	return(NhlFATAL);
+}
+extern NhlErrorTypes _NclFileAddVarChunkCache
+#if     NhlNeedProto
+(NclFile thefile, NclQuark varname, size_t cache_size, size_t cache_nelems, float cache_preemption)
+#else
+(thefile, varname, cache_size, cache_nelems, cache_preemption)
+NclFile thefile;
+NclQuark varname;
+size_t cache_size;
+size_t cache_nelems;
+float cache_preemption;
+#endif
+{
+	NclFileClass fc = NULL;
+
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+	fc = (NclFileClass)thefile->obj.class_ptr;
+	while((NclObjClass)fc != nclObjClass) {
+		if(fc->file_class.add_var_chunk_cache_func != NULL) {
+			return((*fc->file_class.add_var_chunk_cache_func)
+				(thefile, varname, cache_size, cache_nelems, cache_preemption));
+		} else {
+			fc = (NclFileClass)fc->obj_class.super_class;
+		}
+	}
+	return(NhlFATAL);
+}
+extern NhlErrorTypes _NclFileSetVarCompressLevel
+#if     NhlNeedProto
+(NclFile thefile, NclQuark varname, int compress_level)
+#else
+(thefile, varname, compress_level)
+NclFile thefile;
+NclQuark varname;
+int compress_level;
+#endif
+{
+	NclFileClass fc = NULL;
+
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+	fc = (NclFileClass)thefile->obj.class_ptr;
+	while((NclObjClass)fc != nclObjClass) {
+		if(fc->file_class.set_var_compress_level_func != NULL) {
+			return((*fc->file_class.set_var_compress_level_func)(thefile, varname, compress_level));
+		} else {
+			fc = (NclFileClass)fc->obj_class.super_class;
+		}
+	}
+	return(NhlFATAL);
+}
 extern NhlErrorTypes _NclFileAddDim
 #if     NhlNeedProto
 (NclFile thefile, NclQuark dimname, int dimsize, int is_unlimited)
@@ -1260,6 +1414,33 @@ int is_unlimited;
 	while((NclObjClass)fc != nclObjClass) {
 		if(fc->file_class.add_dim_func != NULL) {
 			return((*fc->file_class.add_dim_func)(thefile, dimname, dimsize, is_unlimited));
+		} else {
+			fc = (NclFileClass)fc->obj_class.super_class;
+		}
+	}
+	return(NhlFATAL);
+}
+
+extern NhlErrorTypes _NclFileAddChunkDim
+#if     NhlNeedProto
+(NclFile thefile, NclQuark dimname, int dimsize, int is_unlimited)
+#else
+(thefile, dimname, dimsize, is_unlimited)
+NclFile thefile;
+NclQuark dimname;
+int dimsize;
+int is_unlimited;
+#endif
+{
+	NclFileClass fc = NULL;
+
+	if(thefile == NULL) {
+		return(NhlFATAL);
+	}
+	fc = (NclFileClass)thefile->obj.class_ptr;
+	while((NclObjClass)fc != nclObjClass) {
+		if(fc->file_class.add_chunk_dim_func != NULL) {
+			return((*fc->file_class.add_chunk_dim_func)(thefile, dimname, dimsize, is_unlimited));
 		} else {
 			fc = (NclFileClass)fc->obj_class.super_class;
 		}
@@ -1448,9 +1629,333 @@ NclQuark  varname;
 			}
 		}
 	} else {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"in _NclPrintFileVarSummary"));
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"printFileVarSummary: (%s) is not a variable in the file (%s)",NrmQuarkToString(varname),NrmQuarkToString(thefile->file.fname));
 		return(NhlFATAL);	
 	}
+}
+
+NclQuark *_NclSplitGroupPath
+#if NhlNeedProto
+(NclQuark group_name, int *n_lvls)
+#else
+(group_name, n_lvls)
+NclQuark group_name;
+int *lvls;
+#endif
+{
+	NclQuark *splited_group_names = NULL;
+	char tmp_str[1024];
+	char tmp_delim[32];
+	char *result = NULL;
+	int n = 0;
+	int max_lvl = 0;
+
+      /*
+       *fprintf(stdout, "\n\n\nhit _NclSplitGroupPath. file: %s, line: %d\n", __FILE__, __LINE__);
+       */
+	
+	strcpy(tmp_str, (char *) NrmQuarkToString(group_name));
+
+      /*
+       *fprintf(stdout, "\tgroup_name: <%s>\n", tmp_str);
+       */
+
+	if('/' != tmp_str[0])
+	{
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"in _NclSplitGroupPath, group name started with <%s>", tmp_str[0]));
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclSplitGroupPath: group name (%s) did not start with '/'(slash).",
+			NrmQuarkToString(group_name), tmp_str[0]);
+		return (NULL);
+	}
+
+	strcpy(tmp_delim, "/");
+	for(n = 0; n < strlen(tmp_str); n++)
+		if('/' == tmp_str[n])
+			max_lvl++;
+
+	splited_group_names = (NrmQuark *) NclMalloc(sizeof(NclQuark) * (max_lvl));
+
+	result = strtok(tmp_str, tmp_delim);
+	n = 0;
+	while(result != NULL)
+	{
+		splited_group_names[n] = NrmStringToQuark(result);
+              /*
+	       *fprintf(stdout, "\tsplited_group_names[%d]: <%s>\n", n, result);
+               */
+		n++;
+		result = strtok(NULL, tmp_delim);
+	}
+	*n_lvls = n;
+	return (splited_group_names);
+}
+
+NclQuark *_NclGetFileGroupsList
+#if NhlNeedProto
+(NclFile thefile, NclQuark base_group_name, int depth, int *n_grps)
+#else
+(thefile, base_group_name, depth, n_grps)
+NclFile thefile; 
+NclQuark base_group_name; 
+int depth; 
+int *n_grps; 
+#endif
+{
+	int i, j;
+	NclQuark *selected_group_names = NULL;
+	NclQuark *splited_base = NULL;
+	NclQuark *splited_name = NULL;
+	int need_save = 0;
+	int num_grps = 0;
+	int max_depth = INT_MAX;
+	int bas_depth = 0;
+	int cur_depth = 0;
+	int dif_depth = 0;
+
+      /*
+       *fprintf(stdout, "\n\n\nhit _NclGetFileGroupsList. file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stdout, "\tbase_group_name: <%s>\n", NrmQuarkToString(base_group_name));
+       *fprintf(stdout, "\tdepth: %d\n", depth);
+       *fprintf(stdout, "\tthefile->file.n_grps: %d\n", thefile->file.n_grps);
+       */
+
+	if(thefile->file.n_grps < 1)
+	{
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"in _NclGetFileGroupsList"));
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"getfilegroups: no groups under (%s)",
+			NrmQuarkToString(base_group_name));
+		*n_grps = 0;
+		return (NULL);
+	}
+
+	splited_base = _NclSplitGroupPath(base_group_name, &bas_depth);
+
+	if(depth)
+		max_depth = depth;
+
+      /*
+       *fprintf(stdout, "\tmax_depth = %d\n", max_depth);
+       *fprintf(stdout, "\tbas_depth = %d\n", bas_depth);
+       */
+
+	selected_group_names = (NclQuark *) NclMalloc(sizeof(NclQuark) * thefile->file.n_grps);
+
+      /*
+       *fprintf(stdout, "\n\n\nhit _NclGetFileGroupsList. file: %s, line: %d\n", __FILE__, __LINE__);
+       *for(i = 0; i < thefile->file.n_grps; i++)
+       *{
+       *	fprintf(stdout, "\tthefile->file.grp_info[%d]->grp_name_quark = <%s>\n",
+       *		i, NrmQuarkToString(thefile->file.grp_info[i]->grp_name_quark));
+       *}
+       */
+
+	for(i = 0; i < thefile->file.n_grps; i++)
+	{
+		need_save = 1;
+
+	      /*
+	       *fprintf(stdout, "\tthefile->file.grp_info[%d]->grp_name_quark = <%s>\n",
+	       *	i, NrmQuarkToString(thefile->file.grp_info[i]->grp_name_quark));
+	       */
+
+		splited_name = _NclSplitGroupPath(thefile->file.grp_info[i]->grp_name_quark, &cur_depth);
+		dif_depth = cur_depth - bas_depth;
+	      /*
+	       *fprintf(stdout, "\tbas_depth = %d\n", bas_depth);
+	       *fprintf(stdout, "\tcur_depth = %d\n", cur_depth);
+	       *fprintf(stdout, "\tdif_depth = %d\n", dif_depth);
+	       *fprintf(stdout, "\tmax_depth = %d\n", max_depth);
+	       */
+
+		if(dif_depth < 1)
+			continue;
+		else if(dif_depth > max_depth)
+			continue;
+
+		for(j = 0; j < bas_depth; j++)
+		{
+	              /*
+		       *fprintf(stdout, "\tsplited_base[%d] = <%s>\n", j, NrmQuarkToString(splited_base[j]));
+		       *fprintf(stdout, "\tsplited_name[%d] = <%s>\n", j, NrmQuarkToString(splited_name[j]));
+	               */
+			if(splited_base[j] != splited_name[j])
+			{
+				need_save = 0;
+				break;
+			}
+		}
+
+		if(need_save)
+		{
+			selected_group_names[num_grps] = thefile->file.grp_info[i]->grp_name_quark;
+	              /*
+		       *fprintf(stdout, "\tselected_group_names[%d]: <%s>\n",
+		       *	num_grps, NrmQuarkToString(selected_group_names[num_grps]));
+	               */
+		    num_grps++;
+		}
+	}
+
+	if(num_grps < 1)
+	{
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"in _NclGetFileGroupsList"));
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"getfilegroups: can not find any group under (%s)",
+			NrmQuarkToString(base_group_name));
+		NclFree(selected_group_names);
+		return (NULL);
+	}
+
+	if(num_grps < thefile->file.n_grps)
+	{
+		selected_group_names = (NclQuark *) NclRealloc(selected_group_names, sizeof(NclQuark) * num_grps);
+	}
+      /*
+       *fprintf(stdout, "\tnum_grps = %d\n", num_grps);
+       */
+	*n_grps = num_grps;
+	return (selected_group_names);	
+}
+
+NclQuark *_NclGetGroupVarsList
+#if NhlNeedProto
+(NclFile thefile, NclQuark base_group_name, int depth, int *n_vars)
+#else
+(thefile, base_group_name, depth, n_vars)
+NclFile thefile; 
+NclQuark base_group_name; 
+int depth; 
+int *n_vars; 
+#endif
+{
+	int i, j;
+	NclQuark *selected_var_names = NULL;
+	NclQuark *splited_base = NULL;
+	NclQuark *splited_name = NULL;
+	NclQuark *final_names = NULL;
+	int need_save = 0;
+	int num_vars = 0;
+	int max_depth = INT_MAX;
+	int bas_depth = 0;
+	int cur_depth = 0;
+	int dif_depth = 0;
+
+      /*
+       *fprintf(stdout, "\n\n\nhit _NclGetGroupVarsList. file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stdout, "\tbase_group_name: <%s>\n", NrmQuarkToString(base_group_name));
+       *fprintf(stdout, "\tdepth: %d\n", depth);
+       *fprintf(stdout, "\tthefile->file.n_vars: %d\n", thefile->file.n_vars);
+       */
+
+        if(thefile->file.n_vars < 1)
+        {
+        	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"in _NclGetGroupVarsList"));
+        	NhlPError(NhlFATAL,NhlEUNKNOWN,"getgroupvars: no vars under (%s)",
+        		NrmQuarkToString(base_group_name));
+        	*n_vars = 0;
+        	return (NULL);
+        }
+
+	splited_base = _NclSplitGroupPath(base_group_name, &bas_depth);
+
+	if(depth)
+		max_depth = depth;
+
+      /*
+       *fprintf(stdout, "\tmax_depth = %d\n", max_depth);
+       *fprintf(stdout, "\tbas_depth = %d\n", bas_depth);
+       */
+
+	selected_var_names = (NclQuark *) NclMalloc(sizeof(NclQuark) * thefile->file.n_vars);
+	final_names = (NclQuark *) NclMalloc(sizeof(NclQuark) * thefile->file.n_vars);
+
+      /*
+       *fprintf(stdout, "\n\n\nhit _NclGetGroupVarsList. file: %s, line: %d\n", __FILE__, __LINE__);
+       */
+
+	for(i = 0; i < thefile->file.n_vars; i++)
+	{
+		need_save = 1;
+
+	      /*
+	       *fprintf(stdout, "\tthefile->file.var_info[%d]->var_full_name_quark = <%s>\n",
+	       *	i, NrmQuarkToString(thefile->file.var_info[i]->var_full_name_quark));
+	       */
+
+		splited_name = _NclSplitGroupPath(thefile->file.var_info[i]->var_full_name_quark, &cur_depth);
+		dif_depth = cur_depth - bas_depth;
+	      /*
+	       *fprintf(stdout, "\tbas_depth = %d\n", bas_depth);
+	       *fprintf(stdout, "\tcur_depth = %d\n", cur_depth);
+	       *fprintf(stdout, "\tdif_depth = %d\n", dif_depth);
+	       *fprintf(stdout, "\tmax_depth = %d\n", max_depth);
+	       */
+
+		if(dif_depth < 1)
+			continue;
+		else if(dif_depth > max_depth)
+			continue;
+
+		for(j = 0; j < bas_depth; j++)
+		{
+	              /*
+		       *fprintf(stdout, "\tsplited_base[%d] = <%s>\n", j, NrmQuarkToString(splited_base[j]));
+		       *fprintf(stdout, "\tsplited_name[%d] = <%s>\n", j, NrmQuarkToString(splited_name[j]));
+	               */
+			if(splited_base[j] != splited_name[j])
+			{
+				need_save = 0;
+				break;
+			}
+		}
+
+		if(need_save)
+		{
+			for(j = 0; j < thefile->file.n_grps; j++)
+			{
+				if(thefile->file.grp_info[j]->grp_name_quark == thefile->file.var_info[i]->var_full_name_quark)
+				need_save = 0;
+                                break;
+			}
+
+			if(need_save)
+			{
+				for(j = 0; j < num_vars; j++)
+				{
+					if(selected_var_names[j] == thefile->file.var_info[i]->var_full_name_quark)
+					{
+						need_save = 0;
+                                		break;
+					}
+				}
+
+				if(need_save)
+				{
+					selected_var_names[num_vars] = thefile->file.var_info[i]->var_full_name_quark;
+					num_vars++;
+				}
+			}
+		}
+	}
+
+	if(num_vars < 1)
+	{
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"in _NclGetGroupVarsList"));
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"getgroupvars: can not find any group under (%s)",
+			NrmQuarkToString(base_group_name));
+		NclFree(selected_var_names);
+		return (NULL);
+	}
+
+	if(num_vars < thefile->file.n_vars)
+	{
+		selected_var_names = (NclQuark *) NclRealloc(selected_var_names, sizeof(NclQuark) * num_vars);
+	}
+      /*
+       *fprintf(stdout, "\tnum_vars = %d\n", num_vars);
+       */
+	*n_vars = num_vars;
+	return (selected_var_names);	
 }
 
 NclApiDataList *_NclGetFileVarInfoList2

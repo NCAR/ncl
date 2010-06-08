@@ -1,0 +1,12 @@
+# CODE TABLE 1.4, Type of data
+0:0:Analysis products
+1:1:Forecast products
+2:2:Analysis and forecast products
+3;3:Control forecast products
+4:4:Perturbed forecast products
+5:5:Control and perturbed forecast products
+6:6:Processed satellite observations
+7:7:Processed radar observations
+# 8-191 Reserved
+# 192-254 Reserved for local use
+255:255:Missing

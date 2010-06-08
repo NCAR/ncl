@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.28 2009-02-05 03:42:32 dbrown Exp $
+ *      $Id: SrcTree.h,v 1.29 2010-04-14 21:29:48 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -28,33 +28,99 @@ extern "C" {
 #ifndef _NCSrcTree_h
 #define _NCSrcTree_h
 
-typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
-			Ncl_VISBLKSET, Ncl_VISBLKGET, Ncl_VISBLKCREATE, 
-			Ncl_DOFROMTO, Ncl_DOFROMTOSTRIDE, 
-			Ncl_INTRINSICPROCCALL, Ncl_EXTERNALPROCCALL, 
-			Ncl_PROCCALL, Ncl_FUNCDEF, Ncl_EXTERNFUNCDEF,	
-			Ncl_LOCALVARDEC, Ncl_DIMSIZELISTNODE, Ncl_PROCDEF,
-			Ncl_EXTERNPROCDEF, Ncl_ASSIGN, Ncl_IDNREF,
-			Ncl_INTSUBSCRIPT, Ncl_COORDSUBSCRIPT, Ncl_SINGLEINDEX,
-			Ncl_RANGEINDEX, Ncl_NEGEXPR, Ncl_NOTEXPR, Ncl_MODEXPR,
-			Ncl_OREXPR, Ncl_ANDEXPR, Ncl_XOREXPR, Ncl_LTSELECTEXPR,
-			Ncl_GTSELECTEXPR, Ncl_PLUSEXPR, Ncl_MINUSEXPR,
-			Ncl_MULEXPR, Ncl_MATMULEXPR, Ncl_DIVEXPR,
-			Ncl_EXPEXPR, Ncl_LEEXPR, Ncl_GEEXPR, Ncl_GTEXPR,
-			Ncl_LTEXPR, Ncl_EQEXPR, Ncl_NEEXPR, Ncl_REAL,
-			Ncl_INT, Ncl_STRING, Ncl_INTRINSICFUNCCALL,
-			Ncl_EXTERNFUNCCALL, Ncl_FUNCCALL, Ncl_ARRAY,
-			Ncl_ROWLIST,Ncl_ROWCOLUMNNODE, Ncl_DOWHILE,
-			Ncl_VAR, Ncl_VARDIM, Ncl_VARATT,
-			Ncl_VARCOORD, Ncl_FILEVAR, Ncl_IDNEXPR, 
-			Ncl_RESOURCE, Ncl_GETRESOURCE, Ncl_OBJ,
-			Ncl_BREAK, Ncl_CONTINUE, Ncl_FILEVARATT,
-			Ncl_FILEVARDIM,  Ncl_FILEVARCOORD, Ncl_NEW,
-			Ncl_LOGICAL, Ncl_VARCOORDATT,Ncl_FILEVARCOORDATT,Ncl_WILDCARDINDEX, 
-	                Ncl_NULLNODE, Ncl_LIST, Ncl_EXPRNEW, Ncl_FILEVARLIST
-                        } NclSrcTreeTypes;
+typedef enum {	Ncl_BLOCK		= 0,
+		Ncl_RETURN		= 1,
+		Ncl_IFTHEN		= 2,
+		Ncl_IFTHENELSE		= 3,
+		Ncl_VISBLKSET		= 4,
+		Ncl_VISBLKGET		= 5,
+		Ncl_VISBLKCREATE	= 6,
+		Ncl_DOFROMTO		= 7,
+		Ncl_DOFROMTOSTRIDE	= 8,
+		Ncl_INTRINSICPROCCALL	= 9,
+		Ncl_EXTERNALPROCCALL	= 10,
+		Ncl_PROCCALL		= 11,
+		Ncl_FUNCDEF		= 12,
+		Ncl_EXTERNFUNCDEF	= 13,	
+		Ncl_LOCALVARDEC		= 14,
+		Ncl_DIMSIZELISTNODE	= 15,
+		Ncl_PROCDEF		= 16,
+		Ncl_EXTERNPROCDEF	= 17,
+		Ncl_ASSIGN		= 18,
+		Ncl_IDNREF		= 19,
+		Ncl_INTSUBSCRIPT	= 20,
+		Ncl_COORDSUBSCRIPT	= 21,
+		Ncl_SINGLEINDEX		= 22,
+		Ncl_RANGEINDEX		= 23,
+		Ncl_NEGEXPR		= 24,
+		Ncl_NOTEXPR		= 25,
+		Ncl_MODEXPR		= 26,
+		Ncl_OREXPR		= 27,
+		Ncl_ANDEXPR		= 28,
+		Ncl_XOREXPR		= 29,
+		Ncl_LTSELECTEXPR	= 30,
+		Ncl_GTSELECTEXPR	= 31,
+		Ncl_PLUSEXPR		= 32,
+		Ncl_MINUSEXPR		= 33,
+		Ncl_MULEXPR		= 34,
+		Ncl_MATMULEXPR		= 35,
+		Ncl_DIVEXPR		= 36,
+		Ncl_EXPEXPR		= 37,
+		Ncl_LEEXPR		= 38,
+		Ncl_GEEXPR		= 39,
+		Ncl_GTEXPR		= 40,
+		Ncl_LTEXPR		= 41,
+		Ncl_EQEXPR		= 42,
+		Ncl_NEEXPR		= 43,
+		Ncl_REAL		= 44,
+		Ncl_INT		 	= 45,
+		Ncl_STRING		= 46,
+		Ncl_INTRINSICFUNCCALL	= 47,
+		Ncl_EXTERNFUNCCALL	= 48,
+		Ncl_FUNCCALL		= 49,
+		Ncl_ARRAY		= 50,
+		Ncl_ROWLIST		= 51,
+		Ncl_ROWCOLUMNNODE	= 52,
+		Ncl_DOWHILE		= 53,
+		Ncl_VAR			= 54,
+		Ncl_VARDIM		= 55,
+		Ncl_VARATT		= 56,
+		Ncl_VARCOORD		= 57,
+		Ncl_FILEVAR		= 58,
+		Ncl_IDNEXPR		= 59,
+		Ncl_RESOURCE		= 60,
+		Ncl_GETRESOURCE		= 61,
+		Ncl_OBJ			= 62,
+		Ncl_BREAK		= 63,
+		Ncl_CONTINUE		= 64,
+		Ncl_FILEVARATT		= 65,
+		Ncl_FILEVARDIM		= 66,
+		Ncl_FILEVARCOORD	= 67,
+		Ncl_NEW			= 68,
+		Ncl_LOGICAL		= 69,
+		Ncl_VARCOORDATT		= 70,
+		Ncl_FILEVARCOORDATT	= 71,
+		Ncl_WILDCARDINDEX	= 72,
+		Ncl_NULLNODE		= 73,
+		Ncl_LIST		= 74,
+		Ncl_EXPRNEW		= 75,
+		Ncl_FILEVARLIST		= 76,
+		Ncl_GROUP		= 77,
+		Ncl_FILEGROUP		= 78,
+		Ncl_FILEGROUPATT	= 79,
+		Ncl_FILEGROUPDIM	= 80,
+		Ncl_FILEGROUPCOORD	= 81,
+		Ncl_FILEGROUPCOORDATT	= 82,
+		Ncl_FILEGROUPLIST	= 83,
+		Ncl_LISTVAR		= 84,
+		Ncl_WILLNOTBEUSED	= 85
+} NclSrcTreeTypes;
 
-typedef enum { Ncl_READIT, Ncl_WRITEIT, Ncl_PARAMIT, Ncl_VALONLY } NclReferenceTypes;
+typedef enum {	Ncl_READIT = 0,
+		Ncl_WRITEIT = 1,
+		Ncl_PARAMIT = 2,
+		Ncl_VALONLY = 3
+} NclReferenceTypes;
 
 typedef struct ncl_genericnode NclGenericNode, NclBreak, NclContinue,NclWildCardIndex;
 typedef struct ncl_genericrefnode NclGenericRefNode;
@@ -129,6 +195,16 @@ typedef struct ncl_array{
 	struct ncl_rcl_list *rcl;
 } NclArray;
 
+typedef struct ncl_listvar{
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	struct ncl_rcl_list *rcl;
+} NclListVar;
+
 typedef struct ncl_string{
 	NclSrcTreeTypes kind;
 	char *name;
@@ -183,6 +259,17 @@ typedef struct ncl_filevar {
 	
 	NclSrcListNode *subscript_list;
 }NclFileVar;
+
+typedef struct ncl_filegroup {
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *dfile;
+	void *filegroupnode;
+}NclFileGroup;
 
 typedef struct ncl_filevardim{
 	NclSrcTreeTypes kind;
@@ -287,6 +374,19 @@ typedef struct ncl_filevar_list{
 	void *filevar;
 	NclSrcListNode *filevar_subscript;
 }NclFileVarList;
+
+typedef struct ncl_filegroup_list{
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *list;
+	void *list_subscript;
+	void *filegroup;
+	NclSrcListNode *filegroup_subscript;
+}NclFileGroupList;
 
 typedef struct ncl_filecoord_att {
 	NclSrcTreeTypes kind;
@@ -896,6 +996,12 @@ extern void *_NclMakeArrayNode(
 #endif
 );
 
+extern void *_NclMakeListVarNode(
+#if	NhlNeedProto
+	NclRclList* /*rc_list*/
+#endif
+);
+
 extern NclRclList *_NclMakeRowList(
 #if	NhlNeedProto
 	void
@@ -930,6 +1036,14 @@ extern void *_NclMakeFileVarRef(
 #endif
 );
 
+extern void *_NclMakeFileGroupRef(
+#if	NhlNeedProto
+	NclSymbol * /* dfile */,
+	void * /* filegroup */,
+	int /*type*/
+#endif
+);
+
 
 
 extern void *_NclMakeFileAttRef(
@@ -955,6 +1069,14 @@ extern void *_NclMakeFileVarListRef(
 	void * /* list_subscript */,
 	void *filevar,
 	NclSrcListNode *  /* filevar_subscript */
+#endif
+);	
+extern void *_NclMakeFileGroupListRef(
+#if	NhlNeedProto
+	NclSymbol * /* list*/,
+	void * /* list_subscript */,
+	void *filegroup,
+	NclSrcListNode *  /* filegroup_subscript */
 #endif
 );	
 

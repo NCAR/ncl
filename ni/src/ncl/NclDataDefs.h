@@ -37,6 +37,8 @@ Ncl_Typeushort =                02000,
 Ncl_Typeuint =                  03000,
 Ncl_Typeulong =                 04000,
 Ncl_Typeuint64 =                05000,
+Ncl_Typeint8 =                  06000,
+Ncl_Typeuint8 =                 07000,
 Ncl_Typestring = 		010000,
 Ncl_Typechar= 			020000,
 Ncl_Typeobj= 			040000,
@@ -45,7 +47,9 @@ Ncl_Att = 			0200000,
 Ncl_Typelogical =    		0400000,
 Ncl_HLUObj = 			01000000,
 Ncl_File = 			02000000,
+Ncl_Group = 			03000000,
 Ncl_FileVar = 			04000000,
+Ncl_FileGroup = 		06000000,
 Ncl_HLUVar = 			010000000,
 Ncl_CoordVar = 			020000000,
 Ncl_Type = 			040000000,
@@ -55,13 +59,15 @@ Ncl_OneDValCoordData = 		0400000000,
 Ncl_List = 			01000000000,
 Ncl_MultiDVallistData = 	02000000000,
 Ncl_ListVar = 			04000000000,
-Ncl_Typelist = 			010000000000
+Ncl_Typelist = 			010000000000,
+Ncl_Typegroup = 		020000000000,
+Ncl_Typecompound = 		030000000000
 } NclObjTypes;
 
 /*
 * allows for selection of basic variable data value type 
 */
-#define NCL_VAR_TYPE_MASK	((unsigned long) (Ncl_Var | Ncl_FileVar | Ncl_CoordVar)) 
+#define NCL_VAR_TYPE_MASK	((unsigned long) (Ncl_Var | Ncl_FileVar | Ncl_CoordVar | Ncl_FileGroup)) 
 #define NCL_COORD_MASK		((unsigned long) Ncl_OneDValCoordData)
 #define NCL_HLU_MASK		((unsigned long) Ncl_MultiDValHLUObjData)
 #define NCL_MDV_MASK		((unsigned long) (Ncl_MultiDValData | Ncl_MultiDValnclfileData))
@@ -72,7 +78,7 @@ Ncl_Typelist = 			010000000000
 * group of data types that can be coerced
 */
 #define NCL_NUMERIC_TYPE_MASK	((unsigned long)(Ncl_Typeint | Ncl_Typedouble | Ncl_Typebyte | Ncl_Typelong | Ncl_Typeshort | Ncl_Typefloat))
-#define NCL_ENUMERIC_TYPE_MASK	((unsigned long)(Ncl_Typeushort | Ncl_Typeuint | Ncl_Typeulong | Ncl_Typeint64 | Ncl_Typeuint64))
+#define NCL_ENUMERIC_TYPE_MASK	((unsigned long)(Ncl_Typeushort | Ncl_Typeuint | Ncl_Typeulong | Ncl_Typeint64 | Ncl_Typeuint64 | Ncl_Typeint8 | Ncl_Typeuint8))
 #define NCL_CHARSTR_TYPE_MASK	((unsigned long)(Ncl_Typestring | Ncl_Typechar))
 
 #define NCL_SNUMERIC_TYPE_MASK	(NCL_NUMERIC_TYPE_MASK | NCL_ENUMERIC_TYPE_MASK)
@@ -86,6 +92,8 @@ typedef enum  {
 NCL_none = 	0,
 NCL_char = 	010,
 NCL_byte = 	011,
+NCL_int8 =      012,
+NCL_uint8 =     013,
 NCL_short = 	020,
 NCL_ushort =    021,
 NCL_int = 	040,
@@ -102,13 +110,17 @@ NCL_enumeric = 	02000,
 NCL_snumeric = 	04000,
 NCL_logical = 	010000,
 NCL_obj = 	020000,
-NCL_list = 	040000
+NCL_list = 	040000,
+NCL_group = 	0100000,
+NCL_compound = 	0200000
 } NclBasicDataTypes;
 
 typedef NclQuark string; /* Makes this a quark type */
 typedef unsigned char byte;
 typedef int logical;
 typedef int obj;
+typedef int group;
+typedef int compound;
 
 typedef union _NclScalar {
 	double             doubleval;
@@ -124,8 +136,12 @@ typedef union _NclScalar {
 	unsigned char	   charval;
 	string             stringval;
 	byte               byteval;
+	unsigned char      uint8val;
+	char               int8val;
 	logical            logicalval;
 	obj                objval;
+	group              groupval;
+	compound           compoundval;
 }NclScalar;
 
 typedef struct _NclRefList{
@@ -178,7 +194,7 @@ typedef	struct _NclSubRec {
 
 typedef enum stack_value_types { 
 	NclStk_NOVAL = 0, NclStk_OFFSET = 01, 
-	NclStk_VAL = 02,NclStk_VAR = 04, NclStk_SUBREC = 010,
+	NclStk_VAL = 02, NclStk_VAR = 04, NclStk_SUBREC = 010,
 	NclStk_PARAMLIST = 020, NclStk_RANGEREC = 040,
 	NclStk_VECREC = 0100, NclStk_FILE = 0200, NclStk_GRAPHIC = 0400,
 	NclStk_RETURNVAL = 01000, NclStk_STATIC_LINK = 02000, 
@@ -201,6 +217,7 @@ typedef struct _NclStackEntry{
 		struct _NclSubRec sub_rec;
 		struct _NclParamRecList *the_list;
 		struct _NclVarRec	*data_var;
+		struct _NclFileRec	*data_group;
 		struct _NclMultiDValDataRec 	*data_obj;
 		struct _NclListRec 	*data_list;
 	}u;

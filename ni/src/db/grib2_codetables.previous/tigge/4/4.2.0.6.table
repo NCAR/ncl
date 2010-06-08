@@ -1,0 +1,36 @@
+# Product Discipline 0: Meteorological products, Parameter Category 6: Cloud
+0:0:Cloud ice:kg m-2:CICE
+1:1:Total cloud cover:%:TCC
+2:2:Convective cloud cover:%:CDCON
+3:3:Low cloud cover:%:LCDC
+4:4:Medium cloud cover:%:MCDC
+5:5:High cloud cover:%:HCDC
+6:6:Cloud water:kg m-2:CWAT
+7:7:Cloud amount:%:CAMT
+8:8:Cloud type (Code table 4.203)
+9:9:Thunderstorm maximum tops:m:TSMXT
+10:10:Thunderstorm coverage (Code table 4.204)
+11:11:Cloud base:m:CBASE
+12:12:Cloud top:m:CTOP
+13:13:Ceiling:m:CEIL
+14:14:Non-convective cloud cover:%:CDLYR
+15:15:Cloud work function:J kg-1:CWORK
+16:16:Convective cloud efficiency:Proportion:CUEFI
+17:17:Total condensate:kg kg-1:TCOND
+18:18:Total column-integrated cloud water:kg m-2:TCOLW
+19:19:Total column-integrated cloud ice:kg m-2:TCOLI
+20:20:Total column-integrated condensate:kg m-2:TCOLC
+21:21:Ice fraction of total condensate:Proportion:FICE
+# 22-191 Reserved
+24:24:Sunshine duration (ECMWF proposal, not WMO approved):s:SUND
+# 192-254 Reserved for local use
+192:192:Non-Convective Cloud Cover:%:CDLYR
+193:193:Cloud Work Function:J kg-1:CWORK
+194:194:Convective Cloud Efficiency:non-dim:CUEFI
+195:195:Total Condensate:kg kg-1:TCOND
+196:196:Total Column-Integrated Cloud Water:kg m-2:TCOLW
+197:197:Total Column-Integrated Cloud Ice:kg m-2:TCOLI
+198:198:Total Column-Integrated Condensate:kg m-2:TCOLC
+199:199:Ice fraction of total condensate:non-dim:FICE
+255:255:Missing
+

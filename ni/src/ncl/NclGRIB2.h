@@ -373,6 +373,7 @@ typedef struct _g2prodParams {
     int    num_timerange_spec_time_interval_calc;
     int    total_num_missing_data_vals;
     int    typeof_stat_proc;
+    int    spatial_proc;
     char    *stat_proc;
     int    typeof_incr_betw_fields;
     char    *incr_betw_fields;
@@ -382,6 +383,8 @@ typedef struct _g2prodParams {
     int    ind_time_unit_incr_succ_fields;
     char    *itr_succ_unit;
     unsigned int    time_incr_betw_fields;
+    int    p1, p2; /* for NCEP local stat definitions */
+    int    n_grids;
     /* probability forecasts */
     int forecast_probability_number;
     int total_forecast_probabilities;
@@ -566,6 +569,9 @@ struct _Grib2ParamList {
     int forecast_time_units;
     int time_period_units;
     int variable_time_unit; /* boolean: is there more than a single time unit */
+    int p1; /* for NCEP local stat definitions */ 
+    int p2; /* for NCEP local stat definitions */ 
+    int n_grids; /* for NCEP local stat definitions */ 
     int level_indicator;
     int has_bmap;
     int has_own_missing;
@@ -635,6 +641,9 @@ struct _Grib2RecordInqRec {
     int time_period;
     int forecast_time_units;
     int time_period_units;
+    int    p1, p2; /* for NCEP local stat definitions */
+    int    n_grids;
+    int spatial_proc;
 
     int level_indicator;
     float level0;

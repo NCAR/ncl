@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRendererP.h,v 1.3 2009-10-30 00:16:28 dbrown Exp $
+ *      $Id: CnTriMeshRendererP.h,v 1.4 2010-03-27 18:58:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/CnRendererP.h>
 
 #define Nhlcn1DMESHMAPVAL 98
+#define NhlcnTRIMESHMAPVAL 90
 
 extern void _NhlSetCnl(
 #if	NhlNeedProto

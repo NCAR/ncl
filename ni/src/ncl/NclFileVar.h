@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.h,v 1.3 1995-01-28 01:51:27 ethan Exp $
+ *      $Id: NclFileVar.h,v 1.4 2010-04-14 21:29:47 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -68,5 +68,8 @@ extern struct _NclVarRec *_NclFileVarCreate(
 	NclStatus /*status*/
 #endif
 );
+
+extern NhlErrorTypes FileVarPrint(NclObj theobj,FILE *fp);
+extern NhlErrorTypes FileVarPrintVarSummary(NclObj theobj,FILE *fp);
 
 #endif /* NclFileVar_h */

@@ -1,5 +1,5 @@
 /*
- * $Id: pageutil.c,v 1.1 2010-02-09 23:12:44 brownrig Exp $
+ * $Id: pageutil.c,v 1.2 2010-03-29 16:30:03 brownrig Exp $
  *
  * Encode details about standard paper/page sizes.
  *
@@ -18,7 +18,6 @@
 
 const int DEFAULT_LR_MARGIN = 36;
 const int DEFAULT_TB_MARGIN = 126;
-const char* DEFAULT_PAPERSIZE = "letter";
 
 /* encodes definitions of standard page/paper sizes */
 typedef struct {
@@ -100,9 +99,9 @@ const int nhlGetPaperSize(NhlPageInfo* pageInfo)
         if (pageDef == NULL) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,
                     "%s: Unknown paper-size (%s), defaulting to %s", func,
-                    pageInfo->paperSize, DEFAULT_PAPERSIZE);
+                    pageInfo->paperSize, PAGEUTIL_DEFAULT_PAPERSIZE);
             ret = NhlWARNING;
-            pageDef = nhlGetPageDefinition(DEFAULT_PAPERSIZE);
+            pageDef = nhlGetPageDefinition(PAGEUTIL_DEFAULT_PAPERSIZE);
         }
 
         if (pageInfo->paperWidthIn > 0. && pageInfo->paperHeightIn > 0.) {
@@ -133,11 +132,11 @@ const int nhlGetPaperSize(NhlPageInfo* pageInfo)
             /* issue feedback to user that we're expecting to see both pageWidth/pageHeight */
             NhlPError(NhlWARNING, NhlEUNKNOWN,
                     "%s: Must specify both %s and %s together; using default page size (%s)",
-                    func, pageInfo->paperWidthResName, pageInfo->paperHeightResName, DEFAULT_PAPERSIZE);
+                    func, pageInfo->paperWidthResName, pageInfo->paperHeightResName, PAGEUTIL_DEFAULT_PAPERSIZE);
             ret = NhlWARNING;
         }
 
-        const NhlPageDefinition* pageDef = nhlGetPageDefinition(DEFAULT_PAPERSIZE);
+        const NhlPageDefinition* pageDef = nhlGetPageDefinition(PAGEUTIL_DEFAULT_PAPERSIZE);
         pageInfo->pageWidthPts = pageDef->widthPts;
         pageInfo->pageHeightPts = pageDef->heightPts;
         /* recalculate page size in inches */

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.234 2010-03-05 22:53:56 haley Exp $
+;      $Id: gsn_code.ncl,v 1.241 2010-05-06 17:18:01 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -583,7 +583,7 @@ end
 ;***********************************************************************;
 undef("get_res_value")
 function get_res_value(res,resname:string,default_val)
-local res_value
+local return_val
 begin
   if(((typeof(res).eq."logical".and.res).or.(typeof(res).ne."logical")).and.\
      .not.any(ismissing(getvaratts(res)))) then
@@ -613,7 +613,7 @@ end
 ;***********************************************************************;
 undef("get_res_value_keep")
 function get_res_value_keep(res,resname:string,default_val)
-local res_value
+local return_val
 begin
   if(((typeof(res).eq."logical".and.res).or.(typeof(res).ne."logical")).and.\
      .not.any(ismissing(getvaratts(res)))) then
@@ -2399,7 +2399,11 @@ end
 ;                        default is 0.5)                               ;
 ;                                                                      ;
 ; In V5.2.0, new paper size resources were added, and this function    ;
-; was updated to recognize them.                                       ;
+; was updated to recognize them (wkPaperSize, wkPaperWidthF,           ;
+;    and wkPaperHeightF).                                              ;
+;                                                                      ;
+; gsnPaperWidth and gsnPaperHeight are considered deprecated, but      ;
+; still recognized.                                                    ;
 ;                                                                      ;
 ;                                                                      ;
 ;**********************************************************************;
@@ -2852,8 +2856,11 @@ function get_bb_res(res:logical)
 begin
   maxbb                = get_res_value(res,"gsnMaximize", False) 
   maxbb@gsnPaperMargin = get_res_value(res,"gsnPaperMargin",0.5)
-  maxbb@gsnPaperHeight = get_res_value(res,"gsnPaperHeight",11.0)
-  maxbb@gsnPaperWidth  = get_res_value(res,"gsnPaperWidth",8.5)
+;
+; No longer set these two, because they will be retrieved later.
+;
+;  maxbb@gsnPaperHeight = get_res_value(res,"gsnPaperHeight",11.0)
+;  maxbb@gsnPaperWidth  = get_res_value(res,"gsnPaperWidth",8.5)
   maxbb@gsnBoxMargin   = get_res_value(res,"gsnBoxMargin",0.02)
   maxbb@gsnDebug       = get_res_value(res,"gsnDebug",False)
 ;
@@ -3104,6 +3111,54 @@ begin
   return(labelbar_object)
 end
 
+
+;***********************************************************************;
+; Function to determine if a cairo PS is being requested.               ;
+;***********************************************************************;
+undef("is_cairo_ps")
+function is_cairo_ps(wtype)
+local lwtype, cpsenv
+begin
+  lwtype = lower_case(wtype)
+  cpsenv = getenv("NCARG_CAIRO_PS")
+  if(lwtype.eq."newps".or.(lwtype.eq."ps".and..not.ismissing(cpsenv))) then
+    return(True)
+  else
+    return(False)
+  end if
+end
+
+;***********************************************************************;
+; Function to determine if a cairo PDF is being requested.              ;
+;***********************************************************************;
+undef("is_cairo_pdf")
+function is_cairo_pdf(wtype)
+local lwtype, cpdfenv
+begin
+  lwtype  = lower_case(wtype)
+  cpdfenv = getenv("NCARG_CAIRO_PDF")
+  if(lwtype.eq."newpdf".or.(lwtype.eq."pdf".and..not.ismissing(cpdfenv))) then
+    return(True)
+  else
+    return(False)
+  end if
+end
+
+;***********************************************************************;
+; Function to determine if a cairo PNG is being requested.              ;
+;***********************************************************************;
+undef("is_cairo_png")
+function is_cairo_png(wtype)
+local lwtype
+begin
+  lwtype = lower_case(wtype)
+  if(lwtype.eq."newpng".or.lwtype.eq."png") then
+    return(True)
+  else
+    return(False)
+  end if
+end
+
 ;***********************************************************************;
 ; Function : gsn_open_ps                                                ;
 ;               name : name of PostScript file                          ;
@@ -3284,7 +3339,6 @@ end
 undef("gsn_open_cairo")
 function gsn_open_cairo(type:string, name[1]:string)
 local cairo, res_file, wkres, wkresnew, names, i
-
 begin
 ;
 ; If there are resources, copy them over to a logical variable,
@@ -3313,14 +3367,20 @@ begin
 ;
 ; We need to distinguish between PS/PDF versus image-based output formats
 ;
-    if (type.eq."newps".or.type.eq."newpdf")
+    if (is_cairo_ps(type).or.is_cairo_pdf(type)) then
         resltn   = get_res_value(wkresnew,"wkPDFResolution",1800)
         paperSize   = get_res_value(wkresnew,"wkPaperSize","")
         paperW = get_res_value(wkresnew,"wkPaperWidthF", -1.)
         paperH = get_res_value(wkresnew,"wkPaperHeightF", -1.)
+        if(is_cairo_ps(type)) then
+          newtype = "newps"    ; Can't use "ps" for cairo PS yet
+        else
+          newtype = "newpdf"   ; Can't use "pdf" for cairo PDF yet
+        end if
+
         cairo = create res_file documentWorkstationClass defaultapp
           "wkFileName"        : name
-          "wkFormat"          : type
+          "wkFormat"          : newtype
           "wkPDFResolution"   : resltn
           "wkPaperSize"       : paperSize
           "wkPaperWidthF"      : paperW
@@ -3418,9 +3478,11 @@ function gsn_open_wks(type[1]:string,name[1]:string)
 local i, wks, appusrdir, name_char, not_found, res_file, res_dir
 begin
     type2   = type          ; Make copy of type and its resources
+    type2  = lower_case(type)
     res_dir = "./"          ; Default resource directory.
     res_file = "gsnapp"     ; Default resource file name.
     valid_type = False      ; Is type valid?
+
 ;
 ; Parse "name" to get the directory and the file prefix.
 ;
@@ -3455,7 +3517,7 @@ begin
 ;
     wks = new(1,graphic,"No_FillValue")
 
-    if (lower_case(type2).eq."x11") then
+    if (type2.eq."x11") then
       x_file = res_file
       if (isatt(type2,"wkColorMap"))
         x_file@wkColorMap = type2@wkColorMap
@@ -3464,15 +3526,15 @@ begin
       valid_type = True
     end if
 
-    if (lower_case(type2).eq."ps".or.lower_case(type2).eq."eps".or. \
-        lower_case(type2).eq."epsi") then
+    if (type2.eq."ps".or.type2.eq."eps".or. \
+        type2.eq."epsi") then
       ps_file = get_res_value(type2,"wkPSFileName",res_file + "." + type2)
       ps_file@res_file = res_file
       wks = gsn_open_ps(type2,res_dir+ps_file)
       valid_type = True
     end if
 
-    if (lower_case(type2).eq."ncgm") then
+    if (type2.eq."ncgm") then
       ncgm_file = get_res_value(type2,"wkMetaName",res_file + ".ncgm")
       ncgm_file = res_dir + ncgm_file
       ncgm_file@res_file = res_file
@@ -3483,7 +3545,7 @@ begin
       valid_type = True
     end if
 
-    if (lower_case(type2).eq."pdf") then
+    if (type2.eq."pdf") then
       pdf_file = get_res_value(type2,"wkPDFFileName", \
                                res_file + "." + type2)
       pdf_file@res_file = res_file
@@ -3491,16 +3553,18 @@ begin
       valid_type = True
     end if
 
-    if (lower_case(type2).eq."newps".or.lower_case(type2).eq."newpdf" \
-          .or.lower_case(type2).eq."newpng".or.lower_case(type2).eq."png") then
-      cairo_file = get_res_value(type2,"wkCairoFileName", res_file)
+    if (is_cairo_ps(type2).or.is_cairo_pdf(type2).or.is_cairo_png(type2)) then
+      cairo_file = get_res_value(type2,"wkFileName", res_file)
+      if (is_cairo_png(type2)) then
+        cairo_file = get_res_value(type2,"wkImageFileName", cairo_file)
+      end if
       cairo_file@res_file = res_file
       wks = gsn_open_cairo(type2, res_dir+cairo_file)
       valid_type = True
     end if
 
-    if (lower_case(type2).eq."xwd") then
-      image_file = get_res_value(type2,"wkImageFileName", res_file)
+    if (type2.eq."xwd") then
+      image_file = get_res_value(type2,"wkFileName", res_file)
       image_file@res_file = res_file
       wks = gsn_open_image(type2, res_dir+image_file)
       valid_type = True
@@ -7866,7 +7930,7 @@ begin
 ; Compute min, max, and step necessary to later get "nice" values for
 ; the percentages.
 ;
-    xnpts = npts*1.
+    xnpts = get_res_value(res2,"gsnHistogramNptsForPercent",npts)*1.
     if(horizontal) then
       nicevals = nice_mnmxintvl(res2@trXMinF,min((/100., \
                                 100.*(res2@trXMaxF/xnpts)/)),7,False)
@@ -7886,8 +7950,8 @@ begin
 ; Calculate the bin values that correspond to these percentages.
 ; These are the values we'll use for the tick marks.
 ;
-    bins_at_pnice  = 0.01 * (npts * pnice)
-    bins_at_pmnice = 0.01 * (npts * pmnice)
+    bins_at_pnice  = 0.01 * (xnpts * pnice)
+    bins_at_pmnice = 0.01 * (xnpts * pmnice)
 ;
 ; Set some resources to control tickmarks.
 ;
@@ -9243,8 +9307,8 @@ begin
 
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
-    cnres = get_res_eq(res2,(/"cn","vp","tf"/))
-    vcres = get_res_ne(res2,(/"vf","sf","cn","vp"/))
+    cnres = get_res_eq(res2,(/"cn","tf"/))
+    vcres = get_res_ne(res2,(/"vf","sf","cn"/))
 
     attsetvalues_check(vfdata_object,vfres)
     attsetvalues_check(sfdata_object,sfres)
@@ -9423,8 +9487,8 @@ begin
 
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
-    cnres = get_res_eq(res2,(/"cn","vp"/))
-    stres = get_res_ne(res2,(/"vf","sf","cn","vp"/))
+    cnres = get_res_eq(res2,(/"cn"/))
+    stres = get_res_ne(res2,(/"vf","sf","cn"/))
 
     attsetvalues_check(vfdata_object,vfres)
     attsetvalues_check(sfdata_object,sfres)

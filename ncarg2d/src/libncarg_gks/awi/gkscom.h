@@ -1,5 +1,5 @@
 C
-C $Id: gkscom.h,v 1.31 2010-02-08 06:01:29 fred Exp $
+C $Id: gkscom.h,v 1.32 2010-04-02 16:38:00 brownrig Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -8,14 +8,14 @@ C
 C The use of this Software is governed by a License Agreement.
 C
 C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
-      PARAMETER(MXNWK=15,NSEG=100,IWDIM=10000,NUMERS=143)
+      PARAMETER(MXNWK=15,NSEG=100,IWDIM=10000,NUMERS=144)
       COMMON/GKINTR/ NOPWK , NACWK , WCONID, NUMSEG,
      +               SEGS(NSEG)    , CURSEG, SEGLEN(NSEG)  , MXSREC,
      +               SEGT(NSEG,2,3), CURTM(2,3)            , SEGDEL,
      +               RWKSP(IWDIM)  , GKSCLP
       INTEGER        NOPWK , NACWK , WCONID, NUMSEG, SEGS  , CURSEG,
      +               SEGLEN, MXSREC, SEGDEL, GKSCLP
-      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(23)      ,
+      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(24)      ,
      +               MOPWK , MACWK , MNT
       INTEGER        OPS   , WK
       COMMON/GKSTAT/ SOPWK(MXNWK)  , SACWK(MXNWK)  , CPLI  , CLN   ,

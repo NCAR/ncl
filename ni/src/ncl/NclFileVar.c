@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.20 2008-12-10 20:12:16 dbrown Exp $
+ *      $Id: NclFileVar.c,v 1.21 2010-04-14 21:29:47 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -129,7 +129,7 @@ char * 		/*dim_name */
 #endif
 );
 
-static NhlErrorTypes FileVarPrint
+NhlErrorTypes FileVarPrintVarSummary
 #if	NhlNeedProto
 (NclObj theobj,FILE *fp)
 #else
@@ -139,8 +139,6 @@ FILE *fp;
 #endif
 {
 	NclVar thevar = (NclVar) theobj;
-	NclFile thefile;
-	NclMultiDValData theval;
 	char *v_name;
 
         if(thevar->var.thesym != NULL) {
@@ -152,6 +150,23 @@ FILE *fp;
         }
 	nclfprintf(fp,"Variable: %s (file variable)\n",v_name);
 
+	return(NhlNOERROR);;
+}
+
+NhlErrorTypes FileVarPrint
+#if	NhlNeedProto
+(NclObj theobj,FILE *fp)
+#else
+(theobj,fp)
+NclObj theobj;
+FILE *fp;
+#endif
+{
+	NclVar thevar = (NclVar) theobj;
+	NclFile thefile;
+	NclMultiDValData theval;
+
+	FileVarPrintVarSummary(theobj, fp);
 
 	theval = (NclMultiDValData)_NclGetObj(thevar->var.thevalue_id);
 	if(theval != NULL) {

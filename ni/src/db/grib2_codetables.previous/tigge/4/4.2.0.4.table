@@ -1,0 +1,20 @@
+# Product Discipline 0: Meteorological products, Parameter Category 4: Short-wave Radiation
+0:0:Net short-wave radiation flux (surface):W m-2:NSWRS
+1:1:Net short-wave radiation flux (top of atmosphere):W m-2:NSWRT
+2:2:Short wave radiation flux W:m-2:SWAVR
+3:3:Global radiation flux:W m-2:GRAD
+4:4:Brightness temperature:K:BRTMP
+5:5:Radiance (with respect to wave number):W m-1 sr-1:LWRAD
+6:6:Radiance (with respect to wave length):W m-3 sr-1:SWRAD
+7:7:Downward short-wave radiation flux:W m-2:DSWRF
+8:8:Upward short-wave radiation flux:W m-2:USWRF
+# 9:191:Reserved
+9:9:Time-integrated surface net solar radiation:W m-2:SSR
+#192-254 Reserved for local use
+192:192:Downward Short-Wave Rad. Flux:W m-2:DSWRF
+193:193:Upward Short-Wave Rad. Flux:W m-2:USWRF
+194:194:UV-B downward solar flux:W m-2:DUVB
+195:195:Clear sky UV-B downward solar flux:W m-2:CDUVB
+196:196:Clear sky downward solar flux:W m-2:CSDSF
+255:255:Missing
+

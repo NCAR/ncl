@@ -1,5 +1,5 @@
 /*
- *      $Id: cro.h,v 1.4.2.1 2010-03-17 20:53:30 brownrig Exp $
+ *      $Id: cro.h,v 1.5 2010-04-02 16:36:16 brownrig Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -133,6 +133,7 @@
 #define CPS 				40  /* cairo Postscript  */
 #define CPNG				41  /* cairo PNG         */
 #define CPDF                42  /* cairo PDF         */
+#define CTIFF               43  /* cairo (geo)TIFF   */
 #define CDPY                44  /* cairo native display */
 
 typedef enum {MONO, COLOR} cro_color;

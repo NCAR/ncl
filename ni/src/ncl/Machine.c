@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.89 2009-02-05 03:42:32 dbrown Exp $
+ *      $Id: Machine.c,v 1.90 2010-04-14 21:29:47 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -189,6 +189,11 @@ static void SetUpOpsStrings() {
 	ops_strings[LIST_CLEAR_TMP_OP] = "LIST_CLEAR_TMP_OP";
 	ops_strings[LIST_ASSIGN_VERIFY_SUB] = "LIST_ASSIGN_VERIFY_SUB";
 	ops_strings[LIST_READ_FILEVAR_OP] = "LIST_READ_FILEVAR_OP";
+	ops_strings[FILE_GROUP_OP] = "FILE_GROUP_OP";
+	ops_strings[FILE_GROUPVAL_OP] = "FILE_GROUPVAL_OP";
+	ops_strings[ASSIGN_FILE_GROUP_OP] = "ASSIGN_FILE_GROUP_OP";
+	ops_strings[PARAM_FILE_GROUP_OP] = "PARAM_FILE_GROUP_OP";
+	ops_strings[LISTVAR_LIT_OP] = "LISTVAR_LIT_OP";
 }
 
 static NhlErrorTypes IncreaseStackSize
@@ -646,7 +651,6 @@ int access_type;
 
 	i = current_scope_level;
 	
-
 	if(the_sym->level == 1) {
 		return(_NclGetLevel1Var(the_sym->offset));
 	} else if(the_sym->level != 0){
@@ -1270,6 +1274,7 @@ void _NclPrintMachine
 			case PUSH_INT_LIT_OP :
 			case PUSH_LOGICAL_LIT_OP :
 			case ARRAY_LIT_OP :
+			case LISTVAR_LIT_OP :
 			case JMP_SCALAR_TRUE_OP:
 			case JMP_SCALAR_FALSE_OP:
 			case PUSH_STRING_LIT_OP :
@@ -1537,7 +1542,34 @@ void _NclPrintMachine
 				ptr++;lptr++,fptr++;
 				fprintf(fp,"\tjump to: %d\n",*(int*)ptr);
 				break;
+			case FILE_GROUP_OP :
+			case FILE_GROUPVAL_OP :
+			case ASSIGN_FILE_GROUP_OP :
+			case PARAM_FILE_GROUP_OP :
+			      /*
+			       */
+				fprintf(stdout, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);
+				fprintf(stdout, "\t*ptr: %d\n", *ptr);
+				fprintf(stdout, "\tops_strings[%d]: <%s>\n", *ptr, ops_strings[*ptr]);
+				if(*ptr == FILE_GROUP_OP)
+					fprintf(stdout, "\tFILE_GROUP_OP: %d\n", FILE_GROUP_OP);
+				else if(*ptr == FILE_GROUPVAL_OP)
+					fprintf(stdout, "\tFILE_GROUPVAL_OP: %d\n", FILE_GROUPVAL_OP);
+				else if(*ptr == ASSIGN_FILE_GROUP_OP)
+					fprintf(stdout, "\tASSIGN_FILE_GROUP_OP: %d\n", ASSIGN_FILE_GROUP_OP);
+				else if(*ptr == PARAM_FILE_GROUP_OP)
+					fprintf(stdout, "\tPARAM_FILE_GROUP_OP: %d\n\n", PARAM_FILE_GROUP_OP);
+
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t%d\n",*ptr);
+				break;
 			default:
+				fprintf(stdout, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);
+				fprintf(stdout, "\tUNPROCESSED CASE: %d\n", *ptr);
 				break;
 		}
 		ptr++;lptr++;fptr++;

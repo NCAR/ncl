@@ -1,0 +1,67 @@
+#Code:table:4.5: Fixed surface types and units
+0:0:Reserved
+1:sfc:Ground or water surface:none:SFC
+2:2:Cloud base level:none:CBL
+3:3:Level of cloud tops:none:CTL
+4:4:Level of 0o C isotherm:none:0DEG
+5:5:Level of adiabatic condensation lifted from the surface:none:ADCL
+6:6:Maximum wind level:none:MWSL
+7:7:Tropopause:none:TRO
+8:sfc:Nominal top of the atmosphere:none:NTAT
+9:9:Sea bottom:none:SEAB
+# 10-19 Reserved
+20:20:Isothermal level:K:TMPL
+#21-99 Reserved
+100:pl:Isobaric surface:Pa:ISBL
+101:sfc:Mean sea level:Pa:MSL
+102:102:Specific altitude above mean sea level:m:AMSL
+103:sfc:Specified height level above ground:m:HTGL
+104:104:Sigma level (sigma value):none:SIGL
+105:105:Hybrid level:none:HYBL
+106:sfc:Depth below land surface:m:DBLL
+107:pt:Isentropic (theta) level:K:THEL
+108:108:Level at specified pressure difference from ground to level:Pa:SPDL
+109:pv:Potential vorticity:K m2 kg-1 s-1:PVL
+110:110:Reserved
+111:111:Eta level:Eta value:ETAL
+# 112-116 Reserved
+117:117:Mixed layer depth:m:MIXL
+# 118-159 Reserved
+160:160:Depth below sea level:m:DBSL
+#161-191 Reserved
+#192-254 Reserved for local use
+200:200:Entire atmosphere (considered as a single layer):none:EATM
+201:201:Entire ocean (considered as a single layer):none:EOCN
+204:204:Highest tropospheric freezing level:none:HTFL
+206:206:Grid scale cloud bottom level:none:GCBL
+207:207:Grid scale cloud top level:none:GCTL
+209:209:Boundary layer cloud bottom level:none:BCBL
+210:210:Boundary layer cloud top level:none:BCTL
+211:211:Boundary layer cloud layer:none:BCY
+212:212:Low cloud bottom level:none:LCBL
+213:213:Low cloud top level:none:LCTL
+214:214:Low cloud layer:none:LCY
+215:215:Cloud ceiling:none:CCL
+222:222:Middle cloud bottom level:none:MCBL
+223:223:Middle cloud top level:none:MCTL
+224:224:Middle cloud layer:none:MCY
+232:232:High cloud bottom level:none:HCBL
+233:233:High cloud top level:none:HCTL
+234:234:High cloud layer:none:HCL
+235:235:Ocean Isotherm Level (1/10 deg C):1/10 degC:OITL
+236:236:Layer between two depths below ocean surface:none:OLYR
+237:237:Bottom of Ocean Mixed Layer (m):m:OBML
+238:238:Bottom of Ocean Isothermal Layer:m:OBIL
+242:242:Convective cloud bottom level:none:CCBL
+243:243:Convective cloud top level:none:CCTL
+244:244:Convective cloud:none:CCY
+245:245:Lowest level of the wet bulb zero:none:LLTW
+246:246:Maximum equivalent potential temperature level:none:MTHE
+247:247:Equilibrium level:none:EHLT
+248:248:Shallow convective cloud bottom level:none:SCBL
+249:249:Shallow convective cloud top level:none:SCTL
+251:251:Deep convective cloud bottom level:none:DCBL
+252:252:Deep convective cloud top level:none:DCTL
+253:253:Lowest bottom level of supercooled liquid water layer:none:LSCLW
+254:254:Highest top level of supercooled liquid water layer:none:HSCLW
+255:255:Missing

@@ -16,17 +16,17 @@
 #define	Cdynamic -Wl,-Bdynamic
 #define CppCommand '/usr/bin/cpp -traditional'
 #define	CCompiler	gcc
-#define	FCompiler	g77
-#define	CtoFLibraries	-lg2c -lm
+#define	FCompiler	gfortran
+#define	CtoFLibraries	-lgfortran -lm
 #define CcOptions      -ansi
+#define FcOptions      -fno-range-check
 #define XToolLibrary	-lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
 #define ExeSuffix exe
-#define ExtraExportFlags -rdynamic
 
-#define	ArchRecLibSearch	-L/usr/X11R6/lib
-#define	ArchRecIncSearch	-I/usr/X11R6/include
+#define	ArchRecLibSearch	
+#define	ArchRecIncSearch
 
 FC = $(F77)
 

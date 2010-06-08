@@ -1,0 +1,44 @@
+# Product Discipline 2: Land surface products, Parameter Category 0: Vegetation/Biomass
+0:0:Land sea mask (0 = sea, 1 = land):Proportion:LSM
+1:1:Surface roughness:m:SFCR
+2:2:Soil temperature:K:ST
+3:3:Soil moisture content:kg m-2:SOILM
+4:4:Vegetation:%:VEG
+5:5:Water runoff:kg m-2:WATR
+6:6:Evapotranspiration:kg -2 s-1:VAPO
+7:7:Model terrain height:m:MDLTRHGT
+8:8:Land use (Code table 4.212)
+9:9:Volumetric soil moisture content:Proportion:SOILW
+10:10:Ground heat flux:W m-2:GFLUX
+11:11:Moisture availability:%:MSTAV
+12:12:Exchange coefficient:kg m-2 s-1:SFEXC
+13:13:Plant canopy surface water:kg m-2:CNWAT
+14:14:Blackadars mixing length scale:m:BMIXL
+15:15:Canopy conductance:m s-1:CCOND
+16:16:Minimal stomatal resistance:s m-1:RSMIN
+17:17:Wilting point:Proportion:WILT
+18:18:Solar parameter in canopy conductance:Proportion:RCS
+19:19:Temperature parameter in canopy conductance:Proportion:RCT
+20:20:Soil moisture parameter in canopy conductance:Proportion:RCSOL
+21:21:Humidity parameter in canopy conductance:Proportion:RCQ
+22:22:Soil Moisture:kg m-3:SM
+# 22-191 Reserved
+#192-254 Reserved for local use
+192:192:Volumetric soil moisture content:Proportion:SOILW
+193:192:Ground heat flux:W m-2:GFLUX
+194:194:Moisture availability:%:MSTAV
+195:195:Exchange coefficient:kg m-2 s-1:SFEXC
+196:196:Plant canopy surface water:kg m-2:CNWAT
+197:197:Blackadars mixing length scale:m:BMIXL
+198:198:Vegetation Type:Integer 0-13:VGTYP
+199:199:Canopy conductance:m s-1:CCOND
+200:200:Minimal stomatal resistance:s m-1:RSMIN
+201:201:Wilting point:Proportion:WILT
+202:202:Solar parameter in canopy conductance:Fraction:RCS
+203:203:Temperature parameter in canopy conductance:Fraction:RCT
+204:204:Humidity parameterin canopy conductance:Fraction:RCQ
+205:205:Soil moisture parameter in canopy conductance:Fraction:RCSOL
+206:206:Rate of water dropping from canopy to:RDRIP:ground
+207:207:Ice-free water:ICWAT:surface
+255:255:Missing
+

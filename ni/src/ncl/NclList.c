@@ -137,7 +137,7 @@ NhlArgVal udata;
 	
 }
 
-static NhlErrorTypes ListPush
+NhlErrorTypes ListPush
 #if     NhlNeedProto
 (NclObj list,NclObj theobj)
 #else
@@ -164,6 +164,8 @@ NclObj theobj;
 			tmp_obj = theobj;
 		}
 	
+		tmp_obj->obj.obj_type_mask = theobj->obj.obj_type;
+		tmp->orig_type = theobj->obj.obj_type;
 			
 		ret = _NclAddParent(tmp_obj,list);
 		tmp->cb = _NclAddCallback( tmp_obj, list, ListItemDestroyNotify,DESTROYED,NULL);
@@ -382,6 +384,12 @@ int new_type;
 				outlist->list.last = tmp;
 			}
 			step = thelist->list.first;
+ 			if (ind[i] < 0 || ind[i] >= thelist->list.nelem) {
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,"ListSelect: Index out of range");
+                                _NclDestroyObj((NclObj)outlist);
+                                NclFree(tmp);
+                                return(NULL);
+                        }
 			for(j = 0; j < ind[i];j++) {
 				if(step != NULL) {
 					step = step->next;
@@ -425,6 +433,11 @@ int new_type;
 
 		tmp_stride = abs(sel_ptr->u.sub.stride);
 		if(sel_ptr->u.sub.start <= sel_ptr->u.sub.finish) {
+                        if (sel_ptr->u.sub.start < 0 || sel_ptr->u.sub.finish >= thelist->list.nelem) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"ListSelect: Index out of range");
+				_NclDestroyObj((NclObj)outlist);
+				return(NULL);
+			}
 			if(sel_ptr->u.sub.start != 0) {
 				step = thelist->list.first;
 				for(i = 0; i < sel_ptr->u.sub.start; i++) {
@@ -481,6 +494,11 @@ int new_type;
 				}
 			}
 		} else {
+                        if (sel_ptr->u.sub.finish < 0 || sel_ptr->u.sub.start >= thelist->list.nelem) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"ListSelect: Index out of range");
+				_NclDestroyObj((NclObj)outlist);
+				return(NULL);
+			}
 			if(sel_ptr->u.sub.start != thelist->list.nelem-1) {
 				step = thelist->list.last;
 				for(i = thelist->list.nelem-1; i > sel_ptr->u.sub.start; i--) {

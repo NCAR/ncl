@@ -1,0 +1,8 @@
+# CODE TABLE 4.223, Fire Detection Indicator
+
+0:0:No Fire Detected
+1:1:Possible Fire Detected
+2:2:Probable Fire Detected
+3:3:Missing
+#192-254:Reserved for local use
+255:255:Missing

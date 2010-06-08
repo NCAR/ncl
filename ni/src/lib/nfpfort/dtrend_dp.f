@@ -242,7 +242,7 @@ c                               remove the X and Y means
 c                               This shifts the data: minimize
 c                               roundoff for big X and/or Y numbers
       DO N = 1,NPTS
-         IF (X(N).NE.XMSG .AND. YDT(N).NE.YMSG) THEN
+         IF (X(N).NE.XMSG .AND. Y(N).NE.YMSG) THEN
              XDT(N) = X(N) - XBAR
              YDT(N) = Y(N) - YBAR
 C             print *,"N=",N,"  XDT(N)="+XDT(N),"  YDT(N)="+YDT(N)
@@ -256,7 +256,7 @@ c                               stats for shifted series
       Y2SUM = 0.0D0
       XYSUM = 0.0D0
       DO N=1,NPTS
-         IF (XDT(N).NE.XMSG .AND. YDT(N).NE.YMSG) THEN
+         IF (X(N).NE.XMSG .AND. Y(N).NE.YMSG) THEN
              XTOT  = XTOT  + XDT(N)
              YTOT  = YTOT  + YDT(N)
              X2SUM = X2SUM + XDT(N)*XDT(N)
@@ -279,7 +279,7 @@ C     *                      ,"  YAVE=",YAVE
 
 c                               detrend the (mean removed) series
       DO N = 1,NPTS
-          IF (XDT(N).NE.XMSG .AND. YDT(N).NE.YMSG) THEN
+          IF (X(N).NE.XMSG .AND. Y(N).NE.YMSG) THEN
               YDT(N) = YDT(N) - (SLOPE*XDT(N)+YDTINT)
           ELSE
               YDT(N) = YMSG

@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.37 2010-02-08 06:01:29 fred Exp $
+C	$Id: gksbd.f,v 1.38 2010-04-02 16:38:00 brownrig Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -215,14 +215,14 @@ C       RERR   -- RETURN VARIABLE FOR ERROR INDICATOR
 C       STR    -- CHARACTER VARIABLE FOR PASSING CHARACTERS
 C
 C-----------------------------------------------------------------------
-      DATA KSLEV,WK/0, 23/
+      DATA KSLEV,WK/0, 24/
 C**************************************************************************
 C******** Be sure and change the dimension of LSWK in gkscom.h when    ****
 C******** adding a new workstation type (as well as changing the value ****
 C******** of WK above to the same number).                              ****
 C**************************************************************************
       DATA LSWK/1,3,7,8,9,10,11,12,20,21,22,23,24,25,26,27,28,29,30,31,
-     +  40,41,42/
+     +  40,41,42,43/
 C**************************************************************************
       DATA MOPWK,MACWK,MNT
      +    /   15,   15,  1/
@@ -266,7 +266,7 @@ C
      +             -218, -219, -220, -221, 2200, 2201, 2202, 2203,
      +             2204,   90, -113, -400, -401, -402, -403, -404,
      +             -405, -406, -350, -351, -352, -353, -450, -451,
-     +             -452, -453, -354, -501, -502, -355, -356/
+     +             -452, -453, -354, -501, -502, -355, -356, -503/
 C  Error 1
       DATA ERMSGS(  1)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
      +E GKCL'/
@@ -631,6 +631,9 @@ C  Error -355
 C  Error -356
       DATA ERMSGS(143)/' -- PDF driver error, incorrect paper height spec
      +ification.'/
+C  Error -503
+      DATA ERMSGS(144)/' -- cairo driver error, null or invalid argument
+     + passed to function.'/
 C
       DATA GNAM(001),GNAM(002),GNAM(003)/'GOPKS' ,'GCLKS' ,'GOPWK' /
       DATA GNAM(004),GNAM(005),GNAM(006)/'GCLWK' ,'GACWK' ,'GDAWK' /

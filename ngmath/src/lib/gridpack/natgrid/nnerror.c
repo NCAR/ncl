@@ -1,5 +1,5 @@
 /*
- * $Id: nnerror.c,v 1.9 2008-07-27 03:10:13 haley Exp $
+ * $Id: nnerror.c,v 1.10 2010-04-08 05:32:30 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -41,6 +41,7 @@ void ErrorLog(int error, char *func, FILE *efile, char *smsg)
      error_status = error;
   }
   fprintf(efile,"%s",smsg);
+  Terminate();
 }
 
 char *ErrMsg(int i)

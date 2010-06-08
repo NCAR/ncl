@@ -1,5 +1,5 @@
 /*
- * $Id: pageutil.h,v 1.1 2010-02-09 23:12:44 brownrig Exp $
+ * $Id: pageutil.h,v 1.2 2010-03-29 16:30:03 brownrig Exp $
  *
  * pageutil.h
  *
@@ -7,6 +7,9 @@
 
 #ifndef PAGEUTIL_H_
 #define PAGEUTIL_H_
+
+
+#define PAGEUTIL_DEFAULT_PAPERSIZE "letter"
 
 /* a packet to request and receive page sizing information */
 typedef struct {

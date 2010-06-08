@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.h,v 1.18 2009-10-16 19:15:21 fred Exp $
+ *	$Id: gksc.h,v 1.19 2010-04-02 16:36:16 brownrig Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -33,8 +33,8 @@
  *
  *      Date:		Wed May  1 17:49:30 MDT 1991
  *
- *      Description:	This file defines a gksc which is used to shuttle 
- *			GKS instructions to a particular device driver's 
+ *      Description:	This file defines a gksc which is used to shuttle
+ *			GKS instructions to a particular device driver's
  *			support function.
  */
 
@@ -51,14 +51,14 @@ typedef char*           GKSC_Ptr;
 
 /*
  *	The following structures define the format of data expected by
- *	the gks device drivers. The following complex data types need to 
- *	be supported by each device, Points, Floats, Ints, String, 
+ *	the gks device drivers. The following complex data types need to
+ *	be supported by each device, Points, Floats, Ints, String,
  *	Indexes, and RGBs. Within each complex data type is a pointer
- *	to a list of simple device dependent data. The 'simple data' types 
+ *	to a list of simple device dependent data. The 'simple data' types
  *	declared as type GKSC_Ptr and must be cast to the appropriate type
  *	for each device. Each complex type also contains a field which
  *	specifies the size of a single element of 'simple data'. The next
- *	field specifes how many elements of valid data are stored in the 
+ *	field specifes how many elements of valid data are stored in the
  *	simple  data list. The field after that specifies how much memory
  *	has been allocated to the simple data list. Finally each Complex
  *	type contains a pointer to a device dependent function for converting
@@ -128,21 +128,21 @@ typedef	struct	GKSC_	{
 
 
 /*
- *	a list of points. 
+ *	a list of points.
  *
- *	The conversion function expects the following input parameters (ddp, 
- *	fxs, fys, points, num_f), where 'ddp' is a pointer to device dependent 
- *	data supplied by the gksc (type GKSC_Ptr), fxs is a list of normalized 
- *	x coords of type float, fys is a list of normalized y coords of type 
- *	float, points is a pointer to the Points structure, num_f is an 
+ *	The conversion function expects the following input parameters (ddp,
+ *	fxs, fys, points, num_f), where 'ddp' is a pointer to device dependent
+ *	data supplied by the gksc (type GKSC_Ptr), fxs is a list of normalized
+ *	x coords of type float, fys is a list of normalized y coords of type
+ *	float, points is a pointer to the Points structure, num_f is an
  *	int giving the number of elements in fxs (fys).
  */
 
 /*
  *	a list of floats
  *
- *	The conversion function expects the following input parameters (ddp, 
- *	fxs, f, num_f), where 'ddp' is a pointer to device dependent 
+ *	The conversion function expects the following input parameters (ddp,
+ *	fxs, f, num_f), where 'ddp' is a pointer to device dependent
  *	data supplied by the gksc (type GKSC_Ptr), fxs is a list of floats,
  *	f is a pointer to this Floats structure, and num_f is an
  *	int giving the number of elements in fxs.
@@ -150,8 +150,8 @@ typedef	struct	GKSC_	{
 /*
  *	a list of ints
  *
- *	The conversion function expects the following input parameters (ddp, 
- *	ints, i, num_i), where 'ddp' is a pointer to device dependent 
+ *	The conversion function expects the following input parameters (ddp,
+ *	ints, i, num_i), where 'ddp' is a pointer to device dependent
  *	data supplied by the gksc (type GKSC_Ptr), 'ints' is a list of integers,
  *	'i' is a pointer to this Ints structure, and 'num_i' is an
  *	int giving the number of elements in 'ints'.
@@ -160,36 +160,36 @@ typedef	struct	GKSC_	{
 /*
  *	a list of chars (a string)
  *
- *	The conversion function expects the following input parameters (ddp, 
- *	chars, s, num_s), where 'ddp' is a pointer to device dependent 
- *	data supplied by the gksc (type GKSC_Ptr), 'chars' is a list 
- *	of integers, 's' is a pointer to this String structure, and 'num_s' 
+ *	The conversion function expects the following input parameters (ddp,
+ *	chars, s, num_s), where 'ddp' is a pointer to device dependent
+ *	data supplied by the gksc (type GKSC_Ptr), 'chars' is a list
+ *	of integers, 's' is a pointer to this String structure, and 'num_s'
  *	is an int giving the number of elements in 'chars'.
  */
 
 /*
  *	a list of color indices
  *
- *	The conversion function expects the following input parameters (ddp, 
- *	indexes, x, num_x), where 'ddp' is a pointer to device dependent 
- *	data supplied by the gksc (type GKSC_Ptr), 'indexes' is a list 
- *	of integers, 'x' is a pointer to this Indexes_ structure, and 'num_x' 
+ *	The conversion function expects the following input parameters (ddp,
+ *	indexes, x, num_x), where 'ddp' is a pointer to device dependent
+ *	data supplied by the gksc (type GKSC_Ptr), 'indexes' is a list
+ *	of integers, 'x' is a pointer to this Indexes_ structure, and 'num_x'
  *	is an int giving the number of elements in 'indexes'.
  */
 
 /*
  *	 a list of rgb triplets
  *
- *	The conversion function expects the following input parameters (ddp, 
- *	fxs, rgb, num_rgb), where 'ddp' is a pointer to device dependent 
- *	data supplied by the gksc (type GKSC_Ptr), 'fxs' is a list 
- *	of normalized floats containing color intensities red, green, blue, 
- *	red, green, blue, red, etc, etc., 'rgb' is a pointer to this RGBs 
- *	structure, and 'num_rgb' is an int giving the number of triples 
+ *	The conversion function expects the following input parameters (ddp,
+ *	fxs, rgb, num_rgb), where 'ddp' is a pointer to device dependent
+ *	data supplied by the gksc (type GKSC_Ptr), 'fxs' is a list
+ *	of normalized floats containing color intensities red, green, blue,
+ *	red, green, blue, red, etc, etc., 'rgb' is a pointer to this RGBs
+ *	structure, and 'num_rgb' is an int giving the number of triples
  *	in 'fxs'.
  */
 
-	
+
 /*
  *	some error codes
  */
@@ -257,6 +257,7 @@ typedef	struct	GKSC_	{
  */
 #define ERR_CRO_MEMORY	   -501	/* error in device dependent table mem  */
 #define ERR_CRO_OPN        -502	/* error opening output file            */
+#define ERR_CRO_BADARG     -503 /* NULL or invalid arguments            */
 
 extern	GKSC    *CreateGKSC(
 #ifdef	NeedFuncProto
@@ -282,7 +283,7 @@ extern	int	WriteToGKSC(
         int	*indexes,
         int     total_f,
         int	num_f_sent,
-        float	*fxs, 
+        float	*fxs,
 	float	*fys,
         int	total_c,
 	int	 num_c_sent,

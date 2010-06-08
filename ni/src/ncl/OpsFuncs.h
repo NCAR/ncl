@@ -1,6 +1,6 @@
 
 /*
- *      $Id: OpsFuncs.h,v 1.9 1999-11-12 18:36:43 ethan Exp $
+ *      $Id: OpsFuncs.h,v 1.10 2010-04-14 21:29:48 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -48,6 +48,12 @@ NclStackEntry */*result*/
 #endif
 );
 NhlErrorTypes _NclBuildArray(
+#if	NhlNeedProto
+int	/*n_items*/,
+NclStackEntry */*result*/
+#endif
+);
+NhlErrorTypes _NclBuildListVar(
 #if	NhlNeedProto
 int	/*n_items*/,
 NclStackEntry */*result*/

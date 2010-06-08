@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.44 2010-02-22 05:37:55 haley Exp $
+ *      $Id: yMakefile,v 1.45 2010-04-30 23:17:54 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -201,6 +201,14 @@ HDFEOS5STUFF:
 	@echo "y"
 #else
 HDFEOS5STUFF:
+	@echo "n"
+#endif
+
+#ifdef	BuildHDF5
+HDF5STUFF:
+	@echo "y"
+#else
+HDF5STUFF:
 	@echo "n"
 #endif
 

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncl_filedump,v 1.17 2009-10-26 18:49:30 dbrown Exp $
+#   $Id: ncl_filedump,v 1.18 2010-04-05 23:27:38 dbrown Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -507,7 +507,7 @@ cleanup:
     exit 1
 
 usage:
-echo "${progname} [-c] [-v var1[,...]] [-h] file"
+echo "${progname} [-c] [-v var1[,...]] [-sed sed1[,...]] [-itime] [-ftime] [-tps] [-h] file"
 echo "  [-c]                coordinate variable and header information"
 echo "  [-v var1[,...]]     data for variable(s) <var1>,..."
 echo "  [-sed sed1[,...]]   GRIB files only; set single element dimensions [default: none]"

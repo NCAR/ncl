@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclList.h,v 1.3 2009-02-05 03:42:32 dbrown Exp $
+ *      $Id: NclList.h,v 1.4 2010-04-14 21:29:47 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -127,6 +127,7 @@ typedef struct _NclListRec {
 	NclListPart	list;
 }NclListRec;
 
+NhlErrorTypes ListPush(NclObj list,NclObj theobj);
 
 extern NclObjClass nclListClass;
 

@@ -126,6 +126,9 @@ void printtoken
 		case CHARACTER:
 			fprintf(stdout,"CHARACTER\n");
 			break;
+		case GROUP:
+			fprintf(stdout,"GROUP\n");
+			break;
 		case NUMERIC:
 			fprintf(stdout,"NUMERIC\n");
 			break;

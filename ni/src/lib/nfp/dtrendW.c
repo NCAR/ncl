@@ -64,7 +64,7 @@ NhlErrorTypes dtrend_W( void )
  */
   npts = dsizes_y[ndims_y-1];
   if( npts < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend: The last dimension of x must be greater than 2");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend: The rightmost dimension of x must be greater than 2");
     return(NhlFATAL);
   }
   
@@ -832,7 +832,7 @@ NhlErrorTypes dtrend_quadratic_W( void )
  */
   npts = dsizes_y[ndims_y-1];
   if( npts < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_quadratic: The last dimension of x must be greater than 2");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_quadratic: The rightmost dimension of x must be greater than 2");
     return(NhlFATAL);
   }
   
@@ -1010,7 +1010,7 @@ NhlErrorTypes dtrend_msg_W( void )
  */
   npts = dsizes_y[ndims_y-1];
   if( npts < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: The last dimension of y must be greater than 2");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: The rightmost dimension of y must be greater than 2");
     return(NhlFATAL);
   }
 
@@ -1041,7 +1041,7 @@ NhlErrorTypes dtrend_msg_W( void )
   }
 /*
  * Allocate space for temporary y to allocate to double later if
- * necessasry.
+ * necessary.
  */
   if(type_y != NCL_double) {
     tmp_y = (double*)calloc(npts,sizeof(double));
@@ -1435,7 +1435,7 @@ NhlErrorTypes dtrend_msg_n_W( void )
   }
 /*
  * Allocate space for temporary y to allocate to double later if
- * necessasry.
+ * necessary.
  */
   tmp_y = (double*)calloc(npts,sizeof(double));
   if( tmp_y == NULL ) {

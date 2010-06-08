@@ -1,5 +1,41 @@
 # CODE TABLE 4.2, Parameter number by product discipline and parameter category
-# 4 4  unknown
-# 151 151  unknown
-# 192 192  unknown
-# 255 255     Missing
+#Product Discipline 0, Meteorological products
+0:0:Temperature
+0:1:Moisture
+0:2:Momentum
+0:3:Mass
+0:4:Short wave radiation
+0:5:Long wave radiation
+0:6:Cloud
+0:7:Thermodynamic stability indices
+0:13:Aerosols
+0:14:Trace gases (e.g. Ozone, CO2)
+0:15:Radar
+0:16:Forecast Radar Imagery
+0:18:Nuclear/radiology
+0:19:Physical atmospheric properties
+0:20:Atmospheric Chemical Constituents
+0:190:CCITT IA5 string
+0:191:Miscellaneous
+0:192:Covariance
+#Product Discipline 1, Hydrologic products
+1:0:Hydrology basic products
+1:1:Hydrology probabilities
+#Product Discipline 2, Land Surface products
+2:0:Vegetation/Biomass
+2:1:Agricultural/aquacultural special products
+2:2:Transportation related products
+2:3:Soil products
+2:192:Fire Weather
+#Product Discipline 3, Space products
+3:0:Image format products
+3:1:Quantitative products
+3:192:Forecast Satellite Imagery
+#Product Discipline 10, Oceanographic products
+10:0:Waves
+10:1:Currents
+10:2:Ice
+10:3:Surface properties
+10:4:Sub-surface properties
+10:191:Miscellaneous
+

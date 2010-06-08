@@ -263,9 +263,11 @@ int status;
 %o 4000
 let	[_a-zA-Z]
 alnum   [_a-zA-Z0-9]
+file_grp_var_alnum   [_a-zA-Z0-9/]
+file_grp_var_compound_alnum   [_a-zA-Z0-9/.]
 white	[\t ]
 digit	[0-9]
-inttype [bBhHiIlLqQ]
+inttype [bBcChHiIlLqQ]
 %x incl
 %%
 	if(inc_line) {
@@ -634,7 +636,7 @@ inttype [bBhHiIlLqQ]
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return XOR;
 }
-"->"{alnum}+ {
+"->"{file_grp_var_compound_alnum}+ {
 	char *tmp;
 
 	tmp = yytext + 2;
@@ -647,6 +649,7 @@ inttype [bBhHiIlLqQ]
 "$" {
 	strcpy(yylval.str,yytext);
 	printtoken(EFSTRING,yylval.str);
+
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return EFSTRING;
 }
@@ -656,6 +659,25 @@ inttype [bBhHiIlLqQ]
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return FSTRING;
 }
+"=>"{file_grp_var_alnum}+ {
+	char *tmp;
+
+	tmp = yytext + 2;
+
+	strcpy(yylval.str,tmp);
+
+	printtoken(GVAR,yylval.str);
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	return GVAR;
+}
+"=>$" {
+	strcpy(yylval.str,yytext);
+	printtoken(GSTRING,yylval.str);
+
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	return GSTRING;
+}
+
 {let}{alnum}* {
         NclSymbol *s;
 
@@ -780,7 +802,6 @@ inttype [bBhHiIlLqQ]
 	return(SLSHRP); 
 }
 \[ { 
-	printtoken(yytext[0],(char*)NULL); 
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return(LBK); 
 }
@@ -788,6 +809,16 @@ inttype [bBhHiIlLqQ]
 	printtoken(yytext[0],(char*)NULL); 
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return(RBK); 
+}
+"[\/" { 
+	printtoken(yytext[0],(char*)NULL); 
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	return(LBKSLSH); 
+}
+"\/]" { 
+	printtoken(yytext[0],(char*)NULL); 
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	return(SLSHRBK); 
 }
 \' {
 	printtoken(yytext[0],(char*)NULL);

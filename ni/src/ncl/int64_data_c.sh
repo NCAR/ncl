@@ -8,7 +8,7 @@ then
 fi
 
 sed \
--e 's/PRINTFORMAT/\%ld\\n/' \
+-e 's/PRINTFORMAT/\%lld\\n/' \
 -e 's/DATATYPE/int64/g' \
 -e 's/LOCALTYPE/long long/g' \
 -e 's/HLUTYPEREP/NhlTInt64/g' \

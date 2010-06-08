@@ -1,0 +1,33 @@
+# Product Discipline 0: Meteorological products, Parameter Category 3: Mass
+ 0:0:Pressure:Pa:PRES
+ 1:1:Pressure reduced to MSL: Pa:PRMSL
+ 2:2:Pressure tendency:Pa s-1:PTEND
+ 3:3:ICAO Standard Atmosphere Reference Height:m:ICAHT
+ 4:4:Geopotential:m2 s-2:GP
+ 5:5:Geopotential height:gpm:HGT
+ 6:6:Geometric height:m:DIST
+ 7:7:Standard deviation of height:m:HSTDV
+ 8:8:Pressure anomaly:Pa:PRESA
+ 9:9:Geopotential height anomaly:gpm:GPA
+ 10:10:Density:kg m-3:DEN
+ 11:11:Altimeter setting:Pa:ALTMT
+ 12:12:Thickness:m:THICK
+ 13:13:Pressure altitude:m:PRSAL
+ 14:14:Density altitude:m:DENAL
+ 15:15:5-wave geopotential height:gpm:5WAVH
+ 16:16:Zonal flux of gravity wave stress:N m-2:UGWD
+ 17:17:Meridional flux of gravity wave stress:N m-2:VGWD
+ 18:18:Planetary boundary layer height:m:HPBL
+ 19:19:5-wave geopotential height anomaly:gpm:5WAVA
+# 20-191 Reserved
+# 192-254 Reserved for local use
+192:192:MSLP (Eta model reduction):Pa:MSLET
+193:193:5-Wave Geopotential Height:gpm:5WAVH
+194:194:Zonal Flux of Gravity Wave Stress:N m-2:UGWD
+195:195:Meridional Flux of Gravity Wave Stress:N m-2:VGWD
+196:196:Planetary Boundary Layer Height:m:HPBL
+197:197:5-Wave Geopotential Height Anomaly:gpm:5WAVA
+198:198:MSLP (MAPS System Reduction):Pa:MSLMA
+199:199:3-hr pressure tendency (Std. Atmos. Reduction):Pa s-1:TSLSA
+200:200:Pressure of level from which parcel was lifted:Pa:PLPL
+ 255:255:Missing

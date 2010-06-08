@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Keywords.h,v 1.17 2009-07-28 16:29:41 huangwei Exp $
+ *      $Id: Keywords.h,v 1.18 2010-04-14 21:29:47 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -58,12 +58,15 @@ static struct {
 "byte",         BYTE,
 "logical",      LOGICAL,
 "file",         FILETYPE,
+"group",        GROUP,
 "numeric",      NUMERIC,
 "enumeric",     ENUMERIC,
 "snumeric",     SNUMERIC,
 "graphic",      GRAPHIC,
 "int64",     	INT64,
 "uint64",	UINT64,
+"int8",     	INT8,
+"uint8",	UINT8,
 "return",       RETURN,
 "external",     EXTERNAL,
 "record",	RECORD,

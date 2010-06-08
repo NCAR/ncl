@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.26 2009-07-10 19:54:06 huangwei Exp $
+ *      $Id: defs.h,v 1.27 2010-04-14 21:29:48 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@ extern "C" {
 
 #define NCL_MAX_DIMENSIONS 32
 #define NCL_MAX_FVARS 2048
+#define NCL_MAX_GVARS 2048
 #define NCL_MAX_STRING 256
 #define NCL_MAX_ATTRIBUTES 32
 #define NCL_MAX_SYMS_PER_STMNT 300
@@ -35,7 +36,19 @@ extern "C" {
 #define NCL_MISSING_VALUE_ATT "_FillValue"
 #define NclANY NULL
 #define NhlTNclData "nclData"
-typedef enum { NORMAL, VARSUBSEL , COORD, COORDSUBSEL, FILEVAR, FILEVARSUBSEL,PARAM,RETURNVAR,HLUOBJ } NclVarTypes;
+typedef enum {	NORMAL = 0,
+		VARSUBSEL = 1,
+		COORD = 2,
+		COORDSUBSEL = 3,
+		FILEVAR = 4,
+		FILEVARSUBSEL = 5,
+		PARAM = 6,
+		RETURNVAR = 7,
+		HLUOBJ = 8,
+		FILEGROUP = 9,
+		RETURNGROUP = 10
+} NclVarTypes;
+
 typedef struct _NclDimRec {
         int   dim_quark;
         long   dim_num;

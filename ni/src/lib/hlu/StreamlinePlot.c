@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.72.6.1 2010-03-17 20:47:07 brownrig Exp $
+ *      $Id: StreamlinePlot.c,v 1.74 2010-03-31 00:52:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4159,7 +4159,7 @@ static NhlErrorTypes ManageLabelBar
 	    stp->zero_field != ostp->zero_field ||
 	    stp->data_init != ostp->data_init) {
 
-		if ( stp->zero_field) {
+		if ( stp->zero_field && stp->display_labelbar < NhlFORCEALWAYS) {
 			e_text = "%s: zero field: turning Labelbar off";
 			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlINFO);
@@ -4196,7 +4196,7 @@ static NhlErrorTypes ManageLabelBar
 		ostp->lbar_labels = NULL;
 		stp->lbar_labels_set = True;
 	}
-	if (stp->zero_field)
+	if (stp->zero_field && stp->display_labelbar < NhlFORCEALWAYS)
 		return ret;
 
 	sip= &stp->scale;
@@ -6286,10 +6286,14 @@ static NhlErrorTypes    SetupLevelsManual
 			lmax -= spacing;
 		}
 		lmax = MAX(lmin,lmax);
+		if (stp->zero_field && ! stp->max_level_set) {
+			while (lmax <= stp->zmax)
+				lmax += spacing;
+		}
 		stp->max_level_val = lmax;
 	}
 
-	if (stp->zero_field || spacing == 0.0) {
+	if (spacing == 0.0) {
 		count = 1;
 	}
 	else {

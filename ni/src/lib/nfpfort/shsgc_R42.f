@@ -1,8 +1,10 @@
 C NCLFORTSTART
-      SUBROUTINE DSHSGCR42(A,B,GVAR)
+      SUBROUTINE DSHSGCR42(A,B,GVAR,WORK,LWORK)
 C NCL  gvar = shsgsc_R42(a,b)
       IMPLICIT NONE
+      INTEGER LWORK
       DOUBLE PRECISION A(43,43),B(43,43),GVAR(128,108)
+      DOUBLE PRECISION WORK(LWORK)
 C NCLEND
 
 c driver to subroutines provided by: "Bao Qing" <baoqing@mail.iap.ac.cn>
@@ -16,9 +18,9 @@ c .     glat    - gaussian latitude
 c .     gw      - gaussian weights
 
 c local
-      INTEGER NLAT, LWORK, IER
-      PARAMETER (NLAT=108, LWORK=4*NLAT*(NLAT+1)+2)
-      DOUBLE PRECISION WORK(LWORK)
+      INTEGER NLAT, IER
+C     PARAMETER (NLAT=108, LWORK=4*NLAT*(NLAT+1)+2)
+      PARAMETER (NLAT=108)
       INTEGER I
       DOUBLE PRECISION GLAT(108),GWGT(108)
       DOUBLE PRECISION RADTODEG

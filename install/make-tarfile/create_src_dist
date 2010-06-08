@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_src_dist,v 1.9 2009-02-20 04:47:35 haley Exp $
+#   $Id: create_src_dist,v 1.12 2010-04-14 02:31:54 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -49,11 +49,11 @@
 #
 set rootdir     = "$NCARG"
 set parentdir   = `pwd`
-set scpmach     = "windom.ucar.edu"
+set scpmach     = "topaz.scd.ucar.edu"
 set version     = ""
-set cvsroot     = "windom.ucar.edu:/fs/scd/home1/ncargd/CVS"
+set cvsroot     = "topaz.scd.ucar.edu:/fs/scd/home0/ncargd/CVS"
 set cvsrsh      = "ssh"
-set tardir1     = "/fs/scd/home1/ncargd/dist/tarfiles"
+set tardir1     = "/fs/scd/home0/ncargd/dist/tarfiles"
 set tardir2     = "/fis/scd/home/ncargd"
 set extra       = ""
 set extra2      = "wo_tri"      # Without Shewchuk Triangle code
@@ -174,7 +174,7 @@ if ($?tag_version && ! $?USE_CVS) then
   exit 1
 endif
 
-set scpdir = "/fs/scd/home1/ncargd/dist/tarfiles/ncl/$version"
+set scpdir = "/fs/scd/home0/ncargd/dist/tarfiles/ncl/$version"
 
 #
 # CVS check out the latest source code.
@@ -302,7 +302,7 @@ set tar_filename = "$tar_prefix-$version.tar"
 #
 
 set ni_stuff = "ni/src/ngi ni/src/lib/xcb ni/src/lib/ngo ni/src/ncl/.cvsignore"
-set ext_stuff = "external/fftpack5 external/sphere3.1 external/sphere3_dp"
+set ext_stuff = "external/fftpack5 external/sphere3.1 external/sphere3_dp external/g2clib-1.1.9"
 set tri_stuff = "ni/src/lib/hlu/triangle.c ni/src/lib/hlu/triangle.h"
 set stuff_to_always_remove = "pynio"
 
@@ -327,7 +327,7 @@ foreach f($stuff_to_remove)
 end
 
 #
-# If requseted, remove the given tag before we remove the
+# If requested, remove the given tag before we remove the
 # "CVS" directories.
 #
 if ($?remove_tag_version) then
@@ -336,7 +336,7 @@ if ($?remove_tag_version) then
 endif
   
 #
-# If requseted, tag the directories as they are, before we remove the
+# If requested, tag the directories as they are, before we remove the
 # "CVS" directories.
 #
 if ($?tag_version) then
@@ -384,8 +384,8 @@ else
 endif
 
 if ($?SCP) then
-  echo "scp (via windom) or move file to $scpdir..."
-  if ("$name" == "meeker" || "$name" == "windom" || "$name" == "longs") then
+  echo "scp (via topaz.scd) or move file to $scpdir..."
+  if ("$name" == "meeker" || "$name" == "topaz.scd" || "$name" == "longs") then
     /bin/mv $tardir/$tar_filename.gz $scpdir
   else
     scp $tardir/$tar_filename.gz $scpmach\:$scpdir
@@ -399,7 +399,7 @@ echo "usage: create_src_dist [options]"
 echo ""
 echo "   Options:   -r : root directory"
 echo "              -d : tar file directory"
-echo "              -c : scp to windom.ucar.edu"
+echo "              -c : scp to topaz.scd.ucar.edu"
 echo "              -t : include triangle code in HLU directory"
 echo "              -g : Tag the code with the given version number. This"
 echo "                   can only be done if code is checked-out with CVS."

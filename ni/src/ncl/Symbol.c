@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.73 2009-12-04 15:23:07 huangwei Exp $
+ *      $Id: Symbol.c,v 1.74 2010-04-14 21:29:48 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -1208,7 +1208,10 @@ NclApiDataList *_NclGetFileVarInfoList
 						tmp->u.var->data_type = thefile->file.var_info[i]->data_type;
 						tmp->u.var->type = FILEVAR;
 						tmp->u.var->n_dims = thefile->file.var_info[i]->num_dimensions;
-						tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.var->n_dims);
+						if(tmp->u.var->n_dims)
+							tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.var->n_dims);
+						else
+							tmp->u.var->dim_info = NULL;
 
 						for(j = 0 ; j < tmp->u.var->n_dims ; j++) {
 							tmp->u.var->dim_info[j].dim_quark =thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;

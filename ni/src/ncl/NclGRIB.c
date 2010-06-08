@@ -5052,6 +5052,7 @@ GribRecordInqRec* grib_rec;
 {
 	int cix, nix;
 	static int month_ix = 7;
+	static NrmQuark var_name_q = NrmNULLQUARK;
 	/* 
 	 * These are the codes in ON388 - Table 4 - for time units arranged in order from 
 	 * short to long duration. 
@@ -5078,10 +5079,11 @@ GribRecordInqRec* grib_rec;
 		/* choose the shortest duration as the common unit */
 		node->time_unit_indicator = (int)grib_rec->pds[17];
 	}
-	if (nix >= month_ix) {
+	if (nix >= month_ix && var_name_q != grib_rec->var_name_q) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "NclGRIB: Variable time unit codes representing time durations of a month or more in variable (%s): requires approximation to convert to common unit",
 			  NrmQuarkToString(grib_rec->var_name_q));
+		var_name_q = grib_rec->var_name_q;
 	}
 		
 	/* Set the variable_time_unit flag */
@@ -7565,6 +7567,8 @@ while(vstep != NULL) {
 	if(vstep->int_var->var_info.var_name_quark == var_name) {
 		tmp = (NclFVarRec*)NclMalloc(sizeof(NclFVarRec));
 		tmp->var_name_quark  = vstep->int_var->var_info.var_name_quark;
+		tmp->var_full_name_quark  = vstep->int_var->var_info.var_name_quark;
+		tmp->var_real_name_quark  = vstep->int_var->var_info.var_name_quark;
 		tmp->data_type  = vstep->int_var->var_info.data_type;
 		tmp->num_dimensions  = vstep->int_var->var_info.num_dimensions;
 		for(i=0;i< tmp->num_dimensions;i++) {
@@ -7581,6 +7585,8 @@ while(step != NULL) {
 	if(step->var_info.var_name_quark == var_name) {
 		tmp = (NclFVarRec*)NclMalloc(sizeof(NclFVarRec));
 		tmp->var_name_quark  = step->var_info.var_name_quark;
+		tmp->var_full_name_quark  = step->var_info.var_name_quark;
+		tmp->var_real_name_quark  = step->var_info.var_name_quark;
 		tmp->data_type  = step->var_info.data_type;
 		tmp->num_dimensions  = step->var_info.num_dimensions;
 		for(i=0;i< tmp->num_dimensions;i++) {
@@ -8360,8 +8366,12 @@ NclFormatFunctionRec GribRec = {
 /* NclWriteAttFunc         write_att; */		NULL,
 /* NclWriteVarAttFunc      write_var_att; */		NULL,
 /* NclAddDimFunc           add_dim; */			NULL,
-/* NclAddDimFunc           rename_dim; */		NULL,
+/* NclAddChunkDimFunc      add_chunkdim; */		NULL,
+/* NclRenameDimFunc        rename_dim; */		NULL,
 /* NclAddVarFunc           add_var; */			NULL,
+/* NclAddVarChunkFunc      add_var_chunk; */		NULL,
+/* NclAddVarChunkCacheFunc add_var_chunk_cache; */	NULL,
+/* NclSetVarCompressLevelFunc set_var_compress_level; */ NULL,
 /* NclAddVarFunc           add_coord_var; */		NULL,
 /* NclAddAttFunc           add_att; */			NULL,
 /* NclAddVarAttFunc        add_var_att; */		NULL,
@@ -8369,5 +8379,9 @@ NclFormatFunctionRec GribRec = {
 /* NclMapNclTypeToFormat   map_ncl_type_to_format; */	GribMapFromNcl,
 /* NclDelAttFunc           del_att; */			NULL,
 /* NclDelVarAttFunc        del_var_att; */		NULL,
+/* NclGetGrpNamesFunc      get_grp_names; */            NULL,
+/* NclGetGrpInfoFunc       get_grp_info; */             NULL,
+/* NclGetGrpAttNamesFunc   get_grp_att_names; */        NULL,
+/* NclGetGrpAttInfoFunc    get_grp_att_info; */         NULL,
 /* NclSetOptionFunc        set_option;  */              GribSetOption
 };

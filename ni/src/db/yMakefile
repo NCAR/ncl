@@ -1,9 +1,9 @@
 #
-#	$Id: yMakefile,v 1.6 2006-12-01 16:42:46 grubin Exp $
+#	$Id: yMakefile,v 1.7 2010-04-07 16:39:37 haley Exp $
 #
 
 #define	IHaveSubdirs
-SUBDIRS = rgb colormaps udunits grib2_codetables
+SUBDIRS = rgb colormaps udunits grib2_codetables grib2_codetables.previous
 
 DBFILES = NhlMapData
 

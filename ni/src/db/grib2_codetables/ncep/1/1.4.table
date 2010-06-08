@@ -7,6 +7,7 @@
 5:5:Control and perturbed forecast products
 6:6:Processed satellite observations
 7:7:Processed radar observations
+8:8:Event Probability
 # 8-191 Reserved
 # 192-254 Reserved for local use
 255:255:Missing

@@ -3112,10 +3112,10 @@ end
 ;----------------------------------------------------------------------------
 ;----------------------- Unsupported: DJS -----------------------------------
 ;----------------------------------------------------------------------------
-undef("AdvectGradient")
-function AdvectGradient (u:numeric, v:numeric, x:numeric \
-                        ,gridType[1]:integer, con[1]:numeric \
-                        ,long_name:string, units:string, iopt[1]:integer)
+undef("advent_gradient")
+function advect_gradient (u:numeric, v:numeric, x:numeric \
+                         ,gridType[1]:integer, con[1]:numeric \
+                         ,long_name:string, units:string, iopt[1]:integer)
 ;
 ; linear advection of a scalar quantity: UV.GRADIENT(X)
 ;                                      : U*(dX/dlon) + V*(dX/dlat)
@@ -3144,8 +3144,10 @@ function AdvectGradient (u:numeric, v:numeric, x:numeric \
 ;   v = f->V
 ;   T = f->T
 ;               ; linear advection of temperature
-;   Tadv = advect(u,v,T,0, 1.0,"linear advection of temperature","m-K/s",0)
+;   Tadv = advect_gradient(u,v,T,0, 1.0,"linear advection of temperature","m-K/s",0)
 ;
+local dimu, dimv, dimx, ranku, rankv, rankx, ier \
+    , x_grad_lon, x_grad_lat, advect
 begin
                              ; ERROR CHECKING
   dimu  = dimsizes(u)
@@ -3157,32 +3159,32 @@ begin
 
   ier   = 0
   if (.not.(gridType.eq.0 .or. gridType.eq.1)) then
-      print("advectGradient: unrecognized gridType: only 0 and 1 allowed")
+      print("advect_gradient: unrecognized gridType: only 0 and 1 allowed")
       print("           gridType="+gridType)
       ier = 1
   end if
   if (.not.(ranku.eq.rankv .and. ranku.eq.rankx)) then
-      print("advectGradient: all input arguments must have the same rank")
+      print("advect_gradient: all input arguments must have the same rank")
       print("           ranku="+ranku)
       print("           rankv="+rankv)
       print("           rankx="+rankx)
       ier = ier + 10
   end if
   if (.not.(all(dimu.eq.dimv) .and. all(dimu.eq.dimx))) then
-      print("advectGradient: all input arguments must have the same dimension sizes")
+      print("advect_gradient: all input arguments must have the same dimension sizes")
       print("           ranku="+ranku)
       print("           rankv="+rankv)
       print("           rankx="+rankx)
       ier = ier + 100
   end if
   if (rankx.lt.2) then
-      print("advectGradient: variable rank must be at least 2D: ([time,[lev,]]lat,lon)")
-      print("advectGradient: rank="+rankx+"D")
+      print("advect_gradient: variable rank must be at least 2D: ([time,[lev,]]lat,lon)")
+      print("advect_gradient: rank="+rankx+"D")
       ier = ier + 1000
   end if
 
   if (ier.ne.0) then
-      print("advectGradient: fatal error(s) encountered: ier="+ier)
+      print("advect_gradient: fatal error(s) encountered: ier="+ier)
       exit
   end if
 
@@ -3203,23 +3205,39 @@ begin
 
   if (iopt.eq.1) then
       if (rankx.eq.2) then
-          advec!0 = "lat"
-          advec!1 = "lon"
+          advect!0 = "lat"
+          advect!1 = "lon"
       end if
       if (rankx.eq.3) then
-          advec!0 = "lev"
-          advec!1 = "lat"
-          advec!2 = "lon"
+          advect!0 = "lev"
+          advect!1 = "lat"
+          advect!2 = "lon"
       end if
       if (rankx.eq.4) then
-          advec!0 = "time"
-          advec!1 = "lev"
-          advec!2 = "lat"
-          advec!3 = "lon"
+          advect!0 = "time"
+          advect!1 = "lev"
+          advect!2 = "lat"
+          advect!3 = "lon"
       end if
    end if
 
   return(advect)
+end
+;--> original, old interface which actually was a typo
+undef("advectGradient")
+function advectGradient (u:numeric, v:numeric, x:numeric \
+                        ,gridType[1]:integer, con[1]:numeric \
+                        ,long_name:string, units:string, iopt[1]:integer)
+begin
+  return(advect_gradient(u , v, x, gridType, con, long_name, units, iopt) )
+end
+;--> old interface without typo
+undef("AdvectGradient")
+function AdvectGradient (u:numeric, v:numeric, x:numeric \
+                        ,gridType[1]:integer, con[1]:numeric \
+                        ,long_name:string, units:string, iopt[1]:integer)
+begin
+  return(advect_gradient(u , v, x, gridType, con, long_name, units, iopt) )
 end
 ;----------------------------------------------------------------------------
 ;----------------------- Unsupported: DJS -----------------------------------
@@ -3560,11 +3578,11 @@ function PotVortHybrid\
 ;   V    = f->V
 ;   T    = f->T
 ;   lat  = f->lat
-;   hyai = f->hyai
-;   hybi = f->hybi
+;   hyam = f->hyam
+;   hybm = f->hybm
 ;   p0   = f->P0  ; p0=100000
 ;   ps   = f->PS  ; Pa
-;   p    = pres_hybrid_ccm (ps,p0,hyai,hybi)  ; Pa [kg/(m s2)]
+;   p    = pres_hybrid_ccm (ps,p0,hyam,hybm)  ; Pa [kg/(m s2)]
 ;   copy_VarCoords(U,p)
 ;
 ;               ; Potential Vorticity
@@ -3574,7 +3592,7 @@ function PotVortHybrid\
 ; Mid-Latitude Atmospheric Dynamics: A First Course
 ; Jonathan E. Martin, Wiley 2006,   QC880.M36   , pp276-onward
 ; 
-local ranku, rankv, rankt, rankp, nlt, dNam, wrkp, wrk, dthdp  \
+local ranku, rankv, rankt, rankp, npr, nlt, dthdp  \
     , dudp, dvdp ,theta, W, f, vr, dthdx, dthdy, G, W, rad, pv
 begin
                                    ; ERROR CHECK
@@ -3603,11 +3621,13 @@ begin
       exit
   end if
 
-  if (ranku.eq.3) then
-      nlt = 1
+  if (ranku.eq.3) then       ; (lev,lat,lon)  => (0,1,2) => (npr,nlt,2)
+      npr = 0
+      nlt = 1                 
   end if
-  if (ranku.eq.4) then
-      nlt = 2
+  if (ranku.eq.4) then       ; (time,lev,lat,lon)  => (0,1,2,3) > (0,npr,nlt,2)
+      npr = 1
+      nlt = 2                  
   end if
 
   theta  = t*(100000./p)^0.286  
@@ -3617,49 +3637,14 @@ begin
  ;printVarSummary( theta )
  ;printMinMax( theta, True )
                               ; compute VERTICAL (pressure) derivatives
-  dNam   = getvardims( t )    ; dimension names
-
-  if (ranku.eq.3) then 
-            ;         lat          lon         lev
-      wrkp  = p($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
-
-      wrk   = theta($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
-      wrk   = center_finite_diff (wrk,wrkp,False,0)
-      dthdp = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)
-
-      wrk   = u($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
-      wrk   = center_finite_diff (wrk,wrkp,False,0)
-      dudp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)
-
-      wrk   = v($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
-      wrk   = center_finite_diff (wrk,wrkp,False,0)
-      dvdp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)
-  end if
-
-  if (ranku.eq.4) then 
-            ;    time         lat         lon          lev
-      wrkp  = p($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
-
-      wrk   = theta($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
-      wrk   = center_finite_diff (wrk,wrkp,False,0)
-      dthdp = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:, $dNam(3)$|:)
-
-      wrk   = theta($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
-      wrk   = center_finite_diff (wrk,wrkp,False,0)
-      dudp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:, $dNam(3)$|:)
-
-      wrk   = theta($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
-      wrk   = center_finite_diff (wrk,wrkp,False,0)
-      dvdp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:, $dNam(3)$|:)
-  end if
-  delete(wrk)
-  delete(wrkp)
+  dthdp = center_finite_diff_n (theta,p,False,0,npr)
+  dudp  = center_finite_diff_n (    u,p,False,0,npr)
+  dvdp  = center_finite_diff_n (    v,p,False,0,npr)
                               ; compute 
                               ; (1) lat/lon temperature gradients [K/m]
                               ; (2) relative vorticity            [1/s]
-
-  dthdx   = theta              ; create E-W gradient array
-  dthdy   = theta              ;        S-N        
+  dthdx   = theta             ; create E-W gradient array
+  dthdy   = theta             ;        S-N        
  ;dthx@long_name = "longitudinal gradient (derivative)"
  ;dthdy@long_name = "latitudinal gradient (derivative)"
  ;dthdx@units     = "K/m"
@@ -3687,6 +3672,15 @@ begin
   copy_VarCoords(t,pv)
 
   return(pv)
+end
+;--new interface
+undef("pot_vort_hybrid")
+function pot_vort_hybrid\
+            (p:numeric, u:numeric, v:numeric, t:numeric
+            ,lat[*]:numeric, gridType[1]:integer, opt:integer)
+begin
+        ; PotVortHybrid is the original function name
+  return( PotVortHybrid (p, u, v, t, lat, gridType, opt) )
 end
 
 ;----------------------------------------------------------------------------
@@ -3731,7 +3725,7 @@ function PotVortIsobaric\
 ; Mid-Latitude Atmospheric Dynamics: A First Course
 ; Jonathan E. Martin, Wiley 2006,   QC880.M36   , pp276-onward
 ;
-local ranku, rankv, rankt, npr, nlt, dNam, wrk, dthdp, dudp, dvdp \
+local ranku, rankv, rankt, npr, nlt, dthdp, dudp, dvdp \
      ,theta, s, con, R, W, f, vr, dtdx, dtdy, rad, pv
 begin
                                    ; ERROR CHECK
@@ -3759,11 +3753,11 @@ begin
       exit
   end if
 
-  if (ranku.eq.3) then
+  if (ranku.eq.3) then       ; (lev,lat,lon)  => (0,1,2) > (0,npr,nlt)
       npr = 0
       nlt = 1
   end if
-  if (ranku.eq.4) then
+  if (ranku.eq.4) then       ; (time,lev,lat,lon)  => (0,1,2,3) > (0,npr,nlt,2)
       npr = 1
       nlt = 2
   end if
@@ -3775,38 +3769,9 @@ begin
  ;printVarSummary( theta )
  ;printMinMax( theta, True )
                               ; compute VERTICAL (pressure) derivatives
-  dNam   = getvardims( t )    ; dimension names
-
-  if (ranku.eq.3) then 
-            ;         lat          lon         lev
-      wrk   = theta($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
-      wrk   = center_finite_diff (wrk,p,False,0)
-      dthdp = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)
-
-      wrk   = u($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
-      wrk   = center_finite_diff (wrk,p,False,0)
-      dudp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)
-
-      wrk   = v($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
-      wrk   = center_finite_diff (wrk,p,False,0)
-      dvdp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)
-  end if
-
-  if (ranku.eq.4) then 
-            ;         time         lat         lon          lev
-      wrk   = theta($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
-      wrk   = center_finite_diff (wrk,p,False,0)
-      dthdp = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:, $dNam(3)$|:)
-
-      wrk   = u($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
-      wrk   = center_finite_diff (wrk,p,False,0)
-      dudp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:, $dNam(3)$|:)
-
-      wrk   = v($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
-      wrk   = center_finite_diff (wrk,p,False,0)
-      dvdp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:, $dNam(3)$|:)
-  end if
-  delete(wrk)
+  dthdp = center_finite_diff_n (theta,p,False,0,npr)
+  dudp  = center_finite_diff_n (    u,p,False,0,npr)
+  dvdp  = center_finite_diff_n (    v,p,False,0,npr)
 
   s           = -(t/theta)*dthdp
   s@long_name = "static stability"
@@ -3841,15 +3806,20 @@ begin
 
   vr  = vr + conform(vr,f,nlt)     ; absolute vorticity   
   con = R/(s*conform(t,p,npr))  
-                                   ; G* added to get common pv units
-  pv    = -G*(vr + con*(dvdp*dtdx-dudp*dtdy))*dthdp  
-  pv@long_name  = "potential vorticity"
-  pv@short_name = "PV"
+                                   ; G* added to get common pv units pv    = -G*(vr + con*(dvdp*dtdx-dudp*dtdy))*dthdp  pv@long_name  = "potential vorticity" pv@short_name = "PV"
   pv@units      = "K m2/kg/s"      ; common units
   copy_VarCoords(t,pv)
 
   return( pv )
-
+end
+;-- new interface
+undef("pot_vort_isobaric")
+function pot_vort_isobaric\
+            (p[*]:numeric, u:numeric, v:numeric, t:numeric
+            ,lat[*]:numeric, gridType[1]:integer, opt:integer)
+begin
+        ; PotVortIsobaric is the original function name
+  return(PotVortIsobaric (p, u, v, t, lat, gridType, opt) )
 end
 ; ******************************************************************
 ; *******  THERE IS NO SUPPORT FOR THE PIE CHART FUNCTION **********

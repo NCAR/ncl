@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.90 2010-02-22 17:41:33 huangwei Exp $
+ *      $Id: AddBuiltIns.c,v 1.92 2010-04-28 23:02:03 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -53,6 +53,18 @@ void
 );
 
 extern NhlErrorTypes _NclIAddFiles(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIGetFileGroups(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIGetGroupVars(
 #if NhlNeedProto
 void
 #endif
@@ -115,7 +127,32 @@ extern NhlErrorTypes _NclIFileVarDef(
 void
 #endif
 );
+
+extern NhlErrorTypes _NclIFileVarChunkDef(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIFileVarCompressLevelDef(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIFileVarChunkCacheDef(
+#if NhlNeedProto
+void
+#endif
+);
+
 extern NhlErrorTypes _NclIFileDimDef(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIFileChunkDimDef(
 #if NhlNeedProto
 void
 #endif
@@ -422,6 +459,17 @@ void
 #endif
 );
 
+extern NhlErrorTypes _NclItoint8(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclItouint8(
+#if NhlNeedProto
+void
+#endif
+);
+
 extern NhlErrorTypes _NclItofloat(
 #if NhlNeedProto
 void
@@ -560,11 +608,6 @@ void
 #endif
 );
 extern NhlErrorTypes _NclIstringtoint64(
-#if NhlNeedProto
-void
-#endif
-);
-extern NhlErrorTypes _NclIstringtouint64(
 #if NhlNeedProto
 void
 #endif
@@ -784,6 +827,16 @@ void
 #endif
 );
 extern NhlErrorTypes _NclIIsUint64(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsInt8(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsUint8(
 #if     NhlNeedProto
 void
 #endif
@@ -1807,8 +1860,8 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(3);
 	dimsizes[0] = 1;
-	SetArgTemplate(args,nargs, "numeric", 1, dimsizes);  nargs++;
-	SetArgTemplate(args,nargs, "numeric", 1, dimsizes);  nargs++;
+	SetArgTemplate(args,nargs, "snumeric", 1, dimsizes);  nargs++;
+	SetArgTemplate(args,nargs, "snumeric", 1, dimsizes);  nargs++;
 	SetArgTemplate(args,nargs, "integer", 1, dimsizes);  nargs++;
 	NclRegisterFunc( _Nclfspan, args, "fspan", nargs);
 
@@ -1953,6 +2006,16 @@ void _NclAddBuiltIns
         args = NewArgs(1);
         SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
         NclRegisterFunc( _NclIIsUint64,args,"isuint64",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+        NclRegisterFunc( _NclIIsInt8,args,"isint8",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+        NclRegisterFunc( _NclIIsUint8,args,"isuint8",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
@@ -2175,6 +2238,45 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,3,"string",1,NclANY);nargs++;
 	NclRegisterProc(_NclIFileVarDef,args,"filevardef",nargs);
 
+/*Begin: Wei added for Variable Chunking, April 8, 2010*/
+	nargs = 0;
+	args = NewArgs(3);
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"integer",0,NclANY);nargs++;
+	NclRegisterProc(_NclIFileVarChunkDef,args,"filevarchunkdef",nargs);
+
+      /*Wei added for Variable Compression, April 12, 2010*/
+	nargs = 0;
+	args = NewArgs(3);
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"integer",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFileVarCompressLevelDef,args,"filevarcompressleveldef",nargs);
+	NclRegisterProc(_NclIFileVarCompressLevelDef,args,"filevardeflateleveldef",nargs);
+
+      /*Wei added for File Compression, April 14, 2010*/
+        nargs = 0;
+        args = NewArgs(4);
+        dimsizes[0] = 1;
+        SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+        SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+        SetArgTemplate(args,2,"integer",1,NclANY);nargs++;
+        SetArgTemplate(args,3,"logical",1,NclANY);nargs++;
+        NclRegisterProc(_NclIFileChunkDimDef,args,"filechunkdimdef",nargs);
+
+      /*Wei added for File Compression, April 15, 2010*/
+        nargs = 0;
+        args = NewArgs(5);
+        dimsizes[0] = 1;
+        SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+        SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,2,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,3,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,4,"float",1,dimsizes);nargs++;
+        NclRegisterProc(_NclIFileVarChunkCacheDef,args,"filevarchunkcachedef",nargs);
+/*End: Wei added*/
+
 	nargs = 0;
 	args = NewArgs(2);
 	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
@@ -2192,7 +2294,7 @@ void _NclAddBuiltIns
     args = NewArgs(2);
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
-    SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "snumeric", 0, NclANY);  nargs++;
     NclRegisterFunc(sprintf_W, args, "sprintf", nargs);
 
     nargs = 0;
@@ -2259,6 +2361,24 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"file",0,NclANY); nargs++;
     SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
     NclRegisterProc(_NclIprintFileVarSummary,args,"printFileVarSummary",nargs);
+
+
+    nargs = 0;
+    args = NewArgs(3);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"file",0,NclANY); nargs++;
+    SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+    NclRegisterFunc(_NclIGetFileGroups,args,"getfilegroups",nargs);
+
+
+    nargs = 0;
+    args = NewArgs(3);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"file",0,NclANY); nargs++;
+    SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+    NclRegisterFunc(_NclIGetGroupVars,args,"getgroupvars",nargs);
 
 
     nargs = 0;

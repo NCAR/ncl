@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.h,v 1.10 2008-12-06 01:35:30 dbrown Exp $
+ *      $Id: NclVar.h,v 1.11 2010-04-14 21:29:48 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -238,6 +238,9 @@ typedef NclVarClassRec *NclVarClass;
 extern NclObjClass nclVarClass;
 
 extern NclVarClassRec nclVarClassRec;
+
+extern NhlErrorTypes VarPrint(NclObj theobj,FILE *fp);
+extern NhlErrorTypes VarPrintVarSummary(NclObj theobj,FILE *fp);
 
 void _NclVarMissingNotify(
 #if     NhlNeedProto

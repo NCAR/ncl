@@ -1,0 +1,5 @@
+# CODE TABLE 5.4, Group Splitting Method
+0:0:Row by Row Splitting
+1:1:General Group Splitting
+#192-254:Reserved for local use
+255:255:Missing

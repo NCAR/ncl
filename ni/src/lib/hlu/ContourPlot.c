@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.147.6.1 2010-03-17 20:47:07 brownrig Exp $
+ *      $Id: ContourPlot.c,v 1.150 2010-03-31 00:52:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6044,7 +6044,7 @@ static NhlErrorTypes ManageLabelBar
 	    cnp->const_field != ocnp->const_field ||
 	    cnp->data_init != ocnp->data_init) {
 
-		if ( cnp->const_field) {
+		if ( cnp->const_field && cnp->display_labelbar < NhlFORCEALWAYS) {
 			e_text = "%s: constant field: turning Labelbar off";
 			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlINFO);
@@ -6082,7 +6082,7 @@ static NhlErrorTypes ManageLabelBar
 		cnp->lbar_labels_set = True;
 	}
 
-	if (cnp->const_field) return ret;
+	if (cnp->const_field && cnp->display_labelbar < NhlFORCEALWAYS) return ret;
 	
         if (! (cnp->explicit_lbar_labels_on && cnp->lbar_alignment_set)) {
 		if (init || cnp->lbar_end_style != ocnp->lbar_end_style ||
@@ -9168,9 +9168,6 @@ static NhlErrorTypes    SetupLevelsManual
 	if (cnp->max_level_set) {
 		lmax = cnp->max_level_val;
 	}
-        else if (cnp->const_field) {
-                lmax = cnp->min_level_val;
-	}
 	else if (lmin + Nhl_cnMAX_LEVELS * spacing < cnp->zmax) {
 		/* more than max levels needed */
 		count =  Nhl_cnMAX_LEVELS + 1;
@@ -9185,13 +9182,14 @@ static NhlErrorTypes    SetupLevelsManual
 			}
 			break;
 		}
+		if (cnp->const_field && ! cnp->max_level_set) {
+			while (lmax <= cnp->zmax)
+				lmax += spacing;
+		}
 		cnp->max_level_val = lmax;
 	}
 
-	if (cnp->const_field) {
-		count = 1;
-	}
-	else if (count == 0) {
+	if (count == 0) {
 		count = (lmax - lmin) / cnp->level_spacing;
 		rem = lmax - lmin - cnp->level_spacing * count; 
 		if (_NhlCmpFAny2(rem,0.0,6,spacing * 0.001) != 0.0)
@@ -9284,8 +9282,7 @@ static NhlErrorTypes    SetupLevelsEqual
                 cnp->level_count = cnp->max_level_count;
         }
         else {
-                cnp->level_count = 1;
-                size = cnp->level_spacing;
+                return SetupLevelsAutomatic(cnew,cold,levels,entry_name);
         }
 	if ((*levels = (float *) 
 	     NhlMalloc(cnp->level_count * sizeof(float))) == NULL) {

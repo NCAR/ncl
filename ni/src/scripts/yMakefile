@@ -1,14 +1,9 @@
 #
-#	$Id: yMakefile,v 1.14 2010-03-15 03:55:32 haley Exp $
+#	$Id: yMakefile,v 1.16 2010-04-02 17:52:38 haley Exp $
 #
 
-#ifdef BuildCAIRO
-SCRIPTS1 = nhlcc nhlf77 nhlf90 nhlcc_cairo nhlf77_cairo nhlf90_cairo ng4ex 
-SCRIPTS2 = WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc scrip_check_input
-#else
 SCRIPTS1 = nhlcc nhlf77 nhlf90 ng4ex 
 SCRIPTS2 = WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc scrip_check_input
-#endif
 
 MAN1 = ng4ex nhlcc nhlf77 nhlf90
 
@@ -17,13 +12,15 @@ nhlf77: nhlf77.csh Makefile
 	-e 's+SED_FC+$(F77)+' \
 	-e 's+SED_LIBNCARG_GKS+ncarg_gks+' \
 	-e 's+SED_LIBHLU+hlu+' \
+	-e 's+SED_LIBNCARG_CGKS+ncarg_gks_cairo+' \
+	-e 's+SED_LIBCHLU+hlu_cairo+' \
 	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
 	-e 's+SED_INCSEARCH+$(INCSEARCH)+' \
 	-e 's+SED_LDFFLAGS+$(FC_LDOPTIONS)+' \
 	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
-	-e 's+SED_CAIROLIB++' \
+	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
 	-e 's+SED_NCDFLIBS+$(NCDFLIBS) $(NETCDF4LIB) -lz+' \
@@ -37,13 +34,15 @@ nhlf90: nhlf77.csh Makefile
 	-e 's+SED_FC+$(F77)+' \
 	-e 's+SED_LIBNCARG_GKS+ncarg_gks+' \
 	-e 's+SED_LIBHLU+hlu+' \
+	-e 's+SED_LIBNCARG_CGKS+ncarg_gks_cairo+' \
+	-e 's+SED_LIBCHLU+hlu_cairo+' \
 	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
 	-e 's+SED_INCSEARCH+$(INCSEARCH)+' \
 	-e 's+SED_LDFFLAGS+$(FC_LDOPTIONS)+' \
 	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
-	-e 's+SED_CAIROLIB++' \
+	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
 	-e 's+SED_NCDFLIBS+$(NCDFLIBS) $(NETCDF4LIB) -lz+' \
@@ -57,6 +56,8 @@ nhlcc: nhlcc.csh Makefile
 	-e 's+SED_CC+$(CC)+' \
 	-e 's+SED_LIBNCARG_GKS+ncarg_gks+' \
 	-e 's+SED_LIBHLU+hlu+' \
+	-e 's+SED_LIBNCARG_CGKS+ncarg_gks_cairo+' \
+	-e 's+SED_LIBCHLU+hlu_cairo+' \
 	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
 	-e 's+SED_INCSEARCH+$(INCSEARCH)+' \
 	-e 's+SED_STDDEF+$(STD_DEFINES)+' \
@@ -69,80 +70,12 @@ nhlcc: nhlcc.csh Makefile
 	-e 's+SED_NCDFLIBS+$(NCDFLIBS) $(NETCDF4LIB) -lz+' \
 	-e 's+SED_HDFLIB+$(HDFLIB)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
-	-e 's+SED_CAIROLIB++' \
+	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
 	<nhlcc.csh >nhlcc
-
-
-#ifdef BuildCAIRO
-nhlf77_cairo: nhlf77.csh Makefile
-	@sed \
-	-e 's+SED_FC+$(F77)+' \
-	-e 's+SED_LIBNCARG_GKS+ncarg_gks_cairo+' \
-	-e 's+SED_LIBHLU+hlu_cairo+' \
-	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
-	-e 's+SED_INCSEARCH+$(INCSEARCH)+' \
-	-e 's+SED_LDFFLAGS+$(FC_LDOPTIONS)+' \
-	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
-	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
-	-e 's+SED_XLIB+$(XLIB)+' \
-	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
-	-e 's+SED_LIBDIR+$(LIBDIR)+' \
-	-e 's+SED_INCDIR+$(INCDIR)+' \
-	-e 's+SED_NCDFLIBS+$(NCDFLIBS) $(NETCDF4LIB) -lz+' \
-	-e 's+SED_HDFLIB+$(HDFLIB)+' \
-	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
-	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
-	<nhlf77.csh > nhlf77_cairo
-
-nhlf90_cairo: nhlf77.csh Makefile
-	@sed \
-	-e 's+SED_FC+$(F77)+' \
-	-e 's+SED_LIBNCARG_GKS+ncarg_gks_cairo+' \
-	-e 's+SED_LIBHLU+hlu_cairo+' \
-	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
-	-e 's+SED_INCSEARCH+$(INCSEARCH)+' \
-	-e 's+SED_LDFFLAGS+$(FC_LDOPTIONS)+' \
-	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
-	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
-	-e 's+SED_XLIB+$(XLIB)+' \
-	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
-	-e 's+SED_LIBDIR+$(LIBDIR)+' \
-	-e 's+SED_INCDIR+$(INCDIR)+' \
-	-e 's+SED_NCDFLIBS+$(NCDFLIBS) $(NETCDF4LIB) -lz+' \
-	-e 's+SED_HDFLIB+$(HDFLIB)+' \
-	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
-	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
-	<nhlf77.csh > nhlf90_cairo
-
-nhlcc_cairo: nhlcc.csh Makefile
-	@sed \
-	-e 's+SED_CC+$(CC)+' \
-	-e 's+SED_LIBNCARG_GKS+ncarg_gks_cairo+' \
-	-e 's+SED_LIBHLU+hlu_cairo+' \
-	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
-	-e 's+SED_INCSEARCH+$(INCSEARCH)+' \
-	-e 's+SED_STDDEF+$(STD_DEFINES)+' \
-	-e 's+SED_PROJDEF+$(PROJECTDEFINES)+' \
-	-e 's+SED_LDCFLAGS+$(CC_LDOPTIONS)+' \
-	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
-	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
-	-e 's+SED_XTOOLLIB+$(XTOOLLIB)+' \
-	-e 's+SED_XMOTIFLIB+$(XMOTIFLIB)+' \
-	-e 's+SED_NCDFLIBS+$(NCDFLIBS) $(NETCDF4LIB) -lz+' \
-	-e 's+SED_HDFLIB+$(HDFLIB)+' \
-	-e 's+SED_XLIB+$(XLIB)+' \
-	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
-	-e 's+SED_LIBDIR+$(LIBDIR)+' \
-	-e 's+SED_INCDIR+$(INCDIR)+' \
-	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
-	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
-	<nhlcc.csh >nhlcc_cairo
-
-#endif
 
 # Install preformatted troff documents on systems without troff
 #if UseCatDirs

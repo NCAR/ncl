@@ -1,0 +1,57 @@
+/*
+ *	Description:	This file contains the configuration for a
+ *                      gfortran/gcc build on a 64-bit Intel Mac system.
+ *
+ *                      You may need to modify it to change or include
+ *                      options.
+ *
+ *                       Note: if the build has trouble finding the
+ *                       "gfortran" library, then you may need to modify
+ *                       the "CtoFLibraries" line below and include a "-L"
+ *                       path to help it. For example:
+ *
+ *     #define CtoFLibraries  -L/usr/local/lib -lgfortran
+ *
+ *                       You'll need to change "/usr/local/lib" to
+ *                       whatever directory contains "libgfortran.so".
+ */
+#define HdfDefines  -DDARWIN
+
+/*
+ * The -D_DARWIN_C_SOURCE is to fix a bug with signal.h that affects the
+ * build of $NCARG/ncarview/src/bin/idt/commands.o. Hopefully it will be
+ * fixed and we can remove it.
+ */
+#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped -D__UNIXOS2__ -D_DARWIN_C_SOURCE
+#define ByteSwapped
+#define Cstatic 
+#define Cdynamic 
+#define CppCommand '/usr/bin/cpp -traditional'
+#define CCompiler   gcc
+#define FCompiler   gfortran
+#define CcOptions      -ansi -fPIC -m64
+#define FcOptions      -fPIC  -fno-range-check  -m64
+/*
+#define CtoFLibraries  -L/sw/lib/gcc4.4/lib/x86_64 -lgfortran
+*/
+#define CtoFLibraries -lgfortran
+#define XToolLibrary    -lXt -lSM -lICE
+#define BuildShared NO
+#define XLibrary -lXpm -lX11 -lXext
+
+#define ArchRecLibSearch    -L/usr/X11R6/lib
+#define ArchRecIncSearch    -I/usr/X11R6/include
+
+FC = $(F77)
+
+/*************** Redefine Macros from Rules ********************************/
+
+/*
+ * Macro:	MakeDir
+ *
+ * Description:	This rule creates a directory - if a parent dir doesn't exist
+ *		it attempts to create it.
+ */
+#ifndef MakeDir
+#define MakeDir(dir)    @if (test ! -d dir); then ($(MKDIRHIER) dir); fi
+#endif

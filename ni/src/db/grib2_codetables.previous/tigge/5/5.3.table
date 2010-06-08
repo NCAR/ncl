@@ -1,0 +1,7 @@
+# CODE TABLE 5.3, Matrix coordinate parameter
+1:1:Direction Degrees true:DIRDEGTRU:Degree true
+2:2:Frequency:s-1:FREQ
+3:3:Radial number (2pi/lambda):m-1:RDLNUM
+# 4-191  Reserved
+# 192-254  Reserved for local use
+255:255:Missing

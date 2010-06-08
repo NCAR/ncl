@@ -40,6 +40,8 @@
 #include "croddi.h"
 #include "cro.h"
 
+#define JIRA_494 1   /* temporary, until issued resolved */
+
 #define PI 3.1415926
 #define RINT(A) ((A) > 0 ? (int) ((A) + 0.5) : -(int) (0.5 - (A)))
 #define NUM_CONTEXT 20  /* number of allowable contexts */
@@ -50,6 +52,7 @@ static char *getFileNameRoot(int, char*, char*);
 static char *getCPSFileName(int, char *);
 static char *getCPNGFileName(int, int, char *);
 static char *getCPDFFileName(int, char *);
+static char *getCTIFFFileName(int, int, char *);
 static void setSurfaceTransform(CROddp *psa);
 static void CROinit(CROddp *, int *);
 static void CROpict_init(GKSC *gksc);
@@ -59,6 +62,8 @@ static int ccompar(const void *p1, const void *p2);
 static void cascsrt(float xa[], int ip[], int n);
 static float *csort_array;
 static void reverse_chrs(char*);
+
+extern crotiff_writeImage(const char* filename, cairo_surface_t* surface);
 
 /* this looks like it should be static, but there's a pattern where the SoftFill() routines
  * are declared external for this, the PS, and the PDF drivers. Leaving it for now.  --RLB 1/2010.
@@ -71,22 +76,18 @@ extern void croX11Pause(cairo_surface_t* surface);
 /*
  *  Globals
  */
-cairo_surface_t *cairo_surface[NUM_CONTEXT];
-cairo_t *cairo_context[NUM_CONTEXT];
 FILE *fp;
 
 /*
  *  Functions for mapping workstation IDs into indices for the
  *  cario_context array.
  */
-int context_indices[NUM_CONTEXT];
-void add_context_index(int cindex, int wkid) {
-    context_indices[cindex] = wkid;
-    cindex++;
-}
+int context_num = 0;
+cairo_surface_t *cairo_surface[NUM_CONTEXT];
+cairo_t         *cairo_context[NUM_CONTEXT];
+int             context_indices[NUM_CONTEXT];
 
-
-int context_index(int wkid) {
+static int context_index(int wkid) {
     int i;
     for (i = 0; i < NUM_CONTEXT; i++) {
         if (context_indices[i] == wkid) {
@@ -95,6 +96,22 @@ int context_index(int wkid) {
     }
 }
 
+static void add_context_index(int cindex, int wkid) {
+    context_indices[cindex] = wkid;
+    cindex++;
+}
+
+static void remove_context(int wkid) {
+    int i;
+    int index = context_index(wkid);
+    for (i=index+1; i<context_num; i++) {
+        cairo_surface[i-1] = cairo_surface[i];
+        cairo_context[i-1] = cairo_context[i];
+        context_indices[i-1] = context_indices[i];
+    }
+
+    --context_num;
+}
 
 /*
  *  Picture initialization.  Called once by the first drawing routine (polyline, polymarker, fill, cell, text)
@@ -455,7 +472,7 @@ int cro_Cellarray(GKSC *gksc) {
 
 
 int cro_ClearWorkstation(GKSC *gksc) {
-
+    int ret = 0;
     char* outputFile;
 
     if (getenv("CRO_TRACE")) {
@@ -473,10 +490,11 @@ int cro_ClearWorkstation(GKSC *gksc) {
 
     }
     else if (psa->wks_type == CPNG) {
-        outputFile = getCPNGFileName(psa->wks_id, psa->frame_count,
-                psa->output_file);
-        cairo_surface_write_to_png(cairo_surface[context_index(psa->wks_id)],
+        outputFile = getCPNGFileName(psa->wks_id, psa->frame_count, psa->output_file);
+        ret = cairo_surface_write_to_png(cairo_surface[context_index(psa->wks_id)],
                 outputFile);
+        if (ret != 0)
+            ret = ERR_CRO_OPN;
         psa->frame_count++;
         free(outputFile);
     }
@@ -486,9 +504,16 @@ int cro_ClearWorkstation(GKSC *gksc) {
     }
 #endif
 
+    else if (psa->wks_type == CTIFF) {
+        outputFile = getCTIFFFileName(psa->wks_id, psa->frame_count, psa->output_file);
+        ret = crotiff_writeImage(outputFile, cairo_surface[context_index(psa->wks_id)]);
+        psa->frame_count++;
+        free(outputFile);
+    }
+
     psa->pict_empty = TRUE;
 
-    return (0);
+    return ret;
 }
 
 
@@ -504,6 +529,7 @@ int cro_CloseWorkstation(GKSC *gksc) {
         free(psa->output_file);
 
     cairo_destroy(cairo_context[context_index(psa->wks_id)]);
+    remove_context(psa->wks_id);
 
     return (0);
 }
@@ -795,7 +821,6 @@ int cro_OpenWorkstation(GKSC *gksc) {
     int *pint;
     extern int orig_wks_id;
     static CROClipRect rect;
-    static int context_num = 0;
 
     if (getenv("CRO_TRACE")) {
         printf("Got to cro_OpenWorkstation\n");
@@ -839,6 +864,17 @@ int cro_OpenWorkstation(GKSC *gksc) {
         add_context_index(context_num, orig_wks_id);
     }
 
+    else if (psa->wks_type == CPDF) {
+        /*
+         *  Create a PDF workstation.
+         */
+        psa->output_file = getCPDFFileName(psa->wks_id, sptr);
+        cairo_surface[context_num] = cairo_pdf_surface_create(psa->output_file,
+                psa->paper_width, psa->paper_height);
+        cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
+        add_context_index(context_num, orig_wks_id);
+    }
+
     else if (psa->wks_type == CPNG) {
         /*
          *  Create a PNG workstation.
@@ -851,15 +887,16 @@ int cro_OpenWorkstation(GKSC *gksc) {
         strcpy(psa->output_file, sptr);
     }
 
-    else if (psa->wks_type == CPDF) {
+    else if (psa->wks_type == CTIFF) {
         /*
-         *  Create a PDF workstation.
+         *  Create a (geo)Tiff workstation.
          */
-        psa->output_file = getCPDFFileName(psa->wks_id, sptr);
-        cairo_surface[context_num] = cairo_pdf_surface_create(psa->output_file,
-                psa->paper_width, psa->paper_height);
+        cairo_surface[context_num] = cairo_image_surface_create(
+                CAIRO_FORMAT_ARGB32, psa->image_width, psa->image_height);
         cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
         add_context_index(context_num, orig_wks_id);
+        psa->output_file = (char*) malloc(strlen(sptr) + 1);
+        strcpy(psa->output_file, sptr);
     }
 
 #if 0
@@ -1061,12 +1098,18 @@ int cro_Polymarker(GKSC *gksc) {
                 CAIRO_LINE_CAP_ROUND);
         cairo_set_line_width(cairo_context[context_index(psa->wks_id)], 0.5);
         for (i = 0; i < npoints; i++) {
+#ifndef JIRA_494
             cairo_move_to(cairo_context[context_index(psa->wks_id)], pptr[i].x
                     * (float) psa->dspace.xspan, pptr[i].y
                     * (float) psa->dspace.yspan);
             cairo_line_to(cairo_context[context_index(psa->wks_id)], pptr[i].x
                     * (float) psa->dspace.xspan, pptr[i].y
                     * (float) psa->dspace.yspan);
+#else
+            cairo_arc(cairo_context[context_index(psa->wks_id)], pptr[i].x
+                    * (float) psa->dspace.xspan, pptr[i].y
+                    * (float) psa->dspace.yspan, 0.25, 0., 6.2831853);
+#endif
             cairo_stroke(cairo_context[context_index(psa->wks_id)]);
         }
         cairo_set_line_width(cairo_context[context_index(psa->wks_id)],
@@ -1921,7 +1964,7 @@ int cro_Text(GKSC *gksc) {
             switch (psa->attributes.text_align_vert) {
             /*
              *  Calculate the vertical adjustment (NORMAL has been converted to the
-             *  appropriate alignmen above).
+             *  appropriate alignment above).
              */
             case TOP_ALIGNMENT_VERT:
                 y_del = -1.5 * X_height;
@@ -2195,6 +2238,33 @@ char *getCPDFFileName(int wks_id, char *file_name) {
     strncpy(name, root, rootLen);
     strcat(name, ".pdf");
 
+    return name;
+}
+
+
+/*
+ * getCTIFFFileName()
+ *
+ *  Set up the file name for the TIFF output file. Caller is responsible for
+ *  freeing the returned string.
+ *
+ */
+char *getCTIFFFileName(int wks_id, int frame_count, char *file_name) {
+    char tmp[12];
+
+    /* get a root name */
+    char* root = getFileNameRoot(wks_id, file_name, NULL);
+    int rootLen = strlen(root);
+
+    /* we append a ".tif" suffix below, but file_name may already have it */
+    if (rootLen >= 4 && strncmp(root + strlen(root) - 4, ".tif", 4) == 0)
+        rootLen -= 4;
+
+    char* name = (char*) calloc(rootLen + 12, 1); /* 12 = ".nnnnnn.tif" + null */
+    sprintf(tmp, ".%06d.tif", frame_count + 1);
+
+    strncpy(name, root, rootLen);
+    strcat(name, tmp);
     return name;
 }
 

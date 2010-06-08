@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.41 2009-07-28 15:49:02 huangwei Exp $
+ *      $Id: hlu.h,v 1.42 2010-04-14 21:29:47 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -91,6 +91,8 @@
 #define NhlTUint	"Uint"
 #define NhlTUlong	"Ulong"
 #define NhlTUint64	"Uint64"
+#define NhlTInt8	"Int8"
+#define NhlTUint8	"Uint8"
 
 /* public real types supported */
 #define NhlTFloat	"Float"
@@ -122,6 +124,8 @@
 #define NhlTUintGenArray	"UintGenArray"
 #define NhlTUlongGenArray	"UlongGenArray"
 #define NhlTUint64GenArray	"Uint64GenArray"
+#define NhlTInt8GenArray	"Int8GenArray"
+#define NhlTUint8GenArray	"Uint8GenArray"
 
 #define NhlTFloatGenArray	"FloatGenArray"
 #define NhlTDoubleGenArray	"DoubleGenArray"
@@ -173,6 +177,8 @@ union _NhlType_ {
 	NhlPointer	ptrval;
 	unsigned char	byteval;
 	char		charval;
+	unsigned char	uint8val;
+	char		int8val;
 	short		shrtval;
 	int		intval;
 	long		lngval;

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.6 2010-02-26 20:49:50 haley Exp $
+#      $Id: yMakefile,v 1.7 2010/04/26 14:48:54 huangwei Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -100,6 +100,7 @@ GEN_HDRS	=	NclTypeobj.h NclTypelogical.h \
 			NclTypeshort.h NclTypestring.h \
 			NclTypeushort.h NclTypeuint.h NclTypeulong.h \
 			NclTypeint64.h NclTypeuint64.h \
+			NclTypeint8.h NclTypeuint8.h \
 			NclTypebyte.h NclTypechar.h TypeSupport.h 
 
 STATIC_HDRS	=	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h  \
@@ -108,7 +109,7 @@ STATIC_HDRS	=	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h  \
 			NclMultiDValData.h NclMultiDValHLUObjData.h \
 			OpsList.h Symbol.h VarSupport.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \
-			NclType.h defs.h NclVar.h NclDataDefs.h NclFileInterfaces.h \
+			NclType.h defs.h NclGroup.h NclVar.h NclDataDefs.h NclFileInterfaces.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
 			NclOneDValCoordData.h \
 			date.h NclCCM.h NclGRIB.h NclGRIB2.h date.h tables.h \
@@ -128,10 +129,11 @@ STATIC_HDRS	=	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h  \
 INSTALL_HDRS	=	nio.h niohlu.h nioNresDB.h defs.h Symbol.h NclDataDefs.h NclFile.h \
 			nioc.h nioError.h NclData.h nioBase.h nioCallbacks.h nioConvertP.h NclType.h \
 			nioConvert.h niohluP.h \
-			NclVar.h NclFileInterfaces.h DataSupport.h FileSupport.h NclMdInc.h \
+			NclGroup.h NclVar.h NclFileInterfaces.h DataSupport.h FileSupport.h NclMdInc.h \
 			TypeSupport.h NclTypedouble.h NclTypefloat.h NclTypelong.h NclTypeint.h \
 			NclTypeshort.h NclTypestring.h NclTypelogical.h NclTypebyte.h NclTypechar.h \
 			NclTypeobj.h NclTypeint64.h NclTypeulong.h NclTypeuint.h NclTypeushort.h \
+			NclTypeint8.h NclTypeuint8.h \
 			NclTypeuint64.h NclMultiDValData.h NclMultiDValHLUObjData.h \
 			NclMultiDValnclfileData.h NclOneDValCoordData.h NclMultiDVallistData.h
 
@@ -148,6 +150,7 @@ GEN_TYPE_SRCS	=	NclTypedouble.c NclTypefloat.c \
 			NclTypeshort.c NclTypestring.c \
 			NclTypeushort.c NclTypeuint.c NclTypeulong.c \
 			NclTypeint64.c NclTypeuint64.c \
+			NclTypeint8.c NclTypeuint8.c \
 			NclTypebyte.c NclTypechar.c TypeSupport.c \
 			NclMultiDValData.c 
 
@@ -157,7 +160,7 @@ STATIC_SRCS	=	AddFileFormats.c AttSupport.c DataSupport.c \
 			NclCoordVar.c NclData.c NclFile.c NclFileVar.c \
 			NclGRIB.c NclHDF.c NclMultiDValnclfileData.c \
 			NclNetCdf.c NclOneDValCoordData.c NclType.c \
-			NclTypelist.c NclVar.c VarSupport.c \
+			NclTypelist.c NclGroup.c NclVar.c VarSupport.c \
 			ctoiee.c date.c cmpf.c 
 
 
@@ -185,6 +188,7 @@ GEN_TYPE_OBJS	=	NclTypedouble.o NclTypefloat.o \
 			NclTypeshort.o NclTypestring.o \
 			NclTypeushort.o NclTypeuint.o NclTypeulong.o \
 			NclTypeint64.o NclTypeuint64.o \
+			NclTypeint8.o NclTypeuint8.o \
 			NclTypebyte.o NclTypechar.o TypeSupport.o \
 			NclMultiDValData.o 
 
@@ -194,7 +198,7 @@ STATIC_OBJS	=	AddFileFormats.o AttSupport.o DataSupport.o \
 			NclCoordVar.o NclData.o NclFile.o NclFileVar.o \
 			NclGRIB.o NclHDF.o NclMultiDValnclfileData.o \
 			NclNetCdf.o NclOneDValCoordData.o NclType.o \
-			NclTypelist.o NclVar.o VarSupport.o \
+			NclTypelist.o NclGroup.o NclVar.o VarSupport.o \
 			ctoiee.o date.o 
 
 NIO_ONLY_COBJS	=	nio.o nio_io.o nioError.o nioNresDB.o nioCallbacks.o \
@@ -301,6 +305,8 @@ NclTypeRule(ushort,$(NUM_OP_TMPL))
 NclTypeRule(uint,$(NUM_OP_TMPL))
 NclTypeRule(ulong,$(NUM_OP_TMPL))
 NclTypeRule(uint64,$(NUM_OP_TMPL))
+NclTypeRule(uint8,$(NUM_OP_TMPL))
+NclTypeRule(int8,$(NUM_OP_TMPL))
 
 
 #

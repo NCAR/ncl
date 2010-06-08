@@ -1,0 +1,21 @@
+#
+#      $Id: yMakefile,v 1.1 2010-03-19 18:36:06 dbrown Exp $
+#
+#########################################################################
+#                                                                       #
+#               Copyright (C) 2006                                      #
+#       University Corporation for Atmospheric Research                 #
+#               All Rights Reserved                                     #
+#                                                                       #
+#########################################################################
+#
+#       File:		yMakefile
+#
+#       Author:     Jeff W. Boote
+#                   National Center for Atmospheric Research
+#                   POB 3000, Boulder, Colorado
+#
+#       Date:
+#
+#       Description:   yMakefile for ncarg/ni/src/db/grib2_codetables/ncep/2
+

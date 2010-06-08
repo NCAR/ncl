@@ -1,11 +1,9 @@
-# Product Discipline 1: Hydrologic products, Parameter Category 1: Hydrology probabilities 
-0:0:Conditional percent precipitation amount fractile for an overall period (Encoded as an accumulation):kg m-2:CONDPREC
-1:1:Percent precipitation in a sub-period of an overall period (Encoded as per cent accumulation over the sub-period):%:PCTPREC
+# GRIBv2 - Table 4.2-1-1 Hydrological - Hydrology Probabilities
+
+0:0:Conditional percent precipitation amount fractile for an overall period (encoded as an accumulation):kg m-2:CPPOP
+1:1:Percent precipitation in a sub-period of an overall period (encoded as a percent accumulation over the sub-period):%:PPOSP
 2:2:Probability of 0.01 inch of precipitation (POP):%:POP
-#3-191 Reserved
-#192-254 Reserved for local use
-192:192:Probability of Freezing Precipitation:%:PFREZPREC
-193:193:Probability of Frozen Precipitation:%:PFROZPREC
-194:194:Probability of precipitation exceeding flash flood guidance values:%:PPFFG
-255:255:Missing
+# 3-191:3-191:Reserved:-:
+
+# 192-254:192-254:Reserved for Local Use:-:
 
