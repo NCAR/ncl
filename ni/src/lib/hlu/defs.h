@@ -39,6 +39,9 @@
 /* max characters in a filename */
 #define _NhlMAXFNAMELEN	(512)
 
+/* max characters allowed for an LLU graphics output file name */
+#define _NhlMAXLLUPATHLEN (254)
+
 /* path delimiter - "/" in unix "\" in dos and I'm sure there are others */
 #define _NhlPATHDELIMITER	"/"
 

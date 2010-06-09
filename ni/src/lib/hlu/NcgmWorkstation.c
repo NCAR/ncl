@@ -283,6 +283,13 @@ static NhlErrorTypes NcgmWorkstationInitialize
 	if(!tfname){
 		tfname = DEFAULT_META_NAME;
 	}
+	if (strlen(tfname) > _NhlMAXLLUPATHLEN) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "%s: Filepath %s exceeds maximum length of %d", func,
+			  tfname,_NhlMAXLLUPATHLEN);
+		return NhlFATAL;
+	}
+
         if (wclass->ncgm_class.last_base_meta_name &&
             ! strcmp(tfname,wclass->ncgm_class.last_base_meta_name)) {
                 char suffix[8];
