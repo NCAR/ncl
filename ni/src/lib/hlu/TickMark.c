@@ -7793,7 +7793,7 @@ int		c_or_s;
         float delta;
         char *labels_for_multi[_NhlMAXFNAMELEN];
         float   locs_for_multi[_NhlMAXFNAMELEN];
-        char buffer[_NhlMAXFNAMELEN];
+        char buffer[_NhlMAXRESNAMLEN];
 	float tmpy,tmpx,tmpwidth,tmpheight;
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes subret = NhlNOERROR;
@@ -8465,7 +8465,7 @@ int num_args;
 	NhlSArg	sargs[20];
 	int nargs = 0;
 	NhlClass trans_class = NULL;
-	char buffer[_NhlMAXFNAMELEN];
+	char buffer[_NhlMAXRESNAMLEN];
 	int tmpid;
 	NhlErrorTypes ret = NhlNOERROR;
 
@@ -8614,7 +8614,7 @@ int num_args;
 	NhlSArg	sargs[20];
 	int nargs = 0;
 	NhlClass trans_class = NULL;
-	char buffer[_NhlMAXFNAMELEN];
+	char buffer[_NhlMAXRESNAMLEN];
 	int tmpid;
 	NhlErrorTypes ret = NhlNOERROR;
 

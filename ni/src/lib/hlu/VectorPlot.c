@@ -5826,7 +5826,7 @@ static NhlErrorTypes PrepareAnnoString
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlString		lstring;
 	NhlBoolean		done = False;
-	char			buffer[256];
+	char			buffer[_NhlMAXRESNAMLEN];
 	char			*matchp,*subst;
 	float			val;
 	NhlvcScaleInfo		*sip;
@@ -6722,7 +6722,7 @@ static NhlErrorTypes ReplaceSubstitutionChars
 {
 	NhlErrorTypes		ret = NhlNOERROR;
 	char			*e_text;
-	char			buffer[256];
+	char			buffer[_NhlMAXRESNAMLEN];
 
 	*text_changed = False;
 
