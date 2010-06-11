@@ -46,15 +46,24 @@ extern "C" {
 * compile time
 */
 #ifndef NCL_LEVEL_1_SIZE
+/*
 #define NCL_LEVEL_1_SIZE 512
+*/
+#define NCL_LEVEL_1_SIZE 1024
 #endif
 
 #ifndef NCL_STACK_SIZE
+/*
 #define NCL_STACK_SIZE 1024
+*/
+#define NCL_STACK_SIZE 2048
 #endif
 
 #ifndef NCL_MACHINE_SIZE
+/*
 #define NCL_MACHINE_SIZE 16384
+*/
+#define NCL_MACHINE_SIZE 32768
 #endif
 
 /*
@@ -62,7 +71,10 @@ extern "C" {
 * whole programs.
 */
 #ifndef NCL_FUNC_MACHINE_SIZE
+/*
 #define NCL_FUNC_MACHINE_SIZE 2048
+*/
+#define NCL_FUNC_MACHINE_SIZE 4096
 #endif
 
 NclStackEntry *thestack;

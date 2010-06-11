@@ -813,8 +813,8 @@ NhlErrorTypes _NclBuildListVar
 	NclStackEntry data;
 	NclStackEntry *data_ptr;
 	int i;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
-        int ndims = 1;
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
+	int ndims = 1;
 
 	NclList thelist;
 	obj *id;

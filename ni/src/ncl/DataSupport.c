@@ -2244,7 +2244,7 @@ struct _NclMultiDValDataRec *_NclCreateLMissing
 
 	if(first) {
 		int *val = (int*)NclMalloc((unsigned)sizeof(int));
-		int dim_sizes = 1;
+		ng_size_t dim_sizes = 1;
 		*val = -1;
 		missing.logicalval = (logical)-1;
 		tval = _NclCreateMultiDVal(

@@ -167,10 +167,10 @@ NhlErrorTypes _JavaMin
 #endif
 {
     void *out_val;
-    int dimsizes = 1;
+    ng_size_t dimsizes = 1;
     void *tmp;
     logical result;
-    int i,j;
+    ng_size_t i,j;
 
     if(tmp_md->multidval.missing_value.has_missing)
     {
@@ -246,10 +246,10 @@ NhlErrorTypes _JavaMax
 #endif
 {
     void *out_val;
-    int dimsizes = 1;
+    ng_size_t dimsizes = 1;
     void *tmp;
     logical result;
-    int i,j,count;
+    ng_size_t i,j,count;
 
     if(tmp_md->multidval.missing_value.has_missing)
     {
@@ -331,7 +331,7 @@ NhlErrorTypes _NclIgenerateVarList
 
     NclMultiDValData tmp_md;
     NclFileAttInfoList *step;
-    int i,j;
+    ng_size_t i,j;
 
     FILE *fd;
     FILE *fa;
@@ -339,11 +339,11 @@ NhlErrorTypes _NclIgenerateVarList
 
     char var_name[256];
     char var_type[256];
-    int n;
+    ng_size_t n;
 
     /* dimensions */
-    int dimsizes = 1;
-    int dim_sizes[1];
+    ng_size_t dimsizes = 1;
+    ng_size_t dim_sizes[1];
 
     NhlErrorTypes   ret;
 
