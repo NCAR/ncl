@@ -1,6 +1,6 @@
 c ----------------------------------------------------------- 
 C NCLFORTSTART
-      SUBROUTINE XRCM2POINTS(NGRD,NYI,NXI,YI,XI,FI,NXYO,YO,XO,FO
+      SUBROUTINE DRCM2POINTS(NGRD,NYI,NXI,YI,XI,FI,NXYO,YO,XO,FO
      +                      ,XMSG,OPT,NCRIT,IER)
       IMPLICIT NONE
       INTEGER NGRD,NXI,NYI,NXYO,OPT,NCRIT,IER
