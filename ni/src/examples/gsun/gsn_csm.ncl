@@ -1824,10 +1824,14 @@ begin
     end if
   end if
 ;
-; Remove the text font height, so it doesn't get applied at the end.
+; Remove the text font height and txString, so they don't get
+; applied at the end.
 ;
   if(isatt(txres,"txFontHeightF")) then
     delete(txres@txFontHeightF)
+  end if
+  if(isatt(txres,"txString")) then
+    delete(txres@txString)
   end if
 
   ablank = stringtocharacter(" ")
