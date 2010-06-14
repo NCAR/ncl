@@ -474,14 +474,14 @@ NhlErrorTypes rcm2points_W( void )
 /*
  * Input variables
  */
-  void *lat2d, *lon2d, *fi, *lat1d, *lon1d, *opt;
+  void *lat2d, *lon2d, *fi, *lat1d, *lon1d;
   double *tmp_lat2d, *tmp_lon2d, *tmp_lat1d, *tmp_lon1d, *tmp_fi;
-  int tmp_opt, tmp_ncrit;
+  int *opt, tmp_ncrit;
   int dsizes_lat2d[2], dsizes_lon2d[2], dsizes_lat1d[2], dsizes_lon1d[1];
   int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
   NclScalar missing_fi, missing_dfi, missing_rfi;
   NclBasicDataTypes type_lat2d, type_lon2d, type_lat1d, type_lon1d;
-  NclBasicDataTypes type_fi, type_opt;
+  NclBasicDataTypes type_fi;
 /*
  * Output variables.
  */
@@ -551,14 +551,14 @@ NhlErrorTypes rcm2points_W( void )
           &type_lon1d,
           DONT_CARE);
 
-  opt = (void*)NclGetArgValue(
+  opt = (int*)NclGetArgValue(
           5,
           6,
           NULL,
           NULL,
           NULL,
           NULL,
-          &type_opt,
+          NULL,
           DONT_CARE);
 /*
  * Check the input lat/lon arrays. They must be the same size, and larger
@@ -659,15 +659,14 @@ NhlErrorTypes rcm2points_W( void )
   }
 
 /*
- * Force opt to zero and ncrit to 1, since they are not used yet.
+ * Force ncrit to 1, since it is not used yet.
  */
-  tmp_opt   = 0;
   tmp_ncrit = 1;
 
   NGCALLF(drcm2points,DRCM2POINTS)(&ngrid,&nlat2d,&nlon2d,tmp_lat2d,tmp_lon2d,
                                    tmp_fi,&nlat1d,tmp_lat1d,tmp_lon1d,
                                    tmp_fo,&missing_dfi.doubleval,
-                                   &tmp_opt,&tmp_ncrit,&ier);
+                                   opt,&tmp_ncrit,&ier);
 
   if(ier) {
     if(ier == 1) {
