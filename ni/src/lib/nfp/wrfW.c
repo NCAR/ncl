@@ -1382,6 +1382,7 @@ NhlErrorTypes wrf_slp_W( void )
   NclFree(tmp_q);
   if(type_p   != NCL_double) NclFree(tmp_p);
   if(type_t   != NCL_double) NclFree(tmp_t);
+  if(type_z   != NCL_double) NclFree(tmp_z);
   if(type_slp != NCL_double) NclFree(tmp_slp);
 
   NclFree(tmp_t_sea_level);
@@ -1478,6 +1479,8 @@ NhlErrorTypes wrf_slp_W( void )
                           );
 
   NclFree(dsizes_slp);
+  NclFree(cunits);
+  NclFree(cdescription);
   if(dim_info != NULL) NclFree(dim_info);
 
 /*
