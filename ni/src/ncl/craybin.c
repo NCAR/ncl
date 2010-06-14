@@ -358,9 +358,9 @@ NhlErrorTypes _NclICrayBinRecRead
 {
 	string *fpath;
 	int	*recnum;
-	ng_size_t	*dimensions;
+	ng_size_t  *dimensions;
 	ng_size_t  *tmp_dsz;
-	ng_size_t	dimsize;
+	ng_size_t  dimsize;
 	string *type;
 	NclScalar missing;
 	NclMultiDValData tmp_md;
@@ -412,7 +412,6 @@ NhlErrorTypes _NclICrayBinRecRead
 		return(NhlFATAL);
 	}
 	
-	/*dimensions = (ng_size_t *)NclGetArgValue(*/
 	tmp_dsz = (ng_size_t *)NclGetArgValue(
 		2,
 		4,

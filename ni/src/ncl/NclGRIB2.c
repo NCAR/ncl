@@ -5402,7 +5402,6 @@ Grib2ParamList* step;
 			    (void*)lprob,
 			    NULL,
 			    1,
-/*			    (void*)&n_tmp_ens_vals,*/
 			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
@@ -5419,7 +5418,6 @@ Grib2ParamList* step;
 			    (void*)uprob,
 			    NULL,
 			    1,
-/*			    (void*)&n_tmp_ens_vals,*/
 			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
@@ -5436,7 +5434,6 @@ Grib2ParamList* step;
 			    (void*)lprob,
 			    NULL,
 			    1,
-/*			    (void*)&n_tmp_ens_vals,*/
 			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
@@ -5449,7 +5446,6 @@ Grib2ParamList* step;
 			    (void*)uprob,
 			    NULL,
 			    1,
-/*			    (void*)&n_tmp_ens_vals,*/
 			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
@@ -5463,7 +5459,6 @@ Grib2ParamList* step;
 		    ens_vals_q[j] = g2GetEnsQuark(&(tmp_ens_vals[j]));
 		    ens_indexes[j] = j;
 	    }
-
 	    tmp_dim_siz = (ng_size_t) n_tmp_ens_vals;
 	    step->ensemble = (NclMultiDValData)_NclCreateVal(
 		    NULL,
@@ -5473,7 +5468,6 @@ Grib2ParamList* step;
 		    (void *) ens_vals_q,
 		    NULL,
 		    1,
-/*		    (void *) &n_tmp_ens_vals,*/
 		    &tmp_dim_siz,
 		    TEMPORARY,
 		    NULL,
@@ -5487,7 +5481,6 @@ Grib2ParamList* step;
 		    (void *) ens_indexes,
 		    NULL,
 		    1,
-/*		    (void *) &n_tmp_ens_vals,*/
 		    &tmp_dim_siz,
 		    TEMPORARY,
 		    NULL,
@@ -5526,7 +5519,6 @@ Grib2ParamList* step;
 		    (void*)it_vals_q,
 		    NULL,
 		    1,
-/*		    (void*)&n_tmp_it_vals,*/
 		    &tmp_dim_siz,
 		    TEMPORARY,
 		    NULL,
@@ -5546,7 +5538,6 @@ Grib2ParamList* step;
 		    (void*)it_vals_q,
 		    NULL,
 		    1,
-/*		    (void*)&n_tmp_it_vals,*/
 		    &tmp_dim_siz,
 		    TEMPORARY,
 		    NULL,
@@ -5571,7 +5562,6 @@ Grib2ParamList* step;
 		    (void*)tmp_ft_vals,
 		    NULL,
 		    1,
-/*		    (void*)&n_tmp_ft_vals,*/
 		    &tmp_dim_siz,
 		    TEMPORARY,
 		    NULL,
@@ -5588,7 +5578,6 @@ Grib2ParamList* step;
 		    (void*)tmp_ft_vals,
 		    NULL,
 		    1,
-/*		    (void*)&n_tmp_ft_vals,*/
 		    &tmp_dim_siz,
 		    TEMPORARY,
 		    NULL,
@@ -5612,7 +5601,6 @@ Grib2ParamList* step;
 			    (void*)tmp_lv_vals,
 			    NULL,
 			    1,
-/*			    (void*)&n_tmp_lv_vals,*/
 			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
@@ -5632,7 +5620,6 @@ Grib2ParamList* step;
 			    (void*)tmp_lv_vals,
 			    NULL,
 			    1,
-/*			    (void*)&n_tmp_lv_vals,*/
 			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
@@ -5658,7 +5645,6 @@ Grib2ParamList* step;
 			    (void*)tmp_lv_vals,
 			    NULL,
 			    1,
-/*			    (void*)&n_tmp_lv_vals,*/
 			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
@@ -5671,7 +5657,6 @@ Grib2ParamList* step;
 			    (void*)tmp_lv_vals1,
 			    NULL,
 			    1,
-/*			    (void*)&n_tmp_lv_vals,*/
 			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
@@ -5691,7 +5676,6 @@ Grib2ParamList* step;
 			    (void*)tmp_lv_vals,
 			    NULL,
 			    1,
-/*			    (void*)&n_tmp_lv_vals,*/
 			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,
@@ -5704,7 +5688,6 @@ Grib2ParamList* step;
 			    (void*)tmp_lv_vals1,
 			    NULL,
 			    1,
-/*			    (void*)&n_tmp_lv_vals,*/
 			    &tmp_dim_siz,
 			    TEMPORARY,
 			    NULL,

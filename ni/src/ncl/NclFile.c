@@ -2343,7 +2343,7 @@ NclQuark var;
 
 static void ReverseIt
 #if	NhlNeedProto
-(void *val,void* swap_space,int ndims,int *compare_sel,ng_size_t *dim_sizes,ng_size_t el_size)
+(void *val,void* swap_space,int ndims,int *compare_sel,ng_size_t *dim_sizes,int el_size)
 #else
 (val,swap_space,ndims,compare_sel,dim_sizes,el_size)
 void *val;
@@ -2351,12 +2351,12 @@ void* swap_space;
 int ndims;
 int *compare_sel;
 ng_size_t *dim_sizes;
-ng_size_t el_size;
+int el_size;
 #endif
 {
 	ng_size_t i,j;
 	char *tmp;
-	ng_size_t block_size = el_size;
+	int block_size = el_size;
 
 	for(i = 1; i < ndims; i++) {
 	block_size *= dim_sizes[i];
@@ -5819,7 +5819,6 @@ struct _NclSelectionRecord *sel_ptr;
 	NclMultiDValData tmp_md;
 	NhlArgVal udata;
         ng_size_t ne;
-
 	aindex = FileIsAtt(thefile,attname);
 	if(aindex > -1) {
 		if(thefile->file.file_atts_id != -1) {
