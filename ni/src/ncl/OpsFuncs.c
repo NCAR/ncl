@@ -1304,7 +1304,7 @@ NhlErrorTypes _NclProcCallOp
 		previous_fp = _NclLeaveFrame(caller_level);
 		(void)_NclPopScope();
 		_NclRemapParameters(proc->u.procfunc->nargs,proc->u.procfunc->thescope->cur_offset,previous_fp,PROC_CALL_OP);
-		_NclUndefSymbolsInScope(proc->u.procfunc->thescope);
+		_NclUndefSymbolsInScope(proc->u.procfunc);
 		_NclPopFrame(PROC_CALL_OP);
 	}  else {
 		_NclClearToStackBase(caller_level);
@@ -1356,7 +1356,7 @@ NhlErrorTypes _NclFuncCallOp
 		previous_fp = _NclLeaveFrame(caller_level);
 		(void)_NclPopScope();
 		_NclRemapParameters(func->u.procfunc->nargs,func->u.procfunc->thescope->cur_offset,previous_fp,FUNC_CALL_OP);
-		_NclUndefSymbolsInScope(func->u.procfunc->thescope);
+		_NclUndefSymbolsInScope(func->u.procfunc);
 		_NclPopFrame(FUNC_CALL_OP);
 	}   else {
 		_NclClearToStackBase(caller_level);
