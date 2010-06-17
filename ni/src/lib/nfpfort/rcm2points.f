@@ -31,7 +31,7 @@ c
 c                              local
       INTEGER NG,NX,NY,NXY,NEXACT,IX,IY,M,N,NW,NER,K
       DOUBLE PRECISION FW(2,2),W(2,2),SUMF,SUMW,CHKLAT(NYI),CHKLON(NXI)
-      DOUBLE PRECISION DGCDIST
+      DOUBLE PRECISION DGCDIST, WX, WY
 c                              error checking
       IER = 0
       IF (NXI.LE.1 .OR. NYI.LE.1 .OR. NXYO.LE.0) THEN
@@ -54,8 +54,12 @@ c c c    print *,"chklon: nx=",nx,"  chklon=",chklon(nx)
       CALL DMONOINC(CHKLAT,NYI,IER,NER)
       IF (IER.NE.0) RETURN
 
-      K = 2
-c c c k = opt
+C ORIGINAL  (k = op, never implemented)
+C .   OLIVER_F ... opt=2 yields k=1
+      K = 2 
+      IF (OPT.EQ.2) THEN
+           K = 1
+      end if
 
       DO NG = 1,NGRD
         DO NXY = 1,NXYO
@@ -93,6 +97,16 @@ c                              main loop [interpolation]
      +                 YO(NXY).GE.YI(IX,IY) .AND.
      +                 YO(NXY).LE.YI(IX,IY+K)) THEN
 
+                   IF (ABS(OPT).EQ.2) THEN
+                       WX = (XO(NXY)-XI(IX,IY))/
+     +                      (XI(IX+K,IY)-XI(IX,IY))
+                       WY = (YO(NXY)-YI(IX,IY))/
+     +                      (YI(IX,IY+K)-YI(IX,IY))
+                       W(1,1) = (1.D0-WX)*(1.D0-WY)
+                       W(2,1) = WX*(1.D0-WY)
+                       W(1,2) = (1.D0-WX)*WY
+                       W(2,2) = WX*WY
+                   ELSE
                        W(1,1) = (1.D0/DGCDIST(YO(NXY),XO(NXY),
      +                           YI(IX,IY),XI(IX,IY),2))**2
                        W(2,1) = (1.D0/DGCDIST(YO(NXY),XO(NXY),
@@ -101,6 +115,7 @@ c                              main loop [interpolation]
      +                           YI(IX,IY+K),XI(IX,IY+K),2))**2
                        W(2,2) = (1.D0/DGCDIST(YO(NXY),XO(NXY),
      +                           YI(IX+K,IY+K),XI(IX+K,IY+K),2))**2
+                   END IF
 
                    DO NG = 1,NGRD
                       IF (FO(NXY,NG).EQ.XMSG) THEN
