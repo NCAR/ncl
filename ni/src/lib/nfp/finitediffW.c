@@ -751,16 +751,11 @@ NhlErrorTypes uv2vr_cfd_W( void )
   if(type_lon != NCL_double) NclFree(tmp_lon);
   if(type_vort!= NCL_double) NclFree(tmp_vort);
 
-  if(has_missing_u) {
-    if(type_vort == NCL_double) {
-      return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_du,type_vort,0));
-    }
-    else {
-      return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_ru,type_vort,0));
-    }
+  if(type_vort == NCL_double) {
+    return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_du,type_vort,0));
   }
   else {
-    return(NclReturnValue(vort,ndims_u,dsizes_u,NULL,type_vort,0));
+    return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_ru,type_vort,0));
   }
 }
 
@@ -982,15 +977,10 @@ NhlErrorTypes uv2dv_cfd_W( void )
   if(type_lon != NCL_double) NclFree(tmp_lon);
   if(type_div != NCL_double) NclFree(tmp_div);
 
-  if(has_missing_u) {
-    if(type_div == NCL_double) {
-      return(NclReturnValue(div,ndims_u,dsizes_u,&missing_du,type_div,0));
-    }
-    else {
-      return(NclReturnValue(div,ndims_u,dsizes_u,&missing_ru,type_div,0));
-    }
+  if(type_div == NCL_double) {
+    return(NclReturnValue(div,ndims_u,dsizes_u,&missing_du,type_div,0));
   }
   else {
-    return(NclReturnValue(div,ndims_u,dsizes_u,NULL,type_div,0));
+    return(NclReturnValue(div,ndims_u,dsizes_u,&missing_ru,type_div,0));
   }
 }
