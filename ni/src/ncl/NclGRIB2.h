@@ -10,6 +10,7 @@ typedef struct _git2{
 	short year;
 	short days_from_jan1;
 	short minute_of_day;
+	short seconds;
 } G2_GIT;
 
 typedef struct g2_tble2 {
@@ -338,7 +339,7 @@ typedef struct _g2prodParams {
     int    gen_processID;
     int    hrs_after_reftime_cutoff;
     int    min_after_reftime_cutoff;
-    int    time_range;
+    int    time_range_unit_id;
     char    *time_range_unit;
     int    forecast_time;
 
@@ -364,12 +365,7 @@ typedef struct _g2prodParams {
     unsigned int    perturb_num;
     unsigned int    num_fx_ensemble;
     /* statistical processing */
-    int    year_end_overall_time_interval;
-    int    mon_end_overall_time_interval;
-    int    day_end_overall_time_interval;
-    int    hour_end_overall_time_interval;
-    int    min_end_overall_time_interval;
-    int    sec_end_overall_time_interval;
+    G2date_time end_overall_time_interval;
     int    num_timerange_spec_time_interval_calc;
     int    total_num_missing_data_vals;
     int    typeof_stat_proc;
@@ -635,6 +631,8 @@ struct _Grib2RecordInqRec {
      * Units are set in the Grib2ParamList structure
      */
     G2_GIT initial_time;
+    G2_GIT end_overall_interval;
+    int overall_interval_seconds;
     int forecast_time; /* from the template */
     long time_offset; /* converted to common units and adjusted to account for
 			 the time period -- this is used as the NCL GRIB2 "forecast_time" */
@@ -676,11 +674,6 @@ struct _Grib2AttInqRec {
     NclQuark    name;
     NclMultiDValData    thevalue;
 };
-
-# define    GRIB2_THINNED_GRID_INTERPOLATION_OPT    0
-# define    GRIB2_INITIAL_TIME_COORDINATE_TYPE_OPT  1
-# define    GRIB2_DEFAULT_NCEP_PTABLE_OPT           2
-# define    GRIB2_NUM_OPTIONS                       3
 
 struct _Grib2Options {
     NclQuark    name;
