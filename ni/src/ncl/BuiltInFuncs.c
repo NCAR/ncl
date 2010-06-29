@@ -81,8 +81,8 @@ NhlErrorTypes _NclIGetScriptPrefixName
 ()
 #endif
 {
-    int dimsz = 1,
-        ndims = 1;
+    ng_size_t dimsz = 1;
+    int       ndims = 1;
     string  script_name;
     char    *lastdot = NULL,
             *prefix_nclf = NULL;
@@ -128,8 +128,8 @@ NhlErrorTypes _NclIGetScriptName
 ()
 #endif
 {
-    int dimsz = 1,
-        ndims = 1;
+    ng_size_t dimsz = 1;
+    int       ndims = 1;
     string  script_name;
     NclScalar   missing;
 
@@ -1046,9 +1046,8 @@ NhlErrorTypes _Nclstrlen
     NclScalar   missing,
                 ret_missing;
   
-    ng_size_t sz = 1;
+    ng_size_t i, sz = 1;
     int*    lens;
-    int i;
     
 
     strs = (string *) NclGetArgValue(
@@ -1196,8 +1195,7 @@ NhlErrorTypes _NclIIsMissing
 	NclStackEntry val,data;
 	NclMultiDValData tmp_md = NULL;
 	logical *lval;
-	ng_size_t dimsize = 1;
-	int i;
+	ng_size_t i;
 	
 	val = _NclGetArg(0,1,DONT_CARE);
 /*
@@ -1505,7 +1503,7 @@ NhlErrorTypes _NclIAny
 	NclStackEntry data_out;	
 	NclMultiDValData tmp_md = NULL;
 	ng_size_t dim_size = 1;
-    ng_size_t i;
+	ng_size_t i;
 	logical *tmp_val;
 	data = _NclGetArg(0,1,DONT_CARE);
 	if(data.kind == NclStk_VAR) {
@@ -1588,7 +1586,7 @@ NhlErrorTypes _NclIAll
 	NclStackEntry data_out;	
 	NclMultiDValData tmp_md = NULL;
 	ng_size_t dim_size = 1;
-    ng_size_t i;
+	ng_size_t i;
 	logical *tmp_val;
 	data = _NclGetArg(0,1,DONT_CARE);
 	if(data.kind == NclStk_VAR) {
