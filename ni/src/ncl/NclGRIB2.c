@@ -5,6 +5,7 @@
 #include <math.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <limits.h>
 #ifdef NIO_LIB_ONLY
 #include "niohlu.h"
 #include "nioNresDB.h"
