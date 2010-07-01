@@ -1721,7 +1721,8 @@ NhlErrorTypes _NclIDimSizes
     NclStackEntry data_out;	
     NclMultiDValData tmp_md = NULL;
 /*    int *size;*/
-    void    *size;
+/*    void    *size;*/
+    ng_size_t  *size;
     ng_size_t dim_size;
     int i = 0;
     short   sz_long = 0;
@@ -1741,19 +1742,23 @@ NhlErrorTypes _NclIDimSizes
     if (tmp_md != NULL) {
         data_out.kind = NclStk_VAL;
 
-        if (tmp_md->multidval.data_type == NCL_int) {
-            size = (void *) NclMalloc(sizeof(int) * tmp_md->multidval.n_dims);
-            for (i = 0; i < tmp_md->multidval.n_dims; i++) {
-                ((int *)size)[i] = (int)tmp_md->multidval.dim_sizes[i];
-            }
+        size = (ng_size_t *) NclMalloc(sizeof(ng_size_t) * tmp_md->multidval.n_dims);
+        for (i = 0; i < tmp_md->multidval.n_dims; i++) {
+            size[i] = tmp_md->multidval.dim_sizes[i];
+        }
+        dim_size = tmp_md->multidval.n_dims;
 
-            dim_size = tmp_md->multidval.n_dims;
+/*
+ * Until we have a type like "nclTypengsizetClass", we need to
+ * specifically return int or long.
+ */
+        if (tmp_md->multidval.data_type == NCL_int) {
             data_out.u.data_obj = _NclCreateMultiDVal(
                 NULL,
                 NULL,
                 Ncl_MultiDValData,
                 0,
-                (int *) size,
+                (ng_size_t *) size,
                 NULL,
                 1,
                 &dim_size,
@@ -1762,19 +1767,12 @@ NhlErrorTypes _NclIDimSizes
                 (NclTypeClass) nclTypeintClass
             );
         } else {
-            /* data type is 'NCL_long' */
-            size = (void *) NclMalloc(sizeof(long) * tmp_md->multidval.n_dims);
-            for (i = 0; i < tmp_md->multidval.n_dims; i++) {
-                ((long *)size)[i] = (long)tmp_md->multidval.dim_sizes[i];
-            }
-
-            dim_size = tmp_md->multidval.n_dims;
             data_out.u.data_obj = _NclCreateMultiDVal(
                 NULL,
                 NULL,
                 Ncl_MultiDValData,
                 0,
-                (long *) size,
+                (ng_size_t *) size,
                 NULL,
                 1,
                 &dim_size,
@@ -1927,7 +1925,7 @@ NhlErrorTypes _NclIFrame
 	NhlErrorTypes ret = NhlNOERROR;
 	NclHLUObj hlu_ptr;
 	int *obj_ids;
-    ng_size_t i;
+	ng_size_t i;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 
@@ -1972,7 +1970,7 @@ NhlErrorTypes _NclIClear
 	NclMultiDValData tmp_md;
 	NclHLUObj hlu_ptr;
 	int *obj_ids;
-    ng_size_t i;
+	ng_size_t i;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 
@@ -2019,7 +2017,7 @@ NhlErrorTypes _NclIDestroy
 	NclSymbol *thesym;
 	NclStackEntry *var;
 	int *obj_ids;
-    ng_size_t  i;
+	ng_size_t  i;
 	NclHLUObj hlu_ptr = NULL;
 	NclMultiDValData att_md;
 	void *att_val;
@@ -2060,7 +2058,7 @@ NhlErrorTypes _NclIUpdate
 	NclMultiDValData tmp_md;
 	NclHLUObj hlu_ptr;
 	int *obj_ids;
-    ng_size_t  i;
+	ng_size_t  i;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 
@@ -2109,7 +2107,7 @@ NhlErrorTypes _NclIDraw
 	NclStackEntry data;
 	NclMultiDValData tmp_md;
 	int *obj_ids;
-    ng_size_t  i;
+	ng_size_t  i;
 	NclHLUObj hlu_ptr;
 
 	data = _NclGetArg(0,1,DONT_CARE);
@@ -2325,7 +2323,7 @@ NhlErrorTypes _Nclidsfft
 #endif
 {
 	float *arg[3];
-	int i;
+	ng_size_t i;
 	ng_size_t *dims;
 	ng_size_t  dimsizes,dimsizes1,dimsizes2;
 	int has_missing,has_missing1,has_missing2;
@@ -2489,8 +2487,8 @@ NhlErrorTypes _NclIqsort
 	NclStackEntry args;
 	NclMultiDValData tmp_md= NULL,tmp_md2 = NULL;
 	NclVar tmp_var;
-	long  *index;
-	int i;
+	ng_size_t  *index;
+	ng_size_t i;
 	NclSelectionRecord * sel_ptr = NULL;
 	NhlErrorTypes ret;
 
@@ -2512,7 +2510,7 @@ NhlErrorTypes _NclIqsort
 	}
 	qc_val = tmp_md->multidval.val;
 
-	index = NclMalloc(tmp_md->multidval.totalelements * sizeof(long));
+	index = NclMalloc(tmp_md->multidval.totalelements * sizeof(ng_size_t));
 	for(i = 0; i < tmp_md->multidval.totalelements; i++) {
 		index[i] = i;
 	}
