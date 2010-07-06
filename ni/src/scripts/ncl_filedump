@@ -279,6 +279,11 @@ switch ($suffix)
         set ftype = "HDFEOS5"
         breaksw
 
+    case hdf5:
+    case h5:
+        set ftype = "HDF5"
+        breaksw
+
     case ccm:
         set ftype = "CCM"
         breaksw
