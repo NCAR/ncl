@@ -682,18 +682,21 @@ c      WRITE (6,FMT=*) ' computing velocities '
                ELSE
                   UK = 0.5D0* (U(I,J)+U(I+1,J))
                   VK = 0.5D0* (V(I,J)+V(I,J+1))
+                  UVMET(I,J,1) = VK*LONGCB(I,J) + UK*LONGCA(I,J)
+                  UVMET(I,J,2) = VK*LONGCA(I,J) - UK*LONGCB(I,J)
                END IF
             ELSE
-               IF (IS_MSG_VAL.AND.U(I,J).EQ.UMSG.OR.V(I,J).EQ.VMSG) THEN
+               IF (IS_MSG_VAL.AND.(U(I,J).EQ.UMSG.OR.
+     +                             V(I,J).EQ.VMSG)) THEN
                   UVMET(I,J,1) = UVMETMSG
                   UVMET(I,J,2) = UVMETMSG
                ELSE
                   UK = U(I,J)
                   VK = V(I,J)
+                  UVMET(I,J,1) = VK*LONGCB(I,J) + UK*LONGCA(I,J)
+                  UVMET(I,J,2) = VK*LONGCA(I,J) - UK*LONGCB(I,J)
                END IF
             END IF
-            UVMET(I,J,1) = VK*LONGCB(I,J) + UK*LONGCA(I,J)
-            UVMET(I,J,2) = VK*LONGCA(I,J) - UK*LONGCB(I,J)
          END DO
       END DO
 
