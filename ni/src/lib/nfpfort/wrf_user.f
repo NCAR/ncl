@@ -624,18 +624,20 @@ c we will just return the nearest point at present
 C NCLFORTSTART
       SUBROUTINE DCOMPUTEUVMET(U,V,UVMET,LONGCA,LONGCB,FLONG,FLAT,
      +                         CEN_LONG,CONE,RPD,NX,NY,NXP1,NYP1,
-     +                         ISTAG)
+     +                         ISTAG,IS_MSG_VAL,UMSG,VMSG,UVMETMSG)
       IMPLICIT NONE
 
 C ISTAG should be 0 if the U,V grids are not staggered.
 C That is, NY = NYP1 and NX = NXP1.
 
       INTEGER NX,NY,NXP1,NYP1,NL,ISTAG
+      LOGICAL IS_MSG_VAL
       DOUBLE PRECISION U(NXP1,NY),V(NX,NYP1)
       DOUBLE PRECISION UVMET(NX,NY,2)
       DOUBLE PRECISION FLONG(NX,NY),FLAT(NX,NY)
       DOUBLE PRECISION LONGCB(NX,NY),LONGCA(NX,NY)
       DOUBLE PRECISION CEN_LONG,CONE,RPD
+      DOUBLE PRECISION UMSG,VMSG,UVMETMSG
 C NCLEND
 
       INTEGER I,J
@@ -671,14 +673,30 @@ c      WRITE (6,FMT=*) ' computing velocities '
       DO J = 1,NY
          DO I = 1,NX
             IF (ISTAG.EQ.1) THEN
-               UK = 0.5D0* (U(I,J)+U(I+1,J))
-               VK = 0.5D0* (V(I,J)+V(I,J+1))
+               IF (IS_MSG_VAL.AND.(U(I,J).EQ.UMSG.OR.
+     +                             V(I,J).EQ.VMSG.OR.
+     +                             U(I+1,J).EQ.UMSG.OR.
+     +                             V(I,J+1).EQ.VMSG)) THEN
+                  UVMET(I,J,1) = UVMETMSG
+                  UVMET(I,J,2) = UVMETMSG
+               ELSE
+                  UK = 0.5D0* (U(I,J)+U(I+1,J))
+                  VK = 0.5D0* (V(I,J)+V(I,J+1))
+                  UVMET(I,J,1) = VK*LONGCB(I,J) + UK*LONGCA(I,J)
+                  UVMET(I,J,2) = VK*LONGCA(I,J) - UK*LONGCB(I,J)
+               END IF
             ELSE
-               UK = U(I,J)
-               VK = V(I,J)
+               IF (IS_MSG_VAL.AND.(U(I,J).EQ.UMSG.OR.
+     +                             V(I,J).EQ.VMSG)) THEN
+                  UVMET(I,J,1) = UVMETMSG
+                  UVMET(I,J,2) = UVMETMSG
+               ELSE
+                  UK = U(I,J)
+                  VK = V(I,J)
+                  UVMET(I,J,1) = VK*LONGCB(I,J) + UK*LONGCA(I,J)
+                  UVMET(I,J,2) = VK*LONGCA(I,J) - UK*LONGCB(I,J)
+               END IF
             END IF
-            UVMET(I,J,1) = VK*LONGCB(I,J) + UK*LONGCA(I,J)
-            UVMET(I,J,2) = VK*LONGCA(I,J) - UK*LONGCB(I,J)
          END DO
       END DO
 
