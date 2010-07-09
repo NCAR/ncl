@@ -121,6 +121,12 @@ void
 #endif
 );
 
+extern NhlErrorTypes _Nclstr_sort(
+#if NhlNeedProto
+void
+#endif
+);
+
 extern NhlErrorTypes _Nclstr_concat(
 #if NhlNeedProto
 void
@@ -249,6 +255,11 @@ void NclAddUserBuiltInFuncs
     args = NewArgs(1);
     SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
     NclRegisterFunc(_Nclstr_capital, args, "str_capital", nargs);
+
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    NclRegisterFunc(_Nclstr_sort, args, "str_sort", nargs);
 
     nargs = 0;
     args = NewArgs(3);
