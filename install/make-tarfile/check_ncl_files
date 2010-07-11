@@ -13,7 +13,7 @@
 #
 # set echo verbose timestamp
 
-set version = "5.2.0"
+set version = "5.2.1"
 set pwddir  = `pwd`
 
 echo "Checking files for version $version in dir $pwddir..."
