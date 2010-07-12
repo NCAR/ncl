@@ -40,6 +40,7 @@
 #include "NclAtt.h"
 #include "ApiRecords.h"
 
+#include <math.h>
 
 NclSelectionRecord* _NclGetVarSelRec
 #if	NhlNeedProto
@@ -1569,5 +1570,57 @@ FILE *fp;
 	}
 
         return(NhlNOERROR);
+}
+
+unsigned int _closest_prime(unsigned int prime_in)
+{
+    int i, number, k;
+    unsigned int primes[MAX_ALLOWED_NUMBER];
+    unsigned int prime_out;
+    unsigned int bound;
+    int check_this;
+
+    prime_out = 2*prime_in + 1;
+
+    primes[0] = 2U;
+    primes[1] = 3U;
+    for(i = 2; i < MAX_ALLOWED_NUMBER; i++)
+    {
+         number = primes[i-1];
+         check_this = 1;
+         while(check_this)
+         {
+             number += 2U;
+             check_this = 0;
+             bound = (unsigned int) sqrt((double) number);
+             for(k = 1; k < i; k++)
+             {
+                 if(primes[k] > bound)
+                     break; /*Not a viable shortcut for small quantities*/
+
+                 if(!(number % primes[k]))
+                 {
+                     check_this = 1;
+                     break;
+                 }
+             }
+         }
+         primes[i] = number;
+         if(number == prime_in)
+         {
+             prime_out = number;
+             break;
+         }
+         else if(number > prime_in)
+         {
+             if((number - prime_in) > (prime_in - number))
+                 prime_out = number;
+             else
+                 prime_out = primes[i-1];
+             break;
+         }
+    }
+
+    return prime_out;
 }
 

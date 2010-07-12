@@ -228,13 +228,13 @@ ng_size_t nval;
 
 NclMonoTypes _Nclis_mono
 #if	NhlNeedProto
-(NclTypeClass the_type, void *val, NclScalar* val_m, int nval)
+(NclTypeClass the_type, void *val, NclScalar* val_m, ng_size_t nval)
 #else
 (the_type, val, val_m, nval)
 NclTypeClass the_type;
 void *val;
 NclScalar* val_m;
-int nval;
+ng_size_t nval;
 #endif
 {
 	NclTypeClass tmp;

@@ -60,21 +60,21 @@ static struct _NclDataRec *MultiDValReadSection
 	void *val;
 	ng_size_t i,k,from,to;
 
-	long current_index[NCL_MAX_DIMENSIONS];
-	long multiplier[NCL_MAX_DIMENSIONS];
-	long compare_sel[NCL_MAX_DIMENSIONS];
-	long strider[NCL_MAX_DIMENSIONS];
-	long keeper[NCL_MAX_DIMENSIONS];
+	ng_size_t current_index[NCL_MAX_DIMENSIONS];
+	ng_size_t multiplier[NCL_MAX_DIMENSIONS];
+	ng_size_t compare_sel[NCL_MAX_DIMENSIONS];
+	ng_size_t strider[NCL_MAX_DIMENSIONS];
+	ng_size_t keeper[NCL_MAX_DIMENSIONS];
 	ng_size_t output_dim_sizes[NCL_MAX_DIMENSIONS];
 
 	ng_size_t total_elements = 1;
 	int n_dims_input = self_md->multidval.n_dims;
-	int n_elem=0;
+	ng_size_t n_elem=0;
 	int done = 0;
 	int inc_done = 0;
-	int el_size = 0;
-	int rem_count;
-	int cpy_count = 1;
+	ng_size_t el_size = 0;
+	ng_size_t rem_count;
+	ng_size_t cpy_count = 1;
 	int last = 0;
 
 /*
@@ -419,12 +419,12 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 	NclSelection *sel_ptr = NULL;
 	void *val;
 	ng_size_t i,k;
-	long from,to;
+	ng_size_t from,to;
 
-	long current_index[NCL_MAX_DIMENSIONS];
-	long multiplier[NCL_MAX_DIMENSIONS];
-	long compare_sel[NCL_MAX_DIMENSIONS];
-	long strider[NCL_MAX_DIMENSIONS];
+	ng_size_t current_index[NCL_MAX_DIMENSIONS];
+	ng_size_t multiplier[NCL_MAX_DIMENSIONS];
+	ng_size_t compare_sel[NCL_MAX_DIMENSIONS];
+	ng_size_t strider[NCL_MAX_DIMENSIONS];
 	ng_size_t output_dim_sizes[NCL_MAX_DIMENSIONS];
 
 	ng_size_t dim_sizes_value [NCL_MAX_DIMENSIONS];
@@ -432,14 +432,14 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 	int n_dims_sel = 0;
 	ng_size_t total_elements = 1;
 	int n_dims_target = target_md->multidval.n_dims;
-	int n_elem=0;
+	ng_size_t n_elem=0;
 	int done = 0;
 	int inc_done = 0;
 	int chckmiss = 0;
 	logical tmpe;
-	int el_size;
-	int rem_count;
-	int cpy_count = 1;
+	ng_size_t el_size;
+	ng_size_t rem_count;
+	ng_size_t cpy_count = 1;
 	int last = 0;
 
 /*
@@ -778,22 +778,22 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 	void *val;
 	ng_size_t i,k,to;
 
-	int current_index[NCL_MAX_DIMENSIONS];
-	int multiplier[NCL_MAX_DIMENSIONS];
-	int compare_sel[NCL_MAX_DIMENSIONS];
-	int strider[NCL_MAX_DIMENSIONS];
-	int output_dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t current_index[NCL_MAX_DIMENSIONS];
+	ng_size_t multiplier[NCL_MAX_DIMENSIONS];
+	ng_size_t compare_sel[NCL_MAX_DIMENSIONS];
+	ng_size_t strider[NCL_MAX_DIMENSIONS];
+	ng_size_t output_dim_sizes[NCL_MAX_DIMENSIONS];
 
 	ng_size_t total_elements = 1;
 	int n_dims_target = target_md->multidval.n_dims;
-	int n_elem=0;
+	ng_size_t n_elem=0;
 	int done = 0;
 	int inc_done = 0;
 	int chckmiss = 0;
 	ng_size_t el_size;
 	logical tmpe;
-	int rem_count;
-	int cpy_count = 1;
+	ng_size_t rem_count;
+	ng_size_t cpy_count = 1;
 	int last = 0;
 	int first = 1;
 	char *savep;
@@ -1137,21 +1137,21 @@ NclSelectionRecord *from_selection;
 */
 
 	ng_size_t i,j,k;
-	long from,to;
+	ng_size_t from,to;
 	NclSelection *to_sel_ptr = NULL;
 	void *to_val;
 	NclSelection *from_sel_ptr = NULL;
 	void *from_val;
 
-	long to_current_index[NCL_MAX_DIMENSIONS];
-	long to_multiplier[NCL_MAX_DIMENSIONS];
-	long to_compare_sel[NCL_MAX_DIMENSIONS];
-	long to_strider[NCL_MAX_DIMENSIONS];
+	ng_size_t to_current_index[NCL_MAX_DIMENSIONS];
+	ng_size_t to_multiplier[NCL_MAX_DIMENSIONS];
+	ng_size_t to_compare_sel[NCL_MAX_DIMENSIONS];
+	ng_size_t to_strider[NCL_MAX_DIMENSIONS];
 	ng_size_t to_output_dim_sizes[NCL_MAX_DIMENSIONS];
-	long from_current_index[NCL_MAX_DIMENSIONS];
-	long from_multiplier[NCL_MAX_DIMENSIONS];
-	long from_compare_sel[NCL_MAX_DIMENSIONS];
-	long from_strider[NCL_MAX_DIMENSIONS];
+	ng_size_t from_current_index[NCL_MAX_DIMENSIONS];
+	ng_size_t from_multiplier[NCL_MAX_DIMENSIONS];
+	ng_size_t from_compare_sel[NCL_MAX_DIMENSIONS];
+	ng_size_t from_strider[NCL_MAX_DIMENSIONS];
 	ng_size_t from_output_dim_sizes[NCL_MAX_DIMENSIONS];
 
 	int n_dims_value = 0;
@@ -1166,8 +1166,8 @@ NclSelectionRecord *from_selection;
 	int chckmiss = 0;
 	ng_size_t el_size;
 	logical tmpe =0 ;
-	int to_rem_count,from_rem_count;
-	int from_cpy_count = 1,cpy_count = 1;
+	ng_size_t to_rem_count,from_rem_count;
+	ng_size_t from_cpy_count = 1,cpy_count = 1;
 	int last = 0;
 	ng_size_t from_dim_count, to_dim_count;
 	ng_size_t from_left_dim, to_left_dim, jstart;
@@ -2044,7 +2044,7 @@ NclScalar *new_missing;
 	int limit = 1,from = 0;
 	int n_dims = 0;
 	int step = 0;
-    ng_size_t i;
+	ng_size_t i;
 	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclScalar tmp_missing;
 

@@ -84,7 +84,7 @@ extern NclMonoTypes _Nclis_mono(
 NclTypeClass /* the_type */,
 void * /* val */,
 NclScalar* /* val_m */,
-int /* nval */
+ng_size_t /* nval */
 #endif
 );
 
