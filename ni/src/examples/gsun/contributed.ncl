@@ -8084,6 +8084,10 @@ end
 
 undef("hyi2hyo_Wrap")
 function hyi2hyo_Wrap(p0,hyai,hybi,psfc,xi,hyao,hybo,option)
+;
+; hyai, hybi - input  hybrid coordinates
+; hyao, hybo - output hybrid coordinates
+;
 local xo, dName, nDim, P0, lev, n
 begin
    xo = hyi2hyo(p0,hyai,hybi,psfc,xi,hyao,hybo,option)
@@ -8100,6 +8104,7 @@ begin
 
    do n=0,nDim-1                     ; name the dimensions
       xo!n = dName(n)
+     ;print("dName: "+n+": "+dName(n))
    end do
 
    if (isatt(p0,"units") .and. \
@@ -8107,13 +8112,33 @@ begin
       (p0.eq.100000.))  then
        P0  = p0/100.
        P0@units = "hPa"
-       lev      = (hyao+hybo)*P0
-       lev@long_name     = "level"
-       lev@units         = "hPa"
-       lev@formula_terms = "a: hyam b: hybm p0: P0 ps: PS" 
-       lev@positive      = "down" 
-       lev@standard_name = "atmosphere_hybrid_sigma_pressure_coordinate"
+
+       if (isStrSubset(hyai@long_name,"interfaces") .or. \
+           isStrSubset(hyai@long_name,"midpoints" )) then
+           lev                = (hyao+hybo)*P0
+           lev@long_name      = "level"
+           lev@units          = "hPa"
+
+           if (isStrSubset(hyai@long_name,"interfaces")) then
+               lev@long_name     = "hybrid level at interfaces (1000*(A+B))"
+               lev@formula_terms = "a: hyai b: hybi p0: P0 ps: PS" 
+               lev!0             = "ilev"
+           end if
+           if (isStrSubset(hyai@long_name,"midpoints")) then
+               lev@long_name      = "hybrid level at midpoints (1000*(A+B))"
+               lev@formula_terms  = "a: hyam b: hybm p0: P0 ps: PS" 
+               lev!0             = "lev"
+           end if
+       else
+           lev                = (hyao+hybo)*P0
+           lev@long_name      = "level"
+           lev@units          = "hPa"
+           lev@long_name      = "hybrid level (1000*(A+B))"
+           lev@formula_terms  = "a: hya b: hyb p0: P0 ps: PS" 
+       end if
    end if
+   lev@standard_name  = "atmosphere_hybrid_sigma_pressure_coordinate"
+   lev@positive       = "down" 
 
    if (nDim.eq.3) then
        if (isvar("lev")) then
