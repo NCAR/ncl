@@ -4211,7 +4211,12 @@ C                     Jira NCL_32: if this node was inserted to split
 C                     a segment for a hole-connector, we want to use
 C                     the original segment's endpoints on the next
 C                     iteration through the inner loop.
-                      IF (IP2.GT.ILW .AND. IAM(IP2+$PD$).LT.ILW) THEN
+C                     Note: because the first node (bottom) of the first
+C                     hole-connector points *back* to a user-inserted 
+C                     node (i.e., IAM(IP2+$PD$).LT.ILW), we need to 
+C                     exclude that one special case from the following
+C                     test; hence the factor (ILW+1).  
+                      IF (IP2.GT.(ILW+1).AND.IAM(IP2+$PD$).LT.ILW) THEN
                         IFRMXY = IAM(IP2+$PD$)
                       ELSE
                         IFRMXY = 0
@@ -4228,7 +4233,12 @@ C                     Jira NCL_32: if this node was inserted to split
 C                     a segment for a hole-connector, we want to use
 C                     the original segment's endpoints on the next
 C                     iteration through the inner loop.
-                      IF (IP2.GT.ILW .AND. IAM(IP2+$PD$).LT.ILW) THEN
+C                     Note: because the first node (bottom) of the first
+C                     hole-connector points *back* to a user-inserted 
+C                     node (i.e., IAM(IP2+$PD$).LT.ILW), we need to 
+C                     exclude that one special case from the following
+C                     test; hence the factor (ILW+1).  
+                      IF (IP2.GT.(ILW+1).AND.IAM(IP2+$PD$).LT.ILW) THEN
                         IFRMXY = IAM(IP2+$PD$)
                       ELSE
                         IFRMXY = 0
@@ -5344,7 +5354,11 @@ C original.
 C Jira NCL_32: case where potential next IPP is a node inserted to 
 C create a hole-connector. We want the original segment's coords for
 C angle calculation.
-                      IF (IP2.GT.ILW .AND. IAM(IP2+$PD$).LT.ILW) THEN
+C Note: because the first node (bottom) of the first hole-connector 
+C points *back* to a user-inserted node (i.e., IAM(IP2+$PD$).LT.ILW),
+C we need to exclude that one special case from the following test; 
+C hence the factor (ILW+1).  
+                      IF (IP2.GT.(ILW+1).AND.IAM(IP2+$PD$).LT.ILW) THEN
                         IFRMXY = IAM(IP2+$PD$)
                       ELSE
                         IFRMXY=0
@@ -5359,7 +5373,11 @@ C angle calculation.
 C Jira NCL_32: case where potential next IPP is a node inserted to 
 C create a hole-connector. We want the original segment's coords for
 C angle calculation.
-                      IF (IP2.GT.ILW .AND. IAM(IP2+$PD$).LT.ILW) THEN
+C Note: because the first node (bottom) of the first hole-connector 
+C points *back* to a user-inserted node (i.e., IAM(IP2+$PD$).LT.ILW),
+C we need to exclude that one special case from the following test; 
+C hence the factor (ILW+1).  
+                      IF (IP2.GT.(ILW+1).AND.IAM(IP2+$PD$).LT.ILW) THEN
                         IFRMXY = IAM(IP2+$PD$)
                       ELSE
                         IFRMXY=0
