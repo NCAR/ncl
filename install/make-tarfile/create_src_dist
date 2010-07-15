@@ -36,11 +36,11 @@
 #              -d :  Set the tar directory
 #              -g :  Tag the code with the given version number
 #                    This can only be done if code is checked-out
-#                    with CVS.
-#              -D :  Remove the given CVS tag
+#                    with SVN.
+#              -D :  Remove the given SVN tag
 #              -t :  Include triangle code
 #              -v :  version number
-#              -x :  don't use CVS to get directory. Assume "ncarg"
+#              -x :  don't use SVN to get directory. Assume "ncarg"
 #
 # Set defaults for the root directory, the tar file directory, and the
 # version number.
@@ -51,8 +51,8 @@ set rootdir     = "$NCARG"
 set parentdir   = `pwd`
 set scpmach     = "topaz.scd.ucar.edu"
 set version     = ""
-set cvsroot     = "topaz.scd.ucar.edu:/fs/scd/home0/ncargd/CVS"
-set cvsrsh      = "ssh"
+set svnroot     = "https://subversion.ucar.edu"
+set branch      = "NCL_5_2_1"
 set tardir1     = "/fs/scd/home0/ncargd/dist/tarfiles"
 set tardir2     = "/fis/scd/home/ncargd"
 set extra       = ""
@@ -71,7 +71,7 @@ endif
 #
 
 unset SCP
-set USE_CVS
+set USE_SVN
 unset INC_TRI
 
 set NCARGNCL
@@ -144,7 +144,7 @@ while ($#argv > 0)
       breaksw
 
     case "-x":
-      unset USE_CVS
+      unset USE_SVN
       shift
       breaksw
 
@@ -169,29 +169,27 @@ endif
 
 # Set directory to scp source files to.
 
-if ($?tag_version && ! $?USE_CVS) then
-  echo "To tag this version, you must use the CVS check-out method."
+if ($?tag_version && ! $?USE_SVN) then
+  echo "To tag this version, you must use the SVN check-out method."
   exit 1
 endif
 
 set scpdir = "/fs/scd/home0/ncargd/dist/tarfiles/ncl/$version"
 
 #
-# CVS check out the latest source code.
+# SVN check out the latest source code.
 #
-# First set some CVS environment variables.
+# First set SVNROOT environment variable.
 #
-setenv CVSROOT $cvsroot
-setenv CVS_RSH $cvsrsh
-
+setenv SVNROOT $svnroot
 
 echo ""
-if ($?USE_CVS) then
+if ($?USE_SVN) then
   if ($?INC_TRI) then
-    echo "  I will be CVS checking out the source code in the directory"
+    echo "  I will be SVN checking out the source code in the directory"
     echo "  '$parentdir' and including the triangle code."
   else
-    echo "  I will be CVS checking out the source code in the directory"
+    echo "  I will be SVN checking out the source code in the directory"
     echo "  '$parentdir' and NOT including the triangle code."
   endif
 else
@@ -210,37 +208,37 @@ endif
 # What if there's already an "ncarg" directory?
 #
 cd $parentdir
-if ($?USE_CVS && -e ncarg) then
-  echo "Directory $parentdir/ncarg already exists." 
+if ($?USE_SVN && -e $branch) then
+  echo "Directory $parentdir/$branch already exists." 
   echo -n "Do you want me to remove it? (y/n) "
   set answer="$<"
   if ("$answer" != "y") then
-    echo "Directory '$parentdir/ncarg' already exists and may not be"
+    echo "Directory '$parentdir/$branch' already exists and may not be"
     echo "the correct source code. Use the '-x' option if it's okay to"
     echo "use this directory."
     exit
   endif
-  set cmd = "/bin/rm -rf $parentdir/ncarg"
+  set cmd = "/bin/rm -rf $parentdir/$branch"
   echo "$cmd"
   $cmd
 endif
 
 # 
-# Check out all of $CVSROOT/ncarg
+# Check out all of $SVNROOT/ncldev/ncarg/branches/$branch
 #
-if ($?USE_CVS) then
-  set cmd = "cvs co ncarg"
+if ($?USE_SVN) then
+  set cmd = "svn co $SVNROOT/ncldev/ncarg/branches/$branch"
   echo "$cmd"
   $cmd
-  if (! -e ncarg) then
-    echo "Directory '$parentdir/ncarg' does not exist. The CVS command might"
-    echo "have failed. Can't continue."
+  if (! -e $branch) then
+    echo "Directory '$parentdir/$branch' does not exist."
+    echo "The SVN command might have failed. Can't continue."
     exit
   endif
 else
-  if (! -e ncarg) then
-    echo "Directory '$parentdir/ncarg' does not exist. You either need" 
-    echo "to let this script try to check it out with CVS, or check it"
+  if (! -e $branch) then
+    echo "Directory '$parentdir/$branch' does not exist. You either need"
+    echo "to let this script try to check it out with SVN, or check it"
     echo "out yourself. Don't use the '-x' option if you want this script
     echo "to check it out for you."
     exit
@@ -252,9 +250,9 @@ endif
 #
 if ($version == "") then
   if ($?NCARGONLY) then
-    set version = `cat ncarg/NcargVersion`
+    set version = `cat $branch/NcargVersion`
   else
-    set version = `cat ncarg/NclVersion`
+    set version = `cat $branch/NclVersion`
   endif
 endif
 
@@ -321,43 +319,47 @@ endif
 set stuff_to_remove = "$stuff_to_always_remove $more_stuff_to_remove"
 
 foreach f($stuff_to_remove)
-  set cmd = "/bin/rm -rf $parentdir/ncarg/$f"
+  set cmd = "/bin/rm -rf $parentdir/$branch/$f"
   echo "$cmd"
   $cmd
 end
 
 #
 # If requested, remove the given tag before we remove the
-# "CVS" directories.
+# "SVN" directories.
 #
-if ($?remove_tag_version) then
-  cd $parentdir
-  cvs tag -d $tag_version ncarg
-endif
+# NOT SURE ABOUT THIS CODE WITH SVN, SO COMMENTED OUT FOR NOW.
+#
+#if ($?remove_tag_version) then
+#  cd $parentdir
+#  svn tag -d $tag_version ncarg
+#endif
   
 #
 # If requested, tag the directories as they are, before we remove the
-# "CVS" directories.
+# "SVN" directories.
 #
-if ($?tag_version) then
-  cd $parentdir
-  cvs tag $tag_version ncarg
-endif
+# NOT SURE ABOUT THIS CODE WITH SVN, SO COMMENTED OUT FOR NOW.
+#
+#if ($?tag_version) then
+#  cd $parentdir
+#  cvs tag $tag_version ncarg
+#endif
   
 # 
-# Remove "CVS" directories.
+# Remove "SVN" directories.
 #
-cd $parentdir/ncarg
-set cmd = "find . -name 'CVS' -type d -exec /bin/rm -rf {} \;"
+cd $parentdir/$branch
+set cmd = "find . -name '.svn' -type d -exec /bin/rm -rf {} \;"
 echo "$cmd"
-find . -name 'CVS' -type d -exec /bin/rm -rf {} \;
+find . -name '.svn' -type d -exec /bin/rm -rf {} \;
 cd $parentdir
 
 #
-# Rename the parent "ncarg" directory to something that indicates
+# Rename the parent "$branch" directory to something that indicates
 # what kind of source we have, and what version.
 #
-mv ncarg $src_prefix
+mv $branch $src_prefix
 
 echo -n "The tar file will be called $tar_filename and it will be put in $tardir. Continue? (y/n) "
 set answer="$<"
@@ -385,7 +387,7 @@ endif
 
 if ($?SCP) then
   echo "scp (via topaz.scd) or move file to $scpdir..."
-  if ("$name" == "meeker" || "$name" == "topaz.scd" || "$name" == "longs") then
+  if ("$name" == "topaz.scd") then
     /bin/mv $tardir/$tar_filename.gz $scpdir
   else
     scp $tardir/$tar_filename.gz $scpmach\:$scpdir
@@ -402,8 +404,8 @@ echo "              -d : tar file directory"
 echo "              -c : scp to topaz.scd.ucar.edu"
 echo "              -t : include triangle code in HLU directory"
 echo "              -g : Tag the code with the given version number. This"
-echo "                   can only be done if code is checked-out with CVS."
-echo "              -D : Remove the given CVS tag"
+echo "                   can only be done if code is checked-out with SVN."
+echo "              -D : Remove the given SVN tag"
 echo "              -v : version number"
 echo "              -e : extra string to include in tarfile name"
 echo "              -1 : tar up NCARG source files only"
