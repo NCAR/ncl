@@ -1558,10 +1558,10 @@ begin
         "vcMonoLineArrowColor"     : vc_monolinearrowcolor
         "vcMonoWindBarbColor"      : vc_monowindbarbcolor
       end getvalues
-      if( (vc_glyphstyle.eq.0.and.vc_monolinearrowcolor) .or.\
-          (vc_glyphstyle.eq.1.and.vc_monofillarrowcolor) .or. \
-          (vc_glyphstyle.eq.2.and.vc_monowindbarbcolor)  .or. \
-          (vc_glyphstyle.eq.3.and.vc_monolinearrowcolor)) then
+      if( (vc_glyphstyle.eq.0.and..not.vc_monolinearrowcolor) .or.\
+          (vc_glyphstyle.eq.1.and..not.vc_monofillarrowcolor) .or. \
+          (vc_glyphstyle.eq.2.and..not.vc_monowindbarbcolor)  .or. \
+          (vc_glyphstyle.eq.3.and..not.vc_monolinearrowcolor)) then
         found = True
         new_plot = ids(i)
         new_plot@plot_type = "vector"
