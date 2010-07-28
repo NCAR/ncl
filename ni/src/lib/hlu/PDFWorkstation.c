@@ -403,6 +403,12 @@ static NhlErrorTypes PDFWorkstationInitialize
         }
         tfname = buff;
     }
+    if (strlen(tfname) > _NhlMAXLLUPATHLEN) {
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
+		  "%s: Filepath %s exceeds maximum length of %d", func,
+		  tfname,_NhlMAXLLUPATHLEN);
+	return NhlFATAL;
+    }
 
     np->filename = NhlMalloc(strlen(tfname) + 1);
     if (!np->filename) {

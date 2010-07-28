@@ -57,15 +57,17 @@ c                                      return if user desired
               IF (IFLAG.EQ.1 .AND. KMSG.NE.0) RETURN
 c                                      wgt vertical average
 c                                      by areal wgts x/lon and y/lat
-              TAVEZ = SUMTZ/SUMWZ
-              WGTXY = WGTX(ML)*WGTY(NL)
-              SUMT = SUMT + WGTXY*TAVEZ
-              SUMW = SUMW + WGTXY
+              IF (SUMWZ.GT.0.0D0) THEN
+                  TAVEZ = SUMTZ/SUMWZ
+                  WGTXY = WGTX(ML)*WGTY(NL)
+                  SUMT = SUMT + WGTXY*TAVEZ
+                  SUMW = SUMW + WGTXY
+              END IF
 
           END DO
       END DO
 c                          compute wgted average
-      IF (SUMW.NE.0.D0) THEN
+      IF (SUMW.GT.0.0D0) THEN
           AVE = SUMT/SUMW
       END IF
 
@@ -129,15 +131,17 @@ c                                      return if user desired
               IF (IFLAG.EQ.1 .AND. KMSG.NE.0) RETURN
 c                                      wgt vertical average
 c                                      by areal wgts x/lon and y/lat
-              TAVEZ = SUMTZ/SUMWZ
-              WGTXY = WGTX(ML)*WGTY(NL)
-              SUMT = SUMT + WGTXY*TAVEZ
-              SUMW = SUMW + WGTXY
+              IF (SUMWZ.GT.0.0D0) THEN
+                  TAVEZ = SUMTZ/SUMWZ
+                  WGTXY = WGTX(ML)*WGTY(NL)
+                  SUMT = SUMT + WGTXY*TAVEZ
+                  SUMW = SUMW + WGTXY
+              END IF
 
           END DO
       END DO
 c                          compute wgted average
-      IF (SUMW.NE.0.D0) THEN
+      IF (SUMW.GT.0.0D0) THEN
           AVE = SUMT/SUMW
       END IF
 

@@ -586,7 +586,8 @@ end
 ;--------------------------------------------------------------------------------
 undef("wrf_user_getvar")
 function wrf_user_getvar( nc_file:file, varin[*]:string, time_in:integer )
-
+local variable, time, var, u, v, u_in, v_in, pii, radians_per_degree, \
+dims, nd, latitude, longitude, rank
 begin
 
   variable = varin(0)

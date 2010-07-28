@@ -324,6 +324,13 @@ typedef enum {
 	Ncl_CACHE_NELEMS,
 	Ncl_CACHE_PREEMPTION,
 #endif
+#ifdef BuildHDF5
+        Ncl_H5_COMPRESSION_LEVEL,
+        Ncl_H5_USE_CACHE,
+        Ncl_H5_CACHE_SIZE,
+        Ncl_H5_CACHE_NELEMS,
+        Ncl_H5_CACHE_PREEMPTION,
+#endif
 	Ncl_DEFAULT_NCEP_PTABLE,
 	Ncl_PRINT_RECORD_INFO,
 	Ncl_SINGLE_ELEMENT_DIMENSIONS,

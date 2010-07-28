@@ -60,15 +60,17 @@ c                                      return if user desired
               IF (IFLAG.EQ.1 .AND. KMSG.NE.0) RETURN
 c                            wgt vertical mean square difference
 c                            by areal wgts x/lon and y/lat
-              VARTQ = (SUMTQ/SUMWZ)**2
-              WGTXY = WGTX(ML)*WGTY(NL)
-              SUMD = SUMD + WGTXY*VARTQ
-              SUMW = SUMW + WGTXY
+              IF (SUMWZ.GT.0.0D0) THEN
+                  VARTQ = (SUMTQ/SUMWZ)**2
+                  WGTXY = WGTX(ML)*WGTY(NL)
+                  SUMD  = SUMD + WGTXY*VARTQ
+                  SUMW = SUMW + WGTXY
+              END IF
 
           END DO
       END DO
 c                          compute wgted rmse
-      IF (SUMW.NE.0.D0) THEN
+      IF (SUMW.GT.0.0D0) THEN
           RMSE = SQRT(SUMD/SUMW)
       END IF
 
@@ -122,7 +124,7 @@ C          Dave Williamson suggested the use of the mean "dp"
 
       DO NL = 1,NY
           DO ML = 1,MX
-              SUMTQ = 0
+              SUMTQ = 0.0D0
               SUMDP = 0.0D0
 c                                     sum wgted vertical differences
 c                                     at each lat/lon point
@@ -130,8 +132,7 @@ c                                     at each lat/lon point
                   IF (T(ML,NL,KL).NE.TMSG .AND.
      +                Q(ML,NL,KL).NE.QMSG) THEN
                       WGTDP = 0.5D0* (DPT(ML,NL,KL)+DPQ(ML,NL,KL))
-                      SUMTQ = SUMTQ + WGTDP* (T(ML,NL,KL)-Q(ML,NL,KL))**
-     +                        2
+                      SUMTQ = SUMTQ + WGTDP*(T(ML,NL,KL)-Q(ML,NL,KL))**2
                       SUMDP = SUMDP + WGTDP
                   ELSE
                       KMSG = KMSG + 1
@@ -141,15 +142,17 @@ c                                      return if user desired
               IF (IFLAG.EQ.1 .AND. KMSG.NE.0) RETURN
 c                        wgt vertical mean square difference
 c                        by areal wgts x/lon and y/lat
-              VARTQ = SUMTQ/SUMDP
-              WGTXY = WGTX(ML)*WGTY(NL)
-              SUMD = SUMD + WGTXY*VARTQ
-              SUMW = SUMW + WGTXY
+              IF (SUMDP.GT.0.0D0) THEN
+                  VARTQ = SUMTQ/SUMDP
+                  WGTXY = WGTX(ML)*WGTY(NL)
+                  SUMD  = SUMD + WGTXY*VARTQ
+                  SUMW  = SUMW + WGTXY
+              END IF
 
           END DO
       END DO
 c                          compute wgted rmse
-      IF (SUMW.NE.0.D0) THEN
+      IF (SUMW.GT.0.0D0) THEN
           RMSE = SQRT(SUMD/SUMW)
       END IF
 

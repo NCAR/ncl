@@ -8084,6 +8084,10 @@ end
 
 undef("hyi2hyo_Wrap")
 function hyi2hyo_Wrap(p0,hyai,hybi,psfc,xi,hyao,hybo,option)
+;
+; hyai, hybi - input  hybrid coordinates
+; hyao, hybo - output hybrid coordinates
+;
 local xo, dName, nDim, P0, lev, n
 begin
    xo = hyi2hyo(p0,hyai,hybi,psfc,xi,hyao,hybo,option)
@@ -8100,6 +8104,7 @@ begin
 
    do n=0,nDim-1                     ; name the dimensions
       xo!n = dName(n)
+     ;print("dName: "+n+": "+dName(n))
    end do
 
    if (isatt(p0,"units") .and. \
@@ -8107,13 +8112,33 @@ begin
       (p0.eq.100000.))  then
        P0  = p0/100.
        P0@units = "hPa"
-       lev      = (hyao+hybo)*P0
-       lev@long_name     = "level"
-       lev@units         = "hPa"
-       lev@formula_terms = "a: hyam b: hybm p0: P0 ps: PS" 
-       lev@positive      = "down" 
-       lev@standard_name = "atmosphere_hybrid_sigma_pressure_coordinate"
+
+       if (isStrSubset(hyai@long_name,"interfaces") .or. \
+           isStrSubset(hyai@long_name,"midpoints" )) then
+           lev                = (hyao+hybo)*P0
+           lev@long_name      = "level"
+           lev@units          = "hPa"
+
+           if (isStrSubset(hyai@long_name,"interfaces")) then
+               lev@long_name     = "hybrid level at interfaces (1000*(A+B))"
+               lev@formula_terms = "a: hyai b: hybi p0: P0 ps: PS" 
+               lev!0             = "ilev"
+           end if
+           if (isStrSubset(hyai@long_name,"midpoints")) then
+               lev@long_name      = "hybrid level at midpoints (1000*(A+B))"
+               lev@formula_terms  = "a: hyam b: hybm p0: P0 ps: PS" 
+               lev!0             = "lev"
+           end if
+       else
+           lev                = (hyao+hybo)*P0
+           lev@long_name      = "level"
+           lev@units          = "hPa"
+           lev@long_name      = "hybrid level (1000*(A+B))"
+           lev@formula_terms  = "a: hya b: hyb p0: P0 ps: PS" 
+       end if
    end if
+   lev@standard_name  = "atmosphere_hybrid_sigma_pressure_coordinate"
+   lev@positive       = "down" 
 
    if (nDim.eq.3) then
        if (isvar("lev")) then
@@ -10298,7 +10323,7 @@ end
 undef("pdfx")
 function pdfx(x:numeric, nbin[1]:integer, opt:logical)
 local nGood, nbins, xMin, xMax, mnmxint, xSpace \
-     ,bin, pdf, nTot, XMIN, XMAX
+     ,bin, pdf, nTot, XMIN, XMAX, nLoOut, nHiOut
 begin
 
   if (opt .and. isatt(opt, "v510") .and. opt@v510) then
@@ -10346,21 +10371,26 @@ begin
       xMin    = mnmxint(0)
       xMax    = mnmxint(1)
       xSpace  = mnmxint(2)
-      nbins   = round( (xMax-xMin)/xSpace , 3) 
+    ;;nbins   = round( (xMax-xMin)/xSpace , 3) 
   end if
 
-  dbin        = (xMax-xMin)/(nbins-1)   
+;;dbin        = (xMax-xMin)/(nbins-1)          ; 5.2.0   
+  dbin        = (xMax-xMin)/nbins   
   binBound    = xMin + ispan(0,nbins,1)*dbin
+  binBound(nbins) = xMax                       ; avoid roundoff              
   binCenter   = (binBound(0:nbins-1) + binBound(1:nbins))*0.5d 
 
-  binBoundMin = binBound(0)          ; convenience
-  binBoundMax = binBound(nbins)   
+  binBoundMin = binBound(0)           
+  binBoundMax = binBound(nbins)      
 
   pdf         = new( nbins, "double", getFillValue(x))
   pdf         = 0.0d
 
   do nb=0,nbins-1      
      pdf(nb) = num( x.ge.binBound(nb) .and. x.lt.binBound(nb+1) )
+     if (nb.eq.(nbins-1)) then                 ; last bin 
+         pdf(nb) = pdf(nb) + num( x.eq.binBound(nb+1) )   ; include last bound
+     end if
   end do
 
   pdf!0    = "x"
@@ -10370,7 +10400,10 @@ begin
                                        ; actual number used
   nUse     = num(x.ge.binBoundMin .and. x.le.binBoundMax)
 
-  pdf      = 1d2*pdf/nMax              ; percent frequency
+  nLoOut   = num(x.lt.binBoundMin)     ; number outliers
+  nHiOut   = num(x.gt.binBoundMax)
+
+  pdf      = 100d0*pdf/nMax            ; percent frequency
 
   pdf@bin_center     = binCenter
   pdf@bin_bounds     = binBound
@@ -10380,6 +10413,10 @@ begin
   pdf@nbins          = nbins
   pdf@nMax           = nMax
   pdf@nUse           = nUse
+  if (nLoOut.gt.0 .or. nHiOut.gt.0) then
+      pdf@nLoOut     = nLoOut       
+      pdf@nHiOut     = nHiOut
+  end if
 
   pdf@long_name      = "PDF"
   if (isatt(x,"long_name")) then
@@ -10389,6 +10426,7 @@ begin
   
   return( pdf )
 end
+
 ;**************************************************************
 ; Calculate the "joint PDF [%]" of arrays "x" and "y"
 ;**************************************************************
@@ -10488,7 +10526,7 @@ begin
       xMin    = mnmxint(0)
       xMax    = mnmxint(1)
       xSpace  = mnmxint(2)
-      nbinsx  = round( (xMax-xMin)/xSpace , 3) 
+    ;;nbinsx  = round( (xMax-xMin)/xSpace , 3) 
       delete(mnmxint)
   end if
 
@@ -10501,16 +10539,20 @@ begin
       yMin    = mnmxint(0)
       yMax    = mnmxint(1)
       ySpace  = mnmxint(2)
-      nbinsy  = round( (yMax-yMin)/ySpace , 3) 
+    ;;nbinsy  = round( (yMax-yMin)/ySpace , 3) 
       delete(mnmxint)
   end if
 
-  dbinx       = (xMax-xMin)/(nbinsx-1)
+;;dbinx       = (xMax-xMin)/(nbinsx-1)
+  dbinx       = (xMax-xMin)/nbinsx
   binxBound   = xMin + ispan(0,nbinsx,1)*dbinx
+  binxBound(nbinsx) = xMax                       ; avoid roundoff
   binxCenter  = (binxBound(0:nbinsx-1) + binxBound(1:nbinsx))*0.5d 
 
-  dbiny       = (yMax-yMin)/(nbinsy-1)
+;;dbiny       = (yMax-yMin)/(nbinsy-1)
+  dbiny       = (yMax-yMin)/nbinsy
   binyBound   = yMin + ispan(0,nbinsy,1)*dbiny
+  binyBound(nbinsy) = yMax                       ; avoid roundoff
   binyCenter  = (binyBound(0:nbinsy-1) + binyBound(1:nbinsy))*0.5d 
 
   binxBoundMin= binxBound(0)          ; convenience

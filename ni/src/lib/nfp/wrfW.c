@@ -36,7 +36,9 @@ extern void NGCALLF(dcomputeuvmet,DCOMPUTEUVMET)(double *, double *, double *,
                                                  double *, double *, double *,
                                                  double *, double *, double *,
                                                  double *, int *, int *, 
-                                                 int *, int *, int *);
+                                                 int *, int *, int *,
+                                                 logical *,double *, double*,
+                                                 double *);
 
 extern void NGCALLF(dcomputeiclw,DCOMPUTEICLW)(double *, double *, double *, 
                                                int *, int *, int *);
@@ -1382,6 +1384,7 @@ NhlErrorTypes wrf_slp_W( void )
   NclFree(tmp_q);
   if(type_p   != NCL_double) NclFree(tmp_p);
   if(type_t   != NCL_double) NclFree(tmp_t);
+  if(type_z   != NCL_double) NclFree(tmp_z);
   if(type_slp != NCL_double) NclFree(tmp_slp);
 
   NclFree(tmp_t_sea_level);
@@ -1478,6 +1481,8 @@ NhlErrorTypes wrf_slp_W( void )
                           );
 
   NclFree(dsizes_slp);
+  NclFree(cunits);
+  NclFree(cdescription);
   if(dim_info != NULL) NclFree(dim_info);
 
 /*
@@ -3173,7 +3178,9 @@ NhlErrorTypes wrf_uvmet_W( void )
   void *u;
   double *tmp_u;
   int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
+  int has_missing_u;
   NclBasicDataTypes type_u;
+  NclScalar missing_u, missing_du;
 
 /*
  * Argument # 1
@@ -3181,7 +3188,9 @@ NhlErrorTypes wrf_uvmet_W( void )
   void *v;
   double *tmp_v;
   int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  int has_missing_v;
   NclBasicDataTypes type_v;
+  NclScalar missing_v, missing_dv;
 
 /*
  * Argument # 2
@@ -3217,8 +3226,9 @@ NhlErrorTypes wrf_uvmet_W( void )
  * Return variable and attributes.
  */
   void *uvmet;
-  double *tmp_uvmet;
+  double *tmp_uvmet, tmp_uvmet_msg;
   int ndims_uvmet, *dsizes_uvmet;
+  int has_missing;
   NclScalar missing_uvmet;
   NclBasicDataTypes type_uvmet;
   NclObjClass type_obj_uvmet;
@@ -3257,8 +3267,8 @@ NhlErrorTypes wrf_uvmet_W( void )
            6,
            &ndims_u,
            dsizes_u,
-           NULL,
-           NULL,
+           &missing_u,
+           &has_missing_u,
            &type_u,
            DONT_CARE);
 
@@ -3281,8 +3291,8 @@ NhlErrorTypes wrf_uvmet_W( void )
            6,
            &ndims_v,
            dsizes_v,
-           NULL,
-           NULL,
+           &missing_v,
+           &has_missing_v,
            &type_v,
            DONT_CARE);
 
@@ -3298,6 +3308,17 @@ NhlErrorTypes wrf_uvmet_W( void )
   nx     = dsizes_v[ndims_v-1];
   nyp1nx = nyp1 * nx;
 
+/*
+ * Coerce the missing values.
+ */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
+  if(has_missing_u || has_missing_v) {
+    has_missing = True;
+  }
+  else {
+    has_missing = False;
+  }
 /*
  * Check whether we have staggered or unstaggered grids. 
  *
@@ -3535,10 +3556,12 @@ NhlErrorTypes wrf_uvmet_W( void )
   if(type_uvmet != NCL_double) {
     uvmet = (void *)calloc(size_output, sizeof(float));
     missing_uvmet.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    tmp_uvmet_msg = (double)missing_uvmet.floatval;
   }
   else {
     uvmet = (void *)calloc(size_output, sizeof(double));
     missing_uvmet.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    tmp_uvmet_msg = missing_uvmet.doubleval;
   }
   if(uvmet == NULL || tmp_uvmet == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_uvmet: Unable to allocate memory for output array");
@@ -3629,7 +3652,10 @@ NhlErrorTypes wrf_uvmet_W( void )
       NGCALLF(dcomputeuvmet,DCOMPUTEUVMET)(tmp_u, tmp_v, tmp_uvmet, longca, 
                                            longcb, tmp_lon, tmp_lat, 
                                            tmp_cenlon, tmp_cone, &rpd, 
-                                           &nx, &ny, &nxp1, &nyp1, &istag);
+                                           &nx, &ny, &nxp1, &nyp1, &istag,
+                                           &has_missing,&missing_du.doubleval,
+                                           &missing_du.doubleval,
+                                           &tmp_uvmet_msg);
 /*
  * Coerce output back to float if necessary.
  */
