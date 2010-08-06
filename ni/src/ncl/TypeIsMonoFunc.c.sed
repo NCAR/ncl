@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeIsMonoFunc.c.sed,v 1.3 2009-07-10 19:54:06 huangwei Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -22,16 +22,16 @@
  */
 static NclMonoTypes Ncl_Type_DATATYPE_is_mono
 #if	NhlNeedProto
-(void *val,NclScalar* val_m,int nval)
+(void *val,NclScalar* val_m,ng_size_t nval)
 #else
 (val, val_m, nval)
 void *val;
 NclScalar* val_m;
-int nval;
+ng_size_t nval;
 #endif
 {
 	LOCALTYPE *value = (LOCALTYPE*)val;
-	int i = 0,j = 1;
+	ng_size_t i = 0,j = 1;
 
 	if(nval == 1) 
 		return(NclINCREASING);

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclType.h,v 1.5.4.1 2008-03-28 20:37:51 grubin Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -31,9 +31,9 @@ void * /* rhs */,
 NclScalar * /* lhs_m */, 
 NclScalar * /* rhs_m */,
 int         /* ndimslhs */, 
-ng_size_t */* dimsizeslhs */, 
+ng_size_t * /* dimsizeslhs */, 
 int         /* ndimsrhs */,
-ng_size_t */* dimsizesrhs */ 
+ng_size_t * /* dimsizesrhs */ 
 #endif
 );
 typedef NhlErrorTypes (*NclTypeOp)  (
@@ -43,8 +43,8 @@ void * /* lhs */,
 void * /* rhs */,
 NclScalar * /* lhs_m */, 
 NclScalar * /* rhs_m */,
-int /* nlhs */, 
-int /* nrhs */
+ng_size_t /* nlhs */, 
+ng_size_t /* nrhs */
 #endif
 );
 
@@ -69,7 +69,7 @@ typedef NclMonoTypes (*NclTypeMonotonicTestFunction) (
 #if	NhlNeedProto
 void * /*val*/,
 NclScalar * /*val_m*/,
-int	/*nval*/
+ng_size_t	/*nval*/
 #endif
 );
 

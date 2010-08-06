@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclType.c,v 1.7 2008-12-10 20:12:17 dbrown Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -172,7 +172,7 @@ NclTypeClassRec nclTypeClassRec = {
 	{
 /* NclObjTypes type;			*/ Ncl_Type,
 /* NclBasicDataTypes data_type;		*/ NCL_none,
-/* int size;				*/ 0,
+/* ng_size_t size;			*/ 0,
 /* char* hlu_rep_type[2];		*/ {NULL,NULL},
 /* NclScalar default_mis;		*/ {0},
 /* char* format		;	*/ NULL,
