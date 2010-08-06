@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypelist.c,v 1.4 2010-03-12 18:33:47 dbrown Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -37,27 +37,6 @@
 #include "NclMultiDValData.h"
 #include "DataSupport.h"
 
-/*
- *      $Id: NclTypelist.c,v 1.4 2010-03-12 18:33:47 dbrown Exp $
- */
-/************************************************************************
-*									*
-*			     Copyright (C)  1995			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
-************************************************************************/
-/*
- *	File:		
- *
- *	Author:		Ethan Alpert
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
- *
- *	Date:		Fri Jan 27 18:34:41 MST 1995
- *
- *	Description:	
- */
 #ifdef NIO_LIB_ONLY
 #include "nioBaseP.h"
 #include "nioCallbacks.h"
@@ -113,7 +92,7 @@ static NhlErrorTypes Ncl_Type_list_InitClass
 
 
 /*
- *      $Id: NclTypelist.c,v 1.4 2010-03-12 18:33:47 dbrown Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -162,7 +141,7 @@ ng_size_t nval;
 }
 
 /*
- *      $Id: NclTypelist.c,v 1.4 2010-03-12 18:33:47 dbrown Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -250,7 +229,7 @@ NclTypeClass Ncl_Type_list_eq_type
 }
 
 /*
- *      $Id: NclTypelist.c,v 1.4 2010-03-12 18:33:47 dbrown Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
