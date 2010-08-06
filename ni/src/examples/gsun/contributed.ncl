@@ -11667,6 +11667,9 @@ begin
         xReturn@units = x@units
     end if
 
+    if (rankx.eq.2) then
+        copy_VarCoords(x(0,:), xReturn(0,:))
+    end if
     if (rankx.eq.3) then
         copy_VarCoords(x(0,:,:), xReturn(0,:,:))
     end if
