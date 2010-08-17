@@ -1771,7 +1771,7 @@ CvtGenToExpMDArray
 		*exp->data = NULL;
 		*exp->len_dimensions = NULL;
 		*exp->num_dimensions = 0;
-		*exp->size = 0;
+		if (exp->size != NULL) *exp->size  = 0;
 		*exp->type = NULL;
 
 		return NhlNOERROR;
@@ -1934,7 +1934,7 @@ CvtGenToExpTypeMDArray
 		*exp->data = NULL;
 		*exp->len_dimensions = NULL;
 		*exp->num_dimensions = 0;
-		*exp->size = 0;
+		if (exp->size != NULL) *exp->size  = 0;
 
 		return NhlNOERROR;
 	}
@@ -2278,7 +2278,7 @@ CvtGenToExpArray
 		for(i=0;i < exp->num_dim_req;i++)
 			(*exp->len_dimensions)[i] = 0;
 		*exp->type = NULL;
-		*exp->size = 0;
+		if (exp->size != NULL) *exp->size  = 0;
 		*exp->data = NULL;
 
 		return NhlNOERROR;

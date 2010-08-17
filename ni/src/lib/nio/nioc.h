@@ -38,8 +38,33 @@
  * to a function that is written in fortran or is written in "C" to be
  * Fortran callable.
  */
+#define APPEND_UNDERSCORE 1
+#define NO_APPEND_UNDERSCORE 2
+#define CAPS_NO_APPEND_UNDERSCORE 3
 
-#ifndef	NGCALLF
+/* NGCALLF */
+
+#ifdef FORTRAN_CALLING_METHOD
+
+#if FORTRAN_CALLING_METHOD == APPEND_UNDERSCORE
+
+#define NGCALLF(reg,caps)   reg##_
+
+#elif FORTRAN_CALLING_METHOD == NO_APPEND_UNDERSCORE
+
+#define NGCALLF(reg,caps)   reg
+
+#elif FORTRAN_CALLING_METHOD == CAPS_NO_APPEND_UNDERSCORE
+
+#define NGCALLF(reg,caps)   caps
+
+#else
+
+#define NGCALLF(reg,caps)   reg##_
+
+#endif
+
+#else
 
 #define NGCALLF(reg,caps)   reg##_
 

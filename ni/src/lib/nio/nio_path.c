@@ -231,7 +231,8 @@ const char
 const	char	*_NGGetNCARGEnv(name)
 	const char	*name;
 {
-	static char	*env_vars[] = SED_ENV_DEFS;
+	static char	*env_vars[] = {"ncarg",NULL,"lib",NULL,NULL,	"grib2_codetables","NIO_GRIB2_CODETABLES","ncarg",NULL,NULL,
+		"lib",NULL,"root",NULL,NULL,	"root",NULL,NULL,"/usr/local/ncarg","/lib/ncarg/fontcaps/font1"};
 	static char	*env_vals[(sizeof(env_vars)/sizeof(env_vars[0]))] =
 					{ NULL };
 
@@ -357,43 +358,12 @@ const	char	*_NGGetNCARGEnv(name)
 	}
 
 	cs = _NGResolvePath(direct_val);
-/*
- * Check to see if we are prompting for URL path.  If so, then
- * later we will need to open a file to get the URL.
- */
-	if( strcmp(localname,NCARGURL) ) {
-		env_vals[i] = malloc(strlen(cs)+1);
-		if(!env_vals[i]) {
-			NhlPError(NhlFATAL,errno, "malloc(%s)",strlen(cs)+1);
-			return NULL;
-		}
-		strcpy(env_vals[i],cs);
+	env_vals[i] = malloc(strlen(cs)+1);
+	if(!env_vals[i]) {
+		NhlPError(NhlFATAL,errno, "malloc(%s)",strlen(cs)+1);
+		return NULL;
 	}
-/*
- * If the user wants the URL, then we need to open the file
- * to get it.
- */
-	else {
-		stmp[0] = '\0';
-		fp = fopen(cs,"r");
-		if( fp == (FILE *) NULL) {
-			(void) NhlPError(NhlFATAL,errno, "fopen(%s)", cs);
-			  return NULL;
-		}
-		(void)fgets(stmp,PATH_MAX-1,fp);
-		if( !(slen = strlen(stmp)) ) {
-			NhlPError(NhlFATAL,errno, "No URL found in file (%s)",cs);
-			return NULL;
-		}
-		if( stmp[slen-1] == '\n' ) 
-		  stmp[slen-1] = '\0';
-		env_vals[i] = malloc(strlen(stmp)+1);
-		if(!env_vals[i]) {
-			NhlPError(NhlFATAL,errno, "malloc(%s)",strlen(stmp)+1);
-			return NULL;
-		}
-		strcpy(env_vals[i],stmp);
-	}
+	strcpy(env_vals[i],cs);
 	return env_vals[i];
 }
 

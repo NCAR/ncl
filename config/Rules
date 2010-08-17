@@ -85,11 +85,35 @@ install-local:: names]\
 	if (test -f $$name.$(EXE_SUFFIX)) then \ ]\
 	(echo "Installing $$name.$(EXE_SUFFIX)";\ ]\
 	$(INSTALL) -m mode $$name.$(EXE_SUFFIX) dest);\ ]\
-    else \ ]\
+	else \ ]\
 	(echo "Installing $$name";\ ]\
 	$(INSTALL) -m mode $$name dest); fi \ ]\
 	done]
 #endif	/* InstallTarget */
+
+/*
+ * Macro:	ConditionalInstallTarget
+ *
+ * Description:	like InstallTarget, but only installs if the dest_prefix exists.
+ *		Used, e.g., to install PyNIO libsrc and grib_codetables only if
+ *              there is a pynio directory under the top level directory.
+ */
+#ifndef ConditionalInstallTarget
+#define ConditionalInstallTarget(names, mode, dest_prefix,dest)\
+all::]\
+]\
+all-local:: names]\
+]\
+install-local:: names]\
+	@if (test -d dest_prefix); then \ ]\
+	(if (test ! -d dest); then ($(MKDIRHIER) dest); fi; \ ]\
+	echo "installing to " dest; \ ]\
+	for name in names; do \ ]\
+	(echo "Installing $$name";\ ]\
+	$(INSTALL) -m mode $$name dest); \ ]\
+	done;) \ ]\
+	fi
+#endif  /* ConditionalInstallTarget */
 
 /*
  * Macro:	InstallLibTarget
