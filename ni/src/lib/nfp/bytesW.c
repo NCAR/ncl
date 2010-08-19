@@ -12,22 +12,28 @@ NhlErrorTypes dim_gbits_W( void )
  * Input.
  */
   void *npack;
-  int ndims_npack, dsizes_npack[NCL_MAX_DIMENSIONS];
+  int ndims_npack;
+  ng_size_t dsizes_npack[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_npack;
   int *ibit, *nbits, *nskip, *iter;
 /*  
  * Output.
  */
   void *isam;
-  int *tmp_isam, *dsizes_isam;
+  int *tmp_isam;
+  ng_size_t *dsizes_isam;
 
 /*
  * Various.
  */
-  int i, j, n, size_leftmost, size_isam, tmp_ibit, tmp_nbits, tmp_nskip;
+  ng_size_t i, j;
+  ng_size_t size_leftmost, size_isam;
+  int n;
+  int tmp_ibit, tmp_nbits, tmp_nskip;
   int *tmp_npack, *tmp_npack2;
 
-  int size_npack_type, size_int_type, ret;
+  int size_npack_type, size_int_type;
+  int ret;
   int index_npack = 0, index_isam = 0;
   NclTypeClass typeclass_npack;
 /*
@@ -137,7 +143,7 @@ NhlErrorTypes dim_gbits_W( void )
 /*
  * Allocate space for dimension sizes of output array.
  */
-  dsizes_isam = (int*)calloc(ndims_npack,sizeof(int));
+  dsizes_isam = (ng_size_t *)calloc(ndims_npack,sizeof(ng_size_t));
   if(dsizes_isam == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_gbits: Unable to allocate memory for holding size of output array");
     return(NhlFATAL);
@@ -219,18 +225,24 @@ NhlErrorTypes getbitsone_W( void )
  * Input.
  */
   void *npack;
-  int ndims_npack, dsizes_npack[NCL_MAX_DIMENSIONS];
+  int ndims_npack;
+  ng_size_t dsizes_npack[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_npack;
 /*  
  * Output.
  */
   void *isam;
-  int *tmp_isam, *dsizes_isam;
+  int *tmp_isam;
+  ng_size_t *dsizes_isam;
 
 /*
  * Various.
  */
-  int i, j, n, size_npack, size_isam, ibit, nbits, nskip, size_npack_type, ret;
+  ng_size_t i, j;
+  int size_npack, size_isam;
+  int size_npack_type;
+  int ibit, nbits, nskip;
+  int ret;
   int *tmp_npack, *tmp_npack2;
 
   NclTypeClass typeclass_npack;
@@ -301,7 +313,7 @@ NhlErrorTypes getbitsone_W( void )
 /*
  * Allocate space for dimension sizes of output array.
  */
-  dsizes_isam = (int*)calloc(ndims_npack+1,sizeof(int));
+  dsizes_isam = (ng_size_t *)calloc(ndims_npack+1,sizeof(ng_size_t));
   if(dsizes_isam == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"getbitsone: Unable to allocate memory for holding size of output array");
     return(NhlFATAL);

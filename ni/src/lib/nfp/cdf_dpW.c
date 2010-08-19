@@ -20,13 +20,14 @@ extern void NGCALLF(dcdfcdftp,DCDFCDFTP)(int *, double *, double *, double* ,
 NhlErrorTypes cdfbin_p_W( void ) {
         void    *s, *xn, *pr, *p;
         int     dummy=0;
-        int s_dimsizes[NCL_MAX_DIMENSIONS], xn_dimsizes[NCL_MAX_DIMENSIONS];
-        int pr_dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t s_dimsizes[NCL_MAX_DIMENSIONS], xn_dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t pr_dimsizes[NCL_MAX_DIMENSIONS];
         int s_ndims, xn_ndims, pr_ndims;
 
         /* Declaring temporary variables */
 
-        int i, size_x;
+        int i;
+	ng_size_t size_x;
         double *tmp_s, *tmp_xn, *tmp_pr, *tmp_p;
         NclBasicDataTypes type_s, type_xn, type_pr, type_p;
 
@@ -136,7 +137,15 @@ NhlErrorTypes cdfbin_p_W( void ) {
         /*
         * Call the Fortran version of this routine.
         */
-        NGCALLF(dcdfbinp,DCDFBINP)(&size_x, tmp_s, tmp_xn, tmp_pr, tmp_p, &dummy);
+	if(size_x <= INT_MAX)
+        {
+		int isize_x = (int) size_x;
+        	NGCALLF(dcdfbinp,DCDFBINP)(&isize_x, tmp_s, tmp_xn, tmp_pr, tmp_p, &dummy);
+	}
+	else
+        {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_p: size_x = %d, is larger than INT_MAX", size_x);
+	}
 
         if(type_p == NCL_float)
                 coerce_output_float_only(p,tmp_p,size_x,0);
@@ -156,13 +165,14 @@ NhlErrorTypes cdfbin_p_W( void ) {
 NhlErrorTypes cdfbin_s_W( void ) {
         void    *s, *xn, *pr, *p;
         int     dummy=0;
-        int xn_dimsizes[NCL_MAX_DIMENSIONS];
-        int pr_dimsizes[NCL_MAX_DIMENSIONS], p_dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t xn_dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t pr_dimsizes[NCL_MAX_DIMENSIONS], p_dimsizes[NCL_MAX_DIMENSIONS];
         int xn_ndims, pr_ndims, p_ndims;
 
         /* Declaring temporary variables */
 
-        int i, size_x;
+        int i;
+	ng_size_t size_x;
         double *tmp_s, *tmp_xn, *tmp_pr, *tmp_p;
         NclBasicDataTypes type_s, type_xn, type_pr, type_p;
 
@@ -273,7 +283,15 @@ NhlErrorTypes cdfbin_s_W( void ) {
         /*
         * Call the Fortran version of this routine.
         */
-        NGCALLF(dcdfbins,DCDFBINS)(&size_x, tmp_p, tmp_xn, tmp_pr, tmp_s, &dummy);
+	if(size_x <= INT_MAX)
+        {
+		int isize_x = (int) size_x;
+        	NGCALLF(dcdfbins,DCDFBINS)(&isize_x, tmp_p, tmp_xn, tmp_pr, tmp_s, &dummy);
+	}
+	else
+        {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbins: size_x = %d, is larger than INT_MAX", size_x);
+	}
 
         if(type_s == NCL_float)
                 coerce_output_float_only(s,tmp_s,size_x,0);
@@ -293,13 +311,14 @@ NhlErrorTypes cdfbin_s_W( void ) {
 NhlErrorTypes cdfbin_xn_W( void ) {
         void    *xn, *s, *pr, *p;
         int     dummy=0;
-        int s_dimsizes[NCL_MAX_DIMENSIONS];
-        int pr_dimsizes[NCL_MAX_DIMENSIONS], p_dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t s_dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t pr_dimsizes[NCL_MAX_DIMENSIONS], p_dimsizes[NCL_MAX_DIMENSIONS];
         int s_ndims, pr_ndims, p_ndims;
 
         /* Declaring temporary variables */
 
-        int i, size_x;
+        int i;
+	ng_size_t size_x;
         double *tmp_xn, *tmp_s, *tmp_pr, *tmp_p;
         NclBasicDataTypes type_xn, type_s, type_pr, type_p;
 
@@ -410,7 +429,15 @@ NhlErrorTypes cdfbin_xn_W( void ) {
         /*
         * Call the Fortran version of this routine.
         */
-        NGCALLF(dcdfbinxn,DCDFBINXN)(&size_x, tmp_p, tmp_s, tmp_pr, tmp_xn, &dummy);
+	if(size_x <= INT_MAX)
+        {
+		int isize_x = (int) size_x;
+        	NGCALLF(dcdfbinxn,DCDFBINXN)(&isize_x, tmp_p, tmp_s, tmp_pr, tmp_xn, &dummy);
+	}
+	else
+        {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinxn: size_x = %d, is larger than INT_MAX", size_x);
+	}
 
         if(type_xn == NCL_float)
                 coerce_output_float_only(xn,tmp_xn,size_x,0);
@@ -430,13 +457,14 @@ NhlErrorTypes cdfbin_xn_W( void ) {
 NhlErrorTypes cdfbin_pr_W( void ) {
         void    *pr, *s, *xn, *p;
         int     dummy=0;
-        int s_dimsizes[NCL_MAX_DIMENSIONS];
-        int xn_dimsizes[NCL_MAX_DIMENSIONS], p_dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t s_dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t xn_dimsizes[NCL_MAX_DIMENSIONS], p_dimsizes[NCL_MAX_DIMENSIONS];
         int s_ndims, xn_ndims, p_ndims;
 
         /* Declaring temporary variables */
 
-        int i, size_x;
+        int i;
+	ng_size_t size_x;
         double *tmp_pr, *tmp_s, *tmp_xn, *tmp_p;
         NclBasicDataTypes type_pr, type_s, type_xn, type_p;
 
@@ -547,7 +575,15 @@ NhlErrorTypes cdfbin_pr_W( void ) {
         /*
         * Call the Fortran version of this routine.
         */
-        NGCALLF(dcdfbinpr,DCDFBINPR)(&size_x, tmp_p, tmp_s, tmp_xn, tmp_pr, &dummy);
+	if(size_x <= INT_MAX)
+        {
+		int isize_x = (int) size_x;
+        	NGCALLF(dcdfbinpr,DCDFBINPR)(&isize_x, tmp_p, tmp_s, tmp_xn, tmp_pr, &dummy);
+	}
+	else
+        {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinpr: size_x = %d, is larger than INT_MAX", size_x);
+	}
 
         if(type_pr == NCL_float)
                 coerce_output_float_only(pr,tmp_pr,size_x,0);
@@ -567,13 +603,14 @@ NhlErrorTypes cdfbin_pr_W( void ) {
 NhlErrorTypes cdfgam_p_W( void ) {
         void    *x, *shape, *scale, *p;
         int     dummy=0;
-        int x_dimsizes[NCL_MAX_DIMENSIONS], shape_dimsizes[NCL_MAX_DIMENSIONS];
-        int scale_dimsizes[NCL_MAX_DIMENSIONS];
+	ng_size_t x_dimsizes[NCL_MAX_DIMENSIONS], shape_dimsizes[NCL_MAX_DIMENSIONS];
+	ng_size_t scale_dimsizes[NCL_MAX_DIMENSIONS];
         int x_ndims, shape_ndims, scale_ndims;
 
         /* Declaring temporary variables */
 
-        int i, size_x;
+        int i;
+	ng_size_t size_x;
         double *tmp_x, *tmp_shape, *tmp_scale, *tmp_p;
         NclBasicDataTypes type_x, type_shape, type_scale, type_p;
 
@@ -683,7 +720,15 @@ NhlErrorTypes cdfgam_p_W( void ) {
         /*
         * Call the Fortran version of this routine.
         */
-        NGCALLF(dcdfgamp,DCDFGAMP)(&size_x, tmp_x, tmp_shape, tmp_scale, tmp_p, &dummy);
+	if(size_x <= INT_MAX)
+        {
+		int isize_x = (int) size_x;
+        	NGCALLF(dcdfgamp,DCDFGAMP)(&isize_x, tmp_x, tmp_shape, tmp_scale, tmp_p, &dummy);
+	}
+	else
+        {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfgamp: size_x = %d, is larger than INT_MAX", size_x);
+	}
 
         if(type_p == NCL_float)
                 coerce_output_float_only(p,tmp_p,size_x,0);
@@ -704,13 +749,14 @@ NhlErrorTypes cdfgam_p_W( void ) {
 NhlErrorTypes cdfgam_x_W( void ) {
         void    *p, *shape, *scale, *x;
         int     dummy=0;
-        int p_dimsizes[NCL_MAX_DIMENSIONS], shape_dimsizes[NCL_MAX_DIMENSIONS];
-        int scale_dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t p_dimsizes[NCL_MAX_DIMENSIONS], shape_dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t scale_dimsizes[NCL_MAX_DIMENSIONS];
         int p_ndims, shape_ndims, scale_ndims;
 
         /* Declaring temporary variables */
 
-        int i, size_x;
+        int i;
+	ng_size_t size_x;
         double *tmp_p, *tmp_shape, *tmp_scale, *tmp_x;
         NclBasicDataTypes type_p, type_shape, type_scale, type_x;
 
@@ -821,7 +867,15 @@ NhlErrorTypes cdfgam_x_W( void ) {
         /*
         * Call the Fortran version of this routine.
         */
-        NGCALLF(dcdfgamx,DCDFGAMX)(&size_x, tmp_p, tmp_shape, tmp_scale, tmp_x, &dummy);
+	if(size_x <= INT_MAX)
+        {
+		int isize_x = (int) size_x;
+        	NGCALLF(dcdfgamx,DCDFGAMX)(&isize_x, tmp_p, tmp_shape, tmp_scale, tmp_x, &dummy);
+	}
+	else
+        {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfgamx: size_x = %d, is larger than INT_MAX", size_x);
+	}
 
         if(type_x == NCL_float)
                 coerce_output_float_only(x,tmp_x,size_x,0);
@@ -841,13 +895,14 @@ NhlErrorTypes cdfgam_x_W( void ) {
 NhlErrorTypes cdfnor_p_W( void ) {
         void    *x, *mean, *sd, *p;
         int     dummy=0;
-        int x_dimsizes[NCL_MAX_DIMENSIONS], mean_dimsizes[NCL_MAX_DIMENSIONS];
-        int sd_dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t x_dimsizes[NCL_MAX_DIMENSIONS], mean_dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t sd_dimsizes[NCL_MAX_DIMENSIONS];
         int x_ndims, mean_ndims, sd_ndims;
 
         /* Declaring temporary variables */
 
-        int i, size_x;
+        int i;
+	ng_size_t size_x;
         double *tmp_x, *tmp_mean, *tmp_sd, *tmp_p;
         NclBasicDataTypes type_x, type_mean, type_sd, type_p;
 
@@ -958,7 +1013,15 @@ NhlErrorTypes cdfnor_p_W( void ) {
         /*
         * Call the Fortran version of this routine.
         */
-        NGCALLF(dcdfnorp,DCDFNORP)(&size_x, tmp_x, tmp_mean, tmp_sd, tmp_p, &dummy);
+	if(size_x <= INT_MAX)
+        {
+		int isize_x = (int) size_x;
+        	NGCALLF(dcdfnorp,DCDFNORP)(&isize_x, tmp_x, tmp_mean, tmp_sd, tmp_p, &dummy);
+	}
+	else
+        {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfnorp: size_x = %d, is larger than INT_MAX", size_x);
+	}
 
         if(type_p == NCL_float)
                 coerce_output_float_only(p,tmp_p,size_x,0);
@@ -978,13 +1041,14 @@ NhlErrorTypes cdfnor_p_W( void ) {
 NhlErrorTypes cdfnor_x_W( void ) {
         void    *p, *mean, *sd, *x;
         int     dummy=0;
-        int p_dimsizes[NCL_MAX_DIMENSIONS], mean_dimsizes[NCL_MAX_DIMENSIONS];
-        int sd_dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t p_dimsizes[NCL_MAX_DIMENSIONS], mean_dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t sd_dimsizes[NCL_MAX_DIMENSIONS];
         int p_ndims, mean_ndims, sd_ndims;
 
         /* Declaring temporary variables */
 
-        int i, size_x;
+        int i;
+	ng_size_t size_x;
         double *tmp_p, *tmp_mean, *tmp_sd, *tmp_x;
         NclBasicDataTypes type_p, type_mean, type_sd, type_x;
 
@@ -1094,7 +1158,15 @@ NhlErrorTypes cdfnor_x_W( void ) {
         /*
         * Call the Fortran version of this routine.
         */
-        NGCALLF(dcdfnorx,DCDFNORX)(&size_x, tmp_p, tmp_mean, tmp_sd, tmp_x, &dummy);
+	if(size_x <= INT_MAX)
+        {
+		int isize_x = (int) size_x;
+        	NGCALLF(dcdfnorx,DCDFNORX)(&isize_x, tmp_p, tmp_mean, tmp_sd, tmp_x, &dummy);
+	}
+	else
+        {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfnorx: size_x = %d, is larger than INT_MAX", size_x);
+	}
 
         if(type_x == NCL_float)
                 coerce_output_float_only(x,tmp_x,size_x,0);
@@ -1114,12 +1186,13 @@ NhlErrorTypes cdfnor_x_W( void ) {
 NhlErrorTypes cdfchi_p_W( void ) {
         void    *x, *df, *p;
         int     dummy=0;
-        int x_dimsizes[NCL_MAX_DIMENSIONS], df_dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t x_dimsizes[NCL_MAX_DIMENSIONS], df_dimsizes[NCL_MAX_DIMENSIONS];
         int x_ndims, df_ndims;
 
         /* Declaring temporary variables */
 
-        int i, size_x;
+        int i;
+	ng_size_t size_x;
         double *tmp_x, *tmp_df, *tmp_p;
         NclBasicDataTypes type_x, type_df, type_p;
 
@@ -1214,7 +1287,15 @@ NhlErrorTypes cdfchi_p_W( void ) {
         /*
         * Call the Fortran version of this routine.
         */
-        NGCALLF(dcdfchip,DCDFCHIP)(&size_x, tmp_x, tmp_df, tmp_p, &dummy);
+	if(size_x <= INT_MAX)
+        {
+		int isize_x = (int) size_x;
+		NGCALLF(dcdfchip,DCDFCHIP)(&isize_x, tmp_x, tmp_df, tmp_p, &dummy);
+	}
+	else
+        {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfchip: size_x = %d, is larger than INT_MAX", size_x);
+	}
 
         if(type_p == NCL_float)
                 coerce_output_float_only(p,tmp_p,size_x,0);
@@ -1235,8 +1316,10 @@ NhlErrorTypes cdft_t_W( void )
  * Input variables.
  */
   void  *p, *df;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
-  int ndims_df, dsizes_df[NCL_MAX_DIMENSIONS];
+  int ndims_p;
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  int ndims_df;
+  ng_size_t dsizes_df[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p, type_df;
   double *tmp_p, *tmp_df;
 /*
@@ -1248,7 +1331,9 @@ NhlErrorTypes cdft_t_W( void )
 /*
  * Various
  */
-  int i, n, index_p, size_leftmost, size_t, ier;
+  int i, n, index_p;
+  ng_size_t size_leftmost, size_t;
+  int ier;
  
 /*
  * Retrieve arguments.
@@ -1392,8 +1477,10 @@ NhlErrorTypes cdft_p_W( void )
  * Input variables.
  */
   void  *t, *df;
-  int ndims_t, dsizes_t[NCL_MAX_DIMENSIONS];
-  int ndims_df, dsizes_df[NCL_MAX_DIMENSIONS];
+  int ndims_t;
+  ng_size_t dsizes_t[NCL_MAX_DIMENSIONS];
+  int ndims_df;
+  ng_size_t dsizes_df[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_t, type_df;
   double *tmp_t, *tmp_df;
 /*
@@ -1405,7 +1492,9 @@ NhlErrorTypes cdft_p_W( void )
 /*
  * Various
  */
-  int i, n, index_t, size_leftmost, size_p, ier;
+  int i, n, index_t;
+  ng_size_t size_leftmost, size_p;
+  int ier;
  
 /*
  * Retrieve arguments.

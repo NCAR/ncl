@@ -18,8 +18,12 @@ NhlErrorTypes escorc_W( void )
  */
   void *x, *y;
   double *tmp_x, *tmp_y;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   NclScalar missing_x, missing_y;
   NclScalar missing_rx, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y;
@@ -28,19 +32,20 @@ NhlErrorTypes escorc_W( void )
  */
   void *corc;
   double *tmp_corc;
-  int ndims_corc, dsizes_corc[NCL_MAX_DIMENSIONS];
+  int ndims_corc;
+  ng_size_t dsizes_corc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_corc;
 /*
  * various
  */
   double *xx, *yy;
   int i, j, index_x, index_y, index_corc, ier, ier_count;
-  int nxy, mxy, dimsizes_same;
-  int total_size_leftmost_x, total_size_x;
-  int total_size_leftmost_y, total_size_y;
-  int total_size_corc;
+  int nxy, mxy;
+  ng_size_t dimsizes_same;
+  ng_size_t total_size_leftmost_x, total_size_x;
+  ng_size_t total_size_leftmost_y, total_size_y;
+  ng_size_t total_size_corc;
   double xave, xstd, xvar;
-  int nptusx;
 /*
  * Retrieve parameters
  *
@@ -373,8 +378,12 @@ NhlErrorTypes escovc_W( void )
  */
   void *x, *y;
   double *tmp_x, *tmp_y;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   NclScalar missing_x, missing_y;
   NclScalar missing_rx, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y;
@@ -383,19 +392,21 @@ NhlErrorTypes escovc_W( void )
  */
   void *covc;
   double *tmp_covc;
-  int ndims_covc, dsizes_covc[NCL_MAX_DIMENSIONS];
+  int ndims_covc;
+  ng_size_t dsizes_covc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_covc;
 /*
  * various
  */
   double *xx, *yy;
-  int i, j, index_x, index_y, index_covc, ier, ier_count;
-  int nxy, mxy, dimsizes_same;
-  int total_size_leftmost_x, total_size_x;
-  int total_size_leftmost_y, total_size_y;
-  int total_size_covc;
+  int index_x, index_y, index_covc, ier, ier_count;
+  int nxy, mxy;
+  ng_size_t i, j;
+  ng_size_t dimsizes_same;
+  ng_size_t total_size_leftmost_x, total_size_x;
+  ng_size_t total_size_leftmost_y, total_size_y;
+  ng_size_t total_size_covc;
   double xave, xstd, xvar;
-  int nptusx;
 /*
  * Retrieve parameters
  *
