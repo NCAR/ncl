@@ -93,9 +93,12 @@ static struct _NclDataRec *MultiDVal_nclfile_ReadSection
 	} else if((self_md->multidval.missing_value.has_missing)&&(missing != NULL)) {
 		chckmiss = 1;
 	}
-	if(sel!= NULL){
-		sel_ptr	= sel->selection;
+	if(! sel){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"MultiDVal_nclfile_ReadSection: invalid state: No selection specified");
+		return(NULL);
 	}
+
+	sel_ptr	= sel->selection;
 	for(i = 0 ; i < n_dims_input; i++) {
 		switch(sel_ptr->sel_type) {
 		case Ncl_SUB_ALL:

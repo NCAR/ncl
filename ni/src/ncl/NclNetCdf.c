@@ -30,6 +30,8 @@
 #include "defs.h"
 #include "NclDataDefs.h"
 #include "NclFileInterfaces.h"
+#include "NclVar.h"
+#include "VarSupport.h"
 #include "NclData.h"
 
 #include   <stdio.h>
@@ -48,7 +50,7 @@
 
 #define NETCDF_DEBUG 0
 
-static ng_size_t ChunkSizeHint;
+static ng_usize_t ChunkSizeHint;
 
 typedef struct _NetCdfFileRecord NetCdfFileRecord;
 typedef struct _NetCdfVarInqRec NetCdfVarInqRec;
@@ -325,11 +327,11 @@ NetCdfAttInqRec* frec
 	long start = 0;
 	int ret;
 
-	for(dl; dl != NULL; dl = dl->next) {
+	for(; dl != NULL; dl = dl->next) {
 		NetCdfDimInqRec *dim_inq = dl->dim_inq;
 		NetCdfVarInqRecList *vl = frec->vars;
 
-		for (vl; vl != NULL; vl = vl->next) {
+		for (; vl != NULL; vl = vl->next) {
 			if (vl->var_inq->name != dim_inq->name)
 				continue;
 			break;
@@ -451,7 +453,7 @@ int cdfid;
 				}
 				var_inq->n_chunk_dims = var_inq->n_dims;
                 		nc_ret = nc_def_var_chunking(cdfid, var_inq->varid, storage,
-                                             	var_inq->chunk_dim);
+							     (size_t *)var_inq->chunk_dim);
 
             			if((rec->compress_level > 0) && (var_inq->compress_level < 1))
             			{
@@ -530,7 +532,6 @@ NetCdfFileRecord *tmp;
 #endif
 {
 	NetCdfOptions *options;
-	int i;
 
 	tmp->n_options = NC_NUM_OPTIONS;
 	
@@ -658,7 +659,6 @@ int wr_status;
 	NetCdfVarInqRecList *tmpvlptr;
 	NetCdfDimInqRecList **stepdlptr;
 	NetCdfDimInqRecList *tmpdlptr;
-	static int count = 0;
 
 	if(tmp == NULL) {
 		return(NULL);
@@ -1058,7 +1058,7 @@ NclQuark var_name;
 	NetCdfVarInqRecList *stepvl;
 	NetCdfDimInqRecList *stepdl;
 	NclFVarRec *tmp;
-	int i,j;
+	int j;
 
 	stepvl = rec->vars;
 	while(stepvl != NULL) {
@@ -1892,7 +1892,7 @@ NclQuark theatt;
 	NetCdfAttInqRecList *prev;
 	int cdfid;
 	int nc_ret;
-	int ret;
+	int ret = 0;
 
 	if(rec->wr_status <= 0) {
 		stepal = rec->file_atts;
@@ -1977,7 +1977,7 @@ NclQuark theatt;
 	NetCdfVarInqRecList *stepvl;
 	int cdfid;
 	int nc_ret;
-	int ret;
+	int ret = 0;
 
 	if(rec->wr_status <= 0) {
 		stepvl = rec->vars;
@@ -2240,7 +2240,7 @@ ng_size_t *chunk_dims;
                     stepvl->var_inq->chunk_dim[i] = (ng_size_t)chunk_dims[i];
                 }
                 nc_ret = nc_def_var_chunking(cdfid, stepvl->var_inq->varid, storage,
-                                             stepvl->var_inq->chunk_dim);
+                                             (size_t *)stepvl->var_inq->chunk_dim);
                 ret = NhlNOERROR;
                 break;
             }
@@ -2272,7 +2272,7 @@ float cache_preemption;
 {
     NetCdfFileRecord* rec = (NetCdfFileRecord*)therec;
     NetCdfVarInqRecList *stepvl = NULL;
-    int i,ret = NhlNOERROR;
+    int ret = NhlNOERROR;
     int cdfid;
     int nc_ret;
 
@@ -2348,7 +2348,7 @@ int compress_level;
 {
     NetCdfFileRecord* rec = (NetCdfFileRecord*)therec;
     NetCdfVarInqRecList *stepvl = NULL;
-    int i,ret = NhlNOERROR;
+    int ret = NhlNOERROR;
     int cdfid;
     int shuffle = 0;
     int deflate = compress_level;
@@ -3272,9 +3272,6 @@ static NhlErrorTypes NetSetOption
 #endif
 {
 	NetCdfFileRecord *rec = (NetCdfFileRecord*)therec;
-	NetCdfAttInqRecList* stepal;
-	nc_type *the_data_type;
-	int i,ret;
 
 	if (option ==  NrmStringToQuark("prefill")) {
 		rec->options[NC_PREFILL_OPT].values = (void*) *(int*)values;

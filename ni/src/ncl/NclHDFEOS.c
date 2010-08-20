@@ -31,7 +31,9 @@
 #include <hdf/mfhdf.h>
 #include "NclDataDefs.h"
 #include "NclFileInterfaces.h"
+#include "NclData.h"
 #include <math.h>
+#include <ctype.h>
 #include <HdfEosDef.h>
 
 /*
@@ -484,9 +486,7 @@ static void HDFEOSIntAddIndexedMapVars
 	int i;
 	char *tcp,*cp,*dim1, *dim2;
 	char name_buf[1024];
-	int* mapvals;
 	NrmQuark hdf_name1,ncl_name1,hdf_name2,ncl_name2;
-	int32 rank = 1;
 
 	cp = idxmaps;
 	for (i = 0; i < nmaps; i++) {
@@ -570,15 +570,10 @@ int wr_status;
 	int32 ndims;
 	int32 nmaps;
 	int32 ngeofields;
-	int32 georank[100];
-	int32 geotype[100];
-	int32 nentries;
 	int32 npt,nsw,ngd,i,j,k;
-	int ngroups;
 /*	long bsize;*/
 	int32 bsize;
 	int32 *dimsizes;
-	char *tmp,*tmp2;
 	int32 ndata = 0;
 	NclQuark *sw_hdf_names;
 	NclQuark *sw_ncl_names;
@@ -596,12 +591,6 @@ int wr_status;
 	NclQuark *tmp_names;
 	int32 tmp_rank;
 	int32 tmp_type;
-	int32 HDFid;
-	int32 sdInterfaceID;
-	int32 ref_array[1000];
-	char vgroup_class[100];
-  	int32 tmp_id;
-	intn oginfo;
 	int32 origincode=0;
 	int32 projcode = 0;
 	int32 zonecode =0 ;
@@ -610,8 +599,6 @@ int wr_status;
 	int32 att_type;
 	int32 att_size;
 	intn nrc,nfd,nlv;
-	int32 strbufsize = 0;
-	char version[100];
 	int32 *fldorder = NULL;
 	int32 *fldtype = NULL;
 	float64 projparm[15];
@@ -932,9 +919,7 @@ int wr_status;
 		GDfid = GDopen(NrmQuarkToString(path),DFACC_READ);
 		HDFEOSParseName(buffer,&gd_hdf_names,&gd_ncl_names,ngd);
 		for(i = 0; i < ngd; i++) {
-			double *lat2d, *lon2d;
-			int32 *cols, *rows;
-			int k, l;
+			int k;
 			int32 pixregcode;
 			intn status;
 			int has_xdim_var = 0, has_ydim_var = 0;
@@ -1471,7 +1456,6 @@ NclQuark var_name;
 	HDFEOSFileRecord * thefile = (HDFEOSFileRecord *) therec;
 	HDFEOSVarInqRecList * thelist;
 	NclFVarRec *var_info = NclMalloc(sizeof(NclFVarRec));
-	int32 is_unsigned;
 
 	int i,j;
 
@@ -1491,7 +1475,7 @@ NclQuark var_name;
 		}
 		thelist = thelist->next;
 	}
-	
+	return NULL;
 }
 static NclQuark *HDFEOSGetDimNames
 #if	NhlNeedProto
@@ -1541,6 +1525,7 @@ NclQuark dim_name_q;
 		}
 		thelist= thelist->next;
 	}
+	return NULL;
 }
 static NclQuark *HDFEOSGetAttNames
 #if	NhlNeedProto
@@ -1554,7 +1539,6 @@ int *num_atts;
 	HDFEOSFileRecord * thefile = (HDFEOSFileRecord *) therec;
 	HDFEOSAttInqRecList * the_int_att_list;
 	NclQuark* output = NULL;
-	int i;
 
 	*num_atts = 0;
 	if(thefile->n_int_atts > 0) {
@@ -1677,6 +1661,7 @@ void* therec;
 NclQuark thevar;
 #endif
 {
+	return NULL;
 }
 
 static int ReadCoordVar
@@ -1789,7 +1774,7 @@ void* storage;
 {
         HDFEOSFileRecord * thefile = (HDFEOSFileRecord *) therec;
 	HDFEOSVarInqRecList *thelist;
-	int i,j,out;
+	int i,j,out = 0;
 	int32 fid; 
 	int32 did; 
 	int32 starti[NCL_MAX_DIMENSIONS];
@@ -1903,7 +1888,6 @@ void* storage;
 {
 	HDFEOSFileRecord * thefile = (HDFEOSFileRecord *) therec;
 	HDFEOSAttInqRecList * the_int_att_list;
-	int i;
 
 	the_int_att_list = thefile->att_int_list;
 	while(the_int_att_list != NULL) {
@@ -1930,7 +1914,6 @@ void* storage;
 	HDFEOSFileRecord * thefile = (HDFEOSFileRecord *) therec;
 	HDFEOSVarInqRecList * thelist;
 	HDFEOSAttInqRecList * the_int_att_list;
-	NclFAttRec* output = NULL;
 	int i;
 
 	thelist = thefile->vars;

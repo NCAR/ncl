@@ -319,10 +319,8 @@ int digits;
 double * result;
 #endif
 {
-	double dres;
 	double l = *(double*)lhs;
 	double r = *(double*)rhs;
-	int prec = DBL_DIG;
 
 	if((lhs_m != NULL)&&(lhs_m->doubleval == l)) {
                 return(NhlFATAL);

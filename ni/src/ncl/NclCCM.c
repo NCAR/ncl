@@ -18,6 +18,7 @@
 #include "NclCCM.h"
 #include <math.h>
 #include "ccmhdr.h"
+#include <unistd.h>
 
 
 #ifndef ByteSwapped
@@ -33,6 +34,7 @@
 #endif
 static unsigned char cray_missing_value[8] = { 0x40,0x78,0xc0,0x97,0xce,0x7b,0xc9,0x07 };
 
+#if 0
 static int printbinary(FILE *fp,int val,int val2) {
 
         static int count = 0;
@@ -187,6 +189,7 @@ static int printbinary(FILE *fp,int val,int val2) {
                 fprintf(fp,"\n");
         return(count);
 }
+#endif
 
 long sz(int n)
 {
@@ -1975,7 +1978,7 @@ int level_type;
 	unsigned int uval;
 	unsigned short sval;
 	int k,i,j;
-	ng_size_t mul_lev;
+	ng_size_t mul_lev = 0;
     ng_size_t index;
 
 	switch(level_type) {

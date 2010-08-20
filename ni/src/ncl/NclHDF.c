@@ -126,7 +126,7 @@ int		n_file_atts;
 HDFAttInqRecList *file_atts;
 };
 
-
+#if 0
 static void HDFGetAttrVal
 #if	NhlNeedProto
 (int ncid,HDFAttInqRec* att_inq)
@@ -155,6 +155,7 @@ HDFAttInqRec* att_inq
 		ret = sd_ncattget(ncid,att_inq->varid,NrmQuarkToString(att_inq->name),att_inq->value);
 	}
 }
+#endif
 
 static void HDF_SDGetAttrVal
 #if	NhlNeedProto
@@ -336,7 +337,7 @@ static NclQuark HDFToNCLName
 {
 	char buffer[MAX_NC_NAME];
 	char *tp, *cp;
-	char len = MIN(MAX_NC_NAME - 2,strlen(hdf_name));
+	int len = MIN(MAX_NC_NAME - 2,strlen(hdf_name));
 	
 	strncpy(buffer,hdf_name,len);
 	cp = tp = buffer;
@@ -458,13 +459,9 @@ static void ProcessVgroups(HDFFileRecord *hdf,char *path)
 	int hid = Hopen(path,DFACC_READ,0);
 	int32 *vls = NULL;
 	int status = Vstart(hid);
-	int vid,i,j;
+	int i;
 	int vcount = Vlone(hid,vls,0);
-	char vname[VGNAMELENMAX];
-	char vclass[VGNAMELENMAX];
 	char vpath[1024];
-	int n_entries;
-	int *tag_array,*ref_array;
 
 	if (vcount) {
 		vpath[0] = '\0';
@@ -479,7 +476,7 @@ static void ProcessVgroups(HDFFileRecord *hdf,char *path)
 		NclFree(vls);
 	}
 }
-	
+#if 0	
 static void GetSDInfo(char *path)
 {
 	
@@ -527,7 +524,7 @@ static void GetSDInfo(char *path)
        */    
       status = SDend (sd_id); 
 } 
-
+#endif
 
 
 static void ProcessDuplicateNames
@@ -566,7 +563,6 @@ static void ProcessDuplicateNames
 				(NrmQuarkToString(tvarp->var_inq->hdf_name),vgid_string,True);
 
 			if (tvarp->var_inq->var_path != NrmNULLQUARK) {
-				int i;
 				HDFAttInqRecList **atlp;
 
 				for (atlp = &(tvarp->var_inq->att_list);;atlp = &((*atlp)->next)) {
@@ -607,14 +603,11 @@ static void ProcessDuplicateNames
 			sprintf(vgid_string,"%d",0);
 		}
 		else { /* no dups for this variable and no group name either */
-			sprintf(vgid_string,"");
 			cp = NULL;
 		}
 		varp->var_inq->name = HDFToNCLName(NrmQuarkToString(varp->var_inq->hdf_name),cp,True);
 		if (varp->var_inq->var_path != NrmNULLQUARK) {
-			int i;
 			HDFAttInqRecList **atlp;
-
 
 			for (atlp = &(varp->var_inq->att_list);;atlp = &((*atlp)->next)) {
 				if (*atlp != NULL)
@@ -898,7 +891,6 @@ int wr_status;
 		tmp->has_scalar_dim = 0;
 	}
 	if(tmp->n_file_atts != 0 ) {
-		int attr_ix;
 		stepalptr = &(tmp->file_atts);
 		for(i = 0; i < tmp->n_file_atts; i++) {
 			*stepalptr = (HDFAttInqRecList*)NclMalloc(
@@ -1036,7 +1028,7 @@ NclQuark var_name;
 	HDFVarInqRecList *stepvl;
 	HDFDimInqRecList *stepdl;
 	NclFVarRec *tmp;
-	int i,j;
+	int j;
 
 	stepvl = rec->vars;
 	while(stepvl != NULL) {
@@ -2150,7 +2142,7 @@ NclBasicDataTypes data_type;
 	HDFDimInqRecList *stepdl = NULL;
 	HDFVarInqRecList *stepvl = NULL;
 	int cdfid;
-	int ret,size;
+	int size,ret = -1;
 	nc_type *the_data_type;
 	
 

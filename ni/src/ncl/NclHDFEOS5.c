@@ -30,8 +30,10 @@
 #define HAVE_NETCDF
 #include <hdf/mfhdf.h>
 #include "NclDataDefs.h"
+#include "NclData.h"
 #include "NclFileInterfaces.h"
 #include <math.h>
+#include <ctype.h>
 #include <HE5_HdfEosDef.h>
 
 #ifndef MAX_VAR_DIMS
@@ -608,9 +610,7 @@ static void HDFEOS5IntAddIndexedMapVars
 	int i;
 	char *tcp,*cp,*dim1, *dim2;
 	char name_buf[1024];
-	int* mapvals;
 	NrmQuark hdf_name1,ncl_name1,hdf_name2,ncl_name2;
-	long rank = 1;
 
 	cp = idxmaps;
 	for (i = 0; i < nmaps; i++) {
@@ -739,7 +739,6 @@ NclQuark path;
     NclScalar *tmp_missing;
 
     int *is_unsigned;
-    long xdimsize,ydimsize;
     char *buffer;
     int cur_buf_size = HDFEOS5_BUF_SIZE;
     int *field_ranks;
@@ -1407,12 +1406,9 @@ NclQuark path;
     long natts = FAIL;
     long nlocatts = FAIL;
 
-    herr_t status = FAIL;
-
     long ngd;
     long ndata = 0;
     long ndims;
-    long nmaps;
     long ngrp_atts;
 
     long str_buf_size;
@@ -1521,10 +1517,6 @@ NclQuark path;
     HDFEOS5ParseName(buffer,gd_hdf_names,gd_ncl_names,ngd);
     for(i = 0; i < ngd; i++)
     {
-        double *lat2d, *lon2d;
-        long *cols, *rows;
-        int k, l;
-        int pixregcode;
         intn status;
         int has_xdim_var = 0, has_ydim_var = 0;
         NrmQuark xdim_name = NrmNULLQUARK, ydim_name = NrmNULLQUARK;
@@ -2155,8 +2147,6 @@ NclQuark path;
     hsize_t *dimsizes;
     int max_nlevels = MAX_NDIMS;
 
-    char maxdimlist[HDFEOS5_BUF_SIZE];
-
     NclQuark *pt_hdf_names;
     NclQuark *pt_ncl_names;
     int max_pt = MAX_PT;
@@ -2188,17 +2178,11 @@ NclQuark path;
     hid_t att_type;
     hsize_t att_size;
 
-    NclScalar missing;
-    NclScalar *tmp_missing;
-
-    int *is_unsigned;
     char *buffer;
     char level_name[HDFEOS5_BUF_SIZE];
     int cur_buf_size = HDFEOS5_BUF_SIZE;
 
-    HDFEOS5VarInqRecList *vstep;
-
-    int n, pt, lvl, fld, rec, att, dim, loc;
+    int n, pt, lvl, fld,  att, dim, loc;
     HE5_CmpDTSinfo levelInfo; /* Level information data structure */
 
     /* User-defined structure to read level data to */
@@ -2278,8 +2262,6 @@ typedef struct
 
     for(pt = 0; pt < npt; pt++)
     {
-        NrmQuark lat_name = NrmNULLQUARK, lon_name = NrmNULLQUARK;
-        long y_fld_num = -1, x_fld_num = -1;
 
         HE5_PTid = HE5_PTattach(HE5_PTfid,NrmQuarkToString(pt_hdf_names[pt]));
 
@@ -2636,7 +2618,6 @@ NclQuark path;
     long nza = 0;
     long ndata = 0;
     long ndims = 0;
-    long nmaps = 0;
 
     long str_buf_size;
 
@@ -2686,7 +2667,6 @@ NclQuark path;
     int *field_ranks;
     int *field_types;
     int max_fields = MAX_FIELDS;
-    HDFEOS5VarInqRecList *vstep;
 
     int za,att,dim,nv,loc;
     boolean no_fill_value = TRUE;
@@ -2736,8 +2716,6 @@ NclQuark path;
 
     for(za = 0; za < nza; za++)
     {
-        NrmQuark lat_name = NrmNULLQUARK, lon_name = NrmNULLQUARK;
-        long y_dim_num = -1, x_dim_num = -1;
         HE5_ZAid = HE5_ZAattach(HE5_ZAfid,NrmQuarkToString(za_hdf_names[za]));
 
         if(HE5_ZAid < 1)
@@ -3065,10 +3043,7 @@ NclQuark var_name;
 	HDFEOS5FileRecord * thefile = (HDFEOS5FileRecord *) therec;
 	HDFEOS5VarInqRecList * thelist;
 	NclFVarRec *var_info = NclMalloc(sizeof(NclFVarRec));
-	long is_unsigned;
-
 	int i,j;
-
 
 	thelist = thefile->vars;
 	for (i = 0; i < thefile->n_vars; i++) {
@@ -3085,6 +3060,7 @@ NclQuark var_name;
 		}
 		thelist = thelist->next;
 	}
+	return NULL;
 	
 }
 static NclQuark *HDFEOS5GetDimNames
@@ -3135,6 +3111,7 @@ NclQuark dim_name_q;
 		}
 		thelist= thelist->next;
 	}
+	return NULL;
 }
 static NclQuark *HDFEOS5GetAttNames
 #if	NhlNeedProto
@@ -3148,7 +3125,6 @@ int *num_atts;
 	HDFEOS5FileRecord * thefile = (HDFEOS5FileRecord *) therec;
 	HDFEOS5AttInqRecList * the_int_att_list;
 	NclQuark* output = NULL;
-	int i;
 
 	*num_atts = 0;
 	if(thefile->n_int_atts > 0) {
@@ -3271,6 +3247,7 @@ void* therec;
 NclQuark thevar;
 #endif
 {
+	return NULL;
 }
 
 static int HE5_GDreadCoordVar
@@ -3383,7 +3360,7 @@ void* storage;
 {
         HDFEOS5FileRecord * thefile = (HDFEOS5FileRecord *) therec;
 	HDFEOS5VarInqRecList *thelist;
-	int i,j,out;
+	int i,j,out = 0;
 	hid_t fid; 
 	hid_t did; 
 	hssize_t starti[NCL_MAX_DIMENSIONS];
@@ -3502,7 +3479,6 @@ void* storage;
 {
 	HDFEOS5FileRecord * thefile = (HDFEOS5FileRecord *) therec;
 	HDFEOS5AttInqRecList * the_int_att_list;
-	int i;
 
 	the_int_att_list = thefile->att_int_list;
 	while(the_int_att_list != NULL) {
@@ -3529,7 +3505,6 @@ void* storage;
 	HDFEOS5FileRecord * thefile = (HDFEOS5FileRecord *) therec;
 	HDFEOS5VarInqRecList * thelist;
 	HDFEOS5AttInqRecList * the_int_att_list;
-	NclFAttRec* output = NULL;
 	int i;
 
 	thelist = thefile->vars;

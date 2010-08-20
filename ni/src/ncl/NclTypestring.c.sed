@@ -243,9 +243,9 @@ string mis;
 	len = MIN(strlen(lptr),strlen(rptr));	
 
 	for(i = 0; i<len; i++) {
-		if((int)tolower(*lptr) < (int)tolower(*rptr)) {
+		if((int)(*lptr) < (int)(*rptr)) {
 			return(ls);
-		} else if((int)tolower(*lptr) > (int)tolower(*rptr)){
+		} else if((int)(*lptr) > (int)(*rptr)){
 			return(rs);
 		}
 		lptr++;
@@ -287,9 +287,9 @@ string mis;
 	len = MIN(strlen(lptr),strlen(rptr));	
 
 	for(i = 0; i<len; i++) {
-		if((int)tolower(*lptr) > (int)tolower(*rptr)) {
+		if((int)(*lptr) > (int)(*rptr)) {
 			return(ls);
-		} else if((int)tolower(*lptr) < (int)tolower(*rptr)){
+		} else if((int)(*lptr) < (int)(*rptr)){
 			return(rs);
 		}
 		lptr++;
@@ -328,9 +328,9 @@ string rs;
 	len = MIN(strlen(lptr),strlen(rptr));	
 
 	for(i = 0; i<len; i++) {
-		if((int)tolower(*lptr) < (int)tolower(*rptr)) {
+		if((int)(*lptr) < (int)(*rptr)) {
 			return(1);
-		} else if((int)tolower(*lptr) > (int)tolower(*rptr)) {
+		} else if((int)(*lptr) > (int)(*rptr)) {
 			return(0);
 		}
 		lptr++;	
@@ -370,9 +370,9 @@ string rs;
 	len = MIN(strlen(lptr),strlen(rptr));	
 
 	for(i = 0; i<len; i++) {
-		if((int)tolower(*lptr) > (int)tolower(*rptr)) {
+		if((int)(*lptr) > (int)(*rptr)) {
 			return(1);
-		} else if((int)tolower(*lptr) < (int)tolower(*rptr)) {
+		} else if((int)(*lptr) < (int)(*rptr)) {
 			return(0);
 		}
 		lptr++;	
@@ -412,9 +412,9 @@ string rs;
 	len = MIN(strlen(lptr),strlen(rptr));	
 
 	for(i = 0; i<len; i++) {
-		if((int)tolower(*lptr) < (int)tolower(*rptr)) {
+		if((int)(*lptr) < (int)(*rptr)) {
 			return(1);
-		} else if((int)tolower(*lptr) > (int)tolower(*rptr)) {
+		} else if((int)(*lptr) > (int)(*rptr)) {
 			return(0);
 		}
 		lptr++;	
@@ -453,9 +453,9 @@ string rs;
 	len = MIN(strlen(lptr),strlen(rptr));	
 
 	for(i = 0; i<len; i++) {
-		if((int)tolower(*lptr) > (int)tolower(*rptr)) {
+		if((int)(*lptr) > (int)(*rptr)) {
 			return(1);
-		} else if((int)tolower(*lptr) < (int)tolower(*rptr)) {
+		} else if((int)(*lptr) < (int)(*rptr)) {
 			return(0);
 		}
 		lptr++;	

@@ -38,6 +38,8 @@
 #include "VarSupport.h"
 #include "DataSupport.h"
 #include "NclAtt.h"
+#include "AttSupport.h"
+#include "TypeSupport.h"
 #include "ApiRecords.h"
 
 #include <math.h>
@@ -248,8 +250,7 @@ NhlErrorTypes  _NclBuildCoordVSelection
 	char * v_name;
 	int index = -1;
 	NclQuark cname;
-	NclMultiDValData name_md = NULL,result_md = NULL,tmp_md = NULL,coord_md = NULL;
-	long start = 0,finish = 0;
+	NclMultiDValData name_md = NULL,tmp_md = NULL,coord_md = NULL;
 	NclCoordVar cvar = NULL;
 	NclObjTypes the_type;
 /*
@@ -378,8 +379,7 @@ NhlErrorTypes _NclBuildCoordRSelection
 	char * v_name = NULL;
 	int index = -1;
 	NclQuark cname;
-	NclMultiDValData name_md = NULL,result_md = NULL,tmp_md = NULL,coord_md = NULL;
-	long start = 0,finish = 0;
+	NclMultiDValData name_md = NULL,tmp_md = NULL,coord_md = NULL;
 	NclCoordVar cvar = NULL;
 	NclObjTypes the_type;
 /*
@@ -1264,7 +1264,7 @@ struct _NclVarRec* self;
 	NclMultiDValData tmp_md= NULL;
 	int ret;
 	NhlErrorTypes ret0 = NhlNOERROR;
-	NhlErrorTypes ret1 = NhlNOERROR;
+
 	FILE *fp = _NclGetOutputStream();
 
 	if((self!= NULL)&&(self->obj.obj_type_mask & Ncl_Var)) {
@@ -1455,12 +1455,10 @@ NclApiDataList *_NclGetVarInfo2
 NclVar;
 #endif
 {
-	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclApiDataList *tmp = NULL;
 	NclAtt tmp_att = NULL;
 	NclAttList *att_list = NULL;
 	NclMultiDValData the_value = NULL;
-	NclSymTableListNode *st;
-	NclSymbol *s;
 	int j;
 
 

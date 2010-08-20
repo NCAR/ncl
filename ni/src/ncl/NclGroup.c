@@ -45,12 +45,15 @@ int /*num*/
 #endif
 );
 
+#if 0 
+/* this is not yet defined */
 static int GroupIsVar(
 #if	NhlNeedProto
 NclGroup /*thegroup */,
 NclQuark /* name */
 #endif
 );
+#endif
 
 void copyAttributes(NclFileAttInfoList **out, NclFileAttInfoList *in)
 {
@@ -325,13 +328,10 @@ NclQuark group_name;
     NhlErrorTypes ret= NhlNOERROR;
     NclObjClass class_ptr;
 
-    NclFileAttInfoList *att_list;
-    NclFileAttInfoList *new_list;
     char grp_str[NCL_MAX_STRING];
     char tmp_str[NCL_MAX_STRING];
     char buffer[NCL_MAX_STRING];
     NclQuark selected_group[NCL_MAX_FVARS];
-    NclQuark tmp_quark;
     int nsg = 0;
     int new_group = 0;
     int i, j, n;
@@ -339,9 +339,6 @@ NclQuark group_name;
     int n_grps = 0;
     int n_vars = 0;
 
-    NclQuark selected_var[NCL_MAX_FVARS];
-    int number_of_selected_var = 0;
-    int already_selected = 0;
 
     ret = _NclInitClass(nclFileClass);
     if(ret < NhlWARNING) 

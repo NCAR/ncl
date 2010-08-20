@@ -12,9 +12,11 @@ extern "C" {
 #include   <strings.h>
 #include   <dirent.h>
 #include   <stdlib.h>
+#include   <ctype.h>
 
 #include   <ncarg/hlu/hlu.h>
 #include   <ncarg/hlu/NresDB.h>
+#include   <ncarg/hlu/Workstation.h>
 #include   "defs.h"
 #include   "Symbol.h"
 #include   "NclData.h"
@@ -71,6 +73,13 @@ extern void InitializeReadLine(
 #endif /* NhlNeedProto */
 );
 
+extern void NclSetPromptFunc(
+#if	NhlNeedProto
+NclPromptFunc /*prmf*/, 
+void * /*user_data */
+#endif
+);
+
 extern NhlErrorTypes _NclPreLoadScript(
 #if NhlNeedProto
     char *  /* path */,
@@ -94,8 +103,7 @@ main(int argc, char **argv) {
 
     int errid = -1;
     int appid;
-    int i, j,
-        k = 0;
+    int i, k = 0;
     int reset = 1;
     DIR *d;
     struct dirent   *ent;
@@ -120,10 +128,8 @@ main(int argc, char **argv) {
     int NCL_ARGC;           /* local argv/argc -- future use for NCL scripts? */
 
     int c;
-    char    *s = NULL;
-    char    sc[NCL_MAX_STRING];
 
-    char    **cargs;
+    char    **cargs = NULL;
     int nargs = 0;
 
     struct stat sbuf;
@@ -296,7 +302,7 @@ main(int argc, char **argv) {
     NhlInitialize();
     NhlVACreate(&appid, "ncl", NhlappClass, NhlDEFAULT_APP,
         NhlNappDefaultParent, 1, NhlNappUsrDir, "./", NULL);
-    NhlPalLoadColormapFiles(NhlworkstationClass);
+    NhlPalLoadColormapFiles(NhlworkstationClass,False);
     errid = NhlErrGetID();
     NhlVAGetValues(errid, NhlNerrFileName, &tmp, NULL);
 	

@@ -31,6 +31,7 @@
 #include "NclType.h"
 #include "TypeSupport.h"
 #include "NclMdInc.h"
+#include <ctype.h>
 
 INSERTHERE
 
@@ -89,7 +90,7 @@ double *result;
 			}
 		}
 	}
-
+	return NhlFATAL;
 }
 
 NclTypeClass _NclTypeEnumToTypeClass
@@ -164,6 +165,7 @@ void* val;
 			}
 		}
 	}
+	return NhlFATAL;
 
 }
 

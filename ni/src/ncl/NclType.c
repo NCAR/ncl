@@ -24,11 +24,11 @@
 #ifdef NIO_LIB_ONLY
 #include "niohluP.h"
 #include "nioNresDB.h"
-#include "nioConvert.h"
+#include "nioConvertP.h"
 #else
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
-#include <ncarg/hlu/Convert.h>
+#include <ncarg/hlu/ConvertP.h>
 #endif
 #include "defs.h"
 #include "NclType.h"

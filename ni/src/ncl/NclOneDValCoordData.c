@@ -52,7 +52,6 @@ long * ind;
 	void *coord_ptr;
 	NclOneDValCoordData the_coord;
 	NclTypeClass type_coord;
-	NclTypeClass type_ind;
 	double cmp_val;
 	int i;
 	logical lres;
@@ -156,8 +155,6 @@ long *finish;
 	void* finish_ptr;
 	void* coord_ptr;
 	NclOneDValCoordData the_coord;
-	NclTypeClass type_start;
-	NclTypeClass type_finish;
 	NclTypeClass type_coord;
 	logical result;
 	double cmp_val;
@@ -436,10 +433,8 @@ NclScalar *new_missing;
 	NclMultiDValData self_md = (NclMultiDValData) self;
 	ng_size_t *toval;
 	ng_size_t *frval;
-	int missing;
 	NclScalar themissing;
 	NclMultiDValData output_md = NULL;
-	ng_size_t i;
 	toval = (ng_size_t *)NclMalloc(self_md->multidval.totalsize);
 	frval = (ng_size_t *)self_md->multidval.val;
 	if(toval == NULL) {
@@ -659,10 +654,7 @@ NclTypeClass type;
 {
 	NclOneDValCoordData thevalobj;
 	NclObjClass class_ptr= nclOneDValCoordDataClass;
-	int i;
 	NhlErrorTypes ret1= NhlNOERROR;
-	int *obj_ids;
-	NclFile tmp_file;
 
 	ret1 = _NclInitClass(nclOneDValCoordDataClass);
 	if(ret1 < NhlWARNING) {

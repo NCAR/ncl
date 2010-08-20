@@ -7,12 +7,14 @@ extern "C" {
 #include <ncarg/hlu/VarArg.h>
 
 #include "defs.h"
+#include "Symbol.h"
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+
 extern int errno;
 extern int cmd_line;
 int	cmd_line_is_set = 0;
@@ -322,7 +324,6 @@ void _NclStartCmdLinePager
 	char *pager =NULL;
 	char *arg0 = NULL;
 	int tmp = 1;
-	FILE *fp;
 
 #ifndef DONTUSEPAGER
 	ret = pipe(fildes);

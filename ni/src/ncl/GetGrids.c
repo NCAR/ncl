@@ -160,8 +160,6 @@ static int is_gpoint
 {
 	int i = 0;
 	int off = 0;
-	unsigned char test;
-	unsigned char test1;
 
 	if(bms == NULL) {
 		return(1);
@@ -187,8 +185,10 @@ static int is_gpoint
 			return(bms[i+6] & 0001);
 		}
 	}
+	return 1;
 }
 
+#if 0
 static int printbinary(int val) {
 
 	static int count = 0;	
@@ -228,6 +228,8 @@ static int printbinary(int val) {
 	fprintf(stdout,"\n");
 	return(count);
 }
+
+#endif
 
 /* 
  * lo1, lo2 in millidegrees; di output in millidegrees 
@@ -506,18 +508,20 @@ int nx;
 int ny;
 #endif
 {
-	static int mapid = -1;
+/*	static int mapid = -1;
 	static int vpid = -1;
 	static int rlist = -1;
 	float tlat;
 	float tlon;
-	float nx0,nx1,ny0,ny1;
-	float C,d_per_km,dlon,dlat;
+	float nx0,nx1,ny0,ny1; */
+	float C,d_per_km,dlon;
+/*	
+	float dlat;
 	float ndcdx,ndcdy,start_ndcx,start_ndcy,start_lon = 0.0;
 	float dumx,dumy;
 	int status;
 	float orv;
-	int i,j;
+	int i,j; */
 	float *dummy = NULL;
 
 	InitMapTrans("ME",0.0,(lon1 - lon0)/2.0,0.0);
@@ -725,10 +729,8 @@ GribAttInqRecList **rot_att_list_ptr;
 int *nrotatts;
 #endif
 {
-	GribAttInqRecList* tmp_att_list_ptr;
 	NclQuark *tmp_string = NULL;
 	float *tmp_float = NULL;
-	ng_size_t tmp_dimsizes = 1;
 
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -853,16 +855,10 @@ void GenLambert
 	int ny;
 #endif
 {
-	static int mapid = -1;
-	static int vpid = -1;
-	static int rlist = -1;
-	double tlat;
 	double tlon;
 	double nx0,nx1,ny0,ny1;
-	double C,d_per_km,dlon,dlat;
-	double ndcdx,ndcdy,start_ndcx,start_ndcy;
-	int status;
-	double orv;
+	double C,d_per_km,dlon;
+	double ndcdx,ndcdy;
 	int i,j;
 	double an;
 
@@ -6592,30 +6588,18 @@ GribParamList* thevarrec;
 	int ijswap;
 	int bboff;
 	int dnum = 0;
-	ng_size_t total_gpoints = 0;
 	ng_size_t grid_size = 0;
 	unsigned char *bms = NULL;
 	int numeric = 0;
-	int secondary_bm;
-	int constant_widths;
-	int n_1o;
-	int n_2o;
 	int offset_1o;
-	int offset_2o;
-	int sum = 0;
 	float pmsval = DEFAULT_MISSING_FLOAT;
 	int kret =1;
 	int kcode = 3;
-	int * num = NULL;
-	int nv = -1;
-	int pl = -1;
-	int the_start_off = 32;
 	int is_thinned_lon = 0;
 	int is_thinned_lat = 0;
 	int is_staggered_grid = 0;
 	int is_uv = 0;
-	int nlon,nlat;
-	static int count = 0;
+	int nlon = 0,nlat = 0;
 	Index_Func index_func = compute_index;
 	int lat_size, lon_size;
 	int j;
@@ -6955,7 +6939,7 @@ GribParamList* thevarrec;
 	} else if(spherical_harm) {
 		if(complex_packing) {
 			int nvals;
-			int ip,ii;
+			int ip;
 			int j,k,m,sindex,packed_start;
 			int M,N;
 			int jmain,kmain,mmain;
@@ -6964,7 +6948,6 @@ GribParamList* thevarrec;
 			int diff;
 			float *vals;
 			float *imvals;
-			float *tmpf,*tmpi;
 			float *factor;
 
 
@@ -7121,7 +7104,6 @@ GribParamList* thevarrec;
 		int spatial_differencing; /* 0 -none, 1 - 1st order, 2 - 2nd order, 3 - 3rd order */
 		int p1_num_sub_sections;
 		int p2_num_second_order;
-		int *p1_widths;
 		int i;
 		unsigned char *sec_bm = NULL;
 		int sec_bm_size = 0;
@@ -7296,7 +7278,6 @@ GribParamList* thevarrec;
 	int rindex =0;
 	int integer = 0;
 	int lat= 0;
-	int lon= 0;
 	int spherical_harm = 0;
 	int second_order = 0;
 	int additional_flags = 0;
@@ -7551,8 +7532,6 @@ GribParamList* thevarrec;
 	int gpoint = 0;
 	int dnum= 0;
 	ng_size_t total_gpoints=0;
-	int ttt = 0;
-	
 
 
 	bds = (unsigned char*)NclMalloc((unsigned)therec->bds_size + 4);
@@ -7809,7 +7788,6 @@ void Do_Rotation_Atts
 )
 {
 	NclQuark* tmp_string;
-	char buf[256];
 	
 	char *note1[2] = {"u and v components of vector quantities are resolved relative to grid",
 			  "u and v components of vector quantities are resolved relative to earth"};
@@ -7906,7 +7884,6 @@ int* nrotatts;
 	int i;
 	float *tmp_float;
 	NclQuark* tmp_string;
-	int itmp;
 	int kgds[32];
 	int ni,nj;
 	int iopt,lrot,npts,nret;
@@ -8196,35 +8173,22 @@ GribAttInqRecList** rot_att_list;
 int* nrotatts;
 #endif
 {
-	static int mapid = -1;
-	static int vpid = -1;
-	static int rlist = -1;
 	int nx;
 	int ny;
 	double la1;
 	double lo1;
-	double lov,tlon;
+	double lov;
 	double dx;
 	double dy;
-	float deltax;
-	float deltay;
 	double latin1;
 	double latin2;
-	int north;
 	unsigned char tmpc[4];
-	int status,idir,jdir,i,j;
 	unsigned char *gds = (unsigned char*)thevarrec->thelist->rec_inq->gds;
-	float orv;
-	float nx0,nx1,ny0,ny1;
-	float C,d_per_km,dlon,dlat;
-	float start_ndcx,start_ndcy;
 	float *tmp_float;
 	NclQuark *tmp_string;
-	int *tmp_int;
-	int do_rot;
-	NhlBoolean grid_oriented;
-	char buf[256];
-	NrmQuark grid_name;
+	int do_rot = 1;
+	NhlBoolean grid_oriented = False;
+	NrmQuark grid_name = NrmNULLQUARK;
 
 	nx = UnsignedCnvtToDecimal(2,&(gds[6]));
 	ny = UnsignedCnvtToDecimal(2,&(gds[8]));
@@ -8382,29 +8346,16 @@ int* nrotatts;
 	double *wts;
 	int lwork= 0;
 	double *work = NULL;
-	int i,ierror,tmp,k;
-	double la1;
-	double la2;
+	int i,ierror,k;
 	int ila1;
-	int nv=-1;
-	int pl =-1;
-	int the_start_off = 32;
 	int ila2;
 	int ilo1;
 	int ilo2;
 	double loinc;
-	int max_lon;
-	int num;
-	int sign;
-	float reference_value, tmpa,tmpb;
-	GribRecordInqRecList *step;
 	float *tmp_float;
 	NclQuark *tmp_string;
 	int is_thinned_lon = 0;
 	int idir;
-	int ix;
-
-
 
 	if((thevarrec->thelist != NULL)&&(thevarrec->thelist->rec_inq != NULL)) {
 			
@@ -8640,6 +8591,7 @@ int* nrotatts;
 		*lon = NULL;
 		*n_dims_lon= 0;
 		*dimsizes_lon= NULL;
+		ila1 = ila2 = ilo1 = ilo2 = 0;
 	}
 	if(lon_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
@@ -8750,15 +8702,11 @@ GribAttInqRecList** rot_att_list;
 int* nrotatts;
 #endif
 {
-	static int mapid = -1;
-	static int vpid = -1;
-	static int rlist = -1;
 	int nx;
 	int ny;
 	float la1;
 	float lo1;
 	float lov,tlon;
-	float tlat;
 	float dx;
 	float dy;
 	float deltax;
@@ -8766,18 +8714,15 @@ int* nrotatts;
 	float latin0;
 	int north;
 	unsigned char tmpc[4];
-	int status,idir,jdir,i,j;
+	int idir,jdir,i,j;
 	unsigned char *gds = (unsigned char*)thevarrec->thelist->rec_inq->gds;
-	float orv;
 	float nx0,nx1,ny0,ny1;
-	float C,d_per_km,dlon,dlat;
-	float start_ndcx,start_ndcy;
+	float C,d_per_km,dlon;
 	float *tmp_float;
 	NclQuark* tmp_string;
 	NhlBoolean do_rot;
 	NhlBoolean grid_oriented;
-	char buf[256];
-	NrmQuark grid_name;
+	NrmQuark grid_name = NrmNULLQUARK;
 
 
 	nx = UnsignedCnvtToDecimal(2,&(gds[6]));
@@ -9186,7 +9131,6 @@ int* nrotatts;
 	int idir;
 	int jdir;
 	int has_dir_inc;
-	int vectors;
 	int is_thinned_lat;
 	int is_thinned_lon;
 	unsigned char tmp[4];
@@ -9195,7 +9139,6 @@ int* nrotatts;
 	float *tmp_float;
 	NclQuark* tmp_string;
 	int nlon, nlat;
-	int itmp;
 	
 	
 	*lat = NULL;
@@ -9426,8 +9369,6 @@ int* nrotatts;
 	int is_thinned_lat;
 	int is_thinned_lon;
 	int gds_type;
-	static int failed_gds_types[5] = {-1,-1,-1,-1,-1};
-        static int failed_count = 0;
 	
 	*lat = NULL;
 	*n_dims_lat = 0;
@@ -9607,7 +9548,6 @@ int* nrotatts;
 	int idir;
 	int jdir;
 	int has_dir_inc;
-	int vectors;
 	int is_thinned_lat;
 	int is_thinned_lon;
 	unsigned char tmp[4];
@@ -9616,12 +9556,10 @@ int* nrotatts;
 	float *tmp_float;
 	NclQuark* tmp_string;
 	int ni, nj;
-	int itmp;
 	double lasp;
 	double losp;
 	double rotang;
 	double clat,llat,llon,rlat,rlon;
-	double dux,ux0,ux1,duy,uy0,uy1;
 	int gds_type = 10;
 	NhlBoolean do_rot = True;
 	NhlBoolean grid_oriented;
@@ -9754,7 +9692,6 @@ int* nrotatts;
 		return;
 	}
 	else {
-		double uxc,uyc;
 
 		*dimsizes_lat = (ng_size_t*)NclMalloc(2 * sizeof(ng_size_t));
 		*dimsizes_lon = (ng_size_t*)NclMalloc(2 * sizeof(ng_size_t));
@@ -9790,7 +9727,6 @@ int* nrotatts;
 			
 
 		if (do_rot) {
-			double gridlatc;
 			double dtr = atan(1) / 45.0;
 			*rot = (float*)NclMalloc((unsigned)sizeof(float)* nj * ni);
 
@@ -9799,7 +9735,6 @@ int* nrotatts;
 				for (i = 0; i < ni; i++) {
 					double tlon,tlat;
 					double cgridlat, slon,srot,crot;
-					double crot1, eps;
 					double rlon = idir == 1 ? lo1 : lo2;
 					rot2ll(lasp,losp,rlat + j * jdir * dj,rlon + i * idir * di,&tlat,&tlon);
 					if (do_180) {
@@ -9987,29 +9922,20 @@ int* nrotatts;
 	int loc,lac;
 	int di;
 	int dj;
-	float deltax;
-	float deltay;
-	float latin0;
-	int north;
 	unsigned char tmpc[4];
-	int status,idir,jdir,i,j;
+	int i;
 	unsigned char *gds = (unsigned char*)thevarrec->thelist->rec_inq->gds;
-	float orv;
-	float nx0,nx1,ny0,ny1;
-	float C,d_per_km,dlon,dlat;
-	float start_ndcx,start_ndcy;
 	float *tmp_float;
 	NclQuark* tmp_string;
 	int kgds[200];
 	int iopt = 0;
 	int npts,nret,lrot;
 	float fillval = -9999;
-	float *crot = NULL,*srot = NULL;
-	float *lat1, *lat2, *lon1, *lon2;
+	float *srot = NULL;
 	int is_uv = Is_UV(thevarrec->param_number);
-	NhlBoolean do_rot;
-	NhlBoolean grid_oriented;
-	NrmQuark grid_name;
+	NhlBoolean do_rot = True;
+	NhlBoolean grid_oriented = False;
+	NrmQuark grid_name = NrmNULLQUARK;
 	int gtype;
 
 	/* arakawa RLL: Rotated LatLon grids - 201,202 and 203 */
@@ -10202,241 +10128,241 @@ int* nrotatts;
 
 
 GridGDSInfoRecord grid_gds[] = {
-		GenericUnPack,GdsUnknownGrid,"Unsupported Gds Grid", /*-1*/
-		GenericUnPack,GdsCEGrid,"Cylindrical Equidistant Projection Grid", /*0*/
-		GenericUnPack,(void *)GdsMEGrid,"Mercator Projection Grid", /*1*/
+	{GenericUnPack,GdsUnknownGrid,"Unsupported Gds Grid"}, /*-1*/
+	{GenericUnPack,GdsCEGrid,"Cylindrical Equidistant Projection Grid"}, /*0*/
+	{GenericUnPack,(void *)GdsMEGrid,"Mercator Projection Grid"}, /*1*/
 #if 0
-/**/		GenericUnPack,GdsGNGrid,"Gnomonic Projection Grid", /*2*/
+	/**/		{GenericUnPack,GdsGNGrid,"Gnomonic Projection Grid"}, /*2*/
 #endif
-		GenericUnPack,(void *)GdsLEGrid,"Lambert Conformal Secant or Tangent, Conical or bipolar", /*3*/
-		GenericUnPack,(void *)GdsGAGrid,"Gaussian Latitude/Longitude Grid", /*4*/
-		GenericUnPack,(void *)GdsSTGrid,"Polar Stereographic Projection Grid", /*5*/
+	{GenericUnPack,(void *)GdsLEGrid,"Lambert Conformal Secant or Tangent, Conical or bipolar"}, /*3*/
+	{GenericUnPack,(void *)GdsGAGrid,"Gaussian Latitude/Longitude Grid"}, /*4*/
+	{GenericUnPack,(void *)GdsSTGrid,"Polar Stereographic Projection Grid"}, /*5*/
 #if 0
-		NULL,NULL,"Universal Transverse Mercator (UTM) Projection Grid", /*6*/
-		NULL,NULL,"Simple Polyconic Projection Grid", /*7*/
-		NULL,NULL,"Albers equal-area, secant or tangent, conic or bi-polar, Projection Grid", /*8*/
-		NULL,NULL,"Miller's cylindrical projection Grid", /*9*/
+	{NULL,NULL,"Universal Transverse Mercator (UTM) Projection Grid"}, /*6*/
+	{NULL,NULL,"Simple Polyconic Projection Grid"}, /*7*/
+	{NULL,NULL,"Albers equal-area, secant or tangent, conic or bi-polar, Projection Grid"}, /*8*/
+	{NULL,NULL,"Miller's cylindrical projection Grid"}, /*9*/
 #endif
-		GenericUnPack,GdsRLLGrid,"Rotated Latitude/Longitude Grid", /*10*/
+	{GenericUnPack,GdsRLLGrid,"Rotated Latitude/Longitude Grid"}, /*10*/
 #if 0
-		GenericUnPack,GdsOLGrid,"Oblique Lambert conformal, secant or tangent, conical or bipolar, projection", /*13*/
-		NULL,NULL,"Rotated Gaussian Latitude/Longitude Grid", /* 14 */
-		NULL,NULL,"Stretched Latitude/Longitude Grid", /*20*/
-		NULL,NULL,"Stretched Gaussian Latitude/Longitude Grid", /*24*/
-		NULL,NULL,"Stretched and Rotated Latitude/Longitude Grid", /*30*/
-		NULL,NULL,"Stretched and Rotated Gaussian Latitude/Longitude Grid", /*34*/
+	{GenericUnPack,GdsOLGrid,"Oblique Lambert conformal, secant or tangent, conical or bipolar, projection"}, /*13*/
+	{NULL,NULL,"Rotated Gaussian Latitude/Longitude Grid"}, /* 14 */
+	{NULL,NULL,"Stretched Latitude/Longitude Grid"}, /*20*/
+	{NULL,NULL,"Stretched Gaussian Latitude/Longitude Grid"}, /*24*/
+	{NULL,NULL,"Stretched and Rotated Latitude/Longitude Grid"}, /*30*/
+	{NULL,NULL,"Stretched and Rotated Gaussian Latitude/Longitude Grid"}, /*34*/
 #endif
-		GenericUnPack,GdsSHGrid,"Spherical Harmonic Coefficients", /*50*/
+	{GenericUnPack,GdsSHGrid,"Spherical Harmonic Coefficients"}, /*50*/
 #if 0
-		NULL,NULL,"Rotated Spherical Harmonic Coefficients", /*60*/
-		NULL,NULL,"Stretched Spherical Harmonic Coefficients", /*70*/
-		NULL,NULL,"Stretched and Rotated Spherical Harmonic Coefficients", /*80*/
-		NULL,NULL,"Space View perspective or orthographic grid", /*90*/
+	{NULL,NULL,"Rotated Spherical Harmonic Coefficients"}, /*60*/
+	{NULL,NULL,"Stretched Spherical Harmonic Coefficients"}, /*70*/
+	{NULL,NULL,"Stretched and Rotated Spherical Harmonic Coefficients"}, /*80*/
+	{NULL,NULL,"Space View perspective or orthographic grid"}, /*90*/
 #endif
-		GenericUnPack,GdsArakawaRLLGrid,"Arakawa semi-staggered E-grid on rotated latitude/longitude grid-point array", /*201*/
-		GenericUnPack,GdsArakawaRLLGrid,"Arakawa filled E-grid on rotated latitude/longitude grid-point array", /*202*/
-		GenericUnPack,GdsArakawaRLLGrid,"Arakawa staggered E-grid on rotated latitude/longitude grid-point array", /*203*/
+	{GenericUnPack,GdsArakawaRLLGrid,"Arakawa semi-staggered E-grid on rotated latitude/longitude grid-point array"}, /*201*/
+	{GenericUnPack,GdsArakawaRLLGrid,"Arakawa filled E-grid on rotated latitude/longitude grid-point array"}, /*202*/
+	{GenericUnPack,GdsArakawaRLLGrid,"Arakawa staggered E-grid on rotated latitude/longitude grid-point array"}, /*203*/
 		
 };
 
 GridInfoRecord grid[] = {
-		GenericUnPack,GetGrid_1,GetAtts_1,
-		"1679-point (23x73) Mercator grid with (0,0) at (0W,48.09S), (73,23) at (0W,48.09N); I increasing eastward, Equator at J=12. Grid increment of 5 degs of longitude", /*01*/
-		GenericUnPack,GetGrid_2,GenAtts,
-		"10512-point (73x144) global longitude-latitude grid.  (0,0) at 0E, 90N, latitude grid.  (0,0) at 0E, 90N, matrix layout.  N.B.: prime meridian not duplicated.", /*2*/
-		GenericUnPack,GetGrid_3,GenAtts,
-		"65160-point (181x360) global longitude-latitude grid.  (0,0) at 0E, 90N, matrix layout.  N.B.: prime meridian not duplicated.", /*3*/
-		GenericUnPack,GetGrid_4,GenAtts,
-		"259920-point (361x720) global lon/lat grid. (0,0) at 0E, 90N; matrix layout; prime meridian not duplicated", /*4*/
-		GenericUnPack,GetGrid_5,GenAtts,
-		"3021-point (57x53) N. Hemisphere stereographic grid oriented 105W; Pole at (27,49). (LFM analysis)",/*5*/
-		GenericUnPack,GetGrid_6,GenAtts,
-		"2385-point (45x53) N. Hemisphere polar stereographic grid oriented 105W; Pole at (27,49). (LFM Forecast)", /*6*/
-		IFOSUnPack,GetGrid_21,GenAtts,
-		"1369-point (37x37) longitude-latitude grid. 0-180E, 0-90N", /*21*/
-		IFOSUnPack,GetGrid_22,GenAtts,
-		"1369-point (37x37) longitude-latitude grid. 180W-0, 0-90N", /*22*/
-		IFOSUnPack,GetGrid_23,GenAtts,
-		"1369-point (37x37) longitude-latitude grid. 0-180E, 90S-0", /*23*/
-		IFOSUnPack,GetGrid_24,GenAtts,
-		"1369-point (37x37) longitude-latitude grid. 180W-0, 90S-0", /*24*/
-		IFOSUnPack,GetGrid_25,GenAtts,
-		"1368-point (19x72) longitude-latitude grid. 0-355E, 0-90N", /*25*/
-		IFOSUnPack,GetGrid_26,GenAtts,
-		"1368-point (19x72) longitude-latitude grid. 0-355E, 90S-0", /*26*/
-		GenericUnPack,GetGrid_27,GenAtts,
-		"4225-point (65x65) N. Hemisphere polar stereographic grid oriented 80W; Pole at (33,33).", /*27*/
-		GenericUnPack,GetGrid_28,GenAtts,
-		"4225-point (65x65) S. Hemisphere polar stereographic grid oriented 100E; Pole at (33,33).", /*28*/
-		GenericUnPack,GetGrid_29,GenAtts,
-		"5365-point (37x145) N. Hemisphere longitude/latitude grid for latitudes 0N to 90N; (0,0) at (0E,0N).", /*29*/
-		GenericUnPack,GetGrid_30,GenAtts,
-		"5365-point (37x145) S. Hemisphere longitude/latitude grid for latitudes 90S to 0S; (0,0) at (0E,90S).", /*30*/
-		GenericUnPack,GetGrid_33,GenAtts,
-		"8326-point (46x181) N. Hemisphere longitude/latitude grid for latitudes 0N to 90N; (0,0) at (0E,0N).", /*33*/
-		GenericUnPack,GetGrid_34,GenAtts,
-		"8326-point (46x181) S. Hemisphere longitude/latitude grid for latitudes 90S to 0S; (0,0) at (0E,90S).", /*34*/
-		NULL,NULL,GenAtts,
-		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 330E-60E, 0-90N", /*37*/
-		NULL,NULL,GenAtts,
-		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 60E-150E, 0-90N", /*38*/
-		NULL,NULL,GenAtts,
-		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 150E-240E, 0-90N", /*39*/
-		NULL,NULL,GenAtts,
-		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 240E-330E, 0-90N", /*40*/
-		NULL,NULL,GenAtts,
-		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 330E-60E, 90S-0", /*41*/
-		NULL,NULL,GenAtts,
-		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 60E-150E, 90S-0", /*42*/
-		NULL,NULL,GenAtts,
-		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 150E-240E,90S-0", /*43*/
-		NULL,NULL,GenAtts,
-		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 240E-330E, 90S-0", /*44*/
-		GenericUnPack,GetGrid_45,GenAtts,
-		"41760-point (145x288) Global Latitude/Longitude 1.25 deg Resoulution. 0E-358.75E, 90N-90S",/*45*/
-		IFOS50UnPack,GetGrid_50,GenAtts,
-		"1188-point (33x36) longitude-latitude grid. 140.0W-52.5W, 20N-60N", /*50*/
-		GenericUnPack,GetGrid_55,GenAtts,
-		"6177-point (71x87) N. Hemisphere polar stereographic grid oriented 105W; Pole at (44,38). (2/3 bedient NH sfc anl)", /*55*/
-		GenericUnPack,GetGrid_56,GenAtts,
-		"6177-point (71x87) N. Hemisphere polar stereographic grid oriented 105W; Pole at (40,73). (1/3 bedient NA sfc anl)", /*56*/
-		IFOSUnPack,GetGrid_61,GenAtts,
-		"4186-point (46x91) longitude-latitude grid. 0-180E, 0-90N", /*61*/
-		IFOSUnPack,GetGrid_62,GenAtts,
-		"4186-point (46x91) longitude-latitude grid. 180W-0, 0-90N", /*62*/
-		IFOSUnPack,GetGrid_63,GenAtts,
-		"4186-point (46x91) longitude-latitude grid. 0-180E, 90S-0", /*63*/
-		IFOSUnPack,GetGrid_64,GenAtts,
-		"4186-point (46x91) longitude-latitude grid. 180W-0, 90S-0", /*64*/
-		NULL,NULL,GenAtts,
-		"12321-point (111x111) N. Hemisphere Lambert Conformal grid.  No fixed location; used by QLM Hurricane model.", /*75*/
-		NULL,NULL,GenAtts,
-		"12321-point (111x111) S. Hemisphere Lambert Conformal grid.  No fixed location; used by QLM Hurricane model.", /*76*/
-		NULL,NULL,GenAtts,
-		"12321-point (111x111) N. Hemisphere Mercator grid.  No fixed location; used by QLM Hurricane model.", /*77*/
-		GenericUnPack,GetGrid_85,GenAtts,
-		"32400-point (90x360) N. Hemisphere longitude/latitude grid; longitudes: 0.5E to 359.5E (0.5W); latitudes: 0.5N to 89.5N; origin (0,0) at (0.5E,0.5N)", /*85*/
-		GenericUnPack,GetGrid_86,GenAtts,
-		"32400-point (90x360) S. Hemisphere longitude/latitude grid; longitudes: 0.5E to 359.5E (0.5W); latitudes: 89.5S to 0.5S; origin (0,0) at (0.5E,89.5S)", /*86*/
-		GenericUnPack,GetGrid_87,GenAtts,
-		"5022-point (62x81) N. Hemisphere  polar stereographic grid oriented at 105W. Pole at (31.91, 112.53) Used for RUC.", /*87*/
-		GenericUnPack,GetGrid_88,GenAtts,
-		"317840 point (580x548) N. American polar stereographic grid oriented at 105W. Pole at (260.853, 613.176) Used for RSAS. (15 km at 60N)", /*88*/
-		NULL,NULL,GenAtts,
-		"12902-point (141x92 semi-staggered) lat. long., rotated such that center located at 52.0N, 111.0W; LL at 37.5W, 35S Unfilled E grid for 80 km ETA model", /*90*/
-		NULL,NULL,GenAtts,
-		"25803-point (141x183) lat. long., rotated such that center located at 52.0N, 111.0W; LL at 37.5W,35S Filled E grid for 80 km ETA model", /*91*/
-		NULL,NULL,GenAtts,
-		"24162-point (191x127 semi-staggered) lat. long., rotated such that center located at 41.0N, 97.0W; LL at 35W,25S Unfilled E grid for 40 km ETA model", /*92*/
-		NULL,NULL,GenAtts,
-		"48323-point (191x253)lat. long., rotated such that center located at 41.0N, 97.0W; LL at 35W ,25S Filled E grid for 40 km ETA model", /*93*/
-		NULL,NULL,GenAtts,
-		"18048-point (94x192) Global Gaussian T62 Latitude/Longitude Resolution.", /*98*/
-		GenericUnPack,GetGrid_100,GenAtts,
-		"6889-point (83x83) N. Hemisphere polar stereographic grid oriented 105W; Pole at (40.5,88.5). (NGM Original C-Grid)",  /*100*/
-		GenericUnPack,GetGrid_101,GenAtts,
-		"10283-point (91x113) N. Hemisphere polar stereographic grid oriented 105W; Pole at (58.5,92.5). (NGM \"Big C-Grid\")", /*101*/
-		GenericUnPack,GetGrid_103,GenAtts,
-		"3640-point (56x65) N. Hemisphere polar stereographic grid oriented 105W; Pole at (25.5,84.5) (used by ARL)", /*103*/
-		GenericUnPack,GetGrid_104,GenAtts,
-		"16170-point (110x147) N. Hemisphere polar stereographic grid oriented 105W; pole at (75.5,109.5). (NGM Super C grid)", /*104*/
-		GenericUnPack,GetGrid_105,GenAtts,
-		"6889-point (83x83) N. Hemisphere polar stereographic grid oriented 105W; pole at  (40.5,88.5).  (U.S. area subset of NGM Super C grid, used by ETA model)", /*105*/
-		GenericUnPack,GetGrid_106,GenAtts,
-		"19305-point (117x165) N. Hemisphere stereographic grid oriented 105W; pole at (80,176) Hi res. ETA (2 x resolution of Super C)", /*106*/
-		GenericUnPack,GetGrid_107,GenAtts,
-		"11040 point (92x120) N. Hemisphere stereographic grid oriented 105W; pole at (46,167) subset of Hi res. ETA; for ETA & MAPS/RUC", /*107*/
-		NULL,NULL,GenAtts,
-		"72960-point (190x384) Global Gaussian Latitude/Longitude T126 Resolution", /*126*/
-		GenericUnPack,GetGrid_130,GenAtts,
-		"Regional (CONUS) Lambert Conformal grid for AWIPS", /*130*/
+	{GenericUnPack,GetGrid_1,GetAtts_1,
+	 "1679-point (23x73) Mercator grid with (0,0) at (0W,48.09S), (73,23) at (0W,48.09N); I increasing eastward, Equator at J=12. Grid increment of 5 degs of longitude"}, /*01*/
+	{GenericUnPack,GetGrid_2,GenAtts,
+	 "10512-point (73x144) global longitude-latitude grid.  (0,0) at 0E, 90N, latitude grid.  (0,0) at 0E, 90N, matrix layout.  N.B.: prime meridian not duplicated."}, /*2*/
+	{GenericUnPack,GetGrid_3,GenAtts,
+	 "65160-point (181x360) global longitude-latitude grid.  (0,0) at 0E, 90N, matrix layout.  N.B.: prime meridian not duplicated."}, /*3*/
+	{GenericUnPack,GetGrid_4,GenAtts,
+	 "259920-point (361x720) global lon/lat grid. (0,0) at 0E, 90N; matrix layout; prime meridian not duplicated"}, /*4*/
+	{GenericUnPack,GetGrid_5,GenAtts,
+	 "3021-point (57x53) N. Hemisphere stereographic grid oriented 105W; Pole at (27,49). (LFM analysis)"},/*5*/
+	{GenericUnPack,GetGrid_6,GenAtts,
+	 "2385-point (45x53) N. Hemisphere polar stereographic grid oriented 105W; Pole at (27,49). (LFM Forecast)"}, /*6*/
+	{IFOSUnPack,GetGrid_21,GenAtts,
+	 "1369-point (37x37) longitude-latitude grid. 0-180E, 0-90N"}, /*21*/
+	{IFOSUnPack,GetGrid_22,GenAtts,
+	 "1369-point (37x37) longitude-latitude grid. 180W-0, 0-90N"}, /*22*/
+	{IFOSUnPack,GetGrid_23,GenAtts,
+	 "1369-point (37x37) longitude-latitude grid. 0-180E, 90S-0"}, /*23*/
+	{IFOSUnPack,GetGrid_24,GenAtts,
+	 "1369-point (37x37) longitude-latitude grid. 180W-0, 90S-0"}, /*24*/
+	{IFOSUnPack,GetGrid_25,GenAtts,
+	 "1368-point (19x72) longitude-latitude grid. 0-355E, 0-90N"}, /*25*/
+	{IFOSUnPack,GetGrid_26,GenAtts,
+	 "1368-point (19x72) longitude-latitude grid. 0-355E, 90S-0"}, /*26*/
+	{GenericUnPack,GetGrid_27,GenAtts,
+	 "4225-point (65x65) N. Hemisphere polar stereographic grid oriented 80W; Pole at (33,33)."}, /*27*/
+	{GenericUnPack,GetGrid_28,GenAtts,
+	 "4225-point (65x65) S. Hemisphere polar stereographic grid oriented 100E; Pole at (33,33)."}, /*28*/
+	{GenericUnPack,GetGrid_29,GenAtts,
+	 "5365-point (37x145) N. Hemisphere longitude/latitude grid for latitudes 0N to 90N; (0,0) at (0E,0N)."}, /*29*/
+	{GenericUnPack,GetGrid_30,GenAtts,
+	 "5365-point (37x145) S. Hemisphere longitude/latitude grid for latitudes 90S to 0S; (0,0) at (0E,90S)."}, /*30*/
+	{GenericUnPack,GetGrid_33,GenAtts,
+	 "8326-point (46x181) N. Hemisphere longitude/latitude grid for latitudes 0N to 90N; (0,0) at (0E,0N)."}, /*33*/
+	{GenericUnPack,GetGrid_34,GenAtts,
+	 "8326-point (46x181) S. Hemisphere longitude/latitude grid for latitudes 90S to 0S; (0,0) at (0E,90S)."}, /*34*/
+	{NULL,NULL,GenAtts,
+	 "3447-point (73x73) \"Thinned\" longitude-latitude grid. 330E-60E, 0-90N"}, /*37*/
+	{NULL,NULL,GenAtts,
+	 "3447-point (73x73) \"Thinned\" longitude-latitude grid. 60E-150E, 0-90N"}, /*38*/
+	{NULL,NULL,GenAtts,
+	 "3447-point (73x73) \"Thinned\" longitude-latitude grid. 150E-240E, 0-90N"}, /*39*/
+	{NULL,NULL,GenAtts,
+	 "3447-point (73x73) \"Thinned\" longitude-latitude grid. 240E-330E, 0-90N"}, /*40*/
+	{NULL,NULL,GenAtts,
+	 "3447-point (73x73) \"Thinned\" longitude-latitude grid. 330E-60E, 90S-0"}, /*41*/
+	{NULL,NULL,GenAtts,
+	 "3447-point (73x73) \"Thinned\" longitude-latitude grid. 60E-150E, 90S-0"}, /*42*/
+	{NULL,NULL,GenAtts,
+	 "3447-point (73x73) \"Thinned\" longitude-latitude grid. 150E-240E,90S-0"}, /*43*/
+	{NULL,NULL,GenAtts,
+	 "3447-point (73x73) \"Thinned\" longitude-latitude grid. 240E-330E, 90S-0"}, /*44*/
+	{GenericUnPack,GetGrid_45,GenAtts,
+	 "41760-point (145x288) Global Latitude/Longitude 1.25 deg Resoulution. 0E-358.75E, 90N-90S"},/*45*/
+	{IFOS50UnPack,GetGrid_50,GenAtts,
+	 "1188-point (33x36) longitude-latitude grid. 140.0W-52.5W, 20N-60N"}, /*50*/
+	{GenericUnPack,GetGrid_55,GenAtts,
+	 "6177-point (71x87) N. Hemisphere polar stereographic grid oriented 105W; Pole at (44,38). (2/3 bedient NH sfc anl)"}, /*55*/
+	{GenericUnPack,GetGrid_56,GenAtts,
+	 "6177-point (71x87) N. Hemisphere polar stereographic grid oriented 105W; Pole at (40,73). (1/3 bedient NA sfc anl)"}, /*56*/
+	{IFOSUnPack,GetGrid_61,GenAtts,
+	 "4186-point (46x91) longitude-latitude grid. 0-180E, 0-90N"}, /*61*/
+	{IFOSUnPack,GetGrid_62,GenAtts,
+	 "4186-point (46x91) longitude-latitude grid. 180W-0, 0-90N"}, /*62*/
+	{IFOSUnPack,GetGrid_63,GenAtts,
+	 "4186-point (46x91) longitude-latitude grid. 0-180E, 90S-0"}, /*63*/
+	{IFOSUnPack,GetGrid_64,GenAtts,
+	 "4186-point (46x91) longitude-latitude grid. 180W-0, 90S-0"}, /*64*/
+	{NULL,NULL,GenAtts,
+	 "12321-point (111x111) N. Hemisphere Lambert Conformal grid.  No fixed location; used by QLM Hurricane model."}, /*75*/
+	{NULL,NULL,GenAtts,
+	 "12321-point (111x111) S. Hemisphere Lambert Conformal grid.  No fixed location; used by QLM Hurricane model."}, /*76*/
+	{NULL,NULL,GenAtts,
+	 "12321-point (111x111) N. Hemisphere Mercator grid.  No fixed location; used by QLM Hurricane model."}, /*77*/
+	{GenericUnPack,GetGrid_85,GenAtts,
+	 "32400-point (90x360) N. Hemisphere longitude/latitude grid; longitudes: 0.5E to 359.5E (0.5W); latitudes: 0.5N to 89.5N; origin (0,0) at (0.5E,0.5N)"}, /*85*/
+	{GenericUnPack,GetGrid_86,GenAtts,
+	 "32400-point (90x360) S. Hemisphere longitude/latitude grid; longitudes: 0.5E to 359.5E (0.5W); latitudes: 89.5S to 0.5S; origin (0,0) at (0.5E,89.5S)"}, /*86*/
+	{GenericUnPack,GetGrid_87,GenAtts,
+	 "5022-point (62x81) N. Hemisphere  polar stereographic grid oriented at 105W. Pole at (31.91, 112.53) Used for RUC."}, /*87*/
+	{GenericUnPack,GetGrid_88,GenAtts,
+	 "317840 point (580x548) N. American polar stereographic grid oriented at 105W. Pole at (260.853, 613.176) Used for RSAS. (15 km at 60N)"}, /*88*/
+	{NULL,NULL,GenAtts,
+	 "12902-point (141x92 semi-staggered) lat. long., rotated such that center located at 52.0N, 111.0W; LL at 37.5W, 35S Unfilled E grid for 80 km ETA model"}, /*90*/
+	{NULL,NULL,GenAtts,
+	 "25803-point (141x183) lat. long., rotated such that center located at 52.0N, 111.0W; LL at 37.5W,35S Filled E grid for 80 km ETA model"}, /*91*/
+	{NULL,NULL,GenAtts,
+	 "24162-point (191x127 semi-staggered) lat. long., rotated such that center located at 41.0N, 97.0W; LL at 35W,25S Unfilled E grid for 40 km ETA model"}, /*92*/
+	{NULL,NULL,GenAtts,
+	 "48323-point (191x253)lat. long., rotated such that center located at 41.0N, 97.0W; LL at 35W ,25S Filled E grid for 40 km ETA model"}, /*93*/
+	{NULL,NULL,GenAtts,
+	 "18048-point (94x192) Global Gaussian T62 Latitude/Longitude Resolution."}, /*98*/
+	{GenericUnPack,GetGrid_100,GenAtts,
+	 "6889-point (83x83) N. Hemisphere polar stereographic grid oriented 105W; Pole at (40.5,88.5). (NGM Original C-Grid)"},  /*100*/
+	{GenericUnPack,GetGrid_101,GenAtts,
+	 "10283-point (91x113) N. Hemisphere polar stereographic grid oriented 105W; Pole at (58.5,92.5). (NGM \"Big C-Grid\")"}, /*101*/
+	{GenericUnPack,GetGrid_103,GenAtts,
+	 "3640-point (56x65) N. Hemisphere polar stereographic grid oriented 105W; Pole at (25.5,84.5) (used by ARL)"}, /*103*/
+	{GenericUnPack,GetGrid_104,GenAtts,
+	 "16170-point (110x147) N. Hemisphere polar stereographic grid oriented 105W; pole at (75.5,109.5). (NGM Super C grid)"}, /*104*/
+	{GenericUnPack,GetGrid_105,GenAtts,
+	 "6889-point (83x83) N. Hemisphere polar stereographic grid oriented 105W; pole at  (40.5,88.5).  (U.S. area subset of NGM Super C grid, used by ETA model)"}, /*105*/
+	{GenericUnPack,GetGrid_106,GenAtts,
+	 "19305-point (117x165) N. Hemisphere stereographic grid oriented 105W; pole at (80,176) Hi res. ETA (2 x resolution of Super C)"}, /*106*/
+	{GenericUnPack,GetGrid_107,GenAtts,
+	 "11040 point (92x120) N. Hemisphere stereographic grid oriented 105W; pole at (46,167) subset of Hi res. ETA; for ETA & MAPS/RUC"}, /*107*/
+	{NULL,NULL,GenAtts,
+	 "72960-point (190x384) Global Gaussian Latitude/Longitude T126 Resolution"}, /*126*/
+	{GenericUnPack,GetGrid_130,GenAtts,
+	 "Regional (CONUS) Lambert Conformal grid for AWIPS"}, /*130*/
 
-		GenericUnPack,GetGrid_160,GenAtts,
-		"AWIPS North Polar Stereographic grid for Alaska (Quadruple grid 203)", /*160*/
-		GenericUnPack,GetGrid_163,GenAtts,
-		"Regional (CONUS) Lambert Conformal grid", /*163*/
-		GenericUnPack,GetGrid_171,GenAtts,
-		"AWIPS Northern Hemisphere High Resolution Sea Ice grid (polar stereographic) ", /*171*/
-		GenericUnPack,GetGrid_172,GenAtts,
-		"AWIPS Southern Hemisphere High Resolution Sea Ice grid (polar stereographic) ", /*172*/
-		GenericUnPack,GetGrid_185,GenAtts,
-		"Limited domain CONUS Lambert Conformal (used by the DGEX)", /*185*/
+	{GenericUnPack,GetGrid_160,GenAtts,
+	 "AWIPS North Polar Stereographic grid for Alaska (Quadruple grid 203)"}, /*160*/
+	{GenericUnPack,GetGrid_163,GenAtts,
+	 "Regional (CONUS) Lambert Conformal grid"}, /*163*/
+	{GenericUnPack,GetGrid_171,GenAtts,
+	 "AWIPS Northern Hemisphere High Resolution Sea Ice grid (polar stereographic) "}, /*171*/
+	{GenericUnPack,GetGrid_172,GenAtts,
+	 "AWIPS Southern Hemisphere High Resolution Sea Ice grid (polar stereographic) "}, /*172*/
+	{GenericUnPack,GetGrid_185,GenAtts,
+	 "Limited domain CONUS Lambert Conformal (used by the DGEX)"}, /*185*/
 #if 0
-		GenericUnPack,GetGrid_186,GenAtts,
-		"Limited domain Alaska Polar Stereographic (used by the DGEX)", /*186*/ 
+	{GenericUnPack,GetGrid_186,GenAtts,
+	 "Limited domain Alaska Polar Stereographic (used by the DGEX)"}, /*186*/ 
 #endif
-		GenericUnPack,GetGrid_201,GenAtts,
-		"4225-point (65x65) Hemispheric polar stereographic grid oriented 105W; pole at (33,33)", /*201*/
-		GenericUnPack,GetGrid_202,GenAtts,
-		"2795-point (43x65) National - CONUS polar stereographic oriented 105W; pole at (33,45)", /*202*/
-		GenericUnPack,GetGrid_203,GenAtts,
-		"1755-point (39x45) National - Alaska polar stereographic oriented 150W; pole at (27,37)", /*203*/
-		GenericUnPack,GetGrid_204,GenAtts,
-		"6324-point (68x93) National - Hawaii Mercator (0,0) is 25S,110E, (93,68) is 60.644S,109.129W", /*204*/
-		GenericUnPack,GetGrid_205,GenAtts,
-		"1755-point (39x45) National - Puerto Rico stereographic oriented 60W; pole at (27,57)", /*205*/
-		GenericUnPack,GetGrid_206,GenAtts,
-		"2091-point (41x51) Regional - Central MARD Lambert Conformal oriented 95W; pole at (30.00,169.745)", /*206*/
-		GenericUnPack,GetGrid_205,GenAtts,
-		"1715-point (35x49) Regional - Alaska polar stereographic oriented 150W; pole at 25,51", /*207*/
-		GenericUnPack,GetGrid_208,GenAtts,
-		"783-point (27x29) Regional - Hawaii mercator (0,0) is 9.343N,167.315W, (29,27) is 28.092N,145.878W", /*208*/
-		GenericUnPack,GetGrid_209,GenAtts,
-		"8181-point (81x101) Regional - Centeral US MARD - Double Res. Lambert Conformal oriented 95W; pole at (59.000,338.490)", /* 209*/
-		GenericUnPack,GetGrid_210,GenAtts,
-		"625-point (25x25) Regional - Puerto Rico mercator (0,0) is 9.000N,77.00W (25,25) is 26.422,58.625", /*210*/
-		GenericUnPack,GetGrid_211,GenAtts,
-		"6045-point (65x93) Regional - CONUS lambert conformal oriented 95W; pole at (53.000,178.745)", /*211*/
-		GenericUnPack,GetGrid_212,GenAtts,
-		"23865-point (129x185) Regional - CONUS - double resolution lambert conformal oriented 95W; pole at (105.000,256.490)", /* 212 */
-		GenericUnPack,GetGrid_213,GenAtts,
-		"10965-point (85x129) National - CONUS - Double Resolution polar stereographic oriented 105W; pole at (65,89)", /*213*/
-		GenericUnPack,GetGrid_214,GenAtts,
-		"6693-point (69x97) Regional - Alaska - Double Resolution polar stereographic oriented 150W; pole at (49,101)", /*214*/
-		GenericUnPack,GetGrid_215,GenAtts,
-		"AWIPS grid over the contiguous United States - Quadruple Resolution (used by the 29-km ETA Model) (Lambert Conformal", /*215*/
-		GenericUnPack,GetGrid_216,GenAtts,
-		"AWIPS - Grid over Alaska (polar stereographic)", /*216*/
-		GenericUnPack,GetGrid_217,GenAtts,
-		"AWIPS - Grid over Alaska - Double Resolution (polar stereographic)", /*217*/
-		GenericUnPack,GetGrid_218,GenAtts,
-		"AWIPS grid over the Contiguous United States (used by the 12-km ETA Model) (Lambert Conformal)", /*218*/
-		GenericUnPack,GetGrid_219,GenAtts,
-		"AWIPS grid over the Northern Hemisphere to depict SSMI-derived ice concentrations (polar stereographic)", /*219*/
-		GenericUnPack,GetGrid_220,GenAtts,
-		"AWIPS grid over the Southern Hemisphere to depict SSMI-derived ice concentrations (polar stereographic)", /*220*/
-		GenericUnPack,GetGrid_221,GenAtts,
-		"AWIPS - Regional - NOAMHI - High Resolution North American Master Grid (Lambert Conformal)", /*221*/
-		GenericUnPack,GetGrid_222,GenAtts,
-		"AWIPS - Regional - NOAMLO - Low Resolution North American Master Grid (Lambert Conformal)", /*222*/
-		GenericUnPack,GetGrid_223,GenAtts,
-		"AWIPS - Hemispheric - Double Resolution (polar stereographic)", /*223*/
-		GenericUnPack,GetGrid_224,GenAtts,
-		"AWIPS - Southern Hemispheric (polar stereographic)", /*224*/
-		GenericUnPack,GetGrid_226,GenAtts,
-		"AWIPS grid over the contiguous United States - 8X Resolution (10 km) (Used by the Radar mosaics) (Lambert Conformal)", /*226*/
-		GenericUnPack,GetGrid_227,GenAtts,
-		"AWIPS grid over the contiguous United States - 16X Resolution(5 km) (Used by the Radar Stage IV precipitation analyses and Satellite-derived Precipitation Estimates) (Lambert Conformal", /*227*/
-		GenericUnPack,GetGrid_236,GenAtts,
-		"AWIPS - Regional - CONUS (Lambert Conformal)", /*236*/
-		GenericUnPack,GetGrid_237,GenAtts,
-		"AWIPS - Puerto Rico FAA Regional Grid (Lambert Conformal)", /*237*/
-		GenericUnPack,GetGrid_240,GenAtts,
-		"AWIPS - HRAP Grid over the Contiguous United States and Puerto Rico (polar stereographic)", /*240*/
-		GenericUnPack,GetGrid_241,GenAtts,
-		"AWIPS - Regional - NOAMHI - High Resolution North American Grid (Lambert Conformal)", /*241*/
-		GenericUnPack,GetGrid_242,GenAtts,
-		"AWIPS - Grid over Alaska - Quadruple Resolution Grid (polar stereographic)", /*242*/
-		GenericUnPack,GetGrid_245,GenAtts,
-		"AWIPS - Regional - NOAMHI - High Resolution over Eastern US (Lambert Conformal for 8 km NMM)", /*245*/
-		GenericUnPack,GetGrid_246,GenAtts,
-		"AWIPS - Regional - NOAMHI - High Resolution over Western US (Lambert Conformal for 8 km NMM)", /*246*/
-		GenericUnPack,GetGrid_247,GenAtts,
-		"AWIPS - Regional - NOAMHI - High Resolution over Central US (Lambert Conformal for 8 km NMM)", /*247*/
-		GenericUnPack,GetGrid_249,GenAtts,
-		"AWIPS - Grid over Alaska for 10-km Alaska nest (Polar Stereographic)", /*249*/
-		GenericUnPack,GetGrid_252,GenAtts,
-		"AWIPS - Regional - CONUS (Lambert Conformal)", /*252*/
+	{GenericUnPack,GetGrid_201,GenAtts,
+	 "4225-point (65x65) Hemispheric polar stereographic grid oriented 105W; pole at (33,33)"}, /*201*/
+	{GenericUnPack,GetGrid_202,GenAtts,
+	 "2795-point (43x65) National - CONUS polar stereographic oriented 105W; pole at (33,45)"}, /*202*/
+	{GenericUnPack,GetGrid_203,GenAtts,
+	 "1755-point (39x45) National - Alaska polar stereographic oriented 150W; pole at (27,37)"}, /*203*/
+	{GenericUnPack,GetGrid_204,GenAtts,
+	 "6324-point (68x93) National - Hawaii Mercator (0,0) is 25S,110E, (93,68) is 60.644S,109.129W"}, /*204*/
+	{GenericUnPack,GetGrid_205,GenAtts,
+	 "1755-point (39x45) National - Puerto Rico stereographic oriented 60W; pole at (27,57)"}, /*205*/
+	{GenericUnPack,GetGrid_206,GenAtts,
+	 "2091-point (41x51) Regional - Central MARD Lambert Conformal oriented 95W; pole at (30.00,169.745)"}, /*206*/
+	{GenericUnPack,GetGrid_205,GenAtts,
+	 "1715-point (35x49) Regional - Alaska polar stereographic oriented 150W; pole at 25,51"}, /*207*/
+	{GenericUnPack,GetGrid_208,GenAtts,
+	 "783-point (27x29) Regional - Hawaii mercator (0,0) is 9.343N,167.315W, (29,27) is 28.092N,145.878W"}, /*208*/
+	{GenericUnPack,GetGrid_209,GenAtts,
+	 "8181-point (81x101) Regional - Centeral US MARD - Double Res. Lambert Conformal oriented 95W; pole at (59.000,338.490)"}, /* 209*/
+	{GenericUnPack,GetGrid_210,GenAtts,
+	 "625-point (25x25) Regional - Puerto Rico mercator (0,0) is 9.000N,77.00W (25,25) is 26.422,58.625"}, /*210*/
+	{GenericUnPack,GetGrid_211,GenAtts,
+	 "6045-point (65x93) Regional - CONUS lambert conformal oriented 95W; pole at (53.000,178.745)"}, /*211*/
+	{GenericUnPack,GetGrid_212,GenAtts,
+	 "23865-point (129x185) Regional - CONUS - double resolution lambert conformal oriented 95W; pole at (105.000,256.490)"}, /* 212 */
+	{GenericUnPack,GetGrid_213,GenAtts,
+	 "10965-point (85x129) National - CONUS - Double Resolution polar stereographic oriented 105W; pole at (65,89)"}, /*213*/
+	{GenericUnPack,GetGrid_214,GenAtts,
+	 "6693-point (69x97) Regional - Alaska - Double Resolution polar stereographic oriented 150W; pole at (49,101)"}, /*214*/
+	{GenericUnPack,GetGrid_215,GenAtts,
+	 "AWIPS grid over the contiguous United States - Quadruple Resolution (used by the 29-km ETA Model) (Lambert Conformal"}, /*215*/
+	{GenericUnPack,GetGrid_216,GenAtts,
+	 "AWIPS - Grid over Alaska (polar stereographic)"}, /*216*/
+	{GenericUnPack,GetGrid_217,GenAtts,
+	 "AWIPS - Grid over Alaska - Double Resolution (polar stereographic)"}, /*217*/
+	{GenericUnPack,GetGrid_218,GenAtts,
+	 "AWIPS grid over the Contiguous United States (used by the 12-km ETA Model) (Lambert Conformal)"}, /*218*/
+	{GenericUnPack,GetGrid_219,GenAtts,
+	 "AWIPS grid over the Northern Hemisphere to depict SSMI-derived ice concentrations (polar stereographic)"}, /*219*/
+	{GenericUnPack,GetGrid_220,GenAtts,
+	 "AWIPS grid over the Southern Hemisphere to depict SSMI-derived ice concentrations (polar stereographic)"}, /*220*/
+	{GenericUnPack,GetGrid_221,GenAtts,
+	 "AWIPS - Regional - NOAMHI - High Resolution North American Master Grid (Lambert Conformal)"}, /*221*/
+	{GenericUnPack,GetGrid_222,GenAtts,
+	 "AWIPS - Regional - NOAMLO - Low Resolution North American Master Grid (Lambert Conformal)"}, /*222*/
+	{GenericUnPack,GetGrid_223,GenAtts,
+	 "AWIPS - Hemispheric - Double Resolution (polar stereographic)"}, /*223*/
+	{GenericUnPack,GetGrid_224,GenAtts,
+	 "AWIPS - Southern Hemispheric (polar stereographic)"}, /*224*/
+	{GenericUnPack,GetGrid_226,GenAtts,
+	 "AWIPS grid over the contiguous United States - 8X Resolution (10 km) (Used by the Radar mosaics) (Lambert Conformal)"}, /*226*/
+	{GenericUnPack,GetGrid_227,GenAtts,
+	 "AWIPS grid over the contiguous United States - 16X Resolution(5 km) (Used by the Radar Stage IV precipitation analyses and Satellite-derived Precipitation Estimates) (Lambert Conformal"}, /*227*/
+	{GenericUnPack,GetGrid_236,GenAtts,
+	 "AWIPS - Regional - CONUS (Lambert Conformal)"}, /*236*/
+	{GenericUnPack,GetGrid_237,GenAtts,
+	 "AWIPS - Puerto Rico FAA Regional Grid (Lambert Conformal)"}, /*237*/
+	{GenericUnPack,GetGrid_240,GenAtts,
+	 "AWIPS - HRAP Grid over the Contiguous United States and Puerto Rico (polar stereographic)"}, /*240*/
+	{GenericUnPack,GetGrid_241,GenAtts,
+	 "AWIPS - Regional - NOAMHI - High Resolution North American Grid (Lambert Conformal)"}, /*241*/
+	{GenericUnPack,GetGrid_242,GenAtts,
+	 "AWIPS - Grid over Alaska - Quadruple Resolution Grid (polar stereographic)"}, /*242*/
+	{GenericUnPack,GetGrid_245,GenAtts,
+	 "AWIPS - Regional - NOAMHI - High Resolution over Eastern US (Lambert Conformal for 8 km NMM)"}, /*245*/
+	{GenericUnPack,GetGrid_246,GenAtts,
+	 "AWIPS - Regional - NOAMHI - High Resolution over Western US (Lambert Conformal for 8 km NMM)"}, /*246*/
+	{GenericUnPack,GetGrid_247,GenAtts,
+	 "AWIPS - Regional - NOAMHI - High Resolution over Central US (Lambert Conformal for 8 km NMM)"}, /*247*/
+	{GenericUnPack,GetGrid_249,GenAtts,
+	 "AWIPS - Grid over Alaska for 10-km Alaska nest (Polar Stereographic)"}, /*249*/
+	{GenericUnPack,GetGrid_252,GenAtts,
+	 "AWIPS - Regional - CONUS (Lambert Conformal)"}, /*252*/
 
 };
 

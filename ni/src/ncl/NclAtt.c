@@ -230,7 +230,7 @@ NclSelectionRecord * sel_ptr;
 #endif
 {
 	NclAttList *thelist;
-	NclMultiDValData targetdat,tmp_md;
+	NclMultiDValData targetdat = NULL,tmp_md;
 	int lhs_type,rhs_type;
 	int att_quark;
 	NhlErrorTypes ret;

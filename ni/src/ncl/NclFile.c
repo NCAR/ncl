@@ -262,6 +262,7 @@ NclFile thefile;
 		}
 	}
 	NclFree((void*)name_list);
+	return NhlNOERROR;
 }
 
 /*
@@ -429,7 +430,7 @@ NclQuark *dimnames;
 {
 	NhlErrorTypes ret = NhlNOERROR;
 	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
-	int i,j;
+	int i;
 	NclTypeClass typec;
 	int dindex;
 	int add_scalar_dim = 0;
@@ -1391,7 +1392,7 @@ NclMultiDValData value;
 				return(NhlWARNING);
 			}
 			if (fcp->options[i].valid_values) {
-				int ok;
+				int ok = 0;
 				int j,k;
 				if (fcp->options[i].value->multidval.data_type == NCL_string) {
 					lvalue = NclMalloc(tmp_md->multidval.totalelements * sizeof(NclQuark));
@@ -1489,7 +1490,7 @@ NclMultiDValData value;
 				return(NhlWARNING);
 			}
 			if (fcp->options[i].valid_values) {
-				int ok;
+				int ok = 0;
 				int j,k;
 				if (fcp->options[i].value->multidval.data_type == NCL_string) {
 					lvalue = NclMalloc(tmp_md->multidval.totalelements * sizeof(NclQuark));
@@ -1704,7 +1705,6 @@ static NhlErrorTypes InitializeFileOptions
 	int *ival;
 	ng_size_t len_dims;
 	NhlErrorTypes ret = NhlNOERROR;
-	NclMultiDValData tmp_md;
 	
 	
 	/* option names are case insensitive and so are string-type 
@@ -2292,7 +2292,7 @@ static int FileIsGroup
 	NclQuark group;
 #endif
 {
-	int i, n;
+	int i;
 
       /*
         fprintf(stdout, "\n\n\nhit FileIsGroup. file: %s, line: %d\n", __FILE__, __LINE__);
@@ -2396,21 +2396,21 @@ int vtype;
 	NclMultiDValData mis_md = NULL;
 	NclScalar missing_value;
 	int has_missing = 0;
-	void *val;
+	void *val = NULL;
 	int index;
 	long start[NCL_MAX_DIMENSIONS];
 	long finish[NCL_MAX_DIMENSIONS];
 	long stride[NCL_MAX_DIMENSIONS];
 	long real_stride[NCL_MAX_DIMENSIONS];
 	int i,j,k,done = 0,inc_done = 0;
-	int n_dims_input,n_elem;
-	int n_dims_output;
+	int n_dims_input,n_elem = 1;
+	int n_dims_output = 1;
 	long total_elements = 1;
 	int has_vectors = 0;
 	int has_stride = 0;
 	int has_reverse = 0;
 	int has_reorder = 0;
-	int to = 0,block_read_limit,n_elem_block;
+	int to = 0,block_read_limit = 1,n_elem_block;
 	
 	long multiplier_input[NCL_MAX_DIMENSIONS];
 	int compare_sel[NCL_MAX_DIMENSIONS];
@@ -3750,7 +3750,6 @@ struct _NclSelectionRecord* sel_ptr;
 {
 	NclMultiDValData tmp_md = NULL;
 	NclMultiDValData tmp_att_md = NULL;
-	NclFileAttInfoList *step = NULL;
 	NclVar tmp_var = NULL;
 	int index;
 	int att_id,i,j=0;
@@ -3760,7 +3759,6 @@ struct _NclSelectionRecord* sel_ptr;
 	NclSelection *sel = NULL;
 	NclObj  att_obj = NULL;
 	int single = 0;
-	NhlArgVal udata;
 /*
 * By the the time it gets here the file suport routines in that build the selection
 * record have made sure var_name is valid and all the demensions in sel_ptr
@@ -3957,15 +3955,10 @@ struct _NclSelectionRecord *sel_ptr;
 #endif
 {
 	int aindex,index;
-	NclFileAttInfoList *step;
-	int att_id = -1;
-	void *val;
 	NclMultiDValData tmp_md;
-	NhlArgVal udata;
 
 	aindex = FileIsVarAtt(thefile,var,attname);
 	if(aindex > -1) {
-		NclMultiDValData new_tmp_md;
 		NclScalar missing_value;
 		ng_size_t dim_size = 1;
 		char *type_name;
@@ -4479,9 +4472,8 @@ int type;
 	float tmpf;
 	NclScalar *tmp_mis;
 	NclScalar tmp_scalar;
-	NclScalar tmp_scalar0;
 	ng_size_t tmp_size = 1;
-    int tmpi;
+	int tmpi;
 	void *data_type;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
@@ -5665,11 +5657,9 @@ struct _NclSelectionRecord * sel_ptr;
 	int att_id;
 	NhlErrorTypes ret = NhlNOERROR;
 	int index = -1;
-	NclFileAttInfoList *step;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
 	void *data_type;
-	NhlArgVal udata;
 
 	if(thefile->file.wr_status<=0) {
 		index = FileIsVar(thefile,var);
@@ -6243,13 +6233,11 @@ struct _NclSelectionRecord* sel_ptr;
 {
 	NclSelection *sel;
 	int index;
-	NclMultiDValData tmp_md,tmp_att_md;
+	NclMultiDValData tmp_md;
 	NclDimRec dim_info[NCL_MAX_DIMENSIONS];
 	int att_id = -1;
 	NclObj att_obj = NULL;
 	NclVar tmp_var = NULL;
-	NclFileAttInfoList *step;
-	NhlArgVal udata;
 
 	if(FileIsCoord(thefile,coord_name) > -1){
 		index = FileIsVar(thefile,coord_name);
@@ -6328,10 +6316,6 @@ NclQuark group_name;
 #endif
 {
 	NclGroup *group_out = NULL;
-	NclStackEntry out_data;
-	NclMultiDValData out_md = NULL;
-	int *id = (int*)NclMalloc((unsigned)sizeof(int));
-	int dim_size = 1;
 	int index;
 
 	index = FileIsGroup(thefile,group_name);

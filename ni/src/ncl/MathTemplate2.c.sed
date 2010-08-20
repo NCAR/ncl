@@ -29,12 +29,11 @@ NhlErrorTypes _NclFUNCNAME
 ()
 #endif
 {
-	NclScalar missing0,missing1,missing2,dm0,dm1;
+	NclScalar missing0,missing1,dm0,dm1;
 	int has_missing0,n_dims0;
 	ng_size_t dimsizes0[NCL_MAX_DIMENSIONS];
 	int has_missing1,n_dims1;
 	ng_size_t dimsizes1[NCL_MAX_DIMENSIONS];
-	void *out_val;
 	double *dout_val;
 	float *fout_val;
 	void *value0;
@@ -240,6 +239,9 @@ NhlErrorTypes _NclFUNCNAME
 				NCL_float,
 				0
 			));
+		default:
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: internal error: can not continue");
+			return NhlFATAL;
 		}
 
 	} else {

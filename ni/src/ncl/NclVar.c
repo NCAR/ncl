@@ -35,6 +35,7 @@
 #include "NclAtt.h"
 #include "NclVar.h"
 #include "DataSupport.h"
+#include "TypeSupport.h"
 #include "AttSupport.h"
 #include "VarSupport.h"
 #include "NclCoordVar.h"
@@ -273,7 +274,6 @@ NhlArgVal udata;
 {
 	NclVar self = NULL;
 	NclMultiDValData theval = NULL;
-	NclMultiDValData themis = NULL;
 
 	self = (NclVar)_NclGetObj(udata.intval);
 	if(self != NULL) {
@@ -426,7 +426,6 @@ FILE *fp;
 	NclMultiDValData thevalue = NULL;
 	int ret;
 	NhlErrorTypes ret0 = NhlNOERROR;
-	NhlErrorTypes ret1 = NhlNOERROR;
 
 	thevalue = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
 	
@@ -1301,7 +1300,6 @@ NclSelectionRecord *sel_ptr;
 	NclMultiDValData thevalue;
 	NclMultiDValData attvalue;
 	NclMultiDValData tmp_md;
-	NclMultiDValData tmp_md1;
 	int i,j;
 	NclScalar *missing_ptr;
 	ng_size_t miss_dim_sizes[NCL_MAX_DIMENSIONS];
@@ -1520,9 +1518,6 @@ char* coord_name;
 #endif
 {
 	int index;
-	NclDimRec tmp;
-	NclObj tmp_obj;
-
 	
 	index = VarIsADim(self,coord_name);
 	if((index>=0)&&(index < self->var.n_dims))  {
@@ -1626,6 +1621,7 @@ NclSelectionRecord *sel_ptr;
 			j = 0;
 			tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(self->var.att_id),NULL);
 			for(i = 0; i< sel_ptr->n_entries; i++) {
+				coord_var = NULL;
 				if((self->var.coord_vars[sel_ptr->selection[i].dim_num] != -1)&&(_NclGetObj(self->var.coord_vars[sel_ptr->selection[i].dim_num]) != NULL)) {
 					if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR) {
 						tmp_sel.selection[0].sel_type = sel_ptr->selection[i].sel_type;
@@ -1690,7 +1686,7 @@ NclSelectionRecord *sel_ptr;
 							tmp_att = (NclAtt)_NclGetObj(_NclAttCreate(NULL,NULL,Ncl_Att,0,NULL));
 						}
 						_NclAddAtt(tmp_att->obj.id,NrmQuarkToString(self->var.dim_info[sel_ptr->selection[i].dim_num].dim_quark),_NclVarValueRead(coord_var,NULL,NULL),NULL);
-						if(coord_var->obj.status != PERMANENT) {
+						if(coord_var && coord_var->obj.status != PERMANENT) {
 							_NclDestroyObj((NclObj)coord_var);
 						}
 					} 
@@ -1822,58 +1818,19 @@ struct _NclVarRec *storage;
 {
 	struct _NclVarRec *tmp_var = NULL;
 	NclObj tmp_obj = NULL;
-	int i;
-/*
-	if(thevar == NULL)
-		return(NULL);
 
-	if(storage != NULL) {
-		tmp_var = storage;
-	} else {
-		tmp_var = (NclVar)NclMalloc(thevar->obj.class_ptr->obj_class.obj_size);
-	}
-	if(tmp_var == NULL) {
-		return(NULL);
-	}
-	(void)_NclObjCreate((NclObj)tmp_var,thevar->obj.class_ptr,thevar->obj.obj_type ,thevar->obj.obj_type_mask,TEMPORARY);
-	
-	tmp_var->var = thevar->var;
-
-
-	tmp_obj = (NclObj)_NclCopyVal((NclMultiDValData)_NclGetObj(thevar->var.thevalue_id),new_missing);
-	_NclSetStatus((NclObj)tmp_obj,PERMANENT);
-	_NclAddParent(tmp_obj,(NclObj)tmp_var);
-	if(tmp_obj != NULL) {
-		tmp_var->var.thevalue_id = tmp_obj->obj.id;
-	} else {
-		tmp_var->var.thevalue_id = -1;
-	}
 	tmp_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(thevar->var.att_id),NULL);
-	if(tmp_obj != NULL) {
-		_NclAddParent(tmp_obj,(NclObj)tmp_var);
-		tmp_var->var.att_cb = _NclAddCallback((NclObj)tmp_obj,(NclObj)tmp_var,_NclVarMissingNotify,MISSINGNOTIFY,NULL);
-		tmp_var->var.att_id = tmp_obj->obj.id;
-	} else {
-		tmp_var->var.att_id = -1;
-	}
-	for(i = 0; i < tmp_var->var.n_dims; i++) {
-		if((tmp_var->var.coord_vars[i] == -1)
-			||(_NclGetObj(tmp_var->var.coord_vars[i]) == NULL)) {
-			tmp_var->var.coord_vars[i] = -1;
-		} else {
-			tmp_obj = (NclObj)_NclCopyVar((NclVar)_NclGetObj(tmp_var->var.coord_vars[i]),NULL,NULL);
-			if(tmp_obj == NULL) {
-				tmp_var->var.coord_vars[i] = -1;
-			} else {
-				_NclAddParent(tmp_obj,(NclObj)tmp_var);
-				tmp_var->var.coord_vars[i] = tmp_obj->obj.id;
-			}
-		}
-	}
-*/
-	tmp_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(thevar->var.att_id),NULL);
-	tmp_var = _NclVarNclCreate(NULL,thevar->obj.class_ptr,thevar->obj.obj_type,thevar->obj.obj_type_mask,new_name,(NclMultiDValData)_NclGetObj(thevar->var.thevalue_id),thevar->var.dim_info,((tmp_obj != NULL)?tmp_obj->obj.id:-1),thevar->var.coord_vars,(thevar->var.var_type == PARAM)?NORMAL:thevar->var.var_type,(new_name == NULL)?NrmQuarkToString(thevar->var.var_quark):new_name->name,TEMPORARY);
-	
+	tmp_var = _NclVarNclCreate(NULL,
+				   thevar->obj.class_ptr,thevar->obj.obj_type,
+				   thevar->obj.obj_type_mask,
+				   new_name,
+				   (NclMultiDValData)_NclGetObj(thevar->var.thevalue_id),
+				   thevar->var.dim_info,
+				   ((tmp_obj != NULL)?tmp_obj->obj.id:-1),
+				   thevar->var.coord_vars,
+				   (thevar->var.var_type == PARAM)?NORMAL:thevar->var.var_type,
+				   (new_name == NULL)?NrmQuarkToString(thevar->var.var_quark):new_name->name,
+				   TEMPORARY);
 
 	return(tmp_var);
 }
@@ -2173,7 +2130,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 				}
 				break;
 			}
-			if((lhs_n_elem != 1)&&(rhs_n_elem != 1)||(lhs_n_elem == 1)&&(rhs_n_elem == 1)) {
+			if(((lhs_n_elem != 1)&&(rhs_n_elem != 1))||((lhs_n_elem == 1)&&(rhs_n_elem == 1))) {
 /*
 * Nothing needs to be done unless right hand side has defined dimension 
 */

@@ -10,6 +10,8 @@
 #include "defs.h"
 #include "NclFile.h"
 #include "NclFileInterfaces.h"
+#include <ctype.h>
+#include <unistd.h>
 
 typedef struct _NclFormatList NclFormatList;
 
@@ -101,7 +103,7 @@ NclQuark file_ext1;
 NclQuark file_ext2;
 #endif
 {
-	NclAddFileFormat format_func1;
+	NclAddFileFormat format_func1 = NULL;
 	char ext[16];
         char *cp;
 	NclQuark qext1,qext2;
@@ -118,6 +120,8 @@ NclQuark file_ext2;
 			format_func1 = formats[i].format_func;
 		}
 	}
+	if (!format_func1) 
+		return 0;
 
         strncpy(ext,NrmQuarkToString(file_ext2),sizeof(ext));
         ext[sizeof(ext)-1] = '\0';

@@ -319,7 +319,7 @@ NclMultiDValData str_md;
 	int max_len,tmp_len,to;
 	char *val = NULL;
 	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
-	string missingQ;
+	string missingQ = NrmNULLQUARK;
 	NhlBoolean has_missing = False;
 	NclScalar tmp_missing;
 
@@ -385,15 +385,15 @@ NclMultiDValData _NclCharMdToStringMd
 NclMultiDValData char_md;
 #endif
 {
-	int i,j;
+	int i;
 	int n_strings = 1;
 	char *buffer = NULL;
 	int len =0;
 	int from = 0;
 	string *value = NULL;
 	unsigned char *val = NULL;
-	string missingQ;
-	char missing;
+	string missingQ = NrmNULLQUARK;
+	char missing = '\0';
 	char *cp;
 	NhlBoolean has_missing = False;
 	NclScalar tmp_missing;
@@ -1026,7 +1026,7 @@ NclBasicDataTypes totype;
 			*(logical*)to = (logical)(*(long long*)from?1:0);
                         return(1);
                 case NCL_string:
-                        sprintf(buffer,"%ld",(long long)*(long long*)from);
+                        sprintf(buffer,"%lld",(long long)*(long long*)from);
                         *(string*)to = NrmStringToQuark(buffer);
                         return(1);
                 default:
@@ -1164,7 +1164,7 @@ NclBasicDataTypes totype;
 			*(logical*)to = (logical)(*(unsigned long long*)from?1:0);
                         return(1);
                 case NCL_string:
-                        sprintf(buffer,"%ld",(unsigned long long)*(unsigned long long*)from);
+                        sprintf(buffer,"%lld",(unsigned long long)*(unsigned long long*)from);
                         *(string*)to = NrmStringToQuark(buffer);
                         return(1);
                 default:
@@ -1601,7 +1601,7 @@ NclBasicDataTypes totype;
 			*(logical*)to = (logical)(*(long long*)from?1:0);
                         return(1);
                 case NCL_string:
-                        sprintf(buffer,"%ld",(long long)*(long long*)from);
+                        sprintf(buffer,"%lld",(long long)*(long long*)from);
                         *(string*)to = NrmStringToQuark(buffer);
                         return(1);
                 default:
@@ -1793,7 +1793,7 @@ NclBasicDataTypes totype;
 			*(logical*)to = (logical)(*(unsigned long long*)from?1:0);
 			return(1);
                 case NCL_string:
-                        sprintf(buffer,"%ld",(unsigned long long)*(unsigned long long*)from);
+                        sprintf(buffer,"%lld",(unsigned long long)*(unsigned long long*)from);
                         *(string*)to = NrmStringToQuark(buffer);
                         return(1);
                 default:
@@ -2372,7 +2372,6 @@ NclSelectionRecord *sel_rec;
 NclObjClass type;
 #endif
 {
-	NclTypeClass tmp;
 
 	switch(obj_type) {
 	case Ncl_MultiDValData:
@@ -2666,8 +2665,9 @@ NclBasicDataTypes dt;
                 return(NCL_short);
         case NCL_uint8:
                 return(NCL_ushort);
+	default:
+		return(NCL_none);
 	}
-	return(NCL_none);
 }
 struct _NclDataRec* _NclReadSubSection
 #if     NhlNeedProto

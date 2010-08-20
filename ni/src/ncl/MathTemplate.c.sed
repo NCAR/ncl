@@ -217,4 +217,5 @@ NhlErrorTypes _NclFUNCNAME
 	default:
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: a non-numeric type was passed to this function, can not continue");
 	}
+	return NhlFATAL;
 }
