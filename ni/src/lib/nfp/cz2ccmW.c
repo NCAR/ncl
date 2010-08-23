@@ -15,13 +15,16 @@ NhlErrorTypes cz2ccm_W( void )
   void *ps, *phis, *tv, *p0, *hyam, *hybm, *hyai, *hybi;
   double *tmp, *tmp_ps, *tmp_phis, *tmp_tv, *tmp_p0;
   double *tmp_hyam, *tmp_hybm, *tmp_hyai, *tmp_hybi;
-  int ndims_ps, dsizes_ps[NCL_MAX_DIMENSIONS];
-  int ndims_phis, dsizes_phis[NCL_MAX_DIMENSIONS];
-  int ndims_tv, dsizes_tv[NCL_MAX_DIMENSIONS];
-  int dsizes_hyam[NCL_MAX_DIMENSIONS];
-  int dsizes_hybm[NCL_MAX_DIMENSIONS];
-  int dsizes_hyai[NCL_MAX_DIMENSIONS];
-  int dsizes_hybi[NCL_MAX_DIMENSIONS];
+  int ndims_ps;
+  ng_size_t dsizes_ps[NCL_MAX_DIMENSIONS];
+  int ndims_phis;
+  ng_size_t dsizes_phis[NCL_MAX_DIMENSIONS];
+  int ndims_tv;
+  ng_size_t dsizes_tv[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hyam[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hybm[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hyai[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hybi[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_ps, type_phis, type_tv, type_p0;
   NclBasicDataTypes type_hyam, type_hybm, type_hyai, type_hybi;
 /*
@@ -38,9 +41,9 @@ NhlErrorTypes cz2ccm_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_ps, index_z2, l, m, scalar_phis;
-  int nlat, mlon, klev, klev1, nlatmlon, klevnlatmlon;
-  int any_double=0, size_input, size_z2;
+  ng_size_t i, index_ps, index_z2, scalar_phis;
+  ng_size_t nlat, mlon, klev, klev1, nlatmlon, klevnlatmlon;
+  ng_size_t size_z2;
 
 /*
  * Retrieve arguments.
@@ -334,10 +337,25 @@ NhlErrorTypes cz2ccm_W( void )
 
     if(type_z2 == NCL_double) tmp_z2 = &((double*)z2)[index_z2];
 
-    NGCALLF(dcz2ccm,DCZ2CCM)(tmp_ps,tmp_phis,tmp_tv,tmp_p0,
-                             tmp_hyam,tmp_hybm,tmp_hyai,tmp_hybi,
-                             &mlon,&nlat,&klev,&klev1,tmp_z2,pmln,
-                             hypdln,hyalph,zslice,hyba,hybb,pterm,tv2);
+    if((mlon <= INT_MAX) &&
+       (nlat <= INT_MAX) &&
+       (klev <= INT_MAX) &&
+       (klev1 <= INT_MAX))
+    {
+        int imlon = (int) mlon;
+        int inlat = (int) nlat;
+        int iklev = (int) klev;
+        int iklev1 = (int) klev1;
+        NGCALLF(dcz2ccm,DCZ2CCM)(tmp_ps,tmp_phis,tmp_tv,tmp_p0,
+                                 tmp_hyam,tmp_hybm,tmp_hyai,tmp_hybi,
+                                 &imlon,&inlat,&iklev,&iklev1,tmp_z2,pmln,
+                                 hypdln,hyalph,zslice,hyba,hybb,pterm,tv2);
+
+    }
+    else
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"dezfft[ib]: mlon = %d, is larger than INT_MAX", mlon);
+    }
 /*
  * Coerce output to float if necessary.
  */

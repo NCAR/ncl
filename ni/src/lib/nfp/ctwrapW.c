@@ -24,7 +24,7 @@ NhlErrorTypes ctwrap_W( void )
 {
   int *wks;
   float *lat, *lon, *data;
-  int dsizes_lat[2], dsizes_lon[2], dsizes_data[2];
+  ng_size_t dsizes_lat[2], dsizes_lon[2], dsizes_data[2];
   int nlat, nlon, nlon8, idim, jdim;
   logical *opt;
 

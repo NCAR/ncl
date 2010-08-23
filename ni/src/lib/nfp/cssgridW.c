@@ -32,14 +32,16 @@ char csmsg[61];
 NhlErrorTypes css2c_W(void)
 {
 
-  int ndims[2], dsizes[2][NCL_MAX_DIMENSIONS], has_missing[2],dflag;
-  int return_dsizes[NCL_MAX_DIMENSIONS];
+  int ndims[2];
+  ng_size_t dsizes[2][NCL_MAX_DIMENSIONS];
+  int has_missing[2],dflag;
+  ng_size_t return_dsizes[NCL_MAX_DIMENSIONS];
   NclScalar missing[2],missingd[2],return_missing,*missing_ptr;
   void *datav[2];
   double platd, plond, *return_value_d;
   float  platf, plonf, mvalf, *return_value_f;
 
-  int i,j,k,nt;
+  int i,j,nt;
 
   NclBasicDataTypes atypes[2];  
 
@@ -209,8 +211,10 @@ NhlErrorTypes css2c_W(void)
 NhlErrorTypes csc2s_W(void)
 {
 
-  int ndims[3], dsizes[3][NCL_MAX_DIMENSIONS], has_missing[3],dflag;
-  int return_dsizes[NCL_MAX_DIMENSIONS];
+  int ndims[3];
+  ng_size_t dsizes[3][NCL_MAX_DIMENSIONS];
+  int has_missing[3],dflag;
+  ng_size_t return_dsizes[NCL_MAX_DIMENSIONS];
   NclScalar missing[3],missingd[3],return_missing,*missing_ptr;
   void *datav[3];
   double xid,yid,zid,*return_value_d;
@@ -398,7 +402,7 @@ NhlErrorTypes csc2s_W(void)
 NhlErrorTypes cssetp_W(void)
 {
 
-  char  *arg1, *cval;
+  char  *arg1;
   int   numpi, numpf, numpd, i;
 
 /*
@@ -415,9 +419,11 @@ NhlErrorTypes cssetp_W(void)
  * Input array variables
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int ndims_pname;
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
-  int ndims_pvalue, dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  int ndims_pvalue;
+  ng_size_t dsizes_pvalue[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname, type_pvalue;
 
 /*
@@ -529,9 +535,8 @@ NhlErrorTypes csgetp_W(void)
  *  Get values for csgrid parameters.
  */
 
-  char  *arg1, *cval;
+  char  *arg1;
   int   numpi, numpf, numpd, i;
-  string *pvalue, *qvalue;
 
 /*
  *  List the parameter names (integer, float, double).  To add new ones,
@@ -545,12 +550,13 @@ NhlErrorTypes csgetp_W(void)
  * Input array variable
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int ndims_pname;
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname;
   float  *fval;
   double *dval;
   int    *ival;
-  int    ret_size = 1; 
+  ng_size_t    ret_size = 1; 
 
 /*
  * Retrieve argument #1
@@ -632,13 +638,17 @@ OK_NAME:
 NhlErrorTypes csstri_W(void)
 {
 
-  int ndims[2], dsizes[2][NCL_MAX_DIMENSIONS], has_missing[2];
+  int ndims[2];
+  ng_size_t dsizes[2][NCL_MAX_DIMENSIONS];
+  int has_missing[2];
   NclScalar missing[2],missingd[2];
   void *datav[2];
   double *platd, *plond, platdt, plondt;
 
-  int i,j,nt,num_points,num_missing=0;
-  int *trlist,dsizes_trlist[2],*indices;
+  int i,j,nt,num_points;
+  int *trlist;
+  ng_size_t dsizes_trlist[2];
+  int *indices;
 
   NclBasicDataTypes atypes[2];  
 
@@ -765,14 +775,16 @@ NhlErrorTypes csstri_W(void)
 NhlErrorTypes csvoro_W(void)
 {
 
-  static int ndims[10], dsizes[10][NCL_MAX_DIMENSIONS], has_missing[10];
+  static int ndims[10];
+  ng_size_t dsizes[10][NCL_MAX_DIMENSIONS];
+  int has_missing[10];
   static int dflag;
   static NclScalar missing[10],missingd[10];
   static void *callp,*indexp;
   static void *datav[10];
 
-  static int i,j,nt,num_points,num_missing=0,callv,indexv;
-  static int np2,nf,nca,numv;
+  static int i,num_points,callv,indexv;
+  static int np2;
 
   static double *platd, *plond, platdt, plondt;
   static double *rlatd,*rlond, *rcd;
@@ -941,14 +953,19 @@ NhlErrorTypes csvoro_W(void)
 NhlErrorTypes cssgrid_W(void)
 {
 
-  int ndims[5], dsizes[5][NCL_MAX_DIMENSIONS], has_missing[5];
+  int ndims[5];
+  ng_size_t dsizes[5][NCL_MAX_DIMENSIONS];
+  int has_missing[5];
   NclScalar missing[5],missingd[5];
   void *datav[5];
 
-  float     *fgrid,*zout;
+  float     *zout;
   double    *platd,*plond,*fvald,*rlatd,*rlond,*platdt,*plondt,*fvaldt,
             *zoutd,*ztmp;
-  int       nt,psize,zdim,zsize[NCL_MAX_DIMENSIONS];
+  int       nt;
+  ng_size_t psize;
+  int       zdim;
+  ng_size_t zsize[NCL_MAX_DIMENSIONS];
   int       i,j,k,jo,ji,nxo,nyo,num_points,num_missing,test_missing;
 
   NclBasicDataTypes atypes[5],ztype;

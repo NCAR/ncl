@@ -6,22 +6,27 @@ char csamsg[61];
 
 NhlErrorTypes csa1xs_W(void)
 {
-  int i, j, npts, nxo, scalar_wts, size_output, size_leftmost, ret;
+  int scalar_wts;
+  ng_size_t i, j, npts, nxo;
+  ng_size_t size_output, size_leftmost;
+  int ret;
   int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+  int ndims_yi;
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
   float *wts;
-  int dsizes_wts[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wts[NCL_MAX_DIMENSIONS];
   int *knots;
   float *smth;
   int *nderiv;
   float *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
 
   float *yo, *yo_tmp;
-  int *dsizes_yo;
+  ng_size_t *dsizes_yo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -120,7 +125,7 @@ NhlErrorTypes csa1xs_W(void)
 
   size_output = size_leftmost * nxo;
   yo        = (float *) calloc(size_output, sizeof(float));
-  dsizes_yo =   (int *) calloc(   ndims_yi, sizeof(int));
+  dsizes_yo =   (ng_size_t *) calloc(   ndims_yi, sizeof(ng_size_t));
 
   if(yo == NULL || dsizes_yo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -160,18 +165,22 @@ NhlErrorTypes csa1xs_W(void)
 
 NhlErrorTypes csa1s_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost, ret;
+  ng_size_t i, j, npts, nxo;
+  ng_size_t size_output, size_leftmost;
+  int ret;
   int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
   float *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+  int ndims_yi;
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
   int *knots;
   float *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
 
   float *yo, *yo_tmp;
-  int *dsizes_yo;
+  ng_size_t *dsizes_yo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -240,7 +249,7 @@ NhlErrorTypes csa1s_W(void)
 
   size_output = size_leftmost * nxo;
   yo        = (float *) calloc(size_output, sizeof(float));
-  dsizes_yo =   (int *) calloc(   ndims_yi, sizeof(int));
+  dsizes_yo =   (ng_size_t *) calloc(   ndims_yi, sizeof(ng_size_t));
 
   if(yo == NULL || dsizes_yo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -278,23 +287,26 @@ NhlErrorTypes csa1s_W(void)
 
 NhlErrorTypes csa2s_W(void)
 {
-  int i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost, ret;
+  ng_size_t i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost;
+  int ret;
   int ier = 0, index_in = 0, index_zo = 0;
 
   float *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   float *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   float *zi;
-  int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
+  int ndims_zi;
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
   int *knots;
   float *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   float *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
 
   float *zo, *zo_tmp;
-  int ndims_zo, *dsizes_zo;
+  int ndims_zo;
+  ng_size_t *dsizes_zo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -363,7 +375,7 @@ NhlErrorTypes csa2s_W(void)
   zo        = (float *) calloc(size_output, sizeof(float));
 
   ndims_zo  = ndims_zi + 1;
-  dsizes_zo =   (int *) calloc(ndims_zo, sizeof(int));
+  dsizes_zo =   (ng_size_t *) calloc(ndims_zo, sizeof(ng_size_t));
 
   if(zo == NULL || dsizes_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -405,27 +417,30 @@ NhlErrorTypes csa2s_W(void)
 
 NhlErrorTypes csa2xs_W(void)
 {
-  int i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost, scalar_wts;
+  ng_size_t i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost;
+  int scalar_wts;
   int ier = 0, index_in = 0, index_zo = 0, ret;
 
   float *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   float *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   float *zi;
-  int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
+  int ndims_zi;
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
   float *wts;
-  int dsizes_wts[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wts[NCL_MAX_DIMENSIONS];
   int *knots;
   float *smth;
   int *nderiv;
   float *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   float *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
 
   float *zo, *zo_tmp;
-  int ndims_zo, *dsizes_zo;
+  int ndims_zo;
+  ng_size_t *dsizes_zo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -524,7 +539,7 @@ NhlErrorTypes csa2xs_W(void)
   zo        = (float *) calloc(size_output, sizeof(float));
 
   ndims_zo  = ndims_zi + 1;
-  dsizes_zo =   (int *) calloc(ndims_zo, sizeof(int));
+  dsizes_zo =   (ng_size_t *) calloc(ndims_zo, sizeof(ng_size_t));
 
   if(zo == NULL || dsizes_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -565,23 +580,26 @@ NhlErrorTypes csa2xs_W(void)
 
 NhlErrorTypes csa2ls_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost, ret;
+  ng_size_t i, j, npts, nxo, size_output, size_leftmost;
+  int ret;
   int ier = 0, index_in = 0, index_zo = 0, scalar_zo;
 
   float *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   float *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   float *zi;
-  int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
+  int ndims_zi;
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
   int *knots;
   float *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   float *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
 
   float *zo, *zo_tmp;
-  int ndims_zo, *dsizes_zo;
+  int ndims_zo;
+  ng_size_t *dsizes_zo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -660,7 +678,7 @@ NhlErrorTypes csa2ls_W(void)
   else                          ndims_zo = ndims_zi;
   zo        = (float *) calloc(size_output, sizeof(float));
 
-  dsizes_zo =   (int *) calloc(ndims_zo, sizeof(int));
+  dsizes_zo =   (ng_size_t *) calloc(ndims_zo, sizeof(ng_size_t));
 
   if(zo == NULL || dsizes_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -699,28 +717,31 @@ NhlErrorTypes csa2ls_W(void)
 
 NhlErrorTypes csa2lxs_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost, ret;
+  ng_size_t i, j, npts, nxo, size_output, size_leftmost;
+  int ret;
   int scalar_zo, scalar_wts;
   int ier = 0, index_in = 0, index_zo = 0;
 
   float *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   float *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   float *zi;
-  int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
+  int ndims_zi;
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
   float *wts;
-  int dsizes_wts[1];
+  ng_size_t dsizes_wts[1];
   int *knots;
   float *smth;
   int *nderiv;
   float *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   float *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
 
   float *zo, *zo_tmp;
-  int ndims_zo, *dsizes_zo;
+  int ndims_zo;
+  ng_size_t *dsizes_zo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -829,7 +850,7 @@ NhlErrorTypes csa2lxs_W(void)
   else                          ndims_zo = ndims_zi;
   zo        = (float *) calloc(size_output, sizeof(float));
 
-  dsizes_zo =   (int *) calloc(ndims_zo, sizeof(int));
+  dsizes_zo =   (ng_size_t *) calloc(ndims_zo, sizeof(ng_size_t));
 
   if(zo == NULL || dsizes_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -868,32 +889,35 @@ NhlErrorTypes csa2lxs_W(void)
 
 NhlErrorTypes csa3xs_W(void)
 {
-  int i, j, npts, nxo, nyo, nzo, nxyz;
-  int size_output, size_leftmost, scalar_wts;
+  ng_size_t i, j, npts, nxo, nyo, nzo, nxyz;
+  ng_size_t size_output, size_leftmost;
+  int scalar_wts;
   int ier = 0, index_in = 0, index_uo = 0, ret;
 
   float *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   float *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   float *zi;
-  int dsizes_zi[1];
+  ng_size_t dsizes_zi[1];
   float *ui;
-  int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
+  int ndims_ui;
+  ng_size_t dsizes_ui[NCL_MAX_DIMENSIONS];
   float *wts;
-  int dsizes_wts[1];
+  ng_size_t dsizes_wts[1];
   int *knots;
   float *smth;
   int *nderiv;
   float *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   float *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
   float *zo;
-  int dsizes_zo[1];
+  ng_size_t dsizes_zo[1];
 
   float *uo, *uo_tmp;
-  int ndims_uo, *dsizes_uo;
+  int ndims_uo;
+  ng_size_t *dsizes_uo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -1005,7 +1029,7 @@ NhlErrorTypes csa3xs_W(void)
   uo        = (float *) calloc(size_output, sizeof(float));
 
   ndims_uo  = ndims_ui + 2;
-  dsizes_uo =   (int *) calloc(ndims_uo, sizeof(int));
+  dsizes_uo =   (ng_size_t *) calloc(ndims_uo, sizeof(ng_size_t));
 
   if(uo == NULL || dsizes_uo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1047,28 +1071,31 @@ NhlErrorTypes csa3xs_W(void)
 
 NhlErrorTypes csa3s_W(void)
 {
-  int i, j, npts, nxo, nyo, nzo, nxyz;
-  int size_output, size_leftmost, ret;
+  ng_size_t i, j, npts, nxo, nyo, nzo, nxyz;
+  ng_size_t size_output, size_leftmost;
+  int ret;
   int ier = 0, index_in = 0, index_uo = 0;
 
   float *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   float *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   float *zi;
-  int dsizes_zi[1];
+  ng_size_t dsizes_zi[1];
   float *ui;
-  int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
+  int ndims_ui;
+  ng_size_t dsizes_ui[NCL_MAX_DIMENSIONS];
   int *knots;
   float *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   float *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
   float *zo;
-  int dsizes_zo[1];
+  ng_size_t dsizes_zo[1];
 
   float *uo, *uo_tmp;
-  int ndims_uo, *dsizes_uo;
+  int ndims_uo;
+  ng_size_t *dsizes_uo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -1151,7 +1178,7 @@ NhlErrorTypes csa3s_W(void)
   uo        = (float *) calloc(size_output, sizeof(float));
 
   ndims_uo  = ndims_ui + 2;
-  dsizes_uo =   (int *) calloc(ndims_uo, sizeof(int));
+  dsizes_uo = (ng_size_t *) calloc(ndims_uo, sizeof(ng_size_t));
 
   if(uo == NULL || dsizes_uo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1192,32 +1219,35 @@ NhlErrorTypes csa3s_W(void)
 
 NhlErrorTypes csa3lxs_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost, ret;
+  ng_size_t i, j, npts, nxo, size_output, size_leftmost;
+  int ret;
   int scalar_uo, scalar_wts;
   int ier = 0, index_in = 0, index_uo = 0;
 
   float *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   float *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   float *zi;
-  int dsizes_zi[1];
+  ng_size_t dsizes_zi[1];
   float *ui;
-  int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
+  int ndims_ui;
+  ng_size_t dsizes_ui[NCL_MAX_DIMENSIONS];
   float *wts;
-  int dsizes_wts[1];
+  ng_size_t dsizes_wts[1];
   int *knots;
   float *smth;
   int *nderiv;
   float *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   float *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
   float *zo;
-  int dsizes_zo[1];
+  ng_size_t dsizes_zo[1];
 
   float *uo, *uo_tmp;
-  int ndims_uo, *dsizes_uo;
+  int ndims_uo;
+  ng_size_t *dsizes_uo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -1347,7 +1377,7 @@ NhlErrorTypes csa3lxs_W(void)
   else                          ndims_uo = ndims_ui;
   uo        = (float *) calloc(size_output, sizeof(float));
 
-  dsizes_uo =   (int *) calloc(ndims_uo, sizeof(int));
+  dsizes_uo =   (ng_size_t *) calloc(ndims_uo, sizeof(ng_size_t));
 
   if(uo == NULL || dsizes_uo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1387,27 +1417,30 @@ NhlErrorTypes csa3lxs_W(void)
 
 NhlErrorTypes csa3ls_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost, scalar_uo;
+  ng_size_t i, j, npts, nxo, size_output, size_leftmost;
+  int scalar_uo;
   int ier = 0, index_in = 0, index_uo = 0, ret;
 
   float *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   float *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   float *zi;
-  int dsizes_zi[1];
+  ng_size_t dsizes_zi[1];
   float *ui;
-  int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
+  int ndims_ui;
+  ng_size_t dsizes_ui[NCL_MAX_DIMENSIONS];
   int *knots;
   float *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   float *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
   float *zo;
-  int dsizes_zo[1];
+  ng_size_t dsizes_zo[1];
 
   float *uo, *uo_tmp;
-  int ndims_uo, *dsizes_uo;
+  int ndims_uo;
+  ng_size_t *dsizes_uo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -1509,7 +1542,7 @@ NhlErrorTypes csa3ls_W(void)
   else                          ndims_uo = ndims_ui;
   uo        = (float *) calloc(size_output, sizeof(float));
 
-  dsizes_uo =   (int *) calloc(ndims_uo, sizeof(int));
+  dsizes_uo = (ng_size_t *) calloc(ndims_uo, sizeof(ng_size_t));
 
   if(uo == NULL || dsizes_uo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1548,22 +1581,27 @@ NhlErrorTypes csa3ls_W(void)
 
 NhlErrorTypes csa1xd_W(void)
 {
-  int i, j, npts, nxo, scalar_wts, size_output, size_leftmost, ret;
+  ng_size_t i, j, npts, nxo;
+  int scalar_wts;
+  ng_size_t size_output, size_leftmost;
+  int ret;
   int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
   double *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
   double *yi;
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+  int ndims_yi;
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
   double *wts;
-  int dsizes_wts[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wts[NCL_MAX_DIMENSIONS];
   int *knots;
   double *smth;
   int *nderiv;
   double *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
 
   double *yo, *yo_tmp;
-  int *dsizes_yo;
+  ng_size_t *dsizes_yo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -1659,7 +1697,7 @@ NhlErrorTypes csa1xd_W(void)
 
   size_output = size_leftmost * nxo;
   yo        = (double *) calloc(size_output, sizeof(double));
-  dsizes_yo =   (int *) calloc(   ndims_yi, sizeof(int));
+  dsizes_yo = (ng_size_t *) calloc(   ndims_yi, sizeof(ng_size_t));
 
   if(yo == NULL || dsizes_yo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1699,19 +1737,22 @@ NhlErrorTypes csa1xd_W(void)
 
 NhlErrorTypes csa1d_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost, ret;
+  ng_size_t i, j, npts, nxo, size_output, size_leftmost;
+  int ret;
   int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
 
   double *xi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
   double *yi;
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+  int ndims_yi;
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
   int *knots;
   double *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
 
   double *yo, *yo_tmp;
-  int *dsizes_yo;
+  ng_size_t *dsizes_yo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -1779,7 +1820,7 @@ NhlErrorTypes csa1d_W(void)
 
   size_output = size_leftmost * nxo;
   yo        = (double *) calloc(size_output, sizeof(double));
-  dsizes_yo =   (int *) calloc(   ndims_yi, sizeof(int));
+  dsizes_yo = (ng_size_t *) calloc(   ndims_yi, sizeof(ng_size_t));
 
   if(yo == NULL || dsizes_yo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1817,23 +1858,26 @@ NhlErrorTypes csa1d_W(void)
 
 NhlErrorTypes csa2d_W(void)
 {
-  int i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost, ret;
+  ng_size_t i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost;
+  int ret;
   int ier = 0, index_in = 0, index_zo = 0;
 
   double *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   double *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   double *zi;
-  int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
+  int ndims_zi;
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
   int *knots;
   double *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   double *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
 
   double *zo, *zo_tmp;
-  int ndims_zo, *dsizes_zo;
+  int ndims_zo;
+  ng_size_t *dsizes_zo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -1902,7 +1946,7 @@ NhlErrorTypes csa2d_W(void)
   zo        = (double *) calloc(size_output, sizeof(double));
 
   ndims_zo  = ndims_zi + 1;
-  dsizes_zo =   (int *) calloc(ndims_zo, sizeof(int));
+  dsizes_zo = (ng_size_t *) calloc(ndims_zo, sizeof(ng_size_t));
 
   if(zo == NULL || dsizes_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1944,27 +1988,30 @@ NhlErrorTypes csa2d_W(void)
 
 NhlErrorTypes csa2xd_W(void)
 {
-  int i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost, scalar_wts;
+  ng_size_t i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost;
+  int scalar_wts;
   int ier = 0, index_in = 0, index_zo = 0, ret;
 
   double *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   double *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   double *zi;
-  int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
+  int ndims_zi;
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
   double *wts;
-  int dsizes_wts[1];
+  ng_size_t dsizes_wts[1];
   int *knots;
   double *smth;
   int *nderiv;
   double *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   double *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
 
   double *zo, *zo_tmp;
-  int ndims_zo, *dsizes_zo;
+  int ndims_zo;
+  ng_size_t *dsizes_zo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -2063,7 +2110,7 @@ NhlErrorTypes csa2xd_W(void)
   zo        = (double *) calloc(size_output, sizeof(double));
 
   ndims_zo  = ndims_zi + 1;
-  dsizes_zo =   (int *) calloc(ndims_zo, sizeof(int));
+  dsizes_zo = (ng_size_t *) calloc(ndims_zo, sizeof(ng_size_t));
 
   if(zo == NULL || dsizes_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -2104,23 +2151,26 @@ NhlErrorTypes csa2xd_W(void)
 
 NhlErrorTypes csa2ld_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost, ret;
+  ng_size_t i, j, npts, nxo, size_output, size_leftmost;
+  int ret;
   int ier = 0, index_in = 0, index_zo = 0, scalar_zo;
 
   double *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   double *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   double *zi;
-  int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
+  int ndims_zi;
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
   int *knots;
   double *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   double *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
 
   double *zo, *zo_tmp;
-  int ndims_zo, *dsizes_zo;
+  int ndims_zo;
+  ng_size_t *dsizes_zo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -2199,7 +2249,7 @@ NhlErrorTypes csa2ld_W(void)
   else                          ndims_zo = ndims_zi;
   zo        = (double *) calloc(size_output, sizeof(double));
 
-  dsizes_zo =   (int *) calloc(ndims_zo, sizeof(int));
+  dsizes_zo = (ng_size_t *) calloc(ndims_zo, sizeof(ng_size_t));
 
   if(zo == NULL || dsizes_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -2238,28 +2288,31 @@ NhlErrorTypes csa2ld_W(void)
 
 NhlErrorTypes csa2lxd_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost, ret;
+  ng_size_t i, j, npts, nxo, size_output, size_leftmost;
+  int ret;
   int scalar_zo, scalar_wts;
   int ier = 0, index_in = 0, index_zo = 0;
 
   double *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   double *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   double *zi;
-  int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
+  int ndims_zi;
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
   double *wts;
-  int dsizes_wts[1];
+  ng_size_t dsizes_wts[1];
   int *knots;
   double *smth;
   int *nderiv;
   double *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   double *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
 
   double *zo, *zo_tmp;
-  int ndims_zo, *dsizes_zo;
+  int ndims_zo;
+  ng_size_t *dsizes_zo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -2368,7 +2421,7 @@ NhlErrorTypes csa2lxd_W(void)
   else                          ndims_zo = ndims_zi;
   zo        = (double *) calloc(size_output, sizeof(double));
 
-  dsizes_zo =   (int *) calloc(ndims_zo, sizeof(int));
+  dsizes_zo = (ng_size_t *) calloc(ndims_zo, sizeof(ng_size_t));
 
   if(zo == NULL || dsizes_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -2407,32 +2460,36 @@ NhlErrorTypes csa2lxd_W(void)
 
 NhlErrorTypes csa3xd_W(void)
 {
-  int i, j, npts, nxo, nyo, nzo, nxyz, ret;
-  int size_output, size_leftmost, scalar_wts;
+  ng_size_t i, j, npts, nxo, nyo, nzo, nxyz;
+  int ret;
+  ng_size_t size_output, size_leftmost;
+  int scalar_wts;
   int ier = 0, index_in = 0, index_uo = 0;
 
   double *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   double *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   double *zi;
-  int dsizes_zi[1];
+  ng_size_t dsizes_zi[1];
   double *ui;
-  int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
+  int ndims_ui;
+  ng_size_t dsizes_ui[NCL_MAX_DIMENSIONS];
   double *wts;
-  int dsizes_wts[1];
+  ng_size_t dsizes_wts[1];
   int *knots;
   double *smth;
   int *nderiv;
   double *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   double *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
   double *zo;
-  int dsizes_zo[1];
+  ng_size_t dsizes_zo[1];
 
   double *uo, *uo_tmp;
-  int ndims_uo, *dsizes_uo;
+  int ndims_uo;
+  ng_size_t *dsizes_uo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -2544,7 +2601,7 @@ NhlErrorTypes csa3xd_W(void)
   uo        = (double *) calloc(size_output, sizeof(double));
 
   ndims_uo  = ndims_ui + 2;
-  dsizes_uo =   (int *) calloc(ndims_uo, sizeof(int));
+  dsizes_uo = (ng_size_t *) calloc(ndims_uo, sizeof(ng_size_t));
 
   if(uo == NULL || dsizes_uo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -2586,28 +2643,31 @@ NhlErrorTypes csa3xd_W(void)
 
 NhlErrorTypes csa3d_W(void)
 {
-  int i, j, npts, nxo, nyo, nzo, nxyz;
-  int size_output, size_leftmost, ret;
+  ng_size_t i, j, npts, nxo, nyo, nzo, nxyz;
+  ng_size_t size_output, size_leftmost;
+  int ret;
   int ier = 0, index_in = 0, index_uo = 0;
 
   double *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   double *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   double *zi;
-  int dsizes_zi[1];
+  ng_size_t dsizes_zi[1];
   double *ui;
-  int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
+  int ndims_ui;
+  ng_size_t dsizes_ui[NCL_MAX_DIMENSIONS];
   int *knots;
   double *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   double *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
   double *zo;
-  int dsizes_zo[1];
+  ng_size_t dsizes_zo[1];
 
   double *uo, *uo_tmp;
-  int ndims_uo, *dsizes_uo;
+  int ndims_uo;
+  ng_size_t *dsizes_uo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -2690,7 +2750,7 @@ NhlErrorTypes csa3d_W(void)
   uo        = (double *) calloc(size_output, sizeof(double));
 
   ndims_uo  = ndims_ui + 2;
-  dsizes_uo =   (int *) calloc(ndims_uo, sizeof(int));
+  dsizes_uo = (ng_size_t *) calloc(ndims_uo, sizeof(ng_size_t));
 
   if(uo == NULL || dsizes_uo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -2731,32 +2791,35 @@ NhlErrorTypes csa3d_W(void)
 
 NhlErrorTypes csa3lxd_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost, ret;
+  ng_size_t i, j, npts, nxo, size_output, size_leftmost;
+  int ret;
   int scalar_uo, scalar_wts;
   int ier = 0, index_in = 0, index_uo = 0;
 
   double *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   double *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   double *zi;
-  int dsizes_zi[1];
+  ng_size_t dsizes_zi[1];
   double *ui;
-  int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
+  int ndims_ui;
+  ng_size_t dsizes_ui[NCL_MAX_DIMENSIONS];
   double *wts;
-  int dsizes_wts[1];
+  ng_size_t dsizes_wts[1];
   int *knots;
   double *smth;
   int *nderiv;
   double *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   double *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
   double *zo;
-  int dsizes_zo[1];
+  ng_size_t dsizes_zo[1];
 
   double *uo, *uo_tmp;
-  int ndims_uo, *dsizes_uo;
+  int ndims_uo;
+  ng_size_t *dsizes_uo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -2886,7 +2949,7 @@ NhlErrorTypes csa3lxd_W(void)
   else                          ndims_uo = ndims_ui;
   uo        = (double *) calloc(size_output, sizeof(double));
 
-  dsizes_uo =   (int *) calloc(ndims_uo, sizeof(int));
+  dsizes_uo = (ng_size_t *) calloc(ndims_uo, sizeof(ng_size_t));
 
   if(uo == NULL || dsizes_uo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -2926,27 +2989,30 @@ NhlErrorTypes csa3lxd_W(void)
 
 NhlErrorTypes csa3ld_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost, scalar_uo;
+  ng_size_t i, j, npts, nxo, size_output, size_leftmost;
+  int scalar_uo;
   int ier = 0, index_in = 0, index_uo = 0, ret;
 
   double *xi;
-  int dsizes_xi[1];
+  ng_size_t dsizes_xi[1];
   double *yi;
-  int dsizes_yi[1];
+  ng_size_t dsizes_yi[1];
   double *zi;
-  int dsizes_zi[1];
+  ng_size_t dsizes_zi[1];
   double *ui;
-  int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
+  int ndims_ui;
+  ng_size_t dsizes_ui[NCL_MAX_DIMENSIONS];
   int *knots;
   double *xo;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   double *yo;
-  int dsizes_yo[1];
+  ng_size_t dsizes_yo[1];
   double *zo;
-  int dsizes_zo[1];
+  ng_size_t dsizes_zo[1];
 
   double *uo, *uo_tmp;
-  int ndims_uo, *dsizes_uo;
+  int ndims_uo;
+  ng_size_t *dsizes_uo;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -3048,7 +3114,7 @@ NhlErrorTypes csa3ld_W(void)
   else                          ndims_uo = ndims_ui;
   uo        = (double *) calloc(size_output, sizeof(double));
 
-  dsizes_uo =   (int *) calloc(ndims_uo, sizeof(int));
+  dsizes_uo = (ng_size_t *) calloc(ndims_uo, sizeof(ng_size_t));
 
   if(uo == NULL || dsizes_uo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -3088,23 +3154,28 @@ NhlErrorTypes csa3ld_W(void)
 NhlErrorTypes csa1x_W(void)
 {
   void *xi, *yi, *wts, *smth, *xo;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
-  int dsizes_wts[1], dsizes_xo[1];
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_yi;
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wts[1], dsizes_xo[1];
   int *knots, *nderiv;
   NclBasicDataTypes type_xi, type_yi, type_wts, type_smth, type_xo;
   double *tmp_xi, *tmp_yi, *wts_val, *tmp_wts, *tmp_smth, *tmp_xo;
 /*
  * Various. 
  */
-  int i, j, npts, nxo, scalar_wts, size_output, size_leftmost, ret;
+  ng_size_t i, npts, nxo;
+  int scalar_wts;
+  ng_size_t size_output, size_leftmost;
+  int ret;
   int ier = 0, index_in = 0, index_yo = 0;
 /*
  * Output variables.
  */
   void *yo;
   double *tmp_yo;
-  int *dsizes_yo;
+  ng_size_t *dsizes_yo;
   NclBasicDataTypes type_yo;
 
 /*
@@ -3261,7 +3332,7 @@ NhlErrorTypes csa1x_W(void)
     type_yo = NCL_float;
     yo      = (void *) calloc(size_output, sizeof(float));
   }
-  dsizes_yo = (int *) calloc(   ndims_yi, sizeof(int));
+  dsizes_yo = (ng_size_t *) calloc(   ndims_yi, sizeof(ng_size_t));
 
   if(yo == NULL || dsizes_yo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -3336,23 +3407,26 @@ NhlErrorTypes csa1x_W(void)
 NhlErrorTypes csa1_W(void)
 {
   void *xi, *yi, *xo;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_yi;
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
   int *knots;
-  int dsizes_xo[1];
+  ng_size_t dsizes_xo[1];
   NclBasicDataTypes type_xi, type_yi, type_xo;
   double *tmp_xi, *tmp_yi, *tmp_xo;
 /*
  * Various. 
  */
-  int i, j, npts, nxo, size_output, size_leftmost, ret;
+  ng_size_t i, npts, nxo, size_output, size_leftmost;
+  int ret;
   int ier = 0, index_in = 0, index_yo = 0;
 /*
  * Output variables.
  */
   void *yo;
   double *tmp_yo;
-  int *dsizes_yo;
+  ng_size_t *dsizes_yo;
   NclBasicDataTypes type_yo;
 
 /*
@@ -3451,7 +3525,7 @@ NhlErrorTypes csa1_W(void)
     type_yo = NCL_float;
     yo      = (void *) calloc(size_output, sizeof(float));
   }
-  dsizes_yo = (int *) calloc(   ndims_yi, sizeof(int));
+  dsizes_yo = (ng_size_t *) calloc(   ndims_yi, sizeof(ng_size_t));
 
   if(yo == NULL || dsizes_yo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -3524,17 +3598,19 @@ NhlErrorTypes csa2_W(void)
 {
   void *xi, *yi, *zi, *xo, *yo;
   int *knots;
-  int dsizes_xi[1];
-  int dsizes_yi[1];
-  int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
-  int dsizes_xo[1], dsizes_yo[1];
+  ng_size_t dsizes_xi[1];
+  ng_size_t dsizes_yi[1];
+  int ndims_zi;
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xo[1], dsizes_yo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_xo, type_yo;
   double *tmp_xi, *tmp_yi, *tmp_zi, *tmp_xo, *tmp_yo;
 
 /*
  * Various. 
  */
-  int i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost, ret;
+  ng_size_t i, npts, nxo, nyo, nxonyo, size_output, size_leftmost;
+  int ret;
   int ier = 0, index_in = 0, index_zo = 0;
 
 /*
@@ -3542,7 +3618,8 @@ NhlErrorTypes csa2_W(void)
  */
   void *zo;
   double *tmp_zo;
-  int ndims_zo, *dsizes_zo;
+  int ndims_zo;
+  ng_size_t *dsizes_zo;
   NclBasicDataTypes type_zo;
 
 /*
@@ -3647,7 +3724,7 @@ NhlErrorTypes csa2_W(void)
   }
 
   ndims_zo  = ndims_zi + 1;
-  dsizes_zo =   (int *) calloc(ndims_zo, sizeof(int));
+  dsizes_zo = (ng_size_t *) calloc(ndims_zo, sizeof(ng_size_t));
 
   if(zo == NULL || dsizes_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -3709,12 +3786,13 @@ NhlErrorTypes csa2_W(void)
 NhlErrorTypes csa2x_W(void)
 {
   void *xi, *yi, *zi, *wts, *smth, *xo, *yo;
-  int dsizes_xi[1], dsizes_yi[1];
-  int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
-  int dsizes_wts[1];
+  ng_size_t dsizes_xi[1], dsizes_yi[1];
+  int ndims_zi;
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wts[1];
   int *knots;
   int *nderiv;
-  int dsizes_xo[1], dsizes_yo[1];
+  ng_size_t dsizes_xo[1], dsizes_yo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_wts, type_smth;
   NclBasicDataTypes type_xo, type_yo;
   double *tmp_xi, *tmp_yi, *tmp_zi, *wts_val, *tmp_wts, *tmp_smth;
@@ -3722,14 +3800,16 @@ NhlErrorTypes csa2x_W(void)
 /*
  * Various. 
  */
-  int i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost, scalar_wts;
+  ng_size_t i, npts, nxo, nyo, nxonyo, size_output, size_leftmost;
+  int scalar_wts;
   int ier = 0, index_in = 0, index_zo = 0, ret;
 /*
  * Output variables.
  */
   void *zo;
   double *tmp_zo;
-  int ndims_zo, *dsizes_zo;
+  int ndims_zo;
+  ng_size_t *dsizes_zo;
   NclBasicDataTypes type_zo;
 
 /*
@@ -3892,7 +3972,7 @@ NhlErrorTypes csa2x_W(void)
   }
 
   ndims_zo  = ndims_zi + 1;
-  dsizes_zo =   (int *) calloc(ndims_zo, sizeof(int));
+  dsizes_zo = (ng_size_t *) calloc(ndims_zo, sizeof(ng_size_t));
 
   if(zo == NULL || dsizes_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -3957,17 +4037,19 @@ NhlErrorTypes csa2l_W(void)
 {
   void *xi, *yi, *zi, *xo, *yo;
   int *knots;
-  int dsizes_xi[1];
-  int dsizes_yi[1];
-  int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
-  int dsizes_xo[1], dsizes_yo[1];
+  ng_size_t dsizes_xi[1];
+  ng_size_t dsizes_yi[1];
+  int ndims_zi;
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xo[1], dsizes_yo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_xo, type_yo;
   double *tmp_xi, *tmp_yi, *tmp_zi, *tmp_xo, *tmp_yo;
 
 /*
  * Various. 
  */
-  int i, j, npts, nxo, size_output, size_leftmost, ret;
+  ng_size_t i, npts, nxo, size_output, size_leftmost;
+  int ret;
   int ier = 0, index_in = 0, index_zo = 0, scalar_zo;
 
 /*
@@ -3975,7 +4057,8 @@ NhlErrorTypes csa2l_W(void)
  */
   void *zo;
   double *tmp_zo;
-  int ndims_zo, *dsizes_zo;
+  int ndims_zo;
+  ng_size_t *dsizes_zo;
   NclBasicDataTypes type_zo;
 
 /*
@@ -4087,7 +4170,7 @@ NhlErrorTypes csa2l_W(void)
     type_zo = NCL_float;
     zo      = (void *) calloc(size_output, sizeof(float));
   }
-  dsizes_zo =   (int *) calloc(ndims_zo, sizeof(int));
+  dsizes_zo = (ng_size_t *) calloc(ndims_zo, sizeof(ng_size_t));
 
   if(zo == NULL || dsizes_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -4147,11 +4230,12 @@ NhlErrorTypes csa2l_W(void)
 NhlErrorTypes csa2lx_W(void)
 {
   void *xi, *yi, *zi, *wts, *smth, *xo, *yo;
-  int dsizes_xi[1], dsizes_yi[1];
-  int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
-  int dsizes_wts[1];
+  ng_size_t dsizes_xi[1], dsizes_yi[1];
+  int ndims_zi;
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wts[1];
   int *knots, *nderiv;
-  int dsizes_xo[1], dsizes_yo[1];
+  ng_size_t dsizes_xo[1], dsizes_yo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_wts, type_smth;
   NclBasicDataTypes type_xo, type_yo;
   double *tmp_xi, *tmp_yi, *tmp_zi, *wts_val, *tmp_wts, *tmp_smth;
@@ -4159,7 +4243,8 @@ NhlErrorTypes csa2lx_W(void)
 /*
  * Various. 
  */
-  int i, j, npts, nxo, size_output, size_leftmost, ret;
+  ng_size_t i, npts, nxo, size_output, size_leftmost;
+  int ret;
   int scalar_zo, scalar_wts;
   int ier = 0, index_in = 0, index_zo = 0;
 
@@ -4168,7 +4253,8 @@ NhlErrorTypes csa2lx_W(void)
  */
   void *zo;
   double *tmp_zo;
-  int ndims_zo, *dsizes_zo;
+  int ndims_zo;
+  ng_size_t *dsizes_zo;
   NclBasicDataTypes type_zo;
 
 /*
@@ -4339,7 +4425,7 @@ NhlErrorTypes csa2lx_W(void)
     type_zo = NCL_float;
     zo      = (void *) calloc(size_output, sizeof(float));
   }
-  dsizes_zo =   (int *) calloc(ndims_zo, sizeof(int));
+  dsizes_zo = (ng_size_t *) calloc(ndims_zo, sizeof(ng_size_t));
 
   if(zo == NULL || dsizes_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -4403,11 +4489,12 @@ NhlErrorTypes csa2lx_W(void)
 NhlErrorTypes csa3x_W(void)
 {
   void *xi, *yi, *zi, *ui, *wts, *smth, *xo, *yo, *zo;
-  int dsizes_xi[1], dsizes_yi[1], dsizes_zi[1];
-  int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
-  int dsizes_wts[1];
+  ng_size_t dsizes_xi[1], dsizes_yi[1], dsizes_zi[1];
+  int ndims_ui;
+  ng_size_t dsizes_ui[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wts[1];
   int *knots, *nderiv;
-  int dsizes_xo[1], dsizes_yo[1], dsizes_zo[1];
+  ng_size_t dsizes_xo[1], dsizes_yo[1], dsizes_zo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_ui, type_wts, type_smth;
   NclBasicDataTypes type_xo, type_yo, type_zo;
   double *tmp_xi, *tmp_yi, *tmp_zi, *tmp_ui, *wts_val, *tmp_wts, *tmp_smth;
@@ -4416,8 +4503,9 @@ NhlErrorTypes csa3x_W(void)
 /*
  * Various. 
  */
-  int i, j, npts, nxo, nyo, nzo, nxyz;
-  int size_output, size_leftmost, scalar_wts;
+  ng_size_t i, npts, nxo, nyo, nzo, nxyz;
+  ng_size_t size_output, size_leftmost;
+  int scalar_wts;
   int ier = 0, index_in = 0, index_uo = 0, ret;
 
 /*
@@ -4425,7 +4513,8 @@ NhlErrorTypes csa3x_W(void)
  */
   void *uo;
   double *tmp_uo;
-  int ndims_uo, *dsizes_uo;
+  int ndims_uo;
+  ng_size_t *dsizes_uo;
   NclBasicDataTypes type_uo;
 
 /*
@@ -4594,7 +4683,7 @@ NhlErrorTypes csa3x_W(void)
     uo      = (void *) calloc(size_output, sizeof(float));
   }
   ndims_uo  = ndims_ui + 2;
-  dsizes_uo =   (int *) calloc(ndims_uo, sizeof(int));
+  dsizes_uo = (ng_size_t *) calloc(ndims_uo, sizeof(ng_size_t));
 
   if(uo == NULL || dsizes_uo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -4661,10 +4750,11 @@ NhlErrorTypes csa3x_W(void)
 NhlErrorTypes csa3_W(void)
 {
   void *xi, *yi, *zi, *ui, *xo, *yo, *zo;
-  int dsizes_xi[1], dsizes_yi[1], dsizes_zi[1];
-  int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xi[1], dsizes_yi[1], dsizes_zi[1];
+  int ndims_ui;
+  ng_size_t dsizes_ui[NCL_MAX_DIMENSIONS];
   int *knots;
-  int dsizes_xo[1], dsizes_yo[1], dsizes_zo[1];
+  ng_size_t dsizes_xo[1], dsizes_yo[1], dsizes_zo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_ui;
   NclBasicDataTypes type_xo, type_yo, type_zo;
   double *tmp_xi, *tmp_yi, *tmp_zi, *tmp_ui, *tmp_xo, *tmp_yo, *tmp_zo;
@@ -4672,8 +4762,9 @@ NhlErrorTypes csa3_W(void)
 /*
  * Various. 
  */
-  int i, j, npts, nxo, nyo, nzo, nxyz;
-  int size_output, size_leftmost, ret;
+  ng_size_t i, npts, nxo, nyo, nzo, nxyz;
+  ng_size_t size_output, size_leftmost;
+  int ret;
   int ier = 0, index_in = 0, index_uo = 0;
 
 /*
@@ -4681,7 +4772,8 @@ NhlErrorTypes csa3_W(void)
  */
   void *uo;
   double *tmp_uo;
-  int ndims_uo, *dsizes_uo;
+  int ndims_uo;
+  ng_size_t *dsizes_uo;
   NclBasicDataTypes type_uo;
 
 /*
@@ -4792,7 +4884,7 @@ NhlErrorTypes csa3_W(void)
     uo      = (void *) calloc(size_output, sizeof(float));
   }
   ndims_uo  = ndims_ui + 2;
-  dsizes_uo =   (int *) calloc(ndims_uo, sizeof(int));
+  dsizes_uo = (ng_size_t *) calloc(ndims_uo, sizeof(ng_size_t));
 
   if(uo == NULL || dsizes_uo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -4855,11 +4947,12 @@ NhlErrorTypes csa3_W(void)
 NhlErrorTypes csa3lx_W(void)
 {
   void *xi, *yi, *zi, *ui, *wts, *smth, *xo, *yo, *zo;
-  int dsizes_xi[1], dsizes_yi[1], dsizes_zi[1];
-  int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
-  int dsizes_wts[1];
+  ng_size_t dsizes_xi[1], dsizes_yi[1], dsizes_zi[1];
+  int ndims_ui;
+  ng_size_t dsizes_ui[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wts[1];
   int *knots, *nderiv;
-  int dsizes_xo[1], dsizes_yo[1], dsizes_zo[1];
+  ng_size_t dsizes_xo[1], dsizes_yo[1], dsizes_zo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_ui, type_wts, type_smth;
   NclBasicDataTypes type_xo, type_yo, type_zo;
   double *tmp_xi, *tmp_yi, *tmp_zi, *tmp_ui, *wts_val, *tmp_wts, *tmp_smth;
@@ -4868,7 +4961,8 @@ NhlErrorTypes csa3lx_W(void)
 /*
  * Various
  */
-  int i, j, npts, nxo, size_output, size_leftmost, ret;
+  ng_size_t i, npts, nxo, size_output, size_leftmost;
+  int ret;
   int scalar_uo, scalar_wts;
   int ier = 0, index_in = 0, index_uo = 0;
 
@@ -4877,7 +4971,8 @@ NhlErrorTypes csa3lx_W(void)
  */
   void *uo;
   double *tmp_uo;
-  int ndims_uo, *dsizes_uo;
+  int ndims_uo;
+  ng_size_t *dsizes_uo;
   NclBasicDataTypes type_uo;
 
 /*
@@ -5055,7 +5150,7 @@ NhlErrorTypes csa3lx_W(void)
     type_uo = NCL_float;
     uo      = (void *) calloc(size_output, sizeof(float));
   }
-  dsizes_uo =   (int *) calloc(ndims_uo, sizeof(int));
+  dsizes_uo = (ng_size_t *) calloc(ndims_uo, sizeof(ng_size_t));
 
   if(uo == NULL || dsizes_uo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -5119,10 +5214,11 @@ NhlErrorTypes csa3lx_W(void)
 NhlErrorTypes csa3l_W(void)
 {
   void *xi, *yi, *zi, *ui, *xo, *yo, *zo;
-  int dsizes_xi[1], dsizes_yi[1], dsizes_zi[1];
-  int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xi[1], dsizes_yi[1], dsizes_zi[1];
+  int ndims_ui;
+  ng_size_t dsizes_ui[NCL_MAX_DIMENSIONS];
   int *knots;
-  int dsizes_xo[1], dsizes_yo[1], dsizes_zo[1];
+  ng_size_t dsizes_xo[1], dsizes_yo[1], dsizes_zo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_ui;
   NclBasicDataTypes type_xo, type_yo, type_zo;
   double *tmp_xi, *tmp_yi, *tmp_zi, *tmp_ui, *tmp_xo, *tmp_yo, *tmp_zo;
@@ -5130,7 +5226,8 @@ NhlErrorTypes csa3l_W(void)
 /*
  * Various. 
  */
-  int i, j, npts, nxo, size_output, size_leftmost, scalar_uo;
+  ng_size_t i, npts, nxo, size_output, size_leftmost;
+  ng_size_t scalar_uo;
   int ier = 0, index_in = 0, index_uo = 0, ret;
 
 /*
@@ -5138,7 +5235,8 @@ NhlErrorTypes csa3l_W(void)
  */
   void *uo;
   double *tmp_uo;
-  int ndims_uo, *dsizes_uo;
+  int ndims_uo;
+  ng_size_t *dsizes_uo;
   NclBasicDataTypes type_uo;
 
 /*
@@ -5257,7 +5355,7 @@ NhlErrorTypes csa3l_W(void)
     type_uo = NCL_float;
     uo      = (void *) calloc(size_output, sizeof(float));
   }
-  dsizes_uo =   (int *) calloc(ndims_uo, sizeof(int));
+  dsizes_uo = (ng_size_t *) calloc(ndims_uo, sizeof(ng_size_t));
 
   if(uo == NULL || dsizes_uo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,

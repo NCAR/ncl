@@ -52,19 +52,23 @@ NhlErrorTypes conform_W( void )
   NclStackEntry data;
   int *cnfrm_dims;
   NclMultiDValData tmp_md = NULL;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
-  int dsizes_conform[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_conform[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x;
 /*
  * Output array variables
  */
   void *conform;
-  int ndims, *dsizes;
+  int ndims;
+  ng_size_t *dsizes;
 /*
  * various
  */
-  int i, j, new_position, conform_pos, scalar_tmp_md, copy_scalar = 0;
-  int size_conform, type_size;
+  int new_position, conform_pos, scalar_tmp_md, copy_scalar = 0;
+  ng_size_t i, j;
+  ng_size_t size_conform;
+  int type_size;
   int *skip_x, *skip_c, *indices;
 /*
  * Retrieve parameters
@@ -90,6 +94,9 @@ NhlErrorTypes conform_W( void )
   case NclStk_VAL:
     tmp_md = (NclMultiDValData)data.u.data_obj;
     break;
+  default:
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"conform_W: invalid first input argument.");
+    return(NhlFATAL);
   }
 
   cnfrm_dims = (int*)NclGetArgValue(
@@ -272,23 +279,25 @@ NhlErrorTypes conform_dims_W( void )
 /*
  * Input array variables
  */
-  int *dsizes_x;
+  ng_size_t *dsizes_x;
   NclStackEntry data;
   int *cnfrm_dims;
   NclMultiDValData tmp_md = NULL;
-  int ndims_x;
-  int dsizes_conform[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_x;
+  ng_size_t ndims_x;
+  ng_size_t dsizes_conform[NCL_MAX_DIMENSIONS];
 /*
  * Output array variables
  */
   void *conform;
-  int ndims, *dsizes;
+  int ndims;
+  ng_size_t *dsizes;
 /*
  * various
  */
-  int i, j, new_position, conform_pos, scalar_tmp_md, copy_scalar = 0;
-  int size_conform, type_size;
+  ng_size_t i, j;
+  int new_position, conform_pos, scalar_tmp_md, copy_scalar = 0;
+  ng_size_t size_conform;
+  int type_size;
   int *skip_x, *skip_c, *indices;
 /*
  * Retrieve parameters
@@ -296,7 +305,7 @@ NhlErrorTypes conform_dims_W( void )
  * Note any of the pointer parameters can be set to NULL, which
  * implies you don't care about its value.
  */
-  dsizes_x = (int*)NclGetArgValue(
+  dsizes_x = (ng_size_t*)NclGetArgValue(
            0,
            3,
            NULL,
@@ -314,6 +323,9 @@ NhlErrorTypes conform_dims_W( void )
   case NclStk_VAL:
     tmp_md = (NclMultiDValData)data.u.data_obj;
     break;
+  default:
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"conform_dims_W: invalid first input argument.");
+    return(NhlFATAL);
   }
 
   cnfrm_dims = (int*)NclGetArgValue(
