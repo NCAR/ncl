@@ -308,6 +308,7 @@ herr_t _NclHDF5check_obj(const char *filename, NclHDF5group_node_t **HDF5group);
 
 NclHDF5group_node_t *_find_HDF5Group(char *name, NclHDF5group_node_t *group_node);
 NclHDF5data_t *_NclHDF5allocate_data(hid_t id);
+void _NclHDF5free_data(NclHDF5data_t *);
 hid_t Ncl2HDF5type(const char *type);
 unsigned long NclHDF5sizeof(const char *type);
 

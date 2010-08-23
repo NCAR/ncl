@@ -334,7 +334,7 @@ int n_dims;
     NclQuark quark_name;
 
     HDF5DimInqRecList *cur_dim_list;
-    int i, j, n;
+    int j, n;
     int check_dims = 0;
 
     var_info->var_name_quark = var_inq->name;
@@ -430,9 +430,7 @@ NclQuark var_name;
     HDF5GrpInqRecList *grplist;
     HDF5VarInqRecList *varlist;
     NclFVarRec *var_info = NULL;
-    int i, j, n;
-
-    HDF5DimInqRecList *cur_dim_list;
+    int i;
 
     varlist = grp_inq->var_list;
     for (i = 0; i < grp_inq->n_vars; i++)
@@ -491,8 +489,7 @@ NclQuark var_name;
     HDF5GrpInqRecList *grplist;
     HDF5VarInqRecList *varlist;
     NclFVarRec *var_info = NULL;
-    HDF5DimInqRecList *dim_list;
-    int i, j, n;
+    int i;
 
     varlist = thefile->var_list;
     for (i = 0; i < thefile->n_vars; i++)
@@ -1374,7 +1371,7 @@ void _setHDF5AttValue(HDF5AttInqRecList *new_att_list,
              break;
         default:
              fprintf(stdout, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-             fprintf(stdout, "\tnew_att->type: <0%o>\n", (long) new_att->type);
+             fprintf(stdout, "\tnew_att->type: <0%o>\n", (unsigned int) new_att->type);
              fprintf(stdout, "\tDONOT know how to print new_att->value\n");
     }
 }
@@ -1384,7 +1381,7 @@ static int _HDF5get_var_att_list(HDF5AttInqRecList **HDF5var_att_list,
                                  int update, char *var_name)
 {
     NclHDF5attr_list_t *curHDF5attr_list;
-    int n, i = 0;
+    int i = 0;
     int len = 0;
     int n_atts = 0;
 
@@ -1400,14 +1397,14 @@ static int _HDF5get_var_att_list(HDF5AttInqRecList **HDF5var_att_list,
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for new_att_list, in file: %s, line: %d\n",
                     __FILE__, __LINE__);
-            return;
+            return NhlFATAL;
         }
 
         if(!new_att)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for new_att, in file: %s, line: %d\n",
                     __FILE__, __LINE__);
-            return;
+            return NhlFATAL;
         }
 
         n_atts++;
@@ -1556,6 +1553,7 @@ void _HDF5Build_grp_list_inGroup(HDF5GrpInqRec **the_grp, NclHDF5group_node_t *H
         (*the_grp)->name = NrmStringToQuark("");
         (*the_grp)->hdf5_name = NrmStringToQuark("");
         (*the_grp)->full_name = NrmStringToQuark("/");
+	ptr2shortname = "";
     }
 
   /*
@@ -1730,7 +1728,7 @@ void _HDF5Build_grp_list_inGroup(HDF5GrpInqRec **the_grp, NclHDF5group_node_t *H
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can not allocate memory for: var_cur_list->var_inq->compound->type"));
                 return;
             }
-            var_cur_list->var_inq->compound->offset = (unsigned long *) NclMalloc(dataset_node->compound->nom * sizeof(unsigned long));
+            var_cur_list->var_inq->compound->offset = (nclH5size_t *) NclMalloc(dataset_node->compound->nom * sizeof(nclH5size_t));
             if(! var_cur_list->var_inq->compound->offset)
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can not allocate memory for: var_cur_list->var_inq->compound->offset"));
@@ -1833,7 +1831,7 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
     {
         NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for the_grp, in file: %s, line: %d\n",
                 __FILE__, __LINE__);
-        return;
+        return NULL;
     }
 
     if(strlen(HDF5group->name))
@@ -1858,6 +1856,7 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
         the_grp->name = NrmStringToQuark("");
         the_grp->hdf5_name = NrmStringToQuark("");
         the_grp->full_name = NrmStringToQuark("/");
+	ptr2shortname = "";
     }
 
   /*
@@ -1887,7 +1886,7 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for new_att_list, in file: %s, line: %d\n",
                     __FILE__, __LINE__);
-            return;
+            return NULL;
         }
 
         new_att = calloc(1, sizeof(HDF5DimInqRec));
@@ -1895,7 +1894,7 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for new_att, in file: %s, line: %d\n",
                     __FILE__, __LINE__);
-            return;
+            return NULL;
         }
 
         new_att_list->att_inq = new_att;
@@ -1934,7 +1933,7 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for var_cur_list, in file: %s, line: %d\n",
                     __FILE__, __LINE__);
-            return;
+            return NULL;
         }
 
         var_cur_list->var_inq = calloc(1, sizeof(HDF5VarInqRec));
@@ -1942,7 +1941,7 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for var_cur_list->var_inq, in file: %s, line: %d\n",
                     __FILE__, __LINE__);
-            return;
+            return NULL;
         }
 
         if(dataset_node->attr_list)
@@ -2023,7 +2022,7 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can not allocate memory for: var_cur_list->var_inq->compound->type"));
                 return(NULL);
             }
-            var_cur_list->var_inq->compound->offset = (unsigned long *) NclMalloc(dataset_node->compound->nom * sizeof(unsigned long));
+            var_cur_list->var_inq->compound->offset = (nclH5size_t *) NclMalloc(dataset_node->compound->nom * sizeof(nclH5size_t));
             if(! var_cur_list->var_inq->compound->offset)
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can not allocate memory for: var_cur_list->var_inq->compound->offset"));
@@ -2078,7 +2077,7 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for grp_cur_list, in file: %s, line: %d\n",
                     __FILE__, __LINE__);
-            return;
+            return NULL;
         }
 
         _HDF5Build_grp_list_inGroup(&(grp_cur_list->grp_inq), h5group_node);
@@ -2105,7 +2104,7 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
     NclHDF5group_list_t   *group_list;
     HDF5DimInqRecList *tmp_list = NULL;
 
-    int i, j, k;
+    int i, k;
     int num_new_dim;
     int found_new;
     NclQuark old_dim_name[4*MAX_HDF5_DIMS];
@@ -2142,7 +2141,6 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
         {
             if(0 == strcmp(attr_list->attr_node->name, "HDF4_DIMENSION_LIST"))
             {
-                NclQuark dqname;
                 char *ori_str;
                 char *result;
                 char delimiter[3];
@@ -2284,7 +2282,6 @@ static void _HDF5Create_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclH
     long old_dim_size[4*MAX_HDF5_DIMS];
     long new_dim_size[4*MAX_HDF5_DIMS];
 
-    char *tmp_str;
     char new_name[16];
 
   /*
@@ -2393,7 +2390,6 @@ void* storage;
 {
     HDF5FileRecord * thefile = (HDF5FileRecord *) therec;
     HDF5AttInqRecList * the_att_list;
-    int i;
 
     the_att_list = thefile->att_list;
     while(the_att_list != NULL)
@@ -2580,7 +2576,7 @@ int n_dims;
     cur_list = dim_list;
     for(n = 0; n < n_dims; n++)
     {
-        fprintf(stdout, "Dim No. %d: size: %ld, id: %d, name: <%s>, is_unlimited: %d",
+        fprintf(stdout, "Dim No. %d: size: %ld, id: %ld, name: <%s>, is_unlimited: %d",
                          n, cur_list->dim_inq->size, cur_list->dim_inq->ncldim_id,
                          NrmQuarkToString(cur_list->dim_inq->name),
                          cur_list->dim_inq->is_unlimited);
@@ -2612,11 +2608,7 @@ int wr_status;
 
     hid_t fid = -1;
     char *filename = NULL;
-    static char root_name[] = "/";
-    int n_grps = 0;
-    int n_vars = 0;
     int n_dims = 0;
-    int n_atts = 0;
 
     herr_t status;
 
@@ -2681,7 +2673,7 @@ int wr_status;
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list, in file: %s, line: %d\n",
                         __FILE__, __LINE__);
-                return;
+                return NULL;
             }
     
             cur_list->dim_inq = calloc(1, sizeof(HDF5DimInqRec));
@@ -2689,7 +2681,7 @@ int wr_status;
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list->dim_inq, in file: %s, line: %d\n",
                         __FILE__, __LINE__);
-                return;
+                return NULL;
             }
     
             pre_list = dim_list;
@@ -2911,7 +2903,6 @@ int *num_grps;
 #endif
 {
     HDF5GrpInqRecList *grplist;
-    HDF5VarInqRecList *varlist;
     NclQuark *names;
     int n = 0;
     int m = 0;
@@ -3050,8 +3041,6 @@ NclHDF5group_node_t *h5_group;
     HDF5GrpInqRecList *grplist;
     HDF5VarInqRecList *thelist;
     int i, j, n;
-    hid_t fid; 
-    hid_t did; 
     hssize_t starti[NCL_MAX_DIMENSIONS];
     hsize_t stridei[NCL_MAX_DIMENSIONS];
     hsize_t edgei[NCL_MAX_DIMENSIONS];
@@ -3223,13 +3212,10 @@ void* storage;
     HDF5GrpInqRecList *grplist;
     HDF5VarInqRecList *thelist;
     int i, j, n;
-    hid_t fid; 
-    hid_t did; 
     hssize_t starti[NCL_MAX_DIMENSIONS];
     hsize_t stridei[NCL_MAX_DIMENSIONS];
     hsize_t edgei[NCL_MAX_DIMENSIONS];
     float tmpf;
-    void *output = NULL;
     int found = 0;
     int no_stride = 1;
 
@@ -3379,6 +3365,7 @@ NclQuark thevar;
 #endif
 {
     fprintf(stdout, "NEEDS TO FINISH HDF5GetCoordInfo. file: <%s>, line: %d\n", __FILE__, __LINE__);
+    return NULL;
 }
 
 static NhlErrorTypes HDF5AddCoordVar
@@ -3391,13 +3378,10 @@ NclQuark thevar;
 NclBasicDataTypes data_type;
 #endif
 {
-    HDF5FileRecord *rec = (HDF5FileRecord*)therec;
-    HDF5DimInqRecList *stepdl = NULL;
-    HDF5VarInqRecList *stepvl = NULL;
-    int cdfid;
-    int ret,size;
+
 
     fprintf(stdout, "NEEDS TO FIGURE OUT ADD COORD VAR. file: <%s>, line: %d\n", __FILE__, __LINE__);
+    return NhlNOERROR;
 }
 
 static void *HDF5CreateFile
@@ -3456,9 +3440,8 @@ long *stride;
 #endif
 {
     HDF5FileRecord * thefile = (HDF5FileRecord *) therec;
-    HDF5GrpInqRecList *grplist;
     HDF5VarInqRecList *thelist;
-    int i, j, n;
+    int i, j;
     hid_t fid; 
     hsize_t starti[NCL_MAX_DIMENSIONS];
     hsize_t stridei[NCL_MAX_DIMENSIONS];
@@ -3491,7 +3474,6 @@ long *stride;
            (chkvar == thelist->var_inq->hdf5_name) ||
            (chkvar == thelist->var_inq->name))
         {
-            NclHDF5data_t *NclHDF5data = NULL;
             char *typename;
             char dataset_name[256];
             hsize_t *dims;
@@ -3633,7 +3615,6 @@ int is_unlimited;
     HDF5FileRecord *rec = (HDF5FileRecord*) therec;
     hid_t fid;
     HDF5DimInqRecList *stepdl;
-    int ret = -1;
     int add_scalar = 0;
 
     if(rec->wr_status <=  0)
@@ -3754,12 +3735,11 @@ long* dim_sizes;
     HDF5FileRecord* rec = (HDF5FileRecord*)therec;
     HDF5VarInqRecList *stepvl = NULL;
     hid_t fid;
-    int i,ret;
+    int i;
     char *typename;
     int dim_ids[MAX_HDF5_DIMS];
     HDF5DimInqRecList* stepdl = NULL;
     int add_scalar_dim = 0;
-    int fill_mode;
 
     if(rec->wr_status <= 0)
     {
@@ -3935,22 +3915,18 @@ long* dim_sizes;
 
 static NhlErrorTypes HDF5AddVarChunk
 #if    NhlNeedProto
-(void* therec, NclQuark thevar, int n_dims, int *dims)
+(void* therec, NclQuark thevar, int n_dims, ng_size_t *dims)
 #else
 (therec,thevar,n_dims,dims)
 void* therec;
 NclQuark thevar;
 int n_dims;
-nclH5size_t *dims;
+ng_size_t *dims;
 #endif
 {
     HDF5FileRecord* rec = (HDF5FileRecord*)therec;
     HDF5VarInqRecList *stepvl = NULL;
-    hid_t fid;
     int i,ret = NhlNOERROR;
-    int dim_ids[MAX_HDF5_DIMS];
-    HDF5DimInqRecList* stepdl = NULL;
-    int fill_mode;
     hsize_t *chunk_dims;
 
     if(rec->wr_status <= 0)
@@ -4391,13 +4367,15 @@ NclQuark thevar;
 NclQuark theatt;
 #endif
 {
+#if 0
+
     HDF5FileRecord* rec = (HDF5FileRecord*)therec;
     HDF5AttInqRecList *stepal;
     HDF5AttInqRecList *prev;
     hid_t fid;
     hid_t ret;
 
-#if 0
+
     if(rec->wr_status <= 0)
     {
         stepal = rec->file_atts;
