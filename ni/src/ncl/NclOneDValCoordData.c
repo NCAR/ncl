@@ -53,7 +53,7 @@ long * ind;
 	NclOneDValCoordData the_coord;
 	NclTypeClass type_coord;
 	double cmp_val;
-	int i;
+	ng_size_t i;
 	logical lres;
 	NclScalar m1_res;
 	NclScalar m2_res;
@@ -158,7 +158,7 @@ long *finish;
 	NclTypeClass type_coord;
 	logical result;
 	double cmp_val;
-	int i=0;
+	ng_size_t i=0;
 
 	if((coord_md == NULL)||!(coord_md->obj.obj_type_mask & Ncl_OneDValCoordData)) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclOneDValGetRangeIndex: Non-Coordinate type value object passed, can't continue"); 

@@ -391,7 +391,7 @@ FILE *fp;
 	NclAttList *tmp;
 	int ret = 0;
 	NhlErrorTypes ret1 = NhlNOERROR;
-	int i;
+	ng_size_t i;
 	
 	tmp = theattobj->att.att_list;
 	ret = nclfprintf(fp,"Number Of Attributes: %d\n",theattobj->att.n_atts);
@@ -431,7 +431,7 @@ FILE *fp;
 			}
 		}
 		else {
-			ret = nclfprintf(fp,"<ARRAY of %d elements>",tmp->attvalue->multidval.totalelements);
+			ret = nclfprintf(fp,"<ARRAY of %ld elements>",(long)(tmp->attvalue->multidval.totalelements));
 			if(ret < 0) {	
 				return(NhlWARNING);
 			}
