@@ -649,7 +649,7 @@ NclExtValueRec *NclGetExprValue
 	char *tmp= NULL,*ptr = NULL;
 	NclSymbol *s;
 	NclExtValueRec *tmp_val = NULL;
-	int size;
+	ng_usize_t size;
 /*
 	s = _NclLookUp(NCLAPI_TMP_VAR);
 

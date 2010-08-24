@@ -2780,7 +2780,7 @@ void _NclDumpStack
 				fprintf(file,"%s\t",NrmQuarkToString(_NclObjTypeToName(tmp_ptr->u.data_obj->multidval.type->type_class.type)));
 				
 			for(i = 0; i< tmp_ptr->u.data_obj->multidval.n_dims; i++) {
-				fprintf(file,"[%d]",tmp_ptr->u.data_obj->multidval.dim_sizes[i]);
+				fprintf(file,"[%ld]",(long)(tmp_ptr->u.data_obj->multidval.dim_sizes[i]));
 				if(i !=  tmp_ptr->u.data_obj->multidval.n_dims - 1) {
 					fprintf(file," x ");
 				}
