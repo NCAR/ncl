@@ -316,7 +316,7 @@ NclMultiDValData str_md;
 	ng_size_t i;
     int n_dims;
 	string *value;
-	int max_len,tmp_len,to;
+	ng_size_t max_len,tmp_len,to;
 	char *val = NULL;
 	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	string missingQ = NrmNULLQUARK;
@@ -385,11 +385,11 @@ NclMultiDValData _NclCharMdToStringMd
 NclMultiDValData char_md;
 #endif
 {
-	int i;
-	int n_strings = 1;
+	ng_size_t i;
+	ng_size_t n_strings = 1;
 	char *buffer = NULL;
-	int len =0;
-	int from = 0;
+	ng_size_t len =0;
+	ng_size_t from = 0;
 	string *value = NULL;
 	unsigned char *val = NULL;
 	string missingQ = NrmNULLQUARK;

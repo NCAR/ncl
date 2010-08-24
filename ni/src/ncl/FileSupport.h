@@ -277,7 +277,7 @@ extern NhlErrorTypes _NclFileAddDim(
 #if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* dimname */,
-int	/* dimsize */,
+ng_size_t	/* dimsize */,
 int	/* is_unlimited*/
 #endif
 );
@@ -286,7 +286,7 @@ extern NhlErrorTypes _NclFileAddChunkDim(
 #if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* dimname */,
-int	/* dimsize */,
+ng_size_t	/* dimsize */,
 int	/* is_unlimited*/
 #endif
 );

@@ -554,7 +554,7 @@ NhlErrorTypes  _NclBuildFileVSelection
 	NclMultiDValData vect_md;
 	NclMultiDValData tmp_md;
 	long *thevector;
-	int i;
+	ng_size_t i;
 	char * v_name;
 	char * f_name;
 	int index = -1;
@@ -1398,12 +1398,12 @@ int compress_level;
 }
 extern NhlErrorTypes _NclFileAddDim
 #if     NhlNeedProto
-(NclFile thefile, NclQuark dimname, int dimsize, int is_unlimited)
+(NclFile thefile, NclQuark dimname, ng_size_t dimsize, int is_unlimited)
 #else
 (thefile, dimname, dimsize, is_unlimited)
 NclFile thefile;
 NclQuark dimname;
-int dimsize;
+ng_size_t dimsize;
 int is_unlimited;
 #endif
 {
@@ -1425,12 +1425,12 @@ int is_unlimited;
 
 extern NhlErrorTypes _NclFileAddChunkDim
 #if     NhlNeedProto
-(NclFile thefile, NclQuark dimname, int dimsize, int is_unlimited)
+(NclFile thefile, NclQuark dimname, ng_size_t dimsize, int is_unlimited)
 #else
 (thefile, dimname, dimsize, is_unlimited)
 NclFile thefile;
 NclQuark dimname;
-int dimsize;
+ng_size_t dimsize;
 int is_unlimited;
 #endif
 {
@@ -1531,7 +1531,7 @@ NclQuark  varname;
 				ret = nclfprintf(fp,"\nCoordinates: \n");
 				for(j = 0; j < thefile->file.var_info[i]->num_dimensions;j++) {
 					if(_NclFileVarIsCoord(thefile,thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark)!= -1) {
-						int size = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_size;
+						ng_size_t size = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_size;
 						ret = nclfprintf(fp,"            ");
 						if(ret < 0) {
 							return(NhlWARNING);
@@ -1642,7 +1642,7 @@ NclQuark *_NclSplitGroupPath
 #else
 (group_name, n_lvls)
 NclQuark group_name;
-int *lvls;
+int *n_lvls;
 #endif
 {
 	NclQuark *splited_group_names = NULL;
