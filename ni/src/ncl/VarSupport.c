@@ -246,7 +246,7 @@ NhlErrorTypes  _NclBuildCoordVSelection
 {	
 	NclMultiDValData vect_md;
 	long *thevector;
-	int i;
+	ng_size_t i;
 	char * v_name;
 	int index = -1;
 	NclQuark cname;
@@ -1065,7 +1065,7 @@ NhlErrorTypes  _NclBuildVSelection
 	NclMultiDValData vect_md;
 	NclMultiDValData tmp_md;
 	long *thevector;
-	int i;
+	ng_size_t i;
 	char * v_name;
 	int index = -1;
 /*

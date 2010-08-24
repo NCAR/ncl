@@ -1198,7 +1198,7 @@ void * _NclMakeDimSizeNode
 	} else {
 		tmp->any = 0;
 	}
-	tmp->size = (int)size;
+	tmp->size = (ng_size_t)size;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
@@ -2737,7 +2737,7 @@ if(groot != NULL) {
 				fprintf(fp,"ANYSIZE\n");
 			} else {
 				putspace(i,fp);
-				fprintf(fp,"%d\n",dimsizelistnode->size);
+				fprintf(fp,"%ld\n",(long)dimsizelistnode->size);
 			}
 			i--;
 		}

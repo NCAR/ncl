@@ -606,7 +606,7 @@ typedef struct ncl_dimsizelistnode{
 	char *file;
 	NclSrcTreeDestroyProc destroy_it;
 	int   any;
-	int   size;
+	ng_size_t size;
 } NclDimSizeListNode; 
 
 typedef struct ncl_procdef{
