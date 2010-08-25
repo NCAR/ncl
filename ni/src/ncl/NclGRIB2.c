@@ -208,7 +208,6 @@ static void g2Do_Rotation_Atts
 )
 {
 	NclQuark* tmp_string;
-	char buf[256];
 	
 	char *note1[2] = {"u and v components of vector quantities are resolved relative to grid",
 			  "u and v components of vector quantities are resolved relative to earth"};
@@ -448,10 +447,8 @@ void g2GetAtts_1
     int *nrotatts;
 #endif
 {
-	Grib2AttInqRecList* tmp_att_list_ptr;
 	NclQuark *tmp_string = NULL;
 	float *tmp_float = NULL;
-	ng_size_t tmp_dimsizes = 1;
 
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -531,8 +528,6 @@ int* nrotatts;
 {
 	G2_GDS *gds;
 	int nlon,nlat;
-	int is_thinned_lat;
-	int is_thinned_lon;
 	g2CETemplate *ce;
 
 	/* 
@@ -623,19 +618,14 @@ void g2GDSCEGrid
     double la1,la2,lo1,lo2;
     double di;
     double dj;
-/*    int latXlon;*/
     int idir;
     int jdir;
-    int vectors;
     int is_thinned_lat;
     int is_thinned_lon;
-    unsigned char tmp[4];
-    int sign;
     int i;
     float *tmp_float;
     NclQuark* tmp_string;
     int nlon, nlat;
-    int itmp;
     g2CETemplate *ce;
     double scale_factor;
 	
@@ -932,19 +922,14 @@ void g2GDSRLLGrid
     double la1,la2,lo1,lo2;
     double di;
     double dj;
-/*    int latXlon;*/
     int idir;
     int jdir;
-    int vectors;
     int is_thinned_lat;
     int is_thinned_lon;
-    unsigned char tmp[4];
-    int sign;
     int i,j;
     float *tmp_float;
     NclQuark* tmp_string;
     int ni, nj;
-    int itmp;
     g2RotCETemplate *rll;
     int grid_oriented,do_rot;
     int do_180 = 0;
@@ -954,8 +939,6 @@ void g2GDSRLLGrid
     double losp;
     double rotang;
     double clat,llat,llon,rlat,rlon;
-    double dux,ux0,ux1,duy,uy0,uy1;
-    double uxc,uyc;
 	
     *lat = NULL;
     *n_dims_lat = 0;
@@ -1113,7 +1096,6 @@ void g2GDSRLLGrid
 			
 
     if (do_rot) {
-	    double gridlatc;
 	    double dtr = atan(1) / 45.0;
 	    *rot = (float*)NclMalloc((unsigned)sizeof(float)* nj * ni);
 
@@ -1122,7 +1104,6 @@ void g2GDSRLLGrid
 		    for (i = 0; i < ni; i++) {
 			    double tlon,tlat;
 			    double cgridlat, slon,srot,crot;
-			    double crot1,eps;
 			    double rlon = idir == 1 ? lo1 : lo2;
 			    rot2ll(lasp,losp,rlat + j * jdir * dj,rlon + i * idir * di,&tlat,&tlon);
 			    if (do_180) {
@@ -1336,18 +1317,15 @@ void g2GDSMEGrid
     double dj;
     int idir;
     int jdir;
-    int sign;
     int i;
     float *tmp_float;
     NclQuark* tmp_string;
     int nlon, nlat;
-    int itmp;
     g2METemplate *me;
     double scale_factor;
     double earth_radius;
     double latd, dlon, dlat;
     double ye;
-    int zero360 = 0;
 	
     *lat = NULL;
     *n_dims_lat = 0;
@@ -1561,7 +1539,6 @@ int* nrotatts;
 	double la1;
 	double lo1;
 	double lat_d;
-	double la2,lo2;
 	double lov;
 	double dx;
 	double dy;
@@ -1576,7 +1553,7 @@ int* nrotatts;
 	double de,dr,xpole,ypole;
 	double dxx,dyy,de2,dr2,trot;
 	int x,y;
-	NrmQuark grid_name;
+	NrmQuark grid_name = NrmNULLQUARK;
 	NrmQuark *tmp_string;
 	float *tmp_float;
 	double earth_radius;
@@ -1804,9 +1781,6 @@ Grib2AttInqRecList** rot_att_list;
 int* nrotatts;
 #endif
 {
-	static int mapid = -1;
-	static int vpid = -1;
-	static int rlist = -1;
 	int nx;
 	int ny;
 	double la1;
@@ -1814,25 +1788,19 @@ int* nrotatts;
 	double lov,tlon;
 	double dx;
 	double dy;
-	double deltax;
-	double deltay;
 	double latin1;
 	double latin2;
 	int north;
-	unsigned char tmpc[4];
-	int status,idir,jdir,i,j;
-	double orv;
+	int idir,jdir,i,j;
 	double nx0,nx1,ny0,ny1;
-	double C,d_per_km,dlon,dlat;
+	double C,d_per_km,dlon;
 	double ndcdx,ndcdy;
 	double an;
 	float *tmp_float;
 	NclQuark *tmp_string;
-	int *tmp_int;
 	int do_rot;
 	NhlBoolean grid_oriented;
-	char buf[256];
-	NrmQuark grid_name;
+	NrmQuark grid_name = NrmNULLQUARK;
 	g2LCTemplate *lc;
 	double scale_factor;
 	G2_GDS *gds;
@@ -2087,30 +2055,18 @@ int* nrotatts;
 {
 	double rtod = DegPerRad;
 	int nlat,nlon;
-	unsigned char tmpc[4];
 	double *theta;
 	double *wts;
 	int lwork= 0;
 	double *work = NULL;
-	int i,ierror,tmp,k;
-	int nv=-1;
-	int pl =-1;
-	int the_start_off = 32;
-	double loinc;
-	int max_lon;
-	int num;
-	int sign;
-	float reference_value, tmpa,tmpb;
-	GribRecordInqRecList *step;
+	int i,ierror,k;
 	float *tmp_float;
 	NclQuark *tmp_string;
 	int is_thinned_lon = 0;
 	int idir,jdir;
-	int ix;
 	int try = 0;
 	double la1,la2,lo1,lo2;
 	double di;
-	double dj;
 	G2_GDS *gds;
 	g2GATemplate *ga;
 	double scale_factor;
@@ -2776,8 +2732,6 @@ G2_GIT *the_it;
 	int y = 0;
 	unsigned short mn = 0;
 	unsigned short d = 0;
-	int h = 0;
-	int mi = 0;
 	char buffer[100];
 
 	HeisDiffDate(1,1,the_it->year,the_it->days_from_jan1,&d,&mn,&y);
@@ -3056,9 +3010,6 @@ int l1_val;
 int l1_scale_fac;
 # endif
 {
-	int i;
-	int ltype;
-	int lval;
 
         *l0 = GRIB2_MISSING_LEVEL_VAL;
         *l1 = GRIB2_MISSING_LEVEL_VAL;
@@ -3125,7 +3076,6 @@ void *s2;
 {
 	Grib2RecordInqRecList *s_1 = *(Grib2RecordInqRecList**)s1;
 	Grib2RecordInqRecList *s_2 = *(Grib2RecordInqRecList**)s2;
-	int d1,m1,year1,d2,m2,year2;
 	short result = 0;
 
 	result = s_1->rec_inq->initial_time.year - s_2->rec_inq->initial_time.year;
@@ -3403,7 +3353,6 @@ Grib2FileRecord *therec;
 	ng_size_t tmp_dimsizes = 1;
 	Grib2RecordInqRec *grib_rec = NULL;
 	Grib2AttInqRecList *att_list_ptr= NULL;
-	Grib2AttInqRec 	*att_ptr= NULL;
 	int i;
 	float *tmp_level = NULL;
 	void *tmp_fill = NULL;
@@ -3955,14 +3904,12 @@ static void g2SetInitialTimeCoordinates
 Grib2FileRecord *therec;
 #endif
 {
-	Grib2DimInqRecList *step,*ptr;
+	Grib2DimInqRecList *step;
 	Grib2InternalVarList *vstep,*nvstep;
-	Grib2DimInqRec *tmp;
 	int i,j,k;
 
 	step = therec->it_dims;
 	for (i = 0; i < therec->n_it_dims; i++) {
-		int dimsize;
 		char buffer[128];
 		char *cp;
 		NrmQuark dimq,newdimq;
@@ -4051,7 +3998,7 @@ ng_size_t dimsize;
 		int y,m,d,h;
 		float min;
 		str = NrmQuarkToString(vals[i]);
-		sscanf(str,"%2d/%2d/%4d (%2d:%2d)",&m,&d,&y,&h,&min);
+		sscanf(str,"%2d/%2d/%4d (%2d:%2f)",&m,&d,&y,&h,&min);
 		ddates[i] = y * 1e6 + m * 1e4 + d * 1e2 + h + min / 60.;
 	}
 				       
@@ -4083,7 +4030,6 @@ ng_size_t dimsize;
 	for (i = 0; i < dimsize; i++) {
 		int y,m,d,h,min;
 		long jddiff;
-		int iyear;
 		str = NrmQuarkToString(vals[i]);
 		sscanf(str,"%2d/%2d/%4d (%2d:%2d)",&m,&d,&y,&h,&min);
 		jddiff = HeisDayDiff(1,1,1800,d,m,y);
@@ -4103,9 +4049,8 @@ static void _g2CreateSupplementaryTimeVariables
 Grib2FileRecord *therec;
 #endif
 {
-	Grib2DimInqRecList *step,*ptr;
+	Grib2DimInqRecList *step;
 	Grib2InternalVarList *vstep;
-	Grib2DimInqRec *tmp;
 	int i,j;
 
 	step = therec->it_dims;
@@ -4468,6 +4413,7 @@ static Grib2ParamList *_g2NewListNode
 	tmp->forecast_time_iszero = (grib_rec->forecast_time == 0);
 	tmp->time_period = grib_rec->time_period;
 	tmp->forecast_time_units = grib_rec->forecast_time_units;
+	tmp->time_period_units = grib_rec->time_period_units;
 	tmp->variable_time_unit = False;
 	tmp->prob_type = grib_rec->ens.prob_type;
 	tmp->levels = NULL;
@@ -4568,7 +4514,7 @@ Grib2RecordInqRec* grib_rec;
 
     return;
 }
-
+#if 0
 static int _g2IsDef
 #if NhlNeedProto
 (Grib2FileRecord *therec, int param_num)
@@ -4591,7 +4537,7 @@ int param_num;
 
     return 0;
 }
-
+#endif
 static int g2GridCompare
 #if NhlNeedProto
 (Grib2ParamList *step, Grib2RecordInqRec *grib_rec)
@@ -4910,11 +4856,9 @@ static G2_FTLIST *g2GetFTList
                             *fstep,
                             *last;
     int n_fts = 0;
-    int n_nodes;
     int current_offset;
     G2_FTLIST header;
-    G2_FTLIST   *the_end,
-                *tmp;
+    G2_FTLIST   *the_end;
     float *tmp_lvs = NULL;
     float *tmp_lvs1 = NULL;
     int tmp_n_lvs = 0;
@@ -5062,10 +5006,8 @@ static G2_ITLIST *g2GetITList
                             *istep,
                             *last;
     int n_its = 0;
-    int n_nodes;
     G2_ITLIST header;
-    G2_ITLIST   *the_end,
-                *tmp;
+    G2_ITLIST   *the_end;
     int tmp_n_ft;
     int *tmp_ft_vals = NULL;
     float *tmp_lvs = NULL;
@@ -5215,7 +5157,6 @@ Grib2ParamList* step;
                             *strt,
                             *fnsh,
                             *free_rec;
-    int current_ens_ix;
     int n_ens = 0,
         i, j, k, m,
         icount = 0;
@@ -5775,11 +5716,12 @@ Grib2ParamList* step;
 		sprintf(&(buf[strlen(buf)])," it: %s",NrmQuarkToString(it_vals_q[it_ix])); \
 	if (n_tmp_ft_vals > 1) \
 		sprintf(&(buf[strlen(buf)])," ft: %d",tmp_ft_vals[ft_ix]); \
-	if (n_tmp_lv_vals > 1) \
+	if (n_tmp_lv_vals > 1) { \
 		if (! step->levels_has_two) \
 			sprintf(&(buf[strlen(buf)])," lv: %f",tmp_lv_vals[lv_ix]); \
 		else \
 			sprintf(&(buf[strlen(buf)])," lv: (%f, %f)",tmp_lv_vals[lv_ix],tmp_lv_vals1[lv_ix]); \
+        } \
 	NhlPError(NhlWARNING,NhlEUNKNOWN,buf)
 			
     while(the_end != NULL) {
@@ -5946,7 +5888,6 @@ static void _g2SetFileDimsAndCoordVars
         j,
         m;
     int current_dim = 0;
-    int do_rot;
 
     NclMultiDValData    tmp_md;
     NclMultiDValData    tmp_md1;
@@ -5956,7 +5897,6 @@ static void _g2SetFileDimsAndCoordVars
     int n_dims_lat = 0;
     int n_dims_lon = 0;
     int n_dims_rot = 0;
-    int n_dims_level = 0;
 
     ng_size_t *dimsizes_lat = NULL;
     ng_size_t *dimsizes_lon = NULL;
@@ -5973,15 +5913,11 @@ static void _g2SetFileDimsAndCoordVars
 
     Grib2AttInqRecList  *att_list_ptr = NULL;
     Grib2AttInqRecList  *tmp_att_list_ptr = NULL;
-    Grib2AttInqRec  *att_ptr= NULL;
 
-    int natts = 0;
     NclQuark    *tmp_string = NULL;
 
     float   *tmp_float = NULL;
 
-    ng_size_t tmp_dimsizes = 1;
-    ng_size_t dimsizes_level = 1;
     int nlonatts = 0;
     int nlatatts = 0;
     int nrotatts = 0;
@@ -6111,12 +6047,12 @@ static void _g2SetFileDimsAndCoordVars
 						tmp_md = _Grib2GetInternalVar(therec,NrmStringToQuark(name_buffer),&test);
 						sprintf(name_buffer,"%s%s",NrmQuarkToString(dstep->dim_inq->dim_name),"_lower");
 						tmp_md1 = _Grib2GetInternalVar(therec,NrmStringToQuark(name_buffer),&test);
+						j = 0;
 						if((tmp_md != NULL )&&(tmp_md1 != NULL) ) {
 							lhs_f = (float*)tmp_md->multidval.val;
 							rhs_f = (float*)step->levels0->multidval.val;
 							lhs_f1 = (float*)tmp_md1->multidval.val;
 							rhs_f1 = (float*)step->levels1->multidval.val;
-							j = 0;
 							while(j<dstep->dim_inq->size) {
 								if((lhs_f[j] != rhs_f[j])||(lhs_f1[j] != rhs_f1[j])) {
 									break;
@@ -6259,7 +6195,7 @@ static void _g2SetFileDimsAndCoordVars
                 *tmp_string = NrmStringToQuark("ensemble elements description");
                 Grib2PushAtt(&tmp_att_list_ptr, "long_name", tmp_string, 1, nclTypestringClass); 
 
-                sprintf(&(buffer[strlen(buffer)]), "_info", therec->n_ensemble_dims);
+                sprintf(&(buffer[strlen(buffer)]), "_info");
                 _Grib2AddInternalVar(therec, NrmStringToQuark(buffer), &tmp->dim_number,
                         (NclMultiDValData) step->ensemble, tmp_att_list_ptr, 1);
                 tmp_att_list_ptr = NULL;
@@ -6455,7 +6391,7 @@ static void _g2SetFileDimsAndCoordVars
 				sprintf(buffer, "lv_%s%d", ct->shname,therec->n_lv_dims);
 			}
 			else {
-				sprintf(buffer, "levels%d", ct->shname,therec->n_lv_dims);
+				sprintf(buffer, "levels%d", therec->n_lv_dims);
 			}
 			tmp->dim_name = NrmStringToQuark(buffer);
 			therec->total_dims++;
@@ -6540,7 +6476,7 @@ static void _g2SetFileDimsAndCoordVars
 				sprintf(buffer, "lv_%s%d", ct->shname,therec->n_lv_dims);
 			}
 			else {
-				sprintf(buffer, "levels%d", ct->shname,therec->n_lv_dims);
+				sprintf(buffer, "levels%d", therec->n_lv_dims);
 			}
 			tmp->dim_name = NrmStringToQuark(buffer);
 			therec->total_dims++;
@@ -7003,7 +6939,6 @@ static void _g2SetFileDimsAndCoordVars
 		} else if ((n_dims_lon == 2) && (n_dims_lat == 2)
 			   && (dimsizes_lat[0] == dimsizes_lon[0])
 			   && (dimsizes_lat[1] == dimsizes_lon[1])) {
-			char *uv_m = "m";
 			step->var_info.dim_sizes[current_dim] = dimsizes_lat[0];
 			step->var_info.dim_sizes[current_dim + 1] = dimsizes_lon[1];
 			step->var_info.file_dim_num[current_dim] = therec->total_dims;
@@ -7170,7 +7105,7 @@ static void Grib2PrintRecords
     for (i = 0; i < nr; i++) {
         fprintf(stdout, "GRIB v2 record # %d (of %d)\n\n", i + 1, nr);
 
-        fprintf(stdout, "Offset: %d\n", g2rec[i]->offset);
+        fprintf(stdout, "Offset: %ld\n", (long) g2rec[i]->offset);
         fprintf(stdout, "Record Size: %d\n\n", g2rec[i]->rec_size);
 
         fprintf(stdout, "Section 0\n");
@@ -7198,7 +7133,7 @@ static void Grib2PrintRecords
             g2rec[i]->sec1.date_time.day, g2rec[i]->sec1.date_time.hour,
             g2rec[i]->sec1.date_time.min, g2rec[i]->sec1.date_time.sec);
         fprintf(stdout, "\t\t data date: %ld\n", g2rec[i]->sec1.date_time.dataDate);
-        fprintf(stdout, "\t\t data time: %ld\n", g2rec[i]->sec1.date_time.dataTime);
+        fprintf(stdout, "\t\t data time: %d\n", g2rec[i]->sec1.date_time.dataTime);
 
         fprintf(stdout, "\t production status: %d\n", g2rec[i]->sec1.prod_status);
         fprintf(stdout, "\t proc production status: %s\n", g2rec[i]->sec1.proc_prod_status);
@@ -8159,8 +8094,7 @@ Grib2FileRecord *g2frec;
 Grib2ParamList  *g2plist;
 #endif /* NhlNeedProto */
 {
-	Grib2RecordInqRec   *g2inqrec;
-	Grib2RecordInqRecList *g2rlist, *prevrlist, *g2rlist_max_period;
+	Grib2RecordInqRecList *g2rlist, *prevrlist, *g2rlist_max_period = NULL;
 	int time_period_count;
 	int *time_periods;
 	int max_count;
@@ -8170,7 +8104,6 @@ Grib2ParamList  *g2plist;
 	Grib2ParamList  *newplist, *tplist, *ttplist;
         int zero_offset_index;
 	int common_time_perod_unit;
-	int max_period_original_units;
 	
 	g2rlist = g2plist->thelist;
 
@@ -8251,9 +8184,11 @@ Grib2ParamList  *g2plist;
 		g2rlist = g2rlist->next;
 	}
 	newplist = NULL;
-	g2plist->time_period = g2rlist_max_period->rec_inq->time_period;
-	g2plist->forecast_time_units = g2rlist_max_period->rec_inq->forecast_time_units;
-	g2plist->time_period_units = g2rlist_max_period->rec_inq->time_period_units;
+	if (g2rlist_max_period) {
+		g2plist->time_period = g2rlist_max_period->rec_inq->time_period;
+		g2plist->forecast_time_units = g2rlist_max_period->rec_inq->forecast_time_units;
+		g2plist->time_period_units = g2rlist_max_period->rec_inq->time_period_units;
+	}
 	g2plist->variable_time_unit = 0;
 
         i = 0;
@@ -8320,7 +8255,6 @@ Grib2ParamList  *g2plist;
 	while (ttplist != NULL) {
 		g2rlist = ttplist->thelist;
 		while (g2rlist != NULL) {
-			int time_period;
 			if (! ttplist->variable_time_unit) {
 				g2rlist->rec_inq->time_offset = g2rlist->rec_inq->forecast_time;
 			}
@@ -8422,7 +8356,7 @@ Grib2FileRecord *g2frec;
 Grib2ParamList  *g2plist;
 #endif /* NhlNeedProto */
 {
-	Grib2RecordInqRec   *g2inqrec;
+	Grib2RecordInqRec   *g2inqrec = NULL;
 	Grib2RecordInqRecList *g2rlist;
 	int i;
 	Grib2VarTraits *trp = &g2plist->traits;
@@ -8604,9 +8538,7 @@ static void *Grib2OpenFile
 {
 # define GBUFSZ_T   1024
     FILE    *fd;
-    unsigned char buf[4 * GBUFSZ_T];
-    int len,
-        err,
+    int err,
         i,
         j,
         k;
@@ -8614,6 +8546,11 @@ static void *Grib2OpenFile
     /* g2clib API variables */
     unsigned char   *g2buf;
     gribfield   *g2fld;
+    /* 
+     * Note that g2int is bizarrely defined as long for 32 bit systems but as int for 64 bit systems
+     * Therefore is is really always just a 32 bit integer.
+     */
+
     g2int   sec0[3],
             sec1[13];
 
@@ -8631,14 +8568,11 @@ static void *Grib2OpenFile
         t_nrecs = 0;
 
     /* GRIB2 records */
-    G2Rec   **g2rec = NULL,
-            **tmp_g2rec = NULL;
+    G2Rec   **g2rec = NULL;
 
     /* codetable variables */
     g2codeTable *ct = NULL;
     NhlErrorTypes cterr = 0;
-    char    *ctfnam,
-            *table;
 
     int ctflen = 0;
     char    *center = NULL,              /* center name */
@@ -8654,8 +8588,6 @@ static void *Grib2OpenFile
     char    tmp_dataDate[16],
             tmp_dataTime[16];
 
-    char    fnam[256];
-    double  scale_factor;
 
     /* NCL GRIB2 records */
     Grib2FileRecord *g2frec;
@@ -8666,8 +8598,6 @@ static void *Grib2OpenFile
     Grib2ParamList  *g2plist = NULL,
                     *g2plist_n = NULL,
                     *g2plist_tmp = NULL;
-    G2_TBLE2    *g2name_rec = NULL,
-                *g2tmp_name_rec = NULL;
     static int first = True;
 
     if (first) {
@@ -8812,7 +8742,7 @@ static void *Grib2OpenFile
 
 	    if (! ct->descrip) {
 		    g2rec[nrecs]->sec1.center_name = NclMalloc(strlen("Unknown Center ( )") + 5);
-		    sprintf( g2rec[nrecs]->sec1.center_name,"Unknown Center (%d)",sec1[0]);
+		    sprintf( g2rec[nrecs]->sec1.center_name,"Unknown Center (%d)",(int)sec1[0]);
 	    }
 	    else {
 		    g2rec[nrecs]->sec1.center_name = NclMalloc(strlen(ct->descrip) + 1);
@@ -8935,9 +8865,9 @@ static void *Grib2OpenFile
         g2rec[nrecs]->sec1.date_time.hour = sec1[8];
         g2rec[nrecs]->sec1.date_time.min = sec1[9];
         g2rec[nrecs]->sec1.date_time.sec = sec1[10];
-        (void) sprintf(tmp_dataDate, "%d%02d%02d", sec1[5], sec1[6], sec1[7]);
+        (void) sprintf(tmp_dataDate, "%d%02d%02d", (int)sec1[5], (int)sec1[6], (int)sec1[7]);
         g2rec[nrecs]->sec1.date_time.dataDate = strtol(tmp_dataDate, NULL, 10);
-        (void) sprintf(tmp_dataTime, "%02d%02d", sec1[8], sec1[9]);
+        (void) sprintf(tmp_dataTime, "%02d%02d", (int)sec1[8], (int)sec1[9]);
         g2rec[nrecs]->sec1.date_time.dataTime = (int) strtol(tmp_dataTime, NULL, 10);
 
         /* table 1.3: Production Status of Data */
@@ -9590,7 +9520,7 @@ static void *Grib2OpenFile
             if (g2fld->ipdtmpl != NULL) {
     		    g2rec[nrecs]->sec4[i]->prod_params->scale_factor_first_fixed_sfc = g2fld->ipdtmpl[10];
 	    	    if (g2fld->ipdtmpl[10] == -127)
-		    	    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc;
+		    	    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc = 0;
 		        else
 			        g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc
 				        = g2fld->ipdtmpl[11];
@@ -10711,7 +10641,6 @@ static void *Grib2OpenFile
 	}
     }
 
-
     if (g2frec != NULL) {
         g2plist = g2frec->var_list;
         while (g2plist != NULL) {
@@ -10835,6 +10764,7 @@ static void *Grib2OpenFile
         Grib2FreeGrib2Rec(g2rec);
         return g2frec;
     }
+    return NULL;
 }
 
 
@@ -10848,11 +10778,9 @@ static void Grib2FreeFileRec
 {
 	Grib2FileRecord *thefile = (Grib2FileRecord *) therec;
 	Grib2ParamList *vstep,*vstep1;
-	Grib2RecordInqRecList *rstep;
 	Grib2DimInqRecList *dim,*dim1;
 	Grib2InternalVarList *ivars,*itmp;
 	Grib2AttInqRecList *theatts,*tmp;
-	int i;
 	NclGrib2CacheList *thelist,*thelist0;
 	NclGrib2CacheRec *ctmp,*ctmp0;
 
@@ -11275,8 +11203,8 @@ int* num_atts;
 Grib2FileRecord *thefile = (Grib2FileRecord*)therec;
 Grib2ParamList *step;
 Grib2InternalVarList *vstep;
-NclQuark *arout;
-Grib2AttInqRecList *theatts;
+NclQuark *arout = NrmNULLQUARK;
+Grib2AttInqRecList *theatts = NULL;
 int i;
 
 
@@ -11305,7 +11233,7 @@ if(vstep == NULL ) {
 		}
 	}
 }
-if((arout != NULL)&&(theatts!= NULL))  {
+if((arout != NrmNULLQUARK)&&(theatts!= NULL))  {
 	for(i = 0; i < *num_atts; i++) {
 		arout[i] = theatts->att_inq->name;
 		theatts = theatts->next;
@@ -11331,8 +11259,7 @@ NclQuark theatt;
 	Grib2FileRecord *thefile = (Grib2FileRecord *) therec;
 	Grib2ParamList *step;
 	Grib2InternalVarList *vstep;
-	Grib2AttInqRecList *theatts;
-	int i;
+	Grib2AttInqRecList *theatts = NULL;
 	NclFAttRec *tmp;
 
 
@@ -11847,10 +11774,10 @@ void* storage;
 	long *grid_start;
 	long *grid_finish;
 	long *grid_stride;
-	ng_size_t n_other_dims;
+	ng_size_t n_other_dims = 0;
 	int current_index[5] = {0,0,0,0,0};
 	int dim_offsets[5] = {-1,-1,-1,-1,-1};
-	int i,j,tg;
+	int i,j;
 	int offset;
 	int done = 0,inc_done =0;
 	int data_offset = 0;
@@ -12157,8 +12084,7 @@ void* storage;
 	Grib2FileRecord *thefile = (Grib2FileRecord*)therec;
 	Grib2ParamList *step;
 	Grib2InternalVarList *vstep;
-	Grib2AttInqRecList *theatts;
-	int i;
+	Grib2AttInqRecList *theatts = NULL;
 	void *out_dat;
 
 	vstep = thefile->internal_var_list;
@@ -12319,9 +12245,7 @@ static NhlErrorTypes Grib2SetOption
 #endif
 {
 	Grib2FileRecord *rec = (Grib2FileRecord*)therec;
-	nc_type *the_data_type;
-	int i,ret;
-	int cdfid;
+	int i;
 
 	if (option ==  NrmStringToQuark("thinnedgridinterpolation")) {
 		if (((NrmQuark) rec->options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values) != *(NrmQuark *)values) {

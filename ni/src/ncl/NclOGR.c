@@ -176,6 +176,7 @@ OGRFieldType type;
                 case OFTInteger:  return NCL_int;
                 case OFTReal:     return NCL_double;
                 case OFTString:   return NCL_string;
+	        default:          return NCL_none;
         }
 
         /* imperfect mapping... */
@@ -215,6 +216,8 @@ OGRwkbGeometryType type;
                 case wkbPolygon25D:
                 case wkbMultiPolygon25D:
                         return "polygon";
+	        default:
+			return "unknown";
         }
 
         return "unknown";            
@@ -943,7 +946,6 @@ void *therec;
 #endif
 {
 	OGRRecord *rec = (OGRRecord*)therec;
-        int i;
 
         #ifdef OGR_DEBUG
         fprintf(stderr, "OGRFreeFileRec...\n");
@@ -1193,7 +1195,6 @@ NclQuark thevar;
 int* num_atts;
 #endif
 {
-	OGRRecord* rec = (OGRRecord*)therec;
 
         #ifdef OGR_DEBUG
         fprintf(stderr, "OGRGetVarAttNames...\n");
@@ -1218,7 +1219,6 @@ NclQuark thevar;
 NclQuark theatt;
 #endif
 {
-	OGRRecord* rec = (OGRRecord*)therec;
 
         #ifdef OGR_DEBUG
         fprintf(stderr, "OGRGetVarAttInfo...\n");
