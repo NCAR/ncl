@@ -10,7 +10,9 @@ NhlErrorTypes betainc_W( void )
  * Input array variables
  */
   void *x, *a, *b;
-  double *tmp_x, *tmp_a, *tmp_b;
+  double *tmp_x = NULL;
+  double *tmp_a = NULL;
+  double *tmp_b = NULL;
   int ndims_x;
   ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
@@ -24,7 +26,7 @@ NhlErrorTypes betainc_W( void )
  * output variable 
  */
   void *alpha;
-  double *tmp_alpha;
+  double *tmp_alpha = NULL;
   ng_size_t size_alpha;
 /*
  * Declare various variables for random purposes.
@@ -226,7 +228,8 @@ NhlErrorTypes gammainc_W( void )
  * Input array variables
  */
   void *x, *a;
-  double *tmp_x, *tmp_a;
+  double *tmp_x = NULL;
+  double *tmp_a = NULL;
   int ndims_x;
   ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int ndims_a;
@@ -236,7 +239,8 @@ NhlErrorTypes gammainc_W( void )
  * output variable 
  */
   void *cum;
-  double *tmp_cum, tmp_ccum;
+  double *tmp_cum = NULL;
+  double tmp_ccum;
   ng_size_t size_cum;
 /*
  * Declare various variables for random purposes.

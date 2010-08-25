@@ -20,7 +20,7 @@ NhlErrorTypes dim_gbits_W( void )
  * Output.
  */
   void *isam;
-  int *tmp_isam;
+  int *tmp_isam = NULL;
   ng_size_t *dsizes_isam;
 
 /*
@@ -30,7 +30,8 @@ NhlErrorTypes dim_gbits_W( void )
   ng_size_t size_leftmost, size_isam;
   int n;
   int tmp_ibit, tmp_nbits, tmp_nskip;
-  int *tmp_npack, *tmp_npack2;
+  int *tmp_npack = NULL;
+  int *tmp_npack2 = NULL;
 
   int size_npack_type, size_int_type;
   int ret;
@@ -232,7 +233,7 @@ NhlErrorTypes getbitsone_W( void )
  * Output.
  */
   void *isam;
-  int *tmp_isam;
+  int *tmp_isam = NULL;
   ng_size_t *dsizes_isam;
 
 /*
@@ -243,7 +244,8 @@ NhlErrorTypes getbitsone_W( void )
   int size_npack_type;
   int ibit, nbits, nskip;
   int ret;
-  int *tmp_npack, *tmp_npack2;
+  int *tmp_npack = NULL;
+  int *tmp_npack2 = NULL;
 
   NclTypeClass typeclass_npack;
 
