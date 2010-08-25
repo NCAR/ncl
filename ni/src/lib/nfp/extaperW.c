@@ -14,13 +14,14 @@ NhlErrorTypes exp_tapershC_W( void )
  */
   void *ab, *new_ab, *n0;
   double *tmp_a, *tmp_b, *tmp_n0;
-  int ndims_ab, dsizes_ab[NCL_MAX_DIMENSIONS];
+  int ndims_ab;
+  ng_size_t dsizes_ab[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_ab, type_new_ab, type_n0;
   int *rate;
 /*
  * various
  */
-  int i, j, total_leftmost, total_size_ab, total_size_ab2;
+  ng_size_t i, total_leftmost, total_size_ab, total_size_ab2;
   int start, index_ab, nm, nb, mb, ier;
 /*
  * Retrieve parameters
@@ -154,15 +155,19 @@ NhlErrorTypes exp_tapersh_W( void )
  * Input array variables
  */
   void *a, *b, *n0;
-  double *tmp_a, *tmp_b, *tmp_n0;
-  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
-  int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
+  double *tmp_a = NULL;
+  double *tmp_b = NULL;
+  double *tmp_n0;
+  int ndims_a;
+  ng_size_t dsizes_a[NCL_MAX_DIMENSIONS];
+  int ndims_b;
+  ng_size_t dsizes_b[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_a, type_b, type_n0;
   int *rate;
 /*
  * various
  */
-  int i, total_leftmost, total_size_ab;
+  ng_size_t i, total_leftmost, total_size_ab;
   int index_ab, nm, nb, mb, ier;
 /*
  * Retrieve parameters
@@ -333,7 +338,7 @@ NhlErrorTypes exp_tapersh_wgts_W( void )
  */
   void *s;
   double *tmp_s;
-  int dsizes_s[1];
+  ng_size_t dsizes_s[1];
   NclBasicDataTypes type_s;
 /*
  * Retrieve parameters

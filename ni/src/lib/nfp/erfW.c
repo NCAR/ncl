@@ -14,16 +14,17 @@ NhlErrorTypes erf_W( void )
  * Argument # 0
  */
   void *x;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x;
 
 /*
  * Return variable
  */
   void *result;
-  double *tmp_result;
-  int *dsizes_result;
+  double *tmp_result = NULL;
+  ng_size_t *dsizes_result;
   NclBasicDataTypes type_result;
 
 
@@ -94,7 +95,7 @@ NhlErrorTypes erf_W( void )
 /* 
  * Allocate space for output dimension sizes and set them.
  */
-  dsizes_result = (int*)calloc(ndims_x,sizeof(int));  
+  dsizes_result = (ng_size_t*)calloc(ndims_x,sizeof(ng_size_t));  
   if( dsizes_result == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"erf: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -158,16 +159,17 @@ NhlErrorTypes erfc_W( void )
  * Argument # 0
  */
   void *x;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x;
 
 /*
  * Return variable
  */
   void *result;
-  double *tmp_result;
-  int *dsizes_result;
+  double *tmp_result = NULL;
+  ng_size_t *dsizes_result;
   NclBasicDataTypes type_result;
 
 /*
@@ -238,7 +240,7 @@ NhlErrorTypes erfc_W( void )
 /* 
  * Allocate space for output dimension sizes and set them.
  */
-  dsizes_result = (int*)calloc(ndims_x,sizeof(int));  
+  dsizes_result = (ng_size_t*)calloc(ndims_x,sizeof(ng_size_t));  
   if( dsizes_result == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"erfc: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);

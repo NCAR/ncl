@@ -14,16 +14,18 @@ NhlErrorTypes ezfftf_W( void )
  * Input array variables
  */
   void *x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x;
   NclScalar missing_x, missing_dx, missing_rx, missing_cf;
   int has_missing_x;
-  double *tmp_x;
+  double *tmp_x = NULL;
 /*
  * Output array variables
  */
   void *cf, *xbar;
-  int ndims_cf, dsizes_cf[NCL_MAX_DIMENSIONS];
+  int ndims_cf;
+  ng_size_t dsizes_cf[NCL_MAX_DIMENSIONS];
   double *tmp_cf1, *tmp_cf2, *tmp_xbar;
   NclBasicDataTypes type_cf;
   NclTypeClass type_cf_class;
@@ -32,7 +34,7 @@ NhlErrorTypes ezfftf_W( void )
  */
   void *N;
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -40,8 +42,10 @@ NhlErrorTypes ezfftf_W( void )
  * various
  */
   double *work;
-  int i, j, npts, npts2, lnpts2, npts22, index_x, index_cf1, index_cf2;
-  int found_missing, any_missing, size_leftmost, size_cf;
+  int index_x, index_cf1, index_cf2;
+  ng_size_t i, npts, npts2, lnpts2, npts22;
+  int found_missing, any_missing;
+  ng_size_t size_leftmost, size_cf;
 /*
  * Retrieve parameters
  *
@@ -154,8 +158,16 @@ NhlErrorTypes ezfftf_W( void )
                                 missing_dx.doubleval);
     }
     else {
-      NGCALLF(dezffti,DEZFFTI)(&npts,work);
-      NGCALLF(dezfftf,DEZFFTF)(&npts,tmp_x,tmp_xbar,tmp_cf1,tmp_cf2,work);
+      if(npts <= INT_MAX)
+      {
+          int inpts = (int) npts;
+          NGCALLF(dezffti,DEZFFTI)(&inpts,work);
+          NGCALLF(dezfftf,DEZFFTF)(&inpts,tmp_x,tmp_xbar,tmp_cf1,tmp_cf2,work);
+      }
+      else
+      {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"dezfft[if]: npts = %d, is larger than INT_MAX", npts);
+      }
 /*
  * Copy results back into xbar and cf.
  */
@@ -297,10 +309,13 @@ NhlErrorTypes ezfftb_W( void )
  * Input array variables
  */
   void *cf;
-  double *tmp_cf1, *tmp_cf2;
-  int ndims_cf, dsizes_cf[NCL_MAX_DIMENSIONS], dsizes_xbar[1];
+  double *tmp_cf1 = NULL;
+  double *tmp_cf2 = NULL;
+  int ndims_cf;
+  ng_size_t dsizes_cf[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xbar[1];
   void *xbar;
-  double *tmp_xbar;
+  double *tmp_xbar = NULL;
   NclBasicDataTypes type_cf, type_xbar;
   NclScalar missing_cf, missing_dcf, missing_rcf, missing_x;
   int has_missing_cf;
@@ -315,13 +330,15 @@ NhlErrorTypes ezfftb_W( void )
  */
   void *x;
   double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x;
 /*
  * various
  */
   double *work;
-  int i, j, npts, npts2, lnpts2, index_cf, index_x, size_x, size_leftmost;
+  int index_cf, index_x;
+  ng_size_t i, npts, npts2, lnpts2, size_x, size_leftmost;
   int found_missing1, found_missing2, any_missing, scalar_xbar;
 /*
  * Retrieve parameters
@@ -398,13 +415,16 @@ NhlErrorTypes ezfftb_W( void )
       i = 0;
       while(att_list != NULL) {
         if(att_list->quark == NrmStringToQuark("npts")) {
-          npts  = *(int*)att_list->attvalue->multidval.val;
+          npts  = *(ng_size_t*)att_list->attvalue->multidval.val;
           npts2 = npts/2;
           break;
         }
         att_list = att_list->next;
       }
     }
+  default:
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: data.kind, can't continue");
+        return(NhlFATAL);
   }
 /*
  * Calculate size of output array.
@@ -519,8 +539,16 @@ NhlErrorTypes ezfftb_W( void )
         }
       }
 
-      NGCALLF(dezffti,DEZFFTI)(&npts,work);
-      NGCALLF(dezfftb,DEZFFTB)(&npts,tmp_x,tmp_xbar,tmp_cf1,tmp_cf2,work);
+      if(npts <= INT_MAX)
+      {
+          int inpts = (int) npts;
+          NGCALLF(dezffti,DEZFFTI)(&inpts,work);
+          NGCALLF(dezfftb,DEZFFTB)(&inpts,tmp_x,tmp_xbar,tmp_cf1,tmp_cf2,work);
+      }
+      else
+      {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"dezfft[ib]: npts = %d, is larger than INT_MAX", npts);
+      }
 /*
  * Copy results back into x.
  */

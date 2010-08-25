@@ -85,17 +85,21 @@ NhlErrorTypes eof_W( void )
   void *x;
   double *dx;
   logical *opt;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, mcsta, nc, nc2, nr, kntx, total_size_x;
+  int nrow, ncol, nobs, msta, mcsta, nc, nc2, nr, kntx;
+  ng_size_t total_size_x;
   int *neval, ne;
 /*
  * Various.
  */
-  double *pcrit;
-  float *rpcrit, scale_factor;
-  NclBasicDataTypes type_pcrit;
+  float  scale_factor;
+  double *pcrit = NULL;
+  float *rpcrit = NULL;
+  NclBasicDataTypes type_pcrit = NCL_none;
   int iopt = 0, jopt = 0, i, j, l1, l2, ier = 0;
   logical tr_setbyuser = False, anomalies = False, debug = False;
   logical use_new_transpose = False, use_old_transpose = False;
@@ -104,9 +108,9 @@ NhlErrorTypes eof_W( void )
  * Work array variables.
  */
   double *dx_strip, *xave, *xdvar, *xvar, con, pcx, xsd;
-  double *cssm, *work, *weval;
-  int   *iwork, *ifail;
-  int icovcor, lwork, liwork, lifail, lweval, lcssm;
+  double *cssm = NULL, *work = NULL, *weval = NULL;
+  int   *iwork = NULL, *ifail = NULL;
+  int icovcor, lwork, liwork, lifail, lweval;
   long long int llcssm;
 
 /*
@@ -120,20 +124,21 @@ NhlErrorTypes eof_W( void )
  * Attribute variables
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
   char *cmatrix, *cmethod;
   NclQuark *matrix, *method;
-  double *trace, *eval, *eval2, *pcvar, *prncmp;
-  float *rpcvar, *rtrace, *reval, *reval2;
+  double *trace = NULL, *eval, *eval2, *pcvar = NULL, *prncmp = NULL;
+  float *rpcvar = NULL, *rtrace, *reval, *reval2;
 /*
  * Output array variables
  */
-  double *evec, *wevec, *xdatat;
-  float *revec;
-  int total_size_evec, dsizes_evec[NCL_MAX_DIMENSIONS];
+  double *evec = NULL, *wevec, *xdatat = NULL;
+  float *revec = NULL;
+  ng_size_t total_size_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
 
 /*
  * Retrieve parameters
@@ -1356,12 +1361,18 @@ NhlErrorTypes eof_ts_W( void )
   void *x, *evec;
   double *dx, *devec;
   logical *opt;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_evec, dsizes_evec[NCL_MAX_DIMENSIONS], has_missing_evec;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
+  int has_missing_evec;
   NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_evec;
   int nrow, ncol, nobs, msta, total_size_x, total_size_evec;
-  int neval, ntime, iflag = 0, jopt = 0, i, ier = 0;
+  int neval, ntime, iflag = 0, jopt = 0;
+  ng_size_t i;
+  int ier = 0;
 
 /*
  * Work array variables.
@@ -1373,7 +1384,7 @@ NhlErrorTypes eof_ts_W( void )
  */
   double *evec_ts, *evtsav;
   float *revec_ts, *revtsav;      
-  int dsizes_evec_ts[2];
+  ng_size_t dsizes_evec_ts[2];
 /*
  * Variables for retrieving attributes from "opt".
  */
@@ -1385,7 +1396,7 @@ NhlErrorTypes eof_ts_W( void )
  * Attribute variables
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -1769,18 +1780,22 @@ NhlErrorTypes eofcov_tr_W( void )
   void *x;
   double *dx;
   logical *opt;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, mcsta, nc, nc2, nr, kntx, total_size_x;
+  int nrow, ncol, nobs, msta, mcsta, nc, nc2, nr, kntx;
+  ng_size_t total_size_x;
   int *neval, ne;
 /*
  * Various.
  */
-  double *pcrit;
-  float *rpcrit, *rpcvar;
-  NclBasicDataTypes type_pcrit;
-  int iopt = 0, jopt = 0, i, j, l1, l2, ier = 0, icovcor;
+  float  *rpcvar;
+  double *pcrit = NULL;
+  float *rpcrit = NULL;
+  NclBasicDataTypes type_pcrit = NCL_none;
+  int jopt = 0, i, j, l1, l2, ier = 0, icovcor;
   logical anomalies = False, debug = False;
   logical return_eval = True, return_pcrit = False;
 /*
@@ -1799,7 +1814,7 @@ NhlErrorTypes eofcov_tr_W( void )
  * Attribute variables
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -1810,9 +1825,12 @@ NhlErrorTypes eofcov_tr_W( void )
 /*
  * Output array variables
  */
-  double *evec, *wevec, *xdatat;
-  float *revec;
-  int total_size_evec, dsizes_evec[NCL_MAX_DIMENSIONS];
+  double *evec = NULL;
+  double *wevec = NULL;
+  double *xdatat;
+  float *revec = NULL;
+  ng_size_t total_size_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
 
 /*
  * Retrieve parameters
@@ -2551,19 +2569,25 @@ NhlErrorTypes eofcov_tr_old_W( void )
   void *x;
   double *dx;
   logical *opt;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, mcsta, nc, nr, kntx, total_size_x;
-  int *neval, ne;
+  int nrow, ncol, nobs, msta, mcsta, nc, nr, kntx;
+  ng_size_t total_size_x;
+  int *neval;
 /*
  * Various.
  */
   double *dx_strip, *xave, *xdvar, *xvar, con, pcx, xsd;
-  double *pcrit, *xdatat;
-  float *rpcrit;
-  NclBasicDataTypes type_pcrit;
-  int iopt = 0, jopt = 0, i, ier = 0;
+  double *xdatat;
+  double *pcrit = NULL;
+  float *rpcrit = NULL;
+  NclBasicDataTypes type_pcrit = NCL_none;
+  int jopt = 0;
+  ng_size_t i;
+  int ier = 0;
   logical return_trace = False, return_pcrit = False,  return_eval = False;
   logical debug = False;
 /*
@@ -2576,7 +2600,7 @@ NhlErrorTypes eofcov_tr_old_W( void )
  * Attribute variables
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -2590,7 +2614,8 @@ NhlErrorTypes eofcov_tr_old_W( void )
  */
   double *evec;
   float *revec;
-  int total_size_evec, dsizes_evec[NCL_MAX_DIMENSIONS];
+  ng_size_t total_size_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
 
 /*
  * Retrieve parameters
@@ -3265,19 +3290,25 @@ NhlErrorTypes eofcor_tr_W( void )
   void *x;
   double *dx;
   logical *opt;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, mcsta, nc, nr, kntx, total_size_x;
-  int *neval, ne;
+  int nrow, ncol, nobs, msta, mcsta, nc, nr, kntx;
+  ng_size_t total_size_x;
+  int *neval;
 /*
  * Various.
  */
   double *dx_strip, *xave, *xdvar, *xvar, con, pcx, xsd;
-  double *pcrit, *xdatat;
-  float *rpcrit;
-  NclBasicDataTypes type_pcrit;
-  int iopt = 0, jopt = 1, i, ier = 0;
+  double *xdatat;
+  double *pcrit = NULL;
+  float *rpcrit = NULL;
+  NclBasicDataTypes type_pcrit = NCL_none;
+  int jopt = 1;
+  ng_size_t i;
+  int ier = 0;
   logical return_trace = False, return_pcrit = False,  return_eval = False;
   logical debug = False;
 /*
@@ -3290,7 +3321,7 @@ NhlErrorTypes eofcor_tr_W( void )
  * Attribute variables
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -3304,7 +3335,8 @@ NhlErrorTypes eofcor_tr_W( void )
  */
   double *evec;
   float *revec;
-  int total_size_evec, dsizes_evec[NCL_MAX_DIMENSIONS];
+  ng_size_t total_size_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
 
 /*
  * Retrieve parameters
@@ -3977,11 +4009,16 @@ NhlErrorTypes eofcov_W( void )
  */
   void *x;
   double *dx;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, total_size_x;
-  int *neval, iopt = 0, jopt = 0, i, ier = 0;
+  int nrow, ncol, nobs, msta;
+  ng_size_t total_size_x;
+  int *neval, iopt = 0, jopt = 0;
+  ng_size_t i;
+  int ier = 0;
 /*
  * Work array variables.
  */
@@ -3993,7 +4030,7 @@ NhlErrorTypes eofcov_W( void )
  * Attribute variables
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -4005,7 +4042,8 @@ NhlErrorTypes eofcov_W( void )
  */
   double *evec;
   float *revec;
-  int total_size_evec, dsizes_evec[NCL_MAX_DIMENSIONS];
+  ng_size_t total_size_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
 /*
  * Retrieve parameters
  */
@@ -4402,11 +4440,16 @@ NhlErrorTypes eofcor_W( void )
  */
   void *x;
   double *dx;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, total_size_x;
-  int *neval, iopt = 0, jopt = 1, i, ier = 0;
+  int nrow, ncol, nobs, msta;
+  ng_size_t total_size_x;
+  int *neval, iopt = 0, jopt = 1;
+  ng_size_t i;
+  int ier = 0;
 /*
  * Work array variables.
  */
@@ -4418,7 +4461,7 @@ NhlErrorTypes eofcor_W( void )
  * Attribute variables
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -4430,7 +4473,8 @@ NhlErrorTypes eofcor_W( void )
  */
   double *evec;
   float *revec;
-  int total_size_evec, dsizes_evec[NCL_MAX_DIMENSIONS];
+  ng_size_t total_size_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
 /*
  * Retrieve parameters
  */
@@ -4828,11 +4872,16 @@ NhlErrorTypes eofcov_pcmsg_W( void )
   void *x, *pcmsg;
   double *dx, *dpcmsg;
   float *rpcmsg;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_pcmsg;
-  int nrow, ncol, nobs, msta, total_size_x;
-  int *neval, iopt = 0, jopt = 0, i, ier = 0;
+  int nrow, ncol, nobs, msta;
+  ng_size_t total_size_x;
+  int *neval, iopt = 0, jopt = 0;
+  ng_size_t i;
+  int ier = 0;
 /*
  * Work array variables.
  */
@@ -4844,7 +4893,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
  * Attribute variables
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -4856,7 +4905,8 @@ NhlErrorTypes eofcov_pcmsg_W( void )
  */
   double *evec;
   float *revec;
-  int total_size_evec, dsizes_evec[NCL_MAX_DIMENSIONS];
+  ng_size_t total_size_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
 /*
  * Retrieve parameters
  */
@@ -5347,11 +5397,16 @@ NhlErrorTypes eofcor_pcmsg_W( void )
   void *x, *pcmsg;
   double *dx, *dpcmsg;
   float *rpcmsg;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_pcmsg;
-  int nrow, ncol, nobs, msta, total_size_x;
-  int *neval, iopt = 0, jopt = 1, i, ier = 0;
+  int nrow, ncol, nobs, msta;
+  ng_size_t total_size_x;
+  int *neval, iopt = 0, jopt = 1;
+  ng_size_t i;
+  int ier = 0;
 /*
  * Work array variables.
  */
@@ -5363,7 +5418,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
  * Attribute variables
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -5375,7 +5430,8 @@ NhlErrorTypes eofcor_pcmsg_W( void )
  */
   double *evec;
   float *revec;
-  int total_size_evec, dsizes_evec[NCL_MAX_DIMENSIONS];
+  ng_size_t total_size_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
 /*
  * Retrieve parameters
  */
@@ -5855,12 +5911,18 @@ NhlErrorTypes eofcov_ts_W( void )
  */
   void *x, *evec;
   double *dx, *devec;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_evec, dsizes_evec[NCL_MAX_DIMENSIONS], has_missing_evec;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
+  int has_missing_evec;
   NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_evec;
   int nrow, ncol, nobs, msta, total_size_x, total_size_evec;
-  int neval, ntime, iflag = 0, jopt = 0, i, ier = 0;
+  int neval, ntime, iflag = 0, jopt = 0;
+  ng_size_t i;
+  int ier = 0;
 /*
  * Work array variables.
  */
@@ -5871,12 +5933,12 @@ NhlErrorTypes eofcov_ts_W( void )
  */
   double *evec_ts, *evtsav;
   float *revec_ts, *revtsav;      
-  int dsizes_evec_ts[2];
+  ng_size_t dsizes_evec_ts[2];
 /*
  * Attribute variables
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -6149,12 +6211,18 @@ NhlErrorTypes eofcor_ts_W( void )
  */
   void *x, *evec;
   double *dx, *devec;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_evec, dsizes_evec[NCL_MAX_DIMENSIONS], has_missing_evec;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
+  int has_missing_evec;
   NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_evec;
   int nrow, ncol, nobs, msta, total_size_x, total_size_evec;
-  int neval, ntime, iflag = 0, jopt = 1, i, ier = 0;
+  int neval, ntime, iflag = 0, jopt = 1;
+  ng_size_t i;
+  int ier = 0;
 /*
  * Work array variables.
  */
@@ -6165,13 +6233,13 @@ NhlErrorTypes eofcor_ts_W( void )
  */
   double *evec_ts, *evtsav;
   float *revec_ts, *revtsav;      
-  int dsizes_evec_ts[2];
+  ng_size_t dsizes_evec_ts[2];
 
 /*
  * Attribute variables
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -6444,12 +6512,18 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
  */
   void *x, *evec, *pcmsg;
   double *dx, *devec, *dpcmsg;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_evec, dsizes_evec[NCL_MAX_DIMENSIONS], has_missing_evec;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
+  int has_missing_evec;
   NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_evec, type_pcmsg;
   int nrow, ncol, nobs, msta, total_size_x, total_size_evec;
-  int neval, ntime, iflag = 0, jopt = 0, i, ier = 0;
+  int neval, ntime, iflag = 0, jopt = 0;
+  ng_size_t i;
+  int ier = 0;
 /*
  * Work array variables.
  */
@@ -6460,7 +6534,7 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
  */
   double *evec_ts;
   float *revec_ts;      
-  int dsizes_evec_ts[2];
+  ng_size_t dsizes_evec_ts[2];
 
 /*
  * Retrieve parameters
@@ -6644,12 +6718,18 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
  */
   void *x, *evec, *pcmsg;
   double *dx, *devec, *dpcmsg;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_evec, dsizes_evec[NCL_MAX_DIMENSIONS], has_missing_evec;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
+  int has_missing_evec;
   NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_evec, type_pcmsg;
   int nrow, ncol, nobs, msta, total_size_x, total_size_evec;
-  int neval, ntime, iflag = 0, jopt = 1, i, ier = 0;
+  int neval, ntime, iflag = 0, jopt = 1;
+  ng_size_t i;
+  int ier = 0;
 /*
  * Work array variables.
  */
@@ -6660,7 +6740,7 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
  */
   double *evec_ts;
   float *revec_ts;      
-  int dsizes_evec_ts[2];
+  ng_size_t dsizes_evec_ts[2];
 
 /*
  * Retrieve parameters
@@ -6844,19 +6924,23 @@ NhlErrorTypes eof2data_W( void )
  */
   void *evec, *evects;
   double *devec, *devects;
-  int ndims_evec, dsizes_evec[NCL_MAX_DIMENSIONS], has_missing_evec;
-  int dsizes_evects[2], has_missing_evects;
+  int ndims_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
+  int has_missing_evec;
+  ng_size_t dsizes_evects[2];
   NclScalar missing_evec, missing_devec, missing_revec;
   NclBasicDataTypes type_evec, type_evects;
-  int nrow, ncol, nobs, msta, total_size_evec, total_size_evects;
-  int neval, npts, ntim, i, ret;
+  ng_size_t total_size_evec, total_size_evects;
+  int neval, npts, ntim;
+  ng_size_t i;
+  int ret;
 /*
  * Output array variables
  */
   void *x;
   double *dx;
-  float *rx;      
-  int *dsizes_x, total_size_x;
+  ng_size_t *dsizes_x;
+  ng_size_t total_size_x;
   NclBasicDataTypes type_x;
 
 /*
@@ -6925,7 +7009,7 @@ NhlErrorTypes eof2data_W( void )
 /*
  * Allocate memory for return variable.
  */
-  dsizes_x = (int*)calloc(ndims_evec, sizeof(int));
+  dsizes_x = (ng_size_t *)calloc(ndims_evec, sizeof(ng_size_t));
   
   if(type_evec == NCL_double || type_evects == NCL_double) {
     type_x = NCL_double;
