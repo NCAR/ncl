@@ -17,7 +17,7 @@ NhlErrorTypes area_conserve_remap_W( void )
  */
   void *loni;
   double *tmp_loni;
-  int dsizes_loni[1];
+  ng_size_t dsizes_loni[1];
   NclBasicDataTypes type_loni;
 
 /*
@@ -25,7 +25,7 @@ NhlErrorTypes area_conserve_remap_W( void )
  */
   void *lati;
   double *tmp_lati;
-  int dsizes_lati[1];
+  ng_size_t dsizes_lati[1];
   NclBasicDataTypes type_lati;
 
 /*
@@ -33,7 +33,8 @@ NhlErrorTypes area_conserve_remap_W( void )
  */
   void *fi;
   double *tmp_fi;
-  int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS];
+  int ndims_fi;
+  ng_size_t dsizes_fi[NCL_MAX_DIMENSIONS];
   int has_missing_fi;
   NclScalar missing_fi, missing_flt_fi, missing_dbl_fi;
   NclBasicDataTypes type_fi;
@@ -43,7 +44,7 @@ NhlErrorTypes area_conserve_remap_W( void )
  */
   void *lono;
   double *tmp_lono;
-  int dsizes_lono[1];
+  ng_size_t dsizes_lono[1];
   NclBasicDataTypes type_lono;
 
 /*
@@ -51,7 +52,7 @@ NhlErrorTypes area_conserve_remap_W( void )
  */
   void *lato;
   double *tmp_lato;
-  int dsizes_lato[1];
+  ng_size_t dsizes_lato[1];
   NclBasicDataTypes type_lato;
 
 /*
@@ -63,16 +64,17 @@ NhlErrorTypes area_conserve_remap_W( void )
  */
   void *fo;
   double *tmp_fo;
-  int *dsizes_fo;
+  ng_size_t *dsizes_fo;
   NclBasicDataTypes type_fo;
 
 
 /*
  * Various
  */
-  int nloni, nlati, nlevi, nlono, nlato, nlevnlatnloni, nlevnlatnlono;
-  int NLATi, NLATo, i, ret;
-  double *bin_factor;
+  ng_size_t nloni, nlati, nlevi, nlono, nlato, nlevnlatnloni, nlevnlatnlono;
+  ng_size_t NLATi, NLATo, i;
+  int ret;
+  double *bin_factor = NULL;
   logical set_binf;
   NclBasicDataTypes type_bin_factor;
 
@@ -369,7 +371,7 @@ NhlErrorTypes area_conserve_remap_W( void )
 /* 
  * Allocate space for output dimension sizes and set them.
  */
-  dsizes_fo = (int*)calloc(ndims_fi,sizeof(int));  
+  dsizes_fo = (ng_size_t*)calloc(ndims_fi,sizeof(ng_size_t));  
   if( dsizes_fo == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"area_conserve_remap: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -381,10 +383,31 @@ NhlErrorTypes area_conserve_remap_W( void )
 /*
  * Call the Fortran routine.
  */
-  NGCALLF(cremapbin,CREMAPBIN)(&nlevi, &nlato, &nlono, &nlati, &nloni, 
-                               tmp_fi, tmp_fo, tmp_lati, tmp_loni, tmp_lato,
-                               tmp_lono, &NLATi, &NLATo, bin_factor, 
-			       &missing_dbl_fi.doubleval);
+  if((nlono <= INT_MAX) &&
+     (nlato <= INT_MAX) &&
+     (NLATi <= INT_MAX) &&
+     (NLATo <= INT_MAX) &&
+     (nloni <= INT_MAX) &&
+     (nlati <= INT_MAX) &&
+     (nlevi <= INT_MAX))
+  {
+    int inlono = (int) nlono;
+    int inlato = (int) nlato;
+    int iNLATo = (int) NLATo;
+    int iNLATi = (int) NLATi;
+    int inloni = (int) nloni;
+    int inlati = (int) nlati;
+    int inlevi = (int) nlevi;
+    NGCALLF(cremapbin,CREMAPBIN)(&inlevi, &inlato, &inlono, &inlati, &inloni, 
+                                 tmp_fi, tmp_fo, tmp_lati, tmp_loni, tmp_lato,
+                                 tmp_lono, &iNLATi, &iNLATo, bin_factor, 
+			         &missing_dbl_fi.doubleval);
+  }
+  else
+  {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cremapbin: nlono = %ld is greater than INT_MAX", nlono);
+    return(NhlFATAL);
+  }
 
 /*
  * Coerce output back to float if necessary.

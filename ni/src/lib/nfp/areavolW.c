@@ -43,7 +43,11 @@ NhlErrorTypes wgt_areaave_W( void )
  * Input array variables
  */
   void *x, *wgty, *wgtx;
-  double *tmp_x, *tmp_wgty, *tmp_wgtx, *tmp1_wgtx, *tmp1_wgty;
+  double *tmp_x = NULL;
+  double *tmp_wgty = NULL;
+  double *tmp_wgtx = NULL;
+  double *tmp1_wgtx = NULL;
+  double *tmp1_wgty = NULL;
   int *iflag;
   int ndims_x;
   int has_missing_x;
@@ -56,7 +60,7 @@ NhlErrorTypes wgt_areaave_W( void )
  * Output variable.
  */
   void *ave;
-  double *tmp_ave;
+  double *tmp_ave = NULL;
   ng_size_t *dsizes_ave;
   int ndims_ave;
 /*
@@ -261,7 +265,8 @@ NhlErrorTypes wgt_areaave2_W( void )
  * Input array variables
  */
   void *x, *wgt;
-  double *tmp_x, *tmp_wgt;
+  double *tmp_x = NULL;
+  double *tmp_wgt = NULL;
   int *iflag;
   int ndims_x;
   ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
@@ -273,7 +278,7 @@ NhlErrorTypes wgt_areaave2_W( void )
  * Output variable.
  */
   void *ave;
-  double *tmp_ave;
+  double *tmp_ave = NULL;
   ng_size_t *dsizes_ave;
   int ndims_ave;
 /*
@@ -449,7 +454,8 @@ NhlErrorTypes wgt_areasum2_W( void )
  * Input array variables
  */
   void *x, *wgt;
-  double *tmp_x, *tmp_wgt;
+  double *tmp_x = NULL;
+  double *tmp_wgt = NULL;
   int *iflag;
   int ndims_x;
   int has_missing_x;
@@ -461,7 +467,7 @@ NhlErrorTypes wgt_areasum2_W( void )
  * Output variable.
  */
   void *sum;
-  double *tmp_sum;
+  double *tmp_sum = NULL;
   ng_size_t *dsizes_sum;
   int ndims_sum;
 /*
@@ -637,7 +643,12 @@ NhlErrorTypes wgt_arearmse_W( void )
  * Input array variables
  */
   void *q, *r, *wgty, *wgtx;
-  double *tmp_q, *tmp_r, *tmp_wgty, *tmp_wgtx, *tmp1_wgtx, *tmp1_wgty;
+  double *tmp_q = NULL;
+  double *tmp_r = NULL;
+  double *tmp_wgty = NULL;
+  double *tmp_wgtx = NULL;
+  double *tmp1_wgtx = NULL;
+  double *tmp1_wgty = NULL;
   int *iflag;
   int ndims_q;
   ng_size_t dsizes_q[NCL_MAX_DIMENSIONS];
@@ -654,7 +665,7 @@ NhlErrorTypes wgt_arearmse_W( void )
  * Output variable.
  */
   void *rmse;
-  double *tmp_rmse;
+  double *tmp_rmse = NULL;
   ng_size_t *dsizes_rmse;
   int ndims_rmse;
   NclBasicDataTypes type_rmse;
@@ -899,7 +910,9 @@ NhlErrorTypes wgt_arearmse2_W( void )
  * Input array variables
  */
   void *q, *r, *wgt;
-  double *tmp_q, *tmp_r, *tmp_wgt;
+  double *tmp_q = NULL;
+  double *tmp_r = NULL;
+  double *tmp_wgt = NULL;
   int *iflag;
   int ndims_q;
   ng_size_t dsizes_q[NCL_MAX_DIMENSIONS];
@@ -915,7 +928,7 @@ NhlErrorTypes wgt_arearmse2_W( void )
  * Output variable.
  */
   void *rmse;
-  double *tmp_rmse;
+  double *tmp_rmse = NULL;
   ng_size_t *dsizes_rmse;
   int ndims_rmse;
   NclBasicDataTypes type_rmse;
@@ -1135,8 +1148,13 @@ NhlErrorTypes wgt_volave_W( void )
  * Input array variables
  */
   void *x, *wgtz, *wgty, *wgtx;
-  double *tmp_x; 
-  double *tmp_wgtz, *tmp_wgty, *tmp_wgtx, *tmp1_wgtz, *tmp1_wgtx, *tmp1_wgty;
+  double *tmp_x = NULL; 
+  double *tmp_wgtz = NULL;
+  double *tmp_wgty = NULL;
+  double *tmp_wgtx = NULL;
+  double *tmp1_wgtz = NULL;
+  double *tmp1_wgtx = NULL;
+  double *tmp1_wgty = NULL;
   int *iflag;
   int ndims_x;
   ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
@@ -1150,7 +1168,7 @@ NhlErrorTypes wgt_volave_W( void )
  * Output variable.
  */
   void *ave;
-  double *tmp_ave;
+  double *tmp_ave = NULL;
   ng_size_t *dsizes_ave;
   int ndims_ave;
 /*
@@ -1368,8 +1386,12 @@ NhlErrorTypes wgt_volave_ccm_W( void )
  * Input array variables
  */
   void *x, *wgtz, *wgty, *wgtx;
-  double *tmp_x; 
-  double *tmp_wgtz, *tmp_wgty, *tmp_wgtx, *tmp1_wgtx, *tmp1_wgty;
+  double *tmp_x = NULL; 
+  double *tmp_wgtz = NULL;
+  double *tmp_wgty = NULL;
+  double *tmp_wgtx = NULL;
+  double *tmp1_wgtx = NULL;
+  double *tmp1_wgty = NULL;
   int *iflag;
   int ndims_x;
   ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
@@ -1384,7 +1406,7 @@ NhlErrorTypes wgt_volave_ccm_W( void )
  * Output variable.
  */
   void *ave;
-  double *tmp_ave;
+  double *tmp_ave = NULL;
   ng_size_t *dsizes_ave;
   int ndims_ave;
 /*
@@ -1628,7 +1650,8 @@ NhlErrorTypes wgt_volrmse_W( void )
  * Input array variables
  */
   void *q, *r, *wgtz, *wgty, *wgtx;
-  double *tmp_q, *tmp_r;
+  double *tmp_q = NULL;
+  double *tmp_r = NULL;
   double *tmp_wgtz, *tmp_wgty, *tmp_wgtx, *tmp1_wgtx, *tmp1_wgty, *tmp1_wgtz;
   int *iflag;
   int ndims_q;
@@ -1646,7 +1669,7 @@ NhlErrorTypes wgt_volrmse_W( void )
  * Output variable.
  */
   void *rmse;
-  double *tmp_rmse;
+  double *tmp_rmse = NULL;
   ng_size_t *dsizes_rmse;
   int ndims_rmse;
   NclBasicDataTypes type_rmse;
@@ -1911,7 +1934,10 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
  * Input array variables
  */
   void *q, *r, *wgtq, *wgtr, *wgty, *wgtx;
-  double *tmp_q, *tmp_r, *tmp_wgtq, *tmp_wgtr;
+  double *tmp_q = NULL;
+  double *tmp_r = NULL;
+  double *tmp_wgtq = NULL;
+  double *tmp_wgtr = NULL;
   double *tmp_wgty, *tmp_wgtx, *tmp1_wgtx, *tmp1_wgty;
   int *iflag;
   int ndims_q;
@@ -1933,7 +1959,7 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
  * Output variable.
  */
   void *rmse;
-  double *tmp_rmse;
+  double *tmp_rmse = NULL;
   ng_size_t *dsizes_rmse;
   int ndims_rmse;
   NclBasicDataTypes type_rmse;
