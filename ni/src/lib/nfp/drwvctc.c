@@ -5,6 +5,7 @@
 
 float armn(int, float *);
 float armx(int, float *);
+int cpclrs(int WKID);
 
 /*
  * Procedure drwsrfc uses the NCAR Graphics function c_srface to
@@ -247,7 +248,7 @@ void drwconc (int WKID, int lx, int ly, float *zdat)
 	gdeactivate_ws(WKID);
 }
 
-cpclrs(int WKID)
+int cpclrs(int WKID)
 {
     Gcolr_rep rgbv[9];
     int i;
@@ -291,7 +292,7 @@ cpclrs(int WKID)
 int cpcolr(float *xcra, float *ycra, int *ncra, int *iaia,
            int *igia, int *naia)
 {
-    int i, ifll;
+    int i, ifll = 0;
     Gpoint_list fill_area;
 
     for( i = 0; i <= *naia; i++ ) {

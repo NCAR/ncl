@@ -181,7 +181,8 @@ NhlErrorTypes dsgrid2_W( void )
  * Input values
  */
   void *x, *y, *z;
-  double *tmp_x, *tmp_y, *tmp_z;
+  double *tmp_x, *tmp_y;
+  double *tmp_z = NULL;
   ng_size_t dsizes_x[1];
   int has_missing_x;
   ng_size_t dsizes_y[1];
@@ -849,7 +850,8 @@ NhlErrorTypes dsgrid3_W( void )
  * Input values
  */
   void *x, *y, *z, *u;
-  double *tmp_x, *tmp_y, *tmp_z, *tmp_u;
+  double *tmp_x, *tmp_y, *tmp_z;
+  double *tmp_u = NULL;
   ng_size_t dsizes_x[1];
   int has_missing_x;
   ng_size_t dsizes_y[1];
@@ -1632,6 +1634,7 @@ OK_NAME:  for (i = 0; i < numpi; i++) {
       return(NclReturnValue((void *) qvalue, 1, &ret_size, NULL,NCL_string, 1));
     }
   }
+  return(NhlNOERROR);
 }
 
 
@@ -1958,7 +1961,9 @@ NhlErrorTypes dspnt2_W( void )
 /*
  * Temporary arrays.
  */
-  double *tmp_x, *tmp_y, *tmp_z, *tmp_xo, *tmp_yo, *tmp_zo;
+  double *tmp_x, *tmp_y, *tmp_xo, *tmp_yo;
+  double *tmp_z = NULL;
+  double *tmp_zo = NULL;
   ng_size_t i, npts, nptso, size_z, size_zo, size_leftmost;
   int ier = 0;
   int index_z, index_zo, ret;
@@ -2583,7 +2588,9 @@ NhlErrorTypes dspnt3_W( void )
 /*
  * Temporary arrays.
  */
-  double *tmp_x, *tmp_y, *tmp_z, *tmp_u, *tmp_xo, *tmp_yo, *tmp_zo, *tmp_uo;
+  double *tmp_x, *tmp_y, *tmp_z, *tmp_xo, *tmp_yo, *tmp_zo;
+  double *tmp_u = NULL;
+  double *tmp_uo = NULL;
   ng_size_t i, npts, nptso, size_u, size_uo, size_leftmost;
   int ier = 0;
   int index_u, index_uo, ret;

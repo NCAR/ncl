@@ -25,7 +25,9 @@ NhlErrorTypes dtrend_W( void )
 /*
  * Output array variables
  */
-  void *dtrend_y, *slope, *yintp;
+  void *dtrend_y;
+  void *slope = NULL;
+  void *yintp = NULL;
   double xmean, yvari, yvaro;
 /*
  * Attribute variables
@@ -407,7 +409,9 @@ NhlErrorTypes dtrend_n_W( void )
 /*
  * Output array variables
  */
-  void *dtrend_y, *slope, *yintp;
+  void *dtrend_y;
+  void *slope = NULL;
+  void *yintp = NULL;
   double xmean, yvari, yvaro;
 /*
  * Attribute variables
@@ -965,7 +969,8 @@ NhlErrorTypes dtrend_msg_W( void )
  * Input array variables
  */
   void *x, *y;
-  double *tmp_x, *tmp_y;
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
   ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
   int ndims_y;
@@ -979,7 +984,9 @@ NhlErrorTypes dtrend_msg_W( void )
 /*
  * Output array variables
  */
-  void *dtrend_y, *slope, *yintp;
+  void *dtrend_y;
+  void *slope = NULL;
+  void *yintp = NULL;
   double *ydt, slpe, yint;
 /*
  * Attribute variables
@@ -1363,7 +1370,9 @@ NhlErrorTypes dtrend_msg_n_W( void )
 /*
  * Output array variables
  */
-  void *dtrend_y, *slope, *yintp;
+  void *dtrend_y;
+  void *slope = NULL;
+  void *yintp = NULL;
   double *ydt, slpe, yint;
 /*
  * Attribute variables
