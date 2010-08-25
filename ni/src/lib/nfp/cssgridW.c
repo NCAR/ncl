@@ -38,8 +38,10 @@ NhlErrorTypes css2c_W(void)
   ng_size_t return_dsizes[NCL_MAX_DIMENSIONS];
   NclScalar missing[2],missingd[2],return_missing,*missing_ptr;
   void *datav[2];
-  double platd, plond, *return_value_d;
-  float  platf, plonf, mvalf, *return_value_f;
+  double platd, plond;
+  double *return_value_d = NULL;
+  float  platf, plonf, mvalf;
+  float  *return_value_f = NULL;
 
   int i,j,nt;
 
@@ -206,6 +208,7 @@ NhlErrorTypes css2c_W(void)
     NclReturnValue( (void *) return_value_f, ndims[0]+1, 
                     return_dsizes, missing_ptr, NCL_float,0);
   }
+  return(NhlNOERROR);
 }
 
 NhlErrorTypes csc2s_W(void)
@@ -217,8 +220,10 @@ NhlErrorTypes csc2s_W(void)
   ng_size_t return_dsizes[NCL_MAX_DIMENSIONS];
   NclScalar missing[3],missingd[3],return_missing,*missing_ptr;
   void *datav[3];
-  double xid,yid,zid,*return_value_d;
-  float   xi, yi, zi,*return_value_f,mvalf;
+  double xid,yid,zid;
+  double *return_value_d = NULL;
+  float   xi, yi, zi, mvalf;
+  float   *return_value_f = NULL;
 
   int i,j,nt;
 
@@ -397,6 +402,7 @@ NhlErrorTypes csc2s_W(void)
     NclReturnValue( (void *) return_value_f, ndims[0]+1,
                     return_dsizes, missing_ptr, NCL_float,0);
   }
+  return(NhlNOERROR);
 }
 
 NhlErrorTypes cssetp_W(void)
@@ -959,9 +965,9 @@ NhlErrorTypes cssgrid_W(void)
   NclScalar missing[5],missingd[5];
   void *datav[5];
 
-  float     *zout;
-  double    *platd,*plond,*fvald,*rlatd,*rlond,*platdt,*plondt,*fvaldt,
-            *zoutd,*ztmp;
+  float     *zout = NULL;
+  double    *zoutd = NULL;
+  double    *platd,*plond,*fvald,*rlatd,*rlond,*platdt,*plondt,*fvaldt,*ztmp;
   int       nt;
   ng_size_t psize;
   int       zdim;

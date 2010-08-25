@@ -13,7 +13,10 @@ NhlErrorTypes cz2ccm_W( void )
  * Input array variables
  */
   void *ps, *phis, *tv, *p0, *hyam, *hybm, *hyai, *hybi;
-  double *tmp, *tmp_ps, *tmp_phis, *tmp_tv, *tmp_p0;
+  double *tmp, *tmp_p0;
+  double *tmp_ps = NULL;
+  double *tmp_phis = NULL;
+  double *tmp_tv = NULL;
   double *tmp_hyam, *tmp_hybm, *tmp_hyai, *tmp_hybi;
   int ndims_ps;
   ng_size_t dsizes_ps[NCL_MAX_DIMENSIONS];
@@ -31,7 +34,7 @@ NhlErrorTypes cz2ccm_W( void )
  * Output array variables
  */
   void *z2;
-  double *tmp_z2;
+  double *tmp_z2 = NULL;
   int size_leftmost;
   NclBasicDataTypes type_z2;
 /*

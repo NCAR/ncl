@@ -3161,7 +3161,9 @@ NhlErrorTypes csa1x_W(void)
   ng_size_t dsizes_wts[1], dsizes_xo[1];
   int *knots, *nderiv;
   NclBasicDataTypes type_xi, type_yi, type_wts, type_smth, type_xo;
-  double *tmp_xi, *tmp_yi, *wts_val, *tmp_wts, *tmp_smth, *tmp_xo;
+  double *wts_val, *tmp_wts, *tmp_smth, *tmp_xo;
+  double *tmp_xi = NULL;
+  double *tmp_yi = NULL;
 /*
  * Various. 
  */
@@ -3414,7 +3416,9 @@ NhlErrorTypes csa1_W(void)
   int *knots;
   ng_size_t dsizes_xo[1];
   NclBasicDataTypes type_xi, type_yi, type_xo;
-  double *tmp_xi, *tmp_yi, *tmp_xo;
+  double *tmp_xi = NULL;
+  double *tmp_yi = NULL;
+  double *tmp_xo;
 /*
  * Various. 
  */
@@ -3604,7 +3608,8 @@ NhlErrorTypes csa2_W(void)
   ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
   ng_size_t dsizes_xo[1], dsizes_yo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_xo, type_yo;
-  double *tmp_xi, *tmp_yi, *tmp_zi, *tmp_xo, *tmp_yo;
+  double *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo;
+  double *tmp_zi = NULL;
 
 /*
  * Various. 
@@ -3795,8 +3800,9 @@ NhlErrorTypes csa2x_W(void)
   ng_size_t dsizes_xo[1], dsizes_yo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_wts, type_smth;
   NclBasicDataTypes type_xo, type_yo;
-  double *tmp_xi, *tmp_yi, *tmp_zi, *wts_val, *tmp_wts, *tmp_smth;
+  double *tmp_xi, *tmp_yi, *wts_val, *tmp_wts, *tmp_smth;
   double *tmp_xo, *tmp_yo;
+  double *tmp_zi = NULL;
 /*
  * Various. 
  */
@@ -4043,7 +4049,8 @@ NhlErrorTypes csa2l_W(void)
   ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
   ng_size_t dsizes_xo[1], dsizes_yo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_xo, type_yo;
-  double *tmp_xi, *tmp_yi, *tmp_zi, *tmp_xo, *tmp_yo;
+  double *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo;
+  double *tmp_zi = NULL;
 
 /*
  * Various. 
@@ -4238,8 +4245,9 @@ NhlErrorTypes csa2lx_W(void)
   ng_size_t dsizes_xo[1], dsizes_yo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_wts, type_smth;
   NclBasicDataTypes type_xo, type_yo;
-  double *tmp_xi, *tmp_yi, *tmp_zi, *wts_val, *tmp_wts, *tmp_smth;
+  double *tmp_xi, *tmp_yi, *wts_val, *tmp_wts, *tmp_smth;
   double *tmp_xo, *tmp_yo;
+  double *tmp_zi = NULL;
 /*
  * Various. 
  */
@@ -4497,8 +4505,9 @@ NhlErrorTypes csa3x_W(void)
   ng_size_t dsizes_xo[1], dsizes_yo[1], dsizes_zo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_ui, type_wts, type_smth;
   NclBasicDataTypes type_xo, type_yo, type_zo;
-  double *tmp_xi, *tmp_yi, *tmp_zi, *tmp_ui, *wts_val, *tmp_wts, *tmp_smth;
+  double *tmp_xi, *tmp_yi, *tmp_zi, *wts_val, *tmp_wts, *tmp_smth;
   double *tmp_xo, *tmp_yo, *tmp_zo;
+  double *tmp_ui = NULL;
 
 /*
  * Various. 
@@ -4757,7 +4766,8 @@ NhlErrorTypes csa3_W(void)
   ng_size_t dsizes_xo[1], dsizes_yo[1], dsizes_zo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_ui;
   NclBasicDataTypes type_xo, type_yo, type_zo;
-  double *tmp_xi, *tmp_yi, *tmp_zi, *tmp_ui, *tmp_xo, *tmp_yo, *tmp_zo;
+  double *tmp_xi, *tmp_yi, *tmp_zi, *tmp_xo, *tmp_yo, *tmp_zo;
+  double *tmp_ui = NULL;
 
 /*
  * Various. 
@@ -4955,8 +4965,9 @@ NhlErrorTypes csa3lx_W(void)
   ng_size_t dsizes_xo[1], dsizes_yo[1], dsizes_zo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_ui, type_wts, type_smth;
   NclBasicDataTypes type_xo, type_yo, type_zo;
-  double *tmp_xi, *tmp_yi, *tmp_zi, *tmp_ui, *wts_val, *tmp_wts, *tmp_smth;
+  double *tmp_xi, *tmp_yi, *tmp_zi, *wts_val, *tmp_wts, *tmp_smth;
   double *tmp_xo, *tmp_yo, *tmp_zo;
+  double *tmp_ui = NULL;
 
 /*
  * Various
@@ -5221,7 +5232,9 @@ NhlErrorTypes csa3l_W(void)
   ng_size_t dsizes_xo[1], dsizes_yo[1], dsizes_zo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_ui;
   NclBasicDataTypes type_xo, type_yo, type_zo;
-  double *tmp_xi, *tmp_yi, *tmp_zi, *tmp_ui, *tmp_xo, *tmp_yo, *tmp_zo;
+  double *tmp_xi, *tmp_yi, *tmp_zi;
+  double *tmp_ui = NULL;
+  double *tmp_xo, *tmp_yo, *tmp_zo;
 
 /*
  * Various. 
