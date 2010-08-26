@@ -3,7 +3,7 @@
 #include <ncarg/hlu/Workstation.h>
 #include "wrapper.h"
 
-extern NGCALLF(ctdriver,CTDRIVER)(int *wks, float *lat, float *lon, 
+extern void NGCALLF(ctdriver,CTDRIVER)(int *wks, float *lat, float *lon, 
                                   float *data, int *nlat, int *nlon, 
                                   int *idim, int *jdim, float *rpnt,
                                   int *mpnt, float *rwrk, int *lrwk,

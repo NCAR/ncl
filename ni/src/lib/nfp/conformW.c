@@ -69,7 +69,9 @@ NhlErrorTypes conform_W( void )
   ng_size_t i, j;
   ng_size_t size_conform;
   int type_size;
-  int *skip_x, *skip_c, *indices;
+  int *skip_x = NULL;
+  int *skip_c = NULL;
+  int *indices = NULL;
 /*
  * Retrieve parameters
  *
@@ -298,7 +300,9 @@ NhlErrorTypes conform_dims_W( void )
   int new_position, conform_pos, scalar_tmp_md, copy_scalar = 0;
   ng_size_t size_conform;
   int type_size;
-  int *skip_x, *skip_c, *indices;
+  int *skip_x = NULL;
+  int *skip_c = NULL;
+  int *indices = NULL;
 /*
  * Retrieve parameters
  *

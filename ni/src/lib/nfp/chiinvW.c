@@ -19,7 +19,7 @@ NhlErrorTypes chiinv_W( void )
  * output variable 
  */
   void *chi;
-  double *tmp_chi;
+  double *tmp_chi = NULL;
   ng_size_t size_chi;
   NclBasicDataTypes type_chi;
 /*

@@ -1321,12 +1321,13 @@ NhlErrorTypes cdft_t_W( void )
   int ndims_df;
   ng_size_t dsizes_df[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p, type_df;
-  double *tmp_p, *tmp_df;
+  double *tmp_p = NULL;
+  double *tmp_df = NULL;
 /*
  * Output variables.
  */
   void *t;
-  double *tmp_t;
+  double *tmp_t = NULL;
   NclBasicDataTypes type_t;
 /*
  * Various
@@ -1482,12 +1483,13 @@ NhlErrorTypes cdft_p_W( void )
   int ndims_df;
   ng_size_t dsizes_df[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_t, type_df;
-  double *tmp_t, *tmp_df;
+  double *tmp_t = NULL;
+  double *tmp_df = NULL;
 /*
  * Output variables.
  */
   void *p;
-  double *tmp_p;
+  double *tmp_p = NULL;
   NclBasicDataTypes type_p;
 /*
  * Various

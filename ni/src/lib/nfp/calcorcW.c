@@ -17,7 +17,8 @@ NhlErrorTypes escorc_W( void )
  * Input array variables
  */
   void *x, *y;
-  double *tmp_x, *tmp_y;
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
   int ndims_x;
   ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
@@ -31,7 +32,7 @@ NhlErrorTypes escorc_W( void )
  * Output array variables
  */
   void *corc;
-  double *tmp_corc;
+  double *tmp_corc = NULL;
   int ndims_corc;
   ng_size_t dsizes_corc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_corc;
@@ -377,7 +378,8 @@ NhlErrorTypes escovc_W( void )
  * Input array variables
  */
   void *x, *y;
-  double *tmp_x, *tmp_y;
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
   int ndims_x;
   ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
@@ -391,7 +393,7 @@ NhlErrorTypes escovc_W( void )
  * Output array variables
  */
   void *covc;
-  double *tmp_covc;
+  double *tmp_covc = NULL;
   int ndims_covc;
   ng_size_t dsizes_covc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_covc;
