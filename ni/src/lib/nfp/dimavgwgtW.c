@@ -16,8 +16,9 @@ NhlErrorTypes dim_avg_wgt_W( void )
  * Argument # 0
  */
   void *x;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
   NclScalar missing_x, missing_flt_x, missing_dbl_x;
   NclBasicDataTypes type_x;
@@ -27,7 +28,7 @@ NhlErrorTypes dim_avg_wgt_W( void )
  */
   void *w;
   double *tmp_w;
-  int dsizes_w[1];
+  ng_size_t dsizes_w[1];
   NclBasicDataTypes type_w;
 
 /*
@@ -39,15 +40,16 @@ NhlErrorTypes dim_avg_wgt_W( void )
  */
   void *xavg;
   double tmp_xavg[1];
-  int ndims_xavg, *dsizes_xavg;
+  int ndims_xavg;
+  ng_size_t *dsizes_xavg;
   NclBasicDataTypes type_xavg;
-  NclScalar missing_xavg;
 
 /*
  * Various
  */
-  int nx, index_x, ret;
-  int i, ndims_leftmost, size_output;
+  int ret, ndims_leftmost;
+  ng_size_t nx, index_x;
+  ng_size_t i, size_output;
 
 /*
  * Retrieve parameters.
@@ -165,7 +167,7 @@ NhlErrorTypes dim_avg_wgt_W( void )
  * Allocate space for output dimension sizes and set them.
  */
   ndims_xavg = max(ndims_leftmost,1);
-  dsizes_xavg = (int*)calloc(ndims_xavg,sizeof(int));  
+  dsizes_xavg = (ng_size_t*)calloc(ndims_xavg,sizeof(ng_size_t));  
   if( dsizes_xavg == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_avg_wgt: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -197,8 +199,17 @@ NhlErrorTypes dim_avg_wgt_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(dimavgwgt,DIMAVGWGT)(&nx, tmp_x, &missing_dbl_x.doubleval, 
-                                 tmp_w, opt, &tmp_xavg[0]);
+    if(nx <= INT_MAX)
+    {
+      int inx = (int) nx;
+      NGCALLF(dimavgwgt,DIMAVGWGT)(&inx, tmp_x, &missing_dbl_x.doubleval, 
+                                   tmp_w, opt, &tmp_xavg[0]);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dimavgwgt: nx = %ld is greater than INT_MAX", nx);
+      return(NhlFATAL);
+    }
 
 /*
  * Coerce output back to float or double.
@@ -245,7 +256,8 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
  */
   void *x;
   double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
   NclScalar missing_x, missing_flt_x, missing_dbl_x;
   NclBasicDataTypes type_x;
@@ -255,7 +267,7 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
  */
   void *w;
   double *tmp_w;
-  int dsizes_w[1];
+  ng_size_t dsizes_w[1];
   NclBasicDataTypes type_w;
 
 /*
@@ -272,15 +284,16 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
  */
   void *xavg;
   double tmp_xavg[1];
-  int ndims_xavg, *dsizes_xavg;
+  int ndims_xavg;
+  ng_size_t *dsizes_xavg;
   NclBasicDataTypes type_xavg;
-  NclScalar missing_xavg;
 
 /*
  * Various
  */
-  int nx, index_nrx, index_x, index_nr, index_out, ret;
-  int i, j, k, total_nl, total_nr, nrnx, size_output;
+  int ret;
+  ng_size_t nx, index_nrx, index_x, index_nr, index_out;
+  ng_size_t i, j, total_nl, total_nr, nrnx, size_output;
 
 /*
  * Retrieve parameters.
@@ -365,7 +378,7 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
  * allocate space for output dimension sizes and set them.
  */
   ndims_xavg  = max(ndims_x-1,1);
-  dsizes_xavg = (int*)calloc(ndims_xavg,sizeof(int));  
+  dsizes_xavg = (ng_size_t*)calloc(ndims_xavg,sizeof(ng_size_t));  
   if( dsizes_xavg == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_avg_wgt_n: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -446,8 +459,17 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
 /*
  * Call the Fortran routine.
  */
-      NGCALLF(dimavgwgt,DIMAVGWGT)(&nx, tmp_x, &missing_dbl_x.doubleval, 
-                                   tmp_w, opt, &tmp_xavg[0]);
+      if(nx <= INT_MAX)
+      {
+        int inx = (int) nx;
+        NGCALLF(dimavgwgt,DIMAVGWGT)(&inx, tmp_x, &missing_dbl_x.doubleval, 
+                                     tmp_w, opt, &tmp_xavg[0]);
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"dimavgwgt: nx = %ld is greater than INT_MAX", nx);
+        return(NhlFATAL);
+      }
 /*
  * Coerce output back to float or double.
  */
@@ -491,8 +513,9 @@ NhlErrorTypes dim_sum_wgt_W( void )
  * Argument # 0
  */
   void *x;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
   NclScalar missing_x, missing_flt_x, missing_dbl_x;
   NclBasicDataTypes type_x;
@@ -502,7 +525,7 @@ NhlErrorTypes dim_sum_wgt_W( void )
  */
   void *w;
   double *tmp_w;
-  int dsizes_w[1];
+  ng_size_t dsizes_w[1];
   NclBasicDataTypes type_w;
 
 /*
@@ -514,15 +537,16 @@ NhlErrorTypes dim_sum_wgt_W( void )
  */
   void *xavg;
   double tmp_xavg[1];
-  int ndims_xavg, *dsizes_xavg;
+  int ndims_xavg;
+  ng_size_t *dsizes_xavg;
   NclBasicDataTypes type_xavg;
-  NclScalar missing_xavg;
 
 /*
  * Various
  */
-  int nx, index_x, ret;
-  int i, ndims_leftmost, size_output;
+  int ret, ndims_leftmost;
+  ng_size_t nx, index_x;
+  ng_size_t i, size_output;
 
 /*
  * Retrieve parameters.
@@ -640,7 +664,7 @@ NhlErrorTypes dim_sum_wgt_W( void )
  * Allocate space for output dimension sizes and set them.
  */
   ndims_xavg = max(ndims_leftmost,1);
-  dsizes_xavg = (int*)calloc(ndims_xavg,sizeof(int));  
+  dsizes_xavg = (ng_size_t*)calloc(ndims_xavg,sizeof(ng_size_t));  
   if( dsizes_xavg == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_sum_wgt: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -672,8 +696,17 @@ NhlErrorTypes dim_sum_wgt_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(dimsumwgt,DIMSUMWGT)(&nx, tmp_x, &missing_dbl_x.doubleval, 
-                                 tmp_w, opt, &tmp_xavg[0]);
+    if(nx <= INT_MAX)
+    {
+      int inx = (int) nx;
+      NGCALLF(dimsumwgt,DIMSUMWGT)(&inx, tmp_x, &missing_dbl_x.doubleval, 
+                                   tmp_w, opt, &tmp_xavg[0]);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dimsumwgt: nx = %ld is greater than INT_MAX", nx);
+      return(NhlFATAL);
+    }
 
 /*
  * Coerce output back to float or double.
@@ -720,7 +753,8 @@ NhlErrorTypes dim_sum_wgt_n_W( void )
  */
   void *x;
   double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
   NclScalar missing_x, missing_flt_x, missing_dbl_x;
   NclBasicDataTypes type_x;
@@ -730,7 +764,7 @@ NhlErrorTypes dim_sum_wgt_n_W( void )
  */
   void *w;
   double *tmp_w;
-  int dsizes_w[1];
+  ng_size_t dsizes_w[1];
   NclBasicDataTypes type_w;
 
 /*
@@ -747,15 +781,16 @@ NhlErrorTypes dim_sum_wgt_n_W( void )
  */
   void *xavg;
   double tmp_xavg[1];
-  int ndims_xavg, *dsizes_xavg;
+  int ndims_xavg;
+  ng_size_t *dsizes_xavg;
   NclBasicDataTypes type_xavg;
-  NclScalar missing_xavg;
 
 /*
  * Various
  */
-  int nx, nrnx, index_x, index_nrx, index_nr, index_out, ret;
-  int i, j, k, total_nl, total_nr, size_output;
+  int ret;
+  ng_size_t nx, nrnx, index_x, index_nrx, index_nr, index_out;
+  ng_size_t i, j, total_nl, total_nr, size_output;
 
 /*
  * Retrieve parameters.
@@ -840,7 +875,7 @@ NhlErrorTypes dim_sum_wgt_n_W( void )
  * allocate space for output dimension sizes and set them.
  */
   ndims_xavg  = max(ndims_x-1,1);
-  dsizes_xavg = (int*)calloc(ndims_xavg,sizeof(int));  
+  dsizes_xavg = (ng_size_t*)calloc(ndims_xavg,sizeof(ng_size_t));  
   if( dsizes_xavg == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_sum_wgt_n: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -921,8 +956,17 @@ NhlErrorTypes dim_sum_wgt_n_W( void )
 /*
  * Call the Fortran routine.
  */
-      NGCALLF(dimsumwgt,DIMSUMWGT)(&nx, tmp_x, &missing_dbl_x.doubleval, 
-                                   tmp_w, opt, &tmp_xavg[0]);
+      if(nx <= INT_MAX)
+      {
+        int inx = (int) nx;
+        NGCALLF(dimsumwgt,DIMSUMWGT)(&inx, tmp_x, &missing_dbl_x.doubleval, 
+                                     tmp_w, opt, &tmp_xavg[0]);
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"dimsumwgt: nx = %ld is greater than INT_MAX", nx);
+        return(NhlFATAL);
+      }
 /*
  * Coerce output back to float or double.
  */

@@ -11,9 +11,14 @@ NhlErrorTypes dz_height_W( void )
  */
   void *z, *zsfc, *ztop;
   int *iopt;
-  double *tmp_z, *tmp_zsfc, *tmp1_zsfc, *tmp_ztop;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
-  int ndims_zsfc, dsizes_zsfc[NCL_MAX_DIMENSIONS];
+  double *tmp_z = NULL;
+  double *tmp_zsfc = NULL;
+  double *tmp1_zsfc = NULL;
+  double *tmp_ztop;
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  int ndims_zsfc;
+  ng_size_t dsizes_zsfc[NCL_MAX_DIMENSIONS];
   int has_missing_zsfc, is_scalar_zsfc;
   NclScalar missing_zsfc, missing_dzsfc, missing_rzsfc;
   NclBasicDataTypes type_z, type_zsfc, type_ztop;
@@ -21,14 +26,16 @@ NhlErrorTypes dz_height_W( void )
  * Output variables
  */
   void *dz;
-  double *tmp_dz;
+  double *tmp_dz = NULL;
   NclBasicDataTypes type_dz;
   NclScalar missing_dz;
 /*
  * Various.
  */
-  int i, nlat, nlon, klvl, nlatnlon, klvlnlatnlon, ier, der;
-  int size_z, index_zsfc, index_z, size_leftmost, ret;
+  ng_size_t i, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
+  ng_size_t size_z, index_zsfc, index_z, size_leftmost;
+  int ier, der;
+  int ret;
 /*
  * Retrieve parameters
  *
@@ -266,9 +273,22 @@ NhlErrorTypes dz_height_W( void )
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dzhgtdrv,DZHGTDRV)(&nlon,&nlat,&klvl,tmp_z,tmp_zsfc,
-                               &missing_dzsfc.doubleval,tmp_ztop,tmp_dz,
-                               iopt,&ier);
+    if((nlon <= INT_MAX) &&
+       (nlat <= INT_MAX) &&
+       (klvl <= INT_MAX))
+    {
+      int inlon = (int) nlon;
+      int inlat = (int) nlat;
+      int iklvl = (int) klvl;
+      NGCALLF(dzhgtdrv,DZHGTDRV)(&inlon,&inlat,&iklvl,tmp_z,tmp_zsfc,
+                                 &missing_dzsfc.doubleval,tmp_ztop,tmp_dz,
+                                 iopt,&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dzhgtdrv: nlon = %ld is greater than INT_MAX", nlon);
+      return(NhlFATAL);
+    }
 /*
  * Check for error returns.
  */
