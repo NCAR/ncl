@@ -11,9 +11,14 @@ NhlErrorTypes fluxEddy_W( void )
  * Input array variables
  */
   void *x, *y;
-  double *tmp_x, *tmp_y;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   NclScalar missing_x, missing_y;
   NclScalar missing_dx, missing_dy, missing_rx;
   NclBasicDataTypes type_x, type_y;
@@ -21,13 +26,16 @@ NhlErrorTypes fluxEddy_W( void )
  * Output array variables
  */
   void *fluxeddy;
-  double *tmp_fluxeddy;
-  int ndims_fluxeddy, size_fluxeddy, dsizes_fluxeddy[NCL_MAX_DIMENSIONS];
+  double *tmp_fluxeddy = NULL;
+  int ndims_fluxeddy;
+  ng_size_t size_fluxeddy;
+  ng_size_t dsizes_fluxeddy[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_fluxeddy;
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_xy, ntime, ier;
+  ng_size_t i;
+  int index_xy, ntime, ier;
 
 /*
  * Retrieve arguments.

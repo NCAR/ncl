@@ -26,14 +26,15 @@ NhlErrorTypes filwgts_lanczos_W( void )
 /*
  * Attribute variables
  */
-  int att_id, dsizes[1];
+  int att_id;
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, nfreq, ier, nwgt2;
+  int nfreq, ier, nwgt2;
 /*
  * Retrieve arguments.
  */
@@ -309,7 +310,8 @@ NhlErrorTypes filwgts_normal_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, dsizes[1], ier;
+  ng_size_t dsizes[1];
+  int ier;
 /*
  * Retrieve arguments.
  */

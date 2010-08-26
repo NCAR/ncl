@@ -28,9 +28,9 @@ NhlErrorTypes ftsetp_W(void)
  * Input array variables
  */
   string *pname;
-  int dsizes_pname[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
-  int dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pvalue[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname, type_pvalue;
 
 /*
@@ -166,11 +166,11 @@ NhlErrorTypes ftgetp_W(void)
  * Input array variable
  */
   string *pname;
-  int dsizes_pname[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname;
   float *fval;
   int *ival;
-  int ret_size = 1;
+  ng_size_t ret_size = 1;
 
 /*
  * Retrieve argument #1
@@ -261,14 +261,16 @@ NhlErrorTypes ftcurv_W(void)
  * Input array variables
  */
   void *xi, *yi, *xo;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_yi;
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xo[NCL_MAX_DIMENSIONS];
 /*
  * Output variables.
  */
   void *yo;
-  int *dsizes_yo;
+  ng_size_t *dsizes_yo;
 /*
  * Various
  */
@@ -370,7 +372,7 @@ NhlErrorTypes ftcurv_W(void)
     tmp_xo = coerce_input_double(xo, type_xo, nxo, 0, NULL, NULL);
     yo = (void *) calloc(size_leftmost*nxo, sizeof(double));
   }
-  dsizes_yo = (int *) calloc(ndims_yi, sizeof(int));
+  dsizes_yo = (ng_size_t *) calloc(ndims_yi, sizeof(ng_size_t));
 
   if( tmp_xi == NULL || tmp_yi == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -457,14 +459,16 @@ NhlErrorTypes ftcurvd_W(void)
  * Input array variables
  */
   void *xi, *yi, *xo;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_yi;
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xo[NCL_MAX_DIMENSIONS];
 /*
  * Output variables.
  */
   void *yo;
-  int *dsizes_yo;
+  ng_size_t *dsizes_yo;
 /*
  * Various
  */
@@ -565,7 +569,7 @@ NhlErrorTypes ftcurvd_W(void)
     tmp_xo = coerce_input_double(xo, type_xo, nxo, 0, NULL, NULL);
     yo = (void *) calloc(size_leftmost*nxo, sizeof(double));
   }
-  dsizes_yo = (int *) calloc(ndims_yi, sizeof(int));
+  dsizes_yo = (ng_size_t *) calloc(ndims_yi, sizeof(ng_size_t));
 
   if( tmp_xi == NULL || tmp_yi == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -654,13 +658,16 @@ NhlErrorTypes ftcurvi_W(void)
  * Input variables.
  */
   void *xl, *xr, *xi, *yi;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_yi;
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
 /*
  * Output variables.
  */
   void *integral;
-  int *dsizes_int, ndims_int;
+  ng_size_t *dsizes_int;
+  int ndims_int;
 
 /*
  * Various
@@ -775,7 +782,7 @@ NhlErrorTypes ftcurvi_W(void)
     integral = (void *) calloc(size_leftmost,sizeof(double));
   }
   ndims_int  = max(1,ndims_yi-1);
-  dsizes_int = (int *) calloc(ndims_int,sizeof(int));
+  dsizes_int = (ng_size_t *) calloc(ndims_int,sizeof(ng_size_t));
 
   if( tmp_xi == NULL || tmp_yi == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -869,14 +876,16 @@ NhlErrorTypes ftcurvp_W(void)
  * Input array variables
  */
   void *xi, *yi, *xo, *p;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_yi;
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xo[NCL_MAX_DIMENSIONS];
 /*
  * Output variables.
  */
   void *yo;
-  int *dsizes_yo;
+  ng_size_t *dsizes_yo;
 
 /*
  * Various
@@ -993,7 +1002,7 @@ NhlErrorTypes ftcurvp_W(void)
     tmp_p  = coerce_input_double(p, type_p, 1, 0, NULL, NULL);
     yo = (void *) calloc(size_leftmost*nxo, sizeof(double));
   }
-  dsizes_yo = (int *) calloc(ndims_yi, sizeof(int));
+  dsizes_yo = (ng_size_t *) calloc(ndims_yi, sizeof(ng_size_t));
 
   if( tmp_xi == NULL || tmp_yi == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1083,14 +1092,17 @@ NhlErrorTypes ftcurvpi_W(void)
  * Input variables.
  */
   void *xl, *xr, *xi, *yi, *p;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_yi;
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
 
 /*
  * Output variables.
  */
   void *integral;
-  int *dsizes_int, ndims_int;
+  ng_size_t *dsizes_int;
+  int ndims_int;
 
 /*
  * Various
@@ -1220,7 +1232,7 @@ NhlErrorTypes ftcurvpi_W(void)
     integral = (void *) calloc(size_leftmost,sizeof(double));
   }
   ndims_int  = max(1,ndims_yi-1);
-  dsizes_int = (int *) calloc(ndims_int,sizeof(int));
+  dsizes_int = (ng_size_t *) calloc(ndims_int,sizeof(ng_size_t));
 
   if( tmp_xi == NULL || tmp_yi == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1317,15 +1329,17 @@ NhlErrorTypes ftcurvs_W(void)
  * Input variables.
  */
   void *xi, *yi, *xo, *d;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
-  int dsizes_d[NCL_MAX_DIMENSIONS];
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_yi;
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_d[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xo[NCL_MAX_DIMENSIONS];
 /*
  * Output variables.
  */
   void *yo;
-  int *dsizes_yo;
+  ng_size_t *dsizes_yo;
 
 /*
  * Various
@@ -1448,7 +1462,7 @@ NhlErrorTypes ftcurvs_W(void)
     tmp_d  = coerce_input_double(d, type_d, dsizes_d[0], 0, NULL, NULL);
     yo = (void *) calloc(size_leftmost*nxo, sizeof(double));
   }
-  dsizes_yo =   (int *) calloc(   ndims_yi, sizeof(int));
+  dsizes_yo = (ng_size_t *) calloc(   ndims_yi, sizeof(ng_size_t));
 
   if( tmp_xi == NULL || tmp_yi == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1540,15 +1554,18 @@ NhlErrorTypes ftcurvps_W(void)
  * Input variables.
  */
   void *xi, *yi, *xo, *p, *d;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
-  int dsizes_d[1], dsizes_xo[NCL_MAX_DIMENSIONS];
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_yi;
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_d[1];
+  ng_size_t dsizes_xo[NCL_MAX_DIMENSIONS];
 
 /*
  * Output variables.
  */
   void *yo;
-  int *dsizes_yo;
+  ng_size_t *dsizes_yo;
 
 /*
  * Various
@@ -1686,7 +1703,7 @@ NhlErrorTypes ftcurvps_W(void)
     tmp_p  = coerce_input_double(p, type_p, 1, 0, NULL, NULL);
     yo = (void *) calloc(size_leftmost*nxo, sizeof(double));
   }
-  dsizes_yo = (int *) calloc(ndims_yi, sizeof(int));
+  dsizes_yo = (ng_size_t *) calloc(ndims_yi, sizeof(ng_size_t));
 
   if( tmp_xi == NULL || tmp_yi == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1780,8 +1797,8 @@ NhlErrorTypes ftkurv_W(void)
  * Input array variables
  */
   void *xi, *yi, *xo, *ti, *yo;
-  int dsizes_xi[1], dsizes_yi[1], dsizes_ti[1], dsizes_xo[1], dsizes_yo[1];
-  int i, npts, mpts;
+  ng_size_t dsizes_xi[1], dsizes_yi[1], dsizes_ti[1], dsizes_xo[1], dsizes_yo[1];
+  ng_size_t npts, mpts;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_ti;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo, type_ti, type_tmp;
 
@@ -1986,9 +2003,9 @@ NhlErrorTypes ftkurvp_W(void)
  * Input array variables
  */
   void *xi, *yi, *xo, *ti, *yo;
-  int dsizes_xi[1], dsizes_yi[1], dsizes_ti[1], dsizes_xo[1], dsizes_yo[1];
+  ng_size_t dsizes_xi[1], dsizes_yi[1], dsizes_ti[1], dsizes_xo[1], dsizes_yo[1];
 
-  int i, npts, mpts;
+  ng_size_t npts, mpts;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_ti;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo, type_ti, type_tmp;
 
@@ -2181,12 +2198,12 @@ NhlErrorTypes ftkurvd_W(void)
  * Input array variables
  */
   void *xi, *yi, *xo, *ti, *yo, *xd, *yd, *xdd, *ydd;
-  int dsizes_xi[1], dsizes_yi[1], dsizes_ti[1];
-  int dsizes_xo[1], dsizes_yo[1];
-  int dsizes_xd[1], dsizes_yd[1];
-  int  dsizes_xdd[1], dsizes_ydd[1];
+  ng_size_t dsizes_xi[1], dsizes_yi[1], dsizes_ti[1];
+  ng_size_t dsizes_xo[1], dsizes_yo[1];
+  ng_size_t dsizes_xd[1], dsizes_yd[1];
+  ng_size_t dsizes_xdd[1], dsizes_ydd[1];
 
-  int i, npts, mpts;
+  ng_size_t npts, mpts;
   void *tmp_xi,*tmp_yi,*tmp_xo,*tmp_yo,*tmp_ti;
   void *tmp_xd,*tmp_yd,*tmp_xdd,*tmp_ydd;
   NclBasicDataTypes type_xi,type_yi,type_xo,type_yo,type_ti,type_tmp;
@@ -2460,12 +2477,12 @@ NhlErrorTypes ftkurvpd_W(void)
  * Input array variables
  */
   void *xi, *yi, *xo, *ti, *yo, *xd, *yd, *xdd, *ydd;
-  int dsizes_xi[1], dsizes_yi[1], dsizes_ti[1];
-  int dsizes_xo[1], dsizes_yo[1];
-  int dsizes_xd[1], dsizes_yd[1];
-  int  dsizes_xdd[1], dsizes_ydd[1];
+  ng_size_t dsizes_xi[1], dsizes_yi[1], dsizes_ti[1];
+  ng_size_t dsizes_xo[1], dsizes_yo[1];
+  ng_size_t dsizes_xd[1], dsizes_yd[1];
+  ng_size_t dsizes_xdd[1], dsizes_ydd[1];
 
-  int i, npts, mpts;
+  ng_size_t npts, mpts;
   void *tmp_xi,*tmp_yi,*tmp_xo,*tmp_yo,*tmp_ti;
   void *tmp_xd,*tmp_yd,*tmp_xdd,*tmp_ydd;
   NclBasicDataTypes type_xi,type_yi,type_xo,type_yo,type_ti,type_tmp;
@@ -2739,19 +2756,23 @@ NhlErrorTypes ftsurf_W(void)
  * Input array variables
  */
   void *xi, *yi, *zi, *xo, *yo, *zo;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
-  int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
-  int ndims_zo, dsizes_zo[NCL_MAX_DIMENSIONS];
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_yi;
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
+  int ndims_zi;
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xo[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_yo[NCL_MAX_DIMENSIONS];
+  int ndims_zo;
+  ng_size_t dsizes_zo[NCL_MAX_DIMENSIONS];
 
   int i,index_xi,index_yi,index_zi,index_zo;
   int k,nxi,nyi,nxinyi,nxo,nyo,nxonyo,nt;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_zi;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo, type_zi, type_zo;
-  float *ztmp_ft;
-  double *ztmp_dp;
+  float *ztmp_ft = NULL;
+  double *ztmp_dp = NULL;
 
 /*
  * Retrieve argument #0

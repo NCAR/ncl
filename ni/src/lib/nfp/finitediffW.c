@@ -21,9 +21,12 @@ NhlErrorTypes center_finite_diff_W( void )
   void *q, *r;
   logical *cyclic;
   int *opt, r_one_d, r_scalar;
-  double *tmp_q, *tmp_r;
-  int ndims_q, dsizes_q[NCL_MAX_DIMENSIONS];
-  int ndims_r, dsizes_r[NCL_MAX_DIMENSIONS];
+  double *tmp_q = NULL;
+  double *tmp_r = NULL;
+  int ndims_q;
+  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS];
+  int ndims_r;
+  ng_size_t dsizes_r[NCL_MAX_DIMENSIONS];
   int has_missing_q, has_missing_r;
   NclScalar missing_q, missing_dq, missing_rq;
   NclScalar missing_r, missing_dr;
@@ -32,12 +35,13 @@ NhlErrorTypes center_finite_diff_W( void )
  * Output array variables
  */
   void *dqdr;
-  double *tmp_dqdr;
+  double *tmp_dqdr = NULL;
   NclScalar missing_dqdr;
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, npts, npts1, size_q, size_leftmost, index_q, iend, ier;
+  ng_size_t i, npts, npts1, size_q, size_leftmost;
+  int index_q, iend, ier;
   double *qq, *rr;
 /*
  * Retrieve parameters
@@ -243,9 +247,20 @@ NhlErrorTypes center_finite_diff_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(dcfindif,DCFINDIF)(tmp_q,tmp_r,&npts,&missing_dq.doubleval,
-                               &missing_dr.doubleval,cyclic,&iend,
-                               qq,rr,&npts1,tmp_dqdr,&ier);
+    if((npts <= INT_MAX) &&
+       (npts1 <= INT_MAX))
+    {
+      int inpts = (int) npts;
+      int inpts1 = (int) npts1;
+      NGCALLF(dcfindif,DCFINDIF)(tmp_q,tmp_r,&inpts,&missing_dq.doubleval,
+                                 &missing_dr.doubleval,cyclic,&iend,
+                                 qq,rr,&inpts1,tmp_dqdr,&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcfindif: npts = %d, is larger than INT_MAX", npts);
+    }
+
 
     if(type_dqdr != NCL_double) {
       coerce_output_float_only(dqdr,tmp_dqdr,npts,index_q);
@@ -277,10 +292,13 @@ NhlErrorTypes center_finite_diff_n_W( void )
  */
   void *q, *r;
   logical *cyclic;
-  int *opt, *dim, r_scalar, r_one_d;
+  int *opt, *dim, r_one_d;
+  int r_scalar = 1;
   double *tmp_q, *tmp_r;
-  int ndims_q, dsizes_q[NCL_MAX_DIMENSIONS];
-  int ndims_r, dsizes_r[NCL_MAX_DIMENSIONS];
+  int ndims_q;
+  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS];
+  int ndims_r;
+  ng_size_t dsizes_r[NCL_MAX_DIMENSIONS];
   int has_missing_q, has_missing_r;
   NclScalar missing_q, missing_dq, missing_rq;
   NclScalar missing_r, missing_dr;
@@ -295,7 +313,7 @@ NhlErrorTypes center_finite_diff_n_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, npts, npts1, size_q, size_leftmost, size_rightmost, size_rl;
+  ng_size_t i, j, npts, npts1, size_q, size_leftmost, size_rightmost, size_rl;
   int index_nrnpts, index_q, iend, ier;
   double *qq, *rr;
 /*
@@ -506,9 +524,19 @@ NhlErrorTypes center_finite_diff_n_W( void )
 /*
  * Call the Fortran routine.
  */
-      NGCALLF(dcfindif,DCFINDIF)(tmp_q,tmp_r,&npts,&missing_dq.doubleval,
-                                 &missing_dr.doubleval,cyclic,&iend,
-                                 qq,rr,&npts1,tmp_dqdr,&ier);
+      if((npts <= INT_MAX) &&
+         (npts1 <= INT_MAX))
+      {
+        int inpts = (int) npts;
+        int inpts1 = (int) npts1;
+        NGCALLF(dcfindif,DCFINDIF)(tmp_q,tmp_r,&inpts,&missing_dq.doubleval,
+                                   &missing_dr.doubleval,cyclic,&iend,
+                                   qq,rr,&inpts1,tmp_dqdr,&ier);
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcfindif: npts = %d, is larger than INT_MAX", npts);
+      }
 
       coerce_output_float_or_double_step(dqdr,tmp_dqdr,type_dqdr,npts,index_q,
                                          size_rightmost);
@@ -539,11 +567,15 @@ NhlErrorTypes uv2vr_cfd_W( void )
  */
   void *u, *v, *lat, *lon;
   int *bound_opt;
-  double *tmp_u, *tmp_v, *tmp_lat, *tmp_lon;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
-  int dsizes_lat[NCL_MAX_DIMENSIONS];
-  int dsizes_lon[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  double *tmp_lat, *tmp_lon;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lat[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lon[NCL_MAX_DIMENSIONS];
   int has_missing_u;
   NclScalar missing_u, missing_du, missing_ru;
   NclBasicDataTypes type_u, type_v, type_lat, type_lon;
@@ -551,12 +583,13 @@ NhlErrorTypes uv2vr_cfd_W( void )
  * Output array variables
  */
   void *vort;
-  double *tmp_vort;
+  double *tmp_vort = NULL;
   NclBasicDataTypes type_vort;
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, nlon, nlat, nlatnlon, size_uv, size_leftmost, index_uv, ier;
+  ng_size_t i, nlon, nlat, nlatnlon, size_uv, size_leftmost;
+  int index_uv, ier;
 /*
  * Retrieve parameters
  *
@@ -735,8 +768,19 @@ NhlErrorTypes uv2vr_cfd_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(dvrfidf,DVRFIDF)(tmp_u,tmp_v,tmp_lat,tmp_lon,&nlon,&nlat,
-                             &missing_du.doubleval,bound_opt,tmp_vort,&ier);
+    if((nlon <= INT_MAX) &&
+       (nlat <= INT_MAX))
+    {
+        int inlon = (int) nlon;
+        int inlat = (int) nlat;
+        NGCALLF(dvrfidf,DVRFIDF)(tmp_u,tmp_v,tmp_lat,tmp_lon,&inlon,&inlat,
+                                 &missing_du.doubleval,bound_opt,tmp_vort,&ier);
+    }
+    else
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"dvrfidf: nlon = %d, is larger than INT_MAX", nlon);
+    }
+
     if(type_vort != NCL_double) {
       coerce_output_float_only(vort,tmp_vort,nlatnlon,index_uv);
     }
@@ -767,11 +811,15 @@ NhlErrorTypes uv2dv_cfd_W( void )
  */
   void *u, *v, *lat, *lon;
   int *bound_opt;
-  double *tmp_u, *tmp_v, *tmp_lat, *tmp_lon;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
-  int dsizes_lat[NCL_MAX_DIMENSIONS];
-  int dsizes_lon[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  double *tmp_lat, *tmp_lon;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lat[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lon[NCL_MAX_DIMENSIONS];
   int has_missing_u;
   NclScalar missing_u, missing_du, missing_ru;
   NclBasicDataTypes type_u, type_v, type_lat, type_lon;
@@ -779,12 +827,13 @@ NhlErrorTypes uv2dv_cfd_W( void )
  * Output array variables
  */
   void *div;
-  double *tmp_div;
+  double *tmp_div = NULL;
   NclBasicDataTypes type_div;
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, nlon, nlat, nlatnlon, size_uv, size_leftmost, index_uv, ier;
+  ng_size_t i, nlon, nlat, nlatnlon, size_uv, size_leftmost;
+  int index_uv, ier;
 /*
  * Retrieve parameters
  *
@@ -961,8 +1010,18 @@ NhlErrorTypes uv2dv_cfd_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(ddvfidf,DDVFIDF)(tmp_u,tmp_v,tmp_lat,tmp_lon,&nlon,&nlat,
-                             &missing_du.doubleval,bound_opt,tmp_div,&ier);
+    if((nlon <= INT_MAX) &&
+       (nlat <= INT_MAX))
+    {
+        int inlon = (int) nlon;
+        int inlat = (int) nlat;
+        NGCALLF(ddvfidf,DDVFIDF)(tmp_u,tmp_v,tmp_lat,tmp_lon,&inlon,&inlat,
+                                 &missing_du.doubleval,bound_opt,tmp_div,&ier);
+    }
+    else
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"ddvfidf: nlon = %d, is larger than INT_MAX", nlon);
+    }
     if(type_div != NCL_double) {
       coerce_output_float_only(div,tmp_div,nlatnlon,index_uv);
     }
