@@ -25,7 +25,7 @@ NhlErrorTypes grid2triple_W( void )
  */
   void *x, *y, *z;
   double *tmp_x, *tmp_y, *tmp_z;
-  int dsizes_x[1], dsizes_y[1], dsizes_z[2];
+  ng_size_t dsizes_x[1], dsizes_y[1], dsizes_z[2];
   NclBasicDataTypes type_x, type_y, type_z;
   int has_missing_z;
   NclScalar missing_z, missing_dz, missing_rz;
@@ -34,12 +34,12 @@ NhlErrorTypes grid2triple_W( void )
  */
   void *d;
   double *tmp_d;
-  int dsizes_d[2];
+  ng_size_t dsizes_d[2];
   NclBasicDataTypes type_d;
 /*
  * Various
  */
-  int i, mx, ny, ldmax, ldmax2, ldmax3, ld, ld2, ier;
+  int mx, ny, ldmax, ldmax2, ldmax3, ld, ld2, ier;
 /*
  * Retrieve input array. 
  */
@@ -192,9 +192,12 @@ NhlErrorTypes triple2grid_W( void )
  * Input array variables
  */
   void *x, *y, *z, *gridx, *gridy;
-  double *tmp_x, *tmp_y, *tmp_z, *tmp_gridx, *tmp_gridy;
-  int dsizes_x[1], dsizes_y[1], dsizes_gridx[1], dsizes_gridy[1];
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
+  double *tmp_x, *tmp_y, *tmp_gridx, *tmp_gridy;
+  double *tmp_z = NULL;
+  ng_size_t dsizes_x[1], dsizes_y[1], dsizes_gridx[1], dsizes_gridy[1];
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  int has_missing_z;
   NclBasicDataTypes type_x, type_y, type_z, type_gridx, type_gridy;
   NclScalar missing_z, missing_rz, missing_dz;
   logical *option;
@@ -202,8 +205,9 @@ NhlErrorTypes triple2grid_W( void )
  * Output array variables
  */
   void *grid;
-  double *tmp_grid;
-  int ndims_grid, *dsizes_grid, size_grid, size_leftmost;
+  double *tmp_grid = NULL;
+  int ndims_grid;
+  ng_size_t *dsizes_grid, size_grid, size_leftmost;
   NclBasicDataTypes type_grid;
 /*
  * Work arrays
@@ -213,9 +217,10 @@ NhlErrorTypes triple2grid_W( void )
  * Various
  */
   int method, loop;
-  int i, npts, ngx, ngy, ngx2, ngy2, ngxy2, ngxy;
+  ng_size_t i, npts, ngx, ngy, ngx2, ngy2, ngxy2, ngxy;
   int ier, index_z, index_grid, ret;
-  double *distmx, *domain;
+  double *distmx = NULL;
+  double *domain = NULL;
   logical has_domain=False, has_distmx=False;
   NclBasicDataTypes type_domain, type_distmx;
 /*
@@ -303,7 +308,7 @@ NhlErrorTypes triple2grid_W( void )
  * '0, and the X dimension with dimension '1'.
  */
   ndims_grid = ndims_z + 1;
-  dsizes_grid = (int*)calloc(ndims_grid,sizeof(int));  
+  dsizes_grid = (ng_size_t*)calloc(ndims_grid,sizeof(ng_size_t));  
   if( dsizes_grid == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -500,11 +505,28 @@ NhlErrorTypes triple2grid_W( void )
 
     if(type_grid == NCL_double) tmp_grid = &((double*)grid)[index_grid];
 
-    NGCALLF(triple2grid1,TRIPLE2GRID1)(&npts,tmp_x,tmp_y,tmp_z,
-                                       &missing_dz.doubleval,&ngx,&ngy,
-                                       tmp_gridx,tmp_gridy,tmp_grid,domain,
-                                       &loop,&method,distmx,&ngx2,&ngy2,
-                                       dx,dy,dz,gxbig,gybig,gbig,&ier);
+
+    if((npts <= INT_MAX) &&
+       (ngx <= INT_MAX) &&
+       (ngy <= INT_MAX) &&
+       (ngx2 <= INT_MAX) &&
+       (ngy2 <= INT_MAX))
+    {
+        int inpts = (int) npts;
+        int ingx  = (int) ngx;
+        int ingy  = (int) ngy;
+        int ingx2 = (int) ngx2;
+        int ingy2 = (int) ngy2;
+        NGCALLF(triple2grid1,TRIPLE2GRID1)(&inpts,tmp_x,tmp_y,tmp_z,
+                                           &missing_dz.doubleval,&ingx,&ingy,
+                                           tmp_gridx,tmp_gridy,tmp_grid,domain,
+                                           &loop,&method,distmx,&ingx2,&ingy2,
+                                           dx,dy,dz,gxbig,gybig,gbig,&ier);
+    }
+    else
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid1: npts = %d, is larger than INT_MAX", npts);
+    }
 /*
  * Coerce grid back to float if necessary.
  *
@@ -556,7 +578,7 @@ NhlErrorTypes triple2grid2d_W( void )
  */
   void *x, *y, *z, *gridx, *gridy;
   double *tmp_x, *tmp_y, *tmp_z, *tmp_gridx, *tmp_gridy;
-  int dsizes_x[1], dsizes_y[1], dsizes_z[1], dsizes_gridx[2], dsizes_gridy[2];
+  ng_size_t dsizes_x[1], dsizes_y[1], dsizes_z[1], dsizes_gridx[2], dsizes_gridy[2];
   int has_missing_z;
   NclBasicDataTypes type_x, type_y, type_z, type_gridx, type_gridy;
   NclScalar missing_z, missing_rz, missing_dz;
@@ -570,11 +592,11 @@ NhlErrorTypes triple2grid2d_W( void )
 /*
  * Various
  */
-  int i, npts, nlon, nlat, size_grid, ier;
+  int npts, nlon, nlat, size_grid;
   int mopt = 0;
-  double *distmx;
+  double *distmx = NULL;
   logical has_distmx = False;
-  NclBasicDataTypes type_domain, type_distmx;
+  NclBasicDataTypes type_distmx;
 /*
  * Variables for retrieving attributes from "options".
  */
