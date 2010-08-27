@@ -13,12 +13,16 @@ NhlErrorTypes hyi2hyo_W( void )
  * Input array variables
  */
   void *p0, *hyai, *hybi, *ps, *xi, *hyao, *hybo;
-  double *tmp_p0, *tmp_ps, *tmp_xi; 
+  double *tmp_p0;
+  double *tmp_ps = NULL;
+  double *tmp_xi = NULL; 
   double *tmp_hyai, *tmp_hybi, *tmp_hyao, *tmp_hybo;
   int *option, msgflag;
-  int ndims_ps, dsizes_ps[NCL_MAX_DIMENSIONS];
-  int has_missing_xi, ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
-  int dsizes_hyao[1], dsizes_hybo[1], dsizes_hyai[1], dsizes_hybi[1];
+  int ndims_ps;
+  ng_size_t dsizes_ps[NCL_MAX_DIMENSIONS];
+  int has_missing_xi, ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hyao[1], dsizes_hybo[1], dsizes_hyai[1], dsizes_hybi[1];
   NclBasicDataTypes type_p0, type_ps, type_xi;
   NclBasicDataTypes type_hyai, type_hybi, type_hyao, type_hybo;
   NclScalar missing_xi, missing_dxi;
@@ -32,16 +36,17 @@ NhlErrorTypes hyi2hyo_W( void )
  * Output array variables
  */
   void *xo;
-  double *tmp_xo;
-  int *dsizes_xo, size_xo, size_leftmost;
+  double *tmp_xo = NULL;
+  ng_size_t *dsizes_xo, size_xo, size_leftmost;
   NclScalar missing_xo;
   NclBasicDataTypes type_xo;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_ps, index_xi, index_xo, l, m, ret;
-  int nlat, mlon, klevi, klevo, nlatmlon, klevinlatmlon, klevonlatmlon;
+  int index_ps, index_xi, index_xo, ret;
+  ng_size_t i;
+  ng_size_t nlat, mlon, klevi, klevo, nlatmlon, klevinlatmlon, klevonlatmlon;
   int return_missing;
 
 /*
@@ -245,7 +250,7 @@ NhlErrorTypes hyi2hyo_W( void )
 /*
  * Allocate space for output dimensions.
  */
-  dsizes_xo = (int*)calloc(ndims_xi,sizeof(int));  
+  dsizes_xo = (ng_size_t*)calloc(ndims_xi,sizeof(ng_size_t));  
   if( dsizes_xo == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"hyi2hyo: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -315,10 +320,25 @@ NhlErrorTypes hyi2hyo_W( void )
 
     if(type_xo == NCL_double) tmp_xo = &((double*)xo)[index_xo];
 
-    NGCALLF(dhyi2hyob,DHYI2HYOB)(tmp_p0,tmp_hyai,tmp_hybi,tmp_ps,
-                                 &mlon,&nlat,&klevi,tmp_xi,tmp_hyao,
-                                 tmp_hybo,&klevo,tmp_xo,pi,po,option,
-                                 &msgflag,&missing_dxi.doubleval);
+
+    if((mlon <= INT_MAX) &&
+       (nlat <= INT_MAX) &&
+       (klevi <= INT_MAX) &&
+       (klevo <= INT_MAX))
+    {
+        int imlon = (int) mlon;
+        int inlat = (int) nlat;
+        int iklevi = (int) klevi;
+        int iklevo = (int) klevo;
+        NGCALLF(dhyi2hyob,DHYI2HYOB)(tmp_p0,tmp_hyai,tmp_hybi,tmp_ps,
+                                     &imlon,&inlat,&iklevi,tmp_xi,tmp_hyao,
+                                     tmp_hybo,&iklevo,tmp_xo,pi,po,option,
+                                     &msgflag,&missing_dxi.doubleval);
+    }
+    else
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"dhyi2hyob: mlon = %d, is larger than INT_MAX", mlon);
+    }
 /*
  * Coerce output to float if necessary.
  */

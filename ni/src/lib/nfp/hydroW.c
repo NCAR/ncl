@@ -9,25 +9,33 @@ NhlErrorTypes hydro_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_zh, nlvl, ier=0;
+  int i, index_zh, nlvl, ier=0;
 /*
  * Input array variables
  */
   void *p, *tkv, *zsfc;
-  double *tmp_p, *tmp_tkv, *tmp_zsfc;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS], has_missing_p;
-  int ndims_tkv, dsizes_tkv[NCL_MAX_DIMENSIONS], has_missing_tkv;
-  int ndims_zsfc, dsizes_zsfc[NCL_MAX_DIMENSIONS], has_missing_zsfc;
+  double *tmp_p = NULL;
+  double *tmp_tkv = NULL;
+  double *tmp_zsfc = NULL;
+  int ndims_p;
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  int has_missing_p;
+  int ndims_tkv;
+  ng_size_t dsizes_tkv[NCL_MAX_DIMENSIONS];
+  int has_missing_tkv;
+  int ndims_zsfc;
+  ng_size_t dsizes_zsfc[NCL_MAX_DIMENSIONS];
+  int has_missing_zsfc;
   NclBasicDataTypes type_p, type_tkv, type_zsfc;
   NclScalar missing_p, missing_tkv, missing_zsfc;
   NclScalar missing_dp, missing_dtkv, missing_dzsfc;
-  int size_zsfc, size_p;
+  ng_size_t size_zsfc, size_p;
   int found_missing_p, found_missing_tkv, found_missing_zsfc, any_missing;
 /*
  * Output array variables
  */
   void *zh;
-  double *tmp_zh;
+  double *tmp_zh = NULL;
   NclBasicDataTypes type_zh;
   NclScalar missing_zh;
 /*
