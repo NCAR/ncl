@@ -13,16 +13,21 @@ NhlErrorTypes ind_resolve_W( void )
  * Input array variables
  */
   int *ind, *dsizes;
-  int ndims_ind, ndims_dsizes, dsizes_ind[1], dsizes_dsizes[1];
+  int ndims_ind, ndims_dsizes;
+  ng_size_t dsizes_ind[1], dsizes_dsizes[1];
   NclScalar missing_ind_resolve;
 /*
  * Output array variables
  */
-  int *ind_resolve, dsizes_ind_resolve[2];
+  int *ind_resolve;
+  ng_size_t dsizes_ind_resolve[2];
 /*
  * various
  */
-  int i, j, l, size_input, new_value, *ind_product;
+  int i, j, l;
+  ng_size_t size_input;
+  int new_value;
+  int *ind_product;
 /*
  * Retrieve parameters
  *
