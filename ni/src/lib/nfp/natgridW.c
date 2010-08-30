@@ -12,19 +12,26 @@ NhlErrorTypes natgrids_W( void )
 {
   int ier = 0;
   float *x;
-  int dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   float *y;
-  int dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   float *z;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  int has_missing_z;
   float *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS], has_missing_xo;
+  ng_size_t dsizes_xo[NCL_MAX_DIMENSIONS];
+  int has_missing_xo;
   float *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS], has_missing_yo;
+  ng_size_t dsizes_yo[NCL_MAX_DIMENSIONS];
+  int has_missing_yo;
   NclScalar missing_x, missing_y, missing_z, missing_xo, missing_yo;
   float *zo, *zo_tmp;
-  int ndims_zo, *dsizes_zo;
-  int i, j, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
+  int ndims_zo;
+  ng_size_t *dsizes_zo;
+  ng_size_t i, j, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
   int index_in = 0, index_out = 0, ret;
 
 /*
@@ -148,7 +155,7 @@ NhlErrorTypes natgrids_W( void )
   ndims_zo    = ndims_z + 1;
   size_output = size_leftmost * nzo;
   zo          = (float *) calloc(size_output, sizeof(float));
-  dsizes_zo   =   (int *) calloc(ndims_zo, sizeof(int));
+  dsizes_zo   = (ng_size_t *) calloc(ndims_zo, sizeof(ng_size_t));
 
   if(zo == NULL || dsizes_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -193,19 +200,26 @@ NhlErrorTypes natgridd_W( void )
 {
   int ier = 0;
   double *x;
-  int dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   double *y;
-  int dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   double *z;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  int has_missing_z;
   double *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS], has_missing_xo;
+  ng_size_t dsizes_xo[NCL_MAX_DIMENSIONS];
+  int has_missing_xo;
   double *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS], has_missing_yo;
+  ng_size_t dsizes_yo[NCL_MAX_DIMENSIONS];
+  int has_missing_yo;
   NclScalar missing_x, missing_y, missing_z, missing_xo, missing_yo;
   double *zo, *zo_tmp;
-  int ndims_zo, *dsizes_zo;
-  int i, j, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
+  int ndims_zo;
+  ng_size_t *dsizes_zo;
+  ng_size_t i, j, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
   int index_in = 0, index_out = 0, ret;
 
 /*
@@ -329,7 +343,7 @@ NhlErrorTypes natgridd_W( void )
   ndims_zo    = ndims_z + 1;
   size_output = size_leftmost * nzo;
   zo          = (double *) calloc(size_output, sizeof(double));
-  dsizes_zo   =   (int *) calloc(ndims_zo, sizeof(int));
+  dsizes_zo   = (ng_size_t *) calloc(ndims_zo, sizeof(ng_size_t));
 
   if(zo == NULL || dsizes_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -376,10 +390,15 @@ NhlErrorTypes natgrid_W( void )
  * Input values
  */
   void *x, *y, *z;
-  double *tmp_x, *tmp_y, *tmp_z;
-  int dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
+  double *tmp_x, *tmp_y;
+  double *tmp_z = NULL;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  int has_missing_z;
   NclBasicDataTypes type_x, type_y, type_z;
   NclScalar missing_x, missing_y, missing_z;
   NclScalar missing_dx, missing_dy, missing_dz, missing_rz;
@@ -388,8 +407,10 @@ NhlErrorTypes natgrid_W( void )
  */
   void *xo, *yo;
   double *tmp_xo, *tmp_yo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS], has_missing_xo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS], has_missing_yo;
+  ng_size_t dsizes_xo[NCL_MAX_DIMENSIONS];
+  int has_missing_xo;
+  ng_size_t dsizes_yo[NCL_MAX_DIMENSIONS];
+  int has_missing_yo;
   NclBasicDataTypes type_xo, type_yo;
   NclScalar missing_xo, missing_yo, missing_dxo, missing_dyo;
 /*
@@ -397,13 +418,14 @@ NhlErrorTypes natgrid_W( void )
  */
   void *zo;
   double *tmp_zo;
-  int ndims_zo, *dsizes_zo;
+  int ndims_zo;
+  ng_size_t *dsizes_zo;
   NclBasicDataTypes type_zo;
   NclScalar missing_zo, missing_dzo;
 /*
  * Various
  */
-  int i, j, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
+  ng_size_t i, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
   int ier = 0, nmiss = 0, index_z = 0, index_zo = 0, ret;
 
 /*
@@ -555,7 +577,7 @@ NhlErrorTypes natgrid_W( void )
  */
   ndims_zo    = ndims_z + 1;
   size_output = size_leftmost * nzo;
-  dsizes_zo   = (int *) calloc(ndims_zo, sizeof(int));
+  dsizes_zo   = (ng_size_t *) calloc(ndims_zo, sizeof(ng_size_t));
 
   if(type_z != NCL_double) {
     type_zo = NCL_float;
@@ -693,9 +715,9 @@ NhlErrorTypes nnsetp_W(void)
  * Input array variables
  */
   string *pname;
-  int dsizes_pname[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
-  int dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pvalue[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pvalue;
 
 /*
@@ -812,7 +834,7 @@ NhlErrorTypes nngetp_W(void)
 
   char  *arg1, *cval;
   int   numpi, numpf, numpc, i;
-  string *pvalue, *qvalue;
+  string *qvalue;
 
 /*
  *  List the integer and float parameter names.  To add new ones,
@@ -831,10 +853,10 @@ NhlErrorTypes nngetp_W(void)
  * Input array variable
  */
   string *pname;
-  int dsizes_pname[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   float *fval;
   int *ival;
-  int ret_size = 1;     
+  ng_size_t ret_size = 1;     
 
 /*
  * Retrieve argument #1
@@ -923,7 +945,7 @@ NhlErrorTypes nngetaspects_W( void )
   int ier = 0;
   int *i;
   int *j;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   float *rtmp;
 /*
  * Retrieve parameters
@@ -961,7 +983,7 @@ NhlErrorTypes nngetaspectd_W( void )
   int ier = 0;
   int *i;
   int *j;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   double *dtmp;
 /*
  * Retrieve parameters
@@ -999,7 +1021,7 @@ NhlErrorTypes nngetslopes_W( void )
   int ier = 0;
   int *i;
   int *j;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   float *rtmp;
 /*
  * Retrieve parameters
@@ -1037,7 +1059,7 @@ NhlErrorTypes nngetsloped_W( void )
   int ier = 0;
   int *i;
   int *j;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   double *dtmp;
 /*
  * Retrieve parameters
@@ -1072,16 +1094,14 @@ NhlErrorTypes nngetsloped_W( void )
 
 NhlErrorTypes drwsrfc_W( void )
 {
-  int ier = 0;
   float *x;
-  int dsizes_x[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   float *y;
-  int dsizes_y[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   float *z;
-  int dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
   float *x1,*y1,*z1;
   int *gkswid;
-  int i;
   int *iwk;
 /*
  * Retrieve parameters
@@ -1126,10 +1146,9 @@ NhlErrorTypes drwsrfc_W( void )
 NhlErrorTypes drwvctc_W( void )
 {
   float *u;
-  int dsizes_u[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
   float *v;
-  int dsizes_v[NCL_MAX_DIMENSIONS];
-  int i;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   int *gkswid;
 /*
  * Retrieve parameters
@@ -1165,8 +1184,7 @@ NhlErrorTypes drwvctc_W( void )
 NhlErrorTypes drwconc_W( void )
 {
   float *z;
-  int dsizes_z[NCL_MAX_DIMENSIONS];
-  int i;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
   int *gkswid;
 /*
  * Retrieve parameters
@@ -1195,11 +1213,14 @@ NhlErrorTypes drwconc_W( void )
 NhlErrorTypes nnpntinits_W( void )
 {
   float *x;
-  int dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   float *y;
-  int dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   float *z;
-  int dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  int has_missing_z;
   NclScalar missing_x, missing_y, missing_z;
   int i;
 /*
@@ -1284,11 +1305,14 @@ NhlErrorTypes nnpntinits_W( void )
 NhlErrorTypes nnpntinitd_W( void )
 {
   double *x;
-  int dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   double *y;
-  int dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   double *z;
-  int dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  int has_missing_z;
   NclScalar missing_x, missing_y, missing_z;
   int i;
 /*
@@ -1374,9 +1398,12 @@ NhlErrorTypes nnpntinit_W( void )
 {
   void *x, *y, *z;
   double *tmp_x, *tmp_y, *tmp_z;
-  int dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
-  int dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  int has_missing_z;
   NclScalar missing_x, missing_y, missing_z;
   NclScalar missing_dx, missing_dy, missing_dz;
   NclBasicDataTypes type_x, type_y, type_z;
@@ -1467,7 +1494,9 @@ NhlErrorTypes nnpnts_W( void )
   float *x;
   float *y;
   float *z;
-  int dsizes_x[1], dsizes_y[1], i, npts;
+  ng_size_t dsizes_x[1];
+  ng_size_t dsizes_y[1];
+  ng_size_t i, npts;
 /*
  * Retrieve parameters
  *
@@ -1502,7 +1531,7 @@ NhlErrorTypes nnpntd_W( void )
   double *x;
   double *y;
   double *z;
-  int dsizes[1];
+  ng_size_t dsizes[1];
 /*
  * Retrieve parameters
  */
@@ -1529,8 +1558,11 @@ NhlErrorTypes nnpntd_W( void )
 NhlErrorTypes nnpnt_W( void )
 {
   void *x, *y, *z;
-  double *tmp_x, *tmp_y, *tmp_z;
-  int dsizes_x[1], dsizes_y[1];
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
+  double *tmp_z = NULL;
+  ng_size_t dsizes_x[1];
+  ng_size_t dsizes_y[1];
   NclBasicDataTypes type_x, type_y, type_z;
   int i, npts;
 

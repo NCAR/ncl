@@ -370,7 +370,7 @@ NhlErrorTypes v5d_close_W(void)
 NhlErrorTypes v5d_missing_W(void)
 {
     float   missing = MISSING;
-    int dimsizes = 1;
+    ng_size_t dimsizes = 1;
 
     return NclReturnValue(&missing, 1, &dimsizes, NULL, NCL_float, True);
 }

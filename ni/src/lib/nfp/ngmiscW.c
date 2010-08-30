@@ -15,13 +15,13 @@ NhlErrorTypes nggcog_W(void)
  *  Output variables
  */
   float     *alat, *alon;
-  int       ndims_alat, dsizes_alat[1];
-  int       ndims_alon, dsizes_alon[1];
+  ng_size_t  dsizes_alat[1];
+  ng_size_t  dsizes_alon[1];
 
 /*
  *  Local variables.
  */
-  int       i, num_points;
+  int       num_points;
 
 /*
  *  Retrieve argument #1 (input)
@@ -296,7 +296,7 @@ NhlErrorTypes nggetp_W(void)
   string *pname;
   float *fval;
   int *ival;
-  int ret_size = 1; 
+  ng_size_t ret_size = 1; 
 
 /*
  * Retrieve argument #1
