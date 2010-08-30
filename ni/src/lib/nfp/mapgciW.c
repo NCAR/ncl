@@ -51,8 +51,10 @@ NhlErrorTypes gc_latlon_W( void )
  * Input variables
  */
   void *lat1, *lon1, *lat2, *lon2;
-  int dsizes_lat1[NCL_MAX_DIMENSIONS], dsizes_lat2[NCL_MAX_DIMENSIONS];
-  int dsizes_lon1[NCL_MAX_DIMENSIONS], dsizes_lon2[NCL_MAX_DIMENSIONS]; 
+  ng_size_t dsizes_lat1[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lat2[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lon1[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lon2[NCL_MAX_DIMENSIONS]; 
   int ndims_lat1, ndims_lon1, ndims_lat2, ndims_lon2;
   int *nlatlon, *code;
   NclBasicDataTypes type_lat1, type_lon1, type_lat2, type_lon2;
@@ -61,7 +63,9 @@ NhlErrorTypes gc_latlon_W( void )
  */
   void *dist, *spac, *lat, *lon;
   NclBasicDataTypes type_lon, type_lat, type_dist;
-  int ndims_dist, *dsizes_dist, dsizes[1];
+  int ndims_dist;
+  ng_size_t *dsizes_dist;
+  ng_size_t dsizes[1];
   NclQuark *units;
 /*
  * Attribute variables
@@ -73,7 +77,9 @@ NhlErrorTypes gc_latlon_W( void )
 /*
  * Other variables
  */
-  double *tmp_lat1, *tmp_lon1, *tmp_lat2, *tmp_lon2, *tmp_lat, *tmp_lon;
+  double *tmp_lat1, *tmp_lon1, *tmp_lat2, *tmp_lon2;
+  double *tmp_lat = NULL;
+  double *tmp_lon = NULL;
   double *tmp_dist, *tmp_spac;
   int i, nlatlon2, npts, nlatlon_output, nlatlon_new;
   int is_scalar_latlon1, index2, icode;
@@ -270,7 +276,7 @@ NhlErrorTypes gc_latlon_W( void )
   }
 
   ndims_dist = ndims_lat2;
-  dsizes_dist = (int*)malloc(ndims_dist*sizeof(int));
+  dsizes_dist = (ng_size_t*)malloc(ndims_dist*sizeof(ng_size_t));
   for(i = 0; i < ndims_dist; i++) dsizes_dist[i] = dsizes_lat2[i];
 
   if(type_dist == NCL_double) {
