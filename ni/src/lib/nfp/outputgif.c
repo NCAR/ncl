@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <ctype.h>
+#include <unistd.h>
 #include <math.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/View.h>
@@ -10,7 +12,8 @@ NhlErrorTypes output_gif_W( void )
  * Variables to retrieve from script.
  */
   obj *ncl_objs;
-  int ndims_ncl_objs, dsizes_ncl_objs[NCL_MAX_DIMENSIONS], total_ncl_objs;
+  int ndims_ncl_objs;
+  ng_size_t dsizes_ncl_objs[NCL_MAX_DIMENSIONS], total_ncl_objs;
   string *giffile;
   int *resltn, *MaximizeBB;
 /*
@@ -24,7 +27,6 @@ NhlErrorTypes output_gif_W( void )
   float min_l, min_b, max_t, max_r, margin;
   int nobjs, rh, rw;
   NhlBoundingBox the_box;
-  long res;
   struct stat statbuf;
   extern void output_ncgm(NclHLUObj*,int,char *);
   NclHLUObj *tmp_hlu_ptr;
@@ -192,8 +194,8 @@ void output_ncgm(
 {
   NhlErrorTypes   ret = NhlNOERROR;
   int old_wks, wks;
-  char buf[512];
-  int rl, gl, i, hlu_id, num_dims, *len_dims;
+  int rl, gl, i, hlu_id, num_dims;
+  ng_size_t *len_dims;
   float *cmap;
 /*
  * Need to get the workstation so we can retrieve  the color map.
