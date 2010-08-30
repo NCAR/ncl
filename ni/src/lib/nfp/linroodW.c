@@ -13,7 +13,7 @@ NhlErrorTypes linrood_latwgt_W( void )
 /*
  * Output array variables
  */
-  int dsizes_output[2];
+  ng_size_t dsizes_output[2];
   double *lat, *wgt, *output;
   int i;
 /*
@@ -71,7 +71,7 @@ NhlErrorTypes linrood_wgt_W( void )
  * Output array variables
  */
   double *wgt;
-  int dsizes_wgt[1];
+  ng_size_t dsizes_wgt[1];
 
 /*
  * Retrieve arguments.

@@ -32,10 +32,16 @@ NhlErrorTypes linint1_W( void )
  * Input variables
  */
   void *xi, *fi, *xo;
-  double *tmp_xi, *tmp_xo,*tmp_fi, *tmp_fo;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS], dsizes_xo[NCL_MAX_DIMENSIONS];
-  int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
-  int *dsizes_fo;
+  double *tmp_xi = NULL;
+  double *tmp_fi = NULL;
+  double *tmp_xo, *tmp_fo;
+  int ndims_xi;
+  int ndims_fi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xo[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_fi[NCL_MAX_DIMENSIONS];
+  int has_missing_fi;
+  ng_size_t *dsizes_fo;
   NclScalar missing_fi, missing_dfi, missing_rfi, missing_fo;
   int *opt, iopt = 0;
   logical *wrap;
@@ -163,7 +169,7 @@ NhlErrorTypes linint1_W( void )
 /*
  * Allocate space for output array.
  */
-  dsizes_fo = (int*)calloc(ndims_fi,sizeof(int));
+  dsizes_fo = (ng_size_t*)calloc(ndims_fi,sizeof(ng_size_t));
   if(type_fi == NCL_double) {
     fo         = (void*)calloc(size_fo,sizeof(double));
     type_fo    = NCL_double;
@@ -280,9 +286,12 @@ NhlErrorTypes linint1_n_W( void )
  */
   void *xi, *fi, *xo;
   double *tmp_xi, *tmp_xo,*tmp_fi, *tmp_fo;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS], dsizes_xo[NCL_MAX_DIMENSIONS];
-  int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
-  int *dsizes_fo;
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS], dsizes_xo[NCL_MAX_DIMENSIONS];
+  int ndims_fi;
+  ng_size_t dsizes_fi[NCL_MAX_DIMENSIONS];
+  int has_missing_fi;
+  ng_size_t *dsizes_fo;
   NclScalar missing_fi, missing_dfi, missing_rfi, missing_fo;
   int *dim, *opt, iopt = 0;
   logical *wrap;
@@ -446,7 +455,7 @@ NhlErrorTypes linint1_n_W( void )
 /*
  * Allocate space for output array.
  */
-  dsizes_fo = (int*)calloc(ndims_fi,sizeof(int));
+  dsizes_fo = (ng_size_t*)calloc(ndims_fi,sizeof(ng_size_t));
   if(type_fi == NCL_double) {
     fo         = (void*)calloc(size_fo,sizeof(double));
     type_fo    = NCL_double;
@@ -562,12 +571,20 @@ NhlErrorTypes linint2_W( void )
  * Input variables
  */
   void *xi, *yi, *fi, *xo, *yo;
-  double *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_fi, *tmp_fo;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
-  int dsizes_xo[NCL_MAX_DIMENSIONS], dsizes_yo[NCL_MAX_DIMENSIONS];
-  int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
-  int *dsizes_fo;
+  double *tmp_xi = NULL;
+  double *tmp_yi = NULL;
+  double *tmp_fi = NULL;
+  double *tmp_xo, *tmp_yo, *tmp_fo;
+  int ndims_xi;
+  int ndims_yi;
+  int ndims_fi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xo[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_yo[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_fi[NCL_MAX_DIMENSIONS];
+  int has_missing_fi;
+  ng_size_t *dsizes_fo;
   NclScalar missing_fi, missing_dfi, missing_rfi;
   int *opt, iopt = 0;
   logical *wrap;
@@ -727,7 +744,7 @@ NhlErrorTypes linint2_W( void )
 /*
  * Allocate space for output array.
  */
-  dsizes_fo = (int*)calloc(ndims_fi,sizeof(int));
+  dsizes_fo = (ng_size_t*)calloc(ndims_fi,sizeof(ng_size_t));
   if(type_fi == NCL_double) {
     fo = (void*)calloc(size_fo,sizeof(double));
   }
@@ -871,12 +888,19 @@ NhlErrorTypes linint2_points_W( void )
  * Input variables
  */
   void *xi, *yi, *fi, *xo, *yo;
-  double *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_fi, *tmp_fo;
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
-  int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
-  int dsizes_xo[NCL_MAX_DIMENSIONS], dsizes_yo[NCL_MAX_DIMENSIONS];
-  int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
-  int *dsizes_fo;
+  double *tmp_xi = NULL;
+  double *tmp_yi = NULL;
+  double *tmp_fi = NULL;
+  double *tmp_xo, *tmp_yo, *tmp_fo;
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_yi;
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xo[NCL_MAX_DIMENSIONS], dsizes_yo[NCL_MAX_DIMENSIONS];
+  int ndims_fi;
+  ng_size_t dsizes_fi[NCL_MAX_DIMENSIONS];
+  int has_missing_fi;
+  ng_size_t *dsizes_fo;
   NclScalar missing_fi, missing_dfi, missing_rfi;
   int *opt;
   logical *wrap;
@@ -1038,7 +1062,7 @@ NhlErrorTypes linint2_points_W( void )
 /*
  * Allocate space for output array.
  */
-  dsizes_fo = (int*)calloc(ndims_fi-1,sizeof(int));
+  dsizes_fo = (ng_size_t*)calloc(ndims_fi-1,sizeof(ng_size_t));
   if(type_fi == NCL_double) {
     fo = (void*)calloc(size_fo,sizeof(double));
   }
@@ -1184,8 +1208,10 @@ NhlErrorTypes area_hi2lores_W( void )
   void *xi, *yi, *fi, *wyi, *xo, *yo;
   double *tmp_xi, *tmp_yi, *tmp_fi, *tmp_xo, *tmp_yo, *tmp_fo;
   double *tmp1_wyi, *tmp_wyi;
-  int dsizes_xi[1], dsizes_yi[1], dsizes_wyi[1], dsizes_xo[1], dsizes_yo[1];
-  int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi; 
+  ng_size_t dsizes_xi[1], dsizes_yi[1], dsizes_wyi[1], dsizes_xo[1], dsizes_yo[1];
+  int ndims_fi;
+  ng_size_t dsizes_fi[NCL_MAX_DIMENSIONS];
+  int has_missing_fi; 
   NclScalar missing_fi, missing_dfi, missing_rfi;
   logical *fi_cyclic_x, *fo_option;
   NclBasicDataTypes type_xi, type_yi, type_fi, type_wyi, type_xo, type_yo;
@@ -1193,14 +1219,13 @@ NhlErrorTypes area_hi2lores_W( void )
  * Variables to look for attributes attached to fo_option.
  */
   NclStackEntry stack_entry;
-  NclMultiDValData tmp_md = NULL;
   NclAttList  *attr_list;
   NclAtt  attr_obj;
 /*
  * Output variables.
  */
   void *fo;
-  int *dsizes_fo;
+  ng_size_t *dsizes_fo;
   NclBasicDataTypes type_fo;
   NclScalar missing_fo;
 /*
@@ -1424,7 +1449,7 @@ NhlErrorTypes area_hi2lores_W( void )
       return(NhlFATAL);
     }
   }
-  dsizes_fo = (int*)calloc(ndims_fi,sizeof(int));
+  dsizes_fo = (ng_size_t*)calloc(ndims_fi,sizeof(ng_size_t));
   if(dsizes_fo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"area_hi2lores: Unable to allocate memory for output array");
     return(NhlFATAL);

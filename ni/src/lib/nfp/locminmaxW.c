@@ -18,7 +18,7 @@ NhlErrorTypes local_min_W( void )
   void   *x, *delta;
   logical *cyclic;
   double *tmp_x, *tmp_delta;
-  int dsizes_x[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x, type_delta;
@@ -38,7 +38,9 @@ NhlErrorTypes local_min_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, nx, ny, nxny, ier, dsizes[1];
+  int i, ier;
+  ng_size_t nx, ny, nxny;
+  ng_size_t dsizes[1];
 /*
  * Retrieve parameters
  *
@@ -121,9 +123,22 @@ NhlErrorTypes local_min_W( void )
 /*
  * Call the Fortran routine.
  */
-  NGCALLF(dlocalmn,DLOCALMN)(tmp_x,&nx,&ny,&missing_dx.doubleval,cyclic,
-                             tmp_xi,tmp_yi,&nxny,tmp_minvals,tmp_delta,
-                             &tmp_nmin,&ier);
+  if((nx <= INT_MAX) &&
+     (ny <= INT_MAX) &&
+     (nxny <= INT_MAX))
+  {
+      int inx = (int) nx;
+      int iny = (int) ny;
+      int inxny = (int) nxny;
+      NGCALLF(dlocalmn,DLOCALMN)(tmp_x,&inx,&iny,&missing_dx.doubleval,cyclic,
+                                 tmp_xi,tmp_yi,&inxny,tmp_minvals,tmp_delta,
+                                 &tmp_nmin,&ier);
+  }
+  else
+  {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dlocalmn: nx = %d, is larger than INT_MAX", nx);
+  }
+
   ((int*)nmin)[0] = tmp_nmin;
 
 /*
@@ -309,7 +324,7 @@ NhlErrorTypes local_max_W( void )
   void   *x, *delta;
   logical *cyclic;
   double *tmp_x, *tmp_delta;
-  int dsizes_x[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x, type_delta;
@@ -329,7 +344,9 @@ NhlErrorTypes local_max_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, nx, ny, nxny, ier, dsizes[1];
+  int i, ier;
+  ng_size_t nx, ny, nxny;
+  ng_size_t dsizes[1];
 /*
  * Retrieve parameters
  *
@@ -412,9 +429,22 @@ NhlErrorTypes local_max_W( void )
 /*
  * Call the Fortran routine.
  */
-  NGCALLF(dlocalmx,DLOCALMX)(tmp_x,&nx,&ny,&missing_dx.doubleval,cyclic,
-                             tmp_xi,tmp_yi,&nxny,tmp_maxvals,tmp_delta,
-                             &tmp_nmax,&ier);
+  if((nx <= INT_MAX) &&
+     (ny <= INT_MAX) &&
+     (nxny <= INT_MAX))
+  {
+      int inx = (int) nx;
+      int iny = (int) ny;
+      int inxny = (int) nxny;
+      NGCALLF(dlocalmx,DLOCALMX)(tmp_x,&inx,&iny,&missing_dx.doubleval,cyclic,
+                                 tmp_xi,tmp_yi,&inxny,tmp_maxvals,tmp_delta,
+                                 &tmp_nmax,&ier);
+  }
+  else
+  {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dlocalmx: nx = %d, is larger than INT_MAX", nx);
+  }
+
   ((int*)nmax)[0] = tmp_nmax;
 /*
  * If number of local maximums is zero, then don't bother returning

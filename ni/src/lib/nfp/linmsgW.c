@@ -10,9 +10,12 @@ NhlErrorTypes linmsg_W( void )
  */
   void *x;
   double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
-  int *opt, dsizes_opt[NCL_MAX_DIMENSIONS]; 
+  int *opt;
+  ng_size_t dsizes_opt[NCL_MAX_DIMENSIONS]; 
   NclBasicDataTypes type_x;
   int mflag, nptcrt;
 /*
@@ -22,7 +25,8 @@ NhlErrorTypes linmsg_W( void )
 /*
  * Other variables
  */
-  int i, j, index_x, total_size_x, total_size_x1, npts;
+  int index_x;
+  ng_size_t i, total_size_x, total_size_x1, npts;
 /*
  * Retrieve parameters
  *
@@ -105,8 +109,19 @@ NhlErrorTypes linmsg_W( void )
  */
     coerce_subset_input_double(x,tmp_x,index_x,type_x,npts,0,NULL,NULL);
 
-    NGCALLF(dlinmsg,DLINMSG)(tmp_x,&npts,&missing_dx.doubleval,&mflag,
-                             &nptcrt);
+    if((npts <= INT_MAX) &&
+       (nptcrt <= INT_MAX))
+    {
+        int inpts = (int) npts;
+        int inptcrt = (int) nptcrt;
+        NGCALLF(dlinmsg,DLINMSG)(tmp_x,&inpts,&missing_dx.doubleval,&mflag,
+                                &inptcrt);
+    }
+    else
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"dlinmsg: npts = %d, is larger than INT_MAX", npts);
+    }
+
     coerce_output_float_or_double(xlinmsg,tmp_x,type_x,npts,index_x);
     index_x += npts;
   }
@@ -136,9 +151,12 @@ NhlErrorTypes linmsg_n_W( void )
  */
   void *x;
   double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx, missing;
-  int *dim, *opt, dsizes_opt[NCL_MAX_DIMENSIONS]; 
+  int *dim, *opt;
+  ng_size_t dsizes_opt[NCL_MAX_DIMENSIONS]; 
   NclBasicDataTypes type_x, type_xlinmsg;
   int mflag, nptcrt;
 /*
@@ -148,7 +166,7 @@ NhlErrorTypes linmsg_n_W( void )
 /*
  * Other variables
  */
-  int i, j, nl, nr, nrnxi, index_nri, index_x, total_size_x, npts;
+  ng_size_t i, j, nl, nr, nrnxi, index_nri, index_x, total_size_x, npts;
 /*
  * Retrieve parameters
  *
@@ -272,8 +290,18 @@ NhlErrorTypes linmsg_n_W( void )
       coerce_subset_input_double_step(x,tmp_x,index_x,nr,type_x,
                                       npts,0,NULL,NULL);
 
-      NGCALLF(dlinmsg,DLINMSG)(tmp_x,&npts,&missing_dx.doubleval,&mflag,
-                               &nptcrt);
+      if((npts <= INT_MAX) &&
+         (nptcrt <= INT_MAX))
+      {
+          int inpts = (int) npts;
+          int inptcrt = (int) nptcrt;
+          NGCALLF(dlinmsg,DLINMSG)(tmp_x,&inpts,&missing_dx.doubleval,&mflag,
+                                   &inptcrt);
+      }
+      else
+      {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"dlinmsg: npts = %d, is larger than INT_MAX", npts);
+      }
 
       coerce_output_float_or_double_step(xlinmsg,tmp_x,type_x,npts,index_x,
                                          nr);
