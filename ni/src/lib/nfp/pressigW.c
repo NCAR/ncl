@@ -10,21 +10,26 @@ NhlErrorTypes pres_sigma_W( void )
  * Input variables
  */
   void *sigma, *ps;
-  double *tmp_sigma, *tmp_ps;
-  int ndims_ps, dsizes_sigma[1], dsizes_ps[NCL_MAX_DIMENSIONS];
+  double *tmp_sigma;
+  double *tmp_ps = NULL;
+  int ndims_ps;
+  ng_size_t dsizes_sigma[1];
+  ng_size_t dsizes_ps[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_ps, type_sigma;
 /*
  * Output variables
  */
   void *psigma;
-  double *tmp_psigma;
-  int ndims_psigma, *dsizes_psigma;
+  double *tmp_psigma = NULL;
+  int ndims_psigma;
+  ng_size_t *dsizes_psigma;
   NclBasicDataTypes type_psigma;
 /*
  * Various.
  */
-  int i, j, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
-  int index_psigma, index_ps, size_leftmost, size_psigma;
+  ng_size_t i, j, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
+  int index_psigma, index_ps;
+  ng_size_t size_leftmost, size_psigma;
 /*
  * Retrieve parameters
  *
@@ -78,7 +83,7 @@ NhlErrorTypes pres_sigma_W( void )
  */
   ndims_psigma = ndims_ps + 1;
 
-  dsizes_psigma = (int*)calloc(ndims_psigma,sizeof(int));  
+  dsizes_psigma = (ng_size_t*)calloc(ndims_psigma,sizeof(ng_size_t));  
   if( dsizes_psigma == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_sigma: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -157,7 +162,19 @@ NhlErrorTypes pres_sigma_W( void )
       tmp_psigma = &((double*)psigma)[index_psigma];
     }
 
-    NGCALLF(dpsigma,DPSIGMA)(tmp_sigma,tmp_ps,&nlon,&nlat,&klvl,tmp_psigma);
+    if((nlon <= INT_MAX) &&
+       (nlat <= INT_MAX) &&
+       (klvl <= INT_MAX))
+    {
+      int inlon = (int) nlon;
+      int inlat = (int) nlat;
+      int iklvl = (int) klvl;
+      NGCALLF(dpsigma,DPSIGMA)(tmp_sigma,tmp_ps,&inlon,&inlat,&iklvl,tmp_psigma);
+    }
+    else
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"dpsigma: nlon = %d, is larger than INT_MAX", nlon);
+    }
 /*
  * Copy output values from temporary tmp_psigma to psigma.
  */
