@@ -14,8 +14,9 @@ NhlErrorTypes poisson_grid_fill_W( void )
  * Argument # 0
  */
   void *x;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
   NclScalar missing_x, missing_dx;
   NclBasicDataTypes type_x;
@@ -40,8 +41,10 @@ NhlErrorTypes poisson_grid_fill_W( void )
 /*
  * Various
  */
-  int i, j, ii, jj, ndims_leftmost, size_leftmost;
-  int ny, mx, nymx, index_x, mscan, ier;
+  int ndims_leftmost;
+  ng_size_t i, size_leftmost;
+  ng_size_t ny, mx, nymx, index_x;
+  int mscan, ier;
 
 /*
  * Retrieve parameters.
@@ -203,9 +206,20 @@ NhlErrorTypes poisson_grid_fill_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(poisxy1,POISXY1)(tmp_x, &mx, &ny, &missing_dx.doubleval, 
-                             guess_type, is_cyclic, nscan, tmp_epsx,
-                             tmp_relc, &mscan, &ier);
+    if((mx <= INT_MAX) &&
+       (ny <= INT_MAX))
+    {
+      int imx = (int) mx;
+      int iny = (int) ny;
+      NGCALLF(poisxy1,POISXY1)(tmp_x, &imx, &iny, &missing_dx.doubleval, 
+                               guess_type, is_cyclic, nscan, tmp_epsx,
+                               tmp_relc, &mscan, &ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"poisxy1: mx = %ld is greater than INT_MAX", mx);
+      return(NhlFATAL);
+    }
 /*
  * Coerce back to float, if not double.
  */

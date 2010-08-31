@@ -12,7 +12,7 @@ NhlErrorTypes paleo_outline_W( void )
   void *oro, *lat, *lon;
   float *landmask;
   double *tmp_oro, *tmp_lat, *tmp_lon;
-  int dsizes_oro[2], dsizes_lat[1], dsizes_lon[1];
+  ng_size_t dsizes_oro[2], dsizes_lat[1], dsizes_lon[1];
   NclBasicDataTypes type_oro, type_lat, type_lon;
   string *name;
 /*
@@ -20,7 +20,8 @@ NhlErrorTypes paleo_outline_W( void )
  */
   float *zdat;
   char *cname;
-  int *iwrk, liwk, nlat, nlon, jm, im;
+  int *iwrk;
+  ng_size_t liwk, nlat, nlon, jm, im;
 /*
  * Retrieve arguments.
  */
@@ -110,9 +111,25 @@ NhlErrorTypes paleo_outline_W( void )
 /*
  * Call the Fortran paleo_outline routine.
  */
-  NGCALLF(paleooutline,PALEOOUTLINE)(tmp_oro,zdat,tmp_lat,tmp_lon,
-                                     &nlat,&nlon,&jm,&im,iwrk,&liwk,
-                                     cname,landmask,strlen(cname));
+  if((nlon <= INT_MAX) &&
+     (nlat <= INT_MAX) &&
+     (liwk <= INT_MAX) &&
+     (im <= INT_MAX) &&
+     (jm <= INT_MAX))
+  {
+      int inlon = (int) nlon;
+      int inlat = (int) nlat;
+      int iliwk = (int) liwk;
+      int iim = (int) im;
+      int ijm = (int) jm;
+      NGCALLF(paleooutline,PALEOOUTLINE)(tmp_oro,zdat,tmp_lat,tmp_lon,
+                                         &inlat,&inlon,&ijm,&iim,iwrk,&iliwk,
+                                         cname,landmask,strlen(cname));
+  }
+  else
+  {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"paleooutline: nlon = %d, is larger than INT_MAX", nlon);
+  }
   if(type_oro != NCL_double) NclFree(tmp_oro);
   if(type_lat != NCL_double) NclFree(tmp_lat);
   if(type_lon != NCL_double) NclFree(tmp_lon);
