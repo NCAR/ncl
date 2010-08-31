@@ -442,7 +442,7 @@ int days_in_month (int year, int month)
   }
   else {
 	dinm = daysinmonth[month-1];
-	if (isleapyear(year) & month == 2) dinm = 29;
+	if (isleapyear(year) && (month == 2)) dinm = 29;
   }
   return(dinm);
 }
