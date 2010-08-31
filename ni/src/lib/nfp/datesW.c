@@ -10,7 +10,8 @@ extern int isleapyear(int);
 
 NhlErrorTypes day_of_year_W( void )
 {
-  int i, total;
+  int i;
+  ng_size_t total;
 /*
  * Input variables
  */
@@ -104,7 +105,8 @@ NhlErrorTypes day_of_year_W( void )
 
 NhlErrorTypes days_in_month_W( void )
 {
-  int i, total;
+  int i;
+  ng_size_t total;
 /*
  * Input variables
  */
@@ -175,7 +177,13 @@ NhlErrorTypes days_in_month_W( void )
 /*
  * Call function.
  */
-  for( i = 0; i < total; i++ ) daysinmonth[i] = days_in_month(year[i],month[i]);
+  for( i = 0; i < total; i++ )
+  {
+      daysinmonth[i] = days_in_month(year[i],month[i]);
+
+      fprintf(stderr, "year[%d] = %d, month[%d] = %d, daysinmonth[%d] = %d\n", 
+              i, year[i], i, month[i], i, daysinmonth[i]);
+  }
 /*
  * Return.
  */
@@ -184,7 +192,8 @@ NhlErrorTypes days_in_month_W( void )
 
 NhlErrorTypes day_of_week_W( void )
 {
-  int i, total;
+  int i;
+  ng_size_t total;
 /*
  * Input variables
  */
@@ -273,7 +282,8 @@ NhlErrorTypes day_of_week_W( void )
 
 NhlErrorTypes isleapyear_W( void )
 {
-  int i, total;
+  int i;
+  ng_size_t total;
 /*
  * Input variables
  */
@@ -328,7 +338,8 @@ NhlErrorTypes isleapyear_W( void )
 
 NhlErrorTypes monthday_W( void )
 {
-  int i, total;
+  int i;
+  ng_size_t total;
 /*
  * Input variables
  */
@@ -453,7 +464,7 @@ int days_in_month (int year, int month)
   }
   else {
 	dinm = daysinmonth[month-1];
-	if ((isleapyear(year) & month) == 2) dinm = 29;
+	if (isleapyear(year) && (month == 2)) dinm = 29;
   }
   return(dinm);
 }
