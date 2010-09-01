@@ -16,28 +16,37 @@ NhlErrorTypes regcoef_W( void )
  * Input array variables
  */
   void *x, *y;
-  double *tmp_x, *tmp_y;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_ry;
   NclBasicDataTypes type_x, type_y;
-  int has_missing_x, has_missing_y, npts;
+  int has_missing_x, has_missing_y;
+  ng_size_t npts;
 /*
  * Output array variables
  */
   void *tval, *rcoef;
-  double *tmp_tval, *tmp_rcoef, xave, yave, rstd;
-  int ndims_tval, dsizes_tval[NCL_MAX_DIMENSIONS];
-  int ndims_nptxy, dsizes_nptxy[NCL_MAX_DIMENSIONS];
-  int ndims_rcoef, *dsizes_rcoef;
+  double *tmp_tval = NULL;
+  double *tmp_rcoef = NULL;
+  double xave, yave, rstd;
+  int ndims_tval;
+  ng_size_t dsizes_tval[NCL_MAX_DIMENSIONS];
+  int ndims_nptxy;
+  ng_size_t dsizes_nptxy[NCL_MAX_DIMENSIONS];
+  int ndims_rcoef;
+  ng_size_t *dsizes_rcoef;
   NclBasicDataTypes type_tval, type_rcoef;
   int *nptxy;
 /*
  * various
  */
-  int i, j, k, ly, lx, ln, dimsizes_same;
-  int total_size_leftmost_x, total_size_leftmost_y; 
-  int total_size_x, total_size_y, total_size_rcoef;
+  ng_size_t i, j, ly, lx, ln, dimsizes_same;
+  ng_size_t total_size_leftmost_x, total_size_leftmost_y; 
+  ng_size_t total_size_x, total_size_y, total_size_rcoef;
   int ier = 0, ier_count5 = 0, ier_count6 = 0, ret;
 /*
  * Retrieve parameters
@@ -136,7 +145,7 @@ NhlErrorTypes regcoef_W( void )
  */
   if(dimsizes_same) {
     ndims_rcoef = max(1,ndims_x-1);
-    dsizes_rcoef = (int*)calloc(ndims_rcoef,sizeof(int));
+    dsizes_rcoef = (ng_size_t*)calloc(ndims_rcoef,sizeof(ng_size_t));
     if(dsizes_rcoef == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: Unable to allocate memory for output array");
       return(NhlFATAL);
@@ -154,7 +163,7 @@ NhlErrorTypes regcoef_W( void )
   else {
     total_size_rcoef = total_size_leftmost_x * total_size_leftmost_y;
     ndims_rcoef = max(1,ndims_x + ndims_y - 2);
-    dsizes_rcoef = (int*)calloc(ndims_rcoef,sizeof(int));
+    dsizes_rcoef = (ng_size_t*)calloc(ndims_rcoef,sizeof(ng_size_t));
     if(dsizes_rcoef == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: Unable to allocate memory for output array");
       return(NhlFATAL);
@@ -288,9 +297,18 @@ NhlErrorTypes regcoef_W( void )
       if(type_tval  == NCL_double) tmp_tval  = &((double*)tval)[ln];
       if(type_rcoef == NCL_double) tmp_rcoef = &((double*)rcoef)[ln];
 
-      NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                                 &missing_dy.doubleval,tmp_rcoef,tmp_tval,
-                                 &nptxy[ln],&xave,&yave,&rstd,&ier);
+      if(npts <= INT_MAX)
+      {
+          int inpts = (int) npts;
+          NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                                     &missing_dy.doubleval,tmp_rcoef,tmp_tval,
+                                     &nptxy[ln],&xave,&yave,&rstd,&ier);
+      }
+      else
+      {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"dregcoef: npts = %d, is larger than INT_MAX", npts);
+      }
+
       if (ier == 5) ier_count5++;
       if (ier == 6) ier_count6++;
 /*
@@ -333,10 +351,19 @@ NhlErrorTypes regcoef_W( void )
         if(type_tval  == NCL_double) tmp_tval  = &((double*)tval)[ln];
         if(type_rcoef == NCL_double) tmp_rcoef = &((double*)rcoef)[ln];
         
-        NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                                   &missing_dy.doubleval,
-                                   tmp_rcoef,tmp_tval,&nptxy[ln],
-                                   &xave,&yave,&rstd,&ier);
+        if(npts <= INT_MAX)
+        {
+          int inpts = (int) npts;
+          NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                                     &missing_dy.doubleval,
+                                     tmp_rcoef,tmp_tval,&nptxy[ln],
+                                     &xave,&yave,&rstd,&ier);
+        }
+        else
+        {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"dregcoef: npts = %d, is larger than INT_MAX", npts);
+        }
+
         if (ier == 5) ier_count5++;
         if (ier == 6) ier_count6++;
 /*
@@ -393,16 +420,21 @@ NhlErrorTypes regCoef_W( void )
  * Input array variables
  */
   void *x, *y;
-  double *tmp_x, *tmp_y;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_ry;
   NclBasicDataTypes type_x, type_y;
-  int has_missing_x, has_missing_y, npts;
+  int has_missing_x, has_missing_y;
+  ng_size_t npts;
 /*
  * Attribute variables
  */
-  int att_id, dsizes[1];
+  int att_id;
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -410,16 +442,20 @@ NhlErrorTypes regCoef_W( void )
  * Output array variables
  */
   void *tval, *rstd, *rcoef;
-  double *tmp_tval, *tmp_rstd, *tmp_rcoef, xave, yave;
-  int ndims_rcoef, *dsizes_rcoef;
+  double *tmp_tval = NULL;
+  double *tmp_rstd = NULL;
+  double *tmp_rcoef = NULL;
+  double xave, yave;
+  int ndims_rcoef;
+  ng_size_t *dsizes_rcoef;
   NclBasicDataTypes type_rcoef;
   int *nptxy;
 /*
  * various
  */
-  int i, j, k, ly, lx, ln, dimsizes_same;
-  int total_size_leftmost_x, total_size_leftmost_y; 
-  int total_size_x, total_size_y, total_size_rcoef;
+  ng_size_t i, j, ly, lx, ln, dimsizes_same;
+  ng_size_t total_size_leftmost_x, total_size_leftmost_y; 
+  ng_size_t total_size_x, total_size_y, total_size_rcoef;
   int ier = 0, ier_count5 = 0, ier_count6 = 0;
 /*
  * Retrieve parameters
@@ -504,7 +540,7 @@ NhlErrorTypes regCoef_W( void )
  */
   if(dimsizes_same) {
     ndims_rcoef  = max(1,ndims_x-1);
-    dsizes_rcoef = (int*)calloc(ndims_rcoef,sizeof(int));
+    dsizes_rcoef = (ng_size_t*)calloc(ndims_rcoef,sizeof(ng_size_t));
     if(dsizes_rcoef == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef: Unable to allocate memory for output array");
       return(NhlFATAL);
@@ -522,7 +558,7 @@ NhlErrorTypes regCoef_W( void )
   else {
     total_size_rcoef = total_size_leftmost_x * total_size_leftmost_y;
     ndims_rcoef = max(1,ndims_x + ndims_y - 2);
-    dsizes_rcoef = (int*)calloc(ndims_rcoef,sizeof(int));
+    dsizes_rcoef = (ng_size_t*)calloc(ndims_rcoef,sizeof(ng_size_t));
     if(dsizes_rcoef == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef: Unable to allocate memory for output array");
       return(NhlFATAL);
@@ -634,9 +670,18 @@ NhlErrorTypes regCoef_W( void )
         tmp_rcoef = &((double*)rcoef)[ln];
       }
 
-      NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                                 &missing_dy.doubleval,tmp_rcoef,tmp_tval,
-                                 &nptxy[ln],&xave,&yave,tmp_rstd,&ier);
+      if(npts <= INT_MAX)
+      {
+          int inpts = (int) npts;
+          NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                                     &missing_dy.doubleval,tmp_rcoef,tmp_tval,
+                                     &nptxy[ln],&xave,&yave,tmp_rstd,&ier);
+      }
+      else
+      {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"dregcoef: npts = %d, is larger than INT_MAX", npts);
+      }
+
       if (ier == 5) ier_count5++;
       if (ier == 6) ier_count6++;
 /*
@@ -685,9 +730,18 @@ NhlErrorTypes regCoef_W( void )
           tmp_rcoef = &((double*)rcoef)[ln];
         }
         
-        NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                                   &missing_dy.doubleval,tmp_rcoef,tmp_tval,
-                                   &nptxy[ln],&xave,&yave,tmp_rstd,&ier);
+        if(npts <= INT_MAX)
+        {
+          int inpts = (int) npts;
+          NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                                     &missing_dy.doubleval,tmp_rcoef,tmp_tval,
+                                     &nptxy[ln],&xave,&yave,tmp_rstd,&ier);
+        }
+        else
+        {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"dregcoef: npts = %d, is larger than INT_MAX", npts);
+        }
+
         if (ier == 5) ier_count5++;
         if (ier == 6) ier_count6++;
 /*
@@ -904,16 +958,21 @@ NhlErrorTypes regCoef_shields_W( void )
  * Input array variables
  */
   void *x, *y;
-  double *tmp_x, *tmp_y;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_ry;
   NclBasicDataTypes type_x, type_y;
-  int has_missing_x, has_missing_y, npts;
+  int has_missing_x, has_missing_y;
+  ng_size_t npts;
 /*
  * Attribute variables
  */
-  int att_id, dsizes[1];
+  int att_id;
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -921,16 +980,20 @@ NhlErrorTypes regCoef_shields_W( void )
  * Output array variables
  */
   void *tval, *rstd, *rcoef;
-  double *tmp_tval, *tmp_rstd, *tmp_rcoef, xave, yave;
-  int ndims_rcoef, *dsizes_rcoef;
+  double *tmp_tval = NULL;
+  double *tmp_rstd = NULL;
+  double *tmp_rcoef = NULL;
+  double xave, yave;
+  int ndims_rcoef;
+  ng_size_t *dsizes_rcoef;
   NclBasicDataTypes type_rcoef;
   int *nptxy;
 /*
  * various
  */
-  int i, j, k, ly, lx, ln, dimsizes_same;
-  int total_size_leftmost_x, total_size_leftmost_y; 
-  int total_size_x, total_size_y, total_size_rcoef;
+  ng_size_t i, j, ly, lx, ln;
+  ng_size_t total_size_leftmost_x, total_size_leftmost_y; 
+  ng_size_t total_size_x, total_size_y, total_size_rcoef;
   int ier = 0, ier_count5 = 0, ier_count6 = 0;
 /*
  * Retrieve parameters
@@ -989,7 +1052,7 @@ NhlErrorTypes regCoef_shields_W( void )
  */
   total_size_rcoef = total_size_leftmost_y * dsizes_y[0];
   ndims_rcoef = ndims_y - 1;
-  dsizes_rcoef = (int*)calloc(ndims_rcoef,sizeof(int));
+  dsizes_rcoef = (ng_size_t*)calloc(ndims_rcoef,sizeof(ng_size_t));
   if(dsizes_rcoef == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_shields: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -1091,9 +1154,18 @@ NhlErrorTypes regCoef_shields_W( void )
         tmp_rcoef = &((double*)rcoef)[ln];
       }
       
-      NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                                 &missing_dy.doubleval,tmp_rcoef,tmp_tval,
-                                 &nptxy[ln],&xave,&yave,tmp_rstd,&ier);
+      if(npts <= INT_MAX)
+      {
+          int inpts = (int) npts;
+          NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                                     &missing_dy.doubleval,tmp_rcoef,tmp_tval,
+                                     &nptxy[ln],&xave,&yave,tmp_rstd,&ier);
+      }
+      else
+      {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"dregcoef: npts = %d, is larger than INT_MAX", npts);
+      }
+
       if (ier == 5) ier_count5++;
       if (ier == 6) ier_count6++;
 /*
@@ -1311,10 +1383,12 @@ NhlErrorTypes regline_W( void )
  */
   void *x, *y;
   double *dx, *dy;
-  int dsizes_x[1], dsizes_y[1];
+  ng_size_t dsizes_x[1];
+  ng_size_t dsizes_y[1];
   NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_ry;
   NclBasicDataTypes type_x, type_y;
-  int has_missing_x, has_missing_y, npts;
+  int has_missing_x, has_missing_y;
+  ng_size_t npts;
 /*
  * Output array variables
  */
@@ -1325,7 +1399,8 @@ NhlErrorTypes regline_W( void )
 /*
  * Attribute variables
  */
-  int att_id, dsizes[1];
+  int att_id;
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -1400,9 +1475,18 @@ NhlErrorTypes regline_W( void )
 /*
  * Call the f77 version of 'regline' with the full argument list.
  */
-  NGCALLF(dregcoef,DREGCOEF)(&dx[0],&dy[0],&npts,&missing_dx.doubleval,
-                             &missing_dy.doubleval,rcoef,tval,nptxy,xave,
-                             yave,rstd,&ier);
+  if(npts <= INT_MAX)
+  {
+      int inpts = (int) npts;
+      NGCALLF(dregcoef,DREGCOEF)(&dx[0],&dy[0],&inpts,&missing_dx.doubleval,
+                                 &missing_dy.doubleval,rcoef,tval,nptxy,xave,
+                                 yave,rstd,&ier);
+  }
+  else
+  {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dregcoef: npts = %d, is larger than INT_MAX", npts);
+  }
+
   if (ier == 5) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"regline: The x and/or y array contains all missing values");
   }
@@ -1781,14 +1865,16 @@ NhlErrorTypes reg_multlin_W( void )
   void *x, *y;
   double *tmp_x, *tmp_y;
   logical *opt;
-  int ndims_x, dsizes_y[1], dsizes_x[2];
+  ng_size_t dsizes_y[1];
+  ng_size_t dsizes_x[2];
   NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_ry;
   NclBasicDataTypes type_x, type_y;
   int has_missing_x, has_missing_y;
 /*
  * Attribute variables
  */
-  int att_id, dsizes[1];
+  int att_id;
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -1802,13 +1888,9 @@ NhlErrorTypes reg_multlin_W( void )
  */
   void *coef, *constant;
   double *tmp_coef;
-  int dsizes_coef[1];
+  ng_size_t dsizes_coef[1];
   NclBasicDataTypes type_coef;
-  int size_x, mpts, npts;
-/*
- * various
- */
-  int i;
+  ng_size_t size_x, mpts, npts;
 
 /*
  * Retrieve parameters
@@ -1912,9 +1994,18 @@ NhlErrorTypes reg_multlin_W( void )
     return(NhlFATAL);
   }
 
-  NGCALLF(dzregr1,DZREGR1)(&npts,&mpts,tmp_y,&missing_dy.doubleval,tmp_x,
-                           &missing_dx.doubleval,tmp_coef,resid,tmp_constant,
-                           cnorm,wk);
+  if((mpts <= INT_MAX) && (npts <= INT_MAX))
+  {
+      int impts = (int) mpts;
+      int inpts = (int) npts;
+      NGCALLF(dzregr1,DZREGR1)(&inpts,&impts,tmp_y,&missing_dy.doubleval,tmp_x,
+                               &missing_dx.doubleval,tmp_coef,resid,tmp_constant,
+                               cnorm,wk);
+  }
+  else
+  {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dzregr1: npts = %d, is larger than INT_MAX", npts);
+  }
 
 /*
  * Coerce tmp_constant scalar to appropriate type.

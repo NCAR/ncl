@@ -12,12 +12,15 @@ NhlErrorTypes pop_remap_W( void )
  */
   void *dst_array, *map_wts, *src_array;
   double *dst, *map, *src;
-  int has_missing_src_array, *dst_add, *src_add, ndst, nlink, nw, nsrc;
-  int dsizes_dst_array[1], dsizes_map_wts[2], dsizes_src_array[1];
-  int dsizes_dst_add[1], dsizes_src_add[1];
+  int has_missing_src_array, *dst_add, *src_add;
+  ng_size_t ndst, nlink, nw, nsrc;
+  ng_size_t dsizes_dst_array[1];
+  ng_size_t dsizes_map_wts[2];
+  ng_size_t dsizes_src_array[1];
+  ng_size_t dsizes_dst_add[1];
+  ng_size_t dsizes_src_add[1];
   NclBasicDataTypes type_dst_array, type_map_wts, type_src_array;
   NclScalar missing_src_array, missing_dsrc_array;
-  int i;
 /*
  * Retrieve parameters
  *
@@ -128,8 +131,22 @@ NhlErrorTypes pop_remap_W( void )
 /*
  * Call Fortran popremap.
  */
-  NGCALLF(dpopremap,DPOPREMAP)(dst,map,dst_add,src_add,src,&ndst,&nlink,&nw,
-                               &nsrc,&missing_dsrc_array.doubleval);
+  if((ndst <= INT_MAX) &&
+     (nlink <= INT_MAX) &&
+     (nw <= INT_MAX) &&
+     (nsrc <= INT_MAX))
+  {
+      int indst = (int) ndst;
+      int inlink = (int) nlink;
+      int inw = (int) nw;
+      int insrc = (int) nsrc;
+      NGCALLF(dpopremap,DPOPREMAP)(dst,map,dst_add,src_add,src,&indst,&inlink,&inw,
+                                   &insrc,&missing_dsrc_array.doubleval);
+  }
+  else
+  {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dpopremap: ndst = %d, is larger than INT_MAX", ndst);
+  }
 
   if(type_dst_array == NCL_float) {
     coerce_output_float_only(dst_array,dst,ndst,0);

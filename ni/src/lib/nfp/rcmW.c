@@ -25,8 +25,14 @@ NhlErrorTypes rcm2rgrid_W( void )
   void *lat2d, *lon2d, *fi, *lat1d, *lon1d, *opt;
   double *tmp_lat2d, *tmp_lon2d, *tmp_lat1d, *tmp_lon1d, *tmp_fi;
   int tmp_opt, tmp_ncrit;
-  int dsizes_lat2d[2], dsizes_lon2d[2], dsizes_lat1d[2], dsizes_lon1d[1];
-  int size_fi, ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
+  ng_size_t dsizes_lat2d[2];
+  ng_size_t dsizes_lon2d[2];
+  ng_size_t dsizes_lat1d[2];
+  ng_size_t dsizes_lon1d[1];
+  int ndims_fi;
+  ng_size_t size_fi;
+  ng_size_t dsizes_fi[NCL_MAX_DIMENSIONS];
+  int has_missing_fi;
   NclScalar missing_fi, missing_dfi, missing_rfi;
   NclBasicDataTypes type_lat2d, type_lon2d, type_lat1d, type_lon1d;
   NclBasicDataTypes type_fi, type_opt;
@@ -35,14 +41,15 @@ NhlErrorTypes rcm2rgrid_W( void )
  */
   void *fo;
   double *tmp_fo;
-  int *dsizes_fo;
+  ng_size_t *dsizes_fo;
   NclBasicDataTypes type_fo;
   NclScalar missing_fo;
 /*
  * Other variables
  */
-  int nlon2d, nlat2d, nfi, nlat1d, nlon1d, nfo, ngrid, size_fo;
-  int i, ier, ret;
+  ng_size_t nlon2d, nlat2d, nfi, nlat1d, nlon1d, nfo, ngrid, size_fo;
+  ng_size_t i;
+  int ier, ret;
 /*
  * Retrieve parameters
  *
@@ -176,7 +183,7 @@ NhlErrorTypes rcm2rgrid_W( void )
       return(NhlFATAL);
     }
   }
-  dsizes_fo = (int*)calloc(ndims_fi,sizeof(int));
+  dsizes_fo = (ng_size_t*)calloc(ndims_fi,sizeof(ng_size_t));
   if(fo == NULL || dsizes_fo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"rcm2rgrid: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -207,10 +214,26 @@ NhlErrorTypes rcm2rgrid_W( void )
   tmp_opt   = 0;
   tmp_ncrit = 1;
 
-  NGCALLF(drcm2rgrid,DRCM2RGRID)(&ngrid,&nlat2d,&nlon2d,tmp_lat2d,tmp_lon2d,
-                                 tmp_fi,&nlat1d,tmp_lat1d,&nlon1d,
-                                 tmp_lon1d,tmp_fo,&missing_dfi.doubleval,
-                                 &tmp_ncrit,&tmp_opt,&ier);
+  if((nlon2d <= INT_MAX) &&
+     (nlat2d <= INT_MAX) &&
+     (ngrid <= INT_MAX) &&
+     (nlon1d <= INT_MAX) &&
+     (nlat1d <= INT_MAX))
+  {
+      int inlon2d = (int) nlon2d;
+      int inlat2d = (int) nlat2d;
+      int ingrid = (int) ngrid;
+      int inlon1d = (int) nlon1d;
+      int inlat1d = (int) nlat1d;
+      NGCALLF(drcm2rgrid,DRCM2RGRID)(&ingrid,&inlat2d,&inlon2d,tmp_lat2d,tmp_lon2d,
+                                     tmp_fi,&inlat1d,tmp_lat1d,&inlon1d,
+                                     tmp_lon1d,tmp_fo,&missing_dfi.doubleval,
+                                     &tmp_ncrit,&tmp_opt,&ier);
+  }
+  else
+  {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"drcm2points: nlon2d = %d, is larger than INT_MAX", nlon2d);
+  }
 
   if(ier) {
     if(ier == 1) {
@@ -253,8 +276,13 @@ NhlErrorTypes rgrid2rcm_W( void )
   void *lat2d, *lon2d, *fi, *lat1d, *lon1d, *opt;
   double *tmp_lat2d, *tmp_lon2d, *tmp_lat1d, *tmp_lon1d, *tmp_fi;
   int tmp_opt, tmp_ncrit;
-  int dsizes_lat2d[2], dsizes_lon2d[2], dsizes_lat1d[2], dsizes_lon1d[1];
-  int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
+  ng_size_t dsizes_lat2d[2];
+  ng_size_t dsizes_lon2d[2];
+  ng_size_t dsizes_lat1d[2];
+  ng_size_t dsizes_lon1d[1];
+  int ndims_fi;
+  ng_size_t dsizes_fi[NCL_MAX_DIMENSIONS];
+  int has_missing_fi;
   NclScalar missing_fi, missing_dfi, missing_rfi;
   NclBasicDataTypes type_lat2d, type_lon2d, type_lat1d, type_lon1d;
   NclBasicDataTypes type_fi, type_opt;
@@ -263,14 +291,15 @@ NhlErrorTypes rgrid2rcm_W( void )
  */
   void *fo;
   double *tmp_fo;
-  int *dsizes_fo;
+  ng_size_t *dsizes_fo;
   NclBasicDataTypes type_fo;
   NclScalar missing_fo;
 /*
  * Other variables
  */
-  int nlon2d, nlat2d, nfi, nlat1d, nlon1d, nfo, ngrid, size_fi, size_fo;
-  int i, ier, ret;
+  ng_size_t nlon2d, nlat2d, nfi, nlat1d, nlon1d, nfo, ngrid, size_fi, size_fo;
+  ng_size_t i;
+  int ier, ret;
 /*
  * Retrieve parameters
  *
@@ -404,7 +433,7 @@ NhlErrorTypes rgrid2rcm_W( void )
       return(NhlFATAL);
     }
   }
-  dsizes_fo = (int*)calloc(ndims_fi,sizeof(int));
+  dsizes_fo = (ng_size_t*)calloc(ndims_fi,sizeof(ng_size_t));
   if(fo == NULL || dsizes_fo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"rgrid2rcm: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -434,10 +463,26 @@ NhlErrorTypes rgrid2rcm_W( void )
   tmp_opt   = 0;
   tmp_ncrit = 1;
 
-  NGCALLF(drgrid2rcm,DRGRID2RCM)(&ngrid,&nlat1d,&nlon1d,tmp_lat1d,tmp_lon1d,
-                                 tmp_fi,&nlat2d,&nlon2d,tmp_lat2d,
-                                 tmp_lon2d,tmp_fo,&missing_dfi.doubleval,
-                                 &tmp_ncrit,&tmp_opt,&ier);
+  if((nlon2d <= INT_MAX) &&
+     (nlat2d <= INT_MAX) &&
+     (ngrid <= INT_MAX) &&
+     (nlon1d <= INT_MAX) &&
+     (nlat1d <= INT_MAX))
+  {
+      int inlon2d = (int) nlon2d;
+      int inlat2d = (int) nlat2d;
+      int ingrid = (int) ngrid;
+      int inlon1d = (int) nlon1d;
+      int inlat1d = (int) nlat1d;
+      NGCALLF(drgrid2rcm,DRGRID2RCM)(&ingrid,&inlat1d,&inlon1d,tmp_lat1d,tmp_lon1d,
+                                     tmp_fi,&inlat2d,&inlon2d,tmp_lat2d,
+                                     tmp_lon2d,tmp_fo,&missing_dfi.doubleval,
+                                     &tmp_ncrit,&tmp_opt,&ier);
+  }
+  else
+  {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"drcm2points: nlon2d = %d, is larger than INT_MAX", nlon2d);
+  }
 
   if(ier) {
     if(ier == 1) {
@@ -477,8 +522,13 @@ NhlErrorTypes rcm2points_W( void )
   void *lat2d, *lon2d, *fi, *lat1d, *lon1d;
   double *tmp_lat2d, *tmp_lon2d, *tmp_lat1d, *tmp_lon1d, *tmp_fi;
   int *opt, tmp_ncrit;
-  int dsizes_lat2d[2], dsizes_lon2d[2], dsizes_lat1d[2], dsizes_lon1d[1];
-  int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
+  ng_size_t dsizes_lat2d[2];
+  ng_size_t dsizes_lon2d[2];
+  ng_size_t dsizes_lat1d[2];
+  ng_size_t dsizes_lon1d[1];
+  int ndims_fi;
+  ng_size_t dsizes_fi[NCL_MAX_DIMENSIONS];
+  int has_missing_fi;
   NclScalar missing_fi, missing_dfi, missing_rfi;
   NclBasicDataTypes type_lat2d, type_lon2d, type_lat1d, type_lon1d;
   NclBasicDataTypes type_fi;
@@ -487,14 +537,16 @@ NhlErrorTypes rcm2points_W( void )
  */
   void *fo;
   double *tmp_fo;
-  int ndims_fo, *dsizes_fo;
+  int ndims_fo;
+  ng_size_t *dsizes_fo;
   NclBasicDataTypes type_fo;
   NclScalar missing_fo;
 /*
  * Other variables
  */
-  int nlon2d, nlat2d, nfi, nlat1d, nfo, ngrid, size_fi, size_fo;
-  int i, ier, ret;
+  ng_size_t nlon2d, nlat2d, nfi, nlat1d, nfo, ngrid, size_fi, size_fo;
+  ng_size_t i;
+  int ier, ret;
 /*
  * Retrieve parameters
  *
@@ -634,7 +686,7 @@ NhlErrorTypes rcm2points_W( void )
     }
   }
   ndims_fo  = ndims_fi-1;
-  dsizes_fo = (int*)calloc(ndims_fo,sizeof(int));
+  dsizes_fo = (ng_size_t*)calloc(ndims_fo,sizeof(ng_size_t));
   if(fo == NULL || dsizes_fo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"rcm2points: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -663,10 +715,24 @@ NhlErrorTypes rcm2points_W( void )
  */
   tmp_ncrit = 1;
 
-  NGCALLF(drcm2points,DRCM2POINTS)(&ngrid,&nlat2d,&nlon2d,tmp_lat2d,tmp_lon2d,
-                                   tmp_fi,&nlat1d,tmp_lat1d,tmp_lon1d,
-                                   tmp_fo,&missing_dfi.doubleval,
-                                   opt,&tmp_ncrit,&ier);
+  if((nlon2d <= INT_MAX) &&
+     (nlat2d <= INT_MAX) &&
+     (ngrid <= INT_MAX) &&
+     (nlat1d <= INT_MAX))
+  {
+      int inlon2d = (int) nlon2d;
+      int inlat2d = (int) nlat2d;
+      int ingrid = (int) ngrid;
+      int inlat1d = (int) nlat1d;
+      NGCALLF(drcm2points,DRCM2POINTS)(&ingrid,&inlat2d,&inlon2d,tmp_lat2d,tmp_lon2d,
+                                       tmp_fi,&inlat1d,tmp_lat1d,tmp_lon1d,
+                                       tmp_fo,&missing_dfi.doubleval,
+                                       opt,&tmp_ncrit,&ier);
+  }
+  else
+  {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"drcm2points: nlon2d = %d, is larger than INT_MAX", nlon2d);
+  }
 
   if(ier) {
     if(ier == 1) {

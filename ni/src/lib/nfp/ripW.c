@@ -29,20 +29,27 @@ NhlErrorTypes rip_cape_3d_W( void )
  */
   void *p, *t, *q, *z, *zsfc, *psfc;
   logical *ter_follow;
-  double *tmp_p, *tmp_t, *tmp_q, *tmp_z, *tmp_zsfc, *tmp_psfc;
+  double *tmp_p = NULL;
+  double *tmp_t = NULL;
+  double *tmp_q = NULL;
+  double *tmp_z = NULL;
+  double *tmp_zsfc = NULL;
+  double *tmp_psfc = NULL;
   int ndims_p, ndims_t, ndims_q, ndims_z, ndims_zsfc, ndims_psfc;
-  int dsizes_p[NCL_MAX_DIMENSIONS], dsizes_t[NCL_MAX_DIMENSIONS];
-  int dsizes_q[NCL_MAX_DIMENSIONS], dsizes_z[NCL_MAX_DIMENSIONS];
-  int dsizes_zsfc[NCL_MAX_DIMENSIONS], dsizes_psfc[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS], dsizes_t[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS], dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_zsfc[NCL_MAX_DIMENSIONS], dsizes_psfc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p, type_t, type_q, type_z, type_zsfc, type_psfc;
 
 /*
  * Output array variables
  */
   void *cape;
-  double *tmp_cape, *tmp_cin;
+  double *tmp_cape = NULL;
+  double *tmp_cin = NULL;
   NclBasicDataTypes type_cape;
-  int ndims_cape, *dsizes_cape;
+  int ndims_cape;
+  ng_size_t *dsizes_cape;
 /*
  * File input variables.
  */
@@ -52,8 +59,14 @@ NhlErrorTypes rip_cape_3d_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, miy, mjx, mkzh, ntime, size_cape, size_output, size_zsfc;
-  int i3dflag=1, scalar_zsfc, index_cape, index_zsfc, index_cin;
+  ng_size_t i;
+  ng_size_t miy = 0;
+  ng_size_t mjx = 0;
+  ng_size_t mkzh = 0;
+  ng_size_t ntime = 0;
+  ng_size_t size_cape, size_output, size_zsfc;
+  ng_size_t index_cape, index_zsfc, index_cin;
+  int i3dflag=1, scalar_zsfc;
   int iter, ret;
 
 /*
@@ -253,7 +266,7 @@ NhlErrorTypes rip_cape_3d_W( void )
  *       output array: (2,lev)
  */
   ndims_cape = ndims_p+1;
-  dsizes_cape = (int *)calloc(ndims_cape,sizeof(int));
+  dsizes_cape = (ng_size_t *)calloc(ndims_cape,sizeof(ng_size_t));
   if(dsizes_cape == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: Unable to allocate memory for array dimensionality");
     return(NhlFATAL);
@@ -423,10 +436,23 @@ NhlErrorTypes rip_cape_3d_W( void )
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-                                     tmp_psfc, tmp_cape, tmp_cin, &miy,
-                                     &mjx, &mkzh, &i3dflag, &iter,
-                                     psa_file,strlen(psa_file));
+    if((miy <= INT_MAX) &&
+       (mjx <= INT_MAX) &&
+       (mkzh <= INT_MAX))
+    {
+      int imiy = (int) miy;
+      int imjx = (int) mjx;
+      int imkzh = (int) mkzh;
+      NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
+                                       tmp_psfc, tmp_cape, tmp_cin, &imiy,
+                                       &imjx, &imkzh, &i3dflag, &iter,
+                                       psa_file,strlen(psa_file));
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcapecalc3d: miy = %ld is greater than INT_MAX", miy);
+      return(NhlFATAL);
+    }
 /*
  * If the output is to be float, then do the coercion here.
  */
@@ -479,20 +505,27 @@ NhlErrorTypes rip_cape_2d_W( void )
  */
   void *p, *t, *q, *z, *zsfc, *psfc;
   logical *ter_follow;
-  double *tmp_p, *tmp_t, *tmp_q, *tmp_z, *tmp_zsfc, *tmp_psfc;
+  double *tmp_p = NULL;
+  double *tmp_t = NULL;
+  double *tmp_q = NULL;
+  double *tmp_z = NULL;
+  double *tmp_zsfc = NULL;
+  double *tmp_psfc = NULL;
   int ndims_p, ndims_t, ndims_q, ndims_z, ndims_zsfc, ndims_psfc;
-  int dsizes_p[NCL_MAX_DIMENSIONS], dsizes_t[NCL_MAX_DIMENSIONS];
-  int dsizes_q[NCL_MAX_DIMENSIONS], dsizes_z[NCL_MAX_DIMENSIONS];
-  int dsizes_zsfc[NCL_MAX_DIMENSIONS], dsizes_psfc[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS], dsizes_t[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS], dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_zsfc[NCL_MAX_DIMENSIONS], dsizes_psfc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p, type_t, type_q, type_z, type_zsfc, type_psfc;
 
 /*
  * Output array variables
  */
   void *cape;
-  double *tmp_cape, *tmp_cin;
+  double *tmp_cape = NULL;
+  double *tmp_cin = NULL;
   NclBasicDataTypes type_cape;
-  int ndims_cape, *dsizes_cape;
+  int ndims_cape = 0;
+  ng_size_t *dsizes_cape;
 /*
  * File input variables.
  */
@@ -502,10 +535,17 @@ NhlErrorTypes rip_cape_2d_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, miy, mjx, mkzh, ntime, size_cape, size_output, size_zsfc;
-  int size_left_zsfc, i3dflag=0, scalar_zsfc, index_cape, index_zsfc;
-  int index_output_cape, index_output_cin, index_output_lcl;
-  int index_output_lfc, mkzh0_index, mkzh1_index, mkzh2_index;
+  ng_size_t i;
+  ng_size_t miy = 0;
+  ng_size_t mjx = 0;
+  ng_size_t mkzh = 0;
+  ng_size_t ntime = 0;
+  ng_size_t size_cape, size_output, size_zsfc;
+  ng_size_t size_left_zsfc;
+  int i3dflag=0;
+  ng_size_t index_cape, index_zsfc;
+  ng_size_t index_output_cape, index_output_cin, index_output_lcl;
+  ng_size_t index_output_lfc, mkzh0_index, mkzh1_index, mkzh2_index;
   int iter, ret;
 
 /*
@@ -700,7 +740,7 @@ NhlErrorTypes rip_cape_2d_W( void )
  *  - p,t,q,z (lev,lat,lon) and psfc,zsfc (lat,lon)
  *       output array: (4,lat,lon)
  */
-  dsizes_cape = (int *)calloc(ndims_cape,sizeof(int));
+  dsizes_cape = (ng_size_t *)calloc(ndims_cape,sizeof(ng_size_t));
   if(dsizes_cape == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: Unable to allocate memory for array dimensionality");
     return(NhlFATAL);
@@ -866,10 +906,23 @@ NhlErrorTypes rip_cape_2d_W( void )
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-                                     tmp_psfc, tmp_cape, tmp_cin, &miy,
-                                     &mjx, &mkzh, &i3dflag, &iter,
-                                     psa_file,strlen(psa_file));
+    if((miy <= INT_MAX) &&
+       (mjx <= INT_MAX) &&
+       (mkzh <= INT_MAX))
+    {
+      int imiy = (int) miy;
+      int imjx = (int) mjx;
+      int imkzh = (int) mkzh;
+      NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
+                                       tmp_psfc, tmp_cape, tmp_cin, &imiy,
+                                       &imjx, &imkzh, &i3dflag, &iter,
+                                       psa_file,strlen(psa_file));
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcapecalc3d: miy = %ld is greater than INT_MAX", miy);
+      return(NhlFATAL);
+    }
 /*
  * Copy the values back out to the correct places in the "cape" array.
  *

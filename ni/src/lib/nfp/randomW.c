@@ -53,18 +53,19 @@ NhlErrorTypes random_chi_W( void )
  */
   void *df;
   double *tmp_df;
-  int *N, dsizes_N[NCL_MAX_DIMENSIONS];
+  ng_size_t *N;
+  ng_size_t dsizes_N[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_df;
 /*
  * Output array variables
  */
   void *chi;
-  double *tmp_chi;
+  double *tmp_chi = NULL;
   NclBasicDataTypes type_chi;
 /*
  * Declare various variables for random purposes.
  */
-  int i, size_input;
+  ng_size_t i, size_input;
 /*
  * Retrieve argument.
  */
@@ -78,7 +79,7 @@ NhlErrorTypes random_chi_W( void )
           &type_df,
           DONT_CARE);
 
-  N = (int*)NclGetArgValue(
+  N = (ng_size_t*)NclGetArgValue(
           1,
           2,
           NULL,
@@ -150,13 +151,14 @@ NhlErrorTypes random_gamma_W( void )
  */
   void *locp, *shape;
   double *tmp_locp, *tmp_shape;
-  int *N, dsizes_N[NCL_MAX_DIMENSIONS];
+  ng_size_t *N;
+  ng_size_t dsizes_N[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_locp, type_shape;
 /*
  * Output array variables
  */
   void *gamma;
-  double *tmp_gamma;
+  double *tmp_gamma = NULL;
   NclBasicDataTypes type_gamma;
 /*
  * Declare various variables for random purposes.
@@ -185,7 +187,7 @@ NhlErrorTypes random_gamma_W( void )
           &type_shape,
           DONT_CARE);
 
-  N = (int*)NclGetArgValue(
+  N = (ng_size_t*)NclGetArgValue(
           2,
           3,
           NULL,
@@ -257,18 +259,19 @@ NhlErrorTypes random_normal_W( void )
  */
   void *av, *sd;
   double *tmp_av, *tmp_sd;
-  int *N, dsizes_N[NCL_MAX_DIMENSIONS];
+  ng_size_t *N;
+  ng_size_t dsizes_N[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_av, type_sd;
 /*
  * Output array variables
  */
   void *normal;
-  double *tmp_normal;
+  double *tmp_normal = NULL;
   NclBasicDataTypes type_normal;
 /*
  * Declare various variables for random purposes.
  */
-  int i, size_input;
+  ng_size_t i, size_input;
 /*
  * Retrieve argument.
  */
@@ -292,7 +295,7 @@ NhlErrorTypes random_normal_W( void )
           &type_sd,
           DONT_CARE);
 
-  N = (int*)NclGetArgValue(
+  N = (ng_size_t*)NclGetArgValue(
           2,
           3,
           NULL,
@@ -365,18 +368,19 @@ NhlErrorTypes random_uniform_W( void )
  */
   void *low, *high;
   double *tmp_low, *tmp_high;
-  int *N, dsizes_N[NCL_MAX_DIMENSIONS];
+  ng_size_t *N;
+  ng_size_t dsizes_N[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_low, type_high;
 /*
  * Output array variables
  */
   void *uniform;
-  double *tmp_uniform;
+  double *tmp_uniform = NULL;
   NclBasicDataTypes type_uniform;
 /*
  * Declare various variables for random purposes.
  */
-  int i, size_input;
+  ng_size_t i, size_input;
 /*
  * Retrieve argument.
  */
@@ -400,7 +404,7 @@ NhlErrorTypes random_uniform_W( void )
           &type_high,
           DONT_CARE);
 
-  N = (int*)NclGetArgValue(
+  N = (ng_size_t*)NclGetArgValue(
           2,
           3,
           NULL,
