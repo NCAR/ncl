@@ -13,8 +13,10 @@ NhlErrorTypes dim_pqsort_W( void )
  */
   void *x;
   int *kflag;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
 /*
@@ -24,7 +26,8 @@ NhlErrorTypes dim_pqsort_W( void )
 /*
  * various
  */
-  int i, j, index_x, total_elements, ier = 0, ndim;
+  int index_x, ier = 0, ndim;
+  ng_size_t i, j, total_elements;
 /*
  * Retrieve parameter.
  */
@@ -141,7 +144,9 @@ NhlErrorTypes dim_pqsort_n_W( void )
   int *kflag;
   int *dims;
   double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
 /*
@@ -151,7 +156,8 @@ NhlErrorTypes dim_pqsort_n_W( void )
 /*
  * various
  */
-  int i, j, k, inr, index_x, total_nl, total_nr, total_elements, ier = 0, ndim;
+  int index_x, ier = 0, ndim;
+  ng_size_t i, j, k, inr, total_nl, total_nr, total_elements;
 /*
  * Retrieve parameter.
  */

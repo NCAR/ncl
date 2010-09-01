@@ -13,7 +13,8 @@ NhlErrorTypes smth9_W( void )
   double *tmp_x, *tmp_p, *tmp_q;
   logical *lwrap;
   int has_missing_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x, type_p, type_q;
 /*
@@ -25,7 +26,9 @@ NhlErrorTypes smth9_W( void )
  * Various
  */
   double *work;
-  int total_size_x, ni, nj, ninj, lwork, i, j, index_x, nt, ier;
+  ng_size_t total_size_x, ni, nj, ninj, lwork, i, nt;
+  int index_x;
+  int ier;
 /*
  * Retrieve parameters
  *
@@ -151,8 +154,17 @@ NhlErrorTypes smth9_W( void )
  */
     coerce_subset_input_double(x,tmp_x,index_x,type_x,ninj,0,NULL,NULL);
 
-    NGCALLF(dsmth9,DSMTH9)(tmp_x,work,&ni,&nj,tmp_p,tmp_q,
-                           &missing_dx.doubleval,lwrap,&ier);
+    if((ni <= INT_MAX) && (nj <= INT_MAX))
+    {
+        int ini = (int) ni;
+        int inj = (int) nj;
+        NGCALLF(dsmth9,DSMTH9)(tmp_x,work,&ini,&inj,tmp_p,tmp_q,
+                               &missing_dx.doubleval,lwrap,&ier);
+    }
+    else
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"dsmth9: ni = %d, is larger than INT_MAX", ni);
+    }
 
     coerce_output_float_or_double(smth,tmp_x,type_smth,ninj,index_x);
 

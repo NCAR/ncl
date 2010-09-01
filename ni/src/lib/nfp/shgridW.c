@@ -9,19 +9,19 @@ NhlErrorTypes shgrid_W(void)
   int ier = 0;
 
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
   float *zi;
-  int dsizes_zi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
   float *fval;
-  int dsizes_fval[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_fval[NCL_MAX_DIMENSIONS];
   float *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xo[NCL_MAX_DIMENSIONS];
   float *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_yo[NCL_MAX_DIMENSIONS];
   float *zo;
-  int dsizes_zo[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_zo[NCL_MAX_DIMENSIONS];
 
   int       has_missing_xi, has_missing_yi, has_missing_zi, has_missing_fval;
   int       has_missing_xo, has_missing_yo, has_missing_zo;
@@ -29,7 +29,8 @@ NhlErrorTypes shgrid_W(void)
   NclScalar missing_xo, missing_yo, missing_zo;
 
   float *uo;
-  int i, j, ndims_uo, dsizes_uo[3], num_missing, num_points;
+  int ndims_uo, num_missing;
+  ng_size_t i, j, dsizes_uo[3], num_points;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -296,31 +297,32 @@ NhlErrorTypes shgrid_W(void)
 
 NhlErrorTypes shgetnp_W(void)
 {
-  int i, j, ier = 0, num_missing, num_points, *k, ll;
+  int ier = 0, num_missing;
+  ng_size_t i, j, num_points;
 
   float *px;
-  int dsizes_px[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_px[NCL_MAX_DIMENSIONS];
   float *py;
-  int dsizes_py[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_py[NCL_MAX_DIMENSIONS];
   float *pz;
-  int dsizes_pz[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pz[NCL_MAX_DIMENSIONS];
 
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
   float *zi;
-  int dsizes_zi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
  
   int *flag;
-  int dsizes_flag[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_flag[NCL_MAX_DIMENSIONS];
 
   int       has_missing_px, has_missing_py, has_missing_pz;
   NclScalar missing_px, missing_py, missing_pz;
   int       has_missing_xi, has_missing_yi, has_missing_zi;
   NclScalar missing_xi, missing_yi, missing_zi;
   int       *index;
-  int       index_dims = 1;
+  ng_size_t index_dims = 1;
 
 /*
  * Retrieve argument #0 (x coordinate of reference point).
@@ -525,8 +527,8 @@ NhlErrorTypes shgetnp_W(void)
 NhlErrorTypes shsetp_W(void)
 {
 
-  char  *arg1, *cval;
-  int   numpi, numpf, numpc, i;
+  char  *arg1;
+  int   numpi, i;
 
 /*
  *  List the integer parameter names.  To add new ones,
@@ -538,9 +540,9 @@ NhlErrorTypes shsetp_W(void)
  * Input array variables
  */
   string *pname;
-  int dsizes_pname[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
-  int dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pvalue[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname, type_pvalue;
 
 /*
@@ -610,9 +612,8 @@ NhlErrorTypes shgetp_W(void)
  *  Get values for shgrid parameters.
  */
 
-  char  *arg1, *cval;
-  int   numpi, numpf, numpc, i;
-  string *pvalue, *qvalue;
+  char  *arg1;
+  int   numpi, i;
 
 /*
  *  List the integer parameter names.  To add new ones,
@@ -624,11 +625,10 @@ NhlErrorTypes shgetp_W(void)
  * Input array variable
  */
   string *pname;
-  int dsizes_pname[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname;
-  float *fval;
   int *ival;
-  int ret_size = 1; 
+  ng_size_t ret_size = 1; 
 
 /*
  * Retrieve argument #1

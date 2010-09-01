@@ -15,11 +15,18 @@ NhlErrorTypes pslhyp_W( void )
 /*
  * Input array variables
  */
-  void   *pres, *z, *tv;
-  double *tmp_pres, *tmp_z, *tmp_tv;
-  int ndims_pres, dsizes_pres[NCL_MAX_DIMENSIONS];
-  int ndims_z,    dsizes_z[NCL_MAX_DIMENSIONS];
-  int ndims_tv,   dsizes_tv[NCL_MAX_DIMENSIONS];
+  void   *pres = NULL;
+  void   *z = NULL;
+  void   *tv = NULL;
+  double *tmp_pres = NULL;
+  double *tmp_z = NULL;
+  double *tmp_tv = NULL;
+  int ndims_pres;
+  ng_size_t dsizes_pres[NCL_MAX_DIMENSIONS];
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  int ndims_tv;
+  ng_size_t dsizes_tv[NCL_MAX_DIMENSIONS];
   int has_missing_pres;
   NclScalar missing_pres, missing_dpres, missing_rpres;
   NclBasicDataTypes type_pres, type_z, type_tv;
@@ -27,7 +34,7 @@ NhlErrorTypes pslhyp_W( void )
  * Attribute variables
  */
   int att_id;
-  int nelem = 1;
+  ng_size_t nelem = 1;
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -36,8 +43,8 @@ NhlErrorTypes pslhyp_W( void )
  * Output array variables
  */
   void *slp;
-  double *tmp_slp;
-  int size_slp;
+  double *tmp_slp = NULL;
+  ng_size_t size_slp;
   NclBasicDataTypes type_slp;
 /*
  * Declare various variables for random purposes.
@@ -365,28 +372,35 @@ NhlErrorTypes pslec_W( void )
  * Input array variables
  */
   void *t, *phis, *ps, *pres;
-  double *tmp_t, *tmp_phis, *tmp_ps, *tmp_pres;
-  int ndims_t, dsizes_t[NCL_MAX_DIMENSIONS];
-  int ndims_phis, dsizes_phis[NCL_MAX_DIMENSIONS];
-  int ndims_ps, dsizes_ps[NCL_MAX_DIMENSIONS];
-  int ndims_pres, dsizes_pres[NCL_MAX_DIMENSIONS];
+  double *tmp_t = NULL;
+  double *tmp_phis = NULL;
+  double *tmp_ps = NULL;
+  double *tmp_pres = NULL;
+  int ndims_t;
+  ng_size_t dsizes_t[NCL_MAX_DIMENSIONS];
+  int ndims_phis;
+  ng_size_t dsizes_phis[NCL_MAX_DIMENSIONS];
+  int ndims_ps;
+  ng_size_t dsizes_ps[NCL_MAX_DIMENSIONS];
+  int ndims_pres;
+  ng_size_t dsizes_pres[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_t, type_phis, type_ps, type_pres;
 /*
  * Attribute variables
  */
   int att_id;
-  int nelem = 1;
+  ng_size_t nelem = 1;
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
   NclQuark *long_name, *short_name, *units;
-  int size_pres, size_phis;
+  ng_size_t size_pres, size_phis;
 /*
  * Output array variables
  */
   void *slp;
-  double *tmp_slp;
-  int size_slp1;
+  double *tmp_slp = NULL;
+  ng_size_t size_slp1;
   NclBasicDataTypes type_slp;
 /*
  * Declare various variables for random purposes.
@@ -755,20 +769,31 @@ NhlErrorTypes pslhor_W( void )
  * Input array variables
  */
   void *z, *t, *phis, *ps, *pres, *lats;
-  double *tmp_z, *tmp_t, *tmp_phis, *tmp_ps, *tmp_pres, *tmp_lats;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
-  int ndims_t, dsizes_t[NCL_MAX_DIMENSIONS];
-  int ndims_phis, dsizes_phis[NCL_MAX_DIMENSIONS];
-  int ndims_ps, dsizes_ps[NCL_MAX_DIMENSIONS];
-  int ndims_pres, dsizes_pres[NCL_MAX_DIMENSIONS];
-  int ndims_lats, dsizes_lats[NCL_MAX_DIMENSIONS];
+  double *tmp_z = NULL;
+  double *tmp_t = NULL;
+  double *tmp_phis = NULL;
+  double *tmp_ps = NULL;
+  double *tmp_pres = NULL;
+  double *tmp_lats = NULL;
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  int ndims_t;
+  ng_size_t dsizes_t[NCL_MAX_DIMENSIONS];
+  int ndims_phis;
+  ng_size_t dsizes_phis[NCL_MAX_DIMENSIONS];
+  int ndims_ps;
+  ng_size_t dsizes_ps[NCL_MAX_DIMENSIONS];
+  int ndims_pres;
+  ng_size_t dsizes_pres[NCL_MAX_DIMENSIONS];
+  int ndims_lats;
+  ng_size_t dsizes_lats[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_z, type_t, type_phis, type_ps, type_pres, type_lats;
-  int size_pres, size_ps, size_phis;
+  ng_size_t size_pres, size_ps, size_phis;
 /*
  * Attribute variables
  */
   int att_id;
-  int nelem = 1;
+  ng_size_t nelem = 1;
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -777,9 +802,9 @@ NhlErrorTypes pslhor_W( void )
 /*
  * Output array variables
  */
-  void *slp;
-  double *tmp_slp;
-  int size_slp, size_slp1;
+  void *slp = NULL;
+  double *tmp_slp = NULL;
+  ng_size_t size_slp, size_slp1;
   NclBasicDataTypes type_slp;
 /*
  * Some extra arrays.

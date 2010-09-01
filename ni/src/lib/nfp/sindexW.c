@@ -13,8 +13,10 @@ NhlErrorTypes sindex_yrmo_W( void )
  */
   void *x, *y;
   double *dx, *dy;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_rx, missing_dx, missing_dy;
   int has_missing_x, has_missing_y;
   int nyrs, nmos, *iprnt;
@@ -23,7 +25,7 @@ NhlErrorTypes sindex_yrmo_W( void )
  * Attribute variables
  */
   int att_id;
-  int nelem = 1;
+  ng_size_t nelem = 1;
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -37,7 +39,8 @@ NhlErrorTypes sindex_yrmo_W( void )
 /*
  * various
  */
-  int i, lwork, ler = 0, total_size_xy;
+  int ler = 0;
+  ng_size_t lwork, total_size_xy;
   double *work;
 /*
  * Retrieve parameters
@@ -142,8 +145,17 @@ NhlErrorTypes sindex_yrmo_W( void )
 /*
  * Call the f77 version of 'sindex' with the full argument list.
  */
-  NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
-                           work,&lwork,tmp_soi,soi_noise,&ler);
+  if(lwork <= INT_MAX)
+  {
+      int ilwork = (int) lwork;
+      NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
+                               work,&ilwork,tmp_soi,soi_noise,&ler);
+  }
+  else
+  {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"lwork: lwork = %d, is larger than INT_MAX", lwork);
+  }
+
   if (ler == 2) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"sindex_yrmo: One or both of the input data arrays contains all missing values");
   }
@@ -299,8 +311,10 @@ NhlErrorTypes snindex_yrmo_W( void )
  */
   void *x, *y;
   double *dx, *dy;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_rx, missing_dx, missing_dy;
   int has_missing_x, has_missing_y;
   int nyrs, nmos, *iprnt;
@@ -309,7 +323,7 @@ NhlErrorTypes snindex_yrmo_W( void )
  * Attribute variables
  */
   int att_id;
-  int nelem = 1;
+  ng_size_t nelem = 1;
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -323,7 +337,9 @@ NhlErrorTypes snindex_yrmo_W( void )
 /*
  * various
  */
-  int i, lwork, ler = 0, total_size_xy;
+  int ler = 0;
+  ng_size_t lwork;
+  ng_size_t total_size_xy;
   double *work;
 /*
  * Retrieve parameters
@@ -459,8 +475,17 @@ NhlErrorTypes snindex_yrmo_W( void )
 /*
  * Call the f77 version of 'sindex' with the full argument list.
  */
-  NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
-                           work,&lwork,tmp_soi,tmp_soi_noise,&ler);
+  if(lwork <= INT_MAX)
+  {
+      int ilwork = (int) lwork;
+      NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
+                               work,&ilwork,tmp_soi,tmp_soi_noise,&ler);
+  }
+  else
+  {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"lwork: lwork = %d, is larger than INT_MAX", lwork);
+  }
+
   if (ler == 2) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"snindex_yrmo: One or both of the input data arrays contains all missing values");
   }

@@ -23,17 +23,13 @@ NhlErrorTypes y_skewt_W( void )
   void *pres;
   int np;
   double *tmp_pres;
-  int dsizes_pres[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pres[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pres;
 /*
  * Output array variables
  */
   void *yskewt;
   double *tmp_yskewt;
-/*
- * Declare various variables for random purposes.
- */
-  int i;
 /*
  * Retrieve arguments.
  */
@@ -101,8 +97,8 @@ NhlErrorTypes x_skewt_W( void )
   void *temp, *y;
   int nty;
   double *tmp_temp, *tmp_y;
-  int dsizes_temp[NCL_MAX_DIMENSIONS];
-  int dsizes_y[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_temp[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_temp, type_y;
 /*
  * Output array variables
@@ -110,10 +106,6 @@ NhlErrorTypes x_skewt_W( void )
   void *xskewt;
   double *tmp_xskewt;
   NclBasicDataTypes type_xskewt;
-/*
- * Declare various variables for random purposes.
- */
-  int i;
 /*
  * Retrieve arguments.
  */
@@ -201,7 +193,7 @@ NhlErrorTypes tmr_skewt_W( void )
  */
   void *w, *p;
   double *tmp_w, *tmp_p;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclBasicDataTypes type_w, type_p;
 /*
  * Output array variables
@@ -287,7 +279,7 @@ NhlErrorTypes tda_skewt_W( void )
  */
   void *o, *p;
   double *tmp_o, *tmp_p;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclBasicDataTypes type_o, type_p;
 /*
  * Output array variables
@@ -373,7 +365,7 @@ NhlErrorTypes satlft_skewt_W( void )
  */
   void *thw, *p;
   double *tmp_thw, *tmp_p;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclBasicDataTypes type_thw, type_p;
 /*
  * Output array variables
@@ -458,15 +450,14 @@ NhlErrorTypes ptlcl_skewt_W( void )
  */
   void *p, *t, *td;
   double *tmp_t, *tmp_p, *tmp_td;
-  int dsizes[1];
   NclBasicDataTypes type_t, type_p, type_td;
 /*
  * Output array variables
  */
   void *pc, *tc;
-  double *tmp_pc, *tmp_tc;
-  int dsizes_tc[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_ptlclskewt, type_pc, type_tc;
+  double *tmp_pc = NULL;
+  double *tmp_tc = NULL;
+  NclBasicDataTypes type_pc, type_tc;
 /*
  * Retrieve arguments.
  */
@@ -579,8 +570,10 @@ NhlErrorTypes showal_skewt_W( void )
  */
   void *p, *t, *td;
   double *tmp_t, *tmp_p, *tmp_td;
-  int dsizes_t[NCL_MAX_DIMENSIONS], dsizes_p[NCL_MAX_DIMENSIONS];
-  int dsizes_td[NCL_MAX_DIMENSIONS], dsizes[1];
+  ng_size_t dsizes_t[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_td[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes[1];
   NclBasicDataTypes type_t, type_p, type_td;
 /*
  * Output array variables
@@ -591,7 +584,7 @@ NhlErrorTypes showal_skewt_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, nlvls;
+  int nlvls;
 /*
  * Retrieve arguments.
  */
@@ -690,7 +683,9 @@ NhlErrorTypes pw_skewt_W( void )
  */
   void *p, *td;
   double *tmp_p, *tmp_td;
-  int dsizes_p[NCL_MAX_DIMENSIONS], dsizes_td[NCL_MAX_DIMENSIONS], dsizes[1];
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_td[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes[1];
   NclBasicDataTypes type_p, type_td;
 /*
  * Output array variables
@@ -701,7 +696,7 @@ NhlErrorTypes pw_skewt_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, n;
+  int n;
 /*
  * Retrieve arguments.
  */
@@ -790,8 +785,10 @@ NhlErrorTypes cape_thermo_W( void )
   int *iprint;
   double *tmp_tenv, *tmp_penv, *tmp_lclmb, *tmp_cape;
   NclScalar missing_tenv, missing_dtenv, missing_rtenv;
-  int dsizes_tenv[NCL_MAX_DIMENSIONS], has_missing_tenv;
-  int dsizes_penv[NCL_MAX_DIMENSIONS], dsizes[1];
+  ng_size_t dsizes_tenv[NCL_MAX_DIMENSIONS];
+  int has_missing_tenv;
+  ng_size_t dsizes_penv[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes[1];
   NclBasicDataTypes type_tenv, type_penv, type_lclmb;
 /*
  * Output array variables
@@ -808,10 +805,10 @@ NhlErrorTypes cape_thermo_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  double *tparcel;
-  float *rtparcel;
+  double *tparcel = NULL;
+  float *rtparcel = NULL;
   int *jlcl, *jlfc, *jcross;
-  int i, nlvls;
+  int nlvls;
 /*
  * Retrieve arguments.
  */

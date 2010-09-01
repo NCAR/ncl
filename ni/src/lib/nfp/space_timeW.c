@@ -19,7 +19,8 @@ NhlErrorTypes mjo_cross_segment_W( void )
  */
   void *x;
   double *tmp_x;
-  int dsizes_x[3], has_missing_x;
+  ng_size_t dsizes_x[3];
+  int has_missing_x;
   NclScalar missing_x, missing_flt_x, missing_dbl_x;
   NclBasicDataTypes type_x;
 
@@ -28,7 +29,8 @@ NhlErrorTypes mjo_cross_segment_W( void )
  */
   void *y;
   double *tmp_y;
-  int dsizes_y[3], has_missing_y;
+  ng_size_t dsizes_y[3];
+  int has_missing_y;
   NclScalar missing_y, missing_flt_y, missing_dbl_y;
   NclBasicDataTypes type_y;
 
@@ -41,7 +43,7 @@ NhlErrorTypes mjo_cross_segment_W( void )
  */
   void *stc;
   double *tmp_stc;
-  int dsizes_stc[3], has_missing_stc;
+  ng_size_t dsizes_stc[3];
   NclScalar missing_stc;
   NclBasicDataTypes type_stc;
 
@@ -49,7 +51,7 @@ NhlErrorTypes mjo_cross_segment_W( void )
  * Various
  */
   int nt, nm, nl, ntml, nt2p1, nlp1, ntp1, nt2m1, lsave1, lsave2;
-  int i, size_stc, ret, found_missing_x, found_missing_y;
+  int size_stc, ret, found_missing_x, found_missing_y;
 
 /*
  * Retrieve parameters.
@@ -244,7 +246,7 @@ NhlErrorTypes mjo_cross_coh2pha_W( void )
  */
   void *stc;
   double *tmp_stc;
-  int dsizes_stc[3], size_stc;
+  ng_size_t dsizes_stc[3], size_stc;
   NclBasicDataTypes type_stc;
 
 /*
@@ -255,7 +257,7 @@ NhlErrorTypes mjo_cross_coh2pha_W( void )
 /*
  * Various
  */
-  int nl, nt, nlp1, ntp1, nt2p1;
+  ng_size_t nl, nt, nlp1, ntp1, nt2p1;
 /*
  * Retrieve parameters.
  *
@@ -319,7 +321,24 @@ NhlErrorTypes mjo_cross_coh2pha_W( void )
 /*
  * Call the Fortran routine.
  */
-  NGCALLF(spctimcross3,SPCTIMCROSS3)(&nl,&nt,tmp_stc,&nlp1,&ntp1,&nt2p1);
+  if((nlp1 <= INT_MAX) &&
+     (ntp1 <= INT_MAX) &&
+     (nl <= INT_MAX) &&
+     (nt <= INT_MAX) &&
+     (nt2p1 <= INT_MAX))
+  {
+    int inl = (int) nl;
+    int i_nt = (int) nt;
+    int inlp1 = (int) nlp1;
+    int intp1 = (int) ntp1;
+    int int2p1 = (int) nt2p1;
+    NGCALLF(spctimcross3,SPCTIMCROSS3)(&inl,&i_nt,tmp_stc,&inlp1,&intp1,&int2p1);
+  }
+  else
+  {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"spctimcross3: nlp1 = %ld is greater than INT_MAX", nlp1);
+    return(NhlFATAL);
+  }
 
 /* 
  * Coerce back to float if necessary.
