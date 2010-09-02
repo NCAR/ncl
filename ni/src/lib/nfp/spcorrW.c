@@ -13,16 +13,18 @@ NhlErrorTypes spcorr_W( void )
  * Argument # 0
  */
   void *x;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x;
 
 /*
  * Argument # 1
  */
   void *y;
-  double *tmp_y;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
+  double *tmp_y = NULL;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_y;
 
 /*
@@ -30,13 +32,16 @@ NhlErrorTypes spcorr_W( void )
  */
   void *spc;
   double tmp_spc;
-  int ndims_spc, *dsizes_spc;
+  int ndims_spc;
+  ng_size_t *dsizes_spc;
   NclBasicDataTypes type_spc;
 
 /*
  * Various
  */
-  int i, n, index_x, iwrite, size_spc, ret;
+  ng_size_t i, n, index_x, size_spc;
+  int iwrite;
+  int ret;
 
 /*
  * Retrieve parameters.
@@ -92,7 +97,7 @@ NhlErrorTypes spcorr_W( void )
   if(ndims_x == 1) ndims_spc = 1;
   else             ndims_spc = ndims_x-1;
 
-  dsizes_spc = (int*)calloc(ndims_spc,sizeof(int));  
+  dsizes_spc = (ng_size_t*)calloc(ndims_spc,sizeof(ng_size_t));  
   if( dsizes_spc == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"spcorr: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -188,7 +193,16 @@ NhlErrorTypes spcorr_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(spcorr,SPCORR)(tmp_x, tmp_y, &n, &iwrite, &tmp_spc);
+    if(n <= INT_MAX)
+    {
+      int in = (int) n;
+      NGCALLF(spcorr,SPCORR)(tmp_x, tmp_y, &in, &iwrite, &tmp_spc);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"spcorr: n = %ld is greater than INT_MAX", n);
+      return(NhlFATAL);
+    }
 
 /*
  * Coerce output back to float if necessary.

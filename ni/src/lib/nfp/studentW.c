@@ -13,8 +13,9 @@ NhlErrorTypes student_t_W( void )
  * Argument # 0
  */
   void *t;
-  double *tmp_t;
-  int ndims_t, dsizes_t[NCL_MAX_DIMENSIONS];
+  double *tmp_t = NULL;
+  int ndims_t;
+  ng_size_t dsizes_t[NCL_MAX_DIMENSIONS];
   int has_missing_t;
   NclScalar missing_t, missing_flt_t, missing_dbl_t;
   NclBasicDataTypes type_t;
@@ -23,8 +24,9 @@ NhlErrorTypes student_t_W( void )
  * Argument # 1
  */
   void *df;
-  double *tmp_df;
-  int ndims_df, dsizes_df[NCL_MAX_DIMENSIONS];
+  double *tmp_df = NULL;
+  int ndims_df;
+  ng_size_t dsizes_df[NCL_MAX_DIMENSIONS];
   int is_scalar_df;
   NclBasicDataTypes type_df;
 
@@ -32,14 +34,14 @@ NhlErrorTypes student_t_W( void )
  * Return variable
  */
   void *prob;
-  double *tmp_prob;
+  double *tmp_prob = NULL;
   NclScalar missing_prob;
   NclBasicDataTypes type_prob;
 
 /*
  * Various
  */
-  int i, size_output;
+  ng_size_t i, size_output;
 
 /*
  * Retrieve parameters.

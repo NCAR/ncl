@@ -15,21 +15,28 @@ NhlErrorTypes stdatmus_z2tdp_W( void )
  * Input array variables
  */
   void *z;
-  double *tmp_z;
-  int size_z, ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
+  double *tmp_z = NULL;
+  ng_size_t size_z;
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_z;
 
 /*
  * Output variable.
  */
   void *tdp;
-  double *tmp_t, *tmp_d, *tmp_p;
-  int size_tdp, ndims_tdp, *dsizes_tdp;
+  double *tmp_t = NULL;
+  double *tmp_d = NULL;
+  double *tmp_p = NULL;
+  ng_size_t size_tdp;
+  int ndims_tdp;
+  ng_size_t *dsizes_tdp;
   NclBasicDataTypes type_tdp;
 /*
  * Various
  */
-  int i, nz, size_leftmost, index_z, index_t, index_d, index_p, ret;
+  ng_size_t i, nz, size_leftmost, index_z, index_t, index_d, index_p;
+  int ret;
 
 /*
  * Retrieve parameter.
@@ -56,7 +63,7 @@ NhlErrorTypes stdatmus_z2tdp_W( void )
   else  {
     ndims_tdp = ndims_z + 1;      /* tdp will be 3 x dimsizes(z) */
   }
-  dsizes_tdp = (int *)malloc(ndims_tdp*sizeof(int));
+  dsizes_tdp = (ng_size_t *)malloc(ndims_tdp*sizeof(ng_size_t));
   if(dsizes_tdp == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"stdatmus_z2tdp: Unable to allocate memory for dimension size array");
     return(NhlFATAL);
@@ -129,7 +136,16 @@ NhlErrorTypes stdatmus_z2tdp_W( void )
       tmp_p = &((double*)tdp)[index_p];
     }
 
-    NGCALLF(dstdatmz,DSTDATMZ)(&nz,tmp_z,tmp_t,tmp_d,tmp_p);
+    if(nz <= INT_MAX)
+    {
+      int inz = (int) nz;
+      NGCALLF(dstdatmz,DSTDATMZ)(&inz,tmp_z,tmp_t,tmp_d,tmp_p);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dstdatmz: nz = %ld is greater than INT_MAX", nz);
+      return(NhlFATAL);
+    }
 
     if(type_tdp == NCL_float) {
       coerce_output_float_only(tdp,tmp_t,nz,index_t);
@@ -164,21 +180,28 @@ NhlErrorTypes stdatmus_p2tdz_W( void )
  * Input array variables
  */
   void *p;
-  double *tmp_p;
-  int size_p, ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
+  double *tmp_p = NULL;
+  ng_size_t size_p;
+  int ndims_p;
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p;
 
 /*
  * Output variable.
  */
   void *tdz;
-  double *tmp_t, *tmp_d, *tmp_z;
-  int size_tdz, ndims_tdz, *dsizes_tdz;
+  double *tmp_t = NULL;
+  double *tmp_d = NULL;
+  double *tmp_z = NULL;
+  ng_size_t size_tdz;
+  int ndims_tdz;
+  ng_size_t *dsizes_tdz;
   NclBasicDataTypes type_tdz;
 /*
  * Various
  */
-  int i, np, size_leftmost, index_p, index_t, index_d, index_z, ret;
+  ng_size_t i, np, size_leftmost, index_p, index_t, index_d, index_z;
+  int ret;
 
 /*
  * Retrieve parameter.
@@ -205,7 +228,7 @@ NhlErrorTypes stdatmus_p2tdz_W( void )
   else  {
     ndims_tdz = ndims_p + 1;      /* tdz will be 3 x dimsizes(p) */
   }
-  dsizes_tdz = (int *)malloc(ndims_tdz*sizeof(int));
+  dsizes_tdz = (ng_size_t *)malloc(ndims_tdz*sizeof(ng_size_t));
   if(dsizes_tdz == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"stdatmus_p2tdz: Unable to allocate memory for dimension size array");
     return(NhlFATAL);
@@ -278,7 +301,16 @@ NhlErrorTypes stdatmus_p2tdz_W( void )
       tmp_z = &((double*)tdz)[index_z];
     }
 
-    NGCALLF(dstdatmp,DSTDATMP)(&np,tmp_p,tmp_t,tmp_d,tmp_z);
+    if(np <= INT_MAX)
+    {
+      int inp = (int) np;
+      NGCALLF(dstdatmp,DSTDATMP)(&inp,tmp_p,tmp_t,tmp_d,tmp_z);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dstdatmp: np = %ld is greater than INT_MAX", np);
+      return(NhlFATAL);
+    }
 
     if(type_tdz == NCL_float) {
       coerce_output_float_only(tdz,tmp_t,np,index_t);

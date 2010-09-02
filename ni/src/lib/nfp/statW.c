@@ -39,25 +39,34 @@ NhlErrorTypes stat2_W( void )
  * Input array variables
  */
   void *x;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx;
   NclBasicDataTypes type_x;
 /*
  * Output array variables
  */
   void *xmean, *xvar;
-  double *tmp_xmean, *tmp_xvar;
+  double *tmp_xmean = NULL;
+  double *tmp_xvar = NULL;
   int *nptused;
-  int ndims_xmean, dsizes_xmean[NCL_MAX_DIMENSIONS];
-  int ndims_xvar, dsizes_xvar[NCL_MAX_DIMENSIONS];
-  int ndims_nptused, dsizes_nptused[NCL_MAX_DIMENSIONS];
-  int ndims_out, *dsizes_out;
+  int ndims_xmean;
+  ng_size_t dsizes_xmean[NCL_MAX_DIMENSIONS];
+  int ndims_xvar;
+  ng_size_t dsizes_xvar[NCL_MAX_DIMENSIONS];
+  int ndims_nptused;
+  ng_size_t dsizes_nptused[NCL_MAX_DIMENSIONS];
+  int ndims_out;
+  ng_size_t *dsizes_out;
   NclBasicDataTypes type_xmean, type_xvar;
 /*
  * various
  */
-  int i, index_x, size_leftmost, ier = 0, ier_count, npts;
+  ng_size_t i, index_x, size_leftmost;
+  int ier = 0, ier_count;
+  ng_size_t npts;
   double xsd;
 /*
  * Retrieve parameters
@@ -89,7 +98,7 @@ NhlErrorTypes stat2_W( void )
  * Calculate what the size is supposed to be of our output arrays.
  */
   ndims_out = max(ndims_x-1,1);
-  dsizes_out = (int*)NclMalloc(ndims_out*sizeof(int));
+  dsizes_out = (ng_size_t*)NclMalloc(ndims_out*sizeof(ng_size_t));
   dsizes_out[0] = 1;
   for(i = 0; i < ndims_x-1; i++ ) dsizes_out[i] = dsizes_x[i];
 /* 
@@ -196,8 +205,18 @@ NhlErrorTypes stat2_W( void )
     if(type_xmean == NCL_double) tmp_xmean = &((double*)xmean)[i];
     if(type_xvar  == NCL_double) tmp_xvar  = &((double*)xvar)[i];
 
-    NGCALLF(dstat2,DSTAT2)(tmp_x,&npts,&missing_dx.doubleval,tmp_xmean,
-                           tmp_xvar,&xsd,&nptused[i],&ier);
+    if(npts <= INT_MAX)
+    {
+      int inpts = (int) npts;
+      NGCALLF(dstat2,DSTAT2)(tmp_x,&inpts,&missing_dx.doubleval,tmp_xmean,
+                             tmp_xvar,&xsd,&nptused[i],&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dstat2: npts = %ld is greater than INT_MAX", npts);
+      return(NhlFATAL);
+    }
+
     if (ier == 2) {
       *tmp_xmean = *tmp_xvar = missing_dx.doubleval;
       ier_count++;
@@ -229,25 +248,35 @@ NhlErrorTypes stat_trim_W( void )
  * Input array variables
  */
   void *x, *ptrim;
-  double *tmp_x, *tmp_ptrim;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  double *tmp_x = NULL;
+  double *tmp_ptrim;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx;
   NclBasicDataTypes type_x, type_ptrim;
 /*
  * Output array variables
  */
   void *xmeant, *xsdt;
-  double *tmp_xmeant, *tmp_xsdt;
+  double *tmp_xmeant = NULL;
+  double *tmp_xsdt = NULL;
   int *nptused;
-  int ndims_xmeant, dsizes_xmeant[NCL_MAX_DIMENSIONS];
-  int ndims_xsdt, dsizes_xsdt[NCL_MAX_DIMENSIONS];
-  int ndims_nptused, dsizes_nptused[NCL_MAX_DIMENSIONS];
-  int ndims_out, *dsizes_out;
+  int ndims_xmeant;
+  ng_size_t dsizes_xmeant[NCL_MAX_DIMENSIONS];
+  int ndims_xsdt;
+  ng_size_t dsizes_xsdt[NCL_MAX_DIMENSIONS];
+  int ndims_nptused;
+  ng_size_t dsizes_nptused[NCL_MAX_DIMENSIONS];
+  int ndims_out;
+  ng_size_t *dsizes_out;
   NclBasicDataTypes type_xmeant, type_xsdt;
 /*
  * various
  */
-  int i, index_x, size_leftmost, ier = 0, ier_count, npts;
+  ng_size_t i, index_x, size_leftmost;
+  int ier = 0, ier_count;
+  ng_size_t npts;
   double xvart, *work;
 /*
  * Retrieve parameters
@@ -299,7 +328,7 @@ NhlErrorTypes stat_trim_W( void )
  * Calculate what the size is supposed to be of our output arrays.
  */
   ndims_out = max(ndims_x-1,1);
-  dsizes_out = (int*)NclMalloc(ndims_out*sizeof(int));
+  dsizes_out = (ng_size_t*)NclMalloc(ndims_out*sizeof(ng_size_t));
   dsizes_out[0] = 1;
   for(i = 0; i < ndims_x-1; i++ ) dsizes_out[i] = dsizes_x[i];
 /* 
@@ -410,8 +439,17 @@ NhlErrorTypes stat_trim_W( void )
     if(type_xmeant == NCL_double) tmp_xmeant = &((double*)xmeant)[i];
     if(type_xsdt   == NCL_double) tmp_xsdt   = &((double*)xsdt)[i];
 
-    NGCALLF(dstat2t,DSTAT2T)(tmp_x,&npts,&missing_dx.doubleval,tmp_xmeant,
-                             &xvart,tmp_xsdt,&nptused[i],work,tmp_ptrim,&ier);
+    if(npts <= INT_MAX)
+    {
+      int inpts = (int) npts;
+      NGCALLF(dstat2t,DSTAT2T)(tmp_x,&inpts,&missing_dx.doubleval,tmp_xmeant,
+                               &xvart,tmp_xsdt,&nptused[i],work,tmp_ptrim,&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dstat2t: npts = %ld is greater than INT_MAX", npts);
+      return(NhlFATAL);
+    }
 
     if (ier == 2) {
       *tmp_xmeant = *tmp_xsdt = missing_dx.doubleval;
@@ -452,27 +490,40 @@ NhlErrorTypes stat4_W( void )
  * Input array variables
  */
   void *x;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx;
   NclBasicDataTypes type_x;
 /*
  * Output array variables
  */
   void *xmean, *xvar, *xskew, *xkurt;
-  double *tmp_xmean, *tmp_xvar, *tmp_xskew, *tmp_xkurt;
+  double *tmp_xmean = NULL;
+  double *tmp_xvar = NULL;
+  double *tmp_xskew = NULL;
+  double *tmp_xkurt = NULL;
   int *nptused;
-  int ndims_xmean, dsizes_xmean[NCL_MAX_DIMENSIONS];
-  int ndims_xskew, dsizes_xskew[NCL_MAX_DIMENSIONS];
-  int ndims_xkurt, dsizes_xkurt[NCL_MAX_DIMENSIONS];
-  int ndims_xvar, dsizes_xvar[NCL_MAX_DIMENSIONS];
-  int ndims_nptused, dsizes_nptused[NCL_MAX_DIMENSIONS];
-  int ndims_out, *dsizes_out;
+  int ndims_xmean;
+  ng_size_t dsizes_xmean[NCL_MAX_DIMENSIONS];
+  int ndims_xskew;
+  ng_size_t dsizes_xskew[NCL_MAX_DIMENSIONS];
+  int ndims_xkurt;
+  ng_size_t dsizes_xkurt[NCL_MAX_DIMENSIONS];
+  int ndims_xvar;
+  ng_size_t dsizes_xvar[NCL_MAX_DIMENSIONS];
+  int ndims_nptused;
+  ng_size_t dsizes_nptused[NCL_MAX_DIMENSIONS];
+  int ndims_out;
+  ng_size_t *dsizes_out;
   NclBasicDataTypes type_xmean, type_xvar, type_xskew, type_xkurt;
 /*
  * various
  */
-  int i, index_x, size_leftmost, ier = 0, ier_count, npts;
+  ng_size_t i, index_x, size_leftmost;
+  ng_size_t npts;
+  int ier = 0, ier_count;
   double xsd;
 /*
  * Retrieve parameters
@@ -503,7 +554,7 @@ NhlErrorTypes stat4_W( void )
  * Calculate what the size is supposed to be of our output arrays.
  */
   ndims_out  = max(ndims_x-1,1);
-  dsizes_out = (int*)NclMalloc(ndims_out*sizeof(int));
+  dsizes_out = (ng_size_t*)NclMalloc(ndims_out*sizeof(ng_size_t));
   dsizes_out[0] = 1;
   for(i = 0; i < ndims_x-1; i++ ) dsizes_out[i] = dsizes_x[i];
 /* 
@@ -649,8 +700,17 @@ NhlErrorTypes stat4_W( void )
     if(type_xkurt == NCL_double) tmp_xkurt = &((double*)xkurt)[i];
     if(type_xmean == NCL_double) tmp_xmean = &((double*)xmean)[i];
 
-    NGCALLF(dstat4,DSTAT4)(tmp_x,&npts,&missing_dx.doubleval,tmp_xmean,
-                           tmp_xvar,&xsd,tmp_xskew,tmp_xkurt,&nptused[i],&ier);
+    if(npts <= INT_MAX)
+    {
+      int inpts = (int) npts;
+      NGCALLF(dstat4,DSTAT4)(tmp_x,&inpts,&missing_dx.doubleval,tmp_xmean,
+                             tmp_xvar,&xsd,tmp_xskew,tmp_xkurt,&nptused[i],&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dstat4: npts = %ld is greater than INT_MAX", npts);
+      return(NhlFATAL);
+    }
 
     if (ier == 2) {
 /*
@@ -700,26 +760,36 @@ NhlErrorTypes stat_medrng_W( void )
  * Input array variables
  */
   void *x;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx;
   NclBasicDataTypes type_x;
 /*
  * Output array variables
  */
   void *xmedian, *xmrange, *xrange;
-  double *tmp_xmedian, *tmp_xmrange, *tmp_xrange;
+  double *tmp_xmedian = NULL;
+  double *tmp_xmrange = NULL;
+  double *tmp_xrange = NULL;
   int *nptused;
-  int ndims_xmedian, dsizes_xmedian[NCL_MAX_DIMENSIONS];
-  int ndims_xrange, dsizes_xrange[NCL_MAX_DIMENSIONS];
-  int ndims_xmrange, dsizes_xmrange[NCL_MAX_DIMENSIONS];
-  int ndims_nptused, dsizes_nptused[NCL_MAX_DIMENSIONS];
+  int ndims_xmedian;
+  ng_size_t dsizes_xmedian[NCL_MAX_DIMENSIONS];
+  int ndims_xrange;
+  ng_size_t dsizes_xrange[NCL_MAX_DIMENSIONS];
+  int ndims_xmrange;
+  ng_size_t dsizes_xmrange[NCL_MAX_DIMENSIONS];
+  int ndims_nptused;
+  ng_size_t dsizes_nptused[NCL_MAX_DIMENSIONS];
   int ndims_out;
   NclBasicDataTypes type_xmedian, type_xmrange, type_xrange;
 /*
  * various
  */
-  int i, index_x, size_leftmost, ier = 0, ier_count, npts;
+  ng_size_t i, index_x, size_leftmost;
+  int ier = 0, ier_count;
+  ng_size_t npts;
   double *work;
 /*
  * Retrieve parameters
@@ -885,8 +955,17 @@ NhlErrorTypes stat_medrng_W( void )
     if(type_xmrange == NCL_double) tmp_xmrange = &((double*)xmrange)[i];
     if(type_xrange == NCL_double)  tmp_xrange  = &((double*)xrange)[i];
 
-    NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&npts,&missing_dx.doubleval,
-                 tmp_xmedian,tmp_xmrange,tmp_xrange,&nptused[i],&ier);
+    if(npts <= INT_MAX)
+    {
+      int inpts = (int) npts;
+      NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&inpts,&missing_dx.doubleval,
+                   tmp_xmedian,tmp_xmrange,tmp_xrange,&nptused[i],&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dmedmrng: npts = %ld is greater than INT_MAX", npts);
+      return(NhlFATAL);
+    }
 
     if (ier == 2) {
       *tmp_xmedian = missing_dx.doubleval;
@@ -927,21 +1006,26 @@ NhlErrorTypes dim_median_W( void )
  * Input array variables
  */
   void *x;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
 /*
  * Output array variables
  */
   void *xmedian;
-  double xrange, xmrange, *tmp_xmedian;
-  int dsizes_median[NCL_MAX_DIMENSIONS];
+  double xrange, xmrange;
+  double *tmp_xmedian = NULL;
+  ng_size_t dsizes_median[NCL_MAX_DIMENSIONS];
   int nptused, ndims_median;
 /*
  * various
  */
-  int i, l1, total_elements, ier = 0, ier_count = 0, npts;
+  ng_size_t i, l1, total_elements;
+  int ier = 0, ier_count = 0;
+  ng_size_t npts;
   double *work;
 /*
  * Retrieve parameter.
@@ -1015,8 +1099,17 @@ NhlErrorTypes dim_median_W( void )
       tmp_xmedian = &((double*)xmedian)[i];
     }
 
-    NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&npts,&missing_dx.doubleval,
-                               tmp_xmedian,&xmrange,&xrange,&nptused,&ier);
+    if(npts <= INT_MAX)
+    {
+      int inpts = (int) npts;
+      NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&inpts,&missing_dx.doubleval,
+                                 tmp_xmedian,&xmrange,&xrange,&nptused,&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dmedmrng: npts = %ld is greater than INT_MAX", npts);
+      return(NhlFATAL);
+    }
 
     if(type_x != NCL_double) ((float*)xmedian)[i] = (float)(*tmp_xmedian);
 
@@ -1057,23 +1150,32 @@ NhlErrorTypes dim_median_n_W( void )
  * Input array variables
  */
   void *x;
-  int *dims, ndims;
+  int *dims;
+  ng_size_t ndims;
   double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
 /*
  * Output array variables
  */
   void *xmedian;
-  double xrange, xmrange, *tmp_xmedian;
-  int dsizes_median[NCL_MAX_DIMENSIONS];
-  int nptused, ndims_median;
+  double xrange, xmrange;
+  double *tmp_xmedian = NULL;
+  ng_size_t dsizes_median[NCL_MAX_DIMENSIONS];
+  int nptused;
+  int ndims_median;
 /*
  * various
  */
-  int i, j, k, index_out, index_x, nrnx, index_nrx, index_nr;
-  int total_nl, total_nr, total_elements, ier = 0, ier_count = 0, npts;
+  ;
+  ng_size_t i, j;
+  ng_size_t total_nl, total_nr, total_elements;
+  ng_size_t npts;
+  int ier = 0, ier_count = 0;
+  ng_size_t index_out, index_x, nrnx, index_nrx, index_nr;
   double *work;
 /*
  * Retrieve parameter.
@@ -1181,8 +1283,17 @@ NhlErrorTypes dim_median_n_W( void )
 
       if(type_x == NCL_double) tmp_xmedian = &((double*)xmedian)[index_out];
 
-      NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&npts,&missing_dx.doubleval,
-                                 tmp_xmedian,&xmrange,&xrange,&nptused,&ier);
+      if(npts <= INT_MAX)
+      {
+        int inpts = (int) npts;
+        NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&inpts,&missing_dx.doubleval,
+                                   tmp_xmedian,&xmrange,&xrange,&nptused,&ier);
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"dmedmrng: npts = %ld is greater than INT_MAX", npts);
+        return(NhlFATAL);
+      }
 
       if(type_x != NCL_double) {
         ((float*)xmedian)[index_out] = (float)(*tmp_xmedian);
@@ -1223,7 +1334,9 @@ NhlErrorTypes dim_rmvmean_W( void )
  */
   void *x;
   double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
 /*
@@ -1233,7 +1346,9 @@ NhlErrorTypes dim_rmvmean_W( void )
 /*
  * various
  */
-  int i, l1, total_size_x, total_size_x1, ier = 0, ier_count = 0, npts;
+  ng_size_t i, l1, total_size_x, total_size_x1;
+  int ier = 0, ier_count = 0;
+  ng_size_t npts;
 /*
  * Retrieve parameter.
  */
@@ -1291,7 +1406,16 @@ NhlErrorTypes dim_rmvmean_W( void )
  */
     coerce_subset_input_double(x,tmp_x,l1,type_x,npts,0,NULL,NULL);
 
-    NGCALLF(drmvmean,DRMVMEAN)(tmp_x,&npts,&missing_dx.doubleval,&ier);
+    if(npts <= INT_MAX)
+    {
+      int inpts = (int) npts;
+      NGCALLF(drmvmean,DRMVMEAN)(tmp_x,&inpts,&missing_dx.doubleval,&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"drmvmean: npts = %ld is greater than INT_MAX", npts);
+      return(NhlFATAL);
+    }
 
     coerce_output_float_or_double(rmvmean,tmp_x,type_x,npts,l1);
 
@@ -1333,9 +1457,12 @@ NhlErrorTypes dim_rmvmean_n_W( void )
  * Input array variables
  */
   void *x;
-  int *dims, ndims;
+  int *dims;
+  ng_size_t ndims;
   double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
 /*
@@ -1345,9 +1472,10 @@ NhlErrorTypes dim_rmvmean_n_W( void )
 /*
  * various
  */
-  int i, j, k, index_x, nrnx, index_nrx;
-  int total_nl, total_nr, total_size_x, total_elements;
-  int ier=0, ier_count=0, npts;
+  ng_size_t i, j, index_x, nrnx, index_nrx;
+  ng_size_t total_nl, total_nr, total_size_x, total_elements;
+  int ier=0, ier_count=0;
+  ng_size_t npts;
 
 /*
  * Retrieve parameter.
@@ -1444,7 +1572,16 @@ NhlErrorTypes dim_rmvmean_n_W( void )
       coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
                                       npts,0,NULL,NULL);
 
-      NGCALLF(drmvmean,DRMVMEAN)(tmp_x,&npts,&missing_dx.doubleval,&ier);
+      if(npts <= INT_MAX)
+      {
+        int inpts = (int) npts;
+        NGCALLF(drmvmean,DRMVMEAN)(tmp_x,&inpts,&missing_dx.doubleval,&ier);
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"drmvmean: npts = %ld is greater than INT_MAX", npts);
+        return(NhlFATAL);
+      }
 
       coerce_output_float_or_double_step(rmvmean,tmp_x,type_x,npts,index_x,
                                          total_nr);
@@ -1487,7 +1624,9 @@ NhlErrorTypes dim_rmvmed_W( void )
  */
   void *x;
   double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
 /*
@@ -1498,7 +1637,9 @@ NhlErrorTypes dim_rmvmed_W( void )
 /*
  * various
  */
-  int i, l1, total_size_x1, total_size_x, ier=0, ier_count=0, npts;
+  ng_size_t i, l1, total_size_x1, total_size_x;
+  int ier=0, ier_count=0;
+  ng_size_t npts;
 /*
  * Retrieve parameter.
  */
@@ -1564,7 +1705,16 @@ NhlErrorTypes dim_rmvmed_W( void )
  */
     coerce_subset_input_double(x,tmp_x,l1,type_x,npts,0,NULL,NULL);
 
-    NGCALLF(drmvmed,DRMVMED)(tmp_x,work,&npts,&missing_dx.doubleval,&ier);
+    if(npts <= INT_MAX)
+    {
+      int inpts = (int) npts;
+      NGCALLF(drmvmed,DRMVMED)(tmp_x,work,&inpts,&missing_dx.doubleval,&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"drmvmed: npts = %ld is greater than INT_MAX", npts);
+      return(NhlFATAL);
+    }
 
     coerce_output_float_or_double(rmvmed,tmp_x,type_x,npts,l1);
 
@@ -1605,9 +1755,12 @@ NhlErrorTypes dim_rmvmed_n_W( void )
  * Input array variables
  */
   void *x;
-  int *dims, ndims;
+  int *dims;
+  ng_size_t ndims;
   double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
 /*
@@ -1618,8 +1771,8 @@ NhlErrorTypes dim_rmvmed_n_W( void )
 /*
  * various
  */
-  int i, j, k, index_x, nrnx, index_nrx;
-  int total_nl, total_nr, total_size_x, total_elements;
+  ng_size_t i, j, index_x, nrnx, index_nrx;
+  ng_size_t total_nl, total_nr, total_size_x, total_elements;
   int ier=0, ier_count=0, npts;
 /*
  * Retrieve parameter.
@@ -1765,7 +1918,9 @@ NhlErrorTypes dim_standardize_W( void )
  */
   void *x;
   double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
   int *opt;
@@ -1776,7 +1931,9 @@ NhlErrorTypes dim_standardize_W( void )
 /*
  * various
  */
-  int i, l1, total_size_x1, total_size_x, ier=0, ier_count=0, npts;
+  ng_size_t i, l1, total_size_x1, total_size_x;
+  int ier=0, ier_count=0;
+  ng_size_t npts;
 /*
  * Retrieve parameter.
  */
@@ -1846,7 +2003,16 @@ NhlErrorTypes dim_standardize_W( void )
  */
     coerce_subset_input_double(x,tmp_x,l1,type_x,npts,0,NULL,NULL);
 
-    NGCALLF(dxstnd,DXSTND)(tmp_x,&npts,&missing_dx.doubleval,opt,&ier);
+    if(npts <= INT_MAX)
+    {
+      int inpts = (int) npts;
+      NGCALLF(dxstnd,DXSTND)(tmp_x,&inpts,&missing_dx.doubleval,opt,&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dxstnd: npts = %ld is greater than INT_MAX", npts);
+      return(NhlFATAL);
+    }
 
     coerce_output_float_or_double(standardize,tmp_x,type_x,npts,l1);
 
@@ -1886,9 +2052,12 @@ NhlErrorTypes dim_standardize_n_W( void )
  * Input array variables
  */
   void *x;
-  int *dims, ndims;
+  int *dims;
+  ng_size_t ndims;
   double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
   int *opt;
@@ -1899,8 +2068,8 @@ NhlErrorTypes dim_standardize_n_W( void )
 /*
  * various
  */
-  int i, j, k, index_x, nrnx, index_nrx;
-  int total_nl, total_nr, total_size_x, total_elements;
+  ng_size_t i, j, index_x, nrnx, index_nrx;
+  ng_size_t total_nl, total_nr, total_size_x, total_elements;
   int ier=0, ier_count=0, npts;
 
 /*
@@ -2049,9 +2218,14 @@ NhlErrorTypes dim_rmsd_W( void )
  * Input array variables
  */
   void *x, *y;
-  double *tmp_x, *tmp_y;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   NclScalar missing_x, missing_dx, missing_rx;
   NclScalar missing_y, missing_dy, missing_ry;
   NclBasicDataTypes type_x, type_y;
@@ -2059,15 +2233,17 @@ NhlErrorTypes dim_rmsd_W( void )
  * Output array variables
  */
   void *rmsd;
-  double *tmp_rmsd;
-  int dsizes_rmsd[NCL_MAX_DIMENSIONS];
+  double *tmp_rmsd = NULL;
+  ng_size_t dsizes_rmsd[NCL_MAX_DIMENSIONS];
   int nptused, ndims_rmsd;
   NclScalar missing_rmsd;
   NclBasicDataTypes type_rmsd;
 /*
  * various
  */
-  int i, total_elements, ier = 0, ier_count = 0, npts, index_xy;
+  ng_size_t i, total_elements;
+  int ier = 0, ier_count = 0;
+  ng_size_t npts, index_xy;
 /*
  * Retrieve parameters.
  */
@@ -2193,8 +2369,17 @@ NhlErrorTypes dim_rmsd_W( void )
       tmp_rmsd = &((double*)rmsd)[i];
     }
 
-    NGCALLF(drmsd,DRMSD)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                         &missing_dy.doubleval,tmp_rmsd,&nptused,&ier);
+    if(npts <= INT_MAX)
+    {
+      int inpts = (int) npts;
+      NGCALLF(drmsd,DRMSD)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                           &missing_dy.doubleval,tmp_rmsd,&nptused,&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"drmsd: npts = %ld is greater than INT_MAX", npts);
+      return(NhlFATAL);
+    }
 
     if(type_rmsd != NCL_double) ((float*)rmsd)[i] = (float)(*tmp_rmsd);
 
@@ -2231,8 +2416,12 @@ NhlErrorTypes dim_rmsd_n_W( void )
  */
   void *x, *y;
   double *tmp_x, *tmp_y;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   NclScalar missing_x, missing_dx, missing_rx;
   NclScalar missing_y, missing_dy, missing_ry;
   NclBasicDataTypes type_x, type_y;
@@ -2240,17 +2429,20 @@ NhlErrorTypes dim_rmsd_n_W( void )
  * Output array variables
  */
   void *rmsd;
-  int *dims, ndims;
-  double *tmp_rmsd;
-  int dsizes_rmsd[NCL_MAX_DIMENSIONS];
+  int *dims;
+  ng_size_t ndims;
+  double *tmp_rmsd = NULL;
+  ng_size_t dsizes_rmsd[NCL_MAX_DIMENSIONS];
   int nptused, ndims_rmsd;
   NclScalar missing_rmsd;
   NclBasicDataTypes type_rmsd;
 /*
  * various
  */
-  int i, j, k, index_out, index_xy, nrnx, index_nrx, index_nr;
-  int total_nl, total_nr, total_elements, ier = 0, ier_count = 0, npts;
+  ng_size_t i, j, index_out, index_xy, nrnx, index_nrx, index_nr;
+  ng_size_t total_nl, total_nr, total_elements;
+  int ier = 0, ier_count = 0;
+  ng_size_t npts;
 /*
  * Retrieve parameters.
  */
@@ -2389,8 +2581,17 @@ NhlErrorTypes dim_rmsd_n_W( void )
       
       if(type_rmsd == NCL_double) tmp_rmsd = &((double*)rmsd)[index_out];
 
-      NGCALLF(drmsd,DRMSD)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                           &missing_dy.doubleval,tmp_rmsd,&nptused,&ier);
+      if(npts <= INT_MAX)
+      {
+        int inpts = (int) npts;
+        NGCALLF(drmsd,DRMSD)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                             &missing_dy.doubleval,tmp_rmsd,&nptused,&ier);
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"drmsd: npts = %ld is greater than INT_MAX", npts);
+        return(NhlFATAL);
+      }
 
       if(type_rmsd != NCL_double) {
         ((float*)rmsd)[index_out] = (float)(*tmp_rmsd);
@@ -2427,8 +2628,10 @@ NhlErrorTypes esacr_W( void )
  * Input array variables
  */
   void *x;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
   int *mxlag, mxlag1;
@@ -2436,13 +2639,15 @@ NhlErrorTypes esacr_W( void )
  * Output array variables
  */
   void *acr;
-  double *tmp_acr, *tmp_acv;
-  int *dsizes_acr;
+  double *tmp_acr = NULL;
+  double *tmp_acv;
+  ng_size_t *dsizes_acr;
 /*
  * various
  */
-  int i, j, index_x, index_acr, total_size_x1, total_size_acr;
-  int ier = 0, ier_count2 = 0, ier_count5 = 0, npts;
+  ng_size_t i, index_x, index_acr, total_size_x1, total_size_acr;
+  int ier = 0, ier_count2 = 0, ier_count5 = 0;
+  ng_size_t npts;
   double xmean, xvar;
 /*
  * Retrieve parameters
@@ -2496,7 +2701,7 @@ NhlErrorTypes esacr_W( void )
  * Get size of output variables.
  */
   total_size_acr = total_size_x1*mxlag1;
-  dsizes_acr = (int*)calloc(ndims_x,sizeof(int));
+  dsizes_acr = (ng_size_t*)calloc(ndims_x,sizeof(ng_size_t));
   if (dsizes_acr == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: Unable to allocate space for output arrays" );
     return(NhlFATAL);
@@ -2548,8 +2753,18 @@ NhlErrorTypes esacr_W( void )
     }
 
     xvar = xmean = missing_dx.doubleval;
-    NGCALLF(desauto,DESAUTO)(tmp_x,&npts,&missing_dx.doubleval,&xmean,
-                             &xvar,mxlag,tmp_acv,tmp_acr,&ier);
+
+    if(npts <= INT_MAX)
+    {
+      int inpts = (int) npts;
+      NGCALLF(desauto,DESAUTO)(tmp_x,&inpts,&missing_dx.doubleval,&xmean,
+                               &xvar,mxlag,tmp_acv,tmp_acr,&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"desauto: npts = %ld is greater than INT_MAX", npts);
+      return(NhlFATAL);
+    }
 
     if (ier == -2) ier_count2++;
     if (ier == -5) ier_count5++;
@@ -2601,8 +2816,10 @@ NhlErrorTypes esacv_W( void )
  * Input array variables
  */
   void *x;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
   int *mxlag, mxlag1;
@@ -2610,13 +2827,15 @@ NhlErrorTypes esacv_W( void )
  * Output array variables
  */
   void *acv;
-  double *tmp_acr, *tmp_acv;
-  int *dsizes_acv;
+  double *tmp_acr = NULL;
+  double *tmp_acv = NULL;
+  ng_size_t *dsizes_acv;
 /*
  * various
  */
-  int i, j, index_x, index_acv, total_size_x1, total_size_acv;
-  int ier = 0, ier_count2 = 0, ier_count5 = 0, npts;
+  ng_size_t i, index_x, index_acv, total_size_x1, total_size_acv;
+  int ier = 0, ier_count2 = 0, ier_count5 = 0;
+  ng_size_t npts;
   double xmean, xvar;
 /*
  * Retrieve parameters
@@ -2670,7 +2889,7 @@ NhlErrorTypes esacv_W( void )
  * Get size of output variables.
  */
   total_size_acv = total_size_x1*mxlag1;
-  dsizes_acv = (int*)calloc(ndims_x,sizeof(int));
+  dsizes_acv = (ng_size_t*)calloc(ndims_x,sizeof(ng_size_t));
   if (dsizes_acv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: Unable to allocate space for output arrays" );
     return(NhlFATAL);
@@ -2722,8 +2941,18 @@ NhlErrorTypes esacv_W( void )
     }
 
     xvar = xmean = missing_dx.doubleval;
-    NGCALLF(desauto,DESAUTO)(tmp_x,&npts,&missing_dx.doubleval,&xmean,
-                             &xvar,mxlag,tmp_acv,tmp_acr,&ier);
+
+    if(npts <= INT_MAX)
+    {
+      int inpts = (int) npts;
+      NGCALLF(desauto,DESAUTO)(tmp_x,&inpts,&missing_dx.doubleval,&xmean,
+                               &xvar,mxlag,tmp_acv,tmp_acr,&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"desauto: npts = %ld is greater than INT_MAX", npts);
+      return(NhlFATAL);
+    }
 
     if (ier == -2) ier_count2++;
     if (ier == -5) ier_count5++;
@@ -2777,9 +3006,14 @@ NhlErrorTypes esccr_W( void )
  * Input array variables
  */
   void *x, *y;
-  double *tmp_x, *tmp_y;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   NclScalar missing_x, missing_y;
   NclScalar missing_rx, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y;
@@ -2788,16 +3022,19 @@ NhlErrorTypes esccr_W( void )
  * Output array variables
  */
   void *ccr;
-  double *tmp_ccr, *tmp_ccv;
-  int ndims_ccr, *dsizes_ccr;
+  double *tmp_ccr = NULL;
+  double *tmp_ccv;
+  int ndims_ccr;
+  ng_size_t *dsizes_ccr;
   NclBasicDataTypes type_ccr;
 /*
  * various
  */
-  int i, j, k, index_x, index_y, index_ccr;
-  int total_size_x1, total_size_y1;
-  int total_size_ccr;
-  int ier = 0, ier_count, npts, dimsizes_same;
+  ng_size_t i, j, index_x, index_y, index_ccr;
+  ng_size_t total_size_x1, total_size_y1;
+  ng_size_t total_size_ccr;
+  int ier = 0, ier_count;
+  ng_size_t npts, dimsizes_same;
   double xmean, xsd, ymean, ysd;
 /*
  * Retrieve parameters
@@ -2892,7 +3129,7 @@ NhlErrorTypes esccr_W( void )
     ndims_ccr = ndims_x + ndims_y - 1;
     total_size_ccr = total_size_x1 * total_size_y1 * mxlag1;
   }
-  dsizes_ccr = (int*)calloc(ndims_ccr,sizeof(int));
+  dsizes_ccr = (ng_size_t*)calloc(ndims_ccr,sizeof(ng_size_t));
   if (dsizes_ccr == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: Unable to allocate space for output arrays" );
     return(NhlFATAL);
@@ -2995,9 +3232,19 @@ NhlErrorTypes esccr_W( void )
       }
       xmean = xsd = missing_dx.doubleval;
       ymean = ysd = missing_dy.doubleval;
-      NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                               &missing_dy.doubleval,&xmean,&ymean,&xsd,
-                               &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+
+      if(npts <= INT_MAX)
+      {
+        int inpts = (int) npts;
+        NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                                 &missing_dy.doubleval,&xmean,&ymean,&xsd,
+                                 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"descros: npts = %ld is greater than INT_MAX", npts);
+        return(NhlFATAL);
+      }
       if(type_ccr != NCL_double) {
         coerce_output_float_only(ccr,tmp_ccr,mxlag1,index_ccr);
       }
@@ -3040,9 +3287,19 @@ NhlErrorTypes esccr_W( void )
         }
         xmean = xsd = missing_dx.doubleval;
         ymean = ysd = missing_dy.doubleval;
-        NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                                 &missing_dy.doubleval,&xmean,&ymean,&xsd,
-                                 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+
+        if(npts <= INT_MAX)
+        {
+          int inpts = (int) npts;
+          NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                                   &missing_dy.doubleval,&xmean,&ymean,&xsd,
+                                   &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+        }
+        else
+        {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"descros: npts = %ld is greater than INT_MAX", npts);
+          return(NhlFATAL);
+        }
         if(type_ccr != NCL_double) {
           coerce_output_float_only(ccr,tmp_ccr,mxlag1,index_ccr);
         }
@@ -3087,11 +3344,14 @@ NhlErrorTypes esccr_W( void )
 NhlErrorTypes dim_num_W( void)
 {
   logical *input_var;
-  int ndims_input, dsizes_input[NCL_MAX_DIMENSIONS];
+  int ndims_input;
+  ng_size_t dsizes_input[NCL_MAX_DIMENSIONS];
   void *dim_num;
-  int ndims_num, *dsizes_num, has_missing_input;
+  int ndims_num;
+  ng_size_t *dsizes_num;
+  int has_missing_input;
   NclScalar missing_input;
-  int i, j, ii, size_leftmost, size_last;
+  ng_size_t i, j, ii, size_leftmost, size_last;
 /* 
  * Retrieve input from NCL script.
  */
@@ -3109,7 +3369,7 @@ NhlErrorTypes dim_num_W( void)
  * dimensions (size_leftmost).
  */
   ndims_num     = max(ndims_input-1,1);
-  dsizes_num    = (int*)calloc(ndims_num, sizeof(int));
+  dsizes_num    = (ng_size_t*)calloc(ndims_num, sizeof(ng_size_t));
   dsizes_num[0] = 1;
   size_leftmost = 1;
   for(i = 0; i < ndims_input-1; i++ ) {
@@ -3158,16 +3418,20 @@ NhlErrorTypes dim_num_W( void)
 NhlErrorTypes dim_num_n_W( void)
 {
   logical *input_var;
-  int *dims, ndims;
-  int ndims_input, dsizes_input[NCL_MAX_DIMENSIONS];
+  int *dims;
+  ng_size_t ndims;
+  int ndims_input;
+  ng_size_t dsizes_input[NCL_MAX_DIMENSIONS];
   void *dim_num;
-  int ndims_num, *dsizes_num, has_missing_input;
+  int ndims_num;
+  ng_size_t *dsizes_num;
+  int has_missing_input;
   NclScalar missing_input;
 /*
  * various
  */
-  int i, j, k, index_out, index_in;
-  int total_nl, total_nr, total_elements, npts;
+  ng_size_t i, j, k, index_out, index_in;
+  ng_size_t total_nl, total_nr, total_elements, npts;
 /* 
  * Retrieve input from NCL script.
  */
@@ -3209,7 +3473,7 @@ NhlErrorTypes dim_num_n_W( void)
  * The dimension(s) to do the count across are "dims".
  */
   ndims_num     = max(ndims_input-ndims,1);
-  dsizes_num    = (int*)calloc(ndims_num, sizeof(int));
+  dsizes_num    = (ng_size_t*)calloc(ndims_num, sizeof(ng_size_t));
   dsizes_num[0] = 1;
   npts = total_nl = total_nr = total_elements = 1;
   for(i = 0; i < dims[0];   i++) {
@@ -3275,9 +3539,14 @@ NhlErrorTypes esccr_shields_W( void )
  * Input array variables
  */
   void *x, *y;
-  double *tmp_x, *tmp_y;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   NclScalar missing_x, missing_y;
   NclScalar missing_rx, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y;
@@ -3286,16 +3555,20 @@ NhlErrorTypes esccr_shields_W( void )
  * Output array variables
  */
   void *ccr;
-  double *tmp_ccr, *tmp_ccv;
-  int ndims_ccr, *dsizes_ccr;
+  double *tmp_ccr = NULL;
+  double *tmp_ccv;
+  int ndims_ccr;
+  ng_size_t *dsizes_ccr;
   NclBasicDataTypes type_ccr;
 /*
  * various
  */
-  int i, j, k, nc, index_x, index_y, index_ccr;
-  int total_size_x1, total_size_y1;
-  int total_size_ccr;
-  int ier = 0, ier_count, npts, ncases;
+  ng_size_t index_x, index_y, index_ccr;
+  ng_size_t i, j, nc;
+  ng_size_t total_size_x1, total_size_y1;
+  ng_size_t total_size_ccr;
+  int ier = 0, ier_count;
+  ng_size_t npts, ncases;
   double xmean, xsd, ymean, ysd;
 /*
  * Retrieve parameters
@@ -3376,7 +3649,7 @@ NhlErrorTypes esccr_shields_W( void )
   ndims_ccr = ndims_x + ndims_y - 2;
   total_size_ccr = ncases * total_size_x1 * total_size_y1 * mxlag1;
 
-  dsizes_ccr = (int*)calloc(ndims_ccr,sizeof(int));
+  dsizes_ccr = (ng_size_t*)calloc(ndims_ccr,sizeof(ng_size_t));
   if (dsizes_ccr == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr_shields: Unable to allocate space for output arrays" );
     return(NhlFATAL);
@@ -3472,9 +3745,19 @@ NhlErrorTypes esccr_shields_W( void )
         }
         xmean = xsd = missing_dx.doubleval;
         ymean = ysd = missing_dy.doubleval;
-        NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                                 &missing_dy.doubleval,&xmean,&ymean,&xsd,
-                                 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+
+        if(npts <= INT_MAX)
+        {
+          int inpts = (int) npts;
+          NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                                   &missing_dy.doubleval,&xmean,&ymean,&xsd,
+                                   &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+        }
+        else
+        {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"descros: npts = %ld is greater than INT_MAX", npts);
+          return(NhlFATAL);
+        }
         if(type_ccr != NCL_double) {
           coerce_output_float_only(ccr,tmp_ccr,mxlag1,index_ccr);
         }
@@ -3522,9 +3805,14 @@ NhlErrorTypes esccv_W( void )
  * Input array variables
  */
   void *x, *y;
-  double *tmp_x, *tmp_y;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   NclScalar missing_x, missing_y;
   NclScalar missing_rx, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y;
@@ -3533,16 +3821,20 @@ NhlErrorTypes esccv_W( void )
  * Output array variables
  */
   void *ccv;
-  double *tmp_ccr, *tmp_ccv;
-  int ndims_ccv, *dsizes_ccv;
+  double *tmp_ccr;
+  double *tmp_ccv = NULL;
+  int ndims_ccv;
+  ng_size_t *dsizes_ccv;
   NclBasicDataTypes type_ccv;
 /*
  * various
  */
-  int i, j, k, index_x, index_y, index_ccv;
-  int total_size_x1, total_size_y1;
-  int total_size_ccv;
-  int ier = 0, ier_count, npts, dimsizes_same;
+  ng_size_t index_x, index_y, index_ccv;
+  ng_size_t i, j;
+  ng_size_t total_size_x1, total_size_y1;
+  ng_size_t total_size_ccv;
+  int ier = 0, ier_count;
+  ng_size_t npts, dimsizes_same;
   double xmean, xsd, ymean, ysd;
 /*
  * Retrieve parameters
@@ -3637,7 +3929,7 @@ NhlErrorTypes esccv_W( void )
     ndims_ccv = ndims_x + ndims_y - 1;
     total_size_ccv = total_size_x1 * total_size_y1 * mxlag1;
   }
-  dsizes_ccv = (int*)calloc(ndims_ccv,sizeof(int));
+  dsizes_ccv = (ng_size_t*)calloc(ndims_ccv,sizeof(ng_size_t));
   if (dsizes_ccv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: Unable to allocate space for output arrays" );
     return(NhlFATAL);
@@ -3739,9 +4031,19 @@ NhlErrorTypes esccv_W( void )
 
       xmean = xsd = missing_dx.doubleval;
       ymean = ysd = missing_dy.doubleval;
-      NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                               &missing_dy.doubleval,&xmean,&ymean,&xsd,
-                               &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+
+      if(npts <= INT_MAX)
+      {
+        int inpts = (int) npts;
+        NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                                 &missing_dy.doubleval,&xmean,&ymean,&xsd,
+                                 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"descros: npts = %ld is greater than INT_MAX", npts);
+        return(NhlFATAL);
+      }
       if(type_ccv != NCL_double) {
         coerce_output_float_only(ccv,tmp_ccv,mxlag1,index_ccv);
       }
@@ -3784,9 +4086,19 @@ NhlErrorTypes esccv_W( void )
 
         xmean = xsd = missing_dx.doubleval;
         ymean = ysd = missing_dy.doubleval;
-        NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                                 &missing_dy.doubleval,&xmean,&ymean,&xsd,
-                                 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+
+        if(npts <= INT_MAX)
+        {
+          int inpts = (int) npts;
+          NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                                   &missing_dy.doubleval,&xmean,&ymean,&xsd,
+                                   &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+        }
+        else
+        {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"descros: npts = %ld is greater than INT_MAX", npts);
+          return(NhlFATAL);
+        }
         if(type_ccv != NCL_double) {
           coerce_output_float_only(ccv,tmp_ccv,mxlag1,index_ccv);
         }
@@ -3833,7 +4145,9 @@ NhlErrorTypes dim_stat4_W( void )
  * Input array variables
  */
   void *x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
 /*
@@ -3841,12 +4155,17 @@ NhlErrorTypes dim_stat4_W( void )
  */
   void *stat;
   double dxmean, dxvar, dxskew, dxkurt;
-  int nptused, *dsizes_out;
+  int nptused;
+  ng_size_t *dsizes_out;
 /*
  * various
  */
-  int i, total_leftmost, ier = 0, index_x, npts, ret, ier_count;
-  double xsd, *tmp_x;
+  ng_size_t i, total_leftmost;
+  int ier = 0;
+  ng_size_t index_x, npts;
+  int ret, ier_count;
+  double xsd;
+  double *tmp_x = NULL;
 /*
  * Retrieve parameters
  *
@@ -3875,7 +4194,7 @@ NhlErrorTypes dim_stat4_W( void )
 /*
  * Calculate size of output arrays.
  */
-  dsizes_out = (int*)calloc(ndims_x,sizeof(int));
+  dsizes_out = (ng_size_t*)calloc(ndims_x,sizeof(ng_size_t));
   if(type_x == NCL_double) {
     stat = (void*)calloc(4*total_leftmost,sizeof(double));
     if(dsizes_out == NULL || stat == NULL) {
@@ -3911,8 +4230,18 @@ NhlErrorTypes dim_stat4_W( void )
     else {
       tmp_x   = &((double*)x)[index_x];
     }
-    NGCALLF(dstat4,DSTAT4)(tmp_x,&npts,&missing_dx.doubleval,&dxmean,&dxvar,
-                           &xsd,&dxskew,&dxkurt,&nptused,&ier);
+
+    if(npts <= INT_MAX)
+    {
+      int inpts = (int) npts;
+      NGCALLF(dstat4,DSTAT4)(tmp_x,&inpts,&missing_dx.doubleval,&dxmean,&dxvar,
+                             &xsd,&dxskew,&dxkurt,&nptused,&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dstat4: npts = %ld is greater than INT_MAX", npts);
+      return(NhlFATAL);
+    }
     if (ier == 2) {
 /*
  * Input was all missing for this subset, so set output to missing
@@ -3963,8 +4292,11 @@ NhlErrorTypes dim_stat4_n_W( void )
  * Input array variables
  */
   void *x;
-  int *dims, ndims;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int *dims;
+  ng_size_t ndims;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
 /*
@@ -3972,12 +4304,15 @@ NhlErrorTypes dim_stat4_n_W( void )
  */
   void *stat;
   double dxmean, dxvar, dxskew, dxkurt;
-  int nptused, *dsizes_out;
+  int nptused;
+  ng_size_t *dsizes_out;
 /*
  * various
  */
-  int i, j, k, total_nl, total_nr, total_n, nrnx, index_nrx, index_nr;
-  int ier = 0, index_x, index_out, npts, ret, ier_count;
+  ng_size_t i, j, total_nl, total_nr, total_n, nrnx, index_nrx, index_nr;
+  int ier = 0;
+  ng_size_t index_x, index_out, npts;
+  int ret, ier_count;
   double xsd, *tmp_x;
 /*
  * Retrieve parameters
@@ -4034,7 +4369,7 @@ NhlErrorTypes dim_stat4_n_W( void )
 /*
  * Calculate size of output arrays.
  */
-  dsizes_out = (int*)calloc(ndims_x-ndims+1,sizeof(int));
+  dsizes_out = (ng_size_t*)calloc(ndims_x-ndims+1,sizeof(ng_size_t));
   tmp_x      = (double*)calloc(npts,sizeof(double));
   if(type_x == NCL_double) {
     stat = (void*)calloc(4*total_n,sizeof(double));
@@ -4075,8 +4410,18 @@ NhlErrorTypes dim_stat4_n_W( void )
       coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
                                       npts,0,NULL,NULL);
 
-      NGCALLF(dstat4,DSTAT4)(tmp_x,&npts,&missing_dx.doubleval,&dxmean,&dxvar,
-                             &xsd,&dxskew,&dxkurt,&nptused,&ier);
+      if(npts <= INT_MAX)
+      {
+        int inpts = (int) npts;
+        NGCALLF(dstat4,DSTAT4)(tmp_x,&inpts,&missing_dx.doubleval,&dxmean,&dxvar,
+                               &xsd,&dxskew,&dxkurt,&nptused,&ier);
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"dstat4: npts = %ld is greater than INT_MAX", npts);
+        return(NhlFATAL);
+      }
+
       if (ier == 2) {
 /*
  * Input was all missing for this subset, so set output to missing
