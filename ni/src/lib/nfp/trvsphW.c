@@ -17,10 +17,13 @@ NhlErrorTypes g2gshv_W( void )
  * Input array variables
  */
   void *Ua, *Va;
-  double *tmp_Ua, *tmp_Va;
+  double *tmp_Ua = NULL; 
+  double *tmp_Va = NULL; 
   int ndims_Ua, ndims_Va;
-  int dsizes_Ua[NCL_MAX_DIMENSIONS], dsizes_Va[NCL_MAX_DIMENSIONS];
-  int nlata, nlona, igrida[2];
+  ng_size_t dsizes_Ua[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_Va[NCL_MAX_DIMENSIONS];
+  ng_size_t nlata, nlona;
+  int igrida[2];
   NclScalar missing_Ua, missing_Va, missing_dUa, missing_dVa;
   int has_missing_Ua, has_missing_Va, found_missing;
   NclBasicDataTypes type_Ua, type_Va;
@@ -29,18 +32,24 @@ NhlErrorTypes g2gshv_W( void )
  * Output array variables
  */
   void *Ub, *Vb;
-  double *tmp_Ub, *tmp_Vb;
+  double *tmp_Ub = NULL; 
+  double *tmp_Vb = NULL; 
   int ndims_Ub, ndims_Vb;
-  int dsizes_Ub[NCL_MAX_DIMENSIONS], dsizes_Vb[NCL_MAX_DIMENSIONS];
-  int nlatb, nlonb, igridb[2];
+  ng_size_t dsizes_Ub[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_Vb[NCL_MAX_DIMENSIONS];
+  ng_size_t nlatb, nlonb;
+  int igridb[2];
   NclBasicDataTypes type_Ub, type_Vb;
 /*
  * various
  */
-  int *twave, intl, i, j, index_UVa, index_UVb, l1, ier=0;
-  int nlatanlona, nlatbnlonb;
-  int total_size_in, total_size_out, total_leftmost;
-  int iveca = 0, ivecb = 0, lsvmin, lwkmin;
+  int ier=0;
+  int *twave, intl;
+  ng_size_t i, index_UVa, index_UVb, l1;
+  ng_size_t nlatanlona, nlatbnlonb;
+  ng_size_t total_size_in, total_size_out, total_leftmost;
+  ng_size_t lsvmin, lwkmin;
+  int iveca = 0, ivecb = 0;
 /*
  * Workspace variables
  */
@@ -287,10 +296,38 @@ NhlErrorTypes g2gshv_W( void )
 /*
  * Call the f77 version of 'trvsph' with the full argument list.
  */
-      NGCALLF(trvsphx,TRVSPHX)(&intl,igrida,&nlona,&nlata,&iveca,tmp_Ua,
-                               tmp_Va,igridb,&nlonb,&nlatb,&ivecb,
-                               tmp_Ub,tmp_Vb,wsave,&lsave,&lsvmin,work,
-                               &lwork,&lwkmin,dwork,&ldwork,&ier,twave);
+      if((nlona <= INT_MAX) &&
+         (nlata <= INT_MAX) &&
+         (nlonb <= INT_MAX) &&
+         (nlatb <= INT_MAX) &&
+         (lsvmin <= INT_MAX) &&
+         (lwkmin <= INT_MAX) &&
+         (ldwork <= INT_MAX) &&
+         (lsave <= INT_MAX) &&
+         (lwork <= INT_MAX))
+      {
+        int inlona = (int) nlona;
+        int inlata = (int) nlata;
+        int inlonb = (int) nlonb;
+        int inlatb = (int) nlatb;
+        int ilsvmin;
+        int ilwkmin;
+        int ildwork = (int) ldwork;
+        int ilsave = (int) lsave;
+        int ilwork = (int) lwork;
+        NGCALLF(trvsphx,TRVSPHX)(&intl,igrida,&inlona,&inlata,&iveca,tmp_Ua,
+                                 tmp_Va,igridb,&inlonb,&inlatb,&ivecb,
+                                 tmp_Ub,tmp_Vb,wsave,&ilsave,&ilsvmin,work,
+                                 &ilwork,&ilwkmin,dwork,&ildwork,&ier,twave);
+        lsvmin = (ng_size_t) ilsvmin;
+        lwkmin = (ng_size_t) ilwkmin;
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"trvsphx: nlona = %ld is greater than INT_MAX", nlona);
+        return(NhlFATAL);
+      }
+
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"g2gshv: ier = %d\n", ier );
       }
@@ -330,10 +367,13 @@ NhlErrorTypes f2gshv_W( void )
  * Input array variables
  */
   void *Ua, *Va;
-  double *tmp_Ua, *tmp_Va;
+  double *tmp_Ua = NULL; 
+  double *tmp_Va = NULL; 
   int ndims_Ua, ndims_Va;
-  int dsizes_Ua[NCL_MAX_DIMENSIONS], dsizes_Va[NCL_MAX_DIMENSIONS];
-  int nlata, nlona, igrida[2];
+  ng_size_t dsizes_Ua[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_Va[NCL_MAX_DIMENSIONS];
+  ng_size_t nlata, nlona;
+  int igrida[2];
   NclScalar missing_Ua, missing_Va, missing_dUa, missing_dVa;
   int has_missing_Ua, has_missing_Va, found_missing;
   NclBasicDataTypes type_Ua, type_Va;
@@ -342,18 +382,24 @@ NhlErrorTypes f2gshv_W( void )
  * Output array variables
  */
   void *Ub, *Vb;
-  double *tmp_Ub, *tmp_Vb;
+  double *tmp_Ub = NULL; 
+  double *tmp_Vb = NULL; 
   int ndims_Ub, ndims_Vb;
-  int dsizes_Ub[NCL_MAX_DIMENSIONS], dsizes_Vb[NCL_MAX_DIMENSIONS];
-  int nlatb, nlonb, igridb[2];
+  ng_size_t dsizes_Ub[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_Vb[NCL_MAX_DIMENSIONS];
+  ng_size_t nlatb, nlonb;
+  int igridb[2];
   NclBasicDataTypes type_Ub, type_Vb;
 /*
  * various
  */
-  int *twave, intl, i, j, index_UVa, index_UVb, l1, ier=0;
-  int nlatanlona, nlatbnlonb;
-  int total_size_in, total_size_out, total_leftmost;
-  int iveca = 0, ivecb = 0, lsvmin, lwkmin;
+  int ier=0;
+  int *twave, intl;
+  ng_size_t i, index_UVa, index_UVb, l1;
+  ng_size_t nlatanlona, nlatbnlonb;
+  ng_size_t total_size_in, total_size_out, total_leftmost;
+  ng_size_t lsvmin, lwkmin;
+  int iveca = 0, ivecb = 0;
 /*
  * Workspace variables
  */
@@ -580,10 +626,37 @@ NhlErrorTypes f2gshv_W( void )
 /*
  * Call the f77 version of 'trvsph' with the full argument list.
  */
-      NGCALLF(trvsphx,TRVSPHX)(&intl,igrida,&nlona,&nlata,&iveca,tmp_Ua,
-                               tmp_Va,igridb,&nlonb,&nlatb,&ivecb,
-                               tmp_Ub,tmp_Vb,wsave,&lsave,&lsvmin,work,
-                               &lwork,&lwkmin,dwork,&ldwork,&ier,twave);
+      if((nlona <= INT_MAX) &&
+         (nlata <= INT_MAX) &&
+         (nlonb <= INT_MAX) &&
+         (nlatb <= INT_MAX) &&
+         (lsvmin <= INT_MAX) &&
+         (lwkmin <= INT_MAX) &&
+         (ldwork <= INT_MAX) &&
+         (lsave <= INT_MAX) &&
+         (lwork <= INT_MAX))
+      {
+        int inlona = (int) nlona;
+        int inlata = (int) nlata;
+        int inlonb = (int) nlonb;
+        int inlatb = (int) nlatb;
+        int ilsvmin;
+        int ilwkmin;
+        int ildwork = (int) ldwork;
+        int ilsave = (int) lsave;
+        int ilwork = (int) lwork;
+        NGCALLF(trvsphx,TRVSPHX)(&intl,igrida,&inlona,&inlata,&iveca,tmp_Ua,
+                                 tmp_Va,igridb,&inlonb,&inlatb,&ivecb,
+                                 tmp_Ub,tmp_Vb,wsave,&ilsave,&ilsvmin,work,
+                                 &ilwork,&ilwkmin,dwork,&ildwork,&ier,twave);
+        lsvmin = (ng_size_t) ilsvmin;
+        lwkmin = (ng_size_t) ilwkmin;
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"trvsphx: nlona = %ld is greater than INT_MAX", nlona);
+        return(NhlFATAL);
+      }
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"f2gshv: ier = %d\n", ier );
       }
@@ -624,10 +697,13 @@ NhlErrorTypes g2fshv_W( void )
  * Input array variables
  */
   void *Ua, *Va;
-  double *tmp_Ua, *tmp_Va;
+  double *tmp_Ua = NULL; 
+  double *tmp_Va = NULL; 
   int ndims_Ua, ndims_Va;
-  int dsizes_Ua[NCL_MAX_DIMENSIONS], dsizes_Va[NCL_MAX_DIMENSIONS];
-  int nlata, nlona, igrida[2];
+  ng_size_t dsizes_Ua[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_Va[NCL_MAX_DIMENSIONS];
+  ng_size_t nlata, nlona;
+  int igrida[2];
   NclScalar missing_Ua, missing_Va, missing_dUa, missing_dVa;
   int has_missing_Ua, has_missing_Va, found_missing;
   NclBasicDataTypes type_Ua, type_Va;
@@ -636,18 +712,24 @@ NhlErrorTypes g2fshv_W( void )
  * Output array variables
  */
   void *Ub, *Vb;
-  double *tmp_Ub, *tmp_Vb;
+  double *tmp_Ub = NULL; 
+  double *tmp_Vb = NULL; 
   int ndims_Ub, ndims_Vb;
-  int dsizes_Ub[NCL_MAX_DIMENSIONS], dsizes_Vb[NCL_MAX_DIMENSIONS];
-  int nlatb, nlonb, igridb[2];
+  ng_size_t dsizes_Ub[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_Vb[NCL_MAX_DIMENSIONS];
+  ng_size_t nlatb, nlonb;
+  int igridb[2];
   NclBasicDataTypes type_Ub, type_Vb;
 /*
  * various
  */
-  int twave = 0, intl, i, j, l1, index_UVa, index_UVb, ier=0;
-  int nlatanlona, nlatbnlonb;
-  int total_size_in, total_size_out, total_leftmost;
-  int iveca = 0, ivecb = 0, lsvmin, lwkmin;
+  int ier=0;
+  int twave = 0, intl;
+  ng_size_t i, l1, index_UVa, index_UVb;
+  ng_size_t nlatanlona, nlatbnlonb;
+  ng_size_t total_size_in, total_size_out, total_leftmost;
+  ng_size_t lsvmin, lwkmin;
+  int iveca = 0, ivecb = 0;
 /*
  * Workspace variables
  */
@@ -862,10 +944,37 @@ NhlErrorTypes g2fshv_W( void )
 /*
  * Call the f77 version of 'trvsph' with the full argument list.
  */
-      NGCALLF(trvsphx,TRVSPHX)(&intl,igrida,&nlona,&nlata,&iveca,tmp_Ua,
-                               tmp_Va,igridb,&nlonb,&nlatb,&ivecb,
-                               tmp_Ub,tmp_Vb,wsave,&lsave,&lsvmin,work,
-                               &lwork,&lwkmin,dwork,&ldwork,&ier,&twave);
+      if((nlona <= INT_MAX) &&
+         (nlata <= INT_MAX) &&
+         (nlonb <= INT_MAX) &&
+         (nlatb <= INT_MAX) &&
+         (lsvmin <= INT_MAX) &&
+         (lwkmin <= INT_MAX) &&
+         (ldwork <= INT_MAX) &&
+         (lsave <= INT_MAX) &&
+         (lwork <= INT_MAX))
+      {
+        int inlona = (int) nlona;
+        int inlata = (int) nlata;
+        int inlonb = (int) nlonb;
+        int inlatb = (int) nlatb;
+        int ilsvmin;
+        int ilwkmin;
+        int ildwork = (int) ldwork;
+        int ilsave = (int) lsave;
+        int ilwork = (int) lwork;
+        NGCALLF(trvsphx,TRVSPHX)(&intl,igrida,&inlona,&inlata,&iveca,tmp_Ua,
+                                 tmp_Va,igridb,&inlonb,&inlatb,&ivecb,
+                                 tmp_Ub,tmp_Vb,wsave,&ilsave,&ilsvmin,work,
+                                 &ilwork,&ilwkmin,dwork,&ildwork,&ier,&twave);
+        lsvmin = (ng_size_t) ilsvmin;
+        lwkmin = (ng_size_t) ilwkmin;
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"trvsphx: nlona = %ld is greater than INT_MAX", nlona);
+        return(NhlFATAL);
+      }
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"g2fshv: ier = %d\n", ier );
       }
@@ -905,10 +1014,13 @@ NhlErrorTypes f2fshv_W( void )
  * Input array variables
  */
   void *Ua, *Va;
-  double *tmp_Ua, *tmp_Va;
+  double *tmp_Ua = NULL; 
+  double *tmp_Va = NULL; 
   int ndims_Ua, ndims_Va;
-  int dsizes_Ua[NCL_MAX_DIMENSIONS], dsizes_Va[NCL_MAX_DIMENSIONS];
-  int nlata, nlona, igrida[2];
+  ng_size_t dsizes_Ua[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_Va[NCL_MAX_DIMENSIONS];
+  ng_size_t nlata, nlona;
+  int igrida[2];
   NclScalar missing_Ua, missing_Va, missing_dUa, missing_dVa;
   int has_missing_Ua, has_missing_Va, found_missing;
   NclBasicDataTypes type_Ua, type_Va;
@@ -917,23 +1029,29 @@ NhlErrorTypes f2fshv_W( void )
  * Output array variables
  */
   void *Ub, *Vb;
-  double *tmp_Ub, *tmp_Vb;
+  double *tmp_Ub = NULL;
+  double *tmp_Vb = NULL;
   int ndims_Ub, ndims_Vb;
-  int dsizes_Ub[NCL_MAX_DIMENSIONS], dsizes_Vb[NCL_MAX_DIMENSIONS];
-  int nlatb, nlonb, igridb[2];
+  ng_size_t dsizes_Ub[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_Vb[NCL_MAX_DIMENSIONS];
+  ng_size_t nlatb, nlonb;
+  int igridb[2];
   NclBasicDataTypes type_Ub, type_Vb;
 /*
  * various
  */
-  int twave = 0, intl, i, j, l1, index_UVa, index_UVb, ier=0;
-  int nlatanlona, nlatbnlonb;
-  int total_size_in, total_size_out, total_leftmost;
-  int iveca = 0, ivecb = 0, lsvmin, lwkmin;
+  int ier=0;
+  int twave = 0, intl;
+  ng_size_t i, l1, index_UVa, index_UVb;
+  ng_size_t nlatanlona, nlatbnlonb;
+  ng_size_t total_size_in, total_size_out, total_leftmost;
+  ng_size_t lsvmin, lwkmin;
+  int iveca = 0, ivecb = 0;
 /*
  * Workspace variables
  */
-  int lsave, lwork, ldwork;
-  int klat, klon, la1, la2, lb1, lb2, lwa, lwb;
+  ng_size_t lsave, lwork, ldwork;
+  ng_size_t klat, klon, la1, la2, lb1, lb2, lwa, lwb;
   double *work, *wsave, *dwork;
 /*
  * Retrieve parameters
@@ -1143,10 +1261,37 @@ NhlErrorTypes f2fshv_W( void )
 /*
  * Call the f77 version of 'trvsph' with the full argument list.
  */
-      NGCALLF(trvsphx,TRVSPHX)(&intl,igrida,&nlona,&nlata,&iveca,tmp_Ua,
-                               tmp_Va,igridb,&nlonb,&nlatb,&ivecb,
-                               tmp_Ub,tmp_Vb,wsave,&lsave,&lsvmin,work,
-                               &lwork,&lwkmin,dwork,&ldwork,&ier,&twave);
+      if((nlona <= INT_MAX) &&
+         (nlata <= INT_MAX) &&
+         (nlonb <= INT_MAX) &&
+         (nlatb <= INT_MAX) &&
+         (lsvmin <= INT_MAX) &&
+         (lwkmin <= INT_MAX) &&
+         (ldwork <= INT_MAX) &&
+         (lsave <= INT_MAX) &&
+         (lwork <= INT_MAX))
+      {
+        int inlona = (int) nlona;
+        int inlata = (int) nlata;
+        int inlonb = (int) nlonb;
+        int inlatb = (int) nlatb;
+        int ilsvmin;
+        int ilwkmin;
+        int ildwork = (int) ldwork;
+        int ilsave = (int) lsave;
+        int ilwork = (int) lwork;
+        NGCALLF(trvsphx,TRVSPHX)(&intl,igrida,&inlona,&inlata,&iveca,tmp_Ua,
+                                 tmp_Va,igridb,&inlonb,&inlatb,&ivecb,
+                                 tmp_Ub,tmp_Vb,wsave,&ilsave,&ilsvmin,work,
+                                 &ilwork,&ilwkmin,dwork,&ildwork,&ier,&twave);
+        lsvmin = (ng_size_t) ilsvmin;
+        lwkmin = (ng_size_t) ilwkmin;
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"trvsphx: nlona = %ld is greater than INT_MAX", nlona);
+        return(NhlFATAL);
+      }
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fshv: ier = %d\n", ier );
       }
@@ -1185,10 +1330,12 @@ NhlErrorTypes fo2fshv_W( void )
  * Input array variables
  */
   void *uoff, *voff;
-  double *tmp_uoff, *tmp_voff;
+  double *tmp_uoff = NULL;
+  double *tmp_voff = NULL;
   int ndims_uoff, ndims_voff;
-  int dsizes_uoff[NCL_MAX_DIMENSIONS], dsizes_voff[NCL_MAX_DIMENSIONS];
-  int jlat, jlat1, ilon, ilon2, jlatilon,jlat1ilon;
+  ng_size_t dsizes_uoff[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_voff[NCL_MAX_DIMENSIONS];
+  ng_size_t jlat, jlat1, ilon, ilon2, jlatilon,jlat1ilon;
   NclScalar missing_uoff, missing_voff, missing_duoff, missing_dvoff;
   int has_missing_uoff, has_missing_voff, found_missing;
   NclBasicDataTypes type_uoff, type_voff;
@@ -1197,20 +1344,22 @@ NhlErrorTypes fo2fshv_W( void )
  * Output array variables
  */
   void *ureg, *vreg;
-  double *tmp_ureg, *tmp_vreg;
+  double *tmp_ureg = NULL;
+  double *tmp_vreg = NULL;
   int ndims_ureg, ndims_vreg;
-  int dsizes_ureg[NCL_MAX_DIMENSIONS], dsizes_vreg[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_ureg[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_vreg[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_ureg, type_vreg;
-  int nlatb, nlonb;
 /*
  * various
  */
-  int i, j, index_uvoff, index_uvreg, ioff, ier=0;
-  int total_size_in, total_size_out, total_leftmost;
+  int ioff, ier=0;
+  ng_size_t i, index_uvoff, index_uvreg;
+  ng_size_t total_size_in, total_size_out, total_leftmost;
 /*
  * Workspace variables
  */
-  int lsave, lwork;
+  ng_size_t lsave, lwork;
   double *work, *wsave;
 /*
  * Retrieve parameters
@@ -1414,9 +1563,26 @@ NhlErrorTypes fo2fshv_W( void )
 /*
  * Call the f77 version of 'f2foshv' with the full argument list.
  */
-      NGCALLF(df2foshv,DF2FOSHV)(tmp_uoff,tmp_voff,&ilon,&jlat,
-                                 tmp_ureg,tmp_vreg,&jlat1,
-                                 work,&lwork,wsave,&lsave,&ioff,&ier);
+      if((ilon <= INT_MAX) &&
+         (jlat <= INT_MAX) &&
+         (jlat1 <= INT_MAX) &&
+         (lsave <= INT_MAX) &&
+         (lwork <= INT_MAX))
+      {
+        int iilon = (int) ilon;
+        int ijlat = (int) jlat;
+        int ijlat1 = (int) jlat1;
+        int ilsave = (int) lsave;
+        int ilwork = (int) lwork;
+        NGCALLF(df2foshv,DF2FOSHV)(tmp_uoff,tmp_voff,&iilon,&ijlat,
+                                   tmp_ureg,tmp_vreg,&ijlat1,
+                                   work,&ilwork,wsave,&ilsave,&ioff,&ier);
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"df2foshv: ilon = %ld is greater than INT_MAX", ilon);
+        return(NhlFATAL);
+      }
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"fo2fshv: ier = %d\n", ier );
       }
@@ -1456,10 +1622,12 @@ NhlErrorTypes f2foshv_W( void )
  * Input array vaiables
  */
   void *ureg, *vreg;
-  double *tmp_ureg, *tmp_vreg;
+  double *tmp_ureg = NULL;
+  double *tmp_vreg = NULL;
   int ndims_ureg, ndims_vreg;
-  int dsizes_ureg[NCL_MAX_DIMENSIONS], dsizes_vreg[NCL_MAX_DIMENSIONS];
-  int jlat, jlat1, ilon, ilon2, jlatilon, jlat1ilon;
+  ng_size_t dsizes_ureg[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_vreg[NCL_MAX_DIMENSIONS];
+  ng_size_t jlat, jlat1, ilon, ilon2, jlatilon, jlat1ilon;
   NclScalar missing_ureg, missing_vreg, missing_dureg, missing_dvreg;
   int has_missing_ureg, has_missing_vreg, found_missing;
   NclBasicDataTypes type_ureg, type_vreg;
@@ -1468,16 +1636,18 @@ NhlErrorTypes f2foshv_W( void )
  * Output array variables
  */
   void *uoff, *voff;
-  double *tmp_uoff, *tmp_voff;
+  double *tmp_uoff = NULL;
+  double *tmp_voff = NULL;
   int ndims_uoff, ndims_voff;
-  int dsizes_uoff[NCL_MAX_DIMENSIONS], dsizes_voff[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_uoff[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_voff[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_uoff, type_voff;
-  int nlatb, nlonb;
 /*
  * various
  */
-  int i, j, index_uvreg, index_uvoff, ioff, ier=0;
-  int total_size_in, total_size_out, total_leftmost;
+  int ioff, ier=0;
+  ng_size_t i, index_uvreg, index_uvoff;
+  ng_size_t total_size_in, total_size_out, total_leftmost;
 /*
  * Workspace variables
  */
@@ -1689,9 +1859,26 @@ NhlErrorTypes f2foshv_W( void )
 /*
  * Call the f77 version of 'f2foshv' with the full argument list.
  */
-      NGCALLF(df2foshv,DF2FOSHV)(tmp_uoff,tmp_voff,&ilon,&jlat,
-                                 tmp_ureg,tmp_vreg,&jlat1,
-                                 work,&lwork,wsave,&lsave,&ioff,&ier);
+      if((ilon <= INT_MAX) &&
+         (jlat <= INT_MAX) &&
+         (jlat1 <= INT_MAX) &&
+         (lsave <= INT_MAX) &&
+         (lwork <= INT_MAX))
+      {
+        int iilon = (int) ilon;
+        int ijlat = (int) jlat;
+        int ijlat1 = (int) jlat1;
+        int ilsave = (int) lsave;
+        int ilwork = (int) lwork;
+        NGCALLF(df2foshv,DF2FOSHV)(tmp_uoff,tmp_voff,&iilon,&ijlat,
+                                   tmp_ureg,tmp_vreg,&ijlat1,
+                                   work,&ilwork,wsave,&ilsave,&ioff,&ier);
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"df2foshv: ilon = %ld is greater than INT_MAX", ilon);
+        return(NhlFATAL);
+      }
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"f2foshv: ier = %d\n", ier );
       }

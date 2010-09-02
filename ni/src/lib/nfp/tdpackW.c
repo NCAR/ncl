@@ -190,7 +190,6 @@ NhlErrorTypes tdgetp_W(void)
  */
   char  *arg1;
   int   numpi, numpf, i;
-  string *pvalue, *qvalue;
 
 /*
  *  List the integer and float parameter names.  To add new ones,
@@ -212,10 +211,11 @@ NhlErrorTypes tdgetp_W(void)
  * Input array variable
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int ndims_pname;
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   float *fval;
   int *ival;
-  int ret_size = 1; 
+  ng_size_t ret_size = 1; 
 
 /*
  * Retrieve argument #1
@@ -338,9 +338,11 @@ NhlErrorTypes tdsetp_W(void)
  * Input array variables
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int ndims_pname;
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
-  int ndims_pvalue, dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  int ndims_pvalue;
+  ng_size_t dsizes_pvalue[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pvalue;
 
 /*
@@ -451,9 +453,11 @@ NhlErrorTypes pcsetp_W(void)
  * Input array variables
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int ndims_pname;
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
-  int ndims_pvalue, dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  int ndims_pvalue;
+  ng_size_t dsizes_pvalue[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pvalue;
 
 /*
@@ -581,7 +585,7 @@ NhlErrorTypes tdstrs_W( void )
 NhlErrorTypes tdprpt_W( void )
 {
   float *uvw, xy[2];
-  int dsizes_xy[1];
+  ng_size_t dsizes_xy[1];
 
 /*
  * Retrieve parameter.
@@ -598,7 +602,7 @@ NhlErrorTypes tdprpt_W( void )
 NhlErrorTypes tdprpa_W( void )
 {
   float *xy_in, xy_out[2];
-  int dsizes_xy[1];
+  ng_size_t dsizes_xy[1];
 
 /*
  * Retrieve parameter.
@@ -615,7 +619,7 @@ NhlErrorTypes tdprpa_W( void )
 NhlErrorTypes tdprpi_W( void )
 {
   float *xy_in, xy_out[2];
-  int dsizes_xy[1];
+  ng_size_t dsizes_xy[1];
 
 /*
  * Retrieve parameter.
@@ -724,7 +728,10 @@ NhlErrorTypes tdcurv_W( void )
  */
   int grlist, gkswid, nid;
   NclHLUObj tmp_hlu_obj;
-  int ncrv, dsizes_ucrv[1], dsizes_vcrv[1], dsizes_wcrv[1];
+  int ncrv;
+  ng_size_t dsizes_ucrv[1];
+  ng_size_t dsizes_vcrv[1];
+  ng_size_t dsizes_wcrv[1];
 
 /*
  * Retrieve parameters.
@@ -974,7 +981,7 @@ NhlErrorTypes tdlbla_W( void )
 
 NhlErrorTypes tdplch_W( void )
 {
-  int *nwid, *iaxs;
+  int *nwid;
   float *xpos, *ypos, *size, *angd, *cntr;
   string *chrs;
   char *cchrs;
@@ -1025,7 +1032,8 @@ NhlErrorTypes tdplch_W( void )
 
 NhlErrorTypes tddtri_W( void )
 {
-  int *nwid, *ntri, *itwk, mtri, dsizes_rtri[2];
+  int *nwid, *ntri, *itwk, mtri;
+  ng_size_t dsizes_rtri[2];
   float *rtri;
 /*
  * Variables for retrieving workstation information.
@@ -1076,7 +1084,10 @@ NhlErrorTypes tdstri_W( void )
 {
   float *u, *v, *w, *rtri;
   int nu, nv, *ntri, mtri, *irst;
-  int dsizes_u[1], dsizes_v[1], dsizes_w[2], dsizes_rtri[2];
+  ng_size_t dsizes_u[1];
+  ng_size_t dsizes_v[1];
+  ng_size_t dsizes_w[2];
+  ng_size_t dsizes_rtri[2];
 /*
  * Retrieve parameters.
  */
@@ -1116,7 +1127,11 @@ NhlErrorTypes tditri_W( void )
 {
   float *u, *v, *w, *f, *fiso, *rtri;
   int nu, nv, nw, *ntri, mtri, *irst;
-  int dsizes_u[1], dsizes_v[1], dsizes_w[1], dsizes_f[3], dsizes_rtri[2];
+  ng_size_t dsizes_u[1];
+  ng_size_t dsizes_v[1];
+  ng_size_t dsizes_w[1];
+  ng_size_t dsizes_f[3];
+  ng_size_t dsizes_rtri[2];
 /*
  * Retrieve parameters.
  */
@@ -1161,7 +1176,7 @@ NhlErrorTypes tdmtri_W( void )
   float *uvw, *s, *rtri;
   float *uvwmin, *uvwmax;
   int *imrk, *ntri, mtri, *irst;
-  int dsizes_rtri[2];
+  ng_size_t dsizes_rtri[2];
 /*
  * Retrieve parameters.
  */
@@ -1198,7 +1213,10 @@ NhlErrorTypes tdttri_W( void )
   float *ucra, *vcra, *wcra, *uvwmin, *uvwmax;
   float *rmrk, *smrk, *rtri;
   int *imrk, *ntri, *irst, mtri, ncra;
-  int dsizes_rtri[2], dsizes_ucra[1], dsizes_vcra[1], dsizes_wcra[1];
+  ng_size_t dsizes_rtri[2];
+  ng_size_t dsizes_ucra[1];
+  ng_size_t dsizes_vcra[1];
+  ng_size_t dsizes_wcra[1];
 /*
  * Retrieve parameters.
  */
@@ -1246,7 +1264,8 @@ NhlErrorTypes tdttri_W( void )
 NhlErrorTypes tdctri_W( void )
 {
   float *rtri, *rcut;
-  int *ntri, *iaxs, mtri, dsizes_rtri[2];
+  int *ntri, *iaxs, mtri;
+  ng_size_t dsizes_rtri[2];
 
 /*
  * Retrieve parameters.
@@ -1274,7 +1293,10 @@ NhlErrorTypes tdctri_W( void )
 
 NhlErrorTypes tdotri_W( void )
 {
-  int *ntri, mtri, *iord, dsizes_rtri[2], dsizes_rtwk[2], dsizes_itwk[1];
+  int *ntri, mtri, *iord;
+  ng_size_t dsizes_rtri[2];
+  ng_size_t dsizes_rtwk[2];
+  ng_size_t dsizes_itwk[1];
   float *rtri;
 /*
  * Work arrays.
@@ -1315,13 +1337,16 @@ NhlErrorTypes tdotri_W( void )
 
   dsizes_itwk[0] = mtri;
   ret = NclReturnValue(itwk,1,dsizes_itwk,NULL,NCL_int,0);
+  return(NhlNOERROR);
 }
 
 
 NhlErrorTypes tdsort_W( void )
 {
   float *rwrk;
-  int *iwrk, *iord, nwrk, dsizes_rwrk[1], ret;
+  int *iwrk, *iord, nwrk;
+  ng_size_t dsizes_rwrk[1];
+  int ret;
 /*
  * Retrieve parameters.
  */
@@ -1338,18 +1363,19 @@ NhlErrorTypes tdsort_W( void )
   c_tdsort(rwrk, nwrk, *iord, iwrk);
 
   ret = NclReturnValue(iwrk,1,dsizes_rwrk,NULL,NCL_int,0);
+  return(NhlNOERROR);
 }
 
 
 NhlErrorTypes tdez2d_W( void )
 {
   float *x, *y, *z, *zp;
-  int dsizes_x[NCL_MAX_DIMENSIONS];
-  int dsizes_y[NCL_MAX_DIMENSIONS];
-  int dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
   float *rmult, *theta, *phi;
   int *style, *nwid;
-  int i, j;
+  ng_size_t i, j;
 /*
  * Variables for retrieving workstation information.
  */
@@ -1420,10 +1446,10 @@ NhlErrorTypes tdez2d_W( void )
 NhlErrorTypes tdez3d_W( void )
 {
   float *x, *y, *z, *u, *value, *up;
-  int dsizes_x[NCL_MAX_DIMENSIONS];
-  int dsizes_y[NCL_MAX_DIMENSIONS];
-  int dsizes_z[NCL_MAX_DIMENSIONS];
-  int dsizes_u[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
   float *rmult, *theta, *phi;
   int *nwid, *style;
 /*
@@ -1432,7 +1458,7 @@ NhlErrorTypes tdez3d_W( void )
   int grlist, gkswid, nid;
   NclHLUObj tmp_hlu_obj;
 
-  int i, j, k;
+  ng_size_t i, j, k;
 /*
  * Retrieve parameters.
  *
@@ -1507,7 +1533,9 @@ NhlErrorTypes tdez1d_W( void )
 {
   int *nwid, *imrk, *style;
   float *x, *y, *z, *rmrk, *smrk, *rmult, *theta, *phi;
-  int dsizes_x[1], dsizes_y[1], dsizes_z[1];
+  ng_size_t dsizes_x[1];
+  ng_size_t dsizes_y[1];
+  ng_size_t dsizes_z[1];
 /*
  * Variables for retrieving workstation information.
  */
@@ -1557,8 +1585,17 @@ NhlErrorTypes tdez1d_W( void )
  * tdez1d function, and then deactivates the workstation.
  */
   gactivate_ws (gkswid);
-  NGCALLF(tdez1d,TDEZ1D)(&dsizes_x[0],x,y,z,imrk,rmrk,smrk,rmult,theta,phi,
-                         style);
+
+  if(dsizes_x[0] <= INT_MAX)
+  {
+     int x0 = (int) dsizes_x[0];
+     NGCALLF(tdez1d,TDEZ1D)(&x0,x,y,z,imrk,rmrk,smrk,rmult,theta,phi,style);
+  }
+  else
+  {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdez1d: dsizes_x[0] = %ld is greater than INT_MAX", dsizes_x[0]);
+    return(NhlFATAL);
+  }
   gdeactivate_ws (gkswid);
 
   return(NhlNOERROR);

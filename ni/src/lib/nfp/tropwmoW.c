@@ -15,16 +15,18 @@ NhlErrorTypes trop_wmo_W( void )
  * Argument # 0
  */
   void *p;
-  double *tmp_p;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
+  double *tmp_p = NULL;
+  int ndims_p;
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p;
 
 /*
  * Argument # 1
  */
   void *t;
-  double *tmp_t;
-  int ndims_t, dsizes_t[NCL_MAX_DIMENSIONS];
+  double *tmp_t = NULL;
+  int ndims_t;
+  ng_size_t dsizes_t[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_t;
 
 /*
@@ -42,8 +44,10 @@ NhlErrorTypes trop_wmo_W( void )
  */
   void *ptrop;
   int *itrop;
-  double *tmp_ptrop;
-  int ndims_ptrop, size_ptrop, *dsizes_ptrop;
+  double *tmp_ptrop = NULL;
+  int ndims_ptrop;
+  ng_size_t size_ptrop;
+  ng_size_t *dsizes_ptrop;
   NclBasicDataTypes type_ptrop;
 
 /*
@@ -56,8 +60,11 @@ NhlErrorTypes trop_wmo_W( void )
 /*
  * Various
  */
-  int i, nlev, nlevm, index_t, ret;
-  double tmsg, *lapsec, *lapse, *phalf, *pmb;
+  ng_size_t i, nlev, nlevm, index_t;
+  int ret;
+  double tmsg;
+  double *lapsec = NULL;
+  double *lapse, *phalf, *pmb;
   logical lapsec_set = False;
   NclBasicDataTypes type_lapsec;
             
@@ -155,7 +162,7 @@ NhlErrorTypes trop_wmo_W( void )
   else {
     ndims_ptrop = 1;
   }
-  dsizes_ptrop = (int*)calloc(ndims_ptrop,sizeof(int));  
+  dsizes_ptrop = (ng_size_t*)calloc(ndims_ptrop,sizeof(ng_size_t));  
   if( dsizes_ptrop == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"trop_wmo: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -340,9 +347,20 @@ NhlErrorTypes trop_wmo_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(stattropx,STATTROPX)(&nlev, &nlevm, tmp_p, tmp_t, &tmsg, lapsec,
-                                 punit, tmp_ptrop, &itrop[i], lapse, phalf,
-                                 pmb);
+    if((nlev <= INT_MAX) &&
+       (nlevm <= INT_MAX))
+    {
+      int inlev = (int) nlev;
+      int inlevm = (int) nlevm;
+      NGCALLF(stattropx,STATTROPX)(&inlev, &inlevm, tmp_p, tmp_t, &tmsg, lapsec,
+                                   punit, tmp_ptrop, &itrop[i], lapse, phalf,
+                                   pmb);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"stattropx: nlev = %ld is greater than INT_MAX", nlev);
+      return(NhlFATAL);
+    }
 
 /*
  * Coerce output back to float if necessary.
