@@ -16,23 +16,27 @@ NhlErrorTypes vinth2p_W
 ()
 #endif
 {
-	int i,j, sz,nblk,nblk_out,psf_blk;
+	ng_size_t i,j;
+        ng_size_t sz = 0;
+        ng_size_t nblk = 0;
+        ng_size_t nblk_out,psf_blk;
 	NclVar	tmp_var;
-	NclMultiDValData x_coord_md;
 	NclVar lev_coord_var;
 	NclMultiDValData lev_coord_md;
 	int ids[5];
 	NclDimRec dim_info[5];
 
 	NclStackEntry data,val,plevo_val;
-	NclMultiDValData tmp_md,datai_md;
-	char *datai = NULL,*datao;
-	int datao_dimsizes[5];
+	NclMultiDValData tmp_md = NULL;
+        NclMultiDValData datai_md;
+	char *datai = NULL;
+	char *datao;
+	ng_size_t datao_dimsizes[5];
 	int datai_n_dims,datai_has_missing;
 	NclBasicDataTypes datai_type;
-	int datai_dimsizes[5];
+	ng_size_t datai_dimsizes[5];
 	NclScalar datai_missing;
-	NclQuark plevo_quark;
+	NclQuark plevo_quark = 0;
 	double *tmp_datao;
 	double *tmp_datai;
 
@@ -40,17 +44,17 @@ NhlErrorTypes vinth2p_W
 	double *hbcofa = NULL;
 	void *hbcofa_ptr = NULL;
 	NclBasicDataTypes hbcofa_type;
-	int hbcofa_dimsizes;
+	ng_size_t hbcofa_dimsizes;
 
 	double *hbcofb = NULL;
 	void *hbcofb_ptr = NULL;
 	NclBasicDataTypes hbcofb_type;
-	int hbcofb_dimsizes;
+	ng_size_t hbcofb_dimsizes;
 
 	char *plevo = NULL;
 	char *plevo2 = NULL;
-	NclBasicDataTypes plevo_type;
-	int plevo_dimsizes;
+	NclBasicDataTypes plevo_type = NCL_none;
+	ng_size_t plevo_dimsizes;
 	int plevo_was_val = 0;
 	
 
@@ -60,16 +64,16 @@ NhlErrorTypes vinth2p_W
 	double *psfc_d = NULL;
 	int psfc_n_dims,psfc_has_missing;
 	NclBasicDataTypes psfc_type;
-	int psfc_dimsizes[4];
+	ng_size_t psfc_dimsizes[4];
 	NclScalar psfc_missing;
 
 	void *p0_ptr = NULL;
 	double *p0 = NULL;
 	NclBasicDataTypes p0_type;
 
-	int *ilev = NULL, nlevi, nlevip1;
-	NclScalar ilev_missing;
-	int total;
+	int *ilev = NULL;
+        ng_size_t nlevi, nlevip1;
+	ng_size_t total;
 
 	logical* kxtrp = NULL;
 
@@ -79,7 +83,7 @@ NhlErrorTypes vinth2p_W
 	int was_val = 0;
 	int not_double = 0;
 	int psf_elem;
-	NclTypeClass plevo_type_class;
+	NclTypeClass plevo_type_class = NCL_none;
 	
 /*
  * Get the first argument. This will be the one that determines
@@ -227,6 +231,8 @@ NhlErrorTypes vinth2p_W
 		} else {
 			plevo = (char*)tmp_md->multidval.val;
 		}
+		break;
+	default:
 		break;
 	}
 	if(plevo_type != NCL_double) {
@@ -376,7 +382,27 @@ NhlErrorTypes vinth2p_W
 /*
  * Here's the call to the Fortran routine.
  */
-			NGCALLF(vinth2p,VINTH2P)(tmp_datai,tmp_datao,hbcofa,hbcofb,p0,plevi,plevo,intyp,ilev,psfc_d,&missing,kxtrp,&(datai_dimsizes[2]),&(datai_dimsizes[1]),&nlevi,&nlevip1,&(plevo_dimsizes));
+			if((datai_dimsizes[2] <= INT_MAX) &&
+		   		(datai_dimsizes[1] <= INT_MAX) &&
+		   		(nlevi <= INT_MAX) &&
+		   		(nlevip1 <= INT_MAX) &&
+		   		(plevo_dimsizes <= INT_MAX))
+			{
+				int idsz1 = (int) datai_dimsizes[1];
+				int idsz2 = (int) datai_dimsizes[2];
+				int iplev = (int) plevo_dimsizes;
+				int inlevi = (int) nlevi;
+				int inlevip1 = (int) nlevip1;
+				NGCALLF(vinth2p,VINTH2P)(tmp_datai,tmp_datao,hbcofa,hbcofb,
+							p0,plevi,(double *)plevo,intyp,ilev,
+							psfc_d,(double *)(&missing),kxtrp,
+							&idsz2,&idsz1,&inlevi,&inlevip1,&iplev);
+			}
+			else
+			{
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: datai_dimsizes[2] = %ld is greater than INT_MAX", datai_dimsizes[2]);
+				return(NhlFATAL);
+			}
 
 /*
  * Copy the output values back to the float array. 
@@ -402,12 +428,33 @@ NhlErrorTypes vinth2p_W
 		} else {
 			psfc_d =(double*) psfc;
 		}
-		for(i = 0; i < total; i++) {
+		if((datai_dimsizes[0] <= INT_MAX) &&
+		   (datai_dimsizes[1] <= INT_MAX) &&
+		   (datai_dimsizes[1] <= INT_MAX) &&
+		   (plevo_dimsizes <= INT_MAX))
+		{
+			int idsz0 = (int) datai_dimsizes[0];
+			int idsz1 = (int) datai_dimsizes[1];
+			int idsz2 = (int) datai_dimsizes[2];
+			int iplev = (int) plevo_dimsizes;
+			for(i = 0; i < total; i++) {
 /*
  * Here's the call to the Fortran routine.
  */
-			NGCALLF(vinth2p,VINTH2P)((datai+sizeof(double)*i*nblk),(((char*)datao)+sizeof(double)*nblk_out*i),hbcofa,hbcofb,p0,plevi,plevo,intyp,ilev,(((char*)psfc_d)+sizeof(double)*psf_blk*i),&missing,kxtrp,&(datai_dimsizes[2]),&(datai_dimsizes[1]),&(datai_dimsizes[0]),&(datai_dimsizes[0]),&(plevo_dimsizes));
+			NGCALLF(vinth2p,VINTH2P)((double *)(datai+sizeof(double)*i*nblk),
+						(double *)(((char*)datao)+sizeof(double)*nblk_out*i),
+						hbcofa,hbcofb,p0,plevi,(double *)plevo,intyp,ilev,
+						(double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
+						(double *)(&missing),kxtrp,&idsz2,
+						&idsz1,&idsz0,&idsz0,&iplev);
+			}
 		}
+		else
+		{
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: datai_dimsizes[0] = %ld is greater than INT_MAX", datai_dimsizes[0]);
+			return(NhlFATAL);
+		}
+
 		if((void*)psfc_d != psfc) {
 			NclFree(psfc_d);
 		}

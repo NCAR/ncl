@@ -56,6 +56,7 @@ the "year 0" problem exactly the same as does the udunits-1 library.
 #include <stdlib.h>
 #include <udunits2.h>
 #include <string.h>
+#include <strings.h>
 #include "utCalendar2_cal.h"
 
 /* define DEBUG */

@@ -16,9 +16,11 @@ NhlErrorTypes vinth2p_nodes_W
 ()
 #endif
 {
-        int i,j, sz,nblk,nblk_out,psf_blk;
+        ng_size_t i,j;
+        ng_size_t sz = 0;
+        ng_size_t nblk = 0;
+        ng_size_t nblk_out,psf_blk;
         NclVar  tmp_var;
-        NclMultiDValData x_coord_md;
         NclVar lev_coord_var;
         NclMultiDValData lev_coord_md;
         int ids[4];
@@ -27,7 +29,7 @@ NhlErrorTypes vinth2p_nodes_W
         NclStackEntry data,val,plevo_val;
         NclMultiDValData tmp_md,datai_md;
         char *datai = NULL,*datao;
-        int datao_dimsizes[4];
+        ng_size_t datao_dimsizes[4];
         int datai_n_dims,datai_has_missing;
         NclBasicDataTypes datai_type;
         NclScalar datai_missing;
@@ -39,17 +41,17 @@ NhlErrorTypes vinth2p_nodes_W
         double *hbcofa = NULL;
         void *hbcofa_ptr = NULL;
         NclBasicDataTypes hbcofa_type;
-        int hbcofa_dimsizes;
+        ng_size_t hbcofa_dimsizes;
 
         double *hbcofb = NULL;
         void *hbcofb_ptr = NULL;
         NclBasicDataTypes hbcofb_type;
-        int hbcofb_dimsizes;
+        ng_size_t hbcofb_dimsizes;
 
         char *plevo = NULL;
         char *plevo2 = NULL;
         NclBasicDataTypes plevo_type;
-        int nlevo;
+        ng_size_t nlevo;
         int plevo_was_val = 0;
         
 
@@ -59,16 +61,16 @@ NhlErrorTypes vinth2p_nodes_W
         double *psfc_d = NULL;
         int psfc_n_dims,psfc_has_missing;
         NclBasicDataTypes psfc_type;
-        int psfc_dimsizes[3];
+        ng_size_t psfc_dimsizes[3];
         NclScalar psfc_missing;
 
         void *p0_ptr = NULL;
         double *p0 = NULL;
         NclBasicDataTypes p0_type;
 
-        int *ilev = NULL, ncase, ntime, nlevi, nlevip1, nodes, nlevi_nodes;
-        NclScalar ilev_missing;
-        int total;
+        int *ilev = NULL;
+        ng_size_t ncase, ntime, nlevi, nlevip1, nodes, nlevi_nodes;
+        ng_size_t total;
 
         logical* kxtrp = NULL;
 
@@ -233,6 +235,8 @@ NhlErrorTypes vinth2p_nodes_W
                         plevo = (char*)tmp_md->multidval.val;
                 }
                 break;
+        default:
+                return(NhlFATAL);
         }
         if(plevo_type != NCL_double) {
                 plevo2 = (char*)NclMalloc(tmp_md->multidval.totalsize);
@@ -375,10 +379,27 @@ NhlErrorTypes vinth2p_nodes_W
 /*
  * Here's the call to the Fortran routine.
  */
-                        NGCALLF(dvinth2pnodes,DVINTH2PNODES)(tmp_datai,tmp_datao,hbcofa,hbcofb,
-                                                             p0,plevi,plevo,intyp,ilev,psfc_d,
-                                                             &missing,kxtrp,&nodes,&nlevi,
-                                                             &nlevip1,&nlevo);
+                        if((nodes <= INT_MAX) &&
+                           (nlevo <= INT_MAX) &&
+                           (nlevip1 <= INT_MAX) &&
+                           (nlevi <= INT_MAX))
+                        {
+                                int inodes = (int) nodes;
+                                int inlevo = (int) nlevo;
+                                int inlevi = (int) nlevi;
+                                int inlevip1 = (int) nlevip1;
+                                NGCALLF(dvinth2pnodes,DVINTH2PNODES)(tmp_datai,tmp_datao,hbcofa,hbcofb,
+                                                                     p0,plevi,(double *)plevo,intyp,
+                                                                     ilev,psfc_d,
+                                                                     (double *)(&missing),kxtrp,
+                                                                     &inodes,&inlevi,
+                                                                     &inlevip1,&inlevo);
+                        }
+                        else
+                        {
+                          NhlPError(NhlFATAL,NhlEUNKNOWN,"dvinth2pnodes: nlevo = %ld is greater than INT_MAX", nlevo);
+                          return(NhlFATAL);
+                        }
 
 /*
  * Copy the output values back to the float array. 
@@ -410,11 +431,28 @@ NhlErrorTypes vinth2p_nodes_W
 /*
  * Here's the call to the Fortran routine.
  */
-                        NGCALLF(dvinth2pnodes,DVINTH2PNODES)((datai+sizeof(double)*i*nblk),
-                                     (((char*)datao)+sizeof(double)*nblk_out*i),hbcofa,hbcofb,
-                                     p0,plevi,plevo,intyp,ilev,
-                                     (((char*)psfc_d)+sizeof(double)*psf_blk*i),&missing,kxtrp,
-                                     &nodes,&nlevi,&nlevip1,&nlevo);
+                        if((nodes <= INT_MAX) &&
+                           (nlevo <= INT_MAX) &&
+                           (nlevip1 <= INT_MAX) &&
+                           (nlevi <= INT_MAX))
+                        {
+                                int inodes = (int) nodes;
+                                int inlevo = (int) nlevo;
+                                int inlevi = (int) nlevi;
+                                int inlevip1 = (int) nlevip1;
+                                NGCALLF(dvinth2pnodes,DVINTH2PNODES)((double *)(datai+sizeof(double)*i*nblk),
+                                             (double *)(((char*)datao)+sizeof(double)*nblk_out*i),
+                                             hbcofa,hbcofb,
+                                             p0,plevi,(double *)plevo,intyp,ilev,
+                                             (double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
+                                             (double *)(&missing),kxtrp,
+                                             &inodes,&inlevi,&inlevip1,&inlevo);
+                        }
+                        else
+                        {
+                          NhlPError(NhlFATAL,NhlEUNKNOWN,"dvinth2pnodes: nlevo = %ld is greater than INT_MAX", nlevo);
+                          return(NhlFATAL);
+                        }
                 }
                 if((void*)psfc_d != psfc) {
                         NclFree(psfc_d);

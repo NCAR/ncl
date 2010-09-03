@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 #include "wrapper.h"
 #include <udunits2.h>
 #include <udunits.h>
@@ -9,6 +10,9 @@
 /*
  * Function for initializing Udunits-2 package.
  */
+
+extern int isleapyear(int);
+extern int day_of_year (int, int, int);
 
 ut_system *utopen_ncl()
 {
@@ -62,6 +66,7 @@ void *utclose_ncl(ut_system *us)
 {
     ut_free_system(us);
     us = NULL;
+    return us;
 }
 
 
@@ -153,10 +158,12 @@ NhlErrorTypes ut_calendar_W( void )
  */
   void *x;
   double *tmp_x;
-  string *sspec;
+  string *sspec = NULL;
   char *cspec, *cspec_orig;
   int *option;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx;
   NclBasicDataTypes type_x;
 /* 
@@ -184,11 +191,12 @@ NhlErrorTypes ut_calendar_W( void )
  */
   int year, month, day, hour, minute;
   double second;
-  void *date;
-  int ndims_date, *dsizes_date;
+  void *date = NULL;
+  int ndims_date = 0;
+  ng_size_t *dsizes_date;
   NclScalar missing_date;
-  NclBasicDataTypes type_date;
-  NclObjClass type_date_t;
+  NclBasicDataTypes type_date = NCL_none;
+  NclObjClass type_date_t = NCL_none;
 /*
  * Variables for returning "calendar" attribute.
  */
@@ -201,11 +209,13 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * various
  */
-  int i, ret, return_missing, dsizes[1];
-  int total_size_x, total_size_date, index_date;
+  int i, ret, return_missing;
+  ng_size_t dsizes[1];
+  ng_size_t total_size_x;
+  ng_size_t total_size_date = 0;
+  ng_size_t index_date;
   int months_to_days_fix=0, years_to_days_fix=0;
   extern float truncf(float);
-  ut_system *unitSystem;
 
 /*
  * Before we do anything, initialize the Udunits package.
@@ -383,7 +393,7 @@ NhlErrorTypes ut_calendar_W( void )
         ndims_date      = ndims_x;
         date            = (int *)calloc(total_size_date,sizeof(int));
   }
-  dsizes_date = (int *)calloc(ndims_date,sizeof(int));
+  dsizes_date = (ng_size_t *)calloc(ndims_date,sizeof(ng_size_t));
 
 /*
  * Make sure we have enough memory for output.
@@ -734,16 +744,28 @@ NhlErrorTypes ut_inv_calendar_W( void )
  */
   int *year, *month, *day, *hour, *minute;
   void *second;
-  double *tmp_second;
+  double *tmp_second = NULL;
   string *sspec;
   int *option;
   char *cspec, *cspec_orig;
-  int ndims_year,   dsizes_year[NCL_MAX_DIMENSIONS],   has_missing_year;
-  int ndims_month,  dsizes_month[NCL_MAX_DIMENSIONS],  has_missing_month;
-  int ndims_day,    dsizes_day[NCL_MAX_DIMENSIONS],    has_missing_day;
-  int ndims_hour,   dsizes_hour[NCL_MAX_DIMENSIONS],   has_missing_hour;
-  int ndims_minute, dsizes_minute[NCL_MAX_DIMENSIONS], has_missing_minute;
-  int ndims_second, dsizes_second[NCL_MAX_DIMENSIONS], has_missing_second;
+  int ndims_year;
+  ng_size_t dsizes_year[NCL_MAX_DIMENSIONS];
+  int has_missing_year;
+  int ndims_month;
+  ng_size_t dsizes_month[NCL_MAX_DIMENSIONS];
+  int has_missing_month;
+  int ndims_day;
+  ng_size_t dsizes_day[NCL_MAX_DIMENSIONS];
+  int has_missing_day;
+  int ndims_hour;
+  ng_size_t dsizes_hour[NCL_MAX_DIMENSIONS];
+  int has_missing_hour;
+  int ndims_minute;
+  ng_size_t dsizes_minute[NCL_MAX_DIMENSIONS];
+  int has_missing_minute;
+  int ndims_second;
+  ng_size_t dsizes_second[NCL_MAX_DIMENSIONS];
+  int has_missing_second;
   NclScalar missing_year;
   NclScalar missing_month;
   NclScalar missing_day;
@@ -782,7 +804,8 @@ NhlErrorTypes ut_inv_calendar_W( void )
 /*
  * various
  */
-  int i, total_size_input, dsizes[1], return_missing;
+  int i, total_size_input;
+  ng_size_t dsizes[1], return_missing;
   int months_to_days_fix=0, years_to_days_fix=0;
 
 /*

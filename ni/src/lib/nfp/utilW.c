@@ -13,20 +13,21 @@ NhlErrorTypes round_W( void )
  */
   void *x;
   double *tmp_x;
-  int has_missing_x, ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x, ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int *iopt;
   NclScalar missing_x, missing_dx, missing_xout;
   NclBasicDataTypes type_x;
 /*
  * Output array variables
  */
-  void *xout;
+  void *xout = NULL;
   double *tmp_xout;
-  NclBasicDataTypes type_xout;
+  NclBasicDataTypes type_xout = NCL_none;
 /*
  * Declare various variables for random purposes.
  */
-  int i, size_x;
+  ng_size_t i, size_x;
 /*
  * Retrieve argument.
  */
@@ -111,6 +112,8 @@ NhlErrorTypes round_W( void )
     case  NCL_int:
       xout = (void*)calloc(size_x,sizeof(int));
       break;
+    default:
+      break;
     }
 /*
  * Allocate space for temporary output which must be double. If the output
@@ -129,8 +132,17 @@ NhlErrorTypes round_W( void )
 /*
  * Call the Fortran version of this routine.
  */
-    NGCALLF(rndncl,RNDNCL)(&size_x,tmp_x,&has_missing_x,
-                           &missing_dx.doubleval,tmp_xout,iopt);
+    if(size_x <= INT_MAX)
+    {
+      int isx = (int) size_x;
+      NGCALLF(rndncl,RNDNCL)(&isx,tmp_x,&has_missing_x,
+                             &missing_dx.doubleval,tmp_xout,iopt);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"rndncl: size_x = %ld is greater than INT_MAX", size_x);
+      return(NhlFATAL);
+    }
 /*
  * Figure out if we need to coerce output back to float or int.
  */
@@ -152,6 +164,8 @@ NhlErrorTypes round_W( void )
       break;
     case  NCL_int:
       missing_xout.intval = (int)missing_dx.doubleval;
+      break;
+    default:
       break;
     }
 
@@ -177,7 +191,8 @@ NhlErrorTypes isnan_ieee_W( void )
  * Input array variables
  */
   void *x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x;
 /*
  * Output array variables
@@ -186,7 +201,7 @@ NhlErrorTypes isnan_ieee_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, size_x;
+  ng_size_t i, size_x;
 /*
  * Retrieve argument.
  */
@@ -246,7 +261,8 @@ NhlErrorTypes get_ncl_version_W(void)
 {
   char *version;
   string *sversion;
-  int len, ret_size = 1;
+  int len;
+  ng_size_t ret_size = 1;
 
 /*
  * There are no input arguments to retrieve.
@@ -266,15 +282,16 @@ NhlErrorTypes replace_ieeenan_W( void )
  * Input array variables
  */
   void *x, *value;
-  double *dvalue;
+  double *dvalue = NULL;
   int *iopt, has_missing_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_value;
   NclScalar missing_x;
 /*
  * Declare various variables for random purposes.
  */
-  int i, size_x;
+  ng_size_t i, size_x;
 /*
  * Retrieve argument.
  */
@@ -366,7 +383,8 @@ NhlErrorTypes generate_2d_array_W( void )
 /*
  * Input array variables
  */
-  int *dsizes_data, *mlow, *mhigh, *iseed;
+  ng_size_t *dsizes_data;
+  int *mlow, *mhigh, *iseed;
   void *dlow, *dhigh;
   double *tmp_dlow, *tmp_dhigh;
   NclBasicDataTypes type_dlow, type_dhigh;
@@ -379,7 +397,7 @@ NhlErrorTypes generate_2d_array_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, size_data;
+  ng_size_t size_data;
 /*
  * Retrieve arguments.
  *
@@ -445,7 +463,7 @@ NhlErrorTypes generate_2d_array_W( void )
 /*
  * Get size of output array.
  */
-  dsizes_data = (int*)NclGetArgValue(
+  dsizes_data = (ng_size_t*)NclGetArgValue(
           5,
           6,
           NULL,
@@ -528,9 +546,20 @@ NhlErrorTypes generate_2d_array_W( void )
 /*
  * Call the Fortran version of this routine.
  */
-  NGCALLF(dgendat,DGENDAT)(tmp_data,&dsizes_data[1],&dsizes_data[1],
-                           &dsizes_data[0],mlow,mhigh,tmp_dlow,tmp_dhigh,
-                           iseed);
+  if((dsizes_data[0] <= INT_MAX) &&
+     (dsizes_data[1] <= INT_MAX))
+  {
+    int id0 = (int) dsizes_data[0];
+    int id1 = (int) dsizes_data[1];
+    NGCALLF(dgendat,DGENDAT)(tmp_data,&id1,&id1,
+                             &id0,mlow,mhigh,tmp_dlow,tmp_dhigh,
+                             iseed);
+  }
+  else
+  {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dgendat: dsizes_data[0] = %ld is greater than INT_MAX", dsizes_data[0]);
+    return(NhlFATAL);
+  }
 /*
  * Figure out if we need to coerce output back to float.
  */
