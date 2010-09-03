@@ -45,8 +45,8 @@ NhlErrorTypes   write_matrix_W(void)
 
     /* from NCL: 2D rectangular matrix components */
     void    *data;
-    int has_missing,
-        dimsz[NCL_MAX_DIMENSIONS];
+    int has_missing;
+    ng_size_t dimsz[NCL_MAX_DIMENSIONS];
     NclScalar   missing;
     NclBasicDataTypes   data_type;
 
@@ -187,16 +187,21 @@ NhlErrorTypes   write_matrix_W(void)
     /* flush buffers before writing */
     (void) fflush((FILE *) NULL);
 
-    /* call FORTRAN function */
-    switch (data_type) {
+    if((dimsz[0] <= INT_MAX) && (dimsz[1] <= INT_MAX))
+    {
+      int idsz0 = (int) dimsz[0];
+      int idsz1 = (int) dimsz[1];
+
+      /* call FORTRAN function */
+      switch (data_type) {
         case NCL_byte:
-            NGCALLF(writematrixb, WRITEMATRIXB)(filename, &dimsz[0], &dimsz[1], data,
+            NGCALLF(writematrixb, WRITEMATRIXB)(filename, &idsz0, &idsz1, data,
                     format, title, &tspace, &rownumbers, strlen(filename),
                     strlen(format), strlen(title));
             break;
 
         case NCL_short:
-            NGCALLF(writematrixs, WRITEMATRIXS)(filename, &dimsz[0], &dimsz[1], data,
+            NGCALLF(writematrixs, WRITEMATRIXS)(filename, &idsz0, &idsz1, data,
                     format, title, &tspace, &rownumbers, strlen(filename),
                     strlen(format), strlen(title));
             break;
@@ -204,19 +209,19 @@ NhlErrorTypes   write_matrix_W(void)
         case NCL_int:
             /* fall through */
         case NCL_long:
-            NGCALLF(writematrixi, WRITEMATRIXI)(filename, &dimsz[0], &dimsz[1], data,
+            NGCALLF(writematrixi, WRITEMATRIXI)(filename, &idsz0, &idsz1, data,
                     format, title, &tspace, &rownumbers,
                     strlen(filename), strlen(format), strlen(title));
             break;
 
         case NCL_float:
-            NGCALLF(writematrixf, WRITEMATRIXF)(filename, &dimsz[0], &dimsz[1], data,
+            NGCALLF(writematrixf, WRITEMATRIXF)(filename, &idsz0, &idsz1, data,
                     format, title, &tspace, &rownumbers,
                     strlen(filename), strlen(format), strlen(title));
             break;
 
         case NCL_double:
-            NGCALLF(writematrixd, WRITEMATRIXD)(filename, &dimsz[0], &dimsz[1], data,
+            NGCALLF(writematrixd, WRITEMATRIXD)(filename, &idsz0, &idsz1, data,
                     format, title, &tspace, &rownumbers,
                     strlen(filename), strlen(format), strlen(title));
             break;
@@ -226,6 +231,13 @@ NhlErrorTypes   write_matrix_W(void)
                 "write_matrix: input data must be of numeric type");
             return NhlFATAL;
             break;
+      }
+    }
+    else
+    {
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+               "write_matrix: dimsz[0] = %ld greater than INT_MAX", dimsz[0]);
+      return NhlFATAL;
     }
 
     /* flush buffers after writing */

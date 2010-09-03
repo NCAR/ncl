@@ -26,14 +26,14 @@ NhlErrorTypes wavelet_W( void )
   int *mother, *jtot, *npad, *noise, *isigtest;
   double *tmp_y, *tmp_dt, *tmp_param, *tmp_s0, *tmp_dj;
   double *tmp_siglvl, tmp_nadof[2];
-  int dsizes_y[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_y, type_dt, type_param, type_s0, type_dj;
   NclBasicDataTypes type_siglvl;
 /*
  * Attribute variables
  */
   int att_id;
-  int dsizes[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes[NCL_MAX_DIMENSIONS];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -45,14 +45,15 @@ NhlErrorTypes wavelet_W( void )
   double *tmp_wave, *tmp_scale, *tmp_period, *tmp_coi, *tmp_dof; 
   double *tmp_ffttheor, *tmp_signif, *tmp_gws, *tmp_power, *tmp_phase;
   double *tmp_r1;
-  double *tmp_mean, *tmp_st_dev, *tmp_lag1, *tmp_cdelta, *tmp_psi0, var;
-  int ndims_wave = 3, dsizes_wave[3]; 
+  double *tmp_mean, *tmp_st_dev, *tmp_lag1, *tmp_cdelta, *tmp_psi0;
+  int ndims_wave = 3;
+  ng_size_t dsizes_wave[3]; 
   NclBasicDataTypes type_wave;
   NclObjClass type_output;
 /*
  * Declare various variables for random purposes.
  */
-  int i, n, size_wave, size_output; 
+  ng_size_t n, size_wave, size_output; 
 /*
  * Retrieve parameters
  *
@@ -278,12 +279,22 @@ NhlErrorTypes wavelet_W( void )
 /*
  * Call the Fortran routine.
  */
-  NGCALLF(waveleti,WAVELETI)(&n,tmp_y,tmp_dt,mother,tmp_param,tmp_s0,tmp_dj,
-                             jtot,npad,noise,isigtest,tmp_siglvl,tmp_nadof,
-                             tmp_wave,tmp_scale,tmp_period,tmp_coi,tmp_dof,
-                             tmp_ffttheor,tmp_signif,tmp_gws,tmp_mean,
-                             tmp_st_dev,tmp_lag1,tmp_cdelta,tmp_psi0,
-                             tmp_power,tmp_phase,tmp_r1);
+  if(n <= INT_MAX) 
+  {
+    int in = (int) n;
+    NGCALLF(waveleti,WAVELETI)(&in,tmp_y,tmp_dt,mother,tmp_param,tmp_s0,tmp_dj,
+                               jtot,npad,noise,isigtest,tmp_siglvl,tmp_nadof,
+                               tmp_wave,tmp_scale,tmp_period,tmp_coi,tmp_dof,
+                               tmp_ffttheor,tmp_signif,tmp_gws,tmp_mean,
+                               tmp_st_dev,tmp_lag1,tmp_cdelta,tmp_psi0,
+                               tmp_power,tmp_phase,tmp_r1);
+  }
+  else
+  {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"waveleti: n = %ld is greater than INT_MAX", n);
+    return(NhlFATAL);
+  }
+
   if(type_wave == NCL_float) {
     coerce_output_float_only(wave,tmp_wave,size_wave,0);
     coerce_output_float_only(scale,tmp_scale,*jtot,0);
@@ -695,13 +706,13 @@ NhlErrorTypes wavelet_default_W( void )
   void *y;
   int *mother, jtot, npad, noise, isigtest;
   double *tmp_y, dt, param, s0, dj, siglvl, nadof[2];
-  int dsizes_y[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_y;
 /*
  * Attribute variables
  */
   int att_id;
-  int dsizes[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes[NCL_MAX_DIMENSIONS];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -713,14 +724,15 @@ NhlErrorTypes wavelet_default_W( void )
   double *tmp_wave, *tmp_scale, *tmp_period, *tmp_coi, *tmp_dof; 
   double *tmp_ffttheor, *tmp_signif, *tmp_gws, *tmp_power, *tmp_phase;
   double *tmp_r1;
-  double *tmp_mean, *tmp_st_dev, *tmp_lag1, *tmp_cdelta, *tmp_psi0, var;
-  int ndims_wave = 3, dsizes_wave[3]; 
+  double *tmp_mean, *tmp_st_dev, *tmp_lag1, *tmp_cdelta, *tmp_psi0;
+  int ndims_wave = 3;
+  ng_size_t dsizes_wave[3]; 
   NclBasicDataTypes type_wave;
   NclObjClass type_output;
 /*
  * Declare various variables for random purposes.
  */
-  int i, n, size_wave, size_output; 
+  ng_size_t n, size_wave, size_output; 
 /*
  * Retrieve parameters
  *
@@ -852,12 +864,22 @@ NhlErrorTypes wavelet_default_W( void )
 /*
  * Call the Fortran routine.
  */
-  NGCALLF(waveleti,WAVELETI)(&n,tmp_y,&dt,mother,&param,&s0,&dj,
-                             &jtot,&npad,&noise,&isigtest,&siglvl,nadof,
-                             tmp_wave,tmp_scale,tmp_period,tmp_coi,tmp_dof,
-                             tmp_ffttheor,tmp_signif,tmp_gws,tmp_mean,
-                             tmp_st_dev,tmp_lag1,tmp_cdelta,tmp_psi0,
-                             tmp_power,tmp_phase,tmp_r1);
+  if(n <= INT_MAX)
+  {
+    int in = (int) n;
+    NGCALLF(waveleti,WAVELETI)(&in,tmp_y,&dt,mother,&param,&s0,&dj,
+                               &jtot,&npad,&noise,&isigtest,&siglvl,nadof,
+                               tmp_wave,tmp_scale,tmp_period,tmp_coi,tmp_dof,
+                               tmp_ffttheor,tmp_signif,tmp_gws,tmp_mean,
+                               tmp_st_dev,tmp_lag1,tmp_cdelta,tmp_psi0,
+                               tmp_power,tmp_phase,tmp_r1);
+  }
+  else
+  {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"waveleti: n = %ld is greater than INT_MAX", n);
+    return(NhlFATAL);
+  }
+
   if(type_wave == NCL_float) {
     coerce_output_float_only(wave,tmp_wave,size_wave,0);
     coerce_output_float_only(scale,tmp_scale,jtot,0);

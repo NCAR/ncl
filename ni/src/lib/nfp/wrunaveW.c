@@ -16,8 +16,11 @@ NhlErrorTypes wgt_runave_W( void )
   void *x, *wgt;
   double *tmp_x, *tmp_wgt;
   int *kopt;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_wgt, dsizes_wgt[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_wgt;
+  ng_size_t dsizes_wgt[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_wgt;
   NclScalar missing_x, missing_dx, missing_rx;
 /*
@@ -27,12 +30,13 @@ NhlErrorTypes wgt_runave_W( void )
 /*
  * Work array.
  */
-  int lwork;
+  ng_size_t lwork;
   double *work;
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_x, npts, nwgt, ier, total_leftmost, total_size_x;
+  int ier;
+  ng_size_t i, index_x, npts, nwgt, total_leftmost, total_size_x;
 
 /*
  * Retrieve arguments.
@@ -131,8 +135,21 @@ NhlErrorTypes wgt_runave_W( void )
  */
     coerce_subset_input_double(x,tmp_x,index_x,type_x,npts,0,NULL,NULL);
 
-    NGCALLF(dwgtrunave,DWGTRUNAVE)(tmp_x,&npts,tmp_wgt,&nwgt,kopt,
-                                   &missing_dx.doubleval,work,&lwork,&ier);
+    if((npts <= INT_MAX) &&
+       (nwgt <= INT_MAX) &&
+       (lwork <= INT_MAX))
+    {
+      int inpts = (int) npts;
+      int inwgt = (int) nwgt;
+      int ilwork = (int) lwork;
+      NGCALLF(dwgtrunave,DWGTRUNAVE)(tmp_x,&inpts,tmp_wgt,&inwgt,kopt,
+                                     &missing_dx.doubleval,work,&ilwork,&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dwgttrunave: npts = %ld is greater than INT_MAX", npts);
+      return(NhlFATAL);
+    }
 
     coerce_output_float_or_double(wrunave,tmp_x,type_x,npts,index_x);
 
@@ -168,8 +185,11 @@ NhlErrorTypes wgt_runave_n_W( void )
   void *x, *wgt;
   double *tmp_x, *tmp_wgt;
   int *kopt, *dim;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_wgt, dsizes_wgt[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_wgt;
+  ng_size_t dsizes_wgt[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_wgt;
   NclScalar missing_x, missing_dx, missing_rx;
 /*
@@ -179,13 +199,14 @@ NhlErrorTypes wgt_runave_n_W( void )
 /*
  * Work array.
  */
-  int lwork;
+  ng_size_t lwork;
   double *work;
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_x, index_nrnpts, npts, nwgt, ier;
-  int total_leftmost, total_rightmost, total_size_x, total_rl;
+  int ier;
+  ng_size_t i, j, index_x, index_nrnpts, npts, nwgt;
+  ng_size_t total_leftmost, total_rightmost, total_size_x;
 
 /*
  * Retrieve arguments.
@@ -309,8 +330,21 @@ NhlErrorTypes wgt_runave_n_W( void )
       coerce_subset_input_double_step(x,tmp_x,index_x,total_rightmost,type_x,
                                       npts,0,NULL,NULL);
 
-      NGCALLF(dwgtrunave,DWGTRUNAVE)(tmp_x,&npts,tmp_wgt,&nwgt,kopt,
-                                     &missing_dx.doubleval,work,&lwork,&ier);
+      if((npts <= INT_MAX) &&
+         (nwgt <= INT_MAX) &&
+         (lwork <= INT_MAX))
+      {
+        int inpts = (int) npts;
+        int inwgt = (int) nwgt;
+        int ilwork = (int) lwork;
+        NGCALLF(dwgtrunave,DWGTRUNAVE)(tmp_x,&inpts,tmp_wgt,&inwgt,kopt,
+                                       &missing_dx.doubleval,work,&ilwork,&ier);
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"dwgttrunave: npts = %ld is greater than INT_MAX", npts);
+        return(NhlFATAL);
+      }
 
       coerce_output_float_or_double_step(wrunave,tmp_x,type_x,npts,index_x,
                                          total_rightmost);
@@ -346,7 +380,9 @@ NhlErrorTypes runave_W( void )
   void *x;
   double *tmp_x;
   int *nave, *kopt;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclBasicDataTypes type_x;
   NclScalar missing_x, missing_dx, missing_rx;
 /*
@@ -356,12 +392,13 @@ NhlErrorTypes runave_W( void )
 /*
  * Work array.
  */
-  int lwork;
+  ng_size_t lwork;
   double *work;
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_x, k, npts, ier, total_size_x, total_leftmost;
+  int ier;
+  ng_size_t i, index_x, npts, total_size_x, total_leftmost;
 
 /*
  * Retrieve arguments.
@@ -456,8 +493,19 @@ NhlErrorTypes runave_W( void )
  */
     coerce_subset_input_double(x,tmp_x,index_x,type_x,npts,0,NULL,NULL);
 
-    NGCALLF(drunave,DRUNAVE)(tmp_x,&npts,nave,kopt,&missing_dx.doubleval,
-                             work,&lwork,&ier);
+    if((npts <= INT_MAX) &&
+       (lwork <= INT_MAX))
+    {
+      int inpts = (int) npts;
+      int ilwork = (int) lwork;
+      NGCALLF(drunave,DRUNAVE)(tmp_x,&inpts,nave,kopt,&missing_dx.doubleval,
+                               work,&ilwork,&ier);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"drunave: npts = %ld is greater than INT_MAX", npts);
+      return(NhlFATAL);
+    }
 
     coerce_output_float_or_double(runave,tmp_x,type_x,npts,index_x);
 
@@ -491,7 +539,9 @@ NhlErrorTypes runave_n_W( void )
   void *x;
   double *tmp_x;
   int *nave, *kopt, *dim;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclBasicDataTypes type_x;
   NclScalar missing_x, missing_dx, missing_rx;
 /*
@@ -501,13 +551,14 @@ NhlErrorTypes runave_n_W( void )
 /*
  * Work array.
  */
-  int lwork;
+  ng_size_t lwork;
   double *work;
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_x, index_nrnpts, k, npts, ier;
-  int total_size_x, total_leftmost, total_rightmost;
+  int ier;
+  ng_size_t i, j, index_x, index_nrnpts, npts;
+  ng_size_t total_size_x, total_leftmost, total_rightmost;
 
 /*
  * Retrieve arguments.
@@ -627,8 +678,19 @@ NhlErrorTypes runave_n_W( void )
       coerce_subset_input_double_step(x,tmp_x,index_x,total_rightmost,type_x,
                                  npts,0,NULL,NULL);
 
-      NGCALLF(drunave,DRUNAVE)(tmp_x,&npts,nave,kopt,&missing_dx.doubleval,
-                               work,&lwork,&ier);
+      if((npts <= INT_MAX) &&
+         (lwork <= INT_MAX))
+      {
+        int inpts = (int) npts;
+        int ilwork = (int) lwork;
+        NGCALLF(drunave,DRUNAVE)(tmp_x,&inpts,nave,kopt,&missing_dx.doubleval,
+                                 work,&ilwork,&ier);
+      }
+      else
+      {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"drunave: npts = %ld is greater than INT_MAX", npts);
+        return(NhlFATAL);
+      }
 
       coerce_output_float_or_double_step(runave,tmp_x,type_x,npts,index_x,
                                          total_rightmost);

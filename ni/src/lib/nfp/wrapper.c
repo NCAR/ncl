@@ -562,7 +562,7 @@ extern NhlErrorTypes kron_product_W(void);
 void NclAddUserFuncs(void)
 {
     void *args;
-    int dimsizes[NCL_MAX_DIMENSIONS];
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
     int nargs;
 /*
  * Register "vinth2p".
@@ -6899,7 +6899,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
     SetArgTemplate(args, nargs, 0, 0, NclANY);  nargs++;
     SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
     NclRegisterFunc(conform_dims_W, args, "conform_dims", nargs);
@@ -7078,7 +7078,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
-    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
 
     NclRegisterFunc(random_gamma_W, args, "random_gamma", nargs);
 
@@ -7091,7 +7091,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
-    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
 
     NclRegisterFunc(random_normal_W, args, "random_normal", nargs);
 
@@ -7104,7 +7104,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
-    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
 
     NclRegisterFunc(random_uniform_W, args, "random_uniform", nargs);
 
@@ -7116,7 +7116,7 @@ void NclAddUserFuncs(void)
 
     SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
     dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
 
     NclRegisterFunc(round_W, args, "round", nargs);
 
@@ -7577,7 +7577,7 @@ NclScalar         *missing_rx)
 double *coerce_input_double(
 void              *x,
 NclBasicDataTypes type_x,
-int               size_x,
+ng_size_t         size_x,
 int               has_missing_x,
 NclScalar         *missing_x,
 NclScalar         *missing_dx)
@@ -7623,9 +7623,9 @@ NclScalar         *missing_dx)
 void coerce_subset_input_double(
 void              *x,
 double            *tmp_x,
-int               index_x,
+ng_size_t         index_x,
 NclBasicDataTypes type_x,
-int               size_x,
+ng_size_t         size_x,
 int               has_missing_x,
 NclScalar         *missing_x,
 NclScalar         *missing_dx
@@ -7672,16 +7672,16 @@ NclScalar         *missing_dx
 void coerce_subset_input_double_step(
 void              *x,
 double            *tmp_x,
-int               index_x,
-int               step_x,
+ng_size_t         index_x,
+ng_size_t         step_x,
 NclBasicDataTypes type_x,
-int               size_x,
+ng_size_t         size_x,
 int               has_missing_x,
 NclScalar         *missing_x,
 NclScalar         *missing_dx
 )
 {
-  int i, ii;
+  ng_size_t i, ii;
   NclTypeClass typeclass_x;
   
 /*
@@ -7728,8 +7728,8 @@ NclScalar         *missing_dx
  * Returns 1 if it is, and a 0 if it isn't.
  */
 int is_scalar(
-int    ndims_x,
-int    *dsizes_x
+int        ndims_x,
+ng_size_t *dsizes_x
 )
 {
   int is_scalar;
@@ -7749,10 +7749,10 @@ int    *dsizes_x
 double *copy_scalar_to_array(
 double       *x,
 int          ndims_x,
-int          *dsizes_x,
-int          size_x)
+ng_size_t    *dsizes_x,
+ng_size_t    size_x)
 {
-  int i;
+  ng_size_t i;
   double *dx;
 /*
  * Check if x is a scalar. If so, then allocate an array to hold
@@ -7780,11 +7780,11 @@ int          size_x)
 float *coerce_output_float(
 double *dx,
 void   *x,
-int    size_x,
+ng_size_t size_x,
 int    has_allocated
 )
 {
-  int i;
+  ng_size_t i;
   float *rx;
 
   if(!has_allocated) {
@@ -7817,11 +7817,11 @@ int    has_allocated
 void coerce_output_int_only(
 void   *x,
 double *dx,
-int    size_x,
-int    index_x
+ng_size_t size_x,
+ng_size_t index_x
 )
 {
-  int i;
+  ng_size_t i;
 
   for( i = 0; i < size_x; i++ ) ((int*)x)[index_x+i]  = (int)dx[i];
 }
@@ -7835,7 +7835,7 @@ int    index_x
 double *coerce_output_double(
 void              *x,
 NclBasicDataTypes type_x,
-int               size_x)
+ng_size_t         size_x)
 {
   double *dx;
 /*
@@ -7865,7 +7865,7 @@ int               size_x)
  */
 int contains_missing(
 double *x,
-int    size_x,
+ng_size_t size_x,
 int    has_missing_x,
 double missing
 )
@@ -7889,7 +7889,7 @@ double missing
  */
 int contains_missing_float(
 float *x,
-int    size_x,
+ng_size_t size_x,
 int    has_missing_x,
 float missing
 )
@@ -7912,12 +7912,12 @@ float missing
  */
 void set_subset_output_missing(
 void              *x,
-int               index_x,
+ng_size_t         index_x,
 NclBasicDataTypes type_x,
-int               size_x,
+ng_size_t         size_x,
 double            missing_x)
 {
-  int i;
+  ng_size_t i;
   for(i = 0; i < size_x; i++) {
     if(type_x != NCL_double) {
       ((float*)x)[index_x+i] = (float)missing_x;
@@ -7934,13 +7934,13 @@ double            missing_x)
  */
 void set_subset_output_missing_step(
 void              *x,
-int               index_x,
-int               step_x,
+ng_size_t         index_x,
+ng_size_t         step_x,
 NclBasicDataTypes type_x,
-int               size_x,
+ng_size_t         size_x,
 double            missing_x)
 {
-  int i;
+  ng_size_t i;
   for(i = 0; i < size_x; i++) {
     if(type_x != NCL_double) {
       ((float*)x)[index_x + i*step_x] = (float)missing_x;
@@ -7953,16 +7953,16 @@ double            missing_x)
 
 
 void compute_nlatnlon(
-int *dsizes,
+ng_size_t *dsizes,
 int ndims,
-int *nlat,
-int *nlon,
-int *nlatnlon,
-int *nt,
-int *total
+ng_size_t *nlat,
+ng_size_t *nlon,
+ng_size_t *nlatnlon,
+ng_size_t *nt,
+ng_size_t *total
 )
 {
-  int i;
+  ng_size_t i;
 
   *nlat = dsizes[ndims-2];
   *nlon = dsizes[ndims-1];
@@ -7973,22 +7973,22 @@ int *total
 }
 
 void compute_nlatanlona(
-int *dsizes_in,
-int *dsizes_out,
+ng_size_t *dsizes_in,
+ng_size_t *dsizes_out,
 int ndims_in,
 int ndims_out,
-int *nlata,
-int *nlona,
-int *nlatanlona,
-int *nlatb,
-int *nlonb,
-int *nlatbnlonb,
-int *size_leftmost,
-int *size_in,
-int *size_out
+ng_size_t *nlata,
+ng_size_t *nlona,
+ng_size_t *nlatanlona,
+ng_size_t *nlatb,
+ng_size_t *nlonb,
+ng_size_t *nlatbnlonb,
+ng_size_t *size_leftmost,
+ng_size_t *size_in,
+ng_size_t *size_out
 )
 {
-  int i;
+  ng_size_t i;
 
   *nlata = dsizes_in[ndims_in-2];
   *nlona = dsizes_in[ndims_in-1];
@@ -8007,12 +8007,12 @@ int *size_out
  */
 void print_minmax(
 void *x,
-int size_x,
+ng_size_t size_x,
 NclBasicDataTypes type_x
 )
 {
   double xmin, xmax;
-  int i;
+  ng_size_t i;
   if(type_x != NCL_double) {
         xmin = xmax = (double)((float*)x)[0];
   }
@@ -8041,11 +8041,11 @@ NclBasicDataTypes type_x
 void coerce_output_float_only(
 void   *x,
 double *dx,
-int    size_x,
-int    index_x
+ng_size_t size_x,
+ng_size_t index_x
 )
 {
-  int i;
+  ng_size_t i;
 
   for( i = 0; i < size_x; i++ ) ((float*)x)[index_x+i]  = (float)dx[i];
 }
@@ -8057,11 +8057,11 @@ void coerce_output_float_or_double(
 void   *x,
 double *dx,
 NclBasicDataTypes type_x,
-int    size_x,
-int    index_x
+ng_size_t size_x,
+ng_size_t index_x
 )
 {
-  int i;
+  ng_size_t i;
 
   if(type_x == NCL_double) {
     for( i = 0; i < size_x; i++ ) ((double*)x)[index_x+i]  = dx[i];
@@ -8080,12 +8080,12 @@ void coerce_output_float_or_double_step(
 void   *x,
 double *dx,
 NclBasicDataTypes type_x,
-int    size_x,
-int    index_x,
-int    step_x
+ng_size_t size_x,
+ng_size_t index_x,
+ng_size_t step_x
 )
 {
-  int i;
+  ng_size_t i;
 
   if(type_x == NCL_double) {
     for( i = 0; i < size_x; i++ ) ((double*)x)[index_x+(step_x*i)] = dx[i];
@@ -8104,7 +8104,7 @@ int    step_x
 float *coerce_input_float(
 void              *x,
 NclBasicDataTypes type_x,
-int               size_x,
+ng_size_t         size_x,
 int               has_missing_x,
 NclScalar         *missing_x,
 NclScalar         *missing_fx)
@@ -8150,9 +8150,9 @@ NclScalar         *missing_fx)
 void coerce_subset_input_float(
 void              *x,
 float             *tmp_x,
-int               index_x,
+ng_size_t         index_x,
 NclBasicDataTypes type_x,
-int               size_x,
+ng_size_t         size_x,
 int               has_missing_x,
 NclScalar         *missing_x,
 NclScalar         *missing_fx
