@@ -12,23 +12,31 @@ NhlErrorTypes z2geouv_W( void )
  */
   void *z, *lat, *lon;
   int *iopt;
-  double *tmp_z, *tmp_lat, *tmp_lon;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS], dsizes_lat[1], dsizes_lon[1];
-  int size_z, has_missing_z;
+  double *tmp_z = NULL;
+  double *tmp_lat, *tmp_lon;
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lat[1];
+  ng_size_t dsizes_lon[1];
+  ng_size_t size_z;
+  int has_missing_z;
   NclScalar missing_z, missing_dz, missing_rz;
   NclBasicDataTypes type_z, type_lat, type_lon;
 /*
  * Output variables
  */
   void *uv;
-  double *tmp_u, *tmp_v;
-  int ndims_uv, *dsizes_uv, size_uv;
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_uv;
+  ng_size_t *dsizes_uv, size_uv;
   NclBasicDataTypes type_uv;
 /*
  * Various.
  */
-  int i, index_z, size_leftmost;
-  int nlat, nlon, nlatlon, ret;
+  ng_size_t i, index_z, size_leftmost;
+  ng_size_t nlat, nlon, nlatlon;
+  int ret;
 /*
  * Retrieve parameters
  *
@@ -119,7 +127,7 @@ NhlErrorTypes z2geouv_W( void )
   size_uv  = 2 * size_z;
   ndims_uv = ndims_z+1;
 
-  dsizes_uv = (int*)malloc(ndims_uv*sizeof(int));  
+  dsizes_uv = (ng_size_t*)malloc(ndims_uv*sizeof(ng_size_t));  
   if( dsizes_uv == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"z2geouv: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -191,8 +199,19 @@ NhlErrorTypes z2geouv_W( void )
       tmp_v = &((double*)uv)[index_z+size_z];
     }
 
-    NGCALLF(z2geouv,Z2GEOUV)(tmp_z,&nlon,&nlat,&missing_dz.doubleval,
-                             tmp_lon,tmp_lat,tmp_u,tmp_v,iopt);
+    if((nlon <= INT_MAX) &&
+       (nlat <= INT_MAX))
+    {
+      int inlon = (int) nlon;
+      int inlat = (int) nlat;
+      NGCALLF(z2geouv,Z2GEOUV)(tmp_z,&inlon,&inlat,&missing_dz.doubleval,
+                               tmp_lon,tmp_lat,tmp_u,tmp_v,iopt);
+    }
+    else
+    {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"z2geouv: nlon = %ld is greater than INT_MAX", nlon);
+      return(NhlFATAL);
+    }
 /*
  * Copy output values from temporary tmp_u, tmp_v to uv.
  */
