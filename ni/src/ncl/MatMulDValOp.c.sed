@@ -41,8 +41,7 @@ NclData result;
 	void *result_val;
 	int n_dims =0;
 	ng_size_t dims[2];
-	
-	ng_size_t i,total;
+	ng_size_t total;
 	
 
 	if((other_md == NULL)||(self_md == NULL))

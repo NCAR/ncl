@@ -35,7 +35,7 @@ int* /*finish_offset*/
 extern char EndOfRec(
 );
 
-extern forward_index(
+extern int forward_index(
 #if NhlNeedProto
 unsigned char *
 #endif
@@ -117,6 +117,7 @@ static int extract(int which,char buf[8])
                 tmp[BYTE3] = buf[7];
                 return(*(int*)tmp);
         }
+	return 0;
 }
 
 static int IsCOSBlocked
@@ -129,7 +130,6 @@ FILE* fd;
 {
         char thebuff[8];
         char bytes[8][511];
-        int tmp;
         int type;
         int junk;
         int bnhi;
@@ -229,25 +229,16 @@ NhlErrorTypes _NclICrayBinNumRec
 ()
 #endif
 {
-        NclStackEntry data;
-        NclMultiDValData tmp_md;
         string *fpath;
         NclScalar missing;
         int     has_missing = 0;
-        unsigned char    control_word[WORD_SIZE];
         FILE* fd = NULL;
-        int ind;
-	int cb_off = 0;
-        int cb = 0;
-        int i;
         ng_size_t dimsize = 1;
-	long real_offset = 0;
         long end_offset = 0;
         int total = 0;
         int len;
         ng_size_t n;
         int index = 0;
-        char tmpc;
 	int done = 0;
 	unsigned char buffer[READ_SIZE];
 

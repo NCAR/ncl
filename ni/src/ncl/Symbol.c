@@ -111,10 +111,7 @@ void _NclFreeProcFuncInfo
 NclSymbol *sym;
 #endif
 {
-	_NclMachineRec* tmp;
-	NclScopeRec* sr;
-	NclSymbol *tmps,*s;
-	int i;
+
 	switch(sym->type) {
 		case IFUNC:
 			NclFree(sym->u.bfunc->theargs);
@@ -175,13 +172,9 @@ NhlErrorTypes _NclWalkSymTable
 ()
 #endif
 {
-	NclApiDataList *tmp = NULL,*thelist = NULL;
 	NclSymTableListNode *st;
 	NclSymbol *s;
-	int i,j;
-	NclStackEntry *thevar = NULL;
-	NclFile thefile = NULL;
-	NclMultiDValData theid;
+	int i;
 
 	st = thetablelist;
 	while(st != NULL) {
@@ -682,7 +675,7 @@ char *name;
 
         for(p = name; *p != '\0'; p = p +1) {
                 h = (h<<4) + (*p);
-                if(g = h & 0xf0000000) {
+                if((g = h) & 0xf0000000) {
                         h = h^ (g >> 24);
                         h = h ^ g;
                 }
@@ -1263,7 +1256,7 @@ NclQuark file_sym_name;
 NclQuark file_var_name;
 #endif
 {
-	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclApiDataList *tmp = NULL;
 	NclSymbol *s = NULL;
 	int i,j;
 	NclStackEntry *thevar = NULL;
@@ -1343,7 +1336,7 @@ NclQuark file_var_name;
 NclQuark coordname;
 #endif
 {
-	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclApiDataList *tmp = NULL;
 	NclSymbol *s = NULL;
 	int i,j,k;
 	NclStackEntry *thevar = NULL;
@@ -1882,9 +1875,8 @@ NclQuark file_sym_name;
 #endif
 {
 	NclApiDataList *tmp = NULL;
-	NclSymTableListNode *st;
 	NclSymbol *s;
-	int i,j;
+	int j;
 	NclStackEntry *thevar = NULL;
 	NclFile thefile = NULL;
 	NclMultiDValData theid;
@@ -2272,7 +2264,7 @@ int *num_names;
 	NclSymTableListNode *st;
 	NclSymbol *s;
 	NclStackEntry *the_var;
-	int i,j;
+	int i;
 	int current_size = NCL_SYM_TAB_SIZE;
 	NclQuark *tmp_out;
 	
@@ -2324,7 +2316,7 @@ int *num_names;
 	NclSymTableListNode *st;
 	NclSymbol *s;
 	NclStackEntry *the_var;
-	int i,j;
+	int i;
 	int current_size = NCL_SYM_TAB_SIZE;
 	NclQuark *tmp_out;
 	
@@ -2375,13 +2367,12 @@ NclQuark var_sym_name;
 NclQuark coordname;
 #endif
 {
-	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclApiDataList *tmp = NULL;
 	NclAtt tmp_att = NULL;
 	NclAttList *att_list = NULL;
 	NclMultiDValData the_value = NULL;
-	NclSymTableListNode *st;
 	NclSymbol *s;
-	int i,j;
+	int j;
 	NclStackEntry *the_var;
 	NclVar tmp_var;
 
@@ -2444,11 +2435,10 @@ NclApiDataList *_NclGetVarInfo
 NclQuark var_sym_name;
 #endif
 {
-	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclApiDataList *tmp = NULL;
 	NclAtt tmp_att = NULL;
 	NclAttList *att_list = NULL;
 	NclMultiDValData the_value = NULL;
-	NclSymTableListNode *st;
 	NclSymbol *s;
 	int j;
 	NclStackEntry *the_var;
@@ -2763,10 +2753,8 @@ NclQuark attname;
 {
 	NclSymbol *s;
 	NclStackEntry *thevar = NULL;
-	NclFile thefile = NULL;
 	NclMultiDValData tmp_md;
 	NclExtValueRec *out_data = NULL;
-	NclMultiDValData theid;
 	NclHLUObj tmp_ho;
 	int i;
 
@@ -2846,10 +2834,8 @@ long* stride;
 {
 	NclSymbol *s;
 	NclStackEntry *thevar = NULL;
-	NclFile thefile = NULL;
 	NclMultiDValData tmp_md;
 	NclExtValueRec *out_data = NULL;
-	NclMultiDValData theid;
 	NclSelectionRecord *sel_ptr=NULL;
 	int i;
 	int dim_sizes[NCL_MAX_DIMENSIONS];
@@ -2912,10 +2898,8 @@ NclQuark attname;
 {
 	NclSymbol *s;
 	NclStackEntry *thevar = NULL;
-	NclFile thefile = NULL;
 	NclMultiDValData tmp_md;
 	NclExtValueRec *out_data = NULL;
-	NclMultiDValData theid;
 	int i;
 
 	s = _NclLookUp(NrmQuarkToString(var_sym_name));

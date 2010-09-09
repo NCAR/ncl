@@ -467,7 +467,6 @@ char * dimname;
 {
 	NclFile thefile = NULL;
 	NclMultiDValData theval = NULL;
-	int index;
 
 	theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
 	if(theval != NULL) 

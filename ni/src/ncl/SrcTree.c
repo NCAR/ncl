@@ -1249,10 +1249,6 @@ NclScopeRec *thescope;
 #endif
 {
 	NclProcDef *tmp = (NclProcDef*)NclMalloc((unsigned)sizeof(NclProcDef));
-        NclSrcListNode *step, *step1;
-        NclLocalVarDec *var_dec;
-        NclDimSizeListNode *dim_size;
-        int i=0,j=0;
 
 	if(tmp == NULL) {
 		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
@@ -2944,7 +2940,7 @@ if(groot != NULL) {
 			fprintf(fp,"%s\n",integer->name);
 			putspace(i+1,fp);
 			fprintf(fp,"%s\t",ref_node_names[integer->ref_type]);
-			fprintf(fp,"%d\n",integer->integer);
+			fprintf(fp,"%lld\n",integer->integer);
 		}
 			break;
 		case Ncl_STRING:

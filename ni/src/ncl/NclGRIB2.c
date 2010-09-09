@@ -1097,14 +1097,14 @@ void g2GDSRLLGrid
 
     if (do_rot) {
 	    double dtr = atan(1) / 45.0;
+	    double rlat = la1; 
+	    double rlon = lo1;
 	    *rot = (float*)NclMalloc((unsigned)sizeof(float)* nj * ni);
 
 	    for(j = 0;j < nj; j++) {
-		    double rlat = jdir == 1 ? la1 : la2; 
 		    for (i = 0; i < ni; i++) {
 			    double tlon,tlat;
 			    double cgridlat, slon,srot,crot;
-			    double rlon = idir == 1 ? lo1 : lo2;
 			    rot2ll(lasp,losp,rlat + j * jdir * dj,rlon + i * idir * di,&tlat,&tlon);
 			    if (do_180) {
 				    tlon = tlon > 180 ? tlon - 360 : tlon;
@@ -1135,11 +1135,11 @@ void g2GDSRLLGrid
 	    }
     }
     else {
+	    double rlat = la1; 
+	    double rlon = lo1;
 	    for(j = 0;j < nj; j++) {
-		    double rlat = jdir == 1 ? la1 : la2; 
 		    for (i = 0; i < ni; i++) {
 			    double tlon,tlat;
-			    double rlon = idir == 1 ? lo1 : lo2;
 			    rot2ll(lasp,losp,rlat + j * jdir * dj,rlon + i * idir * di,&tlat,&tlon);
 			    if (do_180) {
 				    tlon = tlon > 180 ? tlon - 360 : tlon;

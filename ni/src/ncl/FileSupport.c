@@ -1490,11 +1490,11 @@ NclQuark  varname;
                		 	if(ret < 0) {
                        			return(NhlWARNING);
                 		}
-				ret = nclfprintf(fp,"Total Size: %lld bytes\n",total * _NclSizeOf(thefile->file.var_info[i]->data_type));
+				ret = nclfprintf(fp,"Total Size: %lld bytes\n",(long long)total * _NclSizeOf(thefile->file.var_info[i]->data_type));
                 		if(ret < 0) {
                         		return(NhlWARNING);
                 		}
-				ret = nclfprintf(fp,"            %lld values\n",total);
+				ret = nclfprintf(fp,"            %lld values\n",(long long)total);
                 		if(ret < 0) {
                         		return(NhlWARNING);
                 		}

@@ -2311,7 +2311,6 @@ NhlErrorTypes _Nclstr_join
     char *tmp_delim;
     string *new_string;
     ng_size_t str_size;
-    int has_miss_field = 0;
     ng_size_t max_length = 1;
     ng_size_t total_length = 0;
     
@@ -2428,7 +2427,6 @@ NhlErrorTypes _Nclstr_concat
 #endif
 {
     string *strs;
-    string *delim;
 
     int ndim_strs;
     ng_size_t dimsz_strs[NCL_MAX_DIMENSIONS];
@@ -2438,7 +2436,6 @@ NhlErrorTypes _Nclstr_concat
     NclScalar   ret_missing;
   
     ng_size_t i;
-    int n;
 
     int ndim;
     ng_size_t dimsz[1];
@@ -2447,7 +2444,6 @@ NhlErrorTypes _Nclstr_concat
     char *tmp_str;
     string *new_string;
     ng_size_t str_size;
-    int has_miss_field = 0;
     ng_size_t max_length = 1;
     ng_size_t total_length = 0;
     
@@ -2548,7 +2544,6 @@ NhlErrorTypes _Nclstr_insert
     string *new_string;
     ng_size_t str_size;
     int *position;
-    int has_miss_position = 0;
     ng_size_t max_length = 0;
     
     strs = (string *) NclGetArgValue(

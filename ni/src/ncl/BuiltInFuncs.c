@@ -27,6 +27,7 @@ extern "C" {
 #include <limits.h>
 #include <stdarg.h>
 #include <string.h>
+#include <ctype.h>
 #include <ncarg/c.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
@@ -55,6 +56,7 @@ extern "C" {
 #include "DataSupport.h"
 #include "NclMdInc.h"
 #include "NclHLUObj.h"
+#include "HLUSupport.h"
 #include "parser.h"
 #include "OpsList.h"
 #include "ApiRecords.h"
@@ -520,7 +522,7 @@ NhlErrorTypes _NclIGetFileVarNames
 	NclApiDataList *tmp,*step;
 	NclQuark *var_names = NULL;
 	NclQuark file_q;
-	int i,ret =0;
+	int i;
 	ng_size_t dimsize = 0;
 	NclFile thefile;
 	NclMultiDValData tmp_md = NULL;
@@ -606,6 +608,8 @@ NhlErrorTypes _NclIListFileVariables
 		 file_q = data.u.data_var->var.var_quark;
 		break;
 	case NclStk_VAL:
+	default:
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
 		return(NhlFATAL);
 	}
 	if(cmd_line == 1) {
@@ -920,10 +924,7 @@ NhlErrorTypes _Nclsystemfunc
 {
         NclStackEntry val,data;
         NclMultiDValData tmp_md = NULL;
-        logical *lval;
-        ng_size_t dimsize = 1;
 	char* command;
-	char *pager;
 	int fildes[2],new_pipe_fd;
         int ret;
 	int id;
@@ -1114,10 +1115,8 @@ NhlErrorTypes _Nclsystem
 ()
 #endif
 {
-    NclStackEntry val,data;
+    NclStackEntry val;
     NclMultiDValData tmp_md = NULL;
-    logical *lval;
-    int dimsize = 1;
     char* command;
     char *pager;
     char *no_sys_pager = NULL;
@@ -1391,6 +1390,7 @@ NhlErrorTypes _NclIAddToOverlay
 	} else {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"overlay: bad HLU id passed in, ignoring");
 	}
+	return NhlFATAL;
 }
 NhlErrorTypes _NclIAddFile
 #if	NhlNeedProto
@@ -1720,12 +1720,9 @@ NhlErrorTypes _NclIDimSizes
     NclStackEntry data;	
     NclStackEntry data_out;	
     NclMultiDValData tmp_md = NULL;
-/*    int *size;*/
-/*    void    *size;*/
     ng_size_t  *size;
     ng_size_t dim_size;
     int i = 0;
-    short   sz_long = 0;
 
     data = _NclGetArg(0,1,DONT_CARE);
     if (data.kind == NclStk_VAR) {
@@ -2014,13 +2011,8 @@ NhlErrorTypes _NclIDestroy
 {
 	NclStackEntry data;
 	NclMultiDValData tmp_md;
-	NclSymbol *thesym;
-	NclStackEntry *var;
 	int *obj_ids;
 	ng_size_t  i;
-	NclHLUObj hlu_ptr = NULL;
-	NclMultiDValData att_md;
-	void *att_val;
 
 	data = _NclGetArg(0,1,WRITE_IT);
 
@@ -2448,7 +2440,7 @@ static NclTypeClass qc_nc = NULL;
 static NclScalar* qc_missing = NULL;
 static void * qc_val = NULL;
 
-static qsort_compare_func
+static int qsort_compare_func
 #if	NhlNeedProto
 (Const void* s1,Const void* s2)
 #else
@@ -2490,8 +2482,6 @@ NhlErrorTypes _NclIqsort
 	ng_size_t  *index;
 	ng_size_t i;
 	NclSelectionRecord * sel_ptr = NULL;
-	NhlErrorTypes ret;
-
 
 	args  = _NclGetArg(0,1,WRITE_IT);
 	switch(args.kind) {
@@ -2585,7 +2575,6 @@ NhlErrorTypes _NclIfbindirread(void)
 	NclStackEntry dimensions;
 	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
 	ng_size_t  n_dimensions = 0;
@@ -2814,12 +2803,11 @@ NhlErrorTypes _NclIcbinread
 	NclStackEntry dimensions;
 	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
 	ng_size_t  n_dimensions = 0;
 	ng_size_t *dimsizes = NULL;
-    ng_size_t *tmp_dsz = NULL;
+	ng_size_t *tmp_dsz = NULL;
 	ng_size_t size = 1;
 	ng_size_t i;
 	void *tmp_ptr;
@@ -2978,8 +2966,6 @@ NhlErrorTypes _NclIfbinnumrec
 ()
 #endif
 {
-	NclStackEntry data;
-	NclMultiDValData tmp_md;
 	string *fpath;
 	NclScalar missing;
 	int 	has_missing = 0;
@@ -3077,12 +3063,8 @@ NhlErrorTypes _NclIfbinrecwrite
 {
 	string *fpath;
 	int	*recnum;
-	ng_size_t	*dimensions;
-    long    *tmp_dsz;
 	ng_size_t	dimsizes[NCL_MAX_DIMENSIONS];
 	NclScalar missing;
-	NclMultiDValData tmp_md;
-	NclStackEntry data;
 	int 	has_missing = 0;
 	NclTypeClass type;
 	char 	control_word[4];
@@ -3090,7 +3072,6 @@ NhlErrorTypes _NclIfbinrecwrite
 	ng_size_t i;
 	int ind1,ind2;
 	int fd = -1;
-	ng_size_t size = 1;
 	int n;
 	int n_dims;
 	off_t cur_off = 0;
@@ -3517,20 +3498,17 @@ NhlErrorTypes _NclIfbinread
 	NclStackEntry dimensions;
 	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
 	ng_size_t  n_dimensions = 0;
 	ng_size_t *dimsizes = NULL;
-    ng_size_t  *tmp_dsz = NULL;
+	ng_size_t  *tmp_dsz = NULL;
 	ng_size_t size = 1;
-    long    tmp_size = 0;
+	long    tmp_size = 0;
 	ng_size_t i;
 	void *tmp_ptr;
-	struct stat buf;
 	ng_size_t totalsize = 0;
 	ng_size_t n;
-	char *step = NULL;
 	NclStackEntry data_out;
 	ng_size_t dim2;
 	int fd;
@@ -3706,22 +3684,14 @@ NhlErrorTypes _NclIasciiwrite
 	NhlErrorTypes ret = NhlNOERROR;
 	NclStackEntry fpath;
 	NclStackEntry value;
-	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
-	ng_size_t  n_dimensions = 0;
-	ng_size_t *dimsizes = NULL;
-	ng_size_t size = 1;
 	ng_size_t i;
 	void *tmp_ptr;
-	struct stat buf;
 	FILE *fd = NULL;
 	ng_size_t  totalsize = 0;
-	ng_size_t n;
 	char *step = NULL;
-	NclStackEntry data_out;
 	int is_stdout = 0;
 	NclVaPrintFunc tmp ;
 
@@ -4131,7 +4101,7 @@ int asciiinteger(char *buf, char **end, int type, void *retvalue,char **rem) {
 	int i;
 	int ishex = 0;
 	long tmpi;
-	char *cp,*iend;
+	char *iend;
 	
 	i = strcspn(buf,initchars);
 	while (buf[i] != '\0') {
@@ -4231,21 +4201,18 @@ NhlErrorTypes _NclIasciiread
 	NclStackEntry dimensions;
 	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
 	ng_size_t  n_dimensions = 0;
 	ng_size_t *dimsizes = NULL;
-    long *tmp_dsz = NULL;
+	long *tmp_dsz = NULL;
 	ng_size_t size = 1;
 	ng_size_t i;
-    int j;
+	int j;
 	void *tmp_ptr;
 	struct stat statbuf;
 	FILE *fp = NULL;
 	ng_size_t totalsize = 0;
-	int n;
-	char *step = NULL;
 	NclStackEntry data_out;
 	int has_unlimited = 0;
 	int bufsize = 4096;
@@ -4780,22 +4747,13 @@ NhlErrorTypes _NclIfbindirwrite
 	NhlErrorTypes ret = NhlNOERROR;
 	NclStackEntry fpath;
 	NclStackEntry value;
-	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
-	int n_dimensions = 0;
-	ng_size_t *dimsizes = NULL;
-	int size = 1;
-	int i;
 	void *tmp_ptr;
-	struct stat buf;
 	int fd = -1;
 	int totalsize = 0;
 	int n;
-	char *step = NULL;
-	NclStackEntry data_out;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
@@ -4879,22 +4837,13 @@ NhlErrorTypes _NclIcbinwrite
 	NhlErrorTypes ret = NhlNOERROR;
 	NclStackEntry fpath;
 	NclStackEntry value;
-	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
-	ng_size_t n_dimensions = 0;
-	ng_size_t *dimsizes = NULL;
-	ng_size_t size = 1;
-	ng_size_t i;
 	void *tmp_ptr;
-	struct stat buf;
 	int fd = -1;
 	ng_size_t  totalsize = 0;
 	int n;
-	char *step = NULL;
-	NclStackEntry data_out;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
@@ -4986,22 +4935,13 @@ NhlErrorTypes _NclIfbinwrite
 	NhlErrorTypes ret = NhlNOERROR;
 	NclStackEntry fpath;
 	NclStackEntry value;
-	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
-	ng_size_t n_dimensions = 0;
-	ng_size_t *dimsizes = NULL;
-	ng_size_t size = 1;
-	int i;
 	void *tmp_ptr;
-	struct stat buf;
 	int fd = -1;
 	ng_size_t  totalsize = 0;
 	int n;
-	char *step = NULL;
-	NclStackEntry data_out;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
@@ -5150,8 +5090,6 @@ NhlErrorTypes _NclIrand
 ()
 #endif
 {
-	NclStackEntry data_out;
-	NclMultiDValData tmp_md= NULL;
 	int tmp ;
 	ng_size_t dimsize = 1;
 
@@ -5554,6 +5492,7 @@ NhlErrorTypes _NclIabs
                 "abs: a non-numeric type was passed to this function, cannot continue");
             break;
     }
+    return NhlFATAL;
 }
 
 
@@ -7531,12 +7470,13 @@ NhlErrorTypes _NclIstringtoulong
 #endif
 {
     NclScalar missing,missing2;
-    int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+    int has_missing,n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
     unsigned long *out_val;
     NclBasicDataTypes type;
     string *value;
-    int total=1;
-    int i;
+    ng_size_t total=1;
+    ng_size_t i;
     unsigned long tval;
     char *val;
     char *end;
@@ -7648,12 +7588,13 @@ NhlErrorTypes _NclIstringtoint64
 #endif
 {
     NclScalar missing,missing2;
-    int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+    int has_missing,n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
     long long *out_val;
     NclBasicDataTypes type;
     string *value;
-    int total=1;
-    int i;
+    ng_size_t total=1;
+    ng_size_t i;
     long long tval;
     char *val;
     char *end;
@@ -7764,12 +7705,13 @@ NhlErrorTypes _NclIstringtouint64
 #endif
 {
     NclScalar missing,missing2;
-    int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+    int has_missing,n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
     unsigned long long *out_val;
     NclBasicDataTypes type;
     string *value;
-    int total=1;
-    int i;
+    ng_size_t total=1;
+    ng_size_t i;
     unsigned long long tval;
     char *val;
     char *end;
@@ -7882,8 +7824,8 @@ NhlErrorTypes _NclIstringtoshort
 {
 	NclScalar missing,missing2;
         int has_missing;
-    int n_dims;
-    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         short *out_val;
 	NclBasicDataTypes type;
         string *value;
@@ -7973,12 +7915,13 @@ NhlErrorTypes _NclIstringtoushort
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         unsigned short *out_val;
 	NclBasicDataTypes type;
         string *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 	long tval;
 	char *val;
 	char *end;
@@ -8065,8 +8008,8 @@ NhlErrorTypes _NclIstringtointeger
 {
 	NclScalar missing,missing2;
         int has_missing;
-    int n_dims;
-    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         int *out_val;
 	NclBasicDataTypes type;
         string *value;
@@ -8158,12 +8101,13 @@ NhlErrorTypes _NclIstringtouint
 #endif
 {
     NclScalar missing,missing2;
-    int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+    int has_missing,n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
     unsigned int *out_val;
     NclBasicDataTypes type;
     string *value;
-    int total=1;
-    int i;
+    ng_size_t total=1;
+    ng_size_t i;
     unsigned int tval;
     char *val;
     char *end;
@@ -8294,8 +8238,8 @@ NhlErrorTypes _NclIstringtodouble
 {
 	NclScalar missing,missing2;
         int has_missing;
-    int n_dims;
-    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         double *out_val;
 	NclBasicDataTypes type;
         string *value;
@@ -8412,8 +8356,8 @@ NhlErrorTypes _NclIstringtofloat
 {
 	NclScalar missing,missing2;
         int has_missing;
-    int n_dims;
-    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         float *out_val;
 	NclBasicDataTypes type;
         string *value;
@@ -8598,6 +8542,9 @@ NhlErrorTypes _NclIIsProc
 	case NclStk_VAL:
 		tmp_md = arg.u.data_obj;
 		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
 	}
 
 	outval = (logical*)NclMalloc((unsigned)sizeof(logical)*tmp_md->multidval.totalelements);
@@ -8673,7 +8620,6 @@ NhlErrorTypes _NclIStatusExit
 	NclStackEntry   data;
 	NclMultiDValData   tmp_md = NULL;
 	int exit_status;
-	int i;
 
 	data = _NclGetArg(0, 1, DONT_CARE);
 	switch (data.kind) {
@@ -8684,7 +8630,10 @@ NhlErrorTypes _NclIStatusExit
         case NclStk_VAL:
 		tmp_md = (NclMultiDValData) data.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 
 	if (tmp_md == NULL)
 		return NhlFATAL;
@@ -8693,6 +8642,7 @@ NhlErrorTypes _NclIStatusExit
 
 	_NclExit(exit_status);
 
+	return NhlNOERROR;
 }
 
 NhlErrorTypes _NclIIsFunc
@@ -8718,7 +8668,10 @@ NhlErrorTypes _NclIIsFunc
 	case NclStk_VAL:
 		tmp_md = arg.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 
 	outval = (logical*)NclMalloc((unsigned)sizeof(logical)*tmp_md->multidval.totalelements);
 	vals = (NclQuark*)tmp_md->multidval.val;
@@ -8782,7 +8735,6 @@ NhlErrorTypes _NclIUnDef
 	NclStackEntry arg,*var,data;
 	NclMultiDValData tmp_md;
 	ng_size_t  i;
-	logical *outval;
 	NclQuark *vals;
 	NclSymbol* s;
 	NclObj tmp;
@@ -8796,7 +8748,10 @@ NhlErrorTypes _NclIUnDef
 	case NclStk_VAL:
 		tmp_md = arg.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 
 	vals = (NclQuark*)tmp_md->multidval.val;
 	if(tmp_md->multidval.missing_value.has_missing) {
@@ -8912,7 +8867,10 @@ NhlErrorTypes _NclIIsDefined
 	case NclStk_VAL:
 		tmp_md = arg.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 
 	outval = (logical*)NclMalloc((unsigned)sizeof(logical)*tmp_md->multidval.totalelements);
 	vals = (NclQuark*)tmp_md->multidval.val;
@@ -8972,7 +8930,10 @@ NhlErrorTypes _NclIIsVar
 	case NclStk_VAL:
 		tmp_md = arg.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 
 	outval = (logical*)NclMalloc((unsigned)sizeof(logical)*tmp_md->multidval.totalelements);
 	vals = (NclQuark*)tmp_md->multidval.val;
@@ -9016,13 +8977,12 @@ NhlErrorTypes _NclIIsCoord
 ()
 #endif
 {
-	NclStackEntry arg0,arg1,arg2;
-	NclMultiDValData tmp_md,att_md;
+	NclStackEntry arg1,arg2;
+	NclMultiDValData att_md;
 	ng_size_t  i;
 	logical *outval;
 	NclVar tmp_var;
 	NclQuark *vals;
-	NclSymbol* s;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 	ng_size_t dims = 1;
 
@@ -9037,7 +8997,11 @@ NhlErrorTypes _NclIIsCoord
 	case NclStk_VAL:
 		tmp_var = NULL;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
+
 	switch(arg2.kind) {
 	case NclStk_VAR:
 		att_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
@@ -9045,8 +9009,10 @@ NhlErrorTypes _NclIIsCoord
 	case NclStk_VAL:
 		att_md = arg2.u.data_obj;
 		break;
-	}
-	
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	
 
 	if(tmp_var == NULL) {
@@ -9094,13 +9060,12 @@ NhlErrorTypes _NclIIsAtt
 ()
 #endif
 {
-	NclStackEntry arg0,arg1,arg2;
-	NclMultiDValData tmp_md,att_md;
+	NclStackEntry arg1,arg2;
+	NclMultiDValData att_md;
 	ng_size_t  i;
 	logical *outval;
 	NclVar tmp_var;
 	NclQuark *vals;
-	NclSymbol* s;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 	ng_size_t dims = 1;
 
@@ -9115,7 +9080,10 @@ NhlErrorTypes _NclIIsAtt
 	case NclStk_VAL:
 		tmp_var = NULL;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg2.kind) {
 	case NclStk_VAR:
 		att_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
@@ -9123,8 +9091,10 @@ NhlErrorTypes _NclIIsAtt
 	case NclStk_VAL:
 		att_md = arg2.u.data_obj;
 		break;
-	}
-	
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	
 
 	if(tmp_var == NULL) {
@@ -9172,13 +9142,12 @@ NhlErrorTypes _NclIIsDim
 ()
 #endif
 {
-	NclStackEntry arg0,arg1,arg2;
-	NclMultiDValData tmp_md,dim_md;
+	NclStackEntry arg1,arg2;
+	NclMultiDValData dim_md;
 	ng_size_t  i;
 	logical *outval;
 	NclVar tmp_var;
 	NclQuark *vals;
-	NclSymbol* s;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 	ng_size_t dims = 1;
 
@@ -9193,7 +9162,10 @@ NhlErrorTypes _NclIIsDim
 	case NclStk_VAL:
 		tmp_var = NULL;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg2.kind) {
 	case NclStk_VAR:
 		dim_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
@@ -9201,8 +9173,10 @@ NhlErrorTypes _NclIIsDim
 	case NclStk_VAL:
 		dim_md = arg2.u.data_obj;
 		break;
-	}
-	
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	
 
 	if(tmp_var == NULL) {
@@ -9250,16 +9224,14 @@ NhlErrorTypes _NclIIsDimNamed
 ()
 #endif
 {
-	NclStackEntry arg0,arg1,arg2;
-	NclMultiDValData tmp_md,dim_md;
+	NclStackEntry arg1,arg2;
+	NclMultiDValData dim_md;
 	int i;
 	logical *outval;
 	NclVar tmp_var;
 	int *vals;
-	NclSymbol* s;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 	ng_size_t dimsize = 1;
-	int get_all = 0;
 
 	
 	arg1  = _NclGetArg(0,2,DONT_CARE);
@@ -9272,7 +9244,10 @@ NhlErrorTypes _NclIIsDimNamed
 	case NclStk_VAL:
 		tmp_var = NULL;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg2.kind) {
 	case NclStk_VAR:
 		dim_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
@@ -9280,8 +9255,10 @@ NhlErrorTypes _NclIIsDimNamed
 	case NclStk_VAL:
 		dim_md = arg2.u.data_obj;
 		break;
-	}
-	
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 
 	if(tmp_var == NULL) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsDimNamed: Non variable passed returning missing");
@@ -9366,7 +9343,6 @@ NhlErrorTypes _NclIIsFileVar
 	ng_size_t  i;
 	logical *outval;
 	NclQuark *vals;
-	NclSymbol* s;
 	NclFile file_ptr;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 	ng_size_t dims = 1;
@@ -9381,7 +9357,10 @@ NhlErrorTypes _NclIIsFileVar
 	case NclStk_VAL:
 		file_md = arg0.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg1.kind) {
 	case NclStk_VAR:
 		tmp_md = _NclVarValueRead(arg1.u.data_var,NULL,NULL);
@@ -9389,7 +9368,10 @@ NhlErrorTypes _NclIIsFileVar
 	case NclStk_VAL:
 		tmp_md = arg1.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	
 	file_ptr = (NclFile)_NclGetObj(*(obj*)(file_md->multidval.val));
 
@@ -9446,7 +9428,6 @@ NhlErrorTypes _NclIIsFileVarAtt
 	logical *outval;
 	NclQuark var;
 	NclQuark *vals;
-	NclSymbol* s;
 	NclFile file_ptr;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 	ng_size_t dims = 1;
@@ -9462,7 +9443,10 @@ NhlErrorTypes _NclIIsFileVarAtt
 	case NclStk_VAL:
 		file_md = arg0.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg1.kind) {
 	case NclStk_VAR:
 		tmp_md = _NclVarValueRead(arg1.u.data_var,NULL,NULL);
@@ -9470,7 +9454,10 @@ NhlErrorTypes _NclIIsFileVarAtt
 	case NclStk_VAL:
 		tmp_md = arg1.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg2.kind) {
 	case NclStk_VAR:
 		att_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
@@ -9478,7 +9465,10 @@ NhlErrorTypes _NclIIsFileVarAtt
 	case NclStk_VAL:
 		att_md = arg2.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	
 	file_ptr = (NclFile)_NclGetObj(*(obj*)(file_md->multidval.val));
 	var =*(NclQuark*)tmp_md->multidval.val;
@@ -9537,7 +9527,6 @@ NhlErrorTypes _NclIIsFileVarCoord
 	logical *outval;
 	NclQuark var;
 	NclQuark *vals;
-	NclSymbol* s;
 	NclFile file_ptr;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 	ng_size_t dims = 1;
@@ -9553,7 +9542,10 @@ NhlErrorTypes _NclIIsFileVarCoord
 	case NclStk_VAL:
 		file_md = arg0.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg1.kind) {
 	case NclStk_VAR:
 		tmp_md = _NclVarValueRead(arg1.u.data_var,NULL,NULL);
@@ -9561,7 +9553,10 @@ NhlErrorTypes _NclIIsFileVarCoord
 	case NclStk_VAL:
 		tmp_md = arg1.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg2.kind) {
 	case NclStk_VAR:
 		dim_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
@@ -9569,7 +9564,10 @@ NhlErrorTypes _NclIIsFileVarCoord
 	case NclStk_VAL:
 		dim_md = arg2.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	
 	file_ptr = (NclFile)_NclGetObj(*(obj*)(file_md->multidval.val));
 	var =*(NclQuark*)tmp_md->multidval.val;
@@ -9635,7 +9633,6 @@ NhlErrorTypes _NclIIsFileVarDim
 	logical *outval;
 	NclQuark var;
 	NclQuark *vals;
-	NclSymbol* s;
 	NclFile file_ptr;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 	ng_size_t dims = 1;
@@ -9651,7 +9648,10 @@ NhlErrorTypes _NclIIsFileVarDim
 	case NclStk_VAL:
 		file_md = arg0.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg1.kind) {
 	case NclStk_VAR:
 		tmp_md = _NclVarValueRead(arg1.u.data_var,NULL,NULL);
@@ -9659,7 +9659,10 @@ NhlErrorTypes _NclIIsFileVarDim
 	case NclStk_VAL:
 		tmp_md = arg1.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg2.kind) {
 	case NclStk_VAR:
 		dim_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
@@ -9667,7 +9670,10 @@ NhlErrorTypes _NclIIsFileVarDim
 	case NclStk_VAL:
 		dim_md = arg2.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	
 	file_ptr = (NclFile)_NclGetObj(*(obj*)(file_md->multidval.val));
 	var =*(NclQuark*)tmp_md->multidval.val;
@@ -9726,54 +9732,61 @@ NhlErrorTypes _Ncl1dtond
 	NclMultiDValData tmp_dims= NULL;
 	void *out_val;
 	ng_size_t *dimsizes;
-	logical *tmp;
 	ng_size_t sz = 1;
 	ng_size_t  i, ndims;
-    int has_missing;
-    NclScalar   missing;
 
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
    	dims = _NclGetArg(1,2,DONT_CARE);
 	switch(dims.kind) {
-		case NclStk_VAR:
-			tmp_dims = _NclVarValueRead(dims.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_dims = (NclMultiDValData)dims.u.data_obj;
-			break;
+	case NclStk_VAR:
+		tmp_dims = _NclVarValueRead(dims.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_dims = (NclMultiDValData)dims.u.data_obj;
+		break;
+	default:
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+		return(NhlFATAL);
 	}
 	if(tmp_dims == NULL)
 		return(NhlFATAL);
 
 
-    ndims = tmp_dims->multidval.totalelements;
-    dimsizes = (ng_size_t *) NclMalloc((tmp_dims->multidval.totalelements) * sizeof(ng_size_t));
-    switch (tmp_dims->multidval.data_type) {
+	ndims = tmp_dims->multidval.totalelements;
+	dimsizes = (ng_size_t *) NclMalloc((tmp_dims->multidval.totalelements) * sizeof(ng_size_t));
+	switch (tmp_dims->multidval.data_type) {
         case NCL_int:
         	for (i = 0; i < tmp_dims->multidval.totalelements; i++) {
                 sz *= ((int*) tmp_dims->multidval.val)[i];
                 ((ng_size_t *) dimsizes)[i] = ((int*) tmp_dims->multidval.val)[i];
 	        }
-            break;
+		break;
 
         case NCL_long:
         	for (i = 0; i < tmp_dims->multidval.totalelements; i++) {
 		        sz *= ((long*)tmp_dims->multidval.val)[i];
                 ((ng_size_t *) dimsizes)[i] = ((ng_size_t*) tmp_dims->multidval.val)[i];
 	        }
-            break;
-    }
+		break;
+        default:
+		/* this should allow conversion */
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Wrong data type for dimension sizes"));
+                return(NhlFATAL);
+	}
 
 	if((sz == tmp_md->multidval.totalelements)||(sz < tmp_md->multidval.totalelements)) {
 		if(sz < tmp_md->multidval.totalelements) {
@@ -9837,18 +9850,19 @@ NhlErrorTypes _Nclndto1d
 	NclMultiDValData tmp_md = NULL;
 	void *out_val;
 	ng_size_t  dimsizes = 0;
-	logical *tmp;
-	int i;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 	
@@ -9881,13 +9895,16 @@ NhlErrorTypes _Nclproduct
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -9954,18 +9971,21 @@ NhlErrorTypes _Ncldim_product
 	logical *tmp = NULL;
 	ng_size_t i,j;
 	ng_size_t m,n;
-    int sz;
+	int sz;
 	ng_size_t nd;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -10047,18 +10067,19 @@ NhlErrorTypes _Ncldim_product_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *dims, ndims;
-	int *dimsizes = NULL;
+        int *dims; 
+	ng_size_t ndims;
+	ng_size_t *dimsizes = NULL;
 	logical *tmp = NULL;
-	int i,j,k;
-	int i_in_sz,i_out_sz;
-	int m,n,nr,nl,sz;
+	ng_size_t i,j,k;
+	ng_size_t i_in_sz,i_out_sz;
+	ng_size_t m,n,nr,nl,sz;
 	int nd;
-	NclScalar missing;
 
 /*
  * Get dimensions to do product across.
  */
+	/* dims is the array of dimension numbers, ndims is the 1D size the the array (i.e. the number of dimensions) */
 	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,0);
 
 /*
@@ -10066,13 +10087,16 @@ NhlErrorTypes _Ncldim_product_n
  */
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -10234,20 +10258,21 @@ NhlErrorTypes _Ncldim_sum
 	logical *tmp = NULL;
 	ng_size_t i,j;
 	ng_size_t m,n;
-    int sz;
+	int sz;
 	ng_size_t nd;
-	NclScalar missing;
-
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -10330,14 +10355,15 @@ NhlErrorTypes _Ncldim_sum_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *dims, ndims;
-	int *dimsizes = NULL;
+        int  *dims;
+	ng_size_t ndims;
+	ng_size_t *dimsizes = NULL;
 	logical *tmp = NULL;
-	int i,j,k;
-	int i_in_sz,i_out_sz;
-	int m,n,nr,nl,sz;
+	ng_size_t i,j,k;
+	ng_size_t i_in_sz,i_out_sz;
+	ng_size_t m,n,nr,nl;
+	int sz;
 	int nd;
-	NclScalar missing;
 
 /*
  * Get dimension(s) to do sum across.
@@ -10349,13 +10375,16 @@ NhlErrorTypes _Ncldim_sum_n
  */
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -10516,13 +10545,16 @@ NhlErrorTypes _Nclsum
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -10600,25 +10632,31 @@ NhlErrorTypes _Ncldim_cumsum
 
 	data0 = _NclGetArg(0,2,DONT_CARE);
 	switch(data0.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data0.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data0.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 	data1 = _NclGetArg(1,2,DONT_CARE);
 	switch(data1.kind) {
-		case NclStk_VAR:
-			opt_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			opt_md = (NclMultiDValData)data1.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		opt_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		opt_md = (NclMultiDValData)data1.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(opt_md == NULL)
 		return(NhlFATAL);
 	opt = *((int*)opt_md->multidval.val);
@@ -10747,11 +10785,12 @@ NhlErrorTypes _Ncldim_cumsum_n
 	NclMultiDValData tmp_md = NULL;
 	NclMultiDValData opt_md = NULL;
 	void *out_val = NULL;
-	int *dims, ndims;
+	int *dims;
+	ng_size_t ndims;
 	logical *tmp = NULL;
-	int i,j,k;
+	ng_size_t i,j,k;
 	int sz;
-	int m,n,nl,nr;
+	ng_size_t m,n,nl,nr;
 	NclScalar *missing = NULL;
 	int opt;
 
@@ -10767,25 +10806,31 @@ NhlErrorTypes _Ncldim_cumsum_n
 
 	data0 = _NclGetArg(0,3,DONT_CARE);
 	switch(data0.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data0.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data0.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 	data1 = _NclGetArg(1,3,DONT_CARE);
 	switch(data1.kind) {
-		case NclStk_VAR:
-			opt_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			opt_md = (NclMultiDValData)data1.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		opt_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		opt_md = (NclMultiDValData)data1.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(opt_md == NULL)
 		return(NhlFATAL);
 	opt = *((int*)opt_md->multidval.val);
@@ -10975,25 +11020,31 @@ NhlErrorTypes _Nclcumsum
 
 	data0 = _NclGetArg(0,2,DONT_CARE);
 	switch(data0.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data0.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data0.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 	data1 = _NclGetArg(1,2,DONT_CARE);
 	switch(data1.kind) {
-		case NclStk_VAR:
-			opt_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			opt_md = (NclMultiDValData)data1.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		opt_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		opt_md = (NclMultiDValData)data1.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(opt_md == NULL)
 		return(NhlFATAL);
 	opt = *((int*)opt_md->multidval.val);
@@ -11114,30 +11165,30 @@ NhlErrorTypes _Ncldim_avg
 	double sum_val ;
 	double *val = NULL;
 	ng_size_t *dimsizes = NULL;
-	logical *tmp = NULL;
 	ng_size_t i,j;
-    int sf;
-	ng_size_t m,n,sz;
-	ng_size_t nd;
-    int count;
-	short tmp1;
+	int sf;
+	ng_size_t m,n;
+	int sz;
+	int nd;
+	ng_size_t count;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
 	NclScalar missing;
 	int did_coerce = 0;
 
-
-
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -11300,15 +11351,17 @@ NhlErrorTypes _Ncldim_avg_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-	int *dims, ndims;
+	int *dims;
+	ng_size_t ndims;
 	double sum_val ;
 	double *val = NULL;
-	int *dimsizes = NULL;
-	logical *tmp = NULL;
-	int i,j,k,sf;
-	int m,n,nr,nl,sz;
-	int nd,count;
-	short tmp1;
+	ng_size_t *dimsizes = NULL;
+	ng_size_t i,j,k;
+	int sf;
+	ng_size_t m,n,nr,nl;
+	int sz;
+	int nd;
+	ng_size_t count;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
@@ -11324,13 +11377,16 @@ NhlErrorTypes _Ncldim_avg_n
  */
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -11523,13 +11579,11 @@ NhlErrorTypes _NclIdim_variance
 	double sum_sqrd_val ;
 	double *val = NULL;
 	ng_size_t *dimsizes = NULL;
-	logical *tmp = NULL;
 	ng_size_t i,j;
-    int sf;
+	int sf;
 	ng_size_t m,n,sz;
 	ng_size_t nd;
-    int count;
-	short tmp1;
+	ng_size_t count;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
@@ -11541,13 +11595,16 @@ NhlErrorTypes _NclIdim_variance
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -11694,15 +11751,19 @@ NhlErrorTypes _NclIdim_variance_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-	int *dims, ndims;
+	int *dims; 
+	ng_size_t  ndims;
 	double sum_val ;
 	double sum_sqrd_val ;
 	double *val = NULL;
-	int *dimsizes = NULL;
-	logical *tmp = NULL;
-	int i,j,k,sf,i_in,i_out;
-	int m,n,nr,nl,sz;
-	int nd,count;
+	ng_size_t *dimsizes = NULL;
+	ng_size_t i,j,k;
+	int sf;
+	ng_size_t i_in,i_out;
+	ng_size_t m,n,nr,nl;
+	int sz;
+	int nd;
+	ng_size_t count;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
@@ -11720,13 +11781,16 @@ NhlErrorTypes _NclIdim_variance_n
  */
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -11931,35 +11995,30 @@ NhlErrorTypes _NclIvariance
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	double sum_val;
-	double out0_val;
 	double sum_sqrd_val;
-	double tmp_sqrd_val;
 	double *val;
 	void *out1_val;
-	double div_val;
-	double done = 1.0;
-	float fone = 1.0;
 	ng_size_t dimsizes = 1;
-	int n;
-    ng_size_t  i;
-	short tmp1;
+	ng_size_t n;
+	ng_size_t  i;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
-	NhlErrorTypes r0 = NhlNOERROR;
-	NhlErrorTypes r1 = NhlNOERROR;
 	NclScalar missing;
 	int did_coerce = 0;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -12115,13 +12174,11 @@ NhlErrorTypes _NclIdim_stddev
 	double sum_sqrd_val ;
 	double *val = NULL;
 	ng_size_t *dimsizes = NULL;
-	logical *tmp = NULL;
 	ng_size_t i,j;
-    int sf;
+	int sf;
 	ng_size_t m,n,sz;
 	ng_size_t nd;
-    int count;
-	short tmp1;
+	ng_size_t count;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
@@ -12129,17 +12186,18 @@ NhlErrorTypes _NclIdim_stddev
 	int start;
 	int did_coerce = 0;
 
-	
-
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -12291,15 +12349,19 @@ NhlErrorTypes _NclIdim_stddev_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *dims, ndims;
+        int *dims;
+	ng_size_t ndims;
 	double sum_val ;
 	double sum_sqrd_val ;
 	double *val = NULL;
-	int *dimsizes = NULL;
-	logical *tmp = NULL;
-	int i,j,k,sf,i_in,i_out;
-	int m,n,nr,nl,sz;
-	int nd,count;
+	ng_size_t *dimsizes = NULL;
+	ng_size_t i,j,k;
+	int sf;
+	ng_size_t i_in,i_out;
+	ng_size_t m,n,nr,nl;
+	int sz;
+	int nd;
+	ng_size_t count;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
@@ -12317,13 +12379,16 @@ NhlErrorTypes _NclIdim_stddev_n
  */
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -12530,35 +12595,30 @@ NhlErrorTypes _NclIstddev
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	double sum_val;
-	double out0_val;
 	double sum_sqrd_val;
-	double tmp_sqrd_val;
 	double *val;
 	void *out1_val;
-	double div_val;
-	double done = 1.0;
-	float fone = 1.0;
 	ng_size_t dimsizes = 1;
-	int n;
-    ng_size_t  i;
-	short tmp1;
+	ng_size_t n;
+	ng_size_t  i;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
-	NhlErrorTypes r0 = NhlNOERROR;
-	NhlErrorTypes r1 = NhlNOERROR;
 	NclScalar missing;
 	int did_coerce = 0;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -12712,12 +12772,10 @@ NhlErrorTypes _Nclavg
 	double sum_val;
 	double *val;
 	void *out_val;
-	double div_val;
 	ng_size_t dimsizes = 1;
 	logical *tmp = NULL;
-	int n;
-    ng_size_t  i;
-	short tmp1;
+	ng_size_t n;
+	ng_size_t  i;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
@@ -12727,13 +12785,16 @@ NhlErrorTypes _Nclavg
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -12860,18 +12921,21 @@ NhlErrorTypes _Nclnum
 	void *out_val;
 	ng_size_t dimsizes = 1;
 	logical *tmp;
-	int j, count;
-    ng_size_t  i;
+	ng_size_t count;
+	ng_size_t  i;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -12903,7 +12967,7 @@ NhlErrorTypes _Nclnum
 		out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size);
 		memcpy(out_val,&count,((NclTypeClass)nclTypeintClass)->type_class.size);
 		return(NclReturnValue(
-			out_val,
+		        out_val,
 			1,
 			&dimsizes,
 			NULL,
@@ -12930,13 +12994,16 @@ NhlErrorTypes _Nclind
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -13023,7 +13090,7 @@ NhlErrorTypes _Nclispan
 	NclMultiDValData tmp_md0 = NULL;
 	NclMultiDValData tmp_md1 = NULL;
 	NclMultiDValData tmp_md2 = NULL;
-    NclBasicDataTypes   data0_type, data1_type, data2_type,
+	NclBasicDataTypes   data0_type, data1_type, data2_type,
         ret_type = NCL_int;
 /*
 	int *out_val;
@@ -13032,48 +13099,57 @@ NhlErrorTypes _Nclispan
 	int fnsh;
 	int spacing;
 */
-    ng_size_t dimsizes = 1;
-    int promote = 0;    /* false */
+	ng_size_t dimsizes = 1;
+	int promote = 0;    /* false */
 
 
 	data0 = _NclGetArg(0,3,DONT_CARE);
 	switch(data0.kind) {
-		case NclStk_VAR:
-			tmp_md0 = _NclVarValueRead(data0.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md0 = (NclMultiDValData)data0.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md0 = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md0 = (NclMultiDValData)data0.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md0 == NULL)
 		return(NhlFATAL);
-    data0_type = tmp_md0->multidval.data_type;
+	data0_type = tmp_md0->multidval.data_type;
 
 	data1 = _NclGetArg(1,3,DONT_CARE);
 	switch(data1.kind) {
-		case NclStk_VAR:
-			tmp_md1 = _NclVarValueRead(data1.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md1 = (NclMultiDValData)data1.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md1 = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md1 = (NclMultiDValData)data1.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md1 == NULL)
 		return(NhlFATAL);
-    data1_type = tmp_md1->multidval.data_type;
+	data1_type = tmp_md1->multidval.data_type;
 
 	data2 = _NclGetArg(2,3,DONT_CARE);
 	switch(data2.kind) {
-		case NclStk_VAR:
-			tmp_md2 = _NclVarValueRead(data2.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md2 = (NclMultiDValData)data2.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md2 = _NclVarValueRead(data2.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md2 = (NclMultiDValData)data2.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md2 == NULL)
 		return(NhlFATAL);
-    data2_type = tmp_md2->multidval.data_type;
+	data2_type = tmp_md2->multidval.data_type;
 
 	if(_NclIsMissing(tmp_md0,tmp_md0->multidval.val)||
 	   _NclIsMissing(tmp_md1,tmp_md1->multidval.val)||
@@ -13083,83 +13159,83 @@ NhlErrorTypes _Nclispan
 		return(NhlFATAL);
 	}
 
-    if ((data0_type == NCL_float) || (data0_type == NCL_double) || (data1_type == NCL_float)
+	if ((data0_type == NCL_float) || (data0_type == NCL_double) || (data1_type == NCL_float)
             || (data1_type == NCL_double) || (data2_type == NCL_float)
             || (data2_type == NCL_double)) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN,
-            "ispan: arguments must be of an integral type, can't continue");
-        return NhlFATAL;
-    }
+		NhlPError(NhlFATAL, NhlEUNKNOWN,
+			  "ispan: arguments must be of an integral type, can't continue");
+		return NhlFATAL;
+	}
 
-    if ((data0_type == NCL_byte) || (data0_type == NCL_short) || (data1_type == NCL_byte)
+	if ((data0_type == NCL_byte) || (data0_type == NCL_short) || (data1_type == NCL_byte)
             || (data1_type == NCL_short) || (data2_type == NCL_byte)
             || (data2_type == NCL_short)) {
-        promote = 1;
-    }
+		promote = 1;
+	}
 
-    if ((data0_type == NCL_long) || (data1_type == NCL_long) || (data2_type == NCL_long)) {
-        tmp_md0 = _NclCoerceData(tmp_md0, Ncl_Typelong, NULL);
-        tmp_md1 = _NclCoerceData(tmp_md1, Ncl_Typelong, NULL);
-        tmp_md2 = _NclCoerceData(tmp_md2, Ncl_Typelong, NULL);
-        ret_type = NCL_long;
-    } else {
-        if (promote == 1) {
-            tmp_md0 = _NclCoerceData(tmp_md0, Ncl_Typeint, NULL);
-            tmp_md1 = _NclCoerceData(tmp_md1, Ncl_Typeint, NULL);
-            tmp_md2 = _NclCoerceData(tmp_md2, Ncl_Typeint, NULL);
-            ret_type = NCL_int;
-        }
-    }
+	if ((data0_type == NCL_long) || (data1_type == NCL_long) || (data2_type == NCL_long)) {
+		tmp_md0 = _NclCoerceData(tmp_md0, Ncl_Typelong, NULL);
+		tmp_md1 = _NclCoerceData(tmp_md1, Ncl_Typelong, NULL);
+		tmp_md2 = _NclCoerceData(tmp_md2, Ncl_Typelong, NULL);
+		ret_type = NCL_long;
+	} else {
+		if (promote == 1) {
+			tmp_md0 = _NclCoerceData(tmp_md0, Ncl_Typeint, NULL);
+			tmp_md1 = _NclCoerceData(tmp_md1, Ncl_Typeint, NULL);
+			tmp_md2 = _NclCoerceData(tmp_md2, Ncl_Typeint, NULL);
+			ret_type = NCL_int;
+		}
+	}
 
-    switch (ret_type) {
+	switch (ret_type) {
         case NCL_int:
-            {
+	{
         	int *out_val;
         	int i;
         	int strt;
         	int fnsh;
         	int spacing;
 
-	spacing = *(int*)tmp_md2->multidval.val;
-	if(spacing < 1) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: spacing parameter must be positive and non-zero");
-		return(NhlFATAL);
-	}
-	fnsh = *(int*)tmp_md1->multidval.val;
-	strt = *(int*)tmp_md0->multidval.val;
-
-	dimsizes  = abs(fnsh-strt)/spacing + 1;
-
-	if((fnsh - strt) > 0) {
-		out_val = (int*)NclMalloc(dimsizes*sizeof(int));
-		for(i = 0; i < dimsizes; i++) {
-			out_val[i] = strt + i * spacing;
+		spacing = *(int*)tmp_md2->multidval.val;
+		if(spacing < 1) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: spacing parameter must be positive and non-zero");
+			return(NhlFATAL);
 		}
-	} else if((fnsh - strt) < 0) {
-		out_val = (int*)NclMalloc(dimsizes*sizeof(int));
-		for(i = 0; i < dimsizes; i++) {
-			out_val[i] = strt - i * spacing;
+		fnsh = *(int*)tmp_md1->multidval.val;
+		strt = *(int*)tmp_md0->multidval.val;
+
+		dimsizes  = abs(fnsh-strt)/spacing + 1;
+
+		if((fnsh - strt) > 0) {
+			out_val = (int*)NclMalloc(dimsizes*sizeof(int));
+			for(i = 0; i < dimsizes; i++) {
+				out_val[i] = strt + i * spacing;
+			}
+		} else if((fnsh - strt) < 0) {
+			out_val = (int*)NclMalloc(dimsizes*sizeof(int));
+			for(i = 0; i < dimsizes; i++) {
+				out_val[i] = strt - i * spacing;
+			}
+		} else {
+			out_val = (int*)NclMalloc(sizeof(int));
+			*out_val = strt;
+			dimsizes = 1;
 		}
-	} else {
-		out_val = (int*)NclMalloc(sizeof(int));
-		*out_val = strt;
-		dimsizes = 1;
-	}
 
 
-	return(NclReturnValue(
-		out_val,
-		1,
-		&dimsizes,
-		NULL,
-		NCL_int,
-		0
-	));
+		return(NclReturnValue(
+			       out_val,
+			       1,
+			       &dimsizes,
+			       NULL,
+			       NCL_int,
+			       0
+			       ));
         }
-            break;
+	break;
 
         case NCL_long:
-            {
+	{
         	long *out_val;
         	long i;
         	long strt;
@@ -13195,15 +13271,15 @@ NhlErrorTypes _Nclispan
 
 
         	return(NclReturnValue(
-        		out_val,
-		        1,
-        		&dimsizes,
-		        NULL,
-        		NCL_long,
-		        0
-        	));
-            }
-    }
+			       out_val,
+			       1,
+			       &dimsizes,
+			       NULL,
+			       NCL_long,
+			       0
+			       ));
+	}
+	}
 }
 
 NhlErrorTypes _Nclfspan
@@ -13236,13 +13312,16 @@ NhlErrorTypes _Nclfspan
      */
     data0 = _NclGetArg(0, 3, DONT_CARE);
     switch (data0.kind) {
-        case NclStk_VAR:
+    case NclStk_VAR:
             tmp_md0 = _NclVarValueRead(data0.u.data_var, NULL, NULL);
             break;
 
-        case NclStk_VAL:
+    case NclStk_VAL:
             tmp_md0 = (NclMultiDValData) data0.u.data_obj;
             break;
+    default:
+	    NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+	    return(NhlFATAL);
     }
 
     if (tmp_md0 == NULL)
@@ -13250,13 +13329,16 @@ NhlErrorTypes _Nclfspan
 
     data1 = _NclGetArg(1, 3, DONT_CARE);
     switch (data1.kind) {
-        case NclStk_VAR:
+    case NclStk_VAR:
             tmp_md1 = _NclVarValueRead(data1.u.data_var, NULL, NULL);
             break;
 
-        case NclStk_VAL:
+    case NclStk_VAL:
             tmp_md1 = (NclMultiDValData) data1.u.data_obj;
             break;
+    default:
+	    NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+	    return(NhlFATAL);
     }
 
     if (tmp_md1 == NULL)
@@ -13265,13 +13347,16 @@ NhlErrorTypes _Nclfspan
     /* number of equally spaced points */
     data2 = _NclGetArg(2, 3, DONT_CARE);
     switch (data2.kind) {
-        case NclStk_VAR:
+    case NclStk_VAR:
             tmp_md2 = _NclVarValueRead(data2.u.data_var,NULL,NULL);
             break;
 
-        case NclStk_VAL:
+    case NclStk_VAL:
             tmp_md2 = (NclMultiDValData)data2.u.data_obj;
             break;
+    default:
+	    NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+	    return(NhlFATAL);
     }
 
     if (tmp_md2 == NULL)
@@ -13413,36 +13498,45 @@ NhlErrorTypes _Nclmask
 
 	data0 = _NclGetArg(0,3,DONT_CARE);
 	switch(data0.kind) {
-		case NclStk_VAR:
-			tmp_md0 = _NclVarValueRead(data0.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md0 = (NclMultiDValData)data0.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md0 = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md0 = (NclMultiDValData)data0.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md0 == NULL)
 		return(NhlFATAL);
 
 	data1 = _NclGetArg(1,3,DONT_CARE);
 	switch(data1.kind) {
-		case NclStk_VAR:
-			tmp_md1 = _NclVarValueRead(data1.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md1 = (NclMultiDValData)data1.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md1 = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md1 = (NclMultiDValData)data1.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md1 == NULL)
 		return(NhlFATAL);
 	data2 = _NclGetArg(2,3,DONT_CARE);
 	switch(data2.kind) {
-		case NclStk_VAR:
-			tmp_md2 = _NclVarValueRead(data2.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md2 = (NclMultiDValData)data2.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md2 = _NclVarValueRead(data2.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md2 = (NclMultiDValData)data2.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md2 == NULL)
 		return(NhlFATAL);
 
@@ -13578,13 +13672,16 @@ NhlErrorTypes _Nclwhere
 
 	data0 = _NclGetArg(0,3,DONT_CARE);
 	switch(data0.kind) {
-		case NclStk_VAR:
-			cond_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			cond_md = (NclMultiDValData)data0.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		cond_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		cond_md = (NclMultiDValData)data0.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(cond_md == NULL)
 		return(NhlFATAL);
 	if (cond_md->multidval.missing_value.has_missing)
@@ -13593,22 +13690,28 @@ NhlErrorTypes _Nclwhere
 
 	data1 = _NclGetArg(1,3,DONT_CARE);
 	switch(data1.kind) {
-		case NclStk_VAR:
-			true_val_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			true_val_md = (NclMultiDValData)data1.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		true_val_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		true_val_md = (NclMultiDValData)data1.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	data2 = _NclGetArg(2,3,DONT_CARE);
 	switch(data2.kind) {
-		case NclStk_VAR:
-			false_val_md = _NclVarValueRead(data2.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			false_val_md = (NclMultiDValData)data2.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		false_val_md = _NclVarValueRead(data2.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		false_val_md = (NclMultiDValData)data2.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if (true_val_md == NULL || false_val_md == NULL)
 		return(NhlFATAL);
 	if (true_val_md->multidval.missing_value.has_missing) {
@@ -13912,18 +14015,20 @@ NhlErrorTypes _Nclmin
 	ng_size_t dimsizes = 1;
 	void *tmp;
 	logical result;
-	int j;
-    ng_size_t  i;
+	ng_size_t  i;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -13994,18 +14099,20 @@ NhlErrorTypes _Nclmax
 	ng_size_t dimsizes = 1;
 	void *tmp;
 	logical result;
-	int j, count;
-    ng_size_t  i;
+	ng_size_t  i;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14073,22 +14180,23 @@ NhlErrorTypes _Nclminind
 {
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
-	void *out_val;
 	ng_size_t dimsizes = 1;
 	void *tmp;
 	logical result;
-	int j;
-    ng_size_t  i;
+	ng_size_t i, j;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14158,22 +14266,23 @@ NhlErrorTypes _Nclmaxind
 {
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
-	void *out_val;
 	ng_size_t dimsizes = 1;
 	void *tmp;
 	logical result;
-	int j, count;
-    ng_size_t  i;
+	ng_size_t  i,j;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14249,18 +14358,21 @@ NhlErrorTypes _Ncldim_min
 	logical result = 0;
 	ng_size_t i,j;
 	ng_size_t m,n;
-    int sz;
+	int sz;
 	ng_size_t nd;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14353,14 +14465,15 @@ NhlErrorTypes _Ncldim_min_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *dims, ndims;
-	int *dimsizes = NULL;
+        int *dims;
+	ng_size_t ndims;
+	ng_size_t *dimsizes = NULL;
 	logical *tmp = NULL;
 	logical result = 0;
-	int i,j,k;
-	int i_in_sz,i_out_sz;
-	int m,n,nr,nl,sz;
-	int nd;
+	ng_size_t i,j,k;
+	ng_size_t i_in_sz,i_out_sz;
+	ng_size_t m,n,nr,nl;
+	int sz,nd;
 
 /*
  * Get dimension to do minimum across.
@@ -14372,13 +14485,16 @@ NhlErrorTypes _Ncldim_min_n
  */
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 /*
@@ -14552,13 +14668,16 @@ NhlErrorTypes _Ncldim_max
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14651,14 +14770,15 @@ NhlErrorTypes _Ncldim_max_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *dims, ndims;
-	int *dimsizes = NULL;
+        int *dims;
+	ng_size_t ndims;
+	ng_size_t *dimsizes = NULL;
 	logical *tmp = NULL;
 	logical result = 0;
-	int i,j,k;
-	int i_in_sz,i_out_sz;
-	int m,n,nr,nl,sz;
-	int nd;
+	ng_size_t i,j,k;
+	ng_size_t i_in_sz,i_out_sz;
+	ng_size_t m,n,nr,nl;
+	int sz,nd;
 
 /*
  * Get dimension to do maximum across.
@@ -14670,13 +14790,16 @@ NhlErrorTypes _Ncldim_max_n
  */
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14846,13 +14969,16 @@ NhlErrorTypes _NclIIsInteger
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14885,17 +15011,20 @@ NhlErrorTypes _NclIIsUint
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14930,13 +15059,16 @@ NhlErrorTypes _NclIIsShort
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14969,17 +15101,20 @@ NhlErrorTypes _NclIIsUshort
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15014,13 +15149,16 @@ NhlErrorTypes _NclIIsLong
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15053,17 +15191,20 @@ NhlErrorTypes _NclIIsUlong
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15094,17 +15235,20 @@ NhlErrorTypes _NclIIsInt64
         NclStackEntry data;
         NclMultiDValData tmp_md = NULL;
         logical *out_val;
-        int dimsizes = 1;
+        ng_size_t dimsizes = 1;
 
         data = _NclGetArg(0,1,DONT_CARE);
         switch(data.kind) {
-                case NclStk_VAR:
-                        tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-                        break;
-                case NclStk_VAL:
-                        tmp_md = (NclMultiDValData)data.u.data_obj;
-                        break;
-        }
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+	}
         if(tmp_md == NULL)
                 return(NhlFATAL);
 
@@ -15135,17 +15279,20 @@ NhlErrorTypes _NclIIsUint64
         NclStackEntry data;
         NclMultiDValData tmp_md = NULL;
         logical *out_val;
-        int dimsizes = 1;
+        ng_size_t dimsizes = 1;
 
         data = _NclGetArg(0,1,DONT_CARE);
         switch(data.kind) {
-                case NclStk_VAR:
-                        tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-                        break;
-                case NclStk_VAL:
-                        tmp_md = (NclMultiDValData)data.u.data_obj;
-                        break;
-        }
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+	}
         if(tmp_md == NULL)
                 return(NhlFATAL);
 
@@ -15176,17 +15323,20 @@ NhlErrorTypes _NclIIsInt8
         NclStackEntry data;
         NclMultiDValData tmp_md = NULL;
         logical *out_val;
-        int dimsizes = 1;
+        ng_size_t dimsizes = 1;
 
         data = _NclGetArg(0,1,DONT_CARE);
         switch(data.kind) {
-                case NclStk_VAR:
-                        tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-                        break;
-                case NclStk_VAL:
-                        tmp_md = (NclMultiDValData)data.u.data_obj;
-                        break;
-        }
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+	default:
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+		return(NhlFATAL);
+	}
         if(tmp_md == NULL)
                 return(NhlFATAL);
 
@@ -15219,17 +15369,20 @@ NhlErrorTypes _NclIIsUint8
         NclStackEntry data;
         NclMultiDValData tmp_md = NULL;
         logical *out_val;
-        int dimsizes = 1;
+        ng_size_t dimsizes = 1;
 
         data = _NclGetArg(0,1,DONT_CARE);
         switch(data.kind) {
-                case NclStk_VAR:
-                        tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-                        break;
-                case NclStk_VAL:
-                        tmp_md = (NclMultiDValData)data.u.data_obj;
-                        break;
-        }
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+	}
         if(tmp_md == NULL)
                 return(NhlFATAL);
 
@@ -15267,13 +15420,16 @@ NhlErrorTypes _NclIIsByte
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15309,13 +15465,16 @@ NhlErrorTypes _NclIIsFloat
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15351,13 +15510,16 @@ NhlErrorTypes _NclIIsDouble
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15393,13 +15555,16 @@ NhlErrorTypes _NclIIsString
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15435,13 +15600,16 @@ NhlErrorTypes _NclIIsChar
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15478,13 +15646,16 @@ NhlErrorTypes _NclIIsNumeric
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15517,17 +15688,20 @@ NhlErrorTypes _NclIIsSNumeric
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15558,17 +15732,20 @@ NhlErrorTypes _NclIIsENumeric
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15605,13 +15782,16 @@ NhlErrorTypes _NclIIsFile
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15645,13 +15825,16 @@ NhlErrorTypes _NclIIsGraphic
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15687,13 +15870,16 @@ NhlErrorTypes _NclIIsLogical
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15753,39 +15939,63 @@ NhlErrorTypes _NclIFileVarTypeOf
 
 	ot = _NclFileVarRepValue(thefile,*var_string);
 	switch(ot) {
-		case Ncl_Typedouble :                
-			*out_val = NrmStringToQuark("double");
-			break;
-		case Ncl_Typefloat : 
-			*out_val = NrmStringToQuark("float");
-			break;
-		case Ncl_Typelong :
-			*out_val = NrmStringToQuark("long");
-			break;
-		case Ncl_Typeint :
-			*out_val = NrmStringToQuark("integer");
-			break;
-		case Ncl_Typeshort :
-			*out_val = NrmStringToQuark("short");
-			break;
-		case Ncl_Typebyte :
-			*out_val = NrmStringToQuark("byte");
-			break;
-		case Ncl_Typestring :
-			*out_val = NrmStringToQuark("string");
-			break;
-		case Ncl_Typechar: 
-			*out_val = NrmStringToQuark("character");
-			break;
-		case Ncl_Typeobj: 
-			*out_val = NrmStringToQuark("obj");
-			break;
-		case Ncl_Typelogical:
-			*out_val = NrmStringToQuark("logical");
-			break;
-		case Ncl_Typelist:
-			*out_val = NrmStringToQuark("list");
-			break;
+	case Ncl_Typedouble :                
+		*out_val = NrmStringToQuark("double");
+		break;
+	case Ncl_Typefloat : 
+		*out_val = NrmStringToQuark("float");
+		break;
+	case Ncl_Typelong :
+		*out_val = NrmStringToQuark("long");
+		break;
+	case Ncl_Typeulong :
+		*out_val = NrmStringToQuark("ulong");
+		break;
+	case Ncl_Typeint :
+		*out_val = NrmStringToQuark("integer");
+		break;
+	case Ncl_Typeuint :
+		*out_val = NrmStringToQuark("uint");
+		break;
+	case Ncl_Typeshort :
+		*out_val = NrmStringToQuark("short");
+		break;
+	case Ncl_Typeushort :
+		*out_val = NrmStringToQuark("ushort");
+		break;
+	case Ncl_Typebyte :
+		*out_val = NrmStringToQuark("byte");
+		break;
+	case Ncl_Typeint8 :
+		*out_val = NrmStringToQuark("int8");
+		break;
+	case Ncl_Typeuint8 :
+		*out_val = NrmStringToQuark("uint8");
+		break;
+	case Ncl_Typeint64 :
+		*out_val = NrmStringToQuark("int64");
+		break;
+	case Ncl_Typeuint64 :
+		*out_val = NrmStringToQuark("uint64");
+		break;
+	case Ncl_Typestring :
+		*out_val = NrmStringToQuark("string");
+		break;
+	case Ncl_Typechar: 
+		*out_val = NrmStringToQuark("character");
+		break;
+	case Ncl_Typeobj: 
+		*out_val = NrmStringToQuark("obj");
+		break;
+	case Ncl_Typelogical:
+		*out_val = NrmStringToQuark("logical");
+		break;
+	case Ncl_Typelist:
+		*out_val = NrmStringToQuark("list");
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"internal error"));
+                return(NhlFATAL);
 	}
 
 	return(NclReturnValue(
@@ -15811,13 +16021,16 @@ NhlErrorTypes _NclITypeOf
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15860,7 +16073,7 @@ NhlErrorTypes _NclIgaus
 	double *wts;
 	int lwork= 0;
 	double *work = NULL;
-	int i,ierror,k;
+	int i,ierror;
 	double *output;
 	double rtod = (double)180.0/(double)3.14159265358979323846;
 
@@ -15935,28 +16148,26 @@ NhlErrorTypes _NclIGetVarDims
 	NclStackEntry val;
 	NclVar tmp_var;
 	NclFile thefile = NULL;
-	NclMultiDValData tmp_md = NULL;
 	NclMultiDValData file_md = NULL;
 	NclQuark names[2048];
-
-    ng_size_t ndims;
+	ng_size_t ndims;
 
 
 
         val = _NclGetArg(0,1,DONT_CARE);
         switch(val.kind) {
-		case NclStk_VAR:
-                	tmp_var = val.u.data_var;
-			if(tmp_var->var.var_quark > 0) {
-				name = tmp_var->var.var_quark;
-			} else {
-				name = -1;
-			}
-			break;
-        	case NclStk_VAL:
-		default:
-			dimsizes = 1;
-			return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
+	case NclStk_VAR:
+		tmp_var = val.u.data_var;
+		if(tmp_var->var.var_quark > 0) {
+			name = tmp_var->var.var_quark;
+		} else {
+			name = -1;
+		}
+		break;
+	case NclStk_VAL:
+	default:
+		dimsizes = 1;
+		return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
 	}
 	if(tmp_var != NULL ) {
 		if(tmp_var->obj.obj_type == Ncl_FileVar) {
@@ -15967,7 +16178,7 @@ NhlErrorTypes _NclIGetVarDims
 				names[i] = data->u.file->dim_info[i].dim_quark;
 			}
 
-            ndims = data->u.file->n_dims;
+			ndims = data->u.file->n_dims;
 			ret = NclReturnValue((void*)names, 1, &ndims, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
 		} else {
 			data = _NclGetVarInfo2(tmp_var);
@@ -15979,7 +16190,7 @@ NhlErrorTypes _NclIGetVarDims
 				}
 			}
 
-            ndims = data->u.var->n_dims;
+			ndims = data->u.var->n_dims;
 			ret = NclReturnValue((void*)names, 1, &ndims, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
 		}
 	} else {
@@ -16012,18 +16223,18 @@ NhlErrorTypes _NclIGetVarAtts
 
         val = _NclGetArg(0,1,DONT_CARE);
         switch(val.kind) {
-		case NclStk_VAR:
-                	tmp_var = val.u.data_var;
-			if(tmp_var->var.var_quark > 0) {
-				name = tmp_var->var.var_quark;
-			} else {
-				name = -1;
-			}
-			break;
-        	case NclStk_VAL:
-		default:
-			dimsizes = 1;
-			return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
+	case NclStk_VAR:
+		tmp_var = val.u.data_var;
+		if(tmp_var->var.var_quark > 0) {
+			name = tmp_var->var.var_quark;
+		} else {
+			name = -1;
+		}
+		break;
+	case NclStk_VAL:
+	default:
+		dimsizes = 1;
+		return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
 	}
 
 	if((tmp_var->obj.obj_type == Ncl_Var)||(tmp_var->obj.obj_type == Ncl_HLUVar)||(tmp_var->obj.obj_type == Ncl_CoordVar)){
@@ -16079,7 +16290,6 @@ NhlErrorTypes _NclIFileVarDimsizes
 	string fname;
 	NclScalar name_missing;
 	int name_has_missing;
-	int out_val = -1;
 	ng_size_t dimsizes;
 	NclApiDataList *data = NULL;
 	NhlErrorTypes ret;
@@ -16094,21 +16304,21 @@ NhlErrorTypes _NclIFileVarDimsizes
 
         val = _NclGetArg(0,2,DONT_CARE);
         switch(val.kind) {
-		case NclStk_VAR:
-                	tmp_var = val.u.data_var;
-			if(tmp_var->var.var_quark > 0) {
-				fname = tmp_var->var.var_quark;
-			} else {
-				fname = -1;
-			}
-			break;
-        	case NclStk_VAL:
+	case NclStk_VAR:
+		tmp_var = val.u.data_var;
+		if(tmp_var->var.var_quark > 0) {
+			fname = tmp_var->var.var_quark;
+		} else {
 			fname = -1;
-			tmp_md = val.u.data_obj;
-			break;
-		default:
-			dimsizes = 1;
-			return(NclReturnValue((void*)&((NclTypeClass)nclTypeintClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypeintClass)->type_class.default_mis, ((NclTypeClass)nclTypeintClass)->type_class.data_type, 1));
+		}
+		break;
+	case NclStk_VAL:
+		fname = -1;
+		tmp_md = val.u.data_obj;
+		break;
+	default:
+		dimsizes = 1;
+		return(NclReturnValue((void*)&((NclTypeClass)nclTypeintClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypeintClass)->type_class.default_mis, ((NclTypeClass)nclTypeintClass)->type_class.data_type, 1));
 	}
 
         name = (string*)NclGetArgValue(
@@ -16151,7 +16361,7 @@ NhlErrorTypes _NclIFileVarDimsizes
 		 	dim_sizes[i] = data->u.var->dim_info[i].dim_size;
 		}
 
-        ng_size_t ndims = data->u.var->n_dims;
+		ng_size_t ndims = data->u.var->n_dims;
 		ret = NclReturnValue((void*)dim_sizes, 1, &ndims, NULL, ((NclTypeClass)nclTypeintClass)->type_class.data_type, 1);
 		_NclFreeApiDataList((void*)data);
 		return(ret);
@@ -16175,7 +16385,6 @@ NhlErrorTypes _NclIGetFileVarDims
 	string fname;
 	NclScalar name_missing;
 	int name_has_missing;
-	string out_val = -1;
 	ng_size_t dimsizes;
 	NclApiDataList *data = NULL;
 	NhlErrorTypes ret;
@@ -16190,18 +16399,18 @@ NhlErrorTypes _NclIGetFileVarDims
 
         val = _NclGetArg(0,2,DONT_CARE);
         switch(val.kind) {
-		case NclStk_VAR:
-                	tmp_var = val.u.data_var;
-			if(tmp_var->var.var_quark > 0) {
-				fname = tmp_var->var.var_quark;
-			} else {
-				fname = -1;
-			}
-			break;
-        	case NclStk_VAL:
-		default:
-			dimsizes = 1;
-			return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
+	case NclStk_VAR:
+		tmp_var = val.u.data_var;
+		if(tmp_var->var.var_quark > 0) {
+			fname = tmp_var->var.var_quark;
+		} else {
+			fname = -1;
+		}
+		break;
+	case NclStk_VAL:
+	default:
+		dimsizes = 1;
+		return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
 	}
 
         name = (string*)NclGetArgValue(
@@ -16245,7 +16454,7 @@ NhlErrorTypes _NclIGetFileVarDims
 		 	dim_names[i] = data->u.var->dim_info[i].dim_quark;
 		}
 
-        ng_size_t ndims = data->u.var->n_dims;
+		ng_size_t ndims = data->u.var->n_dims;
 		ret = NclReturnValue((void*)dim_names, 1, &ndims, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
 		_NclFreeApiDataList((void*)data);
 		return(ret);
@@ -16268,7 +16477,6 @@ NhlErrorTypes _NclIGetFileVarAtts
 	string fname;
 	NclScalar name_missing;
 	int name_has_missing;
-	string out_val = -1;
 	ng_size_t dimsizes;
 	NclApiDataList *data = NULL;
 	NhlErrorTypes ret;
@@ -16277,22 +16485,20 @@ NhlErrorTypes _NclIGetFileVarAtts
 	NclFile thefile = NULL;
 	NclMultiDValData tmp_md = NULL;
 
-
-
         val = _NclGetArg(0,2,DONT_CARE);
         switch(val.kind) {
-		case NclStk_VAR:
-                	tmp_var = val.u.data_var;
-			if(tmp_var->var.var_quark > 0) {
-				fname = tmp_var->var.var_quark;
-			} else {
-				fname = -1;
-			}
-			break;
-        	case NclStk_VAL:
-		default:
-			dimsizes = 1;
-			return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
+	case NclStk_VAR:
+		tmp_var = val.u.data_var;
+		if(tmp_var->var.var_quark > 0) {
+			fname = tmp_var->var.var_quark;
+		} else {
+			fname = -1;
+		}
+		break;
+	case NclStk_VAL:
+	default:
+		dimsizes = 1;
+		return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
 	}
 
         name = (string*)NclGetArgValue(
@@ -16465,9 +16671,9 @@ NhlErrorTypes _NclIFileVarChunkDef
 
 	obj *thefile_id;
 	string *varnames;
-	int    *dimsizes;
-	int     input_dimsizes[NCL_MAX_DIMENSIONS];
-	int i;
+	ng_size_t   *dimsizes;
+	ng_size_t   input_dimsizes[NCL_MAX_DIMENSIONS];
+	ng_size_t i;
 	NclFile thefile;
 	NhlErrorTypes ret=NhlNOERROR;
 	NhlErrorTypes ret0 = NhlNOERROR;
@@ -16503,7 +16709,7 @@ NhlErrorTypes _NclIFileVarChunkDef
 		}
 	}
 
-        dimsizes = (int *)NclGetArgValue(
+        dimsizes = (ng_size_t *)NclGetArgValue(
                         2,
                         3,
                         &n_dims,
@@ -16536,26 +16742,22 @@ NhlErrorTypes _NclIFileVarChunkCacheDef
 ()
 #endif
 {
-	int dimsize;
+	ng_size_t dimsize;
 	NclScalar missing;
 	int has_missing;
-
 	int n_dims;
 	NclScalar tmp_missing;
 	int tmp_has_missing;
-
 	string *varnames;
 	ng_size_t *sizes;
 	ng_size_t *elems;
 	float  *pres;
-	int     input_dimsizes[NCL_MAX_DIMENSIONS];
-	float  *preemption;
+	ng_size_t     input_dimsizes[NCL_MAX_DIMENSIONS];
 	int i;
 	obj *thefile_id;
 	NclFile thefile;
 	NhlErrorTypes ret=NhlNOERROR;
 	NhlErrorTypes ret0 = NhlNOERROR;
-
 	ng_size_t cache_size	= 3200000;
 	ng_size_t cache_nelems	= 1009;
 	float  cache_preemption = 0.5;
@@ -16583,6 +16785,7 @@ NhlErrorTypes _NclIFileVarChunkCacheDef
                         &has_missing,
                         NULL,
                         0);
+	/* dimsize is not initialized */
 	if(has_missing) {
 		for(i = 0; i < dimsize; i++) {
 			if(varnames[i] == missing.stringval)  {
@@ -16644,7 +16847,6 @@ NhlErrorTypes _NclIFileVarCompressLevelDef
 	int dimsize;
 	NclScalar missing;
 	int has_missing;
-
 	int n_dims;
 	NclScalar tmp_missing;
 	int tmp_has_missing;
@@ -16652,7 +16854,7 @@ NhlErrorTypes _NclIFileVarCompressLevelDef
 	obj *thefile_id;
 	string *varnames;
 	int    *compress_level;
-	int     input_dimsizes[NCL_MAX_DIMENSIONS];
+	ng_size_t    input_dimsizes[NCL_MAX_DIMENSIONS];
 	int i;
 	NclFile thefile;
 	NhlErrorTypes ret=NhlNOERROR;
@@ -16827,19 +17029,19 @@ NhlErrorTypes _NclIFileChunkDimDef
 #endif
 {
 
-	int dimsize;
+	ng_size_t dimsize;
 	NclScalar missing;
 	int has_missing;
 
-	int tmp_dimsize;
+	ng_size_t tmp_dimsize;
 	NclScalar tmp_missing;
 	int tmp_has_missing;
 
 	obj *thefile_id;
 	string *dimnames;
-	int *dimsizes;
+	ng_size_t *dimsizes;
 	logical *unlimited;
-	int i;
+	ng_size_t i;
 	NclFile thefile;
 	NhlErrorTypes ret=NhlNOERROR;
 	NhlErrorTypes ret0 = NhlNOERROR;
@@ -16875,7 +17077,7 @@ NhlErrorTypes _NclIFileChunkDimDef
 		}
 	}
 
-        dimsizes = (int*)NclGetArgValue(
+        dimsizes = (ng_size_t *)NclGetArgValue(
                         2,
                         4,
                         NULL,
@@ -16931,19 +17133,8 @@ NhlErrorTypes _NclIFileAttDef
 #endif
 {
 
-	ng_size_t dimsize;
-	NclScalar missing;
-	int has_missing;
-
-	ng_size_t tmp_dimsize;
-	NclScalar tmp_missing;
-	int tmp_has_missing;
-
 	obj *thefile_id;
-	string *dimnames;
-	ng_size_t *dimsizes;
-	logical *unlimited;
-	int i,j;
+	int j;
 	NclFile thefile;
 	NhlErrorTypes ret=NhlNOERROR;
 	NhlErrorTypes ret0 = NhlNOERROR;
@@ -17030,14 +17221,8 @@ NhlErrorTypes _NclIFileVarAttDef
 	NclScalar missing;
 	int has_missing;
 
-	ng_size_t tmp_dimsize;
-	NclScalar tmp_missing;
-	int tmp_has_missing;
-
 	obj *thefile_id;
 	string *varnames;
-	ng_size_t *dimsizes;
-	logical *unlimited;
 	int i,j;
 	NclFile thefile;
 	NhlErrorTypes ret=NhlNOERROR;
@@ -17323,8 +17508,8 @@ NhlErrorTypes _NclIAttSetValues( void )
 	NclAttList *att_list;
 	NhlGenArray *gen_array;
 	int i, k;
-    ng_size_t m;
-    int  j, *ids;
+	ng_size_t m;
+	int  j, *ids;
 	NclHLUObj tmp_hlu_ptr,tmp_hlu_ptr1;
 	int rl_list;
 
@@ -17460,7 +17645,7 @@ NhlErrorTypes _NclIAttSetValues( void )
 
 NhlErrorTypes _NclIPush(void)
 {
-	obj *obj_id,*list_id;
+	obj *list_id;
 	NclObj thelist = NULL;
 	NclObj theobj = NULL;
         NclStackEntry data;
@@ -17589,9 +17774,6 @@ NhlErrorTypes _NclIprintFileVarSummary( void )
 {
 	NclFile thefile;
 	obj *thefile_id;
-	NclQuark *out_val;
-	ng_size_t dimsizes = 1;
-	NclObjTypes ot;
 	string* var_string;
 
         thefile_id = (obj*)NclGetArgValue(
@@ -17623,14 +17805,12 @@ NhlErrorTypes _NclIGetFileGroups( void )
 {
 	NclFile thefile;
 	obj *thefile_id;
-	int dimsizes = 1;
-	NclObjTypes ot;
 	string *base_group_name;
 	NclQuark *selected_group_names;
 	int *depth;
 	int n_grps = 0;
 	int ndims = 1;
-        int dimsz[1];
+        ng_size_t dimsz[1];
 
       /*
        *fprintf(stdout, "\n\n\nhit _NclIGetFileGroups. file: %s, line: %d\n", __FILE__, __LINE__);
@@ -17688,14 +17868,12 @@ NhlErrorTypes _NclIGetGroupVars( void )
 {
 	NclFile thefile;
 	obj *thefile_id;
-	int dimsizes = 1;
-	NclObjTypes ot;
 	string *base_group_name;
 	NclQuark *selected_var_names;
 	int *depth;
 	int n_vars = 0;
 	int ndims = 1;
-        int dimsz[1];
+        ng_size_t dimsz[1];
 
       /*
        *fprintf(stdout, "\n\n\nhit _NclIGetGroupVars. file: %s, line: %d\n", __FILE__, __LINE__);
@@ -17753,7 +17931,6 @@ NhlErrorTypes _NclILoadScript( void )
 {
 	NclStackEntry path;
 	NclMultiDValData p_md = NULL;
-	char buf[1024];
 
 	path =  _NclGetArg(0,1,DONT_CARE);
 	if(path.kind == NclStk_VAR) {
@@ -17788,7 +17965,6 @@ NhlErrorTypes _NclIAddFiles( void )
 	NclStackEntry path;
 	NclStackEntry data;
 	NclStackEntry rw_status;
-	NclStackEntry out_data;
 	NclMultiDValData p_md = NULL;
 	NclMultiDValData rw_md = NULL;
 	NclFile file = NULL;
@@ -17882,7 +18058,7 @@ NhlErrorTypes _NclIAddFiles( void )
 }
 NhlErrorTypes _NclIListGetType(void)
 {
-	obj *obj_id,*list_id;
+	obj *list_id;
 	NclObj thelist = NULL;
 	string *ret_val;
 	ng_size_t dimsize = 2;
@@ -17929,7 +18105,7 @@ NhlErrorTypes _NclIListGetType(void)
 }
 NhlErrorTypes _NclIListSetType(void)
 {
-	obj *obj_id,*list_id;
+	obj *list_id;
 	NclObj thelist = NULL;
 	string *option;
         NclStackEntry data;
@@ -18019,23 +18195,19 @@ NhlErrorTypes _NclICreateFile(void)
 {
 	NclStackEntry out_data,data;
 	string *path;
-	string *filename;
 	string *dimnames;
 	ng_size_t *dimsizes;
-	string *varnames;
 	obj *varinfo;
 	NclObj fileatts_obj;
-	int n_dims,n_dims0;
-    ng_size_t nd, nd0;
+	ng_size_t nd, nd0;
 	ng_size_t n_vars;
-	int n_fileatts;
 	char filename_buffer[2048];
-	NclList  varinfo_obj, attlist_obj, attvals_obj;
-	NclListObjList *thelist,*attvals,*attlist;
+	NclList  varinfo_obj;
+	NclListObjList *thelist;
 	ng_size_t i,k;
-    ng_size_t  j;
+	ng_size_t  j;
 	NclVar tmp_var;
-	NclMultiDValData dnames_md,tmp_md,tmp_val;
+	NclMultiDValData dnames_md,tmp_md;
 	nc_type the_type;
 	nc_type tmp_type;
 	int varids[2048];
@@ -18044,16 +18216,12 @@ NhlErrorTypes _NclICreateFile(void)
 	int cdfid;
 	NclAtt tmp_att;
 	NclAttList *nclattlist;
-        NclMultiDValData p_md = NULL;
         NclFile file = NULL;
         NclMultiDValData out_md = NULL;
         int *id = (int*)NclMalloc((unsigned)sizeof(int));
         ng_size_t dim_size = 1;
 	NclBasicDataTypes ncl_var_type;
 	int unlimited_id = -1;
-	
-	
-
 
   	path = (string*)NclGetArgValue(
            0,
@@ -18205,32 +18373,34 @@ NhlErrorTypes _NclICreateFile(void)
 						NhlPError(NhlWARNING,NhlEUNKNOWN,"createfile: set_fillvalue attribute is a different type than the variable, using default missing value for variable type");
 					}
 					switch(ncl_var_type) {
-						case NCL_float:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypefloatClassRec.type_class.default_mis.floatval));
-							break;
-						case NCL_logical:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypelogicalClassRec.type_class.default_mis.logicalval));
-							break;
-						case NCL_char:
-						case NCL_string:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypecharClassRec.type_class.default_mis.charval));
-							break;
-						case NCL_double:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypedoubleClassRec.type_class.default_mis.doubleval));
-							break;
-						case NCL_byte:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypebyteClassRec.type_class.default_mis.byteval));
-							break;
-						case NCL_int:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypeintClassRec.type_class.default_mis.intval));
-							break;
-						case NCL_long:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypelongClassRec.type_class.default_mis.longval));
-							break;
-						case NCL_short:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypeshortClassRec.type_class.default_mis.shortval));
-							break;
-						
+					case NCL_float:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypefloatClassRec.type_class.default_mis.floatval));
+						break;
+					case NCL_logical:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypelogicalClassRec.type_class.default_mis.logicalval));
+						break;
+					case NCL_char:
+					case NCL_string:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypecharClassRec.type_class.default_mis.charval));
+						break;
+					case NCL_double:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypedoubleClassRec.type_class.default_mis.doubleval));
+						break;
+					case NCL_byte:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypebyteClassRec.type_class.default_mis.byteval));
+						break;
+					case NCL_int:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypeintClassRec.type_class.default_mis.intval));
+						break;
+					case NCL_long:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypelongClassRec.type_class.default_mis.longval));
+						break;
+					case NCL_short:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypeshortClassRec.type_class.default_mis.shortval));
+						break;
+					default:
+						NHLPERROR((NhlFATAL,NhlEUNKNOWN,"unsupported NetCDF 3 type"));
+						return(NhlFATAL);
 					}
 				}
 			} else if((nclattlist->quark != NrmStringToQuark("type"))&&(nclattlist->quark!=NrmStringToQuark("dims"))){
@@ -18305,13 +18475,16 @@ NhlErrorTypes _NclISetFileOption(void)
 
 	data = _NclGetArg(0,3,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 	if (tmp_md->multidval.data_type == NCL_string) {
@@ -18340,13 +18513,16 @@ NhlErrorTypes _NclISetFileOption(void)
 
 	data = _NclGetArg(2,3,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md1 = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md1 = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md1 = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md1 = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md1 == NULL)
 		return(NhlFATAL);
 
@@ -18531,17 +18707,15 @@ NhlErrorTypes   _NclIGetFileDimsizes
         	return ret;
         }
     }
-    else {
-        NhlPError(NhlWARNING, NhlEUNKNOWN, " getfiledimsizes(): undefined file variable");
+    NhlPError(NhlWARNING, NhlEUNKNOWN, " getfiledimsizes(): undefined file variable");
 
-        dimsizes = 1;
-        NclReturnValue(
+    dimsizes = 1;
+    NclReturnValue(
             (void*) &((NclTypeClass) nclTypeintClass)->type_class.default_mis, 1,
             &dimsizes, &((NclTypeClass) nclTypeintClass)->type_class.default_mis,
             ((NclTypeClass) nclTypeintClass)->type_class.data_type, 1);
 	
-        return NhlWARNING;
-    }
+    return NhlWARNING;
 }
 
 
@@ -18623,8 +18797,6 @@ NhlErrorTypes   _NclIFileIsPresent
     struct stat st;
 
     int ncid = 0;
-
-    ng_size_t dimsizes = 1;
     int ndims;
     ng_size_t dimsz[NCL_MAX_DIMENSIONS];
     int sz = 1;
@@ -18681,14 +18853,15 @@ NhlErrorTypes _NclItoint
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+	int j;
+        ng_size_t i;
         int *output;
 
         int overflowed = 0;
@@ -18704,9 +18877,9 @@ NhlErrorTypes _NclItoint
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.intval = (int) ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
@@ -19226,14 +19399,15 @@ NhlErrorTypes _NclItouint
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         unsigned int *output;
 
         int overflowed = 0;
@@ -19249,9 +19423,9 @@ NhlErrorTypes _NclItouint
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.uintval = (unsigned int) ((NclTypeClass) nclTypeuintClass)->type_class.default_mis.uintval;
@@ -19827,14 +20001,15 @@ NhlErrorTypes _NclItolong
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         long *output;
 
         int overflowed = 0;
@@ -19850,9 +20025,9 @@ NhlErrorTypes _NclItolong
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.longval = (long) ((NclTypeClass) nclTypelongClass)->type_class.default_mis.longval;
@@ -20182,7 +20357,6 @@ NhlErrorTypes _NclItolong
                 break;
             case NCL_long:
                 {
-                    long val;
                     long *ptr;
 
                     if(has_missing)
@@ -20359,14 +20533,15 @@ NhlErrorTypes _NclItoulong
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         unsigned long *output;
 
         int overflowed = 0;
@@ -20382,9 +20557,9 @@ NhlErrorTypes _NclItoulong
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.ulongval = (unsigned long) ((NclTypeClass) nclTypeulongClass)->type_class.default_mis.ulongval;
@@ -20918,14 +21093,15 @@ NhlErrorTypes _NclItoint64
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         long long *output;
 
         int overflowed = 0;
@@ -20941,9 +21117,9 @@ NhlErrorTypes _NclItoint64
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.int64val = (long long) ((NclTypeClass) nclTypeint64Class)->type_class.default_mis.int64val;
@@ -21263,7 +21439,6 @@ NhlErrorTypes _NclItoint64
                 break;
             case NCL_ulong:
                 {
-                    unsigned long val;
                     unsigned long *ptr;
     
                     ptr = (unsigned long *) in_value;
@@ -21373,14 +21548,15 @@ NhlErrorTypes _NclItouint64
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         unsigned long long *output;
 
         int overflowed = 0;
@@ -21396,9 +21572,9 @@ NhlErrorTypes _NclItouint64
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.uint64val = (unsigned long long) ((NclTypeClass) nclTypeuint64Class)->type_class.default_mis.uint64val;
@@ -21642,7 +21818,6 @@ NhlErrorTypes _NclItouint64
             case NCL_short:
                 {
                     short val;
-                    unsigned long long ullval;
                     short *ptr;
     
                     ptr = (short *) in_value;
@@ -21861,7 +22036,6 @@ NhlErrorTypes _NclItouint64
                 break;
             case NCL_uint64:
                 {
-                    unsigned long long val;
                     unsigned long long *ptr;
 
                     ptr = (unsigned long long *) in_value;
@@ -21917,14 +22091,15 @@ NhlErrorTypes _NclItoshort
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing = 0;
-        int i;
+        int j;
+	ng_size_t i;
         short *output;
 
         int overflowed = 0;
@@ -21940,9 +22115,9 @@ NhlErrorTypes _NclItoshort
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.shortval = (short) ((NclTypeClass) nclTypeshortClass)->type_class.default_mis.shortval;
@@ -22520,14 +22695,15 @@ NhlErrorTypes _NclItoushort
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         unsigned short *output;
 
         int overflowed = 0;
@@ -22543,9 +22719,9 @@ NhlErrorTypes _NclItoushort
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.ushortval = (unsigned short) ((NclTypeClass) nclTypeushortClass)->type_class.default_mis.ushortval;
@@ -23142,14 +23318,15 @@ NhlErrorTypes _NclItofloat
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         float *output;
 
         int overflowed = 0;
@@ -23165,9 +23342,9 @@ NhlErrorTypes _NclItofloat
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.floatval = (float) ((NclTypeClass) nclTypefloatClass)->type_class.default_mis.floatval;
@@ -23387,7 +23564,6 @@ NhlErrorTypes _NclItofloat
                 break;
             case NCL_byte:
                 {
-                    char val;
                     char *ptr;
 
                     ptr = (char *) in_value;
@@ -23405,7 +23581,6 @@ NhlErrorTypes _NclItofloat
                 break;
             case NCL_char:
                 {
-                    unsigned char val;
                     unsigned char *ptr;
 
                     ptr = (unsigned char *) in_value;
@@ -23544,7 +23719,6 @@ NhlErrorTypes _NclItofloat
                 break;
             case NCL_uint64:
                 {
-                    unsigned long long val;
                     unsigned long long *ptr;
 
                     ptr = (unsigned long long *) in_value;
@@ -23600,20 +23774,15 @@ NhlErrorTypes _NclItostring
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
-
-        int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
-        int has_missing_str = 0;
-        NclScalar   missing_str;
-        NclBasicDataTypes type_str;
-
+        int j;
+	ng_size_t i;
         string *output;
 
         char buffer[4*NCL_MAX_STRING];
@@ -23628,9 +23797,9 @@ NhlErrorTypes _NclItostring
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
@@ -23930,16 +24099,18 @@ NhlErrorTypes _NclItostring_with_format
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
 
-        int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
+        int ndim_str;
+	ng_size_t dimsz_str[NCL_MAX_DIMENSIONS];
         int has_missing_str = 0;
         NclScalar   missing_str;
         NclBasicDataTypes type_str;
@@ -23960,9 +24131,9 @@ NhlErrorTypes _NclItostring_with_format
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
@@ -24280,18 +24451,16 @@ NhlErrorTypes _NclItodouble
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         double *output;
-
-        int overflowed = 0;
-        int underflowed = 0;
 
         in_value = (void *)NclGetArgValue(
                         0,
@@ -24303,7 +24472,7 @@ NhlErrorTypes _NclItodouble
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
             total_elements *= dimsizes[i];
         }
@@ -24628,14 +24797,15 @@ NhlErrorTypes _NclItobyte
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         char *output;
 
         int overflowed = 0;
@@ -24651,9 +24821,9 @@ NhlErrorTypes _NclItobyte
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.byteval = (byte) ((NclTypeClass) nclTypebyteClass)->type_class.default_mis.byteval;
@@ -25277,14 +25447,15 @@ NhlErrorTypes _NclItochar
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         unsigned char *output;
 
         int overflowed = 0;
@@ -25300,9 +25471,9 @@ NhlErrorTypes _NclItochar
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.charval = (unsigned char) ((NclTypeClass) nclTypecharClass)->type_class.default_mis.charval;
@@ -25424,8 +25595,6 @@ NhlErrorTypes _NclItochar
                     string *ptr;
                     char *str;
                     char *end;
-                    char buff[128];
-                    int  buffsize = 128;
 
                     if(has_missing)
                     {
@@ -25929,14 +26098,15 @@ NhlErrorTypes _NclItosigned
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type, out_type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         void *output;
 
         in_value = (void *)NclGetArgValue(
@@ -25949,9 +26119,9 @@ NhlErrorTypes _NclItosigned
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         if(has_missing)
@@ -26180,14 +26350,15 @@ NhlErrorTypes _NclItounsigned
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type, out_type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         void *output;
 
         in_value = (void *)NclGetArgValue(
@@ -26200,9 +26371,9 @@ NhlErrorTypes _NclItounsigned
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         if(has_missing)

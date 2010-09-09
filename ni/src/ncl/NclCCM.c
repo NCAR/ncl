@@ -325,6 +325,8 @@ static int extractCCM(int which,char buf[8])
 		tmp[BYTE3] = buf[7];
 		return(*(int*)tmp);
 	}
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+	return -9999;
 }
 
 static int IsF77Blocked

@@ -341,7 +341,6 @@ void _NclNewMachine
 #endif
 {
 	_NclMachineRec* tmp;
-	int i;
 	tmp = (_NclMachineRec*)NclMalloc((unsigned)sizeof(_NclMachineRec));
 	tmp->themachine = (NclValue*)NclCalloc(NCL_FUNC_MACHINE_SIZE,sizeof(NclValue));
 	tmp->thefiles = (char**)NclCalloc(NCL_FUNC_MACHINE_SIZE,sizeof(char*));
@@ -655,7 +654,7 @@ int access_type;
 {
 	int i;
 	NclFrame *previous;
-	NclParamRecList *the_list;
+	NclParamRecList *the_list = NULL;
 
 	if (! the_sym)
 		return NULL;
@@ -738,8 +737,6 @@ void _NclAbortFrame
 {
 	struct _NclFrameList *tmp;
 	struct _NclFrame *tmp_fp;
-	int n = sb_off ;
-	int k = 0;
 
 	if(flist.next != NULL) {
 		while(flist.next != NULL) {
@@ -1022,7 +1019,6 @@ void *_NclLeaveFrame
 #endif
 {
 	NclFrame * prev;
-	int tfp;
 /*
 	sb = &(fp->func_ret_value);
 	sb_off = (sb - fp);
@@ -1236,9 +1232,9 @@ void _NclPrintMachine
 	
 	while(ptr != eptr) {
 		if(*fptr != NULL) {
-			fprintf(fp,"(%d,%d,%s)\t",(int)(ptr-mstk->the_rec->themachine),*lptr,*fptr);
+			fprintf(fp,"(%d,%ld,%s)\t",(int)(ptr-mstk->the_rec->themachine),(long)*lptr,*fptr);
 		} else {
-			fprintf(fp,"(%d,%d)\t",(int)(ptr-mstk->the_rec->themachine),*lptr);
+			fprintf(fp,"(%d,%ld)\t",(int)(ptr-mstk->the_rec->themachine),(long)*lptr);
 		}
 		switch(*ptr) {
 			case NOOP :
@@ -1291,7 +1287,7 @@ void _NclPrintMachine
 			case PUSH_STRING_LIT_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*(int*)ptr);
+				fprintf(fp,"\t%ld\n",*(long*)ptr);
 				break;
 			case NEW_FRAME_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
@@ -1299,7 +1295,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*(int*)ptr);
+				fprintf(fp,"\t%ld\n",*(long*)ptr);
 				break;
 			case PROC_CALL_OP:
 			case FUNC_CALL_OP:
@@ -1318,7 +1314,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*(int*)ptr);
+				fprintf(fp,"\t%ld\n",*(long*)ptr);
 				break;
 			case LOOP_VALIDATE_OP:
 			case LOOP_INC_OP:
@@ -1338,9 +1334,9 @@ void _NclPrintMachine
 			case DO_WHILE_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*(int*)ptr);
+				fprintf(fp,"\t%ld\n",*(long*)ptr);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*(int*)ptr);
+				fprintf(fp,"\t%ld\n",*(long*)ptr);
 				break;
 			case VAR_COORD_ATT_OP:
 			case ASSIGN_VAR_COORD_ATT_OP:
@@ -1359,7 +1355,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
 */
-				fprintf(fp,"\t%d\n",*ptr);
+				fprintf(fp,"\t%ld\n",(long)*ptr);
 				break;
 			case FILEVARVAL_COORD_OP:
 			case FILEVAR_COORD_OP:
@@ -1376,7 +1372,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
 */
-				fprintf(fp,"\t%d\n",*(int*)ptr);
+				fprintf(fp,"\t%ld\n",*(long*)ptr);
 				break;
 			case VAR_COORD_OP:
 			case VARVAL_COORD_OP:
@@ -1391,7 +1387,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
 */
-				fprintf(fp,"\t%d\n",*(int*)ptr);
+				fprintf(fp,"\t%ld\n",*(long*)ptr);
 				break;
 			case FILEVARATT_OP:
 			case ASSIGN_FILEVARATT_OP:
@@ -1407,7 +1403,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 */
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*(int*)ptr);
+				fprintf(fp,"\t%ld\n",*(long*)ptr);
 				break;
 			case VARATT_OP:
 			case ASSIGN_VARATT_OP:
@@ -1421,7 +1417,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
 				ptr++;lptr++;fptr++;
 */
-				fprintf(fp,"\t%d\n",*(int*)ptr);
+				fprintf(fp,"\t%ld\n",*(long*)ptr);
 				break;
 			case FILE_VAR_OP :
 			case FILE_VARVAL_OP :
@@ -1437,7 +1433,7 @@ void _NclPrintMachine
 				fprintf(fp,"%s\n",NrmQuarkToString(*ptr),fp);
 				ptr++;lptr++;fptr++;
 */
-				fprintf(fp,"\t%d\n",*ptr);
+				fprintf(fp,"\t%ld\n",(long)*ptr);
 				break;
 			case VARVAL_READ_OP :
 			case VAR_READ_OP :
@@ -1448,7 +1444,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*ptr);
+				fprintf(fp,"\t%ld\n",(long)*ptr);
 				break;
 			case ASSIGN_VAR_VAR_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
@@ -1456,12 +1452,12 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*ptr);
+				fprintf(fp,"\t%ld\n",(long)*ptr);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*ptr);
+				fprintf(fp,"\t%ld\n",(long)*ptr);
 				break;
 			case FPDEF:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
@@ -1487,7 +1483,7 @@ void _NclPrintMachine
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\tArg #:");
-				fprintf(fp,"%d\n",*(int*)ptr,fp);
+				fprintf(fp,"%ld\n",*(long*)ptr);
 				break;
 			case VAR_DIM_OP:
 			case ASSIGN_VAR_DIM_OP:
@@ -1514,7 +1510,7 @@ void _NclPrintMachine
 			case CREATE_OBJ_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++,fptr++;
-				fprintf(fp,"\tnres:%d",(*ptr));
+				fprintf(fp,"\tnres:%ld",(long)*ptr);
 				ptr++;lptr++,fptr++;
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
@@ -1529,7 +1525,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++,fptr++;
-				if(*(int*)ptr == 0 ) {
+				if(*(long*)ptr == 0 ) {
 					fprintf(fp,"No Subscripts");
 				} else {
 					fprintf(fp,"Yes Subscripts");
@@ -1551,7 +1547,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++,fptr++;
-				fprintf(fp,"\tjump to: %d\n",*(int*)ptr);
+				fprintf(fp,"\tjump to: %ld\n",*(long*)ptr);
 				break;
 			case FILE_GROUP_OP :
 			case FILE_GROUPVAL_OP :
@@ -1560,8 +1556,8 @@ void _NclPrintMachine
 			      /*
 			       */
 				fprintf(stdout, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);
-				fprintf(stdout, "\t*ptr: %d\n", *ptr);
-				fprintf(stdout, "\tops_strings[%d]: <%s>\n", *ptr, ops_strings[*ptr]);
+				fprintf(stdout, "\t*ptr: %ld\n", (long)*ptr);
+				fprintf(stdout, "\tops_strings[%ld]: <%s>\n", (long)*ptr, ops_strings[*ptr]);
 				if(*ptr == FILE_GROUP_OP)
 					fprintf(stdout, "\tFILE_GROUP_OP: %d\n", FILE_GROUP_OP);
 				else if(*ptr == FILE_GROUPVAL_OP)
@@ -1576,11 +1572,11 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*ptr);
+				fprintf(fp,"\t%ld\n",(long)*ptr);
 				break;
 			default:
 				fprintf(stdout, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);
-				fprintf(stdout, "\tUNPROCESSED CASE: %d\n", *ptr);
+				fprintf(stdout, "\tUNPROCESSED CASE: %ld\n", (long)*ptr);
 				break;
 		}
 		ptr++;lptr++;fptr++;
@@ -1668,18 +1664,14 @@ void _NclRemapIntrParameters
 	NclStackEntry data,*data_ptr = NULL;
 	NclObjTypes param_rep_type,var_rep_type;
 	NclVar anst_var = NULL, tmp_var = NULL,tmp_var1 = NULL;
-	int i = 0,j = 0,k= 0,contains_vec = 0,m = 0;
+	int i = 0,j = 0,contains_vec = 0;
 	NclFrame* tmp_fp = (NclFrame*)previous_fp;
 	int check_ret_status = 0;
 	int value_ref_count = 0;
 	int coord_ids[NCL_MAX_DIMENSIONS];
 	NclAtt tmp_att = NULL;
 	NclVar tmp_coord_var = NULL;
-	NclMultiDValData tmp_md,tmp2_md;
-	int tmp_elem = 0;
-	char *step = NULL;
-	NclSelectionRecord tmp_selection;
-	void *tmp_ptr;
+
 /*
 * Some kind of check is need to assure top of stack and arguments are 
 * aligned before the following loop starts up
@@ -2077,7 +2069,7 @@ void _NclRemapParameters
 	NclStackEntry data,*data_ptr = NULL;
 	NclObjTypes param_rep_type,var_rep_type;
 	NclVar anst_var = NULL, tmp_var = NULL,tmp_var1 = NULL;
-	int i = 0,j = 0,k= 0,contains_vec = 0,m = 0;
+	int i = 0,j = 0,contains_vec = 0;
 	NclFrame* tmp_fp = (NclFrame*)previous_fp;
 	int check_ret_status = 0;
 	int value_ref_count = 0;
@@ -2085,10 +2077,7 @@ void _NclRemapParameters
 	NclAtt tmp_att = NULL;
 	NclVar tmp_coord_var = NULL;
 	NclMultiDValData tmp_md,tmp2_md,tmp3_md;
-	int tmp_elem = 0;
-	char *step = NULL;
-	NclSelectionRecord tmp_selection;
-	void *tmp_ptr;
+
 /*
 * Some kind of check is need to assure top of stack and arguments are 
 * aligned before the following loop starts up
@@ -2766,7 +2755,7 @@ void _NclDumpStack
 			fprintf(file,"NclStk_NOVAL\n");
 			break;
 		case	NclStk_OFFSET:
-			fprintf(file,"NclStk_OFFSET\t",tmp_ptr->u.offset);
+			fprintf(file,"NclStk_OFFSET\t%ld",tmp_ptr->u.offset);
 			break;
 		case 	NclStk_VAL:
 			fprintf(file,"NclStk_VAL\t");

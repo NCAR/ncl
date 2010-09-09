@@ -74,6 +74,9 @@ int break_off;
 		case Ncl_CONTINUES:
 			_NclPutInstrAt(tmp2->off,cont_off,tmp2->line,tmp2->file);
 		break;
+		default:
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal Error"));
+			return;
 		}
 		tmp3= tmp2;
 		tmp2 = tmp2->next;
@@ -460,12 +463,6 @@ if(groot != NULL) {
 		case Ncl_DOFROMTO:
                 {
                         NclDoFromTo *dofromto = (NclDoFromTo*)root;
-                        int off6 = -1;
-                        int off7 = -1;
-                        int off8 = -1;
-                        int off9 = -1;
-                        int off10 = -1;
-			int id;
 
 			if(dofromto->block_stmnt_list != NULL) {
 				_NclNewLoop();
@@ -556,13 +553,6 @@ if(groot != NULL) {
 		case Ncl_DOFROMTOSTRIDE:
 		{
 			NclDoFromToStride *dofromtostride = (NclDoFromToStride*)root;
-                        int off6 = -1;
-                        int off7 = -1;
-                        int off8 = -1;
-                        int off9 = -1;
-                        int off10 = -1;
-                        int off11 = -1;
-                        int off12 = -1;
 		
 			if(dofromtostride->block_stmnt_list != NULL) {	
 				_NclNewLoop();	
@@ -1577,6 +1567,9 @@ Unneeded translations
 				_NclPutInstr((NclValue)filevardim->filevar_q,filevardim->line,filevardim->file);
 */
 				break;
+			default:
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+				return (NhlFATAL);
 			}
 			break;
 		}
@@ -1598,6 +1591,9 @@ Unneeded translations
 				_NclPutInstr(PARAM_VAR_DIM_OP,vardim->line,vardim->file);
 				_NclPutInstr((NclValue)vardim->sym,vardim->line,vardim->file);
 				break;
+			default:
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+				return (NhlFATAL);
 			}
 			break;
 		}
@@ -1686,6 +1682,9 @@ Unneeded translations
 */
 				_NclPutIntInstr(nsubs,filevaratt->line,filevaratt->file);
 				break;	
+                        default:
+                                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                                return (NhlFATAL);
 			}	
 			break;
 		}
@@ -1763,6 +1762,9 @@ Unneeded translations
 */
 				_NclPutIntInstr(nsubs,varatt->line,varatt->file);
 				break;	
+                        default:
+                                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                                return (NhlFATAL);
 			}
 			break;
 		}
@@ -1853,6 +1855,9 @@ Unneeded translations
 */
 				_NclPutIntInstr(nsubs,filecoordatt->line,filecoordatt->file);
 				break;
+                        default:
+                                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                                return (NhlFATAL);
 			}
 			break;
 		}
@@ -1959,6 +1964,9 @@ Unneeded translations
 */
 				_NclPutIntInstr(nsubs,filecoord->line,filecoord->file);
 				break;
+                        default:
+                                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                                return (NhlFATAL);
 			}
 			break;
 		}
@@ -2040,6 +2048,9 @@ Unneeded translations
 */
 				_NclPutIntInstr(nsubs,coordatt->line,coordatt->file);
 				break;
+                        default:
+                                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                                return (NhlFATAL);
 			}
 			break;
 		}
@@ -2130,6 +2141,9 @@ Unneeded translations
 */
 				_NclPutIntInstr(nsubs,coord->line,coord->file);
 				break;
+                        default:
+                                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                                return (NhlFATAL);
 			}
 			break;
 		}
@@ -2227,6 +2241,9 @@ Unneeded translations
 */
 					_NclPutIntInstr(nsubs,filevar->line,filevar->file);
 				break;
+                        default:
+                                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                                return (NhlFATAL);
 			}
 			break;
 		}
@@ -2281,7 +2298,6 @@ Unneeded translations
 		case Ncl_LIST:
 		{
 			NclList *list_op = (NclList*)groot;
-			int nsubs = 0;
 
 			off1 = _NclPutInstr(ISDEFINED_OP,list_op->line,list_op->file);
 			_NclPutInstr((NclValue)list_op->sym,list_op->line,list_op->file);

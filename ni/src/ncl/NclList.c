@@ -89,7 +89,6 @@ NhlArgVal udata;
 #endif
 {
 	NclList list;
-	NclObj theobj;
 	NclListObjList *step,*tmp;
 	int list_id = udata.intval;
 	int obj_id = cbdata.intval;
@@ -326,6 +325,7 @@ NclList thelist;
 		step->next = tmp_prev;
 		step = step->prev;
 	}
+	return thelist;
 	
 }
 static NclList ListSelect
@@ -428,7 +428,9 @@ int new_type;
 			break;
 		case Ncl_SUBSCR:
 			break;
-
+		default:
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+			return(NULL);
 		}
 
 		tmp_stride = abs(sel_ptr->u.sub.stride);

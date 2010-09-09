@@ -1599,10 +1599,8 @@ NclScalar *new_missing;
 	NclList fr_list = NULL;
 	
 	obj *toval;
-	obj *frval;
-	obj missing;
 	NclScalar themissing;
-	int i;
+
 	if(self_md->multidval.val != NULL) {
 		if((self_md->multidval.missing_value.has_missing)&&(self_md->multidval.missing_value.value.objval == *(obj*)self_md->multidval.val)) {
 			toval = (obj*)NclMalloc(sizeof(obj));

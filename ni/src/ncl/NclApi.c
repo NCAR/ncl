@@ -312,7 +312,7 @@ int NclSubmitBlock1
 	int script_size;
 #endif
 {
-	static first = 1;
+	static int first = 1;
 	int i;
 	int state;
 	char *tmp = script;
@@ -647,7 +647,6 @@ NclExtValueRec *NclGetExprValue
 #endif
 {
 	char *tmp= NULL,*ptr = NULL;
-	NclSymbol *s;
 	NclExtValueRec *tmp_val = NULL;
 	ng_usize_t size;
 /*

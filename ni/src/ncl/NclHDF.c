@@ -458,7 +458,6 @@ static void ProcessVgroups(HDFFileRecord *hdf,char *path)
 {
 	int hid = Hopen(path,DFACC_READ,0);
 	int32 *vls = NULL;
-	int status = Vstart(hid);
 	int i;
 	int vcount = Vlone(hid,vls,0);
 	char vpath[1024];

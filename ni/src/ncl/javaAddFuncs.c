@@ -124,6 +124,7 @@ NhlErrorTypes _NclIgenerateVarRange
     max = _JavaMax(tmp_md, fr);
 
     fclose(fr);
+    return NhlNOERROR;
 }
 
 void JavaPrintValue(void *out_val, NclBasicDataTypes data_type, FILE *fr)
@@ -170,7 +171,7 @@ NhlErrorTypes _JavaMin
     ng_size_t dimsizes = 1;
     void *tmp;
     logical result;
-    ng_size_t i,j;
+    ng_size_t i;
 
     if(tmp_md->multidval.missing_value.has_missing)
     {
@@ -249,7 +250,7 @@ NhlErrorTypes _JavaMax
     ng_size_t dimsizes = 1;
     void *tmp;
     logical result;
-    ng_size_t i,j,count;
+    ng_size_t i;
 
     if(tmp_md->multidval.missing_value.has_missing)
     {
@@ -330,7 +331,6 @@ NhlErrorTypes _NclIgenerateVarList
     int *fid;
 
     NclMultiDValData tmp_md;
-    NclFileAttInfoList *step;
     ng_size_t i,j;
 
     FILE *fd;
@@ -343,9 +343,6 @@ NhlErrorTypes _NclIgenerateVarList
 
     /* dimensions */
     ng_size_t dimsizes = 1;
-    ng_size_t dim_sizes[1];
-
-    NhlErrorTypes   ret;
 
     i = 0;
 
@@ -405,7 +402,7 @@ NhlErrorTypes _NclIgenerateVarList
             }
             else
             {
-                fprintf(fa,"<ARRAY of %d elements>\n",thefile->file.file_atts[i]->num_elements);
+		    fprintf(fa,"<ARRAY of %ld elements>\n",(long)thefile->file.file_atts[i]->num_elements);
             }
         }
     }
@@ -417,7 +414,7 @@ NhlErrorTypes _NclIgenerateVarList
     {
         strcpy(var_name, NrmQuarkToString(thefile->file.file_dim_info[i]->dim_name_quark));
         n = thefile->file.file_dim_info[i]->dim_size;
-        fprintf(fd, "%s\t%d\n", var_name, n);
+        fprintf(fd, "%s\t%ld\n", var_name, (long)n);
     }
     fclose(fd);
 

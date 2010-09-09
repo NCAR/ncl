@@ -1791,7 +1791,6 @@ NclObj parent;
 {
 	NclRefList *tmp,*tmp1;
 	int found = 0;
-	NclObj pobj;
 
 	if(theobj->obj.parents == NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"MultiDValDelParent: Attempt to delete parent from empty list");

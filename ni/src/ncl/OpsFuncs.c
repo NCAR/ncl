@@ -17,12 +17,13 @@ extern "C" {
 #include "Machine.h"
 #include "NclFile.h"
 #include "NclVar.h"
-#include "NclList.h"
 #include "NclCoordVar.h"
+#include "NclHLUObj.h"
 #include "VarSupport.h"
 #include "DataSupport.h"
+#include "ListSupport.h"
+#include "HLUSupport.h"
 #include "NclMdInc.h"
-#include "NclHLUObj.h"
 #include "parser.h"
 #include "OpsList.h"
 #include "ApiRecords.h"
@@ -366,6 +367,9 @@ NhlErrorTypes _NclBuildArray
 				result->u.data_obj = _NclCopyVal(_NclVarValueRead(data.u.data_var,NULL,NULL),NULL);
 			}
 			return(NhlNOERROR);
+		default:
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+			return (NhlFATAL);
 		}
 	}
 /*
@@ -810,7 +814,6 @@ NhlErrorTypes _NclBuildListVar
 	NclStackEntry *result;
 #endif
 {
-	NclStackEntry data;
 	NclStackEntry *data_ptr;
 	int i;
 	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
@@ -887,6 +890,9 @@ NhlErrorTypes _NclBuildConcatArray
 				result->u.data_obj = _NclCopyVal(_NclVarValueRead(data.u.data_var,NULL,NULL),NULL);
 			}
 			return(NhlNOERROR);
+		default:
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+			return (NhlFATAL);
 		}
 	}
 /*
@@ -1327,9 +1333,7 @@ NhlErrorTypes _NclProcCallOp
 {
 	NhlErrorTypes ret = NhlNOERROR;
 	NclExecuteReturnStatus eret;
-	NclStackEntry data;
 	void* previous_fp = NULL;
-	int i;
 
 /*
 * By the time you get here all of the arguments should've been checked against
@@ -1379,11 +1383,8 @@ NhlErrorTypes _NclFuncCallOp
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
-	NclStackEntry data;
 	NclExecuteReturnStatus eret;
 	void *previous_fp= NULL;
-	
-	int i;
 
 /*
 * By the time you get here all of the arguments should've been checked against
@@ -1490,12 +1491,11 @@ NclStackEntry _NclCreateHLUObjOp
 #endif
 {
 	int i,j;
-    ng_size_t m;
+	ng_size_t m;
 	NclStackEntry *data,*resname;
 	NclStackEntry data_out;
 	int rl_list;
 	static int local_rl_list = 0;
-	int grl_list =0;
 	NhlGenArray *gen_array;
 	NclMultiDValData tmp_md = NULL;
 	NclMultiDValData tmp2_md = NULL;
@@ -1574,6 +1574,12 @@ NclStackEntry _NclCreateHLUObjOp
 		case NclStk_NOVAL:
 			tmp_md = NULL;
 		break;
+		default:
+			_NclCleanUpStack(2*nres);
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+			data_out.kind = NclStk_NOVAL;
+			data_out.u.data_obj = NULL;
+			return(data_out);
 		}
 		switch(resname->kind) {
 		case NclStk_VAL:
@@ -1582,6 +1588,12 @@ NclStackEntry _NclCreateHLUObjOp
 		case NclStk_VAR:
 			tmp2_md = _NclVarValueRead(resname->u.data_var,NULL,NULL);
 		break;
+		default:
+			_NclCleanUpStack(2*nres);
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+			data_out.kind = NclStk_NOVAL;
+			data_out.u.data_obj = NULL;
+			return(data_out);
 		}
 		if((tmp2_md->multidval.type != (NclTypeClass)nclTypestringClass)||(tmp2_md->multidval.kind != SCALAR)) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in resource name. Resources must be scalar strings\n");
@@ -1691,6 +1703,12 @@ NclStackEntry _NclCreateHLUObjOp
 		case NclStk_VAR:
 			tmp_md = _NclVarValueRead(data->u.data_var,NULL,NULL);
 		break;
+		default:
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+			_NclCleanUpStack(2*nres);
+			data_out.kind = NclStk_NOVAL;
+			data_out.u.data_obj = NULL;
+			return(data_out);
 		}
 		if(tmp_md->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
 			for(j = 0; j < tmp_md->multidval.totalelements;j++) {
@@ -1704,7 +1722,7 @@ NclStackEntry _NclCreateHLUObjOp
 					tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[j]);
 				}
 				if(tmp_ho != NULL) 
-					_NclAddHLUToExpList(_NclGetObj(*tmp_id),tmp_ho->obj.id);
+					_NclAddHLUToExpList((NclHLUObj)_NclGetObj(*tmp_id),tmp_ho->obj.id);
 			}
 		}
 	}
@@ -1886,6 +1904,9 @@ int nres;
 		case NclStk_NOVAL:
 			tmp_md = NULL;
 		break;
+		default:
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+			return (NhlFATAL);
 		}
 		switch(resname->kind) {
 		case NclStk_VAL:
@@ -1894,6 +1915,9 @@ int nres;
 		case NclStk_VAR:
 			tmp2_md = _NclVarValueRead(resname->u.data_var,NULL,NULL);
 		break;
+		default:
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+			return (NhlFATAL);
 		}
 		if((tmp2_md->multidval.type != (NclTypeClass)nclTypestringClass)||(tmp2_md->multidval.kind != SCALAR)) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in resource name. Resources must be scalar strings\n");
@@ -2118,8 +2142,10 @@ NclStackEntry missing_expr;
 		} else {
 			for(i = 0; i< tmp1_md->multidval.dim_sizes[0]; i++) {
 				if(dim_size_list[i] < 1) {	
-printf("_NclNewOp: i is %d; dim_size_list[%d] is %zd, tmp1_md->multidval.dim_sizes[0] is %zd\n",
-i, i, dim_size_list[i], tmp1_md->multidval.dim_sizes[0]);
+#if 0
+					printf("_NclNewOp: i is %ld; dim_size_list[%ld] is %zd, tmp1_md->multidval.dim_sizes[0] is %zd\n",
+					       (long)i, (long)i, dim_size_list[i], tmp1_md->multidval.dim_sizes[0]);
+#endif
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"New: a zero or negative value has been passed in in the dimension size parameter");
 					return(NhlFATAL);
 				} else {

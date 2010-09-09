@@ -33,6 +33,7 @@
 #include "HLUSupport.h"
 #include "NclTypeobj.h"
 #include "NclVar.h"
+#include "VarSupport.h"
 #include <math.h>
 
 /*
@@ -58,7 +59,6 @@ NhlArgVal udata;
 	NclScalar mis;
 	NclMultiDValData tmp_md = NULL;
 	obj *obj_ids = NULL;
-	int i;
 	NclRefList *plptr;
 	NclScalar *tmp_mis;
 	ng_size_t dim_size = 1;
@@ -2174,7 +2174,6 @@ NclObj parent;
 {
         NclRefList *tmp,*tmp1;
         int found = 0;
-        NclObj pobj;
 
         if(theobj->obj.parents == NULL) {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,"MultiDValDelParent: Attempt to delete parent from empty list");

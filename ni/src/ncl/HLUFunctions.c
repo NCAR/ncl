@@ -6,6 +6,10 @@
 #include <ncarg/hlu/PlotManager.h>
 #include <ncarg/hlu/DataComm.h>
 #include <ncarg/hlu/Callbacks.h>
+#include <ncarg/hlu/App.h>
+#include <ncarg/hlu/DataItem.h>
+#include <ncarg/hlu/Workspace.h>
+#include <ncarg/hlu/ResourcesP.h>
 #include "defs.h"
 #include "Symbol.h"
 #include <regex.h>
@@ -32,8 +36,8 @@ NhlErrorTypes _NclINhlIsApp
 	int n_dims;
 	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
-    ng_size_t total=1;
-    ng_size_t i;
+	ng_size_t total=1;
+	ng_size_t i;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	obj *ncl_hlu_obj_ids;
@@ -1578,8 +1582,8 @@ NhlErrorTypes _NclIAddToOverlay2
 	int has_missing1;
 	int has_missing2;
 	NclBasicDataTypes type1;
-    ng_size_t total=1;
-    ng_size_t i,j=0;
+	ng_size_t total=1;
+	ng_size_t i,j=0;
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	NclScalar missing1;
@@ -1636,6 +1640,7 @@ NhlErrorTypes _NclIAddToOverlay2
 	for( i = 0; i < j; i++) {
 		
 	}
+	return NhlNOERROR;
 }
 NhlErrorTypes _NclIAddAnnotation
 #if	NhlNeedProto
@@ -3649,6 +3654,7 @@ NhlErrorTypes _NclINhlPalGetDefined
 		NCL_string,
                 0
         );
+	return NhlNOERROR;
 }
 
 NhlErrorTypes _NclISetDashPattern
