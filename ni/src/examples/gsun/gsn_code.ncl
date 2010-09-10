@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.241 2010-05-06 17:18:01 haley Exp $
+;      $Id: gsn_code.ncl,v 1.238.4.3 2010-05-06 17:13:26 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4486,7 +4486,7 @@ end
 undef("gsn_create_text_ndc")
 function gsn_create_text_ndc(wks:graphic, texto:string, xo:numeric, \
                              yo:numeric, resources:logical )
-local i, txid, plot_object, res, tx_res_index, x2, y2, res2, \
+local i, txid, plot_object, res, tx_res_index, x2, y2, x, y, res2, \
 calldraw, callframe
 begin
 ;
@@ -4634,7 +4634,7 @@ end
 undef("gsn_text_ndc")
 procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
                        y:numeric, resources:logical )
-local txid
+local txid, res2
 begin
   if(resources) then
     res2 = get_resources(resources)
@@ -4663,8 +4663,8 @@ end
 undef("gsn_text")
 procedure gsn_text(wks:graphic,plotid:graphic,texto:string,xo:numeric, \
                    yo:numeric, resources:logical )
-local i, txid, plot_object, res, tx_res_index, x2, y2, xf, yf, \
-funccode, res2, calldraw, callframe
+local i, txid, x2, y2, xf, yf, x, y, res2, calldraw, callframe, maxbb, \
+wksname, xsizes, ysizes, tsizes, xrank, yrank, trank, text, len, txres
 begin
 ;
 ; Any one of xo, yo, and texto can just be one element, but if two or more

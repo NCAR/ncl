@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.245 2010/05/06 22:15:21 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.241.6.5 2010-05-07 16:05:00 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4274,9 +4274,14 @@ begin
         main_zone   = main_zone+1
       end if
 ;
-; Do we want thicker bar outlines?
+; These resources allow you to control the look of the fill patterns
+; in the bars. You can change the fill line thickness, the density of
+; the fill pattern, or the thickness of the stippled dots.
 ;
-      bar_outline_thickness = get_res_value(res2,"gsnXYBarOutlineThicknessF",1.0)
+      bar_outline_thickness = get_res_value(res2,"gsnXYBarChartOutlineThicknessF",1.0)
+      bar_fill_line_thickness = get_res_value(res2,"gsnXYBarChartFillLineThicknessF",1.0)
+      bar_fill_scale = get_res_value(res2,"gsnXYBarChartFillScaleF",1.0)
+      bar_fill_dot_size = get_res_value(res2,"gsnXYBarChartFillDotSizeF",0.0)
     end if                  ; Done checking special resources.
 
     res2          = True
@@ -4721,6 +4726,9 @@ begin
         gsres@gsEdgesOn        = True
         gsres@gsEdgeThicknessF = bar_outline_thickness
       end if
+      gsres@gsFillLineThicknessF = bar_fill_line_thickness
+      gsres@gsFillScaleF         = bar_fill_scale
+      gsres@gsFillDotSizeF       = bar_fill_dot_size
       do i=0,ncurves-1 
         var_string = unique_string("polygons"+i)
 ;
