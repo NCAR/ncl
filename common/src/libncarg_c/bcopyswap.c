@@ -20,8 +20,9 @@
  *		of 4.
  */
 #include <stdio.h>
+#include <stdlib.h>
 
-bcopyswap(b1, b2, size)
+void bcopyswap(b1, b2, size)
 	char	*b1;
 	char	*b2;
 	int	size;

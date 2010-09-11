@@ -337,11 +337,9 @@ int	OpenOptionTbl()
  * on exit
  *	return		: -1 => error, else ok
  */
-CloseOptionTbl(od) 
+int CloseOptionTbl(od) 
 	int	od;
 {
-	int	i;
-
 	if (!(usedOD & (1 << od))) {
 		ESprintf(EBADF, "");
 		return(-1);
@@ -402,7 +400,7 @@ CloseOptionTbl(od)
  * on exit
  *	return		: -1 => failure, else OK
  */
-GetOptions(od, options)
+int GetOptions(od, options)
 	int		od;
 	const Option	*options;
 {
@@ -479,7 +477,7 @@ GetOptions(od, options)
  * on exit
  *	return		: -1 => failure, else OK.
  */
-LoadOptionTable(od, optd)
+int LoadOptionTable(od, optd)
 	int			od;
 	const OptDescRec	*optd;
 {
@@ -783,7 +781,6 @@ int	ParseEnvOptions(od, envv, optds)
 	const EnvOpt	*envv;
 	const	OptDescRec	*optds;
 {
-	int	envc;		/* size of envv list		*/
 	const EnvOpt	*envptr;	/* pointer to envv		*/
 	char	**argv;		/* arg vector created from envv	*/
 	int	argc;		/* size of argv list		*/
@@ -801,7 +798,7 @@ int	ParseEnvOptions(od, envv, optds)
  	 * look for environment variables. Generate the argument vector, argv
 	 */
 	for (envptr = envv; envptr->option; envptr++) {
-		if (arg_string = getenv(envptr->env_var)) {
+ 	        if ( (arg_string = getenv(envptr->env_var)) ) {
 
 			(void) strcpy(buf, "-");
 			(void) strcat(buf, envptr->option);

@@ -13,6 +13,7 @@
 
 
 #include <ncarg/c.h>
+#include <stdlib.h>
 #ifdef	FreeBSD
 #include <sys/filio.h>
 #else
