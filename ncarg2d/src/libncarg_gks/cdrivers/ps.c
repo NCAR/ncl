@@ -2044,7 +2044,7 @@ int ps_OpenWorkstation(GKSC *gksc)
          * Handle Initial C Escape Elements.
          *      (none currently defined for ps - so all of them cause gerhnd.)
          */
-        while(cesc = _NGGetCEscInit()){
+        while((cesc = _NGGetCEscInit())){
                 gerr_hand(182,11,NULL);
         }
 

@@ -635,12 +635,14 @@ static int      str_width(strlen, s)
                 case UP_TEXT_PATH: 
                 case DOWN_TEXT_PATH:  
                         return(right_most(s,strlen));
+
                 }
         }
         /*NOTREACHED*/
+	return(0);
 }
 
-/*      str_heigth:
+/*      str_height:
  *              This function calculates the translation along the up 
  *      vector that is necessary for vertical alignment of the text. 
  *      The value returned must be "rotated" to accommodate the rotation 
@@ -756,6 +758,7 @@ static int      str_height(strlen, s)
                 }
         }
         /*NOTREACHED*/
+	return(0);
 }
  
 /*      text_align:

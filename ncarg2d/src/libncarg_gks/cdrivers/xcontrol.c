@@ -97,7 +97,7 @@ X11_private_color
                 default:
 
                 newcmap = XCreateColormap(xi->dpy,xi->win,xi->vis,AllocAll);
-                if(colors = (void *)malloc(sizeof(XColor)*xi->max_x_colors)){
+                if((colors = (void *)malloc(sizeof(XColor)*xi->max_x_colors))){
                         for(i=0;i<xi->max_x_colors;i++)
                                 colors[i].pixel = i;
                         XQueryColors(xi->dpy,xi->cmap,colors,xi->max_x_colors);
@@ -228,7 +228,7 @@ init_color
 
                         newcmap = XCreateColormap(xi->dpy,xi->win,xi->vis,
                                                                 AllocAll);
-                        if(colors = (void *)malloc(sizeof(XColor)*xi->max_x_colors)){
+                        if((colors = (void *)malloc(sizeof(XColor)*xi->max_x_colors))){
                                 for(i=0;i<xi->max_x_colors;i++)
                                         colors[i].pixel = i;
                                 XQueryColors(xi->dpy,xi->cmap,colors,
@@ -640,8 +640,11 @@ X11_Exec
 #endif
 {
         Xddp                    *xi = (Xddp *) gksc->ddp;
+
+#if 0
         XEvent                  event;
         XClientMessageEvent     *xcme;
+#endif
 
         if((gksc->opcode == OPEN_WORKSTATION) ||
                         (gksc->opcode == CLOSE_WORKSTATION))
@@ -736,7 +739,7 @@ X11_OpenWorkstation
         xi->size_change = NULL;
         xi->sref = NULL;
 
-        while(cesc = _NGGetCEscInit()){
+        while((cesc = _NGGetCEscInit())){
                 _NGCXAllocColor *xac;
                 switch(cesc->type){
                         case NGC_XALLOCCOLOR:

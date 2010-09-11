@@ -97,7 +97,7 @@ PIX_private_color
                 default:
 
                 newcmap = XCreateColormap(xi->dpy,xi->win,xi->vis,AllocAll);
-                if(colors = (void *)malloc(sizeof(XColor)*xi->max_x_colors)){
+                if((colors = (void *)malloc(sizeof(XColor)*xi->max_x_colors))){
                         for(i=0;i<xi->max_x_colors;i++)
                                 colors[i].pixel = i;
                         XQueryColors(xi->dpy,xi->cmap,colors,xi->max_x_colors);
@@ -225,7 +225,7 @@ init_color
 
                         newcmap = XCreateColormap(xi->dpy,xi->win,xi->vis,
                                                                 AllocAll);
-                        if(colors = (void *)malloc(sizeof(XColor)*xi->max_x_colors)){
+                        if((colors = (void *)malloc(sizeof(XColor)*xi->max_x_colors))){
                                 for(i=0;i<xi->max_x_colors;i++)
                                         colors[i].pixel = i;
                                 XQueryColors(xi->dpy,xi->cmap,colors,
@@ -398,9 +398,9 @@ pause
         Display *dpy;
 #endif
 {
+#if 0
         XEvent  event;
 
-#if 0
         /*
          * discard all events that a impatient user
          * may have aquired while waiting for a plot to finnish
@@ -431,20 +431,6 @@ CreateXWorkWindow
 #endif
 {
         Window                  win;
-        static  XWMHints        xwmh = {
-                (InputHint | StateHint ),/* flags                       */
-                True,                   /* input                        */
-                NormalState,            /* initial_state                */
-                0,                      /* icon pixmap                  */
-                0,                      /* icon window                  */
-                0, 0,                   /* icon location                */
-                0,                      /* icon mask                    */
-                0                       /* Window group                 */
-        };
-        static  XClassHint      xch = {
-                "xgks",                 /* resource name                */
-                "Xgks"                  /* class name                   */
-        };
         XSizeHints              xsh = { /* Size hints for window manager*/
                 (PMinSize),
                 0,0,                    /* obsolete ????                */
@@ -459,14 +445,13 @@ CreateXWorkWindow
                 0,                      /* dimensions of window         */
                 0
         };
-        char                    *geometry=NULL;
         int                     geom_mask = 0;
         XSetWindowAttributes    xswa;   /* Set Window Attribute struct  */
-        XTextProperty           window_name, icon_name;
         unsigned long           bw = 0; /* Border width                 */
+#if 0
         XEvent                   event; /* Event received               */
         Atom                    wm_del;
-
+#endif
 	xsh.y = 0;
 	xsh.x = 0;
 	xsh.width = 512;
@@ -660,7 +645,6 @@ PIX_OpenWorkstation
         int                     *iptr = (int *) gksc->i.list;
         _NGCesc                 *cesc;
         _NGCPixConfig          *pixc=NULL;
-        char                   *filename;
 
         if((xi = (PIXddp *) malloc (sizeof (PIXddp))) == (PIXddp *) NULL){
                 ESprintf(ERR_DTABLE_MEMORY, "malloc(%d)", sizeof(PIXddp));
@@ -688,7 +672,7 @@ PIX_OpenWorkstation
 	xi->format = 1;
 	xi->clear = 1;
 
-        while(cesc = _NGGetCEscInit()){
+        while((cesc = _NGGetCEscInit())){
                 _NGCXAllocColor *xac;
                 switch(cesc->type){
                         case NGC_XALLOCCOLOR:

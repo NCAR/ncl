@@ -35,7 +35,7 @@
 
 
 /*ARGSUSED*/
-X11_GetColorRepresentation(gksc)
+int X11_GetColorRepresentation(gksc)
         GKSC    *gksc;
 {
         Xddp            *xi = (Xddp *) gksc->ddp;

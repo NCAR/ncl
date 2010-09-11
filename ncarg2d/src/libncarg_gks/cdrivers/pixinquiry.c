@@ -35,7 +35,7 @@
 
 
 /*ARGSUSED*/
-PIX_GetColorRepresentation(gksc)
+int PIX_GetColorRepresentation(gksc)
         GKSC    *gksc;
 {
         PIXddp            *xi = (PIXddp *) gksc->ddp;
