@@ -24474,7 +24474,7 @@ NhlErrorTypes _NclItodouble
 
         for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.doubleval = (double) ((NclTypeClass) nclTypedoubleClass)->type_class.default_mis.doubleval;
