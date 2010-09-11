@@ -23,6 +23,9 @@ int conn_id_list[MAX_OPEN_WK+1];
 int smallest_avail_id = 2;
 int num_used_conn_ids = 0;
 
+extern void add_conn_id(int*);
+extern void set_avail_conn_id();
+
 void get_conn_id
 #ifdef NeedFuncProto
 (
@@ -33,7 +36,6 @@ void get_conn_id
     int *conn_id;
 #endif
 {
-    int i, pos;
 /*
  * Get the available connection id
  */

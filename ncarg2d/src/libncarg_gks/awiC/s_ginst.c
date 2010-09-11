@@ -16,6 +16,7 @@
  */
 
 #include <ncarg/gks.h>
+#include <string.h>
 
 extern void NGCALLF(ginst,GINST)(Gint*,Gint*,int*,NGstring,Gint*,
                                  const Gfloat*,const Gfloat*,

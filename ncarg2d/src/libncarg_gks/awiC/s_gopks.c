@@ -16,8 +16,10 @@
  */
 
 #include <ncarg/gks.h>
+#include <string.h>
 
 extern void NGCALLF(gopks,GOPKS)(int*,size_t*);
+extern void get_conn_id(int*);
 
 void gopen_gks
 #ifdef NeedFuncProto

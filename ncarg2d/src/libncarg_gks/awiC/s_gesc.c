@@ -31,6 +31,9 @@
 
 extern void NGCALLF(gesc,GESC)(Gint*,int*,char*,int*,int*,
                                char out_array[MAX_ARRAY_LEN],int,int);
+
+extern void NGCALLF(gerhnd,GERHND)(Gint*,Gint*,int*);
+
 #if defined(cray)
 struct common {
 #else

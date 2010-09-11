@@ -32,7 +32,7 @@ void set_avail_conn_id
 ()
 #endif
 {
-    int i, pos;
+  int i;
 /*
  * Get the smallest available connection identifier.
  * Cannot use either "5" or "6" since these are stdin and stdout

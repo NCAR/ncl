@@ -16,6 +16,7 @@
  */
 
 #include <ncarg/gks.h>
+#include <string.h>
 
 extern void NGCALLF(grqst,GRQST)(Gint*,Gint*,Gin_status*,int*,NGstring,int);
 

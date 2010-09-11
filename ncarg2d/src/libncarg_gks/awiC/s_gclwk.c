@@ -21,6 +21,8 @@ extern void NGCALLF(gqwkc,GQWKC)(Gint*,int*,int*,int*);
 
 extern void NGCALLF(gclwk,GCLWK)(Gint*);
 
+extern void remove_conn_id(int);
+
 void gclose_ws
 #ifdef NeedFuncProto
 (
