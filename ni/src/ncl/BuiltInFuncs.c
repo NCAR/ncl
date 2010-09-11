@@ -13279,6 +13279,9 @@ NhlErrorTypes _Nclispan
 			       0
 			       ));
 	}
+	default:
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
 	}
 }
 
@@ -13290,22 +13293,21 @@ NhlErrorTypes _Nclfspan
 #endif
 {
 	NclStackEntry   data0,
-                    data1,
-                    data2;
+		data1,
+		data2;
 
 	NclMultiDValData    tmp_md0 = NULL,
-                        tmp_md1 = NULL,
-                        tmp_md2 = NULL;
+		tmp_md1 = NULL,
+		tmp_md2 = NULL;
 
-    NclBasicDataTypes   data0_type,
-                        data1_type,
-                        data2_type;
+	NclBasicDataTypes   data0_type,
+		data1_type,
+		data2_type;
 
 	ng_size_t dimsizes = 1;
 	ng_size_t i;
 
 	void    *out_val;       /* may be of type float or of type double */
-
 
     /*
      * get arguments and associated data info
@@ -13378,21 +13380,22 @@ NhlErrorTypes _Nclfspan
     }
 
     switch (data2_type) {
-        case NCL_byte:
-            dimsizes = *(byte *) tmp_md2->multidval.val;
+    case NCL_byte:
+	    dimsizes = (ng_size_t)*(byte *) tmp_md2->multidval.val;
             break;
-
-        case NCL_short:
-            dimsizes = *(short *) tmp_md2->multidval.val;
+    case NCL_short:
+            dimsizes = (ng_size_t)*(short *) tmp_md2->multidval.val;
             break;
-
-        case NCL_int:
-            dimsizes = *(int *) tmp_md2->multidval.val;
+    case NCL_int:
+            dimsizes = (ng_size_t)*(int *) tmp_md2->multidval.val;
             break;
-
-        case NCL_long:
+    case NCL_long:
             dimsizes = *(ng_size_t *) tmp_md2->multidval.val;
             break;
+    default:
+	    NhlPError(NhlFATAL, NhlEUNKNOWN,
+		      "fspan: invalid type passed for number of elements parameter, can't continue");
+	    return NhlFATAL;
     }
 
     if (dimsizes <= 0) {
@@ -13400,9 +13403,6 @@ NhlErrorTypes _Nclfspan
             "fspan: number of elements parameter is less-than-or-equal-to zero, can't continue");
         return NhlFATAL;
     }
-
-    if ((data2_type == NCL_byte) || (data2_type == NCL_short) || (data2_type == NCL_int))
-        tmp_md2 = _NclCoerceData(tmp_md2, Ncl_Typelong, NULL);
 
     data0_type = tmp_md0->multidval.data_type;
     data1_type = tmp_md1->multidval.data_type;
