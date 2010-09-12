@@ -53,18 +53,21 @@ NhlErrorTypes random_chi_W( void )
  */
   void *df;
   double *tmp_df;
-  ng_size_t *N;
-  ng_size_t dsizes_N[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_df;
+  void *N;
+  ng_size_t dsizes_N[1];
+  NclBasicDataTypes type_df, type_N;
 /*
  * Output array variables
  */
   void *chi;
   double *tmp_chi = NULL;
+  ng_size_t *dsizes_chi;
   NclBasicDataTypes type_chi;
 /*
  * Declare various variables for random purposes.
  */
+  int ret, isz;
+  long lsz;
   ng_size_t i, size_input;
 /*
  * Retrieve argument.
@@ -79,21 +82,50 @@ NhlErrorTypes random_chi_W( void )
           &type_df,
           DONT_CARE);
 
-  N = (ng_size_t*)NclGetArgValue(
+  N = (void*)NclGetArgValue(
           1,
           2,
           NULL,
           dsizes_N,
           NULL,
           NULL,
-          NULL,
+          &type_N,
           DONT_CARE);
 
 /*
- * Compute the total size of the input array.
+ * Check the input dimensions and compute the total size of the input array.
  */
-  size_input = N[0];
-  for( i = 1; i < dsizes_N[0]; i++ ) size_input *= N[i];
+  switch (type_N) {
+  case NCL_int:
+    isz = ((int*) N)[0];
+
+    dsizes_chi = NclMalloc(sizeof(ng_size_t) * dsizes_N[0]);
+    dsizes_chi[0] = ((int*) N)[0];
+    for (i = 1; i < dsizes_N[0]; i++) {
+      isz *= ((int*) N)[i];
+      dsizes_chi[i] = ((int*) N)[i];
+    }
+
+    size_input = (int) isz;
+    break;
+
+  case NCL_long:
+    lsz = ((long*) N)[0];
+    
+    dsizes_chi = NclMalloc(sizeof(ng_size_t) * dsizes_N[0]);
+    dsizes_chi[0] = ((long*) N)[0];
+    for (i = 1; i < dsizes_N[0]; i++) {
+      lsz *= ((long*) N)[i];
+      dsizes_chi[i] = ((long*) N)[i];
+    }
+
+    size_input = (long) lsz;
+    break;
+
+  default:
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"random_chi: The input dimension sizes must be integer or long");
+    return(NhlFATAL);
+  }
 
 /*
  * Coerce input to double if necessary. 
@@ -141,7 +173,9 @@ NhlErrorTypes random_chi_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(chi,dsizes_N[0],N,NULL,type_chi,0));
+  ret = NclReturnValue(chi,dsizes_N[0],dsizes_chi,NULL,type_chi,0);
+  NclFree(dsizes_chi);
+  return ret;
 }
 
 NhlErrorTypes random_gamma_W( void )
@@ -151,19 +185,22 @@ NhlErrorTypes random_gamma_W( void )
  */
   void *locp, *shape;
   double *tmp_locp, *tmp_shape;
-  ng_size_t *N;
-  ng_size_t dsizes_N[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_locp, type_shape;
+  void *N;
+  ng_size_t dsizes_N[1];
+  NclBasicDataTypes type_locp, type_shape, type_N;
 /*
  * Output array variables
  */
   void *gamma;
   double *tmp_gamma = NULL;
+  ng_size_t *dsizes_gamma;
   NclBasicDataTypes type_gamma;
 /*
  * Declare various variables for random purposes.
  */
-  int i, size_input;
+  int ret, isz;
+  long lsz;
+  ng_size_t i, size_input;
 /*
  * Retrieve argument.
  */
@@ -187,28 +224,60 @@ NhlErrorTypes random_gamma_W( void )
           &type_shape,
           DONT_CARE);
 
-  N = (ng_size_t*)NclGetArgValue(
+  N = (void*)NclGetArgValue(
           2,
           3,
           NULL,
           dsizes_N,
           NULL,
           NULL,
-          NULL,
+          &type_N,
           DONT_CARE);
 
 /*
- * Compute the total size of the input array.
+ * Check the input dimensions and compute the total size of the input array.
  */
-  size_input = N[0];
-  for( i = 1; i < dsizes_N[0]; i++ ) size_input *= N[i];
+  switch (type_N) {
+  case NCL_int:
+    isz = ((int*) N)[0];
+
+    dsizes_gamma = NclMalloc(sizeof(ng_size_t) * dsizes_N[0]);
+    dsizes_gamma[0] = ((int*) N)[0];
+    for (i = 1; i < dsizes_N[0]; i++) {
+      isz *= ((int*) N)[i];
+      dsizes_gamma[i] = ((int*) N)[i];
+    }
+
+    size_input = (int) isz;
+    break;
+
+  case NCL_long:
+    lsz = ((long*) N)[0];
+    
+    dsizes_gamma = NclMalloc(sizeof(ng_size_t) * dsizes_N[0]);
+    dsizes_gamma[0] = ((long*) N)[0];
+    for (i = 1; i < dsizes_N[0]; i++) {
+      lsz *= ((long*) N)[i];
+      dsizes_gamma[i] = ((long*) N)[i];
+    }
+
+    size_input = (long) lsz;
+    break;
+
+  default:
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"random_gamma: The input dimension sizes must be integer or long");
+    return(NhlFATAL);
+  }
 
 /*
- * Create space for output array.
+ * Coerce input to double if necessary. 
  */
   tmp_locp  = coerce_input_double(locp,type_locp,1,0,NULL,NULL);
   tmp_shape = coerce_input_double(shape,type_shape,1,0,NULL,NULL);
 
+/*
+ * Create space for output array.
+ */
   if(type_locp != NCL_double && type_shape != NCL_double) {
     type_gamma = NCL_float;
     gamma      = (void*)calloc(size_input,sizeof(float));
@@ -248,7 +317,9 @@ NhlErrorTypes random_gamma_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(gamma,dsizes_N[0],N,NULL,type_gamma,0));
+  ret = NclReturnValue(gamma,dsizes_N[0],dsizes_gamma,NULL,type_gamma,0);
+  NclFree(dsizes_gamma);
+  return ret;
 }
 
 
@@ -259,18 +330,21 @@ NhlErrorTypes random_normal_W( void )
  */
   void *av, *sd;
   double *tmp_av, *tmp_sd;
-  ng_size_t *N;
-  ng_size_t dsizes_N[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_av, type_sd;
+  void *N;
+  ng_size_t dsizes_N[1];
+  NclBasicDataTypes type_av, type_sd, type_N;
 /*
  * Output array variables
  */
   void *normal;
   double *tmp_normal = NULL;
+  ng_size_t *dsizes_normal;
   NclBasicDataTypes type_normal;
 /*
  * Declare various variables for random purposes.
  */
+  int ret, isz;
+  long lsz;
   ng_size_t i, size_input;
 /*
  * Retrieve argument.
@@ -295,28 +369,60 @@ NhlErrorTypes random_normal_W( void )
           &type_sd,
           DONT_CARE);
 
-  N = (ng_size_t*)NclGetArgValue(
+  N = (void*)NclGetArgValue(
           2,
           3,
           NULL,
           dsizes_N,
           NULL,
           NULL,
-          NULL,
+          &type_N,
           DONT_CARE);
 
 /*
- * Compute the total size of the input array.
+ * Check the input dimensions and compute the total size of the input array.
  */
-  size_input = N[0];
-  for( i = 1; i < dsizes_N[0]; i++ ) size_input *= N[i];
+  switch (type_N) {
+  case NCL_int:
+    isz = ((int*) N)[0];
+
+    dsizes_normal = NclMalloc(sizeof(ng_size_t) * dsizes_N[0]);
+    dsizes_normal[0] = ((int*) N)[0];
+    for (i = 1; i < dsizes_N[0]; i++) {
+      isz *= ((int*) N)[i];
+      dsizes_normal[i] = ((int*) N)[i];
+    }
+
+    size_input = (int) isz;
+    break;
+
+  case NCL_long:
+    lsz = ((long*) N)[0];
+    
+    dsizes_normal = NclMalloc(sizeof(ng_size_t) * dsizes_N[0]);
+    dsizes_normal[0] = ((long*) N)[0];
+    for (i = 1; i < dsizes_N[0]; i++) {
+      lsz *= ((long*) N)[i];
+      dsizes_normal[i] = ((long*) N)[i];
+    }
+
+    size_input = (long) lsz;
+    break;
+
+  default:
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"random_normal: The input dimension sizes must be integer or long");
+    return(NhlFATAL);
+  }
 
 /*
- * Create space for output array.
+ * Coerce input to double if necessary. 
  */
   tmp_av = coerce_input_double(av,type_av,1,0,NULL,NULL);
   tmp_sd = coerce_input_double(sd,type_sd,1,0,NULL,NULL);
 
+/*
+ * Create space for output array.
+ */
   if(type_av != NCL_double && type_sd != NCL_double) {
     type_normal = NCL_float;
     normal      = (void*)calloc(size_input,sizeof(float));
@@ -357,7 +463,9 @@ NhlErrorTypes random_normal_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(normal,dsizes_N[0],N,NULL,type_normal,0));
+  ret = NclReturnValue(normal,dsizes_N[0],dsizes_normal,NULL,type_normal,0);
+  NclFree(dsizes_normal);
+  return ret;
 }
 
 
@@ -368,18 +476,21 @@ NhlErrorTypes random_uniform_W( void )
  */
   void *low, *high;
   double *tmp_low, *tmp_high;
-  ng_size_t *N;
-  ng_size_t dsizes_N[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_low, type_high;
+  void *N;
+  ng_size_t dsizes_N[1];
+  NclBasicDataTypes type_low, type_high, type_N;
 /*
  * Output array variables
  */
   void *uniform;
   double *tmp_uniform = NULL;
+  ng_size_t *dsizes_uniform;
   NclBasicDataTypes type_uniform;
 /*
  * Declare various variables for random purposes.
  */
+  int ret, isz;
+  long lsz;
   ng_size_t i, size_input;
 /*
  * Retrieve argument.
@@ -404,28 +515,60 @@ NhlErrorTypes random_uniform_W( void )
           &type_high,
           DONT_CARE);
 
-  N = (ng_size_t*)NclGetArgValue(
+  N = (void*)NclGetArgValue(
           2,
           3,
           NULL,
           dsizes_N,
           NULL,
           NULL,
-          NULL,
+          &type_N,
           DONT_CARE);
 
 /*
- * Compute the total size of the input array.
+ * Check the input dimensions and compute the total size of the input array.
  */
-  size_input = N[0];
-  for( i = 1; i < dsizes_N[0]; i++ ) size_input *= N[i];
+  switch (type_N) {
+  case NCL_int:
+    isz = ((int*) N)[0];
+
+    dsizes_uniform = NclMalloc(sizeof(ng_size_t) * dsizes_N[0]);
+    dsizes_uniform[0] = ((int*) N)[0];
+    for (i = 1; i < dsizes_N[0]; i++) {
+      isz *= ((int*) N)[i];
+      dsizes_uniform[i] = ((int*) N)[i];
+    }
+
+    size_input = (int) isz;
+    break;
+
+  case NCL_long:
+    lsz = ((long*) N)[0];
+    
+    dsizes_uniform = NclMalloc(sizeof(ng_size_t) * dsizes_N[0]);
+    dsizes_uniform[0] = ((long*) N)[0];
+    for (i = 1; i < dsizes_N[0]; i++) {
+      lsz *= ((long*) N)[i];
+      dsizes_uniform[i] = ((long*) N)[i];
+    }
+
+    size_input = (long) lsz;
+    break;
+
+  default:
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"random_uniform: The input dimension sizes must be integer or long");
+    return(NhlFATAL);
+  }
 
 /*
- * Create space for output array.
+ * Coerce input to double if necessary. 
  */
   tmp_low  = coerce_input_double(low,type_low,1,0,NULL,NULL);
   tmp_high = coerce_input_double(high,type_high,1,0,NULL,NULL);
 
+/*
+ * Create space for output array.
+ */
   if(type_low != NCL_double && type_high != NCL_double) {
     type_uniform = NCL_float;
     uniform      = (void*)calloc(size_input,sizeof(float));
@@ -466,6 +609,8 @@ NhlErrorTypes random_uniform_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(uniform,dsizes_N[0],N,NULL,type_uniform,0));
+  ret = NclReturnValue(uniform,dsizes_N[0],dsizes_uniform,NULL,type_uniform,0);
+  NclFree(dsizes_uniform);
+  return ret;
 }
 
