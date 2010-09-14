@@ -102,12 +102,6 @@ void
 #endif
 );
 
-extern NhlErrorTypes  _NclIDimSizesLong(
-#if	NhlNeedProto
-void
-#endif
-);
-
 extern NhlErrorTypes  _NclIAny(
 #if	NhlNeedProto
 void

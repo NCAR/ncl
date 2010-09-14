@@ -28,6 +28,7 @@ extern "C" {
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdint.h>
 #include <ncarg/c.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
@@ -1720,9 +1721,10 @@ NhlErrorTypes _NclIDimSizes
     NclStackEntry data;	
     NclStackEntry data_out;	
     NclMultiDValData tmp_md = NULL;
-    ng_size_t  *size;
-    ng_size_t dim_size;
+    ng_size_t dim_size, product_size;
+    void *size;
     int i = 0;
+    logical return_int;
 
     data = _NclGetArg(0,1,DONT_CARE);
     if (data.kind == NclStk_VAR) {
@@ -1739,37 +1741,63 @@ NhlErrorTypes _NclIDimSizes
     if (tmp_md != NULL) {
         data_out.kind = NclStk_VAL;
 
-        size = (ng_size_t *) NclMalloc(sizeof(ng_size_t) * tmp_md->multidval.n_dims);
-        for (i = 0; i < tmp_md->multidval.n_dims; i++) {
-            size[i] = tmp_md->multidval.dim_sizes[i];
-        }
-        dim_size = tmp_md->multidval.n_dims;
-
 /*
  * Until we have a type like "nclTypengsizetClass", we need to
- * specifically return int or long.
+ * specifically return ints or longs.
+ *
+ * Assume a return type of int unless one of the criteria 
+ * for returning longs is met.
+ *
+ * The rules for when to return an int versus a long:
+ *    - On a 32-bit system, return ints.
+ *    - On a 64-bit system, return longs if any of the
+ *      individual dimension sizes are > INT32_MAX, or
+ *      if the product of the dimension sizes is > INT32_MAX.
  */
-        if (tmp_md->multidval.data_type == NCL_int) {
-            data_out.u.data_obj = _NclCreateMultiDVal(
-                NULL,
+        dim_size   = tmp_md->multidval.n_dims;
+	return_int = True;
+#if !defined(NG32BIT)
+	i = 0;
+	product_size = 1;
+        while(i < dim_size && return_int) {
+	  product_size *= tmp_md->multidval.dim_sizes[i];
+	  if(tmp_md->multidval.dim_sizes[i] > INT32_MAX ||
+	     product_size > INT32_MAX) {
+	    return_int = False;
+	  }
+	  i++;
+	}
+#endif
+	if(return_int) {
+	  size = (void *) NclMalloc(sizeof(int) * dim_size);
+	  for (i = 0; i < dim_size; i++) {
+	    ((int*)size)[i] = (int)tmp_md->multidval.dim_sizes[i];
+	  }
+	  data_out.u.data_obj = _NclCreateMultiDVal(
+  	        NULL,
+	        NULL,
+	        Ncl_MultiDValData,
+	        0,
+	        size,
+	        NULL,
+	        1,
+	        &dim_size,
+	        TEMPORARY,
+	        NULL,
+	        (NclTypeClass) nclTypeintClass
+	        );
+	}
+	else {
+	  size = (void *) NclMalloc(sizeof(long) * dim_size);
+	  for (i = 0; i < tmp_md->multidval.n_dims; i++) {
+	    ((long*)size)[i] = (long)tmp_md->multidval.dim_sizes[i];
+	  }
+	  data_out.u.data_obj = _NclCreateMultiDVal(
+  	        NULL,
                 NULL,
                 Ncl_MultiDValData,
                 0,
-                (ng_size_t *) size,
-                NULL,
-                1,
-                &dim_size,
-                TEMPORARY,
-                NULL,
-                (NclTypeClass) nclTypeintClass
-            );
-        } else {
-            data_out.u.data_obj = _NclCreateMultiDVal(
-                NULL,
-                NULL,
-                Ncl_MultiDValData,
-                0,
-                (ng_size_t *) size,
+                size,
                 NULL,
                 1,
                 &dim_size,
@@ -1778,7 +1806,6 @@ NhlErrorTypes _NclIDimSizes
                 (NclTypeClass) nclTypelongClass
             );
         }
-
         if (data_out.u.data_obj != NULL ) {
             _NclPlaceReturn(data_out);
             return(NhlNOERROR);
@@ -1788,62 +1815,6 @@ NhlErrorTypes _NclIDimSizes
     } else {
         return(NhlFATAL);
     }
-}
-
-NhlErrorTypes _NclIDimSizesLong
-#if	NhlNeedProto
-(void)
-#else
-()
-#endif
-{
-	NclStackEntry data;	
-	NclStackEntry data_out;	
-	NclMultiDValData tmp_md = NULL;
-	ng_size_t *size;
-	ng_size_t dim_size;
-	int i;
-
-	data = _NclGetArg(0,1,DONT_CARE);
-	if(data.kind == NclStk_VAR) {
-		if(data.u.data_var != NULL) {	
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-		}
-	} else if(data.kind == NclStk_VAL) {
-		tmp_md = data.u.data_obj;
-	} else {
-		NhlPError(NhlWARNING, NhlEUNKNOWN,"sizeof: incorrect type of object passed to sizeof");
-		return(NhlWARNING);
-	}
-	if(tmp_md != NULL) {
-		data_out.kind = NclStk_VAL;
-		size = NclMalloc(sizeof(ng_size_t)*tmp_md->multidval.n_dims);
-		for(i = 0; i< tmp_md->multidval.n_dims; i++) {
-			size[i] = tmp_md->multidval.dim_sizes[i];
-		}
-		dim_size = tmp_md->multidval.n_dims;
-		data_out.u.data_obj = _NclCreateMultiDVal(
-			NULL,
-			NULL,
-			Ncl_MultiDValData,
-			0,
-			(void*)size,
-			NULL,
-			1,
-			&dim_size,
-			TEMPORARY,
-			NULL,
-			(NclTypeClass)nclTypelongClass
-		);
-		if(data_out.u.data_obj != NULL ) {
-			_NclPlaceReturn(data_out);
-			return(NhlNOERROR);
-		} else {
-			return(NhlFATAL);
-		}
-	} else {
-		return(NhlFATAL);
-	}
 }
 
 NhlErrorTypes _NclIDumpStk

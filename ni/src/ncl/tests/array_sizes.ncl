@@ -13,9 +13,13 @@ begin
   print("==================================================")
 
 ;
-; In version 5.x or lower, "i_2_31_m1" is the largest value 
-; that can be held in an integer and hence the largest 
-; total size that an array can be.
+; "i_2_31_m1" is the largest value that can be held in an int type.
+; In NCL V5.x, this is the largest total size that an array can be.
+;
+; "i_2_63_m1" is the largest value that can be held in a long type.
+; In NCL V6.x, this is the largest total size that an array can be.
+;
+; Of course, you are limited by the memory on your machine.
 ;
   i_2_63_m1    = tolong(2^63)-1         ; 9223372036854775807
   i_2_31       = tolong(2^31)           ;          2147483648
