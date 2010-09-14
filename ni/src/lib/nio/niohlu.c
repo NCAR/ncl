@@ -359,7 +359,7 @@ _NhlAllocCreateGenArray
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	int		*len_dimensions,/* number of dimensions	*/
+	ng_size_t	*len_dimensions,/* number of dimensions	*/
 	NhlBoolean	copy_data,	/* copy data pointer?	*/
 	_NhlAllocFunc	alloc_func	/* func to alloc	*/
 )
@@ -369,7 +369,7 @@ _NhlAllocCreateGenArray
 	NhlString	type;			/* type of each element	*/
 	unsigned int	size;			/* size of each element	*/
 	int		num_dimensions;		/* number of dimensions	*/
-	int		*len_dimensions;	/* number of dimensions	*/
+	ng_size_t	*len_dimensions;	/* number of dimensions	*/
 	NhlBoolean	copy_data;		/* copy data pointer?	*/
 	_NhlAllocFunc	alloc_func;		/* func to alloc	*/
 #endif
@@ -490,7 +490,7 @@ _NhlCreateGenArray
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	int		*len_dimensions,/* number of dimensions	*/
+	ng_size_t	*len_dimensions,/* number of dimensions	*/
 	NhlBoolean	copy_data	/* copy data pointer?	*/
 )
 #else
@@ -499,7 +499,7 @@ _NhlCreateGenArray
 	NhlString	type;			/* type of each element	*/
 	unsigned int	size;			/* size of each element	*/
 	int		num_dimensions;		/* number of dimensions	*/
-	int		*len_dimensions;	/* number of dimensions	*/
+	ng_size_t	*len_dimensions;	/* number of dimensions	*/
 	NhlBoolean	copy_data;		/* copy data pointer?	*/
 #endif
 {
@@ -531,7 +531,7 @@ NhlCreateGenArray
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	int		*len_dimensions	/* number of dimensions	*/
+	ng_size_t	*len_dimensions	/* number of dimensions	*/
 )
 #else
 (data,type,size,num_dimensions,len_dimensions)
@@ -539,7 +539,7 @@ NhlCreateGenArray
 	NhlString	type;			/* type of each element	*/
 	unsigned int	size;			/* size of each element	*/
 	int		num_dimensions;		/* number of dimensions	*/
-	int		*len_dimensions;	/* number of dimensions	*/
+	ng_size_t	*len_dimensions;	/* number of dimensions	*/
 #endif
 {
 	return

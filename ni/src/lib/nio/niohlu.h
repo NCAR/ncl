@@ -230,7 +230,7 @@ extern NhlGenArray NhlCreateGenArray(
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	int		*len_dimensions	/* number of dimensions	*/
+	ng_size_t	*len_dimensions	/* number of dimensions	*/
 #endif
 );
 
