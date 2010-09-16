@@ -4189,8 +4189,8 @@ end
 ; Procedure : gsn_polymarker                                            ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
-;                     x: 1-dimensional array of x points                ;
-;                     y: 1-dimensional array of y points                ;
+;                     x: n-dimensional array of x points                ;
+;                     y: n-dimensional array of y points                ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This procedure draws polymarkers on the workstation "wks" (the        ;
@@ -4201,20 +4201,25 @@ end
 ; data from "plotid". "resources" is an optional list of resources.     ;
 ;***********************************************************************;
 undef("gsn_polymarker")
-procedure gsn_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
-                         y[*]:numeric,resources:logical)
-local res2
+procedure gsn_polymarker(wks:graphic,plotid:graphic,x:numeric,\
+                         y:numeric,resources:logical)
+local res2, rank
 begin
   res2 = get_resources(resources)
-  gsn_primitive(wks,plotid,x,y,False,"polymarker",res2)
+  rank = dimsizes(dimsizes(x))
+  if(rank.eq.1) then
+    gsn_primitive(wks,plotid,x,y,False,"polymarker",res2)
+  else
+    gsn_primitive(wks,plotid,ndtooned(x),ndtooned(y),False,"polymarker",res2)
+  end if
 end
 
 ;***********************************************************************;
 ; Function : gsn_add_polymarker                                         ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
-;                     x: 1-dimensional array of x points                ;
-;                     y: 1-dimensional array of y points                ;
+;                     x: n-dimensional array of x points                ;
+;                     y: n-dimensional array of y points                ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function adds polymarkers to the plot "plotid", in the same      ;
@@ -4229,20 +4234,26 @@ end
 ; move the plot, the markers will stay with the plot.                   ;
 ;***********************************************************************;
 undef("gsn_add_polymarker")
-function gsn_add_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
-                            y[*]:numeric,resources:logical)
-local res2
+function gsn_add_polymarker(wks:graphic,plotid:graphic,x:numeric,\
+                            y:numeric,resources:logical)
+local res2, rank
 begin
   res2 = get_resources(resources)
-  return(gsn_add_primitive(wks,plotid,x,y,False,"polymarker",res2))
+
+  rank = dimsizes(dimsizes(x))
+  if(rank.eq.1) then
+    return(gsn_add_primitive(wks,plotid,x,y,False,"polymarker",res2))
+  else
+    return(gsn_add_primitive(wks,plotid,ndtooned(x),ndtooned(y),False,"polymarker",res2))
+  end if
 end
 
 
 ;***********************************************************************;
 ; Procedure : gsn_polymarker_ndc                                        ;
 ;                   wks: workstation object                             ;
-;                     x: 1-dimensional array of x points                ;
-;                     y: 1-dimensional array of y points                ;
+;                     x: n-dimensional array of x points                ;
+;                     y: n-dimensional array of y points                ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This procedure draws polymarkers on the workstation "wks" (the        ;
@@ -4251,13 +4262,19 @@ end
 ; coordinates. "resources" is an optional list of resources.            ;
 ;***********************************************************************;
 undef("gsn_polymarker_ndc")
-procedure gsn_polymarker_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
+procedure gsn_polymarker_ndc(wks:graphic,x:numeric,y:numeric,\
                              resources:logical)
-local res2, dummy
+local res2, dummy, rank
 begin
   dummy = new(1,graphic)
   res2 = get_resources(resources)
-  gsn_primitive(wks,dummy,x,y,True,"polymarker",res2)
+
+  rank = dimsizes(dimsizes(x))
+  if(rank.eq.1) then
+    gsn_primitive(wks,dummy,x,y,True,"polymarker",res2)
+  else
+    gsn_primitive(wks,dummy,ndtooned(x),ndtooned(y),True,"polymarker",res2)
+  end if
 end
 
 ;***********************************************************************;
