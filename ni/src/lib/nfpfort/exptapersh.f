@@ -54,8 +54,8 @@ c     perform an exponential taper on the spherical harmonic coef
       IF ((N0+2).GT.NB) THEN
           JER = 8
           WRITE (*,FMT=
-     +'(''SUB DEXPTAPERSH: n0 too large: ''
-     +   ,''iwave,nb='',2i5)') N0,NB
+     +'(''SUB DEXPTAPERSH: N0 too large: ''
+     +   ,''N0='',f8.0,3x,''iwave,nb='',2i5)') N0,R,NB
       ELSE IF (NB.NE.MB) THEN
           JER = 9
           WRITE (*,FMT=
