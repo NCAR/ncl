@@ -111,7 +111,6 @@ void _NclFreeProcFuncInfo
 NclSymbol *sym;
 #endif
 {
-
 	switch(sym->type) {
 		case IFUNC:
 			NclFree(sym->u.bfunc->theargs);
@@ -222,10 +221,11 @@ NhlErrorTypes _NclWalkSymTable
 }
 static NclSelectionRecord *BuildSel
 #if     NhlNeedProto
-(int n_dims, int *dimsizes,long* start, long* finish, long* stride)
+(int n_dims, ng_size_t *dimsizes,long* start, long* finish, long* stride)
 #else
-(n_dims,int *dimsizes, start, finish, stride)
+(n_dims, *dimsizes, start, finish, stride)
 int n_dims;
+ng_size_t *dimsizes;
 long* start;
 long* finish;
 long* stride;
@@ -671,7 +671,7 @@ char *name;
 #endif
 {
         char *p;
-        unsigned h =0, g;
+        unsigned h = 0, g;
 
         for(p = name; *p != '\0'; p = p +1) {
                 h = (h<<4) + (*p);
@@ -1629,7 +1629,7 @@ long    * stride;
 	NclMultiDValData theid;
 	NclSelectionRecord *sel_ptr=NULL;
 	int i,index = 0,k;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
 	if((s != NULL)&&(s->type != UNDEF)) {
@@ -1699,7 +1699,7 @@ long* stride;
 	NclMultiDValData theid;
 	NclSelectionRecord *sel_ptr=NULL;
 	int i,index = 0,k;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
 	if((s != NULL)&&(s->type != UNDEF)) {
@@ -2636,7 +2636,7 @@ long*stride;
 	NclSelectionRecord *sel_ptr = NULL;
 	NclHLUObj tmp_ho;
 	int i;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 
 	tmp = (NclExtValueRec*)NclMalloc((unsigned)sizeof(NclExtValueRec));
 	the_var = _NclRetrieveRec(the_sym,DONT_CARE);
@@ -2838,7 +2838,7 @@ long* stride;
 	NclExtValueRec *out_data = NULL;
 	NclSelectionRecord *sel_ptr=NULL;
 	int i;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 
 	s = _NclLookUp(NrmQuarkToString(var_sym_name));
 	if((s != NULL)&&(s->type != UNDEF)) {
