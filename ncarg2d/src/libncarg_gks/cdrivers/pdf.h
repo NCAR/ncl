@@ -251,8 +251,8 @@ typedef enum {MITER,ROUND, BEVEL} linejoin_type;
 
 void reverse_chars(char *);
 void bump_page_lines();
-int bump_object_number();
-int PDFPutStreamDict(FILE *, int, int, int, int);
-int PDFPutStream(FILE *);
+void bump_object_number();
+int  PDFPutStreamDict(FILE *, int, int, int, int);
+void PDFPutStream(FILE *);
 
 #endif	/* _pdf_driver_	*/

@@ -1530,8 +1530,8 @@ char *PDFGetFileName(int wkid, char *file_name)
 }
 
 /*
- *  Put out a character string for PostScript display.  The special
- *  characters "(", ")", "\" are put out as PostScript octal
+ *  Put out a character string for PDF display.  The special
+ *  characters "(", ")", "\" are put out as PDF octal
  *  constants as are any characters having an ASCII Decimal Equivalent
  *  larger than 127.
  */
@@ -1545,17 +1545,17 @@ static int PDFoutput_string(PDFddp *psa, char *str)
     strncpy(&ctmp, str+i, 1);
     itmp = (int) (ctmp & 255);
     if (itmp == 40) {
-      sprintf((page_lines[num_page_lines]+j), "\\(", itmp);
+      sprintf((page_lines[num_page_lines]+j), "\\(");
       stream_size += 2;
       j = j+2;
     } 
     else if (itmp == 41) {
-      sprintf((page_lines[num_page_lines]+j), "\\)", itmp);
+      sprintf((page_lines[num_page_lines]+j), "\\)");
       stream_size += 2;
       j = j+2;
     } 
     else if (itmp == 92) {
-      sprintf((page_lines[num_page_lines]+j), "\\\\", itmp);
+      sprintf((page_lines[num_page_lines]+j), "\\\\");
       stream_size += 2;
       j = j+2;
     }
@@ -3602,7 +3602,7 @@ int PDFPutStreamDict(FILE *fp, int obj_num, int obj_contents_num, int width,
  *  Write out a content stream.  The current value for object_number
  *  should be the stream dictionary for the content stream.
  */
-int PDFPutStream(FILE *fp) {
+void PDFPutStream(FILE *fp) {
   int i;
   fprintf(fp, "%6d 0 obj\n<< /Length %10d >>\nstream\n",object_number+1,
                stream_size);
@@ -3898,12 +3898,11 @@ void rgb2cmyk(float r, float g, float b,
   *m = *m-*k;
   *y = *y-*k;
 }
-int bump_object_number() {
+void bump_object_number() {
   if (object_number > MAX_OBJECTS) {
     object_pointer = (int *) realloc(object_pointer,2*MAX_OBJECTS*sizeof(int));
     if (object_pointer == NULL) {
       fprintf(stderr,"PDF - not enough memory to store all objects.\n");
-      return (object_number);
     }
   }
   object_number++;
