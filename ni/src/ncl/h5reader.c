@@ -34,7 +34,7 @@ herr_t _NclHDF5check_obj(const char *filename, NclHDF5group_node_t **HDF5group)
 
     if(fid < 0)
     {
-        fprintf(stdout, "Unable to open file: <%s>, at line: %d\n", filename, __FILE__, __LINE__);
+        fprintf(stdout, "Unable to open file: <%s>, at line: %d\n", filename, __LINE__);
         H5close();
         return (FAILED);
     }
@@ -431,7 +431,6 @@ void _NclHDF5print_dataset(hid_t dset, char *type_name)
     hid_t       p_type;
     herr_t      status = FAILED;
     hid_t       f_type = H5Dget_type(dset);
-    size_t      size = H5Tget_size(f_type);
     
     fprintf(stdout, "\nEnter _NclHDF5print_dataset, dset=%d, type_name: <%s>, at file: %s, line: %d\n",
             dset, type_name, __FILE__, __LINE__);
@@ -492,9 +491,7 @@ int _NclHDF5print_simple_dataset(hid_t dset, hid_t p_type, char *type_name)
     hid_t               f_space;                  /* file data space */
     hsize_t             elmtno;                   /* counter  */
     size_t              i;                        /* counter  */
-    int                 carry;                    /* counter carry value */
     hsize_t             zero[8];                  /* vector of zeros */
-    unsigned int        flags;                    /* buffer extent flags */
     hsize_t             total_size[H5S_MAX_RANK]; /* total size of dataset*/
 
     /* Print info */
@@ -678,7 +675,6 @@ NclHDF5data_t *_NclHDF5get_data_with_name(hid_t fid, char *dataset_name, NclHDF5
     if(HDF5group)
     {
         NclHDF5group_list_t   *curHDF5group_list;
-        NclHDF5attr_list_t    *curHDF5attr_list;
         NclHDF5dataset_list_t *curHDF5dataset_list;
         NclHDF5dataset_node_t *dataset;
         unsigned long size = 1;
@@ -1015,7 +1011,6 @@ NclHDF5data_t *_NclHDF5get_data_with_id(hid_t fid, hid_t did, NclHDF5group_node_
 NclHDF5data_t *_NclHDF5allocate_data(hid_t id)
 {
     NclHDF5data_t *NclHDF5data;
-    int i = 0;
 
     NclHDF5data = calloc(1, sizeof(NclHDF5data_t));
 
@@ -1045,8 +1040,6 @@ NclHDF5data_t *_NclHDF5allocate_data(hid_t id)
  */
 void _NclHDF5free_data(NclHDF5data_t *NclHDF5data)
 {
-    int i = 0;
-
     if(NclHDF5data)
     {
         if(NclHDF5data->value)
@@ -1076,9 +1069,7 @@ unsigned char *_NclHDF5get_dataset(hid_t fid, char *dataset_name, hid_t dset, ch
     H5S_class_t space_type;
     hid_t       f_space;
     hid_t       p_type;
-    herr_t      status = FAILED;
     hid_t       f_type = H5Dget_type(dset);
-    size_t      size = H5Tget_size(f_type);
 
     unsigned char *value;
 
@@ -1147,9 +1138,7 @@ unsigned char *_NclHDF5get_simple_dataset(hid_t dset, hid_t p_type, char *type_n
     hid_t               f_space;                  /* file data space */
     hsize_t             elmtno;                   /* counter  */
     size_t              i;                        /* counter  */
-    int                 carry;                    /* counter carry value */
     hsize_t             zero[8];                  /* vector of zeros */
-    unsigned int        flags;                    /* buffer extent flags */
     hsize_t             total_size[H5S_MAX_RANK]; /* total size of dataset*/
 
     /* Print info */
@@ -1480,12 +1469,12 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
     hsize_t     *offset_out;         /* hyperslab offset in memory */
     hsize_t     *dims_mem;              /* memory space dimensions */
     hsize_t     *dims_out;           /* dataset dimensions */
-    int          i, j, k, rank;
+    int          i, rank;
     int          status_n;
     unsigned long length;
     unsigned long nbytes;
 
-    void *value;
+    void *value = NULL;
 
   /*
    *fprintf(stdout, "\n\n\nhit _NclHDF5get_native_dataset. file: %s, line: %d\n", __FILE__, __LINE__);
@@ -1925,7 +1914,7 @@ void _NclPrint_HDF5attr_list(NclHDF5attr_list_t *NclHDF5attr_list)
             int i;
             for (i=0; i<attr_node->ndims; i++)
             {
-                fprintf(stdout, "\tdims[%d] = %d\n", i, attr_node->dims[i]);
+                fprintf(stdout, "\tdims[%ld] = %d\n", i, attr_node->dims[i]);
             }
         }
 
@@ -1992,7 +1981,7 @@ void _NclPrint_HDF5dataset_list(NclHDF5dataset_list_t *NclHDF5dataset_list)
         fprintf(stdout, "\tndims=%d\n", dataset->ndims);
         for(i=0; i<dataset->ndims; i++)
         {
-            fprintf(stdout, "\tdims[%d] = %d\n", i, dataset->dims[i]);
+            fprintf(stdout, "\tdims[%d] = %ld\n", i, dataset->dims[i]);
         }
 
         curHDF5dataset_list = curHDF5dataset_list->next;
@@ -2027,7 +2016,6 @@ void _NclHDF5print_group(NclHDF5group_node_t *HDF5group)
 
     if(HDF5group != NULL)
     {
-        NclHDF5group_list_t    *HDF5group_list;
         int ng = 0;
 
         if(HDF5group->name)
@@ -2039,19 +2027,19 @@ void _NclHDF5print_group(NclHDF5group_node_t *HDF5group)
         fprintf(stdout, "\ttype: %d\n", HDF5group->type);
         fprintf(stdout, "\ttype_name: <%s>\n", HDF5group->type_name);
        
-        fprintf(stdout, "\tnum_attrs   : %d\n", HDF5group->num_attrs);
+        fprintf(stdout, "\tnum_attrs   : %ld\n", HDF5group->num_attrs);
         if(HDF5group->attr_list)
             _NclPrint_HDF5attr_list(HDF5group->attr_list);
 
-        fprintf(stdout, "\tnum_links   : %d\n", HDF5group->num_links);
+        fprintf(stdout, "\tnum_links   : %ld\n", HDF5group->num_links);
         if(HDF5group->elink_list)
             _NclPrint_HDF5external_link(HDF5group->elink_list);
 
-        fprintf(stdout, "\tnum_datasets: %d\n", HDF5group->num_datasets);
+        fprintf(stdout, "\tnum_datasets: %ld\n", HDF5group->num_datasets);
         if(HDF5group->dataset_list)
             _NclPrint_HDF5dataset_list(HDF5group->dataset_list);
 
-        fprintf(stdout, "\tnum_groups  : %d\n", HDF5group->num_groups);
+        fprintf(stdout, "\tnum_groups  : %ld\n", HDF5group->num_groups);
 
         curHDF5group_list = HDF5group->group_list;
 
@@ -2415,11 +2403,7 @@ herr_t _NclHDF5dataset_attr(hid_t dset, char *name, NclHDF5dataset_node_t *datas
     size_t      cd_num;         /* filter client data counter */
     char        f_name[256];    /* filter/file name */
     char        s[64];          /* temporary string buffer */
-    off_t       f_offset;       /* offset in external file */
-    hsize_t     f_size;         /* bytes used in external file */
     hsize_t     total, used;    /* total size or offset */
-    int         ndims;          /* dimensionality */
-    int         n, max_len;     /* max extern file name length */
     double      utilization;    /* percent utilization of storage */
     int   i;
 
@@ -3063,7 +3047,7 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
                 else
                 {
                     fprintf(stdout, "file: %s, line: %d\n", __FILE__, __LINE__);
-                    fprintf(stdout, "size: <%d>\n", size);
+                    fprintf(stdout, "size: <%ld>\n", size);
                     strcpy(var_name, "unknown integer");
                 }
                 strcpy(NclHDF5datatype->type_name, var_name);
@@ -3142,7 +3126,6 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
                 unsigned char *value=NULL;  /* value array */
                 unsigned char *copy = NULL; /* a pointer to value array */
                 unsigned    nmembs;         /* number of members */
-                int         nchars;         /* number of output characters */
                 hid_t       super;          /* enum base integer type */
                 hid_t       native=-1;      /* native integer data type */
                 hsize_t     dst_size;       /* destination value type size */
@@ -3403,7 +3386,7 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
                     /* Print dimensions */
                     for (i=0; i<ndims; i++)
                     {
-                        fprintf(stdout, "%s%Hu" , i?",":"[", dims[i]);
+                        fprintf(stdout, "%s%ld" , i?",":"[", dims[i]);
                         NclHDF5datatype->dims[i] = dims[i];
                     }
                     putchar(']');
@@ -3689,7 +3672,6 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
         if((0 == strcmp(attr_node->type_name, "string")) && (attr_node->ndims))
         {
             int m, j;
-            char str[HDF5_BUF_SIZE];
             char *osp;
             char *csp;
             char *new_str;
@@ -4064,7 +4046,6 @@ herr_t _NclHDF5search_obj(char *name, H5O_info_t *oinfo,
     hid_t obj_id = -1;                          /* ID of object opened */
     hid_t id = group_node->id;
 
-    char comment[HDF5_BUF_SIZE];
     char parent_group_name[HDF5_NAME_LEN];
     char short_name[HDF5_NAME_LEN];
 
@@ -4180,7 +4161,7 @@ herr_t _NclHDF5search_obj(char *name, H5O_info_t *oinfo,
                        */
                         fprintf(stdout, "\nin file: %s, line: %d\n", __FILE__, __LINE__);
                         fprintf(stdout, "\tcan not find parent group for: <%s>\n", name);
-                        fprintf(stdout, "\tstrlen(parent_group_name) = %d\n", strlen(parent_group_name));
+                        fprintf(stdout, "\tstrlen(parent_group_name) = %ld\n", strlen(parent_group_name));
                         exit(-1);
                     }
                     else
@@ -4245,8 +4226,8 @@ herr_t _NclHDF5search_obj(char *name, H5O_info_t *oinfo,
                         if(new_node->num_attrs != self_node->num_attrs)
                         {
                             fprintf(stdout, "\nin file: %s, line: %d\n", __FILE__, __LINE__);
-                            fprintf(stdout, "\tnew_node->num_attrs: <%s>\n", new_node->num_attrs);
-                            fprintf(stdout, "\tself_node->num_attrs: <%s>\n", new_node->num_attrs);
+                            fprintf(stdout, "\tnew_node->num_attrs: <%ld>\n", new_node->num_attrs);
+                            fprintf(stdout, "\tself_node->num_attrs: <%ld>\n", new_node->num_attrs);
                             fprintf(stdout, "\tit is not new group, but number of attributes is different.\n");
                             exit(-1);
                         }
@@ -4408,15 +4389,12 @@ herr_t _NclHDF5search_obj(char *name, H5O_info_t *oinfo,
 
 herr_t _NclHDF5search_link(char *name, H5O_info_t *oinfo, void *_NclHDF5Rec)
 {
-    NclHDF5group_list_t *NclHDF5group_list = (NclHDF5group_list_t*) _NclHDF5Rec;
-    char *buf;
-
 #if DEBUG_NCL_HDF5
 #endif
     fprintf(stdout, "\nEntering _NclHDF5search_link, name = <%s>, at file: %s, line: %d\n", name, __FILE__, __LINE__);
 
 #if 0
-    NclHDF5FileRec_t *NclHDF5FileRec = (NclHDF5FileRec_t*)_NclHDF5FileRec;
+    NclHDF5FileRec_t *NclHDF5FileRec = (NclHDF5FileRec_t*)_NclHDF5Rec;
 
     switch(linfo->type)
     {

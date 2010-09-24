@@ -354,5 +354,19 @@ int _write_chunkedH5dataset(hid_t fid, hsize_t rank,
                             hsize_t *dims, hsize_t *chunk_dims, void *data,
                             char *typename, char *dataname,
                             NclHDF5group_node_t *group_node);
+
+int _NclHDF5print_simple_dataset(hid_t dset, hid_t p_type, char *type_name);
+hid_t _get_groupID(NclHDF5dataset_node_t *dataset_node,
+                     NclHDF5group_node_t *group_node);
+
+int _add_attr2dataset(hid_t fid, hsize_t rank, hsize_t *dims, void *attrdata,
+                      char *typename, char *attrname,
+                      char *datasetname, NclHDF5group_node_t *group_node);
+int _add_attr2group(hid_t fid, hsize_t rank, hsize_t *dims, void *attrdata,
+                    char *typename, char *attrname,
+                    char *groupname, NclHDF5group_node_t *group_node);
+int _writeH5dataset(hid_t fid, hsize_t rank, hsize_t *dims, void *data,
+                    char *typename, char *dataname,
+                    NclHDF5group_node_t *group_node);
 #endif
 
