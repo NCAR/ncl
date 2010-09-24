@@ -559,6 +559,21 @@ extern NhlErrorTypes ctwrap_W(void);
 
 extern NhlErrorTypes kron_product_W(void);
 
+#ifdef BuildGRIDSPEC
+extern NhlErrorTypes nccffregridW(void);
+extern NhlErrorTypes nccfmakeconformalcubichgridW(void);
+extern NhlErrorTypes nccfmakecouplermosaicW(void);
+extern NhlErrorTypes nccfmakegnomoniccubichgridW(void);
+extern NhlErrorTypes nccfmakehgridfromfileW(void);
+extern NhlErrorTypes nccfmakemosaicW(void);
+extern NhlErrorTypes nccfmakeregularlatlonhgridW(void);
+extern NhlErrorTypes nccfmakesimplecartesianhgridW(void);
+extern NhlErrorTypes nccfmakespectralhgridW(void);
+extern NhlErrorTypes nccfmaketopogW(void);
+extern NhlErrorTypes nccfmaketripolarhgridW(void);
+extern NhlErrorTypes nccfmakevgridW(void);
+#endif
+
 void NclAddUserFuncs(void)
 {
     void *args;
@@ -1012,8 +1027,8 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(eofunc_varimax_jl_W,args,"eofunc_varimax_jl",nargs);
 
 /*
- * Register "eof2data".
- *
+	 * Register "eof2data".
+	 *
  * Create private argument array.
  */
     nargs = 0;
@@ -7493,6 +7508,315 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(v5d_missing_W, args, "v5d_missing", nargs);
 
 # endif /* BuildV5D */
+
+
+#ifdef BuildGRIDSPEC
+
+/**** BEGIN GRIDSPEC WRAPPERS****/
+
+    /*
+    * nccffregridW
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(34);
+ 
+    /*SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"uint",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"uint",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterProc(nccffregridW,args,"fregrid",nargs);
+
+    /*
+    * nccf_make_conformal_cubic_hgrid_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args= NewArgs(6);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+
+    NclRegisterProc(nccfmakeconformalcubichgridW, args,"make_conformal_cubic_hgrid",nargs);
+
+    /*
+    * nccf_make_coupler_mosaic_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(9);
+    dimsizes[0] = 1;
+    /*SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    
+    NclRegisterProc(nccfmakecouplermosaicW,args,"make_coupler_mosaic",nargs);
+
+    /*
+    * nccf_make_gnomonic_cubic_hgrid_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args= NewArgs(5);
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+
+    NclRegisterProc(nccfmakegnomoniccubichgridW, args,"make_gnomonic_cubic_hgrid",nargs);
+    
+    /*
+    * nccf_make_hgrid_from_file_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(7);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    /*SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    
+    NclRegisterProc(nccfmakehgridfromfileW,args,"make_hgrid_from_file",nargs);
+
+    /*
+    * nccf_make_mosaic_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(11);
+    dimsizes[0] = 1;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    
+    NclRegisterProc(nccfmakemosaicW,args,"make_mosaic",nargs);
+
+    /*
+    * nccf_make_regular_latlon_hgrid_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(10);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    
+    NclRegisterProc(nccfmakeregularlatlonhgridW,args,"make_regular_latlon_hgrid",nargs);
+
+    /*
+    * nccf_make_simple_cartesian_hgrid_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(11);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    
+    NclRegisterProc(nccfmakesimplecartesianhgridW,args,"make_simple_cartesian_hgrid",nargs);
+
+    /*
+    * nccf_make_spectral_hgrid_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(7);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    
+    NclRegisterProc(nccfmakespectralhgridW,args,"make_spectral_hgrid",nargs);
+
+    /*
+    * nccf_make_topog
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(26);
+    dimsizes[0] = 1; 
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+
+    NclRegisterProc(nccfmaketopogW,args,"make_topog",nargs);
+
+    /*
+    * nccf_make_tripolar_hgrid_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(11);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    
+    NclRegisterProc(nccfmaketripolarhgridW,args,"make_tripolar_hgrid",nargs);
+
+    /*
+    * nccf_make_vgrid_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(5);
+    dimsizes[0] = 1;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+   /* SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;*/
+   /* SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;*/
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    
+    NclRegisterProc(nccfmakevgridW,args,"make_vgrid",nargs);
+
+/**** END GRIDSPEC WRAPPERS ****/
+
+#endif
 
     return;
 }
