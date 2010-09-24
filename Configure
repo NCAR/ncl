@@ -173,6 +173,8 @@ echo -n "..."
 # echo -n "..."
 set builddods=`$makecmd DODSSTUFF`
 echo -n "..."
+set buildgridspec=`$makecmd GRIDSPECSTUFF`
+echo -n "..."
 set ncargversion=`$makecmd NGVERS`
 echo -n "..."
 set nclversion=`$makecmd NCLVERS`
@@ -677,6 +679,34 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
   endif
 
 #
+# GRIDSPEC
+#
+  if ($?verbose_option) then
+    cat <<"EOF"
+======================================================================
+
+	If you want to use the experimental interface to gridspec, you 
+	will need to link to the CF library. This library is now built 
+        as part of NetCDF V4.1 and later --with-libcf is set.  
+
+	THIS LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
+
+======================================================================
+"EOF"
+  endif
+
+  echo ""
+  echo "Build experimental gridspec support (optional) into NCL? ($buildgridspec)"
+  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+  set answer="$<"
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$buildgridspec")) then
+      set buildgridspec = $answer
+      set newbuildgridspec
+      set altered
+  endif
+
+#
 # Udunits
 #
   if ($?verbose_option) then
@@ -865,6 +895,7 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
   	set newbuildgrib2
         set altered
   endif
+
 else
   set buildhdfeos  = "n"
   set buildhdfeos5 = "n"
@@ -1226,6 +1257,10 @@ endif
 
 if ($?newbuildgdal && "$buildgdal" == "y") then
 	echo "#define BuildGDAL 1" >> Site.local
+endif
+
+if ($?newbuildgridspec && "$buildgridspec" == "y") then
+	echo "#define BuildGRIDSPEC 1" >> Site.local
 endif
 
 if ($?newbuildtriangle) then
