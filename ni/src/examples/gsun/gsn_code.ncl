@@ -268,27 +268,12 @@ end
 ; Function : lower_case                                                 ;
 ;           name : string                                               ;
 ;                                                                       ;
-; Converts "name" to lowercase.                                         ;
+; Converts "name" to lowercase. Uses "str_lower" now.                   ;
 ;***********************************************************************;
 undef("lower_case")
 function lower_case(name:string)
-local lower, upper, lowc, upc, namec, i
 begin
-  lower = (/"a","b","c","d","e","f","g","h","i","j","k","l","m", \
-            "n","o","p","q","r","s","t","u","v","w","x","y","z" /)
-  upper = (/"A","B","C","D","E","F","G","H","I","J","K","L","M", \
-            "N","O","P","Q","R","S","T","U","V","W","X","Y","Z" /)
-  
-  lowc  = stringtocharacter(lower)
-  upc   = stringtocharacter(upper)
-  namec = stringtocharacter(name)
-
-  do i = 0, dimsizes(namec)-2
-    if (any(upc(:,0).eq.namec(i))) then
-      namec(i) = lowc(ind(upc(:,0).eq.namec(i)),0)
-    end if
-  end do
-  return(charactertostring(namec))
+  return(str_lower(name))
 end
 
 
@@ -725,6 +710,266 @@ begin
     attsetvalues(plot,res)
   end if
   return
+end
+
+;***********************************************************************;
+; This function returns the RGB triplets associated with a 
+; given list of named colors.
+; 
+; A n x 3 array is returned, where "n" is the number of 
+; named colors input.
+;
+; If a color is not found, missing values are returned for 
+; that color.
+;***********************************************************************;
+undef("namedcolor2rgb")
+function namedcolor2rgb(names[*]:string)
+local db_dir, lines, named_colors, i, ii, ncolors, \
+lnames, rgb_array
+begin
+;---Read the rgb.txt file.
+  db_dir = ncargpath("database")
+  lines  = asciiread(db_dir + "/rgb.txt",-1,"string")
+;
+; Read list of named colors off the file.
+;
+; Need to use str_get_cols and not str_get_field,
+; because some color names have spaces in them,
+; and hence we can't use a space as a delimiter.
+;
+; Use str_sub_str to remove all tabs and spaces around
+; and inside the color name.
+;
+  named_colors = str_lower(str_get_cols(lines,12,-1))
+  named_colors = str_sub_str(named_colors," ","")
+  named_colors = str_sub_str(named_colors,"	","")
+
+;---Convert to lower case.
+  lnames    = str_lower(names)
+  ncolors   = dimsizes(names)
+  rgb_array = new((/ncolors,3/),float)
+
+;---Loop through named colors and find the requested one(s).
+  do i=0,ncolors-1
+;---Get index into rgb.txt table. There can be more than one.
+    ii = ind(lnames(i).eq.named_colors)
+
+;---Get associated RGB triplet
+    if(.not.any(ismissing(ii))) then
+      rgb_array(i,0) = tointeger(str_get_field(lines(ii(0)),1,\
+                                 " 	"))/255.
+      rgb_array(i,1) = tointeger(str_get_field(lines(ii(0)),2,\
+                                 " 	"))/255.
+      rgb_array(i,2) = tointeger(str_get_field(lines(ii(0)),3,\
+                                 " 	"))/255.
+    else
+      print("Warning:namedcolor2rgb: '" + names(i)  + "' is not a valid named color.")
+      print("Will return missing values for this color.")
+    end if
+    delete(ii)
+  end do
+  return(rgb_array)
+end
+
+;***********************************************************************;
+; Given two named colors and the number of colors, this
+; function creates a series of RGB triplets that spans
+; between the two colors.
+;***********************************************************************;
+undef("span_two_named_colors")
+function span_two_named_colors(named1[1]:string,named2[1]:string,ncolors,\
+                               opt[1]:logical)
+local rgb, msg, hsv1, hsv2, ii, hsv_array, debug, \
+      beg_hue, end_hue, beg_sat, end_sat, beg_val, end_val
+begin
+;---For debug prints
+  debug = get_res_value_keep(opt,"Debug",False)
+
+  rgb = namedcolor2rgb((/named1,named2/))
+  msg = new(3,float)
+  if(any(ismissing(rgb))) then
+    print("Error:span_two_named_colors one or both of the named colors")
+    print("are invalid. Returning missing.")
+    return(msg)
+  end if
+
+;---Convert to HSV.
+  hsv1 = rgbhsv(rgb(0,:))
+  hsv2 = rgbhsv(rgb(1,:))
+
+  if(debug)
+    rgbstr1 = "(" + sprintf("%7.2f", rgb(0,0)) + ", " + \
+                    sprintf("%7.2f", rgb(0,1)) + ", " + \
+                    sprintf("%7.2f", rgb(0,2)) + ") "
+    hsvstr1 = "(" + sprintf("%7.2f", hsv1(0)) + ", " + \
+                    sprintf("%7.2f", hsv1(1)) + ", " + \
+                    sprintf("%7.2f", hsv1(2)) + ") "
+    rgbstr2 = "(" + sprintf("%7.2f", rgb(1,0)) + ", " + \
+                    sprintf("%7.2f", rgb(1,1)) + ", " + \
+                    sprintf("%7.2f", rgb(1,2)) + ") "
+    hsvstr2 = "(" + sprintf("%7.2f", hsv2(0)) + ", " + \
+                    sprintf("%7.2f", hsv2(1)) + ", " + \
+                    sprintf("%7.2f", hsv2(2)) + ") "
+
+    print(named1 + ", RGB: " + rgbstr1)
+    print(named2 + ", RGB: " + rgbstr2)
+    print(named1 + ", HSV: " + hsvstr1)
+    print(named2 + ", HSV: " + hsvstr2)
+  end if
+
+  if(ncolors.le.0.or.ncolors.gt.256) then
+    print("Error:span_two_named_colors: Invalid number of colors requested.")
+    print("Defaulting to 256.")
+    ncolors = 256
+  end if
+
+;---Create array to return
+  hsv_array = new((/ncolors,3/),float)
+
+;---Generate a span of colors from first color to second
+  beg_hue = hsv1(0)    ; begin HUE value
+  end_hue = hsv2(0)    ; end HUE value
+  beg_sat = hsv1(1)    ; begin SAT value
+  end_sat = hsv2(1)    ; end SAT value
+  beg_val = hsv1(2)    ; begin VAL value
+  end_val = hsv2(2)    ; end VAL value
+
+  ii             = ispan(0,ncolors-1,1)
+  hsv_array(:,0) = beg_hue + \
+                   ii*((end_hue-beg_hue)/(ncolors-1))
+  hsv_array(:,1) = beg_sat + \
+                   ii*((end_sat-beg_sat)/(ncolors-1))
+  hsv_array(:,2) = beg_val + \
+                   ii*((end_val-beg_val)/(ncolors-1))
+
+  return(hsvrgb(hsv_array))
+end
+
+;***********************************************************************;
+; Given a list of named colors, this function creates a 
+; series of RGB triplets that creates a span between each 
+; set of colors. The first two colors will be set to white
+; and black.
+;
+; By default, it will create a color map with 256 triplets.
+; The "opt" variable can be used to set the following
+; options:
+;
+;   opt@NumColorsInTable
+;      Number of colors to put in the color table.
+;      Must be <= 256 and > # of named colors specified.
+;
+;   opt@NumColorsInRange
+;      Number of colors to span between each set of
+;      named colors. For example, if you specify three 
+;      colors (/"red", "green", "blue","purple"/), and
+;      NumColorsInRange of (/5, 8, 4/), then you'll have a
+;      color table with:
+;
+;   0        1        2         6         13      16
+;  white   black     red......green......blue....purple
+;***********************************************************************;
+undef("span_named_colors")
+function span_named_colors(named_colors,opt[1]:logical)
+local i, ncolt, ncols_per_rng, def_ncols_per_rng, nnamed, \ 
+      rgb_array, nbeg, nend, ncpg, debug, rgbtmp
+begin
+;---For debug prints
+  debug = get_res_value_keep(opt,"Debug",False)
+
+
+;---Get # of colors in color table.
+  ncolt  = get_res_value_keep(opt,"NumColorsInTable",256)
+  if(ncolt.le.0.or.ncolt.gt.256) then
+    print("Error:span_named_colors: Invalid number of colors requested.")
+    print("Defaulting to 256.")
+    ncolt = 256
+  end if
+
+;---Check # of named colors.
+  nnamed = dimsizes(named_colors)
+  if(nnamed.le.1) then
+    print("Error:span_named_colors: You must specify more than one named color.")
+    return(new((/1,3/),float))
+  end if
+
+;
+; Get number of colors between each set of named colors.
+; The number in the range includes both end colors.
+;
+; Default is to use equally spaced colors.
+;
+  ncpg              = (ncolt-2)/(nnamed-1)
+  def_ncols_per_rng = new(nnamed-1,integer)
+  def_ncols_per_rng = ncpg
+  if(opt.and.isatt(opt,"NumColorsInRange")) then
+    ncols_per_rng = get_res_value_keep(opt,"NumColorsInRange",-1)
+    if(dimsizes(ncols_per_rng).ne.(nnamed-1)) then
+      print("span_named_colors: Invalid # of colors per range.")
+      print("Using equally spaced colors.")
+      delete(ncols_per_rng)
+      ncols_per_rng = def_ncols_per_rng
+    end if
+  else
+    ncols_per_rng = def_ncols_per_rng
+  end if
+
+;
+; Calculate total number of colors and create RGB 
+; array to populate.
+;
+; Since the inside colors are part of two ranges, but only
+; counted once, you need to account for this. The "2" is
+; for the background, foreground coors.
+;
+  ncolt     = sum(ncols_per_rng)+2-(nnamed-2)
+  rgb_array = new((/ncolt,3/),float)
+
+  if(debug) then
+    print("# colors in table  = " + ncolt)
+  end if
+
+;---Background color defaults to white.
+  rgb_array(0,:) = (/1.,1.,1./)      ; White
+  if(opt.and.isatt(opt,"BackgroundColor")) then
+    rgbtmp = namedcolor2rgb(opt@BackgroundColor)
+    if(any(ismissing(rgbtmp))) then
+      print("span_named_colors: Invalid background color.")
+      print("Defaulting to white.")
+    else
+      rgb_array(0,:) = rgbtmp
+    end if
+  end if
+
+;---Foreground color defaults to black.
+  rgb_array(1,:) = (/0.,0.,0./)      ; Black
+  if(opt.and.isatt(opt,"ForegroundColor")) then
+    rgbtmp = namedcolor2rgb(opt@ForegroundColor)
+    if(any(ismissing(rgbtmp))) then
+      print("span_named_colors: Invalid foreground color.")
+      print("Defaulting to black.")
+    else
+      rgb_array(1,:) = rgbtmp
+    end if
+  end if
+
+  nbeg = 2
+  nend = nbeg + ncols_per_rng(0) - 1
+  do i=0,nnamed-2
+    if(debug) then
+      print("Indexes " + nbeg + " to " + nend + \
+            ", "+named_colors(i)+" to "+named_colors(i+1)+\
+            ", " + ncols_per_rng(i) + " colors per range")
+    end if
+    rgb_array(nbeg:nend,:) = span_two_named_colors(named_colors(i), \
+                                                   named_colors(i+1), \
+                                                   ncols_per_rng(i),opt)
+    if(i.lt.(nnamed-2)) then
+      nbeg = nend     ; Start where we ended
+      nend = nbeg + ncols_per_rng(i+1) -1
+    end if
+  end do
+  return(rgb_array)
 end
 
 ;***********************************************************************;
