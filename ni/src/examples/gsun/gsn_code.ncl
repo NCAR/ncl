@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.241 2010-05-06 17:18:01 haley Exp $
+;      $Id: gsn_code.ncl,v 1.238.4.3 2010-05-06 17:13:26 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4189,8 +4189,8 @@ end
 ; Procedure : gsn_polymarker                                            ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
-;                     x: 1-dimensional array of x points                ;
-;                     y: 1-dimensional array of y points                ;
+;                     x: n-dimensional array of x points                ;
+;                     y: n-dimensional array of y points                ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This procedure draws polymarkers on the workstation "wks" (the        ;
@@ -4201,20 +4201,25 @@ end
 ; data from "plotid". "resources" is an optional list of resources.     ;
 ;***********************************************************************;
 undef("gsn_polymarker")
-procedure gsn_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
-                         y[*]:numeric,resources:logical)
-local res2
+procedure gsn_polymarker(wks:graphic,plotid:graphic,x:numeric,\
+                         y:numeric,resources:logical)
+local res2, rank
 begin
   res2 = get_resources(resources)
-  gsn_primitive(wks,plotid,x,y,False,"polymarker",res2)
+  rank = dimsizes(dimsizes(x))
+  if(rank.eq.1) then
+    gsn_primitive(wks,plotid,x,y,False,"polymarker",res2)
+  else
+    gsn_primitive(wks,plotid,ndtooned(x),ndtooned(y),False,"polymarker",res2)
+  end if
 end
 
 ;***********************************************************************;
 ; Function : gsn_add_polymarker                                         ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
-;                     x: 1-dimensional array of x points                ;
-;                     y: 1-dimensional array of y points                ;
+;                     x: n-dimensional array of x points                ;
+;                     y: n-dimensional array of y points                ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function adds polymarkers to the plot "plotid", in the same      ;
@@ -4229,20 +4234,26 @@ end
 ; move the plot, the markers will stay with the plot.                   ;
 ;***********************************************************************;
 undef("gsn_add_polymarker")
-function gsn_add_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
-                            y[*]:numeric,resources:logical)
-local res2
+function gsn_add_polymarker(wks:graphic,plotid:graphic,x:numeric,\
+                            y:numeric,resources:logical)
+local res2, rank
 begin
   res2 = get_resources(resources)
-  return(gsn_add_primitive(wks,plotid,x,y,False,"polymarker",res2))
+
+  rank = dimsizes(dimsizes(x))
+  if(rank.eq.1) then
+    return(gsn_add_primitive(wks,plotid,x,y,False,"polymarker",res2))
+  else
+    return(gsn_add_primitive(wks,plotid,ndtooned(x),ndtooned(y),False,"polymarker",res2))
+  end if
 end
 
 
 ;***********************************************************************;
 ; Procedure : gsn_polymarker_ndc                                        ;
 ;                   wks: workstation object                             ;
-;                     x: 1-dimensional array of x points                ;
-;                     y: 1-dimensional array of y points                ;
+;                     x: n-dimensional array of x points                ;
+;                     y: n-dimensional array of y points                ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This procedure draws polymarkers on the workstation "wks" (the        ;
@@ -4251,13 +4262,19 @@ end
 ; coordinates. "resources" is an optional list of resources.            ;
 ;***********************************************************************;
 undef("gsn_polymarker_ndc")
-procedure gsn_polymarker_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
+procedure gsn_polymarker_ndc(wks:graphic,x:numeric,y:numeric,\
                              resources:logical)
-local res2, dummy
+local res2, dummy, rank
 begin
   dummy = new(1,graphic)
   res2 = get_resources(resources)
-  gsn_primitive(wks,dummy,x,y,True,"polymarker",res2)
+
+  rank = dimsizes(dimsizes(x))
+  if(rank.eq.1) then
+    gsn_primitive(wks,dummy,x,y,True,"polymarker",res2)
+  else
+    gsn_primitive(wks,dummy,ndtooned(x),ndtooned(y),True,"polymarker",res2)
+  end if
 end
 
 ;***********************************************************************;
@@ -4486,7 +4503,7 @@ end
 undef("gsn_create_text_ndc")
 function gsn_create_text_ndc(wks:graphic, texto:string, xo:numeric, \
                              yo:numeric, resources:logical )
-local i, txid, plot_object, res, tx_res_index, x2, y2, res2, \
+local i, txid, plot_object, res, tx_res_index, x2, y2, x, y, res2, \
 calldraw, callframe
 begin
 ;
@@ -4634,7 +4651,7 @@ end
 undef("gsn_text_ndc")
 procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
                        y:numeric, resources:logical )
-local txid
+local txid, res2
 begin
   if(resources) then
     res2 = get_resources(resources)
@@ -4663,8 +4680,8 @@ end
 undef("gsn_text")
 procedure gsn_text(wks:graphic,plotid:graphic,texto:string,xo:numeric, \
                    yo:numeric, resources:logical )
-local i, txid, plot_object, res, tx_res_index, x2, y2, xf, yf, \
-funccode, res2, calldraw, callframe
+local i, txid, x2, y2, xf, yf, x, y, res2, calldraw, callframe, maxbb, \
+wksname, xsizes, ysizes, tsizes, xrank, yrank, trank, text, len, txres
 begin
 ;
 ; Any one of xo, yo, and texto can just be one element, but if two or more
