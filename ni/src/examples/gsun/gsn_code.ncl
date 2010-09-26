@@ -779,11 +779,13 @@ end
 undef("span_two_named_colors")
 function span_two_named_colors(named1[1]:string,named2[1]:string,ncolors,\
                                opt[1]:logical)
-local rgb, msg, hsv1, hsv2, ii, hsv_array, debug, \
+local rgb, msg, hsv1, hsv2, ii, hsv_array, debug, opt2, \
       beg_hue, end_hue, beg_sat, end_sat, beg_val, end_val
 begin
+  opt2 = opt
+
 ;---For debug prints
-  debug = get_res_value_keep(opt,"Debug",False)
+  debug = get_res_value_keep(opt2,"Debug",False)
 
   rgb = namedcolor2rgb((/named1,named2/))
   msg = new(3,float)
@@ -872,14 +874,16 @@ end
 undef("span_named_colors")
 function span_named_colors(named_colors,opt[1]:logical)
 local i, ncolt, ncols_per_rng, def_ncols_per_rng, nnamed, \ 
-      rgb_array, nbeg, nend, ncpg, debug, rgbtmp
+      rgb_array, nbeg, nend, ncpg, debug, rgbtmp, opt2
 begin
+  opt2 = opt
+
 ;---For debug prints
-  debug = get_res_value_keep(opt,"Debug",False)
+  debug = get_res_value_keep(opt2,"Debug",False)
 
 
 ;---Get # of colors in color table.
-  ncolt  = get_res_value_keep(opt,"NumColorsInTable",256)
+  ncolt  = get_res_value_keep(opt2,"NumColorsInTable",256)
   if(ncolt.le.0.or.ncolt.gt.256) then
     print("Error:span_named_colors: Invalid number of colors requested.")
     print("Defaulting to 256.")
@@ -902,8 +906,8 @@ begin
   ncpg              = (ncolt-2)/(nnamed-1)
   def_ncols_per_rng = new(nnamed-1,integer)
   def_ncols_per_rng = ncpg
-  if(opt.and.isatt(opt,"NumColorsInRange")) then
-    ncols_per_rng = get_res_value_keep(opt,"NumColorsInRange",-1)
+  if(opt2.and.isatt(opt2,"NumColorsInRange")) then
+    ncols_per_rng = get_res_value_keep(opt2,"NumColorsInRange",-1)
     if(dimsizes(ncols_per_rng).ne.(nnamed-1)) then
       print("span_named_colors: Invalid # of colors per range.")
       print("Using equally spaced colors.")
@@ -931,8 +935,8 @@ begin
 
 ;---Background color defaults to white.
   rgb_array(0,:) = (/1.,1.,1./)      ; White
-  if(opt.and.isatt(opt,"BackgroundColor")) then
-    rgbtmp = namedcolor2rgb(opt@BackgroundColor)
+  if(opt2.and.isatt(opt2,"BackgroundColor")) then
+    rgbtmp = namedcolor2rgb(opt2@BackgroundColor)
     if(any(ismissing(rgbtmp))) then
       print("span_named_colors: Invalid background color.")
       print("Defaulting to white.")
@@ -943,8 +947,8 @@ begin
 
 ;---Foreground color defaults to black.
   rgb_array(1,:) = (/0.,0.,0./)      ; Black
-  if(opt.and.isatt(opt,"ForegroundColor")) then
-    rgbtmp = namedcolor2rgb(opt@ForegroundColor)
+  if(opt2.and.isatt(opt2,"ForegroundColor")) then
+    rgbtmp = namedcolor2rgb(opt2@ForegroundColor)
     if(any(ismissing(rgbtmp))) then
       print("span_named_colors: Invalid foreground color.")
       print("Defaulting to black.")
@@ -963,7 +967,7 @@ begin
     end if
     rgb_array(nbeg:nend,:) = span_two_named_colors(named_colors(i), \
                                                    named_colors(i+1), \
-                                                   ncols_per_rng(i),opt)
+                                                   ncols_per_rng(i),opt2)
     if(i.lt.(nnamed-2)) then
       nbeg = nend     ; Start where we ended
       nend = nbeg + ncols_per_rng(i+1) -1
