@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.241.6.5 2010-05-07 16:05:00 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.245 2010/05/06 22:15:21 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -152,20 +152,60 @@ undef("get_bar_widths")
 function get_bar_widths(x,ncurves,res2)
 local ncurves, npts, bar_widths, dx, nwidths
 begin
-;
-; Get number of curves and points, and the distances between x values.
-;
+;---Get number of curves and points.
   dims = dimsizes(x)
-  if(dimsizes(dims).eq.1)
-    npts    = dimsizes(x)
-    dx      = min( x(1:npts-1) - x(0:npts-2) )
+  rank = dimsizes(dims)
+  if(rank.eq.1)
+    npts = dims(0)
   else
+    ncurves = dims(0)
     npts    = dims(1)
-    x!0     = "ncurves"
-    x!1     = "npts"
-;
-; Get the minimum dx for each set of curves.
-;
+  end if
+
+;---If bar width is set explicitly, we have to check it first.
+  if(isatt(res2,"gsnXYBarChartBarWidth"))
+    bar_width = get_res_value_keep(res2,"gsnXYBarChartBarWidth",0.)
+    nwidths   = dimsizes(dimsizes(bar_width))
+    if(.not.(nwidths.eq.1.or.nwidths.eq.ncurves))
+      print("get_bar_widths: Fatal: You must either select one constant bar width, or the same number of bar widths as you have curves.")
+      return
+    end if
+  end if
+
+;---Get the distances between x values.
+  if(rank.eq.1)
+;---Special case if we only have one bar.
+    if(npts.eq.1)
+      if(isatt(res2,"gsnXYBarChartBarWidth")) then
+        b = get_res_value(res2,"gsnXYBarChartBarWidth",0.)
+        return(b)
+      else
+        print("get_bar_widths: Warning: You only have one element,")
+        print("and gsnXYBarChartBarWidth is not set.")
+        print("Will default to a bar width equal to x")
+        return(x)
+      end if
+    else
+      dx = min( x(1:npts-1) - x(0:npts-2) )
+    end if
+  else
+    x!0 = "ncurves"
+    x!1 = "npts"
+;---Special case if we only have one bar.
+    if(npts.eq.1) then
+      if(isatt(res2,"gsnXYBarChartBarWidth")) then
+        b = get_res_value(res2,"gsnXYBarChartBarWidth",0.)
+        return(b)
+      else
+        print("get_bar_widths: Warning: You only have one element in each set of curves,")
+        print("and gsnXYBarChartBarWidth is not set.")
+        print("Will default to bar widths equal to x")
+        b = new(ncurves,typeof(x))
+        b = x
+        return(b)
+      end if
+    end if
+;---Get the minimum dx for each set of curves.
     dx = dim_min(x(:,1:npts-1)-x(:,0:npts-2))
     delete(x!0)
     delete(x!1)
@@ -3970,8 +4010,8 @@ end
 ; drawn at this value.                                                  ;
 ;                                                                       ;
 ; If gsnXYBarChart is set to True, then a bar chart will be drawn       ;
-; instead of a line plot. You need to also set gsnYRefLine in order to  ;
-; use this resource.                                                    ;
+; instead of a line plot. You can also set gsnYRefLine to have your     ;
+; bars point up or down from the reference line.                        ;
 ;                                                                       ;
 ; The resource gsnXYBarChartColors can be used to specify an array of   ;
 ; bar colors. This resource was not implemented very smartly. These     ;
@@ -4361,6 +4401,23 @@ begin
             print("Cannot draw a bar chart.")
             return
           end if
+;---Special test for just one point.
+        if(npts.eq.1) then
+          if(isatt(y,"_FillValue")) then
+            ybarmsg = y@_FillValue
+          else
+            ybarmsg = 1e20
+          end if
+;---If just one point, add some dummy missing vals before and after.
+          xbar = (/x-bar_widths,x,x+bar_widths/)
+          ybar = (/ybarmsg,y,ybarmsg/)
+          nptsbar = 3
+          ybar@_FillValue = ybarmsg
+         else
+           xbar = x
+           ybar = y
+           nptsbar = npts
+        end if
 ;
 ; Figure out if we want to fill bars.  Three resources can be used to
 ; specify fill colors, in this order:
@@ -4570,12 +4627,12 @@ begin
 ; and equal to the references lines.  First create arrays to hold points
 ; above, below, and equal to reference lines.
 ;
-          xabove = new((/ncurves,5*npts/),double,1e36)
-          yabove = new((/ncurves,5*npts/),double,1e36)
-          xbelow = new((/ncurves,5*npts/),double,1e36)
-          ybelow = new((/ncurves,5*npts/),double,1e36)
-          xequal = new((/ncurves,5*npts/),double,1e36)
-          yequal = new((/ncurves,5*npts/),double,1e36)
+          xabove = new((/ncurves,5*nptsbar/),double,1e36)
+          yabove = new((/ncurves,5*nptsbar/),double,1e36)
+          xbelow = new((/ncurves,5*nptsbar/),double,1e36)
+          ybelow = new((/ncurves,5*nptsbar/),double,1e36)
+          xequal = new((/ncurves,5*nptsbar/),double,1e36)
+          yequal = new((/ncurves,5*nptsbar/),double,1e36)
 ;
 ; Arrays to hold number of points in each set of above/below points,
 ; and the index values where points fall above, below, and equal
@@ -4584,13 +4641,13 @@ begin
           nabove   = new(ncurves,integer)
           nbelow   = new(ncurves,integer)
           nequal   = new(ncurves,integer)
-          indabove = new((/ncurves,npts/),integer)
-          indbelow = new((/ncurves,npts/),integer)
-          indequal = new((/ncurves,npts/),integer)
+          indabove = new((/ncurves,nptsbar/),integer)
+          indbelow = new((/ncurves,nptsbar/),integer)
+          indequal = new((/ncurves,nptsbar/),integer)
 ;
 ; Fill in values for filled bars (that will be filled later).
 ;
-          filled_bars(x,y,xabove,yabove,xbelow,ybelow,xequal,yequal, \
+          filled_bars(xbar,ybar,xabove,yabove,xbelow,ybelow,xequal,yequal, \
                       nabove,nbelow,nequal,indabove,indbelow,indequal, \
                       yref_line,bar_widths)
 ;
@@ -4613,8 +4670,8 @@ begin
             xinterp  = new((/ncurves3,nabe_max/),double,xabove@_FillValue)
             yinterp  = new((/ncurves3,nabe_max/),double,yabove@_FillValue)
 
-            copy_var_atts(x,xinterp,"")
-            copy_var_atts(y,yinterp,"")
+            copy_var_atts(xbar,xinterp,"")
+            copy_var_atts(ybar,yinterp,"")
 
             if(na_max.gt.0)
               xinterp(0:ncurves3-1:3,0:na_max-1)   = xabove(:,0:na_max-1)
