@@ -1027,8 +1027,8 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(eofunc_varimax_jl_W,args,"eofunc_varimax_jl",nargs);
 
 /*
-	 * Register "eof2data".
-	 *
+ * Register "eof2data".
+ *
  * Create private argument array.
  */
     nargs = 0;
@@ -8535,3 +8535,31 @@ int arg_num, num_args;
     return(NULL);
   }
 }
+
+ng_size_t *get_dimensions(void *tmp_dimensions,ng_size_t n_dimensions,
+                          NclBasicDataTypes type_dimensions, const char *name)
+{
+  ng_size_t i, *dimensions;
+
+  switch (type_dimensions) {
+  case NCL_int:
+    dimensions = NclMalloc(sizeof(ng_size_t) * n_dimensions);
+    for (i = 0; i < n_dimensions; i++) {
+      dimensions[i] = ((int*) tmp_dimensions)[i];
+    }
+    break;
+    
+  case NCL_long:
+    dimensions = NclMalloc(sizeof(ng_size_t) * n_dimensions);
+    for (i = 0; i < n_dimensions; i++) {
+      dimensions[i] = ((long*) tmp_dimensions)[i];
+    }
+    break;
+
+  default:
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: The input dimension sizes must be integer or long",name);
+    return(NULL);
+  }
+  return(dimensions);
+}
+

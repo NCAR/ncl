@@ -80,3 +80,7 @@ extern void print_minmax(void *,ng_size_t,NclBasicDataTypes);
 
 
 extern NclDimRec *get_dim_info(int, int);
+
+extern ng_size_t *get_dimensions(void *tmp_dimensions,ng_size_t n_dimensions,
+				 NclBasicDataTypes type_dimensions,
+				 const char *);
