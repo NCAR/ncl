@@ -18,12 +18,12 @@ NhlErrorTypes g2gsh_W( void )
 /*
  * Input array variables
  */
-  void *Ta;
+  void *Ta, *tmp_dsizes_Tb;
   double *tmp_Ta = NULL;
   int ndims_Ta;
-  ng_size_t dsizes_Ta[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_Ta[NCL_MAX_DIMENSIONS], *dsizes_Tb;
   NclScalar missing_Ta, missing_dTa, missing_rTa;
-  NclBasicDataTypes type_Ta, type_Tb;
+  NclBasicDataTypes type_Ta, type_Tb, type_dsizes_Tb;
   int has_missing_Ta, found_missing;
   ng_size_t nlata, nlona;
   int igrida[2];
@@ -32,7 +32,6 @@ NhlErrorTypes g2gsh_W( void )
  */
   void *Tb;
   double *tmp_Tb = NULL;
-  ng_size_t *dsizes_Tb;
   ng_size_t dsizes_Tb2[NCL_MAX_DIMENSIONS];
   ng_size_t nlatb, nlonb;
   int igridb[2];
@@ -67,15 +66,22 @@ NhlErrorTypes g2gsh_W( void )
 /*
  * Get sizes for output array.
  */
-  dsizes_Tb = (ng_size_t*)NclGetArgValue(
+  tmp_dsizes_Tb = (void*)NclGetArgValue(
                 1,
                 3,
                 NULL,
                 NULL,
                 NULL,
                 NULL,
-                NULL,
+                &type_dsizes_Tb,
                 DONT_CARE);
+/*
+ * Convert the input dimensions to ng_size_t.
+ */
+  dsizes_Tb = get_dimensions(tmp_dsizes_Tb,2,type_dsizes_Tb,"g2gsh");
+  if(dsizes_Tb == NULL) 
+    return(NhlFATAL);
+
 /*
  * Get optional wave truncation value.
  */
@@ -301,12 +307,13 @@ NhlErrorTypes f2gsh_W( void )
 /*
  * Input array variables
  */
-  void *Ta;
+  void *Ta, *tmp_dsizes_Tb;
+  ng_size_t *dsizes_Tb;
   double *tmp_Ta = NULL;
   int ndims_Ta;
   ng_size_t dsizes_Ta[NCL_MAX_DIMENSIONS];
   NclScalar missing_Ta, missing_dTa, missing_rTa;
-  NclBasicDataTypes type_Ta, type_Tb;
+  NclBasicDataTypes type_Ta, type_Tb, type_dsizes_Tb;
   int has_missing_Ta, found_missing;
   int igrida[2];
 /*
@@ -314,7 +321,6 @@ NhlErrorTypes f2gsh_W( void )
  */
   void *Tb;
   double *tmp_Tb = NULL;
-  ng_size_t *dsizes_Tb;
   ng_size_t dsizes_Tb2[NCL_MAX_DIMENSIONS];
   ng_size_t nlata, nlona;
   ng_size_t nlatb, nlonb;
@@ -350,15 +356,21 @@ NhlErrorTypes f2gsh_W( void )
 /*
  * Get sizes for output array.
  */
-  dsizes_Tb = (ng_size_t*)NclGetArgValue(
+  tmp_dsizes_Tb = (void*)NclGetArgValue(
                 1,
                 3,
                 NULL,
                 NULL,
                 NULL,
                 NULL,
-                NULL,
+                &type_dsizes_Tb,
                 DONT_CARE);
+/*
+ * Convert the input dimensions to ng_size_t.
+ */
+  dsizes_Tb = get_dimensions(tmp_dsizes_Tb,2,type_dsizes_Tb,"f2gsh");
+  if(dsizes_Tb == NULL) 
+    return(NhlFATAL);
 /*
  * Get optional wave truncation value.
  */
@@ -584,12 +596,13 @@ NhlErrorTypes g2fsh_W( void )
 /*
  * Input array variables
  */
-  void *Ta;
+  void *Ta, *tmp_dsizes_Tb;
+  ng_size_t *dsizes_Tb;
   double *tmp_Ta = NULL;
   int ndims_Ta;
   ng_size_t dsizes_Ta[NCL_MAX_DIMENSIONS];
   NclScalar missing_Ta, missing_dTa, missing_rTa;
-  NclBasicDataTypes type_Ta, type_Tb;
+  NclBasicDataTypes type_Ta, type_Tb, type_dsizes_Tb;
   int has_missing_Ta, found_missing;
   int igrida[2];
   int twave = 0;
@@ -598,7 +611,6 @@ NhlErrorTypes g2fsh_W( void )
  */
   void *Tb;
   double *tmp_Tb = NULL;
-  ng_size_t *dsizes_Tb;
   ng_size_t dsizes_Tb2[NCL_MAX_DIMENSIONS];
   ng_size_t nlata, nlona;
   ng_size_t nlatb, nlonb;
@@ -634,15 +646,21 @@ NhlErrorTypes g2fsh_W( void )
 /*
  * Get sizes for output array.
  */
-  dsizes_Tb = (ng_size_t*)NclGetArgValue(
+  tmp_dsizes_Tb = (void*)NclGetArgValue(
                 1,
                 2,
                 NULL,
                 NULL,
                 NULL,
                 NULL,
-                NULL,
+                &type_dsizes_Tb,
                 DONT_CARE);
+/*
+ * Convert the input dimensions to ng_size_t.
+ */
+  dsizes_Tb = get_dimensions(tmp_dsizes_Tb,2,type_dsizes_Tb,"g2fsh");
+  if(dsizes_Tb == NULL) 
+    return(NhlFATAL);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -856,12 +874,13 @@ NhlErrorTypes f2fsh_W( void )
 /*
  * Input array variables
  */
-  void *Ta;
+  void *Ta, *tmp_dsizes_Tb;
+  ng_size_t *dsizes_Tb;
   double *tmp_Ta = NULL;
   int ndims_Ta;
   ng_size_t dsizes_Ta[NCL_MAX_DIMENSIONS];
   NclScalar missing_Ta, missing_dTa, missing_rTa;
-  NclBasicDataTypes type_Ta, type_Tb;
+  NclBasicDataTypes type_Ta, type_Tb, type_dsizes_Tb;
   int has_missing_Ta, found_missing;
   ng_size_t nlata, nlona;
   int igrida[2];
@@ -871,7 +890,6 @@ NhlErrorTypes f2fsh_W( void )
  */
   void *Tb;
   double *tmp_Tb = NULL;
-  ng_size_t *dsizes_Tb;
   ng_size_t dsizes_Tb2[NCL_MAX_DIMENSIONS];
   ng_size_t nlatb, nlonb;
   int igridb[2];
@@ -906,15 +924,22 @@ NhlErrorTypes f2fsh_W( void )
 /*
  * Get sizes for output array.
  */
-  dsizes_Tb = (ng_size_t*)NclGetArgValue(
+  tmp_dsizes_Tb = (void*)NclGetArgValue(
                 1,
                 2,
                 NULL,
                 NULL,
                 NULL,
                 NULL,
-                NULL,
+                &type_dsizes_Tb,
                 DONT_CARE);
+/*
+ * Convert the input dimensions to ng_size_t.
+ */
+  dsizes_Tb = get_dimensions(tmp_dsizes_Tb,2,type_dsizes_Tb,"f2fsh");
+  if(dsizes_Tb == NULL) 
+    return(NhlFATAL);
+
 /*
  * The grid coming in must be at least 2-dimensional.
  */

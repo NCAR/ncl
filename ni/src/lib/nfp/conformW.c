@@ -97,7 +97,7 @@ NhlErrorTypes conform_W( void )
     tmp_md = (NclMultiDValData)data.u.data_obj;
     break;
   default:
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"conform_W: invalid first input argument.");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: invalid first input argument.");
     return(NhlFATAL);
   }
 
@@ -281,11 +281,13 @@ NhlErrorTypes conform_dims_W( void )
 /*
  * Input array variables
  */
+  void *tmp_dsizes_x;
   ng_size_t *dsizes_x;
   NclStackEntry data;
   int *cnfrm_dims;
   NclMultiDValData tmp_md = NULL;
   ng_size_t ndims_x;
+  NclBasicDataTypes type_dsizes_x;
   ng_size_t dsizes_conform[NCL_MAX_DIMENSIONS];
 /*
  * Output array variables
@@ -309,14 +311,14 @@ NhlErrorTypes conform_dims_W( void )
  * Note any of the pointer parameters can be set to NULL, which
  * implies you don't care about its value.
  */
-  dsizes_x = (ng_size_t*)NclGetArgValue(
+  tmp_dsizes_x = (void*)NclGetArgValue(
            0,
            3,
            NULL,
            &ndims_x,
            NULL,
            NULL,
-           NULL,
+           &type_dsizes_x,
            DONT_CARE);
 
   data = _NclGetArg(1,3,DONT_CARE);
@@ -328,7 +330,7 @@ NhlErrorTypes conform_dims_W( void )
     tmp_md = (NclMultiDValData)data.u.data_obj;
     break;
   default:
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"conform_dims_W: invalid first input argument.");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"conform_dims: invalid first input argument.");
     return(NhlFATAL);
   }
 
@@ -341,6 +343,10 @@ NhlErrorTypes conform_dims_W( void )
            NULL,
            NULL,
            DONT_CARE);
+
+  dsizes_x = get_dimensions(tmp_dsizes_x,ndims_x,type_dsizes_x,"conform_dims");
+  if(dsizes_x == NULL) 
+    return(NhlFATAL);
 
 /*
  * Check if we're dealing with the special case of where the second

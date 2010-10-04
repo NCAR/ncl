@@ -383,11 +383,12 @@ NhlErrorTypes generate_2d_array_W( void )
 /*
  * Input array variables
  */
+  void *tmp_dsizes_data;
   ng_size_t *dsizes_data;
   int *mlow, *mhigh, *iseed;
   void *dlow, *dhigh;
   double *tmp_dlow, *tmp_dhigh;
-  NclBasicDataTypes type_dlow, type_dhigh;
+  NclBasicDataTypes type_dlow, type_dhigh, type_dsizes_data;
 /*
  * Output variables.
  */
@@ -463,19 +464,23 @@ NhlErrorTypes generate_2d_array_W( void )
 /*
  * Get size of output array.
  */
-  dsizes_data = (ng_size_t*)NclGetArgValue(
+  tmp_dsizes_data = (void*)NclGetArgValue(
           5,
           6,
           NULL,
           NULL,
           NULL,
           NULL,
-          NULL,
+          &type_dsizes_data,
           DONT_CARE);
 
 /*
  * Error checking.
  */
+  dsizes_data = get_dimensions(tmp_dsizes_data,2,type_dsizes_data,"generate_2d_array");
+  if(dsizes_data == NULL) 
+    return(NhlFATAL);
+
   if(dsizes_data[0] <= 1 && dsizes_data[1] <= 1) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"generate_2d_array: the dimensions of the output array must be such that it has at least two elements");
     return(NhlFATAL);
