@@ -435,10 +435,10 @@ if [ $INSTALL_HDFEOS5 ]
       make clean
     fi
     echo "Building $HDFEOS5_DIR..."
-#    export CFLAGS_HE5="$CFLAGS -DH5_USE_16_API"
+    export CFLAGS_HE5="$CFLAGS -DH5_USE_16_API"
 #    ./configure --enable-static --with-hdf\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
 #    ./configure --with-hdf5\=$PREFIX CFLAGS\=$CFLAGS_HE5 --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
-    ./configure CC\=$PREFIX/bin/h5cc --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
+    ./configure CC\=$PREFIX/bin/h5cc CFLAGS\=$CFLAGS_HE5 --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
     make all install
     cp include/HE5_HdfEosDef.h include/HE5_GctpFunc.h $PREFIX/include/.
     if [ $? ]
