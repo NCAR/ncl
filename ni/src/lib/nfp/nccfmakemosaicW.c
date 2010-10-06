@@ -151,7 +151,7 @@ mosaic_name = (string *)NclGetArgValue(
 
 char *mosaic_name_charray = NrmQuarkToString(mosaic_name[0]);
 if (!strncmp(mosaic_name_charray, "null", strlen(mosaic_name_charray)))
-	*mosaic_name_charray = (char)NULL;
+	*mosaic_name_charray = '\0';
 
 nmosaic = (int *)NclGetArgValue(
 	2,
@@ -201,7 +201,7 @@ grid_descriptor= (string *)NclGetArgValue(
 char *grid_descriptor_charray = NrmQuarkToString(grid_descriptor[0]);
 
 if (!strncmp(grid_descriptor_charray, "null", strlen(grid_descriptor_charray)))
-	*grid_descriptor_charray = (char)NULL;
+	*grid_descriptor_charray = '\0';
 
 n_tilefile= (int *)NclGetArgValue(
 	5,
@@ -280,7 +280,7 @@ tile_dir= (string *)NclGetArgValue(
 char *tile_dir_charray = NrmQuarkToString(tile_dir[0]);
 
 if (!strncmp(tile_dir_charray, "null", strlen(tile_dir_charray)))
-	*tile_dir_charray = (char)NULL;
+	*tile_dir_charray = '\0';
 
 nccf_make_mosaic(history, *ntile, mosaic_name_charray, *nmosaic, mosaicfile_array,
 		 grid_descriptor_charray, *n_tilefile, tilefile_array, *periodx, *periody,

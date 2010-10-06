@@ -125,7 +125,7 @@ amosaic= (string *)NclGetArgValue(
 
 char *amosaic_charray = NrmQuarkToString(amosaic[0]);
 if (!strncmp(amosaic_charray, "null", strlen(amosaic_charray)))
-	*amosaic_charray = (char)NULL;
+	*amosaic_charray = '\0';
 
 lmosaic= (string *)NclGetArgValue(
         1,
@@ -140,7 +140,7 @@ lmosaic= (string *)NclGetArgValue(
 char *lmosaic_charray = NrmQuarkToString(lmosaic[0]);
 
 if (!strncmp(lmosaic_charray, "null", strlen(lmosaic_charray)))
-	*lmosaic_charray = (char)NULL;
+	*lmosaic_charray = '\0';
 
 omosaic= (string *)NclGetArgValue(
         2,
@@ -155,7 +155,7 @@ omosaic= (string *)NclGetArgValue(
 char *omosaic_charray = NrmQuarkToString(omosaic[0]);
 
 if (!strncmp(omosaic_charray, "null", strlen(omosaic_charray)))
-	*omosaic_charray = (char)NULL;
+	*omosaic_charray = '\0';
 
 imosaic= (string *)NclGetArgValue(
         3,
@@ -170,7 +170,7 @@ imosaic= (string *)NclGetArgValue(
 char *imosaic_charray = NrmQuarkToString(imosaic[0]);
 
 if (!strncmp(imosaic_charray, "null", strlen(imosaic_charray)))
-	*imosaic_charray = (char)NULL;
+	*imosaic_charray = '\0';
 
 itopog= (string *)NclGetArgValue(
         4,
@@ -185,7 +185,7 @@ itopog= (string *)NclGetArgValue(
 char *itopog_charray = NrmQuarkToString(itopog[0]);
 
 if (!strncmp(itopog_charray, "null", strlen(itopog_charray)))
-	*itopog_charray = (char)NULL;
+	*itopog_charray = '\0';
 
 interp_order= (int *)NclGetArgValue(
         5,
@@ -220,7 +220,7 @@ mosaic_name= (string *)NclGetArgValue(
 char *mosaic_name_charray = NrmQuarkToString(mosaic_name[0]);
 
 if (!strncmp(mosaic_name_charray, "null", strlen(mosaic_name_charray)))
-	*mosaic_name_charray = (char)NULL;
+	*mosaic_name_charray = '\0';
 
 check= (int *)NclGetArgValue(
         8,
