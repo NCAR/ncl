@@ -578,6 +578,9 @@ print (dim_src)
 
   copy_VA_pop(x,xOut)
   xOut@_FillValue    = xmsg              ; force common msg val
+  if (isatt(xOut,"missing_value")) then
+      delete(xOut@missing_value)         
+  end if
   xOut@missing_value = xmsg
                               
   if (isatt(fP,"map_method")) then
