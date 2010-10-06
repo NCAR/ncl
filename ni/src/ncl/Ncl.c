@@ -469,6 +469,8 @@ main(int argc, char **argv) {
     (void) fclose(theoptr);
 #endif /* NCLDEBUG */
 
+    NclFree(myName);
+
     _NclExit(0);
 }
 

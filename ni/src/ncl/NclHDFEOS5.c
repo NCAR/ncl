@@ -546,7 +546,6 @@ static void HDFEOS5IntFileAddAtt(HDFEOS5FileRecord *the_file,NclQuark sw_ncl_nam
 		tmp_node->att_inq->value = (void*)tmp_quark;
 		tmp_node->att_inq->n_elem = 1;
 		NclFree(value);
-		NclFree(buffer);
                 break;
 	    default:
 		tmp_node->att_inq->value = value;
@@ -557,6 +556,7 @@ static void HDFEOS5IntFileAddAtt(HDFEOS5FileRecord *the_file,NclQuark sw_ncl_nam
 	tmp_node->next = the_file->att_int_list;
 	the_file->att_int_list = tmp_node;
 	the_file->n_int_atts++;
+	NclFree(buffer);
 }
 
 static void HDFEOS5IntAddDimMapInfo
@@ -815,6 +815,7 @@ NclQuark path;
             natts = HE5_SWinqattrs(HE5_SWid,buffer,&str_buf_size);
             if(natts > max_att)
             {
+		max_att = natts + 1;
                 att_hdf_names = (NclQuark *)NclRealloc(att_hdf_names, sizeof(NclQuark)*max_att);
                 att_ncl_names = (NclQuark *)NclRealloc(att_ncl_names, sizeof(NclQuark)*max_att);
             }
@@ -878,6 +879,7 @@ NclQuark path;
             ngrp_atts = HE5_EHinqglbattrs(HE5_SWfid,buffer,&str_buf_size);
             if(ngrp_atts > max_att)
             {
+		max_att = ngrp_atts + 1;
                 att_hdf_names = (NclQuark *)NclRealloc(att_hdf_names, sizeof(NclQuark)*max_att);
                 att_ncl_names = (NclQuark *)NclRealloc(att_ncl_names, sizeof(NclQuark)*max_att);
             }
@@ -1037,7 +1039,8 @@ NclQuark path;
 
                 if(nlocatts > max_loc)
                 {
-                    max_loc *= 2;
+                    while(nlocatts > max_loc)
+                        max_loc *= 2;
                     loc_hdf_names = (NclQuark *)NclRealloc(loc_hdf_names, sizeof(NclQuark)*max_loc);
                     loc_ncl_names = (NclQuark *)NclRealloc(loc_ncl_names, sizeof(NclQuark)*max_loc);
                 }
@@ -1074,8 +1077,6 @@ NclQuark path;
                                 (void*)is_unsigned,1,NCL_logical);
                     }
 
-                    tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-                    *(NclQuark*)tmp_value = var_hdf_names[j];
                     strcpy(tmp_name, NrmQuarkToString(var_hdf_names[j]));
                     if (strncmp(tmp_name, "Longitude", 9) == 0)
                     {
@@ -1138,7 +1139,11 @@ NclQuark path;
                                 (void*)qval,1,NCL_string);
                     }
                     else
+                    {
+                        tmp_value = (void*)NclMalloc(sizeof(NclQuark));
+                        *(NclQuark*)tmp_value = var_hdf_names[j];
                         HDFEOS5IntAddAtt(the_file->vars->var_inq,NrmStringToQuark("long_name"),(void*)tmp_value,1,NCL_string);
+                    }
                 }
 
                 for(k = 0; k < nlocatts; k++)
@@ -1146,7 +1151,7 @@ NclQuark path;
                     status = HE5_SWlocattrinfo(HE5_SWid,NrmQuarkToString(var_hdf_names[j]),NrmQuarkToString(loc_hdf_names[k]),&att_type,&att_size);
                     if(status == 0)
                     {
-                        tmp_value = (void *) malloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
+                        tmp_value = (void *) NclMalloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
                         status = HE5_SWreadlocattr(HE5_SWid,NrmQuarkToString(var_hdf_names[j]),NrmQuarkToString(loc_hdf_names[k]),tmp_value);
                         if(status < 0)
                         {
@@ -1178,6 +1183,7 @@ NclQuark path;
                                          *(NclQuark*)add_value = NrmStringToQuark(new_value);
                                          HDFEOS5IntAddAtt(the_file->vars->var_inq,NrmStringToQuark("units"),(void*)add_value,1,NCL_string);
                                      }
+                                     NclFree(new_value);
                                      break;
                                      }
                                 default:
@@ -1290,7 +1296,7 @@ NclQuark path;
                 status = HE5_SWlocattrinfo(HE5_SWid,NrmQuarkToString(var_hdf_names[j]),NrmQuarkToString(loc_hdf_names[k]),&att_type,&att_size);
                 if(status == 0)
                 {
-                    tmp_value = (void *) malloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
+                    tmp_value = (void *) NclMalloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
                     status = HE5_SWreadlocattr(HE5_SWid,NrmQuarkToString(var_hdf_names[j]),NrmQuarkToString(loc_hdf_names[k]),tmp_value);
                     if(status < 0)
                     {
@@ -1322,6 +1328,7 @@ NclQuark path;
                                      *(NclQuark*)add_value = NrmStringToQuark(new_value);
                                      HDFEOS5IntAddAtt(the_file->vars->var_inq,NrmStringToQuark("units"),(void*)add_value,1,NCL_string);
                                  }
+                                 NclFree(new_value);
                                  break;
                                  }
                             default:
@@ -1632,6 +1639,8 @@ NclQuark path;
             ngrp_atts = HE5_EHinqglbattrs(HE5_GDfid,buffer,&str_buf_size);
             if(ngrp_atts > max_att)
             {
+                while(ngrp_atts > max_att)
+                      max_att *= 2;
                 att_hdf_names = (NclQuark *)NclRealloc(att_hdf_names, sizeof(NclQuark)*max_att);
                 att_ncl_names = (NclQuark *)NclRealloc(att_ncl_names, sizeof(NclQuark)*max_att);
             }
@@ -1740,7 +1749,8 @@ NclQuark path;
 
             if(nlocatts > max_loc)
             {
-                max_loc *= 2;
+                while(nlocatts > max_loc)
+                      max_loc *= 2;
                 loc_hdf_names = (NclQuark *)NclRealloc(loc_hdf_names, sizeof(NclQuark)*max_loc);
                 loc_ncl_names = (NclQuark *)NclRealloc(loc_ncl_names, sizeof(NclQuark)*max_loc);
             }
@@ -1895,7 +1905,7 @@ NclQuark path;
                                          HDFEOS5IntAddAtt(the_file->vars->var_inq,NrmStringToQuark("units"),(void*)add_value,1,NCL_string);
                                      }
                                  }
-
+                                 NclFree(new_value);
                                  break;
                                  }
                             default:
