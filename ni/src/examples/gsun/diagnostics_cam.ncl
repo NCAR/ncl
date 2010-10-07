@@ -3,6 +3,8 @@
 ;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 ; gsn_code.ncl, gsn_csm.ncl, contributed.ncl  must be preloaded.
 ;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+; October 2010: changed code to use _n functions. Less memory.  
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 ;
 ;-------------------------------------------------------------
 ; Decompose a variable into symmetric and asymmetric parts
@@ -764,11 +766,15 @@ local latN, latS, lonL, lonR, spd, fCrit, tim_taper        \
   psumsym@long_name  = "Symmetric  summed over lat"
 
   if (nlat%2.eq.0)    ; use named dimensions to reorder
-      psumanti = dim_sum_Wrap(peeAS(wave|:,freq|:,lat|nlat/2:nlat-1))
-      psumsym  = dim_sum_Wrap(peeAS(wave|:,freq|:,lat|0:nlat/2-1)   )
+      psumanti = dim_sum_n_Wrap(peeAS(nlat/2:nlat-1,:,:), 0)
+      psumsym  = dim_sum_n_Wrap(peeAS(0:nlat/2-1,:,:)   , 0)
+    ;;psumanti = dim_sum_Wrap(peeAS(wave|:,freq|:,lat|nlat/2:nlat-1))
+    ;;psumsym  = dim_sum_Wrap(peeAS(wave|:,freq|:,lat|0:nlat/2-1)   )
   else
-      psumanti = dim_sum_Wrap(peeAS(wave|:,freq|:,lat|nlat/2+1:nlat-1))
-      psumsym  = dim_sum_Wrap(peeAS(wave|:,freq|:,lat|0:nlat/2)     )
+      psumanti = dim_sum_n_Wrap(peeAS(nlat/2+1:nlat-1,:,:), 0)
+      psumsym  = dim_sum_n_Wrap(peeAS(0:nlat/2,:,:)       , 0)
+    ;;psumanti = dim_sum_Wrap(peeAS(wave|:,freq|:,lat|nlat/2+1:nlat-1))
+    ;;psumsym  = dim_sum_Wrap(peeAS(wave|:,freq|:,lat|0:nlat/2)     )
   end if
     
 ;-------------------------------------------------------------------
@@ -1077,7 +1083,8 @@ local latN, latS, lonL, lonR, spd, fCrit, tim_taper        \
 ;-----------------------------------------------------------------------------
   ;print("======> BACKGROUND <=====")
     
-   psumb = dim_sum_Wrap(peeAS(wave|:,freq|:,lat|:))  ; sum over all latitudes
+   psumb = dim_sum_n_Wrap(peeAS, 0)                  ; sum over all latitudes
+ ;;psumb = dim_sum_Wrap(peeAS(wave|:,freq|:,lat|:))  ; sum over all latitudes
    psumb@long_name = "Background Spectrum"
     
    psumb@_FillValue       = fillVal    
@@ -1620,74 +1627,90 @@ end
 ; ====================================================
 undef("mjo_ApplyLanczosWgt_LeftDim")
 function mjo_ApplyLanczosWgt_LeftDim(x:numeric, wgt[*]:numeric, opt[1]:integer)
-;
+;++++
+; The wgt_runave_n function made this function obsolete. 
+; It is included for backward compatibility. It replaces *ALL* the
+; reordering with the wgt_runave_n function.
+;++++
 ; utility routine ... makes for cleaner code
 ; Reorder so time is rightmost; applies Lanczos weights, reorder back
 ;
 local dimx, rank, dNam, xBand
 begin
-  dimx = dimsizes(x)
-  rank = dimsizes( dimx )
+  return( wgt_runave_n_Wrap( x, wgt, opt, 0) )
 
-  dNam = getvardims( x )
+;;dimx = dimsizes(x)
+;;rank = dimsizes( dimx )
 
-  if (rank.eq.1) then
-      return( wgt_runave_Wrap( x, wgt, opt) )
-  end if
-  if (rank.eq.2) then
-      xBand = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(0)$|:), wgt, opt)
-      return( xBand($dNam(0)$|:,$dNam(1)$|:) ) 
-  end if
-  if (rank.eq.3) then
-      xBand = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:), wgt, opt)
-      return( xBand($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) )
-  end if
-  if (rank.eq.4) then
-      xBand = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(0)$|:), wgt, opt)
-      return (xBand($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:) )
-  end if
-  if (rank.eq.5) then
-      xBand = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:,$dNam(0)$|:), wgt, opt)
-      return (xBand($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:) )
-  end if
+;;dNam = getvardims( x )
+
+;;if (rank.eq.1) then
+;;    return( wgt_runave_Wrap( x, wgt, opt) )
+;;end if
+;;if (rank.eq.2) then
+;;    xBand = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(0)$|:), wgt, opt)
+;;    return( xBand($dNam(0)$|:,$dNam(1)$|:) ) 
+;;end if
+;;if (rank.eq.3) then
+;;    xBand = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:), wgt, opt)
+;;    return( xBand($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) )
+;;end if
+;;if (rank.eq.4) then
+;;    xBand = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(0)$|:), wgt, opt)
+;;    return (xBand($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:) )
+;;end if
+;;if (rank.eq.5) then
+;;    xBand = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:,$dNam(0)$|:), wgt, opt)
+;;    return (xBand($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:) )
+;;end if
 end
 ; ====================================================
 undef("apply_dtrend_LeftDim")
 function apply_dtrend_LeftDim(x:numeric, wgt[*]:numeric, opt[1]:integer)
+;++++
+; The dtrend_n function made this function obsolete. 
+; It is included for backward compatibility. It replaces *ALL* the
+; reordering with the wgt_runave_n function.
+;++++
 ;
 ; utility routine ... makes for cleaner code
 ; Reorder so time is rightmost; detrend the time series, reorder back
 ;
-local dimx, rank, dNam, x_dtrend, xWork
+local xdtr
+;;local dimx, rank, dNam, x_dtrend, xWork
 begin
-  dimx = dimsizes(x)
-  rank = dimsizes( dimx )
-  dNam = getvardims( x )
+  xdtr = dtrend_n( x, False, 0)  
+  copy_VarMeta(x, xdtr)
+  return( xdtr ) 
 
-  if (rank.eq.1) then
-      x_dtrend = x                             ; retain meta data
-      x_dtrend = dtrend( x, False) 
-  end if
-  if (rank.eq.2) then
-      xWork = x($dNam(1)$|:,$dNam(0)$|:)       ; retain meta data
-      xWork = dtrend( xWork, False)
-      return( xWork($dNam(0)$|:,$dNam(1)$|:) ) 
-  end if
-  if (rank.eq.3) then
-      xWork = x($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:)
-      xWork = dtrend( xWork, False)
-      return( xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) )
-  end if
-  if (rank.eq.4) then
-      xWork = x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(0)$|:)
-      xWork = dtrend( xWork, False)
-      return (xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:) )
-  end if
-  if (rank.eq.5) then
-      xWork = x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:,$dNam(0)$|:)
-      xWork = dtrend( xWork, False)
-      return (xWork )
-  end if
+;;dimx = dimsizes(x)
+;;rank = dimsizes( dimx )
+;;dNam = getvardims( x )
+
+;;if (rank.eq.1) then
+;;    x_dtrend = x                             ; retain meta data
+;;    x_dtrend = dtrend( x, False) 
+;;end if
+;;if (rank.eq.2) then
+;;    xWork = x($dNam(1)$|:,$dNam(0)$|:)       ; retain meta data
+;;    xWork = dtrend( xWork, False)
+;;    return( xWork($dNam(0)$|:,$dNam(1)$|:) ) 
+;;end if
+;;if (rank.eq.3) then
+;;    xWork = x($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:)
+;;    xWork = dtrend( xWork, False)
+;;    return( xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) )
+;;end if
+;;if (rank.eq.4) then
+;;    xWork = x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(0)$|:)
+;;    xWork = dtrend( xWork, False)
+;;    return (xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:) )
+;;end if
+;;if (rank.eq.5) then
+;;    xWork = x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:,$dNam(0)$|:)
+;;    xWork = dtrend( xWork, False)
+;;    return (xWork )
+;;end if
 end
 ; ====================================================
 undef ("band_pass_area_time")
@@ -1855,7 +1878,7 @@ procedure band_pass_area_time_plot_cam(          \
           xts[3][*]:numeric, date[*]:integer, datesec[*]:integer, \
           pltDir[1]:string, pltType[1]:string, pltName[1]:string)
 begin
-
+  ; place holder
 end
 
 ;=========================================
@@ -1903,14 +1926,15 @@ begin
   end do
 
 ;;work   = x(lat|:,lon|:,time|:)       ; reorder so time is rightmost
-  work   = x($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)   ; generic
+;;work   = x($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)   ; generic
+  work   = x                           ; _n
 
                                        ; By default ... no detrend
   if (opt .and.(isatt(opt,"detrend") .and. opt@detrend)) then
       if (isatt(work,"_FillValue")) then
           delete(work@_FillValue)         ; avoid annoying warning msg
       end if                           
-      work  = dtrend(work, False )     ; detrend
+      work  = dtrend_n(work, False, 0 )   ; detrend
       work@detrend = "data detrended in time"        
   end if
 
@@ -1944,7 +1968,8 @@ begin
       delete(cf)
       work@process  =  "FFT with digital respoonse mapped tp FFT space"
   else
-      work   = wgt_runave_Wrap(work,bpfwgt,0)
+      work   = wgt_runave_n_Wrap(work,bpfwgt,0,0)
+    ;;work   = wgt_runave_Wrap(work,bpfwgt,0)
       work@process  =  "wgt_runave"
   end if
 
@@ -1952,14 +1977,22 @@ begin
   work@band_pass_last  = bpfLast
   work@band_pass_Nwgts = bpfNwgt
 
-  X      = work($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)   
-  copy_VarMeta (x, X)
-  X@long_name = "Band Pass: "
-  if (isatt(x,"long_name")) then
-      X@long_name = "Band Pass: "+x@long_name
+;;X      = work($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)   
+;;copy_VarMeta (x, X)
+;;X@long_name = "Band Pass: "
+;;if (isatt(x,"long_name")) then
+;;    X@long_name = "Band Pass: "+x@long_name
+;;end if
+;;return( X )
+
+  if (isatt(work,"long_name")) then
+      work@long_name = "Band Pass: "+work@long_name
+  else
+      work@long_name = "Band Pass: "
   end if
-  
-  return( X )
+
+  return(work)
+
 end
 ; ----------------------------------------------------
 
@@ -2020,9 +2053,11 @@ begin
      end if
   end do
                                        ; weighted average at each (lon,time)
-  work = dim_avg_wgt_Wrap(x($dNam(2)$|:, $dNam(0)$|:, $dNam(1)$|:), wgty, 0) 
+  work = dim_avg_wgt_n_Wrap(x, wgty, 0, 1) 
+;;work = dim_avg_wgt_Wrap(x($dNam(2)$|:, $dNam(0)$|:, $dNam(1)$|:), wgty, 0) 
                                        ; unweighted average at each (lon,time)
- ;work = dim_avg_Wrap(x($dNam(2)$|:, $dNam(0)$|:, $dNam(1)$|:)) 
+;;work = dim_avg_n_Wrap(x, 0, 1) 
+;;work = dim_avg_Wrap(x($dNam(2)$|:, $dNam(0)$|:, $dNam(1)$|:)) 
 
                                        ; Remove overall mean 
   work = work - avg(work)   
@@ -2045,14 +2080,18 @@ begin
   sigma  = 1.0                             ; Lanczos sigma
   bpfwgt = filwgts_lanczos (bpfNwgt, ihp, fca, fcb, sigma )
 
-  work   = wgt_runave_Wrap(work,bpfwgt,0) ; apply filter to time
+  work   = wgt_runave_n_Wrap(work,bpfwgt,0,0) ; apply filter to time
+;;work   = wgt_runave_Wrap(work,bpfwgt,0) ; apply filter to time
 
   work@band_pass_start = bpfStrt
   work@band_pass_last  = bpfLast
   work@band_pass_Nwgts = bpfNwgt
 
+;;printVarSummary(work)
+
   
-  return(  work($dNam(0)$|:, $dNam(2)$|:) )  ; (time,lon)
+  return(  work )  ; (time,lon)
+;;return(  work($dNam(0)$|:, $dNam(2)$|:) )  ; (time,lon)
 end
 ; ==============>  prototype plot procedure  <================= 
 ; create Hovmueller plots
@@ -2089,6 +2128,27 @@ begin
   resH@gsnPaperOrientation   = "portrait"
 
   symMinMaxPlt (x,16,False,resH)        ; nice symmetric range
+                                        ; user settings?
+  if (isatt(opt,"cnLevelSpacingF")) then
+      resH@cnLevelSpacingF = opt@cnLevelSpacingF
+  end if
+  if (isatt(opt,"cnMinLevelValF")) then
+      resH@cnMinLevelValF = opt@cnMinLevelValF
+  end if
+  if (isatt(opt,"cnMaxLevelValF")) then
+      resH@cnMaxLevelValF = opt@cnMaxLevelValF
+  end if
+  if (isatt(opt,"cnMinLevelValF") .and. \  ; user should have -/+ and be =
+      isatt(opt,"cnMaxLevelValF") ) then 
+      if (abs(opt@cnMinLevelValF).ne.opt@cnMaxLevelValF) then
+          print(" ")
+          print("band_pass_hovmueller_plot: user min/max are not symmetric")
+          print("                           color plot may be misleading  ")
+          print("                           cnMinLevelValF="+opt@cnMinLevelValF)
+          print("                           cnMaxLevelValF="+opt@cnMaxLevelValF)
+          print(" ")
+      end if
+  end if
 
   resH@tmLabelAutoStride     = True     ; don't let labels overlap
 
