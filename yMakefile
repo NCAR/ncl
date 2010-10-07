@@ -228,6 +228,14 @@ GDALSTUFF:
 	@echo "n"
 #endif
 
+#ifdef	BuildGRIDSPEC
+GRIDSPECSTUFF:
+	@echo "y"
+#else
+GRIDSPECSTUFF:
+	@echo "n"
+#endif
+
 #ifdef BuildGRIB2
 GRIB2STUFF:
 	@echo "y"
