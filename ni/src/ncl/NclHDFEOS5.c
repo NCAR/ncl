@@ -432,8 +432,7 @@ NclQuark ncl_class_name;
 
 static void HDFEOS5IntAddDim
 #if NhlNeedProto
-(HDFEOS5DimInqRecList **dims,int *n_dims, NclQuark hdf_name, NclQuark ncl_name, long size,NclQuark class_name,NclQuark ncl_class_name,
-NclQuark path)
+(HDFEOS5DimInqRecList **dims,int *n_dims, NclQuark hdf_name, NclQuark ncl_name, long size,NclQuark class_name,NclQuark ncl_class_name)
 #else
 (dims,n_dims, hdf_name, ncl_name, size,class_name)
 HDFEOS5DimInqRecList **dims;
@@ -443,7 +442,6 @@ NclQuark ncl_name;
 long size;
 NclQuark class_name;
 NclQuark ncl_class_name;
-NclQuark path;
 #endif 
 {
 	HDFEOS5DimInqRecList * tmp_node ;
@@ -641,7 +639,7 @@ static void HDFEOS5IntAddIndexedMapVars
 		}
 		ncl_name2 = NrmStringToQuark(dim2);
 		HDFEOS5IntAddDim(&(the_file->dims),&(the_file->n_dims),hdf_name1,ncl_name1,sizes[i],
-				swath_hdf_name,swath_ncl_name,the_file->file_path_q);
+				swath_hdf_name,swath_ncl_name);
 		sprintf(name_buf,"%s_index_mapping",dim2);
 
 		HDFEOS5IntAddVar(&(the_file->vars),hdf_name2,NrmStringToQuark(name_buf),
@@ -815,7 +813,8 @@ NclQuark path;
             natts = HE5_SWinqattrs(HE5_SWid,buffer,&str_buf_size);
             if(natts > max_att)
             {
-		max_att = natts + 1;
+                while(natts >= max_att)
+                    max_att *= 2;
                 att_hdf_names = (NclQuark *)NclRealloc(att_hdf_names, sizeof(NclQuark)*max_att);
                 att_ncl_names = (NclQuark *)NclRealloc(att_ncl_names, sizeof(NclQuark)*max_att);
             }
@@ -879,7 +878,8 @@ NclQuark path;
             ngrp_atts = HE5_EHinqglbattrs(HE5_SWfid,buffer,&str_buf_size);
             if(ngrp_atts > max_att)
             {
-		max_att = ngrp_atts + 1;
+                while(ngrp_atts >= max_att)
+                    max_att *= 2;
                 att_hdf_names = (NclQuark *)NclRealloc(att_hdf_names, sizeof(NclQuark)*max_att);
                 att_ncl_names = (NclQuark *)NclRealloc(att_ncl_names, sizeof(NclQuark)*max_att);
             }
@@ -952,7 +952,7 @@ NclQuark path;
         for(j = 0; j < ndims; j++)
         {
             HDFEOS5IntAddDim(&(the_file->dims),&(the_file->n_dims),dim_hdf_names[j],dim_ncl_names[j],
-                    dimsizes[j],sw_hdf_names[i],sw_ncl_names[i],the_file->file_path_q);
+                    dimsizes[j],sw_hdf_names[i],sw_ncl_names[i]);
         }
 
         /* Dimension mappings */
@@ -996,7 +996,8 @@ NclQuark path;
         ngeofields = HE5_SWnentries(HE5_SWid, HE5_HDFE_NENTGFLD, &str_buf_size);
         if (ngeofields > max_fields)
         {
-            max_fields *= 2;
+            while(ngeofields >= max_fields)
+                max_fields *= 2;
             field_ranks = NclRealloc(field_ranks,max_fields * sizeof(long));
         }
 
@@ -1049,7 +1050,8 @@ NclQuark path;
 
                 if (field_ranks[j] > max_ndims)
                 {
-                    max_ndims *= 2;
+                    while(field_ranks[j] > max_ndims)
+                        max_ndims *= 2;
                     dimsizes = NclRealloc(dimsizes, max_ndims * sizeof(hsize_t));
                 }
 
@@ -1062,7 +1064,7 @@ NclQuark path;
                     {
                         HDFEOS5IntAddDim(&(the_file->dims),&(the_file->n_dims),
                                 tmp_hdf_names[k],tmp_ncl_names[k],dimsizes[k],sw_hdf_names[i],
-                                sw_ncl_names[i],the_file->file_path_q);
+                                sw_ncl_names[i]);
                     }
 
                     HDFEOS5IntAddVar(&(the_file->vars),var_hdf_names[j],var_ncl_names[j],
@@ -1259,7 +1261,8 @@ NclQuark path;
 
             if (field_ranks[j] > max_ndims)
             {
-                max_ndims *= 2;
+                while(field_ranks[j] > max_ndims)
+                    max_ndims *= 2;
                 dimsizes = NclRealloc(dimsizes, max_ndims * sizeof(hsize_t));
             }
 
@@ -1272,7 +1275,7 @@ NclQuark path;
                 {
                     HDFEOS5IntAddDim(&(the_file->dims),&(the_file->n_dims),
                             tmp_hdf_names[k],tmp_ncl_names[k],dimsizes[k],sw_hdf_names[i],
-                            sw_ncl_names[i],the_file->file_path_q);
+                            sw_ncl_names[i]);
                 }
 
                 HDFEOS5IntAddVar(&(the_file->vars),var_hdf_names[j],var_ncl_names[j],
@@ -1697,7 +1700,7 @@ NclQuark path;
                     cur_buf_size *= 2;
                 buffer = NclRealloc(buffer, cur_buf_size);
             }
-            if (ndims > max_ndims)
+            while (ndims > max_ndims)
             {
                 max_ndims *= 2;
             }
@@ -1708,14 +1711,15 @@ NclQuark path;
             for(j = 0; j < ndims; j++)
             {
                 HDFEOS5IntAddDim(&(the_file->dims),&(the_file->n_dims),dim_hdf_names[j],dim_ncl_names[j],
-                        dimsizes[j],gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
+                        dimsizes[j],gd_hdf_names[i],gd_ncl_names[i]);
             }
         }
 
         ndata = HE5_GDnentries(HE5_GDid, HE5_HDFE_NENTDFLD, &str_buf_size);
         if (ndata > max_fields)
         {
-            max_fields *= 2;
+            while(ndata > max_fields)
+                max_fields *= 2;
             field_ranks = NclRealloc(field_ranks,max_fields * sizeof(long));
         }
 
@@ -1759,8 +1763,9 @@ NclQuark path;
 
             if (field_ranks[j] > max_ndims)
             {
-                max_ndims *= 2;
-                dimsizes = NclRealloc(dimsizes,field_ranks[j] * sizeof(long));
+                while(field_ranks[j] > max_ndims)
+                    max_ndims *= 2;
+                dimsizes = NclRealloc(dimsizes,max_ndims * sizeof(long));
             }
 
             if (NrmStringToQuark("XDim") == var_hdf_names[j]) 
@@ -1778,7 +1783,7 @@ NclQuark path;
                     if (tmp_hdf_names[k] == NrmStringToQuark("YDim")) 
                         has_ydim = 1;
                     HDFEOS5IntAddDim(&(the_file->dims),&(the_file->n_dims),tmp_hdf_names[k],tmp_ncl_names[k],
-                            dimsizes[k],gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
+                            dimsizes[k],gd_hdf_names[i],gd_ncl_names[i]);
                 }
 
                 HDFEOS5IntAddVar(&(the_file->vars),var_hdf_names[j],var_ncl_names[j],
@@ -1930,7 +1935,9 @@ NclQuark path;
         if (status == SUCCEED)
             status = HE5_GDpixreginfo(HE5_GDid,&pixregcode);
         if (status == SUCCEED)
+        {
             status = HE5_GDgridinfo(HE5_GDid,&xdimsize,&ydimsize,upper_left,lower_right);
+        }
         if (status == SUCCEED)
             status = HE5_GDprojinfo(HE5_GDid,&projcode,&zonecode,&spherecode,projparm);
         if (status == FAIL)
@@ -1946,10 +1953,11 @@ NclQuark path;
 
             dim_names[1] = NrmStringToQuark("XDim");
             HDFEOS5IntAddDim(&(the_file->dims),&(the_file->n_dims),dim_names[1],dim_names[1],
-                    xdimsize,gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
+                    xdimsize,gd_hdf_names[i],gd_ncl_names[i]);
             dim_names[0] = NrmStringToQuark("YDim");
             HDFEOS5IntAddDim(&(the_file->dims),&(the_file->n_dims),dim_names[0],dim_names[0],
-                    ydimsize,gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
+                    ydimsize,gd_hdf_names[i],gd_ncl_names[i]);
+
             dim_sizes[0] = ydimsize;
             dim_sizes[1] = xdimsize;
             if (projcode == HE5_GCTP_GEO) /* 1D coordinate */
@@ -1962,7 +1970,6 @@ NclQuark path;
                             the_file->dims,1,&(dim_sizes[1]),HE5T_NATIVE_DOUBLE,&(dim_names[1]),
                             GRID,gd_hdf_names[i],gd_ncl_names[i]);
                     var = the_file->vars->var_inq;
-
                 }
                 else
                 {
@@ -2042,16 +2049,18 @@ NclQuark path;
                 double lat2d[4], lon2d[4];
                 double *corners;
 
-                cols[0] = rows[0] = 0;
+                cols[0] = 0;
+                rows[0] = 0;
                 cols[1] = xdimsize - 1;
                 rows[1] = 0;
                 cols[2] = xdimsize - 1;
                 rows[2] = ydimsize - 1;
                 cols[3] = 0;
                 rows[3] = ydimsize - 1;
+
                 HE5_GDij2ll(projcode,zonecode,projparm,spherecode,xdimsize,ydimsize,
                     upper_left,lower_right,4,rows,cols,lon2d,lat2d,pixregcode,origincode);
-                
+
                 the_file->n_vars += 2;
                 HDFEOS5IntAddVar(&(the_file->vars),NrmStringToQuark("lon"),NrmStringToQuark("GridLon"),
                         the_file->dims,2,dim_sizes,HE5T_NATIVE_DOUBLE,dim_names,GRID,gd_hdf_names[i],gd_ncl_names[i]);
@@ -2240,11 +2249,8 @@ typedef struct
     dimsizes = NclMalloc(max_nlevels * sizeof(hsize_t));
     sensor_buffer = (Sensor *)NclMalloc(max_sensors*sizeof(Sensor));
 
-    if(npt > max_pt)
-    {
-        while(npt > max_pt)
-            max_pt *= 2;
-    }
+    while(npt > max_pt)
+        max_pt *= 2;
 
     pt_hdf_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_pt);
     pt_ncl_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_pt);
@@ -2375,7 +2381,7 @@ typedef struct
             {
                 HDFEOS5IntAddDim(&(the_file->dims),&(the_file->n_dims),
                         dim_hdf_names[dim],dim_ncl_names[dim],dimsizes[dim],pt_hdf_names[pt],
-                        pt_ncl_names[pt],the_file->file_path_q);
+                        pt_ncl_names[pt]);
             }
 
             /* Fake tmp_type here. */
@@ -2800,7 +2806,7 @@ NclQuark path;
         for(dim = 0; dim < ndims; dim++)
         {
             HDFEOS5IntAddDim(&(the_file->dims),&(the_file->n_dims),dim_hdf_names[dim],dim_ncl_names[dim],
-                    dimsizes[dim],za_hdf_names[za],za_ncl_names[za],the_file->file_path_q);
+                    dimsizes[dim],za_hdf_names[za],za_ncl_names[za]);
         }
 
         ndata = HE5_ZAnentries(HE5_ZAid, HE5_HDFE_NENTDFLD, &str_buf_size);
@@ -2858,7 +2864,8 @@ NclQuark path;
 
             if (field_ranks[nv] > max_ndims)
             {
-                max_ndims *= 2;
+                while(field_ranks[nv] > max_ndims)
+                    max_ndims *= 2;
                 dimsizes = NclRealloc(dimsizes, max_ndims * sizeof(hsize_t));
             }
 
@@ -2871,7 +2878,7 @@ NclQuark path;
                 {
                     HDFEOS5IntAddDim(&(the_file->dims),&(the_file->n_dims),
                             tmp_hdf_names[dim],tmp_ncl_names[dim],dimsizes[dim],za_hdf_names[za],
-                            za_ncl_names[za],the_file->file_path_q);
+                            za_ncl_names[za]);
                 }
 
                 HDFEOS5IntAddVar(&(the_file->vars),var_hdf_names[nv],var_ncl_names[nv],
