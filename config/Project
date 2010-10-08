@@ -113,6 +113,10 @@
 #undef BuildGDAL
 #endif
 
+#if !BuildGRIDSPEC
+#undef BuildGRIDSPEC
+#endif
+
 #ifndef	BuildRasterHDF
 #define	BuildRasterHDF
 #else
@@ -233,6 +237,14 @@
 #endif
 #else
 #define GDALlib
+#endif
+
+#ifdef BuildGRIDSPEC
+#ifndef	GRIDSPEClib
+#define	GRIDSPEClib   -lcf
+#endif
+#else
+#define GRIDSPEClib
 #endif
 
 #ifndef	GRIB2lib
@@ -604,7 +616,8 @@ HDF5LIB		= HDF5lib
 GDALLIB		= GDALlib
 GRIB2LIB	= GRIB2lib
 UDUNITSLIB	= UdUnitslib
-V5DLIB      = V5Dlib
+V5DLIB      	= V5Dlib
+GRIDSPECLIB     = GRIDSPEClib
 XDRLIB		= XdrLibrary
 HDFDEFINES	= HdfDefines
 VDEFINE		= -DNGVERSION='"$(NGVERSION)"'  -DNCLVERSION='"$(NCLVERSION)"'
