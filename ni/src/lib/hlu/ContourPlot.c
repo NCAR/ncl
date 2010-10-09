@@ -6023,6 +6023,7 @@ static NhlErrorTypes ManageLabelBar
 	NhlBoolean		redo_lbar = False;
 	NhlBoolean		set_all = False;
 	NhlBoolean              limit_mode = False;
+	ng_size_t               lcount;
 
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
         
@@ -6169,9 +6170,9 @@ static NhlErrorTypes ManageLabelBar
 					new_fcolors[i] = fcolors[i+1];
 				}
 				NhlFreeGenArray(cnp->lbar_fill_colors);
-				/* this is wrong -- can't just cast to a different size pointer */
 				cnp->lbar_fill_colors = NhlCreateGenArray((NhlPointer)new_fcolors,NhlTColorIndex,
-									  sizeof(int),1,(ng_size_t *)&cnp->lbar_fill_count);
+									  sizeof(int),1,&lcount);
+				cnp->lbar_fill_count = (int) lcount;
 				cnp->lbar_fill_colors->my_data = True;
 				ocnp->lbar_fill_colors = NULL;
 				
@@ -6184,9 +6185,9 @@ static NhlErrorTypes ManageLabelBar
 					new_fpatterns[i] = fpatterns[i+1];
 				}
 				NhlFreeGenArray(cnp->lbar_fill_patterns);
-				/* this is wrong -- can't just cast to a different size pointer */
 				cnp->lbar_fill_patterns = NhlCreateGenArray((NhlPointer)new_fpatterns,NhlTInteger,
-								sizeof(int),1,(ng_size_t *)&cnp->lbar_fill_count);
+									    sizeof(int),1,&lcount);
+				cnp->lbar_fill_count = (int) lcount;
 				cnp->lbar_fill_patterns->my_data = True;
 				ocnp->lbar_fill_patterns = NULL;
 			}
@@ -6198,9 +6199,9 @@ static NhlErrorTypes ManageLabelBar
 					new_fscales[i] = fscales[i+1];
 				}
 				NhlFreeGenArray(cnp->lbar_fill_scales);
-				/* this is wrong -- can't just cast to a different size pointer */
 				cnp->lbar_fill_scales = NhlCreateGenArray((NhlPointer)new_fscales,NhlTFloat,
-									  sizeof(float),1,(ng_size_t *)&cnp->lbar_fill_count);
+									  sizeof(float),1,&lcount);
+				cnp->lbar_fill_count = (int) lcount;
 				cnp->lbar_fill_scales->my_data = True;
 				ocnp->lbar_fill_scales = NULL;
 			}

@@ -966,7 +966,7 @@ _NhlAllocCreateGenArray
 	}
 	else{
 		gen->num_dimensions = num_dimensions;
-		gen->len_dimensions = alloc_func(num_dimensions * sizeof(int));
+		gen->len_dimensions = alloc_func(num_dimensions * sizeof(ng_size_t));
 		if(gen->len_dimensions == NULL)
 			return NULL;
 		gen->num_elements = 1;

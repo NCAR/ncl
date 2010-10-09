@@ -3916,7 +3916,7 @@ static NhlErrorTypes GetXAxisTicks
 	float lx,
 	float rx,
 	float y,
-	int *count,
+	ng_size_t *count,
 	float **values,
 	NhlString **labels
 )
@@ -3926,7 +3926,7 @@ static NhlErrorTypes GetXAxisTicks
 	float lx;
 	float rx;
 	float y;
-	int *count;
+	ng_size_t *count;
 	float **values;
 	NhlString **labels;
 #endif
@@ -3950,11 +3950,11 @@ static NhlErrorTypes GetXAxisTicks
 	float val;
 	char label[128];
 	int nchr;
-	int size;
+	ng_size_t size;
 	int start_ix, end_ix;
 	float angle_div;
 	NhlBoolean dolat = False;
-	int max_count;
+	ng_size_t max_count;
 	int max_seg;
 	int jstart,jend,jsign;
 
@@ -4288,7 +4288,7 @@ static NhlErrorTypes GetYAxisTicks
 	float by,
 	float ty,
 	float x,
-	int *count,
+	ng_size_t *count,
 	float **values,
 	NhlString **labels
 )
@@ -4298,7 +4298,7 @@ static NhlErrorTypes GetYAxisTicks
 	float by;
 	float ty;
 	float x;
-	int *count;
+	ng_size_t *count;
 	float **values;
 	NhlString **labels;
 #endif
@@ -4685,7 +4685,7 @@ static NhlErrorTypes ManageTickMarks
         NhlString *yllabels = NULL, *yrlabels = NULL;
 	float *xbvalues = NULL, *xtvalues = NULL;
 	float *ylvalues = NULL, *yrvalues = NULL;
-	int xbcount,xtcount,ylcount,yrcount;
+	ng_size_t xbcount,xtcount,ylcount,yrcount;
 	NhlBoolean usebottom = True, useleft = True;
 	NhlBoolean xbon,ylon,xton,yron;
 	NhlBoolean xb_labels_on,yl_labels_on,xt_labels_on,yr_labels_on;
@@ -4982,13 +4982,12 @@ static NhlErrorTypes ManageTickMarks
 		xbon = True;
 		xb_labels_on = True;
 
-		/* this is wrong -- can't just cast to a different size pointer */
 		mpp->xbvalues = NhlCreateGenArray
 			((NhlPointer)xbvalues,NhlTFloat,
-			 sizeof(float),1,(ng_size_t *) &xbcount);
+			 sizeof(float),1, &xbcount);
 		mpp->xblabels = NhlCreateGenArray
 			((NhlPointer)xblabels,NhlTString,
-			 sizeof(NhlString),1,(ng_size_t *) &xbcount);
+			 sizeof(NhlString),1, &xbcount);
 		if (! (mpp->xbvalues && mpp->xblabels)) {
 			 NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			 return NhlFATAL;
@@ -5023,10 +5022,10 @@ static NhlErrorTypes ManageTickMarks
 
 		mpp->xtvalues = NhlCreateGenArray
 			((NhlPointer)xtvalues,NhlTFloat,
-			 sizeof(float),1,(ng_size_t *) &xtcount);
+			 sizeof(float),1, &xtcount);
 		mpp->xtlabels = NhlCreateGenArray
 			((NhlPointer)xtlabels,NhlTString,
-			 sizeof(NhlString),1,(ng_size_t *) &xtcount);
+			 sizeof(NhlString),1, &xtcount);
 		if (! (mpp->xtvalues && mpp->xtlabels)) {
 			 NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			 return NhlFATAL;
@@ -5049,10 +5048,10 @@ static NhlErrorTypes ManageTickMarks
 		yl_labels_on = True;
 		mpp->ylvalues = NhlCreateGenArray
 			((NhlPointer)ylvalues,NhlTFloat,
-			 sizeof(float),1,(ng_size_t *) &ylcount);
+			 sizeof(float),1, &ylcount);
 		mpp->yllabels = NhlCreateGenArray
 			((NhlPointer)yllabels,NhlTString,
-			 sizeof(NhlString),1,(ng_size_t *) &ylcount);
+			 sizeof(NhlString),1, &ylcount);
 		if (! (mpp->ylvalues && mpp->yllabels)) {
 			 NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			 return NhlFATAL;
@@ -5087,10 +5086,10 @@ static NhlErrorTypes ManageTickMarks
 
 		mpp->yrvalues = NhlCreateGenArray
 			((NhlPointer)yrvalues,NhlTFloat,
-			 sizeof(float),1,(ng_size_t *) &yrcount);
+			 sizeof(float),1,&yrcount);
 		mpp->yrlabels = NhlCreateGenArray
 			((NhlPointer)yrlabels,NhlTString,
-			 sizeof(NhlString),1,(ng_size_t *) &yrcount);
+			 sizeof(NhlString),1,&yrcount);
 		if (! (mpp->yrvalues && mpp->yrlabels)) {
 			 NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			 return NhlFATAL;
