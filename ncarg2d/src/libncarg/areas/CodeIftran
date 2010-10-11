@@ -2817,6 +2817,18 @@ C
      +             4 ,  6 ,  2 ,  3 ,
      +             2 ,  7 ,  5 ,  6 ,
      +             5 ,  7 ,  0 ,  0 /
+C 
+C Added 8/2010, Jira NCL_32, RLB:
+C This statement-function test whether a given node is a hole-connector.
+C Such nodes have index greater than ILW, and have next/previous links
+C greater than ILW (with the exception of the very first connector, 
+C which necessarily has a previous link pointing to the last 
+C regular node).
+       LOGICAL ISHOLEC
+       ISHOLEC(IDX) = (
+     *     IDX.GT.ILW            .AND.
+     *     IAM(IDX+$ND$).GT.ILW  .AND.
+     *     (IAM(IDX+$PD$).GT.ILW .OR. (IAM(IDX+$PD$)+$NL$).GT.ILW))
 C
 C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
@@ -4236,45 +4248,58 @@ C
 C
                   IF (IPU.EQ.1)
                     IF (ANG.GT.ANM)
-                      IPR=IAM(IP2+$ND$)
-                      ANM=ANG
-                      IPM=IPR
-                      IPV=1
-C                     Jira NCL_32: if this node was inserted to split
-C                     a segment for a hole-connector, we want to use
-C                     the original segment's endpoints on the next
-C                     iteration through the inner loop.
-C                     Note: because the first node (bottom) of the first
-C                     hole-connector points *back* to a user-inserted 
-C                     node (i.e., IAM(IP2+$PD$).LT.ILW), we need to 
-C                     exclude that one special case from the following
-C                     test; hence the factor (ILW+1).  
-                      IF (IP2.GT.(ILW+1).AND.IAM(IP2+$PD$).LT.ILW) THEN
-                        IFRMXY = IAM(IP2+$PD$)
+C                     Jira NCL_32: special-case code for Tomas example:
+C                     Do not follow hole-connector segments that double
+C                     back in the direction we just came from.
+                      IF (ISHOLEC(IP2) .AND. ANG.GE.$PI$) THEN
+                        CONTINUE
                       ELSE
-                        IFRMXY = 0
+                        IPR=IAM(IP2+$ND$)
+                        ANM=ANG
+                        IPM=IPR
+                        IPV=1
+C                       Jira NCL_32: if this node was inserted to split
+C                       a segment for a hole-connector, we want to use
+C                       the original segment's endpoints on the next
+C                       iteration through the inner loop.
+C                       Note: because the first node (bottom) of the first
+C                       hole-connector points *back* to a user-inserted 
+C                       node (i.e., IAM(IP2+$PD$).LT.ILW), we need to 
+C                       exclude that one special case from the following
+C                       test; hence the factor (ILW+1).  
+                        IF (IP2.GT.(ILW+1).AND.IAM(IP2+$PD$).LT.ILW)THEN
+                          IFRMXY = IAM(IP2+$PD$)
+                        ELSE
+                          IFRMXY = 0
+                        END IF
                       END IF
-
                     END IF
                   ELSE
                     IF (ANG.LT.ANM)
-                      IPR=IAM(IP2+$ND$)
-                      ANM=ANG
-                      IPM=IPR
-                      IPV=2
-C                     Jira NCL_32: if this node was inserted to split
-C                     a segment for a hole-connector, we want to use
-C                     the original segment's endpoints on the next
-C                     iteration through the inner loop.
-C                     Note: because the first node (bottom) of the first
-C                     hole-connector points *back* to a user-inserted 
-C                     node (i.e., IAM(IP2+$PD$).LT.ILW), we need to 
-C                     exclude that one special case from the following
-C                     test; hence the factor (ILW+1).  
-                      IF (IP2.GT.(ILW+1).AND.IAM(IP2+$PD$).LT.ILW) THEN
-                        IFRMXY = IAM(IP2+$PD$)
+C                     Jira NCL_32: special-case code for Tomas example:
+C                     Do not follow hole-connector segments that double
+C                     back in the direction we just came from.
+                      IF (ISHOLEC(IP2) .AND. ANG.LE.-$PI$) THEN
+                        CONTINUE
                       ELSE
-                        IFRMXY = 0
+                        IPR=IAM(IP2+$ND$)
+                        ANM=ANG
+                        IPM=IPR
+                        IPV=2
+C                       Jira NCL_32: if this node was inserted to split
+C                       a segment for a hole-connector, we want to use
+C                       the original segment's endpoints on the next
+C                       iteration through the inner loop.
+C                       Note: because the first node (bottom) of the first
+C                       hole-connector points *back* to a user-inserted 
+C                       node (i.e., IAM(IP2+$PD$).LT.ILW), we need to 
+C                       exclude that one special case from the following
+C                       test; hence the factor (ILW+1).  
+                        IF (IP2.GT.(ILW+1).AND.IAM(IP2+$PD$).LT.ILW)THEN
+                          IFRMXY = IAM(IP2+$PD$)
+                        ELSE
+                          IFRMXY = 0
+                        END IF
                       END IF
                     END IF
                   END IF
@@ -4322,34 +4347,48 @@ C
 C
                   IF (IPU.EQ.1)
                     IF (ANG.GT.ANM)
-                      IPR=IAM(IP2+$PD$)
-                      ANM=ANG
-                      IPM=IP2
-                      IPV=2
-C                     Jira NCL_32: if this node was inserted to split
-C                     a segment for a hole-connector, we want to use
-C                     the original segment's endpoints on the next
-C                     iteration through the inner loop.
-                      IF (IP2.GT.ILW .AND. IAM(IP2+$ND$).LT.ILW) THEN
-                        IFRMXY = IAM(IP2+$ND$)
+C                     Jira NCL_32: special-case code for Tomas example:
+C                     Do not follow hole-connector segments that double
+C                     back in the direction we just came from.
+                      IF (ISHOLEC(IP2) .AND. ANG.GE.$PI$) THEN
+                        CONTINUE
                       ELSE
-                        IFRMXY = 0
+                        IPR=IAM(IP2+$PD$)
+                        ANM=ANG
+                        IPM=IP2
+                        IPV=2
+C                       Jira NCL_32: if this node was inserted to split
+C                       a segment for a hole-connector, we want to use
+C                       the original segment's endpoints on the next
+C                       iteration through the inner loop.
+                        IF (IP2.GT.ILW .AND. IAM(IP2+$ND$).LT.ILW) THEN
+                          IFRMXY = IAM(IP2+$ND$)
+                        ELSE
+                          IFRMXY = 0
+                        END IF
                       END IF
                     END IF
                   ELSE
                     IF (ANG.LT.ANM)
-                      IPR=IAM(IP2+$PD$)
-                      ANM=ANG
-                      IPM=IP2
-                      IPV=1
-C                     Jira NCL_32: if this node was inserted to split
-C                     a segment for a hole-connector, we want to use
-C                     the original segment's endpoints on the next
-C                     iteration through the inner loop.
-                      IF (IP2.GT.ILW .AND. IAM(IP2+$ND$).LT.ILW) THEN
-                        IFRMXY = IAM(IP2+$ND$)
+C                     Jira NCL_32: special-case code for Tomas example:
+C                     Do not follow hole-connector segments that double
+C                     back in the direction we just came from.
+                      IF (ISHOLEC(IP2) .AND. ANG.LE.-$PI$) THEN
+                        CONTINUE
                       ELSE
-                        IFRMXY = 0
+                        IPR=IAM(IP2+$PD$)
+                        ANM=ANG
+                        IPM=IP2
+                        IPV=1
+C                       Jira NCL_32: if this node was inserted to split
+C                       a segment for a hole-connector, we want to use
+C                       the original segment's endpoints on the next
+C                       iteration through the inner loop.
+                        IF (IP2.GT.ILW .AND. IAM(IP2+$ND$).LT.ILW) THEN
+                          IFRMXY = IAM(IP2+$ND$)
+                        ELSE
+                          IFRMXY = 0
+                        END IF
                       END IF
                     END IF
                   END IF

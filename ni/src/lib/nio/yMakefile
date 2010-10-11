@@ -87,12 +87,16 @@ GDAL_OBJS = NclOGR.o
 
 NIO_DEFS = -DNIO_LIB_ONLY
 
-PYNIO_SRC_DIR   =   $(TOP)/pynio
 
-NGCALLF_DEF= -D"NGCALLF(reg,caps)=$(NGCALLF)"
-NGCALLF_DEF= 
+#define APPEND_UNDERSCORE 1
+#define NO_APPEND_UNDERSCORE 2
+#define CAPS_NO_APPEND_UNDERSCORE 3
 
-EXTRA_CDEFINES = $(OS1_DEF) $(MAJOR_DEF) $(NETCDF4_DEFS) $(HDFEOS_DEFS) $(GRIB2_DEFS) $(UDUNITS_DEFS) $(V5D_DEFS) $(NIO_DEFS) $(NGCALLF_DEF)
+#if defined(AIX) 
+NGCALLF_DEF= -DFORTRAN_CALLING_METHOD=NO_APPEND_UNDERSCORE
+#endif
+
+EXTRA_CDEFINES = $(OS1_DEF) $(MAJOR_DEF) $(NETCDF4_DEFS) $(HDFEOS_DEFS) $(HDFEOS5_DEFS) $(HDF5_DEFS) $(GRIB2_DEFS) $(GDAL_DEFS) $(NIO_DEFS) $(NGCALLF_DEF)
 
 GEN_HDRS	=	NclTypeobj.h NclTypelogical.h \
 			NclTypedouble.h NclTypefloat.h \
@@ -163,23 +167,23 @@ STATIC_SRCS	=	AddFileFormats.c AttSupport.c DataSupport.c \
 			NclTypelist.c NclGroup.c NclVar.c VarSupport.c \
 			ctoiee.c date.c cmpf.c 
 
-
 NIO_ONLY_CSRCS	=	cmpf.c nioBase.c nio.c nioCallbacks.c nioConvert.c nioError.c niohlu.c nio_io.c \
-			nioNclHLUStub.c nioNresDB.c nioQuarks.c
+			nioNclHLUStub.c nioNresDB.c nioQuarks.c nio_path.c
 
 NIO_ONLY_FSRCS	=	llmap.f llmisc.f
 
-NIO_ONLY_OTHER_SRCS  =	nio_path.c.sed
 
-GEN_SRCS	=	$(GEN_TYPE_SRCS) nio_path.c
+GEN_SRCS	=	$(GEN_TYPE_SRCS)
 
-CSRCS		=	$(STATIC_SRCS) $(HDFEOS_SRCS) $(HDFEOS5_SRCS) $(GRIB2_SRCS)
+CSRCS		=	$(STATIC_SRCS) $(HDFEOS_SRCS) $(HDFEOS5_SRCS) $(HDF5_SRCS) $(GRIB2_SRCS) $(GDAL_SRCS)
+
+OPT_CSRCS	=	NclHDFEOS.c NclHDFEOS5.c NclHDF5.c NclGRIB2.c NclOGR.c
 
 FSRCS		=	qu2reg3.f rowina3.f scm0.f ncepcode.f
 
 SRCS		=	$(GEN_SRCS) $(IO_SRCS) $(NIO_ONLY_CSRCS) $(NIO_ONLY_FSRCS) $(FSRCS)
 
-NIO_CP_SRCS	=	$(GEN_TYPE_SRCS) $(CSRCS) $(NIO_ONLY_CSRCS) $(NIO_ONLY_FSRCS) $(FSRCS) $(NIO_ONLY_OTHER_SRCS)
+NIO_CP_SRCS	=	$(GEN_TYPE_SRCS) $(STATIC_SRCS) $(NIO_ONLY_CSRCS) $(NIO_ONLY_FSRCS) $(FSRCS) $(OPT_CSRCS)
 
 
 GEN_TYPE_OBJS	=	NclTypedouble.o NclTypefloat.o \
@@ -210,30 +214,12 @@ NIO_ONLY_FOBJS	=	llmap.o llmisc.o
 
 FOBJS		=	qu2reg3.o rowina3.o scm0.o ncepcode.o
 
-COMMON_OBJS	=	$(GEN_TYPE_OBJS) $(STATIC_OBJS) $(FOBJS) $(HDFEOS_OBJS) $(HDFEOS5_OBJS) $(GRIB2_OBJS)
-
+COMMON_OBJS	=	$(GEN_TYPE_OBJS) $(STATIC_OBJS) $(FOBJS) $(HDFEOS_OBJS) $(HDFEOS5_OBJS) $(HDF5_OBJS) $(GRIB2_OBJS) $(GDAL_OBJS) 
 OBJS		=	$(COMMON_OBJS) $(NIO_ONLY_COBJS) $(NIO_ONLY_FOBJS) 
 
 
-#ifndef ConditionalInstallTarget
-#define ConditionalInstallTarget(names, mode, dest_prefix,dest)\
-all::]\
-]\
-all-local:: names]\
-]\
-install-local:: names]\
-	@if (test -d dest_prefix); then \ ]\
-	(if (test ! -d dest); then ($(MKDIRHIER) $(PYNIO_SRC_DIR)/libsrc); fi; \ ]\
-	echo "installing NIO files to $(PYNIO_SRC_DIR)"; \ ]\
-        for name in names; do \ ]\
-        (echo "Installing $$name";\ ]\
-        $(INSTALL) -m mode $$name dest); \ ]\
-        done;) \ ]\
-	fi
-#endif  /* ConditionalInstallTarget */
-
-ConditionalInstallTarget($(HDRS),$(INSTALL_INC),$(PYNIO_SRC_DIR),$(PYNIO_SRC_DIR)/libsrc)
-ConditionalInstallTarget($(NIO_CP_SRCS),$(INSTALL_INC),$(PYNIO_SRC_DIR),$(PYNIO_SRC_DIR)/libsrc)
+ConditionalInstallTarget($(HDRS),$(INSTALL_INC),$(PYNIOSRC),$(PYNIOSRC)/libsrc)
+ConditionalInstallTarget($(NIO_CP_SRCS),$(INSTALL_INC),$(PYNIOSRC),$(PYNIOSRC)/libsrc)
 
 LibraryTarget($(MYLIB_IO),$(OBJS))
 InstallTarget($(INSTALL_HDRS),$(INSTALL_INC),$(NCARGINCPATH)/nio)
@@ -334,12 +320,4 @@ NclHDFEOS5.o: NclHDFEOS5.c
       $(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclHDFEOS5.c
 	  @echo 
 
-#
-# NIO dependencies
-#
-nio_path.c: nio_path.c.sed Makefile
-        @sed    -e 's+SED_ENV_DEFS+$(NGENV_DESCRIPT)+'  <nio_path.c.sed >nio_path.c
-
-nio_path.o: nio_path.h nio_path.c
-	$(CC) -c -DNCARGURL='$(NCARGURL)' $(CFLAGS) nio_path.c
 

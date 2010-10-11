@@ -708,7 +708,7 @@ NhlErrorTypes _Nclstr_get_cols
             arraySubString[i] = NrmStringToQuark(result);
         }
     }
-    else if(ms > 0)
+    else if(ms >= 0)
     {
         ns = sC;
         ie = eC;

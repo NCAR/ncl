@@ -23,3 +23,4 @@ TABLES = 5.0.table 5.1.table 5.2.table 5.3.table 5.4.table 5.40.table \
 		 5.5.table 5.6.table 5.7.table 
 
 InstallTarget($(TABLES),$(INSTALL_LIB),$(GRIB2CODETABLEROOT)/ecmwf/5)
+ConditionalInstallTarget($(TABLES),$(INSTALL_INC),$(PYNIOSRC),$(PYNIOSRC)/ncarg/grib2_codetables/ecmwf/5)

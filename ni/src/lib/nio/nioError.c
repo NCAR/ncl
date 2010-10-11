@@ -147,7 +147,9 @@ static Const char *printerror
 		tmp.fname = NULL;
 	}
 
-	return NhlErrFPrintMsg(stderr,&tmp);
+	if (severity < NhlINFO)
+		return NhlErrFPrintMsg(stderr,&tmp);
+	return NULL;
 }
 
 /*

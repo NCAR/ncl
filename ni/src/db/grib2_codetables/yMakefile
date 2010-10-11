@@ -31,3 +31,4 @@ GRIB2_CODETABLE_PATH = $(LIBNCARGPATH)/grib2_codetables
 INSTALL_GRIB2_CODETABLE = $(INSTALL_LIB)
 
 InstallTarget($(TABLES),$(INSTALL_LIB),$(GRIB2CODETABLEROOT))
+ConditionalInstallTarget($(TABLES),$(INSTALL_INC),$(PYNIOSRC),$(PYNIOSRC)/ncarg/grib2_codetables)

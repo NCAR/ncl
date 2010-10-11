@@ -22,3 +22,4 @@
 TABLES = 1.0.table 1.1.table 1.2.table 1.3.table 1.4.table
 
 InstallTarget($(TABLES),$(INSTALL_LIB),$(GRIB2CODETABLEROOT)/fsl/1)
+ConditionalInstallTarget($(TABLES),$(INSTALL_INC),$(PYNIOSRC),$(PYNIOSRC)/ncarg/grib2_codetables/fsl/1)

@@ -28,3 +28,4 @@ TABLES = 4.0.table 4.1.table 4.10.table 4.12.table 4.13.table 4.14.table 4.15.ta
 4.216.table 4.217.table 4.220.table 4.221.table 4.222.table 4.223.table 4.230.table 4.3.table 4.4.table 4.5.table 4.6.table 4.7.table 4.8.table 4.9.table
 
 InstallTarget($(TABLES),$(INSTALL_LIB),$(GRIB2CODETABLEROOT)/ecmwf/4)
+ConditionalInstallTarget($(TABLES),$(INSTALL_INC),$(PYNIOSRC),$(PYNIOSRC)/ncarg/grib2_codetables/ecmwf/4)

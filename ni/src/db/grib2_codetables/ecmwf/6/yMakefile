@@ -22,3 +22,4 @@
 TABLES = 6.0.table
 
 InstallTarget($(TABLES),$(INSTALL_LIB),$(GRIB2CODETABLEROOT)/ecmwf/6)
+ConditionalInstallTarget($(TABLES),$(INSTALL_INC),$(PYNIOSRC),$(PYNIOSRC)/ncarg/grib2_codetables/ecmwf/6)

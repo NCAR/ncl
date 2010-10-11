@@ -35,3 +35,4 @@ TABLES = 4.0.table 4.1.table 4.2.table 4.3.table 4.4.table 4.5.table 4.6.table \
 		 4.216.table 4.217.table 4.220.table 4.221.table 4.222.table
 
 InstallTarget($(TABLES),$(INSTALL_LIB),$(GRIB2CODETABLEROOT)/ncar/4)
+ConditionalInstallTarget($(TABLES),$(INSTALL_INC),$(PYNIOSRC),$(PYNIOSRC)/ncarg/grib2_codetables/ncar/4)

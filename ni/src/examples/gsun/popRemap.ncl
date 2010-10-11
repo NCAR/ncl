@@ -116,6 +116,72 @@ begin
 
 end
 ; ----------------------------------------------------------
+undef ("create_rmpPopFileName2")
+function create_rmpPopFileName2(gridSrc:string, gridDst:string \
+                               ,method:string, areaType:string )
+
+; invoked internally by PopLatLon and PopLatLonV
+; creates the name of the file containing the remap information
+; also performs various consistency/error checks
+; determies directory containing the file with the remap weights
+
+; Map names will be of the form
+;        map_[src grd]_to_[dst grd]_[method]_[type].nc
+;     or
+;        map_[src grd]_to_[dst grd]_[method]_[type]_Date.nc
+; where [method] is bilin or aave and 
+; [type] is da, for destarea, or fa, for fracarea.
+
+local ier, rmpPOP, gridPOP, dirENV, dirPOP, indP
+begin
+  ier = 0
+  if (.not.(areaType.eq."da" .or. areaType.eq."fa") ) then
+      ier = ier + 1
+      print ("create_rmpPopFileName2: areaType="+areaType \
+            +" Only da or fa recognized")
+  end if
+  if (.not.(method.eq."bilin" .or. method.eq."aave") ) then
+      ier = ier + 1
+      print ("create_rmpPopFileName2: method="+method \
+            +" Only bilin or aave recognized")
+  end if
+  if (ier.ne.0) then
+      print ("create_rmpPopFileName2: exit")
+      exit
+  end if
+                                            ; concatenate
+  rmpPOP  = "map_"+gridSrc+"_to_"+gridDst \
+                  +"_"+method+"_"+areaType+"_"+"*.nc"   
+
+ ;dirENV  = "/fis/cgd/cseg/csm/mapping/maps"
+
+  dirENV  = getenv("NCL_POP_REMAP")
+  if (ismissing(dirENV)) then
+      dirPOP  = (/ "./" /)             ; local only
+  else
+      dirPOP  = (/ dirENV, "." /) + "/"
+  end if
+
+ ;print (dirPOP)
+
+  do nd=0,dimsizes(dirPOP)-1
+    ;print ("nd="+nd+"  dirPOP="+dirPOP(nd))
+     gridPOP = systemfunc("cd "+dirPOP(nd)+" ; ls "+rmpPOP)
+    ;print (gridPOP)
+
+     if (.not.ismissing(gridPOP)) then   ; ?supported transformation?
+         print ("create_rmpPopFileName2: "+dirPOP(nd)+gridPOP)
+         return (dirPOP(nd)+gridPOP)
+     end if
+     delete (gridPOP)
+  end do
+                                                                     
+  print ("create_rmpPopFileName2: file not recognized/found: " +rmpPOP)
+  print ("create_rmpPopFileName2: dir searched: " +dirPOP)
+  exit
+
+end
+; ----------------------------------------------------------
 undef ("create_rotPopFileName")
 function create_rotPopFileName (gridSrc:string, gridDst:string) 
 
@@ -129,7 +195,8 @@ begin
  ;print ("create_rotPopFileName: gridSrc="+gridSrc+"  gridDst="+gridDst)
 
                                         ; names with rot angles
-  rotPOP  = (/ "POPX3","POP23" , "POP43", "gx1v3", "gx1v2" \
+  rotPOP  = (/ "POPX3","POP23" , "POP43", "gx1v2", "gx1v3" \
+             , "gx1v4", "gx1v5", "gx1v6"                   \
              , "gx3v3", "gx3v4", "gx3v5", "gx3v6", "gx3v7" \
              , "gx3Uum", "gx3uum"  \
              , "gx3", "gx3p", "hx1", "crx3", "tx0.1v2" /)
@@ -419,7 +486,7 @@ begin
   if (dim_x(nDx-2).ne.dim_src(1) .or. dim_x(nDx-1).ne.dim_src(0)) then
       print ("PopLatLon: Input and Tranform do not match")
       print ("PopLatLon: -----Dimension mismatch-------")
-print (dim_src)
+      print (dim_src)
       print ("PopLatLon: dim_x(nDx-2)="+dim_x(nDx-2) )
       print ("PopLatLon: dim_x(nDx-1)="+dim_x(nDx-1) )
       print ("PopLatLon: dim_src(1)="+dim_src(1) )
@@ -578,6 +645,231 @@ print (dim_src)
 
   copy_VA_pop(x,xOut)
   xOut@_FillValue    = xmsg              ; force common msg val
+  if (isatt(xOut,"missing_value")) then
+      delete(xOut@missing_value)         
+  end if
+  xOut@missing_value = xmsg
+                              
+  if (isatt(fP,"map_method")) then
+      xOut@spatial_op = fP@map_method + ": 1st order" 
+  else
+      xOut@spatial_op = "Unknown remapping"
+  end if
+
+  if (isatt(fP,"normalization")) then
+      xOut@spatial_op = xOut@spatial_op +": "+fP@normalization
+  end if
+
+  xOut@spatial_op = xOut@spatial_op +": NCL: "+rmpFile
+;*************************************************
+; add lat/lon [grid point] coord variables
+;*************************************************
+  PopCoord (xOut, gridDst, latStart, lonStart) 
+;*************************************************
+; output result
+;*************************************************
+  print (" ")
+  return(xOut)  ; return as 2D array
+
+end
+;----------------------------------------------------------------------
+undef ("PopLatLon2")
+function PopLatLon2(x:numeric, gridSrc:string, gridDst:string \
+                             , method:string, areaType:string )
+
+; Regrid a variable from one grid to the other
+;
+; EG: xOut =  PopLatLon(x, "gx1v2" , "T62", "bilin", "da") 
+; EG: xOut => xOut( 94,192)[lat,lon]
+; EG: xPOP =  PopLatLon(xOut  , "T62", "gx3", "aave", "da" ) 
+; EG: xPOP => xPOP( ny, nx)
+
+local rmpFile, fP, dim_x, dim_src, dst_add\
+    , src_ad, map_wts, dim_wts, nlink, nwt, dim_dst, mlon, nlat \
+    , latStart, lonStart, x_atts, i, xmsg, n, nDx, rmpType
+begin
+  print (" ")
+;*****************************************************************
+; take user input for original and destination grid and determine
+; what weight file should be used.
+;*****************************************************************
+  rmpFile = create_rmpPopFileName2(gridSrc, gridDst, method, areaType )
+ ;print ("PopLatLon2: rmpFile="+rmpFile)
+  fP      = addfile(rmpFile,"r")
+;*****************************************************************
+; check to see if weight file for source and actual data source
+; have the same dimensions.
+;*****************************************************************
+  dim_src = fP->src_grid_dims           ; size source grid 
+
+  dim_x   = dimsizes( x )               ; consistency check
+  nDx     = dimsizes( dim_x )           ; rank [# dimensions] of data
+
+  if (dim_x(nDx-2).ne.dim_src(1) .or. dim_x(nDx-1).ne.dim_src(0)) then
+      print ("PopLatLon2: Input and Tranform do not match")
+      print ("PopLatLon2: -----Dimension mismatch-------")
+      print (dim_src)
+      print ("PopLatLon2: dim_x(nDx-2)="+dim_x(nDx-2) )
+      print ("PopLatLon2: dim_x(nDx-1)="+dim_x(nDx-1) )
+      print ("PopLatLon2: dim_src(1)="+dim_src(1) )
+      print ("PopLatLon2: dim_src(0)="+dim_src(0) )
+      exit
+  end if
+;*******************************************************
+; determine which type of convention the weight file was
+; written out in.
+; for NCAR CSM models we want CSM, for PCM models we expect
+; SCRIP
+;*******************************************************
+  if (isfilevar(fP, "row")) then
+    convention = "CSM"
+  else
+    if (isfilevar(fP, "remap_matrix")) then
+      convention = "SCRIP"
+    else
+      print ("PopLatLon2: don't know which convention")
+      print ("PopLatLon2: weight file="+rmpFile)
+      exit
+    end if
+  end if
+;*********************************************************
+  if (convention.eq."CSM") then
+;     print ("PopLatLon2: convention="+convention)
+      dst_add = fP->row                 ; destination grid [linear] 
+      src_add = fP->col                 ; source grid [linear] 
+      s       = fP->S                   ; wts [fortran indexing] 
+      dims    = dimsizes(s)             ; size of each dimension
+      ranks   = dimsizes(dims)          ; rank [# dimensions]
+;      printVarSummary (s)
+;      print ("dimensions of weight file is ="+dims)
+;      print ("ranks="+ranks)
+
+;**********************************************************
+; create local weights array. pop_remap requires weights to
+; have two dimensions. If they come in as only 1D, then create
+; a dummy dimension
+;**********************************************************
+      if (ranks.eq.1) then
+;          print("PopLatLon2: in_wts are 1D, making 2D")
+;          map_wts = new ( (/ 1,dims(0)/), typeof(s))
+;          map_wts(0,:) = s 
+
+          map_wts = new ( (/ dims(0),1/), typeof(s))
+          map_wts(:,0) = s 
+      else
+          map_wts = new ( (/dims(1)+1,dims(0)/), typeof(s))
+          map_wts = s 
+      end if
+      delete (s)
+
+      yc_b0 = fP->yc_b(0)
+      xc_b0 = fP->xc_b(0)
+      if (.not.isatt(yc_b0, "units")) then 
+          latStart= doubletofloat( yc_b0 )*57.29578 
+          lonStart= doubletofloat( xc_b0 )*57.29578
+      else
+          latStart= doubletofloat( yc_b0 )
+          lonStart= doubletofloat( xc_b0 )
+      end if
+  else
+;************************************************************
+; SCRIP weight files
+;************************************************************
+;     print ("PopLatLon2: convention=SCRIP")
+      dst_add = fP->dst_address         ; destination grid [linear] 
+      src_add = fP->src_address         ; source grid [linear] 
+      map_wts = fP->remap_matrix        ; wts 
+
+      latStart= doubletofloat( fP->dst_grid_center_lat(0) )*57.29578 
+      lonStart= doubletofloat( fP->dst_grid_center_lon(0) )*57.29578
+  end if
+;     print ("PopLatLon2: lonStart="+lonStart)
+;     print ("PopLatLon2: latStart="+latStart)
+
+  dim_wts = dimsizes(map_wts)
+  nlink   = dim_wts(0)
+  nwt     = dim_wts(1)
+;*********************************************************
+; now deal with the destination grid
+;*********************************************************
+  dim_dst = fP->dst_grid_dims            ; size destination grid
+  mlon    = dim_dst(0)                   ; eg: 192 for T63 
+  nlat    = dim_dst(1)                   ; eg:  94 for T63
+;*******************************************************
+; Attach missing_value/_FillValue if necessary
+;*******************************************************
+  if (.not.(isatt(x,"missing_value") .and. isatt(x,"_FillValue")) ) then
+      if (isatt(x,"missing_value") .and. .not.isatt(x,"_FillValue")) then
+          x@_FillValue = x@missing_value             
+      else
+          if (isatt(x,"_FillValue") .and. .not.isatt(x,"missing_value")) then
+              x@missing_value = x@_FillValue
+          else
+              xmsg = new ( 1, typeof(x) )
+              xmsg = 1.e30                  ; create msg val
+              x@missing_value = xmsg
+              x@_FillValue    = xmsg
+          end if
+      end if
+  end if
+
+  xmsg = x@_FillValue
+;*******************************************************
+; Actual remapping is done here
+;*******************************************************
+  if (nDx.eq.2) then                                ; lat,lon grid
+;      print("input grid is [lat,lon]")
+;      print ("dimsizes(dst_add)="+dimsizes(dst_add))
+;      print ("dimsizes(src_add)="+dimsizes(src_add))
+;      print ("dimsizes(map_wts)=:")
+;      print (dimsizes(map_wts))
+      xOut = PopLatLon2D(x, nlat, mlon, map_wts, dst_add, src_add \
+                          , nlink, nwt)  
+  end if                              
+
+  if (nDx.eq.3) then
+      xOut = new ( (/dim_x(0),nlat,mlon/), typeof(x), getFillValue(x) )
+      do n=0,dim_x(0)-1
+         xOut(n,:,:) = PopLatLon2D(x(n,:,:), nlat, mlon, map_wts \
+                                  ,dst_add, src_add, nlink, nwt)
+      end do
+                                 
+      if (.not.ismissing(x!0)) then ; if coord present copy
+          xOut!0 = x!0
+          if (iscoord(x,x!0)) then
+              xOut&$x!0$ = x&$x!0$
+          end if
+      end if
+  end if                                 
+
+  if (nDx.eq.4) then
+      xOut = new ( (/dim_x(0), dim_x(1),nlat,mlon/), typeof(x), getFillValue(x) )
+      do n=0,dim_x(0)-1
+        do i=0,dim_x(1)-1
+           xOut(n,i,:,:) = PopLatLon2D(x(n,i,:,:), nlat, mlon, map_wts \
+                                      ,dst_add, src_add, nlink, nwt)
+        end do
+      end do
+                                 
+      do n=0,1
+         if (.not.ismissing(x!n)) then ; if coord present copy
+             xOut!n = x!n
+             if (iscoord(x,x!n)) then
+                 xOut&$x!n$ = x&$x!n$
+             end if
+         end if
+      end do
+  end if                                 
+                                         
+;*****************************************************************
+; take care of attributes
+;*****************************************************************
+
+  copy_VA_pop(x,xOut)
+  xOut@_FillValue    = xmsg              ; force common msg val
+  if (isatt(xOut,"missing_value")) then
+      delete(xOut@missing_value)         
+  end if
   xOut@missing_value = xmsg
                               
   if (isatt(fP,"map_method")) then
@@ -802,7 +1094,8 @@ begin
                                          ; REMAP
                                          ; uvNew will have extra dim
 
-  types = (/"POP","gx3","gx3p","gx1v2","gx1v3", "gx3v3",  "gx3v5",  "crx3", "tx0.1v2"/)
+  types = (/"POP","gx3","gx3p","gx1v2","gx1v3", "gx1v4", "gx1v5", "gx1v6",\
+            "gx3v3",  "gx3v4", "gx3v5", "gx3v6", "gx3v7", "crx3", "tx0.1v2"/)
  ;print(gridSrcType)
  ;print(types)
   if (nDu.eq.2) then
@@ -872,6 +1165,9 @@ begin
 
   copy_VA_pop (u, uvNew)                  ; copy atttributes
   uvNew@_FillValue    = uvmsg
+  if (isatt(uvNew,"missing_value")) then
+      delete(uvNew@missing_value)         
+  end if
   uvNew@missing_value = uvmsg
 
   uvNew@long_name = "velocity components" ; generic name
@@ -893,6 +1189,222 @@ begin
   return( uvNew)  ; return as array with one additional dimension
 end
 ;-------------------------------------------------------
+undef ("PopLatLonV2")
+function PopLatLonV2(u:numeric , v:numeric, rotin:numeric \
+                    ,gridSrc:string, gridDst:string \
+                    ,method:string, areaType:string )
+
+; Regrid a vector from one grid to the other
+; EG: xOut =  PopLatLonV(xPOP23, "gx1v2" , "T62", "bilin", "da", "")) 
+; EG: xOut => xOut( 94,192)[lat,lon]
+; EG: xPOP =  PopLatLonV(xOut  , "T62", "gx3", "aave", "da", "010808" ) 
+; EG: xPOP => xPOP( ny, nx)
+
+local rmpFile, fP, gP, dim_u, dim_src, dst_add \
+    , src_add, map_wts, dim_wts, nlink, nwt, dim_dst, mlon, nlat \
+    , latStart, lonStart, u_1D, v_1D, gP, rot, gridChar, gridSrcTyp \
+    , uWRK_1D, vWRK_1D, uNew_1D, vNew_1D, uvNew, u_atts, i
+
+begin
+  print (" ")
+  rmpFile = create_rmpPopFileName2(gridSrc, gridDst, method, areaType )
+  fP      = addfile(rmpFile,"r")
+
+  dim_u   = dimsizes( u )               ; consistency check
+  nDu     = dimsizes( dim_u )           ; rank [# dimensions]
+  dim_src = fP->src_grid_dims            ; size source grid
+  if (dim_u(nDu-2).ne.dim_src(1) .or. dim_u(nDu-1).ne.dim_src(0)) then
+      print ("PopLatLonV2: Input and Tranform do not match")
+      print ("PopLatLonV2: -----Dimension mismatch--------")
+      print ("PopLatLonV2: dim_x(nDx-2)="+dim_x(nDx-2) )
+      print ("PopLatLonV2: dim_x(nDx-1)="+dim_x(nDx-1) )
+      print ("PopLatLonV: dim_src(1)="+dim_src(1) )
+      print ("PopLatLonV2: dim_src(0)="+dim_src(0) )
+      exit
+  end if
+
+
+;*******************************************************
+; determine which type of convention the weight file was
+; written out in.
+; for NCAR CSM models we want CSM, for PCM models we expect
+; SCRIP
+;*******************************************************
+  if (isfilevar(fP, "row")) then
+    convention = "CSM"
+  else
+    if (isfilevar(fP, "remap_matrix")) then
+      convention = "SCRIP"
+    else
+      print ("PopLatLon2: don't know which convention")
+      print ("PopLatLon2: weight file="+rmpFile)
+      exit
+    end if
+  end if
+
+  if (convention.eq."CSM") then
+      dst_add = fP->row                 ; destination grid [linear] 
+      src_add = fP->col                 ; source grid [linear] 
+      s       = fP->S                   ; wts [fortran indexing] 
+      dims    = dimsizes(s)             ; size of each dimension
+      ranks   = dimsizes(dims)          ; rank [# dimensions]
+      if (ranks.eq.1) then
+          map_wts = new ( (/ dims(0),1/), typeof(s))
+          map_wts(:,0) = s 
+      else
+          map_wts = new ( (/dims(1)+1,dims(0)/), typeof(s))
+          map_wts = s 
+      end if
+      delete (s)
+
+      yc_b0 = fP->yc_b(0)
+      xc_b0 = fP->xc_b(0)
+      if (.not.isatt(yc_b0, "units")) then 
+          latStart= doubletofloat( yc_b0 )*57.29578 
+          lonStart= doubletofloat( xc_b0 )*57.29578
+      else
+          latStart= doubletofloat( yc_b0 )
+          lonStart= doubletofloat( xc_b0 )
+      end if
+
+  else ; for SCRIP convention
+
+      dst_add = fP->dst_address         ; destination grid [linear] 
+      src_add = fP->src_address         ; source grid [linear] 
+      map_wts = fP->remap_matrix        ; wts 
+
+      latStart= doubletofloat( fP->dst_grid_center_lat(0) )*57.29578 
+      lonStart= doubletofloat( fP->dst_grid_center_lon(0) )*57.29578
+      
+  end if
+
+  dim_wts = dimsizes(map_wts)
+  nlink   = dim_wts(0)
+  nwt     = dim_wts(1)
+
+  dim_dst = fP->dst_grid_dims            ; size destination grid
+  mlon    = dim_dst(0)                   ; eg: 192 for T63 
+  nlat    = dim_dst(1)                   ; eg:  94 for T63
+
+  rot = ndtooned(rotin)
+
+  if (isatt(u,"missing_value") .and. .not. isatt(u,"_FillValue")) then
+      uvmsg = u@missing_value
+  else
+      if (isatt(u,"_FillValue")) then
+          uvmsg = u@_FillValue
+      else
+          uvmsg = new ( 1, typeof(u) )
+          uvmsg = 1.e30                  ; create msg val
+      end if
+  end if
+  if (.not.isatt(u,"_FillValue")) then   ; force common msg val
+      u@_FillValue = uvmsg         ; NCL looks for _FillValue
+      v@_FillValue = uvmsg         ; NCL looks for _FillValue
+  end if
+
+  gridChar = stringtochar (gridSrc)
+  gridSrcType= gridSrc
+;  gridSrcType= chartostring(gridChar(0:2)); ex: "POP
+
+                                         ; REMAP
+                                         ; uvNew will have extra dim
+
+  types = (/"POP","gx3","gx3p","gx1v2","gx1v3", "gx1v4", "gx1v5", "gx1v6",\
+            "gx3v3",  "gx3v4", "gx3v5", "gx3v6", "gx3v7", "crx3", "tx0.1v2"/)
+ ;print(gridSrcType)
+ ;print(types)
+  if (nDu.eq.2) then
+      uvNew = new ( (/2, nlat,mlon/), typeof(u), uvmsg )
+      
+      if (any(gridSrcType .eq. types)) then
+          uvNew = preRotate_PopLatLon2D \
+                       (u,v,rot,nlat, mlon, map_wts, dst_add, src_add, uvmsg)  
+      else
+          uvNew = postRotate_PopLatLon2D \
+                       (u,v,rot,nlat, mlon, map_wts, dst_add, src_add, uvmsg)
+ ;        printVarSummary(uvNew)  
+      end if
+  end if                    ; nDu=2  
+        
+
+  if (nDu.eq.3) then
+      uvNew = new ( (/2, dim_u(0), nlat,mlon/), typeof(u), uvmsg )
+      do n=0,dim_u(0)-1
+         if (any(gridSrcType.eq.types)) then
+             uvNew(:,n,:,:) = preRotate_PopLatLon2D \
+                             (u(n,:,:),v(n,:,:),rot,nlat, mlon \
+                             ,map_wts, dst_add, src_add, uvmsg)  
+         else
+             uvNew(:,n,:,:) = postRotate_PopLatLon2D \
+                             (u(n,:,:),v(n,:,:),rot,nlat, mlon \
+                             ,map_wts, dst_add, src_add, uvmsg)  
+         end if
+      end do
+                                 
+      if (.not.ismissing(u!0)) then ; if coord present copy
+          uvNew!1 = u!0
+          if (iscoord(u,u!0)) then
+              uvNew&$u!0$ = u&$u!0$
+          end if
+      end if
+  end if                    ; nDu=3
+
+  if (nDu.eq.4) then
+      uvNew = new ( (/2, dim_u(0), dim_u(1) ,nlat,mlon/), typeof(u), uvmsg )
+      do n=0,dim_u(0)-1
+        do i=0,dim_u(1)-1
+           if (any(gridSrcType.eq.types)) then
+               uvNew(:,n,i,:,:) = preRotate_PopLatLon2D \
+                               (u(n,i,:,:),v(n,i,:,:),rot,nlat, mlon \
+                               ,map_wts, dst_add, src_add, uvmsg)  
+           else
+               uvNew(:,n,i,:,:) = postRotate_PopLatLon2D \
+                               (u(n,i,:,:),v(n,i,:,:),rot,nlat, mlon \
+                               ,map_wts, dst_add, src_add, uvmsg)  
+            end if
+        end do
+      end do
+                                 
+      do n=0,1
+         if (.not.ismissing(u!n)) then ; if coord present copy
+             uvNew!(n+1) = u!n
+             if (iscoord(u,u!n)) then
+                 uvNew&$u!n$ = u&$u!n$
+             end if
+         end if
+      end do
+  end if                     ; nDu=4                   
+
+  uvNew!0 = "component"                   ; generic names
+  uvNew&component = (/0,1/)               ; index coord dim (not needed)
+
+  copy_VA_pop (u, uvNew)                  ; copy atttributes
+  uvNew@_FillValue    = uvmsg
+  if (isatt(uvNew,"missing_value")) then
+      delete(uvNew@missing_value)         
+  end if
+  uvNew@missing_value = uvmsg
+
+  uvNew@long_name = "velocity components" ; generic name
+                              ; add info on operation performed
+  if (isatt(fP,"map_method")) then
+      uvNew@spatial_op = fP@map_method + "; 1st order" 
+  else
+      uvNew@spatial_op = "Unknown remapping"
+  end if
+
+  if (isatt(fP,"normalization")) then
+      uvNew@spatial_op = uvNew@spatial_op +"; "+fP@normalization
+  end if
+  uvNew@spatial_op = uvNew@spatial_op +"; NCL; "+rmpFile
+
+  PopCoord (uvNew, gridDst, latStart, lonStart) ; add lat/lon [grid point] coord variables
+
+  print (" ")
+  return( uvNew)  ; return as array with one additional dimension
+end
+;----------------------------------------------------------------------
 undef("POPlonReorderGM")
 function POPlonReorderGM (x:numeric)   
 

@@ -24,11 +24,12 @@
 #ifdef NIO_LIB_ONLY
 #include "niohlu.h"
 #include "nioNresDB.h"
+#include "nioError.h"
 #else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
-#endif
 #include "ncarg/hlu/Error.h"
+#endif
 #include "defs.h"
 #include "NclMultiDValData.h"
 #include "NclFile.h"

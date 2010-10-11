@@ -1521,7 +1521,7 @@ begin
           ; names to check
  oNames = (/"add_offset", "offset", "OFFSET", "Offset", "_offset" \
            ,"Intercept", "intercept"/)
- sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor" \
+ sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor", "factor" \
            ,"Scale_factor", "Slope" , "slope", "ScaleFactor", "Scale_Factor" /)
 
  offset = 0.0   ; establish as type float
@@ -1608,7 +1608,7 @@ begin
           ; names to check
  oNames = (/"add_offset", "offset", "OFFSET", "Offset", "_offset" \
            ,"Intercept", "intercept"/)
- sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor" \
+ sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor" , "factor" \
            ,"Scale_factor", "Slope" , "slope", "ScaleFactor", "Scale_Factor" /)
 
 
@@ -11667,6 +11667,9 @@ begin
         xReturn@units = x@units
     end if
 
+    if (rankx.eq.2) then
+        copy_VarCoords(x(0,:), xReturn(0,:))
+    end if
     if (rankx.eq.3) then
         copy_VarCoords(x(0,:,:), xReturn(0,:,:))
     end if
