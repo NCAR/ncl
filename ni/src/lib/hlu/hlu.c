@@ -1251,7 +1251,7 @@ NhlErrorTypes _NhlValidatedGenArrayCopy
 #if NhlNeedProto
 	(NhlGenArray	*gto, 
 	 NhlGenArray	gfrom,
-	 int		max_el,
+	 ng_size_t	max_el,
 	 NhlBoolean	copy_data,
 	 NhlBoolean	exact_count,
 	 char		*res_name,
@@ -1260,7 +1260,7 @@ NhlErrorTypes _NhlValidatedGenArrayCopy
 (gto,gfrom,max_el,copy_data,exact_count,res_name,caller)
 	NhlGenArray	*gto; 
 	NhlGenArray	gfrom;
-	int		max_el;
+	ng_size_t	max_el;
 	NhlBoolean	copy_data;
 	NhlBoolean	exact_count;
 	char		*res_name;
@@ -1268,8 +1268,8 @@ NhlErrorTypes _NhlValidatedGenArrayCopy
 #endif
 {
 	char		*e_text;
-	int		i;
-	int		el_count;
+	ng_size_t	i;
+	ng_size_t	el_count;
 	static NrmQuark Qstring;
 	static NhlBoolean first = True;
 

@@ -1171,12 +1171,12 @@ static NhlErrorTypes    ManageDynamicArrays(
 static NhlErrorTypes    ManageGenArray(
 #if	NhlNeedProto
 	NhlGenArray	*ga,
-	int		count,
+	ng_size_t	count,
 	NhlGenArray	copy_ga,
 	NrmQuark	type,
 	NhlPointer	init_val,
-	int		*old_count,
-	int		*init_count,
+	ng_size_t	*old_count,
+	ng_size_t	*init_count,
 	NhlBoolean	*need_check,
 	NhlBoolean	*changed,				       
 	NhlString	resource_name,
@@ -1187,7 +1187,7 @@ static NhlErrorTypes    ManageGenArray(
 static NhlGenArray GenArraySubsetCopy(
 #if	NhlNeedProto
         NhlGenArray     ga,
-        int             length
+        ng_size_t       length
 #endif
 );
 
@@ -2714,7 +2714,8 @@ static NhlErrorTypes    VectorPlotGetValues
         NhlGenArray ga;
 	NhlString ts;
         char *e_text;
-        int i, count = 0;
+        int i;
+	ng_size_t count = 0;
         char *type = "";
 
         for( i = 0; i< num_args; i++ ) {
@@ -2838,11 +2839,11 @@ static NhlErrorTypes    VectorPlotGetValues
 static NhlGenArray GenArraySubsetCopy
 #if	NhlNeedProto
         (NhlGenArray    ga,
-        int             length)
+        ng_size_t       length)
 #else
 (ga,length)
         NhlGenArray     ga;
-        int             length;
+        ng_size_t       length;
 #endif
 {
         NhlGenArray gto;
@@ -6070,7 +6071,7 @@ static NhlErrorTypes ManageVecAnno
                     break;
         }
 	if (ilp->aap->use_vec_color) {
-		int i;
+		ng_size_t i;
 		float *fp = (float *) vcp->levels->data;
 		int *ip = (int *) vcp->level_colors->data;
 		float mag = ilp->aap->real_vec_mag;
@@ -7776,13 +7777,14 @@ static NhlErrorTypes    ManageDynamicArrays
 	NhlVectorPlotLayer	vcold = (NhlVectorPlotLayer) old;
 	NhlVectorPlotLayerPart *ovcp = &(vcold->vectorplot);
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
-	int i,count;
+	int i;
+	ng_size_t count;
 	NhlGenArray ga;
 	char *entry_name;
 	char *e_text;
-	int	init_count;
+	ng_size_t init_count;
 	NhlBoolean need_check,changed;
-	int old_count;
+	ng_size_t old_count;
 	int *ip;
 	float *levels = NULL;
 	NhlBoolean levels_modified = False;
@@ -7983,12 +7985,12 @@ static NhlErrorTypes    ManageDynamicArrays
 static NhlErrorTypes    ManageGenArray
 #if	NhlNeedProto
 	(NhlGenArray	*ga,
-	 int		count,
+	 ng_size_t	count,
 	 NhlGenArray	copy_ga,
 	 NrmQuark	type,
 	 NhlPointer	init_val,
-	 int		*old_count,
-	 int		*init_count,
+	 ng_size_t	*old_count,
+	 ng_size_t	*init_count,
 	 NhlBoolean	*need_check,
 	 NhlBoolean	*changed,
 	 NhlString	resource_name,
@@ -7997,12 +7999,12 @@ static NhlErrorTypes    ManageGenArray
 (ga,count,copy_ga,type,init_val,old_count,init_count,
  need_check,changed,resource_name,entry_name)
 	NhlGenArray	*ga;
-	ng_size_t		count;
+	ng_size_t	count;
 	NhlGenArray	copy_ga;
 	NrmQuark	type;
 	NhlPointer	init_val;
-	int		*old_count;
-	int		*init_count;
+	ng_size_t	*old_count;
+	ng_size_t	*init_count;
 	NhlBoolean	*need_check;
 	NhlBoolean	*changed;
 	NhlString	resource_name;
@@ -8076,9 +8078,8 @@ static NhlErrorTypes    ManageGenArray
 		}
 		memset(datap,0,count * size);
 
-		/* this is wrong -- can't just cast to a different size pointer */
 		if ((*ga = NhlCreateGenArray((NhlPointer)datap,str_type,
-					     size,1,(ng_size_t *)&count)) == NULL) {
+					     size,1,&count)) == NULL) {
 			e_text = "%s: error creating %s GenArray";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  resource_name);

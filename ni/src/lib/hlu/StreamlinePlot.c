@@ -874,12 +874,12 @@ static NhlErrorTypes    ManageDynamicArrays(
 static NhlErrorTypes    ManageGenArray(
 #if	NhlNeedProto
 	NhlGenArray	*ga,
-	ng_size_t		count,
+	ng_size_t	count,
 	NhlGenArray	copy_ga,
 	NrmQuark	type,
 	NhlPointer	init_val,
-	int		*old_count,
-	int		*init_count,
+	ng_size_t	*old_count,
+	ng_size_t	*init_count,
 	NhlBoolean	*need_check,
 	NhlBoolean	*changed,				       
 	NhlString	resource_name,
@@ -890,7 +890,7 @@ static NhlErrorTypes    ManageGenArray(
 static NhlGenArray GenArraySubsetCopy(
 #if	NhlNeedProto
         NhlGenArray     ga,
-        int             length
+        ng_size_t       length
 #endif
 );
 
@@ -2066,11 +2066,11 @@ static NhlErrorTypes    StreamlinePlotGetValues
 static NhlGenArray GenArraySubsetCopy
 #if	NhlNeedProto
         (NhlGenArray    ga,
-        int             length)
+        ng_size_t       length)
 #else
 (ga,length)
         NhlGenArray     ga;
-        int             length;
+        ng_size_t       length;
 #endif
 {
         NhlGenArray gto;
@@ -5666,13 +5666,14 @@ static NhlErrorTypes    ManageDynamicArrays
 	NhlStreamlinePlotLayer	stold = (NhlStreamlinePlotLayer) old;
 	NhlStreamlinePlotLayerPart *ostp = &(stold->streamlineplot);
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
-	int i,count;
+	int i;
+	ng_size_t count;
 	NhlGenArray ga;
 	char *entry_name;
 	char *e_text;
-	int	init_count;
+	ng_size_t init_count;
 	NhlBoolean need_check,changed;
-	int old_count;
+	ng_size_t old_count;
 	int *ip;
 	float *levels = NULL;
 	NhlBoolean levels_modified = False;
@@ -5860,12 +5861,12 @@ static NhlErrorTypes    ManageDynamicArrays
 static NhlErrorTypes    ManageGenArray
 #if	NhlNeedProto
 	(NhlGenArray	*ga,
-	 ng_size_t		count,
+	 ng_size_t	count,
 	 NhlGenArray	copy_ga,
 	 NrmQuark	type,
 	 NhlPointer	init_val,
-	 int		*old_count,
-	 int		*init_count,
+	 ng_size_t	*old_count,
+	 ng_size_t	*init_count,
 	 NhlBoolean	*need_check,
 	 NhlBoolean	*changed,
 	 NhlString	resource_name,
@@ -5878,8 +5879,8 @@ static NhlErrorTypes    ManageGenArray
 	NhlGenArray	copy_ga;
 	NrmQuark	type;
 	NhlPointer	init_val;
-	int		*old_count;
-	int		*init_count;
+	ng_size_t	*old_count;
+	ng_size_t	*init_count;
 	NhlBoolean	*need_check;
 	NhlBoolean	*changed;
 	NhlString	resource_name;

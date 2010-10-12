@@ -1321,8 +1321,8 @@ static NhlErrorTypes    ManageGenArray(
 	NhlGenArray	copy_ga,
 	NrmQuark	type,
 	NhlPointer	init_val,
-	int		*old_count,
-	int		*init_count,
+	ng_size_t	*old_count,
+	ng_size_t	*init_count,
 	NhlBoolean	*need_check,
 	NhlBoolean	*changed,				       
 	NhlString	resource_name,
@@ -1346,7 +1346,7 @@ static NhlErrorTypes	CheckColorArray(
 static NhlGenArray GenArraySubsetCopy(
 #if	NhlNeedProto
         NhlGenArray     ga,
-        int             length
+        ng_size_t       length
 #endif
 );
 
@@ -2840,11 +2840,11 @@ static NhlErrorTypes    ContourPlotGetValues
 static NhlGenArray GenArraySubsetCopy
 #if	NhlNeedProto
         (NhlGenArray    ga,
-        int             length)
+        ng_size_t       length)
 #else
 (ga,length)
         NhlGenArray     ga;
-        int             length;
+        ng_size_t       length;
 #endif
 {
         NhlGenArray gto;
@@ -6140,6 +6140,7 @@ static NhlErrorTypes ManageLabelBar
 
 	if (redo_lbar) {
 		NhlGenArray ga;
+		lcount = cnp->lbar_fill_count;
 
 		cnp->lbar_func_code = cnp->line_lbls.fcode[0];
 		if (cnp->lbar_labels != NULL) 
@@ -8023,9 +8024,9 @@ static NhlErrorTypes    ManageDynamicArrays
 	int *ip;
 	float *fp;
 	float fval;
-	int	init_count;
+	ng_size_t init_count;
 	NhlBoolean need_check,changed;
-	int old_count;
+	ng_size_t old_count;
 	float *levels = NULL;
 	NhlBoolean levels_modified = False, flags_modified = False;
 	NhlBoolean line_init;
@@ -8602,8 +8603,8 @@ static NhlErrorTypes    ManageGenArray
 	 NhlGenArray	copy_ga,
 	 NrmQuark	type,
 	 NhlPointer	init_val,
-	 int		*old_count,
-	 int		*init_count,
+	 ng_size_t	*old_count,
+	 ng_size_t	*init_count,
 	 NhlBoolean	*need_check,
 	 NhlBoolean	*changed,
 	 NhlString	resource_name,
@@ -8616,8 +8617,8 @@ static NhlErrorTypes    ManageGenArray
 	NhlGenArray	copy_ga;
 	NrmQuark	type;
 	NhlPointer	init_val;
-	int		*old_count;
-	int		*init_count;
+	ng_size_t	*old_count;
+	ng_size_t	*init_count;
 	NhlBoolean	*need_check;
 	NhlBoolean	*changed;
 	NhlString	resource_name;

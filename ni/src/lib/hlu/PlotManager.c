@@ -1415,13 +1415,14 @@ static NhlErrorTypes	PlotManagerGetValues
 	int			*ids;
 	NhlGenArray		ga;
 	NhlpmRec		**pm_recs;
-	ng_size_t	count;
+	ng_size_t		count;
 
 	for ( i = 0; i< num_args; i++ ) {
 
 		if (args[i].quark == Qoverlay_seq_ids) {
+			count = ovp->overlay_count;
 
-			if ((ids = (int *) NhlMalloc(ovp->overlay_count * 
+			if ((ids = (int *) NhlMalloc(count * 
 						     sizeof(int))) == NULL) {
 				
 				e_text = "%s: dynamic memory allocation error";
@@ -1430,13 +1431,12 @@ static NhlErrorTypes	PlotManagerGetValues
 				return NhlFATAL;
 			}
 
-			for (j = 0; j < ovp->overlay_count; j++) {
+			for (j = 0; j < count; j++) {
 				ids[j] = ovp->pm_recs[j]->plot->base.id; 
 			}
-			/* this is wrong -- can't just cast to a different size pointer */
 			if ((ga = NhlCreateGenArray((NhlPointer)ids,
 						    NhlTInteger,sizeof(int),
-						    1,(ng_size_t *) &ovp->overlay_count)) 
+						    1, &count)) 
 			    == NULL) {
 				e_text = "%s: error creating %s GenArray";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1448,10 +1448,9 @@ static NhlErrorTypes	PlotManagerGetValues
 			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 		}
 		else if (args[i].quark == Qoverlay_recs) {
-				
+			count = ovp->overlay_count;
 			pm_recs = (NhlpmRec **) 
-			      NhlMalloc(ovp->overlay_count * 
-					sizeof(NhlpmRec *));
+			      NhlMalloc(count * sizeof(NhlpmRec *));
 			if (pm_recs == NULL) {
 				e_text = "%s: dynamic memory allocation error";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1459,7 +1458,7 @@ static NhlErrorTypes	PlotManagerGetValues
 				return NhlFATAL;
 			}
 
-			for (j = 0; j < ovp->overlay_count; j++) {
+			for (j = 0; j < count; j++) {
 
 				pm_recs[j] = (NhlpmRec *)
 					NhlMalloc(sizeof(NhlpmRec));
@@ -1480,10 +1479,9 @@ static NhlErrorTypes	PlotManagerGetValues
 				*/
 			}
 			
-			/* this is wrong -- can't just cast to a different size pointer */
 			ga = NhlCreateGenArray((NhlPointer)pm_recs,
 					       NhlTPointer,sizeof(NhlpmRec *),
-					       1, (ng_size_t *) &ovp->overlay_count);
+					       1,  &count);
 			if (ga == NULL) {
 				e_text = "%s: error creating %s GenArray";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,

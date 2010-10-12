@@ -61,7 +61,7 @@
 #define _NhlLAYERLISTINC	(128)
 
 /* usefull defines for specifying a layer has no parent or default app parent */
-#define	NhlDEFAULT_APP	((int)(NULL))
+#define	NhlDEFAULT_APP	0
 
 
 /* defines for the converter hash table */

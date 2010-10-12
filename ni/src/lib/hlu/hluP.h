@@ -256,7 +256,7 @@ extern NhlErrorTypes _NhlValidatedGenArrayCopy(
 #if	NhlNeedProto
 	 NhlGenArray	*gto, 		/* destination gen array */
 	 NhlGenArray	gfrom,		/* source gen array */
-	 int		max_el,	      /* maximum number of elements allowed */
+	 ng_size_t	max_el,	        /* maximum number of elements allowed */
 	 NhlBoolean	copy_data,	/* copy data part? */
 	 NhlBoolean	exact_count,    /* ensure dest counts match source */
 	 char		*res_name,	/* associated resource name */

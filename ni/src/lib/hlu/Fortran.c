@@ -775,7 +775,9 @@ _NHLCALLF(nhlpfrlsetstringarray,NHLPFRLSETSTRINGARRAY)
 	_NhlArgVal	val;
 	NhlGenArray	gen;
 	NhlString	*table;
+	ng_size_t       nstrings;
 
+	nstrings = *num_strings;
 	table = _NhlMDFstrToCstrtbl(data,*num_strings,*maxlen_strings);
 
 	if(table == NULL){
@@ -785,8 +787,7 @@ _NHLCALLF(nhlpfrlsetstringarray,NHLPFRLSETSTRINGARRAY)
 		return;
 	}
         /* this is wrong -- can't just cast to a different size pointer */
-	gen = _NhlCreateGenArray(table,NhlTString,sizeof(NhlString),1,
-							(ng_size_t *)num_strings,False);
+	gen = _NhlCreateGenArray(table,NhlTString,sizeof(NhlString),1,&nstrings,False);
 	if(gen == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"Unable to add string array to RL");
