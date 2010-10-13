@@ -26,7 +26,9 @@ extern "C" {
 #ifndef _NCdefs_h
 #define _NCdefs_h
 
+#ifndef NIO_LIB_ONLY
 #include "ncarg/hlu/NgSizeT.h"
+#endif
 #include    <stddef.h>
 
 #define NCL_MAX_DIMENSIONS 32

@@ -250,7 +250,7 @@ NIO_NCL_HDR_FILES = ApiRecords.h AttSupport.h DataSupport.h		\
 		jma_3_gtb.h ncep_128_gtb.h ncep_129_gtb.h		\
 		ncep_130_gtb.h ncep_131_gtb.h ncep_133_gtb.h		\
 		ncep_140_gtb.h ncep_141_gtb.h ncep_opn_gtb.h		\
-		ncep_reanal_gtb.h tables.h
+		ncep_reanal_gtb.h tables.h h5data_struct.h
 
 NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		FileSupport.c Formats.c GetGrids.c InitData.c		\

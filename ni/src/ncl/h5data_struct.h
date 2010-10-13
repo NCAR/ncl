@@ -14,7 +14,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef NIO_LIB_ONLY
+#include "nioNgSizeT.h"
+#else
 #include <ncarg/hlu/NgSizeT.h>
+#endif
 
 #include "hdf5.h"
 
