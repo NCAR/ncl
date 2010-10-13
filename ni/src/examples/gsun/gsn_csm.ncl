@@ -10632,10 +10632,14 @@ begin
 ; Pick some "nice" values for this single vertical axis, and
 ; use them if the user hasn't already set their own.
 ;
-  mnmxint               = nice_mnmxintvl(min(y3), max(y3), 10, True)
-  res3_new@trYMinF      = get_res_value(res3_new,"trYMinF",mnmxint(0))
-  res3_new@trYMaxF      = get_res_value(res3_new,"trYMaxF",mnmxint(1))
-
+  if(.not.isatt(res3_new,"trYMinF").or..not.isatt(res3_new,"trYMaxF")) then
+    mnmxint               = nice_mnmxintvl(min(y3), max(y3), 10, True)
+    res3_new@trYMinF      = get_res_value(res3_new,"trYMinF",mnmxint(0))
+    res3_new@trYMaxF      = get_res_value(res3_new,"trYMaxF",mnmxint(1))
+  else
+    res3_new@trYMinF      = get_res_value(res3_new,"trYMinF",0)
+    res3_new@trYMaxF      = get_res_value(res3_new,"trYMaxF",0)
+  end if
   res3_new@tmXBOn       = get_res_value(res3_new,"tmXBOn",False)
   res3_new@tmXBBorderOn = get_res_value(res3_new,"tmXBBorderOn",False)
   res3_new@tmXTOn       = get_res_value(res3_new,"tmXTOn",False)
