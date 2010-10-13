@@ -3348,12 +3348,33 @@ static int HE5_GDreadCoordVar
 
 	HE5_GDij2ll(projcode,zonecode,projparm,spherecode,xdimsize,ydimsize,
 		upper_left,lower_right,total,rows,cols,longitude,latitude,pixregcode,origincode);
+
 				
 	if (islon)
 		NclFree(latitude);
 	else
-		NclFree(longitude);
+	{
+	      /*
+	       *This is a kludge fix for OMI [L3] data,
+	       *which the data is started from LL(Low-Left),
+	       *instead of normal UL (Upper-Left).
+	       *(In short, we need to reverse the latitude from north->south to south->north.)
+	       */
+		if((projcode == HE5_GCTP_GEO) && (origincode == HE5_HDFE_GD_LL))
+		{
+			double tmp;
+			j = total;
+			for(i = 0; i < total/2; i++)
+			{
+				j--;
+				tmp = latitude[j];
+				latitude[j] = latitude[i];
+				latitude[i] = tmp;
+			}
+		}
 
+		NclFree(longitude);
+	}
 		
 	NclFree(rows);
 	NclFree(cols);
@@ -3385,6 +3406,8 @@ void* storage;
 	hsize_t edgei[NCL_MAX_DIMENSIONS];
 	float tmpf;
 	char *tmp_hdf_name;
+
+	hsize_t total_size = 1;
 
 	thelist = thefile->vars;
 	for(i = 0; i < thefile->n_vars; i++) {
@@ -3421,10 +3444,11 @@ void* storage;
 				fid = HE5_SWopen(NrmQuarkToString(thefile->file_path_q),H5F_ACC_RDONLY);
 				did = HE5_SWattach(fid,NrmQuarkToString(thelist->var_inq->var_class_name));
 				for(j = 0; j < thelist->var_inq->n_dims; j++) {
-					starti[j] = (long)start[j] ;
-					stridei[j] = (long)stride[j];
+					starti[j] = (hssize_t)start[j] ;
+					stridei[j] = (hsize_t)stride[j];
 					tmpf = stridei[j];
-	                                edgei[j] =(int)(fabs(((double)(finish[j] - start[j]))) /tmpf) + 1;
+	                                edgei[j] =(hsize_t)(fabs(((double)(finish[j] - start[j]))) /tmpf) + 1;
+	                                total_size *= edgei[j];
 				}
 				if (thelist->var_inq->index_dim != NrmNULLQUARK) {
 					long dimsize = HE5_SWdiminfo(did,NrmQuarkToString(thelist->var_inq->index_dim));
@@ -3444,7 +3468,26 @@ void* storage;
 					}
 				}
 				else {
-					out = HE5_SWreadfield(did,NrmQuarkToString(thelist->var_inq->hdf_name),starti,stridei,edgei,storage);
+					if(thelist->var_inq->typenumber == HE5T_CHARSTRING)
+					{
+        					char **datbuf;
+        					NrmQuark *quark_ptr;
+        					datbuf = (char **)NclMalloc(total_size * sizeof(char *));
+						for(j = 0; j < total_size; j++)
+						{
+							datbuf[j] = (char *)NclMalloc(HDFEOS5_BUF_SIZE * sizeof(char));
+						}
+						out = HE5_SWreadfield(did,NrmQuarkToString(thelist->var_inq->hdf_name),starti,stridei,edgei,datbuf);
+						quark_ptr = (NrmQuark *) storage;
+						for(j = 0; j < total_size; j++)
+						{
+							quark_ptr[j] = NrmStringToQuark(datbuf[j]);
+						}
+					}
+					else
+					{
+						out = HE5_SWreadfield(did,NrmQuarkToString(thelist->var_inq->hdf_name),starti,stridei,edgei,storage);
+					}
 				}
 				if(out == 0) {
 					HE5_SWdetach(did);
