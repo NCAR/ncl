@@ -51,6 +51,16 @@ HDFEOS_OBJS = NclHDFEOS.o
 #define HDFEOSLIB
 #endif
 
+#ifdef BuildHDF5
+HDF5_DEFS = -DBuildHDF5
+HDF5_SRCS = NclHDF5.c h5reader.c h5writer.c
+HDF5_OBJS = NclHDF5.o h5reader.o h5writer.o
+#else
+#define HDF5_SRCS
+#define HDF5_OBJS
+#define HDF5LIB
+#endif
+
 #ifdef BuildHDFEOS5
 HDFEOS5_DEFS = -DBuildHDFEOS5 $(HDF4_NETCDF)
 HDFEOS5_SRCS = NclHDFEOS5.c
@@ -115,7 +125,7 @@ STATIC_HDRS	=	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h  \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \
 			NclType.h defs.h NclGroup.h NclVar.h NclDataDefs.h NclFileInterfaces.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
-			NclOneDValCoordData.h \
+			NclOneDValCoordData.h h5data_struct.h \
 			date.h NclCCM.h NclGRIB.h NclGRIB2.h date.h tables.h \
 			NclList.h NclMultiDVallistData.h NclTypelist.h ccmhdr.h \
 			cptec_254_gtb.h dwd_002_gtb.h dwd_201_gtb.h dwd_202_gtb.h \
@@ -132,7 +142,7 @@ STATIC_HDRS	=	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h  \
 
 INSTALL_HDRS	=	nio.h niohlu.h nioNresDB.h defs.h Symbol.h NclDataDefs.h NclFile.h \
 			nioc.h nioError.h NclData.h nioBase.h nioCallbacks.h nioConvertP.h NclType.h \
-			nioConvert.h niohluP.h \
+			nioConvert.h niohluP.h nioNgSizeT.h \
 			NclGroup.h NclVar.h NclFileInterfaces.h DataSupport.h FileSupport.h NclMdInc.h \
 			TypeSupport.h NclTypedouble.h NclTypefloat.h NclTypelong.h NclTypeint.h \
 			NclTypeshort.h NclTypestring.h NclTypelogical.h NclTypebyte.h NclTypechar.h \
@@ -143,7 +153,7 @@ INSTALL_HDRS	=	nio.h niohlu.h nioNresDB.h defs.h Symbol.h NclDataDefs.h NclFile.
 
 NIO_ONLY_HDRS	=	cmpf.h nioBase.h nioBaseI.h nioBaseP.h nioCallbacks.h nioCallbacksP.h \
 			nioc.h nioConvert.h nioConvertP.h nioError.h nio.h niohlu.h niohluP.h \
-			nioNresDB.h nio_path.h nioResList.h nioVarArg.h
+			nioNresDB.h nio_path.h nioResList.h nioVarArg.h nioNgSizeT.h 
 
 HDRS		=	$(GEN_HDRS) $(STATIC_HDRS) $(NIO_ONLY_HDRS)
 
@@ -177,7 +187,7 @@ GEN_SRCS	=	$(GEN_TYPE_SRCS)
 
 CSRCS		=	$(STATIC_SRCS) $(HDFEOS_SRCS) $(HDFEOS5_SRCS) $(HDF5_SRCS) $(GRIB2_SRCS) $(GDAL_SRCS)
 
-OPT_CSRCS	=	NclHDFEOS.c NclHDFEOS5.c NclHDF5.c NclGRIB2.c NclOGR.c
+OPT_CSRCS	=	NclHDFEOS.c NclHDFEOS5.c NclHDF5.c NclGRIB2.c NclOGR.c h5reader.c h5writer.c
 
 FSRCS		=	qu2reg3.f rowina3.f scm0.f ncepcode.f
 
