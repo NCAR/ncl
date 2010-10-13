@@ -422,6 +422,7 @@ NhlErrorTypes ezfftb_W( void )
         att_list = att_list->next;
       }
     }
+    break;
   default:
         NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: data.kind, can't continue");
         return(NhlFATAL);
