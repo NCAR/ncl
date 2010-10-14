@@ -514,11 +514,11 @@ FILE *fp;
 	if(ret < 0) {
 		return(NhlWARNING);
 	}
-	ret = nclfprintf(fp,"Total Size: %lld bytes\n",thevalue->multidval.totalsize);
+	ret = nclfprintf(fp,"Total Size: %lld bytes\n",(long long)thevalue->multidval.totalsize);
 	if(ret < 0) {
 		return(NhlWARNING);
 	}
-	ret = nclfprintf(fp,"            %lld values\n",thevalue->multidval.totalelements);
+	ret = nclfprintf(fp,"            %lld values\n",(long long)thevalue->multidval.totalelements);
 	if(ret < 0) {
 		return(NhlWARNING);
 	}
@@ -541,7 +541,7 @@ FILE *fp;
 				return(NhlWARNING);
 			}
 		}
-		ret = nclfprintf(fp,"%lld]",self->var.dim_info[i].dim_size);
+		ret = nclfprintf(fp,"%lld]",(long long)self->var.dim_info[i].dim_size);
 		if(ret < 0) {
 			return(NhlWARNING);
 		}
@@ -1324,7 +1324,7 @@ NclSelectionRecord *sel_ptr;
 						thevalue->multidval.type->type_class.type,
 						NULL);
 				if(tmp_md == NULL) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
+					NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side"));
 					return(NhlFATAL);
 				}
 			} else {
