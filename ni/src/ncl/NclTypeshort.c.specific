@@ -141,6 +141,44 @@ NclTypeClass fc;
 		}
 		return(NhlNOERROR);
 	}
+	case Ncl_Typeint8: {
+		char *fl = (char*)from;
+		if((from_m == NULL)||(to_m == NULL)) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				*res = (short)*fl;
+			}
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = tmp_mis.shortval;
+				} else {
+					*res = (short)*fl;
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
+        case Ncl_Typeuint8: {
+                unsigned char *fl = (unsigned char *)from;
+                if((from_m == NULL)||(to_m == NULL)) {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                *res = (short)*fl;
+                        }
+                } else {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                tmp = 0;
+                                (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+                                if(tmp) {
+                                        *res = tmp_mis.shortval;
+                                } else {
+                                        *res = (short)*fl;
+                                }
+                        }
+                }
+                return(NhlNOERROR);
+        }
 	default:
 		return(NhlFATAL);
 	}
