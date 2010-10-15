@@ -1862,7 +1862,7 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs, "snumeric", 1, dimsizes);  nargs++;
 	SetArgTemplate(args,nargs, "snumeric", 1, dimsizes);  nargs++;
 /*	SetArgTemplate(args,nargs, "integer", 1, dimsizes);  nargs++;*/
-	SetArgTemplate(args,nargs, "numeric", 1, dimsizes);  nargs++;
+	SetArgTemplate(args,nargs, "snumeric", 1, dimsizes);  nargs++;
 	NclRegisterFunc( _Nclfspan, args, "fspan", nargs);
 
 	nargs = 0;
@@ -1873,9 +1873,9 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
 	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
 */
-	SetArgTemplate(args,nargs,"numeric",1,dimsizes); nargs++;
-	SetArgTemplate(args,nargs,"numeric",1,dimsizes); nargs++;
-	SetArgTemplate(args,nargs,"numeric",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"snumeric",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"snumeric",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"snumeric",1,dimsizes); nargs++;
 	NclRegisterFunc( _Nclispan,args,"ispan",nargs);
 
 	nargs = 0;

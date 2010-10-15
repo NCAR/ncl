@@ -559,7 +559,7 @@ void _NclAddIntrinsics
 	args[0].dim_sizes[0] = 1;
 	args[0].is_dimsizes = 1;
 	args[0].n_dims = 1;
-	args[1].arg_data_type = _NclLookUp("long");
+	args[1].arg_data_type = _NclLookUp("numeric");
 	args[1].is_dimsizes = 0;
 	args[1].n_dims = 1;
 	args[2].arg_data_type = _NclLookUp("string");
@@ -577,7 +577,7 @@ void _NclAddIntrinsics
 	args[1].dim_sizes[0] = 1;
 	args[1].is_dimsizes = 1;
 	args[1].n_dims = 1;
-	args[2].arg_data_type = _NclLookUp("long");
+	args[2].arg_data_type = _NclLookUp("numeric");
 	args[2].is_dimsizes = 1;
 	args[2].n_dims = 1;
 	args[2].dim_sizes[0] = -1;
@@ -596,7 +596,7 @@ void _NclAddIntrinsics
 	args[1].dim_sizes[0] = 1;
 	args[1].is_dimsizes = 1;
 	args[1].n_dims = 1;
-	args[2].arg_data_type = _NclLookUp("long");
+	args[2].arg_data_type = _NclLookUp("numeric");
 	args[2].is_dimsizes = 1;
 	args[2].n_dims = 1;
 	args[2].dim_sizes[0] = -1;
@@ -657,7 +657,7 @@ void _NclAddIntrinsics
 	args[0].dim_sizes[0] = 1;
 	args[0].is_dimsizes = 1;
 	args[0].n_dims = 1;
-	args[1].arg_data_type = _NclLookUp("long");
+	args[1].arg_data_type = _NclLookUp("numeric");
 	args[1].is_dimsizes = 0;
 	args[1].n_dims = 1;
 	args[2].arg_data_type = _NclLookUp("string");
@@ -671,7 +671,7 @@ void _NclAddIntrinsics
 	args[0].dim_sizes[0] = 1;
 	args[0].is_dimsizes = 1;
 	args[0].n_dims = 1;
-	args[1].arg_data_type = _NclLookUp("long");
+	args[1].arg_data_type = _NclLookUp("numeric");
 	args[1].is_dimsizes = 0;
 	args[1].n_dims = 1;
 	args[2].arg_data_type = _NclLookUp("string");

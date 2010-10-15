@@ -77,6 +77,14 @@ extern char *nclf;
 
 long long local_strtoll(const char *nptr, char **endptr, int base);
 
+/* 
+ * Function to coerce dimension sizes to int or long
+ * Located in ../lib/nfp/wrapper.[ch].
+ */
+extern ng_size_t *get_dimensions(void *tmp_dimensions,ng_size_t n_dimensions,
+				 NclBasicDataTypes type_dimensions,
+				 const char *);
+
 NhlErrorTypes _NclIGetScriptPrefixName
 #if     NhlNeedProto
 (void)
@@ -2550,7 +2558,6 @@ NhlErrorTypes _NclIfbindirread(void)
 	Const char *path_string;
 	ng_size_t  n_dimensions = 0;
 	ng_size_t *dimsizes = NULL;
-    long *tmp_dsz = NULL;
 	ng_size_t size = 1;
 	ng_size_t i;
 	void *tmp_ptr;
@@ -2648,10 +2655,16 @@ NhlErrorTypes _NclIfbindirread(void)
 	default:
 		return(NhlFATAL);
 	}
+/*
+ * Create array to hold dimension sizes, which can be int or long.
+ */
 	if(tmp_md != NULL) {
 		n_dimensions = tmp_md->multidval.totalelements;
-		tmp_dsz = (ng_size_t *) tmp_md->multidval.val;
-		dimsizes = (ng_size_t *) tmp_dsz;
+		dimsizes = get_dimensions(tmp_md->multidval.val,
+					  tmp_md->multidval.totalelements,
+					  tmp_md->multidval.data_type,"fbindirread");
+		if(dimsizes == NULL) 
+		  return(NhlFATAL);
 /*
 		if((n_dimensions == 1)&&(dimsizes[0] == -1)) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: -1 is not supported for fbindirread use cbinread");
@@ -2659,7 +2672,7 @@ NhlErrorTypes _NclIfbindirread(void)
 		}
 */
 	}
-	if((n_dimensions == 1) && (tmp_dsz[0] == -1)) {
+	if((n_dimensions == 1) && (dimsizes[0] == -1)) {
                 size = buf.st_size/thetype->type_class.size;
                 n_dimensions = 1;
                 dimsizes = &size;
@@ -2778,7 +2791,6 @@ NhlErrorTypes _NclIcbinread
 	Const char *path_string;
 	ng_size_t  n_dimensions = 0;
 	ng_size_t *dimsizes = NULL;
-	ng_size_t *tmp_dsz = NULL;
 	ng_size_t size = 1;
 	ng_size_t i;
 	void *tmp_ptr;
@@ -2860,10 +2872,13 @@ NhlErrorTypes _NclIcbinread
 	}
 	if(tmp_md != NULL) {
 		n_dimensions = tmp_md->multidval.totalelements;
-		tmp_dsz = (ng_size_t *) tmp_md->multidval.val;
-		dimsizes = (ng_size_t *) tmp_dsz;
+		dimsizes = get_dimensions(tmp_md->multidval.val,
+					  tmp_md->multidval.totalelements,
+					  tmp_md->multidval.data_type,"cbinread");
+		if(dimsizes == NULL) 
+		  return(NhlFATAL);
 	}
-	if((n_dimensions == 1) && (tmp_dsz[0] == -1)) {
+	if((n_dimensions == 1) && (dimsizes[0] == -1)) {
 		size = buf.st_size/thetype->type_class.size;
 		n_dimensions = 1;
 		dim2 = size;
@@ -3211,7 +3226,8 @@ NhlErrorTypes _NclIfbinrecread
 	string *fpath;
 	int	*recnum;
 	ng_size_t	*dimensions;
-    ng_size_t  *tmp_dsz;
+	NclBasicDataTypes type_dimensions;
+	void	*tmp_dimensions;
 	ng_size_t	dimsize;
 	string *type;
 	NclScalar missing;
@@ -3224,8 +3240,7 @@ NhlErrorTypes _NclIfbinrecread
 	ng_size_t i;
 	int ind1,ind2;
 	int fd = -1;
-	ng_size_t size = 1;
-    long    tmp_size = 1;
+	ng_size_t size = 1, tmp_size = 1;
 	int n;
 	off_t cur_off = 0;
 	NhlErrorTypes ret = NhlNOERROR;
@@ -3277,19 +3292,21 @@ NhlErrorTypes _NclIfbinrecread
 	}
 	
 /*	dimensions = (ng_size_t*)NclGetArgValue(*/
-	tmp_dsz = (ng_size_t*)NclGetArgValue(
+	tmp_dimensions = (void*)NclGetArgValue(
 		2,
 		4,
 		NULL,
 		&dimsize,
 		&missing,
 		&has_missing,
-		NULL,
+		&type_dimensions,
 		0);
 
-    dimensions = (ng_size_t *) tmp_dsz;
-/*	if(*dimensions!= -1) {*/
-	if(*tmp_dsz != -1) {
+	dimensions = get_dimensions(tmp_dimensions,dimsize,type_dimensions,
+				    "fbinrecread");
+	if(dimensions == NULL) 
+	  return(NhlFATAL);
+	if(*dimensions!= -1) {
 		for(i = 0; i < 	dimsize; i++) {
 			if(has_missing&&(missing.intval == *(dimensions + i))) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: dimension size contains a missing value, can't continue");
@@ -3473,9 +3490,7 @@ NhlErrorTypes _NclIfbinread
 	Const char *path_string;
 	ng_size_t  n_dimensions = 0;
 	ng_size_t *dimsizes = NULL;
-	ng_size_t  *tmp_dsz = NULL;
-	ng_size_t size = 1;
-	long    tmp_size = 0;
+	ng_size_t size = 1, tmp_size = 1;
 	ng_size_t i;
 	void *tmp_ptr;
 	ng_size_t totalsize = 0;
@@ -3558,12 +3573,18 @@ NhlErrorTypes _NclIfbinread
 	default:
 		return(NhlFATAL);
 	}
+/*
+ * Create array to hold dimension sizes, which can be int or long.
+ */
 	if(tmp_md != NULL) {
 		n_dimensions = tmp_md->multidval.totalelements;
-		tmp_dsz = (ng_size_t *) tmp_md->multidval.val;
-		dimsizes = (ng_size_t *) tmp_dsz;
+		dimsizes = get_dimensions(tmp_md->multidval.val,
+					  tmp_md->multidval.totalelements,
+					  tmp_md->multidval.data_type,"fbinread");
+	if(dimsizes == NULL) 
+	  return(NhlFATAL);
 	}
-	if((n_dimensions == 1) && (tmp_dsz[0] == -1)){
+	if((n_dimensions == 1) && (dimsizes[0] == -1)){
 		tmp_size = -1;
 		dimsizes = &dim2;
 		n_dimensions = 1;
@@ -3573,7 +3594,7 @@ NhlErrorTypes _NclIfbinread
 		}
 	}
 	if(read(fd,(void*)&control_word,4) != 4) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIfbinread: An error occurred while reading the file (%s), check path",
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: An error occurred while reading the file (%s), check path",
 			  _NGResolvePath(path_string));
 		return(NhlFATAL);
 	}
@@ -3581,7 +3602,7 @@ NhlErrorTypes _NclIfbinread
 		_NclSwapBytes(NULL,&control_word,1,sizeof(int));
 	}
 	if(control_word <= 0) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIfbinread: 0 or less than zero fortran control word, FILE NOT SEQUENTIAL ACCESS!");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: 0 or less than zero fortran control word, FILE NOT SEQUENTIAL ACCESS!");
 		close(fd);
 		return(NhlFATAL);
 	}
@@ -3595,7 +3616,7 @@ NhlErrorTypes _NclIfbinread
 		totalsize = size * thetype->type_class.size;
 		if (totalsize > control_word) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "_NclIfbinread: requested variable size exceeds record size");
+				  "fbinread: requested variable size exceeds record size");
 			close(fd);
 			return(NhlFATAL);
 		}
@@ -4176,7 +4197,6 @@ NhlErrorTypes _NclIasciiread
 	Const char *path_string;
 	ng_size_t  n_dimensions = 0;
 	ng_size_t *dimsizes = NULL;
-	long *tmp_dsz = NULL;
 	ng_size_t size = 1;
 	ng_size_t i;
 	int j;
@@ -4226,13 +4246,19 @@ NhlErrorTypes _NclIasciiread
 	default:
 		return(NhlFATAL);
 	}
+/*
+ * Create array to hold dimension sizes, which can be int or long.
+ */
 	if(tmp_md != NULL) {
 		n_dimensions = tmp_md->multidval.totalelements;
-		tmp_dsz = tmp_md->multidval.val;
-		dimsizes = (ng_size_t *) tmp_dsz;
+		dimsizes = get_dimensions(tmp_md->multidval.val,
+					  tmp_md->multidval.totalelements,
+					  tmp_md->multidval.data_type,"asciiread");
+	if(dimsizes == NULL) 
+	  return(NhlFATAL);
 	}
-	if(tmp_dsz[0] == -1) {
-        has_unlimited = 1;
+	if(dimsizes[0] == -1) {
+	  has_unlimited = 1;
 	} else {
 		has_unlimited = 0;
 		for(i = 0; i < n_dimensions; i++) {
@@ -9700,7 +9726,7 @@ NhlErrorTypes _Ncl1dtond
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	NclStackEntry dims;
-	NclMultiDValData tmp_dims= NULL;
+	NclMultiDValData tmp_dims = NULL;
 	void *out_val;
 	ng_size_t *dimsizes;
 	ng_size_t sz = 1;
@@ -9733,31 +9759,13 @@ NhlErrorTypes _Ncl1dtond
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
 		return(NhlFATAL);
 	}
+
 	if(tmp_dims == NULL)
 		return(NhlFATAL);
-
-
 	ndims = tmp_dims->multidval.totalelements;
-	dimsizes = (ng_size_t *) NclMalloc((tmp_dims->multidval.totalelements) * sizeof(ng_size_t));
-	switch (tmp_dims->multidval.data_type) {
-        case NCL_int:
-        	for (i = 0; i < tmp_dims->multidval.totalelements; i++) {
-                sz *= ((int*) tmp_dims->multidval.val)[i];
-                ((ng_size_t *) dimsizes)[i] = ((int*) tmp_dims->multidval.val)[i];
-	        }
-		break;
-
-        case NCL_long:
-        	for (i = 0; i < tmp_dims->multidval.totalelements; i++) {
-		        sz *= ((long*)tmp_dims->multidval.val)[i];
-                ((ng_size_t *) dimsizes)[i] = ((ng_size_t*) tmp_dims->multidval.val)[i];
-	        }
-		break;
-        default:
-		/* this should allow conversion */
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Wrong data type for dimension sizes"));
-                return(NhlFATAL);
-	}
+	dimsizes = get_dimensions(tmp_dims->multidval.val,ndims,
+				  tmp_dims->multidval.data_type,"onedtond");
+	for (i = 0; i < ndims; i++) sz *= dimsizes[i];
 
 	if((sz == tmp_md->multidval.totalelements)||(sz < tmp_md->multidval.totalelements)) {
 		if(sz < tmp_md->multidval.totalelements) {
@@ -9794,8 +9802,13 @@ NhlErrorTypes _Ncl1dtond
 			0
 		));
 	} else { /* (sz > tmp_md->multidval.totalelements)&&!(sz%tmp_md->multidval.totalelements)) */
+	  printf("size of out_val = %ld\n", sz*tmp_md->multidval.type->type_class.size);
 		out_val = (void*)NclMalloc(sz*tmp_md->multidval.type->type_class.size);
+		printf("sz = %ld ndims = %ld\n", sz, ndims);
 		for(i = 0; i < (ng_size_t)sz/tmp_md->multidval.totalelements; i++) {
+		  printf("i = %ld\n", i);
+		  printf("tmp_md->multidval.totalsize = %ld\n", tmp_md->multidval.totalsize);
+		  printf("i*tmp_md->multidval.totalsize = %ld\n", i*tmp_md->multidval.totalsize);
 			memcpy(&(((char*)out_val)[i*tmp_md->multidval.totalsize]),
 				tmp_md->multidval.val,
 				tmp_md->multidval.totalsize);
@@ -10050,7 +10063,7 @@ NhlErrorTypes _Ncldim_product_n
 /*
  * Get dimensions to do product across.
  */
-	/* dims is the array of dimension numbers, ndims is the 1D size the the array (i.e. the number of dimensions) */
+	/* dims is the array of dimension numbers, ndims is the 1D size of the array (i.e. the number of dimensions) */
 	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,0);
 
 /*
@@ -12894,6 +12907,8 @@ NhlErrorTypes _Nclnum
 	logical *tmp;
 	ng_size_t count;
 	ng_size_t  i;
+	int return_size;
+	NclBasicDataTypes return_type;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
@@ -12910,43 +12925,43 @@ NhlErrorTypes _Nclnum
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
+/*
+ * The rules for when to return an int versus a long:
+ *    - On a 32-bit system, return int.
+ *    - On a 64-bit system, return long if the count > INT32_MAX.
+ */
+	return_size = ((NclTypeClass)nclTypeintClass)->type_class.size;
+	return_type = NCL_int;
 
+	tmp = (logical*)tmp_md->multidval.val;
+	count = 0;
 	if(tmp_md->multidval.missing_value.has_missing) {
-		tmp = (logical*)tmp_md->multidval.val;
-		count = 0;
 		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
 			if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval))
 				count++;
 		}
-		out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size);
-		memcpy(out_val,&count,((NclTypeClass)nclTypeintClass)->type_class.size);
-		return(NclReturnValue(
-			out_val,
-			1,
-			&dimsizes,
-			NULL,
-			NCL_int,
-			0
-		));
 	} else {
-		tmp = (logical*)tmp_md->multidval.val;
-		count = 0;
 		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
 			if(tmp[i])
 				count++;
 		}
-		out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size);
-		memcpy(out_val,&count,((NclTypeClass)nclTypeintClass)->type_class.size);
-		return(NclReturnValue(
-		        out_val,
-			1,
-			&dimsizes,
-			NULL,
-			NCL_int,
-			0
-		));
 	}
-
+#if !defined(NG32BIT)
+	if(count > INT32_MAX) {
+	  return_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
+	  return_type = NCL_long;
+	}
+#endif
+	out_val = (void*)NclMalloc(return_size);
+	memcpy(out_val,&count,return_size);
+	return(NclReturnValue(
+			      out_val,
+			      1,
+			      &dimsizes,
+			      NULL,
+			      return_type,
+			      0
+			      ));
 }
 NhlErrorTypes _Nclind
 #if	NhlNeedProto
@@ -12959,9 +12974,11 @@ NhlErrorTypes _Nclind
 	NclMultiDValData tmp_md = NULL;
 	void *out_val;
 	ng_size_t dimsizes = 1;
-	logical *tmp;
+	logical *tmp, return_int;
 	ng_size_t j, count;
-    ng_size_t  i;
+	ng_size_t  i;
+	int return_size;
+	NclBasicDataTypes return_type;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
@@ -12978,27 +12995,79 @@ NhlErrorTypes _Nclind
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
-
+/*
+ * The rules for when to return an int versus a long:
+ *    - On a 32-bit system, return ints.
+ *    - On a 64-bit system, return longs if any indexes > INT32_MAX.
+ *
+ * There are four main sections below, handling four possible ways
+ * of returning indexes:
+ *
+ *   - The input array has a _FillValue, count>0, and returning ints.
+ *   - The input array has a _FillValue, count>0, and returning longs.
+ *   - The input array has a _FillValue, count=0, return int msg value
+ *   - The input array doesn't have a _FillValue, count>0, and returning ints.
+ *   - The input array doesn't have a _FillValue, count>0, and returning longs.
+ *   - The input array doesn't have a _FillValue, count=0, return int msg value
+ */
+	return_int = True;
 	if(tmp_md->multidval.missing_value.has_missing) {
+/*
+ * The input array has a _FillValue.
+ */
 		tmp = (logical*)tmp_md->multidval.val;
 		count = 0;
 		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
-			if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval))
-				count++;
+		  if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval)) {
+		    count++;
+#if !defined(NG32BIT)
+		    if(return_int == True && i > INT32_MAX) {
+		      return_int = False;
+		    }
+#endif
+		  }
+		}
+		if(return_int) {
+		  return_size = ((NclTypeClass)nclTypeintClass)->type_class.size;
+		  return_type = NCL_int;
+		}
+		else {
+		  return_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
+		  return_type = NCL_long;
 		}
 		if(count > 0) {
-			out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size * count);
-			j = 0;
-			for(i = 0; i < tmp_md->multidval.totalelements; i++) {
-				if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval)) {
-					((int*)out_val)[j] = i;
-					j++;
-				}
-			}
+		  out_val = (void*)NclMalloc(return_size * count);
+		  if(return_int) {
+/*
+ * Return ints because indexes <= INT32_MAX.
+ */
+		    j = 0;
+		    for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+		      if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval)) {
+			((int*)out_val)[j] = (int)i;
+			j++;
+		      }
+		    }
+		  }
+		  else {
+/*
+ * Return longs b/c one or more indexes > INT32_MAX.
+ */
+		    j = 0;
+		    for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+		      if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval)) {
+			((long*)out_val)[j] = (long)i;
+			j++;
+		      }
+		    }
+		  }
 		} else {
-			out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size);
-			memcpy(out_val,&((NclTypeClass)nclTypeintClass)->type_class.default_mis,((NclTypeClass)nclTypeintClass)->type_class.size);
-			return(NclReturnValue(
+/*
+ * No indexes found, so return missing.
+ */
+		  out_val = (void*)NclMalloc(return_size);
+		  memcpy(out_val,&((NclTypeClass)nclTypeintClass)->type_class.default_mis,return_size);
+		  return(NclReturnValue(
 				out_val,
 				1,
 				&dimsizes,
@@ -13008,24 +13077,61 @@ NhlErrorTypes _Nclind
 			));
 		}
 	} else {
+/*
+ * The input array doesn't have a _FillValue.
+ */
 		tmp = (logical*)tmp_md->multidval.val;
 		count = 0;
 		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
-			if(tmp[i])
-				count++;
+		  if(tmp[i]) {
+		    count++;
+#if !defined(NG32BIT)
+		    if(return_int == True && i > INT32_MAX) {
+		      return_int = False;
+		    }
+#endif
+		  }
+		}
+		if(return_int) {
+		  return_size = ((NclTypeClass)nclTypeintClass)->type_class.size;
+		  return_type = NCL_int;
+		}
+		else {
+		  return_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
+		  return_type = NCL_long;
 		}
 		if(count > 0) {
-			out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size * count);
-			j = 0;
-			for(i = 0; i < tmp_md->multidval.totalelements; i++) {
-				if(tmp[i]) {
-					((int*)out_val)[j] = i;
-					j++;
-				}
-			}
+		  out_val = (void*)NclMalloc(return_size * count);
+		  if(return_int) {
+/*
+ * Return ints because indexes <= INT32_MAX.
+ */
+		    j = 0;
+		    for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+		      if(tmp[i]) {
+			((int*)out_val)[j] = (int)i;
+			j++;
+		      }
+		    }
+		  }
+		  else {
+/*
+ * Return longs because one or more indexes > INT32_MAX.
+ */
+		    j = 0;
+		    for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+		      if(tmp[i]) {
+			((long*)out_val)[j] = (long)i;
+			j++;
+		      }
+		    }
+		  }
 		} else {
-			out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size);
-			memcpy(out_val,&((NclTypeClass)nclTypeintClass)->type_class.default_mis,((NclTypeClass)nclTypeintClass)->type_class.size);
+/*
+ * No indexes found, so return missing.
+ */
+			out_val = (void*)NclMalloc(return_size);
+			memcpy(out_val,&((NclTypeClass)nclTypeintClass)->type_class.default_mis,return_size);
 			return(NclReturnValue(
 				out_val,
 				1,
@@ -13033,9 +13139,8 @@ NhlErrorTypes _Nclind
 				&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
 				((NclTypeClass)nclTypeintClass)->type_class.data_type,
 				0
-			));
+			       ));
 		}
-
 	}
 
 	return(NclReturnValue(
@@ -13043,7 +13148,7 @@ NhlErrorTypes _Nclind
 		1,
 		&j,
 		NULL,
-		((NclTypeClass)nclTypeintClass)->type_class.data_type,
+		return_type,
 		0
 	));
 }
@@ -13061,18 +13166,10 @@ NhlErrorTypes _Nclispan
 	NclMultiDValData tmp_md0 = NULL;
 	NclMultiDValData tmp_md1 = NULL;
 	NclMultiDValData tmp_md2 = NULL;
-	NclBasicDataTypes   data0_type, data1_type, data2_type,
-        ret_type = NCL_int;
-/*
-	int *out_val;
-	int i;
-	int strt;
-	int fnsh;
-	int spacing;
-*/
+	NclBasicDataTypes   data0_type, data1_type, data2_type;
+	NclBasicDataTypes ret_type = NCL_int;
+	NclObjTypes obj_type = Ncl_Typeint;
 	ng_size_t dimsizes = 1;
-	int promote = 0;    /* false */
-
 
 	data0 = _NclGetArg(0,3,DONT_CARE);
 	switch(data0.kind) {
@@ -13130,34 +13227,41 @@ NhlErrorTypes _Nclispan
 		return(NhlFATAL);
 	}
 
-	if ((data0_type == NCL_float) || (data0_type == NCL_double) || (data1_type == NCL_float)
-            || (data1_type == NCL_double) || (data2_type == NCL_float)
-            || (data2_type == NCL_double)) {
+/*
+ * Determine the return type: NCL_int, NCL_long, or NCL_int64
+ */
+	if ((data0_type == NCL_int64) || (data1_type == NCL_int64) || 
+	    (data2_type == NCL_int64)) {
+		ret_type = NCL_int64;
+		obj_type = Ncl_Typeint64;
+	}
+	else if ((data0_type == NCL_long) || (data1_type == NCL_long) || 
+		 (data2_type == NCL_long)) {
+		ret_type = NCL_long;
+		obj_type = Ncl_Typelong;
+	}
+	else if (((data0_type == NCL_byte)  || (data0_type == NCL_int8) || 
+		  (data0_type == NCL_short) || (data0_type == NCL_int)) &&
+		 ((data1_type == NCL_byte)  || (data1_type == NCL_int8) ||
+		  (data1_type == NCL_short) || (data1_type == NCL_int)) &&
+		 ((data2_type == NCL_byte)  || (data2_type == NCL_int8) ||
+		  (data2_type == NCL_short) || (data2_type == NCL_int))) {
+		ret_type = NCL_int;
+		obj_type = Ncl_Typeint;
+	}
+	else {
 		NhlPError(NhlFATAL, NhlEUNKNOWN,
 			  "ispan: arguments must be of an integral type, can't continue");
 		return NhlFATAL;
 	}
 
-	if ((data0_type == NCL_byte) || (data0_type == NCL_short) || (data1_type == NCL_byte)
-            || (data1_type == NCL_short) || (data2_type == NCL_byte)
-            || (data2_type == NCL_short)) {
-		promote = 1;
-	}
+	tmp_md0 = _NclCoerceData(tmp_md0, obj_type, NULL);
+	tmp_md1 = _NclCoerceData(tmp_md1, obj_type, NULL);
+	tmp_md2 = _NclCoerceData(tmp_md2, obj_type, NULL);
 
-	if ((data0_type == NCL_long) || (data1_type == NCL_long) || (data2_type == NCL_long)) {
-		tmp_md0 = _NclCoerceData(tmp_md0, Ncl_Typelong, NULL);
-		tmp_md1 = _NclCoerceData(tmp_md1, Ncl_Typelong, NULL);
-		tmp_md2 = _NclCoerceData(tmp_md2, Ncl_Typelong, NULL);
-		ret_type = NCL_long;
-	} else {
-		if (promote == 1) {
-			tmp_md0 = _NclCoerceData(tmp_md0, Ncl_Typeint, NULL);
-			tmp_md1 = _NclCoerceData(tmp_md1, Ncl_Typeint, NULL);
-			tmp_md2 = _NclCoerceData(tmp_md2, Ncl_Typeint, NULL);
-			ret_type = NCL_int;
-		}
-	}
-
+/*
+ * Three possible return types: NCL_int, NCL_long, or NCL_int64
+ */
 	switch (ret_type) {
         case NCL_int:
 	{
@@ -13192,14 +13296,12 @@ NhlErrorTypes _Nclispan
 			*out_val = strt;
 			dimsizes = 1;
 		}
-
-
 		return(NclReturnValue(
 			       out_val,
 			       1,
 			       &dimsizes,
 			       NULL,
-			       NCL_int,
+			       ret_type,
 			       0
 			       ));
         }
@@ -13239,14 +13341,55 @@ NhlErrorTypes _Nclispan
         		*out_val = strt;
 		        dimsizes = 1;
 	        }
-
-
-        	return(NclReturnValue(
+		return(NclReturnValue(
 			       out_val,
 			       1,
 			       &dimsizes,
 			       NULL,
-			       NCL_long,
+			       ret_type,
+			       0
+			       ));
+	}
+        case NCL_int64:
+	{
+        	long long *out_val;
+        	long long i;
+        	long long strt;
+        	long long fnsh;
+        	long long spacing;
+
+        	spacing = *(long long*)tmp_md2->multidval.val;
+        	if(spacing < 1) {
+		        NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: spacing parameter must be positive and non-zero");
+        		return(NhlFATAL);
+        	}
+
+        	fnsh = *(long long*)tmp_md1->multidval.val;
+        	strt = *(long long*)tmp_md0->multidval.val;
+
+        	dimsizes  = abs(fnsh-strt)/spacing + 1;
+
+        	if((fnsh - strt) > 0) {
+        		out_val = (long long*)NclMalloc(dimsizes*sizeof(long long));
+        		for(i = 0; i < dimsizes; i++) {
+		        	out_val[i] = strt + i * spacing;
+        		}
+        	} else if((fnsh - strt) < 0) {
+		        out_val = (long long*)NclMalloc(dimsizes*sizeof(long long));
+        		for(i = 0; i < dimsizes; i++) {
+		        	out_val[i] = strt - i * spacing;
+        		}
+        	} else {
+		        out_val = (long long*)NclMalloc(sizeof(long long));
+        		*out_val = strt;
+		        dimsizes = 1;
+	        }
+		return(NclReturnValue(
+			       out_val,
+			       1,
+			       &dimsizes,
+			       NULL,
+			       ret_type,
 			       0
 			       ));
 	}
@@ -13354,6 +13497,9 @@ NhlErrorTypes _Nclfspan
     case NCL_byte:
 	    dimsizes = (ng_size_t)*(byte *) tmp_md2->multidval.val;
             break;
+    case NCL_int8:
+	    dimsizes = (ng_size_t)*(char *) tmp_md2->multidval.val;
+            break;
     case NCL_short:
             dimsizes = (ng_size_t)*(short *) tmp_md2->multidval.val;
             break;
@@ -13361,7 +13507,10 @@ NhlErrorTypes _Nclfspan
             dimsizes = (ng_size_t)*(int *) tmp_md2->multidval.val;
             break;
     case NCL_long:
-            dimsizes = *(ng_size_t *) tmp_md2->multidval.val;
+            dimsizes = *(ng_size_t *)(long *) tmp_md2->multidval.val;
+            break;
+    case NCL_int64:
+            dimsizes = *(ng_size_t *) (long long*)tmp_md2->multidval.val;
             break;
     default:
 	    NhlPError(NhlFATAL, NhlEUNKNOWN,
@@ -26563,8 +26712,6 @@ NhlErrorTypes _NclItounsigned
                 0
         ));
 }
-
-
 
 #ifdef __cplusplus
 }
