@@ -356,13 +356,13 @@ _NhlCreateFGenArray
 	NhlBoolean	copy_data;
 #endif
 {
-	int		stacklen[_NhlMAXRESNAMLEN];
-	int		*lenptr = stacklen;
+	ng_size_t	stacklen[_NhlMAXRESNAMLEN];
+	ng_size_t	*lenptr = stacklen;
 	int		i;
 	NhlGenArray	gen;
 
 	if(num_dimensions > NhlNumber(stacklen)){
-		lenptr = (int*)NhlMalloc(sizeof(int) * num_dimensions);
+		lenptr = (ng_size_t*)NhlMalloc(sizeof(ng_size_t) * num_dimensions);
 		if(lenptr == NULL){
 			NhlPError(NhlFATAL,ENOMEM,NULL);
 			return NULL;
@@ -373,7 +373,7 @@ _NhlCreateFGenArray
 	for(i=0;i < num_dimensions; i++)
 		lenptr[i] = len_dimensions[(num_dimensions - 1) - i];
 
-	gen = _NhlCreateGenArray(data,type,size,num_dimensions,(ng_size_t *) lenptr,
+	gen = _NhlCreateGenArray(data,type,size,num_dimensions,lenptr,
 								copy_data);
 
 	if(lenptr != stacklen)

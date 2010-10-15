@@ -1981,12 +1981,12 @@ static NhlErrorTypes
 GrowGen
 #if	NhlNeedProto
 (
-	int		new_size,
+	ng_size_t	new_size,
 	NhlGenArray	gen
 )
 #else
 (new_size,gen)
-	int		new_size;
+	ng_size_t	new_size;
 	NhlGenArray	gen;
 #endif
 {

@@ -1051,7 +1051,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 	NhlLegendLayerPart *lg_p = &(tnew->legend);
 	NhlErrorTypes ret = NhlNOERROR, ret_1;
 	int i;
-    ng_size_t  count;
+	ng_size_t  count;
 	int len_1, len_2;
 	char number[10];
 	NhlGenArray ga;

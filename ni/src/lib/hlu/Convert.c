@@ -1680,7 +1680,7 @@ _NhlConverterExists
 
 	return ConverterExists(ref_class,from,to);
 }
-
+#if 0
 /*
  * Function:	RetrieveCache
  *
@@ -1723,6 +1723,7 @@ RetrieveCache
 
 	return(NULL);
 }
+
 
 /*
  * Function:	SetConvertVal
@@ -1837,6 +1838,7 @@ InsertInCache
 
 	return(NhlNOERROR);
 }
+#endif
 
 /*
  * Function:	ComputeArgs
@@ -2326,7 +2328,7 @@ _NhlConvertCreateGenArray
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	ng_size_t		*len_dimensions	/* length of dimensions	*/
+	ng_size_t	*len_dimensions	/* length of dimensions	*/
 )
 #else
 (data,type,size,num_dimensions,len_dimensions)

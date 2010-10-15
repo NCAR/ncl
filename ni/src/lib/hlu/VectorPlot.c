@@ -5612,8 +5612,7 @@ static NhlErrorTypes ManageLabelBar
 		NhlGenArray ga;
 		NhlString *to_sp, *from_sp;
 		NhlString s;
-		int i;
-		ng_size_t count;
+		ng_size_t i,count;
 		NhlBoolean copy = False;
 
 		from_sp = (NhlString *) vcp->level_strings;
@@ -7978,7 +7977,8 @@ static NhlErrorTypes    ManageGenArray
 {
 	char		*str_type;
 	NhlErrorTypes	ret = NhlNOERROR;
-	int		i, size;
+	int		size;
+	ng_size_t       i;
 	NhlPointer	datap;
 	char		*e_text;
 
@@ -8103,7 +8103,7 @@ static NhlErrorTypes    ManageGenArray
 			char *init_str = (char *) init_val;
 			char numstr[10];
 			for (i = *init_count; i< count; i++) {
-				sprintf(numstr,"%d",i);
+				sprintf(numstr,"%d",(int)i);
 				if ((sp = (char *) 
 				     NhlMalloc(sizeof(init_str)+
 					       sizeof(numstr)+1)) == NULL) {

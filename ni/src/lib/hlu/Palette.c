@@ -1056,7 +1056,7 @@ CvtStringGenArrayToCmap
 	NhlGenArray		tgen;
 	NhlString		*sptr;
 	float			*fptr;
-	ng_size_t			dimlen[2] = {0,3};
+	ng_size_t		dimlen[2] = {0,3};
 	int			i;
 	NhlErrorTypes		ret = NhlNOERROR;
 
@@ -1169,7 +1169,7 @@ PaletteInitialize
 	NhlPaletteClass		pc = (NhlPaletteClass)lc;
 	_NhlPalCmap		*cmptr = pc->pal_class.default_maps;
 	NhlPalList		list,*tmp;
-	ng_size_t			dimlen[2] = {0,3};
+	ng_size_t		dimlen[2] = {0,3};
 	NhlConvertArg		arg;
 	
 	arg.addressmode = NhlLAYEROFFSET;
@@ -1438,7 +1438,7 @@ NhlPalSetColormap
 	int		cmap_len;
 #endif
 {
-	ng_size_t			dimlen[2] = {0,3};
+	ng_size_t		dimlen[2] = {0,3};
 	char			func[] = "NhlPalSetColormap";
 	NhlWorkstationClass	wc;
 	NhlPaletteLayer		pl;

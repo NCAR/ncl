@@ -1411,11 +1411,11 @@ static NhlErrorTypes	PlotManagerGetValues
 	char			*entry_name = "PlotManagerGetValues";
 	char			*e_text;
 	NhlPlotManagerLayerPart	*ovp = &((NhlPlotManagerLayer) l)->plotmanager;
-	int 			i,j;
+	int 			i;
 	int			*ids;
 	NhlGenArray		ga;
 	NhlpmRec		**pm_recs;
-	ng_size_t		count;
+	ng_size_t		j,count;
 
 	for ( i = 0; i< num_args; i++ ) {
 
@@ -6729,7 +6729,7 @@ RemoveOverlayBase
 	NhlSArg			sargs[10];
         int			nargs = 0;
 	int			i;
-	ng_size_t	count = 1;
+	ng_size_t		count = 1;
 
 /*
  * Create a GenArray of 1 element in order to set the PlotManagerRecs resource

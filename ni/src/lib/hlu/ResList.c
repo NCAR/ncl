@@ -1097,13 +1097,13 @@ NhlRLSetMDArray
 	NhlString	type;
 	ng_size_t	size;
 	int		num_dimensions;
-	ng_size_t		*len_dimensions;
+	ng_size_t	*len_dimensions;
 #endif
 {
 	_NhlArgVal	gen = {0};
 	
 	gen.ptrval = _NhlCreateGenArray(data,type,size,num_dimensions,
-							(ng_size_t *) len_dimensions,False);
+					len_dimensions,False);
 	if(gen.ptrval == NULL){
 		NhlPError(NhlFATAL,ENOMEM,NULL);
 		return NhlFATAL;

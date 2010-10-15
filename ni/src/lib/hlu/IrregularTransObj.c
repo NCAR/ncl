@@ -2783,7 +2783,7 @@ int nargs;
 	NhlIrregularTransObjLayerPart* irp = 
 		(&((NhlIrregularTransObjLayer)l)->irtrans);
 	int i;
-    ng_size_t count;
+	ng_size_t count;
 	float *fp;
 	char *e_text;
 	NhlString entry_name = "IrTransGetValues";

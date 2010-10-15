@@ -4299,7 +4299,7 @@ static NhlErrorTypes    VectorFieldGetValues
         NrmQuark resQ;
 	NrmQuark typeQ = NrmNULLQUARK;
 	NhlPointer	data;
-	ng_size_t		dlen[2];
+	ng_size_t	dlen[2];
 	int		ndim;
 	int		size;
 	NhlBoolean	nocopy = False, do_genarray;

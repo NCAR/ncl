@@ -19,7 +19,7 @@
  *
  *	Description:	
  */
-/* uncomment this to write out tables of the recognized map boundaries, with area id info, in html  */
+/* Uncomment this to write out tables of the recognized map boundaries, with area id info, etc. in html  */
 /*#define HLU_WRITE_TABLES*/
 
 
@@ -948,8 +948,7 @@ static NhlGenArray mdhGetNewGenArray
                 &((NhlMapV40DataHandlerClass)
                   mv40l->base.layer_class)->mapv40dh_class;
 	char *e_text;
-	int i;
-	ng_size_t len;
+	ng_size_t i,len;
 	NhlGenArray ga;
         int outline_rec_count;
         mpOutlineRec *outline_recs;

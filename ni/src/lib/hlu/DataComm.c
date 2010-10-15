@@ -1119,8 +1119,8 @@ DataCommGetValues
 	_NhlDataOffset		oset;
 	_NhlInternDataList	ilist;
 	NhlGenArray		gen;
-	int			i,j, *iarray;
-	ng_size_t		len;
+	int			i, *iarray;
+	ng_size_t		j, len;
 	NhlBoolean		dsres;
 
 	for(i=0;i < nargs; i++){
@@ -1161,7 +1161,7 @@ DataCommGetValues
 			}
 
 			gen = _NhlCreateGenArray(iarray,NhlTObjId,sizeof(int),
-								1,(ng_size_t *)&len,False);
+								1,&len,False);
 			if(gen == NULL){
 				NHLPERROR((NhlFATAL,ENOMEM,NULL));
 				return NhlFATAL;

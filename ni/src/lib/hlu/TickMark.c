@@ -9555,10 +9555,10 @@ static NhlGenArray CreateGetValuesData
         _NhlArg		*arg;
 #endif
 {
-	NhlString type;
+	NhlString  type;
 	NhlPointer data;
-	int	size;
-	ng_size_t 	count;
+	int	   size;
+	ng_size_t count;
 	NhlTickMarkLayerPart *tmp = &((NhlTickMarkLayer)l)->tick;
 	
 	if(arg->quark == QXBValues) {

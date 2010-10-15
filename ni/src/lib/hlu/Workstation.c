@@ -1185,8 +1185,7 @@ _NhlStringToColorDefStringGenArray
 	_NhlCITokens	token;
 	char		**ptr;
 	char		*data;
-/*	int		ptri=0;*/
-    ng_size_t  ptri = 0;
+	ng_size_t  ptri = 0;
 	int		datai=0;
 	int		stri = 0;
 	
@@ -1821,8 +1820,7 @@ CvtStringToColorDefinitionGenArray
 
 	if(_NhlLookupColor(wc,s1,&rgb)){
 		NhlGenArray	tgen;
-/*		int		tint=3;*/
-        ng_size_t  tint = 3;
+		ng_size_t  	tint = 3;
 		float		*fptr;
 
 		tgen = _NhlConvertCreateGenArray(NULL,NhlTFloat,sizeof(float),
@@ -3397,8 +3395,7 @@ WorkstationGetValues
 	NhlColor* tmp;
 	NhlPrivateColor *private;
 	NhlGenArray ga;
-/*	int count[2];*/
-    ng_size_t  count[2];
+	ng_size_t  count[2];
 	NhlMarkerTableParams *mtp_p;
 	char **s_p = NULL;
 	char *e_text;

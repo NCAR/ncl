@@ -2635,8 +2635,9 @@ NhlErrorTypes NhlAddPrimitive
 	NhlLayer	transform = _NhlGetLayer(transform_id);
 	NhlTransformLayer tf;
 	NhlTransformLayerPart *tfp;
-	int i,j,count,bid;
+	int j,bid;
 	int *pids;
+	ng_size_t i, count;
 	NhlGenArray gen;
 
 /*
@@ -2679,7 +2680,7 @@ NhlErrorTypes NhlAddPrimitive
 		}
 		pids[0] = primitive_id;
 		gen = _NhlCreateGenArray(pids,NhlTInteger,sizeof(int),1,
-					 (ng_size_t *) &count,False);
+					 &count,False);
 		if (! gen) {
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return NhlFATAL;

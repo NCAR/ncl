@@ -336,8 +336,8 @@ CreateFloatTable
 	NhlGenArray	*tbl_lens;
 #endif
 {
-	int	vectors, elements;
-	int	i,j;
+	ng_size_t vectors, elements;
+	ng_size_t i,j;
 	float	**flttable, *fltvect;
 	int	*intvect;
 
