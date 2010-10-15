@@ -642,8 +642,6 @@ static NhlErrorTypes SetUpTransObj
 
 	}
         else {
-                NhlTransformLayerPart	*otfp = &(llold->trans);
-                
                 subret = _NhlALSetValuesChild(tfp->trans_obj->base.id,
                                               (NhlLayer) llnew,sargs,nargs);
         }

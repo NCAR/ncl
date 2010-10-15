@@ -2,11 +2,11 @@ C
 C $Id: gerhnd.f,v 1.4 1997-05-05 21:45:41 boote Exp $
 C
 C****************************************************************
-C								*
-C			Copyright (C)  1994			*
-C	University Corporation for Atmospheric Research		*
-C			All Rights Reserved			*
-C								*
+C                                                               *
+C                       Copyright (C)  1994                     *
+C       University Corporation for Atmospheric Research         *
+C                       All Rights Reserved                     *
+C                                                               *
 C****************************************************************
 C
 C      File:            gerhnd.f
@@ -19,8 +19,8 @@ C      Date:            Fri Aug 19 16:12:47 MDT 1994
 C
 C****************************************************************
 C
-C	GKS Error Handler function - this function will be called
-C	in the event of a GKS error.
+C       GKS Error Handler function - this function will be called
+C       in the event of a GKS error.
 C
 C****************************************************************
 C
@@ -33,26 +33,26 @@ C We don't care about the errfil - the hlu library uses it's own
 C error logging scheme.
 C
       subroutine gerhnd(errnr,fctid,errfil)
-	integer errnr,fctid,errfil
-	character*6 fname
-	character*90 mesg
+        integer errnr,fctid,errfil
+        character*6 fname
+        character*90 mesg
 
-	call gzname(fctid,fname)
-	call gzgte2(errnr,mesg)
-	call nhlpfgerhnd(errnr,fctid,fname,len(fname),mesg,len(mesg))
+        call gzname(fctid,fname)
+        call gzgte2(errnr,mesg)
+        call nhlpfgerhnd(errnr,fctid,fname,len(fname),mesg,len(mesg))
 
-	return
+        return
       end
 C
-C	This function should always be called with 0 so the gerhnd
-C	subroutine is not actually called.  It is just necessary
-C	to make sure that subroutine is loaded by the time the
-C	hlu library is loaded so it doesn't end up resolving to
-C	the one in libncarg_gks.
+C       This function should always be called with 0 so the gerhnd
+C       subroutine is not actually called.  It is just necessary
+C       to make sure that subroutine is loaded by the time the
+C       hlu library is loaded so it doesn't end up resolving to
+C       the one in libncarg_gks.
 C
       subroutine nhlfloadgerhnd(idum)
-	integer idum
-	if(idum .NE. 0) then
-		call gerhnd(1,1,1)
-	endif
+        integer idum
+        if(idum .NE. 0) then
+                call gerhnd(1,1,1)
+        endif
       end

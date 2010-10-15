@@ -896,12 +896,11 @@ _NhlRegSymConvQ
 {
 	char			*fname = "_NhlRegSymConv";
 	NhlConvertArg		cvtargs[2] = {
-				{NhlIMMEDIATE,sizeof(NrmQuark),(NhlPointer)0},
-				{NhlIMMEDIATE,sizeof(NrmQuark),(NhlPointer)0}
+		{NhlIMMEDIATE,sizeof(NrmQuark),{(NhlPointer)0}},
+		{NhlIMMEDIATE,sizeof(NrmQuark),{(NhlPointer)0}}
 					};
 	NhlConvertPtr		cvtrec = NULL;
 	NhlConvertPtr		tmp = NULL;
-	NhlConvertPtr		*HashTable = NULL;
 
 	if(!ref_class)
 		ref_class = NhlbaseClass;
@@ -1551,8 +1550,6 @@ RecurseGetCvtPtr
 #endif
 {
 	NhlConvertPtr	ptr;
-	_NhlTsubptr	sub;
-	int		i;
 	
 	/*
 	 * Terminate Recursion down this branch.
@@ -1941,7 +1938,6 @@ ConvertData
 #endif 
 {
 	NhlConvertPtr		ptr = NULL;
-	CachePtr		cache=NULL;
 	_NhlCtxtStackRec	ctxt;
 	NhlErrorTypes		ret=NhlNOERROR;
 	NrmQuark		from,to;

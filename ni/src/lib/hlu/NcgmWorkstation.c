@@ -34,7 +34,7 @@ static NhlResource resources[] = {
 
 	{ NhlNwkMetaName, NhlCwkMetaName, NhlTString, sizeof(char*),
           NhlOffset(NhlNcgmWorkstationLayerRec,ncgm.meta_name),NhlTString,
-          NULL,0,(NhlFreeFunc)NhlFree },
+          {NULL},0,(NhlFreeFunc)NhlFree },
 	{NhlNwkVSWidthDevUnits,NhlCwkVSWidthDevUnits,NhlTInteger,sizeof(int),
           NhlOffset(NhlNcgmWorkstationLayerRec,work.vswidth_dev_units),
           NhlTImmediate,_NhlUSET((NhlPointer)32767),_NhlRES_GONLY,NULL}
@@ -346,7 +346,6 @@ static NhlErrorTypes NcgmWorkstationClassPartInitialize
 #endif
 {
 	NhlNcgmWorkstationClass wlc = (NhlNcgmWorkstationClass)lc;
-	NhlClass	sc = wlc->base_class.superclass;
 
 	wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
         wlc->ncgm_class.last_base_meta_name = NULL;
@@ -593,7 +592,6 @@ NcgmWorkstationOpen
 	NhlNcgmWorkstationClass wlc = 
 		(NhlNcgmWorkstationClass)instance->base.layer_class;
 	NhlErrorTypes subret = NhlNOERROR,retcode= NhlNOERROR;
-	static int first = True;
 
 	indat.escape_r1.size = strlen(winstance->ncgm.meta_name) + 1;
 	indat.escape_r1.data = (void*)winstance->ncgm.meta_name;
@@ -663,8 +661,6 @@ NcgmWorkstationActivate
 {
 	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)l;
 	char			func[] = "NcgmWorkstationActivate";
-	NhlNcgmWorkstationClass wlc = 
-		(NhlNcgmWorkstationClass)l->base.layer_class;
 	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
 	NhlErrorTypes subret = NhlNOERROR,retcode= NhlNOERROR;
 
@@ -825,8 +821,6 @@ NcgmWorkstationAllocateColors
 {
 	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)workl;
 	char			func[] = "NcgmWorkstationAllocateColors";
-	NhlNcgmWorkstationClass wlc = 
-		(NhlNcgmWorkstationClass)workl->base.layer_class;
 	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
 	NhlErrorTypes subret = NhlNOERROR,retcode = NhlNOERROR;
 
@@ -892,8 +886,6 @@ NcgmWorkstationUpdate
 {
 	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)l;
 	char			func[] = "NcgmWorkstationUpdate";
-	NhlNcgmWorkstationClass wlc = 
-		(NhlNcgmWorkstationClass)l->base.layer_class;
 	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
 	NhlErrorTypes subret = NhlNOERROR,retcode = NhlNOERROR;
 
@@ -956,8 +948,6 @@ NcgmWorkstationClear
 {
 	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)l;
 	char			func[] = "NcgmWorkstationClear";
-	NhlNcgmWorkstationClass wlc = 
-		(NhlNcgmWorkstationClass)l->base.layer_class;
 	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
 	NhlErrorTypes subret = NhlNOERROR,retcode = NhlNOERROR;
 
@@ -1021,9 +1011,6 @@ static void NcgmWorkstationNotify(
 {
 	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)l;
 	char			func[] = "NcgmWorkstationNotify";
-	NhlNcgmWorkstationClass wlc = 
-		(NhlNcgmWorkstationClass)l->base.layer_class;
-        NhlErrorTypes subret = NhlNOERROR;
 	Gctrl_flag cofl = GFLAG_ALWAYS;
 
         switch (action) {

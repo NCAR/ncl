@@ -185,7 +185,6 @@ PrimitiveInitialize
 	NhlPrimitiveLayerPart	*prp = &prnew->primitive;
 
 	NhlErrorTypes		ret=NhlNOERROR;
-	NhlString		e_text, entry_name = "PrimitiveInitialize";
 
 	if (prp->x_arr != NULL)
 		prp->x_arr = _NhlCopyGenArray(prp->x_arr,True);
@@ -235,7 +234,6 @@ PrimitiveSetValues
 	NhlPrimitiveLayerPart	*oprp = &prold->primitive;
 	NhlGenArray		gen;
 	NhlErrorTypes 		ret = NhlNOERROR;
-	NhlString		e_text, entry_name = "PrimitiveSetValues";
 
 	if (prp->x_arr != oprp->x_arr){
 		gen = prp->x_arr;

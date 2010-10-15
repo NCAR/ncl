@@ -1023,7 +1023,6 @@ static NhlErrorTypes    TitleInitialize
 	NhlTitleLayer tnew = (NhlTitleLayer) new;
 	NhlTitleLayer treq = (NhlTitleLayer) req;
 	NhlErrorTypes ret = NhlNOERROR, ret1 = NhlNOERROR;
-	char *e_text;
 
 	tnew->title.new_draw_req = True;
 	tnew->title.trans_dat = NULL;
@@ -1119,10 +1118,8 @@ static NhlErrorTypes    TitleSetValues
 	NhlTitleLayer tref = (NhlTitleLayer) reference;
 	NhlTitleLayer told = (NhlTitleLayer) old;
 	NhlErrorTypes ret = NhlNOERROR,ret1 = NhlNOERROR;
-	float tmpxy,tmpwh,tmpxy1,tmpwh1,main_location;
 	float deltah;
 	float deltaw;
-	char *e_text;
 	int		view_args = 0;
 
 	if (tnew->view.use_segments != told->view.use_segments)

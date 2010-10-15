@@ -1,6 +1,6 @@
 C
 C
-C	$Id: search.f,v 1.2 1997-05-05 21:45:43 boote Exp $
+C       $Id: search.f,v 1.2 1997-05-05 21:45:43 boote Exp $
 C
 C This subprogram is used by subroutines TERP1 and TERP2 in 
 C library ncarm.  It is lower-level, i.e. not called by users.

@@ -144,9 +144,6 @@ NhlMapRGDataHandlerClassRec NhlmapRGDataHandlerClassRec = {
 
 NhlClass NhlmapRGDataHandlerClass = (NhlClass)&NhlmapRGDataHandlerClassRec;
 
-static int Level;
-static int Color,Dash_Pattern;
-static float Dash_SegLen,Thickness;
 
 static NrmQuark Qdata_resolution = NrmNULLQUARK;
 
@@ -169,8 +166,6 @@ MapRGDHClassPartInit
 #endif
 {
 	NhlMapRGDataHandlerClass	mdhc = (NhlMapRGDataHandlerClass)lc;
-	NhlErrorTypes		ret = NhlNOERROR;
-        NhlString		entry_name = "MapRGDHClassPartInit";
         
 	Qdata_resolution = NrmStringToQuark(NhlNmpDataResolution);
         
@@ -215,16 +210,8 @@ static NhlErrorTypes    mdhManageDynamicArrays
 #endif
 
 {
-	NhlMapDataHandlerLayerPart	*mdhp = &(mv4new->mapdh);
-	NhlMapDataHandlerLayerPart	*omdhp = &(mv4old->mapdh);
-        NhlMapRGDataHandlerLayerPart	*mrgp = &mv4new->maprgdh;
         
-	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
-	char *entry_name;
-	char *e_text;
-
-	entry_name =  init ?
-                "MapDataHandlerInitialize" : "MapDataHandlerSetValues";
+	NhlErrorTypes ret = NhlNOERROR;
 
 	return ret;
 }
@@ -267,12 +254,10 @@ MapRGDHInitialize
 #endif
 {
         NhlMapRGDataHandlerLayer mrgl = (NhlMapRGDataHandlerLayer) new;
-	NhlMapDataHandlerLayerPart *mdhp = &(mrgl->mapdh);
         NhlMapRGDataHandlerLayerPart *mrgp = &mrgl->maprgdh;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "MapRGDHInitialize";
 	char			*e_text;
-	char	*dsname = NULL;
         
 	mrgp->aws_id = -1;
 	mrgp->fws_id = -1;
@@ -329,14 +314,9 @@ static NhlErrorTypes MapRGDHSetValues
 	int		num_args;
 #endif
 {
-        NhlMapRGDataHandlerLayer mrgl = (NhlMapRGDataHandlerLayer) new;
-	NhlMapDataHandlerLayerPart *mdhp = &(mrgl->mapdh);
-        NhlMapRGDataHandlerLayer omrgl = (NhlMapRGDataHandlerLayer) old;
-	NhlMapDataHandlerLayerPart *omdhp = &(omrgl->mapdh);
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "MapRGDHSetValues";
 	char			*e_text;
-	char			*dsname = NULL;
 
 
 /* Manage the dynamic arrays */
@@ -387,11 +367,6 @@ static NhlErrorTypes    MapRGDHGetValues
         int     	num_args;
 #endif
 {
-        NhlMapRGDataHandlerLayer mrgl = (NhlMapRGDataHandlerLayer) l;
-        NhlMapDataHandlerLayerPart *mdhp = &mrgl->mapdh;
-        NhlMapRGDataHandlerLayerPart *mrgp = &mrgl->maprgdh;
-        NhlString e_text,entry_name = "MapRGDHGetValues";
-        int i, count = 0;
 	
         return(NhlNOERROR);
 
@@ -434,7 +409,6 @@ static NhlErrorTypes    MapRGDHDestroy
 {
         NhlMapRGDataHandlerLayer mrgl = (NhlMapRGDataHandlerLayer) l;
         NhlMapRGDataHandlerLayerPart *mrgp = &mrgl->maprgdh;
-	int i;
 
 	if (mrgp->aws_id > 0)
 		_NhlFreeWorkspace(mrgp->aws_id);
@@ -466,11 +440,6 @@ static NhlErrorTypes MapRGDHUpdateDrawList
         int             num_args;
 #endif
 {
-        NhlMapRGDataHandlerLayer mrgl = 
-		(NhlMapRGDataHandlerLayer) instance;
-        NhlMapRGDataHandlerLayerPart *mrgp = &mrgl->maprgdh;
-	NhlMapPlotLayerPart	*mpp = &(newmp->mapplot);
-	NhlString e_text, entry_name = "MapRGDHUpdateDrawList";
         NhlErrorTypes ret = NhlNOERROR;
                 
         return ret;
@@ -509,7 +478,6 @@ static NhlErrorTypes mpFill
         NhlMapRGDataHandlerLayerPart *mrgp = &mrgl->maprgdh;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
-	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
         NhlWorkspace		*aws = NULL;
         NhlWorkspace		*fws = NULL;
 	int 			irgl;
@@ -600,13 +568,8 @@ static NhlErrorTypes mpGrid
 	NhlString			entry_name;
 #endif
 {
-        NhlMapRGDataHandlerLayerPart *mrgp = &mrgl->maprgdh;
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
-	NhlWorkspace		*aws;
-        float flx,frx,fby,fuy,wlx,wrx,wby,wuy,lon1,lon2,lat1,lat2,spacing;
-	float avlat,avlon;
-	int ll,status;
         float pole_param;
 
 	Grid_Setup = False;
@@ -739,7 +702,6 @@ static NhlErrorTypes mpOutline
 	char			*e_text;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
 	NhlWorkspace		*fws;
-	int			i;
 	int 			irgl;
 
 	if (mrgp->fws_id < 1) {
@@ -794,12 +756,9 @@ static NhlErrorTypes MapRGDHDrawMapList
         NhlMapRGDataHandlerLayer mrgl = 
 		(NhlMapRGDataHandlerLayer) instance;
 	NhlMapPlotLayerPart	  *mpp = &mpl->mapplot;
-	NhlString e_text, entry_name = "MapRGDHDrawMapList";
-        NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
-	int i;
+	NhlString entry_name = "MapRGDHDrawMapList";
+        NhlErrorTypes ret = NhlNOERROR;
         int lcol[5], lcsf[5];
-
-	
 
 	Mpp = mpp;
 	Mpl = mpl;
@@ -817,12 +776,17 @@ static NhlErrorTypes MapRGDHDrawMapList
 	c_mdrgsc(lcol,lcsf);
 	
         switch (draw_op) {
-            case mpDRAWFILL:
-                    return mpFill(mrgl,mpl,entry_name);
-            case mpDRAWOUTLINE:
-                    return mpOutline(mrgl,mpl,entry_name);
-            case mpDRAWGRID:
-                    return mpGrid(mrgl,mpl,entry_name);
+	case mpDRAWFILL:
+		ret =  mpFill(mrgl,mpl,entry_name);
+		break;
+	case mpDRAWOUTLINE:
+		ret =  mpOutline(mrgl,mpl,entry_name);
+		break;
+	case mpDRAWGRID:
+		ret =  mpGrid(mrgl,mpl,entry_name);
+		break;
+	default:
+		break;
         }
 
 	Mpp = NULL;

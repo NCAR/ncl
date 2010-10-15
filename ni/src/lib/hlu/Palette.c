@@ -25,6 +25,7 @@
 #include <machine/types.h>
 #endif
 #include <dirent.h>
+#include <ctype.h>
 
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/WorkstationP.h>
@@ -38,7 +39,7 @@
 #define Oset(field)	NhlOffset(NhlPaletteLayerRec,pal.field)
 static NhlResource resources[] = {
 	{_NhlNpalWorkClass,_NhlCpalWorkClass,NhlTPointer,sizeof(NhlPointer),
-		Oset(work_class),NhlTImmediate,NULL,_NhlRES_CONLY,NULL}
+		 Oset(work_class),NhlTImmediate,_NhlUSET(NULL),_NhlRES_CONLY,NULL}
 };
 #undef Oset
 
@@ -1164,7 +1165,6 @@ PaletteInitialize
 	int		nargs;
 #endif
 {
-	char			func[]="PaletteInitialize";
 	NhlPaletteLayerPart	*pp = &((NhlPaletteLayer)new)->pal;
 	NhlPaletteClass		pc = (NhlPaletteClass)lc;
 	_NhlPalCmap		*cmptr = pc->pal_class.default_maps;
@@ -1569,7 +1569,7 @@ static NhlErrorTypes GetColormapsInPath
 		}
 		i = min_ix;
 		max_cval = 0.0;
-		while (cp = fgets(buf,255,fp)) {
+		while ((cp = fgets(buf,255,fp))) {
 			char *next,*tcp = cp;
 			float f;
 			while (isspace(*tcp))

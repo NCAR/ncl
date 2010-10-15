@@ -958,7 +958,7 @@ GetResLayer
 	_NhlChildList		childlist;
 	NhlClass		child_class = NULL;
 	int			i;
-	NhlBoolean		found = False,forwarded = False;
+	NhlBoolean		found = False;
 
 	for (i = 0; i < num_res; i++) {
 		if (resq == reslist[i].nrm_name) {
@@ -1019,7 +1019,6 @@ AddValueSetCB
 #endif
 {
 	_NhlValSetCBInfo	vsinfo;
-	NhlClass		lc = _NhlClass(l);
 	NhlLayer		resl;
 	NrmResource		*res = NULL;
 	_NhlCB			cb;

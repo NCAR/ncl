@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
+#include <ctype.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/IrregularTransObjP.h>
@@ -121,7 +122,6 @@ static void   load_hlucp_routines(
 #endif
 );
 
-static NhlErrorTypes cnCellFill();
 
 NhlCnStdRendererClassRec NhlcnStdRendererClassRec = {
 	{
@@ -240,9 +240,7 @@ CnStdRendererInitialize
         int             num_args;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name = "CnStdRendererInitialize";
-	char			*e_text;
+	NhlErrorTypes		ret = NhlNOERROR;
 
 	load_hlucp_routines(False);
 	

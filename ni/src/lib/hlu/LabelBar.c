@@ -752,10 +752,8 @@ static NhlErrorTypes LabelBarSetValues
 {
 	NhlLabelBarLayer	told = (NhlLabelBarLayer) old;
 	NhlLabelBarLayer	tnew = (NhlLabelBarLayer) new;
-	NhlLabelBarLayerPart	*olb_p = &(told->labelbar);
 	NhlLabelBarLayerPart	*lb_p = &(tnew->labelbar);
 	NhlErrorTypes		ret = NhlNOERROR,ret1 = NhlNOERROR;
-	char 			*e_text;
 	char			*entry_name = SetValues_Name;
 	int			view_args = 0;
 	NhlBoolean	        do_scaling = False;
@@ -4202,7 +4200,7 @@ NhlLabelBarLayer lbl;
 NhlBoolean edges_only;
 #endif
 {
-	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 	NhlLabelBarLayerPart *lb_p = &(lbl->labelbar);
 	int *colors, *patterns;
 	float xpoints[5];
@@ -4320,12 +4318,11 @@ NhlLabelBarLayer lbl
 NhlLabelBarLayer lbl;
 #endif
 {
-	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 	NhlLabelBarLayerPart *lb_p = &(lbl->labelbar);
 	int *colors;
 	float xp1,yp1,xp2,yp2;
 	int i;
-	int fill_color;
 	int nx,ny;
 	int has_transparent = 0;
 	

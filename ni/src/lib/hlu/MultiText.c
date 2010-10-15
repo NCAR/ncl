@@ -25,37 +25,38 @@
 #include <ncarg/hlu/TextItem.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <math.h>
+#include <ctype.h>
 
 /* Resources */
 #define Oset(field)	NhlOffset(NhlMultiTextLayerRec,multitext.field)
 static NhlResource resources[] = {
 	{NhlNMtextNumStrings, NhlCMtextNumStrings, NhlTInteger,
-		sizeof(int),Oset(num_strings),NhlTImmediate,0,
+	 	sizeof(int),Oset(num_strings),NhlTImmediate,{0},
          	_NhlRES_DEFAULT,NULL},
 /*
 * The free function is probably wrong in this place
 */
 	{NhlNMtextStrings, NhlCMtextStrings, NhlTPointer,
-		sizeof(char**),Oset(text_strings),NhlTImmediate,NULL,
+	 	sizeof(char**),Oset(text_strings),NhlTImmediate,{NULL},
          	_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
 	{NhlNMtextOrientation, NhlCMtextOrientation, NhlTMTextOrientationType,
 		sizeof(NhlMTextOrientatonType),Oset(orientation),NhlTImmediate,
-		(NhlPointer)NhlMTEXT_X_CONST,_NhlRES_DEFAULT,NULL},
+	 {(NhlPointer)NhlMTEXT_X_CONST},_NhlRES_DEFAULT,NULL},
 	{NhlNMtextConstPosF, NhlCMtextConstPosF, NhlTFloat,
-		sizeof(float),Oset(const_pos),NhlTString,"-1.0",
+	 	sizeof(float),Oset(const_pos),NhlTString,{"-1.0"},
          	_NhlRES_DEFAULT,NULL},
 	{NhlNMtextPosArray, NhlCMtextPosArray, NhlTPointer,
-		sizeof(float*),Oset(pos_array),NhlTImmediate,NULL,
+	 	sizeof(float*),Oset(pos_array),NhlTImmediate,{NULL},
          	_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
 	{NhlNMtextMaxLenF, NhlCMtextMaxLenF, NhlTFloat,
-		sizeof(float),Oset(max_len),NhlTString,"0.0",
+	 	sizeof(float),Oset(max_len),NhlTString,{"0.0"},
 		 _NhlRES_GONLY,NULL},
 	{NhlNMtextAutoStride, NhlCMtextAutoStride, NhlTBoolean,
-	 sizeof(NhlBoolean),Oset(auto_stride),NhlTImmediate,
-	 _NhlUSET((NhlPointer)True),0,NULL},
+	 	sizeof(NhlBoolean),Oset(auto_stride),NhlTImmediate,
+	 	_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNMtextKeepEndItems, NhlCMtextKeepEndItems, NhlTBoolean,
-	 sizeof(NhlBoolean),Oset(keep_end_items),NhlTImmediate,
-	 _NhlUSET((NhlPointer)False),0,NULL},
+	 	sizeof(NhlBoolean),Oset(keep_end_items),NhlTImmediate,
+	 	_NhlUSET((NhlPointer)False),0,NULL},
 
 	/*
 	 * These resources are actually resources in the TextItem object
@@ -63,27 +64,27 @@ static NhlResource resources[] = {
 	 * resources of TextItem they may need to be updated as well.
 	 */
 	{NhlNtxAngleF, NhlCTextAngleF, NhlTFloat,
-		sizeof(float),Oset(angle),NhlTString,"0.0",0,NULL},
+	 	sizeof(float),Oset(angle),NhlTString,{"0.0"},0,NULL},
 	{NhlNtxFont, NhlCFont, NhlTInteger,
-		sizeof(int),Oset(font),NhlTImmediate,(NhlPointer)0,0,NULL},
+	 	sizeof(int),Oset(font),NhlTImmediate,{(NhlPointer)0},0,NULL},
 	{NhlNtxJust, NhlCTextJustification, NhlTInteger,
-		sizeof(int),Oset(just),NhlTImmediate,(NhlPointer)4,0,NULL},
+		 sizeof(int),Oset(just),NhlTImmediate,{(NhlPointer)4},0,NULL},
 	{NhlNtxFontQuality, NhlCFontQuality, NhlTFontQuality,
 		sizeof(NhlFontQuality),Oset(font_quality),NhlTImmediate,
-						(NhlPointer)NhlHIGH,0,NULL},
+	 {(NhlPointer)NhlHIGH},0,NULL},
 	{NhlNtxFontHeightF, NhlCFontHeightF, NhlTFloat,
-		sizeof(float),Oset(font_height),NhlTString,"0.5",0,NULL},
+		 sizeof(float),Oset(font_height),NhlTString,{"0.5"},0,NULL},
 	{NhlNtxFontAspectF, NhlCFontAspectF, NhlTFloat,
-		sizeof(float),Oset(font_aspect),NhlTString,"1.3125",0,NULL},
+		 sizeof(float),Oset(font_aspect),NhlTString,{"1.3125"},0,NULL},
 	{NhlNtxFontThicknessF, NhlCFontThicknessF, NhlTFloat,
-		sizeof(float),Oset(font_thickness),NhlTString,"1.0",0,NULL},
+		 sizeof(float),Oset(font_thickness),NhlTString,{"1.0"},0,NULL},
 	{NhlNtxConstantSpacingF, NhlCTextConstantSpacingF, NhlTFloat,
-		sizeof(float),Oset(constant_spacing),NhlTString,"0.0",0,NULL},
+		 sizeof(float),Oset(constant_spacing),NhlTString,{"0.0"},0,NULL},
 	{NhlNtxDirection, NhlCTextDirection, NhlTTextDirection,
 		sizeof(NhlTextDirection),Oset(direction),NhlTImmediate,
-						(NhlPointer)NhlACROSS,0,NULL},
+	 {(NhlPointer)NhlACROSS},0,NULL},
 	{NhlNtxFuncCode, NhlCTextFuncCode, NhlTCharacter,
-		 sizeof(char),Oset(func_code),NhlTString,":",0,NULL}
+		 sizeof(char),Oset(func_code),NhlTString,{":"},0,NULL}
 };
 #undef Oset
 

@@ -970,7 +970,6 @@ static NhlErrorTypes RearrangePlotSequence
 	char			*entry_name;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
         char *e_text;
         int i,j;
         int *seq_ids = (int *)ovp->overlay_seq_ids->data;
@@ -1079,7 +1078,6 @@ static NhlErrorTypes PlotManagerSetValues
 	int			trans_change_count;
 	NhlBoolean		is_map;
 	float			x,y,w,h;
-	NhlViewLayer		ovl_view;
 
 	if (_NhlArgIsSet(args,num_args,NhlNpmLabelBarWidthF))
 		ovp->lbar_width_set = True;
@@ -1362,6 +1360,7 @@ static NhlErrorTypes PlotManagerSetValues
 		
 	return ret;
 }
+#if 0
 static NhlAnnoRec *CopyAnnoList
 (
 NhlAnnoRec *list
@@ -1380,6 +1379,7 @@ NhlAnnoRec *list
 	}
 	return *to_list;
 }
+#endif
 
 /*
  * Function:	PlotManagerGetValues
@@ -3521,8 +3521,6 @@ ManageExtAnnotation
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name;
 	char			*e_text;
-	NhlPlotManagerLayerPart	*ovp = &ovnew->plotmanager;
-	NhlPlotManagerLayerPart	*oovp = &ovold->plotmanager;
 	NhlTransformLayerPart   *tfp = &((NhlTransformLayer)ovnew)->trans;
 	NhlTransformLayerPart   *otfp = &((NhlTransformLayer)ovold)->trans;
 	NhlJustification	just = NhlCENTERCENTER;
@@ -3736,7 +3734,7 @@ UpdateAnnoData
 	NhlString		entry_name;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 	NhlAnnoRec		*anlp;
 	NhlBoolean		on;
         NhlBoolean		viewable = _NhlViewOn((NhlLayer) plot);
@@ -5455,8 +5453,6 @@ NhlErrorTypes NhlAddOverlay
 		int			nargs = 0;
 		NhlTransformLayer	plot = sub_recs[i]->plot;
 		NhlTransformLayerPart	*plot_tfp = &plot->trans;
-		NhlPlotManagerLayer	pml = 
-			(NhlPlotManagerLayer)sub_recs[i]->ov_obj;
 
 		NhlSetSArg(&sargs[nargs++],NhlNtfOverlayStatus, 
 			   _tfCurrentOverlayMember);
@@ -5852,7 +5848,6 @@ int NhlAddAnnotation
 	int anno_view_id;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "NhlAddAnnotation";
 	NhlLayer		base = _NhlGetLayer(plot_id);
@@ -6561,8 +6556,6 @@ NhlAnnoRec *UnregisterAnnotation
 	NhlString	entry_name;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
 	NhlPlotManagerLayerPart	*ovp;
 	NhlAnnoRec		**tanrp;
 	NhlAnnoRec		*anrp = NULL;

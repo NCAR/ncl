@@ -130,9 +130,7 @@ MapDHInitialize
         int             num_args;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name = "MapV40DHInitialize";
-	char			*e_text;
+	NhlErrorTypes		ret = NhlNOERROR;
 
         return ret;
 }

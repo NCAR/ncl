@@ -40,7 +40,7 @@ static NhlResource dcresources[] = {
 /* Begin-documented-resources */
 
 	{NhlNdcDelayCompute,NhlCdcDelayCompute,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(delay_compute),NhlTImmediate,(NhlPointer)False,0,NULL}
+		 Oset(delay_compute),NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL}
 
 /* End-documented-resources */
 
@@ -179,7 +179,7 @@ static NhlResource dsresources[] = {
 
 	/* initialize this field to false */
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(destroying),NhlTImmediate,(NhlPointer)False,
+		 Oset(destroying),NhlTImmediate,_NhlUSET((NhlPointer)False),
          	_NhlRES_PRIVATE,NULL}
 
 };
@@ -738,7 +738,6 @@ CreateDataNode
 {
 	_NhlDataNodePtr		dnode = NULL;
 	int			dspecid;
-	NhlDataSpecLayer	dsl = NULL;
 	NhlErrorTypes		ret=NhlNOERROR;
 
 	if(!_NhlIsDataItem(dil)){

@@ -941,7 +941,7 @@ static NrmQuark Qfill_colors = NrmNULLQUARK;
 static NrmQuark Qfill_patterns = NrmNULLQUARK;
 static NrmQuark Qfill_scales = NrmNULLQUARK;
 
-static NhlMapPlotLayerPart *Mpp = NULL, *Ompp;
+static NhlMapPlotLayerPart *Mpp = NULL;
 
 static int Init_Colors[] ={16,10, 8,10,26,22,11,23,13,19,24,25,21,20,18};
 
@@ -1504,13 +1504,11 @@ static NhlErrorTypes MapPlotSetValues
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "MapPlotSetValues";
 	char			*e_text;
-	int			view_args = 0;
         NhlSArg			sargs[64];
         int			nargs = 0;
         NhlMapPlotLayer		mpl = (NhlMapPlotLayer) new;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
         NhlMapPlotLayer		ompl = (NhlMapPlotLayer) old;
-	NhlMapPlotLayerPart	*ompp = &(ompl->mapplot);
 
 	mpl->trans.grid_type = NhltrMAP;
 
@@ -2403,14 +2401,9 @@ static NhlErrorTypes mpDraw
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
 	NhlMapPlotLayerPart	*mpp = &(mp->mapplot);
-	NhlTransformLayerPart	*tfp = &(mp->trans);
 	NhlBoolean		do_labels = False,
 				do_perim = False;
-	NhlTransDat		*seg_dat;
-	float			mr,ml,mt,mb;
-	float			new_x[3],new_y[3];
 
 	NhlVASetValues(mp->base.wkptr->base.id,
 		_NhlNwkReset,	True,
@@ -2848,7 +2841,6 @@ static NhlErrorTypes    mpManageDynamicArrays
 	NhlBoolean need_check,changed;
 	ng_size_t old_count;
 	int cmap_len = 0;
-	NhlBoolean use_default;
 
 	entry_name =  init ? "MapPlotInitialize" : "MapPlotSetValues";
 
@@ -3681,7 +3673,6 @@ static NhlErrorTypes mpSetUpDataHandler
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name;
-	NhlTransformLayerPart	*tfp = &(mpnew->trans);
 	char			buffer[_NhlMAXRESNAMLEN];
         int			tmpid;
         NhlSArg			sargs[32];
@@ -3932,8 +3923,7 @@ static NhlErrorTypes GetXAxisTicks
 	NhlString **labels;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
-	char *e_text;
+	NhlErrorTypes		ret = NhlNOERROR;
 	double lon[101],lat[101],xw[101];
 	double minlon,maxlon,minlat,maxlat;
 	double xspan;
@@ -3945,10 +3935,9 @@ static NhlErrorTypes GetXAxisTicks
 	int seg_count;
 	int statix;
 	double max_angle,nice;
-	int i,j,ipln,iqln;
+	int i,j;
 	double dlx,drx,dy;
 	double rlon,rlat,xwin,ywin;
-	float val;
 	char label[128];
 	int nchr;
 	ng_size_t size;
@@ -4304,8 +4293,7 @@ static NhlErrorTypes GetYAxisTicks
 	NhlString **labels;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
-	char *e_text;
+	NhlErrorTypes		ret = NhlNOERROR;
 	double lon[101],lat[101],yw[101];
 	double minlon,maxlon,minlat,maxlat;
 	double yspan;
@@ -4317,10 +4305,9 @@ static NhlErrorTypes GetYAxisTicks
 	int seg_count;
 	int statix;
 	double max_angle,nice;
-	int i,j,ipln,iqln;
+	int i,j;
 	double dby,dty,dx;
 	double rlon,rlat,xwin,ywin;
-	float val;
 	char label[128];
 	int nchr;
 	int size;
@@ -4692,7 +4679,6 @@ static NhlErrorTypes ManageTickMarks
 	NhlBoolean xb_labels_on,yl_labels_on,xt_labels_on,yr_labels_on;
 	NhlBoolean update = False;
 	int projection;
-	NhlBoolean outward_set;
 	int i;
 
  	if (! tfp->plot_manager_on)
@@ -5328,7 +5314,6 @@ void   (_NHLCALLF(hlumapusr,HLUMAPUSR))
 	NhlString *sp;
 	float	p0,p1,jcrt;
 	int	slen;
-	int     i;
 	char	buffer[128];
 	char	*entry_name = "mpDraw";
 
@@ -5449,7 +5434,6 @@ static void   load_hlumap_routines
 #endif
 {
 	int idum;
-	float fdum;
 
 
 	if (flag) {

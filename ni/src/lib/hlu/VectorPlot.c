@@ -675,10 +675,10 @@ static NhlResource resources[] = {
 /* Intercepted resources */
 
 	{NhlNtrXTensionF,NhlCtrXTensionF,NhlTFloat,sizeof(float),
-		Oset(x_tension),NhlTString,"2.0",
+		 Oset(x_tension),NhlTString,_NhlUSET("2.0"),
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{NhlNtrYTensionF,NhlCtrYTensionF,NhlTFloat,sizeof(float),
-		Oset(y_tension),NhlTString,"2.0",
+		 Oset(y_tension),NhlTString,_NhlUSET("2.0"),
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 
 	{ NhlNpmLabelBarDisplayMode,NhlCpmLabelBarDisplayMode,
@@ -873,14 +873,6 @@ static NhlErrorTypes SetUpLLTransObj(
 #endif
 );
 
-static NhlErrorTypes SetCoordBounds(
-#if	NhlNeedProto
-	NhlVectorPlotLayerPart	*vcp,
-	vcCoord			ctype,
-	int			count,
-	NhlString		entry_name
-#endif
-);
 
 static NhlErrorTypes SetUpIrrTransObj(
 #if	NhlNeedProto
@@ -1100,16 +1092,6 @@ static NhlErrorTypes    SetupLevelsExplicit(
 #endif
 );
 
-static NhlErrorTypes ChooseSpacingLin(
-#if	NhlNeedProto
-	float		*tstart,
-	float		*tend,
-	float		*spacing,
-	int		convert_precision,
-	int		max_ticks,
-	NhlString	entry_name
-#endif
-);
 
 static NhlErrorTypes    ManageVectorData(
 #if	NhlNeedProto
@@ -1725,9 +1707,7 @@ CurlyVectorInitialize
         int             num_args;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name = InitName;
-	char			*e_text;
+	NhlErrorTypes		ret = NhlNOERROR;
 	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
 	char buffer[_NhlMAXRESNAMLEN];
 	float afr;
@@ -2281,12 +2261,8 @@ CurlyVectorSetValues
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name = InitName;
-	char			*e_text;
  	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
  	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
-        NhlSArg			sargs[32];
-        int			nargs = 0;
 	float			afr;
 	int			rlist;
 
@@ -3166,7 +3142,6 @@ static NhlErrorTypes vcInitDraw
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
 	NhlTransformLayerPart	*tfp = &(vcl->trans);
-	NhlString		e_text;
 
  /*
  * Set up LLU interface coordinate boundaries 
@@ -3307,7 +3282,6 @@ static NhlErrorTypes vcUpdateTrans
                 if ((vcp->trans_obj->base.layer_class)->base_class.class_name 
 		    == NhlmapTransObjClass->base_class.class_name) {
 			float xmin, xmax;
-			float cell_size;
 
 			xmin = MIN (vcp->vfp->x_start,vcp->vfp->x_end);
 			xmax = MAX (vcp->vfp->x_start,vcp->vfp->x_end);
@@ -3407,7 +3381,6 @@ static NhlErrorTypes SetVecAnnoParams
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
 	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
 	float wlx,wrx,wby,wty; 
 	int lnlg,invx,invy;
@@ -3492,12 +3465,10 @@ static NhlErrorTypes CurlyVectorDraw
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
 	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
 	NhlTransformLayerPart	*tfp = &(vcl->trans);
 	NhlStreamlinePlotLayer stl = (NhlStreamlinePlotLayer) 
 		_NhlGetLayer(vcp->curly_vector_id);
-	NhlStreamlinePlotLayerPart *stp = &(stl->streamlineplot);
 	NhlTransformLayerPart *stfp = &(stl->trans);
 	NhlTransformLayerPart save_trans;
 
@@ -3561,7 +3532,7 @@ static NhlErrorTypes VectorPlotPreDraw
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlString		e_text,entry_name = "VectorPlotPreDraw";
+	NhlString		entry_name = "VectorPlotPreDraw";
 	NhlVectorPlotLayer	vcl = (NhlVectorPlotLayer) layer;
 	NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
         NhlBoolean		seg_draw;
@@ -3636,7 +3607,7 @@ static NhlErrorTypes VectorPlotDraw
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlVectorPlotLayer	vcl = (NhlVectorPlotLayer) layer;
 	NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
-	NhlString		e_text,entry_name = "VectorPlotDraw";
+	NhlString		entry_name = "VectorPlotDraw";
         NhlBoolean		seg_draw;
 
 	if (! vcp->data_init || vcp->zero_field) {
@@ -3700,7 +3671,7 @@ static NhlErrorTypes VectorPlotPostDraw
 	NhlVectorPlotLayer		vcl = (NhlVectorPlotLayer) layer;
 	NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
 	NhlTransformLayerPart	*tfp = &vcl->trans;
-	NhlString		e_text,entry_name = "VectorPostPlotDraw";
+	NhlString		entry_name = "VectorPostPlotDraw";
         NhlBoolean		seg_draw;
 
 	Vcp = vcp;
@@ -4211,7 +4182,6 @@ static NhlErrorTypes InitCoordBounds
 	NhlErrorTypes	ret = NhlNOERROR;
         NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
         NhlTransformLayerPart	*tfp = &vcl->trans;
-	char		*e_text;
 
 	vcp->do_low_level_log = False;
         
@@ -4331,7 +4301,6 @@ static NhlErrorTypes SetUpLLTransObj
 	char			*e_text;
 	char			*entry_name;
 	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
-	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
 	NhlTransformLayerPart	*tfp = &(vcnew->trans);
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
@@ -5163,7 +5132,6 @@ static NhlErrorTypes SetScale
 {
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
-	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
 	NhlString entry_name, e_text;
 	float sigval,t;
 	int power,i,count;
@@ -7125,7 +7093,6 @@ static NhlErrorTypes    ManageVectorData
 	char			*entry_name;
 	char			*e_text;
 	NhlVectorPlotLayerPart	*vcp = &vcnew->vectorplot;
-	NhlVectorPlotLayerPart	*ovcp = &vcold->vectorplot;
 	NhlVectorFieldFloatLayer	vfl;
 	_NhlDataNodePtr			*dlist = NULL;
 	NhlBoolean			new;
@@ -7290,7 +7257,6 @@ static NhlErrorTypes    ManageScalarData
 	char			*entry_name;
 	char			*e_text;
 	NhlVectorPlotLayerPart	*vcp = &vcnew->vectorplot;
-	NhlVectorPlotLayerPart	*ovcp = &vcold->vectorplot;
 	NhlScalarFieldFloatLayer	sfl;
 	_NhlDataNodePtr			*dlist = NULL;
 	NhlBoolean			new;
@@ -7438,7 +7404,6 @@ static NhlErrorTypes    ManageViewDepResources
 	NhlVectorPlotLayer	vcold = (NhlVectorPlotLayer) old;
 	NhlBoolean		view_changed;
 	float			ratio,old_width,old_height;
-	NhlBoolean		ref_len_inited = False;
 
 	entry_name = (init) ? InitName : SetValuesName;
 
@@ -8732,7 +8697,6 @@ static NhlErrorTypes    SetupLevelsExplicit
 	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
 	char			*e_text;
 	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
-	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
 	int			i,j,count;
 	float			*fp;
 	float			ftmp;

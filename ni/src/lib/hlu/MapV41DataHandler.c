@@ -20,9 +20,11 @@
  *	Description:	
  */
 
+/* Uncomment this to write out tables of the recognized map boundaries, with area id info, etc. in html  */
 /*#define HLU_WRITE_TABLES*/
 
 #include <ncarg/hlu/MapV41DataHandlerP.h>
+#include <ctype.h>
 
 static NhlErrorTypes MapV41DHClassPartInit(
 #if	NhlNeedProto
@@ -154,9 +156,7 @@ static NhlMapV41DataHandlerClassPart	*Mv41cp;
 static NhlMapV41DataHandlerLayerPart	*Mv41p;
 static NhlMapDataHandlerLayerPart *Mdhp;
 static NhlBoolean Grid_Setup;
-static mpDrawOp Draw_Op;
 static NhlBoolean Count_Points_Only = False;
-static NhlString Last_Data_Set_Name = NULL;
 
 static mpDrawIdRec *DrawIds = NULL;
 static int	    DrawIdCount = 0;
@@ -309,7 +309,6 @@ static char *SimplifyString(char *string)
 {
 	char *cp = string;
         char *bp = OutBuf;
-        NhlBoolean last_space = False;
 
 	while (*cp != '\0') {
                 switch (*cp) {
@@ -344,7 +343,6 @@ static char *UpNameHierarchy
 #endif
 {
         char *cp,*bcp;
-        int i;
 
         cp = string;
         
@@ -377,8 +375,6 @@ MapV41DHClassPartInit
 #endif
 {
 	NhlMapV41DataHandlerClass	mdhc = (NhlMapV41DataHandlerClass)lc;
-	NhlErrorTypes		ret = NhlNOERROR;
-        NhlString		entry_name = "MapV41DHClassPartInit";
         
 	Qstring = NrmStringToQuark(NhlTString);
 	Qarea_names = NrmStringToQuark(NhlNmpAreaNames);
@@ -454,8 +450,7 @@ static NhlErrorTypes Init_Entity_Recs
 {
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
 	char *e_text;
-        int i,j,us_ix=0;
-        int us_child_count[3] = {0,0,0};
+        int i,j;
         LongNameRec *lname_recs;
         char lname_buf[256];
 	NrmQuark cur_dataset_q;
@@ -827,11 +822,11 @@ static NhlErrorTypes    mdhManageDynamicArrays
 	NhlMapDataHandlerLayerPart	*omdhp = &(mv4old->mapdh);
         NhlMapV41DataHandlerLayerPart	*mv41p = &mv4new->mapv41dh;
         
-	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 	char *entry_name;
 	char *e_text;
 	NhlGenArray ga;
-	int i,count;
+	int i;
 	int *ip;
 	NhlString *sp;
 	NhlBoolean need_check;
@@ -1439,7 +1434,6 @@ static NhlGenArray mdhGetNewGenArray
         }
 	else if (quark == Qdynamic_groups) {
 		int	*ip;
-		int	index = quark == Qdynamic_groups ? 1 : 0;
 
 		len = entity_rec_count;
 		if ((ip = NhlMalloc(sizeof(int)*len)) == NULL) {
@@ -1563,7 +1557,6 @@ static NhlErrorTypes    MapV41DHGetValues
 {
         NhlMapV41DataHandlerLayer mv41l = (NhlMapV41DataHandlerLayer) l;
         NhlMapDataHandlerLayerPart *mdhp = &mv41l->mapdh;
-        NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
         NhlGenArray ga;
 	NhlString ts;
         NhlString e_text,entry_name = "MapV41DHGetValues";
@@ -1726,7 +1719,6 @@ static int fill_sort
         v41SpecFillRec frec2 = *(v41SpecFillRec *) p2;
         int lev1,lev2;
         int pix;
-        int ret = 0;
 /*
  * The draw id records are set up based on the specified fill records -
  * Later entries in the list modify the list last, and therefore override
@@ -1810,8 +1802,6 @@ static NhlErrorTypes    ExpandSpecFillRecord
 
         for (i = 0; i < mv41p->entity_rec_count; i++) {
                 int count = mv41p->fill_rec_count;
-		int plevel;
-		int is_child = 0;
 		v41EntityRec *erec = mv41p->alpha_recs[i];
 
 		if (! c_mpipai(erec->eid,eid))
@@ -1840,6 +1830,7 @@ static NhlErrorTypes    ExpandSpecFillRecord
 		mv41p->fill_recs[count].level = level;
 		mv41p->fill_rec_count++;
 	}
+	return NhlNOERROR;
 }
 
 
@@ -1879,7 +1870,7 @@ static NhlErrorTypes    UpdateSpecFillRecords
 {
         NhlMapDataHandlerLayerPart *mdhp = &mv41l->mapdh;
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
         char *comp_string, *parent_string = NULL;
         char *e_text;
 	NhlString *area_names = NULL;
@@ -2149,7 +2140,6 @@ static int outline_sort
         v41SpecLineRec lrec2 = *(v41SpecLineRec *) p2;
         int lev1,lev2;
         int pix;
-        int ret = 0;
 /*
  * The draw id records are set up based on the specified outline records -
  * Later entries in the list modify the list last, and therefore override
@@ -2225,9 +2215,8 @@ static NhlErrorTypes    UpdateSpecLineRecords
         NhlString			entry_name;
 #endif
 {
-        NhlMapDataHandlerLayerPart *mdhp = &mv41l->mapdh;
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
         char *comp_string, *parent_string = NULL;
 	NhlString *area_names = NULL;
         char *e_text;
@@ -2380,7 +2369,6 @@ static NhlErrorTypes    mv41BuildOutlineDrawList
         NhlString			entry_name;
 #endif
 {
-        NhlMapDataHandlerLayerPart *mdhp = &mv41l->mapdh;
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	int			i;
@@ -2454,7 +2442,7 @@ static NhlErrorTypes MapV41DHUpdateDrawList
 		(NhlMapV41DataHandlerLayer) instance;
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
 	NhlMapPlotLayerPart	*mpp = &(newmp->mapplot);
-	NhlString e_text, entry_name = "MapV41DHUpdateDrawList";
+	NhlString entry_name = "MapV41DHUpdateDrawList";
         NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
         NhlBoolean build_fill_list = False, build_outline_list = False;
         
@@ -2546,9 +2534,8 @@ static int (_NHLCALLF(hlumapfill,HLUMAPFILL))
 	int *nai;
 #endif
 {
-	int ix, pat_ix, col_ix, id;
+	int pat_ix, col_ix;
 	float fscale;
-	unsigned char s_ix;
         int i,gid,geo_ix = -1 ,vs_ix = -1;
 
 	if (Mpp == NULL) return 0;
@@ -2708,8 +2695,7 @@ static NhlErrorTypes mpSetUpFillDrawList
 #endif
 {
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
+	NhlErrorTypes		ret = NhlNOERROR;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
 	int	i;
 
@@ -2739,7 +2725,6 @@ static NhlErrorTypes mpSetUpFillDrawList
         for (i = 0; i < mv41p->fill_rec_count; i++) {
                 int eid = mv41p->fill_recs[i].eid;
                 int spec_fill_index = mv41p->fill_recs[i].spec_ix;
-                int spec_level = c_mpiaty(eid);
                 int j;
                 
                 mv41p->fill_recs[i].spec_col = 0;
@@ -2812,7 +2797,7 @@ static NhlErrorTypes mpSetUpAreamap
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
-	int			aws_id = -1,i;
+	int			aws_id = -1;
 	int			last_fill_level;
 	int			req_size;
 
@@ -2857,9 +2842,6 @@ static NhlErrorTypes mpSetUpAreamap
 	}
 	
 	if (! _NhlWorkspaceDataIntact(aws_id) || mv41p->new_amap_req ) {
-                float fl,fr,fb,ft,ul,ur,ub,ut;
-                int ll;
-                float xp[5],yp[5];
                 
 		c_mpseti("VS",1);
 		c_mpseti("G2",2);
@@ -2911,9 +2893,7 @@ static NhlErrorTypes mpFill
 	NhlString			entry_name;
 #endif
 {
-        NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
         NhlWorkspace		*aws = NULL;
 
         subret = mpSetUpAreamap(mv41l,mpl,&aws,entry_name);
@@ -2970,8 +2950,7 @@ static int (_NHLCALLF(hlumaskgrid,HLUMASKGRID))
 #endif
 {
 	NhlBoolean draw_line = False;
-	int i,id,ix = 0;
-	int type;
+	int i;
         int geo_ix = -1 ,vs_ix = -1;
         
 	if (Mpp == NULL) return 0;
@@ -3090,13 +3069,9 @@ static NhlErrorTypes mpGrid
 	NhlString			entry_name;
 #endif
 {
-        NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
 	NhlWorkspace		*aws;
-        float flx,frx,fby,fuy,wlx,wrx,wby,wuy,lon1,lon2,lat1,lat2,spacing;
-	float avlat,avlon;
-	int ll,status;
         float pole_param;
 
 	Grid_Setup = False;
@@ -3164,7 +3139,7 @@ static NhlErrorTypes mpOutline
 #endif
 {
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
 	int			i;
 
@@ -3208,7 +3183,6 @@ static NhlErrorTypes mpOutline
         for (i = 0; i < mv41p->outline_rec_count; i++) {
                 int eid = mv41p->outline_recs[i].eid;
 		char eidname[128];
-                int spec_level = c_mpiaty(eid);
                 int j;
 
 		strcpy(eidname,c_mdname(eid));
@@ -3256,8 +3230,8 @@ static NhlErrorTypes MapV41DHDrawMapList
         NhlMapV41DataHandlerLayer mv41l = 
 		(NhlMapV41DataHandlerLayer) instance;
 	NhlMapPlotLayerPart	  *mpp = &mpl->mapplot;
-	NhlString e_text, entry_name = "MapV41DHDrawMapList";
-        NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlString entry_name = "MapV41DHDrawMapList";
+        NhlErrorTypes ret = NhlNOERROR;
 	int i;
         
 	Mpp = mpp;
@@ -3288,12 +3262,17 @@ static NhlErrorTypes MapV41DHDrawMapList
 	OceanId = Mv41p->basic_ids.ocean_id;
         
         switch (draw_op) {
-            case mpDRAWFILL:
-                    return mpFill(mv41l,mpl,entry_name);
-            case mpDRAWOUTLINE:
-                    return mpOutline(mv41l,mpl,entry_name);
-            case mpDRAWGRID:
-                    return mpGrid(mv41l,mpl,entry_name);
+	case mpDRAWFILL:
+		ret = mpFill(mv41l,mpl,entry_name);
+		break;
+	case mpDRAWOUTLINE:
+		ret = mpOutline(mv41l,mpl,entry_name);
+		break;
+	case mpDRAWGRID:
+		ret =  mpGrid(mv41l,mpl,entry_name);
+		break;
+	default:
+		break;
         }
 
 	Mpp = NULL;
@@ -3473,7 +3452,6 @@ static void SetLineAttrs
                 float	p0,p1,jcrt;
                 int	slen;
                 char	buffer[128];
-		int     i;
                 
                 dpat = dash_pattern % Mpp->dash_table->num_elements;
                 sp = (NhlString *) Mpp->dash_table->data;

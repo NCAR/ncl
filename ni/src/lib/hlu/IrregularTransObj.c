@@ -446,7 +446,6 @@ static NhlErrorTypes IrTransSetValues
 {
 	NhlIrregularTransObjLayer inew = (NhlIrregularTransObjLayer) new;
 	NhlIrregularTransObjLayerPart *irp = &inew->irtrans;
-	NhlTransObjLayerPart	*tp = &inew->trobj;
 
 	if (_NhlArgIsSet(args,num_args,NhlNtrLowLevelLogOn)) {
 		/* assumed to be the only arg set */

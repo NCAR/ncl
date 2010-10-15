@@ -24,6 +24,7 @@
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/ErrorI.h>
 #include <ncarg/hlu/Workspace.h>
+#include <ncarg/hlu/ResListP.h>
 
 static _NhlRawClassCB appc_callbacks[] = {
 	{_NhlCBappDefParentChange,NULL,0,NULL,NULL,NULL},
@@ -125,10 +126,10 @@ GetSysAppDir
 
 #define appDefResDef	{NhlNappDefaultParent,NhlCappDefaultParent,	\
 	NhlTBoolean,sizeof(NhlBoolean),Oset(default_parent),		\
-	NhlTImmediate,(NhlPointer)False,_NhlRES_DEFAULT,NULL}
+	NhlTImmediate,_NhlUSET((NhlPointer)False),_NhlRES_DEFAULT,NULL}
 #define appResResDef {NhlNappResources,NhlCappResources,		\
 	NhlTStringGenArray,sizeof(NhlGenArray),Oset(resources),		\
-	NhlTImmediate,(NhlPointer)NULL,_NhlRES_NOSACCESS,		\
+	NhlTImmediate,_NhlUSET((NhlPointer)NULL),_NhlRES_NOSACCESS,		\
 	(NhlFreeFunc)NhlFreeGenArray}
 
 static NhlResource more_res[] = {
@@ -139,41 +140,41 @@ static NhlResource more_res[] = {
 static NhlResource resources[] = {
 /* Begin-documented-resources */
 	{NhlNappUsrDir,NhlCappUsrDir,NhlTString,sizeof(NhlString),
-		Oset(usr_appdir),NhlTImmediate,(NhlPointer)"./",
+		Oset(usr_appdir),NhlTImmediate,_NhlUSET((NhlPointer)"./"),
 		_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
 	{NhlNappSysDir,NhlCappSysDir,NhlTString,sizeof(NhlString),
-		Oset(sys_appdir),NhlTProcedure,(NhlPointer)GetSysAppDir,
+		Oset(sys_appdir),NhlTProcedure,_NhlUSET((NhlPointer)GetSysAppDir),
 		_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
 	{NhlNappFileSuffix,NhlCappFileSuffix,NhlTString,sizeof(NhlString),
-		Oset(file_suffix),NhlTImmediate,(NhlPointer)".res",
+		Oset(file_suffix),NhlTImmediate,_NhlUSET((NhlPointer)".res"),
 		_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
 	appDefResDef,
 	appResResDef,
 /* End-documented-resources */
 	{_NhlNappMode,_NhlCappMode,NhlTInteger,sizeof(_NhlC_OR_F),
-		Oset(init_mode),NhlTImmediate,(NhlPointer)_NhlNONE,
+		Oset(init_mode),NhlTImmediate,_NhlUSET((NhlPointer)_NhlNONE),
 		_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNdefApp,_NhlCdefApp,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(default_app),NhlTImmediate,(NhlPointer)False,
+		Oset(default_app),NhlTImmediate,_NhlUSET((NhlPointer)False),
 		_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNnoAppDB,_NhlCnoAppDB,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(no_appDB),NhlTImmediate,(NhlPointer)False,
+		Oset(no_appDB),NhlTImmediate,_NhlUSET((NhlPointer)False),
          	_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNappResourceStrings,_NhlCappResourceStrings,NhlTPointer,
 		sizeof(NhlPointer),Oset(res_strings),NhlTImmediate,
-		(NhlPointer)NULL,_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
+		_NhlUSET((NhlPointer)NULL),_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNappCommandLineOpts,_NhlCappCommandLineOpts,NhlTPointer,
 		sizeof(NhlPointer),Oset(clineopts),NhlTImmediate,
-		(NhlPointer)NULL,_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
+		_NhlUSET((NhlPointer)NULL),_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNappArgcInOut,_NhlCappArgcInOut,NhlTPointer,
 		sizeof(NhlPointer),Oset(argc_in_out),NhlTImmediate,
-		(NhlPointer)NULL,_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
+		_NhlUSET((NhlPointer)NULL),_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNappArgvInOut,_NhlCappArgvInOut,NhlTPointer,
 		sizeof(NhlPointer),Oset(argv_in_out),NhlTImmediate,
-		(NhlPointer)NULL,_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
+		_NhlUSET((NhlPointer)NULL),_NhlRES_CONLY|_NhlRES_PRIVATE,NULL},
 	{NhlNobjAppObj,NhlCobjAppObj,NhlTInteger,sizeof(int),
 		NhlOffset(NhlBaseLayerRec,base.appid),NhlTImmediate,
-		(NhlPointer)NhlDEFAULT_APP,
+		_NhlUSET((NhlPointer)NhlDEFAULT_APP),
          	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 };
 

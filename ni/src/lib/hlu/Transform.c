@@ -521,7 +521,6 @@ TransformInitialize
         int             num_args;
 #endif
 {
-	char			*entry_name = "TransformInitialize";
 	NhlTransformLayer	tnew = (NhlTransformLayer) new;
 	NhlTransformLayerPart	*tfp = &(tnew->trans);
 
@@ -642,7 +641,6 @@ static NhlErrorTypes TransformSetValues
 	int		num_args;
 #endif
 {
-	char			*entry_name = "TransformSetValues";
 	NhlTransformLayer	tnew = (NhlTransformLayer) new;
  	NhlTransformLayerPart	*tfp = &(tnew->trans);
 	NhlTransformLayer	told = (NhlTransformLayer) old;
@@ -2635,8 +2633,6 @@ NhlErrorTypes NhlAddPrimitive
 	char			*e_text;
 	char			*entry_name = "NhlAddPrimitive";
 	NhlLayer	transform = _NhlGetLayer(transform_id);
-	NhlLayer	primitive = _NhlGetLayer(primitive_id);
-	NhlLayer	before = _NhlGetLayer(before_id);
 	NhlTransformLayer tf;
 	NhlTransformLayerPart *tfp;
 	int i,j,count,bid;
@@ -2780,7 +2776,6 @@ NhlErrorTypes NhlRemovePrimitive
 	char			*e_text;
 	char			*entry_name = "NhlRemovePrimitive";
 	NhlLayer	transform = _NhlGetLayer(transform_id);
-	NhlLayer	primitive = _NhlGetLayer(primitive_id);
 	NhlTransformLayer tf;
 	NhlTransformLayerPart *tfp;
 	int i,j,count;

@@ -25,6 +25,7 @@
 
 #include <ncarg/hlu/CnStdRenderer.h>
 #include <ncarg/hlu/CnRendererP.h>
+#include <ncarg/hlu/ContourPlotI.h>
 
 
 typedef struct _NhlCnStdRendererLayerPart {

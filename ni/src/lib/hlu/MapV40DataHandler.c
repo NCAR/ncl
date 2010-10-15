@@ -19,8 +19,12 @@
  *
  *	Description:	
  */
+/* uncomment this to write out tables of the recognized map boundaries, with area id info, in html  */
 /*#define HLU_WRITE_TABLES*/
+
+
 #include <ncarg/hlu/MapV40DataHandlerP.h>
+#include <ctype.h>
 
 static NhlErrorTypes MapV40DHClassPartInit(
 #if	NhlNeedProto
@@ -306,6 +310,8 @@ static void mpLowerCase(char *string)
 	}
 }
 
+#if 0
+
 static void GetOutRecsByName(mpOutlineRec *orp, int nrecs, NhlString name)
 {
 	mpOutlineRec *lorp = orp;
@@ -348,7 +354,6 @@ static void GetOutRecsByType(mpOutlineRec *orp, int nrecs, mpOutlineType type)
 	}
 }
 
-#if 0
 void mpprintids(FILE *fp,short *idlist, int count)
 {
 	int i, j;
@@ -384,7 +389,6 @@ static NhlErrorTypes Init_Outline_Recs
 	mpOutlineType last_type;
 	Const char *db_path;
 	char *full_name;
-	int i;
 
 	if ((db_path = GetNCARGPath("database")) == NULL) {
 		e_text = "%s: cannot find path to NCARG database";
@@ -569,19 +573,14 @@ static NhlErrorTypes    mdhManageDynamicArrays
                 &((NhlMapV40DataHandlerClass)
                   mv4new->base.layer_class)->mapv40dh_class;
         
-	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 	char *entry_name;
 	char *e_text;
 	NhlGenArray ga;
-	int i,count;
+	int i;
 	int *ip;
-	float *fp;
 	NhlString *sp;
-	float fval;
-	int	init_count;
-	NhlBoolean need_check,changed;
-	int old_count;
-	int cmap_len = 0;
+	NhlBoolean need_check;
 	NhlBoolean use_default;
         int outline_rec_count;
         mpOutlineRec *outline_recs;
@@ -1073,7 +1072,6 @@ static NhlErrorTypes    MapV40DHGetValues
 {
         NhlMapV40DataHandlerLayer mv40l = (NhlMapV40DataHandlerLayer) l;
         NhlMapDataHandlerLayerPart *mdhp = &mv40l->mapdh;
-        NhlMapV40DataHandlerLayerPart *mv40p = &mv40l->mapv40dh;
         NhlGenArray ga;
         NhlString e_text,entry_name = "MapV40DHGetValues";
         int i, count = 0;
@@ -1404,7 +1402,6 @@ static NhlErrorTypes mpSetFlags
 #endif
 {
         NhlMapDataHandlerLayerPart *mdhp = &mv40l->mapdh;
-        NhlMapV40DataHandlerLayerPart *mv40p = &mv40l->mapv40dh;
         NhlMapV40DataHandlerClassPart *mdhcp =
          &((NhlMapV40DataHandlerClass)mv40l->base.layer_class)->mapv40dh_class;
 
@@ -1675,11 +1672,9 @@ static NhlErrorTypes    mdhBuildFillDrawList
         NhlString	entry_name;
 #endif
 {
-        NhlMapDataHandlerLayerPart *mdhp = &mv40l->mapdh;
         NhlMapV40DataHandlerLayerPart *mv40p = &mv40l->mapv40dh;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlMapPlotLayerPart	*mpp = &(mpnew->mapplot);
-	NhlMapPlotLayerPart	*ompp = NULL;
 	int			i,j;
 	NhlString		*sp;
 	NhlBoolean		found;
@@ -1860,7 +1855,6 @@ static NhlErrorTypes    mdhBuildOutlineDrawList
         NhlMapV40DataHandlerLayerPart *mv40p = &mv40l->mapv40dh;
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlMapPlotLayerPart *mpp = &(mpnew->mapplot);
-	NhlMapPlotLayerPart *ompp = NULL;
 	int i,j;
 	NhlString	*sp;
 	NhlBoolean	found;
@@ -2014,7 +2008,7 @@ static NhlErrorTypes MapV40DHUpdateDrawList
         NhlMapV40DataHandlerLayer mv40l = (NhlMapV40DataHandlerLayer) instance;
         NhlMapV40DataHandlerLayerPart *mv40p = &mv40l->mapv40dh;
 	NhlMapPlotLayerPart	*mpp = &(newmp->mapplot);
-	NhlString e_text, entry_name = "MapV40DHUpdateDrawList";
+	NhlString entry_name = "MapV40DHUpdateDrawList";
         NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
         NhlBoolean build_fill_list = False, build_outline_list = False;
 
@@ -2820,7 +2814,6 @@ static NhlErrorTypes mpFill
 {
         NhlMapV40DataHandlerLayerPart *mv40p = &mv40l->mapv40dh;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
         NhlWorkspace		*aws = NULL, *us_aws = NULL;
 
 /*
@@ -3218,9 +3211,6 @@ static NhlErrorTypes mpGrid
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
 	NhlWorkspace		*aws = NULL, *us_aws = NULL;
-        float flx,frx,fby,fuy,wlx,wrx,wby,wuy,lon1,lon2,lat1,lat2,spacing;
-	float avlat,avlon;
-	int ll,status;
         float pole_param;
 
 	Grid_Setup = False;
@@ -3319,14 +3309,9 @@ static NhlErrorTypes MapV40DHDrawMapList
 {
         NhlMapV40DataHandlerLayer mv40l = (NhlMapV40DataHandlerLayer) instance;
 	NhlMapPlotLayerPart	  *mpp = &mpl->mapplot;
-	NhlString e_text, entry_name = "MapV40DHDrawMapList";
-        NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlString entry_name = "MapV40DHDrawMapList";
+        NhlErrorTypes ret = NhlNOERROR;
         
-        Mv4cp = &((NhlMapV40DataHandlerClass)
-                  mv40l->base.layer_class)->mapv40dh_class;
-	Mv40p = &(mv40l->mapv40dh);
-	Mpp = mpp;
-	Mpl = mpl;
 
         if (! DrawIds) {
                 DrawIds = NhlMalloc(DrawId_Count * sizeof(mpDrawIdRec));
@@ -3335,17 +3320,29 @@ static NhlErrorTypes MapV40DHDrawMapList
                         return NhlFATAL;
                 }
         }
+
+        Mv4cp = &((NhlMapV40DataHandlerClass)
+                  mv40l->base.layer_class)->mapv40dh_class;
+	Mv40p = &(mv40l->mapv40dh);
+	Mpp = mpp;
+	Mpl = mpl;
+
         Last_Instance = instance;
         Point_Count = 0;
 	Draw_Op = draw_op;
                 
         switch (draw_op) {
-            case mpDRAWFILL:
-                    return mpFill(mv40l,mpl,entry_name);
-            case mpDRAWOUTLINE:
-                    return mpOutline(mv40l,mpl,entry_name);
-            case mpDRAWGRID:
-                    return mpGrid(mv40l,mpl,entry_name);
+	case mpDRAWFILL:
+		ret =  mpFill(mv40l,mpl,entry_name);
+		break;
+	case mpDRAWOUTLINE:
+		ret =  mpOutline(mv40l,mpl,entry_name);
+		break;
+	case mpDRAWGRID:
+		ret =  mpGrid(mv40l,mpl,entry_name);
+		break;
+	default:
+		break;
         }
                     
 	Mpp = NULL;
@@ -3395,7 +3392,6 @@ void   (_NHLCALLF(hlumapeod,HLUMAPEOD))
 {
 	int ir,il;
 	NhlBoolean keep = False;
-	int i;
 
 	if (Mpp == NULL) {
 		_NHLCALLF(mapeod,MAPEOD)(nout,nseg,idls,idrs,npts,pnts);

@@ -921,8 +921,8 @@ ValidCoordArray
 #endif
 {
 	char *e_text;
-	int len_dim;
-	char *name;
+	int len_dim = 0;
+	char *name = "sf[X|Y]Array";
 	NhlBoolean error = False;
 
 
@@ -988,6 +988,7 @@ ValidCoordArray
 		else if (sfp->xc_el_count != sfp->xd_el_count) {
 			sfp->xc_el_count = sfp->xd_el_count;
 			error = True;
+			len_dim = sfp->xc_el_count;
 		}
 	}
 	else {
@@ -999,6 +1000,7 @@ ValidCoordArray
 		else if (sfp->yc_el_count != sfp->yd_el_count) {
 			sfp->yc_el_count = sfp->yd_el_count;
 			error = True;
+			len_dim = sfp->yc_el_count;
 		}
 	}
 	if (error) {
@@ -1498,16 +1500,11 @@ GetSubsetBounds2D
 #endif
 {
 	char		*e_text;
-	NhlErrorTypes   ret = NhlNOERROR,subret = NhlNOERROR;
 	NhlBoolean      do_subset = False;
 	NhlBoolean	rev;
-	NhlGenArray	*subset_start,*subset_end;
         NhlGenArray     out_ga;
-	NhlBoolean	nullstart = False,nullend = False;
-        NhlBoolean	start_byindex,end_byindex;
 	char		*c_name;
 	float		*fp, *nfp;
-	int		rem,stride;
 	float           min, max;
 	int		yi,xi;
 	int		yimin,yimax,ximin,ximax;
@@ -3655,7 +3652,7 @@ static NhlErrorTypes    ScalarFieldGetValues
         int i;
         NrmQuark resQ;
 	NrmQuark typeQ = NrmNULLQUARK;
-	NhlPointer	data,value;
+	NhlPointer	data;
 	ng_size_t	dlen[2];
 	int		ndim;
 	int		size;
@@ -3663,7 +3660,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 	float		tmp;
 	int		ival;
 	float		fval;
-	float		*farray;
 		
 	/*
 	 * subclasses of ScalarField completely override it.
@@ -4176,7 +4172,7 @@ ScalarFieldDestroy
 
 	if (sfl->base.layer_class->base_class.class_name != 
 	    NhlscalarFieldClass->base_class.class_name)
-		return;
+		return NhlNOERROR;
 
 	NhlFreeGenArray(sfp->d_arr);
 	NhlFreeGenArray(sfp->x_arr);

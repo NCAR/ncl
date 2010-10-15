@@ -107,7 +107,7 @@ _NhlStringToStringGenArray
 	int d_o_index = 0;
 	int d_p_index = 0;
 	_NhlTokens token;
-	int i,j;
+	int i;
 	char *data_out;
 	char **data_ptr;
 	char space_buffer[80];
@@ -3283,7 +3283,7 @@ NhlCvtInt8GenArrayToStringGenArray
 CvtArgs
 {
         NhlGenArray     togen,fromgen;
-        long long       *fromval;
+        char            *fromval;
         NhlString       *toval;
         int             i;
         char            func[] = "NhlCvtInt8GenArrayToStringGenArray";
@@ -3318,7 +3318,7 @@ CvtArgs
         }
 
         for(i=0;i < fromgen->num_elements;i++){
-                sprintf(buff,"%d",fromval[i]);
+                sprintf(buff,"%d",(int)fromval[i]);
                 toval[i] = NhlConvertMalloc(sizeof(char) * (strlen(buff) + 1));
                 if(toval[i] == NULL){
                         NhlPError(NhlFATAL,ENOMEM,"%s",func);
@@ -3336,7 +3336,7 @@ NhlCvtUint8GenArrayToStringGenArray
 CvtArgs
 {
         NhlGenArray     togen,fromgen;
-        unsigned long long       *fromval;
+        unsigned char   *fromval;
         NhlString       *toval;
         int             i;
         char            func[] = "NhlCvtUint8GenArrayToStringGenArray";
@@ -3371,7 +3371,7 @@ CvtArgs
         }
 
         for(i=0;i < fromgen->num_elements;i++){
-                sprintf(buff,"%u",fromval[i]);
+                sprintf(buff,"%u",(unsigned int)fromval[i]);
                 toval[i] = NhlConvertMalloc(sizeof(char) * (strlen(buff) + 1));
                 if(toval[i] == NULL){
                         NhlPError(NhlFATAL,ENOMEM,"%s",func);

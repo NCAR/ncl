@@ -1875,16 +1875,12 @@ GetSubsetBounds2D
 #endif
 {
         char            *e_text;
-        NhlErrorTypes   ret = NhlNOERROR,subret = NhlNOERROR;
+        NhlErrorTypes   ret = NhlNOERROR;
         NhlBoolean      do_subset = False;
         NhlBoolean      rev;
-        NhlGenArray     *subset_start,*subset_end;
         NhlGenArray     out_ga;
-        NhlBoolean      nullstart = False,nullend = False;
-        NhlBoolean      start_byindex,end_byindex;
         char            *c_name;
         float           *fp, *nfp;
-        int             rem,stride;
         float           min, max;
         int             yi,xi;
         int             yimin,yimax,ximin,ximax;

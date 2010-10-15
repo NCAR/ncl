@@ -309,10 +309,10 @@ static NhlResource resources[] = {
 
 /* Intercepted resources */
 	{NhlNtrXTensionF,NhlCtrXTensionF,NhlTFloat,sizeof(float),
-		Oset(x_tension),NhlTString,"2.0",
+		 Oset(x_tension),NhlTString,_NhlUSET("2.0"),
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{NhlNtrYTensionF,NhlCtrYTensionF,NhlTFloat,sizeof(float),
-		Oset(y_tension),NhlTString,"2.0",
+		 Oset(y_tension),NhlTString,_NhlUSET("2.0"),
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 
 	{ NhlNpmLabelBarDisplayMode,NhlCpmLabelBarDisplayMode,
@@ -619,14 +619,6 @@ static NhlErrorTypes SetUpLLTransObj(
 #endif
 );
 
-static NhlErrorTypes SetCoordBounds(
-#if	NhlNeedProto
-	NhlStreamlinePlotLayerPart	*stp,
-	stCoord			ctype,
-	int			count,
-	NhlString		entry_name
-#endif
-);
 
 static NhlErrorTypes SetUpIrrTransObj(
 #if	NhlNeedProto
@@ -808,17 +800,6 @@ static NhlErrorTypes    SetupLevelsExplicit(
         float			min,
 	float			max,
 	char			*entry_name
-#endif
-);
-
-static NhlErrorTypes ChooseSpacingLin(
-#if	NhlNeedProto
-	float		*tstart,
-	float		*tend,
-	float		*spacing,
-	int		convert_precision,
-	int		max_ticks,
-	NhlString	entry_name
 #endif
 );
 
@@ -2315,7 +2296,6 @@ static NhlErrorTypes stInitDraw
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlStreamlinePlotLayerPart	*stp = &(stl->streamlineplot);
 	NhlTransformLayerPart		*tfp = &(stl->trans);
-	NhlString		e_text;
 
 /*
  * Set up LLU interface coordinate boundaries 
@@ -2462,7 +2442,6 @@ static NhlErrorTypes stUpdateTrans
                 if ((stp->trans_obj->base.layer_class)->base_class.class_name
 		    == NhlmapTransObjClass->base_class.class_name) {
 			float xmin, xmax;
-			float cell_size;
 
                         Over_Map = True;	
 
@@ -2560,7 +2539,7 @@ static NhlErrorTypes StreamlinePlotPreDraw
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlString		e_text,entry_name = "StreamlinePlotPreDraw";
+	NhlString		entry_name = "StreamlinePlotPreDraw";
 	NhlStreamlinePlotLayer		stl = (NhlStreamlinePlotLayer) layer;
 	NhlStreamlinePlotLayerPart	*stp = &stl->streamlineplot;
         NhlBoolean		seg_draw;
@@ -2632,7 +2611,7 @@ static NhlErrorTypes StreamlinePlotDraw
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlStreamlinePlotLayer	stl = (NhlStreamlinePlotLayer) layer;
 	NhlStreamlinePlotLayerPart	*stp = &stl->streamlineplot;
-	NhlString		e_text,entry_name = "StreamlinePlotDraw";
+	NhlString		entry_name = "StreamlinePlotDraw";
         NhlBoolean		seg_draw;
 
 	if (! stp->data_init || stp->zero_field) {
@@ -2697,7 +2676,7 @@ static NhlErrorTypes StreamlinePlotPostDraw
 	NhlStreamlinePlotLayer		stl = (NhlStreamlinePlotLayer) layer;
 	NhlStreamlinePlotLayerPart	*stp = &stl->streamlineplot;
 	NhlTransformLayerPart		*tfp = &stl->trans;
-	NhlString		e_text,entry_name = "StreamlinePostPlotDraw";
+	NhlString		entry_name = "StreamlinePostPlotDraw";
         NhlBoolean		seg_draw;
 
 
@@ -3077,10 +3056,7 @@ static NhlErrorTypes InitCoordBounds
 {
 	NhlErrorTypes	ret = NhlNOERROR;
         NhlStreamlinePlotLayerPart	*stp = &stl->streamlineplot;
-        NhlStreamlinePlotLayerPart	*ostp = &ostl->streamlineplot;
         NhlTransformLayerPart	*tfp = &stl->trans;
-	char		*e_text;
-	NhlBoolean	x_data_reversed,y_data_reversed;
 
 	stp->do_low_level_log = False;
         
@@ -3200,7 +3176,6 @@ static NhlErrorTypes SetUpLLTransObj
 	char			*e_text;
 	char			*entry_name;
 	NhlStreamlinePlotLayerPart	*stp = &(stnew->streamlineplot);
-	NhlStreamlinePlotLayerPart	*ostp = &(stold->streamlineplot);
 	NhlTransformLayerPart	*tfp = &(stnew->trans);
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
@@ -5159,7 +5134,6 @@ static NhlErrorTypes    ManageScalarData
 	char			*entry_name;
 	char			*e_text;
 	NhlStreamlinePlotLayerPart	*stp = &stnew->streamlineplot;
-	NhlStreamlinePlotLayerPart	*ostp = &stold->streamlineplot;
 	NhlScalarFieldFloatLayer	sfl;
 	_NhlDataNodePtr			*dlist = NULL;
 	NhlBoolean			new;
@@ -5511,7 +5485,6 @@ static NhlErrorTypes SetScale
 {
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlStreamlinePlotLayerPart	*stp = &(stnew->streamlineplot);
-	NhlStreamlinePlotLayerPart	*ostp = &(stold->streamlineplot);
 	NhlString entry_name, e_text;
 	float sigval,t;
 	int power,i,count;
@@ -5678,7 +5651,6 @@ static NhlErrorTypes    ManageDynamicArrays
 	float *levels = NULL;
 	NhlBoolean levels_modified = False;
 	NhlstScaleInfo 		*sip,*osip;
-	NhlBoolean		scalar_labels, mag_labels;
 
 	entry_name =  init ? InitName : SetValuesName;
 
@@ -6601,7 +6573,6 @@ static NhlErrorTypes    SetupLevelsExplicit
 	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
 	char			*e_text;
 	NhlStreamlinePlotLayerPart	*stp = &(stnew->streamlineplot);
-	NhlStreamlinePlotLayerPart	*ostp = &(stold->streamlineplot);
 	int			i,j,count;
 	float			*fp;
 	float			ftmp;
