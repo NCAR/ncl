@@ -2134,9 +2134,14 @@ begin
 ; than actual min/max of data) because the labels will already be 
 ; formatted correctly.
 ;
+  nlev = dimsizes(levels)
+  if(end_labels_on.and.end_labelbar_style.eq.1.and. \
+      (lbstrings(0).eq."".or.lbstrings(nlev+1).eq."")) then
+    print("Warning:add_labelbar: invalid end labels, turning them off.")
+    end_labels_on = False
+  end if
   if(end_labels_on) then
     if(end_labelbar_style.eq.1) then
-      nlev              = dimsizes(levels)
       newlevels         = new(nlev+2,typeof(levels))
       newlevels(1:nlev) = levels
       newlevels(0)      = stringtoxxx(lbstrings(0),typeof(newlevels))
