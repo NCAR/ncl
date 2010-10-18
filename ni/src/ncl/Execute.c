@@ -386,6 +386,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	ng_size_t ix_start, ix_end;
 	int var_offset;
 	ng_size_t var_dim_sizes[32];
+	ng_size_t agg_chunk_size;
         int var_ndims; /* non_aggregated natural var dim count */
 	int good_file_count;
 
@@ -1003,7 +1004,6 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		
 	for (i = ix_start; i != ix_end; i+= dir) {
 		int j;
-		long agg_chunk_size;
 		long *vec = NULL;
 		long vcount,vstart;
 		int do_file = 0;
@@ -1241,11 +1241,11 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		}
 		if (! do_file)
 			continue;
-		agg_chunk_size = 0;
 		if (first) {
 			long long tsize;
 			NclVar sub_agg_coord_var;
 			NclSelectionRecord sel_rec;
+			agg_chunk_size = 0;
 			var1 = _NclFileReadVar(files[i],var,filevar_sel_ptr);
 			if (! var1) {
 				NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
