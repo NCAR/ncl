@@ -11674,11 +11674,11 @@ begin
         copy_VarCoords(x(0,:,:), xReturn(0,:,:))
     end if
     if (rankx.eq.4) then
-        copy_VarCoords(x(0,0,:,:), xReturn(0,0,:,:))
+        copy_VarCoords(x(0,:,:,:), xReturn(0,:,:,:))
 
     end if
     if (rankx.eq.5) then
-        copy_VarCoords(x(:,0,0,:,:), xReturn(:,0,0,:,:))
+        copy_VarCoords(x(:,0,:,:,:), xReturn(:,0,:,:,:))
     end if
 
     xReturn@operation_tag = "calculate_monthly_values: "+arith
