@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.22 2010-05-03 03:15:22 haley Exp $
+#   $Id: create_dist,v 1.21.4.1 2010-05-03 03:14:30 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -45,6 +45,7 @@
 #              -e :  extra string to include in tarfile name
 #              -f :  string to use in filename instead of generated one.
 #              -p :  don't prompt for stuff, just do it
+#              -x :  just echo the filename that's going to be used and quit
 #
 #
 # Here's what various options to uname return on various systems:
@@ -167,6 +168,11 @@ while ($#argv > 0)
       shift
       set fstring = "$1"
       shift
+      breaksw
+
+    case "-x":
+      shift
+      set echoandquit
       breaksw
 
     case "-d":
@@ -403,14 +409,21 @@ end
 cd $rootdir
 
 echo "Tarring up the files in $rootdir..."
+if ($?echoandquit) then
+  echo "The tar file would be called $tar_filename"
+  echo "and would be put in $tardir."
+  exit
+endif
 if ($?PROMPT) then
-  echo -n "The tar file is called $tar_filename and it will be put in $tardir. Continue? (y/n) "
+  echo "The tar file will be called '$tar_filename'"
+  echo "and put in '$tardir.'"
+  echo -n "Continue? (y/n) "
   set answer="$<"
   if ("$answer" != "y") then
     exit
   endif
 else
-  echo "The tar file is called $tar_filename and it will be put in $tardir."
+  echo "The tar file is called $tar_filename and will be put in $tardir."
 endif
 
 #

@@ -1,1 +1,0 @@
-*ndvDirectoryTitle : Contour Plots

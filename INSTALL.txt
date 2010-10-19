@@ -1,10 +1,10 @@
 ------------------------------------------------------------------------
-How to build NCL and NCAR Graphics V5.2.0 from source code
+How to build NCL and NCAR Graphics V5.2.1 from source code
 
     The latest version of this document can be found at:
     http://www.ncl.ucar.edu/Download/build_from_src.shtml 
 
-April 14, 2010
+July 11, 2010
 ------------------------------------------------------------------------
 
 This is an all-encompassing document on:
@@ -62,8 +62,6 @@ Table of Contents
     * Set up and test build environment for NCL
           o Compilers needed to build NCL
           o Set environment variables
-          o Test that your Fortran compiler does blockdata
-            initializations correctly
           o Install X11 developer libraries and include files 
     * Download and build non-optional external software
           o JPEG
@@ -128,7 +126,7 @@ Table of Contents
 ------------------------------------------------------------------------
 What's new in build instructions since last NCL release
 
-Here's what's new about the source code instructions in V5.2.0:
+Here's what's new about the source code instructions in V5.2.1:
 
    1. We highly recommend not using g77 as a Fortran compiler. Instead,
       use gfortran or g95.
@@ -195,60 +193,6 @@ csh/tcsh: setenv CXXFLAGS '-O -ansi -fPIC'
 *CPPFLAGS* 	preprocessor compile flags
 	bash/ksh: export CPPFLAGS='-DNDEBUG'
 csh/tcsh: setenv CXXFLAGS '-DNDEBUG'
-
-------------------------------------------------------------------------
-*Test that your Fortran compiler does blockdata initializations correctly*.
-
-/This is only necessary for versions 5.0.0 and earlier./
-
-The NCL code depends heavily on Fortran blockdata variables being
-initialized correctly. We have found that some Fortran compilers don't
-handle blockdata initializations correctly, and hence can't be used to
-build NCL V5.0.0. We fixed this issue in V5.1.x of the source code, and
-hence this test is unnecessary with that version of the source code.
-
-To test if your Fortran compiler handles blockdata initializations
-correctly, download the small blockdata_test.tar
-<http://www.ncl.ucar.edu/Download/files/blockdata_test.tar> tar file,
-and untar it with:
-
-  tar -xvf blockdata_test.tar
-
-Cd to "blockdata_test" and edit the "Makefile" to change "g77" to
-whatever compiler you are using. (There are sample Makefiles for
-"gfortran" and "g95" that you can use.)
-
-Type:
-
-  make main.good main.bad main.init main.good2
-  ./main.good
-  ./main.good2
-  ./main.init
-  ./main.bad
-
-If the "main.bad" and "main.init" programs give you the output:
-
-  TESTSUB: WK =  0, WK should be 20
-
-then your compiler doesn't handle blockdata initializations correctly.
-However, if the "main.good2" program produces the correct output:
-
-  TESTSUB2: WK =  20, WK should be 20
-
-then this means some new changes we made to the code, based on an
-ingenious suggestion
-<http://www.ncarg.ucar.edu/ncarg-talk/2008/0032.html> that Ted Mansell
-of NOAA sent us, should work for you.
-
-We haven't released this new source code yet, but you can email Mary
-Haley <mailto:haley@ucar.edu> for a test copy.
-
-If "main.init" gives you the correct output, but "main.bad" doesn't,
-then you will be able to use this compiler to build the V5.0.0 source
-code, but you will need to include the special options "-ncarbd" and
-"-ngmathbd" if you compile an NCAR Graphics or HLU C or Fortran program
-using "ncargf77", "ncargf90", "ncargcc", "nhlf77", "nhlf90", and/or
-"nhlcc".
 
 ------------------------------------------------------------------------
 *Install X11 developer libraries and include files*
@@ -371,9 +315,10 @@ below for installing external software.
               ./configure --prefix=/usr/local  --disable-shared
               make all install >& make-output
 
-          o HDF-5 <http://www.hdfgroup.org/HDF5/release/obtain5.html> -
-            Download version 1.8.4-patch1 or later. *Do not download
-            hdf5 versions 1.8.0 through 1.8.4!*
+          o HDF-5 <http://www.hdfgroup.org/HDF5/release/obtain5.html>
+            - Download version 1.8.5 or later. *Do not download hdf5
+            versions 1.8.0 through 1.8.4!* Version 1.8.4-patch1 is
+            okay.
 
               ./configure --with-zlib=/usr/local --with-szlib=/usr/local --prefix=/usr/local --disable-shared
               make all install >& make-output
@@ -449,9 +394,9 @@ below for installing external software.
       <http://www.ncl.ucar.edu/Document/Tools/ictrans.shtml>, and idt
       <http://www.ncl.ucar.edu/Document/Tools/idt.shtml>.
 
-      Download version 4.2r4 or later. MacOS 10.6 users should download
-      version 4.2.5 or later. (HDF version 5./x.y/ is a different
-      software package).
+      Download version 4.2.5 or later. This is especially important
+      for MacOS 10.6 users.(HDF version 5.x.y is a different software
+      package).
 
       *Important note:* By default, the HDF-4 include files get
       installed to $prefix/include. Since this could cause some netCDF
@@ -501,9 +446,9 @@ then you will need to download and install the following packages.
     * libpng - see instructions above.
 
     * g2clib <http://www.nco.ncep.noaa.gov/pmb/codes/GRIB2/> (*not
-      g2lib!*) - Download version 1.1.9 or later. There's a bug in
-      versions 1.0.x and earlier, so we recommend downloading 1.1.9 or
-      later.
+      g2lib!*) - There's a bug in versions 1.0.x and earlier, so we
+      recommend downloading 1.1.9. Version 1.2.0 seems to have some
+      other bugs, so we don't recommend downloading this version.
 
       Once you have the g2clib source code and the modified file, make
       changes to "makefile" to:
@@ -617,7 +562,7 @@ will need to download and install the following packages:
     * HDF-EOS 5 <ftp://edhs1.gsfc.nasa.gov/pub/> - Download version
       1.11.v1 (HDF-EOS5.1.12) or later.
 
-      Once you have the GDAL source code, you can build and install it
+      Once you have the HDF-EOS5 source code, you can build and install it
       with:
 
         ./configure --with-hdf5=/usr/local --with-zlib=/usr/local --with-szlib=/usr/local --prefix=/usr/local
@@ -761,7 +706,7 @@ and *ut_inv_calendar*
 <http://www.ncl.ucar.edu/Document/Functions/Built-in/ut_inv_calendar.shtml>,
 then you need to install UDUNITS-2.
 
-Download the Udunits <http://www.unidata.ucar.edu/software/udunits/>
+Download the Udunits <http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html>
 2./x/ (*not* 1./x/!) source code. Once you have the source code, you can
 build and install it with:
 
@@ -798,31 +743,31 @@ To download the NCL source code, follow the instructions at the URL:
     * http://www.ncl.ucar.edu/Download/ * 
 
 The NCL source code you download will be a single compressed tar file
-(we'll call it "ncl_ncarg_src-5.2.0.tar.gz"). Move the
-"ncl_ncarg_src-5.2.0.tar.gz" file to a temporary directory where you
+(we'll call it "ncl_ncarg_src-5.2.1.tar.gz"). Move the
+"ncl_ncarg_src-5.2.1.tar.gz" file to a temporary directory where you
 have plenty of disk space (around 250 megabytes to hold all of the
 source code, object files, binaries, and so on). Then, uncompress and
 untar the file as follows:
 
-  gunzip ncl_ncarg_src-5.2.0.tar.gz
-  tar -xvf ncl_ncarg_src-5.2.0.tar
+  gunzip ncl_ncarg_src-5.2.1.tar.gz
+  tar -xvf ncl_ncarg_src-5.2.1.tar
 
-The above steps will create a directory called "ncl_ncarg-5.2.0". For
+The above steps will create a directory called "ncl_ncarg-5.2.1". For
 convenience, we'll use the notation $NCARG to mean the top level of the
 NCL/NCAR Graphics source tree. Set the environment variable NCARG to the
 full path of this directory. For example, if you untarred the files from
 the directory /usr/local/src, then you would do one of the following:
 From tcsh or csh:
 
-  setenv NCARG /usr/local/src/ncl_ncarg-5.2.0
+  setenv NCARG /usr/local/src/ncl_ncarg-5.2.1
 
 From ksh or bash:
 
-  export NCARG=/usr/local/src/ncl_ncarg-5.2.0
+  export NCARG=/usr/local/src/ncl_ncarg-5.2.1
 
 sh:
 
-  NCARG=/usr/local/src/ncl_ncarg-5.2.0
+  NCARG=/usr/local/src/ncl_ncarg-5.2.1
   export NCARG
 
 Be sure to see the troubleshooting section below for
