@@ -8543,16 +8543,16 @@ ng_size_t *get_dimensions(void *tmp_dimensions,ng_size_t n_dimensions,
 
   switch (type_dimensions) {
   case NCL_int:
-    dimensions = NclMalloc(sizeof(ng_size_t) * n_dimensions);
+    dimensions = (ng_size_t *)NclMalloc(sizeof(ng_size_t) * n_dimensions);
     for (i = 0; i < n_dimensions; i++) {
-      dimensions[i] = ((int*) tmp_dimensions)[i];
+      ((ng_size_t *)dimensions)[i] = ((int*)tmp_dimensions)[i];
     }
     break;
     
   case NCL_long:
-    dimensions = NclMalloc(sizeof(ng_size_t) * n_dimensions);
+    dimensions = (ng_size_t *)NclMalloc(sizeof(ng_size_t) * n_dimensions);
     for (i = 0; i < n_dimensions; i++) {
-      dimensions[i] = ((long*) tmp_dimensions)[i];
+      ((ng_size_t *)dimensions)[i] = ((long*)tmp_dimensions)[i];
     }
     break;
 
