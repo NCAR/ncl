@@ -9205,6 +9205,25 @@ int* nrotatts;
 		di = 1000 * ((fmod((lo2 - lo1) * 1e-3 - 1.0 + 3600.0,360.0)+1.0) / (double) (nlon - 1));
 		if (di < 0) di = -di;
 		*/
+
+		if (lo1 == lo2) { /* assume this is a badly specified global grid */
+			if (idir == 1) {
+				if (lo1 > 0) {
+					lo1 -= 360000;
+				}
+				else {
+					lo2 += 360000;
+				}
+			}
+			else {
+				if (lo1 > 0) {
+					lo2 -= 360000;
+				}
+				else {
+					lo1 += 360000;
+				}
+			}
+		}
 		/* this seems to work */
 		if (nlon == 1) {
 			di = ((double)CnvtToDecimal(2,&gds[23]));
@@ -9736,7 +9755,7 @@ int* nrotatts;
 				for (i = 0; i < ni; i++) {
 					double tlon,tlat;
 					double cgridlat, slon,srot,crot;
-
+					double crot1, eps;
 					rot2ll(lasp,losp,rlat + j * jdir * dj,rlon + i * idir * di,&tlat,&tlon);
 					if (do_180) {
 						tlon = tlon > 180 ? tlon - 360 : tlon;

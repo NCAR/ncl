@@ -1536,17 +1536,28 @@ C
                 YPE=YLS
                 XDI=XNX-XLS
                 YDI=YNX-YLS
-                IF (ABS(XDI).GT..000001*RLC) THEN
+C               IF (ABS(XDI).GT..000001*RLC) THEN
+C                 XPE=0.
+C                 IF (XDI.GE.0.) XPE=RLC
+C                 YPE=YLS+(XPE-XLS)*YDI/XDI
+C                 IF (YPE.GE.0..AND.YPE.LE.RLC) GO TO 101
+C               END IF
+C               IF (ABS(YDI).GT..000001*RLC) THEN
+C                 YPE=0.
+C                 IF (YDI.GE.0.) YPE=RLC
+C                 XPE=XLS+(YPE-YLS)*XDI/YDI
+C               END IF
+C The 2 tests above were rewritten below in response to Jira #654 --RLB
+                IF (XNX.LT.0. .OR. XNX.GT.RLC) THEN
                   XPE=0.
                   IF (XDI.GE.0.) XPE=RLC
-                  YPE=YLS+(XPE-XLS)*YDI/XDI
-                  IF (YPE.GE.0..AND.YPE.LE.RLC) GO TO 101
-                END IF
-                IF (ABS(YDI).GT..000001*RLC) THEN
+                  IF (ABS(XDI).GT..000001*RLC) YPE=YLS+(XPE-XLS)*YDI/XDI
+                ENDIF
+                IF (YNX.LT.0. .OR. YNX.GT.RLC) THEN
                   YPE=0.
                   IF (YDI.GE.0.) YPE=RLC
-                  XPE=XLS+(YPE-YLS)*XDI/YDI
-                END IF
+                  IF (ABS(YDI).gt..000001*RLC) XPE=XLS+(YPE-YLS)*XDI/YDI
+                ENDIF
   101           IXN=NINT(XPE)
                 IYN=NINT(YPE)
                 IF (IXN.NE.IXL.OR.IYN.NE.IYL)
@@ -1560,17 +1571,28 @@ C
                 YPE=YNX
                 XDI=XLS-XNX
                 YDI=YLS-YNX
-                IF (ABS(XDI).GT..000001*RLC) THEN
+C               IF (ABS(XDI).GT..000001*RLC) THEN
+C                 XPE=0.
+C                 IF (XDI.GE.0.) XPE=RLC
+C                 YPE=YNX+(XPE-XNX)*YDI/XDI
+C                 IF (YPE.GE.0..AND.YPE.LE.RLC) GO TO 102
+C               END IF
+C               IF (ABS(YDI).GT..000001*RLC) THEN
+C                 YPE=0.
+C                 IF (YDI.GE.0.) YPE=RLC
+C                 XPE=XNX+(YPE-YNX)*XDI/YDI
+C               END IF
+C The 2 tests above were rewritten below in response to Jira #654 --RLB
+                IF (XLS.LT.0. .OR. XLS.GT.RLC) THEN
                   XPE=0.
                   IF (XDI.GE.0.) XPE=RLC
-                  YPE=YNX+(XPE-XNX)*YDI/XDI
-                  IF (YPE.GE.0..AND.YPE.LE.RLC) GO TO 102
-                END IF
-                IF (ABS(YDI).GT..000001*RLC) THEN
+                  IF (ABS(XDI).GT..000001*RLC) YPE=YNX+(XPE-XNX)*YDI/XDI
+                ENDIF
+                IF (YLS.LT.0. .OR. YLS.GT.RLC) THEN
                   YPE=0.
                   IF (YDI.GE.0.) YPE=RLC
-                  XPE=XNX+(YPE-YNX)*XDI/YDI
-                END IF
+                  IF (ABS(YDI).gt..000001*RLC) XPE=XNX+(YPE-YNX)*XDI/YDI
+                ENDIF
   102           IXN=NINT(XPE)
                 IYN=NINT(YPE)
                 IF (IXN.NE.IXL.OR.IYN.NE.IYL)
@@ -1692,12 +1714,23 @@ C
           IAM(IAM(<$LN$+$PD$>)+$ND$)=IPN
           IAM(<$LN$+$PD$>)=IPN
           LOOP
+C           test for error condition added in response to Jira 654
+            IF (IPX.LE.0 .OR. MOD(IPX-$FN$,$NL$).NE.0) THEN
+              CALL SETER('AREDAM - UNABLE TO INSERT NODE INTO MAP',8,1)
+              RETURN
+            ENDIF
             IF (IAM(IPN+$XC$).LT.IAM(IPX+$XC$))
               IPX=IAM(IPX+$PC$)
             ELSE IF (IAM(IPN+$XC$).GT.IAM(IAM(IPX+$NC$)+$XC$))
               IPX=IAM(IPX+$NC$)
             ELSE
               LOOP
+C               test for error condition added in response to Jira 654
+                IF (IPX.LE.0 .OR. MOD(IPX-$FN$,$NL$).NE.0) THEN
+                  CALL SETER('AREDAM - UNABLE TO INSERT NODE INTO MAP',
+     +              8,1)
+                  RETURN
+                ENDIF
                 IF (IAM(IPN+$XC$).EQ.IAM(IPX+$XC$).AND.
      +              IAM(IPN+$YC$).LT.IAM(IPX+$YC$))
                   IPX=IAM(IPX+$PC$)
@@ -2784,6 +2817,18 @@ C
      +             4 ,  6 ,  2 ,  3 ,
      +             2 ,  7 ,  5 ,  6 ,
      +             5 ,  7 ,  0 ,  0 /
+C 
+C Added 8/2010, Jira NCL_32, RLB:
+C This statement-function test whether a given node is a hole-connector.
+C Such nodes have index greater than ILW, and have next/previous links
+C greater than ILW (with the exception of the very first connector, 
+C which necessarily has a previous link pointing to the last 
+C regular node).
+       LOGICAL ISHOLEC
+       ISHOLEC(IDX) = (
+     *     IDX.GT.ILW            .AND.
+     *     IAM(IDX+$ND$).GT.ILW  .AND.
+     *     (IAM(IDX+$PD$).GT.ILW .OR. (IAM(IDX+$PD$)+$NL$).GT.ILW))
 C
 C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
@@ -3730,8 +3775,16 @@ C
                 IF (ABS(IAM(IAM(IP2+$ND$)+$GI$)).EQ.IGI.AND.
      +              (IAM(IAM(IP2+$ND$)+$XC$).NE.IAM(IPP+$XC$).OR.
      +               IAM(IAM(IP2+$ND$)+$YC$).NE.IAM(IPP+$YC$)))
-                  IXR=IAM(IAM(IP2+$ND$)+$XC$)
-                  IYR=IAM(IAM(IP2+$ND$)+$YC$)
+C                 Jira NCL_32: If test node is due to splitting a
+C                 a line-segment to insert a hole-connector, use the 
+C                 original segment's end points for angle calculation.
+                  IF (IP2.LT.ILW .AND. IAM(IP2+$ND$).GT.ILW) THEN
+                    IXR=IAM(IAM(IAM(IP2+$ND$)+$ND$)+$XC$)
+                    IYR=IAM(IAM(IAM(IP2+$ND$)+$ND$)+$YC$)
+                  ELSE
+                    IXR=IAM(IAM(IP2+$ND$)+$XC$)
+                    IYR=IAM(IAM(IP2+$ND$)+$YC$)
+                  END IF
                   FXR=REAL(IXR)
                   FYR=REAL(IYR)
 C
@@ -3778,8 +3831,16 @@ C
                 IF (ABS(IAM(IP2+$GI$)).EQ.IGI.AND.
      +              (IAM(IAM(IP2+$PD$)+$XC$).NE.IAM(IPP+$XC$).OR.
      +               IAM(IAM(IP2+$PD$)+$YC$).NE.IAM(IPP+$YC$)))
-                  IXR=IAM(IAM(IP2+$PD$)+$XC$)
-                  IYR=IAM(IAM(IP2+$PD$)+$YC$)
+C                 Jira NCL_32: If test node is due to splitting a
+C                 a line-segment to insert a hole-connector, use the 
+C                 original segment's end points for angle calculation.
+                  IF (IP2.LT.ILW .AND. IAM(IP2+$PD$).GT.ILW) THEN
+                    IXR=IAM(IAM(IAM(IP2+$PD$)+$PD$)+$XC$)
+                    IYR=IAM(IAM(IAM(IP2+$PD$)+$PD$)+$YC$)
+                  ELSE
+                    IXR=IAM(IAM(IP2+$PD$)+$XC$)
+                    IYR=IAM(IAM(IP2+$PD$)+$YC$)
+                  END IF
                   FXR=REAL(IXR)
                   FYR=REAL(IYR)
 C
@@ -4053,6 +4114,16 @@ C
           IPS=IPQ
           IPM=IPR
           IPV=IPU
+C Jira NCL_32: Test for special-case where IPP of first segment of the 
+C had been split to insert a hole-connector; if so, use the segment's
+C original coordinates for angle calculation.
+          IF (IPQ.GT.ILW) THEN
+            IF (IAM(IPQ+$ND$).NE.IPT) IFRMXY=IAM(IPQ+$ND$)
+            IF (IAM(IPQ+$PD$).NE.IPT) IFRMXY=IAM(IPQ+$PD$)
+          ELSE
+            IFRMXY=0
+          ENDIF
+
 C
 C Each pass through the following loop moves one step along the edge of
 C the subarea.
@@ -4067,8 +4138,16 @@ C
 C Get the coordinates of the ends of the edge segment for use in
 C computing change in direction to a possible next point.
 C
-            IXP=IAM(IPP+$XC$)
-            IYP=IAM(IPP+$YC$)
+            IF (IFRMXY.NE.0) THEN
+C             Jira NCL_32: use original endpoint of segments that were
+C             split for hole-connectors.
+              IXP=IAM(IFRMXY+$XC$)
+              IYP=IAM(IFRMXY+$YC$)
+              IFRMXY=0
+            ELSE
+              IXP=IAM(IPP+$XC$)
+              IYP=IAM(IPP+$YC$)
+            END IF
             IXQ=IAM(IPQ+$XC$)
             IYQ=IAM(IPQ+$YC$)
             FXP=REAL(IXP)
@@ -4130,8 +4209,16 @@ C
      +              ABS(IAM(IAM(IP2+$ND$)+$GI$)).EQ.IGI).AND.
      +              (IAM(IAM(IP2+$ND$)+$XC$).NE.IAM(IPP+$XC$).OR.
      +               IAM(IAM(IP2+$ND$)+$YC$).NE.IAM(IPP+$YC$)))
-                  IXR=IAM(IAM(IP2+$ND$)+$XC$)
-                  IYR=IAM(IAM(IP2+$ND$)+$YC$)
+C                 Jira NCL_32: If test node is due to splitting a
+C                 a line-segment to insert a hole-connector, use the 
+C                 original segment's end points for angle calculation.
+                  IF (IP2.LT.ILW .AND. IAM(IP2+$ND$).GT.ILW) THEN
+                    IXR=IAM(IAM(IAM(IP2+$ND$)+$ND$)+$XC$)
+                    IYR=IAM(IAM(IAM(IP2+$ND$)+$ND$)+$YC$)
+                  ELSE 
+                    IXR=IAM(IAM(IP2+$ND$)+$XC$)
+                    IYR=IAM(IAM(IP2+$ND$)+$YC$)
+                  END IF
                   FXR=REAL(IXR)
                   FYR=REAL(IYR)
 C
@@ -4161,17 +4248,59 @@ C
 C
                   IF (IPU.EQ.1)
                     IF (ANG.GT.ANM)
-                      IPR=IAM(IP2+$ND$)
-                      ANM=ANG
-                      IPM=IPR
-                      IPV=1
+C                     Jira NCL_32: special-case code for Tomas example:
+C                     Do not follow hole-connector segments that double
+C                     back in the direction we just came from.
+                      IF (ISHOLEC(IP2) .AND. ANG.GE.$PI$) THEN
+                        CONTINUE
+                      ELSE
+                        IPR=IAM(IP2+$ND$)
+                        ANM=ANG
+                        IPM=IPR
+                        IPV=1
+C                       Jira NCL_32: if this node was inserted to split
+C                       a segment for a hole-connector, we want to use
+C                       the original segment's endpoints on the next
+C                       iteration through the inner loop.
+C                       Note: because the first node (bottom) of the first
+C                       hole-connector points *back* to a user-inserted 
+C                       node (i.e., IAM(IP2+$PD$).LT.ILW), we need to 
+C                       exclude that one special case from the following
+C                       test; hence the factor (ILW+1).  
+                        IF (IP2.GT.(ILW+1).AND.IAM(IP2+$PD$).LT.ILW)THEN
+                          IFRMXY = IAM(IP2+$PD$)
+                        ELSE
+                          IFRMXY = 0
+                        END IF
+                      END IF
                     END IF
                   ELSE
                     IF (ANG.LT.ANM)
-                      IPR=IAM(IP2+$ND$)
-                      ANM=ANG
-                      IPM=IPR
-                      IPV=2
+C                     Jira NCL_32: special-case code for Tomas example:
+C                     Do not follow hole-connector segments that double
+C                     back in the direction we just came from.
+                      IF (ISHOLEC(IP2) .AND. ANG.LE.-$PI$) THEN
+                        CONTINUE
+                      ELSE
+                        IPR=IAM(IP2+$ND$)
+                        ANM=ANG
+                        IPM=IPR
+                        IPV=2
+C                       Jira NCL_32: if this node was inserted to split
+C                       a segment for a hole-connector, we want to use
+C                       the original segment's endpoints on the next
+C                       iteration through the inner loop.
+C                       Note: because the first node (bottom) of the first
+C                       hole-connector points *back* to a user-inserted 
+C                       node (i.e., IAM(IP2+$PD$).LT.ILW), we need to 
+C                       exclude that one special case from the following
+C                       test; hence the factor (ILW+1).  
+                        IF (IP2.GT.(ILW+1).AND.IAM(IP2+$PD$).LT.ILW)THEN
+                          IFRMXY = IAM(IP2+$PD$)
+                        ELSE
+                          IFRMXY = 0
+                        END IF
+                      END IF
                     END IF
                   END IF
                 END IF
@@ -4179,8 +4308,16 @@ C
      +              ABS(IAM(IP2+$GI$)).EQ.IGI).AND.
      +              (IAM(IAM(IP2+$PD$)+$XC$).NE.IAM(IPP+$XC$).OR.
      +               IAM(IAM(IP2+$PD$)+$YC$).NE.IAM(IPP+$YC$)))
-                  IXR=IAM(IAM(IP2+$PD$)+$XC$)
-                  IYR=IAM(IAM(IP2+$PD$)+$YC$)
+C                 Jira NCL_32: If test node is due to splitting a
+C                 a line-segment to insert a hole-connector, use the 
+C                 original segment's end points for angle calculation.
+                  IF (IP2.LT.ILW .AND. IAM(IP2+$PD$).GT.ILW) THEN
+                    IXR=IAM(IAM(IAM(IP2+$PD$)+$PD$)+$XC$)
+                    IYR=IAM(IAM(IAM(IP2+$PD$)+$PD$)+$YC$)
+                  ELSE
+                    IXR=IAM(IAM(IP2+$PD$)+$XC$)
+                    IYR=IAM(IAM(IP2+$PD$)+$YC$)
+                  END IF
                   FXR=REAL(IXR)
                   FYR=REAL(IYR)
 C
@@ -4210,17 +4347,49 @@ C
 C
                   IF (IPU.EQ.1)
                     IF (ANG.GT.ANM)
-                      IPR=IAM(IP2+$PD$)
-                      ANM=ANG
-                      IPM=IP2
-                      IPV=2
+C                     Jira NCL_32: special-case code for Tomas example:
+C                     Do not follow hole-connector segments that double
+C                     back in the direction we just came from.
+                      IF (ISHOLEC(IP2) .AND. ANG.GE.$PI$) THEN
+                        CONTINUE
+                      ELSE
+                        IPR=IAM(IP2+$PD$)
+                        ANM=ANG
+                        IPM=IP2
+                        IPV=2
+C                       Jira NCL_32: if this node was inserted to split
+C                       a segment for a hole-connector, we want to use
+C                       the original segment's endpoints on the next
+C                       iteration through the inner loop.
+                        IF (IP2.GT.ILW .AND. IAM(IP2+$ND$).LT.ILW) THEN
+                          IFRMXY = IAM(IP2+$ND$)
+                        ELSE
+                          IFRMXY = 0
+                        END IF
+                      END IF
                     END IF
                   ELSE
                     IF (ANG.LT.ANM)
-                      IPR=IAM(IP2+$PD$)
-                      ANM=ANG
-                      IPM=IP2
-                      IPV=1
+C                     Jira NCL_32: special-case code for Tomas example:
+C                     Do not follow hole-connector segments that double
+C                     back in the direction we just came from.
+                      IF (ISHOLEC(IP2) .AND. ANG.LE.-$PI$) THEN
+                        CONTINUE
+                      ELSE
+                        IPR=IAM(IP2+$PD$)
+                        ANM=ANG
+                        IPM=IP2
+                        IPV=1
+C                       Jira NCL_32: if this node was inserted to split
+C                       a segment for a hole-connector, we want to use
+C                       the original segment's endpoints on the next
+C                       iteration through the inner loop.
+                        IF (IP2.GT.ILW .AND. IAM(IP2+$ND$).LT.ILW) THEN
+                          IFRMXY = IAM(IP2+$ND$)
+                        ELSE
+                          IFRMXY = 0
+                        END IF
+                      END IF
                     END IF
                   END IF
                 END IF
@@ -4672,8 +4841,16 @@ C
               IF (IAM(IAM(IP2+$ND$)+$GI$).GT.1.AND.
      +            (IAM(IAM(IP2+$ND$)+$XC$).NE.IAM(IPP+$XC$).OR.
      +             IAM(IAM(IP2+$ND$)+$YC$).NE.IAM(IPP+$YC$)))
-                IXR=IAM(IAM(IP2+$ND$)+$XC$)
-                IYR=IAM(IAM(IP2+$ND$)+$YC$)
+C               Jira NCL_32: If test node is due to splitting a
+C               a line-segment to insert a hole-connector, use the 
+C               original segment's end points for angle calculation.
+                IF (IP2.LT.ILW .AND. IAM(IP2+$ND$).GT.ILW) THEN
+                  IXR=IAM(IAM(IAM(IP2+$ND$)+$ND$)+$XC$)
+                  IYR=IAM(IAM(IAM(IP2+$ND$)+$ND$)+$YC$)
+                ELSE 
+                  IXR=IAM(IAM(IP2+$ND$)+$XC$)
+                  IYR=IAM(IAM(IP2+$ND$)+$YC$)
+                END IF
                 FXR=REAL(IXR)
                 FYR=REAL(IYR)
 C
@@ -4720,8 +4897,16 @@ C
               IF (IAM(IP2+$GI$).GT.1.AND.
      +            (IAM(IAM(IP2+$PD$)+$XC$).NE.IAM(IPP+$XC$).OR.
      +             IAM(IAM(IP2+$PD$)+$YC$).NE.IAM(IPP+$YC$)))
-                IXR=IAM(IAM(IP2+$PD$)+$XC$)
-                IYR=IAM(IAM(IP2+$PD$)+$YC$)
+C               Jira NCL_32: If test node is due to splitting a
+C               a line-segment to insert a hole-connector, use the 
+C               original segment's end points for angle calculation.
+                IF (IP2.LT.ILW .AND. IAM(IP2+$PD$).GT.ILW) THEN
+                  IXR=IAM(IAM(IAM(IP2+$PD$)+$PD$)+$XC$)
+                  IYR=IAM(IAM(IAM(IP2+$PD$)+$PD$)+$YC$)
+                ELSE
+                  IXR=IAM(IAM(IP2+$PD$)+$XC$)
+                  IYR=IAM(IAM(IP2+$PD$)+$YC$)
+                END IF
                 FXR=REAL(IXR)
                 FYR=REAL(IYR)
 C
@@ -4958,6 +5143,18 @@ C
           XCS(1)=REAL(IAM(IPQ+$XC$))/RLC
           YCS(1)=REAL(IAM(IPQ+$YC$))/RLC
 C
+C Jira NCL_32: Handle special case of IPP in starting segment is a 
+C node inserted due to splitting a segment to insert a hole-connector.
+C In that case, we want to use original segment's coords for angle
+C calculation.
+              IF (IPQ.GT.ILW) THEN 
+                IF (IAM(IPQ+$ND$).NE.IPT) IFRMXY=IAM(IPQ+$ND$)
+                IF (IAM(IPQ+$PD$).NE.IPT) IFRMXY=IAM(IPQ+$PD$)
+              ELSE
+                IFRMXY=0
+              END IF
+
+C
 C Each pass through the following loop moves one step along the edge of
 C the subarea.
 C
@@ -5095,7 +5292,6 @@ C
                 END IF
               END WHILE
               IAF=1
-C
             END IF
 C
 C Move IPQ to IPP and IPR to IPQ.
@@ -5106,8 +5302,16 @@ C
 C Get the coordinates of the ends of the edge segment for use in
 C computing change in direction to a possible next point.
 C
-            IXP=IAM(IPP+$XC$)
-            IYP=IAM(IPP+$YC$)
+C Jira NCL_32: if IPP is from a segment that was split to insert a 
+C hole-connector, use original segment's coords. in angle calculation.
+            IF (IFRMXY.GT.0) THEN
+              IXP=IAM(IFRMXY+$XC$)
+              IYP=IAM(IFRMXY+$YC$)
+              IFRMXY=0
+            ELSE
+              IXP=IAM(IPP+$XC$)
+              IYP=IAM(IPP+$YC$)
+            END IF
             IXQ=IAM(IPQ+$XC$)
             IYQ=IAM(IPQ+$YC$)
             FXP=REAL(IXP)
@@ -5166,8 +5370,16 @@ C
                 IF (IAM(IAM(IP2+$ND$)+$GI$).GT.0.AND.
      +              (IAM(IAM(IP2+$ND$)+$XC$).NE.IAM(IPP+$XC$).OR.
      +               IAM(IAM(IP2+$ND$)+$YC$).NE.IAM(IPP+$YC$)))
-                  IXR=IAM(IAM(IP2+$ND$)+$XC$)
-                  IYR=IAM(IAM(IP2+$ND$)+$YC$)
+C                 Jira NCL_32: If test node is due to splitting a
+C                 a line-segment to insert a hole-connector, use the 
+C                 original segment's end points for angle calculation.
+                  IF (IP2.LT.ILW .AND. IAM(IP2+$ND$).GT.ILW) THEN
+                    IXR=IAM(IAM(IAM(IP2+$ND$)+$ND$)+$XC$)
+                    IYR=IAM(IAM(IAM(IP2+$ND$)+$ND$)+$YC$)
+                  ELSE
+                    IXR=IAM(IAM(IP2+$ND$)+$XC$)
+                    IYR=IAM(IAM(IP2+$ND$)+$YC$)
+                  END IF
                   FXR=REAL(IXR)
                   FYR=REAL(IYR)
 C
@@ -5196,11 +5408,33 @@ C
                   END IF
 C
                   IF (IPU.EQ.1)
+C Jira NCL_32: jamison test case, where angle along an original
+C segment and angle along temp segment is the same, we prefer the
+C original.
+                    IF (ANG.EQ.ANM .AND. IPR.GT.ILW) THEN
+                      IPR=IAM(IP2+$ND$)
+                      ANM=ANG
+                      IPM=IPR
+                      IPV=1
+                      IFRMXY=0
+                    END IF
                     IF (ANG.GT.ANM)
                       IPR=IAM(IP2+$ND$)
                       ANM=ANG
                       IPM=IPR
                       IPV=1
+C Jira NCL_32: case where potential next IPP is a node inserted to 
+C create a hole-connector. We want the original segment's coords for
+C angle calculation.
+C Note: because the first node (bottom) of the first hole-connector 
+C points *back* to a user-inserted node (i.e., IAM(IP2+$PD$).LT.ILW),
+C we need to exclude that one special case from the following test; 
+C hence the factor (ILW+1).  
+                      IF (IP2.GT.(ILW+1).AND.IAM(IP2+$PD$).LT.ILW) THEN
+                        IFRMXY = IAM(IP2+$PD$)
+                      ELSE
+                        IFRMXY=0
+                      END IF
                     END IF
                   ELSE
                     IF (ANG.LT.ANM)
@@ -5208,14 +5442,34 @@ C
                       ANM=ANG
                       IPM=IPR
                       IPV=2
+C Jira NCL_32: case where potential next IPP is a node inserted to 
+C create a hole-connector. We want the original segment's coords for
+C angle calculation.
+C Note: because the first node (bottom) of the first hole-connector 
+C points *back* to a user-inserted node (i.e., IAM(IP2+$PD$).LT.ILW),
+C we need to exclude that one special case from the following test; 
+C hence the factor (ILW+1).  
+                      IF (IP2.GT.(ILW+1).AND.IAM(IP2+$PD$).LT.ILW) THEN
+                        IFRMXY = IAM(IP2+$PD$)
+                      ELSE
+                        IFRMXY=0
+                      END IF
                     END IF
                   END IF
                 END IF
                 IF (IAM(IP2+$GI$).GT.0.AND.
      +              (IAM(IAM(IP2+$PD$)+$XC$).NE.IAM(IPP+$XC$).OR.
      +               IAM(IAM(IP2+$PD$)+$YC$).NE.IAM(IPP+$YC$)))
-                  IXR=IAM(IAM(IP2+$PD$)+$XC$)
-                  IYR=IAM(IAM(IP2+$PD$)+$YC$)
+C                 Jira NCL_32: If test node is due to splitting a
+C                 a line-segment to insert a hole-connector, use the 
+C                 original segment's end points for angle calculation.
+                  IF (IP2.LT.ILW .AND. IAM(IP2+$PD$).GT.ILW) THEN
+                    IXR=IAM(IAM(IAM(IP2+$PD$)+$PD$)+$XC$)
+                    IYR=IAM(IAM(IAM(IP2+$PD$)+$PD$)+$YC$)
+                  ELSE
+                    IXR=IAM(IAM(IP2+$PD$)+$XC$)
+                    IYR=IAM(IAM(IP2+$PD$)+$YC$)
+                  END IF
                   FXR=REAL(IXR)
                   FYR=REAL(IYR)
 C
@@ -5244,11 +5498,29 @@ C
                   END IF
 C
                   IF (IPU.EQ.1)
+C Jira NCL_32: jamison test case, where angle along an original
+C segment and angle along temp segment is the same, we prefer the
+C original.
+                    IF (ANG.EQ.ANM .AND. IPR.GT.ILW) THEN
+                      IPR=IAM(IP2+$PD$)
+                      ANM=ANG
+                      IPM=IP2
+                      IPV=2
+                      IFRMXY=0
+                    END IF
                     IF (ANG.GT.ANM)
                       IPR=IAM(IP2+$PD$)
                       ANM=ANG
                       IPM=IP2
                       IPV=2
+C Jira NCL_32: case where potential next IPP is a node inserted to 
+C create a hole-connector. We want the original segment's coords for
+C angle calculation.
+                      IF (IP2.GT.ILW .AND. IAM(IP2+$ND$).LT.ILW) THEN
+                        IFRMXY=IAM(IP2+$ND$)
+                      ELSE
+                        IFRMXY=0
+                      END IF
                     END IF
                   ELSE
                     IF (ANG.LT.ANM)
@@ -5256,6 +5528,14 @@ C
                       ANM=ANG
                       IPM=IP2
                       IPV=1
+C Jira NCL_32: case where potential next IPP is a node inserted to 
+C create a hole-connector. We want the original segment's coords for
+C angle calculation.
+                      IF (IP2.GT.ILW .AND. IAM(IP2+$ND$).LT.ILW) THEN
+                        IFRMXY=IAM(IP2+$ND$)
+                      ELSE
+                        IFRMXY=0
+                      END IF
                     END IF
                   END IF
                 END IF

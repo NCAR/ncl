@@ -24,7 +24,7 @@
 #   libpng-1.2.41          NCL:   optional (needed for GRIB2 or PNG support)
 #                          NCARG: optional (needed for PNG)
 #                          
-#   HDF4.2r4               NCL:   required
+#   HDF-4.2.5              NCL:   required
 #                          NCARG: optional 
 # 
 #   pkg-config-0.23        NCL/NCARG: optional (needed for cairo support)
@@ -35,12 +35,12 @@
 #   cairo-1.8.6            NCL/NCARG: optional (needed for cairo support)
 #
 # NCL only:
-#   hdf5-1.8.4-patch1      Required if you want classic NetCDF-4 support
+#   hdf5-1.8.5             Required if you want classic NetCDF-4 support
 #   szip-2.1               Required if you want classic NetCDF-4 support
 #   jasper-1.900.1         Required if you want GRIB2 support
 #   g2clib-1.1.9           Required if you want GRIB2 support
 #   gdal-1.6.3             Required if you want GDAL support
-#   netcdf-4.1.1-rc2       Required (classic NetCDF-4 support is optional)
+#   netcdf-4.1.1           Required (classic NetCDF-4 support is optional)
 #   proj-4.7.0             Required if you want GDAL support
 #   udunits-2.1.14         Required if you want ut_calendar/ut_inv_calendar
 #   HDF-EOS2.16v1.00       Required if you want HDF-EOS 2 support
@@ -155,12 +155,12 @@ fi
 
 G2CLIB_DIR="g2clib-1.1.9"
 GDAL_DIR="gdal-1.6.3"
-HDF4_DIR="HDF4.2r4"
-HDF5_DIR="hdf5-1.8.4-patch1"
+HDF4_DIR="hdf-4.2.5"
+HDF5_DIR="hdf5-1.8.5"
 HDFEOS5_DIR="hdfeos5-1.12"
 JASPER_DIR="jasper-1.900.1"
 JPEG_DIR="jpeg-6b"
-NETCDF_DIR="netcdf-4.1.1-rc2"
+NETCDF_DIR="netcdf-4.1.1"
 PNG_DIR="libpng-1.2.41"
 PROJ4_DIR="proj-4.7.0"
 SZIP_DIR="szip-2.1"
@@ -435,10 +435,10 @@ if [ $INSTALL_HDFEOS5 ]
       make clean
     fi
     echo "Building $HDFEOS5_DIR..."
-#    export CFLAGS_HE5="$CFLAGS -DH5_USE_16_API"
+    export CFLAGS_HE5="$CFLAGS -DH5_USE_16_API"
 #    ./configure --enable-static --with-hdf\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
 #    ./configure --with-hdf5\=$PREFIX CFLAGS\=$CFLAGS_HE5 --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
-    ./configure CC\=$PREFIX/bin/h5cc --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
+    ./configure CC\=$PREFIX/bin/h5cc CFLAGS\=$CFLAGS_HE5 --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
     make all install
     cp include/HE5_HdfEosDef.h include/HE5_GctpFunc.h $PREFIX/include/.
     if [ $? ]

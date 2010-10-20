@@ -126,6 +126,9 @@ int		n_file_atts;
 HDFAttInqRecList *file_atts;
 };
 
+static NrmQuark Qmissing_val;
+static NrmQuark Qfill_val;
+
 #if 0
 static void HDFGetAttrVal
 #if	NhlNeedProto
@@ -142,7 +145,7 @@ HDFAttInqRec* att_inq
 	if (att_inq->data_type < 1) {
 		att_inq->value = NULL;
 	}
-	else if(att_inq->data_type == NC_CHAR) {
+	else if(att_inq->data_type == NC_CHAR && !(att_inq->name == Qfill_val || att_inq->name == Qmissing_val)) {
 		tmp = (char*)NclMalloc(att_inq->len+1);
 		tmp[att_inq->len] = '\0';
 		ret = sd_ncattget(ncid,att_inq->varid,NrmQuarkToString(att_inq->name),tmp);
@@ -208,7 +211,7 @@ static void HDFCacheAttValue
 	if (att_inq->data_type < 1 || value == NULL) {
 		att_inq->value = NULL;
 	}
-	else if (att_inq->data_type == NC_CHAR) {
+	else if (att_inq->data_type == NC_CHAR && !(att_inq->name == Qfill_val || att_inq->name == Qmissing_val)) {
 		char *tmp = NclMalloc(att_inq->len + 1);
 		strncpy(tmp,value,att_inq->len);
 		tmp[att_inq->len] = '\0';
@@ -649,6 +652,13 @@ NclFileFormatType *format;
 #endif
 {
 	HDFFileRecord *therec = NULL;
+	static int first = 1;
+
+	if (first) {
+		Qmissing_val = NrmStringToQuark("missing_value");
+		Qfill_val = NrmStringToQuark("_FillValue");
+		first = False;
+	}
 
 	therec = (HDFFileRecord*)NclCalloc(1, sizeof(HDFFileRecord));
 	if (! therec) {
@@ -884,7 +894,7 @@ int wr_status;
 				tmpvlptr->var_inq->name = HDFToNCLName(NrmQuarkToString(tmpvlptr->var_inq->hdf_name),NULL,True);
 			}
 		}
-		
+
 	} else {
 		tmp->vars = NULL;
 		tmp->has_scalar_dim = 0;
@@ -1156,9 +1166,9 @@ NclQuark att_name_q;
 			tmp=(NclFAttRec*)NclMalloc((unsigned)sizeof(NclFAttRec));
 			tmp->att_name_quark = att_name_q;
 /*
-* For conveniesd_nce I make all character attributes strings
+* For convenience I make all character attributes strings (except if it's the _FillValue or missing_value of a character variable)
 */
-			if(stepal->att_inq->data_type == NC_CHAR) {
+			if(stepal->att_inq->data_type == NC_CHAR && !(stepal->att_inq->name == Qfill_val || stepal->att_inq->name == Qmissing_val)) {
 				tmp->data_type = NCL_string;
 				tmp->num_elements = 1;
 			} else {
@@ -1234,7 +1244,7 @@ NclQuark theatt;
 					tmp= (NclFAttRec*)NclMalloc((unsigned)
 						sizeof(NclFAttRec));
 					tmp->att_name_quark = theatt;
-					if(stepal->att_inq->data_type == NC_CHAR) {
+					if(stepal->att_inq->data_type == NC_CHAR && !(stepal->att_inq->name == Qfill_val || stepal->att_inq->name == Qmissing_val)) {
 
 						tmp->data_type = NCL_string;
 						tmp->num_elements = 1;
@@ -1378,7 +1388,7 @@ void* storage;
 	while(stepal != NULL) {
 		if(stepal->att_inq->name == theatt) {
 			if (stepal->att_inq->value != NULL) {
-				if(stepal->att_inq->data_type == NC_CHAR) {
+				if(stepal->att_inq->data_type == NC_CHAR && !(stepal->att_inq->name == Qfill_val || stepal->att_inq->name == Qmissing_val)) {
 					*(string*)storage = *(string*)(stepal->att_inq->value);
 				} else {
 					memcpy(storage,stepal->att_inq->value,
@@ -1392,7 +1402,7 @@ void* storage;
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for reading",NrmQuarkToString(rec->file_path_q));
 				return(NULL);
 			}
-			if(stepal->att_inq->data_type == NC_CHAR) {
+			if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {
 				tmp = (char*)NclMalloc(stepal->att_inq->len+1);
 				tmp[stepal->att_inq->len] = '\0';
 				ret = sd_ncattget(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),tmp);
@@ -1450,7 +1460,7 @@ void* storage;
 						return storage;
 					}
 					if (stepal->att_inq->value != NULL) {
-						if(stepal->att_inq->data_type == NC_CHAR) {
+						if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {
 							*(string*)storage = *(string*)(stepal->att_inq->value);
 						} else {
 							memcpy(storage,stepal->att_inq->value,
@@ -1464,7 +1474,7 @@ void* storage;
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for reading",NrmQuarkToString(rec->file_path_q));
 						return(NULL);
 					}
-					if(stepal->att_inq->data_type == NC_CHAR) {
+					if(stepal->att_inq->data_type == NC_CHAR  && !(theatt == Qfill_val || theatt == Qmissing_val)) {
 	
 						tmp = (char*)NclMalloc(stepal->att_inq->len + 1);
 						tmp[stepal->att_inq->len] = '\0';
@@ -1611,7 +1621,7 @@ void *data;
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 					return(NhlFATAL);
 				}
-				if(stepal->att_inq->data_type == NC_CHAR) {
+				if(stepal->att_inq->data_type == NC_CHAR  && !(theatt == Qfill_val || theatt == Qmissing_val)) {
 					buffer = NrmQuarkToString(*(NclQuark*)data);
 					if (strlen(buffer) == 0) {
 						NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -1849,7 +1859,7 @@ void* data;
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 							return(NhlFATAL);
 						}
-						if(stepal->att_inq->data_type == NC_CHAR) {	
+						if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {	
 							int redef = 0;
 							buffer = NrmQuarkToString(*(NclQuark*)data);
 							if (strlen(buffer) == 0) {

@@ -63,7 +63,7 @@ if ($?NCLONLY && $?NCARGONLY) then
 endif
 
 
-set nclversion = "5.2.0"
+set nclversion = "6.0.0"
 set pwddir  = `pwd`
 
 if ($?NCARGNCL) then
@@ -310,6 +310,7 @@ include/ncarg/hlu/MultiText.h
 include/ncarg/hlu/MultiTextP.h
 include/ncarg/hlu/NcgmWorkstation.h
 include/ncarg/hlu/NcgmWorkstationP.h
+include/ncarg/hlu/NgSizeT.h
 include/ncarg/hlu/NresDB.h
 include/ncarg/hlu/PDFWorkstation.h
 include/ncarg/hlu/PDFWorkstationP.h
@@ -392,6 +393,7 @@ include/ncarg/nio/NclData.h
 include/ncarg/nio/NclDataDefs.h
 include/ncarg/nio/NclFile.h
 include/ncarg/nio/NclFileInterfaces.h
+include/ncarg/nio/NclGroup.h
 include/ncarg/nio/NclMdInc.h
 include/ncarg/nio/NclMultiDValData.h
 include/ncarg/nio/NclMultiDValHLUObjData.h
@@ -405,6 +407,7 @@ include/ncarg/nio/NclTypedouble.h
 include/ncarg/nio/NclTypefloat.h
 include/ncarg/nio/NclTypeint.h
 include/ncarg/nio/NclTypeint64.h
+include/ncarg/nio/NclTypeint8.h
 include/ncarg/nio/NclTypelogical.h
 include/ncarg/nio/NclTypelong.h
 include/ncarg/nio/NclTypeobj.h
@@ -412,6 +415,7 @@ include/ncarg/nio/NclTypeshort.h
 include/ncarg/nio/NclTypestring.h
 include/ncarg/nio/NclTypeuint.h
 include/ncarg/nio/NclTypeuint64.h
+include/ncarg/nio/NclTypeuint8.h
 include/ncarg/nio/NclTypeulong.h
 include/ncarg/nio/NclTypeushort.h
 include/ncarg/nio/NclVar.h
@@ -424,6 +428,7 @@ include/ncarg/nio/nioCallbacks.h
 include/ncarg/nio/nioConvert.h
 include/ncarg/nio/nioConvertP.h
 include/ncarg/nio/nioError.h
+include/ncarg/nio/nioNgSizeT.h
 include/ncarg/nio/nioNresDB.h
 include/ncarg/nio/nioc.h
 include/ncarg/nio/niohlu.h
@@ -616,10 +621,15 @@ lib/ncarg/data/cdf/sstanom.robinsonproj.nc
 lib/ncarg/data/cdf/sstdata_netcdf.nc
 lib/ncarg/data/cdf/traj_data.nc
 lib/ncarg/data/cdf/trinidad.nc
+lib/ncarg/data/cdf/uv300.nc
 lib/ncarg/data/cdf/vinth2p.nc
 lib/ncarg/data/grb/ced1.lf00.t00z.eta.grb
 lib/ncarg/data/grb/fh.0012_tl.press_gr.awp211.grb2
 lib/ncarg/data/grb/wafsgfs_L_t06z_intdsk60.grib2
+lib/ncarg/data/shp/states.dbf
+lib/ncarg/data/shp/states.prj
+lib/ncarg/data/shp/states.shp
+lib/ncarg/data/shp/states.shx
 lib/ncarg/grib2_codetables.previous/centers.table
 lib/ncarg/grib2_codetables.previous/ecmwf/0/0.0.table
 lib/ncarg/grib2_codetables.previous/ecmwf/1/1.0.table

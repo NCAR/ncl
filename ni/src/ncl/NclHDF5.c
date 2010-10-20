@@ -56,6 +56,13 @@ static NrmQuark Qfill_val;
 
 #include "h5data_struct.h"
 
+#define H5_USE_CACHE_OPT         0
+#define H5_COMPRESSION_LEVEL_OPT 1
+#define H5_CACHE_SIZE_OPT        2
+#define H5_CACHE_NELEMS_OPT      3
+#define H5_CACHE_PREEMPTION_OPT  4
+#define H5_NUM_OPTIONS           5
+
 typedef struct _HDF5compound_t HDF5compound_t;
 typedef struct _HDF5FileRecord HDF5FileRecord;
 typedef struct _HDF5GrpInqRec HDF5GrpInqRec;
@@ -66,6 +73,7 @@ typedef struct _HDF5GrpInqRecList HDF5GrpInqRecList;
 typedef struct _HDF5VarInqRecList HDF5VarInqRecList;
 typedef struct _HDF5DimInqRecList HDF5DimInqRecList;
 typedef struct _HDF5AttInqRecList HDF5AttInqRecList;
+typedef struct _HDF5Options HDF5Options;
 
 struct _HDF5compound_t
 {
@@ -142,6 +150,13 @@ struct _HDF5VarInqRec
     nclH5size_t chunk_dim[MAX_HDF5_DIMS];
     nclH5size_t n_unlimit_dims;
     nclH5size_t unlimit_dim[MAX_HDF5_DIMS];
+
+    int         compress_level;
+
+    int         use_cache;
+    nclH5size_t cache_size;
+    nclH5size_t cache_nelems;
+    float       cache_preemption;
 };
 
 struct _HDF5DimInqRec
@@ -163,6 +178,14 @@ struct _HDF5AttInqRec
     NclBasicDataTypes type;
 };
 
+struct _HDF5Options
+{
+    NclQuark name;
+    NclBasicDataTypes data_type;
+    int n_values;
+    void *values;
+};
+
 struct _HDF5FileRecord
 {
     NclQuark             file_path_q;
@@ -178,16 +201,77 @@ struct _HDF5FileRecord
     HDF5VarInqRecList   *var_list;
     nclH5size_t          n_dims;
     HDF5DimInqRecList   *dim_list;
+    int                  compress_level;
+    int                  n_chunk_dims;
+    HDF5DimInqRecList   *chunk_dims;
     nclH5size_t          n_atts;
     HDF5AttInqRecList   *att_list;
     NclHDF5group_node_t *h5_group;
 
     nclH5size_t          deflate_pass;
+/*
     nclH5size_t          n_chunk_dims;
     nclH5size_t          chunk_dim[MAX_HDF5_DIMS];
+*/
     nclH5size_t          n_unlimit_dims;
     nclH5size_t          unlimit_dim[MAX_HDF5_DIMS];
+
+    int                  use_cache;
+    nclH5size_t          cache_size;
+    nclH5size_t          cache_nelems;
+    float                cache_preemption;
+    int                  n_options;
+    HDF5Options         *options;
 };
+
+static int _H5_initializeOptions 
+#if    NhlNeedProto
+(HDF5FileRecord *tmp)
+#else
+(tmp)
+HDF5FileRecord *tmp;
+#endif
+{
+    HDF5Options *options;
+    int i;
+
+    tmp->n_options = H5_NUM_OPTIONS;
+    
+    options = NclMalloc(tmp->n_options * sizeof(HDF5Options));
+    if (! options)
+    {
+        NhlPError(NhlFATAL,ENOMEM,NULL);
+        return 0;
+    }
+
+    options[H5_USE_CACHE_OPT].name = NrmStringToQuark("usecache");
+    options[H5_USE_CACHE_OPT].data_type = NCL_int;
+    options[H5_USE_CACHE_OPT].n_values = 1;
+    options[H5_USE_CACHE_OPT].values = (void *) 0;
+
+    options[H5_COMPRESSION_LEVEL_OPT].name = NrmStringToQuark("compressionlevel");
+    options[H5_COMPRESSION_LEVEL_OPT].data_type = NCL_int;
+    options[H5_COMPRESSION_LEVEL_OPT].n_values = 1;
+    options[H5_COMPRESSION_LEVEL_OPT].values = (void *) -1;
+
+    options[H5_CACHE_SIZE_OPT].name = NrmStringToQuark("cachesize");
+    options[H5_CACHE_SIZE_OPT].data_type = NCL_int;
+    options[H5_CACHE_SIZE_OPT].n_values = 1;
+    options[H5_CACHE_SIZE_OPT].values = (void *) 3200000;
+
+    options[H5_CACHE_NELEMS_OPT].name = NrmStringToQuark("cachenelems");
+    options[H5_CACHE_NELEMS_OPT].data_type = NCL_int;
+    options[H5_CACHE_NELEMS_OPT].n_values = 1;
+    options[H5_CACHE_NELEMS_OPT].values = (void *) 1009;
+
+    options[H5_CACHE_PREEMPTION_OPT].name = NrmStringToQuark("cachepreemption");
+    options[H5_CACHE_PREEMPTION_OPT].data_type = NCL_float;
+    options[H5_CACHE_PREEMPTION_OPT].n_values = 1;
+    options[H5_CACHE_PREEMPTION_OPT].values = (void *) 0;
+
+    tmp->options = options;
+    return 1;
+}
 
 static void *HDF5InitializeFileRec
 #if     NhlNeedProto
@@ -211,6 +295,12 @@ NclFileFormatType *format;
     if (! therec)
     {
         NhlPError(NhlFATAL,ENOMEM,NULL);
+        return NULL;
+    }
+
+    if(! _H5_initializeOptions(therec))
+    {
+        NclFree(therec);
         return NULL;
     }
 
@@ -3915,7 +4005,7 @@ long* dim_sizes;
 
 static NhlErrorTypes HDF5AddVarChunk
 #if    NhlNeedProto
-(void* therec, NclQuark thevar, int n_dims, ng_size_t *dims)
+(void* therec, NclQuark thevar, int n_dims, nclH5size_t *dims)
 #else
 (therec,thevar,n_dims,dims)
 void* therec;
@@ -4448,6 +4538,108 @@ NclQuark theatt;
     return(NhlNOERROR);
 }
 
+int _HDF5WriteVarAtt2Group
+#if    NhlNeedProto
+(HDF5GrpInqRec *grp_inq, NclQuark thevar, NclQuark theatt, void* data, NclHDF5group_node_t *h5_group)
+#else
+(grp_inq, thevar, theatt, data, h5_group)
+HDF5GrpInqRec *grp_inq;
+NclQuark thevar;
+NclQuark theatt;
+void* data;
+NclHDF5group_node_t *h5_group;
+#endif
+{
+    HDF5AttInqRecList *stepal;
+    HDF5VarInqRecList *stepvl;
+    HDF5GrpInqRecList *stepgl;
+    int n;
+    int ret = 0;
+    char * buffer = NULL;
+
+    stepvl = grp_inq->var_list;
+    for(n=0; n<grp_inq->n_vars; n++)
+    {
+        if(stepvl->var_inq->name == thevar)
+        {
+            stepal = stepvl->var_inq->att_list;
+            while(stepal != NULL)
+            {
+                if(stepal->att_inq->name == theatt)
+                {
+                    if(stepal->att_inq->type == NCL_string && !(theatt == Qfill_val || theatt == Qmissing_val))
+                    {
+                        buffer = NrmQuarkToString(*(NclQuark*)data);
+                        hsize_t rank = 1;
+                        hsize_t dims[1];
+                        dims[0] = strlen(buffer);
+                        ret = (hid_t) _add_attr2dataset(grp_inq->id, rank, dims, (void*)buffer,
+                                                       "string", NrmQuarkToString(theatt),
+                                                       NrmQuarkToString(thevar), h5_group);
+                        if (stepal->att_inq->value != NULL)
+                            memcpy(stepal->att_inq->value,buffer,sizeof(NclQuark));
+                    }
+                    else
+                    {
+                        hsize_t rank = 1;
+                        hsize_t dims[1];
+                        dims[0] = stepal->att_inq->n_elem;
+                        ret = (hid_t) _add_attr2dataset(grp_inq->id, rank, dims, data,
+                                                       "string", NrmQuarkToString(theatt),
+                                                       NrmQuarkToString(thevar), h5_group);
+                        if (stepal->att_inq->value != NULL)
+                        {
+                            memcpy(stepal->att_inq->value,data,
+                                    _NclSizeOf(stepal->att_inq->type)*stepal->att_inq->n_elem);
+                        }
+                    }
+
+                    if(ret == -1)
+                    {
+                        if (theatt == NrmStringToQuark("_FillValue"))
+                        {
+                            NhlPError(NhlWARNING,NhlEUNKNOWN,
+                                     "HDF5: HDF5 does not allow the _FillValue attribute to be modified after data written to variable (%s) in file (%s)",
+                                      NrmQuarkToString(thevar),NrmQuarkToString(grp_inq->file));
+                        }
+                        else
+                        {
+                            NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                     "HDF5: An error occurred while attempting to write the attribute (%s) to variable (%s) in file (%s)",
+                                      NrmQuarkToString(theatt),NrmQuarkToString(thevar),NrmQuarkToString(grp_inq->file));
+                        }
+                    }
+                    return(1);
+                }
+                else
+                {    
+                    stepal = stepal->next;
+                }
+            }    
+        }
+        else
+        {
+            stepvl = stepvl->next;
+        }
+    } 
+
+    stepgl = grp_inq->grp_list;
+    for(n=0; n<grp_inq->n_grps; n++)
+    {
+        ret = _HDF5WriteVarAtt2Group(stepgl->grp_inq, thevar, theatt, data, h5_group);
+        if(ret)
+        {
+            return (ret);
+        }
+        else
+        {
+            stepgl = stepgl->next;
+        }
+    } 
+
+    return(0);
+}
+
 static NhlErrorTypes HDF5WriteVarAtt 
 #if    NhlNeedProto
 (void *therec, NclQuark thevar, NclQuark theatt, void* data)
@@ -4462,7 +4654,9 @@ void* data;
     HDF5FileRecord* rec = (HDF5FileRecord*)therec;
     HDF5AttInqRecList *stepal;
     HDF5VarInqRecList *stepvl;
+    HDF5GrpInqRecList *stepgl;
     int fid;
+    int n;
     int ret;
     char * buffer = NULL;
 
@@ -4553,12 +4747,353 @@ void* data;
                 stepvl = stepvl->next;
             }
         } 
+
+        stepgl = rec->grp_list;
+        for(n=0; n<rec->n_grps; n++)
+        {
+            ret = _HDF5WriteVarAtt2Group(stepgl->grp_inq, thevar, theatt, data, rec->h5_group);
+            if(ret)
+            {
+                return (NhlNOERROR);
+            }
+            else
+            {
+                stepgl = stepgl->next;
+            }
+        }
     }
     else
     {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) was opened as a read only file, can not write to it",NrmQuarkToString(rec->file_path_q));
     }
     return(NhlFATAL);
+}
+
+static NhlErrorTypes HDF5AddVarChunkCache
+#if    NhlNeedProto
+(void* therec, NclQuark thevar, nclH5size_t cache_size, nclH5size_t cache_nelems, float cache_preemption)
+#else
+(therec, thevar, cache_size, cache_nelems, cache_preemption)
+void* therec;
+NclQuark thevar;
+nclH5size_t cache_size;
+nclH5size_t cache_nelems;
+float cache_preemption;
+#endif
+{
+    HDF5FileRecord* rec = (HDF5FileRecord*)therec;
+    HDF5VarInqRecList *stepvl = NULL;
+    int i,ret = NhlNOERROR;
+    int fid;
+
+    fprintf(stderr, "Enter HDF5AddVarChunkCache, file: %s, line: %d\n", __FILE__, __LINE__);
+
+    if(rec->wr_status <= 0)
+    {
+        if (rec->open)
+        {
+            fid = rec->id;
+        }
+        else
+        {
+            fid = H5Fopen(NrmQuarkToString(rec->file_path_q), H5F_ACC_TRUNC, H5P_DEFAULT);
+            if(fid < 1)
+            {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                      "HDF5: Could not reopen the file (%s) for writing",
+                      NrmQuarkToString(rec->file_path_q));
+                return(NhlFATAL);
+            }
+            rec->id = fid;
+            rec->define_mode = 0;
+            rec->open = 1;
+        }
+
+        stepvl = rec->var_list;
+        while(stepvl != NULL)
+        {
+            if(stepvl->var_inq->name == thevar)
+            {
+                if((cache_size > 0) && (cache_nelems > 0))
+                    stepvl->var_inq->use_cache = 1;
+                stepvl->var_inq->cache_size = cache_size;
+                stepvl->var_inq->cache_nelems = cache_nelems;
+                if(cache_preemption < 0.0)
+                    stepvl->var_inq->cache_preemption = 0.0;
+                else if(cache_preemption > 1.0)
+                    stepvl->var_inq->cache_preemption = 1.0;
+                else
+                    stepvl->var_inq->cache_preemption = cache_preemption;
+
+                if(stepvl->var_inq->use_cache)
+		{
+/*
+			nc_ret = nc_set_var_chunk_cache(fid, stepvl->var_inq->varid,
+                                                cache_size, cache_nelems,
+                                                stepvl->var_inq->cache_preemption);
+*/
+		}
+                ret = NhlNOERROR;
+                break;
+            }
+            stepvl= stepvl->next;
+        }
+    }
+    else
+    {    
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                 "File (%s) was opened as a read only file, can not write to it",
+                  NrmQuarkToString(rec->file_path_q));
+        ret = NhlFATAL;
+    }
+
+    fprintf(stderr, "Leave HDF5AddVarChunkCache, file: %s, line: %d\n", __FILE__, __LINE__);
+
+    return(ret);
+}
+
+static NhlErrorTypes HDF5SetVarCompressLevel
+#if    NhlNeedProto
+(void* therec, NclQuark thevar, int compress_level)
+#else
+(therec,thevar,compress_level)
+void* therec;
+NclQuark thevar;
+int compress_level;
+#endif
+{
+    HDF5FileRecord* rec = (HDF5FileRecord*)therec;
+    HDF5VarInqRecList *stepvl = NULL;
+    int i,ret = NhlNOERROR;
+    int fid;
+    int shuffle = 0;
+    int deflate = compress_level;
+    int deflate_level = compress_level;
+
+    if(rec->wr_status <= 0)
+    {
+        if (rec->open)
+        {
+            fid = rec->id;
+        }
+        else
+        {
+            fid = H5Fopen(NrmQuarkToString(rec->file_path_q), H5F_ACC_TRUNC, H5P_DEFAULT);
+            if(fid < 1)
+            {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                      "HDF5: Could not reopen the file (%s) for writing",
+                      NrmQuarkToString(rec->file_path_q));
+                return(NhlFATAL);
+            }
+            rec->id = fid;
+            rec->define_mode = 0;
+            rec->open = 1;
+        }
+
+        stepvl = rec->var_list;
+        while(stepvl != NULL)
+        {
+            if(stepvl->var_inq->name == thevar)
+            {
+                stepvl->var_inq->compress_level = compress_level;
+                if(compress_level > 0)
+                    deflate = compress_level;
+/*
+                mc_ret = nc_def_var_deflate(fid, stepvl->var_inq->varid, shuffle,
+                                            deflate, deflate_level);
+*/
+                ret = NhlNOERROR;
+                break;
+            }
+            stepvl= stepvl->next;
+        }
+    }
+    else
+    {    
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                 "File (%s) was opened as a read only file, can not write to it",
+                  NrmQuarkToString(rec->file_path_q));
+        ret = NhlFATAL;
+    }
+
+    return(ret);
+}
+
+static NhlErrorTypes HDF5AddChunkDim
+#if    NhlNeedProto
+(void* therec, NclQuark thedim, nclH5size_t size,int is_unlimited)
+#else
+(therec, thedim, size,is_unlimited)
+void* therec;
+NclQuark thedim;
+nclH5size_t size;
+int is_unlimited;
+#endif
+{
+    HDF5FileRecord *rec = (HDF5FileRecord*) therec;
+    int fid;
+    int nc_ret;
+    HDF5DimInqRecList *stepdl;
+    int ret = -1;
+    int add_scalar = 0;
+
+    if(rec->wr_status <=  0)
+    {
+        if(thedim == NrmStringToQuark("ncl_scalar"))
+        {
+            if (size != 1)
+            {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                    "HDF5: \"ncl_scalar\" is a reserved file dimension name in NCL, %s",
+                    "this name can only represent dimensions of size 1"));
+                return(NhlFATAL);
+            }
+            add_scalar = 1;
+        }
+        else
+        {
+            if (rec->open)
+            {
+                fid = rec->id;
+            }
+            else
+            {
+                fid = H5Fopen(NrmQuarkToString(rec->file_path_q), H5F_ACC_TRUNC, H5P_DEFAULT);
+                if(fid < 1)
+                {
+                    NhlPError(NhlFATAL,NhlEUNKNOWN,
+                          "HDF5: Could not reopen the file (%s) for writing",
+                          NrmQuarkToString(rec->file_path_q));
+                    return(NhlFATAL);
+                }
+                rec->id = fid;
+                rec->define_mode = 0;
+                rec->open = 1;
+            }
+        }
+        stepdl = rec->chunk_dims;
+
+        if (add_scalar)
+        {
+            rec->has_scalar_dim = 1;
+            rec->chunk_dims = (HDF5DimInqRecList*)NclMalloc(
+                (unsigned) sizeof(HDF5DimInqRecList));
+            rec->chunk_dims->dim_inq = (HDF5DimInqRec*)NclMalloc(
+                (unsigned)sizeof(HDF5DimInqRec));
+            rec->chunk_dims->next = stepdl;
+            rec->chunk_dims->dim_inq->ncldim_id = -5;
+            rec->chunk_dims->dim_inq->size = 1;
+            rec->chunk_dims->dim_inq->is_unlimited = 0;
+            rec->chunk_dims->dim_inq->name = NrmStringToQuark("ncl_scalar");
+            rec->n_chunk_dims++;
+        }
+        else if(stepdl == NULL)
+        {
+            rec->chunk_dims = (HDF5DimInqRecList*)NclMalloc((unsigned)sizeof(HDF5DimInqRecList));
+            rec->chunk_dims->dim_inq = (HDF5DimInqRec*)NclMalloc((unsigned)sizeof(HDF5DimInqRec));
+            rec->chunk_dims->dim_inq->ncldim_id = (nclH5size_t)ret;
+            rec->chunk_dims->dim_inq->name = thedim;
+            rec->chunk_dims->dim_inq->size = (nclH5size_t)size;
+            rec->chunk_dims->dim_inq->is_unlimited= is_unlimited;
+            if(rec->chunk_dims->dim_inq->size < 1)
+                rec->chunk_dims->dim_inq->size = (nclH5size_t)1;
+            rec->chunk_dims->next = NULL;
+            rec->n_chunk_dims = 1;
+        }
+        else
+        {
+            while(stepdl->next != NULL)
+            {
+                stepdl = stepdl->next;
+            }
+            stepdl->next = (HDF5DimInqRecList*)NclMalloc((unsigned)sizeof(HDF5DimInqRecList));
+            stepdl->next->dim_inq = (HDF5DimInqRec*)NclMalloc((unsigned)sizeof(HDF5DimInqRec));
+            stepdl->next->dim_inq->ncldim_id = (nclH5size_t)ret;
+            stepdl->next->dim_inq->name = thedim;
+            stepdl->next->dim_inq->size = (nclH5size_t)size;
+            stepdl->next->dim_inq->is_unlimited= is_unlimited;
+            if(stepdl->next->dim_inq->size < 1)
+                stepdl->next->dim_inq->size = (nclH5size_t)1;
+            stepdl->next->next = NULL;
+            rec->n_chunk_dims++;
+        }
+        return(NhlNOERROR);
+    }
+    else
+    {    
+        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+            "File (%s) was opened as a read only file, can not write to it",
+            NrmQuarkToString(rec->file_path_q)));
+    }
+    return(NhlFATAL);
+}
+
+static NhlErrorTypes HDF5SetOption
+#if	NhlNeedProto
+(void *therec,NclQuark option, NclBasicDataTypes data_type, int n_items, void * values)
+#else
+(therec,theatt,data_type,n_items,values)
+    void *therec;
+    NclQuark theatt;
+    NclBasicDataTypes data_type;
+    int n_items;
+    void * values;
+#endif
+{
+    HDF5FileRecord *rec = (HDF5FileRecord*)therec;
+    HDF5AttInqRecList* stepal;
+    int i,ret;
+
+    if (option == NrmStringToQuark("compressionlevel"))
+    {
+        if (*(int*)values < -1 || *(int*)values > 9)
+        {
+            NhlPError(NhlWARNING,NhlEUNKNOWN,
+                     "HDF5SetOption: option (%s) value cannot be less than -1 or greater than 9",
+                      NrmQuarkToString(option));
+            return(NhlWARNING);
+        }
+        rec->options[H5_COMPRESSION_LEVEL_OPT].values = (void*) *(int*)values;
+    }
+    else if (option == NrmStringToQuark("usecache"))
+    {
+        rec->options[H5_USE_CACHE_OPT].values = (void*) *(int*)values;
+    }
+    else if (option == NrmStringToQuark("cachesize"))
+    {
+        if (*(int*)values < 1)
+        {
+            NhlPError(NhlWARNING,NhlEUNKNOWN,
+                     "HDF5SetOption: option (%s) value cannot be less than 1",
+                     NrmQuarkToString(option));
+            return(NhlWARNING);
+        }
+        rec->options[H5_CACHE_SIZE_OPT].values = (void*) *(int*)values;
+    }
+    else if (option == NrmStringToQuark("cachenelems"))
+    {
+        if (*(int*)values < 3)
+        {
+            NhlPError(NhlWARNING,NhlEUNKNOWN,
+                     "HDF5SetOption: option (%s) value cannot be less than 3",
+                      NrmQuarkToString(option));
+            return(NhlWARNING);
+        }
+        else
+        {
+            unsigned int *iv = (unsigned int *)values;
+            *iv = _closest_prime(*iv);
+            rec->options[H5_CACHE_NELEMS_OPT].values = (void*) *(int*)iv;
+        }
+    }
+    else if (option == NrmStringToQuark("cachepreemption"))
+    {
+        float *fv = (float *)values;
+        rec->options[H5_CACHE_PREEMPTION_OPT].values = (void*) fv;
+    }
+
+    return NhlNOERROR;
 }
 
 NclFormatFunctionRec HDF5Rec = {
@@ -4586,14 +5121,14 @@ NclFormatFunctionRec HDF5Rec = {
 /* NclWriteVarFunc          write_var; */          HDF5WriteVar,
 /* NclWriteVarFunc          write_var_ns; */       NULL,
 /* NclWriteAttFunc          write_att; */          HDF5WriteAtt,
-/* NclWriteVarAttFunc       write_var_att; */      NULL,
+/* NclWriteVarAttFunc       write_var_att; */      HDF5WriteVarAtt,
 /* NclAddDimFunc            add_dim; */            HDF5AddDim,
-/* NclAddChunkDimFunc       add_chunk_dim; */      NULL,
+/* NclAddChunkDimFunc       add_chunk_dim; */      HDF5AddChunkDim,
 /* NclRenameDimFunc         rename_dim; */         NULL,
 /* NclAddVarFunc            add_var; */            HDF5AddVar,
 /* NclAddVarChunkFunc       add_var_chunk; */      HDF5AddVarChunk,
-/* NclAddVarChunkCacheFunc add_var_chunk_cache; */ NULL,
-/* NclSetVarCompressLevelFunc set_var_compress_level; */ NULL,
+/* NclAddVarChunkCacheFunc  add_var_chunk_cache; */ HDF5AddVarChunkCache,
+/* NclSetVarCompressLevelFunc set_var_compress_level; */ HDF5SetVarCompressLevel,
 /* NclAddVarFunc            add_coord_var; */      HDF5AddCoordVar,
 /* NclAddAttFunc            add_att; */            HDF5AddAtt,
 /* NclAddVarAttFunc         add_var_att; */        HDF5AddVarAtt,
@@ -4605,7 +5140,7 @@ NclFormatFunctionRec HDF5Rec = {
 /* NclGetGrpInfoFunc        get_grp_info; */       HDF5GetGrpInfo,
 /* NclGetGrpAttNamesFunc    get_grp_att_names; */  HDF5GetGrpAttNames,
 /* NclGetGrpAttInfoFunc     get_grp_att_info; */   HDF5GetGrpAttInfo,
-/* NclSetOptionFunc         set_option;  */        NULL
+/* NclSetOptionFunc         set_option;  */        HDF5SetOption
 };
 
 NclFormatFunctionRecPtr HDF5AddFileFormat 

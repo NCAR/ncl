@@ -575,6 +575,16 @@ while ($n <= $nfiles)
                 goto VALID_FILE
                 breaksw
 
+            case hdf5:
+            case h5:
+                set ftype = "HDF5"
+                set if = $fil
+                set of = $fil:r
+
+                set valid_file = 1
+                goto VALID_FILE
+                breaksw
+
             case hdfeos5:
             case he5:
                 set ftype = "HDFEOS5"
@@ -695,6 +705,15 @@ while ($n <= $nfiles)
             case hdf:
             case h4:
                 set ftype = "HDF"
+                set if = $fil:r.$lsfx
+                set of = $fil:r
+                set valid_file = 1
+                goto VALID_FILE
+                breaksw
+
+            case hdf5:
+            case h5:
+                set ftype = "HDF5"
                 set if = $fil:r.$lsfx
                 set of = $fil:r
                 set valid_file = 1

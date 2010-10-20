@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.60 2010-04-30 23:17:54 huangwei Exp $
+#      $Id: Configure,v 1.58.2.1 2010-05-02 16:55:13 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2010-04-30 23:17:54 $
+#	$Date: 2010-05-02 16:55:13 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.

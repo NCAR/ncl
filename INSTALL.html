@@ -1,11 +1,11 @@
 <html>
 <head>
-<title>How to build NCL and NCAR Graphics V5.2.0 from source code</title>
+<title>How to build NCL and NCAR Graphics V5.2.1 from source code</title>
 </head>
 
-<h1>How to build NCL and NCAR Graphics V5.2.0 from source code</h1>
+<h1>How to build NCL and NCAR Graphics V5.2.1 from source code</h1>
 <p>
-<i>April 14, 2010</i><p>
+<i>July 11, 2010</i><p>
 
 This is an all-encompassing document on:
 
@@ -95,9 +95,6 @@ for NCL</A>
 <LI><A HREF="#CompilersNeeded">Compilers needed to build NCL</A>
 
 <LI><A HREF="#SetEnvVars">Set environment variables</A>
-
-<LI><A HREF="#TestBlockdataInit">Test that your Fortran compiler does
-blockdata initializations correctly</A>
 
 <LI><A HREF="#X11Libs">Install X11 developer libraries and include files</A>
 
@@ -241,7 +238,7 @@ routines</A>
 <H2>What's new in build instructions since last NCL release</H2>
 <p>
 
-Here's what's new about the source code instructions in V5.2.0:
+Here's what's new about the source code instructions in V5.2.1:
 <p>
 
 <ol>
@@ -265,7 +262,7 @@ software. This is required if you want support for reading HDF-EOS
 5 files.
 <p>
 
-<li>There's a new section on building <a href="#CAIRO">cairo</a>
+<li>There's a new section on building <a href="#cairo">cairo</a>
 software. This is if you want support for creating PNG output, or our
 new PS/PDF output, which is in alpha test mode.
 <p>
@@ -361,79 +358,6 @@ csh/tcsh: setenv CXXFLAGS '-DNDEBUG'
 </TABLE>
 <p>
 
-
-<A NAME="TestBlockdataInit"></A>
-<HR>
-<b>Test that your Fortran compiler does blockdata initializations
-correctly</b>.<p>
-
-<i>This is only necessary for versions 5.0.0 and earlier.</i><p>
-
-The NCL code depends heavily on Fortran blockdata variables
-being initialized correctly. We have found that some Fortran compilers
-don't handle blockdata initializations correctly, and hence can't
-be used to build NCL V5.0.0. We fixed this issue in V5.1.x of
-the source code, and hence this test is unnecessary with that
-version of the source code.
-<p>
-
-To test if your Fortran compiler handles blockdata initializations
-correctly, download the small <a
-href="http://www.ncl.ucar.edu/Download/files/blockdata_test.tar">blockdata_test.tar</a>
-tar file, and untar it with:
-<p>
-
-<pre>
-  tar -xvf blockdata_test.tar
-</pre>
-
-Cd to "blockdata_test" and edit the "Makefile" to change "g77" to
-whatever compiler you are using. (There are sample Makefiles for
-"gfortran" and "g95" that you can use.)
-<p>
-
-Type:
-<p>
-
-<pre>
-  make main.good main.bad main.init main.good2
-  ./main.good
-  ./main.good2
-  ./main.init
-  ./main.bad
-</pre>
-
-If the "main.bad" and "main.init" programs give you the output:
-<p>
-
-<pre>
-  TESTSUB: WK =  0, WK should be 20
-</pre>
-
-then your compiler doesn't handle blockdata initializations correctly.
-However, if the "main.good2" program produces the correct output:
-<p>
-
-<pre>
-  TESTSUB2: WK =  20, WK should be 20
-</pre>
-
-then this means some new changes we made to the code, based on an <a
-href="http://www.ncarg.ucar.edu/ncarg-talk/2008/0032.html">ingenious
-suggestion</a> that Ted Mansell of NOAA sent us, should work for you.
-<p>
-
-We haven't released this new source code yet, but you can email <a
-href="mailto:haley@ucar.edu">Mary Haley</a> for a test copy.
-<p>
-
-If "main.init" gives you the correct output, but "main.bad" doesn't,
-then you will be able to use this compiler to build the V5.0.0 source
-code, but you will need to include the special options "-ncarbd" and
-"-ngmathbd" if you compile an NCAR Graphics or HLU C or Fortran
-program using "ncargf77", "ncargf90", "ncargcc", "nhlf77", "nhlf90",
-and/or "nhlcc".
-<p>
 
 <A NAME="X11Libs"></A>
 <HR>
@@ -616,8 +540,8 @@ szip page.
 <A NAME="HDF5"></A>
 <li><a
 href="http://www.hdfgroup.org/HDF5/release/obtain5.html">HDF-5</a> -
-Download version 1.8.4-patch1 or later. <b>Do not download hdf5
-versions 1.8.0 through 1.8.4!</b>
+Download version 1.8.5 or later. <b>Do not download hdf5
+versions 1.8.0 through 1.8.4! Version 1.8.4-patch1 is okay.</b>
 <p>
 
 <pre>
@@ -734,9 +658,9 @@ and <a
 href="http://www.ncl.ucar.edu/Document/Tools/idt.shtml">idt</a>.
 <p>
 
-Download version 4.2r4 or later. MacOS 10.6 users should download
-version 4.2.5 or later. (HDF version 5.<i>x.y</i> is a different
-software package).
+Download version 4.2.5 or later. This is especially important for
+MacOS 10.6 users.(HDF version 5.<i>x.y</i> is a different software
+package).
 <p>
 
 
@@ -814,9 +738,9 @@ with:
 
 <a name="g2clib"></a>
 <li><a href="http://www.nco.ncep.noaa.gov/pmb/codes/GRIB2/">g2clib</a>
-(<b>not g2lib!</b>) - Download version 1.1.9 or later. There's a bug
-in versions 1.0.x and earlier, so we recommend downloading 1.1.9
-or later.
+(<b>not g2lib!</b>) - There's a bug in versions 1.0.x and earlier, so
+we recommend downloading 1.1.9.  Version 1.2.0 seems to have some
+other bugs, so we don't recommend downloading this version.
 <p>
 
 Once you have the g2clib source code and the modified file, make
@@ -1004,7 +928,7 @@ packages:
 version 1.11.v1 (HDF-EOS5.1.12) or later.
 <p>
 
-Once you have the GDAL source code, you can build and install it
+Once you have the HDF-EOS5 source code, you can build and install it
 with:
 <p>
 
@@ -1235,7 +1159,7 @@ then you need to install UDUNITS-2.
 <p>
 
 Download the <a
-href="http://www.unidata.ucar.edu/software/udunits/">Udunits</a>
+href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">Udunits</a>
 2.<i>x</i> (<b>not</b> 1.<i>x</i>!) source code.  Once you have the
 source code, you can build and install it with:
 <p>
@@ -1288,18 +1212,18 @@ HREF="http://www.ncl.ucar.edu/Download/">http://www.ncl.ucar.edu/Download/</A>
 </BLOCKQUOTE>
 
 The NCL source code you download will be a single compressed tar
-file (we'll call it "ncl_ncarg_src-5.2.0.tar.gz"). Move the
-"ncl_ncarg_src-5.2.0.tar.gz" file to a temporary directory where you
+file (we'll call it "ncl_ncarg_src-5.2.1.tar.gz"). Move the
+"ncl_ncarg_src-5.2.1.tar.gz" file to a temporary directory where you
 have plenty of disk space (around 250 megabytes to hold all of the
 source code, object files, binaries, and so on). Then, uncompress and
 untar the file as follows:<P>
 
 <pre>
-  gunzip ncl_ncarg_src-5.2.0.tar.gz
-  tar -xvf ncl_ncarg_src-5.2.0.tar
+  gunzip ncl_ncarg_src-5.2.1.tar.gz
+  tar -xvf ncl_ncarg_src-5.2.1.tar
 </pre>
 
-The above steps will create a directory called "ncl_ncarg-5.2.0".  For
+The above steps will create a directory called "ncl_ncarg-5.2.1".  For
 convenience, we'll use the notation $NCARG to mean the top level of
 the NCL/NCAR Graphics source tree. Set the environment variable NCARG
 to the full path of this directory.
@@ -1311,21 +1235,21 @@ From tcsh or csh:
 <p>
 
 <pre>
-  setenv NCARG /usr/local/src/ncl_ncarg-5.2.0
+  setenv NCARG /usr/local/src/ncl_ncarg-5.2.1
 </pre>
 
 From ksh or bash:
 <p>
 
 <pre>
-  export NCARG=/usr/local/src/ncl_ncarg-5.2.0
+  export NCARG=/usr/local/src/ncl_ncarg-5.2.1
 </pre>
 
 sh:
 <p>
 
 <pre>
-  NCARG=/usr/local/src/ncl_ncarg-5.2.0
+  NCARG=/usr/local/src/ncl_ncarg-5.2.1
   export NCARG
 </pre>
 <p>

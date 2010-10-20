@@ -1,5 +1,5 @@
 /*
- *      $Id: Machine.c,v 1.90 2010-04-14 21:29:47 huangwei Exp $
+ *      $Id: Machine.c,v 1.89 2009-02-05 03:42:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -67,7 +67,7 @@ extern "C" {
 #endif
 
 /*
-* Making this smaller because functions will generally be smaller than 
+* Making this smaller because functions will generally be smaller than
 * whole programs.
 */
 #ifndef NCL_FUNC_MACHINE_SIZE

@@ -1,5 +1,4 @@
 # GRIBv2 - Table 4.2-0-2 Meteorological - Momentum
-
 0:0:Wind direction (from which blowing):Degree true:WDIR
 1:1:Wind speed:m s-1:WIND
 2:2:U-component of wind:m s-1:UGRD
@@ -32,6 +31,5 @@
 29:29:Drag coefficient:Numeric:CD
 30:30:Frictional velocity:m s-1:FRICV
 # 31-191:31-191:Reserved:-:
-
 # 192-254:192-254:Reserved for Local Use:-:
-
+255:255:Missing:-:

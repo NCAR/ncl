@@ -3930,7 +3930,7 @@ function pie_chart(wks:graphic, percent[*]:numeric, name[*]:string        \
 
   do n=0,nSections-1
                                                ; create nodes for section
-     npts  = round(pcPie(n), 3)
+     npts  = max( (/round(pcPie(n),3), 1/) )
      npts2 = npts+2
      xx    = new (npts2, "double", "No_FillValue")
      yy    = new (npts2, "double", "No_FillValue")

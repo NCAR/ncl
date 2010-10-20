@@ -256,7 +256,7 @@ void
 
 extern void _NclUndefSymbolsInScope(
 #if	NhlNeedProto
-NclScopeRec *thetable
+NclProcFuncInfo *procfunc_info
 #endif
 );
 

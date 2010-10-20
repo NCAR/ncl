@@ -1334,7 +1334,7 @@ NclQuark option;
 NclMultiDValData value;
 #endif
 {
-	int i;
+	int i, found, idx;
 	NclMultiDValData tmp_md;
 	NclQuark loption;
 	NclQuark *lvalue = NULL;
@@ -1347,9 +1347,19 @@ NclMultiDValData value;
 				  "FileSetFileOption: file does not support any options");
 			return(NhlWARNING);
 		}
+		found = 0;
 		for (i = 0; i < fcp->num_options; i++) {
 			if (fcp->options[i].name != loption)
 				continue;
+			found = 1;
+			idx = i;
+			if (thefile->file.format_funcs == _NclGetFormatFuncs(fcp->options[i].format))
+			{
+				break;
+			}
+		}
+		if(found) {
+			i = idx;
 			if (thefile->file.format_funcs != _NclGetFormatFuncs(fcp->options[i].format)) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 				    "FileSetFileOption: %s is not a recognized option for format %s",
@@ -1618,11 +1628,18 @@ NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, UpdateDims },   /* GRIB initial time coordinate type */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* NetCDF missing to fill value option */
 #ifdef USE_NETCDF4
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },   /* NetCDF 4 compression option level */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },   /* NetCDF 4 cache switch */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },         /* NetCDF 4 compression option level */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },         /* NetCDF 4 cache switch */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 3200000, NULL },   /* NetCDF 4 cache size */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 1009, NULL },   /* NetCDF 4 cache nelems */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0.50, NULL },   /* NetCDF 4 cache preemption */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 1009, NULL },      /* NetCDF 4 cache nelems */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0.50, NULL },      /* NetCDF 4 cache preemption */
+#endif
+#ifdef BuildHDF5
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },         /* HDF5 compression option level */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },         /* HDF5 cache switch */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 3200000, NULL },   /* HDF5 cache size */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 1009, NULL },      /* HDF5 cache nelems */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0.50, NULL },      /* HDF5 cache preemption */
 #endif
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }, /* GRIB default NCEP parameter table */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB print record info */
@@ -1994,6 +2011,88 @@ static NhlErrorTypes InitializeFileOptions
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0.50,(void *)fval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
 	fcp->options[Ncl_CACHE_PREEMPTION].valid_values = NULL;
+#endif
+
+#ifdef BuildHDF5
+	/* HDF5 option compression level */
+	fcp->options[Ncl_H5_COMPRESSION_LEVEL].format = NrmStringToQuark("h5");
+	fcp->options[Ncl_H5_COMPRESSION_LEVEL].name = NrmStringToQuark("compressionlevel");
+	len_dims = 1;
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = -1;
+	fcp->options[Ncl_H5_COMPRESSION_LEVEL].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = -1;
+	fcp->options[Ncl_H5_COMPRESSION_LEVEL].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	fcp->options[Ncl_H5_COMPRESSION_LEVEL].valid_values = NULL;
+
+	/* HDF5 option use cache */
+	fcp->options[Ncl_H5_USE_CACHE].format = NrmStringToQuark("h5");
+	fcp->options[Ncl_H5_USE_CACHE].name = NrmStringToQuark("cachepreemption");
+	len_dims = 1;
+	fval = (float *) NclMalloc(sizeof(float));
+	*fval = 0.50;
+	fcp->options[Ncl_H5_USE_CACHE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0.50,(void *)fval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 0;
+	fcp->options[Ncl_H5_USE_CACHE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	fcp->options[Ncl_H5_USE_CACHE].valid_values = NULL;
+
+	/* HDF5 option cache size */
+	fcp->options[Ncl_H5_CACHE_SIZE].format = NrmStringToQuark("h5");
+	fcp->options[Ncl_H5_CACHE_SIZE].name = NrmStringToQuark("cachesize");
+	len_dims = 1;
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 3*1024*1025;
+	fcp->options[Ncl_H5_CACHE_SIZE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 3*1024*1025;
+	fcp->options[Ncl_H5_CACHE_SIZE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	fcp->options[Ncl_H5_CACHE_SIZE].valid_values = NULL;
+
+	/* HDF5 option cache nelems */
+	fcp->options[Ncl_H5_CACHE_NELEMS].format = NrmStringToQuark("h5");
+	fcp->options[Ncl_H5_CACHE_NELEMS].name = NrmStringToQuark("cachenelems");
+	len_dims = 1;
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 1009;
+	fcp->options[Ncl_H5_CACHE_NELEMS].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 1009;
+	fcp->options[Ncl_H5_CACHE_NELEMS].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	fcp->options[Ncl_H5_CACHE_NELEMS].valid_values = NULL;
+
+	/* HDF5 option cache preemption */
+	fcp->options[Ncl_H5_CACHE_PREEMPTION].format = NrmStringToQuark("h5");
+	fcp->options[Ncl_H5_CACHE_PREEMPTION].name = NrmStringToQuark("cachepreemption");
+	len_dims = 1;
+	fval = (float *) NclMalloc(sizeof(float));
+	*fval = 0.50;
+	fcp->options[Ncl_H5_CACHE_PREEMPTION].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0.50,(void *)fval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
+	fval = (float*) NclMalloc(sizeof(float));
+	*fval = 0.50;
+	fcp->options[Ncl_H5_CACHE_PREEMPTION].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0.50,(void *)fval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
+	fcp->options[Ncl_H5_CACHE_PREEMPTION].valid_values = NULL;
 #endif
 
 	/* Grib option Default_NCEP_Ptable */

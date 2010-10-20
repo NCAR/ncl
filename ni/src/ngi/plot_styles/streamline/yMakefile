@@ -1,9 +1,0 @@
-#
-#       $Id: yMakefile,v 1.1 1999-09-21 00:15:36 dbrown Exp $
-#
-FILES		= DIRECTORY.res Streamline.res
-
-PSPATH	= $(LIBNCARGPATH)/plot_styles/streamline
-INSTALL_PS = $(INSTALL_DB)
-
-InstallTarget($(FILES),$(INSTALL_PS),$(PSPATH))

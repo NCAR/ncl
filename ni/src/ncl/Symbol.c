@@ -1002,21 +1002,27 @@ char *name;
 
 void _NclUndefSymbolsInScope
 #if	NhlNeedProto
-(NclScopeRec *thetable)
+(NclProcFuncInfo *procfunc_info)
 #else
-(thetable)
-	NclScopeRec *thetable;
+(procfunc_info)
+NclProcFuncInfo *procfunc_info;
 #endif
 {
-	NclScopeRec *sr = thetable;
+	NclScopeRec *sr = procfunc_info->thescope;
 	NclSymbol *s;
-        int i;
+        int i,j;
 
 	for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
 		if(sr->this_scope[i].nelem != 0) {
 			s = sr->this_scope[i].thelist;
 			while (s != NULL) {
-				s->type = UNDEF;
+				for (j = 0; j < procfunc_info->nargs; j++) {
+					if (s == procfunc_info->theargs[j].arg_sym) {
+						break;
+					}
+				}
+				if (j == procfunc_info->nargs)
+					s->type = UNDEF;
 				s = s->symnext;
 			}
 		}

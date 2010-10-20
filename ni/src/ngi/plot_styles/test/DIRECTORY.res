@@ -1,2 +1,0 @@
-*ndvDirectoryTitle : Test Plot Styles
-
