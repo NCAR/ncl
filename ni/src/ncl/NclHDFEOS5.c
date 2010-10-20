@@ -454,8 +454,20 @@ NclQuark ncl_class_name;
 	step = *dims;
 	while(step != NULL) {
 		if(step->dim_inq->name == NrmStringToQuark(buffer)) {
+		      /*Correct the dim size, if different from previous read.*/
+		        if(step->dim_inq->size < size)
+			{
+			      /*
+			       *fprintf(stderr, "\t\nfile: %s, line: %d\n", __FILE__, __LINE__);
+			       *fprintf(stderr, "\tFind: <%s>, old size: %d, new size: %d\n",
+			       *	buffer, step->dim_inq->size, size);
+			       */
+				step->dim_inq->size = size;
+			}
 			return;
-		} else {
+		}
+		else
+		{
 			step = step->next;
 		}
 	}
@@ -468,7 +480,8 @@ NclQuark ncl_class_name;
 	if (! tmp_node->dim_inq->is_unlimited) {
 		tmp_node->dim_inq->size = size;
 	}
-	else {
+	else
+	{
 		/* set to 0 until we find a variable with this dimension  */
 		tmp_node->dim_inq->size = size;
 	}
@@ -3264,6 +3277,9 @@ void* therec;
 NclQuark thevar;
 #endif
 {
+	fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+	fprintf(stderr, "\tHave not done anyhting with HDFEOS5GetCoordInfo yet.\n");
+	fprintf(stderr, "\nfile: %s, line: %d\n\n", __FILE__, __LINE__);
 	return NULL;
 }
 
