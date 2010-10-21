@@ -1670,7 +1670,8 @@ NclQuark path;
             ngrp_atts = HE5_EHinqglbattrs(HE5_GDfid,buffer,&str_buf_size);
             if(ngrp_atts > max_att)
             {
-		max_att = ngrp_atts + 1;
+                while(ngrp_atts > max_att)
+                      max_att *= 2;
                 att_hdf_names = (NclQuark *)NclRealloc(att_hdf_names, sizeof(NclQuark)*max_att);
                 att_ncl_names = (NclQuark *)NclRealloc(att_ncl_names, sizeof(NclQuark)*max_att);
             }
@@ -1779,7 +1780,8 @@ NclQuark path;
 
             if(nlocatts > max_loc)
             {
-                max_loc = nlocatts + 2;
+                while(nlocatts > max_loc)
+                      max_loc *= 2;
                 loc_hdf_names = (NclQuark *)NclRealloc(loc_hdf_names, sizeof(NclQuark)*max_loc);
                 loc_ncl_names = (NclQuark *)NclRealloc(loc_ncl_names, sizeof(NclQuark)*max_loc);
             }
@@ -1939,7 +1941,6 @@ NclQuark path;
                                          HDFEOS5IntAddAtt(the_file->vars->var_inq,NrmStringToQuark("units"),(void*)add_value,1,NCL_string);
                                      }
                                  }
-                                 NclFree(new_value);
                                  NclFree(new_value);
                                  break;
                                  }
