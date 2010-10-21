@@ -89,7 +89,7 @@ static struct {
 /*
 {"objdata",	RKEY},
 */
-{(char*)NULL,(int)NULL}
+{(char*)NULL,(int)0}
 };
 
 #ifdef __cplusplus

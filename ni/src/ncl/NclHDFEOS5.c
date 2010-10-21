@@ -3449,8 +3449,6 @@ void* storage;
 	char *tmp_hdf_name;
 	hsize_t total_size = 1;
 
-	hsize_t total_size = 1;
-
 	thelist = thefile->vars;
 	for(i = 0; i < thefile->n_vars; i++) {
 		if(thevar == thelist->var_inq->name ) {
