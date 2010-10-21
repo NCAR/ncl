@@ -455,10 +455,24 @@ NclQuark path;
 	strcat(buffer,"_");
 	strcat(buffer, NrmQuarkToString(ncl_class_name));	
 	step = *dims;
-	while(step != NULL) {
-		if(step->dim_inq->name == NrmStringToQuark(buffer)) {
+	while(step != NULL)
+	{
+		if(step->dim_inq->name == NrmStringToQuark(buffer))
+		{
+		      /*Correct the dim size, if different from previous read.*/
+		        if(step->dim_inq->size < size)
+			{
+			      /*
+			       *fprintf(stderr, "\t\nfile: %s, line: %d\n", __FILE__, __LINE__);
+			       *fprintf(stderr, "\tFind: <%s>, old size: %d, new size: %d\n",
+			       *	buffer, step->dim_inq->size, size);
+			       */
+				step->dim_inq->size = size;
+			}
 			return;
-		} else {
+		}
+		else
+		{
 			step = step->next;
 		}
 	}
@@ -468,10 +482,12 @@ NclQuark path;
 	tmp_node->dim_inq->name = NrmStringToQuark(buffer);
 	tmp_node->dim_inq->hdf_name = hdf_name;
 	tmp_node->dim_inq->is_unlimited = size == 0 ? 1 : 0;
-	if (! tmp_node->dim_inq->is_unlimited) {
+	if (! tmp_node->dim_inq->is_unlimited)
+	{
 		tmp_node->dim_inq->size = size;
 	}
-	else {
+	else
+	{
 		/* set to 0 until we find a variable with this dimension  */
 		tmp_node->dim_inq->size = size;
 	}
@@ -3313,6 +3329,10 @@ void* therec;
 NclQuark thevar;
 #endif
 {
+	fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+	fprintf(stderr, "\tHave not done anyhting with HDFEOS5GetCoordInfo yet.\n");
+	fprintf(stderr, "\nfile: %s, line: %d\n\n", __FILE__, __LINE__);
+	return NULL;
 }
 
 static int HE5_GDreadCoordVar
@@ -3660,7 +3680,8 @@ NclFormatFunctionRec HDFEOS5Rec = {
 /* NclWriteAttFunc          write_att; */		NULL,
 /* NclWriteVarAttFunc       write_var_att; */		NULL,
 /* NclAddDimFunc            add_dim; */			NULL,
-/* NclAddDimFunc            rename_dim; */		NULL,
+/* NclAddChunkDimFunc       add_chunk_dim; */		NULL,
+/* NclRenameDim             rename_dim; */		NULL,
 /* NclAddVarFunc            add_var; */			NULL,
 /* NclAddVarFunc            add_coord_var; */		NULL,
 /* NclAddAttFunc            add_att; */			NULL,
