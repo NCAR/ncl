@@ -43,6 +43,14 @@
 #endif
 #endif /* BuildNetCDF4 */
 
+#ifndef	BuildHDF4
+#define	BuildHDF4
+#else
+#if	!BuildHDF4
+#undef	BuildHDF4
+#endif
+#endif	/* BuildHDF4 */
+
 #ifndef	BuildHDFEOS
 #define	BuildHDFEOS
 #else
