@@ -34,7 +34,7 @@
 #define NhlDOCREF(url,anchortext)
 #define NhlSRCREF(srcfileurl)
 #define _NhlMAXRESNAMLEN        (128)
-#define  NhlDEFAULT_APP  ((int)(NULL))
+#define  NhlDEFAULT_APP  ((int)0)
 #define _NhlMAXFNAMELEN   (256)
 
 /*
