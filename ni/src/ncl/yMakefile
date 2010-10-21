@@ -45,7 +45,17 @@ NETCDF4_DEFS = -DUSE_NETCDF4
 #define NETCDF4LIB
 #endif
 
-#ifdef BuildHDFEOS
+#ifdef BuildHDF4
+HDF4_DEFS = -DBuildHDF4 $(HDF4_NETCDF)
+HDF4_SRCS = NclHDF.c
+HDF4_OBJS = NclHDF.o
+#else
+#define HDF4_SRCS
+#define HDF4_OBJS
+#define HDFLIB
+#endif
+
+#if defined BuildHDF4 && defined BuildHDFEOS
 HDFEOS_DEFS = -DBuildHDFEOS $(HDF4_NETCDF)
 HDFEOS_SRCS = NclHDFEOS.c
 HDFEOS_OBJS = NclHDFEOS.o
@@ -147,7 +157,7 @@ HACKOBJS	=	hphack.o
 DYNAMIC_LIBS	=	-ldl
 #endif
 
-EXTRA_CDEFINES = $(OS1_DEF) $(MAJOR_DEF) $(NETCDF4_DEFS) $(HDFEOS_DEFS) $(HDFEOS5_DEFS) $(HDF5_DEFS) $(GRIB2_DEFS) $(GDAL_DEFS) $(UDUNITS_DEFS) $(V5D_DEFS) 
+EXTRA_CDEFINES = $(OS1_DEF) $(MAJOR_DEF) $(NETCDF4_DEFS) $(HDFEOS_DEFS) $(HDF4_DEFS) $(HDFEOS5_DEFS) $(HDF5_DEFS) $(GRIB2_DEFS) $(GDAL_DEFS) $(UDUNITS_DEFS) $(V5D_DEFS) 
 
 API_DEFS	=	-DMAKEAPI
 
@@ -303,7 +313,7 @@ APISRCS		=	$(API_SRCS) $(SRCS)
 EXESRCS		=	$(EXE_SRCS) $(SRCS)
 ALLSRCS		=	$(EXE_SRCS) 
 COMMON_SRCS     =       $(GEN_TYPE_SRCS)
-SRCS		=	$(GEN_SRCS) $(STATIC_SRCS) $(STATIC_IO_SRCS) $(HDFEOS_SRCS) $(HDFEOS5_SRCS) $(HDF5_SRCS) $(GRIB2_SRCS) $(GDAL_SRCS)
+SRCS		=	$(GEN_SRCS) $(STATIC_SRCS) $(STATIC_IO_SRCS) $(HDFEOS_SRCS) $(HDF4_SRCS) $(HDFEOS5_SRCS) $(HDF5_SRCS) $(GRIB2_SRCS) $(GDAL_SRCS)
 
 GEN_SRCS        =       $(GEN_TYPE_SRCS) $(GEN_EXE_SRCS) $(GEN_API_SRCS) $(GEN_MATH_SRCS)
 
@@ -370,7 +380,7 @@ STATIC_IO_OBJS  =       AddFileFormats.o AttSupport.o DataSupport.o \
 			FileSupport.o Formats.o GetGrids.o \
 			InitData.o Memory.o NclAtt.o NclCCM.o \
 			NclCoordVar.o NclData.o NclGroup.o NclFile.o NclFileVar.o \
-			NclGRIB.o NclHDF.o NclMultiDValnclfileData.o \
+			NclGRIB.o NclMultiDValnclfileData.o \
 			NclNetCdf.o NclOneDValCoordData.o NclType.o \
 			NclTypelist.o NclVar.o VarSupport.o \
 			ctoiee.o date.o 
@@ -393,7 +403,7 @@ FOBJS		=	qu2reg3.o rowina3.o scm0.o ncepcode.o
 
 FIO_OBJS        =       fortranio.o
 
-COMMON_OBJS	=	$(GEN_TYPE_OBJS) $(STATIC_IO_OBJS) $(FOBJS) $(HDFEOS_OBJS) $(HDFEOS5_OBJS) $(HDF5_OBJS) $(GRIB2_OBJS) $(GDAL_OBJS)
+COMMON_OBJS	=	$(GEN_TYPE_OBJS) $(STATIC_IO_OBJS) $(FOBJS) $(HDFEOS_OBJS) $(HDF4_OBJS) $(HDFEOS5_OBJS) $(HDF5_OBJS) $(GRIB2_OBJS) $(GDAL_OBJS)
 
 API_OBJS	=	NclApi.o ioapi.o NclHLUObjapi.o $(GEN_API_OBJS) $(GEN_MATH_OBJS) $(COMMON_OBJS) $(STATIC_OBJS) $(FIO_OBJS)
 EXE_OBJS	=	Ncl.o io.o NclHLUObj.o $(GEN_EXE_OBJS) $(GEN_MATH_OBJS) $(COMMON_OBJS) $(STATIC_OBJS) $(FIO_OBJS)
