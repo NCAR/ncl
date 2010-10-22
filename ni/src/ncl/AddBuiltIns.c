@@ -2230,7 +2230,7 @@ void _NclAddBuiltIns
 	dimsizes[0] = 1;
 	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
 	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
-	SetArgTemplate(args,2,"numeric",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"snumeric",1,NclANY);nargs++;
 	SetArgTemplate(args,3,"logical",1,NclANY);nargs++;
 	NclRegisterProc(_NclIFileDimDef,args,"filedimdef",nargs);
 

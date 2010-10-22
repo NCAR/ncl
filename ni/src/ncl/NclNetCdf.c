@@ -2405,12 +2405,12 @@ int compress_level;
 
 static NhlErrorTypes NetAddDim
 #if	NhlNeedProto
-(void* therec, NclQuark thedim, int size,int is_unlimited)
+(void* therec, NclQuark thedim, ng_size_t size,int is_unlimited)
 #else
 (therec, thedim, size,is_unlimited)
 void* therec;
 NclQuark thedim;
-int size;
+ng_size_t size;
 int is_unlimited;
 #endif
 {
@@ -2534,12 +2534,12 @@ int is_unlimited;
 
 static NhlErrorTypes NetAddChunkDim
 #if	NhlNeedProto
-(void* therec, NclQuark thedim, int size,int is_unlimited)
+(void* therec, NclQuark thedim, ng_size_t size,int is_unlimited)
 #else
 (therec, thedim, size,is_unlimited)
 void* therec;
 NclQuark thedim;
-int size;
+ng_size_t size;
 int is_unlimited;
 #endif
 {

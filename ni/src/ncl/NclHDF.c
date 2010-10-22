@@ -1913,12 +1913,12 @@ void* data;
 
 static NhlErrorTypes HDFAddDim
 #if	NhlNeedProto
-(void* therec, NclQuark thedim, int size,int is_unlimited)
+(void* therec, NclQuark thedim, ng_size_t size,int is_unlimited)
 #else
 (therec, thedim, size)
 void* therec;
 NclQuark thedim;
-int size;
+ng_size_t size;
 int is_unlimited;
 #endif
 {

@@ -340,7 +340,7 @@ typedef NhlErrorTypes (*NclAddDimFunc) (
 #if	NhlNeedProto
 void *,
 NclQuark,
-int,
+ng_size_t,
 int
 #endif
 );
@@ -349,7 +349,7 @@ typedef NhlErrorTypes (*NclAddChunkDimFunc) (
 #if	NhlNeedProto
 void *,
 NclQuark,
-int,
+ng_size_t,
 int
 #endif
 );

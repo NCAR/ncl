@@ -9802,13 +9802,13 @@ NhlErrorTypes _Ncl1dtond
 			0
 		));
 	} else { /* (sz > tmp_md->multidval.totalelements)&&!(sz%tmp_md->multidval.totalelements)) */
-	  printf("size of out_val = %ld\n", sz*tmp_md->multidval.type->type_class.size);
+		/*printf("size of out_val = %ld\n", sz*tmp_md->multidval.type->type_class.size);*/
 		out_val = (void*)NclMalloc(sz*tmp_md->multidval.type->type_class.size);
-		printf("sz = %ld ndims = %ld\n", sz, ndims);
+		/*printf("sz = %ld ndims = %ld\n", sz, ndims);*/
 		for(i = 0; i < (ng_size_t)sz/tmp_md->multidval.totalelements; i++) {
-		  printf("i = %ld\n", i);
-		  printf("tmp_md->multidval.totalsize = %ld\n", tmp_md->multidval.totalsize);
-		  printf("i*tmp_md->multidval.totalsize = %ld\n", i*tmp_md->multidval.totalsize);
+			/*printf("i = %ld\n", i);
+			  printf("tmp_md->multidval.totalsize = %ld\n", tmp_md->multidval.totalsize);
+			  printf("i*tmp_md->multidval.totalsize = %ld\n", i*tmp_md->multidval.totalsize);*/
 			memcpy(&(((char*)out_val)[i*tmp_md->multidval.totalsize]),
 				tmp_md->multidval.val,
 				tmp_md->multidval.totalsize);
@@ -17061,6 +17061,10 @@ NhlErrorTypes _NclIFileDimDef
 	NclFile thefile;
 	NhlErrorTypes ret=NhlNOERROR;
 	NhlErrorTypes ret0 = NhlNOERROR;
+	NclStackEntry data;
+	NclBasicDataTypes data_type;
+	NclMultiDValData    tmp_md = NULL;
+	ng_size_t missing_val;
 
         thefile_id = (obj*)NclGetArgValue(
                         0,
@@ -17093,22 +17097,68 @@ NhlErrorTypes _NclIFileDimDef
 		}
 	}
 
-        dimsizes = (ng_size_t*)NclGetArgValue(
-                        2,
-                        4,
-                        NULL,
-                        &tmp_dimsize,
-                        &tmp_missing,
-                        &tmp_has_missing,
-                        NULL,
-                        0);
-
-	if(tmp_dimsize != dimsize) {
+	data = _NclGetArg(2, 4, DONT_CARE);
+	switch (data.kind) {
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var, NULL, NULL);
+		break;
+		
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData) data.u.data_obj;
+		break;
+	default:
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
 		return(NhlFATAL);
-	} else if(tmp_has_missing) {
-		for(i = 0; i < dimsize; i++) {
-			if(dimsizes[i] == tmp_missing.intval)  {
-				return(NhlFATAL);
+	}
+	if (tmp_md == NULL) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+		return NhlFATAL;
+	}
+
+	dimsizes = (ng_size_t *) NclMalloc(tmp_md->multidval.dim_sizes[0] * sizeof(ng_size_t));
+
+	switch (tmp_md->multidval.data_type) {
+	case NCL_byte:
+		missing_val = (ng_size_t) tmp_md->multidval.missing_value.value.byteval;
+		for (i = 0; i< tmp_md->multidval.dim_sizes[0]; i++)
+			dimsizes[i]  = (ng_size_t)((byte *) tmp_md->multidval.val)[i];
+		break;
+	case NCL_int8:
+		missing_val = (ng_size_t) tmp_md->multidval.missing_value.value.int8val;
+		for (i = 0; i< tmp_md->multidval.dim_sizes[0]; i++)
+			dimsizes[i]  = (ng_size_t)((char *) tmp_md->multidval.val)[i];
+		break;
+	case NCL_short:
+		missing_val = (ng_size_t) tmp_md->multidval.missing_value.value.shortval;
+		for (i = 0; i< tmp_md->multidval.dim_sizes[0]; i++)
+			dimsizes[i]  = (ng_size_t)((short *) tmp_md->multidval.val)[i];
+		break;
+	case NCL_int:
+		missing_val = (ng_size_t) tmp_md->multidval.missing_value.value.intval;
+		for (i = 0; i< tmp_md->multidval.dim_sizes[0]; i++)
+			dimsizes[i]  = (ng_size_t)((int *) tmp_md->multidval.val)[i];
+		break;
+	case NCL_long:
+		missing_val = (ng_size_t) tmp_md->multidval.missing_value.value.longval;
+		for (i = 0; i< tmp_md->multidval.dim_sizes[0]; i++)
+			dimsizes[i]  = (ng_size_t)((long *) tmp_md->multidval.val)[i];
+		break;
+	case NCL_int64:
+		missing_val = (ng_size_t) tmp_md->multidval.missing_value.value.int64val;
+		for (i = 0; i< tmp_md->multidval.dim_sizes[0]; i++)
+			dimsizes[i]  = (ng_size_t)((long long *) tmp_md->multidval.val)[i];
+		break;
+	default:
+		NhlPError(NhlFATAL, NhlEUNKNOWN,
+			  "filedimdef: invalid type passed for number of elements parameter, can't continue");
+		return NhlFATAL;
+	}
+	if (tmp_md->multidval.missing_value.has_missing) {
+		for (i = 0; i< tmp_md->multidval.dim_sizes[0]; i++) {
+			if (dimsizes[i] == missing_val) {
+				NhlPError(NhlFATAL, NhlEUNKNOWN,
+					  "filedimdef: dimension size array cannot contain missing values");
+				return NhlFATAL;
 			}
 		}
 	}
