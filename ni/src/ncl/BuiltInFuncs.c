@@ -10109,7 +10109,7 @@ NhlErrorTypes _Ncldim_product_n
 	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
 	  nd       = tmp_md->multidval.n_dims-ndims;
-	  dimsizes = NclMalloc(nd * sizeof(int));
+	  dimsizes = NclMalloc(nd * sizeof(ng_size_t));
 	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -10122,7 +10122,7 @@ NhlErrorTypes _Ncldim_product_n
 	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
 	  }
 	} else {
-	  dimsizes = NclMalloc(sizeof(int));
+	  dimsizes = NclMalloc(sizeof(ng_size_t));
 	  *dimsizes = 1;
 	  nd = 1;
 	  m  = tmp_md->multidval.dim_sizes[dims[0]];
@@ -11398,7 +11398,7 @@ NhlErrorTypes _Ncldim_avg_n
 	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
 	  nd       = tmp_md->multidval.n_dims-ndims;
-	  dimsizes = NclMalloc(nd * sizeof(int));
+	  dimsizes = NclMalloc(nd * sizeof(ng_size_t));
 	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -11411,7 +11411,7 @@ NhlErrorTypes _Ncldim_avg_n
 	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
 	  }
 	} else {
-	  dimsizes = NclMalloc(sizeof(int));
+	  dimsizes = NclMalloc(sizeof(ng_size_t));
 	  *dimsizes = 1;
 	  nd = 1;
 	  m  = tmp_md->multidval.dim_sizes[dims[0]];
@@ -11803,7 +11803,7 @@ NhlErrorTypes _NclIdim_variance_n
 	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
 	  nd       = tmp_md->multidval.n_dims-ndims;
-	  dimsizes = NclMalloc(nd * sizeof(int));
+	  dimsizes = NclMalloc(nd * sizeof(ng_size_t));
 	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -11816,7 +11816,7 @@ NhlErrorTypes _NclIdim_variance_n
 	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
 	  }
 	} else {
-	  dimsizes = NclMalloc(sizeof(int));
+	  dimsizes = NclMalloc(sizeof(ng_size_t));
 	  *dimsizes = 1;
 	  nd = 1;
 	  m  = tmp_md->multidval.dim_sizes[dims[0]];
@@ -12400,7 +12400,7 @@ NhlErrorTypes _NclIdim_stddev_n
 	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
 	  nd       = tmp_md->multidval.n_dims-ndims;
-	  dimsizes = NclMalloc(nd * sizeof(int));
+	  dimsizes = NclMalloc(nd * sizeof(ng_size_t));
 	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -12413,7 +12413,7 @@ NhlErrorTypes _NclIdim_stddev_n
 	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
 	  }
 	} else {
-	  dimsizes = NclMalloc(sizeof(int));
+	  dimsizes = NclMalloc(sizeof(ng_size_t));
 	  *dimsizes = 1;
 	  nd = 1;
 	  m  = tmp_md->multidval.dim_sizes[dims[0]];
