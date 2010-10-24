@@ -10688,6 +10688,7 @@ NhlErrorTypes _Ncldim_cumsum
 					memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),sz);
 				}
 				if (j < m) {
+					int goffset;
 					goffset = dim_offset + j * sz;
 					memcpy((char*)out_val + goffset,(char*)(tmp_md->multidval.val) + goffset,sz);
 				}
@@ -10904,6 +10905,7 @@ NhlErrorTypes _Ncldim_cumsum_n
 			 &(tmp_md->multidval.missing_value.value),sz);
 		}
 		if (k < m) {
+		  int goffset;
 		  goffset = dim_offset + (nr*k)*sz;
 		  memcpy((char*)out_val + goffset,
 			 (char*)(tmp_md->multidval.val) + goffset,sz);
@@ -16294,21 +16296,21 @@ NhlErrorTypes _NclIgaus
 {
         void *tmp_nlat;
 	ng_size_t *nlat, dsizes_nlat[1];
-	NclBasicDataTypes type_nlat, ret_type;
+	NclBasicDataTypes type_nlat;
 	int has_missing;
 	NclScalar missing;
 	ng_size_t dimsizes[2];
-	ng_size_t nl;
+	int nl, lwork=0;
 	double *theta;
 	double *wts;
-	ng_size_t i, lwork= 0;
+	ng_size_t i;
 	double *work = NULL;
 	int ierror;
 	double rtod = (double)180.0/(double)3.14159265358979323846;
 	double *output;
 	NclScalar output_missing;
 	logical ret_missing = False;
-
+	extern void NGCALLF(gaqdncl,GAQDNCL)(int *,double *,double *,double *,int *,int *);
 
 	tmp_nlat = (void*)NclGetArgValue( 0, 1, NULL, dsizes_nlat, &missing, &has_missing, &type_nlat,DONT_CARE);
 
@@ -16319,9 +16321,8 @@ NhlErrorTypes _NclIgaus
 	if(nlat == NULL) 
 	  return(NhlFATAL);
 
-	if(has_missing &&
-	   ((type_nlat==NCL_int)&&(*nlat==missing.intval) ||
-	    (type_nlat==NCL_long)&&(*nlat==missing.longval))) {
+	if(has_missing && ( ((type_nlat==NCL_int)&&(*nlat==missing.intval)) ||
+			    ((type_nlat==NCL_long)&&(*nlat==missing.longval)))) {
 	  ret_missing = True;
 	  NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: missing value in input cannot compute gaussian vals");
 	}
@@ -16350,7 +16351,7 @@ NhlErrorTypes _NclIgaus
 			 1);
 	  return(NhlWARNING);
 	}
-	nl= 2 * (*nlat) ;
+	nl= 2 * (int)(*nlat) ;
 	theta = (double*)NclMalloc(sizeof(double)*nl);
 	wts = (double*)NclMalloc(sizeof(double)*nl);
 	lwork = 4 * nl*(nl+1)+2;
@@ -16535,16 +16536,17 @@ NhlErrorTypes _NclIFileVarDimsizes
 	string fname;
 	NclScalar name_missing;
 	int name_has_missing;
-	ng_size_t dimsizes;
+	ng_size_t dimsizes, product_size;
+	ng_size_t ndims;
 	NclApiDataList *data = NULL;
 	NhlErrorTypes ret;
 	NclStackEntry val;
 	NclVar tmp_var;
-	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
+	void *dim_sizes;
 	int i;
 	NclMultiDValData tmp_md = NULL;
 	NclFile thefile;
-
+	NclBasicDataTypes return_type;
 
 
         val = _NclGetArg(0,2,DONT_CARE);
@@ -16602,12 +16604,44 @@ NhlErrorTypes _NclIFileVarDimsizes
 		data = _NclGetFileVarInfo(fname,*name);
 	}
 	if((data != NULL)&&(data->u.var->n_dims != 0)) {
-		for(i = 0; i < data->u.var->n_dims; i++) {
-		 	dim_sizes[i] = data->u.var->dim_info[i].dim_size;
+/*
+ * First loop through dimension sizes to see if we need to return
+ * ints or longs.
+ *
+ * The rules for when to return an int versus a long:
+ *    - On a 32-bit system, return ints.
+ *    - On a 64-bit system, return longs if any of the
+ *      individual dimension sizes are > INT32_MAX, or
+ *      if the product of the dimension sizes is > INT32_MAX.
+ */
+		ndims = data->u.var->n_dims;
+		return_type = NCL_int;
+#if !defined(NG32BIT)
+		i = 0;
+		product_size = 1;
+		while(i < ndims && (return_type == NCL_int)) {
+			product_size *= data->u.var->dim_info[i].dim_size;
+			if(data->u.var->dim_info[i].dim_size > INT32_MAX || 
+			   product_size > INT32_MAX) {
+			  return_type = NCL_long;
+			}
+			i++;
 		}
-
-		ng_size_t ndims = data->u.var->n_dims;
-		ret = NclReturnValue((void*)dim_sizes, 1, &ndims, NULL, ((NclTypeClass)nclTypeintClass)->type_class.data_type, 1);
+#endif
+		if(return_type == NCL_int) {
+		  dim_sizes = (void *) NclMalloc(sizeof(int) * ndims);
+		  for (i = 0; i < ndims; i++) {
+		    ((int*)dim_sizes)[i] = (int)data->u.var->dim_info[i].dim_size;
+		  }
+		}
+		else {
+		  dim_sizes = (void *) NclMalloc(sizeof(long) * ndims);
+		  for (i = 0; i < ndims; i++) {
+		    ((long*)dim_sizes)[i] = (long)data->u.var->dim_info[i].dim_size;
+		  }
+		}
+		ret = NclReturnValue(dim_sizes, 1, &ndims, NULL, return_type, 1);
+		free(dim_sizes);
 		_NclFreeApiDataList((void*)data);
 		return(ret);
 	} else {
@@ -16906,7 +16940,6 @@ NhlErrorTypes _NclIFileVarChunkDef
 ()
 #endif
 {
-	int dimsize;
 	NclScalar missing;
 	int has_missing;
 
@@ -16947,7 +16980,7 @@ NhlErrorTypes _NclIFileVarChunkDef
                         NULL,
                         0);
 	if(has_missing) {
-		for(i = 0; i < dimsize; i++) {
+		for(i = 0; i < n_dims; i++) {
 			if(varnames[i] == missing.stringval)  {
 				return(NhlFATAL);
 			}
@@ -16987,7 +17020,6 @@ NhlErrorTypes _NclIFileVarChunkCacheDef
 ()
 #endif
 {
-	ng_size_t dimsize;
 	NclScalar missing;
 	int has_missing;
 	int n_dims;
@@ -17032,7 +17064,7 @@ NhlErrorTypes _NclIFileVarChunkCacheDef
                         0);
 	/* dimsize is not initialized */
 	if(has_missing) {
-		for(i = 0; i < dimsize; i++) {
+		for(i = 0; i < n_dims; i++) {
 			if(varnames[i] == missing.stringval)  {
 				return(NhlFATAL);
 			}
@@ -17089,7 +17121,6 @@ NhlErrorTypes _NclIFileVarCompressLevelDef
 ()
 #endif
 {
-	int dimsize;
 	NclScalar missing;
 	int has_missing;
 	int n_dims;
@@ -17129,7 +17160,7 @@ NhlErrorTypes _NclIFileVarCompressLevelDef
                         NULL,
                         0);
 	if(has_missing) {
-		for(i = 0; i < dimsize; i++) {
+		for(i = 0; i < n_dims; i++) {
 			if(varnames[i] == missing.stringval)  {
 				return(NhlFATAL);
 			}
@@ -17187,7 +17218,6 @@ NhlErrorTypes _NclIFileDimDef
 	NhlErrorTypes ret=NhlNOERROR;
 	NhlErrorTypes ret0 = NhlNOERROR;
 	NclStackEntry data;
-	NclBasicDataTypes data_type;
 	NclMultiDValData    tmp_md = NULL;
 	ng_size_t missing_val;
 
@@ -18970,12 +19000,13 @@ NhlErrorTypes   _NclIGetFileDimsizes
     int *fid;
 
     /* dimensions */
-    ng_size_t dimsizes = 1;
-    ng_size_t *dim_sizes;
+    ng_size_t dimsizes = 1, ndims, product_size;
+    void *dim_sizes;
+    NclBasicDataTypes return_type;
 
     NhlErrorTypes   ret;
 
-    int i = 0;
+    ng_size_t i = 0;
     
 
     /* get file information */
@@ -18991,18 +19022,49 @@ NhlErrorTypes   _NclIGetFileDimsizes
     f = (NclFile) _NclGetObj((int) *fid);
 
     if (f != NULL) {
-        dim_sizes = (ng_size_t *) NclMalloc(sizeof(ng_size_t) * f->file.n_file_dims);
-        if (f->file.n_file_dims != 0) {
-            for (i = 0; i < f->file.n_file_dims; i++)
-                dim_sizes[i] = f->file.file_dim_info[i]->dim_size;
-
-            ng_size_t nfd = f->file.n_file_dims;
-            ret = NclReturnValue((void *) dim_sizes, 1, &nfd, NULL, NCL_long, 1);
-            free(dim_sizes);
-        	return ret;
+/*
+ * First loop through dimension sizes to see if we need to return
+ * ints or longs.
+ *
+ * The rules for when to return an int versus a long:
+ *    - On a 32-bit system, return ints.
+ *    - On a 64-bit system, return longs if any of the
+ *      individual dimension sizes are > INT32_MAX, or
+ *      if the product of the dimension sizes is > INT32_MAX.
+ */
+	ndims = f->file.n_file_dims;
+        if (ndims != 0) {
+	  return_type = NCL_int;
+#if !defined(NG32BIT)
+	  i = 0;
+	  product_size = 1;
+	  while(i < ndims && (return_type == NCL_int)) {
+	    product_size *= f->file.file_dim_info[i]->dim_size;
+	    if(f->file.file_dim_info[i]->dim_size > INT32_MAX || 
+	       product_size > INT32_MAX) {
+	      return_type = NCL_long;
+	    }
+	    i++;
+	  }
+#endif
+	  if(return_type == NCL_int) {
+	    dim_sizes = (void *) NclMalloc(sizeof(int) * ndims);
+	    for (i = 0; i < ndims; i++) {
+	      ((int*)dim_sizes)[i] = (int)f->file.file_dim_info[i]->dim_size;
+	    }
+	  }
+	  else {
+	    dim_sizes = (void *) NclMalloc(sizeof(long) * ndims);
+	    for (i = 0; i < ndims; i++) {
+	      ((long*)dim_sizes)[i] = (long)f->file.file_dim_info[i]->dim_size;
+	    }
+	  }
+	  ret = NclReturnValue(dim_sizes, 1, &ndims, NULL, return_type, 1);
+	  free(dim_sizes);
+	  return ret;
         }
     }
-    NhlPError(NhlWARNING, NhlEUNKNOWN, " getfiledimsizes(): undefined file variable");
+    NhlPError(NhlWARNING, NhlEUNKNOWN, "getfiledimsizes: undefined file variable");
 
     dimsizes = 1;
     NclReturnValue(
@@ -19073,7 +19135,7 @@ NhlErrorTypes   _NclIVarIsUnlimited
         }
     }
     else {
-        NhlPError(NhlWARNING, NhlEUNKNOWN, " isunlimited(): undefined file variable");
+        NhlPError(NhlWARNING, NhlEUNKNOWN, "isunlimited: undefined file variable");
     }
 
     return NclReturnValue((void *) &isunlimited, 1, &dimsizes, NULL, NCL_logical, 1);
@@ -19117,7 +19179,7 @@ NhlErrorTypes   _NclIFileIsPresent
     /* logical array to return */
     file_exists = (logical *) NclMalloc((unsigned int) sizeof(logical) * sz);
     if (file_exists == (logical *) NULL) {
-        NhlPError(NhlFATAL, errno, " isfilepresent: memory allocation error");
+        NhlPError(NhlFATAL, errno, "isfilepresent: memory allocation error");
         return NhlFATAL;
     }
 
