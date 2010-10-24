@@ -2123,7 +2123,7 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(1);
 	dimsizes[0] = 1;
-	SetArgTemplate(args,0,"integer",1,dimsizes);nargs++;
+	SetArgTemplate(args,0,"numeric",1,dimsizes);nargs++;
 	NclRegisterFunc(_NclIgaus,args,"gaus",nargs);
 	nargs = 0;
 	args = NewArgs(1);

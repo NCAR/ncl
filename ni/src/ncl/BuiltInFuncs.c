@@ -9802,13 +9802,8 @@ NhlErrorTypes _Ncl1dtond
 			0
 		));
 	} else { /* (sz > tmp_md->multidval.totalelements)&&!(sz%tmp_md->multidval.totalelements)) */
-		/*printf("size of out_val = %ld\n", sz*tmp_md->multidval.type->type_class.size);*/
 		out_val = (void*)NclMalloc(sz*tmp_md->multidval.type->type_class.size);
-		/*printf("sz = %ld ndims = %ld\n", sz, ndims);*/
 		for(i = 0; i < (ng_size_t)sz/tmp_md->multidval.totalelements; i++) {
-			/*printf("i = %ld\n", i);
-			  printf("tmp_md->multidval.totalsize = %ld\n", tmp_md->multidval.totalsize);
-			  printf("i*tmp_md->multidval.totalsize = %ld\n", i*tmp_md->multidval.totalsize);*/
 			memcpy(&(((char*)out_val)[i*tmp_md->multidval.totalsize]),
 				tmp_md->multidval.val,
 				tmp_md->multidval.totalsize);
@@ -10397,7 +10392,7 @@ NhlErrorTypes _Ncldim_sum_n
 	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
 	  nd       = tmp_md->multidval.n_dims-ndims;
-	  dimsizes = NclMalloc(nd * sizeof(int));
+	  dimsizes = NclMalloc(nd * sizeof(ng_size_t));
 	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -10410,7 +10405,7 @@ NhlErrorTypes _Ncldim_sum_n
 	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
 	  }
 	} else {
-	  dimsizes = NclMalloc(sizeof(int));
+	  dimsizes = NclMalloc(sizeof(ng_size_t));
 	  *dimsizes = 1;
 	  nd = 1;
 	  m  = tmp_md->multidval.dim_sizes[dims[0]];
@@ -13000,7 +12995,7 @@ NhlErrorTypes _Nclind
  *    - On a 32-bit system, return ints.
  *    - On a 64-bit system, return longs if any indexes > INT32_MAX.
  *
- * There are four main sections below, handling four possible ways
+ * There are six main sections below, handling six possible ways
  * of returning indexes:
  *
  *   - The input array has a _FillValue, count>0, and returning ints.
@@ -13021,7 +13016,7 @@ NhlErrorTypes _Nclind
 		  if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval)) {
 		    count++;
 #if !defined(NG32BIT)
-		    if(return_int == True && i > INT32_MAX) {
+		    if(return_int && i > INT32_MAX) {
 		      return_int = False;
 		    }
 #endif
@@ -13086,7 +13081,7 @@ NhlErrorTypes _Nclind
 		  if(tmp[i]) {
 		    count++;
 #if !defined(NG32BIT)
-		    if(return_int == True && i > INT32_MAX) {
+		    if(return_int && i > INT32_MAX) {
 		      return_int = False;
 		    }
 #endif
@@ -14301,9 +14296,11 @@ NhlErrorTypes _Nclminind
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	ng_size_t dimsizes = 1;
-	void *tmp;
+	void *tmp, *out_val;
 	logical result;
 	ng_size_t i, j;
+	NclBasicDataTypes ret_type;
+	int ret_size;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
@@ -14321,21 +14318,46 @@ NhlErrorTypes _Nclminind
 		return(NhlFATAL);
 
 
+	ret_type = NCL_int;
+	ret_size = ((NclTypeClass)nclTypeintClass)->type_class.size;
+/*
+ * Potential missing values.
+ */
 	if(tmp_md->multidval.missing_value.has_missing) {
-		tmp= tmp_md->multidval.val;
 		i = 0;
 		while((i < tmp_md->multidval.totalelements)&&(_NclIsMissing(tmp_md,&(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]))))
 			i++;
 		if(i == tmp_md->multidval.totalelements) {
-			return(NclReturnValue(
+/*
+ * Array is all missing.
+ */
+#if !defined(NG32BIT)
+		  if(i > INT32_MAX) ret_type = NCL_long;
+#endif
+		  if(ret_type == NCL_int) {
+		    return(NclReturnValue(
 				&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
 				1,
 				&dimsizes,
 				&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
-				NCL_int,
+				ret_type,
 				1
-			));
+			  ));
+		  }
+		  else {
+		    return(NclReturnValue(
+				&((NclTypeClass)nclTypelongClass)->type_class.default_mis,
+				1,
+				&dimsizes,
+				&((NclTypeClass)nclTypelongClass)->type_class.default_mis,
+				NCL_long,
+				1
+			  ));
+		  }
 		}
+/*
+ * Array contains some non-missing values.
+ */
 		tmp= &(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]);
 		j = i;
 		i++;
@@ -14347,15 +14369,31 @@ NhlErrorTypes _Nclminind
 				result = 0;
 			}
 		}
+#if !defined(NG32BIT)
+		if(j > INT32_MAX) {
+		  ret_type = NCL_long;
+		  ret_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
+		}
+#endif
+		out_val = (void*)NclMalloc(ret_size);
+		if(ret_type == NCL_int) {
+		  *(int*)out_val = (int)j;
+		}
+		else {
+		  *(long*)out_val = (long)j;
+		}
 		return(NclReturnValue(
-			&j,
+			out_val,
 			1,
 			&dimsizes,
 			NULL,
-			NCL_int,
+			ret_type,
 			1
 		));
 	} else {
+/*
+ * No missing values possible in array.
+ */
 		tmp= tmp_md->multidval.val;
 		j = 0;
 		for(i = 1; i < tmp_md->multidval.totalelements; i++) {
@@ -14366,12 +14404,25 @@ NhlErrorTypes _Nclminind
 				result = 0;
 			}
 		}
+#if !defined(NG32BIT)
+		if(j > INT32_MAX) {
+		  ret_type = NCL_long;
+		  ret_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
+		}
+#endif
+		out_val = (void*)NclMalloc(ret_size);
+		if(ret_type == NCL_int) {
+		  *(int*)out_val = (int)j;
+		}
+		else {
+		  *(long*)out_val = (long)j;
+		}
 		return(NclReturnValue(
-			&j,
+			out_val,
 			1,
 			&dimsizes,
 			NULL,
-			NCL_int,
+			ret_type,
 			1
 		));
 	}
@@ -14387,9 +14438,11 @@ NhlErrorTypes _Nclmaxind
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	ng_size_t dimsizes = 1;
-	void *tmp;
+	void *tmp, *out_val;
 	logical result;
-	ng_size_t  i,j;
+	ng_size_t i, j;
+	NclBasicDataTypes ret_type;
+	int ret_size;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
@@ -14407,20 +14460,46 @@ NhlErrorTypes _Nclmaxind
 		return(NhlFATAL);
 
 
+	ret_type = NCL_int;
+	ret_size = ((NclTypeClass)nclTypeintClass)->type_class.size;
+/*
+ * Potential missing values.
+ */
 	if(tmp_md->multidval.missing_value.has_missing) {
 		i = 0;
-		while((i < tmp_md->multidval.totalelements)&&_NclIsMissing(tmp_md,&(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size])))
+		while((i < tmp_md->multidval.totalelements)&&(_NclIsMissing(tmp_md,&(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]))))
 			i++;
 		if(i == tmp_md->multidval.totalelements) {
+/*
+ * Array is all missing.
+ */
+#if !defined(NG32BIT)
+		  if(i > INT32_MAX) ret_type = NCL_long;
+#endif
+		  if(ret_type == NCL_int) {
 			return(NclReturnValue(
 				&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
 				1,
 				&dimsizes,
 				&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
-				NCL_int,
+				ret_type,
 				1
 			));
+		  }
+		  else {
+		    return(NclReturnValue(
+				&((NclTypeClass)nclTypelongClass)->type_class.default_mis,
+				1,
+				&dimsizes,
+				&((NclTypeClass)nclTypelongClass)->type_class.default_mis,
+				NCL_long,
+				1
+			  ));
+		  }
 		}
+/*
+ * Array contains some non-missing values.
+ */
 		tmp= &(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]);
 		j = i;
 		i++;
@@ -14432,15 +14511,31 @@ NhlErrorTypes _Nclmaxind
 				result = 0;
 			}
 		}
+#if !defined(NG32BIT)
+		if(j > INT32_MAX) {
+		  ret_type = NCL_long;
+		  ret_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
+		}
+#endif
+		out_val = (void*)NclMalloc(ret_size);
+		if(ret_type == NCL_int) {
+		  *(int*)out_val = (int)j;
+		}
+		else {
+		  *(long*)out_val = (long)j;
+		}
 		return(NclReturnValue(
-			&j,
+		        out_val,
 			1,
 			&dimsizes,
 			NULL,
-			NCL_int,
+			ret_type,
 			1
 		));
 	} else {
+/*
+ * No missing values possible in array.
+ */
 		tmp= tmp_md->multidval.val;
 		j = 0;
 		for(i = 1; i < tmp_md->multidval.totalelements; i++) {
@@ -14451,12 +14546,25 @@ NhlErrorTypes _Nclmaxind
 				result = 0;
 			}
 		}
+#if !defined(NG32BIT)
+		if(j > INT32_MAX) {
+		  ret_type = NCL_long;
+		  ret_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
+		}
+#endif
+		out_val = (void*)NclMalloc(ret_size);
+		if(ret_type == NCL_int) {
+		  *(int*)out_val = (int)j;
+		}
+		else {
+		  *(long*)out_val = (long)j;
+		}
 		return(NclReturnValue(
-			&j,
+			out_val,
 			1,
 			&dimsizes,
 			NULL,
-			NCL_int,
+			ret_type,
 			1
 		));
 	}
@@ -14641,7 +14749,7 @@ NhlErrorTypes _Ncldim_min_n
 	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
 	  nd       = tmp_md->multidval.n_dims-ndims;
-	  dimsizes = NclMalloc(nd * sizeof(int));
+	  dimsizes = NclMalloc(nd * sizeof(ng_size_t));
 	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -14654,7 +14762,7 @@ NhlErrorTypes _Ncldim_min_n
 	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
 	  }
 	} else {
-	  dimsizes = NclMalloc(sizeof(int));
+	  dimsizes = NclMalloc(sizeof(ng_size_t));
 	  *dimsizes = 1;
 	  nd = 1;
 	  m  = tmp_md->multidval.dim_sizes[dims[0]];
@@ -14947,7 +15055,7 @@ NhlErrorTypes _Ncldim_max_n
 	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
 	  nd       = tmp_md->multidval.n_dims-ndims;
-	  dimsizes = NclMalloc(nd * sizeof(int));
+	  dimsizes = NclMalloc(nd * sizeof(ng_size_t));
 	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -14960,7 +15068,7 @@ NhlErrorTypes _Ncldim_max_n
 	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
 	  }
 	} else {
-	  dimsizes = NclMalloc(sizeof(int));
+	  dimsizes = NclMalloc(sizeof(ng_size_t));
 	  *dimsizes = 1;
 	  nd = 1;
 	  m  = tmp_md->multidval.dim_sizes[dims[0]];
@@ -16184,47 +16292,64 @@ NhlErrorTypes _NclIgaus
 ()
 #endif
 {
-	int * nlat;
+        void *tmp_nlat;
+	ng_size_t *nlat, dsizes_nlat[1];
+	NclBasicDataTypes type_nlat, ret_type;
 	int has_missing;
 	NclScalar missing;
 	ng_size_t dimsizes[2];
-	int nl;
+	ng_size_t nl;
 	double *theta;
 	double *wts;
-	int lwork= 0;
+	ng_size_t i, lwork= 0;
 	double *work = NULL;
-	int i,ierror;
-	double *output;
+	int ierror;
 	double rtod = (double)180.0/(double)3.14159265358979323846;
+	double *output;
+	NclScalar output_missing;
+	logical ret_missing = False;
 
 
+	tmp_nlat = (void*)NclGetArgValue( 0, 1, NULL, dsizes_nlat, &missing, &has_missing, &type_nlat,DONT_CARE);
 
-	nlat = (int*)NclGetArgValue( 0, 1, NULL, NULL, &missing, &has_missing, NULL,DONT_CARE);
+/*
+ * Check the input dimensions and compute the total size of the input array.
+ */
+	nlat = get_dimensions(tmp_nlat,dsizes_nlat[0],type_nlat,"gaus");
+	if(nlat == NULL) 
+	  return(NhlFATAL);
 
-	if(has_missing&&(*nlat==missing.intval)) {
-		dimsizes[0]= 1;
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: missing value in input cannot compute gaussian vals");
-		NclReturnValue(
-			nlat,
-			1,
-			dimsizes,
-			&missing,
-			NCL_int,
-			1);
-		return(NhlWARNING);
-	}  else if(*nlat <= 0) {
-		dimsizes[0]= 1;
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: number of latitudes must be positive");
-		NclReturnValue(
-			nlat,
-			1,
-			dimsizes,
-			&missing,
-			NCL_int,
-			1);
-		return(NhlWARNING);
+	if(has_missing &&
+	   ((type_nlat==NCL_int)&&(*nlat==missing.intval) ||
+	    (type_nlat==NCL_long)&&(*nlat==missing.longval))) {
+	  ret_missing = True;
+	  NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: missing value in input cannot compute gaussian vals");
 	}
-	
+	else if(*nlat <= 0) {
+	  ret_missing = True;
+	  NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: number of latitudes must be positive");
+	} 
+	else if(*nlat > INT32_MAX) {
+/*
+ * The Fortran gaus only accepts integers for now, so can't have an nlat > INT32_MAX.
+ */
+	  ret_missing = True;
+	  NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: number of latitudes can't be > INT32_MAX");
+	}
+	if(ret_missing) {
+	  dimsizes[0] = 1;
+	  output = (double*)NclMalloc(sizeof(double));
+	  output_missing.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+	  *(double*)output = output_missing.doubleval;
+	  NclReturnValue(
+			 output,
+			 1,
+			 dimsizes,
+			 &output_missing,
+			 NCL_double,
+			 1);
+	  return(NhlWARNING);
+	}
 	nl= 2 * (*nlat) ;
 	theta = (double*)NclMalloc(sizeof(double)*nl);
 	wts = (double*)NclMalloc(sizeof(double)*nl);
