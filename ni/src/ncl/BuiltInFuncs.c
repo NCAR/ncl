@@ -10654,8 +10654,8 @@ NhlErrorTypes _Ncldim_cumsum
 
 	if(tmp_md->multidval.missing_value.has_missing) {
 		for(i = 0; i < n ; i++) {
-			int goffset;
-			int dim_offset = i * m * sz;
+			ng_size_t goffset;
+			ng_size_t dim_offset = i * m * sz;
 			int missing_flag = 0;
 			_Ncleq(tmp_md->multidval.type,tmp,((char*)tmp_md->multidval.val) + dim_offset,
 			       &(tmp_md->multidval.missing_value.value),NULL,NULL,m,1);
@@ -10669,8 +10669,8 @@ NhlErrorTypes _Ncldim_cumsum
 					missing_flag = 1;
 				}
 				for(j = 1; j < m; j++) {
-					int last_offset = dim_offset + (j-1) * sz;
-					int offset = dim_offset + j * sz;
+					ng_size_t last_offset = dim_offset + (j-1) * sz;
+					ng_size_t offset = dim_offset + j * sz;
 					if (missing_flag || tmp[j]) {
 						missing_flag = 1;
 			 			memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),sz);
@@ -10684,16 +10684,15 @@ NhlErrorTypes _Ncldim_cumsum
 				break;
 			case 1: /* missing values are skipped */
 				for (j = 0; j < m && tmp[j]; j++) {
-					int offset = dim_offset + j * sz;
+					ng_size_t offset = dim_offset + j * sz;
 					memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),sz);
 				}
 				if (j < m) {
-					int goffset;
 					goffset = dim_offset + j * sz;
 					memcpy((char*)out_val + goffset,(char*)(tmp_md->multidval.val) + goffset,sz);
 				}
 				for(j++; j < m; j++) {
-					int offset = dim_offset + j * sz;
+					ng_size_t offset = dim_offset + j * sz;
 					if (tmp[j]) {
 						memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),sz);
 					}
@@ -10707,7 +10706,7 @@ NhlErrorTypes _Ncldim_cumsum
 				break;
 			case 2: /* missing values treated as 0 */
 				for (j = 0; j < m && tmp[j]; j++) {
-					int offset = dim_offset + j * sz;
+					ng_size_t offset = dim_offset + j * sz;
 					memset((char*)out_val + offset,0,sz);
 				}
 				if (j == 0) {
@@ -10715,8 +10714,8 @@ NhlErrorTypes _Ncldim_cumsum
 					j++;
 				}
 				for(; j < m; j++) {
-					int last_offset = dim_offset + (j-1) * sz;
-					int offset = dim_offset + j * sz;
+					ng_size_t last_offset = dim_offset + (j-1) * sz;
+					ng_size_t offset = dim_offset + j * sz;
 					if (tmp[j]) {
 						memcpy((char*)out_val + offset,(char*)out_val + last_offset,sz);
 					}
@@ -10730,11 +10729,11 @@ NhlErrorTypes _Ncldim_cumsum
 		}
 	} else {
 		for(i = 0; i < n ; i++) {
-			int dim_offset = i * m * sz;
+			ng_size_t dim_offset = i * m * sz;
 			memcpy((char*)out_val + dim_offset,(char*)tmp_md->multidval.val + dim_offset,sz);
 			for(j = 1; j < m; j++) {
-				int last_offset = dim_offset + (j-1) * sz;
-				int offset = dim_offset + j * sz;
+				ng_size_t last_offset = dim_offset + (j-1) * sz;
+				ng_size_t offset = dim_offset + j * sz;
 				_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
 					 (char*)(tmp_md->multidval.val) + offset,(char*)out_val + last_offset,NULL,NULL,1,1);
 			}
@@ -10864,9 +10863,9 @@ NhlErrorTypes _Ncldim_cumsum_n
  */
 	  for(i = 0; i < nl ; i++) {
 	    for(j = 0; j < nr ; j++) {
-	      int goffset;
+	      ng_size_t goffset;
 	      int missing_flag = 0;
-	      int dim_offset = ((i*nr*m)+j)*sz;
+	      ng_size_t dim_offset = ((i*nr*m)+j)*sz;
 	      for(k = 0; k < m; k++) {
 		goffset = dim_offset + (nr*k)*sz;
 		_Ncleq(tmp_md->multidval.type,&tmp[k],
@@ -10883,8 +10882,8 @@ NhlErrorTypes _Ncldim_cumsum_n
 		  missing_flag = 1;
 		}
 		for(k = 1; k < m; k++) {
-		  int last_offset = dim_offset + (nr*(k-1))*sz;
-		  int offset = dim_offset + (nr*k)*sz;
+		  ng_size_t last_offset = dim_offset + (nr*(k-1))*sz;
+		  ng_size_t offset = dim_offset + (nr*k)*sz;
 		  if (missing_flag || tmp[k]) {
 		    missing_flag = 1;
 		    memcpy((char*)out_val + offset,
@@ -10900,18 +10899,17 @@ NhlErrorTypes _Ncldim_cumsum_n
 		break;
 	      case 1: /* missing values are skipped */
 		for (k = 0; k < m && tmp[k]; k++) {
-		  int offset = dim_offset + (nr*k)*sz;
+		  ng_size_t offset = dim_offset + (nr*k)*sz;
 		  memcpy((char*)out_val + offset,
 			 &(tmp_md->multidval.missing_value.value),sz);
 		}
 		if (k < m) {
-		  int goffset;
 		  goffset = dim_offset + (nr*k)*sz;
 		  memcpy((char*)out_val + goffset,
 			 (char*)(tmp_md->multidval.val) + goffset,sz);
 		}
 		for(k++; k < m; k++) {
-		  int offset = dim_offset + (nr*k)*sz;
+		  ng_size_t offset = dim_offset + (nr*k)*sz;
 		  if (tmp[k]) {
 		    memcpy((char*)out_val + offset,
 			   &(tmp_md->multidval.missing_value.value),sz);
@@ -10927,7 +10925,7 @@ NhlErrorTypes _Ncldim_cumsum_n
 		break;
 	      case 2: /* missing values treated as 0 */
 		for (k = 0; k < m && tmp[k]; k++) {
-		  int offset = dim_offset + (nr*k)*sz;
+		  ng_size_t offset = dim_offset + (nr*k)*sz;
 		  memset((char*)out_val + offset,0,sz);
 		}
 		if (k == 0) {
@@ -10936,8 +10934,8 @@ NhlErrorTypes _Ncldim_cumsum_n
 		  k++;
 		}
 		for(; k < m; k++) {
-		  int last_offset = dim_offset + (nr*(k-1))*sz;
-		  int offset = dim_offset + (k*nr)*sz;
+		  ng_size_t last_offset = dim_offset + (nr*(k-1))*sz;
+		  ng_size_t offset = dim_offset + (k*nr)*sz;
 		  if (tmp[k]) {
 		    memcpy((char*)out_val + offset,
 			   (char*)out_val + last_offset,sz);
@@ -10955,12 +10953,12 @@ NhlErrorTypes _Ncldim_cumsum_n
 	} else {
 	  for(i = 0; i < nl ; i++) {
 	    for(j = 0; j < nr ; j++) {
-	      int dim_offset = ((i*nr*m)+j)*sz;
+	      ng_size_t dim_offset = ((i*nr*m)+j)*sz;
 	      memcpy((char*)out_val + dim_offset,
 		     (char*)tmp_md->multidval.val + dim_offset,sz);
 	      for(k = 1; k < m; k++) {
-		int last_offset = dim_offset + (nr*(k-1))*sz;
-		int offset = dim_offset + (nr*k)*sz;
+		ng_size_t last_offset = dim_offset + (nr*(k-1))*sz;
+		ng_size_t offset = dim_offset + (nr*k)*sz;
 		_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
 			 (char*)(tmp_md->multidval.val) + offset,
 			 (char*)out_val + last_offset,NULL,NULL,1,1);
@@ -10997,7 +10995,7 @@ NhlErrorTypes _Nclcumsum
 	logical *tmp = NULL;
 	int missing_flag = 0;
     ng_size_t  i;
-	int goffset;
+	ng_size_t goffset;
 
 	data0 = _NclGetArg(0,2,DONT_CARE);
 	switch(data0.kind) {
@@ -11046,8 +11044,8 @@ NhlErrorTypes _Nclcumsum
 				missing_flag = 1;
 			}
 			for(i = 1; i < tmp_md->multidval.totalelements; i++) {
-				int last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
-				int offset = i * tmp_md->multidval.type->type_class.size;
+				ng_size_t last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
+				ng_size_t offset = i * tmp_md->multidval.type->type_class.size;
 				if (missing_flag || tmp[i]) {
 					missing_flag = 1;
 					memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),
@@ -11063,7 +11061,7 @@ NhlErrorTypes _Nclcumsum
 		case 1: /* missing values are skipped */
 			i = 0;
 			while (tmp[i]) {
-				int offset = i * tmp_md->multidval.type->type_class.size;
+				ng_size_t offset = i * tmp_md->multidval.type->type_class.size;
 				memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),
 				       tmp_md->multidval.type->type_class.size);
 				i++;
@@ -11073,7 +11071,7 @@ NhlErrorTypes _Nclcumsum
 				memcpy((char*)out_val + goffset,(char*)(tmp_md->multidval.val) + goffset,tmp_md->multidval.type->type_class.size);
 			}
 			for(i++; i < tmp_md->multidval.totalelements; i++) {
-				int offset = i * tmp_md->multidval.type->type_class.size;
+				ng_size_t offset = i * tmp_md->multidval.type->type_class.size;
 				if (tmp[i]) {
 					memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),
 					       tmp_md->multidval.type->type_class.size);
@@ -11089,7 +11087,7 @@ NhlErrorTypes _Nclcumsum
 		case 2: /* missing values treated as 0 */
 			i = 0;
 			while (tmp[i]) {
-				int offset = i * tmp_md->multidval.type->type_class.size;
+				ng_size_t offset = i * tmp_md->multidval.type->type_class.size;
 				memset((char*)out_val + offset,0,tmp_md->multidval.type->type_class.size);
 				i++;
 			}
@@ -11098,8 +11096,8 @@ NhlErrorTypes _Nclcumsum
 				i++;
 			}
 			for(; i < tmp_md->multidval.totalelements; i++) {
-				int last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
-				int offset = i * tmp_md->multidval.type->type_class.size;
+				ng_size_t last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
+				ng_size_t offset = i * tmp_md->multidval.type->type_class.size;
 				if (tmp[i]) {
 					memcpy((char*)out_val + offset,(char*)out_val + last_offset,
 					       tmp_md->multidval.type->type_class.size);
@@ -11114,8 +11112,8 @@ NhlErrorTypes _Nclcumsum
 	} else {
 		memcpy(out_val,tmp_md->multidval.val,tmp_md->multidval.type->type_class.size);
 		for(i = 1; i < tmp_md->multidval.totalelements; i++) {
-			int last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
-			int offset = i * tmp_md->multidval.type->type_class.size;
+			ng_size_t last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
+			ng_size_t offset = i * tmp_md->multidval.type->type_class.size;
 			_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,(char*)(tmp_md->multidval.val) + offset,(char*)out_val + last_offset,NULL,NULL,1,1);
 		}
 	}
@@ -14392,7 +14390,11 @@ NhlErrorTypes _Nclminind
 			ret_type,
 			1
 		));
-	} else {
+	}
+	else {
+/*
+ * No missing values possible in array.
+ */
 /*
  * No missing values possible in array.
  */
