@@ -317,6 +317,10 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * Convert sspec to character string.
  */
+  if(sspec == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: no 'units' attribute provided");
+    return(NhlFATAL);
+  }
   cspec = NrmQuarkToString(*sspec);
 
 /*
