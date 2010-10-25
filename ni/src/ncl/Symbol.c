@@ -482,7 +482,7 @@ void *NewArgs
 int n;
 #endif
 {
-	return((void*)NclMalloc(n * sizeof(NclArgTemplate)));
+	return((void*)NclCalloc(n, sizeof(NclArgTemplate)));
 }
 void SetArgTemplate
 #if NhlNeedProto

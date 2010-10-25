@@ -234,7 +234,7 @@ static struct _NclDataRec *MultiDVal_nclfile_ReadSection
 		if(!chckmiss) {
 			val[to] = ((int*)self_md->multidval.val)[from];
 		} else {
-			val[to] = (((ng_size_t*)self_md->multidval.val)[from] == missing->intval) ? missing->intval:((ng_size_t*)self_md->multidval.val)[from];
+			val[to] = (((int*)self_md->multidval.val)[from] == missing->intval) ? missing->intval:((int*)self_md->multidval.val)[from];
 		}
 		if(compare_sel[n_dims_input-1] <0) {
 			current_index[n_dims_input -1 ] += strider[n_dims_input-1];
@@ -577,7 +577,7 @@ static NhlErrorTypes MultiDVal_nclfile_md_WriteSection
 			to = to + (current_index[i] * multiplier[i]);
 		}
 		if(chckmiss) {
-			((ng_size_t*)target_md->multidval.val)[to] = 
+			((int*)target_md->multidval.val)[to] = 
 				((val[from] == value_md->multidval.missing_value.value.intval) ? 
 				target_md->multidval.missing_value.value.intval 
 				: val[from]);
@@ -586,7 +586,7 @@ static NhlErrorTypes MultiDVal_nclfile_md_WriteSection
 				_NclSetStatus((NclObj)_NclGetObj(*val),PERMANENT);
 			}
 		} else {
-			((ng_size_t*)target_md->multidval.val)[to] = val[from];
+			((int*)target_md->multidval.val)[to] = val[from];
 			(void)_NclAddParent((NclObj)_NclGetObj(val[from]),(NclObj)target_md);
 			_NclSetStatus((NclObj)_NclGetObj(*val),PERMANENT);
 
@@ -869,21 +869,21 @@ static NhlErrorTypes MultiDVal_nclfile_s_WriteSection
 		for(i = 0; i < n_dims_target;i++) {
 			to = to + (current_index[i] * multiplier[i]);
 		}
-		if((target_md->multidval.missing_value.has_missing)&&(target_md->multidval.missing_value.value.objval != ((ng_size_t*)target_md->multidval.val)[to])) {
-			_NclDelParent((NclObj)_NclGetObj(((ng_size_t*)target_md->multidval.val)[to]),(NclObj)target_md);
+		if((target_md->multidval.missing_value.has_missing)&&(target_md->multidval.missing_value.value.objval != ((int *)target_md->multidval.val)[to])) {
+			_NclDelParent((NclObj)_NclGetObj(((int *)target_md->multidval.val)[to]),(NclObj)target_md);
 		} else {
-			_NclDelParent((NclObj)_NclGetObj(((ng_size_t*)target_md->multidval.val)[to]),(NclObj)target_md);
+			_NclDelParent((NclObj)_NclGetObj(((int *)target_md->multidval.val)[to]),(NclObj)target_md);
 		}
 
 		if((value_md->multidval.missing_value.has_missing)&&(value_md->multidval.missing_value.value.objval == *val)) {
 			if(target_md->multidval.missing_value.has_missing) {
-				((ng_size_t*)target_md->multidval.val)[to] = target_md->multidval.missing_value.value.objval;
+				((int *)target_md->multidval.val)[to] = target_md->multidval.missing_value.value.objval;
 			} else {
 				_NclResetMissingValue(target_md,&value_md->multidval.missing_value.value);
-				((ng_size_t*)target_md->multidval.val)[to] = *val;
+				((int *)target_md->multidval.val)[to] = *val;
 			}
 		} else {
-			((ng_size_t*)target_md->multidval.val)[to] = *val;
+			((int *)target_md->multidval.val)[to] = *val;
 			(void)_NclAddParent((NclObj)_NclGetObj(*val),(NclObj)target_md);
 			_NclSetStatus((NclObj)_NclGetObj(*val),PERMANENT);
 		}
@@ -1531,13 +1531,13 @@ NclScalar *new_missing;
 #endif
 {
 	NclMultiDValData self_md = (NclMultiDValData) self;
-	ng_size_t *toval;
-	ng_size_t *frval;
+	int *toval;
+	int *frval;
 	int missing;
 	NclScalar themissing;
 	ng_size_t i;
-	toval = (ng_size_t *)NclMalloc(self_md->multidval.totalsize);
-	frval = (ng_size_t *)self_md->multidval.val;
+	toval = (int *)NclMalloc(self_md->multidval.totalsize);
+	frval = (int *)self_md->multidval.val;
 	if(toval == NULL) {
 		return(NULL);
         }
