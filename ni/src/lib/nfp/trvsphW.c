@@ -300,8 +300,6 @@ NhlErrorTypes g2gshv_W( void )
          (nlata <= INT_MAX) &&
          (nlonb <= INT_MAX) &&
          (nlatb <= INT_MAX) &&
-         (lsvmin <= INT_MAX) &&
-         (lwkmin <= INT_MAX) &&
          (ldwork <= INT_MAX) &&
          (lsave <= INT_MAX) &&
          (lwork <= INT_MAX))
@@ -630,8 +628,6 @@ NhlErrorTypes f2gshv_W( void )
          (nlata <= INT_MAX) &&
          (nlonb <= INT_MAX) &&
          (nlatb <= INT_MAX) &&
-         (lsvmin <= INT_MAX) &&
-         (lwkmin <= INT_MAX) &&
          (ldwork <= INT_MAX) &&
          (lsave <= INT_MAX) &&
          (lwork <= INT_MAX))
@@ -948,8 +944,6 @@ NhlErrorTypes g2fshv_W( void )
          (nlata <= INT_MAX) &&
          (nlonb <= INT_MAX) &&
          (nlatb <= INT_MAX) &&
-         (lsvmin <= INT_MAX) &&
-         (lwkmin <= INT_MAX) &&
          (ldwork <= INT_MAX) &&
          (lsave <= INT_MAX) &&
          (lwork <= INT_MAX))
@@ -1265,8 +1259,6 @@ NhlErrorTypes f2fshv_W( void )
          (nlata <= INT_MAX) &&
          (nlonb <= INT_MAX) &&
          (nlatb <= INT_MAX) &&
-         (lsvmin <= INT_MAX) &&
-         (lwkmin <= INT_MAX) &&
          (ldwork <= INT_MAX) &&
          (lsave <= INT_MAX) &&
          (lwork <= INT_MAX))
