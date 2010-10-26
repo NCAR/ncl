@@ -21,6 +21,24 @@
 #include <math.h>
 #include <unistd.h>
 
+extern void NGCALLF(mdppos,MDPPOS)(double *, double *, double *, double *);
+extern void NGCALLF(mdproj,MDPROJ)(char *, double *, double *, double *);
+/*
+extern void NGCALLF(mdpset,MDPSET)(char *, double *, double *, double *, double *);
+*/
+extern void NGCALLF(mdpint,MDPINT)();
+extern void NGCALLF(gdswiz,GDSWIZ)(int *, int *, int *, float *,
+                                   float *, float *, float *, float *,
+                                   int *, int *, float *, float *);
+extern void NGCALLF(mdptrn,MDPTRN)(double *, double *, double *, double *);
+extern void NGCALLF(mdptri,MDPTRI)(double *, double *, double *, double *);
+extern void NGCALLF(qu2reg3,QU2REG3)(float *, int *, int *, int *, int *,
+                                     float *, int *, int *, int *, int *,
+                                     int *, float *, float *, float *);
+extern void NGCALLF(gaqdnio,GAQDNIO)(int *, double *, double *, double *, int *, int *);
+extern void NGCALLF(maptrn,MAPTRN)(float *, float*, float *, float *);
+extern void NGCALLF(maptri,MAPTRI)(float *, float*, float *, float *);
+
 static void GenAtts(
 #if     NhlNeedProto
 GribParamList* thevarrec, 
@@ -438,7 +456,16 @@ float **rot;
 		lrot = 1;
 	}
 	
-	NGCALLF(gdswiz,GDSWIZ)(kgds,&iopt,&npts,&fillval,*lon,*lat,*lon,*lat,&nret,&lrot,*rot,srot);
+        if(npts <= INT_MAX)
+        {
+          int inpts = (int) npts;
+	  NGCALLF(gdswiz,GDSWIZ)(kgds,&iopt,&inpts,&fillval,*lon,*lat,*lon,*lat,&nret,&lrot,*rot,srot);
+    }
+        else
+        {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"gdswiz: npts = %ld is greater than INT_MAX", npts);
+          return;
+        }
 
 	if (do_rot) {
 		for (i = 0; i < npts; i++) {
@@ -7842,7 +7869,7 @@ void GdsMEGrid
 	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	GribAttInqRecList** lon_att_list, 
@@ -7863,7 +7890,7 @@ int* n_dims_lon;
 ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
 GribAttInqRecList** lon_att_list; 
@@ -8094,7 +8121,7 @@ void GdsGNGrid
 	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	GribAttInqRecList** lon_att_list, 
@@ -8115,7 +8142,7 @@ int* n_dims_lon;
 ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
 GribAttInqRecList** lon_att_list; 
@@ -8143,7 +8170,7 @@ void GdsLEGrid
 	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	GribAttInqRecList** lon_att_list, 
@@ -8164,7 +8191,7 @@ int* n_dims_lon;
 ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
 GribAttInqRecList** lon_att_list; 
@@ -8310,7 +8337,7 @@ void GdsGAGrid
 	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	GribAttInqRecList** lon_att_list, 
@@ -8331,7 +8358,7 @@ int* n_dims_lon;
 ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
 GribAttInqRecList** lon_att_list; 
@@ -8672,7 +8699,7 @@ void GdsSTGrid
 	ng_size_t** dimsizes_lon,
 	float** rot,
 	int* n_dims_rot,
-	int **dimsizes_rot,
+	ng_size_t **dimsizes_rot,
 	GribAttInqRecList** lat_att_list, 
 	int* nlatatts, 
 	GribAttInqRecList** lon_att_list, 
@@ -8693,7 +8720,7 @@ int* n_dims_lon;
 ng_size_t** dimsizes_lon;
 float** rot;
 int* n_dims_rot;
-int **dimsizes_rot;
+ng_size_t **dimsizes_rot;
 GribAttInqRecList** lat_att_list; 
 int* nlatatts; 
 GribAttInqRecList** lon_att_list; 
