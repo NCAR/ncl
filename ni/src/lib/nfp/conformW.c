@@ -65,13 +65,14 @@ NhlErrorTypes conform_W( void )
 /*
  * various
  */
-  int new_position, conform_pos, scalar_tmp_md, copy_scalar = 0;
+  int scalar_tmp_md, copy_scalar = 0;
   ng_size_t i, j;
-  ng_size_t size_conform;
+  ng_size_t new_position, size_conform, conform_pos;
   int type_size;
-  int *skip_x = NULL;
-  int *skip_c = NULL;
-  int *indices = NULL;
+  ng_size_t *skip_x = NULL;
+  ng_size_t *skip_c = NULL;
+  ng_size_t *indices = NULL;
+  int ret;
 /*
  * Retrieve parameters
  *
@@ -171,9 +172,9 @@ NhlErrorTypes conform_W( void )
  * you increment the second index, you skip over 4 elements (2 x 2),
  * and so on.
  */
-    skip_x  = (int*)calloc(ndims_x,sizeof(int));
-    indices = (int*)calloc(ndims_x,sizeof(int));
-    skip_c  = (int*)calloc(dsizes_conform[0],sizeof(int));
+    skip_x  = (ng_size_t*)calloc(ndims_x,sizeof(ng_size_t));
+    indices = (ng_size_t*)calloc(ndims_x,sizeof(ng_size_t));
+    skip_c  = (ng_size_t*)calloc(dsizes_conform[0],sizeof(ng_size_t));
 
     size_conform = dsizes_x[ndims_x-1];
     skip_x[ndims_x-1] = 1; 
@@ -186,7 +187,6 @@ NhlErrorTypes conform_W( void )
     for(i = dsizes_conform[0]-2; i >= 0; i--) {
       skip_c[i] = skip_c[i+1]*dsizes_x[cnfrm_dims[i+1]];
     }
-    dsizes = dsizes_x;
     ndims  = ndims_x;
   }
   else {
@@ -195,7 +195,6 @@ NhlErrorTypes conform_W( void )
  * the dimensions given.
  */
     ndims  = ndims_x;
-    dsizes = dsizes_x;
     size_conform = 1;
     for(i = 0; i < ndims_x; i++) {
       size_conform *= dsizes_x[i];
@@ -258,14 +257,15 @@ NhlErrorTypes conform_W( void )
  * Return values.
  */
   if(tmp_md->multidval.missing_value.has_missing) {
-      return(NclReturnValue(conform,ndims,dsizes,
-                            &tmp_md->multidval.missing_value.value,
-                            tmp_md->multidval.data_type,0));
+    ret = NclReturnValue(conform,ndims,dsizes_x,
+			 &tmp_md->multidval.missing_value.value,
+			 tmp_md->multidval.data_type,0);
   }
   else {
-    return(NclReturnValue(conform,ndims,dsizes,NULL,
-                          tmp_md->multidval.data_type,0));
+    ret = NclReturnValue(conform,ndims,dsizes_x,NULL,
+			 tmp_md->multidval.data_type,0);
   }
+  return(ret);
 }
 
 
@@ -294,17 +294,18 @@ NhlErrorTypes conform_dims_W( void )
  */
   void *conform;
   int ndims;
-  ng_size_t *dsizes;
 /*
  * various
  */
   ng_size_t i, j;
-  int new_position, conform_pos, scalar_tmp_md, copy_scalar = 0;
-  ng_size_t size_conform;
+  int scalar_tmp_md, copy_scalar = 0;
+  ng_size_t new_position, size_conform, conform_pos;
   int type_size;
-  int *skip_x = NULL;
-  int *skip_c = NULL;
-  int *indices = NULL;
+  ng_size_t *skip_x = NULL;
+  ng_size_t *skip_c = NULL;
+  ng_size_t *indices = NULL;
+  int ret;
+
 /*
  * Retrieve parameters
  *
@@ -408,9 +409,9 @@ NhlErrorTypes conform_dims_W( void )
  * you increment the second index, you skip over 4 elements (2 x 2),
  * and so on.
  */
-    skip_x  = (int*)calloc(ndims_x,sizeof(int));
-    indices = (int*)calloc(ndims_x,sizeof(int));
-    skip_c  = (int*)calloc(dsizes_conform[0],sizeof(int));
+    skip_x  = (ng_size_t*)calloc(ndims_x,sizeof(ng_size_t));
+    skip_c  = (ng_size_t*)calloc(dsizes_conform[0],sizeof(ng_size_t)); 
+    indices = (ng_size_t*)calloc(ndims_x,sizeof(ng_size_t));
 
     size_conform = dsizes_x[ndims_x-1];
     skip_x[ndims_x-1] = 1; 
@@ -423,7 +424,6 @@ NhlErrorTypes conform_dims_W( void )
     for(i = dsizes_conform[0]-2; i >= 0; i--) {
       skip_c[i] = skip_c[i+1]*dsizes_x[cnfrm_dims[i+1]];
     }
-    dsizes = dsizes_x;
     ndims  = ndims_x;
   }
   else {
@@ -432,7 +432,6 @@ NhlErrorTypes conform_dims_W( void )
  * the dimensions given.
  */
     ndims  = ndims_x;
-    dsizes = dsizes_x;
     size_conform = 1;
     for(i = 0; i < ndims_x; i++) {
       size_conform *= dsizes_x[i];
@@ -495,14 +494,14 @@ NhlErrorTypes conform_dims_W( void )
  * Return values.
  */
   if(tmp_md->multidval.missing_value.has_missing) {
-      return(NclReturnValue(conform,ndims,dsizes,
-                            &tmp_md->multidval.missing_value.value,
-                            tmp_md->multidval.data_type,0));
+    ret = NclReturnValue(conform,ndims,dsizes_x,
+			 &tmp_md->multidval.missing_value.value,
+			 tmp_md->multidval.data_type,0);
   }
   else {
-    return(NclReturnValue(conform,ndims,dsizes,NULL,
-                          tmp_md->multidval.data_type,0));
+    ret = NclReturnValue(conform,ndims,dsizes_x,NULL,
+			 tmp_md->multidval.data_type,0);
   }
+  NclFree(dsizes_x);
+  return(ret);
 }
-
-

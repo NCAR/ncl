@@ -395,6 +395,7 @@ NhlErrorTypes generate_2d_array_W( void )
   void *data;
   double *tmp_data;
   NclBasicDataTypes type_data;
+  int ret;
 /*
  * Declare various variables for random purposes.
  */
@@ -578,6 +579,8 @@ NhlErrorTypes generate_2d_array_W( void )
   if(type_dlow  != NCL_double) NclFree(tmp_dlow);
   if(type_dhigh != NCL_double) NclFree(tmp_dhigh);
 
-  return(NclReturnValue(data,2,dsizes_data,NULL,type_data,0));
+  ret = NclReturnValue(data,2,dsizes_data,NULL,type_data,0);
+  NclFree(dsizes_data);
+  return(ret);
 }
 

@@ -34,7 +34,7 @@ NhlErrorTypes g2gsh_W( void )
   double *tmp_Tb = NULL;
   ng_size_t dsizes_Tb2[NCL_MAX_DIMENSIONS];
   ng_size_t nlatb, nlonb;
-  int igridb[2];
+  int igridb[2], ret;
 /*
  * various
  */
@@ -107,6 +107,8 @@ NhlErrorTypes g2gsh_W( void )
   compute_nlatanlona(dsizes_Ta,dsizes_Tb,ndims_Ta,2,
                      &nlata,&nlona,&nlatanlona,&nlatb,&nlonb,&nlatbnlonb,
                      &total_size_leftmost,&total_size_Ta,&total_size_Tb);
+  NclFree(dsizes_Tb);
+
 /*
  * Check output dimensions.
  */
@@ -290,15 +292,16 @@ NhlErrorTypes g2gsh_W( void )
  */
   if(has_missing_Ta) {
     if(type_Tb == NCL_float) {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_rTa,type_Tb,0));
+      ret = NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_rTa,type_Tb,0);
     }
     else {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_dTa,type_Tb,0));
+      ret = NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_dTa,type_Tb,0);
     }
   }
   else {
-    return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,NULL,type_Tb,0));
+    ret = NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,NULL,type_Tb,0);
   }
+  return(ret);
 }
 
 
@@ -396,6 +399,7 @@ NhlErrorTypes f2gsh_W( void )
   compute_nlatanlona(dsizes_Ta,dsizes_Tb,ndims_Ta,2,
                      &nlata,&nlona,&nlatanlona,&nlatb,&nlonb,&nlatbnlonb,
                      &total_size_leftmost,&total_size_Ta,&total_size_Tb);
+  NclFree(dsizes_Tb);
 /*
  * Check output dimensions.
  */
@@ -674,6 +678,7 @@ NhlErrorTypes g2fsh_W( void )
   compute_nlatanlona(dsizes_Ta,dsizes_Tb,ndims_Ta,2,
                      &nlata,&nlona,&nlatanlona,&nlatb,&nlonb,&nlatbnlonb,
                      &total_size_leftmost,&total_size_Ta,&total_size_Tb);
+  NclFree(dsizes_Tb);
 /*
  * Check output dimensions.
  */
@@ -953,6 +958,7 @@ NhlErrorTypes f2fsh_W( void )
   compute_nlatanlona(dsizes_Ta,dsizes_Tb,ndims_Ta,2,
                      &nlata,&nlona,&nlatanlona,&nlatb,&nlonb,&nlatbnlonb,
                      &total_size_leftmost,&total_size_Ta,&total_size_Tb);
+  NclFree(dsizes_Tb);
 /*
  * Check output dimensions.
  */
