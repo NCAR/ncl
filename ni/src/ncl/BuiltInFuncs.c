@@ -20321,23 +20321,23 @@ NhlErrorTypes _NclItouint
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to uint.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to uint.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to uint.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to uint.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to uint.");
                 return NhlFATAL;
         }
 
@@ -20685,8 +20685,7 @@ NhlErrorTypes _NclItolong
 
                     if(has_missing)
                     {
-                        if(missing.uintval <= LONG_MAX)
-                            ret_missing.longval = (long) missing.uintval;
+                        ret_missing.longval = (long) missing.uintval;
                     }
 
                     ptr = (unsigned int *) in_value;
@@ -20853,23 +20852,23 @@ NhlErrorTypes _NclItolong
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to long.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to long.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to long.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to long.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to long.");
                 return NhlFATAL;
         }
 
@@ -21413,23 +21412,23 @@ NhlErrorTypes _NclItoulong
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to ulong.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to ulong.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to ulong.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to ulong.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to ulong.");
                 return NhlFATAL;
         }
 
@@ -21868,23 +21867,23 @@ NhlErrorTypes _NclItoint64
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to int64.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to int64.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to int64.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to int64.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to int64.");
                 return NhlFATAL;
         }
 
@@ -22411,23 +22410,23 @@ NhlErrorTypes _NclItouint64
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to uint64.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to uint64.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to uint64.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to uint64.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to uint64.");
                 return NhlFATAL;
         }
 
@@ -22700,6 +22699,40 @@ NhlErrorTypes _NclItoshort
 
                     ptr = (unsigned char *) in_value;
     
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (short) ptr[i];
+                    }
+                }
+                break;
+            case NCL_int8:
+                {
+                    char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.shortval = (short) missing.int8val;
+                    }
+
+                    ptr = (char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (short) ptr[i];
+                    }
+                }
+                break;
+            case NCL_uint8:
+                {
+                    unsigned char *ptr;
+
+                    ptr = (unsigned char *) in_value;
+    
+                    if(has_missing)
+                    {
+                        ret_missing.shortval = (short) missing.uint8val;
+                    }
+
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (short) ptr[i];
@@ -23015,23 +23048,23 @@ NhlErrorTypes _NclItoshort
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to short.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to short.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to short.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to short.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to short.");
                 return NhlFATAL;
         }
 
@@ -23638,23 +23671,23 @@ NhlErrorTypes _NclItoushort
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to ushort.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to ushort.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to ushort.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to ushort.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to ushort.");
                 return NhlFATAL;
         }
 
@@ -24094,23 +24127,23 @@ NhlErrorTypes _NclItofloat
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to float.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to float.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to float.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to float.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to float.");
                 return NhlFATAL;
         }
 
@@ -24419,23 +24452,23 @@ NhlErrorTypes _NclItostring
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to string.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to string.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to string.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to string.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to string.");
                 return NhlFATAL;
         }
 
@@ -24767,23 +24800,23 @@ NhlErrorTypes _NclItostring_with_format
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to string.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to string.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to string.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to string.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to string.");
                 return NhlFATAL;
         }
 
@@ -25117,23 +25150,23 @@ NhlErrorTypes _NclItodouble
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to double.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to double.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to double.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to double.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to double.");
                 return NhlFATAL;
         }
 
@@ -25767,23 +25800,23 @@ NhlErrorTypes _NclItobyte
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to byte.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to byte.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to byte.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to byte.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to byte.");
                 return NhlFATAL;
         }
 
@@ -26419,23 +26452,23 @@ NhlErrorTypes _NclItochar
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to char.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to char.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to char.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to char.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to char.");
                 return NhlFATAL;
         }
 
