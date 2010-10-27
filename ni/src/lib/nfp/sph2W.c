@@ -20636,7 +20636,7 @@ NhlErrorTypes shaec_W( void )
     {
       int inlon = (int) nlon;
       int inlat = (int) nlat;
-      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,&dg[j],work);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,&dg[j],work);
     }
     else
     {
@@ -20902,7 +20902,7 @@ NhlErrorTypes shagc_W( void )
     {
       int inlon = (int) nlon;
       int inlat = (int) nlat;
-      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,&dg[j],work);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,&dg[j],work);
     }
     else
     {
@@ -21084,11 +21084,6 @@ NhlErrorTypes shsec_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shsec: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-/*
-  NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork,&ldwork,&jer);
-  NGCALLF(dshsec,DSHSEC)(&nlat,&nlon,&isym,&nt,&dg[0],&idg,&jdg,da,db,
-                         &mdab,&ndab,wshsec,&lshsec,work,&lwork,&ker);
-*/
   if((nlon <= INT_MAX) &&
      (nlat <= INT_MAX) &&
      (nt <= INT_MAX) &&
@@ -21145,7 +21140,7 @@ NhlErrorTypes shsec_W( void )
     }
     else
     {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dmatgeo: nlon = %d, is larger than INT_MAX", nlon);
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"shsec: nlon = %d, is larger than INT_MAX", nlon);
       return(NhlFATAL);
     }
 
