@@ -2172,7 +2172,7 @@ NclStackEntry missing_expr;
 #endif
 			return(NhlFATAL);
 		}
-		tmp_val = (void*)NclMalloc((unsigned int)ll_total);
+		tmp_val = (void*)NclMalloc((ng_usize_t)ll_total);
 		if (! tmp_val) {
 			NhlPError(NhlFATAL,ENOMEM,"New: could not create new array");
 			return(NhlFATAL);
