@@ -19290,6 +19290,11 @@ NhlErrorTypes _NclItoint
                         {
                             ret_missing.intval = (int) val;
                         }
+                        else
+                        {
+                            NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                                      "The double missing value %g is out of integer range.\n", missing.doubleval));
+                        }
                     }
 
                     for(i = 0; i < total_elements; i++)
@@ -19342,6 +19347,11 @@ NhlErrorTypes _NclItoint
                         if((val < fmax) && (val > fmin))
                         {
                             ret_missing.intval = (int) val;
+                        }
+                        else
+                        {
+                            NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                                      "The float missing value %f is out of integer range.\n", missing.floatval));
                         }
                     }
 
@@ -19403,6 +19413,11 @@ NhlErrorTypes _NclItoint
                         { 
                             if((llval <= INT_MAX) && (llval >= INT_MIN))
                                 ret_missing.intval = (int) llval;
+                            else
+                            {
+                                NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                                          "The string missing value %f is out of integer range.\n", missing.stringval));
+                            }
                         }
                     }
 
@@ -19488,6 +19503,40 @@ NhlErrorTypes _NclItoint
                     }
                 }
                 break;
+            case NCL_uint8:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.intval = (int) missing.uint8val;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (int) ptr[i];
+                    }
+                }
+                break;
+            case NCL_int8:
+                {
+                    char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.intval = (int) missing.int8val;
+                    }
+
+                    ptr = (char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (int) ptr[i];
+                    }
+                }
+                break;
             case NCL_short:
                 {
                     short val;
@@ -19550,6 +19599,11 @@ NhlErrorTypes _NclItoint
                     {
                         if(missing.uintval < INT_MAX)
                             ret_missing.intval = (int) missing.uintval;
+                        else
+                        {
+                            NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                                      "The uint missing value %u is out of integer range.\n", missing.intval));
+                        }
                     }
 
                     for(i = 0; i < total_elements; i++)
@@ -19584,6 +19638,11 @@ NhlErrorTypes _NclItoint
                     {
                         if((missing.longval <= INT_MAX) &&(missing.longval >= INT_MIN))
                             ret_missing.intval = (int) missing.longval;
+                        else
+                        {
+                            NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                                      "The long missing value %ld is out of integer range.\n", missing.longval));
+                        }
                     }
 
                     ptr = (long *) in_value;
@@ -19633,6 +19692,11 @@ NhlErrorTypes _NclItoint
                     {
                         if(missing.ulongval <= INT_MAX)
                             ret_missing.intval = (int) missing.ulongval;
+                        else
+                        {
+                            NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                                      "The ulong missing value %uld is out of integer range.\n", missing.ulongval));
+                        }
                     }
 
                     ptr = (unsigned long *) in_value;
@@ -19669,6 +19733,11 @@ NhlErrorTypes _NclItoint
                     {
                         if((missing.int64val <= INT_MAX) && (missing.int64val >= INT_MIN))
                             ret_missing.intval = (int) missing.int64val;
+                        else
+                        {
+                            NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                                      "The int64 missing value %lld is out of integer range.\n", missing.int64val));
+                        }
                     }
 
                     ptr = (long long *) in_value;
@@ -19718,6 +19787,11 @@ NhlErrorTypes _NclItoint
                     {
                         if(missing.uint64val <= INT_MAX)
                             ret_missing.intval = (int) missing.uint64val;
+                        else
+                        {
+                            NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                                      "The uint64 missing value %ulld is out of integer range.\n", missing.uint64val));
+                        }
                     }
 
                     ptr = (unsigned long long *) in_value;
@@ -20646,6 +20720,40 @@ NhlErrorTypes _NclItolong
                     }
                 }
                 break;
+            case NCL_int8:
+                {
+                    char *ptr;
+
+                    ptr = (char *) in_value;
+
+                    if(has_missing)
+                    {
+                        ret_missing.longval = (long) missing.int8val;
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (long) ptr[i];
+                    }
+                }
+                break;
+            case NCL_uint8:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.longval = (long) missing.uint8val;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (long) ptr[i];
+                    }
+                }
+                break;
             case NCL_short:
                 {
                     short val;
@@ -20895,7 +21003,7 @@ NhlErrorTypes _NclItolong
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to long.");
+                NHLPERROR((NhlFATAL, errno, "Don't know how to convert unkown type to long."));
                 return NhlFATAL;
         }
 
@@ -21190,6 +21298,55 @@ NhlErrorTypes _NclItoulong
                     }
                 }
                 break;
+            case NCL_int8:
+                {
+                    char *ptr;
+
+                    ptr = (char *) in_value;
+
+                    if(has_missing)
+                    {
+                        if(missing.int8val >= 0)
+                            ret_missing.longval = (unsigned long) missing.int8val;
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        if(ptr[i] < 0)
+                        {
+                            has_missing = 1;
+                            underflowed ++;
+                            output[i] = ret_missing.ulongval;
+                        }
+                        else
+                            output[i] = (unsigned long) ptr[i];
+                    }
+
+                    if(underflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "There are %d int8 less than 0, which has been flagged missing.",
+                            underflowed);
+                    }
+                }
+                break;
+            case NCL_uint8:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.ulongval = (unsigned long) missing.uint8val;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (unsigned long) ptr[i];
+                    }
+                }
+                break;
             case NCL_short:
                 {
                     unsigned long ulval;
@@ -21455,7 +21612,7 @@ NhlErrorTypes _NclItoulong
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to ulong.");
+                NHLPERROR((NhlFATAL, errno, "Don't know how to convert unkown type to ulong."));
                 return NhlFATAL;
         }
 
@@ -22649,9 +22806,8 @@ NhlErrorTypes _NclItoshort
                     {
                         str = NrmQuarkToString(ptr[i]);
     
-                        if(missing.stringval == ptr[i])
+                        if(has_missing && (missing.stringval == ptr[i]))
                         {
-                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else
@@ -25385,7 +25541,7 @@ NhlErrorTypes _NclItobyte
                     {
                         str = NrmQuarkToString(ptr[i]);
     
-                        if(missing.stringval == ptr[i])
+                        if(has_missing && (missing.stringval == ptr[i]))
                         {
                             output[i] = ret_missing.byteval;
                         }
@@ -26036,9 +26192,8 @@ NhlErrorTypes _NclItochar
                     {
                         str = NrmQuarkToString(ptr[i]);
     
-                        if(missing.stringval == ptr[i])
+                        if(has_missing && (missing.stringval == ptr[i]))
                         {
-                            has_missing = 1;
                             output[i] = ret_missing.charval;
                         }
                         else
