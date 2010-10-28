@@ -3636,52 +3636,48 @@ NhlErrorTypes _NclIfbinread
 			return(NhlFATAL);
 		}
 	}
-	if(tmp_ptr != NULL) {
-		tmp_ptr = NclMalloc(totalsize);
-		if (! tmp_ptr) {
-			NhlPError(NhlFATAL,ENOMEM,NULL);
-			return( NhlFATAL);
-		}
-		lseek(fd,(off_t)4,SEEK_SET); /* skip the control word */
-		n = (ng_size_t) read(fd,tmp_ptr,totalsize);
-		if(n != totalsize)  {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: an error occurred reading the FORTRAN binary file.");
-			NclFree(tmp_ptr);
-			close(fd);
-			return(NhlFATAL);
-		}
+	tmp_ptr = NclMalloc(totalsize);
+	if (! tmp_ptr) {
+	  NhlPError(NhlFATAL,ENOMEM,NULL);
+	  return( NhlFATAL);
+	}
+	lseek(fd,(off_t)4,SEEK_SET); /* skip the control word */
+	n = (ng_size_t) read(fd,tmp_ptr,totalsize);
+	if(n != totalsize)  {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: an error occurred reading the FORTRAN binary file.");
+	  NclFree(tmp_ptr);
+	  close(fd);
+	  return(NhlFATAL);
+	}
 #if 0
-		NGCALLF(nclpfortranread,NCLPFORTRANREAD)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
+	NGCALLF(nclpfortranread,NCLPFORTRANREAD)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
 #endif
-		if (swap_bytes) {
-			_NclSwapBytes(NULL,tmp_ptr,totalsize / thetype->type_class.size,thetype->type_class.size);
-		}
-
-
-		tmp_md = _NclCreateMultiDVal(
-			NULL,
-			NULL,
-			Ncl_MultiDValData,
-			0,
-			tmp_ptr,
-			NULL,
-			n_dimensions,
-			dimsizes,
-			TEMPORARY,
-			NULL,
-			thetype);
-		if(tmp_md == NULL) 
-			return(NhlFATAL);
-		data_out.kind = NclStk_VAL;
-		data_out.u.data_obj = tmp_md;
-		close(fd);
-		NclFree(dimsizes);
-		_NclPlaceReturn(data_out);
-		return(ret);
-	} 
+	if (swap_bytes) {
+	  _NclSwapBytes(NULL,tmp_ptr,totalsize / thetype->type_class.size,thetype->type_class.size);
+	}
+	
+	
+	tmp_md = _NclCreateMultiDVal(
+				     NULL,
+				     NULL,
+				     Ncl_MultiDValData,
+				     0,
+				     tmp_ptr,
+				     NULL,
+				     n_dimensions,
+				     dimsizes,
+				     TEMPORARY,
+				     NULL,
+				     thetype);
+	if(tmp_md == NULL) 
+	  return(NhlFATAL);
+	data_out.kind = NclStk_VAL;
+	data_out.u.data_obj = tmp_md;
 	close(fd);
-	return(NhlFATAL);
-}
+	NclFree(dimsizes);
+	_NclPlaceReturn(data_out);
+	return(ret);
+} 
 NhlErrorTypes _NclIasciiwrite
 #if	NhlNeedProto
 (void)
