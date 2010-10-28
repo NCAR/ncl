@@ -1,12 +1,14 @@
 ;******************************************************************************
 ; ut_string.ncl
 ; Carl Schreck (carl@atmos.albany.edu)
-; Based on time_axis_labels (originally "tTick") by Arindam Chakrborty.
+; Based on time_axis_labels (originally "tTick") by Arindam Chakraborty.
 ; Obtained from http://www.ncl.ucar.edu/Support/talk_archives/2007/0763.html
 ; September 2008
 ; Modified April 2009 by Carl Schreck (carl@atmos.albany.edu)
 ;   Replaced "mod" function call on line 279 with modulus operator %
 ;   Add default input string for ""
+; Modified October 2010 by Carl Schreck (carl.schreck@noaa.gov)
+;   Add support for "day of year"
 ;******************************************************************************
 
 undef("ut_string")
@@ -33,6 +35,8 @@ function ut_string( time[*]:numeric, inFormat:string )
 ; n => 1 or 2 digit month (e.g., 6 for June, 12 for December).
 ; D => 2-digit day (e.g., 04).
 ; d => 1 or 2 digit day (e.g., 4)
+; J => 3-digit day-of-year (e.g., 091)
+; j => 1, 2, or 3 digit day-of-year (e.g., 4, 91, or 181)
 ; H => 2-digit hour (e.g., 09).
 ; h => 1 or 2 digit hour (e.g., 9 or 11).
 ; M => 2 digit minute (e.g., 08).
@@ -90,7 +94,8 @@ begin
   else
     ymdhms1i = ymdhms0
   end if
-  taxisvalues = ut_inv_calendar(ymdhms1i(:,0),ymdhms1i(:,1),ymdhms1i(:,2),ymdhms1i(:,3),ymdhms1i(:,4),ymdhms1i(:,5),time@units,0)
+
+  doy = day_of_year( ymdhms1i(:,0), ymdhms1i(:,1), ymdhms1i(:,2) )
 
   retVal = new(nt,"string")
 
@@ -147,6 +152,14 @@ begin
         end if
         if (chFormat(j) .eq. "d") then
           retVal(i) = retVal(i)+sprinti("%d",ymdhms1i(i,2))
+          inside = False
+        end if
+        if (chFormat(j) .eq. "J") then
+          retVal(i) = retVal(i)+sprinti("%03d",doy(i))
+          inside = False
+        end if
+        if (chFormat(j) .eq. "j") then
+          retVal(i) = retVal(i)+sprinti("%d",doy(i))
           inside = False
         end if
         if (chFormat(j) .eq. "H") then
