@@ -2672,10 +2672,14 @@ NhlErrorTypes _NclIfbindirread(void)
 		}
 */
 	}
+	else {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: invalid dimension sizes");
+	  return(NhlFATAL);
+	}
 	if((n_dimensions == 1) && (dimsizes[0] == -1)) {
                 size = buf.st_size/thetype->type_class.size;
                 n_dimensions = 1;
-                dimsizes = &size;
+                dimsizes[0] = size;
         } else {
                 for(i = 0; i < n_dimensions; i++) {
                         size *= dimsizes[i];
@@ -2709,6 +2713,8 @@ NhlErrorTypes _NclIfbindirread(void)
 			thetype);
 		if(tmp_md == NULL) 
 			return(NhlFATAL);
+
+		NclFree(dimsizes);
 
 		step = tmp_ptr;
 		for(i = 0; i < (totalsize / buf.st_blksize); i++) {
@@ -2878,11 +2884,15 @@ NhlErrorTypes _NclIcbinread
 		if(dimsizes == NULL) 
 		  return(NhlFATAL);
 	}
+	else {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinread: invalid dimension sizes");
+	  return(NhlFATAL);
+	}
 	if((n_dimensions == 1) && (dimsizes[0] == -1)) {
 		size = buf.st_size/thetype->type_class.size;
 		n_dimensions = 1;
 		dim2 = size;
-		dimsizes = &dim2;
+		dimsizes[0] = dim2;
 	} else {
 		for(i = 0; i < n_dimensions; i++) {
 			size *= dimsizes[i];
@@ -2917,6 +2927,8 @@ NhlErrorTypes _NclIcbinread
 			thetype);
 		if(tmp_md == NULL) 
 			return(NhlFATAL);
+
+		NclFree(dimsizes);
 
 		step = tmp_ptr;
 		for(i = 0; i < (ng_size_t)(totalsize / buf.st_blksize); i++) {
@@ -3466,6 +3478,7 @@ NhlErrorTypes _NclIfbinrecread
 		data.u.data_obj = tmp_md;
 		_NclPlaceReturn(data);
 		close(fd);
+		NclFree(dimensions);
 		return(ret);
 	} else {
 		close(fd);
@@ -3496,7 +3509,6 @@ NhlErrorTypes _NclIfbinread
 	ng_size_t totalsize = 0;
 	ng_size_t n;
 	NclStackEntry data_out;
-	ng_size_t dim2;
 	int fd;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
@@ -3581,12 +3593,15 @@ NhlErrorTypes _NclIfbinread
 		dimsizes = get_dimensions(tmp_md->multidval.val,
 					  tmp_md->multidval.totalelements,
 					  tmp_md->multidval.data_type,"fbinread");
-	if(dimsizes == NULL) 
+		if(dimsizes == NULL) 
+		  return(NhlFATAL);
+	}
+	else {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: invalid dimension sizes");
 	  return(NhlFATAL);
 	}
 	if((n_dimensions == 1) && (dimsizes[0] == -1)){
 		tmp_size = -1;
-		dimsizes = &dim2;
 		n_dimensions = 1;
 	} else {
 		for(i = 0; i < n_dimensions; i++) {
@@ -3660,6 +3675,7 @@ NhlErrorTypes _NclIfbinread
 		data_out.kind = NclStk_VAL;
 		data_out.u.data_obj = tmp_md;
 		close(fd);
+		NclFree(dimsizes);
 		_NclPlaceReturn(data_out);
 		return(ret);
 	} 
@@ -4254,7 +4270,11 @@ NhlErrorTypes _NclIasciiread
 		dimsizes = get_dimensions(tmp_md->multidval.val,
 					  tmp_md->multidval.totalelements,
 					  tmp_md->multidval.data_type,"asciiread");
-	if(dimsizes == NULL) 
+		if(dimsizes == NULL) 
+		  return(NhlFATAL);
+	}
+	else {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: invalid dimension sizes");
 	  return(NhlFATAL);
 	}
 	if(dimsizes[0] == -1) {
@@ -4447,6 +4467,7 @@ NhlErrorTypes _NclIasciiread
 			data_out.u.data_obj = tmp_md;
 			_NclPlaceReturn(data_out);
 			fclose(fp);
+			NclFree(dimsizes);
 			return(ret);
 		}
 	} else {
@@ -4565,6 +4586,7 @@ NhlErrorTypes _NclIasciiread
 			data_out.kind = NclStk_VAL;
 			data_out.u.data_obj = tmp_md;
 			_NclPlaceReturn(data_out);
+			NclFree(dimsizes);
 			return(ret);
 		}
 		tmp_ptr = NclMalloc(totalsize*thetype->type_class.size);
@@ -4703,6 +4725,7 @@ NhlErrorTypes _NclIasciiread
 		data_out.u.data_obj = tmp_md;
 		_NclPlaceReturn(data_out);
 		fclose(fp);
+		NclFree(dimsizes);
 		return(ret);
 	} 
 	return(NhlFATAL);
@@ -9731,6 +9754,7 @@ NhlErrorTypes _Ncl1dtond
 	ng_size_t *dimsizes;
 	ng_size_t sz = 1;
 	ng_size_t  i, ndims;
+	int ret;
 
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
@@ -9773,14 +9797,14 @@ NhlErrorTypes _Ncl1dtond
 		}
 		out_val = (void*)NclMalloc(sz*tmp_md->multidval.type->type_class.size);
 		memcpy(out_val,tmp_md->multidval.val,sz*tmp_md->multidval.type->type_class.size);
-		return(NclReturnValue(
+		ret = NclReturnValue(
 			out_val,
 			tmp_dims->multidval.totalelements,
 			dimsizes,
 			tmp_md->multidval.missing_value.has_missing ? &(tmp_md->multidval.missing_value.value):NULL,
 			tmp_md->multidval.type->type_class.data_type,
 			0
-		));
+		);
 	} else if((sz > tmp_md->multidval.totalelements)&&(sz%tmp_md->multidval.totalelements)){
 		NhlPError(NhlWARNING, NhlEUNKNOWN,"onedtond : output dimension sizes not even multiples of input, check output");
 		out_val = (void*)NclMalloc(sz*tmp_md->multidval.type->type_class.size);
@@ -9793,14 +9817,14 @@ NhlErrorTypes _Ncl1dtond
 			tmp_md->multidval.val,
 			(sz%tmp_md->multidval.totalelements)*tmp_md->multidval.type->type_class.size);
 
-		return(NclReturnValue(
+		ret = NclReturnValue(
 			out_val,
 			tmp_dims->multidval.totalelements,
 			dimsizes,
 			tmp_md->multidval.missing_value.has_missing ? &(tmp_md->multidval.missing_value.value):NULL,
 			tmp_md->multidval.type->type_class.data_type,
 			0
-		));
+		);
 	} else { /* (sz > tmp_md->multidval.totalelements)&&!(sz%tmp_md->multidval.totalelements)) */
 		out_val = (void*)NclMalloc(sz*tmp_md->multidval.type->type_class.size);
 		for(i = 0; i < (ng_size_t)sz/tmp_md->multidval.totalelements; i++) {
@@ -9808,15 +9832,17 @@ NhlErrorTypes _Ncl1dtond
 				tmp_md->multidval.val,
 				tmp_md->multidval.totalsize);
 		}
-		return(NclReturnValue(
+		ret = NclReturnValue(
 			out_val,
 			tmp_dims->multidval.totalelements,
 			dimsizes,
 			tmp_md->multidval.missing_value.has_missing ? &(tmp_md->multidval.missing_value.value):NULL,
 			tmp_md->multidval.type->type_class.data_type,
 			0
-		));
+		);
 	}
+	NclFree(dimsizes);
+	return(ret);
 }
 NhlErrorTypes _Nclndto1d
 #if	NhlNeedProto
@@ -16368,6 +16394,7 @@ NhlErrorTypes _NclIgaus
 	}
 	NclFree(wts);
 	NclFree(theta);
+	NclFree(nlat);
 	dimsizes[0] = nl;
 	dimsizes[1] = 2;
 	return(NclReturnValue(
