@@ -1,3 +1,35 @@
+
+C   ***************************************************************
+C   * Storm Relative Helicity (SRH) is a measure of the           *
+C   * streamwise vorticity within the inflow environment of a     *
+C   * convective storm. It is calculated by multiplying the       *
+C   * storm-relative inflow velocity vector (Vh-C) by the         *
+C   * streamwise vorticity (Zh) and integrating this quantity     *
+C   * over the inflow depth (lowest 1-3 km layers above ground    *
+C   * level). It describes the extent to which corkscrew-like     *
+C   * motion occurs (similar to the spiraling motion of an        *
+C   * American football). SRH corresponds to the transfer of      *
+C   * vorticity from the environment to an air parcel in          *
+C   * convective motion and is used to predict the potential      *
+C   * for tornadic development (cyclonic updraft rotation) in     *
+C   * right-moving supercells.                                    *
+C   *                                                             *
+C   * There is no clear threshold value for SRH when forecasting  *
+C   * supercells, since the formation of supercells appears to be *
+C   * related more strongly to the deeper layer vertical shear.   *
+C   * Larger values of 0-3-km SRH (greater than 250 m**2/s**2)    *
+C   * and 0-1-km SRH (greater than 100 m**2/s**2), suggest an     *
+C   * increased threat of tornadoes with supercells. For SRH,     *
+C   * larger values are generally better, but there are no clear  *
+C   * "boundaries" between non-tornadic and significant tornadic  *
+C   * supercells.                                                 *
+C   *                                                             *
+C   * SRH < 100 (lowest 1 km): cutoff value                       *
+C   * SRH = 150-299: supercells possible with weak tornadoes      *
+C   * SRH = 300-499: very favorable to supercell development and  *
+C   *                strong tornadoes                             *
+C   * SRH > 450    : violent tornadoes                            *
+C   ***************************************************************
 C NCLFORTSTART
       subroutine dcalrelhl(u, v, ght, ter, top, sreh, miy, mjx, mkzh)
       implicit none
