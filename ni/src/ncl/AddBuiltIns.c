@@ -1481,6 +1481,16 @@ void _NclAddBuiltIns
         nargs = 0;
         args = NewArgs(1);
         SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItoint8,args,"toint8",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItouint8,args,"touint8",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
         NclRegisterFunc(_NclItoint64,args,"toint64",nargs);
 
         nargs = 0;
