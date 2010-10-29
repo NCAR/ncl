@@ -20122,6 +20122,59 @@ NhlErrorTypes _NclItouint
                     }
                 }
                 break;
+            case NCL_int8:
+                {
+                    char *ptr;
+                    char val;
+
+                    if(has_missing)
+                    {
+                        if(missing.int8val >= 0)
+                            ret_missing.uintval = (unsigned int) missing.int8val;
+                    }
+
+                    ptr = (char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = ptr[i];
+                        if(val < 0)
+                        {
+                            has_missing = 1;
+                            underflowed ++;
+                            output[i] = ret_missing.uintval;
+                        }
+                        else
+                        {
+                            output[i] = (unsigned int) ptr[i];
+                        }
+                    }
+    
+                    if(underflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "There are %d int8 less than 0, which has been flagged missing.",
+                            underflowed);
+                    }
+                }
+                break;
+            case NCL_uint8:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                            ret_missing.uintval = (unsigned int) missing.uint8val;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (unsigned int) ptr[i];
+                    }
+                }
+                break;
             case NCL_short:
                 {
                     short val;
@@ -23988,10 +24041,10 @@ NhlErrorTypes _NclItouint8
                 break;
             case NCL_int64:
                 {
-                    char *ptr;
+                    long long *ptr;
                     long long val;
 
-                    ptr = (char *) in_value;
+                    ptr = (long long *) in_value;
 
                     if(has_missing)
                     {
@@ -24037,10 +24090,10 @@ NhlErrorTypes _NclItouint8
                 break;
             case NCL_uint64:
                 {
-                    unsigned char *ptr;
+                    unsigned long long *ptr;
                     unsigned long long val;
 
-                    ptr = (unsigned char *) in_value;
+                    ptr = (unsigned long long *) in_value;
 
                     if(has_missing)
                     {
@@ -25022,6 +25075,59 @@ NhlErrorTypes _NclItoushort
                     }
                 }
                 break;
+            case NCL_int8:
+                {
+                    char *ptr;
+                    char val;
+
+                    if(has_missing)
+                    {
+                        if(missing.int8val >= 0)
+                            ret_missing.ushortval = (unsigned short) missing.int8val;
+                    }
+
+                    ptr = (char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = ptr[i];
+                        if(val < 0)
+                        {
+                            has_missing = 1;
+                            underflowed ++;
+                            output[i] = ret_missing.ushortval;
+                        }
+                        else
+                        {
+                            output[i] = (unsigned short) ptr[i];
+                        }
+                    }
+    
+                    if(underflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "There are %d int8 less than 0, which has been flagged missing.",
+                            underflowed);
+                    }
+                }
+                break;
+            case NCL_uint8:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                            ret_missing.ushortval = (unsigned short) missing.uint8val;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (unsigned short) ptr[i];
+                    }
+                }
+                break;
             case NCL_short:
                 {
                     short val;
@@ -25650,6 +25756,40 @@ NhlErrorTypes _NclItofloat
                     }
                 }
                 break;
+            case NCL_int8:
+                {
+                    char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.floatval = (float) missing.int8val;
+                    }
+
+                    ptr = (char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (float) ptr[i];
+                    }
+                }
+                break;
+            case NCL_uint8:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.floatval = (char) missing.uint8val;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (float) ptr[i];
+                    }
+                }
+                break;
             case NCL_short:
                 {
                     short *ptr;
@@ -25957,6 +26097,44 @@ NhlErrorTypes _NclItostring
                     for(i = 0; i < total_elements; i++)
                     {
                         sprintf(buffer, "%c", ptr[i]);
+                        output[i] = NrmStringToQuark(buffer);
+                    }
+                }
+                break;
+            case NCL_int8:
+                {
+                    char *ptr;
+
+                    if(has_missing)
+                    {
+                        sprintf(buffer, "%dc", (int)missing.int8val);
+                        ret_missing.stringval = NrmStringToQuark(buffer);
+                    }
+
+                    ptr = (char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        sprintf(buffer, "%dc", (int)ptr[i]);
+                        output[i] = NrmStringToQuark(buffer);
+                    }
+                }
+                break;
+            case NCL_uint8:
+                {
+                    unsigned char *ptr;
+    
+                    ptr = (unsigned char *) in_value;
+   
+                    if(has_missing)
+                    {
+                        sprintf(buffer, "%dC", missing.uint8val);
+                        ret_missing.stringval = NrmStringToQuark(buffer);
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        sprintf(buffer, "%dC", (int)ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
                     }
                 }
@@ -26675,6 +26853,40 @@ NhlErrorTypes _NclItodouble
                     }
                 }
                 break;
+            case NCL_int8:
+                {
+                    char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.doubleval = (double) missing.int8val;
+                    }
+
+                    ptr = (char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (double) ptr[i];
+                    }
+                }
+                break;
+            case NCL_uint8:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.doubleval = (char) missing.uint8val;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (double) ptr[i];
+                    }
+                }
+                break;
             case NCL_short:
                 {
                     short *ptr;
@@ -27117,6 +27329,59 @@ NhlErrorTypes _NclItobyte
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
                             "There are %d int larger than CHAR_MAX, which has been flagged missing.",
+                            overflowed);
+                    }
+                }
+                break;
+            case NCL_int8:
+                {
+                    char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.byteval = (unsigned char) missing.int8val;
+                    }
+
+                    ptr = (char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (unsigned char) ptr[i];
+                    }
+                }
+                break;
+            case NCL_uint8:
+                {
+                    unsigned char val;
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        if(missing.uint8val <= SCHAR_MAX)
+                            ret_missing.byteval = (char) missing.uint8val;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = ptr[i];
+                        if(val > SCHAR_MAX)
+                        {
+                            has_missing = 1;
+                            overflowed ++;
+                            output[i] = ret_missing.byteval;
+                        }
+                        else
+                        {
+                            output[i] = (char) val;
+                        }
+                    }
+    
+                    if(overflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "There are %d uint8 larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -27769,6 +28034,59 @@ NhlErrorTypes _NclItochar
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
                             "There are %d char less than, which has been flagged missing.",
                             underflowed);
+                    }
+                }
+                break;
+            case NCL_int8:
+                {
+                    char val;
+                    char *ptr;
+
+                    if(has_missing)
+                    {
+                        if(missing.int8val >= 0)
+                            ret_missing.charval = (unsigned char) missing.int8val;
+                    }
+
+                    ptr = (char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = ptr[i];
+                        if(val < 0)
+                        {
+                            has_missing = 1;
+                            underflowed ++;
+                            output[i] = ret_missing.charval;
+                        }
+                        else
+                        {
+                            output[i] = (unsigned char) val;
+                        }
+                    }
+
+                    if(underflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "There are %d int8 less than 0, which has been flagged missing.",
+                            underflowed);
+                    }
+                }
+                break;
+            case NCL_uint8:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.charval = (unsigned char) missing.uint8val;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (unsigned char) ptr[i];
                     }
                 }
                 break;
