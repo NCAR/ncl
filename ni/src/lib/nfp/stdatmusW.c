@@ -36,7 +36,7 @@ NhlErrorTypes stdatmus_z2tdp_W( void )
  * Various
  */
   ng_size_t i, nz, size_leftmost, index_z, index_t, index_d, index_p;
-  int ret;
+  int is_scalar_z, ret;
 
 /*
  * Retrieve parameter.
@@ -57,7 +57,8 @@ NhlErrorTypes stdatmus_z2tdp_W( void )
  * Calculate size of leftmost dimensions, and set dimension sizes for 
  * output.
  */
-  if(is_scalar(ndims_z,dsizes_z)) {
+  is_scalar_z = is_scalar(ndims_z,dsizes_z);
+  if(is_scalar_z) {
     ndims_tdp = ndims_z;         /* tdp will be of length 3 */
   }
   else  {
@@ -76,9 +77,11 @@ NhlErrorTypes stdatmus_z2tdp_W( void )
   size_leftmost = 1;
   nz = dsizes_z[ndims_z-1];
   dsizes_tdp[0] = 3;
-  for(i = 0; i < ndims_z; i++) {
-    dsizes_tdp[i+1] = dsizes_z[i];
-    if(i < (ndims_z-1)) size_leftmost *= dsizes_z[i];
+  if(!is_scalar_z) {
+    for(i = 0; i < ndims_z; i++) {
+      dsizes_tdp[i+1] = dsizes_z[i];
+      if(i < (ndims_z-1)) size_leftmost *= dsizes_z[i];
+    }
   }
   size_z   = size_leftmost * nz;
   size_tdp = 3 * size_z;
@@ -201,7 +204,7 @@ NhlErrorTypes stdatmus_p2tdz_W( void )
  * Various
  */
   ng_size_t i, np, size_leftmost, index_p, index_t, index_d, index_z;
-  int ret;
+  int is_scalar_p, ret;
 
 /*
  * Retrieve parameter.
@@ -222,7 +225,8 @@ NhlErrorTypes stdatmus_p2tdz_W( void )
  * Calculate size of leftmost dimensions, and set dimension sizes for 
  * output.
  */
-  if(is_scalar(ndims_p,dsizes_p)) {
+  is_scalar_p = is_scalar(ndims_p,dsizes_p);
+  if(is_scalar_p) {
     ndims_tdz = ndims_p;         /* tdz will be of length 3 */
   }
   else  {
@@ -241,9 +245,11 @@ NhlErrorTypes stdatmus_p2tdz_W( void )
   size_leftmost = 1;
   np = dsizes_p[ndims_p-1];
   dsizes_tdz[0] = 3;
-  for(i = 0; i < ndims_p; i++) {
-    dsizes_tdz[i+1] = dsizes_p[i];
-    if(i < (ndims_p-1)) size_leftmost *= dsizes_p[i];
+  if(!is_scalar_p) {
+    for(i = 0; i < ndims_p; i++) {
+      dsizes_tdz[i+1] = dsizes_p[i];
+      if(i < (ndims_p-1)) size_leftmost *= dsizes_p[i];
+    }
   }
   size_p   = size_leftmost * np;
   size_tdz = 3 * size_p;
