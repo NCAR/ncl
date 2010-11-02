@@ -159,7 +159,7 @@ NhlErrorTypes relhum_W( void )
  */
   if(type_rh == NCL_float) {
     rh     = (void*)calloc(total_size_rh,sizeof(float));
-    tmp_rh = (void*)calloc(1,sizeof(float));
+    tmp_rh = (void*)calloc(1,sizeof(double));
     if(tmp_rh == NULL || rh == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"relhum: Unable to allocate memory for output array");
       return(NhlFATAL);
