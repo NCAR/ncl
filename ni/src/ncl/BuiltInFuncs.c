@@ -17236,7 +17236,7 @@ NhlErrorTypes _NclIFileDimDef
 
 	obj *thefile_id;
 	string *dimnames;
-	ng_size_t *dimsizes;
+	ng_size_t *dimsizes = NULL;
 	logical *unlimited;
 	int i;
 	NclFile thefile;
@@ -17296,6 +17296,10 @@ NhlErrorTypes _NclIFileDimDef
 	}
 
 	dimsizes = (ng_size_t *) NclMalloc(tmp_md->multidval.dim_sizes[0] * sizeof(ng_size_t));
+	if (! dimsizes) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+		return (NhlFATAL);
+	}
 
 	switch (tmp_md->multidval.data_type) {
 	case NCL_byte:
@@ -17368,6 +17372,7 @@ NhlErrorTypes _NclIFileDimDef
 			ret0 = ret;
 		}
 	}
+	NclFree(dimsizes);
 	return(ret0);
 }
 

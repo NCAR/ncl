@@ -8387,7 +8387,7 @@ int* nrotatts;
 	if((thevarrec->thelist != NULL)&&(thevarrec->thelist->rec_inq != NULL)) {
 			
 		*n_dims_lat = 1;
-		*dimsizes_lat = malloc(sizeof(int));
+		*dimsizes_lat = malloc(sizeof(ng_size_t));
 		(*dimsizes_lat)[0] = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[8]));
 		
 		nlat = 2 * UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[25]));
@@ -8578,7 +8578,7 @@ int* nrotatts;
 		
 			
 		*n_dims_lon = 1;
-		*dimsizes_lon = malloc(sizeof(int));
+		*dimsizes_lon = malloc(sizeof(ng_size_t));
 		nlon = CnvtToDecimal(2,&thevarrec->thelist->rec_inq->gds[6]);
 		idir = ((char)0200 & thevarrec->thelist->rec_inq->gds[27]) ? -1 : 1;
 
@@ -9782,7 +9782,7 @@ int* nrotatts;
 				for (i = 0; i < ni; i++) {
 					double tlon,tlat;
 					double cgridlat, slon,srot,crot;
-					double crot1, eps;
+					/*double crot1, eps;*/
 					rot2ll(lasp,losp,rlat + j * jdir * dj,rlon + i * idir * di,&tlat,&tlon);
 					if (do_180) {
 						tlon = tlon > 180 ? tlon - 360 : tlon;
