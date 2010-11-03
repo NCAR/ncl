@@ -338,7 +338,7 @@ NhlErrorTypes ezfftb_W( void )
  */
   double *work;
   int index_cf, index_x;
-  ng_size_t i, npts, npts2, lnpts2, size_x, size_leftmost;
+  ng_size_t i, *tmp_npts, npts, npts2, lnpts2, size_x, size_leftmost;
   int found_missing1, found_missing2, any_missing, scalar_xbar;
 /*
  * Retrieve parameters
@@ -415,7 +415,11 @@ NhlErrorTypes ezfftb_W( void )
       i = 0;
       while(att_list != NULL) {
         if(att_list->quark == NrmStringToQuark("npts")) {
-          npts  = *(ng_size_t*)att_list->attvalue->multidval.val;
+          tmp_npts = get_dimensions(att_list->attvalue->multidval.val,1,
+                                    att_list->attvalue->multidval.data_type,
+                                    "ezfftb");
+          npts = *tmp_npts;
+          free(tmp_npts);
           npts2 = npts/2;
           break;
         }
@@ -548,7 +552,7 @@ NhlErrorTypes ezfftb_W( void )
       }
       else
       {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,"dezfft[ib]: npts = %d, is larger than INT_MAX", npts);
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"dezfft[ib]: npts = %ld, is larger than INT_MAX", npts);
       }
 /*
  * Copy results back into x.
