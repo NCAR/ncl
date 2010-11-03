@@ -2232,6 +2232,7 @@ NhlErrorTypes _NclIDelete
 			}
 		} else {
 			if((data.u.data_obj->obj.ref_count != 0)&&(!sub_sel)) {
+				int id = data.u.data_obj->obj.id;
 				switch(data.u.data_obj->obj.obj_type) {
 				case Ncl_CoordVar:
 					rlist = data.u.data_obj->obj.parents;
@@ -2242,7 +2243,10 @@ NhlErrorTypes _NclIDelete
 						} else {
 							_NclDelParent((NclObj)data.u.data_obj,(NclObj)pobj);
 						}
-						rlist = data.u.data_obj->obj.parents;
+						if (_NclGetObj(id) != NULL)
+							rlist = data.u.data_obj->obj.parents;
+						else
+							rlist = NULL;
 					}
 					break;
 				default:
