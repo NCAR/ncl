@@ -847,7 +847,7 @@ NhlString _NhlFormatFloat
 	int set_ppos,move_cnt = 0;
 	NhlBoolean has_mantissa,set_point_pos = False;
 	NhlBoolean check_zero = True;
-        char tbuf[20];
+        char tbuf[64];
         long actual_leftmost = 0;
 
 	lmsd = format->left_sig_digit;
