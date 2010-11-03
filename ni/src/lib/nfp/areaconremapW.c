@@ -32,7 +32,7 @@ NhlErrorTypes area_conserve_remap_W( void )
  * Argument # 2
  */
   void *fi;
-  double *tmp_fi;
+  double *tmp_fi = NULL;
   int ndims_fi;
   ng_size_t dsizes_fi[NCL_MAX_DIMENSIONS];
   int has_missing_fi;
@@ -311,14 +311,8 @@ NhlErrorTypes area_conserve_remap_W( void )
  *
  * The output type defaults to float, unless fi is double.
  */
-
   if(type_fi != NCL_double) {
     type_fo = NCL_float;
-    tmp_fi = (double *)calloc(nlevnlatnloni,sizeof(double));
-    if(tmp_fi == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"area_conserve_remap: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
-    }
   }
   else {
     type_fo = NCL_double;
