@@ -51,6 +51,8 @@
 #define FAILED    (-1)
 #endif
 
+unsigned int _closest_prime(unsigned int prime_in);
+
 static NrmQuark Qmissing_val;
 static NrmQuark Qfill_val;
 
@@ -233,7 +235,6 @@ HDF5FileRecord *tmp;
 #endif
 {
     HDF5Options *options;
-    int i;
 
     tmp->n_options = H5_NUM_OPTIONS;
     
@@ -2803,9 +2804,9 @@ int wr_status;
 
     grp_inq = _HDF5Build_grp_list(h5_group);
 
-  /*
-   *_printHDF5dim_list(dim_list, n_dims);
-   */
+#ifdef DEBUG
+    _printHDF5dim_list(dim_list, n_dims);
+#endif
 
     the_file->h5_group = h5_group;
 
@@ -4783,7 +4784,7 @@ float cache_preemption;
 {
     HDF5FileRecord* rec = (HDF5FileRecord*)therec;
     HDF5VarInqRecList *stepvl = NULL;
-    int i,ret = NhlNOERROR;
+    int ret = NhlNOERROR;
     int fid;
 
     fprintf(stderr, "Enter HDF5AddVarChunkCache, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -4864,7 +4865,7 @@ int compress_level;
 {
     HDF5FileRecord* rec = (HDF5FileRecord*)therec;
     HDF5VarInqRecList *stepvl = NULL;
-    int i,ret = NhlNOERROR;
+    int nc_ret, ret = NhlNOERROR;
     int fid;
     int shuffle = 0;
     int deflate = compress_level;
@@ -4900,7 +4901,7 @@ int compress_level;
                 if(compress_level > 0)
                     deflate = compress_level;
 /*
-                mc_ret = nc_def_var_deflate(fid, stepvl->var_inq->varid, shuffle,
+                nc_ret = nc_def_var_deflate(fid, stepvl->var_inq->varid, shuffle,
                                             deflate, deflate_level);
 */
                 ret = NhlNOERROR;
@@ -5042,8 +5043,6 @@ static NhlErrorTypes HDF5SetOption
 #endif
 {
     HDF5FileRecord *rec = (HDF5FileRecord*)therec;
-    HDF5AttInqRecList* stepal;
-    int i,ret;
 
     if (option == NrmStringToQuark("compressionlevel"))
     {

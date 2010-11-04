@@ -56,6 +56,14 @@ void
 );
 #endif
 
+#ifdef BuildOPENDAP
+extern NclFormatFunctionRecPtr OpenDapAddFileFormat(
+#if     NhlNeedProto
+void
+#endif
+);
+#endif
+
 extern NclFormatFunctionRecPtr NetCdfAddFileFormat(
 #if	NhlNeedProto
 void
@@ -122,6 +130,10 @@ void _NclAddFileFormats
 	_NclRegisterFormat(GribAddFileFormat,"grb2");
 #endif  /* BuildGRIB2 */
 	_NclRegisterFormat(CcmAddFileFormat,"ccm");
+
+#ifdef BuildOPENDAP
+	_NclRegisterFormat(OpenDapAddFileFormat,"opendap");
+#endif
 
 #ifdef  BuildGDAL
         /* file types supported by OGR... */

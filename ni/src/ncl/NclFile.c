@@ -4244,7 +4244,24 @@ int rw_status;
 		}
 		buffer[i] = '\0';
 		fname_q = NrmStringToQuark(buffer);
+#ifdef BuildOPENDAP
+                if(strcmp("nc", end_of_name+1) == 0)
+	        	file_ext_q = NrmStringToQuark("nc");
+	        else
+		{
+                        if(strcmp("he5", end_of_name+1) == 0)
+			{
+				file_ext_q = NrmStringToQuark("opendap");
+				fprintf(stderr, "file: <%s>, line: %d\n", __FILE__, __LINE__);
+				fprintf(stderr, "\topendap file_ext_q = <%s>\n", NrmQuarkToString(file_ext_q));
+	        		file_ext_q = NrmStringToQuark("nc");
+			}
+	                else
+	        		file_ext_q = NrmStringToQuark("nc");
+		}
+#else
 		file_ext_q = NrmStringToQuark("nc");
+#endif
 	}
 	else if(end_of_name == NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) has no file extension, can't determine type of file to open",NrmQuarkToString(path));
@@ -4264,7 +4281,6 @@ int rw_status;
 */
 		end_of_name++;
 		file_ext_q = NrmStringToQuark(end_of_name);
-		
 	}
 
  	/*
@@ -4370,7 +4386,6 @@ int rw_status;
 	else {
 		if((file_out->file.format_funcs->open_file != NULL)&&((rw_status != -1)||
 								      (file_out->file.format_funcs->create_file != NULL))) {
-			
 			if(rw_status == -1) {
 				file_out->file.fpath = the_real_path = path;
 				file_out->file.wr_status = rw_status;

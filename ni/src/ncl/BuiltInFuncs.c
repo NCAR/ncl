@@ -16985,6 +16985,9 @@ NhlErrorTypes _NclIFileVarChunkDef
 	NhlErrorTypes ret=NhlNOERROR;
 	NhlErrorTypes ret0 = NhlNOERROR;
 
+	void *dims_void = NULL;
+	NclBasicDataTypes dims_type;
+
         thefile_id = (obj *)NclGetArgValue(
                         0,
                         3,
@@ -17016,17 +17019,25 @@ NhlErrorTypes _NclIFileVarChunkDef
 		}
 	}
 
-        dimsizes = (ng_size_t *)NclGetArgValue(
+        dims_void = (void *)NclGetArgValue(
                         2,
                         3,
                         &n_dims,
                         input_dimsizes,
                         &tmp_missing,
                         &tmp_has_missing,
-                        NULL,
+                        &dims_type,
                         0);
 
 	n_dims = input_dimsizes[0];
+        dimsizes = get_dimensions(dims_void, (ng_size_t)n_dims, dims_type, "Chunkdef");
+
+	if(dimsizes == NULL)
+	{
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,"FileVarChunkDef: dimension sizes wrong."));
+		return(NhlFATAL);
+        }
+
 	if(tmp_has_missing) {
 		for(i = 0; i < n_dims; i++) {
 			if(dimsizes[i] == tmp_missing.intval)  {
@@ -17068,6 +17079,12 @@ NhlErrorTypes _NclIFileVarChunkCacheDef
 	ng_size_t cache_nelems	= 1009;
 	float  cache_preemption = 0.5;
 
+	void *elems_void = NULL;
+	NclBasicDataTypes elems_type;
+
+	void *sizes_void = NULL;
+	NclBasicDataTypes sizes_type;
+
         thefile_id = (obj *)NclGetArgValue(
                         0,
                         5,
@@ -17100,27 +17117,43 @@ NhlErrorTypes _NclIFileVarChunkCacheDef
 		}
 	}
 
-        sizes = (ng_size_t *)NclGetArgValue(
+        sizes_void = (void *)NclGetArgValue(
                         2,
                         5,
                         &n_dims,
                         input_dimsizes,
                         &tmp_missing,
                         &tmp_has_missing,
-                        NULL,
+                        &sizes_type,
                         0);
+
+        sizes = get_dimensions(sizes_void, (ng_size_t)n_dims, sizes_type, "ChunkCachedef");
+
+	if(sizes == NULL)
+	{
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,"FileVarChunkCacheDef: Cache sizes wrong."));
+		return(NhlFATAL);
+        }
 
 	cache_size = sizes[0];
 
-        elems = (ng_size_t *)NclGetArgValue(
+        elems_void = (void *)NclGetArgValue(
                         3,
                         5,
                         &n_dims,
                         input_dimsizes,
                         &tmp_missing,
                         &tmp_has_missing,
-                        NULL,
+                        &elems_type,
                         0);
+
+        elems = get_dimensions(elems_void, (ng_size_t)n_dims, elems_type, "ChunkCachedef");
+
+	if(elems == NULL)
+	{
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,"FileVarChunkCacheDef: Cache elems wrong."));
+		return(NhlFATAL);
+        }
 
 	cache_nelems = elems[0];
 
@@ -19187,7 +19220,7 @@ NhlErrorTypes   _NclIFileIsPresent
     const char  *fpath = NULL;
     struct stat st;
 
-    int ncid = 0;
+    int fid = 0;
     int ndims;
     ng_size_t dimsz[NCL_MAX_DIMENSIONS];
     int sz = 1;
@@ -19219,9 +19252,16 @@ NhlErrorTypes   _NclIFileIsPresent
 
     for (i = 0; i < sz; i++) {
         fpath = (char *) NrmQuarkToString(files[i]);
+	printf("file: <%s>, line: %d\n", __FILE__, __LINE__);
+        printf("\tNo. %d path: <%s>\n", i, fpath);
         if (!strncmp(fpath, "http", 4)) {
-            ncid = ncopen(fpath, NC_NOWRITE);
-            if (ncid == -1)
+	  /*
+            fid = ncopen(fpath, NC_NOWRITE);
+	   */
+	    oc_open(fpath, &fid);
+	    printf("file: <%s>, line: %d\n", __FILE__, __LINE__);
+            printf("\tfid: <%d>\n", fid);
+            if (fid < 1)
                 file_exists[i] = 0;     /* false */
             else
                 file_exists[i] = 1;     /* true */
