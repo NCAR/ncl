@@ -531,14 +531,33 @@ NhlErrorTypes f2gshv_W( void )
  */
   if(type_Ua != NCL_double) {
     tmp_Ua = (double*)calloc(nlatanlona,sizeof(double));
-    tmp_Va = (double*)calloc(nlatanlona,sizeof(double));
-    tmp_Ub = (double*)calloc(nlatbnlonb,sizeof(double));
-    tmp_Vb = (double*)calloc(nlatbnlonb,sizeof(double));
-    if(tmp_Ua == NULL || tmp_Va == NULL || tmp_Ub == NULL || tmp_Vb == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2gshv: Unable to allocate memory for input/output arrays");
+    if(tmp_Ua == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2gshv: Unable to allocate memory for Ua array");
       return(NhlFATAL);
     }
-  } 
+  }
+  if(type_Va != NCL_double) {
+    tmp_Va = (double*)calloc(nlatanlona,sizeof(double));
+    if(tmp_Va == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2gshv: Unable to allocate memory for Va array");
+      return(NhlFATAL);
+    }
+  }
+  if(type_Ub != NCL_double) {
+    tmp_Ub = (double*)calloc(nlatbnlonb,sizeof(double));
+    if(tmp_Ub == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2gshv: Unable to allocate memory for Ub array");
+      return(NhlFATAL);
+    }
+  }
+  if(type_Vb != NCL_double) {
+    tmp_Vb = (double*)calloc(nlatbnlonb,sizeof(double));
+    if(tmp_Vb == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2gshv: Unable to allocate memory for Vb array");
+      return(NhlFATAL);
+    }
+  }
+
 /*
  * Determine the workspace size.
  */
@@ -847,11 +866,29 @@ NhlErrorTypes g2fshv_W( void )
  */
   if(type_Ua != NCL_double) {
     tmp_Ua = (double*)calloc(nlatanlona,sizeof(double));
+    if(tmp_Ua == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"g2fshv: Unable to allocate memory for input Ua array");
+      return(NhlFATAL);
+    }
+  } 
+  if(type_Va != NCL_double) {
     tmp_Va = (double*)calloc(nlatanlona,sizeof(double));
+    if(tmp_Va == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"g2fshv: Unable to allocate memory for input Va array");
+      return(NhlFATAL);
+    }
+  } 
+  if(type_Ub != NCL_double) {
     tmp_Ub = (double*)calloc(nlatbnlonb,sizeof(double));
+    if(tmp_Ub == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"g2fshv: Unable to allocate memory for input Ub array");
+      return(NhlFATAL);
+    }
+  } 
+  if(type_Vb != NCL_double) {
     tmp_Vb = (double*)calloc(nlatbnlonb,sizeof(double));
-    if(tmp_Ua == NULL || tmp_Va == NULL || tmp_Ub == NULL || tmp_Vb == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"g2fshv: Unable to allocate memory for input/output arrays");
+    if(tmp_Vb == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"g2fshv: Bnable to allocate memory for input Vb array");
       return(NhlFATAL);
     }
   } 
@@ -1161,11 +1198,29 @@ NhlErrorTypes f2fshv_W( void )
  */
   if(type_Ua != NCL_double) {
     tmp_Ua = (double*)calloc(nlatanlona,sizeof(double));
+    if(tmp_Ua == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fshv: Unable to allocate memory for Ua array");
+      return(NhlFATAL);
+    }
+  } 
+  if(type_Va != NCL_double) {
     tmp_Va = (double*)calloc(nlatanlona,sizeof(double));
+    if(tmp_Va == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fshv: Unable to allocate memory for Va array");
+      return(NhlFATAL);
+    }
+  } 
+  if(type_Ub != NCL_double) {
     tmp_Ub = (double*)calloc(nlatbnlonb,sizeof(double));
+    if(tmp_Ub == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fshv: Unable to allocate memory for Ub array");
+      return(NhlFATAL);
+    }
+  } 
+  if(type_Vb != NCL_double) {
     tmp_Vb = (double*)calloc(nlatbnlonb,sizeof(double));
-    if(tmp_Ua == NULL || tmp_Va == NULL || tmp_Ub == NULL || tmp_Vb == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fshv: Unable to allocate memory for input/output arrays");
+    if(tmp_Vb == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fshv: Unable to allocate memory for Vb array");
       return(NhlFATAL);
     }
   } 
@@ -1471,12 +1526,29 @@ NhlErrorTypes fo2fshv_W( void )
  */
   if(type_uoff != NCL_double) {
     tmp_uoff = (double*)calloc(jlatilon,sizeof(double));
+    if(tmp_uoff == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"fo2fshv: Unable to allocate memory for uoff array");
+      return(NhlFATAL);
+    }
+  } 
+  if(type_voff != NCL_double) {
     tmp_voff = (double*)calloc(jlatilon,sizeof(double));
+    if(tmp_voff == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"fo2fshv: Unable to allocate memory for voff array");
+      return(NhlFATAL);
+    }
+  } 
+  if(type_ureg != NCL_double) {
     tmp_ureg = (double*)calloc(jlat1ilon,sizeof(double));
+    if(tmp_ureg == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"fo2fshv: Unable to allocate memory for ureg array");
+      return(NhlFATAL);
+    }
+  } 
+  if(type_vreg != NCL_double) {
     tmp_vreg = (double*)calloc(jlat1ilon,sizeof(double));
-    if(tmp_uoff == NULL || tmp_voff == NULL || 
-       tmp_ureg == NULL || tmp_vreg == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"fo2fshv: Unable to allocate memory for input/output arrays");
+    if(tmp_vreg == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"fo2fshv: Unable to allocate memory for vreg array");
       return(NhlFATAL);
     }
   } 
@@ -1764,14 +1836,32 @@ NhlErrorTypes f2foshv_W( void )
  * input is not already double, otherwise, we just have them point to the
  * appropriate locations in uoff/voff and ureg/vreg.
  */
-  if(type_ureg != NCL_double) {
+  if(type_uoff != NCL_double) {
     tmp_uoff = (double*)calloc(jlatilon,sizeof(double));
+    if(tmp_uoff == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2foshv: Unable to allocate memory for uoff array");
+      return(NhlFATAL);
+    }
+  } 
+
+  if(type_voff != NCL_double) {
     tmp_voff = (double*)calloc(jlatilon,sizeof(double));
+    if(tmp_voff == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2foshv: Unable to allocate memory for voff array");
+      return(NhlFATAL);
+    }
+  } 
+  if(type_ureg != NCL_double) {
     tmp_ureg = (double*)calloc(jlat1ilon,sizeof(double));
+    if(tmp_ureg == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2foshv: Unable to allocate memory for ureg array");
+      return(NhlFATAL);
+    }
+  } 
+  if(type_vreg != NCL_double) {
     tmp_vreg = (double*)calloc(jlat1ilon,sizeof(double));
-    if(tmp_uoff == NULL || tmp_voff == NULL || 
-       tmp_ureg == NULL || tmp_vreg == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2foshv: Unable to allocate memory for input/output arrays");
+    if(tmp_vreg == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"f2foshv: Unable to allocate memory for vreg array");
       return(NhlFATAL);
     }
   } 
