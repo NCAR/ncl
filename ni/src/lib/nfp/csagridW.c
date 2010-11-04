@@ -3270,6 +3270,8 @@ NhlErrorTypes csa1x_W(void)
       return(NhlFATAL);
     }
     for(i = 0; i < npts; i++ ) tmp_wts[i] = *wts_val;
+    if (wts_val != wts)
+	    NclFree(wts_val);
   }
   else {
     tmp_wts = coerce_input_double(wts,type_wts,npts,0,NULL,NULL);
@@ -3912,6 +3914,8 @@ NhlErrorTypes csa2x_W(void)
       return(NhlFATAL);
     }
     for(i = 0; i < npts; i++ ) tmp_wts[i] = *wts_val;
+    if (wts_val != wts)
+	    NclFree(wts_val);
   }
   else {
     tmp_wts = coerce_input_double(wts,type_wts,npts,0,NULL,NULL);
@@ -4358,6 +4362,8 @@ NhlErrorTypes csa2lx_W(void)
       return(NhlFATAL);
     }
     for(i = 0; i < npts; i++ ) tmp_wts[i] = *wts_val;
+    if (wts_val != wts) 
+	    NclFree(wts_val);
   }
   else {
     tmp_wts = coerce_input_double(wts,type_wts,npts,0,NULL,NULL);
@@ -4622,6 +4628,8 @@ NhlErrorTypes csa3x_W(void)
       return(NhlFATAL);
     }
     for(i = 0; i < npts; i++ ) tmp_wts[i] = *wts_val;
+    if (wts_val != wts)
+	    NclFree(wts_val);
   }
   else {
     tmp_wts = coerce_input_double(wts,type_wts,npts,0,NULL,NULL);
@@ -4667,9 +4675,9 @@ NhlErrorTypes csa3x_W(void)
   nzo = dsizes_zo[0];
   nxyz = nxo * nyo * nzo;
 
-  tmp_xo = coerce_input_double(xo,type_xo,nxyz,0,NULL,NULL);
-  tmp_yo = coerce_input_double(yo,type_yo,nxyz,0,NULL,NULL);
-  tmp_zo = coerce_input_double(zo,type_zo,nxyz,0,NULL,NULL);
+  tmp_xo = coerce_input_double(xo,type_xo,nxo,0,NULL,NULL);
+  tmp_yo = coerce_input_double(yo,type_yo,nyo,0,NULL,NULL);
+  tmp_zo = coerce_input_double(zo,type_zo,nzo,0,NULL,NULL);
 
   if(tmp_xo == NULL || tmp_yo == NULL || tmp_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3x: Unable to allocate memory for coercing xo/yo arrays to double precision");
@@ -4869,9 +4877,9 @@ NhlErrorTypes csa3_W(void)
   nzo = dsizes_zo[0];
   nxyz = nxo * nyo * nzo;
  
-  tmp_xo = coerce_input_double(xo,type_xo,nxyz,0,NULL,NULL);
-  tmp_yo = coerce_input_double(yo,type_yo,nxyz,0,NULL,NULL);
-  tmp_zo = coerce_input_double(zo,type_zo,nxyz,0,NULL,NULL);
+  tmp_xo = coerce_input_double(xo,type_xo,nxo,0,NULL,NULL);
+  tmp_yo = coerce_input_double(yo,type_yo,nyo,0,NULL,NULL);
+  tmp_zo = coerce_input_double(zo,type_zo,nzo,0,NULL,NULL);
 
   if(tmp_xo == NULL || tmp_yo == NULL || tmp_zo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3: Unable to allocate memory for coercing xo/yo arrays to double precision");
@@ -5083,6 +5091,8 @@ NhlErrorTypes csa3lx_W(void)
       return(NhlFATAL);
     }
     for(i = 0; i < npts; i++ ) tmp_wts[i] = *wts_val;
+    if (wts_val != wts) 
+	    NclFree(wts_val);
   }
   else {
     tmp_wts = coerce_input_double(wts,type_wts,npts,0,NULL,NULL);
