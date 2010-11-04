@@ -308,6 +308,7 @@ NhlErrorTypes cfftf_W( void )
                               (NclObjClass)type_cf_class
                               );
   }
+  NclFree(dsizes_cf);
 /*
  * Attributes "frq" and "npts".
  */
@@ -641,6 +642,7 @@ NhlErrorTypes cfftb_W( void )
   else {
     ret = NclReturnValue(x,ndims_x,dsizes_x,NULL,type_x,0);
   }
+  NclFree(dsizes_x);
   return(ret);
 }
 
