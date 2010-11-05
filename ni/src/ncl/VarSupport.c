@@ -87,11 +87,16 @@ struct _NclMultiDValDataRec* _NclStripVarData
 {
 	NclMultiDValData tmp;
 	if(inst->obj.status == TEMPORARY) {
+		NclRefList *tref;
 		tmp = (NclMultiDValData)_NclGetObj(inst->var.thevalue_id);	
 		tmp->obj.status = TEMPORARY;
-		tmp->obj.ref_count = 0;
-		NclFree(tmp->obj.parents);
-		tmp->obj.parents = NULL;
+		tref = tmp->obj.parents;
+		while (tref != NULL && tref->pid == inst->obj.id) {
+			tmp->obj.parents = tref->next;
+			NclFree(tref);
+			tref = tmp->obj.parents;
+			tmp->obj.ref_count--;
+		}
 		inst->var.thevalue_id = -1;
 		return(tmp);
 	} else {
