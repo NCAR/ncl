@@ -273,6 +273,7 @@ NhlErrorTypes get_ncl_version_W(void)
   strcpy(version,GetNCLVersion());
   sversion  = (string *)calloc(1,sizeof(string));
   *sversion = NrmStringToQuark(version);
+  free(version);
   return(NclReturnValue((void *)sversion, 1, &ret_size, NULL, NCL_string, 0));
 }
 
