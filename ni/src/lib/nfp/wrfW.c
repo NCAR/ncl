@@ -333,6 +333,8 @@ NhlErrorTypes wrf_tk_W( void )
   units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
   *units       = NrmStringToQuark(cunits);
+  free(cunits);
+  free(cdescription);
 
 /*
  * Set up return value.
@@ -663,6 +665,8 @@ NhlErrorTypes wrf_td_W( void )
   units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
   *units       = NrmStringToQuark(cunits);
+  free(cdescription);
+  free(cunits);
 
 /*
  * Set up return value.
@@ -1014,6 +1018,8 @@ NhlErrorTypes wrf_rh_W( void )
   units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
   *units       = NrmStringToQuark(cunits);
+  free(cdescription);
+  free(cunits);
 
 /*
  * Set up return value.
@@ -1457,6 +1463,8 @@ NhlErrorTypes wrf_slp_W( void )
   units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
   *units       = NrmStringToQuark(cunits);
+  free(cdescription);
+  free(cunits);
 
 /*
  * Set up return value.
@@ -1901,10 +1909,14 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  */
   qdesc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *qdesc = NrmStringToQuark(cdesc);
+  if (!found_desc)
+	  free(cdesc);
+
   if(found_units) {
     qunits  = (NclQuark*)NclMalloc(sizeof(NclQuark));
     *qunits = NrmStringToQuark(cunits);
   }
+
 /*
  * Set up return value.
  */
@@ -2309,6 +2321,8 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  */
   qdesc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *qdesc = NrmStringToQuark(cdesc);
+  if (!found_desc)
+	  free(cdesc);
   if(found_units) {
     qunits  = (NclQuark*)NclMalloc(sizeof(NclQuark));
     *qunits = NrmStringToQuark(cunits);
@@ -2749,6 +2763,8 @@ NhlErrorTypes wrf_interp_1d_W( void )
  */
   qdesc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *qdesc = NrmStringToQuark(cdesc);
+  if (!found_desc)
+	  free(cdesc);
   if(found_units) {
     qunits  = (NclQuark*)NclMalloc(sizeof(NclQuark));
     *qunits = NrmStringToQuark(cunits);
@@ -3848,6 +3864,8 @@ NhlErrorTypes wrf_uvmet_W( void )
   units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
   *units       = NrmStringToQuark(cunits);
+  free(cdescription);
+  free(cunits);
 
 /*
  * Get dimension info of U and V to see if we have named dimensions.
@@ -4549,11 +4567,14 @@ NhlErrorTypes wrf_dbz_W( void )
   strcpy(cdescription,"Reflectivity");
   description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
+  free(cdescription);
 
   cunits       = (char *)calloc(4,sizeof(char));
   strcpy(cunits,"dBZ");
   units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *units       = NrmStringToQuark(cunits);
+  free(cunits);
+
 
 /*
  * Set up attributes to return.
@@ -5389,11 +5410,13 @@ NhlErrorTypes wrf_pvo_W( void )
   strcpy(cdescription,"Potential Vorticity");
   description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
+  free(cdescription);
 
   cunits       = (char *)calloc(4,sizeof(char));
   strcpy(cunits,"PVU");
   units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *units       = NrmStringToQuark(cunits);
+  free(cunits);
 
 /*
  * Set up attributes to return.
@@ -6124,11 +6147,13 @@ NhlErrorTypes wrf_avo_W( void )
   strcpy(cdescription,"Absolute Vorticity");
   description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
+  free(cdescription);
 
   cunits       = (char *)calloc(9,sizeof(char));
   strcpy(cunits,"10-5 s-1");
   units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *units       = NrmStringToQuark(cunits);
+  free(cunits);
 
 /*
  * Set up attributes to return.
@@ -6566,6 +6591,8 @@ NhlErrorTypes wrf_helicity_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dcalrelhl: miy = %ld is greater than INT_MAX", miy);
       return(NhlFATAL);
     }
+    if (tmp_top != top)
+	    free(tmp_top);
 
     if(type_sreh != NCL_double) {
       coerce_output_float_only(sreh,tmp_sreh,mxy,index_ter);
@@ -6607,11 +6634,13 @@ NhlErrorTypes wrf_helicity_W( void )
   strcpy(cdescription,"Storm Relative Helicity");
   description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
+  free(cdescription);
 
   cunits       = (char *)calloc(8,sizeof(char));
   strcpy(cunits,"m-2/s-2");
   units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *units       = NrmStringToQuark(cunits);
+  free(cunits);
 
 /*
  * Set up attributes to return.
@@ -7358,11 +7387,13 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
   strcpy(cdescription,"Updraft Helicity");
   description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
+  free(cdescription);
 
   cunits       = (char *)calloc(8,sizeof(char));
   strcpy(cunits,"m-2/s-2");
   units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *units       = NrmStringToQuark(cunits);
+  free(cunits);
 
 /*
  * Set up attributes to return.
@@ -10376,11 +10407,13 @@ NhlErrorTypes wrf_eth_W( void )
   strcpy(cdescription,"Equivalent Potential Temperature");
   description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
+  free(cdescription);
 
   cunits       = (char *)calloc(2,sizeof(char));
   strcpy(cunits,"K");
   units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *units       = NrmStringToQuark(cunits);
+  free(cunits);
 
 /*
  * Set up attributes to return.
@@ -11056,6 +11089,8 @@ NhlErrorTypes wrf_iclw_W( void )
   units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
   *units       = NrmStringToQuark(cunits);
+  free(cdescription);
+  free(cunits);
 
 /*
  * Set up return value.

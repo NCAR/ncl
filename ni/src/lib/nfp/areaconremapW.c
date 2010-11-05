@@ -402,6 +402,9 @@ NhlErrorTypes area_conserve_remap_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cremapbin: nlono = %ld is greater than INT_MAX", nlono);
     return(NhlFATAL);
   }
+  if (!set_binf || type_bin_factor != NCL_double) {
+	  free(bin_factor);
+  }
 
 /*
  * Coerce output back to float if necessary.

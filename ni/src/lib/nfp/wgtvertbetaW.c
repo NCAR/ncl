@@ -73,6 +73,7 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
   ng_size_t index_datai, index_psfc;
   ng_size_t i, size_leftmost, size_output;
   int ndims_leftmost;
+  NhlErrorTypes ret;
 
 /*
  * Retrieve parameters.
@@ -443,15 +444,17 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  */
   if(has_missing_datai) {
     if(type_wva != NCL_double) {
-      return(NclReturnValue(wva,ndims_wva,dsizes_wva,&missing_flt_datai,
-                            type_wva,0));
+     ret = NclReturnValue(wva,ndims_wva,dsizes_wva,&missing_flt_datai,
+                            type_wva,0);
     }
     else {
-      return(NclReturnValue(wva,ndims_wva,dsizes_wva,&missing_dbl_datai,
-                            type_wva,0));
+      ret = NclReturnValue(wva,ndims_wva,dsizes_wva,&missing_dbl_datai,
+                            type_wva,0);
     }
   }
   else {
-    return(NclReturnValue(wva,ndims_wva,dsizes_wva,NULL,type_wva,0));
+    ret =NclReturnValue(wva,ndims_wva,dsizes_wva,NULL,type_wva,0);
   }
+  NclFree(dsizes_wva);
+  return ret;
 }
