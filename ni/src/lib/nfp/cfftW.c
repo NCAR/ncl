@@ -60,6 +60,7 @@ NhlErrorTypes cfftf_W( void )
   double *work;
   ng_size_t i, npts, npts2, nwrk, index_x, index_cfb, size_leftmost, size_cf;
   int found_missing_xr, found_missing_xi, any_missing;
+  int inpts, inwrk;
 /*
  * Retrieve parameters
  *
@@ -163,9 +164,20 @@ NhlErrorTypes cfftf_W( void )
     }
   }
 /*
+ * Test input dimension sizes.
+ */
+  nwrk= (4*npts) + 25;
+
+  if((npts > INT_MAX) || (nwrk > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftf: One of the input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+  inwrk = (int) nwrk;
+
+/*
  * Allocate space for other arrays.
  */
-  nwrk     = (4*npts) + 25;
   tmp_frq  = (double*)calloc(npts,sizeof(double));
   tmp_cfa  = (double*)calloc(npts,sizeof(double));
   tmp_cfb  = (double*)calloc(npts,sizeof(double));
@@ -234,18 +246,8 @@ NhlErrorTypes cfftf_W( void )
                                 missing_dxr.doubleval);
     }
     else {
-      if((npts <= INT_MAX) && (nwrk <= INT_MAX))
-      {
-        int inpts = (int) npts;
-        int inwrk = (int) nwrk;
-        NGCALLF(cfftfdriver,CFFTFDRIVER)(&inpts,tmp_xr,tmp_xi,tmp_cfa,tmp_cfb,
-                                         work,&inwrk);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftfdriver: npts = %ld is greater than INT_MAX", npts);
-        return(NhlFATAL);
-      }
+      NGCALLF(cfftfdriver,CFFTFDRIVER)(&inpts,tmp_xr,tmp_xi,tmp_cfa,tmp_cfb,
+                                       work,&inwrk);
 /*
  * Copy results back into cf.
  */
@@ -315,16 +317,7 @@ NhlErrorTypes cfftf_W( void )
   att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
 /* Calculate frequences */
-  if(npts <= INT_MAX)
-  {
-    int inpts = (int) npts;
-    NGCALLF(frqcfft,FRQCFFT)(&inpts,tmp_frq);
-  }
-  else
-  {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"frqcfft: npts = %ld is greater than INT_MAX", npts);
-    return(NhlFATAL);
-  }
+  NGCALLF(frqcfft,FRQCFFT)(&inpts,tmp_frq);
   coerce_output_float_or_double(frq,tmp_frq,type_cf,npts,0);
   free(tmp_frq);
 
@@ -429,6 +422,8 @@ NhlErrorTypes cfftb_W( void )
   int ret;
   ng_size_t i, npts, nwrk, index_cfa, index_cfb, size_xr, size_x;
   int found_missing_cfa, found_missing_cfb, any_missing, size_leftmost;
+  int inpts, inwrk;
+
 /*
  * Retrieve parameters
  *
@@ -528,9 +523,19 @@ NhlErrorTypes cfftb_W( void )
     }
   }
 /*
+ * Test input dimension sizes.
+ */
+  nwrk= (4*npts) + 25;
+  if((npts > INT_MAX) || (nwrk > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftb: One of the input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+  inwrk = (int) nwrk;
+
+/*
  * Allocate space for other arrays.
  */
-  nwrk   = (4*npts) + 25;
   work   = (double*)calloc(nwrk,sizeof(double));
   tmp_xr = (double*)calloc(npts,sizeof(double));
   tmp_xi = (double*)calloc(npts,sizeof(double));
@@ -586,18 +591,8 @@ NhlErrorTypes cfftb_W( void )
       }
     }
     else {
-      if((npts <= INT_MAX) && (nwrk <= INT_MAX))
-      {
-        int inpts = (int) npts;
-        int inwrk = (int) nwrk;
-        NGCALLF(cfftbdriver,CFFTBDRIVER)(&inpts,tmp_xr,tmp_xi,tmp_cfa,tmp_cfb,
-                                         work,&inwrk);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftfdriver: npts = %ld is greater than INT_MAX", npts);
-        return(NhlFATAL);
-      }
+      NGCALLF(cfftbdriver,CFFTBDRIVER)(&inpts,tmp_xr,tmp_xi,tmp_cfa,tmp_cfb,
+                                       work,&inwrk);
 /*
  * Copy real or complex results back into x. Note that opt should have
  * been checked above to be between 0 and 2. Eventually, opt may have
@@ -691,6 +686,8 @@ NhlErrorTypes cfftf_frq_reorder_W( void )
   double *tmp_cfar, *tmp_cfbr, *tmp_frq, *tmp_frqr;
   ng_size_t i, size_x, *N, npts, index_cfa, index_cfb, size_leftmost;
   logical found_frq;
+  int inpts;
+
 /*
  * Retrieve parameters
  *
@@ -713,11 +710,20 @@ NhlErrorTypes cfftf_frq_reorder_W( void )
   }
 
 /*
+ * Test input dimension size.
+ */
+  npts = dsizes_cf[ndims_cf-1];
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftf_frq_reorder: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
+/*
  * Calculate size of input array.
  */
   size_leftmost = 1;
   for( i = 1; i < ndims_cf-1; i++ ) size_leftmost *= dsizes_cf[i];
-  npts    = dsizes_cf[ndims_cf-1];
   size_x  = size_leftmost * npts;
   size_cf = 2 * size_x;
 
@@ -831,17 +837,8 @@ NhlErrorTypes cfftf_frq_reorder_W( void )
       tmp_cfb = &((double*)cf)[index_cfb];
     }
 
-    if(npts <= INT_MAX)
-    {
-      int inpts = (int) npts;
-      NGCALLF(cfftffrqreorder,CFFTFFRQREORDER)(&inpts,tmp_frq,tmp_cfa,tmp_cfb,
-                                               tmp_frqr,tmp_cfar,tmp_cfbr);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftffrqreorder: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
+    NGCALLF(cfftffrqreorder,CFFTFFRQREORDER)(&inpts,tmp_frq,tmp_cfa,tmp_cfb,
+                                             tmp_frqr,tmp_cfar,tmp_cfbr);
 /*
  * Copy results back into cfr.
  */
