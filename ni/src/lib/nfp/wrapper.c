@@ -5914,7 +5914,8 @@ void NclAddUserFuncs(void)
     args = NewArgs(3);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(linmsg_n_W,args,"linmsg_n",nargs);
 
 /*
