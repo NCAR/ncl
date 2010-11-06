@@ -86,6 +86,11 @@ NhlErrorTypes area_conserve_remap_W( void )
   NclStackEntry   stack_entry;
 
 /*
+ * Variables for coercing input dimension sizes to integer.
+ */
+  int inlono, inlato, iNLATo, iNLATi, inloni, inlati, inlevi;
+
+/*
  * Retrieve parameters.
  *
  * Note any of the pointer parameters can be set to NULL, which
@@ -281,6 +286,27 @@ NhlErrorTypes area_conserve_remap_W( void )
   nlevi = 1;
   for(i = 0; i < ndims_fi-2; i++) nlevi *= dsizes_fi[i];
 
+/*
+ * Test input dimension sizes to make sure they are <= INT_MAX.
+ */
+  if((nlono > INT_MAX) ||
+     (nlato > INT_MAX) ||
+     (NLATi > INT_MAX) ||
+     (NLATo > INT_MAX) ||
+     (nloni > INT_MAX) ||
+     (nlati > INT_MAX) ||
+     (nlevi > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"area_conserve_remap: One of the input array dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlono = (int) nlono;
+  inlato = (int) nlato;
+  iNLATo = (int) NLATo;
+  iNLATi = (int) NLATi;
+  inloni = (int) nloni;
+  inlati = (int) nlati;
+  inlevi = (int) nlevi;
+
   nlevnlatnloni = nlevi * nlati * nloni;   /* input array size */
   nlevnlatnlono = nlevi * nlato * nlono;   /* output array size */
 
@@ -377,33 +403,12 @@ NhlErrorTypes area_conserve_remap_W( void )
 /*
  * Call the Fortran routine.
  */
-  if((nlono <= INT_MAX) &&
-     (nlato <= INT_MAX) &&
-     (NLATi <= INT_MAX) &&
-     (NLATo <= INT_MAX) &&
-     (nloni <= INT_MAX) &&
-     (nlati <= INT_MAX) &&
-     (nlevi <= INT_MAX))
-  {
-    int inlono = (int) nlono;
-    int inlato = (int) nlato;
-    int iNLATo = (int) NLATo;
-    int iNLATi = (int) NLATi;
-    int inloni = (int) nloni;
-    int inlati = (int) nlati;
-    int inlevi = (int) nlevi;
-    NGCALLF(cremapbin,CREMAPBIN)(&inlevi, &inlato, &inlono, &inlati, &inloni, 
-                                 tmp_fi, tmp_fo, tmp_lati, tmp_loni, tmp_lato,
-                                 tmp_lono, &iNLATi, &iNLATo, bin_factor, 
-			         &missing_dbl_fi.doubleval);
-  }
-  else
-  {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cremapbin: nlono = %ld is greater than INT_MAX", nlono);
-    return(NhlFATAL);
-  }
+  NGCALLF(cremapbin,CREMAPBIN)(&inlevi, &inlato, &inlono, &inlati, &inloni, 
+                               tmp_fi, tmp_fo, tmp_lati, tmp_loni, tmp_lato,
+                               tmp_lono, &iNLATi, &iNLATo, bin_factor, 
+                               &missing_dbl_fi.doubleval);
   if (!set_binf || type_bin_factor != NCL_double) {
-	  free(bin_factor);
+          free(bin_factor);
   }
 
 /*

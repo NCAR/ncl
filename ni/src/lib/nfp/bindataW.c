@@ -77,6 +77,7 @@ NhlErrorTypes bin_sum_W( void )
  * Various
  */
   ng_size_t nlat, mlon, nlatmlon, nz;
+  int imlon, inlat, inz;
 
 /*
  * Retrieve parameters.
@@ -183,6 +184,17 @@ NhlErrorTypes bin_sum_W( void )
   nz = dsizes_zlon[0];
 
 /*
+ * Test input dimension sizes to make sure they are <= INT_MAX.
+ */
+  if((mlon > INT_MAX) || (nlat > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"bin_sum: One of the input array dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imlon = (int) mlon;
+  inlat = (int) nlat;
+  inz   = (int) nz;
+
+/*
  * Get argument # 5
  */
   zlat = (void*)NclGetArgValue(
@@ -270,22 +282,9 @@ NhlErrorTypes bin_sum_W( void )
 /*
  * Call the Fortran routine.
  */
-  if((mlon <= INT_MAX) &&
-     (nlat <= INT_MAX) &&
-     (nz <= INT_MAX))
-  {
-    int imlon = (int) mlon;
-    int inlat = (int) nlat;
-    int inz = (int) nz;
-    NGCALLF(bindatasum3,BINDATASUM3)(&imlon, &inlat, tmp_gbin, gknt, tmp_glon, 
-                                     tmp_glat, &inz, tmp_zlon, tmp_zlat, 
-                                     tmp_z, &missing_dbl_z.doubleval);
-  }
-  else
-  {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"bindatasum3: mlon = %ld is greater than INT_MAX", mlon);
-    return(NhlFATAL);
-  }
+  NGCALLF(bindatasum3,BINDATASUM3)(&imlon, &inlat, tmp_gbin, gknt, tmp_glon, 
+                                   tmp_glat, &inz, tmp_zlon, tmp_zlat, 
+                                   tmp_z, &missing_dbl_z.doubleval);
 /*
  * Coerce gbin back to float if necessary.
  */
@@ -376,6 +375,7 @@ NhlErrorTypes bin_avg_W( void )
  */
   int ret, ier;
   ng_size_t nz, mlon, nlat, size_output;
+  int imlon, inlat, inz;
 
 /*
  * Retrieve parameters.
@@ -467,6 +467,17 @@ NhlErrorTypes bin_avg_W( void )
            DONT_CARE);
 
   nlat = dsizes_glat[0];
+
+/*
+ * Test input dimension sizes to make sure they are <= INT_MAX.
+ */
+  if((mlon > INT_MAX) || (nlat > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"bin_avg: One of the input array dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imlon = (int) mlon;
+  inlat = (int) nlat;
+  inz   = (int) nz;
 
 /*
  * Get argument # 5
@@ -564,23 +575,9 @@ NhlErrorTypes bin_avg_W( void )
 /*
  * Call the Fortran routine.
  */
-  if((mlon <= INT_MAX) &&
-     (nlat <= INT_MAX) &&
-     (nz <= INT_MAX))
-  {
-    int imlon = (int) mlon;
-    int inlat = (int) nlat;
-    int inz = (int) nz;
-    NGCALLF(bindataavg,BINDATAAVG)(&inz, tmp_zlon, tmp_zlat, tmp_z, 
-                                   &missing_dbl_z.doubleval, &imlon, &inlat, 
-                                   tmp_glon, tmp_glat, tmp_gbinknt, opt, &ier);
-  }
-  else
-  {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"bindataavg: mlon = %ld is greater than INT_MAX", mlon);
-    return(NhlFATAL);
-  }
-
+  NGCALLF(bindataavg,BINDATAAVG)(&inz, tmp_zlon, tmp_zlat, tmp_z, 
+                                 &missing_dbl_z.doubleval, &imlon, &inlat, 
+                                 tmp_glon, tmp_glat, tmp_gbinknt, opt, &ier);
 /*
  * Coerce gbinknt back to float if necessary.
  */
