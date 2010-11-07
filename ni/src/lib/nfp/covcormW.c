@@ -45,6 +45,8 @@ NhlErrorTypes covcorm_W( void )
   NclVar tmp_var;
   NclStackEntry return_data;
 
+  int intim, invar, ilvcm;
+
 /*
  * Retrieve x.
  */
@@ -71,6 +73,20 @@ NhlErrorTypes covcorm_W( void )
   nvar = dsizes_x[0];
   ntim = dsizes_x[1];
   size_x = nvar * ntim;
+  lvcm = (nvar*(nvar+1))/2;
+
+/*
+ * Test dimension sizes to make sure they are <= INT_MAX.
+ */
+  if((ntim > INT_MAX) ||
+     (nvar > INT_MAX) ||
+     (lvcm > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"covcorm: one or more dimension sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  intim = (int) ntim;
+  invar = (int) nvar;
+  ilvcm = (int) lvcm;
 
 /*
  * Coerce missing values, if any.
@@ -80,7 +96,6 @@ NhlErrorTypes covcorm_W( void )
 /*
  * Allocate space for input/output arrays.
  */
-  lvcm = (nvar*(nvar+1))/2;
   if(!iopt[0]) {
     size_vcm      = lvcm;
     ndims_vcm     = 1;
@@ -125,26 +140,13 @@ NhlErrorTypes covcorm_W( void )
 /*
  * Depending on iopt[0], call one of two Fortran routines.
  */
-  if((ntim <= INT_MAX) &&
-     (nvar <= INT_MAX) &&
-     (lvcm <= INT_MAX))
-  {
-    int intim = (int) ntim;
-    int invar = (int) nvar;
-    int ilvcm = (int) lvcm;
-    if(!iopt[0]) {
-      NGCALLF(dcovcormssm,DCOVCORMSSM)(&intim,&invar,dx,&missing_dx.doubleval,
-                                       &iopt[1],dvcm,&ilvcm,dtrace,&ier);
-    }
-    else {
-      NGCALLF(dcovcorm,DCOVCORM)(&intim,&invar,dx,&missing_dx.doubleval,
-                                 &iopt[1],dvcm,&ilvcm,dtrace,&ier);
-    }
+  if(!iopt[0]) {
+    NGCALLF(dcovcormssm,DCOVCORMSSM)(&intim,&invar,dx,&missing_dx.doubleval,
+				     &iopt[1],dvcm,&ilvcm,dtrace,&ier);
   }
-  else
-  {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dcovcorm: ntim = %ld is greater than INT_MAX", ntim);
-    return(NhlFATAL);
+  else {
+    NGCALLF(dcovcorm,DCOVCORM)(&intim,&invar,dx,&missing_dx.doubleval,
+			       &iopt[1],dvcm,&ilvcm,dtrace,&ier);
   }
 
   if(type_vcm == NCL_float) {

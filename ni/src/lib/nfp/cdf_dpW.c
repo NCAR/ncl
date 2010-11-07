@@ -91,9 +91,9 @@ NhlErrorTypes cdfbin_p_W( void ) {
 /*
  * Test input dimension size to make sure it is <= INT_MAX.
  */
-	if(size_x > INT_MAX)
-        {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_p: size_x = %ld is larger than INT_MAX", size_x);
+	if(size_x > INT_MAX) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_p: size_x = %ld is larger than INT_MAX", size_x);
+	  return(NhlFATAL);
 	}
 	isize_x = (int) size_x;
 
@@ -237,9 +237,9 @@ NhlErrorTypes cdfbin_s_W( void ) {
 /*
  * Test input dimension size to make sure it is <= INT_MAX.
  */
-	if(size_x > INT_MAX)
-        {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_s: size_x = %ld is larger than INT_MAX", size_x);
+	if(size_x > INT_MAX) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_s: size_x = %ld is larger than INT_MAX", size_x);
+	  return(NhlFATAL);
 	}
 	isize_x = (int) size_x;
 
@@ -383,9 +383,9 @@ NhlErrorTypes cdfbin_xn_W( void ) {
 /*
  * Test input dimension size to make sure it is <= INT_MAX.
  */
-	if(size_x > INT_MAX)
-        {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_xn: size_x = %ld is larger than INT_MAX", size_x);
+	if(size_x > INT_MAX) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_xn: size_x = %ld is larger than INT_MAX", size_x);
+	  return(NhlFATAL);
 	}
 	isize_x = (int) size_x;
 
@@ -529,9 +529,9 @@ NhlErrorTypes cdfbin_pr_W( void ) {
 /*
  * Test input dimension size to make sure it is <= INT_MAX.
  */
-	if(size_x > INT_MAX)
-        {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_pr: size_x = %ld is larger than INT_MAX", size_x);
+	if(size_x > INT_MAX) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_pr: size_x = %ld is larger than INT_MAX", size_x);
+	  return(NhlFATAL);
 	}
 	isize_x = (int) size_x;
 
@@ -675,9 +675,9 @@ NhlErrorTypes cdfgam_p_W( void ) {
 /*
  * Test input dimension size to make sure it is <= INT_MAX.
  */
-	if(size_x > INT_MAX)
-        {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfgam_p: size_x = %ld is larger than INT_MAX", size_x);
+	if(size_x > INT_MAX) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfgam_p: size_x = %ld is larger than INT_MAX", size_x);
+	  return(NhlFATAL);
 	}
 	isize_x = (int) size_x;
 
@@ -822,9 +822,9 @@ NhlErrorTypes cdfgam_x_W( void ) {
 /*
  * Test input dimension size to make sure it is <= INT_MAX.
  */
-	if(size_x > INT_MAX)
-        {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfgam_x: size_x = %ld is larger than INT_MAX", size_x);
+	if(size_x > INT_MAX) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfgam_x: size_x = %ld is larger than INT_MAX", size_x);
+	  return(NhlFATAL);
 	}
 	isize_x = (int) size_x;
 
@@ -968,9 +968,9 @@ NhlErrorTypes cdfnor_p_W( void ) {
 /*
  * Test input dimension size to make sure it is <= INT_MAX.
  */
-	if(size_x > INT_MAX)
-        {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfnor_p: size_x = %ld is larger than INT_MAX", size_x);
+	if(size_x > INT_MAX) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfnor_p: size_x = %ld is larger than INT_MAX", size_x);
+	  return(NhlFATAL);
 	}
 	isize_x = (int) size_x;
 
@@ -1114,9 +1114,9 @@ NhlErrorTypes cdfnor_x_W( void ) {
 /*
  * Test input dimension size to make sure it is <= INT_MAX.
  */
-	if(size_x > INT_MAX)
-        {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfnor_x: size_x = %ld is larger than INT_MAX", size_x);
+	if(size_x > INT_MAX) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfnor_x: size_x = %ld is larger than INT_MAX", size_x);
+	  return(NhlFATAL);
 	}
 	isize_x = (int) size_x;
 
@@ -1249,9 +1249,9 @@ NhlErrorTypes cdfchi_p_W( void ) {
 /*
  * Test input dimension size to make sure it is <= INT_MAX.
  */
-	if(size_x > INT_MAX)
-        {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfchi_p: size_x = %ld is larger than INT_MAX", size_x);
+	if(size_x > INT_MAX) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfchi_p: size_x = %ld is larger than INT_MAX", size_x);
+	  return(NhlFATAL);
 	}
 	isize_x = (int) size_x;
 

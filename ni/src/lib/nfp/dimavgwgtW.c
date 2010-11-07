@@ -47,7 +47,7 @@ NhlErrorTypes dim_avg_wgt_W( void )
 /*
  * Various
  */
-  int ret, ndims_leftmost;
+  int inx, ret, ndims_leftmost;
   ng_size_t nx, index_x;
   ng_size_t i, size_output;
 
@@ -76,7 +76,16 @@ NhlErrorTypes dim_avg_wgt_W( void )
   coerce_missing(type_x,has_missing_x,&missing_x,
                  &missing_dbl_x,&missing_flt_x);
 
+/*
+ * Test input dimension size.
+ */
   nx = dsizes_x[ndims_x-1];
+  if(nx > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_avg_wgt: nx = %ld is greater than INT_MAX", nx);
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+
 /*
  * Get argument # 1
  */
@@ -199,17 +208,8 @@ NhlErrorTypes dim_avg_wgt_W( void )
 /*
  * Call the Fortran routine.
  */
-    if(nx <= INT_MAX)
-    {
-      int inx = (int) nx;
-      NGCALLF(dimavgwgt,DIMAVGWGT)(&inx, tmp_x, &missing_dbl_x.doubleval, 
-                                   tmp_w, opt, &tmp_xavg[0]);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dimavgwgt: nx = %ld is greater than INT_MAX", nx);
-      return(NhlFATAL);
-    }
+    NGCALLF(dimavgwgt,DIMAVGWGT)(&inx, tmp_x, &missing_dbl_x.doubleval, 
+                                 tmp_w, opt, &tmp_xavg[0]);
 
 /*
  * Coerce output back to float or double.
@@ -291,7 +291,7 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
 /*
  * Various
  */
-  int ret;
+  int ret, inx;
   ng_size_t nx, index_nrx, index_x, index_nr, index_out;
   ng_size_t i, j, total_nl, total_nr, nrnx, size_output;
 
@@ -363,11 +363,20 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
  * Some error checking. Make sure input dimension is valid.
  */
   if(*narg < 0 || *narg >= ndims_x) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_sum_wgt_n: Invalid dimension argument, can't continue");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_avg_wgt_n: Invalid dimension argument, can't continue");
     return(NhlFATAL);
   }
 
+/*
+ * Test input dimension size.
+ */
   nx = dsizes_x[*narg];
+  if(nx > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_avg_wgt_n: nx = %ld is greater than INT_MAX", nx);
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+
   if(dsizes_w[0] != nx) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_avg_wgt_n: w must be length nx");
     return(NhlFATAL);
@@ -459,17 +468,9 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
 /*
  * Call the Fortran routine.
  */
-      if(nx <= INT_MAX)
-      {
-        int inx = (int) nx;
-        NGCALLF(dimavgwgt,DIMAVGWGT)(&inx, tmp_x, &missing_dbl_x.doubleval, 
-                                     tmp_w, opt, &tmp_xavg[0]);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dimavgwgt: nx = %ld is greater than INT_MAX", nx);
-        return(NhlFATAL);
-      }
+      NGCALLF(dimavgwgt,DIMAVGWGT)(&inx, tmp_x, &missing_dbl_x.doubleval, 
+                                   tmp_w, opt, &tmp_xavg[0]);
+
 /*
  * Coerce output back to float or double.
  */
@@ -544,7 +545,7 @@ NhlErrorTypes dim_sum_wgt_W( void )
 /*
  * Various
  */
-  int ret, ndims_leftmost;
+  int inx, ret, ndims_leftmost;
   ng_size_t nx, index_x;
   ng_size_t i, size_output;
 
@@ -568,12 +569,21 @@ NhlErrorTypes dim_sum_wgt_W( void )
            DONT_CARE);
 
 /*
+ * Test input dimension size.
+ */
+  nx = dsizes_x[ndims_x-1];
+  if(nx > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_sum_wgt: nx = %ld is greater than INT_MAX", nx);
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+
+/*
  * Coerce missing value to double if necessary.
  */
   coerce_missing(type_x,has_missing_x,&missing_x,
                  &missing_dbl_x,&missing_flt_x);
 
-  nx = dsizes_x[ndims_x-1];
 /*
  * Get argument # 1
  */
@@ -696,17 +706,8 @@ NhlErrorTypes dim_sum_wgt_W( void )
 /*
  * Call the Fortran routine.
  */
-    if(nx <= INT_MAX)
-    {
-      int inx = (int) nx;
-      NGCALLF(dimsumwgt,DIMSUMWGT)(&inx, tmp_x, &missing_dbl_x.doubleval, 
-                                   tmp_w, opt, &tmp_xavg[0]);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dimsumwgt: nx = %ld is greater than INT_MAX", nx);
-      return(NhlFATAL);
-    }
+    NGCALLF(dimsumwgt,DIMSUMWGT)(&inx, tmp_x, &missing_dbl_x.doubleval, 
+                                 tmp_w, opt, &tmp_xavg[0]);
 
 /*
  * Coerce output back to float or double.
@@ -788,7 +789,7 @@ NhlErrorTypes dim_sum_wgt_n_W( void )
 /*
  * Various
  */
-  int ret;
+  int inx, ret;
   ng_size_t nx, nrnx, index_x, index_nrx, index_nr, index_out;
   ng_size_t i, j, total_nl, total_nr, size_output;
 
@@ -864,7 +865,16 @@ NhlErrorTypes dim_sum_wgt_n_W( void )
     return(NhlFATAL);
   }
 
+/*
+ * Test input dimension size.
+ */
   nx = dsizes_x[*narg];
+  if(nx > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_sum_wgt_n: nx = %ld is greater than INT_MAX", nx);
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+
   if(dsizes_w[0] != nx) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_sum_wgt_n: w must be length nx");
     return(NhlFATAL);
@@ -956,17 +966,8 @@ NhlErrorTypes dim_sum_wgt_n_W( void )
 /*
  * Call the Fortran routine.
  */
-      if(nx <= INT_MAX)
-      {
-        int inx = (int) nx;
-        NGCALLF(dimsumwgt,DIMSUMWGT)(&inx, tmp_x, &missing_dbl_x.doubleval, 
-                                     tmp_w, opt, &tmp_xavg[0]);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dimsumwgt: nx = %ld is greater than INT_MAX", nx);
-        return(NhlFATAL);
-      }
+      NGCALLF(dimsumwgt,DIMSUMWGT)(&inx, tmp_x, &missing_dbl_x.doubleval, 
+                                   tmp_w, opt, &tmp_xavg[0]);
 /*
  * Coerce output back to float or double.
  */

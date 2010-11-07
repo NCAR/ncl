@@ -34,8 +34,9 @@ NhlErrorTypes dz_height_W( void )
  */
   ng_size_t i, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
   ng_size_t size_z, index_zsfc, index_z, size_leftmost;
-  int ier, der;
-  int ret;
+  int ier, der, ret;
+  int inlon, inlat, iklvl;
+
 /*
  * Retrieve parameters
  *
@@ -93,6 +94,19 @@ NhlErrorTypes dz_height_W( void )
   nlon = dsizes_z[ndims_z-1];
 
 /*
+ * Check input dimension sizes.
+ */
+    if((nlon > INT_MAX) ||
+       (nlat > INT_MAX) ||
+       (klvl > INT_MAX)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dz_height: one or more input dimension sizes are greater than INT_MAX");
+      return(NhlFATAL);
+    }
+    inlon = (int) nlon;
+    inlat = (int) nlat;
+    iklvl = (int) klvl;
+
+/*
  * Check dimension sizes for zsfc. It must be a scalar, an nlat x nlon
  * array, or the same size as z.
  */
@@ -134,9 +148,9 @@ NhlErrorTypes dz_height_W( void )
   size_z = size_leftmost * klvlnlatnlon;
 
 /*
- * Determine type of output. It depends on the type of zsfc only.
+ * Determine type of output.
  */
-  if(type_zsfc == NCL_double) {
+  if(type_z == NCL_double || type_zsfc == NCL_double || type_ztop == NCL_double) {
     type_dz = NCL_double;
   }
   else {
@@ -273,22 +287,9 @@ NhlErrorTypes dz_height_W( void )
 /*
  * Call Fortran routine.
  */
-    if((nlon <= INT_MAX) &&
-       (nlat <= INT_MAX) &&
-       (klvl <= INT_MAX))
-    {
-      int inlon = (int) nlon;
-      int inlat = (int) nlat;
-      int iklvl = (int) klvl;
-      NGCALLF(dzhgtdrv,DZHGTDRV)(&inlon,&inlat,&iklvl,tmp_z,tmp_zsfc,
-                                 &missing_dzsfc.doubleval,tmp_ztop,tmp_dz,
-                                 iopt,&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dzhgtdrv: nlon = %ld is greater than INT_MAX", nlon);
-      return(NhlFATAL);
-    }
+    NGCALLF(dzhgtdrv,DZHGTDRV)(&inlon,&inlat,&iklvl,tmp_z,tmp_zsfc,
+                               &missing_dzsfc.doubleval,tmp_ztop,tmp_dz,
+                               iopt,&ier);
 /*
  * Check for error returns.
  */
