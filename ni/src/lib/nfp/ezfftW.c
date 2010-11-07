@@ -46,6 +46,8 @@ NhlErrorTypes ezfftf_W( void )
   ng_size_t i, npts, npts2, lnpts2, npts22;
   int found_missing, any_missing;
   ng_size_t size_leftmost, size_cf;
+  int inpts;
+
 /*
  * Retrieve parameters
  *
@@ -67,9 +69,19 @@ NhlErrorTypes ezfftf_W( void )
   size_leftmost = 1;
   for( i = 0; i < ndims_x-1; i++ ) size_leftmost *= dsizes_x[i];
 /*
+ * Test input array size
+ */
+  npts = dsizes_x[ndims_x-1];
+
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: npts = %d is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
+/*
  * Calculate size of output array.
  */
-  npts   = dsizes_x[ndims_x-1];
   npts2  = npts/2;
   lnpts2 = npts2 * size_leftmost;
   npts22 = 2*npts2;
@@ -158,16 +170,8 @@ NhlErrorTypes ezfftf_W( void )
                                 missing_dx.doubleval);
     }
     else {
-      if(npts <= INT_MAX)
-      {
-          int inpts = (int) npts;
-          NGCALLF(dezffti,DEZFFTI)(&inpts,work);
-          NGCALLF(dezfftf,DEZFFTF)(&inpts,tmp_x,tmp_xbar,tmp_cf1,tmp_cf2,work);
-      }
-      else
-      {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,"dezfft[if]: npts = %d, is larger than INT_MAX", npts);
-      }
+      NGCALLF(dezffti,DEZFFTI)(&inpts,work);
+      NGCALLF(dezfftf,DEZFFTF)(&inpts,tmp_x,tmp_xbar,tmp_cf1,tmp_cf2,work);
 /*
  * Copy results back into xbar and cf.
  */
@@ -340,6 +344,7 @@ NhlErrorTypes ezfftb_W( void )
   int index_cf, index_x;
   ng_size_t i, *tmp_npts, npts, npts2, lnpts2, size_x, size_leftmost;
   int found_missing1, found_missing2, any_missing, scalar_xbar;
+  int inpts;
 /*
  * Retrieve parameters
  *
@@ -399,6 +404,15 @@ NhlErrorTypes ezfftb_W( void )
   npts2  = dsizes_cf[ndims_cf-1];     /* Go ahead and calculate the     */
   npts   = 2*npts2;                   /* length, in case it is not set  */
                                       /* explicitly.                    */
+/*
+ * Test input array size
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: npts = %d is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
   data = _NclGetArg(0,2,DONT_CARE);
   switch(data.kind) {
   case NclStk_VAR:
@@ -544,16 +558,8 @@ NhlErrorTypes ezfftb_W( void )
         }
       }
 
-      if(npts <= INT_MAX)
-      {
-          int inpts = (int) npts;
-          NGCALLF(dezffti,DEZFFTI)(&inpts,work);
-          NGCALLF(dezfftb,DEZFFTB)(&inpts,tmp_x,tmp_xbar,tmp_cf1,tmp_cf2,work);
-      }
-      else
-      {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,"dezfft[ib]: npts = %ld, is larger than INT_MAX", npts);
-      }
+      NGCALLF(dezffti,DEZFFTI)(&inpts,work);
+      NGCALLF(dezfftb,DEZFFTB)(&inpts,tmp_x,tmp_xbar,tmp_cf1,tmp_cf2,work);
 /*
  * Copy results back into x.
  */

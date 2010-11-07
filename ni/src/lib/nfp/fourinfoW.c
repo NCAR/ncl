@@ -2,9 +2,9 @@
 #include "wrapper.h"
 
 extern void NGCALLF(dfourinfo,DFOURINFO)(double*, int*, int*, int*, double*,
-					 double*, double*, double*,
-					 double*, double*, double*,
-					 double*, double*, double*, int*);
+                                         double*, double*, double*,
+                                         double*, double*, double*,
+                                         double*, double*, double*, int*);
 
 NhlErrorTypes fourier_info_W( void )
 {
@@ -37,6 +37,7 @@ NhlErrorTypes fourier_info_W( void )
  */
   ng_size_t i;
   int index_x, index_amp, index_pha, index_pcv;
+  int ilwrk, inpts;
   ng_size_t npts, size_leftmost, size_output;
 
 /*
@@ -76,13 +77,21 @@ NhlErrorTypes fourier_info_W( void )
  * Check input sizes.
  */
   npts = dsizes_x[ndims_x-1];
-  nhar = npts/2;
-
   if(npts < 1) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: The last dimension of x must be greater than 1");
     return(NhlFATAL);
   }
   
+  nhar = npts/2;
+  lwrk = 4*npts+15; 
+  
+  if((lwrk > INT_MAX) || (npts > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: npts and/or lwrk is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  ilwrk = (int) lwrk;
+  inpts = (int) npts;
+
   if(*nhret == 0) {
     nht = nhar;
   }
@@ -135,14 +144,13 @@ NhlErrorTypes fourier_info_W( void )
  * length "nhar" for "a" and "b", but for some reason, on Sun systems,
  * a core dump occurs if you use just "nhar" and "npts" is odd.
  */
-  lwrk    = 4*npts+15; 
   a       = (double *)calloc(nhar+1,sizeof(double));
   b       = (double *)calloc(nhar+1,sizeof(double));
   wrk     = (double *)calloc(lwrk,sizeof(double));
   
   if(tmp_amp == NULL || tmp_pha == NULL || tmp_pcv == NULL ||
-	 tmp_ampx== NULL || tmp_phax== NULL || tmp_pcvx== NULL ||
-	 a == NULL || b == NULL || wrk == NULL) {
+     tmp_ampx== NULL || tmp_phax== NULL || tmp_pcvx== NULL ||
+     a == NULL || b == NULL || wrk == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: Cannot allocate space for work arrays");
     return(NhlFATAL);
   }
@@ -207,23 +215,13 @@ NhlErrorTypes fourier_info_W( void )
     }
     else {
 
-      if((lwrk <= INT_MAX) &&
-         (npts <= INT_MAX))
-      {
-          int ilwrk = (int) lwrk;
-          int inpts = (int) npts;
-          NGCALLF(dfourinfo,DFOURINFO)(tmp_x,&inpts,&nht,&nhar,tmp_sclphase,
-				       tmp_amp,tmp_pha,tmp_pcv,a,b,tmp_ampx,
-				       tmp_phax,tmp_pcvx,wrk,&ilwrk);
-      }
-      else
-      {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,"dfourinfo: lwrk = %d, is larger than INT_MAX", lwrk);
-      }
+      NGCALLF(dfourinfo,DFOURINFO)(tmp_x,&inpts,&nht,&nhar,tmp_sclphase,
+                                   tmp_amp,tmp_pha,tmp_pcv,a,b,tmp_ampx,
+                                   tmp_phax,tmp_pcvx,wrk,&ilwrk);
 
-	  coerce_output_float_or_double(finfo,tmp_amp,type_finfo,nht,index_amp);
-	  coerce_output_float_or_double(finfo,tmp_pha,type_finfo,nht,index_pha);
-	  coerce_output_float_or_double(finfo,tmp_pcv,type_finfo,nht,index_pcv);
+      coerce_output_float_or_double(finfo,tmp_amp,type_finfo,nht,index_amp);
+      coerce_output_float_or_double(finfo,tmp_pha,type_finfo,nht,index_pha);
+      coerce_output_float_or_double(finfo,tmp_pcv,type_finfo,nht,index_pcv);
     }
     index_x   += npts;
     index_amp += nht;

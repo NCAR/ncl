@@ -43,6 +43,7 @@ NhlErrorTypes fft2df_W( void )
   ng_size_t i, j, m, l, ldim, l21, ml, mldim, ml21, lwsave, lwork, size_coef;
   ng_size_t ic0, ic1, ir0, ir1, ix0, ix1;
   double *wsave, *work;
+  int il, im, ildim, ilwsave, ilwork;
 
 /*
  * Retrieve input argument.
@@ -125,10 +126,24 @@ NhlErrorTypes fft2df_W( void )
   }
 
 /*
- * Allocate space for work arrays.
+ * Test dimension sizes. 
  */
   lwsave = 2*m + l + (int)log((double)l) + (int)log((double)m) + 8;
   lwork  = mldim;
+  if((l > INT_MAX) || (m > INT_MAX) || (ldim > INT_MAX) ||
+     (lwsave > INT_MAX) || (lwork > INT_MAX)) { 
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fft2df: one or more input dimension sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  il = (int) l;
+  im = (int) m;
+  ildim = (int) ldim;
+  ilwsave = (int) lwsave;
+  ilwork = (int) lwork;
+
+/*
+ * Allocate space for work arrays.
+ */
   wsave  = (double *)calloc(lwsave,sizeof(double));
   work   = (double *)calloc(lwork,sizeof(double));
   if(work == NULL || wsave == NULL) {
@@ -140,26 +155,9 @@ NhlErrorTypes fft2df_W( void )
  * Call the Fortran routines.
  */
   ier = 0;
-  if((l <= INT_MAX) &&
-     (m <= INT_MAX) &&
-     (ldim <= INT_MAX) &&
-     (lwsave <= INT_MAX) &&
-     (lwork <= INT_MAX))
-  { 
-    int il = (int) l;
-    int im = (int) m;
-    int ildim = (int) ldim;
-    int ilwsave = (int) lwsave;
-    int ilwork = (int) lwork;
-    NGCALLF(drfft2i,DRFFT2I)(&il, &im, wsave, &ilwsave, &ier);
-    NGCALLF(drfft2f,DRFFT2F)(&ildim, &il, &im, tmp_r, wsave, &ilwsave, work, &ilwork,
+  NGCALLF(drfft2i,DRFFT2I)(&il, &im, wsave, &ilwsave, &ier);
+  NGCALLF(drfft2f,DRFFT2F)(&ildim, &il, &im, tmp_r, wsave, &ilwsave, work, &ilwork,
                              &ier);
-  }
-  else
-  {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"drfft2f: lwork = %ld is greater than INT_MAX", lwork);
-    return(NhlFATAL);
-  }
   if(ier) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"fft2df: ier = %d", ier);
     return(NhlFATAL);
@@ -326,6 +324,7 @@ NhlErrorTypes fft2db_W( void )
   ng_size_t ix0, ix1, ir0, ir1, ic0, ic1, size_coef;
   logical calculate_lval;
   double *wsave, *work;
+  int il, im, ildim, ilwsave, ilwork;
 
 /*
  * Retrieve input argument.
@@ -473,10 +472,24 @@ NhlErrorTypes fft2db_W( void )
   }
 
 /*
- * Allocate space for work arrays.
+ * Test dimension sizes. 
  */
   lwsave = 2*m + l + log(l) + log(m) + 8;
   lwork  = mldim;
+  if((l > INT_MAX) || (m > INT_MAX) || (ldim > INT_MAX) ||
+     (lwsave > INT_MAX) || (lwork > INT_MAX)) { 
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fft2db: one or more input dimension sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  il = (int) l;
+  im = (int) m;
+  ildim = (int) ldim;
+  ilwsave = (int) lwsave;
+  ilwork = (int) lwork;
+
+/*
+ * Allocate space for work arrays.
+ */
   wsave  = (double *)calloc(lwsave,sizeof(double));
   work   = (double *)calloc(lwork,sizeof(double));
   if(work == NULL || wsave == NULL) {
@@ -488,26 +501,9 @@ NhlErrorTypes fft2db_W( void )
  * Call the Fortran routines.
  */
   ier = 0;
-  if((l <= INT_MAX) &&
-     (m <= INT_MAX) &&
-     (ldim <= INT_MAX) &&
-     (lwsave <= INT_MAX) &&
-     (lwork <= INT_MAX))
-  {
-    int il = (int) l;
-    int im = (int) m;
-    int ildim = (int) ldim;
-    int ilwsave = (int) lwsave;
-    int ilwork = (int) lwork;
-    NGCALLF(drfft2i,DRFFT2I)(&il, &im, wsave, &ilwsave, &ier);
-    NGCALLF(drfft2b,DRFFT2B)(&ildim, &il, &im, tmp_r, wsave, &ilwsave, work, 
-                             &ilwork,&ier);
-  }
-  else
-  {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"drfft2b: lwork = %ld is greater than INT_MAX", lwork);
-    return(NhlFATAL);
-  }
+  NGCALLF(drfft2i,DRFFT2I)(&il, &im, wsave, &ilwsave, &ier);
+  NGCALLF(drfft2b,DRFFT2B)(&ildim, &il, &im, tmp_r, wsave, &ilwsave, work, 
+                           &ilwork,&ier);
 
   if(ier) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"fft2db: ier = %d", ier);
