@@ -209,6 +209,7 @@ NhlErrorTypes prcwater_dp_W( void )
  */
   if(type_dp != NCL_double) NclFree(tmp_dp);
   if(type_q  != NCL_double) NclFree(tmp_q);
+  if(type_prcwat != NCL_double) NclFree(tmp_prcwat);
 
 /*
  * Return.
