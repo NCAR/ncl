@@ -389,6 +389,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	ng_size_t agg_chunk_size;
         int var_ndims; /* non_aggregated natural var dim count */
 	int good_file_count;
+	long long max_var_size;
 
 
 	ptr++;lptr++;fptr++;
@@ -947,6 +948,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	first = 1;
 	var_offset = 0;
 	agg_stride_index = -1;
+	max_var_size = 	sizeof(ng_size_t) == 8 ? LONG_MAX : INT_MAX;
 	if (sel.sel_type == Ncl_SUBSCR) {
 		if (sel.u.sub.stride > 0) {
 			dir = 1;
@@ -1260,7 +1262,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				agg_chunk_size = tmp_md->multidval.totalsize;
 				var_offset = tmp_md->multidval.totalsize;
 				tsize = agg_chunk_size * (long long) agg_sel_count;
-				if (tsize > INT_MAX) {
+				if (tsize > max_var_size) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,
 						  "Aggregating variable %s from file list variable %s as specified would exceed maximum NCL variable size",
 						  NrmQuarkToString(var),listsym->name);
@@ -1332,7 +1334,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				agg_chunk_size = tmp_md->multidval.totalsize / tmp_md->multidval.dim_sizes[0];
 				var_offset = tmp_md->multidval.totalsize;
 				tsize = agg_chunk_size * (long long) agg_sel_count;
-				if (tsize > INT_MAX) {
+				if (tsize > max_var_size) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,
 						  "Aggregating variable %s from file list variable %s as specified would exceed maximum NCL variable size",
 						  NrmQuarkToString(var),listsym->name);
