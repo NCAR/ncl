@@ -39,7 +39,8 @@ NhlErrorTypes grid2triple_W( void )
 /*
  * Various
  */
-  int mx, ny, ldmax, ldmax2, ldmax3, ld, ld2, ier;
+  ng_size_t mx, ny, ld, ld2, ldmax, ldmax2, ldmax3;
+  int ild, ier, imx, iny, ildmax;
 /*
  * Retrieve input array. 
  */
@@ -78,6 +79,7 @@ NhlErrorTypes grid2triple_W( void )
   ldmax = mx * ny;
   ldmax2 = 2 * ldmax;
   ldmax3 = 3 * ldmax;
+
 /*
  * Check size of z array.
  */
@@ -85,6 +87,17 @@ NhlErrorTypes grid2triple_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"grid2triple: The last input array must be dimensioned ny x mx, where ny is the length of y, and mx is the length of x");
     return(NhlFATAL);
   }
+/*
+ * Check input dimension sizes.
+ */
+  if((mx > INT_MAX) || (ny > INT_MAX) || (ldmax > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"grid2triple: one or input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imx    = (int) mx;
+  iny    = (int) ny;
+  ildmax = (int) ldmax;
+
 /*
  * Coerce missing values.
  */
@@ -124,10 +137,11 @@ NhlErrorTypes grid2triple_W( void )
     type_d = NCL_float;
   }
 
-  NGCALLF(grid2triple,GRID2TRIPLE)(tmp_x,tmp_y,tmp_z,&mx,&ny,tmp_d,&ldmax,
-                                   &ld,&missing_dz.doubleval,&ier);
+  NGCALLF(grid2triple,GRID2TRIPLE)(tmp_x,tmp_y,tmp_z,&imx,&iny,tmp_d,&ildmax,
+                                   &ild,&missing_dz.doubleval,&ier);
+  ld = (ng_size_t)ild;
 /*
- * if ld is zero, then this probably means that all of tmp_d is missing,
+ * If ld is zero, then this probably means that all of tmp_d is missing,
  * and thus we need to return 3*ldmax missing values.
  */
   if(ld == 0) ld = ldmax;
@@ -223,6 +237,8 @@ NhlErrorTypes triple2grid_W( void )
   double *domain = NULL;
   logical has_domain=False, has_distmx=False;
   NclBasicDataTypes type_domain, type_distmx;
+  int inpts, ingx, ingy, ingx2, ingy2;
+
 /*
  * Variables for retrieving attributes from "options".
  */
@@ -325,6 +341,20 @@ NhlErrorTypes triple2grid_W( void )
   ngxy  = ngx * ngy;
   ngxy2 = ngx2 * ngy2;
   size_grid = size_leftmost * ngxy;
+
+/*
+ * Test input dimension sizes.
+ */
+  if((npts > INT_MAX) || (ngx  > INT_MAX) || (ngy > INT_MAX) || 
+     (ngx2 > INT_MAX) || (ngy2 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+  ingx  = (int) ngx;
+  ingy  = (int) ngy;
+  ingx2 = (int) ngx2;
+  ingy2 = (int) ngy2;
 
   dsizes_grid[ndims_grid-2] = ngy;
   dsizes_grid[ndims_grid-1] = ngx;
@@ -505,28 +535,11 @@ NhlErrorTypes triple2grid_W( void )
 
     if(type_grid == NCL_double) tmp_grid = &((double*)grid)[index_grid];
 
-
-    if((npts <= INT_MAX) &&
-       (ngx <= INT_MAX) &&
-       (ngy <= INT_MAX) &&
-       (ngx2 <= INT_MAX) &&
-       (ngy2 <= INT_MAX))
-    {
-        int inpts = (int) npts;
-        int ingx  = (int) ngx;
-        int ingy  = (int) ngy;
-        int ingx2 = (int) ngx2;
-        int ingy2 = (int) ngy2;
-        NGCALLF(triple2grid1,TRIPLE2GRID1)(&inpts,tmp_x,tmp_y,tmp_z,
-                                           &missing_dz.doubleval,&ingx,&ingy,
-                                           tmp_gridx,tmp_gridy,tmp_grid,domain,
-                                           &loop,&method,distmx,&ingx2,&ingy2,
-                                           dx,dy,dz,gxbig,gybig,gbig,&ier);
-    }
-    else
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid1: npts = %d, is larger than INT_MAX", npts);
-    }
+    NGCALLF(triple2grid1,TRIPLE2GRID1)(&inpts,tmp_x,tmp_y,tmp_z,
+                                       &missing_dz.doubleval,&ingx,&ingy,
+                                       tmp_gridx,tmp_gridy,tmp_grid,domain,
+                                       &loop,&method,distmx,&ingx2,&ingy2,
+                                       dx,dy,dz,gxbig,gybig,gbig,&ier);
 /*
  * Coerce grid back to float if necessary.
  *
@@ -592,8 +605,8 @@ NhlErrorTypes triple2grid2d_W( void )
 /*
  * Various
  */
-  int npts, nlon, nlat, size_grid;
-  int mopt = 0;
+  ng_size_t npts, nlon, nlat, size_grid;
+  int inpts, inlon, inlat, mopt = 0;
   double *distmx = NULL;
   logical has_distmx = False;
   NclBasicDataTypes type_distmx;
@@ -686,6 +699,17 @@ NhlErrorTypes triple2grid2d_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid2d: The two 2-dimensional arrays that define the output grid must be the same size");
     return(NhlFATAL);
   }
+
+/*
+ * Test dimension sizes.
+ */
+  if((npts > INT_MAX) || (nlon > INT_MAX) || (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid2d: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+  inlat = (int) nlat;
+  inlon = (int) nlon;
 
 /*
  * Set sizes for output array.
@@ -797,10 +821,10 @@ NhlErrorTypes triple2grid2d_W( void )
 /*
  * Call the Fortran subroutine.
  */
-  NGCALLF(triple2grid2d,TRIPLE2GRID2D)(tmp_x,tmp_y,tmp_z,&npts,
+  NGCALLF(triple2grid2d,TRIPLE2GRID2D)(tmp_x,tmp_y,tmp_z,&inpts,
                                        &missing_dz.doubleval,distmx,&mopt,
                                        tmp_gridy,tmp_gridx,tmp_grid,
-                                       &nlat,&nlon);
+                                       &inlat,&inlon);
 /*
  * Coerce grid back to float if necessary.
  *
