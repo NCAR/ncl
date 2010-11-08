@@ -30,7 +30,7 @@ NhlErrorTypes inverse_matrix_W( void )
  * Various
  */
   ng_size_t n, m, nm, lwork, lpiv, nb, lda;
-  int one, mone;
+  int one, mone, in, im, inrhs, ilda, ilwork;
   int info=0, *ipiv;
   double *work;
 /*
@@ -46,9 +46,19 @@ NhlErrorTypes inverse_matrix_W( void )
            &type_x,
            DONT_CARE);
 
+/*
+ * Test dimension sizes.
+ */
   n  = dsizes_x[0];
   m  = dsizes_x[1];
   nm = n * m;
+
+  if((n > INT_MAX) || (m > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"inverse_matrix: one or more input dimension sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  in = (int) n;
+  im = (int) m;
 
 /*
  * Coerce input matrix to double no matter what, since it will get
@@ -86,18 +96,19 @@ NhlErrorTypes inverse_matrix_W( void )
   mone  = -1;
   one   =  1;
   lda   = m;
-  if(n <= INT_MAX)
-  {
-      int in = (int) n;
-      nb = NGCALLF(ilaenv,ILAENV)(&one, "dgetri", " ", &in, &mone, &mone, 
-                                    &mone, 6, 1);
-  }
-  else
-  {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ilaenv: n = %d, is larger than INT_MAX", n);
-  }
+
+  nb = NGCALLF(ilaenv,ILAENV)(&one, "dgetri", " ", &in, &mone, &mone, 
+                              &mone, 6, 1);
+
   lwork = n * nb;
   lpiv  = min(n,m);
+  if((lwork > INT_MAX) || (lda > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"inverse_matrix: one or more work array dimension sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  ilda = (int) lda;
+  ilwork = (int) lwork;
+
   work  = (double*)calloc(lwork,sizeof(double));
   ipiv  = (int*)calloc(lpiv,sizeof(int));
   if(work == NULL || ipiv == NULL) {
@@ -111,30 +122,15 @@ NhlErrorTypes inverse_matrix_W( void )
  */
   coerce_subset_input_double(x,tmp_x,0,type_x,nm,0,NULL,NULL);
 
-  if((n <= INT_MAX) &&
-     (m <= INT_MAX) &&
-     (lwork <= INT_MAX) &&
-     (lda <= INT_MAX))
-  {
-      int in = (int) n;
-      int im = (int) m;
-      int ilda = (int) lda;
-
-      NGCALLF(dgetrf,DGETRF)( &im, &in, tmp_x, &ilda, ipiv, &info );
-      if(!info) {
-        int ilwork = (int) work;
-        NGCALLF(dgetri,DGETRI)( &in, tmp_x, &ilda, ipiv, work, &ilwork, &info );
-        if(!info) {
-          coerce_output_float_or_double(xinv,tmp_x,type_xinv,nm,0);
-        }
-      }
-      else {
-        NhlPError(NhlWARNING,NhlEUNKNOWN,"inverse_matrix: info = %d; missing values not allowed\n", info );
-      }
+  NGCALLF(dgetrf,DGETRF)( &im, &in, tmp_x, &ilda, ipiv, &info );
+  if(!info) {
+    NGCALLF(dgetri,DGETRI)( &in, tmp_x, &ilda, ipiv, work, &ilwork, &info );
+    if(!info) {
+      coerce_output_float_or_double(xinv,tmp_x,type_xinv,nm,0);
+    }
   }
-  else
-  {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dgetrf: n = %d, is larger than INT_MAX", n);
+  else {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"inverse_matrix: info = %d; missing values not allowed\n", info );
   }
 
 /*
@@ -181,7 +177,7 @@ NhlErrorTypes solve_linsys_W( void )
   ng_size_t i, j, l, n, nrhs, nn, nnrhs;
   ng_size_t lda, ldb;
   int info=0;
-  int *ipiv;
+  int *ipiv, in, inrhs, ilda, ildb;
 /*
  * Retrieve input arrays. 
  */
@@ -225,6 +221,16 @@ NhlErrorTypes solve_linsys_W( void )
 
   nn    = n * n;
   nnrhs = n * nrhs;
+  lda   = ldb = n;
+
+  if((n > INT_MAX) || (nrhs > INT_MAX) || (lda > INT_MAX) || (ldb > INT_MAX)){
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"solve_linsys: one or more dimension sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  in = (int) n;
+  inrhs = (int) nrhs;
+  ilda = (int) lda;
+  ildb = (int) ldb;
 
 /*
  * Coerce input matrix to double no matter what, since it will get
@@ -261,7 +267,6 @@ NhlErrorTypes solve_linsys_W( void )
 /*
  * Allocate space for work arrays.
  */
-  lda = ldb = n;
   ipiv = (int*)calloc(n,sizeof(int));
   if(ipiv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"solve_linsys: Unable to allocate memory for work array");
@@ -283,21 +288,7 @@ NhlErrorTypes solve_linsys_W( void )
     }
   }
 
-  if((n <= INT_MAX) &&
-     (nrhs <= INT_MAX) &&
-     (lda <= INT_MAX) &&
-     (ldb <= INT_MAX))
-  {
-      int in = (int) n;
-      int inrhs = (int) nrhs;
-      int ilda = (int) lda;
-      int ildb = (int) ldb;
-      NGCALLF(dgesv,DGESV)( &in, &inrhs, tmp_a, &ilda, ipiv, tmp_b, &ildb, &info );
-  }
-  else
-  {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dgesv: n = %d, is larger than INT_MAX", n);
-  }
+  NGCALLF(dgesv,DGESV)( &in, &inrhs, tmp_a, &ilda, ipiv, tmp_b, &ildb, &info );
 
   if(!info) {
     coerce_output_float_or_double(x,tmp_b,type_x,nnrhs,0);

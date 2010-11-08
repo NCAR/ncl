@@ -34,7 +34,7 @@ NhlErrorTypes lspoly_W( void )
 /*
  * Other variables
  */
-  int ierr, ret;
+  int ierr, ret, inpts;
   ng_size_t i, j, index_x, index_coef;
   ng_size_t size_leftmost, total_size_x, total_size_coef, npts, is_scalar_wgt;
 /*
@@ -112,6 +112,15 @@ NhlErrorTypes lspoly_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lspoly: The number of coefficients must be less than or equal to the rightmost dimension of x and y");
     return(NhlFATAL);
   }
+
+/*
+ * Test input dimension size.
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lspoly: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
 
 /*
  * Compute the total number of elements in our x,y arrays, and set the 
@@ -239,17 +248,8 @@ NhlErrorTypes lspoly_W( void )
 
     if(type_coef == NCL_double) tmp_coef = &((double*)coef)[index_coef];
 
-    if(npts <= INT_MAX)
-    {
-      int inpts = (int) npts;
-      NGCALLF(dlspoly,DLSPOLY)(ncoef,&inpts,tmp_x,tmp_y,&tmp_wgt[index_x],
-                               tmp_coef,&ierr);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dlspoly: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
+    NGCALLF(dlspoly,DLSPOLY)(ncoef,&inpts,tmp_x,tmp_y,&tmp_wgt[index_x],
+                             tmp_coef,&ierr);
 
     coerce_output_float_or_double(coef,tmp_coef,type_coef,*ncoef,index_coef);
 

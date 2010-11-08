@@ -26,6 +26,7 @@ NhlErrorTypes hyi2hyo_W( void )
   NclBasicDataTypes type_p0, type_ps, type_xi;
   NclBasicDataTypes type_hyai, type_hybi, type_hyao, type_hybo;
   NclScalar missing_xi, missing_dxi;
+  int imlon, inlat, iklevi, iklevo;
 
 /*
  * Work arrays.
@@ -152,6 +153,21 @@ NhlErrorTypes hyi2hyo_W( void )
   mlon  = dsizes_xi[ndims_xi-1];
   klevo = dsizes_hyao[0];
   
+/*
+ * Test dimension sizes.
+ */
+  if((mlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (klevi > INT_MAX) ||
+     (klevo > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"hyi2hyo: one or more input dimensions sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imlon = (int) mlon;
+  inlat = (int) nlat;
+  iklevi = (int) klevi;
+  iklevo = (int) klevo;
+
 /*
  * Check rest of arrays against these dimensions.
  */
@@ -321,24 +337,10 @@ NhlErrorTypes hyi2hyo_W( void )
     if(type_xo == NCL_double) tmp_xo = &((double*)xo)[index_xo];
 
 
-    if((mlon <= INT_MAX) &&
-       (nlat <= INT_MAX) &&
-       (klevi <= INT_MAX) &&
-       (klevo <= INT_MAX))
-    {
-        int imlon = (int) mlon;
-        int inlat = (int) nlat;
-        int iklevi = (int) klevi;
-        int iklevo = (int) klevo;
-        NGCALLF(dhyi2hyob,DHYI2HYOB)(tmp_p0,tmp_hyai,tmp_hybi,tmp_ps,
-                                     &imlon,&inlat,&iklevi,tmp_xi,tmp_hyao,
-                                     tmp_hybo,&iklevo,tmp_xo,pi,po,option,
-                                     &msgflag,&missing_dxi.doubleval);
-    }
-    else
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dhyi2hyob: mlon = %d, is larger than INT_MAX", mlon);
-    }
+    NGCALLF(dhyi2hyob,DHYI2HYOB)(tmp_p0,tmp_hyai,tmp_hybi,tmp_ps,
+                                 &imlon,&inlat,&iklevi,tmp_xi,tmp_hyao,
+                                 tmp_hybo,&iklevo,tmp_xo,pi,po,option,
+                                 &msgflag,&missing_dxi.doubleval);
 /*
  * Coerce output to float if necessary.
  */

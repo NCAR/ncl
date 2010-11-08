@@ -38,7 +38,7 @@ NhlErrorTypes local_min_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, ier;
+  int i, ier, inx, iny, inxny;
   ng_size_t nx, ny, nxny;
   ng_size_t dsizes[1];
 /*
@@ -95,6 +95,18 @@ NhlErrorTypes local_min_W( void )
     return(NhlFATAL);
   }
   nxny = nx * ny;
+
+/*
+ * Check dimension sizes
+ */
+  if((nx > INT_MAX) || (ny > INT_MAX) || (nxny > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"local_min: one or more input dimension sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inxny = (int) nxny;
+
 /*
  * Check for missing values.
  */
@@ -123,21 +135,9 @@ NhlErrorTypes local_min_W( void )
 /*
  * Call the Fortran routine.
  */
-  if((nx <= INT_MAX) &&
-     (ny <= INT_MAX) &&
-     (nxny <= INT_MAX))
-  {
-      int inx = (int) nx;
-      int iny = (int) ny;
-      int inxny = (int) nxny;
-      NGCALLF(dlocalmn,DLOCALMN)(tmp_x,&inx,&iny,&missing_dx.doubleval,cyclic,
-                                 tmp_xi,tmp_yi,&inxny,tmp_minvals,tmp_delta,
-                                 &tmp_nmin,&ier);
-  }
-  else
-  {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dlocalmn: nx = %d, is larger than INT_MAX", nx);
-  }
+  NGCALLF(dlocalmn,DLOCALMN)(tmp_x,&inx,&iny,&missing_dx.doubleval,cyclic,
+                             tmp_xi,tmp_yi,&inxny,tmp_minvals,tmp_delta,
+                             &tmp_nmin,&ier);
 
   ((int*)nmin)[0] = tmp_nmin;
 
@@ -344,7 +344,7 @@ NhlErrorTypes local_max_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, ier;
+  int i, ier, inx, iny, inxny;
   ng_size_t nx, ny, nxny;
   ng_size_t dsizes[1];
 /*
@@ -402,6 +402,17 @@ NhlErrorTypes local_max_W( void )
   }
   nxny = nx * ny;
 /*
+ * Check dimension sizes
+ */
+  if((nx > INT_MAX) || (ny > INT_MAX) || (nxny > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"local_max: one or more input dimension sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inxny = (int) nxny;
+
+/*
  * Check for missing values.
  */
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
@@ -429,21 +440,9 @@ NhlErrorTypes local_max_W( void )
 /*
  * Call the Fortran routine.
  */
-  if((nx <= INT_MAX) &&
-     (ny <= INT_MAX) &&
-     (nxny <= INT_MAX))
-  {
-      int inx = (int) nx;
-      int iny = (int) ny;
-      int inxny = (int) nxny;
-      NGCALLF(dlocalmx,DLOCALMX)(tmp_x,&inx,&iny,&missing_dx.doubleval,cyclic,
-                                 tmp_xi,tmp_yi,&inxny,tmp_maxvals,tmp_delta,
-                                 &tmp_nmax,&ier);
-  }
-  else
-  {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dlocalmx: nx = %d, is larger than INT_MAX", nx);
-  }
+  NGCALLF(dlocalmx,DLOCALMX)(tmp_x,&inx,&iny,&missing_dx.doubleval,cyclic,
+                             tmp_xi,tmp_yi,&inxny,tmp_maxvals,tmp_delta,
+                             &tmp_nmax,&ier);
 
   ((int*)nmax)[0] = tmp_nmax;
 /*

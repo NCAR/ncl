@@ -40,7 +40,7 @@ NhlErrorTypes int2p_W( void )
  */
   int i, index_in, index_out;
   ng_size_t npin, npout;
-  int ier = 0, ret;
+  int ier = 0, ret, inpin, inpout;
   int nmiss = 0, nmono = 0;
 /*
  * Retrieve parameters
@@ -135,6 +135,16 @@ NhlErrorTypes int2p_W( void )
  * it must have the same rightmost dimensions as xin.
  */
   npout = dsizes_pout[ndims_pout-1];
+
+/*
+ * Test dimension sizes.
+ */
+  if((npin > INT_MAX) || (npout > INT_MAX)){
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: npin and/or npout is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpin = (int) npin;
+  inpout = (int) npout;
 
   if(ndims_pout != ndims_xin && ndims_pout != 1) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: pout must either be a one-dimensional array or an array with the same number of dimensions as xin");
@@ -307,19 +317,9 @@ NhlErrorTypes int2p_W( void )
 
     if(type_xout == NCL_double) tmp_xout = &((double*)xout)[index_out];
 
-    if((npin <= INT_MAX) &&
-       (npout <= INT_MAX))
-    {
-        int inpin = (int) npin;
-        int inpout = (int) npout;
-        NGCALLF(dint2p,DINT2P)(tmp_pin,tmp_xin,&p[0],&x[0],&inpin,
-                               tmp_pout,tmp_xout,&inpout,linlog,
-                               &missing_dx.doubleval,&ier);
-    }
-    else
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dint2p: npin = %d, is larger than INT_MAX", npin);
-    }
+    NGCALLF(dint2p,DINT2P)(tmp_pin,tmp_xin,&p[0],&x[0],&inpin,
+                           tmp_pout,tmp_xout,&inpout,linlog,
+                           &missing_dx.doubleval,&ier);
     if (ier) {
       if (ier >= 1000) nmiss++;
       else             nmono++;
@@ -407,7 +407,7 @@ NhlErrorTypes int2p_n_W( void )
  * Declare various variables for random purposes.
  */
   ng_size_t i, j, npin, npout;
-  int ier = 0, ret;
+  int ier = 0, ret, inpin, inpout;
   int nrni, nrno, index_nri, index_nro, index_in, index_out;
   int nmiss = 0, nmono = 0;
 /*
@@ -547,6 +547,17 @@ NhlErrorTypes int2p_n_W( void )
   else { 
     npout = dsizes_pout[0];
   }
+
+/*
+ * Test dimension sizes.
+ */
+  if((npin > INT_MAX) || (npout > INT_MAX)){
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p_n: npin and/or npout is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpin = (int) npin;
+  inpout = (int) npout;
+
 /*
  * Calculate the size of the leftmost dimensions of xin (if any).
  */
@@ -693,20 +704,9 @@ NhlErrorTypes int2p_n_W( void )
                                         size_rightmost,type_pout,
                                         npout,0,NULL,NULL);
       }
-      if((npin <= INT_MAX) &&
-         (npout <= INT_MAX))
-      {
-          int inpin = (int) npin;
-          int inpout = (int) npout;
-          NGCALLF(dint2p,DINT2P)(tmp_pin,tmp_xin,&p[0],&x[0],&inpin,
-                                 tmp_pout,tmp_xout,&inpout,linlog,
-                                 &missing_dx.doubleval,&ier);
-      }
-      else
-      {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,"dint2p: npin = %d, is larger than INT_MAX", npin);
-      }
-
+      NGCALLF(dint2p,DINT2P)(tmp_pin,tmp_xin,&p[0],&x[0],&inpin,
+                             tmp_pout,tmp_xout,&inpout,linlog,
+                             &missing_dx.doubleval,&ier);
 
       if (ier) {
         if (ier >= 1000) nmiss++;
