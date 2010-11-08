@@ -9895,7 +9895,7 @@ NhlErrorTypes _Nclproduct
 	NclMultiDValData tmp_md = NULL;
 	void *out_val;
 	ng_size_t dimsizes = 1;
-	logical *tmp;
+	logical *tmp = NULL;
 	ng_size_t  i;
 
 	data = _NclGetArg(0,1,DONT_CARE);
@@ -9915,11 +9915,11 @@ NhlErrorTypes _Nclproduct
 
 
 	if(tmp_md->multidval.missing_value.has_missing) {
-		tmp = (logical*)NclMalloc(sizeof(logical)*tmp_md->multidval.totalelements);
+		tmp = (logical*)NclCalloc(sizeof(logical),tmp_md->multidval.totalelements);
 		_Ncleq(tmp_md->multidval.type,tmp,tmp_md->multidval.val,&(tmp_md->multidval.missing_value.value),NULL,NULL,tmp_md->multidval.totalelements,1);
 		out_val = (void*)NclMalloc(tmp_md->multidval.type->type_class.size);
 		i = 0;
-		while((tmp[i])&&(i<tmp_md->multidval.totalelements)) {
+		while((i<tmp_md->multidval.totalelements) && tmp[i]) {
 			i++;
 		}
 		if(i==tmp_md->multidval.totalelements) {
@@ -9950,7 +9950,8 @@ NhlErrorTypes _Nclproduct
 			_Nclmultiply(tmp_md->multidval.type,out_val,&(((char*)tmp_md->multidval.val)[tmp_md->multidval.type->type_class.size*i]),out_val,NULL,NULL,1,1);
 		}
 	}
-
+	if (tmp) 
+		NclFree(tmp);
 	return(NclReturnValue(
 		out_val,
 		1,
@@ -10017,7 +10018,7 @@ NhlErrorTypes _Ncldim_product
 		for(i = 0; i < n ; i++) {
 			_Ncleq(tmp_md->multidval.type,tmp,&(((char*)tmp_md->multidval.val)[i*m*sz]),&(tmp_md->multidval.missing_value.value),NULL,NULL,m,1);
 			j = 0;
-			while((tmp[j])&&(j<m)) {
+			while((j<m) && tmp[j]) {
 				j++;
 			}
 			if(j==m) {
@@ -10174,7 +10175,7 @@ NhlErrorTypes _Ncldim_product_n
  * Loop through tmp to find the first non-missing value.
  */
 	      k = 0;
-	      while((tmp[k])&&(k<m)) {
+	      while((k<m) && tmp[k]) {
 		k++;
 	      }
 	      if(k==m) {
@@ -10304,7 +10305,7 @@ NhlErrorTypes _Ncldim_sum
 		for(i = 0; i < n ; i++) {
 			_Ncleq(tmp_md->multidval.type,tmp,&(((char*)tmp_md->multidval.val)[i*m*sz]),&(tmp_md->multidval.missing_value.value),NULL,NULL,m,1);
 			j = 0;
-			while((tmp[j])&&(j<m)) {
+			while((j<m) && tmp[j]) {
 				j++;
 			}
 			if(j==m) {
@@ -10462,7 +10463,7 @@ NhlErrorTypes _Ncldim_sum_n
  * Loop through tmp to find the first non-missing value.
  */
 	      k = 0;
-	      while((tmp[k])&&(k<m)) {
+	      while((k<m) && tmp[k]) {
 		k++;
 	      }
 	      if(k==m) {
@@ -10569,7 +10570,7 @@ NhlErrorTypes _Nclsum
 		_Ncleq(tmp_md->multidval.type,tmp,tmp_md->multidval.val,&(tmp_md->multidval.missing_value.value),NULL,NULL,tmp_md->multidval.totalelements,1);
 		out_val = (void*)NclMalloc(tmp_md->multidval.type->type_class.size);
 		i = 0;
-		while((tmp[i])&&(i<tmp_md->multidval.totalelements)) {
+		while((i<tmp_md->multidval.totalelements) && tmp[i]) {
 			i++;
 		}
 		if(i==tmp_md->multidval.totalelements) {
@@ -14657,7 +14658,7 @@ NhlErrorTypes _Ncldim_min
 		for(i = 0; i < n ; i++) {
 			_Ncleq(tmp_md->multidval.type,tmp,&(((char*)tmp_md->multidval.val)[i*m*sz]),&(tmp_md->multidval.missing_value.value),NULL,NULL,m,1);
 			j = 0;
-			while((tmp[j])&&(j<m)) {
+			while((j<m) && tmp[j]) {
 				j++;
 			}
 			if(j==m) {
@@ -14823,7 +14824,7 @@ NhlErrorTypes _Ncldim_min_n
  * Loop through tmp to find the first non-missing value.
  */
 	      k = 0;
-	      while((tmp[k])&&(k<m)) {
+	      while((k<m) && tmp[k]) {
 		k++;
 	      }
 	      if(k==m) {
@@ -14962,7 +14963,7 @@ NhlErrorTypes _Ncldim_max
 		for(i = 0; i < n ; i++) {
 			_Ncleq(tmp_md->multidval.type,tmp,&(((char*)tmp_md->multidval.val)[i*m*sz]),&(tmp_md->multidval.missing_value.value),NULL,NULL,m,1);
 			j = 0;
-			while((tmp[j])&&(j<m)) {
+			while((j<m) && tmp[j]) {
 				j++;
 			}
 			if(j==m) {
@@ -15130,7 +15131,7 @@ NhlErrorTypes _Ncldim_max_n
  * Loop through tmp to find the first non-missing value.
  */
 	      k = 0;
-	      while((tmp[k])&&(k<m)) {
+	      while((k<m) && tmp[k]) {
 		k++;
 	      }
 	      if(k==m) {
