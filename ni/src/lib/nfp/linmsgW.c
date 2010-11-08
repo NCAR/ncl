@@ -76,7 +76,7 @@ NhlErrorTypes linmsg_W( void )
 /*
  * Test input dimension sizes.
  */
-  if((npts > INT_MAX) || (nptcrt <= INT_MAX)) {
+  if((npts > INT_MAX) || (nptcrt > INT_MAX)) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linmsg: npts and/or nptcrt is greater than INT_MAX");
     return(NhlFATAL);
   }
@@ -251,7 +251,7 @@ NhlErrorTypes linmsg_n_W( void )
 /*
  * Test input dimension sizes.
  */
-  if((npts > INT_MAX) || (nptcrt <= INT_MAX)) {
+  if((npts > INT_MAX) || (nptcrt > INT_MAX)) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linmsg_n: npts and/or nptcrt is greater than INT_MAX");
     return(NhlFATAL);
   }
