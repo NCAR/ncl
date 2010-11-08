@@ -102,7 +102,7 @@ NhlErrorTypes obj_anal_ic_W( void )
  */
   double pmsg, *work, *zval, *zlat, *zlon;
   int ret, ier;
-  int *ip;
+  int *ip, imlon, inlat, intim, inscan, ilwork, inpts;
   ng_size_t npts, ntim, mlon, nlat, nscan;
   ng_size_t i, size_output, lwork;
 
@@ -423,6 +423,23 @@ NhlErrorTypes obj_anal_ic_W( void )
   }
 
 /*
+ * Check dimension sizes.
+ */
+  if((mlon > INT_MAX) || (nlat > INT_MAX) ||
+     (ntim > INT_MAX) || (nscan > INT_MAX) ||
+     (lwork > INT_MAX) || (npts > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"obj_anal_ic: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imlon = (int) mlon;
+  inlat = (int) nlat;
+  intim = (int) ntim;
+  inscan = (int) nscan;
+  ilwork = (int) lwork;
+  inpts = (int) npts;
+
+
+/*
  * If "blend_wgt" attribute not set by user, then set some defaults here.
  */
   if(!set_wgts) {
@@ -438,31 +455,11 @@ NhlErrorTypes obj_anal_ic_W( void )
  * There are no leftmost dimensions to loop across, b/c the 
  * the Fortran routine handles this through its "ntim" variable.
  */
-  if((mlon <= INT_MAX) &&
-     (nlat <= INT_MAX) &&
-     (ntim <= INT_MAX) &&
-     (nscan <= INT_MAX) &&
-     (lwork <= INT_MAX) &&
-     (npts <= INT_MAX))
-  {
-    int imlon = (int) mlon;
-    int inlat = (int) nlat;
-    int intim = (int) ntim;
-    int inscan = (int) nscan;
-    int ilwork = (int) lwork;
-    int inpts = (int) npts;
-    NGCALLF(dobjanlx,DOBJANLX)(tmp_plon, tmp_plat, tmp_pval, &intim, &inpts,
-                               tmp_grid, &imlon, &inlat, 
-                               &missing_dbl_pval.doubleval, &pmsg, tmp_rscan,
-                               &inscan, tmp_glat, tmp_glon, wgts, opt, zval, zlat,
-			       zlon,ip,work,&ilwork,&ier);
-  }
-  else
-  {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dobjanlx: npts = %ld is greater than INT_MAX", npts);
-    return(NhlFATAL);
-  }
-
+  NGCALLF(dobjanlx,DOBJANLX)(tmp_plon, tmp_plat, tmp_pval, &intim, &inpts,
+                             tmp_grid, &imlon, &inlat, 
+                             &missing_dbl_pval.doubleval, &pmsg, tmp_rscan,
+                             &inscan, tmp_glat, tmp_glon, wgts, opt, zval, zlat,
+                             zlon,ip,work,&ilwork,&ier);
 /*
  * Coerce output back to float if necessary.
  */

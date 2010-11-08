@@ -68,6 +68,7 @@ NhlErrorTypes pdfxy_bin_W( void )
  */
   ng_size_t i, nxy, mbxp1, nbyp1, nby, mbx, nbymbx;
   int ier, ret;
+  int inxy, imbx, inby, imbxp1, inbyp1;
 
 /*
  * Variables for retrieving attributes from "opt".
@@ -161,6 +162,20 @@ NhlErrorTypes pdfxy_bin_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: The binybnd array must have at least two values");
     return(NhlFATAL);
   }
+
+/*
+ * Test input dimension sizes.
+ */
+  if((nxy > INT_MAX) || (mbx > INT_MAX) || (nby > INT_MAX) ||
+     (mbxp1 > INT_MAX) || (nbyp1 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inxy = (int) nxy;
+  imbx = (int) mbx;
+  inby = (int) nby;
+  imbxp1 = (int) mbxp1;
+  inbyp1 = (int) nbyp1;
 
 /*
  * Get argument # 4
@@ -305,28 +320,10 @@ NhlErrorTypes pdfxy_bin_W( void )
 /*
  * Call the Fortran routine.
  */
-  if((nxy <= INT_MAX) &&
-     (mbx <= INT_MAX) &&
-     (nby <= INT_MAX) &&
-     (mbxp1 <= INT_MAX) &&
-     (nbyp1 <= INT_MAX))
-  {
-    int inxy = (int) nxy;
-    int imbx = (int) mbx;
-    int inby = (int) nby;
-    int imbxp1 = (int) mbxp1;
-    int inbyp1 = (int) nbyp1;
-    NGCALLF(xy2pdf77,XY2PDF77)(&inxy, tmp_x, tmp_y, &missing_dbl_x.doubleval,
-                               &missing_dbl_y.doubleval, &inby, &imbx, 
-                               tmp_pdf, &imbxp1, &inbyp1, tmp_binxbnd, 
-                               tmp_binybnd, &ipcnt, &ier);
-  }
-  else
-  {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"xy2pdf77: nxy = %ld is greater than INT_MAX", nxy);
-    return(NhlFATAL);
-  }
-
+  NGCALLF(xy2pdf77,XY2PDF77)(&inxy, tmp_x, tmp_y, &missing_dbl_x.doubleval,
+                             &missing_dbl_y.doubleval, &inby, &imbx, 
+                             tmp_pdf, &imbxp1, &inbyp1, tmp_binxbnd, 
+                             tmp_binybnd, &ipcnt, &ier);
 /*
  * Coerce output back to float if necessary.
  */

@@ -34,6 +34,8 @@ NhlErrorTypes prcwater_dp_W( void )
  * various
  */
   ng_size_t i, klvl, total_size_leftmost, index_q, ret;
+  int iklvl;
+
 /*
  * Retrieve parameters
  *
@@ -83,6 +85,15 @@ NhlErrorTypes prcwater_dp_W( void )
  * of output array.
  */
   klvl = dsizes_q[ndims_q-1];
+
+/*
+ * Test input dimension sizes.
+ */
+  if(klvl > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"prcwater_dp: klvl = %ld is greater than INT_MAX", klvl);
+    return(NhlFATAL);
+  }
+  iklvl = (int) klvl;
 
   total_size_leftmost = 1;
   for( i = 0; i < ndims_q-1; i++ ) {
@@ -183,16 +194,8 @@ NhlErrorTypes prcwater_dp_W( void )
 
     if(type_prcwat == NCL_double) tmp_prcwat = &((double*)prcwat)[i];
 
-    if(klvl <= INT_MAX)
-    {
-        int iklvl = (int) klvl;
         NGCALLF(dprcwatdp,DPRCWATDP)(tmp_q,tmp_dp,&iklvl,&missing_dq.doubleval,
                                   &missing_ddp.doubleval,tmp_prcwat);
-    }
-    else
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dprcwatdp: klvl = %d, is larger than INT_MAX", klvl);
-    }
 /*
  * Coerce output to float if necessary.
  */

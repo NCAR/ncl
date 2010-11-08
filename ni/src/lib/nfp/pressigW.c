@@ -30,6 +30,7 @@ NhlErrorTypes pres_sigma_W( void )
   ng_size_t i, j, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
   int index_psigma, index_ps, ret;
   ng_size_t size_leftmost, size_psigma;
+  int inlon, inlat, iklvl;
 /*
  * Retrieve parameters
  *
@@ -69,6 +70,18 @@ NhlErrorTypes pres_sigma_W( void )
 
   nlatnlon     = nlat * nlon;
   klvlnlatnlon = klvl * nlatnlon;
+
+/*
+ * Test input dimension sizes.
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX) || (klvl > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_sigma: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  iklvl = (int) klvl;
+
 /*
  * Determine type of output.
  */
@@ -162,19 +175,8 @@ NhlErrorTypes pres_sigma_W( void )
       tmp_psigma = &((double*)psigma)[index_psigma];
     }
 
-    if((nlon <= INT_MAX) &&
-       (nlat <= INT_MAX) &&
-       (klvl <= INT_MAX))
-    {
-      int inlon = (int) nlon;
-      int inlat = (int) nlat;
-      int iklvl = (int) klvl;
-      NGCALLF(dpsigma,DPSIGMA)(tmp_sigma,tmp_ps,&inlon,&inlat,&iklvl,tmp_psigma);
-    }
-    else
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dpsigma: nlon = %d, is larger than INT_MAX", nlon);
-    }
+    NGCALLF(dpsigma,DPSIGMA)(tmp_sigma,tmp_ps,&inlon,&inlat,&iklvl,tmp_psigma);
+
 /*
  * Copy output values from temporary tmp_psigma to psigma.
  */

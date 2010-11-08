@@ -51,7 +51,7 @@ NhlErrorTypes pres_hybrid_W( void )
  */
   int index_phy;
   ng_size_t i, klvl, size_leftmost, size_phy;
-  int ret;
+  int ret, iklvl;
 /*
  * Retrieve parameters
  *
@@ -102,6 +102,15 @@ NhlErrorTypes pres_hybrid_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: The 'hyb' array must be the same length as 'hya'");
     return(NhlFATAL);
   }
+/*
+ * Test input dimension sizes.
+ */
+  if(klvl > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: klvl = %ld is greater than INT_MAX", klvl);
+    return(NhlFATAL);
+  }
+  iklvl = (int) klvl;
+
 /*
  * Determine type of output.
  */
@@ -199,16 +208,9 @@ NhlErrorTypes pres_hybrid_W( void )
     if(type_phy == NCL_double) tmp_phy = &((double*)phy)[index_phy];
 
 
-    if(klvl <= INT_MAX)
-    {
-      int iklvl = (int) klvl;
-      NGCALLF(preshybrid,PRESHYBRID)(tmp_p0,tmp_psfc,tmp_hya,tmp_hyb,&iklvl,
-                                     tmp_phy);
-    }
-    else
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dpreshybrid: klvl = %d, is larger than INT_MAX", klvl);
-    }
+    NGCALLF(preshybrid,PRESHYBRID)(tmp_p0,tmp_psfc,tmp_hya,tmp_hyb,&iklvl,
+                                   tmp_phy);
+
 /*
  * Copy output values from temporary tmp_phy to phy.
  */
@@ -261,7 +263,7 @@ NhlErrorTypes dpres_hybrid_W( void )
  */
   int index_phy;
   ng_size_t i, klvl, klvl1, size_leftmost, size_phy;
-  int ret;
+  int ret, iklvl;
 /*
  * Retrieve parameters
  *
@@ -313,6 +315,15 @@ NhlErrorTypes dpres_hybrid_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid: The 'hyb' array must be the same length as 'hya'");
     return(NhlFATAL);
   }
+/*
+ * Test input dimension sizes.
+ */
+  if(klvl > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid: klvl = %ld is greater than INT_MAX", klvl);
+    return(NhlFATAL);
+  }
+  iklvl = (int) klvl;
+
 /*
  * Determine type of output.
  */
@@ -408,16 +419,9 @@ NhlErrorTypes dpres_hybrid_W( void )
 
     if(type_phy == NCL_double) tmp_phy = &((double*)phy)[index_phy];
 
-    if(klvl <= INT_MAX)
-    {
-      int iklvl = (int) klvl;
-      NGCALLF(dpreshybrid,DPRESHYBRID)(tmp_p0,tmp_psfc,tmp_hya,tmp_hyb,&iklvl,
-                                       tmp_phy);
-    }
-    else
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dpreshybrid: klvl = %d, is larger than INT_MAX", klvl);
-    }
+    NGCALLF(dpreshybrid,DPRESHYBRID)(tmp_p0,tmp_psfc,tmp_hya,tmp_hyb,&iklvl,
+                                     tmp_phy);
+
 /*
  * Copy output values from temporary tmp_phy to phy.
  */
@@ -471,7 +475,7 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
   ng_size_t i, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
   int index_psfc, index_phy;
   ng_size_t size_leftmost, size_phy;
-  int ret;
+  int ret, inlon, inlat, iklvl;
 /*
  * Retrieve parameters
  *
@@ -530,6 +534,18 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
   nlon = dsizes_psfc[ndims_psfc-1];
   nlatnlon     = nlat * nlon;
   klvlnlatnlon = klvl * nlatnlon;
+
+/*
+ * Test input dimension sizes.
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX) || (klvl > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_ccm: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  iklvl = (int) klvl;
+
 /*
  * Determine type of output.
  */
@@ -629,20 +645,8 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
 
     if(type_phy == NCL_double) tmp_phy = &((double*)phy)[index_phy];
 
-    if((nlon <= INT_MAX) &&
-       (nlat <= INT_MAX) &&
-       (klvl <= INT_MAX))
-    {   
-        int inlon = (int) nlon;
-        int inlat = (int) nlat;
-        int iklvl = (int) klvl;
-        NGCALLF(dphybrid,DPHYBRID)(tmp_p0,tmp_hya,tmp_hyb,tmp_psfc,&inlon,&inlat,
-                                   &iklvl,tmp_phy,&missing_dpsfc.doubleval);
-    }
-    else
-    {   
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"ddphybrid: nlon = %d, is larger than INT_MAX", nlon);
-    }
+    NGCALLF(dphybrid,DPHYBRID)(tmp_p0,tmp_hya,tmp_hyb,tmp_psfc,&inlon,&inlat,
+                               &iklvl,tmp_phy,&missing_dpsfc.doubleval);
 
 /*
  * Copy output values from temporary tmp_phy to phy.
@@ -712,7 +716,7 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
   ng_size_t i, nlat, nlon, klvl, klvl1, nlatnlon, klvl1nlatnlon;
   int index_psfc, index_phy;
   ng_size_t size_leftmost, size_phy;
-  int ret;
+  int ret, iklvl, inlat, inlon;
 /*
  * Retrieve parameters
  *
@@ -772,6 +776,17 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
   nlon = dsizes_psfc[ndims_psfc-1];
   nlatnlon      = nlat * nlon;
   klvl1nlatnlon = klvl1 * nlatnlon;
+/*
+ * Test input dimension sizes.
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX) || (klvl > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid_ccm: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  iklvl = (int) klvl;
+
 /*
  * Determine type of output.
  */
@@ -870,20 +885,9 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
 
     if(type_phy == NCL_double) tmp_phy = &((double*)phy)[index_phy];
 
-    if((nlon <= INT_MAX) &&
-       (nlat <= INT_MAX) &&
-       (klvl <= INT_MAX))
-    {
-        int inlon = (int) nlon;
-        int inlat = (int) nlat;
-        int iklvl = (int) klvl;
-        NGCALLF(ddphybrid,DDPHYBRID)(tmp_p0,tmp_hya,tmp_hyb,tmp_psfc,&inlon,&inlat,
-                                     &iklvl,tmp_phy,&missing_dpsfc.doubleval);
-    }
-    else
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"ddphybrid: nlon = %d, is larger than INT_MAX", nlon);
-    }
+    NGCALLF(ddphybrid,DDPHYBRID)(tmp_p0,tmp_hya,tmp_hyb,tmp_psfc,&inlon,&inlat,
+                                 &iklvl,tmp_phy,&missing_dpsfc.doubleval);
+
 /*
  * Copy output values from temporary tmp_phy to phy.
  */
@@ -1450,6 +1454,8 @@ NhlErrorTypes pres2hybrid_W( void )
   ng_size_t i, size_leftmost, size_xo;
   ng_size_t nlat, nlon, nlevi, nlevo, nlat_nlon, nlat_nlon_nlevi, nlat_nlon_nlevo;
   int iflag, ret, ier, return_missing;
+  int inlon, inlat, inlevi, inlevo;
+
 /*
  * Retrieve parameters
  *
@@ -1545,6 +1551,18 @@ NhlErrorTypes pres2hybrid_W( void )
   nlat_nlon       = nlat*nlon;
   nlat_nlon_nlevi = nlat_nlon*nlevi;
   nlat_nlon_nlevo = nlat_nlon*nlevo;
+
+/*
+ * Test input dimension sizes.
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX) || (nlevi > INT_MAX) || (nlevo > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  inlevi = (int) nlevi;
+  inlevo = (int) nlevo;
 
   if( dsizes_xi[ndims_xi-3] != nlevi || dsizes_xi[ndims_xi-2] != nlat || 
       dsizes_xi[ndims_xi-1] != nlon) {
@@ -1697,23 +1715,10 @@ NhlErrorTypes pres2hybrid_W( void )
 
     if(type_xo == NCL_double) tmp_xo = &((double*)xo)[index_xo];
 
-    if((nlon <= INT_MAX) &&
-       (nlat <= INT_MAX) &&
-       (nlevi <= INT_MAX) &&
-       (nlevo <= INT_MAX))
-    {
-      int inlon = (int) nlon;
-      int inlat = (int) nlat;
-      int inlevi = (int) nlevi;
-      int inlevo = (int) nlevo;
-      NGCALLF(p2hyo,P2HYO)(tmp_p,&inlon,&inlat,&inlevi,tmp_xi,tmp_ps,tmp_p0,
-                           tmp_hyao,tmp_hybo,&inlevo,tmp_xo,
-                           &missing_dxi.doubleval,&iflag,kflag,&ier);
-    }
-    else
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"p2hyo: nlon = %d, is larger than INT_MAX", nlon);
-    }
+    NGCALLF(p2hyo,P2HYO)(tmp_p,&inlon,&inlat,&inlevi,tmp_xi,tmp_ps,tmp_p0,
+                         tmp_hyao,tmp_hybo,&inlevo,tmp_xo,
+                         &missing_dxi.doubleval,&iflag,kflag,&ier);
+
 /*
  * If iflag is 1, then this means there are missing values present in
  * the output, and hence we need to make sure the return value has a
