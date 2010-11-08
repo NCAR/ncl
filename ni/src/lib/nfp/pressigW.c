@@ -28,7 +28,7 @@ NhlErrorTypes pres_sigma_W( void )
  * Various.
  */
   ng_size_t i, j, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
-  int index_psigma, index_ps;
+  int index_psigma, index_ps, ret;
   ng_size_t size_leftmost, size_psigma;
 /*
  * Retrieve parameters
@@ -195,7 +195,9 @@ NhlErrorTypes pres_sigma_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(psigma,ndims_psigma,dsizes_psigma,NULL,type_psigma,0));
+  ret = NclReturnValue(psigma,ndims_psigma,dsizes_psigma,NULL,type_psigma,0);
+  NclFree(dsizes_psigma);
+  return(ret);
 }
 
 
