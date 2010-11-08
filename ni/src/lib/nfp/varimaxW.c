@@ -50,7 +50,7 @@ NhlErrorTypes eof_varimax_W( void )
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
-  int i;
+  int i, invar, infac, ildevec;
   float *pcvar;
   logical return_trace;
 
@@ -144,6 +144,17 @@ NhlErrorTypes eof_varimax_W( void )
   }
   ldevec = nvar;
 
+/*
+ * Test dimension sizes. 
+ */
+  if((nvar > INT_MAX) || (nfac > INT_MAX) || (ldevec <= INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  invar = (int) nvar;
+  infac = (int) nfac;
+  ildevec = (int) ldevec;
+
   if( nvar < 1 || nfac < 1 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
@@ -209,20 +220,7 @@ NhlErrorTypes eof_varimax_W( void )
 /*
  * Call the Fortran 77 version of 'vors' with the full argument list.
  */
-  if((nvar <= INT_MAX) &&
-     (nfac <= INT_MAX) &&
-     (ldevec <= INT_MAX))
-  {
-    int invar = (int) nvar;
-    int infac = (int) nfac;
-    int ildevec = (int) ldevec;
-     NGCALLF(vors,VORS)(&invar, &infac, devec, a, b, w, &ildevec);
-  }
-  else
-  {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vors: nvar = %ld is greater than INT_MAX", nvar);
-    return(NhlFATAL);
-  }
+  NGCALLF(vors,VORS)(&invar, &infac, devec, a, b, w, &ildevec);
 
 /*
  * Free unneeded memory.
@@ -385,7 +383,7 @@ NhlErrorTypes eofunc_varimax_W( void )
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
-  int i;
+  int i, invar, infac, ildevec;
   void *rotvar;
   float *pcvar;
   logical return_trace = False, found_eval = False, found_pcvar = False;
@@ -534,6 +532,17 @@ NhlErrorTypes eofunc_varimax_W( void )
   total_size_evec = nvar * nfac;
 
 /*
+ * Test input dimension sizes.
+ */
+  if((nvar > INT_MAX) || (nfac > INT_MAX) || (ldevec > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  invar = (int) nvar;
+  infac = (int) nfac;
+  ildevec = (int) ldevec;
+
+/*
  * Coerce missing values, if any. Prior to 4.2.0.a034, this routine
  * didn't handle missing values.
  */
@@ -581,21 +590,8 @@ NhlErrorTypes eofunc_varimax_W( void )
 /*
  * Call the Fortran 77 version of 'roteof' with the full argument list.
  */
-  if((nvar <= INT_MAX) &&
-     (nfac <= INT_MAX) &&
-     (ldevec <= INT_MAX))
-  {
-    int invar = (int) nvar;
-    int infac = (int) nfac;
-    int ildevec = (int) ldevec;
-    NGCALLF(roteof,ROTEOF)(&invar, &infac, devec, &ildevec, deval, dpcvar, drotvar,
-                           &missing_devec.doubleval,&iopt,&kflag);
-  }
-  else
-  {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"roteof: nvar = %ld is greater than INT_MAX", nvar);
-    return(NhlFATAL);
-  }
+  NGCALLF(roteof,ROTEOF)(&invar, &infac, devec, &ildevec, deval, dpcvar, drotvar,
+                         &missing_devec.doubleval,&iopt,&kflag);
 
   if(type_evec_out == NCL_float) {
 /*
@@ -748,6 +744,12 @@ NhlErrorTypes eofunc_varimax_W( void )
                           TEMPORARY
                           );
 /*
+ * Free memory.
+ */
+  if(type_eval  != NCL_double) NclFree(deval);
+  if(type_pcvar != NCL_double) NclFree(dpcvar);
+
+/*
  * Return output grid and attributes to NCL.
  */
   return_data.kind = NclStk_VAR;
@@ -802,7 +804,7 @@ NhlErrorTypes eofunc_varimax_jl_W( void )
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
-  int i;
+  int i, invar, infac, ildevec;
   void *rotvar;
   float *pcvar;
   logical return_trace = False, found_eval = False, found_pcvar = False;
@@ -951,6 +953,17 @@ NhlErrorTypes eofunc_varimax_jl_W( void )
   total_size_evec = nvar * nfac;
 
 /*
+ * Test input dimension sizes.
+ */
+  if((nvar > INT_MAX) || (nfac > INT_MAX) || (ldevec > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax_jl: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  invar = (int) nvar;
+  infac = (int) nfac;
+  ildevec = (int) ldevec;
+
+/*
  * Coerce missing values, if any. Prior to 4.2.0.a034, this routine
  * didn't handle missing values.
  */
@@ -998,21 +1011,8 @@ NhlErrorTypes eofunc_varimax_jl_W( void )
 /*
  * Call the Fortran 77 version of 'roteof' with the full argument list.
  */
-  if((nvar <= INT_MAX) &&
-     (nfac <= INT_MAX) &&
-     (ldevec <= INT_MAX))
-  {
-    int invar = (int) nvar;
-    int infac = (int) nfac;
-    int ildevec = (int) ldevec;
-    NGCALLF(zroteof,ZROTEOF)(&invar, &infac, devec, &ildevec, deval, dpcvar, drotvar,
-                             &missing_devec.doubleval,&iopt,&kflag);
-  }
-  else
-  {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"zroteof: nvar = %ld is greater than INT_MAX", nvar);
-    return(NhlFATAL);
-  }
+  NGCALLF(zroteof,ZROTEOF)(&invar, &infac, devec, &ildevec, deval, dpcvar, drotvar,
+                           &missing_devec.doubleval,&iopt,&kflag);
 
   if(type_evec_out == NCL_float) {
 /*

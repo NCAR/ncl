@@ -50,7 +50,7 @@ NhlErrorTypes ttest_W( void )
  */
   void *prob;
   double *tmp_alpha, *tmp_tval;
-  int ndims_prob;
+  int ndims_prob, ret;
   ng_size_t *dsizes_prob;
   NclBasicDataTypes type_prob;
   NclScalar missing_prob;
@@ -544,12 +544,14 @@ NhlErrorTypes ttest_W( void )
  * Return.
  */
   if(output_contains_msg) {
-    return(NclReturnValue(prob,ndims_prob,dsizes_prob,&missing_prob,
-                          type_prob,0));
+    ret = NclReturnValue(prob,ndims_prob,dsizes_prob,&missing_prob,
+                         type_prob,0);
   }
   else {
-    return(NclReturnValue(prob,ndims_prob,dsizes_prob,NULL,type_prob,0));
+    ret = NclReturnValue(prob,ndims_prob,dsizes_prob,NULL,type_prob,0);
   }
+  NclFree(dsizes_prob);
+  return(ret);
 }
 
 NhlErrorTypes ftest_W( void )
@@ -1105,7 +1107,7 @@ NhlErrorTypes equiv_sample_size_W( void )
  * Declare various variables for random purposes.
  */
   ng_size_t nx, i, size_neqv;
-  int index_x, is_missing;
+  int inx, index_x, is_missing;
 /*
  * Retrieve parameters
  *
@@ -1144,6 +1146,12 @@ NhlErrorTypes equiv_sample_size_W( void )
           DONT_CARE);
 
   nx = dsizes_x[ndims_x-1];
+  if(nx > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"equiv_sample_size: nx = %ld is greater than INT_MAX", nx);
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+
 /*
  * Calculate the size of the output.
  */
@@ -1209,16 +1217,8 @@ NhlErrorTypes equiv_sample_size_W( void )
  */
       tmp_x = &((double*)x)[index_x];
     }
-    if(nx <= INT_MAX)
-    {
-      int inx = (int) nx;
-      NGCALLF(deqvsiz,DEQVSIZ)(tmp_x,&inx,&missing_dx.doubleval,tmp_siglvl,
-                               &neqv[i]);
-    }
-    else
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"deqvsiz: nx = %d, is larger than INT_MAX", nx);
-    }
+    NGCALLF(deqvsiz,DEQVSIZ)(tmp_x,&inx,&missing_dx.doubleval,tmp_siglvl,
+                             &neqv[i]);
 /*
  * Check if missing value is returned.
  */
