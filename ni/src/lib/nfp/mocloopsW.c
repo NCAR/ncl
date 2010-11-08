@@ -73,7 +73,7 @@ NhlErrorTypes moc_globe_atl_W( void )
  */
   ng_size_t nyaux, kdep, nlat, mlon, nlatmlon, kdepnlatmlon, kdepnyaux2;
   ng_size_t i, size_output;
-  int nrx;
+  int nrx, inlat, imlon, ikdep, inyaux;
   int ret;
 
 /*
@@ -170,6 +170,19 @@ NhlErrorTypes moc_globe_atl_W( void )
   kdepnyaux2   = 2 * kdep * nyaux;
   nlatmlon     = nlat * mlon;
   kdepnlatmlon = kdep * nlatmlon;
+
+/*
+ * Test dimension sizes.
+ */
+  if((mlon > INT_MAX) || (nlat > INT_MAX) ||
+     (kdep > INT_MAX) || (nyaux > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: one or more input dimension sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imlon = (int) mlon;
+  inlat = (int) nlat;
+  ikdep = (int) kdep;
+  inyaux = (int) nyaux;
 
   for(i = 0; i <= 2; i++) {
     if(dsizes_a_bolus[i] != dsizes_a_wvel[i] || 
@@ -294,25 +307,10 @@ NhlErrorTypes moc_globe_atl_W( void )
  */
   nrx = 2;
 
-  if((mlon <= INT_MAX) &&
-     (nlat <= INT_MAX) &&
-     (kdep <= INT_MAX) &&
-     (nyaux <= INT_MAX))
-  {
-    int imlon = (int) mlon;
-    int inlat = (int) nlat;
-    int ikdep = (int) kdep;
-    int inyaux = (int) nyaux;
   NGCALLF(mocloops,MOCLOOPS)(&inyaux, &imlon, &inlat, &ikdep, &nrx, tmp_tlat, 
                              tmp_lat_aux_grid, rmlak, tmp_a_wvel, tmp_a_bolus, 
                              tmp_a_submeso, &missing_dbl_a_wvel.doubleval, 
                              dtmp1, dtmp2, dtmp3);
-  }
-  else
-  {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"mocloops: mlon = %ld is greater than INT_MAX", mlon);
-    return(NhlFATAL);
-  }
 
   if(type_tmp != NCL_double) {
     coerce_output_float_only(tmp,dtmp1,kdepnyaux2,0);

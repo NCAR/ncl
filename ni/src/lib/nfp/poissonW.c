@@ -231,7 +231,9 @@ NhlErrorTypes poisson_grid_fill_W( void )
 /*
  * Free unneeded memory.
  */
- if(type_x != NCL_double) NclFree(tmp_x);
+ if(type_x    != NCL_double) NclFree(tmp_x);
+ if(type_epsx != NCL_double) NclFree(tmp_epsx);
+ if(type_relc != NCL_double) NclFree(tmp_relc);
 
 /*
  * This is a procedure, so no values are returned.
