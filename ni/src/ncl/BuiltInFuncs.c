@@ -23738,7 +23738,7 @@ NhlErrorTypes _NclItouint8
     
                     if(has_missing)
                     {
-                        if(missing.byteval >= 0)
+                      /*if(missing.byteval >= 0)*/
                             ret_missing.uint8val = (unsigned char) missing.byteval;
                     }
 
@@ -28057,7 +28057,7 @@ NhlErrorTypes _NclItochar
     
                     if(has_missing)
                     {
-                        if(missing.byteval >= 0)
+                      /*if(missing.byteval >= 0)*/
                             ret_missing.charval = (unsigned char) missing.byteval;
                     }
 
