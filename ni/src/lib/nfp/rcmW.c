@@ -50,6 +50,8 @@ NhlErrorTypes rcm2rgrid_W( void )
   ng_size_t nlon2d, nlat2d, nfi, nlat1d, nlon1d, nfo, ngrid, size_fo;
   ng_size_t i;
   int ier, ret;
+  int inlon2d, inlat2d, ingrid, inlon1d, inlat1d;
+
 /*
  * Retrieve parameters
  *
@@ -159,6 +161,21 @@ NhlErrorTypes rcm2rgrid_W( void )
   for( i = 0; i < ndims_fi-2; i++ ) ngrid *= dsizes_fi[i];
   size_fi = ngrid * nfi;
   size_fo = ngrid * nfo;
+
+/*
+ * Test input dimension sizes.
+ */
+  if((nlon2d > INT_MAX) || (nlat2d > INT_MAX) || (ngrid > INT_MAX) || 
+     (nlon1d > INT_MAX) || (nlat1d > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rcm2rgrid: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon2d = (int) nlon2d;
+  inlat2d = (int) nlat2d;
+  ingrid = (int) ngrid;
+  inlon1d = (int) nlon1d;
+  inlat1d = (int) nlat1d;
+
 /*
  * Coerce missing values.
  */
@@ -214,26 +231,10 @@ NhlErrorTypes rcm2rgrid_W( void )
   tmp_opt   = 0;
   tmp_ncrit = 1;
 
-  if((nlon2d <= INT_MAX) &&
-     (nlat2d <= INT_MAX) &&
-     (ngrid <= INT_MAX) &&
-     (nlon1d <= INT_MAX) &&
-     (nlat1d <= INT_MAX))
-  {
-      int inlon2d = (int) nlon2d;
-      int inlat2d = (int) nlat2d;
-      int ingrid = (int) ngrid;
-      int inlon1d = (int) nlon1d;
-      int inlat1d = (int) nlat1d;
-      NGCALLF(drcm2rgrid,DRCM2RGRID)(&ingrid,&inlat2d,&inlon2d,tmp_lat2d,tmp_lon2d,
-                                     tmp_fi,&inlat1d,tmp_lat1d,&inlon1d,
-                                     tmp_lon1d,tmp_fo,&missing_dfi.doubleval,
-                                     &tmp_ncrit,&tmp_opt,&ier);
-  }
-  else
-  {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"drcm2points: nlon2d = %d, is larger than INT_MAX", nlon2d);
-  }
+  NGCALLF(drcm2rgrid,DRCM2RGRID)(&ingrid,&inlat2d,&inlon2d,tmp_lat2d,tmp_lon2d,
+                                 tmp_fi,&inlat1d,tmp_lat1d,&inlon1d,
+                                 tmp_lon1d,tmp_fo,&missing_dfi.doubleval,
+                                 &tmp_ncrit,&tmp_opt,&ier);
 
   if(ier) {
     if(ier == 1) {
@@ -300,6 +301,7 @@ NhlErrorTypes rgrid2rcm_W( void )
   ng_size_t nlon2d, nlat2d, nfi, nlat1d, nlon1d, nfo, ngrid, size_fi, size_fo;
   ng_size_t i;
   int ier, ret;
+  int inlon2d, inlat2d, ingrid, inlon1d, inlat1d;
 /*
  * Retrieve parameters
  *
@@ -410,6 +412,20 @@ NhlErrorTypes rgrid2rcm_W( void )
   size_fi = ngrid * nfi;
   size_fo = ngrid * nfo;
 /*
+ * Test input dimension sizes.
+ */
+  if((nlon2d > INT_MAX) || (nlat2d > INT_MAX) || (ngrid > INT_MAX) || 
+     (nlon1d > INT_MAX) || (nlat1d > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rgrid2rcm: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon2d = (int) nlon2d;
+  inlat2d = (int) nlat2d;
+  ingrid = (int) ngrid;
+  inlon1d = (int) nlon1d;
+  inlat1d = (int) nlat1d;
+
+/*
  * Coerce missing values.
  */
   coerce_missing(type_fi,has_missing_fi,&missing_fi,&missing_dfi,
@@ -463,27 +479,10 @@ NhlErrorTypes rgrid2rcm_W( void )
   tmp_opt   = 0;
   tmp_ncrit = 1;
 
-  if((nlon2d <= INT_MAX) &&
-     (nlat2d <= INT_MAX) &&
-     (ngrid <= INT_MAX) &&
-     (nlon1d <= INT_MAX) &&
-     (nlat1d <= INT_MAX))
-  {
-      int inlon2d = (int) nlon2d;
-      int inlat2d = (int) nlat2d;
-      int ingrid = (int) ngrid;
-      int inlon1d = (int) nlon1d;
-      int inlat1d = (int) nlat1d;
-      NGCALLF(drgrid2rcm,DRGRID2RCM)(&ingrid,&inlat1d,&inlon1d,tmp_lat1d,tmp_lon1d,
-                                     tmp_fi,&inlat2d,&inlon2d,tmp_lat2d,
-                                     tmp_lon2d,tmp_fo,&missing_dfi.doubleval,
-                                     &tmp_ncrit,&tmp_opt,&ier);
-  }
-  else
-  {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"drcm2points: nlon2d = %d, is larger than INT_MAX", nlon2d);
-  }
-
+  NGCALLF(drgrid2rcm,DRGRID2RCM)(&ingrid,&inlat1d,&inlon1d,tmp_lat1d,tmp_lon1d,
+                                 tmp_fi,&inlat2d,&inlon2d,tmp_lat2d,
+                                 tmp_lon2d,tmp_fo,&missing_dfi.doubleval,
+                                 &tmp_ncrit,&tmp_opt,&ier);
   if(ier) {
     if(ier == 1) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"rgrid2rcm: not enough points in input/output array");
@@ -547,6 +546,7 @@ NhlErrorTypes rcm2points_W( void )
   ng_size_t nlon2d, nlat2d, nfi, nlat1d, nfo, ngrid, size_fi, size_fo;
   ng_size_t i;
   int ier, ret;
+  int inlon2d, inlat2d, ingrid, inlat1d;
 /*
  * Retrieve parameters
  *
@@ -662,6 +662,18 @@ NhlErrorTypes rcm2points_W( void )
   size_fo = ngrid * nfo;
 
 /*
+ * Test input dimension sizes.
+ */
+  if((nlon2d > INT_MAX) || (nlat2d > INT_MAX) || (ngrid > INT_MAX) || (nlat1d > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rcm2points: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon2d = (int) nlon2d;
+  inlat2d = (int) nlat2d;
+  ingrid = (int) ngrid;
+  inlat1d = (int) nlat1d;
+
+/*
  * Coerce missing values.
  */
   coerce_missing(type_fi,has_missing_fi,&missing_fi,&missing_dfi,
@@ -715,25 +727,10 @@ NhlErrorTypes rcm2points_W( void )
  */
   tmp_ncrit = 1;
 
-  if((nlon2d <= INT_MAX) &&
-     (nlat2d <= INT_MAX) &&
-     (ngrid <= INT_MAX) &&
-     (nlat1d <= INT_MAX))
-  {
-      int inlon2d = (int) nlon2d;
-      int inlat2d = (int) nlat2d;
-      int ingrid = (int) ngrid;
-      int inlat1d = (int) nlat1d;
-      NGCALLF(drcm2points,DRCM2POINTS)(&ingrid,&inlat2d,&inlon2d,tmp_lat2d,tmp_lon2d,
-                                       tmp_fi,&inlat1d,tmp_lat1d,tmp_lon1d,
-                                       tmp_fo,&missing_dfi.doubleval,
-                                       opt,&tmp_ncrit,&ier);
-  }
-  else
-  {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"drcm2points: nlon2d = %d, is larger than INT_MAX", nlon2d);
-  }
-
+  NGCALLF(drcm2points,DRCM2POINTS)(&ingrid,&inlat2d,&inlon2d,tmp_lat2d,tmp_lon2d,
+                                   tmp_fi,&inlat1d,tmp_lat1d,tmp_lon1d,
+                                   tmp_fo,&missing_dfi.doubleval,
+                                   opt,&tmp_ncrit,&ier);
   if(ier) {
     if(ier == 1) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2points: not enough points in input/output array");

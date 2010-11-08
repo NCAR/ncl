@@ -21,6 +21,8 @@ NhlErrorTypes pop_remap_W( void )
   ng_size_t dsizes_src_add[1];
   NclBasicDataTypes type_dst_array, type_map_wts, type_src_array;
   NclScalar missing_src_array, missing_dsrc_array;
+  int indst, inlink, inw, insrc;
+
 /*
  * Retrieve parameters
  *
@@ -95,6 +97,15 @@ NhlErrorTypes pop_remap_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pop_remap: The size of the dst_add and src_add arrays must be the same as the first dimension of map_wts");
     return(NhlFATAL);
   }
+  if((ndst > INT_MAX) || (nlink > INT_MAX) || (nw > INT_MAX) || (nsrc > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pop_remap: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  indst = (int) ndst;
+  inlink = (int) nlink;
+  inw = (int) nw;
+  insrc = (int) nsrc;
+
 /*
  * Check that src_array has a missing value set.
  */
@@ -131,22 +142,8 @@ NhlErrorTypes pop_remap_W( void )
 /*
  * Call Fortran popremap.
  */
-  if((ndst <= INT_MAX) &&
-     (nlink <= INT_MAX) &&
-     (nw <= INT_MAX) &&
-     (nsrc <= INT_MAX))
-  {
-      int indst = (int) ndst;
-      int inlink = (int) nlink;
-      int inw = (int) nw;
-      int insrc = (int) nsrc;
-      NGCALLF(dpopremap,DPOPREMAP)(dst,map,dst_add,src_add,src,&indst,&inlink,&inw,
-                                   &insrc,&missing_dsrc_array.doubleval);
-  }
-  else
-  {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dpopremap: ndst = %d, is larger than INT_MAX", ndst);
-  }
+  NGCALLF(dpopremap,DPOPREMAP)(dst,map,dst_add,src_add,src,&indst,&inlink,&inw,
+                               &insrc,&missing_dsrc_array.doubleval);
 
   if(type_dst_array == NCL_float) {
     coerce_output_float_only(dst_array,dst,ndst,0);
