@@ -19253,13 +19253,9 @@ NhlErrorTypes   _NclIFileIsPresent
 
     for (i = 0; i < sz; i++) {
         fpath = (char *) NrmQuarkToString(files[i]);
-	printf("file: <%s>, line: %d\n", __FILE__, __LINE__);
-        printf("\tNo. %d path: <%s>\n", i, fpath);
         if (!strncmp(fpath, "http", 4)) {
 #ifdef BuildOPENDAP
 	    oc_open(fpath, &fid);
-	    printf("file: <%s>, line: %d\n", __FILE__, __LINE__);
-            printf("\tfid: <%d>\n", fid);
 #else
             fid = ncopen(fpath, NC_NOWRITE);
 #endif
