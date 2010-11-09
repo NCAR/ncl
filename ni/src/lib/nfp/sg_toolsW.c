@@ -368,7 +368,7 @@ NhlErrorTypes gc_clkwise_W( void )
  * output variable 
  */
   logical *tfval; 
-  int itmp;
+  int itmp, inpts, inptsp1;
   ng_size_t size_tfval,tsize,npts,nptsp1,jpol;
   NclBasicDataTypes type_tfval;
 
@@ -435,6 +435,16 @@ NhlErrorTypes gc_clkwise_W( void )
   }
 
 /*
+ * Test input dimension sizes.
+ */
+  if(npts > INT_MAX || nptsp1 > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_clkwise: npts and/or nptsp1 is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts   = (int) npts;
+  inptsp1 = (int) nptsp1;
+
+/*
  * Determine size for the return array.
  */
   size_tfval = 1;
@@ -490,16 +500,9 @@ NhlErrorTypes gc_clkwise_W( void )
       memcpy(tlon,dlon+jpol,npts*sizeof(double));
       tlat[npts] = tlat[0];
       tlon[npts] = tlon[0];
-      if(nptsp1 <= INT_MAX)
-      {
-        int inptsp1 = (int) nptsp1;
-        itmp = NGCALLF(gccwise,GCCWISE)(tlat,tlon,&inptsp1);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"gccwise: nptsp1 = %ld is greater than INT_MAX", nptsp1);
-        return(NhlFATAL);
-      }
+
+      itmp = NGCALLF(gccwise,GCCWISE)(tlat,tlon,&inptsp1);
+
       if (itmp == 0) {
         tfval[i] = True;
       }
@@ -510,16 +513,8 @@ NhlErrorTypes gc_clkwise_W( void )
       free(tlon);
     }
     else {
-      if(npts <= INT_MAX)
-      {
-        int inpts = (int) npts;
-        itmp = NGCALLF(gccwise,GCCWISE)(dlat+jpol,dlon+jpol,&inpts);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"gccwise: nptsp1 = %ld is greater than INT_MAX", nptsp1);
-        return(NhlFATAL);
-      }
+      itmp = NGCALLF(gccwise,GCCWISE)(dlat+jpol,dlon+jpol,&inpts);
+
       if (itmp == 0) {
         tfval[i] = True;
       }
@@ -740,6 +735,7 @@ NhlErrorTypes gc_inout_W( void )
  * Declare various variables for random purposes.
  */
   ng_size_t i,itmp,npts,nptsp1,jpol,tsize;
+  int inpts, inptsp1;
   double *work;
 
 /*
@@ -858,6 +854,16 @@ NhlErrorTypes gc_inout_W( void )
   }
 
 /*
+ * Test input dimension sizes.
+ */
+  if(npts > INT_MAX || nptsp1 > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_inout: npts and/or nptsp1 is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts   = (int) npts;
+  inptsp1 = (int) nptsp1;
+
+/*
  * Determine size for the return array.
  */
   size_tfval = 1;
@@ -916,16 +922,7 @@ NhlErrorTypes gc_inout_W( void )
       memcpy(tlon,dlon+jpol,npts*sizeof(double));
       tlat[npts] = tlat[0];
       tlon[npts] = tlon[0];
-      if(nptsp1 <= INT_MAX)
-      {
-        int inptsp1 = (int) nptsp1;
-        itmp = NGCALLF(gcinout,GCINOUT)(dplat+i,dplon+i,tlat,tlon,&inptsp1,work);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"gcinout: nptsp1 = %ld is greater than INT_MAX", nptsp1);
-        return(NhlFATAL);
-      }
+      itmp = NGCALLF(gcinout,GCINOUT)(dplat+i,dplon+i,tlat,tlon,&inptsp1,work);
       if (itmp == 0) {
         tfval[i] = True;
       }
@@ -936,17 +933,8 @@ NhlErrorTypes gc_inout_W( void )
       free(tlon);
     }
     else {
-      if(npts <= INT_MAX)
-      {
-        int inpts = (int) npts;
-        itmp = NGCALLF(gcinout,GCINOUT)(dplat+i,dplon+i,dlat+jpol,dlon+jpol,
-                                        &inpts,work);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"gcinout: npts = %ld is greater than INT_MAX", npts);
-        return(NhlFATAL);
-      }
+      itmp = NGCALLF(gcinout,GCINOUT)(dplat+i,dplon+i,dlat+jpol,dlon+jpol,
+				      &inpts,work);
 
       if (itmp == 0) {
         tfval[i] = True;

@@ -27,7 +27,7 @@ NhlErrorTypes smth9_W( void )
  */
   double *work;
   ng_size_t total_size_x, ni, nj, ninj, lwork, i, nt;
-  int index_x;
+  int index_x, ini, inj;
   int ier;
 /*
  * Retrieve parameters
@@ -84,6 +84,17 @@ NhlErrorTypes smth9_W( void )
   nj = dsizes_x[ndims_x-2];
   ni = dsizes_x[ndims_x-1];
   ninj = ni * nj;
+
+/*
+ * Test input dimension sizes.
+ */
+  if((ni > INT_MAX) || (nj > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"smth9: ni and/or nj is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  ini = (int) ni;
+  inj = (int) nj;
+
 /*
  * Compute the total number of elements in our array.
  */
@@ -154,17 +165,8 @@ NhlErrorTypes smth9_W( void )
  */
     coerce_subset_input_double(x,tmp_x,index_x,type_x,ninj,0,NULL,NULL);
 
-    if((ni <= INT_MAX) && (nj <= INT_MAX))
-    {
-        int ini = (int) ni;
-        int inj = (int) nj;
-        NGCALLF(dsmth9,DSMTH9)(tmp_x,work,&ini,&inj,tmp_p,tmp_q,
-                               &missing_dx.doubleval,lwrap,&ier);
-    }
-    else
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dsmth9: ni = %d, is larger than INT_MAX", ni);
-    }
+    NGCALLF(dsmth9,DSMTH9)(tmp_x,work,&ini,&inj,tmp_p,tmp_q,
+			   &missing_dx.doubleval,lwrap,&ier);
 
     coerce_output_float_or_double(smth,tmp_x,type_smth,ninj,index_x);
 

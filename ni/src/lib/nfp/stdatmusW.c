@@ -36,7 +36,7 @@ NhlErrorTypes stdatmus_z2tdp_W( void )
  * Various
  */
   ng_size_t i, nz, size_leftmost, index_z, index_t, index_d, index_p;
-  int is_scalar_z, ret;
+  int is_scalar_z, ret, inz;
 
 /*
  * Retrieve parameter.
@@ -85,6 +85,14 @@ NhlErrorTypes stdatmus_z2tdp_W( void )
   }
   size_z   = size_leftmost * nz;
   size_tdp = 3 * size_z;
+
+/*
+ * Test input dimension sizes.
+ */
+  if(nz > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"stdatmus_z2tdp: nz = %ld is greater than INT_MAX",nz);
+  }
+  inz = (int) nz;
 
 /* 
  * Allocate space for output arrays.  If the input z is already double,
@@ -139,16 +147,7 @@ NhlErrorTypes stdatmus_z2tdp_W( void )
       tmp_p = &((double*)tdp)[index_p];
     }
 
-    if(nz <= INT_MAX)
-    {
-      int inz = (int) nz;
-      NGCALLF(dstdatmz,DSTDATMZ)(&inz,tmp_z,tmp_t,tmp_d,tmp_p);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dstdatmz: nz = %ld is greater than INT_MAX", nz);
-      return(NhlFATAL);
-    }
+    NGCALLF(dstdatmz,DSTDATMZ)(&inz,tmp_z,tmp_t,tmp_d,tmp_p);
 
     if(type_tdp == NCL_float) {
       coerce_output_float_only(tdp,tmp_t,nz,index_t);
@@ -204,7 +203,7 @@ NhlErrorTypes stdatmus_p2tdz_W( void )
  * Various
  */
   ng_size_t i, np, size_leftmost, index_p, index_t, index_d, index_z;
-  int is_scalar_p, ret;
+  int is_scalar_p, ret, inp;
 
 /*
  * Retrieve parameter.
@@ -254,6 +253,15 @@ NhlErrorTypes stdatmus_p2tdz_W( void )
   size_p   = size_leftmost * np;
   size_tdz = 3 * size_p;
 
+/*
+ * Test input dimension sizes.
+ */
+  if(np > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"stdatmus_p2tdz: np = %ld is greater than INT_MAX",np);
+     return(NhlFATAL);
+  }
+  inp = (int) np;
+
 /* 
  * Allocate space for output arrays.  If the input p is already double,
  * then we don't need to allocate space for temporary arrays, because
@@ -263,8 +271,8 @@ NhlErrorTypes stdatmus_p2tdz_W( void )
     type_tdz = NCL_double;
     tdz = (double *)calloc(size_tdz,sizeof(double));
     if(tdz == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"stdatmus_p2tdz: Unable to allocate memory for output array");
-      return(NhlFATAL);
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"stdatmus_p2tdz: Unable to allocate memory for output array"); 
+     return(NhlFATAL);
     }
   }
   else {
@@ -307,16 +315,7 @@ NhlErrorTypes stdatmus_p2tdz_W( void )
       tmp_z = &((double*)tdz)[index_z];
     }
 
-    if(np <= INT_MAX)
-    {
-      int inp = (int) np;
-      NGCALLF(dstdatmp,DSTDATMP)(&inp,tmp_p,tmp_t,tmp_d,tmp_z);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dstdatmp: np = %ld is greater than INT_MAX", np);
-      return(NhlFATAL);
-    }
+    NGCALLF(dstdatmp,DSTDATMP)(&inp,tmp_p,tmp_t,tmp_d,tmp_z);
 
     if(type_tdz == NCL_float) {
       coerce_output_float_only(tdz,tmp_t,np,index_t);

@@ -39,7 +39,7 @@ NhlErrorTypes sindex_yrmo_W( void )
 /*
  * various
  */
-  int ler = 0;
+  int ler = 0, ilwork;
   ng_size_t lwork, total_size_xy;
   double *work;
 /*
@@ -88,6 +88,17 @@ NhlErrorTypes sindex_yrmo_W( void )
   nyrs = dsizes_x[0];
   nmos = dsizes_x[1];
   total_size_xy = nyrs * nmos;
+  lwork = 2*nyrs*nmos + 4*nmos + nyrs;
+
+/*
+ * Test dimension sizes.
+ */
+  if(lwork > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sindex_yrmo: lwork = %ld is greater than INT_MAX", lwork);
+    return(NhlFATAL);
+  }
+  ilwork = (int) lwork;
+
 /*
  * Coerce missing values to double.
  *
@@ -136,25 +147,17 @@ NhlErrorTypes sindex_yrmo_W( void )
 /*
  * Allocate memory for work array.
  */
-  lwork = 2*nyrs*nmos + 4*nmos + nyrs;
   work = (double *)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"sindex_yrmo: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+
 /*
  * Call the f77 version of 'sindex' with the full argument list.
  */
-  if(lwork <= INT_MAX)
-  {
-      int ilwork = (int) lwork;
-      NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
-                               work,&ilwork,tmp_soi,soi_noise,&ler);
-  }
-  else
-  {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"lwork: lwork = %d, is larger than INT_MAX", lwork);
-  }
+  NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
+                           work,&ilwork,tmp_soi,soi_noise,&ler);
 
   if (ler == 2) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"sindex_yrmo: One or both of the input data arrays contains all missing values");
@@ -337,7 +340,7 @@ NhlErrorTypes snindex_yrmo_W( void )
 /*
  * various
  */
-  int ler = 0;
+  int ler = 0, ilwork;
   ng_size_t lwork;
   ng_size_t total_size_xy;
   double *work;
@@ -397,6 +400,16 @@ NhlErrorTypes snindex_yrmo_W( void )
   nyrs = dsizes_x[0];
   nmos = dsizes_x[1];
   total_size_xy = nyrs * nmos;
+  lwork = 2*nyrs*nmos + 4*nmos + nyrs;
+/*
+ * Test dimension sizes.
+ */
+  if(lwork > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: lwork = %ld is greater than INT_MAX", lwork);
+    return(NhlFATAL);
+  }
+  ilwork = (int) lwork;
+
 /*
  * Coerce missing values to double.
  *
@@ -466,25 +479,17 @@ NhlErrorTypes snindex_yrmo_W( void )
 /*
  * Allocate memory for work array.
  */
-  lwork = 2*nyrs*nmos + 4*nmos + nyrs;
   work = (double *)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+
 /*
  * Call the f77 version of 'sindex' with the full argument list.
  */
-  if(lwork <= INT_MAX)
-  {
-      int ilwork = (int) lwork;
-      NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
-                               work,&ilwork,tmp_soi,tmp_soi_noise,&ler);
-  }
-  else
-  {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"lwork: lwork = %d, is larger than INT_MAX", lwork);
-  }
+  NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
+			   work,&ilwork,tmp_soi,tmp_soi_noise,&ler);
 
   if (ler == 2) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"snindex_yrmo: One or both of the input data arrays contains all missing values");
