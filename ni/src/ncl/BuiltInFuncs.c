@@ -17882,6 +17882,7 @@ NhlErrorTypes sprintf_W(void)
                 (void) sprintf(buffer, NrmQuarkToString(*format_string), tmp_f[i]);
                 output_str[i] = NrmStringToQuark(buffer);
             }
+            if(type != NCL_float) NclFree(tmp_f);
 
             break;
     }
