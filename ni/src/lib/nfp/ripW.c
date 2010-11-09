@@ -68,6 +68,7 @@ NhlErrorTypes rip_cape_3d_W( void )
   ng_size_t index_cape, index_zsfc, index_cin;
   int i3dflag=1, scalar_zsfc;
   int iter, ret;
+  int imiy, imjx, imkzh;
 
 /*
  * The default is to use $NCARG_ROOT/lib/ncarg/data/asc/psadilookup.dat
@@ -237,6 +238,17 @@ NhlErrorTypes rip_cape_3d_W( void )
     mjx  = 1;                     /* lat */
     miy  = 1;                     /* lon */
   }
+
+/*
+ * Test input dimension sizes.
+ */
+  if((miy > INT_MAX) || (mjx > INT_MAX) || (mkzh > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imiy = (int) miy;
+  imjx = (int) mjx;
+  imkzh = (int) mkzh;
 
 /*
  * Check some more dimension sizes.
@@ -436,23 +448,11 @@ NhlErrorTypes rip_cape_3d_W( void )
 /*
  * Call Fortran routine.
  */
-    if((miy <= INT_MAX) &&
-       (mjx <= INT_MAX) &&
-       (mkzh <= INT_MAX))
-    {
-      int imiy = (int) miy;
-      int imjx = (int) mjx;
-      int imkzh = (int) mkzh;
-      NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-                                       tmp_psfc, tmp_cape, tmp_cin, &imiy,
-                                       &imjx, &imkzh, &i3dflag, &iter,
-                                       psa_file,strlen(psa_file));
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcapecalc3d: miy = %ld is greater than INT_MAX", miy);
-      return(NhlFATAL);
-    }
+    NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
+                                     tmp_psfc, tmp_cape, tmp_cin, &imiy,
+                                     &imjx, &imkzh, &i3dflag, &iter,
+                                     psa_file,strlen(psa_file));
+
 /*
  * If the output is to be float, then do the coercion here.
  */
@@ -547,6 +547,7 @@ NhlErrorTypes rip_cape_2d_W( void )
   ng_size_t index_output_cape, index_output_cin, index_output_lcl;
   ng_size_t index_output_lfc, mkzh0_index, mkzh1_index, mkzh2_index;
   int iter, ret;
+  int imiy, imjx, imkzh;
 
 /*
  * The default is to use $NCARG_ROOT/lib/ncarg/data/asc/psadilookup.dat
@@ -732,6 +733,18 @@ NhlErrorTypes rip_cape_2d_W( void )
   }
 
 /*
+ * Test input dimension sizes.
+ */
+  if((miy > INT_MAX) || (mjx > INT_MAX) || (mkzh > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imiy = (int) miy;
+  imjx = (int) mjx;
+  imkzh = (int) mkzh;
+
+
+/*
  * Calculate size of output array. The output array size depends on
  * the size of p,t,q,z:
  *
@@ -906,23 +919,11 @@ NhlErrorTypes rip_cape_2d_W( void )
 /*
  * Call Fortran routine.
  */
-    if((miy <= INT_MAX) &&
-       (mjx <= INT_MAX) &&
-       (mkzh <= INT_MAX))
-    {
-      int imiy = (int) miy;
-      int imjx = (int) mjx;
-      int imkzh = (int) mkzh;
-      NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-                                       tmp_psfc, tmp_cape, tmp_cin, &imiy,
-                                       &imjx, &imkzh, &i3dflag, &iter,
-                                       psa_file,strlen(psa_file));
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcapecalc3d: miy = %ld is greater than INT_MAX", miy);
-      return(NhlFATAL);
-    }
+    NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
+                                     tmp_psfc, tmp_cape, tmp_cin, &imiy,
+                                     &imjx, &imkzh, &i3dflag, &iter,
+                                     psa_file,strlen(psa_file));
+
 /*
  * Copy the values back out to the correct places in the "cape" array.
  *

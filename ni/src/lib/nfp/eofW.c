@@ -286,7 +286,7 @@ NhlErrorTypes eof_W( void )
             }
             else if(type_pcrit == NCL_int || type_pcrit == NCL_float) {
 /*
- * Coerce to float, if it's not double.
+ * Coerce to double.
  */
               pcrit = coerce_input_double(attr_list->attvalue->multidval.val,
                                           type_pcrit,1,0,NULL,NULL);
@@ -1343,6 +1343,15 @@ NhlErrorTypes eof_W( void )
                           TEMPORARY
                           );
 /*
+ * Free memory 
+ */
+  NclFree(cmatrix);
+  NclFree(cmethod);
+  if((return_pcrit && type_pcrit != NCL_double) || !return_pcrit)  {
+    NclFree(pcrit);
+  }
+
+/*
  * Return output grid and attributes to NCL.
  */
   return_data.kind = NclStk_VAR;
@@ -1762,6 +1771,11 @@ NhlErrorTypes eof_ts_W( void )
                           NULL,
                           TEMPORARY
                           );
+/*
+ * Free memory 
+ */
+  NclFree(cmatrix);
+
 /*
  * Return output grid and attributes to NCL.
  */

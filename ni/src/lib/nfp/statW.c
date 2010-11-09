@@ -67,6 +67,7 @@ NhlErrorTypes stat2_W( void )
   ng_size_t i, index_x, size_leftmost;
   int ier = 0, ier_count;
   ng_size_t npts;
+  int inpts;
   double xsd;
 /*
  * Retrieve parameters
@@ -94,6 +95,13 @@ NhlErrorTypes stat2_W( void )
   npts = dsizes_x[ndims_x-1];
   size_leftmost = 1;
   for(i = 0; i < ndims_x-1; i++) size_leftmost *= dsizes_x[i];
+  
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"stat2: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Calculate what the size is supposed to be of our output arrays.
  */
@@ -205,18 +213,8 @@ NhlErrorTypes stat2_W( void )
     if(type_xmean == NCL_double) tmp_xmean = &((double*)xmean)[i];
     if(type_xvar  == NCL_double) tmp_xvar  = &((double*)xvar)[i];
 
-    if(npts <= INT_MAX)
-    {
-      int inpts = (int) npts;
-      NGCALLF(dstat2,DSTAT2)(tmp_x,&inpts,&missing_dx.doubleval,tmp_xmean,
-                             tmp_xvar,&xsd,&nptused[i],&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dstat2: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
-
+    NGCALLF(dstat2,DSTAT2)(tmp_x,&inpts,&missing_dx.doubleval,tmp_xmean,
+			   tmp_xvar,&xsd,&nptused[i],&ier);
     if (ier == 2) {
       *tmp_xmean = *tmp_xvar = missing_dx.doubleval;
       ier_count++;
@@ -238,7 +236,8 @@ NhlErrorTypes stat2_W( void )
   if(type_x     != NCL_double) NclFree(tmp_x);
   if(type_xmean != NCL_double) NclFree(tmp_xmean);
   if(type_xvar  != NCL_double) NclFree(tmp_xvar);
-
+  NclFree(dsizes_out);
+  
   return(NhlNOERROR);
 }
 
@@ -277,6 +276,7 @@ NhlErrorTypes stat_trim_W( void )
   ng_size_t i, index_x, size_leftmost;
   int ier = 0, ier_count;
   ng_size_t npts;
+  int inpts;
   double xvart, *work;
 /*
  * Retrieve parameters
@@ -383,10 +383,20 @@ NhlErrorTypes stat_trim_W( void )
       return(NhlFATAL);
     }
   }
+
+/*
+ * Check input dimension size
+ */
+  npts = dsizes_x[ndims_x-1];
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Allocate space for work array.
  */
-  npts = dsizes_x[ndims_x-1];
   work = (double*)calloc(npts,sizeof(double));
   if (work == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: Unable to allocate space for work array" );
@@ -439,17 +449,8 @@ NhlErrorTypes stat_trim_W( void )
     if(type_xmeant == NCL_double) tmp_xmeant = &((double*)xmeant)[i];
     if(type_xsdt   == NCL_double) tmp_xsdt   = &((double*)xsdt)[i];
 
-    if(npts <= INT_MAX)
-    {
-      int inpts = (int) npts;
-      NGCALLF(dstat2t,DSTAT2T)(tmp_x,&inpts,&missing_dx.doubleval,tmp_xmeant,
-                               &xvart,tmp_xsdt,&nptused[i],work,tmp_ptrim,&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dstat2t: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
+    NGCALLF(dstat2t,DSTAT2T)(tmp_x,&inpts,&missing_dx.doubleval,tmp_xmeant,
+			     &xvart,tmp_xsdt,&nptused[i],work,tmp_ptrim,&ier);
 
     if (ier == 2) {
       *tmp_xmeant = *tmp_xsdt = missing_dx.doubleval;
@@ -479,6 +480,7 @@ NhlErrorTypes stat_trim_W( void )
   if(type_xmeant != NCL_double) NclFree(tmp_xmeant);
   if(type_xsdt   != NCL_double) NclFree(tmp_xsdt);
   NclFree(work);
+  NclFree(dsizes_out);
 
   return(NhlNOERROR);
 }
@@ -523,6 +525,7 @@ NhlErrorTypes stat4_W( void )
  */
   ng_size_t i, index_x, size_leftmost;
   ng_size_t npts;
+  int inpts;
   int ier = 0, ier_count;
   double xsd;
 /*
@@ -544,10 +547,20 @@ NhlErrorTypes stat4_W( void )
  * Coerce missing value.
  */
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+
+/*
+ * Check input dimension size
+ */
+  npts = dsizes_x[ndims_x-1];
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"stat4: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Compute the total number of elements in our x array.
  */
-  npts = dsizes_x[ndims_x-1];
   size_leftmost = 1;
   for(i = 0; i < ndims_x-1; i++) size_leftmost *= dsizes_x[i];
 /*
@@ -700,17 +713,8 @@ NhlErrorTypes stat4_W( void )
     if(type_xkurt == NCL_double) tmp_xkurt = &((double*)xkurt)[i];
     if(type_xmean == NCL_double) tmp_xmean = &((double*)xmean)[i];
 
-    if(npts <= INT_MAX)
-    {
-      int inpts = (int) npts;
-      NGCALLF(dstat4,DSTAT4)(tmp_x,&inpts,&missing_dx.doubleval,tmp_xmean,
-                             tmp_xvar,&xsd,tmp_xskew,tmp_xkurt,&nptused[i],&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dstat4: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
+    NGCALLF(dstat4,DSTAT4)(tmp_x,&inpts,&missing_dx.doubleval,tmp_xmean,
+			   tmp_xvar,&xsd,tmp_xskew,tmp_xkurt,&nptused[i],&ier);
 
     if (ier == 2) {
 /*
@@ -750,6 +754,7 @@ NhlErrorTypes stat4_W( void )
   if(type_xvar  != NCL_double) NclFree(tmp_xvar);
   if(type_xskew != NCL_double) NclFree(tmp_xskew);
   if(type_xkurt != NCL_double) NclFree(tmp_xkurt);
+  NclFree(dsizes_out);
 
   return(NhlNOERROR);
 }
@@ -790,6 +795,7 @@ NhlErrorTypes stat_medrng_W( void )
   ng_size_t i, index_x, size_leftmost;
   int ier = 0, ier_count;
   ng_size_t npts;
+  int inpts;
   double *work;
 /*
  * Retrieve parameters
@@ -812,9 +818,18 @@ NhlErrorTypes stat_medrng_W( void )
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
 
 /*
- * Compute the total number of elements in our x array.
+ * Check input dimension size
  */
   npts = dsizes_x[ndims_x-1];
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_medrng: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
+/*
+ * Compute the total number of elements in our x array.
+ */
   size_leftmost = 1;
   for(i = 0; i < ndims_x-1; i++) size_leftmost *= dsizes_x[i];
 /*
@@ -907,7 +922,7 @@ NhlErrorTypes stat_medrng_W( void )
   if(type_x != NCL_double) {
     tmp_x = (double*)calloc(npts,sizeof(double));
     if(tmp_x == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"stat2: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_medrng: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
   }
@@ -955,17 +970,8 @@ NhlErrorTypes stat_medrng_W( void )
     if(type_xmrange == NCL_double) tmp_xmrange = &((double*)xmrange)[i];
     if(type_xrange == NCL_double)  tmp_xrange  = &((double*)xrange)[i];
 
-    if(npts <= INT_MAX)
-    {
-      int inpts = (int) npts;
-      NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&inpts,&missing_dx.doubleval,
-                   tmp_xmedian,tmp_xmrange,tmp_xrange,&nptused[i],&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dmedmrng: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
+    NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&inpts,&missing_dx.doubleval,
+			       tmp_xmedian,tmp_xmrange,tmp_xrange,&nptused[i],&ier);
 
     if (ier == 2) {
       *tmp_xmedian = missing_dx.doubleval;
@@ -995,6 +1001,7 @@ NhlErrorTypes stat_medrng_W( void )
   if(type_xmedian != NCL_double) NclFree(tmp_xmedian);
   if(type_xmrange != NCL_double) NclFree(tmp_xmrange);
   if(type_xrange  != NCL_double) NclFree(tmp_xrange);
+  NclFree(work);
 
   return(NhlNOERROR);
 }
@@ -1026,6 +1033,7 @@ NhlErrorTypes dim_median_W( void )
   ng_size_t i, l1, total_elements;
   int ier = 0, ier_count = 0;
   ng_size_t npts;
+  int inpts;
   double *work;
 /*
  * Retrieve parameter.
@@ -1051,7 +1059,16 @@ NhlErrorTypes dim_median_W( void )
     dsizes_median[i] = dsizes_x[i];
   }    
 
+/*
+ * Check input dimension size
+ */
   npts = dsizes_x[ndims_x-1];
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_median: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Coerce missing values, if any.
  */
@@ -1099,17 +1116,8 @@ NhlErrorTypes dim_median_W( void )
       tmp_xmedian = &((double*)xmedian)[i];
     }
 
-    if(npts <= INT_MAX)
-    {
-      int inpts = (int) npts;
-      NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&inpts,&missing_dx.doubleval,
-                                 tmp_xmedian,&xmrange,&xrange,&nptused,&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dmedmrng: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
+    NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&inpts,&missing_dx.doubleval,
+			       tmp_xmedian,&xmrange,&xrange,&nptused,&ier);
 
     if(type_x != NCL_double) ((float*)xmedian)[i] = (float)(*tmp_xmedian);
 
@@ -1174,6 +1182,7 @@ NhlErrorTypes dim_median_n_W( void )
   ng_size_t i, j;
   ng_size_t total_nl, total_nr, total_elements;
   ng_size_t npts;
+  int inpts;
   int ier = 0, ier_count = 0;
   ng_size_t index_out, index_x, nrnx, index_nrx, index_nr;
   double *work;
@@ -1235,6 +1244,15 @@ NhlErrorTypes dim_median_n_W( void )
   total_elements = total_nr * total_nl;
 
 /*
+ * Check input dimension size
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_median_n: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
+/*
  * Coerce missing values, if any.
  */
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
@@ -1283,17 +1301,8 @@ NhlErrorTypes dim_median_n_W( void )
 
       if(type_x == NCL_double) tmp_xmedian = &((double*)xmedian)[index_out];
 
-      if(npts <= INT_MAX)
-      {
-        int inpts = (int) npts;
-        NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&inpts,&missing_dx.doubleval,
-                                   tmp_xmedian,&xmrange,&xrange,&nptused,&ier);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dmedmrng: npts = %ld is greater than INT_MAX", npts);
-        return(NhlFATAL);
-      }
+      NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&inpts,&missing_dx.doubleval,
+				 tmp_xmedian,&xmrange,&xrange,&nptused,&ier);
 
       if(type_x != NCL_double) {
         ((float*)xmedian)[index_out] = (float)(*tmp_xmedian);
@@ -1349,6 +1358,7 @@ NhlErrorTypes dim_rmvmean_W( void )
   ng_size_t i, l1, total_size_x, total_size_x1;
   int ier = 0, ier_count = 0;
   ng_size_t npts;
+  int inpts;
 /*
  * Retrieve parameter.
  */
@@ -1367,7 +1377,16 @@ NhlErrorTypes dim_rmvmean_W( void )
   total_size_x1 = 1;
   for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
 
+/*
+ * Check input dimension size
+ */
   npts = dsizes_x[ndims_x-1];
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmean: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
   total_size_x = total_size_x1 * npts;
 /*
  * Coerce missing values, if any.
@@ -1406,16 +1425,7 @@ NhlErrorTypes dim_rmvmean_W( void )
  */
     coerce_subset_input_double(x,tmp_x,l1,type_x,npts,0,NULL,NULL);
 
-    if(npts <= INT_MAX)
-    {
-      int inpts = (int) npts;
-      NGCALLF(drmvmean,DRMVMEAN)(tmp_x,&inpts,&missing_dx.doubleval,&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"drmvmean: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
+    NGCALLF(drmvmean,DRMVMEAN)(tmp_x,&inpts,&missing_dx.doubleval,&ier);
 
     coerce_output_float_or_double(rmvmean,tmp_x,type_x,npts,l1);
 
@@ -1476,6 +1486,7 @@ NhlErrorTypes dim_rmvmean_n_W( void )
   ng_size_t total_nl, total_nr, total_size_x, total_elements;
   int ier=0, ier_count=0;
   ng_size_t npts;
+  int inpts;
 
 /*
  * Retrieve parameter.
@@ -1512,7 +1523,6 @@ NhlErrorTypes dim_rmvmean_n_W( void )
     }
   }
 
-
 /*
  * Compute the total number of elements in output and input.
  *
@@ -1530,6 +1540,15 @@ NhlErrorTypes dim_rmvmean_n_W( void )
   }
   total_elements = total_nr * total_nl;
   total_size_x   = total_elements * npts;
+
+/*
+ * Check input dimension size
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmean_n: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
 
 /*
  * Coerce missing values, if any.
@@ -1572,16 +1591,7 @@ NhlErrorTypes dim_rmvmean_n_W( void )
       coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
                                       npts,0,NULL,NULL);
 
-      if(npts <= INT_MAX)
-      {
-        int inpts = (int) npts;
-        NGCALLF(drmvmean,DRMVMEAN)(tmp_x,&inpts,&missing_dx.doubleval,&ier);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"drmvmean: npts = %ld is greater than INT_MAX", npts);
-        return(NhlFATAL);
-      }
+      NGCALLF(drmvmean,DRMVMEAN)(tmp_x,&inpts,&missing_dx.doubleval,&ier);
 
       coerce_output_float_or_double_step(rmvmean,tmp_x,type_x,npts,index_x,
                                          total_nr);
@@ -1640,6 +1650,7 @@ NhlErrorTypes dim_rmvmed_W( void )
   ng_size_t i, l1, total_size_x1, total_size_x;
   int ier=0, ier_count=0;
   ng_size_t npts;
+  int inpts;
 /*
  * Retrieve parameter.
  */
@@ -1658,7 +1669,16 @@ NhlErrorTypes dim_rmvmed_W( void )
   total_size_x1 = 1;
   for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
 
+/*
+ * Check input dimension size
+ */
   npts = dsizes_x[ndims_x-1];
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmed: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
   total_size_x = total_size_x1 * npts;
 /*
  * Coerce missing values, if any.
@@ -1705,16 +1725,7 @@ NhlErrorTypes dim_rmvmed_W( void )
  */
     coerce_subset_input_double(x,tmp_x,l1,type_x,npts,0,NULL,NULL);
 
-    if(npts <= INT_MAX)
-    {
-      int inpts = (int) npts;
-      NGCALLF(drmvmed,DRMVMED)(tmp_x,work,&inpts,&missing_dx.doubleval,&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"drmvmed: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
+    NGCALLF(drmvmed,DRMVMED)(tmp_x,work,&inpts,&missing_dx.doubleval,&ier);
 
     coerce_output_float_or_double(rmvmed,tmp_x,type_x,npts,l1);
 
@@ -1771,9 +1782,9 @@ NhlErrorTypes dim_rmvmed_n_W( void )
 /*
  * various
  */
-  ng_size_t i, j, index_x, nrnx, index_nrx;
+  ng_size_t i, j, index_x, nrnx, index_nrx, npts;
   ng_size_t total_nl, total_nr, total_size_x, total_elements;
-  int ier=0, ier_count=0, npts;
+  int ier=0, ier_count=0, inpts;
 /*
  * Retrieve parameter.
  */
@@ -1828,6 +1839,15 @@ NhlErrorTypes dim_rmvmed_n_W( void )
   total_size_x   = total_elements * npts;
 
 /*
+ * Check input dimension size
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmed_n: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
+/*
  * Coerce missing values, if any.
  */
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
@@ -1876,7 +1896,7 @@ NhlErrorTypes dim_rmvmed_n_W( void )
       coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
                                       npts,0,NULL,NULL);
 
-      NGCALLF(drmvmed,DRMVMED)(tmp_x,work,&npts,&missing_dx.doubleval,&ier);
+      NGCALLF(drmvmed,DRMVMED)(tmp_x,work,&inpts,&missing_dx.doubleval,&ier);
 
       coerce_output_float_or_double_step(rmvmed,tmp_x,type_x,npts,index_x,
                                          total_nr);
@@ -1934,6 +1954,7 @@ NhlErrorTypes dim_standardize_W( void )
   ng_size_t i, l1, total_size_x1, total_size_x;
   int ier=0, ier_count=0;
   ng_size_t npts;
+  int inpts;
 /*
  * Retrieve parameter.
  */
@@ -1964,7 +1985,16 @@ NhlErrorTypes dim_standardize_W( void )
   total_size_x1 = 1;
   for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
 
+/*
+ * Check input dimension size
+ */
   npts = dsizes_x[ndims_x-1];
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_standardize: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
   total_size_x = total_size_x1 * npts;
 /*
  * Coerce missing values, if any.
@@ -2003,16 +2033,7 @@ NhlErrorTypes dim_standardize_W( void )
  */
     coerce_subset_input_double(x,tmp_x,l1,type_x,npts,0,NULL,NULL);
 
-    if(npts <= INT_MAX)
-    {
-      int inpts = (int) npts;
-      NGCALLF(dxstnd,DXSTND)(tmp_x,&inpts,&missing_dx.doubleval,opt,&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dxstnd: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
+    NGCALLF(dxstnd,DXSTND)(tmp_x,&inpts,&missing_dx.doubleval,opt,&ier);
 
     coerce_output_float_or_double(standardize,tmp_x,type_x,npts,l1);
 
@@ -2068,9 +2089,9 @@ NhlErrorTypes dim_standardize_n_W( void )
 /*
  * various
  */
-  ng_size_t i, j, index_x, nrnx, index_nrx;
+  ng_size_t i, j, index_x, nrnx, index_nrx, npts;
   ng_size_t total_nl, total_nr, total_size_x, total_elements;
-  int ier=0, ier_count=0, npts;
+  int ier=0, ier_count=0, inpts;
 
 /*
  * Retrieve parameter.
@@ -2138,6 +2159,15 @@ NhlErrorTypes dim_standardize_n_W( void )
   total_size_x   = total_elements * npts;
 
 /*
+ * Check input dimension size
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_standardize_n: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
+/*
  * Coerce missing values, if any.
  */
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
@@ -2178,7 +2208,7 @@ NhlErrorTypes dim_standardize_n_W( void )
       coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
                                       npts,0,NULL,NULL);
 
-      NGCALLF(dxstnd,DXSTND)(tmp_x,&npts,&missing_dx.doubleval,opt,&ier);
+      NGCALLF(dxstnd,DXSTND)(tmp_x,&inpts,&missing_dx.doubleval,opt,&ier);
 
       coerce_output_float_or_double_step(standardize,tmp_x,type_x,npts,
                                          index_x,total_nr);
@@ -2244,6 +2274,7 @@ NhlErrorTypes dim_rmsd_W( void )
   ng_size_t i, total_elements;
   int ier = 0, ier_count = 0;
   ng_size_t npts, index_xy;
+  int inpts;
 /*
  * Retrieve parameters.
  */
@@ -2320,9 +2351,18 @@ NhlErrorTypes dim_rmsd_W( void )
     }
   }
 /*
- * Allocate space for coercing input arrays to double, if necessary.
+ * Check input dimension size
  */
   npts = dsizes_x[ndims_x-1];
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmsd: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
+/*
+ * Allocate space for coercing input arrays to double, if necessary.
+ */
   if(type_x != NCL_double) {
     tmp_x = (double*)calloc(npts,sizeof(double));
     if(tmp_x == NULL) {
@@ -2369,17 +2409,8 @@ NhlErrorTypes dim_rmsd_W( void )
       tmp_rmsd = &((double*)rmsd)[i];
     }
 
-    if(npts <= INT_MAX)
-    {
-      int inpts = (int) npts;
-      NGCALLF(drmsd,DRMSD)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-                           &missing_dy.doubleval,tmp_rmsd,&nptused,&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"drmsd: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
+    NGCALLF(drmsd,DRMSD)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+			 &missing_dy.doubleval,tmp_rmsd,&nptused,&ier);
 
     if(type_rmsd != NCL_double) ((float*)rmsd)[i] = (float)(*tmp_rmsd);
 
@@ -2443,6 +2474,7 @@ NhlErrorTypes dim_rmsd_n_W( void )
   ng_size_t total_nl, total_nr, total_elements;
   int ier = 0, ier_count = 0;
   ng_size_t npts;
+  int inpts;
 /*
  * Retrieve parameters.
  */
@@ -2524,6 +2556,15 @@ NhlErrorTypes dim_rmsd_n_W( void )
   total_elements = total_nr * total_nl;
 
 /*
+ * Check input dimension size
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmsd_n: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
+/*
  * Coerce missing values, if any.
  */
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
@@ -2581,17 +2622,8 @@ NhlErrorTypes dim_rmsd_n_W( void )
       
       if(type_rmsd == NCL_double) tmp_rmsd = &((double*)rmsd)[index_out];
 
-      if(npts <= INT_MAX)
-      {
-        int inpts = (int) npts;
-        NGCALLF(drmsd,DRMSD)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-                             &missing_dy.doubleval,tmp_rmsd,&nptused,&ier);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"drmsd: npts = %ld is greater than INT_MAX", npts);
-        return(NhlFATAL);
-      }
+      NGCALLF(drmsd,DRMSD)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+			   &missing_dy.doubleval,tmp_rmsd,&nptused,&ier);
 
       if(type_rmsd != NCL_double) {
         ((float*)rmsd)[index_out] = (float)(*tmp_rmsd);
@@ -2648,6 +2680,7 @@ NhlErrorTypes esacr_W( void )
   ng_size_t i, index_x, index_acr, total_size_x1, total_size_acr;
   int ier = 0, ier_count2 = 0, ier_count5 = 0;
   ng_size_t npts;
+  int inpts;
   double xmean, xvar;
 /*
  * Retrieve parameters
@@ -2684,6 +2717,15 @@ NhlErrorTypes esacr_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: npts must be >= 2");
     return(NhlFATAL);
   }
+/*
+ * Check input dimension size
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Check mxlag
  */
@@ -2754,17 +2796,8 @@ NhlErrorTypes esacr_W( void )
 
     xvar = xmean = missing_dx.doubleval;
 
-    if(npts <= INT_MAX)
-    {
-      int inpts = (int) npts;
-      NGCALLF(desauto,DESAUTO)(tmp_x,&inpts,&missing_dx.doubleval,&xmean,
-                               &xvar,mxlag,tmp_acv,tmp_acr,&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"desauto: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
+    NGCALLF(desauto,DESAUTO)(tmp_x,&inpts,&missing_dx.doubleval,&xmean,
+			     &xvar,mxlag,tmp_acv,tmp_acr,&ier);
 
     if (ier == -2) ier_count2++;
     if (ier == -5) ier_count5++;
@@ -2836,6 +2869,7 @@ NhlErrorTypes esacv_W( void )
   ng_size_t i, index_x, index_acv, total_size_x1, total_size_acv;
   int ier = 0, ier_count2 = 0, ier_count5 = 0;
   ng_size_t npts;
+  int inpts;
   double xmean, xvar;
 /*
  * Retrieve parameters
@@ -2872,6 +2906,15 @@ NhlErrorTypes esacv_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: npts must be >= 2");
     return(NhlFATAL);
   }
+/*  
+ * Check input dimension size
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Check mxlag
  */
@@ -2942,17 +2985,8 @@ NhlErrorTypes esacv_W( void )
 
     xvar = xmean = missing_dx.doubleval;
 
-    if(npts <= INT_MAX)
-    {
-      int inpts = (int) npts;
-      NGCALLF(desauto,DESAUTO)(tmp_x,&inpts,&missing_dx.doubleval,&xmean,
-                               &xvar,mxlag,tmp_acv,tmp_acr,&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"desauto: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
+    NGCALLF(desauto,DESAUTO)(tmp_x,&inpts,&missing_dx.doubleval,&xmean,
+			     &xvar,mxlag,tmp_acv,tmp_acr,&ier);
 
     if (ier == -2) ier_count2++;
     if (ier == -5) ier_count5++;
@@ -3035,6 +3069,7 @@ NhlErrorTypes esccr_W( void )
   ng_size_t total_size_ccr;
   int ier = 0, ier_count;
   ng_size_t npts, dimsizes_same;
+  int inpts;
   double xmean, xsd, ymean, ysd;
 /*
  * Retrieve parameters
@@ -3102,6 +3137,15 @@ NhlErrorTypes esccr_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: npts must be >= 2");
     return(NhlFATAL);
   }
+/*  
+ * Check input dimension size
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Check mxlag
  */
@@ -3233,18 +3277,10 @@ NhlErrorTypes esccr_W( void )
       xmean = xsd = missing_dx.doubleval;
       ymean = ysd = missing_dy.doubleval;
 
-      if(npts <= INT_MAX)
-      {
-        int inpts = (int) npts;
-        NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-                                 &missing_dy.doubleval,&xmean,&ymean,&xsd,
-                                 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"descros: npts = %ld is greater than INT_MAX", npts);
-        return(NhlFATAL);
-      }
+      NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+			       &missing_dy.doubleval,&xmean,&ymean,&xsd,
+			       &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+
       if(type_ccr != NCL_double) {
         coerce_output_float_only(ccr,tmp_ccr,mxlag1,index_ccr);
       }
@@ -3288,18 +3324,10 @@ NhlErrorTypes esccr_W( void )
         xmean = xsd = missing_dx.doubleval;
         ymean = ysd = missing_dy.doubleval;
 
-        if(npts <= INT_MAX)
-        {
-          int inpts = (int) npts;
-          NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-                                   &missing_dy.doubleval,&xmean,&ymean,&xsd,
-                                   &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
-        }
-        else
-        {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,"descros: npts = %ld is greater than INT_MAX", npts);
-          return(NhlFATAL);
-        }
+	NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+				 &missing_dy.doubleval,&xmean,&ymean,&xsd,
+				 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+
         if(type_ccr != NCL_double) {
           coerce_output_float_only(ccr,tmp_ccr,mxlag1,index_ccr);
         }
@@ -3432,6 +3460,7 @@ NhlErrorTypes dim_num_n_W( void)
  */
   ng_size_t i, j, k, index_out, index_in;
   ng_size_t total_nl, total_nr, total_elements, npts;
+
 /* 
  * Retrieve input from NCL script.
  */
@@ -3569,6 +3598,7 @@ NhlErrorTypes esccr_shields_W( void )
   ng_size_t total_size_ccr;
   int ier = 0, ier_count;
   ng_size_t npts, ncases;
+  int inpts;
   double xmean, xsd, ymean, ysd;
 /*
  * Retrieve parameters
@@ -3625,6 +3655,15 @@ NhlErrorTypes esccr_shields_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr_shields: npts must be >= 2");
     return(NhlFATAL);
   }
+/*  
+ * Check input dimension size
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr_shields: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Check mxlag
  */
@@ -3746,18 +3785,10 @@ NhlErrorTypes esccr_shields_W( void )
         xmean = xsd = missing_dx.doubleval;
         ymean = ysd = missing_dy.doubleval;
 
-        if(npts <= INT_MAX)
-        {
-          int inpts = (int) npts;
-          NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-                                   &missing_dy.doubleval,&xmean,&ymean,&xsd,
-                                   &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
-        }
-        else
-        {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,"descros: npts = %ld is greater than INT_MAX", npts);
-          return(NhlFATAL);
-        }
+	NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+				 &missing_dy.doubleval,&xmean,&ymean,&xsd,
+				 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+
         if(type_ccr != NCL_double) {
           coerce_output_float_only(ccr,tmp_ccr,mxlag1,index_ccr);
         }
@@ -3835,6 +3866,7 @@ NhlErrorTypes esccv_W( void )
   ng_size_t total_size_ccv;
   int ier = 0, ier_count;
   ng_size_t npts, dimsizes_same;
+  int inpts;
   double xmean, xsd, ymean, ysd;
 /*
  * Retrieve parameters
@@ -3902,6 +3934,16 @@ NhlErrorTypes esccv_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: npts must be >= 2");
     return(NhlFATAL);
   }
+
+/*  
+ * Check input dimension size
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Check mxlag
  */
@@ -4032,18 +4074,10 @@ NhlErrorTypes esccv_W( void )
       xmean = xsd = missing_dx.doubleval;
       ymean = ysd = missing_dy.doubleval;
 
-      if(npts <= INT_MAX)
-      {
-        int inpts = (int) npts;
-        NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-                                 &missing_dy.doubleval,&xmean,&ymean,&xsd,
-                                 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"descros: npts = %ld is greater than INT_MAX", npts);
-        return(NhlFATAL);
-      }
+      NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+			       &missing_dy.doubleval,&xmean,&ymean,&xsd,
+			       &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+
       if(type_ccv != NCL_double) {
         coerce_output_float_only(ccv,tmp_ccv,mxlag1,index_ccv);
       }
@@ -4087,18 +4121,10 @@ NhlErrorTypes esccv_W( void )
         xmean = xsd = missing_dx.doubleval;
         ymean = ysd = missing_dy.doubleval;
 
-        if(npts <= INT_MAX)
-        {
-          int inpts = (int) npts;
-          NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-                                   &missing_dy.doubleval,&xmean,&ymean,&xsd,
-                                   &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
-        }
-        else
-        {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,"descros: npts = %ld is greater than INT_MAX", npts);
-          return(NhlFATAL);
-        }
+	NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+				 &missing_dy.doubleval,&xmean,&ymean,&xsd,
+				 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+
         if(type_ccv != NCL_double) {
           coerce_output_float_only(ccv,tmp_ccv,mxlag1,index_ccv);
         }
@@ -4163,6 +4189,7 @@ NhlErrorTypes dim_stat4_W( void )
   ng_size_t i, total_leftmost;
   int ier = 0;
   ng_size_t index_x, npts;
+  int inpts;
   int ret, ier_count;
   double xsd;
   double *tmp_x = NULL;
@@ -4185,10 +4212,19 @@ NhlErrorTypes dim_stat4_W( void )
  * Coerce missing values, if any.
  */
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+/*  
+ * Check input dimension size
+ */
+  npts = dsizes_x[ndims_x-1];
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stat4: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Compute the total number of lefmost and rightmost elements in our x array.
  */
-  npts = dsizes_x[ndims_x-1];
   total_leftmost = 1;
   for(i = 0; i < ndims_x-1; i++) total_leftmost *= dsizes_x[i];
 /*
@@ -4231,17 +4267,9 @@ NhlErrorTypes dim_stat4_W( void )
       tmp_x   = &((double*)x)[index_x];
     }
 
-    if(npts <= INT_MAX)
-    {
-      int inpts = (int) npts;
-      NGCALLF(dstat4,DSTAT4)(tmp_x,&inpts,&missing_dx.doubleval,&dxmean,&dxvar,
-                             &xsd,&dxskew,&dxkurt,&nptused,&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dstat4: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
+    NGCALLF(dstat4,DSTAT4)(tmp_x,&inpts,&missing_dx.doubleval,&dxmean,&dxvar,
+                           &xsd,&dxskew,&dxkurt,&nptused,&ier);
+
     if (ier == 2) {
 /*
  * Input was all missing for this subset, so set output to missing
@@ -4312,6 +4340,7 @@ NhlErrorTypes dim_stat4_n_W( void )
   ng_size_t i, j, total_nl, total_nr, total_n, nrnx, index_nrx, index_nr;
   int ier = 0;
   ng_size_t index_x, index_out, npts;
+  int inpts;
   int ret, ier_count;
   double xsd, *tmp_x;
 /*
@@ -4366,6 +4395,15 @@ NhlErrorTypes dim_stat4_n_W( void )
   for(i = dims[ndims-1]+1; i < ndims_x; i++) total_nr *= dsizes_x[i];
   total_n = total_nl * total_nr;
 
+/*  
+ * Check input dimension size
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stat4_n: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Calculate size of output arrays.
  */
@@ -4410,17 +4448,8 @@ NhlErrorTypes dim_stat4_n_W( void )
       coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
                                       npts,0,NULL,NULL);
 
-      if(npts <= INT_MAX)
-      {
-        int inpts = (int) npts;
-        NGCALLF(dstat4,DSTAT4)(tmp_x,&inpts,&missing_dx.doubleval,&dxmean,&dxvar,
-                               &xsd,&dxskew,&dxkurt,&nptused,&ier);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dstat4: npts = %ld is greater than INT_MAX", npts);
-        return(NhlFATAL);
-      }
+      NGCALLF(dstat4,DSTAT4)(tmp_x,&inpts,&missing_dx.doubleval,&dxmean,&dxvar,
+                             &xsd,&dxskew,&dxkurt,&nptused,&ier);
 
       if (ier == 2) {
 /*

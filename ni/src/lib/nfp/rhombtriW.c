@@ -25,6 +25,7 @@ NhlErrorTypes rhomb_trunC_W( void )
   ng_size_t i;
   int index_nm;
   ng_size_t start;
+  int im, in;
 /*
  * Retrieve parameters
  *
@@ -70,6 +71,16 @@ NhlErrorTypes rhomb_trunC_W( void )
   n  = dsizes_ab[ndims_ab-1];
   nm = n * m;
 
+/*
+ * Test input dimension sizes.
+ */
+  if((m > INT_MAX) || (n > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunC: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  im = (int) m;
+  in = (int) n;
+
   nt = 1;
   for(i = 1; i < ndims_ab-2; nt*=dsizes_ab[i],i++);
 
@@ -113,16 +124,7 @@ NhlErrorTypes rhomb_trunC_W( void )
     coerce_subset_input_double(ab,tmp_b,start+index_nm,type_ab,nm,0,
                                NULL,NULL);
 
-    if((m <= INT_MAX) && (n <= INT_MAX))
-    {
-        int im = (int) m;
-        int in = (int) n;
-        NGCALLF(drhombtrunc,DRHOMBTRUNC)(&in,&im,tmp_a,tmp_b,T);
-    }
-    else
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"drhombtrunc: n = %d, is larger than INT_MAX", n);
-    }
+    NGCALLF(drhombtrunc,DRHOMBTRUNC)(&in,&im,tmp_a,tmp_b,T);
 
 /*
  * Copy a and b arrays back into new_ab array.
@@ -163,6 +165,7 @@ NhlErrorTypes tri_trunC_W( void )
   ng_size_t i;
   int index_nm;
   ng_size_t start;
+  int im, in;
 /*
  * Retrieve parameters
  *
@@ -212,6 +215,16 @@ NhlErrorTypes tri_trunC_W( void )
     return(NhlFATAL);
   }
 
+/*
+ * Test input dimension sizes.
+ */
+  if((m > INT_MAX) || (n > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunC: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  im = (int) m;
+  in = (int) n;
+
   nt = 1;
   for(i = 1; i < ndims_ab-2; nt*=dsizes_ab[i],i++);
 
@@ -255,16 +268,7 @@ NhlErrorTypes tri_trunC_W( void )
     coerce_subset_input_double(ab,tmp_b,start+index_nm,type_ab,nm,0,
                                NULL,NULL);
 
-    if((m <= INT_MAX) && (n <= INT_MAX))
-    {
-        int im = (int) m;
-        int in = (int) n;
-        NGCALLF(dtritrunc,DTRITRUNC)(&in, T, &im, tmp_a, tmp_b);
-    }
-    else
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dtritrunc: n = %d, is larger than INT_MAX", n);
-    }
+    NGCALLF(dtritrunc,DTRITRUNC)(&in, T, &im, tmp_a, tmp_b);
 
 /*
  * Copy a and b arrays back into new_ab array.
@@ -305,6 +309,7 @@ NhlErrorTypes rhomb_trunc_W( void )
  */
   ng_size_t i;
   int index_nm;
+  int im, in;
 /*
  * Retrieve parameters
  *
@@ -362,6 +367,17 @@ NhlErrorTypes rhomb_trunc_W( void )
   n = dsizes_a[ndims_a-1];
   nm = n * m;
 
+/*
+ * Test input dimension sizes.
+ */
+  if((m > INT_MAX) || (n > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunc: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  im = (int) m;
+  in = (int) n;
+
+
   nt = 1;
   for(i = 0; i < ndims_a-2; nt*=dsizes_a[i],i++);
   total_size_ab = nt*nm;
@@ -411,16 +427,7 @@ NhlErrorTypes rhomb_trunc_W( void )
       tmp_b  = &((double*)b)[index_nm];
     }
 
-    if((m <= INT_MAX) && (n <= INT_MAX))
-    {
-        int im = (int) m;
-        int in = (int) n;
-        NGCALLF(drhombtrunc,DRHOMBTRUNC)(&in,&im,tmp_a,tmp_b,T);
-    }
-    else
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"drhombtrunc: n = %d, is larger than INT_MAX", n);
-    }
+    NGCALLF(drhombtrunc,DRHOMBTRUNC)(&in,&im,tmp_a,tmp_b,T);
 
     if(type_a != NCL_double) {
       coerce_output_float_only(a,tmp_a,nm,index_nm);
@@ -463,6 +470,7 @@ NhlErrorTypes tri_trunc_W( void )
  */
   ng_size_t i;
   int index_nm;
+  int im, in;
 /*
  * Retrieve parameters
  *
@@ -524,6 +532,16 @@ NhlErrorTypes tri_trunc_W( void )
   }
   nm = n * m;
 
+/*
+ * Test input dimension sizes.
+ */
+  if((m > INT_MAX) || (n > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunc: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  im = (int) m;
+  in = (int) n;
+
   nt = 1;
   for(i = 0; i < ndims_a-2; nt*=dsizes_a[i],i++);
   total_size_ab = nt*nm;
@@ -573,16 +591,7 @@ NhlErrorTypes tri_trunc_W( void )
       tmp_b  = &((double*)b)[index_nm];
     }
 
-    if((m <= INT_MAX) && (n <= INT_MAX))
-    {
-        int im = (int) m;
-        int in = (int) n;
-        NGCALLF(dtritrunc,DTRITRUNC)(&in, T, &im, tmp_a, tmp_b);
-    }
-    else
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dtritrunc: n = %d, is larger than INT_MAX", n);
-    }
+    NGCALLF(dtritrunc,DTRITRUNC)(&in, T, &im, tmp_a, tmp_b);
 
     if(type_a != NCL_double) coerce_output_float_only(a,tmp_a,nm,index_nm);
     if(type_b != NCL_double) coerce_output_float_only(b,tmp_b,nm,index_nm);

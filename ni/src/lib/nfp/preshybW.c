@@ -1316,6 +1316,9 @@ NhlErrorTypes sigma2hybrid_W( void )
   dsizes_xhybrid[ndims_x-1] = nlvo;
 /*
  * Coerce data to double if necessary.
+ *
+ * psfc might be a scalar and it might be an array.
+ * Just allocate one double for it.
  */
   tmp_sigma= coerce_input_double(sigma,type_sigma,nlvi,0,NULL,NULL);
   tmp_hya  = coerce_input_double(hya,type_hya,nlvo,0,NULL,NULL);
@@ -1331,23 +1334,36 @@ NhlErrorTypes sigma2hybrid_W( void )
 /*
  * Allocate space for output array.
  */
+  if(type_x != NCL_double) {
+    tmp_x = (double*)calloc(nlvi,sizeof(double));
+    if(tmp_x == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sigma2hybrid: Unable to allocate memory for coercing x to double");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Allocate space for output array.
+ */
   if(type_xhybrid == NCL_float) {
     xhybrid     = (void*)calloc(size_xhybrid,sizeof(float));
-    tmp_x       = (double*)calloc(nlvi,sizeof(double));
-    tmp_sigo    = (double*)calloc(nlvo,sizeof(double));
     tmp_xhybrid = (double*)calloc(nlvo,sizeof(double));
-    if(tmp_x == NULL || tmp_xhybrid == NULL || xhybrid == NULL) {
+    if(tmp_xhybrid == NULL || xhybrid == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"sigma2hybrid: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
   else {
-    tmp_sigo = (double*)calloc(nlvo,sizeof(double));
     xhybrid  = (void*)calloc(size_xhybrid,sizeof(double));
-    if(tmp_sigo == NULL || xhybrid == NULL) {
+    if(xhybrid == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"sigma2hybrid: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
+  }
+  tmp_sigo = (double*)calloc(nlvo,sizeof(double));
+  if(tmp_sigo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sigma2hybrid: Unable to allocate memory for sigo array");
+    return(NhlFATAL);
   }
 
 /*
@@ -1410,6 +1426,8 @@ NhlErrorTypes sigma2hybrid_W( void )
   if(type_p0      != NCL_double) NclFree(tmp_p0);
   if(type_psfc    != NCL_double) NclFree(tmp_psfc);
   if(type_xhybrid != NCL_double) NclFree(tmp_xhybrid);
+  NclFree(tmp_sigo);
+
 /*
  * Return.
  */
