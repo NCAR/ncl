@@ -47,6 +47,7 @@ NhlErrorTypes   write_matrix_W(void)
     void    *data;
     int has_missing;
     ng_size_t dimsz[NCL_MAX_DIMENSIONS];
+    int idsz0, idsz1;
     NclScalar   missing;
     NclBasicDataTypes   data_type;
 
@@ -92,6 +93,14 @@ NhlErrorTypes   write_matrix_W(void)
         &has_missing,
         &data_type,
         0);
+
+    /*
+     * Test input dimension sizes.
+     */
+    if((dimsz[0] > INT_MAX) || (dimsz[1] > INT_MAX)) {
+    }      
+    idsz0 = (int) dimsz[0];
+    idsz1 = (int) dimsz[1];
 
     /* Parameter #2: data print format */
     fmtx = (string *) NclGetArgValue(
@@ -187,57 +196,53 @@ NhlErrorTypes   write_matrix_W(void)
     /* flush buffers before writing */
     (void) fflush((FILE *) NULL);
 
-    if((dimsz[0] <= INT_MAX) && (dimsz[1] <= INT_MAX))
-    {
-      int idsz0 = (int) dimsz[0];
-      int idsz1 = (int) dimsz[1];
+    if((dimsz[0] > INT_MAX) || (dimsz[1] > INT_MAX)) {
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "write_matrix: input dimension sizes are > INT_MAX");
+      return(NhlFATAL);
+    }
+    idsz0 = (int) dimsz[0];
+    idsz1 = (int) dimsz[1];
 
       /* call FORTRAN function */
-      switch (data_type) {
-        case NCL_byte:
-            NGCALLF(writematrixb, WRITEMATRIXB)(filename, &idsz0, &idsz1, data,
+    switch (data_type) {
+    case NCL_byte:
+      NGCALLF(writematrixb, WRITEMATRIXB)(filename, &idsz0, &idsz1, data,
+		  format, title, &tspace, &rownumbers, strlen(filename),
+		  strlen(format), strlen(title));
+      break;
+
+    case NCL_short:
+      NGCALLF(writematrixs, WRITEMATRIXS)(filename, &idsz0, &idsz1, data,
                     format, title, &tspace, &rownumbers, strlen(filename),
                     strlen(format), strlen(title));
-            break;
+      break;
 
-        case NCL_short:
-            NGCALLF(writematrixs, WRITEMATRIXS)(filename, &idsz0, &idsz1, data,
-                    format, title, &tspace, &rownumbers, strlen(filename),
-                    strlen(format), strlen(title));
-            break;
-
-        case NCL_int:
+    case NCL_int:
             /* fall through */
-        case NCL_long:
-            NGCALLF(writematrixi, WRITEMATRIXI)(filename, &idsz0, &idsz1, data,
-                    format, title, &tspace, &rownumbers,
-                    strlen(filename), strlen(format), strlen(title));
-            break;
+    case NCL_long:
+      NGCALLF(writematrixi, WRITEMATRIXI)(filename, &idsz0, &idsz1, data,
+                   format, title, &tspace, &rownumbers,
+                   strlen(filename), strlen(format), strlen(title));
+      break;
 
-        case NCL_float:
-            NGCALLF(writematrixf, WRITEMATRIXF)(filename, &idsz0, &idsz1, data,
-                    format, title, &tspace, &rownumbers,
-                    strlen(filename), strlen(format), strlen(title));
-            break;
+    case NCL_float:
+      NGCALLF(writematrixf, WRITEMATRIXF)(filename, &idsz0, &idsz1, data,
+                  format, title, &tspace, &rownumbers,
+                  strlen(filename), strlen(format), strlen(title));
+      break;
 
-        case NCL_double:
-            NGCALLF(writematrixd, WRITEMATRIXD)(filename, &idsz0, &idsz1, data,
-                    format, title, &tspace, &rownumbers,
-                    strlen(filename), strlen(format), strlen(title));
-            break;
+    case NCL_double:
+      NGCALLF(writematrixd, WRITEMATRIXD)(filename, &idsz0, &idsz1, data,
+                  format, title, &tspace, &rownumbers,
+                  strlen(filename), strlen(format), strlen(title));
+      break;
 
-        default:
-            NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "write_matrix: input data must be of numeric type");
+    default:
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+		      "write_matrix: input data must be of numeric type");
             return NhlFATAL;
             break;
-      }
-    }
-    else
-    {
-      NhlPError(NhlFATAL, NhlEUNKNOWN,
-               "write_matrix: dimsz[0] = %ld greater than INT_MAX", dimsz[0]);
-      return NhlFATAL;
     }
 
     /* flush buffers after writing */

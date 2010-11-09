@@ -15,7 +15,7 @@ NhlErrorTypes round_W( void )
   double *tmp_x;
   int has_missing_x, ndims_x;
   ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
-  int *iopt;
+  int *iopt, isx;
   NclScalar missing_x, missing_dx, missing_xout;
   NclBasicDataTypes type_x;
 /*
@@ -69,6 +69,12 @@ NhlErrorTypes round_W( void )
  */
   size_x = 1;
   for( i = 0; i < ndims_x; i++ ) size_x *= dsizes_x[i];
+
+  if(size_x > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"round: size_x = %ld is greater than INT_MAX", size_x);
+    return(NhlFATAL);
+  }
+  isx = (int) size_x;
 
 /*
  * Coerce input and missing value to double if necessary.
@@ -132,17 +138,9 @@ NhlErrorTypes round_W( void )
 /*
  * Call the Fortran version of this routine.
  */
-    if(size_x <= INT_MAX)
-    {
-      int isx = (int) size_x;
-      NGCALLF(rndncl,RNDNCL)(&isx,tmp_x,&has_missing_x,
-                             &missing_dx.doubleval,tmp_xout,iopt);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"rndncl: size_x = %ld is greater than INT_MAX", size_x);
-      return(NhlFATAL);
-    }
+    NGCALLF(rndncl,RNDNCL)(&isx,tmp_x,&has_missing_x,
+			   &missing_dx.doubleval,tmp_xout,iopt);
+
 /*
  * Figure out if we need to coerce output back to float or int.
  */
@@ -396,7 +394,7 @@ NhlErrorTypes generate_2d_array_W( void )
   void *data;
   double *tmp_data;
   NclBasicDataTypes type_data;
-  int ret;
+  int ret, id0, id1;
 /*
  * Declare various variables for random purposes.
  */
@@ -487,6 +485,13 @@ NhlErrorTypes generate_2d_array_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"generate_2d_array: the dimensions of the output array must be such that it has at least two elements");
     return(NhlFATAL);
   }
+  if((dsizes_data[0] > INT_MAX) ||
+     (dsizes_data[1] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"generate_2d_array: input dimensions are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  id0 = (int) dsizes_data[0];
+  id1 = (int) dsizes_data[1];
 
   if(*iseed < 0 || *iseed > 100) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"generate_2d_array: iseed must be between 0 and 100. Will reset to 0.");
@@ -553,20 +558,10 @@ NhlErrorTypes generate_2d_array_W( void )
 /*
  * Call the Fortran version of this routine.
  */
-  if((dsizes_data[0] <= INT_MAX) &&
-     (dsizes_data[1] <= INT_MAX))
-  {
-    int id0 = (int) dsizes_data[0];
-    int id1 = (int) dsizes_data[1];
-    NGCALLF(dgendat,DGENDAT)(tmp_data,&id1,&id1,
-                             &id0,mlow,mhigh,tmp_dlow,tmp_dhigh,
-                             iseed);
-  }
-  else
-  {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dgendat: dsizes_data[0] = %ld is greater than INT_MAX", dsizes_data[0]);
-    return(NhlFATAL);
-  }
+  NGCALLF(dgendat,DGENDAT)(tmp_data,&id1,&id1,
+			   &id0,mlow,mhigh,tmp_dlow,tmp_dhigh,
+			   iseed);
+
 /*
  * Figure out if we need to coerce output back to float.
  */
