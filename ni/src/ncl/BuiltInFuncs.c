@@ -9927,6 +9927,8 @@ NhlErrorTypes _Nclproduct
 * return missing
 */
 				memcpy(out_val,&(tmp_md->multidval.missing_value.value),tmp_md->multidval.type->type_class.size);
+				if (tmp)
+					NclFree(tmp);
 				return(NclReturnValue(
 					out_val,
 					1,
