@@ -96,6 +96,7 @@ NhlErrorTypes vintp2p_ecmwf_W
     
     ng_size_t ncase, ntime, nlev, nlat, nlon;  /* The 5 possible dims of datai */
     ng_size_t nlevp1;
+    int inlon, inlat, inlev, iplev, inlevp1;
 
     val = _NclGetArg(0,10,DONT_CARE);
 /*
@@ -442,6 +443,21 @@ NhlErrorTypes vintp2p_ecmwf_W
     }
 
     nlevp1 = nlev+1;
+
+/*
+ * Test dimension sizes
+ */
+    if((nlon > INT_MAX) || (nlat > INT_MAX) || (nlev > INT_MAX) || 
+       (plevo_dimsizes > INT_MAX) || (nlevp1 > INT_MAX)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vintp2p_ecmwf: nlon = %ld is greater than INT_MAX", nlon);
+      return(NhlFATAL);
+    }
+    inlon = (int) nlon;
+    inlat = (int) nlat;
+    inlev = (int) nlev;
+    iplev = (int) plevo_dimsizes;
+    inlevp1 = (int) nlevp1;
+
     plevi = (double*)NclMalloc(nlevp1*sizeof(double));
     if(not_double) {
       datao     = (char*)NclMalloc(total * nblk_out * sizeof(float));
@@ -485,29 +501,12 @@ NhlErrorTypes vintp2p_ecmwf_W
                        ((char*)phis+sz*psf_blk*index_phis),psf_blk,NULL,NULL,
                        (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(phis_type))));
           }
-          if((nlon <= INT_MAX) &&
-             (nlat <= INT_MAX) &&
-             (nlev <= INT_MAX) &&
-             (plevo_dimsizes <= INT_MAX) &&
-             (nlevp1 <= INT_MAX))
-          {
-            int inlon = (int) nlon;
-            int inlat = (int) nlat;
-            int inlev = (int) nlev;
-            int iplev = (int) plevo_dimsizes;
-            int inlevp1 = (int) nlevp1;
-            NGCALLF(vintp2pecmwf,VINTP2PECMWF)(tmp_datai,tmp_datao,presi_d,
-                                               plevi,(double *)plevo,intyp,psfc_d,
-                                               (double *)(&missing),kxtrp,
-                                               &inlon,&inlat,&inlev,&inlevp1,
-                                               &iplev,varflg,
-                                               tbot_d,phis_d);
-          }
-          else
-          {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"vintp2pecmwf: nlon = %ld is greater than INT_MAX", nlon);
-            return(NhlFATAL);
-          }
+	  NGCALLF(vintp2pecmwf,VINTP2PECMWF)(tmp_datai,tmp_datao,presi_d,
+					     plevi,(double *)plevo,intyp,psfc_d,
+					     (double *)(&missing),kxtrp,
+					     &inlon,&inlat,&inlev,&inlevp1,
+					     &iplev,varflg,
+					     tbot_d,phis_d);
 
           for(j = 0; j< nblk_out; j++) {
             ((float*)datao)[i*nblk_out + j] = (float)tmp_datao[j];
@@ -578,65 +577,31 @@ NhlErrorTypes vintp2p_ecmwf_W
 /*
  * phis_n_dims is 3D and needs to be coerced.
  */
-            if((nlon <= INT_MAX) &&
-               (nlat <= INT_MAX) &&
-               (nlev <= INT_MAX) &&
-               (plevo_dimsizes <= INT_MAX) &&
-               (nlevp1 <= INT_MAX))
-            {
-              int inlon = (int) nlon;
-              int inlat = (int) nlat;
-              int inlev = (int) nlev;
-              int iplev = (int) plevo_dimsizes;
-              int inlevp1 = (int) nlevp1;
-              NGCALLF(vintp2pecmwf,VINTP2PECMWF)((double *)(datai+sizeof(double)*i*nblk),
-                                                 (double *)(((char*)datao)+sizeof(double)*nblk_out*i),
-                                                 (double *)(((char*)presi_d)+sizeof(double)*i*nblk),
-                                                 plevi,(double *)plevo,intyp,
-                                                 (double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
-                                                 (double *)(&missing),kxtrp,
-                                                 &inlon,&inlat,&inlev,&inlevp1,
-                                                 &iplev,varflg,
-                                                 (double *)(((char*)tbot_d)+sizeof(double)*psf_blk*i),
-                                                 (double *)(((char*)phis_d)+sizeof(double)*psf_blk*index_phis));
-            }
-            else
-            {
-              NhlPError(NhlFATAL,NhlEUNKNOWN,"vintp2pecmwf: nlon = %ld is greater than INT_MAX", nlon);
-              return(NhlFATAL);
-            }
+	    NGCALLF(vintp2pecmwf,VINTP2PECMWF)((double *)(datai+sizeof(double)*i*nblk),
+					       (double *)(((char*)datao)+sizeof(double)*nblk_out*i),
+					       (double *)(((char*)presi_d)+sizeof(double)*i*nblk),
+					       plevi,(double *)plevo,intyp,
+					       (double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
+					       (double *)(&missing),kxtrp,
+					       &inlon,&inlat,&inlev,&inlevp1,
+					       &iplev,varflg,
+					       (double *)(((char*)tbot_d)+sizeof(double)*psf_blk*i),
+					       (double *)(((char*)phis_d)+sizeof(double)*psf_blk*index_phis));
           }
           else {
 /*
  * phis_n_dims is 2D and has already been coerced.
  */
-            if((nlon <= INT_MAX) &&
-               (nlat <= INT_MAX) &&
-               (nlev <= INT_MAX) &&
-               (plevo_dimsizes <= INT_MAX) &&
-               (nlevp1 <= INT_MAX))
-            {
-              int inlon = (int) nlon;
-              int inlat = (int) nlat;
-              int inlev = (int) nlev;
-              int iplev = (int) plevo_dimsizes;
-              int inlevp1 = (int) nlevp1;
-              NGCALLF(vintp2pecmwf,VINTP2PECMWF)((double *)(datai+sizeof(double)*i*nblk),
-                                                 (double *)(((char*)datao)+sizeof(double)*nblk_out*i),
-                                                 (double *)(((char*)presi_d)+sizeof(double)*i*nblk),
-                                                 plevi,(double *)plevo,intyp,
-                                                 (double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
-                                                 (double *)(&missing),kxtrp,
-                                                 &inlon,&inlat,&inlev,&inlevp1,
-                                                 &iplev,varflg,
-                                                 (double *)(((char*)tbot_d)+sizeof(double)*psf_blk*i),
-                                                 phis_d);
-            }
-            else
-            {
-              NhlPError(NhlFATAL,NhlEUNKNOWN,"vintp2pecmwf: nlon = %ld is greater than INT_MAX", nlon);
-              return(NhlFATAL);
-            }
+	    NGCALLF(vintp2pecmwf,VINTP2PECMWF)((double *)(datai+sizeof(double)*i*nblk),
+                                               (double *)(((char*)datao)+sizeof(double)*nblk_out*i),
+					       (double *)(((char*)presi_d)+sizeof(double)*i*nblk),
+					       plevi,(double *)plevo,intyp,
+					       (double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
+					       (double *)(&missing),kxtrp,
+					       &inlon,&inlat,&inlev,&inlevp1,
+					       &iplev,varflg,
+					       (double *)(((char*)tbot_d)+sizeof(double)*psf_blk*i),
+					       phis_d);
           }
           i++;
           index_phis++;

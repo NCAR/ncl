@@ -84,7 +84,8 @@ NhlErrorTypes vinth2p_W
 	int not_double = 0;
 	int psf_elem;
 	NclTypeClass plevo_type_class = NCL_none;
-	
+	int idsz0, idsz1, idsz2, iplev, inlevi, inlevip1;
+
 /*
  * Get the first argument. This will be the one that determines
  * partial information about the return array, including number of
@@ -358,6 +359,22 @@ NhlErrorTypes vinth2p_W
 	nlevi   = datai_dimsizes[0];
 	nlevip1 = nlevi+1;
 	plevi   = (double*)NclMalloc(nlevip1*sizeof(double));
+/*
+ * Test dimension sizes.
+ */
+	if((datai_dimsizes[0] > INT_MAX) || (datai_dimsizes[1] > INT_MAX) ||
+	   (datai_dimsizes[2] > INT_MAX) || (plevo_dimsizes > INT_MAX) ||
+	   (nlevi > INT_MAX) ||(nlevip1 > INT_MAX)) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: one or more dimension sizes is greater than INT_MAX");
+	  return(NhlFATAL);
+	}
+	idsz0 = (int) datai_dimsizes[0];
+	idsz1 = (int) datai_dimsizes[1];
+	idsz2 = (int) datai_dimsizes[2];
+	iplev = (int) plevo_dimsizes;
+	inlevi = (int) nlevi;
+	inlevip1 = (int) nlevip1;
+
 	if(not_double) {
 /*
  * Create space for datao array, and temporary input/output arrays
@@ -382,27 +399,10 @@ NhlErrorTypes vinth2p_W
 /*
  * Here's the call to the Fortran routine.
  */
-			if((datai_dimsizes[2] <= INT_MAX) &&
-		   		(datai_dimsizes[1] <= INT_MAX) &&
-		   		(nlevi <= INT_MAX) &&
-		   		(nlevip1 <= INT_MAX) &&
-		   		(plevo_dimsizes <= INT_MAX))
-			{
-				int idsz1 = (int) datai_dimsizes[1];
-				int idsz2 = (int) datai_dimsizes[2];
-				int iplev = (int) plevo_dimsizes;
-				int inlevi = (int) nlevi;
-				int inlevip1 = (int) nlevip1;
-				NGCALLF(vinth2p,VINTH2P)(tmp_datai,tmp_datao,hbcofa,hbcofb,
-							p0,plevi,(double *)plevo,intyp,ilev,
-							psfc_d,(double *)(&missing),kxtrp,
-							&idsz2,&idsz1,&inlevi,&inlevip1,&iplev);
-			}
-			else
-			{
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: datai_dimsizes[2] = %ld is greater than INT_MAX", datai_dimsizes[2]);
-				return(NhlFATAL);
-			}
+			NGCALLF(vinth2p,VINTH2P)(tmp_datai,tmp_datao,hbcofa,hbcofb,
+						 p0,plevi,(double *)plevo,intyp,ilev,
+						 psfc_d,(double *)(&missing),kxtrp,
+						 &idsz2,&idsz1,&inlevi,&inlevip1,&iplev);
 
 /*
  * Copy the output values back to the float array. 
@@ -428,35 +428,20 @@ NhlErrorTypes vinth2p_W
 		} else {
 			psfc_d =(double*) psfc;
 		}
-		if((datai_dimsizes[0] <= INT_MAX) &&
-		   (datai_dimsizes[1] <= INT_MAX) &&
-		   (datai_dimsizes[1] <= INT_MAX) &&
-		   (plevo_dimsizes <= INT_MAX))
-		{
-			int idsz0 = (int) datai_dimsizes[0];
-			int idsz1 = (int) datai_dimsizes[1];
-			int idsz2 = (int) datai_dimsizes[2];
-			int iplev = (int) plevo_dimsizes;
-			for(i = 0; i < total; i++) {
+		for(i = 0; i < total; i++) {
 /*
  * Here's the call to the Fortran routine.
  */
-			NGCALLF(vinth2p,VINTH2P)((double *)(datai+sizeof(double)*i*nblk),
-						(double *)(((char*)datao)+sizeof(double)*nblk_out*i),
-						hbcofa,hbcofb,p0,plevi,(double *)plevo,intyp,ilev,
-						(double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
-						(double *)(&missing),kxtrp,&idsz2,
-						&idsz1,&idsz0,&idsz0,&iplev);
-			}
+		  NGCALLF(vinth2p,VINTH2P)((double *)(datai+sizeof(double)*i*nblk),
+					   (double *)(((char*)datao)+sizeof(double)*nblk_out*i),
+					   hbcofa,hbcofb,p0,plevi,(double *)plevo,intyp,ilev,
+					   (double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
+					   (double *)(&missing),kxtrp,&idsz2,
+					   &idsz1,&idsz0,&idsz0,&iplev);
+		  
 		}
-		else
-		{
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: datai_dimsizes[0] = %ld is greater than INT_MAX", datai_dimsizes[0]);
-			return(NhlFATAL);
-		}
-
 		if((void*)psfc_d != psfc) {
-			NclFree(psfc_d);
+		  NclFree(psfc_d);
 		}
 	}
 

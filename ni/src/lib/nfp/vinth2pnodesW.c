@@ -81,6 +81,7 @@ NhlErrorTypes vinth2p_nodes_W
         int not_double = 0;
         int psf_elem;
         NclTypeClass plevo_type_class;
+	int inodes, inlevo, inlevi, inlevip1;
         
 /*
  * Get the first argument. This will be the one that determines
@@ -355,6 +356,24 @@ NhlErrorTypes vinth2p_nodes_W
  */
         nlevip1 = nlevi+1;
         plevi   = (double*)NclMalloc(nlevip1*sizeof(double));
+
+/*
+ * Test dimension sizes.
+ */
+	if((nodes > INT_MAX) || (nlevo > INT_MAX) ||
+           (nlevip1 > INT_MAX) || (nlevi > INT_MAX)) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dvinth2pnodes: nlevo = %ld is greater than INT_MAX", nlevo);
+	  return(NhlFATAL);
+	}
+	inodes = (int) nodes;
+        inlevo = (int) nlevo;
+        inlevi = (int) nlevi;
+        inlevip1 = (int) nlevip1;
+
+/*
+ * Here's the start if the big if-else statement, depending on whether
+ * the input is double or not.
+ */
         if(not_double) {
 /*
  * Create space for datao array, and temporary input/output arrays
@@ -379,28 +398,12 @@ NhlErrorTypes vinth2p_nodes_W
 /*
  * Here's the call to the Fortran routine.
  */
-                        if((nodes <= INT_MAX) &&
-                           (nlevo <= INT_MAX) &&
-                           (nlevip1 <= INT_MAX) &&
-                           (nlevi <= INT_MAX))
-                        {
-                                int inodes = (int) nodes;
-                                int inlevo = (int) nlevo;
-                                int inlevi = (int) nlevi;
-                                int inlevip1 = (int) nlevip1;
-                                NGCALLF(dvinth2pnodes,DVINTH2PNODES)(tmp_datai,tmp_datao,hbcofa,hbcofb,
-                                                                     p0,plevi,(double *)plevo,intyp,
-                                                                     ilev,psfc_d,
-                                                                     (double *)(&missing),kxtrp,
-                                                                     &inodes,&inlevi,
-                                                                     &inlevip1,&inlevo);
-                        }
-                        else
-                        {
-                          NhlPError(NhlFATAL,NhlEUNKNOWN,"dvinth2pnodes: nlevo = %ld is greater than INT_MAX", nlevo);
-                          return(NhlFATAL);
-                        }
-
+			NGCALLF(dvinth2pnodes,DVINTH2PNODES)(tmp_datai,tmp_datao,hbcofa,hbcofb,
+							     p0,plevi,(double *)plevo,intyp,
+							     ilev,psfc_d,
+							     (double *)(&missing),kxtrp,
+							     &inodes,&inlevi,
+							     &inlevip1,&inlevo);
 /*
  * Copy the output values back to the float array. 
  */
@@ -431,28 +434,13 @@ NhlErrorTypes vinth2p_nodes_W
 /*
  * Here's the call to the Fortran routine.
  */
-                        if((nodes <= INT_MAX) &&
-                           (nlevo <= INT_MAX) &&
-                           (nlevip1 <= INT_MAX) &&
-                           (nlevi <= INT_MAX))
-                        {
-                                int inodes = (int) nodes;
-                                int inlevo = (int) nlevo;
-                                int inlevi = (int) nlevi;
-                                int inlevip1 = (int) nlevip1;
-                                NGCALLF(dvinth2pnodes,DVINTH2PNODES)((double *)(datai+sizeof(double)*i*nblk),
-                                             (double *)(((char*)datao)+sizeof(double)*nblk_out*i),
-                                             hbcofa,hbcofb,
-                                             p0,plevi,(double *)plevo,intyp,ilev,
-                                             (double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
-                                             (double *)(&missing),kxtrp,
-                                             &inodes,&inlevi,&inlevip1,&inlevo);
-                        }
-                        else
-                        {
-                          NhlPError(NhlFATAL,NhlEUNKNOWN,"dvinth2pnodes: nlevo = %ld is greater than INT_MAX", nlevo);
-                          return(NhlFATAL);
-                        }
+		  NGCALLF(dvinth2pnodes,DVINTH2PNODES)((double *)(datai+sizeof(double)*i*nblk),
+						       (double *)(((char*)datao)+sizeof(double)*nblk_out*i),
+						       hbcofa,hbcofb,
+						       p0,plevi,(double *)plevo,intyp,ilev,
+						       (double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
+						       (double *)(&missing),kxtrp,
+						       &inodes,&inlevi,&inlevip1,&inlevo);
                 }
                 if((void*)psfc_d != psfc) {
                         NclFree(psfc_d);

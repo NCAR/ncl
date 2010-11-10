@@ -41,6 +41,7 @@ NhlErrorTypes angmom_atm_W( void )
  */
   ng_size_t ntim, klev, nlat, nlon, i, index_dp;
   ng_size_t klevnlatnlon;
+  int inlon, inlat, iklev;
 /*
  * Retrieve parameters
  *
@@ -123,6 +124,18 @@ NhlErrorTypes angmom_atm_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"angmom_atm: wgt must be a scalar or a 1-dimensional vector the same size as the 'lats' array");
     return(NhlFATAL);
   }
+
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX) || (klev > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"angmom_atm: nlon = %ld is greater than INT_MAX", nlon);
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  iklev = (int) klev;
+
 /*
  * Check for missing values.
  */
@@ -185,16 +198,7 @@ NhlErrorTypes angmom_atm_W( void )
     }
     tmp_wgt[0] = *tmp1_wgt;
 
-    if(nlat <= INT_MAX)
-    {
-      int inlat = (int) nlat;
-      NGCALLF(dcosweight,DCOSWEIGHT)(tmp_lat,&inlat,tmp_wgt);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcosweight: nlat = %ld is greater than INT_MAX", nlat);
-      return(NhlFATAL);
-    }
+    NGCALLF(dcosweight,DCOSWEIGHT)(tmp_lat,&inlat,tmp_wgt);
   }
   else {
 /*
@@ -263,38 +267,12 @@ NhlErrorTypes angmom_atm_W( void )
         tmp_dp = &((double*)dp)[index_dp];
       }
 
-      if((nlon <= INT_MAX) &&
-         (nlat <= INT_MAX) &&
-         (klev <= INT_MAX))
-      {
-        int inlon = (int) nlon;
-        int inlat = (int) nlat;
-        int iklev = (int) klev;
-        NGCALLF(daamom3,DAAMOM3)(tmp_u,tmp_dp,tmp_lat,tmp_wgt,&inlon,&inlat,&iklev,
-                                 &missing_du.doubleval,tmp_angmom);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"daamom3: nlon = %ld is greater than INT_MAX", nlon);
-        return(NhlFATAL);
-      }
+      NGCALLF(daamom3,DAAMOM3)(tmp_u,tmp_dp,tmp_lat,tmp_wgt,&inlon,&inlat,&iklev,
+			       &missing_du.doubleval,tmp_angmom);
     }
     else {
-      if((nlon <= INT_MAX) &&
-         (nlat <= INT_MAX) &&
-         (klev <= INT_MAX))
-      {
-        int inlon = (int) nlon;
-        int inlat = (int) nlat;
-        int iklev = (int) klev;
-        NGCALLF(daamom1,DAAMOM1)(tmp_u,tmp_dp,tmp_lat,tmp_wgt,&inlon,&inlat,&iklev,
-                                 &missing_du.doubleval,tmp_angmom);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"daamom1: nlon = %ld is greater than INT_MAX", nlon);
-        return(NhlFATAL);
-      }
+      NGCALLF(daamom1,DAAMOM1)(tmp_u,tmp_dp,tmp_lat,tmp_wgt,&inlon,&inlat,&iklev,
+			       &missing_du.doubleval,tmp_angmom);
     }
 /*
  * Copy output values from temporary tmp_angmom to angmom.

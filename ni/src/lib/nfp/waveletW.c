@@ -291,7 +291,7 @@ NhlErrorTypes wavelet_W( void )
   }
   else
   {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"waveleti: n = %ld is greater than INT_MAX", n);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wavelet: n = %ld is greater than INT_MAX", n);
     return(NhlFATAL);
   }
 
@@ -876,7 +876,7 @@ NhlErrorTypes wavelet_default_W( void )
   }
   else
   {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"waveleti: n = %ld is greater than INT_MAX", n);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wavelet_default: n = %ld is greater than INT_MAX", n);
     return(NhlFATAL);
   }
 

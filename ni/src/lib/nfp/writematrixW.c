@@ -98,7 +98,9 @@ NhlErrorTypes   write_matrix_W(void)
      * Test input dimension sizes.
      */
     if((dimsz[0] > INT_MAX) || (dimsz[1] > INT_MAX)) {
-    }      
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"write_matrix: one or more dimension sizes is greater than INT_MAX");
+      return(NhlFATAL);
+    }
     idsz0 = (int) dimsz[0];
     idsz1 = (int) dimsz[1];
 
@@ -195,14 +197,6 @@ NhlErrorTypes   write_matrix_W(void)
 
     /* flush buffers before writing */
     (void) fflush((FILE *) NULL);
-
-    if((dimsz[0] > INT_MAX) || (dimsz[1] > INT_MAX)) {
-      NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "write_matrix: input dimension sizes are > INT_MAX");
-      return(NhlFATAL);
-    }
-    idsz0 = (int) dimsz[0];
-    idsz1 = (int) dimsz[1];
 
       /* call FORTRAN function */
     switch (data_type) {

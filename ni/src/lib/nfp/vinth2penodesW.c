@@ -112,6 +112,7 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W
     
     ng_size_t ncase, ntime, nlevi, nodes;  /* The 4 possible dims of datai */
     ng_size_t nlevi_nodes, nlevip1;
+    int inodes, inlevi, inlevip1, inlevo;
 
     val = _NclGetArg(0,12,DONT_CARE);
 /*
@@ -473,6 +474,20 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W
     }
 
     nlevip1 = nlevi+1;
+
+/*
+ * Check dimension sizes.
+ */
+    if((nodes > INT_MAX) || (nlevi > INT_MAX) ||
+       (nlevip1 > INT_MAX) || (nlevo > INT_MAX))  {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: one or more dimension sizes is greater than INT_MAX");
+      return(NhlFATAL);
+    }
+    inodes = (int) nodes;
+    inlevi = (int) nlevi;
+    inlevip1 = (int) nlevip1;
+    inlevo = (int) nlevo;
+
     plevi = (double*)NclMalloc(nlevip1*sizeof(double));
     if(not_double) {
       datao = (char*)NclMalloc(total * nblk_out * sizeof(float));
@@ -512,28 +527,13 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W
                        ((char*)phis+sz*psf_blk*index_phis),psf_blk,NULL,NULL,
                        (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(phis_type))));
           }
-          if((nodes <= INT_MAX) &&
-             (nlevi <= INT_MAX) &&
-             (nlevip1 <= INT_MAX) &&
-             (nlevo <= INT_MAX))
-          {
-            int inodes = (int) nodes;
-            int inlevi = (int) nlevi;
-            int inlevip1 = (int) nlevip1;
-            int inlevo = (int) nlevo;
-            NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(tmp_datai,tmp_datao,
-                                               hbcofa,hbcofb,p0,plevi,(double *)plevo,
-                                               intyp,ilev,psfc_d,
-                                               (double *)(&missing),kxtrp,
-                                               &inodes,&inlevi,&inlevip1,
-                                               &inlevo,varflg,
-                                               tbot_d,phis_d);
-          }
-          else
-          {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"dvinth2pecmwfnodes: nlevo = %ld is greater than INT_MAX", nlevo);
-            return(NhlFATAL);
-          }
+	  NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(tmp_datai,tmp_datao,
+					 hbcofa,hbcofb,p0,plevi,(double *)plevo,
+					 intyp,ilev,psfc_d,
+					 (double *)(&missing),kxtrp,
+					 &inodes,&inlevi,&inlevip1,
+					 &inlevo,varflg,
+					 tbot_d,phis_d);
           for(j = 0; j< nblk_out; j++) {
             ((float*)datao)[i*nblk_out + j] = (float)tmp_datao[j];
           }
@@ -596,63 +596,33 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W
 /*
  * phis_n_dims is 2D and needs to be coerced.
  */
-            if((nodes <= INT_MAX) &&
-               (nlevi <= INT_MAX) &&
-               (nlevip1 <= INT_MAX) &&
-               (nlevo <= INT_MAX))
-            {
-              int inodes = (int) nodes;
-              int inlevi = (int) nlevi;
-              int inlevip1 = (int) nlevip1;
-              int inlevo = (int) nlevo;
-              NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(
-                                                 (double *)(datai+sizeof(double)*i*nblk),
-                                                 (double *)(((char*)datao)+sizeof(double)*nblk_out*i),
-                                                 hbcofa,hbcofb,p0,plevi,(double *)plevo,
-                                                 intyp,ilev,
-                                                 (double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
-                                                 (double *)(&missing),kxtrp,
-                                                 &inodes,&inlevi,&inlevip1,
-                                                 &inlevo,varflg,
-                                                 (double *)(((char*)tbot_d)+sizeof(double)*psf_blk*i),
-                                                 (double *)(((char*)phis_d)+sizeof(double)*psf_blk*index_phis));
-            }
-            else
-            {
-              NhlPError(NhlFATAL,NhlEUNKNOWN,"dvinth2pecmwfnodes: nlevo = %ld is greater than INT_MAX", nlevo);
-              return(NhlFATAL);
-            }
+	    NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(
+					   (double *)(datai+sizeof(double)*i*nblk),
+					   (double *)(((char*)datao)+sizeof(double)*nblk_out*i),
+					   hbcofa,hbcofb,p0,plevi,(double *)plevo,
+					   intyp,ilev,
+					   (double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
+					   (double *)(&missing),kxtrp,
+					   &inodes,&inlevi,&inlevip1,
+					   &inlevo,varflg,
+					   (double *)(((char*)tbot_d)+sizeof(double)*psf_blk*i),
+					   (double *)(((char*)phis_d)+sizeof(double)*psf_blk*index_phis));
           }
           else {
 /*
  * phis_n_dims is 1D and has already been coerced.
  */
-            if((nodes <= INT_MAX) &&
-               (nlevi <= INT_MAX) &&
-               (nlevip1 <= INT_MAX) &&
-               (nlevo <= INT_MAX))
-            {
-              int inodes = (int) nodes;
-              int inlevi = (int) nlevi;
-              int inlevip1 = (int) nlevip1;
-              int inlevo = (int) nlevo;
-              NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(
-                                                 (double *)(datai+sizeof(double)*i*nblk),
-                                                 (double *)(((char*)datao)+sizeof(double)*nblk_out*i),
-                                                 hbcofa,hbcofb,p0,plevi,(double *)plevo,
-                                                 intyp,ilev,
-                                                 (double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
-                                                 (double *)(&missing),kxtrp,
-                                                 &inodes,&inlevi,&inlevip1,
-                                                 &inlevo,varflg,
-                                                 (double *)(((char*)tbot_d)+sizeof(double)*psf_blk*i),
-                                                 phis_d);
-            }
-            else
-            {
-              NhlPError(NhlFATAL,NhlEUNKNOWN,"dvinth2pecmwfnodes: nlevo = %ld is greater than INT_MAX", nlevo);
-              return(NhlFATAL);
-            }
+	    NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(
+                                          (double *)(datai+sizeof(double)*i*nblk),
+					  (double *)(((char*)datao)+sizeof(double)*nblk_out*i),
+					  hbcofa,hbcofb,p0,plevi,(double *)plevo,
+					  intyp,ilev,
+					  (double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
+					  (double *)(&missing),kxtrp,
+					  &inodes,&inlevi,&inlevip1,
+					  &inlevo,varflg,
+					  (double *)(((char*)tbot_d)+sizeof(double)*psf_blk*i),
+					  phis_d);
           }
           i++;
           index_phis++;

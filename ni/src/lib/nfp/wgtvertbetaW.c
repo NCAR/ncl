@@ -74,6 +74,7 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
   ng_size_t i, size_leftmost, size_output;
   int ndims_leftmost;
   NhlErrorTypes ret;
+  int imlon, inlat, iklev;
 
 /*
  * Retrieve parameters.
@@ -146,6 +147,17 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The p array must either be a one dimensional array of klev values, or an array whose rightmost three dimensions are klev x nlat x mlon");
     return(NhlFATAL);
   }
+
+/* 
+ * Test dimension sizes.
+ */
+  if((mlon > INT_MAX) || (nlat > INT_MAX) || (klev > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: one or more dimension sizes is greater than INT_MAX", mlon);
+    return(NhlFATAL);
+  }
+  imlon = (int) mlon;
+  inlat = (int) nlat;
+  iklev = (int) klev;
 
 /*
  * Coerce missing values to double if necessary.
@@ -383,42 +395,16 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  * 1D or the same dimensions as datai.
  */
     if(ndims_p == 1) {
-      if((mlon <= INT_MAX) &&
-         (nlat <= INT_MAX) &&
-         (klev <= INT_MAX))
-      {
-        int imlon = (int) mlon;
-        int inlat = (int) nlat;
-        int iklev = (int) klev;
-        NGCALLF(dwvbetap1,DWVBETAP1)(&imlon, &inlat, &iklev, tmp_p, tmp_datai,
-                                     &missing_dbl_datai.doubleval, tmp_psfc,
-                                     punits, &opt[0], &ptop, &pbot, tmp_wva,
-                                     &ier);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dwvbetap1: mlon = %ld is greater than INT_MAX", mlon);
-        return(NhlFATAL);
-      }
+      NGCALLF(dwvbetap1,DWVBETAP1)(&imlon, &inlat, &iklev, tmp_p, tmp_datai,
+				   &missing_dbl_datai.doubleval, tmp_psfc,
+				   punits, &opt[0], &ptop, &pbot, tmp_wva,
+				   &ier);
     }
     else {
-      if((mlon <= INT_MAX) &&
-         (nlat <= INT_MAX) &&
-         (klev <= INT_MAX))
-      {
-        int imlon = (int) mlon;
-        int inlat = (int) nlat;
-        int iklev = (int) klev;
-        NGCALLF(dwvbetap3,DWVBETAP3)(&imlon, &inlat, &iklev, tmp_p, tmp_datai,
-                                     &missing_dbl_datai.doubleval, tmp_psfc,
-                                     punits, &opt[0], &ptop, &pbot, tmp_wva,
-                                     &ier);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dwvbetap3: mlon = %ld is greater than INT_MAX", mlon);
-        return(NhlFATAL);
-      }
+      NGCALLF(dwvbetap3,DWVBETAP3)(&imlon, &inlat, &iklev, tmp_p, tmp_datai,
+				   &missing_dbl_datai.doubleval, tmp_psfc,
+				   punits, &opt[0], &ptop, &pbot, tmp_wva,
+				   &ier);
     }
 
 /*

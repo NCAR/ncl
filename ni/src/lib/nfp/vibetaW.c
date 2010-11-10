@@ -41,7 +41,7 @@ NhlErrorTypes vibeta_W( void )
   ng_size_t i, index_x;
   ng_size_t nlev;
   ng_size_t total_size_x, total_size_psfc;
-  int found_missing;
+  int found_missing, inlev;
   double plvcrt, xsfc;
 /*
  * Retrieve parameters
@@ -153,6 +153,12 @@ NhlErrorTypes vibeta_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: the last dimension of 'p' must be at least 3 and less than 151" );
     return(NhlFATAL);
   }
+
+  if(nlev > INT_MAX){
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: nlev = %ld is greater than INT_MAX", nlev);
+    return(NhlFATAL);
+  }
+  inlev = (int) nlev;
 
 /*
  * Coerce missing values to double if necessary.
@@ -282,18 +288,9 @@ NhlErrorTypes vibeta_W( void )
 
     if(type_vint == NCL_double) tmp_vint  = &((double*)vint)[i];
 
-    if(nlev <= INT_MAX)
-    {
-      int inlev = (int) nlev;
-      NGCALLF(dvibeta,DVIBETA)(tmp_p,&tmp_x[index_x],&inlev,&missing_dx.doubleval,
-                               linlog,&tmp_psfc[i],&xsfc,tmp_pbot,tmp_ptop,
-                               &plvcrt,tmp_vint,&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dvibeta: nlev = %ld is greater than INT_MAX", nlev);
-      return(NhlFATAL);
-    }
+    NGCALLF(dvibeta,DVIBETA)(tmp_p,&tmp_x[index_x],&inlev,&missing_dx.doubleval,
+			     linlog,&tmp_psfc[i],&xsfc,tmp_pbot,tmp_ptop,
+			     &plvcrt,tmp_vint,&ier);
     if(ier == -999) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"vibeta: there must be at least three levels with data above the surface" );
     }

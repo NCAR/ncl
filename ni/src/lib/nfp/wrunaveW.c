@@ -35,7 +35,7 @@ NhlErrorTypes wgt_runave_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int ier;
+  int ier, inpts, inwgt, ilwork;
   ng_size_t i, index_x, npts, nwgt, total_leftmost, total_size_x;
 
 /*
@@ -116,9 +116,21 @@ NhlErrorTypes wgt_runave_W( void )
   }
 
 /*
- * Allocate space for work array.
+ * Test dimension sizes.
  */
   lwork = npts+2*(nwgt/2);
+  
+  if((npts > INT_MAX) || (nwgt > INT_MAX) || (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: one or more dimension sizes is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+  inwgt = (int) nwgt;
+  ilwork = (int) lwork;
+
+/*
+ * Allocate space for work array.
+ */
   work = (double *)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: Unable to allocate memory for work array");
@@ -135,21 +147,8 @@ NhlErrorTypes wgt_runave_W( void )
  */
     coerce_subset_input_double(x,tmp_x,index_x,type_x,npts,0,NULL,NULL);
 
-    if((npts <= INT_MAX) &&
-       (nwgt <= INT_MAX) &&
-       (lwork <= INT_MAX))
-    {
-      int inpts = (int) npts;
-      int inwgt = (int) nwgt;
-      int ilwork = (int) lwork;
-      NGCALLF(dwgtrunave,DWGTRUNAVE)(tmp_x,&inpts,tmp_wgt,&inwgt,kopt,
-                                     &missing_dx.doubleval,work,&ilwork,&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dwgttrunave: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
+    NGCALLF(dwgtrunave,DWGTRUNAVE)(tmp_x,&inpts,tmp_wgt,&inwgt,kopt,
+				   &missing_dx.doubleval,work,&ilwork,&ier);
 
     coerce_output_float_or_double(wrunave,tmp_x,type_x,npts,index_x);
 
@@ -204,7 +203,7 @@ NhlErrorTypes wgt_runave_n_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int ier;
+  int ier, inpts, inwgt, ilwork;
   ng_size_t i, j, index_x, index_nrnpts, npts, nwgt;
   ng_size_t total_leftmost, total_rightmost, total_size_x;
 
@@ -308,9 +307,20 @@ NhlErrorTypes wgt_runave_n_W( void )
   }
 
 /*
- * Allocate space for work array.
+ * Test dimension sizes.
  */
   lwork = npts+2*(nwgt/2);
+  if((npts > INT_MAX) || (nwgt > INT_MAX) || (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave_n: one or more dimension sizes is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+  inwgt = (int) nwgt;
+  ilwork = (int) lwork;
+
+/*
+ * Allocate space for work array.
+ */
   work = (double *)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave_n: Unable to allocate memory for work array");
@@ -330,21 +340,8 @@ NhlErrorTypes wgt_runave_n_W( void )
       coerce_subset_input_double_step(x,tmp_x,index_x,total_rightmost,type_x,
                                       npts,0,NULL,NULL);
 
-      if((npts <= INT_MAX) &&
-         (nwgt <= INT_MAX) &&
-         (lwork <= INT_MAX))
-      {
-        int inpts = (int) npts;
-        int inwgt = (int) nwgt;
-        int ilwork = (int) lwork;
-        NGCALLF(dwgtrunave,DWGTRUNAVE)(tmp_x,&inpts,tmp_wgt,&inwgt,kopt,
+      NGCALLF(dwgtrunave,DWGTRUNAVE)(tmp_x,&inpts,tmp_wgt,&inwgt,kopt,
                                        &missing_dx.doubleval,work,&ilwork,&ier);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dwgttrunave: npts = %ld is greater than INT_MAX", npts);
-        return(NhlFATAL);
-      }
 
       coerce_output_float_or_double_step(wrunave,tmp_x,type_x,npts,index_x,
                                          total_rightmost);
@@ -397,7 +394,7 @@ NhlErrorTypes runave_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int ier;
+  int ier, inpts, ilwork;
   ng_size_t i, index_x, npts, total_size_x, total_leftmost;
 
 /*
@@ -472,10 +469,22 @@ NhlErrorTypes runave_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
+
+/*
+ * Test dimension sizes.
+ */
+  lwork = npts+2*(*nave/2);
+  
+  if((npts > INT_MAX) || (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: one or more dimension sizes is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+  ilwork = (int) lwork;
+
 /*
  * Allocate space for work array.
  */
-  lwork = npts+2*(*nave/2);
   work = (double *)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: Unable to allocate memory for work array");
@@ -493,19 +502,8 @@ NhlErrorTypes runave_W( void )
  */
     coerce_subset_input_double(x,tmp_x,index_x,type_x,npts,0,NULL,NULL);
 
-    if((npts <= INT_MAX) &&
-       (lwork <= INT_MAX))
-    {
-      int inpts = (int) npts;
-      int ilwork = (int) lwork;
-      NGCALLF(drunave,DRUNAVE)(tmp_x,&inpts,nave,kopt,&missing_dx.doubleval,
-                               work,&ilwork,&ier);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"drunave: npts = %ld is greater than INT_MAX", npts);
-      return(NhlFATAL);
-    }
+    NGCALLF(drunave,DRUNAVE)(tmp_x,&inpts,nave,kopt,&missing_dx.doubleval,
+			     work,&ilwork,&ier);
 
     coerce_output_float_or_double(runave,tmp_x,type_x,npts,index_x);
 
@@ -556,7 +554,7 @@ NhlErrorTypes runave_n_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int ier;
+  int ier, inpts, ilwork;
   ng_size_t i, j, index_x, index_nrnpts, npts;
   ng_size_t total_size_x, total_leftmost, total_rightmost;
 
@@ -655,9 +653,20 @@ NhlErrorTypes runave_n_W( void )
     return(NhlFATAL);
   }
 /*
- * Allocate space for work array.
+ * Test dimension sizes.
  */
   lwork = npts+2*(*nave/2);
+  
+  if((npts > INT_MAX) || (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave_n: one or more dimension sizes is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+  ilwork = (int) lwork;
+
+/*
+ * Allocate space for work array.
+ */
   work = (double *)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"runave_n: Unable to allocate memory for work array");
@@ -678,19 +687,8 @@ NhlErrorTypes runave_n_W( void )
       coerce_subset_input_double_step(x,tmp_x,index_x,total_rightmost,type_x,
                                  npts,0,NULL,NULL);
 
-      if((npts <= INT_MAX) &&
-         (lwork <= INT_MAX))
-      {
-        int inpts = (int) npts;
-        int ilwork = (int) lwork;
-        NGCALLF(drunave,DRUNAVE)(tmp_x,&inpts,nave,kopt,&missing_dx.doubleval,
-                                 work,&ilwork,&ier);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"drunave: npts = %ld is greater than INT_MAX", npts);
-        return(NhlFATAL);
-      }
+      NGCALLF(drunave,DRUNAVE)(tmp_x,&inpts,nave,kopt,&missing_dx.doubleval,
+			       work,&ilwork,&ier);
 
       coerce_output_float_or_double_step(runave,tmp_x,type_x,npts,index_x,
                                          total_rightmost);

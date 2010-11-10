@@ -111,7 +111,7 @@ NhlErrorTypes vinth2p_ecmwf_W
     
     ng_size_t ncase, ntime, nlev, nlat, nlon;  /* The 5 possible dims of datai */
     ng_size_t nlevp1;
-    int inlon, inlat, inlev, iplev, inlevp1 = (int) nlevp1;
+    int inlon, inlat, inlev, iplev, inlevp1;
 
     val = _NclGetArg(0,12,DONT_CARE);
 /*
@@ -325,13 +325,11 @@ NhlErrorTypes vinth2p_ecmwf_W
       NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf: one or more of the input dimension sizes is greater than INT_MAX");
       return(NhlFATAL);
     }
-    else {
-      inlon = (int) nlon;
-      inlat = (int) nlat;
-      inlev = (int) nlev;
-      iplev = (int) plevo_dimsizes;
-      inlevp1 = (int) nlevp1;
-    }
+    inlon = (int) nlon;
+    inlat = (int) nlat;
+    inlev = (int) nlev;
+    iplev = (int) plevo_dimsizes;
+    inlevp1 = (int) nlevp1;
 
     if(plevo_type != NCL_double) {
       plevo2 = (char*)NclMalloc(tmp_md->multidval.totalsize);

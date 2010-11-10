@@ -147,7 +147,7 @@ NhlErrorTypes eof_varimax_W( void )
 /*
  * Test dimension sizes. 
  */
-  if((nvar > INT_MAX) || (nfac > INT_MAX) || (ldevec <= INT_MAX)) {
+  if((nvar > INT_MAX) || (nfac > INT_MAX) || (ldevec > INT_MAX)) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: one or more input dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
