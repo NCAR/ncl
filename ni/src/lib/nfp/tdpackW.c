@@ -1539,7 +1539,7 @@ NhlErrorTypes tdez1d_W( void )
 /*
  * Variables for retrieving workstation information.
  */
-  int grlist, gkswid, nid;
+  int grlist, gkswid, nid, x0;
   NclHLUObj tmp_hlu_obj;
 /*
  * Retrieve parameters.
@@ -1567,6 +1567,12 @@ NhlErrorTypes tdez1d_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tdez1d: the length of the x, y, and z arrays must be the same");
     return(NhlFATAL);
   }
+  if(dsizes_x[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdez1d: dsizes_x[0] = %ld is greater than INT_MAX", dsizes_x[0]);
+    return(NhlFATAL);
+  }
+  x0 = (int) dsizes_x[0];
+
 /*
  *  Determine the NCL identifier for the graphic object in nid.
  */
@@ -1586,16 +1592,8 @@ NhlErrorTypes tdez1d_W( void )
  */
   gactivate_ws (gkswid);
 
-  if(dsizes_x[0] <= INT_MAX)
-  {
-     int x0 = (int) dsizes_x[0];
-     NGCALLF(tdez1d,TDEZ1D)(&x0,x,y,z,imrk,rmrk,smrk,rmult,theta,phi,style);
-  }
-  else
-  {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdez1d: dsizes_x[0] = %ld is greater than INT_MAX", dsizes_x[0]);
-    return(NhlFATAL);
-  }
+  NGCALLF(tdez1d,TDEZ1D)(&x0,x,y,z,imrk,rmrk,smrk,rmult,theta,phi,style);
+
   gdeactivate_ws (gkswid);
 
   return(NhlNOERROR);

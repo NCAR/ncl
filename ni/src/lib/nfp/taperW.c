@@ -29,6 +29,7 @@ NhlErrorTypes taper_W( void )
  */
   ng_size_t i, index_x, npts, size_leftmost, size_x;
   logical any_missing;
+  int inpts;
 /*
  * Retrieve arguments.
  */
@@ -69,6 +70,12 @@ NhlErrorTypes taper_W( void )
   size_leftmost = 1;
   for( i = 0; i < ndims_x-1; i++ ) size_leftmost *= dsizes_x[i];
   size_x = size_leftmost * npts;
+
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"taper: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
 
 /*
  * Check for missing values.
@@ -150,16 +157,7 @@ NhlErrorTypes taper_W( void )
     else {
       if(type_taper == NCL_double) tmp_taper = &((double*)taper)[index_x];
 
-      if(npts <= INT_MAX)
-      {
-        int inpts = (int) npts;
-        NGCALLF(dtaper,DTAPER)(tmp_x,&inpts,tmp_p,tmp_taper,option);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dtaper: npts = %ld is greater than INT_MAX", npts);
-        return(NhlFATAL);
-      }
+      NGCALLF(dtaper,DTAPER)(tmp_x,&inpts,tmp_p,tmp_taper,option);
 
       if(type_taper == NCL_float) {
         coerce_output_float_only(taper,tmp_taper,npts,index_x);
@@ -210,6 +208,7 @@ NhlErrorTypes taper_n_W( void )
   ng_size_t i, j, index_x, index_nrnpts, npts;
   ng_size_t size_rl, size_leftmost, size_rightmost, size_x;
   logical any_missing;
+  int inpts;
 /*
  * Retrieve arguments.
  */
@@ -271,6 +270,12 @@ NhlErrorTypes taper_n_W( void )
 
   size_rl = size_leftmost * size_rightmost;
   size_x = size_rl * npts;
+
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"taper_n: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
 
 /*
  * Check for missing values.
@@ -340,16 +345,7 @@ NhlErrorTypes taper_n_W( void )
                                        type_taper,npts,missing_dx.doubleval);
       }
       else {
-        if(npts <= INT_MAX)
-        {
-          int inpts = (int) npts;
-          NGCALLF(dtaper,DTAPER)(tmp_x,&inpts,tmp_p,tmp_taper,option);
-        }
-        else
-        {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,"dtaper: npts = %ld is greater than INT_MAX", npts);
-          return(NhlFATAL);
-        }
+	NGCALLF(dtaper,DTAPER)(tmp_x,&inpts,tmp_p,tmp_taper,option);
 
         coerce_output_float_or_double_step(taper,tmp_taper,type_taper,npts,
                                            index_x,size_rightmost);

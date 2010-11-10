@@ -61,7 +61,7 @@ NhlErrorTypes trop_wmo_W( void )
  * Various
  */
   ng_size_t i, nlev, nlevm, index_t;
-  int ret;
+  int ret, inlev, inlevm;
   double tmsg;
   double *lapsec = NULL;
   double *lapse, *phalf, *pmb;
@@ -91,6 +91,14 @@ NhlErrorTypes trop_wmo_W( void )
  * Check dimension sizes.
  */
   nlev = dsizes_p[ndims_p-1];
+
+  nlevm = nlev+1;
+  if((nlev > INT_MAX) || (nlevm > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"trop_wmo: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlev = (int) nlev;
+  inlevm = (int) nlevm;
 
 /*
  * Get argument # 1
@@ -238,7 +246,6 @@ NhlErrorTypes trop_wmo_W( void )
 /* 
  * Allocate space for work arrays.
  */
-  nlevm = nlev+1;
   lapse = (double *)calloc(nlevm,sizeof(double));
   phalf = (double *)calloc(nlevm,sizeof(double));
   pmb   = (double *)calloc(nlev,sizeof(double));
@@ -347,20 +354,9 @@ NhlErrorTypes trop_wmo_W( void )
 /*
  * Call the Fortran routine.
  */
-    if((nlev <= INT_MAX) &&
-       (nlevm <= INT_MAX))
-    {
-      int inlev = (int) nlev;
-      int inlevm = (int) nlevm;
-      NGCALLF(stattropx,STATTROPX)(&inlev, &inlevm, tmp_p, tmp_t, &tmsg, lapsec,
-                                   punit, tmp_ptrop, &itrop[i], lapse, phalf,
-                                   pmb);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"stattropx: nlev = %ld is greater than INT_MAX", nlev);
-      return(NhlFATAL);
-    }
+    NGCALLF(stattropx,STATTROPX)(&inlev, &inlevm, tmp_p, tmp_t, &tmsg, lapsec,
+				 punit, tmp_ptrop, &itrop[i], lapse, phalf,
+				 pmb);
 
 /*
  * Coerce output back to float if necessary.
