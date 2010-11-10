@@ -230,7 +230,8 @@ NhlErrorTypes specx_anal_W( void )
   }
   else
   {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dspecx: nx = %d, is larger than INT_MAX", nx);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: one or more input dimensions is greater than INT_MAX", nx);
+    return(NhlFATAL);
   }
 
 
@@ -741,7 +742,8 @@ NhlErrorTypes specxy_anal_W( void )
   }
   else
   {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dspecxy: nx = %d, is larger than INT_MAX", nx);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: one or more input dimensions is greater than INT_MAX", nx);
+    return(NhlFATAL);
   }
 
   if( ier > 700000 ) {

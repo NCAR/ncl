@@ -41,7 +41,7 @@ NhlErrorTypes spcorr_W( void )
  */
   ng_size_t i, n, index_x, size_spc;
   int iwrite;
-  int ret;
+  int ret, in;
 
 /*
  * Retrieve parameters.
@@ -63,6 +63,12 @@ NhlErrorTypes spcorr_W( void )
            DONT_CARE);
 
   n = dsizes_x[ndims_x-1];
+  if(n > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"spcorr: n = %ld is greater than INT_MAX", n);
+    return(NhlFATAL);
+  }
+  in = (int) n;
+
 /*
  * Get argument # 1
  */
@@ -193,16 +199,7 @@ NhlErrorTypes spcorr_W( void )
 /*
  * Call the Fortran routine.
  */
-    if(n <= INT_MAX)
-    {
-      int in = (int) n;
-      NGCALLF(spcorr,SPCORR)(tmp_x, tmp_y, &in, &iwrite, &tmp_spc);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"spcorr: n = %ld is greater than INT_MAX", n);
-      return(NhlFATAL);
-    }
+    NGCALLF(spcorr,SPCORR)(tmp_x, tmp_y, &in, &iwrite, &tmp_spc);
 
 /*
  * Coerce output back to float if necessary.
