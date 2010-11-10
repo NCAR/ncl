@@ -235,7 +235,6 @@ NhlErrorTypes dv2uvf_W( void )
   double *wshaec, *wvhsec, *pertrb, *a, *b;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshaec;
   int ilvhsec;
   int iidvw;
@@ -604,7 +603,6 @@ NhlErrorTypes dv2uvg_W( void )
   double *wshagc, *wvhsgc, *pertrb, *a, *b;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshagc;
   int ilvhsgc;
   int iidvw;
@@ -970,7 +968,6 @@ NhlErrorTypes dv2uvF_W( void )
   double *wshaec, *wvhsec, *pertrb, *a, *b;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshaec;
   int ilvhsec;
   int iidvw;
@@ -1302,7 +1299,6 @@ NhlErrorTypes dv2uvG_W( void )
   double *wshagc, *wvhsgc, *pertrb, *a, *b;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshagc;
   int ilvhsgc;
   int iidvw;
@@ -1638,7 +1634,6 @@ NhlErrorTypes gradsf_W( void )
   double *wshaec, *wvhsec, *a, *b, *pertrb;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshaec;
   int ilvhsec;
   int iidvw;
@@ -2017,7 +2012,6 @@ NhlErrorTypes gradsg_W( void )
   double *wshagc, *wvhsgc, *a, *b, *pertrb;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshagc;
   int ilvhsgc;
   int iidvw;
@@ -2394,7 +2388,6 @@ NhlErrorTypes igradsf_W( void )
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhaec;
   int ilshsec;
   int iidvw;
@@ -2769,7 +2762,6 @@ NhlErrorTypes igradsF_W( void )
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhaec;
   int ilshsec;
   int iidvw;
@@ -3136,7 +3128,6 @@ NhlErrorTypes igradsg_W( void )
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhagc;
   int ilshsgc;
   int iidvw;
@@ -3511,7 +3502,6 @@ NhlErrorTypes igradsG_W( void )
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhagc;
   int ilshsgc;
   int iidvw;
@@ -3877,7 +3867,6 @@ NhlErrorTypes ilapsf_W( void )
   double *work1, *work2, *work3, *wshaec, *wshsec, *pertrb, *a, *b, *dwork;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshaec;
   int ilshsec;
   int iidvw;
@@ -4263,7 +4252,6 @@ NhlErrorTypes ilapsF_W( void )
   double *work1, *work2, *work3, *wshaec, *wshsec, *pertrb, *a, *b, *dwork;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshaec;
   int ilshsec;
   int iidvw;
@@ -4641,7 +4629,6 @@ NhlErrorTypes ilapsg_W( void )
   double *work1, *work2, *work3, *wshagc, *wshsgc, *pertrb, *a, *b, *dwork;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshagc;
   int ilshsgc;
   int iidvw;
@@ -5026,7 +5013,6 @@ NhlErrorTypes ilapsG_W( void )
   double *work1, *work2, *work3, *wshagc, *wshsgc, *pertrb, *a, *b, *dwork;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshagc;
   int ilshsgc;
   int iidvw;
@@ -5405,7 +5391,6 @@ NhlErrorTypes ilapvf_W( void )
   double *work1, *work2, *work3, *wvhaec, *wvhsec, *br, *bi, *cr, *ci, *dwork;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhaec;
   int ilvhsec;
   int iidvw;
@@ -5815,7 +5800,6 @@ NhlErrorTypes ilapvg_W( void )
   double *work1, *work2, *work3, *wvhagc, *wvhsgc, *br, *bi, *cr, *ci, *dwork;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhagc;
   int ilvhsgc;
   int iidvw;
@@ -6219,7 +6203,6 @@ NhlErrorTypes lapsf_W( void )
   double *work1, *work2, *work3, *wshaec, *wshsec, *a, *b, *dwork;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshaec;
   int ilshsec;
   int iidvw;
@@ -6540,7 +6523,6 @@ NhlErrorTypes lapsF_W( void )
   double *work1, *work2, *work3, *wshaec, *wshsec, *a, *b, *dwork;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshaec;
   int ilshsec;
   int iidvw;
@@ -6845,7 +6827,6 @@ NhlErrorTypes lapsg_W( void )
   double *work1, *work2, *work3, *wshagc, *wshsgc, *a, *b, *dwork;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshagc;
   int ilshsgc;
   int iidvw;
@@ -7163,7 +7144,6 @@ NhlErrorTypes lapsG_W( void )
   double *work1, *work2, *work3, *wshagc, *wshsgc, *a, *b, *dwork;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshagc;
   int ilshsgc;
   int iidvw;
@@ -7470,7 +7450,6 @@ NhlErrorTypes lapvf_W( void )
   double *work1, *work2, *work3, *wvhaec, *wvhsec, *br, *bi, *cr, *ci, *dwork;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhaec;
   int ilvhsec;
   int iidvw;
@@ -7878,7 +7857,6 @@ NhlErrorTypes lapvg_W( void )
   double *work1, *work2, *work3, *wvhagc, *wvhsgc, *br, *bi, *cr, *ci, *dwork;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhagc;
   int ilvhsgc;
   int iidvw;
@@ -8286,7 +8264,6 @@ NhlErrorTypes uv2sfvpf_W( void )
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhaec;
   int ilshsec;
   int iidvw;
@@ -8688,7 +8665,6 @@ NhlErrorTypes uv2sfvpF_W( void )
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhaec;
   int ilshsec;
   int iidvw;
@@ -9064,7 +9040,6 @@ NhlErrorTypes uv2sfvpg_W( void )
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhagc;
   int ilshsgc;
   int iidvw;
@@ -9465,7 +9440,6 @@ NhlErrorTypes uv2sfvpG_W( void )
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhagc;
   int ilshsgc;
   int iidvw;
@@ -9841,7 +9815,6 @@ NhlErrorTypes lderuvf_W( void )
   double *dwork1, *dwork2;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhaec;
   int ilwvts;
   int iidvw;
@@ -10251,7 +10224,6 @@ NhlErrorTypes lderuvg_W( void )
   double *dwork1, *dwork2;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhagc;
   int ilwvts;
   int iidvw;
@@ -10658,7 +10630,6 @@ NhlErrorTypes uv2dvf_W( void )
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhaec;
   int ilshsec;
   int iidvw;
@@ -11032,7 +11003,6 @@ NhlErrorTypes uv2dvF_W( void )
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhaec;
   int ilshsec;
   int iidvw;
@@ -11398,7 +11368,6 @@ NhlErrorTypes uv2dvg_W( void )
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhagc;
   int ilshsgc;
   int iidvw;
@@ -11771,7 +11740,6 @@ NhlErrorTypes uv2dvG_W( void )
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhagc;
   int ilshsgc;
   int iidvw;
@@ -12133,7 +12101,6 @@ NhlErrorTypes uv2vrf_W( void )
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhaec;
   int ilshsec;
   int iidvw;
@@ -12506,7 +12473,6 @@ NhlErrorTypes uv2vrF_W( void )
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhaec;
   int ilshsec;
   int iidvw;
@@ -12872,7 +12838,6 @@ NhlErrorTypes uv2vrg_W( void )
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhagc;
   int ilshsgc;
   int iidvw;
@@ -13243,7 +13208,6 @@ NhlErrorTypes uv2vrG_W( void )
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhagc;
   int ilshsgc;
   int iidvw;
@@ -13608,7 +13572,6 @@ NhlErrorTypes uv2vrdvf_W( void )
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhaec;
   int ilshsec;
   int iidvw;
@@ -14017,7 +13980,6 @@ NhlErrorTypes uv2vrdvF_W( void )
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhaec;
   int ilshsec;
   int iidvw;
@@ -14400,7 +14362,6 @@ NhlErrorTypes uv2vrdvg_W( void )
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhagc;
   int ilshsgc;
   int iidvw;
@@ -14810,7 +14771,6 @@ NhlErrorTypes uv2vrdvG_W( void )
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
   int inlon;
   int inlat;
-  int i_nt;
   int ilvhagc;
   int ilshsgc;
   int iidvw;
@@ -15186,7 +15146,6 @@ NhlErrorTypes vr2uvf_W( void )
   double *wshaec, *wvhsec, *a, *b, *pertrb;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshaec;
   int ilvhsec;
   int iidvw;
@@ -15552,7 +15511,6 @@ NhlErrorTypes vr2uvF_W( void )
   double *wshaec, *wvhsec, *a, *b, *pertrb;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshaec;
   int ilvhsec;
   int iidvw;
@@ -15881,7 +15839,6 @@ NhlErrorTypes vr2uvg_W( void )
   double *wshagc, *wvhsgc, *a, *b, *pertrb;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshagc;
   int ilvhsgc;
   int iidvw;
@@ -16246,7 +16203,6 @@ NhlErrorTypes vr2uvG_W( void )
   double *wshagc, *wvhsgc, *a, *b, *pertrb;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshagc;
   int ilvhsgc;
   int iidvw;
@@ -16577,7 +16533,6 @@ NhlErrorTypes vrdv2uvf_W( void )
   double *wshaec, *wvhsec, *ad, *bd, *av, *bv, *pertbd, *pertbv;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshaec;
   int ilvhsec;
   int iidvw;
@@ -16997,7 +16952,6 @@ NhlErrorTypes vrdv2uvF_W( void )
   double *wshaec, *wvhsec, *ad, *bd, *av, *bv, *pertbd, *pertbv;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshaec;
   int ilvhsec;
   int iidvw;
@@ -17384,7 +17338,6 @@ NhlErrorTypes vrdv2uvg_W( void )
   double *wshagc, *wvhsgc, *ad, *bd, *av, *bv, *pertbd, *pertbv;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshagc;
   int ilvhsgc;
   int iidvw;
@@ -17801,7 +17754,6 @@ NhlErrorTypes vrdv2uvG_W( void )
   double *wshagc, *wvhsgc, *ad, *bd, *av, *bv, *pertbd, *pertbv;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshagc;
   int ilvhsgc;
   int iidvw;
@@ -18186,7 +18138,6 @@ NhlErrorTypes sfvp2uvf_W( void )
   double *wshaec, *wvhsec, *as, *bs, *av, *bv;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshaec;
   int ilvhsec;
   int iidvw;
@@ -18603,7 +18554,6 @@ NhlErrorTypes sfvp2uvg_W( void )
   double *wshagc, *wvhsgc, *as, *bs, *av, *bv;
   int inlon;
   int inlat;
-  int i_nt;
   int ilshagc;
   int ilvhsgc;
   int iidvw;
@@ -19167,30 +19117,17 @@ NhlErrorTypes vhaec_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaec: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+
+/*
+ * Test dimension sizes
+ */
   if((nlon > INT_MAX) ||
-     (nlat > INT_MAX) ||
-     (nt > INT_MAX) ||
-     (lvhaec > INT_MAX) ||
-     (idvw > INT_MAX) ||
-     (jdvw > INT_MAX) ||
-     (mdab > INT_MAX) ||
-     (ndab > INT_MAX) ||
-     (ldwork > INT_MAX) ||
-     (lwork > INT_MAX)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaec: one or more input dimension sizes is greater than INT_MAX");
+     (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaec: nlat and/or nlon is greater than INT_MAX");
     return(NhlFATAL);
   }
   inlon = (int) nlon;
   inlat = (int) nlat;
-  i_nt = (int) nt;
-  ilvhaec = (int) lvhaec;
-  iidvw = (int) idvw;
-  ijdvw = (int) jdvw;
-  imdab = (int) mdab;
-  indab = (int) ndab;
-  ilwork = (int) lwork;
-  ildwork = (int) ldwork;
-
 
 /*
  * transform from geophysical coordinates to math coordinates.
@@ -19218,6 +19155,29 @@ NhlErrorTypes vhaec_W( void )
   lwork  = max(4*(nlat+1),nlat*(2*nlon*nt+max(6*l2,nlon)));
   ldwork = 2*(nlat+2);
   lvhaec = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
+
+/*
+ * Test dimension sizes
+ */
+  if((nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaec: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  i_nt = (int) nt;
+  ilvhaec = (int) lvhaec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
 
   wvhaec = (double*)calloc(lvhaec,sizeof(double));
   work   = (double*)calloc( lwork,sizeof(double));
@@ -19382,29 +19342,12 @@ NhlErrorTypes vhaeC_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaeC: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
-  if((nlon > INT_MAX) ||
-     (nlat > INT_MAX) ||
-     (nt > INT_MAX) ||
-     (lvhaec > INT_MAX) ||
-     (idvw > INT_MAX) ||
-     (jdvw > INT_MAX) ||
-     (mdab > INT_MAX) ||
-     (ndab > INT_MAX) ||
-     (ldwork > INT_MAX) ||
-     (lwork > INT_MAX)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaeC: one or more input dimension sizes is greater than INT_MAX");
+  if((nlon > INT_MAX) || (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaeC: nlat and/or nlon is greater than INT_MAX");
     return(NhlFATAL);
   }
   inlon = (int) nlon;
   inlat = (int) nlat;
-  i_nt = (int) nt;
-  ilvhaec = (int) lvhaec;
-  iidvw = (int) idvw;
-  ijdvw = (int) jdvw;
-  imdab = (int) mdab;
-  indab = (int) ndab;
-  ilwork = (int) lwork;
-  ildwork = (int) ldwork;
 
 /*
  * transform from geophysical coordinates to math coordinates.
@@ -19432,6 +19375,26 @@ NhlErrorTypes vhaeC_W( void )
   lwork  = max(4*(nlat+1),nlat*(2*nlon*nt+max(6*l2,nlon)));
   ldwork = 2*(nlat+2);
   lvhaec = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
+
+  if((nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaeC: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  i_nt = (int) nt;
+  ilvhaec = (int) lvhaec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
 
   wvhaec = (double*)calloc(lvhaec,sizeof(double));
   work   = (double*)calloc( lwork,sizeof(double));
@@ -19696,29 +19659,17 @@ NhlErrorTypes vhagc_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagc: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+
+/*
+ * Test dimension sizes
+ */
   if((nlon > INT_MAX) ||
-     (nlat > INT_MAX) ||
-     (nt > INT_MAX) ||
-     (lvhagc > INT_MAX) ||
-     (idvw > INT_MAX) ||
-     (jdvw > INT_MAX) ||
-     (mdab > INT_MAX) ||
-     (ndab > INT_MAX) ||
-     (ldwork > INT_MAX) ||
-     (lwork > INT_MAX)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagc: one or more input dimension sizes is greater than INT_MAX");
+     (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagc: nlat and/or nlon is greater than INT_MAX");
     return(NhlFATAL);
   }
   inlon = (int) nlon;
   inlat = (int) nlat;
-  i_nt = (int) nt;
-  ilvhagc = (int) lvhagc;
-  iidvw = (int) idvw;
-  ijdvw = (int) jdvw;
-  imdab = (int) mdab;
-  indab = (int) ndab;
-  ilwork = (int) lwork;
-  ildwork = (int) ldwork;
 
 /*
  * transform from geophysical coordinates to math coordinates.
@@ -19746,6 +19697,30 @@ NhlErrorTypes vhagc_W( void )
   lwork  = max(4*nlat*(nlat+1)+2,2*nlat*(2*nlon*nt +3*l2 ));
   lvhagc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+l2+15;
   ldwork = 2*nlat*(nlat+1)+1;
+
+
+/*
+ * Test dimension sizes.
+ */
+  if((nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagc: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  i_nt = (int) nt;
+  ilvhagc = (int) lvhagc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
 
   wvhagc = (double*)calloc( lvhagc,sizeof(double));
   work   = (double*)calloc(  lwork,sizeof(double));
@@ -19909,29 +19884,15 @@ NhlErrorTypes vhagC_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagC: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
-  if((nlon > INT_MAX) ||
-     (nlat > INT_MAX) ||
-     (nt > INT_MAX) ||
-     (lvhagc > INT_MAX) ||
-     (idvw > INT_MAX) ||
-     (jdvw > INT_MAX) ||
-     (mdab > INT_MAX) ||
-     (ndab > INT_MAX) ||
-     (ldwork > INT_MAX) ||
-     (lwork > INT_MAX)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagC: one or more input dimension sizes is greater than INT_MAX");
+/*
+ * Test dimension sizes
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagC: nlat and/or nlon is greater than INT_MAX");
     return(NhlFATAL);
   }
   inlon = (int) nlon;
   inlat = (int) nlat;
-  i_nt = (int) nt;
-  ilvhagc = (int) lvhagc;
-  iidvw = (int) idvw;
-  ijdvw = (int) jdvw;
-  imdab = (int) mdab;
-  indab = (int) ndab;
-  ilwork = (int) lwork;
-  ildwork = (int) ldwork;
 
 /*
  * transform from geophysical coordinates to math coordinates.
@@ -19959,6 +19920,30 @@ NhlErrorTypes vhagC_W( void )
   lwork  = max(4*nlat*(nlat+1)+2,2*nlat*(2*nlon*nt +3*l2 ));
   lvhagc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+l2+15;
   ldwork = 2*nlat*(nlat+1)+1;
+
+/*
+ * Test dimension sizes
+ */
+  if((nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagC: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  i_nt = (int) nt;
+  ilvhagc = (int) lvhagc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+
 
   wvhagc = (double*)calloc( lvhagc,sizeof(double));
   work   = (double*)calloc(  lwork,sizeof(double));
@@ -20225,15 +20210,6 @@ NhlErrorTypes vhsec_W( void )
   lvhsec = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
   ldwork = 2*(nlat+2);
 
-  wvhsec = (double*)calloc(lvhsec,sizeof(double));
-  work   = (double*)calloc( lwork,sizeof(double));
-  dwork  = (double*)calloc(ldwork,sizeof(double));
-
-  if( wvhsec == NULL || work == NULL || dwork == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsec: Unable to allocate memory for work arrays");
-    return(NhlFATAL);
-  }
-
   if((nlon > INT_MAX) ||
      (nlat > INT_MAX) ||
      (nt > INT_MAX) ||
@@ -20257,6 +20233,15 @@ NhlErrorTypes vhsec_W( void )
   indab = (int) ndab;
   ilwork = (int) lwork;
   ildwork = (int) ldwork;
+
+  wvhsec = (double*)calloc(lvhsec,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
+
+  if( wvhsec == NULL || work == NULL || dwork == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsec: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
 
   NGCALLF(dvhseci,DVHSECI)(&inlat,&inlon,wvhsec,&ilvhsec,dwork,&ildwork,&jer);
   NGCALLF(dvhsec,DVHSEC)(&inlat,&inlon,&ityp,&i_nt,&dv[0],&du[0],
