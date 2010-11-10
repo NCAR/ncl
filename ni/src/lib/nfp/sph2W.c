@@ -19443,10 +19443,10 @@ NhlErrorTypes vhaeC_W( void )
   }
 
   NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork,&ildwork,&jer);
-      j = nt * nlat * nlat;
-      NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&ityp,&i_nt,&dv[0],&du[0],
-                             &iidvw,&ijdvw,&dbc[0],&dbc[j],&dbc[2*j],&dbc[3*j],
-                             &imdab,&indab,wvhaec,&ilvhaec,work,&ilwork,&ker);
+  j = nt * nlat * nlat;
+  NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&ityp,&i_nt,&dv[0],&du[0],
+			 &iidvw,&ijdvw,&dbc[0],&dbc[j],&dbc[2*j],&dbc[3*j],
+			 &imdab,&indab,wvhaec,&ilvhaec,work,&ilwork,&ker);
   NclFree(wvhaec);
   NclFree(work);
   NclFree(dwork);
@@ -19970,10 +19970,10 @@ NhlErrorTypes vhagC_W( void )
   }
 
   NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork,&ildwork,&jer);
-      j = nt * nlat * nlat;
-      NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&ityp,&i_nt,&dv[0],&du[0],
-                             &iidvw,&ijdvw,&dbc[0],&dbc[j],&dbc[2*j],&dbc[3*j],
-                             &imdab,&indab,wvhagc,&ilvhagc,work,&ilwork,&ker);
+  j = nt * nlat * nlat;
+  NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&ityp,&i_nt,&dv[0],&du[0],
+			 &iidvw,&ijdvw,&dbc[0],&dbc[j],&dbc[2*j],&dbc[3*j],
+			 &imdab,&indab,wvhagc,&ilvhagc,work,&ilwork,&ker);
   NclFree(wvhagc);
   NclFree(work);
   NclFree(dwork);
@@ -20913,21 +20913,6 @@ NhlErrorTypes vhsgC_W( void )
   lvhsgc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
   ldwork = 2*nlat*(nlat+1)+1;
 
-  wvhsgc = (double*)calloc(lvhsgc,sizeof(double));
-  work   = (double*)calloc( lwork,sizeof(double));
-  dwork  = (double*)calloc(ldwork,sizeof(double));
-
-  if( wvhsgc == NULL || work == NULL || dwork == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgC: Unable to allocate memory for work arrays");
-    return(NhlFATAL);
-  }
-
-  NGCALLF(dvhsgci,DVHSGCI)(&inlat,&inlon,wvhsgc,&ilvhsgc,dwork,&ildwork,&jer);
-  i = ntnlatnlat;
-  j = ntnlatnlon;
-  NGCALLF(dvhsgc,DVHSGC)(&inlat,&inlon,&ityp,&i_nt,&duv[j],&duv[0],
-			 &iidvw,&ijdvw,&dbc[0],&dbc[i],&dbc[2*i],&dbc[3*i],
-			 &imdab,&indab,wvhsgc,&ilvhsgc,work,&ilwork,&ker);
   if((nlon > INT_MAX) ||
      (nlat > INT_MAX) ||
      (nt > INT_MAX) ||
@@ -20952,6 +20937,21 @@ NhlErrorTypes vhsgC_W( void )
   ilwork = (int) lwork;
   ildwork = (int) ldwork;
 
+  wvhsgc = (double*)calloc(lvhsgc,sizeof(double));
+  work   = (double*)calloc( lwork,sizeof(double));
+  dwork  = (double*)calloc(ldwork,sizeof(double));
+
+  if( wvhsgc == NULL || work == NULL || dwork == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgC: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+
+  NGCALLF(dvhsgci,DVHSGCI)(&inlat,&inlon,wvhsgc,&ilvhsgc,dwork,&ildwork,&jer);
+  i = ntnlatnlat;
+  j = ntnlatnlon;
+  NGCALLF(dvhsgc,DVHSGC)(&inlat,&inlon,&ityp,&i_nt,&duv[j],&duv[0],
+			 &iidvw,&ijdvw,&dbc[0],&dbc[i],&dbc[2*i],&dbc[3*i],
+			 &imdab,&indab,wvhsgc,&ilvhsgc,work,&ilwork,&ker);
   NclFree(wvhsgc);
   NclFree(work);
   NclFree(dwork);
@@ -21158,6 +21158,13 @@ NhlErrorTypes shaec_W( void )
     return(NhlFATAL);
   }
 
+  if((nlon > INT_MAX) || (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: nlat and/or nlon is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+
 /*
  * Determine the workspace size.
  */
@@ -21167,6 +21174,7 @@ NhlErrorTypes shaec_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+
 /*
  * transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
@@ -21205,9 +21213,7 @@ NhlErrorTypes shaec_W( void )
     return(NhlFATAL);
   }
 
-  if((nlon > INT_MAX) ||
-     (nlat > INT_MAX) ||
-     (nt > INT_MAX) ||
+  if((nt > INT_MAX) ||
      (lshaec > INT_MAX) ||
      (idg > INT_MAX) ||
      (jdg > INT_MAX) ||
@@ -21218,8 +21224,6 @@ NhlErrorTypes shaec_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: one or more input dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
-  inlon = (int) nlon;
-  inlat = (int) nlat;
   i_nt = (int) nt;
   ilshaec = (int) lshaec;
   iidg = (int) idg;
@@ -21421,6 +21425,13 @@ NhlErrorTypes shagc_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shagc: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+
+  if((nlon > INT_MAX) || (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shagc: nlat and/or nlon is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
 /*
  * transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
@@ -21460,9 +21471,7 @@ NhlErrorTypes shagc_W( void )
     return(NhlFATAL);
   }
   
-  if((nlon > INT_MAX) ||
-     (nlat > INT_MAX) ||
-     (nt > INT_MAX) ||
+  if((nt > INT_MAX) ||
      (lshagc > INT_MAX) ||
      (idg > INT_MAX) ||
      (jdg > INT_MAX) ||
@@ -21473,8 +21482,6 @@ NhlErrorTypes shagc_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shagc: one or more dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
-  inlon = (int) nlon;
-  inlat = (int) nlat;
   i_nt = (int) nt;
   ilshagc = (int) lshagc;
   iidg = (int) idg;
@@ -23060,7 +23067,6 @@ NhlErrorTypes shsgC_W( void )
   i_nt = (int) nt;
 
   NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork,&ildwork,&jer);
-
   j = nt * ndab * mdab;
   NGCALLF(dshsgc,DSHSGC)(&inlat,&inlon,&isym,&i_nt,&dg[0],&iidg,&ijdg,
 			 &dab[0],&dab[j],
