@@ -8526,14 +8526,22 @@ NclDimRec *get_dim_info(arg_num,num_args)
 int arg_num, num_args;
 {
   NclStackEntry tmp_var;
+  NclDimRec *dim_info;
+  int i;
 
   tmp_var = _NclGetArg(arg_num,num_args,DONT_CARE);
 
   if(tmp_var.kind == NclStk_VAR) {
-    return(tmp_var.u.data_var->var.dim_info);
+	  dim_info = malloc(sizeof(NclDimRec) * tmp_var.u.data_var->var.n_dims);
+	  for (i = 0; i < tmp_var.u.data_var->var.n_dims; i++) {
+		  dim_info[i].dim_quark = tmp_var.u.data_var->var.dim_info[i].dim_quark;
+		  dim_info[i].dim_num = tmp_var.u.data_var->var.dim_info[i].dim_num;
+		  dim_info[i].dim_size = tmp_var.u.data_var->var.dim_info[i].dim_size;
+	  }
+	  return(dim_info);
   }
   else {
-    return(NULL);
+	  return(NULL);
   }
 }
 

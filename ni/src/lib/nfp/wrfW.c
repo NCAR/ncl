@@ -413,6 +413,7 @@ NhlErrorTypes wrf_tk_W( void )
                           TEMPORARY
                           );
 
+  NclFree(dim_info);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -746,6 +747,7 @@ NhlErrorTypes wrf_td_W( void )
                           TEMPORARY
                           );
 
+  NclFree(dim_info);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -1098,6 +1100,7 @@ NhlErrorTypes wrf_rh_W( void )
                           TEMPORARY
                           );
 
+  NclFree(dim_info);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -1544,9 +1547,8 @@ NhlErrorTypes wrf_slp_W( void )
                           );
 
   NclFree(dsizes_slp);
-  NclFree(cunits);
-  NclFree(cdescription);
   if(dim_info != NULL) NclFree(dim_info);
+  NclFree(dim_info_t);
 
 /*
  * Return output grid and attributes to NCL.
@@ -1996,6 +1998,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
                           );
   NclFree(dsizes_v2d);
   if(dim_info != NULL) NclFree(dim_info);
+  NclFree(dim_info_v3d);
 
 /*
  * Return output grid and attributes to NCL.
@@ -2847,6 +2850,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
                           TEMPORARY
                           );
   NclFree(dsizes_v_out);
+  NclFree(dim_info);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -3464,8 +3468,8 @@ NhlErrorTypes wrf_uvmet_W( void )
   coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   if(has_missing_u || has_missing_v) {
     has_missing = True;
-    fprintf(stderr, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tu or v has missing.\n");
+    /*fprintf(stderr, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);*/
+    /* fprintf(stderr, "\tu or v has missing.\n");*/
   }
   else {
     has_missing = False;
@@ -3850,6 +3854,8 @@ NhlErrorTypes wrf_uvmet_W( void )
   if(type_cenlon != NCL_double) NclFree(tmp_cenlon);
   if(type_cone   != NCL_double) NclFree(tmp_cone);
   NclFree(tmp_uvmet);
+  NclFree(longca);
+  NclFree(longcb);
 
 /*
  * Set up some attributes ("description" and "units") to return.
@@ -3969,6 +3975,9 @@ NhlErrorTypes wrf_uvmet_W( void )
                           TEMPORARY
                           );
   NclFree(dsizes_uvmet);
+  NclFree(dim_info);
+  NclFree(dim_info_u);
+  NclFree(dim_info_v);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -4478,6 +4487,7 @@ NhlErrorTypes wrf_dbz_W( void )
  * Coerce subsection of qgr (tmp_qgr) to double if necessary.
  */
     if(!is_scalar_qgr) {
+      double *tmp_qgr_save = tmp_qgr;
       if(type_qgr != NCL_double) {
         coerce_subset_input_double(qgr,tmp_qgr,index_dbz,type_qgr,nbtsnwe,
                                    0,NULL,NULL);
@@ -4485,6 +4495,8 @@ NhlErrorTypes wrf_dbz_W( void )
       else {
         tmp_qgr = &((double*)qgr)[index_dbz];
       }
+      if (tmp_qgr_save != NULL && tmp_qgr_save != tmp_qgr)
+	      NclFree(tmp_qgr);
     }
 
 /*
@@ -4636,6 +4648,7 @@ NhlErrorTypes wrf_dbz_W( void )
                           NULL,
                           TEMPORARY
                           );
+  NclFree(dim_info);
 
 /*
  * Return output grid and attributes to NCL.
@@ -5479,6 +5492,7 @@ NhlErrorTypes wrf_pvo_W( void )
                           TEMPORARY
                           );
 
+  NclFree(dim_info);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -6140,6 +6154,7 @@ NhlErrorTypes wrf_avo_W( void )
                             type_obj_av
                             );
 
+  NclFree(dsizes_av);
 /*
  * Set up some attributes ("description" and "units") to return.
  */
@@ -6219,6 +6234,8 @@ NhlErrorTypes wrf_avo_W( void )
 /*
  * Return output grid and attributes to NCL.
  */
+  NclFree(dim_info);
+  NclFree(dim_info_v);
   return_data.kind = NclStk_VAR;
   return_data.u.data_var = tmp_var;
   _NclPlaceReturn(return_data);
@@ -6591,8 +6608,6 @@ NhlErrorTypes wrf_helicity_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dcalrelhl: miy = %ld is greater than INT_MAX", miy);
       return(NhlFATAL);
     }
-    if (tmp_top != top)
-	    free(tmp_top);
 
     if(type_sreh != NCL_double) {
       coerce_output_float_only(sreh,tmp_sreh,mxy,index_ter);
@@ -6609,6 +6624,7 @@ NhlErrorTypes wrf_helicity_W( void )
   if(type_z    != NCL_double) NclFree(tmp_z);
   if(type_ter  != NCL_double) NclFree(tmp_ter);
   if(type_sreh != NCL_double) NclFree(tmp_sreh);
+  if(type_top != NCL_double) NclFree(tmp_top);
 
 /*
  * Set up return value.
@@ -6702,6 +6718,7 @@ NhlErrorTypes wrf_helicity_W( void )
                           NULL,
                           TEMPORARY
                           );
+  NclFree(dim_info);
 
 /*
  * Return output grid and attributes to NCL.
@@ -7360,8 +7377,10 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
   if(type_vs != NCL_double)      NclFree(tmp_vs);
   if(type_w != NCL_double)       NclFree(tmp_w);
   if(type_uh != NCL_double)      NclFree(tmp_uh);
-  if(type_uhmnhgt != NCL_double) NclFree(tmp_uhmnhgt);
-  if(type_uhmxhgt != NCL_double) NclFree(tmp_uhmxhgt);
+  if(type_uhmnhgt != NCL_double || ! set_uhmnhgt) NclFree(tmp_uhmnhgt);
+  if(type_uhmxhgt != NCL_double || ! set_uhmxhgt) NclFree(tmp_uhmxhgt);
+  NclFree(tem1);
+  NclFree(tem2);
 
 /*
  * Set up return value.
@@ -7380,6 +7399,7 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
                             type_obj_uh
                             );
 
+  NclFree(dsizes_uh);
 /*
  * Set up some attributes ("description" and "units") to return.
  */
@@ -7455,6 +7475,8 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
                           NULL,
                           TEMPORARY
                           );
+  NclFree(dim_info);
+  NclFree(dim_info_us);
 
 /*
  * Return output grid and attributes to NCL.
@@ -8075,6 +8097,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
                           );
 
   NclFree(dsizes_loc);
+  NclFree(dim_info);
 
 /*
  * Return output grid and attributes to NCL.
@@ -8706,6 +8729,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
                           );
 
   NclFree(dsizes_loc);
+  NclFree(dim_info);
 
 /*
  * Return output grid and attributes to NCL.
@@ -9352,6 +9376,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
 
   NclFree(dsizes_cape);
   if(dim_info   != NULL) NclFree(dim_info);
+  NclFree(dim_info_t);
 
 /*
  * Return output grid and attributes to NCL.
@@ -10023,6 +10048,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
 
   NclFree(dsizes_cape);
   if(dim_info   != NULL) NclFree(dim_info);
+  NclFree(dim_info_t);
 
 /*
  * Return output grid and attributes to NCL.
@@ -10046,6 +10072,7 @@ NclDimRec *get_wrf_dim_info(int arg_num,int num_args,int ndims_arg,ng_size_t *ds
   NclDimRec *dim_info;
   int i, is_named;
 
+  /* this is now separately malloced */
   dim_info = get_dim_info(arg_num,num_args);
 
   is_named = 0;
@@ -10476,6 +10503,7 @@ NhlErrorTypes wrf_eth_W( void )
                           TEMPORARY
                           );
 
+  NclFree(dim_info);
 /*
  * Return output grid and attributes to NCL.
  */
