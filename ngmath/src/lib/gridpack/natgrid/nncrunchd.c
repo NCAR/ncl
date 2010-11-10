@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunchd.c,v 1.14 2008-07-27 03:10:12 haley Exp $
+ * $Id: nncrunchd.c,v 1.14 2008/07/27 03:10:12 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -643,6 +643,7 @@ void c_nnpntd(double x, double y, double *point)
       ErrorHnd(27, "c_nnpntd", stderr, emsg);
       return;
    } 
+   out = (double *) calloc(1,sizeof(double));
  
 /*
  *  Set up a 3 x 3 gridded region with the desired coordinate in
@@ -664,6 +665,7 @@ void c_nnpntd(double x, double y, double *point)
    }
    
    *point = out[3*1 +1];
+   free(out);
 }
 void c_nnpntendd()
 {
