@@ -301,7 +301,7 @@ NhlErrorTypes svdcov_W( void )
   }
   else
   {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsvdlap: ncolx = %ld is greater than INT_MAX", ncolx);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: one or more dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
 
@@ -795,7 +795,7 @@ NhlErrorTypes svdstd_W( void )
   }
   else
   {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsvdlap: ncolx = %ld is greater than INT_MAX", ncolx);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: one or more input dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
 
@@ -1239,7 +1239,7 @@ NhlErrorTypes svdcov_sv_W( void )
   }
   else
   {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsvdsv: ncolx = %ld is greater than INT_MAX", ncolx);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: one or more input dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
 /*
@@ -1574,7 +1574,7 @@ NhlErrorTypes svdstd_sv_W( void )
   }
   else
   {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsvdsv: ncolx = %ld is greater than INT_MAX", ncolx);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: one or more input dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
 /*
@@ -1930,7 +1930,7 @@ NhlErrorTypes svd_lapack_W( void )
   }
   else
   {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dgesvd: nrow = %ld is greater than INT_MAX", nrow);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: one or more input dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
 
@@ -2109,7 +2109,7 @@ NhlErrorTypes svdpar_W( void )
   }
   else
   {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsvdpar: dsizes_x[0] = %ld is greater than INT_MAX", dsizes_x[0]);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdpar: one or more input dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
 /*
