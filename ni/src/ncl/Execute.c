@@ -384,7 +384,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	int first;
 	int dir;
 	ng_size_t ix_start, ix_end;
-	int var_offset;
+	ng_size_t var_offset;
 	ng_size_t var_dim_sizes[32];
 	ng_size_t agg_chunk_size;
         int var_ndims; /* non_aggregated natural var dim count */
