@@ -454,8 +454,14 @@ int cro_Cellarray(GKSC *gksc) {
 
     cairo_set_source_surface(cairo_context[context_index(psa->wks_id)],
             cell_image, x_offset, y_offset);
-    cairo_surface_destroy(cell_image);
     cairo_paint(cairo_context[context_index(psa->wks_id)]);
+
+    /* free up resources need to create the cairo_surface... */
+    cairo_surface_finish(cell_image);
+    cairo_surface_destroy(cell_image);
+    free(data);
+    free(rows);
+    free(cols);
 
     /*
      *  Restore color.
@@ -517,8 +523,12 @@ int cro_CloseWorkstation(GKSC *gksc) {
     if (psa->output_file)
         free(psa->output_file);
 
+    if (psa->max_color > 0)
+        free(psa->ctable);
+
     cairo_destroy(cairo_context[context_index(psa->wks_id)]);
     remove_context(psa->wks_id);
+    free(psa);
 
     return (0);
 }
@@ -816,6 +826,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
         cairo_ps_surface_set_size(cairo_surface[context_num], psa->paper_width, psa->paper_height);
         cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
         add_context_index(context_num, orig_wks_id);
+        psa->orientation = PORTRAIT;
     }
 
     else if (psa->wks_type == CPDF) {
@@ -827,6 +838,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
                 psa->paper_width, psa->paper_height);
         cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
         add_context_index(context_num, orig_wks_id);
+        psa->orientation = PORTRAIT;
     }
 
     else if (psa->wks_type == CPNG) {
@@ -2341,8 +2353,7 @@ void setSurfaceTransform(CROddp *psa) {
 
     double angle, tx, ty;
     /* Landscape is only supported for PS/PDF, not for image-based formats. */
-    if (psa->orientation == LANDSCAPE && (psa->wks_type == CPS || psa->wks_type
-            == CPDF)) {
+    if ((psa->wks_type == CPS || psa->wks_type == CPDF) && psa->orientation == LANDSCAPE) {
         angle = PI / 2.0;
         tx = psa->dspace.lly;
         ty = -psa->dspace.llx;

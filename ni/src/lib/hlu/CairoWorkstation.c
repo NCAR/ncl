@@ -33,7 +33,7 @@ static NhlResource resourcesPSPDFWS[] = {
      */
     {NhlNwkPaperSize,NhlCwkPaperSize,NhlTString,
         sizeof(NhlString),Oset(paper_size),NhlTImmediate,
-        _NhlUSET(PAGEUTIL_DEFAULT_PAPERSIZE),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
+        _NhlUSET(PAGEUTIL_DEFAULT_PAPERSIZE),_NhlRES_DEFAULT,NULL},
     {NhlNwkPaperWidthF, NhlCwkPaperWidthF, NhlTFloat,
         sizeof(float), Oset(page_width), NhlTString,
         _NhlUSET("-1."), _NhlRES_DEFAULT, NULL},
@@ -650,9 +650,12 @@ CairoWorkstationGetValues(NhlLayer l, _NhlArgList args, int nargs)
 static NhlErrorTypes
 CairoWorkstationDestroy(NhlLayer l)
 {
+    NhlCairoWorkstationLayer  layer = (NhlCairoWorkstationLayer) l;
     NhlCairoWorkstationLayerPart   *cairo = &((NhlCairoWorkstationLayer)l)->cairo;
 
     NhlFree(cairo->filename);
+    if (layer->work.gkswkstype == CPS || layer->work.gkswkstype == CPDF)
+        NhlFree(cairo->paper_size);
 
     return NhlNOERROR;
 }

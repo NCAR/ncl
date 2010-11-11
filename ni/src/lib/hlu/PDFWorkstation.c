@@ -48,7 +48,7 @@ static NhlResource resources[] = {
      */
     {NhlNwkPaperSize,NhlCwkPaperSize,NhlTString,
         sizeof(NhlString),Oset(paper_size),NhlTImmediate,
-        _NhlUSET(PAGEUTIL_DEFAULT_PAPERSIZE),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
+        _NhlUSET(PAGEUTIL_DEFAULT_PAPERSIZE),_NhlRES_DEFAULT,NULL},
     {NhlNwkPaperWidthF, NhlCwkPaperWidthF, NhlTFloat,
         sizeof(float), Oset(page_width), NhlTString,
         _NhlUSET("-1."), _NhlRES_DEFAULT, NULL},
@@ -594,6 +594,7 @@ PDFWorkstationDestroy
     NhlPDFWorkstationLayerPart   *pdfp = &((NhlPDFWorkstationLayer)l)->pdf;
 
     NhlFree(pdfp->filename);
+    NhlFree(pdfp->paper_size);
 
     return NhlNOERROR;
 }

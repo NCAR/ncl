@@ -2178,6 +2178,8 @@ int ps_CloseWorkstation(gksc)
         (void) fflush(psa->file_pointer);
         psa->pict_empty = TRUE;
         fclose(psa->file_pointer);
+
+        free(psa);
         return(0);
 }
 
