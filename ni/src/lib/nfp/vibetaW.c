@@ -310,6 +310,7 @@ NhlErrorTypes vibeta_W( void )
   if(type_psfc != NCL_double) NclFree(tmp_psfc);
   if(type_ptop != NCL_double) NclFree(tmp_ptop);
   if(type_pbot != NCL_double) NclFree(tmp_pbot);
+  if(type_vint != NCL_double) NclFree(tmp_vint);
 /*
  * Check error.
  */

@@ -36,7 +36,7 @@ NhlErrorTypes zonal_mpsi_W( void )
  */
   ng_size_t i, index_v, index_ps, index_zmpsi, size_zmpsi;
   ng_size_t nlat, nlon, nlev, ntim, nlatlon, nlatlev, nlatlonlev;
-  int ret;
+  int ret, inlon, inlat, inlev;
 /*
  * Retrieve parameters
  *
@@ -122,6 +122,18 @@ NhlErrorTypes zonal_mpsi_W( void )
       return(NhlFATAL);
     }
   }
+
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX) || (nlev > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"zonal_mpsi: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  inlev = (int) nlev;
+
 /*
  * Coerce missing value to double.
  */
@@ -266,21 +278,8 @@ NhlErrorTypes zonal_mpsi_W( void )
     
     if(type_zmpsi == NCL_double) tmp_zmpsi = &((double*)zmpsi)[index_zmpsi];
 
-    if((nlon <= INT_MAX) &&
-       (nlat <= INT_MAX) &&
-       (nlev <= INT_MAX))
-    {
-      int inlon = (int) nlon;
-      int inlat = (int) nlat;
-      int inlev = (int) nlev;
-      NGCALLF(dzpsidrv,DZPSIDRV)(&inlon,&inlat,&inlev,tmp_v,tmp_lat,tmp_p,tmp_ps,
+    NGCALLF(dzpsidrv,DZPSIDRV)(&inlon,&inlat,&inlev,tmp_v,tmp_lat,tmp_p,tmp_ps,
                                  &missing_dv.doubleval,tmp_zmpsi);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dzpsidrv: nlon = %ld is greater than INT_MAX", nlon);
-      return(NhlFATAL);
-    }
 /*
  * Copy output values from temporary tmp_zmpsi to zmpsi.
  */

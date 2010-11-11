@@ -20450,6 +20450,8 @@ NhlErrorTypes vhseC_W( void )
   NclFree(wvhsec);
   NclFree(work);
   NclFree(dwork);
+  if(type_bc != NCL_double) NclFree(dbc);
+
   NGCALLF(dchkerr,DCHKERR)("vhseC","vhsec",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
@@ -20940,6 +20942,8 @@ NhlErrorTypes vhsgC_W( void )
   NclFree(wvhsgc);
   NclFree(work);
   NclFree(dwork);
+  if(type_bc != NCL_double) NclFree(dbc);
+
   NGCALLF(dchkerr,DCHKERR)("vhsgC","vhsgc",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates

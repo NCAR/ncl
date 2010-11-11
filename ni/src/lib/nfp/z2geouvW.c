@@ -36,7 +36,7 @@ NhlErrorTypes z2geouv_W( void )
  */
   ng_size_t i, index_z, size_leftmost;
   ng_size_t nlat, nlon, nlatlon;
-  int ret;
+  int ret, inlat, inlon;
 /*
  * Retrieve parameters
  *
@@ -100,6 +100,15 @@ NhlErrorTypes z2geouv_W( void )
     return(NhlFATAL);
   }
 
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"z2geouv: nlat and/or nlon is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
 /*
  * Coerce missing value to double.
  */
@@ -199,19 +208,8 @@ NhlErrorTypes z2geouv_W( void )
       tmp_v = &((double*)uv)[index_z+size_z];
     }
 
-    if((nlon <= INT_MAX) &&
-       (nlat <= INT_MAX))
-    {
-      int inlon = (int) nlon;
-      int inlat = (int) nlat;
-      NGCALLF(z2geouv,Z2GEOUV)(tmp_z,&inlon,&inlat,&missing_dz.doubleval,
-                               tmp_lon,tmp_lat,tmp_u,tmp_v,iopt);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"z2geouv: nlon = %ld is greater than INT_MAX", nlon);
-      return(NhlFATAL);
-    }
+    NGCALLF(z2geouv,Z2GEOUV)(tmp_z,&inlon,&inlat,&missing_dz.doubleval,
+			     tmp_lon,tmp_lat,tmp_u,tmp_v,iopt);
 /*
  * Copy output values from temporary tmp_u, tmp_v to uv.
  */

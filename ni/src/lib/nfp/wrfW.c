@@ -138,6 +138,7 @@ NhlErrorTypes wrf_tk_W( void )
  * Various
  */
   ng_size_t i, nx, size_leftmost, index_p;
+  int inx;
 
 /*
  * Variables for returning the output array with attributes attached.
@@ -200,6 +201,15 @@ NhlErrorTypes wrf_tk_W( void )
   for(i = 0; i < ndims_p-1; i++) size_leftmost *= dsizes_p[i];
   nx = dsizes_p[ndims_p-1];
   size_tt = size_leftmost * nx;
+
+/*
+ * Test dimension sizes.
+ */
+  if(nx > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_tk: nx = %ld is greater than INT_MAX", nx);
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
 
 /* 
  * Allocate space for coercing input arrays.  If the input p or theta
@@ -287,16 +297,7 @@ NhlErrorTypes wrf_tk_W( void )
 /*
  * Call Fortran routine.
  */
-    if(nx <= INT_MAX)
-    {
-      int inx = (int) nx;
       NGCALLF(dcomputetk,DCOMPUTETK)(tmp_t,tmp_p,tmp_theta,&inx);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcomputetk: nx = %ld is greater than INT_MAX", nx);
-      return(NhlFATAL);
-    }
 
 /*
  * Coerce output back to float if necessary.
@@ -454,6 +455,7 @@ NhlErrorTypes wrf_td_W( void )
  * Various
  */
   ng_size_t i, np, nx, size_leftmost, index_p;
+  int inx;
 
 /*
  * Variables for returning the output array with attributes attached.
@@ -517,6 +519,15 @@ NhlErrorTypes wrf_td_W( void )
   for(i = 0; i < ndims_p-1; i++) size_leftmost *= dsizes_p[i];
   nx = dsizes_p[ndims_p-1];
   size_tt = size_leftmost * nx;
+
+/*
+ * Test dimension sizes.
+ */
+  if(nx > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_td: nx = %ld is greater than INT_MAX", nx);
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
 
 /* 
  * Allocate space for coercing input arrays.  If the input p or qv
@@ -620,16 +631,7 @@ NhlErrorTypes wrf_td_W( void )
 /*
  * Call Fortran routine.
  */
-    if(nx <= INT_MAX) 
-    {
-      int inx = (int) nx;
-      NGCALLF(dcomputetd,DCOMPUTETD)(tmp_t,tmp_p,tmp_qv,&inx);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcomputetd: nx = %ld is greater than INT_MAX", nx);
-      return(NhlFATAL);
-    }
+    NGCALLF(dcomputetd,DCOMPUTETD)(tmp_t,tmp_p,tmp_qv,&inx);
 
 /*
  * Coerce output back to float if necessary.
@@ -791,6 +793,7 @@ NhlErrorTypes wrf_rh_W( void )
  * Various
  */
   ng_size_t i, nx, size_leftmost, index_qv;
+  int inx;
 
 /*
  * Variables for returning the output array with attributes and/or
@@ -865,6 +868,15 @@ NhlErrorTypes wrf_rh_W( void )
   for(i = 0; i < ndims_qv-1; i++) size_leftmost *= dsizes_qv[i];
   nx = dsizes_qv[ndims_qv-1];
   size_rh = size_leftmost * nx;
+
+/*
+ * Test dimension sizes.
+ */
+  if(nx > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_rh: nx = %ld is greater than INT_MAX", nx);
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
 
 /* 
  * Allocate space for coercing input arrays.  If the input p or t
@@ -981,16 +993,7 @@ NhlErrorTypes wrf_rh_W( void )
 /*
  * Call Fortran routine.
  */
-    if(nx <= INT_MAX)
-    {
-      int inx = (int) nx;
-      NGCALLF(dcomputerh,DCOMPUTERH)(tmp_qv,tmp_p,tmp_t,tmp_rh,&inx);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcomputerh: nx = %ld is greater than INT_MAX", nx);
-      return(NhlFATAL);
-    }
+    NGCALLF(dcomputerh,DCOMPUTERH)(tmp_qv,tmp_p,tmp_t,tmp_rh,&inx);
 
 /*
  * Coerce output back to float if necessary.
@@ -1149,6 +1152,7 @@ NhlErrorTypes wrf_slp_W( void )
  */
   ng_size_t i, nx, ny, nz, nxy, nxyz, size_leftmost, index_nxy, index_nxyz;
   double *tmp_t_sea_level, *tmp_t_surf, *tmp_level;
+  int inx, iny, inz;
 /*
  * Variables for returning the output array with attributes and/or
  * dimension names attached.
@@ -1250,6 +1254,17 @@ NhlErrorTypes wrf_slp_W( void )
   nxy  = nx * ny;
   nxyz = nxy * nz;
   size_slp = size_leftmost * nxy;
+/*
+ * Test dimension sizes.
+ */
+  if((nx > INT_MAX) || (ny > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: nx, ny, and/or nz is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inz = (int) nz;
+
 /*
  * Get dimension info to see if we have named dimensions.
  * This will be used for return variable.
@@ -1416,22 +1431,9 @@ NhlErrorTypes wrf_slp_W( void )
 /*
  * Call Fortran routine.
  */
-    if((nx <= INT_MAX) &&
-       (ny <= INT_MAX) &&
-       (nz <= INT_MAX))
-    {
-      int inx = (int) nx;
-      int iny = (int) ny;
-      int inz = (int) nz;
-      NGCALLF(dcomputeseaprs,DCOMPUTESEAPRS)(&inx,&iny,&inz,tmp_z,tmp_t,tmp_p,
-                                             tmp_q,tmp_slp,tmp_t_sea_level,
-                                             tmp_t_surf,tmp_level);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcomputeseaprs: nx = %ld is greater than INT_MAX", nx);
-      return(NhlFATAL);
-    }
+    NGCALLF(dcomputeseaprs,DCOMPUTESEAPRS)(&inx,&iny,&inz,tmp_z,tmp_t,tmp_p,
+					   tmp_q,tmp_slp,tmp_t_sea_level,
+					   tmp_t_surf,tmp_level);
 /*
  * Coerce output back to float if necessary.
  */
@@ -1615,6 +1617,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  * Various
  */
   ng_size_t i, nx, ny, nz, nxy, nxyz, size_leftmost, index_v3d, index_v2d;
+  int inx, iny, inz;
 
 /*
  * Retrieve parameters.
@@ -1735,6 +1738,17 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   nz = dsizes_v3d[ndims_v3d-3];
   nxy  = nx * ny;
   nxyz = nxy * nz;
+
+/*
+ * Test dimension sizes.
+ */
+  if((nx > INT_MAX) || (ny > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: nx, ny, and/or nz is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inz = (int) nz;
 
   ndims_v2d = ndims_v3d-1;
   dsizes_v2d = (ng_size_t*)calloc(ndims_v2d,sizeof(ng_size_t));  
@@ -1861,21 +1875,8 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
 /*
  * Call Fortran routine.
  */
-    if((nx <= INT_MAX) &&
-       (ny <= INT_MAX) &&
-       (nz <= INT_MAX))
-    {
-      int inx = (int) nx;
-      int iny = (int) ny;
-      int inz = (int) nz;
-      NGCALLF(dinterp3dz,DINTERP3DZ)(tmp_v3d,tmp_v2d,tmp_z,tmp_loc,
-                                     &inx,&iny,&inz);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dinterp3dz: nx = %ld is greater than INT_MAX", nx);
-      return(NhlFATAL);
-    }
+    NGCALLF(dinterp3dz,DINTERP3DZ)(tmp_v3d,tmp_v2d,tmp_z,tmp_loc,
+				   &inx,&iny,&inz);
 /*
  * Coerce output back to float if necessary.
  */
@@ -2059,6 +2060,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  */
   ng_size_t i, nx, ny, nz, nxnynz, nxy, nxy_nz , nxy_2, size_leftmost;
   ng_size_t index_v3d, index_v2d, index_xy;
+  int inx, iny, inz, inxy;
 /*
  * Retrieve parameters.
  *
@@ -2107,6 +2109,18 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   nxnynz   = nx * ny * nz;
   nxy_nz   = nxy * nz;
   nxy_2    = nxy * 2;
+
+/*
+ * Test dimension sizes.
+ */
+  if((nxy > INT_MAX) || (nx > INT_MAX) || (ny > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_2d_xy: one or more dimension sizes is greater than INT_MAX", nxy);
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inz = (int) nz;
+  inxy = (int) nxy;
 
 /*
  * Check leftmost dimensions, if any, and calculate their size.
@@ -2272,23 +2286,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
 /*
  * Call Fortran routine.
  */
-    if((nxy <= INT_MAX) &&
-       (nx <= INT_MAX) &&
-       (ny <= INT_MAX) &&
-       (nz <= INT_MAX))
-    {
-      int inx = (int) nx;
-      int iny = (int) ny;
-      int inz = (int) nz;
-      int inxy = (int) nxy;
-      NGCALLF(dinterp2dxy,DINTERP2DXY)(tmp_v3d,tmp_v2d,tmp_xy,&inx,&iny,&inz,&inxy);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dinterp2dxy: nxy = %ld is greater than INT_MAX", nxy);
-      return(NhlFATAL);
-    }
-
+    NGCALLF(dinterp2dxy,DINTERP2DXY)(tmp_v3d,tmp_v2d,tmp_xy,&inx,&iny,&inz,&inxy);
 /*
  * Coerce output back to float if necessary.
  */
@@ -2473,6 +2471,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
  * Various
  */
   ng_size_t i, nz_in, nz_out, size_leftmost, index_v_in, index_v_out;
+  int inz_in, inz_out;
 
 /*
  * Retrieve parameters.
@@ -2523,6 +2522,16 @@ NhlErrorTypes wrf_interp_1d_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: The rightmost dimension of v_in and z_in must be the same");
     return(NhlFATAL);
   }
+
+/*
+ * Test dimension sizes.
+ */
+  if((nz_in > INT_MAX) || (nz_out > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: nz_in and/or nz_out is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inz_in = (int) nz_in;
+  inz_out = (int) nz_out;
 
 /*
  * Retrieve dimension names from the "v3d" variable, if any.
@@ -2718,19 +2727,8 @@ NhlErrorTypes wrf_interp_1d_W( void )
 /*
  * Call Fortran routine.
  */
-    if((nz_in <= INT_MAX) &&
-       (nz_out <= INT_MAX))
-    {
-      int inz_in = (int) nz_in;
-      int inz_out = (int) nz_out;
-      NGCALLF(dinterp1d,DINTERP1D)(tmp_v_in,tmp_v_out,tmp_z_in,tmp_z_out,&inz_in,
-                                   &inz_out,&v_out_msg);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dinterp1d: nz_in = %ld is greater than INT_MAX", nz_in);
-      return(NhlFATAL);
-    }
+    NGCALLF(dinterp1d,DINTERP1D)(tmp_v_in,tmp_v_out,tmp_z_in,tmp_z_out,&inz_in,
+				 &inz_out,&v_out_msg);
 /*
  * Coerce output back to float if necessary.
  */
@@ -3019,6 +3017,7 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
   ng_size_t ny, nx, nynx, nretlocs;
   ng_size_t index_array, index_ret;
   ng_size_t i, j, ndims_leftmost, size_leftmost, size_output;
+  int inx, iny;
 
 /*
  * Retrieve parameters.
@@ -3065,6 +3064,16 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
   ny = dsizes_lat_array[ndims_lat_array-2];
   nx = dsizes_lat_array[ndims_lat_array-1];
   nynx = ny * nx;
+
+/*
+ * Test dimension sizes.
+ */
+  if((nx > INT_MAX) || (ny > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: nx and/or ny is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
 
   size_leftmost  = 1;
   ndims_leftmost = ndims_lat_array-2;
@@ -3277,22 +3286,10 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
  * Call the Fortran routine. Make sure you return the i,j index
  * swapped, since we are going from Fortran to C.
  */
-      if((nx <= INT_MAX) &&
-         (ny <= INT_MAX))
-      {
-        int inx = (int) nx;
-        int iny = (int) ny;
-
-        NGCALLF(dgetijlatlong,DGETIJLATLONG)(tmp_lat_array, tmp_lon_array, 
-                                             tmp_lat_loc, tmp_lon_loc,
-                                             &ret[index_ret+1], 
-                                             &ret[index_ret], &inx, &iny);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dgetijlatlong: nx = %ld is greater than INT_MAX", nx);
-        return(NhlFATAL);
-      }
+      NGCALLF(dgetijlatlong,DGETIJLATLONG)(tmp_lat_array, tmp_lon_array, 
+					   tmp_lat_loc, tmp_lon_loc,
+					   &ret[index_ret+1], 
+					   &ret[index_ret], &inx, &iny);
       index_ret+=2;
     }
     index_array += nynx;
@@ -3397,6 +3394,8 @@ NhlErrorTypes wrf_uvmet_W( void )
   ng_size_t size_leftmost, size_leftmost_uvmet, size_uvmet, size_output;
   double rpd, *longca, *longcb;
   int istag, ndims_leftmost;
+  int inx, iny, inxp1, inyp1;
+
 /*
  * Variables for returning the output array with attributes attached.
  */
@@ -3460,6 +3459,18 @@ NhlErrorTypes wrf_uvmet_W( void )
   nyp1   = dsizes_v[ndims_v-2];
   nx     = dsizes_v[ndims_v-1];
   nyp1nx = nyp1 * nx;
+
+/*
+ * Test dimension sizes.
+ */
+  if((nxp1 > INT_MAX) || (nyp1 > INT_MAX) || (nx > INT_MAX) || (ny > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_uvmet: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inxp1 = (int) nxp1;
+  inyp1 = (int) nyp1;
 
 /*
  * Coerce the missing values.
@@ -3804,15 +3815,6 @@ NhlErrorTypes wrf_uvmet_W( void )
 /*
  * Call the Fortran routine.
  */
-    if((nxp1 <= INT_MAX) &&
-       (nyp1 <= INT_MAX) &&
-       (nx <= INT_MAX) &&
-       (ny <= INT_MAX))
-    {
-      int inx = (int) nx;
-      int iny = (int) ny;
-      int inxp1 = (int) nxp1;
-      int inyp1 = (int) nyp1;
       NGCALLF(dcomputeuvmet,DCOMPUTEUVMET)(tmp_u, tmp_v, tmp_uvmet, longca, 
                                            longcb, tmp_lon, tmp_lat, 
                                            tmp_cenlon, tmp_cone, &rpd, 
@@ -3820,12 +3822,7 @@ NhlErrorTypes wrf_uvmet_W( void )
                                            &has_missing,&missing_du.doubleval,
                                            &missing_du.doubleval,
                                            &tmp_uvmet_msg);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcomputeuvmet: nxp1 = %ld is greater than INT_MAX", nxp1);
-      return(NhlFATAL);
-    }
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -4084,7 +4081,7 @@ NhlErrorTypes wrf_dbz_W( void )
  */
   ng_size_t btdim, sndim, wedim, nbtsnwe, index_dbz;
   ng_size_t i, j, size_leftmost, size_output;
-  int sn0 = 0;
+  int sn0 = 0, iwedim, isndim, ibtdim;
 
 /*
  * Retrieve parameters.
@@ -4116,6 +4113,17 @@ NhlErrorTypes wrf_dbz_W( void )
   sndim = dsizes_prs[ndims_prs-2];
   wedim = dsizes_prs[ndims_prs-1];
   nbtsnwe = btdim * sndim * wedim;
+  
+/*
+ * Test dimension sizes.
+ */
+  if((wedim > INT_MAX) || (sndim > INT_MAX) || (btdim > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: one or more dimension sizes is greater than INT_MAX");    
+    return(NhlFATAL);
+  }
+  iwedim = (int) wedim;
+  isndim = (int) sndim;
+  ibtdim = (int) btdim;
 
 /*
  * Get argument # 1
@@ -4507,23 +4515,9 @@ NhlErrorTypes wrf_dbz_W( void )
 /*
  * Call the Fortran routine.
  */
-    if((wedim <= INT_MAX) &&
-       (sndim <= INT_MAX) &&
-       (btdim <= INT_MAX))
-    {
-      int iwedim = (int) wedim;
-      int isndim = (int) sndim;
-      int ibtdim = (int) btdim;
-      NGCALLF(calcdbz,CALCDBZ)(tmp_dbz, tmp_prs, tmp_tmk, tmp_qvp, tmp_qra, 
-                               tmp_qsn, tmp_qgr, &iwedim, &isndim, &ibtdim, 
-                               &sn0, ivarint, iliqskin);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"calcdbz: wedim = %ld is greater than INT_MAX", wedim);
-      return(NhlFATAL);
-    }
-
+    NGCALLF(calcdbz,CALCDBZ)(tmp_dbz, tmp_prs, tmp_tmk, tmp_qvp, tmp_qra, 
+			     tmp_qsn, tmp_qgr, &iwedim, &isndim, &ibtdim, 
+			     &sn0, ivarint, iliqskin);
 /*
  * Coerce output back to float if necessary.
  */
@@ -4779,7 +4773,7 @@ NhlErrorTypes wrf_pvo_W( void )
   ng_size_t nznynxp1, nznyp1nx, nznynx, nynxp1, nyp1nx, nynx;
   ng_size_t i, size_pv, size_leftmost;
   ng_size_t index_u, index_v, index_th, index_msfu, index_msfv, index_msft;
-
+  int inx, iny, inz, inxp1, inyp1;
 /*
  * Variables for returning the output array with dimension names attached.
  */
@@ -5109,6 +5103,20 @@ NhlErrorTypes wrf_pvo_W( void )
   nznyp1nx = nz * nyp1nx;
 
 /*
+ * Test dimension sizes.
+ */
+    if((nxp1 > INT_MAX) || (nyp1 > INT_MAX) || (nz > INT_MAX) || 
+       (nx > INT_MAX) ||(ny > INT_MAX)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: one or more dimension sizes is greater than INT_MAX");
+      return(NhlFATAL);
+    }
+    inx = (int) nx;
+    iny = (int) ny;
+    inz = (int) nz;
+    inxp1 = (int) nxp1;
+    inyp1 = (int) nyp1;
+
+/*
  * Calculate size of leftmost dimensions.
  */
   size_leftmost = 1;
@@ -5352,27 +5360,9 @@ NhlErrorTypes wrf_pvo_W( void )
  */
     if(type_pv == NCL_double) tmp_pv = &((double*)pv)[index_th];
 
-    if((nxp1 <= INT_MAX) &&
-       (nyp1 <= INT_MAX) &&
-       (nz <= INT_MAX) &&
-       (nx <= INT_MAX) &&
-       (ny <= INT_MAX))
-    {
-      int inx = (int) nx;
-      int iny = (int) ny;
-      int inz = (int) nz;
-      int inxp1 = (int) nxp1;
-      int inyp1 = (int) nyp1;
       NGCALLF(dcomputepv,DCOMPUTEPV)(tmp_pv, tmp_u, tmp_v, tmp_th, tmp_p, 
                                      tmp_msfu, tmp_msfv, tmp_msft, tmp_cor, 
                                      tmp_dx, tmp_dy, &inx, &iny, &inz, &inxp1, &inyp1);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcomputepv: nxp1 = %ld is greater than INT_MAX", nxp1);
-      return(NhlFATAL);
-    }
-
     if(type_pv != NCL_double) {
       coerce_output_float_only(pv,tmp_pv,nznynx,index_th);
     }
@@ -5604,6 +5594,7 @@ NhlErrorTypes wrf_avo_W( void )
   ng_size_t nznynxp1, nznyp1nx, nznynx, nynxp1, nyp1nx, nynx;
   ng_size_t i, size_av, size_leftmost;
   ng_size_t index_u, index_v, index_msfu, index_msfv, index_msft, index_av;
+  int inx, iny, inz, inxp1, inyp1;
 
 /*
  * Variables for returning the output array with dimension names attached.
@@ -5868,6 +5859,20 @@ NhlErrorTypes wrf_avo_W( void )
   nznyp1nx = nz * nyp1nx;
 
 /*
+ * Test dimension sizes.
+ */
+    if((nxp1 > INT_MAX) || (nyp1 > INT_MAX) || (nz > INT_MAX) || 
+       (nx > INT_MAX) ||(ny > INT_MAX)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: one or more dimension sizes is greater than INT_MAX");
+      return(NhlFATAL);
+    }
+    inx = (int) nx;
+    iny = (int) ny;
+    inz = (int) nz;
+    inxp1 = (int) nxp1;
+    inyp1 = (int) nyp1;
+
+/*
  * Calculate size of leftmost dimensions, and set
  * dimension sizes for output array.
  */
@@ -6091,28 +6096,10 @@ NhlErrorTypes wrf_avo_W( void )
  */
     if(type_av == NCL_double) tmp_av = &((double*)av)[index_av];
 
-    if((nxp1 <= INT_MAX) &&
-       (nyp1 <= INT_MAX) &&
-       (nz <= INT_MAX) &&
-       (nx <= INT_MAX) &&
-       (ny <= INT_MAX))
-    {
-      int inx = (int) nx;
-      int iny = (int) ny;
-      int inz = (int) nz;
-      int inxp1 = (int) nxp1;
-      int inyp1 = (int) nyp1;
-      NGCALLF(dcomputeabsvort,DCOMPUTEABSVORT)(tmp_av, tmp_u, tmp_v, tmp_msfu,
-                                               tmp_msfv, tmp_msft, tmp_cor,
-                                               tmp_dx, tmp_dy, &inx, &iny, &inz,
-                                               &inxp1, &inyp1);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcomputeabsvort: nxp1 = %ld is greater than INT_MAX", nxp1);
-      return(NhlFATAL);
-    }
-
+    NGCALLF(dcomputeabsvort,DCOMPUTEABSVORT)(tmp_av, tmp_u, tmp_v, tmp_msfu,
+					     tmp_msfv, tmp_msft, tmp_cor,
+					     tmp_dx, tmp_dy, &inx, &iny, &inz,
+					     &inxp1, &inyp1);
     if(type_av != NCL_double) {
       coerce_output_float_only(av,tmp_av,nznynx,index_av);
     }
@@ -6312,7 +6299,7 @@ NhlErrorTypes wrf_helicity_W( void )
  */
   ng_size_t i, miy, mjx, mkzh, mxy, mxyz;
   ng_size_t size_sreh, size_leftmost, index_u, index_ter;
-
+  int imiy, imjx, imkzh;
 /*
  * Variables for returning the output array with dimension names attached.
  */
@@ -6443,6 +6430,14 @@ NhlErrorTypes wrf_helicity_W( void )
 
   mxy  = mjx * miy;
   mxyz = mxy * mkzh;
+
+  if((miy > INT_MAX) || (mjx > INT_MAX) || (mkzh > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: one or more dimension sizes is greater than INT_MAX");
+      return(NhlFATAL);
+  }
+  imiy = (int) miy;
+  imjx = (int) mjx;
+  imkzh = (int) mkzh;
 
 /*
  * Calculate size of leftmost dimensions.
@@ -6593,22 +6588,8 @@ NhlErrorTypes wrf_helicity_W( void )
  */
     if(type_sreh == NCL_double) tmp_sreh = &((double*)sreh)[index_ter];
 
-    if((miy <= INT_MAX) &&
-       (mjx <= INT_MAX) &&
-       (mkzh <= INT_MAX))
-    {
-      int imiy = (int) miy;
-      int imjx = (int) mjx;
-      int imkzh = (int) mkzh;
-      NGCALLF(dcalrelhl,DCALRELHL)(tmp_u, tmp_v, tmp_z, tmp_ter, tmp_top,
-                                   tmp_sreh, &imiy, &imjx, &imkzh);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcalrelhl: miy = %ld is greater than INT_MAX", miy);
-      return(NhlFATAL);
-    }
-
+    NGCALLF(dcalrelhl,DCALRELHL)(tmp_u, tmp_v, tmp_z, tmp_ter, tmp_top,
+				 tmp_sreh, &imiy, &imjx, &imkzh);
     if(type_sreh != NCL_double) {
       coerce_output_float_only(sreh,tmp_sreh,mxy,index_ter);
     }
@@ -6845,6 +6826,7 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
   ng_size_t index_zp, index_uh, index_us;
   double *tem1, *tem2;
   ng_size_t i, ndims_leftmost, size_leftmost, size_output;
+  int inx, iny, inz, inzp1;
 
 /*
  * Variables for returning the output array with dimension names attached.
@@ -6938,6 +6920,18 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
   }
   nz = dsizes_us[ndims_us-3];
   nznynx = nz * nynx;
+
+/*
+ * Test dimension sizes.
+ */
+  if((nx > INT_MAX) || (ny > INT_MAX) || (nzp1 > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inz = (int) nz;
+  inzp1 = (int) nzp1;
 
 /*
  * Get argument # 3
@@ -7336,25 +7330,9 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
 /*
  * Call the Fortran routine.
  */
-    if((nx <= INT_MAX) &&
-       (ny <= INT_MAX) &&
-       (nzp1 <= INT_MAX) &&
-       (nz <= INT_MAX))
-    {
-      int inx = (int) nx;
-      int iny = (int) ny;
-      int inz = (int) nz;
-      int inzp1 = (int) nzp1;
-      NGCALLF(dcalcuh,DCALCUH)(&inx, &iny, &inz, &inzp1, tmp_zp, tmp_mapfct, 
-                               tmp_dx, tmp_dy, tmp_uhmnhgt, tmp_uhmxhgt, 
-                               tmp_us, tmp_vs, tmp_w, tmp_uh, tem1, tem2);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcalcuh: nx = %ld is greater than INT_MAX", nx);
-      return(NhlFATAL);
-    }
-
+    NGCALLF(dcalcuh,DCALCUH)(&inx, &iny, &inz, &inzp1, tmp_zp, tmp_mapfct, 
+			     tmp_dx, tmp_dy, tmp_uhmnhgt, tmp_uhmxhgt, 
+			     tmp_us, tmp_vs, tmp_w, tmp_uh, tem1, tem2);
 /*
  * Coerce output back to float if necessary.
  */
@@ -8825,6 +8803,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
   ng_size_t index_cape, index_zsfc, index_cin;
   int iter;
   logical flip;
+  int imiy, imjx, imkzh;
 
 /*
  * The default is to use $NCARG_ROOT/lib/ncarg/data/asc/psadilookup.dat
@@ -9005,6 +8984,17 @@ NhlErrorTypes wrf_cape_3d_W( void )
     mjx   = 1;                 /* lat */
     miy   = 1;                 /* lon */
   }
+
+/*
+ * Test input dimension sizes.
+ */
+  if((miy > INT_MAX) || (mjx > INT_MAX) || (mkzh > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imiy = (int) miy;
+  imjx = (int) mjx;
+  imkzh = (int) mkzh;
 
 /*
  * Check some more dimension sizes.
@@ -9261,23 +9251,11 @@ NhlErrorTypes wrf_cape_3d_W( void )
 /*
  * Call Fortran routine.
  */
-    if((miy <= INT_MAX) &&
-       (mjx <= INT_MAX) &&
-       (mkzh <= INT_MAX))
-    {
-      int imiy = (int) miy;
-      int imjx = (int) mjx;
-      int imkzh = (int) mkzh;
-      NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-                                       tmp_psfc, tmp_cape_orig, tmp_cin_orig,
-                                       &imiy, &imjx, &imkzh, &i3dflag, &iter,
-                                       psa_file,strlen(psa_file));
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcapecalc3d: miy = %ld is greater than INT_MAX", miy);
-      return(NhlFATAL);
-    }
+    NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
+				     tmp_psfc, tmp_cape_orig, tmp_cin_orig,
+				     &imiy, &imjx, &imkzh, &i3dflag, &iter,
+				     psa_file,strlen(psa_file));
+
 /*
  * If we flipped arrays before going into the Fortran routine, we need
  * to flip the output values as well.
@@ -9472,6 +9450,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
   ng_size_t index_cape, index_zsfc;
   ng_size_t index_output_cape, index_output_cin, index_output_lcl;
   ng_size_t index_output_lfc, mkzh0_index, mkzh1_index, mkzh2_index;
+  int imiy, imjx, imkzh;
 
   int i3dflag=0;
   int iter;
@@ -9679,6 +9658,18 @@ NhlErrorTypes wrf_cape_2d_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: The level dimension must have at least 3 elements");
     return(NhlFATAL);
   }
+
+/*
+ * Test input dimension sizes.
+ */
+  if((miy > INT_MAX) || (mjx > INT_MAX) || (mkzh > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imiy = (int) miy;
+  imjx = (int) mjx;
+  imkzh = (int) mkzh;
+
 
 /*
  * Calculate size of output array. The output array size depends on
@@ -9923,23 +9914,10 @@ NhlErrorTypes wrf_cape_2d_W( void )
 /*
  * Call Fortran routine.
  */
-    if((miy <= INT_MAX) &&
-       (mjx <= INT_MAX) &&
-       (mkzh <= INT_MAX))
-    {
-      int imiy = (int) miy;
-      int imjx = (int) mjx;
-      int imkzh = (int) mkzh;
-      NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-                                       tmp_psfc, tmp_cape, tmp_cin,
-                                       &imiy, &imjx, &imkzh, &i3dflag, &iter,
-                                       psa_file,strlen(psa_file));
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcapecalc3d: miy = %ld is greater than INT_MAX", miy);
-      return(NhlFATAL);
-    }
+    NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
+				     tmp_psfc, tmp_cape, tmp_cin,
+				     &imiy, &imjx, &imkzh, &i3dflag, &iter,
+				     psa_file,strlen(psa_file));
 /*
  * Even if we flipped arrays before going into the Fortran routine, do
  * NOT flip them on the output.
@@ -10552,7 +10530,7 @@ NhlErrorTypes wrf_bint_W( void )
   int ret;
   ng_size_t i, nx, ny, nz, nobsicrs, nobsjcrs, size_leftmost;
   ng_size_t nxyz, nobsij, nobsijz, index_data_in, index_data_out, index_nobsij;
-
+  int inx, iny, inz, inobsicrs, inobsjcrs;
 /*
  * Retrieve parameters.
  *
@@ -10668,6 +10646,20 @@ NhlErrorTypes wrf_bint_W( void )
   nobsijz  = nobsij * nz;
 
   size_data_out = size_leftmost * nobsijz;
+
+/*
+ * Test input dimension sizes.
+ */
+  if((nx > INT_MAX) || (ny > INT_MAX) || (nobsicrs > INT_MAX) || 
+     (nobsjcrs > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+    }
+    inx = (int) nx;
+    iny = (int) ny;
+    inz = (int) nz;
+    inobsicrs = (int) nobsicrs;
+    inobsjcrs = (int) nobsjcrs;
 
 /* 
  * Allocate space for coercing input arrays.  If the input data_in, obsii,
@@ -10789,26 +10781,8 @@ NhlErrorTypes wrf_bint_W( void )
 /*
  * Call Fortran routine.
  */
-    if((nx <= INT_MAX) &&
-       (ny <= INT_MAX) &&
-       (nobsicrs <= INT_MAX) &&
-       (nobsjcrs <= INT_MAX) &&
-       (nz <= INT_MAX))
-    {
-      int inx = (int) nx;
-      int iny = (int) ny;
-      int inz = (int) nz;
-      int inobsicrs = (int) nobsicrs;
-      int inobsjcrs = (int) nobsjcrs;
-      NGCALLF(dbint3d,DBINT3D)(tmp_data_out,tmp_obsii,tmp_obsjj,tmp_data_in,
-                               &inx,&iny,&inz,&inobsicrs,&inobsjcrs,icrs,jcrs);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dbint3d: nx = %ld is greater than INT_MAX", nx);
-      return(NhlFATAL);
-    }
-
+    NGCALLF(dbint3d,DBINT3D)(tmp_data_out,tmp_obsii,tmp_obsjj,tmp_data_in,
+			     &inx,&iny,&inz,&inobsicrs,&inobsjcrs,icrs,jcrs);
 /*
  * Coerce output back to float if necessary.
  */
@@ -10888,6 +10862,7 @@ NhlErrorTypes wrf_iclw_W( void )
   ng_size_t nz, ny, nx, nznynx, nynx;
   ng_size_t index_p, index_iclw;
   ng_size_t i, ndims_leftmost, size_leftmost, size_output;
+  int inx, iny, inz;
 
 /*
  * Retrieve parameters.
@@ -10920,6 +10895,17 @@ NhlErrorTypes wrf_iclw_W( void )
   nx = dsizes_p[ndims_p-1];
   nynx   = ny * nx;
   nznynx = nz * nynx;
+
+/*
+ * Test dimension sizes.
+ */
+  if((nx > INT_MAX) || (ny > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_iclw: nx, ny and/or is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inz = (int) nz;
 
 /*
  * Get argument # 1
@@ -11074,21 +11060,7 @@ NhlErrorTypes wrf_iclw_W( void )
 /*
  * Call the Fortran routine.
  */
-    if((nx <= INT_MAX) &&
-       (ny <= INT_MAX) &&
-       (nz <= INT_MAX))
-    {
-      int inx = (int) nx;
-      int iny = (int) ny;
-      int inz = (int) nz;
-      NGCALLF(dcomputeiclw,DCOMPUTEICLW)(tmp_iclw, tmp_p, tmp_qc, &inx, &iny, &inz);
-    }
-    else
-    {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dcomputeiclw: nx = %ld is greater than INT_MAX", nx);
-      return(NhlFATAL);
-    }
-
+    NGCALLF(dcomputeiclw,DCOMPUTEICLW)(tmp_iclw, tmp_p, tmp_qc, &inx, &iny, &inz);
 /*
  * Coerce output back to float if necessary.
  */

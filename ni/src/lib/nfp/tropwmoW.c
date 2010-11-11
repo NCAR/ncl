@@ -370,9 +370,12 @@ NhlErrorTypes trop_wmo_W( void )
 /*
  * Free unneeded memory.
  */
-  if(type_p != NCL_double) NclFree(tmp_p);
+  if(!lapsec_set || 
+     (lapsec_set && type_lapsec != NCL_double)) NclFree(lapsec);
   if(type_t != NCL_double) NclFree(tmp_t);
   if(type_ptrop != NCL_double) NclFree(tmp_ptrop);
+  if(type_p != NCL_double) NclFree(tmp_p);
+
   NclFree(itrop);
   NclFree(lapse);
   NclFree(phalf);

@@ -41,6 +41,8 @@ NhlErrorTypes g2gsh_W( void )
   int *twave, intl, i, index_Ta, index_Tb;
   ng_size_t total_size_leftmost, nlatanlona, nlatbnlonb;
   ng_size_t total_size_Ta, total_size_Tb;
+  int inlona, inlata, inlonb, inlatb, ilwork, ildwork, ilsave; 
+  int ilwkmin, ilsvmin;
 /*
  * Workspace variables
  */
@@ -174,6 +176,23 @@ NhlErrorTypes g2gsh_W( void )
   lwork = 5*lwork;
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlona > INT_MAX) || (nlata > INT_MAX) || (nlonb > INT_MAX) ||
+     (nlatb > INT_MAX) || (lwork > INT_MAX) || (ldwork > INT_MAX) ||
+     (lsave > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"g2gsh: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlona = (int) nlona;
+  inlata = (int) nlata;
+  inlonb = (int) nlonb;
+  inlatb = (int) nlatb;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+  ilsave = (int) lsave;
+
+/*
  * Dynamically allocate the various work space.
  */
   work  = (double *)calloc(lwork,sizeof(double));
@@ -222,34 +241,11 @@ NhlErrorTypes g2gsh_W( void )
 /*
  * Call the f77 version of 'trssph' with the full argument list.
  */
-      if((nlona <= INT_MAX) &&
-         (nlata <= INT_MAX) &&
-         (nlonb <= INT_MAX) &&
-         (nlatb <= INT_MAX) &&
-         (lwork <= INT_MAX) &&
-         (ldwork <= INT_MAX) &&
-         (lsave <= INT_MAX))
-      {
-        int inlona = (int) nlona;
-        int inlata = (int) nlata;
-        int inlonb = (int) nlonb;
-        int inlatb = (int) nlatb;
-        int ilwork = (int) lwork;
-        int ildwork = (int) ldwork;
-        int ilsave = (int) lsave;
-        int ilwkmin;
-        int ilsvmin;
-        NGCALLF(trssphx,TRSSPHX)(&intl,igrida,&inlona,&inlata,tmp_Ta,igridb,
-                                 &inlonb,&inlatb,tmp_Tb,wsave,&ilsave,&ilsvmin,
-                                 work,&ilwork,&ilwkmin,dwork,&ildwork,&ier,twave);
-        lwkmin = (ng_size_t) ilwkmin;
-        lsvmin = (ng_size_t) ilsvmin;
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"trssphx: nlona = %ld is greater than INT_MAX", nlona);
-        return(NhlFATAL);
-      }
+      NGCALLF(trssphx,TRSSPHX)(&intl,igrida,&inlona,&inlata,tmp_Ta,igridb,
+			       &inlonb,&inlatb,tmp_Tb,wsave,&ilsave,&ilsvmin,
+			       work,&ilwork,&ilwkmin,dwork,&ildwork,&ier,twave);
+      lwkmin = (ng_size_t) ilwkmin;
+      lsvmin = (ng_size_t) ilsvmin;
 
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"g2gsh: ier = %d\n", ier );
@@ -334,6 +330,8 @@ NhlErrorTypes f2gsh_W( void )
   int *twave, intl, i, index_Ta, index_Tb;
   ng_size_t total_size_leftmost, nlatanlona, nlatbnlonb;
   ng_size_t total_size_Ta, total_size_Tb;
+  int inlona, inlata, inlonb, inlatb, ilwork, ildwork, ilsave;
+  int ilwkmin, ilsvmin;
 /*
  * Workspace variables
  */
@@ -465,6 +463,23 @@ NhlErrorTypes f2gsh_W( void )
   lwork = 5*lwork;
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlona > INT_MAX) || (nlata > INT_MAX) || (nlonb > INT_MAX) ||
+     (nlatb > INT_MAX) || (lwork > INT_MAX) || (ldwork > INT_MAX) ||
+     (lsave > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2gsh: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlona = (int) nlona;
+  inlata = (int) nlata;
+  inlonb = (int) nlonb;
+  inlatb = (int) nlatb;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+  ilsave = (int) lsave;
+
+/*
  * Dynamically allocate the various work space.
  */
   work  = (double *)calloc(lwork,sizeof(double));
@@ -513,34 +528,11 @@ NhlErrorTypes f2gsh_W( void )
 /*
  * Call the f77 version of 'trssph' with the full argument list.
  */
-      if((nlona <= INT_MAX) &&
-         (nlata <= INT_MAX) &&
-         (nlonb <= INT_MAX) &&
-         (nlatb <= INT_MAX) &&
-         (lwork <= INT_MAX) &&
-         (ldwork <= INT_MAX) &&
-         (lsave <= INT_MAX))
-      {
-        int inlona = (int) nlona;
-        int inlata = (int) nlata;
-        int inlonb = (int) nlonb;
-        int inlatb = (int) nlatb;
-        int ilwork = (int) lwork;
-        int ildwork = (int) ldwork;
-        int ilsave = (int) lsave;
-        int ilwkmin;
-        int ilsvmin;
-        NGCALLF(trssphx,TRSSPHX)(&intl,igrida,&inlona,&inlata,tmp_Ta,igridb,
-                                 &inlonb,&inlatb,tmp_Tb,wsave,&ilsave,&ilsvmin,
-                                 work,&ilwork,&ilwkmin,dwork,&ildwork,&ier,twave);
-        lwkmin = (ng_size_t) ilwkmin;
-        lsvmin = (ng_size_t) ilsvmin;
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"trssphx: nlona = %ld is greater than INT_MAX", nlona);
-        return(NhlFATAL);
-      }
+      NGCALLF(trssphx,TRSSPHX)(&intl,igrida,&inlona,&inlata,tmp_Ta,igridb,
+			       &inlonb,&inlatb,tmp_Tb,wsave,&ilsave,&ilsvmin,
+			       work,&ilwork,&ilwkmin,dwork,&ildwork,&ier,twave);
+      lwkmin = (ng_size_t) ilwkmin;
+      lsvmin = (ng_size_t) ilsvmin;
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"f2gsh: ier = %d\n", ier );
       }
@@ -632,6 +624,8 @@ NhlErrorTypes g2fsh_W( void )
   ng_size_t klat, klon, k1, k2, lwa, lwb;
   int ier = 0, kmiss = 0;
   double *work, *wsave, *dwork;
+  int inlona, inlata, inlonb, inlatb, ilwork, ildwork, ilsave;
+  int ilsvmin, ilwkmin;
 /*
  * Retrieve parameters
  *
@@ -745,6 +739,23 @@ NhlErrorTypes g2fsh_W( void )
   lwork = 5*lwork;
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlona > INT_MAX) || (nlata > INT_MAX) || (nlonb > INT_MAX) ||
+     (nlatb > INT_MAX) || (lwork > INT_MAX) || (ldwork > INT_MAX) ||
+     (lsave > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"g2fsh: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlona = (int) nlona;
+  inlata = (int) nlata;
+  inlonb = (int) nlonb;
+  inlatb = (int) nlatb;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+  ilsave = (int) lsave;
+
+/*
  * Dynamically allocate the various work space.
  */
   work  = (double *)calloc(lwork,sizeof(double));
@@ -792,34 +803,12 @@ NhlErrorTypes g2fsh_W( void )
 /*
  * Call the f77 version of 'trssph' with the full argument list.
  */
-      if((nlona <= INT_MAX) &&
-         (nlata <= INT_MAX) &&
-         (nlonb <= INT_MAX) &&
-         (nlatb <= INT_MAX) &&
-         (lwork <= INT_MAX) &&
-         (ldwork <= INT_MAX) &&
-         (lsave <= INT_MAX))
-      {
-        int inlona = (int) nlona;
-        int inlata = (int) nlata;
-        int inlonb = (int) nlonb;
-        int inlatb = (int) nlatb;
-        int ilwork = (int) lwork;
-        int ildwork = (int) ldwork;
-        int ilsave = (int) lsave;
-        int ilwkmin;
-        int ilsvmin;
-        NGCALLF(trssphx,TRSSPHX)(&intl,igrida,&inlona,&inlata,tmp_Ta,igridb,
-                                 &inlonb,&inlatb,tmp_Tb,wsave,&ilsave,&ilsvmin,
-                                 work,&ilwork,&ilwkmin,dwork,&ildwork,&ier,&twave);
-        lwkmin = (ng_size_t) ilwkmin;
-        lsvmin = (ng_size_t) ilsvmin;
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"trssphx: nlona = %ld is greater than INT_MAX", nlona);
-        return(NhlFATAL);
-      }
+      NGCALLF(trssphx,TRSSPHX)(&intl,igrida,&inlona,&inlata,tmp_Ta,igridb,
+			       &inlonb,&inlatb,tmp_Tb,wsave,&ilsave,&ilsvmin,
+			       work,&ilwork,&ilwkmin,dwork,&ildwork,&ier,&twave);
+      lwkmin = (ng_size_t) ilwkmin;
+      lsvmin = (ng_size_t) ilsvmin;
+
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"g2fsh: ier = %d\n", ier );
       }
@@ -911,6 +900,8 @@ NhlErrorTypes f2fsh_W( void )
   ng_size_t klat, klon, k1, k2, lwa, lwb;
   int ier = 0, kmiss = 0;
   double *work, *wsave, *dwork;
+  int inlona, inlata, inlonb, inlatb, ilwork, ildwork, ilsave;
+  int ilsvmin, ilwkmin;
 /*
  * Retrieve parameters
  *
@@ -1024,6 +1015,23 @@ NhlErrorTypes f2fsh_W( void )
   lwork = 5*lwork;
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlona > INT_MAX) || (nlata > INT_MAX) || (nlonb > INT_MAX) ||
+     (nlatb > INT_MAX) || (lwork > INT_MAX) || (ldwork > INT_MAX) ||
+     (lsave > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fsh: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlona = (int) nlona;
+  inlata = (int) nlata;
+  inlonb = (int) nlonb;
+  inlatb = (int) nlatb;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+  ilsave = (int) lsave;
+
+/*
  * Dynamically allocate the various work space.
  */
   work  = (double *)calloc(lwork,sizeof(double));
@@ -1071,34 +1079,12 @@ NhlErrorTypes f2fsh_W( void )
 /*
  * Call the f77 version of 'trssph' with the full argument list.
  */
-      if((nlona <= INT_MAX) &&
-         (nlata <= INT_MAX) &&
-         (nlonb <= INT_MAX) &&
-         (nlatb <= INT_MAX) &&
-         (lwork <= INT_MAX) &&
-         (ldwork <= INT_MAX) &&
-         (lsave <= INT_MAX))
-      {
-        int inlona = (int) nlona;
-        int inlata = (int) nlata;
-        int inlonb = (int) nlonb;
-        int inlatb = (int) nlatb;
-        int ilwork = (int) lwork;
-        int ildwork = (int) ldwork;
-        int ilsave = (int) lsave;
-        int ilsvmin;
-        int ilwkmin;
-        NGCALLF(trssphx,TRSSPHX)(&intl,igrida,&inlona,&inlata,tmp_Ta,igridb,
-                                 &inlonb,&inlatb,tmp_Tb,wsave,&ilsave,&ilsvmin,
-                                 work,&ilwork,&ilwkmin,dwork,&ildwork,&ier,&twave);
-        lwkmin = (ng_size_t) ilwkmin;
-        lsvmin = (ng_size_t) ilsvmin;
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"trssphx: nlona = %ld is greater than INT_MAX", nlona);
-        return(NhlFATAL);
-      }
+      NGCALLF(trssphx,TRSSPHX)(&intl,igrida,&inlona,&inlata,tmp_Ta,igridb,
+			       &inlonb,&inlatb,tmp_Tb,wsave,&ilsave,&ilsvmin,
+			       work,&ilwork,&ilwkmin,dwork,&ildwork,&ier,&twave);
+      lwkmin = (ng_size_t) ilwkmin;
+      lsvmin = (ng_size_t) ilsvmin;
+
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fsh: ier = %d\n", ier );
       }
@@ -1182,6 +1168,7 @@ NhlErrorTypes fo2fsh_W( void )
   int i, index_goff, index_greg, ioff, ier = 0, kmiss = 0;
   ng_size_t total_size_leftmost, jlatilon, jlat1ilon;
   ng_size_t total_size_goff, total_size_greg, ret;
+  int iilon, ijlat, ijlat1, ilwork, ilsave; 
 /*
  * Retrieve parameters
  *
@@ -1264,6 +1251,20 @@ NhlErrorTypes fo2fsh_W( void )
   lsave = (10*lsave)/9;
 
 /*
+ * Test dimension sizes.
+ */
+  if((ilon > INT_MAX) || (jlat > INT_MAX) || (jlat1 > INT_MAX) ||
+     (lwork > INT_MAX) || (lsave > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fo2fsh: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  iilon = (int) ilon;
+  ijlat = (int) jlat;
+  ijlat1 = (int) jlat1;
+  ilwork = (int) lwork;
+  ilsave = (int) lsave;
+
+/*
  * Dynamically allocate the various work space.
  */
   work  = (double *)calloc(lwork,sizeof(double));
@@ -1311,25 +1312,8 @@ NhlErrorTypes fo2fsh_W( void )
 /*
  * Call the f77 version of 'fo2fsh' with the full argument list.
  */
-      if((ilon <= INT_MAX) &&
-         (jlat <= INT_MAX) &&
-         (jlat1 <= INT_MAX) &&
-         (lwork <= INT_MAX) &&
-         (lsave <= INT_MAX))
-      {
-        int iilon = (int) ilon;
-        int ijlat = (int) jlat;
-        int ijlat1 = (int) jlat1;
-        int ilwork = (int) lwork;
-        int ilsave = (int) lsave;
-        NGCALLF(dfo2f,DFO2F)(tmp_goff,&iilon,&ijlat,tmp_greg,&ijlat1,
-                             work,&ilwork,wsave,&ilsave,&ioff,&ier);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"dfo2f: ilon = %ld is greater than INT_MAX", ilon);
-        return(NhlFATAL);
-      }
+      NGCALLF(dfo2f,DFO2F)(tmp_goff,&iilon,&ijlat,tmp_greg,&ijlat1,
+			   work,&ilwork,wsave,&ilsave,&ioff,&ier);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"fo2fsh: ier = %d\n", ier );
       }
@@ -1404,6 +1388,7 @@ NhlErrorTypes f2fosh_W( void )
  */
   ng_size_t lwork, lsave;
   double *work, *wsave;
+  int iilon, ijlat, ijlat1, ilwork, ilsave; 
 /*
  * error code, various
  */
@@ -1490,6 +1475,20 @@ NhlErrorTypes f2fosh_W( void )
   lwork = (10*lwork)/9;
   lsave = (10*lsave)/9;
 /*
+ * Test dimension sizes.
+ */
+  if((ilon > INT_MAX) || (jlat > INT_MAX) || (jlat1 > INT_MAX) ||
+     (lwork > INT_MAX) || (lsave > INT_MAX)) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fosh: one or more dimension sizes is greater than INT_MAX");
+        return(NhlFATAL);
+  }
+  iilon = (int) ilon;
+  ijlat = (int) jlat;
+  ijlat1 = (int) jlat1;
+  ilwork = (int) lwork;
+  ilsave = (int) lsave;
+
+/*
  * Dynamically allocate the various work space.
  */
   work  = (double *)calloc(lwork,sizeof(double));
@@ -1537,25 +1536,8 @@ NhlErrorTypes f2fosh_W( void )
 /*
  * Call the f77 version of 'f2fosh' with the full argument list.
  */
-      if((ilon <= INT_MAX) &&
-         (jlat <= INT_MAX) &&
-         (jlat1 <= INT_MAX) &&
-         (lwork <= INT_MAX) &&
-         (lsave <= INT_MAX))
-      {
-        int iilon = (int) ilon;
-        int ijlat = (int) jlat;
-        int ijlat1 = (int) jlat1;
-        int ilwork = (int) lwork;
-        int ilsave = (int) lsave;
-        NGCALLF(dfo2f,DFO2F)(tmp_goff,&iilon,&ijlat,tmp_greg,&ijlat1,
-                             work,&ilwork,wsave,&ilsave,&ioff,&ier);
-      }
-      else
-      {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"compute_jlatilon: ilon = %ld is greater than INT_MAX", ilon);
-        return(NhlFATAL);
-      }
+      NGCALLF(dfo2f,DFO2F)(tmp_goff,&iilon,&ijlat,tmp_greg,&ijlat1,
+			   work,&ilwork,wsave,&ilsave,&ioff,&ier);
       if (ier) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fosh: ier = %d\n", ier );
       }

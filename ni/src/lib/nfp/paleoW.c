@@ -105,7 +105,7 @@ NhlErrorTypes paleo_outline_W( void )
  * Test input dimension sizes.
  */
   if((nlon > INT_MAX) || (nlat > INT_MAX) || (liwk > INT_MAX) || 
-     (im > INT_MAX) || (jm <= INT_MAX)) {
+     (im > INT_MAX) || (jm > INT_MAX)) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"paleo_outline: one or more input dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
