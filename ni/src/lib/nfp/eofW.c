@@ -888,6 +888,10 @@ NhlErrorTypes eof_W( void )
     if(use_new_transpose) NclFree(prncmp);
   }
 
+/*
+ * This is the start of a rather large if-else statement. It is based
+ * on whether you are returning floats or doubles. 
+ */
   if(type_x != NCL_double) {
 /*
  * Set up return value.
@@ -1017,14 +1021,15 @@ NhlErrorTypes eof_W( void )
  * Only return the trace if the appropriate option has been set.
  * The new transpose routine doesn't return trace.
  */
-    if(!use_new_transpose && return_trace) {
+    if(!use_new_transpose) {
+      if(return_trace) {
 /*
  * Coerce trace to float.
  */
-      rtrace = (float *)calloc(1,sizeof(float));
-      *rtrace = (float)(*trace);
-      dsizes[0] = 1;
-      att_md = _NclCreateVal(
+        rtrace = (float *)calloc(1,sizeof(float));
+        *rtrace = (float)(*trace);
+        dsizes[0] = 1;
+        att_md = _NclCreateVal(
                              NULL,
                              NULL,
                              Ncl_MultiDValData,
@@ -1037,12 +1042,14 @@ NhlErrorTypes eof_W( void )
                              NULL,
                              (NclObjClass)nclTypefloatClass
                              );
-      _NclAddAtt(
-                 att_id,
-                 "trace",
-                 att_md,
-                 NULL
-                 );
+        _NclAddAtt(
+                   att_id,
+                   "trace",
+                   att_md,
+                   NULL
+                   );
+      }
+      NclFree(trace);
     }
   }
   else {
@@ -1156,9 +1163,10 @@ NhlErrorTypes eof_W( void )
       }
     }
 
-    if(!use_new_transpose && return_trace) {
-      dsizes[0] = 1;
-      att_md = _NclCreateVal(
+    if(!use_new_transpose) {
+      if(return_trace) {
+        dsizes[0] = 1;  
+        att_md = _NclCreateVal(
                              NULL,
                              NULL,
                              Ncl_MultiDValData,
@@ -1171,12 +1179,16 @@ NhlErrorTypes eof_W( void )
                              NULL,
                              (NclObjClass)nclTypedoubleClass
                              );
-      _NclAddAtt(
-                 att_id,
-                 "trace",
-                 att_md,
-                 NULL
-                 );
+        _NclAddAtt(
+                   att_id,
+                   "trace",
+                   att_md,
+                   NULL
+                   );
+      }
+      else {
+        NclFree(trace);
+      }
     }
   }
 
@@ -1348,7 +1360,7 @@ NhlErrorTypes eof_W( void )
   NclFree(cmatrix);
   NclFree(cmethod);
   if((return_pcrit && type_pcrit != NCL_double) || !return_pcrit)  {
-    NclFree(pcrit);
+    NclFree(pcrit); 
   }
 
 /*
