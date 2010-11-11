@@ -841,7 +841,7 @@ NhlErrorTypes triple2grid2d_W( void )
   if(type_gridx != NCL_double) NclFree(tmp_gridx);
   if(type_gridy != NCL_double) NclFree(tmp_gridy);
   if(type_grid  != NCL_double) NclFree(tmp_grid);
-  if(!has_distmx) NclFree(distmx);
+  if(!has_distmx || (has_distmx && type_distmx != NCL_double) ) NclFree(distmx);
 
 /*
  * Return with missing value set no matter what, b/c even though input
