@@ -1303,7 +1303,7 @@ C
             CALL HLUCTMXYZ (IMPF,RPNT(IPP1+1),RPNT(IPP1+2),RPNT(IPP1+3),
      +                                                        XCU1,YCU1)
             IF (ICFELL('CTCICA',10).NE.0) RETURN
-            IF ((OORV.NE.0.).AND.(XCP1.EQ.OORV.OR.YCP1.EQ.OORV))
+            IF ((OORV.NE.0.).AND.(XCU1.EQ.OORV.OR.YCU1.EQ.OORV))
      +                                                         GO TO 101
           END IF
 C
@@ -1325,7 +1325,7 @@ C
             CALL HLUCTMXYZ (IMPF,RPNT(IPP2+1),RPNT(IPP2+2),RPNT(IPP2+3),
      +                                                        XCU2,YCU2)
             IF (ICFELL('CTCICA',11).NE.0) RETURN
-            IF ((OORV.NE.0.).AND.(XCP2.EQ.OORV.OR.YCP2.EQ.OORV))
+            IF ((OORV.NE.0.).AND.(XCU2.EQ.OORV.OR.YCU2.EQ.OORV))
      +                                                         GO TO 101
           END IF
 C
@@ -1347,7 +1347,7 @@ C
             CALL HLUCTMXYZ (IMPF,RPNT(IPP3+1),RPNT(IPP3+2),RPNT(IPP3+3),
      +                                                        XCU3,YCU3)
             IF (ICFELL('CTCICA',12).NE.0) RETURN
-            IF ((OORV.NE.0.).AND.(XCP3.EQ.OORV.OR.YCP3.EQ.OORV))
+            IF ((OORV.NE.0.).AND.(XCU3.EQ.OORV.OR.YCU3.EQ.OORV))
      +                                                         GO TO 101
           END IF
 C
@@ -8247,7 +8247,7 @@ C
             CALL HLUCTMXYZ (IMPF,RPNT(IPP1+1),RPNT(IPP1+2),RPNT(IPP1+3),
      +                                                        XCD1,YCD1)
             IF (ICFELL('CTCPAG',1).NE.0) RETURN
-            IF ((OORV.NE.0.).AND.(XCP1.EQ.OORV.OR.YCP1.EQ.OORV))
+            IF ((OORV.NE.0.).AND.(XCD1.EQ.OORV.OR.YCD1.EQ.OORV))
      +                                                         GO TO 101
           END IF
 C
@@ -8269,7 +8269,7 @@ C
             CALL HLUCTMXYZ (IMPF,RPNT(IPP2+1),RPNT(IPP2+2),RPNT(IPP2+3),
      +                                                        XCD2,YCD2)
             IF (ICFELL('CTCPAG',2).NE.0) RETURN
-            IF ((OORV.NE.0.).AND.(XCP2.EQ.OORV.OR.YCP2.EQ.OORV))
+            IF ((OORV.NE.0.).AND.(XCD2.EQ.OORV.OR.YCD2.EQ.OORV))
      +                                                         GO TO 101
           END IF
 C
@@ -8291,7 +8291,7 @@ C
             CALL HLUCTMXYZ (IMPF,RPNT(IPP3+1),RPNT(IPP3+2),RPNT(IPP3+3),
      +                                                        XCD3,YCD3)
             IF (ICFELL('CTCPAG',3).NE.0) RETURN
-            IF ((OORV.NE.0.).AND.(XCP3.EQ.OORV.OR.YCP3.EQ.OORV))
+            IF ((OORV.NE.0.).AND.(XCD3.EQ.OORV.OR.YCD3.EQ.OORV))
      +                                                         GO TO 101
           END IF
 C
