@@ -5547,6 +5547,7 @@ void CallASSIGN_VARATT_OP(void) {
 						estatus = NhlFATAL;
 					}
 					if(!(estatus < NhlINFO)) {
+						int id;
 						value = _NclPop();
 						if(value.kind == NclStk_VAR) {
 							value_md = _NclVarValueRead(value.u.data_var,NULL,NULL);
@@ -5559,10 +5560,11 @@ void CallASSIGN_VARATT_OP(void) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to assign illegal type or value to variable attribute");
 							estatus = NhlFATAL;
 						}
+						id = value_md->obj.id;
 						ret = _NclWriteAtt(var->u.data_var,attname,value_md,sel_ptr);
 						if((value.kind == NclStk_VAR)&&(value.u.data_var->obj.status != PERMANENT)) {
 							 _NclDestroyObj((NclObj)value.u.data_var);
-						} else if((value.kind == NclStk_VAL)&&(value.u.data_obj->obj.status != PERMANENT)){
+						} else if((value.kind == NclStk_VAL)&& _NclGetObj(id) && (value.u.data_obj->obj.status != PERMANENT)){
 							 _NclDestroyObj((NclObj)value.u.data_obj);
 						} 
 						if( ret < NhlINFO) {
