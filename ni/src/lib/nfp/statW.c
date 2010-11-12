@@ -214,7 +214,7 @@ NhlErrorTypes stat2_W( void )
     if(type_xvar  == NCL_double) tmp_xvar  = &((double*)xvar)[i];
 
     NGCALLF(dstat2,DSTAT2)(tmp_x,&inpts,&missing_dx.doubleval,tmp_xmean,
-			   tmp_xvar,&xsd,&nptused[i],&ier);
+                           tmp_xvar,&xsd,&nptused[i],&ier);
     if (ier == 2) {
       *tmp_xmean = *tmp_xvar = missing_dx.doubleval;
       ier_count++;
@@ -450,7 +450,7 @@ NhlErrorTypes stat_trim_W( void )
     if(type_xsdt   == NCL_double) tmp_xsdt   = &((double*)xsdt)[i];
 
     NGCALLF(dstat2t,DSTAT2T)(tmp_x,&inpts,&missing_dx.doubleval,tmp_xmeant,
-			     &xvart,tmp_xsdt,&nptused[i],work,tmp_ptrim,&ier);
+                             &xvart,tmp_xsdt,&nptused[i],work,tmp_ptrim,&ier);
 
     if (ier == 2) {
       *tmp_xmeant = *tmp_xsdt = missing_dx.doubleval;
@@ -714,7 +714,7 @@ NhlErrorTypes stat4_W( void )
     if(type_xmean == NCL_double) tmp_xmean = &((double*)xmean)[i];
 
     NGCALLF(dstat4,DSTAT4)(tmp_x,&inpts,&missing_dx.doubleval,tmp_xmean,
-			   tmp_xvar,&xsd,tmp_xskew,tmp_xkurt,&nptused[i],&ier);
+                           tmp_xvar,&xsd,tmp_xskew,tmp_xkurt,&nptused[i],&ier);
 
     if (ier == 2) {
 /*
@@ -971,7 +971,7 @@ NhlErrorTypes stat_medrng_W( void )
     if(type_xrange == NCL_double)  tmp_xrange  = &((double*)xrange)[i];
 
     NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&inpts,&missing_dx.doubleval,
-			       tmp_xmedian,tmp_xmrange,tmp_xrange,&nptused[i],&ier);
+                               tmp_xmedian,tmp_xmrange,tmp_xrange,&nptused[i],&ier);
 
     if (ier == 2) {
       *tmp_xmedian = missing_dx.doubleval;
@@ -1117,7 +1117,7 @@ NhlErrorTypes dim_median_W( void )
     }
 
     NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&inpts,&missing_dx.doubleval,
-			       tmp_xmedian,&xmrange,&xrange,&nptused,&ier);
+                               tmp_xmedian,&xmrange,&xrange,&nptused,&ier);
 
     if(type_x != NCL_double) ((float*)xmedian)[i] = (float)(*tmp_xmedian);
 
@@ -1302,7 +1302,7 @@ NhlErrorTypes dim_median_n_W( void )
       if(type_x == NCL_double) tmp_xmedian = &((double*)xmedian)[index_out];
 
       NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&inpts,&missing_dx.doubleval,
-				 tmp_xmedian,&xmrange,&xrange,&nptused,&ier);
+                                 tmp_xmedian,&xmrange,&xrange,&nptused,&ier);
 
       if(type_x != NCL_double) {
         ((float*)xmedian)[index_out] = (float)(*tmp_xmedian);
@@ -2410,7 +2410,7 @@ NhlErrorTypes dim_rmsd_W( void )
     }
 
     NGCALLF(drmsd,DRMSD)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-			 &missing_dy.doubleval,tmp_rmsd,&nptused,&ier);
+                         &missing_dy.doubleval,tmp_rmsd,&nptused,&ier);
 
     if(type_rmsd != NCL_double) ((float*)rmsd)[i] = (float)(*tmp_rmsd);
 
@@ -2623,7 +2623,7 @@ NhlErrorTypes dim_rmsd_n_W( void )
       if(type_rmsd == NCL_double) tmp_rmsd = &((double*)rmsd)[index_out];
 
       NGCALLF(drmsd,DRMSD)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-			   &missing_dy.doubleval,tmp_rmsd,&nptused,&ier);
+                           &missing_dy.doubleval,tmp_rmsd,&nptused,&ier);
 
       if(type_rmsd != NCL_double) {
         ((float*)rmsd)[index_out] = (float)(*tmp_rmsd);
@@ -2797,7 +2797,7 @@ NhlErrorTypes esacr_W( void )
     xvar = xmean = missing_dx.doubleval;
 
     NGCALLF(desauto,DESAUTO)(tmp_x,&inpts,&missing_dx.doubleval,&xmean,
-			     &xvar,mxlag,tmp_acv,tmp_acr,&ier);
+                             &xvar,mxlag,tmp_acv,tmp_acr,&ier);
 
     if (ier == -2) ier_count2++;
     if (ier == -5) ier_count5++;
@@ -2986,7 +2986,7 @@ NhlErrorTypes esacv_W( void )
     xvar = xmean = missing_dx.doubleval;
 
     NGCALLF(desauto,DESAUTO)(tmp_x,&inpts,&missing_dx.doubleval,&xmean,
-			     &xvar,mxlag,tmp_acv,tmp_acr,&ier);
+                             &xvar,mxlag,tmp_acv,tmp_acr,&ier);
 
     if (ier == -2) ier_count2++;
     if (ier == -5) ier_count5++;
@@ -3278,8 +3278,8 @@ NhlErrorTypes esccr_W( void )
       ymean = ysd = missing_dy.doubleval;
 
       NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-			       &missing_dy.doubleval,&xmean,&ymean,&xsd,
-			       &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+                               &missing_dy.doubleval,&xmean,&ymean,&xsd,
+                               &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
 
       if(type_ccr != NCL_double) {
         coerce_output_float_only(ccr,tmp_ccr,mxlag1,index_ccr);
@@ -3324,9 +3324,9 @@ NhlErrorTypes esccr_W( void )
         xmean = xsd = missing_dx.doubleval;
         ymean = ysd = missing_dy.doubleval;
 
-	NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-				 &missing_dy.doubleval,&xmean,&ymean,&xsd,
-				 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+        NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                                 &missing_dy.doubleval,&xmean,&ymean,&xsd,
+                                 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
 
         if(type_ccr != NCL_double) {
           coerce_output_float_only(ccr,tmp_ccr,mxlag1,index_ccr);
@@ -3336,9 +3336,9 @@ NhlErrorTypes esccr_W( void )
         if(ier < 0) ier_count++;
       }
       index_x += npts;
-      if(ier_count > 0) {
-        NhlPError(NhlWARNING,NhlEUNKNOWN,"esccr: Non-fatal conditions encountered: all missing or constant values");
-      }
+    }
+    if(ier_count > 0) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"esccr: Non-fatal conditions encountered: all missing or constant values");
     }
   }
 /*
@@ -3785,9 +3785,9 @@ NhlErrorTypes esccr_shields_W( void )
         xmean = xsd = missing_dx.doubleval;
         ymean = ysd = missing_dy.doubleval;
 
-	NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-				 &missing_dy.doubleval,&xmean,&ymean,&xsd,
-				 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+        NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                                 &missing_dy.doubleval,&xmean,&ymean,&xsd,
+                                 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
 
         if(type_ccr != NCL_double) {
           coerce_output_float_only(ccr,tmp_ccr,mxlag1,index_ccr);
@@ -4075,8 +4075,8 @@ NhlErrorTypes esccv_W( void )
       ymean = ysd = missing_dy.doubleval;
 
       NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-			       &missing_dy.doubleval,&xmean,&ymean,&xsd,
-			       &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+                               &missing_dy.doubleval,&xmean,&ymean,&xsd,
+                               &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
 
       if(type_ccv != NCL_double) {
         coerce_output_float_only(ccv,tmp_ccv,mxlag1,index_ccv);
@@ -4121,9 +4121,9 @@ NhlErrorTypes esccv_W( void )
         xmean = xsd = missing_dx.doubleval;
         ymean = ysd = missing_dy.doubleval;
 
-	NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-				 &missing_dy.doubleval,&xmean,&ymean,&xsd,
-				 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
+        NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                                 &missing_dy.doubleval,&xmean,&ymean,&xsd,
+                                 &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
 
         if(type_ccv != NCL_double) {
           coerce_output_float_only(ccv,tmp_ccv,mxlag1,index_ccv);
@@ -4133,9 +4133,9 @@ NhlErrorTypes esccv_W( void )
         if(ier < 0) ier_count++;
       }
       index_x += npts;
-      if(ier_count > 0) {
-        NhlPError(NhlWARNING,NhlEUNKNOWN,"esccv: Non-fatal conditions encountered: all missing or constant values");
-      }
+    }
+    if(ier_count > 0) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"esccv: Non-fatal conditions encountered: all missing or constant values");
     }
   }
 /*
