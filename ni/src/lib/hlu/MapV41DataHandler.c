@@ -667,6 +667,10 @@ static NhlErrorTypes Init_Entity_Recs
 			j++;
 		}
 	}
+        for (i = 0; i < mv41p->entity_rec_count; i++) {
+		NclFree(lname_recs[i].lname);
+	}
+	NclFree(lname_recs);
 		
 	return NhlNOERROR;
 }    

@@ -59,6 +59,12 @@ static NhlErrorTypes MapDHInitialize(
 #endif
 );
 
+static NhlErrorTypes    MapDHDestroy(
+#if	NhlNeedProto
+	NhlLayer        l
+#endif
+);
+
 NhlMapDataHandlerClassRec NhlmapDataHandlerClassRec = {
 	{
 /* class_name 		*/      "mapDataHandlerClass",
@@ -83,7 +89,7 @@ NhlMapDataHandlerClassRec NhlmapDataHandlerClassRec = {
 /* layer_set_values_hook */  	NULL,
 /* layer_get_values 	*/  	NULL,
 /* layer_reparent 	*/  	NULL,
-/* layer_destroy 	*/    	NULL,
+/* layer_destroy 	*/    	MapDHDestroy,
 	},
 	{
 /* update_draw_list */		NULL,
@@ -133,6 +139,49 @@ MapDHInitialize
 	NhlErrorTypes		ret = NhlNOERROR;
 
         return ret;
+}
+
+
+/*
+ * Function:    MapV41DHDestroy
+ *
+ * Description: Retrieves the current setting of MapV41DataHandler resources.
+ *      Actually the resources belong to the superclass MapDataHandler --
+ *      but they get their contents from the subclass.
+ *
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ *      Memory is allocated when any of the following resources are retrieved:
+ *		NhlNmpAreaNames
+ *		NhlNmpAreaTypes
+ *		NhlNmpDynamicAreaGroups
+ *		NhlNmpSpecifiedFillColors
+ *
+ *      The caller is responsible for freeing this memory.
+ */
+
+static NhlErrorTypes    MapDHDestroy
+#if	NhlNeedProto
+(
+        NhlLayer l
+        )
+#else
+(l)
+        NhlLayer        l;
+#endif
+{
+        NhlMapDataHandlerLayer mdhl = (NhlMapDataHandlerLayer) l;
+        NhlMapDataHandlerLayerPart *mdhp = &mdhl->mapdh;
+
+	if (mdhp->data_set_name) NhlFree(mdhp->data_set_name);
+
+        return NhlNOERROR;
 }
 
 NhlErrorTypes _NhlUpdateDrawList

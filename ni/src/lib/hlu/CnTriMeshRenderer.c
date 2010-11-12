@@ -1154,6 +1154,8 @@ static NhlErrorTypes BuildDelaunayMesh
 	}
 	triangulate(flags,&in,&out,NULL);
 
+	if (points != out.pointlist)
+		NclFree(points);
 	points = out.pointlist;
 	el = out.trianglelist;
 	mnop = out.numberofpoints;
@@ -1245,6 +1247,7 @@ static NhlErrorTypes BuildDelaunayMesh
 	NhlFree(ippe);
 	NhlFree(points);
 	NhlFree(dat);
+	NhlFree(el);
 
 	return NhlNOERROR;
 

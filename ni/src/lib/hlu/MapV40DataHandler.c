@@ -3313,7 +3313,8 @@ static NhlErrorTypes MapV40DHDrawMapList
         
 
         if (! DrawIds) {
-                DrawIds = NhlMalloc(DrawId_Count * sizeof(mpDrawIdRec));
+                DrawIds = NhlMalloc(DrawId_Count *  sizeof(mpDrawIdRec));
+		memset(DrawIds,-1,DrawId_Count *  sizeof(mpDrawIdRec));
                 if (! DrawIds) {
                         NHLPERROR((NhlFATAL,ENOMEM,NULL));
                         return NhlFATAL;

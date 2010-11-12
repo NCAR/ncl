@@ -407,6 +407,8 @@ NhlLayer inst;
 		NhlFree(sp->sptrans.iymin);
 	if (sp->sptrans.iymax)
 		NhlFree(sp->sptrans.iymax);
+	if (sp->sptrans.llcs)
+		NhlFree(sp->sptrans.llcs);
 
  	free(sp->sptrans.xmin_dat);
 	free(sp->sptrans.xmax_dat);

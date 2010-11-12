@@ -325,6 +325,12 @@ static NhlErrorTypes    TransformGetValues(
 	int             /* num_args */
 #endif
 );
+static NhlErrorTypes TransformDestroy(
+#if	NhlNeedProto
+        NhlLayer           /* inst */
+#endif
+);
+
 NhlTransformClassRec NhltransformClassRec = {
         {
 /* class_name			*/      "transformClass",
@@ -349,7 +355,7 @@ NhlTransformClassRec NhltransformClassRec = {
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	TransformGetValues,
 /* layer_reparent		*/	NULL,
-/* layer_destroy		*/	NULL,
+/* layer_destroy		*/	TransformDestroy,
 
 /* child_resources		*/	NULL,
 
@@ -795,6 +801,34 @@ static NhlErrorTypes    TransformGetValues
         return(NhlNOERROR);
 }
 
+
+/*
+ * Function:	TransformDestroy
+ *
+ * Description: Destroys Transform instance.
+ *
+ * In Args:	inst		instance record pointer
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:	NONE
+ */
+static NhlErrorTypes TransformDestroy
+#if	NhlNeedProto
+(NhlLayer inst)
+#else
+(inst)
+NhlLayer inst;
+#endif
+{
+        NhlTransformLayer tfl = (NhlTransformLayer)inst;
+        NhlTransformLayerPart *tfp = &(tfl->trans);
+
+	NhlFreeGenArray(tfp->poly_draw_list);
+	return NhlNOERROR;
+}
 
 /*
  * Function:	TransformDataToNDC

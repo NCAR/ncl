@@ -2028,6 +2028,23 @@ NhlLayer inst;
 	NhlFreeGenArray(mpp->spec_fill_colors);
 	NhlFreeGenArray(mpp->spec_fill_patterns);
 	NhlFreeGenArray(mpp->spec_fill_scales);
+	if (mpp->xbvalues)
+		NhlFreeGenArray(mpp->xbvalues);
+	if (mpp->xblabels)
+		NhlFreeGenArray(mpp->xblabels);
+	if (mpp->xtvalues)
+		NhlFreeGenArray(mpp->xtvalues);
+	if (mpp->xtlabels)
+		NhlFreeGenArray(mpp->xtlabels);
+	if (mpp->ylvalues)
+		NhlFreeGenArray(mpp->ylvalues);
+	if (mpp->yllabels)
+		NhlFreeGenArray(mpp->yllabels);
+	if (mpp->yrvalues)
+		NhlFreeGenArray(mpp->yrvalues);
+	if (mpp->yrlabels)
+		NhlFreeGenArray(mpp->yrlabels);
+
 
 	if (mpp->predraw_dat != NULL)
 		_NhlDeleteViewSegment(inst,mpp->predraw_dat);

@@ -1076,7 +1076,7 @@ static NhlErrorTypes PlotManagerSetValues
 	NhlTransformLayer       baseplotmanager = (NhlTransformLayer)ovnew->trans.overlay_object;
 	int			i;
 	int			trans_change_count;
-	NhlBoolean		is_map;
+	NhlBoolean		is_map = False;
 	float			x,y,w,h;
 
 	if (_NhlArgIsSet(args,num_args,NhlNpmLabelBarWidthF))
