@@ -169,7 +169,7 @@ static char OutBuf[512];
 static NhlString DefDataSetName = "Earth..2";
 
 
-static char *BorderWater[] = {
+static char *BorderWater_1[] = {
 "ocean",
 "aral sea (eurasia)",
 "azov sea (eurasia)",
@@ -182,8 +182,8 @@ static char *BorderWater[] = {
 "lake tanganyika (africa)",
 "lake titicaca (south america)",
 "lake victoria (africa)",
-"lake champlain (north america)",
 
+"lake champlain (north america)",
 "lake erie (north america)",
 "lake george (north america)",
 "lake of the woods (north america)",
@@ -209,14 +209,56 @@ static char *BorderWater[] = {
 
 };
 
-static int BorderWaterEids[NhlNumber(BorderWater)];
+static char *BorderWater_4[] = {
+
+"ocean",
+
+"aral sea",
+"azov sea",
+"black sea",
+"caspian sea",
+"lake albert",
+"lake chad",
+"lake kariba",
+"lake malawi",
+"lake tanganyika",
+"lake titicaca",
+"lake victoria",
+
+"lake champlain",
+"lake erie",
+"lake george",
+"lake of the woods",
+"lake ontario",
+"lake saint clair",
+"lake superior",
+"lakes michigan and huron",
+"namakan lake",
+"rainy lake",
+"sault sainte marie",  /* national count */
+
+"clark hill reservoir",
+"lake mead",
+"lake seminole",
+"lake tahoe",
+"lake texoma",
+"sabine lake",     /* state count */
+
+"great salt lake",
+"lake maurepas",
+"lake okeechobee",
+"lake pontchartrain"
+};
+
+static char **BorderWater;
 static int GeoBorderWaterCount = 1;
 static int NatBorderWaterCount = 23;
 static int StateBorderWaterCount = 29;
-static int CountyBorderWaterCount = NhlNumber(BorderWater);
+static int CountyBorderWaterCount = 33;
 static int USStartIndex = 13; /* this is for  NhlGEOPHYSICALANDUSSTATES */
+static int BorderWaterEids[33];
 
-static NrmQuark RDatasets[4];
+static NrmQuark RDatasets[5];
 
 /*
  * special entity recs for broad subcategories
@@ -458,7 +500,8 @@ static NhlErrorTypes Init_Entity_Recs
 	RDatasets[0] = NrmStringToQuark("Earth..1");
 	RDatasets[1] = NrmStringToQuark("Earth..2");
 	RDatasets[2] = NrmStringToQuark("Earth..3");
-	RDatasets[3] = NrmNULLQUARK;
+	RDatasets[3] = NrmStringToQuark("Earth..4");
+	RDatasets[4] = NrmNULLQUARK;
 
         mv41p->entity_recs = NhlMalloc
                 (sizeof(v41EntityRec) * mv41p->entity_rec_count);
@@ -638,21 +681,36 @@ static NhlErrorTypes Init_Entity_Recs
 
 	cur_dataset_q = NrmStringToQuark(mv41l->mapdh.data_set_name);
 	for (i = 0; RDatasets[i] != NrmNULLQUARK; i++) {
-		if (cur_dataset_q == RDatasets[i])
+		if (cur_dataset_q == RDatasets[i]) {
+			if (i == 3)
+				BorderWater = BorderWater_4;
+			else
+				BorderWater = BorderWater_1;
 			break;
+		}
 	}
-	if (RDatasets[i] == NrmNULLQUARK)
+	if (RDatasets[i] == NrmNULLQUARK) {
+		if (lname_recs != NULL) {
+			for (i = 0; i < mv41p->entity_rec_count; i++) {
+				NclFree(lname_recs[i].lname);
+			}
+			NclFree(lname_recs);
+		}
 		return (NhlNOERROR);
+	}
+#if 0
+	printf("initializing dataset %s\n",mv41l->mapdh.data_set_name);
+#endif
 		
+	memset(BorderWaterEids,0,sizeof(int) * CountyBorderWaterCount);
 	j = 0;
-	memset(BorderWaterEids,0,sizeof(int) * NhlNumber(BorderWater));
-	for (i = 0; i < NhlNumber(BorderWater); i++) {
+	for (i = 0; i < CountyBorderWaterCount; i++) {
 		int found = 0;
 		while (! found) {
 			if (j == mv41p->entity_rec_count) {
 				j = 0;
 #if 0				
-				printf("recycling j at %d\n",i);
+				printf("recycling j at i=%d, \n",i);
 #endif
 			}
 			if (! strcmp(mv41p->alpha_recs[j]->name,BorderWater[i])) {
