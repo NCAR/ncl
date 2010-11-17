@@ -100,7 +100,7 @@ NhlErrorTypes obj_anal_ic_W( void )
 /*
  * Various
  */
-  double pmsg, *work, *zval, *zlat, *zlon;
+  double xmsg, *work, *zval, *zlat, *zlon;
   int ret, ier;
   int *ip, imlon, inlat, intim, inscan, ilwork, inpts;
   ng_size_t npts, ntim, mlon, nlat, nscan;
@@ -257,13 +257,13 @@ NhlErrorTypes obj_anal_ic_W( void )
     return(NhlFATAL);
   }
   if(has_missing_plon) {
-    pmsg = missing_plon.doubleval;
+    xmsg = missing_plon.doubleval;
   }
   else if(has_missing_plat) {
-    pmsg = missing_plat.doubleval;
+    xmsg = missing_plat.doubleval;
   }
   else {
-    pmsg = 1.e20;
+    xmsg = 1.e20;
   }
 
  /*
@@ -457,7 +457,7 @@ NhlErrorTypes obj_anal_ic_W( void )
  */
   NGCALLF(dobjanlx,DOBJANLX)(tmp_plon, tmp_plat, tmp_pval, &intim, &inpts,
                              tmp_grid, &imlon, &inlat, 
-                             &missing_dbl_pval.doubleval, &pmsg, tmp_rscan,
+                             &xmsg, &missing_dbl_pval.doubleval, tmp_rscan,
                              &inscan, tmp_glat, tmp_glon, wgts, opt, zval, zlat,
                              zlon,ip,work,&ilwork,&ier);
 /*
