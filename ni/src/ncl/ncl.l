@@ -611,7 +611,7 @@ inttype [bBcChHiIlLqQ]
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return GE;
 }
-".not."|".not." {
+".not."|".NOT." {
 	printtoken(NOT,(char*)NULL);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return NOT;
@@ -635,6 +635,30 @@ inttype [bBcChHiIlLqQ]
 	printtoken(XOR,(char*)NULL);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return XOR;
+}
+"->"{file_grp_var_compound_alnum}+?(".eq."|".EQ."|".ne."|".NE."|".le."|".LE."|".lt."|".LT."|".ge."|".GE."|".gt."|".GT."|".or."|".OR.") {
+	char *tmp;
+
+	yyless(yyleng - strlen(".eq."));
+
+	tmp = yytext + 2;
+
+	strcpy(yylval.str,tmp);
+	printtoken(FVAR,yylval.str);
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	return FVAR;
+}
+"->"{file_grp_var_compound_alnum}+?(".and."|".AND."|".xor."|".XOR."|".not."|".NOT.") {
+        char *tmp;
+
+        yyless(yyleng - strlen(".and."));
+
+        tmp = yytext + 2;
+
+        strcpy(yylval.str,tmp);
+        printtoken(FVAR,yylval.str);
+        CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+        return FVAR;
 }
 "->"{file_grp_var_compound_alnum}+ {
 	char *tmp;
