@@ -43,9 +43,6 @@ static NhlResource resources[] = {
 	{NhlNmpAreaGroupCount,NhlCmpAreaGroupCount,NhlTInteger,
 		 sizeof(int),Oset(area_group_count),NhlTImmediate,
 		 _NhlUSET((NhlPointer) Nhl_mpMIN_AREA_GROUPS),0,NULL},
-	{NhlNmpDataSetName,NhlCmpDataSetName,NhlTString,
-		 sizeof(NhlString),Oset(data_set_name),NhlTImmediate,
-		 _NhlUSET((NhlPointer) NULL),0,NULL}
 };
 #undef Oset
 
@@ -176,10 +173,6 @@ static NhlErrorTypes    MapDHDestroy
         NhlLayer        l;
 #endif
 {
-        NhlMapDataHandlerLayer mdhl = (NhlMapDataHandlerLayer) l;
-        NhlMapDataHandlerLayerPart *mdhp = &mdhl->mapdh;
-
-	if (mdhp->data_set_name) NhlFree(mdhp->data_set_name);
 
         return NhlNOERROR;
 }

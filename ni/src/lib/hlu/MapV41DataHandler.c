@@ -26,6 +26,13 @@
 #include <ncarg/hlu/MapV41DataHandlerP.h>
 #include <ctype.h>
 
+#define Oset(field)	NhlOffset(NhlMapV41DataHandlerLayerRec,mapv41dh.field)
+static NhlResource resources[] = {
+	{NhlNmpDataSetName,NhlCmpDataSetName,NhlTString,
+		 sizeof(NhlString),Oset(data_set_name),NhlTImmediate,
+		 _NhlUSET((NhlPointer) NULL),0,NULL}
+};
+
 static NhlErrorTypes MapV41DHClassPartInit(
 #if	NhlNeedProto
 	NhlClass	lc
@@ -114,8 +121,8 @@ NhlMapV41DataHandlerClassRec NhlmapV41DataHandlerClassRec = {
 /* superclass		*/      (NhlClass)&NhlmapDataHandlerClassRec,
 /* cvt_table		*/	NULL,
 
-/* layer_resources 	*/   	NULL,
-/* num_resources 	*/     	0,
+/* layer_resources 	*/   	resources,
+/* num_resources 	*/     	NhlNumber(resources),
 /* all_resources 	*/	NULL,
 /* callbacks		*/	NULL,
 /* num_callbacks	*/	0,
@@ -679,7 +686,7 @@ static NhlErrorTypes Init_Entity_Recs
                c_mpname(UsIds[2]),us_child_count[2]);
 #endif                
 
-	cur_dataset_q = NrmStringToQuark(mv41l->mapdh.data_set_name);
+	cur_dataset_q = NrmStringToQuark(mv41p->data_set_name);
 	for (i = 0; RDatasets[i] != NrmNULLQUARK; i++) {
 		if (cur_dataset_q == RDatasets[i]) {
 			if (i == 3)
@@ -699,7 +706,7 @@ static NhlErrorTypes Init_Entity_Recs
 		return (NhlNOERROR);
 	}
 #if 0
-	printf("initializing dataset %s\n",mv41l->mapdh.data_set_name);
+	printf("initializing dataset %s\n",mv41p->data_set_name);
 #endif
 		
 	memset(BorderWaterEids,0,sizeof(int) * CountyBorderWaterCount);
@@ -777,7 +784,7 @@ static NhlErrorTypes SetUpEntityRecs
 	Mv41p->basic_ids.water_id = WaterId = -1;
 	Mv41p->basic_ids.ocean_id = OceanId = -1;
 
-	c_mplnri(mv41l->mapdh.data_set_name);
+	c_mplnri(Mv41p->data_set_name);
         
 	for (i = 1; ;i++) {
 		int type = NGCALLF(mpiaty,MPIATY)(&i);
@@ -813,7 +820,7 @@ static NhlErrorTypes SetUpEntityRecs
 	Mv41p->basic_ids.us_id_count = UsIdCount = us_ix;
 	Mv41p->entity_rec_count = Mv41p->outline_rec_count = i-1;
 
-	if (! strcmp(mdhp->data_set_name,DefDataSetName)) {
+	if (! strcmp(Mv41p->data_set_name,DefDataSetName)) {
 		if (! Mv41cp->entity_rec_count) {
 			ret = Init_Entity_Recs(mv41l,entry_name);
 			if (ret < NhlWARNING) {
@@ -1125,12 +1132,12 @@ MapV41DHInitialize
 	mv41p->alpha_recs = NULL;
 	mv41p->long_alpha_recs = NULL;
 
-	if (mdhp->data_set_name) {
-		dsname = (char*)_NGResolvePath(mdhp->data_set_name);
+	if (mv41p->data_set_name) {
+		dsname = (char*)_NGResolvePath(mv41p->data_set_name);
 		if(!dsname){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"%s:Unable to resolve path name for \"%s\", defaulting %s",
-				  entry_name,mdhp->data_set_name,
+				  entry_name,mv41p->data_set_name,
 				  NhlNmpDataSetName);
 			ret = NhlWARNING;
 		}
@@ -1138,12 +1145,12 @@ MapV41DHInitialize
 	if (! dsname) {
 		dsname = DefDataSetName;
 	}
-	mdhp->data_set_name = NhlMalloc(strlen(dsname)+1);
-	if(!mdhp->data_set_name){
+	mv41p->data_set_name = NhlMalloc(strlen(dsname)+1);
+	if(! mv41p->data_set_name){
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return NhlFATAL;
 	}
-	strcpy(mdhp->data_set_name,dsname);
+	strcpy(mv41p->data_set_name,dsname);
 
 	SetUpEntityRecs(mv41l,entry_name);
         
@@ -1199,36 +1206,38 @@ static NhlErrorTypes MapV41DHSetValues
 {
         NhlMapV41DataHandlerLayer mv41l = (NhlMapV41DataHandlerLayer) new;
 	NhlMapDataHandlerLayerPart *mdhp = &(mv41l->mapdh);
+	NhlMapV41DataHandlerLayerPart *mv41p = &(mv41l->mapv41dh);
         NhlMapV41DataHandlerLayer omv41l = (NhlMapV41DataHandlerLayer) old;
 	NhlMapDataHandlerLayerPart *omdhp = &(omv41l->mapdh);
+	NhlMapV41DataHandlerLayerPart *omv41p = &(omv41l->mapv41dh);
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "MapV41DHSetValues";
 	char			*e_text;
 	char			*dsname = NULL;
 
-	if (mdhp->data_set_name != omdhp->data_set_name) {
-		if (mdhp->data_set_name) {
-			dsname = (char*)_NGResolvePath(mdhp->data_set_name);
+	if (mv41p->data_set_name != omv41p->data_set_name) {
+		if (mv41p->data_set_name) {
+			dsname = (char*)_NGResolvePath(mv41p->data_set_name);
 			if(!dsname){
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"%s:Unable to resolve path name for \"%s\", defaulting %s",
-					  entry_name,mdhp->data_set_name,
+					  entry_name,mv41p->data_set_name,
 					  NhlNmpDataSetName);
 				ret = NhlWARNING;
-				dsname = omdhp->data_set_name;
+				dsname = omv41p->data_set_name;
 			}
 		}
 		if (! dsname)
 			dsname = DefDataSetName;
-		mdhp->data_set_name = NhlMalloc(strlen(dsname)+1);
-		if(!mdhp->data_set_name){
+		mv41p->data_set_name = NhlMalloc(strlen(dsname)+1);
+		if(!mv41p->data_set_name){
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return NhlFATAL;
 		}
-		strcpy(mdhp->data_set_name,dsname);
-		if (omdhp->data_set_name) {
-			NhlFree(omdhp->data_set_name);
-			omdhp->data_set_name = NULL;
+		strcpy(mv41p->data_set_name,dsname);
+		if (omv41p->data_set_name) {
+			NhlFree(omv41p->data_set_name);
+			omv41p->data_set_name = NULL;
 		}
 		SetUpEntityRecs(mv41l,entry_name);
 	}
@@ -1237,7 +1246,7 @@ static NhlErrorTypes MapV41DHSetValues
 		 * this is necessary to ensure that Ezmap is using the
 		 * correct data set.
 		 */
-		c_mplnri(mv41l->mapdh.data_set_name);
+		c_mplnri(mv41p->data_set_name);
 	}
 
 		
@@ -1586,8 +1595,6 @@ static NhlGenArray mdhGenArraySubsetCopy
  * Function:    MapV41DHGetValues
  *
  * Description: Retrieves the current setting of MapV41DataHandler resources.
- *      Actually the resources belong to the superclass MapDataHandler --
- *      but they get their contents from the subclass.
  *
  *
  * In Args:
@@ -1618,6 +1625,7 @@ static NhlErrorTypes    MapV41DHGetValues
 {
         NhlMapV41DataHandlerLayer mv41l = (NhlMapV41DataHandlerLayer) l;
         NhlMapDataHandlerLayerPart *mdhp = &mv41l->mapdh;
+        NhlMapV41DataHandlerLayerPart	*mv41p = &mv41l->mapv41dh;
         NhlGenArray ga;
 	NhlString ts;
         NhlString e_text,entry_name = "MapV41DHGetValues";
@@ -1679,7 +1687,7 @@ static NhlErrorTypes    MapV41DHGetValues
 		}
 		ts = NULL;
 		if(args[i].quark == Qdata_set_name){
-			ts = mdhp->data_set_name;
+			ts = mv41p->data_set_name;
 		}
                 if (ts != NULL) {
 			*((NhlString*)(args[i].value.ptrval)) =
@@ -1703,7 +1711,7 @@ static NhlErrorTypes    MapV41DHGetValues
 /*
  * Function:    MapV41DHDestroy
  *
- * Description: Retrieves the current setting of MapV41DataHandler resources.
+ * Description: Destroys memory specifically the responsibility of the V41 Map DataHandler
  *      Actually the resources belong to the superclass MapDataHandler --
  *      but they get their contents from the subclass.
  *
@@ -1714,14 +1722,6 @@ static NhlErrorTypes    MapV41DHGetValues
  *
  * Return Values:
  *
- * Side Effects:
- *      Memory is allocated when any of the following resources are retrieved:
- *		NhlNmpAreaNames
- *		NhlNmpAreaTypes
- *		NhlNmpDynamicAreaGroups
- *		NhlNmpSpecifiedFillColors
- *
- *      The caller is responsible for freeing this memory.
  */
 
 static NhlErrorTypes    MapV41DHDestroy
@@ -1760,6 +1760,9 @@ static NhlErrorTypes    MapV41DHDestroy
 	    mv41p->long_alpha_recs != Mv41cp->long_alpha_recs) {
 		NhlFree(mv41p->long_alpha_recs);
 	}
+
+	if (mv41p->data_set_name) NhlFree(mv41p->data_set_name);
+
 
         return NhlNOERROR;
 }
@@ -2870,7 +2873,7 @@ static NhlErrorTypes mpSetUpAreamap
 	    last_fill_level != mv41p->min_fill_level) {
 		mv41p->data_set_point_count = 0;
 		Count_Points_Only = True;
-		c_mplndr(mv41l->mapdh.data_set_name,mv41p->min_fill_level);
+		c_mplndr(mv41p->data_set_name,mv41p->min_fill_level);
 		Count_Points_Only = False;
 	}
 
@@ -2912,7 +2915,7 @@ static NhlErrorTypes mpSetUpAreamap
 		subret = _NhlArinam(*aws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
                 subret = _NhlMplnam
-                        (*aws,mv41l->mapdh.data_set_name,
+                        (*aws,mv41p->data_set_name,
 			 mv41p->min_fill_level,entry_name);
                 if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
                 if (mpp->dump_area_map)
@@ -3267,7 +3270,7 @@ static NhlErrorTypes mpOutline
                 }
         }
 
-        c_mplndr(mv41l->mapdh.data_set_name,mv41p->min_outline_level);
+        c_mplndr(mv41p->data_set_name,mv41p->min_outline_level);
         
 	return ret;
 }
@@ -3304,7 +3307,7 @@ static NhlErrorTypes MapV41DHDrawMapList
 	 * this is necessary to ensure that Ezmap is using the
 	 * correct data set.
 	 */
-	c_mplnri(mv41l->mapdh.data_set_name);
+	c_mplnri(Mv41p->data_set_name);
 
         if (DrawIdCount < Mv41p->entity_rec_count) {
                 DrawIds = NhlRealloc

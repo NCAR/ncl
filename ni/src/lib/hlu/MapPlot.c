@@ -3704,9 +3704,6 @@ static NhlErrorTypes mpSetUpDataHandler
 	    _NhlArgIsSet(args,num_args,NhlNmpDynamicAreaGroups))
                 NhlSetSArg(&sargs[nargs++],
                            NhlNmpDynamicAreaGroups,mpp->dynamic_groups);
-        if (mpp->data_set_name)
-                NhlSetSArg(&sargs[nargs++],
-                           NhlNmpDataSetName,mpp->data_set_name);
 
 	if (init ||
 	    (!init && mpp->area_group_count != ompp->area_group_count))
@@ -3724,6 +3721,9 @@ static NhlErrorTypes mpSetUpDataHandler
                 }
 		else if (mpp->database_version == NhlNCARG4_1) {
 			mapdh_class = NhlmapV41DataHandlerClass;
+			if (mpp->data_set_name)
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNmpDataSetName,mpp->data_set_name);
                 }		
 		else if (mpp->database_version == NhlRANGS_GSHHS) {
 			mapdh_class = NhlmapRGDataHandlerClass;

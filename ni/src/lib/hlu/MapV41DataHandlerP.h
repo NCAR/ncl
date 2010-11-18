@@ -109,6 +109,8 @@ typedef struct _mpBasicIds {
 } mpBasicIds;
 
 typedef struct _NhlMapV41DataHandlerLayerPart {
+	NhlString	data_set_name;
+
 	v41SpecFillRec	*fill_recs;
 	int		fill_rec_alloc;
 	int		fill_rec_count;

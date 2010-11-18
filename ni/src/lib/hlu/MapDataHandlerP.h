@@ -34,7 +34,6 @@ typedef struct _NhlMapDataHandlerLayerPart {
         NhlGenArray	dynamic_groups;
         NhlGenArray	fixed_groups;
         int		area_group_count;
-	NhlString	data_set_name;
 }NhlMapDataHandlerLayerPart;
 
 typedef struct _NhlMapDataHandlerLayerRec {
