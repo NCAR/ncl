@@ -5777,6 +5777,11 @@ NhlErrorTypes _NclIushorttoint
 		total_elements *= dimsizes[i];
 	}
 	output = (ng_size_t*)NclMalloc(sizeof(ng_size_t)*total_elements);
+        if (output == NULL)
+        {
+            NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+            return NhlFATAL;
+        }
 	for(i = 0; i < total_elements; i++) {
 		output[i] = (ng_size_t)((unsigned short*)value)[i];
 	}
@@ -16371,6 +16376,11 @@ NhlErrorTypes _NclIgaus
 	if(ret_missing) {
 	  dimsizes[0] = 1;
 	  output = (double*)NclMalloc(sizeof(double));
+          if (output == NULL)
+          {
+            NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+            return NhlFATAL;
+          }
 	  output_missing.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
 	  *(double*)output = output_missing.doubleval;
 	  NclReturnValue(
@@ -16390,6 +16400,11 @@ NhlErrorTypes _NclIgaus
 	NGCALLF(gaqdncl,GAQDNCL)(&nl,theta,wts,work,&lwork,&ierror);
 	NclFree(work);
 	output = (double*)NclMalloc(sizeof(double)*nl*2);
+        if (output == NULL)
+        {
+            NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+            return NhlFATAL;
+        }
 
 	for(i = 0; i < nl; i++) {
 		output[2*i] = rtod*theta[i] - 90.0;
@@ -19317,6 +19332,11 @@ NhlErrorTypes _NclItoint
         ret_missing.intval = (int) ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
 
         output = (int*)NclMalloc(sizeof(int)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -19937,6 +19957,11 @@ NhlErrorTypes _NclItouint
         ret_missing.uintval = (unsigned int) ((NclTypeClass) nclTypeuintClass)->type_class.default_mis.uintval;
 
         output = (unsigned int*)NclMalloc(sizeof(unsigned int)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -20592,6 +20617,11 @@ NhlErrorTypes _NclItolong
         ret_missing.longval = (long) ((NclTypeClass) nclTypelongClass)->type_class.default_mis.longval;
 
         output = (long *)NclMalloc(sizeof(long)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -21157,6 +21187,11 @@ NhlErrorTypes _NclItoulong
         ret_missing.ulongval = (unsigned long) ((NclTypeClass) nclTypeulongClass)->type_class.default_mis.ulongval;
 
         output = (unsigned long *)NclMalloc(sizeof(unsigned long)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -21766,6 +21801,11 @@ NhlErrorTypes _NclItoint64
         ret_missing.int64val = (long long) ((NclTypeClass) nclTypeint64Class)->type_class.default_mis.int64val;
 
         output = (long long *)NclMalloc(sizeof(long long)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -22256,6 +22296,11 @@ NhlErrorTypes _NclItouint64
         ret_missing.uint64val = (unsigned long long) ((NclTypeClass) nclTypeuint64Class)->type_class.default_mis.uint64val;
 
         output = (unsigned long long *)NclMalloc(sizeof(unsigned long long)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -22848,6 +22893,11 @@ NhlErrorTypes _NclItoint8
         ret_missing.int8val = (char) ((NclTypeClass) nclTypeint8Class)->type_class.default_mis.int8val;
 
         output = (char *)NclMalloc(sizeof(char)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -23543,6 +23593,11 @@ NhlErrorTypes _NclItouint8
         ret_missing.uint8val = (unsigned char) ((NclTypeClass) nclTypeuint8Class)->type_class.default_mis.uint8val;
 
         output = (unsigned char *)NclMalloc(sizeof(unsigned char)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -24247,6 +24302,11 @@ NhlErrorTypes _NclItoshort
         ret_missing.shortval = (short) ((NclTypeClass) nclTypeshortClass)->type_class.default_mis.shortval;
 
         output = (short *)NclMalloc(sizeof(short)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -24884,6 +24944,11 @@ NhlErrorTypes _NclItoushort
         ret_missing.ushortval = (unsigned short) ((NclTypeClass) nclTypeushortClass)->type_class.default_mis.ushortval;
 
         output = (unsigned short *)NclMalloc(sizeof(unsigned short)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -25560,6 +25625,11 @@ NhlErrorTypes _NclItofloat
         ret_missing.floatval = (float) ((NclTypeClass) nclTypefloatClass)->type_class.default_mis.floatval;
 
         output = (float *)NclMalloc(sizeof(float)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -26049,6 +26119,11 @@ NhlErrorTypes _NclItostring
         ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
         output = (string *)NclMalloc(sizeof(string)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -26435,6 +26510,11 @@ NhlErrorTypes _NclItostring_with_format
         strcpy(fmt, (char *) NrmQuarkToString(format[0]));
 
         output = (string *)NclMalloc(sizeof(string)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -26762,6 +26842,11 @@ NhlErrorTypes _NclItodouble
         ret_missing.doubleval = (double) ((NclTypeClass) nclTypedoubleClass)->type_class.default_mis.doubleval;
 
         output = (double *)NclMalloc(sizeof(double)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -27122,7 +27207,7 @@ NhlErrorTypes _NclItobyte
         int has_missing;
         int j;
 	ng_size_t i;
-        char *output;
+        byte *output;
 
         int overflowed = 0;
         int underflowed = 0;
@@ -27145,6 +27230,11 @@ NhlErrorTypes _NclItobyte
         ret_missing.byteval = (byte) ((NclTypeClass) nclTypebyteClass)->type_class.default_mis.byteval;
 
         output = (char *)NclMalloc(sizeof(byte)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -27242,14 +27332,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than CHAR_MAX, which has been flagged missing.",
+                            "There are %d float larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than CHAR_MIN, which has been flagged missing.",
+                            "There are %d float less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27331,10 +27421,10 @@ NhlErrorTypes _NclItobyte
                 break;
             case NCL_byte:
                 {
-                    char val;
-                    char *ptr;
+                    byte val;
+                    byte *ptr;
 
-                    ptr = (char *) in_value;
+                    ptr = (byte *) in_value;
     
                     if(has_missing)
                     {
@@ -27355,7 +27445,7 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        ret_missing.byteval = (char) missing.charval;
+                        ret_missing.byteval = (byte) missing.charval;
                     }
 
                     ptr = (char *) in_value;
@@ -27366,7 +27456,7 @@ NhlErrorTypes _NclItobyte
                         if(val < 0)
                         {
                             has_missing = 1;
-                            overflowed ++;
+                            underflowed ++;
                             output[i] = ret_missing.byteval;
                         }
                         else
@@ -27375,16 +27465,17 @@ NhlErrorTypes _NclItobyte
                         }
                     }
 
-                    if(overflowed)
+                    if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than CHAR_MAX, which has been flagged missing.",
-                            overflowed);
+                            "There are %d int less than 0, which has been flagged missing.",
+                            underflowed);
                     }
                 }
                 break;
             case NCL_int8:
                 {
+                    char val;
                     char *ptr;
 
                     if(has_missing)
@@ -27396,43 +27487,39 @@ NhlErrorTypes _NclItobyte
 
                     for(i = 0; i < total_elements; i++)
                     {
-                        output[i] = (unsigned char) ptr[i];
+                        val = ptr[i];
+                        if(val < 0)
+                        {
+                            has_missing = 1;
+                            underflowed ++;
+                            output[i] = ret_missing.byteval;
+                        }
+                        else
+                            output[i] = (byte) val;
+                    }
+
+                    if(underflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "There are %d int less than 0, which has been flagged missing.",
+                            underflowed);
                     }
                 }
                 break;
             case NCL_uint8:
                 {
-                    unsigned char val;
                     unsigned char *ptr;
 
                     if(has_missing)
                     {
-                        if(missing.uint8val <= SCHAR_MAX)
-                            ret_missing.byteval = (char) missing.uint8val;
+                        ret_missing.byteval = (byte) missing.uint8val;
                     }
 
                     ptr = (unsigned char *) in_value;
 
                     for(i = 0; i < total_elements; i++)
                     {
-                        val = ptr[i];
-                        if(val > SCHAR_MAX)
-                        {
-                            has_missing = 1;
-                            overflowed ++;
-                            output[i] = ret_missing.byteval;
-                        }
-                        else
-                        {
-                            output[i] = (char) val;
-                        }
-                    }
-    
-                    if(overflowed)
-                    {
-                        NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint8 larger than SCHAR_MAX, which has been flagged missing.",
-                            overflowed);
+                        output[i] = (byte) ptr[i];
                     }
                 }
                 break;
@@ -27443,8 +27530,8 @@ NhlErrorTypes _NclItobyte
     
                     if(has_missing)
                     {
-                        if((missing.shortval <= CHAR_MAX) && (missing.shortval >= CHAR_MIN))
-                            ret_missing.byteval = (char) missing.shortval;
+                        if((missing.shortval <= UCHAR_MAX) && (missing.shortval >= 0))
+                            ret_missing.byteval = (byte) missing.shortval;
                     }
 
                     ptr = (short *) in_value;
@@ -27466,21 +27553,21 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
 
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than CHAR_MAX, which has been flagged missing.",
+                            "There are %d int larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than CHAR_MIN, which has been flagged missing.",
+                            "There are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27492,8 +27579,8 @@ NhlErrorTypes _NclItobyte
     
                     if(has_missing)
                     {
-                        if(missing.ushortval <= CHAR_MAX)
-                            ret_missing.byteval = (char) missing.ushortval;
+                        if(missing.ushortval <= UCHAR_MAX)
+                            ret_missing.byteval = (byte) missing.ushortval;
                     }
 
                     ptr = (unsigned short *) in_value;
@@ -27509,14 +27596,14 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
   
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than CHAR_MAX, which has been flagged missing.",
+                            "There are %d int larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -27528,8 +27615,8 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if((missing.intval <= CHAR_MAX) && (missing.intval >= CHAR_MIN))
-                            ret_missing.byteval = (char) missing.intval;
+                        if((missing.intval <= UCHAR_MAX) && (missing.intval >= 0))
+                            ret_missing.byteval = (byte) missing.intval;
                     }
 
                     ptr = (int *) in_value;
@@ -27551,21 +27638,21 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
    
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than CHAR_MAX, which has been flagged missing.",
+                            "There are %d int larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than CHAR_MIN, which has been flagged missing.",
+                            "There are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27578,7 +27665,7 @@ NhlErrorTypes _NclItobyte
                     if(has_missing)
                     {
                         if(missing.uintval <= UCHAR_MAX)
-                            ret_missing.byteval = (char) missing.uintval;
+                            ret_missing.byteval = (byte) missing.uintval;
                     }
 
                     ptr = (unsigned int *) in_value;
@@ -27594,14 +27681,14 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than CHAR_MAX, which has been flagged missing.",
+                            "There are %d unsigned int larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -27613,8 +27700,8 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if((missing.longval <= CHAR_MAX) && (missing.longval >= CHAR_MIN))
-                            ret_missing.byteval = (char) missing.longval;
+                        if((missing.longval <= UCHAR_MAX) && (missing.longval >= 0))
+                            ret_missing.byteval = (byte) missing.longval;
                     }
 
                     ptr = (long *) in_value;
@@ -27636,21 +27723,21 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than CHAR_MAX, which has been flagged missing.",
+                            "There are %d long larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than CHAR_MIN, which has been flagged missing.",
+                            "There are %d long less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27663,7 +27750,7 @@ NhlErrorTypes _NclItobyte
                     if(has_missing)
                     {
                         if(missing.ulongval <= UCHAR_MAX)
-                            ret_missing.byteval = (char) missing.ulongval;
+                            ret_missing.byteval = (byte) missing.ulongval;
                     }
 
                     ptr = (unsigned long *) in_value;
@@ -27679,14 +27766,14 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned long larger than CHAR_MAX, which has been flagged missing.",
+                            "There are %d unsigned long larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -27698,8 +27785,8 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if((missing.int64val <= CHAR_MAX) && (missing.int64val >= CHAR_MIN))
-                            ret_missing.byteval = (char) missing.int64val;
+                        if((missing.int64val <= UCHAR_MAX) && (missing.int64val >= 0))
+                            ret_missing.byteval = (byte) missing.int64val;
                     }
 
                     ptr = (long long *) in_value;
@@ -27721,21 +27808,21 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
 
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than CHAR_MAX, which has been flagged missing.",
+                            "There are %d int64 larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than CHAR_MIN, which has been flagged missing.",
+                            "There are %d int64 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27748,7 +27835,7 @@ NhlErrorTypes _NclItobyte
                     if(has_missing)
                     {
                         if(missing.uint64val <= UCHAR_MAX)
-                            ret_missing.byteval = (char) missing.uint64val;
+                            ret_missing.byteval = (byte) missing.uint64val;
                     }
 
                     ptr = (unsigned long long *) in_value;
@@ -27764,14 +27851,14 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than CHAR_MAX, which has been flagged missing.",
+                            "There are %d uint64 larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -27825,7 +27912,7 @@ NhlErrorTypes _NclItochar
         int has_missing;
         int j;
 	ng_size_t i;
-        unsigned char *output;
+        char *output;
 
         int overflowed = 0;
         int underflowed = 0;
@@ -27845,9 +27932,14 @@ NhlErrorTypes _NclItochar
             total_elements *= dimsizes[j];
         }
 
-        ret_missing.charval = (unsigned char) ((NclTypeClass) nclTypecharClass)->type_class.default_mis.charval;
+        ret_missing.charval = (char) ((NclTypeClass) nclTypecharClass)->type_class.default_mis.charval;
 
-        output = (unsigned char *)NclMalloc(sizeof(unsigned char)*total_elements);
+        output = (char *)NclMalloc(sizeof(char)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -27856,8 +27948,8 @@ NhlErrorTypes _NclItochar
                     double val, dmin, dmax;
                     double *ptr;
 
-                    dmin = 0.0;
-                    dmax = (double) UCHAR_MAX;
+                    dmin = (double) SCHAR_MIN;
+                    dmax = (double) SCHAR_MAX;
 
                     if(has_missing)
                     {
@@ -27892,14 +27984,14 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d double larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "There are %d double less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27909,8 +28001,8 @@ NhlErrorTypes _NclItochar
                     float val, fmin, fmax;
                     float *ptr;
 
-                    fmin = 0.0;
-                    fmax = (float) UCHAR_MAX;
+                    fmin = (float) SCHAR_MIN;
+                    fmax = (float) SCHAR_MAX;
 
                     if(has_missing)
                     {
@@ -27945,14 +28037,14 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d float larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than 0, which has been flagged missing.",
+                            "There are %d float less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27972,11 +28064,11 @@ NhlErrorTypes _NclItochar
                         llval = _Nclstrtoll(str,&end);
                         if (end == str || errno == ERANGE)
                         {
-                            ret_missing.intval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.intval;
+                            ret_missing.charval = (char) ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
                         }
                         else
                         {
-                            if((llval <= UCHAR_MAX) && (llval >= 0))
+                            if((llval <= SCHAR_MAX) && (llval >= SCHAR_MIN))
                                 ret_missing.charval = (int) llval;
                         }
                     }
@@ -28000,13 +28092,13 @@ NhlErrorTypes _NclItochar
                                     "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.charval;
                             }
-                            else if (lval > UCHAR_MAX)
+                            else if (lval > SCHAR_MAX)
                             {
                                 has_missing = 1;
                                 overflowed ++;
                                 output[i] = ret_missing.charval;
                             }
-                            else if (lval < 0)
+                            else if (lval < SCHAR_MIN)
                             {
                                 has_missing = 1;
                                 underflowed ++;
@@ -28014,7 +28106,7 @@ NhlErrorTypes _NclItochar
                             }
                             else
                             {
-                                output[i] = (unsigned char) lval;
+                                output[i] = (char) lval;
                             }
                         }
                     }
@@ -28022,28 +28114,28 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d double larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "There are %d double less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
                 break;
             case NCL_char:
                 {
-                    unsigned char *ptr;
+                    char *ptr;
 
                     if(has_missing)
                     {
-                        ret_missing.charval = (unsigned char) missing.charval;
+                        ret_missing.charval = missing.charval;
                     }
 
-                    ptr = (unsigned char *) in_value;
+                    ptr = (char *) in_value;
     
                     for(i = 0; i < total_elements; i++)
                     {
@@ -28053,90 +28145,89 @@ NhlErrorTypes _NclItochar
                 break;
             case NCL_byte:
                 {
-                    char val;
-                    char *ptr;
+                    unsigned char val;
+                    unsigned char *ptr;
 
-                    ptr = (char *) in_value;
+                    ptr = (unsigned char *) in_value;
     
                     if(has_missing)
                     {
-                      /*if(missing.byteval >= 0)*/
-                            ret_missing.charval = (unsigned char) missing.byteval;
+                        if(missing.byteval <= SCHAR_MAX)
+                            ret_missing.charval = (char) missing.byteval;
                     }
 
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val < 0)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
-                            underflowed ++;
+                            overflowed ++;
                             output[i] = ret_missing.charval;
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
 
-                    if(underflowed)
+                    if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d char less than, which has been flagged missing.",
-                            underflowed);
+                            "There are %d char great than SCHAR_MAX, which has been flagged missing.",
+                            overflowed);
                     }
                 }
                 break;
             case NCL_int8:
                 {
-                    char val;
                     char *ptr;
 
                     if(has_missing)
                     {
                         if(missing.int8val >= 0)
-                            ret_missing.charval = (unsigned char) missing.int8val;
+                            ret_missing.charval = (char) missing.int8val;
                     }
 
                     ptr = (char *) in_value;
 
                     for(i = 0; i < total_elements; i++)
                     {
-                        val = ptr[i];
-                        if(val < 0)
-                        {
-                            has_missing = 1;
-                            underflowed ++;
-                            output[i] = ret_missing.charval;
-                        }
-                        else
-                        {
-                            output[i] = (unsigned char) val;
-                        }
-                    }
-
-                    if(underflowed)
-                    {
-                        NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int8 less than 0, which has been flagged missing.",
-                            underflowed);
+                        output[i] = ptr[i];
                     }
                 }
                 break;
             case NCL_uint8:
                 {
+                    unsigned char val;
                     unsigned char *ptr;
 
                     if(has_missing)
                     {
-                        ret_missing.charval = (unsigned char) missing.uint8val;
+                        if(missing.uint8val <= SCHAR_MAX)
+                            ret_missing.charval = (char) missing.uint8val;
                     }
 
                     ptr = (unsigned char *) in_value;
 
                     for(i = 0; i < total_elements; i++)
                     {
-                        output[i] = (unsigned char) ptr[i];
+                        val = ptr[i];
+                        if(val > SCHAR_MAX)
+                        {
+                            has_missing = 1;
+                            overflowed ++;
+                            output[i] = ret_missing.charval;
+                        }
+                        else
+                            output[i] = (char) ptr[i];
+                    }
+
+                    if(overflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "There are %d int larger than SCHAR_MAX, which has been flagged missing.",
+                            overflowed);
                     }
                 }
                 break;
@@ -28147,8 +28238,8 @@ NhlErrorTypes _NclItochar
     
                     if(has_missing)
                     {
-                        if((missing.shortval <= UCHAR_MAX) && (missing.shortval >= 0))
-                            ret_missing.charval = (unsigned char) missing.shortval;
+                        if((missing.shortval <= SCHAR_MAX) && (missing.shortval >= SCHAR_MIN))
+                            ret_missing.charval = (char) missing.shortval;
                     }
 
                     ptr = (short *) in_value;
@@ -28156,13 +28247,13 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.charval;
                         }
-                        else if(val < 0)
+                        else if(val < SCHAR_MIN)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -28170,21 +28261,21 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
 
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d int larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "There are %d int less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28196,8 +28287,8 @@ NhlErrorTypes _NclItochar
     
                     if(has_missing)
                     {
-                        if(missing.ushortval <= UCHAR_MAX)
-                            ret_missing.charval = (unsigned char) missing.ushortval;
+                        if(missing.ushortval <= SCHAR_MAX)
+                            ret_missing.charval = (char) missing.ushortval;
                     }
 
                     ptr = (unsigned short *) in_value;
@@ -28205,7 +28296,7 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -28213,14 +28304,14 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
   
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d int larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -28232,8 +28323,8 @@ NhlErrorTypes _NclItochar
 
                     if(has_missing)
                     {
-                        if((missing.intval <= UCHAR_MAX) && (missing.intval >= 0))
-                            ret_missing.charval = (unsigned char) missing.intval;
+                        if((missing.intval <= SCHAR_MAX) && (missing.intval >= SCHAR_MIN))
+                            ret_missing.charval = (char) missing.intval;
                     }
 
                     ptr = (int *) in_value;
@@ -28241,13 +28332,13 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.charval;
                         }
-                        else if(val < 0)
+                        else if(val <  SCHAR_MIN)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -28255,21 +28346,21 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
    
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d int larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "There are %d int less than  SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28281,8 +28372,8 @@ NhlErrorTypes _NclItochar
 
                     if(has_missing)
                     {
-                        if(missing.uintval <= UCHAR_MAX)
-                            ret_missing.charval = (unsigned char) missing.uintval;
+                        if(missing.uintval <= SCHAR_MAX)
+                            ret_missing.charval = (char) missing.uintval;
                     }
 
                     ptr = (unsigned int *) in_value;
@@ -28290,7 +28381,7 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -28298,14 +28389,14 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d unsigned int larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -28317,8 +28408,8 @@ NhlErrorTypes _NclItochar
 
                     if(has_missing)
                     {
-                        if((missing.longval <= UCHAR_MAX) && (missing.longval >= 0))
-                            ret_missing.charval = (unsigned char) missing.longval;
+                        if((missing.longval <= SCHAR_MAX) && (missing.longval >= SCHAR_MIN))
+                            ret_missing.charval = (char) missing.longval;
                     }
 
                     ptr = (long *) in_value;
@@ -28326,13 +28417,13 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.charval;
                         }
-                        else if(val < 0)
+                        else if(val < SCHAR_MIN)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -28340,21 +28431,21 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d long larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than 0, which has been flagged missing.",
+                            "There are %d long less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28366,8 +28457,8 @@ NhlErrorTypes _NclItochar
     
                     if(has_missing)
                     {
-                        if(missing.ulongval <= UCHAR_MAX)
-                            ret_missing.charval = (unsigned char) missing.ulongval;
+                        if(missing.ulongval <= SCHAR_MAX)
+                            ret_missing.charval = (char) missing.ulongval;
                     }
 
                     ptr = (unsigned long *) in_value;
@@ -28375,7 +28466,7 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -28383,14 +28474,14 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned long larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d unsigned long larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -28402,8 +28493,8 @@ NhlErrorTypes _NclItochar
 
                     if(has_missing)
                     {
-                        if((missing.int64val <= UCHAR_MAX) && (missing.int64val >= 0))
-                            ret_missing.charval = (unsigned char) missing.int64val;
+                        if((missing.int64val <= SCHAR_MAX) && (missing.int64val >= SCHAR_MIN))
+                            ret_missing.charval = (char) missing.int64val;
                     }
 
                     ptr = (long long *) in_value;
@@ -28411,13 +28502,13 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.charval;
                         }
-                        else if(val < 0)
+                        else if(val < SCHAR_MIN)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -28425,21 +28516,21 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
 
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d int64 larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than 0, which has been flagged missing.",
+                            "There are %d int64 less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28452,8 +28543,8 @@ NhlErrorTypes _NclItochar
 
                     if(has_missing)
                     {
-                        if(missing.uint64val <= UCHAR_MAX)
-                            ret_missing.charval = (unsigned char) missing.uint64val;
+                        if(missing.uint64val <= SCHAR_MAX)
+                            ret_missing.charval = (char) missing.uint64val;
                     }
 
                     ptr = (unsigned long long *) in_value;
@@ -28461,7 +28552,7 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -28469,14 +28560,14 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d uint64 larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -28555,10 +28646,15 @@ NhlErrorTypes _NclItosigned
         {
             case NCL_char:
                 {
-                    unsigned char *ptr;
+                    char *ptr;
                     char *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(char)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     if(has_missing)
@@ -28566,21 +28662,48 @@ NhlErrorTypes _NclItosigned
                         ret_missing.byteval = (char) missing.charval;
                     }
 
+                    ptr = (char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = (char) ptr[i];
+                    }
+                    out_type = NCL_char;
+                }
+                break;
+            case NCL_byte:
+                {
+                    unsigned char *ptr;
+                    char *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(char)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
+                    out_ptr = output;
+
                     ptr = (unsigned char *) in_value;
     
                     for(i = 0; i < total_elements; i++)
                     {
                         out_ptr[i] = (char) ptr[i];
                     }
-                    out_type = NCL_byte;
+                    out_type = NCL_char;
                 }
                 break;
-            case NCL_byte:
+            case NCL_int8:
                 {
                     char *ptr;
                     char *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(char)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     ptr = (char *) in_value;
@@ -28589,7 +28712,34 @@ NhlErrorTypes _NclItosigned
                     {
                         out_ptr[i] = ptr[i];
                     }
-                    out_type = NCL_byte;
+                    out_type = NCL_int8;
+                }
+                break;
+            case NCL_uint8:
+                {
+                    unsigned char *ptr;
+                    char *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(char)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
+                    out_ptr = output;
+
+                    if(has_missing)
+                    {
+                        ret_missing.int8val = (char) missing.uint8val;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = (char) ptr[i];
+                    }
+                    out_type = NCL_int8;
                 }
                 break;
             case NCL_short:
@@ -28598,6 +28748,11 @@ NhlErrorTypes _NclItosigned
                     short *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(short)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     ptr = (short *) in_value;
@@ -28615,6 +28770,11 @@ NhlErrorTypes _NclItosigned
                     short *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(short)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     if(has_missing)
@@ -28637,6 +28797,11 @@ NhlErrorTypes _NclItosigned
                     int *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(int)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     ptr = (int *) in_value;
@@ -28654,6 +28819,11 @@ NhlErrorTypes _NclItosigned
                     int *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(int)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     if(has_missing)
@@ -28676,6 +28846,11 @@ NhlErrorTypes _NclItosigned
                     long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     ptr = (long *) in_value;
@@ -28693,6 +28868,11 @@ NhlErrorTypes _NclItosigned
                     long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     if(has_missing)
@@ -28715,6 +28895,11 @@ NhlErrorTypes _NclItosigned
                     long long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(long long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     ptr = (long long *) in_value;
@@ -28732,6 +28917,11 @@ NhlErrorTypes _NclItosigned
                     long long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(long long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     if(has_missing)
@@ -28805,34 +28995,44 @@ NhlErrorTypes _NclItounsigned
 
         switch(type)
         {
-            case NCL_byte:
-                {
-                    char *ptr;
-                    unsigned char *out_ptr;
-
-                    output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
-                    out_ptr = output;
-
-                    if(has_missing)
-                    {
-                        ret_missing.charval = (unsigned char) missing.byteval;
-                    }
-
-                    ptr = (char *) in_value;
-    
-                    for(i = 0; i < total_elements; i++)
-                    {
-                        out_ptr[i] = (unsigned char) ptr[i];
-                    }
-                    out_type = NCL_char;
-                }
-                break;
             case NCL_char:
                 {
                     unsigned char *ptr;
                     unsigned char *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
+                    out_ptr = output;
+
+                    if(has_missing)
+                    {
+                        ret_missing.byteval = (unsigned char) missing.charval;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = (unsigned char) ptr[i];
+                    }
+                    out_type = NCL_byte;
+                }
+                break;
+            case NCL_byte:
+                {
+                    unsigned char *ptr;
+                    unsigned char *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     ptr = (unsigned char *) in_value;
@@ -28841,7 +29041,56 @@ NhlErrorTypes _NclItounsigned
                     {
                         out_ptr[i] = ptr[i];
                     }
-                    out_type = NCL_char;
+                    out_type = NCL_byte;
+                }
+                break;
+            case NCL_int8:
+                {
+                    char *ptr;
+                    unsigned char *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
+                    out_ptr = output;
+
+                    if(has_missing)
+                    {
+                        ret_missing.uint8val = (char) missing.int8val;
+                    }
+
+                    ptr = (char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = (unsigned char)ptr[i];
+                    }
+                    out_type = NCL_uint8;
+                }
+                break;
+            case NCL_uint8:
+                {
+                    unsigned char *ptr;
+                    unsigned char *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
+                    out_ptr = output;
+
+                    ptr = (unsigned char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = (unsigned char) ptr[i];
+                    }
+                    out_type = NCL_uint8;
                 }
                 break;
             case NCL_ushort:
@@ -28850,6 +29099,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned short *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned short)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     ptr = (unsigned short *) in_value;
@@ -28867,6 +29121,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned short *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned short)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     if(has_missing)
@@ -28889,6 +29148,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned int *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned int)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     ptr = (unsigned int *) in_value;
@@ -28906,6 +29170,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned int *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned int)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     if(has_missing)
@@ -28928,6 +29197,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     ptr = (unsigned long *) in_value;
@@ -28945,6 +29219,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     if(has_missing)
@@ -28967,6 +29246,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned long long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned long long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
    
                     ptr = (unsigned long long *) in_value;
@@ -28984,6 +29268,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned long long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned long long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     if(has_missing)
