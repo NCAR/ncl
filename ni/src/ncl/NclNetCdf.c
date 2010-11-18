@@ -2082,9 +2082,16 @@ void* data;
 					if(stepal->att_inq->name == theatt) {
 						if (! stepal->att_inq->virtual) {
 							/* if the value is the same as before don't bother writing it */
-							if (! memcmp(stepal->att_inq->value,data,
-								     nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len)) {
-								return NhlNOERROR;
+							if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {	
+								if (*(NrmQuark*)stepal->att_inq->value == *(NrmQuark*)data) {
+									return NhlNOERROR;
+								}
+							}
+							else {
+								if (! memcmp(stepal->att_inq->value,data,
+									     nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len)) {
+									return NhlNOERROR;
+								}
 							}
 						}
 						if (rec->open) {
