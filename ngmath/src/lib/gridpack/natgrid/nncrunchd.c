@@ -643,7 +643,6 @@ void c_nnpntd(double x, double y, double *point)
       ErrorHnd(27, "c_nnpntd", stderr, emsg);
       return;
    } 
-   out = (double *) calloc(1,sizeof(double));
  
 /*
  *  Set up a 3 x 3 gridded region with the desired coordinate in
