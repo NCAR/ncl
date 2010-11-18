@@ -5779,7 +5779,7 @@ NhlErrorTypes _NclIushorttoint
 	output = (ng_size_t*)NclMalloc(sizeof(ng_size_t)*total_elements);
         if (output == NULL)
         {
-            NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+            NHLPERROR((NhlFATAL, errno, "_NclIushorttoint output: memory allocation error."));
             return NhlFATAL;
         }
 	for(i = 0; i < total_elements; i++) {
@@ -16378,7 +16378,7 @@ NhlErrorTypes _NclIgaus
 	  output = (double*)NclMalloc(sizeof(double));
           if (output == NULL)
           {
-            NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+            NHLPERROR((NhlFATAL, errno, "_NclIgaus, output: memory allocation error."));
             return NhlFATAL;
           }
 	  output_missing.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
@@ -16402,7 +16402,7 @@ NhlErrorTypes _NclIgaus
 	output = (double*)NclMalloc(sizeof(double)*nl*2);
         if (output == NULL)
         {
-            NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+            NHLPERROR((NhlFATAL, errno, "_NclIgaus, output: memory allocation error."));
             return NhlFATAL;
         }
 
@@ -19334,7 +19334,7 @@ NhlErrorTypes _NclItoint
         output = (int*)NclMalloc(sizeof(int)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItoint output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -19959,7 +19959,7 @@ NhlErrorTypes _NclItouint
         output = (unsigned int*)NclMalloc(sizeof(unsigned int)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItouint output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -20619,7 +20619,7 @@ NhlErrorTypes _NclItolong
         output = (long *)NclMalloc(sizeof(long)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItolong output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -21189,7 +21189,7 @@ NhlErrorTypes _NclItoulong
         output = (unsigned long *)NclMalloc(sizeof(unsigned long)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItoulong output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -21803,7 +21803,7 @@ NhlErrorTypes _NclItoint64
         output = (long long *)NclMalloc(sizeof(long long)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItoint64 output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -22298,7 +22298,7 @@ NhlErrorTypes _NclItouint64
         output = (unsigned long long *)NclMalloc(sizeof(unsigned long long)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItouint64 output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -22895,7 +22895,7 @@ NhlErrorTypes _NclItoint8
         output = (char *)NclMalloc(sizeof(char)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItoint8 output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -23595,7 +23595,7 @@ NhlErrorTypes _NclItouint8
         output = (unsigned char *)NclMalloc(sizeof(unsigned char)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItouint8 output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -24304,7 +24304,7 @@ NhlErrorTypes _NclItoshort
         output = (short *)NclMalloc(sizeof(short)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItoshort output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -24946,7 +24946,7 @@ NhlErrorTypes _NclItoushort
         output = (unsigned short *)NclMalloc(sizeof(unsigned short)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItoushort output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -25627,7 +25627,7 @@ NhlErrorTypes _NclItofloat
         output = (float *)NclMalloc(sizeof(float)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItofloat output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -26121,7 +26121,7 @@ NhlErrorTypes _NclItostring
         output = (string *)NclMalloc(sizeof(string)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItostring output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -26512,7 +26512,7 @@ NhlErrorTypes _NclItostring_with_format
         output = (string *)NclMalloc(sizeof(string)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItostring_with_format output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -26844,7 +26844,7 @@ NhlErrorTypes _NclItodouble
         output = (double *)NclMalloc(sizeof(double)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItodouble output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -27232,7 +27232,7 @@ NhlErrorTypes _NclItobyte
         output = (char *)NclMalloc(sizeof(byte)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItobyte output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -27937,7 +27937,7 @@ NhlErrorTypes _NclItochar
         output = (char *)NclMalloc(sizeof(char)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "_NclItochar output: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -28652,7 +28652,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -28679,7 +28679,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -28701,7 +28701,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -28723,7 +28723,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -28750,7 +28750,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(short)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -28772,7 +28772,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(short)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -28799,7 +28799,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(int)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -28821,7 +28821,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(int)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -28848,7 +28848,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -28870,7 +28870,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -28897,7 +28897,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(long long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -28919,7 +28919,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(long long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29003,7 +29003,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29030,7 +29030,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29052,7 +29052,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29079,7 +29079,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29101,7 +29101,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned short)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29123,7 +29123,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned short)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29150,7 +29150,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned int)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29172,7 +29172,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned int)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29199,7 +29199,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29221,7 +29221,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29248,7 +29248,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned long long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29270,7 +29270,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned long long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
