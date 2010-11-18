@@ -1842,7 +1842,7 @@ NclScalar *new_missing;
 	NclMultiDValData self_md = (NclMultiDValData)self;
 	NclMultiDValData output_md = NULL;
 
-	new_val = (void*)NclMalloc((unsigned int)self_md->multidval.totalsize);
+	new_val = (void*)NclMalloc(self_md->multidval.totalsize);
 	memcpy(new_val,self_md->multidval.val,self_md->multidval.totalsize);
 
 	output_md = _NclCreateVal(
