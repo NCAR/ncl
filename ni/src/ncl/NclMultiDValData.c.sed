@@ -35,6 +35,7 @@
 #include "TypeSupport.h"
 #include "DataSupport.h"
 #include <math.h>
+#include <stdlib.h>
 #include "NclTypestring.h"
 #include "NclTypechar.h"
 
@@ -129,10 +130,8 @@ static struct _NclDataRec *MultiDValReadSection
 					sel_ptr->u.sub.stride = 1;
 				}
 
-				n_elem = abs((int)(((double)
-					(sel_ptr->u.sub.start 
-					- sel_ptr->u.sub.finish))
-					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1);
+				n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 
 /*
 * Need to be able to determine which type of comparision < or > is needed to
@@ -158,10 +157,8 @@ static struct _NclDataRec *MultiDValReadSection
 
 				}
 
-				n_elem = abs((int)(((double)
-					(sel_ptr->u.sub.finish 
-					- sel_ptr->u.sub.start))
-					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1);
+				n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 				
 				if(sel_ptr->u.sub.stride < 0){
 					compare_sel[i] = -1;
@@ -513,10 +510,8 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 
 				}
 
-				n_elem = abs((int)(((double)
-					(sel_ptr->u.sub.start 
-					- sel_ptr->u.sub.finish))
-					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1);
+				n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 				
 
 				 if(sel_ptr->u.sub.stride < 0){
@@ -545,10 +540,8 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 
 				}
 
-				n_elem = abs((int)(((double)
-					(sel_ptr->u.sub.finish 
-					- sel_ptr->u.sub.start))
-					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1);
+				n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 
 				if(sel_ptr->u.sub.stride < 0){
                                         compare_sel[i] = -1;
@@ -786,7 +779,7 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 
 	ng_size_t total_elements = 1;
 	int n_dims_target = target_md->multidval.n_dims;
-	ng_size_t n_elem=0;
+	long long n_elem=0;
 	int done = 0;
 	int inc_done = 0;
 	int chckmiss = 0;
@@ -865,10 +858,8 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 					sel_ptr->u.sub.stride = 1;
 				}
 
-				n_elem = abs((int)(((double)
-					(sel_ptr->u.sub.start 
-					- sel_ptr->u.sub.finish))
-					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1);
+				n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 
 /*
 * Need to be able to determine which type of comparision < or > is needed to
@@ -892,10 +883,8 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 					sel_ptr->u.sub.stride = 1;
 				}
 
-				n_elem = abs((int)(((double)
-					(sel_ptr->u.sub.finish 
-					- sel_ptr->u.sub.start))
-					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1);
+				n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 
 				if(sel_ptr->u.sub.stride < 0){
                                         compare_sel[i] = -1;
@@ -1251,10 +1240,8 @@ NclSelectionRecord *from_selection;
 					to_sel_ptr->u.sub.stride = 1;
 				}
 
-				n_elem_target = abs((int)(((double)
-					(to_sel_ptr->u.sub.start 
-					- to_sel_ptr->u.sub.finish))
-					/(double)fabs(((double)to_sel_ptr->u.sub.stride))) + 1);
+				n_elem_target = (ng_size_t) labs((to_sel_ptr->u.sub.start - to_sel_ptr->u.sub.finish)
+					 	          / to_sel_ptr->u.sub.stride) + 1L;
 
 /*
 * Need to be able to determine which type of comparision < or > is needed to
@@ -1281,10 +1268,8 @@ NclSelectionRecord *from_selection;
 
 				}
 
-				n_elem_target = abs((int)(((double)
-					(to_sel_ptr->u.sub.finish 
-					- to_sel_ptr->u.sub.start))
-					/(double)fabs(((double)to_sel_ptr->u.sub.stride))) + 1);
+				n_elem_target = (ng_size_t) labs((to_sel_ptr->u.sub.start - to_sel_ptr->u.sub.finish)
+					 	          / to_sel_ptr->u.sub.stride) + 1L;
 
 				if(to_sel_ptr->u.sub.stride < 0){
                                         to_compare_sel[i] = -1;
@@ -1372,10 +1357,8 @@ NclSelectionRecord *from_selection;
 
 				}
 
-				n_elem_value = abs((int)(((double)
-					(from_sel_ptr->u.sub.start 
-					- from_sel_ptr->u.sub.finish))
-					/(double)fabs(((double)from_sel_ptr->u.sub.stride))) + 1);
+				n_elem_value = (ng_size_t) labs((from_sel_ptr->u.sub.start - from_sel_ptr->u.sub.finish)
+					 	          / from_sel_ptr->u.sub.stride) + 1L;
 
 /*
 * Need from be able from determine which type of comparision < or > is needed from
@@ -1401,10 +1384,8 @@ NclSelectionRecord *from_selection;
 					from_sel_ptr->u.sub.stride = 1;
 				}
 
-				n_elem_value = abs((int)(((double)
-					(from_sel_ptr->u.sub.finish 
-					- from_sel_ptr->u.sub.start))
-					/(double)fabs(((double)from_sel_ptr->u.sub.stride))) + 1);
+				n_elem_value = (ng_size_t) labs((from_sel_ptr->u.sub.start - from_sel_ptr->u.sub.finish)
+					 	          / from_sel_ptr->u.sub.stride) + 1L;
 				
 				if(from_sel_ptr->u.sub.stride < 0){
                                         from_compare_sel[i] = -1;

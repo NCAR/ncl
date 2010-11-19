@@ -802,7 +802,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		sel.u.sub.is_single = total_agg_dim_size > 1 ? 0 : 1;
 	}
 	else {
-		double start = 0, finish = total_agg_dim_size - 1, stride = 1;
+		long start = 0, finish = total_agg_dim_size - 1, stride = 1;
 		long end_ix;
 		filevar_sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
 		if (! filevar_sel_ptr) {
@@ -918,7 +918,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				break;
 			case Ncl_SUBSCR:
 				if (sel.u.sub.finish < sel.u.sub.start) {
-					start  = sel.u.sub.finish + (sel.u.sub.start - sel.u.sub.finish) % abs(sel.u.sub.stride);
+					start  = sel.u.sub.finish + (sel.u.sub.start - sel.u.sub.finish) % labs(sel.u.sub.stride);
 					finish = sel.u.sub.start;
 					stride = -sel.u.sub.stride;
 				}
@@ -932,11 +932,11 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				break;
 			}
 			if (agg_sel_count < 0) {
-				agg_sel_count = (int) ((finish - start) / fabs(stride)) + 1;
+				agg_sel_count = (long) ((finish - start) / labs(stride)) + 1L;
 			}
 			sel.u.sub.start = start;
 			sel.u.sub.stride = stride;
-			sel.u.sub.finish = (ng_size_t) finish - ((ng_size_t) finish - (ng_size_t) start) % abs((ng_size_t)stride);
+			sel.u.sub.finish =  finish - (finish - start) % labs(stride);
 		}
 	}
 
