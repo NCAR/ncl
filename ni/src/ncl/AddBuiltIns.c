@@ -2051,6 +2051,7 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsChar,args,"ischar",nargs);
+	NclRegisterFunc( _NclIIsChar,args,"ischaracter",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
