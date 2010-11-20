@@ -1694,8 +1694,10 @@ NhlErrorTypes _NclISizeOf
 	NclStackEntry data;	
 	NclStackEntry data_out;	
 	NclMultiDValData tmp_md = NULL;
-	ng_size_t *size;
+	long lsize;
+	void *size;
 	ng_size_t dim_size = 1;
+	logical return_int;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	if(data.kind == NclStk_VAR) {
@@ -1710,9 +1712,17 @@ NhlErrorTypes _NclISizeOf
 	}
 	if(tmp_md != NULL) {
 		data_out.kind = NclStk_VAL;
-		size = NclMalloc(sizeof(ng_size_t));
-		*size = _NclSizeOf(tmp_md->multidval.data_type)*tmp_md->multidval.totalelements;
-		data_out.u.data_obj = _NclCreateMultiDVal(
+		return_int = True;
+		lsize = (long)_NclSizeOf(tmp_md->multidval.data_type)*tmp_md->multidval.totalelements;
+#if !defined(NG32BIT)
+		if(lsize > INT32_MAX) {
+		  return_int = False;
+		}
+#endif
+		if(return_int) {
+		  size          = (void *) NclMalloc(sizeof(int));
+		  *((int*)size) = (int) lsize;
+		  data_out.u.data_obj = _NclCreateMultiDVal(
 			NULL,
 			NULL,
 			Ncl_MultiDValData,
@@ -1724,7 +1734,25 @@ NhlErrorTypes _NclISizeOf
 			TEMPORARY,
 			NULL,
 			(NclTypeClass)nclTypeintClass
-		);
+			);
+		}
+		else {
+		  size           = (void *) NclMalloc(sizeof(long));
+		  *((long*)size) = lsize;
+		  data_out.u.data_obj = _NclCreateMultiDVal(
+			NULL,
+			NULL,
+			Ncl_MultiDValData,
+			0,
+			(void*)size,
+			NULL,
+			1,
+			&dim_size,
+			TEMPORARY,
+			NULL,
+			(NclTypeClass)nclTypelongClass
+			);
+		}
 		if(data_out.u.data_obj != NULL) {
 			_NclPlaceReturn(data_out);
 			return(NhlNOERROR);
