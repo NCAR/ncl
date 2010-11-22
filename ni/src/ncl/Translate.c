@@ -1058,7 +1058,7 @@ if(groot != NULL) {
 			case 'B':
 				tmp_val = NclMalloc(sizeof(byte));
 				*(byte*)tmp_val = (byte) integer->integer;
-				tclass = (NclTypeClass) nclTypecharClass;
+				tclass = (NclTypeClass) nclTypebyteClass;
 				break;
 			case 'H':
 				tmp_val = NclMalloc(sizeof(unsigned short));
