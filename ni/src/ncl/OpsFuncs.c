@@ -2115,8 +2115,8 @@ NclStackEntry missing_expr;
 
 	}
 	if(size_md != NULL) {
-		if(!(size_md->multidval.type->type_class.type & Ncl_Typelong)) {
-			tmp1_md = _NclCoerceData(size_md,Ncl_Typelong,NULL);
+		if(!(size_md->multidval.type->type_class.type & Ncl_Typeint64)) {
+			tmp1_md = _NclCoerceData(size_md,Ncl_Typeint64,NULL);
 			if(tmp1_md == NULL) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"New: the dimension size parameter is the wrong type an integer value was expected");
 				return(NhlFATAL);
