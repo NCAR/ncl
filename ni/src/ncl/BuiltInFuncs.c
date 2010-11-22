@@ -27490,7 +27490,7 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if(missing.charval >= 0)
+                      /*if(missing.charval >= 0)*/
                             ret_missing.byteval = (byte) missing.charval;
                     }
 
@@ -27526,7 +27526,8 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        ret_missing.byteval = (unsigned char) missing.int8val;
+                        if(missing.int8val >= 0)
+                            ret_missing.byteval = (unsigned char) missing.int8val;
                     }
 
                     ptr = (char *) in_value;

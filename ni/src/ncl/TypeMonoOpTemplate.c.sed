@@ -38,8 +38,8 @@ ng_size_t nrhs;
         LOCALTYPE *ls,*rs;
 	LOCALOUTTYPE *res;
 	ng_size_t stopi = 1;
-	int linc = 0;
-	int rinc = 0;
+	ng_size_t linc = 0;
+	ng_size_t rinc = 0;
 	ng_size_t i;
 	
 	rs = NULL;

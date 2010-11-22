@@ -597,8 +597,8 @@ ng_size_t nrhs;
         string *ls,*rs;
 	string *res;
 	ng_size_t stopi = 1;
-	int linc = 0;
-	int rinc = 0;
+	ng_size_t linc = 0;
+	ng_size_t rinc = 0;
 	ng_size_t i;
 
 	ls = (string*)lhs;
@@ -664,8 +664,8 @@ ng_size_t nrhs;
         string *ls,*rs;
 	logical *res;
 	ng_size_t stopi = 1;
-	int linc = 0;
-	int rinc = 0;
+	ng_size_t linc = 0;
+	ng_size_t rinc = 0;
 	ng_size_t i;
 
 	ls = (string*)lhs;
@@ -730,8 +730,8 @@ ng_size_t nrhs;
         string *ls,*rs;
 	logical *res;
 	ng_size_t stopi = 1;
-	int linc = 0;
-	int rinc = 0;
+	ng_size_t linc = 0;
+	ng_size_t rinc = 0;
 	ng_size_t i;
 
 	ls = (string*)lhs;
