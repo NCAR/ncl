@@ -1031,9 +1031,9 @@ if(groot != NULL) {
 			off1 = _NclPutInstr(PUSH_INT_LIT_OP,integer->line,integer->file);
 			switch (integer->int_type) {
 			case 'b':
-				tmp_val = NclMalloc(sizeof(short));
-				*(byte*)tmp_val = (byte) integer->integer;
-				tclass = (NclTypeClass) nclTypebyteClass;
+				tmp_val = NclMalloc(sizeof(char));
+				*(char*)tmp_val = (char) integer->integer;
+				tclass = (NclTypeClass) nclTypecharClass;
 				break;
 			case 'h':
 				tmp_val = NclMalloc(sizeof(short));
@@ -1056,8 +1056,8 @@ if(groot != NULL) {
 				tclass = (NclTypeClass) nclTypeint64Class;
 				break;
 			case 'B':
-				tmp_val = NclMalloc(sizeof(char));
-				*(char*)tmp_val = (char) integer->integer;
+				tmp_val = NclMalloc(sizeof(byte));
+				*(byte*)tmp_val = (byte) integer->integer;
 				tclass = (NclTypeClass) nclTypecharClass;
 				break;
 			case 'H':
