@@ -196,8 +196,8 @@ NhlErrorTypes linmsg_n_W( void )
           DONT_CARE);
 
   dim = (int*)NclGetArgValue(
-          5,
-          6,
+          2,
+          3,
           NULL,
           NULL,
           NULL,
