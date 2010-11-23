@@ -1305,7 +1305,7 @@ NclSelectionRecord *sel_ptr;
 	ng_size_t miss_dim_sizes[NCL_MAX_DIMENSIONS];
 	NclVar self_var = (NclVar)self;
 	NclSelectionRecord mysel;
-	ng_size_t theval_ndims, tmpmd_ndims;
+	int theval_ndims, tmpmd_ndims;
 
 
 /*
@@ -1854,7 +1854,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 	NclSelectionRecord tmp_sel;
 	NclMultiDValData val_md = NULL;
 	int i,j,done,m;
-	int lhs_n_elem,rhs_n_elem;
+	ng_size_t lhs_n_elem,rhs_n_elem;
 	void *tmp_coord;
 	char *tmp_ptr;
 	NclMultiDValData *tmp_coord_array;
@@ -2103,15 +2103,9 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 				rhs_n_elem = rhs_sel_ptr->selection[j].u.vec.n_ind;
 				break;
 			default:
-				if(rhs_sel_ptr->selection[j].u.sub.finish < rhs_sel_ptr->selection[j].u.sub.start){
-					rhs_n_elem = (int)(((double) (rhs_sel_ptr->selection[j].u.sub.start
-                                        	- rhs_sel_ptr->selection[j].u.sub.finish))
-                                        	/(double)fabs(((double)rhs_sel_ptr->selection[j].u.sub.stride))) + 1;
-				} else {
-					rhs_n_elem = (int)(((double) (rhs_sel_ptr->selection[j].u.sub.finish
-                                        	- rhs_sel_ptr->selection[j].u.sub.start))
-                                        	/((double)rhs_sel_ptr->selection[j].u.sub.stride)) + 1;
-				}
+				rhs_n_elem =  (ng_size_t) labs((rhs_sel_ptr->selection[j].u.sub.finish
+								- rhs_sel_ptr->selection[j].u.sub.start)
+							       / rhs_sel_ptr->selection[j].u.sub.stride) + 1;
 				break;
 			}
 			switch(lhs_sel_ptr->selection[i].sel_type) {
@@ -2119,15 +2113,9 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 				lhs_n_elem = lhs_sel_ptr->selection[i].u.vec.n_ind;
 				break;
 			default:
-				if(lhs_sel_ptr->selection[i].u.sub.finish < lhs_sel_ptr->selection[i].u.sub.start){
-					lhs_n_elem = (int)(((double) (lhs_sel_ptr->selection[i].u.sub.start
-                                        	- lhs_sel_ptr->selection[i].u.sub.finish))
-                                        	/(double)fabs(((double)lhs_sel_ptr->selection[i].u.sub.stride))) + 1;
-				} else {
-					lhs_n_elem = (int)(((double) (lhs_sel_ptr->selection[i].u.sub.finish
-                                        	- lhs_sel_ptr->selection[i].u.sub.start))
-                                        	/((double)lhs_sel_ptr->selection[i].u.sub.stride)) + 1;
-				}
+				lhs_n_elem =  (ng_size_t) labs((lhs_sel_ptr->selection[i].u.sub.finish
+								- lhs_sel_ptr->selection[i].u.sub.start)
+							       / lhs_sel_ptr->selection[i].u.sub.stride) + 1;
 				break;
 			}
 			if(((lhs_n_elem != 1)&&(rhs_n_elem != 1))||((lhs_n_elem == 1)&&(rhs_n_elem == 1))) {
@@ -2534,15 +2522,9 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 				lhs_n_elem = lhs_sel_ptr->selection[i].u.vec.n_ind;
 				break;
 			default:
-				if(lhs_sel_ptr->selection[i].u.sub.finish < lhs_sel_ptr->selection[i].u.sub.start){
-					lhs_n_elem = (int)(((double) (lhs_sel_ptr->selection[i].u.sub.start
-						- lhs_sel_ptr->selection[i].u.sub.finish))
-						/(double)fabs(((double)lhs_sel_ptr->selection[i].u.sub.stride))) + 1;
-				} else {
-					lhs_n_elem = (int)(((double) (lhs_sel_ptr->selection[i].u.sub.finish
-						- lhs_sel_ptr->selection[i].u.sub.start))
-						/((double)lhs_sel_ptr->selection[i].u.sub.stride)) + 1;
-				}
+				lhs_n_elem =  (ng_size_t) labs((lhs_sel_ptr->selection[i].u.sub.finish
+								- lhs_sel_ptr->selection[i].u.sub.start)
+							       / lhs_sel_ptr->selection[i].u.sub.stride) + 1;
 				break;
 			}
 			if((lhs_n_elem != 1)||((lhs_n_elem == 1)&&(rhs_md->multidval.totalelements ==1))||((lhs_n_elem == 1)&&(rhs_md->multidval.n_dims > j )&&(rhs_md->multidval.dim_sizes[j] == 1))){
@@ -2776,15 +2758,9 @@ if(rhs_md->multidval.totalelements !=1) {
 				rhs_n_elem = rhs_sel_ptr->selection[j].u.vec.n_ind;
 				break;
 			default:
-				if(rhs_sel_ptr->selection[j].u.sub.finish < rhs_sel_ptr->selection[j].u.sub.start){
-					rhs_n_elem = (int)(((double) (rhs_sel_ptr->selection[j].u.sub.start
-						- rhs_sel_ptr->selection[i].u.sub.finish))
-						/(double)fabs(((double)rhs_sel_ptr->selection[j].u.sub.stride))) + 1;
-				} else {
-					rhs_n_elem = (int)(((double) (rhs_sel_ptr->selection[j].u.sub.finish
-						- rhs_sel_ptr->selection[j].u.sub.start))
-						/((double)rhs_sel_ptr->selection[j].u.sub.stride)) + 1;
-				}
+				rhs_n_elem =  (ng_size_t) labs((rhs_sel_ptr->selection[j].u.sub.finish
+								- rhs_sel_ptr->selection[j].u.sub.start)
+							       / rhs_sel_ptr->selection[j].u.sub.stride) + 1;
 				break;
 			}
 
