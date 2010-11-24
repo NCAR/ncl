@@ -2879,6 +2879,8 @@ NhlErrorTypes wrf_smooth_2d_W( void )
   double *db = NULL;
   float *fb = NULL;
   int ny, nx, nynx,  i, index_a, size_leftmost;
+  double d_missing;
+  float  f_missing;
 
 /*
  * Retrieve parameters.
@@ -2943,6 +2945,7 @@ NhlErrorTypes wrf_smooth_2d_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: Unable to allocate memory for temporary array");
       return(NhlFATAL);
     }
+    d_missing = has_missing_a ? missing_a.doubleval : ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
   }
   else {
     fb = (float *)malloc(nynx*sizeof(float));
@@ -2950,6 +2953,7 @@ NhlErrorTypes wrf_smooth_2d_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: Unable to allocate memory for temporary array");
       return(NhlFATAL);
     } 
+    f_missing = has_missing_a ? missing_a.floatval : ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.floatval;
  }
 
 /*
@@ -2961,11 +2965,11 @@ NhlErrorTypes wrf_smooth_2d_W( void )
   for(i = 0; i < size_leftmost; i++) {
     if(type_a == NCL_double) {
       NGCALLF(dfilter2d,DFILTER2D)(&((double*)a)[index_a], db, &nx, &ny, it,
-                                   &missing_a.doubleval);
+                                   &d_missing);
     }
     else {
       NGCALLF(filter2d,FILTER2D)(&((float*)a)[index_a], fb, &nx, &ny, it,
-                                   &missing_a.floatval);
+                                   &f_missing);
     }
     index_a += nynx;
   }
