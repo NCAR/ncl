@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunchs.c,v 1.15 2008-07-27 03:10:13 haley Exp $
+ * $Id: nncrunchs.c,v 1.15 2008/07/27 03:10:13 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -357,7 +357,7 @@ float **MakeGrid(int nxi, int nyi, float *xi, float *yi)
 {  
    double wxd, wyd, wxde, wydn, surf, surfe, surfn, aspect, slope;
    int i0, j7, j8;
-   static int first_c = 1, first_as = 1;
+   static int first_as = 1;
    static float **data_out;
 
    if (optim) {
@@ -667,6 +667,7 @@ void c_nnpnts(float x, float y, float *point)
    }
    
    *point = out[3*1 + 1];
+   free(out);
 }
 void c_nnpntend()
 {

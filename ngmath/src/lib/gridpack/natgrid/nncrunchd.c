@@ -356,7 +356,7 @@ double **MakeGridd(int nxi, int nyi, double *xi, double *yi)
 {  
    double wxd, wyd, wxde, wydn, surf, surfe, surfn, aspect, slope;
    int i0, j7, j8;
-   static int first_c = 1, first_as = 1;
+   static int first_as = 1;
    static double **data_out;
 
    if (optim) {
