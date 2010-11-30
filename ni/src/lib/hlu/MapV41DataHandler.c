@@ -699,9 +699,9 @@ static NhlErrorTypes Init_Entity_Recs
 	if (RDatasets[i] == NrmNULLQUARK) {
 		if (lname_recs != NULL) {
 			for (i = 0; i < mv41p->entity_rec_count; i++) {
-				NclFree(lname_recs[i].lname);
+				NhlFree(lname_recs[i].lname);
 			}
-			NclFree(lname_recs);
+			NhlFree(lname_recs);
 		}
 		return (NhlNOERROR);
 	}
@@ -733,9 +733,9 @@ static NhlErrorTypes Init_Entity_Recs
 		}
 	}
         for (i = 0; i < mv41p->entity_rec_count; i++) {
-		NclFree(lname_recs[i].lname);
+		NhlFree(lname_recs[i].lname);
 	}
-	NclFree(lname_recs);
+	NhlFree(lname_recs);
 		
 	return NhlNOERROR;
 }    
