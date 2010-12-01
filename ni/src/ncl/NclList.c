@@ -162,9 +162,13 @@ NclObj theobj;
 		} else {
 			tmp_obj = theobj;
 		}
-	
-		tmp_obj->obj.obj_type_mask = theobj->obj.obj_type;
-		tmp->orig_type = theobj->obj.obj_type;
+		/*
+		 * These lines cause problems when individual files from a list are accessed:
+                 * i.e. isfilevar(f[0],var) returns an error rather than True or False
+                 *
+		     tmp_obj->obj.obj_type_mask = theobj->obj.obj_type;
+		     tmp->orig_type = theobj->obj.obj_type;
+                */
 			
 		ret = _NclAddParent(tmp_obj,list);
 		tmp->cb = _NclAddCallback( tmp_obj, list, ListItemDestroyNotify,DESTROYED,NULL);
