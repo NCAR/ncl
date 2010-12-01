@@ -2038,7 +2038,8 @@ NclStackEntry missing_expr;
 	void *tmp_val;
 	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	short tmp_missing = NCL_DEFAULT_MISSING_VALUE;
-	ng_size_t *dim_size_list,total;
+	long long *dim_size_list;
+	ng_size_t total;
 	long long ll_total;
 	ng_size_t i,j;
 	char *tp;
@@ -2124,7 +2125,7 @@ NclStackEntry missing_expr;
 		} else {
 			tmp1_md = size_md;
 		}
-		dim_size_list = (ng_size_t*)tmp1_md->multidval.val;
+		dim_size_list = (long long *)tmp1_md->multidval.val;
 		if(tmp1_md->multidval.missing_value.has_missing) {
 			for(i = 0; i < tmp1_md->multidval.totalelements; i++ ) {
 				if(tmp1_md->multidval.missing_value.value.longval == dim_size_list[i]) {
