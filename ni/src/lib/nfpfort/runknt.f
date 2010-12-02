@@ -1,5 +1,7 @@
-      subroutine runknta(nx, xin, optknt, xknt )
+      subroutine numrunn(nx, xin, optknt, xknt )
       implicit none
+C
+C knt = dim_numrun_n( x, optknt, n)
 C                                                      INPUT
       integer  nx, optknt, optend
       integer  xin(nx) 
