@@ -1568,6 +1568,7 @@ NhlErrorTypes area_hi2lores_W( void )
   NclFree(yowrk);
   NclFree(indx);
   NclFree(indy);
+  NclFree(critpc);
 
   ret = NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_fo,type_fo,0);
   NclFree(dsizes_fo);
