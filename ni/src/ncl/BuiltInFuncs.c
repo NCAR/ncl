@@ -13358,7 +13358,7 @@ NhlErrorTypes _Nclispan
 		fnsh = *(int*)tmp_md1->multidval.val;
 		strt = *(int*)tmp_md0->multidval.val;
 
-		dimsizes  = abs(fnsh-strt)/spacing + 1;
+		dimsizes = (ng_size_t)abs(fnsh-strt)/spacing + 1;
 
 		if((fnsh - strt) > 0) {
 			out_val = (int*)NclMalloc(dimsizes*sizeof(int));
@@ -13403,7 +13403,7 @@ NhlErrorTypes _Nclispan
         	fnsh = *(long*)tmp_md1->multidval.val;
         	strt = *(long*)tmp_md0->multidval.val;
 
-        	dimsizes  = abs(fnsh-strt)/spacing + 1;
+        	dimsizes = (ng_size_t)labs(fnsh-strt)/spacing + 1;
 
         	if((fnsh - strt) > 0) {
         		out_val = (long*)NclMalloc(dimsizes*sizeof(long));
@@ -13446,7 +13446,7 @@ NhlErrorTypes _Nclispan
         	fnsh = *(long long*)tmp_md1->multidval.val;
         	strt = *(long long*)tmp_md0->multidval.val;
 
-        	dimsizes  = abs(fnsh-strt)/spacing + 1;
+        	dimsizes = (ng_size_t)_Ncl_llabs(fnsh-strt)/spacing + 1;
 
         	if((fnsh - strt) > 0) {
         		out_val = (long long*)NclMalloc(dimsizes*sizeof(long long));
