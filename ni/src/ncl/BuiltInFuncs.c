@@ -15977,7 +15977,16 @@ NhlErrorTypes _NclIIsNumeric
 
 	out_val = (logical*)NclMalloc(sizeof(logical));
 	if(tmp_md->multidval.type->type_class.type & NCL_NUMERIC_TYPE_MASK) {
-		*out_val = 1;
+		switch(tmp_md->multidval.type->type_class.type)
+		{
+			case Ncl_Typeint8:
+			case Ncl_Typeuint8:
+			case Ncl_Typeushort:
+				*out_val = 0;
+				break;
+			default:
+				*out_val = 1;
+		}
 	} else {
 		*out_val = 0;
 	}
@@ -16068,7 +16077,15 @@ NhlErrorTypes _NclIIsENumeric
 
 	out_val = (logical*)NclMalloc(sizeof(logical));
 	if(tmp_md->multidval.type->type_class.type & NCL_ENUMERIC_TYPE_MASK) {
-		*out_val = 1;
+		switch(tmp_md->multidval.type->type_class.type)
+		{
+			case Ncl_Typeshort:
+			case Ncl_Typeint:
+				*out_val = 0;
+				break;
+			default:
+				*out_val = 1;
+		}
 	} else {
 		*out_val = 0;
 	}
