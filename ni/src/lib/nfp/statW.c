@@ -2680,7 +2680,7 @@ NhlErrorTypes esacr_W( void )
   ng_size_t i, index_x, index_acr, total_size_x1, total_size_acr;
   int ier = 0, ier_count2 = 0, ier_count5 = 0;
   ng_size_t npts;
-  int inpts;
+  int inpts, ret;
   double xmean, xvar;
 /*
  * Retrieve parameters
@@ -2833,14 +2833,16 @@ NhlErrorTypes esacr_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(acr,ndims_x,dsizes_acr,&missing_rx,NCL_float,0));
+    ret = NclReturnValue(acr,ndims_x,dsizes_acr,&missing_rx,NCL_float,0);
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(acr,ndims_x,dsizes_acr,&missing_dx,NCL_double,0));
+    ret = NclReturnValue(acr,ndims_x,dsizes_acr,&missing_dx,NCL_double,0);
   }
+  NclFree(dsizes_acr);
+  return(ret);
 }
 
 NhlErrorTypes esacv_W( void )
@@ -2869,7 +2871,7 @@ NhlErrorTypes esacv_W( void )
   ng_size_t i, index_x, index_acv, total_size_x1, total_size_acv;
   int ier = 0, ier_count2 = 0, ier_count5 = 0;
   ng_size_t npts;
-  int inpts;
+  int inpts, ret;
   double xmean, xvar;
 /*
  * Retrieve parameters
@@ -3023,14 +3025,16 @@ NhlErrorTypes esacv_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(acv,ndims_x,dsizes_acv,&missing_rx,NCL_float,0));
+    ret = NclReturnValue(acv,ndims_x,dsizes_acv,&missing_rx,NCL_float,0);
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(acv,ndims_x,dsizes_acv,&missing_dx,NCL_double,0));
+    ret = NclReturnValue(acv,ndims_x,dsizes_acv,&missing_dx,NCL_double,0);
   }
+  NclFree(dsizes_acv);
+  return(ret);
 }
 
 
@@ -3069,7 +3073,7 @@ NhlErrorTypes esccr_W( void )
   ng_size_t total_size_ccr;
   int ier = 0, ier_count;
   ng_size_t npts, dimsizes_same;
-  int inpts;
+  int inpts, ret;
   double xmean, xsd, ymean, ysd;
 /*
  * Retrieve parameters
@@ -3356,16 +3360,16 @@ NhlErrorTypes esccr_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(ccr,ndims_ccr,dsizes_ccr,&missing_rx,
-                          NCL_float,0));
+    ret = NclReturnValue(ccr,ndims_ccr,dsizes_ccr,&missing_rx,NCL_float,0);
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(ccr,ndims_ccr,dsizes_ccr,&missing_dx,
-                          NCL_double,0));
+    ret = NclReturnValue(ccr,ndims_ccr,dsizes_ccr,&missing_dx,NCL_double,0);
   }
+  NclFree(dsizes_ccr);
+  return(ret);
 }
 
 
@@ -3379,7 +3383,7 @@ NhlErrorTypes dim_num_W( void)
   ng_size_t *dsizes_num;
   int has_missing_input;
   NclScalar missing_input;
-  ng_size_t i, j, ii, size_leftmost, size_last;
+  ng_size_t i, j, ii, size_leftmost, size_last, ret;
 /* 
  * Retrieve input from NCL script.
  */
@@ -3439,7 +3443,9 @@ NhlErrorTypes dim_num_W( void)
       }
     }
   }
-  return(NclReturnValue(dim_num, ndims_num, dsizes_num, NULL, NCL_int, 0));
+  ret = NclReturnValue(dim_num, ndims_num, dsizes_num, NULL, NCL_int, 0);
+  NclFree(dsizes_num);
+  return(ret);
 }
 
 
@@ -3460,6 +3466,7 @@ NhlErrorTypes dim_num_n_W( void)
  */
   ng_size_t i, j, k, index_out, index_in;
   ng_size_t total_nl, total_nr, total_elements, npts;
+  int ret;
 
 /* 
  * Retrieve input from NCL script.
@@ -3558,7 +3565,9 @@ NhlErrorTypes dim_num_n_W( void)
       }
     }
   }
-  return(NclReturnValue(dim_num, ndims_num, dsizes_num, NULL, NCL_int, 0));
+  ret = NclReturnValue(dim_num, ndims_num, dsizes_num, NULL, NCL_int, 0);
+  NclFree(dsizes_num);
+  return(ret);
 }
 
 
@@ -3598,7 +3607,7 @@ NhlErrorTypes esccr_shields_W( void )
   ng_size_t total_size_ccr;
   int ier = 0, ier_count;
   ng_size_t npts, ncases;
-  int inpts;
+  int inpts, ret;
   double xmean, xsd, ymean, ysd;
 /*
  * Retrieve parameters
@@ -3817,16 +3826,16 @@ NhlErrorTypes esccr_shields_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(ccr,ndims_ccr,dsizes_ccr,&missing_rx,
-                          NCL_float,0));
+    ret = NclReturnValue(ccr,ndims_ccr,dsizes_ccr,&missing_rx,NCL_float,0);
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(ccr,ndims_ccr,dsizes_ccr,&missing_dx,
-                          NCL_double,0));
+    ret = NclReturnValue(ccr,ndims_ccr,dsizes_ccr,&missing_dx,NCL_double,0);
   }
+  NclFree(dsizes_ccr);
+  return(ret);
 }
 
 
@@ -3866,7 +3875,7 @@ NhlErrorTypes esccv_W( void )
   ng_size_t total_size_ccv;
   int ier = 0, ier_count;
   ng_size_t npts, dimsizes_same;
-  int inpts;
+  int inpts, ret;
   double xmean, xsd, ymean, ysd;
 /*
  * Retrieve parameters
@@ -4153,16 +4162,16 @@ NhlErrorTypes esccv_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(ccv,ndims_ccv,dsizes_ccv,&missing_rx,
-                          NCL_float,0));
+    ret = NclReturnValue(ccv,ndims_ccv,dsizes_ccv,&missing_rx,NCL_float,0);
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(ccv,ndims_ccv,dsizes_ccv,&missing_dx,
-                          NCL_double,0));
+    ret = NclReturnValue(ccv,ndims_ccv,dsizes_ccv,&missing_dx,NCL_double,0);
   }
+  NclFree(dsizes_ccv);
+  return(ret);
 }
 
 NhlErrorTypes dim_stat4_W( void )
