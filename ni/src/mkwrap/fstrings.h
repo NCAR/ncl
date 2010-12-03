@@ -16,7 +16,7 @@ static char *initial_fmt = "\n\n\n#include <stdio.h>\n"
 static char *init_fmt= "\n\n\nvoid Init(void)"
 "{\n"
 "\tvoid *args;\n"
-"\tint dimsizes[NCL_MAX_DIMENSIONS];\n"
+"\tlong dimsizes[NCL_MAX_DIMENSIONS];\n"
 "\tint nargs;\n\n\n";
 
 static char *endf_fmt = "}\n";
