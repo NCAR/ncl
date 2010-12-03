@@ -505,7 +505,7 @@ ng_size_t *dimsizes;
 	the_args->n_dims = n_dims;
 	if(dimsizes != NULL) {
 		the_args->is_dimsizes = 1;
-		memcpy((void*)the_args->dim_sizes,(void*)dimsizes,sizeof(int)*n_dims);
+		memcpy((void*)the_args->dim_sizes,(void*)dimsizes,sizeof(ng_size_t)*n_dims);
 	} else {
 		the_args->is_dimsizes = 0;
 		for(i = 0; i < NCL_MAX_DIMENSIONS; i++) {
