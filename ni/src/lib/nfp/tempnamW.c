@@ -80,7 +80,7 @@ NhlErrorTypes unique_string_W(void)
 {
   char  *prefix, *return_string, tmp_string[20];
   string *pname, *rname;
-  int len, return_len;
+  int len, return_len, ret;
   ng_size_t ret_size = 1;
   static int counter = 0;
 
@@ -127,6 +127,7 @@ NhlErrorTypes unique_string_W(void)
  */
   rname  = (string *) calloc(1,sizeof(string));
   *rname = NrmStringToQuark(return_string);
-  return(NclReturnValue( (void *) rname, 1, &ret_size, NULL, NCL_string, 0));
-
+  ret = NclReturnValue( (void *) rname, 1, &ret_size, NULL, NCL_string, 0);
+  free(return_string);
+  return(ret);
 }
