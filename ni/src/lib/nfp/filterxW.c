@@ -199,6 +199,9 @@ NhlErrorTypes filwgts_lanczos_W( void )
  * Free memory.
  */
   NclFree(tmp_wgt);
+  if(type_fca    != NCL_double) NclFree(tmp_fca);
+  if(type_fcb    != NCL_double) NclFree(tmp_fcb);
+  if(type_nsigma != NCL_double) NclFree(tmp_nsigma);
   if(type_wgt != NCL_double) {
     NclFree(tmp_freq);
     NclFree(tmp_resp);
