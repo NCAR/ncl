@@ -90,7 +90,8 @@ NhlErrorTypes eof_W( void )
   int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, mcsta, nc, nc2, nr, kntx;
+  ng_size_t nrow, ncol, nobs, msta, mcsta, nc, nc2, nr;
+  int inrow, incol, inobs, imsta, imcsta, kntx;
   ng_size_t total_size_x;
   int *neval, ne;
 /*
@@ -100,7 +101,8 @@ NhlErrorTypes eof_W( void )
   double *pcrit = NULL;
   float *rpcrit = NULL;
   NclBasicDataTypes type_pcrit = NCL_none;
-  int iopt = 0, jopt = 0, i, j, l1, l2, ier = 0;
+  ng_size_t i, j, l1, l2;
+  int iopt = 0, jopt = 0, ier = 0;
   logical tr_setbyuser = False, anomalies = False, debug = False;
   logical use_new_transpose = False, use_old_transpose = False;
   logical return_eval = True, return_trace = False, return_pcrit = False;
@@ -110,7 +112,8 @@ NhlErrorTypes eof_W( void )
   double *dx_strip, *xave, *xdvar, *xvar, con, pcx, xsd;
   double *cssm = NULL, *work = NULL, *weval = NULL;
   int   *iwork = NULL, *ifail = NULL;
-  int icovcor, lwork, liwork, lifail, lweval;
+  ng_size_t lwork, liwork, lifail, lweval;
+  int icovcor, ilwork, iliwork, ilifail;
   long long int llcssm;
 
 /*
@@ -197,6 +200,17 @@ NhlErrorTypes eof_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
+
+  if((nrow > INT_MAX) || (ncol > INT_MAX) || 
+     (msta > INT_MAX) || (nobs > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inrow = (int) nrow;
+  incol = (int) ncol;
+  imsta = (int) msta;
+  inobs = (int) nobs;
+
 /*
  * Coerce missing values, if any.
  */
@@ -424,7 +438,7 @@ NhlErrorTypes eof_W( void )
 /*
  * Statistics for this station/grid-point
  */
-    NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&nrow,&missing_dx.doubleval,
+    NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&inrow,&missing_dx.doubleval,
                            &xave[nc],&xvar[nc],&xsd,&kntx,&ier);
 /*
  * Eliminate stations/grid-points with less than pcrit % of data.
@@ -486,6 +500,13 @@ NhlErrorTypes eof_W( void )
       mcsta++;
     }
   }
+
+  if(mcsta > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imcsta = (int) mcsta;
+
 /*
  * Depending on the size of the rightmost 2D arrays being processed, and/or
  * the value of the transpose or oldtranspose attributes, we call one of
@@ -493,7 +514,7 @@ NhlErrorTypes eof_W( void )
  * same, except two of them operate on a transposed version of the 2d array.
  */
   if(debug) {
-    printf("eofunc: msta = %d mcsta = %d nobs = %d\n", msta, mcsta, nobs);
+    printf("eofunc: msta = %ld mcsta = %ld nobs = %ld\n", msta, mcsta, nobs);
   }
 /*
  * If one of the transpose attributes has not explicitly been set by the
@@ -674,6 +695,24 @@ NhlErrorTypes eof_W( void )
         }
       }
     }
+
+/*
+ * Check sizes of work arrays that need to be passed to Fortran 
+ * routine below.
+ */
+    llcssm = mcsta*(mcsta+1)/2;
+    lwork  = 8*mcsta;
+    liwork = 5*mcsta;
+    lifail = mcsta;
+
+    if((lwork > INT_MAX) || (liwork > INT_MAX) || (lifail > INT_MAX)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: one or more dimension sizes is greater than INT_MAX");
+      return(NhlFATAL);
+    }
+    ilwork  = (int) lwork; 
+    iliwork = (int) liwork; 
+    ilifail = (int) lifail; 
+
 /*
  * Initialization.
  */
@@ -693,10 +732,6 @@ NhlErrorTypes eof_W( void )
  * these arrays created dynamically in the Fortran file (which makes
  * it Fortran 90, and unportable to some systems. 
  */
-    llcssm = mcsta*(mcsta+1)/2;
-    lwork  = 8*mcsta;
-    liwork = 5*mcsta;
-    lifail = mcsta;
     lweval = lifail;
     cssm   = (double *)calloc(llcssm,sizeof(double));
     work   = (double *)calloc(lwork,sizeof(double));
@@ -715,19 +750,19 @@ NhlErrorTypes eof_W( void )
  */
   if(use_new_transpose) {
     icovcor = 0;
-    NGCALLF(deof11,DEOF11)(xdatat,&mcsta,&nrow,neval,&icovcor,
+    NGCALLF(deof11,DEOF11)(xdatat,&imcsta,&inrow,neval,&icovcor,
                            &missing_dx.doubleval,eval,wevec,pcvar,prncmp);
   }
   else if(use_old_transpose) {
-    NGCALLF(xrveoft,XRVEOFT)(dx_strip,xdatat,&nrow,&ncol,&nobs,&mcsta,
+    NGCALLF(xrveoft,XRVEOFT)(dx_strip,xdatat,&inrow,&incol,&inobs,&imcsta,
                              &missing_dx.doubleval,neval,eval,evec,
                              pcvar,trace,xdvar,xave,&jopt,&ier);
   }
   else {
-    NGCALLF(ddrveof,DDRVEOF)(dx_strip,&nrow,&ncol,&nobs,&mcsta,
+    NGCALLF(ddrveof,DDRVEOF)(dx_strip,&inrow,&incol,&inobs,&imcsta,
                              &missing_dx.doubleval,neval,eval,wevec,rpcvar,
-                             trace,&iopt,&jopt,cssm,&llcssm,work,&lwork,
-                             weval,iwork,&liwork,ifail,&lifail,&ier);
+                             trace,&iopt,&jopt,cssm,&llcssm,work,&ilwork,
+                             weval,iwork,&iliwork,ifail,&ilifail,&ier);
   }
 /*
  * If we used the "old" transpose routine, then the returned eigenvectors
@@ -1390,8 +1425,9 @@ NhlErrorTypes eof_ts_W( void )
   int has_missing_evec;
   NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_evec;
-  int nrow, ncol, nobs, msta, total_size_x, total_size_evec;
-  int neval, ntime, iflag = 0, jopt = 0;
+  ng_size_t nrow, ncol, nobs, msta, neval, ntime, total_size_x, total_size_evec;
+  int inrow, incol, inobs, imsta, ineval;
+  int iflag = 0, jopt = 0;
   ng_size_t i;
   int ier = 0;
 
@@ -1399,7 +1435,7 @@ NhlErrorTypes eof_ts_W( void )
  * Work array variables.
  */
   double *wrk, *wx;
-  int lwrk, lwx;
+  ng_size_t lwrk, lwx;
 /*
  * Output array variables
  */
@@ -1478,6 +1514,17 @@ NhlErrorTypes eof_ts_W( void )
   ncol = msta;
   nobs = nrow = ntime = dsizes_x[ndims_x-1];
   neval = dsizes_evec[0];
+
+  if((nrow > INT_MAX) || (ncol > INT_MAX) || (msta > INT_MAX) || 
+     (neval > INT_MAX) || (nobs > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inrow  = (int) nrow;
+  incol  = (int) ncol;
+  imsta  = (int) msta;
+  inobs  = (int) nobs;
+  ineval = (int) neval;
 
   total_size_x    = ncol * nrow;
   total_size_evec = msta * neval;
@@ -1590,9 +1637,9 @@ NhlErrorTypes eof_ts_W( void )
 /*
  * Call the appropriate Fortran 77 routine.
  */
-  NGCALLF(deofts7,DEOFTS7)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-                           &neval,devec,&jopt,&iflag,wx,wrk,evec_ts,evtsav,
-                           &ier);
+  NGCALLF(deofts7,DEOFTS7)(dx,&inrow,&incol,&inobs,&imsta,
+                           &missing_dx.doubleval,&ineval,devec,&jopt,
+                           &iflag,wx,wrk,evec_ts,evtsav,&ier);
 
 /*
  * Check various possible error messages.
@@ -1797,7 +1844,6 @@ NhlErrorTypes eof_ts_W( void )
   return(NhlNOERROR);
 }
 
-
 NhlErrorTypes eofcov_tr_W( void )
 {
 /*
@@ -1811,7 +1857,8 @@ NhlErrorTypes eofcov_tr_W( void )
   int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, mcsta, nc, nc2, nr, kntx;
+  ng_size_t nrow, ncol, nobs, msta, mcsta, nc, nc2, nr;
+  int inrow, imcsta, kntx;
   ng_size_t total_size_x;
   int *neval, ne;
 /*
@@ -1821,7 +1868,8 @@ NhlErrorTypes eofcov_tr_W( void )
   double *pcrit = NULL;
   float *rpcrit = NULL;
   NclBasicDataTypes type_pcrit = NCL_none;
-  int jopt = 0, i, j, l1, l2, ier = 0, icovcor;
+  ng_size_t i, j, l1, l2;
+  int jopt = 0, ier = 0, icovcor;
   logical anomalies = False, debug = False;
   logical return_eval = True, return_pcrit = False;
 /*
@@ -1909,12 +1957,17 @@ NhlErrorTypes eofcov_tr_W( void )
   ncol = msta;
   nobs = nrow = dsizes_x[ndims_x-1];
 
-  total_size_x = ncol * nrow;
-
   if( msta < 1 || nobs < 1 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
+
+  if((nrow > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inrow = (int) nrow;
+
 /*
  * Coerce missing values, if any.
  */
@@ -1922,6 +1975,7 @@ NhlErrorTypes eofcov_tr_W( void )
 /*
  * Coerce x to double if necessary.
  */
+  total_size_x = ncol * nrow;
   dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                            &missing_dx);
   if( dx == NULL ) {
@@ -2103,7 +2157,7 @@ NhlErrorTypes eofcov_tr_W( void )
 /*
  * Statistics for this station/grid-point
  */
-    NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&nrow,&missing_dx.doubleval,
+    NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&inrow,&missing_dx.doubleval,
                            &xave[nc],&xvar[nc],&xsd,&kntx,&ier);
 /*
  * Eliminate stations/grid-points with less than pcrit % of data.
@@ -2128,7 +2182,7 @@ NhlErrorTypes eofcov_tr_W( void )
  * The following can produce too much output, so I've commented it out.
  *
  *      if(debug) {
- *          printf("nc = %d xave = %g\n", nc, xave[nc]);
+ *          printf("nc = %ld xave = %g\n", nc, xave[nc]);
  *      }
  */
 /*
@@ -2166,8 +2220,14 @@ NhlErrorTypes eofcov_tr_W( void )
     }
   }
 
+  if(mcsta > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imcsta = (int) mcsta;
+
   if(debug) {
-    printf("eofcov_tr: msta = %d mcsta = %d nobs = %d\n", msta, mcsta, nobs);
+    printf("eofcov_tr: msta = %ld mcsta = %ld nobs = %ld\n", msta, mcsta, nobs);
   }
 
 /*
@@ -2243,7 +2303,7 @@ NhlErrorTypes eofcov_tr_W( void )
  * Call the Fortran 77 version of appropriate routine.
  */
   icovcor = 0;
-  NGCALLF(deof11,DEOF11)(xdatat,&mcsta,&nrow,neval,&icovcor,
+  NGCALLF(deof11,DEOF11)(xdatat,&imcsta,&inrow,neval,&icovcor,
                          &missing_dx.doubleval,eval,wevec,pcvar,prncmp);
 /*
  * If mcsta < msta then we need to "fix" the evec (or revec if float)
@@ -2600,7 +2660,8 @@ NhlErrorTypes eofcov_tr_old_W( void )
   int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, mcsta, nc, nr, kntx;
+  int inrow, incol, inobs, imcsta, kntx;
+  ng_size_t nrow, ncol, nobs, msta, mcsta, nc, nr;
   ng_size_t total_size_x;
   int *neval;
 /*
@@ -2611,9 +2672,8 @@ NhlErrorTypes eofcov_tr_old_W( void )
   double *pcrit = NULL;
   float *rpcrit = NULL;
   NclBasicDataTypes type_pcrit = NCL_none;
-  int jopt = 0;
+  int jopt = 0, ier = 0;
   ng_size_t i;
-  int ier = 0;
   logical return_trace = False, return_pcrit = False,  return_eval = False;
   logical debug = False;
 /*
@@ -2694,12 +2754,19 @@ NhlErrorTypes eofcov_tr_old_W( void )
   ncol = msta;
   nobs = nrow = dsizes_x[ndims_x-1];
 
-  total_size_x = ncol * nrow;
-
   if( msta < 1 || nobs < 1 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr_old: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
+
+  if((nrow > INT_MAX) || (ncol > INT_MAX) || (nobs > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr_old: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inrow = (int) nrow;
+  incol = (int) ncol;
+  inobs = (int) nobs;
+
 /*
  * Coerce missing values, if any.
  */
@@ -2707,6 +2774,7 @@ NhlErrorTypes eofcov_tr_old_W( void )
 /*
  * Coerce x to double if necessary.
  */
+  total_size_x = ncol * nrow;
   dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                            &missing_dx);
   if( dx == NULL ) {
@@ -2898,7 +2966,7 @@ NhlErrorTypes eofcov_tr_old_W( void )
 /*
  * Statistics for this station/grid-point
  */
-    NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&nrow,&missing_dx.doubleval,
+    NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&inrow,&missing_dx.doubleval,
                            &xave[nc],&xvar[nc],&xsd,&kntx,&ier);
 /*
  * Eliminate stations/grid-oints with less than pcrit % of data.
@@ -2940,6 +3008,12 @@ NhlErrorTypes eofcov_tr_old_W( void )
     }
   }
 
+  if(mcsta > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr_old: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imcsta = (int) mcsta;
+
 /*
  * We have to allocate this array separately, because it depends
  * on the value of "mcsta".
@@ -2950,7 +3024,7 @@ NhlErrorTypes eofcov_tr_old_W( void )
     return(NhlFATAL);
   }
 
-  NGCALLF(xrveoft,XRVEOFT)(dx_strip,xdatat,&nrow,&ncol,&nobs,&mcsta,
+  NGCALLF(xrveoft,XRVEOFT)(dx_strip,xdatat,&inrow,&incol,&inobs,&imcsta,
                            &missing_dx.doubleval,neval,eval,evec,
                            pcvar,trace,xdvar,xave,&jopt,&ier);
 
@@ -3321,7 +3395,8 @@ NhlErrorTypes eofcor_tr_W( void )
   int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, mcsta, nc, nr, kntx;
+  int inrow, incol, inobs, imcsta, kntx;
+  ng_size_t nrow, ncol, msta, mcsta, nobs, nc, nr;
   ng_size_t total_size_x;
   int *neval;
 /*
@@ -3332,9 +3407,8 @@ NhlErrorTypes eofcor_tr_W( void )
   double *pcrit = NULL;
   float *rpcrit = NULL;
   NclBasicDataTypes type_pcrit = NCL_none;
-  int jopt = 1;
+  int jopt = 1, ier = 0;
   ng_size_t i;
-  int ier = 0;
   logical return_trace = False, return_pcrit = False,  return_eval = False;
   logical debug = False;
 /*
@@ -3415,12 +3489,19 @@ NhlErrorTypes eofcor_tr_W( void )
   ncol = msta;
   nobs = nrow = dsizes_x[ndims_x-1];
 
-  total_size_x = ncol * nrow;
-
   if( msta < 1 || nobs < 1 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_tr: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
+
+  if((nrow > INT_MAX) || (ncol > INT_MAX) || (nobs > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_tr: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inrow = (int) nrow;
+  incol = (int) ncol;
+  inobs = (int) nobs;
+
 /*
  * Coerce missing values, if any.
  */
@@ -3428,6 +3509,7 @@ NhlErrorTypes eofcor_tr_W( void )
 /*
  * Coerce x to double if necessary.
  */
+  total_size_x = ncol * nrow;
   dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                            &missing_dx);
   if( dx == NULL ) {
@@ -3618,7 +3700,7 @@ NhlErrorTypes eofcor_tr_W( void )
 /*
  * Statistics for this station/grid-point
  */
-    NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&nrow,&missing_dx.doubleval,
+    NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&inrow,&missing_dx.doubleval,
                            &xave[nc],&xvar[nc],&xsd,&kntx,&ier);
 /*
  * Eliminate stations/grid-oints with less than pcrit % of data.
@@ -3660,6 +3742,12 @@ NhlErrorTypes eofcor_tr_W( void )
     }
   }
 
+  if(mcsta > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_tr: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imcsta = (int) mcsta;
+
 /*
  * We have to allocate this array separately, because it depends
  * on the value of "mcsta".
@@ -3670,7 +3758,7 @@ NhlErrorTypes eofcor_tr_W( void )
     return(NhlFATAL);
   }
 
-  NGCALLF(xrveoft,XRVEOFT)(dx_strip,xdatat,&nrow,&ncol,&nobs,&mcsta,
+  NGCALLF(xrveoft,XRVEOFT)(dx_strip,xdatat,&inrow,&incol,&inobs,&imcsta,
                            &missing_dx.doubleval,neval,eval,evec,
                            pcvar,trace,xdvar,xave,&jopt,&ier);
 
@@ -4040,8 +4128,8 @@ NhlErrorTypes eofcov_W( void )
   int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta;
-  ng_size_t total_size_x;
+  int inrow, incol, inobs, imsta;
+  ng_size_t nrow, ncol, nobs, msta, total_size_x;
   int *neval, iopt = 0, jopt = 0;
   ng_size_t i;
   int ier = 0;
@@ -4050,7 +4138,8 @@ NhlErrorTypes eofcov_W( void )
  */
   double *cssm, *work, *weval;
   int   *iwork, *ifail;
-  int lwork, liwork, lifail;
+  ng_size_t lwork, liwork, lifail;
+  int ilwork, iliwork, ilifail;
   long long int lcssm;
 /*
  * Attribute variables
@@ -4106,15 +4195,32 @@ NhlErrorTypes eofcov_W( void )
  */
   msta = 1;
   for( i = 0; i <= ndims_x-2; i++ ) msta *= dsizes_x[i];
-  ncol = msta;
-  nobs = nrow = dsizes_x[ndims_x-1];
-
-  total_size_x = ncol * nrow;
+  ncol   = msta;
+  nobs   = nrow = dsizes_x[ndims_x-1];
+  lcssm  = msta*(msta+1)/2;
+  lwork  = 8*msta;
+  liwork = 5*msta;
+  lifail = msta;
 
   if( msta < 1 || nobs < 1 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
+
+  if((nrow > INT_MAX) || (ncol > INT_MAX) || (msta > INT_MAX) || 
+     (nobs > INT_MAX) || (lwork > INT_MAX) || (liwork > INT_MAX) || 
+     (lifail > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inrow   = (int) nrow;
+  incol   = (int) ncol;
+  imsta   = (int) msta;
+  inobs   = (int) nobs;
+  ilwork  = (int) lwork;
+  iliwork = (int) liwork;
+  ilifail = (int) lifail;
+
 /*
  * Coerce missing values, if any.
  */
@@ -4122,6 +4228,7 @@ NhlErrorTypes eofcov_W( void )
 /*
  * Coerce x to double if necessary.
  */
+  total_size_x = ncol * nrow;
   dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                            &missing_dx);
   if( dx == NULL ) {
@@ -4156,10 +4263,6 @@ NhlErrorTypes eofcov_W( void )
  * these arrays created dynamically in the Fortran file (which makes
  * it Fortran 90, and unportable to some systems. 
  */
-  lcssm  = msta*(msta+1)/2;
-  lwork  = 8*msta;
-  liwork = 5*msta;
-  lifail = msta;
   cssm   = (double *)calloc(lcssm,sizeof(double));
   work   = (double *)calloc(lwork,sizeof(double));
   weval  = (double *)calloc(lifail,sizeof(double));
@@ -4173,10 +4276,10 @@ NhlErrorTypes eofcov_W( void )
 /*
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
-  NGCALLF(ddrveof,DDRVEOF)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-                           neval,eval,evec,pcvar,trace,&iopt,&jopt,
-                           cssm,&lcssm,work,&lwork,weval,iwork,&liwork,
-                           ifail,&lifail,&ier);
+  NGCALLF(ddrveof,DDRVEOF)(dx,&inrow,&incol,&inobs,&imsta,
+                           &missing_dx.doubleval,neval,eval,evec,pcvar,
+                           trace,&iopt,&jopt,cssm,&lcssm,work,&ilwork,
+                           weval,iwork,&iliwork,ifail,&ilifail,&ier);
 /*
  * Check various possible error messages.
  */
@@ -4471,8 +4574,8 @@ NhlErrorTypes eofcor_W( void )
   int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta;
-  ng_size_t total_size_x;
+  int inrow, incol, inobs, imsta;
+  ng_size_t nrow, ncol, nobs, msta, total_size_x;
   int *neval, iopt = 0, jopt = 1;
   ng_size_t i;
   int ier = 0;
@@ -4481,7 +4584,8 @@ NhlErrorTypes eofcor_W( void )
  */
   double *cssm, *work, *weval;
   int   *iwork, *ifail;
-  int lwork, liwork, lifail;
+  ng_size_t lwork, liwork, lifail;
+  int ilwork, iliwork, ilifail;
   long long int lcssm;
 /*
  * Attribute variables
@@ -4537,15 +4641,32 @@ NhlErrorTypes eofcor_W( void )
  */
   msta = 1;
   for( i = 0; i <= ndims_x-2; i++ ) msta *= dsizes_x[i];
-  ncol = msta;
-  nobs = nrow = dsizes_x[ndims_x-1];
-
-  total_size_x = ncol * nrow;
+  ncol   = msta;
+  nobs   = nrow = dsizes_x[ndims_x-1];
+  lcssm  = msta*(msta+1)/2;
+  lwork  = 8*msta;
+  liwork = 5*msta;
+  lifail = msta;
 
   if( msta < 1 || nobs < 1 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
+
+  if((nrow > INT_MAX) || (ncol > INT_MAX) || (msta > INT_MAX) || 
+     (nobs > INT_MAX) || (lwork > INT_MAX) || (liwork > INT_MAX) || 
+     (lifail > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inrow   = (int) nrow;
+  incol   = (int) ncol;
+  imsta   = (int) msta;
+  inobs   = (int) nobs;
+  ilwork  = (int) lwork;
+  iliwork = (int) liwork;
+  ilifail = (int) lifail;
+
 /*
  * Coerce missing values, if any.
  */
@@ -4553,6 +4674,7 @@ NhlErrorTypes eofcor_W( void )
 /*
  * Coerce x to double if necessary.
  */
+  total_size_x = ncol * nrow;
   dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                            &missing_dx);
   if( dx == NULL ) {
@@ -4587,10 +4709,6 @@ NhlErrorTypes eofcor_W( void )
  * these arrays created dynamically in the Fortran file (which makes
  * it Fortran 90, and unportable to some systems. 
  */
-  lcssm  = msta*(msta+1)/2;
-  lwork  = 8*msta;
-  liwork = 5*msta;
-  lifail = msta;
   cssm   = (double *)calloc(lcssm,sizeof(double));
   work   = (double *)calloc(lwork,sizeof(double));
   weval  = (double *)calloc(lifail,sizeof(double));
@@ -4604,10 +4722,10 @@ NhlErrorTypes eofcor_W( void )
 /*
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
-  NGCALLF(ddrveof,DDRVEOF)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-                           neval,eval,evec,pcvar,trace,&iopt,&jopt,
-                           cssm,&lcssm,work,&lwork,weval,iwork,&liwork,
-                           ifail,&lifail,&ier);
+  NGCALLF(ddrveof,DDRVEOF)(dx,&inrow,&incol,&inobs,&imsta,
+                           &missing_dx.doubleval,neval,eval,evec,pcvar,
+                           trace,&iopt,&jopt,cssm,&lcssm,work,&ilwork,
+                           weval,iwork,&iliwork,ifail,&ilifail,&ier);
 /*
  * Check various possible error messages.
  */
@@ -4903,8 +5021,8 @@ NhlErrorTypes eofcov_pcmsg_W( void )
   int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_pcmsg;
-  int nrow, ncol, nobs, msta;
-  ng_size_t total_size_x;
+  ng_size_t nrow, ncol, nobs, msta, total_size_x;
+  int inrow, incol, inobs, imsta;
   int *neval, iopt = 0, jopt = 0;
   ng_size_t i;
   int ier = 0;
@@ -4913,7 +5031,8 @@ NhlErrorTypes eofcov_pcmsg_W( void )
  */
   double *tmp_x, *cssm, *work, *weval, *evecx;
   int   *iwork, *ifail;
-  int lwork, liwork, lifail;
+  ng_size_t lwork, liwork, lifail;
+  int ilwork, iliwork, ilifail;
   long long int lcssm, total_mem;
 /*
  * Attribute variables
@@ -4979,15 +5098,33 @@ NhlErrorTypes eofcov_pcmsg_W( void )
  */
   msta = 1;
   for( i = 0; i <= ndims_x-2; i++ ) msta *= dsizes_x[i];
-  ncol = msta;
-  nobs = nrow = dsizes_x[ndims_x-1];
-
-  total_size_x = ncol * nrow;
+  ncol   = msta;
+  nobs   = nrow = dsizes_x[ndims_x-1];
+  lcssm  = msta*(msta+1)/2;
+  lwork  = 8*msta;
+  liwork = 5*msta;
+  lifail = msta;
 
   if( msta < 1 || nobs < 1 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_pcmsg: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
+
+  if((nrow > INT_MAX) || (ncol > INT_MAX) || (msta > INT_MAX) || 
+     (nobs > INT_MAX) || (lwork > INT_MAX) || (liwork > INT_MAX) || 
+     (lifail > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_pcmsg: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inrow   = (int) nrow;
+  incol   = (int) ncol;
+  imsta   = (int) msta;
+  inobs   = (int) nobs;
+  ilwork  = (int) lwork;
+  iliwork = (int) liwork;
+  ilifail = (int) lifail;
+
+
 /*
  * Coerce missing values, if any.
  */
@@ -4995,6 +5132,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
 /*
  * Coerce x to double if necessary.
  */
+  total_size_x = ncol * nrow;
   dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                            &missing_dx);
   if(dx == NULL) {
@@ -5051,10 +5189,6 @@ NhlErrorTypes eofcov_pcmsg_W( void )
  * these arrays created dynamically in the Fortran file (which makes
  * it Fortran 90, and unportable to some systems. 
  */
-  lcssm  = msta*(msta+1)/2;
-  lwork  = 8*msta;
-  liwork = 5*msta;
-  lifail = msta;
   cssm   = (double *)calloc(lcssm,sizeof(double));
   work   = (double *)calloc(lwork,sizeof(double));
   weval  = (double *)calloc(lifail,sizeof(double));
@@ -5064,7 +5198,6 @@ NhlErrorTypes eofcov_pcmsg_W( void )
   evecx  =  (double *)calloc(total_size_evec,sizeof(double));
   total_mem = 8*(lcssm+lwork+lifail+total_size_x+total_size_evec) +
               4*(liwork+lifail);
-
   if(  cssm == NULL ||  work == NULL || weval == NULL || iwork == NULL || 
       ifail == NULL || tmp_x == NULL || evecx == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_pcmsg: Unable to allocate memory for work arrays. A total of %lld bytes need to be allocated",total_mem);
@@ -5073,10 +5206,10 @@ NhlErrorTypes eofcov_pcmsg_W( void )
 /*
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
-  NGCALLF(dncldrv,DNCLDRV)(dx,tmp_x,&nrow,&ncol,&nobs,&msta,
+  NGCALLF(dncldrv,DNCLDRV)(dx,tmp_x,&inrow,&incol,&inobs,&imsta,
                            &missing_dx.doubleval,neval,eval,evec,pcvar,
                            trace,&iopt,&jopt,dpcmsg,evecx,cssm,&lcssm,
-                           work,&lwork,weval,iwork,&liwork,ifail,&lifail,&ier);
+                           work,&ilwork,weval,iwork,&iliwork,ifail,&ilifail,&ier);
 /*
  * Check various possible error messages.
  */
@@ -5428,8 +5561,8 @@ NhlErrorTypes eofcor_pcmsg_W( void )
   int has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_pcmsg;
-  int nrow, ncol, nobs, msta;
-  ng_size_t total_size_x;
+  ng_size_t nrow, ncol, nobs, msta, total_size_x;
+  int inrow, incol, inobs, imsta;
   int *neval, iopt = 0, jopt = 1;
   ng_size_t i;
   int ier = 0;
@@ -5438,7 +5571,8 @@ NhlErrorTypes eofcor_pcmsg_W( void )
  */
   double *tmp_x, *cssm, *work, *weval, *evecx;
   int    *iwork, *ifail;
-  int lwork, liwork, lifail;
+  ng_size_t lwork, liwork, lifail;
+  int ilwork, iliwork, ilifail;
   long long int lcssm, total_mem;
 /*
  * Attribute variables
@@ -5504,15 +5638,32 @@ NhlErrorTypes eofcor_pcmsg_W( void )
  */
   msta = 1;
   for( i = 0; i <= ndims_x-2; i++ ) msta *= dsizes_x[i];
-  ncol = msta;
-  nobs = nrow = dsizes_x[ndims_x-1];
-
-  total_size_x = ncol * nrow;
+  ncol   = msta;
+  nobs   = nrow = dsizes_x[ndims_x-1];
+  lcssm  = msta*(msta+1)/2;
+  lwork  = 8*msta;
+  liwork = 5*msta;
+  lifail = msta;
 
   if( msta < 1 || nobs < 1 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_pcmsg: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
+
+  if((nrow > INT_MAX) || (ncol > INT_MAX) || (msta > INT_MAX) || 
+     (nobs > INT_MAX) || (lwork > INT_MAX) || (liwork > INT_MAX) || 
+     (lifail > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_pcmsg: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inrow   = (int) nrow;
+  incol   = (int) ncol;
+  imsta   = (int) msta;
+  inobs   = (int) nobs;
+  ilwork  = (int) lwork;
+  iliwork = (int) liwork;
+  ilifail = (int) lifail;
+
 /*
  * Coerce missing values, if any.
  */
@@ -5520,6 +5671,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
 /*
  * Coerce x to double if necessary.
  */
+  total_size_x = ncol * nrow;
   dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                            &missing_dx);
   if(dx == NULL) {
@@ -5574,10 +5726,6 @@ NhlErrorTypes eofcor_pcmsg_W( void )
  * these arrays created dynamically in the Fortran file (which makes
  * it Fortran 90, and unportable to some systems. 
  */
-  lcssm  = msta*(msta+1)/2;
-  lwork  = 8*msta;
-  liwork = 5*msta;
-  lifail = msta;
   cssm   = (double *)calloc(lcssm,sizeof(double));
   work   = (double *)calloc(lwork,sizeof(double));
   weval  = (double *)calloc(lifail,sizeof(double));
@@ -5595,10 +5743,10 @@ NhlErrorTypes eofcor_pcmsg_W( void )
 /*
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
-  NGCALLF(dncldrv,DNCLDRV)(dx,tmp_x,&nrow,&ncol,&nobs,&msta,
+  NGCALLF(dncldrv,DNCLDRV)(dx,tmp_x,&inrow,&incol,&inobs,&imsta,
                            &missing_dx.doubleval,neval,eval,evec,pcvar,
                            trace,&iopt,&jopt,dpcmsg,evecx,cssm,&lcssm,
-                           work,&lwork,weval,iwork,&liwork,ifail,&lifail,&ier);
+                           work,&ilwork,weval,iwork,&iliwork,ifail,&ilifail,&ier);
 /*
  * Check various possible error messages.
  */
@@ -5945,15 +6093,16 @@ NhlErrorTypes eofcov_ts_W( void )
   int has_missing_evec;
   NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_evec;
-  int nrow, ncol, nobs, msta, total_size_x, total_size_evec;
-  int neval, ntime, iflag = 0, jopt = 0;
+  int inrow, incol, inobs, imsta;
+  ng_size_t nrow, ncol, nobs, msta, neval, ntime, total_size_x, total_size_evec;
+  int ineval, iflag = 0, jopt = 0;
   ng_size_t i;
   int ier = 0;
 /*
  * Work array variables.
  */
   double *wrk, *wx;
-  int lwrk, lwx;
+  ng_size_t lwrk, lwx;
 /*
  * Output array variables
  */
@@ -6013,14 +6162,23 @@ NhlErrorTypes eofcov_ts_W( void )
   ncol = msta;
   nobs = nrow = ntime = dsizes_x[ndims_x-1];
   neval = dsizes_evec[0];
-
-  total_size_x    = ncol * nrow;
-  total_size_evec = msta * neval;
-
+ 
   if( msta < 1 || nobs < 1 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
+
+  if((nrow > INT_MAX) || (ncol > INT_MAX) || (msta > INT_MAX) || 
+     (neval > INT_MAX) || (nobs > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inrow  = (int) nrow;
+  incol  = (int) ncol;
+  imsta  = (int) msta;
+  inobs  = (int) nobs;
+  ineval = (int) neval;
+
 /*
  * Coerce missing values, if any.
  */
@@ -6030,6 +6188,9 @@ NhlErrorTypes eofcov_ts_W( void )
 /*
  * Coerce x/evec to double if necessary.
  */
+  total_size_x    = ncol * nrow;
+  total_size_evec = msta * neval;
+
   dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                            &missing_dx);
   devec = coerce_input_double(evec,type_evec,total_size_evec,
@@ -6065,9 +6226,9 @@ NhlErrorTypes eofcov_ts_W( void )
 /*
  * Call the deofts7 Fortran 77 routine.
  */
-  NGCALLF(deofts7,DEOFTS7)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-                           &neval,devec,&jopt,&iflag,wx,wrk,evec_ts,evtsav,
-                           &ier);
+  NGCALLF(deofts7,DEOFTS7)(dx,&inrow,&incol,&inobs,&imsta,
+                           &missing_dx.doubleval,&ineval,devec,
+                           &jopt,&iflag,wx,wrk,evec_ts,evtsav,&ier);
 /*
  * Check various possible error messages.
  */
@@ -6245,15 +6406,16 @@ NhlErrorTypes eofcor_ts_W( void )
   int has_missing_evec;
   NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_evec;
-  int nrow, ncol, nobs, msta, total_size_x, total_size_evec;
-  int neval, ntime, iflag = 0, jopt = 1;
+  int inrow, incol, inobs, imsta;
+  ng_size_t nrow, ncol, nobs, msta, neval, ntime, total_size_x, total_size_evec;
+  int ineval, iflag = 0, jopt = 1;
   ng_size_t i;
   int ier = 0;
 /*
  * Work array variables.
  */
   double *wrk, *wx;
-  int lwrk, lwx;
+  ng_size_t lwrk, lwx;
 /*
  * Output array variables
  */
@@ -6314,13 +6476,22 @@ NhlErrorTypes eofcor_ts_W( void )
   nobs = nrow = ntime = dsizes_x[ndims_x-1];
   neval = dsizes_evec[0];
 
-  total_size_x    = ncol * nrow;
-  total_size_evec = msta * neval;
-
   if( msta < 1 || nobs < 1 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
+
+  if((nrow > INT_MAX) || (ncol > INT_MAX) || (msta > INT_MAX) || 
+     (neval > INT_MAX) || (nobs > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inrow  = (int) nrow;
+  incol  = (int) ncol;
+  imsta  = (int) msta;
+  inobs  = (int) nobs;
+  ineval = (int) neval;
+
 /*
  * Coerce missing values, if any.
  */
@@ -6330,6 +6501,9 @@ NhlErrorTypes eofcor_ts_W( void )
 /*
  * Coerce x/evec to double if necessary.
  */
+  total_size_x    = ncol * nrow;
+  total_size_evec = msta * neval;
+
   dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                            &missing_dx);
   devec = coerce_input_double(evec,type_evec,total_size_evec,
@@ -6359,15 +6533,15 @@ NhlErrorTypes eofcor_ts_W( void )
   wrk  = (double *)calloc(lwrk,sizeof(double));
   wx   = (double *)calloc(lwx,sizeof(double));
   if( wrk == NULL || wx == NULL ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts: Unable to allocate memory for work arrays");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
 /*
- * Call the Fortran 77 version of 'drveof' with the full argument list.
+ * Call the deofts7 Fortran 77 routine.
  */
-  NGCALLF(deofts7,DEOFTS7)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-                           &neval,devec,&jopt,&iflag,wx,wrk,evec_ts,evtsav,
-                           &ier);
+  NGCALLF(deofts7,DEOFTS7)(dx,&inrow,&incol,&inobs,&imsta,
+                           &missing_dx.doubleval,&ineval,devec,
+                           &jopt,&iflag,wx,wrk,evec_ts,evtsav,&ier);
 /*
  * Check various possible error messages.
  */
@@ -6546,15 +6720,16 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
   int has_missing_evec;
   NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_evec, type_pcmsg;
-  int nrow, ncol, nobs, msta, total_size_x, total_size_evec;
-  int neval, ntime, iflag = 0, jopt = 0;
+  ng_size_t nrow, ncol, nobs, msta, ntime, neval, total_size_x, total_size_evec;
+  int inrow, incol, inobs, imsta, ineval;
+  int iflag = 0, jopt = 0;
   ng_size_t i;
   int ier = 0;
 /*
  * Work array variables.
  */
   double *wrk, *wx;
-  int lwrk, lwx;
+  ng_size_t lwrk, lwx;
 /*
  * Output array variables
  */
@@ -6615,13 +6790,22 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
   nobs = nrow = ntime = dsizes_x[ndims_x-1];
   neval = dsizes_evec[0];
 
-  total_size_x    = ncol * nrow;
-  total_size_evec = msta * neval;
-
   if( msta < 1 || nobs < 1 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts_pcmsg: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
+
+  if((nrow > INT_MAX) || (ncol > INT_MAX) || (msta > INT_MAX) || 
+     (neval > INT_MAX) || (nobs > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts_pcmsg: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inrow  = (int) nrow;
+  incol  = (int) ncol;
+  imsta  = (int) msta;
+  inobs  = (int) nobs;
+  ineval = (int) neval;
+
 /*
  * Coerce missing values, if any.
  */
@@ -6631,6 +6815,8 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
 /*
  * Coerce x, evec, pcmsg to double if necessary.
  */
+  total_size_x    = ncol * nrow;
+  total_size_evec = msta * neval;
   dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                            &missing_dx);
   devec = coerce_input_double(evec,type_evec,total_size_evec,
@@ -6674,8 +6860,9 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
 /*
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
-  NGCALLF(deoftsca,DEOFTSCA)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-                             &neval,devec,&jopt,&iflag,evec_ts,dpcmsg,&ier,wx,wrk);
+  NGCALLF(deoftsca,DEOFTSCA)(dx,&inrow,&incol,&inobs,&imsta,
+                             &missing_dx.doubleval,&ineval,devec,
+                             &jopt,&iflag,evec_ts,dpcmsg,&ier,wx,wrk);
 /*
  * Check various possible error messages.
  */
@@ -6752,15 +6939,16 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
   int has_missing_evec;
   NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_evec, type_pcmsg;
-  int nrow, ncol, nobs, msta, total_size_x, total_size_evec;
-  int neval, ntime, iflag = 0, jopt = 1;
+  ng_size_t nrow, ncol, nobs, msta, neval, ntime, total_size_x, total_size_evec;
+  int inrow, incol, inobs, imsta, ineval;
+  int iflag = 0, jopt = 1;
   ng_size_t i;
   int ier = 0;
 /*
  * Work array variables.
  */
   double *wrk, *wx;
-  int lwrk, lwx;
+  ng_size_t lwrk, lwx;
 /*
  * Output array variables
  */
@@ -6821,13 +7009,22 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
   nobs = nrow = ntime = dsizes_x[ndims_x-1];
   neval = dsizes_evec[0];
 
-  total_size_x    = ncol * nrow;
-  total_size_evec = msta * neval;
-
   if( msta < 1 || nobs < 1 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts_pcmsg: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
+
+  if((nrow > INT_MAX) || (ncol > INT_MAX) || (msta > INT_MAX) || 
+     (neval > INT_MAX) || (nobs > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts_pcmsg: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inrow  = (int) nrow;
+  incol  = (int) ncol;
+  imsta  = (int) msta;
+  inobs  = (int) nobs;
+  ineval = (int) neval;
+
 /*
  * Coerce missing values, if any.
  */
@@ -6837,6 +7034,9 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
 /*
  * Coerce x, evec, pcmsg to double if necessary.
  */
+  total_size_x    = ncol * nrow;
+  total_size_evec = msta * neval;
+
   dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                            &missing_dx);
   devec = coerce_input_double(evec,type_evec,total_size_evec,
@@ -6880,8 +7080,9 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
 /*
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
-  NGCALLF(deoftsca,DEOFTSCA)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-                             &neval,devec,&jopt,&iflag,evec_ts,dpcmsg,&ier,wx,wrk);
+  NGCALLF(deoftsca,DEOFTSCA)(dx,&inrow,&incol,&inobs,&imsta,
+                             &missing_dx.doubleval,&ineval,devec,
+                             &jopt,&iflag,evec_ts,dpcmsg,&ier,wx,wrk);
 /*
  * Check various possible error messages.
  */
@@ -6956,8 +7157,8 @@ NhlErrorTypes eof2data_W( void )
   ng_size_t dsizes_evects[2];
   NclScalar missing_evec, missing_devec, missing_revec;
   NclBasicDataTypes type_evec, type_evects;
-  ng_size_t total_size_evec, total_size_evects;
-  int neval, npts, ntim;
+  ng_size_t neval, npts, ntim, total_size_evec, total_size_evects;
+  int ineval, inpts, intim;
   ng_size_t i;
   int ret;
 /*
@@ -7011,6 +7212,14 @@ NhlErrorTypes eof2data_W( void )
   npts  = 1;
   for( i = 1; i < ndims_evec; i++ ) npts *= dsizes_evec[i];
 
+  if((neval > INT_MAX) || (npts > INT_MAX) || (npts > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  ineval = (int) neval;
+  inpts  = (int) npts;
+  intim  = (int) ntim;
+
   total_size_evec   = neval * npts;
   total_size_evects = neval * ntim;
   total_size_x      = npts  * ntim;
@@ -7058,7 +7267,7 @@ NhlErrorTypes eof2data_W( void )
 /*
  * Call the Fortran 77 version of 'deof2data' with the full argument list.
  */
-  NGCALLF(deof2data,DEOF2DATA)(&neval,&npts,&ntim,devec,devects,dx,
+  NGCALLF(deof2data,DEOF2DATA)(&ineval,&inpts,&intim,devec,devects,dx,
                                &missing_devec.doubleval);
 /*
  * Free unneeded memory.
