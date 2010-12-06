@@ -7081,7 +7081,7 @@ void NclAddUserFuncs(void)
 
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
-    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
 
     NclRegisterFunc(random_chi_W, args, "random_chi", nargs);
 
