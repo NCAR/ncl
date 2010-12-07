@@ -623,15 +623,16 @@ local latN, latS, lonL, lonR, spd, fCrit, tim_taper        \
 ;-------------------------------------------------------------------
 
   dNam = getvardims( x )
-  work = x($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:)    ; reorder  (lat,lon,time)
+;;work = x($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:)    ; reorder  (lat,lon,time)
 ;;work = dtrend( work , False )   ; remove mean + overall long term temporal trend 
-  work = dtrend_msg(ispan(0,ntim-1,1)*1.0, work, False, False)  ; remove just  trend
-  if (isatt(work,"_FillValue")) then
-      delete(work@_FillValue)                  ; dtrend_msg adds this att
-  end if
+;;work = dtrend_msg(ispan(0,ntim-1,1)*1.0, work, False, False)  ; remove just  trend
+;;if (isatt(work,"_FillValue")) then
+;;    delete(work@_FillValue)                  ; dtrend_msg adds this att
+;;end if
                                                          ; replace with detrended
-  x    = (/ work($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) /) ; values (time,lat,lon)
-  delete(work)
+;;x    = (/ work($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) /) ; values (time,lat,lon)
+;;delete(work)
+  x    = dtrend_msg_n(ispan(0,ntim-1,1)*1.0, x, False, False, 0)  ; remove just trend
 
   if (nDayTot.ge.365) then                     ; rmv dominant signals
       rmvMeans = False                         ; original code did not remove

@@ -2755,7 +2755,7 @@ end
 
 
 undef("smth9_Wrap")
-function smth9_Wrap(var:float, p[1]:float, q[1]:float, cyclic:logical)
+function smth9_Wrap(var:numeric, p[1]:numeric, q[1]:numeric, cyclic:logical)
 local var_out
 begin
   if (isatt(var,"missing_value") .and. .not.isatt(var,"_FillValue")) then
