@@ -5974,9 +5974,9 @@ void CallASSIGN_FILEVAR_COORD_OP(void) {
 /*
 				var_name = (NclQuark)(*ptr);
 				ptr++;lptr++;fptr++;
-*/
 				coord_name = (NclQuark)(*ptr);
 				ptr++;lptr++;fptr++;
+*/
 				nsubs = (*(int*)ptr);
 /*
 * This is really are read because the actual variable holding
