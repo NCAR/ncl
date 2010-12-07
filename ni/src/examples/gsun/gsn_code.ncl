@@ -3834,6 +3834,7 @@ begin
     wks_res = True
     res_list = (/"wkColorMap","wkWidth","wkHeight","wkColorModel", \
                  "wkPSResolution","wkPDFResolution","wkVisualType", \
+                 "wkPaperSize","wkPaperWidthF","wkPaperHeightF", \
                  "_FillValue"/)
     do i=0,dimsizes(varatts)-1
       if(all(varatts(i).ne.res_list)) then
