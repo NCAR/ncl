@@ -177,13 +177,7 @@ NhlErrorTypes days_in_month_W( void )
 /*
  * Call function.
  */
-  for( i = 0; i < total; i++ )
-  {
-      daysinmonth[i] = days_in_month(year[i],month[i]);
-
-      fprintf(stderr, "year[%d] = %d, month[%d] = %d, daysinmonth[%d] = %d\n", 
-              i, year[i], i, month[i], i, daysinmonth[i]);
-  }
+  for( i = 0; i < total; i++ ) daysinmonth[i] = days_in_month(year[i],month[i]);
 /*
  * Return.
  */
