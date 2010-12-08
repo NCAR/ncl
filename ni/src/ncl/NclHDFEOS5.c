@@ -301,9 +301,13 @@ static NclBasicDataTypes HDFEOS5MapTypeNumber(long typenumber){
 static char *_make_proper_string_end(const char *input_name)
 {
     char *output_name;
-    char *name = strdup(input_name);
-    int n = strlen(name);
-    int i = strlen(name) - 1;
+    int i, n;
+    char *name;
+
+    name = strdup(input_name);
+    n = strlen(name);
+    i = strlen(name) - 1;
+
     while(i)
     {
       /*
