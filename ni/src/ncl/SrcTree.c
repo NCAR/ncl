@@ -1849,7 +1849,7 @@ char* string_rep;
 	tmp->len = -1;
 	tmp->int_type = 'i';
 	if (string_rep != NULL) { 
-		char *type = strpbrk(string_rep,"bBcChHiIlLqQ");
+		char *type = strpbrk(string_rep,"bCjJhHiIlLqQ");
 		if (type) {
 			tmp->int_type = *type;
 			tmp->len = strlen(string_rep) - 1;

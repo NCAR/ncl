@@ -37,10 +37,10 @@ Ncl_Typeint = 		 	02000,
 Ncl_Typeushort =                03000,
 Ncl_Typeshort = 	 	04000,
 Ncl_Typeuint8 =                 05000,
-Ncl_Typebyte = 	 		06000,
+Ncl_Typechar = 	 		06000,
 Ncl_Typeint8 =                  07000,
 Ncl_Typestring = 		010000,
-Ncl_Typechar= 			020000,
+Ncl_Typebyte= 			020000,
 Ncl_Typeobj= 			040000,
 Ncl_Var = 			0100000,
 Ncl_Att = 			0200000,
@@ -77,7 +77,7 @@ Ncl_Typecompound = 		030000000000
 * allows for selection of numeric value types which represent one 
 * group of data types that can be coerced
 */
-#define NCL_NUMERIC_TYPE_MASK	((unsigned long)(Ncl_Typeint | Ncl_Typedouble | Ncl_Typebyte | Ncl_Typelong | Ncl_Typeshort | Ncl_Typefloat))
+#define NCL_NUMERIC_TYPE_MASK	((unsigned long)(Ncl_Typeint | Ncl_Typedouble | Ncl_Typechar | Ncl_Typebyte | Ncl_Typelong | Ncl_Typeshort | Ncl_Typefloat))
 #define NCL_ENUMERIC_TYPE_MASK	((unsigned long)(Ncl_Typeushort | Ncl_Typeuint | Ncl_Typeulong | Ncl_Typeint64 | Ncl_Typeuint64 | Ncl_Typeint8 | Ncl_Typeuint8))
 #define NCL_CHARSTR_TYPE_MASK	((unsigned long)(Ncl_Typestring | Ncl_Typechar))
 
@@ -90,8 +90,8 @@ Ncl_Typecompound = 		030000000000
 
 typedef enum  {
 NCL_none = 	0,
-NCL_char = 	010,
-NCL_byte = 	011,
+NCL_byte = 	010,
+NCL_char = 	011,
 NCL_int8 =      012,
 NCL_uint8 =     013,
 NCL_short = 	020,
@@ -116,7 +116,7 @@ NCL_compound = 	0200000
 } NclBasicDataTypes;
 
 typedef NclQuark string; /* Makes this a quark type */
-typedef unsigned char byte;
+typedef char byte;
 typedef int logical;
 typedef int obj;
 typedef int group;
@@ -133,9 +133,9 @@ typedef union _NclScalar {
 	int	           intval;
 	long               longval;
 	short              shortval;
-	unsigned char	   charval;
+	unsigned char  	   charval;
 	string             stringval;
-	byte               byteval;
+	char               byteval;
 	unsigned char      uint8val;
 	char               int8val;
 	logical            logicalval;

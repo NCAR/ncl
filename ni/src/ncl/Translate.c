@@ -1033,7 +1033,7 @@ if(groot != NULL) {
 			case 'b':
 				tmp_val = NclMalloc(sizeof(char));
 				*(char*)tmp_val = (char) integer->integer;
-				tclass = (NclTypeClass) nclTypecharClass;
+				tclass = (NclTypeClass) nclTypebyteClass;
 				break;
 			case 'h':
 				tmp_val = NclMalloc(sizeof(short));
@@ -1055,10 +1055,10 @@ if(groot != NULL) {
 				*(long long*)tmp_val = integer->integer;
 				tclass = (NclTypeClass) nclTypeint64Class;
 				break;
-			case 'B':
+			case 'C':
 				tmp_val = NclMalloc(sizeof(byte));
-				*(byte*)tmp_val = (byte) integer->integer;
-				tclass = (NclTypeClass) nclTypebyteClass;
+				*(unsigned char*)tmp_val = (unsigned char) integer->integer;
+				tclass = (NclTypeClass) nclTypecharClass;
 				break;
 			case 'H':
 				tmp_val = NclMalloc(sizeof(unsigned short));
@@ -1080,12 +1080,12 @@ if(groot != NULL) {
 				*(unsigned long long*)tmp_val = (unsigned long long)integer->integer;
 				tclass = (NclTypeClass) nclTypeuint64Class;
 				break;
-			case 'c':
+			case 'j':
 				tmp_val = NclMalloc(sizeof(char));
-				*(char*)tmp_val = integer->integer;
+				*(char*)tmp_val = (char)integer->integer;
 				tclass = (NclTypeClass) nclTypeint8Class;
 				break;
-			case 'C':
+			case 'J':
 				tmp_val = NclMalloc(sizeof(unsigned char));
 				*(unsigned char*)tmp_val = (unsigned char)integer->integer;
 				tclass = (NclTypeClass) nclTypeuint8Class;
