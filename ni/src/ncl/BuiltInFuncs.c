@@ -19187,16 +19187,36 @@ NhlErrorTypes   _NclIGetFileVarTypes
 	    		vartypes[i] = NrmStringToQuark("long");
 		    	break;
 
+    		case Ncl_Typeulong:
+	    		vartypes[i] = NrmStringToQuark("ulong");
+		    	break;
+
     		case Ncl_Typeint:
 	    		vartypes[i] = NrmStringToQuark("integer");
+		    	break;
+
+    		case Ncl_Typeuint:
+	    		vartypes[i] = NrmStringToQuark("uint");
 		    	break;
 
     		case Ncl_Typeshort:
 	    		vartypes[i] = NrmStringToQuark("short");
 		    	break;
 
+    		case Ncl_Typeushort:
+	    		vartypes[i] = NrmStringToQuark("ushort");
+		    	break;
+
        		case Ncl_Typebyte:
 	    		vartypes[i] = NrmStringToQuark("byte");
+		    	break;
+
+    		case Ncl_Typeint8:
+	    		vartypes[i] = NrmStringToQuark("int8");
+		    	break;
+
+    		case Ncl_Typeuint8:
+	    		vartypes[i] = NrmStringToQuark("uint8");
 		    	break;
 
     		case Ncl_Typestring:

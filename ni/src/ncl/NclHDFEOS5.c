@@ -3108,6 +3108,7 @@ NclQuark var_name;
 	int i,j;
 
 	thelist = thefile->vars;
+	memset(var_info,0,sizeof(NclFVarRec));
 	for (i = 0; i < thefile->n_vars; i++) {
 		if(thelist->var_inq->name == var_name) {
 			var_info->var_name_quark = var_name;

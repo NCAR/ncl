@@ -465,12 +465,10 @@ NclQuark *dimnames;
 					dim_sizes
 					);
 				if(ret == NhlFATAL) {
-					fprintf(stdout, "FileAddVar, in file: %s, line: %d\n", __FILE__, __LINE__);
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar: an error occurred while adding a variable to a file, check to make sure data type is supported by the output format");
+					NHLPERROR((NhlFATAL,NhlEUNKNOWN,"FileAddVar: an error occurred while adding a variable to a file, check to make sure data type is supported by the output format"));
 				}
 			} else {
-				fprintf(stdout, "FileAddVar, in file: %s, line: %d\n", __FILE__, __LINE__);
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar Incorrect type specified, can't add variable (%s)",NrmQuarkToString(varname));
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"FileAddVar Incorrect type specified, can't add variable (%s)",NrmQuarkToString(varname)));
 				ret = NhlFATAL;
 			}
 			if(ret < NhlWARNING) 
@@ -486,13 +484,11 @@ NclQuark *dimnames;
 			UpdateCoordInfo(thefile,varname); 
 			return(NhlNOERROR);
 		} else {
-			fprintf(stdout, "FileAddVar, in file: %s, line: %d\n", __FILE__, __LINE__);
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAddVar: Variable %s is already defined, can not redefine",NrmQuarkToString(varname));
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,"FileAddVar: Variable %s is already defined, can not redefine",NrmQuarkToString(varname)));
 			return(NhlWARNING);
 		}
 	} else {
-		fprintf(stdout, "FileAddVar, in file: %s, line: %d\n", __FILE__, __LINE__);
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar: file (%s) was opened for reading only, can not write",NrmQuarkToString(thefile->file.fname));
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"FileAddVar: file (%s) was opened for reading only, can not write",NrmQuarkToString(thefile->file.fname)));
 	}
 	return(NhlFATAL);
 }
@@ -521,17 +517,15 @@ ng_size_t *dims;
 					varname, n_dims, dims);
 				if(ret == NhlFATAL)
 				{
-					fprintf(stdout, "FileAddVarChunk, in file: %s, line: %d\n", __FILE__, __LINE__);
-					NhlPError(NhlFATAL,NhlEUNKNOWN,
-						"FileAddVarChunk: an error occurred while adding chunk to variable");
+					NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+						   "FileAddVarChunk: an error occurred while adding chunk to variable"));
 				}
 			}
 			else
 			{
 				ret = NhlWARNING;
-				fprintf(stdout, "FileAddVarChunk, in file: %s, line: %d\n", __FILE__, __LINE__);
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
-					"FileAddVarChunk: add_var_chunk is not defined.");
+				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+					   "FileAddVarChunk: add_var_chunk is not defined."));
 			}
 			return(ret);
 		}
