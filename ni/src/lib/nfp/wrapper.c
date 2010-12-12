@@ -7310,8 +7310,8 @@ void NclAddUserFuncs(void)
     args = NewArgs(2);
 
     dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
-    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
 
     NclRegisterFunc(ind_resolve_W, args, "ind_resolve", nargs);
 
