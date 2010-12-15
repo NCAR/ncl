@@ -7,10 +7,10 @@ char csamsg[61];
 NhlErrorTypes csa1xs_W(void)
 {
   int scalar_wts;
-  ng_size_t i, j, npts, nxo;
+  ng_size_t i, j;
   ng_size_t size_output, size_leftmost;
-  int ret;
-  int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
+  int npts, nxo, ret, ier = 0;
+  ng_size_t index_xi = 0, index_yi = 0, index_yo = 0;
   float *xi;
   int ndims_xi;
   ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
@@ -44,6 +44,15 @@ NhlErrorTypes csa1xs_W(void)
                                 NULL, DONT_CARE);
  
 /*
+ * Test the dimension sizes.
+ */
+  if(dsizes_yi[ndims_yi-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa1xs: the rightmost dimension of yi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_yi[ndims_yi-1];
+
+/*
  * Either the dimensions of xi and yi must be the same, or if xi
  * is 1D and yi is nD, then the last dimension of yi must be equal
  * to the dimension of xi.
@@ -71,8 +80,6 @@ NhlErrorTypes csa1xs_W(void)
       return(NhlFATAL);
     }
   }
-
-  npts = dsizes_yi[ndims_yi-1];
 
 /*
  * Retrieve argument #2 (weights).
@@ -117,7 +124,14 @@ NhlErrorTypes csa1xs_W(void)
  */
   xo = (float *) NclGetArgValue(6, 7, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
  
-  nxo = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa1xs: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
 
 /*
  * Calculate space for output array and its dimension sizes.
@@ -165,10 +179,10 @@ NhlErrorTypes csa1xs_W(void)
 
 NhlErrorTypes csa1s_W(void)
 {
-  ng_size_t i, j, npts, nxo;
+  ng_size_t i, j;
   ng_size_t size_output, size_leftmost;
-  int ret;
-  int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
+  int npts, nxo, ret, ier = 0;
+  ng_size_t index_xi = 0, index_yi = 0, index_yo = 0;
   float *xi;
   int ndims_xi;
   ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
@@ -225,9 +239,17 @@ NhlErrorTypes csa1s_W(void)
   }
 
 /*
+ * Test the dimension sizes.
+ */
+  if(dsizes_yi[ndims_yi-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa1s: the rightmost dimension of yi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_yi[ndims_yi-1];
+
+/*
  * Compute the total size of the leftmost dimension.
  */
-  npts = dsizes_yi[ndims_yi-1];
   size_leftmost = 1;
   for( i = 0; i < ndims_yi-1; i++ ) size_leftmost *= dsizes_yi[i];
 
@@ -241,7 +263,14 @@ NhlErrorTypes csa1s_W(void)
  */
   xo = (float *) NclGetArgValue(3, 4, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
  
-  nxo = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa1s: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
 
 /*
  * Calculate space for output array and its dimension sizes.
@@ -287,9 +316,9 @@ NhlErrorTypes csa1s_W(void)
 
 NhlErrorTypes csa2s_W(void)
 {
-  ng_size_t i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost;
-  int ret;
-  int ier = 0, index_in = 0, index_zo = 0;
+  ng_size_t i, j, nxonyo, size_output, size_leftmost;
+  int npts, nxo, nyo, ret, ier = 0;
+  ng_size_t index_in = 0, index_zo = 0;
 
   float *xi;
   ng_size_t dsizes_xi[1];
@@ -327,7 +356,14 @@ NhlErrorTypes csa2s_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2s: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #2 (z values).
@@ -358,13 +394,21 @@ NhlErrorTypes csa2s_W(void)
  * Retrieve argument #4 (output x coordinates).
  */
   xo = (float *) NclGetArgValue(4, 6, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
 
 /*
  * Retrieve argument #5 (output y coordinates).
  */
   yo = (float *) NclGetArgValue(5, 6, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
-  nyo = dsizes_yo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2s: the length of xo and/or yo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
+  nyo = (int) dsizes_yo[0];
   nxonyo = nxo*nyo;
  
 /*
@@ -418,8 +462,8 @@ NhlErrorTypes csa2s_W(void)
 NhlErrorTypes csa2xs_W(void)
 {
   ng_size_t i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost;
-  int scalar_wts;
-  int ier = 0, index_in = 0, index_zo = 0, ret;
+  int scalar_wts, ier = 0;
+  ng_size_t index_in = 0, index_zo = 0, ret;
 
   float *xi;
   ng_size_t dsizes_xi[1];
@@ -461,7 +505,14 @@ NhlErrorTypes csa2xs_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2xs: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #2 (z values).
@@ -522,13 +573,22 @@ NhlErrorTypes csa2xs_W(void)
  * Retrieve argument #7 (output x coordinates).
  */
   xo = (float *) NclGetArgValue(7, 9, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
- 
+
 /*
  * Retrieve argument #8 (output y coordinates).
  */
   yo = (float *) NclGetArgValue(8, 9, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
-  nyo = dsizes_yo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2xs: the length of xo and/or yo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
+  nyo = (int) dsizes_yo[0];
+
   nxonyo = nxo*nyo;
 
 /*
@@ -581,8 +641,8 @@ NhlErrorTypes csa2xs_W(void)
 NhlErrorTypes csa2ls_W(void)
 {
   ng_size_t i, j, npts, nxo, size_output, size_leftmost;
-  int ret;
-  int ier = 0, index_in = 0, index_zo = 0, scalar_zo;
+  int ret, ier = 0;
+  ng_size_t index_in = 0, index_zo = 0, scalar_zo;
 
   float *xi;
   ng_size_t dsizes_xi[1];
@@ -620,7 +680,14 @@ NhlErrorTypes csa2ls_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2ls: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #2 (z values).
@@ -652,7 +719,15 @@ NhlErrorTypes csa2ls_W(void)
  * Retrieve argument #4 (output x coordinates).
  */
   xo = (float *) NclGetArgValue(4, 6, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2ls: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
  
 /*
  * Retrieve argument #5 (output y coordinates).
@@ -719,8 +794,8 @@ NhlErrorTypes csa2lxs_W(void)
 {
   ng_size_t i, j, npts, nxo, size_output, size_leftmost;
   int ret;
-  int scalar_zo, scalar_wts;
-  int ier = 0, index_in = 0, index_zo = 0;
+  int scalar_zo, scalar_wts, ier = 0;
+  ng_size_t index_in = 0, index_zo = 0;
 
   float *xi;
   ng_size_t dsizes_xi[1];
@@ -762,7 +837,14 @@ NhlErrorTypes csa2lxs_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2lxs: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #2 (z values).
@@ -823,7 +905,15 @@ NhlErrorTypes csa2lxs_W(void)
  * Retrieve argument #7 (output x coordinates).
  */
   xo = (float *) NclGetArgValue(7, 9, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2lxs: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
  
 /*
  * Retrieve argument #8 (output y coordinates).
@@ -891,8 +981,8 @@ NhlErrorTypes csa3xs_W(void)
 {
   ng_size_t i, j, npts, nxo, nyo, nzo, nxyz;
   ng_size_t size_output, size_leftmost;
-  int scalar_wts;
-  int ier = 0, index_in = 0, index_uo = 0, ret;
+  int ret, scalar_wts, ier = 0;
+  ng_size_t index_in = 0, index_uo = 0;
 
   float *xi;
   ng_size_t dsizes_xi[1];
@@ -946,7 +1036,14 @@ NhlErrorTypes csa3xs_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3xs: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #3 (u values).
@@ -1006,19 +1103,28 @@ NhlErrorTypes csa3xs_W(void)
  * Retrieve argument #8 (output x coordinates).
  */
   xo = (float *) NclGetArgValue(8, 11, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #9 (output y coordinates).
  */
   yo = (float *) NclGetArgValue(9, 11, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
-  nyo = dsizes_yo[0];
 
 /*
  * Retrieve argument #10 (output z coordinates).
  */
   zo = (float *) NclGetArgValue(10, 11, NULL, dsizes_zo, NULL, NULL, NULL, DONT_CARE);
-  nzo = dsizes_zo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX) || 
+      (dsizes_zo[0] > INT_MAX) ){
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3xs: the length of xo, yo, and/or zo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
+  nyo = (int) dsizes_yo[0];
+  nzo = (int) dsizes_zo[0];
  
 /*
  * Calculate space for output array and its dimension sizes.
@@ -1073,8 +1179,8 @@ NhlErrorTypes csa3s_W(void)
 {
   ng_size_t i, j, npts, nxo, nyo, nzo, nxyz;
   ng_size_t size_output, size_leftmost;
-  int ret;
-  int ier = 0, index_in = 0, index_uo = 0;
+  int ret, ier = 0;
+  ng_size_t index_in = 0, index_uo = 0;
 
   float *xi;
   ng_size_t dsizes_xi[1];
@@ -1124,7 +1230,14 @@ NhlErrorTypes csa3s_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3s: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #3 (u values).
@@ -1156,19 +1269,28 @@ NhlErrorTypes csa3s_W(void)
  * Retrieve argument #5 (output x coordinates).
  */
   xo = (float *) NclGetArgValue(5, 8, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #6 (output y coordinates).
  */
   yo = (float *) NclGetArgValue(6, 8, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
-  nyo = dsizes_yo[0];
  
 /*
  * Retrieve argument #7 (output z coordinates).
  */
   zo = (float *) NclGetArgValue(7, 8, NULL, dsizes_zo, NULL, NULL, NULL, DONT_CARE);
-  nzo = dsizes_zo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX) || 
+      (dsizes_zo[0] > INT_MAX) ){
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3s: the length of xo, yo, and/or zo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
+  nyo = (int) dsizes_yo[0];
+  nzo = (int) dsizes_zo[0];
  
 /*
  * Calculate space for output array and its dimension sizes.
@@ -1222,7 +1344,8 @@ NhlErrorTypes csa3lxs_W(void)
   ng_size_t i, j, npts, nxo, size_output, size_leftmost;
   int ret;
   int scalar_uo, scalar_wts;
-  int ier = 0, index_in = 0, index_uo = 0;
+  int ier = 0;
+  ng_size_t index_in = 0, index_uo = 0;
 
   float *xi;
   ng_size_t dsizes_xi[1];
@@ -1276,7 +1399,14 @@ NhlErrorTypes csa3lxs_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3lxs: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #3 (u values).
@@ -1336,7 +1466,15 @@ NhlErrorTypes csa3lxs_W(void)
  * Retrieve argument #8 (output x coordinates).
  */
   xo = (float *) NclGetArgValue(8, 11, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3lxs: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
  
 /*
  * Retrieve argument #9 (output y coordinates).
@@ -1418,8 +1556,8 @@ NhlErrorTypes csa3lxs_W(void)
 NhlErrorTypes csa3ls_W(void)
 {
   ng_size_t i, j, npts, nxo, size_output, size_leftmost;
-  int scalar_uo;
-  int ier = 0, index_in = 0, index_uo = 0, ret;
+  int scalar_uo, ier = 0;
+  ng_size_t index_in = 0, index_uo = 0, ret;
 
   float *xi;
   ng_size_t dsizes_xi[1];
@@ -1469,7 +1607,14 @@ NhlErrorTypes csa3ls_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3ls: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #3 (u values).
@@ -1501,7 +1646,15 @@ NhlErrorTypes csa3ls_W(void)
  * Retrieve argument #5 (output x coordinates).
  */
   xo = (float *) NclGetArgValue(5, 8, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3ls: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
  
 /*
  * Retrieve argument #6 (output y coordinates).
@@ -1584,8 +1737,8 @@ NhlErrorTypes csa1xd_W(void)
   ng_size_t i, j, npts, nxo;
   int scalar_wts;
   ng_size_t size_output, size_leftmost;
-  int ret;
-  int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
+  int ret, ier = 0;
+  ng_size_t index_xi = 0, index_yi = 0, index_yo = 0;
   double *xi;
   int ndims_xi;
   ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
@@ -1644,7 +1797,14 @@ NhlErrorTypes csa1xd_W(void)
     }
   }
 
-  npts = dsizes_yi[ndims_yi-1];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_yi[ndims_yi-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa1xd: the rightmost dimension of yi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_yi[ndims_yi-1];
 
 /*
  * Retrieve argument #2 (weights).
@@ -1689,7 +1849,14 @@ NhlErrorTypes csa1xd_W(void)
  */
   xo = (double *) NclGetArgValue(6, 7, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
  
-  nxo = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa1xd: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
 
 /*
  * Calculate space for output array and its dimension sizes.
@@ -1738,8 +1905,8 @@ NhlErrorTypes csa1xd_W(void)
 NhlErrorTypes csa1d_W(void)
 {
   ng_size_t i, j, npts, nxo, size_output, size_leftmost;
-  int ret;
-  int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
+  int ret, ier = 0;
+  ng_size_t index_xi = 0, index_yi = 0, index_yo = 0;
 
   double *xi;
   int ndims_xi;
@@ -1796,9 +1963,17 @@ NhlErrorTypes csa1d_W(void)
   }
 
 /*
+ * Test the dimension sizes.
+ */
+  if(dsizes_yi[ndims_yi-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa1d: the rightmost dimension of yi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_yi[ndims_yi-1];
+
+/*
  * Compute the total size of the leftmost dimension.
  */
-  npts = dsizes_yi[ndims_yi-1];
   size_leftmost = 1;
   for( i = 0; i < ndims_yi-1; i++ ) size_leftmost *= dsizes_yi[i];
 
@@ -1812,7 +1987,14 @@ NhlErrorTypes csa1d_W(void)
  */
   xo = (double *) NclGetArgValue(3, 4, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
  
-  nxo = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa1d: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
 
 /*
  * Calculate space for output array and its dimension sizes.
@@ -1859,8 +2041,8 @@ NhlErrorTypes csa1d_W(void)
 NhlErrorTypes csa2d_W(void)
 {
   ng_size_t i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost;
-  int ret;
-  int ier = 0, index_in = 0, index_zo = 0;
+  int ret, ier = 0;
+  ng_size_t index_in = 0, index_zo = 0;
 
   double *xi;
   ng_size_t dsizes_xi[1];
@@ -1898,7 +2080,14 @@ NhlErrorTypes csa2d_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2d: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #2 (z values).
@@ -1929,13 +2118,21 @@ NhlErrorTypes csa2d_W(void)
  * Retrieve argument #4 (output x coordinates).
  */
   xo = (double *) NclGetArgValue(4, 6, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
 
 /*
  * Retrieve argument #5 (output y coordinates).
  */
   yo = (double *) NclGetArgValue(5, 6, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
-  nyo = dsizes_yo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2d: the length of xo and/or yo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
+  nyo = (int) dsizes_yo[0];
   nxonyo = nxo*nyo;
  
 /*
@@ -1989,8 +2186,8 @@ NhlErrorTypes csa2d_W(void)
 NhlErrorTypes csa2xd_W(void)
 {
   ng_size_t i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost;
-  int scalar_wts;
-  int ier = 0, index_in = 0, index_zo = 0, ret;
+  int scalar_wts, ier = 0;
+  ng_size_t index_in = 0, index_zo = 0, ret;
 
   double *xi;
   ng_size_t dsizes_xi[1];
@@ -2032,7 +2229,14 @@ NhlErrorTypes csa2xd_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2xd: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #2 (z values).
@@ -2093,13 +2297,22 @@ NhlErrorTypes csa2xd_W(void)
  * Retrieve argument #7 (output x coordinates).
  */
   xo = (double *) NclGetArgValue(7, 9, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #8 (output y coordinates).
  */
   yo = (double *) NclGetArgValue(8, 9, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
-  nyo = dsizes_yo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2xd: the length of xo and/or yo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
+  nyo = (int) dsizes_yo[0];
+
   nxonyo = nxo*nyo;
 
 /*
@@ -2152,8 +2365,8 @@ NhlErrorTypes csa2xd_W(void)
 NhlErrorTypes csa2ld_W(void)
 {
   ng_size_t i, j, npts, nxo, size_output, size_leftmost;
-  int ret;
-  int ier = 0, index_in = 0, index_zo = 0, scalar_zo;
+  int ret, ier = 0;
+  ng_size_t index_in = 0, index_zo = 0, scalar_zo;
 
   double *xi;
   ng_size_t dsizes_xi[1];
@@ -2191,7 +2404,14 @@ NhlErrorTypes csa2ld_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2ld: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #2 (z values).
@@ -2223,7 +2443,15 @@ NhlErrorTypes csa2ld_W(void)
  * Retrieve argument #4 (output x coordinates).
  */
   xo = (double *) NclGetArgValue(4, 6, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2ld: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
  
 /*
  * Retrieve argument #5 (output y coordinates).
@@ -2291,7 +2519,8 @@ NhlErrorTypes csa2lxd_W(void)
   ng_size_t i, j, npts, nxo, size_output, size_leftmost;
   int ret;
   int scalar_zo, scalar_wts;
-  int ier = 0, index_in = 0, index_zo = 0;
+  int ier = 0;
+  ng_size_t index_in = 0, index_zo = 0;
 
   double *xi;
   ng_size_t dsizes_xi[1];
@@ -2333,7 +2562,14 @@ NhlErrorTypes csa2lxd_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2lxd: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #2 (z values).
@@ -2394,7 +2630,15 @@ NhlErrorTypes csa2lxd_W(void)
  * Retrieve argument #7 (output x coordinates).
  */
   xo = (double *) NclGetArgValue(7, 9, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2lxd: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
  
 /*
  * Retrieve argument #8 (output y coordinates).
@@ -2463,8 +2707,8 @@ NhlErrorTypes csa3xd_W(void)
   ng_size_t i, j, npts, nxo, nyo, nzo, nxyz;
   int ret;
   ng_size_t size_output, size_leftmost;
-  int scalar_wts;
-  int ier = 0, index_in = 0, index_uo = 0;
+  int scalar_wts, ier = 0;
+  ng_size_t index_in = 0, index_uo = 0;
 
   double *xi;
   ng_size_t dsizes_xi[1];
@@ -2518,7 +2762,14 @@ NhlErrorTypes csa3xd_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3xd: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #3 (u values).
@@ -2578,19 +2829,28 @@ NhlErrorTypes csa3xd_W(void)
  * Retrieve argument #8 (output x coordinates).
  */
   xo = (double *) NclGetArgValue(8, 11, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #9 (output y coordinates).
  */
   yo = (double *) NclGetArgValue(9, 11, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
-  nyo = dsizes_yo[0];
 
 /*
  * Retrieve argument #10 (output z coordinates).
  */
   zo = (double *) NclGetArgValue(10, 11, NULL, dsizes_zo, NULL, NULL, NULL, DONT_CARE);
-  nzo = dsizes_zo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX) || 
+      (dsizes_zo[0] > INT_MAX) ){
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3xs: the length of xo, yo, and/or zo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
+  nyo = (int) dsizes_yo[0];
+  nzo = (int) dsizes_zo[0];
  
 /*
  * Calculate space for output array and its dimension sizes.
@@ -2645,8 +2905,8 @@ NhlErrorTypes csa3d_W(void)
 {
   ng_size_t i, j, npts, nxo, nyo, nzo, nxyz;
   ng_size_t size_output, size_leftmost;
-  int ret;
-  int ier = 0, index_in = 0, index_uo = 0;
+  int ret, ier = 0;
+  ng_size_t index_in = 0, index_uo = 0;
 
   double *xi;
   ng_size_t dsizes_xi[1];
@@ -2696,7 +2956,14 @@ NhlErrorTypes csa3d_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3d: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #3 (u values).
@@ -2728,19 +2995,28 @@ NhlErrorTypes csa3d_W(void)
  * Retrieve argument #5 (output x coordinates).
  */
   xo = (double *) NclGetArgValue(5, 8, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #6 (output y coordinates).
  */
   yo = (double *) NclGetArgValue(6, 8, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
-  nyo = dsizes_yo[0];
  
 /*
  * Retrieve argument #7 (output z coordinates).
  */
   zo = (double *) NclGetArgValue(7, 8, NULL, dsizes_zo, NULL, NULL, NULL, DONT_CARE);
-  nzo = dsizes_zo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX) || 
+      (dsizes_zo[0] > INT_MAX) ){
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3xs: the length of xo, yo, and/or zo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
+  nyo = (int) dsizes_yo[0];
+  nzo = (int) dsizes_zo[0];
  
 /*
  * Calculate space for output array and its dimension sizes.
@@ -2794,7 +3070,8 @@ NhlErrorTypes csa3lxd_W(void)
   ng_size_t i, j, npts, nxo, size_output, size_leftmost;
   int ret;
   int scalar_uo, scalar_wts;
-  int ier = 0, index_in = 0, index_uo = 0;
+  int ier = 0;
+  ng_size_t index_in = 0, index_uo = 0;
 
   double *xi;
   ng_size_t dsizes_xi[1];
@@ -2848,7 +3125,14 @@ NhlErrorTypes csa3lxd_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3lxd: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #3 (u values).
@@ -2908,7 +3192,15 @@ NhlErrorTypes csa3lxd_W(void)
  * Retrieve argument #8 (output x coordinates).
  */
   xo = (double *) NclGetArgValue(8, 11, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3lxd: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
  
 /*
  * Retrieve argument #9 (output y coordinates).
@@ -2990,8 +3282,8 @@ NhlErrorTypes csa3lxd_W(void)
 NhlErrorTypes csa3ld_W(void)
 {
   ng_size_t i, j, npts, nxo, size_output, size_leftmost;
-  int scalar_uo;
-  int ier = 0, index_in = 0, index_uo = 0, ret;
+  int scalar_uo, ier = 0;
+  ng_size_t index_in = 0, index_uo = 0, ret;
 
   double *xi;
   ng_size_t dsizes_xi[1];
@@ -3041,7 +3333,14 @@ NhlErrorTypes csa3ld_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3ld: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Retrieve argument #3 (u values).
@@ -3073,7 +3372,15 @@ NhlErrorTypes csa3ld_W(void)
  * Retrieve argument #5 (output x coordinates).
  */
   xo = (double *) NclGetArgValue(5, 8, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
-  nxo = dsizes_xo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3ld: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
  
 /*
  * Retrieve argument #6 (output y coordinates).
@@ -3170,8 +3477,8 @@ NhlErrorTypes csa1x_W(void)
   ng_size_t i, npts, nxo;
   int scalar_wts;
   ng_size_t size_output, size_leftmost;
-  int ret;
-  int ier = 0, index_in = 0, index_yo = 0;
+  int ret, ier = 0;
+  ng_size_t index_in = 0, index_yo = 0;
 /*
  * Output variables.
  */
@@ -3217,7 +3524,14 @@ NhlErrorTypes csa1x_W(void)
     }
   }
 
-  npts = dsizes_yi[ndims_yi-1];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_yi[ndims_yi-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa1x: the rightmost dimension of yi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_yi[ndims_yi-1];
 
 /*
  * Create temp arrays for coercing xi and yi to double if necessary.
@@ -3271,7 +3585,7 @@ NhlErrorTypes csa1x_W(void)
     }
     for(i = 0; i < npts; i++ ) tmp_wts[i] = *wts_val;
     if (wts_val != wts)
-	    NclFree(wts_val);
+      NclFree(wts_val);
   }
   else {
     tmp_wts = coerce_input_double(wts,type_wts,npts,0,NULL,NULL);
@@ -3314,7 +3628,15 @@ NhlErrorTypes csa1x_W(void)
  */
   xo = (void *) NclGetArgValue(6, 7, NULL, dsizes_xo, NULL, NULL, 
                                &type_xo, DONT_CARE);
-  nxo = dsizes_xo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa1x: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
 
   tmp_xo = coerce_input_double(xo,type_xo,nxo,0,NULL,NULL);
 
@@ -3425,8 +3747,8 @@ NhlErrorTypes csa1_W(void)
  * Various. 
  */
   ng_size_t i, npts, nxo, size_output, size_leftmost;
-  int ret;
-  int ier = 0, index_in = 0, index_yo = 0;
+  int ret, ier = 0;
+  ng_size_t index_in = 0, index_yo = 0;
 /*
  * Output variables.
  */
@@ -3473,7 +3795,14 @@ NhlErrorTypes csa1_W(void)
     }
   }
 
-  npts = dsizes_yi[ndims_yi-1];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_yi[ndims_yi-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa1: the rightmost dimension of yi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_yi[ndims_yi-1];
 
 /*
  * Create temp arrays for coercing xi and yi to double if ncessary.
@@ -3510,7 +3839,15 @@ NhlErrorTypes csa1_W(void)
  */
   xo = (void *) NclGetArgValue(3, 4, NULL, dsizes_xo, NULL, NULL, 
                                &type_xo, DONT_CARE);
-  nxo = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa1: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
+
   tmp_xo = coerce_input_double(xo,type_xo,nxo,0,NULL,NULL);
 
   if(tmp_xo == NULL) {
@@ -3617,8 +3954,8 @@ NhlErrorTypes csa2_W(void)
  * Various. 
  */
   ng_size_t i, npts, nxo, nyo, nxonyo, size_output, size_leftmost;
-  int ret;
-  int ier = 0, index_in = 0, index_zo = 0;
+  int ret, ier = 0;
+  ng_size_t index_in = 0, index_zo = 0;
 
 /*
  * Output variables.
@@ -3646,7 +3983,14 @@ NhlErrorTypes csa2_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Coerce if ncessary. 
@@ -3703,8 +4047,16 @@ NhlErrorTypes csa2_W(void)
                                &type_xo, DONT_CARE);
   yo = (void *) NclGetArgValue(5, 6, NULL, dsizes_yo, NULL, NULL, 
                                &type_yo, DONT_CARE);
-  nxo    = dsizes_xo[0];
-  nyo    = dsizes_yo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2: the length of xo and/or yo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
+  nyo = (int) dsizes_yo[0];
   nxonyo = nxo*nyo;
  
   tmp_xo = coerce_input_double(xo,type_xo,nxo,0,NULL,NULL);
@@ -3809,8 +4161,8 @@ NhlErrorTypes csa2x_W(void)
  * Various. 
  */
   ng_size_t i, npts, nxo, nyo, nxonyo, size_output, size_leftmost;
-  int scalar_wts;
-  int ier = 0, index_in = 0, index_zo = 0, ret;
+  int scalar_wts, ier = 0, ret;
+  ng_size_t index_in = 0, index_zo = 0;
 /*
  * Output variables.
  */
@@ -3837,7 +4189,14 @@ NhlErrorTypes csa2x_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2x: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Coerce if ncessary. 
@@ -3915,7 +4274,7 @@ NhlErrorTypes csa2x_W(void)
     }
     for(i = 0; i < npts; i++ ) tmp_wts[i] = *wts_val;
     if (wts_val != wts)
-	    NclFree(wts_val);
+      NclFree(wts_val);
   }
   else {
     tmp_wts = coerce_input_double(wts,type_wts,npts,0,NULL,NULL);
@@ -3954,8 +4313,16 @@ NhlErrorTypes csa2x_W(void)
   yo = (void *) NclGetArgValue(8, 9, NULL, dsizes_yo, NULL, NULL,
                                &type_yo, DONT_CARE);
 
-  nxo    = dsizes_xo[0];
-  nyo    = dsizes_yo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2x: the length of xo and/or yo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
+  nyo = (int) dsizes_yo[0];
+
   nxonyo = nxo*nyo;
 
   tmp_xo = coerce_input_double(xo,type_xo,nxo,0,NULL,NULL);
@@ -4060,8 +4427,8 @@ NhlErrorTypes csa2l_W(void)
  * Various. 
  */
   ng_size_t i, npts, nxo, size_output, size_leftmost;
-  int ret;
-  int ier = 0, index_in = 0, index_zo = 0, scalar_zo;
+  int ret, ier = 0;
+  ng_size_t index_in = 0, index_zo = 0, scalar_zo;
 
 /*
  * Output variables.
@@ -4089,7 +4456,14 @@ NhlErrorTypes csa2l_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2l: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Coerce if ncessary. 
@@ -4148,7 +4522,15 @@ NhlErrorTypes csa2l_W(void)
 /*
  * Check sizes of arguments 4 and 5.
  */
-  nxo = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2l: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
+ 
   if(nxo != dsizes_yo[0]) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
               "csa2l: Arguments #4 and 5 must be the same size.");
@@ -4258,7 +4640,8 @@ NhlErrorTypes csa2lx_W(void)
   ng_size_t i, npts, nxo, size_output, size_leftmost;
   int ret;
   int scalar_zo, scalar_wts;
-  int ier = 0, index_in = 0, index_zo = 0;
+  int ier = 0;
+  ng_size_t index_in = 0, index_zo = 0;
 
 /*
  * Output variables.
@@ -4286,7 +4669,15 @@ NhlErrorTypes csa2lx_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2lx: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
+
 /*
  * Coerce if ncessary. 
  */
@@ -4363,7 +4754,7 @@ NhlErrorTypes csa2lx_W(void)
     }
     for(i = 0; i < npts; i++ ) tmp_wts[i] = *wts_val;
     if (wts_val != wts) 
-	    NclFree(wts_val);
+      NclFree(wts_val);
   }
   else {
     tmp_wts = coerce_input_double(wts,type_wts,npts,0,NULL,NULL);
@@ -4402,7 +4793,14 @@ NhlErrorTypes csa2lx_W(void)
                                &type_xo, DONT_CARE);
   yo = (void *) NclGetArgValue(8, 9, NULL, dsizes_yo, NULL, NULL,
                                &type_yo, DONT_CARE);
-  nxo = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa2lx: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
  
 /*
  * Check sizes of arguments 7 and 8.
@@ -4521,7 +4919,8 @@ NhlErrorTypes csa3x_W(void)
   ng_size_t i, npts, nxo, nyo, nzo, nxyz;
   ng_size_t size_output, size_leftmost;
   int scalar_wts;
-  int ier = 0, index_in = 0, index_uo = 0, ret;
+  int ier = 0;
+  ng_size_t index_in = 0, index_uo = 0, ret;
 
 /*
  * Output variables.
@@ -4551,7 +4950,15 @@ NhlErrorTypes csa3x_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3x: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
+
 /*
  * Coerce if ncessary. 
  */
@@ -4629,7 +5036,7 @@ NhlErrorTypes csa3x_W(void)
     }
     for(i = 0; i < npts; i++ ) tmp_wts[i] = *wts_val;
     if (wts_val != wts)
-	    NclFree(wts_val);
+      NclFree(wts_val);
   }
   else {
     tmp_wts = coerce_input_double(wts,type_wts,npts,0,NULL,NULL);
@@ -4670,9 +5077,19 @@ NhlErrorTypes csa3x_W(void)
                                &type_yo, DONT_CARE);
   zo = (void *) NclGetArgValue(10, 11, NULL, dsizes_zo, NULL, NULL,
                                &type_zo, DONT_CARE);
-  nxo = dsizes_xo[0];
-  nyo = dsizes_yo[0];
-  nzo = dsizes_zo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX) || 
+      (dsizes_zo[0] > INT_MAX) ){
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3x: the length of xo, yo, and/or zo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
+  nyo = (int) dsizes_yo[0];
+  nzo = (int) dsizes_zo[0];
+ 
   nxyz = nxo * nyo * nzo;
 
   tmp_xo = coerce_input_double(xo,type_xo,nxo,0,NULL,NULL);
@@ -4782,8 +5199,8 @@ NhlErrorTypes csa3_W(void)
  */
   ng_size_t i, npts, nxo, nyo, nzo, nxyz;
   ng_size_t size_output, size_leftmost;
-  int ret;
-  int ier = 0, index_in = 0, index_uo = 0;
+  int ret, ier = 0;
+  ng_size_t index_in = 0, index_uo = 0;
 
 /*
  * Output variables.
@@ -4813,7 +5230,14 @@ NhlErrorTypes csa3_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Coerce if ncessary. 
@@ -4872,9 +5296,18 @@ NhlErrorTypes csa3_W(void)
                                  &type_yo, DONT_CARE);
   zo = (double *) NclGetArgValue(7, 8, NULL, dsizes_zo, NULL, NULL,
                                  &type_zo, DONT_CARE);
-  nxo = dsizes_xo[0];
-  nyo = dsizes_yo[0];
-  nzo = dsizes_zo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX) || 
+      (dsizes_zo[0] > INT_MAX) ){
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3: the length of xo, yo, and/or zo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
+  nyo = (int) dsizes_yo[0];
+  nzo = (int) dsizes_zo[0];
+ 
   nxyz = nxo * nyo * nzo;
  
   tmp_xo = coerce_input_double(xo,type_xo,nxo,0,NULL,NULL);
@@ -4983,7 +5416,8 @@ NhlErrorTypes csa3lx_W(void)
   ng_size_t i, npts, nxo, size_output, size_leftmost;
   int ret;
   int scalar_uo, scalar_wts;
-  int ier = 0, index_in = 0, index_uo = 0;
+  int ier = 0;
+  ng_size_t index_in = 0, index_uo = 0;
 
 /*
  * Output variables.
@@ -5013,7 +5447,15 @@ NhlErrorTypes csa3lx_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3lx: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
+
 /*
  * Coerce if ncessary. 
  */
@@ -5092,7 +5534,7 @@ NhlErrorTypes csa3lx_W(void)
     }
     for(i = 0; i < npts; i++ ) tmp_wts[i] = *wts_val;
     if (wts_val != wts) 
-	    NclFree(wts_val);
+      NclFree(wts_val);
   }
   else {
     tmp_wts = coerce_input_double(wts,type_wts,npts,0,NULL,NULL);
@@ -5133,7 +5575,16 @@ NhlErrorTypes csa3lx_W(void)
                                &type_yo, DONT_CARE);
   zo = (void *) NclGetArgValue(10, 11, NULL, dsizes_zo, NULL, NULL,
                                &type_zo, DONT_CARE);
-  nxo = dsizes_xo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3lx: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
+ 
 /*
  * Check sizes of arguments 8, 9, and 10.
  */
@@ -5251,7 +5702,8 @@ NhlErrorTypes csa3l_W(void)
  */
   ng_size_t i, npts, nxo, size_output, size_leftmost;
   ng_size_t scalar_uo;
-  int ier = 0, index_in = 0, index_uo = 0, ret;
+  int ier = 0;
+  ng_size_t index_in = 0, index_uo = 0, ret;
 
 /*
  * Output variables.
@@ -5281,7 +5733,14 @@ NhlErrorTypes csa3l_W(void)
     return(NhlFATAL);
   }
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3l: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_xi[0];
 
 /*
  * Coerce if ncessary. 
@@ -5341,7 +5800,14 @@ NhlErrorTypes csa3l_W(void)
                                  &type_yo, DONT_CARE);
   zo = (double *) NclGetArgValue(7, 8, NULL, dsizes_zo, NULL, NULL,
                                  &type_zo, DONT_CARE);
-  nxo = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"csa3l: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes_xo[0];
  
 /*
  * Check sizes of arguments 5, 6, and 7.

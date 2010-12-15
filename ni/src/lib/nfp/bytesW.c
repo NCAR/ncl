@@ -28,14 +28,13 @@ NhlErrorTypes dim_gbits_W( void )
  */
   ng_size_t i, j;
   ng_size_t size_leftmost, size_isam;
-  int n;
-  int tmp_ibit, tmp_nbits, tmp_nskip;
+  int n, tmp_ibit, tmp_nbits, tmp_nskip;
   int *tmp_npack = NULL;
   int *tmp_npack2 = NULL;
 
   int size_npack_type, size_int_type;
   int ret;
-  int index_npack = 0, index_isam = 0;
+  ng_size_t index_npack = 0, index_isam = 0;
   NclTypeClass typeclass_npack;
 /*
  * Retrieve first argument.
@@ -112,8 +111,13 @@ NhlErrorTypes dim_gbits_W( void )
   for(i = 0; i < ndims_npack-1; i++) {
     size_leftmost *= dsizes_npack[i];
   }
-  n         = dsizes_npack[ndims_npack-1];
   size_isam = *iter * size_leftmost;
+
+  if(dsizes_npack[ndims_npack-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_gbits: the rightmost dimension of npack is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  n = (int)dsizes_npack[ndims_npack-1];
 
 /*
  * Allocate space for input/output arrays.
