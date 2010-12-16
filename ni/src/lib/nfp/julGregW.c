@@ -8,7 +8,7 @@ extern void   NGCALLF(juli2greg,JULI2GREG)(int *,int *,int *,int *);
 
 NhlErrorTypes greg2jul_W( void )
 {
-  int i, total;
+  ng_size_t i, total;
 /*
  * Input variables
  */
@@ -186,7 +186,8 @@ NhlErrorTypes jul2greg_W( void )
 /*
  * Other variables
  */
-  int i, j, total, num_elems, is_double;
+  ng_size_t i, j, total, num_elems;
+  int is_double;
 /*
  * Retrieve argument.
  *

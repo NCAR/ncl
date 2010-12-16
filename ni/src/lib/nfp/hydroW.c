@@ -9,7 +9,8 @@ NhlErrorTypes hydro_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_zh, nlvl, ier=0;
+  ng_size_t i, index_zh, nlvl;
+  int inlvl, ier=0;
 /*
  * Input array variables
  */
@@ -116,11 +117,17 @@ NhlErrorTypes hydro_W( void )
 /*
  * Compute the total size of the output array.
  */
-  nlvl = dsizes_p[ndims_p-1];
-  if (nlvl < 1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: 'nlvl' (the last dimension of 'p' and 'tkv') must be at least one");
+  if (dsizes_p[ndims_p-1] < 1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: The rightmost dimension of p and tkv must be at least one");
     return(NhlFATAL);
   }
+
+  if(dsizes_p[ndims_p-1] > INT_MAX) { 
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: The rightmost dimension of p is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nlvl  = dsizes_p[ndims_p-1];
+  inlvl = (int) nlvl;
 
   size_zsfc = 1;
   for( i = 0; i < ndims_zsfc; i++ ) size_zsfc *= dsizes_zsfc[i];
@@ -259,7 +266,7 @@ NhlErrorTypes hydro_W( void )
       NhlPError(NhlWARNING,NhlEUNKNOWN,"hydro: one of the input arrays contains missing values. No geopotential heights calculated for this set of values.");
     }
     else {
-      NGCALLF(dhydro,DHYDRO)(tmp_p,tmp_tkv,tmp_zsfc,&nlvl,tmp_zh,&ier);
+      NGCALLF(dhydro,DHYDRO)(tmp_p,tmp_tkv,tmp_zsfc,&inlvl,tmp_zh,&ier);
 /*
  * Copy output values from temporary tmp_zh to zh.
  */
