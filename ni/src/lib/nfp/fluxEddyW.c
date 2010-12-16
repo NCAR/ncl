@@ -34,8 +34,8 @@ NhlErrorTypes fluxEddy_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  ng_size_t i;
-  int index_xy, ntime, ier;
+  ng_size_t i, ntime, index_xy;
+  int intime, ier;
 
 /*
  * Retrieve arguments.
@@ -66,7 +66,12 @@ NhlErrorTypes fluxEddy_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"fluxEddy: The input arrays x and y must have the same number of dimensions");
     return(NhlFATAL);
   }
-  ntime = dsizes_x[ndims_x-1];
+  if( dsizes_x[ndims_x-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fluxEddy: The rightmost dimension of x is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  ntime  = dsizes_x[ndims_x-1];
+  intime = (int) ntime;
 
   for( i = 0; i < ndims_x; i++ ) {
     if(dsizes_x[i] != dsizes_y[i]) {
@@ -159,7 +164,7 @@ NhlErrorTypes fluxEddy_W( void )
     }
     if(type_fluxeddy == NCL_double) tmp_fluxeddy = &((double*)fluxeddy)[i];
 
-    *tmp_fluxeddy = NGCALLF(dflxedy,DFLXEDY)(tmp_x,tmp_y,&ntime,
+    *tmp_fluxeddy = NGCALLF(dflxedy,DFLXEDY)(tmp_x,tmp_y,&intime,
                                              &missing_dx.doubleval,&ier);
 /*
  * Copy output values from temporary tmp_fluxeddy to "fluxeddy".

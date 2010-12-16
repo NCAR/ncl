@@ -21,8 +21,8 @@ NhlErrorTypes exp_tapershC_W( void )
 /*
  * various
  */
-  ng_size_t i, total_leftmost, total_size_ab, total_size_ab2;
-  int start, index_ab, nm, nb, mb, ier;
+  ng_size_t i, start, nm, index_ab, total_leftmost, total_size_ab, total_size_ab2;
+  int nb, mb, ier;
 /*
  * Retrieve parameters
  *
@@ -76,8 +76,12 @@ NhlErrorTypes exp_tapershC_W( void )
 /*
  * Compute the total number of elements in our array.
  */
-  nb  = dsizes_ab[ndims_ab-2];
-  mb  = dsizes_ab[ndims_ab-1];
+  if( (dsizes_ab[ndims_ab-2] > INT_MAX) || (dsizes_ab[ndims_ab-1] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_tapershC: One of the rightmost two dimensions of the input array is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nb  = (int) dsizes_ab[ndims_ab-2];
+  mb  = (int) dsizes_ab[ndims_ab-1];
   nm = nb * mb;
 
   total_leftmost = 1;
