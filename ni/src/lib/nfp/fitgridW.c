@@ -274,8 +274,8 @@ NhlErrorTypes ftcurv_W(void)
 /*
  * Various
  */
-  int i, npts, nxo, ret;
-  int size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
+  int inpts, inxo, ret;
+  ng_size_t i, npts, nxo, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo;
 
@@ -292,7 +292,15 @@ NhlErrorTypes ftcurv_W(void)
           &type_xi,
           DONT_CARE);
 
-  npts = dsizes_xi[ndims_xi-1];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[ndims_xi-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftcurv: the rightmost dimension of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_xi[ndims_xi-1];
+  inpts = (int) npts;
 
 /*
  * Retrieve yi.
@@ -346,7 +354,15 @@ NhlErrorTypes ftcurv_W(void)
           &type_xo,
           DONT_CARE);
 
-  nxo = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftcurv: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo  = dsizes_xo[0];
+  inxo = (int) nxo;
 
 /*
  * Compute the total size of the leftmost dimension.
@@ -425,11 +441,11 @@ NhlErrorTypes ftcurv_W(void)
 
     if(type_yo == NCL_float) {
       tmp_yo = &((float*)yo) [index_out];
-      fterr = c_ftcurv(npts, tmp_xi, tmp_yi, nxo, tmp_xo, tmp_yo);
+      fterr = c_ftcurv(inpts, tmp_xi, tmp_yi, inxo, tmp_xo, tmp_yo);
     }
     else {
       tmp_yo = &((double*)yo) [index_out];
-      fterr = c_ftcurvdp(npts, tmp_xi, tmp_yi, nxo, tmp_xo, tmp_yo);
+      fterr = c_ftcurvdp(inpts, tmp_xi, tmp_yi, inxo, tmp_xo, tmp_yo);
     }
     if (fterr != 0) {
       sprintf(ftmsg, "ftcurv: Error number %d.", fterr);
@@ -472,8 +488,9 @@ NhlErrorTypes ftcurvd_W(void)
 /*
  * Various
  */
-  int i, npts, nxo, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
-  int ret;
+  ng_size_t i, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
+  ng_size_t npts, nxo;
+  int inpts, inxo, ret;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo;
 
@@ -490,7 +507,15 @@ NhlErrorTypes ftcurvd_W(void)
           &type_xi,
           DONT_CARE);
 
-  npts = dsizes_xi[ndims_xi-1];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[ndims_xi-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftcurvd: the rightmost dimension of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_xi[ndims_xi-1];
+  inpts = (int) npts;
 
 /*
  * Retrieve yi.
@@ -543,7 +568,15 @@ NhlErrorTypes ftcurvd_W(void)
           &type_xo,
           DONT_CARE);
 
-  nxo = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftcurvd: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo  = dsizes_xo[0];
+  inxo = (int) nxo;
 
 /*
  * Compute the total size of the leftmost dimension.
@@ -622,11 +655,11 @@ NhlErrorTypes ftcurvd_W(void)
 
     if(type_yo == NCL_float) {
       tmp_yo = &((float*)yo) [index_out];
-      fterr = c_ftcurvd(npts, tmp_xi, tmp_yi, nxo, tmp_xo, tmp_yo);
+      fterr = c_ftcurvd(inpts, tmp_xi, tmp_yi, inxo, tmp_xo, tmp_yo);
     }
     else {
       tmp_yo = &((double*)yo) [index_out];
-      fterr = c_ftcurvddp(npts, tmp_xi, tmp_yi, nxo, tmp_xo, tmp_yo);
+      fterr = c_ftcurvddp(inpts, tmp_xi, tmp_yi, inxo, tmp_xo, tmp_yo);
     }
     if (fterr != 0) {
       sprintf(ftmsg, "ftcurvd: Error number %d.", fterr);
@@ -672,7 +705,8 @@ NhlErrorTypes ftcurvi_W(void)
 /*
  * Various
  */
-  int i, npts, size_leftmost, index_xi = 0, index_yi = 0, ret;
+  int inpts, ret;
+  ng_size_t i, npts, size_leftmost, index_xi = 0, index_yi = 0;
   void *tmp_xi, *tmp_yi, *tmp_xl, *tmp_xr, *tmp_int;
   NclBasicDataTypes type_xi, type_yi, type_xl, type_xr, type_int;
 
@@ -715,7 +749,15 @@ NhlErrorTypes ftcurvi_W(void)
           &type_xi,
           DONT_CARE);
 
-  npts = dsizes_xi[ndims_xi-1];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[ndims_xi-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftcurvi: the rightmost dimension of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_xi[ndims_xi-1];
+  inpts = (int) npts;
 
 /*
  * Retrieve yi.
@@ -839,12 +881,12 @@ NhlErrorTypes ftcurvi_W(void)
 
     if(type_int == NCL_float) {
       tmp_int = &((float*)integral) [i];
-      fterr = c_ftcurvi(*((float*)tmp_xl),*((float*)tmp_xr),npts,tmp_xi,
+      fterr = c_ftcurvi(*((float*)tmp_xl),*((float*)tmp_xr),inpts,tmp_xi,
                         tmp_yi,tmp_int);
     }
     else {
       tmp_int = &((double*)integral) [i];
-      fterr = c_ftcurvidp(*((double*)tmp_xl),*((double*)tmp_xr),npts,tmp_xi,
+      fterr = c_ftcurvidp(*((double*)tmp_xl),*((double*)tmp_xr),inpts,tmp_xi,
                           tmp_yi,tmp_int);
     }
     if (fterr != 0) {
@@ -890,8 +932,9 @@ NhlErrorTypes ftcurvp_W(void)
 /*
  * Various
  */
-  int i, npts, nxo, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
-  int ret;
+  ng_size_t i, npts, nxo;
+  ng_size_t size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
+  int inpts, inxo, ret;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_p;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo, type_p;
 
@@ -908,7 +951,15 @@ NhlErrorTypes ftcurvp_W(void)
           &type_xi,
           DONT_CARE);
 
-  npts = dsizes_xi[ndims_xi-1];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[ndims_xi-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftcurvp: the rightmost dimension of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_xi[ndims_xi-1];
+  inpts = (int) npts;
 
 /*
  * Retrieve yi (Y coordinate input values)
@@ -974,7 +1025,15 @@ NhlErrorTypes ftcurvp_W(void)
           &type_xo,
           DONT_CARE);
 
-  nxo = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftcurvp: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo  = dsizes_xo[0];
+  inxo = (int) nxo;
 
 /*
  * Compute the total size of the leftmost dimension.
@@ -1054,12 +1113,12 @@ NhlErrorTypes ftcurvp_W(void)
     }
     if(type_yo == NCL_float) {
       tmp_yo = &((float*)yo) [index_out];
-      fterr = c_ftcurvp(npts, tmp_xi, tmp_yi, *((float*)tmp_p), nxo, 
+      fterr = c_ftcurvp(inpts, tmp_xi, tmp_yi, *((float*)tmp_p), inxo, 
                         tmp_xo, tmp_yo);
     }
     else {
       tmp_yo = &((double*)yo) [index_out];
-      fterr = c_ftcurvpdp(npts, tmp_xi, tmp_yi, *((double*)tmp_p), nxo, 
+      fterr = c_ftcurvpdp(inpts, tmp_xi, tmp_yi, *((double*)tmp_p), inxo, 
                           tmp_xo, tmp_yo);
     }
     if (fterr != 0) {
@@ -1107,7 +1166,8 @@ NhlErrorTypes ftcurvpi_W(void)
 /*
  * Various
  */
-  int i, npts, size_leftmost, index_xi = 0, index_yi = 0, ret;
+  ng_size_t i, npts, size_leftmost, index_xi = 0, index_yi = 0;
+  int inpts, ret;
   void *tmp_xi, *tmp_yi, *tmp_xl, *tmp_xr, *tmp_int, *tmp_p;
   NclBasicDataTypes type_xi, type_yi, type_xl, type_xr, type_int, type_p;
 
@@ -1163,7 +1223,15 @@ NhlErrorTypes ftcurvpi_W(void)
           &type_xi,
           DONT_CARE);
 
-  npts = dsizes_xi[ndims_xi-1];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[ndims_xi-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftcurvpi: the rightmost dimension of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_xi[ndims_xi-1];
+  inpts = (int) npts;
 
 /*
  * Retrieve yi (the Y coordinate input values).
@@ -1290,12 +1358,12 @@ NhlErrorTypes ftcurvpi_W(void)
     if(type_int == NCL_float) {
       tmp_int = &((float*)integral) [i];
       fterr = c_ftcurvpi(*((float*)tmp_xl),*((float*)tmp_xr),
-                         *((float*)tmp_p),npts,tmp_xi,tmp_yi,tmp_int);
+                         *((float*)tmp_p),inpts,tmp_xi,tmp_yi,tmp_int);
     }
     else {
       tmp_int = &((double*)integral) [i];
       fterr = c_ftcurvpidp(*((double*)tmp_xl),*((double*)tmp_xr),
-                           *((double*)tmp_p),npts,tmp_xi,tmp_yi,tmp_int);
+                           *((double*)tmp_p),inpts,tmp_xi,tmp_yi,tmp_int);
     }
     if (fterr != 0) {
       sprintf(ftmsg, "ftcurvpi: Error number %d.", fterr);
@@ -1344,7 +1412,9 @@ NhlErrorTypes ftcurvs_W(void)
 /*
  * Various
  */
-  int i, npts, nxo, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
+  ng_size_t i, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
+  ng_size_t npts, nxo;
+  int inpts, inxo;
   int isw, ret;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_d;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo, type_d;
@@ -1362,7 +1432,15 @@ NhlErrorTypes ftcurvs_W(void)
           &type_xi,
           DONT_CARE);
 
-  npts = dsizes_xi[ndims_xi-1];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[ndims_xi-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftcurvs: the rightmost dimension of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_xi[ndims_xi-1];
+  inpts = (int) npts;
 
 /*
  * Retrieve yi (Y coordinate input values).
@@ -1434,7 +1512,15 @@ NhlErrorTypes ftcurvs_W(void)
           &type_xo,
           DONT_CARE);
 
-  nxo = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftcurvs: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo  = dsizes_xo[0];
+  inxo = (int) nxo;
 
 /*
  * Compute the total size of the leftmost dimension.
@@ -1517,11 +1603,11 @@ NhlErrorTypes ftcurvs_W(void)
     }
     if(type_yo == NCL_float) {
       tmp_yo = &((float*)yo) [index_out];
-      fterr = c_ftcurvs(npts,tmp_xi,tmp_yi,isw,tmp_d,nxo,tmp_xo,tmp_yo);
+      fterr = c_ftcurvs(inpts,tmp_xi,tmp_yi,isw,tmp_d,inxo,tmp_xo,tmp_yo);
     }
     else {
       tmp_yo = &((double*)yo) [index_out];
-      fterr = c_ftcurvsdp(npts,tmp_xi,tmp_yi,isw,tmp_d,nxo,tmp_xo,tmp_yo);
+      fterr = c_ftcurvsdp(inpts,tmp_xi,tmp_yi,isw,tmp_d,inxo,tmp_xo,tmp_yo);
     }
     if (fterr != 0) {
       sprintf(ftmsg, "ftcurvs: Error number %d.", fterr);
@@ -1570,7 +1656,9 @@ NhlErrorTypes ftcurvps_W(void)
 /*
  * Various
  */
-  int i, npts, nxo, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
+  ng_size_t i, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
+  ng_size_t npts, nxo;
+  int inpts, inxo;
   int isw, ret;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_d, *tmp_p;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo, type_d, type_p;
@@ -1588,7 +1676,15 @@ NhlErrorTypes ftcurvps_W(void)
           &type_xi,
           DONT_CARE);
 
-  npts = dsizes_xi[ndims_xi-1];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[ndims_xi-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftcurvs: the rightmost dimension of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_xi[ndims_xi-1];
+  inpts = (int) npts;
 
 /*
  * Retrieve yi (Y coordinate input values).
@@ -1673,7 +1769,15 @@ NhlErrorTypes ftcurvps_W(void)
           &type_xo,
           DONT_CARE);
 
-  nxo = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xo[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftcurvps: the length of xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo  = dsizes_xo[0];
+  inxo = (int) nxo;
 
 /*
  * Compute the total size of the leftmost dimension.
@@ -1758,13 +1862,13 @@ NhlErrorTypes ftcurvps_W(void)
     }
     if(type_yo == NCL_float) {
       tmp_yo = &((float*)yo) [index_out];
-      fterr = c_ftcurvps(npts,tmp_xi,tmp_yi,*((float*)tmp_p),isw,tmp_d,
-                         nxo,tmp_xo,tmp_yo);
+      fterr = c_ftcurvps(inpts,tmp_xi,tmp_yi,*((float*)tmp_p),isw,tmp_d,
+                         inxo,tmp_xo,tmp_yo);
     }
     else {
       tmp_yo = &((double*)yo) [index_out];
-      fterr = c_ftcurvpsdp(npts,tmp_xi,tmp_yi,*((double*)tmp_p),isw,tmp_d,
-                           nxo,tmp_xo,tmp_yo);
+      fterr = c_ftcurvpsdp(inpts,tmp_xi,tmp_yi,*((double*)tmp_p),isw,tmp_d,
+                           inxo,tmp_xo,tmp_yo);
     }
     if (fterr != 0) {
       sprintf(ftmsg, "ftcurvps: Error number %d.", fterr);
@@ -1799,6 +1903,7 @@ NhlErrorTypes ftkurv_W(void)
   void *xi, *yi, *xo, *ti, *yo;
   ng_size_t dsizes_xi[1], dsizes_yi[1], dsizes_ti[1], dsizes_xo[1], dsizes_yo[1];
   ng_size_t npts, mpts;
+  int inpts, impts;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_ti;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo, type_ti, type_tmp;
 
@@ -1815,7 +1920,15 @@ NhlErrorTypes ftkurv_W(void)
           &type_xi,
           DONT_CARE);
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftkurv: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_xi[0];
+  inpts = (int) npts;
 
 /*
  * Retrieve argument #2
@@ -1852,7 +1965,15 @@ NhlErrorTypes ftkurv_W(void)
           &type_ti,
           DONT_CARE);
 
-  mpts = dsizes_ti[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_ti[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftkurv: the length of ti is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  mpts  = dsizes_ti[0];
+  impts = (int) mpts;
 
 /*
  * Retrieve argument #4
@@ -1959,10 +2080,10 @@ NhlErrorTypes ftkurv_W(void)
  *  Invoke the C function.
  */
   if(type_tmp == NCL_float) {
-    fterr = c_ftkurv(npts,tmp_xi,tmp_yi,mpts,tmp_ti,tmp_xo,tmp_yo);
+    fterr = c_ftkurv(inpts,tmp_xi,tmp_yi,impts,tmp_ti,tmp_xo,tmp_yo);
   }
   else {
-    fterr = c_ftkurvdp(npts,tmp_xi,tmp_yi,mpts,tmp_ti,tmp_xo,tmp_yo);
+    fterr = c_ftkurvdp(inpts,tmp_xi,tmp_yi,impts,tmp_ti,tmp_xo,tmp_yo);
 
     if(type_xo == NCL_float) {
       coerce_output_float_only(xo,tmp_xo,mpts,0);
@@ -2006,6 +2127,7 @@ NhlErrorTypes ftkurvp_W(void)
   ng_size_t dsizes_xi[1], dsizes_yi[1], dsizes_ti[1], dsizes_xo[1], dsizes_yo[1];
 
   ng_size_t npts, mpts;
+  int inpts, impts;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_ti;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo, type_ti, type_tmp;
 
@@ -2022,7 +2144,16 @@ NhlErrorTypes ftkurvp_W(void)
           &type_xi,
           DONT_CARE);
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftkurvp: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_xi[0];
+  inpts = (int) npts;
+
 
 /*
  * Retrieve argument #1
@@ -2059,7 +2190,15 @@ NhlErrorTypes ftkurvp_W(void)
           &type_ti,
           DONT_CARE);
 
-  mpts = dsizes_ti[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_ti[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftkurvp: the length of ti is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  mpts  = dsizes_ti[0];
+  impts = (int) mpts;
 
 /*
  * Retrieve argument #3
@@ -2154,10 +2293,10 @@ NhlErrorTypes ftkurvp_W(void)
  */
 
   if(type_tmp == NCL_float) {
-    fterr = c_ftkurvp(npts,tmp_xi,tmp_yi,mpts,tmp_ti,tmp_xo,tmp_yo);
+    fterr = c_ftkurvp(inpts,tmp_xi,tmp_yi,impts,tmp_ti,tmp_xo,tmp_yo);
   }
   else {
-    fterr = c_ftkurvpdp(npts,tmp_xi,tmp_yi,mpts,tmp_ti,tmp_xo,tmp_yo);
+    fterr = c_ftkurvpdp(inpts,tmp_xi,tmp_yi,impts,tmp_ti,tmp_xo,tmp_yo);
 
     if(type_xo == NCL_float) {
       coerce_output_float_only(xo,tmp_xo,mpts,0);
@@ -2204,6 +2343,7 @@ NhlErrorTypes ftkurvd_W(void)
   ng_size_t dsizes_xdd[1], dsizes_ydd[1];
 
   ng_size_t npts, mpts;
+  int inpts, impts;
   void *tmp_xi,*tmp_yi,*tmp_xo,*tmp_yo,*tmp_ti;
   void *tmp_xd,*tmp_yd,*tmp_xdd,*tmp_ydd;
   NclBasicDataTypes type_xi,type_yi,type_xo,type_yo,type_ti,type_tmp;
@@ -2214,7 +2354,15 @@ NhlErrorTypes ftkurvd_W(void)
  */
   xi = (void *) NclGetArgValue(0,9,NULL,dsizes_xi,NULL,NULL,&type_xi,DONT_CARE);
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftkurvd: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_xi[0];
+  inpts = (int) npts;
 
 /*
  * Retrieve argument #1
@@ -2234,7 +2382,15 @@ NhlErrorTypes ftkurvd_W(void)
           &type_ti,
           DONT_CARE);
 
-  mpts = dsizes_ti[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_ti[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftkurvd: the length of ti is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  mpts  = dsizes_ti[0];
+  impts = (int) mpts;
 
 /*
  * Retrieve argument #3
@@ -2416,11 +2572,11 @@ NhlErrorTypes ftkurvd_W(void)
  *  Invoke the C function.
  */
   if(type_tmp == NCL_float) {
-    fterr = c_ftkurvd(npts,tmp_xi,tmp_yi,mpts,tmp_ti,tmp_xo,tmp_yo,
+    fterr = c_ftkurvd(inpts,tmp_xi,tmp_yi,impts,tmp_ti,tmp_xo,tmp_yo,
                       tmp_xd,tmp_yd,tmp_xdd,tmp_ydd);
   }
   else {
-    fterr = c_ftkurvddp(npts,tmp_xi,tmp_yi,mpts,tmp_ti,tmp_xo,tmp_yo,
+    fterr = c_ftkurvddp(inpts,tmp_xi,tmp_yi,impts,tmp_ti,tmp_xo,tmp_yo,
                         tmp_xd,tmp_yd,tmp_xdd,tmp_ydd);
 
     if(type_xo == NCL_float) {
@@ -2483,6 +2639,7 @@ NhlErrorTypes ftkurvpd_W(void)
   ng_size_t dsizes_xdd[1], dsizes_ydd[1];
 
   ng_size_t npts, mpts;
+  int inpts, impts;
   void *tmp_xi,*tmp_yi,*tmp_xo,*tmp_yo,*tmp_ti;
   void *tmp_xd,*tmp_yd,*tmp_xdd,*tmp_ydd;
   NclBasicDataTypes type_xi,type_yi,type_xo,type_yo,type_ti,type_tmp;
@@ -2493,7 +2650,15 @@ NhlErrorTypes ftkurvpd_W(void)
  */
   xi = (void *) NclGetArgValue(0,9,NULL,dsizes_xi,NULL,NULL,&type_xi,DONT_CARE);
 
-  npts = dsizes_xi[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftkurvpd: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_xi[0];
+  inpts = (int) npts;
 
 /*
  * Retrieve argument #2
@@ -2513,7 +2678,15 @@ NhlErrorTypes ftkurvpd_W(void)
           &type_ti,
           DONT_CARE);
 
-  mpts = dsizes_ti[0];
+/*
+ * Test the dimension sizes.
+ */
+  if(dsizes_ti[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftkurvpd: the length of ti is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  mpts  = dsizes_ti[0];
+  impts = (int) mpts;
 
 /*
  * Retrieve argument #4
@@ -2695,11 +2868,11 @@ NhlErrorTypes ftkurvpd_W(void)
  *  Invoke the C function.
  */
   if(type_tmp == NCL_float) {
-    fterr = c_ftkurvpd(npts,tmp_xi,tmp_yi,mpts,tmp_ti,tmp_xo,tmp_yo,
+    fterr = c_ftkurvpd(inpts,tmp_xi,tmp_yi,impts,tmp_ti,tmp_xo,tmp_yo,
                        tmp_xd,tmp_yd,tmp_xdd,tmp_ydd);
   }
   else {
-    fterr = c_ftkurvpddp(npts,tmp_xi,tmp_yi,mpts,tmp_ti,tmp_xo,tmp_yo,
+    fterr = c_ftkurvpddp(inpts,tmp_xi,tmp_yi,impts,tmp_ti,tmp_xo,tmp_yo,
                          tmp_xd,tmp_yd,tmp_xdd,tmp_ydd);
 
     if(type_xo == NCL_float) {
@@ -2767,8 +2940,9 @@ NhlErrorTypes ftsurf_W(void)
   int ndims_zo;
   ng_size_t dsizes_zo[NCL_MAX_DIMENSIONS];
 
-  int i,index_xi,index_yi,index_zi,index_zo;
-  int k,nxi,nyi,nxinyi,nxo,nyo,nxonyo,nt;
+  ng_size_t i,index_xi,index_yi,index_zi,index_zo;
+  ng_size_t k,nxi,nyi,nxinyi,nxo,nyo,nxonyo,nt;
+  int inxi,inyi,inxo,inyo;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_zi;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo, type_zi, type_zo;
   float *ztmp_ft = NULL;
@@ -2849,12 +3023,24 @@ NhlErrorTypes ftsurf_W(void)
           DONT_CARE);
 
 /*
- * Save the sizes of the last two dimensions of the output array.
+ * Test and save the sizes of the last two dimensions of the output array.
  */
-  nxi = dsizes_xi[ndims_xi-1];
-  nyi = dsizes_yi[ndims_yi-1];
-  nxo = dsizes_xo[0];
-  nyo = dsizes_yo[0];
+  if( (dsizes_xi[ndims_xi-1] > INT_MAX) ||
+      (dsizes_yi[ndims_yi-1] > INT_MAX) ||
+      (dsizes_xo[0] > INT_MAX) ||
+      (dsizes_yo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ftsurf: one or more dimension sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxi  = dsizes_xi[ndims_xi-1];
+  nyi  = dsizes_yi[ndims_yi-1];
+  nxo  = dsizes_xo[0];
+  nyo  = dsizes_yo[0];
+  inxi = (int) nxi;
+  inyi = (int) nyi;
+  inxo = (int) nxo;
+  inyo = (int) nyo;
+
   nxinyi = nxi * nyi;
   nxonyo = nxo * nyo;
 
@@ -2996,11 +3182,11 @@ a */
 
       fterr = 0;
       if(type_zo == NCL_float) {
-        ztmp_ft = c_ftsurf(nxi,nyi,tmp_xi,tmp_yi,tmp_zi,nxo,nyo,tmp_xo,
+        ztmp_ft = c_ftsurf(inxi,inyi,tmp_xi,tmp_yi,tmp_zi,inxo,inyo,tmp_xo,
                            tmp_yo,&fterr);
       }
       else {
-        ztmp_dp = c_ftsurfdp(nxi,nyi,tmp_xi,tmp_yi,tmp_zi,nxo,nyo,tmp_xo,
+        ztmp_dp = c_ftsurfdp(inxi,inyi,tmp_xi,tmp_yi,tmp_zi,inxo,inyo,tmp_xo,
                              tmp_yo,&fterr);
       }
       if (fterr != 0) {

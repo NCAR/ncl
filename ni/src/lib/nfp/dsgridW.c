@@ -25,9 +25,11 @@ NhlErrorTypes dsgrid2s_W( void )
   float *zo, *tmp_zo;
   int ndims_zo;
   ng_size_t *dsizes_zo;
-  ng_size_t i, npts, nxo, nyo, nzo, size_leftmost, size_z, size_zo;
-  int type_size_zo;
-  int index_z = 0, index_zo = 0, ret;
+  ng_size_t i, nzo, size_leftmost, size_z, size_zo;
+  ng_size_t npts, nxo, nyo;
+  int type_size_zo, inpts, inxo, inyo;
+  ng_size_t index_z = 0, index_zo = 0;
+  int ret;
 
 /*
  * Retrieve parameters
@@ -56,10 +58,18 @@ NhlErrorTypes dsgrid2s_W( void )
                              NULL,
                              DONT_CARE);
 /*
+ * Test the dimension sizes.
+ */
+  if(dsizes_x[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid2s: the length of x is > INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_x[0];
+  inpts = (int) npts;
+
+/*
  * Check dimension sizes for x and y.
  */
-  npts = dsizes_x[0];
-
   if(dsizes_y[0] != npts) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid2s: x and y must be the same length");
     return(NhlFATAL);
@@ -108,9 +118,17 @@ NhlErrorTypes dsgrid2s_W( void )
                               &has_missing_yo,
                               NULL,
                               DONT_CARE);
-
-  nxo = dsizes_xo[0];
-  nyo = dsizes_yo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid2s: the length of xo and/or yo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo  = dsizes_xo[0];
+  nyo  = dsizes_yo[0];
+  inxo = (int) nxo;
+  inyo = (int) nyo;
   nzo = nxo * nyo;
 
 /*
@@ -157,7 +175,7 @@ NhlErrorTypes dsgrid2s_W( void )
  * the c_dsgrid2s function.
  */
   for( i = 0; i < size_leftmost; i++ ) {
-    tmp_zo = c_dsgrid2s (npts,x,y,&z[index_z],nxo,nyo,xo,yo,&ier);
+    tmp_zo = c_dsgrid2s (inpts,x,y,&z[index_z],inxo,inyo,xo,yo,&ier);
     if(ier) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid2s: ier = %d", ier);
       NclFree(tmp_zo);
@@ -216,8 +234,10 @@ NhlErrorTypes dsgrid2_W( void )
 /*
  * Various
  */
-  ng_size_t i, npts, nxo, nyo, nzo, size_leftmost, size_z, size_zo;
-  int ier = 0, nmiss = 0, index_z = 0, index_zo = 0, ret;
+  ng_size_t i, nzo, size_leftmost, size_z, size_zo;
+  ng_size_t npts, nxo, nyo;
+  int inpts, inxo, inyo, ier = 0, nmiss = 0, ret;
+  ng_size_t index_z = 0, index_zo = 0;
 
 /*
  * Retrieve parameters
@@ -246,10 +266,18 @@ NhlErrorTypes dsgrid2_W( void )
                              &type_y,
                              DONT_CARE);
 /*
+ * Test the dimension sizes.
+ */
+  if(dsizes_x[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid2: the length of x is > INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_x[0];
+  inpts = (int) npts;
+
+/*
  * Check dimension sizes for x and y.
  */
-  npts = dsizes_x[0];
-
   if(dsizes_y[0] != npts) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid2: x and y must be the same length");
     return(NhlFATAL);
@@ -298,8 +326,17 @@ NhlErrorTypes dsgrid2_W( void )
                               &type_yo,
                               DONT_CARE);
 
-  nxo = dsizes_xo[0];
-  nyo = dsizes_yo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid2: the length of xo and/or yo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo  = dsizes_xo[0];
+  nyo  = dsizes_yo[0];
+  inxo = (int) nxo;
+  inyo = (int) nyo;
   nzo = nxo * nyo;
 
 /*
@@ -419,7 +456,7 @@ NhlErrorTypes dsgrid2_W( void )
 /*
  * Call c_dsgrid2d.
  */
-      tmp_zo = c_dsgrid2d (npts,tmp_x,tmp_y,tmp_z,nxo,nyo,tmp_xo,tmp_yo,&ier);
+      tmp_zo = c_dsgrid2d (inpts,tmp_x,tmp_y,tmp_z,inxo,inyo,tmp_xo,tmp_yo,&ier);
 /*
  * Check for errors.
  */
@@ -490,8 +527,9 @@ NhlErrorTypes dsgrid2d_W( void )
   double *zo, *tmp_zo;
   int ndims_zo;
   ng_size_t *dsizes_zo;
-  ng_size_t i, npts, nxo, nyo, nzo, size_leftmost, size_z, size_zo;
-  int type_size_zo;
+  ng_size_t i, nzo, size_leftmost, size_z, size_zo;
+  ng_size_t npts, nxo, nyo;
+  int inpts, inxo, inyo, type_size_zo;
   int index_z = 0, index_zo = 0, ret;
 
 /*
@@ -521,10 +559,18 @@ NhlErrorTypes dsgrid2d_W( void )
                              NULL,
                              DONT_CARE);
 /*
+ * Test the dimension sizes.
+ */
+  if(dsizes_x[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid2d: the length of x is > INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_x[0];
+  inpts = (int) npts;
+
+/*
  * Check dimension sizes for x and y.
  */
-  npts = dsizes_x[0];
-
   if(dsizes_y[0] != npts) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid2d: x and y must be the same length");
     return(NhlFATAL);
@@ -574,8 +620,18 @@ NhlErrorTypes dsgrid2d_W( void )
                                NULL,
                                DONT_CARE);
 
-  nxo = dsizes_xo[0];
-  nyo = dsizes_yo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid2d: the length of xo and/or yo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo  = dsizes_xo[0];
+  nyo  = dsizes_yo[0];
+  inxo = (int) nxo;
+  inyo = (int) nyo;
+
   nzo = nxo * nyo;
 
 /*
@@ -622,7 +678,7 @@ NhlErrorTypes dsgrid2d_W( void )
  * the c_dsgrid2d function.
  */
   for( i = 0; i < size_leftmost; i++ ) {
-    tmp_zo = c_dsgrid2d (npts,x,y,&z[index_z],nxo,nyo,xo,yo,&ier);
+    tmp_zo = c_dsgrid2d (inpts,x,y,&z[index_z],inxo,inyo,xo,yo,&ier);
     if(ier) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid2d: ier = %d", ier);
       NclFree(tmp_zo);
@@ -671,9 +727,10 @@ NhlErrorTypes dsgrid3s_W( void )
   int ndims_uo;
   ng_size_t *dsizes_uo;
   ng_size_t i, npts, nxo, nyo, nzo, nuo;
-  int ret;
+  int inpts, inxo, inyo, inzo, ret;
   ng_size_t size_leftmost, size_u, size_uo;
-  int type_size_uo, index_u = 0, index_uo = 0;
+  int type_size_uo;
+  ng_size_t index_u = 0, index_uo = 0;
 
 /*
  * Retrieve parameters
@@ -712,10 +769,18 @@ NhlErrorTypes dsgrid3s_W( void )
                              DONT_CARE);
 
 /*
+ * Test the dimension sizes.
+ */
+  if(dsizes_x[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid3s: the length of x is > INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_x[0];
+  inpts = (int) npts;
+
+/*
  * Check dimension sizes for x, y, and z.
  */
-  npts = dsizes_x[0];
-
   if(dsizes_y[0] != npts || dsizes_z[0] != npts) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid3s: x, y, and z must be the same length");
     return(NhlFATAL);
@@ -781,9 +846,20 @@ NhlErrorTypes dsgrid3s_W( void )
                              &has_missing_zo,
                              NULL,
                              DONT_CARE);
-  nxo = dsizes_xo[0];
-  nyo = dsizes_yo[0];
-  nzo = dsizes_zo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX) ||
+      (dsizes_zo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid3s: the length of xo, yo, and/or zo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo  = dsizes_xo[0];
+  nyo  = dsizes_yo[0];
+  nzo  = dsizes_zo[0];
+  inxo = (int) nxo;
+  inyo = (int) nyo;
+  inzo = (int) nzo;
   nuo = nxo * nyo * nzo;
 
 /*
@@ -825,7 +901,7 @@ NhlErrorTypes dsgrid3s_W( void )
  * the c_dsgrid3s function.
  */
   for( i = 0; i < size_leftmost; i++ ) {
-    tmp_uo = c_dsgrid3s(npts,x,y,z,&u[index_u],nxo,nyo,nzo,xo,yo,zo,&ier);
+    tmp_uo = c_dsgrid3s(inpts,x,y,z,&u[index_u],inxo,inyo,inzo,xo,yo,zo,&ier);
     if(ier) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid3s: ier = %d", ier);
       NclFree(tmp_uo);
@@ -890,8 +966,10 @@ NhlErrorTypes dsgrid3_W( void )
 /*
  * Various
  */
-  ng_size_t i, npts, nxo, nyo, nzo, nuo, size_leftmost, size_u, size_uo;
-  int ier = 0, nmiss = 0, index_u = 0, index_uo = 0, ret;
+  ng_size_t i, nuo, size_leftmost, size_u, size_uo;
+  ng_size_t index_u = 0, index_uo = 0;
+  ng_size_t npts, nxo, nyo, nzo;
+  int inpts, inxo, inyo, inzo, ier = 0, nmiss = 0, ret;
 
 /*
  * Retrieve parameters
@@ -930,10 +1008,18 @@ NhlErrorTypes dsgrid3_W( void )
                              DONT_CARE);
 
 /*
+ * Test the dimension sizes.
+ */
+  if(dsizes_x[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid3: the length of x is > INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_x[0];
+  inpts = (int) npts;
+
+/*
  * Check dimension sizes for x, y, and z.
  */
-  npts = dsizes_x[0];
-
   if(dsizes_y[0] != npts || dsizes_z[0] != npts) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid3: x, y, and z must be the same length");
     return(NhlFATAL);
@@ -991,9 +1077,20 @@ NhlErrorTypes dsgrid3_W( void )
                              &has_missing_zo,
                              &type_zo,
                              DONT_CARE);
-  nxo = dsizes_xo[0];
-  nyo = dsizes_yo[0];
-  nzo = dsizes_zo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX) ||
+      (dsizes_zo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid3: the length of xo, yo, and/or zo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo  = dsizes_xo[0];
+  nyo  = dsizes_yo[0];
+  nzo  = dsizes_zo[0];
+  inxo = (int) nxo;
+  inyo = (int) nyo;
+  inzo = (int) nzo;
   nuo = nxo * nyo * nzo;
 
 /*
@@ -1122,7 +1219,7 @@ NhlErrorTypes dsgrid3_W( void )
 /*
  * Call c_dsgrid3d.
  */
-      tmp_uo = c_dsgrid3d(npts,tmp_x,tmp_y,tmp_z,tmp_u,nxo,nyo,nzo,
+      tmp_uo = c_dsgrid3d(inpts,tmp_x,tmp_y,tmp_z,tmp_u,inxo,inyo,inzo,
                           tmp_xo,tmp_yo,tmp_zo,&ier);
 /*
  * Check for errors.
@@ -1206,10 +1303,12 @@ NhlErrorTypes dsgrid3d_W( void )
   double *uo, *tmp_uo;
   int ndims_uo;
   ng_size_t *dsizes_uo;
-  ng_size_t i, npts, nxo, nyo, nzo, nuo;
-  int type_size_uo;
+  ng_size_t i, nuo;
+  ng_size_t npts, nxo, nyo, nzo;
+  int inpts, inxo, inyo, inzo, type_size_uo;
   ng_size_t size_leftmost, size_u, size_uo;
-  int index_u = 0, index_uo = 0, ret;
+  int ret;
+  ng_size_t index_u = 0, index_uo = 0;
 
 /*
  * Retrieve parameters
@@ -1248,10 +1347,18 @@ NhlErrorTypes dsgrid3d_W( void )
                              DONT_CARE);
 
 /*
+ * Test the dimension sizes.
+ */
+  if(dsizes_x[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid3d: the length of x is > INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_x[0];
+  inpts = (int) npts;
+
+/*
  * Check dimension sizes for x, y, and z.
  */
-  npts = dsizes_x[0];
-
   if(dsizes_y[0] != npts || dsizes_z[0] != npts) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid3d: x, y, and z must be the same length");
     return(NhlFATAL);
@@ -1317,9 +1424,20 @@ NhlErrorTypes dsgrid3d_W( void )
                              &has_missing_zo,
                              NULL,
                              DONT_CARE);
-  nxo = dsizes_xo[0];
-  nyo = dsizes_yo[0];
-  nzo = dsizes_zo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX) ||
+      (dsizes_zo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid3d: the length of xo, yo, and/or zo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo  = dsizes_xo[0];
+  nyo  = dsizes_yo[0];
+  nzo  = dsizes_zo[0];
+  inxo = (int) nxo;
+  inyo = (int) nyo;
+  inzo = (int) nzo;
   nuo = nxo * nyo * nzo;
 
 /*
@@ -1361,7 +1479,7 @@ NhlErrorTypes dsgrid3d_W( void )
  * the c_dsgrid3d function.
  */
   for( i = 0; i < size_leftmost; i++ ) {
-    tmp_uo = c_dsgrid3d(npts,x,y,z,&u[index_u],nxo,nyo,nzo,xo,yo,zo,&ier);
+    tmp_uo = c_dsgrid3d(inpts,x,y,z,&u[index_u],inxo,inyo,inzo,xo,yo,zo,&ier);
     if(ier) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dsgrid3d: ier = %d", ier);
       NclFree(tmp_uo);
@@ -1660,10 +1778,9 @@ NhlErrorTypes dspnt2s_W( void )
   int ndims_zo;
   ng_size_t dsizes_zo[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_z, missing_xo, missing_yo;
-  ng_size_t i, size_leftmost, size_z;
+  ng_size_t i, size_leftmost, size_z, index_z, index_zo;
   ng_size_t npts, nptso;
-  int index_z, index_zo;
-  int ier = 0;
+  int inpts, inptso, ier;
 /*
  * Retrieve parameters
  *
@@ -1728,8 +1845,18 @@ NhlErrorTypes dspnt2s_W( void )
                              NULL,
                              DONT_CARE);
 
-  npts  = dsizes_x[0];
-  nptso = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_x[0] > INT_MAX) || (dsizes_xo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt2s: the length of x and/or xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts   = dsizes_x[0];
+  nptso  = dsizes_xo[0];
+  inpts  = (int) npts;
+  inptso = (int) nptso;
+
 /*
  * Make sure z and zo have the same number of dimensions.
  */
@@ -1773,7 +1900,7 @@ NhlErrorTypes dspnt2s_W( void )
  */
      index_z = index_zo = 0;
      for( i = 0; i < size_leftmost; i++ ) {
-       c_dspnt2s(npts,x,y,&z[index_z],nptso,xo,yo,&zo[index_zo],&ier);
+       c_dspnt2s(inpts,x,y,&z[index_z],inptso,xo,yo,&zo[index_zo],&ier);
        if(ier) {
          NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt2s: ier = %d", ier);
          return(NhlFATAL);
@@ -1812,8 +1939,11 @@ NhlErrorTypes dspnt2d_W( void )
   int ndims_zo;
   ng_size_t dsizes_zo[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_z, missing_xo, missing_yo;
-  int ier = 0, index_z, index_zo;
-  ng_size_t i, size_leftmost, size_z, npts, nptso;
+  int ier = 0;
+  ng_size_t index_z, index_zo;
+  ng_size_t i, size_leftmost, size_z;
+  ng_size_t npts, nptso;
+  int inpts, inptso;
 /*
  * Retrieve parameters
  *
@@ -1877,8 +2007,18 @@ NhlErrorTypes dspnt2d_W( void )
                              NULL,
                              NULL,
                              DONT_CARE);
-  npts  = dsizes_x[0];
-  nptso = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_x[0] > INT_MAX) || (dsizes_xo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt2d: the length of x and/or xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts   = dsizes_x[0];
+  nptso  = dsizes_xo[0];
+  inpts  = (int) npts;
+  inptso = (int) nptso;
+
 /*
  * Make sure z and zo have the same number of dimensions.
  */
@@ -1922,7 +2062,7 @@ NhlErrorTypes dspnt2d_W( void )
  */
      index_z = index_zo = 0;
      for( i = 0; i < size_leftmost; i++ ) {
-       c_dspnt2d(npts,x,y,&z[index_z],nptso,xo,yo,&zo[index_zo],&ier);
+       c_dspnt2d(inpts,x,y,&z[index_z],inptso,xo,yo,&zo[index_zo],&ier);
        if(ier) {
          NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt2d: ier = %d", ier);
          return(NhlFATAL);
@@ -1965,8 +2105,8 @@ NhlErrorTypes dspnt2_W( void )
   double *tmp_z = NULL;
   double *tmp_zo = NULL;
   ng_size_t i, npts, nptso, size_z, size_zo, size_leftmost;
-  int ier = 0;
-  int index_z, index_zo, ret;
+  int inpts, inptso, ier = 0, ret;
+  ng_size_t index_z, index_zo;
 /*
  * Retrieve parameters
  *
@@ -2019,8 +2159,17 @@ NhlErrorTypes dspnt2_W( void )
                              &has_missing_yo,
                              &type_yo,
                              DONT_CARE);
-  npts  = dsizes_x[0];
-  nptso = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_x[0] > INT_MAX) || (dsizes_xo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt2: the length of x and/or xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts   = dsizes_x[0];
+  nptso  = dsizes_xo[0];
+  inpts  = (int) npts;
+  inptso = (int) nptso;
 
 /*
  * Check dimensions.
@@ -2167,7 +2316,7 @@ NhlErrorTypes dspnt2_W( void )
 /*
  * Call c_dspnt2d.
  */
-    c_dspnt2d(npts,tmp_x,tmp_y,tmp_z,nptso,tmp_xo,tmp_yo,tmp_zo,&ier);
+    c_dspnt2d(inpts,tmp_x,tmp_y,tmp_z,inptso,tmp_xo,tmp_yo,tmp_zo,&ier);
 /*
  * Check for errors.
  */
@@ -2179,7 +2328,7 @@ NhlErrorTypes dspnt2_W( void )
  * Coerce output back to float if necessary.
  */
     if(type_zo != NCL_double) {
-      coerce_output_float_only(zo,tmp_zo,nptso,index_zo);
+      coerce_output_float_only(zo,tmp_zo,inptso,index_zo);
     }
 
     index_z  += npts;
@@ -2231,9 +2380,9 @@ NhlErrorTypes dspnt3s_W( void )
   ng_size_t dsizes_uo[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_z, missing_u;
   NclScalar missing_xo, missing_yo, missing_zo;
-  ng_size_t i, size_leftmost, size_u, npts, nptso;
-  int index_u, index_uo;
-  int ier = 0;
+  ng_size_t i, size_leftmost, size_u;
+  ng_size_t npts, nptso, index_u, index_uo;
+  int inpts, inptso, ier = 0;
 /*
  * Retrieve parameters
  *
@@ -2317,8 +2466,18 @@ NhlErrorTypes dspnt3s_W( void )
                              NULL,
                              NULL,
                              DONT_CARE);
-  npts  = dsizes_x[0];
-  nptso = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_x[0] > INT_MAX) || (dsizes_xo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt3s: the length of x and/or xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts   = dsizes_x[0];
+  nptso  = dsizes_xo[0];
+  inpts  = (int) npts;
+  inptso = (int) nptso;
+
 /*
  * Make sure u and uo have the same number of dimensions.
  */
@@ -2364,7 +2523,7 @@ NhlErrorTypes dspnt3s_W( void )
  */
      index_u = index_uo = 0;
      for( i = 0; i < size_leftmost; i++ ) {
-       c_dspnt3s(npts,x,y,z,&u[index_u],nptso,xo,yo,zo,&uo[index_uo],&ier);
+       c_dspnt3s(inpts,x,y,z,&u[index_u],inptso,xo,yo,zo,&uo[index_uo],&ier);
        if(ier) {
          NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt3s: ier = %d", ier);
          return(NhlFATAL);
@@ -2410,8 +2569,10 @@ NhlErrorTypes dspnt3d_W( void )
   ng_size_t dsizes_uo[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_z, missing_u;
   NclScalar missing_xo, missing_yo, missing_zo;
-  int ier = 0, index_u, index_uo;
-  ng_size_t i, size_leftmost, size_u, npts, nptso;
+  int ier = 0;
+  ng_size_t index_u, index_uo;
+  ng_size_t i, npts, nptso, size_leftmost, size_u;
+  int inpts, inptso;
 /*
  * Retrieve parameters
  *
@@ -2495,8 +2656,18 @@ NhlErrorTypes dspnt3d_W( void )
                              NULL,
                              NULL,
                              DONT_CARE);
-  npts  = dsizes_x[0];
-  nptso = dsizes_xo[0];
+
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_x[0] > INT_MAX) || (dsizes_xo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt3d: the length of x and/or xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts   = dsizes_x[0];
+  nptso  = dsizes_xo[0];
+  inpts  = (int) npts;
+  inptso = (int) nptso;
 
 /*
  * Make sure u and uo have the same number of dimensions.
@@ -2543,7 +2714,7 @@ NhlErrorTypes dspnt3d_W( void )
  */
      index_u = index_uo = 0;
      for( i = 0; i < size_leftmost; i++ ) {
-       c_dspnt3d(npts,x,y,z,&u[index_u],nptso,xo,yo,zo,&uo[index_uo],&ier);
+       c_dspnt3d(inpts,x,y,z,&u[index_u],inptso,xo,yo,zo,&uo[index_uo],&ier);
        if(ier) {
          NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt3d: ier = %d", ier);
          return(NhlFATAL);
@@ -2592,8 +2763,9 @@ NhlErrorTypes dspnt3_W( void )
   double *tmp_u = NULL;
   double *tmp_uo = NULL;
   ng_size_t i, npts, nptso, size_u, size_uo, size_leftmost;
-  int ier = 0;
-  int index_u, index_uo, ret;
+  int inpts, inptso;
+  int ier = 0, ret;
+  ng_size_t index_u, index_uo;
 /*
  * Retrieve parameters
  *
@@ -2668,8 +2840,17 @@ NhlErrorTypes dspnt3_W( void )
                              &has_missing_zo,
                              &type_zo,
                              DONT_CARE);
-  npts  = dsizes_x[0];
-  nptso = dsizes_xo[0];
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_x[0] > INT_MAX) || (dsizes_xo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt3: the length of x and/or xo is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts   = dsizes_x[0];
+  nptso  = dsizes_xo[0];
+  inpts  = (int) npts;
+  inptso = (int) nptso;
 
 /*
  * Check dimensions.
@@ -2825,7 +3006,7 @@ NhlErrorTypes dspnt3_W( void )
 /*
  * Call c_dspnt3d.
  */
-    c_dspnt3d(npts,tmp_x,tmp_y,tmp_z,tmp_u,nptso,tmp_xo,tmp_yo,tmp_zo,
+    c_dspnt3d(inpts,tmp_x,tmp_y,tmp_z,tmp_u,inptso,tmp_xo,tmp_yo,tmp_zo,
               tmp_uo,&ier);
 
 /*

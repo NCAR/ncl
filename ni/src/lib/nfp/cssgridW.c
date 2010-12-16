@@ -792,21 +792,24 @@ NhlErrorTypes csstri_W(void)
 NhlErrorTypes csvoro_W(void)
 {
 
-  static int ndims[10];
+  int ndims[10];
   ng_size_t dsizes[10][NCL_MAX_DIMENSIONS];
   int has_missing[10];
-  static int dflag;
-  static NclScalar missing[10],missingd[10];
-  static void *callp,*indexp;
+  int dflag;
+  NclScalar missing[10],missingd[10];
+  void *callp,*indexp;
+
+  int i,callv,indexv;
+  int np2;
+
+  double platdt, plondt;
+  NclBasicDataTypes atypes[10];
+
+  static int num_points;
+  static double *platd, *plond;
   static void *datav[10];
-
-  static int i,num_points,callv,indexv;
-  static int np2;
-
-  static double *platd, *plond, platdt, plondt;
   static double *rlatd,*rlond, *rcd;
 
-  static NclBasicDataTypes atypes[10];
 
 /*
  *  See if this is the first call to csvoro for the current
@@ -982,8 +985,8 @@ NhlErrorTypes cssgrid_W(void)
   ng_size_t nt, psize;
   int       zdim;
   ng_size_t zsize[NCL_MAX_DIMENSIONS];
-  ng_size_t i,j,k,jo,ji,lnum_points;
-  int       nxo,nyo,num_points,num_missing,test_missing;
+  ng_size_t i,j,k,jo,ji,num_points;
+  int       nxo,nyo,inum_points,num_missing,test_missing;
 
   NclBasicDataTypes atypes[5],ztype;
 
@@ -1021,7 +1024,8 @@ NhlErrorTypes cssgrid_W(void)
                 "cssgrid: number of possible valid points > INT_MAX\n");
       return(NhlFATAL);
     }
-    num_points = (int) dsizes[0][0]; 
+    num_points  = dsizes[0][0]; 
+    inum_points = (int) num_points;
     num_missing = 0;
   }
 
@@ -1183,7 +1187,7 @@ NhlErrorTypes cssgrid_W(void)
  */
   jo = 0;
   for (ji = 0; ji < nt; ji += psize) {
-    lnum_points = 0;
+    num_points = 0;
     coerce_subset_input_double(datav[2],fvald,ji,atypes[2],psize,
                                has_missing[2],missing+2,missingd+2);
     for (i = 0; i < psize; i++) {
@@ -1194,13 +1198,13 @@ NhlErrorTypes cssgrid_W(void)
       if ( (!has_missing[0] || (platd[i] !=  missingd[0].doubleval)) &&
            (!has_missing[1] || (plond[i] !=  missingd[1].doubleval)) &&
            (!has_missing[2] || (fvald[i] !=  missingd[2].doubleval))) {
-        platdt[lnum_points] = platd[i];
-        plondt[lnum_points] = plond[i];
-        fvaldt[lnum_points] = fvald[i];
-        lnum_points++;
+        platdt[num_points] = platd[i];
+        plondt[num_points] = plond[i];
+        fvaldt[num_points] = fvald[i];
+        num_points++;
       }
     }
-    if (lnum_points < 3) {
+    if (num_points < 3) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,
         "cssgrid: missing values in the input data have reduced the number "
         "of valid points to less than 3.\n");
@@ -1209,15 +1213,15 @@ NhlErrorTypes cssgrid_W(void)
 /*
  * Test dimension sizes.
  */
-    if(lnum_points > INT_MAX) {
+    if(num_points > INT_MAX) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,
                 "cssgrid: number of valid points > INT_MAX\n");
       return(NhlFATAL);
     }
-    num_points = (int) lnum_points;
+    inum_points = (int) num_points;
 
-    ztmp = c_cssgridd(num_points,platdt,plondt,fvaldt,nxo,nyo,
-                        rlatd,rlond,&cserr);
+    ztmp = c_cssgridd(inum_points,platdt,plondt,fvaldt,nxo,nyo,
+                      rlatd,rlond,&cserr);
     if (cserr != 0) {
       sprintf(csmsg, "cssgrid: Error number %d.", cserr);
       NhlPError(NhlFATAL, NhlEUNKNOWN, csmsg);

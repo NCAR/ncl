@@ -32,7 +32,7 @@ NhlErrorTypes natgrids_W( void )
   int ndims_zo;
   ng_size_t *dsizes_zo;
   ng_size_t i, j, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
-  int index_in = 0, index_out = 0, ret;
+  int inpts, inxo, inyo, index_in = 0, index_out = 0, ret;
 
 /*
  * Retrieve parameters
@@ -68,7 +68,15 @@ NhlErrorTypes natgrids_W( void )
     return(NhlFATAL);
   }
 
-  npts = dsizes_x[0];
+/*
+ * Test dimension sizes. 
+ */
+  if(dsizes_x[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: the length of x is > INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_x[0];
+  inpts = (int) npts;
 
 /*
  * Get z.
@@ -121,8 +129,18 @@ NhlErrorTypes natgrids_W( void )
                               &has_missing_yo,
                               NULL,
                               DONT_CARE);
-  nxo = dsizes_xo[0];
-  nyo = dsizes_yo[0];
+/*
+ * Test dimension sizes. 
+ */
+  if((dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrids: the length of xo and/or yo is > INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo  = dsizes_xo[0];
+  nyo  = dsizes_yo[0];
+  inxo = (int) nxo;
+  inyo = (int) nyo;
+
   nzo = nxo * nyo;
 
 /*
@@ -172,7 +190,7 @@ NhlErrorTypes natgrids_W( void )
  * the c_natgrids function.
  */
   for( i = 0; i < size_leftmost; i++ ) {
-    zo_tmp = c_natgrids (npts,x,y,&z[index_in],nxo,nyo,xo,yo,&ier);
+    zo_tmp = c_natgrids (inpts,x,y,&z[index_in],inxo,inyo,xo,yo,&ier);
 
     if(!ier || (ier >= 4 && ier <= 6)) {
       if(ier) {
@@ -220,7 +238,7 @@ NhlErrorTypes natgridd_W( void )
   int ndims_zo;
   ng_size_t *dsizes_zo;
   ng_size_t i, j, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
-  int index_in = 0, index_out = 0, ret;
+  int inpts, inxo, inyo, index_in = 0, index_out = 0, ret;
 
 /*
  * Retrieve parameters
@@ -256,7 +274,15 @@ NhlErrorTypes natgridd_W( void )
     return(NhlFATAL);
   }
 
-  npts = dsizes_x[0];
+/*
+ * Test dimension sizes. 
+ */
+  if(dsizes_x[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: the length of x is > INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_x[0];
+  inpts = (int) npts;
 
 /*
  * Get z.
@@ -309,8 +335,18 @@ NhlErrorTypes natgridd_W( void )
                                &has_missing_yo,
                                NULL,
                                DONT_CARE);
-  nxo = dsizes_xo[0];
-  nyo = dsizes_yo[0];
+/*
+ * Test dimension sizes. 
+ */
+  if((dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgridd: the length of xo and/or yo is > INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo  = dsizes_xo[0];
+  nyo  = dsizes_yo[0];
+  inxo = (int) nxo;
+  inyo = (int) nyo;
+
   nzo = nxo * nyo;
 
 /*
@@ -360,7 +396,7 @@ NhlErrorTypes natgridd_W( void )
  * the c_natgridd function.
  */
   for( i = 0; i < size_leftmost; i++ ) {
-    zo_tmp = c_natgridd (npts,x,y,&z[index_in],nxo,nyo,xo,yo,&ier);
+    zo_tmp = c_natgridd (inpts,x,y,&z[index_in],inxo,inyo,xo,yo,&ier);
 
     if(!ier || (ier >= 4 && ier <= 6)) {
       if(ier) {
@@ -426,6 +462,7 @@ NhlErrorTypes natgrid_W( void )
  * Various
  */
   ng_size_t i, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
+  int inpts, inxo, inyo;
   int ier = 0, nmiss = 0, index_z = 0, index_zo = 0, ret;
 
 /*
@@ -462,7 +499,15 @@ NhlErrorTypes natgrid_W( void )
     return(NhlFATAL);
   }
 
-  npts = dsizes_x[0];
+/*
+ * Test dimension sizes. 
+ */
+  if(dsizes_x[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrid: the length of x is > INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_x[0];
+  inpts = (int) npts;
 
 /*
  * Get z.
@@ -506,8 +551,18 @@ NhlErrorTypes natgrid_W( void )
                                &has_missing_yo,
                                &type_yo,
                                DONT_CARE);
-  nxo = dsizes_xo[0];
-  nyo = dsizes_yo[0];
+/*
+ * Test dimension sizes. 
+ */
+  if((dsizes_xo[0] > INT_MAX) || (dsizes_yo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"natgrid: the length of xo and/or yo is > INT_MAX");
+    return(NhlFATAL);
+  }
+  nxo  = dsizes_xo[0];
+  nyo  = dsizes_yo[0];
+  inxo = (int) nxo;
+  inyo = (int) nyo;
+
   nzo = nxo * nyo;
 
 /*
@@ -636,7 +691,7 @@ NhlErrorTypes natgrid_W( void )
 /*
  * Call c_natgridd.
  */
-      tmp_zo = c_natgridd (npts,tmp_x,tmp_y,tmp_z,nxo,nyo,tmp_xo,tmp_yo,&ier);
+      tmp_zo = c_natgridd (inpts,tmp_x,tmp_y,tmp_z,inxo,inyo,tmp_xo,tmp_yo,&ier);
 /*
  * Check for errors.
  */
@@ -1223,6 +1278,7 @@ NhlErrorTypes nnpntinits_W( void )
   int has_missing_z;
   NclScalar missing_x, missing_y, missing_z;
   int i;
+  ng_size_t npts;
 /*
  * Retrieve parameters
  */
@@ -1260,7 +1316,13 @@ NhlErrorTypes nnpntinits_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-   if((dsizes_x[0] == dsizes_y[0])&&(dsizes_x[0] == dsizes_z[0])) {
+  if(dsizes_x[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinits: the length of x is > INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_x[0];
+
+  if((dsizes_x[0] == dsizes_y[0])&&(dsizes_x[0] == dsizes_z[0])) {
 /*
  * Check for missing values. 
  */
@@ -1292,7 +1354,7 @@ NhlErrorTypes nnpntinits_W( void )
  * The following section allocates the work memory and calls the
  * c_nnpntinits function.
  */
-         c_nnpntinits(dsizes_x[0],x,y,z);
+         c_nnpntinits(npts,x,y,z);
          return(NhlNOERROR);
    }
   else {
@@ -1314,7 +1376,7 @@ NhlErrorTypes nnpntinitd_W( void )
   ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
   int has_missing_z;
   NclScalar missing_x, missing_y, missing_z;
-  int i;
+  int i, npts;
 /*
  * Retrieve parameters
  */
@@ -1352,6 +1414,12 @@ NhlErrorTypes nnpntinitd_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
+  if(dsizes_x[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinitd: the length of x is > INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_x[0];
+
    if((dsizes_x[0] == dsizes_y[0])&&(dsizes_x[0] == dsizes_z[0])) {
 /*
  * Check for missing values. 
@@ -1384,7 +1452,7 @@ NhlErrorTypes nnpntinitd_W( void )
  * The following section allocates the work memory and calls the
  * c_nnpntinitd function.
  */
-         c_nnpntinitd(dsizes_x[0],x,y,z);
+         c_nnpntinitd(npts,x,y,z);
          return(NhlNOERROR);
    }
   else {
@@ -1442,7 +1510,12 @@ NhlErrorTypes nnpntinit_W( void )
 /*
  * Check sizes.
  */
-  npts = dsizes_x[0];
+  if(dsizes_x[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinit: the length of x is > INT_MAX");
+    return(NhlFATAL);
+  }
+  npts = (int) dsizes_x[0];
+
   if(dsizes_y[0] != npts || dsizes_z[0] != npts) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinit: the dimension sizes of parameters x, y and z must be identical");
     return(NhlFATAL);

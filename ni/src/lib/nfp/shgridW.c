@@ -29,8 +29,8 @@ NhlErrorTypes shgrid_W(void)
   NclScalar missing_xo, missing_yo, missing_zo;
 
   float *uo;
-  int ndims_uo, num_missing;
-  ng_size_t i, j, dsizes_uo[3], num_points;
+  int nxi, nxo, nyo, nzo, ndims_uo;
+  ng_size_t i, j, dsizes_uo[3], num_points, num_missing;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -44,6 +44,7 @@ NhlErrorTypes shgrid_W(void)
        &has_missing_xi,
        NULL,
        DONT_CARE);
+
 /*
  * Retrieve argument #1 (y coordinates).
  */
@@ -104,6 +105,7 @@ NhlErrorTypes shgrid_W(void)
        &has_missing_yo,
        NULL,
        DONT_CARE);
+
 /*
  *  Retrieve argument #6 (output z coordinates)
  */
@@ -132,6 +134,19 @@ NhlErrorTypes shgrid_W(void)
     num_points = dsizes_xi[0];
     num_missing = 0;
   }
+
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xi[0] > INT_MAX) || (dsizes_xo[0] > INT_MAX) || 
+      (dsizes_yo[0] > INT_MAX) || (dsizes_zo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shgrid: the length of one or more input arrays is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxi = (int) num_points;
+  nxo = (int) dsizes_xo[0];
+  nyo = (int) dsizes_yo[0];
+  nzo = (int) dsizes_zo[0];
 
 /*
  *  Check for missing values.  Each argument xi, yi, zi, and fval must 
@@ -280,8 +295,8 @@ NhlErrorTypes shgrid_W(void)
 /*
  *  Call the C procedure.
  */
-  uo = c_shgrid(dsizes_xi[0], xi, yi, zi, fval, dsizes_xo[0], 
-                dsizes_yo[0], dsizes_zo[0], xo, yo, zo, &ier);
+  uo = c_shgrid(nxi, xi, yi, zi, fval, nxo, nyo, nzo,
+                xo, yo, zo, &ier);
   if (ier != 0) {
     sprintf(shmsg, "shgrid: Error number %d.", ier);
     NhlPError(NhlFATAL, NhlEUNKNOWN, shmsg);
@@ -297,8 +312,8 @@ NhlErrorTypes shgrid_W(void)
 
 NhlErrorTypes shgetnp_W(void)
 {
-  int ier = 0, num_missing;
-  ng_size_t i, j, num_points;
+  int ier = 0, nxi;
+  ng_size_t i, j, num_points, num_missing;
 
   float *px;
   ng_size_t dsizes_px[NCL_MAX_DIMENSIONS];
@@ -425,6 +440,15 @@ NhlErrorTypes shgetnp_W(void)
   }
 
 /*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shgetnp: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxi = (int) num_points;
+
+/*
  *  Check for missing values.  Each argument xi, yi, and zi must 
  *  be checked separately, since it may be that _FillValue may be
  *  set for just one or two of the arguments.
@@ -507,7 +531,7 @@ NhlErrorTypes shgetnp_W(void)
  */
   if (num_missing > 0) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,
-      "shgrid: missing values in %d input points - those points ignored.",
+      "shgetnp: missing values in %d input points - those points ignored.",
       num_missing);
   }
 
@@ -515,7 +539,7 @@ NhlErrorTypes shgetnp_W(void)
  *  Call the C procedure.
  */
   index = (int*)malloc(sizeof(int));
-  *index = c_shgetnp(*px, *py, *pz, dsizes_xi[0], xi, yi, zi, *flag, &ier);
+  *index = c_shgetnp(*px, *py, *pz, nxi, xi, yi, zi, *flag, &ier);
   if (ier != 0) {
     sprintf(shmsg, "shgetnp: Error number %d.", ier);
     NhlPError(NhlFATAL, NhlEUNKNOWN, shmsg);
