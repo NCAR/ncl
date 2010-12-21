@@ -280,6 +280,7 @@ NhlErrorTypes dim_pqsort_n_W( void )
  * Free unneeded memory.
  */
   NclFree(tmp_x);
+  NclFree(tmp_iperm);
 /*
  * Return.
  */

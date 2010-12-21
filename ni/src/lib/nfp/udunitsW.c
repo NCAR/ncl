@@ -345,7 +345,6 @@ NhlErrorTypes ut_calendar_W( void )
     NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: Invalid specification string. Missing values will be returned.");
     return_missing = 1;
   }
-
 /*
  * Calculate size of input array.
  */
@@ -641,6 +640,8 @@ NhlErrorTypes ut_calendar_W( void )
  * Free extra units
  */
   NclFree(cspec_orig);
+
+  ut_free(utunit);
 
 /*
  * Set up variable to return.
