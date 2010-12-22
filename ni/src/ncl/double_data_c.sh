@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sh op_funcs.sh double NhlTDouble NhlTDoubleGenArray -9999.0 > .tmp.$$ 
+sh op_funcs.sh double NhlTDouble NhlTDoubleGenArray 9.9692099683868690e+36 > .tmp.$$ 
 
 if [ ! $? ]
 then
@@ -12,7 +12,7 @@ sed \
 -e 's/LOCALTYPE/double/g' \
 -e 's/HLUTYPEREP/NhlTDouble/g' \
 -e 's/HLUGENTYPEREP/NhlTDoubleGenArray/g' \
--e 's/DEFAULT_MISS/-9999.0/g' \
+-e 's/DEFAULT_MISS/9.9692099683868690e+36/g' \
 -e 's/DEFAULT_FORMAT/%lf/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \

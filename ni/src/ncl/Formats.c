@@ -73,17 +73,13 @@ NclFormatFunctionRecPtr _NclGetFormatFuncs
 	int i; 
 	char ext[16];
         char *cp;
+	NclQuark lfile_ext;
 
-        strncpy(ext,NrmQuarkToString(file_extension),sizeof(ext));
-        ext[sizeof(ext)-1] = '\0';
-	for (cp = ext; *cp != '\0'; cp++) {
-		*cp = tolower(*cp);	
-        }
-        file_extension = NrmStringToQuark(ext);
+	lfile_ext = _NclGetLower(file_extension);
 	
 	for(i = 0; i<num_formats; i++) {
-		if(formats[i].file_extension == file_extension) {
-            return((*formats[i].format_func)());
+		if(formats[i].file_extension == lfile_ext) {
+			return((*formats[i].format_func)());
 		}
 	}
 	return(NULL);
@@ -109,12 +105,7 @@ NclQuark file_ext2;
 	NclQuark qext1,qext2;
 	int i;
 
-        strncpy(ext,NrmQuarkToString(file_ext1),sizeof(ext));
-        ext[sizeof(ext)-1] = '\0';
-	for (cp = ext; *cp != '\0'; cp++) {
-		*cp = tolower(*cp);	
-        }
-        qext1 = NrmStringToQuark(ext);
+	qext1 = _NclGetLower(file_ext1);
 	for(i = 0; i<num_formats; i++) {
 		if(formats[i].file_extension == qext1) {
 			format_func1 = formats[i].format_func;
@@ -123,12 +114,7 @@ NclQuark file_ext2;
 	if (!format_func1) 
 		return 0;
 
-        strncpy(ext,NrmQuarkToString(file_ext2),sizeof(ext));
-        ext[sizeof(ext)-1] = '\0';
-	for (cp = ext; *cp != '\0'; cp++) {
-		*cp = tolower(*cp);	
-        }
-        qext2 = NrmStringToQuark(ext);
+	qext2 = _NclGetLower(file_ext2);
 	for(i = 0; i<num_formats; i++) {
 		if(formats[i].file_extension == qext2) {
 			if (format_func1 == formats[i].format_func)

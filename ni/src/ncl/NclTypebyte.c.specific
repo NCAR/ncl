@@ -35,7 +35,7 @@ void *val;
         byte sp = *(byte *)val;
 	int ret;
 
-        ret = nclfprintf(fp,"0x%02x",sp);
+        ret = nclfprintf(fp,"%d",sp);
 	if(ret < 0) {
 		return(NhlWARNING);
 	} else {

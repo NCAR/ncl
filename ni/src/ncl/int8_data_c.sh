@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sh op_funcs.sh int8 NhlTInt8 NhlTInt8GenArray -128 > .tmp.$$
+sh op_funcs.sh int8 NhlTInt8 NhlTInt8GenArray -127 > .tmp.$$
 
 if [ ! $? ]
 then
@@ -13,7 +13,7 @@ sed \
 -e 's/LOCALTYPE/char/g' \
 -e 's/HLUTYPEREP/NhlTInt8/g' \
 -e 's/HLUGENTYPEREP/NhlTInt8GenArray/g' \
--e 's/DEFAULT_MISS/-128/g' \
+-e 's/DEFAULT_MISS/-127/g' \
 -e 's/DEFAULT_FORMAT/%d/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \

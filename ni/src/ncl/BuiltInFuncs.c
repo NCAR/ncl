@@ -29544,6 +29544,274 @@ NhlErrorTypes _NclItounsigned
         ));
 }
 
+NhlErrorTypes _Ncldefault_fillvalue
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        void *in_type;
+        ng_size_t total_elements = 1;
+        int n_dims = 0;
+        ng_size_t dimsizes;
+        NclScalar missing;
+        NclScalar ret_missing;
+        NclBasicDataTypes type, out_type;
+        int has_missing;
+        int j;
+	ng_size_t i;
+	NclTypeClass type_class;
+        void *output;
+
+	dimsizes = 1;
+        in_type = (void *)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        &dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+
+	type_class = _NclNameToTypeClass(*(NrmQuark *)in_type);
+	
+        if (! type_class) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"default_fillvalue: invalid type string: %s", NrmQuarkToString(*(NrmQuark *)in_type));
+		return NhlFATAL;
+	}
+
+	output = NclMalloc(type_class->type_class.size);
+	out_type = type_class->type_class.data_type;
+	switch (out_type) {
+	case NCL_short:
+		*(short *) output = type_class->type_class.default_mis.shortval;
+		break;
+	case NCL_int:
+		*(int *) output = type_class->type_class.default_mis.intval;
+		break;
+	case NCL_long:
+		*(long *) output = type_class->type_class.default_mis.longval;
+		break;
+	case NCL_int64:
+		*(long long *) output = type_class->type_class.default_mis.int64val;
+		break;
+        case NCL_ushort:
+		*(unsigned short *) output = type_class->type_class.default_mis.ushortval;
+		break;
+        case NCL_uint:
+		*(unsigned int *) output = type_class->type_class.default_mis.uintval;
+		break;
+        case NCL_ulong:
+		*(unsigned long *) output = type_class->type_class.default_mis.ulongval;
+		break;
+        case NCL_uint64:
+		*(unsigned long long *) output = type_class->type_class.default_mis.uint64val;
+		break;
+	case NCL_int8:
+		*(char *) output = type_class->type_class.default_mis.int8val;
+		break;
+        case NCL_uint8:
+		*(unsigned char *) output = type_class->type_class.default_mis.uint8val;
+		break;
+	case NCL_float:
+		*(float *) output = type_class->type_class.default_mis.floatval;
+		break;
+	case NCL_double:
+		*(double *) output = type_class->type_class.default_mis.doubleval;
+		break;
+	case NCL_char:
+		*(unsigned char *) output = type_class->type_class.default_mis.charval;
+		break;
+	case NCL_byte:
+		*(char *) output = type_class->type_class.default_mis.byteval;
+		break;
+	case NCL_string:
+		*(NrmQuark *) output = type_class->type_class.default_mis.stringval;
+		break;
+	case NCL_logical:
+		*(int *) output = type_class->type_class.default_mis.logicalval;
+		break;
+	case NCL_obj:
+		*(int *) output = type_class->type_class.default_mis.objval;
+		break;
+	case NCL_group:
+		*(int *) output = type_class->type_class.default_mis.groupval;
+		break;
+	case NCL_compound:
+		*(int *) output = type_class->type_class.default_mis.compoundval;
+		break;
+	case NCL_list:
+	default:
+		*(int *) output = type_class->type_class.default_mis.intval;
+		break;
+	}
+
+        return(NclReturnValue(
+                (void*)output,
+                1,
+                &dimsizes,
+                NULL,
+                out_type,
+                0
+        ));
+
+}
+
+
+NhlErrorTypes _Nclset_default_fillvalue
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        void *in_type;
+        int n_dims = 0;
+        NclScalar missing;
+	int has_missing;
+        ng_size_t dimsizes;
+        NclBasicDataTypes type, set_type;
+	NclTypeClass type_class;
+        void *in_value;
+	NclScalar in_value_coerced;
+	static int first = 1;
+	static NrmQuark q_all,q_nclv5,q_nclv6,q_default;
+
+	if (first) {
+		q_all = NrmStringToQuark("all");
+		q_nclv5 = NrmStringToQuark("ncl_v5");
+		q_nclv6 = NrmStringToQuark("ncl_v6");
+		q_default = NrmStringToQuark("default");
+		first = 0;
+	}
+
+	dimsizes = 1;
+        in_type = (void *)NclGetArgValue(
+                        0,
+                        2,
+                        &n_dims,
+                        &dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+
+        in_value = (void *)NclGetArgValue(
+                        1,
+                        2,
+                        &n_dims,
+                        &dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+
+        if (_NclGetLower(*(NrmQuark*)in_type) == q_all) {
+		NrmQuark q_inval;
+		if (type != NCL_string) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"set_default_fillvalue: value type must be string when setting 'all'");
+			return NhlFATAL;
+		}
+		q_inval = _NclGetLower(*(NrmQuark*)in_value);
+		if  (q_inval == q_nclv5) {
+			return (_NclSetDefaultFillValues(NCL_5_DEFAULT_FILLVALUES));
+		}
+		else if (q_inval == q_default || q_inval == q_nclv6) {
+			return (_NclSetDefaultFillValues(NCL_6_DEFAULT_FILLVALUES));
+		}
+	        else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"set_default_fillvalue: invalid value for setting 'all'");
+			return NhlFATAL;
+		}
+	}
+		
+	type_class = _NclNameToTypeClass(*(NrmQuark *)in_type);
+	
+        if (! type_class) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"set_default_fillvalue: invalid type string: %s", NrmQuarkToString(*(NrmQuark *)in_type));
+		return NhlFATAL;
+	}
+	set_type = type_class->type_class.data_type;
+
+	if (type != set_type) {
+		if (!_NclScalarCoerce(in_value,type,&in_value_coerced,set_type)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"set_default_fillvalue: value cannot be coerced to type: %s", NrmQuarkToString(*(NrmQuark *)in_type));
+			return NhlFATAL;
+		}
+		in_value = &in_value_coerced;
+	}
+
+	switch (set_type) {
+	case NCL_short:
+		type_class->type_class.default_mis.shortval = *(short *) in_value;
+		break;
+	case NCL_int:
+		type_class->type_class.default_mis.intval = *(int *) in_value;
+		break;
+	case NCL_long:
+		type_class->type_class.default_mis.longval = *(long *) in_value;
+		break;
+	case NCL_int64:
+		type_class->type_class.default_mis.int64val = *(long long *) in_value;
+		break;
+        case NCL_ushort:
+		type_class->type_class.default_mis.ushortval = *(unsigned short *) in_value;
+		break;
+        case NCL_uint:
+		type_class->type_class.default_mis.uintval = *(unsigned int *) in_value;
+		break;
+        case NCL_ulong:
+		type_class->type_class.default_mis.ulongval = *(unsigned long *) in_value;
+		break;
+        case NCL_uint64:
+		type_class->type_class.default_mis.uint64val = *(unsigned long long *) in_value;
+		break;
+	case NCL_int8:
+		type_class->type_class.default_mis.int8val = *(char *) in_value;
+		break;
+        case NCL_uint8:
+		type_class->type_class.default_mis.uint8val = *(unsigned char *) in_value;
+		break;
+	case NCL_float:
+		type_class->type_class.default_mis.floatval = *(float *) in_value;
+		break;
+	case NCL_double:
+		type_class->type_class.default_mis.doubleval = *(double *) in_value;
+		break;
+	case NCL_char:
+		type_class->type_class.default_mis.charval = *(unsigned char *) in_value;
+		break;
+	case NCL_byte:
+		type_class->type_class.default_mis.byteval = *(char *) in_value;
+		break;
+	case NCL_string:
+		type_class->type_class.default_mis.stringval = *(NrmQuark *) in_value;
+		break;
+	case NCL_logical:
+		if (*(int*)in_value == 0 || *(int*) in_value == -1)
+			type_class->type_class.default_mis.logicalval = *(int *) in_value;
+		else
+			type_class->type_class.default_mis.logicalval = 1;
+		break;
+	case NCL_obj:
+		type_class->type_class.default_mis.objval = *(int*) in_value;
+	case NCL_group:
+		type_class->type_class.default_mis.objval = *(int*) in_value;
+		break;
+	case NCL_compound:
+		type_class->type_class.default_mis.objval = *(int*) in_value;
+		break;
+	case NCL_list:
+	default:
+		type_class->type_class.default_mis.objval = *(int*) in_value;
+
+	}
+	return NhlNOERROR;
+
+}
+
 #ifdef __cplusplus
 }
 #endif

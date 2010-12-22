@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sh op_funcs.sh int64 NhlTInt64 NhlTInt64GenArray -99999999 > .tmp.$$
+sh op_funcs.sh int64 NhlTInt64 NhlTInt64GenArray '\(long long\)-9223372036854775806LL' > .tmp.$$
 
 if [ ! $? ]
 then
@@ -13,7 +13,7 @@ sed \
 -e 's/LOCALTYPE/long long/g' \
 -e 's/HLUTYPEREP/NhlTInt64/g' \
 -e 's/HLUGENTYPEREP/NhlTInt64GenArray/g' \
--e 's/DEFAULT_MISS/-99999999/g' \
+-e 's/DEFAULT_MISS/(long long)-9223372036854775806LL/g' \
 -e 's/DEFAULT_FORMAT/%lld/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \

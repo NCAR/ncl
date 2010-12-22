@@ -94,4 +94,14 @@ NclQuark qstr
 #endif
 );
 
+#define NCL_5_DEFAULT_FILLVALUES 0
+#define NCL_6_DEFAULT_FILLVALUES 1
+
+extern NhlErrorTypes _NclSetDefaultFillValues(
+#if	NhlNeedProto
+int default_type
+#endif
+);
+
+
 #endif /* TypeSupport_h*/

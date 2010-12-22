@@ -682,7 +682,7 @@ int wr_status;
 		nc_ret = nc__open(NrmQuarkToString(path),NC_NOWRITE,&ChunkSizeHint,&cdfid);
 #if NETCDF_DEBUG
 		fprintf(stderr,"nc__open(\"%s\",NC_NOWRITE,&ChunkSizeHint,&cdfid);\n",NrmQuarkToString(path));
-		fprintf(stderr,"%d: cdfid = %d\n",count++,cdfid);
+		fprintf(stderr,"%d: cdfid = %d\n",cdfid);
 #endif                
 		tmp->define_mode = 0;
 		tmp->cdfid = cdfid;

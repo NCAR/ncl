@@ -14,7 +14,7 @@ sed \
 -e 's/HLUTYPEREP/NhlTUint8/g' \
 -e 's/HLUGENTYPEREP/NhlTUint8GenArray/g' \
 -e 's/DEFAULT_MISS/255/g' \
--e 's/DEFAULT_FORMAT/%u/g' \
+-e 's/DEFAULT_FORMAT/%hhu/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypeuint8.c.specific' \

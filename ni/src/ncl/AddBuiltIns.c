@@ -1016,6 +1016,17 @@ void
 #endif
 );
 
+NhlErrorTypes _Ncldefault_fillvalue(
+#if NhlNeedProto
+void
+#endif
+);
+
+NhlErrorTypes _Nclset_default_fillvalue(
+#if NhlNeedProto
+void
+#endif
+);
 
 void _NclAddBuiltIns
 #if     NhlNeedProto
@@ -2450,6 +2461,19 @@ void _NclAddBuiltIns
     args = NewArgs(0);
     dimsizes[0] = 1;
     NclRegisterFunc(_NclIGetScriptPrefixName, args, "get_script_prefix_name", nargs);
+
+    nargs = 0;
+    args = NewArgs(1);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
+    NclRegisterFunc(_Ncldefault_fillvalue, args, "default_fillvalue", nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
+    SetArgTemplate(args,nargs,NclANY,1,dimsizes); nargs++;
+    NclRegisterProc(_Nclset_default_fillvalue,args,"set_default_fillvalue",nargs);
 
 /*
 	nargs = 0;

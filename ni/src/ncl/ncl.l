@@ -511,77 +511,77 @@ inttype [bCjJhHiIlLqQ]
 	return REAL;
 }
 {digit}+{inttype}? {
-	sscanf(yytext,"%lld",&(yylval.int_val));
+	sscanf(yytext,"%llu",&(yylval.int_val));
 	printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return INT;
 }
 {digit}+{inttype}?(".gt."|".GT.") {
 	yyless(yyleng - strlen(".gt."));
-	sscanf(yytext,"%lld",&(yylval.int_val));
+	sscanf(yytext,"%llu",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+{inttype}?(".lt."|".LT.") {
 	yyless(yyleng - strlen(".lt."));
-	sscanf(yytext,"%lld",&(yylval.int_val));
+	sscanf(yytext,"%llu",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+{inttype}?(".le."|".LE.") {
 	yyless(yyleng - strlen(".le."));
-	sscanf(yytext,"%lld",&(yylval.int_val));
+	sscanf(yytext,"%llu",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+{inttype}?(".eq."|".EQ.") {
 	yyless(yyleng - strlen(".eq."));
-	sscanf(yytext,"%lld",&(yylval.int_val));
+	sscanf(yytext,"%llu",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+{inttype}?(".ge."|".GE.") {
 	yyless(yyleng - strlen(".ge."));
-	sscanf(yytext,"%lld",&(yylval.int_val));
+	sscanf(yytext,"%llu",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+{inttype}?(".ne."|".NE.") {
 	yyless(yyleng - strlen(".ne."));
-	sscanf(yytext,"%lld",&(yylval.int_val));
+	sscanf(yytext,"%llu",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+{inttype}?(".and."|".AND.") {
 	yyless(yyleng - strlen(".and."));
-	sscanf(yytext,"%lld",&(yylval.int_val));
+	sscanf(yytext,"%llu",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+{inttype}?(".or."|".OR.") {
 	yyless(yyleng - strlen(".or."));
-	sscanf(yytext,"%lld",&(yylval.int_val));
+	sscanf(yytext,"%llu",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+{inttype}?(".xor."|".XOR.") {
 	yyless(yyleng - strlen(".xor."));
-	sscanf(yytext,"%lld",&(yylval.int_val));
+	sscanf(yytext,"%llu",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
 {digit}+{inttype}?(".not."|".NOT.") {
 	yyless(yyleng - strlen(".not."));
-	sscanf(yytext,"%lld",&(yylval.int_val));
+	sscanf(yytext,"%llu",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;

@@ -265,9 +265,13 @@ NclQuark _NclGetLower
 	char buffer[256];
 	char *cp;
 	char *instr = NrmQuarkToString(qstr);
-	int size = strlen(instr);
+	int size;
 	NrmQuark outq;
 	
+	if (! instr) {
+	        return NrmNULLQUARK;
+        }
+        size  = strlen(instr);
 	if (size < 256) {
 		buf = buffer;
 	}
@@ -285,4 +289,48 @@ NclQuark _NclGetLower
 		NclFree(buf);
 
 	return outq;
+}
+
+NhlErrorTypes _NclSetDefaultFillValues
+(
+	int default_type
+)
+{
+	if (default_type == NCL_5_DEFAULT_FILLVALUES) {
+		((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval = -99;
+		((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval = -999;
+		((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval = -9999;
+		((NclTypeClass)nclTypeint64Class)->type_class.default_mis.int64val = -99999999;
+		((NclTypeClass)nclTypeushortClass)->type_class.default_mis.ushortval = 0;
+		((NclTypeClass)nclTypeuintClass)->type_class.default_mis.uintval = 0;
+		((NclTypeClass)nclTypeulongClass)->type_class.default_mis.ulongval = 0;
+		((NclTypeClass)nclTypeuint64Class)->type_class.default_mis.uint64val = 0;
+		((NclTypeClass)nclTypeint8Class)->type_class.default_mis.int8val = -128;
+		((NclTypeClass)nclTypeuint8Class)->type_class.default_mis.uint8val = 0;
+		((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval = -999.0;
+		((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval = -9999.0;
+		((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval = 0;
+		((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval = (char) 0xff;
+		((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval = NrmStringToQuark("missing");
+		((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval = -1;
+	}
+	else if (default_type == NCL_6_DEFAULT_FILLVALUES) {
+		((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval = -32767;
+		((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval = -2147483647;
+		((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval = -2147483647;
+		((NclTypeClass)nclTypeint64Class)->type_class.default_mis.int64val = (long long)-9223372036854775806LL;
+		((NclTypeClass)nclTypeushortClass)->type_class.default_mis.ushortval = 65535;
+		((NclTypeClass)nclTypeuintClass)->type_class.default_mis.uintval = 4294967295U;
+		((NclTypeClass)nclTypeulongClass)->type_class.default_mis.ulongval = 4294967295U;
+		((NclTypeClass)nclTypeuint64Class)->type_class.default_mis.uint64val = (unsigned long long)18446744073709551614ULL;
+		((NclTypeClass)nclTypeint8Class)->type_class.default_mis.int8val = -127;
+		((NclTypeClass)nclTypeuint8Class)->type_class.default_mis.uint8val = 255;
+		((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval = 9.9692099683868690e+36f;
+		((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval = 9.9692099683868690e+36;
+		((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval = 0;
+		((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval = -127;
+		((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval = NrmStringToQuark("missing");
+		((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval = -1;
+	}
+	return NhlNOERROR;
 }
