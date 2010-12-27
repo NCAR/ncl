@@ -16,7 +16,7 @@ NhlErrorTypes int2p_W( void )
   double *tmp_pout = NULL;
   int ndims_pin;
   ng_size_t dsizes_pin[NCL_MAX_DIMENSIONS];
-  NclScalar missing_pin, missing_xin, missing_dx, missing_rx;
+  NclScalar missing_pin, missing_xin, missing_dx;
   int has_missing_pin, has_missing_xin;
   int ndims_xin;
   ng_size_t dsizes_xin[NCL_MAX_DIMENSIONS];
@@ -35,6 +35,7 @@ NhlErrorTypes int2p_W( void )
   double *tmp_xout = NULL;
   ng_size_t size_xout, size_leftmost, *dsizes_xout;
   NclBasicDataTypes type_xout;
+  NclScalar missing_xout;
 /*
  * Declare various variables for random purposes.
  */
@@ -166,27 +167,6 @@ NhlErrorTypes int2p_W( void )
   for( i = 0; i < ndims_xin-1; i++ ) size_leftmost *= dsizes_xin[i];
 
 /*
- * Check for missing values.
- */
-  if(has_missing_xin) {
-    coerce_missing(type_xin,has_missing_xin,&missing_xin,&missing_dx,
-                   &missing_rx);
-  }
-  else if(has_missing_pin) {
-    coerce_missing(type_pin,has_missing_pin,&missing_pin,&missing_dx,
-                   &missing_rx);
-  }
-  else {
-/*
- * Assign a default missing value.
- */ 
-    if(type_pin != NCL_double && type_xin != NCL_double && 
-       type_pout != NCL_double) {
-      missing_rx.floatval  = 1.e36;
-    }
-    missing_dx.doubleval = 1.e36;
-  }
-/*
  * Create temporary arrays to coerce input to double, if necessary.
  */
   if(type_xin != NCL_double) {
@@ -254,6 +234,34 @@ NhlErrorTypes int2p_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
+  }
+/*
+ * Check for missing values.
+ */
+  if(has_missing_xin) {
+    coerce_missing(type_xin,has_missing_xin,&missing_xin,&missing_dx, 
+                   NULL);
+ }
+  else if(has_missing_pin) {
+    coerce_missing(type_pin,has_missing_pin,&missing_pin,&missing_dx,
+                   NULL);
+  }
+  else {
+/*
+ * Assign a default missing value.
+ */ 
+    if(type_xout == NCL_float) {
+      missing_dx.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    }
+    else {
+      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
+  }
+  if(type_xout == NCL_float) {
+    missing_xout.floatval = (float)missing_dx.doubleval;
+  }
+  else {
+    missing_xout.doubleval = missing_dx.doubleval;
   }
 /*
  * Allocate space for work arrays.
@@ -356,20 +364,8 @@ NhlErrorTypes int2p_W( void )
 /*
  * Return values.
  */
-  if(type_xout != NCL_double) {
-/*
- * Return float values with missing value set.
- */
-    ret = NclReturnValue(xout,ndims_xin,dsizes_xout,&missing_rx,
-                          NCL_float,0);
-  }
-  else {
-/*
- * Return double values with missing value set.
- */
-    ret = NclReturnValue(xout,ndims_xin,dsizes_xout,&missing_dx,
-                          NCL_double,0);
-  }
+  ret = NclReturnValue(xout,ndims_xin,dsizes_xout,&missing_xout,
+                       type_xout,0);
   NclFree(dsizes_xout);
   return(ret);
 }
@@ -384,7 +380,7 @@ NhlErrorTypes int2p_n_W( void )
   int *dim;
   int ndims_pin;
   ng_size_t dsizes_pin[NCL_MAX_DIMENSIONS];
-  NclScalar missing_pin, missing_xin, missing_dx, missing_rx, missing_xout;
+  NclScalar missing_pin, missing_xin, missing_dx;
   int has_missing_pin, has_missing_xin;
   int ndims_xin;
   ng_size_t dsizes_xin[NCL_MAX_DIMENSIONS];
@@ -403,6 +399,7 @@ NhlErrorTypes int2p_n_W( void )
   double *tmp_xout;
   ng_size_t size_xout, size_leftmost, size_rightmost, *dsizes_xout;
   NclBasicDataTypes type_xout;
+  NclScalar missing_xout;
 /*
  * Declare various variables for random purposes.
  */
@@ -566,27 +563,6 @@ NhlErrorTypes int2p_n_W( void )
   for( i = *dim+1; i < ndims_xin; i++ ) size_rightmost *= dsizes_xin[i];
 
 /*
- * Check for missing values.
- */
-  if(has_missing_xin) {
-    coerce_missing(type_xin,has_missing_xin,&missing_xin,&missing_dx,
-                   &missing_rx);
-  }
-  else if(has_missing_pin) {
-    coerce_missing(type_pin,has_missing_pin,&missing_pin,&missing_dx,
-                   &missing_rx);
-  }
-  else {
-/*
- * Assign a default missing value.
- */ 
-    if(type_pin != NCL_double && type_xin != NCL_double && 
-       type_pout != NCL_double) {
-      missing_rx.floatval  = 1.e36;
-    }
-    missing_dx.doubleval = 1.e36;
-  }
-/*
  * Create temporary arrays to coerce input to double, if necessary.
  * Note that because these arrays are not necessarily continguous
  * in memory, we have to make a copy of them regardless if they are
@@ -643,18 +619,45 @@ NhlErrorTypes int2p_n_W( void )
 
     xout     = (void*)calloc(size_xout,sizeof(float));
     tmp_xout = (double*)calloc(npout,sizeof(double));
-    missing_xout = missing_rx;
   }
   else {
     type_xout = NCL_double;
     xout     = (void*)calloc(size_xout,sizeof(double));
     tmp_xout = (double*)calloc(npout,sizeof(double));
-    missing_xout = missing_dx;
   }
   if(xout == NULL || tmp_xout == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p_n: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
+/*
+ * Check for missing values.
+ */
+  if(has_missing_xin) {
+    coerce_missing(type_xin,has_missing_xin,&missing_xin,&missing_dx,
+                   NULL);
+  }
+  else if(has_missing_pin) {
+    coerce_missing(type_pin,has_missing_pin,&missing_pin,&missing_dx,
+                   NULL);
+  }
+  else {
+/*
+ * Assign a default missing value.
+ */ 
+    if(type_xout == NCL_float) {
+      missing_dx.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    }
+    else {
+      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
+  }
+  if(type_xout == NCL_float) {
+    missing_xout.floatval = (float)missing_dx.doubleval;
+  }
+  else {
+    missing_xout.doubleval = missing_dx.doubleval;
+  }
+
 /*
  * Allocate space for work arrays.
  */
