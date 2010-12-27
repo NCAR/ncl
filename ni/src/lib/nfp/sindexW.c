@@ -19,7 +19,8 @@ NhlErrorTypes sindex_yrmo_W( void )
   ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_rx, missing_dx, missing_dy;
   int has_missing_x, has_missing_y;
-  int nyrs, nmos, *iprnt;
+  ng_size_t nyrs, nmos;
+  int inyrs, inmos, *iprnt;
   NclBasicDataTypes type_x, type_y;
 /*
  * Attribute variables
@@ -93,11 +94,13 @@ NhlErrorTypes sindex_yrmo_W( void )
 /*
  * Test dimension sizes.
  */
-  if(lwork > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"sindex_yrmo: lwork = %ld is greater than INT_MAX", lwork);
+  if((lwork > INT_MAX) || (nyrs > INT_MAX) || (nmos > INT_MAX)){
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sindex_yrmo: one or more dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
   ilwork = (int) lwork;
+  inyrs  = (int) nyrs;
+  inmos  = (int) nmos;
 
 /*
  * Coerce missing values to double.
@@ -156,7 +159,7 @@ NhlErrorTypes sindex_yrmo_W( void )
 /*
  * Call the f77 version of 'sindex' with the full argument list.
  */
-  NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
+  NGCALLF(dindx77,DINDX77)(dx,dy,&inmos,&inyrs,&missing_dx.doubleval,iprnt,
                            work,&ilwork,tmp_soi,soi_noise,&ler);
 
   if (ler == 2) {
@@ -320,7 +323,8 @@ NhlErrorTypes snindex_yrmo_W( void )
   ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_rx, missing_dx, missing_dy;
   int has_missing_x, has_missing_y;
-  int nyrs, nmos, *iprnt;
+  int inyrs, inmos, *iprnt;
+  ng_size_t nyrs, nmos;
   NclBasicDataTypes type_x, type_y, type_soi_noise;
 /*
  * Attribute variables
@@ -401,14 +405,17 @@ NhlErrorTypes snindex_yrmo_W( void )
   nmos = dsizes_x[1];
   total_size_xy = nyrs * nmos;
   lwork = 2*nyrs*nmos + 4*nmos + nyrs;
+
 /*
  * Test dimension sizes.
  */
-  if(lwork > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: lwork = %ld is greater than INT_MAX", lwork);
+  if((lwork > INT_MAX) || (nyrs > INT_MAX) || (nmos > INT_MAX)){
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: one or more dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
   ilwork = (int) lwork;
+  inyrs  = (int) nyrs;
+  inmos  = (int) nmos;
 
 /*
  * Coerce missing values to double.
@@ -488,7 +495,7 @@ NhlErrorTypes snindex_yrmo_W( void )
 /*
  * Call the f77 version of 'sindex' with the full argument list.
  */
-  NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
+  NGCALLF(dindx77,DINDX77)(dx,dy,&inmos,&inyrs,&missing_dx.doubleval,iprnt,
 			   work,&ilwork,tmp_soi,tmp_soi_noise,&ler);
 
   if (ler == 2) {
