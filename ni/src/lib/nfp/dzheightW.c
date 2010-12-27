@@ -162,8 +162,9 @@ NhlErrorTypes dz_height_W( void )
                    &missing_dzsfc,&missing_rzsfc);
   }
   else {
-    missing_dzsfc.doubleval = 1.e20;   /* Don't use NCL default of -9999. */
-    missing_rzsfc.floatval  = 1.e20;
+    missing_dzsfc.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    missing_rzsfc.floatval  = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+
   }
 
 /*
