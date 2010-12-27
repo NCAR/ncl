@@ -1236,7 +1236,7 @@ NhlErrorTypes equiv_sample_size_W( void )
  * Return.
  */
   if(is_missing) {
-    missing_neqv.intval = (int)((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+    missing_neqv.intval = -999;
     return(NclReturnValue(neqv,ndims_neqv,dsizes_neqv,&missing_neqv,
                           NCL_int,0));
   }
