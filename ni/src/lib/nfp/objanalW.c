@@ -5,8 +5,8 @@ extern void NGCALLF(dobjanlx,DOBJANLX)(double *, double *, double *, int *,
                                        int *, double *, int *, int *, double *,
                                        double *, double *, int *, double *, 
                                        double *, double *, logical *, 
-				       double *, double *, double *, int *,
-				       double *, int *, int *);
+                                       double *, double *, double *, int *,
+                                       double *, int *, int *);
 
 #define NSCANMX 10
 
@@ -263,7 +263,7 @@ NhlErrorTypes obj_anal_ic_W( void )
     xmsg = missing_plat.doubleval;
   }
   else {
-    xmsg = 1.e20;
+    xmsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
   }
 
  /*
@@ -348,10 +348,15 @@ NhlErrorTypes obj_anal_ic_W( void )
     else                        missing_grid = missing_flt_pval;
     missing_dbl_grid = missing_dbl_pval;
   }
-  {
-    if(type_grid == NCL_double) missing_grid.doubleval = 1.e20;
-    else                        missing_grid.floatval  = 1.e20;
-    missing_dbl_grid.doubleval = 1.e20;
+  else {
+    if(type_grid == NCL_double) {
+      missing_dbl_grid.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      missing_grid.doubleval = missing_dbl_grid.doubleval;
+    }
+    else {
+      missing_dbl_grid.doubleval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_grid.floatval = (float)missing_dbl_grid.doubleval;
+    }
   }
 
 /* 

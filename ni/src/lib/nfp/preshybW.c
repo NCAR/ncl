@@ -937,7 +937,7 @@ NhlErrorTypes dpres_plevel_W( void )
   ng_size_t dsizes_psfc[NCL_MAX_DIMENSIONS];
   ng_size_t dsizes_plev[1];
   int has_missing_psfc, is_scalar_psfc;
-  NclScalar missing_psfc, missing_dpsfc, missing_rpsfc;
+  NclScalar missing_psfc, missing_dpsfc;
   NclBasicDataTypes type_plev, type_psfc, type_ptop;
 /*
  * Output variables
@@ -1073,16 +1073,31 @@ NhlErrorTypes dpres_plevel_W( void )
     dsizes_dp[3] = nlon;
   }
 
+/*
+ * Set the input and output missing values.
+ */
   if(has_missing_psfc) {
     coerce_missing(type_psfc,has_missing_psfc,&missing_psfc,
-                   &missing_dpsfc,&missing_rpsfc);
+                   &missing_dpsfc,NULL);
   }
   else {
-    missing_dpsfc.doubleval = 1.e20;   /* Don't use NCL default of -9999. */
-    missing_rpsfc.floatval  = 1.e20;
+    if(type_dp == NCL_float) {
+/*
+ * These were set to 1e20 before default missing values were 
+ * changed in V6.0.0.
+ */
+      missing_dpsfc.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    }
+    else {
+      missing_dpsfc.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
   }
-
-
+  if(type_dp == NCL_float) {
+    missing_dp.floatval = (float)missing_dpsfc.doubleval;
+  }
+  else {
+    missing_dp.doubleval = missing_dpsfc.doubleval;
+  }
 /*
  * Coerce data to double if necessary.
  */
@@ -1104,7 +1119,6 @@ NhlErrorTypes dpres_plevel_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_plevel: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
-    missing_dp = missing_rpsfc;
   }
   else {
     dp = (void*)calloc(ntimklvlnlatnlon,sizeof(double));
@@ -1113,7 +1127,6 @@ NhlErrorTypes dpres_plevel_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_plevel: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
-    missing_dp = missing_dpsfc;
   }
 
   NGCALLF(dpresplvl,DPRESPLVL)(&klvl,tmp_plev,&ntim,&nlat,&nlon,tmp_psfc,
@@ -1599,9 +1612,18 @@ NhlErrorTypes pres2hybrid_W( void )
   }
 
 /*
+ * Determine type of output.
+ */
+  if(type_ps == NCL_double || type_xi == NCL_double) {
+    type_xo = NCL_double;
+  }
+  else {
+    type_xo = NCL_float;
+  }
+/*
  * Get missing value of xi, in case we need to use it for setting
  * output values to missing. Otherwise, set the missing value to
- * a default of 1.e20.
+ * the default for float or missing (it was 1.e20 before V6.0.0)
  *
  * This was added in version 4.3.0 of ncl to cover the extrapolation
  * algorithms Dennis added.
@@ -1610,17 +1632,18 @@ NhlErrorTypes pres2hybrid_W( void )
     coerce_missing(type_xi,has_missing_xi,&missing_xi,&missing_dxi,NULL);
   }
   else {
-    missing_dxi.doubleval = 1.e20;   /* Don't use NCL default of -9999. */
+    if(type_xo == NCL_float) {
+      missing_dxi.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    }
+    else {
+      missing_dxi.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
   }
-
-/*
- * Determine type of output.
- */
-  if(type_ps == NCL_double || type_xi == NCL_double) {
-    type_xo = NCL_double;
+  if(type_xo == NCL_float) {
+    missing_xo.floatval = (float)missing_dxi.doubleval;
   }
   else {
-    type_xo = NCL_float;
+    missing_xo.doubleval = missing_dxi.doubleval;
   }
 /*
  * Calculate total size of output array.
@@ -1770,12 +1793,6 @@ NhlErrorTypes pres2hybrid_W( void )
  * set a _FillValue attribute for the return variable.
  */
   if(return_missing) {
-    if(type_xo == NCL_double) {
-      missing_xo.doubleval = missing_dxi.doubleval;
-    }
-    else {
-      missing_xo.floatval = (float)missing_dxi.doubleval;
-    }
     ret = NclReturnValue(xo,ndims_xi,dsizes_xo,&missing_xo,type_xo,0);
   }
   else {

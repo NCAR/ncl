@@ -215,17 +215,6 @@ NhlErrorTypes hyi2hyo_W( void )
   size_xo = size_leftmost*klevonlatmlon;
 
 /*
- * Get missing value of xi, in case we need to use it for setting
- * output values to missing. Otherwise, set the missing value to
- * a default of 1.e20.
- */
-  if(has_missing_xi) {
-    coerce_missing(type_xi,has_missing_xi,&missing_xi,&missing_dxi,NULL);
-  }
-  else {
-    missing_dxi.doubleval = 1.e20;   /* Don't use NCL default of -9999. */
-  }
-/*
  * Allocate space for ps if necessary.
  */
   if(type_ps != NCL_double) {
@@ -298,6 +287,22 @@ NhlErrorTypes hyi2hyo_W( void )
     if( xo == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"hyi2hyo: Unable to allocate memory for output array");
       return(NhlFATAL);
+    }
+  }
+/*
+ * Get missing value of xi, in case we need to use it for setting
+ * output values to missing. Otherwise, set the missing value to
+ * the default for float or double.
+ */
+  if(has_missing_xi) {
+    coerce_missing(type_xi,has_missing_xi,&missing_xi,&missing_dxi,NULL);
+  }
+  else {
+    if(type_xo == NCL_float) {
+      missing_dxi.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    }
+    else {
+      missing_dxi.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
     }
   }
 /*
