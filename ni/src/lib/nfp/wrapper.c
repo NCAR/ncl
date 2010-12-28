@@ -7149,7 +7149,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
     SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
     dimsizes[0] = 2;
-    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
 
     NclRegisterFunc(generate_2d_array_W, args, "generate_2d_array", nargs);
 
