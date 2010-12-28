@@ -712,7 +712,8 @@ NhlErrorTypes mixhum_ptd_W( void )
 /*
  * Random variables.
  */
-  int i, index, size_q, size_leftmost, nmax;
+  ng_size_t i, index, size_q, size_leftmost, nmax;
+  int inmax;
 /*
  * Retrieve parameters.
  *
@@ -771,6 +772,15 @@ NhlErrorTypes mixhum_ptd_W( void )
 
   nmax   = dsizes_p[ndims_p-1];
   size_q = size_leftmost * nmax;
+
+/*
+ * Test dimension sizes.
+ */
+  if(nmax > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"mixhum_ptd: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inmax  = (int) nmax;
 
 /*
  * Allocate space for temporary input/output arrays.
@@ -868,7 +878,7 @@ NhlErrorTypes mixhum_ptd_W( void )
       }
     }
     else {
-      NGCALLF(dwmrq,DWMRQ)(tmp_p,tmp_tdk,&missing_dtdk.doubleval,&nmax,tmp_q,
+      NGCALLF(dwmrq,DWMRQ)(tmp_p,tmp_tdk,&missing_dtdk.doubleval,&inmax,tmp_q,
                            iswit);
 /*
  * Copy output values from temporary tmp_q to q.

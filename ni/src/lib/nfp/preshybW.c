@@ -951,9 +951,9 @@ NhlErrorTypes dpres_plevel_W( void )
 /*
  * Various.
  */
-  int ntim, nlat, nlon, klvl, kflag, ier;
-  int nlatnlon, klvlnlatnlon, ntimnlatnlon, ntimklvlnlatnlon;
-  int ret;
+  ng_size_t ntim, nlat, nlon, klvl;
+  ng_size_t nlatnlon, klvlnlatnlon, ntimnlatnlon, ntimklvlnlatnlon;
+  int intim, inlat, inlon, iklvl, kflag, ier, ret;
 /*
  * Retrieve parameters
  *
@@ -1026,6 +1026,19 @@ NhlErrorTypes dpres_plevel_W( void )
     nlat = dsizes_psfc[ndims_psfc-2];
     nlon = dsizes_psfc[ndims_psfc-1];
   }
+
+/*
+ * Test input dimension sizes.
+ */
+  if((klvl > INT_MAX) || (ntim > INT_MAX) || (nlat > INT_MAX) ||
+     (nlon > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_plevel: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  iklvl = (int) klvl;
+  intim = (int) ntim;
+  inlat = (int) nlat;
+  inlon = (int) nlon;
 
   nlatnlon         = nlat * nlon;
   ntimnlatnlon     = ntim * nlatnlon;
@@ -1129,7 +1142,7 @@ NhlErrorTypes dpres_plevel_W( void )
     }
   }
 
-  NGCALLF(dpresplvl,DPRESPLVL)(&klvl,tmp_plev,&ntim,&nlat,&nlon,tmp_psfc,
+  NGCALLF(dpresplvl,DPRESPLVL)(&iklvl,tmp_plev,&intim,&inlat,&inlon,tmp_psfc,
                                &missing_dpsfc.doubleval,tmp_ptop,tmp_dp,
                                iopt,&kflag,&ier);
   if(ier < 0) {
@@ -1192,10 +1205,9 @@ NhlErrorTypes sigma2hybrid_W( void )
  * Various.
  */
   double *tmp_sigo;
-  int i, scalar_psfc, nlvi, nlvo;
-  int index_x, index_xhybrid;
+  ng_size_t i, nlvi, nlvo, index_x, index_xhybrid;
   ng_size_t size_leftmost, size_xhybrid;
-  int ret;
+  int inlvi, inlvo, scalar_psfc, ret;
 /*
  * Retrieve parameters
  *
@@ -1281,6 +1293,17 @@ NhlErrorTypes sigma2hybrid_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"sigma2hybrid: 'hya' and 'hyb' must be the same length");
     return(NhlFATAL);
   }
+
+/*
+ * Test input dimension sizes.
+ */
+  if((nlvi > INT_MAX) || (nlvo > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sigma2hybrid: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlvi = (int) nlvi;
+  inlvo = (int) nlvo;
+
 /*
  * psfc must be the same as the leftmost N-1 dimensions of X. If x is
  * a 1D array, then psfc must be a scalar.
@@ -1419,7 +1442,7 @@ NhlErrorTypes sigma2hybrid_W( void )
     }
 
     NGCALLF(dh2sdrv,DH2SDRV)(tmp_x,tmp_xhybrid,tmp_hya,tmp_hyb,tmp_p0,
-                             tmp_sigma,tmp_sigo,intyp,tmp_psfc,&nlvi,&nlvo);
+                             tmp_sigma,tmp_sigo,intyp,tmp_psfc,&inlvi,&inlvo);
 /*
  * Copy output values from temporary tmp_xhybrid to xhybrid.
  */

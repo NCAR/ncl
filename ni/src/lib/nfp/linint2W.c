@@ -53,8 +53,9 @@ NhlErrorTypes linint1_W( void )
 /*
  * Other variables
  */
-  int nxi, nxi2, nxo, nfo, size_leftmost, size_fo;
-  int i, j, index_xi, index_fi, index_fo, ier, ret;
+  ng_size_t nxi, nxi2, nxo, nfo, size_leftmost, size_fo;
+  int inxi, inxi2, inxo, ier, ret;
+  ng_size_t i, j, index_xi, index_fi, index_fo;
   double *xiw, *fxiw;
 /*
  * Retrieve parameters
@@ -114,14 +115,26 @@ NhlErrorTypes linint1_W( void )
 /*
  * Compute the total number of elements in our arrays and check them.
  */
-  nxi = dsizes_xi[ndims_xi-1];
-  nxo = dsizes_xo[0];
-  nfo = nxo;
+  nxi  = dsizes_xi[ndims_xi-1];
+  nxo  = dsizes_xo[0];
+  nfo  = nxo;
+  nxi2 = nxi + 2;
 
   if(nxi < 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: xi must have at least 2 elements");
     return(NhlFATAL);
   }
+
+/*
+ * Test dimension sizes.
+ */
+  if((nxi > INT_MAX) || (nxo > INT_MAX) || (nxi2 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inxi  = (int) nxi;
+  inxo  = (int) nxo;
+  inxi2 = (int) nxi2;
 
 /*
  * Check dimensions of xi and fi. If xi is not one-dimensional, then it 
@@ -190,7 +203,6 @@ NhlErrorTypes linint1_W( void )
 /*
  * Allocate space for work arrays.
  */
-  nxi2 = nxi + 2;
   xiw  = (double*)calloc(nxi2,sizeof(double));
   fxiw = (double*)calloc(nxi2,sizeof(double));
   if(xiw == NULL || fxiw == NULL) {
@@ -243,8 +255,9 @@ NhlErrorTypes linint1_W( void )
       tmp_fi = &((double*)fi)[index_fi];
     }
 
-    NGCALLF(dlinint1,DLININT1)(&nxi,tmp_xi,tmp_fi,wrap,&nxo,tmp_xo,tmp_fo,xiw,
-                               fxiw,&nxi2,&missing_dfi.doubleval,&iopt,&ier);
+    NGCALLF(dlinint1,DLININT1)(&inxi,tmp_xi,tmp_fi,wrap,&inxo,tmp_xo,tmp_fo,
+                               xiw,fxiw,&inxi2,&missing_dfi.doubleval,
+                               &iopt,&ier);
 
     if(ier) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"linint1: xi and xo must be monotonically increasing");
@@ -303,8 +316,9 @@ NhlErrorTypes linint1_n_W( void )
 /*
  * Other variables
  */
-  int nxi, nxi2, nxo, nfo, nd, nr, nl, nrnxi, nrnxo, ntotal, size_fo;
-  int i, j, index_nri, index_nro, index_fi, index_fo, ier, ret;
+  ng_size_t nxi, nxi2, nxo, nfo, nd, nr, nl, nrnxi, nrnxo, ntotal, size_fo;
+  int inxi, inxi2, inxo, ier, ret;
+  ng_size_t i, j, index_nri, index_nro, index_fi, index_fo;
   double *xiw, *fxiw;
 /*
  * Retrieve parameters
@@ -382,14 +396,26 @@ NhlErrorTypes linint1_n_W( void )
 /*
  * Compute the total number of elements in our arrays and check them.
  */
-  nxi = dsizes_fi[*dim];
-  nxo = dsizes_xo[0];
-  nfo = nxo;
+  nxi  = dsizes_fi[*dim];
+  nxo  = dsizes_xo[0];
+  nfo  = nxo;
+  nxi2 = nxi + 2;
 
   if(nxi < 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1_n: xi must have at least 2 elements");
     return(NhlFATAL);
   }
+
+/*
+ * Test dimension sizes.
+ */
+  if((nxi > INT_MAX) || (nxo > INT_MAX) || (nxi2 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1_n: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inxi  = (int) nxi;
+  inxo  = (int) nxo;
+  inxi2 = (int) nxi2;
 
 /*
  * Check dimensions of xi and fi. If xi is not one-dimensional, then it 
@@ -479,7 +505,6 @@ NhlErrorTypes linint1_n_W( void )
 /*
  * Allocate space for work arrays.
  */
-  nxi2 = nxi + 2;
   xiw  = (double*)calloc(nxi2,sizeof(double));
   fxiw = (double*)calloc(nxi2,sizeof(double));
   if(xiw == NULL || fxiw == NULL) {
@@ -535,8 +560,8 @@ NhlErrorTypes linint1_n_W( void )
 /*
  * Call Fortran routine.
  */
-      NGCALLF(dlinint1,DLININT1)(&nxi,tmp_xi,tmp_fi,wrap,&nxo,tmp_xo,tmp_fo,
-                                 xiw,fxiw,&nxi2,&missing_dfi.doubleval,
+      NGCALLF(dlinint1,DLININT1)(&inxi,tmp_xi,tmp_fi,wrap,&inxo,tmp_xo,tmp_fo,
+                                 xiw,fxiw,&inxi2,&missing_dfi.doubleval,
                                  &iopt,&ier);
 
       if(ier) {
@@ -596,8 +621,9 @@ NhlErrorTypes linint2_W( void )
 /*
  * Other variables
  */
-  int nxi, nyi, nxi2, nfi, nxo, nyo, nfo, size_leftmost, size_fo;
-  int i, j, index_xi, index_yi, index_fi, index_fo, ier, ret;
+  ng_size_t nxi, nyi, nxi2, nfi, nxo, nyo, nfo, size_leftmost, size_fo;
+  ng_size_t i, j, index_xi, index_yi, index_fi, index_fo;
+  int inxi, inyi, inxi2, inxo, inyo, ier, ret;
   double *xiw, *fxiw;
 /*
  * Retrieve parameters
@@ -683,10 +709,24 @@ NhlErrorTypes linint2_W( void )
   nyo  = dsizes_yo[0];
   nfi  = nxi * nyi;
   nfo  = nxo * nyo;
+  nxi2 = nxi + 2;
   if(nxi < 2 || nyi < 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: xi and yi must both have at least two elements");
     return(NhlFATAL);
   }
+/*
+ * Test dimension sizes.
+ */
+  if((nxi > INT_MAX) || (nyi > INT_MAX) || (nxo > INT_MAX) || 
+     (nyo > INT_MAX) || (nxi2 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inxi  = (int) nxi;
+  inyi  = (int) nyi;
+  inxo  = (int) nxo;
+  inyo  = (int) nyo;
+  inxi2 = (int) nxi2;
 /*
  * Check dimensions of xi, yi, and fi. If xi/yi are not one-dimensional,
  * then their leftmost dimensions must be the same size as the leftmost
@@ -761,7 +801,6 @@ NhlErrorTypes linint2_W( void )
 /*
  * Allocate space for work arrays.
  */
-  nxi2 = nxi + 2;
   xiw  = (double*)calloc(nxi2,sizeof(double));
   fxiw = (double*)calloc(nxi2,sizeof(double));
   if(xiw == NULL || fxiw == NULL) {
@@ -831,8 +870,8 @@ NhlErrorTypes linint2_W( void )
       tmp_fi = &((double*)fi)[index_fi];
     }
 
-    NGCALLF(dlinint2,DLININT2)(&nxi,tmp_xi,&nyi,tmp_yi,tmp_fi,wrap,&nxo,
-                               tmp_xo,&nyo,tmp_yo,tmp_fo,xiw,fxiw,&nxi2,
+    NGCALLF(dlinint2,DLININT2)(&inxi,tmp_xi,&inyi,tmp_yi,tmp_fi,wrap,&inxo,
+                               tmp_xo,&inyo,tmp_yo,tmp_fo,xiw,fxiw,&inxi2,
                                &missing_dfi.doubleval,&iopt,&ier);
 
     if(ier) {
@@ -913,8 +952,9 @@ NhlErrorTypes linint2_points_W( void )
  * Other variables
  */
   double *xiw, *fxiw;
-  int nxi, nxi2, nyi, nfi, nxyo, size_leftmost, size_fo;
-  int i, j, index_xi, index_yi, index_fi, index_fo, ier, ret;
+  ng_size_t nxi, nxi2, nyi, nfi, nxyo, size_leftmost, size_fo;
+  ng_size_t i, j, index_xi, index_yi, index_fi, index_fo;
+  int inxi, inxi2, inyi, inxyo, ier, ret;
 /*
  * Retrieve parameters
  *
@@ -1006,6 +1046,20 @@ NhlErrorTypes linint2_points_W( void )
     return(NhlFATAL);
   }
   nfi = nxi * nyi;
+
+/*
+ * Test dimension sizes.
+ */
+  if((nxi > INT_MAX) || (nyi > INT_MAX) || (nxyo > INT_MAX) || 
+     (nxi2 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inxi  = (int) nxi;
+  inyi  = (int) nyi;
+  inxyo = (int) nxyo;
+  inxi2 = (int) nxi2;
+
 /*
  * Check dimensions of xi, yi, and fi. If xi/yi are not one-dimensional,
  * then their leftmost dimensions must be the same size as the leftmost
@@ -1149,9 +1203,9 @@ NhlErrorTypes linint2_points_W( void )
       tmp_fi = &((double*)fi)[index_fi];
     }
 
-    NGCALLF(dlinint2pts,DLININT2PTS)(&nxi,tmp_xi,&nyi,tmp_yi,tmp_fi,wrap,
-                                     &nxyo,tmp_xo,tmp_yo,tmp_fo,xiw,fxiw,
-                                     &nxi2,&missing_dfi.doubleval,&ier);
+    NGCALLF(dlinint2pts,DLININT2PTS)(&inxi,tmp_xi,&inyi,tmp_yi,tmp_fi,wrap,
+                                     &inxyo,tmp_xo,tmp_yo,tmp_fo,xiw,fxiw,
+                                     &inxi2,&missing_dfi.doubleval,&ier);
 
     if(ier) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"linint2_points: xi and yi must be monotonically increasing");
@@ -1231,8 +1285,9 @@ NhlErrorTypes area_hi2lores_W( void )
 /*
  * Other variables
  */
-  int i, ret, ncyc = 0, ier = 0, debug = 0;
-  int mxi, nyi, nfi, mxo, nyo, nfo, ngrd,  size_fi, size_fo;
+  int ret, ncyc = 0, ier = 0, debug = 0;
+  ng_size_t i, mxi, nyi, nfi, mxo, nyo, nfo, ngrd,  size_fi, size_fo;
+  int imxi, inyi, imxo, inyo, ingrd;
   double *critpc = NULL, *xilft, *xirgt, *yibot, *yitop, *xolft, *xorgt;
   double *wxi, *dxi, *dyi, *fracx, *fracy;
   double *ziwrk, *zowrk, *yiwrk, *yowrk;
@@ -1421,6 +1476,21 @@ NhlErrorTypes area_hi2lores_W( void )
   for( i = 0; i < ndims_fi-2; i++ ) ngrd *= dsizes_fi[i];
   size_fi = ngrd * nfi;
   size_fo = ngrd * nfo;
+
+/*
+ * Test dimension sizes.
+ */
+  if((mxi > INT_MAX) || (nyi > INT_MAX) || (mxo > INT_MAX) || 
+     (nyo > INT_MAX) || (ngrd > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"area_hi2lores: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imxi  = (int) mxi;
+  inyi  = (int) nyi;
+  imxo  = (int) mxo;
+  inyo  = (int) nyo;
+  ingrd = (int) ngrd;
+
 /*
  * Coerce missing values for fi.
  */
@@ -1512,9 +1582,9 @@ NhlErrorTypes area_hi2lores_W( void )
 /*
  * Call Fortran function.
  */
-  NGCALLF(arealinint2da,AREALININT2DA)(&mxi,&nyi,&ngrd,tmp_xi,tmp_yi,tmp_fi,
+  NGCALLF(arealinint2da,AREALININT2DA)(&imxi,&inyi,&ingrd,tmp_xi,tmp_yi,tmp_fi,
                                        wxi,tmp_wyi,&missing_dfi.doubleval,
-                                       fi_cyclic_x,&ncyc,&mxo,&nyo,tmp_xo,
+                                       fi_cyclic_x,&ncyc,&imxo,&inyo,tmp_xo,
                                        tmp_yo,tmp_fo,critpc,&debug,&ier,
                                        xilft,xirgt,yibot,yitop,dyi,xolft,
                                        xorgt,yiwrk,yowrk,fracx,fracy,

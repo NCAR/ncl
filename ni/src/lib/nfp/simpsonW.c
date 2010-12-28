@@ -33,7 +33,8 @@ NhlErrorTypes simpeq_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_f, npts, size_leftmost, ret;
+  ng_size_t i, index_f, npts, size_leftmost;
+  int inpts, ret;
 
 /*
  * Retrieve arguments.
@@ -49,6 +50,15 @@ NhlErrorTypes simpeq_W( void )
           DONT_CARE);
 
   npts = dsizes_f[ndims_f-1];
+
+/*
+ * Test dimension sizes.
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"simpeq: npts is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
 
   x = (void*)NclGetArgValue(
           1,
@@ -151,7 +161,7 @@ NhlErrorTypes simpeq_W( void )
                                 missing_df.doubleval);
     }
     else {
-      NGCALLF(dsimpeq,DSIMPEQ)(&npts,tmp_x,tmp_f,tmp_simpeq);
+      NGCALLF(dsimpeq,DSIMPEQ)(&inpts,tmp_x,tmp_f,tmp_simpeq);
 
       if(type_simpeq != NCL_double) {
         coerce_output_float_only(simpeq,tmp_simpeq,1,i);
@@ -213,7 +223,8 @@ NhlErrorTypes simpne_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_y, npts, size_leftmost, ret;
+  ng_size_t i, index_y, npts, size_leftmost;
+  int inpts, ret;
 
 /*
  * Retrieve arguments.
@@ -259,6 +270,15 @@ NhlErrorTypes simpne_W( void )
   }
 
   npts = dsizes_y[ndims_y-1];
+
+/*
+ * Test dimension sizes.
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"simpne: npts is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
 
 /*
  * Compute size of the output array (size_leftmost).
@@ -395,7 +415,7 @@ NhlErrorTypes simpne_W( void )
       set_subset_output_missing(simpne,i,type_simpne,1,missing_dy.doubleval);
     }
     else {
-      NGCALLF(dsimpne,DSIMPNE)(&npts,tmp_x,tmp_y,&missing_dy.doubleval,
+      NGCALLF(dsimpne,DSIMPNE)(&inpts,tmp_x,tmp_y,&missing_dy.doubleval,
                                tmp_simpne);
 
       if(type_simpne != NCL_double) {

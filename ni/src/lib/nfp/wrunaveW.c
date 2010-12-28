@@ -121,7 +121,7 @@ NhlErrorTypes wgt_runave_W( void )
   lwork = npts+2*(nwgt/2);
   
   if((npts > INT_MAX) || (nwgt > INT_MAX) || (lwork > INT_MAX)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: one or more dimension sizes is greater than INT_MAX", npts);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: one or more dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
   inpts = (int) npts;
@@ -311,7 +311,7 @@ NhlErrorTypes wgt_runave_n_W( void )
  */
   lwork = npts+2*(nwgt/2);
   if((npts > INT_MAX) || (nwgt > INT_MAX) || (lwork > INT_MAX)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave_n: one or more dimension sizes is greater than INT_MAX", npts);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave_n: one or more dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
   inpts = (int) npts;
@@ -476,7 +476,7 @@ NhlErrorTypes runave_W( void )
   lwork = npts+2*(*nave/2);
   
   if((npts > INT_MAX) || (lwork > INT_MAX)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: one or more dimension sizes is greater than INT_MAX", npts);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: one or more dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
   inpts = (int) npts;
@@ -658,7 +658,7 @@ NhlErrorTypes runave_n_W( void )
   lwork = npts+2*(*nave/2);
   
   if((npts > INT_MAX) || (lwork > INT_MAX)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave_n: one or more dimension sizes is greater than INT_MAX", npts);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave_n: one or more dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
   inpts = (int) npts;
