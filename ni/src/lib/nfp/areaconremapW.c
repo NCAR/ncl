@@ -407,7 +407,7 @@ NhlErrorTypes area_conserve_remap_W( void )
                                tmp_fi, tmp_fo, tmp_lati, tmp_loni, tmp_lato,
                                tmp_lono, &iNLATi, &iNLATo, bin_factor, 
                                &missing_dbl_fi.doubleval);
-  if (!set_binf || type_bin_factor != NCL_double) {
+  if (!set_binf || (set_binf && type_bin_factor != NCL_double)) {
           free(bin_factor);
   }
 
