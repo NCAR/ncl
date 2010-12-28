@@ -209,9 +209,9 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * various
  */
-  int i, ret, return_missing;
+  int ret, return_missing;
   ng_size_t dsizes[1];
-  ng_size_t total_size_x;
+  ng_size_t i, total_size_x;
   ng_size_t total_size_date = 0;
   ng_size_t index_date;
   int months_to_days_fix=0, years_to_days_fix=0;
@@ -809,7 +809,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
 /*
  * various
  */
-  int i, total_size_input;
+  ng_size_t i, total_size_input;
   ng_size_t dsizes[1], return_missing;
   int months_to_days_fix=0, years_to_days_fix=0;
 

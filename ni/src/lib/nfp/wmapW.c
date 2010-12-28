@@ -260,7 +260,7 @@ NhlErrorTypes wmgetp_W(void)
   NclBasicDataTypes type_pname;
   float *fval;
   int *ival;
-  ng_size_t ret_size = 1;	
+  ng_size_t ret_size = 1;
 
 /*
  * Retrieve argument #1
@@ -354,7 +354,8 @@ OK_NAME:  for (i = 0; i < numpi; i++) {
 
 NhlErrorTypes wmbarb_W( void )
 {
-  int grlist,gkswid,i,btot;
+  ng_size_t i;
+  int grlist,gkswid,btot;
   int *nwid,nid,ezf;
   float xt,yt,xtn,ytn,ang1,ang2,utmp,vtmp,vlen,d2r=0.01745329;
  
@@ -505,7 +506,8 @@ NhlErrorTypes wmbarb_W( void )
 
 NhlErrorTypes wmbarbmap_W( void )
 {
-  int grlist,gkswid,i,btot;
+  ng_size_t i;
+  int grlist,gkswid,btot;
   int *nwid,nid,ezf,wdf;
   float xt,yt,xtn,ytn,ang1,ang2,utmp,vtmp,vlen,d2r=0.01745329;
 
@@ -664,7 +666,8 @@ NhlErrorTypes wmbarbmap_W( void )
 
 NhlErrorTypes wmvect_W( void )
 {
-  int grlist,gkswid,i,btot;
+  ng_size_t i;
+  int grlist,gkswid,btot;
   int *nwid,nid,ezf;
   float xt,yt,xtn,ytn,ang1,ang2,utmp,vtmp,vlen,d2r=0.01745329;
  
@@ -815,7 +818,8 @@ NhlErrorTypes wmvect_W( void )
 
 NhlErrorTypes wmvectmap_W( void )
 {
-  int grlist,gkswid,i,btot;
+  ng_size_t i;
+  int grlist,gkswid,btot;
   int *nwid,nid;
  
 /*
@@ -933,7 +937,8 @@ NhlErrorTypes wmvectmap_W( void )
 
 NhlErrorTypes wmvlbl_W( void )
 {
-  int grlist,gkswid,i;
+  ng_size_t i;
+  int grlist,gkswid;
   int *nwid,nid;
  
 /*
@@ -1014,7 +1019,8 @@ NhlErrorTypes wmdrft_W( void )
   int ier;
   Gclip clip_ind_rect;
 
-  int grlist,gkswid,i;
+  ng_size_t i;
+  int grlist,gkswid;
   int *nwid,nid,ezf,j,indx,numi;
   float *xd,*yd,*ud,*vd,xt,yt,mval=1.e12;
 
@@ -1378,7 +1384,8 @@ NhlErrorTypes wmstnm_W( void )
   int ier;
   Gclip clip_ind_rect;
 
-  int grlist,gkswid,i,num_strings;
+  ng_size_t i;
+  int grlist,gkswid,num_strings;
   int *nwid,nid,ezf,iang;
   char *arg1,tang[3],*tsym;
   float xt,yt,xtt,ytt,fang;
