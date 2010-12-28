@@ -20289,7 +20289,7 @@ NhlErrorTypes _NclItouint
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
+                                "A bad value was passed to touint, input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.uintval;
                         }
                         else if (errno == ERANGE)
@@ -24680,7 +24680,7 @@ NhlErrorTypes _NclItoshort
                             {
                                 has_missing = 1;
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                    "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
+                                    "A bad value was passed to toshort, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.shortval;
                             }
                             else if (llval > SHRT_MAX)
@@ -25322,7 +25322,7 @@ NhlErrorTypes _NclItoushort
                             if (strcmp(end, str) == 0)
                             {
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                    "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
+                                    "A bad value was passed to toushort, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.ushortval;
                             }
                             else if (llval > USHRT_MAX)
@@ -26443,20 +26443,63 @@ NhlErrorTypes _NclItostring
             case NCL_char:
                 {
                     unsigned char *ptr;
+                    char *str;
+                    int n;
+                    int cur_str_len;
 
                     ptr = (unsigned char *) in_value;
 
+                    cur_str_len = dimsizes[n_dims-1];
+                    str = (char *)NclMalloc(sizeof(char)*(cur_str_len + 1));
+                    if (str == NULL)
+                    {
+                            NHLPERROR((NhlFATAL, errno, "_NclItostring str: memory allocation error."));
+                            return NhlFATAL;
+                    }
+                    str[cur_str_len] = '\0';
+
                     if(has_missing)
                     {
-                        sprintf(buffer, "%c", missing.charval);
-                        ret_missing.stringval = NrmStringToQuark(buffer);
+                        str[0] = missing.charval;
+                        str[1] = '\0';
+                        ret_missing.stringval = NrmStringToQuark(str);
+                    }
+
+                    if(n_dims > 1)
+                    {
+                        n_dims --;
+                        dimsizes[n_dims] = 0;
+                    }
+                    else
+                    {
+                        dimsizes[0] = 1;
+                    }
+
+                    total_elements = 1;
+                    for(j = 0; j < n_dims; j++)
+                    {
+                        total_elements *= dimsizes[j];
+                    }
+
+                    output = (string *)NclRealloc(output, sizeof(string)*total_elements);
+                    if (output == NULL)
+                    {
+                            NHLPERROR((NhlFATAL, errno, "_NclItostring output: memory allocation error."));
+                            return NhlFATAL;
                     }
 
                     for(i = 0; i < total_elements; i++)
                     {
-                        sprintf(buffer, "%c", ptr[i]);
-                        output[i] = NrmStringToQuark(buffer);
+                        n = i * cur_str_len;
+                        for(j = 0; j < cur_str_len; j++)
+                        {
+                            str[j] = ptr[n++];
+                            if(!str[j])
+                                break;
+                        }
+                        output[i] = NrmStringToQuark(str);
                     }
+                    free(str);
                 }
                 break;
             case NCL_int8:
@@ -28288,26 +28331,18 @@ NhlErrorTypes _NclItochar
                 break;
             case NCL_string:
                 {
-                    long long llval;
-                    long lval;
                     string *ptr;
                     char *str;
-                    char *end;
+                    int   cur_str_len = 1;
+                    int   max_str_len = 1;
+                    int   n = 0;
 
                     if(has_missing)
                     {
                         errno = 0;
                         str = NrmQuarkToString(missing.stringval);
-                        llval = _Nclstrtoll(str,&end);
-                        if (end == str || errno == ERANGE)
-                        {
-                            ret_missing.charval = (char) ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
-                        }
-                        else
-                        {
-                            if((llval <= SCHAR_MAX) && (llval >= SCHAR_MIN))
-                                ret_missing.charval = (int) llval;
-                        }
+                        if(missing.stringval != ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval)
+                            ret_missing.charval = '\0';		/* default missing char value is 0 */
                     }
 
                     ptr = (string *) in_value;
@@ -28317,50 +28352,63 @@ NhlErrorTypes _NclItochar
     
                         if(has_missing && (missing.stringval == ptr[i]))
                         {
-                            output[i] = ret_missing.charval;
+                            continue;
                         }
                         else
                         {
-                            lval = _Nclstrtol(str,&end);
-                            if (end == str || errno == ERANGE)
-                            {
-                                has_missing = 1;
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                    "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
-                                output[i] = ret_missing.charval;
-                            }
-                            else if (lval > SCHAR_MAX)
-                            {
-                                has_missing = 1;
-                                overflowed ++;
-                                output[i] = ret_missing.charval;
-                            }
-                            else if (lval < SCHAR_MIN)
-                            {
-                                has_missing = 1;
-                                underflowed ++;
-                                output[i] = ret_missing.charval;
-                            }
-                            else
-                            {
-                                output[i] = (char) lval;
-                            }
+                            cur_str_len = strlen(str) + 1;
+                            if(max_str_len < cur_str_len)
+                               max_str_len = cur_str_len;
                         }
                     }
-    
-                    if(overflowed)
+
+                    output = (char *)NclRealloc(output, sizeof(char)*total_elements*max_str_len);
+                    if (output == NULL)
                     {
-                        NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than SCHAR_MAX, which has been flagged missing.",
-                            overflowed);
+                        NHLPERROR((NhlFATAL, errno, "_NclItochar output: memory allocation error."));
+                        return NhlFATAL;
                     }
-    
-                    if(underflowed)
+
+                    if(total_elements > 1)
                     {
-                        NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than SCHAR_MIN, which has been flagged missing.",
-                            underflowed);
+                       dimsizes[n_dims] = max_str_len;
+                       n_dims ++;
                     }
+                    else
+                    {
+                       dimsizes[0] = max_str_len;
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        n = i * max_str_len;
+                        str = NrmQuarkToString(ptr[i]);
+    
+                        if(has_missing && (missing.stringval == ptr[i]))
+                        {
+                            output[n++] = ret_missing.charval;
+                        }
+                        else
+                        {
+                            for(j = 0; j < strlen(str); j++)
+                            {
+                                output[n++] = str[j];
+                            }
+
+                            for(j = strlen(str); j < max_str_len; j++)
+                            {
+                                output[n++] = '\0';
+                            }
+                        }
+                        output[n++] = '\0';
+                    }
+
+                    return(NclReturnValue((void*)output,
+                                           n_dims,
+                                           dimsizes,
+                                           (has_missing ? &ret_missing : NULL),
+                                           NCL_char,
+                                           0));
                 }
                 break;
             case NCL_char:
