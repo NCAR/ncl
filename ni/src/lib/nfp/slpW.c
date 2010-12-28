@@ -405,7 +405,8 @@ NhlErrorTypes pslec_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, l, nlat, mlon, nlatmlon;
+  ng_size_t i, j, l, nlat, mlon, nlatmlon;
+  int inlat, imlon;
 /*
  * Retrieve parameters
  *
@@ -486,6 +487,16 @@ NhlErrorTypes pslec_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: The dimensions of 'phis' must be the same as the last two dimensions of 't'");
     return(NhlFATAL);
   }
+/*
+ * Test dimension sizes.
+ */
+  if((mlon > INT_MAX) || (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: one or more input dimensions sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imlon = (int) mlon;
+  inlat = (int) nlat;
+
 /*
  * Compute sizes of input arrays.
  */
@@ -610,7 +621,7 @@ NhlErrorTypes pslec_W( void )
 
     if(type_slp == NCL_double) tmp_slp = &((double*)slp)[l];
 
-    NGCALLF(dpslec,DPSLEC)(tmp_t,tmp_phis,tmp_ps,tmp_pres,&mlon,&nlat,
+    NGCALLF(dpslec,DPSLEC)(tmp_t,tmp_phis,tmp_ps,tmp_pres,&imlon,&inlat,
                            tmp_slp);
 /*
  * Copy output values from temporary tmp_slp to slp.
@@ -813,7 +824,8 @@ NhlErrorTypes pslhor_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, k, l, nlat, mlon, klev, nlatmlon, klevnlatmlon;
+  ng_size_t i, j, k, l, nlat, mlon, klev, nlatmlon, klevnlatmlon;
+  int inlat, imlon, iklev;
 /*
  * Retrieve parameters
  *
@@ -940,6 +952,17 @@ NhlErrorTypes pslhor_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: The input array 'lats' must be the same length as the first dimension of 'phis'" );
     return(NhlFATAL);
   }
+/*
+ * Test dimension sizes.
+ */
+  if((mlon > INT_MAX) || (nlat > INT_MAX) || (klev > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: one or more input dimensions sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imlon = (int) mlon;
+  inlat = (int) nlat;
+  iklev = (int) klev;
+
 /*
  * Compute sizes of input arrays.
  */
@@ -1117,7 +1140,7 @@ NhlErrorTypes pslhor_W( void )
 
 
     NGCALLF(dpslhor,DPSLHOR)(tmp_z,tmp_t,tmp_phis,tmp_ps,tmp_pres,
-                             tmp_lats,&mlon,&nlat,&klev,tmp_slp,pslu,
+                             tmp_lats,&imlon,&inlat,&iklev,tmp_slp,pslu,
                              zx,tx,presx);
 /*
  * Copy output values from temporary tmp_slp to slp.

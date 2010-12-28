@@ -50,8 +50,10 @@ NhlErrorTypes mjo_cross_segment_W( void )
 /*
  * Various
  */
-  int nt, nm, nl, ntml, nt2p1, nlp1, ntp1, nt2m1, lsave1, lsave2;
-  int size_stc, ret, found_missing_x, found_missing_y;
+  ng_size_t nt, nm, nl, ntml, nt2p1, nlp1, ntp1, nt2m1, lsave1, lsave2;
+  ng_size_t size_stc;
+  int i_nt, inm, inl, int2p1, inlp1, int2m1, ilsave1, ilsave2;
+  int ret, found_missing_x, found_missing_y;
 
 /*
  * Retrieve parameters.
@@ -149,12 +151,39 @@ NhlErrorTypes mjo_cross_segment_W( void )
                                      missing_dbl_y.doubleval);
 
 /* 
- * Allocate space for output array.
+ * Size of output array and work arrays that will be 
+ * created in Fortran routine.
  */
   nlp1     = nl+1;
   nt2p1    = nt/2+1;
   size_stc = nlp1 * nt2p1 * 16;
+  lsave1   = 4*nl + 15;
+  lsave2   = 4*nt + 15;
+  nt2m1    = nt/2 -1;
+  ntp1     = nt + 1;
 
+/*
+ * Test dimension sizes.
+ */
+  if((nl > INT_MAX) || (nm > INT_MAX) || (nt > INT_MAX) ||
+     (nlp1 > INT_MAX) || (nt2p1 > INT_MAX) || (nt2m1 > INT_MAX) ||
+     (nt2p1 > INT_MAX) || (lsave1 > INT_MAX) || (lsave2 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"mjo_cross_segment: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inl     = (int) nl;
+  inm     = (int) nm;
+  i_nt    = (int) nt;
+  inlp1   = (int) nlp1;
+  int2p1  = (int) nt2p1;
+  int2m1  = (int) nt2m1;
+  int2p1  = (int) nt2p1;
+  ilsave1 = (int) lsave1;
+  ilsave2 = (int) lsave2;
+
+/* 
+ * Allocate space for output array.
+ */
   if(type_stc != NCL_double) {
     stc     = (void *)calloc(size_stc, sizeof(float));
     tmp_stc = (double *)calloc(size_stc,sizeof(double));
@@ -193,19 +222,12 @@ NhlErrorTypes mjo_cross_segment_W( void )
  */
   }
   else {
-/* 
- * Size of work arrays that will be created in Fortran routine.
- */
-    lsave1 = 4*nl + 15;
-    lsave2 = 4*nt + 15;
-    nt2m1 = nt/2 -1;
-    ntp1  = nt + 1;
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(spctimcross2,SPCTIMCROSS2)(&nl, &nm, &nt, tmp_x, tmp_y, tmp_stc, 
-                                       &nlp1, &nt2p1, &nt2m1, &nt2p1,
-				       &lsave1, &lsave2);
+    NGCALLF(spctimcross2,SPCTIMCROSS2)(&inl,&inm,&i_nt,tmp_x,tmp_y,tmp_stc, 
+                                       &inlp1,&int2p1,&int2m1,&int2p1,
+                                       &ilsave1,&ilsave2);
 /*
  * Coerce output back to float if necessary.
  */
