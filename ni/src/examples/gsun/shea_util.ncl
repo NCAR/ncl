@@ -3135,7 +3135,7 @@ end
 ;----------------------------------------------------------------------------
 ;----------------------- Unsupported: DJS -----------------------------------
 ;----------------------------------------------------------------------------
-undef("advent_gradient")
+undef("advect_gradient")
 function advect_gradient (u:numeric, v:numeric, x:numeric \
                          ,gridType[1]:integer, con[1]:numeric \
                          ,long_name:string, units:string, iopt[1]:integer)
