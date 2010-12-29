@@ -27519,8 +27519,8 @@ NhlErrorTypes _NclItobyte
                     double val, dmin, dmax;
                     double *ptr;
 
-                    dmin = 0.0;
-                    dmax = (double) UCHAR_MAX;
+                    dmin = (double) SCHAR_MIN;
+                    dmax = (double) SCHAR_MAX;
 
                     if(has_missing)
                     {
@@ -27555,14 +27555,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than CHAR_MAX, which has been flagged missing.",
+                            "There are %d double larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than CHAR_MIN, which has been flagged missing.",
+                            "There are %d double less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27572,8 +27572,8 @@ NhlErrorTypes _NclItobyte
                     float val, fmin, fmax;
                     float *ptr;
 
-                    fmin = 0.0;
-                    fmax = (float) UCHAR_MAX;
+                    fmin = (float) SCHAR_MIN;
+                    fmax = (float) SCHAR_MAX;
 
                     if(has_missing)
                     {
@@ -27608,14 +27608,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d float larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than 0, which has been flagged missing.",
+                            "There are %d float less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27638,7 +27638,7 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            if((llval < UCHAR_MAX) && (llval >= 0))
+                            if((llval < SCHAR_MAX) && (llval >= SCHAR_MIN))
                                 ret_missing.byteval = (unsigned char) llval;
                         }
                     }
@@ -27661,13 +27661,13 @@ NhlErrorTypes _NclItobyte
                                     "A bad value was passed to tobyte, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.byteval;
                             }
-                            else if (llval > UCHAR_MAX)
+                            else if (llval > SCHAR_MAX)
                             {
                                 has_missing = 1;
                                 overflowed ++;
                                 output[i] = ret_missing.byteval;
                             }
-                            else if (llval < 0)
+                            else if (llval < SCHAR_MIN)
                             {
                                 has_missing = 1;
                                 underflowed ++;
@@ -27683,14 +27683,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than CHAR_MAX, which has been flagged missing.",
+                            "There are %d double larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than CHAR_MIN, which has been flagged missing.",
+                            "There are %d double less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27754,7 +27754,6 @@ NhlErrorTypes _NclItobyte
                 break;
             case NCL_int8:
                 {
-                    char val;
                     char *ptr;
 
                     if(has_missing)
@@ -27767,27 +27766,13 @@ NhlErrorTypes _NclItobyte
 
                     for(i = 0; i < total_elements; i++)
                     {
-                        val = ptr[i];
-                        if(val < 0)
-                        {
-                            has_missing = 1;
-                            underflowed ++;
-                            output[i] = ret_missing.byteval;
-                        }
-                        else
-                            output[i] = (byte) val;
-                    }
-
-                    if(underflowed)
-                    {
-                        NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
-                            underflowed);
+                        output[i] = (byte) ptr[i];
                     }
                 }
                 break;
             case NCL_uint8:
                 {
+                    unsigned char val;
                     unsigned char *ptr;
 
                     if(has_missing)
@@ -27799,7 +27784,22 @@ NhlErrorTypes _NclItobyte
 
                     for(i = 0; i < total_elements; i++)
                     {
-                        output[i] = (byte) ptr[i];
+                        val = ptr[i];
+                        if(val > SCHAR_MAX)
+                        {
+                            has_missing = 1;
+                            overflowed ++;
+                            output[i] = ret_missing.byteval;
+                        }
+                        else
+                            output[i] = (byte) val;
+                    }
+
+                    if(underflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "There are %d uint8 great than SCHAR_MAX, which has been flagged missing.",
+                            overflowed);
                     }
                 }
                 break;
@@ -27810,7 +27810,7 @@ NhlErrorTypes _NclItobyte
     
                     if(has_missing)
                     {
-                        if((missing.shortval <= UCHAR_MAX) && (missing.shortval >= 0))
+                        if((missing.shortval <= SCHAR_MAX) && (missing.shortval >= SCHAR_MIN))
                             ret_missing.byteval = (byte) missing.shortval;
                     }
 
@@ -27819,13 +27819,13 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.byteval;
                         }
-                        else if(val < 0)
+                        else if(val < SCHAR_MIN)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -27840,14 +27840,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d short larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "There are %d int short less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27859,7 +27859,7 @@ NhlErrorTypes _NclItobyte
     
                     if(has_missing)
                     {
-                        if(missing.ushortval <= UCHAR_MAX)
+                        if(missing.ushortval <= SCHAR_MAX)
                             ret_missing.byteval = (byte) missing.ushortval;
                     }
 
@@ -27868,7 +27868,7 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -27883,7 +27883,7 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d ushort larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -27895,7 +27895,7 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if((missing.intval <= UCHAR_MAX) && (missing.intval >= 0))
+                        if((missing.intval <= SCHAR_MAX) && (missing.intval >= SCHAR_MIN))
                             ret_missing.byteval = (byte) missing.intval;
                     }
 
@@ -27904,13 +27904,13 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.byteval;
                         }
-                        else if(val < 0)
+                        else if(val < SCHAR_MIN)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -27925,14 +27925,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d int larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "There are %d int less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27944,7 +27944,7 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if(missing.uintval <= UCHAR_MAX)
+                        if(missing.uintval <= SCHAR_MAX)
                             ret_missing.byteval = (byte) missing.uintval;
                     }
 
@@ -27953,7 +27953,7 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -27968,7 +27968,7 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d unsigned int larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -27980,7 +27980,7 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if((missing.longval <= UCHAR_MAX) && (missing.longval >= 0))
+                        if((missing.longval <= SCHAR_MAX) && (missing.longval >= SCHAR_MIN))
                             ret_missing.byteval = (byte) missing.longval;
                     }
 
@@ -27989,13 +27989,13 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.byteval;
                         }
-                        else if(val < 0)
+                        else if(val < SCHAR_MIN)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -28010,14 +28010,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d long larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than 0, which has been flagged missing.",
+                            "There are %d long less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28029,7 +28029,7 @@ NhlErrorTypes _NclItobyte
     
                     if(has_missing)
                     {
-                        if(missing.ulongval <= UCHAR_MAX)
+                        if(missing.ulongval <= SCHAR_MAX)
                             ret_missing.byteval = (byte) missing.ulongval;
                     }
 
@@ -28038,7 +28038,7 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -28053,7 +28053,7 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned long larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d unsigned ulong larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -28065,7 +28065,7 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if((missing.int64val <= UCHAR_MAX) && (missing.int64val >= 0))
+                        if((missing.int64val <= SCHAR_MAX) && (missing.int64val >= SCHAR_MIN))
                             ret_missing.byteval = (byte) missing.int64val;
                     }
 
@@ -28074,13 +28074,13 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.byteval;
                         }
-                        else if(val < 0)
+                        else if(val < SCHAR_MIN)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -28095,14 +28095,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d int64 larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than 0, which has been flagged missing.",
+                            "There are %d int64 less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28114,7 +28114,7 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if(missing.uint64val <= UCHAR_MAX)
+                        if(missing.uint64val <= SCHAR_MAX)
                             ret_missing.byteval = (byte) missing.uint64val;
                     }
 
@@ -28123,7 +28123,7 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -28138,7 +28138,7 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than UCHAR_MAX, which has been flagged missing.",
+                            "There are %d uint64 larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -28228,8 +28228,8 @@ NhlErrorTypes _NclItochar
                     double val, dmin, dmax;
                     double *ptr;
 
-                    dmin = (double) SCHAR_MIN;
-                    dmax = (double) SCHAR_MAX;
+                    dmin = (double) 0.0;
+                    dmax = (double) UCHAR_MAX;
 
                     if(has_missing)
                     {
@@ -28264,14 +28264,14 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than SCHAR_MAX, which has been flagged missing.",
+                            "There are %d double larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than SCHAR_MIN, which has been flagged missing.",
+                            "There are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28281,8 +28281,8 @@ NhlErrorTypes _NclItochar
                     float val, fmin, fmax;
                     float *ptr;
 
-                    fmin = (float) SCHAR_MIN;
-                    fmax = (float) SCHAR_MAX;
+                    fmin = (float) 0.0;
+                    fmax = (float) UCHAR_MAX;
 
                     if(has_missing)
                     {
@@ -28317,14 +28317,14 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than SCHAR_MAX, which has been flagged missing.",
+                            "There are %d float larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than SCHAR_MIN, which has been flagged missing.",
+                            "There are %d float less than UCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28487,35 +28487,18 @@ NhlErrorTypes _NclItochar
                 break;
             case NCL_uint8:
                 {
-                    unsigned char val;
                     unsigned char *ptr;
 
                     if(has_missing)
                     {
-                        if(missing.uint8val <= SCHAR_MAX)
-                            ret_missing.charval = (char) missing.uint8val;
+                        ret_missing.charval = (char) missing.uint8val;
                     }
 
                     ptr = (unsigned char *) in_value;
 
                     for(i = 0; i < total_elements; i++)
                     {
-                        val = ptr[i];
-                        if(val > SCHAR_MAX)
-                        {
-                            has_missing = 1;
-                            overflowed ++;
-                            output[i] = ret_missing.charval;
-                        }
-                        else
-                            output[i] = (char) ptr[i];
-                    }
-
-                    if(overflowed)
-                    {
-                        NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than SCHAR_MAX, which has been flagged missing.",
-                            overflowed);
+                        output[i] = ptr[i];
                     }
                 }
                 break;
@@ -28526,7 +28509,7 @@ NhlErrorTypes _NclItochar
     
                     if(has_missing)
                     {
-                        if((missing.shortval <= SCHAR_MAX) && (missing.shortval >= SCHAR_MIN))
+                        if((missing.shortval <= UCHAR_MAX) && (missing.shortval >= 0))
                             ret_missing.charval = (char) missing.shortval;
                     }
 
@@ -28535,13 +28518,13 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > SCHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.charval;
                         }
-                        else if(val < SCHAR_MIN)
+                        else if(val < 0)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -28556,14 +28539,14 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than SCHAR_MAX, which has been flagged missing.",
+                            "There are %d short larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than SCHAR_MIN, which has been flagged missing.",
+                            "There are %d short less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28575,7 +28558,7 @@ NhlErrorTypes _NclItochar
     
                     if(has_missing)
                     {
-                        if(missing.ushortval <= SCHAR_MAX)
+                        if(missing.ushortval <= UCHAR_MAX)
                             ret_missing.charval = (char) missing.ushortval;
                     }
 
@@ -28584,7 +28567,7 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > SCHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -28599,7 +28582,7 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than SCHAR_MAX, which has been flagged missing.",
+                            "There are %d ushort larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -28611,7 +28594,7 @@ NhlErrorTypes _NclItochar
 
                     if(has_missing)
                     {
-                        if((missing.intval <= SCHAR_MAX) && (missing.intval >= SCHAR_MIN))
+                        if((missing.intval <= UCHAR_MAX) && (missing.intval >= 0))
                             ret_missing.charval = (char) missing.intval;
                     }
 
@@ -28620,13 +28603,13 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > SCHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.charval;
                         }
-                        else if(val <  SCHAR_MIN)
+                        else if(val <  0)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -28641,14 +28624,14 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than SCHAR_MAX, which has been flagged missing.",
+                            "There are %d int larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than  SCHAR_MIN, which has been flagged missing.",
+                            "There are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28660,7 +28643,7 @@ NhlErrorTypes _NclItochar
 
                     if(has_missing)
                     {
-                        if(missing.uintval <= SCHAR_MAX)
+                        if(missing.uintval <= UCHAR_MAX)
                             ret_missing.charval = (char) missing.uintval;
                     }
 
@@ -28669,7 +28652,7 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > SCHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -28684,7 +28667,7 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than SCHAR_MAX, which has been flagged missing.",
+                            "There are %d unsigned int larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -28696,7 +28679,7 @@ NhlErrorTypes _NclItochar
 
                     if(has_missing)
                     {
-                        if((missing.longval <= SCHAR_MAX) && (missing.longval >= SCHAR_MIN))
+                        if((missing.longval <= UCHAR_MAX) && (missing.longval >= 0))
                             ret_missing.charval = (char) missing.longval;
                     }
 
@@ -28705,13 +28688,13 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > SCHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.charval;
                         }
-                        else if(val < SCHAR_MIN)
+                        else if(val < 0)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -28726,14 +28709,14 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than SCHAR_MAX, which has been flagged missing.",
+                            "There are %d long larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than SCHAR_MIN, which has been flagged missing.",
+                            "There are %d long less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28745,7 +28728,7 @@ NhlErrorTypes _NclItochar
     
                     if(has_missing)
                     {
-                        if(missing.ulongval <= SCHAR_MAX)
+                        if(missing.ulongval <= UCHAR_MAX)
                             ret_missing.charval = (char) missing.ulongval;
                     }
 
@@ -28754,7 +28737,7 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > SCHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -28769,7 +28752,7 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned long larger than SCHAR_MAX, which has been flagged missing.",
+                            "There are %d unsigned long larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -28781,7 +28764,7 @@ NhlErrorTypes _NclItochar
 
                     if(has_missing)
                     {
-                        if((missing.int64val <= SCHAR_MAX) && (missing.int64val >= SCHAR_MIN))
+                        if((missing.int64val <= UCHAR_MAX) && (missing.int64val >= 0))
                             ret_missing.charval = (char) missing.int64val;
                     }
 
@@ -28790,13 +28773,13 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > SCHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.charval;
                         }
-                        else if(val < SCHAR_MIN)
+                        else if(val < 0)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -28811,14 +28794,14 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than SCHAR_MAX, which has been flagged missing.",
+                            "There are %d int64 larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than SCHAR_MIN, which has been flagged missing.",
+                            "There are %d int64 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28831,7 +28814,7 @@ NhlErrorTypes _NclItochar
 
                     if(has_missing)
                     {
-                        if(missing.uint64val <= SCHAR_MAX)
+                        if(missing.uint64val <= UCHAR_MAX)
                             ret_missing.charval = (char) missing.uint64val;
                     }
 
@@ -28840,7 +28823,7 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > SCHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -28855,7 +28838,7 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than SCHAR_MAX, which has been flagged missing.",
+                            "There are %d uint64 larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
