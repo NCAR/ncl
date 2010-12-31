@@ -5897,6 +5897,56 @@ char **endptr;
         return tval;
 }
 
+NhlErrorTypes _NclIshorttoint
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	short *value;
+	ng_size_t total_elements = 1;
+	int n_dims = 0;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	NclScalar missing, missing2;
+	int has_missing;
+	ng_size_t i;
+	int *output;
+	
+        value = (short*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+	for (i = 0; i < n_dims; i++) {
+		total_elements *= dimsizes[i];
+	}
+	output = (int*)NclMalloc(sizeof(int)*total_elements);
+        if (output == NULL)
+        {
+            NHLPERROR((NhlFATAL, errno, "_NclIshorttoint output: memory allocation error."));
+            return NhlFATAL;
+        }
+	for(i = 0; i < total_elements; i++) {
+		output[i] = (int)((short*)value)[i];
+	}
+	if(has_missing) {
+		missing2.intval = (int)*((short*)&missing);
+	}
+	return(NclReturnValue(
+		(void*)output,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing2 : NULL),
+		NCL_int,
+		0
+	));
+}
+
 NhlErrorTypes _NclIushorttoint
 #if	NhlNeedProto
 (void)
@@ -19539,7 +19589,7 @@ NhlErrorTypes _NclItoint
                     if(has_missing)
                     {
                         val = (double) missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.intval = (int) val;
                         }
@@ -19597,7 +19647,7 @@ NhlErrorTypes _NclItoint
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.intval = (int) val;
                         }
@@ -19613,7 +19663,7 @@ NhlErrorTypes _NclItoint
                     for(i = 0; i < total_elements; i++)
                     {
                         val = (float) ptr[i];
-                        if(val > fmax)
+                        if(val >= fmax)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -19630,6 +19680,15 @@ NhlErrorTypes _NclItoint
                             output[i] = (int) val;
                         }
                     }
+                  /*
+                    fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
+                    fprintf(stderr, "\tfmin = %f\n", fmin);
+                    fprintf(stderr, "\tfmax = %f\n", fmax);
+                    fprintf(stderr, "\tptr[0] = %f\n", ptr[0]);
+                    fprintf(stderr, "\toutput[0] = %d\n", output[0]);
+                    fprintf(stderr, "\tINT_MIN = %d\n", INT_MIN);
+                    fprintf(stderr, "\tINT_MAX = %d\n", INT_MAX);
+                   */
     
                     if(overflowed)
                     {
@@ -20162,7 +20221,7 @@ NhlErrorTypes _NclItouint
 
                     if(has_missing)
                     {
-                        if(missing.doubleval < dmax)
+                        if((missing.doubleval <= dmax) && (missing.doubleval >= dmin))
                             ret_missing.uintval = (unsigned int) missing.doubleval;
                     }
 
@@ -20214,7 +20273,7 @@ NhlErrorTypes _NclItouint
 
                     if(has_missing)
                     {
-                        if(missing.floatval < fmax)
+                        if((missing.floatval <= fmax) && (missing.floatval >= fmin))
                             ret_missing.uintval = (unsigned int) missing.floatval;
                     }
 
@@ -20828,7 +20887,7 @@ NhlErrorTypes _NclItolong
                     if(has_missing)
                     {
                         val = (double) missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.longval = (long) val;
                         }
@@ -20881,7 +20940,7 @@ NhlErrorTypes _NclItolong
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.longval = (long) val;
                         }
@@ -21394,7 +21453,7 @@ NhlErrorTypes _NclItoulong
                     if(has_missing)
                     {
                         val = missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.intval = (unsigned long) val;
                         }
@@ -21448,7 +21507,7 @@ NhlErrorTypes _NclItoulong
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.ulongval = (unsigned long) val;
                         }
@@ -22014,7 +22073,7 @@ NhlErrorTypes _NclItoint64
                     if(has_missing)
                     {
                         val = (double) missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.int64val = (long long) val;
                         }
@@ -22068,7 +22127,7 @@ NhlErrorTypes _NclItoint64
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.int64val = (long long) val;
                         }
@@ -22505,7 +22564,7 @@ NhlErrorTypes _NclItouint64
                     if(has_missing)
                     {
                         val = missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.uint64val = (unsigned long long) val;
                         }
@@ -22559,7 +22618,7 @@ NhlErrorTypes _NclItouint64
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.uint64val = (unsigned long long) val;
                         }
@@ -23109,7 +23168,7 @@ NhlErrorTypes _NclItoint8
                     if(has_missing)
                     {
                         val = (double) missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.int8val = (char) val;
                         }
@@ -23163,7 +23222,7 @@ NhlErrorTypes _NclItoint8
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.int8val = (char) val;
                         }
@@ -23813,7 +23872,7 @@ NhlErrorTypes _NclItouint8
                     if(has_missing)
                     {
                         val = missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.uint8val = (unsigned char) val;
                         }
@@ -23867,7 +23926,7 @@ NhlErrorTypes _NclItouint8
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.uint8val = (unsigned char) val;
                         }
@@ -24542,7 +24601,7 @@ NhlErrorTypes _NclItoshort
                     if(has_missing)
                     {
                         val = missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.shortval = (short) val;
                         }
@@ -24597,7 +24656,7 @@ NhlErrorTypes _NclItoshort
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.shortval = (short) val;
                         }
@@ -24610,13 +24669,15 @@ NhlErrorTypes _NclItoshort
                         val = (float) ptr[i];
                         if(val > fmax)
                         {
-                            overflowed ++;
+                            if(has_missing && (val != missing.floatval))
+                                overflowed ++;
                             has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else if(val < fmin)
                         {
-                            underflowed ++;
+                            if(has_missing && (val != missing.floatval))
+                                underflowed ++;
                             has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
@@ -25184,7 +25245,7 @@ NhlErrorTypes _NclItoushort
                     if(has_missing)
                     {
                         val = missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.ushortval = (unsigned short) val;
                         }
@@ -25239,7 +25300,7 @@ NhlErrorTypes _NclItoushort
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.shortval = (unsigned short) val;
                         }
@@ -25880,7 +25941,7 @@ NhlErrorTypes _NclItofloat
                     if(has_missing)
                     {
                         val = missing.doubleval;
-                        if(val < dmax && val > dmin)
+                        if(val <= dmax && val >= dmin)
                         {
                             if(fabs(val) < dtiny)
                                 ret_missing.floatval = 0.0;
@@ -27525,7 +27586,7 @@ NhlErrorTypes _NclItobyte
                     if(has_missing)
                     {
                         val = missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                            ret_missing.byteval = (unsigned char) val;
                     }
 
@@ -27578,7 +27639,7 @@ NhlErrorTypes _NclItobyte
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                            ret_missing.byteval = (unsigned char) val;
                     }
 
@@ -28212,9 +28273,9 @@ NhlErrorTypes _NclItochar
             total_elements *= dimsizes[j];
         }
 
-        ret_missing.charval = (char) ((NclTypeClass) nclTypecharClass)->type_class.default_mis.charval;
+        ret_missing.charval = (unsigned char) ((NclTypeClass) nclTypecharClass)->type_class.default_mis.charval;
 
-        output = (char *)NclMalloc(sizeof(char)*total_elements);
+        output = (unsigned char *)NclMalloc(sizeof(unsigned char)*total_elements);
 	if (output == NULL)
 	{
         	NHLPERROR((NhlFATAL, errno, "_NclItochar output: memory allocation error."));
@@ -28234,7 +28295,7 @@ NhlErrorTypes _NclItochar
                     if(has_missing)
                     {
                         val = missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                            ret_missing.charval = (char) val;
                     }
 
@@ -28242,22 +28303,24 @@ NhlErrorTypes _NclItochar
 
                     for(i = 0; i < total_elements; i++)
                     {
-                        val = (double) ptr[i];
+                        val = ptr[i];
                         if(val > dmax)
                         {
+                            if(has_missing && (val != missing.doubleval))
+                                overflowed ++;
                             has_missing = 1;
-                            overflowed ++;
                             output[i] = ret_missing.charval;
                         }
                         else if(val < dmin)
                         {
+                            if(has_missing && (val != missing.doubleval))
+                                underflowed ++;
                             has_missing = 1;
-                            underflowed ++;
                             output[i] = ret_missing.charval;
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (unsigned char) val;
                         }
                     }
     
@@ -28281,36 +28344,38 @@ NhlErrorTypes _NclItochar
                     float val, fmin, fmax;
                     float *ptr;
 
-                    fmin = (float) 0.0;
+                    fmin = (float) 0;
                     fmax = (float) UCHAR_MAX;
 
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
-                           ret_missing.charval = (char) val;
+                        if((val <= fmax) && (val >= fmin))
+                           ret_missing.charval = (unsigned char) val;
                     }
 
                     ptr = (float *) in_value;
     
                     for(i = 0; i < total_elements; i++)
                     {
-                        val = (float) ptr[i];
+                        val = ptr[i];
                         if(val > fmax)
                         {
+                            if(has_missing && (val != missing.floatval))
+                                overflowed ++;
                             has_missing = 1;
-                            overflowed ++;
                             output[i] = ret_missing.charval;
                         }
                         else if(val < fmin)
                         {
+                            if(has_missing && (val != missing.floatval))
+                                underflowed ++;
                             has_missing = 1;
-                            underflowed ++;
                             output[i] = ret_missing.charval;
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (unsigned char) val;
                         }
                     }
     
@@ -28324,7 +28389,7 @@ NhlErrorTypes _NclItochar
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than UCHAR_MIN, which has been flagged missing.",
+                            "There are %d float less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28532,7 +28597,7 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (unsigned char) val;
                         }
                     }
 
