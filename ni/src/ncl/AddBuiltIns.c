@@ -45,6 +45,11 @@ extern NhlErrorTypes _NclISetFileOption(
 void
 #endif
 );
+extern NhlErrorTypes _NclIshorttoint(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _NclIushorttoint(
 #if NhlNeedProto
 void
@@ -1370,6 +1375,10 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+	NclRegisterFunc( _NclIinttochar,args,"inttocharacter",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIinttochar,args,"integertochar",nargs);
 	nargs = 0;
 	args = NewArgs(1);
@@ -1643,6 +1652,10 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartoint,args,"charactertointeger",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
+	NclRegisterFunc( _NclIchartoint,args,"charactertoint",nargs);
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"character",0,NclANY);nargs++;
@@ -2442,6 +2455,15 @@ void _NclAddBuiltIns
     nargs = 0;
     args = NewArgs(1);
     SetArgTemplate(args,nargs,"short",0,NclANY); nargs++;
+    NclRegisterFunc(_NclIshorttoint,args,"shorttoint",nargs);
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"short",0,NclANY); nargs++;
+    NclRegisterFunc(_NclIshorttoint,args,"shorttointeger",nargs);
+
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"ushort",0,NclANY); nargs++;
     NclRegisterFunc(_NclIushorttoint,args,"ushorttoint",nargs);
 
     nargs = 0;
