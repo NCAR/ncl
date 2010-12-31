@@ -1106,7 +1106,6 @@ void g2GDSRLLGrid
 		    for (i = 0; i < ni; i++) {
 			    double tlon,tlat;
 			    double cgridlat, slon,srot,crot;
-			    double crot1,eps;
 			    rot2ll(lasp,losp,rlat + j * jdir * dj,rlon + i * idir * di,&tlat,&tlon);
 			    if (do_180) {
 				    tlon = tlon > 180 ? tlon - 360 : tlon;
@@ -1315,19 +1314,22 @@ void g2GDSMEGrid
     G2_GDS *gds;
     double la1,la2,lo1,lo2;
     double tlo1,tlo2;
+    double tmplon,tmplat;
+    double dumx,dumy;
+    double nx1,ny1,nx0,ny0;
+    double udx,udy;
     double di;
     double dj;
     int idir;
     int jdir;
-    int i;
+    int i,j;
     float *tmp_float;
     NclQuark* tmp_string;
     int nlon, nlat;
     g2METemplate *me;
     double scale_factor;
     double earth_radius;
-    double latd, dlon, dlat;
-    double ye;
+    double latd;
 	
     *lat = NULL;
     *n_dims_lat = 0;
@@ -1392,6 +1394,17 @@ void g2GDSMEGrid
     else 
 	    earth_radius = Earth_Radius[me->ep.shapeOfEarth];	
 
+    *dimsizes_lat = (ng_size_t *) NclMalloc(sizeof(ng_size_t));
+    *dimsizes_lon = (ng_size_t *) NclMalloc(sizeof(ng_size_t));
+    *(*dimsizes_lon) = nlon;
+    *(*dimsizes_lat) = nlat;
+    *n_dims_lat = 1;
+    *n_dims_lon = 1;
+    *lat = (float *) NclMalloc((unsigned)sizeof(float) * nlat);
+    *lon = (float *) NclMalloc((unsigned)sizeof(float) * nlon);
+
+    InitMapTrans("ME",0,idir * (lo2 - lo1)/2.0,0.0);
+
     tlo1 = lo1;
     tlo2 = lo2;
     if (idir == 1) {
@@ -1404,27 +1417,26 @@ void g2GDSMEGrid
 		    tlo2 -= 360.0;
 	    }
     }
-    dlon = (tlo2 - tlo1) / (double) (nlon - 1);
-    dlat = jdir * dj / (earth_radius * cos(latd * RadPerDeg));
-    ye = 1 - log(tan(((la1 + 90.0)/ 2.0) * RadPerDeg)) / dlat;
-    			
-    *dimsizes_lat = (ng_size_t *) NclMalloc(sizeof(ng_size_t));
-    *dimsizes_lon = (ng_size_t *) NclMalloc(sizeof(ng_size_t));
-    *(*dimsizes_lon) = nlon;
-    *(*dimsizes_lat) = nlat;
-    *n_dims_lat = 1;
-    *n_dims_lon = 1;
-    *lat = (float *) NclMalloc((unsigned)sizeof(float) * nlat);
-    *lon = (float *) NclMalloc((unsigned)sizeof(float) * nlon);
+    tmplon = (tlo2 - tlo1) / 2.0;
+    tmplat = jdir * (la2 - la1) / 2.0;
+    NGCALLF(mdptrn,MDPTRN)(&tmplat,&tmplon,&dumx,&dumy);
+    NGCALLF(mdptrn,MDPTRN)(&la1,&lo1,&nx0,&ny0);
+    NGCALLF(mdptrn,MDPTRN)(&la2,&lo2,&nx1,&ny1);
+    udx = fabs(nx1 - nx0) / (nlon -1);
+    udy = fabs(ny1 - ny0) / (nlat -1);
 
-    for (i = 0; i < *(*dimsizes_lon) ; i++) {
-	    double tlon = (float)(lo1 + idir * i * dlon);
-	    (*lon)[i] = tlon;
+    for(i = 0; i < nlat; i++) {
+	    double uy = ny0 + i * udy * idir;
+	    NGCALLF(mdptri,MDPTRI)(&dumx,&uy,&tmplat,&tmplon);
+	    (*lat)[i] = (float) tmplat;
     }
-
-    for (i = 0; i < *(*dimsizes_lat) ; i++) {
-	    double tlat = 2 * atan(exp(dlat * (i + 1 - ye))) * DegPerRad - 90.0;
-	    (*lat)[i] = tlat;
+    for(j = 0; j < nlon; j++) {
+	    double ux = nx0 + j * udx * jdir;
+	    NGCALLF(mdptri,MDPTRI)(&ux,&dumy,&tmplat,&tmplon);
+	    (*lon)[j] = (float) tmplon;
+    }
+    for(j = 0; j < nlon; j++) {
+	    (*lon)[j] = ((*lon)[j] < 0)? ((*lon)[j] + 360) : (*lon)[j];
     }
 
     if(lon_att_list != NULL) {
@@ -3454,7 +3466,6 @@ Grib2FileRecord *therec;
 			}
 			else {
 				if (step->traits.stat_proc_type > 191 && step->traits.stat_proc_type != 255 && step->n_grids > 0) {
-					Grib2RecordInqRecList *rec_list;
 					int rix = 0;
 					att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 					att_list_ptr->next = step->theatts;

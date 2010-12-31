@@ -535,27 +535,23 @@ int nx;
 int ny;
 #endif
 {
-/*	static int mapid = -1;
-	static int vpid = -1;
-	static int rlist = -1;
-	float tlat;
-	float tlon;
-	float nx0,nx1,ny0,ny1; */
-	float C,d_per_km,dlon;
-/*	
-	float dlat;
-	float ndcdx,ndcdy,start_ndcx,start_ndcy,start_lon = 0.0;
-	float dumx,dumy;
-	int status;
-	float orv;
-	int i,j; */
-	float *dummy = NULL;
+	double dumx,dumy;
+	double nx0,nx1,ny0,ny1;
+	double tmplon,tmplat;
+	double dlon1,dlon0,dlat1,dlat0;
+	double udx,udy;
+	int i,j;
 
-	InitMapTrans("ME",0.0,(lon1 - lon0)/2.0,0.0);
+	dlon0 = lon0;
+	dlon1 = lon1;
+	dlat0 = lat0;
+	dlat1 = lat1;
+
+	InitMapTrans("ME",0.0,(dlon1 - dlon0)/2.0,0.0);
 	
 	*lat = (float*)NclMalloc(sizeof(float)*ny);
 	*lon = (float*)NclMalloc(sizeof(float)*nx);
-	dummy = (float*)NclMalloc(sizeof(float)* ( nx > ny ? nx : ny));
+
         *dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
         *dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
         *n_dims_lat = 1;
@@ -563,35 +559,27 @@ int ny;
         (*dimsizes_lat)[0] = ny;
         (*dimsizes_lon)[0] = nx;
 
-	C = 2 * pi * EAR * cos(degtorad * latin);
-	d_per_km = 360.0/C;
-	dlon = dx * d_per_km;
-/*
-* lat0 is always closest to pole
-*/
-/*
-	tlon = (lon1-lon0) / 2.0;
-	tlat = (lat1-lat0) / 2.0;
-	NGCALLF(maptrn,MAPTRN)(&tlat,&tlon,&dumx,&dumy);
-	tlon = lon0 + dlon;
-	NGCALLF(maptrn,MAPTRN)(&lat0,&lo1,&nx0,&ny0);
-	NGCALLF(maptrn,MAPTRN)(&lat0,&tlon,&nx1,&ny1);
-	ndcdx = fabs(nx0 - nx1);
-	ndcdy = dy/dx * ndcdx;
-	NGCALLF(maptrn,MAPTRN)(&lat0,&lon0,&nx0,&ny0);
+	tmplon = (dlon1 - dlon0) / 2.0;
+	tmplat = (dlat1 - dlat0) / 2.0;
+	NGCALLF(mdptrn,MDPTRN)(&tmplat,&tmplon,&dumx,&dumy);
+	NGCALLF(mdptrn,MDPTRN)(&dlat0,&dlon0,&nx0,&ny0);
+	NGCALLF(mdptrn,MDPTRN)(&dlat1,&dlon1,&nx1,&ny1);
+        udx = fabs(nx1 - nx0) / (nx -1);
+	udy = fabs(ny1 - ny0) / (ny-1);
+
 	for(i = 0; i < ny; i++) {
-		float tmplat = ny0 + i * ndcdy;
-		NGCALLF(maptri,MAPTRI)(&dumx,&tmplat,&((*lat)[i]),&(dummy[i]));
+		double uy = ny0 + i * udy;
+		NGCALLF(mdptri,MDPTRI)(&dumx,&uy,&tmplat,&tmplon);
+		(*lat)[i] = (float) tmplat;
 	}
 	for(j = 0; j < nx; j++) {
-		float tmplon = nx0 + j * ndcdx;
-		NGCALLF(maptri,MAPTRI)(&tmplon,&dumy,&(dummy[j]),&((*lon)[j]));
+		double ux = nx0 + j * udx;
+		NGCALLF(mdptri,MDPTRI)(&ux,&dumy,&tmplat,&tmplon);
+		(*lon)[j] = (float) tmplon;
 	}
 	for(j = 0; j < nx; j++) {
 		(*lon)[j] = ((*lon)[j] < 0)? ((*lon)[j] + 360) : (*lon)[j];
 	}
-	NclFree(dummy);
-*/
 }
 
 void GetGrid_210
@@ -634,13 +622,13 @@ int* nrotatts;
 	int kgds[3];
 
 	kgds[0] = 1;
-	kgds[1] = 93;
-	kgds[2] = 68;
+	kgds[1] = 25;
+	kgds[2] = 25;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
 
-	GenMercator(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, -25.0/*lat0*/, 110.0 /*lon0*/, 60.644 /*lat1*/, -109.129/* lon1*/, 160.0 /*dx*/, 160.0 /*dy*/, 20.0 /*latin*/, 93/*nx*/, 68/*ny*/);
+	GenMercator(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 9.0/*lat0*/, -77.0 /*lon0*/, 26.422 /*lat1*/, -58.625/* lon1*/, 80.0 /*dx*/, 80.0 /*dy*/, 20.0 /*latin*/, 25/*nx*/, 25 /*ny*/);
 }
 void GetGrid_208
 #if NhlNeedProto
@@ -682,13 +670,13 @@ int* nrotatts;
 	int kgds[3];
 
 	kgds[0] = 1;
-	kgds[1] = 93;
-	kgds[2] = 68;
+	kgds[1] = 29;
+	kgds[2] = 27;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
 
-	GenMercator(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, -25.0/*lat0*/, 110.0 /*lon0*/, 60.644 /*lat1*/, -109.129/* lon1*/, 160.0 /*dx*/, 160.0 /*dy*/, 20.0 /*latin*/, 93/*nx*/, 68/*ny*/);
+	GenMercator(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 9.343/*lat0*/, -167.315 /*lon0*/, 28.092 /*lat1*/, -145.878/* lon1*/, 80.0 /*dx*/, 80. /*dy*/, 20.0 /*latin*/, 29/*nx*/, 27/*ny*/);
 }
 void GetGrid_204
 #if NhlNeedProto
@@ -736,7 +724,7 @@ int* nrotatts;
 		return;
 	}
 
-	GenMercator(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, -25.0/*lat0*/, 110.0 /*lon0*/, 60.644 /*lat1*/, -109.129/* lon1*/, 160.0 /*dx*/, 160.0 /*dy*/, 20.0 /*latin*/, 93/*nx*/, 68/*ny*/);
+	GenMercator(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, -25.0/*lat0*/, 110.0 /*lon0*/, 60.644 /*lat1*/, 250.871/* lon1*/, 160.0 /*dx*/, 160.0 /*dy*/, 20.0 /*latin*/, 93/*nx*/, 68/*ny*/);
 }
 
 void GetAtts_1
@@ -885,7 +873,7 @@ void GenLambert
 	double tlon;
 	double nx0,nx1,ny0,ny1;
 	double C,d_per_km,dlon;
-	double ndcdx,ndcdy;
+	double udx,udy;
 	int i,j;
 	double an;
 
@@ -925,13 +913,13 @@ void GenLambert
 		tlon = lon0 + dlon;
 		NGCALLF(mdptrn,MDPTRN)(&lat0,&lon0,&nx0,&ny0);
 		NGCALLF(mdptrn,MDPTRN)(&lat0,&tlon,&nx1,&ny1);
-		ndcdx = fabs(nx0 - nx1);
-		ndcdy = dy/dx * ndcdx;
+		udx = fabs(nx0 - nx1);
+		udy = dy/dx * udx;
 		NGCALLF(mdptrn,MDPTRN)(&start_lat,&start_lon,&nx0,&ny0);
 		for(i = 0; i < ny; i++) {
 			for(j = 0; j < nx; j++) {
-				double tmpx =  nx0 + j * ndcdx;
-				double tmpy =  ny0 + i * ndcdy;
+				double tmpx =  nx0 + j * udx;
+				double tmpy =  ny0 + i * udy;
 				double tmplat,tmplon;
 				NGCALLF(mdptri,MDPTRI)
 					(&tmpx,&tmpy,&tmplat,&tmplon);
@@ -961,13 +949,13 @@ void GenLambert
 		tlon = lon0 + dlon;
 		NGCALLF(mdptrn,MDPTRN)(&lat0,&lon0,&nx0,&ny0);
 		NGCALLF(mdptrn,MDPTRN)(&lat0,&tlon,&nx1,&ny1);
-		ndcdx = fabs(nx0 - nx1);
-		ndcdy = dy/dx * ndcdx;
+		udx = fabs(nx0 - nx1);
+		udy = dy/dx * udx;
 		NGCALLF(mdptrn,MDPTRN)(&start_lat,&start_lon,&nx0,&ny0);
 		for(i = 0; i < ny; i++) {
 			for(j = 0; j < nx; j++) {
-				double tmpx =  nx0 + j * ndcdx;
-				double tmpy =  ny0 + i * ndcdy;
+				double tmpx =  nx0 + j * udx;
+				double tmpy =  ny0 + i * udy;
 				double tmplat,tmplon;
 				NGCALLF(mdptri,MDPTRI)
 					(&tmpx,&tmpy,&tmplat,&tmplon);
@@ -7906,16 +7894,19 @@ int* nrotatts;
 	int lo2;
 	int latin;
 	float di,dj;
+	int idir, jdir;
 	unsigned char tmp[4];
 	int sign;
-	int i;
 	float *tmp_float;
 	NclQuark* tmp_string;
-	int kgds[32];
 	int ni,nj;
-	int iopt,lrot,npts,nret;
-	float fillval = -9999;
-	float *tlon, *tlat;
+	double udx,udy;
+	double dumx,dumy;
+	int i,j;
+	double lon1,lon0,lat1,lat0;
+	double nx0,nx1,ny0,ny1;
+	double tmplon,tmplat;
+	double latin1;
 	
 	*lat = NULL;
 	*n_dims_lat = 0;
@@ -7977,6 +7968,10 @@ int* nrotatts;
 	tmp[1] = gds[32];
 	tmp[2] = gds[33];
 	dj = sign * CnvtToDecimal(3,tmp);
+	idir = ((unsigned char)0200 & (unsigned char)gds[27])?-1:1;
+	jdir = ((unsigned char)0100 & (unsigned char)gds[27])?1:-1;
+
+#if 0
 
 	kgds[0] = 1;
 	kgds[1] = ni;
@@ -7990,7 +7985,6 @@ int* nrotatts;
 	kgds[10] = UnsignedCnvtToDecimal(1,&(gds[27]));
 	kgds[11] = di;
 	kgds[12] = dj;
-
 
 	iopt = 1;
 	lrot = 0;
@@ -8034,14 +8028,101 @@ int* nrotatts;
 		return;
 	}
 
+/*
+ * this is the code that was used in the GRIB2 version of this routine. It is basically a translation of the NCEP code
+ * and seems to have the same error
+
+	{
+		double lon1,lon0,lat1,lat0;
+		double tlo1,tlo2;
+		double earth_radius;
+		double latd;
+		double dx,dy;
+		double dlon, dlat;
+		double ye;
+		double RadPerDeg = dtor;
+		double DegPerRad = rtod;
+
+		lon0 = lo1 / 1000.0;
+		lon1 = lo2 / 1000.0;
+		lat0 = la1 / 1000.0;
+		lat1 = la2 / 1000.0;
+		dy = dj / 1000.0;
+		dx = di / 1000.0;
+		latd =  latin/1000.0;
+
+		earth_radius = EAR;
+
+		tlo1 = lon0;
+		tlo2 = lon1;
+		if (idir == 1) {
+			if (tlo2 < tlo1) {
+				tlo1 -= 360.0;
+			}
+		}
+		else {
+			if (tlo2 > tlo1) {
+				tlo2 -= 360.0;
+			}
+		}
+		dlon = (tlo2 - tlo1) / (double) (ni - 1);
+		dlat = jdir * dy / (earth_radius * cos(latd * RadPerDeg));
+		ye = 1 - log(tan(((lat0 + 90.0)/ 2.0) * RadPerDeg)) / dlat;
+    			
+		for (i = 0; i < *(*dimsizes_lon) ; i++) {
+			double tlon = (float)(lon0 + idir * i * dlon);
+			(*lon)[i] = tlon;
+		}
+
+		for (i = 0; i < *(*dimsizes_lat) ; i++) {
+			double tlat = 2 * atan(exp(dlat * (i + 1 - ye))) * DegPerRad - 90.0;
+			(*lat)[i] = tlat;
+		}
+
+	}	
+*/
+#endif
+
 	*n_dims_lon = 1;
 	*dimsizes_lon = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
 	*(*dimsizes_lon) = ni;
 	*dimsizes_lat = (ng_size_t*)NclMalloc(sizeof(ng_size_t));
 	*n_dims_lat = 1;
 	*(*dimsizes_lat) = nj;
-	*lat = tlat;
-	
+        *lon = (float*)NclMalloc((unsigned)sizeof(float)* ni);
+        *lat = (float*)NclMalloc((unsigned)sizeof(float)* nj);
+
+
+	lon0 = lo1 / 1000.0;
+	lon1 = lo2 / 1000.0;
+	lat0 = la1 / 1000.0;
+        lat1 = la2 / 1000.0;
+	latin1 =  latin/1000.0;
+
+	InitMapTrans("ME",0,idir * (lon1 - lon0)/2.0,0.0);
+
+	tmplon = (lon1-lon0) / 2.0;
+	tmplat = (lat1 - lat0) / 2.0;
+	NGCALLF(mdptrn,MDPTRN)(&tmplat,&tmplon,&dumx,&dumy);
+	NGCALLF(mdptrn,MDPTRN)(&lat0,&lon0,&nx0,&ny0);
+	NGCALLF(mdptrn,MDPTRN)(&lat1,&lon1,&nx1,&ny1);
+        udx = fabs(nx1 - nx0) / (ni -1);
+	udy = fabs(ny1 - ny0) / (nj-1);
+
+	for(i = 0; i < nj; i++) {
+		double uy = ny0 + i * udy * idir;
+		NGCALLF(mdptri,MDPTRI)(&dumx,&uy,&tmplat,&tmplon);
+		(*lat)[i] = (float) tmplat;
+	}
+	for(j = 0; j < ni; j++) {
+		double ux = nx0 + j * udx * jdir;
+		NGCALLF(mdptri,MDPTRI)(&ux,&dumy,&tmplat,&tmplon);
+		(*lon)[j] = (float) tmplon;
+	}
+	for(j = 0; j < ni; j++) {
+		(*lon)[j] = ((*lon)[j] < 0)? ((*lon)[j] + 360) : (*lon)[j];
+	}
+
 	if(lon_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = la1/1000.0;
