@@ -42,12 +42,13 @@ C NCLEND
       END
 
 C NCLFORTSTART
-      SUBROUTINE DINTERP3DZ(V3D,V2D,Z,LOC,NX,NY,NZ)
+      SUBROUTINE DINTERP3DZ(V3D,V2D,Z,LOC,NX,NY,NZ,VMSG)
       IMPLICIT NONE
       INTEGER NX,NY,NZ
       DOUBLE PRECISION V3D(NX,NY,NZ),V2D(NX,NY)
       DOUBLE PRECISION Z(NX,NY,NZ)
       DOUBLE PRECISION LOC
+      DOUBLE PRECISION VMSG
 C NCLEND
 
       INTEGER I,J,KP,IP,IM
@@ -68,8 +69,8 @@ c set offset appropriately
 
       DO I = 1,NX
           DO J = 1,NY
-C Initialize to missing.
-              V2D(I,J) = -999999
+C Initialize to missing.  Was initially hard-coded to -999999.
+              V2D(I,J) = VMSG
               INTERP = .false.
               KP = NZ
 
@@ -195,7 +196,7 @@ C NCLFORTSTART
 C NCLEND
 
       INTEGER KP,K,IM,IP
-      LOGICAL INTERP,INCREASING_Z
+      LOGICAL INTERP
       DOUBLE PRECISION HEIGHT,W1,W2
 
 c does vertical coordinate increase of decrease with increasing k?
@@ -247,9 +248,6 @@ c    output units of SLP are Pa, but you should divide that by 100 for the
 c          weather weenies.
 c    virtual effects are included
 c
-c I have done no testing on this routine.  Please feel free to give me
-c a call on Monday  208 362-9747
-c Dave
 
 C NCLFORTSTART
       SUBROUTINE DCOMPUTESEAPRS(NX,NY,NZ,Z,T,P,Q,SEA_LEVEL_PRESSURE,
@@ -570,9 +568,9 @@ c----------------------------------------------
 
 C NCLFORTSTART
       SUBROUTINE DGETIJLATLONG(LAT_ARRAY,LONG_ARRAY,LAT,LONGITUDE,
-     +                         II,JJ,NX,NY)
+     +                         II,JJ,NX,NY,IMSG)
       IMPLICIT NONE
-      INTEGER NX,NY,II,JJ
+      INTEGER NX,NY,II,JJ,IMSG
       DOUBLE PRECISION LAT_ARRAY(NX,NY),LONG_ARRAY(NX,NY)
       DOUBLE PRECISION LAT,LONGITUDE
 C NCLEND
@@ -581,9 +579,9 @@ C NCLEND
       DOUBLE PRECISION IR,JR
       DOUBLE PRECISION DIST_MIN,DIST
 
-C Init to missing
-      IR = -999
-      JR = -999    
+C Init to missing. Was hard-coded to -999 initially.
+      IR = IMSG
+      JR = IMSG
 
       DIST_MIN = 1.D+20
       DO J = 1,NY
@@ -608,12 +606,12 @@ C
 C Also, I'm subtracing 1 here, because it will be returned to NCL
 C script which has 0-based indexing.
 C 
-      IF(IR.ne.-999.and.JR.ne.-999) then
+      IF(IR.ne.IMSG.and.JR.ne.IMSG) then
         II = NINT(IR)-1
         JJ = NINT(JR)-1
       ELSE
-        II = -999
-        JJ = -999
+        II = IMSG
+        JJ = IMSG
       END IF
 
 c we will just return the nearest point at present
@@ -630,7 +628,7 @@ C NCLFORTSTART
 C ISTAG should be 0 if the U,V grids are not staggered.
 C That is, NY = NYP1 and NX = NXP1.
 
-      INTEGER NX,NY,NXP1,NYP1,NL,ISTAG
+      INTEGER NX,NY,NXP1,NYP1,ISTAG
       LOGICAL IS_MSG_VAL
       DOUBLE PRECISION U(NXP1,NY),V(NX,NYP1)
       DOUBLE PRECISION UVMET(NX,NY,2)

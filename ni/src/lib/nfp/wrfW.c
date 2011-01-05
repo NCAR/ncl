@@ -14,7 +14,8 @@ extern void NGCALLF(dcomputeseaprs,DCOMPUTESEAPRS)(int *,int *,int *,
                                                    double *,double *);
 
 extern void NGCALLF(dinterp3dz,DINTERP3DZ)(double *,double *,double *,
-                                           double *,int *,int *, int*);
+                                           double *,int *,int *, int*,
+					   double *);
 
 extern void NGCALLF(dinterp2dxy,DINTERP2DXY)(double *,double *,double *,
                                              int *,int *,int *, int*);
@@ -30,7 +31,7 @@ extern void NGCALLF(filter2d,FILTER2D)(float *, float *, int *, int *,
 
 extern void NGCALLF(dgetijlatlong,DGETIJLATLONG)(double *, double *, double *,
                                                  double *, int *, int *,
-                                                 int *, int *);
+                                                 int *, int *, int *);
 
 
 extern void NGCALLF(dcomputeuvmet,DCOMPUTEUVMET)(double *, double *, double *,
@@ -1432,8 +1433,8 @@ NhlErrorTypes wrf_slp_W( void )
  * Call Fortran routine.
  */
     NGCALLF(dcomputeseaprs,DCOMPUTESEAPRS)(&inx,&iny,&inz,tmp_z,tmp_t,tmp_p,
-					   tmp_q,tmp_slp,tmp_t_sea_level,
-					   tmp_t_surf,tmp_level);
+                                           tmp_q,tmp_slp,tmp_t_sea_level,
+                                           tmp_t_surf,tmp_level);
 /*
  * Coerce output back to float if necessary.
  */
@@ -1618,6 +1619,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  */
   ng_size_t i, nx, ny, nz, nxy, nxyz, size_leftmost, index_v3d, index_v2d;
   int inx, iny, inz;
+  double vmsg;
 
 /*
  * Retrieve parameters.
@@ -1831,7 +1833,8 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
-    missing_v2d.doubleval = -999999;
+    missing_v2d.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    vmsg = missing_v2d.doubleval;
   }
   else {
     v2d     = (float *)calloc(size_v2d,sizeof(float));
@@ -1840,7 +1843,9 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
-    missing_v2d.floatval = -999999;
+    missing_v2d.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    vmsg = (double)missing_v2d.floatval;
+
   }
 /*
  * Loop across leftmost dimensions and call the Fortran routine
@@ -1876,7 +1881,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  * Call Fortran routine.
  */
     NGCALLF(dinterp3dz,DINTERP3DZ)(tmp_v3d,tmp_v2d,tmp_z,tmp_loc,
-				   &inx,&iny,&inz);
+                                   &inx,&iny,&inz,&vmsg);
 /*
  * Coerce output back to float if necessary.
  */
@@ -1913,7 +1918,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   qdesc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *qdesc = NrmStringToQuark(cdesc);
   if (!found_desc)
-	  free(cdesc);
+          free(cdesc);
 
   if(found_units) {
     qunits  = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -2323,7 +2328,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   qdesc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *qdesc = NrmStringToQuark(cdesc);
   if (!found_desc)
-	  free(cdesc);
+          free(cdesc);
   if(found_units) {
     qunits  = (NclQuark*)NclMalloc(sizeof(NclQuark));
     *qunits = NrmStringToQuark(cunits);
@@ -2728,7 +2733,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
  * Call Fortran routine.
  */
     NGCALLF(dinterp1d,DINTERP1D)(tmp_v_in,tmp_v_out,tmp_z_in,tmp_z_out,&inz_in,
-				 &inz_out,&v_out_msg);
+                                 &inz_out,&v_out_msg);
 /*
  * Coerce output back to float if necessary.
  */
@@ -2765,7 +2770,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
   qdesc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *qdesc = NrmStringToQuark(cdesc);
   if (!found_desc)
-	  free(cdesc);
+          free(cdesc);
   if(found_units) {
     qunits  = (NclQuark*)NclMalloc(sizeof(NclQuark));
     *qunits = NrmStringToQuark(cunits);
@@ -3260,6 +3265,11 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
     }
 
 /*
+ * Get default integer missing value.
+ */
+  missing_ret.intval =  ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+
+/*
  * Loop across lat,lon locations.
  */
     for(j = 0; j < dsizes_lat_loc[0]; j++) {
@@ -3291,9 +3301,10 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
  * swapped, since we are going from Fortran to C.
  */
       NGCALLF(dgetijlatlong,DGETIJLATLONG)(tmp_lat_array, tmp_lon_array, 
-					   tmp_lat_loc, tmp_lon_loc,
-					   &ret[index_ret+1], 
-					   &ret[index_ret], &inx, &iny);
+                                           tmp_lat_loc, tmp_lon_loc,
+                                           &ret[index_ret+1], 
+                                           &ret[index_ret], &inx, &iny,
+					   &missing_ret.intval);
       index_ret+=2;
     }
     index_array += nynx;
@@ -3307,7 +3318,6 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
   if(type_lat_loc   != NCL_double) NclFree(tmp_lat_loc);
   if(type_lon_loc   != NCL_double) NclFree(tmp_lon_loc);
 
-  missing_ret.intval = -999;
   iret = NclReturnValue(ret,ndims_ret,dsizes_ret,&missing_ret,NCL_int,0);
   NclFree(dsizes_ret);
   return(iret);
@@ -4508,7 +4518,7 @@ NhlErrorTypes wrf_dbz_W( void )
         tmp_qgr = &((double*)qgr)[index_dbz];
       }
       if (tmp_qgr_save != NULL && tmp_qgr_save != tmp_qgr)
-	      NclFree(tmp_qgr);
+              NclFree(tmp_qgr);
     }
 
 /*
@@ -4520,8 +4530,8 @@ NhlErrorTypes wrf_dbz_W( void )
  * Call the Fortran routine.
  */
     NGCALLF(calcdbz,CALCDBZ)(tmp_dbz, tmp_prs, tmp_tmk, tmp_qvp, tmp_qra, 
-			     tmp_qsn, tmp_qgr, &iwedim, &isndim, &ibtdim, 
-			     &sn0, ivarint, iliqskin);
+                             tmp_qsn, tmp_qgr, &iwedim, &isndim, &ibtdim, 
+                             &sn0, ivarint, iliqskin);
 /*
  * Coerce output back to float if necessary.
  */
@@ -6101,9 +6111,9 @@ NhlErrorTypes wrf_avo_W( void )
     if(type_av == NCL_double) tmp_av = &((double*)av)[index_av];
 
     NGCALLF(dcomputeabsvort,DCOMPUTEABSVORT)(tmp_av, tmp_u, tmp_v, tmp_msfu,
-					     tmp_msfv, tmp_msft, tmp_cor,
-					     tmp_dx, tmp_dy, &inx, &iny, &inz,
-					     &inxp1, &inyp1);
+                                             tmp_msfv, tmp_msft, tmp_cor,
+                                             tmp_dx, tmp_dy, &inx, &iny, &inz,
+                                             &inxp1, &inyp1);
     if(type_av != NCL_double) {
       coerce_output_float_only(av,tmp_av,nznynx,index_av);
     }
@@ -6593,7 +6603,7 @@ NhlErrorTypes wrf_helicity_W( void )
     if(type_sreh == NCL_double) tmp_sreh = &((double*)sreh)[index_ter];
 
     NGCALLF(dcalrelhl,DCALRELHL)(tmp_u, tmp_v, tmp_z, tmp_ter, tmp_top,
-				 tmp_sreh, &imiy, &imjx, &imkzh);
+                                 tmp_sreh, &imiy, &imjx, &imkzh);
     if(type_sreh != NCL_double) {
       coerce_output_float_only(sreh,tmp_sreh,mxy,index_ter);
     }
@@ -7335,8 +7345,8 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
  * Call the Fortran routine.
  */
     NGCALLF(dcalcuh,DCALCUH)(&inx, &iny, &inz, &inzp1, tmp_zp, tmp_mapfct, 
-			     tmp_dx, tmp_dy, tmp_uhmnhgt, tmp_uhmxhgt, 
-			     tmp_us, tmp_vs, tmp_w, tmp_uh, tem1, tem2);
+                             tmp_dx, tmp_dy, tmp_uhmnhgt, tmp_uhmxhgt, 
+                             tmp_us, tmp_vs, tmp_w, tmp_uh, tem1, tem2);
 /*
  * Coerce output back to float if necessary.
  */
@@ -9256,9 +9266,9 @@ NhlErrorTypes wrf_cape_3d_W( void )
  * Call Fortran routine.
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-				     tmp_psfc, tmp_cape_orig, tmp_cin_orig,
-				     &imiy, &imjx, &imkzh, &i3dflag, &iter,
-				     psa_file,strlen(psa_file));
+                                     tmp_psfc, tmp_cape_orig, tmp_cin_orig,
+                                     &imiy, &imjx, &imkzh, &i3dflag, &iter,
+                                     psa_file,strlen(psa_file));
 
 /*
  * If we flipped arrays before going into the Fortran routine, we need
@@ -9919,9 +9929,9 @@ NhlErrorTypes wrf_cape_2d_W( void )
  * Call Fortran routine.
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-				     tmp_psfc, tmp_cape, tmp_cin,
-				     &imiy, &imjx, &imkzh, &i3dflag, &iter,
-				     psa_file,strlen(psa_file));
+                                     tmp_psfc, tmp_cape, tmp_cin,
+                                     &imiy, &imjx, &imkzh, &i3dflag, &iter,
+                                     psa_file,strlen(psa_file));
 /*
  * Even if we flipped arrays before going into the Fortran routine, do
  * NOT flip them on the output.
@@ -10786,7 +10796,7 @@ NhlErrorTypes wrf_bint_W( void )
  * Call Fortran routine.
  */
     NGCALLF(dbint3d,DBINT3D)(tmp_data_out,tmp_obsii,tmp_obsjj,tmp_data_in,
-			     &inx,&iny,&inz,&inobsicrs,&inobsjcrs,icrs,jcrs);
+                             &inx,&iny,&inz,&inobsicrs,&inobsjcrs,icrs,jcrs);
 /*
  * Coerce output back to float if necessary.
  */
