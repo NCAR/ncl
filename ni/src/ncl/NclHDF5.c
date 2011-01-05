@@ -3231,11 +3231,25 @@ NclHDF5group_node_t *h5_group;
             if(NclHDF5data)
             {
               /*
-               *fprintf(stdout, "\tNclHDF5data->nbytes = %d\n", NclHDF5data->nbytes);
                */
+                fprintf(stdout, "\nfile: <%s>, line: %d\n", __FILE__, __LINE__);
+                fprintf(stdout, "\tNclHDF5data->nbytes = %d\n", NclHDF5data->nbytes);
                 if(no_stride)
                 {
-                    memcpy(storage, NclHDF5data->value, NclHDF5data->nbytes);
+                    if(NclHDF5data->is_str)
+                    {
+                        NclQuark *qp = calloc(1, sizeof(NclQuark));
+                        if(!qp)
+                        {
+                            NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Failed to allocated memory for curAttrList. in file: %s, line: %d\n",
+                                    __FILE__, __LINE__));
+                            return 0;
+                        }
+                    }
+                    else
+                    {
+                        memcpy(storage, NclHDF5data->value, NclHDF5data->nbytes);
+                    }
                 }
                 else
                 {
@@ -3328,7 +3342,7 @@ void* storage;
     }
 
   /*
-   *fprintf(stdout, "\n\n\nhit HDF5ReadVar, file: <%s>, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stdout, "\nhit HDF5ReadVar, file: <%s>, line: %d\n", __FILE__, __LINE__);
    *fprintf(stdout, "\tfilename = <%s>\n", NrmQuarkToString(thefile->file_path_q));
    *fprintf(stdout, "\tthevar = <%s>\n", NrmQuarkToString(thevar));
    */
@@ -3370,6 +3384,10 @@ void* storage;
                 stridei[j] = (hsize_t)stride[j];
                 tmpf = stridei[j];
                 edgei[j] =(hsize_t)(fabs(((double)(finish[j] - start[j]))) /tmpf) + 1;
+
+                if(stridei[j] != 1)
+                    no_stride = 0;
+
               /*
                *fprintf(stdout, "\n\nin file: <%s>, at line: %d\n", __FILE__, __LINE__);
                *fprintf(stdout, "\tstarti[%d] = %ld, stridei[%d] = %ld, edgei[%d] = %ld\n",
@@ -3377,17 +3395,37 @@ void* storage;
                *fprintf(stdout, "\tstart[%d] = %ld, stride[%d] = %ld, start[%d] = %ld, finish[%d] = %ld\n",
                *        j, (long) start[j], j, (long) stride[j], j, (long) start[j], j, (long) finish[j]);
                */
-                if(stridei[j] != 1)
-                    no_stride = 0;
             }
 
             H5close();
 
             if(NclHDF5data)
             {
+              /*
+               *fprintf(stdout, "\nfile: <%s>, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stdout, "\tNclHDF5data->nbytes = %d\n", NclHDF5data->nbytes);
+               */
+
                 if(no_stride)
                 {
-                    memcpy(storage, NclHDF5data->value, NclHDF5data->nbytes);
+                    if(NclHDF5data->is_str)
+                    {
+                        NclQuark *qp = calloc(NclHDF5data->nbytes, sizeof(NclQuark));
+                        if(!qp)
+                        {
+                            NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Failed to allocated memory for curAttrList. in file: %s, line: %d\n",
+                                    __FILE__, __LINE__));
+                            return 0;
+                        }
+                        for(j = 0; j < NclHDF5data->nbytes; j++)
+                            qp[j] = NrmStringToQuark((char *)NclHDF5data->value);
+                        memcpy(storage, qp, NclHDF5data->nbytes*sizeof(NclQuark));
+                        free(qp);
+                    }
+                    else
+                    {
+                        memcpy(storage, NclHDF5data->value, NclHDF5data->nbytes);
+                    }
                 }
                 else
                 {

@@ -60,6 +60,7 @@ typedef struct NclHDF5compound_t
 {
     int     nom;	/* number of members */
     hsize_t size;	/* size of compound data */
+    int     is_str;	/* is member string */
     NclHDF5compound_component_list_t *member;
 } NclHDF5compound_t;
 
@@ -75,6 +76,7 @@ typedef struct NclHDF5data_t
 
     unsigned long  nbytes;                          /* number of bytes for value */
     void          *value;                           /* Data value */
+    int            is_str;                          /* is data string */
 } NclHDF5data_t;
 
 typedef struct NclHDF5datatype_t
