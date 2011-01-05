@@ -1611,7 +1611,7 @@ begin
 
   if ( returnI  ) then
     loci = new(dimsizes(loc),integer)
-    loci@_FillValue = -999
+    loci@_FillValue = default_fillvalue("integer")   ; was -999
     loci = tointeger(loc + .5)
     loci!0 = loc!0
     return(loci)
