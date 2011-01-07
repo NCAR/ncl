@@ -11227,7 +11227,7 @@ NhlErrorTypes _Nclcumsum
 	void *out_val;
 	logical *tmp = NULL;
 	int missing_flag = 0;
-    ng_size_t  i;
+	ng_size_t  i;
 	ng_size_t goffset;
 
 	data0 = _NclGetArg(0,2,DONT_CARE);
@@ -27758,7 +27758,6 @@ NhlErrorTypes _NclItobyte
                 break;
             case NCL_byte:
                 {
-                    byte val;
                     byte *ptr;
 
                     ptr = (byte *) in_value;
@@ -29648,15 +29647,11 @@ NhlErrorTypes _Ncldefault_fillvalue
 #endif
 {
         void *in_type;
-        ng_size_t total_elements = 1;
         int n_dims = 0;
         ng_size_t dimsizes;
         NclScalar missing;
-        NclScalar ret_missing;
         NclBasicDataTypes type, out_type;
         int has_missing;
-        int j;
-	ng_size_t i;
 	NclTypeClass type_class;
         void *output;
 
