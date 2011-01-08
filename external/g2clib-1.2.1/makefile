@@ -10,6 +10,8 @@ SHELL=/bin/sh
 #
 #  In addition, INC must include all directories where the above
 #  mentioned include files can be found.
+# 64-bit systems need this.
+#DEFS=-DUSE_JPEG2000 -DUSE_PNG -D__64BIT__
 DEFS=-DUSE_JPEG2000 -DUSE_PNG
 INC=-I/usr/include
 
@@ -21,9 +23,9 @@ INC=-I/usr/include
 #CFLAGS=-q64 -O3 -qarch=auto -qcpluscmt $(INC) $(DEFS)
 CFLAGS= $(INC) $(DEFS)
 
-CC=cc
+CC=gcc -fPIC
 LIB=libgrib2c.a
-ARFLAGS=-X64
+#ARFLAGS=-X64
 
 all: $(LIB)
 
@@ -80,6 +82,6 @@ $(LIB):	$(LIB)(gridtemplates.o) \
 
 .c.a:
 	$(CC) -c $(CFLAGS) $<
-	ar $(ARFLAGS) -ruv $@ $*.o
+	ar $(ARFLAGS) $@ $*.o
 	rm -f $*.o
 
