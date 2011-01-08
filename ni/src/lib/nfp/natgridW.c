@@ -1558,6 +1558,13 @@ NhlErrorTypes nnpntinit_W( void )
  * c_nnpntinitd function.
  */
    c_nnpntinitd(npts,tmp_x,tmp_y,tmp_z);
+
+/*
+ * Free memory.
+ */
+   if(type_x   != NCL_double) NclFree(tmp_x);
+   if(type_y   != NCL_double) NclFree(tmp_y);
+   if(type_z   != NCL_double) NclFree(tmp_z);
    return(NhlNOERROR);
 }
 
