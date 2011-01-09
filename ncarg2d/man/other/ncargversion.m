@@ -13,7 +13,7 @@ This command allows you to determine what version of NCAR Graphics
 that you are currently using.  This can be helpful when trying to
 get consulting help on NCAR Graphics.
 .SH COPYRIGHT
-Copyright (C) 1987-2002
+Copyright (C) 1987-2011
 .br
 University Corporation for Atmospheric Research
 .br

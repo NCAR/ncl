@@ -11,7 +11,7 @@
 echo ""
 cat <<EOF
 NCAR View - UNIX Version VERSION
-Copyright (C) 1987-2010
+Copyright (C) 1987-2011
 University Corporation for Atmospheric Research
 
 The use of this Software is governed by a License Agreement.
