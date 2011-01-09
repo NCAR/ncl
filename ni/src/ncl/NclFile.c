@@ -4435,7 +4435,7 @@ int rw_status;
 		name_list = (*file_out->file.format_funcs->get_grp_names)(file_out->file.private_rec,&n_names);
 		file_out->file.n_grps = n_names;
 		if(n_names > NCL_MAX_FVARS) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"The file (%s) contains (%d) grpiable which  exceeds the number of allowable grpiables (%d), ",NrmQuarkToString(path),n_names,NCL_MAX_FVARS);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"The file (%s) contains (%d) variable which  exceeds the number of allowable variables (%d), ",NrmQuarkToString(path),n_names,NCL_MAX_FVARS);
 			NclFree((void*)name_list);
 			if(file_out_free) 
 				NclFree((void*)file_out);
@@ -4451,7 +4451,7 @@ int rw_status;
 				}
 				NclFree((void*)name_list2);
 			} else {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"Can not access grpiable attributes for the file format");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"Can not access variable attributes for the file format");
 			}
 		}
 		NclFree((void*)name_list);
