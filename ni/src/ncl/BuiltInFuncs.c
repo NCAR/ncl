@@ -584,7 +584,7 @@ NhlErrorTypes _NclIGetFileVarNames
 	} else {
 		tmp = _NclGetFileVarInfoList(file_q);
 		if(tmp==NULL){
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIGetFileVarNames: file does not exist");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"getfilevarnames: file does not exist");
 			return(NhlFATAL);
 		} 
 		step = tmp;
@@ -1952,7 +1952,7 @@ NhlErrorTypes _NclIFrame
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar) ) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to frame, ignoring request");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"frame: non-object input; ignoring request");
 			return(NhlFATAL);
 		} else {
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
@@ -1997,7 +1997,7 @@ NhlErrorTypes _NclIClear
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar) ) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to clear, ignoring request");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"clear: non-object input; ignoring request");
 			return(NhlFATAL);
 		} else {
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
@@ -2042,7 +2042,7 @@ NhlErrorTypes _NclIDestroy
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to destroy, ignoring request");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"destroy: non-object input; ignoring request");
 	
 			return(NhlFATAL);
 		} else {
@@ -2080,7 +2080,7 @@ NhlErrorTypes _NclIUpdate
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to update, ignoring request");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"update: non-object input; ignoring request");
 	
 			return(NhlFATAL);
 		} else {
@@ -2130,7 +2130,7 @@ NhlErrorTypes _NclIDraw
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to draw, ignoring request");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"draw: non-object input; ignoring request");
 			return(NhlFATAL);
 		} else {
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
@@ -2380,7 +2380,7 @@ NhlErrorTypes _Nclidsfft
 		for(i = 0; i < dimsizes; i++) {
 			if(has_missing) {
 				if((arg[0])[i] == missing.floatval) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclisdfft: input contains missing values, cannot continue");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"idsfft: input contains missing values, cannot continue");
 					return(NhlFATAL);
 				} else if((arg[0])[i] > xmax) {
 					xmax = (arg[0])[i];
@@ -2396,7 +2396,7 @@ NhlErrorTypes _Nclidsfft
 			}
 			if(has_missing1) {
 				if((arg[1])[i] == missing1.floatval) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclisdfft: input contains missing values, cannot continue");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"idsfft: input contains missing values, cannot continue");
 					return(NhlFATAL);
 				} else if((arg[1])[i] > ymax) {
 					ymax = (arg[1])[i];
@@ -2412,7 +2412,7 @@ NhlErrorTypes _Nclidsfft
 			}
 			if(has_missing2) {
 				if((arg[2])[i] == missing2.floatval) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclisdfft: input contains missing values, cannot continue");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"idsfft: input contains missing values, cannot continue");
 					return(NhlFATAL);
 				}
 			}
@@ -3419,7 +3419,7 @@ NhlErrorTypes _NclIfbinrecread
 		else
 			_NclSwapBytes(&ind1,control_word,1,sizeof(int));
 		if(ind1 <= 0) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIfbinrecread: 0 or less than zero fortran control word, FILE NOT SEQUENTIAL ACCESS!");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: 0 or less than zero fortran control word, FILE NOT SEQUENTIAL ACCESS!");
 			close(fd);
 			return(NhlFATAL);
 		}
@@ -5928,7 +5928,7 @@ NhlErrorTypes _NclIshorttoint
 	output = (int*)NclMalloc(sizeof(int)*total_elements);
         if (output == NULL)
         {
-            NHLPERROR((NhlFATAL, errno, "_NclIshorttoint output: memory allocation error."));
+            NHLPERROR((NhlFATAL, errno, "shorttoint: memory allocation error."));
             return NhlFATAL;
         }
 	for(i = 0; i < total_elements; i++) {
@@ -5978,7 +5978,7 @@ NhlErrorTypes _NclIushorttoint
 	output = (ng_size_t*)NclMalloc(sizeof(ng_size_t)*total_elements);
         if (output == NULL)
         {
-            NHLPERROR((NhlFATAL, errno, "_NclIushorttoint output: memory allocation error."));
+            NHLPERROR((NhlFATAL, errno, "ushorttoint output: memory allocation error."));
             return NhlFATAL;
         }
 	for(i = 0; i < total_elements; i++) {
@@ -7644,7 +7644,7 @@ NhlErrorTypes _NclIstringtolong
 				tval = _Nclstrtol(val,&end);
 				if (end == val) {
                                         NhlPError(NhlWARNING,NhlEUNKNOWN,
-					"A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
+					"stringtolong: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.longval;
 				}
 				else if (errno == ERANGE) {
@@ -7663,7 +7663,7 @@ NhlErrorTypes _NclIstringtolong
 			tval = _Nclstrtol(val,&end);
 			if (end == val) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
-                                "A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
+                                "stringtolong: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
 				out_val[i] = missing2.longval;
 			}
@@ -7751,7 +7751,7 @@ NhlErrorTypes _NclIstringtoulong
                 if (end == val)
                 {
                     NhlPError(NhlFATAL,NhlEUNKNOWN,
-                    "A bad value was passed to stringtoulong, input strings must contain numeric digits, replacing with missing value");
+                    "stringtoulong: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                     out_val[i] = missing2.ulongval;
                 }
                 else if (errno == ERANGE)
@@ -7778,7 +7778,7 @@ NhlErrorTypes _NclIstringtoulong
             if (end == val)
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                "A bad value was passed to stringtoulong, input strings must contain numeric digits, replacing with missing value");
+                "stringtoulong: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                 has_missing = 1;
                 out_val[i] = missing2.ulongval;
             }
@@ -7869,7 +7869,7 @@ NhlErrorTypes _NclIstringtoint64
                 if (end == val)
                 {
                     NhlPError(NhlFATAL,NhlEUNKNOWN,
-                    "A bad value was passed to stringtoint64, input strings must contain numeric digits, replacing with missing value");
+                    "stringtoint64: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                     out_val[i] = missing2.int64val;
                 }
                 else if (errno == ERANGE)
@@ -7895,7 +7895,7 @@ NhlErrorTypes _NclIstringtoint64
             if (end == val)
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                "A bad value was passed to stringtoint64, input strings must contain numeric digits, replacing with missing value");
+                "stringtoint64: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                 has_missing = 1;
                 out_val[i] = missing2.int64val;
             }
@@ -7986,7 +7986,7 @@ NhlErrorTypes _NclIstringtouint64
                 if (end == val)
                 {
                     NhlPError(NhlFATAL,NhlEUNKNOWN,
-                    "A bad value was passed to stringtouint64, input strings must contain numeric digits, replacing with missing value");
+                    "stringtouint64: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                     out_val[i] = missing2.uint64val;
                 }
                 else if (errno == ERANGE)
@@ -8013,7 +8013,7 @@ NhlErrorTypes _NclIstringtouint64
             if (end == val)
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                "A bad value was passed to stringtouint64, input strings must contain numeric digits, replacing with missing value");
+                "stringtouint64: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                 has_missing = 1;
                 out_val[i] = missing2.uint64val;
             }
@@ -8090,7 +8090,7 @@ NhlErrorTypes _NclIstringtoshort
 				tval = _Nclstrtol(val,&end);
 				if (end == val) {
                                         NhlPError(NhlWARNING,NhlEUNKNOWN,
-                                        "A bad value was passed to stringtoshort, input strings must contain numeric digits, replacing with missing value");
+                                        "stringtoshort: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.shortval;
 				}
 				else if (tval > SHRT_MAX || tval < SHRT_MIN) {
@@ -8108,7 +8108,7 @@ NhlErrorTypes _NclIstringtoshort
 			tval = _Nclstrtol(val,&end);
 			if (end == val) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
-                                "A bad value was passed to stringtoshort, input strings must contain numeric digits, replacing with missing value");
+                                "stringtoshort: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
 				out_val[i] = missing2.shortval;
 			}
@@ -8181,7 +8181,7 @@ NhlErrorTypes _NclIstringtoushort
 				tval = _Nclstrtol(val,&end);
 				if (end == val) {
                                         NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                        "A bad value was passed to stringtoushort, input strings must contain numeric digits, replacing with missing value");
+                                        "stringtoushort: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.ushortval;
 				}
 				else if (tval > SHRT_MAX || tval < SHRT_MIN) {
@@ -8199,7 +8199,7 @@ NhlErrorTypes _NclIstringtoushort
 			tval = _Nclstrtol(val,&end);
 			if (end == val) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to stringtoushort, input strings must contain numeric digits, replacing with missing value");
+                                "stringtoushort: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
 				out_val[i] = missing2.ushortval;
 			}
@@ -8275,7 +8275,7 @@ NhlErrorTypes _NclIstringtointeger
 				tval = _Nclstrtol(val,&end);
 				if (end == val) {
                                         NhlPError(NhlWARNING,NhlEUNKNOWN,
-                                        "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
+                                        "stringtointeger: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.intval;
 				}
 				else if (tval > INT_MAX || tval < INT_MIN || errno == ERANGE) {
@@ -8294,7 +8294,7 @@ NhlErrorTypes _NclIstringtointeger
 			tval = _Nclstrtol(val,&end);
 			if (end == val) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
-                                "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
+                                "stringtointeger: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
 				out_val[i] = missing2.intval;
 			}
@@ -8382,7 +8382,7 @@ NhlErrorTypes _NclIstringtouint
                 if (end == val)
                 {
                     NhlPError(NhlFATAL,NhlEUNKNOWN,
-                    "A bad value was passed to stringtouint, input strings must contain numeric digits, replacing with missing value");
+                    "stringtouint: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                     out_val[i] = missing2.uintval;
                 }
                 else if (errno == ERANGE)
@@ -8409,7 +8409,7 @@ NhlErrorTypes _NclIstringtouint
             if (end == val)
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                "A bad value was passed to stringtouint, input strings must contain numeric digits, replacing with missing value");
+                "stringtouint: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                 has_missing = 1;
                 out_val[i] = missing2.uintval;
             }
@@ -8523,7 +8523,7 @@ NhlErrorTypes _NclIstringtodouble
 				tval = strtod(val,&end);
 				if (end == val) {
                                         NhlPError(NhlWARNING,NhlEUNKNOWN,
-					"A bad value was passed to stringtodouble, input strings must contain numeric digits, replacing with missing value");
+					"stringtodouble: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.doubleval;
 				}
 				else if (errno == ERANGE) {
@@ -8547,7 +8547,7 @@ NhlErrorTypes _NclIstringtodouble
 			tval = strtod(val,&end);
 			if (end == val) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
-                                "A bad value was passed to stringtodouble, input strings must contain numeric digits, replacing with missing value");
+                                "stringtodouble: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
 				out_val[i] = missing2.doubleval;
 			}
@@ -8628,7 +8628,7 @@ NhlErrorTypes _NclIstringtofloat
 				dtest = fabs(tval);
 				if (end == val) {
                                         NhlPError(NhlWARNING,NhlEUNKNOWN,
-					"A bad value was passed to stringtofloat, input strings must contain numeric digits, replacing with missing value");
+					"stringtofloat: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.floatval;
 				}
 				else if (errno == ERANGE || dtest > (double) FLT_MAX) {
@@ -8651,7 +8651,7 @@ NhlErrorTypes _NclIstringtofloat
 			dtest = fabs(tval);
 			if (end == val) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
-					  "A bad value was passed to stringtofloat, input strings must contain numeric digits, replacing with missing value");
+					  "stringtofloat: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
 				has_missing = 1;
 				out_val[i] = missing2.floatval;
 			}
@@ -9240,7 +9240,7 @@ NhlErrorTypes _NclIIsCoord
 	
 
 	if(tmp_var == NULL) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIsCoord: Non variable passed returning missing");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"iscoord: Non variable passed returning missing");
 		NclReturnValue(
 			&miss,
 			1,
@@ -9322,7 +9322,7 @@ NhlErrorTypes _NclIIsAtt
 	
 
 	if(tmp_var == NULL) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsAtt: Non variable passed returning missing");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"isatt: Non variable passed returning missing");
 		NclReturnValue(
 			&miss,
 			1,
@@ -9404,7 +9404,7 @@ NhlErrorTypes _NclIIsDim
 	
 
 	if(tmp_var == NULL) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsDim: Non variable passed returning missing");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"isdim: Non variable passed returning missing");
 		NclReturnValue(
 			&miss,
 			1,
@@ -9485,7 +9485,7 @@ NhlErrorTypes _NclIIsDimNamed
     	}
 
 	if(tmp_var == NULL) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsDimNamed: Non variable passed returning missing");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"isdimnamed: Non variable passed returning missing");
 		NclReturnValue(
 			&miss,
 			1,
@@ -9625,7 +9625,7 @@ NhlErrorTypes _NclIIsFileVar
 			0
 		));
 	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsFileVar: undefined file returning missing value");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"isfilevar: undefined file returning missing value");
 		NclReturnValue(
 			&miss,
 			1,
@@ -9724,7 +9724,7 @@ NhlErrorTypes _NclIIsFileVarAtt
 			0
 		));
 	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsFileVar: undefined file returning missing value");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"isfilevar: undefined file returning missing value");
 		NclReturnValue(
 			&miss,
 			1,
@@ -9831,7 +9831,7 @@ NhlErrorTypes _NclIIsFileVarCoord
 			0
 		));
 	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsFileVar: undefined file returning missing value");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"isfilevar: undefined file returning missing value");
 		NclReturnValue(
 			&miss,
 			1,
@@ -9929,7 +9929,7 @@ NhlErrorTypes _NclIIsFileVarDim
 			0
 		));
 	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsFileVar: undefined file returning missing value");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"isfilevar: undefined file returning missing value");
 		NclReturnValue(
 			&miss,
 			1,
@@ -16595,7 +16595,7 @@ NhlErrorTypes _NclIgaus
 	  output = (double*)NclMalloc(sizeof(double));
           if (output == NULL)
           {
-            NHLPERROR((NhlFATAL, errno, "_NclIgaus, output: memory allocation error."));
+            NHLPERROR((NhlFATAL, errno, "gaus: output: memory allocation error."));
             return NhlFATAL;
           }
 	  output_missing.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
@@ -16619,7 +16619,7 @@ NhlErrorTypes _NclIgaus
 	output = (double*)NclMalloc(sizeof(double)*nl*2);
         if (output == NULL)
         {
-            NHLPERROR((NhlFATAL, errno, "_NclIgaus, output: memory allocation error."));
+            NHLPERROR((NhlFATAL, errno, "gaus: output: memory allocation error."));
             return NhlFATAL;
         }
 
@@ -17887,7 +17887,7 @@ NhlErrorTypes _NclIFileVarAttDef
 	if(has_missing) {
 		for(i = 0; i < dimsize; i++) {
 			if(varnames[i] == missing.stringval)  {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"Missing value variable name detected, can't continue");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"filevarattdef: missing value variable name detected, can't continue");
 				return(NhlFATAL);
 			}
 		}
@@ -18224,7 +18224,7 @@ NhlErrorTypes _NclIAttSetValues( void )
 							NclFree(ids);
 						} else {
 							NclFree(ids);
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"The value associated with (%s) does not have an HLU representation", NrmQuarkToString(att_list->quark));
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"attsetvalues: the value associated with (%s) does not have an HLU representation", NrmQuarkToString(att_list->quark));
 							gen_array[i] = NULL;
 						}
 		 
@@ -18394,7 +18394,7 @@ NhlErrorTypes _NclIprintVarSummary( void )
 		_NclPrintVarSummary(data.u.data_var);
 		return(NhlNOERROR);
 	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-Variable passed to printVarSummary, can't continue");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"printVarSummary: non-variable passed; can't continue");
 		return(NhlFATAL);
 	}
 }
@@ -18656,7 +18656,7 @@ NhlErrorTypes _NclIAddFiles( void )
 			*id = file->obj.id;
 			out_md = _NclMultiDValnclfileDataCreate(NULL,NULL,Ncl_MultiDValnclfileData,0,id,NULL,1,&dim_size,TEMPORARY,NULL);
 			if((out_md == NULL)|| (_NclListPush((NclObj)tmp_list,(NclObj)out_md) == NhlFATAL)) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred opening %s, can't continue",NrmQuarkToString(((NclQuark*)p_md->multidval.val)[i]));	
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"addfiles: an error occurred opening %s, can't continue",NrmQuarkToString(((NclQuark*)p_md->multidval.val)[i]));	
 				return(NhlFATAL);	
 			}
 		} else {
@@ -18674,7 +18674,7 @@ NhlErrorTypes _NclIAddFiles( void )
 					TEMPORARY,
 					NULL);
 			if((out_md == NULL)|| (_NclListPush((NclObj)tmp_list,(NclObj)out_md) == NhlFATAL)) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred opening %s, can't continue",NrmQuarkToString(((NclQuark*)p_md->multidval.val)[i]));	
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"addfiles: an error occurred opening %s, can't continue",NrmQuarkToString(((NclQuark*)p_md->multidval.val)[i]));	
 				return(NhlFATAL);	
 			}
 		}
@@ -18906,7 +18906,7 @@ NhlErrorTypes _NclICreateFile(void)
 	ncredef(cdfid);
 
 	if(cdfid == -1) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"The specified netCDF file can't be created, either the file exists or the path is incorrect");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"createfile: The specified netCDF file can't be created, either the file exists or the path is incorrect");
 		return(NhlFATAL);
 	}
 /*	for(i = 0; i < n_dims; i++) {*/
@@ -18925,19 +18925,19 @@ NhlErrorTypes _NclICreateFile(void)
 	while(thelist != NULL) {
 		tmp_var = (NclVar)_NclGetObj(thelist->obj_id);
 		if(tmp_var == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Something is wrong with the varinfo parameter");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"createfile: Something is wrong with the varinfo parameter");
 			return(NhlFATAL);
 	
 		}
 		tmp_md = (NclMultiDValData)_NclGetObj(tmp_var->var.thevalue_id);
 		if(tmp_md->multidval.data_type != NCL_string) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"varinfo parameter must be a list of string variable names");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"createfile: varinfo parameter must be a list of string variable names");
 			return(NhlFATAL);
 		}
 		if(tmp_var->var.att_id != -1) {
 			tmp_att= (NclAtt)_NclGetObj(tmp_var->var.att_id);
 		} else {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"varinfo parameter list elements must at minimum contain the attributes \"dims\" and \"type\" ");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"createfile: varinfo parameter list elements must at minimum contain the attributes \"dims\" and \"type\" ");
 			return(NhlFATAL);
 		}
 		nclattlist = tmp_att->att.att_list;
@@ -18951,7 +18951,7 @@ NhlErrorTypes _NclICreateFile(void)
 			}
 		}
 		if(dnames_md == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"varinfo parameter list elements must at minimum contain the attributes \"dims\" and \"type\", attribute \"dims\" not found");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"createfile: varinfo parameter list elements must at minimum contain the attributes \"dims\" and \"type\", attribute \"dims\" not found");
 			return(NhlFATAL);
 		}
 		for(j = 0; j < dnames_md->multidval.totalelements; j++) {
@@ -18983,7 +18983,7 @@ NhlErrorTypes _NclICreateFile(void)
 			}
 		}
 		if(the_type == 0) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Either and unsupported type was requested or the \"type\" attribute was not supplied");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"createfile: Either an unsupported type was requested or the \"type\" attribute was not supplied");
 			return(NhlFATAL);
 		}
 
@@ -19027,7 +19027,7 @@ NhlErrorTypes _NclICreateFile(void)
 						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypeshortClassRec.type_class.default_mis.shortval));
 						break;
 					default:
-						NHLPERROR((NhlFATAL,NhlEUNKNOWN,"unsupported NetCDF 3 type"));
+						NHLPERROR((NhlFATAL,NhlEUNKNOWN,"createfile: unsupported NetCDF 3 type"));
 						return(NhlFATAL);
 					}
 				}
@@ -19064,7 +19064,7 @@ NhlErrorTypes _NclICreateFile(void)
 			}
 		}
 	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"fileatts parameter must be a variable, which optionally contains global file attributes, a value was passed in"); 
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"createfile: fileatts parameter must be a variable, which optionally contains global file attributes, a value was passed in"); 
 	}
 	ncendef(cdfid);
 	/*nc__enddef(cdfid,65536,4,0,4); */
@@ -19571,7 +19571,7 @@ NhlErrorTypes _NclItoint
         output = (int*)NclMalloc(sizeof(int)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItoint output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "toint: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -19596,7 +19596,7 @@ NhlErrorTypes _NclItoint
                         else
                         {
                             NHLPERROR((NhlWARNING, NhlEUNKNOWN,
-                                      "The double missing value %g is out of integer range.\n", missing.doubleval));
+                                      "toint: the double missing value %g is out of integer range.\n", missing.doubleval));
                         }
                     }
 
@@ -19624,14 +19624,14 @@ NhlErrorTypes _NclItoint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d doubles larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d doubles larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d doubles less than INT_MIN, which has flagged missing.",
+                            "toint: there are %d doubles less than INT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -19654,7 +19654,7 @@ NhlErrorTypes _NclItoint
                         else
                         {
                             NHLPERROR((NhlWARNING, NhlEUNKNOWN,
-                                      "The float missing value %f is out of integer range.\n", missing.floatval));
+                                      "toint: The float missing value %f is out of integer range.\n", missing.floatval));
                         }
                     }
 
@@ -19693,14 +19693,14 @@ NhlErrorTypes _NclItoint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d floats larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d floats larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d floats less than INT_MIN, which has been flagged missing.",
+                            "toint: there are %d floats less than INT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -19728,7 +19728,7 @@ NhlErrorTypes _NclItoint
                             else
                             {
                                 NHLPERROR((NhlWARNING, NhlEUNKNOWN,
-                                          "The string missing value %f is out of integer range.\n", missing.stringval));
+                                          "toint: The string missing value %f is out of integer range.\n", missing.stringval));
                             }
                         }
                     }
@@ -19743,7 +19743,7 @@ NhlErrorTypes _NclItoint
                         {
                             has_missing = 1;
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) tointeger, input strings must contain numeric digits, replacing with missing value");
+                                "toint: A bad value was passed (string); input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.intval;
                         }
                         else if (llval > INT_MAX)
@@ -19767,14 +19767,14 @@ NhlErrorTypes _NclItoint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d strings larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d strings larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d strings less than INT_MIN, which has forced to INT_MIN.",
+                            "toint: there are %d strings less than INT_MIN, which has forced to INT_MIN.",
                             underflowed);
                     }
                 }
@@ -19914,7 +19914,7 @@ NhlErrorTypes _NclItoint
                         else
                         {
                             NHLPERROR((NhlWARNING, NhlEUNKNOWN,
-                                      "The uint missing value %u is out of integer range.\n", missing.intval));
+                                      "toint: The uint missing value %u is out of integer range.\n", missing.intval));
                         }
                     }
 
@@ -19936,7 +19936,7 @@ NhlErrorTypes _NclItoint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d unsigned int larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -19953,7 +19953,7 @@ NhlErrorTypes _NclItoint
                         else
                         {
                             NHLPERROR((NhlWARNING, NhlEUNKNOWN,
-                                      "The long missing value %ld is out of integer range.\n", missing.longval));
+                                      "toint: the long missing value %ld is out of integer range.\n", missing.longval));
                         }
                     }
 
@@ -19983,14 +19983,14 @@ NhlErrorTypes _NclItoint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d long larger than INT_MAX, which has been flagged missing.",
                             underflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than INT_MIN, which has been flagged missing.",
+                            "toint: there are %d long less than INT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20007,7 +20007,7 @@ NhlErrorTypes _NclItoint
                         else
                         {
                             NHLPERROR((NhlWARNING, NhlEUNKNOWN,
-                                      "The ulong missing value %uld is out of integer range.\n", missing.ulongval));
+                                      "toint: the ulong missing value %uld is out of integer range.\n", missing.ulongval));
                         }
                     }
 
@@ -20031,7 +20031,7 @@ NhlErrorTypes _NclItoint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d long larger than INT_MAX, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20048,7 +20048,7 @@ NhlErrorTypes _NclItoint
                         else
                         {
                             NHLPERROR((NhlWARNING, NhlEUNKNOWN,
-                                      "The int64 missing value %lld is out of integer range.\n", missing.int64val));
+                                      "toint: the int64 missing value %lld is out of integer range.\n", missing.int64val));
                         }
                     }
 
@@ -20078,14 +20078,14 @@ NhlErrorTypes _NclItoint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d int64 larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than INT_MIN, which has been flagged missing.",
+                            "toint: there are %d int64 less than INT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20102,7 +20102,7 @@ NhlErrorTypes _NclItoint
                         else
                         {
                             NHLPERROR((NhlWARNING, NhlEUNKNOWN,
-                                      "The uint64 missing value %ulld is out of integer range.\n", missing.uint64val));
+                                      "toint: the uint64 missing value %ulld is out of integer range.\n", missing.uint64val));
                         }
                     }
 
@@ -20126,29 +20126,29 @@ NhlErrorTypes _NclItoint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d uint64 larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "toint: don't know how to convert logical to integer.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "toint: don't know how to convert object to integer.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "toint: don't know how to convert list to integer.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "toint: don't know how to convert NCL_none to integer.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "toint: don't know how to convert unkown type to integer.");
                 return NhlFATAL;
         }
 
@@ -20205,7 +20205,7 @@ NhlErrorTypes _NclItouint
         output = (unsigned int*)NclMalloc(sizeof(unsigned int)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItouint output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "touint: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -20251,14 +20251,14 @@ NhlErrorTypes _NclItouint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d doubles larger than INT_MAX, which has been flagged missing.",
+                            "touint: there are %d doubles larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d doubles less than INT_MIN, which has flagged missing.",
+                            "touint: there are %d doubles less than INT_MIN, which has flagged missing.",
                             underflowed);
                     }
                 }
@@ -20303,14 +20303,14 @@ NhlErrorTypes _NclItouint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d floats larger than INT_MAX, which has been flagged missing.",
+                            "touint: there are %d floats larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d floats less than INT_MIN, which has been flagged missing.",
+                            "touint: there are %d floats less than INT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20348,7 +20348,7 @@ NhlErrorTypes _NclItouint
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to touint, input strings must contain numeric digits, replacing with missing value");
+                                "touint: a bad value was passed to touint, input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.uintval;
                         }
                         else if (errno == ERANGE)
@@ -20377,14 +20377,14 @@ NhlErrorTypes _NclItouint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than UINT_MAX, which has been flagged missing.",
+                            "touint: there are %d double larger than UINT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "touint: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20439,7 +20439,7 @@ NhlErrorTypes _NclItouint
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d char less than 0, which has been flagged missing.",
+                            "touint: there are %d char less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20475,7 +20475,7 @@ NhlErrorTypes _NclItouint
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int8 less than 0, which has been flagged missing.",
+                            "touint: there are %d int8 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20528,7 +20528,7 @@ NhlErrorTypes _NclItouint
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "touint: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20603,7 +20603,7 @@ NhlErrorTypes _NclItouint
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "touint: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20662,14 +20662,14 @@ NhlErrorTypes _NclItouint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than UINT_MAX, which has been flagged missing.",
+                            "touint: there are %d long larger than UINT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than 0, which has been flagged missing.",
+                            "touint: there are %d long less than 0, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -20705,7 +20705,7 @@ NhlErrorTypes _NclItouint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned long larger than UINT_MAX, which has been flagged missing.",
+                            "touint: there are %d unsigned long larger than UINT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -20747,14 +20747,14 @@ NhlErrorTypes _NclItouint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than UINT_MAX, which has been flagged missing.",
+                            "touint: there are %d long larger than UINT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than 0, which has been flagged missing.",
+                            "touint: there are %d long less than 0, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -20790,29 +20790,29 @@ NhlErrorTypes _NclItouint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than UINT_MAX, which has been flagged missing.",
+                            "touint: there are %d uint64 larger than UINT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to uint.");
+                NhlPError(NhlFATAL, errno, "touint: don't know how to convert logical to uint.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to uint.");
+                NhlPError(NhlFATAL, errno, "touint: don't know how to convert object to uint.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to uint.");
+                NhlPError(NhlFATAL, errno, "uint: don't know how to convert list to uint.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to uint.");
+                NhlPError(NhlFATAL, errno, "uint: don't know how to convert NCL_none to uint.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to uint.");
+                NhlPError(NhlFATAL, errno, "uint: don't know how to convert unkown type to uint.");
                 return NhlFATAL;
         }
 
@@ -20869,7 +20869,7 @@ NhlErrorTypes _NclItolong
         output = (long *)NclMalloc(sizeof(long)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItolong output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "tolong: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -20917,14 +20917,14 @@ NhlErrorTypes _NclItolong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than LONG_MAX, which has been flagged missing.",
+                            "tolong: there are %d double larger than LONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than LONG_MIN, which has been flagged missing.",
+                            "tolong: there are %d double less than LONG_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20972,14 +20972,14 @@ NhlErrorTypes _NclItolong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d floats larger than INT_MAX, which has been flagged missing.",
+                            "tolong: there are %d floats larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d floats less than INT_MIN, which has been flagged missing.",
+                            "tolong: there are %d floats less than INT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21024,7 +21024,7 @@ NhlErrorTypes _NclItolong
                             {
                                 has_missing = 1;
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                    "A bad value was passed to (string) tolong, input strings must contain numeric digits, replacing with missing value");
+                                    "tolong: a bad value was passed to (string) tolong, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.longval;
                             }
                             else if (llval > LONG_MAX)
@@ -21049,14 +21049,14 @@ NhlErrorTypes _NclItolong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than LONG_MAX, which has been flagged missing.",
+                            "tolong: there are %d double larger than LONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than LONG_MIN, which has been flagged missing.",
+                            "tolong: there are %d double less than LONG_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21218,7 +21218,7 @@ NhlErrorTypes _NclItolong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than LONG_MAX, which has been flagged missing.",
+                            "tolong: there are %d unsigned int larger than LONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -21271,7 +21271,7 @@ NhlErrorTypes _NclItolong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned long larger than LONG_MAX, which has been flagged missing.",
+                            "tolong: there are %d unsigned long larger than LONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -21313,14 +21313,14 @@ NhlErrorTypes _NclItolong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than LONG_MAX, which has been flagged missing.",
+                            "tolong: there are %d int64 larger than LONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than LONG_MIN, which has been flagged missing.",
+                            "tolong: there are %d int64 less than LONG_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21356,29 +21356,29 @@ NhlErrorTypes _NclItolong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than LONG_MAX, which has been flagged missing.",
+                            "tolong: there are %d uint64 larger than LONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to long.");
+                NhlPError(NhlFATAL, errno, "tolong: don't know how to convert logical to long.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to long.");
+                NhlPError(NhlFATAL, errno, "tolong: don't know how to convert object to long.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to long.");
+                NhlPError(NhlFATAL, errno, "tolong: don't know how to convert list to long.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to long.");
+                NhlPError(NhlFATAL, errno, "tolong: don't know how to convert NCL_none to long.");
                 return NhlFATAL;
                 break;
             default:
-                NHLPERROR((NhlFATAL, errno, "Don't know how to convert unkown type to long."));
+                NHLPERROR((NhlFATAL, errno, "tolong: don't know how to convert unkown type to long."));
                 return NhlFATAL;
         }
 
@@ -21435,7 +21435,7 @@ NhlErrorTypes _NclItoulong
         output = (unsigned long *)NclMalloc(sizeof(unsigned long)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItoulong output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "toulong: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -21483,14 +21483,14 @@ NhlErrorTypes _NclItoulong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than ULONG_MAX, which has been flagged missing.",
+                            "toulong: there are %d double larger than ULONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "toulong: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21539,14 +21539,14 @@ NhlErrorTypes _NclItoulong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than ULONG_MAX, which has been flagged missing.",
+                            "toulong: there are %d float larger than ULONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than 0, which has been flagged missing.",
+                            "toulong: there are %d float less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21568,7 +21568,7 @@ NhlErrorTypes _NclItoulong
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) toulong, input strings must contain numeric digits, replacing with missing value");
+                                "toulong: a bad value was passed to (string) toulong, input strings must contain numeric digits, replacing with missing value");
                         }
                         else if(errno != ERANGE)
                             if((llval <= ULONG_MAX) && (llval >= 0))
@@ -21585,7 +21585,7 @@ NhlErrorTypes _NclItoulong
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) toulong, input strings must contain numeric digits, replacing with missing value");
+                                "toulong: a bad value was passed to (string) toulong, input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.ulongval;
                         }
                         else if (errno == ERANGE)
@@ -21614,14 +21614,14 @@ NhlErrorTypes _NclItoulong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than ULONG_MAX, which has been flagged missing.",
+                            "toulong: there are %d double larger than ULONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "toulong: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21676,7 +21676,7 @@ NhlErrorTypes _NclItoulong
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d char less than 0, which has been flagged missing.",
+                            "toulong: there are %d char less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21708,7 +21708,7 @@ NhlErrorTypes _NclItoulong
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int8 less than 0, which has been flagged missing.",
+                            "toulong: there are %d int8 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21763,7 +21763,7 @@ NhlErrorTypes _NclItoulong
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d short less than 0, which has been flagged missing.",
+                            "toulong: there are %d short less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21821,7 +21821,7 @@ NhlErrorTypes _NclItoulong
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "toulong: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21874,7 +21874,7 @@ NhlErrorTypes _NclItoulong
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "toulong: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21933,14 +21933,14 @@ NhlErrorTypes _NclItoulong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than ULONG_MAX, which has been flagged missing.",
+                            "toulong: there are %d int64 larger than ULONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than 0, which has been flagged missing.",
+                            "toulong: there are %d int64 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21976,29 +21976,29 @@ NhlErrorTypes _NclItoulong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than ULONG_MAX, which has been flagged missing.",
+                            "toulong: there are %d uint64 larger than ULONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to ulong.");
+                NhlPError(NhlFATAL, errno, "toulong: don't know how to convert logical to ulong.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to ulong.");
+                NhlPError(NhlFATAL, errno, "toulong: don't know how to convert object to ulong.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to ulong.");
+                NhlPError(NhlFATAL, errno, "toulong: don't know how to convert list to ulong.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to ulong.");
+                NhlPError(NhlFATAL, errno, "toulong: don't know how to convert NCL_none to ulong.");
                 return NhlFATAL;
                 break;
             default:
-                NHLPERROR((NhlFATAL, errno, "Don't know how to convert unkown type to ulong."));
+                NHLPERROR((NhlFATAL, errno, "toulong: don't know how to convert unkown type to ulong."));
                 return NhlFATAL;
         }
 
@@ -22055,7 +22055,7 @@ NhlErrorTypes _NclItoint64
         output = (long long *)NclMalloc(sizeof(long long)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItoint64 output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "toint64: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -22103,14 +22103,14 @@ NhlErrorTypes _NclItoint64
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than LLONG_MAX, which has been flagged missing.",
+                            "toint64: there are %d double larger than LLONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than LLONG_MIN, which has been flagged missing.",
+                            "toint64: there are %d double less than LLONG_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22159,14 +22159,14 @@ NhlErrorTypes _NclItoint64
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than LLONG_MAX, which has been flagged missing.",
+                            "toint64: there are %d float larger than LLONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than LLONG_MIN, which has been flagged missing.",
+                            "toint64: there are %d float less than LLONG_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22186,7 +22186,7 @@ NhlErrorTypes _NclItoint64
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) toint64, input strings must contain numeric digits, replacing with missing value");
+                                "toint64: a bad value was passed to (string) toint64, input strings must contain numeric digits, replacing with missing value");
                         }
                         else if(errno != ERANGE)
                             ret_missing.int64val = (long long) llval;
@@ -22202,7 +22202,7 @@ NhlErrorTypes _NclItoint64
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) toint64, input strings must contain numeric digits, replacing with missing value");
+                                "toint64: a bad value was passed to (string) toint64, input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.int64val;
                         }
                         else if (errno == ERANGE)
@@ -22231,14 +22231,14 @@ NhlErrorTypes _NclItoint64
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d string larger than LLONG_MAX, which has been flagged missing.",
+                            "toint64: there are %d string larger than LLONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d string less than LLONG_MIN, which has been flagged missing.",
+                            "toint64: there are %d string less than LLONG_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22467,29 +22467,29 @@ NhlErrorTypes _NclItoint64
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than LLONG_MAX, which has been flagged missing.",
+                            "toint64: there are %d uint64 larger than LLONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to int64.");
+                NhlPError(NhlFATAL, errno, "toint64: don't know how to convert logical to int64.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to int64.");
+                NhlPError(NhlFATAL, errno, "toint64: don't know how to convert object to int64.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to int64.");
+                NhlPError(NhlFATAL, errno, "toint64: don't know how to convert list to int64.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to int64.");
+                NhlPError(NhlFATAL, errno, "toint64: don't know how to convert NCL_none to int64.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to int64.");
+                NhlPError(NhlFATAL, errno, "toint64: don't know how to convert unkown type to int64.");
                 return NhlFATAL;
         }
 
@@ -22546,7 +22546,7 @@ NhlErrorTypes _NclItouint64
         output = (unsigned long long *)NclMalloc(sizeof(unsigned long long)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItouint64 output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "touint64: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -22594,14 +22594,14 @@ NhlErrorTypes _NclItouint64
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than ULLONG_MAX, which has been flagged missing.",
+                            "touint64: there are %d double larger than ULLONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "touint64: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22650,14 +22650,14 @@ NhlErrorTypes _NclItouint64
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than ULLONG_MAX, which has been flagged missing.",
+                            "touint64: there are %d float larger than ULLONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than 0, which has been flagged missing.",
+                            "touint64: there are %d float less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22677,7 +22677,7 @@ NhlErrorTypes _NclItouint64
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) touint64, input strings must contain numeric digits, replacing with missing value");
+                                "touint64: a bad value was passed to (string) touint64, input strings must contain numeric digits, replacing with missing value");
                         }
                         else if(errno != ERANGE)
                             if(llval >= 0)
@@ -22694,7 +22694,7 @@ NhlErrorTypes _NclItouint64
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) touint64, input strings must contain numeric digits, replacing with missing value");
+                                "touint64: a bad value was passed to (string) touint64, input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.uint64val;
                         }
                         else if (errno == ERANGE)
@@ -22720,14 +22720,14 @@ NhlErrorTypes _NclItouint64
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than ULLONG_MAX, which has been flagged missing.",
+                            "touint64: there are %d double larger than ULLONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "touint64: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22783,7 +22783,7 @@ NhlErrorTypes _NclItouint64
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d char less than 0, which has been flagged missing.",
+                            "touint64: there are %d char less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22815,7 +22815,7 @@ NhlErrorTypes _NclItouint64
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int8 less than 0, which has been flagged missing.",
+                            "touint64: there are %d int8 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22867,7 +22867,7 @@ NhlErrorTypes _NclItouint64
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "touint64: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22948,7 +22948,7 @@ NhlErrorTypes _NclItouint64
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "touint64: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -23001,7 +23001,7 @@ NhlErrorTypes _NclItouint64
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than 0, which has been flagged missing.",
+                            "touint64: there are %d long less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -23054,7 +23054,7 @@ NhlErrorTypes _NclItouint64
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than 0, which has been flagged missing.",
+                            "touint64: there are %d int64 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -23077,23 +23077,23 @@ NhlErrorTypes _NclItouint64
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to uint64.");
+                NhlPError(NhlFATAL, errno, "touint64: don't know how to convert logical to uint64.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to uint64.");
+                NhlPError(NhlFATAL, errno, "touint64: don't know how to convert object to uint64.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to uint64.");
+                NhlPError(NhlFATAL, errno, "touint64: don't know how to convert list to uint64.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to uint64.");
+                NhlPError(NhlFATAL, errno, "touint64: don't know how to convert NCL_none to uint64.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to uint64.");
+                NhlPError(NhlFATAL, errno, "touint64: don't know how to convert unkown type to uint64.");
                 return NhlFATAL;
         }
 
@@ -23150,7 +23150,7 @@ NhlErrorTypes _NclItoint8
         output = (char *)NclMalloc(sizeof(char)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItoint8 output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "toint8: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -23198,14 +23198,14 @@ NhlErrorTypes _NclItoint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than SCHAR_MAX, which has been flagged missing.",
+                            "toint8: there are %d double larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than SCHAR_MIN, which has been flagged missing.",
+                            "toint8: there are %d double less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -23254,14 +23254,14 @@ NhlErrorTypes _NclItoint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than SCHAR_MAX, which has been flagged missing.",
+                            "toint8: there are %d float larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than SCHAR_MIN, which has been flagged missing.",
+                            "toint8: there are %d float less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -23281,7 +23281,7 @@ NhlErrorTypes _NclItoint8
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) toint8, input strings must contain numeric digits, replacing with missing value");
+                                "toint8: a bad value was passed to (string) toint8, input strings must contain numeric digits, replacing with missing value");
                         }
                         else if(errno != ERANGE)
                             if((llval >= SCHAR_MIN) && (llval <= SCHAR_MAX))
@@ -23298,7 +23298,7 @@ NhlErrorTypes _NclItoint8
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) toint8, input strings must contain numeric digits, replacing with missing value");
+                                "toint8: a bad value was passed to (string) toint8, input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.int8val;
                         }
                         else if (errno == ERANGE)
@@ -23327,14 +23327,14 @@ NhlErrorTypes _NclItoint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d string larger than SCHAR_MAX, which has been flagged missing.",
+                            "toint8: there are %d string larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d string less than SCHAR_MIN, which has been flagged missing.",
+                            "toint8: there are %d string less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -23388,7 +23388,7 @@ NhlErrorTypes _NclItoint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d char larger than SCHAR_MAX, which has been flagged missing.",
+                            "toint8: there are %d char larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -23439,7 +23439,7 @@ NhlErrorTypes _NclItoint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint8 larger than SCHAR_MAX, which has been flagged missing.",
+                            "toint8: there are %d uint8 larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -23478,14 +23478,14 @@ NhlErrorTypes _NclItoint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d short larger than SCHAR_MAX, which has been flagged missing.",
+                            "toint8: there are %d short larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d short less than SCHAR_MIN, which has been flagged missing.",
+                            "toint8: there are %d short less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -23519,7 +23519,7 @@ NhlErrorTypes _NclItoint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d ushort larger than SCHAR_MAX, which has been flagged missing.",
+                            "toint8: there are %d ushort larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -23561,14 +23561,14 @@ NhlErrorTypes _NclItoint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than SCHAR_MAX, which has been flagged missing.",
+                            "toint8: there are %d int larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than SCHAR_MIN, which has been flagged missing.",
+                            "toint8: there are %d int less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -23604,7 +23604,7 @@ NhlErrorTypes _NclItoint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint larger than SCHAR_MAX, which has been flagged missing.",
+                            "toint8: there are %d uint larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -23646,14 +23646,14 @@ NhlErrorTypes _NclItoint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than SCHAR_MAX, which has been flagged missing.",
+                            "toint8: there are %d long larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than SCHAR_MIN, which has been flagged missing.",
+                            "toint8: there are %d long less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
 
@@ -23690,7 +23690,7 @@ NhlErrorTypes _NclItoint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d ulong larger than SCHAR_MAX, which has been flagged missing.",
+                            "toint8: there are %d ulong larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -23732,14 +23732,14 @@ NhlErrorTypes _NclItoint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than SCHAR_MAX, which has been flagged missing.",
+                            "toint8: there are %d int64 larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than SCHAR_MIN, which has been flagged missing.",
+                            "toint8: there are %d int64 less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -23775,29 +23775,29 @@ NhlErrorTypes _NclItoint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint8 larger than SCHAR_MAX, which has been flagged missing.",
+                            "toint8: there are %d uint8 larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to int8.");
+                NhlPError(NhlFATAL, errno, "toint8: don't know how to convert logical to int8.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to int8.");
+                NhlPError(NhlFATAL, errno, "toint8: don't know how to convert object to int8.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to int8.");
+                NhlPError(NhlFATAL, errno, "toint8: don't know how to convert list to int8.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to int8.");
+                NhlPError(NhlFATAL, errno, "toint8: don't know how to convert NCL_none to int8.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to int8.");
+                NhlPError(NhlFATAL, errno, "toint8: don't know how to convert unkown type to int8.");
                 return NhlFATAL;
         }
 
@@ -23854,7 +23854,7 @@ NhlErrorTypes _NclItouint8
         output = (unsigned char *)NclMalloc(sizeof(unsigned char)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItouint8 output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "touint8: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -23902,14 +23902,14 @@ NhlErrorTypes _NclItouint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than UCHAR_MAX, which has been flagged missing.",
+                            "touint8: there are %d double larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "touint8: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -23958,14 +23958,14 @@ NhlErrorTypes _NclItouint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than UCHAR_MAX, which has been flagged missing.",
+                            "touint8: there are %d float larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than 0, which has been flagged missing.",
+                            "touint8: there are %d float less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -23985,7 +23985,7 @@ NhlErrorTypes _NclItouint8
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) touint8, input strings must contain numeric digits, replacing with missing value");
+                                "touint8: a bad value was passed to (string) touint8, input strings must contain numeric digits, replacing with missing value");
                         }
                         else if(errno != ERANGE)
                             if((llval >= 0) && (llval <= UCHAR_MAX))
@@ -24002,7 +24002,7 @@ NhlErrorTypes _NclItouint8
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) touint8, input strings must contain numeric digits, replacing with missing value");
+                                "touint8: a bad value was passed to (string) touint8, input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.uint8val;
                         }
                         else if (errno == ERANGE)
@@ -24034,14 +24034,14 @@ NhlErrorTypes _NclItouint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than UCHAR_MAX, which has been flagged missing.",
+                            "touint8: there are %d double larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "touint8: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24078,7 +24078,7 @@ NhlErrorTypes _NclItouint8
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d byte less than 0, which has been flagged missing.",
+                            "touint8: there are %d byte less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24144,7 +24144,7 @@ NhlErrorTypes _NclItouint8
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int8 less than 0, which has been flagged missing.",
+                            "touint8: there are %d int8 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24203,14 +24203,14 @@ NhlErrorTypes _NclItouint8
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "touint8: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
 
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d short larger than SCHAR_MAX, which has been flagged missing.",
+                            "touint8: there are %d short larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -24246,7 +24246,7 @@ NhlErrorTypes _NclItouint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d ushortlarger than UCHAR_MAX, which has been flagged missing.",
+                            "touint8: there are %d ushortlarger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -24291,14 +24291,14 @@ NhlErrorTypes _NclItouint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than UCHAR_MAX, which has been flagged missing.",
+                            "touint8: there are %d int larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "touint8: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24334,7 +24334,7 @@ NhlErrorTypes _NclItouint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint larger than UCHAR_MAX, which has been flagged missing.",
+                            "touint8: there are %d uint larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -24376,14 +24376,14 @@ NhlErrorTypes _NclItouint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than UCHAR_MAX, which has been flagged missing.",
+                            "touint8: there are %d long larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than 0, which has been flagged missing.",
+                            "touint8: there are %d long less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24419,7 +24419,7 @@ NhlErrorTypes _NclItouint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d ulong larger than UCHAR_MAX, which has been flagged missing.",
+                            "touint8: there are %d ulong larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -24461,14 +24461,14 @@ NhlErrorTypes _NclItouint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than UCHAR_MAX, which has been flagged missing.",
+                            "touint8: there are %d int64 larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than 0, which has been flagged missing.",
+                            "touint8: there are %d int64 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24504,29 +24504,29 @@ NhlErrorTypes _NclItouint8
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than UCHAR_MAX, which has been flagged missing.",
+                            "touint8: there are %d uint64 larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to uint8.");
+                NhlPError(NhlFATAL, errno, "touint8: Don't know how to convert logical to uint8.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to uint8.");
+                NhlPError(NhlFATAL, errno, "touint8: don't know how to convert object to uint8.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to uint8.");
+                NhlPError(NhlFATAL, errno, "touint8: don't know how to convert list to uint8.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to uint8.");
+                NhlPError(NhlFATAL, errno, "touint8: don't know how to convert NCL_none to uint8.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to uint8.");
+                NhlPError(NhlFATAL, errno, "touint8: don't know how to convert unkown type to uint8.");
                 return NhlFATAL;
         }
 
@@ -24584,7 +24584,7 @@ NhlErrorTypes _NclItoshort
         output = (short *)NclMalloc(sizeof(short)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItoshort output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "toshort: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -24633,14 +24633,14 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d double larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than SHRT_MIN, which has been flagged missing.",
+                            "toshort: there are %d double less than SHRT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24690,14 +24690,14 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d float larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than SHRT_MIN, which has been flagged missing.",
+                            "toshort: there are %d float less than SHRT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24741,7 +24741,7 @@ NhlErrorTypes _NclItoshort
                             {
                                 has_missing = 1;
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                    "A bad value was passed to toshort, input strings must contain numeric digits, replacing with missing value");
+                                    "toshort: a bad value was passed to toshort, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.shortval;
                             }
                             else if (llval > SHRT_MAX)
@@ -24766,14 +24766,14 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d double larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than SHRT_MIN, which has been flagged missing.",
+                            "toshort: there are %d double less than SHRT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24894,7 +24894,7 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d int larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -24936,14 +24936,14 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d int larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than SHRT_MIN, which has been flagged missing.",
+                            "toshort: there are %d int less than SHRT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24979,7 +24979,7 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d unsigned int larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -25021,14 +25021,14 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d long larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than SHRT_MIN, which has been flagged missing.",
+                            "toshort: there are %d long less than SHRT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -25064,7 +25064,7 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned long larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d unsigned long larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -25106,14 +25106,14 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d int64 larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than SHRT_MIN, which has been flagged missing.",
+                            "toshort: there are %d int64 less than SHRT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -25149,29 +25149,29 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d uint64 larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to short.");
+                NhlPError(NhlFATAL, errno, "toshort: don't know how to convert logical to short.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to short.");
+                NhlPError(NhlFATAL, errno, "toshort: don't know how to convert object to short.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to short.");
+                NhlPError(NhlFATAL, errno, "toshort: don't know how to convert list to short.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to short.");
+                NhlPError(NhlFATAL, errno, "toshort: don't know how to convert NCL_none to short.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to short.");
+                NhlPError(NhlFATAL, errno, "toshort: don't know how to convert unkown type to short.");
                 return NhlFATAL;
         }
 
@@ -25228,7 +25228,7 @@ NhlErrorTypes _NclItoushort
         output = (unsigned short *)NclMalloc(sizeof(unsigned short)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItoushort output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "toushort: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -25277,14 +25277,14 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d double larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "toushort: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -25332,14 +25332,14 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d float larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than 0, which has been flagged missing.",
+                            "toushort: there are %d float less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -25408,14 +25408,14 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d double larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "toushort: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -25470,7 +25470,7 @@ NhlErrorTypes _NclItoushort
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d char less than 0, which has been flagged missing.",
+                            "toushort: there are %d char less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -25506,7 +25506,7 @@ NhlErrorTypes _NclItoushort
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int8 less than 0, which has been flagged missing.",
+                            "toushort: there are %d int8 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -25562,7 +25562,7 @@ NhlErrorTypes _NclItoushort
                     if(underflowed)
                     {
                         NHLPERROR((NhlWARNING, NhlEUNKNOWN,
-                            "There are %d short less than 0, which has been flagged missing.",
+                            "toushort: there are %d short less than 0, which has been flagged missing.",
                             underflowed));
                     }
                 }
@@ -25629,14 +25629,14 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NHLPERROR((NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d int larger than USHRT_MAX, which has been flagged missing.",
                             overflowed));
                     }
     
                     if(underflowed)
                     {
                         NHLPERROR((NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "toushort: there are %d int less than 0, which has been flagged missing.",
                             underflowed));
                     }
                 }
@@ -25672,7 +25672,7 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d unsigned int larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -25714,14 +25714,14 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d long larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than 0, which has been flagged missing.",
+                            "toushort: there are %d long less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -25757,7 +25757,7 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned long larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d unsigned long larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -25799,14 +25799,14 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d int64 larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than 0, which has been flagged missing.",
+                            "toushort: there are %d int64 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -25842,29 +25842,29 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d uint64 larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to ushort.");
+                NhlPError(NhlFATAL, errno, "toushort: don't know how to convert logical to ushort.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to ushort.");
+                NhlPError(NhlFATAL, errno, "toushort: don't know how to convert object to ushort.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to ushort.");
+                NhlPError(NhlFATAL, errno, "toushort: don't know how to convert list to ushort.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to ushort.");
+                NhlPError(NhlFATAL, errno, "toushort: don't know how to convert NCL_none to ushort.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to ushort.");
+                NhlPError(NhlFATAL, errno, "toushort: don't know how to convert unkown type to ushort.");
                 return NhlFATAL;
         }
 
@@ -25921,7 +25921,7 @@ NhlErrorTypes _NclItofloat
         output = (float *)NclMalloc(sizeof(float)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItofloat output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "tofloat: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -25978,14 +25978,14 @@ NhlErrorTypes _NclItofloat
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than FLT_MAX, which has been flagged missing.",
+                            "tofloat: there are %d double larger than FLT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than (-FLT_MAX), which has been flagged missing.",
+                            "tofloat: there are %d double less than (-FLT_MAX), which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -26124,14 +26124,14 @@ NhlErrorTypes _NclItofloat
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d string larger than FLT_MAX, which has been flagged missing.",
+                            "tofloat: there are %d string larger than FLT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d string less than (-FLT_MAX), which has been flagged missing.",
+                            "tofloat: there are %d string less than (-FLT_MAX), which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -26343,23 +26343,23 @@ NhlErrorTypes _NclItofloat
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to float.");
+                NhlPError(NhlFATAL, errno, "tofloat: don't know how to convert logical to float.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to float.");
+                NhlPError(NhlFATAL, errno, "tofloat: don't know how to convert object to float.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to float.");
+                NhlPError(NhlFATAL, errno, "tofloat: don't know how to convert list to float.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to float.");
+                NhlPError(NhlFATAL, errno, "tofloat: don't know how to convert NCL_none to float.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to float.");
+                NhlPError(NhlFATAL, errno, "tofloat: don't know how to convert unkown type to float.");
                 return NhlFATAL;
         }
 
@@ -26415,7 +26415,7 @@ NhlErrorTypes _NclItostring
         output = (string *)NclMalloc(sizeof(string)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItostring output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "tostring: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -26514,7 +26514,7 @@ NhlErrorTypes _NclItostring
                     str = (char *)NclMalloc(sizeof(char)*(cur_str_len + 1));
                     if (str == NULL)
                     {
-                            NHLPERROR((NhlFATAL, errno, "_NclItostring str: memory allocation error."));
+                            NHLPERROR((NhlFATAL, errno, "tostring: memory allocation error."));
                             return NhlFATAL;
                     }
                     str[cur_str_len] = '\0';
@@ -26545,7 +26545,7 @@ NhlErrorTypes _NclItostring
                     output = (string *)NclRealloc(output, sizeof(string)*total_elements);
                     if (output == NULL)
                     {
-                            NHLPERROR((NhlFATAL, errno, "_NclItostring output: memory allocation error."));
+                            NHLPERROR((NhlFATAL, errno, "tostring: memory allocation error."));
                             return NhlFATAL;
                     }
 
@@ -26754,23 +26754,23 @@ NhlErrorTypes _NclItostring
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to string.");
+                NhlPError(NhlFATAL, errno, "tostring: don't know how to convert logical to string.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to string.");
+                NhlPError(NhlFATAL, errno, "tostring: don't know how to convert object to string.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to string.");
+                NhlPError(NhlFATAL, errno, "tostring: don't know how to convert list to string.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to string.");
+                NhlPError(NhlFATAL, errno, "tostring: don't know how to convert NCL_none to string.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to string.");
+                NhlPError(NhlFATAL, errno, "tostring: don't know how to convert unkown type to string.");
                 return NhlFATAL;
         }
 
@@ -26849,7 +26849,7 @@ NhlErrorTypes _NclItostring_with_format
         output = (string *)NclMalloc(sizeof(string)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItostring_with_format output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "tostring_with_format: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -27107,23 +27107,23 @@ NhlErrorTypes _NclItostring_with_format
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to string.");
+                NhlPError(NhlFATAL, errno, "tostring_with_format: don't know how to convert logical to string.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to string.");
+                NhlPError(NhlFATAL, errno, "tostring_with_format: don't know how to convert object to string.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to string.");
+                NhlPError(NhlFATAL, errno, "tostring_with_format: don't know how to convert list to string.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to string.");
+                NhlPError(NhlFATAL, errno, "tostring_with_format: don't know how to convert NCL_none to string.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to string.");
+                NhlPError(NhlFATAL, errno, "tostring_with_format: don't know how to convert unkown type to string.");
                 return NhlFATAL;
         }
 
@@ -27181,7 +27181,7 @@ NhlErrorTypes _NclItodouble
         output = (double *)NclMalloc(sizeof(double)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItodouble output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "todouble: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -27496,23 +27496,23 @@ NhlErrorTypes _NclItodouble
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to double.");
+                NhlPError(NhlFATAL, errno, "todouble: don't know how to convert logical to double.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to double.");
+                NhlPError(NhlFATAL, errno, "todouble: don't know how to convert object to double.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to double.");
+                NhlPError(NhlFATAL, errno, "todouble: don't know how to convert list to double.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to double.");
+                NhlPError(NhlFATAL, errno, "todouble: don't know how to convert NCL_none to double.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to double.");
+                NhlPError(NhlFATAL, errno, "todouble: don't know how to convert unkown type to double.");
                 return NhlFATAL;
         }
 
@@ -27569,7 +27569,7 @@ NhlErrorTypes _NclItobyte
         output = (char *)NclMalloc(sizeof(byte)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItobyte output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "tobyte: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -27616,14 +27616,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than SCHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d double larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than SCHAR_MIN, which has been flagged missing.",
+                            "tobyte: there are %d double less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27669,14 +27669,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than SCHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d float larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than SCHAR_MIN, which has been flagged missing.",
+                            "tobyte: there are %d float less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27744,14 +27744,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than SCHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d double larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than SCHAR_MIN, which has been flagged missing.",
+                            "tobyte: there are %d double less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27807,7 +27807,7 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d char great than SCHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d char great than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -27858,7 +27858,7 @@ NhlErrorTypes _NclItobyte
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint8 great than SCHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d uint8 great than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -27900,14 +27900,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d short larger than SCHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d short larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int short less than SCHAR_MIN, which has been flagged missing.",
+                            "tobyte: there are %d int short less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -27943,7 +27943,7 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d ushort larger than SCHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d ushort larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -27985,14 +27985,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than SCHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d int larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than SCHAR_MIN, which has been flagged missing.",
+                            "tobyte: there are %d int less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28028,7 +28028,7 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than SCHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d unsigned int larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -28070,14 +28070,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than SCHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d long larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than SCHAR_MIN, which has been flagged missing.",
+                            "tobyte: there are %d long less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28113,7 +28113,7 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned ulong larger than SCHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d unsigned ulong larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -28155,14 +28155,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than SCHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d int64 larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than SCHAR_MIN, which has been flagged missing.",
+                            "tobyte: there are %d int64 less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28198,29 +28198,29 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than SCHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d uint64 larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to byte.");
+                NhlPError(NhlFATAL, errno, "tobyte: don't know how to convert logical to byte.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to byte.");
+                NhlPError(NhlFATAL, errno, "tobyte: don't know how to convert object to byte.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to byte.");
+                NhlPError(NhlFATAL, errno, "tobyte: don't know how to convert list to byte.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to byte.");
+                NhlPError(NhlFATAL, errno, "tobyte: don't know how to convert NCL_none to byte.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to byte.");
+                NhlPError(NhlFATAL, errno, "tobyte: don't know how to convert unkown type to byte.");
                 return NhlFATAL;
         }
 
@@ -28277,7 +28277,7 @@ NhlErrorTypes _NclItochar
         output = (unsigned char *)NclMalloc(sizeof(unsigned char)*total_elements);
 	if (output == NULL)
 	{
-        	NHLPERROR((NhlFATAL, errno, "_NclItochar output: memory allocation error."));
+        	NHLPERROR((NhlFATAL, errno, "tochar: memory allocation error."));
 		return NhlFATAL;
 	}
 
@@ -28326,14 +28326,14 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d double larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "tochar: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28381,14 +28381,14 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d float larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than 0, which has been flagged missing.",
+                            "tochar: there are %d float less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28429,7 +28429,7 @@ NhlErrorTypes _NclItochar
                     output = (char *)NclRealloc(output, sizeof(char)*total_elements*max_str_len);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "_NclItochar output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tochar: memory allocation error."));
                         return NhlFATAL;
                     }
 
@@ -28526,7 +28526,7 @@ NhlErrorTypes _NclItochar
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d byte leass than 0, which has been flagged missing.",
+                            "tochar: there are %d byte leass than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28603,14 +28603,14 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d short larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d short larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d short less than 0, which has been flagged missing.",
+                            "tochar: there are %d short less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28646,7 +28646,7 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d ushort larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d ushort larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -28688,14 +28688,14 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d int larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "tochar: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28731,7 +28731,7 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d unsigned int larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -28773,14 +28773,14 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d long larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than 0, which has been flagged missing.",
+                            "tochar: there are %d long less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28816,7 +28816,7 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned long larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d unsigned long larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -28858,14 +28858,14 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d int64 larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than 0, which has been flagged missing.",
+                            "tochar: there are %d int64 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -28902,29 +28902,29 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d uint64 larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to char.");
+                NhlPError(NhlFATAL, errno, "tochar: don't know how to convert logical to char.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to char.");
+                NhlPError(NhlFATAL, errno, "tochar: don't know how to convert object to char.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to char.");
+                NhlPError(NhlFATAL, errno, "tochar: don't know how to convert list to char.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to char.");
+                NhlPError(NhlFATAL, errno, "tochar: don't know how to convert NCL_none to char.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to char.");
+                NhlPError(NhlFATAL, errno, "tochar: don't know how to convert unkown type to char.");
                 return NhlFATAL;
         }
 
@@ -28987,7 +28987,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29014,7 +29014,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29036,7 +29036,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29058,7 +29058,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29085,7 +29085,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(short)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29107,7 +29107,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(short)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29134,7 +29134,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(int)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29156,7 +29156,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(int)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29183,7 +29183,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29205,7 +29205,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29232,7 +29232,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(long long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29254,7 +29254,7 @@ NhlErrorTypes _NclItosigned
                     output = (void *)NclMalloc(sizeof(long long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "_NclItosigned output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29274,7 +29274,7 @@ NhlErrorTypes _NclItosigned
                 }
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert type to singed.");
+                NhlPError(NhlFATAL, errno, "tosigned: don't know how to convert type to singed.");
                 return NhlFATAL;
         }
 
@@ -29338,7 +29338,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29365,7 +29365,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29387,7 +29387,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29414,7 +29414,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29436,7 +29436,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned short)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29458,7 +29458,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned short)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29485,7 +29485,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned int)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29507,7 +29507,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned int)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29534,7 +29534,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29556,7 +29556,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29583,7 +29583,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned long long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29605,7 +29605,7 @@ NhlErrorTypes _NclItounsigned
                     output = (void *)NclMalloc(sizeof(unsigned long long)*total_elements);
                     if (output == NULL)
                     {
-                        NHLPERROR((NhlFATAL, errno, "In _NclItounsigned, output: memory allocation error."));
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
                         return NhlFATAL;
                     }
                     out_ptr = output;
@@ -29625,7 +29625,7 @@ NhlErrorTypes _NclItounsigned
                 }
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert type to singed.");
+                NhlPError(NhlFATAL, errno, "tounsigned: don't know how to convert type to singed.");
                 return NhlFATAL;
         }
 
