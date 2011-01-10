@@ -139,7 +139,7 @@ NclData result;
 			}
 			result_val = (void*)NclMalloc(total * the_type->type_class.size);
 			if(result_val == NULL) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNNAME: Could not allocate memory for result type, can't continue\n");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: Could not allocate memory for result type, can't continue\n");
 				return(NULL);
 			}
 		}
