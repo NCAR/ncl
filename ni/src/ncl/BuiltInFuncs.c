@@ -1823,6 +1823,10 @@ NhlErrorTypes _NclIDimSizes
 #endif
 	if(return_int) {
 	  size = (void *) NclMalloc(sizeof(int) * dim_size);
+	  if(size == NULL) {
+	    NhlPError(NhlFATAL, NhlEUNKNOWN,"dimsizes: cannot allocate memory for output");
+	    return(NhlFATAL);
+	  }
 	  for (i = 0; i < dim_size; i++) {
 	    ((int*)size)[i] = (int)tmp_md->multidval.dim_sizes[i];
 	  }
@@ -1842,6 +1846,10 @@ NhlErrorTypes _NclIDimSizes
 	}
 	else {
 	  size = (void *) NclMalloc(sizeof(long) * dim_size);
+	  if(size == NULL) {
+	    NhlPError(NhlFATAL, NhlEUNKNOWN,"dimsizes: cannot allocate memory for output");
+	    return(NhlFATAL);
+	  }
 	  for (i = 0; i < tmp_md->multidval.n_dims; i++) {
 	    ((long*)size)[i] = (long)tmp_md->multidval.dim_sizes[i];
 	  }
@@ -5257,6 +5265,11 @@ NhlErrorTypes _NclIabs
         case NCL_float:
             fvalue = (float *) value;
             out_val = (void *) NclMalloc(total * sizeof(float));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL, NhlEUNKNOWN,
+			"abs: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             fout_val = (float *) out_val;
             if (has_missing) {
                 for (i = 0; i < total; i++) {
@@ -5279,6 +5292,11 @@ NhlErrorTypes _NclIabs
         case NCL_double:
             dvalue = (double *) value;
             out_val = (void *) NclMalloc(total * sizeof(double));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL, NhlEUNKNOWN,
+			"abs: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             dout_val = (double *) out_val;
             if (has_missing) {
                 for (i = 0 ; i < total; i++) {
@@ -5301,6 +5319,11 @@ NhlErrorTypes _NclIabs
         case NCL_int:
             ivalue = (int *) value;
             out_val = (void *) NclMalloc(total * sizeof(int));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL, NhlEUNKNOWN,
+			"abs: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             iout_val = (int *) out_val;
             if (has_missing) {
                 for (i = 0; i < total; i++) {
@@ -5325,6 +5348,11 @@ NhlErrorTypes _NclIabs
                 unsigned short *pin, *pout;
 
                 out_val = (void *) NclMalloc(total * sizeof(unsigned short));
+		if(out_val == NULL) {
+		  NhlPError(NhlFATAL, NhlEUNKNOWN,
+			    "abs: cannot allocate memory for output array");
+		  return(NhlFATAL);
+		}
 
                 pin = (unsigned short *) value;
                 pout = (unsigned short *) out_val;
@@ -5361,6 +5389,11 @@ NhlErrorTypes _NclIabs
                 unsigned int *pin, *pout;
 
                 out_val = (void *) NclMalloc(total * sizeof(unsigned int));
+		if(out_val == NULL) {
+		  NhlPError(NhlFATAL, NhlEUNKNOWN,
+			    "abs: cannot allocate memory for output array");
+		  return(NhlFATAL);
+		}
 
                 pin = (unsigned int *) value;
                 pout = (unsigned int *) out_val;
@@ -5397,6 +5430,11 @@ NhlErrorTypes _NclIabs
                 unsigned long *pin, *pout;
 
                 out_val = (void *) NclMalloc(total * sizeof(unsigned long));
+		if(out_val == NULL) {
+		  NhlPError(NhlFATAL, NhlEUNKNOWN,
+			    "abs: cannot allocate memory for output array");
+		  return(NhlFATAL);
+		}
 
                 pin = (unsigned long *) value;
                 pout = (unsigned long *) out_val;
@@ -5433,6 +5471,11 @@ NhlErrorTypes _NclIabs
                 unsigned long long *pin, *pout;
 
                 out_val = (void *) NclMalloc(total * sizeof(unsigned long long));
+		if(out_val == NULL) {
+		  NhlPError(NhlFATAL, NhlEUNKNOWN,
+			    "abs: cannot allocate memory for output array");
+		  return(NhlFATAL);
+		}
 
                 pin = (unsigned long long *) value;
                 pout = (unsigned long long *) out_val;
@@ -5467,6 +5510,11 @@ NhlErrorTypes _NclIabs
         case NCL_short:
             svalue = (short *) value;
             out_val = (void *) NclMalloc(total * sizeof(short));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL, NhlEUNKNOWN,
+			"abs: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             sout_val = (short *) out_val;
             if (has_missing) {
                 for (i = 0; i < total; i++) {
@@ -5489,6 +5537,11 @@ NhlErrorTypes _NclIabs
         case NCL_long:
             lvalue = (long *) value;
             out_val = (void *) NclMalloc(total * sizeof(long));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL, NhlEUNKNOWN,
+			"abs: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             lout_val = (long *) out_val;
             if (has_missing) {
                 for (i = 0; i < total; i++) {
@@ -5511,6 +5564,11 @@ NhlErrorTypes _NclIabs
         case NCL_int64:
             llvalue = (long long *) value;
             out_val = (void *) NclMalloc(total * sizeof(long long));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL, NhlEUNKNOWN,
+			"abs: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             llout_val = (long long *) out_val;
             if (has_missing) {
                 for (i = 0; i < total; i++) {
@@ -5539,6 +5597,11 @@ NhlErrorTypes _NclIabs
         case NCL_byte:
             bvalue = (byte *) value;
             out_val = (void *) NclMalloc(total * sizeof(float));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL, NhlEUNKNOWN,
+			"abs: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             bout_val = (byte *) out_val;
             if (has_missing) {
                 for (i = 0; i < total; i++) {
@@ -5565,6 +5628,11 @@ NhlErrorTypes _NclIabs
 
            	pin = (char *) value;
            	out_val = (void *) NclMalloc(total * sizeof(char));
+		if(out_val == NULL) {
+		  NhlPError(NhlFATAL, NhlEUNKNOWN,
+			    "abs: cannot allocate memory for output array");
+		  return(NhlFATAL);
+		}
            	pout = (char *) out_val;
            	if (has_missing) {
                	    for (i = 0; i < total; i++) {
@@ -5590,6 +5658,11 @@ NhlErrorTypes _NclIabs
                 unsigned char *pin, *pout;
 
                 out_val = (void *) NclMalloc(total * sizeof(unsigned char));
+		if(out_val == NULL) {
+		  NhlPError(NhlFATAL, NhlEUNKNOWN,
+			    "abs: cannot allocate memory for output array");
+		  return(NhlFATAL);
+		}
 
                 pin = (unsigned char *) value;
                 pout = (unsigned char *) out_val;
@@ -5626,6 +5699,11 @@ NhlErrorTypes _NclIabs
                 unsigned char *pin, *pout;
 
                 out_val = (void *) NclMalloc(total * sizeof(unsigned char));
+		if(out_val == NULL) {
+		  NhlPError(NhlFATAL, NhlEUNKNOWN,
+			    "abs: cannot allocate memory for output array");
+		  return(NhlFATAL);
+		}
 
                 pin = (unsigned char *) value;
                 pout = (unsigned char *) out_val;
@@ -13556,16 +13634,28 @@ NhlErrorTypes _Nclispan
 
         	if((fnsh - strt) > 0) {
         		out_val = (long*)NclMalloc(dimsizes*sizeof(long));
+			if(out_val == NULL) {
+			  NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: cannot allocate memory for output array");
+			  return(NhlFATAL);
+			}
         		for(i = 0; i < dimsizes; i++) {
 		        	out_val[i] = strt + i * spacing;
         		}
         	} else if((fnsh - strt) < 0) {
 		        out_val = (long*)NclMalloc(dimsizes*sizeof(long));
+			if(out_val == NULL) {
+			  NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: cannot allocate memory for output array");
+			  return(NhlFATAL);
+			}
         		for(i = 0; i < dimsizes; i++) {
 		        	out_val[i] = strt - i * spacing;
         		}
         	} else {
 		        out_val = (long*)NclMalloc(sizeof(long));
+			if(out_val == NULL) {
+			  NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: cannot allocate memory for output array");
+			  return(NhlFATAL);
+			}
         		*out_val = strt;
 		        dimsizes = 1;
 	        }
@@ -13599,16 +13689,28 @@ NhlErrorTypes _Nclispan
 
         	if((fnsh - strt) > 0) {
         		out_val = (long long*)NclMalloc(dimsizes*sizeof(long long));
+			if(out_val == NULL) {
+			  NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: cannot allocate memory for output array");
+			  return(NhlFATAL);
+			}
         		for(i = 0; i < dimsizes; i++) {
 		        	out_val[i] = strt + i * spacing;
         		}
         	} else if((fnsh - strt) < 0) {
 		        out_val = (long long*)NclMalloc(dimsizes*sizeof(long long));
+			if(out_val == NULL) {
+			  NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: cannot allocate memory for output array");
+			  return(NhlFATAL);
+			}
         		for(i = 0; i < dimsizes; i++) {
 		        	out_val[i] = strt - i * spacing;
         		}
         	} else {
 		        out_val = (long long*)NclMalloc(sizeof(long long));
+			if(out_val == NULL) {
+			  NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: cannot allocate memory for output array");
+			  return(NhlFATAL);
+			}
         		*out_val = strt;
 		        dimsizes = 1;
 	        }
@@ -13773,6 +13875,10 @@ NhlErrorTypes _Nclfspan
             spacing = (fnsh - strt) / (dimsizes - 1);
 
             out_val = (void *) NclMalloc(dimsizes * sizeof(double));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             for (i = 0; i < dimsizes; i++) {
                 ((double *) out_val)[i] = strt + (i * spacing);
             }
@@ -13781,8 +13887,12 @@ NhlErrorTypes _Nclfspan
             ((double *) out_val)[dimsizes - 1] = fnsh;
         } else {
             /* dimsizes == 1 */
-             out_val = (void *) NclMalloc(sizeof(double));
-            ((double *) out_val)[0] =  *(double *) tmp_md0->multidval.val;
+	  out_val = (void *) NclMalloc(sizeof(double));
+	  if(out_val == NULL) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: cannot allocate memory for output array");
+	    return(NhlFATAL);
+	  }
+	  ((double *) out_val)[0] =  *(double *) tmp_md0->multidval.val;
         }
 
         return NclReturnValue(out_val, 1, &dimsizes, NULL, NCL_double, 0);
@@ -13804,6 +13914,10 @@ NhlErrorTypes _Nclfspan
             spacing = (fnsh - strt) / (dimsizes - 1);
 
             out_val = (void *) NclMalloc(dimsizes * sizeof(float));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             for (i = 0; i < dimsizes; i++) {
                 ((float *) out_val)[i] = strt + (i * spacing);
             }
@@ -13813,6 +13927,10 @@ NhlErrorTypes _Nclfspan
         } else {
             /* dimsizes == 1 */
             out_val = (void *) NclMalloc(sizeof(float));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             ((float *) out_val)[0] =  *(float *) tmp_md0->multidval.val;
         }
     
