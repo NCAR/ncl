@@ -188,12 +188,6 @@ void _NclHDF5dim_info(NclHDF5dim_list_t **NclHDF5dim_list,
     {
         NclHDF5attr_node_t *attr_node = curHDF5attr_list->attr_node;
 
-#if DEBUG_NCL_HDF5
-        fprintf(stderr, "\tname: <%s>\n", attr_node->name);
-        fprintf(stderr, "\ttype_name: <%s>\n", attr_node->type_name);
-        fprintf(stderr, "\tndims: %d\n", attr_node->ndims);
-#endif
-
         if((0 == strcmp(attr_node->name, "Dimensions")) &&
            (0 == strcmp(attr_node->type_name, "string")))
         {
@@ -204,6 +198,12 @@ void _NclHDF5dim_info(NclHDF5dim_list_t **NclHDF5dim_list,
             NclHDF5dim_list_t *cur_dim_list;
 
             tmpString = strdup((char *)attr_node->value);
+
+#if DEBUG_NCL_HDF5
+            fprintf(stderr, "\tname: <%s>\n", attr_node->name);
+            fprintf(stderr, "\ttype_name: <%s>\n", attr_node->type_name);
+            fprintf(stderr, "\tndims: %d\n", attr_node->ndims);
+#endif
 
             result = strtok(tmpString, " ");
             i = 0;
@@ -238,6 +238,86 @@ void _NclHDF5dim_info(NclHDF5dim_list_t **NclHDF5dim_list,
     fprintf(stderr, "Leaving _NclHDF5dim_info, file: %s, line: %d\n\n", __FILE__, __LINE__);
 #endif
 }
+
+
+/*
+ ***********************************************************************
+ * Function:	_NclAddNewDim
+ *
+ * Purpose:	add new dimension to dim_list
+ *
+ * Return:	void
+ *
+ * Programmer:	Wei Huang
+ * Created:	January 6, 2011
+ *
+ ***********************************************************************
+ */
+void _NclAddNewDim(NclHDF5dim_list_t **NclHDF5dim_list,
+                   char *dim_name, hsize_t size, int n)
+{
+    NclHDF5dim_list_t *new_dim_list;
+
+    new_dim_list = calloc(1, sizeof(NclHDF5dim_list_t));
+    if(!new_dim_list)
+    {
+       fprintf(stderr, "ERROR to allocate memory for new_dim_list in file: %s, line: %d\n",
+               __FILE__, __LINE__);
+       return;
+    }
+
+    new_dim_list->size = size;
+    if(strlen(dim_name) > 1)
+        strcpy(new_dim_list->name, dim_name);
+    else
+        sprintf(new_dim_list->name, "DIM_%.3d", n);
+
+#if DEBUG_NCL_HDF5
+    fprintf(stderr, "\tadd dim: %d, name: <%s>, size: %d\n",
+            n, new_dim_list->name, new_dim_list->size);
+#endif
+
+    new_dim_list->next = *NclHDF5dim_list;
+    *NclHDF5dim_list = new_dim_list;
+}
+
+
+/*
+ ***********************************************************************
+ * Function:	_NclHDF5dim_info_from_dataset
+ *
+ * Purpose:	get HDF5 dim info from dataset.
+ *
+ * Return:	void
+ *
+ * Programmer:	Wei Huang
+ * Created:	January 6, 2011
+ *
+ ***********************************************************************
+ */
+void _NclHDF5dim_info_from_dataset(NclHDF5dim_list_t **NclHDF5dim_list,
+                      NclHDF5dataset_node_t *dataset_node)
+{
+    NclHDF5dim_list_t *cur_dim_list;
+    int n;
+
+#if DEBUG_NCL_HDF5
+    fprintf(stderr, "\nEntering _NclHDF5dim_info_from_dataset, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tdataset_node->ndims: <%d>\n", dataset_node->ndims);
+#endif
+
+    cur_dim_list = *NclHDF5dim_list;
+
+    for(n = 0; n < dataset_node->ndims; n++)
+    {
+        _NclAddNewDim(NclHDF5dim_list, dataset_node->dim_name[n], dataset_node->dims[n], n);
+    }
+
+#if DEBUG_NCL_HDF5
+    fprintf(stderr, "Leaving _NclHDF5dim_info_from_dataset, file: %s, line: %d\n\n", __FILE__, __LINE__);
+#endif
+}
+
 
 
 /*
@@ -278,7 +358,11 @@ void _NclHDF5var_list(NclHDF5var_list_t **var_list, NclHDF5group_node_t *HDF5gro
         NclHDF5dim_list_t *curDimList;
 
         if(dataset_node->attr_list)
+        {
             _NclHDF5dim_info(&NclHDF5dim_list, dataset_node->attr_list);
+            if(NULL == NclHDF5dim_list)
+                _NclHDF5dim_info_from_dataset(&NclHDF5dim_list, dataset_node);
+        }
 
         cur_list = calloc(1, sizeof(NclHDF5var_list_t));
         if(!cur_list)
@@ -295,35 +379,34 @@ void _NclHDF5var_list(NclHDF5var_list_t **var_list, NclHDF5group_node_t *HDF5gro
         cur_list->ndims = dataset_node->ndims;
 
 #if DEBUG_NCL_HDF5
-        fprintf(stderr, "\tname=<%s>\n", dataset_node->name);
-        fprintf(stderr, "\tgroup_name=<%s>\n", dataset_node->group_name);
         fprintf(stderr, "\tshort_name=<%s>\n", dataset_node->short_name);
+        fprintf(stderr, "\n\tname=<%s>", dataset_node->name);
         fprintf(stderr, "\tcur_list->ndims=%d\n", cur_list->ndims);
 #endif
       
         curDimList = NclHDF5dim_list;
-        i = 0;
-        while(curDimList)
+        for(i = 0; i < dataset_node->ndims; i++)
         {
             curDimList->size = dataset_node->dims[i];
             cur_list->dims[i] = dataset_node->dims[i];
 
-            strcpy(dataset_node->dim_name[i], curDimList->name);
             strcpy(cur_list->dim_name[i], curDimList->name);
-#if DEBUG_NCL_HDF5
-            fprintf(stderr, "\tdims[%d] name = <%s>\n", i, curDimList->name);
-            fprintf(stderr, "\tdims[%d] size = %d\n", i, curDimList->size);
-            fprintf(stderr, "\tcur_list->dim_name[%d] = <%s>\n", i, cur_list->dim_name[i]);
-            fprintf(stderr, "\tcur_list->dims[%d]     = %d\n", i, cur_list->dims[i]);
-#endif
+            strcpy(dataset_node->dim_name[i], curDimList->name);
 
             curDimList = curDimList->next;
-            i++;
-            if(i >= dataset_node->ndims)
-                break;
         }
 
         _NclFree_HDF5dim_list(NclHDF5dim_list);
+
+#if DEBUG_NCL_HDF5
+        for(i = 0; i < dataset_node->ndims; i++)
+        {
+            fprintf(stderr, "\tdims[%d] name = <%s>", i, curDimList->name);
+            fprintf(stderr, "\tdims[%d] size = %d\n", i, curDimList->size);
+            fprintf(stderr, "\tcur_list->dim_name[%d] = <%s>", i, cur_list->dim_name[i]);
+            fprintf(stderr, "\tcur_list->dims[%d]     = %d\n", i, cur_list->dims[i]);
+        }
+#endif
         dataset_list = dataset_list->next;
     }
 
@@ -334,6 +417,7 @@ void _NclHDF5var_list(NclHDF5var_list_t **var_list, NclHDF5group_node_t *HDF5gro
         
         group_list = group_list->next;
     }
+
 #if DEBUG_NCL_HDF5
     fprintf(stderr, "Leaving _NclHDF5var_list, file: %s, line: %d\n\n", __FILE__, __LINE__);
 #endif
@@ -1049,8 +1133,32 @@ void _NclHDF5free_data(NclHDF5data_t *NclHDF5data)
 {
     if(NclHDF5data)
     {
+        if(0 == strcmp("string", NclHDF5data->type))
+        {
+            int i;
+            char **tmp_char_array = (char **) NclHDF5data->value;
+
+            NclHDF5data->nbytes = 1;
+            if(NclHDF5data->ndims > 0)
+            {
+                for(i=0; i<NclHDF5data->ndims; i++)
+                {
+                    NclHDF5data->nbytes *= NclHDF5data->dims[i];
+                }
+
+                for(i=0; i<NclHDF5data->nbytes; i++)
+                {
+                    free(tmp_char_array[i]);
+                }
+              /*
+               *free(tmp_char_array);
+               */
+            }
+        }
+
         if(NclHDF5data->value)
             free(NclHDF5data->value);
+
         free(NclHDF5data);
     }
 }
@@ -1361,7 +1469,6 @@ hid_t Ncl2HDF5type(const char *type)
     else if(strcmp("string", type) == 0)
     {
         h5type = H5T_STRING;
-        fprintf(stderr, "\nFOUND STRING TYPE: <%s>. file: %s, line: %d\n", type, __FILE__, __LINE__);
     }
     else if(strcmp("compound", type) == 0)
     {
@@ -1702,10 +1809,67 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
     }
     else if(H5T_STRING == h5type)
     {
+        hid_t xfer_pid = H5Pcreate (H5P_DATASET_XFER);
+        char **tmp_char_array;
+
+        hid_t       str_type;
       /*
+       *size_t      str_size=0;
+       *H5T_str_t   str_pad;
+       *H5T_cset_t  cset;
        */
-        fprintf(stderr, "\t DO NOT KNOW HOW TO HANDLE string type: <%s>, file: %s, line: %d\n",
-                         type, __FILE__, __LINE__);
+        htri_t      is_vlstr=FALSE;
+
+        str_type = H5Tcopy(datatype);
+      /*
+       *str_size = H5Tget_size(str_type);
+       *str_pad = H5Tget_strpad(str_type);
+       *cset = H5Tget_cset(str_type);
+       */
+        is_vlstr = H5Tis_variable_str(str_type);
+
+      /*
+        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tstr_type=%d\n", str_type);
+        fprintf(stderr, "\tis_vlstr=%d\n", is_vlstr);
+
+        fprintf(stderr, "\trank: %d\n", rank);
+        fprintf(stderr, "\tlength : %d\n", length);
+       */
+
+        if(is_vlstr)
+        {
+            char *cp[length];
+       
+            status = H5Dread(did, datatype, H5S_ALL, H5S_ALL, xfer_pid, cp);
+
+            tmp_char_array = malloc(length * sizeof(char *));
+            assert(tmp_char_array);
+
+            for(i = 0; i < length; i++)
+            {
+                nbytes = strlen(cp[i]) + 1;
+                tmp_char_array[i] = malloc(nbytes * sizeof(char));
+                assert(tmp_char_array[i]);
+                memcpy(tmp_char_array[i], cp[i], nbytes);
+                free(cp[i]);
+            }
+        }
+        else
+        {
+            char cp[2048];
+
+            status = H5Dread(did, datatype, H5S_ALL, H5S_ALL, xfer_pid, &cp);
+            tmp_char_array = malloc(length * sizeof(char *));
+            assert(tmp_char_array);
+
+            nbytes = strlen(cp) + 1;
+            tmp_char_array[0] = malloc(nbytes * sizeof(char));
+            assert(tmp_char_array[0]);
+            memcpy(tmp_char_array[0], cp, nbytes);
+        }
+
+        value = (void *) tmp_char_array;
     }
     else
     {
@@ -3390,7 +3554,13 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
 
                 if (H5Tis_variable_str(type))
                 {
-                    printf("variable-length");
+#if 0
+                    fprintf(stderr, "\n\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
+                    size = H5Tget_size(type);
+                    fprintf(stderr, "\tsize = %d\n", size);
+                    fprintf(stderr, "variable-length");
+                    fprintf(stderr, " %s %s string\n", pad_s, cset_s);
+#endif
                     NclHDF5datatype->bit = 0;
                 }
                 else
@@ -3400,9 +3570,6 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
 #endif
                     NclHDF5datatype->bit = (unsigned) (8*size);
                 }
-#if 0
-                printf(" %s %s string", pad_s, cset_s);
-#endif
             }
             return NclHDF5datatype;
             break;
@@ -3548,9 +3715,9 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
     hid_t       attr_id, space, type, p_type;
     hsize_t     size[H5S_MAX_RANK], nelmts = 1;
     hsize_t     temp_need;
-    H5S_class_t space_type;
+    H5S_class_t class;
     H5T_class_t type_class;
-    int  ndims, i, n;
+    int  ndims, i, n = 0;
     hsize_t need;
   
     NclHDF5attr_list_t **attr_list = (NclHDF5attr_list_t **) attr_data;
@@ -3632,7 +3799,8 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
     }
 
     /* Data space */
-    ndims = H5Sget_simple_extent_dims(space, size, NULL);
+    ndims = H5Sget_simple_extent_ndims(space);
+    n = H5Sget_simple_extent_dims(space, size, NULL);
 
     if(ndims > 10)
     {
@@ -3659,12 +3827,12 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
         return FAILED;
     }
 
-    space_type = H5Sget_simple_extent_type(space);
+    class = H5Sget_simple_extent_type(space);
 
     attr_node->ndims = ndims;
-    attr_node->space_type = space_type;
+    attr_node->space_type = class;
 
-    switch(space_type)
+    switch(class)
     {
         case H5S_SCALAR:
             /* scalar dataspace */
@@ -3713,7 +3881,7 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
     fprintf(stderr, "\tattr_node->space: %d\n", attr_node->space);
     fprintf(stderr, "\tattr_node->type: %d\n", attr_node->type);
     fprintf(stderr, "\tattr_node->p_type: %d\n", attr_node->p_type);
-    fprintf(stderr, "\tattr_node->space_type: %d\n", attr_node->space_type);
+    fprintf(stderr, "\tattr_node->class: %d\n", attr_node->space_type);
     fprintf(stderr, "\tattr_node->type_name: <%s>\n", attr_node->type_name);
     fprintf(stderr, "\tattr_node->ndims: %d\n", attr_node->ndims);
 
@@ -3728,31 +3896,68 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
 
     if(p_type >= 0)
     {
-        hsize_t size = H5Tget_size(type);
+        hsize_t t_size = H5Tget_size(type);
         hsize_t p_size = H5Tget_size(p_type);
-        if(p_size > size)
+        if(p_size > t_size)
             temp_need = nelmts * p_size;
         else
-            temp_need = nelmts * size;
+            temp_need = nelmts * t_size;
 
         assert(temp_need == (hsize_t)((size_t)temp_need));
         need = (size_t)temp_need;
-        if(0 == strcmp(attr_node->type_name, "string"))
-            attr_node->nbytes = need + 1;
-        else
-            attr_node->nbytes = need;
-        attr_node->value = malloc(need);
-        assert(attr_node->value);
 
-        n = H5Aread(attr_id, p_type, attr_node->value);
+        if(0 == strcmp(attr_node->type_name, "string"))
+        {
+            herr_t status;
+            char *cp;
+
 #if DEBUG_NCL_HDF5
-        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tn=%d\n", n);
-        fprintf(stderr, "\tneed=%d\n", need);
-        fprintf(stderr, "\tsize=%d\n", size);
-        fprintf(stderr, "\tp_size=%d\n", p_size);
-        fprintf(stderr, "\tnelmts=%d\n", nelmts);
-        fprintf(stderr, "\tattr_node->type_name=<%s>\n", attr_node->type_name);
+            hid_t       str_type;
+            size_t      str_size=0;
+            H5T_str_t   str_pad;
+            H5T_cset_t  cset;
+            hid_t       tmp_type;
+            htri_t      is_vlstr=FALSE;
+
+
+            tmp_type = H5Tcopy(type);
+            str_size = H5Tget_size(tmp_type);
+            str_pad = H5Tget_strpad(tmp_type);
+            cset = H5Tget_cset(tmp_type);
+            is_vlstr = H5Tis_variable_str(tmp_type);
+
+            fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+            fprintf(stderr, "\tattr_node->type_name=<%s>\n", attr_node->type_name);
+            fprintf(stderr, "\tH5Tget_class(type)=%d\n", H5Tget_class(type));
+            fprintf(stderr, "\tH5T_STRING=%d\n", H5T_STRING);
+            fprintf(stderr, "\tneed=%d\n", need);
+            fprintf(stderr, "\tt_size=%d\n", t_size);
+            fprintf(stderr, "\tp_size=%d\n", p_size);
+            fprintf(stderr, "\tnelmts=%d\n", nelmts);
+#endif
+
+            status = H5Aread(attr_id, type, &cp);
+
+            attr_node->nbytes = strlen(cp) + 1;
+            attr_node->value = malloc(attr_node->nbytes);
+            assert(attr_node->value);
+
+            memcpy(attr_node->value, cp, attr_node->nbytes);
+          /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tattr_node->type_name=<%s>\t", attr_node->type_name);
+           *fprintf(stderr, "\tvalue: <%s>\n", cp);
+           */
+            free(cp);
+        }
+        else
+        {
+            attr_node->nbytes = need;
+            attr_node->value = malloc(attr_node->nbytes);
+            assert(attr_node->value);
+
+            n = H5Aread(attr_id, p_type, attr_node->value);
+        }
 
 #if 0
         if(n == 0)
@@ -3761,8 +3966,8 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
                                      attr_node->dims, attr_node->type_name);
         }
 #endif
-#endif
 
+#if 0
         if((0 == strcmp(attr_node->type_name, "string")) && (attr_node->ndims))
         {
             int m, j;
@@ -3772,6 +3977,12 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
 
             osp = (char *)attr_node->value;
 
+          /*
+            fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+            fprintf(stderr, "\tattr_node->type_name: <%s>\n", attr_node->type_name);
+            fprintf(stderr, "\tattr_node->value: <%s>\n", osp);
+           */
+
             new_str = malloc(attr_node->nbytes);
             n = 0;
             j = 0;
@@ -3779,7 +3990,7 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
             {
                 for(i=0; i<attr_node->dims[m]; i++)
                 {
-                    csp = osp + j*size;
+                    csp = osp + j*t_size;
                     n += 1 + strlen(csp);
 
                     if(j)
@@ -3797,6 +4008,7 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
 
             attr_node->nbytes = n;
         }
+#endif
 
         if(0 == strcmp(attr_node->type_name, "object reference"))
         {
@@ -3899,7 +4111,7 @@ char *_find_parent_group_name(char *name)
         int i;
 
         sl = sq->head;
-        for(i = 0; i < sq->ns - 2; i++)
+        for(i = 0; i < sq->ns - 1; i++)
         {
             strcat(parent_group_name, "/");
             strcat(parent_group_name, sl->str);
@@ -3908,6 +4120,7 @@ char *_find_parent_group_name(char *name)
     }
 
   /*
+   *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tname    : <%s>\n", name);
    *fprintf(stderr, "\tparent_group_name: <%s>\n\n", parent_group_name);
    */
@@ -4088,6 +4301,11 @@ NclHDF5group_node_t *_find_HDF5Group(char *name, NclHDF5group_node_t *group_node
     NclHDF5group_list_t *cur_list;
     int group_is_new = 1;
 
+  /*
+   *fprintf(stderr, "\nhit _find_HDF5Group, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tgroup name: <%s>\n", name);
+   */
+
     if(strlen(name) < 1)
         return group_node;
 
@@ -4101,7 +4319,7 @@ NclHDF5group_node_t *_find_HDF5Group(char *name, NclHDF5group_node_t *group_node
          if(0 == strcmp(name, cur_node->name))
          {
            /*
-            *fprintf(stderr, "group <%s> is already in, at file: %s, line: %d\n\n", name, __FILE__, __LINE__);
+            *fprintf(stderr, "\n found group <%s> at file: %s, line: %d\n\n", name, __FILE__, __LINE__);
             */
              return cur_node;
          }
@@ -4193,7 +4411,10 @@ herr_t _NclHDF5search_obj(char *name, H5O_info_t *oinfo,
         it_is_root = 0;
         strcpy(short_name, sn);
       /*
-        fprintf(stderr, "\nin file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\nin file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tname: <%s>\n", name);
+       *fprintf(stderr, "\tparent_group_name: <%s>\n", parent_group_name);
+       *fprintf(stderr, "\tshort_name: <%s>\n", short_name);
        */
     }
     else
@@ -4202,13 +4423,13 @@ herr_t _NclHDF5search_obj(char *name, H5O_info_t *oinfo,
         parent_group_name[0] = '\0';
         short_name[0] = '\0';
       /*
-        fprintf(stderr, "\nin file: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tit is the root\n");
+       *fprintf(stderr, "\nin file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tit is the root\n");
        */
     }
-   /*
-    fprintf(stderr, "\tparent_group_name: <%s>\n", parent_group_name);
-    fprintf(stderr, "\tshort_name: <%s>\n", short_name);
+  /*
+   *fprintf(stderr, "\tparent_group_name: <%s>\n", parent_group_name);
+   *fprintf(stderr, "\tshort_name: <%s>\n", short_name);
    */
 
     /* Check object information */

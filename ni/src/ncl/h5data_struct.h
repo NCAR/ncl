@@ -17,7 +17,11 @@
 #ifdef NIO_LIB_ONLY
 #include "nioNgSizeT.h"
 #else
+#ifdef STANDALONE
+#include "NgSizeT.h"
+#else
 #include <ncarg/hlu/NgSizeT.h>
+#endif
 #endif
 
 #include "hdf5.h"
@@ -33,7 +37,7 @@
 #define SUCCEED         0
 #define FAILED          (-1)
 
-#define HDF5_BUF_SIZE   1024
+#define HDF5_BUF_SIZE	1024
 #define HDF5_NAME_LEN	1024
 
 #define HDF5_EXT_LINK		0
@@ -50,7 +54,7 @@ typedef ng_size_t nclH5size_t;
 
 typedef struct NclHDF5compound_component_list_t
 {
-    char     name[HDF5_BUF_SIZE];                   /* Data name */
+    char     name[HDF5_NAME_LEN];                   /* Data name */
     char     type[HDF5_NAME_LEN];                   /* Data type, such as integer, float, etc. */
     hid_t    type_id;
     unsigned long offset;
@@ -67,7 +71,7 @@ typedef struct NclHDF5compound_t
 typedef struct NclHDF5data_t
 {
     hid_t    id;                                    /* Data id */
-    char     name[HDF5_BUF_SIZE];                   /* Data name */
+    char     name[HDF5_NAME_LEN];                   /* Data name */
     char     type[HDF5_NAME_LEN];                   /* Data type, such as integer, float, etc. */
     char     dim_name[H5S_MAX_RANK][HDF5_NAME_LEN]; /* Dimension name */
 
@@ -82,8 +86,8 @@ typedef struct NclHDF5data_t
 typedef struct NclHDF5datatype_t
 {
     char     type_name[HDF5_NAME_LEN];     /* Data type name, such as integer, float, etc. */
-    char     endian[HDF5_BUF_SIZE];        /* Data Endian, such as little-endian, big-endian, etc. */
-    char     format[HDF5_BUF_SIZE];        /* The data format, such as IEEE, etc. */
+    char     endian[HDF5_NAME_LEN];        /* Data Endian, such as little-endian, big-endian, etc. */
+    char     format[HDF5_NAME_LEN];        /* The data format, such as IEEE, etc. */
 
     unsigned bit;               /* the size of the data (how many bits). */
     unsigned usign;             /* is it unsigned? 1, yes, 0 no. */
@@ -92,7 +96,7 @@ typedef struct NclHDF5datatype_t
 
     int           compound_nom;    /* number of members */
     hsize_t       compound_size;   /* data size of members */
-    char          compound_name[H5S_MAX_RANK][HDF5_BUF_SIZE];  /* Data name */
+    char          compound_name[H5S_MAX_RANK][HDF5_NAME_LEN];  /* Data name */
     char          compound_type[H5S_MAX_RANK][HDF5_NAME_LEN];  /* Data type, such as integer, float, etc. */
     hid_t         compound_type_id[H5S_MAX_RANK];
     unsigned long compound_offset[H5S_MAX_RANK];
@@ -103,8 +107,8 @@ typedef struct _NclHDF5external_link_t NclHDF5external_link_t;
 /* Struct to keep track of external link targets visited */
 struct _NclHDF5external_link_t
 {
-    char file[HDF5_BUF_SIZE];
-    char path[HDF5_BUF_SIZE];
+    char file[HDF5_NAME_LEN];
+    char path[HDF5_NAME_LEN];
 
     NclHDF5external_link_t *next;
 };
@@ -116,7 +120,7 @@ struct _NclHDF5var_list_t
 {
     int     ndims;                                 /* number of dimensions */
     int     nconf;                                 /* number of conformed dimensions */
-    char    name[HDF5_BUF_SIZE];                   /* Full name of this variable */
+    char    name[HDF5_NAME_LEN];                   /* Full name of this variable */
     hsize_t dims[H5S_MAX_RANK];                    /* dimensions */
     char    dim_name[H5S_MAX_RANK][HDF5_NAME_LEN]; /* Dimension name */
 
@@ -125,13 +129,21 @@ struct _NclHDF5var_list_t
 
 typedef struct _NclHDF5dim_list_t NclHDF5dim_list_t;
 
-/* Struct to keep track of external link targets visited */
 struct _NclHDF5dim_list_t
 {
-    char name[HDF5_BUF_SIZE];
-    int  size;
+    char name[HDF5_NAME_LEN];
+    hsize_t  size;
 
     NclHDF5dim_list_t *next;
+};
+
+typedef struct _NclHDF5dim_info_t NclHDF5dim_info_t;
+
+struct _NclHDF5dim_info_t
+{
+    int ndims;
+
+    NclHDF5dim_list_t *dim_list;
 };
 
 typedef struct NclHDF5attr_node_t
@@ -141,7 +153,7 @@ typedef struct NclHDF5attr_node_t
     hid_t p_type;        /* Attribute p_type */
     hid_t space;         /* Attribute space */
 
-    char  name[HDF5_BUF_SIZE];          /* Attribute name */
+    char  name[HDF5_NAME_LEN];          /* Attribute name */
     char  dataspace[HDF5_NAME_LEN];     /* Attribute dataspace name */
     char  type_name[HDF5_NAME_LEN];     /* Attribute type name, integer, float, etc. */
 
@@ -166,10 +178,10 @@ struct _NclHDF5attr_list_t
 
 typedef struct NclHDF5dataset_node_t
 {
-    char        name[HDF5_BUF_SIZE];         /* Dataset name */
+    char        name[HDF5_NAME_LEN];         /* Dataset name */
     char        type_name[HDF5_NAME_LEN];    /* Data type name, such as integer, float, etc. */
-    char        short_name[HDF5_BUF_SIZE];   /* Data short name */
-    char        group_name[HDF5_BUF_SIZE];   /* Data group name */
+    char        short_name[HDF5_NAME_LEN];   /* Data short name */
+    char        group_name[HDF5_NAME_LEN];   /* Data group name */
     char        endian[HDF5_NAME_LEN];       /* Data Endian, such as little-endian, big-endian, etc. */
 
     hid_t       id;            /* data id */
@@ -205,9 +217,9 @@ typedef struct _NclHDF5group_list_t NclHDF5group_list_t;
 
 typedef struct NclHDF5group_node_t
 {
-    char file[HDF5_BUF_SIZE];                 /* group in file(name) */
-    char name[HDF5_BUF_SIZE];                 /* group name */ 
-    char parent_name[HDF5_BUF_SIZE];          /* parent-group name */ 
+    char file[HDF5_NAME_LEN];                 /* group in file(name) */
+    char name[HDF5_NAME_LEN];                 /* group name */ 
+    char parent_name[HDF5_NAME_LEN];          /* parent-group name */ 
     hid_t id;                                 /* Group id */
     int   counter;                            /* Group counter */
 
@@ -225,6 +237,8 @@ typedef struct NclHDF5group_node_t
 
     size_t                       num_groups;      /* number of groups */
     NclHDF5group_list_t         *group_list;      /* List of groups */
+
+    NclHDF5dim_info_t           *dim_info;        /* dimension info */
 } NclHDF5group_node_t;
 
 typedef struct _NclHDF5group_list_t
@@ -270,7 +284,7 @@ typedef struct
     struct
     {
         haddr_t addr;
-        char    path[HDF5_BUF_SIZE];
+        char    path[HDF5_NAME_LEN];
     } *objs;
 } NclHDF5_addr_t;
 
@@ -307,10 +321,11 @@ NclHDF5data_t *_NclHDF5get_data_with_name(hid_t fid, char *dataset_name, NclHDF5
 
 NclHDF5group_node_t *_NclHDF5allocate_group(hid_t fid, const char *fname, char *gname, H5O_type_t type);
 herr_t _NclHDF5recursive_check(hid_t fid, char *grp_name,
-                               _NclHDF5search_obj_func_t _NclHDF5search_obj,
-                               _NclHDF5search_link_func_t  _NclHDF5search_link,
+                               _NclHDF5search_obj_func_t  _NclHDF5search_obj,
+                               _NclHDF5search_link_func_t _NclHDF5search_link,
                                NclHDF5group_node_t *HDF5group);
-herr_t _NclHDF5check_obj(const char *filename, NclHDF5group_node_t **HDF5group);
+herr_t _NclHDF5check_obj(const char *filename,
+                         NclHDF5group_node_t **HDF5group);
 
 NclHDF5group_node_t *_find_HDF5Group(char *name, NclHDF5group_node_t *group_node);
 NclHDF5data_t *_NclHDF5allocate_data(hid_t id);
