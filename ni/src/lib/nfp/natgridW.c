@@ -889,7 +889,7 @@ NhlErrorTypes nngetp_W(void)
 
   char  *arg1, *cval;
   int   numpi, numpf, numpc, i;
-  string *qvalue;
+  string qvalue;
 
 /*
  *  List the integer and float parameter names.  To add new ones,
@@ -986,9 +986,9 @@ OK_NAME:  for (i = 0; i < numpi; i++) {
         return(NhlFATAL);
       }
       c_nngetc(arg1, cval);
-      qvalue = (string *) calloc(1,sizeof(string));
-      *qvalue = NrmStringToQuark(cval);
-      return(NclReturnValue((void *) qvalue, 1, &ret_size, NULL,NCL_string, 1));
+      qvalue = NrmStringToQuark(cval);
+      free(cval);
+      return(NclReturnValue((void *) (&qvalue), 1, &ret_size, NULL,NCL_string, 1));
     }
   }
   return(NhlNOERROR);
