@@ -1121,47 +1121,14 @@ function getVarFillValue (x)
 local FillValue
 begin
   if (isatt(x,"_FillValue")) then
-      FillValue = x@_FillValue
+      return( x@_FillValue )
   else
       if (isatt(x,"missing_value")) then
-           FillValue = x@missing_value
+           return( x@missing_value )
       else
-           if (typeof(x).eq."float") then
-               FillValue = -999.
-           end if
-           if (typeof(x).eq."double") then
-               FillValue = -9999.
-           end if
-           if (typeof(x).eq."integer") then
-               FillValue = -99
-           end if
-           if (typeof(x).eq."logical") then
-               FillValue = -1
-           end if
-           if (typeof(x).eq."byte") then
-               FillValue = 0377
-           end if
-           if (typeof(x).eq."short") then
-               FillValue = -99
-           end if
-           if (typeof(x).eq."graphic") then
-               FillValue = -9999
-           end if
-           if (typeof(x).eq."file") then
-               FillValue = -9999
-           end if
-           if (typeof(x).eq."list") then
-               FillValue = -9999
-           end if
-           if (typeof(x).eq."character") then
-               FillValue = "\0"
-           end if
-           if (typeof(x).eq."string") then
-               FillValue = "missing"
-           end if
+           return( default_fillvalue(typeof(x)) )
       end if
   end if
-  return (FillValue)
 end
 ; **************************************************************
 ; D. Shea
