@@ -2513,7 +2513,7 @@ NhlErrorTypes _NclIqsort
 #endif
 {
 	NclStackEntry args;
-	NclMultiDValData tmp_md= NULL,tmp_md2 = NULL;
+	NclMultiDValData tmp_md= NULL,tmp_md2 = NULL,tmp_md3 = NULL;
 	NclVar tmp_var;
 	ng_size_t  *index;
 	ng_size_t i;
@@ -2557,7 +2557,9 @@ NhlErrorTypes _NclIqsort
 		_NclAssignToVar(args.u.data_var,tmp_md2,NULL);
 		if((args.u.data_var->var.dim_info[0].dim_quark != -1)&&(_NclIsCoord(args.u.data_var,NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark)))) {
 			tmp_var = _NclReadCoordVar(args.u.data_var,NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark),NULL);
-			_NclWriteCoordVar(args.u.data_var,_NclVarValueRead(tmp_var,sel_ptr,NULL),NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark),NULL);
+			tmp_md3 = _NclVarValueRead(tmp_var,sel_ptr,NULL);
+			_NclWriteCoordVar(args.u.data_var,tmp_md3,NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark),NULL);
+			_NclDestroyObj((NclObj)tmp_md3);
 		}
 		_NclDestroyObj((NclObj)tmp_md2);
 		break;

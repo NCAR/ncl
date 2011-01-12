@@ -681,7 +681,12 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					goto fatal_err;
 				}
 				thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
-				if (var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
+				if (! thefile) {
+					files[list_index] = NULL;
+					agg_dim_count[list_index] = 0;
+					list_index--;
+				}
+				else if (var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
 					int bad = 0;
 					struct _NclFVarRec *var_info = thefile->file.var_info[index];
 					if (first) { /* save the dimension sizes */
