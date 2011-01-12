@@ -784,8 +784,8 @@ function skewT_PlotData_Original \
   if (localOpts@ThermoInfo) then
       nP   = localOpts@Parcel  ; default is the lowest level [0]
       nlvls= dimsizes(p)
-      plcl = -999.             ; p (hPa) Lifting Condensation Lvl (lcl)
-      tlcl = -999.             ; temperature (C) of lcl
+      plcl = default_fillvalue("float")       ; p (hPa) Lifting Condensation Lvl (lcl)
+      tlcl = default_fillvalue("float")       ; temperature (C) of lcl
      ;THERMO::ptlcl(p(nP),tc(nP),tdc(nP),plcl,tlcl)
       ptlcl_skewt(p(nP),tc(nP),tdc(nP),plcl,tlcl)
      ;shox = THERMO::showal(p,tc,tdc,nlvls)   ; Showwalter Index
