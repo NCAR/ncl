@@ -19715,7 +19715,7 @@ NhlErrorTypes _NclItoint
                         }
                         else
                         {
-                            NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                            NHLPERROR((NhlINFO, NhlEUNKNOWN,
                                       "toint: the double missing value %g is out of integer range.\n", missing.doubleval));
                         }
                     }
@@ -19773,7 +19773,7 @@ NhlErrorTypes _NclItoint
                         }
                         else
                         {
-                            NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                            NHLPERROR((NhlINFO, NhlEUNKNOWN,
                                       "toint: The float missing value %f is out of integer range.\n", missing.floatval));
                         }
                     }
@@ -20033,7 +20033,7 @@ NhlErrorTypes _NclItoint
                             ret_missing.intval = (int) missing.uintval;
                         else
                         {
-                            NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                            NHLPERROR((NhlINFO, NhlEUNKNOWN,
                                       "toint: The uint missing value %u is out of integer range.\n", missing.intval));
                         }
                     }
