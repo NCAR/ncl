@@ -3742,6 +3742,7 @@ begin
   end if
 
   panel_plot = get_res_value(opts,"PanelPlot",False)    ; Are we paneling?
+  latlon_overlay = get_res_value(opts,"LatLonOverlay",False) ; Lat/lon Overlay?
 
   nplots = dimsizes(plots)
 ;  font_color = "Black"
