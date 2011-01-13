@@ -1253,8 +1253,9 @@ int *num_dims;
     int i;
 
   /*
-   *fprintf(stderr, "\n\n\nhit HDF5GetDimNames. file: %s, line: %d\n", __FILE__, __LINE__);
    */
+    fprintf(stderr, "\nhit HDF5GetDimNames. file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tthefile->n_dims = %d\n", thefile->n_dims);
 
     thelist = thefile->dim_list;
     names = NclMalloc(sizeof(NclQuark)*thefile->n_dims);
@@ -2881,11 +2882,14 @@ int wr_status;
     {
         dim_group = _find_HDF5Group("/Dimensions", h5_group);
 
-      /*
-       *_NclHDF5print_group(dim_group);
-       */
+        if(dim_group)
+        {
+          /*
+           *_NclHDF5print_group(dim_group);
+           */
 
-        n_dims = _HDF5Build_dim_list_from_dim_group(&dim_list, dim_group);
+            n_dims = _HDF5Build_dim_list_from_dim_group(&dim_list, dim_group);
+        }
     }
 
   /*

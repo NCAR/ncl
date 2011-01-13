@@ -39,6 +39,7 @@
 
 #define HDF5_BUF_SIZE	1024
 #define HDF5_NAME_LEN	1024
+#define MAX_COMPOUND_COMPONENTS		128
 
 #define HDF5_EXT_LINK		0
 #define HDF5_GROUP		1
@@ -58,6 +59,7 @@ typedef struct NclHDF5compound_component_list_t
     char     type[HDF5_NAME_LEN];                   /* Data type, such as integer, float, etc. */
     hid_t    type_id;
     unsigned long offset;
+    unsigned int  is_str;
 } NclHDF5compound_component_list_t;
 
 typedef struct NclHDF5compound_t
@@ -96,10 +98,11 @@ typedef struct NclHDF5datatype_t
 
     int           compound_nom;    /* number of members */
     hsize_t       compound_size;   /* data size of members */
-    char          compound_name[H5S_MAX_RANK][HDF5_NAME_LEN];  /* Data name */
-    char          compound_type[H5S_MAX_RANK][HDF5_NAME_LEN];  /* Data type, such as integer, float, etc. */
-    hid_t         compound_type_id[H5S_MAX_RANK];
-    unsigned long compound_offset[H5S_MAX_RANK];
+    char          compound_name[MAX_COMPOUND_COMPONENTS][HDF5_NAME_LEN];  /* Data name */
+    char          compound_type[MAX_COMPOUND_COMPONENTS][HDF5_NAME_LEN];  /* Data type, such as integer, float, etc. */
+    hid_t         compound_type_id[MAX_COMPOUND_COMPONENTS];
+    unsigned long compound_offset[MAX_COMPOUND_COMPONENTS];
+    unsigned int  compound_is_vlstr[MAX_COMPOUND_COMPONENTS];
 } NclHDF5datatype_t;
 
 typedef struct _NclHDF5external_link_t NclHDF5external_link_t;

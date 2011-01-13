@@ -1688,24 +1688,6 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
         hid_t component_datasize = 1;
         hid_t str_type = 0;
 
-      /*
-       *fprintf(stderr, "\tHANDLING type: <%s>, file: %s, line: %d\n",
-       *                 type, __FILE__, __LINE__);
-
-       *fprintf(stderr, "\tlength = %d\n", length);
-       *fprintf(stderr, "\ttype = <%s>\n", type);
-       *fprintf(stderr, "\tdatatype = %d\n", datatype);
-       *fprintf(stderr, "\tdatasize = %d\n", datasize);
-
-       *fprintf(stderr, "\tdataset_name = %s\n", dataset_name);
-       *fprintf(stderr, "\tdid = %d\n", did);
-       *fprintf(stderr, "\tmemspace = %d\n", memspace);
-       *fprintf(stderr, "\tdataspace = %d\n", dataspace);
-
-       *fprintf(stderr, "\tcomponent: <%s>\n", component);
-       *fprintf(stderr, "\tH5T_NATIVE_FLOAT: %d\n", H5T_NATIVE_FLOAT);
-       */
-
         compound->is_str = 0;
 
         for(i = 0; i < compound->nom; i++)
@@ -1720,6 +1702,7 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
            *fprintf(stderr, "\tcompound->member[%d].offset: %d\n",
            *                i, compound->member[i].offset);
            */
+            compound->member[i].is_str = -1;
             if(0 == strcmp(component, compound->member[i].name))
             {
                 strcpy(selected_type, compound->member[i].type);
@@ -1736,6 +1719,8 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
                    */
 
                     str_type = H5Tcopy(H5T_C_S1);
+
+                    compound->member[i].is_str = 0;
 
                     compound->is_str = 1;
 
@@ -1772,36 +1757,6 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
         value = calloc(nbytes, sizeof(char));
 
         status = H5Dread(did, datatype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, value);
-
-      /*
-       *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tstatus: %d\n", status);
-       *fprintf(stderr, "\tnbytes: <%d>\n", nbytes);
-       *fprintf(stderr, "\tvalue: <%s>\n", (char *) value);
-
-       *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tselected_type: <%s>\n", selected_type);
-       *fprintf(stderr, "\tnbytes: <%d>\n", nbytes);
-
-        if(0 == strcmp("float", selected_type))
-        {
-            float *fp = (float *) value;
-            for(i = 0; i < length; i += 201)
-                fprintf(stderr, "%s[%d]: %f\n", component, i, fp[i]);
-        }
-        else if(0 == strcmp("uint", selected_type))
-        {
-            unsigned int *ip = (unsigned int *) value;
-            for(i = 0; i < length; i += 201)
-                fprintf(stderr, "%s[%d]: %d\n", component, i, ip[i]);
-        }
-        else if(0 == strcmp("ushort", selected_type))
-        {
-            unsigned short *sp = (unsigned short *) value;
-            for(i = 0; i < length; i += 201)
-                fprintf(stderr, "%s[%d]: %d\n", component, i, (int) sp[i]);
-        }
-       */
 
         H5Tclose(datatype_id);
         if(str_type)
@@ -3185,6 +3140,14 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
 
                 nmembs=H5Tget_nmembers(type);
 
+                if (nmembs > MAX_COMPOUND_COMPONENTS)
+                {
+                    fprintf(stderr, "nmembs[%d] > MAX_COMPOUND_COMPONENTS[%d], in file: %s, line: %d\n",
+                            nmembs, MAX_COMPOUND_COMPONENTS, __FILE__, __LINE__);
+                    fprintf(stderr, "INCREASE MAX_COMPOUND_COMPONENTS in file: <h5data_struct.h>\n");
+                    return NULL;
+                }
+
                 NclHDF5datatype->compound_nom = nmembs;
 
                 for (i=0; i<nmembs; i++)
@@ -3909,10 +3872,7 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
         if(0 == strcmp(attr_node->type_name, "string"))
         {
             herr_t status;
-            char *cp;
 
-#if DEBUG_NCL_HDF5
-            hid_t       str_type;
             size_t      str_size=0;
             H5T_str_t   str_pad;
             H5T_cset_t  cset;
@@ -3926,29 +3886,45 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
             cset = H5Tget_cset(tmp_type);
             is_vlstr = H5Tis_variable_str(tmp_type);
 
+          /*
+           */
             fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
             fprintf(stderr, "\tattr_node->type_name=<%s>\n", attr_node->type_name);
-            fprintf(stderr, "\tH5Tget_class(type)=%d\n", H5Tget_class(type));
-            fprintf(stderr, "\tH5T_STRING=%d\n", H5T_STRING);
-            fprintf(stderr, "\tneed=%d\n", need);
-            fprintf(stderr, "\tt_size=%d\n", t_size);
-            fprintf(stderr, "\tp_size=%d\n", p_size);
-            fprintf(stderr, "\tnelmts=%d\n", nelmts);
-#endif
+            fprintf(stderr, "\tstr_size=<%d>\n", str_size);
+            fprintf(stderr, "\tis_vlstr=<%d>\n", is_vlstr);
 
-            status = H5Aread(attr_id, type, &cp);
+            if(is_vlstr)
+            {
+                char *cp;
+                status = H5Aread(attr_id, type, &cp);
 
-            attr_node->nbytes = strlen(cp) + 1;
-            attr_node->value = malloc(attr_node->nbytes);
-            assert(attr_node->value);
+                attr_node->nbytes = strlen(cp) + 1;
+                attr_node->value = malloc(attr_node->nbytes);
+                assert(attr_node->value);
 
-            memcpy(attr_node->value, cp, attr_node->nbytes);
-          /*
-           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\tattr_node->type_name=<%s>\t", attr_node->type_name);
-           *fprintf(stderr, "\tvalue: <%s>\n", cp);
-           */
-            free(cp);
+                memcpy(attr_node->value, cp, attr_node->nbytes);
+              /*
+               *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr, "\tvalue: <%s>\n", cp);
+               */
+                free(cp);
+            }
+            else
+            {
+                char cp[HDF5_BUF_SIZE];
+                status = H5Aread(attr_id, tmp_type, &cp);
+
+                attr_node->nbytes = strlen(cp) + 1;
+                attr_node->value = malloc(attr_node->nbytes);
+                assert(attr_node->value);
+
+                memcpy(attr_node->value, cp, attr_node->nbytes);
+              /*
+               */
+                fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                fprintf(stderr, "\tvalue: <%s>\n", cp);
+                fprintf(stderr, "\tattr_node->nbytes: %d\n", attr_node->nbytes);
+            }
         }
         else
         {
