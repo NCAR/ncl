@@ -65,6 +65,7 @@ static NrmQuark Qfill_val;
 #define H5_CACHE_PREEMPTION_OPT  4
 #define H5_NUM_OPTIONS           5
 
+typedef struct _HDF5compound_component_t HDF5compound_component_t;
 typedef struct _HDF5compound_t HDF5compound_t;
 typedef struct _HDF5FileRecord HDF5FileRecord;
 typedef struct _HDF5GrpInqRec HDF5GrpInqRec;
@@ -77,13 +78,19 @@ typedef struct _HDF5DimInqRecList HDF5DimInqRecList;
 typedef struct _HDF5AttInqRecList HDF5AttInqRecList;
 typedef struct _HDF5Options HDF5Options;
 
+struct _HDF5compound_component_t
+{
+    NclQuark          name;   /* name */
+    NclBasicDataTypes type;   /* type */
+    nclH5size_t       offset;
+    int               is_str;  /* is the component string */
+};
+
 struct _HDF5compound_t
 {
     nclH5size_t        nom;    /* number of members */
     nclH5size_t        size;   /* size of compound data */
-    NclQuark          *name;   /* name */
-    NclBasicDataTypes *type;   /* type */
-    nclH5size_t       *offset;
+    HDF5compound_component_t *member;
 };
 
 struct _HDF5GrpInqRecList
@@ -444,13 +451,14 @@ int n_dims;
        *fprintf(stderr, "\tcompound->nom: <%d>\n", var_inq->compound->nom);
        */
         var_info->num_compounds = var_inq->compound->nom;
+        assert(var_info->num_compounds < NCL_MAX_COMPOUND_COMPONETS);
         for(n = 0; n < var_info->num_compounds; n++)
         {
           /*
            *fprintf(stderr, "\tvar_info->component_name[%d]: <%s>\n", n, NrmQuarkToString(var_inq->compound->name[n]));
            */
-            var_info->component_name[n] = var_inq->compound->name[n];
-            var_info->component_type[n] = var_inq->compound->type[n];
+            var_info->component_name[n] = var_inq->compound->member[n].name;
+            var_info->component_type[n] = var_inq->compound->member[n].type;
         }
     }
 
@@ -595,6 +603,7 @@ NclQuark var_name;
            (varlist->var_inq->name == var_name))
         {
             var_info = (NclFVarRec *) NclMalloc(sizeof(NclFVarRec));
+            assert(var_info);
             var_info->var_name_quark = var_name;
             HDF5Set_var_info(varlist->var_inq, var_info, thefile->dim_list, thefile->n_dims);
             return(var_info);
@@ -1415,7 +1424,7 @@ void _setHDF5AttValue(HDF5AttInqRecList *new_att_list,
              {
                  char *buffer;
                  NclQuark *tmp_quark;
-                 int resigned = 0;
+                 int latlon = 0;
 
                  buffer = (char *)NclMalloc(attr_node->nbytes * sizeof(char));
                  if(!buffer)
@@ -1428,6 +1437,7 @@ void _setHDF5AttValue(HDF5AttInqRecList *new_att_list,
                  memcpy(buffer, attr_node->value, attr_node->nbytes);
                  len = attr_node->nbytes - 1;
                  buffer[len] = '\0';
+
 
                  tmp_quark = (NclQuark*)NclMalloc(sizeof(NclQuark));
                  if(!tmp_quark)
@@ -1443,7 +1453,7 @@ void _setHDF5AttValue(HDF5AttInqRecList *new_att_list,
                      {
                          if(0 == strcmp("units", attr_node->name))
                          {
-                             resigned = 1;
+                             latlon = 1;
                              *tmp_quark = NrmStringToQuark("degree_north");
                          }
                      }
@@ -1451,17 +1461,18 @@ void _setHDF5AttValue(HDF5AttInqRecList *new_att_list,
                      {
                          if(0 == strcmp("units", attr_node->name))
                          {
-                             resigned = 1;
+                             latlon = 1;
                              *tmp_quark = NrmStringToQuark("degree_east");
                          }
                      }
                  }
 
-                 if(! resigned)
+                 if(! latlon)
                  {
                      *tmp_quark = NrmStringToQuark(buffer);
                  }
-                 new_att->value = (void*)tmp_quark;
+
+                 new_att->value = (void *)tmp_quark;
                  new_att->n_elem = 1;
 
                  free(buffer);
@@ -1814,26 +1825,18 @@ void _HDF5Build_grp_list_inGroup(HDF5GrpInqRec **the_grp, NclHDF5group_node_t *H
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can not allocate memory for: var_cur_list->var_inq->compound"));
                 return;
             }
-            var_cur_list->var_inq->compound->name = (NclQuark *) NclMalloc(dataset_node->compound->nom * sizeof(NclQuark));
-            if(! var_cur_list->var_inq->compound->name)
+
+            var_cur_list->var_inq->compound->member = (HDF5compound_component_t *)
+                                                       NclMalloc(dataset_node->compound.nom *
+                                                       sizeof(HDF5compound_component_t));
+            if(! var_cur_list->var_inq->compound->member)
             {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can not allocate memory for: var_cur_list->var_inq->compound->name"));
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"NclHDF5: Can not allocate memory for: var_cur_list->var_inq->compound->member"));
                 return;
             }
-            var_cur_list->var_inq->compound->type = (NclBasicDataTypes *) NclMalloc(dataset_node->compound->nom * sizeof(NclBasicDataTypes));
-            if(! var_cur_list->var_inq->compound->type)
-            {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can not allocate memory for: var_cur_list->var_inq->compound->type"));
-                return;
-            }
-            var_cur_list->var_inq->compound->offset = (nclH5size_t *) NclMalloc(dataset_node->compound->nom * sizeof(nclH5size_t));
-            if(! var_cur_list->var_inq->compound->offset)
-            {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can not allocate memory for: var_cur_list->var_inq->compound->offset"));
-                return;
-            }
-            var_cur_list->var_inq->compound->nom = dataset_node->compound->nom;
-            for(i = 0; i < dataset_node->compound->nom; i++)
+
+            var_cur_list->var_inq->compound->nom = dataset_node->compound.nom;
+            for(i = 0; i < dataset_node->compound.nom; i++)
             {
               /*
                *fprintf(stderr, "\tcompound->member[%d].name: <%s>\n",
@@ -1845,9 +1848,10 @@ void _HDF5Build_grp_list_inGroup(HDF5GrpInqRec **the_grp, NclHDF5group_node_t *H
                *fprintf(stderr, "\tcompound->member[%d].offset: %d\n",
                *            i, dataset_node->compound->member[i].offset);
                */
-                var_cur_list->var_inq->compound->name[i] = NrmStringToQuark(dataset_node->compound->member[i].name);
-                var_cur_list->var_inq->compound->type[i] = _HDF52Ncl_type(dataset_node->compound->member[i].type);
-                var_cur_list->var_inq->compound->offset[i] = dataset_node->compound->member[i].offset;
+                var_cur_list->var_inq->compound->member[i].name = NrmStringToQuark(dataset_node->compound.member[i].name);
+                var_cur_list->var_inq->compound->member[i].type = _HDF52Ncl_type(dataset_node->compound.member[i].type);
+                var_cur_list->var_inq->compound->member[i].offset = dataset_node->compound.member[i].offset;
+                var_cur_list->var_inq->compound->member[i].is_str = dataset_node->compound.member[i].is_str;
             }
         }
         else
@@ -2088,10 +2092,6 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
             var_cur_list->var_inq->dim_name[i] = NrmStringToQuark(dataset_node->dim_name[i]);
         }
 
-          /*
-        if(dataset_node->compound)
-        {
-           */
         if(var_cur_list->var_inq->type == NCL_compound)
         {
           /*
@@ -2108,26 +2108,18 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can not allocate memory for: var_cur_list->var_inq->compound"));
                 return(NULL);
             }
-            var_cur_list->var_inq->compound->name = (NclQuark *) NclMalloc(dataset_node->compound->nom * sizeof(NclQuark));
-            if(! var_cur_list->var_inq->compound->name)
+            var_cur_list->var_inq->compound->member = (HDF5compound_component_t *)
+                                                      NclMalloc(dataset_node->compound.nom *
+                                                      sizeof(HDF5compound_component_t));
+            if(! var_cur_list->var_inq->compound->member)
             {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can not allocate memory for: var_cur_list->var_inq->compound->name"));
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"NclHDF5: Can not allocate memory for: var_cur_list->var_inq->compound->member"));
                 return(NULL);
             }
-            var_cur_list->var_inq->compound->type = (NclBasicDataTypes *) NclMalloc(dataset_node->compound->nom * sizeof(NclBasicDataTypes));
-            if(! var_cur_list->var_inq->compound->type)
-            {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can not allocate memory for: var_cur_list->var_inq->compound->type"));
-                return(NULL);
-            }
-            var_cur_list->var_inq->compound->offset = (nclH5size_t *) NclMalloc(dataset_node->compound->nom * sizeof(nclH5size_t));
-            if(! var_cur_list->var_inq->compound->offset)
-            {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can not allocate memory for: var_cur_list->var_inq->compound->offset"));
-                return(NULL);
-            }
-            var_cur_list->var_inq->compound->nom = dataset_node->compound->nom;
-            for(i = 0; i < dataset_node->compound->nom; i++)
+            var_cur_list->var_inq->compound->nom = dataset_node->compound.nom;
+            var_cur_list->var_inq->compound->size = dataset_node->compound.size;
+
+            for(i = 0; i < dataset_node->compound.nom; i++)
             {
               /*
                *fprintf(stderr, "\tcompound->member[%d].name: <%s>\n",
@@ -2139,9 +2131,10 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
                *fprintf(stderr, "\tcompound->member[%d].offset: %d\n",
                *            i, dataset_node->compound->member[i].offset);
                */
-                var_cur_list->var_inq->compound->name[i] = NrmStringToQuark(dataset_node->compound->member[i].name);
-                var_cur_list->var_inq->compound->type[i] = _HDF52Ncl_type(dataset_node->compound->member[i].type);
-                var_cur_list->var_inq->compound->offset[i] = dataset_node->compound->member[i].offset;
+                var_cur_list->var_inq->compound->member[i].name = NrmStringToQuark(dataset_node->compound.member[i].name);
+                var_cur_list->var_inq->compound->member[i].type = _HDF52Ncl_type(dataset_node->compound.member[i].type);
+                var_cur_list->var_inq->compound->member[i].offset = dataset_node->compound.member[i].offset;
+                var_cur_list->var_inq->compound->member[i].is_str = dataset_node->compound.member[i].is_str;
             }
         }
         else
@@ -2989,6 +2982,119 @@ int wr_status;
     return(the_file);
 }
 
+static void _HDF5free_dim_list
+#if     NhlNeedProto
+(HDF5DimInqRecList *dim_list, int n_dims)
+#else
+(dim_list, n_dims)
+HDF5DimInqRecList *dim_list;
+int n_dims;
+#endif
+{
+    HDF5DimInqRecList *cur_list;
+    int j;
+
+    for(j = 0; j < n_dims; j++)
+    {
+        cur_list = dim_list;
+        dim_list = dim_list->next;
+        cur_list->next = NULL;
+
+        free(cur_list->dim_inq);
+        free(cur_list);
+    }
+}
+
+static void _HDF5free_att_list
+#if     NhlNeedProto
+(HDF5AttInqRecList *att_list, int n_atts)
+#else
+(att_list, n_atts)
+HDF5AttInqRecList *att_list;
+int n_atts;
+#endif
+{
+    HDF5AttInqRecList *cur_list;
+    int j;
+
+    for(j = 0; j < n_atts; j++)
+    {
+        cur_list = att_list;
+        att_list = att_list->next;
+        cur_list->next = NULL;
+
+      /*
+       *if(cur_list->att_inq->value)
+       *    free(cur_list->att_inq->value);
+       */
+        free(cur_list->att_inq);
+        free(cur_list);
+    }
+}
+
+static void _HDF5free_var_list
+#if     NhlNeedProto
+(HDF5VarInqRecList *var_list, int n_vars)
+#else
+(var_list, n_vars)
+HDF5VarInqRecList *var_list;
+int n_vars;
+#endif
+{
+    HDF5VarInqRecList *cur_list;
+    int i;
+
+    for(i = 0; i < n_vars; i++)
+    {
+        cur_list = var_list;
+        var_list = var_list->next;
+        cur_list->next = NULL;
+
+        _HDF5free_att_list(cur_list->var_inq->att_list, cur_list->var_inq->n_atts);
+
+        if(cur_list->var_inq->compound)
+        {
+            if(cur_list->var_inq->compound->member)
+            {
+                free(cur_list->var_inq->compound->member);
+            }
+            free(cur_list->var_inq->compound);
+        }
+        if(cur_list->var_inq->value)
+            free(cur_list->var_inq->value);
+        free(cur_list->var_inq);
+        free(cur_list);
+    }
+}
+
+static void _HDF5free_grp_list
+#if     NhlNeedProto
+(HDF5GrpInqRecList *grp_list, int n_grps)
+#else
+(grp_list, n_grps)
+HDF5GrpInqRecList *grp_list;
+int n_grps;
+#endif
+{
+    HDF5GrpInqRecList *cur_list;
+    int i;
+
+    for(i = 0; i < n_grps; i++)
+    {
+        cur_list = grp_list;
+        grp_list = grp_list->next;
+        cur_list->next = NULL;
+
+        _HDF5free_att_list(cur_list->grp_inq->att_list, cur_list->grp_inq->n_atts);
+        _HDF5free_att_list(cur_list->grp_inq->var_list, cur_list->grp_inq->n_vars);
+        _HDF5free_grp_list(cur_list->grp_inq->grp_list, cur_list->grp_inq->n_grps);
+
+        free(cur_list->grp_inq);
+        free(cur_list);
+    }
+}
+
+
 static void HDF5FreeRec
 #if    NhlNeedProto
 (void *rec)
@@ -2999,6 +3105,12 @@ void *rec;
 {
     HDF5FileRecord *the_file = (HDF5FileRecord *) rec;
     _NclHDF5free_group(the_file->h5_group);
+    _HDF5free_att_list(the_file->dim_list, the_file->n_dims);
+    _HDF5free_att_list(the_file->att_list, the_file->n_atts);
+    _HDF5free_var_list(the_file->var_list, the_file->n_vars);
+    _HDF5free_grp_list(the_file->grp_list, the_file->n_grps);
+    if(the_file->options)
+        free(the_file->options);
     free(the_file);
 }
 

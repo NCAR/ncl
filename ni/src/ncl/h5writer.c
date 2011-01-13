@@ -984,7 +984,6 @@ NclHDF5dataset_node_t *_find_dataset(char *dataname, NclHDF5group_node_t *group_
 
         current_dataset_node->num_attrs = 0;
         current_dataset_node->attr_list = NULL;
-        current_dataset_node->compound = NULL;
 
         strcpy(current_dataset_node->name, fullname);
         strcpy(current_dataset_node->group_name, groupname);

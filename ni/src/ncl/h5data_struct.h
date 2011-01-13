@@ -53,24 +53,23 @@ typedef unsigned long nclH5size_t;
 */
 typedef ng_size_t nclH5size_t;
 
-typedef struct NclHDF5compound_component_list_t
+typedef struct _NclHDF5compound_component_t
 {
-    char     name[HDF5_NAME_LEN];                   /* Data name */
-    char     type[HDF5_NAME_LEN];                   /* Data type, such as integer, float, etc. */
+    char     name[HDF5_NAME_LEN];	/* Data name */
+    char     type[HDF5_NAME_LEN];	/* Data type, such as integer, float, etc. */
     hid_t    type_id;
     unsigned long offset;
     unsigned int  is_str;
-} NclHDF5compound_component_list_t;
+} NclHDF5compound_component_t;
 
-typedef struct NclHDF5compound_t
+typedef struct _NclHDF5compound_t
 {
     int     nom;	/* number of members */
     hsize_t size;	/* size of compound data */
-    int     is_str;	/* is member string */
-    NclHDF5compound_component_list_t *member;
+    NclHDF5compound_component_t member[MAX_COMPOUND_COMPONENTS];
 } NclHDF5compound_t;
 
-typedef struct NclHDF5data_t
+typedef struct _NclHDF5data_t
 {
     hid_t    id;                                    /* Data id */
     char     name[HDF5_NAME_LEN];                   /* Data name */
@@ -85,7 +84,7 @@ typedef struct NclHDF5data_t
     int            is_str;                          /* is data string */
 } NclHDF5data_t;
 
-typedef struct NclHDF5datatype_t
+typedef struct _NclHDF5datatype_t
 {
     char     type_name[HDF5_NAME_LEN];     /* Data type name, such as integer, float, etc. */
     char     endian[HDF5_NAME_LEN];        /* Data Endian, such as little-endian, big-endian, etc. */
@@ -96,13 +95,7 @@ typedef struct NclHDF5datatype_t
     int      ndims;             /* number of dimensions */
     hsize_t  dims[H5S_MAX_RANK];/* dimensions */
 
-    int           compound_nom;    /* number of members */
-    hsize_t       compound_size;   /* data size of members */
-    char          compound_name[MAX_COMPOUND_COMPONENTS][HDF5_NAME_LEN];  /* Data name */
-    char          compound_type[MAX_COMPOUND_COMPONENTS][HDF5_NAME_LEN];  /* Data type, such as integer, float, etc. */
-    hid_t         compound_type_id[MAX_COMPOUND_COMPONENTS];
-    unsigned long compound_offset[MAX_COMPOUND_COMPONENTS];
-    unsigned int  compound_is_vlstr[MAX_COMPOUND_COMPONENTS];
+    NclHDF5compound_t compound;
 } NclHDF5datatype_t;
 
 typedef struct _NclHDF5external_link_t NclHDF5external_link_t;
@@ -204,7 +197,7 @@ typedef struct NclHDF5dataset_node_t
 
     int                     num_attrs;     /* number of Attributes */
     NclHDF5attr_list_t     *attr_list;     /* Attribute list */
-    NclHDF5compound_t      *compound;
+    NclHDF5compound_t      compound;
 } NclHDF5dataset_node_t;
 
 typedef struct _NclHDF5dataset_list_t NclHDF5dataset_list_t;
@@ -343,7 +336,8 @@ NclHDF5data_t *_NclHDF5get_data_with_id(hid_t fid, hid_t did, NclHDF5group_node_
 unsigned char *_NclHDF5get_dataset(hid_t fid, char *dataset_name, hid_t dset, char *type_name);
 unsigned char *_NclHDF5get_simple_dataset(hid_t dset, hid_t p_type, char *type_name);
 unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *type_name,
-                                          NclHDF5compound_t *compound, const char *component);
+                                          NclHDF5compound_t *compound,
+                                          const char *component, int *is_str);
 
 char *_find_parent_group_name(char *name);
 char *_get_short_name(char *name);

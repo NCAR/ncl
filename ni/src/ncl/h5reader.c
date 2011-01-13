@@ -755,6 +755,7 @@ NclHDF5data_t *_NclHDF5get_data_with_name(hid_t fid, char *dataset_name, NclHDF5
 {
     NclHDF5data_t *NclHDF5data = NULL;
     unsigned char *uc_value;
+    int            is_str;
 
     if(HDF5group)
     {
@@ -808,13 +809,13 @@ NclHDF5data_t *_NclHDF5get_data_with_name(hid_t fid, char *dataset_name, NclHDF5
                 if(0 == strcmp(NclHDF5data->type, "compound"))
                 {
                   /*
-                   *size = (unsigned long) dataset->compound->size;
+                   *size = (unsigned long) dataset->compound.size;
                    */
-                    for(i = 0; i < dataset->compound->nom; i++)
+                    for(i = 0; i < dataset->compound.nom; i++)
                     {
-                        if(0 == strcmp(component, dataset->compound->member[i].name))
+                        if(0 == strcmp(component, dataset->compound.member[i].name))
                         {
-                            size = NclHDF5sizeof(dataset->compound->member[i].type);
+                            size = NclHDF5sizeof(dataset->compound.member[i].type);
                             break;
                         }
                     }
@@ -880,11 +881,10 @@ NclHDF5data_t *_NclHDF5get_data_with_name(hid_t fid, char *dataset_name, NclHDF5
 
                 uc_value = _NclHDF5get_native_dataset(fid, dataset->name,
                                                       NclHDF5data->type,
-                                                      dataset->compound,
-                                                      component);
+                                                      &(dataset->compound),
+                                                      component,
+                                                      &is_str);
                 NclHDF5data->value = (void *) uc_value;
-                if(NULL != dataset->compound)
-                    NclHDF5data->is_str = dataset->compound->is_str;
 
 #if 0
                 fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -894,14 +894,6 @@ NclHDF5data_t *_NclHDF5get_data_with_name(hid_t fid, char *dataset_name, NclHDF5
                 _NclHDF5Print_data_value(NclHDF5data->value, NclHDF5data->ndims,
                                          NclHDF5data->dims, NclHDF5data->type);
 #endif
-
-              /*
-               *uc_value = _NclHDF5get_dataset(fid, dataset->name, NclHDF5data->id, NclHDF5data->type);
-               *NclHDF5data->value = (void *) uc_value;
-
-               *_NclHDF5Print_data_value(NclHDF5data->value, NclHDF5data->ndims,
-               *                         NclHDF5data->dims, NclHDF5data->type);
-               */
 
                 return NclHDF5data;
             }
@@ -980,7 +972,7 @@ NclHDF5data_t *_NclHDF5get_data_with_id(hid_t fid, hid_t did, NclHDF5group_node_
 
                 if(0 == strcmp(NclHDF5data->type, "compound"))
                 {
-                    size = (unsigned long) dataset->compound->size;
+                    size = (unsigned long) dataset->compound.size;
                 }
                 else
                 {
@@ -1032,20 +1024,6 @@ NclHDF5data_t *_NclHDF5get_data_with_id(hid_t fid, hid_t did, NclHDF5group_node_
 
                     curHDF5attr_list = curHDF5attr_list->next;
                 }
-
-              /*
-                if(strcmp("integer", NclHDF5data->type) == 0)
-                {
-                    uc_value = _NclHDF5get_native_dataset(fid, dataset->short_name,
-                                                          NclHDF5data->id, NclHDF5data->type,
-                                                          dataset->compound,
-                                                          component);
-                    NclHDF5data->value = (void *) uc_value;
-                    _NclHDF5Print_data_value(NclHDF5data->value, NclHDF5data->ndims,
-                                             NclHDF5data->dims, NclHDF5data->type);
-                }
-                uc_value = _NclHDF5get_dataset(fid, dataset->short_name, NclHDF5data->id, NclHDF5data->type);
-               */
 
                 uc_value = _NclHDF5get_dataset(fid, dataset->name, NclHDF5data->id, NclHDF5data->type);
                 NclHDF5data->value = (void *) uc_value;
@@ -1567,7 +1545,8 @@ unsigned long NclHDF5sizeof(const char *type)
  */
 
 unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *type,
-                                          NclHDF5compound_t *compound, const char *component)
+                                          NclHDF5compound_t *compound,
+                                          const char *component, int *is_str)
 {
     hid_t       did;
     hid_t       h5type;
@@ -1599,6 +1578,8 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
    *fprintf(stderr, "\ttype: <%s>\n", type);
    *fprintf(stderr, "\tcomponent: <%s>\n", component);
    */
+
+    *is_str = 0;
 
     did = H5Dopen2(fid, dataset_name, H5P_DEFAULT);
 
@@ -1688,8 +1669,6 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
         hid_t component_datasize = 1;
         hid_t str_type = 0;
 
-        compound->is_str = 0;
-
         for(i = 0; i < compound->nom; i++)
         {
           /*
@@ -1702,7 +1681,7 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
            *fprintf(stderr, "\tcompound->member[%d].offset: %d\n",
            *                i, compound->member[i].offset);
            */
-            compound->member[i].is_str = -1;
+            compound->member[i].is_str = 0;
             if(0 == strcmp(component, compound->member[i].name))
             {
                 strcpy(selected_type, compound->member[i].type);
@@ -1720,9 +1699,9 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
 
                     str_type = H5Tcopy(H5T_C_S1);
 
-                    compound->member[i].is_str = 0;
+                    compound->member[i].is_str = 1;
 
-                    compound->is_str = 1;
+                    *is_str = 1;
 
                     if((compound->nom - i) > 1)
                         component_datasize = compound->member[i+1].offset - compound->member[i].offset;
@@ -1809,6 +1788,7 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
                 memcpy(tmp_char_array[i], cp[i], nbytes);
                 free(cp[i]);
             }
+            *is_str = 2;
         }
         else
         {
@@ -1822,6 +1802,7 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
             tmp_char_array[0] = malloc(nbytes * sizeof(char));
             assert(tmp_char_array[0]);
             memcpy(tmp_char_array[0], cp, nbytes);
+            *is_str = 1;
         }
 
         value = (void *) tmp_char_array;
@@ -1968,13 +1949,6 @@ void _NclFree_HDF5dataset_list(NclHDF5dataset_list_t *NclHDF5dataset_list)
             if(curHDF5dataset_list->dataset_node->attr_list)
                 _NclFree_HDF5attr_list(curHDF5dataset_list->dataset_node->attr_list);
 
-            if(curHDF5dataset_list->dataset_node->compound)
-            {
-                if(curHDF5dataset_list->dataset_node->compound->nom)
-                    free(curHDF5dataset_list->dataset_node->compound->member);
-                free(curHDF5dataset_list->dataset_node->compound);
-            }
-
             free(curHDF5dataset_list->dataset_node);
         }
         free(curHDF5dataset_list);
@@ -2012,6 +1986,11 @@ void _NclHDF5free_group(NclHDF5group_node_t *HDF5group)
         _NclFree_HDF5dataset_list(HDF5group->dataset_list);
         _NclFree_HDF5external_link(HDF5group->elink_list);
         _NclFree_HDF5attr_list(HDF5group->attr_list);
+        if(HDF5group->dim_info)
+        {
+            _NclFree_HDF5dim_list(HDF5group->dim_info->dim_list);
+            free(HDF5group->dim_info);
+        }
 
         while(HDF5group->group_list)
         {
@@ -2508,68 +2487,20 @@ herr_t _NclHDF5dataset_info(hid_t dset, char *name, NclHDF5dataset_node_t *datas
 
     strcpy(dataset_node->type_name, NclHDF5datatype->type_name);
 
-    if(NclHDF5datatype->compound_nom)
+    if(NclHDF5datatype->compound.nom)
     {
-        dataset_node->compound = calloc(1, sizeof(NclHDF5compound_t));
-        if(! dataset_node->compound)
-        {
-            fprintf(stderr, "UNABLE TO ALLOCATE MEMORY for dataset_node->compound, in file: %s, line: %d\n",
-                    __FILE__, __LINE__);
-            free(NclHDF5datatype);
-            return FAILED;
-        }
-        dataset_node->compound->member = calloc(NclHDF5datatype->compound_nom,
-                                                sizeof(NclHDF5compound_component_list_t));
-        if(! dataset_node->compound->member)
-        {
-            fprintf(stderr, "UNABLE TO ALLOCATE MEMORY for dataset_node->compound->member, in file: %s, line: %d\n",
-                    __FILE__, __LINE__);
-            free(NclHDF5datatype);
-            return FAILED;
-        }
+        dataset_node->compound.nom = NclHDF5datatype->compound.nom;
+        dataset_node->compound.size = NclHDF5datatype->compound.size;
 
-        dataset_node->compound->nom = NclHDF5datatype->compound_nom;
-        dataset_node->compound->size = NclHDF5datatype->compound_size;
-        dataset_node->compound->is_str = 0;
-
-        for(i=0; i<NclHDF5datatype->compound_nom; i++)
+        for(i=0; i<NclHDF5datatype->compound.nom; i++)
         {
-            strcpy(dataset_node->compound->member[i].name, NclHDF5datatype->compound_name[i]);
-            strcpy(dataset_node->compound->member[i].type, NclHDF5datatype->compound_type[i]);
-            dataset_node->compound->member[i].offset = NclHDF5datatype->compound_offset[i];
-            dataset_node->compound->member[i].type_id = NclHDF5datatype->compound_type_id[i];
+            strcpy(dataset_node->compound.member[i].name, NclHDF5datatype->compound.member[i].name);
+            strcpy(dataset_node->compound.member[i].type, NclHDF5datatype->compound.member[i].type);
+            dataset_node->compound.member[i].offset = NclHDF5datatype->compound.member[i].offset;
+            dataset_node->compound.member[i].type_id = NclHDF5datatype->compound.member[i].type_id;
+            dataset_node->compound.member[i].is_str = NclHDF5datatype->compound.member[i].is_str;
         }
-
-#if DEBUG_NCL_HDF5
-        fprintf(stderr, "\nTHIS IS COMPOUND data. file: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tdataset_node->compound->nom = %d\n",
-                dataset_node->compound->nom);
-        fprintf(stderr, "\tdataset_node->compound->size= %d\n",
-                dataset_node->compound->size);
-        for(i=0; i<dataset_node->compound->nom; i++)
-        {
-            fprintf(stderr, "\tdataset_node->compound->member[%d].name: <%s>\n",
-                    i, dataset_node->compound->member[i].name);
-            fprintf(stderr, "\tdataset_node->compound->member[%d].type: <%s>\n",
-                    i, dataset_node->compound->member[i].type);
-            fprintf(stderr, "\tdataset_node->compound->member[%d].offset: %d\n",
-                    i, dataset_node->compound->member[i].offset);
-        }
-#endif
     }
-
-#if DEBUG_NCL_HDF5
-    fprintf(stderr, "\n\tdataset_node->type_name=<%s>\n", dataset_node->type_name);
-    fprintf(stderr, "\tdataset_node->id=%d\n", dataset_node->id);
-    fprintf(stderr, "\tdataset_node->space=%d\n", dataset_node->space);
-    fprintf(stderr, "\tdataset_node->space_type=%d\n", dataset_node->space_type);
-    fprintf(stderr, "\tdataset_node->space_name=<%s>\n", dataset_node->space_name);
-    fprintf(stderr, "\tdataset_node->ndims=%d\n", dataset_node->ndims);
-    for(i=0; i<dataset_node->ndims; i++)
-    {
-        fprintf(stderr, "\tdataset_node->dims[%d] = %d\n", i, dataset_node->dims[i]);
-    }
-#endif
 
     free(NclHDF5datatype);
 
@@ -2634,19 +2565,19 @@ herr_t _NclHDF5dataset_attr(hid_t dset, char *name, NclHDF5dataset_node_t *datas
     curAttrList->next = dataset_node->attr_list;
     dataset_node->attr_list = curAttrList;
 
-    curAttrList->attr_node = calloc(1, sizeof(NclHDF5attr_node_t));
-    if(!curAttrList->attr_node)
+    attr_node = calloc(1, sizeof(NclHDF5attr_node_t));
+    if(!attr_node)
     {
-        fprintf(stderr, "Failed to allocated memory for curAttrList->attr_node. in file: %s, line: %d\n",
+        fprintf(stderr, "Failed to allocated memory for attr_node. in file: %s, line: %d\n",
                 __FILE__, __LINE__);
         return FAILED;
     }
 
+    curAttrList->attr_node = attr_node;
+
     dcpl = H5Dget_create_plist(dset);
     space = H5Dget_space(dset);
     type = H5Dget_type(dset);
-
-    attr_node = curAttrList->attr_node;
 
     attr_node->id = dcpl;
     attr_node->type = type;
@@ -3124,17 +3055,6 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
                 unsigned    i;              /* miscellaneous counters */
 
                 NclHDF5datatype_t *COMPOUNDdatatype;
-                COMPOUNDdatatype = calloc(1, sizeof(NclHDF5datatype_t));
-                if (! COMPOUNDdatatype)
-                {
-                    fprintf(stderr, "Error to allocate memory for COMPOUNDdatatype, in file: %s, line: %d\n",
-                            __FILE__, __LINE__);
-                    return NULL;
-                }
-
-              /*
-               *fprintf(stderr, "\n\tFound compounddata, file: %s, line: %d\n\n", __FILE__, __LINE__);
-               */
 
                 strcpy(NclHDF5datatype->type_name, "compound");
 
@@ -3148,53 +3068,47 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
                     return NULL;
                 }
 
-                NclHDF5datatype->compound_nom = nmembs;
+                NclHDF5datatype->compound.nom = nmembs;
 
                 for (i=0; i<nmembs; i++)
                 {
                     /* Name and offset */
                     name = H5Tget_member_name(type, i);
-                    strcpy(NclHDF5datatype->compound_name[i], name);
-                    NclHDF5datatype->compound_offset[i] =
+                    strcpy(NclHDF5datatype->compound.member[i].name, name);
+                    NclHDF5datatype->compound.member[i].offset =
                            (unsigned long) H5Tget_member_offset(type, i);
                     free(name);
             
                     /* Member's type */
                     subtype = H5Tget_member_type(type, i);
-                    NclHDF5datatype->compound_type_id[i] = subtype;
+                    NclHDF5datatype->compound.member[i].type_id = subtype;
                     COMPOUNDdatatype = _NclHDF5get_typename(subtype, ind+4);
-                    strcpy(NclHDF5datatype->compound_type[i], COMPOUNDdatatype->type_name);
+                    strcpy(NclHDF5datatype->compound.member[i].type, COMPOUNDdatatype->type_name);
                     H5Tclose(subtype);
 
-
-                    if(0 == strcmp(NclHDF5datatype->compound_type[i], "string"))
+                    NclHDF5datatype->compound.member[i].is_str = 0;
+                    if(0 == strcmp(NclHDF5datatype->compound.member[i].type, "string"))
                     {
+                        NclHDF5datatype->compound.member[i].is_str = 1;
                       /*
                         fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-                        fprintf(stderr, "\tNclHDF5datatype->compound_name[%d]: <%s>\n", 
-                                i, NclHDF5datatype->compound_name[i]);
-                        fprintf(stderr, "\tNclHDF5datatype->compound_type[%d]: <%s>\n", 
-                                i, NclHDF5datatype->compound_type[i]);
-                        fprintf(stderr, "\tNclHDF5datatype->compound_.offset[%d]: <%d>\n", 
-                                i, NclHDF5datatype->compound_offset[i]);
-                        fprintf(stderr, "\tNclHDF5datatype->compound_.type_id[%d]: <%d>\n", 
-                                i, NclHDF5datatype->compound_type_id[i]);
+                        fprintf(stderr, "\tNclHDF5datatype->compound.member[%d].name: <%s>\n", 
+                                i, NclHDF5datatype->compound.member[i].name);
+                        fprintf(stderr, "\tNclHDF5datatype->compound.member[%d].type: <%s>\n", 
+                                i, NclHDF5datatype->compound.member[i].type);
+                        fprintf(stderr, "\tNclHDF5datatype->compound.member[%d].offset: <%d>\n", 
+                                i, NclHDF5datatype->compound.member[i].offset);
+                        fprintf(stderr, "\tNclHDF5datatype->compound.member[%d].type_id: <%d>\n", 
+                                i, NclHDF5datatype->compound.member[i].type_id);
                        */
                     }
+
+                    free(COMPOUNDdatatype);
                 }
                 size = H5Tget_size(type);
 
                 NclHDF5datatype->bit = size;
-                NclHDF5datatype->compound_size = size;
-
-              /*
-               *fprintf(stderr, "\tNclHDF5datatype->compound_nom = %d\n",
-               *        NclHDF5datatype->compound_nom);
-               *fprintf(stderr, "\tNclHDF5datatype->compound_size= %d\n",
-               *        NclHDF5datatype->compound_size);
-               */
-
-                free(COMPOUNDdatatype);
+                NclHDF5datatype->compound.size = size;
             }
             return NclHDF5datatype;
             break;
@@ -3887,11 +3801,11 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
             is_vlstr = H5Tis_variable_str(tmp_type);
 
           /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tattr_node->type_name=<%s>\n", attr_node->type_name);
+           *fprintf(stderr, "\tstr_size=<%d>\n", str_size);
+           *fprintf(stderr, "\tis_vlstr=<%d>\n", is_vlstr);
            */
-            fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tattr_node->type_name=<%s>\n", attr_node->type_name);
-            fprintf(stderr, "\tstr_size=<%d>\n", str_size);
-            fprintf(stderr, "\tis_vlstr=<%d>\n", is_vlstr);
 
             if(is_vlstr)
             {
@@ -3920,10 +3834,10 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
 
                 memcpy(attr_node->value, cp, attr_node->nbytes);
               /*
+               *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr, "\tvalue: <%s>\n", cp);
+               *fprintf(stderr, "\tattr_node->nbytes: %d\n", attr_node->nbytes);
                */
-                fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                fprintf(stderr, "\tvalue: <%s>\n", cp);
-                fprintf(stderr, "\tattr_node->nbytes: %d\n", attr_node->nbytes);
             }
         }
         else
@@ -4038,6 +3952,8 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
 
     cur_attr_list->next = *attr_list;
     *attr_list = cur_attr_list;
+
+    free(NclHDF5datatype);
 
 #if DEBUG_NCL_HDF5
     fprintf(stderr, "Leaving _NclHDF5check_attr, at file: %s, line: %d\n\n", __FILE__, __LINE__);

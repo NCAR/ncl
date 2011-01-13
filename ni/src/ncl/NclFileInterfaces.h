@@ -35,8 +35,8 @@ struct _NclFVarRec {
 	int     file_dim_num[NCL_MAX_DIMENSIONS];
 
 	int	 num_compounds;
-	NclQuark component_name[NCL_MAX_DIMENSIONS];
-	NclBasicDataTypes component_type[NCL_MAX_DIMENSIONS];
+	NclQuark component_name[NCL_MAX_COMPOUND_COMPONETS];
+	NclBasicDataTypes component_type[NCL_MAX_COMPOUND_COMPONETS];
 };
 
 struct _NclFDimRec {
