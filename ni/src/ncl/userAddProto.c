@@ -55,6 +55,12 @@ void
 #endif
 );
 
+extern NhlErrorTypes _Nclstr_split_by_length(
+#if NhlNeedProto
+void
+#endif
+);
+
 extern NhlErrorTypes _Nclstr_sub_str(
 #if NhlNeedProto
 void
@@ -201,6 +207,13 @@ void NclAddUserBuiltInFuncs
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
     NclRegisterFunc(_Nclstr_get_cols, args, "str_get_cols", nargs);
+    
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "integer", 0, NclANY); nargs++;
+    NclRegisterFunc(_Nclstr_split_by_length, args, "str_split_by_length", nargs);
     
     nargs = 0;
     args = NewArgs(3);

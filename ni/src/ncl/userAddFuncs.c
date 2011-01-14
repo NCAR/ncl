@@ -824,6 +824,235 @@ NhlErrorTypes _Nclstr_get_cols
 
 }
 
+NhlErrorTypes _Nclstr_split_by_length
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    string *strs;
+    string *leng;
+    string *new_strs;
+
+    int ndim_strs;
+    int ndim_leng;
+    int ndim_news;
+    ng_size_t dimsz_strs[NCL_MAX_DIMENSIONS];
+    ng_size_t dimsz_leng[NCL_MAX_DIMENSIONS];
+    ng_size_t dimsz_news[NCL_MAX_DIMENSIONS];
+    int has_missing_strs;
+    int has_missing_leng;
+    int has_missing_news;
+    ng_size_t str_size;
+    ng_size_t len_size;
+    ng_size_t new_size;
+    NclScalar   missing_strs;
+    NclScalar   missing_leng;
+    NclScalar   missing_news;
+  
+    ng_size_t i, m, n;
+
+    char *tmp_str;
+    char *result;
+    int *news_length;
+    int sl, ip, ns, ne;
+    int number_splitted = 1;
+    int max_length = 1;
+    
+    strs = (string *) NclGetArgValue(
+                        0,
+                        2,
+                        &ndim_strs,
+                        dimsz_strs,
+                        &missing_strs,
+                        &has_missing_strs,
+                        NULL,
+                        DONT_CARE);
+
+    if (strs == NULL)
+    {
+        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "str_get_cols: input string is null."));
+        return NhlFATAL;
+    }
+
+    has_missing_news = has_missing_strs;
+    if(has_missing_strs)
+        missing_news.stringval = missing_strs.stringval;
+    else
+        missing_news.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
+
+    leng = (int *) NclGetArgValue(
+                        1,
+                        2,
+                        &ndim_leng,
+                        dimsz_leng,
+                        &missing_leng,
+                        &has_missing_leng,
+                        NULL,
+                        DONT_CARE);
+
+    if (leng == NULL)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_split_by_length: input leng is null.");
+        return NhlFATAL;
+    }
+
+    str_size = 1;
+    for(i=0; i<ndim_strs; i++)
+    {
+        str_size *= dimsz_strs[i];
+        dimsz_news[i] = dimsz_strs[i];
+    }
+
+    for(i=0; i<str_size; i++)
+    {
+        tmp_str = (char *) NrmQuarkToString(strs[i]);
+        if (max_length < strlen(tmp_str))
+            max_length = strlen(tmp_str);
+    }
+
+    result = (char *) NclMalloc(max_length*sizeof(char));
+    if (!result)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+    
+    news_length = (int *) NclMalloc(max_length*sizeof(int));
+    if (! news_length)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    len_size = 1;
+    for(i=0; i<ndim_leng; i++)
+    {
+        len_size *= dimsz_leng[i];
+    }
+
+    if(len_size == 1)
+    {
+        if(leng[0] < 1)
+        {
+            number_splitted = max_length;
+            leng[0] = 1;
+        }
+        else
+        {
+            number_splitted = max_length/leng[0];
+            if(number_splitted * leng[0] < max_length)
+                number_splitted ++;
+        }
+
+        for(i=0; i<number_splitted; i++)
+        {
+            news_length[i] = leng[0];
+        }
+    }
+    else
+    {
+        int tmp_length = max_length;
+        number_splitted = 0;
+        while(tmp_length > 0)
+        {
+            for(i=0; i<len_size; i++)
+            {
+                tmp_length -= leng[i];
+                news_length[number_splitted] = leng[i];
+                number_splitted++;
+                if(tmp_length < 1)
+                    break;
+            }
+        }
+    }
+  /*
+   *fprintf(stderr, "\tnumber_splitted = %d\n", number_splitted);
+   */
+
+    if((1 == dimsz_strs[0]) && (1 == ndim_strs))
+    {
+        dimsz_news[0] = number_splitted;
+        ndim_news = 1;
+    }
+    else
+    {
+        dimsz_news[ndim_strs] = number_splitted;
+        ndim_news = ndim_strs + 1;
+    }
+
+  /*
+   *fprintf(stderr, "\tndim_news = %d\n", ndim_news);
+   */
+
+    new_size = 1;
+    for(i=0; i<ndim_news; i++)
+    {
+        new_size *= dimsz_news[i];
+    }
+  /*
+   *fprintf(stderr, "\tnew_size = %d\n", new_size);
+   */
+    
+    new_strs = (string *) NclMalloc(new_size*sizeof(string));
+    if (!new_strs)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    for(i=0; i<str_size; i++)
+    {
+        ns = i * number_splitted;
+        ne = ns + number_splitted;
+
+        if (has_missing_strs && strs[i] == missing_strs.stringval)
+        {
+            for(n=ns; n<ne; n++)
+                new_strs[n] = missing_news.stringval;
+            continue;
+        }
+
+        tmp_str = (char *) NrmQuarkToString(strs[i]);
+      /*
+       *fprintf(stderr, "\tstrs[%d]: <%s>\n", i, tmp_str);
+       */
+
+        sl = strlen(tmp_str) - 1;
+        ip = 0;
+        for(n=ns; n<ne; n++)
+        {
+            if(ip > sl)
+            {
+                new_strs[n] = missing_news.stringval;
+              /*
+               *fprintf(stderr, "\tnew_strs[%d]: missing\n", n);
+               */
+            }
+            else
+            {
+                strncpy(result, tmp_str + ip, news_length[n-ns]);
+                ip += news_length[n-ns];
+                new_strs[n] = NrmStringToQuark(result);
+              /*
+               *fprintf(stderr, "\tnew_strs[%d]: <%s>, leng: %d, from original string: <%s>\n",
+               *                   n, result, news_length[n-ns], tmp_str + ip);
+               */
+                memset(result, 0, max_length);
+            }
+        }
+    }
+
+    NclFree(result);
+
+    return NclReturnValue(new_strs, ndim_news, dimsz_news,
+                         (has_missing_news ? &missing_news : NULL),
+                          NCL_string, 0);
+
+}
+
+
 
 NhlErrorTypes _Nclstr_sub_str
 #if     NhlNeedProto
