@@ -29099,33 +29099,6 @@ NhlErrorTypes _NclItosigned
 
         switch(type)
         {
-            case NCL_char:
-                {
-                    unsigned char *ptr;
-                    char *out_ptr;
-
-                    output = (void *)NclMalloc(sizeof(char)*total_elements);
-                    if (output == NULL)
-                    {
-                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
-                        return NhlFATAL;
-                    }
-                    out_ptr = output;
-
-                    if(has_missing)
-                    {
-                        ret_missing.byteval = (char) missing.charval;
-                    }
-
-                    ptr = (unsigned char *) in_value;
-    
-                    for(i = 0; i < total_elements; i++)
-                    {
-                        out_ptr[i] = (char) ptr[i];
-                    }
-                    out_type = NCL_byte;
-                }
-                break;
             case NCL_byte:
                 {
                     byte *ptr;
@@ -29450,55 +29423,7 @@ NhlErrorTypes _NclItounsigned
 
         switch(type)
         {
-            case NCL_char:
-                {
-                    unsigned char *ptr;
-                    unsigned char *out_ptr;
-
-                    output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
-                    if (output == NULL)
-                    {
-                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
-                        return NhlFATAL;
-                    }
-                    out_ptr = output;
-
-                    if(has_missing)
-                    {
-                        ret_missing.byteval = (unsigned char) missing.charval;
-                    }
-
-                    ptr = (unsigned char *) in_value;
-    
-                    for(i = 0; i < total_elements; i++)
-                    {
-                        out_ptr[i] = ptr[i];
-                    }
-                    out_type = NCL_char;
-                }
-                break;
             case NCL_byte:
-                {
-                    byte *ptr;
-                    unsigned char *out_ptr;
-
-                    output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
-                    if (output == NULL)
-                    {
-                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
-                        return NhlFATAL;
-                    }
-                    out_ptr = output;
-
-                    ptr = (byte *) in_value;
-    
-                    for(i = 0; i < total_elements; i++)
-                    {
-                        out_ptr[i] = (unsigned char) ptr[i];
-                    }
-                    out_type = NCL_char;
-                }
-                break;
             case NCL_int8:
                 {
                     char *ptr;
