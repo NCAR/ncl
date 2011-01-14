@@ -211,7 +211,6 @@ void NclAddUserBuiltInFuncs
     nargs = 0;
     args = NewArgs(2);
     SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
-    dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "integer", 0, NclANY); nargs++;
     NclRegisterFunc(_Nclstr_split_by_length, args, "str_split_by_length", nargs);
     

@@ -832,7 +832,7 @@ NhlErrorTypes _Nclstr_split_by_length
 #endif
 {
     string *strs;
-    string *leng;
+    int    *leng;
     string *new_strs;
 
     int ndim_strs;
