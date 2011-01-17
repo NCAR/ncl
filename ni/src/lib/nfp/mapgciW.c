@@ -50,14 +50,15 @@ NhlErrorTypes gc_latlon_W( void )
 /*
  * Input variables
  */
-  void *lat1, *lon1, *lat2, *lon2;
+  void *lat1, *lon1, *lat2, *lon2, *tmp_nlatlon;
   ng_size_t dsizes_lat1[NCL_MAX_DIMENSIONS];
   ng_size_t dsizes_lat2[NCL_MAX_DIMENSIONS];
   ng_size_t dsizes_lon1[NCL_MAX_DIMENSIONS];
   ng_size_t dsizes_lon2[NCL_MAX_DIMENSIONS]; 
   int ndims_lat1, ndims_lon1, ndims_lat2, ndims_lon2;
-  int *nlatlon, *code;
-  NclBasicDataTypes type_lat1, type_lon1, type_lat2, type_lon2;
+  ng_size_t *nlatlon;
+  int *code;
+  NclBasicDataTypes type_lat1, type_lon1, type_lat2, type_lon2, type_nlatlon;
 /*
  * Output variables.
  */
@@ -131,15 +132,19 @@ NhlErrorTypes gc_latlon_W( void )
           &type_lon2,
           DONT_CARE);
 
-  nlatlon = (int*)NclGetArgValue(
+  tmp_nlatlon = (void*)NclGetArgValue(
           4,
           6,
           NULL,
           NULL,
           NULL,
           NULL,
-          NULL,
+          &type_nlatlon,
           DONT_CARE);
+
+  nlatlon = get_dimensions(tmp_nlatlon,1,type_nlatlon,"gc_latlon");
+  if(nlatlon == NULL) 
+    return(NhlFATAL);
 
   code = (int*)NclGetArgValue(
           5,
@@ -628,6 +633,7 @@ NhlErrorTypes gc_latlon_W( void )
                           );
 
   NclFree(dsizes_dist);
+  NclFree(nlatlon);
 /*
  * Return output grid and attributes to NCL.
  */
