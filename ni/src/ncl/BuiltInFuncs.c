@@ -5934,14 +5934,18 @@ char **endptr;
         long long tval;
         int i = 0;
 
+        errno = ERANGE;
+
         while (isspace(str[i]))
                         i++;
         if (strlen(&(str[i])) >= 2 && str[i] == '0' && (str[i+1] == 'x' || str[i+1] == 'X'))
         {
+                errno = 0;
                 tval = local_strtoll(str,endptr,16);
         }
         else
         {
+                errno = 0;
                 tval = local_strtoll(str,endptr,10);
         }
 
@@ -7922,7 +7926,6 @@ NhlErrorTypes _NclIstringtoint64
 
     if(has_missing)
     {
-        errno = 0;
         val = NrmQuarkToString(missing.stringval);
         tval = _Nclstrtoll(val,&end);
 
@@ -7943,7 +7946,6 @@ NhlErrorTypes _NclIstringtoint64
             }
             else
             {
-                errno = 0;
                 val = NrmQuarkToString(value[i]);
                 tval = _Nclstrtoll(val,&end);
                 if (end == val)
@@ -7969,7 +7971,6 @@ NhlErrorTypes _NclIstringtoint64
 
         for(i = 0; i < total; i++)
         {
-            errno = 0;
             val = NrmQuarkToString(value[i]);
             tval = _Nclstrtoll(val,&end);
             if (end == val)
@@ -19834,7 +19835,6 @@ NhlErrorTypes _NclItoint
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (end == str || errno == ERANGE)
@@ -20444,7 +20444,6 @@ NhlErrorTypes _NclItouint
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (end == str || errno == ERANGE)
@@ -20461,7 +20460,6 @@ NhlErrorTypes _NclItouint
                     ptr = (string *) in_value;
                     for(i = 0; i < total_elements; i++)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(ptr[i]);
     
                         llval = _Nclstrtoll(str,&end);
@@ -20961,7 +20959,7 @@ NhlErrorTypes _NclItolong
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
-        int has_missing;
+        int has_missing = 0;
         int j;
 	ng_size_t i;
         long *output;
@@ -21113,7 +21111,6 @@ NhlErrorTypes _NclItolong
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (end == str || errno == ERANGE)
@@ -21132,7 +21129,7 @@ NhlErrorTypes _NclItolong
                     {
                         str = NrmQuarkToString(ptr[i]);
     
-                        if(missing.stringval == ptr[i])
+                        if(has_missing && (missing.stringval == ptr[i]))
                         {
                             has_missing = 1;
                             output[i] = ret_missing.longval;
@@ -21682,7 +21679,6 @@ NhlErrorTypes _NclItoulong
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (strcmp(end, str) == 0)
@@ -21698,7 +21694,6 @@ NhlErrorTypes _NclItoulong
                     ptr = (string *) in_value;
                     for(i = 0; i < total_elements; i++)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(ptr[i]);
     
                         llval = _Nclstrtoll(str,&end);
@@ -22300,7 +22295,6 @@ NhlErrorTypes _NclItoint64
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (strcmp(end, str) == 0)
@@ -22315,7 +22309,6 @@ NhlErrorTypes _NclItoint64
                     ptr = (string *) in_value;
                     for(i = 0; i < total_elements; i++)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(ptr[i]);
     
                         llval = _Nclstrtoll(str,&end);
@@ -22791,7 +22784,6 @@ NhlErrorTypes _NclItouint64
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (strcmp(end, str) == 0)
@@ -22807,7 +22799,6 @@ NhlErrorTypes _NclItouint64
                     ptr = (string *) in_value;
                     for(i = 0; i < total_elements; i++)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(ptr[i]);
     
                         llval = _Nclstrtoll(str,&end);
@@ -23395,7 +23386,6 @@ NhlErrorTypes _NclItoint8
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (strcmp(end, str) == 0)
@@ -23411,7 +23401,6 @@ NhlErrorTypes _NclItoint8
                     ptr = (string *) in_value;
                     for(i = 0; i < total_elements; i++)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(ptr[i]);
     
                         llval = _Nclstrtoll(str,&end);
@@ -24099,7 +24088,6 @@ NhlErrorTypes _NclItouint8
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (strcmp(end, str) == 0)
@@ -24115,7 +24103,6 @@ NhlErrorTypes _NclItouint8
                     ptr = (string *) in_value;
                     for(i = 0; i < total_elements; i++)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(ptr[i]);
     
                         llval = _Nclstrtoll(str,&end);
@@ -24831,7 +24818,6 @@ NhlErrorTypes _NclItoshort
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (end == str || errno == ERANGE)
@@ -25473,7 +25459,6 @@ NhlErrorTypes _NclItoushort
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (end == str || errno == ERANGE)
@@ -27291,6 +27276,8 @@ NhlErrorTypes _NclItodouble
                         &type,
                         0);
 
+        errno = 0;
+
         for(j = 0; j < n_dims; j++)
         {
             total_elements *= dimsizes[j];
@@ -27355,7 +27342,7 @@ NhlErrorTypes _NclItodouble
                         errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         dval = strtod(str,&end);
-                        if (end == str || errno == ERANGE)
+                        if((strcmp(end, str) == 0) || (errno == ERANGE))
                         {
                             ret_missing.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
                         }
@@ -27375,9 +27362,9 @@ NhlErrorTypes _NclItodouble
                             else
                             {
                                 dval = strtod(str,&end);
-                                if (strcmp(end, str) == 0)
+                                if((strcmp(end, str) == 0) || (errno == ERANGE))
                                 {
-                                    NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                    NhlPError(NhlWARNING,NhlEUNKNOWN,
                                         "todouble: A bad value was passed to (string) todouble, input strings must contain numeric digits, replacing with missing value");
                                     output[i] = ret_missing.doubleval;
                                     has_missing = 1;
@@ -27396,9 +27383,9 @@ NhlErrorTypes _NclItodouble
                             str = NrmQuarkToString(ptr[i]);
    
                             dval = strtod(str,&end);
-                            if (strcmp(end, str) == 0)
+                            if((strcmp(end, str) == 0) || (errno == ERANGE))
                             {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,
                                     "todouble: A bad value was passed to (string) todouble, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.doubleval;
                                 has_missing = 1;
@@ -27810,7 +27797,6 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (end == str || errno == ERANGE)
