@@ -630,7 +630,7 @@ begin
     print("get_non_missing_pairs: x and y must be the same length")
   end if
 
-  indices = new((/ndimx,2/),integer,-999)
+  indices = new((/ndimx,2/),integer)
 
   counter = 0
   ibeg = -1   ; First non-missing point in a group.
@@ -6929,7 +6929,7 @@ begin
   end do
 
   ncolors = dimsizes(named_colors)
-  rgb_values = new((/ncolors,3/),float,-999)
+  rgb_values = new((/ncolors,3/),float)
 
   do i=0,ncolors-1
     index = ind(lower_case(named_colors(i)).eq.names)
@@ -7147,8 +7147,8 @@ begin
 
 ; Create the data object; also, check for a missing value and
 ; set during the create call (if you don't do this, then if the
-; user's happens by freak chance to have a constant field of -999,
-; it will choke.
+; user's happens by freak chance to have a constant field of 
+; missing values, it will choke.
 
     if(isatt(data,"_FillValue")) then
 ;

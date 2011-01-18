@@ -1126,39 +1126,7 @@ begin
       if (isatt(x,"missing_value")) then
            FillValue = x@missing_value
       else
-           if (typeof(x).eq."float") then
-               FillValue = -999.
-           end if
-           if (typeof(x).eq."double") then
-               FillValue = -9999.
-           end if
-           if (typeof(x).eq."integer") then
-               FillValue = -99
-           end if
-           if (typeof(x).eq."logical") then
-               FillValue = -1
-           end if
-           if (typeof(x).eq."byte") then
-               FillValue = 0377
-           end if
-           if (typeof(x).eq."short") then
-               FillValue = -99
-           end if
-           if (typeof(x).eq."graphic") then
-               FillValue = -9999
-           end if
-           if (typeof(x).eq."file") then
-               FillValue = -9999
-           end if
-           if (typeof(x).eq."list") then
-               FillValue = -9999
-           end if
-           if (typeof(x).eq."character") then
-               FillValue = "\0"
-           end if
-           if (typeof(x).eq."string") then
-               FillValue = "missing"
-           end if
+           FillValue = default_fillvalue(typeof(x))
       end if
   end if
   return (FillValue)
@@ -4027,7 +3995,7 @@ begin
   days     = (/ (/31,28,31,30,31,30,31,31,30,31,30,31/) \    ; [2] x [12]
               , (/31,29,31,30,31,30,31,31,30,31,30,31/) /)
 
-  yyyymmdd = new (nTime, "integer", -999)
+  yyyymmdd = new (nTime, integer)
 
   do nt=0,nTime-1
      iyr   = 0
@@ -5077,7 +5045,7 @@ begin
 
  if (nclr .lt. ncn+1) then 
    print ("Not enough colors in colormap for number of contour levels")
-   index = -999
+   index = default_fillvalue("integer")
    return (index)
  end if
 
@@ -7820,8 +7788,9 @@ begin
 
    if (ismissing(S) .or. ismissing(s)) then
        print("indStrSubset: missing string")
-       ii = (/-999,-999/)
-       ii@_FillValue = -999
+       imsg = default_fillvalue("integer")
+       ii = (/imsg,imsg/)
+       ii@_FillValue = imsg
        return(ii)
    end if
 
@@ -7840,7 +7809,7 @@ begin
        end do
    end if
 
-   ii = new ( 1, "integer", -999)
+   ii = new ( 1, integer)
    return (ii)
 end
 
@@ -8427,12 +8396,7 @@ begin
       end if
   else                          ; must be no local minima
       if (opt.eq.0) then
-          if (typeof(x).eq."float") then
-              return(-999.)
-          end if
-          if (typeof(x).eq."double") then
-              return(-999.d0)
-          end if
+          return(default_fillvalue(typeof(x)))
       else
           return(i)           ; default integer missing code
       end if
@@ -8515,12 +8479,7 @@ begin
       end if
   else                          ; must be no local maxima
       if (opt.eq.0) then
-          if (typeof(x).eq."float") then
-              return(-999.)
-          end if
-          if (typeof(x).eq."double") then
-              return(-999.d0)
-          end if
+          return(default_fillvalue(typeof(x)))
       else
           return(i)
       end if
@@ -10436,8 +10395,10 @@ local nGood_x, nbinsx, xMin, xMax, mnmxint, binx, binxBound, binxCenter, nbx \
      ,nGood_y, nbinsy, yMin, yMax, ySpace , biny, binyBound, binyCenter, nby \
      ,outside, mnmxint, pdf2, nTot, dimx, dimy, rankx, ranky, x1d, y1d, iy, warnFlag\
      ,xMIN, xMAX, yMIN, yMAX, binxBoundMin, binxBoundMax, binyBoundMin, binyBoundMax\
-     ,nMax, nUse, nxLoOut, nxHiOut, nyLoOut, nyHiOut, popt
+     ,nMax, nUse, nxLoOut, nxHiOut, nyLoOut, nyHiOut, popt, fmsg
 begin
+
+  fmsg = default_fillvalue("float")
 
   if (nbinx.le.2) then
       nbinsx = 25             ; default
@@ -10617,8 +10578,8 @@ begin
       pdf2@pcUse       = (1e2*nUse)/nMax         ; percent [pc]
       pdf2@pcOut       = (1e2*pdf2@nOut)/nMax
   else
-      pdf2@pcUse       = -999                                   
-      pdf2@pcOut       = -999
+      pdf2@pcUse       = fmsg
+      pdf2@pcOut       = fmsg
   end if
 
   pdf2@xMIN            = xMIN 
@@ -10636,8 +10597,8 @@ begin
       pdf2@pcxLoOut    = (1e2*nxLoOut)/nMax         ; %
       pdf2@pcxHiOut    = (1e2*nxHiOut)/nMax
   else
-      pdf2@pcxLoOut    = -999
-      pdf2@pcxHiOut    = -999                
+      pdf2@pcxLoOut    = fmsg
+      pdf2@pcxHiOut    = fmsg
   end if
 
   pdf2@yMIN            = yMIN 
@@ -10654,8 +10615,8 @@ begin
       pdf2@pcyLoOut        = (1e2*nyLoOut)/nMax         ; %
       pdf2@pcyHiOut        = (1e2*nyHiOut)/nMax
   else
-      pdf2@pcyLoOut        = -999
-      pdf2@pcyHiOut        = -999 
+      pdf2@pcyLoOut        = fmsg
+      pdf2@pcyHiOut        = fmsg
   end if
 
  ;pdf2@long_name      = "Joint PDF"
@@ -11475,7 +11436,7 @@ begin
    dim_nCrit  = dimsizes(nCrit)
    if (dim_nCrit.gt.2) then
        print("numBinOneRuns: nCrit size must be .le. 2: nCrit="+dim_nCrit)
-       return(-999)
+       return(default_fillvalue("integer"))
    end if
 
    inds    = ind (a .eq. 1)

@@ -68,11 +68,6 @@ undef("ref_line_interp")
 function ref_line_interp(x,y,xinterp,yinterp,ref_line)
 local ncurves, nref_lines, nlines, i, j, location, xnew, ynew, npts
 begin
-
-; Check for missing values.
-
-  xmsg = get_res_value_keep(x,"_FillValue",-999)
-  ymsg = get_res_value_keep(y,"_FillValue",-999)
 ;
 ; Convert x and y into two dimensional arrays so we don't have to
 ; test for whether we have one line or multiple lines.  Convert
@@ -457,10 +452,8 @@ function find_cross_xy(x1:numeric,x2:numeric,y11:numeric,y12:numeric, \
                        y21:numeric,y22:numeric)
 begin
   if((x2-x1).eq.0.or.(y12-y11+y21-y22).eq.0)
-    x0 = new(1,double,-9999)
-    y0 = new(1,double,-9999)
-    x0 = -9999
-    y0 = -9999
+    x0 = new(1,double)
+    y0 = new(1,double)
   else
     x0 = (x2*y21 - x2*y11 + x1*y12 - x1*y22)/(y12-y11+y21-y22)
     y0 = (y11*y22 - y12*y21) / (y11-y12+y22-y21)
@@ -2933,7 +2926,7 @@ begin
   if(min_lat.lt.-90.or.max_lat.gt.90) then
     print("get_lat_values: Warning: Your latitude values do not fall between -90 and 90 inclusive.")
     print("You will not get 'nice' latitude labels.")
-    lat_values = new(1,float,-999)
+    lat_values = new(1,float)
     return(lat_values)
   end if
 
@@ -3591,8 +3584,8 @@ begin
     lat_object = gsn_contour(wks,a->LAT,latlon_res)
 
     tmplon            = a->LON - 360.0
-    tmplon(242:,190)  = -999.0
-    tmplon@_FillValue = -999.0
+    tmplon(242:,190)  = default_fillvalue("float")
+    tmplon@_FillValue = default_fillvalue("float")
 
     latlon_res@cnMinLevelValF     = -90
     latlon_res@cnMaxLevelValF     = 270
