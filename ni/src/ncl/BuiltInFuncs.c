@@ -19848,7 +19848,8 @@ NhlErrorTypes _NclItoint
                             else
                             {
                                 NHLPERROR((NhlWARNING, NhlEUNKNOWN,
-                                          "toint: The string missing value %f is out of integer range.\n", missing.stringval));
+                                          "toint: The string missing value %s is out of integer range.\n",
+                                           NrmQuarkToString(missing.stringval)));
                             }
                         }
                     }
