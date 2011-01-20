@@ -4198,14 +4198,14 @@ end
 ; vars.  It adds the longitude and latitude coordinates.
 
 undef ("rcm2rgrid_Wrap")
-function rcm2rgrid_Wrap (xi[*][*]:numeric,yi[*][*]:numeric, fi:numeric \
-                        ,xo[*]:numeric,yo[*]:numeric, Opt)
+function rcm2rgrid_Wrap (yi[*][*]:numeric,xi[*][*]:numeric, fi:numeric \
+                        ,yo[*]:numeric,xo[*]:numeric, Opt)
 
 ; wrapper for NCL function "rcm2rgrid"  that copies attributes and coordinate vars
 
 local fo, dimfi, nDim, nD
 begin
-  fo   = rcm2rgrid (xi,yi,fi, xo,yo, Opt)  ; perform interpolation
+  fo   = rcm2rgrid (yi,xi,fi, yo,xo, Opt)  ; perform interpolation
 
   dimfi= dimsizes(fi)
   nDim = dimsizes(dimsizes(fi))            ; number of dimensions
@@ -4226,8 +4226,8 @@ begin
   fo!(nDim-1) = "X"
                                            ; override if possible
   if (isdimnamed(xo,0) .and. isdimnamed(yo,0) ) then
-      fo!(nDim-2) = xo!0                   ; if present, use xo name
-      fo!(nDim-1) = yo!0                   ; if present, use xo name
+      fo!(nDim-1) = xo!0                   ; if present, use xo name
+      fo!(nDim-2) = yo!0                   ; if present, use xo name
   else
       do nD=nDim-2,nDim-1                  ; two rightmost dimensions
          if (.not.ismissing(fi!nD)) then
@@ -4236,8 +4236,8 @@ begin
       end do
   end if
 
-  fo&$fo!(nDim-2)$ = xo                    ; create coordinate var
-  fo&$fo!(nDim-1)$ = yo                    ; two rightmost dimensions
+  fo&$fo!(nDim-1)$ = xo                    ; create coordinate var
+  fo&$fo!(nDim-2)$ = yo                    ; two rightmost dimensions
 
   fo@ncl = "rcm2rgrid used for interpolation"
 
