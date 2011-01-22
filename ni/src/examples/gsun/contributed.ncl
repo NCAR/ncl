@@ -9889,8 +9889,8 @@ undef("generate_unique_indices")
 function generate_unique_indices( N )
 local r
 begin
-  if(.not.any(typeof(N).eq.(/"int","long"/))) then
-    print("generate_unique_indices: N must be int or long")
+  if(.not.any(typeof(N).eq.(/"integer","long"/))) then
+    print("generate_unique_indices: N must be integer or long")
     exit
   end if
   r   = random_uniform(0,100,N)
