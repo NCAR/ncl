@@ -9882,11 +9882,17 @@ end
 ;****************************************************************
 ; Christophe Cassou [CERFACS, Toulouse CEDEX France] and Dennis Shea
 ; Generate unique random subscript indices
-
+;
+; As of 6.0.0, N can be integer or long
+;
 undef("generate_unique_indices")
-function generate_unique_indices( N:integer)
+function generate_unique_indices( N )
 local r
 begin
+  if(.not.any(typeof(N).eq.(/"int","long"/))) then
+    print("generate_unique_indices: N must be int or long")
+    exit
+  end if
   r   = random_uniform(0,100,N)
   return( dim_pqsort(r, 1) )
 end
