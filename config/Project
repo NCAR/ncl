@@ -100,11 +100,7 @@
 #endif	/* BuildUdunits */
 
 #ifndef    BuildV5D
-#define    BuildV5D
-#else
-#if    !BuildV5D
 #undef BuildV5D
-#endif
 #endif /* BuildV5D */
 
 /* No longer build the old PNG driver since we have the new cairo one. */
