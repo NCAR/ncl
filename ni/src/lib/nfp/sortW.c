@@ -4,7 +4,7 @@
 #include "wrapper.h"
 
 extern void NGCALLF(dpsortdriver,DPSORTDRIVER)(double*, int*, int*, int*,
-                           int*);
+											   int*);
 
 NhlErrorTypes dim_pqsort_W( void )
 {
@@ -52,10 +52,11 @@ NhlErrorTypes dim_pqsort_W( void )
            NULL,
            DONT_CARE);
 /*
- * Input array must be integer, float, or double.
+ * Input array must be integer, long, float, or double.
  */
-  if(type_x != NCL_int && type_x != NCL_float && type_x != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_pqsort: The input array must be of type integer, float, or double");
+  if(type_x != NCL_int && type_x != NCL_long && type_x != NCL_float && 
+	 type_x != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_pqsort: The input array must be of type integer, long, float, or double");
     return(NhlFATAL);
   }
 /*
@@ -67,8 +68,7 @@ NhlErrorTypes dim_pqsort_W( void )
   }
 
 /*
- * Compute the total number of elements in output and input, minus
- * the last dimension.
+ * Compute the total number of leftmost elements.
  */
   total_elements = 1;
   for(i = 0; i < ndims_x-1; i++) {
@@ -129,6 +129,11 @@ NhlErrorTypes dim_pqsort_W( void )
           ((int*)x)[index_x+j] = (int)(tmp_x[j]);
         }
       }
+      else if(type_x == NCL_long) {
+        for(j = 0; j < ndim; j++) {
+          ((long*)x)[index_x+j] = (long)(tmp_x[j]);
+        }
+	  }
       else {
         coerce_output_float_only(x,tmp_x,ndim,index_x);
       }
@@ -214,8 +219,9 @@ NhlErrorTypes dim_pqsort_n_W( void )
 /*
  * Input array must be integer, float, or double.
  */
-  if(type_x != NCL_int && type_x != NCL_float && type_x != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_pqsort_n: The input array must be of type integer, float, or double");
+  if(type_x != NCL_int && type_x != NCL_long && type_x != NCL_float && 
+	 type_x != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_pqsort_n: The input array must be of type integer, long, float, or double");
     return(NhlFATAL);
   }
 /*
