@@ -151,7 +151,7 @@ set buildcairo=`$makecmd CAIROSTUFF`
 echo -n "..."
 set buildgdal=`$makecmd GDALSTUFF`
 echo -n "..."
-set buildhdf=`$makecmd HDFSTUFF`
+set buildhdf4=`$makecmd HDF5STUFF`
 echo -n "..."
 set buildrasterhdf=`$makecmd RASTERHDFSTUFF`
 echo -n "..."
@@ -504,7 +504,7 @@ endif
 
 if ("$buildncl" == "y" || "$buildncl" == "Y") then
   echo ""
-  echo "Build HDF4 support (optional) into NCL? ($buildhdf)"
+  echo "Build HDF4 support (optional) into NCL? ($buildhdf4)"
   echo "Informational note: HDF4 is no longer required to build NCL,"
   echo "but it is a prerequisite if you need HDF-EOS2 support."
   echo "(Requires external HDF-4 libraries available from "
@@ -515,9 +515,9 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
   echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
   set answer="$<"
   if ("$answer" == "q") goto cleanup
-  if (("$answer" != "") && ("$answer" != "$buildhdf")) then
-      set buildhdf = $answer
-      set newbuildhdf
+  if (("$answer" != "") && ("$answer" != "$buildhdf4")) then
+      set buildhdf4 = $answer
+      set newbuildhdf4
       set altered
   endif
   echo ""
@@ -537,14 +537,14 @@ else
   echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
   set answer="$<"
   if ("$answer" == "q") goto cleanup
-  if (("$answer" != "") && ("$answer" != "$buildhdf")) then
+  if (("$answer" != "") && ("$answer" != "$buildhdf4")) then
     set buildrasterhdf = $answer
     set newbuildrasterhdf
     set altered
   endif
 endif
 set hdfwithszip = "n"
-if (("$buildhdf" == "y") || ("$buildhdf" == "Y") || \
+if (("$buildhdf4" == "y") || ("$buildhdf4" == "Y") || \
     ("$buildrasterhdf" == "y") || ("$buildrasterhdf" == "Y")) then
     echo ""
     echo "Did you build HDF4 with szip support? ($hdfwithszip)"
@@ -926,6 +926,7 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
 else
   set buildhdfeos  = "n"
   set buildhdfeos5 = "n"
+  set buildhdf4 = "n"
   set buildhdf5 = "n"
   set buildnetcdf4 = "n"
   set buildtriangle = "n"
@@ -1255,14 +1256,14 @@ if ($?newbuildrasterhdf) then
 		echo "#define BuildRasterHDF 1" >> Site.local
 	else
 		echo "#define BuildRasterHDF 0" >> Site.local
-		if ($buildhdf != "y") then
+		if ($buildhdf4 != "y") then
 		    echo "#define HDFlib" >> Site.local
 	        endif
 	endif
 endif
 
-if ($?newbuildhdf) then
-	if ("$buildhdf" == "y") then
+if ($?newbuildhdf4) then
+	if ("$buildhdf4" == "y") then
 		echo "#define BuildHDF4 1" >> Site.local
 	else
 		echo "#define BuildHDF4 0" >> Site.local
