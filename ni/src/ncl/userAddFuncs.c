@@ -109,7 +109,7 @@ NhlErrorTypes _Nclstr_fields_count
     if (strs == NULL)
     {
         NclFree(fields);
-        NHLPERROR((NhlFATAL,ENOMEM,"str_fields_count: input string is null."));
+        NhlPError(NhlFATAL,ENOMEM,"str_fields_count: input string is null.");
         return NhlFATAL;
     }
 
@@ -125,7 +125,7 @@ NhlErrorTypes _Nclstr_fields_count
 
     if (delim == NULL)
     {
-        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "str_fields_count: delimiter is null."));
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_fields_count: delimiter is null.");
         return NhlFATAL;
     }
 
@@ -551,7 +551,7 @@ NhlErrorTypes _Nclstr_get_cols
 
     if (strs == NULL)
     {
-        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "str_get_cols: input string is null."));
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_get_cols: input string is null.");
         return NhlFATAL;
     }
 
@@ -872,7 +872,7 @@ NhlErrorTypes _Nclstr_split_by_length
 
     if (strs == NULL)
     {
-        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "str_get_cols: input string is null."));
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_get_cols: input string is null.");
         return NhlFATAL;
     }
 
@@ -3147,13 +3147,13 @@ NhlErrorTypes _Nclstr_match
 
     if (input_strs == NULL)
     {
-        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "str_match: input string is null."));
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match: input string is null.");
         return NhlFATAL;
     }
 
     if(type != NCL_string)
     {
-        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "str_match: Invalid input string."));
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match: Invalid input string.");
         return NhlFATAL;
     }
 
@@ -3179,7 +3179,7 @@ NhlErrorTypes _Nclstr_match
 
     if (input_expr == NULL)
     {
-        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "str_match: input expression is null."));
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match: input expression is null.");
         return NhlFATAL;
     }
 
@@ -3194,14 +3194,14 @@ NhlErrorTypes _Nclstr_match
         {
             if(regcomp(&expr,reg_exp,REG_ICASE|REG_EXTENDED) != 0)
             {
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,"str_match: Invalid expression"));
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"str_match: Invalid expression");
                 return NhlFATAL;
             }
         }
     }
     else
     {
-        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "str_match: input expression is not a string."));
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match: input expression is not a string.");
         return NhlFATAL;
     }
 
