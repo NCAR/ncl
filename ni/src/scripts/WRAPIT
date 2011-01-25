@@ -1,6 +1,6 @@
 #!/bin/csh -f
 # set echo verbose timestamp
-set version = 100111    # YYMMDD
+set version = 110125    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
 if ($#argv == 0) then
