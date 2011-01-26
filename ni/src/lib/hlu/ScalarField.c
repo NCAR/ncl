@@ -2685,7 +2685,7 @@ VTypeValuesEqual
         if (_NhlConvertData(context,Qgen_array,Qfloat,&from,&to) < NhlWARNING)
                 return False;
 
-        if (_NhlCmpFAny(f1,f2,5) == 0.0)
+        if (_NhlCmpFAny(f1,f2,6) == 0.0)
                 return True;
         
         return False;

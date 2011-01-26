@@ -3202,7 +3202,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	     (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
 		     (&map,&rpnt[ipp3],&rpnt[ipp3+1],&rpnt[ipp3+2],
 		      &xcu3,&ycu3);
-	     if (orv != 0.0 && (xcu3 == orv || ycu2 == orv))
+	     if (orv != 0.0 && (xcu3 == orv || ycu3 == orv))
 		     continue;	     
 
 	     xcf1 = c_cufx(xcu1);

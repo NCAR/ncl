@@ -561,6 +561,14 @@ NhlErrorTypes NhlDataPolyline
 		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
+		if (gsid == NhlNULLOBJID) {
+			ret = NhlVAGetValues
+				(tl->base.wkptr->base.id,
+				 NhlNwkDefGraphicStyleId,&gsid,
+				 NULL);
+			if (ret < NhlWARNING)
+				return ret;
+		}
 		ret = NhlVASetValues(tl->base.wkptr->base.id,
 			_NhlNwkGraphicStyle,	gsid,
 			NULL);
@@ -647,6 +655,14 @@ NhlErrorTypes NhlNDCPolyline
 		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
+		if (gsid == NhlNULLOBJID) {
+			ret = NhlVAGetValues
+				(tl->base.wkptr->base.id,
+				 NhlNwkDefGraphicStyleId,&gsid,
+				 NULL);
+			if (ret < NhlWARNING)
+				return ret;
+		}
 		ret = NhlVASetValues(tl->base.wkptr->base.id,
 			_NhlNwkGraphicStyle,	gsid,
 			NULL);
@@ -728,6 +744,14 @@ NhlErrorTypes NhlDataPolygon
 		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
+		if (gsid == NhlNULLOBJID) {
+			ret = NhlVAGetValues
+				(tl->base.wkptr->base.id,
+				 NhlNwkDefGraphicStyleId,&gsid,
+				 NULL);
+			if (ret < NhlWARNING)
+				return ret;
+		}
 		ret = NhlVASetValues(tl->base.wkptr->base.id,
 				     _NhlNwkGraphicStyle,	gsid,
 				     NULL);
@@ -814,6 +838,14 @@ NhlErrorTypes NhlNDCPolygon
 		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
+		if (gsid == NhlNULLOBJID) {
+			ret = NhlVAGetValues
+				(tl->base.wkptr->base.id,
+				 NhlNwkDefGraphicStyleId,&gsid,
+				 NULL);
+			if (ret < NhlWARNING)
+				return ret;
+		}
 		ret = NhlVASetValues(tl->base.wkptr->base.id,
 				     _NhlNwkGraphicStyle,	gsid,
 				     NULL);
@@ -895,6 +927,14 @@ NhlErrorTypes NhlDataPolymarker
 		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
+		if (gsid == NhlNULLOBJID) {
+			ret = NhlVAGetValues
+				(tl->base.wkptr->base.id,
+				 NhlNwkDefGraphicStyleId,&gsid,
+				 NULL);
+			if (ret < NhlWARNING)
+				return ret;
+		}
 		ret = NhlVASetValues(tl->base.wkptr->base.id,
 				     _NhlNwkGraphicStyle,	gsid,
 				     NULL);
@@ -982,6 +1022,14 @@ NhlErrorTypes NhlNDCPolymarker
 		NhlTransformLayer tfl = (NhlTransformLayer)tl;
 		tc = (NhlTransformClass)tl->base.layer_class;
 
+		if (gsid == NhlNULLOBJID) {
+			ret = NhlVAGetValues
+				(tl->base.wkptr->base.id,
+				 NhlNwkDefGraphicStyleId,&gsid,
+				 NULL);
+			if (ret < NhlWARNING)
+				return ret;
+		}
 		ret = NhlVASetValues(tl->base.wkptr->base.id,
 				     _NhlNwkGraphicStyle,	gsid,
 				     NULL);

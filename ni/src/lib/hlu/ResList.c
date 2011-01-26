@@ -1087,7 +1087,7 @@ NhlRLSetMDArray
 	NhlString	type,
 	ng_size_t	size,
 	int		num_dimensions,
-	ng_size_t		*len_dimensions
+	ng_size_t	*len_dimensions
 )
 #else
 (id,name,data,type,size,num_dimensions,len_dimensions)
@@ -1138,7 +1138,7 @@ NhlRLSetMDIntegerArray
 	NhlString	name,
 	int		*data,
 	int		num_dimensions,
-	ng_size_t		*len_dimensions
+	ng_size_t	*len_dimensions
 )
 #else
 (id,name,data,num_dimensions,len_dimensions)
@@ -1146,7 +1146,7 @@ NhlRLSetMDIntegerArray
 	NhlString	name;
 	int		*data;
 	int		num_dimensions;
-	ng_size_t		*len_dimensions;
+	ng_size_t	*len_dimensions;
 #endif
 {
 	return NhlRLSetMDArray(id,name,data,NhlTInteger,sizeof(int),
@@ -1175,7 +1175,7 @@ NhlRLSetMDLongArray
 	NhlString	name,
 	long		*data,
 	int		num_dimensions,
-	ng_size_t		*len_dimensions
+	ng_size_t	*len_dimensions
 )
 #else
 (id,name,data,num_dimensions,len_dimensions)
@@ -1183,7 +1183,7 @@ NhlRLSetMDLongArray
 	NhlString	name;
 	long		*data;
 	int		num_dimensions;
-	ng_size_t		*len_dimensions;
+	ng_size_t	*len_dimensions;
 #endif
 {
 	return NhlRLSetMDArray(id,name,data,NhlTLong,sizeof(long),
@@ -1212,7 +1212,7 @@ NhlRLSetMDFloatArray
 	NhlString	name,
 	float		*data,
 	int		num_dimensions,
-	ng_size_t		*len_dimensions
+	ng_size_t	*len_dimensions
 )
 #else
 (id,name,data,num_dimensions,len_dimensions)
@@ -1220,7 +1220,7 @@ NhlRLSetMDFloatArray
 	NhlString	name;
 	float		*data;
 	int		num_dimensions;
-	ng_size_t		*len_dimensions;
+	ng_size_t	*len_dimensions;
 #endif
 {
 	return NhlRLSetMDArray(id,name,data,NhlTFloat,sizeof(float),
@@ -1249,7 +1249,7 @@ NhlRLSetMDDoubleArray
 	NhlString	name,
 	double		*data,
 	int		num_dimensions,
-	ng_size_t		*len_dimensions
+	ng_size_t	*len_dimensions
 )
 #else
 (id,name,data,num_dimensions,len_dimensions)
@@ -1257,7 +1257,7 @@ NhlRLSetMDDoubleArray
 	NhlString	name;
 	double		*data;
 	int		num_dimensions;
-	ng_size_t		*len_dimensions;
+	ng_size_t	*len_dimensions;
 #endif
 {
 	return NhlRLSetMDArray(id,name,data,NhlTDouble,sizeof(double),
@@ -1287,7 +1287,7 @@ NhlRLSetArray
 	NhlPointer	data,
 	NhlString	type,
 	ng_size_t	size,
-	ng_size_t		num_elements
+	ng_size_t	num_elements
 )
 #else
 (id,name,data,type,size,num_elements)
@@ -1296,7 +1296,7 @@ NhlRLSetArray
 	NhlPointer	data;
 	NhlString	type;
 	ng_size_t	size;
-	ng_size_t		num_elements;
+	ng_size_t	num_elements;
 #endif
 {
 	return NhlRLSetMDArray(id,name,data,type,size,1,&num_elements);
@@ -1323,14 +1323,14 @@ NhlRLSetIntegerArray
 	int		id,
 	NhlString	name,
 	int		*data,
-	ng_size_t		num_elements
+	ng_size_t	num_elements
 )
 #else
 (id,name,data,num_elements)
 	int		id;
 	NhlString	name;
 	int		*data;
-	ng_size_t		num_elements;
+	ng_size_t	num_elements;
 #endif
 {
 	return NhlRLSetMDArray(id,name,data,NhlTInteger,sizeof(int),1,
@@ -1365,7 +1365,7 @@ NhlRLSetLongArray
 	int		id;
 	NhlString	name;
 	long		*data;
-	ng_size_t		num_elements;
+	ng_size_t	num_elements;
 #endif
 {
 	return NhlRLSetMDArray(id,name,data,NhlTLong,sizeof(long),1,
@@ -1393,14 +1393,14 @@ NhlRLSetFloatArray
 	int		id,
 	NhlString	name,
 	float		*data,
-	ng_size_t		num_elements
+	ng_size_t	num_elements
 )
 #else
 (id,name,data,num_elements)
 	int		id;
 	NhlString	name;
 	float		*data;
-	ng_size_t		num_elements;
+	ng_size_t	num_elements;
 #endif
 {
 	return NhlRLSetMDArray(id,name,data,NhlTFloat,sizeof(float),1,
@@ -1428,14 +1428,14 @@ NhlRLSetDoubleArray
 	int		id,
 	NhlString	name,
 	double		*data,
-	ng_size_t		num_elements
+	ng_size_t	num_elements
 )
 #else
 (id,name,data,num_elements)
 	int		id;
 	NhlString	name;
 	double		*data;
-	ng_size_t		num_elements;
+	ng_size_t	num_elements;
 #endif
 {
 	return NhlRLSetMDArray(id,name,data,NhlTDouble,sizeof(double),1,
@@ -1463,14 +1463,14 @@ NhlRLSetStringArray
 	int		id,
 	NhlString	name,
 	NhlString	*data,
-	ng_size_t		num_elements
+	ng_size_t	num_elements
 )
 #else
 (id,name,data,num_elements)
 	int		id;
 	NhlString	name;
 	NhlString	*data;
-	ng_size_t		num_elements;
+	ng_size_t	num_elements;
 #endif
 {
 	return NhlRLSetMDArray(id,name,data,NhlTString,sizeof(NhlString),1,
@@ -1844,7 +1844,7 @@ NhlRLGetMDArray
 	NhlPointer	*data,
 	NhlString	*type,
 	unsigned int	*size,
-	int	*num_dimensions,
+	int		*num_dimensions,
 	ng_size_t	**len_dimensions
 )
 #else
@@ -1855,7 +1855,7 @@ NhlRLGetMDArray
 	NhlString	*type;
 	unsigned int	*size;
 	int		*num_dimensions;
-	ng_size_t		**len_dimensions;
+	ng_size_t	**len_dimensions;
 #endif
 {
 	_NhlExpArray	exp = NULL;
@@ -2035,7 +2035,7 @@ NhlRLGetMDTypeArray
 	NrmQuark	type,
 	unsigned int	size,
 	NhlPointer	*data,
-	int	*num_dimensions,
+	int		*num_dimensions,
 	ng_size_t	**len_dimensions
 )
 #else
@@ -2046,7 +2046,7 @@ NhlRLGetMDTypeArray
 	unsigned int	size;
 	NhlPointer	*data;
 	int		*num_dimensions;
-	ng_size_t		**len_dimensions;
+	ng_size_t	**len_dimensions;
 #endif
 {
 	_NhlExpArray	exp = NULL;
@@ -2098,7 +2098,7 @@ NhlRLGetMDIntegerArray
 	NhlString	name,
 	int		**data,
 	int		*num_dimensions,
-	ng_size_t		**len_dimensions
+	ng_size_t	**len_dimensions
 )
 #else
 (id,name,data,num_dimensions,len_dimensions)
@@ -2106,7 +2106,7 @@ NhlRLGetMDIntegerArray
 	NhlString	name;
 	int		**data;
 	int		*num_dimensions;
-	ng_size_t		**len_dimensions;
+	ng_size_t	**len_dimensions;
 #endif
 {
 	return NhlRLGetMDTypeArray(id,name,intQ,sizeof(int),(NhlPointer*)data,
@@ -2135,7 +2135,7 @@ NhlRLGetMDLongArray
 	NhlString	name,
 	long		**data,
 	int		*num_dimensions,
-	ng_size_t		**len_dimensions
+	ng_size_t	**len_dimensions
 )
 #else
 (id,name,data,num_dimensions,len_dimensions)
@@ -2143,7 +2143,7 @@ NhlRLGetMDLongArray
 	NhlString	name;
 	long		**data;
 	int		*num_dimensions;
-	ng_size_t		**len_dimensions;
+	ng_size_t	**len_dimensions;
 #endif
 {
 	return NhlRLGetMDTypeArray(id,name,longQ,sizeof(long),(NhlPointer*)data,
@@ -2172,7 +2172,7 @@ NhlRLGetMDFloatArray
 	NhlString	name,
 	float		**data,
 	int		*num_dimensions,
-	ng_size_t		**len_dimensions
+	ng_size_t	**len_dimensions
 )
 #else
 (id,name,data,num_dimensions,len_dimensions)
@@ -2180,7 +2180,7 @@ NhlRLGetMDFloatArray
 	NhlString	name;
 	float		**data;
 	int		*num_dimensions;
-	ng_size_t		**len_dimensions;
+	ng_size_t	**len_dimensions;
 #endif
 {
 	return NhlRLGetMDTypeArray(id,name,floatQ,sizeof(float),
@@ -2209,7 +2209,7 @@ NhlRLGetMDDoubleArray
 	NhlString	name,
 	double		**data,
 	int		*num_dimensions,
-	ng_size_t		**len_dimensions
+	ng_size_t	**len_dimensions
 )
 #else
 (id,name,data,num_dimensions,len_dimensions)
@@ -2217,7 +2217,7 @@ NhlRLGetMDDoubleArray
 	NhlString	name;
 	double		**data;
 	int		*num_dimensions;
-	ng_size_t		**len_dimensions;
+	ng_size_t	**len_dimensions;
 #endif
 {
 	return NhlRLGetMDTypeArray(id,name,doubleQ,sizeof(double),
@@ -2347,7 +2347,7 @@ NhlRLGetDimArray
 	NhlPointer	*data,
 	NhlString	*type,
 	unsigned int	*size,
-	int	num_dim,		/* IN */
+	int		num_dim,		/* IN */
 	ng_size_t	**len_dimensions
 )
 #else
@@ -2357,7 +2357,7 @@ NhlRLGetDimArray
 	NhlPointer	*data;
 	NhlString	*type;
 	unsigned int	*size;
-	int	num_dim;		/* IN */
+	int		num_dim;		/* IN */
 	ng_size_t	**len_dimensions;
 #endif
 {
@@ -2418,7 +2418,7 @@ NhlRLGetArray
 	NhlPointer	*data,
 	NhlString	*type,
 	unsigned int	*size,
-	ng_size_t		*num_elements
+	ng_size_t	*num_elements
 )
 #else
 (id,name,data,type,size,num_elements)
@@ -2427,7 +2427,7 @@ NhlRLGetArray
 	NhlPointer	*data;
 	NhlString	*type;
 	unsigned int	*size;
-	ng_size_t		*num_elements;
+	ng_size_t	*num_elements;
 #endif
 {
 	return NhlRLGetDimArray(id,name,data,type,size,1,&num_elements);
@@ -2589,8 +2589,8 @@ NhlRLGetTypeDimArray
 	NhlString	type;
 	unsigned int	size;
 	NhlPointer	*data;
-	ng_size_t		num_dim;		/* IN */
-	ng_size_t		**len_dimensions;
+	ng_size_t	num_dim;		/* IN */
+	ng_size_t	**len_dimensions;
 #endif
 {
 	_NhlExpArray	exp = NULL;
@@ -2653,7 +2653,7 @@ NhlRLGetTypeArray
 	NhlString	type,
 	unsigned int	size,
 	NhlPointer	*data,
-	ng_size_t		*num_elements
+	ng_size_t	*num_elements
 )
 #else
 (id,name,type,size,data,num_elements)
@@ -2662,7 +2662,7 @@ NhlRLGetTypeArray
 	NhlString	type;
 	unsigned int	size;
 	NhlPointer	*data;
-	ng_size_t		*num_elements;
+	ng_size_t	*num_elements;
 #endif
 {
 	return NhlRLGetTypeDimArray(id,name,type,size,data,1,&num_elements);
@@ -2689,14 +2689,14 @@ NhlRLGetIntegerArray
 	int		id,
 	NhlString	name,
 	int		**data,
-	ng_size_t		*num_elements
+	ng_size_t	*num_elements
 )
 #else
 (id,name,data,num_elements)
 	int		id;
 	NhlString	name;
 	int		**data;
-	ng_size_t		*num_elements;
+	ng_size_t	*num_elements;
 #endif
 {
 	return NhlRLGetTypeArray(id,name,NhlTInteger,sizeof(int),
@@ -2724,14 +2724,14 @@ NhlRLGetLongArray
 	int		id,
 	NhlString	name,
 	long		**data,
-	ng_size_t		*num_elements
+	ng_size_t	*num_elements
 )
 #else
 (id,name,data,num_elements)
 	int		id;
 	NhlString	name;
 	long		**data;
-	ng_size_t		*num_elements;
+	ng_size_t	*num_elements;
 #endif
 {
 	return NhlRLGetTypeArray(id,name,NhlTLong,sizeof(long),
@@ -2759,14 +2759,14 @@ NhlRLGetFloatArray
 	int		id,
 	NhlString	name,
 	float		**data,
-	ng_size_t		*num_elements
+	ng_size_t	*num_elements
 )
 #else
 (id,name,data,num_elements)
 	int		id;
 	NhlString	name;
 	float		**data;
-	ng_size_t		*num_elements;
+	ng_size_t	*num_elements;
 #endif
 {
 	return NhlRLGetTypeArray(id,name,NhlTFloat,sizeof(float),
@@ -2794,14 +2794,14 @@ NhlRLGetDoubleArray
 	int		id,
 	NhlString	name,
 	double		**data,
-	ng_size_t		*num_elements
+	ng_size_t	*num_elements
 )
 #else
 (id,name,data,num_elements)
 	int		id;
 	NhlString	name;
 	double		**data;
-	ng_size_t		*num_elements;
+	ng_size_t	*num_elements;
 #endif
 {
 	return NhlRLGetTypeArray(id,name,NhlTDouble,sizeof(double),
@@ -2829,14 +2829,14 @@ NhlRLGetStringArray
 	int		id,
 	NhlString	name,
 	NhlString	**data,
-	ng_size_t		*num_elements
+	ng_size_t	*num_elements
 )
 #else
 (id,name,data,num_elements)
 	int		id;
 	NhlString	name;
 	NhlString	**data;
-	ng_size_t		*num_elements;
+	ng_size_t	*num_elements;
 #endif
 {
 	return NhlRLGetTypeArray(id,name,NhlTString,sizeof(NhlString),

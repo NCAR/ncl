@@ -4698,6 +4698,16 @@ static NhlErrorTypes ManageTickMarks
 	int projection;
 	int i;
 
+	if (init) {
+		mpp->xbvalues = NULL;
+		mpp->xblabels = NULL;
+		mpp->xtvalues = NULL;
+		mpp->xtlabels = NULL;
+		mpp->ylvalues = NULL;
+		mpp->yllabels = NULL;
+		mpp->yrvalues = NULL;
+		mpp->yrlabels = NULL;
+	}
  	if (! tfp->plot_manager_on)
 		return NhlNOERROR;
 
@@ -4734,14 +4744,6 @@ static NhlErrorTypes ManageTickMarks
 	if (init) {
 		float delta;
 		int set_count = 0;
-		mpp->xbvalues = NULL;
-		mpp->xblabels = NULL;
-		mpp->xtvalues = NULL;
-		mpp->xtlabels = NULL;
-		mpp->ylvalues = NULL;
-		mpp->yllabels = NULL;
-		mpp->yrvalues = NULL;
-		mpp->yrlabels = NULL;
 		delta = (mpnew->view.width/NHL_DEFAULT_VIEW_WIDTH +
 			 mpnew->view.height/NHL_DEFAULT_VIEW_HEIGHT) / 2.0;
 
