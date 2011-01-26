@@ -119,7 +119,7 @@ main()
     float x, y, zdat[NCLS][NCLS], xlat, xlon;
     float xlonrng, xlatrng, xlonstp, xlatstp, dist;
     float miss_val = 1.e12;
-    int count[2];
+    ng_size_t count[2];
     int appid, wid, dataid, cnid, mpid, gsid, gkswid;
     int srlist, grlist, i, j;
     float dfce = 1.3, rtod = 57.2957795130823;
@@ -140,12 +140,12 @@ main()
  * for the states, and the latitude and longitude of a point where the
  * mnemonic may be placed to label the state.
  */
-    int num_am_ids = NDIM;
+    ng_size_t num_am_ids = NDIM;
     int *am_ids, text_ids[NDIM];
 /*
  * Declare variables for defining color map.
  */
-    int length[2];
+    ng_size_t length[2];
     float   cmap[NCOLORS][3];
 /*
  * Default is to create an X11 window.

@@ -56,7 +56,7 @@ int main ()
 
     int ZOOM=0;
 
-    int i, j, k, u_id, v_id, p_id, t_id, len_dims [2], *time, *timestep;
+    int i, j, k, u_id, v_id, p_id, t_id, *time, *timestep;
     int rlist, uf, vf, pf, tf, tim_id, lat_id, lon_id, tit_id;
     int appid, wid, vfield, sfield, sfield2, mapid, vcid, cnid;
     int title_id1, title_id2, txid1;
@@ -64,7 +64,7 @@ int main ()
     long start [3] = {0,0,0}, count [3]={0,0,0};
     float MinLat, MaxLat, MinLon, MaxLon;
     float *U, *V, *P, *T, *lat, *lon;
-
+    ng_size_t len_dims[2];
     char Uname [256], Vname [256], Pname [256], Tname [256];
     char *reftime;
     char title [256];

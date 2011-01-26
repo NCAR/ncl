@@ -45,14 +45,15 @@ static const int M=25, N=25;
 main(int argc, char *argv[])
 {
     float   T[25 * 25];
-    int len_dims[2];
+    ng_size_t len_dims[2];
     int appid,wid,dataid,cnid;
     int srlist,grlist;
     float   x,y;
     int i,j;
     float   *fscales;
     int *colors;
-    int     count, itmp;
+    ng_size_t count;
+    int itmp;
     char const *wks_type = "x11";
 
 /* create a simple bull's eye pattern test data set */

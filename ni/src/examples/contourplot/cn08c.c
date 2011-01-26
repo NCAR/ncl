@@ -47,8 +47,8 @@ main()
  */
     int     appid, workid, field1, con1;
     int     srlist, i, j, k;
-    int     icount[2];
-	float cmap[NCOLORS][3];
+    ng_size_t   icount[2];
+    float cmap[NCOLORS][3];
 /*
  * Declare variables for getting information from netCDF file.
  */
@@ -215,8 +215,7 @@ main()
  */
     icount[0] = levellen; icount[1] = latlen;
     NhlRLClear(srlist);
-    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&temp[0][0],2,
-                         (int *)icount);
+    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&temp[0][0],2,icount);
     NhlRLSetFloat(srlist,NhlNsfMissingValueV,special_value);
     NhlRLSetFloat(srlist,NhlNsfXCStartV,lat[0]);
     NhlRLSetFloat(srlist,NhlNsfXCEndV,lat[latlen-1]);
@@ -291,8 +290,7 @@ main()
         }
         NhlRLClear(srlist);
         icount[0] = levellen; icount[1] = latlen;
-        NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&temp[0][0],2,
-                            (int *)icount);
+        NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&temp[0][0],2,icount);
 /*
  * Create new scalar field.
  */

@@ -84,11 +84,12 @@ main(int argc, char *argv[])
     int appid, wid, cnid, vcid, stid, txid, amid, mpid, tmid, stdmid;
     long stid_len;
     int vfield, vfield2, sfield, sfield2;
-    int rlist, len_dims[2];
+    int rlist;
+    ng_size_t len_dims[2];
     long strt[1], cnt[1];
     long latlen, lonlen;
     long timelen;
-	int *timestep;
+    int *timestep;
     int ncid[6], uid, vid, u5id, v5id, pid, tid;
     int latid, lonid;
     float *lon, *lat;

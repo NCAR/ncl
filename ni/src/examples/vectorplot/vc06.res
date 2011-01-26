@@ -41,3 +41,7 @@
 *mpPerimOn : false
 *mpLabelsOn : false
 *mpEllipticalBoundary : true
+
+*FuncCode           : :
+*TextFuncCode       : :
+

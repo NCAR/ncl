@@ -74,7 +74,7 @@ main(int argc, char *argv[])
     int rlist;
 
     float z[N*M];
-    int len_dims[2];
+    ng_size_t len_dims[2];
 
     extern void bndary();
     extern void gendat (float *,int,int,int,int,int,float,float);

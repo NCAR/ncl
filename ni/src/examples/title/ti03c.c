@@ -33,8 +33,8 @@ main()
     int appid, wid, pid;
     int rlist;
     char const *wks_type = "x11";
-	int len[2];
-	float cmap[4][3];
+    ng_size_t len[2];
+    float cmap[4][3];
 /*
  * Initialize the high level utility library
  */

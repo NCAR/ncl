@@ -67,7 +67,7 @@ main()
 /*
  * Declare variables for color map
  */
-    int length[2];
+    ng_size_t length[2];
     float cmap[NCOLORS][3];
 /*
  * Declare variables to hold contour and xy plot data.
@@ -80,7 +80,7 @@ main()
  */
     int  ncid, lon_id, lat_id, stid;
     long start[3], count[3];
-    int icount[2];
+    ng_size_t icount[2];
     long lonlen, latlen;
     char filename[256];
     char recname[50];

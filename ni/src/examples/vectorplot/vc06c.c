@@ -80,7 +80,8 @@ main(int argc, char *argv[])
  * Declare variables for getting information from netCDF file.
  */
     int   uv, p, u_id, v_id, p_id, ncid, lon_id, lat_id, FRAME_COUNT;
-    int  i, mindistval, icount[3], longitudeval;
+    int  i, mindistval, longitudeval;
+    ng_size_t icount[3];
     float val;
     long  start[2], count[2], lonlen, latlen; 
     float CenLonF;
@@ -192,8 +193,8 @@ main(int argc, char *argv[])
     icount[0] = latlen; icount[1] = lonlen;
 
     NhlRLClear(rlist);
-    NhlRLSetMDFloatArray(rlist,NhlNvfUDataArray,&U[0][0],2,(int *)icount);
-    NhlRLSetMDFloatArray(rlist,NhlNvfVDataArray,&V[0][0],2,(int *)icount);
+    NhlRLSetMDFloatArray(rlist,NhlNvfUDataArray,&U[0][0],2,icount);
+    NhlRLSetMDFloatArray(rlist,NhlNvfVDataArray,&V[0][0],2,icount);
     NhlRLSetFloat(rlist,NhlNvfXCStartV, -180.0);
     NhlRLSetFloat(rlist,NhlNvfXCEndV, 180.0);
     NhlRLSetFloat(rlist,NhlNvfYCStartV,-90.0);
@@ -214,7 +215,7 @@ main(int argc, char *argv[])
     icount[0] = latlen; icount[1] = lonlen;
 
     NhlRLClear(rlist);
-    NhlRLSetMDFloatArray(rlist,NhlNsfDataArray,&PSL[0][0],2,(int *)icount);
+    NhlRLSetMDFloatArray(rlist,NhlNsfDataArray,&PSL[0][0],2,icount);
     NhlRLSetFloat(rlist,NhlNsfXCStartV, -180.0);
     NhlRLSetFloat(rlist,NhlNsfXCEndV, 180.0);
     NhlRLSetFloat(rlist,NhlNsfYCStartV, -90.0);

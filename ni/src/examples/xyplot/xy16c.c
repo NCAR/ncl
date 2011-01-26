@@ -90,7 +90,7 @@ main()
 /*
  * Define variable for data file
  */
-    char filename[6];
+    char filename[10];
 /*
  * Indicate whether we want output to go to NCGM, X11 window or
  * PS file.

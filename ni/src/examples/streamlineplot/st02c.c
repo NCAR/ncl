@@ -45,7 +45,7 @@ main(int argc, char *argv[])
     char const *wks_type = "x11";
     int appid,wid,stid,vfid;
     int rlist,grlist;
-    int len_dims[2];
+    ng_size_t len_dims[2];
     float stepsize,arrowlength,spacing;
     float U[N][M],V[N][M];
 

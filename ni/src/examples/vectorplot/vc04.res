@@ -10,3 +10,5 @@
 *vc04Work*lbBoxLineThicknessF : 3.0
 *vcFillArrowEdgeColor : 1
 *wkBackgroundColor : (/ 1.0, 1.0, 1.0 /)
+*FuncCode           : :
+*TextFuncCode       : :

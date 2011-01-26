@@ -12,5 +12,8 @@
 *mpLimitMode       : LatLon
 *mpPerimOn         : True
 
+*FuncCode           : :
+*TextFuncCode       : :
+
 *pmTitleDisplayMode: Always
 

@@ -53,7 +53,8 @@
 main()
 {
     int     appid,xworkid,plotid,dataid;
-    int     i, rlist, len[2];
+    int     i, rlist;
+    ng_size_t len[2];
     float   xdra[NPTS],ydra[NPTS], theta;
     float   cmap[4][3];
     char const *wks_type = "x11";

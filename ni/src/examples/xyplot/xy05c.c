@@ -58,7 +58,8 @@ int length[NCURVE];
 main()
 {
     int     appid,xworkid,plotid,dataid;
-    int     rlist, i, j, len[2];
+    int     rlist, i, j;
+    ng_size_t len[2];
     float   cmap[NCOLORS][3];
     char const *wks_type = "x11";
 /*

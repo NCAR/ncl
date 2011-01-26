@@ -52,7 +52,8 @@ main(int argc, char *argv[])
     int i, j;
     int appid, wid, cnid, vcid, mpid;
     int vfield, sfield;
-    int rlist, grlist, len_dims[2];
+    int rlist, grlist;
+    ng_size_t len_dims[2];
     float cmap[NCOLORS][3];
     float U[MSIZE][NSIZE],V[MSIZE][NSIZE],P[MSIZE][NSIZE];
     float vmin, vmax;

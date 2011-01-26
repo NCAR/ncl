@@ -53,7 +53,8 @@ float ydra[NPTS],xdra[NPTS];
 main()
 {
     int     appid,xworkid,plotid,dataid;
-    int     rlist, i, len[2];
+    int     rlist, i;
+    ng_size_t len[2];
     float   theta;
     float   cmap[NCOLORS][3];
     char plot_name[8];

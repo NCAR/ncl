@@ -47,7 +47,7 @@ main(int argc, char *argv[])
     int M = 50, N = 50;
     int mlow = 13, mhigh = 18;
     float dlow = 13.0, dhigh = 18.0;
-    int len_dims[2];
+    ng_size_t len_dims[2];
     char const *wks_type = "x11";
 
     extern void gendat();

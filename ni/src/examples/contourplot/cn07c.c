@@ -52,8 +52,8 @@ main()
  */
     int     appid, workid, field1, con1;
     int     srlist, i;
-    int     icount[2];
-	float cmap[NCOLORS][3];
+    ng_size_t    icount[2];
+    float cmap[NCOLORS][3];
 /*
  * Declare variables for getting information from netCDF file.
  */
@@ -212,7 +212,7 @@ main()
  */
     icount[0] = latlen; icount[1] = lonlen;
     NhlRLClear(srlist);
-    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&Z[0][0],2,(int *)icount);
+    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&Z[0][0],2,icount);
     NhlRLSetFloat(srlist,NhlNsfMissingValueV,special_value);
     NhlRLSetFloat(srlist,NhlNsfXCStartV,lon[0]);
     NhlRLSetFloat(srlist,NhlNsfXCEndV,lon[lonlen-1]);
@@ -280,7 +280,7 @@ main()
         NhlRLClear(srlist);
         icount[0] = latlen; icount[1] = lonlen;
         NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&Z[0][0],2,
-                            (int *)icount);
+                            icount);
         NhlSetValues(field1,srlist);
         NhlDraw(con1);
         NhlFrame(workid);

@@ -103,7 +103,7 @@ main(int argc, char *argv[])
   float z[NumIn];
   float *out, xo[NumXOut], yo[NumYOut], xc, yc;
   float u[NumXOut][NumYOut], v[NumXOut][NumYOut], uvtmp;
-  int   len_dims[2];
+  ng_size_t  len_dims[2];
   int   appid,wid,dataid,cnid,vfid,vcid,gkswid;
   int   srlist, grlist;
   int   i, j, ier;

@@ -65,7 +65,7 @@ main()
 /*
  * Declare variables for color map
  */
-  int length[2];
+  ng_size_t length[2];
   float cmap[NCOLORS][3];
 /*
  * Declare variables to hold U, V, and wind speed data.
@@ -77,7 +77,7 @@ main()
   int  ncid, lon_id, lat_id, uid, vid;
   float lon[NPTS], lat[NPTS];
   long start[2], count[2], lonlen, latlen;
-  int icount[2];
+  ng_size_t icount[2];
   char filename[256], recname[50];
   const char *dir = _NGGetNCARGEnv("data");
 /*
