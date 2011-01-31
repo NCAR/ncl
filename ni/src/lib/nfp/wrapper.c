@@ -6910,7 +6910,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(5);
-    SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
+    /* 'snumeric' allows int8, uint8. */
+    SetArgTemplate(args, nargs, "snumeric", 0, NclANY);  nargs++;
 
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
