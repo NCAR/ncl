@@ -40,6 +40,7 @@
 #include "VarSupport.h"
 #include "NclCoordVar.h"
 #include "NclCallBacksI.h"
+#include "NclList.h"
 #include <math.h>
 #ifdef NIO_LIB_ONLY
 #define UNDEF 255
@@ -422,6 +423,7 @@ FILE *fp;
 	NclVar cvar= NULL;
 	NclMultiDValData tmp_md = NULL;
 	char *v_name;
+	char v_type[256];
 	int i;
 	NclMultiDValData thevalue = NULL;
 	int ret;
@@ -514,6 +516,33 @@ FILE *fp;
 	if(ret < 0) {
 		return(NhlWARNING);
 	}
+
+	/* Wei added for print list information */
+	strcpy(v_type, _NclBasicDataTypeToName(thevalue->multidval.data_type));
+	if(0 == strcmp(v_type, "list"))
+	{
+		NclObj obj;
+		NclListObjList *step;
+		NclList thelist = (NclList) _NclGetObj(*(int *)thevalue->multidval.val);
+		ret0 = NhlNOERROR;
+
+		ret = nclfprintf(fp,"Total objects: %ld\n",(long)thelist->list.nelem);
+		if(ret < 0) {
+			return(NhlWARNING);
+		}
+		step = thelist->list.first;
+		for(i = 0; i < thelist->list.nelem; i++)
+		{
+			obj = _NclGetObj(step->obj_id);
+			ret = nclfprintf(fp,"\n\n********Object[%d]********", i);
+
+			VarPrintVarSummary(obj, fp);
+			step = step->next;
+		}
+
+		return(ret0);
+	}
+
 	ret = nclfprintf(fp,"Total Size: %lld bytes\n",(long long)thevalue->multidval.totalsize);
 	if(ret < 0) {
 		return(NhlWARNING);

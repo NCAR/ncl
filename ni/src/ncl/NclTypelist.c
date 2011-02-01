@@ -86,7 +86,7 @@ static NhlErrorTypes Ncl_Type_list_InitClass
 ()
 #endif
 {
-	nclTypelistClassRec.type_class.default_mis.objval = -1;
+	nclTypelistClassRec.type_class.default_mis.listval = -1;
 	return(NhlNOERROR);
 }
 

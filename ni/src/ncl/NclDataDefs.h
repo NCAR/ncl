@@ -86,7 +86,7 @@ Ncl_Typecompound = 		030000000000
 /*
 * allows for selection of basic data value type
 */
-#define NCL_VAL_TYPE_MASK	(((unsigned long) Ncl_Typelogical) | NCL_CHARSTR_TYPE_MASK | NCL_SNUMERIC_TYPE_MASK)
+#define NCL_VAL_TYPE_MASK	(((unsigned long) Ncl_Typelogical) | NCL_CHARSTR_TYPE_MASK | NCL_SNUMERIC_TYPE_MASK | Ncl_Typelist)
 
 typedef enum  {
 NCL_none = 	0,
@@ -119,6 +119,7 @@ typedef NclQuark string; /* Makes this a quark type */
 typedef char byte;
 typedef int logical;
 typedef int obj;
+typedef int list;
 typedef int group;
 typedef int compound;
 
@@ -129,6 +130,7 @@ typedef union _NclScalar {
 	unsigned short	   ushortval;
 	unsigned int	   uintval;
 	unsigned long      ulongval;
+	long               listval;
 	float 	           floatval;
 	int	           intval;
 	long               longval;
