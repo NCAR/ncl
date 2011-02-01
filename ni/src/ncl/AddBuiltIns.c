@@ -1,5 +1,5 @@
 /*
- *      $Id: AddBuiltIns.c,v 1.92 2010-04-28 23:02:03 huangwei Exp $
+ *      $Id$
  */
 /************************************************************************
 *                                                                       *
@@ -418,6 +418,11 @@ extern NhlErrorTypes _NclItobyte(
 void
 #endif
 );
+extern NhlErrorTypes _NclItoubyte(
+#if NhlNeedProto
+void
+#endif
+);
 
 extern NhlErrorTypes _NclItoshort(
 #if NhlNeedProto
@@ -458,17 +463,6 @@ void
 #endif
 );
 extern NhlErrorTypes _NclItouint64(
-#if NhlNeedProto
-void
-#endif
-);
-
-extern NhlErrorTypes _NclItoint8(
-#if NhlNeedProto
-void
-#endif
-);
-extern NhlErrorTypes _NclItouint8(
 #if NhlNeedProto
 void
 #endif
@@ -835,12 +829,7 @@ extern NhlErrorTypes _NclIIsUint64(
 void
 #endif
 );
-extern NhlErrorTypes _NclIIsInt8(
-#if     NhlNeedProto
-void
-#endif
-);
-extern NhlErrorTypes _NclIIsUint8(
+extern NhlErrorTypes _NclIIsUbyte(
 #if     NhlNeedProto
 void
 #endif
@@ -866,6 +855,11 @@ void
 #endif
 );
 extern NhlErrorTypes _NclIIsLogical(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsList(
 #if     NhlNeedProto
 void
 #endif
@@ -1506,12 +1500,7 @@ void _NclAddBuiltIns
         nargs = 0;
         args = NewArgs(1);
         SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
-        NclRegisterFunc(_NclItoint8,args,"toint8",nargs);
-
-        nargs = 0;
-        args = NewArgs(1);
-        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
-        NclRegisterFunc(_NclItouint8,args,"touint8",nargs);
+        NclRegisterFunc(_NclItoubyte,args,"toubyte",nargs);
 
         nargs = 0;
         args = NewArgs(1);
@@ -2059,12 +2048,12 @@ void _NclAddBuiltIns
         nargs = 0;
         args = NewArgs(1);
         SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
-        NclRegisterFunc( _NclIIsInt8,args,"isint8",nargs);
+        NclRegisterFunc( _NclIIsList,args,"islist",nargs);
 
         nargs = 0;
         args = NewArgs(1);
         SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
-        NclRegisterFunc( _NclIIsUint8,args,"isuint8",nargs);
+        NclRegisterFunc( _NclIIsUbyte,args,"isubyte",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);

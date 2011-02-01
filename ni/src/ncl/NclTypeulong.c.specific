@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeulong.c.specific,v 1.2 2009-07-10 19:54:06 huangwei Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -199,26 +199,7 @@ NclTypeClass fc;
                 }
                 return(NhlNOERROR);
         }
-	case Ncl_Typeint8: {
-		char *fl = (char*)from;
-		if((from_m == NULL)||(to_m == NULL)) {
-			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (unsigned long)*fl;
-			}
-		} else {
-			for(i = 0; i < n;i++,res++,fl++)  {
-				tmp = 0;
-				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
-				if(tmp) {
-					*res = tmp_mis.ulongval;
-				} else {
-					*res = (unsigned long)*fl;
-				}
-			}
-		}
-		return(NhlNOERROR);
-	}
-        case Ncl_Typeuint8: {
+        case Ncl_Typeubyte: {
                 unsigned char *fl = (unsigned char *)from;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {

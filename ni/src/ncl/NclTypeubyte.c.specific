@@ -1,5 +1,5 @@
 /*
- *      $Id: NclTypeuint8.c.specific,v 1.2 2010-04-14 21:29:48 huangwei Exp $
+ *      $Id$
  */
 
 /************************************************************************
@@ -27,7 +27,7 @@
 #include "NclTypeint.h"
 #include "NclTypelong.h"
 
-static NhlErrorTypes Ncl_Type_uint8_print
+static NhlErrorTypes Ncl_Type_ubyte_print
 #if     NhlNeedProto
 (FILE *fp, void * val)
 #else
@@ -54,7 +54,7 @@ void *val;
 
 
 
-static NhlErrorTypes Ncl_Type_uint8_coerce
+static NhlErrorTypes Ncl_Type_ubyte_coerce
 #if	NhlNeedProto
 (void * result, void* from, ng_size_t n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
 #else
@@ -82,32 +82,13 @@ NclTypeClass fc;
                 eq = fc->type_class.eq;
 
         if(to_m == NULL){  
-		tmp_mis.uint8val = ((NclTypeClass)nclTypeuint8Class)->type_class.default_mis.uint8val;
+		tmp_mis.ubyteval = ((NclTypeClass)nclTypeubyteClass)->type_class.default_mis.ubyteval;
         } else {
-		tmp_mis.uint8val = to_m->uint8val;
+		tmp_mis.ubyteval = to_m->ubyteval;
 	}
 
 	switch(fc->type_class.type) {
-	case Ncl_Typeint8: {
-		char *fl = (char*)from;
-		if((from_m == NULL)||(to_m == NULL)) {
-			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (char)*fl;
-			}
-		} else {
-			for(i = 0; i < n;i++,res++,fl++)  {
-				tmp = 0;
-				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
-				if(tmp) {
-					*res = tmp_mis.int8val;
-				} else {
-					*res = *fl;
-				}
-			}
-		}
-		return(NhlNOERROR);
-	}
-        case Ncl_Typeuint8: {
+        case Ncl_Typeubyte: {
                 unsigned char *fl = (unsigned char*)from;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {
@@ -118,7 +99,7 @@ NclTypeClass fc;
                                 tmp = 0;
                                 (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
                                 if(tmp) {
-                                        *res = tmp_mis.uint8val;
+                                        *res = tmp_mis.ubyteval;
                                 } else {
                                         *res = *fl;
                                 }
@@ -138,7 +119,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = tmp_mis.uint8val;
+					*res = tmp_mis.ubyteval;
 				} else {
 					*res = (unsigned char)*fl;
 				}
@@ -150,7 +131,7 @@ NclTypeClass fc;
 		return(NhlFATAL);
 	}
 }
-static NhlErrorTypes Ncl_Type_uint8_cmpf
+static NhlErrorTypes Ncl_Type_ubyte_cmpf
 #if     NhlNeedProto
 (void *lhs, void* rhs, NclScalar* lhs_m, NclScalar *rhs_m,int digits, double* result)
 #else
@@ -164,9 +145,9 @@ double * result;
 #endif
 {
         
-        if((lhs_m != NULL)&&(lhs_m->uint8val == *(unsigned char*)lhs)) {
+        if((lhs_m != NULL)&&(lhs_m->ubyteval == *(unsigned char*)lhs)) {
                 return(NhlFATAL);
-        } else if((rhs_m != NULL)&&(rhs_m->uint8val == *(unsigned char*)rhs)) {
+        } else if((rhs_m != NULL)&&(rhs_m->ubyteval == *(unsigned char*)rhs)) {
                 return(NhlFATAL);
         } else {
                 *result = (double)(*(unsigned char*)lhs-*(unsigned char*)rhs);

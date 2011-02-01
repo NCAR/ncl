@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Keywords.h,v 1.18 2010-04-14 21:29:47 huangwei Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -65,8 +65,7 @@ static struct {
 {"graphic",      GRAPHIC},
 {"int64",     	INT64},
 {"uint64",	UINT64},
-{"int8",     	INT8},
-{"uint8",	UINT8},
+{"ubyte",        UBYTE},
 {"return",       RETURN},
 {"external",     EXTERNAL},
 {"record",	RECORD},

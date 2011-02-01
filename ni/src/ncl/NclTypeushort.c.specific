@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeushort.c.specific,v 1.2 2009-07-10 19:54:06 huangwei Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -121,26 +121,7 @@ NclTypeClass fc;
 		}
 		return(NhlNOERROR);
 	}
-	case Ncl_Typeint8: {
-		char *fl = (char*)from;
-		if((from_m == NULL)||(to_m == NULL)) {
-			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (unsigned short)*fl;
-			}
-		} else {
-			for(i = 0; i < n;i++,res++,fl++)  {
-				tmp = 0;
-				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
-				if(tmp) {
-					*res = tmp_mis.ushortval;
-				} else {
-					*res = (unsigned short)*fl;
-				}
-			}
-		}
-		return(NhlNOERROR);
-	}
-        case Ncl_Typeuint8: {
+        case Ncl_Typeubyte: {
                 unsigned char *fl = (unsigned char *)from;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {

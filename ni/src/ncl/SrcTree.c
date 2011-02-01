@@ -1,6 +1,5 @@
-
 /*
- *      $Id: SrcTree.c,v 1.47 2010-04-14 21:29:48 huangwei Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -1849,7 +1848,7 @@ char* string_rep;
 	tmp->len = -1;
 	tmp->int_type = 'i';
 	if (string_rep != NULL) { 
-		char *type = strpbrk(string_rep,"bCjJhHiIlLqQ");
+		char *type = strpbrk(string_rep,"bBChHiIlLqQ");
 		if (type) {
 			tmp->int_type = *type;
 			tmp->len = strlen(string_rep) - 1;

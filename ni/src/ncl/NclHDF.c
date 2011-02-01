@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.40 2010-05-06 22:52:28 huangwei Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -245,8 +245,8 @@ static int32 HDFIsUnsigned (int hdf_type)
 static NclBasicDataTypes ToNclUnsigned(NclBasicDataTypes type)
 {
 	switch (type) {
-	case NCL_int8:
-		return NCL_uint8;
+	case NCL_byte:
+		return NCL_ubyte;
 	case NCL_short:
 		return NCL_ushort;
 	case NCL_int:
@@ -385,11 +385,10 @@ static void *HDFMapFromNcl
 	}
 	switch(the_type) {
 	case NCL_byte:
-	case NCL_int8:
 		*(nc_type*)out_type = NC_BYTE;
                 break;
-	case NCL_uint8:
 	case NCL_char:
+	case NCL_ubyte:
 		*(nc_type*)out_type = NC_CHAR;
                 break;
 	case NCL_short:

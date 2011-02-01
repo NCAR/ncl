@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypebyte.c.specific,v 1.6.4.1 2008-03-28 20:37:51 grubin Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -94,26 +94,7 @@ NclTypeClass fc;
                 }
                 return(NhlNOERROR);
         }	
-	case Ncl_Typeint8: {
-		char *fl = (char*)from;
-		if((from_m == NULL)||(to_m == NULL)) {
-			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (byte)*fl;
-			}
-		} else {
-			for(i = 0; i < n;i++,res++,fl++)  {
-				tmp = 0;
-				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
-				if(tmp) {
-					*res = tmp_mis.byteval;
-				} else {
-					*res = (byte)*fl;
-				}
-			}
-		}
-		return(NhlNOERROR);
-	}
-        case Ncl_Typeuint8: {
+        case Ncl_Typeubyte: {
                 unsigned char *fl = (unsigned char *)from;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {

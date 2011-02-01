@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MathTemplate.c.sed,v 1.4 2001-01-03 17:12:02 ethan Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -143,32 +143,6 @@ NhlErrorTypes _NclFUNCNAME
 			NCL_float,
 			0
 		));
-	case NCL_int8:
-		cvalue = (char *)value;
-		out_val = (void*)NclMalloc(total*sizeof(float));
-		fout_val = (float*)out_val;
-		if(has_missing) {
-			missing2.floatval = (float)missing.int8val;
-			for( i = 0 ; i < total; i ++ ) {
-				if(cvalue[i] != missing.int8val) {
-					fout_val[i] = (float)FUNCNAME((CAST)cvalue[i]);
-				} else {
-					fout_val[i] = missing2.floatval;
-				}
-			}
-		} else {
-			for( i = 0 ; i < total; i ++ ) {
-				fout_val[i] = (float)FUNCNAME((CAST)cvalue[i]);
-			}
-		}
-		return(NclReturnValue(
-			out_val,
-			n_dims,
-			dimsizes,
-			(has_missing ? &missing2 : NULL),
-			NCL_float,
-			0
-		));
 	case NCL_short:
 		svalue = (short*)value;
 		out_val = (void*)NclMalloc(total*sizeof(float));
@@ -299,14 +273,14 @@ NhlErrorTypes _NclFUNCNAME
 			NCL_float,
 			0
 		));
-	case NCL_uint8:
+	case NCL_ubyte:
 		ucvalue = (unsigned char *)value;
 		out_val = (void*)NclMalloc(total*sizeof(float));
 		fout_val = (float*)out_val;
 		if(has_missing) {
-			missing2.floatval = (float)missing.uint8val;
+			missing2.floatval = (float)missing.ubyteval;
 			for( i = 0 ; i < total; i ++ ) {
-				if(ucvalue[i] != missing.uint8val) {
+				if(ucvalue[i] != missing.ubyteval) {
 					fout_val[i] = (float)FUNCNAME((CAST)ucvalue[i]);
 				} else {
 					fout_val[i] = missing2.floatval;

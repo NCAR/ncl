@@ -1080,15 +1080,10 @@ if(groot != NULL) {
 				*(unsigned long long*)tmp_val = (unsigned long long)integer->integer;
 				tclass = (NclTypeClass) nclTypeuint64Class;
 				break;
-			case 'j':
-				tmp_val = NclMalloc(sizeof(char));
-				*(char*)tmp_val = (char)integer->integer;
-				tclass = (NclTypeClass) nclTypeint8Class;
-				break;
-			case 'J':
+			case 'B':
 				tmp_val = NclMalloc(sizeof(unsigned char));
 				*(unsigned char*)tmp_val = (unsigned char)integer->integer;
-				tclass = (NclTypeClass) nclTypeuint8Class;
+				tclass = (NclTypeClass) nclTypeubyteClass;
 				break;
 			}
 

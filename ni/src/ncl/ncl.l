@@ -267,7 +267,7 @@ file_grp_var_alnum   [_a-zA-Z0-9/]
 file_grp_var_compound_alnum   [_a-zA-Z0-9/.]
 white	[\t ]
 digit	[0-9]
-inttype [bCjJhHiIlLqQ]
+inttype [bBChHiIlLqQ]
 %x incl
 %%
 	if(inc_line) {

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.177 2010-05-02 20:22:17 haley Exp $
+#      $Id$
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2010-05-02 20:22:17 $
+#	Date:		$Date$
 #
 #	Description:	
 #
@@ -197,7 +197,7 @@ GEN_HDRS	=	NclTypeobj.h NclTypelogical.h \
 			NclTypeshort.h NclTypestring.h \
 			NclTypeushort.h NclTypeuint.h NclTypeulong.h \
 			NclTypeint64.h NclTypeuint64.h \
-			NclTypeint8.h NclTypeuint8.h \
+			NclTypeubyte.h \
 			parser.h NclTypebyte.h NclTypechar.h TypeSupport.h \
 			MathFuncs.h 
 
@@ -276,8 +276,7 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		NclTypelist.c NclTypelogical.c.specific			\
 		NclTypeushort.c.specific NclTypeuint.c.specific		\
 		NclTypeulong.c.specific NclTypeint64.c.specific		\
-		NclTypeuint64.c.specific				\
-		NclTypeint8.c.specific NclTypeuint8.c.specific		\
+		NclTypeuint64.c.specific NclTypeubyte.c.specific	\
 		NclTypelong.c.specific NclTypeobj.c.specific		\
 		NclTypeshort.c.specific NclTypestring.c.sed		\
 		NclTypestring.c.specific NclVar.c			\
@@ -292,7 +291,7 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		TypeAndOpTemplate.c.sed TypeOrOpTemplate.c.sed          \
 		TypestringCompareOpTemplate.c.sed			\
 		TypestringSelectOpTemplate.c.sed			\
-		VarSupport.c				\
+		VarSupport.c						\
 		byte_data_c.sh char_data_c.sh ctoiee.c data_h.sh	\
 		date.c double_data_c.sh float_data_c.sh int_data_c.sh	\
 		logical_data_c.sh long_data_c.sh math_funcs.sh		\
@@ -300,7 +299,7 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		obj_data_c.sh op_funcs.sh qu2reg3.f rowina3.f scm0.f	\
 		short_data_c.sh string_data_c.sh type_support_c.sh	\
 		type_support_h.sh ushort_data_c.sh ulong_data_c.sh      \
-		uint8_data_c.sh int8_data_c.sh				\
+		ubyte_data_c.sh 					\
 		uint_data_c.sh uint64_data_c.sh int64_data_c.sh
 
 PYNIO_SRC_DIR   =	$(TOP)/pynio
@@ -323,7 +322,7 @@ GEN_TYPE_SRCS	=	NclTypedouble.c NclTypefloat.c \
 			NclTypelong.c NclTypeobj.c \
 			NclTypeshort.c NclTypestring.c \
 			NclTypeint64.c NclTypeuint64.c \
-			NclTypeint8.c NclTypeuint8.c \
+			NclTypeubyte.c \
 			NclTypeushort.c NclTypeuint.c NclTypeulong.c \
 			NclTypebyte.c NclTypechar.c TypeSupport.c \
 			NclMultiDValData.c 
@@ -365,7 +364,7 @@ GEN_TYPE_OBJS	=	NclTypedouble.o NclTypefloat.o \
 			NclTypelong.o NclTypeobj.o \
 			NclTypeshort.o NclTypestring.o \
 			NclTypeint64.o NclTypeuint64.o \
-			NclTypeint8.o NclTypeuint8.o \
+			NclTypeubyte.o \
 			NclTypeushort.o NclTypeuint.o NclTypeulong.o \
 			NclTypebyte.o NclTypechar.o TypeSupport.o \
 			NclMultiDValData.o 
@@ -564,8 +563,7 @@ NclTypeRule(ushort,$(NUM_OP_TMPL))
 NclTypeRule(uint,$(NUM_OP_TMPL))
 NclTypeRule(ulong,$(NUM_OP_TMPL))
 NclTypeRule(uint64,$(NUM_OP_TMPL))
-NclTypeRule(int8,$(NUM_OP_TMPL))
-NclTypeRule(uint8,$(NUM_OP_TMPL))
+NclTypeRule(ubyte,$(NUM_OP_TMPL))
 
 
 #if defined(CRAY)
