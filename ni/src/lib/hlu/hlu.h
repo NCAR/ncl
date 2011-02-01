@@ -91,8 +91,7 @@
 #define NhlTUint	"Uint"
 #define NhlTUlong	"Ulong"
 #define NhlTUint64	"Uint64"
-#define NhlTInt8	"Int8"
-#define NhlTUint8	"Uint8"
+#define NhlTUbyte	"Ubyte"
 
 /* public real types supported */
 #define NhlTFloat	"Float"
@@ -124,8 +123,7 @@
 #define NhlTUintGenArray	"UintGenArray"
 #define NhlTUlongGenArray	"UlongGenArray"
 #define NhlTUint64GenArray	"Uint64GenArray"
-#define NhlTInt8GenArray	"Int8GenArray"
-#define NhlTUint8GenArray	"Uint8GenArray"
+#define NhlTUbyteGenArray	"UbyteGenArray"
 
 #define NhlTFloatGenArray	"FloatGenArray"
 #define NhlTDoubleGenArray	"DoubleGenArray"
@@ -177,8 +175,8 @@ union _NhlType_ {
 	NhlPointer	ptrval;
 	unsigned char	byteval;
 	char		charval;
-	unsigned char	uint8val;
-	char		int8val;
+	unsigned char	ubyteval;
+	int		listval;
 	short		shrtval;
 	int		intval;
 	long		lngval;
