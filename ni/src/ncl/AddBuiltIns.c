@@ -870,6 +870,11 @@ extern NhlErrorTypes _NclIIsLogical(
 void
 #endif
 );
+extern NhlErrorTypes _NclIIsUnsigned(
+#if     NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _NclIisbigendian(
 #if     NhlNeedProto
 void
@@ -1995,6 +2000,11 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsDefined,args,"isdefined",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsUnsigned,args,"isunsigned",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);

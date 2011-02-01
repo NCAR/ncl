@@ -18469,6 +18469,7 @@ NhlErrorTypes _NclINewList( void )
 	obj *id;
 	ng_size_t one = 1;
 	int i;
+	int list_type;
 	string *tmp_string;
 	char buffer[5];
 	
@@ -18484,7 +18485,7 @@ NhlErrorTypes _NclINewList( void )
 	
 	tmp = NrmQuarkToString(*tmp_string);
 	if(tmp == NULL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"NewList: unknow list type. Only \"join\" or \"cat\" supported");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NewList: unknow list type.");
 		return(NhlFATAL);
 	}
 	buffer[4] = '\0';
@@ -18497,11 +18498,33 @@ NhlErrorTypes _NclINewList( void )
 	
 
 	data.kind = NclStk_VAL;
-	tmp_list =(NclList)_NclListCreate(NULL,NULL,0,0,(strcmp("join",buffer) == 0 ? (NCL_JOIN | NCL_FIFO):(NCL_CONCAT|NCL_FIFO)));
+
+        if(0 == strcmp("join",buffer))
+	{
+		list_type = (int) (NCL_JOIN | NCL_FIFO);
+	}
+        else if(0 == strcmp("concat",buffer))
+	{
+		list_type = (int) (NCL_CONCAT | NCL_FIFO);
+	}
+        else if(0 == strcmp("fifo",buffer))
+	{
+		list_type = (int) (NCL_FIFO);
+	}
+        else if(0 == strcmp("lifo",buffer))
+	{
+		list_type = (int) (NCL_LIFO);
+	}
+        else
+	{
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NewList: unknow list type");
+		return(NhlFATAL);
+	}
+	tmp_list =(NclList)_NclListCreate(NULL,NULL,0,0,list_type);
 	id = (obj*)NclMalloc(sizeof(obj));
 	*id = tmp_list->obj.id;
 	data.u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,id,NULL,1,&one,TEMPORARY,NULL);
-	_NclListSetType((NclObj)tmp_list,NCL_FIFO);
+	_NclListSetType((NclObj)tmp_list,list_type);
 	_NclPlaceReturn(data);
 	return(NhlNOERROR);
 	
@@ -25652,11 +25675,8 @@ NhlErrorTypes _NclItoushort
                         val = ptr[i];
                         if(val < 0)
                         {
-                            if(has_missing && (val != missing.shortval))
-                            {
-                                has_missing = 1;
-                                underflowed ++;
-                            }
+                            has_missing = 1;
+                            underflowed ++;
                             output[i] = ret_missing.ushortval;
                         }
                         else
@@ -25710,20 +25730,14 @@ NhlErrorTypes _NclItoushort
                         val = ptr[i];
                         if(val > USHRT_MAX)
                         {
-                            if(has_missing && (val != missing.intval))
-                            {
-                               has_missing = 1;
-                               overflowed ++;
-                            }
+                            has_missing = 1;
+                            overflowed ++;
                             output[i] = ret_missing.ushortval;
                         }
                         else if(val < 0)
                         {
-                            if(has_missing && (val != missing.intval))
-                            {
-                                has_missing = 1;
-                                underflowed ++;
-                            }
+                            has_missing = 1;
+                            underflowed ++;
                             output[i] = ret_missing.ushortval;
                         }
                         else
@@ -25734,16 +25748,16 @@ NhlErrorTypes _NclItoushort
    
                     if(overflowed)
                     {
-                        NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
                             "toushort: there are %d int larger than USHRT_MAX, which has been flagged missing.",
-                            overflowed));
+                            overflowed);
                     }
     
                     if(underflowed)
                     {
-                        NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
                             "toushort: there are %d int less than 0, which has been flagged missing.",
-                            underflowed));
+                            underflowed);
                     }
                 }
                 break;
@@ -29669,6 +29683,60 @@ NhlErrorTypes _NclItounsigned
                 out_type,
                 0
         ));
+}
+
+NhlErrorTypes _NclIIsUnsigned
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	logical *out_val;
+        void *in_value;
+        int n_dims = 0;
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+        NclScalar missing;
+        NclBasicDataTypes type;
+        int has_missing;
+
+        in_value = (void *)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+
+	out_val = (logical*)NclMalloc(sizeof(logical));
+	*out_val = 0;
+
+        switch(type)
+        {
+            case NCL_uint8:
+            case NCL_ushort:
+            case NCL_uint:
+            case NCL_ulong:
+            case NCL_uint64:
+		*out_val = 1;
+		break;
+            default:
+		*out_val = 0;
+		break;
+        }
+
+	type = NCL_logical;
+        dimsizes[0] = 1;
+	return(NclReturnValue(
+		out_val,
+		1,
+		dimsizes,
+		NULL,
+		type,
+		0
+	));
 }
 
 NhlErrorTypes _Ncldefault_fillvalue
