@@ -57,8 +57,7 @@ NhlErrorTypes _NclInitTypeClasses
 	_NclInitClass(nclTypeuintClass);
 	_NclInitClass(nclTypeulongClass);
 	_NclInitClass(nclTypeuint64Class);
-	_NclInitClass(nclTypeint8Class);
-	_NclInitClass(nclTypeuint8Class);
+	_NclInitClass(nclTypeubyteClass);
 	return(NhlNOERROR);
 }
 
@@ -132,10 +131,8 @@ NclObjTypes obj_type_enum;
 		return((NclTypeClass)nclTypeulongClass);
 	case Ncl_Typeuint64:
 		return((NclTypeClass)nclTypeuint64Class);
-	case Ncl_Typeint8:
-		return((NclTypeClass)nclTypeint8Class);
-	case Ncl_Typeuint8:
-		return((NclTypeClass)nclTypeuint8Class);
+	case Ncl_Typeubyte:
+		return((NclTypeClass)nclTypeubyteClass);
 	default:
 		return((NclTypeClass)nclTypeClass);
 	}
@@ -305,8 +302,7 @@ NhlErrorTypes _NclSetDefaultFillValues
 		((NclTypeClass)nclTypeuintClass)->type_class.default_mis.uintval = 0;
 		((NclTypeClass)nclTypeulongClass)->type_class.default_mis.ulongval = 0;
 		((NclTypeClass)nclTypeuint64Class)->type_class.default_mis.uint64val = 0;
-		((NclTypeClass)nclTypeint8Class)->type_class.default_mis.int8val = -128;
-		((NclTypeClass)nclTypeuint8Class)->type_class.default_mis.uint8val = 0;
+		((NclTypeClass)nclTypeubyteClass)->type_class.default_mis.ubyteval = 0;
 		((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval = -999.0;
 		((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval = -9999.0;
 		((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval = 0;
@@ -323,8 +319,7 @@ NhlErrorTypes _NclSetDefaultFillValues
 		((NclTypeClass)nclTypeuintClass)->type_class.default_mis.uintval = 4294967295U;
 		((NclTypeClass)nclTypeulongClass)->type_class.default_mis.ulongval = 4294967295U;
 		((NclTypeClass)nclTypeuint64Class)->type_class.default_mis.uint64val = (unsigned long long)18446744073709551614ULL;
-		((NclTypeClass)nclTypeint8Class)->type_class.default_mis.int8val = -127;
-		((NclTypeClass)nclTypeuint8Class)->type_class.default_mis.uint8val = 255;
+		((NclTypeClass)nclTypeubyteClass)->type_class.default_mis.ubyteval = 255;
 		((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval = 9.9692099683868690e+36f;
 		((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval = 9.9692099683868690e+36;
 		((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval = 0;
