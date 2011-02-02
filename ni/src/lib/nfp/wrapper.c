@@ -6910,7 +6910,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(5);
-    /* 'snumeric' allows int8, ushort, uint8, etc. */
+    /* 'snumeric' allows ushort, ubyte, etc. */
     SetArgTemplate(args, nargs, "snumeric", 0, NclANY);  nargs++;
 
     dimsizes[0] = 1;
@@ -6925,7 +6925,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(1);
-    /* 'snumeric' allows int8, ushort, uint8, etc. */
+    /* 'snumeric' allows ushort, ubyte, etc. */
     SetArgTemplate(args, nargs, "snumeric", 0, NclANY);  nargs++;
     NclRegisterFunc(getbitsone_W, args, "getbitsone", nargs);
 

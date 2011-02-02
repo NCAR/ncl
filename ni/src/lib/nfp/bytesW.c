@@ -51,10 +51,10 @@ NhlErrorTypes dim_gbits_W( void )
 /*
  * Check type of npack.
  */
-  if(type_npack != NCL_byte && type_npack != NCL_int8 && 
-     type_npack != NCL_uint8 && type_npack != NCL_short && 
-     type_npack != NCL_ushort && type_npack != NCL_int) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_gbits: npack must either be of type byte, int8, unsigned int8, short, unsigned short, or int");
+  if(type_npack != NCL_byte && type_npack != NCL_ubyte && 
+     type_npack != NCL_short && type_npack != NCL_ushort && 
+     type_npack != NCL_int) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_gbits: npack must either be of type byte, unsigned byte, short, unsigned short, or int");
       return(NhlFATAL);
   }
 
@@ -135,10 +135,7 @@ NhlErrorTypes dim_gbits_W( void )
     if(type_npack == NCL_byte) {
       isam = (void*)calloc(size_isam,sizeof(byte));
     }
-    else if(type_npack == NCL_int8) {
-      isam = (void*)calloc(size_isam,sizeof(char));
-    }
-    else if(type_npack == NCL_uint8) {
+    else if(type_npack == NCL_ubyte) {
       isam = (void*)calloc(size_isam,sizeof(unsigned char));
     }
     else if(type_npack == NCL_short) {
@@ -208,12 +205,7 @@ NhlErrorTypes dim_gbits_W( void )
         ((byte*)isam)[index_isam+j] = (byte)(tmp_isam[j]);
       }
     }
-    else if(type_npack == NCL_int8) {
-      for(j = 0; j < *iter; j++ ) {
-        ((char*)isam)[index_isam+j] = (char)(tmp_isam[j]);
-      }
-    }
-    else if(type_npack == NCL_uint8) {
+    else if(type_npack == NCL_ubyte) {
       for(j = 0; j < *iter; j++ ) {
         ((unsigned char*)isam)[index_isam+j] = (unsigned char)(tmp_isam[j]);
       }
@@ -293,10 +285,10 @@ NhlErrorTypes getbitsone_W( void )
 /*
  * Check type of npack.
  */
-  if(type_npack != NCL_byte && type_npack != NCL_int8 && 
-     type_npack != NCL_uint8 && type_npack != NCL_short && 
-     type_npack != NCL_ushort && type_npack != NCL_int) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"getbitsone_gbits: npack must either be of type byte, int8, unsigned int8, short, unsigned short, or int");
+  if(type_npack != NCL_byte && type_npack != NCL_ubyte && 
+     type_npack != NCL_short && type_npack != NCL_ushort && 
+     type_npack != NCL_int) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"getbitsone_gbits: npack must either be of type byte, unsigned byte, short, unsigned short, or int");
       return(NhlFATAL);
   }
 
@@ -331,10 +323,7 @@ NhlErrorTypes getbitsone_W( void )
     if(type_npack == NCL_byte) {
       isam = (void*)calloc(size_isam,sizeof(byte));
     }
-    else if(type_npack == NCL_int8) {
-      isam = (void*)calloc(size_isam,sizeof(char));
-    }
-    else if(type_npack == NCL_uint8) {
+    else if(type_npack == NCL_ubyte) {
       isam = (void*)calloc(size_isam,sizeof(unsigned char));
     }
     else if(type_npack == NCL_short) {
@@ -405,12 +394,7 @@ NhlErrorTypes getbitsone_W( void )
       ((byte*)isam)[j] = (byte)(tmp_isam[j]);
     }
   }
-  else if(type_npack == NCL_int8) {
-    for(j = 0; j < size_isam; j++ ) {
-      ((char*)isam)[j] = (char)(tmp_isam[j]);
-    }
-  }
-  else if(type_npack == NCL_uint8) {
+  else if(type_npack == NCL_ubyte) {
     for(j = 0; j < size_isam; j++ ) {
       ((unsigned char*)isam)[j] = (unsigned char)(tmp_isam[j]);
     }
