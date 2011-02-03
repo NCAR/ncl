@@ -699,7 +699,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(3);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 2;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
@@ -713,7 +713,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(3);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 2;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
@@ -727,7 +727,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 2;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(g2fsh_W,args,"g2fsh",nargs);
 /*
@@ -738,7 +738,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
     NclRegisterFunc(f2fsh_W,args,"f2fsh",nargs);
 /*
@@ -2697,7 +2697,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(vhseC_W,args,"vhseC",nargs);
 
@@ -2726,7 +2726,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(vhsgC_W,args,"vhsgC",nargs);
 
@@ -2836,7 +2836,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(shsgC_W,args,"shsgC",nargs);
 

@@ -20294,7 +20294,7 @@ NhlErrorTypes vhseC_W( void )
   double *dbc;
   int ndims_bc;
   ng_size_t dsizes_bc[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_bc;
+  NclBasicDataTypes type_bc, type_nlon;
 /*
  * Output array variables
  */
@@ -20310,7 +20310,8 @@ NhlErrorTypes vhseC_W( void )
   ng_size_t i, j, idvw, jdvw, mdab, ndab, l1, l2;
   int ityp;
   int ier=0, jer=0, ker=0, mer=0;
-  int *nlon_in;
+  ng_size_t *nlon_dims;
+  void *nlon_in;
 /*
  * Workspace variables
  */
@@ -20341,16 +20342,24 @@ NhlErrorTypes vhseC_W( void )
            NULL,
            &type_bc,
            DONT_CARE);
-  nlon_in = (int*)NclGetArgValue(
+  nlon_in = (void*)NclGetArgValue(
            1,
            2,
            NULL,
            NULL,
            NULL,
            NULL,
-           NULL,
+           &type_nlon,
            DONT_CARE);
-  nlon = (ng_size_t) nlon_in[0];
+/*
+ * Convert the input dimensions to ng_size_t.
+ */
+  nlon_dims = get_dimensions(nlon_in,1,type_nlon,"shseC");
+  if(nlon_dims == NULL) 
+    return(NhlFATAL);
+  nlon = *nlon_dims;
+  NclFree(nlon_dims);
+
 /*
  * The grid coming in must be at least 3-dimensional.
  */
@@ -20786,7 +20795,7 @@ NhlErrorTypes vhsgC_W( void )
   double *dbc;
   int ndims_bc;
   ng_size_t dsizes_bc[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_bc;
+  NclBasicDataTypes type_bc, type_nlon;
 /*
  * Output array variables
  */
@@ -20802,7 +20811,8 @@ NhlErrorTypes vhsgC_W( void )
   ng_size_t i, j, idvw, jdvw, mdab, ndab, l1, l2;
   int ityp;
   int ier=0, jer=0, ker=0, mer=0;
-  int *nlon_in;
+  ng_size_t *nlon_dims;
+  void *nlon_in;
 /*
  * Workspace variables
  */
@@ -20833,17 +20843,24 @@ NhlErrorTypes vhsgC_W( void )
            NULL,
            &type_bc,
            DONT_CARE);
-  nlon_in = (int*)NclGetArgValue(
+  nlon_in = (void*)NclGetArgValue(
            1,
            2,
            NULL,
            NULL,
            NULL,
            NULL,
-           NULL,
+           &type_nlon,
            DONT_CARE);
+/*
+ * Convert the input dimensions to ng_size_t.
+ */
+  nlon_dims = get_dimensions(nlon_in,1,type_nlon,"shsgC");
+  if(nlon_dims == NULL) 
+    return(NhlFATAL);
+  nlon = *nlon_dims;
+  NclFree(nlon_dims);
 
-  nlon = (ng_size_t) nlon_in[0];
 /*
  * The grid coming in must be at least 3-dimensional.
  */
@@ -22663,7 +22680,7 @@ NhlErrorTypes shseC_W( void )
   double *dab;
   int ndims_ab;
   ng_size_t dsizes_ab[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_ab;
+  NclBasicDataTypes type_ab, type_nlon;
 /*
  * Output array variables
  */
@@ -22678,7 +22695,8 @@ NhlErrorTypes shseC_W( void )
   ng_size_t i, j, idg, jdg, mdab, ndab, l1, l2;
   int isym;
   int ier=0, jer=0, ker=0, mer=0;
-  int *nlon_in;
+  ng_size_t *nlon_dims;
+  void *nlon_in;
 /*
  * Workspace variables
  */
@@ -22712,16 +22730,24 @@ NhlErrorTypes shseC_W( void )
 /*
  * Get nlon
  */
-  nlon_in = (int*)NclGetArgValue(
+  nlon_in = (void*)NclGetArgValue(
            1,
            2,
            NULL,
            NULL,
            NULL,
            NULL,
-           NULL,
+           &type_nlon,
            DONT_CARE);
-  nlon = (ng_size_t) nlon_in[0];
+/*
+ * Convert the input dimensions to ng_size_t.
+ */
+  nlon_dims = get_dimensions(nlon_in,1,type_nlon,"shseC");
+  if(nlon_dims == NULL) 
+    return(NhlFATAL);
+  nlon = *nlon_dims;
+  NclFree(nlon_dims);
+
 /*
  * The grid coming in must be at least 3-dimensional.
  */
@@ -22892,7 +22918,7 @@ NhlErrorTypes shsgC_W( void )
   double *dab;
   int ndims_ab;
   ng_size_t dsizes_ab[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_ab;
+  NclBasicDataTypes type_ab, type_nlon;
 /*
  * Output array variables
  */
@@ -22907,7 +22933,8 @@ NhlErrorTypes shsgC_W( void )
   ng_size_t i, j, idg, jdg, mdab, ndab, l1, l2;
   int isym;
   int ier=0, jer=0, ker=0, mer=0;
-  int *nlon_in = NULL;
+  ng_size_t *nlon_dims;
+  void *nlon_in;
 /*
  * Workspace variables
  */
@@ -22941,17 +22968,25 @@ NhlErrorTypes shsgC_W( void )
 /*
  * Get nlon
  */
-  nlon_in = (int*)NclGetArgValue(
+  nlon_in = (void*)NclGetArgValue(
            1,
            2,
            NULL,
            NULL,
            NULL,
            NULL,
-           NULL,
+           &type_nlon,
            DONT_CARE);
 
-  nlon = (ng_size_t) nlon_in[0];
+/*
+ * Convert the input dimensions to ng_size_t.
+ */
+  nlon_dims = get_dimensions(nlon_in,1,type_nlon,"shsgC");
+  if(nlon_dims == NULL) 
+    return(NhlFATAL);
+  nlon = *nlon_dims;
+  NclFree(nlon_dims);
+
 /*
  * The grid coming in must be at least 3-dimensional.
  */
