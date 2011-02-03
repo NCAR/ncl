@@ -16638,7 +16638,7 @@ NhlErrorTypes _NclIgaus
 	NclBasicDataTypes type_nlat;
 	int has_missing;
 	NclScalar missing;
-	ng_size_t dimsizes[2];
+	ng_size_t nl_tmp, lwork_tmp, dimsizes[2];
 	int nl, lwork=0;
 	double *theta;
 	double *wts;
@@ -16660,6 +16660,12 @@ NhlErrorTypes _NclIgaus
 	if(nlat == NULL) 
 	  return(NhlFATAL);
 
+/*
+ * Calculate some array sizes so we can test them.
+ */
+	nl_tmp    = 2 * (*nlat);                   /* Output array size */
+	lwork_tmp = 4 * nl_tmp*(nl_tmp+1)+2;       /* Work array size */
+
 	if(has_missing && ( ((type_nlat==NCL_int)&&(*nlat==missing.intval)) ||
 			    ((type_nlat==NCL_long)&&(*nlat==missing.longval)))) {
 	  ret_missing = True;
@@ -16669,13 +16675,15 @@ NhlErrorTypes _NclIgaus
 	  ret_missing = True;
 	  NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: number of latitudes must be positive");
 	} 
-	else if(*nlat > INT32_MAX) {
+	else if(*nlat > INT32_MAX || nl_tmp > INT32_MAX || lwork_tmp > INT32_MAX ) {
 /*
  * The Fortran gaus only accepts integers for now, so can't have an nlat > INT32_MAX.
  */
 	  ret_missing = True;
-	  NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: number of latitudes can't be > INT32_MAX");
+	  NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: number of input/output latitudes and/or size of work array can't be > INT32_MAX");
 	}
+	nl    = (int) nl_tmp;
+	lwork = (int) lwork_tmp;
 	if(ret_missing) {
 	  dimsizes[0] = 1;
 	  output = (double*)NclMalloc(sizeof(double));
@@ -16695,10 +16703,8 @@ NhlErrorTypes _NclIgaus
 			 1);
 	  return(NhlWARNING);
 	}
-	nl= 2 * (int)(*nlat) ;
 	theta = (double*)NclMalloc(sizeof(double)*nl);
 	wts = (double*)NclMalloc(sizeof(double)*nl);
-	lwork = 4 * nl*(nl+1)+2;
 	work = (double*)NclMalloc(sizeof(double)*lwork);
 	NGCALLF(gaqdncl,GAQDNCL)(&nl,theta,wts,work,&lwork,&ierror);
 	NclFree(work);
