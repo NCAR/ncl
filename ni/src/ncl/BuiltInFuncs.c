@@ -18900,6 +18900,156 @@ NhlErrorTypes _NclIListSetType(void)
 	}
 	return(NhlNOERROR);
 }
+
+NhlErrorTypes _NclIListCount(void)
+{
+	obj *list_id;
+	NclList thelist = NULL;
+	ng_size_t dimsize = 1;
+	int *ret_val;
+
+   	list_id = (obj*)NclGetArgValue(
+           0,
+           1,
+           NULL, 
+           NULL,
+	   NULL,
+	   NULL,
+           NULL,
+           DONT_CARE);
+
+	thelist = (NclList)_NclGetObj(*list_id);
+
+	ret_val = (int*)NclMalloc(sizeof(int));
+	if(ret_val == NULL)
+	{
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ListCount: problem to allocate memory.");
+		return(NhlFATAL);
+	}
+
+	ret_val[0] = (int)thelist->list.nelem;
+
+	return(NclReturnValue(
+		ret_val,
+		1,
+		&dimsize,
+		NULL,
+		NCL_int,
+		0
+	));
+}
+
+NhlErrorTypes _NclIListIndex(void)
+{
+	obj *list_id;
+	NclList thelist = NULL;
+	ng_size_t dimsize = 1;
+	int *ret_val;
+	int nm = 0;
+	int i, j;
+
+	NclObj the_obj;
+	NclVar cur_var;
+	NclMultiDValData the_value;
+	NclMultiDValData cur_value;
+
+        NclStackEntry data;
+
+	NclListObjList *step;
+
+	int comp_val = 0;
+
+   	list_id = (obj*)NclGetArgValue(
+           0,
+           2,
+           NULL, 
+           NULL,
+	   NULL,
+	   NULL,
+           NULL,
+           DONT_CARE);
+
+	data = _NclGetArg(1,2,DONT_CARE);
+
+	thelist = (NclList)_NclGetObj(*list_id);
+
+	if(NclStk_VAL == data.kind)
+	{
+		comp_val = 1;
+		the_value = (NclMultiDValData)data.u.data_obj;
+	}
+	else
+	{
+		comp_val = 0;
+		the_obj = (NclObj)data.u.data_obj;
+	}
+
+	ret_val = (int*)NclMalloc(thelist->list.nelem * sizeof(int));
+	if(ret_val == NULL)
+	{
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ListIndex: problem to allocate memory.");
+		return(NhlFATAL);
+	}
+
+	ret_val[0] = -1;
+
+	step = thelist->list.first;
+	for(i = 0; i < thelist->list.nelem; i++)
+	{
+		if(comp_val)
+		{
+			cur_var = (NclVar)_NclGetObj(step->obj_id);
+
+			if(!(cur_var->var.thesym))
+			{
+				cur_value = (NclMultiDValData)_NclGetObj(cur_var->var.thevalue_id);
+
+				if((the_value->multidval.data_type == cur_value->multidval.data_type) &&
+				   (the_value->multidval.kind      == cur_value->multidval.kind) &&
+				   (the_value->multidval.n_dims    == cur_value->multidval.n_dims) &&
+				   (the_value->multidval.totalsize == cur_value->multidval.totalsize))
+				{
+					int match = memcmp(the_value->multidval.val, cur_value->multidval.val, the_value->multidval.totalsize);
+					if(!match)
+						ret_val[nm++] = i;
+				}
+			}
+		}
+		else
+		{
+			if(the_obj->obj.id == step->obj_id)
+			{
+				ret_val[nm++] = i;
+			}
+		}
+
+		step = step->next;
+	}
+
+	if(nm < 1)
+            nm = 1;
+
+	dimsize = nm;
+	if(nm < thelist->list.nelem)
+	{
+		ret_val = (int *)NclRealloc(ret_val, nm*sizeof(int));
+		if(ret_val == NULL)
+		{
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"ListIndex: problem to reallocate memory.");
+			return(NhlFATAL);
+		}
+	}
+
+	return(NclReturnValue(
+		ret_val,
+		1,
+		&dimsize,
+		NULL,
+		NCL_int,
+		0
+	));
+}
+
 static nc_type _MapType (NclBasicDataTypes data_type) {
 	nc_type the_type;
 		switch(data_type) {
