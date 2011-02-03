@@ -20354,7 +20354,7 @@ NhlErrorTypes vhseC_W( void )
 /*
  * Convert the input dimensions to ng_size_t.
  */
-  nlon_dims = get_dimensions(nlon_in,1,type_nlon,"shseC");
+  nlon_dims = get_dimensions(nlon_in,1,type_nlon,"vhseC");
   if(nlon_dims == NULL) 
     return(NhlFATAL);
   nlon = *nlon_dims;
@@ -20855,7 +20855,7 @@ NhlErrorTypes vhsgC_W( void )
 /*
  * Convert the input dimensions to ng_size_t.
  */
-  nlon_dims = get_dimensions(nlon_in,1,type_nlon,"shsgC");
+  nlon_dims = get_dimensions(nlon_in,1,type_nlon,"vhsgC");
   if(nlon_dims == NULL) 
     return(NhlFATAL);
   nlon = *nlon_dims;
