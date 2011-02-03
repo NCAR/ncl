@@ -741,7 +741,7 @@ end
 ; set nlat@double = True if double precision is desired
 
 undef ("latGau")
-function latGau (nlat:integer, dimName:string, longName:string, units:string)
+function latGau (nlat, dimName:string, longName:string, units:string)
 local gau_info, lat
 begin
   if (isatt(nlat,"double") .and. nlat@double) then
@@ -768,7 +768,7 @@ end
 ; set nlat@double = True if double precision is desired
 
 undef ("latGauWgt")
-function latGauWgt(nlat:integer,dimName:string,longName:string,units:string)
+function latGauWgt(nlat,dimName:string,longName:string,units:string)
 local gau_info, gwt
 begin        
   if (isatt(nlat,"double") .and. nlat@double) then
@@ -832,7 +832,7 @@ end
 ; set mlon@double = True if double precision is desired
 
 undef ("lonGlobeF")
-function lonGlobeF(mlon:integer,dimName:string,longName:string,units:string)
+function lonGlobeF(mlon,dimName:string,longName:string,units:string)
 local dlon, lon
 begin
   if (isatt(mlon,"double") .and. mlon@double) then
@@ -864,7 +864,7 @@ end
 ; set mlon@double = True if double precision is desired
 
 undef ("lonGlobeFo")
-function lonGlobeFo(mlon:integer,dimName:string,longName:string,units:string)
+function lonGlobeFo(mlon,dimName:string,longName:string,units:string)
 local dlon, offset, lon
 begin
   if (isatt(mlon,"double") .and. mlon@double) then
@@ -981,7 +981,7 @@ end
 ; set nlat@double = True if double precision is desired
 ;
 undef ("latGlobeF")
-function latGlobeF(nlat:integer,dimName:string,longName:string,units:string)
+function latGlobeF(nlat,dimName:string,longName:string,units:string)
 local dlat, lat
 begin
   if (isatt(nlat,"double") .and. nlat@double) then
@@ -1009,7 +1009,7 @@ end
 ; set nlat@double = True if double precision is desired
 ;
 undef ("latGlobeFo")
-function latGlobeFo(nlat:integer,dimName:string,longName:string,units:string)
+function latGlobeFo(nlat,dimName:string,longName:string,units:string)
 local dlat, offset, lat
 begin
   if (isatt(nlat,"double") .and. nlat@double) then
@@ -4447,7 +4447,7 @@ end
 ; It adds the longitude and gaussian latitude coordinates.
 
 undef("g2gsh_Wrap")
-function g2gsh_Wrap (x:numeric, newDims:integer, twave:numeric)
+function g2gsh_Wrap (x:numeric, newDims, twave:numeric)
 local nlat, mlon, xNew, lat, lon, nDim, gwt 
 begin
   nlat = newDims(0)                             ; specify output grid
@@ -4489,7 +4489,7 @@ end
 ; It adds the longitude and gaussian latitude coordinates.
 
 undef("g2fsh_Wrap")
-function g2fsh_Wrap (x:numeric, newDims:integer)
+function g2fsh_Wrap (x:numeric, newDims)
 local nlat, mlon, xNew, lat, lon, nDim 
 begin
   nlat = newDims(0)                             ; specify output grid
@@ -4526,7 +4526,7 @@ end
 ; It adds the longitude and gaussian latitude coordinates.
 
 undef("f2gsh_Wrap")
-function f2gsh_Wrap (x:numeric, newDims:integer, twave:numeric)
+function f2gsh_Wrap (x:numeric, newDims, twave:numeric)
 local nlat, mlon, xNew, lat, lon, nDim 
 begin
   nlat = newDims(0)                             ; specify output grid
@@ -4570,7 +4570,7 @@ end
 ; It adds the longitude and latitude coordinates.
 
 undef("f2fsh_Wrap")
-function f2fsh_Wrap (x:numeric, newDims:integer)
+function f2fsh_Wrap (x:numeric, newDims)
 local nlat, mlon, xNew, lat, lon, nDim 
 begin
   nlat = newDims(0)                             ; specify output grid
@@ -4906,7 +4906,7 @@ begin
   mlon    = dim_uNew(nDim-1)                   ; number of longitudes [fo grid]
   nlat1= nlat-1                                ; fo has one less lat
 
-  if (typeof(x).eq."double") then
+  if (typeof(u).eq."double") then
       nlat@double = True
       nlat1@double= True
       mlon@double = True
