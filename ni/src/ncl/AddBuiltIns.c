@@ -1460,10 +1460,6 @@ void _NclAddBuiltIns
         args = NewArgs(1);
         SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
         NclRegisterFunc(_NclItoint,args,"tointeger",nargs);
-
-        nargs = 0;
-        args = NewArgs(1);
-        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
         NclRegisterFunc(_NclItoint,args,"toint",nargs);
 
 	nargs = 0;
@@ -1999,10 +1995,6 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsInteger,args,"isinteger",nargs);
-
-	nargs = 0;
-	args = NewArgs(1);
-	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsInteger,args,"isint",nargs);
 
         nargs = 0;
