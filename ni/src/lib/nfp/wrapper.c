@@ -1681,7 +1681,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(1);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(gaus_lobat_W,args,"gaus_lobat",nargs);
 /*
@@ -1702,7 +1702,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(1);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(linrood_latwgt_W,args,"linrood_latwgt",nargs);
 /*
@@ -1713,7 +1713,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(1);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(linrood_wgt_W,args,"linrood_wgt",nargs);
 /*
