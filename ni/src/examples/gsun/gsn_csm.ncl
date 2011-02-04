@@ -11834,11 +11834,14 @@ begin
   vcres@gsnFrame        = False
   vcres@gsnRightString  = ""  ; Use gsnRightString and gsnLeftString
   vcres@gsnLeftString   = ""  ; from contour plot.
-;
-; Create vector plot. We have to check the pressure values.  If they
-; are not in descending order, then reverse 'em.
-;
-  if(is_valid_coord(u,"y"))
+
+;---If pressure values are Pascals, convert them to millibars.
+  if(is_valid_coord(u,"y").and.isatt(u&$u!0$,"units").and.\
+     any(u&$u!0$@units.eq.get_allowed_pres_units_pa()))
+    set_attr(vcres,"vfYArray",tofloat_wunits(u&$u!0$) * 0.01)
+  end if
+;---If pressure values are not in descending order, reverse them.
+  if(is_valid_coord(u,"y")) then
     npres = dimsizes(u&$u!0$)
     if(u&$u!0$(0).lt.u&$u!0$(npres-1))
       vector = gsn_csm_vector(wks,u(::-1,:),v(::-1,:),vcres)
