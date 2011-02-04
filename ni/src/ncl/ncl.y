@@ -129,7 +129,7 @@ char *ncl_cur_func = NULL;
 %left '^'
 %left UNOP NOT
 %type <array> expr_list
-%type <listvar> expr_list
+%type <listvar> list_expr_list
 %type <src_node> statement assignment 
 %type <src_node> procedure function_def procedure_def fp_block block do conditional
 %type <src_node> visblk statement_list
@@ -2639,10 +2639,40 @@ array : LPSLSH expr_list SLSHRP	 {
 					}
 
 ;
-listvar : LBKSLSH expr_list SLSHRBK	{ 
+listvar : LBKSLSH list_expr_list SLSHRBK	{ 
 							$$ = _NclMakeListVarNode($2);
 					}
 
+;
+list_expr_list :  expr				{	
+							$$ = _NclMakeRowList();
+							$$->list = _NclMakeNewListNode();
+							$$->list->next = NULL;
+							$$->list->node = $1;
+							$$->currentitem= NULL; 
+							$$->nelem = 1;
+						}
+	| list_expr_list ',' expr   		{ 
+						/* pushed on backwards so they can be popped of in correct order*/
+							if($1 == NULL) {
+								$$ = _NclMakeRowList();
+								$$->nelem = 1;
+								$$->list = _NclMakeNewListNode();
+								$$->list->next = NULL;
+								$$->list->node = $1;
+								$$->currentitem= NULL; 
+								$$->nelem = 1;
+							} else {
+								NclSrcListNode *tmp;
+
+								tmp = _NclMakeNewListNode();
+								tmp->next = $1->list;
+								tmp->node = $3;
+								$1->list = tmp;
+								$1->nelem++;
+								$$ = $1;
+							}
+						}
 ;
 expr_list :  expr				{	
 							_NclValOnly($1);
