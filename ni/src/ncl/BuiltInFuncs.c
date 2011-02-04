@@ -18822,15 +18822,22 @@ NhlErrorTypes _NclIListGetType(void)
 	ret_val = (string*)NclMalloc(2 * sizeof(string));
 	if(list_type & NCL_JOIN)  {
 		ret_val[i++] = NrmStringToQuark("join");
-	} else {
+	} else if(list_type & NCL_CONCAT) {
 		ret_val[i++] = NrmStringToQuark("cat");
 	}
+
 	if(list_type & NCL_FIFO) {
 		ret_val[i++] = NrmStringToQuark("fifo");
-	} else {
+	} else if(list_type & NCL_LIFO) {
 		ret_val[i++] = NrmStringToQuark("lifo");
 	}
 	
+	if(i == 1)
+	{
+		dimsize = 1;
+		ret_val = (string*)NclRealloc(ret_val, sizeof(string));
+	}
+
 	return(NclReturnValue(
 		ret_val,
 		1,
@@ -19021,6 +19028,14 @@ NhlErrorTypes _NclIListIndex(void)
 			{
 				ret_val[nm++] = i;
 			}
+			/*
+			else
+			{
+				NclObj t_obj = (NclObj)_NclGetObj(the_obj->obj.id);
+				NclObj s_obj = (NclObj)_NclGetObj(step->obj_id);
+				ret_val[nm++] = i;
+			}
+			*/
 		}
 
 		step = step->next;

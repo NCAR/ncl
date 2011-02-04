@@ -3558,6 +3558,12 @@ void CallCONVERT_TO_LOCAL(void) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) is (%d), (%d) dimensions were expected ",arg_num,thesym->name,data.u.data_var->var.n_dims,pfinfo->theargs[arg_num].n_dims);
 								estatus = NhlFATAL;
 
+							} else if(Ncl_Typelist == obj_type_arg) {
+								/*
+								Skip dimension check for list.
+								Wei 2/4/2011
+								*/
+								estatus = NhlNOERROR;
 							} else {
 								for(i = 0; i< pfinfo->theargs[arg_num].n_dims; i++) {
 									if(pfinfo->theargs[arg_num].dim_sizes[i] != -1) {
