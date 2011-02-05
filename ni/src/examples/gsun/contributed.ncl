@@ -8339,11 +8339,13 @@ end
 ;              qmin = q(imin)
 ;              zmin = z(imin)   ; z where q is at a minimum
 ;          end if
+;
+; M.Haley, 5 Feb 2011 - updated to allow long dimension sizes
 
 undef("local_min_1d")
 function local_min_1d( X[*]:numeric  , cyclic:logical \
                      , del[1]:numeric, opt[1]:integer )
-local NX, nx, x, iOffSet, nStrt, nLast, imn, i
+local NX, nx, x, iOffSet, nStrt, nLast, imn, i, type_nx
 begin
   if (del.gt.0.0) then
       print("contributed: local_min_1d: del must be .le. 0.0")
@@ -8361,8 +8363,8 @@ begin
   NX  = dimsizes(X)
 
   if (cyclic) then
-      nx = NX+2
-      x  = new (nx, typeof(X), getFillValue(X)) 
+      nx        = NX+2
+      x         = new (nx, typeof(X), getFillValue(X)) 
       x(0)      = (/ X(NX-1) /)
       x(nx-1)   = (/ X(0)    /)
       x(1:nx-2) = (/ X       /) 
@@ -8372,12 +8374,16 @@ begin
       iOffSet   = 0
   end if
 
-  nx    = dimsizes(x) 
+  nx      = dimsizes(x)
+  type_nx = typeof(nx)                     ; int or long
+  imn     = new( nx, type_nx )
+  nStrt   = new(  1, type_nx )
+  nLast   = new(  1, type_nx )
+  i       = new(  1, type_nx )
+
   nStrt = 1
   nLast = nx-2   
-  imn   = new( nx, "integer") 
-
-  i   = -1
+  i     = -1
   do n=nStrt,nLast
      if ((x(n)-x(n-1)).le.del .and. (x(n)-x(n+1)).le.del) then
          i = i+1
@@ -8426,8 +8432,7 @@ end
 undef("local_max_1d")
 function local_max_1d( X[*]:numeric  , cyclic:logical \
                      , del[1]:numeric, opt[1]:integer )
-
-local NX, nx, x, iOffSet, nStrt, nLast, imn, i
+local NX, nx, x, iOffSet, nStrt, nLast, imx, i, type_nx
 begin
   if (del.lt.0.0) then
       print("contributed: local_max_1d: del must be .ge. 0.0")
@@ -8445,8 +8450,8 @@ begin
   NX  = dimsizes(X)        
                           
   if (cyclic) then          
-      nx = NX+2                 
-      x  = new (nx, typeof(X), getFillValue(X))    
+      nx        = NX+2                 
+      x         = new (nx, typeof(X), getFillValue(X))    
       x(0)      = (/ X(NX-1) /)  
       x(nx-1)   = (/ X(0)    /)   
       x(1:nx-2) = (/ X       /)    
@@ -8454,13 +8459,18 @@ begin
   else                              
       x         = (/ X /)            
       iOffSet   = 0
-  end if                                                                                            
-  nx    = dimsizes(x) 
+  end if
+
+  nx      = dimsizes(x)
+  type_nx = typeof(nx)                     ; int or long
+  imx     = new( nx, type_nx ) 
+  nStrt   = new(  1, type_nx )
+  nLast   = new(  1, type_nx )
+  i       = new(  1, type_nx )
+
   nStrt = 1 
   nLast = nx-2   
-  imx   = new( nx, "integer") 
-
-  i   = -1
+  i     = -1
   do n=nStrt,nLast
      if ((x(n)-x(n-1)).ge.del .and. (x(n)-x(n+1)).ge.del) then
          i    = i+1
@@ -9773,7 +9783,7 @@ function getind_latlon2d(lat2d[*][*]:numeric,lon2d[*][*]:numeric \
 local N, ij, lat1d, lon1d, dist, mndist, indx
 begin
   N  = dimsizes( LAT )          
-  ij = new ( (/N,2/) , "integer")
+  ij = new ( (/N,2/) , typeof(N))
 
   lat1d  = ndtooned( lat2d )  
   lon1d  = ndtooned( lon2d )  
