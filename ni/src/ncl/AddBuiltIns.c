@@ -1168,7 +1168,7 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,1,"float",1,NclANY);nargs++;
 	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
 	dimsizes[0] = 2;
-	SetArgTemplate(args,3,"integer",1,dimsizes);nargs++;
+	SetArgTemplate(args,3,"numeric",1,dimsizes);nargs++;
 	NclRegisterFunc(_Nclidsfft,args,"idsfft",nargs);
 
 	nargs = 0;
@@ -2307,7 +2307,7 @@ void _NclAddBuiltIns
         dimsizes[0] = 1;
         SetArgTemplate(args,0,"file",0,NclANY);nargs++;
         SetArgTemplate(args,1,"string",1,NclANY);nargs++;
-        SetArgTemplate(args,2,"integer",1,NclANY);nargs++;
+        SetArgTemplate(args,2,"numeric",1,NclANY);nargs++;
         SetArgTemplate(args,3,"logical",1,NclANY);nargs++;
         NclRegisterProc(_NclIFileChunkDimDef,args,"filechunkdimdef",nargs);
 
@@ -2454,7 +2454,7 @@ void _NclAddBuiltIns
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
     SetArgTemplate(args,nargs,"string",1,NclANY); nargs++;
-    SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
     SetArgTemplate(args,nargs,"list",1,dimsizes); nargs++;
     SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
     NclRegisterFunc(_NclICreateFile,args,"createfile",nargs);

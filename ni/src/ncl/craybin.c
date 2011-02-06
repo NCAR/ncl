@@ -18,6 +18,14 @@
 #include "NclBuiltInSupport.h"
 
 
+/* 
+ * Function to coerce dimension sizes to int or long
+ * Located in ../lib/nfp/wrapper.[ch].
+ */
+extern ng_size_t *get_dimensions(void *tmp_dimensions,ng_size_t n_dimensions,
+				 NclBasicDataTypes type_dimensions,
+				 const char *);
+
 static unsigned char cray_missing_value[8] = { 0x40,0x78,0xc0,0x97,0xce,0x7b,0xc9,0x07 };
 
 
@@ -350,8 +358,9 @@ NhlErrorTypes _NclICrayBinRecRead
 	string *fpath;
 	int	*recnum;
 	ng_size_t  *dimensions;
-	ng_size_t  *tmp_dsz;
+	void  *tmp_dsz;
 	ng_size_t  dimsize;
+        NclBasicDataTypes type_dsz;
 	string *type;
 	NclScalar missing;
 	NclMultiDValData tmp_md;
@@ -403,19 +412,18 @@ NhlErrorTypes _NclICrayBinRecRead
 		return(NhlFATAL);
 	}
 	
-	tmp_dsz = (ng_size_t *)NclGetArgValue(
+	tmp_dsz = (void *)NclGetArgValue(
 		2,
 		4,
 		NULL,
 		&dimsize,
 		&missing,
 		&has_missing,
-		NULL,
+		&type_dsz,
 		0);
 
-    dimensions = (ng_size_t *) tmp_dsz;
-/*	if(*dimensions!= -1) {*/
-	if(*tmp_dsz != -1) {
+	dimensions = get_dimensions(tmp_dsz,dimsize,type_dsz,"craybinrecread");
+	if(*dimensions!= -1) {
 		for(i = 0; i < 	dimsize; i++) {
 			if(missing.intval == *(dimensions + i)) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"craybinrecread: dimension size contains a missing value, can't continue");

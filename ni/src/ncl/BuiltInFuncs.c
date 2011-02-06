@@ -2352,11 +2352,12 @@ NhlErrorTypes _Nclidsfft
 {
 	float *arg[3];
 	ng_size_t i;
+	void *tmp_dims;
 	ng_size_t *dims;
 	ng_size_t  dimsizes,dimsizes1,dimsizes2;
 	int has_missing,has_missing1,has_missing2;
 	NclScalar missing,missing1,missing2;
-	NclBasicDataTypes type0,type1,type2;
+	NclBasicDataTypes type0,type1,type2,type3;
 	ng_size_t m,n;
 	float *tmp;
 	float *x_coord;
@@ -2378,7 +2379,10 @@ NhlErrorTypes _Nclidsfft
 	arg[0] = (float*)NclGetArgValue( 0, 4, NULL, &dimsizes, &missing, &has_missing, &type0,DONT_CARE);
 	arg[1] = (float*)NclGetArgValue( 1, 4, NULL, &dimsizes1, &missing1, &has_missing1, &type1,DONT_CARE);
 	arg[2] = (float*)NclGetArgValue( 2, 4, NULL, &dimsizes2, &missing2, &has_missing2, &type2,DONT_CARE);
-	dims = (ng_size_t*)NclGetArgValue( 3, 4, NULL, NULL, NULL, &has_missing, NULL,DONT_CARE);
+	tmp_dims = (void*)NclGetArgValue( 3, 4, NULL, NULL, NULL, &has_missing, &type3,DONT_CARE);
+	dims = get_dimensions(tmp_dims,2,type3,"idsfft");
+	if(dims == NULL) 
+	  return(NhlFATAL);
 
 	if((dimsizes == dimsizes1)&&(dimsizes = dimsizes2)){
 		xmax = (arg[0])[0];
@@ -2462,6 +2466,7 @@ NhlErrorTypes _Nclidsfft
 		tmp_var = _NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,tmp_md,dim_info,-1,ids,RETURNVAR,NULL,TEMPORARY);
 		data.kind = NclStk_VAR;
 		data.u.data_var = tmp_var;
+		NclFree(dims);
 		_NclPlaceReturn(data);
 		return(NhlNOERROR);
 	} else {
@@ -3362,7 +3367,6 @@ NhlErrorTypes _NclIfbinrecread
 		return(NhlFATAL);
 	}
 	
-/*	dimensions = (ng_size_t*)NclGetArgValue(*/
 	tmp_dimensions = (void*)NclGetArgValue(
 		2,
 		4,
@@ -17753,7 +17757,9 @@ NhlErrorTypes _NclIFileChunkDimDef
 
 	obj *thefile_id;
 	string *dimnames;
+	void *tmp_dimsizes;
 	ng_size_t *dimsizes;
+        NclBasicDataTypes type_dimsizes;
 	logical *unlimited;
 	ng_size_t i;
 	NclFile thefile;
@@ -17791,15 +17797,18 @@ NhlErrorTypes _NclIFileChunkDimDef
 		}
 	}
 
-        dimsizes = (ng_size_t *)NclGetArgValue(
+        tmp_dimsizes = (void *)NclGetArgValue(
                         2,
                         4,
                         NULL,
                         &tmp_dimsize,
                         &tmp_missing,
                         &tmp_has_missing,
-                        NULL,
+                        &type_dimsizes,
                         0);
+
+	dimsizes = get_dimensions(tmp_dimsizes,tmp_dimsize,type_dimsizes,
+				  "FileChunkDimDef");
 
 	if(tmp_dimsize != dimsize) {
 		return(NhlFATAL);
@@ -17836,6 +17845,7 @@ NhlErrorTypes _NclIFileChunkDimDef
 			ret0 = ret;
 		}
 	}
+	NclFree(dimsizes);
 	return(ret0);
 }
 
@@ -19099,6 +19109,7 @@ NhlErrorTypes _NclICreateFile(void)
 	NclStackEntry out_data,data;
 	string *path;
 	string *dimnames;
+	void *tmp_dimsizes;
 	ng_size_t *dimsizes;
 	obj *varinfo;
 	NclObj fileatts_obj;
@@ -19123,7 +19134,7 @@ NhlErrorTypes _NclICreateFile(void)
         NclMultiDValData out_md = NULL;
         int *id = (int*)NclMalloc((unsigned)sizeof(int));
         ng_size_t dim_size = 1;
-	NclBasicDataTypes ncl_var_type;
+	NclBasicDataTypes ncl_var_type, type_dimsizes;
 	int unlimited_id = -1;
 
   	path = (string*)NclGetArgValue(
@@ -19144,15 +19155,16 @@ NhlErrorTypes _NclICreateFile(void)
 	   NULL,
 	   NULL,
 	   DONT_CARE);
-  	dimsizes = (ng_size_t*)NclGetArgValue(
+  	tmp_dimsizes = (void*)NclGetArgValue(
            2,
            5,
 	   NULL,
 	   &nd0,
 	   NULL,
 	   NULL,
-	   NULL,
+	   &type_dimsizes,
 	   DONT_CARE);
+
   	varinfo = (obj*)NclGetArgValue(
            3,
            5,
@@ -19165,6 +19177,8 @@ NhlErrorTypes _NclICreateFile(void)
 	data= _NclGetArg(4,5,DONT_CARE);
 	fileatts_obj = (NclObj)data.u.data_obj;
 	
+	dimsizes = get_dimensions(tmp_dimsizes,nd0,type_dimsizes,
+				  "createfile");
 
 	sprintf(filename_buffer,"%s",NrmQuarkToString(*path));
 	if(NrmStringToQuark(&(filename_buffer[strlen(filename_buffer)-3]))!= NrmStringToQuark(".nc")) {
@@ -19361,7 +19375,7 @@ NhlErrorTypes _NclICreateFile(void)
                         return(NhlFATAL);
                 }
 	}
-
+	NclFree(dimsizes);
 	return(NhlNOERROR);
 }
 
