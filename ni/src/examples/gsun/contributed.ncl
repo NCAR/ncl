@@ -10777,7 +10777,7 @@ begin
                 XLON_1d.ge.lonW .and. XLON_1d.le.lonE)
  nlml     = ind_resolve(nm_1d, dimsizes(XLON))
 
- ijsub    = new( 4, "integer", "No_FillValue")
+ ijsub    = new( 4, typeof(nlml), "No_FillValue")
 
  ijsub(0) = min(nlml(:,0))   ; lat start index
  ijsub(1) = max(nlml(:,0))   ; lat last  index
