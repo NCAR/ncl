@@ -141,7 +141,7 @@ begin
       return(x@DataFieldName)
   end if
  ;return("")                          ; return 
-  return("missing")                   ; return 
+  return(new(1,string))
 end
 
 ; ******************************************************************
@@ -7921,8 +7921,9 @@ end
 ; return this may have to be parsed individually for specific info. 
 ;
 ; opt - option
-;       if type "integer" then it is the number of rows (line)
-;       for the header. This is a 'fixed' number of lines.
+;       if type "integer" or "long" then it is the number of rows
+;       (line) for the header. This is a 'fixed' number of lines.
+;        [06 Feb 2011 - add support for "long" nrows]
 ;
 ;       if type "string" then it is a sequence of characters
 ;       that terminate a variable number of header rows.
@@ -7939,34 +7940,29 @@ local xs, xc, nr, nrow, noptc, nxc, f_head
 begin
   xs   = asciiread(fName, -1, "string") ; all rows as strings
  
-  if (typeof(opt).eq."integer") then
+  if (any(typeof(opt).eq.(/"integer","long"/))) then
       if (opt.gt.0) then
           return( xs(0:opt-1) )       ; return just header rows
       else
           print ("contributed: readAsciiHead: opt must be >0")
-          return( "missing" )
+          return( new(1,string) )
       end if
   end if
 
   if (typeof(opt).eq."string") then
       nrow = dimsizes(xs)
-      noptc = dimsizes(stringtochar(opt))-2  ; account for added carriage return(CR)
-    ;;print ("nrow="+nrow+"  noptc="+noptc)
-      
       do nr=0,nrow-1
-         xc  = stringtochar(xs(nr))          ; xc will have CR
-         nxc = dimsizes(xc)-2
-         if (nxc.ge.noptc .and. opt.eq.chartostring(xc(0:noptc))) then
+         ii = str_index_of_substr(xs(nr),opt,1)  ; Find the 1st match
+         if(.not.any(ismissing(ii)).and.ii.eq.0) then
              return( xs(0:nr) )
              exit
          end if
-         delete (xc)
       end do
-      return( "missing" )           ; return just header
+      return(new(1,string))
   end if
 
   if (typeof(opt).eq."float") then
-      nrow = floattointeger(opt)    ; # of rows to be read as float
+      nrow = tolong(opt)    ; # of rows to be read as float
 
       tmpdir  = ncargpath("tmp") + "/"
       if(ismissing(tmpdir)) then
@@ -8003,14 +7999,21 @@ end
 ;       Currently this just checks character sequences
 ;       starting in col 0. 
 ; ncol- number of columns in table
-
+;
+;   [06 Feb 2011 - added support for "long" ncol]
 
 undef("readAsciiTable")
-function readAsciiTable( fName:string, ncol:integer, datatype:string, opt)
-local head, nh, xs, nrow, table, nopt
+function readAsciiTable( fName:string, ncol, datatype:string, opt)
+local head, nh, xs, nrow, table, nopt, valid_dim_types
 begin
+  valid_dim_types = (/"integer","long"/)
+  if (.not.any(typeof(ncol).eq.valid_dim_types)) then
+    print ("contributed: readAsciiTable: ncol must be int or long")
+    return(new(1,string))
+  end if
   nopt = dimsizes(opt)
-  if (typeof(opt).eq."integer" .and. nopt.eq.1 .and. opt(0).eq.0) then
+  if (any(typeof(opt).eq.valid_dim_types) .and. nopt.eq.1 .and. \
+      opt(0).eq.0) then
       nrow  = dimsizes(asciiread(fName, -1, "string"))  ; all rows as strings
       table = asciiread(fName, (/nrow,ncol/), datatype)
   else
