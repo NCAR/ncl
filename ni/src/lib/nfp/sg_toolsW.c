@@ -815,7 +815,7 @@ NhlErrorTypes gc_inout_W( void )
   if (ndims_lat == 1) {
     if ( ndims_plat != 1 || ndims_plon != 1) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,
-        "gc_inout: if the final two arrays are singly dimensioned, the the first two must be as well.");
+        "gc_inout: if the final two arrays are singly dimensioned, then the first two must be as well.");
       return(NhlFATAL);
     }
   }

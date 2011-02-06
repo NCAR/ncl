@@ -329,7 +329,9 @@ NhlErrorTypes exp_tapersh_wgts_W( void )
 /*
  * Input array variables
  */
-  int *nwgt, *rate;
+  void *nwgt_tmp;
+  ng_size_t *nwgt;
+  int inwgt, *rate;
   void *n0;
   double *tmp_n0;
   NclBasicDataTypes type_n0;
@@ -343,22 +345,36 @@ NhlErrorTypes exp_tapersh_wgts_W( void )
   void *s;
   double *tmp_s;
   ng_size_t dsizes_s[1];
-  NclBasicDataTypes type_s;
+  NclBasicDataTypes type_s, type_nwgt;
 /*
  * Retrieve parameters
  *
  * Note any of the pointer parameters can be set to NULL, which
  * implies you don't care sout its value.
  */
-  nwgt = (int*)NclGetArgValue(
+  nwgt_tmp = (void*)NclGetArgValue(
           0,
           3,
           NULL,
           NULL,
           NULL,
           NULL,
-          NULL,
+          &type_nwgt,
           DONT_CARE);
+
+/*
+ * Check the input dimension size.
+ */
+  nwgt = get_dimensions(nwgt_tmp,1,type_nwgt,"exp_tapersh_wgts");
+  if(nwgt == NULL) 
+    return(NhlFATAL);
+
+  if(*nwgt > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_taper_wgts: nwgt is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inwgt = (int) *nwgt;
+
 /*
  * Get n0 and rate.
  */
@@ -413,7 +429,7 @@ NhlErrorTypes exp_tapersh_wgts_W( void )
 /*
  * Call Fortran routine.
  */
-  NGCALLF(dexptaper,DEXPTAPER)(tmp_n0,rate,tmp_s,nwgt,&ier);
+  NGCALLF(dexptaper,DEXPTAPER)(tmp_n0,rate,tmp_s,&inwgt,&ier);
 
 /*
  * Coerce back to float if necessary and free array.
@@ -426,6 +442,7 @@ NhlErrorTypes exp_tapersh_wgts_W( void )
 /*
  * Return values. 
  */
+  NclFree(nwgt);
   dsizes_s[0] = *nwgt;
   return(NclReturnValue(s,1,dsizes_s,NULL,type_s,0));
 }
