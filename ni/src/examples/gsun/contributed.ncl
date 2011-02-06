@@ -567,8 +567,8 @@ begin
  ;nrow      = dimsizes(filString)
 
   nrow_s    = systemfunc("'wc' -l " + fNam +" | awk '{print $1}'" )
-  nrow      = stringtointeger( nrow_s )
 
+  nrow      = tointeger( nrow_s )
   return (nrow)
 end
 
@@ -6140,36 +6140,37 @@ end
 ;
 ; Output file will be sequential access file
 ;
+;   [06 Feb 2011 - added support for "long" dims]
 
 undef ("fbinseqSwap1")
 procedure fbinseqSwap1(in_file[1]:string, outfile[1]:string \
-                      ,type[1]:string,  dims[*]:integer)
+                      ,type[1]:string,  dims[*])
 local indata, tot, n, sz, i, done, tmp
 begin
 	indata = cbinread(in_file,-1,"byte")
-	tot = dimsizes(indata)
+	tot = tolong(dimsizes(indata))
        ;print(tot)
-	n = floattointeger(product(dims))
+	n = tolong(product(dims))   ; Use longs to handle large sizes
        ;print(n)
 	if(type.eq."long")
 		print("fbinswap: won't convert longs due to fact that " + \
                       "they can be different sizes on different machines, " + \
-                      "use double for 64 bit longs and integer for 32 bit longs")
+                      "use int64/double for 64 bit ints and integer for 32 bit longs")
 		return
 	end if
 	if(type.eq."short")
-		sz = 2
+		sz = 2l
 	end if
 	if(any(type.eq.(/"integer","float"/)))
-		sz = 4
+		sz = 4l
 	end if
-	if(type.eq."double")
-		sz = 8
+	if(any(type.eq.(/"int64","double"/)))
+		sz = 8l
 	end if
 ;
 ; Skip first control word
 ;
-	i    = 4
+	i    = 4l
 	done = False
 
 	do while(.not.done)
@@ -6178,7 +6179,7 @@ begin
 ;
 ; Skip control word after current record and before next
 ;
-		i = i + 8 + n*sz
+		i = i + 8l + n*sz
 		if(i.ge.tot)
 			done = True
 		end if
@@ -6192,27 +6193,28 @@ end
 ;
 ; Output file will be fortran sequential access file
 ;
+;   [06 Feb 2011 - added support for "long" dims]
 
 undef ("fbinseqSwap2")
 procedure fbinseqSwap2(in_file[1]:string, outfile[1]:string, \
-                       type[1]:string, nrec[1]:integer, dims[*]:integer)
+                       type[1]:string, nrec[1]:integer, dims[*])
 local n, sz, i, indata, tmp
 begin
-	n = floattointeger(product(dims))
+	n = tolong(product(dims))
 	if(type.eq."long")
 		print("fbinswap: won't convert longs due to fact that " + \
                       "they can be different sizes on different machines, " + \
-                      "use double for 64 bit longs and integer for 32 bit longs")
+                      "use int64/double for 64 bit longs and integer for 32 bit longs")
 		return
 	end if
 	if(type.eq."short")
-		sz = 2
+		sz = 2l
 	end if
 	if(any(type.eq.(/"integer","float"/)))
-		sz = 4
+		sz = 4l
 	end if
-	if(type.eq."double")
-		sz = 8
+	if(any(type.eq.(/"int64","double"/)))
+		sz = 8l
 	end if
 	recsize = n*sz
 
@@ -6231,7 +6233,7 @@ end
 ;
 
 undef ("fbindirSwap")
-procedure fbindirSwap (infile:string, dims:integer \
+procedure fbindirSwap (infile:string, dims \
                       ,inType:string, outFile:string)
                        
 ; procedure that reads byte reversed data 
@@ -6244,9 +6246,9 @@ local nBytes, dimBytes, indata
 begin
  ;print ("Start fbindirSwap: "+systemfunc("date"))
 
-  nBytes = 4
+  nBytes = 4l     ; treat as longs just in case large dimensions
   if (inType.eq."double") then
-      nBytes  = 8
+      nBytes  = 8l
   end if
   dimBytes  = (/product(dims),nBytes/)
  ;print (dimBytes)
