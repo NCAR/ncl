@@ -4004,7 +4004,7 @@ begin
 
   calldraw      = get_res_value(res2,"gsnDraw", True)
   callframe     = get_res_value(res2,"gsnFrame",False)
-  shape         = get_res_value(res2,"gsnShape",True)
+  shape         = get_res_value(res2,"gsnShape",False)
   scale         = get_res_value(res2,"gsnScale",shape)
   ticks         = get_res_value(res2,"pmTickMarkDisplayMode","Always")
   title         = get_res_value(res2,"pmTitleDisplayMode","Always")
@@ -4023,7 +4023,7 @@ begin
     main_zone = 3
   end if
 
-  canvas = create "canvas" logLinPlotClass wks
+  canvas = create "canvas" irregularPlotClass wks
     "pmTickMarkDisplayMode" : ticks
     "pmTitleDisplayMode"    : title
     "pmTitleZone"           : main_zone    ; Zone for main title

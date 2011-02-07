@@ -3160,7 +3160,7 @@ begin
   title     = get_res_value(res2,"pmTitleDisplayMode","Always")
   maxbb     = get_bb_res(res2)
 
-  canvas = create "canvas" logLinPlotClass wks
+  canvas = create "canvas" irregularPlotClass wks
     "pmTickMarkDisplayMode" : ticks
     "pmTitleDisplayMode"    : title
   end create
