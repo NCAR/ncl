@@ -19038,14 +19038,6 @@ NhlErrorTypes _NclIListIndex(void)
 			{
 				ret_val[nm++] = i;
 			}
-			/*
-			else
-			{
-				NclObj t_obj = (NclObj)_NclGetObj(the_obj->obj.id);
-				NclObj s_obj = (NclObj)_NclGetObj(step->obj_id);
-				ret_val[nm++] = i;
-			}
-			*/
 		}
 
 		step = step->next;
