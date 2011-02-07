@@ -3981,6 +3981,120 @@ end
 
 
 ;***********************************************************************;
+; Function : gsn_csm_blank_plot                                         ;
+;               wks : workstation                                       ;
+;               res : optional resources                                ;
+;                                                                       ;
+; This function creates a blank tickmark object that can be used for    ;
+; drawing primitives. This function is similar to gsn_blank_plot        ;
+; except the tickmarks point outward and the gsnXXXString resources are ;
+; recognized.                                                           ;
+;                                                                       ;
+;***********************************************************************;
+undef("gsn_csm_blank_plot")
+function gsn_csm_blank_plot(wks:graphic,res:logical)
+local calldraw, callframe, center_string, font_height, height, left_string, \
+main_zone, major_length, maxbb, minor_length, point_outward, ratio, \
+res2, right_string, scale, shape, subres, ticks, title, tmres, width, \
+xfontf, xlength, xmlength, yfontf, ylength, ymlength
+begin
+  res2          = res    ; Copy of resources.
+
+  point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
+
+  calldraw      = get_res_value(res2,"gsnDraw", True)
+  callframe     = get_res_value(res2,"gsnFrame",False)
+  shape         = get_res_value(res2,"gsnShape",True)
+  scale         = get_res_value(res2,"gsnScale",shape)
+  ticks         = get_res_value(res2,"pmTickMarkDisplayMode","Always")
+  title         = get_res_value(res2,"pmTitleDisplayMode","Always")
+  maxbb         = get_bb_res(res2)
+
+; Check for existence of the left, center, and right subtitles.
+
+  left_string   = new(1,logical)
+  center_string = new(1,logical)
+  right_string  = new(1,logical)
+
+  check_for_subtitles(res2,left_string,center_string,right_string)
+  if(left_string.or.center_string.or.right_string)
+    main_zone = 4
+  else
+    main_zone = 3
+  end if
+
+  canvas = create "canvas" logLinPlotClass wks
+    "pmTickMarkDisplayMode" : ticks
+    "pmTitleDisplayMode"    : title
+    "pmTitleZone"           : main_zone    ; Zone for main title
+  end create
+
+  attsetvalues_check(canvas,res2)
+
+; If gsnShape was set to True, then resize the X or Y axis so that
+; the scales are proportionally correct.
+
+  if(shape)
+    gsnp_shape_plot(canvas)
+  end if
+
+; If gsnScale was set to True, then make sure the X and Y axis labels
+; and tick marks are the same size.
+
+  if(scale)
+    gsnp_scale_plot(canvas,"",False)
+  end if
+
+; Get title label sizes and tickmark lengths.
+  getvalues canvas
+    "vpWidthF"             : width
+    "vpHeightF"            : height
+    "tiXAxisFontHeightF"   : xfontf
+    "tiYAxisFontHeightF"   : yfontf
+
+    "tmYLMajorLengthF"     : ylength
+    "tmXBMajorLengthF"     : xlength
+    "tmYLMinorLengthF"     : ymlength
+    "tmXBMinorLengthF"     : xmlength
+  end getvalues
+
+  font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
+                                        ; the size of the X/Y axis labels.
+  major_length = min((/ylength,xlength/))
+  minor_length = min((/ymlength,xmlength/))
+
+; If the plot is close to square in size, then make the 
+; three top titles smaller.
+
+  ratio = height/width
+  if(ratio.gt.1) 
+    ratio = 1./ratio
+  end if
+  if(ratio.gt.0.5)
+    font_height  = 0.75 * font_height
+    major_length = 0.75 * major_length
+    minor_length = 0.75 * minor_length
+  end if
+
+  tmres = get_res_eq(res2,"tm")
+  gsnp_point_tickmarks_outward(canvas,tmres,xlength,ylength,xmlength, \
+                               ymlength,major_length,minor_length, \
+                               point_outward)
+
+; Set up three subtitles at top, if they exist.
+  subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
+  subres                  = True
+  set_attr(subres,"txFontHeightF",font_height)
+  add_subtitles(wks,canvas,left_string,center_string,\
+                right_string,subres)
+
+  draw_and_frame(wks,canvas,calldraw,callframe,False,maxbb)
+
+  return(canvas)
+end
+
+
+;***********************************************************************;
 ; Function : gsn_csm_xy                                                 ;
 ;                     wks: workstation object                           ;
 ;                       x: X values                                     ;
