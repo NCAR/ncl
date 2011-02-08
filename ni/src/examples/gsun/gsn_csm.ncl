@@ -895,29 +895,27 @@ end
 ; Function : is_tm_obj_valid                                            ;
 ;                                                                       ;
 ;          pobj : plot object to retrieve trGridType from               ;
-;          tdata: data variable to see if it has 2D lat/lon coords      ;
 ;                                                                       ;
-; This function checks to see if the given plot object has had a tick   ;
-; mark object created for it. A tickmark object can't be created if     ;
-; you have 2D lat/lon coordinates *and* trGridType was not set to       ;
-; "TriangularMesh".                                                     ;
+; This function checks to see if the given plot object is using a       ;
+; spherical or curvilinear transformation. If so, you can't have a      ;
+; tickmark objects. This function used to additionally check for 2D     ;
+; lat/lon coords, but Dave B and I decided this wasn't necessary.       ;
 ;                                                                       ;
 ;***********************************************************************;
 undef("is_tm_obj_valid")
-function is_tm_obj_valid(pobj,tdata)
+function is_tm_obj_valid(pobj)
 local tr_grid_type
 begin
-  if(is_valid_latlon2d_attr(tdata,"lat2d").and. \
-     is_valid_latlon2d_attr(tdata,"lon2d")) then
-    getvalues pobj
-      "trGridType" : tr_grid_type
-    end getvalues
-; trGridType == 5 --> TriangularMesh
-    if(tr_grid_type.ne.5) then
-      return(False)
-    end if
+; trGridType == 3 --> Curvilinear
+; trGridType == 4 --> Spherical
+  getvalues pobj
+    "trGridType" : tr_grid_type
+  end getvalues
+  if(any(tr_grid_type.eq.(/3,4/))) then
+    return(False)
+  else
+    return(True)
   end if
-  return(True)
 end
 
 
@@ -9049,7 +9047,7 @@ begin
 ; If gsnScale is True, then make sure we have a valid tickmark
 ; object before we do anything else.
 ;
-    if(tm_scale.and.is_tm_obj_valid(vector_object,unew)) then
+    if(tm_scale.and.is_tm_obj_valid(vector_object)) then
 ;
 ; Make tick marks same length and point outward.
 ;
@@ -11201,7 +11199,7 @@ begin
 ;
 ; Make tick marks same length and point outward.
 ;
-      if(tm_scale.and.is_tm_obj_valid(contour_plot,datanew)) then
+      if(tm_scale.and.is_tm_obj_valid(contour_plot)) then
         getvalues contour_plot
           "tmYLMajorLengthF"     : ylength
           "tmXBMajorLengthF"     : xlength
@@ -11830,7 +11828,7 @@ begin
     scale = font_scale(index(0))
     font_height  = scale * font_height
 
-    if(tm_scale.and.is_tm_obj_valid(vector_plot,unew)) then
+    if(tm_scale.and.is_tm_obj_valid(vector_plot)) then
 ;
 ; Make tick marks same length and point outward.
 ;
@@ -12117,7 +12115,7 @@ begin
     scale = font_scale(index(0))
     font_height  = scale * font_height
 
-    if(tm_scale.and.is_tm_obj_valid(streamline_plot,unew)) then
+    if(tm_scale.and.is_tm_obj_valid(streamline_plot)) then
 ;
 ; Make tick marks same length and point outward.
 ;
