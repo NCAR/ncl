@@ -1347,7 +1347,29 @@ NclSelectionRecord *sel_ptr;
 * When id's are equal a write screws things up
 */
 	if(thevalue->obj.id != value->obj.id) {
-		if(sel_ptr == NULL) {
+		/*Handle NCL_list*/
+		if(NCL_list == thevalue->multidval.data_type)
+		{
+			NclObj theobj = (NclObj)_NclGetObj(*(int *)thevalue->multidval.val);
+			NclObj rhsobj = (NclObj)_NclGetObj(*(int *)value->multidval.val);
+			NclObj tmp = NULL;
+			NclList thelist = (NclList) theobj;
+			NclList rhslist = (NclList) rhsobj;
+
+			while(0 < thelist->list.nelem)
+			{
+				tmp = (NclObj)_NclListPop((NclObj)thelist);
+			}
+
+			while(0 < rhslist->list.nelem)
+			{
+				tmp = (NclObj)_NclListPop((NclObj)rhslist);
+				_NclListPush((NclObj)thelist, tmp);
+			}
+
+			return (NhlNOERROR);
+		}
+		else if(sel_ptr == NULL) {
 			if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
 				tmp_md = _NclCoerceData(value,
 						thevalue->multidval.type->type_class.type,

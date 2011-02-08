@@ -1774,8 +1774,15 @@ NclObj parent;
 	int found = 0;
 
 	if(theobj->obj.parents == NULL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"MultiDValDelParent: Attempt to delete parent from empty list");
-		return(NhlFATAL);
+		if(0 == strcmp("MultiDVallistData", parent->obj.class_ptr->obj_class.class_name))
+		{
+			return(NhlNOERROR);
+		}
+		else
+		{
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"MultiDValDelParent: Attempt to delete parent from empty list");
+			return(NhlFATAL);
+		}
 	} 
 
 	tmp = theobj->obj.parents;	
