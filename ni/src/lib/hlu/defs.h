@@ -38,7 +38,10 @@
 #define _NhlMAXLINELEN (256)
 
 /* max characters in a filename */
-#define _NhlMAXFNAMELEN	(256)
+#define _NhlMAXFNAMELEN	(512)
+
+/* max characters allowed for an LLU graphics output file name */
+#define _NhlMAXLLUPATHLEN (254)
 
 /* path delimiter - "/" in unix "\" in dos and I'm sure there are others */
 #define _NhlPATHDELIMITER	"/"
@@ -55,7 +58,7 @@
 #define	_NhlMAXRESLIST	(1024)
 
 /* maximuim resource name length - each name not the full name.name. string */
-#define _NhlMAXRESNAMLEN	(128)
+#define _NhlMAXRESNAMLEN	(320)   /* 256 + 64 */
 
 /* how many layer pointers to alloc at a time when more are needed */
 #define _NhlLAYERLISTINC	(128)

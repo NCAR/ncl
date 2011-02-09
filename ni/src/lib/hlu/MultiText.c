@@ -769,7 +769,7 @@ MultiTextInitialize
 	int		i;
 	int		num_strings = mtnew->multitext.num_strings;
 	char		**text_strings;
-	char		name[128];
+	char		name[_NhlMAXRESNAMLEN];
 	float		x,y,width,height;
 	NhlErrorTypes	ret = NhlNOERROR,subret = NhlNOERROR;
 

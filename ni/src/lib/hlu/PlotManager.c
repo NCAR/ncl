@@ -3820,7 +3820,7 @@ ManageTickMarks
 	NhlTransformLayerPart	*tfp = &ovnew->trans;
 	NhlTransformLayerPart	*otfp = &ovold->trans;
 	int			tmpid = NhlNULLOBJID;
-	char			buffer[_NhlMAXFNAMELEN];
+	char			buffer[_NhlMAXRESNAMLEN];
         NhlSArg			sargs[ovTMARGCOUNT];
         int			nargs = 0;
 	NhlLayer		trobj;
@@ -4268,7 +4268,7 @@ ManageTitles
 	NhlTransformLayerPart   *otfp = &((NhlTransformLayer)ovold)->trans;
 	int			tmpid = NhlNULLOBJID;
 	NhlBoundingBox		bbox;
-	char			buffer[_NhlMAXFNAMELEN];
+	char			buffer[_NhlMAXRESNAMLEN];
         NhlSArg			sargs[16];
         int			nargs = 0;
 	int			zone;
@@ -4631,7 +4631,7 @@ ManageLabelBar
 	NhlTransformLayerPart   *otfp = &((NhlTransformLayer)ovold)->trans;
 	int			tmpid = NhlNULLOBJID;
 	NhlBoundingBox		bbox;
-	char			buffer[_NhlMAXFNAMELEN];
+	char			buffer[_NhlMAXRESNAMLEN];
         NhlSArg			sargs[16];
         int			nargs = 0;
 	float			wold, hold;
@@ -4939,7 +4939,7 @@ ManageLegend
 	NhlTransformLayerPart   *otfp = &((NhlTransformLayer)ovold)->trans;
 	int			tmpid = NhlNULLOBJID;
 	NhlBoundingBox		bbox;
-	char			buffer[_NhlMAXFNAMELEN];
+	char			buffer[_NhlMAXRESNAMLEN];
         NhlSArg			sargs[16];
         int			nargs = 0;
 	float			wold, hold;
@@ -6997,7 +6997,7 @@ extern NhlErrorTypes _NhlManageOverlay
 	NhlTransformLayerPart	*otfp = &(((NhlTransformLayer)lold)->trans);
 	NhlViewLayerPart		*vwp = &(((NhlViewLayer)lnew)->view);
 	int			tmpid = NhlNULLOBJID;
-	char			buffer[_NhlMAXFNAMELEN];
+	char			buffer[_NhlMAXRESNAMLEN];
 	NhlSArg			*lsargs;
 	int			lsarg_count = 32; /* Keep up to date!!! */
 

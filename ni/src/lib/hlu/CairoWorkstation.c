@@ -482,6 +482,12 @@ static NhlErrorTypes CairoWorkstationInitialize(NhlClass lclass, NhlLayer req, N
         }
         tfname = buff;
     }
+    if (strlen(tfname) > _NhlMAXLLUPATHLEN) {
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
+		  "%s: Filepath %s exceeds maximum length of %d", func,
+		  tfname,_NhlMAXLLUPATHLEN);
+	return NhlFATAL;
+    }
 
     /* This looks like a mem-leak at first glance, but upstream in _NhlCreate, a "context" has been keeping
      * track of memory allocated temporarily for the Layer, and cleans that up.

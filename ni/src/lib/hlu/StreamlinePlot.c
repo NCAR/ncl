@@ -4732,7 +4732,7 @@ static NhlErrorTypes ReplaceSubstitutionChars
 {
 	NhlErrorTypes		ret = NhlNOERROR;
 	char			*e_text;
-	char			buffer[256];
+	char			buffer[_NhlMAXRESNAMLEN];
 
 	*text_changed = False;
 
