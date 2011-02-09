@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include "wrapper.h"
 
@@ -19,7 +20,7 @@ NhlErrorTypes tempnam_W(void)
     string  *dname,
             *pname,
             *rname;
-    int ret_size = 1;
+    ng_size_t ret_size = 1;
 
     /*
      * Retrieve directory name.
@@ -79,7 +80,8 @@ NhlErrorTypes unique_string_W(void)
 {
   char  *prefix, *return_string, tmp_string[20];
   string *pname, *rname;
-  int len, return_len, ret_size = 1;
+  int len, return_len, ret;
+  ng_size_t ret_size = 1;
   static int counter = 0;
 
 /*
@@ -103,7 +105,7 @@ NhlErrorTypes unique_string_W(void)
  */
   len = sprintf(tmp_string,"%-d",counter);
 
-  if(prefix != NULL && prefix != "") {
+  if(prefix != NULL && prefix[0] != '\0') {
     return_len    = strlen(prefix) + len + 1;
     return_string = (char *)calloc(return_len,sizeof(char));
     return_string = strncpy(return_string,prefix,strlen(prefix));
@@ -125,6 +127,7 @@ NhlErrorTypes unique_string_W(void)
  */
   rname  = (string *) calloc(1,sizeof(string));
   *rname = NrmStringToQuark(return_string);
-  return(NclReturnValue( (void *) rname, 1, &ret_size, NULL, NCL_string, 0));
-
+  ret = NclReturnValue( (void *) rname, 1, &ret_size, NULL, NCL_string, 0);
+  free(return_string);
+  return(ret);
 }

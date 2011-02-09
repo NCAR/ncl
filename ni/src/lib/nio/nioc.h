@@ -32,6 +32,7 @@
 
 #include <stdio.h>
 #include <sys/types.h>
+#include "nioNgSizeT.h"
 
 /*
  * Fortran function macro.  This macro needs to surround any "C" reference

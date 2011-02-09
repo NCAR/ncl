@@ -19,7 +19,8 @@ NhlErrorTypes mjo_cross_segment_W( void )
  */
   void *x;
   double *tmp_x;
-  int dsizes_x[3], has_missing_x;
+  ng_size_t dsizes_x[3];
+  int has_missing_x;
   NclScalar missing_x, missing_flt_x, missing_dbl_x;
   NclBasicDataTypes type_x;
 
@@ -28,7 +29,8 @@ NhlErrorTypes mjo_cross_segment_W( void )
  */
   void *y;
   double *tmp_y;
-  int dsizes_y[3], has_missing_y;
+  ng_size_t dsizes_y[3];
+  int has_missing_y;
   NclScalar missing_y, missing_flt_y, missing_dbl_y;
   NclBasicDataTypes type_y;
 
@@ -41,15 +43,17 @@ NhlErrorTypes mjo_cross_segment_W( void )
  */
   void *stc;
   double *tmp_stc;
-  int dsizes_stc[3], has_missing_stc;
+  ng_size_t dsizes_stc[3];
   NclScalar missing_stc;
   NclBasicDataTypes type_stc;
 
 /*
  * Various
  */
-  int nt, nm, nl, ntml, nt2p1, nlp1, ntp1, nt2m1, lsave1, lsave2;
-  int i, size_stc, ret, found_missing_x, found_missing_y;
+  ng_size_t nt, nm, nl, ntml, nt2p1, nlp1, ntp1, nt2m1, lsave1, lsave2;
+  ng_size_t size_stc;
+  int i_nt, inm, inl, int2p1, inlp1, int2m1, ilsave1, ilsave2;
+  int ret, found_missing_x, found_missing_y;
 
 /*
  * Retrieve parameters.
@@ -147,12 +151,39 @@ NhlErrorTypes mjo_cross_segment_W( void )
                                      missing_dbl_y.doubleval);
 
 /* 
- * Allocate space for output array.
+ * Size of output array and work arrays that will be 
+ * created in Fortran routine.
  */
   nlp1     = nl+1;
   nt2p1    = nt/2+1;
   size_stc = nlp1 * nt2p1 * 16;
+  lsave1   = 4*nl + 15;
+  lsave2   = 4*nt + 15;
+  nt2m1    = nt/2 -1;
+  ntp1     = nt + 1;
 
+/*
+ * Test dimension sizes.
+ */
+  if((nl > INT_MAX) || (nm > INT_MAX) || (nt > INT_MAX) ||
+     (nlp1 > INT_MAX) || (nt2p1 > INT_MAX) || (nt2m1 > INT_MAX) ||
+     (nt2p1 > INT_MAX) || (lsave1 > INT_MAX) || (lsave2 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"mjo_cross_segment: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inl     = (int) nl;
+  inm     = (int) nm;
+  i_nt    = (int) nt;
+  inlp1   = (int) nlp1;
+  int2p1  = (int) nt2p1;
+  int2m1  = (int) nt2m1;
+  int2p1  = (int) nt2p1;
+  ilsave1 = (int) lsave1;
+  ilsave2 = (int) lsave2;
+
+/* 
+ * Allocate space for output array.
+ */
   if(type_stc != NCL_double) {
     stc     = (void *)calloc(size_stc, sizeof(float));
     tmp_stc = (double *)calloc(size_stc,sizeof(double));
@@ -191,19 +222,12 @@ NhlErrorTypes mjo_cross_segment_W( void )
  */
   }
   else {
-/* 
- * Size of work arrays that will be created in Fortran routine.
- */
-    lsave1 = 4*nl + 15;
-    lsave2 = 4*nt + 15;
-    nt2m1 = nt/2 -1;
-    ntp1  = nt + 1;
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(spctimcross2,SPCTIMCROSS2)(&nl, &nm, &nt, tmp_x, tmp_y, tmp_stc, 
-                                       &nlp1, &nt2p1, &nt2m1, &nt2p1,
-				       &lsave1, &lsave2);
+    NGCALLF(spctimcross2,SPCTIMCROSS2)(&inl,&inm,&i_nt,tmp_x,tmp_y,tmp_stc, 
+                                       &inlp1,&int2p1,&int2m1,&int2p1,
+                                       &ilsave1,&ilsave2);
 /*
  * Coerce output back to float if necessary.
  */
@@ -244,7 +268,7 @@ NhlErrorTypes mjo_cross_coh2pha_W( void )
  */
   void *stc;
   double *tmp_stc;
-  int dsizes_stc[3], size_stc;
+  ng_size_t dsizes_stc[3], size_stc;
   NclBasicDataTypes type_stc;
 
 /*
@@ -255,7 +279,8 @@ NhlErrorTypes mjo_cross_coh2pha_W( void )
 /*
  * Various
  */
-  int nl, nt, nlp1, ntp1, nt2p1;
+  ng_size_t nl, nt, nlp1, ntp1, nt2p1;
+  int inl, i_nt, inlp1, intp1, int2p1;
 /*
  * Retrieve parameters.
  *
@@ -291,6 +316,23 @@ NhlErrorTypes mjo_cross_coh2pha_W( void )
   size_stc = 16 * nt2p1 * nlp1;
 
 /*
+ * Test dimension sizes
+ */
+  if((nlp1 > INT_MAX) ||
+     (ntp1 > INT_MAX) ||
+     (nl > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (nt2p1 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"mjo_cross_coh2pha: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inl = (int) nl;
+  i_nt = (int) nt;
+  inlp1 = (int) nlp1;
+  intp1 = (int) ntp1;
+  int2p1 = (int) nt2p1;
+
+/*
  * Get argument # 2
  */
   opt = (int*)NclGetArgValue(
@@ -319,7 +361,7 @@ NhlErrorTypes mjo_cross_coh2pha_W( void )
 /*
  * Call the Fortran routine.
  */
-  NGCALLF(spctimcross3,SPCTIMCROSS3)(&nl,&nt,tmp_stc,&nlp1,&ntp1,&nt2p1);
+  NGCALLF(spctimcross3,SPCTIMCROSS3)(&inl,&i_nt,tmp_stc,&inlp1,&intp1,&int2p1);
 
 /* 
  * Coerce back to float if necessary.

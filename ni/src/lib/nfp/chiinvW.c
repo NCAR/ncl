@@ -10,20 +10,22 @@ NhlErrorTypes chiinv_W( void )
  */
   void *p, *df;
   double *dp, *ddf;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
-  int ndims_df, dsizes_df[NCL_MAX_DIMENSIONS];
+  int ndims_p;
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  int ndims_df;
+  ng_size_t dsizes_df[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p, type_df;
 /*
  * output variable 
  */
   void *chi;
-  double *tmp_chi;
-  int size_chi;
+  double *tmp_chi = NULL;
+  ng_size_t size_chi;
   NclBasicDataTypes type_chi;
 /*
  * Declare various variables for random purposes.
  */
-  int i;
+  ng_size_t i;
 /*
  * Retrieve parameters
  *

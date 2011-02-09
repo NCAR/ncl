@@ -87,7 +87,7 @@ unsigned int    /* obj_type_mask */,
 void *          /* val */,
 NclScalar *     /*missing_value*/,
 int             /*n_dims*/,
-int *           /*dim_sizes*/,
+ng_size_t *           /*dim_sizes*/,
 NclStatus       /*status*/,
 NclSelectionRecord * /*sel_rec*/
 #endif

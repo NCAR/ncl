@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValOp.c.sed,v 1.13 1999-02-03 23:05:22 ethan Exp $
+ *      $Id: MultiDValOp.c.sed,v 1.13.4.1 2008-03-28 20:37:49 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -39,7 +39,7 @@ NclData result;
 	NclTypeClass operand_type = NULL;
 	NclMissingRec themissing;
 	void *result_val;
-	int i;
+	ng_size_t i;
 	
 
 	if((other_md == NULL)||(self_md == NULL))
@@ -90,7 +90,7 @@ NclData result;
 			result_md = NULL;
 			result_val = (void*)NclMalloc(self_md->multidval.totalelements * the_type->type_class.size);
 			if(result_val == NULL) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNNAME: Could not allocate memory for result type, can't continue\n");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: Could not allocate memory for result type, can't continue\n");
 				return(NULL);
 			}
 		}
@@ -164,8 +164,8 @@ NclData result;
 	NclTypeClass operand_type = NULL;
 	NclMissingRec themissing;
 	void *result_val;
-	int total;
-	int *dim_sizes = NULL;
+	ng_size_t total;
+	ng_size_t *dim_sizes = NULL;
 	int n_dims = 1;
 	
 
@@ -220,7 +220,7 @@ NclData result;
                         result_md = NULL;
                         result_val = (void*)NclMalloc(total * the_type->type_class.size);
                         if(result_val == NULL) {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNNAME: Could not allocate memory for result type, can't continue\n");
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: Could not allocate memory for result type, can't continue\n");
                                 return(NULL);
                         }
                 }

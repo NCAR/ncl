@@ -1,5 +1,5 @@
 /*
- *      $Id: Futil.c,v 1.3 1994-12-16 20:04:13 boote Exp $
+ *      $Id: Futil.c,v 1.3.22.1 2008-03-28 20:37:35 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -356,13 +356,13 @@ _NhlCreateFGenArray
 	NhlBoolean	copy_data;
 #endif
 {
-	int		stacklen[_NhlMAXRESNAMLEN];
-	int		*lenptr = stacklen;
+	ng_size_t	stacklen[_NhlMAXRESNAMLEN];
+	ng_size_t	*lenptr = stacklen;
 	int		i;
 	NhlGenArray	gen;
 
 	if(num_dimensions > NhlNumber(stacklen)){
-		lenptr = (int*)NhlMalloc(sizeof(int) * num_dimensions);
+		lenptr = (ng_size_t*)NhlMalloc(sizeof(ng_size_t) * num_dimensions);
 		if(lenptr == NULL){
 			NhlPError(NhlFATAL,ENOMEM,NULL);
 			return NULL;

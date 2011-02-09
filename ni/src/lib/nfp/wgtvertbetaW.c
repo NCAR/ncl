@@ -21,16 +21,18 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  * Argument # 0
  */
   void *p;
-  double *tmp_p;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
+  double *tmp_p = NULL;
+  int ndims_p;
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p;
 
 /*
  * Argument # 1
  */
   void *datai;
-  double *tmp_datai;
-  int ndims_datai, dsizes_datai[NCL_MAX_DIMENSIONS];
+  double *tmp_datai = NULL;
+  int ndims_datai;
+  ng_size_t dsizes_datai[NCL_MAX_DIMENSIONS];
   int has_missing_datai;
   NclScalar missing_datai, missing_flt_datai, missing_dbl_datai;
   NclBasicDataTypes type_datai;
@@ -39,8 +41,9 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  * Argument # 2
  */
   void *psfc;
-  double *tmp_psfc;
-  int ndims_psfc, dsizes_psfc[NCL_MAX_DIMENSIONS];
+  double *tmp_psfc = NULL;
+  int ndims_psfc;
+  ng_size_t dsizes_psfc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_psfc;
 
 /*
@@ -51,13 +54,14 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  * Argument # 4
  */
   int *opt;
-  int dsizes_opt[1];
+  ng_size_t dsizes_opt[1];
 /*
  * Return variable
  */
   void *wva;
-  double *tmp_wva;
-  int ndims_wva, *dsizes_wva;
+  double *tmp_wva = NULL;
+  int ndims_wva;
+  ng_size_t *dsizes_wva;
   NclBasicDataTypes type_wva;
 
 /*
@@ -65,9 +69,12 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  */
   double ptop = 0, pbot=1100;
   int ier;
-  int klev, nlat, mlon, klevnlatmlon, nlatmlon, nopt;
-  int index_p, index_datai, index_psfc;
-  int i, ndims_leftmost, size_leftmost, size_output;
+  ng_size_t klev, nlat, mlon, klevnlatmlon, nlatmlon, nopt;
+  ng_size_t index_datai, index_psfc;
+  ng_size_t i, size_leftmost, size_output;
+  int ndims_leftmost;
+  NhlErrorTypes ret;
+  int imlon, inlat, iklev;
 
 /*
  * Retrieve parameters.
@@ -140,6 +147,17 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The p array must either be a one dimensional array of klev values, or an array whose rightmost three dimensions are klev x nlat x mlon");
     return(NhlFATAL);
   }
+
+/* 
+ * Test dimension sizes.
+ */
+  if((mlon > INT_MAX) || (nlat > INT_MAX) || (klev > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: one or more dimension sizes is greater than INT_MAX", mlon);
+    return(NhlFATAL);
+  }
+  imlon = (int) mlon;
+  inlat = (int) nlat;
+  iklev = (int) klev;
 
 /*
  * Coerce missing values to double if necessary.
@@ -315,7 +333,7 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  * Allocate space for output dimension sizes and set them.
  */
   ndims_wva = ndims_leftmost + 2;
-  dsizes_wva = (int*)calloc(ndims_wva,sizeof(int));  
+  dsizes_wva = (ng_size_t*)calloc(ndims_wva,sizeof(ng_size_t));  
   if( dsizes_wva == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -377,16 +395,16 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  * 1D or the same dimensions as datai.
  */
     if(ndims_p == 1) {
-      NGCALLF(dwvbetap1,DWVBETAP1)(&mlon, &nlat, &klev, tmp_p, tmp_datai,
-                                   &missing_dbl_datai.doubleval, tmp_psfc,
-                                   punits, &opt[0], &ptop, &pbot, tmp_wva,
-                                   &ier);
+      NGCALLF(dwvbetap1,DWVBETAP1)(&imlon, &inlat, &iklev, tmp_p, tmp_datai,
+				   &missing_dbl_datai.doubleval, tmp_psfc,
+				   punits, &opt[0], &ptop, &pbot, tmp_wva,
+				   &ier);
     }
     else {
-      NGCALLF(dwvbetap3,DWVBETAP3)(&mlon, &nlat, &klev, tmp_p, tmp_datai,
-                                   &missing_dbl_datai.doubleval, tmp_psfc,
-                                   punits, &opt[0], &ptop, &pbot, tmp_wva,
-                                   &ier);
+      NGCALLF(dwvbetap3,DWVBETAP3)(&imlon, &inlat, &iklev, tmp_p, tmp_datai,
+				   &missing_dbl_datai.doubleval, tmp_psfc,
+				   punits, &opt[0], &ptop, &pbot, tmp_wva,
+				   &ier);
     }
 
 /*
@@ -412,15 +430,17 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  */
   if(has_missing_datai) {
     if(type_wva != NCL_double) {
-      return(NclReturnValue(wva,ndims_wva,dsizes_wva,&missing_flt_datai,
-                            type_wva,0));
+     ret = NclReturnValue(wva,ndims_wva,dsizes_wva,&missing_flt_datai,
+                            type_wva,0);
     }
     else {
-      return(NclReturnValue(wva,ndims_wva,dsizes_wva,&missing_dbl_datai,
-                            type_wva,0));
+      ret = NclReturnValue(wva,ndims_wva,dsizes_wva,&missing_dbl_datai,
+                            type_wva,0);
     }
   }
   else {
-    return(NclReturnValue(wva,ndims_wva,dsizes_wva,NULL,type_wva,0));
+    ret =NclReturnValue(wva,ndims_wva,dsizes_wva,NULL,type_wva,0);
   }
+  NclFree(dsizes_wva);
+  return ret;
 }

@@ -444,7 +444,7 @@ interface : function_def odata_defs
 		strcpy(thecall->callstring,buffer);
 
 		sprintf(buffer,"%s_ret_dimsizes",$1->name);
-		(void)WNewVDef(buffer,NCL_int,0,"[NCL_MAX_DIMENSIONS]",0);
+		(void)WNewVDef(buffer,NCL_long,0,"[NCL_MAX_DIMENSIONS]",0);
 		
 
 		for (i = 0; i < $1->u.func->n_args; i++) {
@@ -513,7 +513,7 @@ interface : function_def odata_defs
 					if($1->u.func->args[i]->u.farg->dim_refs[j] != NULL) {
 						s0 = _NclLookUpInScope(current->wrec,$1->u.func->args[i]->name);
 						DoDimsizes(s0);
-						sprintf(buffer,"\tif(*%s != %s_dimsizes[%d]) {\n\t\tNhlPError(NhlFATAL,NhlEUNKNOWN,\"%s: dimension size of dimension (%d) of %s must be equal to the value of %s\");\n\t\treturn(NhlFATAL);\n\t}\n",$1->u.func->args[i]->u.farg->dim_refs[j]->name,$1->u.func->args[i]->name,j,$1->name,j,$1->u.func->args[i]->name,$1->u.func->args[i]->u.farg->dim_refs[j]->name);
+						sprintf(buffer,"\tif(*%s != (int)%s_dimsizes[%d]) {\n\t\tNhlPError(NhlFATAL,NhlEUNKNOWN,\"%s: dimension size of dimension (%d) of %s must be equal to the value of %s\");\n\t\treturn(NhlFATAL);\n\t}\n",$1->u.func->args[i]->u.farg->dim_refs[j]->name,$1->u.func->args[i]->name,j,$1->name,j,$1->u.func->args[i]->name,$1->u.func->args[i]->u.farg->dim_refs[j]->name);
 						tmp_src = thecall->arg_strings[i]->additional_src;
 						thecall->arg_strings[i]->additional_src = WNewAdditionalSrc(buffer,1);
 						thecall->arg_strings[i]->additional_src->next = tmp_src;
@@ -635,7 +635,7 @@ interface : function_def odata_defs
 					if($1->u.subr->args[i]->u.farg->dim_refs[j] != NULL) {
 						s0 = _NclLookUpInScope(current->wrec,$1->u.subr->args[i]->name);
 						DoDimsizes(s0);
-						sprintf(buffer,"\tif(*%s != %s_dimsizes[%d]) {\n\t\tNhlPError(NhlFATAL,NhlEUNKNOWN,\"%s: dimension size of dimension (%d) of %s must be equal to the value of %s\");\n\t\treturn(NhlFATAL);\n\t}\n",$1->u.subr->args[i]->u.farg->dim_refs[j]->name,$1->u.subr->args[i]->name,j,$1->name,j,$1->u.subr->args[i]->name,$1->u.subr->args[i]->u.farg->dim_refs[j]->name);
+						sprintf(buffer,"\tif(*%s != (int)%s_dimsizes[%d]) {\n\t\tNhlPError(NhlFATAL,NhlEUNKNOWN,\"%s: dimension size of dimension (%d) of %s must be equal to the value of %s\");\n\t\treturn(NhlFATAL);\n\t}\n",$1->u.subr->args[i]->u.farg->dim_refs[j]->name,$1->u.subr->args[i]->name,j,$1->name,j,$1->u.subr->args[i]->name,$1->u.subr->args[i]->u.farg->dim_refs[j]->name);
 						tmp_src = thecall->arg_strings[i]->additional_src;
 						thecall->arg_strings[i]->additional_src = WNewAdditionalSrc(buffer,1);
 						thecall->arg_strings[i]->additional_src->next = tmp_src;
@@ -1265,7 +1265,7 @@ declaration : UNDEF {
 		(void)WNewVDef(buffer,NCL_int,0,NULL,0);
 
 		sprintf(buffer,"%s_dimsizes",$1->name);
-		(void)WNewVDef(buffer,NCL_int,0,"[NCL_MAX_DIMENSIONS]",0);
+		(void)WNewVDef(buffer,NCL_long,0,"[NCL_MAX_DIMENSIONS]",0);
 		tmp->dimsizes = malloc(strlen(buffer)+1);
 		strcpy(tmp->dimsizes,buffer);
 
@@ -1308,7 +1308,7 @@ declaration : UNDEF {
 		sprintf(buffer,"%s_dimsizes",$1->name);
 		tmp->dimsizes= malloc(strlen(buffer)+1);
 		strcpy(tmp->dimsizes,buffer);
-		(void)WNewVDef(buffer,NCL_int,0,"[NCL_MAX_DIMENSIONS]",0);
+		(void)WNewVDef(buffer,NCL_long,0,"[NCL_MAX_DIMENSIONS]",0);
 
 		sprintf(buffer,"&%s_type",$1->name);
 		tmp->type = malloc(strlen(buffer)+1);

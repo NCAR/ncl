@@ -16,6 +16,7 @@
  */
 
 #include <ncarg/gks.h>
+#include <string.h>
 
 extern void NGCALLF(gtx,GTX)(const Gfloat*,const Gfloat*,NGstring,int);
 

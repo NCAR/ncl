@@ -45,9 +45,6 @@ int     Verbose = 0;
 GKSdev  *GKS_GetDevByName(name)
         char    *name;
 {
-        GKSdev  *ptr;
-        int     i;
-
 
         static  int     first = 1;
 

@@ -9,25 +9,34 @@ NhlErrorTypes hydro_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_zh, nlvl, ier=0;
+  ng_size_t i, index_zh, nlvl;
+  int inlvl, ier=0;
 /*
  * Input array variables
  */
   void *p, *tkv, *zsfc;
-  double *tmp_p, *tmp_tkv, *tmp_zsfc;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS], has_missing_p;
-  int ndims_tkv, dsizes_tkv[NCL_MAX_DIMENSIONS], has_missing_tkv;
-  int ndims_zsfc, dsizes_zsfc[NCL_MAX_DIMENSIONS], has_missing_zsfc;
+  double *tmp_p = NULL;
+  double *tmp_tkv = NULL;
+  double *tmp_zsfc = NULL;
+  int ndims_p;
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  int has_missing_p;
+  int ndims_tkv;
+  ng_size_t dsizes_tkv[NCL_MAX_DIMENSIONS];
+  int has_missing_tkv;
+  int ndims_zsfc;
+  ng_size_t dsizes_zsfc[NCL_MAX_DIMENSIONS];
+  int has_missing_zsfc;
   NclBasicDataTypes type_p, type_tkv, type_zsfc;
   NclScalar missing_p, missing_tkv, missing_zsfc;
   NclScalar missing_dp, missing_dtkv, missing_dzsfc;
-  int size_zsfc, size_p;
+  ng_size_t size_zsfc, size_p;
   int found_missing_p, found_missing_tkv, found_missing_zsfc, any_missing;
 /*
  * Output array variables
  */
   void *zh;
-  double *tmp_zh;
+  double *tmp_zh = NULL;
   NclBasicDataTypes type_zh;
   NclScalar missing_zh;
 /*
@@ -108,11 +117,17 @@ NhlErrorTypes hydro_W( void )
 /*
  * Compute the total size of the output array.
  */
-  nlvl = dsizes_p[ndims_p-1];
-  if (nlvl < 1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: 'nlvl' (the last dimension of 'p' and 'tkv') must be at least one");
+  if (dsizes_p[ndims_p-1] < 1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: The rightmost dimension of p and tkv must be at least one");
     return(NhlFATAL);
   }
+
+  if(dsizes_p[ndims_p-1] > INT_MAX) { 
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: The rightmost dimension of p is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nlvl  = dsizes_p[ndims_p-1];
+  inlvl = (int) nlvl;
 
   size_zsfc = 1;
   for( i = 0; i < ndims_zsfc; i++ ) size_zsfc *= dsizes_zsfc[i];
@@ -251,7 +266,7 @@ NhlErrorTypes hydro_W( void )
       NhlPError(NhlWARNING,NhlEUNKNOWN,"hydro: one of the input arrays contains missing values. No geopotential heights calculated for this set of values.");
     }
     else {
-      NGCALLF(dhydro,DHYDRO)(tmp_p,tmp_tkv,tmp_zsfc,&nlvl,tmp_zh,&ier);
+      NGCALLF(dhydro,DHYDRO)(tmp_p,tmp_tkv,tmp_zsfc,&inlvl,tmp_zh,&ier);
 /*
  * Copy output values from temporary tmp_zh to zh.
  */

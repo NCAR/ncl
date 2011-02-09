@@ -11,8 +11,11 @@ NhlErrorTypes simpeq_W( void )
  * Input array variables
  */
   void *f, *x;
-  double *tmp_f, *tmp_x;
-  int ndims_f, dsizes_f[NCL_MAX_DIMENSIONS], has_missing_f;
+  double *tmp_f = NULL;
+  double *tmp_x = NULL;
+  int ndims_f;
+  ng_size_t dsizes_f[NCL_MAX_DIMENSIONS];
+  int has_missing_f;
   int nmiss, found_missing;
   NclScalar missing_f, missing_df, missing_rf;
   NclBasicDataTypes type_f, type_x;
@@ -21,15 +24,17 @@ NhlErrorTypes simpeq_W( void )
  * Output array variables
  */
   void *simpeq;
-  double *tmp_simpeq;
+  double *tmp_simpeq = NULL;
   NclBasicDataTypes type_simpeq;
-  int ndims_simpeq, *dsizes_simpeq;
+  int ndims_simpeq;
+  ng_size_t *dsizes_simpeq;
   NclScalar missing_simpeq;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_f, npts, size_leftmost, ret;
+  ng_size_t i, index_f, npts, size_leftmost;
+  int inpts, ret;
 
 /*
  * Retrieve arguments.
@@ -45,6 +50,15 @@ NhlErrorTypes simpeq_W( void )
           DONT_CARE);
 
   npts = dsizes_f[ndims_f-1];
+
+/*
+ * Test dimension sizes.
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"simpeq: npts is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
 
   x = (void*)NclGetArgValue(
           1,
@@ -65,7 +79,7 @@ NhlErrorTypes simpeq_W( void )
   else {
     ndims_simpeq = 1;
   }
-  dsizes_simpeq = (int*)calloc(ndims_simpeq,sizeof(int));
+  dsizes_simpeq = (ng_size_t*)calloc(ndims_simpeq,sizeof(ng_size_t));
   size_leftmost = 1;
   if(ndims_simpeq > 1) {
     for( i = 0; i < ndims_f-1; i++ ) {
@@ -147,7 +161,7 @@ NhlErrorTypes simpeq_W( void )
                                 missing_df.doubleval);
     }
     else {
-      NGCALLF(dsimpeq,DSIMPEQ)(&npts,tmp_x,tmp_f,tmp_simpeq);
+      NGCALLF(dsimpeq,DSIMPEQ)(&inpts,tmp_x,tmp_f,tmp_simpeq);
 
       if(type_simpeq != NCL_double) {
         coerce_output_float_only(simpeq,tmp_simpeq,1,i);
@@ -183,9 +197,14 @@ NhlErrorTypes simpne_W( void )
  * Input array variables
  */
   void *x, *y;
-  double *tmp_x, *tmp_y;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   int nmiss, found_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclScalar missing_y, missing_dy, missing_ry;
@@ -195,15 +214,17 @@ NhlErrorTypes simpne_W( void )
  * Output array variables
  */
   void *simpne;
-  double *tmp_simpne;
+  double *tmp_simpne = NULL;
   NclBasicDataTypes type_simpne;
-  int ndims_simpne, *dsizes_simpne;
+  int ndims_simpne;
+  ng_size_t *dsizes_simpne;
   NclScalar missing_simpne;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_y, npts, size_leftmost, ret;
+  ng_size_t i, index_y, npts, size_leftmost;
+  int inpts, ret;
 
 /*
  * Retrieve arguments.
@@ -251,6 +272,15 @@ NhlErrorTypes simpne_W( void )
   npts = dsizes_y[ndims_y-1];
 
 /*
+ * Test dimension sizes.
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"simpne: npts is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
+/*
  * Compute size of the output array (size_leftmost).
  */
   if(ndims_y > 1) {
@@ -259,7 +289,7 @@ NhlErrorTypes simpne_W( void )
   else {
     ndims_simpne = 1;
   }
-  dsizes_simpne = (int*)calloc(ndims_simpne,sizeof(int));
+  dsizes_simpne = (ng_size_t*)calloc(ndims_simpne,sizeof(ng_size_t));
   size_leftmost = 1;
   if(ndims_simpne > 1) {
     for( i = 0; i < ndims_y-1; i++ ) {
@@ -385,7 +415,7 @@ NhlErrorTypes simpne_W( void )
       set_subset_output_missing(simpne,i,type_simpne,1,missing_dy.doubleval);
     }
     else {
-      NGCALLF(dsimpne,DSIMPNE)(&npts,tmp_x,tmp_y,&missing_dy.doubleval,
+      NGCALLF(dsimpne,DSIMPNE)(&inpts,tmp_x,tmp_y,&missing_dy.doubleval,
                                tmp_simpne);
 
       if(type_simpne != NCL_double) {

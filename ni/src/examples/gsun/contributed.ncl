@@ -141,7 +141,7 @@ begin
       return(x@DataFieldName)
   end if
  ;return("")                          ; return 
-  return("missing")                   ; return 
+  return(new(1,string))
 end
 
 ; ******************************************************************
@@ -567,8 +567,8 @@ begin
  ;nrow      = dimsizes(filString)
 
   nrow_s    = systemfunc("'wc' -l " + fNam +" | awk '{print $1}'" )
-  nrow      = stringtointeger( nrow_s )
 
+  nrow      = tointeger( nrow_s )
   return (nrow)
 end
 
@@ -741,7 +741,7 @@ end
 ; set nlat@double = True if double precision is desired
 
 undef ("latGau")
-function latGau (nlat:integer, dimName:string, longName:string, units:string)
+function latGau (nlat, dimName:string, longName:string, units:string)
 local gau_info, lat
 begin
   if (isatt(nlat,"double") .and. nlat@double) then
@@ -768,7 +768,7 @@ end
 ; set nlat@double = True if double precision is desired
 
 undef ("latGauWgt")
-function latGauWgt(nlat:integer,dimName:string,longName:string,units:string)
+function latGauWgt(nlat,dimName:string,longName:string,units:string)
 local gau_info, gwt
 begin        
   if (isatt(nlat,"double") .and. nlat@double) then
@@ -832,7 +832,7 @@ end
 ; set mlon@double = True if double precision is desired
 
 undef ("lonGlobeF")
-function lonGlobeF(mlon:integer,dimName:string,longName:string,units:string)
+function lonGlobeF(mlon,dimName:string,longName:string,units:string)
 local dlon, lon
 begin
   if (isatt(mlon,"double") .and. mlon@double) then
@@ -864,7 +864,7 @@ end
 ; set mlon@double = True if double precision is desired
 
 undef ("lonGlobeFo")
-function lonGlobeFo(mlon:integer,dimName:string,longName:string,units:string)
+function lonGlobeFo(mlon,dimName:string,longName:string,units:string)
 local dlon, offset, lon
 begin
   if (isatt(mlon,"double") .and. mlon@double) then
@@ -981,7 +981,7 @@ end
 ; set nlat@double = True if double precision is desired
 ;
 undef ("latGlobeF")
-function latGlobeF(nlat:integer,dimName:string,longName:string,units:string)
+function latGlobeF(nlat,dimName:string,longName:string,units:string)
 local dlat, lat
 begin
   if (isatt(nlat,"double") .and. nlat@double) then
@@ -1009,7 +1009,7 @@ end
 ; set nlat@double = True if double precision is desired
 ;
 undef ("latGlobeFo")
-function latGlobeFo(nlat:integer,dimName:string,longName:string,units:string)
+function latGlobeFo(nlat,dimName:string,longName:string,units:string)
 local dlat, offset, lat
 begin
   if (isatt(nlat,"double") .and. nlat@double) then
@@ -1077,7 +1077,7 @@ function get1Dindex (cv[*],  cvWant[*])
 local nWant, indWant, n
 begin
   nWant   = dimsizes (cvWant)
-  indWant = new (nWant, integer)
+  indWant = new (nWant, typeof(dimsizes(cv)))
 
   do n=0,nWant-1
      indWant(n) = ind( cv.eq.cvWant(n) )
@@ -3994,7 +3994,7 @@ begin
   days     = (/ (/31,28,31,30,31,30,31,31,30,31,30,31/) \    ; [2] x [12]
               , (/31,29,31,30,31,30,31,31,30,31,30,31/) /)
 
-  yyyymmdd = new (nTime, "integer", -999)
+  yyyymmdd = new (nTime, integer)
 
   do nt=0,nTime-1
      iyr   = 0
@@ -4447,7 +4447,7 @@ end
 ; It adds the longitude and gaussian latitude coordinates.
 
 undef("g2gsh_Wrap")
-function g2gsh_Wrap (x:numeric, newDims:integer, twave:numeric)
+function g2gsh_Wrap (x:numeric, newDims, twave:numeric)
 local nlat, mlon, xNew, lat, lon, nDim, gwt 
 begin
   nlat = newDims(0)                             ; specify output grid
@@ -4489,7 +4489,7 @@ end
 ; It adds the longitude and gaussian latitude coordinates.
 
 undef("g2fsh_Wrap")
-function g2fsh_Wrap (x:numeric, newDims:integer)
+function g2fsh_Wrap (x:numeric, newDims)
 local nlat, mlon, xNew, lat, lon, nDim 
 begin
   nlat = newDims(0)                             ; specify output grid
@@ -4526,7 +4526,7 @@ end
 ; It adds the longitude and gaussian latitude coordinates.
 
 undef("f2gsh_Wrap")
-function f2gsh_Wrap (x:numeric, newDims:integer, twave:numeric)
+function f2gsh_Wrap (x:numeric, newDims, twave:numeric)
 local nlat, mlon, xNew, lat, lon, nDim 
 begin
   nlat = newDims(0)                             ; specify output grid
@@ -4570,7 +4570,7 @@ end
 ; It adds the longitude and latitude coordinates.
 
 undef("f2fsh_Wrap")
-function f2fsh_Wrap (x:numeric, newDims:integer)
+function f2fsh_Wrap (x:numeric, newDims)
 local nlat, mlon, xNew, lat, lon, nDim 
 begin
   nlat = newDims(0)                             ; specify output grid
@@ -4906,7 +4906,7 @@ begin
   mlon    = dim_uNew(nDim-1)                   ; number of longitudes [fo grid]
   nlat1= nlat-1                                ; fo has one less lat
 
-  if (typeof(x).eq."double") then
+  if (typeof(u).eq."double") then
       nlat@double = True
       nlat1@double= True
       mlon@double = True
@@ -5044,8 +5044,7 @@ begin
 
  if (nclr .lt. ncn+1) then 
    print ("Not enough colors in colormap for number of contour levels")
-   index = -999
-   return (index)
+   return (default_fillvalue("integer"))
  end if
 
  if (data .le. cnlvls(0)) then
@@ -6141,36 +6140,37 @@ end
 ;
 ; Output file will be sequential access file
 ;
+;   [06 Feb 2011 - added support for "long" dims]
 
 undef ("fbinseqSwap1")
 procedure fbinseqSwap1(in_file[1]:string, outfile[1]:string \
-                      ,type[1]:string,  dims[*]:integer)
+                      ,type[1]:string,  dims[*])
 local indata, tot, n, sz, i, done, tmp
 begin
 	indata = cbinread(in_file,-1,"byte")
-	tot = dimsizes(indata)
+	tot = tolong(dimsizes(indata))
        ;print(tot)
-	n = floattointeger(product(dims))
+	n = tolong(product(dims))   ; Use longs to handle large sizes
        ;print(n)
 	if(type.eq."long")
 		print("fbinswap: won't convert longs due to fact that " + \
                       "they can be different sizes on different machines, " + \
-                      "use double for 64 bit longs and integer for 32 bit longs")
+                      "use int64/double for 64 bit ints and integer for 32 bit longs")
 		return
 	end if
 	if(type.eq."short")
-		sz = 2
+		sz = 2l
 	end if
 	if(any(type.eq.(/"integer","float"/)))
-		sz = 4
+		sz = 4l
 	end if
-	if(type.eq."double")
-		sz = 8
+	if(any(type.eq.(/"int64","double"/)))
+		sz = 8l
 	end if
 ;
 ; Skip first control word
 ;
-	i    = 4
+	i    = 4l
 	done = False
 
 	do while(.not.done)
@@ -6179,7 +6179,7 @@ begin
 ;
 ; Skip control word after current record and before next
 ;
-		i = i + 8 + n*sz
+		i = i + 8l + n*sz
 		if(i.ge.tot)
 			done = True
 		end if
@@ -6193,27 +6193,28 @@ end
 ;
 ; Output file will be fortran sequential access file
 ;
+;   [06 Feb 2011 - added support for "long" dims]
 
 undef ("fbinseqSwap2")
 procedure fbinseqSwap2(in_file[1]:string, outfile[1]:string, \
-                       type[1]:string, nrec[1]:integer, dims[*]:integer)
+                       type[1]:string, nrec[1]:integer, dims[*])
 local n, sz, i, indata, tmp
 begin
-	n = floattointeger(product(dims))
+	n = tolong(product(dims))
 	if(type.eq."long")
 		print("fbinswap: won't convert longs due to fact that " + \
                       "they can be different sizes on different machines, " + \
-                      "use double for 64 bit longs and integer for 32 bit longs")
+                      "use int64/double for 64 bit longs and integer for 32 bit longs")
 		return
 	end if
 	if(type.eq."short")
-		sz = 2
+		sz = 2l
 	end if
 	if(any(type.eq.(/"integer","float"/)))
-		sz = 4
+		sz = 4l
 	end if
-	if(type.eq."double")
-		sz = 8
+	if(any(type.eq.(/"int64","double"/)))
+		sz = 8l
 	end if
 	recsize = n*sz
 
@@ -6232,7 +6233,7 @@ end
 ;
 
 undef ("fbindirSwap")
-procedure fbindirSwap (infile:string, dims:integer \
+procedure fbindirSwap (infile:string, dims \
                       ,inType:string, outFile:string)
                        
 ; procedure that reads byte reversed data 
@@ -6245,9 +6246,9 @@ local nBytes, dimBytes, indata
 begin
  ;print ("Start fbindirSwap: "+systemfunc("date"))
 
-  nBytes = 4
+  nBytes = 4l     ; treat as longs just in case large dimensions
   if (inType.eq."double") then
-      nBytes  = 8
+      nBytes  = 8l
   end if
   dimBytes  = (/product(dims),nBytes/)
  ;print (dimBytes)
@@ -7787,8 +7788,9 @@ begin
 
    if (ismissing(S) .or. ismissing(s)) then
        print("indStrSubset: missing string")
-       ii = (/-999,-999/)
-       ii@_FillValue = -999
+       imsg = default_fillvalue("integer")
+       ii = (/imsg,imsg/)
+       ii@_FillValue = imsg
        return(ii)
    end if
 
@@ -7807,7 +7809,7 @@ begin
        end do
    end if
 
-   ii = new ( 1, "integer", -999)
+   ii = new ( 1, integer)
    return (ii)
 end
 
@@ -7921,8 +7923,9 @@ end
 ; return this may have to be parsed individually for specific info. 
 ;
 ; opt - option
-;       if type "integer" then it is the number of rows (line)
-;       for the header. This is a 'fixed' number of lines.
+;       if type "integer" or "long" then it is the number of rows
+;       (line) for the header. This is a 'fixed' number of lines.
+;        [06 Feb 2011 - add support for "long" nrows]
 ;
 ;       if type "string" then it is a sequence of characters
 ;       that terminate a variable number of header rows.
@@ -7939,34 +7942,29 @@ local xs, xc, nr, nrow, noptc, nxc, f_head
 begin
   xs   = asciiread(fName, -1, "string") ; all rows as strings
  
-  if (typeof(opt).eq."integer") then
+  if (any(typeof(opt).eq.(/"integer","long"/))) then
       if (opt.gt.0) then
           return( xs(0:opt-1) )       ; return just header rows
       else
           print ("contributed: readAsciiHead: opt must be >0")
-          return( "missing" )
+          return( new(1,string) )
       end if
   end if
 
   if (typeof(opt).eq."string") then
       nrow = dimsizes(xs)
-      noptc = dimsizes(stringtochar(opt))-2  ; account for added carriage return(CR)
-    ;;print ("nrow="+nrow+"  noptc="+noptc)
-      
       do nr=0,nrow-1
-         xc  = stringtochar(xs(nr))          ; xc will have CR
-         nxc = dimsizes(xc)-2
-         if (nxc.ge.noptc .and. opt.eq.chartostring(xc(0:noptc))) then
+         ii = str_index_of_substr(xs(nr),opt,1)  ; Find the 1st match
+         if(.not.any(ismissing(ii)).and.ii.eq.0) then
              return( xs(0:nr) )
              exit
          end if
-         delete (xc)
       end do
-      return( "missing" )           ; return just header
+      return(new(1,string))
   end if
 
   if (typeof(opt).eq."float") then
-      nrow = floattointeger(opt)    ; # of rows to be read as float
+      nrow = tolong(opt)    ; # of rows to be read as float
 
       tmpdir  = ncargpath("tmp") + "/"
       if(ismissing(tmpdir)) then
@@ -8003,14 +8001,21 @@ end
 ;       Currently this just checks character sequences
 ;       starting in col 0. 
 ; ncol- number of columns in table
-
+;
+;   [06 Feb 2011 - added support for "long" ncol]
 
 undef("readAsciiTable")
-function readAsciiTable( fName:string, ncol:integer, datatype:string, opt)
-local head, nh, xs, nrow, table, nopt
+function readAsciiTable( fName:string, ncol, datatype:string, opt)
+local head, nh, xs, nrow, table, nopt, valid_dim_types
 begin
+  valid_dim_types = (/"integer","long"/)
+  if (.not.any(typeof(ncol).eq.valid_dim_types)) then
+    print ("contributed: readAsciiTable: ncol must be int or long")
+    return(new(1,string))
+  end if
   nopt = dimsizes(opt)
-  if (typeof(opt).eq."integer" .and. nopt.eq.1 .and. opt(0).eq.0) then
+  if (any(typeof(opt).eq.valid_dim_types) .and. nopt.eq.1 .and. \
+      opt(0).eq.0) then
       nrow  = dimsizes(asciiread(fName, -1, "string"))  ; all rows as strings
       table = asciiread(fName, (/nrow,ncol/), datatype)
   else
@@ -8339,11 +8344,13 @@ end
 ;              qmin = q(imin)
 ;              zmin = z(imin)   ; z where q is at a minimum
 ;          end if
+;
+; M.Haley, 5 Feb 2011 - updated to allow long dimension sizes
 
 undef("local_min_1d")
 function local_min_1d( X[*]:numeric  , cyclic:logical \
                      , del[1]:numeric, opt[1]:integer )
-local NX, nx, x, iOffSet, nStrt, nLast, imn, i
+local NX, nx, x, iOffSet, nStrt, nLast, imn, i, type_nx
 begin
   if (del.gt.0.0) then
       print("contributed: local_min_1d: del must be .le. 0.0")
@@ -8361,8 +8368,8 @@ begin
   NX  = dimsizes(X)
 
   if (cyclic) then
-      nx = NX+2
-      x  = new (nx, typeof(X), getFillValue(X)) 
+      nx        = NX+2
+      x         = new (nx, typeof(X), getFillValue(X)) 
       x(0)      = (/ X(NX-1) /)
       x(nx-1)   = (/ X(0)    /)
       x(1:nx-2) = (/ X       /) 
@@ -8372,12 +8379,16 @@ begin
       iOffSet   = 0
   end if
 
-  nx    = dimsizes(x) 
+  nx      = dimsizes(x)
+  type_nx = typeof(nx)                     ; int or long
+  imn     = new( nx, type_nx )
+  nStrt   = new(  1, type_nx )
+  nLast   = new(  1, type_nx )
+  i       = new(  1, type_nx )
+
   nStrt = 1
   nLast = nx-2   
-  imn   = new( nx, "integer") 
-
-  i   = -1
+  i     = -1
   do n=nStrt,nLast
      if ((x(n)-x(n-1)).le.del .and. (x(n)-x(n+1)).le.del) then
          i = i+1
@@ -8394,12 +8405,7 @@ begin
       end if
   else                          ; must be no local minima
       if (opt.eq.0) then
-          if (typeof(x).eq."float") then
-              return(-999.)
-          end if
-          if (typeof(x).eq."double") then
-              return(-999.d0)
-          end if
+          return(default_fillvalue(typeof(x)))
       else
           return(i)           ; default integer missing code
       end if
@@ -8431,8 +8437,7 @@ end
 undef("local_max_1d")
 function local_max_1d( X[*]:numeric  , cyclic:logical \
                      , del[1]:numeric, opt[1]:integer )
-
-local NX, nx, x, iOffSet, nStrt, nLast, imn, i
+local NX, nx, x, iOffSet, nStrt, nLast, imx, i, type_nx
 begin
   if (del.lt.0.0) then
       print("contributed: local_max_1d: del must be .ge. 0.0")
@@ -8450,8 +8455,8 @@ begin
   NX  = dimsizes(X)        
                           
   if (cyclic) then          
-      nx = NX+2                 
-      x  = new (nx, typeof(X), getFillValue(X))    
+      nx        = NX+2                 
+      x         = new (nx, typeof(X), getFillValue(X))    
       x(0)      = (/ X(NX-1) /)  
       x(nx-1)   = (/ X(0)    /)   
       x(1:nx-2) = (/ X       /)    
@@ -8459,13 +8464,18 @@ begin
   else                              
       x         = (/ X /)            
       iOffSet   = 0
-  end if                                                                                            
-  nx    = dimsizes(x) 
+  end if
+
+  nx      = dimsizes(x)
+  type_nx = typeof(nx)                     ; int or long
+  imx     = new( nx, type_nx ) 
+  nStrt   = new(  1, type_nx )
+  nLast   = new(  1, type_nx )
+  i       = new(  1, type_nx )
+
   nStrt = 1 
   nLast = nx-2   
-  imx   = new( nx, "integer") 
-
-  i   = -1
+  i     = -1
   do n=nStrt,nLast
      if ((x(n)-x(n-1)).ge.del .and. (x(n)-x(n+1)).ge.del) then
          i    = i+1
@@ -8482,12 +8492,7 @@ begin
       end if
   else                          ; must be no local maxima
       if (opt.eq.0) then
-          if (typeof(x).eq."float") then
-              return(-999.)
-          end if
-          if (typeof(x).eq."double") then
-              return(-999.d0)
-          end if
+          return(default_fillvalue(typeof(x)))
       else
           return(i)
       end if
@@ -9783,7 +9788,7 @@ function getind_latlon2d(lat2d[*][*]:numeric,lon2d[*][*]:numeric \
 local N, ij, lat1d, lon1d, dist, mndist, indx
 begin
   N  = dimsizes( LAT )          
-  ij = new ( (/N,2/) , "integer")
+  ij = new ( (/N,2/) , typeof(N))
 
   lat1d  = ndtooned( lat2d )  
   lon1d  = ndtooned( lon2d )  
@@ -9892,11 +9897,17 @@ end
 ;****************************************************************
 ; Christophe Cassou [CERFACS, Toulouse CEDEX France] and Dennis Shea
 ; Generate unique random subscript indices
-
+;
+; As of 6.0.0, N can be integer or long
+;
 undef("generate_unique_indices")
-function generate_unique_indices( N:integer)
+function generate_unique_indices( N )
 local r
 begin
+  if(.not.any(typeof(N).eq.(/"integer","long"/))) then
+    print("generate_unique_indices: N must be integer or long")
+    exit
+  end if
   r   = random_uniform(0,100,N)
   return( dim_pqsort(r, 1) )
 end
@@ -10403,8 +10414,10 @@ local nGood_x, nbinsx, xMin, xMax, mnmxint, binx, binxBound, binxCenter, nbx \
      ,nGood_y, nbinsy, yMin, yMax, ySpace , biny, binyBound, binyCenter, nby \
      ,outside, mnmxint, pdf2, nTot, dimx, dimy, rankx, ranky, x1d, y1d, iy, warnFlag\
      ,xMIN, xMAX, yMIN, yMAX, binxBoundMin, binxBoundMax, binyBoundMin, binyBoundMax\
-     ,nMax, nUse, nxLoOut, nxHiOut, nyLoOut, nyHiOut, popt
+     ,nMax, nUse, nxLoOut, nxHiOut, nyLoOut, nyHiOut, popt, fmsg
 begin
+
+  fmsg = default_fillvalue("float")
 
   if (nbinx.le.2) then
       nbinsx = 25             ; default
@@ -10584,8 +10597,8 @@ begin
       pdf2@pcUse       = (1e2*nUse)/nMax         ; percent [pc]
       pdf2@pcOut       = (1e2*pdf2@nOut)/nMax
   else
-      pdf2@pcUse       = -999                                   
-      pdf2@pcOut       = -999
+      pdf2@pcUse       = fmsg
+      pdf2@pcOut       = fmsg
   end if
 
   pdf2@xMIN            = xMIN 
@@ -10603,8 +10616,8 @@ begin
       pdf2@pcxLoOut    = (1e2*nxLoOut)/nMax         ; %
       pdf2@pcxHiOut    = (1e2*nxHiOut)/nMax
   else
-      pdf2@pcxLoOut    = -999
-      pdf2@pcxHiOut    = -999                
+      pdf2@pcxLoOut    = fmsg
+      pdf2@pcxHiOut    = fmsg
   end if
 
   pdf2@yMIN            = yMIN 
@@ -10621,8 +10634,8 @@ begin
       pdf2@pcyLoOut        = (1e2*nyLoOut)/nMax         ; %
       pdf2@pcyHiOut        = (1e2*nyHiOut)/nMax
   else
-      pdf2@pcyLoOut        = -999
-      pdf2@pcyHiOut        = -999 
+      pdf2@pcyLoOut        = fmsg
+      pdf2@pcyHiOut        = fmsg
   end if
 
  ;pdf2@long_name      = "Joint PDF"
@@ -10769,7 +10782,7 @@ begin
                 XLON_1d.ge.lonW .and. XLON_1d.le.lonE)
  nlml     = ind_resolve(nm_1d, dimsizes(XLON))
 
- ijsub    = new( 4, "integer", "No_FillValue")
+ ijsub    = new( 4, typeof(nlml), "No_FillValue")
 
  ijsub(0) = min(nlml(:,0))   ; lat start index
  ijsub(1) = max(nlml(:,0))   ; lat last  index
@@ -11442,7 +11455,7 @@ begin
    dim_nCrit  = dimsizes(nCrit)
    if (dim_nCrit.gt.2) then
        print("numBinOneRuns: nCrit size must be .le. 2: nCrit="+dim_nCrit)
-       return(-999)
+       return(default_fillvalue("integer"))
    end if
 
    inds    = ind (a .eq. 1)

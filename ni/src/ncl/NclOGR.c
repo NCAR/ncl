@@ -55,6 +55,11 @@
  *      used as variable attributes, so none are created for these file variables. The same is 
  *      true for coordinate variables.
  *
+ *      NOTE on 64-bit port: Although the NCL file interface has been modified to accomodate
+ *      arrays larger than 2GB, the OGR API has inherent limits of size "int", and this is
+ *      reflected internally in this source module.
+ *      8/10/2010, RLB.
+ *
  */
 #ifdef NIO_LIB_ONLY
 #include "niohlu.h"
@@ -92,7 +97,7 @@ struct _OGRRecord {
         int              numVariables;
 
         NclFAttRec       *globalAtts;
-        void             **globalAttsValues;
+        long             *globalAttsValues;
         int              numAtts;
 
         /* pointers to the contents of the "geometry" variables */
@@ -171,6 +176,7 @@ OGRFieldType type;
                 case OFTInteger:  return NCL_int;
                 case OFTReal:     return NCL_double;
                 case OFTString:   return NCL_string;
+	        default:          return NCL_none;
         }
 
         /* imperfect mapping... */
@@ -210,6 +216,8 @@ OGRwkbGeometryType type;
                 case wkbPolygon25D:
                 case wkbMultiPolygon25D:
                         return "polygon";
+	        default:
+			return "unknown";
         }
 
         return "unknown";            
@@ -279,20 +287,20 @@ OGRRec *rec;
 
         /* Define the global attributes... */
         rec->globalAtts = (NclFAttRec*)NclMalloc(sizeof(NclFAttRec) * 7);
-        rec->globalAttsValues = NclMalloc(sizeof(void*) * 7);
+        rec->globalAttsValues = NclMalloc(sizeof(long) * 7);
 
         /* the layer name */        
         rec->globalAtts[i].att_name_quark = NrmStringToQuark("layer_name");
         rec->globalAtts[i].data_type = NCL_string;
         rec->globalAtts[i].num_elements = 1;
-        rec->globalAttsValues[i] = (void*) NrmStringToQuark( OGR_FD_GetName(rec->layerDefn) );
+        rec->globalAttsValues[i] =  NrmStringToQuark( OGR_FD_GetName(rec->layerDefn) );
         ++i;
 
         /* the geometry-type of the layer */
         rec->globalAtts[i].att_name_quark = NrmStringToQuark("geometry_type");
         rec->globalAtts[i].data_type = NCL_string;
         rec->globalAtts[i].num_elements = 1;
-        rec->globalAttsValues[i] = (void*) NrmStringToQuark(
+        rec->globalAttsValues[i] =  NrmStringToQuark(
             _mapOGRGeom2Ncl(OGR_FD_GetGeomType(rec->layerDefn)) );
         ++i;
 
@@ -303,25 +311,25 @@ OGRRec *rec;
         rec->globalAtts[i].att_name_quark = NrmStringToQuark("geom_segIndex");
         rec->globalAtts[i].data_type = NCL_int;
         rec->globalAtts[i].num_elements = 1;
-        rec->globalAttsValues[i] = (void*) 0;   /* index zero */ 
+        rec->globalAttsValues[i] = 0;   /* index zero */
         ++i;
 
         rec->globalAtts[i].att_name_quark = NrmStringToQuark("geom_numSegs");
         rec->globalAtts[i].data_type = NCL_int;
         rec->globalAtts[i].num_elements = 1;
-        rec->globalAttsValues[i] = (void*)1;
+        rec->globalAttsValues[i] = 1;
         ++i;
 
         rec->globalAtts[i].att_name_quark = NrmStringToQuark("segs_xyzIndex");
         rec->globalAtts[i].data_type = NCL_int;
         rec->globalAtts[i].num_elements = 1;
-        rec->globalAttsValues[i] = (void*) 0;
+        rec->globalAttsValues[i] = 0;
         ++i;
 
         rec->globalAtts[i].att_name_quark = NrmStringToQuark("segs_numPnts");
         rec->globalAtts[i].data_type = NCL_int;
         rec->globalAtts[i].num_elements = 1;
-        rec->globalAttsValues[i] = (void*) 1;
+        rec->globalAttsValues[i] = 1;
         ++i;
 
         rec->numAtts = i;
@@ -429,12 +437,12 @@ OGRRec *rec;
  */
 static void _countGeometry
 #if	NhlNeedProto
-(OGRGeometryH geom, int *numSegments, int *numPoints)
+(OGRGeometryH geom, ng_size_t *numSegments, ng_size_t *numPoints)
 #else
 (geom, numSegments, numPoints)
 OGRGeometryH geom;
-int         *numSegments;
-int         *numPoints;
+ng_size_t    *numSegments;
+ng_size_t    *numPoints;
 #endif
 {
         int geomCount = OGR_G_GetGeometryCount(geom);
@@ -826,9 +834,9 @@ int wr_status;
         OGRLayerH layer;
         OGRFeatureH feature;
         OGRSpatialReferenceH sSrs;
-        int numGeometry = 0;
-        int numSegments = 0;
-        int numPoints = 0;
+        ng_size_t numGeometry = 0;
+        ng_size_t numSegments = 0;
+        ng_size_t numPoints = 0;
 
         #ifdef OGR_DEBUG
         fprintf(stderr, "OGROpenFile...\n");
@@ -938,7 +946,6 @@ void *therec;
 #endif
 {
 	OGRRecord *rec = (OGRRecord*)therec;
-        int i;
 
         #ifdef OGR_DEBUG
         fprintf(stderr, "OGRFreeFileRec...\n");
@@ -1188,7 +1195,6 @@ NclQuark thevar;
 int* num_atts;
 #endif
 {
-	OGRRecord* rec = (OGRRecord*)therec;
 
         #ifdef OGR_DEBUG
         fprintf(stderr, "OGRGetVarAttNames...\n");
@@ -1213,7 +1219,6 @@ NclQuark thevar;
 NclQuark theatt;
 #endif
 {
-	OGRRecord* rec = (OGRRecord*)therec;
 
         #ifdef OGR_DEBUG
         fprintf(stderr, "OGRGetVarAttInfo...\n");
@@ -1332,8 +1337,12 @@ void* storage;
                         /*if (rec->globalAtts[i].data_type == NCL_char)
                         //        *(char*)storage = (char*)rec->globalAttsValues[i];
                         //0else*/
-                                *(int*)storage = (int)rec->globalAttsValues[i];
-                        return (storage);
+		  /* *storage = rec->globalAttsValues[i];  */
+                	if (rec->globalAtts[i].data_type == NCL_string)
+                		*(long*) storage = rec->globalAttsValues[i];
+                	else
+                		*(int*) storage = (int) rec->globalAttsValues[i];
+					return (storage);
                 }
         }
 

@@ -262,6 +262,7 @@ NclFile thefile;
 		}
 	}
 	NclFree((void*)name_list);
+	return NhlNOERROR;
 }
 
 /*
@@ -326,12 +327,12 @@ NclFile thefile;
 
 static NhlErrorTypes FileAddDim
 #if  NhlNeedProto
-(NclFile thefile, NclQuark dimname, int dimsize, int is_unlimited)
+(NclFile thefile, NclQuark dimname, ng_size_t dimsize, int is_unlimited)
 #else
 (thefile, dimname, dimsize, is_unlimited)
 NclFile thefile;
 NclQuark dimname;
-int dimsize;
+ng_size_t dimsize;
 int is_unlimited;
 #endif
 {
@@ -368,12 +369,12 @@ int is_unlimited;
 
 static NhlErrorTypes FileAddChunkDim
 #if  NhlNeedProto
-(NclFile thefile, NclQuark dimname, int dimsize, int is_unlimited)
+(NclFile thefile, NclQuark dimname, ng_size_t dimsize, int is_unlimited)
 #else
 (thefile, dimname, dimsize, is_unlimited)
 NclFile thefile;
 NclQuark dimname;
-int dimsize;
+ng_size_t dimsize;
 int is_unlimited;
 #endif
 {
@@ -428,8 +429,8 @@ NclQuark *dimnames;
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
-	long dim_sizes[NCL_MAX_DIMENSIONS];
-	int i,j;
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
+	int i;
 	NclTypeClass typec;
 	int dindex;
 	int add_scalar_dim = 0;
@@ -464,12 +465,10 @@ NclQuark *dimnames;
 					dim_sizes
 					);
 				if(ret == NhlFATAL) {
-					fprintf(stdout, "FileAddVar, in file: %s, line: %d\n", __FILE__, __LINE__);
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar: an error occurred while adding a variable to a file, check to make sure data type is supported by the output format");
+					NHLPERROR((NhlFATAL,NhlEUNKNOWN,"FileAddVar: an error occurred while adding a variable to a file, check to make sure data type is supported by the output format"));
 				}
 			} else {
-				fprintf(stdout, "FileAddVar, in file: %s, line: %d\n", __FILE__, __LINE__);
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar Incorrect type specified, can't add variable (%s)",NrmQuarkToString(varname));
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"FileAddVar Incorrect type specified, can't add variable (%s)",NrmQuarkToString(varname)));
 				ret = NhlFATAL;
 			}
 			if(ret < NhlWARNING) 
@@ -485,30 +484,27 @@ NclQuark *dimnames;
 			UpdateCoordInfo(thefile,varname); 
 			return(NhlNOERROR);
 		} else {
-			fprintf(stdout, "FileAddVar, in file: %s, line: %d\n", __FILE__, __LINE__);
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAddVar: Variable %s is already defined, can not redefine",NrmQuarkToString(varname));
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,"FileAddVar: Variable %s is already defined, can not redefine",NrmQuarkToString(varname)));
 			return(NhlWARNING);
 		}
 	} else {
-		fprintf(stdout, "FileAddVar, in file: %s, line: %d\n", __FILE__, __LINE__);
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar: file (%s) was opened for reading only, can not write",NrmQuarkToString(thefile->file.fname));
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"FileAddVar: file (%s) was opened for reading only, can not write",NrmQuarkToString(thefile->file.fname)));
 	}
 	return(NhlFATAL);
 }
 
 static NhlErrorTypes FileAddVarChunk
 #if	NhlNeedProto
-(NclFile thefile, NclQuark varname, int n_dims, int *dims)
+(NclFile thefile, NclQuark varname, int n_dims, ng_size_t *dims)
 #else
 (thefile, varname, n_dims, dims)
 NclFile thefile;
 NclQuark varname;
 int n_dims;
-int *dims;
+ng_size_t *dims;
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
-	long dim_sizes[NCL_MAX_DIMENSIONS];
 	
 	if(thefile->file.wr_status <= 0)
 	{
@@ -521,17 +517,15 @@ int *dims;
 					varname, n_dims, dims);
 				if(ret == NhlFATAL)
 				{
-					fprintf(stdout, "FileAddVarChunk, in file: %s, line: %d\n", __FILE__, __LINE__);
-					NhlPError(NhlFATAL,NhlEUNKNOWN,
-						"FileAddVarChunk: an error occurred while adding chunk to variable");
+					NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+						   "FileAddVarChunk: an error occurred while adding chunk to variable"));
 				}
 			}
 			else
 			{
 				ret = NhlWARNING;
-				fprintf(stdout, "FileAddVarChunk, in file: %s, line: %d\n", __FILE__, __LINE__);
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
-					"FileAddVarChunk: add_var_chunk is not defined.");
+				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+					   "FileAddVarChunk: add_var_chunk is not defined."));
 			}
 			return(ret);
 		}
@@ -555,13 +549,13 @@ int *dims;
 
 static NhlErrorTypes FileAddVarChunkCache
 #if	NhlNeedProto
-(NclFile thefile, NclQuark varname, size_t cache_size, size_t cache_nelems, float cache_preemption)
+(NclFile thefile, NclQuark varname, ng_size_t cache_size, ng_size_t cache_nelems, float cache_preemption)
 #else
 (thefile, varname, cache_size, cache_nelems, cache_preemption)
 NclFile thefile;
 NclQuark varname;
-size_t cache_size;
-size_t cache_nelems;
+ng_size_t cache_size;
+ng_size_t cache_nelems;
 float  cache_preemption;
 #endif
 {
@@ -621,7 +615,6 @@ int compress_level;
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
-	long dim_sizes[NCL_MAX_DIMENSIONS];
 	
 	if(thefile->file.wr_status <= 0)
 	{
@@ -683,6 +676,7 @@ NhlArgVal udata;
 	NclFileAttInfoList *thelist;
 	NclMultiDValData tmp_md;
 	void *val;
+        ng_size_t  ne;
 
 	theattobj = (NclAtt)_NclGetObj(((FileCallBackRec*)udata.ptrval)->theattid);
 	thefile = (NclFile)_NclGetObj(((FileCallBackRec*)udata.ptrval)->thefileid);
@@ -711,6 +705,7 @@ NhlArgVal udata;
                                         		thelist->the_att->att_name_quark,
                                         		val
                                         		);
+                                        ne = thelist->the_att->num_elements;
                                 		tmp_md = _NclCreateMultiDVal(
                                                 		NULL,
                                                 		NULL,
@@ -719,7 +714,7 @@ NhlArgVal udata;
                                                 		val,
                                                 		NULL,
                                                 		1,
-                                                		&thelist->the_att->num_elements,
+                                                		&ne,
                                                 		TEMPORARY,
                                                 		NULL,
                                                 		_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(thelist->the_att->data_type))
@@ -744,6 +739,7 @@ NhlArgVal udata;
                                         thefile->file.file_atts[index]->att_name_quark,
                                         val
                                         );
+                                ne = thefile->file.file_atts[index]->num_elements;
                                 tmp_md = _NclCreateMultiDVal(
                                                 NULL,
                                                 NULL,
@@ -752,7 +748,7 @@ NhlArgVal udata;
                                                 val,
                                                 NULL,
                                                 1,
-                                                &thefile->file.file_atts[index]->num_elements,
+                                                &ne,
                                                 TEMPORARY,
                                                 NULL,
                                                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(thefile->file.file_atts[index]->data_type)));
@@ -779,7 +775,7 @@ NclQuark var;
         void *val;
         NclMultiDValData tmp_md;
         NhlArgVal udata;
-	
+        ng_size_t ne;	
 
 	index = FileIsVar(thefile,var);
         if(index > -1) {
@@ -798,6 +794,7 @@ NclQuark var;
 						val
 						);
 				}
+				ne = step->the_att->num_elements;
 				tmp_md = _NclCreateMultiDVal(
 						NULL,
 						NULL,
@@ -806,7 +803,7 @@ NclQuark var;
 						val,
 						NULL,
 						1,
-						&step->the_att->num_elements,
+						&ne,
 						TEMPORARY,
 						NULL,
 						_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(step->the_att->data_type))
@@ -1399,7 +1396,7 @@ NclMultiDValData value;
 				return(NhlWARNING);
 			}
 			if (fcp->options[i].valid_values) {
-				int ok;
+				int ok = 0;
 				int j,k;
 				if (fcp->options[i].value->multidval.data_type == NCL_string) {
 					lvalue = NclMalloc(tmp_md->multidval.totalelements * sizeof(NclQuark));
@@ -1497,7 +1494,7 @@ NclMultiDValData value;
 				return(NhlWARNING);
 			}
 			if (fcp->options[i].valid_values) {
-				int ok;
+				int ok = 0;
 				int j,k;
 				if (fcp->options[i].value->multidval.data_type == NCL_string) {
 					lvalue = NclMalloc(tmp_md->multidval.totalelements * sizeof(NclQuark));
@@ -1717,9 +1714,8 @@ static NhlErrorTypes InitializeFileOptions
 	string *sval;
 	float *fval;
 	int *ival;
-	int len_dims;
+	ng_size_t len_dims;
 	NhlErrorTypes ret = NhlNOERROR;
-	NclMultiDValData tmp_md;
 	
 	
 	/* option names are case insensitive and so are string-type 
@@ -2389,7 +2385,7 @@ static int FileIsGroup
 	NclQuark group;
 #endif
 {
-	int i, n;
+	int i;
 
       /*
         fprintf(stdout, "\n\n\nhit FileIsGroup. file: %s, line: %d\n", __FILE__, __LINE__);
@@ -2440,23 +2436,23 @@ NclQuark var;
 
 static void ReverseIt
 #if	NhlNeedProto
-(void *val,void* swap_space,int ndims,int *compare_sel,int *dim_sizes,int el_size)
+(void *val,void* swap_space,int ndims,int *compare_sel,ng_size_t *dim_sizes,int el_size)
 #else
 (val,swap_space,ndims,compare_sel,dim_sizes,el_size)
 void *val;
 void* swap_space;
 int ndims;
 int *compare_sel;
-int *dim_sizes;
+ng_size_t *dim_sizes;
 int el_size;
 #endif
 {
-	int i,j;
+	ng_size_t i,j;
 	char *tmp;
 	int block_size = el_size;
 
 	for(i = 1; i < ndims; i++) {
-		block_size *= dim_sizes[i];
+	block_size *= dim_sizes[i];
 	}
 	tmp = (char*)val;
 	if(ndims != 1) {
@@ -2493,32 +2489,33 @@ int vtype;
 	NclMultiDValData mis_md = NULL;
 	NclScalar missing_value;
 	int has_missing = 0;
-	void *val;
+	void *val = NULL;
 	int index;
 	long start[NCL_MAX_DIMENSIONS];
 	long finish[NCL_MAX_DIMENSIONS];
 	long stride[NCL_MAX_DIMENSIONS];
 	long real_stride[NCL_MAX_DIMENSIONS];
 	int i,j,k,done = 0,inc_done = 0;
-	int n_dims_input,n_elem;
-	int n_dims_output;
+	int n_dims_input;
+        long  n_elem = 1;
+	int n_dims_output = 1;
 	long total_elements = 1;
 	int has_vectors = 0;
 	int has_stride = 0;
 	int has_reverse = 0;
 	int has_reorder = 0;
-	int to = 0,block_read_limit,n_elem_block;
+	int to = 0,block_read_limit = 1,n_elem_block;
 	
 	long multiplier_input[NCL_MAX_DIMENSIONS];
 	int compare_sel[NCL_MAX_DIMENSIONS];
 	long current_index[NCL_MAX_DIMENSIONS];
 	long current_finish[NCL_MAX_DIMENSIONS];
 	int index_map[NCL_MAX_DIMENSIONS];
-	int output_dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t output_dim_sizes[NCL_MAX_DIMENSIONS];
 	int keeper[NCL_MAX_DIMENSIONS];
 	NclSelection *sel;
 	float tmpf;
-	int tmpi;
+	long tmpi;
 	int swap_size;
 	void *swap_space = NULL;
 /*
@@ -2561,7 +2558,7 @@ int vtype;
 				}
 				if(finish[sel->dim_num] < start[sel->dim_num]) {
 					if(stride[sel->dim_num] < 0) {
-						tmpi = finish[sel->dim_num] + (start[sel->dim_num] - finish[sel->dim_num]) % abs(stride[sel->dim_num]);
+						tmpi = finish[sel->dim_num] + (start[sel->dim_num] - finish[sel->dim_num]) % labs(stride[sel->dim_num]);
 						finish[sel->dim_num] = start[sel->dim_num];
 						start[sel->dim_num] = tmpi;
 						compare_sel[sel->dim_num] = NCLFILE_INC;
@@ -2574,7 +2571,7 @@ int vtype;
 				} else {
 					if(stride[sel->dim_num] < 0) {
 						has_reverse = 1;
-                                                tmpi = finish[sel->dim_num] - (finish[sel->dim_num] - start[sel->dim_num]) % abs(stride[sel->dim_num]);
+                                                tmpi = finish[sel->dim_num] - (finish[sel->dim_num] - start[sel->dim_num]) % labs(stride[sel->dim_num]);
                                                 finish[sel->dim_num] = start[sel->dim_num];
                                                 start[sel->dim_num] = tmpi;
                                                 compare_sel[sel->dim_num] = NCLFILE_DEC;
@@ -2585,17 +2582,17 @@ int vtype;
                                         }
 
 				}
-				if(abs(stride[sel->dim_num]) > 1) 
+				if(labs(stride[sel->dim_num]) > 1) 
 					has_stride = 1;
 				if(stride[sel->dim_num] != 0)  {
-					tmpf = (float)fabs(((float)sel->u.sub.stride));
+					tmpi = labs(sel->u.sub.stride);
 				} else {
 					NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer");
 
 					stride[sel->dim_num] = 1;
 					tmpf = 1;
 				}
-				n_elem =(int)(fabs(((double)(finish[sel->dim_num] - start[sel->dim_num]))) /tmpf) + 1;
+				n_elem = labs((finish[sel->dim_num] - start[sel->dim_num]) /tmpi) + 1;
 				if((sel->u.sub.start > thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size-1)||(sel->u.sub.start < 0)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
 					return(NULL);
@@ -2827,7 +2824,7 @@ int vtype;
 				case NCLFILE_INC:
 					current_index[i] = start[i];
 					current_finish[i] = finish[i];
-					real_stride[i] = abs(stride[i]);
+					real_stride[i] = labs(stride[i]);
 					break;
 				case NCLFILE_DEC:
 /*
@@ -2836,12 +2833,12 @@ int vtype;
 * Therefore a new start and finish must be computed to
 * produce desired selection
 */
-					real_stride[i] = abs(stride[i]);
+					real_stride[i] = labs(stride[i]);
 					current_finish[i] = start[i];
-					if(( start[i] - finish[i])%abs(stride[i]) == 0) {
+					if(( start[i] - finish[i])%labs(stride[i]) == 0) {
 						current_index[i] = finish[i] ;
 					} else {
-						current_index[i] = finish[i]+ (start[i] - finish[i])%abs(stride[i]);
+						current_index[i] = finish[i]+ (start[i] - finish[i])%labs(stride[i]);
 					}
 					break;
 				}
@@ -2907,7 +2904,7 @@ int vtype;
 */
                                         n_elem_block *= output_dim_sizes[index_map[i]];
                                         current_finish[index_map[i]] = finish[index_map[i]];
-                                        real_stride[index_map[i]] = abs(stride[index_map[i]]);
+                                        real_stride[index_map[i]] = labs(stride[index_map[i]]);
                                 } else {
                                         switch(compare_sel[index_map[i]]) {
                                         case NCLFILE_INC:
@@ -3847,7 +3844,6 @@ struct _NclSelectionRecord* sel_ptr;
 {
 	NclMultiDValData tmp_md = NULL;
 	NclMultiDValData tmp_att_md = NULL;
-	NclFileAttInfoList *step = NULL;
 	NclVar tmp_var = NULL;
 	int index;
 	int att_id,i,j=0;
@@ -3857,7 +3853,6 @@ struct _NclSelectionRecord* sel_ptr;
 	NclSelection *sel = NULL;
 	NclObj  att_obj = NULL;
 	int single = 0;
-	NhlArgVal udata;
 /*
 * By the the time it gets here the file suport routines in that build the selection
 * record have made sure var_name is valid and all the demensions in sel_ptr
@@ -3883,7 +3878,7 @@ struct _NclSelectionRecord* sel_ptr;
 			if (_NclIsAtt(att_id,"_FillValue")) {
 				tmp_att_md = _NclGetAtt(att_id,"_FillValue",NULL);
 				if (tmp_att_md->multidval.data_type != tmp_md->multidval.data_type) {
-					int tmp_size = 1;
+					ng_size_t tmp_size = 1;
 					NclScalar *tmp_mis = (NclScalar*)NclMalloc((unsigned)sizeof(NclScalar));
 					*tmp_mis = tmp_md->multidval.missing_value.value;
 					tmp_att_md = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,
@@ -4054,17 +4049,12 @@ struct _NclSelectionRecord *sel_ptr;
 #endif
 {
 	int aindex,index;
-	NclFileAttInfoList *step;
-	int att_id = -1;
-	void *val;
 	NclMultiDValData tmp_md;
-	NhlArgVal udata;
 
 	aindex = FileIsVarAtt(thefile,var,attname);
 	if(aindex > -1) {
-		NclMultiDValData new_tmp_md;
 		NclScalar missing_value;
-		int dim_size = 1;
+		ng_size_t dim_size = 1;
 		char *type_name;
 		NclTypeClass type_class;
 
@@ -4249,7 +4239,24 @@ int rw_status;
 		}
 		buffer[i] = '\0';
 		fname_q = NrmStringToQuark(buffer);
+#ifdef BuildOPENDAP
+                if(strcmp("nc", end_of_name+1) == 0)
+	        	file_ext_q = NrmStringToQuark("nc");
+	        else
+		{
+                        if(strcmp("he5", end_of_name+1) == 0)
+			{
+				file_ext_q = NrmStringToQuark("opendap");
+				fprintf(stderr, "file: <%s>, line: %d\n", __FILE__, __LINE__);
+				fprintf(stderr, "\topendap file_ext_q = <%s>\n", NrmQuarkToString(file_ext_q));
+	        		file_ext_q = NrmStringToQuark("nc");
+			}
+	                else
+	        		file_ext_q = NrmStringToQuark("nc");
+		}
+#else
 		file_ext_q = NrmStringToQuark("nc");
+#endif
 	}
 	else if(end_of_name == NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) has no file extension, can't determine type of file to open",NrmQuarkToString(path));
@@ -4269,7 +4276,6 @@ int rw_status;
 */
 		end_of_name++;
 		file_ext_q = NrmStringToQuark(end_of_name);
-		
 	}
 
  	/*
@@ -4375,7 +4381,6 @@ int rw_status;
 	else {
 		if((file_out->file.format_funcs->open_file != NULL)&&((rw_status != -1)||
 								      (file_out->file.format_funcs->create_file != NULL))) {
-			
 			if(rw_status == -1) {
 				file_out->file.fpath = the_real_path = path;
 				file_out->file.wr_status = rw_status;
@@ -4430,7 +4435,7 @@ int rw_status;
 		name_list = (*file_out->file.format_funcs->get_grp_names)(file_out->file.private_rec,&n_names);
 		file_out->file.n_grps = n_names;
 		if(n_names > NCL_MAX_FVARS) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"The file (%s) contains (%d) grpiable which  exceeds the number of allowable grpiables (%d), ",NrmQuarkToString(path),n_names,NCL_MAX_FVARS);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"The file (%s) contains (%d) variable which  exceeds the number of allowable variables (%d), ",NrmQuarkToString(path),n_names,NCL_MAX_FVARS);
 			NclFree((void*)name_list);
 			if(file_out_free) 
 				NclFree((void*)file_out);
@@ -4446,7 +4451,7 @@ int rw_status;
 				}
 				NclFree((void*)name_list2);
 			} else {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"Can not access grpiable attributes for the file format");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"Can not access variable attributes for the file format");
 			}
 		}
 		NclFree((void*)name_list);
@@ -4542,7 +4547,7 @@ int type;
 	NclMultiDValData tmp_md = NULL;
 	NclMultiDValData mis_md = NULL;
 	NclQuark new_dim_quarks[NCL_MAX_DIMENSIONS];
-	long 	new_dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t 	new_dim_sizes[NCL_MAX_DIMENSIONS];
 	
 	int has_missing = 0;
 	int update_unlimited = 0;
@@ -4571,13 +4576,13 @@ int type;
 	long current_finish[NCL_MAX_DIMENSIONS];
 	int keeper[NCL_MAX_DIMENSIONS];
 	int index_map[NCL_MAX_DIMENSIONS];
-	int selection_dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t selection_dim_sizes[NCL_MAX_DIMENSIONS];
 	NclSelection *sel;
 	float tmpf;
 	NclScalar *tmp_mis;
 	NclScalar tmp_scalar;
-	NclScalar tmp_scalar0;
-	int tmp_size = 1,tmpi;
+	ng_size_t tmp_size = 1;
+	long tmpi;
 	void *data_type;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
@@ -4619,7 +4624,7 @@ int type;
 						}
 						if(finish[sel->dim_num] < start[sel->dim_num]) {
 							if(stride[sel->dim_num] < 0) {
-								tmpi = finish[sel->dim_num] + (start[sel->dim_num] - finish[sel->dim_num]) % abs(stride[sel->dim_num]);
+								tmpi = finish[sel->dim_num] + (start[sel->dim_num] - finish[sel->dim_num]) % labs(stride[sel->dim_num]);
 								finish[sel->dim_num] = start[sel->dim_num];
 								start[sel->dim_num] = tmpi;
 								compare_sel[sel->dim_num] = NCLFILE_INC;
@@ -4632,7 +4637,7 @@ int type;
 						} else {
 							if(stride[sel->dim_num] < 0) {
 								has_reverse = 1;
-								tmpi = finish[sel->dim_num] - (finish[sel->dim_num] - start[sel->dim_num]) % abs(stride[sel->dim_num]);
+								tmpi = finish[sel->dim_num] - (finish[sel->dim_num] - start[sel->dim_num]) % labs(stride[sel->dim_num]);
 								finish[sel->dim_num] = start[sel->dim_num];
 								start[sel->dim_num] = tmpi;
 								compare_sel[sel->dim_num] = NCLFILE_DEC;
@@ -4643,17 +4648,17 @@ int type;
 							}
 						}
 
-						if(abs(stride[sel->dim_num]) > 1) {
+						if(labs(stride[sel->dim_num]) > 1) {
 							has_stride = 1;
 						}
 						if(stride[sel->dim_num] != 0)  {
-							tmpf = (float)fabs(((float)sel->u.sub.stride));
+							tmpi = labs(sel->u.sub.stride);
 						} else {
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer");
 							stride[sel->dim_num] = 1;
 							tmpf = 1;
 						}
-						n_elem = (int)(fabs(((double)(finish[sel->dim_num] -start[sel->dim_num])))/tmpf) + 1;
+						n_elem = labs((finish[sel->dim_num] -start[sel->dim_num]) / tmpi) + 1;
 
 						if((sel->u.sub.start > thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size-1 )||(sel->u.sub.start < 0)) {
 							if(!( thefile->file.file_dim_info[ thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->is_unlimited)||(sel->u.sub.start < 0)) {
@@ -4889,7 +4894,7 @@ int type;
 						if(i > block_write_limit) {
 							n_elem_block *= selection_dim_sizes[i];
 							current_finish[i] = finish[i];
-							real_stride[i] = abs(stride[i]);
+							real_stride[i] = labs(stride[i]);
 						} else {
 							current_finish[index_map[i]] = current_index[index_map[i]];
 							real_stride[index_map[i]] = 1;
@@ -5480,13 +5485,14 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 	NclQuark dim_names[NCL_MAX_DIMENSIONS];
 	NclAtt theatt;
 	NclAttList *step;
-	int index,cindex,lhs_n_elem;	
+	int index,cindex;
+	ng_size_t lhs_n_elem;	
 	NclSelectionRecord tmp_sel;
         void *tmp_coord;
         char *tmp_ptr;
 	NclMultiDValData tmp_md;
 	struct _NclVarRec* cvar;
-	int dimsize = -1;
+	ng_size_t dimsize = -1;
 
 	tmp_sel.n_entries = 1;
 	tmp_sel.selected_from_sym = NULL;
@@ -5556,11 +5562,7 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 						lhs_n_elem = lhs_sel_ptr->selection[i].u.vec.n_ind;
 						break;
 					default:
-						if(lhs_sel_ptr->selection[i].u.sub.finish < lhs_sel_ptr->selection[i].u.sub.start) {
-							lhs_n_elem = (int)(((double)(lhs_sel_ptr->selection[i].u.sub.start - lhs_sel_ptr->selection[i].u.sub.finish))/(double)fabs(((double)lhs_sel_ptr->selection[i].u.sub.stride))) + 1;
-						} else {
-							lhs_n_elem = (int)(((double)(lhs_sel_ptr->selection[i].u.sub.finish - lhs_sel_ptr->selection[i].u.sub.start))/(double)fabs(((double)lhs_sel_ptr->selection[i].u.sub.stride))) + 1;
-						}
+						lhs_n_elem = (ng_size_t)labs((lhs_sel_ptr->selection[i].u.sub.finish - lhs_sel_ptr->selection[i].u.sub.start)/lhs_sel_ptr->selection[i].u.sub.stride) + 1;
 						break;
 					}
 					if(tmp_var->var.dim_info[j].dim_quark > 0) {
@@ -5761,11 +5763,9 @@ struct _NclSelectionRecord * sel_ptr;
 	int att_id;
 	NhlErrorTypes ret = NhlNOERROR;
 	int index = -1;
-	NclFileAttInfoList *step;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
 	void *data_type;
-	NhlArgVal udata;
 
 	if(thefile->file.wr_status<=0) {
 		index = FileIsVar(thefile,var);
@@ -5914,6 +5914,7 @@ struct _NclSelectionRecord *sel_ptr;
 	void *val;
 	NclMultiDValData tmp_md;
 	NhlArgVal udata;
+        ng_size_t ne;
 	aindex = FileIsAtt(thefile,attname);
 	if(aindex > -1) {
 		if(thefile->file.file_atts_id != -1) {
@@ -5928,6 +5929,7 @@ struct _NclSelectionRecord *sel_ptr;
 					thefile->file.file_atts[i]->att_name_quark,
 					val
 					);
+				ne = thefile->file.file_atts[i]->num_elements;
 				tmp_md = _NclCreateMultiDVal(
 						NULL,
 						NULL,
@@ -5936,7 +5938,7 @@ struct _NclSelectionRecord *sel_ptr;
 						val,
 						NULL,
 						1,
-						&thefile->file.file_atts[i]->num_elements,
+						&ne,
 						TEMPORARY,
 						NULL,
 						_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(thefile->file.file_atts[i]->data_type)));
@@ -6135,7 +6137,7 @@ long dim_num;
 	int i;
 	int *tmpi;
 	NclQuark *tmpq;
-	int output_dim_sizes = 1;
+	ng_size_t output_dim_sizes = 1;
 	
 	
 	index = FileIsVar(thefile,var);
@@ -6241,7 +6243,7 @@ long dim_num;
 	int i = 0;
 	NclQuark *tmps;
 	int *tmpl;
-	int output_dim_sizes = 1;
+	ng_size_t output_dim_sizes = 1;
 	if(dim_name != -1) {
 		for(i =0; i< thefile->file.n_file_dims; i++) {
 			if(thefile->file.file_dim_info[i]->dim_name_quark) {
@@ -6337,13 +6339,11 @@ struct _NclSelectionRecord* sel_ptr;
 {
 	NclSelection *sel;
 	int index;
-	NclMultiDValData tmp_md,tmp_att_md;
+	NclMultiDValData tmp_md;
 	NclDimRec dim_info[NCL_MAX_DIMENSIONS];
 	int att_id = -1;
 	NclObj att_obj = NULL;
 	NclVar tmp_var = NULL;
-	NclFileAttInfoList *step;
-	NhlArgVal udata;
 
 	if(FileIsCoord(thefile,coord_name) > -1){
 		index = FileIsVar(thefile,coord_name);
@@ -6422,10 +6422,6 @@ NclQuark group_name;
 #endif
 {
 	NclGroup *group_out = NULL;
-	NclStackEntry out_data;
-	NclMultiDValData out_md = NULL;
-	int *id = (int*)NclMalloc((unsigned)sizeof(int));
-	int dim_size = 1;
 	int index;
 
 	index = FileIsGroup(thefile,group_name);

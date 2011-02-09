@@ -354,7 +354,7 @@ void PDFOutputClipping (PDFddp *psa, int type)
 
 void PDFpreamble (PDFddp *psa, preamble_type type)
 {
-  int     i,current_color,tx,ty,x0,x1,y0,y1,current_clipping;
+  int     i,current_color,tx,ty,current_clipping;
   float   scl = psa->scaling;
   FILE    *fp;
   char    *strn,*lines[10];
@@ -1530,8 +1530,8 @@ char *PDFGetFileName(int wkid, char *file_name)
 }
 
 /*
- *  Put out a character string for PostScript display.  The special
- *  characters "(", ")", "\" are put out as PostScript octal
+ *  Put out a character string for PDF display.  The special
+ *  characters "(", ")", "\" are put out as PDF octal
  *  constants as are any characters having an ASCII Decimal Equivalent
  *  larger than 127.
  */
@@ -1545,17 +1545,17 @@ static int PDFoutput_string(PDFddp *psa, char *str)
     strncpy(&ctmp, str+i, 1);
     itmp = (int) (ctmp & 255);
     if (itmp == 40) {
-      sprintf((page_lines[num_page_lines]+j), "\\(", itmp);
+      sprintf((page_lines[num_page_lines]+j), "\\(");
       stream_size += 2;
       j = j+2;
     } 
     else if (itmp == 41) {
-      sprintf((page_lines[num_page_lines]+j), "\\)", itmp);
+      sprintf((page_lines[num_page_lines]+j), "\\)");
       stream_size += 2;
       j = j+2;
     } 
     else if (itmp == 92) {
-      sprintf((page_lines[num_page_lines]+j), "\\\\", itmp);
+      sprintf((page_lines[num_page_lines]+j), "\\\\");
       stream_size += 2;
       j = j+2;
     }
@@ -1617,7 +1617,7 @@ static void PDFOutputPolymarker (GKSC *gksc, int markersize, int markertype)
   PDFPoint *pptr = (PDFPoint *) gksc->p.list;
   PDFddp   *psa = (PDFddp *) gksc->ddp;
   int      npoints = gksc->p.num, i, tsize;
-  int      ms, hs, qs, px, py, px0, py0, px1, py1;
+  int      hs, qs, px, py;
 
   /*
    *  Put the markers out.
@@ -1684,7 +1684,7 @@ int PDFOpenWorkstation(GKSC *gksc)
  * Handle Initial C Escape Elements.
  * (none currently defined for ps - so all of them cause gerhnd.)
  */
-  while(cesc = _NGGetCEscInit()){
+  while((cesc = _NGGetCEscInit())){
     gerr_hand(182,11,NULL);
   }
 
@@ -1764,7 +1764,7 @@ int PDFDeactivateWorkstation(GKSC *gksc)
 int PDFCloseWorkstation(GKSC *gksc)
 {
   PDFddp  *psa;
-  int     pages, i, j, startxref;
+  int     i, j, startxref;
   char    *tstring;
   FILE    *fp;
 
@@ -1844,7 +1844,6 @@ int PDFCloseWorkstation(GKSC *gksc)
 int PDFClearWorkstation(GKSC *gksc)
 {
   PDFddp  *psa;
-  int     ier = 0;
   psa = (PDFddp *) gksc->ddp;
 
 /*
@@ -1891,7 +1890,6 @@ int PDFPolyline(GKSC *gksc)
 {
   PDFddp  *psa;
   int     pdf_linewidth, requested_color, current_color, requested_type;
-  int     ier = 0;
 
   psa = (PDFddp *) gksc->ddp;
 
@@ -1960,7 +1958,7 @@ int PDFPolymarker(GKSC *gksc)
 
   PDFddp  *psa;
   int     markersize, markertype, requested_color, current_color;
-  int     ier = 0, linewidth;
+  int     linewidth;
 
   psa = (PDFddp *) gksc->ddp;
 
@@ -2058,7 +2056,7 @@ int PDFText(GKSC *gksc)
   int     string_height=0, max_char_width, char_spacing=0;
   int     num_chars, char_num, rchars, old_font=0, current_font, strpos, fcount;
   int     x_orig, y_orig, x_offset_to_orig, y_offset_to_orig, xpos, ypos;
-  int     text_linewidth, mflag=0;
+  int     text_linewidth;
 
   float   xoffset=0.0, yoffset=0.0, vert_offset=0.0;
   float   nominal_vert_adjust, tdiff, bdiff, char_expn;
@@ -2539,8 +2537,7 @@ int PDFFillArea(GKSC *gksc)
   PDFddp   *psa  = (PDFddp *) gksc->ddp;
   PDFPoint *pptr = (PDFPoint *) gksc->p.list;
   int     requested_color, current_color;
-  int     npoints = gksc->p.num, i, linewidth, ier;
-  int     PathSize;
+  int     npoints = gksc->p.num, i, linewidth;
 
   if (psa->pict_empty) {
     PDFpreamble(psa, FOR_PICTURE);
@@ -2692,9 +2689,9 @@ int PDFCellarray(GKSC *gksc)
   int     nx = iptr[0];   /* number of cols       */
   int     ny = iptr[1];   /* number of rows       */
 
-  int     index, intensity;
-  int     i, j, color_index, ier = 0, xtr, ytr, line_offset;
-  float   x_scale, y_scale, ftmp;
+  int     index;
+  int     i, j, color_index, xtr, ytr, line_offset;
+  float   x_scale, y_scale;
   float   tred, tgreen, tblue;
 
   PDFPoint *Pptr = &pptr[0];
@@ -3556,8 +3553,6 @@ int PDFPutObject(FILE *fp, int object_number, int num_lines, char *guts[]) {
 int PDFPutStreamDict(FILE *fp, int obj_num, int obj_contents_num, int width, 
                      int height) {
   int tbcnt=0;
-  static char ctmp[29];
-  int itmp;
 
   fprintf(fp,"%6d 0 obj\n<<\n",obj_num);
   tbcnt += 16;
@@ -3607,7 +3602,7 @@ int PDFPutStreamDict(FILE *fp, int obj_num, int obj_contents_num, int width,
  *  Write out a content stream.  The current value for object_number
  *  should be the stream dictionary for the content stream.
  */
-int PDFPutStream(FILE *fp) {
+void PDFPutStream(FILE *fp) {
   int i;
   fprintf(fp, "%6d 0 obj\n<< /Length %10d >>\nstream\n",object_number+1,
                stream_size);
@@ -3903,12 +3898,11 @@ void rgb2cmyk(float r, float g, float b,
   *m = *m-*k;
   *y = *y-*k;
 }
-int bump_object_number() {
+void bump_object_number() {
   if (object_number > MAX_OBJECTS) {
     object_pointer = (int *) realloc(object_pointer,2*MAX_OBJECTS*sizeof(int));
     if (object_pointer == NULL) {
       fprintf(stderr,"PDF - not enough memory to store all objects.\n");
-      return (object_number);
     }
   }
   object_number++;

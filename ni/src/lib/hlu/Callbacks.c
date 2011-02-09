@@ -289,7 +289,7 @@ _NhlCBCallCallbacks
 #endif
 {
 	long	index;
-	_NhlCB	cb,tcb;
+	_NhlCB	cb;
 	int	i;
 
 	if(!cblist)

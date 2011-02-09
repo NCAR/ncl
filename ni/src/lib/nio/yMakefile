@@ -41,7 +41,17 @@ NETCDF4_DEFS = -DUSE_NETCDF4
 #define NETCDF4LIB
 #endif
 
-#ifdef BuildHDFEOS
+#ifdef BuildHDF4
+HDF4_DEFS = -DBuildHDF4 $(HDF4_NETCDF)
+HDF4_SRCS = NclHDF.c
+HDF4_OBJS = NclHDF.o
+#else
+#define HDF4_SRCS
+#define HDF4_OBJS
+#define HDFLIB
+#endif
+
+#if defined BuildHDF4 && defined BuildHDFEOS
 HDFEOS_DEFS = -DBuildHDFEOS $(HDF4_NETCDF)
 HDFEOS_SRCS = NclHDFEOS.c
 HDFEOS_OBJS = NclHDFEOS.o
@@ -49,6 +59,16 @@ HDFEOS_OBJS = NclHDFEOS.o
 #define HDFEOS_SRCS
 #define HDFEOS_OBJS
 #define HDFEOSLIB
+#endif
+
+#ifdef BuildHDF5
+HDF5_DEFS = -DBuildHDF5
+HDF5_SRCS = NclHDF5.c h5reader.c h5writer.c
+HDF5_OBJS = NclHDF5.o h5reader.o h5writer.o
+#else
+#define HDF5_SRCS
+#define HDF5_OBJS
+#define HDF5LIB
 #endif
 
 #ifdef BuildHDFEOS5
@@ -96,7 +116,7 @@ NIO_DEFS = -DNIO_LIB_ONLY
 NGCALLF_DEF= -DFORTRAN_CALLING_METHOD=NO_APPEND_UNDERSCORE
 #endif
 
-EXTRA_CDEFINES = $(OS1_DEF) $(MAJOR_DEF) $(NETCDF4_DEFS) $(HDFEOS_DEFS) $(HDFEOS5_DEFS) $(HDF5_DEFS) $(GRIB2_DEFS) $(GDAL_DEFS) $(NIO_DEFS) $(NGCALLF_DEF)
+EXTRA_CDEFINES = $(OS1_DEF) $(MAJOR_DEF) $(NETCDF4_DEFS) $(HDFEOS_DEFS) $(HDF4_DEFS) $(HDFEOS5_DEFS) $(HDF5_DEFS) $(GRIB2_DEFS) $(GDAL_DEFS) $(NIO_DEFS) $(NGCALLF_DEF)
 
 GEN_HDRS	=	NclTypeobj.h NclTypelogical.h \
 			NclTypedouble.h NclTypefloat.h \
@@ -115,7 +135,7 @@ STATIC_HDRS	=	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h  \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \
 			NclType.h defs.h NclGroup.h NclVar.h NclDataDefs.h NclFileInterfaces.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
-			NclOneDValCoordData.h \
+			NclOneDValCoordData.h h5data_struct.h \
 			date.h NclCCM.h NclGRIB.h NclGRIB2.h date.h tables.h \
 			NclList.h NclMultiDVallistData.h NclTypelist.h ccmhdr.h \
 			cptec_254_gtb.h dwd_002_gtb.h dwd_201_gtb.h dwd_202_gtb.h \
@@ -132,7 +152,7 @@ STATIC_HDRS	=	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h  \
 
 INSTALL_HDRS	=	nio.h niohlu.h nioNresDB.h defs.h Symbol.h NclDataDefs.h NclFile.h \
 			nioc.h nioError.h NclData.h nioBase.h nioCallbacks.h nioConvertP.h NclType.h \
-			nioConvert.h niohluP.h \
+			nioConvert.h niohluP.h nioNgSizeT.h \
 			NclGroup.h NclVar.h NclFileInterfaces.h DataSupport.h FileSupport.h NclMdInc.h \
 			TypeSupport.h NclTypedouble.h NclTypefloat.h NclTypelong.h NclTypeint.h \
 			NclTypeshort.h NclTypestring.h NclTypelogical.h NclTypebyte.h NclTypechar.h \
@@ -143,7 +163,7 @@ INSTALL_HDRS	=	nio.h niohlu.h nioNresDB.h defs.h Symbol.h NclDataDefs.h NclFile.
 
 NIO_ONLY_HDRS	=	cmpf.h nioBase.h nioBaseI.h nioBaseP.h nioCallbacks.h nioCallbacksP.h \
 			nioc.h nioConvert.h nioConvertP.h nioError.h nio.h niohlu.h niohluP.h \
-			nioNresDB.h nio_path.h nioResList.h nioVarArg.h
+			nioNresDB.h nio_path.h nioResList.h nioVarArg.h nioNgSizeT.h 
 
 HDRS		=	$(GEN_HDRS) $(STATIC_HDRS) $(NIO_ONLY_HDRS)
 
@@ -162,7 +182,7 @@ STATIC_SRCS	=	AddFileFormats.c AttSupport.c DataSupport.c \
 			FileSupport.c Formats.c GetGrids.c \
 			InitData.c Memory.c NclAtt.c NclCCM.c \
 			NclCoordVar.c NclData.c NclFile.c NclFileVar.c \
-			NclGRIB.c NclHDF.c NclMultiDValnclfileData.c \
+			NclGRIB.c NclMultiDValnclfileData.c \
 			NclNetCdf.c NclOneDValCoordData.c NclType.c \
 			NclTypelist.c NclGroup.c NclVar.c VarSupport.c \
 			ctoiee.c date.c cmpf.c 
@@ -175,9 +195,9 @@ NIO_ONLY_FSRCS	=	llmap.f llmisc.f
 
 GEN_SRCS	=	$(GEN_TYPE_SRCS)
 
-CSRCS		=	$(STATIC_SRCS) $(HDFEOS_SRCS) $(HDFEOS5_SRCS) $(HDF5_SRCS) $(GRIB2_SRCS) $(GDAL_SRCS)
+CSRCS		=	$(STATIC_SRCS) $(HDFEOS_SRCS) $(HDF4_SRCS) $(HDFEOS5_SRCS) $(HDF5_SRCS) $(GRIB2_SRCS) $(GDAL_SRCS)
 
-OPT_CSRCS	=	NclHDFEOS.c NclHDFEOS5.c NclHDF5.c NclGRIB2.c NclOGR.c
+OPT_CSRCS	=	NclHDF.c NclHDFEOS.c NclHDFEOS5.c NclHDF5.c NclGRIB2.c NclOGR.c h5reader.c h5writer.c
 
 FSRCS		=	qu2reg3.f rowina3.f scm0.f ncepcode.f
 
@@ -214,7 +234,7 @@ NIO_ONLY_FOBJS	=	llmap.o llmisc.o
 
 FOBJS		=	qu2reg3.o rowina3.o scm0.o ncepcode.o
 
-COMMON_OBJS	=	$(GEN_TYPE_OBJS) $(STATIC_OBJS) $(FOBJS) $(HDFEOS_OBJS) $(HDFEOS5_OBJS) $(HDF5_OBJS) $(GRIB2_OBJS) $(GDAL_OBJS) 
+COMMON_OBJS	=	$(GEN_TYPE_OBJS) $(STATIC_OBJS) $(FOBJS) $(HDFEOS_OBJS) $(HDF4_OBJS) $(HDFEOS5_OBJS) $(HDF5_OBJS) $(GRIB2_OBJS) $(GDAL_OBJS) 
 OBJS		=	$(COMMON_OBJS) $(NIO_ONLY_COBJS) $(NIO_ONLY_FOBJS) 
 
 

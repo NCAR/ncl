@@ -8,3 +8,6 @@ tm03.tm03Work.TickMarks.tmYLLabelFontHeightF : .02
 tm03.tm03Work.TickMarks.tmXBLabelFont        : 25
 tm03.tm03Work.TickMarks.tmYLLabelFont        : 25
 tm03.tm03Work.TickMarks.tmXBMinorOn          : false
+*FuncCode           : :
+*TextFuncCode       : :
+

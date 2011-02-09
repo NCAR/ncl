@@ -34,7 +34,7 @@ void gcell_array
     Gpat_rep *colr_array;
 #endif
 {
-    int i, j, k, l, idx, idy;
+    int i, j, idx, idy;
 
     if( colr_array->colr_array != NULL ) {
         idx = colr_array->dims.size_x;

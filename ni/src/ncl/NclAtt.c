@@ -50,38 +50,39 @@ NhlArgVal udata;
 	int	thevalue_id;
         NclAttList *thelist;
 	NhlArgVal selector;
-	NclAttList *tmp = NULL;
-	NclMultiDValData attval_md;
+    NclAttList *tmp = NULL;
+    NclMultiDValData attval_md;
 
 	theattobj = (NclAtt)_NclGetObj(udata.intval);
 	if(theattobj == NULL) {
-		return;
-	}
+        return;
+    }
+
 	thevalue_id = cbdata.intval;
 	thelist = theattobj->att.att_list;
 	if(thelist == NULL) {
-		return;
-	}
+        return;
+    }
 	if(thelist->attvalue->obj.id == thevalue_id) {
 		tmp = thelist;
-		attval_md = thelist->attvalue;
+        attval_md = thelist->attvalue;
 		theattobj->att.att_list= thelist->next;
 		theattobj->att.n_atts--;
 	} else {
 		while(thelist->next != NULL) {
 			if(thelist->next->attvalue->obj.id != thevalue_id) {
-				thelist = thelist->next;
-				continue;
-			}
+                thelist = thelist->next;
+                continue;
+            }
 			tmp = thelist->next;
-			attval_md = thelist->next->attvalue;
+            attval_md = thelist->next->attvalue;
 			theattobj->att.n_atts--;
 			thelist->next = thelist->next->next;
-			break;
-		}
-	}
-	if (tmp) {
-		NclRefList *plist, *tmp_plist;
+            break;
+        }
+    }
+    if (tmp) {
+        NclRefList *plist, *tmp_plist;
 		_NhlCBDelete(tmp->cb);
 		if(theattobj->obj.cblist != NULL) {
 			if(NrmStringToQuark(NCL_MISSING_VALUE_ATT)==tmp->quark) {
@@ -229,7 +230,7 @@ NclSelectionRecord * sel_ptr;
 #endif
 {
 	NclAttList *thelist;
-	NclMultiDValData targetdat,tmp_md;
+	NclMultiDValData targetdat = NULL,tmp_md;
 	int lhs_type,rhs_type;
 	int att_quark;
 	NhlErrorTypes ret;
@@ -390,7 +391,7 @@ FILE *fp;
 	NclAttList *tmp;
 	int ret = 0;
 	NhlErrorTypes ret1 = NhlNOERROR;
-	int i;
+	ng_size_t i;
 	
 	tmp = theattobj->att.att_list;
 	ret = nclfprintf(fp,"Number Of Attributes: %d\n",theattobj->att.n_atts);
@@ -430,7 +431,7 @@ FILE *fp;
 			}
 		}
 		else {
-			ret = nclfprintf(fp,"<ARRAY of %d elements>",tmp->attvalue->multidval.totalelements);
+			ret = nclfprintf(fp,"<ARRAY of %ld elements>",(long)(tmp->attvalue->multidval.totalelements));
 			if(ret < 0) {	
 				return(NhlWARNING);
 			}

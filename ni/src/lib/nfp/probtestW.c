@@ -17,7 +17,12 @@ NhlErrorTypes ttest_W( void )
  * Input array variables
  */
   void *ave1, *ave2, *var1, *var2, *s1, *s2;
-  double *tmp_ave1, *tmp_ave2, *tmp_var1, *tmp_var2, *tmp_s1, *tmp_s2;
+  double *tmp_ave1 = NULL;
+  double *tmp_ave2 = NULL;
+  double *tmp_var1 = NULL;
+  double *tmp_var2 = NULL;
+  double *tmp_s1 = NULL;
+  double *tmp_s2 = NULL;
   NclScalar missing_ave1, missing_ave2, missing_var1, missing_var2;
   NclScalar missing_s1, missing_s2;
   NclScalar missing_dave1, missing_dave2, missing_dvar1, missing_dvar2;
@@ -25,12 +30,18 @@ NhlErrorTypes ttest_W( void )
   int has_missing_ave1, has_missing_ave2, has_missing_var1, has_missing_var2;
   int has_missing_s1, has_missing_s2;
   logical *iflag, *tval_opt;
-  int ndims_ave1, dsizes_ave1[NCL_MAX_DIMENSIONS];
-  int ndims_ave2, dsizes_ave2[NCL_MAX_DIMENSIONS];
-  int ndims_var1, dsizes_var1[NCL_MAX_DIMENSIONS];
-  int ndims_var2, dsizes_var2[NCL_MAX_DIMENSIONS];
-  int ndims_s1, dsizes_s1[NCL_MAX_DIMENSIONS];
-  int ndims_s2, dsizes_s2[NCL_MAX_DIMENSIONS];
+  int ndims_ave1;
+  ng_size_t dsizes_ave1[NCL_MAX_DIMENSIONS];
+  int ndims_ave2;
+  ng_size_t dsizes_ave2[NCL_MAX_DIMENSIONS];
+  int ndims_var1;
+  ng_size_t dsizes_var1[NCL_MAX_DIMENSIONS];
+  int ndims_var2;
+  ng_size_t dsizes_var2[NCL_MAX_DIMENSIONS];
+  int ndims_s1;
+  ng_size_t dsizes_s1[NCL_MAX_DIMENSIONS];
+  int ndims_s2;
+  ng_size_t dsizes_s2[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_ave1, type_ave2, type_var1, type_var2;
   NclBasicDataTypes type_s1, type_s2;
   int scalar_s1, scalar_s2, output_contains_msg;
@@ -39,13 +50,15 @@ NhlErrorTypes ttest_W( void )
  */
   void *prob;
   double *tmp_alpha, *tmp_tval;
-  int ndims_prob, *dsizes_prob;
+  int ndims_prob, ret;
+  ng_size_t *dsizes_prob;
   NclBasicDataTypes type_prob;
   NclScalar missing_prob;
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_s1, index_s2, size_ave1, size_prob, ier;
+  ng_size_t i, size_ave1, size_prob;
+  int index_s1, index_s2, ier;
   int is_missing_ave1, is_missing_ave2, is_missing_var1, is_missing_var2;
   int is_missing_s1, is_missing_s2, ncount1, ncount2;
 /*
@@ -204,7 +217,7 @@ NhlErrorTypes ttest_W( void )
     ndims_prob = ndims_ave1;
     size_prob = 1;
   }
-  dsizes_prob = (int*)calloc(ndims_prob,sizeof(int));
+  dsizes_prob = (ng_size_t*)calloc(ndims_prob,sizeof(ng_size_t));
   if( dsizes_prob == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ttest: Unable to allocate memory for output variable");
     return(NhlFATAL);
@@ -531,12 +544,14 @@ NhlErrorTypes ttest_W( void )
  * Return.
  */
   if(output_contains_msg) {
-    return(NclReturnValue(prob,ndims_prob,dsizes_prob,&missing_prob,
-                          type_prob,0));
+    ret = NclReturnValue(prob,ndims_prob,dsizes_prob,&missing_prob,
+                         type_prob,0);
   }
   else {
-    return(NclReturnValue(prob,ndims_prob,dsizes_prob,NULL,type_prob,0));
+    ret = NclReturnValue(prob,ndims_prob,dsizes_prob,NULL,type_prob,0);
   }
+  NclFree(dsizes_prob);
+  return(ret);
 }
 
 NhlErrorTypes ftest_W( void )
@@ -545,15 +560,22 @@ NhlErrorTypes ftest_W( void )
  * Input array variables
  */
   void *var1, *var2, *s1, *s2;
-  double *tmp_var1, *tmp_var2, *tmp_s1, *tmp_s2;
+  double *tmp_var1 = NULL;
+  double *tmp_var2 = NULL;
+  double *tmp_s1 = NULL;
+  double *tmp_s2 = NULL;
   NclScalar missing_var1, missing_dvar1, missing_rvar1;
   NclScalar missing_var2, missing_dvar2;
   int has_missing_var1, has_missing_var2;
   int *opt;
-  int ndims_var1, dsizes_var1[NCL_MAX_DIMENSIONS];
-  int ndims_var2, dsizes_var2[NCL_MAX_DIMENSIONS];
-  int ndims_s1, dsizes_s1[NCL_MAX_DIMENSIONS];
-  int ndims_s2, dsizes_s2[NCL_MAX_DIMENSIONS];
+  int ndims_var1;
+  ng_size_t dsizes_var1[NCL_MAX_DIMENSIONS];
+  int ndims_var2;
+  ng_size_t dsizes_var2[NCL_MAX_DIMENSIONS];
+  int ndims_s1;
+  ng_size_t dsizes_s1[NCL_MAX_DIMENSIONS];
+  int ndims_s2;
+  ng_size_t dsizes_s2[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_var1, type_var2;
   NclBasicDataTypes type_s1, type_s2;
   int scalar_s1, scalar_s2, output_contains_msg;
@@ -566,7 +588,8 @@ NhlErrorTypes ftest_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_s1, index_s2, size_prob, is_missing_var1, is_missing_var2, ier;
+  ng_size_t i, size_prob;
+  int index_s1, index_s2, is_missing_var1, is_missing_var2, ier;
 /*
  * Retrieve parameters
  *
@@ -881,11 +904,13 @@ NhlErrorTypes rtest_W( void )
  */
   void *r;
   int *n, tmp_n, *opt;
-  double *tmp_r;
+  double *tmp_r = NULL;
   NclScalar missing_r, missing_dr, missing_rr;
   int has_missing_r;
-  int ndims_r, dsizes_r[NCL_MAX_DIMENSIONS];
-  int ndims_n, dsizes_n[NCL_MAX_DIMENSIONS];
+  int ndims_r;
+  ng_size_t dsizes_r[NCL_MAX_DIMENSIONS];
+  int ndims_n;
+  ng_size_t dsizes_n[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_r;
 /*
  * output variable 
@@ -894,11 +919,11 @@ NhlErrorTypes rtest_W( void )
   double *tmp_prob;
   NclBasicDataTypes type_prob;
   int has_missing_prob;
-  NclScalar missing_prob;
 /*
  * Declare various variables for random purposes.
  */
-  int i, size_prob, ier, scalar_n;
+  ng_size_t i, size_prob;
+  int scalar_n;
 /*
  * Retrieve parameters
  *
@@ -1063,21 +1088,26 @@ NhlErrorTypes equiv_sample_size_W( void )
  * Input array variables
  */
   void *x, *siglvl;
-  double *tmp_x, *tmp_siglvl;
+  double *tmp_x = NULL;
+  double *tmp_siglvl;
   int *opt;
   NclScalar missing_x, missing_dx;
   int has_missing_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_siglvl;
 /*
  * output variable 
  */
-  int *neqv, *dsizes_neqv, ndims_neqv;
+  int *neqv;
+  ng_size_t *dsizes_neqv;
+  int ndims_neqv;
   NclScalar missing_neqv;
 /*
  * Declare various variables for random purposes.
  */
-  int nx, i, size_neqv, ier, index_x, is_missing;
+  ng_size_t nx, i, size_neqv;
+  int inx, index_x, is_missing;
 /*
  * Retrieve parameters
  *
@@ -1116,12 +1146,18 @@ NhlErrorTypes equiv_sample_size_W( void )
           DONT_CARE);
 
   nx = dsizes_x[ndims_x-1];
+  if(nx > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"equiv_sample_size: nx = %ld is greater than INT_MAX", nx);
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+
 /*
  * Calculate the size of the output.
  */
   ndims_neqv = max(1,ndims_x-1);
 
-  dsizes_neqv = (int*)calloc(ndims_neqv,sizeof(int));
+  dsizes_neqv = (ng_size_t*)calloc(ndims_neqv,sizeof(ng_size_t));
   if(dsizes_neqv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"equiv_sample_size: Unable to allocate memory for output variable");
     return(NhlFATAL);
@@ -1181,7 +1217,7 @@ NhlErrorTypes equiv_sample_size_W( void )
  */
       tmp_x = &((double*)x)[index_x];
     }
-    NGCALLF(deqvsiz,DEQVSIZ)(tmp_x,&nx,&missing_dx.doubleval,tmp_siglvl,
+    NGCALLF(deqvsiz,DEQVSIZ)(tmp_x,&inx,&missing_dx.doubleval,tmp_siglvl,
                              &neqv[i]);
 /*
  * Check if missing value is returned.
@@ -1200,7 +1236,7 @@ NhlErrorTypes equiv_sample_size_W( void )
  * Return.
  */
   if(is_missing) {
-    missing_neqv.intval = (int)((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+    missing_neqv.intval = -999;
     return(NclReturnValue(neqv,ndims_neqv,dsizes_neqv,&missing_neqv,
                           NCL_int,0));
   }

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.40 2010-05-06 22:52:28 huangwei Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -126,10 +126,10 @@ int		n_file_atts;
 HDFAttInqRecList *file_atts;
 };
 
-
 static NrmQuark Qmissing_val;
 static NrmQuark Qfill_val;
 
+#if 0
 static void HDFGetAttrVal
 #if	NhlNeedProto
 (int ncid,HDFAttInqRec* att_inq)
@@ -158,6 +158,7 @@ HDFAttInqRec* att_inq
 		ret = sd_ncattget(ncid,att_inq->varid,NrmQuarkToString(att_inq->name),att_inq->value);
 	}
 }
+#endif
 
 static void HDF_SDGetAttrVal
 #if	NhlNeedProto
@@ -226,6 +227,40 @@ static void HDFCacheAttValue
 }
 
 
+static int32 HDFIsUnsigned (int hdf_type)
+{
+
+	switch (hdf_type) {
+	case DFNT_UINT8:
+	case DFNT_UINT16:
+	case DFNT_UINT32:
+	case DFNT_UINT64:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
+
+static NclBasicDataTypes ToNclUnsigned(NclBasicDataTypes type)
+{
+	switch (type) {
+	case NCL_byte:
+		return NCL_ubyte;
+	case NCL_short:
+		return NCL_ushort;
+	case NCL_int:
+		return NCL_uint;
+	case NCL_long:
+		return NCL_ulong;
+	case NCL_int64:
+		return NCL_uint64;
+	default:
+		return type;
+	}
+}
+		
+
 static NclBasicDataTypes HDFMapToNcl 
 #if	NhlNeedProto
 (void* the_type)
@@ -265,6 +300,68 @@ static NclBasicDataTypes HDFMapToNcl
 	}
 }
 
+#ifndef NC_USHORT
+#define NC_UOFFSET 101
+#define NC_USHORT DFNT_UINT16 + NC_UOFFSET
+#define NC_UINT   DFNT_UINT32 + NC_UOFFSET
+#endif
+
+static int32 NCMapToHDF(nc_type type)
+{
+/* this maps from NetCDF compatibility modes type to  HDF types */
+
+	switch(type) {
+	case NC_BYTE:
+		return(DFNT_UCHAR);
+	case NC_CHAR:
+		return(DFNT_CHAR);
+	case NC_SHORT:
+		return(DFNT_INT16);
+	case NC_USHORT:
+		return(DFNT_UINT16);
+	case NC_LONG:
+		return(DFNT_INT32);
+	case NC_UINT:
+		return(DFNT_INT32);
+	case NC_FLOAT:
+		return(DFNT_FLOAT32);
+	case NC_DOUBLE:
+		return(DFNT_FLOAT64);
+	default:
+		return(DFNT_NONE);
+	}
+}
+
+
+static nc_type HDFMapToNC(int32 hdf_type)
+{
+/* this maps from HDF types to the NetCDF compatibility mode types (strictly NetCDF 3) */
+
+	switch (hdf_type) {
+	case DFNT_INT8:
+	case DFNT_UCHAR:
+		return  NC_BYTE;
+	case DFNT_UINT8:
+	case DFNT_CHAR:
+		return NC_CHAR;
+	case DFNT_INT16:
+	case DFNT_UINT16:
+		return NC_SHORT;
+	case DFNT_INT32:
+	case DFNT_UINT32:
+		return NC_LONG;
+	case DFNT_FLOAT32:
+		return NC_FLOAT;
+	case DFNT_FLOAT64:
+		return NC_DOUBLE;
+	case DFNT_INT64:
+	case DFNT_UINT64:
+        default:
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclHDF.c: Can't map type");
+		return (int) NhlWARNING;
+	}
+}
+		
 static void *HDFMapFromNcl
 #if	NhlNeedProto
 (NclBasicDataTypes the_type)
@@ -291,18 +388,34 @@ static void *HDFMapFromNcl
 		*(nc_type*)out_type = NC_BYTE;
                 break;
 	case NCL_char:
+	case NCL_ubyte:
 		*(nc_type*)out_type = NC_CHAR;
                 break;
 	case NCL_short:
 		*(nc_type*)out_type = NC_SHORT;
                 break;
+	case NCL_ushort:
+		*(int*)out_type = NC_USHORT;
+                break;
 	case NCL_int:
 	case NCL_logical:
 		*(nc_type*)out_type = NC_LONG;
                 break;
+	case NCL_uint:
+		*(int*)out_type = NC_UINT;
+                break;
 	case NCL_long:
 		if(long_type == the_type) {
 			*(nc_type*)out_type = NC_LONG;
+		} else {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"Can't map type, HDF 4 does not support 64 bit longs: try converting to integer or double");
+			NclFree(out_type);
+			out_type = NULL;
+		}
+		break;
+	case NCL_ulong:
+		if(long_type == the_type) {
+			*(int*)out_type = NC_UINT;
 		} else {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"Can't map type, HDF 4 does not support 64 bit longs: try converting to integer or double");
 			NclFree(out_type);
@@ -315,7 +428,11 @@ static void *HDFMapFromNcl
 	case NCL_double:
 		*(nc_type*)out_type = NC_DOUBLE;
 		break;
+	case NCL_int64:
+	case NCL_uint64:
+		/* fall through */
         default:
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"Can't map type");
 		NclFree(out_type);
 		out_type = NULL;
 	}
@@ -339,7 +456,7 @@ static NclQuark HDFToNCLName
 {
 	char buffer[MAX_NC_NAME];
 	char *tp, *cp;
-	char len = MIN(MAX_NC_NAME - 2,strlen(hdf_name));
+	int len = MIN(MAX_NC_NAME - 2,strlen(hdf_name));
 	
 	strncpy(buffer,hdf_name,len);
 	cp = tp = buffer;
@@ -460,14 +577,9 @@ static void ProcessVgroups(HDFFileRecord *hdf,char *path)
 {
 	int hid = Hopen(path,DFACC_READ,0);
 	int32 *vls = NULL;
-	int status = Vstart(hid);
-	int vid,i,j;
+	int i;
 	int vcount = Vlone(hid,vls,0);
-	char vname[VGNAMELENMAX];
-	char vclass[VGNAMELENMAX];
 	char vpath[1024];
-	int n_entries;
-	int *tag_array,*ref_array;
 
 	if (vcount) {
 		vpath[0] = '\0';
@@ -482,7 +594,7 @@ static void ProcessVgroups(HDFFileRecord *hdf,char *path)
 		NclFree(vls);
 	}
 }
-	
+#if 0	
 static void GetSDInfo(char *path)
 {
 	
@@ -530,7 +642,7 @@ static void GetSDInfo(char *path)
        */    
       status = SDend (sd_id); 
 } 
-
+#endif
 
 
 static void ProcessDuplicateNames
@@ -569,7 +681,6 @@ static void ProcessDuplicateNames
 				(NrmQuarkToString(tvarp->var_inq->hdf_name),vgid_string,True);
 
 			if (tvarp->var_inq->var_path != NrmNULLQUARK) {
-				int i;
 				HDFAttInqRecList **atlp;
 
 				for (atlp = &(tvarp->var_inq->att_list);;atlp = &((*atlp)->next)) {
@@ -610,14 +721,11 @@ static void ProcessDuplicateNames
 			sprintf(vgid_string,"%d",0);
 		}
 		else { /* no dups for this variable and no group name either */
-			sprintf(vgid_string,"");
 			cp = NULL;
 		}
 		varp->var_inq->name = HDFToNCLName(NrmQuarkToString(varp->var_inq->hdf_name),cp,True);
 		if (varp->var_inq->var_path != NrmNULLQUARK) {
-			int i;
 			HDFAttInqRecList **atlp;
-
 
 			for (atlp = &(varp->var_inq->att_list);;atlp = &((*atlp)->next)) {
 				if (*atlp != NULL)
@@ -794,6 +902,14 @@ int wr_status;
 					   dim_sizes,
 					   &((*stepvlptr)->var_inq->hdf_type),
 					   &n_atts);
+				
+                      /*
+                        fprintf(stdout, "file: %s, line, %d\n", __FILE__, __LINE__);
+                        fprintf(stdout, "\t(*stepvlptr)->var_inq->data_type: %ld\n", (long) (*stepvlptr)->var_inq->data_type);
+                        fprintf(stdout, "\tdim_sizes[0]: %d \n", dim_sizes[0]);
+                        fprintf(stdout, "\t(*stepvlptr)->var_inq->n_dims: %ld \n", (long) (*stepvlptr)->var_inq->n_dims);
+                        fprintf(stdout, "\t(*stepvlptr)->var_inq->natts): %ld \n", (long) (*stepvlptr)->var_inq->natts);
+                       */
 
 			for(j = 0; j < ((*stepvlptr)->var_inq->n_dims); j++) {
 				tmp_size = 0;
@@ -901,7 +1017,6 @@ int wr_status;
 		tmp->has_scalar_dim = 0;
 	}
 	if(tmp->n_file_atts != 0 ) {
-		int attr_ix;
 		stepalptr = &(tmp->file_atts);
 		for(i = 0; i < tmp->n_file_atts; i++) {
 			*stepalptr = (HDFAttInqRecList*)NclMalloc(
@@ -1039,7 +1154,7 @@ NclQuark var_name;
 	HDFVarInqRecList *stepvl;
 	HDFDimInqRecList *stepdl;
 	NclFVarRec *tmp;
-	int i,j;
+	int j;
 
 	stepvl = rec->vars;
 	while(stepvl != NULL) {
@@ -1049,6 +1164,9 @@ NclQuark var_name;
 			tmp->var_full_name_quark = stepvl->var_inq->name;
 			tmp->var_real_name_quark = stepvl->var_inq->name;
 			tmp->data_type = HDFMapToNcl((void*)&(stepvl->var_inq->data_type));
+			if (HDFIsUnsigned(stepvl->var_inq->hdf_type)) {
+				tmp->data_type = ToNclUnsigned(tmp->data_type);
+			}
 			tmp->num_dimensions = stepvl->var_inq->n_dims;
 			for(j=0; j< stepvl->var_inq->n_dims; j++) {
 				stepdl = rec->dims;
@@ -1175,6 +1293,9 @@ NclQuark att_name_q;
 				tmp->num_elements = 1;
 			} else {
 				tmp->data_type = HDFMapToNcl((void*)&(stepal->att_inq->data_type));
+				if (HDFIsUnsigned(stepal->att_inq->hdf_type)) {
+					tmp->data_type = ToNclUnsigned(tmp->data_type);
+				}
 				tmp->num_elements = stepal->att_inq->len;
 			}
 			return(tmp);
@@ -1252,6 +1373,9 @@ NclQuark theatt;
 						tmp->num_elements = 1;
 					} else {
 						tmp->data_type = HDFMapToNcl((void*)&stepal->att_inq->data_type);
+						if (HDFIsUnsigned(stepal->att_inq->hdf_type)) {
+							tmp->data_type = ToNclUnsigned(tmp->data_type);
+						}
 						tmp->num_elements = stepal->att_inq->len;
 					}
 					return(tmp);
@@ -1915,12 +2039,12 @@ void* data;
 
 static NhlErrorTypes HDFAddDim
 #if	NhlNeedProto
-(void* therec, NclQuark thedim, int size,int is_unlimited)
+(void* therec, NclQuark thedim, ng_size_t size,int is_unlimited)
 #else
 (therec, thedim, size)
 void* therec;
 NclQuark thedim;
-int size;
+ng_size_t size;
 int is_unlimited;
 #endif
 {
@@ -2006,7 +2130,7 @@ int is_unlimited;
 /*ARGSUSED*/
 static NhlErrorTypes HDFAddVar
 #if	NhlNeedProto
-(void* therec, NclQuark thevar, NclBasicDataTypes data_type, int n_dims,NclQuark *dim_names, long* dim_sizes)
+(void* therec, NclQuark thevar, NclBasicDataTypes data_type, int n_dims,NclQuark *dim_names, ng_size_t* dim_sizes)
 #else
 (therec,thevar,data_type,n_dims,dim_names,dim_sizes)
 void* therec;
@@ -2014,7 +2138,7 @@ NclQuark thevar;
 NclBasicDataTypes data_type;
 int n_dims;
 NclQuark *dim_names;
-long* dim_sizes;
+ng_size_t* dim_sizes;
 #endif
 {
 	HDFFileRecord* rec = (HDFFileRecord*)therec;
@@ -2024,14 +2148,16 @@ long* dim_sizes;
 	int dim_ids[MAX_NC_DIMS];
 	HDFDimInqRecList* stepdl = NULL;
 	int add_scalar_dim = 0;
+	int is_unsigned;
 
 	if(rec->wr_status <= 0) {
-		cdfid = sd_ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
-		if(cdfid == -1) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
-			return(NhlFATAL);
-		}
 		the_data_type = HDFMapFromNcl(data_type);
+		if(the_data_type == NULL) {
+			return NhlFATAL;
+		}
+		is_unsigned =  ((int) *the_data_type < NC_UOFFSET) ? 0 : 1;
+
+
 /*
 * All dimensions are correct dimensions for the file
 */
@@ -2062,7 +2188,12 @@ long* dim_sizes;
 			}
 		}
 
-		if(the_data_type != NULL) {
+		if (! is_unsigned) {
+			cdfid = sd_ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+			if(cdfid == -1) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
+				return(NhlFATAL);
+			}
 			sd_ncredef(cdfid);
 			if((n_dims == 1)&&(dim_ids[0] == -5)) {
 				ret = sd_ncvardef(cdfid,NrmQuarkToString(thevar),*the_data_type, 0, NULL);
@@ -2075,64 +2206,97 @@ long* dim_sizes;
 				NclFree(the_data_type);
 				return(NhlFATAL);
 			} 
-	
-			stepvl = rec->vars;
-			if(stepvl == NULL) {
-				rec->vars = (HDFVarInqRecList*)NclMalloc(
-                                        (unsigned)sizeof(HDFVarInqRecList));
-				rec->vars->next = NULL;
-				rec->vars->var_inq = (HDFVarInqRec*)NclMalloc(
-					(unsigned)sizeof(HDFVarInqRec));
-				rec->vars->var_inq->varid = ret;
-				rec->vars->var_inq->name = thevar;
-				rec->vars->var_inq->data_type = *the_data_type;
-				rec->vars->var_inq->n_dims = n_dims;
-				rec->vars->var_inq->natts = 0;
-				rec->vars->var_inq->att_list = NULL;
-				for(i = 0 ; i< n_dims; i++) {
-					rec->vars->var_inq->dim[i] = dim_ids[i];
-				}
-				rec->n_vars = 1;
-			} else {
-				while(stepvl->next != NULL) {
-					stepvl= stepvl->next;
-				}
-				stepvl->next = (HDFVarInqRecList*)NclMalloc(
-					(unsigned)sizeof(HDFVarInqRecList));
-				stepvl->next->var_inq = (HDFVarInqRec*)NclMalloc(
-					(unsigned)sizeof(HDFVarInqRec));
-				stepvl->next->next = NULL;
-				stepvl->next->var_inq->varid = ret;
-				stepvl->next->var_inq->name = thevar;
-				stepvl->next->var_inq->data_type = *the_data_type;
-				stepvl->next->var_inq->n_dims = n_dims;
-				stepvl->next->var_inq->natts = 0;
-				stepvl->next->var_inq->att_list = NULL;
-				for(i = 0 ; i< n_dims; i++) {
-					stepvl->next->var_inq->dim[i] = dim_ids[i];
-				}
-				rec->n_vars++;
-			}
-			if (add_scalar_dim) {
-				rec->has_scalar_dim = 1;
-				stepdl = rec->dims;
-				rec->dims = (HDFDimInqRecList*)NclMalloc(
-					(unsigned) sizeof(HDFDimInqRecList));
-				rec->dims->dim_inq = (HDFDimInqRec*)NclMalloc(
-					(unsigned)sizeof(HDFDimInqRec));
-				rec->dims->next = stepdl;
-				rec->dims->dim_inq->dimid = -5;
-				rec->dims->dim_inq->size = 1;
-				rec->dims->dim_inq->is_unlimited = 0;
-				rec->dims->dim_inq->name = NrmStringToQuark("ncl_scalar");
-				rec->n_dims++;
-			}
 
-			NclFree(the_data_type);
-			return(NhlNOERROR);
-		} else {
-			sd_ncclose(cdfid);
 		}
+		else {
+			int32 sd_id, sds_id;
+			int32 hdf_dim_sizes[MAX_NC_DIMS];
+
+			for (i = 0; i < n_dims; i++) {
+				hdf_dim_sizes[i] = (int) dim_sizes[i];
+			}
+			sd_id = SDstart(NrmQuarkToString(rec->file_path_q),DFACC_WRITE);
+			sds_id = SDcreate(sd_id,NrmQuarkToString(thevar),(int)*the_data_type - NC_UOFFSET,n_dims,hdf_dim_sizes);
+			for (i = 0; i < n_dims; i++) {
+				int32 dim_id = SDgetdimid(sds_id,i);
+				if (dim_names[i] > NrmNULLQUARK) {
+					ret = SDsetdimname(dim_id,NrmQuarkToString(dim_names[i]));
+				}
+			}
+			ret = SDendaccess(sds_id);
+			ret = SDend(sd_id);
+			ret = sds_id;
+		}
+		stepvl = rec->vars;
+		if(stepvl == NULL) {
+			rec->vars = (HDFVarInqRecList*)NclMalloc(
+				(unsigned)sizeof(HDFVarInqRecList));
+			rec->vars->next = NULL;
+			rec->vars->var_inq = (HDFVarInqRec*)NclMalloc(
+				(unsigned)sizeof(HDFVarInqRec));
+			rec->vars->var_inq->varid = 0;
+			rec->vars->var_inq->name = thevar;
+			if (! is_unsigned) {
+				rec->vars->var_inq->data_type = *the_data_type;
+				rec->vars->var_inq->hdf_type = *the_data_type;
+			}
+			else {
+				
+				rec->vars->var_inq->data_type = HDFMapToNC(*the_data_type - NC_UOFFSET);
+				rec->vars->var_inq->hdf_type = NCMapToHDF(*the_data_type);
+			}
+			rec->vars->var_inq->n_dims = n_dims;
+			rec->vars->var_inq->natts = 0;
+			rec->vars->var_inq->att_list = NULL;
+			for(i = 0 ; i< n_dims; i++) {
+				rec->vars->var_inq->dim[i] = dim_ids[i];
+			}
+			rec->n_vars = 1;
+		} else {
+			while(stepvl->next != NULL) {
+				stepvl= stepvl->next;
+			}
+			stepvl->next = (HDFVarInqRecList*)NclMalloc(
+				(unsigned)sizeof(HDFVarInqRecList));
+			stepvl->next->var_inq = (HDFVarInqRec*)NclMalloc(
+				(unsigned)sizeof(HDFVarInqRec));
+			stepvl->next->next = NULL;
+			stepvl->next->var_inq->varid = rec->n_vars;
+			stepvl->next->var_inq->name = thevar;
+			stepvl->next->var_inq->data_type = *the_data_type;
+			if (! is_unsigned) {
+				stepvl->next->var_inq->data_type = *the_data_type;
+				stepvl->next->var_inq->hdf_type = *the_data_type;
+			}
+			else {
+				
+				stepvl->next->var_inq->data_type = HDFMapToNC(*the_data_type - NC_UOFFSET);
+				stepvl->next->var_inq->hdf_type = NCMapToHDF(*the_data_type);
+			}
+			stepvl->next->var_inq->n_dims = n_dims;
+			stepvl->next->var_inq->natts = 0;
+			stepvl->next->var_inq->att_list = NULL;
+			for(i = 0 ; i< n_dims; i++) {
+				stepvl->next->var_inq->dim[i] = dim_ids[i];
+			}
+			rec->n_vars++;
+		}
+		if (add_scalar_dim) {
+			rec->has_scalar_dim = 1;
+			stepdl = rec->dims;
+			rec->dims = (HDFDimInqRecList*)NclMalloc(
+				(unsigned) sizeof(HDFDimInqRecList));
+			rec->dims->dim_inq = (HDFDimInqRec*)NclMalloc(
+				(unsigned)sizeof(HDFDimInqRec));
+			rec->dims->next = stepdl;
+			rec->dims->dim_inq->dimid = -5;
+			rec->dims->dim_inq->size = 1;
+			rec->dims->dim_inq->is_unlimited = 0;
+			rec->dims->dim_inq->name = NrmStringToQuark("ncl_scalar");
+			rec->n_dims++;
+		}
+		NclFree(the_data_type);
+		return(NhlNOERROR);
 	} else {	
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) was opened as a read only file, can not write to it",NrmQuarkToString(rec->file_path_q));
 	}
@@ -2153,24 +2317,29 @@ NclBasicDataTypes data_type;
 	HDFDimInqRecList *stepdl = NULL;
 	HDFVarInqRecList *stepvl = NULL;
 	int cdfid;
-	int ret,size;
+	int size,ret = -1;
 	nc_type *the_data_type;
+	int is_unsigned;
 	
-
 	if(rec->wr_status <= 0) {
-		cdfid = sd_ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
-		if(cdfid == -1) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
-			return(NhlFATAL);
-		}
 		the_data_type = HDFMapFromNcl(data_type);
-		if(the_data_type != NULL) {
+		if (the_data_type == NULL) {
+			return NhlFATAL;
+		}
+		is_unsigned =  ((int) *the_data_type < NC_UOFFSET) ? 0 : 1;
+
+		if (! is_unsigned) {
+			cdfid = sd_ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+			if(cdfid == -1) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
+				return(NhlFATAL);
+			}
 			stepdl = rec->dims;
 			while(stepdl != NULL ) {
 				if(stepdl->dim_inq->name == thevar){
 					sd_ncredef(cdfid);
 					size = stepdl->dim_inq->size;
-					ret = sd_ncvardef(cdfid,NrmQuarkToString(thevar),*the_data_type,1,&size);
+					ret = sd_ncvardef(cdfid,NrmQuarkToString(thevar),*the_data_type,1,&stepdl->dim_inq->dimid);
 					if(ret == -1) {
 						sd_ncabort(cdfid);
 						sd_ncclose(cdfid);
@@ -2179,44 +2348,75 @@ NclBasicDataTypes data_type;
 					} 
 				}
 			} 
-			stepvl = rec->vars;
-			if(stepvl == NULL) {
-				rec->vars = (HDFVarInqRecList*)NclMalloc(
-					(unsigned)sizeof(HDFVarInqRecList));
-				rec->vars->next = NULL;
-				rec->vars->var_inq = (HDFVarInqRec*)NclMalloc(
-					(unsigned)sizeof(HDFVarInqRec*));
-				rec->vars->var_inq->varid = ret;
-				rec->vars->var_inq->name = thevar;
-				rec->vars->var_inq->data_type = *the_data_type;
-				rec->vars->var_inq->n_dims = 1;
-				rec->vars->var_inq->dim[0] = stepdl->dim_inq->dimid;
-				rec->vars->var_inq->natts = 0;
-				rec->vars->var_inq->att_list = NULL;
-				rec->n_vars++;
-			} else {
-				while(stepvl->next != NULL) {
-					stepvl = stepvl->next;
-				}
-				stepvl->next = (HDFVarInqRecList*)NclMalloc(
-					(unsigned)sizeof(HDFVarInqRecList));
-				stepvl->next->next = NULL;
-				stepvl->next->var_inq = (HDFVarInqRec*)NclMalloc(
-					(unsigned)sizeof(HDFVarInqRec*));
-				stepvl->next->var_inq->varid = ret;
-				stepvl->next->var_inq->name = thevar;
-				stepvl->next->var_inq->data_type = *the_data_type;
-				stepvl->next->var_inq->n_dims = 1;
-				stepvl->next->var_inq->dim[0] = stepdl->dim_inq->dimid;
-				stepvl->next->var_inq->natts = 0;
-				stepvl->next->var_inq->att_list = NULL;
-				rec->n_vars++;
-			}
-			NclFree(the_data_type);
-		} else {
-			sd_ncclose(cdfid);
 		}
-	} else {	
+		else {
+			int32 sd_id, sds_id;
+			int32 dim_id;
+
+			sd_id = SDstart(NrmQuarkToString(rec->file_path_q),DFACC_WRITE);
+			stepdl = rec->dims;
+			while(stepdl != NULL ) {
+				if (stepdl->dim_inq->name == thevar) {
+					size = stepdl->dim_inq->size;
+					sds_id = SDcreate(sd_id,NrmQuarkToString(thevar),(int)*the_data_type - NC_UOFFSET,1,&size);
+				}
+			}
+			ret = SDendaccess(sds_id);
+			ret = SDend(sd_id);
+		}
+		stepvl = rec->vars;
+		if(stepvl == NULL) {
+			rec->vars = (HDFVarInqRecList*)NclMalloc(
+				(unsigned)sizeof(HDFVarInqRecList));
+			rec->vars->next = NULL;
+			rec->vars->var_inq = (HDFVarInqRec*)NclMalloc(
+				(unsigned)sizeof(HDFVarInqRec*));
+			rec->vars->var_inq->varid = 0;
+			rec->vars->var_inq->name = thevar;
+			if (! is_unsigned) {
+				rec->vars->var_inq->data_type = *the_data_type;
+				rec->vars->var_inq->hdf_type = *the_data_type;
+			}
+			else {
+				
+				rec->vars->var_inq->data_type = HDFMapToNC(*the_data_type - NC_UOFFSET);
+				rec->vars->var_inq->hdf_type = NCMapToHDF(*the_data_type);
+			}
+			rec->vars->var_inq->n_dims = 1;
+			rec->vars->var_inq->dim[0] = stepdl->dim_inq->dimid;
+			rec->vars->var_inq->natts = 0;
+			rec->vars->var_inq->att_list = NULL;
+			rec->n_vars++;
+		} else {
+			while(stepvl->next != NULL) {
+				stepvl = stepvl->next;
+			}
+			stepvl->next = (HDFVarInqRecList*)NclMalloc(
+				(unsigned)sizeof(HDFVarInqRecList));
+			stepvl->next->next = NULL;
+			stepvl->next->var_inq = (HDFVarInqRec*)NclMalloc(
+				(unsigned)sizeof(HDFVarInqRec*));
+			stepvl->next->var_inq->varid = rec->n_vars;
+			stepvl->next->var_inq->name = thevar;
+			if (! is_unsigned) {
+				stepvl->next->var_inq->data_type = *the_data_type;
+				stepvl->next->var_inq->hdf_type = *the_data_type;
+			}
+			else {
+				
+				stepvl->next->var_inq->data_type = HDFMapToNC(*the_data_type - NC_UOFFSET);
+				stepvl->next->var_inq->hdf_type = NCMapToHDF(*the_data_type);
+			}
+			stepvl->next->var_inq->n_dims = 1;
+			stepvl->next->var_inq->dim[0] = stepdl->dim_inq->dimid;
+			stepvl->next->var_inq->natts = 0;
+			stepvl->next->var_inq->att_list = NULL;
+			rec->n_vars++;
+		}
+		NclFree(the_data_type);
+		return NhlNOERROR;
+	}
+	else {	
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) was opened as a read only file, can not write to it",NrmQuarkToString(rec->file_path_q));
 	}
 	return(NhlFATAL);
@@ -2289,22 +2489,26 @@ static NhlErrorTypes HDFAddAtt
 	int cdfid;
 	void *lvalues = values;
 	NhlErrorTypes eret = NhlNOERROR;
-	
+	int is_unsigned;
 
 	if(rec->wr_status <= 0) {
 		the_data_type = (nc_type*)HDFMapFromNcl(data_type);
-		if(the_data_type != NULL) {
-			if (*the_data_type == NC_CHAR) {
-				if (! lvalues || (strlen((char *) lvalues) == 0)) {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-		  "HDF: The HDF library does not currently allow empty strings as attribute values; not adding attribute (%s) to file (%s)",
-							  NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
-					eret = NhlWARNING;
-					/* still necessary to add the attribute to avoid an error when it is later deleted */
-					lvalues = (void*) MissingAtt;
-					n_items = strlen (MissingAtt);
-				}
+		if (the_data_type == NULL) {
+			return NhlFATAL;
+		}
+		is_unsigned =  ((int) *the_data_type < NC_UOFFSET) ? 0 : 1;
+		if (*the_data_type == NC_CHAR) {
+			if (! lvalues || (strlen((char *) lvalues) == 0)) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  "HDF: The HDF library does not currently allow empty strings as attribute values; not adding attribute (%s) to file (%s)",
+					  NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
+				eret = NhlWARNING;
+				/* still necessary to add the attribute to avoid an error when it is later deleted */
+				lvalues = (void*) MissingAtt;
+				n_items = strlen (MissingAtt);
 			}
+		}
+		if (! is_unsigned) {
 			cdfid = sd_ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
 			if(cdfid == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
@@ -2315,37 +2519,64 @@ static NhlErrorTypes HDFAddAtt
 			ret = sd_ncattput(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),*the_data_type,n_items,lvalues);
 			sd_ncendef(cdfid);
 			sd_ncclose(cdfid);
-			if(ret != -1 ) {
-				stepal = rec->file_atts;
-				if(stepal == NULL) {
-					rec->file_atts = (HDFAttInqRecList*)NclMalloc((unsigned)
-						sizeof(HDFAttInqRecList));
-					rec->file_atts->att_inq= (HDFAttInqRec*)NclMalloc((unsigned)sizeof(HDFAttInqRec));
-					rec->file_atts->next = NULL;
-					rec->file_atts->att_inq->att_num = 1;
-					rec->file_atts->att_inq->name = theatt;
+		}
+		else {
+			int32 sd_id, sds_id;
+			int32 dim_id;
+			int32 ix, type, nvalues;
+
+			sd_id = SDstart(NrmQuarkToString(rec->file_path_q),DFACC_WRITE);
+			ret = SDsetattr(sd_id,NrmQuarkToString(theatt),(int)*the_data_type - NC_UOFFSET,n_items,lvalues);
+#if 0
+			ix = SDfindattr(sd_id,NrmQuarkToString(theatt));
+			SDattrinfo(sd_id,ix,NrmQuarkToString(theatt),&type,&nvalues);
+#endif
+			ret = SDend(sd_id);
+		}
+		if(ret != -1 ) {
+			stepal = rec->file_atts;
+			if(stepal == NULL) {
+				rec->file_atts = (HDFAttInqRecList*)NclMalloc((unsigned)
+									      sizeof(HDFAttInqRecList));
+				rec->file_atts->att_inq= (HDFAttInqRec*)NclMalloc((unsigned)sizeof(HDFAttInqRec));
+				rec->file_atts->next = NULL;
+				rec->file_atts->att_inq->att_num = 1;
+				rec->file_atts->att_inq->name = theatt;
+				rec->file_atts->att_inq->len = n_items;
+				if (! is_unsigned) {
 					rec->file_atts->att_inq->data_type = *the_data_type;
-					rec->file_atts->att_inq->len = n_items;
-					HDFCacheAttValue(rec->file_atts->att_inq,lvalues);
-				} else {	
-					i = 0;
-					while(stepal->next != NULL) {
-						stepal = stepal->next; 
-						i++;
-					}
-					stepal->next = (HDFAttInqRecList*)NclMalloc((unsigned)sizeof(HDFAttInqRecList));
-					stepal->next->att_inq = (HDFAttInqRec*)NclMalloc((unsigned)sizeof(HDFAttInqRec));
-					stepal->next->att_inq->att_num = i;
-					stepal->next->att_inq->name = theatt;
-					stepal->next->att_inq->data_type = *the_data_type;
-					stepal->next->att_inq->len = n_items;
-					stepal->next->next = NULL;
-					HDFCacheAttValue(stepal->next->att_inq,lvalues);
+					rec->file_atts->att_inq->hdf_type = *the_data_type;
 				}
-				rec->n_file_atts++;
-				NclFree(the_data_type);
-				return(eret);
-			} 
+				else {
+					rec->file_atts->att_inq->data_type = HDFMapToNC(*the_data_type - NC_UOFFSET);
+					rec->file_atts->att_inq->hdf_type = NCMapToHDF(*the_data_type);
+				}
+				HDFCacheAttValue(rec->file_atts->att_inq,lvalues);
+			} else {	
+				i = 0;
+				while(stepal->next != NULL) {
+					stepal = stepal->next; 
+					i++;
+				}
+				stepal->next = (HDFAttInqRecList*)NclMalloc((unsigned)sizeof(HDFAttInqRecList));
+				stepal->next->att_inq = (HDFAttInqRec*)NclMalloc((unsigned)sizeof(HDFAttInqRec));
+				stepal->next->att_inq->att_num = i;
+				stepal->next->att_inq->name = theatt;
+				stepal->next->att_inq->len = n_items;
+				stepal->next->next = NULL;
+				if (! is_unsigned) {
+					stepal->next->att_inq->data_type = *the_data_type;
+					stepal->next->att_inq->hdf_type = *the_data_type;
+				}
+				else {
+					stepal->next->att_inq->data_type = HDFMapToNC(*the_data_type - NC_UOFFSET);
+					stepal->next->att_inq->hdf_type = NCMapToHDF(*the_data_type);
+				}
+				HDFCacheAttValue(stepal->next->att_inq,lvalues);
+			}
+			rec->n_file_atts++;
+			NclFree(the_data_type);
+			return(eret);
 		} 
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) was opened as a read only file, can not write to it",NrmQuarkToString(rec->file_path_q));
@@ -2374,21 +2605,27 @@ static NhlErrorTypes HDFAddVarAtt
 	int cdfid,ret;
 	void *lvalues = values;
 	NhlErrorTypes eret = NhlNOERROR;
+	int is_unsigned;
 	
 	if(rec->wr_status <= 0) {
 		the_data_type = (nc_type*)HDFMapFromNcl(data_type);
-		if(the_data_type != NULL) {
-			if (*the_data_type == NC_CHAR) {
-				if (! lvalues || (strlen((char *) lvalues) == 0)) {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-		  "HDF: The HDF library does not currently allow empty strings as attribute values; not adding attribute (%s) to variable (%s) in file (%s)",
-						  NrmQuarkToString(theatt),NrmQuarkToString(thevar), NrmQuarkToString(rec->file_path_q));
+		if (the_data_type == NULL) {
+			return NhlFATAL;
+		}
+		is_unsigned =  ((int) *the_data_type < NC_UOFFSET) ? 0 : 1;
+
+		if (*the_data_type == NC_CHAR) {
+			if (! lvalues || (strlen((char *) lvalues) == 0)) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  "HDF: The HDF library does not currently allow empty strings as attribute values; not adding attribute (%s) to variable (%s) in file (%s)",
+					  NrmQuarkToString(theatt),NrmQuarkToString(thevar), NrmQuarkToString(rec->file_path_q));
 				eret = NhlWARNING;
 				/* still necessary to add the attribute to avoid an error when it is later deleted */
 				lvalues = (void*) MissingAtt;
 				n_items = strlen(MissingAtt);
-				}
 			}
+		}
+		if (! is_unsigned) {
 			cdfid = sd_ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
 			if(cdfid == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
@@ -2403,42 +2640,83 @@ static NhlErrorTypes HDFAddVarAtt
 					stepvl = stepvl->next;
 				}
 			}
+			if (stepvl == NULL) {
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Invalid state"));
+				return NhlFATAL;
+			}
 			sd_ncredef(cdfid);
 			ret = sd_ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),*the_data_type,n_items,lvalues);
 			sd_ncendef(cdfid);
 			sd_ncclose(cdfid);
-			if(ret != -1 ) {
-				stepal = stepvl->var_inq->att_list;
-				if(stepal == NULL) {
-					stepvl->var_inq->att_list= (HDFAttInqRecList*)NclMalloc((unsigned)
-						sizeof(HDFAttInqRecList));
-					stepvl->var_inq->att_list->att_inq = (HDFAttInqRec*)NclMalloc((unsigned)sizeof(HDFAttInqRec));
-					stepvl->var_inq->att_list->next = NULL;
-					stepvl->var_inq->att_list->att_inq->att_num = 0;
-					stepvl->var_inq->att_list->att_inq->name = theatt;
-					stepvl->var_inq->att_list->att_inq->data_type = *the_data_type;
-					stepvl->var_inq->att_list->att_inq->len = n_items;
-					HDFCacheAttValue(stepvl->var_inq->att_list->att_inq,lvalues);
-					stepvl->var_inq->natts = 1;
-				} else {	
-					i = 0;
-					while(stepal->next != NULL) {
-						stepal = stepal->next; 
-						i++;
-					}
-					stepal->next = (HDFAttInqRecList*)NclMalloc((unsigned)sizeof(HDFAttInqRecList));
-					stepal->next->att_inq = (HDFAttInqRec*)NclMalloc((unsigned)sizeof(HDFAttInqRec));
-					stepal->next->att_inq->att_num = i;
-					stepal->next->att_inq->name = theatt;
-					stepal->next->att_inq->data_type = *the_data_type;
-					stepal->next->att_inq->len = n_items;
-					stepal->next->next = NULL;
-					HDFCacheAttValue(stepal->next->att_inq,lvalues);
-					stepvl->var_inq->natts++ ;
+		}
+		else {
+			int32 sd_id, sds_id;
+			int32 dim_id;
+
+			stepvl = rec->vars;	
+			while(stepvl != NULL) {
+				if(stepvl->var_inq->name == thevar) {
+					break;
+				} else {
+					stepvl = stepvl->next;
 				}
-				NclFree(the_data_type);
-				return(eret);
-			} 
+			}
+			if (stepvl == NULL) {
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Invalid state"));
+				return NhlFATAL;
+			}
+			sd_id = SDstart(NrmQuarkToString(rec->file_path_q),DFACC_WRITE);
+			sds_id = SDselect(sd_id, stepvl->var_inq->varid);
+			ret = SDsetattr(sds_id,NrmQuarkToString(theatt),(int)*the_data_type - NC_UOFFSET,n_items,lvalues);
+			ret = SDendaccess(sds_id);
+			ret = SDend(sd_id);
+		}
+		if(ret != -1 ) {
+			stepal = stepvl->var_inq->att_list;
+			if(stepal == NULL) {
+				stepvl->var_inq->att_list = (HDFAttInqRecList*)NclMalloc((unsigned)
+											sizeof(HDFAttInqRecList));
+				stepvl->var_inq->att_list->att_inq = (HDFAttInqRec*)NclMalloc((unsigned)sizeof(HDFAttInqRec));
+				stepvl->var_inq->att_list->next = NULL;
+				stepvl->var_inq->att_list->att_inq->att_num = 0;
+				stepvl->var_inq->att_list->att_inq->name = theatt;
+				stepvl->var_inq->att_list->att_inq->len = n_items;
+				if (! is_unsigned) {
+					stepvl->var_inq->att_list->att_inq->data_type = *the_data_type;
+					stepvl->var_inq->att_list->att_inq->hdf_type = *the_data_type;
+				}
+				else {
+					stepvl->var_inq->att_list->att_inq->data_type = HDFMapToNC(*the_data_type - NC_UOFFSET);
+					stepvl->var_inq->att_list->att_inq->hdf_type = NCMapToHDF(*the_data_type);
+				}
+				HDFCacheAttValue(stepvl->var_inq->att_list->att_inq,lvalues);
+				stepvl->var_inq->natts = 1;
+			} else {	
+				i = 0;
+				while(stepal->next != NULL) {
+					stepal = stepal->next; 
+					i++;
+				}
+				stepal->next = (HDFAttInqRecList*)NclMalloc((unsigned)sizeof(HDFAttInqRecList));
+				stepal->next->att_inq = (HDFAttInqRec*)NclMalloc((unsigned)sizeof(HDFAttInqRec));
+				stepal->next->next = NULL;
+				stepal->next->att_inq->att_num = i;
+				stepal->next->att_inq->name = theatt;
+				stepal->next->att_inq->len = n_items;
+				HDFCacheAttValue(stepal->next->att_inq,lvalues);
+				if (! is_unsigned) {
+					stepal->next->att_inq->data_type = *the_data_type;
+					stepal->next->att_inq->hdf_type = *the_data_type;
+				}
+				else {
+					stepal->next->att_inq->data_type = HDFMapToNC(*the_data_type - NC_UOFFSET);
+					stepal->next->att_inq->hdf_type = NCMapToHDF(*the_data_type);
+				}
+				HDFCacheAttValue(stepvl->var_inq->att_list->att_inq,lvalues);
+				stepvl->var_inq->natts++ ;
+			}
+			NclFree(the_data_type);
+			return(eret);
 		} 
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) was opened as a read only file, can not write to it",NrmQuarkToString(rec->file_path_q));

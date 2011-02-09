@@ -10,14 +10,18 @@ extern int isleapyear(int);
 
 NhlErrorTypes day_of_year_W( void )
 {
-  int i, j, total;
+  int i;
+  ng_size_t total;
 /*
  * Input variables
  */
   int *year, *month, *day;
-  int ndims_year, dsizes_year[NCL_MAX_DIMENSIONS];
-  int ndims_month, dsizes_month[NCL_MAX_DIMENSIONS];
-  int ndims_day, dsizes_day[NCL_MAX_DIMENSIONS];
+  int ndims_year;
+  ng_size_t dsizes_year[NCL_MAX_DIMENSIONS];
+  int ndims_month;
+  ng_size_t dsizes_month[NCL_MAX_DIMENSIONS];
+  int ndims_day;
+  ng_size_t dsizes_day[NCL_MAX_DIMENSIONS];
 /*
  * Output variables
  */
@@ -101,13 +105,16 @@ NhlErrorTypes day_of_year_W( void )
 
 NhlErrorTypes days_in_month_W( void )
 {
-  int i, j, total;
+  int i;
+  ng_size_t total;
 /*
  * Input variables
  */
   int *year, *month;
-  int ndims_year, dsizes_year[NCL_MAX_DIMENSIONS];
-  int ndims_month, dsizes_month[NCL_MAX_DIMENSIONS];
+  int ndims_year;
+  ng_size_t dsizes_year[NCL_MAX_DIMENSIONS];
+  int ndims_month;
+  ng_size_t dsizes_month[NCL_MAX_DIMENSIONS];
 /*
  * Output variables
  */
@@ -179,14 +186,18 @@ NhlErrorTypes days_in_month_W( void )
 
 NhlErrorTypes day_of_week_W( void )
 {
-  int i, j, total;
+  int i;
+  ng_size_t total;
 /*
  * Input variables
  */
   int *year, *month, *day;
-  int ndims_year, dsizes_year[NCL_MAX_DIMENSIONS];
-  int ndims_month, dsizes_month[NCL_MAX_DIMENSIONS];
-  int ndims_day, dsizes_day[NCL_MAX_DIMENSIONS];
+  int ndims_year;
+  ng_size_t dsizes_year[NCL_MAX_DIMENSIONS];
+  int ndims_month;
+  ng_size_t dsizes_month[NCL_MAX_DIMENSIONS];
+  int ndims_day;
+  ng_size_t dsizes_day[NCL_MAX_DIMENSIONS];
 /*
  * Output variables
  */
@@ -265,12 +276,14 @@ NhlErrorTypes day_of_week_W( void )
 
 NhlErrorTypes isleapyear_W( void )
 {
-  int i, j, total;
+  int i;
+  ng_size_t total;
 /*
  * Input variables
  */
   int *year;
-  int ndims_year, dsizes_year[NCL_MAX_DIMENSIONS];
+  int ndims_year;
+  ng_size_t dsizes_year[NCL_MAX_DIMENSIONS];
 /*
  * Output variables
  */
@@ -319,13 +332,16 @@ NhlErrorTypes isleapyear_W( void )
 
 NhlErrorTypes monthday_W( void )
 {
-  int i, j, total;
+  int i;
+  ng_size_t total;
 /*
  * Input variables
  */
   int *year, *day;
-  int ndims_year, dsizes_year[NCL_MAX_DIMENSIONS];
-  int ndims_day, dsizes_day[NCL_MAX_DIMENSIONS];
+  int ndims_year;
+  ng_size_t dsizes_year[NCL_MAX_DIMENSIONS];
+  int ndims_day;
+  ng_size_t dsizes_day[NCL_MAX_DIMENSIONS];
 /*
  * Output variables
  */
@@ -492,7 +508,8 @@ int monthday (int year, int dayofyear)
  *
  * An error will result in monthday being set to -9999
  */ 
-  int i, mday, work[13];
+  int i, work[13];
+  int mday = -9999;
   int yearday[13] = {1,32,60,91,121,152,182,213,244,274,305,335,367};
 
   if (dayofyear < 1 || (isleapyear(year) && dayofyear > 366) ||

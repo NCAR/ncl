@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypelist.c,v 1.4 2010-03-12 18:33:47 dbrown Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -37,27 +37,6 @@
 #include "NclMultiDValData.h"
 #include "DataSupport.h"
 
-/*
- *      $Id: NclTypelist.c,v 1.4 2010-03-12 18:33:47 dbrown Exp $
- */
-/************************************************************************
-*									*
-*			     Copyright (C)  1995			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
-************************************************************************/
-/*
- *	File:		
- *
- *	Author:		Ethan Alpert
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
- *
- *	Date:		Fri Jan 27 18:34:41 MST 1995
- *
- *	Description:	
- */
 #ifdef NIO_LIB_ONLY
 #include "nioBaseP.h"
 #include "nioCallbacks.h"
@@ -107,13 +86,13 @@ static NhlErrorTypes Ncl_Type_list_InitClass
 ()
 #endif
 {
-	nclTypelistClassRec.type_class.default_mis.objval = -1;
+	nclTypelistClassRec.type_class.default_mis.listval = -1;
 	return(NhlNOERROR);
 }
 
 
 /*
- *      $Id: NclTypelist.c,v 1.4 2010-03-12 18:33:47 dbrown Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -137,17 +116,17 @@ static NhlErrorTypes Ncl_Type_list_InitClass
 
 static NhlErrorTypes Ncl_Type_list_reset_mis
 #if	NhlNeedProto
-(void	*val,NclScalar * old_m,NclScalar * new_m, int nval)
+(void	*val,NclScalar * old_m,NclScalar * new_m, ng_size_t nval)
 #else
 (val,old_m,new_m,nval)
 void *val;
 NclScalar * old_m;
 NclScalar * new_m;
-int nval;
+ng_size_t nval;
 #endif
 {
 	obj *value = (obj*)val;
-	int i;
+	ng_size_t i;
 
 	if((old_m == NULL)||(new_m == NULL))
 		return(NhlFATAL);
@@ -162,7 +141,7 @@ int nval;
 }
 
 /*
- *      $Id: NclTypelist.c,v 1.4 2010-03-12 18:33:47 dbrown Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -184,7 +163,7 @@ int nval;
  */
 NhlErrorTypes Ncl_Type_list_eq
 #if	NhlNeedProto
-(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, int nlhs, int nrhs)
+(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, ng_size_t nlhs, ng_size_t nrhs)
 #else
 (result,lhs,rhs,lhs_m,rhs_m,nlhs,nrhs)
 void *result;
@@ -192,16 +171,16 @@ void *lhs;
 void* rhs;
 NclScalar* lhs_m;
 NclScalar* rhs_m;
-int nlhs;
-int nrhs;
+ng_size_t nlhs;
+ng_size_t nrhs;
 #endif
 {
         obj *ls,*rs;
 	logical *res;
-	int stopi = 1;
+	ng_size_t stopi = 1;
 	int linc = 0;
 	int rinc = 0;
-	int i;
+	ng_size_t i;
 
 	ls = (obj*)lhs;
 	rs = (obj*)rhs;
@@ -250,7 +229,7 @@ NclTypeClass Ncl_Type_list_eq_type
 }
 
 /*
- *      $Id: NclTypelist.c,v 1.4 2010-03-12 18:33:47 dbrown Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -272,7 +251,7 @@ NclTypeClass Ncl_Type_list_eq_type
  */
 NhlErrorTypes Ncl_Type_list_ne
 #if	NhlNeedProto
-(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, int nlhs, int nrhs)
+(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, ng_size_t nlhs, ng_size_t nrhs)
 #else
 (result,lhs,rhs,lhs_m,rhs_m,nlhs,nrhs)
 void *result;
@@ -280,16 +259,16 @@ void *lhs;
 void* rhs;
 NclScalar* lhs_m;
 NclScalar* rhs_m;
-int nlhs;
-int nrhs;
+ng_size_t nlhs;
+ng_size_t nrhs;
 #endif
 {
         obj *ls,*rs;
 	logical *res;
-	int stopi = 1;
+	ng_size_t stopi = 1;
 	int linc = 0;
 	int rinc = 0;
-	int i;
+	ng_size_t i;
 
 	ls = (obj*)lhs;
 	rs = (obj*)rhs;

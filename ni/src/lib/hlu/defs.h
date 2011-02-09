@@ -24,6 +24,7 @@
 #ifndef _DEFS_H_
 #define _DEFS_H_
 
+#include "ncarg/hlu/NgSizeT.h"
 /*
  * These macros are defined to be NULL.  They are not used by the code, but
  * so that http daemons using the code2html script can produce anchors in
@@ -63,7 +64,7 @@
 #define _NhlLAYERLISTINC	(128)
 
 /* usefull defines for specifying a layer has no parent or default app parent */
-#define	NhlDEFAULT_APP	((int)(NULL))
+#define	NhlDEFAULT_APP	0
 
 
 /* defines for the converter hash table */

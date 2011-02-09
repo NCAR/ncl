@@ -60,7 +60,7 @@
  * on exit
  *      return          : 0 => error, else gks error returned
  */
-static  hatch_fill
+static  int hatch_fill
 #ifdef  NeedFuncProto
 (
         Display         *dpy,
@@ -90,8 +90,8 @@ static  hatch_fill
                 Pixmap  tileid;
                 int     width,
                 height;
-                } tile = { 0,0, 0,0, 0,0, 0,0, 0, 0, 0 };
-
+                } tile = { {{0,0}, {0,0}, {0,0}, {0,0}}, 0, 0, 0 };
+ 	               
         static  Boolean first = TRUE;
 
         int     status = 0;
@@ -228,7 +228,6 @@ static  void    text_strokes(x, y, num, lines_data)
 
         PIXddp    *xi = (PIXddp *) lines_data;
         Display *dpy = xi->dpy;
-        Drawable  win = xi->win;
 
         static  XPoint  *pptr = (XPoint *) NULL;
         static  unsigned        point_buf_size = 0;
@@ -259,7 +258,7 @@ static  void    text_strokes(x, y, num, lines_data)
 }
 
 /*ARGSUSED*/
-static  non_rect_cell_array(dpy, win, gc, color_pal, P, Q, R, nx, ny, xptr)
+static  int non_rect_cell_array(dpy, win, gc, color_pal, P, Q, R, nx, ny, xptr)
         Display *dpy;
         Drawable  win;
         GC      gc;
@@ -506,7 +505,7 @@ static  void    encode_pixels(src, dst, n, pixel_size, byte_order)
  * on exit
  *      return          : 0 => Ok, else error
  */
-static  cell_array
+static  int cell_array
 #if     NeedFuncProto
 (
         Display         *dpy,
@@ -695,12 +694,11 @@ static  cell_array
         return(0);
 }
 /*ARGSUSED*/
-PIX_Polyline(gksc)
+int PIX_Polyline(gksc)
         GKSC    *gksc;
 {
         PIXddp    *xi = (PIXddp *) gksc->ddp;
         Display *dpy = xi->dpy;
-        Drawable  win = xi->win;
 
         XPoint  *pptr = (XPoint *) gksc->p.list;
         int     n = gksc->p.num;
@@ -711,7 +709,7 @@ PIX_Polyline(gksc)
 }
 
 /*ARGSUSED*/
-PIX_Polymarker(gksc)
+int PIX_Polymarker(gksc)
         GKSC    *gksc;
 {
         PIXddp    *xi = (PIXddp *) gksc->ddp;
@@ -796,7 +794,7 @@ PIX_Polymarker(gksc)
 }
 
 /*ARGSUSED*/
-PIX_Text(gksc)
+int PIX_Text(gksc)
         GKSC    *gksc;
 {
         PIXddp    *xi = (PIXddp *) gksc->ddp;
@@ -818,7 +816,7 @@ PIX_Text(gksc)
 }
 
 /*ARGSUSED*/
-PIX_FillArea(gksc)
+int PIX_FillArea(gksc)
         GKSC    *gksc;
 {
         PIXddp    *xi = (PIXddp *) gksc->ddp;
@@ -896,12 +894,11 @@ PIX_FillArea(gksc)
 
 
 /*ARGSUSED*/
-PIX_Cellarray(gksc)
+int PIX_Cellarray(gksc)
         GKSC    *gksc;
 {
         PIXddp    *xi = (PIXddp *) gksc->ddp;
         Display *dpy = xi->dpy;
-        Drawable  win = xi->win;
         GC      gc = xi->cell_gc;
         Pixeltype *color_pal = xi->color_pal;
 

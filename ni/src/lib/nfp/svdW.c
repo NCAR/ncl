@@ -30,40 +30,47 @@ NhlErrorTypes svdcov_W( void )
  */
   void *x, *y, *homlft, *hetlft, *homrgt, *hetrgt;
   double *dx, *dy, *homlft_tmp, *hetlft_tmp, *homrgt_tmp, *hetrgt_tmp;
-  int dsizes_x[2], has_missing_x;
-  int dsizes_y[2], has_missing_y;
-  int dsizes_homlft[2], dsizes_hetlft[2];
-  int dsizes_homrgt[2], dsizes_hetrgt[2];
+  ng_size_t dsizes_x[2];
+  int has_missing_x;
+  ng_size_t dsizes_y[2];
+  int has_missing_y;
+  ng_size_t dsizes_homlft[2];
+  ng_size_t dsizes_hetlft[2];
+  ng_size_t dsizes_homrgt[2];
+  ng_size_t dsizes_hetrgt[2];
   NclScalar missing_x, missing_y, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y;
   NclBasicDataTypes type_homlft, type_hetlft, type_homrgt, type_hetrgt;
-  int ntimes, ncolx, ncoly, lab, *nsvd;
+  ng_size_t ntimes, ncolx, ncoly, lab;
+  int *nsvd;
   int ier = 0, iflag=0, iprint=0;
 /*
  * Work array variables
  */
   double *w;
-  int lwk, nsvmx;
+  ng_size_t lwk, nsvmx;
 /*
  * Output array variables
  */
   double *svdpcv_tmp, *ak_tmp, *bk_tmp;
   void *svdpcv, *fnorm, *condn, *ak, *bk;
-  int *lapack_err, dsizes_svdpcv[1];
+  int *lapack_err;
+  ng_size_t dsizes_svdpcv[1];
   NclBasicDataTypes type_svdpcv;
   NclTypeClass type_svdpcv_class;
 /*
  * Attribute variables
  */
-  int att_id, dsizes[1];
+  int att_id;
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
  * various
  */
-  int i, j, ipt7;
-  int total_size_x, total_size_y, total_size_lft, total_size_rgt;
+  ng_size_t ipt7;
+  ng_size_t total_size_x, total_size_y, total_size_lft, total_size_rgt;
 /*
  * Retrieve input parameters.
  */
@@ -174,10 +181,10 @@ NhlErrorTypes svdcov_W( void )
  * The hom/het arrays must be float or double. It doesn't matter what
  * the input types are.
  */
-  if(type_hetlft != NCL_float && type_hetlft != NCL_double ||
-     type_homlft != NCL_float && type_homlft != NCL_double ||
-     type_homrgt != NCL_float && type_homrgt != NCL_double ||
-     type_hetrgt != NCL_float && type_hetrgt != NCL_double) {
+  if((type_hetlft != NCL_float && type_hetlft != NCL_double) ||
+     (type_homlft != NCL_float && type_homlft != NCL_double) ||
+     (type_homrgt != NCL_float && type_homrgt != NCL_double) ||
+     (type_hetrgt != NCL_float && type_hetrgt != NCL_double)) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: The hetlft/homlft/hetrgt/homrgt arrays must be of type float or double");
     return(NhlFATAL);
   }
@@ -276,10 +283,28 @@ NhlErrorTypes svdcov_W( void )
 /*
  * Call the Fortran version of 'svdlap' with the full argument list.
  */
-  NGCALLF(dsvdlap,DSVDLAP)(dx,dy,&ntimes,&ntimes,&ncolx,&ncoly,nsvd,&iflag,
-                           &missing_dx.doubleval,&iprint,w,&lwk,svdpcv_tmp,
-                           homlft_tmp,homrgt_tmp,hetlft_tmp,hetrgt_tmp,
-                           ak_tmp,bk_tmp,&lab,&ier);
+  if((ntimes <= INT_MAX) &&
+     (ncolx <= INT_MAX) &&
+     (ncoly <= INT_MAX) &&
+     (lab <= INT_MAX) &&
+     (lwk <= INT_MAX))
+  {
+    int intimes = (int) ntimes;
+    int incolx = (int) ncolx;
+    int incoly = (int) ncoly;
+    int ilab = (int) lab;
+    int ilwk = (int) lwk;
+    NGCALLF(dsvdlap,DSVDLAP)(dx,dy,&intimes,&intimes,&incolx,&incoly,nsvd,&iflag,
+                             &missing_dx.doubleval,&iprint,w,&ilwk,svdpcv_tmp,
+                             homlft_tmp,homrgt_tmp,hetlft_tmp,hetrgt_tmp,
+                             ak_tmp,bk_tmp,&ilab,&ier);
+  }
+  else
+  {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+
   if (ier) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"svdcov: ier = %d\n", ier );
   }
@@ -499,41 +524,47 @@ NhlErrorTypes svdstd_W( void )
  */
   void *x, *y, *homlft, *hetlft, *homrgt, *hetrgt;
   double *dx, *dy, *homlft_tmp, *hetlft_tmp, *homrgt_tmp, *hetrgt_tmp;
-  int dsizes_x[2], has_missing_x;
-  int dsizes_y[2], has_missing_y;
-  int dsizes_homlft[2], dsizes_hetlft[2];
-  int dsizes_homrgt[2], dsizes_hetrgt[2];
+  ng_size_t dsizes_x[2];
+  int has_missing_x;
+  ng_size_t dsizes_y[2];
+  int has_missing_y;
+  ng_size_t dsizes_homlft[2];
+  ng_size_t dsizes_hetlft[2];
+  ng_size_t dsizes_homrgt[2];
+  ng_size_t dsizes_hetrgt[2];
   NclScalar missing_x, missing_y, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y;
   NclBasicDataTypes type_homlft, type_hetlft, type_homrgt, type_hetrgt;
-  int ntimes, ncolx, ncoly, lab, *nsvd;
+  ng_size_t ntimes, ncolx, ncoly, lab;
+  int *nsvd;
   int ier = 0, iflag=1, iprint=0;
 /*
  * Work array variables
  */
   double *w;
-  int lwk, nsvmx;
+  ng_size_t lwk, nsvmx;
 /*
  * Output array variables
  */
   double *svdpcv_tmp, *ak_tmp, *bk_tmp;
   void *svdpcv, *fnorm, *condn, *ak, *bk;
-  int *lapack_err, dsizes_svdpcv[1];
+  int *lapack_err;
+  ng_size_t dsizes_svdpcv[1];
   NclBasicDataTypes type_svdpcv;
   NclTypeClass type_svdpcv_class;
 /*
  * Attribute variables
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
  * various
  */
-  int i, j, ipt7;
-  int total_size_x, total_size_y, total_size_lft, total_size_rgt;
+  ng_size_t ipt7;
+  ng_size_t total_size_x, total_size_y, total_size_lft, total_size_rgt;
 /*
  * Retrieve input parameters.
  */
@@ -644,10 +675,10 @@ NhlErrorTypes svdstd_W( void )
  * The hom/het arrays must be float or double. It doesn't matter what
  * the input types are.
  */
-  if(type_hetlft != NCL_float && type_hetlft != NCL_double ||
-     type_homlft != NCL_float && type_homlft != NCL_double ||
-     type_homrgt != NCL_float && type_homrgt != NCL_double ||
-     type_hetrgt != NCL_float && type_hetrgt != NCL_double) {
+  if((type_hetlft != NCL_float && type_hetlft != NCL_double) ||
+     (type_homlft != NCL_float && type_homlft != NCL_double) ||
+     (type_homrgt != NCL_float && type_homrgt != NCL_double) ||
+     (type_hetrgt != NCL_float && type_hetrgt != NCL_double)) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: The hetlft/homlft/hetrgt/homrgt arrays must be of type float or double");
     return(NhlFATAL);
   }
@@ -746,10 +777,28 @@ NhlErrorTypes svdstd_W( void )
 /*
  * Call the Fortran version of 'svdlap' with the full argument list.
  */
-  NGCALLF(dsvdlap,DSVDLAP)(dx,dy,&ntimes,&ntimes,&ncolx,&ncoly,nsvd,&iflag,
-                           &missing_dx.doubleval,&iprint,w,&lwk,svdpcv_tmp,
-                           homlft_tmp,homrgt_tmp,hetlft_tmp,hetrgt_tmp,
-                           ak_tmp,bk_tmp,&lab,&ier);
+  if((ntimes <= INT_MAX) &&
+     (ncolx <= INT_MAX) &&
+     (ncoly <= INT_MAX) &&
+     (lab <= INT_MAX) &&
+     (lwk <= INT_MAX))
+  {
+    int intimes = (int) ntimes;
+    int incolx = (int) ncolx;
+    int incoly = (int) ncoly;
+    int ilab = (int) lab;
+    int ilwk = (int) lwk;
+    NGCALLF(dsvdlap,DSVDLAP)(dx,dy,&intimes,&intimes,&incolx,&incoly,nsvd,&iflag,
+                             &missing_dx.doubleval,&iprint,w,&ilwk,svdpcv_tmp,
+                             homlft_tmp,homrgt_tmp,hetlft_tmp,hetrgt_tmp,
+                             ak_tmp,bk_tmp,&ilab,&ier);
+  }
+  else
+  {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+
   if (ier) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"svdstd: ier = %d\n", ier );
   }
@@ -968,39 +1017,42 @@ NhlErrorTypes svdcov_sv_W( void )
  */
   void *x, *y, *svlft, *svrgt;
   double *dx, *dy, *svlft_tmp, *svrgt_tmp;
-  int dsizes_x[2], has_missing_x;
-  int dsizes_y[2], has_missing_y;
-  int dsizes_svlft[2], dsizes_svrgt[2];
+  ng_size_t dsizes_x[2];
+  int has_missing_x;
+  ng_size_t dsizes_y[2];
+  int has_missing_y;
+  ng_size_t dsizes_svlft[2];
+  ng_size_t dsizes_svrgt[2];
   NclScalar missing_x, missing_y, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y, type_svlft, type_svrgt;
-  int ntimes, ncolx, ncoly;
+  ng_size_t ntimes, ncolx, ncoly;
   int *nsvd;
   int ier = 0, iflag=0, iprint=0;
 /*
  * Work array variables
  */
   double *w, *crv, *u, *vt;
-  int lwork, nsvmx;
+  ng_size_t lwork, nsvmx;
 /*
  * Output array variables
  */
   double *svdpcv_tmp, *sv_tmp;
   void *svdpcv, *sv;
-  int dsizes_svdpcv[1];
+  ng_size_t dsizes_svdpcv[1];
   NclBasicDataTypes type_svdpcv;
   NclTypeClass type_svdpcv_class;
 /*
  * Attribute variables
  */
-  int att_id, dsizes[1];
+  int att_id;
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
  * Various
  */
-  int i, j, k, l;
-  int total_size_x, total_size_y, total_size_svrgt, total_size_svlft;
+  ng_size_t total_size_x, total_size_y, total_size_svrgt, total_size_svlft;
 /*
  * Retrieve input parameters.
  */
@@ -1109,8 +1161,8 @@ NhlErrorTypes svdcov_sv_W( void )
  * svlft and svrgt must be float or double. It doesn't matter what the input
  * types are.
  */
-  if(type_svlft != NCL_float && type_svlft != NCL_double ||
-     type_svrgt != NCL_float && type_svrgt != NCL_double) {
+  if((type_svlft != NCL_float && type_svlft != NCL_double) ||
+     (type_svrgt != NCL_float && type_svrgt != NCL_double)) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: svLeft/svRight must be of type float or double");
     return(NhlFATAL);
   }
@@ -1170,9 +1222,26 @@ NhlErrorTypes svdcov_sv_W( void )
 /*
  * Call the Fortran version of 'svdlap' with the full argument list.
  */
-  NGCALLF(dsvdsv,DSVDSV)(dx,dy,&ntimes,&ntimes,&ncolx,&ncoly,nsvd,&iflag,
-                         &missing_dx.doubleval,&iprint,svlft_tmp,svrgt_tmp,
-                         svdpcv_tmp,crv,u,vt,sv_tmp,&nsvmx,w,&lwork,&ier);
+  if((ntimes <= INT_MAX) &&
+     (ncolx <= INT_MAX) &&
+     (ncoly <= INT_MAX) &&
+     (nsvmx <= INT_MAX) &&
+     (lwork <= INT_MAX))
+  {
+    int intimes = (int) ntimes;
+    int incolx = (int) ncolx;
+    int incoly = (int) ncoly;
+    int insvmx = (int) nsvmx;
+    int ilwork = (int) lwork;
+    NGCALLF(dsvdsv,DSVDSV)(dx,dy,&intimes,&intimes,&incolx,&incoly,nsvd,&iflag,
+                           &missing_dx.doubleval,&iprint,svlft_tmp,svrgt_tmp,
+                           svdpcv_tmp,crv,u,vt,sv_tmp,&insvmx,w,&ilwork,&ier);
+  }
+  else
+  {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
 /*
  * Free memory.
  */
@@ -1281,39 +1350,42 @@ NhlErrorTypes svdstd_sv_W( void )
  */
   void *x, *y, *svlft, *svrgt;
   double *dx, *dy, *svlft_tmp, *svrgt_tmp;
-  int dsizes_x[2], has_missing_x;
-  int dsizes_y[2], has_missing_y;
-  int dsizes_svlft[2], dsizes_svrgt[2];
+  ng_size_t dsizes_x[2];
+  int has_missing_x;
+  ng_size_t dsizes_y[2];
+  int has_missing_y;
+  ng_size_t dsizes_svlft[2];
+  ng_size_t dsizes_svrgt[2];
   NclScalar missing_x, missing_y, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y, type_svlft, type_svrgt;
-  int ntimes, ncolx, ncoly;
+  ng_size_t ntimes, ncolx, ncoly;
   int *nsvd;
   int ier = 0, iflag=1, iprint=0;
 /*
  * Work array variables
  */
   double *w, *crv, *u, *vt;
-  int lwork, nsvmx;
+  ng_size_t lwork, nsvmx;
 /*
  * Output array variables
  */
   double *svdpcv_tmp, *sv_tmp;
   void *svdpcv, *sv;
-  int dsizes_svdpcv[1];
+  ng_size_t dsizes_svdpcv[1];
   NclBasicDataTypes type_svdpcv;
   NclTypeClass type_svdpcv_class;
 /*
  * Attribute variables
  */
-  int att_id, dsizes[1];
+  int att_id;
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
  * Various
  */
-  int i, j, k, l;
-  int total_size_x, total_size_y, total_size_svrgt, total_size_svlft;
+  ng_size_t total_size_x, total_size_y, total_size_svrgt, total_size_svlft;
 /*
  * Retrieve input parameters.
  */
@@ -1422,8 +1494,8 @@ NhlErrorTypes svdstd_sv_W( void )
  * svlft and svrgt must be float or double. It doesn't matter what the input
  * types are.
  */
-  if(type_svlft != NCL_float && type_svlft != NCL_double ||
-     type_svrgt != NCL_float && type_svrgt != NCL_double) {
+  if(((type_svlft != NCL_float) && (type_svlft != NCL_double)) ||
+     ((type_svrgt != NCL_float) && (type_svrgt != NCL_double))) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: svLeft/svRight must be of type float or double");
     return(NhlFATAL);
   }
@@ -1484,9 +1556,27 @@ NhlErrorTypes svdstd_sv_W( void )
 /*
  * Call the Fortran version of 'svdlap' with the full argument list.
  */
-  NGCALLF(dsvdsv,DSVDSV)(dx,dy,&ntimes,&ntimes,&ncolx,&ncoly,nsvd,&iflag,
-                         &missing_dx.doubleval,&iprint,svlft_tmp,svrgt_tmp,
-                         svdpcv_tmp,crv,u,vt,sv_tmp,&nsvmx,w,&lwork,&ier);
+
+  if((ntimes <= INT_MAX) &&
+     (ncolx <= INT_MAX) &&
+     (ncoly <= INT_MAX) &&
+     (nsvmx <= INT_MAX) &&
+     (lwork <= INT_MAX))
+  {
+    int intimes = (int) ntimes;
+    int incolx = (int) ncolx;
+    int incoly = (int) ncoly;
+    int insvmx = (int) nsvmx;
+    int ilwork = (int) lwork;
+    NGCALLF(dsvdsv,DSVDSV)(dx,dy,&intimes,&intimes,&incolx,&incoly,nsvd,&iflag,
+                           &missing_dx.doubleval,&iprint,svlft_tmp,svrgt_tmp,
+                           svdpcv_tmp,crv,u,vt,sv_tmp,&insvmx,w,&ilwork,&ier);
+  }
+  else
+  {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
 /*
  * Free memory.
  */
@@ -1594,10 +1684,12 @@ NhlErrorTypes svd_lapack_W( void )
  */
   void *a, *u, *v;
   string *jobu, *jobv;
-  char *c_jobu, *c_jobv;
   int *optv;
   double *tmp_a, *tmp_u, *tmp_vt;
-  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS], dsizes_u[2], dsizes_v[2];
+  int ndims_a;
+  ng_size_t dsizes_a[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_u[2];
+  ng_size_t dsizes_v[2];
   int has_missing_a;
   NclScalar missing_a, missing_da;
   NclBasicDataTypes type_a, type_u, type_v;
@@ -1605,27 +1697,29 @@ NhlErrorTypes svd_lapack_W( void )
  * Work array variables
  */
   double *work;
-  int lwk;
+  ng_size_t lwk;
 /*
  * Output array variables
  */
   double *tmp_sgesvd;
   void *sgesvd;
-  int *info, dsizes_sgesvd[1];
+  int *info;
+  ng_size_t dsizes_sgesvd[1];
   NclBasicDataTypes type_sgesvd;
   NclTypeClass type_sgesvd_class;
 /*
  * Attribute variables
  */
-  int att_id, dsizes[1];
+  int att_id;
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
  * various
  */
-  int i, j, k1, k2, nrow, ncol, minrc, size_a, size_u, size_v;
-  int ldu, ucol, ldvt;
+  ng_size_t i, j, k1, k2, nrow, ncol, minrc, size_a, size_u, size_v;
+  ng_size_t ldu, ucol, ldvt;
   int found_missing_a;
 /*
  * Retrieve input parameters.
@@ -1732,8 +1826,8 @@ NhlErrorTypes svd_lapack_W( void )
  * The hom/het arrays must be float or double. It doesn't matter what
  * the input types are.
  */
-  if(type_u != NCL_float && type_u != NCL_double ||
-     type_v != NCL_float && type_v != NCL_double) {
+  if(((type_u != NCL_float) && (type_u != NCL_double)) ||
+     ((type_v != NCL_float) && (type_v != NCL_double))) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: The u, v arrays must be of type float or double");
     return(NhlFATAL);
   }
@@ -1818,9 +1912,27 @@ NhlErrorTypes svd_lapack_W( void )
 /*
  * Call the Fortran version of 'svdlap' with the full argument list.
  */
-  NGCALLF(dgesvd,DGESVD)("S", "S", &nrow, &ncol, tmp_a, &nrow, 
-                         tmp_sgesvd, tmp_u, &ldu, tmp_vt, &ldvt, 
-                         work, &lwk, info);
+
+  if((nrow <= INT_MAX) &&
+     (ncol <= INT_MAX) &&
+     (ldu <= INT_MAX) &&
+     (ldvt <= INT_MAX) &&
+     (lwk <= INT_MAX))
+  {
+    int inrow = (int) nrow;
+    int incol = (int) ncol;
+    int ildu = (int) ldu;
+    int ildvt = (int) ldvt;
+    int ilwk = (int) lwk;
+    NGCALLF(dgesvd,DGESVD)("S", "S", &inrow, &incol, tmp_a, &inrow, 
+                           tmp_sgesvd, tmp_u, &ildu, tmp_vt, &ildvt, 
+                           work, &ilwk, info);
+  }
+  else
+  {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
 
 /*
  * Coerce output back to float if necessary.
@@ -1950,7 +2062,7 @@ NhlErrorTypes svdpar_W( void )
  */
   void *x;
   double *dx;
-  int dsizes_x[2];
+  ng_size_t dsizes_x[2];
   NclBasicDataTypes type_x;
   string *label;
   char *label2;
@@ -1987,8 +2099,19 @@ NhlErrorTypes svdpar_W( void )
 /*
  * Call the Fortran version of 'dsvdpar' with the full argument list.
  */
-  NGCALLF(dsvdpar,DSVDPAR)(dx,&dsizes_x[1],&dsizes_x[1],&dsizes_x[0],
-                           label2,strlen(label2));
+
+  if((dsizes_x[0] <= INT_MAX) && (dsizes_x[1] <= INT_MAX))
+  {
+    int x0 = (int) dsizes_x[0];
+    int x1 = (int) dsizes_x[1];
+    NGCALLF(dsvdpar,DSVDPAR)(dx,&x1,&x1,&x0,
+                             label2,strlen(label2));
+  }
+  else
+  {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdpar: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
 /*
  * Free up memory and return.
  */

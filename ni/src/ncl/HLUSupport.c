@@ -194,6 +194,8 @@ int level;
 		/*printf("%d  hlu id %d  ncl id added: %s %s\n", id, ncl_id,NhlClassName(id),NhlName(id));*/
 		return(NhlNOERROR);
 	}
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"internal error"));
+	return(NhlFATAL);
 }
 NclHLUObj _NclLookUpHLU 
 #if NhlNeedProto
@@ -322,7 +324,7 @@ NhlErrorTypes _NclRemoveAllRefs
 	int ncl_id;
 #endif 
 {
-	int i,j = -1,k;
+	int i;
 	int index;
 	NclHLULookUpTable *tmp = NULL,*prev = NULL;
 	NclHLUObj tmp_obj;

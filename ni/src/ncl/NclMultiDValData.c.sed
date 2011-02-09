@@ -35,6 +35,7 @@
 #include "TypeSupport.h"
 #include "DataSupport.h"
 #include <math.h>
+#include <stdlib.h>
 #include "NclTypestring.h"
 #include "NclTypechar.h"
 
@@ -58,23 +59,23 @@ static struct _NclDataRec *MultiDValReadSection
 	NclData output_md;
 	NclSelection *sel_ptr;
 	void *val;
-	int i,k,from,to;
+	ng_size_t i,k,from,to;
 
-	long current_index[NCL_MAX_DIMENSIONS];
-	long multiplier[NCL_MAX_DIMENSIONS];
-	long compare_sel[NCL_MAX_DIMENSIONS];
-	long strider[NCL_MAX_DIMENSIONS];
-	long keeper[NCL_MAX_DIMENSIONS];
-	int output_dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t current_index[NCL_MAX_DIMENSIONS];
+	ng_size_t multiplier[NCL_MAX_DIMENSIONS];
+	ng_size_t compare_sel[NCL_MAX_DIMENSIONS];
+	ng_size_t strider[NCL_MAX_DIMENSIONS];
+	ng_size_t keeper[NCL_MAX_DIMENSIONS];
+	ng_size_t output_dim_sizes[NCL_MAX_DIMENSIONS];
 
-	int total_elements = 1;
+	ng_size_t total_elements = 1;
 	int n_dims_input = self_md->multidval.n_dims;
-	int n_elem=0;
+	ng_size_t n_elem=0;
 	int done = 0;
 	int inc_done = 0;
-	int el_size = 0;
-	int rem_count;
-	int cpy_count = 1;
+	ng_size_t el_size = 0;
+	ng_size_t rem_count;
+	ng_size_t cpy_count = 1;
 	int last = 0;
 
 /*
@@ -129,10 +130,8 @@ static struct _NclDataRec *MultiDValReadSection
 					sel_ptr->u.sub.stride = 1;
 				}
 
-				n_elem = abs((int)(((double)
-					(sel_ptr->u.sub.start 
-					- sel_ptr->u.sub.finish))
-					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1);
+				n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 
 /*
 * Need to be able to determine which type of comparision < or > is needed to
@@ -158,10 +157,8 @@ static struct _NclDataRec *MultiDValReadSection
 
 				}
 
-				n_elem = abs((int)(((double)
-					(sel_ptr->u.sub.finish 
-					- sel_ptr->u.sub.start))
-					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1);
+				n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 				
 				if(sel_ptr->u.sub.stride < 0){
 					compare_sel[i] = -1;
@@ -418,28 +415,28 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 */
 	NclSelection *sel_ptr = NULL;
 	void *val;
-	int i,k;
-	long from,to;
+	ng_size_t i,k;
+	ng_size_t from,to;
 
-	long current_index[NCL_MAX_DIMENSIONS];
-	long multiplier[NCL_MAX_DIMENSIONS];
-	long compare_sel[NCL_MAX_DIMENSIONS];
-	long strider[NCL_MAX_DIMENSIONS];
-	int output_dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t current_index[NCL_MAX_DIMENSIONS];
+	ng_size_t multiplier[NCL_MAX_DIMENSIONS];
+	ng_size_t compare_sel[NCL_MAX_DIMENSIONS];
+	ng_size_t strider[NCL_MAX_DIMENSIONS];
+	ng_size_t output_dim_sizes[NCL_MAX_DIMENSIONS];
 
-	int dim_sizes_value [NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes_value [NCL_MAX_DIMENSIONS];
 	int n_dims_value = 0;
 	int n_dims_sel = 0;
-	int total_elements = 1;
+	ng_size_t total_elements = 1;
 	int n_dims_target = target_md->multidval.n_dims;
-	int n_elem=0;
+	ng_size_t n_elem=0;
 	int done = 0;
 	int inc_done = 0;
 	int chckmiss = 0;
 	logical tmpe;
-	int el_size;
-	int rem_count;
-	int cpy_count = 1;
+	ng_size_t el_size;
+	ng_size_t rem_count;
+	ng_size_t cpy_count = 1;
 	int last = 0;
 
 /*
@@ -513,10 +510,8 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 
 				}
 
-				n_elem = abs((int)(((double)
-					(sel_ptr->u.sub.start 
-					- sel_ptr->u.sub.finish))
-					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1);
+				n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 				
 
 				 if(sel_ptr->u.sub.stride < 0){
@@ -545,10 +540,8 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 
 				}
 
-				n_elem = abs((int)(((double)
-					(sel_ptr->u.sub.finish 
-					- sel_ptr->u.sub.start))
-					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1);
+				n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 
 				if(sel_ptr->u.sub.stride < 0){
                                         compare_sel[i] = -1;
@@ -776,24 +769,24 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 */
 	NclSelection *sel_ptr = NULL;
 	void *val;
-	int i,k,to;
+	ng_size_t i,k,to;
 
-	int current_index[NCL_MAX_DIMENSIONS];
-	int multiplier[NCL_MAX_DIMENSIONS];
-	int compare_sel[NCL_MAX_DIMENSIONS];
-	int strider[NCL_MAX_DIMENSIONS];
-	int output_dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t current_index[NCL_MAX_DIMENSIONS];
+	ng_size_t multiplier[NCL_MAX_DIMENSIONS];
+	ng_size_t compare_sel[NCL_MAX_DIMENSIONS];
+	ng_size_t strider[NCL_MAX_DIMENSIONS];
+	ng_size_t output_dim_sizes[NCL_MAX_DIMENSIONS];
 
-	int total_elements = 1;
+	ng_size_t total_elements = 1;
 	int n_dims_target = target_md->multidval.n_dims;
-	int n_elem=0;
+	long long n_elem=0;
 	int done = 0;
 	int inc_done = 0;
 	int chckmiss = 0;
-	int el_size;
+	ng_size_t el_size;
 	logical tmpe;
-	int rem_count;
-	int cpy_count = 1;
+	ng_size_t rem_count;
+	ng_size_t cpy_count = 1;
 	int last = 0;
 	int first = 1;
 	char *savep;
@@ -865,10 +858,8 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 					sel_ptr->u.sub.stride = 1;
 				}
 
-				n_elem = abs((int)(((double)
-					(sel_ptr->u.sub.start 
-					- sel_ptr->u.sub.finish))
-					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1);
+				n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 
 /*
 * Need to be able to determine which type of comparision < or > is needed to
@@ -892,10 +883,8 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 					sel_ptr->u.sub.stride = 1;
 				}
 
-				n_elem = abs((int)(((double)
-					(sel_ptr->u.sub.finish 
-					- sel_ptr->u.sub.start))
-					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1);
+				n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 
 				if(sel_ptr->u.sub.stride < 0){
                                         compare_sel[i] = -1;
@@ -1136,27 +1125,27 @@ NclSelectionRecord *from_selection;
 * mapping from the value object into target. 
 */
 
-	int i,j,k;
-	long from,to;
+	ng_size_t i,j,k;
+	ng_size_t from,to;
 	NclSelection *to_sel_ptr = NULL;
 	void *to_val;
 	NclSelection *from_sel_ptr = NULL;
 	void *from_val;
 
-	long to_current_index[NCL_MAX_DIMENSIONS];
-	long to_multiplier[NCL_MAX_DIMENSIONS];
-	long to_compare_sel[NCL_MAX_DIMENSIONS];
-	long to_strider[NCL_MAX_DIMENSIONS];
-	int to_output_dim_sizes[NCL_MAX_DIMENSIONS];
-	long from_current_index[NCL_MAX_DIMENSIONS];
-	long from_multiplier[NCL_MAX_DIMENSIONS];
-	long from_compare_sel[NCL_MAX_DIMENSIONS];
-	long from_strider[NCL_MAX_DIMENSIONS];
-	int from_output_dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t to_current_index[NCL_MAX_DIMENSIONS];
+	ng_size_t to_multiplier[NCL_MAX_DIMENSIONS];
+	ng_size_t to_compare_sel[NCL_MAX_DIMENSIONS];
+	ng_size_t to_strider[NCL_MAX_DIMENSIONS];
+	ng_size_t to_output_dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t from_current_index[NCL_MAX_DIMENSIONS];
+	ng_size_t from_multiplier[NCL_MAX_DIMENSIONS];
+	ng_size_t from_compare_sel[NCL_MAX_DIMENSIONS];
+	ng_size_t from_strider[NCL_MAX_DIMENSIONS];
+	ng_size_t from_output_dim_sizes[NCL_MAX_DIMENSIONS];
 
 	int n_dims_value = 0;
-	int total_elements_value = 1;
-	int total_elements_target = 1;
+	ng_size_t total_elements_value = 1;
+	ng_size_t total_elements_target = 1;
 	int n_dims_target = 0;
 	int n_elem_target=0;
 	int n_elem_value=0;
@@ -1164,13 +1153,13 @@ NclSelectionRecord *from_selection;
 	int done = 0;
 	int inc_done = 0;
 	int chckmiss = 0;
-	int el_size;
+	ng_size_t el_size;
 	logical tmpe =0 ;
-	int to_rem_count,from_rem_count;
-	int from_cpy_count = 1,cpy_count = 1;
+	ng_size_t to_rem_count,from_rem_count;
+	ng_size_t from_cpy_count = 1,cpy_count = 1;
 	int last = 0;
-	int from_dim_count, to_dim_count;
-	int from_left_dim, to_left_dim, jstart;
+	ng_size_t from_dim_count, to_dim_count;
+	ng_size_t from_left_dim, to_left_dim, jstart;
 	int scalar;
 	
 	for(i = 0; i < NCL_MAX_DIMENSIONS; i++) {
@@ -1251,10 +1240,8 @@ NclSelectionRecord *from_selection;
 					to_sel_ptr->u.sub.stride = 1;
 				}
 
-				n_elem_target = abs((int)(((double)
-					(to_sel_ptr->u.sub.start 
-					- to_sel_ptr->u.sub.finish))
-					/(double)fabs(((double)to_sel_ptr->u.sub.stride))) + 1);
+				n_elem_target = (ng_size_t) labs((to_sel_ptr->u.sub.start - to_sel_ptr->u.sub.finish)
+					 	          / to_sel_ptr->u.sub.stride) + 1L;
 
 /*
 * Need to be able to determine which type of comparision < or > is needed to
@@ -1281,10 +1268,8 @@ NclSelectionRecord *from_selection;
 
 				}
 
-				n_elem_target = abs((int)(((double)
-					(to_sel_ptr->u.sub.finish 
-					- to_sel_ptr->u.sub.start))
-					/(double)fabs(((double)to_sel_ptr->u.sub.stride))) + 1);
+				n_elem_target = (ng_size_t) labs((to_sel_ptr->u.sub.start - to_sel_ptr->u.sub.finish)
+					 	          / to_sel_ptr->u.sub.stride) + 1L;
 
 				if(to_sel_ptr->u.sub.stride < 0){
                                         to_compare_sel[i] = -1;
@@ -1372,10 +1357,8 @@ NclSelectionRecord *from_selection;
 
 				}
 
-				n_elem_value = abs((int)(((double)
-					(from_sel_ptr->u.sub.start 
-					- from_sel_ptr->u.sub.finish))
-					/(double)fabs(((double)from_sel_ptr->u.sub.stride))) + 1);
+				n_elem_value = (ng_size_t) labs((from_sel_ptr->u.sub.start - from_sel_ptr->u.sub.finish)
+					 	          / from_sel_ptr->u.sub.stride) + 1L;
 
 /*
 * Need from be able from determine which type of comparision < or > is needed from
@@ -1401,10 +1384,8 @@ NclSelectionRecord *from_selection;
 					from_sel_ptr->u.sub.stride = 1;
 				}
 
-				n_elem_value = abs((int)(((double)
-					(from_sel_ptr->u.sub.finish 
-					- from_sel_ptr->u.sub.start))
-					/(double)fabs(((double)from_sel_ptr->u.sub.stride))) + 1);
+				n_elem_value = (ng_size_t) labs((from_sel_ptr->u.sub.start - from_sel_ptr->u.sub.finish)
+					 	          / from_sel_ptr->u.sub.stride) + 1L;
 				
 				if(from_sel_ptr->u.sub.stride < 0){
                                         from_compare_sel[i] = -1;
@@ -1791,11 +1772,17 @@ NclObj parent;
 {
 	NclRefList *tmp,*tmp1;
 	int found = 0;
-	NclObj pobj;
 
 	if(theobj->obj.parents == NULL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"MultiDValDelParent: Attempt to delete parent from empty list");
-		return(NhlFATAL);
+		if(0 == strcmp("MultiDVallistData", parent->obj.class_ptr->obj_class.class_name))
+		{
+			return(NhlNOERROR);
+		}
+		else
+		{
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"MultiDValDelParent: Attempt to delete parent from empty list");
+			return(NhlFATAL);
+		}
 	} 
 
 	tmp = theobj->obj.parents;	
@@ -1843,7 +1830,7 @@ NclScalar *new_missing;
 	NclMultiDValData self_md = (NclMultiDValData)self;
 	NclMultiDValData output_md = NULL;
 
-	new_val = (void*)NclMalloc((unsigned int)self_md->multidval.totalsize);
+	new_val = (void*)NclMalloc(self_md->multidval.totalsize);
 	memcpy(new_val,self_md->multidval.val,self_md->multidval.totalsize);
 
 	output_md = _NclCreateVal(
@@ -2043,8 +2030,9 @@ NclScalar *new_missing;
 	void *result_val = NULL;
 	int limit = 1,from = 0;
 	int n_dims = 0;
-	int step = 0,i;
-	int dimsizes[NCL_MAX_DIMENSIONS];
+	int step = 0;
+	ng_size_t i;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclScalar tmp_missing;
 
 	if((self_md != NULL)&&(self_md->multidval.type != NULL)) {
@@ -2091,7 +2079,7 @@ NclScalar *new_missing;
 							result_val,
 							new_missing,
 							n_dims,
-							(int*)dimsizes,
+							(ng_size_t*)dimsizes,
 							TEMPORARY,
 							NULL,
 							(NclObjClass)to_type
@@ -2203,11 +2191,13 @@ FILE *fp;
 #endif
 {
     NclMultiDValData self_md = (NclMultiDValData)self;
-    int i[NCL_MAX_DIMENSIONS];
-    int j[NCL_MAX_DIMENSIONS];
-    int k,where,done = 0;
-    int ndims = self_md->multidval.n_dims;
-    int el_size;
+    ng_size_t i[NCL_MAX_DIMENSIONS];
+    ng_size_t j[NCL_MAX_DIMENSIONS];
+    ng_size_t where;
+    int done = 0;
+    ng_size_t k;
+    ng_size_t ndims = self_md->multidval.n_dims;
+    ng_size_t el_size;
     int ret = 0;
     NhlErrorTypes ret0 = NhlNOERROR;
 
@@ -2233,13 +2223,13 @@ FILE *fp;
                 return(NhlWARNING);
             }
             for(k = 0; k < ndims - 1; k++) {
-                ret = nclfprintf(fp,"%d,",i[k]);
+                ret = nclfprintf(fp,"%zd,",i[k]);
                 if(ret < 0) {
                     return(NhlWARNING);
                 }
                 where = (where + i[k]) * j[k+1];
             }
-            ret = nclfprintf(fp,"%d)\t",i[ndims-1]);
+            ret = nclfprintf(fp,"%zd)\t",i[ndims-1]);
             if(ret < 0) {
                 return(NhlWARNING);
             }
@@ -2285,7 +2275,7 @@ static void MultiDValDestroy
         NclMultiDValData self_md = (NclMultiDValData)self;
 	NhlArgVal selector;
 	NhlArgVal cbdata;
-	int i;
+	ng_size_t i;
 
 	cbdata.intval = self->obj.id;
 	selector.lngval = DESTROYED;
@@ -2495,7 +2485,7 @@ static NhlErrorTypes MultiDValClassInitialize
 
 struct _NclMultiDValDataRec * _NclCreateMultiDVal
 #if     NhlNeedProto
-(NclObj inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, void *val, NclScalar *missing_value, int n_dims, int *dim_sizes, NclStatus status, NclSelectionRecord *sel_rec, NclTypeClass type)
+(NclObj inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, void *val, NclScalar *missing_value, int n_dims, ng_size_t *dim_sizes, NclStatus status, NclSelectionRecord *sel_rec, NclTypeClass type)
 #else
 (inst, theclass, obj_type, obj_type_mask, val, missing_value, n_dims, dim_sizes, status, sel_rec, type)
 NclObj inst;
@@ -2505,7 +2495,7 @@ unsigned int obj_type_mask;
 void *val;
 NclScalar *missing_value;
 int n_dims;
-int *dim_sizes;
+ng_size_t *dim_sizes;
 NclStatus status;
 NclSelectionRecord *sel_rec;
 NclTypeClass type;
@@ -2514,9 +2504,9 @@ NclTypeClass type;
 
 	NclMultiDValData thevalobj;
 	NclObjClass class_ptr= nclMultiDValDataClass;
-	int i;
+	ng_size_t i;
 	NhlErrorTypes ret1= NhlNOERROR;
-	int nelem;
+	ng_size_t nelem;
 
 	ret1 = _NclInitClass(nclMultiDValDataClass);
 	if(ret1 < NhlWARNING) {

@@ -1,6 +1,5 @@
-
 /*
- *      $Id: SrcTree.c,v 1.47 2010-04-14 21:29:48 huangwei Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -1198,7 +1197,7 @@ void * _NclMakeDimSizeNode
 	} else {
 		tmp->any = 0;
 	}
-	tmp->size = (int)size;
+	tmp->size = (ng_size_t)size;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
@@ -1249,10 +1248,6 @@ NclScopeRec *thescope;
 #endif
 {
 	NclProcDef *tmp = (NclProcDef*)NclMalloc((unsigned)sizeof(NclProcDef));
-        NclSrcListNode *step, *step1;
-        NclLocalVarDec *var_dec;
-        NclDimSizeListNode *dim_size;
-        int i=0,j=0;
 
 	if(tmp == NULL) {
 		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
@@ -1853,7 +1848,7 @@ char* string_rep;
 	tmp->len = -1;
 	tmp->int_type = 'i';
 	if (string_rep != NULL) { 
-		char *type = strpbrk(string_rep,"bBcChHiIlLqQ");
+		char *type = strpbrk(string_rep,"bBChHiIlLqQ");
 		if (type) {
 			tmp->int_type = *type;
 			tmp->len = strlen(string_rep) - 1;
@@ -2737,7 +2732,7 @@ if(groot != NULL) {
 				fprintf(fp,"ANYSIZE\n");
 			} else {
 				putspace(i,fp);
-				fprintf(fp,"%d\n",dimsizelistnode->size);
+				fprintf(fp,"%ld\n",(long)dimsizelistnode->size);
 			}
 			i--;
 		}
@@ -2944,7 +2939,7 @@ if(groot != NULL) {
 			fprintf(fp,"%s\n",integer->name);
 			putspace(i+1,fp);
 			fprintf(fp,"%s\t",ref_node_names[integer->ref_type]);
-			fprintf(fp,"%d\n",integer->integer);
+			fprintf(fp,"%lld\n",integer->integer);
 		}
 			break;
 		case Ncl_STRING:

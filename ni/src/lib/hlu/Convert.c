@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.20 1999-05-22 00:43:10 dbrown Exp $
+ *      $Id: Convert.c,v 1.20.4.1 2008-03-28 20:37:34 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -896,12 +896,11 @@ _NhlRegSymConvQ
 {
 	char			*fname = "_NhlRegSymConv";
 	NhlConvertArg		cvtargs[2] = {
-				{NhlIMMEDIATE,sizeof(NrmQuark),(NhlPointer)0},
-				{NhlIMMEDIATE,sizeof(NrmQuark),(NhlPointer)0}
+		{NhlIMMEDIATE,sizeof(NrmQuark),{(NhlPointer)0}},
+		{NhlIMMEDIATE,sizeof(NrmQuark),{(NhlPointer)0}}
 					};
 	NhlConvertPtr		cvtrec = NULL;
 	NhlConvertPtr		tmp = NULL;
-	NhlConvertPtr		*HashTable = NULL;
 
 	if(!ref_class)
 		ref_class = NhlbaseClass;
@@ -1551,8 +1550,6 @@ RecurseGetCvtPtr
 #endif
 {
 	NhlConvertPtr	ptr;
-	_NhlTsubptr	sub;
-	int		i;
 	
 	/*
 	 * Terminate Recursion down this branch.
@@ -1683,7 +1680,7 @@ _NhlConverterExists
 
 	return ConverterExists(ref_class,from,to);
 }
-
+#if 0
 /*
  * Function:	RetrieveCache
  *
@@ -1726,6 +1723,7 @@ RetrieveCache
 
 	return(NULL);
 }
+
 
 /*
  * Function:	SetConvertVal
@@ -1840,6 +1838,7 @@ InsertInCache
 
 	return(NhlNOERROR);
 }
+#endif
 
 /*
  * Function:	ComputeArgs
@@ -1941,7 +1940,6 @@ ConvertData
 #endif 
 {
 	NhlConvertPtr		ptr = NULL;
-	CachePtr		cache=NULL;
 	_NhlCtxtStackRec	ctxt;
 	NhlErrorTypes		ret=NhlNOERROR;
 	NrmQuark		from,to;
@@ -2301,11 +2299,11 @@ NhlPointer
 NhlConvertMalloc
 #if	NhlNeedProto
 (
-	unsigned int	size	/* size of memory requested	*/
+	ng_usize_t	size	/* size of memory requested	*/
 )
 #else
 (size)
-	unsigned int	size;	/* size of memory requested	*/
+	ng_usize_t	size;	/* size of memory requested	*/
 #endif
 {
 	_NhlConvertContext	context;
@@ -2330,7 +2328,7 @@ _NhlConvertCreateGenArray
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	int		*len_dimensions	/* number of dimensions	*/
+	ng_size_t	*len_dimensions	/* length of dimensions	*/
 )
 #else
 (data,type,size,num_dimensions,len_dimensions)
@@ -2338,7 +2336,7 @@ _NhlConvertCreateGenArray
 	NhlString	type;		/* type of each element	*/
 	unsigned int	size;		/* size of each element	*/
 	int		num_dimensions;	/* number of dimensions	*/
-	int		*len_dimensions;/* number of dimensions	*/
+	ng_size_t	*len_dimensions;/* length of dimensions	*/
 #endif
 {
 	return _NhlAllocCreateGenArray(data,type,size,num_dimensions,

@@ -258,6 +258,7 @@ typedef	struct	GKSC_	{
 #define ERR_CRO_MEMORY	   -501	/* error in device dependent table mem  */
 #define ERR_CRO_OPN        -502	/* error opening output file            */
 #define ERR_CRO_BADARG     -503 /* NULL or invalid arguments            */
+#define ERR_CRO_RENAME     -504 /* error renaming output file           */
 
 extern	GKSC    *CreateGKSC(
 #ifdef	NeedFuncProto

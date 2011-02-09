@@ -13,20 +13,21 @@ NhlErrorTypes round_W( void )
  */
   void *x;
   double *tmp_x;
-  int has_missing_x, ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
-  int *iopt;
+  int has_missing_x, ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int *iopt, isx;
   NclScalar missing_x, missing_dx, missing_xout;
   NclBasicDataTypes type_x;
 /*
  * Output array variables
  */
-  void *xout;
+  void *xout = NULL;
   double *tmp_xout;
-  NclBasicDataTypes type_xout;
+  NclBasicDataTypes type_xout = NCL_none;
 /*
  * Declare various variables for random purposes.
  */
-  int i, size_x;
+  ng_size_t i, size_x;
 /*
  * Retrieve argument.
  */
@@ -68,6 +69,12 @@ NhlErrorTypes round_W( void )
  */
   size_x = 1;
   for( i = 0; i < ndims_x; i++ ) size_x *= dsizes_x[i];
+
+  if(size_x > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"round: size_x = %ld is greater than INT_MAX", size_x);
+    return(NhlFATAL);
+  }
+  isx = (int) size_x;
 
 /*
  * Coerce input and missing value to double if necessary.
@@ -111,6 +118,8 @@ NhlErrorTypes round_W( void )
     case  NCL_int:
       xout = (void*)calloc(size_x,sizeof(int));
       break;
+    default:
+      break;
     }
 /*
  * Allocate space for temporary output which must be double. If the output
@@ -129,8 +138,9 @@ NhlErrorTypes round_W( void )
 /*
  * Call the Fortran version of this routine.
  */
-    NGCALLF(rndncl,RNDNCL)(&size_x,tmp_x,&has_missing_x,
-                           &missing_dx.doubleval,tmp_xout,iopt);
+    NGCALLF(rndncl,RNDNCL)(&isx,tmp_x,&has_missing_x,
+			   &missing_dx.doubleval,tmp_xout,iopt);
+
 /*
  * Figure out if we need to coerce output back to float or int.
  */
@@ -152,6 +162,8 @@ NhlErrorTypes round_W( void )
       break;
     case  NCL_int:
       missing_xout.intval = (int)missing_dx.doubleval;
+      break;
+    default:
       break;
     }
 
@@ -177,7 +189,8 @@ NhlErrorTypes isnan_ieee_W( void )
  * Input array variables
  */
   void *x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x;
 /*
  * Output array variables
@@ -186,7 +199,7 @@ NhlErrorTypes isnan_ieee_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, size_x;
+  ng_size_t i, size_x;
 /*
  * Retrieve argument.
  */
@@ -246,7 +259,8 @@ NhlErrorTypes get_ncl_version_W(void)
 {
   char *version;
   string *sversion;
-  int len, ret_size = 1;
+  int len;
+  ng_size_t ret_size = 1;
 
 /*
  * There are no input arguments to retrieve.
@@ -257,6 +271,7 @@ NhlErrorTypes get_ncl_version_W(void)
   strcpy(version,GetNCLVersion());
   sversion  = (string *)calloc(1,sizeof(string));
   *sversion = NrmStringToQuark(version);
+  free(version);
   return(NclReturnValue((void *)sversion, 1, &ret_size, NULL, NCL_string, 0));
 }
 
@@ -266,15 +281,16 @@ NhlErrorTypes replace_ieeenan_W( void )
  * Input array variables
  */
   void *x, *value;
-  double *dvalue;
+  double *dvalue = NULL;
   int *iopt, has_missing_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_value;
   NclScalar missing_x;
 /*
  * Declare various variables for random purposes.
  */
-  int i, size_x;
+  ng_size_t i, size_x;
 /*
  * Retrieve argument.
  */
@@ -366,20 +382,23 @@ NhlErrorTypes generate_2d_array_W( void )
 /*
  * Input array variables
  */
-  int *dsizes_data, *mlow, *mhigh, *iseed;
+  void *tmp_dsizes_data;
+  ng_size_t *dsizes_data;
+  int *mlow, *mhigh, *iseed;
   void *dlow, *dhigh;
   double *tmp_dlow, *tmp_dhigh;
-  NclBasicDataTypes type_dlow, type_dhigh;
+  NclBasicDataTypes type_dlow, type_dhigh, type_dsizes_data;
 /*
  * Output variables.
  */
   void *data;
   double *tmp_data;
   NclBasicDataTypes type_data;
+  int ret, id0, id1;
 /*
  * Declare various variables for random purposes.
  */
-  int i, size_data;
+  ng_size_t size_data;
 /*
  * Retrieve arguments.
  *
@@ -445,23 +464,34 @@ NhlErrorTypes generate_2d_array_W( void )
 /*
  * Get size of output array.
  */
-  dsizes_data = (int*)NclGetArgValue(
+  tmp_dsizes_data = (void*)NclGetArgValue(
           5,
           6,
           NULL,
           NULL,
           NULL,
           NULL,
-          NULL,
+          &type_dsizes_data,
           DONT_CARE);
 
 /*
  * Error checking.
  */
+  dsizes_data = get_dimensions(tmp_dsizes_data,2,type_dsizes_data,"generate_2d_array");
+  if(dsizes_data == NULL) 
+    return(NhlFATAL);
+
   if(dsizes_data[0] <= 1 && dsizes_data[1] <= 1) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"generate_2d_array: the dimensions of the output array must be such that it has at least two elements");
     return(NhlFATAL);
   }
+  if((dsizes_data[0] > INT_MAX) ||
+     (dsizes_data[1] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"generate_2d_array: input dimensions are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  id0 = (int) dsizes_data[0];
+  id1 = (int) dsizes_data[1];
 
   if(*iseed < 0 || *iseed > 100) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"generate_2d_array: iseed must be between 0 and 100. Will reset to 0.");
@@ -528,9 +558,10 @@ NhlErrorTypes generate_2d_array_W( void )
 /*
  * Call the Fortran version of this routine.
  */
-  NGCALLF(dgendat,DGENDAT)(tmp_data,&dsizes_data[1],&dsizes_data[1],
-                           &dsizes_data[0],mlow,mhigh,tmp_dlow,tmp_dhigh,
-                           iseed);
+  NGCALLF(dgendat,DGENDAT)(tmp_data,&id1,&id1,
+			   &id0,mlow,mhigh,tmp_dlow,tmp_dhigh,
+			   iseed);
+
 /*
  * Figure out if we need to coerce output back to float.
  */
@@ -544,6 +575,8 @@ NhlErrorTypes generate_2d_array_W( void )
   if(type_dlow  != NCL_double) NclFree(tmp_dlow);
   if(type_dhigh != NCL_double) NclFree(tmp_dhigh);
 
-  return(NclReturnValue(data,2,dsizes_data,NULL,type_data,0));
+  ret = NclReturnValue(data,2,dsizes_data,NULL,type_data,0);
+  NclFree(dsizes_data);
+  return(ret);
 }
 

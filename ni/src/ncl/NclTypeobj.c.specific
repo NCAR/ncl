@@ -78,10 +78,11 @@ int nargs;
 	char func[] = "CvtNhlTObjIdGenArrayToNclData";
 	void *val;
 	NclMultiDValData tmp_md;
-	int i,id;
+	ng_size_t i;
+	int id;
 	NclHLUObj tmp_hlu;
 	NhlLayer tmp_layer;
-	int len_dimensions = 1;
+	ng_size_t len_dimensions = 1;
 	
 
 	if(nargs != 0) {
@@ -150,7 +151,8 @@ int nargs;
 {
 	void* tmp;
 	NclMultiDValData tmp_md;
-	int n_dims = 1,len_dims = 1;
+	int n_dims = 1;
+	ng_size_t len_dims = 1;
 	NhlLayer tmp_layer;
 	NclHLUObj tmp_hlu;
 	NclScalar missing;

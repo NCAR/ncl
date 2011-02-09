@@ -42,11 +42,11 @@ void
 *NclMalloc
 #if	NhlNeedProto
 (
-        unsigned int    size    /* size of memory requested     */
+        ng_usize_t    size    /* size of memory requested     */
 )
 #else
 (size)
-        unsigned int    size;   /* size of memory requested     */
+        ng_usize_t    size;   /* size of memory requested     */
 #endif
 {
         void *ptr;
@@ -100,8 +100,8 @@ NclFree
  *		for memory allocation in one place and so we can impliment
  *		our own memory management code if we need to.
  *
- * In Args:	unsigned int	num	number of elements
- *		unsigned int	size	size of each element
+ * In Args:	ng_usize_t	num	number of elements
+ *		ng_usize_t	size	size of each element
  *
  * Out Args:	
  *
@@ -113,13 +113,13 @@ void
 *NclCalloc
 #if	NhlNeedProto
 (
-	unsigned int	num,	/* number of elements		*/
-	unsigned int	size	/* size of each element		*/
+	ng_usize_t	num,	/* number of elements		*/
+	ng_usize_t	size	/* size of each element		*/
 )
 #else
 (num,size)
-	 unsigned int	num;	/* number of elements		*/
-	unsigned int	size;	/* size of each element		*/
+	ng_usize_t	num;	/* number of elements		*/
+	ng_usize_t	size;	/* size of each element		*/
 #endif
 {
 	void *ptr;
@@ -144,7 +144,7 @@ void
  *		our own memory management code if we need to.
  *
  * In Args:	void		*ptr	pointer to old memory
- *		unsigned int	size	size of memory requested
+ *		ng_usize_t	size	size of memory requested
  *
  * Out Args:	
  *
@@ -157,12 +157,12 @@ void
 #if	NhlNeedProto
 (
 	void		*ptr,	/* pointer to old memory	*/
-	unsigned int	size	/* size of memory requested	*/
+	ng_usize_t	size	/* size of memory requested	*/
 )
 #else
 (ptr,size)
 	void		*ptr;	/* pointer to old memory	*/
-	unsigned int	size;	/* size of memory requested	*/
+	ng_usize_t	size;	/* size of memory requested	*/
 #endif
 {
 	void *tptr;

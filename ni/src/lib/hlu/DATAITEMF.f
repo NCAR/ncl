@@ -2,11 +2,11 @@ C
 C $Id: DATAITEMF.f,v 1.1 2001-10-09 00:18:34 haley Exp $
 C
 C****************************************************************
-C								*
-C			Copyright (C)  1995			*
-C	University Corporation for Atmospheric Research		*
-C			All Rights Reserved			*
-C								*
+C                                                               *
+C                       Copyright (C)  1995                     *
+C       University Corporation for Atmospheric Research         *
+C                       All Rights Reserved                     *
+C                                                               *
 C****************************************************************
 C
 C      File:            DATAITEM.f
@@ -21,6 +21,6 @@ C      Description:
 C
       subroutine nhlfisdataitem(id,istat)
 
-	integer id,istat
-	call nhlpfisdataitem(id,istat)
+        integer id,istat
+        call nhlpfisdataitem(id,istat)
       end

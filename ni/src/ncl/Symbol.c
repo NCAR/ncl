@@ -111,10 +111,6 @@ void _NclFreeProcFuncInfo
 NclSymbol *sym;
 #endif
 {
-	_NclMachineRec* tmp;
-	NclScopeRec* sr;
-	NclSymbol *tmps,*s;
-	int i;
 	switch(sym->type) {
 		case IFUNC:
 			NclFree(sym->u.bfunc->theargs);
@@ -175,13 +171,9 @@ NhlErrorTypes _NclWalkSymTable
 ()
 #endif
 {
-	NclApiDataList *tmp = NULL,*thelist = NULL;
 	NclSymTableListNode *st;
 	NclSymbol *s;
-	int i,j;
-	NclStackEntry *thevar = NULL;
-	NclFile thefile = NULL;
-	NclMultiDValData theid;
+	int i;
 
 	st = thetablelist;
 	while(st != NULL) {
@@ -229,10 +221,11 @@ NhlErrorTypes _NclWalkSymTable
 }
 static NclSelectionRecord *BuildSel
 #if     NhlNeedProto
-(int n_dims, int *dimsizes,long* start, long* finish, long* stride)
+(int n_dims, ng_size_t *dimsizes,long* start, long* finish, long* stride)
 #else
-(n_dims,int *dimsizes, start, finish, stride)
+(n_dims, *dimsizes, start, finish, stride)
 int n_dims;
+ng_size_t *dimsizes;
 long* start;
 long* finish;
 long* stride;
@@ -489,18 +482,18 @@ void *NewArgs
 int n;
 #endif
 {
-	return((void*)NclMalloc(n * sizeof(NclArgTemplate)));
+	return((void*)NclCalloc(n, sizeof(NclArgTemplate)));
 }
 void SetArgTemplate
 #if NhlNeedProto
-(void *args, int arg_num, char *type_name, int n_dims, int *dimsizes)
+(void *args, int arg_num, char *type_name, int n_dims, ng_size_t *dimsizes)
 #else
 (args, arg_num, type_name, n_dims, dimsizes)
 void *args;
 int arg_num;
 char *type_name;
 int n_dims;
-int *dimsizes;
+ng_size_t *dimsizes;
 #endif
 {
 	NclArgTemplate* the_args = (NclArgTemplate*) &(((NclArgTemplate*)args)[arg_num]);
@@ -512,7 +505,7 @@ int *dimsizes;
 	the_args->n_dims = n_dims;
 	if(dimsizes != NULL) {
 		the_args->is_dimsizes = 1;
-		memcpy((void*)the_args->dim_sizes,(void*)dimsizes,sizeof(int)*n_dims);
+		memcpy((void*)the_args->dim_sizes,(void*)dimsizes,sizeof(ng_size_t)*n_dims);
 	} else {
 		the_args->is_dimsizes = 0;
 		for(i = 0; i < NCL_MAX_DIMENSIONS; i++) {
@@ -678,11 +671,11 @@ char *name;
 #endif
 {
         char *p;
-        unsigned h =0, g;
+        unsigned h = 0, g;
 
         for(p = name; *p != '\0'; p = p +1) {
                 h = (h<<4) + (*p);
-                if(g = h & 0xf0000000) {
+                if((g = h) & 0xf0000000) {
                         h = h^ (g >> 24);
                         h = h ^ g;
                 }
@@ -1269,7 +1262,7 @@ NclQuark file_sym_name;
 NclQuark file_var_name;
 #endif
 {
-	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclApiDataList *tmp = NULL;
 	NclSymbol *s = NULL;
 	int i,j;
 	NclStackEntry *thevar = NULL;
@@ -1349,7 +1342,7 @@ NclQuark file_var_name;
 NclQuark coordname;
 #endif
 {
-	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclApiDataList *tmp = NULL;
 	NclSymbol *s = NULL;
 	int i,j,k;
 	NclStackEntry *thevar = NULL;
@@ -1642,7 +1635,7 @@ long    * stride;
 	NclMultiDValData theid;
 	NclSelectionRecord *sel_ptr=NULL;
 	int i,index = 0,k;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
 	if((s != NULL)&&(s->type != UNDEF)) {
@@ -1712,7 +1705,7 @@ long* stride;
 	NclMultiDValData theid;
 	NclSelectionRecord *sel_ptr=NULL;
 	int i,index = 0,k;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
 	if((s != NULL)&&(s->type != UNDEF)) {
@@ -1888,9 +1881,8 @@ NclQuark file_sym_name;
 #endif
 {
 	NclApiDataList *tmp = NULL;
-	NclSymTableListNode *st;
 	NclSymbol *s;
-	int i,j;
+	int j;
 	NclStackEntry *thevar = NULL;
 	NclFile thefile = NULL;
 	NclMultiDValData theid;
@@ -2278,7 +2270,7 @@ int *num_names;
 	NclSymTableListNode *st;
 	NclSymbol *s;
 	NclStackEntry *the_var;
-	int i,j;
+	int i;
 	int current_size = NCL_SYM_TAB_SIZE;
 	NclQuark *tmp_out;
 	
@@ -2330,7 +2322,7 @@ int *num_names;
 	NclSymTableListNode *st;
 	NclSymbol *s;
 	NclStackEntry *the_var;
-	int i,j;
+	int i;
 	int current_size = NCL_SYM_TAB_SIZE;
 	NclQuark *tmp_out;
 	
@@ -2381,13 +2373,12 @@ NclQuark var_sym_name;
 NclQuark coordname;
 #endif
 {
-	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclApiDataList *tmp = NULL;
 	NclAtt tmp_att = NULL;
 	NclAttList *att_list = NULL;
 	NclMultiDValData the_value = NULL;
-	NclSymTableListNode *st;
 	NclSymbol *s;
-	int i,j;
+	int j;
 	NclStackEntry *the_var;
 	NclVar tmp_var;
 
@@ -2450,11 +2441,10 @@ NclApiDataList *_NclGetVarInfo
 NclQuark var_sym_name;
 #endif
 {
-	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclApiDataList *tmp = NULL;
 	NclAtt tmp_att = NULL;
 	NclAttList *att_list = NULL;
 	NclMultiDValData the_value = NULL;
-	NclSymTableListNode *st;
 	NclSymbol *s;
 	int j;
 	NclStackEntry *the_var;
@@ -2652,7 +2642,7 @@ long*stride;
 	NclSelectionRecord *sel_ptr = NULL;
 	NclHLUObj tmp_ho;
 	int i;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 
 	tmp = (NclExtValueRec*)NclMalloc((unsigned)sizeof(NclExtValueRec));
 	the_var = _NclRetrieveRec(the_sym,DONT_CARE);
@@ -2769,10 +2759,8 @@ NclQuark attname;
 {
 	NclSymbol *s;
 	NclStackEntry *thevar = NULL;
-	NclFile thefile = NULL;
 	NclMultiDValData tmp_md;
 	NclExtValueRec *out_data = NULL;
-	NclMultiDValData theid;
 	NclHLUObj tmp_ho;
 	int i;
 
@@ -2852,13 +2840,11 @@ long* stride;
 {
 	NclSymbol *s;
 	NclStackEntry *thevar = NULL;
-	NclFile thefile = NULL;
 	NclMultiDValData tmp_md;
 	NclExtValueRec *out_data = NULL;
-	NclMultiDValData theid;
 	NclSelectionRecord *sel_ptr=NULL;
 	int i;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 
 	s = _NclLookUp(NrmQuarkToString(var_sym_name));
 	if((s != NULL)&&(s->type != UNDEF)) {
@@ -2918,10 +2904,8 @@ NclQuark attname;
 {
 	NclSymbol *s;
 	NclStackEntry *thevar = NULL;
-	NclFile thefile = NULL;
 	NclMultiDValData tmp_md;
 	NclExtValueRec *out_data = NULL;
-	NclMultiDValData theid;
 	int i;
 
 	s = _NclLookUp(NrmQuarkToString(var_sym_name));

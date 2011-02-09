@@ -21,19 +21,16 @@ NhlErrorTypes y_skewt_W( void )
  * Input array variables
  */
   void *pres;
-  int np;
+  ng_size_t np;
+  int inp;
   double *tmp_pres;
-  int dsizes_pres[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pres[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pres;
 /*
  * Output array variables
  */
   void *yskewt;
   double *tmp_yskewt;
-/*
- * Declare various variables for random purposes.
- */
-  int i;
 /*
  * Retrieve arguments.
  */
@@ -48,6 +45,15 @@ NhlErrorTypes y_skewt_W( void )
           DONT_CARE);
 
   np = dsizes_pres[0];
+
+/*
+ * Test dimension sizes.
+ */
+  if(np > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"y_skewt: the length of p is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inp = (int) np;
 
 /*
  * Create a temporary array to hold subarray of pres and yskewt.
@@ -80,7 +86,7 @@ NhlErrorTypes y_skewt_W( void )
 /*
  * Call Fortran routine.
  */
-  NGCALLF(dskewty,DSKEWTY)(tmp_pres,&np,tmp_yskewt);
+  NGCALLF(dskewty,DSKEWTY)(tmp_pres,&inp,tmp_yskewt);
 
   coerce_output_float_or_double(yskewt,tmp_yskewt,type_pres,np,0);
 
@@ -99,10 +105,11 @@ NhlErrorTypes x_skewt_W( void )
  * Input array variables
  */
   void *temp, *y;
-  int nty;
+  ng_size_t nty;
+  int inty;
   double *tmp_temp, *tmp_y;
-  int dsizes_temp[NCL_MAX_DIMENSIONS];
-  int dsizes_y[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_temp[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_temp, type_y;
 /*
  * Output array variables
@@ -110,10 +117,6 @@ NhlErrorTypes x_skewt_W( void )
   void *xskewt;
   double *tmp_xskewt;
   NclBasicDataTypes type_xskewt;
-/*
- * Declare various variables for random purposes.
- */
-  int i;
 /*
  * Retrieve arguments.
  */
@@ -144,6 +147,15 @@ NhlErrorTypes x_skewt_W( void )
   }
 
   nty = dsizes_temp[0];
+
+/*
+ * Test dimension sizes.
+ */
+  if(nty > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"x_skewt: the length of temp is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inty = (int) nty;
 
 /*
  * Create a temporary array to hold subarray of temp, y, and xskewt.
@@ -180,7 +192,7 @@ NhlErrorTypes x_skewt_W( void )
 /*
  * Call Fortran routine.
  */
-  NGCALLF(dskewtx,DSKEWTX)(tmp_temp,tmp_y,&nty,tmp_xskewt);
+  NGCALLF(dskewtx,DSKEWTX)(tmp_temp,tmp_y,&inty,tmp_xskewt);
 
   coerce_output_float_or_double(xskewt,tmp_xskewt,type_xskewt,nty,0);
 
@@ -201,7 +213,7 @@ NhlErrorTypes tmr_skewt_W( void )
  */
   void *w, *p;
   double *tmp_w, *tmp_p;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclBasicDataTypes type_w, type_p;
 /*
  * Output array variables
@@ -287,7 +299,7 @@ NhlErrorTypes tda_skewt_W( void )
  */
   void *o, *p;
   double *tmp_o, *tmp_p;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclBasicDataTypes type_o, type_p;
 /*
  * Output array variables
@@ -373,7 +385,7 @@ NhlErrorTypes satlft_skewt_W( void )
  */
   void *thw, *p;
   double *tmp_thw, *tmp_p;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclBasicDataTypes type_thw, type_p;
 /*
  * Output array variables
@@ -458,15 +470,14 @@ NhlErrorTypes ptlcl_skewt_W( void )
  */
   void *p, *t, *td;
   double *tmp_t, *tmp_p, *tmp_td;
-  int dsizes[1];
   NclBasicDataTypes type_t, type_p, type_td;
 /*
  * Output array variables
  */
   void *pc, *tc;
-  double *tmp_pc, *tmp_tc;
-  int dsizes_tc[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_ptlclskewt, type_pc, type_tc;
+  double *tmp_pc = NULL;
+  double *tmp_tc = NULL;
+  NclBasicDataTypes type_pc, type_tc;
 /*
  * Retrieve arguments.
  */
@@ -579,8 +590,10 @@ NhlErrorTypes showal_skewt_W( void )
  */
   void *p, *t, *td;
   double *tmp_t, *tmp_p, *tmp_td;
-  int dsizes_t[NCL_MAX_DIMENSIONS], dsizes_p[NCL_MAX_DIMENSIONS];
-  int dsizes_td[NCL_MAX_DIMENSIONS], dsizes[1];
+  ng_size_t dsizes_t[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_td[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes[1];
   NclBasicDataTypes type_t, type_p, type_td;
 /*
  * Output array variables
@@ -591,7 +604,8 @@ NhlErrorTypes showal_skewt_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, nlvls;
+  ng_size_t nlvls;
+  int inlvls;
 /*
  * Retrieve arguments.
  */
@@ -632,6 +646,15 @@ NhlErrorTypes showal_skewt_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if(nlvls > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"showal_skewt: the length of t is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlvls = (int) nlvls;
+
+/*
  * Create temp arrays to hold subarray of p, t, td.
  */
   tmp_showalskewt = (double*)calloc(1,sizeof(double));
@@ -668,7 +691,7 @@ NhlErrorTypes showal_skewt_W( void )
  * Call Fortran routine.
  */
   *tmp_showalskewt = NGCALLF(dshowalskewt,DSHOWALSKEWT)(tmp_p,tmp_t,tmp_td,
-                                                        &nlvls);
+                                                        &inlvls);
   coerce_output_float_or_double(showalskewt,tmp_showalskewt,
 				type_showalskewt,1,0);
 /*
@@ -690,7 +713,9 @@ NhlErrorTypes pw_skewt_W( void )
  */
   void *p, *td;
   double *tmp_p, *tmp_td;
-  int dsizes_p[NCL_MAX_DIMENSIONS], dsizes_td[NCL_MAX_DIMENSIONS], dsizes[1];
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_td[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes[1];
   NclBasicDataTypes type_p, type_td;
 /*
  * Output array variables
@@ -701,7 +726,8 @@ NhlErrorTypes pw_skewt_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, n;
+  ng_size_t n;
+  int in;
 /*
  * Retrieve arguments.
  */
@@ -731,6 +757,15 @@ NhlErrorTypes pw_skewt_W( void )
     return(NhlFATAL);
   }
   n = dsizes_td[0];
+/*
+ * Test dimension sizes.
+ */
+  if(n > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pw_skewt: the length of td is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  in = (int) n;
+
 /*
  * Create temp arrays to hold subarray of p, t, td.
  */
@@ -767,7 +802,7 @@ NhlErrorTypes pw_skewt_W( void )
 /*
  * Call Fortran routine.
  */
-  *tmp_pwskewt = NGCALLF(dpwskewt,DPWSKEWT)(tmp_td,tmp_p,&n);
+  *tmp_pwskewt = NGCALLF(dpwskewt,DPWSKEWT)(tmp_td,tmp_p,&in);
   coerce_output_float_or_double(pwskewt,tmp_pwskewt,type_pwskewt,1,0);
 
 /*
@@ -790,8 +825,10 @@ NhlErrorTypes cape_thermo_W( void )
   int *iprint;
   double *tmp_tenv, *tmp_penv, *tmp_lclmb, *tmp_cape;
   NclScalar missing_tenv, missing_dtenv, missing_rtenv;
-  int dsizes_tenv[NCL_MAX_DIMENSIONS], has_missing_tenv;
-  int dsizes_penv[NCL_MAX_DIMENSIONS], dsizes[1];
+  ng_size_t dsizes_tenv[NCL_MAX_DIMENSIONS];
+  int has_missing_tenv;
+  ng_size_t dsizes_penv[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes[1];
   NclBasicDataTypes type_tenv, type_penv, type_lclmb;
 /*
  * Output array variables
@@ -808,10 +845,11 @@ NhlErrorTypes cape_thermo_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  double *tparcel;
-  float *rtparcel;
+  double *tparcel = NULL;
+  float *rtparcel = NULL;
   int *jlcl, *jlfc, *jcross;
-  int i, nlvls;
+  ng_size_t nlvls;
+  int inlvls;
 /*
  * Retrieve arguments.
  */
@@ -859,6 +897,15 @@ NhlErrorTypes cape_thermo_W( void )
     return(NhlFATAL);
   }
   nlvls = dsizes_tenv[0];
+
+/*
+ * Test dimension sizes.
+ */
+  if(nlvls > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cape_thermo: the length of tenv is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlvls = (int) nlvls;
 
 /*
  * Check for missing values.
@@ -915,7 +962,7 @@ NhlErrorTypes cape_thermo_W( void )
  * Call Fortran routine.
  */
   *tmp_cape = NGCALLF(dcapethermo,DCAPETHERMO)(tmp_penv,tmp_tenv,
-                                               &nlvls,tmp_lclmb,
+                                               &inlvls,tmp_lclmb,
                                                iprint,tparcel,
                                                &missing_dtenv.doubleval,
                                                jlcl,jlfc,jcross);

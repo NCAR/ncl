@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.57 2010-04-14 21:29:47 huangwei Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -293,8 +293,7 @@ void _NclInitDataClasses
 	_NclInitClass(nclMultiDValuintDataClass);
 	_NclInitClass(nclMultiDValulongDataClass);
 	_NclInitClass(nclMultiDValuint64DataClass);
-	_NclInitClass(nclMultiDValint8DataClass);
-	_NclInitClass(nclMultiDValuint8DataClass);
+	_NclInitClass(nclMultiDValubyteDataClass);
 	_NclInitClass(nclMultiDVallogicalDataClass);
 	_NclInitClass(nclMultiDValbyteDataClass);
 	_NclInitClass(nclMultiDValcharDataClass);
@@ -313,12 +312,13 @@ NclMultiDValData str_md;
 #endif
 {
 	char **buffer;
-	int i,n_dims;
+	ng_size_t i;
+    int n_dims;
 	string *value;
-	int max_len,tmp_len,to;
+	ng_size_t max_len,tmp_len,to;
 	char *val = NULL;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
-	string missingQ;
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
+	string missingQ = NrmNULLQUARK;
 	NhlBoolean has_missing = False;
 	NclScalar tmp_missing;
 
@@ -358,7 +358,7 @@ NclMultiDValData str_md;
 			val[to] = '\0';
 		}
 		else {
-			strcpy(&(val[to]),buffer[i]);
+			strcpy((char *)&(val[to]),buffer[i]);
 		}
 		to += max_len;
 	}
@@ -384,15 +384,15 @@ NclMultiDValData _NclCharMdToStringMd
 NclMultiDValData char_md;
 #endif
 {
-	int i,j;
-	int n_strings = 1;
+	ng_size_t i;
+	ng_size_t n_strings = 1;
 	char *buffer = NULL;
-	int len =0;
-	int from = 0;
+	ng_size_t len =0;
+	ng_size_t from = 0;
 	string *value = NULL;
 	unsigned char *val = NULL;
-	string missingQ;
-	char missing;
+	string missingQ = NrmNULLQUARK;
+	char missing = '\0';
 	char *cp;
 	NhlBoolean has_missing = False;
 	NclScalar tmp_missing;
@@ -460,6 +460,7 @@ NclMultiDValData char_md;
 			NULL,
 			(NclTypeClass)nclTypestringClass));
 	} else {
+                ng_size_t dim_size = 1;
 		return(_NclCreateMultiDVal(
 			NULL,
 			NULL,
@@ -468,7 +469,7 @@ NclMultiDValData char_md;
 			(void*)value,
 			(has_missing ? &tmp_missing : NULL),
 			char_md->multidval.n_dims,
-			&(char_md->multidval.n_dims),
+			&dim_size,
 			TEMPORARY,
 			NULL,
 			(NclTypeClass)nclTypestringClass));
@@ -484,8 +485,8 @@ NclTypeClass _NclNameToTypeClass
 #endif
 {
 	static int first = 1;
-	static NclQuark quarks[20];
-	static NclTypeClass classes[20];
+	static NclQuark quarks[19];
+	static NclTypeClass classes[19];
 	int i;
 
 	if(first) {
@@ -526,12 +527,10 @@ NclTypeClass _NclNameToTypeClass
 		classes[16] = (NclTypeClass)nclTypeulongClass;
 		quarks[17] = NrmStringToQuark("uint64");
 		classes[17] = (NclTypeClass)nclTypeuint64Class;
-		quarks[18] = NrmStringToQuark("int8");
-		classes[18] = (NclTypeClass)nclTypeint8Class;
-		quarks[19] = NrmStringToQuark("uint8");
-		classes[19] = (NclTypeClass)nclTypeuint8Class;
+		quarks[18] = NrmStringToQuark("ubyte");
+		classes[18] = (NclTypeClass)nclTypeubyteClass;
 	}	
-	for(i = 0; i < 20; i++) {
+	for(i = 0; i < 19; i++) {
 		if(quarks[i] == typename) {
 			return(classes[i]);
 		}
@@ -570,10 +569,8 @@ long _NclObjTypeToName
 		return(NrmStringToQuark("Ncl_Typeint64"));
 	case Ncl_Typeuint64:
 		return(NrmStringToQuark("Ncl_Typeuint64"));
-	case Ncl_Typeint8:
-		return(NrmStringToQuark("Ncl_Typeint8"));
-	case Ncl_Typeuint8:
-		return(NrmStringToQuark("Ncl_Typeuint8"));
+	case Ncl_Typeubyte:
+		return(NrmStringToQuark("Ncl_Typeubyte"));
 	case Ncl_Typeshort:
 		return(NrmStringToQuark("Ncl_Typeshort"));
 	case Ncl_Typeushort:
@@ -623,10 +620,8 @@ NclObjTypes _NclKeywordToObjType
 			return(Ncl_Typeint64);
 		case UINT64:
 			return(Ncl_Typeuint64);
-		case INT8:
-			return(Ncl_Typeint8);
-		case UINT8:
-			return(Ncl_Typeuint8);
+		case UBYTE:
+			return(Ncl_Typeubyte);
 		case SHORT:
 			return(Ncl_Typeshort);
 		case USHORT:
@@ -690,10 +685,8 @@ NclObjTypes _NclBasicDataTypeToObjType
                 return(Ncl_Typeulong);
         case NCL_uint64:
                 return(Ncl_Typeuint64);
-	case NCL_int8:
-		return(Ncl_Typeint8);
-        case NCL_uint8:
-                return(Ncl_Typeuint8);
+        case NCL_ubyte:
+                return(Ncl_Typeubyte);
 	case NCL_float:
 		return(Ncl_Typefloat);
 	case NCL_double:
@@ -751,10 +744,8 @@ NclBasicDataTypes _NclKeywordToDataType
                         return(NCL_ulong);
 		case UINT64:
                         return(NCL_uint64);
-		case INT8:
-			return(NCL_int8);
-		case UINT8:
-                        return(NCL_uint8);
+		case UBYTE:
+                        return(NCL_ubyte);
 		case FLOAT:
 			return(NCL_float);
 		case CHARACTER:
@@ -812,9 +803,7 @@ NclBasicDataTypes data_type;
                         return(sizeof(unsigned long));
                 case NCL_uint64:
                         return(sizeof(unsigned long long));
-		case NCL_int8:
-			return(sizeof(char));
-                case NCL_uint8:
+                case NCL_ubyte:
                         return(sizeof(unsigned char));
 		case NCL_float:
 			return(sizeof(float));
@@ -1024,7 +1013,7 @@ NclBasicDataTypes totype;
 			*(logical*)to = (logical)(*(long long*)from?1:0);
                         return(1);
                 case NCL_string:
-                        sprintf(buffer,"%ld",(long long)*(long long*)from);
+                        sprintf(buffer,"%lld",(long long)*(long long*)from);
                         *(string*)to = NrmStringToQuark(buffer);
                         return(1);
                 default:
@@ -1162,7 +1151,7 @@ NclBasicDataTypes totype;
 			*(logical*)to = (logical)(*(unsigned long long*)from?1:0);
                         return(1);
                 case NCL_string:
-                        sprintf(buffer,"%ld",(unsigned long long)*(unsigned long long*)from);
+                        sprintf(buffer,"%lld",(unsigned long long)*(unsigned long long*)from);
                         *(string*)to = NrmStringToQuark(buffer);
                         return(1);
                 default:
@@ -1599,7 +1588,7 @@ NclBasicDataTypes totype;
 			*(logical*)to = (logical)(*(long long*)from?1:0);
                         return(1);
                 case NCL_string:
-                        sprintf(buffer,"%ld",(long long)*(long long*)from);
+                        sprintf(buffer,"%lld",(long long)*(long long*)from);
                         *(string*)to = NrmStringToQuark(buffer);
                         return(1);
                 default:
@@ -1791,7 +1780,7 @@ NclBasicDataTypes totype;
 			*(logical*)to = (logical)(*(unsigned long long*)from?1:0);
 			return(1);
                 case NCL_string:
-                        sprintf(buffer,"%ld",(unsigned long long)*(unsigned long long*)from);
+                        sprintf(buffer,"%lld",(unsigned long long)*(unsigned long long*)from);
                         *(string*)to = NrmStringToQuark(buffer);
                         return(1);
                 default:
@@ -1831,10 +1820,8 @@ NclBasicDataTypes totype;
                         return(1);
                 case NCL_float:
 			*(float*)to = *(float*)from;
-		case NCL_int8:
-			*(char*)to = *(char*)from;
-			return(1);
-                case NCL_uint8:
+                        return(1);
+                case NCL_ubyte:
                         *(unsigned char*)to = *(char*)from;
                         return(1);
                 case NCL_double:
@@ -1891,10 +1878,7 @@ NclBasicDataTypes totype;
                 case NCL_logical:
 			*(logical*)to = (logical)(*(double*)from?1:0);
 			return(1);
-		case NCL_int8:
-			*(char*)to = *(double*)from;
-			return(1);
-                case NCL_uint8:
+                case NCL_ubyte:
                         *(unsigned char*)to = *(double*)from;
                         return(1);
 		case NCL_string:
@@ -2242,7 +2226,7 @@ struct _NclMultiDValDataRec *_NclCreateLMissing
 
 	if(first) {
 		int *val = (int*)NclMalloc((unsigned)sizeof(int));
-		int dim_sizes = 1;
+		ng_size_t dim_sizes = 1;
 		*val = -1;
 		missing.logicalval = (logical)-1;
 		tval = _NclCreateMultiDVal(
@@ -2273,7 +2257,7 @@ struct _NclMultiDValDataRec *_NclCreateFalse
 
 	if(first) {
 		int *val = (int*)NclMalloc((unsigned)sizeof(int));
-		int dim_sizes = 1;
+		ng_size_t dim_sizes = 1;
 		*val = 0;
 		tval = _NclCreateMultiDVal(
 			NULL,
@@ -2305,7 +2289,7 @@ struct _NclMultiDValDataRec *_NclCreateTrue
 
 	if(first) {
 		int *val = (int*)NclMalloc((unsigned)sizeof(int));
-		int dim_sizes = 1;
+		ng_size_t dim_sizes = 1;
 		*val = 1;
 		tval = _NclCreateMultiDVal(
 			NULL,
@@ -2334,7 +2318,7 @@ struct _NclMultiDValDataRec *_NclCreateMissing
 {
 	NclMultiDValData tval;
 	int *val = (int*)NclMalloc((unsigned)sizeof(int));
-	int dim_sizes = 1;
+	ng_size_t dim_sizes = 1;
 	*val = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 
 	tval = _NclCreateMultiDVal(
@@ -2354,7 +2338,7 @@ struct _NclMultiDValDataRec *_NclCreateMissing
 }
 struct _NclMultiDValDataRec * _NclCreateVal
 #if	NhlNeedProto
-(NclObj inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, void *val, NclScalar *missing_value, int n_dims, int *dim_sizes, NclStatus status, NclSelectionRecord *sel_rec,NclObjClass type)
+(NclObj inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, void *val, NclScalar *missing_value, int n_dims, ng_size_t *dim_sizes, NclStatus status, NclSelectionRecord *sel_rec,NclObjClass type)
 #else 
 ( inst, theclass, obj_type, obj_type_mask, val, missing_value, n_dims, dim_sizes, status, sel_rec,type)
 NclObj inst;
@@ -2364,13 +2348,12 @@ unsigned int obj_type_mask;
 void *val;
 NclScalar *missing_value;
 int n_dims;
-int *dim_sizes;
+ng_size_t *dim_sizes;
 NclStatus status;
 NclSelectionRecord *sel_rec;
 NclObjClass type;
 #endif
 {
-	NclTypeClass tmp;
 
 	switch(obj_type) {
 	case Ncl_MultiDValData:
@@ -2545,7 +2528,7 @@ NclBasicDataTypes dt;
 #endif
 {
 	static int first = 1;
-	static NclQuark quarks[23];
+	static NclQuark quarks[22];
 
 	if(first) {
 		first = 0;
@@ -2569,9 +2552,8 @@ NclBasicDataTypes dt;
                 quarks[17] = NrmStringToQuark("uint64");
                 quarks[18] = NrmStringToQuark("group");
                 quarks[19] = NrmStringToQuark("compound");
-                quarks[20] = NrmStringToQuark("int8");
-                quarks[21] = NrmStringToQuark("uint8");
-                quarks[22] = NrmStringToQuark("none");
+                quarks[20] = NrmStringToQuark("ubyte");
+                quarks[21] = NrmStringToQuark("none");
 	}	
 
 	switch(dt) {
@@ -2611,13 +2593,11 @@ NclBasicDataTypes dt;
 		return(NrmQuarkToString(quarks[18]));
 	case NCL_compound:
 		return(NrmQuarkToString(quarks[19]));
-	case NCL_int8:
+	case NCL_ubyte:
 		return(NrmQuarkToString(quarks[20]));
-	case NCL_uint8:
-		return(NrmQuarkToString(quarks[21]));
 	case NCL_none:
         default:
-		return(NrmQuarkToString(quarks[22]));
+		return(NrmQuarkToString(quarks[21]));
 	}
 }
 
@@ -2660,12 +2640,11 @@ NclBasicDataTypes dt;
 		return(NCL_string);
 	case NCL_byte:
 		return(NCL_short);
-        case NCL_int8:
-                return(NCL_short);
-        case NCL_uint8:
+        case NCL_ubyte:
                 return(NCL_ushort);
+	default:
+		return(NCL_none);
 	}
-	return(NCL_none);
 }
 struct _NclDataRec* _NclReadSubSection
 #if     NhlNeedProto

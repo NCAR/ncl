@@ -16,20 +16,22 @@ NhlErrorTypes fft2df_W( void )
  */
   void *x;
   double *tmp_x, *tmp_r;
-  int dsizes_x[2];
+  ng_size_t dsizes_x[2];
   NclBasicDataTypes type_x;
 
 /*
  * Return variable
  */
   void *coef;
-  int dsizes_coef[3];
+  ng_size_t dsizes_coef[3];
   NclBasicDataTypes type_coef;
   NclObjClass type_obj_coef;
 /*
  * Variables for returning the output array with attributes attached.
  */
-  int att_id, dsizes[1], *nattr, *mattr;
+  int att_id;
+  ng_size_t dsizes[1];
+  int *nattr, *mattr;
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -37,9 +39,11 @@ NhlErrorTypes fft2df_W( void )
 /*
  * Various
  */
-  int i, j, m, l, ldim, l21, ml, mldim, ml21, lwsave, lwork, ier, size_coef;
-  int ic0, ic1, ir0, ir1, ix0, ix1;
+  int ier;
+  ng_size_t i, j, m, l, ldim, l21, ml, mldim, ml21, lwsave, lwork, size_coef;
+  ng_size_t ic0, ic1, ir0, ir1, ix0, ix1;
   double *wsave, *work;
+  int il, im, ildim, ilwsave, ilwork;
 
 /*
  * Retrieve input argument.
@@ -122,10 +126,24 @@ NhlErrorTypes fft2df_W( void )
   }
 
 /*
- * Allocate space for work arrays.
+ * Test dimension sizes. 
  */
   lwsave = 2*m + l + (int)log((double)l) + (int)log((double)m) + 8;
   lwork  = mldim;
+  if((l > INT_MAX) || (m > INT_MAX) || (ldim > INT_MAX) ||
+     (lwsave > INT_MAX) || (lwork > INT_MAX)) { 
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fft2df: one or more input dimension sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  il = (int) l;
+  im = (int) m;
+  ildim = (int) ldim;
+  ilwsave = (int) lwsave;
+  ilwork = (int) lwork;
+
+/*
+ * Allocate space for work arrays.
+ */
   wsave  = (double *)calloc(lwsave,sizeof(double));
   work   = (double *)calloc(lwork,sizeof(double));
   if(work == NULL || wsave == NULL) {
@@ -137,9 +155,9 @@ NhlErrorTypes fft2df_W( void )
  * Call the Fortran routines.
  */
   ier = 0;
-  NGCALLF(drfft2i,DRFFT2I)(&l, &m, wsave, &lwsave, &ier);
-  NGCALLF(drfft2f,DRFFT2F)(&ldim, &l, &m, tmp_r, wsave, &lwsave, work, &lwork,
-                           &ier);
+  NGCALLF(drfft2i,DRFFT2I)(&il, &im, wsave, &ilwsave, &ier);
+  NGCALLF(drfft2f,DRFFT2F)(&ildim, &il, &im, tmp_r, wsave, &ilwsave, work, &ilwork,
+                             &ier);
   if(ier) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"fft2df: ier = %d", ier);
     return(NhlFATAL);
@@ -279,14 +297,14 @@ NhlErrorTypes fft2db_W( void )
  */
   void *coef;
   double *tmp_coef, *tmp_r;
-  int dsizes_coef[3];
+  ng_size_t dsizes_coef[3];
   NclBasicDataTypes type_coef;
 
 /*
  * Return variable
  */
   void *x;
-  int dsizes_x[2];
+  ng_size_t dsizes_x[2];
   NclBasicDataTypes type_x;
   NclObjClass type_obj_x;
 
@@ -300,10 +318,13 @@ NhlErrorTypes fft2db_W( void )
 /*
  * Various
  */
-  int i, j, m, l, ldim, l21, ml, mldim, ml21, lwsave, lwork, ier;
-  int ix0, ix1, ir0, ir1, ic0, ic1, size_coef;
+  int ier;
+  ng_size_t l = 0;
+  ng_size_t i, j, m, ldim, l21, ml, mldim, ml21, lwsave, lwork;
+  ng_size_t ix0, ix1, ir0, ir1, ic0, ic1, size_coef;
   logical calculate_lval;
   double *wsave, *work;
+  int il, im, ildim, ilwsave, ilwork;
 
 /*
  * Retrieve input argument.
@@ -451,10 +472,24 @@ NhlErrorTypes fft2db_W( void )
   }
 
 /*
- * Allocate space for work arrays.
+ * Test dimension sizes. 
  */
   lwsave = 2*m + l + log(l) + log(m) + 8;
   lwork  = mldim;
+  if((l > INT_MAX) || (m > INT_MAX) || (ldim > INT_MAX) ||
+     (lwsave > INT_MAX) || (lwork > INT_MAX)) { 
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fft2db: one or more input dimension sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  il = (int) l;
+  im = (int) m;
+  ildim = (int) ldim;
+  ilwsave = (int) lwsave;
+  ilwork = (int) lwork;
+
+/*
+ * Allocate space for work arrays.
+ */
   wsave  = (double *)calloc(lwsave,sizeof(double));
   work   = (double *)calloc(lwork,sizeof(double));
   if(work == NULL || wsave == NULL) {
@@ -466,9 +501,9 @@ NhlErrorTypes fft2db_W( void )
  * Call the Fortran routines.
  */
   ier = 0;
-  NGCALLF(drfft2i,DRFFT2I)(&l, &m, wsave, &lwsave, &ier);
-  NGCALLF(drfft2b,DRFFT2B)(&ldim, &l, &m, tmp_r, wsave, &lwsave, work, 
-                           &lwork,&ier);
+  NGCALLF(drfft2i,DRFFT2I)(&il, &im, wsave, &ilwsave, &ier);
+  NGCALLF(drfft2b,DRFFT2B)(&ildim, &il, &im, tmp_r, wsave, &ilwsave, work, 
+                           &ilwork,&ier);
 
   if(ier) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"fft2db: ier = %d", ier);

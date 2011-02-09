@@ -31,41 +31,41 @@ static NhlResource resources[] = {
 #ifdef BuildPNG
 	{NhlNwkImageFormat,NhlCwkImageFormat,NhlTImageFormat,
 	 sizeof(NhlImageFormat),
-		Oset(pixconfig.format),NhlTImmediate,(NhlPointer)NhlPNG,
+		Oset(pixconfig.format),NhlTImmediate,_NhlUSET((NhlPointer)NhlPNG),
 		_NhlRES_NOSACCESS,NULL},
 #else
 	{NhlNwkImageFormat,NhlCwkImageFormat,NhlTImageFormat,
 	 sizeof(NhlImageFormat),
-		Oset(pixconfig.format),NhlTImmediate,(NhlPointer)NhlXWD,
+		Oset(pixconfig.format),NhlTImmediate,_NhlUSET((NhlPointer)NhlXWD),
 		_NhlRES_NOSACCESS,NULL},
 #endif
 	{NhlNwkImageFileName,NhlCwkImageFileName,NhlTString,
 		sizeof(NhlString),Oset(pixconfig.filename),NhlTImmediate,
-		(NhlPointer)NULL,_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
+		_NhlUSET((NhlPointer)NULL),_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
 
 	{NhlNwkXColorMode,NhlCwkXColorMode,
 	 NhlTXColorMode,sizeof(NhlXColorMode),
-	 Oset(xcolor_mode),NhlTImmediate,(NhlPointer)-1,
+	 Oset(xcolor_mode),NhlTImmediate,_NhlUSET((NhlPointer)-1),
 	 0,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(pause_set),
-		NhlTImmediate,(NhlPointer)True,
+		NhlTImmediate,_NhlUSET((NhlPointer)True),
          	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{NhlNwkPause,NhlCwkPause,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(pause),NhlTProcedure,(NhlPointer)_NhlResUnset,0,NULL},
+		Oset(pause),NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 
 	{"no.res","no.res",NhlTInteger,sizeof(int),Oset(pixconfig.type),
-		NhlTImmediate,(NhlPointer)NGC_PIXCONFIG,
+		NhlTImmediate,_NhlUSET((NhlPointer)NGC_PIXCONFIG),
          	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{"no.res","no.res",NhlTInteger,sizeof(int),Oset(pixconfig.work_id),
-		NhlTImmediate,(NhlPointer)-1,
+		NhlTImmediate,_NhlUSET((NhlPointer)-1),
          	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 
 	{NhlNwkWidth,NhlCwkWidth,NhlTInteger,sizeof(int),
          	Oset(pixconfig.width),
-		NhlTImmediate,(NhlPointer)512,_NhlRES_NOSACCESS,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)512),_NhlRES_NOSACCESS,NULL},
 	{NhlNwkHeight,NhlCwkHeight,NhlTInteger,sizeof(int),
 		Oset(pixconfig.height),NhlTImmediate,
-		(NhlPointer)512,_NhlRES_NOSACCESS,NULL},
+		_NhlUSET((NhlPointer)512),_NhlRES_NOSACCESS,NULL},
 
 /* End-documented-resources */
 
@@ -380,7 +380,6 @@ ImageWorkstationDestroy
 	NhlLayer	l;
 #endif
 {
-	char				func[]="ImageWorkstationDestroy";
 	NhlImageWorkstationLayer		xl = (NhlImageWorkstationLayer)l;
 
 	NhlFree(xl->imagework.pixconfig.filename);
@@ -600,7 +599,6 @@ ImageWorkstationOpen
 	NhlImageWorkstationLayerPart	*xp = &xl->imagework;
 	NhlWorkstationClassPart	*wcp =
 		&((NhlWorkstationClass)xl->base.layer_class)->work_class;
-	int				i=2;
 	_NGCXGetSizeChg			xgsc;
 	Gescape_in_data			gesc_in_xgsc;
 	Gescape_in_data			gesc_in_xwconf;

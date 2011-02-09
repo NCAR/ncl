@@ -43,23 +43,34 @@ NhlErrorTypes wgt_areaave_W( void )
  * Input array variables
  */
   void *x, *wgty, *wgtx;
-  double *tmp_x, *tmp_wgty, *tmp_wgtx, *tmp1_wgtx, *tmp1_wgty;
+  double *tmp_x = NULL;
+  double *tmp_wgty = NULL;
+  double *tmp_wgtx = NULL;
+  double *tmp1_wgtx = NULL;
+  double *tmp1_wgty = NULL;
   int *iflag;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int dsizes_wgtx[NCL_MAX_DIMENSIONS];
-  int dsizes_wgty[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  int has_missing_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wgtx[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wgty[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_wgtx, type_wgty;
   NclScalar missing_x, missing_dx, missing_rx;
 /*
  * Output variable.
  */
   void *ave;
-  double *tmp_ave;
-  int *dsizes_ave, ndims_ave;
+  double *tmp_ave = NULL;
+  ng_size_t *dsizes_ave;
+  int ndims_ave;
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_x, nx, ny, nxny, total_leftmost, ret;
+  ng_size_t i;
+  ng_size_t nxny, total_leftmost;
+  int nx, ny;
+  int index_x;
+  int ret;
 
 /*
  * Retrieve arguments.
@@ -128,7 +139,7 @@ NhlErrorTypes wgt_areaave_W( void )
  * Compute the size of the output array.
  */
   ndims_ave  = max(1,ndims_x-2);
-  dsizes_ave = (int*)calloc(ndims_ave,sizeof(int));  
+  dsizes_ave = (ng_size_t *)calloc(ndims_ave,sizeof(ng_size_t));  
   if( dsizes_ave == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -254,22 +265,30 @@ NhlErrorTypes wgt_areaave2_W( void )
  * Input array variables
  */
   void *x, *wgt;
-  double *tmp_x, *tmp_wgt;
+  double *tmp_x = NULL;
+  double *tmp_wgt = NULL;
   int *iflag;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int dsizes_wgt[2];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  ng_size_t dsizes_wgt[2];
   NclBasicDataTypes type_x, type_wgt;
   NclScalar missing_x, missing_dx, missing_rx;
 /*
  * Output variable.
  */
   void *ave;
-  double *tmp_ave;
-  int *dsizes_ave, ndims_ave;
+  double *tmp_ave = NULL;
+  ng_size_t *dsizes_ave;
+  int ndims_ave;
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_x, nx, ny, nxny, total_leftmost, ret;
+  int ret;
+  int index_x;
+  int nx, ny;
+  ng_size_t i;
+  ng_size_t nxny, total_leftmost;
 
 /*
  * Retrieve arguments.
@@ -323,7 +342,7 @@ NhlErrorTypes wgt_areaave2_W( void )
  * Compute the size of the output array.
  */
   ndims_ave  = max(1,ndims_x-2);
-  dsizes_ave = (int*)calloc(ndims_ave,sizeof(int));  
+  dsizes_ave = (ng_size_t *)calloc(ndims_ave,sizeof(ng_size_t));  
   if( dsizes_ave == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave2: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -435,22 +454,30 @@ NhlErrorTypes wgt_areasum2_W( void )
  * Input array variables
  */
   void *x, *wgt;
-  double *tmp_x, *tmp_wgt;
+  double *tmp_x = NULL;
+  double *tmp_wgt = NULL;
   int *iflag;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int dsizes_wgt[2];
+  int ndims_x;
+  int has_missing_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wgt[2];
   NclBasicDataTypes type_x, type_wgt;
   NclScalar missing_x, missing_dx, missing_rx;
 /*
  * Output variable.
  */
   void *sum;
-  double *tmp_sum;
-  int *dsizes_sum, ndims_sum;
+  double *tmp_sum = NULL;
+  ng_size_t *dsizes_sum;
+  int ndims_sum;
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_x, nx, ny, nxny, total_leftmost, ret;
+  int ret;
+  int index_x;
+  int nx, ny;
+  ng_size_t i;
+  ng_size_t nxny, total_leftmost;
 
 /*
  * Retrieve arguments.
@@ -504,7 +531,7 @@ NhlErrorTypes wgt_areasum2_W( void )
  * Compute the size of the output array.
  */
   ndims_sum  = max(1,ndims_x-2);
-  dsizes_sum = (int*)calloc(ndims_sum,sizeof(int));  
+  dsizes_sum = (ng_size_t *)calloc(ndims_sum,sizeof(ng_size_t));  
   if( dsizes_sum == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areasum2: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -616,12 +643,21 @@ NhlErrorTypes wgt_arearmse_W( void )
  * Input array variables
  */
   void *q, *r, *wgty, *wgtx;
-  double *tmp_q, *tmp_r, *tmp_wgty, *tmp_wgtx, *tmp1_wgtx, *tmp1_wgty;
+  double *tmp_q = NULL;
+  double *tmp_r = NULL;
+  double *tmp_wgty = NULL;
+  double *tmp_wgtx = NULL;
+  double *tmp1_wgtx = NULL;
+  double *tmp1_wgty = NULL;
   int *iflag;
-  int ndims_q, dsizes_q[NCL_MAX_DIMENSIONS], has_missing_q;
-  int ndims_r, dsizes_r[NCL_MAX_DIMENSIONS], has_missing_r;
-  int dsizes_wgtx[NCL_MAX_DIMENSIONS];
-  int dsizes_wgty[NCL_MAX_DIMENSIONS];
+  int ndims_q;
+  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS];
+  int has_missing_q;
+  int ndims_r;
+  ng_size_t dsizes_r[NCL_MAX_DIMENSIONS];
+  int has_missing_r;
+  ng_size_t dsizes_wgtx[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wgty[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_q, type_r, type_wgtx, type_wgty;
   NclScalar missing_q, missing_dq, missing_rq;
   NclScalar missing_r, missing_dr;
@@ -629,13 +665,19 @@ NhlErrorTypes wgt_arearmse_W( void )
  * Output variable.
  */
   void *rmse;
-  double *tmp_rmse;
-  int *dsizes_rmse, ndims_rmse;
+  double *tmp_rmse = NULL;
+  ng_size_t *dsizes_rmse;
+  int ndims_rmse;
   NclBasicDataTypes type_rmse;
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_q, nlon, nlat, nlatnlon, total_leftmost, ret;
+  ng_size_t i;
+  int index_q;
+  int nlon, nlat;
+  ng_size_t nlatnlon;
+  ng_size_t total_leftmost;
+  int ret;
 
 /*
  * Retrieve arguments.
@@ -720,7 +762,7 @@ NhlErrorTypes wgt_arearmse_W( void )
  * Compute the size of the output array.
  */
   ndims_rmse  = max(1,ndims_q-2);
-  dsizes_rmse = (int*)calloc(ndims_rmse,sizeof(int));  
+  dsizes_rmse = (ng_size_t *)calloc(ndims_rmse,sizeof(ng_size_t));  
   if( dsizes_rmse == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_arearmse: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -868,11 +910,17 @@ NhlErrorTypes wgt_arearmse2_W( void )
  * Input array variables
  */
   void *q, *r, *wgt;
-  double *tmp_q, *tmp_r, *tmp_wgt;
+  double *tmp_q = NULL;
+  double *tmp_r = NULL;
+  double *tmp_wgt = NULL;
   int *iflag;
-  int ndims_q, dsizes_q[NCL_MAX_DIMENSIONS], has_missing_q;
-  int ndims_r, dsizes_r[NCL_MAX_DIMENSIONS], has_missing_r;
-  int dsizes_wgt[2];
+  int ndims_q;
+  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS];
+  int has_missing_q;
+  int ndims_r;
+  ng_size_t dsizes_r[NCL_MAX_DIMENSIONS];
+  int has_missing_r;
+  ng_size_t dsizes_wgt[2];
   NclBasicDataTypes type_q, type_r, type_wgt;
   NclScalar missing_q, missing_dq, missing_rq;
   NclScalar missing_r, missing_dr;
@@ -880,13 +928,17 @@ NhlErrorTypes wgt_arearmse2_W( void )
  * Output variable.
  */
   void *rmse;
-  double *tmp_rmse;
-  int *dsizes_rmse, ndims_rmse;
+  double *tmp_rmse = NULL;
+  ng_size_t *dsizes_rmse;
+  int ndims_rmse;
   NclBasicDataTypes type_rmse;
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_q, nx, ny, nxny, total_leftmost, ret;
+  int ret;
+  int index_q, nx, ny;
+  ng_size_t i;
+  ng_size_t nxny, total_leftmost;
 
 /*
  * Retrieve arguments.
@@ -961,7 +1013,7 @@ NhlErrorTypes wgt_arearmse2_W( void )
  * Compute the size of the output array.
  */
   ndims_rmse  = max(1,ndims_q-2);
-  dsizes_rmse = (int*)calloc(ndims_rmse,sizeof(int));  
+  dsizes_rmse = (ng_size_t *)calloc(ndims_rmse,sizeof(ng_size_t));  
   if( dsizes_rmse == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_arearmse2: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -1096,25 +1148,36 @@ NhlErrorTypes wgt_volave_W( void )
  * Input array variables
  */
   void *x, *wgtz, *wgty, *wgtx;
-  double *tmp_x; 
-  double *tmp_wgtz, *tmp_wgty, *tmp_wgtx, *tmp1_wgtz, *tmp1_wgtx, *tmp1_wgty;
+  double *tmp_x = NULL; 
+  double *tmp_wgtz = NULL;
+  double *tmp_wgty = NULL;
+  double *tmp_wgtx = NULL;
+  double *tmp1_wgtz = NULL;
+  double *tmp1_wgtx = NULL;
+  double *tmp1_wgty = NULL;
   int *iflag;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int dsizes_wgtx[NCL_MAX_DIMENSIONS];
-  int dsizes_wgty[NCL_MAX_DIMENSIONS];
-  int dsizes_wgtz[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  ng_size_t dsizes_wgtx[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wgty[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wgtz[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_wgtx, type_wgty, type_wgtz;
   NclScalar missing_x, missing_dx, missing_rx;
 /*
  * Output variable.
  */
   void *ave;
-  double *tmp_ave;
-  int *dsizes_ave, ndims_ave;
+  double *tmp_ave = NULL;
+  ng_size_t *dsizes_ave;
+  int ndims_ave;
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_x, nx, ny, nz, nxnynz, total_leftmost, ret;
+  int ret;
+  int index_x, nx, ny, nz;
+  ng_size_t i;
+  ng_size_t nxnynz, total_leftmost;
 
 /*
  * Retrieve arguments.
@@ -1196,7 +1259,7 @@ NhlErrorTypes wgt_volave_W( void )
  * Compute the size of the output array.
  */
   ndims_ave  = max(1,ndims_x-3);
-  dsizes_ave = (int*)calloc(ndims_ave,sizeof(int));  
+  dsizes_ave = (ng_size_t *)calloc(ndims_ave,sizeof(ng_size_t));  
   if( dsizes_ave == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -1323,25 +1386,36 @@ NhlErrorTypes wgt_volave_ccm_W( void )
  * Input array variables
  */
   void *x, *wgtz, *wgty, *wgtx;
-  double *tmp_x; 
-  double *tmp_wgtz, *tmp_wgty, *tmp_wgtx, *tmp1_wgtx, *tmp1_wgty;
+  double *tmp_x = NULL; 
+  double *tmp_wgtz = NULL;
+  double *tmp_wgty = NULL;
+  double *tmp_wgtx = NULL;
+  double *tmp1_wgtx = NULL;
+  double *tmp1_wgty = NULL;
   int *iflag;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int dsizes_wgtx[NCL_MAX_DIMENSIONS];
-  int dsizes_wgty[NCL_MAX_DIMENSIONS];
-  int ndims_wgtz, dsizes_wgtz[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  ng_size_t dsizes_wgtx[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wgty[NCL_MAX_DIMENSIONS];
+  int ndims_wgtz;
+  ng_size_t dsizes_wgtz[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_wgtx, type_wgty, type_wgtz;
   NclScalar missing_x, missing_dx, missing_rx;
 /*
  * Output variable.
  */
   void *ave;
-  double *tmp_ave;
-  int *dsizes_ave, ndims_ave;
+  double *tmp_ave = NULL;
+  ng_size_t *dsizes_ave;
+  int ndims_ave;
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_x, nx, ny, nz, nxnynz, total_leftmost, ret;
+  int ret;
+  int index_x, nx, ny, nz;
+  ng_size_t i;
+  ng_size_t nxnynz, total_leftmost;
 
 /*
  * Retrieve arguments.
@@ -1418,7 +1492,7 @@ NhlErrorTypes wgt_volave_ccm_W( void )
   nxnynz = nx * ny * nz;
 
   ndims_ave  = max(1,ndims_x-3);
-  dsizes_ave = (int*)calloc(ndims_ave,sizeof(int));  
+  dsizes_ave = (ng_size_t *)calloc(ndims_ave,sizeof(ng_size_t ));  
   if( dsizes_ave == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave_ccm: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -1576,27 +1650,36 @@ NhlErrorTypes wgt_volrmse_W( void )
  * Input array variables
  */
   void *q, *r, *wgtz, *wgty, *wgtx;
-  double *tmp_q, *tmp_r;
+  double *tmp_q = NULL;
+  double *tmp_r = NULL;
   double *tmp_wgtz, *tmp_wgty, *tmp_wgtx, *tmp1_wgtx, *tmp1_wgty, *tmp1_wgtz;
   int *iflag;
-  int ndims_q, dsizes_q[NCL_MAX_DIMENSIONS], has_missing_q;
-  int ndims_r, dsizes_r[NCL_MAX_DIMENSIONS], has_missing_r;
-  int dsizes_wgtx[NCL_MAX_DIMENSIONS];
-  int dsizes_wgty[NCL_MAX_DIMENSIONS];
-  int dsizes_wgtz[NCL_MAX_DIMENSIONS];
+  int ndims_q;
+  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS];
+  int has_missing_q;
+  int ndims_r;
+  ng_size_t dsizes_r[NCL_MAX_DIMENSIONS];
+  int has_missing_r;
+  ng_size_t dsizes_wgtx[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wgty[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wgtz[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_q, type_r, type_wgtx, type_wgty, type_wgtz;
   NclScalar missing_q, missing_dq, missing_rq, missing_r, missing_dr;
 /*
  * Output variable.
  */
   void *rmse;
-  double *tmp_rmse;
-  int *dsizes_rmse, ndims_rmse;
+  double *tmp_rmse = NULL;
+  ng_size_t *dsizes_rmse;
+  int ndims_rmse;
   NclBasicDataTypes type_rmse;
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_q, klev, nlon, nlat, klevnlatnlon, total_leftmost, ret;
+  ng_size_t i;
+  ng_size_t klevnlatnlon, total_leftmost;
+  int ret;
+  int index_q, klev, nlon, nlat;
 
 /*
  * Retrieve arguments.
@@ -1697,7 +1780,7 @@ NhlErrorTypes wgt_volrmse_W( void )
  * Compute the size of the output array.
  */
   ndims_rmse  = max(1,ndims_q-3);
-  dsizes_rmse = (int*)calloc(ndims_rmse,sizeof(int));  
+  dsizes_rmse = (ng_size_t *)calloc(ndims_rmse,sizeof(ng_size_t));  
   if( dsizes_rmse == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -1851,14 +1934,24 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
  * Input array variables
  */
   void *q, *r, *wgtq, *wgtr, *wgty, *wgtx;
-  double *tmp_q, *tmp_r, *tmp_wgtq, *tmp_wgtr;
+  double *tmp_q = NULL;
+  double *tmp_r = NULL;
+  double *tmp_wgtq = NULL;
+  double *tmp_wgtr = NULL;
   double *tmp_wgty, *tmp_wgtx, *tmp1_wgtx, *tmp1_wgty;
   int *iflag;
-  int ndims_q, dsizes_q[NCL_MAX_DIMENSIONS], has_missing_q;
-  int ndims_r, dsizes_r[NCL_MAX_DIMENSIONS], has_missing_r;
-  int ndims_wgtq, dsizes_wgtq[NCL_MAX_DIMENSIONS];
-  int ndims_wgtr, dsizes_wgtr[NCL_MAX_DIMENSIONS];
-  int dsizes_wgtx[NCL_MAX_DIMENSIONS], dsizes_wgty[NCL_MAX_DIMENSIONS];
+  int ndims_q;
+  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS];
+  int has_missing_q;
+  int ndims_r;
+  ng_size_t dsizes_r[NCL_MAX_DIMENSIONS];
+  int has_missing_r;
+  int ndims_wgtq;
+  ng_size_t dsizes_wgtq[NCL_MAX_DIMENSIONS];
+  int ndims_wgtr;
+  ng_size_t dsizes_wgtr[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wgtx[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_wgty[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_q, type_r, type_wgtq, type_wgtr;
   NclBasicDataTypes type_wgtx, type_wgty;
   NclScalar missing_q, missing_dq, missing_rq, missing_r, missing_dr;
@@ -1866,13 +1959,17 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
  * Output variable.
  */
   void *rmse;
-  double *tmp_rmse;
-  int *dsizes_rmse, ndims_rmse;
+  double *tmp_rmse = NULL;
+  ng_size_t *dsizes_rmse;
+  int ndims_rmse;
   NclBasicDataTypes type_rmse;
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_q, klev, nlon, nlat, klevnlatnlon, total_leftmost, ret;
+  ng_size_t i;
+  ng_size_t klevnlatnlon, total_leftmost;
+  int ret;
+  int index_q, klev, nlon, nlat;
 
 /*
  * Retrieve arguments.
@@ -1981,7 +2078,7 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
  * Compute the size of the output array.
  */
   ndims_rmse  = max(1,ndims_q-3);
-  dsizes_rmse = (int*)calloc(ndims_rmse,sizeof(int));  
+  dsizes_rmse = (ng_size_t *)calloc(ndims_rmse,sizeof(ng_size_t));  
   if( dsizes_rmse == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse_ccm: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);

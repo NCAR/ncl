@@ -17,6 +17,8 @@
 
 #include <ncarg/gks.h>
 
+extern void NGCALLF(gclks,GCLKS)();
+
 void gclose_gks
 #ifdef NeedFuncProto
 (

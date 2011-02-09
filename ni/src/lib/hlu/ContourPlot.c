@@ -793,10 +793,10 @@ static NhlResource resources[] = {
 /* Intercepted resources */
 
 	{NhlNtrXTensionF,NhlCtrXTensionF,NhlTFloat,sizeof(float),
-		Oset(x_tension),NhlTString,"2.0",
+		 Oset(x_tension),NhlTString,_NhlUSET("2.0"),
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{NhlNtrYTensionF,NhlCtrYTensionF,NhlTFloat,sizeof(float),
-		Oset(y_tension),NhlTString,"2.0",
+		 Oset(y_tension),NhlTString,_NhlUSET("2.0"),
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{ NhlNpmLabelBarDisplayMode,NhlCpmLabelBarDisplayMode,
 		 NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
@@ -958,23 +958,7 @@ static NhlErrorTypes cnInitDraw(
 #endif
 );
 
-static NhlErrorTypes cnInitAreamap(
-#if	NhlNeedProto
-	NhlContourPlotLayer	cnl,
-	NhlString	entry_name
-#endif
-);
 
-static NhlErrorTypes cnInitCellArray(
-#if	NhlNeedProto
-	NhlContourPlotLayer	cnl,
-	int		*msize,
-	int		*nsize,
-	NhlBoundingBox	*bbox,
-	float		*min_cell_size,
-	NhlString	entry_name
-#endif
-);
 
 static NhlErrorTypes ContourPlotUpdateData(
 #if	NhlNeedProto
@@ -1008,15 +992,6 @@ static NhlErrorTypes SetUpLLTransObj(
 	NhlContourPlotLayer	cnew,
 	NhlContourPlotLayer	cold,
 	NhlBoolean	init
-#endif
-);
-
-static NhlErrorTypes SetCoordBounds(
-#if	NhlNeedProto
-	NhlContourPlotLayer	cnl,
-	cnCoord			ctype,
-	int			count,
-	NhlString		entry_name
 #endif
 );
 
@@ -1256,17 +1231,6 @@ static NhlErrorTypes    SetupLevelsExplicit(
 #endif
 );
 
-static NhlErrorTypes ChooseSpacingLin(
-#if	NhlNeedProto
-	float		*tstart,
-	float		*tend,
-	float		*spacing,
-	int		convert_precision,
-	int		max_ticks,
-	NhlString	entry_name
-#endif
-);
-
 static NhlErrorTypes    ManageData(
 #if	NhlNeedProto
 	NhlContourPlotLayer	cnnew, 
@@ -1317,12 +1281,12 @@ static NhlErrorTypes    ManageDynamicArrays(
 static NhlErrorTypes    ManageGenArray(
 #if	NhlNeedProto
 	NhlGenArray	*ga,
-	int		count,
+	ng_size_t	count,
 	NhlGenArray	copy_ga,
 	NrmQuark	type,
 	NhlPointer	init_val,
-	int		*old_count,
-	int		*init_count,
+	ng_size_t	*old_count,
+	ng_size_t	*init_count,
 	NhlBoolean	*need_check,
 	NhlBoolean	*changed,				       
 	NhlString	resource_name,
@@ -1346,7 +1310,7 @@ static NhlErrorTypes	CheckColorArray(
 static NhlGenArray GenArraySubsetCopy(
 #if	NhlNeedProto
         NhlGenArray     ga,
-        int             length
+        ng_size_t       length
 #endif
 );
 
@@ -1500,52 +1464,12 @@ static NrmQuark	Qlg_label_strings = NrmNULLQUARK;
 static NrmQuark	Qlb_label_strings = NrmNULLQUARK;
 
 
-
-typedef enum { 
-	cnInt,
-	cnFloat,
-	cnString 
-} _cnParamType;
-
-typedef struct _cnCp_Params {
-	NhlString	name;
-	_cnParamType	type;
-} cnCp_Params;
-
-static cnCp_Params Cp_Params[] = {
-{"HCL", cnFloat},
-{"HCS", cnFloat}, 
-{"HCF", cnInt}, 
-{"HLX", cnInt}, 
-{"HLY", cnInt}, 
-{"IWM", cnInt}, 
-{"PC1", cnFloat},
-{"PC2", cnFloat}, 
-{"PC3", cnFloat}, 
-{"PC4", cnFloat}, 
-{"PC5", cnFloat}, 
-{"PC6", cnFloat},
-{"PIC", cnInt}, 
-{"PIE", cnInt},
-{"PW1", cnFloat}, 
-{"PW2", cnFloat}, 
-{"PW3", cnFloat},
-{"PW4", cnFloat}, 
-{"RC1", cnFloat}, 
-{"RC2", cnFloat}, 
-{"RC3", cnFloat}, 
-{"RWC", cnInt}, 
-{"RWG", cnInt}, 
-{"RWM", cnInt},
-};
-
 static NhlString cnEmptyString = "";
 
 #define NhlDASHBUFSIZE	128
 
 static NhlContourPlotLayer	Cnl = NULL;
 static NhlContourPlotLayerPart	*Cnp = NULL;
-static float LowLabelFactor = 1.0;
 
 /*
  * Function:	nhlfcontourplotlayerclass
@@ -2379,7 +2303,6 @@ static NhlErrorTypes ContourPlotSetValues
  	NhlContourPlotLayerPart	*cnp = &(cnew->contourplot);
 	NhlContourPlotLayer		cold = (NhlContourPlotLayer) old;
  	NhlContourPlotLayerPart	*ocnp = &(cold->contourplot);
-	NhlTransformLayerPart	*tfp = &(cnew->trans);
 	/* Note that both ManageLegend and ManageLabelBar add to sargs */
 	NhlSArg			sargs[128];
 	int			nargs = 0;
@@ -2840,11 +2763,11 @@ static NhlErrorTypes    ContourPlotGetValues
 static NhlGenArray GenArraySubsetCopy
 #if	NhlNeedProto
         (NhlGenArray    ga,
-        int             length)
+        ng_size_t       length)
 #else
 (ga,length)
         NhlGenArray     ga;
-        int             length;
+        ng_size_t       length;
 #endif
 {
         NhlGenArray gto;
@@ -3237,8 +3160,6 @@ static NhlErrorTypes cnInitDraw
                 cnp->ycn = ycount - 1;
         }
 	else if (cnp->grid_type >= NhltrCURVILINEAR) {
-                int xcount,ycount;
-
                 cnp->xc1 = cnp->sfp->ix_start;
                 cnp->xcm = cnp->sfp->ix_end;
                 cnp->yc1 = cnp->sfp->iy_start;
@@ -3248,201 +3169,6 @@ static NhlErrorTypes cnInitDraw
 	return ret;
 }
 
-
-/*
- * Function:	cnInitAreamap
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes cnInitAreamap
-#if	NhlNeedProto
-(
-	NhlContourPlotLayer	cnl,
-	NhlString	entry_name
-)
-#else
-(cnl,entry_name)
-        NhlContourPlotLayer cnl;
-	NhlString	entry_name;
-#endif
-{
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
-	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
-
-	if (cnp->aws_id < 1) {
-		cnp->aws_id = 
-			_NhlNewWorkspace(NhlwsAREAMAP,
-					 NhlwsNONE,200000*sizeof(int));
-		if (cnp->aws_id < 1) 
-			return MIN(ret,(NhlErrorTypes)cnp->aws_id);
-	}
-	if ((cnp->aws = _NhlUseWorkspace(cnp->aws_id)) == NULL) {
-		e_text = 
-			"%s: error reserving label area map workspace";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
-#if 0
-	c_arseti("lc",(int) (cnp->amap_crange * 
-		 MIN(cnl->view.width,cnl->view.height)));
-#endif
-	subret = _NhlArinam(cnp->aws,entry_name);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-	return ret;
-}
-
-static void GetCellInfo
-#if	NhlNeedProto
-(
-	NhlContourPlotLayerPart	*cnp,
-	float			*cxd,
-	float			*cyd,
-        NhlBoolean		xlinear,
-        NhlBoolean		ylinear,
-	int			*mcount,
-	int			*ncount,
-	float			*xsoff,
-	float			*xeoff,
-	float			*ysoff,
-	float			*yeoff,
-	float			*xexact_count,
-	float			*yexact_count
-)
-#else
-(cnp,cxd,cyd,xlinear,ylinear,mcount,ncount,
- xsoff,xeoff,ysoff,yeoff,xexact_count,yexact_count)
-	float			*cxd;
-	float			*cyd;
-        NhlBoolean		xlinear;
-        NhlBoolean		ylinear;
-	int			*mcount;
-	int			*ncount;
-	float			*xsoff;
-	float			*xeoff;
-	float			*ysoff;
-	float			*yeoff;
-	float			*xexact_count;
-	float			*yexact_count;
-#endif
-{
-	float offset,ddiff,wdiff,stepsize;
-	float xmin,xmax,ymin,ymax;
-	double pint;
-/*
- * these are the offsets (in fraction of a cell edge) added to the 
- * data space in order to account
- * for the fact that more or less of the edge cells should show. If the
- * data window is equal to or larger than the data being show, the offset
- * is half a cell. Under other conditions it may be more or less.
- */
-	if (cnp->sfp->xc_is_bounds)
-		*xsoff = *xeoff = 0.0;
-	else 
-		*xsoff = *xeoff = 0.5;
-	if (cnp->sfp->yc_is_bounds)
-		*ysoff = *yeoff = 0.0;
-	else 
-		*ysoff = *yeoff = 0.5;
-	*xexact_count = *mcount - 1;
-	*yexact_count = *ncount - 1;
-
-	xmin = MIN(cnp->sfp->x_end,cnp->sfp->x_start);
-	xmax = MAX(cnp->sfp->x_end,cnp->sfp->x_start);
-	if (xlinear && (xmin < cxd[0] || xmax > cxd[1])) {
-		ddiff = xmax - xmin;
-		stepsize = ddiff / (cnp->sfp->fast_len - 1);
-		offset = cxd[0] - xmin;
-		*xsoff += modf(offset/stepsize,&pint);
-		*xsoff = (*xsoff >= 1.0) ? *xsoff - 1 : *xsoff;
-		offset = xmax - cxd[1];
-		*xeoff += modf(offset/stepsize,&pint);
-		*xeoff = (*xeoff >= 1.0) ? *xeoff - 1 : *xeoff;
-		*xexact_count = (cxd[1] - cxd[0]) / stepsize;
-		*mcount = (int) (0.5 + *xexact_count + *xsoff + *xeoff);
-	}
-
-	ymin = MIN(cnp->sfp->y_end,cnp->sfp->y_start);
-	ymax = MAX(cnp->sfp->y_end,cnp->sfp->y_start);
-	if (ylinear && (ymin < cyd[0] || ymax > cyd[1])) {
-		ddiff = ymax - ymin;
-		stepsize = ddiff / (cnp->sfp->slow_len - 1);
-		offset = cyd[0] - ymin;
-		*ysoff += modf(offset/stepsize,&pint);
-		*ysoff = (*ysoff >= 1.0) ? *ysoff - 1 : *ysoff;
-		offset = ymax - cyd[1];
-		*yeoff += modf(offset/stepsize,&pint);
-		*yeoff = (*yeoff >= 1.0) ? *yeoff - 1 : *yeoff;
-		*yexact_count = (cyd[1] - cyd[0]) / stepsize;
-		*ncount = (int) (0.5 + *yexact_count + *ysoff + *yeoff);
-	}
-}
-
-static float Xsoff,Xeoff,Ysoff,Yeoff;
-
-static void CanonicalLonBounds
-#if	NhlNeedProto
-(
-	float lon0,
-	float lon1,
-	float center_lon,
-	float *min_lon,
-	float *max_lon
-)
-#else
-(lon0,lon1,center_lon,min_lon,max_lon)
-	float lon0;
-	float lon1;
-	float center_lon;
-	float *min_lon;
-	float *max_lon;
-#endif
-{
-	float lmin,lmax;
-
-	lmin = lon0;
-	lmax = lon1;
-
-	while (lmax - lmin > 360)
-		lmax -= 360;
-
-	while (_NhlCmpFAny2(lmin,lmax,6,1e-6) >= 0.0) 
-		lmin -=360;
-
-		
-	if (center_lon > 360)
-		center_lon -= 360;
-	if (center_lon < -360)
-		center_lon += 360;
-
-	while (lmin < center_lon - 180.0) {
-		lmin += 360;
-		lmax += 360;
-	}
-	while (lmin > center_lon + 180.0) {
-		lmin -= 360;
-		lmax -= 360;
-	}
-	if (lmax > center_lon + 180.0) {
-		lmin = center_lon - 180.0;
-		lmax = center_lon + 180.0;
-	}
-	*min_lon = lmin;
-	*max_lon = lmax;
-
-	return;
-}
 			
 /*
  * Function:	cnUpdateTrans
@@ -3496,7 +3222,6 @@ static NhlErrorTypes cnUpdateTrans
 		if ((cnp->trans_obj->base.layer_class)->base_class.class_name 
 		    == NhlmapTransObjClass->base_class.class_name) {
 			float xmin, xmax;
-			float cell_size;
 
 			xmin = MIN (cnp->sfp->x_start,cnp->sfp->x_end);
 			xmax = MAX (cnp->sfp->x_start,cnp->sfp->x_end);
@@ -3896,7 +3621,6 @@ static NhlErrorTypes cnDraw
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
-	NhlTransformLayerPart	*tfp = &(cnl->trans);
 
 	NhlVASetValues(cnl->base.wkptr->base.id,
 		       _NhlNwkReset,	True,
@@ -4615,7 +4339,7 @@ static NhlErrorTypes SetUpCrvTransObj
 {
  	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
-	char			*entry_name;
+	char			*entry_name = "SetUpCrvTransObj";
 	NhlContourPlotLayerPart	*cnp = &(cnew->contourplot);
 	NhlContourPlotLayerPart	*ocnp = &(cold->contourplot);
 	NhlTransformLayerPart	*tfp = &(cnew->trans);
@@ -6022,7 +5746,7 @@ static NhlErrorTypes ManageLabelBar
 	NhlTransformLayerPart	*tfp = &(cnnew->trans);
 	NhlBoolean		redo_lbar = False;
 	NhlBoolean		set_all = False;
-	NhlBoolean              limit_mode = False;
+	ng_size_t               lcount;
 
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
         
@@ -6139,6 +5863,7 @@ static NhlErrorTypes ManageLabelBar
 
 	if (redo_lbar) {
 		NhlGenArray ga;
+		lcount = cnp->lbar_fill_count;
 
 		cnp->lbar_func_code = cnp->line_lbls.fcode[0];
 		if (cnp->lbar_labels != NULL) 
@@ -6170,7 +5895,8 @@ static NhlErrorTypes ManageLabelBar
 				}
 				NhlFreeGenArray(cnp->lbar_fill_colors);
 				cnp->lbar_fill_colors = NhlCreateGenArray((NhlPointer)new_fcolors,NhlTColorIndex,
-									  sizeof(int),1,&cnp->lbar_fill_count);
+									  sizeof(int),1,&lcount);
+				cnp->lbar_fill_count = (int) lcount;
 				cnp->lbar_fill_colors->my_data = True;
 				ocnp->lbar_fill_colors = NULL;
 				
@@ -6184,7 +5910,8 @@ static NhlErrorTypes ManageLabelBar
 				}
 				NhlFreeGenArray(cnp->lbar_fill_patterns);
 				cnp->lbar_fill_patterns = NhlCreateGenArray((NhlPointer)new_fpatterns,NhlTInteger,
-								sizeof(int),1,&cnp->lbar_fill_count);
+									    sizeof(int),1,&lcount);
+				cnp->lbar_fill_count = (int) lcount;
 				cnp->lbar_fill_patterns->my_data = True;
 				ocnp->lbar_fill_patterns = NULL;
 			}
@@ -6197,7 +5924,8 @@ static NhlErrorTypes ManageLabelBar
 				}
 				NhlFreeGenArray(cnp->lbar_fill_scales);
 				cnp->lbar_fill_scales = NhlCreateGenArray((NhlPointer)new_fscales,NhlTFloat,
-									  sizeof(float),1,&cnp->lbar_fill_count);
+									  sizeof(float),1,&lcount);
+				cnp->lbar_fill_count = (int) lcount;
 				cnp->lbar_fill_scales->my_data = True;
 				ocnp->lbar_fill_scales = NULL;
 			}
@@ -6205,7 +5933,8 @@ static NhlErrorTypes ManageLabelBar
 		else { /* NhlINCLUDEMINMAXLABELS */
 			NhlString *to_sp, *from_sp;
 			NhlString s;
-			int i, count;
+			int i;
+			ng_size_t  count;
 			float *levels = (float *) cnp->levels->data;
 			from_sp = (NhlString *) cnp->llabel_strings->data;
 			count = cnp->level_count + 2;
@@ -8010,16 +7739,17 @@ static NhlErrorTypes    ManageDynamicArrays
 	NhlContourPlotLayer	cold = (NhlContourPlotLayer) old;
 	NhlContourPlotLayerPart *ocnp = &(cold->contourplot);
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
-	int i,count;
+	int i;
+	ng_size_t  count;
 	NhlGenArray ga;
 	char *entry_name;
 	char *e_text;
 	int *ip;
 	float *fp;
 	float fval;
-	int	init_count;
+	ng_size_t init_count;
 	NhlBoolean need_check,changed;
-	int old_count;
+	ng_size_t old_count;
 	float *levels = NULL;
 	NhlBoolean levels_modified = False, flags_modified = False;
 	NhlBoolean line_init;
@@ -8592,12 +8322,12 @@ static NhlErrorTypes    ManageDynamicArrays
 static NhlErrorTypes    ManageGenArray
 #if	NhlNeedProto
 	(NhlGenArray	*ga,
-	 int		count,
+	 ng_size_t	count,
 	 NhlGenArray	copy_ga,
 	 NrmQuark	type,
 	 NhlPointer	init_val,
-	 int		*old_count,
-	 int		*init_count,
+	 ng_size_t	*old_count,
+	 ng_size_t	*init_count,
 	 NhlBoolean	*need_check,
 	 NhlBoolean	*changed,
 	 NhlString	resource_name,
@@ -8606,12 +8336,12 @@ static NhlErrorTypes    ManageGenArray
 (ga,count,copy_ga,type,init_val,old_count,init_count,
  need_check,changed,resource_name,entry_name)
 	NhlGenArray	*ga;
-	int		count;
+	ng_size_t	count;
 	NhlGenArray	copy_ga;
 	NrmQuark	type;
 	NhlPointer	init_val;
-	int		*old_count;
-	int		*init_count;
+	ng_size_t	*old_count;
+	ng_size_t	*init_count;
 	NhlBoolean	*need_check;
 	NhlBoolean	*changed;
 	NhlString	resource_name;
@@ -9463,7 +9193,6 @@ NhlContourPlotLayer	cnew;
 	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnew->contourplot);
-	NhlContourPlotLayerPart	*ocnp = &(cold->contourplot);
 	int			i,j,count;
 	float			*fp;
 	float			ftmp;
@@ -9610,7 +9339,7 @@ static int AdjustFromSingle
 	int gix = -1;
 	int p0,p1,p2,p3;
 	float xout,yout,xtri,ytri,xinc,yinc;
-	float xp0,yp0,xp2,yp2,xo1,yo1,xo2,yo2,xo3,yo3,dist1,dist2;
+	float xp0,yp0,xp2,yp2,dist1,dist2;
 	int i;
 	int status;
 
@@ -9766,7 +9495,6 @@ static int AdjustFromDouble
 	int gix1 = -1, gix2 = -1;
 	int p0,p1,p2,p3;
 	float xout[2],yout[2],xtri[2],ytri[2],xinc,yinc;
-	float xt,yt;
 	int i;
 	int status;
 
@@ -9917,7 +9645,7 @@ static int AdjustFromTriple
 #endif
 {
 	int bix = -1;
-	int p0,p1,p2,p3;
+	int p0,p1,p2;
 	float xout,yout,xtri,ytri,xinc,yinc;
 	float xbad, ybad, xnew1, ynew1, xnew2, ynew2;
 	int i;
@@ -10049,12 +9777,7 @@ static int GoodPoints
 	float out_of_range;
 #endif
 {
-	int status;
 	int points = 0;
-	float xmin = FLT_MAX;
-	float xmax = -FLT_MAX;
-	float ymin = FLT_MAX;
-	float ymax = -FLT_MAX;
 	int i;
 
 	for (i = 0; i < 4; i++) {
@@ -10706,14 +10429,11 @@ NhlErrorTypes CellFill2D
 {
 	NhlContourPlotLayerPart 	  *cnp = &cnl->contourplot;
 	NhlErrorTypes	ret = NhlNOERROR;
-	char		*e_text;
-	float 		*xa, *ya, *da, *levels;
+	float 		*xa, *ya, *da;
 	int		xcount,ycount;
 	int		xsize;
 	int             i,j,k;
 	float		xi[4],yi[4],xo[6],yo[6];
-	NhlBoolean	has_missing;
-	int		lcol,gcol, fcol,npoints;
 	float           out_of_range;
 	int             oor_count = 0;
 	int             over_sized = 0;
@@ -10721,7 +10441,6 @@ NhlErrorTypes CellFill2D
 	int             adj_count;
 	float           xcellthreshold,ycellthreshold;
 	NhlBoolean      ezmap = False;
-	NhlBoolean      cyclic = False;
 	int             *ibnd;
 	int xmaxix, xminix;
 	int jc, jcp1, jcm1;
@@ -11295,16 +11014,13 @@ NhlErrorTypes CellFill1D
 {
 	NhlContourPlotLayerPart 	  *cnp = &cnl->contourplot;
 	NhlErrorTypes	ret = NhlNOERROR;
-	char		*e_text;
-	NhlBoolean      x_isbound,y_isbound;
 	float 		*xa, *ya, *da, *levels;
 	int		xcount,ycount;
 	int		xsize;
 	int             i,j,k;
 	float		xi[4],yi[4],xo[6],yo[6];
-	NhlBoolean	has_missing;
-	int		gcol, fcol,npoints;
-	float		xwcell,ywcell,xfcell,yfcell;
+	int		npoints;
+	float		xfcell,yfcell;
 	float           out_of_range;
 	int             oor_count = 0;
 	int             over_sized = 0;

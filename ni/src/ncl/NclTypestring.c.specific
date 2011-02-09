@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.specific,v 1.9 2009-07-10 19:54:05 huangwei Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -54,18 +54,18 @@ void *val;
 
 static NhlErrorTypes Ncl_Type_string_coerce
 #if	NhlNeedProto
-(void * result, void* from, int n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
+(void * result, void* from, ng_size_t n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
 #else
 (result, from, n, from_m, to_m, fc)
 void * result;
 void* from;
-int n;
+ng_size_t n;
 NclScalar* from_m;
 NclScalar *to_m;
 NclTypeClass fc;
 #endif
 {
-	int i;
+	ng_size_t i;
 	string *res = (string*)result;
 	int tmp;
 	NclTypeOp eq;
@@ -318,6 +318,27 @@ NclTypeClass fc;
 	}
         case Ncl_Typeushort: {
                 unsigned short *fl = (unsigned short*)from;
+                if((from_m == NULL)||(to_m == NULL)) {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                sprintf(buffer,"%u",*fl);
+                                *res = (string)NrmStringToQuark(buffer);
+                        }
+                } else {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                tmp = 0;
+                                (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+                                if(tmp) {
+                                        *res = tmp_mis.stringval;
+                                } else {
+                                        sprintf(buffer,"%u",*fl);
+                                        *res = (string)NrmStringToQuark(buffer);
+                                }
+                        }
+                }
+                return(NhlNOERROR);
+	}
+        case Ncl_Typeubyte: {
+                unsigned char *fl = (unsigned char*)from;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {
                                 sprintf(buffer,"%u",*fl);

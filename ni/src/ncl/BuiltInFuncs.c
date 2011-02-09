@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.255 2010-05-06 18:18:40 dbrown Exp $
+ *      $Id$
  */
 /************************************************************************
 *                                                                       *
@@ -27,6 +27,8 @@ extern "C" {
 #include <limits.h>
 #include <stdarg.h>
 #include <string.h>
+#include <ctype.h>
+#include <stdint.h>
 #include <ncarg/c.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
@@ -44,6 +46,7 @@ extern "C" {
 #include <float.h>
 #include "defs.h"
 #include <errno.h>
+#include <string.h>
 #include "Symbol.h"
 #include "NclDataDefs.h"
 #include "Machine.h"
@@ -54,6 +57,7 @@ extern "C" {
 #include "DataSupport.h"
 #include "NclMdInc.h"
 #include "NclHLUObj.h"
+#include "HLUSupport.h"
 #include "parser.h"
 #include "OpsList.h"
 #include "ApiRecords.h"
@@ -73,6 +77,14 @@ extern char *nclf;
 
 long long local_strtoll(const char *nptr, char **endptr, int base);
 
+/* 
+ * Function to coerce dimension sizes to int or long
+ * Located in ../lib/nfp/wrapper.[ch].
+ */
+extern ng_size_t *get_dimensions(void *tmp_dimensions,ng_size_t n_dimensions,
+				 NclBasicDataTypes type_dimensions,
+				 const char *);
+
 NhlErrorTypes _NclIGetScriptPrefixName
 #if     NhlNeedProto
 (void)
@@ -80,8 +92,8 @@ NhlErrorTypes _NclIGetScriptPrefixName
 ()
 #endif
 {
-    int dimsz = 1,
-        ndims = 1;
+    ng_size_t dimsz = 1;
+    int       ndims = 1;
     string  script_name;
     char    *lastdot = NULL,
             *prefix_nclf = NULL;
@@ -127,8 +139,8 @@ NhlErrorTypes _NclIGetScriptName
 ()
 #endif
 {
-    int dimsz = 1,
-        ndims = 1;
+    ng_size_t dimsz = 1;
+    int       ndims = 1;
     string  script_name;
     NclScalar   missing;
 
@@ -197,6 +209,23 @@ NhlErrorTypes _NclIListHLUObjs
         }
 	return(NhlNOERROR);
 }
+
+static long long _Ncl_llabs
+#if     NhlNeedProto
+(
+        long long val
+)
+#else
+(val)
+long long val;
+#endif
+{
+        if(val < 0)
+		return (-val);
+        else
+		return (val);
+}
+
 NhlErrorTypes _NclIListVariables
 #if	NhlNeedProto
 (void)
@@ -235,7 +264,7 @@ NhlErrorTypes _NclIListVariables
 					return(NhlWARNING);
 				}
 			}
-			ret = nclfprintf(fp,"%d ] x ",step->u.var->dim_info[i].dim_size);
+			ret = nclfprintf(fp,"%zd ] x ",step->u.var->dim_info[i].dim_size);
 			if(ret < 0) {
 				_NclFreeApiDataList((void*)tmp);
 				return(NhlWARNING);
@@ -253,7 +282,7 @@ NhlErrorTypes _NclIListVariables
 				return(NhlWARNING);
 			}
                 }
-                ret = nclfprintf(fp,"%d ]\n",step->u.var->dim_info[step->u.var->n_dims - 1].dim_size);
+                ret = nclfprintf(fp,"%zd ]\n",step->u.var->dim_info[step->u.var->n_dims - 1].dim_size);
 		if(ret < 0) {
 			_NclFreeApiDataList((void*)tmp);
 			return(NhlWARNING);
@@ -322,7 +351,7 @@ NhlErrorTypes _NclIListFiles
 					return(NhlWARNING);
 				}
 			}
-			ret = nclfprintf(fp,"%d\n",step->u.file->dim_info[i].dim_size);
+			ret = nclfprintf(fp,"%zd\n",step->u.file->dim_info[i].dim_size);
 			if(ret < 0) {
 				_NclFreeApiDataList((void*)tmp);
 				return(NhlWARNING);
@@ -404,7 +433,7 @@ NhlErrorTypes _NclIListFuncs
 				if(step->u.func->theargs[i].is_dimsizes) {
 					for(j = 0; j < step->u.func->theargs[i].n_dims; j++ ) {
 						if(step->u.func->theargs[i].dim_sizes[j] > 0) {
-							ret = nclfprintf(fp,"[%d]",step->u.func->theargs[i].dim_sizes[j]);
+							ret = nclfprintf(fp,"[%zd]",step->u.func->theargs[i].dim_sizes[j]);
 							if(ret < 0) {
 								_NclFreeApiDataList((void*)tmp);
         							return(NhlWARNING);
@@ -456,7 +485,7 @@ NhlErrorTypes _NclIListFuncs
 			if(step->u.func->theargs[step->u.func->nparams-1].is_dimsizes) {
 				for(j = 0; j < step->u.func->theargs[step->u.func->nparams-1].n_dims; j++ ) {
 					if(step->u.func->theargs[step->u.func->nparams-1].dim_sizes[j] > 0) {
-						ret = nclfprintf(fp,"[%d]",step->u.func->theargs[step->u.func->nparams-1].dim_sizes[j]);
+						ret = nclfprintf(fp,"[%zd]",step->u.func->theargs[step->u.func->nparams-1].dim_sizes[j]);
 						if(ret < 0) {
 							_NclFreeApiDataList((void*)tmp);
         						return(NhlWARNING);
@@ -519,8 +548,8 @@ NhlErrorTypes _NclIGetFileVarNames
 	NclApiDataList *tmp,*step;
 	NclQuark *var_names = NULL;
 	NclQuark file_q;
-	int i,ret =0;
-	int dimsize = 0;
+	int i;
+	ng_size_t dimsize = 0;
 	NclFile thefile;
 	NclMultiDValData tmp_md = NULL;
 	
@@ -555,7 +584,7 @@ NhlErrorTypes _NclIGetFileVarNames
 	} else {
 		tmp = _NclGetFileVarInfoList(file_q);
 		if(tmp==NULL){
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIGetFileVarNames: file does not exist");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"getfilevarnames: file does not exist");
 			return(NhlFATAL);
 		} 
 		step = tmp;
@@ -605,6 +634,8 @@ NhlErrorTypes _NclIListFileVariables
 		 file_q = data.u.data_var->var.var_quark;
 		break;
 	case NclStk_VAL:
+	default:
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
 		return(NhlFATAL);
 	}
 	if(cmd_line == 1) {
@@ -639,7 +670,7 @@ NhlErrorTypes _NclIListFileVariables
 					return(NhlWARNING);
 				}
 			}
-			ret = nclfprintf(fp,"%d ] x ",step->u.var->dim_info[i].dim_size);
+			ret = nclfprintf(fp,"%zd ] x ",step->u.var->dim_info[i].dim_size);
 			if(ret < 0) {
 				_NclFreeApiDataList((void*)tmp);
 				return(NhlWARNING);
@@ -657,7 +688,7 @@ NhlErrorTypes _NclIListFileVariables
 				return(NhlWARNING);
 			}
                 }
-                ret = nclfprintf(fp,"%d ]\n",step->u.var->dim_info[step->u.var->n_dims - 1].dim_size);
+                ret = nclfprintf(fp,"%zd ]\n",step->u.var->dim_info[step->u.var->n_dims - 1].dim_size);
 		if(ret < 0) {
 			_NclFreeApiDataList((void*)tmp);
 			return(NhlWARNING);
@@ -692,7 +723,7 @@ NhlErrorTypes _NclINhlDataToNDC
 	NclVar tmp_vars[5];
 	int i;
 	int ncl_id;
-	int tmp_dimsizes = 1;
+	ng_size_t tmp_dimsizes = 1;
 	NclHLUObj hlu_ptr;
 	int status;
 	NclScalar* missing, *missing1;
@@ -808,7 +839,7 @@ NhlErrorTypes _NclINhlNDCToData
 	NclVar tmp_vars[5];
 	int i;
 	int ncl_id;
-	int tmp_dimsizes = 1;
+	ng_size_t tmp_dimsizes = 1;
 	NclHLUObj hlu_ptr;
 	int status;
 	NclScalar* missing, *missing1;
@@ -919,10 +950,7 @@ NhlErrorTypes _Nclsystemfunc
 {
         NclStackEntry val,data;
         NclMultiDValData tmp_md = NULL;
-        logical *lval;
-        int dimsize = 1;
 	char* command;
-	char *pager;
 	int fildes[2],new_pipe_fd;
         int ret;
 	int id;
@@ -936,7 +964,7 @@ NhlErrorTypes _Nclsystemfunc
 	NclQuark *qbuffer;
 	NclQuark *qbuffer_ptr;
 	long off;
-	int nelem = 0;
+	ng_size_t nelem = 0;
 
 
         val = _NclGetArg(0,1,DONT_CARE);
@@ -967,7 +995,7 @@ NhlErrorTypes _Nclsystemfunc
 			new_pipe_fd = dup(fildes[1]);
 			close(fildes[1]);
 			command = NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val); 
-			/*
+                        /*
 			 * Note: the child should use _exit() rather than exit() to avoid calling the
 			 * registered atexit() functions prematurely
 			 */
@@ -1038,16 +1066,15 @@ NhlErrorTypes _Nclstrlen
 #endif
 {
     string* strs;
-    int ndims,
-        dimsz[NCL_MAX_DIMENSIONS];
+    int ndims;
+    ng_size_t dimsz[NCL_MAX_DIMENSIONS];
     int has_missing,
-        found_missing = 0;
+    found_missing = 0;
     NclScalar   missing,
                 ret_missing;
   
-    int sz = 1;
+    ng_size_t i, sz = 1;
     int*    lens;
-    int i;
     
 
     strs = (string *) NclGetArgValue(
@@ -1114,10 +1141,8 @@ NhlErrorTypes _Nclsystem
 ()
 #endif
 {
-    NclStackEntry val,data;
+    NclStackEntry val;
     NclMultiDValData tmp_md = NULL;
-    logical *lval;
-    int dimsize = 1;
     char* command;
     char *pager;
     char *no_sys_pager = NULL;
@@ -1143,7 +1168,6 @@ NhlErrorTypes _Nclsystem
             NhlPError(NhlWARNING, NhlEUNKNOWN, "system: invalid argument (zero length)");
             return NhlWARNING;
         }
-
         no_sys_pager = getenv("NCL_NO_SYSTEM_PAGER");
         if (cmd_line == 1) {
             if ((no_sys_pager == NULL) && (!NCLnoSysPager)) {
@@ -1196,8 +1220,7 @@ NhlErrorTypes _NclIIsMissing
 	NclStackEntry val,data;
 	NclMultiDValData tmp_md = NULL;
 	logical *lval;
-	int dimsize = 1;
-	int i;
+	ng_size_t i;
 	
 	val = _NclGetArg(0,1,DONT_CARE);
 /*
@@ -1393,6 +1416,7 @@ NhlErrorTypes _NclIAddToOverlay
 	} else {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"overlay: bad HLU id passed in, ignoring");
 	}
+	return NhlFATAL;
 }
 NhlErrorTypes _NclIAddFile
 #if	NhlNeedProto
@@ -1411,7 +1435,7 @@ NhlErrorTypes _NclIAddFile
 	char *rw;
 	int rw_v;
 	int *id = (int*)NclMalloc((unsigned)sizeof(int));
-	int dim_size = 1;
+	ng_size_t dim_size = 1;
 	obj *tmp_obj = NULL; 
 /*
 * Guarenteed to be scalar string
@@ -1504,7 +1528,8 @@ NhlErrorTypes _NclIAny
 	NclStackEntry data;	
 	NclStackEntry data_out;	
 	NclMultiDValData tmp_md = NULL;
-	int i,dim_size = 1;
+	ng_size_t dim_size = 1;
+	ng_size_t i;
 	logical *tmp_val;
 	data = _NclGetArg(0,1,DONT_CARE);
 	if(data.kind == NclStk_VAR) {
@@ -1586,7 +1611,8 @@ NhlErrorTypes _NclIAll
 	NclStackEntry data;	
 	NclStackEntry data_out;	
 	NclMultiDValData tmp_md = NULL;
-	int i,dim_size = 1;
+	ng_size_t dim_size = 1;
+	ng_size_t i;
 	logical *tmp_val;
 	data = _NclGetArg(0,1,DONT_CARE);
 	if(data.kind == NclStk_VAR) {
@@ -1668,8 +1694,10 @@ NhlErrorTypes _NclISizeOf
 	NclStackEntry data;	
 	NclStackEntry data_out;	
 	NclMultiDValData tmp_md = NULL;
-	int *size;
-	int dim_size = 1;
+	long lsize;
+	void *size;
+	ng_size_t dim_size = 1;
+	logical return_int;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	if(data.kind == NclStk_VAR) {
@@ -1684,9 +1712,17 @@ NhlErrorTypes _NclISizeOf
 	}
 	if(tmp_md != NULL) {
 		data_out.kind = NclStk_VAL;
-		size = NclMalloc(sizeof(int));
-		*size = _NclSizeOf(tmp_md->multidval.data_type)*tmp_md->multidval.totalelements;
-		data_out.u.data_obj = _NclCreateMultiDVal(
+		return_int = True;
+		lsize = (long)_NclSizeOf(tmp_md->multidval.data_type)*tmp_md->multidval.totalelements;
+#if !defined(NG32BIT)
+		if(lsize > INT32_MAX) {
+		  return_int = False;
+		}
+#endif
+		if(return_int) {
+		  size          = (void *) NclMalloc(sizeof(int));
+		  *((int*)size) = (int) lsize;
+		  data_out.u.data_obj = _NclCreateMultiDVal(
 			NULL,
 			NULL,
 			Ncl_MultiDValData,
@@ -1698,7 +1734,25 @@ NhlErrorTypes _NclISizeOf
 			TEMPORARY,
 			NULL,
 			(NclTypeClass)nclTypeintClass
-		);
+			);
+		}
+		else {
+		  size           = (void *) NclMalloc(sizeof(long));
+		  *((long*)size) = lsize;
+		  data_out.u.data_obj = _NclCreateMultiDVal(
+			NULL,
+			NULL,
+			Ncl_MultiDValData,
+			0,
+			(void*)size,
+			NULL,
+			1,
+			&dim_size,
+			TEMPORARY,
+			NULL,
+			(NclTypeClass)nclTypelongClass
+			);
+		}
 		if(data_out.u.data_obj != NULL) {
 			_NclPlaceReturn(data_out);
 			return(NhlNOERROR);
@@ -1717,52 +1771,111 @@ NhlErrorTypes _NclIDimSizes
 ()
 #endif
 {
-	NclStackEntry data;	
-	NclStackEntry data_out;	
-	NclMultiDValData tmp_md = NULL;
-	int *size;
-	int dim_size,i;
+    NclStackEntry data;	
+    NclStackEntry data_out;	
+    NclMultiDValData tmp_md = NULL;
+    ng_size_t dim_size, product_size;
+    void *size;
+    int i = 0;
+    logical return_int;
 
-	data = _NclGetArg(0,1,DONT_CARE);
-	if(data.kind == NclStk_VAR) {
-		if(data.u.data_var != NULL) {	
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-		}
-	} else if(data.kind == NclStk_VAL) {
-		tmp_md = data.u.data_obj;
-	} else {
-		NhlPError(NhlWARNING, NhlEUNKNOWN,"sizeof: incorrect type of object passed to sizeof");
-		return(NhlWARNING);
+    data = _NclGetArg(0,1,DONT_CARE);
+    if (data.kind == NclStk_VAR) {
+        if (data.u.data_var != NULL) {	
+            tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+        }
+    } else if (data.kind == NclStk_VAL) {
+        tmp_md = data.u.data_obj;
+    } else {
+        NhlPError(NhlWARNING, NhlEUNKNOWN,"dimsizes: incorrect object type.");
+        return(NhlWARNING);
+    }
+
+    if (tmp_md != NULL) {
+        data_out.kind = NclStk_VAL;
+
+/*
+ * Until we have a type like "nclTypengsizetClass", we need to
+ * specifically return ints or longs.
+ *
+ * Assume a return type of int unless one of the criteria 
+ * for returning longs is met.
+ *
+ * The rules for when to return an int versus a long:
+ *    - On a 32-bit system, return ints.
+ *    - On a 64-bit system, return longs if any of the
+ *      individual dimension sizes are > INT32_MAX, or
+ *      if the product of the dimension sizes is > INT32_MAX.
+ */
+        dim_size   = tmp_md->multidval.n_dims;
+	return_int = True;
+#if !defined(NG32BIT)
+	i = 0;
+	product_size = 1;
+        while(i < dim_size && return_int) {
+	  product_size *= tmp_md->multidval.dim_sizes[i];
+	  if(tmp_md->multidval.dim_sizes[i] > INT32_MAX ||
+	     product_size > INT32_MAX) {
+	    return_int = False;
+	  }
+	  i++;
 	}
-	if(tmp_md != NULL) {
-		data_out.kind = NclStk_VAL;
-		size = NclMalloc(sizeof(int)*tmp_md->multidval.n_dims);
-		for(i = 0; i< tmp_md->multidval.n_dims; i++) {
-			size[i] = tmp_md->multidval.dim_sizes[i];
-		}
-		dim_size = tmp_md->multidval.n_dims;
-		data_out.u.data_obj = _NclCreateMultiDVal(
-			NULL,
-			NULL,
-			Ncl_MultiDValData,
-			0,
-			(void*)size,
-			NULL,
-			1,
-			&dim_size,
-			TEMPORARY,
-			NULL,
-			(NclTypeClass)nclTypeintClass
-		);
-		if(data_out.u.data_obj != NULL ) {
-			_NclPlaceReturn(data_out);
-			return(NhlNOERROR);
-		} else {
-			return(NhlFATAL);
-		}
-	} else {
-		return(NhlFATAL);
+#endif
+	if(return_int) {
+	  size = (void *) NclMalloc(sizeof(int) * dim_size);
+	  if(size == NULL) {
+	    NhlPError(NhlFATAL, NhlEUNKNOWN,"dimsizes: cannot allocate memory for output");
+	    return(NhlFATAL);
+	  }
+	  for (i = 0; i < dim_size; i++) {
+	    ((int*)size)[i] = (int)tmp_md->multidval.dim_sizes[i];
+	  }
+	  data_out.u.data_obj = _NclCreateMultiDVal(
+  	        NULL,
+	        NULL,
+	        Ncl_MultiDValData,
+	        0,
+	        size,
+	        NULL,
+	        1,
+	        &dim_size,
+	        TEMPORARY,
+	        NULL,
+	        (NclTypeClass) nclTypeintClass
+	        );
 	}
+	else {
+	  size = (void *) NclMalloc(sizeof(long) * dim_size);
+	  if(size == NULL) {
+	    NhlPError(NhlFATAL, NhlEUNKNOWN,"dimsizes: cannot allocate memory for output");
+	    return(NhlFATAL);
+	  }
+	  for (i = 0; i < tmp_md->multidval.n_dims; i++) {
+	    ((long*)size)[i] = (long)tmp_md->multidval.dim_sizes[i];
+	  }
+	  data_out.u.data_obj = _NclCreateMultiDVal(
+  	        NULL,
+                NULL,
+                Ncl_MultiDValData,
+                0,
+                size,
+                NULL,
+                1,
+                &dim_size,
+                TEMPORARY,
+                NULL,
+                (NclTypeClass) nclTypelongClass
+            );
+        }
+        if (data_out.u.data_obj != NULL ) {
+            _NclPlaceReturn(data_out);
+            return(NhlNOERROR);
+        } else {
+            return(NhlFATAL);
+        }
+    } else {
+        return(NhlFATAL);
+    }
 }
 
 NhlErrorTypes _NclIDumpStk
@@ -1840,13 +1953,14 @@ NhlErrorTypes _NclIFrame
 	NclMultiDValData tmp_md;
 	NhlErrorTypes ret = NhlNOERROR;
 	NclHLUObj hlu_ptr;
-	int *obj_ids,i;
+	int *obj_ids;
+	ng_size_t i;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar) ) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to frame, ignoring request");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"frame: non-object input; ignoring request");
 			return(NhlFATAL);
 		} else {
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
@@ -1884,13 +1998,14 @@ NhlErrorTypes _NclIClear
 	NclStackEntry data;
 	NclMultiDValData tmp_md;
 	NclHLUObj hlu_ptr;
-	int *obj_ids,i;
+	int *obj_ids;
+	ng_size_t i;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar) ) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to clear, ignoring request");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"clear: non-object input; ignoring request");
 			return(NhlFATAL);
 		} else {
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
@@ -1928,18 +2043,14 @@ NhlErrorTypes _NclIDestroy
 {
 	NclStackEntry data;
 	NclMultiDValData tmp_md;
-	NclSymbol *thesym;
-	NclStackEntry *var;
-	int *obj_ids,i;
-	NclHLUObj hlu_ptr = NULL;
-	NclMultiDValData att_md;
-	void *att_val;
+	int *obj_ids;
+	ng_size_t  i;
 
 	data = _NclGetArg(0,1,WRITE_IT);
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to destroy, ignoring request");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"destroy: non-object input; ignoring request");
 	
 			return(NhlFATAL);
 		} else {
@@ -1970,13 +2081,14 @@ NhlErrorTypes _NclIUpdate
 	NclStackEntry data;
 	NclMultiDValData tmp_md;
 	NclHLUObj hlu_ptr;
-	int *obj_ids,i;
+	int *obj_ids;
+	ng_size_t  i;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to update, ignoring request");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"update: non-object input; ignoring request");
 	
 			return(NhlFATAL);
 		} else {
@@ -2018,14 +2130,15 @@ NhlErrorTypes _NclIDraw
 {
 	NclStackEntry data;
 	NclMultiDValData tmp_md;
-	int *obj_ids,i;
+	int *obj_ids;
+	ng_size_t  i;
 	NclHLUObj hlu_ptr;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-object passed to draw, ignoring request");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"draw: non-object input; ignoring request");
 			return(NhlFATAL);
 		} else {
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
@@ -2172,6 +2285,7 @@ NhlErrorTypes _NclIDelete
 			}
 		} else {
 			if((data.u.data_obj->obj.ref_count != 0)&&(!sub_sel)) {
+				int id = data.u.data_obj->obj.id;
 				switch(data.u.data_obj->obj.obj_type) {
 				case Ncl_CoordVar:
 					rlist = data.u.data_obj->obj.parents;
@@ -2182,7 +2296,10 @@ NhlErrorTypes _NclIDelete
 						} else {
 							_NclDelParent((NclObj)data.u.data_obj,(NclObj)pobj);
 						}
-						rlist = data.u.data_obj->obj.parents;
+						if (_NclGetObj(id) != NULL)
+							rlist = data.u.data_obj->obj.parents;
+						else
+							rlist = NULL;
 					}
 					break;
 				default:
@@ -2234,13 +2351,14 @@ NhlErrorTypes _Nclidsfft
 #endif
 {
 	float *arg[3];
-	int i;
-	int *dims;
-	int  dimsizes,dimsizes1,dimsizes2;
+	ng_size_t i;
+	void *tmp_dims;
+	ng_size_t *dims;
+	ng_size_t  dimsizes,dimsizes1,dimsizes2;
 	int has_missing,has_missing1,has_missing2;
 	NclScalar missing,missing1,missing2;
-	NclBasicDataTypes type0,type1,type2;
-	int m,n;
+	NclBasicDataTypes type0,type1,type2,type3;
+	ng_size_t m,n;
 	float *tmp;
 	float *x_coord;
 	float *y_coord;
@@ -2261,7 +2379,10 @@ NhlErrorTypes _Nclidsfft
 	arg[0] = (float*)NclGetArgValue( 0, 4, NULL, &dimsizes, &missing, &has_missing, &type0,DONT_CARE);
 	arg[1] = (float*)NclGetArgValue( 1, 4, NULL, &dimsizes1, &missing1, &has_missing1, &type1,DONT_CARE);
 	arg[2] = (float*)NclGetArgValue( 2, 4, NULL, &dimsizes2, &missing2, &has_missing2, &type2,DONT_CARE);
-	dims = (int*)NclGetArgValue( 3, 4, NULL, NULL, NULL, &has_missing, NULL,DONT_CARE);
+	tmp_dims = (void*)NclGetArgValue( 3, 4, NULL, NULL, NULL, &has_missing, &type3,DONT_CARE);
+	dims = get_dimensions(tmp_dims,2,type3,"idsfft");
+	if(dims == NULL) 
+	  return(NhlFATAL);
 
 	if((dimsizes == dimsizes1)&&(dimsizes = dimsizes2)){
 		xmax = (arg[0])[0];
@@ -2271,7 +2392,7 @@ NhlErrorTypes _Nclidsfft
 		for(i = 0; i < dimsizes; i++) {
 			if(has_missing) {
 				if((arg[0])[i] == missing.floatval) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclisdfft: input contains missing values, cannot continue");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"idsfft: input contains missing values, cannot continue");
 					return(NhlFATAL);
 				} else if((arg[0])[i] > xmax) {
 					xmax = (arg[0])[i];
@@ -2287,7 +2408,7 @@ NhlErrorTypes _Nclidsfft
 			}
 			if(has_missing1) {
 				if((arg[1])[i] == missing1.floatval) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclisdfft: input contains missing values, cannot continue");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"idsfft: input contains missing values, cannot continue");
 					return(NhlFATAL);
 				} else if((arg[1])[i] > ymax) {
 					ymax = (arg[1])[i];
@@ -2303,7 +2424,7 @@ NhlErrorTypes _Nclidsfft
 			}
 			if(has_missing2) {
 				if((arg[2])[i] == missing2.floatval) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclisdfft: input contains missing values, cannot continue");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"idsfft: input contains missing values, cannot continue");
 					return(NhlFATAL);
 				}
 			}
@@ -2322,7 +2443,7 @@ NhlErrorTypes _Nclidsfft
 		for(i = 0; i < n; i++) {
 			y_coord[i] = ymin + i * spacing;
 		}
-		iwrk = (int*)NclMalloc((31 * dimsizes + m * n)*sizeof(int));
+		iwrk = (int *)NclMalloc((31 * dimsizes + m * n)*sizeof(int));
 		fwrk = (float*)NclMalloc(6*dimsizes*sizeof(float));
 		c_idsfft(1,dimsizes,arg[1],arg[0],arg[2],n,m,n,y_coord,x_coord,tmp,iwrk,fwrk);
 		NclFree(iwrk);
@@ -2345,6 +2466,7 @@ NhlErrorTypes _Nclidsfft
 		tmp_var = _NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,tmp_md,dim_info,-1,ids,RETURNVAR,NULL,TEMPORARY);
 		data.kind = NclStk_VAR;
 		data.u.data_var = tmp_var;
+		NclFree(dims);
 		_NclPlaceReturn(data);
 		return(NhlNOERROR);
 	} else {
@@ -2359,7 +2481,7 @@ static NclTypeClass qc_nc = NULL;
 static NclScalar* qc_missing = NULL;
 static void * qc_val = NULL;
 
-static qsort_compare_func
+static int qsort_compare_func
 #if	NhlNeedProto
 (Const void* s1,Const void* s2)
 #else
@@ -2396,13 +2518,11 @@ NhlErrorTypes _NclIqsort
 #endif
 {
 	NclStackEntry args;
-	NclMultiDValData tmp_md= NULL,tmp_md2 = NULL;
+	NclMultiDValData tmp_md= NULL,tmp_md2 = NULL,tmp_md3 = NULL;
 	NclVar tmp_var;
-	long *index;
-	int i;
+	ng_size_t  *index;
+	ng_size_t i;
 	NclSelectionRecord * sel_ptr = NULL;
-	NhlErrorTypes ret;
-
 
 	args  = _NclGetArg(0,1,WRITE_IT);
 	switch(args.kind) {
@@ -2421,11 +2541,11 @@ NhlErrorTypes _NclIqsort
 	}
 	qc_val = tmp_md->multidval.val;
 
-	index = (long*)NclMalloc(tmp_md->multidval.totalelements * sizeof(long));
+	index = NclMalloc(tmp_md->multidval.totalelements * sizeof(ng_size_t));
 	for(i = 0; i < tmp_md->multidval.totalelements; i++) {
 		index[i] = i;
 	}
-	qsort((void*)index,tmp_md->multidval.totalelements,sizeof(long),qsort_compare_func);
+	qsort((void*)index,tmp_md->multidval.totalelements,sizeof(ng_size_t),qsort_compare_func);
 	
 	sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
 	sel_ptr->n_entries = 1;
@@ -2442,7 +2562,9 @@ NhlErrorTypes _NclIqsort
 		_NclAssignToVar(args.u.data_var,tmp_md2,NULL);
 		if((args.u.data_var->var.dim_info[0].dim_quark != -1)&&(_NclIsCoord(args.u.data_var,NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark)))) {
 			tmp_var = _NclReadCoordVar(args.u.data_var,NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark),NULL);
-			_NclWriteCoordVar(args.u.data_var,_NclVarValueRead(tmp_var,sel_ptr,NULL),NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark),NULL);
+			tmp_md3 = _NclVarValueRead(tmp_var,sel_ptr,NULL);
+			_NclWriteCoordVar(args.u.data_var,tmp_md3,NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark),NULL);
+			_NclDestroyObj((NclObj)tmp_md3);
 		}
 		_NclDestroyObj((NclObj)tmp_md2);
 		break;
@@ -2496,17 +2618,16 @@ NhlErrorTypes _NclIfbindirread(void)
 	NclStackEntry dimensions;
 	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
-	int n_dimensions = 0;
-	int *dimsizes = NULL;
-	int size = 1;
-	int i;
+	ng_size_t  n_dimensions = 0;
+	ng_size_t *dimsizes = NULL;
+	ng_size_t size = 1;
+	ng_size_t i;
 	void *tmp_ptr;
 	struct stat buf;
 	int fd = -1;
-	int totalsize = 0;
+	ng_size_t totalsize = 0;
 	off_t f_off;
 	int n;
 	char *step = NULL;
@@ -2598,9 +2719,16 @@ NhlErrorTypes _NclIfbindirread(void)
 	default:
 		return(NhlFATAL);
 	}
+/*
+ * Create array to hold dimension sizes, which can be int or long.
+ */
 	if(tmp_md != NULL) {
 		n_dimensions = tmp_md->multidval.totalelements;
-		dimsizes = (int*)tmp_md->multidval.val;
+		dimsizes = get_dimensions(tmp_md->multidval.val,
+					  tmp_md->multidval.totalelements,
+					  tmp_md->multidval.data_type,"fbindirread");
+		if(dimsizes == NULL) 
+		  return(NhlFATAL);
 /*
 		if((n_dimensions == 1)&&(dimsizes[0] == -1)) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: -1 is not supported for fbindirread use cbinread");
@@ -2608,10 +2736,14 @@ NhlErrorTypes _NclIfbindirread(void)
 		}
 */
 	}
-	if((n_dimensions ==1)&&(dimsizes[0] == -1)) {
+	else {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: invalid dimension sizes");
+	  return(NhlFATAL);
+	}
+	if((n_dimensions == 1) && (dimsizes[0] == -1)) {
                 size = buf.st_size/thetype->type_class.size;
                 n_dimensions = 1;
-                dimsizes = &size;
+                dimsizes[0] = size;
         } else {
                 for(i = 0; i < n_dimensions; i++) {
                         size *= dimsizes[i];
@@ -2646,6 +2778,8 @@ NhlErrorTypes _NclIfbindirread(void)
 		if(tmp_md == NULL) 
 			return(NhlFATAL);
 
+		NclFree(dimsizes);
+
 		step = tmp_ptr;
 		for(i = 0; i < (totalsize / buf.st_blksize); i++) {
 			n = read(fd, step,buf.st_blksize);
@@ -2666,7 +2800,7 @@ NhlErrorTypes _NclIfbindirread(void)
 			if (ret < NhlWARNING)
 				return ret;
 		}
-		while((int)(step - (char*)tmp_ptr) < totalsize) {
+		while((ng_size_t)(step - (char*)tmp_ptr) < totalsize) {
 			memcpy(step,(char*)&(thetype->type_class.default_mis),thetype->type_class.size);
 			step += thetype->type_class.size;
 		}
@@ -2691,7 +2825,7 @@ NhlErrorTypes _NclIisbigendian
 #endif
 {
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	out_val = (logical*)NclMalloc(sizeof(logical));
 #ifdef ByteSwapped
@@ -2723,21 +2857,20 @@ NhlErrorTypes _NclIcbinread
 	NclStackEntry dimensions;
 	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
-	int n_dimensions = 0;
-	int *dimsizes = NULL;
-	int size = 1;
-	int i;
+	ng_size_t  n_dimensions = 0;
+	ng_size_t *dimsizes = NULL;
+	ng_size_t size = 1;
+	ng_size_t i;
 	void *tmp_ptr;
 	struct stat buf;
 	int fd = -1;
-	int totalsize = 0;
+	ng_size_t totalsize = 0;
 	int n;
 	char *step = NULL;
 	NclStackEntry data_out;
-	int dim2;
+	ng_size_t dim2;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
@@ -2809,13 +2942,21 @@ NhlErrorTypes _NclIcbinread
 	}
 	if(tmp_md != NULL) {
 		n_dimensions = tmp_md->multidval.totalelements;
-		dimsizes = (int*)tmp_md->multidval.val;
+		dimsizes = get_dimensions(tmp_md->multidval.val,
+					  tmp_md->multidval.totalelements,
+					  tmp_md->multidval.data_type,"cbinread");
+		if(dimsizes == NULL) 
+		  return(NhlFATAL);
 	}
-	if((n_dimensions ==1)&&(dimsizes[0] == -1)) {
+	else {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinread: invalid dimension sizes");
+	  return(NhlFATAL);
+	}
+	if((n_dimensions == 1) && (dimsizes[0] == -1)) {
 		size = buf.st_size/thetype->type_class.size;
 		n_dimensions = 1;
 		dim2 = size;
-		dimsizes = &dim2;
+		dimsizes[0] = dim2;
 	} else {
 		for(i = 0; i < n_dimensions; i++) {
 			size *= dimsizes[i];
@@ -2851,8 +2992,10 @@ NhlErrorTypes _NclIcbinread
 		if(tmp_md == NULL) 
 			return(NhlFATAL);
 
+		NclFree(dimsizes);
+
 		step = tmp_ptr;
-		for(i = 0; i < (int)(totalsize / buf.st_blksize); i++) {
+		for(i = 0; i < (ng_size_t)(totalsize / buf.st_blksize); i++) {
 			n = read(fd, step,buf.st_blksize);
 			step = step + buf.st_blksize;
 		}
@@ -2864,7 +3007,7 @@ NhlErrorTypes _NclIcbinread
 			if (ret < NhlWARNING)
 				return ret;
 		}
-		while((int)(step - (char*)tmp_ptr) < totalsize) {
+		while((ng_size_t)(step - (char*)tmp_ptr) < totalsize) {
 			memcpy(step,(char*)&(thetype->type_class.default_mis),thetype->type_class.size);
 			step += thetype->type_class.size;
 		}
@@ -2885,8 +3028,6 @@ NhlErrorTypes _NclIfbinnumrec
 ()
 #endif
 {
-	NclStackEntry data;
-	NclMultiDValData tmp_md;
 	string *fpath;
 	NclScalar missing;
 	int 	has_missing = 0;
@@ -2895,7 +3036,7 @@ NhlErrorTypes _NclIfbinnumrec
 	int ind1,ind2;
 	off_t cur_off;
 	int i,n;
-	int dimsize = 1;
+	ng_size_t dimsize = 1;
 	int swap_bytes = 0;
 	NhlErrorTypes ret = NhlNOERROR;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
@@ -2984,26 +3125,22 @@ NhlErrorTypes _NclIfbinrecwrite
 {
 	string *fpath;
 	int	*recnum;
-	int	*dimensions;
-	int	dimsizes[NCL_MAX_DIMENSIONS];
+	ng_size_t	dimsizes[NCL_MAX_DIMENSIONS];
 	NclScalar missing;
-	NclMultiDValData tmp_md;
-	NclStackEntry data;
 	int 	has_missing = 0;
 	NclTypeClass type;
 	char 	control_word[4];
 	void *value;
-	int i;
+	ng_size_t i;
 	int ind1,ind2;
 	int fd = -1;
-	int size = 1;
 	int n;
 	int n_dims;
 	off_t cur_off = 0;
 	NhlErrorTypes ret = NhlNOERROR;
 	int rsize = 0;
 	NclBasicDataTypes datai_type;
-	int total;
+	ng_size_t total;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
@@ -3164,8 +3301,10 @@ NhlErrorTypes _NclIfbinrecread
 {
 	string *fpath;
 	int	*recnum;
-	int	*dimensions;
-	int	dimsize;
+	ng_size_t	*dimensions;
+	NclBasicDataTypes type_dimensions;
+	void	*tmp_dimensions;
+	ng_size_t	dimsize;
 	string *type;
 	NclScalar missing;
 	NclMultiDValData tmp_md;
@@ -3174,10 +3313,10 @@ NhlErrorTypes _NclIfbinrecread
 	NclTypeClass thetype;
 	char 	control_word[4];
 	void *value;
-	int i;
+	ng_size_t i;
 	int ind1,ind2;
 	int fd = -1;
-	int size = 1;
+	ng_size_t size = 1, tmp_size = 1;
 	int n;
 	off_t cur_off = 0;
 	NhlErrorTypes ret = NhlNOERROR;
@@ -3228,16 +3367,20 @@ NhlErrorTypes _NclIfbinrecread
 		return(NhlFATAL);
 	}
 	
-	dimensions = (int*)NclGetArgValue(
+	tmp_dimensions = (void*)NclGetArgValue(
 		2,
 		4,
 		NULL,
 		&dimsize,
 		&missing,
 		&has_missing,
-		NULL,
+		&type_dimensions,
 		0);
 
+	dimensions = get_dimensions(tmp_dimensions,dimsize,type_dimensions,
+				    "fbinrecread");
+	if(dimensions == NULL) 
+	  return(NhlFATAL);
 	if(*dimensions!= -1) {
 		for(i = 0; i < 	dimsize; i++) {
 			if(has_missing&&(missing.intval == *(dimensions + i))) {
@@ -3247,7 +3390,8 @@ NhlErrorTypes _NclIfbinrecread
 			size *= dimensions[i];
 		}
 	} else {
-		size = -1;
+        tmp_size = -1;
+		size = (ng_size_t) tmp_size;
 	}
 	type = (string*)NclGetArgValue(
 		3,
@@ -3289,7 +3433,7 @@ NhlErrorTypes _NclIfbinrecread
 		else
 			_NclSwapBytes(&ind1,control_word,1,sizeof(int));
 		if(ind1 <= 0) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIfbinrecread: 0 or less than zero fortran control word, FILE NOT SEQUENTIAL ACCESS!");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: 0 or less than zero fortran control word, FILE NOT SEQUENTIAL ACCESS!");
 			close(fd);
 			return(NhlFATAL);
 		}
@@ -3325,7 +3469,8 @@ NhlErrorTypes _NclIfbinrecread
 			ind1 = *(int*)control_word;
 		else
 			_NclSwapBytes(&ind1,control_word,1,sizeof(int));
-		if(size != -1) {
+/*		if(size != -1) {*/
+		if(tmp_size != -1) {
 			value = (void*)NclMalloc(thetype->type_class.size*size);
 			if(ind1 < size*thetype->type_class.size) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"fbinrecread: size specified is greater than record size, filling with missing values");
@@ -3396,6 +3541,7 @@ NhlErrorTypes _NclIfbinrecread
 		data.u.data_obj = tmp_md;
 		_NclPlaceReturn(data);
 		close(fd);
+		NclFree(dimensions);
 		return(ret);
 	} else {
 		close(fd);
@@ -3416,20 +3562,16 @@ NhlErrorTypes _NclIfbinread
 	NclStackEntry dimensions;
 	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
-	int n_dimensions = 0;
-	int *dimsizes = NULL;
-	int size = 1;
-	int i;
+	ng_size_t  n_dimensions = 0;
+	ng_size_t *dimsizes = NULL;
+	ng_size_t size = 1, tmp_size = 1;
+	ng_size_t i;
 	void *tmp_ptr;
-	struct stat buf;
-	int totalsize = 0;
-	int n;
-	char *step = NULL;
+	ng_size_t totalsize = 0;
+	ng_size_t n;
 	NclStackEntry data_out;
-	int dim2;
 	int fd;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
@@ -3506,13 +3648,23 @@ NhlErrorTypes _NclIfbinread
 	default:
 		return(NhlFATAL);
 	}
+/*
+ * Create array to hold dimension sizes, which can be int or long.
+ */
 	if(tmp_md != NULL) {
 		n_dimensions = tmp_md->multidval.totalelements;
-		dimsizes = (int*)tmp_md->multidval.val;
+		dimsizes = get_dimensions(tmp_md->multidval.val,
+					  tmp_md->multidval.totalelements,
+					  tmp_md->multidval.data_type,"fbinread");
+		if(dimsizes == NULL) 
+		  return(NhlFATAL);
 	}
-	if((n_dimensions ==1)&&(dimsizes[0] ==-1)){
-		size = -1;
-		dimsizes = &dim2;
+	else {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: invalid dimension sizes");
+	  return(NhlFATAL);
+	}
+	if((n_dimensions == 1) && (dimsizes[0] == -1)){
+		tmp_size = -1;
 		n_dimensions = 1;
 	} else {
 		for(i = 0; i < n_dimensions; i++) {
@@ -3520,7 +3672,7 @@ NhlErrorTypes _NclIfbinread
 		}
 	}
 	if(read(fd,(void*)&control_word,4) != 4) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIfbinread: An error occurred while reading the file (%s), check path",
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: An error occurred while reading the file (%s), check path",
 			  _NGResolvePath(path_string));
 		return(NhlFATAL);
 	}
@@ -3528,70 +3680,67 @@ NhlErrorTypes _NclIfbinread
 		_NclSwapBytes(NULL,&control_word,1,sizeof(int));
 	}
 	if(control_word <= 0) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIfbinread: 0 or less than zero fortran control word, FILE NOT SEQUENTIAL ACCESS!");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: 0 or less than zero fortran control word, FILE NOT SEQUENTIAL ACCESS!");
 		close(fd);
 		return(NhlFATAL);
 	}
-	if(size == -1) {
+	if(tmp_size == -1) {
 		size = control_word;
 		n_dimensions = 1;
 		*dimsizes= size/thetype->type_class.size;
 		totalsize = size;
 	}
 	else {
-		totalsize = size*thetype->type_class.size;
+		totalsize = size * thetype->type_class.size;
 		if (totalsize > control_word) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "_NclIfbinread: requested variable size exceeds record size");
+				  "fbinread: requested variable size exceeds record size");
 			close(fd);
 			return(NhlFATAL);
 		}
 	}
-	if(tmp_ptr != NULL) {
-		tmp_ptr = NclMalloc(totalsize);
-		if (! tmp_ptr) {
-			NhlPError(NhlFATAL,ENOMEM,NULL);
-			return( NhlFATAL);
-		}
-		lseek(fd,(off_t)4,SEEK_SET); /* skip the control word */
-		n = read(fd,tmp_ptr,totalsize);
-		if(n != totalsize)  {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: an error occurred reading the FORTRAN binary file.");
-			NclFree(tmp_ptr);
-			close(fd);
-			return(NhlFATAL);
-		}
+	tmp_ptr = NclMalloc(totalsize);
+	if (! tmp_ptr) {
+	  NhlPError(NhlFATAL,ENOMEM,NULL);
+	  return( NhlFATAL);
+	}
+	lseek(fd,(off_t)4,SEEK_SET); /* skip the control word */
+	n = (ng_size_t) read(fd,tmp_ptr,totalsize);
+	if(n != totalsize)  {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: an error occurred reading the FORTRAN binary file.");
+	  NclFree(tmp_ptr);
+	  close(fd);
+	  return(NhlFATAL);
+	}
 #if 0
-		NGCALLF(nclpfortranread,NCLPFORTRANREAD)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
+	NGCALLF(nclpfortranread,NCLPFORTRANREAD)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
 #endif
-		if (swap_bytes) {
-			_NclSwapBytes(NULL,tmp_ptr,totalsize / thetype->type_class.size,thetype->type_class.size);
-		}
-
-
-		tmp_md = _NclCreateMultiDVal(
-			NULL,
-			NULL,
-			Ncl_MultiDValData,
-			0,
-			tmp_ptr,
-			NULL,
-			n_dimensions,
-			dimsizes,
-			TEMPORARY,
-			NULL,
-			thetype);
-		if(tmp_md == NULL) 
-			return(NhlFATAL);
-		data_out.kind = NclStk_VAL;
-		data_out.u.data_obj = tmp_md;
-		close(fd);
-		_NclPlaceReturn(data_out);
-		return(ret);
-	} 
+	if (swap_bytes) {
+	  _NclSwapBytes(NULL,tmp_ptr,totalsize / thetype->type_class.size,thetype->type_class.size);
+	}
+	
+	
+	tmp_md = _NclCreateMultiDVal(
+				     NULL,
+				     NULL,
+				     Ncl_MultiDValData,
+				     0,
+				     tmp_ptr,
+				     NULL,
+				     n_dimensions,
+				     dimsizes,
+				     TEMPORARY,
+				     NULL,
+				     thetype);
+	if(tmp_md == NULL) 
+	  return(NhlFATAL);
+	data_out.kind = NclStk_VAL;
+	data_out.u.data_obj = tmp_md;
 	close(fd);
-	return(NhlFATAL);
-}
+	NclFree(dimsizes);
+	_NclPlaceReturn(data_out);
+	return(ret);
+} 
 NhlErrorTypes _NclIasciiwrite
 #if	NhlNeedProto
 (void)
@@ -3602,22 +3751,14 @@ NhlErrorTypes _NclIasciiwrite
 	NhlErrorTypes ret = NhlNOERROR;
 	NclStackEntry fpath;
 	NclStackEntry value;
-	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
-	int n_dimensions = 0;
-	int *dimsizes = NULL;
-	int size = 1;
-	int i;
+	ng_size_t i;
 	void *tmp_ptr;
-	struct stat buf;
 	FILE *fd = NULL;
-	int totalsize = 0;
-	int n;
+	ng_size_t  totalsize = 0;
 	char *step = NULL;
-	NclStackEntry data_out;
 	int is_stdout = 0;
 	NclVaPrintFunc tmp ;
 
@@ -3666,10 +3807,10 @@ NhlErrorTypes _NclIasciiwrite
 	if(is_stdout) {
 		fd = stdout;
 	} else {
-		errno = 0;
+		errno = (short) 0;
 		fd = fopen(path_string,"w+");
-		if (fd == NULL && errno) {
-			NhlPError(NhlFATAL,errno,"asciiwrite: Unable to open file for writing");
+		if (fd == NULL && errno != (short) 0) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiwrite: Unable to open file for writing: %s", strerror(errno));
 			return(NhlFATAL);
 		}
 		else if (fd == NULL) {
@@ -4027,7 +4168,7 @@ int asciiinteger(char *buf, char **end, int type, void *retvalue,char **rem) {
 	int i;
 	int ishex = 0;
 	long tmpi;
-	char *cp,*iend;
+	char *iend;
 	
 	i = strcspn(buf,initchars);
 	while (buf[i] != '\0') {
@@ -4127,24 +4268,22 @@ NhlErrorTypes _NclIasciiread
 	NclStackEntry dimensions;
 	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
-	int n_dimensions = 0;
-	int *dimsizes = NULL;
-	int size = 1;
-	int i,j;
+	ng_size_t  n_dimensions = 0;
+	ng_size_t *dimsizes = NULL;
+	ng_size_t size = 1;
+	ng_size_t i;
+	int j;
 	void *tmp_ptr;
 	struct stat statbuf;
 	FILE *fp = NULL;
-	int totalsize = 0;
-	int n;
-	char *step = NULL;
+	ng_size_t totalsize = 0;
 	NclStackEntry data_out;
 	int has_unlimited = 0;
 	int bufsize = 4096;
 	char buf[4096];
-	int total = 0;
+	ng_size_t total = 0;
 	char *cp;
 
 	fpath = _NclGetArg(0,3,DONT_CARE);
@@ -4182,19 +4321,23 @@ NhlErrorTypes _NclIasciiread
 	default:
 		return(NhlFATAL);
 	}
+/*
+ * Create array to hold dimension sizes, which can be int or long.
+ */
 	if(tmp_md != NULL) {
 		n_dimensions = tmp_md->multidval.totalelements;
-		dimsizes = (int*)tmp_md->multidval.val;
+		dimsizes = get_dimensions(tmp_md->multidval.val,
+					  tmp_md->multidval.totalelements,
+					  tmp_md->multidval.data_type,"asciiread");
+		if(dimsizes == NULL) 
+		  return(NhlFATAL);
+	}
+	else {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: invalid dimension sizes");
+	  return(NhlFATAL);
 	}
 	if(dimsizes[0] == -1) {
-		if(n_dimensions == 1) {
-			size = -1;
-		} else {
-			for(i = 1; i < n_dimensions; i++) {
-				size *= dimsizes[i];
-			}
-		}
-		has_unlimited = 1;
+	  has_unlimited = 1;
 	} else {
 		has_unlimited = 0;
 		for(i = 0; i < n_dimensions; i++) {
@@ -4225,7 +4368,7 @@ NhlErrorTypes _NclIasciiread
 		}
 	}
 
-	if((size != -1)&&(!has_unlimited)) {
+	if(!has_unlimited) {
 		totalsize = size;
 		
 		tmp_ptr = NclMalloc(size*thetype->type_class.size);
@@ -4383,9 +4526,10 @@ NhlErrorTypes _NclIasciiread
 			data_out.u.data_obj = tmp_md;
 			_NclPlaceReturn(data_out);
 			fclose(fp);
+			NclFree(dimsizes);
 			return(ret);
 		}
-	} else if(size == -1) {
+	} else {
 		int total = 0;
 		errno = 0;
 		fp = fopen(path_string,"r");
@@ -4501,6 +4645,7 @@ NhlErrorTypes _NclIasciiread
 			data_out.kind = NclStk_VAL;
 			data_out.u.data_obj = tmp_md;
 			_NclPlaceReturn(data_out);
+			NclFree(dimsizes);
 			return(ret);
 		}
 		tmp_ptr = NclMalloc(totalsize*thetype->type_class.size);
@@ -4639,11 +4784,9 @@ NhlErrorTypes _NclIasciiread
 		data_out.u.data_obj = tmp_md;
 		_NclPlaceReturn(data_out);
 		fclose(fp);
+		NclFree(dimsizes);
 		return(ret);
-	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: Dimension size less than 1 specified, can't determine size");
-		return(NhlFATAL);
-	}
+	} 
 	return(NhlFATAL);
 }
 
@@ -4683,22 +4826,13 @@ NhlErrorTypes _NclIfbindirwrite
 	NhlErrorTypes ret = NhlNOERROR;
 	NclStackEntry fpath;
 	NclStackEntry value;
-	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
-	int n_dimensions = 0;
-	int *dimsizes = NULL;
-	int size = 1;
-	int i;
 	void *tmp_ptr;
-	struct stat buf;
 	int fd = -1;
 	int totalsize = 0;
 	int n;
-	char *step = NULL;
-	NclStackEntry data_out;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
@@ -4782,22 +4916,13 @@ NhlErrorTypes _NclIcbinwrite
 	NhlErrorTypes ret = NhlNOERROR;
 	NclStackEntry fpath;
 	NclStackEntry value;
-	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
-	int n_dimensions = 0;
-	int *dimsizes = NULL;
-	int size = 1;
-	int i;
 	void *tmp_ptr;
-	struct stat buf;
 	int fd = -1;
-	int totalsize = 0;
+	ng_size_t  totalsize = 0;
 	int n;
-	char *step = NULL;
-	NclStackEntry data_out;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
@@ -4889,22 +5014,13 @@ NhlErrorTypes _NclIfbinwrite
 	NhlErrorTypes ret = NhlNOERROR;
 	NclStackEntry fpath;
 	NclStackEntry value;
-	NclStackEntry type;
 	NclTypeClass thetype;
-	char *typechar = NULL;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
-	int n_dimensions = 0;
-	int *dimsizes = NULL;
-	int size = 1;
-	int i;
 	void *tmp_ptr;
-	struct stat buf;
 	int fd = -1;
-	int totalsize = 0;
+	ng_size_t  totalsize = 0;
 	int n;
-	char *step = NULL;
-	NclStackEntry data_out;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
@@ -5053,10 +5169,8 @@ NhlErrorTypes _NclIrand
 ()
 #endif
 {
-	NclStackEntry data_out;
-	NclMultiDValData tmp_md= NULL;
 	int tmp ;
-	int dimsize = 1;
+	ng_size_t dimsize = 1;
 
 /*
  * Generate a random number from 0 to 32766 inclusive.
@@ -5111,10 +5225,10 @@ NhlErrorTypes _NclIabs
 ()
 # endif
 {
-   NclScalar   missing;
-   int has_missing,
-	   n_dims,
-	   dimsizes[NCL_MAX_DIMENSIONS];
+    NclScalar   missing;
+    int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 
     void    *out_val,
             *value;
@@ -5134,8 +5248,8 @@ NhlErrorTypes _NclIabs
               *llvalue;
 
     NclBasicDataTypes   type;
-    int total = 1;
-    int i;
+    ng_size_t total = 1;
+    ng_size_t i;
 
 
     /* get input data */
@@ -5157,6 +5271,11 @@ NhlErrorTypes _NclIabs
         case NCL_float:
             fvalue = (float *) value;
             out_val = (void *) NclMalloc(total * sizeof(float));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL, NhlEUNKNOWN,
+			"abs: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             fout_val = (float *) out_val;
             if (has_missing) {
                 for (i = 0; i < total; i++) {
@@ -5179,6 +5298,11 @@ NhlErrorTypes _NclIabs
         case NCL_double:
             dvalue = (double *) value;
             out_val = (void *) NclMalloc(total * sizeof(double));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL, NhlEUNKNOWN,
+			"abs: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             dout_val = (double *) out_val;
             if (has_missing) {
                 for (i = 0 ; i < total; i++) {
@@ -5201,6 +5325,11 @@ NhlErrorTypes _NclIabs
         case NCL_int:
             ivalue = (int *) value;
             out_val = (void *) NclMalloc(total * sizeof(int));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL, NhlEUNKNOWN,
+			"abs: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             iout_val = (int *) out_val;
             if (has_missing) {
                 for (i = 0; i < total; i++) {
@@ -5225,6 +5354,11 @@ NhlErrorTypes _NclIabs
                 unsigned short *pin, *pout;
 
                 out_val = (void *) NclMalloc(total * sizeof(unsigned short));
+		if(out_val == NULL) {
+		  NhlPError(NhlFATAL, NhlEUNKNOWN,
+			    "abs: cannot allocate memory for output array");
+		  return(NhlFATAL);
+		}
 
                 pin = (unsigned short *) value;
                 pout = (unsigned short *) out_val;
@@ -5261,6 +5395,11 @@ NhlErrorTypes _NclIabs
                 unsigned int *pin, *pout;
 
                 out_val = (void *) NclMalloc(total * sizeof(unsigned int));
+		if(out_val == NULL) {
+		  NhlPError(NhlFATAL, NhlEUNKNOWN,
+			    "abs: cannot allocate memory for output array");
+		  return(NhlFATAL);
+		}
 
                 pin = (unsigned int *) value;
                 pout = (unsigned int *) out_val;
@@ -5297,6 +5436,11 @@ NhlErrorTypes _NclIabs
                 unsigned long *pin, *pout;
 
                 out_val = (void *) NclMalloc(total * sizeof(unsigned long));
+		if(out_val == NULL) {
+		  NhlPError(NhlFATAL, NhlEUNKNOWN,
+			    "abs: cannot allocate memory for output array");
+		  return(NhlFATAL);
+		}
 
                 pin = (unsigned long *) value;
                 pout = (unsigned long *) out_val;
@@ -5333,6 +5477,11 @@ NhlErrorTypes _NclIabs
                 unsigned long long *pin, *pout;
 
                 out_val = (void *) NclMalloc(total * sizeof(unsigned long long));
+		if(out_val == NULL) {
+		  NhlPError(NhlFATAL, NhlEUNKNOWN,
+			    "abs: cannot allocate memory for output array");
+		  return(NhlFATAL);
+		}
 
                 pin = (unsigned long long *) value;
                 pout = (unsigned long long *) out_val;
@@ -5367,6 +5516,11 @@ NhlErrorTypes _NclIabs
         case NCL_short:
             svalue = (short *) value;
             out_val = (void *) NclMalloc(total * sizeof(short));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL, NhlEUNKNOWN,
+			"abs: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             sout_val = (short *) out_val;
             if (has_missing) {
                 for (i = 0; i < total; i++) {
@@ -5389,6 +5543,11 @@ NhlErrorTypes _NclIabs
         case NCL_long:
             lvalue = (long *) value;
             out_val = (void *) NclMalloc(total * sizeof(long));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL, NhlEUNKNOWN,
+			"abs: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             lout_val = (long *) out_val;
             if (has_missing) {
                 for (i = 0; i < total; i++) {
@@ -5411,18 +5570,29 @@ NhlErrorTypes _NclIabs
         case NCL_int64:
             llvalue = (long long *) value;
             out_val = (void *) NclMalloc(total * sizeof(long long));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL, NhlEUNKNOWN,
+			"abs: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             llout_val = (long long *) out_val;
             if (has_missing) {
                 for (i = 0; i < total; i++) {
                     if (llvalue[i] != missing.int64val) {
-                        llout_val[i] = (long long) llabs((long long) llvalue[i]);
+		      /*
+                       *llout_val[i] = (long long) llabs((long long) llvalue[i]);
+		       */
+                        llout_val[i] = _Ncl_llabs(llvalue[i]);
                     } else {
                         llout_val[i] = missing.int64val;
                     }
                 }
             } else {
                 for (i = 0; i < total; i++) {
-                    llout_val[i] = (long long) llabs((long long) llvalue[i]);
+		      /*
+                       *llout_val[i] = (long long) llabs((long long) llvalue[i]);
+		       */
+                        llout_val[i] = _Ncl_llabs(llvalue[i]);
                 }
             }
 
@@ -5433,6 +5603,11 @@ NhlErrorTypes _NclIabs
         case NCL_byte:
             bvalue = (byte *) value;
             out_val = (void *) NclMalloc(total * sizeof(float));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL, NhlEUNKNOWN,
+			"abs: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             bout_val = (byte *) out_val;
             if (has_missing) {
                 for (i = 0; i < total; i++) {
@@ -5452,11 +5627,94 @@ NhlErrorTypes _NclIabs
                     (has_missing ? &missing : NULL), NCL_byte, 0);
             break;
 
+        case NCL_ubyte:
+            {
+                unsigned char *pin, *pout;
+
+                out_val = (void *) NclMalloc(total * sizeof(unsigned char));
+		if(out_val == NULL) {
+		  NhlPError(NhlFATAL, NhlEUNKNOWN,
+			    "abs: cannot allocate memory for output array");
+		  return(NhlFATAL);
+		}
+
+                pin = (unsigned char *) value;
+                pout = (unsigned char *) out_val;
+
+                if (has_missing)
+                {
+                    for (i = 0; i < total; i++)
+                    {
+                        if (pin[i] != missing.ubyteval)
+                        {
+                            pout[i] = (unsigned char) pin[i];
+                        }
+                        else
+                        {
+                            pout[i] = missing.ubyteval;
+                        }
+                    }
+                }
+                else
+                {
+                    for (i = 0; i < total; i++)
+                    {
+                        pout[i] = pin[i];
+                    }
+                }
+
+                return NclReturnValue(out_val, n_dims, dimsizes,
+                        (has_missing ? &missing : NULL), NCL_ubyte, 0);
+            }
+            break;
+
+        case NCL_char:
+            {
+                unsigned char *pin, *pout;
+
+                out_val = (void *) NclMalloc(total * sizeof(unsigned char));
+		if(out_val == NULL) {
+		  NhlPError(NhlFATAL, NhlEUNKNOWN,
+			    "abs: cannot allocate memory for output array");
+		  return(NhlFATAL);
+		}
+
+                pin = (unsigned char *) value;
+                pout = (unsigned char *) out_val;
+
+                if (has_missing)
+                {
+                    for (i = 0; i < total; i++)
+                    {
+                        if (pin[i] != missing.charval)
+                        {
+                            pout[i] = (unsigned char) pin[i];
+                        }
+                        else
+                        {
+                            pout[i] = missing.charval;
+                        }
+                    }
+                }
+                else
+                {
+                    for (i = 0; i < total; i++)
+                    {
+                        pout[i] = pin[i];
+                    }
+                }
+
+                return NclReturnValue(out_val, n_dims, dimsizes,
+                        (has_missing ? &missing : NULL), NCL_char, 0);
+            }
+            break;
+
         default:
             NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "abs: a non-numeric type was passed to this function, cannot continue");
             break;
     }
+    return NhlFATAL;
 }
 
 
@@ -5490,7 +5748,7 @@ NhlErrorTypes _NclIncargpath
 	NclMultiDValData tmp_md= NULL;
 	char *str;
 	string outval;
-	int dimsize = 1;
+	ng_size_t dimsize = 1;
 
 
 	args  = _NclGetArg(0,1,DONT_CARE);
@@ -5534,7 +5792,7 @@ NhlErrorTypes _NclIgetenv
     char    *str;
     char    *tmp;
     string  outval;
-    int dimsize = 1;
+    ng_size_t dimsize = 1;
 
 
     /* get the environment variable */
@@ -5648,14 +5906,18 @@ char **endptr;
         long long tval;
         int i = 0;
 
+        errno = ERANGE;
+
         while (isspace(str[i]))
                         i++;
         if (strlen(&(str[i])) >= 2 && str[i] == '0' && (str[i+1] == 'x' || str[i+1] == 'X'))
         {
+                errno = 0;
                 tval = local_strtoll(str,endptr,16);
         }
         else
         {
+                errno = 0;
                 tval = local_strtoll(str,endptr,10);
         }
 
@@ -5691,6 +5953,55 @@ char **endptr;
         return tval;
 }
 
+NhlErrorTypes _NclIshorttoint
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	short *value;
+	ng_size_t total_elements = 1;
+	int n_dims = 0;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	NclScalar missing, missing2;
+	int has_missing;
+	ng_size_t i;
+	int *output;
+	
+        value = (short*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+	for (i = 0; i < n_dims; i++) {
+		total_elements *= dimsizes[i];
+	}
+	output = (int*)NclMalloc(sizeof(int)*total_elements);
+        if (output == NULL)
+        {
+            NHLPERROR((NhlFATAL, errno, "shorttoint: memory allocation error."));
+            return NhlFATAL;
+        }
+	for(i = 0; i < total_elements; i++) {
+		output[i] = (int)((short*)value)[i];
+	}
+	if(has_missing) {
+		missing2.intval = (int)*((short*)&missing);
+	}
+	return(NclReturnValue(
+		(void*)output,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing2 : NULL),
+		NCL_int,
+		0
+	));
+}
 
 NhlErrorTypes _NclIushorttoint
 #if	NhlNeedProto
@@ -5700,13 +6011,13 @@ NhlErrorTypes _NclIushorttoint
 #endif
 {
 	unsigned short *value;
-	int total_elements = 1;
+	ng_size_t total_elements = 1;
 	int n_dims = 0;
-	int dimsizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclScalar missing, missing2;
 	int has_missing;
-	int i;
-	int *output;
+	ng_size_t i;
+	ng_size_t *output;
 	
         value = (unsigned short*)NclGetArgValue(
                         0,
@@ -5720,9 +6031,14 @@ NhlErrorTypes _NclIushorttoint
 	for (i = 0; i < n_dims; i++) {
 		total_elements *= dimsizes[i];
 	}
-	output = (int*)NclMalloc(sizeof(int)*total_elements);
+	output = (ng_size_t*)NclMalloc(sizeof(ng_size_t)*total_elements);
+        if (output == NULL)
+        {
+            NHLPERROR((NhlFATAL, errno, "ushorttoint output: memory allocation error."));
+            return NhlFATAL;
+        }
 	for(i = 0; i < total_elements; i++) {
-		output[i] = (int)((unsigned short*)value)[i];
+		output[i] = (ng_size_t)((unsigned short*)value)[i];
 	}
 	if(has_missing) {
 		missing2.intval = (int)*((unsigned short*)&missing);
@@ -5746,12 +6062,14 @@ NhlErrorTypes _NclIinttoshort
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-        short *out_val;
+    int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+    short *out_val;
 	NclBasicDataTypes type;
-        int *value;
-        int total=1;
-        int i;
+    int *value;
+    ng_size_t total=1;
+    ng_size_t i;
 
         value = (int*)NclGetArgValue(
                         0,
@@ -5809,12 +6127,14 @@ NhlErrorTypes _NclIinttobyte
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-        byte *out_val;
+    int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+    byte *out_val;
 	NclBasicDataTypes type;
-        int *value;
-        int total=1;
-        int i;
+    int *value;
+    ng_size_t total=1;
+    ng_size_t i;
 
         value = (int*)NclGetArgValue(
                         0,
@@ -5830,14 +6150,14 @@ NhlErrorTypes _NclIinttobyte
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypebyteClass)->type_class.size *total);
 	if(has_missing) {
-		if (missing.intval < 0 || missing.intval > UCHAR_MAX) {
+		if (missing.intval < SCHAR_MIN || missing.intval > SCHAR_MAX) {
 		        missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		}
 		else {
 			missing2.byteval = (byte)missing.intval;
 		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.intval)) {
+			if((value[i] < SCHAR_MIN)||(value[i] > SCHAR_MAX)||(value[i] == missing.intval)) {
 				out_val[i] = (byte)missing2.byteval;
 			} else {
 				out_val[i] = (byte)value[i];
@@ -5846,7 +6166,7 @@ NhlErrorTypes _NclIinttobyte
 	} else {
 		missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+			if((value[i] < SCHAR_MIN)||(value[i] > SCHAR_MAX)) {
 				out_val[i] = missing2.byteval;
 				has_missing = 1;
 			} else {
@@ -5873,12 +6193,14 @@ NhlErrorTypes _NclIinttochar
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         unsigned char *out_val;
 	NclBasicDataTypes type;
         int *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (int*)NclGetArgValue(
                         0,
@@ -5936,12 +6258,14 @@ NhlErrorTypes _NclIchartoint
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         int *out_val;
 	NclBasicDataTypes type;
         unsigned char *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (unsigned char*)NclGetArgValue(
                         0,
@@ -5989,12 +6313,14 @@ NhlErrorTypes _NclIshorttobyte
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         byte *out_val;
 	NclBasicDataTypes type;
         short *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (short*)NclGetArgValue(
                         0,
@@ -6010,14 +6336,14 @@ NhlErrorTypes _NclIshorttobyte
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypebyteClass)->type_class.size *total);
 	if(has_missing) {
-		if (missing.shortval < 0 || missing.shortval > UCHAR_MAX) {
+		if (missing.shortval < SCHAR_MIN || missing.shortval > SCHAR_MAX) {
 		        missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		}
 		else {
 			missing2.byteval = (byte)missing.shortval;
 		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.shortval)) {
+			if((value[i] < SCHAR_MIN)||(value[i] > SCHAR_MAX)||(value[i] == missing.shortval)) {
 				out_val[i] = (byte)  missing2.byteval;
 			} else {
 				out_val[i] = (byte)value[i];
@@ -6027,7 +6353,7 @@ NhlErrorTypes _NclIshorttobyte
 	} else {
 		missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;  
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+			if((value[i] < SCHAR_MIN)||(value[i] > SCHAR_MAX)) {
 				out_val[i] = missing2.byteval;
 				has_missing = 1;
 			} else {
@@ -6054,12 +6380,14 @@ NhlErrorTypes _NclIshorttochar
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         unsigned char *out_val;
 	NclBasicDataTypes type;
         short *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (short*)NclGetArgValue(
                         0,
@@ -6117,12 +6445,14 @@ NhlErrorTypes _NclIchartoshort
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         short *out_val;
 	NclBasicDataTypes type;
         unsigned char *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (unsigned char*)NclGetArgValue(
                         0,
@@ -6170,12 +6500,14 @@ NhlErrorTypes _NclIlongtoint
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         int *out_val;
 	NclBasicDataTypes type;
         long *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
 
         value = (long*)NclGetArgValue(
@@ -6235,12 +6567,14 @@ NhlErrorTypes _NclIlongtoshort
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         short *out_val;
 	NclBasicDataTypes type;
         long *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (long*)NclGetArgValue(
                         0,
@@ -6297,12 +6631,14 @@ NhlErrorTypes _NclIlongtobyte
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         byte *out_val;
 	NclBasicDataTypes type;
         long *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (long*)NclGetArgValue(
                         0,
@@ -6318,7 +6654,7 @@ NhlErrorTypes _NclIlongtobyte
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypebyteClass)->type_class.size *total);
 	if(has_missing) {
-		if (missing.longval < 0 || missing.longval > UCHAR_MAX) {
+		if (missing.longval < SCHAR_MIN || missing.longval > SCHAR_MAX) {
 		        missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		}
 		else {
@@ -6334,7 +6670,7 @@ NhlErrorTypes _NclIlongtobyte
 	} else {
 		missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+			if((value[i] < SCHAR_MIN)||(value[i] > SCHAR_MAX)) {
 				out_val[i] = missing2.byteval;
 				has_missing = 1;
 			} else {
@@ -6361,12 +6697,14 @@ NhlErrorTypes _NclIlongtochar
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         unsigned char *out_val;
 	NclBasicDataTypes type;
         long *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (long*)NclGetArgValue(
                         0,
@@ -6386,7 +6724,7 @@ NhlErrorTypes _NclIlongtochar
 		        missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		}
 		else {
-			missing2.charval = (int)missing.longval;
+			missing2.charval = (unsigned char)missing.longval;
 		}
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.longval)) {
@@ -6424,12 +6762,14 @@ NhlErrorTypes _NclIchartolong
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         long *out_val;
 	NclBasicDataTypes type;
         unsigned char *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (unsigned char*)NclGetArgValue(
                         0,
@@ -6476,12 +6816,14 @@ NhlErrorTypes _NclIfloattoshort
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         short *out_val;
 	NclBasicDataTypes type;
         float *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
 
         value = (float*)NclGetArgValue(
@@ -6539,12 +6881,14 @@ NhlErrorTypes _NclIfloattoint
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         int *out_val;
 	NclBasicDataTypes type;
         float *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (float*)NclGetArgValue(
                         0,
@@ -6601,12 +6945,14 @@ NhlErrorTypes _NclIfloattolong
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         long *out_val;
 	NclBasicDataTypes type;
         float *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
 
         value = (float*)NclGetArgValue(
@@ -6664,12 +7010,14 @@ NhlErrorTypes _NclIfloattobyte
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         byte *out_val;
 	NclBasicDataTypes type;
         float *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (float*)NclGetArgValue(
                         0,
@@ -6685,14 +7033,14 @@ NhlErrorTypes _NclIfloattobyte
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypebyteClass)->type_class.size *total);
 	if(has_missing) {
-		if (missing.floatval < (float)0 || missing.floatval > (float)UCHAR_MAX) {
+		if (missing.floatval < (float)SCHAR_MIN || missing.floatval > (float)SCHAR_MAX) {
 		        missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		}
 		else {
 			missing2.byteval = (byte)missing.floatval;
 		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.floatval)) {
+			if((value[i] < SCHAR_MIN)||(value[i] > SCHAR_MAX)||(value[i] == missing.floatval)) {
 				out_val[i] = missing2.byteval;
 			} else {
 				out_val[i] = (byte)value[i];
@@ -6701,7 +7049,7 @@ NhlErrorTypes _NclIfloattobyte
 	} else {
 		missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+			if((value[i] < SCHAR_MIN)||(value[i] > SCHAR_MAX)) {
 				out_val[i] = missing2.byteval;
 				has_missing = 1;
 			} else {
@@ -6728,12 +7076,14 @@ NhlErrorTypes _NclIfloattochar
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         unsigned char *out_val;
 	NclBasicDataTypes type;
         float *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (float*)NclGetArgValue(
                         0,
@@ -6792,12 +7142,14 @@ NhlErrorTypes _NclIchartofloat
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         float *out_val;
 	NclBasicDataTypes type;
         unsigned char *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (unsigned char*)NclGetArgValue(
                         0,
@@ -6844,12 +7196,14 @@ NhlErrorTypes _NclIdoubletobyte
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         byte *out_val;
 	NclBasicDataTypes type;
         double *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (double*)NclGetArgValue(
                         0,
@@ -6865,14 +7219,14 @@ NhlErrorTypes _NclIdoubletobyte
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypebyteClass)->type_class.size *total);
 	if(has_missing) {
-		if (missing.doubleval < (double)0 || missing.doubleval > (double)UCHAR_MAX) {
+		if (missing.doubleval < (double)SCHAR_MIN || missing.doubleval > (double)SCHAR_MAX) {
 		        missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		}
 		else {
 			missing2.byteval = (byte)missing.doubleval;
 		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.doubleval)) {
+			if((value[i] < (double)SCHAR_MIN)||(value[i] > (double)SCHAR_MAX)||(value[i] == missing.doubleval)) {
 				out_val[i] = missing2.byteval;
 			} else {
 				out_val[i] = (byte)value[i];
@@ -6881,7 +7235,7 @@ NhlErrorTypes _NclIdoubletobyte
 	} else {
 		missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+			if((value[i] < (double)SCHAR_MIN)||(value[i] > (double)SCHAR_MAX)) {
 				out_val[i] = missing2.byteval;
 				has_missing = 1;
 			} else {
@@ -6908,12 +7262,14 @@ NhlErrorTypes _NclIdoubletochar
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         unsigned char *out_val;
 	NclBasicDataTypes type;
         double *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (double*)NclGetArgValue(
                         0,
@@ -6936,7 +7292,7 @@ NhlErrorTypes _NclIdoubletochar
 			missing2.charval = (unsigned char)missing.doubleval;
 		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.doubleval)) {
+			if((value[i] < (double)0)||(value[i] > (double)UCHAR_MAX)||(value[i] == missing.doubleval)) {
 				out_val[i] = (unsigned char)missing2.charval;
 			} else {
 				out_val[i] = (unsigned char)value[i];
@@ -6945,7 +7301,7 @@ NhlErrorTypes _NclIdoubletochar
 	} else {
 		missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+			if((value[i] <(double)0)||(value[i] > (double)UCHAR_MAX)) {
 				out_val[i] = missing2.charval;
 				has_missing = 1;
 			} else {
@@ -6971,12 +7327,14 @@ NhlErrorTypes _NclIchartodouble
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         double *out_val;
 	NclBasicDataTypes type;
         unsigned char *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (unsigned char*)NclGetArgValue(
                         0,
@@ -7022,12 +7380,14 @@ NhlErrorTypes _NclIdoubletoshort
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         short *out_val;
 	NclBasicDataTypes type;
         double *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
 
         value = (double*)NclGetArgValue(
@@ -7085,12 +7445,14 @@ NhlErrorTypes _NclIdoubletoint
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         int *out_val;
 	NclBasicDataTypes type;
         double *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
 
         value = (double*)NclGetArgValue(
@@ -7148,12 +7510,14 @@ NhlErrorTypes _NclIdoubletolong
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         long *out_val;
 	NclBasicDataTypes type;
         double *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
 
         value = (double*)NclGetArgValue(
@@ -7216,13 +7580,15 @@ NhlErrorTypes _NclIdoubletofloat
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         float *out_val;
 	NclBasicDataTypes type;
         double *value;
 	double dtmp;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 
         value = (double*)NclGetArgValue(
                         0,
@@ -7290,12 +7656,14 @@ NhlErrorTypes _NclIstringtolong
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         long *out_val;
 	NclBasicDataTypes type;
         string *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 	long tval;
 	char *val;
 	char *end;
@@ -7332,7 +7700,7 @@ NhlErrorTypes _NclIstringtolong
 				tval = _Nclstrtol(val,&end);
 				if (end == val) {
                                         NhlPError(NhlWARNING,NhlEUNKNOWN,
-					"A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
+					"stringtolong: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.longval;
 				}
 				else if (errno == ERANGE) {
@@ -7351,7 +7719,7 @@ NhlErrorTypes _NclIstringtolong
 			tval = _Nclstrtol(val,&end);
 			if (end == val) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
-                                "A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
+                                "stringtolong: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
 				out_val[i] = missing2.longval;
 			}
@@ -7382,12 +7750,13 @@ NhlErrorTypes _NclIstringtoulong
 #endif
 {
     NclScalar missing,missing2;
-    int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+    int has_missing,n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
     unsigned long *out_val;
     NclBasicDataTypes type;
     string *value;
-    int total=1;
-    int i;
+    ng_size_t total=1;
+    ng_size_t i;
     unsigned long tval;
     char *val;
     char *end;
@@ -7438,7 +7807,7 @@ NhlErrorTypes _NclIstringtoulong
                 if (end == val)
                 {
                     NhlPError(NhlFATAL,NhlEUNKNOWN,
-                    "A bad value was passed to stringtoulong, input strings must contain numeric digits, replacing with missing value");
+                    "stringtoulong: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                     out_val[i] = missing2.ulongval;
                 }
                 else if (errno == ERANGE)
@@ -7465,7 +7834,7 @@ NhlErrorTypes _NclIstringtoulong
             if (end == val)
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                "A bad value was passed to stringtoulong, input strings must contain numeric digits, replacing with missing value");
+                "stringtoulong: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                 has_missing = 1;
                 out_val[i] = missing2.ulongval;
             }
@@ -7499,12 +7868,13 @@ NhlErrorTypes _NclIstringtoint64
 #endif
 {
     NclScalar missing,missing2;
-    int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+    int has_missing,n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
     long long *out_val;
     NclBasicDataTypes type;
     string *value;
-    int total=1;
-    int i;
+    ng_size_t total=1;
+    ng_size_t i;
     long long tval;
     char *val;
     char *end;
@@ -7528,7 +7898,6 @@ NhlErrorTypes _NclIstringtoint64
 
     if(has_missing)
     {
-        errno = 0;
         val = NrmQuarkToString(missing.stringval);
         tval = _Nclstrtoll(val,&end);
 
@@ -7549,13 +7918,12 @@ NhlErrorTypes _NclIstringtoint64
             }
             else
             {
-                errno = 0;
                 val = NrmQuarkToString(value[i]);
                 tval = _Nclstrtoll(val,&end);
                 if (end == val)
                 {
                     NhlPError(NhlFATAL,NhlEUNKNOWN,
-                    "A bad value was passed to stringtoint64, input strings must contain numeric digits, replacing with missing value");
+                    "stringtoint64: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                     out_val[i] = missing2.int64val;
                 }
                 else if (errno == ERANGE)
@@ -7575,13 +7943,12 @@ NhlErrorTypes _NclIstringtoint64
 
         for(i = 0; i < total; i++)
         {
-            errno = 0;
             val = NrmQuarkToString(value[i]);
             tval = _Nclstrtoll(val,&end);
             if (end == val)
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                "A bad value was passed to stringtoint64, input strings must contain numeric digits, replacing with missing value");
+                "stringtoint64: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                 has_missing = 1;
                 out_val[i] = missing2.int64val;
             }
@@ -7615,12 +7982,13 @@ NhlErrorTypes _NclIstringtouint64
 #endif
 {
     NclScalar missing,missing2;
-    int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+    int has_missing,n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
     unsigned long long *out_val;
     NclBasicDataTypes type;
     string *value;
-    int total=1;
-    int i;
+    ng_size_t total=1;
+    ng_size_t i;
     unsigned long long tval;
     char *val;
     char *end;
@@ -7671,7 +8039,7 @@ NhlErrorTypes _NclIstringtouint64
                 if (end == val)
                 {
                     NhlPError(NhlFATAL,NhlEUNKNOWN,
-                    "A bad value was passed to stringtouint64, input strings must contain numeric digits, replacing with missing value");
+                    "stringtouint64: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                     out_val[i] = missing2.uint64val;
                 }
                 else if (errno == ERANGE)
@@ -7698,7 +8066,7 @@ NhlErrorTypes _NclIstringtouint64
             if (end == val)
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                "A bad value was passed to stringtouint64, input strings must contain numeric digits, replacing with missing value");
+                "stringtouint64: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                 has_missing = 1;
                 out_val[i] = missing2.uint64val;
             }
@@ -7732,12 +8100,14 @@ NhlErrorTypes _NclIstringtoshort
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         short *out_val;
 	NclBasicDataTypes type;
         string *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 	long tval;
 	char *val;
 	char *end;
@@ -7773,7 +8143,7 @@ NhlErrorTypes _NclIstringtoshort
 				tval = _Nclstrtol(val,&end);
 				if (end == val) {
                                         NhlPError(NhlWARNING,NhlEUNKNOWN,
-                                        "A bad value was passed to stringtoshort, input strings must contain numeric digits, replacing with missing value");
+                                        "stringtoshort: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.shortval;
 				}
 				else if (tval > SHRT_MAX || tval < SHRT_MIN) {
@@ -7791,7 +8161,7 @@ NhlErrorTypes _NclIstringtoshort
 			tval = _Nclstrtol(val,&end);
 			if (end == val) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
-                                "A bad value was passed to stringtoshort, input strings must contain numeric digits, replacing with missing value");
+                                "stringtoshort: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
 				out_val[i] = missing2.shortval;
 			}
@@ -7822,12 +8192,13 @@ NhlErrorTypes _NclIstringtoushort
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         unsigned short *out_val;
 	NclBasicDataTypes type;
         string *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 	long tval;
 	char *val;
 	char *end;
@@ -7863,7 +8234,7 @@ NhlErrorTypes _NclIstringtoushort
 				tval = _Nclstrtol(val,&end);
 				if (end == val) {
                                         NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                        "A bad value was passed to stringtoushort, input strings must contain numeric digits, replacing with missing value");
+                                        "stringtoushort: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.ushortval;
 				}
 				else if (tval > SHRT_MAX || tval < SHRT_MIN) {
@@ -7881,7 +8252,7 @@ NhlErrorTypes _NclIstringtoushort
 			tval = _Nclstrtol(val,&end);
 			if (end == val) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to stringtoushort, input strings must contain numeric digits, replacing with missing value");
+                                "stringtoushort: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
 				out_val[i] = missing2.ushortval;
 			}
@@ -7913,12 +8284,14 @@ NhlErrorTypes _NclIstringtointeger
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         int *out_val;
 	NclBasicDataTypes type;
         string *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 	long tval;
 	char *val;
 	char *end;
@@ -7955,7 +8328,7 @@ NhlErrorTypes _NclIstringtointeger
 				tval = _Nclstrtol(val,&end);
 				if (end == val) {
                                         NhlPError(NhlWARNING,NhlEUNKNOWN,
-                                        "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
+                                        "stringtointeger: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.intval;
 				}
 				else if (tval > INT_MAX || tval < INT_MIN || errno == ERANGE) {
@@ -7974,7 +8347,7 @@ NhlErrorTypes _NclIstringtointeger
 			tval = _Nclstrtol(val,&end);
 			if (end == val) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
-                                "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
+                                "stringtointeger: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
 				out_val[i] = missing2.intval;
 			}
@@ -8005,12 +8378,13 @@ NhlErrorTypes _NclIstringtouint
 #endif
 {
     NclScalar missing,missing2;
-    int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+    int has_missing,n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
     unsigned int *out_val;
     NclBasicDataTypes type;
     string *value;
-    int total=1;
-    int i;
+    ng_size_t total=1;
+    ng_size_t i;
     unsigned int tval;
     char *val;
     char *end;
@@ -8061,7 +8435,7 @@ NhlErrorTypes _NclIstringtouint
                 if (end == val)
                 {
                     NhlPError(NhlFATAL,NhlEUNKNOWN,
-                    "A bad value was passed to stringtouint, input strings must contain numeric digits, replacing with missing value");
+                    "stringtouint: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                     out_val[i] = missing2.uintval;
                 }
                 else if (errno == ERANGE)
@@ -8088,7 +8462,7 @@ NhlErrorTypes _NclIstringtouint
             if (end == val)
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                "A bad value was passed to stringtouint, input strings must contain numeric digits, replacing with missing value");
+                "stringtouint: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                 has_missing = 1;
                 out_val[i] = missing2.uintval;
             }
@@ -8140,12 +8514,14 @@ NhlErrorTypes _NclIstringtodouble
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         double *out_val;
 	NclBasicDataTypes type;
         string *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 	double tval;
 	char tbuf[128];
 	char *val;
@@ -8200,7 +8576,7 @@ NhlErrorTypes _NclIstringtodouble
 				tval = strtod(val,&end);
 				if (end == val) {
                                         NhlPError(NhlWARNING,NhlEUNKNOWN,
-					"A bad value was passed to stringtodouble, input strings must contain numeric digits, replacing with missing value");
+					"stringtodouble: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.doubleval;
 				}
 				else if (errno == ERANGE) {
@@ -8224,7 +8600,7 @@ NhlErrorTypes _NclIstringtodouble
 			tval = strtod(val,&end);
 			if (end == val) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
-                                "A bad value was passed to stringtodouble, input strings must contain numeric digits, replacing with missing value");
+                                "stringtodouble: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
 				out_val[i] = missing2.doubleval;
 			}
@@ -8256,12 +8632,14 @@ NhlErrorTypes _NclIstringtofloat
 #endif
 {
 	NclScalar missing,missing2;
-        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int has_missing;
+	int n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         float *out_val;
 	NclBasicDataTypes type;
         string *value;
-        int total=1;
-        int i;
+        ng_size_t total=1;
+        ng_size_t i;
 	double tval,dtest;
 	char *val;
 	char *end;
@@ -8303,7 +8681,7 @@ NhlErrorTypes _NclIstringtofloat
 				dtest = fabs(tval);
 				if (end == val) {
                                         NhlPError(NhlWARNING,NhlEUNKNOWN,
-					"A bad value was passed to stringtofloat, input strings must contain numeric digits, replacing with missing value");
+					"stringtofloat: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.floatval;
 				}
 				else if (errno == ERANGE || dtest > (double) FLT_MAX) {
@@ -8326,7 +8704,7 @@ NhlErrorTypes _NclIstringtofloat
 			dtest = fabs(tval);
 			if (end == val) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
-					  "A bad value was passed to stringtofloat, input strings must contain numeric digits, replacing with missing value");
+					  "stringtofloat: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
 				has_missing = 1;
 				out_val[i] = missing2.floatval;
 			}
@@ -8427,7 +8805,7 @@ NhlErrorTypes _NclIIsProc
 {
 	NclStackEntry arg;
 	NclMultiDValData tmp_md;
-	int i;
+	ng_size_t  i;
 	logical *outval;
 	NclQuark *vals;
 	NclSymbol* s;
@@ -8441,6 +8819,9 @@ NhlErrorTypes _NclIIsProc
 	case NclStk_VAL:
 		tmp_md = arg.u.data_obj;
 		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
 	}
 
 	outval = (logical*)NclMalloc((unsigned)sizeof(logical)*tmp_md->multidval.totalelements);
@@ -8516,7 +8897,6 @@ NhlErrorTypes _NclIStatusExit
 	NclStackEntry   data;
 	NclMultiDValData   tmp_md = NULL;
 	int exit_status;
-	int i;
 
 	data = _NclGetArg(0, 1, DONT_CARE);
 	switch (data.kind) {
@@ -8527,7 +8907,10 @@ NhlErrorTypes _NclIStatusExit
         case NclStk_VAL:
 		tmp_md = (NclMultiDValData) data.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 
 	if (tmp_md == NULL)
 		return NhlFATAL;
@@ -8536,6 +8919,7 @@ NhlErrorTypes _NclIStatusExit
 
 	_NclExit(exit_status);
 
+	return NhlNOERROR;
 }
 
 NhlErrorTypes _NclIIsFunc
@@ -8547,7 +8931,7 @@ NhlErrorTypes _NclIIsFunc
 {
 	NclStackEntry arg;
 	NclMultiDValData tmp_md;
-	int i;
+	ng_size_t  i;
 	logical *outval;
 	NclQuark *vals;
 	NclSymbol* s;
@@ -8561,7 +8945,10 @@ NhlErrorTypes _NclIIsFunc
 	case NclStk_VAL:
 		tmp_md = arg.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 
 	outval = (logical*)NclMalloc((unsigned)sizeof(logical)*tmp_md->multidval.totalelements);
 	vals = (NclQuark*)tmp_md->multidval.val;
@@ -8624,8 +9011,7 @@ NhlErrorTypes _NclIUnDef
 {
 	NclStackEntry arg,*var,data;
 	NclMultiDValData tmp_md;
-	int i;
-	logical *outval;
+	ng_size_t  i;
 	NclQuark *vals;
 	NclSymbol* s;
 	NclObj tmp;
@@ -8639,7 +9025,10 @@ NhlErrorTypes _NclIUnDef
 	case NclStk_VAL:
 		tmp_md = arg.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 
 	vals = (NclQuark*)tmp_md->multidval.val;
 	if(tmp_md->multidval.missing_value.has_missing) {
@@ -8741,7 +9130,7 @@ NhlErrorTypes _NclIIsDefined
 {
 	NclStackEntry arg;
 	NclMultiDValData tmp_md;
-	int i;
+	ng_size_t  i;
 	logical *outval;
 	NclQuark *vals;
 	NclSymbol* s;
@@ -8755,7 +9144,10 @@ NhlErrorTypes _NclIIsDefined
 	case NclStk_VAL:
 		tmp_md = arg.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 
 	outval = (logical*)NclMalloc((unsigned)sizeof(logical)*tmp_md->multidval.totalelements);
 	vals = (NclQuark*)tmp_md->multidval.val;
@@ -8801,7 +9193,7 @@ NhlErrorTypes _NclIIsVar
 {
 	NclStackEntry arg;
 	NclMultiDValData tmp_md;
-	int i;
+	ng_size_t  i;
 	logical *outval;
 	NclQuark *vals;
 	NclSymbol* s;
@@ -8815,7 +9207,10 @@ NhlErrorTypes _NclIIsVar
 	case NclStk_VAL:
 		tmp_md = arg.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 
 	outval = (logical*)NclMalloc((unsigned)sizeof(logical)*tmp_md->multidval.totalelements);
 	vals = (NclQuark*)tmp_md->multidval.val;
@@ -8859,15 +9254,14 @@ NhlErrorTypes _NclIIsCoord
 ()
 #endif
 {
-	NclStackEntry arg0,arg1,arg2;
-	NclMultiDValData tmp_md,att_md;
-	int i;
+	NclStackEntry arg1,arg2;
+	NclMultiDValData att_md;
+	ng_size_t  i;
 	logical *outval;
 	NclVar tmp_var;
 	NclQuark *vals;
-	NclSymbol* s;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
-	int dims = 1;
+	ng_size_t dims = 1;
 
 	
 	arg1  = _NclGetArg(0,2,DONT_CARE);
@@ -8880,7 +9274,11 @@ NhlErrorTypes _NclIIsCoord
 	case NclStk_VAL:
 		tmp_var = NULL;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
+
 	switch(arg2.kind) {
 	case NclStk_VAR:
 		att_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
@@ -8888,12 +9286,14 @@ NhlErrorTypes _NclIIsCoord
 	case NclStk_VAL:
 		att_md = arg2.u.data_obj;
 		break;
-	}
-	
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	
 
 	if(tmp_var == NULL) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIsCoord: Non variable passed returning missing");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"iscoord: Non variable passed returning missing");
 		NclReturnValue(
 			&miss,
 			1,
@@ -8937,15 +9337,14 @@ NhlErrorTypes _NclIIsAtt
 ()
 #endif
 {
-	NclStackEntry arg0,arg1,arg2;
-	NclMultiDValData tmp_md,att_md;
-	int i;
+	NclStackEntry arg1,arg2;
+	NclMultiDValData att_md;
+	ng_size_t  i;
 	logical *outval;
 	NclVar tmp_var;
 	NclQuark *vals;
-	NclSymbol* s;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
-	int dims = 1;
+	ng_size_t dims = 1;
 
 	
 	arg1  = _NclGetArg(0,2,DONT_CARE);
@@ -8958,7 +9357,10 @@ NhlErrorTypes _NclIIsAtt
 	case NclStk_VAL:
 		tmp_var = NULL;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg2.kind) {
 	case NclStk_VAR:
 		att_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
@@ -8966,12 +9368,14 @@ NhlErrorTypes _NclIIsAtt
 	case NclStk_VAL:
 		att_md = arg2.u.data_obj;
 		break;
-	}
-	
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	
 
 	if(tmp_var == NULL) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsAtt: Non variable passed returning missing");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"isatt: Non variable passed returning missing");
 		NclReturnValue(
 			&miss,
 			1,
@@ -9015,15 +9419,14 @@ NhlErrorTypes _NclIIsDim
 ()
 #endif
 {
-	NclStackEntry arg0,arg1,arg2;
-	NclMultiDValData tmp_md,dim_md;
-	int i;
+	NclStackEntry arg1,arg2;
+	NclMultiDValData dim_md;
+	ng_size_t  i;
 	logical *outval;
 	NclVar tmp_var;
 	NclQuark *vals;
-	NclSymbol* s;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
-	int dims = 1;
+	ng_size_t dims = 1;
 
 	
 	arg1  = _NclGetArg(0,2,DONT_CARE);
@@ -9036,7 +9439,10 @@ NhlErrorTypes _NclIIsDim
 	case NclStk_VAL:
 		tmp_var = NULL;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg2.kind) {
 	case NclStk_VAR:
 		dim_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
@@ -9044,12 +9450,14 @@ NhlErrorTypes _NclIIsDim
 	case NclStk_VAL:
 		dim_md = arg2.u.data_obj;
 		break;
-	}
-	
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	
 
 	if(tmp_var == NULL) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsDim: Non variable passed returning missing");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"isdim: Non variable passed returning missing");
 		NclReturnValue(
 			&miss,
 			1,
@@ -9093,16 +9501,14 @@ NhlErrorTypes _NclIIsDimNamed
 ()
 #endif
 {
-	NclStackEntry arg0,arg1,arg2;
-	NclMultiDValData tmp_md,dim_md;
+	NclStackEntry arg1,arg2;
+	NclMultiDValData dim_md;
 	int i;
 	logical *outval;
 	NclVar tmp_var;
 	int *vals;
-	NclSymbol* s;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
-	int dimsize = 1;
-	int get_all = 0;
+	ng_size_t dimsize = 1;
 
 	
 	arg1  = _NclGetArg(0,2,DONT_CARE);
@@ -9115,7 +9521,10 @@ NhlErrorTypes _NclIIsDimNamed
 	case NclStk_VAL:
 		tmp_var = NULL;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg2.kind) {
 	case NclStk_VAR:
 		dim_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
@@ -9123,11 +9532,13 @@ NhlErrorTypes _NclIIsDimNamed
 	case NclStk_VAL:
 		dim_md = arg2.u.data_obj;
 		break;
-	}
-	
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 
 	if(tmp_var == NULL) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsDimNamed: Non variable passed returning missing");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"isdimnamed: Non variable passed returning missing");
 		NclReturnValue(
 			&miss,
 			1,
@@ -9147,10 +9558,13 @@ NhlErrorTypes _NclIIsDimNamed
 			else
 				outval[i] = 1;	
 		}
+
+        ng_size_t  ndims = tmp_var->var.n_dims;
 		return(NclReturnValue(
 			(void*)outval,
 			1,
-			&tmp_var->var.n_dims,
+/*			(ng_size_t *)&tmp_var->var.n_dims,*/
+            &ndims,
 			NULL,
 			NCL_logical,
 			0
@@ -9203,13 +9617,12 @@ NhlErrorTypes _NclIIsFileVar
 {
 	NclStackEntry arg0,arg1;
 	NclMultiDValData tmp_md,file_md;
-	int i;
+	ng_size_t  i;
 	logical *outval;
 	NclQuark *vals;
-	NclSymbol* s;
 	NclFile file_ptr;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
-	int dims = 1;
+	ng_size_t dims = 1;
 
 	
 	arg0  = _NclGetArg(0,2,DONT_CARE);
@@ -9221,7 +9634,10 @@ NhlErrorTypes _NclIIsFileVar
 	case NclStk_VAL:
 		file_md = arg0.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg1.kind) {
 	case NclStk_VAR:
 		tmp_md = _NclVarValueRead(arg1.u.data_var,NULL,NULL);
@@ -9229,7 +9645,10 @@ NhlErrorTypes _NclIIsFileVar
 	case NclStk_VAL:
 		tmp_md = arg1.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	
 	file_ptr = (NclFile)_NclGetObj(*(obj*)(file_md->multidval.val));
 
@@ -9259,7 +9678,7 @@ NhlErrorTypes _NclIIsFileVar
 			0
 		));
 	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsFileVar: undefined file returning missing value");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"isfilevar: undefined file returning missing value");
 		NclReturnValue(
 			&miss,
 			1,
@@ -9282,14 +9701,13 @@ NhlErrorTypes _NclIIsFileVarAtt
 {
 	NclStackEntry arg0,arg1,arg2;
 	NclMultiDValData tmp_md,file_md,att_md;
-	int i;
+	ng_size_t  i;
 	logical *outval;
 	NclQuark var;
 	NclQuark *vals;
-	NclSymbol* s;
 	NclFile file_ptr;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
-	int dims = 1;
+	ng_size_t dims = 1;
 
 	
 	arg0  = _NclGetArg(0,3,DONT_CARE);
@@ -9302,7 +9720,10 @@ NhlErrorTypes _NclIIsFileVarAtt
 	case NclStk_VAL:
 		file_md = arg0.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg1.kind) {
 	case NclStk_VAR:
 		tmp_md = _NclVarValueRead(arg1.u.data_var,NULL,NULL);
@@ -9310,7 +9731,10 @@ NhlErrorTypes _NclIIsFileVarAtt
 	case NclStk_VAL:
 		tmp_md = arg1.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg2.kind) {
 	case NclStk_VAR:
 		att_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
@@ -9318,7 +9742,10 @@ NhlErrorTypes _NclIIsFileVarAtt
 	case NclStk_VAL:
 		att_md = arg2.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	
 	file_ptr = (NclFile)_NclGetObj(*(obj*)(file_md->multidval.val));
 	var =*(NclQuark*)tmp_md->multidval.val;
@@ -9350,7 +9777,7 @@ NhlErrorTypes _NclIIsFileVarAtt
 			0
 		));
 	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsFileVar: undefined file returning missing value");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"isfilevar: undefined file returning missing value");
 		NclReturnValue(
 			&miss,
 			1,
@@ -9373,14 +9800,13 @@ NhlErrorTypes _NclIIsFileVarCoord
 {
 	NclStackEntry arg0,arg1,arg2;
 	NclMultiDValData tmp_md,file_md,dim_md;
-	int i;
+	ng_size_t  i;
 	logical *outval;
 	NclQuark var;
 	NclQuark *vals;
-	NclSymbol* s;
 	NclFile file_ptr;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
-	int dims = 1;
+	ng_size_t dims = 1;
 
 	
 	arg0  = _NclGetArg(0,3,DONT_CARE);
@@ -9393,7 +9819,10 @@ NhlErrorTypes _NclIIsFileVarCoord
 	case NclStk_VAL:
 		file_md = arg0.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg1.kind) {
 	case NclStk_VAR:
 		tmp_md = _NclVarValueRead(arg1.u.data_var,NULL,NULL);
@@ -9401,7 +9830,10 @@ NhlErrorTypes _NclIIsFileVarCoord
 	case NclStk_VAL:
 		tmp_md = arg1.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg2.kind) {
 	case NclStk_VAR:
 		dim_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
@@ -9409,7 +9841,10 @@ NhlErrorTypes _NclIIsFileVarCoord
 	case NclStk_VAL:
 		dim_md = arg2.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	
 	file_ptr = (NclFile)_NclGetObj(*(obj*)(file_md->multidval.val));
 	var =*(NclQuark*)tmp_md->multidval.val;
@@ -9449,7 +9884,7 @@ NhlErrorTypes _NclIIsFileVarCoord
 			0
 		));
 	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsFileVar: undefined file returning missing value");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"isfilevar: undefined file returning missing value");
 		NclReturnValue(
 			&miss,
 			1,
@@ -9471,14 +9906,13 @@ NhlErrorTypes _NclIIsFileVarDim
 {
 	NclStackEntry arg0,arg1,arg2;
 	NclMultiDValData tmp_md,file_md,dim_md;
-	int i;
+	ng_size_t  i;
 	logical *outval;
 	NclQuark var;
 	NclQuark *vals;
-	NclSymbol* s;
 	NclFile file_ptr;
 	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
-	int dims = 1;
+	ng_size_t dims = 1;
 
 	
 	arg0  = _NclGetArg(0,3,DONT_CARE);
@@ -9491,7 +9925,10 @@ NhlErrorTypes _NclIIsFileVarDim
 	case NclStk_VAL:
 		file_md = arg0.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg1.kind) {
 	case NclStk_VAR:
 		tmp_md = _NclVarValueRead(arg1.u.data_var,NULL,NULL);
@@ -9499,7 +9936,10 @@ NhlErrorTypes _NclIIsFileVarDim
 	case NclStk_VAL:
 		tmp_md = arg1.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	switch(arg2.kind) {
 	case NclStk_VAR:
 		dim_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
@@ -9507,7 +9947,10 @@ NhlErrorTypes _NclIIsFileVarDim
 	case NclStk_VAL:
 		dim_md = arg2.u.data_obj;
 		break;
-	}
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	
 	file_ptr = (NclFile)_NclGetObj(*(obj*)(file_md->multidval.val));
 	var =*(NclQuark*)tmp_md->multidval.val;
@@ -9539,7 +9982,7 @@ NhlErrorTypes _NclIIsFileVarDim
 			0
 		));
 	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsFileVar: undefined file returning missing value");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"isfilevar: undefined file returning missing value");
 		NclReturnValue(
 			&miss,
 			1,
@@ -9563,44 +10006,47 @@ NhlErrorTypes _Ncl1dtond
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	NclStackEntry dims;
-	NclMultiDValData tmp_dims= NULL;
+	NclMultiDValData tmp_dims = NULL;
 	void *out_val;
-	int *dimsizes;
-	logical *tmp;
-	int i;
-	int sz;
+	ng_size_t *dimsizes;
+	ng_size_t sz = 1;
+	ng_size_t  i, ndims;
+	int ret;
 
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
-	dims = _NclGetArg(1,2,DONT_CARE);
+   	dims = _NclGetArg(1,2,DONT_CARE);
 	switch(dims.kind) {
-		case NclStk_VAR:
-			tmp_dims = _NclVarValueRead(dims.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_dims = (NclMultiDValData)dims.u.data_obj;
-			break;
+	case NclStk_VAR:
+		tmp_dims = _NclVarValueRead(dims.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_dims = (NclMultiDValData)dims.u.data_obj;
+		break;
+	default:
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+		return(NhlFATAL);
 	}
+
 	if(tmp_dims == NULL)
 		return(NhlFATAL);
-
-
-	dimsizes = (int*)tmp_dims->multidval.val;	
-
-	sz = 1;	
-	for(i = 0; i < tmp_dims->multidval.totalelements; i++) {
-		sz = sz * dimsizes[i];
-	}
+	ndims = tmp_dims->multidval.totalelements;
+	dimsizes = get_dimensions(tmp_dims->multidval.val,ndims,
+				  tmp_dims->multidval.data_type,"onedtond");
+	for (i = 0; i < ndims; i++) sz *= dimsizes[i];
 
 	if((sz == tmp_md->multidval.totalelements)||(sz < tmp_md->multidval.totalelements)) {
 		if(sz < tmp_md->multidval.totalelements) {
@@ -9608,18 +10054,18 @@ NhlErrorTypes _Ncl1dtond
 		}
 		out_val = (void*)NclMalloc(sz*tmp_md->multidval.type->type_class.size);
 		memcpy(out_val,tmp_md->multidval.val,sz*tmp_md->multidval.type->type_class.size);
-		return(NclReturnValue(
+		ret = NclReturnValue(
 			out_val,
 			tmp_dims->multidval.totalelements,
 			dimsizes,
 			tmp_md->multidval.missing_value.has_missing ? &(tmp_md->multidval.missing_value.value):NULL,
 			tmp_md->multidval.type->type_class.data_type,
 			0
-		));
+		);
 	} else if((sz > tmp_md->multidval.totalelements)&&(sz%tmp_md->multidval.totalelements)){
 		NhlPError(NhlWARNING, NhlEUNKNOWN,"onedtond : output dimension sizes not even multiples of input, check output");
 		out_val = (void*)NclMalloc(sz*tmp_md->multidval.type->type_class.size);
-		for(i = 0; i < (int)sz/tmp_md->multidval.totalelements; i++) {
+		for(i = 0; i < (ng_size_t)sz/tmp_md->multidval.totalelements; i++) {
 			memcpy(&(((char*)out_val)[i*tmp_md->multidval.totalsize]),
 				tmp_md->multidval.val,
 				tmp_md->multidval.totalsize);
@@ -9628,30 +10074,32 @@ NhlErrorTypes _Ncl1dtond
 			tmp_md->multidval.val,
 			(sz%tmp_md->multidval.totalelements)*tmp_md->multidval.type->type_class.size);
 
-		return(NclReturnValue(
+		ret = NclReturnValue(
 			out_val,
 			tmp_dims->multidval.totalelements,
 			dimsizes,
 			tmp_md->multidval.missing_value.has_missing ? &(tmp_md->multidval.missing_value.value):NULL,
 			tmp_md->multidval.type->type_class.data_type,
 			0
-		));
+		);
 	} else { /* (sz > tmp_md->multidval.totalelements)&&!(sz%tmp_md->multidval.totalelements)) */
 		out_val = (void*)NclMalloc(sz*tmp_md->multidval.type->type_class.size);
-		for(i = 0; i < sz/tmp_md->multidval.totalelements; i++) {
+		for(i = 0; i < (ng_size_t)sz/tmp_md->multidval.totalelements; i++) {
 			memcpy(&(((char*)out_val)[i*tmp_md->multidval.totalsize]),
 				tmp_md->multidval.val,
 				tmp_md->multidval.totalsize);
 		}
-		return(NclReturnValue(
+		ret = NclReturnValue(
 			out_val,
 			tmp_dims->multidval.totalelements,
 			dimsizes,
 			tmp_md->multidval.missing_value.has_missing ? &(tmp_md->multidval.missing_value.value):NULL,
 			tmp_md->multidval.type->type_class.data_type,
 			0
-		));
+		);
 	}
+	NclFree(dimsizes);
+	return(ret);
 }
 NhlErrorTypes _Nclndto1d
 #if	NhlNeedProto
@@ -9663,19 +10111,20 @@ NhlErrorTypes _Nclndto1d
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val;
-	int dimsizes = 0;
-	logical *tmp;
-	int i;
+	ng_size_t  dimsizes = 0;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 	
@@ -9702,29 +10151,32 @@ NhlErrorTypes _Nclproduct
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val;
-	int dimsizes = 1;
-	logical *tmp;
-	int i;
+	ng_size_t dimsizes = 1;
+	logical *tmp = NULL;
+	ng_size_t  i;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 
 	if(tmp_md->multidval.missing_value.has_missing) {
-		tmp = (logical*)NclMalloc(sizeof(logical)*tmp_md->multidval.totalelements);
+		tmp = (logical*)NclCalloc(sizeof(logical),tmp_md->multidval.totalelements);
 		_Ncleq(tmp_md->multidval.type,tmp,tmp_md->multidval.val,&(tmp_md->multidval.missing_value.value),NULL,NULL,tmp_md->multidval.totalelements,1);
 		out_val = (void*)NclMalloc(tmp_md->multidval.type->type_class.size);
 		i = 0;
-		while((tmp[i])&&(i<tmp_md->multidval.totalelements)) {
+		while((i<tmp_md->multidval.totalelements) && tmp[i]) {
 			i++;
 		}
 		if(i==tmp_md->multidval.totalelements) {
@@ -9732,6 +10184,8 @@ NhlErrorTypes _Nclproduct
 * return missing
 */
 				memcpy(out_val,&(tmp_md->multidval.missing_value.value),tmp_md->multidval.type->type_class.size);
+				if (tmp)
+					NclFree(tmp);
 				return(NclReturnValue(
 					out_val,
 					1,
@@ -9755,7 +10209,8 @@ NhlErrorTypes _Nclproduct
 			_Nclmultiply(tmp_md->multidval.type,out_val,&(((char*)tmp_md->multidval.val)[tmp_md->multidval.type->type_class.size*i]),out_val,NULL,NULL,1,1);
 		}
 	}
-
+	if (tmp) 
+		NclFree(tmp);
 	return(NclReturnValue(
 		out_val,
 		1,
@@ -9777,28 +10232,32 @@ NhlErrorTypes _Ncldim_product
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-	int *dimsizes = NULL;
+	ng_size_t *dimsizes = NULL;
 	logical *tmp = NULL;
-	int i,j;
-	int m,n,sz;
-	int nd;
+	ng_size_t i,j;
+	ng_size_t m,n;
+	int sz;
+	ng_size_t nd;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 
 	n = 1;
 	if(tmp_md->multidval.n_dims > 1) {
-		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
+		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(ng_size_t));
 		for(i = 0; i < tmp_md->multidval.n_dims -1 ; i++) {
 			n = n* tmp_md->multidval.dim_sizes[i];
 			dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -9806,7 +10265,7 @@ NhlErrorTypes _Ncldim_product
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = tmp_md->multidval.n_dims -1;
 	} else {
-		dimsizes = NclMalloc(sizeof(int));
+		dimsizes = NclMalloc(sizeof(ng_size_t));
 		*dimsizes = n; 	
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = 1;
@@ -9818,7 +10277,7 @@ NhlErrorTypes _Ncldim_product
 		for(i = 0; i < n ; i++) {
 			_Ncleq(tmp_md->multidval.type,tmp,&(((char*)tmp_md->multidval.val)[i*m*sz]),&(tmp_md->multidval.missing_value.value),NULL,NULL,m,1);
 			j = 0;
-			while((tmp[j])&&(j<m)) {
+			while((j<m) && tmp[j]) {
 				j++;
 			}
 			if(j==m) {
@@ -9873,18 +10332,19 @@ NhlErrorTypes _Ncldim_product_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *dims, ndims;
-	int *dimsizes = NULL;
+        int *dims; 
+	ng_size_t ndims;
+	ng_size_t *dimsizes = NULL;
 	logical *tmp = NULL;
-	int i,j,k;
-	int i_in_sz,i_out_sz;
-	int m,n,nr,nl,sz;
+	ng_size_t i,j,k;
+	ng_size_t i_in_sz,i_out_sz;
+	ng_size_t m,n,nr,nl,sz;
 	int nd;
-	NclScalar missing;
 
 /*
  * Get dimensions to do product across.
  */
+	/* dims is the array of dimension numbers, ndims is the 1D size of the array (i.e. the number of dimensions) */
 	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,0);
 
 /*
@@ -9892,13 +10352,16 @@ NhlErrorTypes _Ncldim_product_n
  */
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -9927,7 +10390,7 @@ NhlErrorTypes _Ncldim_product_n
 	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
 	  nd       = tmp_md->multidval.n_dims-ndims;
-	  dimsizes = NclMalloc(nd * sizeof(int));
+	  dimsizes = NclMalloc(nd * sizeof(ng_size_t));
 	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -9940,7 +10403,7 @@ NhlErrorTypes _Ncldim_product_n
 	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
 	  }
 	} else {
-	  dimsizes = NclMalloc(sizeof(int));
+	  dimsizes = NclMalloc(sizeof(ng_size_t));
 	  *dimsizes = 1;
 	  nd = 1;
 	  m  = tmp_md->multidval.dim_sizes[dims[0]];
@@ -9971,7 +10434,7 @@ NhlErrorTypes _Ncldim_product_n
  * Loop through tmp to find the first non-missing value.
  */
 	      k = 0;
-	      while((tmp[k])&&(k<m)) {
+	      while((k<m) && tmp[k]) {
 		k++;
 	      }
 	      if(k==m) {
@@ -10056,30 +10519,32 @@ NhlErrorTypes _Ncldim_sum
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-	int *dimsizes = NULL;
+	ng_size_t *dimsizes = NULL;
 	logical *tmp = NULL;
-	int i,j;
-	int m,n,sz;
-	int nd;
-	NclScalar missing;
-
+	ng_size_t i,j;
+	ng_size_t m,n;
+	int sz;
+	ng_size_t nd;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 
 	n = 1;
 	if(tmp_md->multidval.n_dims > 1) {
-		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
+		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(ng_size_t));
 		for(i = 0; i < tmp_md->multidval.n_dims -1 ; i++) {
 			n = n* tmp_md->multidval.dim_sizes[i];
 			dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -10087,7 +10552,7 @@ NhlErrorTypes _Ncldim_sum
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = tmp_md->multidval.n_dims -1;
 	} else {
-		dimsizes = NclMalloc(sizeof(int));
+		dimsizes = NclMalloc(sizeof(ng_size_t));
 		*dimsizes = n; 	
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = 1;
@@ -10099,7 +10564,7 @@ NhlErrorTypes _Ncldim_sum
 		for(i = 0; i < n ; i++) {
 			_Ncleq(tmp_md->multidval.type,tmp,&(((char*)tmp_md->multidval.val)[i*m*sz]),&(tmp_md->multidval.missing_value.value),NULL,NULL,m,1);
 			j = 0;
-			while((tmp[j])&&(j<m)) {
+			while((j<m) && tmp[j]) {
 				j++;
 			}
 			if(j==m) {
@@ -10155,14 +10620,15 @@ NhlErrorTypes _Ncldim_sum_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *dims, ndims;
-	int *dimsizes = NULL;
+        int  *dims;
+	ng_size_t ndims;
+	ng_size_t *dimsizes = NULL;
 	logical *tmp = NULL;
-	int i,j,k;
-	int i_in_sz,i_out_sz;
-	int m,n,nr,nl,sz;
+	ng_size_t i,j,k;
+	ng_size_t i_in_sz,i_out_sz;
+	ng_size_t m,n,nr,nl;
+	int sz;
 	int nd;
-	NclScalar missing;
 
 /*
  * Get dimension(s) to do sum across.
@@ -10174,13 +10640,16 @@ NhlErrorTypes _Ncldim_sum_n
  */
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -10209,7 +10678,7 @@ NhlErrorTypes _Ncldim_sum_n
 	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
 	  nd       = tmp_md->multidval.n_dims-ndims;
-	  dimsizes = NclMalloc(nd * sizeof(int));
+	  dimsizes = NclMalloc(nd * sizeof(ng_size_t));
 	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -10222,7 +10691,7 @@ NhlErrorTypes _Ncldim_sum_n
 	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
 	  }
 	} else {
-	  dimsizes = NclMalloc(sizeof(int));
+	  dimsizes = NclMalloc(sizeof(ng_size_t));
 	  *dimsizes = 1;
 	  nd = 1;
 	  m  = tmp_md->multidval.dim_sizes[dims[0]];
@@ -10253,7 +10722,7 @@ NhlErrorTypes _Ncldim_sum_n
  * Loop through tmp to find the first non-missing value.
  */
 	      k = 0;
-	      while((tmp[k])&&(k<m)) {
+	      while((k<m) && tmp[k]) {
 		k++;
 	      }
 	      if(k==m) {
@@ -10335,19 +10804,22 @@ NhlErrorTypes _Nclsum
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 	logical *tmp = NULL;
-	int i;
+	ng_size_t  i;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -10357,7 +10829,7 @@ NhlErrorTypes _Nclsum
 		_Ncleq(tmp_md->multidval.type,tmp,tmp_md->multidval.val,&(tmp_md->multidval.missing_value.value),NULL,NULL,tmp_md->multidval.totalelements,1);
 		out_val = (void*)NclMalloc(tmp_md->multidval.type->type_class.size);
 		i = 0;
-		while((tmp[i])&&(i<tmp_md->multidval.totalelements)) {
+		while((i<tmp_md->multidval.totalelements) && tmp[i]) {
 			i++;
 		}
 		if(i==tmp_md->multidval.totalelements) {
@@ -10416,33 +10888,40 @@ NhlErrorTypes _Ncldim_cumsum
 	NclMultiDValData opt_md = NULL;
 	void *out_val = NULL;
 	logical *tmp = NULL;
-	int i,j;
-	int m,n,sz;
+	ng_size_t i,j;
+	ng_size_t m,n;
+    int sz;
 	NclScalar *missing = NULL;
 	int opt;
 
 
 	data0 = _NclGetArg(0,2,DONT_CARE);
 	switch(data0.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data0.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data0.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 	data1 = _NclGetArg(1,2,DONT_CARE);
 	switch(data1.kind) {
-		case NclStk_VAR:
-			opt_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			opt_md = (NclMultiDValData)data1.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		opt_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		opt_md = (NclMultiDValData)data1.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(opt_md == NULL)
 		return(NhlFATAL);
 	opt = *((int*)opt_md->multidval.val);
@@ -10461,8 +10940,8 @@ NhlErrorTypes _Ncldim_cumsum
 
 	if(tmp_md->multidval.missing_value.has_missing) {
 		for(i = 0; i < n ; i++) {
-			int goffset;
-			int dim_offset = i * m * sz;
+			ng_size_t goffset;
+			ng_size_t dim_offset = i * m * sz;
 			int missing_flag = 0;
 			_Ncleq(tmp_md->multidval.type,tmp,((char*)tmp_md->multidval.val) + dim_offset,
 			       &(tmp_md->multidval.missing_value.value),NULL,NULL,m,1);
@@ -10476,8 +10955,8 @@ NhlErrorTypes _Ncldim_cumsum
 					missing_flag = 1;
 				}
 				for(j = 1; j < m; j++) {
-					int last_offset = dim_offset + (j-1) * sz;
-					int offset = dim_offset + j * sz;
+					ng_size_t last_offset = dim_offset + (j-1) * sz;
+					ng_size_t offset = dim_offset + j * sz;
 					if (missing_flag || tmp[j]) {
 						missing_flag = 1;
 			 			memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),sz);
@@ -10491,7 +10970,7 @@ NhlErrorTypes _Ncldim_cumsum
 				break;
 			case 1: /* missing values are skipped */
 				for (j = 0; j < m && tmp[j]; j++) {
-					int offset = dim_offset + j * sz;
+					ng_size_t offset = dim_offset + j * sz;
 					memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),sz);
 				}
 				if (j < m) {
@@ -10499,7 +10978,7 @@ NhlErrorTypes _Ncldim_cumsum
 					memcpy((char*)out_val + goffset,(char*)(tmp_md->multidval.val) + goffset,sz);
 				}
 				for(j++; j < m; j++) {
-					int offset = dim_offset + j * sz;
+					ng_size_t offset = dim_offset + j * sz;
 					if (tmp[j]) {
 						memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),sz);
 					}
@@ -10513,7 +10992,7 @@ NhlErrorTypes _Ncldim_cumsum
 				break;
 			case 2: /* missing values treated as 0 */
 				for (j = 0; j < m && tmp[j]; j++) {
-					int offset = dim_offset + j * sz;
+					ng_size_t offset = dim_offset + j * sz;
 					memset((char*)out_val + offset,0,sz);
 				}
 				if (j == 0) {
@@ -10521,8 +11000,8 @@ NhlErrorTypes _Ncldim_cumsum
 					j++;
 				}
 				for(; j < m; j++) {
-					int last_offset = dim_offset + (j-1) * sz;
-					int offset = dim_offset + j * sz;
+					ng_size_t last_offset = dim_offset + (j-1) * sz;
+					ng_size_t offset = dim_offset + j * sz;
 					if (tmp[j]) {
 						memcpy((char*)out_val + offset,(char*)out_val + last_offset,sz);
 					}
@@ -10536,11 +11015,11 @@ NhlErrorTypes _Ncldim_cumsum
 		}
 	} else {
 		for(i = 0; i < n ; i++) {
-			int dim_offset = i * m * sz;
+			ng_size_t dim_offset = i * m * sz;
 			memcpy((char*)out_val + dim_offset,(char*)tmp_md->multidval.val + dim_offset,sz);
 			for(j = 1; j < m; j++) {
-				int last_offset = dim_offset + (j-1) * sz;
-				int offset = dim_offset + j * sz;
+				ng_size_t last_offset = dim_offset + (j-1) * sz;
+				ng_size_t offset = dim_offset + j * sz;
 				_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
 					 (char*)(tmp_md->multidval.val) + offset,(char*)out_val + last_offset,NULL,NULL,1,1);
 			}
@@ -10571,11 +11050,12 @@ NhlErrorTypes _Ncldim_cumsum_n
 	NclMultiDValData tmp_md = NULL;
 	NclMultiDValData opt_md = NULL;
 	void *out_val = NULL;
-	int *dims, ndims;
+	int *dims;
+	ng_size_t ndims;
 	logical *tmp = NULL;
-	int i,j,k;
+	ng_size_t i,j,k;
 	int sz;
-	int m,n,nl,nr;
+	ng_size_t m,n,nl,nr;
 	NclScalar *missing = NULL;
 	int opt;
 
@@ -10591,25 +11071,31 @@ NhlErrorTypes _Ncldim_cumsum_n
 
 	data0 = _NclGetArg(0,3,DONT_CARE);
 	switch(data0.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data0.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data0.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 	data1 = _NclGetArg(1,3,DONT_CARE);
 	switch(data1.kind) {
-		case NclStk_VAR:
-			opt_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			opt_md = (NclMultiDValData)data1.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		opt_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		opt_md = (NclMultiDValData)data1.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(opt_md == NULL)
 		return(NhlFATAL);
 	opt = *((int*)opt_md->multidval.val);
@@ -10663,9 +11149,9 @@ NhlErrorTypes _Ncldim_cumsum_n
  */
 	  for(i = 0; i < nl ; i++) {
 	    for(j = 0; j < nr ; j++) {
-	      int goffset;
+	      ng_size_t goffset;
 	      int missing_flag = 0;
-	      int dim_offset = ((i*nr*m)+j)*sz;
+	      ng_size_t dim_offset = ((i*nr*m)+j)*sz;
 	      for(k = 0; k < m; k++) {
 		goffset = dim_offset + (nr*k)*sz;
 		_Ncleq(tmp_md->multidval.type,&tmp[k],
@@ -10682,8 +11168,8 @@ NhlErrorTypes _Ncldim_cumsum_n
 		  missing_flag = 1;
 		}
 		for(k = 1; k < m; k++) {
-		  int last_offset = dim_offset + (nr*(k-1))*sz;
-		  int offset = dim_offset + (nr*k)*sz;
+		  ng_size_t last_offset = dim_offset + (nr*(k-1))*sz;
+		  ng_size_t offset = dim_offset + (nr*k)*sz;
 		  if (missing_flag || tmp[k]) {
 		    missing_flag = 1;
 		    memcpy((char*)out_val + offset,
@@ -10699,7 +11185,7 @@ NhlErrorTypes _Ncldim_cumsum_n
 		break;
 	      case 1: /* missing values are skipped */
 		for (k = 0; k < m && tmp[k]; k++) {
-		  int offset = dim_offset + (nr*k)*sz;
+		  ng_size_t offset = dim_offset + (nr*k)*sz;
 		  memcpy((char*)out_val + offset,
 			 &(tmp_md->multidval.missing_value.value),sz);
 		}
@@ -10709,7 +11195,7 @@ NhlErrorTypes _Ncldim_cumsum_n
 			 (char*)(tmp_md->multidval.val) + goffset,sz);
 		}
 		for(k++; k < m; k++) {
-		  int offset = dim_offset + (nr*k)*sz;
+		  ng_size_t offset = dim_offset + (nr*k)*sz;
 		  if (tmp[k]) {
 		    memcpy((char*)out_val + offset,
 			   &(tmp_md->multidval.missing_value.value),sz);
@@ -10725,7 +11211,7 @@ NhlErrorTypes _Ncldim_cumsum_n
 		break;
 	      case 2: /* missing values treated as 0 */
 		for (k = 0; k < m && tmp[k]; k++) {
-		  int offset = dim_offset + (nr*k)*sz;
+		  ng_size_t offset = dim_offset + (nr*k)*sz;
 		  memset((char*)out_val + offset,0,sz);
 		}
 		if (k == 0) {
@@ -10734,8 +11220,8 @@ NhlErrorTypes _Ncldim_cumsum_n
 		  k++;
 		}
 		for(; k < m; k++) {
-		  int last_offset = dim_offset + (nr*(k-1))*sz;
-		  int offset = dim_offset + (k*nr)*sz;
+		  ng_size_t last_offset = dim_offset + (nr*(k-1))*sz;
+		  ng_size_t offset = dim_offset + (k*nr)*sz;
 		  if (tmp[k]) {
 		    memcpy((char*)out_val + offset,
 			   (char*)out_val + last_offset,sz);
@@ -10753,12 +11239,12 @@ NhlErrorTypes _Ncldim_cumsum_n
 	} else {
 	  for(i = 0; i < nl ; i++) {
 	    for(j = 0; j < nr ; j++) {
-	      int dim_offset = ((i*nr*m)+j)*sz;
+	      ng_size_t dim_offset = ((i*nr*m)+j)*sz;
 	      memcpy((char*)out_val + dim_offset,
 		     (char*)tmp_md->multidval.val + dim_offset,sz);
 	      for(k = 1; k < m; k++) {
-		int last_offset = dim_offset + (nr*(k-1))*sz;
-		int offset = dim_offset + (nr*k)*sz;
+		ng_size_t last_offset = dim_offset + (nr*(k-1))*sz;
+		ng_size_t offset = dim_offset + (nr*k)*sz;
 		_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
 			 (char*)(tmp_md->multidval.val) + offset,
 			 (char*)out_val + last_offset,NULL,NULL,1,1);
@@ -10793,30 +11279,37 @@ NhlErrorTypes _Nclcumsum
 	int opt;
 	void *out_val;
 	logical *tmp = NULL;
-	int i,missing_flag = 0;
-	int goffset;
+	int missing_flag = 0;
+	ng_size_t  i;
+	ng_size_t goffset;
 
 	data0 = _NclGetArg(0,2,DONT_CARE);
 	switch(data0.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data0.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data0.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 	data1 = _NclGetArg(1,2,DONT_CARE);
 	switch(data1.kind) {
-		case NclStk_VAR:
-			opt_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			opt_md = (NclMultiDValData)data1.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		opt_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		opt_md = (NclMultiDValData)data1.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(opt_md == NULL)
 		return(NhlFATAL);
 	opt = *((int*)opt_md->multidval.val);
@@ -10837,8 +11330,8 @@ NhlErrorTypes _Nclcumsum
 				missing_flag = 1;
 			}
 			for(i = 1; i < tmp_md->multidval.totalelements; i++) {
-				int last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
-				int offset = i * tmp_md->multidval.type->type_class.size;
+				ng_size_t last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
+				ng_size_t offset = i * tmp_md->multidval.type->type_class.size;
 				if (missing_flag || tmp[i]) {
 					missing_flag = 1;
 					memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),
@@ -10854,7 +11347,7 @@ NhlErrorTypes _Nclcumsum
 		case 1: /* missing values are skipped */
 			i = 0;
 			while (tmp[i]) {
-				int offset = i * tmp_md->multidval.type->type_class.size;
+				ng_size_t offset = i * tmp_md->multidval.type->type_class.size;
 				memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),
 				       tmp_md->multidval.type->type_class.size);
 				i++;
@@ -10864,7 +11357,7 @@ NhlErrorTypes _Nclcumsum
 				memcpy((char*)out_val + goffset,(char*)(tmp_md->multidval.val) + goffset,tmp_md->multidval.type->type_class.size);
 			}
 			for(i++; i < tmp_md->multidval.totalelements; i++) {
-				int offset = i * tmp_md->multidval.type->type_class.size;
+				ng_size_t offset = i * tmp_md->multidval.type->type_class.size;
 				if (tmp[i]) {
 					memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),
 					       tmp_md->multidval.type->type_class.size);
@@ -10880,7 +11373,7 @@ NhlErrorTypes _Nclcumsum
 		case 2: /* missing values treated as 0 */
 			i = 0;
 			while (tmp[i]) {
-				int offset = i * tmp_md->multidval.type->type_class.size;
+				ng_size_t offset = i * tmp_md->multidval.type->type_class.size;
 				memset((char*)out_val + offset,0,tmp_md->multidval.type->type_class.size);
 				i++;
 			}
@@ -10889,8 +11382,8 @@ NhlErrorTypes _Nclcumsum
 				i++;
 			}
 			for(; i < tmp_md->multidval.totalelements; i++) {
-				int last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
-				int offset = i * tmp_md->multidval.type->type_class.size;
+				ng_size_t last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
+				ng_size_t offset = i * tmp_md->multidval.type->type_class.size;
 				if (tmp[i]) {
 					memcpy((char*)out_val + offset,(char*)out_val + last_offset,
 					       tmp_md->multidval.type->type_class.size);
@@ -10905,8 +11398,8 @@ NhlErrorTypes _Nclcumsum
 	} else {
 		memcpy(out_val,tmp_md->multidval.val,tmp_md->multidval.type->type_class.size);
 		for(i = 1; i < tmp_md->multidval.totalelements; i++) {
-			int last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
-			int offset = i * tmp_md->multidval.type->type_class.size;
+			ng_size_t last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
+			ng_size_t offset = i * tmp_md->multidval.type->type_class.size;
 			_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,(char*)(tmp_md->multidval.val) + offset,(char*)out_val + last_offset,NULL,NULL,1,1);
 		}
 	}
@@ -10936,29 +11429,31 @@ NhlErrorTypes _Ncldim_avg
 	void *out_val = NULL;
 	double sum_val ;
 	double *val = NULL;
-	int *dimsizes = NULL;
-	logical *tmp = NULL;
-	int i,j,sf;
-	int m,n,sz;
-	int nd,count;
-	short tmp1;
+	ng_size_t *dimsizes = NULL;
+	ng_size_t i,j;
+	int sf;
+	ng_size_t m,n;
+	int sz;
+	int nd;
+	ng_size_t count;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
 	NclScalar missing;
 	int did_coerce = 0;
 
-
-
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -10968,7 +11463,7 @@ NhlErrorTypes _Ncldim_avg
  */
 	n = 1;
 	if(tmp_md->multidval.n_dims > 1) {
-		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
+		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(ng_size_t));
 		for(i = 0; i < tmp_md->multidval.n_dims -1 ; i++) {
 			n = n* tmp_md->multidval.dim_sizes[i];
 			dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -10976,7 +11471,7 @@ NhlErrorTypes _Ncldim_avg
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = tmp_md->multidval.n_dims -1;
 	} else {
-		dimsizes = NclMalloc(sizeof(int));
+		dimsizes = NclMalloc(sizeof(ng_size_t));
 		*dimsizes = n; 	
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = 1;
@@ -11121,15 +11616,17 @@ NhlErrorTypes _Ncldim_avg_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-	int *dims, ndims;
+	int *dims;
+	ng_size_t ndims;
 	double sum_val ;
 	double *val = NULL;
-	int *dimsizes = NULL;
-	logical *tmp = NULL;
-	int i,j,k,sf;
-	int m,n,nr,nl,sz;
-	int nd,count;
-	short tmp1;
+	ng_size_t *dimsizes = NULL;
+	ng_size_t i,j,k;
+	int sf;
+	ng_size_t m,n,nr,nl;
+	int sz;
+	int nd;
+	ng_size_t count;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
@@ -11145,13 +11642,16 @@ NhlErrorTypes _Ncldim_avg_n
  */
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -11179,7 +11679,7 @@ NhlErrorTypes _Ncldim_avg_n
 	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
 	  nd       = tmp_md->multidval.n_dims-ndims;
-	  dimsizes = NclMalloc(nd * sizeof(int));
+	  dimsizes = NclMalloc(nd * sizeof(ng_size_t));
 	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -11192,7 +11692,7 @@ NhlErrorTypes _Ncldim_avg_n
 	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
 	  }
 	} else {
-	  dimsizes = NclMalloc(sizeof(int));
+	  dimsizes = NclMalloc(sizeof(ng_size_t));
 	  *dimsizes = 1;
 	  nd = 1;
 	  m  = tmp_md->multidval.dim_sizes[dims[0]];
@@ -11343,12 +11843,12 @@ NhlErrorTypes _NclIdim_variance
 	double sum_val ;
 	double sum_sqrd_val ;
 	double *val = NULL;
-	int *dimsizes = NULL;
-	logical *tmp = NULL;
-	int i,j,sf;
-	int m,n,sz;
-	int nd,count;
-	short tmp1;
+	ng_size_t *dimsizes = NULL;
+	ng_size_t i,j;
+	int sf;
+	ng_size_t m,n,sz;
+	ng_size_t nd;
+	ng_size_t count;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
@@ -11360,20 +11860,23 @@ NhlErrorTypes _NclIdim_variance
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 
 	n = 1;
 	if(tmp_md->multidval.n_dims > 1) {
-		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
+		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(ng_size_t));
 		for(i = 0; i < tmp_md->multidval.n_dims -1 ; i++) {
 			n = n* tmp_md->multidval.dim_sizes[i];
 			dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -11381,7 +11884,7 @@ NhlErrorTypes _NclIdim_variance
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = tmp_md->multidval.n_dims -1;
 	} else {
-		dimsizes = NclMalloc(sizeof(int));
+		dimsizes = NclMalloc(sizeof(ng_size_t));
 		*dimsizes = n; 	
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = 1;
@@ -11513,15 +12016,19 @@ NhlErrorTypes _NclIdim_variance_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-	int *dims, ndims;
+	int *dims; 
+	ng_size_t  ndims;
 	double sum_val ;
 	double sum_sqrd_val ;
 	double *val = NULL;
-	int *dimsizes = NULL;
-	logical *tmp = NULL;
-	int i,j,k,sf,i_in,i_out;
-	int m,n,nr,nl,sz;
-	int nd,count;
+	ng_size_t *dimsizes = NULL;
+	ng_size_t i,j,k;
+	int sf;
+	ng_size_t i_in,i_out;
+	ng_size_t m,n,nr,nl;
+	int sz;
+	int nd;
+	ng_size_t count;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
@@ -11539,13 +12046,16 @@ NhlErrorTypes _NclIdim_variance_n
  */
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -11574,7 +12084,7 @@ NhlErrorTypes _NclIdim_variance_n
 	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
 	  nd       = tmp_md->multidval.n_dims-ndims;
-	  dimsizes = NclMalloc(nd * sizeof(int));
+	  dimsizes = NclMalloc(nd * sizeof(ng_size_t));
 	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -11587,7 +12097,7 @@ NhlErrorTypes _NclIdim_variance_n
 	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
 	  }
 	} else {
-	  dimsizes = NclMalloc(sizeof(int));
+	  dimsizes = NclMalloc(sizeof(ng_size_t));
 	  *dimsizes = 1;
 	  nd = 1;
 	  m  = tmp_md->multidval.dim_sizes[dims[0]];
@@ -11750,34 +12260,30 @@ NhlErrorTypes _NclIvariance
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	double sum_val;
-	double out0_val;
 	double sum_sqrd_val;
-	double tmp_sqrd_val;
 	double *val;
 	void *out1_val;
-	double div_val;
-	double done = 1.0;
-	float fone = 1.0;
-	int dimsizes = 1;
-	int i,n;
-	short tmp1;
+	ng_size_t dimsizes = 1;
+	ng_size_t n;
+	ng_size_t  i;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
-	NhlErrorTypes r0 = NhlNOERROR;
-	NhlErrorTypes r1 = NhlNOERROR;
 	NclScalar missing;
 	int did_coerce = 0;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -11932,12 +12438,12 @@ NhlErrorTypes _NclIdim_stddev
 	double sum_val ;
 	double sum_sqrd_val ;
 	double *val = NULL;
-	int *dimsizes = NULL;
-	logical *tmp = NULL;
-	int i,j,sf;
-	int m,n,sz;
-	int nd,count;
-	short tmp1;
+	ng_size_t *dimsizes = NULL;
+	ng_size_t i,j;
+	int sf;
+	ng_size_t m,n,sz;
+	ng_size_t nd;
+	ng_size_t count;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
@@ -11945,24 +12451,25 @@ NhlErrorTypes _NclIdim_stddev
 	int start;
 	int did_coerce = 0;
 
-	
-
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 
 	n = 1;
 	if(tmp_md->multidval.n_dims > 1) {
-		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
+		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(ng_size_t));
 		for(i = 0; i < tmp_md->multidval.n_dims -1 ; i++) {
 			n = n* tmp_md->multidval.dim_sizes[i];
 			dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -11970,7 +12477,7 @@ NhlErrorTypes _NclIdim_stddev
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = tmp_md->multidval.n_dims -1;
 	} else {
-		dimsizes = NclMalloc(sizeof(int));
+		dimsizes = NclMalloc(sizeof(ng_size_t));
 		*dimsizes = n; 	
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = 1;
@@ -12107,15 +12614,19 @@ NhlErrorTypes _NclIdim_stddev_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *dims, ndims;
+        int *dims;
+	ng_size_t ndims;
 	double sum_val ;
 	double sum_sqrd_val ;
 	double *val = NULL;
-	int *dimsizes = NULL;
-	logical *tmp = NULL;
-	int i,j,k,sf,i_in,i_out;
-	int m,n,nr,nl,sz;
-	int nd,count;
+	ng_size_t *dimsizes = NULL;
+	ng_size_t i,j,k;
+	int sf;
+	ng_size_t i_in,i_out;
+	ng_size_t m,n,nr,nl;
+	int sz;
+	int nd;
+	ng_size_t count;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
@@ -12133,13 +12644,16 @@ NhlErrorTypes _NclIdim_stddev_n
  */
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -12167,7 +12681,7 @@ NhlErrorTypes _NclIdim_stddev_n
 	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
 	  nd       = tmp_md->multidval.n_dims-ndims;
-	  dimsizes = NclMalloc(nd * sizeof(int));
+	  dimsizes = NclMalloc(nd * sizeof(ng_size_t));
 	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -12180,7 +12694,7 @@ NhlErrorTypes _NclIdim_stddev_n
 	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
 	  }
 	} else {
-	  dimsizes = NclMalloc(sizeof(int));
+	  dimsizes = NclMalloc(sizeof(ng_size_t));
 	  *dimsizes = 1;
 	  nd = 1;
 	  m  = tmp_md->multidval.dim_sizes[dims[0]];
@@ -12346,34 +12860,30 @@ NhlErrorTypes _NclIstddev
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	double sum_val;
-	double out0_val;
 	double sum_sqrd_val;
-	double tmp_sqrd_val;
 	double *val;
 	void *out1_val;
-	double div_val;
-	double done = 1.0;
-	float fone = 1.0;
-	int dimsizes = 1;
-	int i,n;
-	short tmp1;
+	ng_size_t dimsizes = 1;
+	ng_size_t n;
+	ng_size_t  i;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
-	NhlErrorTypes r0 = NhlNOERROR;
-	NhlErrorTypes r1 = NhlNOERROR;
 	NclScalar missing;
 	int did_coerce = 0;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -12527,11 +13037,10 @@ NhlErrorTypes _Nclavg
 	double sum_val;
 	double *val;
 	void *out_val;
-	double div_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 	logical *tmp = NULL;
-	int i,n;
-	short tmp1;
+	ng_size_t n;
+	ng_size_t  i;
 	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
@@ -12541,13 +13050,16 @@ NhlErrorTypes _Nclavg
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -12672,59 +13184,65 @@ NhlErrorTypes _Nclnum
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 	logical *tmp;
-	int i,j,count;
+	ng_size_t count;
+	ng_size_t  i;
+	int return_size;
+	NclBasicDataTypes return_type;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
+/*
+ * The rules for when to return an int versus a long:
+ *    - On a 32-bit system, return int.
+ *    - On a 64-bit system, return long if the count > INT32_MAX.
+ */
+	return_size = ((NclTypeClass)nclTypeintClass)->type_class.size;
+	return_type = NCL_int;
 
+	tmp = (logical*)tmp_md->multidval.val;
+	count = 0;
 	if(tmp_md->multidval.missing_value.has_missing) {
-		tmp = (logical*)tmp_md->multidval.val;
-		count = 0;
 		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
 			if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval))
 				count++;
 		}
-		out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size);
-		memcpy(out_val,&count,((NclTypeClass)nclTypeintClass)->type_class.size);
-		return(NclReturnValue(
-			out_val,
-			1,
-			&dimsizes,
-			NULL,
-			NCL_int,
-			0
-		));
 	} else {
-		tmp = (logical*)tmp_md->multidval.val;
-		count = 0;
 		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
 			if(tmp[i])
 				count++;
 		}
-		out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size);
-		memcpy(out_val,&count,((NclTypeClass)nclTypeintClass)->type_class.size);
-		return(NclReturnValue(
-			out_val,
-			1,
-			&dimsizes,
-			NULL,
-			NCL_int,
-			0
-		));
 	}
-
+#if !defined(NG32BIT)
+	if(count > INT32_MAX) {
+	  return_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
+	  return_type = NCL_long;
+	}
+#endif
+	out_val = (void*)NclMalloc(return_size);
+	memcpy(out_val,&count,return_size);
+	return(NclReturnValue(
+			      out_val,
+			      1,
+			      &dimsizes,
+			      NULL,
+			      return_type,
+			      0
+			      ));
 }
 NhlErrorTypes _Nclind
 #if	NhlNeedProto
@@ -12736,43 +13254,101 @@ NhlErrorTypes _Nclind
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val;
-	int dimsizes = 1;
-	logical *tmp;
-	int i,j,count;
+	ng_size_t dimsizes = 1;
+	logical *tmp, return_int;
+	ng_size_t j, count;
+	ng_size_t  i;
+	int return_size;
+	NclBasicDataTypes return_type;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
-
+/*
+ * The rules for when to return an int versus a long:
+ *    - On a 32-bit system, return ints.
+ *    - On a 64-bit system, return longs if any indexes > INT32_MAX.
+ *
+ * There are six main sections below, handling six possible ways
+ * of returning indexes:
+ *
+ *   - The input array has a _FillValue, count>0, and returning ints.
+ *   - The input array has a _FillValue, count>0, and returning longs.
+ *   - The input array has a _FillValue, count=0, return int msg value
+ *   - The input array doesn't have a _FillValue, count>0, and returning ints.
+ *   - The input array doesn't have a _FillValue, count>0, and returning longs.
+ *   - The input array doesn't have a _FillValue, count=0, return int msg value
+ */
+	return_int = True;
 	if(tmp_md->multidval.missing_value.has_missing) {
+/*
+ * The input array has a _FillValue.
+ */
 		tmp = (logical*)tmp_md->multidval.val;
 		count = 0;
 		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
-			if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval))
-				count++;
+		  if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval)) {
+		    count++;
+#if !defined(NG32BIT)
+		    if(return_int && i > INT32_MAX) {
+		      return_int = False;
+		    }
+#endif
+		  }
+		}
+		if(return_int) {
+		  return_size = ((NclTypeClass)nclTypeintClass)->type_class.size;
+		  return_type = NCL_int;
+		}
+		else {
+		  return_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
+		  return_type = NCL_long;
 		}
 		if(count > 0) {
-			out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size * count);
-			j = 0;
-			for(i = 0; i < tmp_md->multidval.totalelements; i++) {
-				if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval)) {
-					((int*)out_val)[j] = i;
-					j++;
-				}
-			}
+		  out_val = (void*)NclMalloc(return_size * count);
+		  if(return_int) {
+/*
+ * Return ints because indexes <= INT32_MAX.
+ */
+		    j = 0;
+		    for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+		      if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval)) {
+			((int*)out_val)[j] = (int)i;
+			j++;
+		      }
+		    }
+		  }
+		  else {
+/*
+ * Return longs b/c one or more indexes > INT32_MAX.
+ */
+		    j = 0;
+		    for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+		      if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval)) {
+			((long*)out_val)[j] = (long)i;
+			j++;
+		      }
+		    }
+		  }
 		} else {
-			out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size);
-			memcpy(out_val,&((NclTypeClass)nclTypeintClass)->type_class.default_mis,((NclTypeClass)nclTypeintClass)->type_class.size);
-			return(NclReturnValue(
+/*
+ * No indexes found, so return missing.
+ */
+		  out_val = (void*)NclMalloc(return_size);
+		  memcpy(out_val,&((NclTypeClass)nclTypeintClass)->type_class.default_mis,return_size);
+		  return(NclReturnValue(
 				out_val,
 				1,
 				&dimsizes,
@@ -12782,24 +13358,61 @@ NhlErrorTypes _Nclind
 			));
 		}
 	} else {
+/*
+ * The input array doesn't have a _FillValue.
+ */
 		tmp = (logical*)tmp_md->multidval.val;
 		count = 0;
 		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
-			if(tmp[i])
-				count++;
+		  if(tmp[i]) {
+		    count++;
+#if !defined(NG32BIT)
+		    if(return_int && i > INT32_MAX) {
+		      return_int = False;
+		    }
+#endif
+		  }
+		}
+		if(return_int) {
+		  return_size = ((NclTypeClass)nclTypeintClass)->type_class.size;
+		  return_type = NCL_int;
+		}
+		else {
+		  return_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
+		  return_type = NCL_long;
 		}
 		if(count > 0) {
-			out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size * count);
-			j = 0;
-			for(i = 0; i < tmp_md->multidval.totalelements; i++) {
-				if(tmp[i]) {
-					((int*)out_val)[j] = i;
-					j++;
-				}
-			}
+		  out_val = (void*)NclMalloc(return_size * count);
+		  if(return_int) {
+/*
+ * Return ints because indexes <= INT32_MAX.
+ */
+		    j = 0;
+		    for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+		      if(tmp[i]) {
+			((int*)out_val)[j] = (int)i;
+			j++;
+		      }
+		    }
+		  }
+		  else {
+/*
+ * Return longs because one or more indexes > INT32_MAX.
+ */
+		    j = 0;
+		    for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+		      if(tmp[i]) {
+			((long*)out_val)[j] = (long)i;
+			j++;
+		      }
+		    }
+		  }
 		} else {
-			out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size);
-			memcpy(out_val,&((NclTypeClass)nclTypeintClass)->type_class.default_mis,((NclTypeClass)nclTypeintClass)->type_class.size);
+/*
+ * No indexes found, so return missing.
+ */
+			out_val = (void*)NclMalloc(return_size);
+			memcpy(out_val,&((NclTypeClass)nclTypeintClass)->type_class.default_mis,return_size);
 			return(NclReturnValue(
 				out_val,
 				1,
@@ -12807,9 +13420,8 @@ NhlErrorTypes _Nclind
 				&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
 				((NclTypeClass)nclTypeintClass)->type_class.data_type,
 				0
-			));
+			       ));
 		}
-
 	}
 
 	return(NclReturnValue(
@@ -12817,7 +13429,7 @@ NhlErrorTypes _Nclind
 		1,
 		&j,
 		NULL,
-		((NclTypeClass)nclTypeintClass)->type_class.data_type,
+		return_type,
 		0
 	));
 }
@@ -12835,47 +13447,58 @@ NhlErrorTypes _Nclispan
 	NclMultiDValData tmp_md0 = NULL;
 	NclMultiDValData tmp_md1 = NULL;
 	NclMultiDValData tmp_md2 = NULL;
-	int *out_val;
-	int dimsizes = 1;
-	int i;
-	int strt;
-	int fnsh;
-	int spacing;
+	NclBasicDataTypes   data0_type, data1_type, data2_type;
+	NclBasicDataTypes ret_type = NCL_int;
+	NclObjTypes obj_type = Ncl_Typeint;
+	ng_size_t dimsizes = 1;
 
 	data0 = _NclGetArg(0,3,DONT_CARE);
 	switch(data0.kind) {
-		case NclStk_VAR:
-			tmp_md0 = _NclVarValueRead(data0.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md0 = (NclMultiDValData)data0.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md0 = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md0 = (NclMultiDValData)data0.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md0 == NULL)
 		return(NhlFATAL);
+	data0_type = tmp_md0->multidval.data_type;
 
 	data1 = _NclGetArg(1,3,DONT_CARE);
 	switch(data1.kind) {
-		case NclStk_VAR:
-			tmp_md1 = _NclVarValueRead(data1.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md1 = (NclMultiDValData)data1.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md1 = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md1 = (NclMultiDValData)data1.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md1 == NULL)
 		return(NhlFATAL);
+	data1_type = tmp_md1->multidval.data_type;
+
 	data2 = _NclGetArg(2,3,DONT_CARE);
 	switch(data2.kind) {
-		case NclStk_VAR:
-			tmp_md2 = _NclVarValueRead(data2.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md2 = (NclMultiDValData)data2.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md2 = _NclVarValueRead(data2.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md2 = (NclMultiDValData)data2.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md2 == NULL)
 		return(NhlFATAL);
+	data2_type = tmp_md2->multidval.data_type;
 
 	if(_NclIsMissing(tmp_md0,tmp_md0->multidval.val)||
 	   _NclIsMissing(tmp_md1,tmp_md1->multidval.val)||
@@ -12885,42 +13508,203 @@ NhlErrorTypes _Nclispan
 		return(NhlFATAL);
 	}
 
-	
-	spacing = *(int*)tmp_md2->multidval.val;
-	if(spacing < 1) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: spacing parameter must be positive and non-zero");
-		return(NhlFATAL);
+/*
+ * Determine the return type: NCL_int, NCL_long, or NCL_int64
+ */
+	if ((data0_type == NCL_int64) || (data1_type == NCL_int64) || 
+	    (data2_type == NCL_int64)) {
+		ret_type = NCL_int64;
+		obj_type = Ncl_Typeint64;
 	}
-	fnsh = *(int*)tmp_md1->multidval.val;
-	strt = *(int*)tmp_md0->multidval.val;
-
-	dimsizes  = abs(fnsh-strt)/spacing + 1;
-
-	if((fnsh - strt) > 0) {
-		out_val = (int*)NclMalloc(dimsizes*sizeof(int));
-		for(i = 0; i < dimsizes; i++) {
-			out_val[i] = strt + i * spacing;
-		}
-	} else if((fnsh - strt) < 0) {
-		out_val = (int*)NclMalloc(dimsizes*sizeof(int));
-		for(i = 0; i < dimsizes; i++) {
-			out_val[i] = strt - i * spacing;
-		}
-	} else {
-		out_val = (int*)NclMalloc(sizeof(int));
-		*out_val = strt;
-		dimsizes = 1;
+	else if ((data0_type == NCL_long) || (data1_type == NCL_long) || 
+		 (data2_type == NCL_long)) {
+		ret_type = NCL_long;
+		obj_type = Ncl_Typelong;
+	}
+	else if (((data0_type == NCL_byte)  || 
+		  (data0_type == NCL_short) ||
+                  (data0_type == NCL_int)) &&
+		 ((data1_type == NCL_byte)  || 
+		  (data1_type == NCL_short) ||
+                  (data1_type == NCL_int)) &&
+		 ((data2_type == NCL_byte)  ||
+		  (data2_type == NCL_short) ||
+                  (data2_type == NCL_int))) {
+		ret_type = NCL_int;
+		obj_type = Ncl_Typeint;
+	}
+	else {
+		NhlPError(NhlFATAL, NhlEUNKNOWN,
+			  "ispan: arguments must be of an integral type, can't continue");
+		return NhlFATAL;
 	}
 
+	tmp_md0 = _NclCoerceData(tmp_md0, obj_type, NULL);
+	tmp_md1 = _NclCoerceData(tmp_md1, obj_type, NULL);
+	tmp_md2 = _NclCoerceData(tmp_md2, obj_type, NULL);
 
-	return(NclReturnValue(
-		out_val,
-		1,
-		&dimsizes,
-		NULL,
-		NCL_int,
-		0
-	));
+/*
+ * Three possible return types: NCL_int, NCL_long, or NCL_int64
+ */
+	switch (ret_type) {
+        case NCL_int:
+	{
+        	int *out_val;
+        	int i;
+        	int strt;
+        	int fnsh;
+        	int spacing;
+
+		spacing = *(int*)tmp_md2->multidval.val;
+		if(spacing < 1) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: spacing parameter must be positive and non-zero");
+			return(NhlFATAL);
+		}
+		fnsh = *(int*)tmp_md1->multidval.val;
+		strt = *(int*)tmp_md0->multidval.val;
+
+		dimsizes = (ng_size_t)abs(fnsh-strt)/spacing + 1;
+
+		if((fnsh - strt) > 0) {
+			out_val = (int*)NclMalloc(dimsizes*sizeof(int));
+			for(i = 0; i < dimsizes; i++) {
+				out_val[i] = strt + i * spacing;
+			}
+		} else if((fnsh - strt) < 0) {
+			out_val = (int*)NclMalloc(dimsizes*sizeof(int));
+			for(i = 0; i < dimsizes; i++) {
+				out_val[i] = strt - i * spacing;
+			}
+		} else {
+			out_val = (int*)NclMalloc(sizeof(int));
+			*out_val = strt;
+			dimsizes = 1;
+		}
+		return(NclReturnValue(
+			       out_val,
+			       1,
+			       &dimsizes,
+			       NULL,
+			       ret_type,
+			       0
+			       ));
+        }
+	break;
+
+        case NCL_long:
+	{
+        	long *out_val;
+        	long i;
+        	long strt;
+        	long fnsh;
+        	long spacing;
+
+        	spacing = *(long*)tmp_md2->multidval.val;
+        	if(spacing < 1) {
+		        NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: spacing parameter must be positive and non-zero");
+        		return(NhlFATAL);
+        	}
+
+        	fnsh = *(long*)tmp_md1->multidval.val;
+        	strt = *(long*)tmp_md0->multidval.val;
+
+        	dimsizes = (ng_size_t)labs(fnsh-strt)/spacing + 1;
+
+        	if((fnsh - strt) > 0) {
+        		out_val = (long*)NclMalloc(dimsizes*sizeof(long));
+			if(out_val == NULL) {
+			  NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: cannot allocate memory for output array");
+			  return(NhlFATAL);
+			}
+        		for(i = 0; i < dimsizes; i++) {
+		        	out_val[i] = strt + i * spacing;
+        		}
+        	} else if((fnsh - strt) < 0) {
+		        out_val = (long*)NclMalloc(dimsizes*sizeof(long));
+			if(out_val == NULL) {
+			  NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: cannot allocate memory for output array");
+			  return(NhlFATAL);
+			}
+        		for(i = 0; i < dimsizes; i++) {
+		        	out_val[i] = strt - i * spacing;
+        		}
+        	} else {
+		        out_val = (long*)NclMalloc(sizeof(long));
+			if(out_val == NULL) {
+			  NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: cannot allocate memory for output array");
+			  return(NhlFATAL);
+			}
+        		*out_val = strt;
+		        dimsizes = 1;
+	        }
+		return(NclReturnValue(
+			       out_val,
+			       1,
+			       &dimsizes,
+			       NULL,
+			       ret_type,
+			       0
+			       ));
+	}
+        case NCL_int64:
+	{
+        	long long *out_val;
+        	long long i;
+        	long long strt;
+        	long long fnsh;
+        	long long spacing;
+
+        	spacing = *(long long*)tmp_md2->multidval.val;
+        	if(spacing < 1) {
+		        NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: spacing parameter must be positive and non-zero");
+        		return(NhlFATAL);
+        	}
+
+        	fnsh = *(long long*)tmp_md1->multidval.val;
+        	strt = *(long long*)tmp_md0->multidval.val;
+
+        	dimsizes = (ng_size_t)_Ncl_llabs(fnsh-strt)/spacing + 1;
+
+        	if((fnsh - strt) > 0) {
+        		out_val = (long long*)NclMalloc(dimsizes*sizeof(long long));
+			if(out_val == NULL) {
+			  NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: cannot allocate memory for output array");
+			  return(NhlFATAL);
+			}
+        		for(i = 0; i < dimsizes; i++) {
+		        	out_val[i] = strt + i * spacing;
+        		}
+        	} else if((fnsh - strt) < 0) {
+		        out_val = (long long*)NclMalloc(dimsizes*sizeof(long long));
+			if(out_val == NULL) {
+			  NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: cannot allocate memory for output array");
+			  return(NhlFATAL);
+			}
+        		for(i = 0; i < dimsizes; i++) {
+		        	out_val[i] = strt - i * spacing;
+        		}
+        	} else {
+		        out_val = (long long*)NclMalloc(sizeof(long long));
+			if(out_val == NULL) {
+			  NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: cannot allocate memory for output array");
+			  return(NhlFATAL);
+			}
+        		*out_val = strt;
+		        dimsizes = 1;
+	        }
+		return(NclReturnValue(
+			       out_val,
+			       1,
+			       &dimsizes,
+			       NULL,
+			       ret_type,
+			       0
+			       ));
+	}
+	default:
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+	}
 }
 
 NhlErrorTypes _Nclfspan
@@ -12931,34 +13715,37 @@ NhlErrorTypes _Nclfspan
 #endif
 {
 	NclStackEntry   data0,
-                    data1,
-                    data2;
+		data1,
+		data2;
 
 	NclMultiDValData    tmp_md0 = NULL,
-                        tmp_md1 = NULL,
-                        tmp_md2 = NULL;
+		tmp_md1 = NULL,
+		tmp_md2 = NULL;
 
-    NclBasicDataTypes   data0_type,
-                        data1_type;
+	NclBasicDataTypes   data0_type,
+		data1_type,
+		data2_type;
 
-	int dimsizes = 1;
-	int i;
+	ng_size_t dimsizes = 1;
+	ng_size_t i;
 
 	void    *out_val;       /* may be of type float or of type double */
-
 
     /*
      * get arguments and associated data info
      */
     data0 = _NclGetArg(0, 3, DONT_CARE);
     switch (data0.kind) {
-        case NclStk_VAR:
+    case NclStk_VAR:
             tmp_md0 = _NclVarValueRead(data0.u.data_var, NULL, NULL);
             break;
 
-        case NclStk_VAL:
+    case NclStk_VAL:
             tmp_md0 = (NclMultiDValData) data0.u.data_obj;
             break;
+    default:
+	    NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+	    return(NhlFATAL);
     }
 
     if (tmp_md0 == NULL)
@@ -12966,27 +13753,34 @@ NhlErrorTypes _Nclfspan
 
     data1 = _NclGetArg(1, 3, DONT_CARE);
     switch (data1.kind) {
-        case NclStk_VAR:
+    case NclStk_VAR:
             tmp_md1 = _NclVarValueRead(data1.u.data_var, NULL, NULL);
             break;
 
-        case NclStk_VAL:
+    case NclStk_VAL:
             tmp_md1 = (NclMultiDValData) data1.u.data_obj;
             break;
+    default:
+	    NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+	    return(NhlFATAL);
     }
 
     if (tmp_md1 == NULL)
         return NhlFATAL;
 
+    /* number of equally spaced points */
     data2 = _NclGetArg(2, 3, DONT_CARE);
     switch (data2.kind) {
-        case NclStk_VAR:
+    case NclStk_VAR:
             tmp_md2 = _NclVarValueRead(data2.u.data_var,NULL,NULL);
             break;
 
-        case NclStk_VAL:
+    case NclStk_VAL:
             tmp_md2 = (NclMultiDValData)data2.u.data_obj;
             break;
+    default:
+	    NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+	    return(NhlFATAL);
     }
 
     if (tmp_md2 == NULL)
@@ -13000,7 +13794,35 @@ NhlErrorTypes _Nclfspan
         return NhlFATAL;
     }
 
-    dimsizes = *(int *) tmp_md2->multidval.val;
+    data2_type = tmp_md2->multidval.data_type;
+    if ((data2_type == NCL_float) || (data2_type == NCL_double)) {
+        NhlPError(NhlFATAL, NhlEUNKNOWN,
+            "fspan: number of elements parameter must be of an integral type, cannot continue");
+        return NhlFATAL;
+    }
+
+    switch (data2_type) {
+    case NCL_byte:
+	    dimsizes = (ng_size_t)*(byte *) tmp_md2->multidval.val;
+            break;
+    case NCL_short:
+            dimsizes = (ng_size_t)*(short *) tmp_md2->multidval.val;
+            break;
+    case NCL_int:
+            dimsizes = (ng_size_t)*(int *) tmp_md2->multidval.val;
+            break;
+    case NCL_long:
+            dimsizes = *(ng_size_t *)(long *) tmp_md2->multidval.val;
+            break;
+    case NCL_int64:
+            dimsizes = *(ng_size_t *) (long long*)tmp_md2->multidval.val;
+            break;
+    default:
+	    NhlPError(NhlFATAL, NhlEUNKNOWN,
+		      "fspan: invalid type passed for number of elements parameter, can't continue");
+	    return NhlFATAL;
+    }
+
     if (dimsizes <= 0) {
         NhlPError(NhlFATAL, NhlEUNKNOWN,
             "fspan: number of elements parameter is less-than-or-equal-to zero, can't continue");
@@ -13028,6 +13850,10 @@ NhlErrorTypes _Nclfspan
             spacing = (fnsh - strt) / (dimsizes - 1);
 
             out_val = (void *) NclMalloc(dimsizes * sizeof(double));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             for (i = 0; i < dimsizes; i++) {
                 ((double *) out_val)[i] = strt + (i * spacing);
             }
@@ -13036,8 +13862,12 @@ NhlErrorTypes _Nclfspan
             ((double *) out_val)[dimsizes - 1] = fnsh;
         } else {
             /* dimsizes == 1 */
-             out_val = (void *) NclMalloc(sizeof(double));
-            ((double *) out_val)[0] =  *(double *) tmp_md0->multidval.val;
+	  out_val = (void *) NclMalloc(sizeof(double));
+	  if(out_val == NULL) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: cannot allocate memory for output array");
+	    return(NhlFATAL);
+	  }
+	  ((double *) out_val)[0] =  *(double *) tmp_md0->multidval.val;
         }
 
         return NclReturnValue(out_val, 1, &dimsizes, NULL, NCL_double, 0);
@@ -13059,6 +13889,10 @@ NhlErrorTypes _Nclfspan
             spacing = (fnsh - strt) / (dimsizes - 1);
 
             out_val = (void *) NclMalloc(dimsizes * sizeof(float));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             for (i = 0; i < dimsizes; i++) {
                 ((float *) out_val)[i] = strt + (i * spacing);
             }
@@ -13068,6 +13902,10 @@ NhlErrorTypes _Nclfspan
         } else {
             /* dimsizes == 1 */
             out_val = (void *) NclMalloc(sizeof(float));
+	    if(out_val == NULL) {
+	      NhlPError(NhlFATAL,NhlEUNKNOWN,"fspan: cannot allocate memory for output array");
+	      return(NhlFATAL);
+	    }
             ((float *) out_val)[0] =  *(float *) tmp_md0->multidval.val;
         }
     
@@ -13089,9 +13927,10 @@ NhlErrorTypes _Nclmask
 	NclMultiDValData tmp_md1 = NULL;
 	NclMultiDValData tmp_md2 = NULL;
 	void **out_val;
-	int j,i;
+	int j;
 	int nblk = 0 ;
-	int diff, n;
+	int diff;
+    ng_size_t  i, n;
 	void *tmp = NULL;
 	logical *tmp0 = NULL;
 	void *mask_grid = NULL;
@@ -13100,36 +13939,45 @@ NhlErrorTypes _Nclmask
 
 	data0 = _NclGetArg(0,3,DONT_CARE);
 	switch(data0.kind) {
-		case NclStk_VAR:
-			tmp_md0 = _NclVarValueRead(data0.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md0 = (NclMultiDValData)data0.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md0 = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md0 = (NclMultiDValData)data0.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md0 == NULL)
 		return(NhlFATAL);
 
 	data1 = _NclGetArg(1,3,DONT_CARE);
 	switch(data1.kind) {
-		case NclStk_VAR:
-			tmp_md1 = _NclVarValueRead(data1.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md1 = (NclMultiDValData)data1.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md1 = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md1 = (NclMultiDValData)data1.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md1 == NULL)
 		return(NhlFATAL);
 	data2 = _NclGetArg(2,3,DONT_CARE);
 	switch(data2.kind) {
-		case NclStk_VAR:
-			tmp_md2 = _NclVarValueRead(data2.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md2 = (NclMultiDValData)data2.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md2 = _NclVarValueRead(data2.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md2 = (NclMultiDValData)data2.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md2 == NULL)
 		return(NhlFATAL);
 
@@ -13250,7 +14098,8 @@ NhlErrorTypes _Nclwhere
 	NclMultiDValData false_val_md = NULL;
 	NclMultiDValData val_md = NULL;
 	void *out_val;
-	int j,i;
+	int i;
+    ng_size_t  j;
 	void *tmp = NULL;
 	void *true_val = NULL;
 	void *false_val = NULL;
@@ -13264,13 +14113,16 @@ NhlErrorTypes _Nclwhere
 
 	data0 = _NclGetArg(0,3,DONT_CARE);
 	switch(data0.kind) {
-		case NclStk_VAR:
-			cond_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			cond_md = (NclMultiDValData)data0.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		cond_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		cond_md = (NclMultiDValData)data0.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(cond_md == NULL)
 		return(NhlFATAL);
 	if (cond_md->multidval.missing_value.has_missing)
@@ -13279,22 +14131,28 @@ NhlErrorTypes _Nclwhere
 
 	data1 = _NclGetArg(1,3,DONT_CARE);
 	switch(data1.kind) {
-		case NclStk_VAR:
-			true_val_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			true_val_md = (NclMultiDValData)data1.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		true_val_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		true_val_md = (NclMultiDValData)data1.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	data2 = _NclGetArg(2,3,DONT_CARE);
 	switch(data2.kind) {
-		case NclStk_VAR:
-			false_val_md = _NclVarValueRead(data2.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			false_val_md = (NclMultiDValData)data2.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		false_val_md = _NclVarValueRead(data2.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		false_val_md = (NclMultiDValData)data2.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if (true_val_md == NULL || false_val_md == NULL)
 		return(NhlFATAL);
 	if (true_val_md->multidval.missing_value.has_missing) {
@@ -13595,20 +14453,23 @@ NhlErrorTypes _Nclmin
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 	void *tmp;
 	logical result;
-	int i,j;
+	ng_size_t  i;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -13676,20 +14537,23 @@ NhlErrorTypes _Nclmax
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 	void *tmp;
 	logical result;
-	int i,j,count;
+	ng_size_t  i;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -13757,40 +14621,69 @@ NhlErrorTypes _Nclminind
 {
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
-	void *out_val;
-	int dimsizes = 1;
-	void *tmp;
+	ng_size_t dimsizes = 1;
+	void *tmp, *out_val;
 	logical result;
-	int i,j;
+	ng_size_t i, j;
+	NclBasicDataTypes ret_type;
+	int ret_size;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 
+	ret_type = NCL_int;
+	ret_size = ((NclTypeClass)nclTypeintClass)->type_class.size;
+/*
+ * Potential missing values.
+ */
 	if(tmp_md->multidval.missing_value.has_missing) {
-		tmp= tmp_md->multidval.val;
 		i = 0;
 		while((i < tmp_md->multidval.totalelements)&&(_NclIsMissing(tmp_md,&(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]))))
 			i++;
 		if(i == tmp_md->multidval.totalelements) {
-			return(NclReturnValue(
+/*
+ * Array is all missing.
+ */
+#if !defined(NG32BIT)
+		  if(i > INT32_MAX) ret_type = NCL_long;
+#endif
+		  if(ret_type == NCL_int) {
+		    return(NclReturnValue(
 				&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
 				1,
 				&dimsizes,
 				&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
-				NCL_int,
+				ret_type,
 				1
-			));
+			  ));
+		  }
+		  else {
+		    return(NclReturnValue(
+				&((NclTypeClass)nclTypelongClass)->type_class.default_mis,
+				1,
+				&dimsizes,
+				&((NclTypeClass)nclTypelongClass)->type_class.default_mis,
+				NCL_long,
+				1
+			  ));
+		  }
 		}
+/*
+ * Array contains some non-missing values.
+ */
 		tmp= &(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]);
 		j = i;
 		i++;
@@ -13802,15 +14695,35 @@ NhlErrorTypes _Nclminind
 				result = 0;
 			}
 		}
+#if !defined(NG32BIT)
+		if(j > INT32_MAX) {
+		  ret_type = NCL_long;
+		  ret_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
+		}
+#endif
+		out_val = (void*)NclMalloc(ret_size);
+		if(ret_type == NCL_int) {
+		  *(int*)out_val = (int)j;
+		}
+		else {
+		  *(long*)out_val = (long)j;
+		}
 		return(NclReturnValue(
-			&j,
+			out_val,
 			1,
 			&dimsizes,
 			NULL,
-			NCL_int,
+			ret_type,
 			1
 		));
-	} else {
+	}
+	else {
+/*
+ * No missing values possible in array.
+ */
+/*
+ * No missing values possible in array.
+ */
 		tmp= tmp_md->multidval.val;
 		j = 0;
 		for(i = 1; i < tmp_md->multidval.totalelements; i++) {
@@ -13821,12 +14734,25 @@ NhlErrorTypes _Nclminind
 				result = 0;
 			}
 		}
+#if !defined(NG32BIT)
+		if(j > INT32_MAX) {
+		  ret_type = NCL_long;
+		  ret_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
+		}
+#endif
+		out_val = (void*)NclMalloc(ret_size);
+		if(ret_type == NCL_int) {
+		  *(int*)out_val = (int)j;
+		}
+		else {
+		  *(long*)out_val = (long)j;
+		}
 		return(NclReturnValue(
-			&j,
+			out_val,
 			1,
 			&dimsizes,
 			NULL,
-			NCL_int,
+			ret_type,
 			1
 		));
 	}
@@ -13841,39 +14767,69 @@ NhlErrorTypes _Nclmaxind
 {
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
-	void *out_val;
-	int dimsizes = 1;
-	void *tmp;
+	ng_size_t dimsizes = 1;
+	void *tmp, *out_val;
 	logical result;
-	int i,j,count;
+	ng_size_t i, j;
+	NclBasicDataTypes ret_type;
+	int ret_size;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 
+	ret_type = NCL_int;
+	ret_size = ((NclTypeClass)nclTypeintClass)->type_class.size;
+/*
+ * Potential missing values.
+ */
 	if(tmp_md->multidval.missing_value.has_missing) {
 		i = 0;
-		while((i < tmp_md->multidval.totalelements)&&_NclIsMissing(tmp_md,&(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size])))
+		while((i < tmp_md->multidval.totalelements)&&(_NclIsMissing(tmp_md,&(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]))))
 			i++;
 		if(i == tmp_md->multidval.totalelements) {
+/*
+ * Array is all missing.
+ */
+#if !defined(NG32BIT)
+		  if(i > INT32_MAX) ret_type = NCL_long;
+#endif
+		  if(ret_type == NCL_int) {
 			return(NclReturnValue(
 				&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
 				1,
 				&dimsizes,
 				&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
-				NCL_int,
+				ret_type,
 				1
 			));
+		  }
+		  else {
+		    return(NclReturnValue(
+				&((NclTypeClass)nclTypelongClass)->type_class.default_mis,
+				1,
+				&dimsizes,
+				&((NclTypeClass)nclTypelongClass)->type_class.default_mis,
+				NCL_long,
+				1
+			  ));
+		  }
 		}
+/*
+ * Array contains some non-missing values.
+ */
 		tmp= &(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]);
 		j = i;
 		i++;
@@ -13885,15 +14841,31 @@ NhlErrorTypes _Nclmaxind
 				result = 0;
 			}
 		}
+#if !defined(NG32BIT)
+		if(j > INT32_MAX) {
+		  ret_type = NCL_long;
+		  ret_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
+		}
+#endif
+		out_val = (void*)NclMalloc(ret_size);
+		if(ret_type == NCL_int) {
+		  *(int*)out_val = (int)j;
+		}
+		else {
+		  *(long*)out_val = (long)j;
+		}
 		return(NclReturnValue(
-			&j,
+		        out_val,
 			1,
 			&dimsizes,
 			NULL,
-			NCL_int,
+			ret_type,
 			1
 		));
 	} else {
+/*
+ * No missing values possible in array.
+ */
 		tmp= tmp_md->multidval.val;
 		j = 0;
 		for(i = 1; i < tmp_md->multidval.totalelements; i++) {
@@ -13904,12 +14876,25 @@ NhlErrorTypes _Nclmaxind
 				result = 0;
 			}
 		}
+#if !defined(NG32BIT)
+		if(j > INT32_MAX) {
+		  ret_type = NCL_long;
+		  ret_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
+		}
+#endif
+		out_val = (void*)NclMalloc(ret_size);
+		if(ret_type == NCL_int) {
+		  *(int*)out_val = (int)j;
+		}
+		else {
+		  *(long*)out_val = (long)j;
+		}
 		return(NclReturnValue(
-			&j,
+			out_val,
 			1,
 			&dimsizes,
 			NULL,
-			NCL_int,
+			ret_type,
 			1
 		));
 	}
@@ -13926,29 +14911,33 @@ NhlErrorTypes _Ncldim_min
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-	int *dimsizes = NULL;
+	ng_size_t *dimsizes = NULL;
 	logical *tmp = NULL;
 	logical result = 0;
-	int i,j;
-	int m,n,sz;
-	int nd;
+	ng_size_t i,j;
+	ng_size_t m,n;
+	int sz;
+	ng_size_t nd;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 
 	n = 1;
 	if(tmp_md->multidval.n_dims > 1) {
-		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
+		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(ng_size_t));
 		for(i = 0; i < tmp_md->multidval.n_dims -1 ; i++) {
 			n = n* tmp_md->multidval.dim_sizes[i];
 			dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -13956,7 +14945,7 @@ NhlErrorTypes _Ncldim_min
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = tmp_md->multidval.n_dims -1;
 	} else {
-		dimsizes = NclMalloc(sizeof(int));
+		dimsizes = NclMalloc(sizeof(ng_size_t));
 		*dimsizes = n; 	
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = 1;
@@ -13968,7 +14957,7 @@ NhlErrorTypes _Ncldim_min
 		for(i = 0; i < n ; i++) {
 			_Ncleq(tmp_md->multidval.type,tmp,&(((char*)tmp_md->multidval.val)[i*m*sz]),&(tmp_md->multidval.missing_value.value),NULL,NULL,m,1);
 			j = 0;
-			while((tmp[j])&&(j<m)) {
+			while((j<m) && tmp[j]) {
 				j++;
 			}
 			if(j==m) {
@@ -14034,14 +15023,15 @@ NhlErrorTypes _Ncldim_min_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *dims, ndims;
-	int *dimsizes = NULL;
+        int *dims;
+	ng_size_t ndims;
+	ng_size_t *dimsizes = NULL;
 	logical *tmp = NULL;
 	logical result = 0;
-	int i,j,k;
-	int i_in_sz,i_out_sz;
-	int m,n,nr,nl,sz;
-	int nd;
+	ng_size_t i,j,k;
+	ng_size_t i_in_sz,i_out_sz;
+	ng_size_t m,n,nr,nl;
+	int sz,nd;
 
 /*
  * Get dimension to do minimum across.
@@ -14053,13 +15043,16 @@ NhlErrorTypes _Ncldim_min_n
  */
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 /*
@@ -14086,7 +15079,7 @@ NhlErrorTypes _Ncldim_min_n
 	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
 	  nd       = tmp_md->multidval.n_dims-ndims;
-	  dimsizes = NclMalloc(nd * sizeof(int));
+	  dimsizes = NclMalloc(nd * sizeof(ng_size_t));
 	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -14099,7 +15092,7 @@ NhlErrorTypes _Ncldim_min_n
 	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
 	  }
 	} else {
-	  dimsizes = NclMalloc(sizeof(int));
+	  dimsizes = NclMalloc(sizeof(ng_size_t));
 	  *dimsizes = 1;
 	  nd = 1;
 	  m  = tmp_md->multidval.dim_sizes[dims[0]];
@@ -14130,7 +15123,7 @@ NhlErrorTypes _Ncldim_min_n
  * Loop through tmp to find the first non-missing value.
  */
 	      k = 0;
-	      while((tmp[k])&&(k<m)) {
+	      while((k<m) && tmp[k]) {
 		k++;
 	      }
 	      if(k==m) {
@@ -14224,29 +15217,32 @@ NhlErrorTypes _Ncldim_max
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-	int *dimsizes = NULL;
+	ng_size_t *dimsizes = NULL;
 	logical *tmp = NULL;
-	int i,j;
-	int m,n,sz;
-	int nd;
+	ng_size_t i,j;
+	ng_size_t m,n,sz;
+	ng_size_t nd;
 	logical result = 0;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 
 	n = 1;
 	if(tmp_md->multidval.n_dims > 1) {
-		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
+		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(ng_size_t));
 		for(i = 0; i < tmp_md->multidval.n_dims -1 ; i++) {
 			n = n* tmp_md->multidval.dim_sizes[i];
 			dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -14254,7 +15250,7 @@ NhlErrorTypes _Ncldim_max
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = tmp_md->multidval.n_dims -1;
 	} else {
-		dimsizes = NclMalloc(sizeof(int));
+		dimsizes = NclMalloc(sizeof(ng_size_t));
 		*dimsizes = n; 	
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = 1;
@@ -14266,7 +15262,7 @@ NhlErrorTypes _Ncldim_max
 		for(i = 0; i < n ; i++) {
 			_Ncleq(tmp_md->multidval.type,tmp,&(((char*)tmp_md->multidval.val)[i*m*sz]),&(tmp_md->multidval.missing_value.value),NULL,NULL,m,1);
 			j = 0;
-			while((tmp[j])&&(j<m)) {
+			while((j<m) && tmp[j]) {
 				j++;
 			}
 			if(j==m) {
@@ -14332,14 +15328,15 @@ NhlErrorTypes _Ncldim_max_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *dims, ndims;
-	int *dimsizes = NULL;
+        int *dims;
+	ng_size_t ndims;
+	ng_size_t *dimsizes = NULL;
 	logical *tmp = NULL;
 	logical result = 0;
-	int i,j,k;
-	int i_in_sz,i_out_sz;
-	int m,n,nr,nl,sz;
-	int nd;
+	ng_size_t i,j,k;
+	ng_size_t i_in_sz,i_out_sz;
+	ng_size_t m,n,nr,nl;
+	int sz,nd;
 
 /*
  * Get dimension to do maximum across.
@@ -14351,13 +15348,16 @@ NhlErrorTypes _Ncldim_max_n
  */
 	data = _NclGetArg(0,2,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14385,7 +15385,7 @@ NhlErrorTypes _Ncldim_max_n
 	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
 	  nd       = tmp_md->multidval.n_dims-ndims;
-	  dimsizes = NclMalloc(nd * sizeof(int));
+	  dimsizes = NclMalloc(nd * sizeof(ng_size_t));
 	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
@@ -14398,7 +15398,7 @@ NhlErrorTypes _Ncldim_max_n
 	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
 	  }
 	} else {
-	  dimsizes = NclMalloc(sizeof(int));
+	  dimsizes = NclMalloc(sizeof(ng_size_t));
 	  *dimsizes = 1;
 	  nd = 1;
 	  m  = tmp_md->multidval.dim_sizes[dims[0]];
@@ -14430,7 +15430,7 @@ NhlErrorTypes _Ncldim_max_n
  * Loop through tmp to find the first non-missing value.
  */
 	      k = 0;
-	      while((tmp[k])&&(k<m)) {
+	      while((k<m) && tmp[k]) {
 		k++;
 	      }
 	      if(k==m) {
@@ -14523,17 +15523,20 @@ NhlErrorTypes _NclIIsInteger
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14566,17 +15569,20 @@ NhlErrorTypes _NclIIsUint
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14607,17 +15613,20 @@ NhlErrorTypes _NclIIsShort
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14650,17 +15659,20 @@ NhlErrorTypes _NclIIsUshort
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14691,17 +15703,20 @@ NhlErrorTypes _NclIIsLong
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14734,17 +15749,20 @@ NhlErrorTypes _NclIIsUlong
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14775,17 +15793,20 @@ NhlErrorTypes _NclIIsInt64
         NclStackEntry data;
         NclMultiDValData tmp_md = NULL;
         logical *out_val;
-        int dimsizes = 1;
+        ng_size_t dimsizes = 1;
 
         data = _NclGetArg(0,1,DONT_CARE);
         switch(data.kind) {
-                case NclStk_VAR:
-                        tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-                        break;
-                case NclStk_VAL:
-                        tmp_md = (NclMultiDValData)data.u.data_obj;
-                        break;
-        }
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+	}
         if(tmp_md == NULL)
                 return(NhlFATAL);
 
@@ -14816,17 +15837,20 @@ NhlErrorTypes _NclIIsUint64
         NclStackEntry data;
         NclMultiDValData tmp_md = NULL;
         logical *out_val;
-        int dimsizes = 1;
+        ng_size_t dimsizes = 1;
 
         data = _NclGetArg(0,1,DONT_CARE);
         switch(data.kind) {
-                case NclStk_VAR:
-                        tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-                        break;
-                case NclStk_VAL:
-                        tmp_md = (NclMultiDValData)data.u.data_obj;
-                        break;
-        }
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+	}
         if(tmp_md == NULL)
                 return(NhlFATAL);
 
@@ -14847,7 +15871,7 @@ NhlErrorTypes _NclIIsUint64
         ));
 }
 
-NhlErrorTypes _NclIIsInt8
+NhlErrorTypes _NclIIsList
 #if     NhlNeedProto
 (void)
 #else
@@ -14857,22 +15881,25 @@ NhlErrorTypes _NclIIsInt8
         NclStackEntry data;
         NclMultiDValData tmp_md = NULL;
         logical *out_val;
-        int dimsizes = 1;
+        ng_size_t dimsizes = 1;
 
         data = _NclGetArg(0,1,DONT_CARE);
         switch(data.kind) {
-                case NclStk_VAR:
-                        tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-                        break;
-                case NclStk_VAL:
-                        tmp_md = (NclMultiDValData)data.u.data_obj;
-                        break;
-        }
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+	default:
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+		return(NhlFATAL);
+	}
         if(tmp_md == NULL)
                 return(NhlFATAL);
 
         out_val = (logical*)NclMalloc(sizeof(logical));
-        if(tmp_md->multidval.data_type == NCL_int8) {
+        if(tmp_md->multidval.data_type == NCL_list) {
                 *out_val = 1;
         } else {
                 *out_val = 0;
@@ -14890,7 +15917,7 @@ NhlErrorTypes _NclIIsInt8
         ));
 }
 
-NhlErrorTypes _NclIIsUint8
+NhlErrorTypes _NclIIsUbyte
 #if     NhlNeedProto
 (void)
 #else
@@ -14900,22 +15927,25 @@ NhlErrorTypes _NclIIsUint8
         NclStackEntry data;
         NclMultiDValData tmp_md = NULL;
         logical *out_val;
-        int dimsizes = 1;
+        ng_size_t dimsizes = 1;
 
         data = _NclGetArg(0,1,DONT_CARE);
         switch(data.kind) {
-                case NclStk_VAR:
-                        tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-                        break;
-                case NclStk_VAL:
-                        tmp_md = (NclMultiDValData)data.u.data_obj;
-                        break;
-        }
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+	}
         if(tmp_md == NULL)
                 return(NhlFATAL);
 
         out_val = (logical*)NclMalloc(sizeof(logical));
-        if(tmp_md->multidval.data_type == NCL_uint8) {
+        if(tmp_md->multidval.data_type == NCL_ubyte) {
                 *out_val = 1;
         } else {
                 *out_val = 0;
@@ -14944,17 +15974,20 @@ NhlErrorTypes _NclIIsByte
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -14986,17 +16019,20 @@ NhlErrorTypes _NclIIsFloat
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15028,17 +16064,20 @@ NhlErrorTypes _NclIIsDouble
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15070,17 +16109,20 @@ NhlErrorTypes _NclIIsString
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15112,17 +16154,20 @@ NhlErrorTypes _NclIIsChar
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15155,23 +16200,34 @@ NhlErrorTypes _NclIIsNumeric
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 	out_val = (logical*)NclMalloc(sizeof(logical));
 	if(tmp_md->multidval.type->type_class.type & NCL_NUMERIC_TYPE_MASK) {
-		*out_val = 1;
+		switch(tmp_md->multidval.type->type_class.type)
+		{
+			case Ncl_Typeubyte:
+			case Ncl_Typeushort:
+				*out_val = 0;
+				break;
+			default:
+				*out_val = 1;
+		}
 	} else {
 		*out_val = 0;
 	}
@@ -15198,21 +16254,25 @@ NhlErrorTypes _NclIIsSNumeric
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 	out_val = (logical*)NclMalloc(sizeof(logical));
+
 	if(tmp_md->multidval.type->type_class.type & NCL_SNUMERIC_TYPE_MASK) {
 		*out_val = 1;
 	} else {
@@ -15239,23 +16299,35 @@ NhlErrorTypes _NclIIsENumeric
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
 	out_val = (logical*)NclMalloc(sizeof(logical));
 	if(tmp_md->multidval.type->type_class.type & NCL_ENUMERIC_TYPE_MASK) {
-		*out_val = 1;
+		switch(tmp_md->multidval.type->type_class.type)
+		{
+			case Ncl_Typebyte:
+			case Ncl_Typeshort:
+			case Ncl_Typeint:
+				*out_val = 0;
+				break;
+			default:
+				*out_val = 1;
+		}
 	} else {
 		*out_val = 0;
 	}
@@ -15282,17 +16354,20 @@ NhlErrorTypes _NclIIsFile
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15322,17 +16397,20 @@ NhlErrorTypes _NclIIsGraphic
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15364,17 +16442,20 @@ NhlErrorTypes _NclIIsLogical
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	logical *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15406,7 +16487,7 @@ NhlErrorTypes _NclIFileVarTypeOf
 	NclFile thefile;
 	obj *thefile_id;
 	NclQuark *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 	NclObjTypes ot;
 	string* var_string;
 
@@ -15434,39 +16515,60 @@ NhlErrorTypes _NclIFileVarTypeOf
 
 	ot = _NclFileVarRepValue(thefile,*var_string);
 	switch(ot) {
-		case Ncl_Typedouble :                
-			*out_val = NrmStringToQuark("double");
-			break;
-		case Ncl_Typefloat : 
-			*out_val = NrmStringToQuark("float");
-			break;
-		case Ncl_Typelong :
-			*out_val = NrmStringToQuark("long");
-			break;
-		case Ncl_Typeint :
-			*out_val = NrmStringToQuark("integer");
-			break;
-		case Ncl_Typeshort :
-			*out_val = NrmStringToQuark("short");
-			break;
-		case Ncl_Typebyte :
-			*out_val = NrmStringToQuark("byte");
-			break;
-		case Ncl_Typestring :
-			*out_val = NrmStringToQuark("string");
-			break;
-		case Ncl_Typechar: 
-			*out_val = NrmStringToQuark("character");
-			break;
-		case Ncl_Typeobj: 
-			*out_val = NrmStringToQuark("obj");
-			break;
-		case Ncl_Typelogical:
-			*out_val = NrmStringToQuark("logical");
-			break;
-		case Ncl_Typelist:
-			*out_val = NrmStringToQuark("list");
-			break;
+	case Ncl_Typedouble :                
+		*out_val = NrmStringToQuark("double");
+		break;
+	case Ncl_Typefloat : 
+		*out_val = NrmStringToQuark("float");
+		break;
+	case Ncl_Typelong :
+		*out_val = NrmStringToQuark("long");
+		break;
+	case Ncl_Typeulong :
+		*out_val = NrmStringToQuark("ulong");
+		break;
+	case Ncl_Typeint :
+		*out_val = NrmStringToQuark("integer");
+		break;
+	case Ncl_Typeuint :
+		*out_val = NrmStringToQuark("uint");
+		break;
+	case Ncl_Typeshort :
+		*out_val = NrmStringToQuark("short");
+		break;
+	case Ncl_Typeushort :
+		*out_val = NrmStringToQuark("ushort");
+		break;
+	case Ncl_Typebyte :
+		*out_val = NrmStringToQuark("byte");
+		break;
+	case Ncl_Typeubyte :
+		*out_val = NrmStringToQuark("ubyte");
+		break;
+	case Ncl_Typeint64 :
+		*out_val = NrmStringToQuark("int64");
+		break;
+	case Ncl_Typeuint64 :
+		*out_val = NrmStringToQuark("uint64");
+		break;
+	case Ncl_Typestring :
+		*out_val = NrmStringToQuark("string");
+		break;
+	case Ncl_Typechar: 
+		*out_val = NrmStringToQuark("character");
+		break;
+	case Ncl_Typeobj: 
+		*out_val = NrmStringToQuark("obj");
+		break;
+	case Ncl_Typelogical:
+		*out_val = NrmStringToQuark("logical");
+		break;
+	case Ncl_Typelist:
+		*out_val = NrmStringToQuark("list");
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"internal error"));
+                return(NhlFATAL);
 	}
 
 	return(NclReturnValue(
@@ -15488,17 +16590,20 @@ NhlErrorTypes _NclITypeOf
 	NclStackEntry data;
 	NclMultiDValData tmp_md = NULL;
 	NclQuark *out_val;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
@@ -15532,55 +16637,87 @@ NhlErrorTypes _NclIgaus
 ()
 #endif
 {
-	int * nlat;
+        void *tmp_nlat;
+	ng_size_t *nlat, dsizes_nlat[1];
+	NclBasicDataTypes type_nlat;
 	int has_missing;
 	NclScalar missing;
-	int dimsizes[2];
-	int nl;
+	ng_size_t nl_tmp, lwork_tmp, dimsizes[2];
+	int nl, lwork=0;
 	double *theta;
 	double *wts;
-	int lwork= 0;
+	ng_size_t i;
 	double *work = NULL;
-	int i,ierror,k;
-	double *output;
+	int ierror;
 	double rtod = (double)180.0/(double)3.14159265358979323846;
+	double *output;
+	NclScalar output_missing;
+	logical ret_missing = False;
+	extern void NGCALLF(gaqdncl,GAQDNCL)(int *,double *,double *,double *,int *,int *);
 
+	tmp_nlat = (void*)NclGetArgValue( 0, 1, NULL, dsizes_nlat, &missing, &has_missing, &type_nlat,DONT_CARE);
 
+/*
+ * Check the input dimensions and compute the total size of the input array.
+ */
+	nlat = get_dimensions(tmp_nlat,dsizes_nlat[0],type_nlat,"gaus");
+	if(nlat == NULL) 
+	  return(NhlFATAL);
 
-	nlat = (int*)NclGetArgValue( 0, 1, NULL, NULL, &missing, &has_missing, NULL,DONT_CARE);
+/*
+ * Calculate some array sizes so we can test them.
+ */
+	nl_tmp    = 2 * (*nlat);                   /* Output array size */
+	lwork_tmp = 4 * nl_tmp*(nl_tmp+1)+2;       /* Work array size */
 
-	if(has_missing&&(*nlat==missing.intval)) {
-		dimsizes[0]= 1;
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: missing value in input cannot compute gaussian vals");
-		NclReturnValue(
-			nlat,
-			1,
-			dimsizes,
-			&missing,
-			NCL_int,
-			1);
-		return(NhlWARNING);
-	}  else if(*nlat <= 0) {
-		dimsizes[0]= 1;
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: number of latitudes must be positive");
-		NclReturnValue(
-			nlat,
-			1,
-			dimsizes,
-			&missing,
-			NCL_int,
-			1);
-		return(NhlWARNING);
+	if(has_missing && ( ((type_nlat==NCL_int)&&(*nlat==missing.intval)) ||
+			    ((type_nlat==NCL_long)&&(*nlat==missing.longval)))) {
+	  ret_missing = True;
+	  NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: missing value in input cannot compute gaussian vals");
 	}
-	
-	nl= 2 * (*nlat) ;
+	else if(*nlat <= 0) {
+	  ret_missing = True;
+	  NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: number of latitudes must be positive");
+	} 
+	else if(*nlat > INT32_MAX || nl_tmp > INT32_MAX || lwork_tmp > INT32_MAX ) {
+/*
+ * The Fortran gaus only accepts integers for now, so can't have an nlat > INT32_MAX.
+ */
+	  ret_missing = True;
+	  NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: number of input/output latitudes and/or size of work array can't be > INT32_MAX");
+	}
+	nl    = (int) nl_tmp;
+	lwork = (int) lwork_tmp;
+	if(ret_missing) {
+	  dimsizes[0] = 1;
+	  output = (double*)NclMalloc(sizeof(double));
+          if (output == NULL)
+          {
+            NHLPERROR((NhlFATAL, errno, "gaus: output: memory allocation error."));
+            return NhlFATAL;
+          }
+	  output_missing.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+	  *(double*)output = output_missing.doubleval;
+	  NclReturnValue(
+			 output,
+			 1,
+			 dimsizes,
+			 &output_missing,
+			 NCL_double,
+			 1);
+	  return(NhlWARNING);
+	}
 	theta = (double*)NclMalloc(sizeof(double)*nl);
 	wts = (double*)NclMalloc(sizeof(double)*nl);
-	lwork = 4 * nl*(nl+1)+2;
 	work = (double*)NclMalloc(sizeof(double)*lwork);
 	NGCALLF(gaqdncl,GAQDNCL)(&nl,theta,wts,work,&lwork,&ierror);
 	NclFree(work);
 	output = (double*)NclMalloc(sizeof(double)*nl*2);
+        if (output == NULL)
+        {
+            NHLPERROR((NhlFATAL, errno, "gaus: output: memory allocation error."));
+            return NhlFATAL;
+        }
 
 	for(i = 0; i < nl; i++) {
 		output[2*i] = rtod*theta[i] - 90.0;
@@ -15588,6 +16725,7 @@ NhlErrorTypes _NclIgaus
 	}
 	NclFree(wts);
 	NclFree(theta);
+	NclFree(nlat);
 	dimsizes[0] = nl;
 	dimsizes[1] = 2;
 	return(NclReturnValue(
@@ -15610,32 +16748,32 @@ NhlErrorTypes _NclIGetVarDims
 {
 	int i;
 	string name;
-	int dimsizes;
+	ng_size_t dimsizes;
 	NclApiDataList *data = NULL;
 	NhlErrorTypes ret = NhlNOERROR;
 	NclStackEntry val;
 	NclVar tmp_var;
 	NclFile thefile = NULL;
-	NclMultiDValData tmp_md = NULL;
 	NclMultiDValData file_md = NULL;
 	NclQuark names[2048];
+	ng_size_t ndims;
 
 
 
         val = _NclGetArg(0,1,DONT_CARE);
         switch(val.kind) {
-		case NclStk_VAR:
-                	tmp_var = val.u.data_var;
-			if(tmp_var->var.var_quark > 0) {
-				name = tmp_var->var.var_quark;
-			} else {
-				name = -1;
-			}
-			break;
-        	case NclStk_VAL:
-		default:
-			dimsizes = 1;
-			return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
+	case NclStk_VAR:
+		tmp_var = val.u.data_var;
+		if(tmp_var->var.var_quark > 0) {
+			name = tmp_var->var.var_quark;
+		} else {
+			name = -1;
+		}
+		break;
+	case NclStk_VAL:
+	default:
+		dimsizes = 1;
+		return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
 	}
 	if(tmp_var != NULL ) {
 		if(tmp_var->obj.obj_type == Ncl_FileVar) {
@@ -15645,7 +16783,9 @@ NhlErrorTypes _NclIGetVarDims
 			for (i=0; i < data->u.file->n_dims;i++) {
 				names[i] = data->u.file->dim_info[i].dim_quark;
 			}
-			ret = NclReturnValue((void*)names, 1, &data->u.file->n_dims, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+
+			ndims = data->u.file->n_dims;
+			ret = NclReturnValue((void*)names, 1, &ndims, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
 		} else {
 			data = _NclGetVarInfo2(tmp_var);
 			for (i=0; i < data->u.var->n_dims;i++) {
@@ -15655,7 +16795,9 @@ NhlErrorTypes _NclIGetVarDims
 					
 				}
 			}
-			ret = NclReturnValue((void*)names, 1, &data->u.var->n_dims, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+
+			ndims = data->u.var->n_dims;
+			ret = NclReturnValue((void*)names, 1, &ndims, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
 		}
 	} else {
 		ret  = NhlFATAL;
@@ -15675,7 +16817,7 @@ NhlErrorTypes _NclIGetVarAtts
 #endif
 {
 	string name;
-	int dimsizes;
+	ng_size_t dimsizes;
 	NclApiDataList *data = NULL;
 	NhlErrorTypes ret;
 	NclStackEntry val;
@@ -15683,22 +16825,22 @@ NhlErrorTypes _NclIGetVarAtts
 	NclFile thefile = NULL;
 	NclMultiDValData tmp_md = NULL;
 
-
+    ng_size_t num_atts;
 
         val = _NclGetArg(0,1,DONT_CARE);
         switch(val.kind) {
-		case NclStk_VAR:
-                	tmp_var = val.u.data_var;
-			if(tmp_var->var.var_quark > 0) {
-				name = tmp_var->var.var_quark;
-			} else {
-				name = -1;
-			}
-			break;
-        	case NclStk_VAL:
-		default:
-			dimsizes = 1;
-			return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
+	case NclStk_VAR:
+		tmp_var = val.u.data_var;
+		if(tmp_var->var.var_quark > 0) {
+			name = tmp_var->var.var_quark;
+		} else {
+			name = -1;
+		}
+		break;
+	case NclStk_VAL:
+	default:
+		dimsizes = 1;
+		return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
 	}
 
 	if((tmp_var->obj.obj_type == Ncl_Var)||(tmp_var->obj.obj_type == Ncl_HLUVar)||(tmp_var->obj.obj_type == Ncl_CoordVar)){
@@ -15708,7 +16850,8 @@ NhlErrorTypes _NclIGetVarAtts
 			data = _NclGetVarInfo(name);
 		}
 		if((data != NULL)&&(data->u.var->n_atts != 0)) {
-			ret = NclReturnValue((void*)data->u.var->attnames, 1, &data->u.var->n_atts, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+            num_atts = data->u.var->n_atts;
+			ret = NclReturnValue((void*)data->u.var->attnames, 1, &num_atts, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
 			_NclFreeApiDataList((void*)data);
 			return(ret);
 		}
@@ -15727,7 +16870,8 @@ NhlErrorTypes _NclIGetVarAtts
 			data = _NclGetFileInfo(name);
 		}
 		if((data != NULL)&&(data->u.file->n_atts != 0)) {
-			ret = NclReturnValue((void*)data->u.file->attnames, 1, &data->u.file->n_atts, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+            num_atts = data->u.file->n_atts;
+			ret = NclReturnValue((void*)data->u.file->attnames, 1, &num_atts, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
 			_NclFreeApiDataList((void*)data);
 			return(ret);
 		}
@@ -15752,36 +16896,36 @@ NhlErrorTypes _NclIFileVarDimsizes
 	string fname;
 	NclScalar name_missing;
 	int name_has_missing;
-	int out_val = -1;
-	int dimsizes;
+	ng_size_t dimsizes, product_size;
+	ng_size_t ndims;
 	NclApiDataList *data = NULL;
 	NhlErrorTypes ret;
 	NclStackEntry val;
 	NclVar tmp_var;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	void *dim_sizes;
 	int i;
 	NclMultiDValData tmp_md = NULL;
 	NclFile thefile;
-
+	NclBasicDataTypes return_type;
 
 
         val = _NclGetArg(0,2,DONT_CARE);
         switch(val.kind) {
-		case NclStk_VAR:
-                	tmp_var = val.u.data_var;
-			if(tmp_var->var.var_quark > 0) {
-				fname = tmp_var->var.var_quark;
-			} else {
-				fname = -1;
-			}
-			break;
-        	case NclStk_VAL:
+	case NclStk_VAR:
+		tmp_var = val.u.data_var;
+		if(tmp_var->var.var_quark > 0) {
+			fname = tmp_var->var.var_quark;
+		} else {
 			fname = -1;
-			tmp_md = val.u.data_obj;
-			break;
-		default:
-			dimsizes = 1;
-			return(NclReturnValue((void*)&((NclTypeClass)nclTypeintClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypeintClass)->type_class.default_mis, ((NclTypeClass)nclTypeintClass)->type_class.data_type, 1));
+		}
+		break;
+	case NclStk_VAL:
+		fname = -1;
+		tmp_md = val.u.data_obj;
+		break;
+	default:
+		dimsizes = 1;
+		return(NclReturnValue((void*)&((NclTypeClass)nclTypeintClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypeintClass)->type_class.default_mis, ((NclTypeClass)nclTypeintClass)->type_class.data_type, 1));
 	}
 
         name = (string*)NclGetArgValue(
@@ -15820,10 +16964,44 @@ NhlErrorTypes _NclIFileVarDimsizes
 		data = _NclGetFileVarInfo(fname,*name);
 	}
 	if((data != NULL)&&(data->u.var->n_dims != 0)) {
-		for(i = 0; i < data->u.var->n_dims; i++) {
-		 	dim_sizes[i] = data->u.var->dim_info[i].dim_size;
+/*
+ * First loop through dimension sizes to see if we need to return
+ * ints or longs.
+ *
+ * The rules for when to return an int versus a long:
+ *    - On a 32-bit system, return ints.
+ *    - On a 64-bit system, return longs if any of the
+ *      individual dimension sizes are > INT32_MAX, or
+ *      if the product of the dimension sizes is > INT32_MAX.
+ */
+		ndims = data->u.var->n_dims;
+		return_type = NCL_int;
+#if !defined(NG32BIT)
+		i = 0;
+		product_size = 1;
+		while(i < ndims && (return_type == NCL_int)) {
+			product_size *= data->u.var->dim_info[i].dim_size;
+			if(data->u.var->dim_info[i].dim_size > INT32_MAX || 
+			   product_size > INT32_MAX) {
+			  return_type = NCL_long;
+			}
+			i++;
 		}
-		ret = NclReturnValue((void*)dim_sizes, 1, &data->u.var->n_dims, NULL, ((NclTypeClass)nclTypeintClass)->type_class.data_type, 1);
+#endif
+		if(return_type == NCL_int) {
+		  dim_sizes = (void *) NclMalloc(sizeof(int) * ndims);
+		  for (i = 0; i < ndims; i++) {
+		    ((int*)dim_sizes)[i] = (int)data->u.var->dim_info[i].dim_size;
+		  }
+		}
+		else {
+		  dim_sizes = (void *) NclMalloc(sizeof(long) * ndims);
+		  for (i = 0; i < ndims; i++) {
+		    ((long*)dim_sizes)[i] = (long)data->u.var->dim_info[i].dim_size;
+		  }
+		}
+		ret = NclReturnValue(dim_sizes, 1, &ndims, NULL, return_type, 1);
+		free(dim_sizes);
 		_NclFreeApiDataList((void*)data);
 		return(ret);
 	} else {
@@ -15846,8 +17024,7 @@ NhlErrorTypes _NclIGetFileVarDims
 	string fname;
 	NclScalar name_missing;
 	int name_has_missing;
-	string out_val = -1;
-	int dimsizes;
+	ng_size_t dimsizes;
 	NclApiDataList *data = NULL;
 	NhlErrorTypes ret;
 	NclStackEntry val;
@@ -15861,18 +17038,18 @@ NhlErrorTypes _NclIGetFileVarDims
 
         val = _NclGetArg(0,2,DONT_CARE);
         switch(val.kind) {
-		case NclStk_VAR:
-                	tmp_var = val.u.data_var;
-			if(tmp_var->var.var_quark > 0) {
-				fname = tmp_var->var.var_quark;
-			} else {
-				fname = -1;
-			}
-			break;
-        	case NclStk_VAL:
-		default:
-			dimsizes = 1;
-			return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
+	case NclStk_VAR:
+		tmp_var = val.u.data_var;
+		if(tmp_var->var.var_quark > 0) {
+			fname = tmp_var->var.var_quark;
+		} else {
+			fname = -1;
+		}
+		break;
+	case NclStk_VAL:
+	default:
+		dimsizes = 1;
+		return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
 	}
 
         name = (string*)NclGetArgValue(
@@ -15915,7 +17092,9 @@ NhlErrorTypes _NclIGetFileVarDims
 		for(i = 0; i < data->u.var->n_dims; i++) {
 		 	dim_names[i] = data->u.var->dim_info[i].dim_quark;
 		}
-		ret = NclReturnValue((void*)dim_names, 1, &data->u.var->n_dims, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+
+		ng_size_t ndims = data->u.var->n_dims;
+		ret = NclReturnValue((void*)dim_names, 1, &ndims, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
 		_NclFreeApiDataList((void*)data);
 		return(ret);
 	} else {
@@ -15937,8 +17116,7 @@ NhlErrorTypes _NclIGetFileVarAtts
 	string fname;
 	NclScalar name_missing;
 	int name_has_missing;
-	string out_val = -1;
-	int dimsizes;
+	ng_size_t dimsizes;
 	NclApiDataList *data = NULL;
 	NhlErrorTypes ret;
 	NclStackEntry val;
@@ -15946,22 +17124,20 @@ NhlErrorTypes _NclIGetFileVarAtts
 	NclFile thefile = NULL;
 	NclMultiDValData tmp_md = NULL;
 
-
-
         val = _NclGetArg(0,2,DONT_CARE);
         switch(val.kind) {
-		case NclStk_VAR:
-                	tmp_var = val.u.data_var;
-			if(tmp_var->var.var_quark > 0) {
-				fname = tmp_var->var.var_quark;
-			} else {
-				fname = -1;
-			}
-			break;
-        	case NclStk_VAL:
-		default:
-			dimsizes = 1;
-			return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
+	case NclStk_VAR:
+		tmp_var = val.u.data_var;
+		if(tmp_var->var.var_quark > 0) {
+			fname = tmp_var->var.var_quark;
+		} else {
+			fname = -1;
+		}
+		break;
+	case NclStk_VAL:
+	default:
+		dimsizes = 1;
+		return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
 	}
 
         name = (string*)NclGetArgValue(
@@ -16001,7 +17177,8 @@ NhlErrorTypes _NclIGetFileVarAtts
 		data = _NclGetFileVarInfo(fname,*name);
 	}
 	if((data != NULL)&&(data->u.var->n_atts != 0)) {
-		ret = NclReturnValue((void*)data->u.var->attnames, 1, &data->u.var->n_atts, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+        ng_size_t natts = data->u.var->n_atts;
+		ret = NclReturnValue((void*)data->u.var->attnames, 1, &natts, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
 		_NclFreeApiDataList((void*)data);
 		return(ret);
 	} else {
@@ -16022,11 +17199,11 @@ NhlErrorTypes _NclIFileVarDef
 #endif
 {
 
-	int dimsize;
+	ng_size_t dimsize;
 	NclScalar missing;
 	int has_missing;
 
-	int tmp_dimsize;
+	ng_size_t tmp_dimsize;
 	NclScalar tmp_missing;
 	int tmp_has_missing;
 
@@ -16123,7 +17300,6 @@ NhlErrorTypes _NclIFileVarChunkDef
 ()
 #endif
 {
-	int dimsize;
 	NclScalar missing;
 	int has_missing;
 
@@ -16133,12 +17309,15 @@ NhlErrorTypes _NclIFileVarChunkDef
 
 	obj *thefile_id;
 	string *varnames;
-	int    *dimsizes;
-	int     input_dimsizes[NCL_MAX_DIMENSIONS];
-	int i;
+	ng_size_t   *dimsizes;
+	ng_size_t   input_dimsizes[NCL_MAX_DIMENSIONS];
+	ng_size_t i;
 	NclFile thefile;
 	NhlErrorTypes ret=NhlNOERROR;
 	NhlErrorTypes ret0 = NhlNOERROR;
+
+	void *dims_void = NULL;
+	NclBasicDataTypes dims_type;
 
         thefile_id = (obj *)NclGetArgValue(
                         0,
@@ -16164,24 +17343,32 @@ NhlErrorTypes _NclIFileVarChunkDef
                         NULL,
                         0);
 	if(has_missing) {
-		for(i = 0; i < dimsize; i++) {
+		for(i = 0; i < n_dims; i++) {
 			if(varnames[i] == missing.stringval)  {
 				return(NhlFATAL);
 			}
 		}
 	}
 
-        dimsizes = (int *)NclGetArgValue(
+        dims_void = (void *)NclGetArgValue(
                         2,
                         3,
                         &n_dims,
                         input_dimsizes,
                         &tmp_missing,
                         &tmp_has_missing,
-                        NULL,
+                        &dims_type,
                         0);
 
 	n_dims = input_dimsizes[0];
+        dimsizes = get_dimensions(dims_void, (ng_size_t)n_dims, dims_type, "Chunkdef");
+
+	if(dimsizes == NULL)
+	{
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,"FileVarChunkDef: dimension sizes wrong."));
+		return(NhlFATAL);
+        }
+
 	if(tmp_has_missing) {
 		for(i = 0; i < n_dims; i++) {
 			if(dimsizes[i] == tmp_missing.intval)  {
@@ -16204,29 +17391,30 @@ NhlErrorTypes _NclIFileVarChunkCacheDef
 ()
 #endif
 {
-	int dimsize;
 	NclScalar missing;
 	int has_missing;
-
 	int n_dims;
 	NclScalar tmp_missing;
 	int tmp_has_missing;
-
 	string *varnames;
-	size_t *sizes;
-	size_t *elems;
+	ng_size_t *sizes;
+	ng_size_t *elems;
 	float  *pres;
-	int     input_dimsizes[NCL_MAX_DIMENSIONS];
-	float  *preemption;
+	ng_size_t     input_dimsizes[NCL_MAX_DIMENSIONS];
 	int i;
 	obj *thefile_id;
 	NclFile thefile;
 	NhlErrorTypes ret=NhlNOERROR;
 	NhlErrorTypes ret0 = NhlNOERROR;
-
-	size_t cache_size	= 3200000;
-	size_t cache_nelems	= 1009;
+	ng_size_t cache_size	= 3200000;
+	ng_size_t cache_nelems	= 1009;
 	float  cache_preemption = 0.5;
+
+	void *elems_void = NULL;
+	NclBasicDataTypes elems_type;
+
+	void *sizes_void = NULL;
+	NclBasicDataTypes sizes_type;
 
         thefile_id = (obj *)NclGetArgValue(
                         0,
@@ -16251,35 +17439,52 @@ NhlErrorTypes _NclIFileVarChunkCacheDef
                         &has_missing,
                         NULL,
                         0);
+	/* dimsize is not initialized */
 	if(has_missing) {
-		for(i = 0; i < dimsize; i++) {
+		for(i = 0; i < n_dims; i++) {
 			if(varnames[i] == missing.stringval)  {
 				return(NhlFATAL);
 			}
 		}
 	}
 
-        sizes = (size_t *)NclGetArgValue(
+        sizes_void = (void *)NclGetArgValue(
                         2,
                         5,
                         &n_dims,
                         input_dimsizes,
                         &tmp_missing,
                         &tmp_has_missing,
-                        NULL,
+                        &sizes_type,
                         0);
+
+        sizes = get_dimensions(sizes_void, (ng_size_t)n_dims, sizes_type, "ChunkCachedef");
+
+	if(sizes == NULL)
+	{
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,"FileVarChunkCacheDef: Cache sizes wrong."));
+		return(NhlFATAL);
+        }
 
 	cache_size = sizes[0];
 
-        elems = (size_t *)NclGetArgValue(
+        elems_void = (void *)NclGetArgValue(
                         3,
                         5,
                         &n_dims,
                         input_dimsizes,
                         &tmp_missing,
                         &tmp_has_missing,
-                        NULL,
+                        &elems_type,
                         0);
+
+        elems = get_dimensions(elems_void, (ng_size_t)n_dims, elems_type, "ChunkCachedef");
+
+	if(elems == NULL)
+	{
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,"FileVarChunkCacheDef: Cache elems wrong."));
+		return(NhlFATAL);
+        }
 
 	cache_nelems = elems[0];
 
@@ -16309,10 +17514,8 @@ NhlErrorTypes _NclIFileVarCompressLevelDef
 ()
 #endif
 {
-	int dimsize;
 	NclScalar missing;
 	int has_missing;
-
 	int n_dims;
 	NclScalar tmp_missing;
 	int tmp_has_missing;
@@ -16320,7 +17523,7 @@ NhlErrorTypes _NclIFileVarCompressLevelDef
 	obj *thefile_id;
 	string *varnames;
 	int    *compress_level;
-	int     input_dimsizes[NCL_MAX_DIMENSIONS];
+	ng_size_t    input_dimsizes[NCL_MAX_DIMENSIONS];
 	int i;
 	NclFile thefile;
 	NhlErrorTypes ret=NhlNOERROR;
@@ -16350,7 +17553,7 @@ NhlErrorTypes _NclIFileVarCompressLevelDef
                         NULL,
                         0);
 	if(has_missing) {
-		for(i = 0; i < dimsize; i++) {
+		for(i = 0; i < n_dims; i++) {
 			if(varnames[i] == missing.stringval)  {
 				return(NhlFATAL);
 			}
@@ -16391,22 +17594,25 @@ NhlErrorTypes _NclIFileDimDef
 #endif
 {
 
-	int dimsize;
+	ng_size_t dimsize;
 	NclScalar missing;
 	int has_missing;
 
-	int tmp_dimsize;
+	ng_size_t tmp_dimsize;
 	NclScalar tmp_missing;
 	int tmp_has_missing;
 
 	obj *thefile_id;
 	string *dimnames;
-	int *dimsizes;
+	ng_size_t *dimsizes = NULL;
 	logical *unlimited;
 	int i;
 	NclFile thefile;
 	NhlErrorTypes ret=NhlNOERROR;
 	NhlErrorTypes ret0 = NhlNOERROR;
+	NclStackEntry data;
+	NclMultiDValData    tmp_md = NULL;
+	ng_size_t missing_val;
 
         thefile_id = (obj*)NclGetArgValue(
                         0,
@@ -16439,22 +17645,67 @@ NhlErrorTypes _NclIFileDimDef
 		}
 	}
 
-        dimsizes = (int*)NclGetArgValue(
-                        2,
-                        4,
-                        NULL,
-                        &tmp_dimsize,
-                        &tmp_missing,
-                        &tmp_has_missing,
-                        NULL,
-                        0);
-
-	if(tmp_dimsize != dimsize) {
+	data = _NclGetArg(2, 4, DONT_CARE);
+	switch (data.kind) {
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var, NULL, NULL);
+		break;
+		
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData) data.u.data_obj;
+		break;
+	default:
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
 		return(NhlFATAL);
-	} else if(tmp_has_missing) {
-		for(i = 0; i < dimsize; i++) {
-			if(dimsizes[i] == tmp_missing.intval)  {
-				return(NhlFATAL);
+	}
+	if (tmp_md == NULL) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+		return NhlFATAL;
+	}
+
+	dimsizes = (ng_size_t *) NclMalloc(tmp_md->multidval.dim_sizes[0] * sizeof(ng_size_t));
+	if (! dimsizes) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+		return (NhlFATAL);
+	}
+
+	switch (tmp_md->multidval.data_type) {
+	case NCL_byte:
+		missing_val = (ng_size_t) tmp_md->multidval.missing_value.value.byteval;
+		for (i = 0; i< tmp_md->multidval.dim_sizes[0]; i++)
+			dimsizes[i]  = (ng_size_t)((byte *) tmp_md->multidval.val)[i];
+		break;
+	case NCL_short:
+		missing_val = (ng_size_t) tmp_md->multidval.missing_value.value.shortval;
+		for (i = 0; i< tmp_md->multidval.dim_sizes[0]; i++)
+			dimsizes[i]  = (ng_size_t)((short *) tmp_md->multidval.val)[i];
+		break;
+	case NCL_int:
+		missing_val = (ng_size_t) tmp_md->multidval.missing_value.value.intval;
+		for (i = 0; i< tmp_md->multidval.dim_sizes[0]; i++)
+			dimsizes[i]  = (ng_size_t)((int *) tmp_md->multidval.val)[i];
+		break;
+	case NCL_long:
+		missing_val = (ng_size_t) tmp_md->multidval.missing_value.value.longval;
+		for (i = 0; i< tmp_md->multidval.dim_sizes[0]; i++)
+			dimsizes[i]  = (ng_size_t)((long *) tmp_md->multidval.val)[i];
+		break;
+	case NCL_int64:
+		missing_val = (ng_size_t) tmp_md->multidval.missing_value.value.int64val;
+		for (i = 0; i< tmp_md->multidval.dim_sizes[0]; i++)
+			dimsizes[i]  = (ng_size_t)((long long *) tmp_md->multidval.val)[i];
+		break;
+	default:
+		NhlPError(NhlFATAL, NhlEUNKNOWN,
+			  "filedimdef: invalid type passed for number of elements parameter, can't continue");
+		return NhlFATAL;
+	}
+	if (tmp_md->multidval.missing_value.has_missing) {
+		for (i = 0; i< tmp_md->multidval.dim_sizes[0]; i++) {
+			if (dimsizes[i] == missing_val) {
+				NhlPError(NhlFATAL, NhlEUNKNOWN,
+					  "filedimdef: dimension size array cannot contain missing values");
+				return NhlFATAL;
 			}
 		}
 	}
@@ -16484,6 +17735,7 @@ NhlErrorTypes _NclIFileDimDef
 			ret0 = ret;
 		}
 	}
+	NclFree(dimsizes);
 	return(ret0);
 }
 
@@ -16495,19 +17747,21 @@ NhlErrorTypes _NclIFileChunkDimDef
 #endif
 {
 
-	int dimsize;
+	ng_size_t dimsize;
 	NclScalar missing;
 	int has_missing;
 
-	int tmp_dimsize;
+	ng_size_t tmp_dimsize;
 	NclScalar tmp_missing;
 	int tmp_has_missing;
 
 	obj *thefile_id;
 	string *dimnames;
-	int *dimsizes;
+	void *tmp_dimsizes;
+	ng_size_t *dimsizes;
+        NclBasicDataTypes type_dimsizes;
 	logical *unlimited;
-	int i;
+	ng_size_t i;
 	NclFile thefile;
 	NhlErrorTypes ret=NhlNOERROR;
 	NhlErrorTypes ret0 = NhlNOERROR;
@@ -16543,15 +17797,18 @@ NhlErrorTypes _NclIFileChunkDimDef
 		}
 	}
 
-        dimsizes = (int*)NclGetArgValue(
+        tmp_dimsizes = (void *)NclGetArgValue(
                         2,
                         4,
                         NULL,
                         &tmp_dimsize,
                         &tmp_missing,
                         &tmp_has_missing,
-                        NULL,
+                        &type_dimsizes,
                         0);
+
+	dimsizes = get_dimensions(tmp_dimsizes,tmp_dimsize,type_dimsizes,
+				  "FileChunkDimDef");
 
 	if(tmp_dimsize != dimsize) {
 		return(NhlFATAL);
@@ -16588,6 +17845,7 @@ NhlErrorTypes _NclIFileChunkDimDef
 			ret0 = ret;
 		}
 	}
+	NclFree(dimsizes);
 	return(ret0);
 }
 
@@ -16599,19 +17857,8 @@ NhlErrorTypes _NclIFileAttDef
 #endif
 {
 
-	int dimsize;
-	NclScalar missing;
-	int has_missing;
-
-	int tmp_dimsize;
-	NclScalar tmp_missing;
-	int tmp_has_missing;
-
 	obj *thefile_id;
-	string *dimnames;
-	int *dimsizes;
-	logical *unlimited;
-	int i,j;
+	int j;
 	NclFile thefile;
 	NhlErrorTypes ret=NhlNOERROR;
 	NhlErrorTypes ret0 = NhlNOERROR;
@@ -16694,18 +17941,12 @@ NhlErrorTypes _NclIFileVarAttDef
 #endif
 {
 
-	int dimsize;
+	ng_size_t dimsize;
 	NclScalar missing;
 	int has_missing;
 
-	int tmp_dimsize;
-	NclScalar tmp_missing;
-	int tmp_has_missing;
-
 	obj *thefile_id;
 	string *varnames;
-	int *dimsizes;
-	logical *unlimited;
 	int i,j;
 	NclFile thefile;
 	NhlErrorTypes ret=NhlNOERROR;
@@ -16743,7 +17984,7 @@ NhlErrorTypes _NclIFileVarAttDef
 	if(has_missing) {
 		for(i = 0; i < dimsize; i++) {
 			if(varnames[i] == missing.stringval)  {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"Missing value variable name detected, can't continue");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"filevarattdef: missing value variable name detected, can't continue");
 				return(NhlFATAL);
 			}
 		}
@@ -16807,9 +18048,11 @@ NhlErrorTypes sprinti_W( void )
  */
   int *input_var;
   string *format_string;
-  int ndims_input_var, dsizes_input_var[NCL_MAX_DIMENSIONS], nlata, nlona, igrida[2];
+  int ndims_input_var;
+  ng_size_t dsizes_input_var[NCL_MAX_DIMENSIONS];  /* not used: nlata, nlona, igrida[2]; */
   NclScalar missing_input_var;
-  int has_missing_input_var, total_elements,i;
+  int has_missing_input_var;
+  ng_size_t total_elements,i;
   char buffer[80];
 /*
  * Output array variables
@@ -16865,12 +18108,12 @@ NhlErrorTypes sprintf_W(void)
     string  *format_string;
     void    *input_var;
 
-    int ndims_input_var,
-        dsizes_input_var[NCL_MAX_DIMENSIONS];
+    int ndims_input_var;
+    ng_size_t dsizes_input_var[NCL_MAX_DIMENSIONS];
 
     NclScalar   missing_input_var;
-    int has_missing_input_var,
-        total_elements;
+    int has_missing_input_var;
+    ng_size_t total_elements;
     NclBasicDataTypes   type;
 
     /* Output */
@@ -16968,6 +18211,7 @@ NhlErrorTypes sprintf_W(void)
                 (void) sprintf(buffer, NrmQuarkToString(*format_string), tmp_f[i]);
                 output_str[i] = NrmStringToQuark(buffer);
             }
+            if(type != NCL_float) NclFree(tmp_f);
 
             break;
     }
@@ -16980,15 +18224,17 @@ NhlErrorTypes _NclIAttSetValues( void )
 {
 	obj* objects;
 	int ndims;
-	int dimsizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
 	NclScalar missing;
 	int has_missing;
-	int total = 1;
+	ng_size_t total = 1;
         NclStackEntry data;
 	NclAtt tmp_attobj;
 	NclAttList *att_list;
 	NhlGenArray *gen_array;
-	int i,j,m,k,*ids;
+	int i, k;
+	ng_size_t m;
+	int  j, *ids;
 	NclHLUObj tmp_hlu_ptr,tmp_hlu_ptr1;
 	int rl_list;
 
@@ -17038,7 +18284,7 @@ NhlErrorTypes _NclIAttSetValues( void )
 							0);
 						NhlRLSet(rl_list,NrmQuarkToString(att_list->quark),NhlTGenArray,gen_array[i]);
 					} else {
-						ids = (int*)NclMalloc((unsigned)sizeof(int)*att_list->attvalue->multidval.totalelements);
+						ids = NclMalloc((unsigned)sizeof(int)*att_list->attvalue->multidval.totalelements);
 						m = 0;
 						for(j = 0; j < att_list->attvalue->multidval.totalelements;j++) {
 							if(att_list->attvalue->obj.obj_type_mask & Ncl_MultiDValHLUObjData ) {
@@ -17066,7 +18312,7 @@ NhlErrorTypes _NclIAttSetValues( void )
 								NhlTInteger,
 								sizeof(int),
 								1,
-								&m,
+								(ng_size_t *)&m,
 								1);
 							NhlRLSet(rl_list,
 								NrmQuarkToString(att_list->quark),
@@ -17075,7 +18321,7 @@ NhlErrorTypes _NclIAttSetValues( void )
 							NclFree(ids);
 						} else {
 							NclFree(ids);
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"The value associated with (%s) does not have an HLU representation", NrmQuarkToString(att_list->quark));
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"attsetvalues: the value associated with (%s) does not have an HLU representation", NrmQuarkToString(att_list->quark));
 							gen_array[i] = NULL;
 						}
 		 
@@ -17124,7 +18370,7 @@ NhlErrorTypes _NclIAttSetValues( void )
 
 NhlErrorTypes _NclIPush(void)
 {
-	obj *obj_id,*list_id;
+	obj *list_id;
 	NclObj thelist = NULL;
 	NclObj theobj = NULL;
         NclStackEntry data;
@@ -17197,8 +18443,9 @@ NhlErrorTypes _NclINewList( void )
 	char *tmp;
 	NclList tmp_list;
 	obj *id;
-	int one = 1;
+	ng_size_t one = 1;
 	int i;
+	int list_type;
 	string *tmp_string;
 	char buffer[5];
 	
@@ -17214,7 +18461,7 @@ NhlErrorTypes _NclINewList( void )
 	
 	tmp = NrmQuarkToString(*tmp_string);
 	if(tmp == NULL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"NewList: unknow list type. Only \"join\" or \"cat\" supported");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NewList: unknow list type.");
 		return(NhlFATAL);
 	}
 	buffer[4] = '\0';
@@ -17227,11 +18474,33 @@ NhlErrorTypes _NclINewList( void )
 	
 
 	data.kind = NclStk_VAL;
-	tmp_list =(NclList)_NclListCreate(NULL,NULL,0,0,(strcmp("join",buffer) == 0 ? (NCL_JOIN | NCL_FIFO):(NCL_CONCAT|NCL_FIFO)));
+
+        if(0 == strcmp("join",buffer))
+	{
+		list_type = (int) (NCL_JOIN | NCL_FIFO);
+	}
+        else if(0 == strcmp("concat",buffer))
+	{
+		list_type = (int) (NCL_CONCAT | NCL_FIFO);
+	}
+        else if(0 == strcmp("fifo",buffer))
+	{
+		list_type = (int) (NCL_FIFO);
+	}
+        else if(0 == strcmp("lifo",buffer))
+	{
+		list_type = (int) (NCL_LIFO);
+	}
+        else
+	{
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NewList: unknow list type");
+		return(NhlFATAL);
+	}
+	tmp_list =(NclList)_NclListCreate(NULL,NULL,0,0,list_type);
 	id = (obj*)NclMalloc(sizeof(obj));
 	*id = tmp_list->obj.id;
 	data.u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,id,NULL,1,&one,TEMPORARY,NULL);
-	_NclListSetType((NclObj)tmp_list,NCL_FIFO);
+	_NclListSetType((NclObj)tmp_list,list_type);
 	_NclPlaceReturn(data);
 	return(NhlNOERROR);
 	
@@ -17245,7 +18514,7 @@ NhlErrorTypes _NclIprintVarSummary( void )
 		_NclPrintVarSummary(data.u.data_var);
 		return(NhlNOERROR);
 	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Non-Variable passed to printVarSummary, can't continue");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"printVarSummary: non-variable passed; can't continue");
 		return(NhlFATAL);
 	}
 }
@@ -17253,9 +18522,6 @@ NhlErrorTypes _NclIprintFileVarSummary( void )
 {
 	NclFile thefile;
 	obj *thefile_id;
-	NclQuark *out_val;
-	int dimsizes = 1;
-	NclObjTypes ot;
 	string* var_string;
 
         thefile_id = (obj*)NclGetArgValue(
@@ -17287,14 +18553,12 @@ NhlErrorTypes _NclIGetFileGroups( void )
 {
 	NclFile thefile;
 	obj *thefile_id;
-	int dimsizes = 1;
-	NclObjTypes ot;
 	string *base_group_name;
 	NclQuark *selected_group_names;
 	int *depth;
 	int n_grps = 0;
 	int ndims = 1;
-        int dimsz[1];
+        ng_size_t dimsz[1];
 
       /*
        *fprintf(stdout, "\n\n\nhit _NclIGetFileGroups. file: %s, line: %d\n", __FILE__, __LINE__);
@@ -17352,14 +18616,12 @@ NhlErrorTypes _NclIGetGroupVars( void )
 {
 	NclFile thefile;
 	obj *thefile_id;
-	int dimsizes = 1;
-	NclObjTypes ot;
 	string *base_group_name;
 	NclQuark *selected_var_names;
 	int *depth;
 	int n_vars = 0;
 	int ndims = 1;
-        int dimsz[1];
+        ng_size_t dimsz[1];
 
       /*
        *fprintf(stdout, "\n\n\nhit _NclIGetGroupVars. file: %s, line: %d\n", __FILE__, __LINE__);
@@ -17417,7 +18679,6 @@ NhlErrorTypes _NclILoadScript( void )
 {
 	NclStackEntry path;
 	NclMultiDValData p_md = NULL;
-	char buf[1024];
 
 	path =  _NclGetArg(0,1,DONT_CARE);
 	if(path.kind == NclStk_VAR) {
@@ -17452,16 +18713,15 @@ NhlErrorTypes _NclIAddFiles( void )
 	NclStackEntry path;
 	NclStackEntry data;
 	NclStackEntry rw_status;
-	NclStackEntry out_data;
 	NclMultiDValData p_md = NULL;
 	NclMultiDValData rw_md = NULL;
 	NclFile file = NULL;
 	NclMultiDValData out_md = NULL;
 	char *rw;
-	int i;
+	ng_size_t  i;
 	int rw_v;
 	int *id = (int*)NclMalloc((unsigned)sizeof(int));
-	int dim_size = 1,one = 1;
+	ng_size_t dim_size = 1,one = 1;
 	obj *tmp_obj = NULL; 
 	NclList tmp_list;
 	
@@ -17516,7 +18776,7 @@ NhlErrorTypes _NclIAddFiles( void )
 			*id = file->obj.id;
 			out_md = _NclMultiDValnclfileDataCreate(NULL,NULL,Ncl_MultiDValnclfileData,0,id,NULL,1,&dim_size,TEMPORARY,NULL);
 			if((out_md == NULL)|| (_NclListPush((NclObj)tmp_list,(NclObj)out_md) == NhlFATAL)) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred opening %s, can't continue",NrmQuarkToString(((NclQuark*)p_md->multidval.val)[i]));	
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"addfiles: an error occurred opening %s, can't continue",NrmQuarkToString(((NclQuark*)p_md->multidval.val)[i]));	
 				return(NhlFATAL);	
 			}
 		} else {
@@ -17534,7 +18794,7 @@ NhlErrorTypes _NclIAddFiles( void )
 					TEMPORARY,
 					NULL);
 			if((out_md == NULL)|| (_NclListPush((NclObj)tmp_list,(NclObj)out_md) == NhlFATAL)) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred opening %s, can't continue",NrmQuarkToString(((NclQuark*)p_md->multidval.val)[i]));	
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"addfiles: an error occurred opening %s, can't continue",NrmQuarkToString(((NclQuark*)p_md->multidval.val)[i]));	
 				return(NhlFATAL);	
 			}
 		}
@@ -17546,10 +18806,10 @@ NhlErrorTypes _NclIAddFiles( void )
 }
 NhlErrorTypes _NclIListGetType(void)
 {
-	obj *obj_id,*list_id;
+	obj *list_id;
 	NclObj thelist = NULL;
 	string *ret_val;
-	int dimsize = 2;
+	ng_size_t dimsize = 2;
         NclStackEntry data;
 	int i;
 	int list_type;
@@ -17572,15 +18832,22 @@ NhlErrorTypes _NclIListGetType(void)
 	ret_val = (string*)NclMalloc(2 * sizeof(string));
 	if(list_type & NCL_JOIN)  {
 		ret_val[i++] = NrmStringToQuark("join");
-	} else {
+	} else if(list_type & NCL_CONCAT) {
 		ret_val[i++] = NrmStringToQuark("cat");
 	}
+
 	if(list_type & NCL_FIFO) {
 		ret_val[i++] = NrmStringToQuark("fifo");
-	} else {
+	} else if(list_type & NCL_LIFO) {
 		ret_val[i++] = NrmStringToQuark("lifo");
 	}
 	
+	if(i == 1)
+	{
+		dimsize = 1;
+		ret_val = (string*)NclRealloc(ret_val, sizeof(string));
+	}
+
 	return(NclReturnValue(
 		ret_val,
 		1,
@@ -17593,7 +18860,7 @@ NhlErrorTypes _NclIListGetType(void)
 }
 NhlErrorTypes _NclIListSetType(void)
 {
-	obj *obj_id,*list_id;
+	obj *list_id;
 	NclObj thelist = NULL;
 	string *option;
         NclStackEntry data;
@@ -17650,6 +18917,156 @@ NhlErrorTypes _NclIListSetType(void)
 	}
 	return(NhlNOERROR);
 }
+
+NhlErrorTypes _NclIListCount(void)
+{
+	obj *list_id;
+	NclList thelist = NULL;
+	ng_size_t dimsize = 1;
+	int *ret_val;
+
+   	list_id = (obj*)NclGetArgValue(
+           0,
+           1,
+           NULL, 
+           NULL,
+	   NULL,
+	   NULL,
+           NULL,
+           DONT_CARE);
+
+	thelist = (NclList)_NclGetObj(*list_id);
+
+	ret_val = (int*)NclMalloc(sizeof(int));
+	if(ret_val == NULL)
+	{
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ListCount: problem to allocate memory.");
+		return(NhlFATAL);
+	}
+
+	ret_val[0] = (int)thelist->list.nelem;
+
+	return(NclReturnValue(
+		ret_val,
+		1,
+		&dimsize,
+		NULL,
+		NCL_int,
+		0
+	));
+}
+
+NhlErrorTypes _NclIListIndex(void)
+{
+	obj *list_id;
+	NclList thelist = NULL;
+	ng_size_t dimsize = 1;
+	int *ret_val;
+	int nm = 0;
+	int i, j;
+
+	NclObj the_obj;
+	NclVar cur_var;
+	NclMultiDValData the_value;
+	NclMultiDValData cur_value;
+
+        NclStackEntry data;
+
+	NclListObjList *step;
+
+	int comp_val = 0;
+
+   	list_id = (obj*)NclGetArgValue(
+           0,
+           2,
+           NULL, 
+           NULL,
+	   NULL,
+	   NULL,
+           NULL,
+           DONT_CARE);
+
+	data = _NclGetArg(1,2,DONT_CARE);
+
+	thelist = (NclList)_NclGetObj(*list_id);
+
+	if(NclStk_VAL == data.kind)
+	{
+		comp_val = 1;
+		the_value = (NclMultiDValData)data.u.data_obj;
+	}
+	else
+	{
+		comp_val = 0;
+		the_obj = (NclObj)data.u.data_obj;
+	}
+
+	ret_val = (int*)NclMalloc(thelist->list.nelem * sizeof(int));
+	if(ret_val == NULL)
+	{
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ListIndex: problem to allocate memory.");
+		return(NhlFATAL);
+	}
+
+	ret_val[0] = -1;
+
+	step = thelist->list.first;
+	for(i = 0; i < thelist->list.nelem; i++)
+	{
+		if(comp_val)
+		{
+			cur_var = (NclVar)_NclGetObj(step->obj_id);
+
+			if(!(cur_var->var.thesym))
+			{
+				cur_value = (NclMultiDValData)_NclGetObj(cur_var->var.thevalue_id);
+
+				if((the_value->multidval.data_type == cur_value->multidval.data_type) &&
+				   (the_value->multidval.kind      == cur_value->multidval.kind) &&
+				   (the_value->multidval.n_dims    == cur_value->multidval.n_dims) &&
+				   (the_value->multidval.totalsize == cur_value->multidval.totalsize))
+				{
+					int match = memcmp(the_value->multidval.val, cur_value->multidval.val, the_value->multidval.totalsize);
+					if(!match)
+						ret_val[nm++] = i;
+				}
+			}
+		}
+		else
+		{
+			if(the_obj->obj.id == step->obj_id)
+			{
+				ret_val[nm++] = i;
+			}
+		}
+
+		step = step->next;
+	}
+
+	if(nm < 1)
+            nm = 1;
+
+	dimsize = nm;
+	if(nm < thelist->list.nelem)
+	{
+		ret_val = (int *)NclRealloc(ret_val, nm*sizeof(int));
+		if(ret_val == NULL)
+		{
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"ListIndex: problem to reallocate memory.");
+			return(NhlFATAL);
+		}
+	}
+
+	return(NclReturnValue(
+		ret_val,
+		1,
+		&dimsize,
+		NULL,
+		NCL_int,
+		0
+	));
+}
+
 static nc_type _MapType (NclBasicDataTypes data_type) {
 	nc_type the_type;
 		switch(data_type) {
@@ -17683,21 +19100,20 @@ NhlErrorTypes _NclICreateFile(void)
 {
 	NclStackEntry out_data,data;
 	string *path;
-	string *filename;
 	string *dimnames;
-	int *dimsizes;
-	string *varnames;
+	void *tmp_dimsizes;
+	ng_size_t *dimsizes;
 	obj *varinfo;
 	NclObj fileatts_obj;
-	int n_dims,n_dims0;
-	int n_vars;
-	int n_fileatts;
+	ng_size_t nd, nd0;
+	ng_size_t n_vars;
 	char filename_buffer[2048];
-	NclList  varinfo_obj, attlist_obj, attvals_obj;
-	NclListObjList *thelist,*attvals,*attlist;
-	int i,j,k;
+	NclList  varinfo_obj;
+	NclListObjList *thelist;
+	ng_size_t i,k;
+	ng_size_t  j;
 	NclVar tmp_var;
-	NclMultiDValData dnames_md,tmp_md,tmp_val;
+	NclMultiDValData dnames_md,tmp_md;
 	nc_type the_type;
 	nc_type tmp_type;
 	int varids[2048];
@@ -17706,16 +19122,12 @@ NhlErrorTypes _NclICreateFile(void)
 	int cdfid;
 	NclAtt tmp_att;
 	NclAttList *nclattlist;
-        NclMultiDValData p_md = NULL;
         NclFile file = NULL;
         NclMultiDValData out_md = NULL;
         int *id = (int*)NclMalloc((unsigned)sizeof(int));
-        int dim_size = 1;
-	NclBasicDataTypes ncl_var_type;
+        ng_size_t dim_size = 1;
+	NclBasicDataTypes ncl_var_type, type_dimsizes;
 	int unlimited_id = -1;
-	
-	
-
 
   	path = (string*)NclGetArgValue(
            0,
@@ -17730,20 +19142,21 @@ NhlErrorTypes _NclICreateFile(void)
            1,
            5,
 	   NULL,
-	   &n_dims,
+	   &nd,
 	   NULL,
 	   NULL,
 	   NULL,
 	   DONT_CARE);
-  	dimsizes = (int*)NclGetArgValue(
+  	tmp_dimsizes = (void*)NclGetArgValue(
            2,
            5,
 	   NULL,
-	   &n_dims0,
+	   &nd0,
 	   NULL,
 	   NULL,
-	   NULL,
+	   &type_dimsizes,
 	   DONT_CARE);
+
   	varinfo = (obj*)NclGetArgValue(
            3,
            5,
@@ -17756,6 +19169,8 @@ NhlErrorTypes _NclICreateFile(void)
 	data= _NclGetArg(4,5,DONT_CARE);
 	fileatts_obj = (NclObj)data.u.data_obj;
 	
+	dimsizes = get_dimensions(tmp_dimsizes,nd0,type_dimsizes,
+				  "createfile");
 
 	sprintf(filename_buffer,"%s",NrmQuarkToString(*path));
 	if(NrmStringToQuark(&(filename_buffer[strlen(filename_buffer)-3]))!= NrmStringToQuark(".nc")) {
@@ -17772,10 +19187,11 @@ NhlErrorTypes _NclICreateFile(void)
 	ncredef(cdfid);
 
 	if(cdfid == -1) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"The specified netCDF file can't be created, either the file exists or the path is incorrect");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"createfile: The specified netCDF file can't be created, either the file exists or the path is incorrect");
 		return(NhlFATAL);
 	}
-	for(i = 0; i < n_dims; i++) {
+/*	for(i = 0; i < n_dims; i++) {*/
+	for(i = 0; i < nd; i++) {
 		if(dimsizes[i] == -1) {	
 			dim_ids[i] = ncdimdef(cdfid,NrmQuarkToString(dimnames[i]),NC_UNLIMITED);
 			unlimited_id = dim_ids[i];
@@ -17790,19 +19206,19 @@ NhlErrorTypes _NclICreateFile(void)
 	while(thelist != NULL) {
 		tmp_var = (NclVar)_NclGetObj(thelist->obj_id);
 		if(tmp_var == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Something is wrong with the varinfo parameter");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"createfile: Something is wrong with the varinfo parameter");
 			return(NhlFATAL);
 	
 		}
 		tmp_md = (NclMultiDValData)_NclGetObj(tmp_var->var.thevalue_id);
 		if(tmp_md->multidval.data_type != NCL_string) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"varinfo parameter must be a list of string variable names");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"createfile: varinfo parameter must be a list of string variable names");
 			return(NhlFATAL);
 		}
 		if(tmp_var->var.att_id != -1) {
 			tmp_att= (NclAtt)_NclGetObj(tmp_var->var.att_id);
 		} else {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"varinfo parameter list elements must at minimum contain the attributes \"dims\" and \"type\" ");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"createfile: varinfo parameter list elements must at minimum contain the attributes \"dims\" and \"type\" ");
 			return(NhlFATAL);
 		}
 		nclattlist = tmp_att->att.att_list;
@@ -17816,12 +19232,13 @@ NhlErrorTypes _NclICreateFile(void)
 			}
 		}
 		if(dnames_md == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"varinfo parameter list elements must at minimum contain the attributes \"dims\" and \"type\", attribute \"dims\" not found");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"createfile: varinfo parameter list elements must at minimum contain the attributes \"dims\" and \"type\", attribute \"dims\" not found");
 			return(NhlFATAL);
 		}
 		for(j = 0; j < dnames_md->multidval.totalelements; j++) {
 			ids[j] = -2;
-			for(k=0; k < n_dims; k++) {
+/*			for(k=0; k < n_dims; k++) {*/
+			for(k=0; k < nd; k++) {
 				if(((string*)(dnames_md->multidval.val))[j] == dimnames[k]) {
 					ids[j] = dim_ids[k];
 					if((unlimited_id == ids[j])&&(j != 0)) {
@@ -17847,7 +19264,7 @@ NhlErrorTypes _NclICreateFile(void)
 			}
 		}
 		if(the_type == 0) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Either and unsupported type was requested or the \"type\" attribute was not supplied");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"createfile: Either an unsupported type was requested or the \"type\" attribute was not supplied");
 			return(NhlFATAL);
 		}
 
@@ -17865,32 +19282,34 @@ NhlErrorTypes _NclICreateFile(void)
 						NhlPError(NhlWARNING,NhlEUNKNOWN,"createfile: set_fillvalue attribute is a different type than the variable, using default missing value for variable type");
 					}
 					switch(ncl_var_type) {
-						case NCL_float:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypefloatClassRec.type_class.default_mis.floatval));
-							break;
-						case NCL_logical:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypelogicalClassRec.type_class.default_mis.logicalval));
-							break;
-						case NCL_char:
-						case NCL_string:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypecharClassRec.type_class.default_mis.charval));
-							break;
-						case NCL_double:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypedoubleClassRec.type_class.default_mis.doubleval));
-							break;
-						case NCL_byte:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypebyteClassRec.type_class.default_mis.byteval));
-							break;
-						case NCL_int:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypeintClassRec.type_class.default_mis.intval));
-							break;
-						case NCL_long:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypelongClassRec.type_class.default_mis.longval));
-							break;
-						case NCL_short:
-							ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypeshortClassRec.type_class.default_mis.shortval));
-							break;
-						
+					case NCL_float:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypefloatClassRec.type_class.default_mis.floatval));
+						break;
+					case NCL_logical:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypelogicalClassRec.type_class.default_mis.logicalval));
+						break;
+					case NCL_char:
+					case NCL_string:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypecharClassRec.type_class.default_mis.charval));
+						break;
+					case NCL_double:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypedoubleClassRec.type_class.default_mis.doubleval));
+						break;
+					case NCL_byte:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypebyteClassRec.type_class.default_mis.byteval));
+						break;
+					case NCL_int:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypeintClassRec.type_class.default_mis.intval));
+						break;
+					case NCL_long:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypelongClassRec.type_class.default_mis.longval));
+						break;
+					case NCL_short:
+						ncattput(cdfid,varids[i],"_FillValue",the_type,1,&(nclTypeshortClassRec.type_class.default_mis.shortval));
+						break;
+					default:
+						NHLPERROR((NhlFATAL,NhlEUNKNOWN,"createfile: unsupported NetCDF 3 type"));
+						return(NhlFATAL);
 					}
 				}
 			} else if((nclattlist->quark != NrmStringToQuark("type"))&&(nclattlist->quark!=NrmStringToQuark("dims"))){
@@ -17926,7 +19345,7 @@ NhlErrorTypes _NclICreateFile(void)
 			}
 		}
 	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"fileatts parameter must be a variable, which optionally contains global file attributes, a value was passed in"); 
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"createfile: fileatts parameter must be a variable, which optionally contains global file attributes, a value was passed in"); 
 	}
 	ncendef(cdfid);
 	/*nc__enddef(cdfid,65536,4,0,4); */
@@ -17948,7 +19367,7 @@ NhlErrorTypes _NclICreateFile(void)
                         return(NhlFATAL);
                 }
 	}
-
+	NclFree(dimsizes);
 	return(NhlNOERROR);
 }
 
@@ -17965,13 +19384,16 @@ NhlErrorTypes _NclISetFileOption(void)
 
 	data = _NclGetArg(0,3,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 	if (tmp_md->multidval.data_type == NCL_string) {
@@ -17992,7 +19414,7 @@ NhlErrorTypes _NclISetFileOption(void)
            1,
            3,
 	   NULL,
-	   &n_dims,
+	   (ng_size_t *) &n_dims,
 	   NULL,
 	   NULL,
 	   NULL,
@@ -18000,13 +19422,16 @@ NhlErrorTypes _NclISetFileOption(void)
 
 	data = _NclGetArg(2,3,DONT_CARE);
 	switch(data.kind) {
-		case NclStk_VAR:
-			tmp_md1 = _NclVarValueRead(data.u.data_var,NULL,NULL);
-			break;
-		case NclStk_VAL:
-			tmp_md1 = (NclMultiDValData)data.u.data_obj;
-			break;
-	}
+	case NclStk_VAR:
+		tmp_md1 = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md1 = (NclMultiDValData)data.u.data_obj;
+		break;
+        default:
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+                return(NhlFATAL);
+    	}
 	if(tmp_md1 == NULL)
 		return(NhlFATAL);
 
@@ -18034,8 +19459,8 @@ NhlErrorTypes   _NclIGetFileVarTypes
     NclObjTypes vartype;
 
     /* dimensions, sizes */
-    int ndims,
-        dimsz[NCL_MAX_DIMENSIONS];
+    int ndims;
+    ng_size_t dimsz[NCL_MAX_DIMENSIONS];
     int sz = 1;
 
     NclScalar   missing;
@@ -18093,16 +19518,32 @@ NhlErrorTypes   _NclIGetFileVarTypes
 	    		vartypes[i] = NrmStringToQuark("long");
 		    	break;
 
+    		case Ncl_Typeulong:
+	    		vartypes[i] = NrmStringToQuark("ulong");
+		    	break;
+
     		case Ncl_Typeint:
 	    		vartypes[i] = NrmStringToQuark("integer");
+		    	break;
+
+    		case Ncl_Typeuint:
+	    		vartypes[i] = NrmStringToQuark("uint");
 		    	break;
 
     		case Ncl_Typeshort:
 	    		vartypes[i] = NrmStringToQuark("short");
 		    	break;
 
+    		case Ncl_Typeushort:
+	    		vartypes[i] = NrmStringToQuark("ushort");
+		    	break;
+
        		case Ncl_Typebyte:
 	    		vartypes[i] = NrmStringToQuark("byte");
+		    	break;
+
+    		case Ncl_Typeubyte:
+	    		vartypes[i] = NrmStringToQuark("ubyte");
 		    	break;
 
     		case Ncl_Typestring:
@@ -18159,12 +19600,13 @@ NhlErrorTypes   _NclIGetFileDimsizes
     int *fid;
 
     /* dimensions */
-    int dimsizes = 1;
-    int *dim_sizes;
+    ng_size_t dimsizes = 1, ndims, product_size;
+    void *dim_sizes;
+    NclBasicDataTypes return_type;
 
     NhlErrorTypes   ret;
 
-    int i = 0;
+    ng_size_t i = 0;
     
 
     /* get file information */
@@ -18180,27 +19622,57 @@ NhlErrorTypes   _NclIGetFileDimsizes
     f = (NclFile) _NclGetObj((int) *fid);
 
     if (f != NULL) {
-        dim_sizes = (int *) NclMalloc((unsigned int) sizeof(int) * f->file.n_file_dims);
-        if (f->file.n_file_dims != 0) {
-            for (i = 0; i < f->file.n_file_dims; i++)
-                dim_sizes[i] = f->file.file_dim_info[i]->dim_size;
-
-            ret = NclReturnValue((void *) dim_sizes, 1, &(f->file.n_file_dims), NULL, NCL_int, 1);
-            free(dim_sizes);
-        	return ret;
+/*
+ * First loop through dimension sizes to see if we need to return
+ * ints or longs.
+ *
+ * The rules for when to return an int versus a long:
+ *    - On a 32-bit system, return ints.
+ *    - On a 64-bit system, return longs if any of the
+ *      individual dimension sizes are > INT32_MAX, or
+ *      if the product of the dimension sizes is > INT32_MAX.
+ */
+	ndims = f->file.n_file_dims;
+        if (ndims != 0) {
+	  return_type = NCL_int;
+#if !defined(NG32BIT)
+	  i = 0;
+	  product_size = 1;
+	  while(i < ndims && (return_type == NCL_int)) {
+	    product_size *= f->file.file_dim_info[i]->dim_size;
+	    if(f->file.file_dim_info[i]->dim_size > INT32_MAX || 
+	       product_size > INT32_MAX) {
+	      return_type = NCL_long;
+	    }
+	    i++;
+	  }
+#endif
+	  if(return_type == NCL_int) {
+	    dim_sizes = (void *) NclMalloc(sizeof(int) * ndims);
+	    for (i = 0; i < ndims; i++) {
+	      ((int*)dim_sizes)[i] = (int)f->file.file_dim_info[i]->dim_size;
+	    }
+	  }
+	  else {
+	    dim_sizes = (void *) NclMalloc(sizeof(long) * ndims);
+	    for (i = 0; i < ndims; i++) {
+	      ((long*)dim_sizes)[i] = (long)f->file.file_dim_info[i]->dim_size;
+	    }
+	  }
+	  ret = NclReturnValue(dim_sizes, 1, &ndims, NULL, return_type, 1);
+	  free(dim_sizes);
+	  return ret;
         }
     }
-    else {
-        NhlPError(NhlWARNING, NhlEUNKNOWN, " getfiledimsizes(): undefined file variable");
+    NhlPError(NhlWARNING, NhlEUNKNOWN, "getfiledimsizes: undefined file variable");
 
-        dimsizes = 1;
-        NclReturnValue(
+    dimsizes = 1;
+    NclReturnValue(
             (void*) &((NclTypeClass) nclTypeintClass)->type_class.default_mis, 1,
             &dimsizes, &((NclTypeClass) nclTypeintClass)->type_class.default_mis,
             ((NclTypeClass) nclTypeintClass)->type_class.data_type, 1);
 	
-        return NhlWARNING;
-    }
+    return NhlWARNING;
 }
 
 
@@ -18219,9 +19691,9 @@ NhlErrorTypes   _NclIVarIsUnlimited
     string  *dname;
 
     /* dimensions, sizes */
-    int dimsizes = 1;
-    int ndims,
-        dimsz[NCL_MAX_DIMENSIONS];
+    ng_size_t dimsizes = 1;
+    int ndims;
+    ng_size_t dimsz[NCL_MAX_DIMENSIONS];
 
     logical isunlimited = 0;
 
@@ -18263,7 +19735,7 @@ NhlErrorTypes   _NclIVarIsUnlimited
         }
     }
     else {
-        NhlPError(NhlWARNING, NhlEUNKNOWN, " isunlimited(): undefined file variable");
+        NhlPError(NhlWARNING, NhlEUNKNOWN, "isunlimited: undefined file variable");
     }
 
     return NclReturnValue((void *) &isunlimited, 1, &dimsizes, NULL, NCL_logical, 1);
@@ -18281,11 +19753,9 @@ NhlErrorTypes   _NclIFileIsPresent
     const char  *fpath = NULL;
     struct stat st;
 
-    int ncid = 0;
-
-    int dimsizes = 1;
-    int ndims,
-        dimsz[NCL_MAX_DIMENSIONS];
+    int fid = 0;
+    int ndims;
+    ng_size_t dimsz[NCL_MAX_DIMENSIONS];
     int sz = 1;
 
     logical *file_exists;        /* file exists? */
@@ -18309,15 +19779,19 @@ NhlErrorTypes   _NclIFileIsPresent
     /* logical array to return */
     file_exists = (logical *) NclMalloc((unsigned int) sizeof(logical) * sz);
     if (file_exists == (logical *) NULL) {
-        NhlPError(NhlFATAL, errno, " isfilepresent: memory allocation error");
+        NhlPError(NhlFATAL, errno, "isfilepresent: memory allocation error");
         return NhlFATAL;
     }
 
     for (i = 0; i < sz; i++) {
         fpath = (char *) NrmQuarkToString(files[i]);
         if (!strncmp(fpath, "http", 4)) {
-            ncid = ncopen(fpath, NC_NOWRITE);
-            if (ncid == -1)
+#ifdef BuildOPENDAP
+	    oc_open(fpath, &fid);
+#else
+            fid = ncopen(fpath, NC_NOWRITE);
+#endif
+            if (fid < 1)
                 file_exists[i] = 0;     /* false */
             else
                 file_exists[i] = 1;     /* true */
@@ -18340,14 +19814,15 @@ NhlErrorTypes _NclItoint
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+	int j;
+        ng_size_t i;
         int *output;
 
         int overflowed = 0;
@@ -18363,14 +19838,19 @@ NhlErrorTypes _NclItoint
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.intval = (int) ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
 
         output = (int*)NclMalloc(sizeof(int)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "toint: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -18386,9 +19866,14 @@ NhlErrorTypes _NclItoint
                     if(has_missing)
                     {
                         val = (double) missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.intval = (int) val;
+                        }
+                        else
+                        {
+                            NHLPERROR((NhlINFO, NhlEUNKNOWN,
+                                      "toint: the double missing value %g is out of integer range.\n", missing.doubleval));
                         }
                     }
 
@@ -18416,14 +19901,14 @@ NhlErrorTypes _NclItoint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d doubles larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d doubles larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d doubles less than INT_MIN, which has flagged missing.",
+                            "toint: there are %d doubles less than INT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -18439,9 +19924,14 @@ NhlErrorTypes _NclItoint
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.intval = (int) val;
+                        }
+                        else
+                        {
+                            NHLPERROR((NhlINFO, NhlEUNKNOWN,
+                                      "toint: The float missing value %f is out of integer range.\n", missing.floatval));
                         }
                     }
 
@@ -18450,7 +19940,7 @@ NhlErrorTypes _NclItoint
                     for(i = 0; i < total_elements; i++)
                     {
                         val = (float) ptr[i];
-                        if(val > fmax)
+                        if(val >= fmax)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -18467,18 +19957,27 @@ NhlErrorTypes _NclItoint
                             output[i] = (int) val;
                         }
                     }
+                  /*
+                    fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
+                    fprintf(stderr, "\tfmin = %f\n", fmin);
+                    fprintf(stderr, "\tfmax = %f\n", fmax);
+                    fprintf(stderr, "\tptr[0] = %f\n", ptr[0]);
+                    fprintf(stderr, "\toutput[0] = %d\n", output[0]);
+                    fprintf(stderr, "\tINT_MIN = %d\n", INT_MIN);
+                    fprintf(stderr, "\tINT_MAX = %d\n", INT_MAX);
+                   */
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d floats larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d floats larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d floats less than INT_MIN, which has been flagged missing.",
+                            "toint: there are %d floats less than INT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -18492,7 +19991,6 @@ NhlErrorTypes _NclItoint
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (end == str || errno == ERANGE)
@@ -18503,6 +20001,12 @@ NhlErrorTypes _NclItoint
                         { 
                             if((llval <= INT_MAX) && (llval >= INT_MIN))
                                 ret_missing.intval = (int) llval;
+                            else
+                            {
+                                NHLPERROR((NhlINFO, NhlEUNKNOWN,
+                                          "toint: The string missing value %s is out of integer range.\n",
+                                           NrmQuarkToString(missing.stringval)));
+                            }
                         }
                     }
 
@@ -18516,7 +20020,7 @@ NhlErrorTypes _NclItoint
                         {
                             has_missing = 1;
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) tointeger, input strings must contain numeric digits, replacing with missing value");
+                                "toint: A bad value was passed (string); input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.intval;
                         }
                         else if (llval > INT_MAX)
@@ -18540,14 +20044,14 @@ NhlErrorTypes _NclItoint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d strings larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d strings larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d strings less than INT_MIN, which has forced to INT_MIN.",
+                            "toint: there are %d strings less than INT_MIN, which has forced to INT_MIN.",
                             underflowed);
                     }
                 }
@@ -18573,18 +20077,35 @@ NhlErrorTypes _NclItoint
                 break;
             case NCL_byte:
                 {
-                    char *ptr;
+                    byte *ptr;
 
                     if(has_missing)
                     {
                         ret_missing.intval = (int) missing.byteval;
                     }
 
-                    ptr = (char *) in_value;
+                    ptr = (byte *) in_value;
     
                     for(i = 0; i < total_elements; i++)
                     {
-                        output[i] = ptr[i];
+                        output[i] = (int) ptr[i];
+                    }
+                }
+                break;
+            case NCL_ubyte:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.intval = (int) missing.ubyteval;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (int) ptr[i];
                     }
                 }
                 break;
@@ -18650,6 +20171,11 @@ NhlErrorTypes _NclItoint
                     {
                         if(missing.uintval < INT_MAX)
                             ret_missing.intval = (int) missing.uintval;
+                        else
+                        {
+                            NHLPERROR((NhlINFO, NhlEUNKNOWN,
+                                      "toint: The uint missing value %u is out of integer range.\n", missing.intval));
+                        }
                     }
 
                     for(i = 0; i < total_elements; i++)
@@ -18670,7 +20196,7 @@ NhlErrorTypes _NclItoint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d unsigned int larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -18684,6 +20210,11 @@ NhlErrorTypes _NclItoint
                     {
                         if((missing.longval <= INT_MAX) &&(missing.longval >= INT_MIN))
                             ret_missing.intval = (int) missing.longval;
+                        else
+                        {
+                            NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                                      "toint: the long missing value %ld is out of integer range.\n", missing.longval));
+                        }
                     }
 
                     ptr = (long *) in_value;
@@ -18712,14 +20243,14 @@ NhlErrorTypes _NclItoint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d long larger than INT_MAX, which has been flagged missing.",
                             underflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than INT_MIN, which has been flagged missing.",
+                            "toint: there are %d long less than INT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -18733,6 +20264,11 @@ NhlErrorTypes _NclItoint
                     {
                         if(missing.ulongval <= INT_MAX)
                             ret_missing.intval = (int) missing.ulongval;
+                        else
+                        {
+                            NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                                      "toint: the ulong missing value %uld is out of integer range.\n", missing.ulongval));
+                        }
                     }
 
                     ptr = (unsigned long *) in_value;
@@ -18755,7 +20291,7 @@ NhlErrorTypes _NclItoint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d long larger than INT_MAX, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -18769,6 +20305,11 @@ NhlErrorTypes _NclItoint
                     {
                         if((missing.int64val <= INT_MAX) && (missing.int64val >= INT_MIN))
                             ret_missing.intval = (int) missing.int64val;
+                        else
+                        {
+                            NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                                      "toint: the int64 missing value %lld is out of integer range.\n", missing.int64val));
+                        }
                     }
 
                     ptr = (long long *) in_value;
@@ -18797,14 +20338,14 @@ NhlErrorTypes _NclItoint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d int64 larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than INT_MIN, which has been flagged missing.",
+                            "toint: there are %d int64 less than INT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -18818,6 +20359,11 @@ NhlErrorTypes _NclItoint
                     {
                         if(missing.uint64val <= INT_MAX)
                             ret_missing.intval = (int) missing.uint64val;
+                        else
+                        {
+                            NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                                      "toint: the uint64 missing value %ulld is out of integer range.\n", missing.uint64val));
+                        }
                     }
 
                     ptr = (unsigned long long *) in_value;
@@ -18840,29 +20386,29 @@ NhlErrorTypes _NclItoint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than INT_MAX, which has been flagged missing.",
+                            "toint: there are %d uint64 larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "toint: don't know how to convert logical to integer.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "toint: don't know how to convert object to integer.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "toint: don't know how to convert list to integer.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "toint: don't know how to convert NCL_none to integer.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "toint: don't know how to convert unkown type to integer.");
                 return NhlFATAL;
         }
 
@@ -18885,14 +20431,15 @@ NhlErrorTypes _NclItouint
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         unsigned int *output;
 
         int overflowed = 0;
@@ -18908,14 +20455,19 @@ NhlErrorTypes _NclItouint
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.uintval = (unsigned int) ((NclTypeClass) nclTypeuintClass)->type_class.default_mis.uintval;
 
         output = (unsigned int*)NclMalloc(sizeof(unsigned int)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "touint: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -18929,7 +20481,7 @@ NhlErrorTypes _NclItouint
 
                     if(has_missing)
                     {
-                        if(missing.doubleval < dmax)
+                        if((missing.doubleval <= dmax) && (missing.doubleval >= dmin))
                             ret_missing.uintval = (unsigned int) missing.doubleval;
                     }
 
@@ -18959,14 +20511,14 @@ NhlErrorTypes _NclItouint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d doubles larger than INT_MAX, which has been flagged missing.",
+                            "touint: there are %d doubles larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d doubles less than INT_MIN, which has flagged missing.",
+                            "touint: there are %d doubles less than INT_MIN, which has flagged missing.",
                             underflowed);
                     }
                 }
@@ -18981,7 +20533,7 @@ NhlErrorTypes _NclItouint
 
                     if(has_missing)
                     {
-                        if(missing.floatval < fmax)
+                        if((missing.floatval <= fmax) && (missing.floatval >= fmin))
                             ret_missing.uintval = (unsigned int) missing.floatval;
                     }
 
@@ -19011,14 +20563,14 @@ NhlErrorTypes _NclItouint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d floats larger than INT_MAX, which has been flagged missing.",
+                            "touint: there are %d floats larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d floats less than INT_MIN, which has been flagged missing.",
+                            "touint: there are %d floats less than INT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -19032,7 +20584,6 @@ NhlErrorTypes _NclItouint
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (end == str || errno == ERANGE)
@@ -19049,14 +20600,13 @@ NhlErrorTypes _NclItouint
                     ptr = (string *) in_value;
                     for(i = 0; i < total_elements; i++)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(ptr[i]);
     
                         llval = _Nclstrtoll(str,&end);
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
+                                "touint: a bad value was passed to touint, input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.uintval;
                         }
                         else if (errno == ERANGE)
@@ -19085,21 +20635,20 @@ NhlErrorTypes _NclItouint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than UINT_MAX, which has been flagged missing.",
+                            "touint: there are %d double larger than UINT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "touint: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
                 break;
             case NCL_char:
                 {
-                    unsigned char val;
                     unsigned char *ptr;
 
                     if(has_missing)
@@ -19111,30 +20660,32 @@ NhlErrorTypes _NclItouint
     
                     for(i = 0; i < total_elements; i++)
                     {
-                        val = ptr[i];
-                        output[i] = (unsigned int) val;
+                        output[i] = (unsigned int) ptr[i];
                     }
                 }
                 break;
             case NCL_byte:
                 {
-                    char val;
-                    char *ptr;
+                    byte val;
+                    byte *ptr;
 
                     if(has_missing)
                     {
                         ret_missing.uintval = (unsigned int) missing.byteval;
                     }
 
-                    ptr = (char *) in_value;
+                    ptr = (byte *) in_value;
     
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
                         if(val < 0)
                         {
-                            has_missing = 1;
-                            underflowed ++;
+                            if(has_missing && (val != missing.byteval))
+                            {
+                               has_missing = 1;
+                               underflowed ++;
+                            }
                             output[i] = ret_missing.uintval;
                         }
                         else
@@ -19146,8 +20697,25 @@ NhlErrorTypes _NclItouint
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "touint: there are %d char less than 0, which has been flagged missing.",
                             underflowed);
+                    }
+                }
+                break;
+            case NCL_ubyte:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                            ret_missing.uintval = (unsigned int) missing.ubyteval;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (unsigned int) ptr[i];
                     }
                 }
                 break;
@@ -19182,7 +20750,7 @@ NhlErrorTypes _NclItouint
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "touint: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -19223,8 +20791,11 @@ NhlErrorTypes _NclItouint
                             val = ptr[i];
                             if(val < 0)
                             {
-                                has_missing = 1;
-                                underflowed ++;
+                                if(val != missing.intval)
+                                {
+                                    has_missing = 1;
+                                    underflowed ++;
+                                }
                                 output[i] = ret_missing.uintval;
                             }
                             else
@@ -19254,7 +20825,7 @@ NhlErrorTypes _NclItouint
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "touint: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -19313,14 +20884,14 @@ NhlErrorTypes _NclItouint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than UINT_MAX, which has been flagged missing.",
+                            "touint: there are %d long larger than UINT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than 0, which has been flagged missing.",
+                            "touint: there are %d long less than 0, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -19356,7 +20927,7 @@ NhlErrorTypes _NclItouint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned long larger than UINT_MAX, which has been flagged missing.",
+                            "touint: there are %d unsigned long larger than UINT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -19398,14 +20969,14 @@ NhlErrorTypes _NclItouint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than UINT_MAX, which has been flagged missing.",
+                            "touint: there are %d long larger than UINT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than 0, which has been flagged missing.",
+                            "touint: there are %d long less than 0, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -19441,29 +21012,29 @@ NhlErrorTypes _NclItouint
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than UINT_MAX, which has been flagged missing.",
+                            "touint: there are %d uint64 larger than UINT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "touint: don't know how to convert logical to uint.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "touint: don't know how to convert object to uint.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "touint: don't know how to convert list to uint.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "touint: don't know how to convert NCL_none to uint.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "touint: don't know how to convert unkown type to uint.");
                 return NhlFATAL;
         }
 
@@ -19486,14 +21057,15 @@ NhlErrorTypes _NclItolong
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
-        int has_missing;
-        int i;
+        int has_missing = 0;
+        int j;
+	ng_size_t i;
         long *output;
 
         int overflowed = 0;
@@ -19509,14 +21081,19 @@ NhlErrorTypes _NclItolong
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.longval = (long) ((NclTypeClass) nclTypelongClass)->type_class.default_mis.longval;
 
         output = (long *)NclMalloc(sizeof(long)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "tolong: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -19532,7 +21109,7 @@ NhlErrorTypes _NclItolong
                     if(has_missing)
                     {
                         val = (double) missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.longval = (long) val;
                         }
@@ -19562,14 +21139,14 @@ NhlErrorTypes _NclItolong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than LONG_MAX, which has been flagged missing.",
+                            "tolong: there are %d double larger than LONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than LONG_MIN, which has been flagged missing.",
+                            "tolong: there are %d double less than LONG_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -19585,7 +21162,7 @@ NhlErrorTypes _NclItolong
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.longval = (long) val;
                         }
@@ -19617,14 +21194,14 @@ NhlErrorTypes _NclItolong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d floats larger than INT_MAX, which has been flagged missing.",
+                            "tolong: there are %d floats larger than INT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d floats less than INT_MIN, which has been flagged missing.",
+                            "tolong: there are %d floats less than INT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -19638,7 +21215,6 @@ NhlErrorTypes _NclItolong
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (end == str || errno == ERANGE)
@@ -19657,7 +21233,7 @@ NhlErrorTypes _NclItolong
                     {
                         str = NrmQuarkToString(ptr[i]);
     
-                        if(missing.stringval == ptr[i])
+                        if(has_missing && (missing.stringval == ptr[i]))
                         {
                             has_missing = 1;
                             output[i] = ret_missing.longval;
@@ -19669,7 +21245,7 @@ NhlErrorTypes _NclItolong
                             {
                                 has_missing = 1;
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                    "A bad value was passed to (string) tolong, input strings must contain numeric digits, replacing with missing value");
+                                    "tolong: a bad value was passed to (string) tolong, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.longval;
                             }
                             else if (llval > LONG_MAX)
@@ -19694,21 +21270,20 @@ NhlErrorTypes _NclItolong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than LONG_MAX, which has been flagged missing.",
+                            "tolong: there are %d double larger than LONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than LONG_MIN, which has been flagged missing.",
+                            "tolong: there are %d double less than LONG_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
                 break;
             case NCL_char:
                 {
-                    unsigned char val;
                     unsigned char *ptr;
 
                     if(has_missing)
@@ -19720,27 +21295,41 @@ NhlErrorTypes _NclItolong
     
                     for(i = 0; i < total_elements; i++)
                     {
-                        val = ptr[i];
-                        output[i] = (long) val;
+                        output[i] = (long) ptr[i];
                     }
                 }
                 break;
             case NCL_byte:
                 {
-                    char val;
-                    char *ptr;
+                    byte *ptr;
 
                     if(has_missing)
                     {
                         ret_missing.longval = (long) missing.byteval;
                     }
 
-                    ptr = (char *) in_value;
+                    ptr = (byte *) in_value;
     
                     for(i = 0; i < total_elements; i++)
                     {
-                        val = ptr[i];
-                        output[i] = (long) val;
+                        output[i] = (long) ptr[i];
+                    }
+                }
+                break;
+            case NCL_ubyte:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.longval = (long) missing.ubyteval;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (long) ptr[i];
                     }
                 }
                 break;
@@ -19810,8 +21399,7 @@ NhlErrorTypes _NclItolong
 
                     if(has_missing)
                     {
-                        if(missing.uintval <= LONG_MAX)
-                            ret_missing.longval = (long) missing.uintval;
+                        ret_missing.longval = (long) missing.uintval;
                     }
 
                     ptr = (unsigned int *) in_value;
@@ -19834,14 +21422,13 @@ NhlErrorTypes _NclItolong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than LONG_MAX, which has been flagged missing.",
+                            "tolong: there are %d unsigned int larger than LONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_long:
                 {
-                    long val;
                     long *ptr;
 
                     if(has_missing)
@@ -19888,7 +21475,7 @@ NhlErrorTypes _NclItolong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned long larger than LONG_MAX, which has been flagged missing.",
+                            "tolong: there are %d unsigned long larger than LONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -19930,14 +21517,14 @@ NhlErrorTypes _NclItolong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than LONG_MAX, which has been flagged missing.",
+                            "tolong: there are %d int64 larger than LONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than LONG_MIN, which has been flagged missing.",
+                            "tolong: there are %d int64 less than LONG_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -19973,29 +21560,29 @@ NhlErrorTypes _NclItolong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than LONG_MAX, which has been flagged missing.",
+                            "tolong: there are %d uint64 larger than LONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "tolong: don't know how to convert logical to long.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "tolong: don't know how to convert object to long.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "tolong: don't know how to convert list to long.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "tolong: don't know how to convert NCL_none to long.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NHLPERROR((NhlFATAL, errno, "tolong: don't know how to convert unkown type to long."));
                 return NhlFATAL;
         }
 
@@ -20018,14 +21605,15 @@ NhlErrorTypes _NclItoulong
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         unsigned long *output;
 
         int overflowed = 0;
@@ -20041,14 +21629,19 @@ NhlErrorTypes _NclItoulong
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.ulongval = (unsigned long) ((NclTypeClass) nclTypeulongClass)->type_class.default_mis.ulongval;
 
         output = (unsigned long *)NclMalloc(sizeof(unsigned long)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "toulong: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -20064,7 +21657,7 @@ NhlErrorTypes _NclItoulong
                     if(has_missing)
                     {
                         val = missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.intval = (unsigned long) val;
                         }
@@ -20094,14 +21687,14 @@ NhlErrorTypes _NclItoulong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than ULONG_MAX, which has been flagged missing.",
+                            "toulong: there are %d double larger than ULONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "toulong: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20118,7 +21711,7 @@ NhlErrorTypes _NclItoulong
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.ulongval = (unsigned long) val;
                         }
@@ -20150,14 +21743,14 @@ NhlErrorTypes _NclItoulong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than ULONG_MAX, which has been flagged missing.",
+                            "toulong: there are %d float larger than ULONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than 0, which has been flagged missing.",
+                            "toulong: there are %d float less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20173,13 +21766,12 @@ NhlErrorTypes _NclItoulong
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) toulong, input strings must contain numeric digits, replacing with missing value");
+                                "toulong: a bad value was passed to (string) toulong, input strings must contain numeric digits, replacing with missing value");
                         }
                         else if(errno != ERANGE)
                             if((llval <= ULONG_MAX) && (llval >= 0))
@@ -20189,14 +21781,13 @@ NhlErrorTypes _NclItoulong
                     ptr = (string *) in_value;
                     for(i = 0; i < total_elements; i++)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(ptr[i]);
     
                         llval = _Nclstrtoll(str,&end);
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) toulong, input strings must contain numeric digits, replacing with missing value");
+                                "toulong: a bad value was passed to (string) toulong, input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.ulongval;
                         }
                         else if (errno == ERANGE)
@@ -20225,14 +21816,14 @@ NhlErrorTypes _NclItoulong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than ULONG_MAX, which has been flagged missing.",
+                            "toulong: there are %d double larger than ULONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "toulong: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20256,10 +21847,10 @@ NhlErrorTypes _NclItoulong
                 break;
             case NCL_byte:
                 {
-                    char val;
-                    char *ptr;
+                    byte val;
+                    byte *ptr;
    
-                    ptr = (char *) in_value;
+                    ptr = (byte *) in_value;
    
                     if(has_missing)
                     {
@@ -20271,8 +21862,11 @@ NhlErrorTypes _NclItoulong
                         val = ptr[i];
                         if(val < 0)
                         {
-                            has_missing = 1;
-                            underflowed ++;
+                            if(has_missing && (val != missing.byteval))
+                            {
+                                has_missing = 1;
+                                underflowed ++;
+                            }
                             output[i] = ret_missing.ulongval;
                         }
                         else
@@ -20284,8 +21878,25 @@ NhlErrorTypes _NclItoulong
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "toulong: there are %d char less than 0, which has been flagged missing.",
                             underflowed);
+                    }
+                }
+                break;
+            case NCL_ubyte:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.ulongval = (unsigned long) missing.ubyteval;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (unsigned long) ptr[i];
                     }
                 }
                 break;
@@ -20322,7 +21933,7 @@ NhlErrorTypes _NclItoulong
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d short less than 0, which has been flagged missing.",
+                            "toulong: there are %d short less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20364,8 +21975,11 @@ NhlErrorTypes _NclItoulong
                         val = ptr[i];
                         if(val < 0)
                         {
-                            has_missing = 1;
-                            underflowed ++;
+                            if(has_missing && (val != missing.intval))
+                            {
+                                has_missing = 1;
+                                underflowed ++;
+                            }
                             output[i] = ret_missing.ulongval;
                         }
                         else
@@ -20377,7 +21991,7 @@ NhlErrorTypes _NclItoulong
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "toulong: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20430,7 +22044,7 @@ NhlErrorTypes _NclItoulong
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "toulong: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20489,14 +22103,14 @@ NhlErrorTypes _NclItoulong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than ULONG_MAX, which has been flagged missing.",
+                            "toulong: there are %d int64 larger than ULONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than 0, which has been flagged missing.",
+                            "toulong: there are %d int64 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20532,29 +22146,29 @@ NhlErrorTypes _NclItoulong
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than ULONG_MAX, which has been flagged missing.",
+                            "toulong: there are %d uint64 larger than ULONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "toulong: don't know how to convert logical to ulong.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "toulong: don't know how to convert object to ulong.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "toulong: don't know how to convert list to ulong.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "toulong: don't know how to convert NCL_none to ulong.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NHLPERROR((NhlFATAL, errno, "toulong: don't know how to convert unkown type to ulong."));
                 return NhlFATAL;
         }
 
@@ -20577,14 +22191,15 @@ NhlErrorTypes _NclItoint64
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         long long *output;
 
         int overflowed = 0;
@@ -20600,14 +22215,19 @@ NhlErrorTypes _NclItoint64
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.int64val = (long long) ((NclTypeClass) nclTypeint64Class)->type_class.default_mis.int64val;
 
         output = (long long *)NclMalloc(sizeof(long long)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "toint64: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -20623,7 +22243,7 @@ NhlErrorTypes _NclItoint64
                     if(has_missing)
                     {
                         val = (double) missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.int64val = (long long) val;
                         }
@@ -20653,14 +22273,14 @@ NhlErrorTypes _NclItoint64
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than LLONG_MAX, which has been flagged missing.",
+                            "toint64: there are %d double larger than LLONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than LLONG_MIN, which has been flagged missing.",
+                            "toint64: there are %d double less than LLONG_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20677,7 +22297,7 @@ NhlErrorTypes _NclItoint64
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.int64val = (long long) val;
                         }
@@ -20709,14 +22329,14 @@ NhlErrorTypes _NclItoint64
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than LLONG_MAX, which has been flagged missing.",
+                            "toint64: there are %d float larger than LLONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than LLONG_MIN, which has been flagged missing.",
+                            "toint64: there are %d float less than LLONG_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -20730,13 +22350,12 @@ NhlErrorTypes _NclItoint64
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) toint64, input strings must contain numeric digits, replacing with missing value");
+                                "toint64: a bad value was passed to (string) toint64, input strings must contain numeric digits, replacing with missing value");
                         }
                         else if(errno != ERANGE)
                             ret_missing.int64val = (long long) llval;
@@ -20745,14 +22364,13 @@ NhlErrorTypes _NclItoint64
                     ptr = (string *) in_value;
                     for(i = 0; i < total_elements; i++)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(ptr[i]);
     
                         llval = _Nclstrtoll(str,&end);
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) toint64, input strings must contain numeric digits, replacing with missing value");
+                                "toint64: a bad value was passed to (string) toint64, input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.int64val;
                         }
                         else if (errno == ERANGE)
@@ -20781,40 +22399,20 @@ NhlErrorTypes _NclItoint64
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d string larger than LLONG_MAX, which has been flagged missing.",
+                            "toint64: there are %d string larger than LLONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d string less than LLONG_MIN, which has been flagged missing.",
+                            "toint64: there are %d string less than LLONG_MIN, which has been flagged missing.",
                             underflowed);
-                    }
-                }
-                break;
-            case NCL_byte:
-                {
-                    char val;
-                    char *ptr;
-
-                    if(has_missing)
-                    {
-                        ret_missing.int64val = (long long) missing.byteval;
-                    }
-
-                    ptr = (char *) in_value;
-    
-                    for(i = 0; i < total_elements; i++)
-                    {
-                        val = ptr[i];
-                        output[i] = (long long) val;
                     }
                 }
                 break;
             case NCL_char:
                 {
-                    unsigned char val;
                     unsigned char *ptr;
 
                     if(has_missing)
@@ -20826,8 +22424,41 @@ NhlErrorTypes _NclItoint64
     
                     for(i = 0; i < total_elements; i++)
                     {
-                        val = ptr[i];
-                        output[i] = (long long) val;
+                        output[i] = (long long) ptr[i];
+                    }
+                }
+                break;
+            case NCL_byte:
+                {
+                    byte *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.int64val = (long long) missing.byteval;
+                    }
+
+                    ptr = (byte *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (long long) ptr[i];
+                    }
+                }
+                break;
+            case NCL_ubyte:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.int64val = (long long) missing.ubyteval;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (long long) ptr[i];
                     }
                 }
                 break;
@@ -20922,7 +22553,6 @@ NhlErrorTypes _NclItoint64
                 break;
             case NCL_ulong:
                 {
-                    unsigned long val;
                     unsigned long *ptr;
     
                     ptr = (unsigned long *) in_value;
@@ -20987,29 +22617,29 @@ NhlErrorTypes _NclItoint64
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than LLONG_MAX, which has been flagged missing.",
+                            "toint64: there are %d uint64 larger than LLONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "toint64: don't know how to convert logical to int64.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "toint64: don't know how to convert object to int64.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "toint64: don't know how to convert list to int64.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "toint64: don't know how to convert NCL_none to int64.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "toint64: don't know how to convert unkown type to int64.");
                 return NhlFATAL;
         }
 
@@ -21032,14 +22662,15 @@ NhlErrorTypes _NclItouint64
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         unsigned long long *output;
 
         int overflowed = 0;
@@ -21055,14 +22686,19 @@ NhlErrorTypes _NclItouint64
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.uint64val = (unsigned long long) ((NclTypeClass) nclTypeuint64Class)->type_class.default_mis.uint64val;
 
         output = (unsigned long long *)NclMalloc(sizeof(unsigned long long)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "touint64: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -21078,7 +22714,7 @@ NhlErrorTypes _NclItouint64
                     if(has_missing)
                     {
                         val = missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.uint64val = (unsigned long long) val;
                         }
@@ -21108,14 +22744,14 @@ NhlErrorTypes _NclItouint64
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than ULLONG_MAX, which has been flagged missing.",
+                            "touint64: there are %d double larger than ULLONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "touint64: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21132,7 +22768,7 @@ NhlErrorTypes _NclItouint64
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.uint64val = (unsigned long long) val;
                         }
@@ -21164,14 +22800,14 @@ NhlErrorTypes _NclItouint64
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than ULLONG_MAX, which has been flagged missing.",
+                            "touint64: there are %d float larger than ULLONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than 0, which has been flagged missing.",
+                            "touint64: there are %d float less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21185,13 +22821,12 @@ NhlErrorTypes _NclItouint64
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) touint64, input strings must contain numeric digits, replacing with missing value");
+                                "touint64: a bad value was passed to (string) touint64, input strings must contain numeric digits, replacing with missing value");
                         }
                         else if(errno != ERANGE)
                             if(llval >= 0)
@@ -21201,14 +22836,13 @@ NhlErrorTypes _NclItouint64
                     ptr = (string *) in_value;
                     for(i = 0; i < total_elements; i++)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(ptr[i]);
     
                         llval = _Nclstrtoll(str,&end);
                         if (strcmp(end, str) == 0)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "A bad value was passed to (string) touint64, input strings must contain numeric digits, replacing with missing value");
+                                "touint64: a bad value was passed to (string) touint64, input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.uint64val;
                         }
                         else if (errno == ERANGE)
@@ -21234,38 +22868,59 @@ NhlErrorTypes _NclItouint64
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than ULLONG_MAX, which has been flagged missing.",
+                            "touint64: there are %d double larger than ULLONG_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "touint64: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
+                    }
+                }
+                break;
+            case NCL_char:
+                {
+                    unsigned char *ptr;
+
+                    ptr = (unsigned char *) in_value;
+    
+                    if(has_missing)
+                    {
+                        ret_missing.uint64val = (unsigned long long) missing.charval;
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (unsigned long long) ptr[i];
                     }
                 }
                 break;
             case NCL_byte:
                 {
-                    char val;
-                    char *ptr;
+                    byte val;
+                    byte *ptr;
 
-                    ptr = (char *) in_value;
-    
                     if(has_missing)
                     {
-                        ret_missing.uint64val = (unsigned long long) missing.byteval;
+                        if(missing.byteval >= 0)
+                            ret_missing.uint64val = (unsigned long long) missing.byteval;
                     }
 
+                    ptr = (byte *) in_value;
+    
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
                         if(val < 0)
                         {
-                            has_missing = 1;
-                            underflowed ++;
-                            output[i] = ret_missing.ulongval;
+                            if(has_missing && (val != missing.byteval))
+                            {
+                                has_missing = 1;
+                                underflowed ++;
+                            }
+                            output[i] = ret_missing.uint64val;
                         }
                         else
                         {
@@ -21276,18 +22931,18 @@ NhlErrorTypes _NclItouint64
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "touint64: there are %d char less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
                 break;
-            case NCL_char:
+            case NCL_ubyte:
                 {
                     unsigned char *ptr;
 
                     if(has_missing)
                     {
-                        ret_missing.uint64val = (unsigned long long) missing.charval;
+                        ret_missing.uint64val = (unsigned long long) missing.ubyteval;
                     }
 
                     ptr = (unsigned char *) in_value;
@@ -21301,7 +22956,6 @@ NhlErrorTypes _NclItouint64
             case NCL_short:
                 {
                     short val;
-                    unsigned long long ullval;
                     short *ptr;
     
                     ptr = (short *) in_value;
@@ -21329,7 +22983,7 @@ NhlErrorTypes _NclItouint64
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "touint64: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21370,7 +23024,10 @@ NhlErrorTypes _NclItouint64
                             val = ptr[i];
                             if(val < 0)
                             {
-                                underflowed ++;
+                                if(val != missing.intval)
+                                {
+                                    underflowed ++;
+                                }
                                 output[i] = ret_missing.ulongval;
                             }
                             else
@@ -21407,7 +23064,7 @@ NhlErrorTypes _NclItouint64
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "touint64: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21460,7 +23117,7 @@ NhlErrorTypes _NclItouint64
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than 0, which has been flagged missing.",
+                            "touint64: there are %d long less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21513,14 +23170,13 @@ NhlErrorTypes _NclItouint64
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than 0, which has been flagged missing.",
+                            "touint64: there are %d int64 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
                 break;
             case NCL_uint64:
                 {
-                    unsigned long long val;
                     unsigned long long *ptr;
 
                     ptr = (unsigned long long *) in_value;
@@ -21537,23 +23193,23 @@ NhlErrorTypes _NclItouint64
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "touint64: don't know how to convert logical to uint64.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "touint64: don't know how to convert object to uint64.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "touint64: don't know how to convert list to uint64.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "touint64: don't know how to convert NCL_none to uint64.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "touint64: don't know how to convert unkown type to uint64.");
                 return NhlFATAL;
         }
 
@@ -21568,6 +23224,685 @@ NhlErrorTypes _NclItouint64
 }
 
 
+NhlErrorTypes _NclItoubyte
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        void *in_value;
+        ng_size_t total_elements = 1;
+        int n_dims = 0;
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+        NclScalar missing;
+        NclScalar ret_missing;
+        NclBasicDataTypes type;
+        int has_missing;
+        int j;
+	ng_size_t i;
+        unsigned char *output;
+
+        int overflowed = 0;
+        int underflowed = 0;
+
+        in_value = (void *)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+
+        for(j = 0; j < n_dims; j++)
+        {
+            total_elements *= dimsizes[j];
+        }
+
+        ret_missing.ubyteval = (unsigned char) ((NclTypeClass) nclTypeubyteClass)->type_class.default_mis.ubyteval;
+
+        output = (unsigned char *)NclMalloc(sizeof(unsigned char)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "toubyte: memory allocation error."));
+		return NhlFATAL;
+	}
+
+        switch(type)
+        {
+            case NCL_double:
+                {
+                    double val, dmin, dmax;
+                    double *ptr;
+
+                    dmin = 0.0;
+                    dmax = (double) UCHAR_MAX;
+                    ptr = (double *) in_value;
+
+                    if(has_missing)
+                    {
+                        val = missing.doubleval;
+                        if((val <= dmax) && (val >= dmin))
+                        {
+                            ret_missing.ubyteval = (unsigned char) val;
+                        }
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = ptr[i];
+                        if(val > dmax)
+                        {
+                            has_missing = 1;
+                            overflowed ++;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else if(val < dmin)
+                        {
+                            has_missing = 1;
+                            underflowed ++;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else
+                        {
+                            output[i] = (unsigned char) val;
+                        }
+                    }
+
+                    if(overflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d double larger than UCHAR_MAX, which has been flagged missing.",
+                            overflowed);
+                    }
+    
+                    if(underflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d double less than 0, which has been flagged missing.",
+                            underflowed);
+                    }
+                }
+                break;
+            case NCL_float:
+                {
+                    float val, fmin, fmax;
+                    float *ptr;
+
+                    fmin = 0.0;
+                    fmax = (float) UCHAR_MAX;
+                    ptr = (float *) in_value;
+
+                    if(has_missing)
+                    {
+                        val = missing.floatval;
+                        if((val <= fmax) && (val >= fmin))
+                        {
+                            ret_missing.ubyteval = (unsigned char) val;
+                        }
+                    }
+
+                    ptr = (float *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = (float) ptr[i];
+                        if(val > fmax)
+                        {
+                            has_missing = 1;
+                            overflowed ++;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else if(val < fmin)
+                        {
+                            has_missing = 1;
+                            underflowed ++;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else
+                        {
+                            output[i] = (unsigned char) val;
+                        }
+                    }
+    
+                    if(overflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d float larger than UCHAR_MAX, which has been flagged missing.",
+                            overflowed);
+                    }
+    
+                    if(underflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d float less than 0, which has been flagged missing.",
+                            underflowed);
+                    }
+                }
+                break;
+            case NCL_string:
+                {
+                    long long llval;
+                    string *ptr;
+                    char *str;
+                    char *end;
+
+                    if(has_missing)
+                    {
+                        str = NrmQuarkToString(missing.stringval);
+                        llval = _Nclstrtoll(str,&end);
+                        if (strcmp(end, str) == 0)
+                        {
+                            NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                "toubyte: a bad value was passed to (string) toubyte, input strings must contain numeric digits, replacing with missing value");
+                        }
+                        else if(errno != ERANGE)
+                            if((llval >= 0) && (llval <= UCHAR_MAX))
+                                ret_missing.ubyteval = (unsigned char) llval;
+                    }
+
+                    ptr = (string *) in_value;
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        str = NrmQuarkToString(ptr[i]);
+    
+                        llval = _Nclstrtoll(str,&end);
+                        if (strcmp(end, str) == 0)
+                        {
+                            NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                "toubyte: a bad value was passed to (string) toubyte, input strings must contain numeric digits, replacing with missing value");
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else if (errno == ERANGE)
+                        {
+                            has_missing = 1;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else
+                        {
+                            if(llval < 0)
+                            {
+                                has_missing = 1;
+                                output[i] = ret_missing.ubyteval;
+                                underflowed++;
+                            }
+                            else if(llval > UCHAR_MAX)
+                            {
+                                has_missing = 1;
+                                output[i] = ret_missing.ubyteval;
+                                overflowed++;
+                            }
+                            else
+                            {
+                                output[i] = (unsigned char) llval;
+                            }
+                        }
+                    }
+    
+                    if(overflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d double larger than UCHAR_MAX, which has been flagged missing.",
+                            overflowed);
+                    }
+    
+                    if(underflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d double less than 0, which has been flagged missing.",
+                            underflowed);
+                    }
+                }
+                break;
+            case NCL_byte:
+                {
+                    byte val;
+                    byte *ptr;
+
+                    ptr = (byte *) in_value;
+    
+                    if(has_missing)
+                    {
+                        if(missing.byteval >= 0)
+                            ret_missing.ubyteval = (unsigned char) missing.byteval;
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = ptr[i];
+                        if(val < 0)
+                        {
+                            if(has_missing && (val != missing.byteval))
+                            {
+                               has_missing = 1;
+                               underflowed ++;
+                            }
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else
+                            output[i] = (char) ptr[i];
+                    }
+
+                    if(underflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d byte less than 0, which has been flagged missing.",
+                            underflowed);
+                    }
+                }
+                break;
+            case NCL_char:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.ubyteval = (unsigned char) missing.charval;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = ptr[i];
+                    }
+                }
+                break;
+            case NCL_ubyte:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.ubyteval = (unsigned char) missing.ubyteval;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (unsigned char) ptr[i];
+                    }
+                }
+                break;
+            case NCL_short:
+                {
+                    short val;
+                    short *ptr;
+    
+                    ptr = (short *) in_value;
+    
+                    if(has_missing)
+                    {
+                        if((missing.shortval >= 0) && (missing.shortval <= UCHAR_MAX))
+                            ret_missing.ubyteval = (unsigned char) missing.shortval;
+                    }
+   
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = ptr[i];
+                        if(val < 0)
+                        {
+                            has_missing = 1;
+                            underflowed ++;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else if(val > UCHAR_MAX)
+                        {
+                            has_missing = 1;
+                            overflowed ++;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else
+                        {
+                            output[i] = (unsigned char) val;
+                        }
+                    }
+
+                    if(underflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d int less than 0, which has been flagged missing.",
+                            underflowed);
+                    }
+
+                    if(overflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d short larger than SCHAR_MAX, which has been flagged missing.",
+                            overflowed);
+                    }
+                }
+                break;
+            case NCL_ushort:
+                {
+                    unsigned short val;
+                    unsigned short *ptr;
+   
+                    ptr = (unsigned short *) in_value;
+   
+                    if(has_missing)
+                    {
+                        if(missing.ushortval <= UCHAR_MAX) 
+                            ret_missing.ubyteval = (char) missing.ushortval;
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = (unsigned short) ptr[i];
+                        if(val > UCHAR_MAX)
+                        {
+                            has_missing = 1;
+                            overflowed ++;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else
+                        {
+                            output[i] = (unsigned char) val;
+                        }
+                    }
+
+                    if(overflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d ushortlarger than UCHAR_MAX, which has been flagged missing.",
+                            overflowed);
+                    }
+                }
+                break;
+            case NCL_int:
+                {
+                    int val;
+                    int *ptr;
+
+                    ptr = (int *) in_value;
+
+                    if(has_missing)
+                    {
+                        if((missing.intval <= UCHAR_MAX) && (missing.intval >= 0))
+                            ret_missing.ubyteval = (char) missing.intval;
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = (int) ptr[i];
+                        if(val > UCHAR_MAX)
+                        {
+                            has_missing = 1;
+                            overflowed ++;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else if(val < 0)
+                        {
+                            if(has_missing && (val != missing.intval))
+                            {
+                                has_missing = 1;
+                                underflowed ++;
+                            }
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else
+                        {
+                            output[i] = (unsigned char) val;
+                        }
+                    }
+
+                    if(overflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d int larger than UCHAR_MAX, which has been flagged missing.",
+                            overflowed);
+                    }
+
+                    if(underflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d int less than 0, which has been flagged missing.",
+                            underflowed);
+                    }
+                }
+                break;
+            case NCL_uint:
+                {
+                    unsigned int *ptr;
+                    unsigned int val;
+
+                    ptr = (unsigned int *) in_value;
+    
+                    if(has_missing)
+                    {
+                        if(missing.uintval <= UCHAR_MAX)
+                            ret_missing.ubyteval = (char) missing.uintval;
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = (unsigned int) ptr[i];
+                        if(val > UCHAR_MAX)
+                        {
+                            has_missing = 1;
+                            overflowed ++;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else
+                        {
+                            output[i] = (unsigned char) val;
+                        }
+                    }
+
+                    if(overflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d uint larger than UCHAR_MAX, which has been flagged missing.",
+                            overflowed);
+                    }
+                }
+                break;
+            case NCL_long:
+                {
+                    long val;
+                    long *ptr;
+
+                    ptr = (long *) in_value;
+
+                    if(has_missing)
+                    {
+                        if((missing.longval <= UCHAR_MAX) && (missing.longval >= 0))
+                            ret_missing.ubyteval = (char) missing.longval;
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = (long) ptr[i];
+                        if(val > UCHAR_MAX)
+                        {
+                            has_missing = 1;
+                            overflowed ++;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else if(val < 0)
+                        {
+                            has_missing = 1;
+                            underflowed ++;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else
+                        {
+                            output[i] = (unsigned char) val;
+                        }
+                    }
+
+                    if(overflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d long larger than UCHAR_MAX, which has been flagged missing.",
+                            overflowed);
+                    }
+
+                    if(underflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d long less than 0, which has been flagged missing.",
+                            underflowed);
+                    }
+                }
+                break;
+            case NCL_ulong:
+                {
+                    unsigned long *ptr;
+                    unsigned long val;
+    
+                    ptr = (unsigned long *) in_value;
+
+                    if(has_missing)
+                    {
+                        if(missing.ulongval <= UCHAR_MAX)
+                            ret_missing.ubyteval = (char) missing.ulongval;
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = (unsigned long) ptr[i];
+                        if(val > UCHAR_MAX)
+                        {
+                            has_missing = 1;
+                            overflowed ++;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else
+                        {
+                            output[i] = (unsigned char) val;
+                        }
+                    }
+
+                    if(overflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d ulong larger than UCHAR_MAX, which has been flagged missing.",
+                            overflowed);
+                    }
+                }
+                break;
+            case NCL_int64:
+                {
+                    long long *ptr;
+                    long long val;
+
+                    ptr = (long long *) in_value;
+
+                    if(has_missing)
+                    {
+                        if((missing.int64val <= UCHAR_MAX) && (missing.int64val >= 0))
+                            ret_missing.ubyteval = (char) missing.int64val;
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = (long long) ptr[i];
+                        if(val > UCHAR_MAX)
+                        {
+                            has_missing = 1;
+                            overflowed ++;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else if(val < 0)
+                        {
+                            has_missing = 1;
+                            underflowed ++;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else
+                        {
+                            output[i] = (unsigned char) val;
+                        }
+                    }
+
+                    if(overflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d int64 larger than UCHAR_MAX, which has been flagged missing.",
+                            overflowed);
+                    }
+
+                    if(underflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d int64 less than 0, which has been flagged missing.",
+                            underflowed);
+                    }
+                }
+                break;
+            case NCL_uint64:
+                {
+                    unsigned long long *ptr;
+                    unsigned long long val;
+
+                    ptr = (unsigned long long *) in_value;
+
+                    if(has_missing)
+                    {
+                        if(missing.uint64val <= UCHAR_MAX)
+                            ret_missing.ubyteval = (char) missing.uint64val;
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = (unsigned long long) ptr[i];
+                        if(val > UCHAR_MAX)
+                        {
+                            has_missing = 1;
+                            overflowed ++;
+                            output[i] = ret_missing.ubyteval;
+                        }
+                        else
+                        {
+                            output[i] = (unsigned char) val;
+                        }
+                    }
+
+                    if(overflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "toubyte: there are %d uint64 larger than UCHAR_MAX, which has been flagged missing.",
+                            overflowed);
+                    }
+                }
+                break;
+            case NCL_logical:
+                NhlPError(NhlFATAL, errno, "toubyte: Don't know how to convert logical to ubyte.");
+                return NhlFATAL;
+                break;
+            case NCL_obj:
+                NhlPError(NhlFATAL, errno, "toubyte: don't know how to convert object to ubyte.");
+                return NhlFATAL;
+                break;
+            case NCL_list:
+                NhlPError(NhlFATAL, errno, "toubyte: don't know how to convert list to ubyte.");
+                return NhlFATAL;
+                break;
+            case NCL_none:
+                NhlPError(NhlFATAL, errno, "toubyte: don't know how to convert NCL_none to ubyte.");
+                return NhlFATAL;
+                break;
+            default:
+                NhlPError(NhlFATAL, errno, "toubyte: don't know how to convert unkown type to ubyte.");
+                return NhlFATAL;
+        }
+
+        return(NclReturnValue(
+                (void*)output,
+                n_dims,
+                dimsizes,
+                (has_missing ? &ret_missing : NULL),
+                NCL_ubyte,
+                0
+        ));
+}
+
+
+
 NhlErrorTypes _NclItoshort
 #if     NhlNeedProto
 (void)
@@ -21576,14 +23911,15 @@ NhlErrorTypes _NclItoshort
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing = 0;
-        int i;
+        int j;
+	ng_size_t i;
         short *output;
 
         int overflowed = 0;
@@ -21599,14 +23935,19 @@ NhlErrorTypes _NclItoshort
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.shortval = (short) ((NclTypeClass) nclTypeshortClass)->type_class.default_mis.shortval;
 
         output = (short *)NclMalloc(sizeof(short)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "toshort: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -21621,7 +23962,7 @@ NhlErrorTypes _NclItoshort
                     if(has_missing)
                     {
                         val = missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.shortval = (short) val;
                         }
@@ -21653,14 +23994,14 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d double larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than SHRT_MIN, which has been flagged missing.",
+                            "toshort: there are %d double less than SHRT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21676,7 +24017,7 @@ NhlErrorTypes _NclItoshort
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.shortval = (short) val;
                         }
@@ -21689,13 +24030,15 @@ NhlErrorTypes _NclItoshort
                         val = (float) ptr[i];
                         if(val > fmax)
                         {
-                            overflowed ++;
+                            if(has_missing && (val != missing.floatval))
+                                overflowed ++;
                             has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else if(val < fmin)
                         {
-                            underflowed ++;
+                            if(has_missing && (val != missing.floatval))
+                                underflowed ++;
                             has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
@@ -21708,14 +24051,14 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d float larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than SHRT_MIN, which has been flagged missing.",
+                            "toshort: there are %d float less than SHRT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21729,7 +24072,6 @@ NhlErrorTypes _NclItoshort
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (end == str || errno == ERANGE)
@@ -21748,9 +24090,8 @@ NhlErrorTypes _NclItoshort
                     {
                         str = NrmQuarkToString(ptr[i]);
     
-                        if(missing.stringval == ptr[i])
+                        if(has_missing && (missing.stringval == ptr[i]))
                         {
-                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else
@@ -21760,7 +24101,7 @@ NhlErrorTypes _NclItoshort
                             {
                                 has_missing = 1;
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                    "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
+                                    "toshort: a bad value was passed to toshort, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.shortval;
                             }
                             else if (llval > SHRT_MAX)
@@ -21785,32 +24126,15 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d double larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than SHRT_MIN, which has been flagged missing.",
+                            "toshort: there are %d double less than SHRT_MIN, which has been flagged missing.",
                             underflowed);
-                    }
-                }
-                break;
-            case NCL_byte:
-                {
-                    char *ptr;
-
-                    if(has_missing)
-                    {
-                        ret_missing.shortval = (short) missing.byteval;
-                    }
-
-                    ptr = (char *) in_value;
-    
-                    for(i = 0; i < total_elements; i++)
-                    {
-                        output[i] = (short) ptr[i];
                     }
                 }
                 break;
@@ -21825,6 +24149,40 @@ NhlErrorTypes _NclItoshort
 
                     ptr = (unsigned char *) in_value;
     
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (short) ptr[i];
+                    }
+                }
+                break;
+            case NCL_byte:
+                {
+                    byte *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.shortval = (short) missing.byteval;
+                    }
+
+                    ptr = (byte *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (short) ptr[i];
+                    }
+                }
+                break;
+            case NCL_ubyte:
+                {
+                    unsigned char *ptr;
+
+                    ptr = (unsigned char *) in_value;
+    
+                    if(has_missing)
+                    {
+                        ret_missing.shortval = (short) missing.ubyteval;
+                    }
+
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (short) ptr[i];
@@ -21879,7 +24237,7 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d int larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -21921,14 +24279,14 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d int larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than SHRT_MIN, which has been flagged missing.",
+                            "toshort: there are %d int less than SHRT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -21964,7 +24322,7 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d unsigned int larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -22006,14 +24364,14 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d long larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than SHRT_MIN, which has been flagged missing.",
+                            "toshort: there are %d long less than SHRT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22049,7 +24407,7 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned long larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d unsigned long larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -22091,14 +24449,14 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d int64 larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than SHRT_MIN, which has been flagged missing.",
+                            "toshort: there are %d int64 less than SHRT_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22134,29 +24492,29 @@ NhlErrorTypes _NclItoshort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than SHRT_MAX, which has been flagged missing.",
+                            "toshort: there are %d uint64 larger than SHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "toshort: don't know how to convert logical to short.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "toshort: don't know how to convert object to short.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "toshort: don't know how to convert list to short.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "toshort: don't know how to convert NCL_none to short.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "toshort: don't know how to convert unkown type to short.");
                 return NhlFATAL;
         }
 
@@ -22179,14 +24537,15 @@ NhlErrorTypes _NclItoushort
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         unsigned short *output;
 
         int overflowed = 0;
@@ -22202,14 +24561,19 @@ NhlErrorTypes _NclItoushort
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.ushortval = (unsigned short) ((NclTypeClass) nclTypeushortClass)->type_class.default_mis.ushortval;
 
         output = (unsigned short *)NclMalloc(sizeof(unsigned short)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "toushort: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -22224,7 +24588,7 @@ NhlErrorTypes _NclItoushort
                     if(has_missing)
                     {
                         val = missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                         {
                             ret_missing.ushortval = (unsigned short) val;
                         }
@@ -22256,14 +24620,14 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d double larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "toushort: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22279,7 +24643,7 @@ NhlErrorTypes _NclItoushort
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                         {
                             ret_missing.shortval = (unsigned short) val;
                         }
@@ -22311,14 +24675,14 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d float larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than 0, which has been flagged missing.",
+                            "toushort: there are %d float less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22332,7 +24696,6 @@ NhlErrorTypes _NclItoushort
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (end == str || errno == ERANGE)
@@ -22362,7 +24725,7 @@ NhlErrorTypes _NclItoushort
                             if (strcmp(end, str) == 0)
                             {
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                    "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
+                                    "toushort: A bad value was passed to toushort, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.ushortval;
                             }
                             else if (llval > USHRT_MAX)
@@ -22387,29 +24750,46 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d double larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "toushort: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
+                    }
+                }
+                break;
+            case NCL_char:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.ushortval = (unsigned short) missing.charval;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (unsigned short) ptr[i];
                     }
                 }
                 break;
             case NCL_byte:
                 {
-                    char val;
-                    char *ptr;
+                    byte val;
+                    byte *ptr;
 
                     if(has_missing)
                     {
                         ret_missing.ushortval = (unsigned short) missing.byteval;
                     }
 
-                    ptr = (char *) in_value;
+                    ptr = (byte *) in_value;
     
                     for(i = 0; i < total_elements; i++)
                     {
@@ -22429,22 +24809,22 @@ NhlErrorTypes _NclItoushort
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "toushort: there are %d char less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
                 break;
-            case NCL_char:
+            case NCL_ubyte:
                 {
                     unsigned char *ptr;
 
                     if(has_missing)
                     {
-                        ret_missing.ushortval = (unsigned short) missing.charval;
+                            ret_missing.ushortval = (unsigned short) missing.ubyteval;
                     }
 
                     ptr = (unsigned char *) in_value;
-    
+
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (unsigned short) ptr[i];
@@ -22469,8 +24849,8 @@ NhlErrorTypes _NclItoushort
                         val = ptr[i];
                         if(val < 0)
                         {
-                            underflowed ++;
                             has_missing = 1;
+                            underflowed ++;
                             output[i] = ret_missing.ushortval;
                         }
                         else
@@ -22481,9 +24861,9 @@ NhlErrorTypes _NclItoushort
 
                     if(underflowed)
                     {
-                        NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
-                            underflowed);
+                        NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+                            "toushort: there are %d short less than 0, which has been flagged missing.",
+                            underflowed));
                     }
                 }
                 break;
@@ -22543,14 +24923,14 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d int larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "toushort: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22586,7 +24966,7 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d unsigned int larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -22628,14 +25008,14 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d long larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than 0, which has been flagged missing.",
+                            "toushort: there are %d long less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22671,7 +25051,7 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned long larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d unsigned long larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -22713,14 +25093,14 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d int64 larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than 0, which has been flagged missing.",
+                            "toushort: there are %d int64 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22756,29 +25136,29 @@ NhlErrorTypes _NclItoushort
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than USHRT_MAX, which has been flagged missing.",
+                            "toushort: there are %d uint64 larger than USHRT_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "toushort: don't know how to convert logical to ushort.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "toushort: don't know how to convert object to ushort.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "toushort: don't know how to convert list to ushort.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "toushort: don't know how to convert NCL_none to ushort.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "toushort: don't know how to convert unkown type to ushort.");
                 return NhlFATAL;
         }
 
@@ -22801,14 +25181,15 @@ NhlErrorTypes _NclItofloat
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         float *output;
 
         int overflowed = 0;
@@ -22824,14 +25205,19 @@ NhlErrorTypes _NclItofloat
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.floatval = (float) ((NclTypeClass) nclTypefloatClass)->type_class.default_mis.floatval;
 
         output = (float *)NclMalloc(sizeof(float)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "tofloat: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -22849,7 +25235,7 @@ NhlErrorTypes _NclItofloat
                     if(has_missing)
                     {
                         val = missing.doubleval;
-                        if(val < dmax && val > dmin)
+                        if(val <= dmax && val >= dmin)
                         {
                             if(fabs(val) < dtiny)
                                 ret_missing.floatval = 0.0;
@@ -22886,14 +25272,14 @@ NhlErrorTypes _NclItofloat
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than FLT_MAX, which has been flagged missing.",
+                            "tofloat: there are %d double larger than FLT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than (-FLT_MAX), which has been flagged missing.",
+                            "tofloat: there are %d double less than (-FLT_MAX), which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -22960,7 +25346,7 @@ NhlErrorTypes _NclItofloat
                                 if (strcmp(end, str) == 0)
                                 {
                                     NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                        "A bad value was passed to (string) tofloat, input strings must contain numeric digits, replacing with missing value");
+                                        "tofloat: A bad value was passed to (string) tofloat, input strings must contain numeric digits, replacing with missing value");
                                     output[i] = ret_missing.floatval;
                                 }
                                 else if (dval > FLT_MAX)
@@ -22998,7 +25384,7 @@ NhlErrorTypes _NclItofloat
                             if (strcmp(end, str) == 0)
                             {
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                    "A bad value was passed to (string) tofloat, input strings must contain numeric digits, replacing with missing value");
+                                    "tofloat: A bad value was passed to (string) tofloat, input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
                                 output[i] = ret_missing.floatval;
                             }
@@ -23032,24 +25418,23 @@ NhlErrorTypes _NclItofloat
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d string larger than FLT_MAX, which has been flagged missing.",
+                            "tofloat: there are %d string larger than FLT_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d string less than (-FLT_MAX), which has been flagged missing.",
+                            "tofloat: there are %d string less than (-FLT_MAX), which has been flagged missing.",
                             underflowed);
                     }
                 }
                 break;
             case NCL_byte:
                 {
-                    char val;
-                    char *ptr;
+                    byte *ptr;
 
-                    ptr = (char *) in_value;
+                    ptr = (byte *) in_value;
     
                     if(has_missing)
                     {
@@ -23064,7 +25449,6 @@ NhlErrorTypes _NclItofloat
                 break;
             case NCL_char:
                 {
-                    unsigned char val;
                     unsigned char *ptr;
 
                     ptr = (unsigned char *) in_value;
@@ -23073,6 +25457,23 @@ NhlErrorTypes _NclItofloat
                     {
                         ret_missing.floatval = (float) missing.charval;
                     }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (float) ptr[i];
+                    }
+                }
+                break;
+            case NCL_ubyte:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.floatval = (char) missing.ubyteval;
+                    }
+
+                    ptr = (unsigned char *) in_value;
 
                     for(i = 0; i < total_elements; i++)
                     {
@@ -23203,7 +25604,6 @@ NhlErrorTypes _NclItofloat
                 break;
             case NCL_uint64:
                 {
-                    unsigned long long val;
                     unsigned long long *ptr;
 
                     ptr = (unsigned long long *) in_value;
@@ -23220,23 +25620,23 @@ NhlErrorTypes _NclItofloat
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "tofloat: don't know how to convert logical to float.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "tofloat: don't know how to convert object to float.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "tofloat: don't know how to convert list to float.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "tofloat: don't know how to convert NCL_none to float.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "tofloat: don't know how to convert unkown type to float.");
                 return NhlFATAL;
         }
 
@@ -23259,20 +25659,15 @@ NhlErrorTypes _NclItostring
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
-
-        int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
-        int has_missing_str = 0;
-        NclScalar   missing_str;
-        NclBasicDataTypes type_str;
-
+        int j;
+	ng_size_t i;
         string *output;
 
         char buffer[4*NCL_MAX_STRING];
@@ -23287,14 +25682,19 @@ NhlErrorTypes _NclItostring
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
         output = (string *)NclMalloc(sizeof(string)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "tostring: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -23361,19 +25761,19 @@ NhlErrorTypes _NclItostring
                 break;
             case NCL_byte:
                 {
-                    char *ptr;
+                    byte *ptr;
 
-                    ptr = (char *) in_value;
+                    ptr = (byte *) in_value;
 
                     if(has_missing)
                     {
-                        sprintf(buffer, "%d", missing.byteval);
+                        sprintf(buffer, "%c", missing.byteval);
                         ret_missing.stringval = NrmStringToQuark(buffer);
                     }
 
                     for(i = 0; i < total_elements; i++)
                     {
-                        sprintf(buffer, "%d", ptr[i]);
+                        sprintf(buffer, "%c", ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
                     }
                 }
@@ -23381,18 +25781,80 @@ NhlErrorTypes _NclItostring
             case NCL_char:
                 {
                     unsigned char *ptr;
+                    char *str;
+                    int n;
+                    int cur_str_len;
 
                     ptr = (unsigned char *) in_value;
 
+                    cur_str_len = dimsizes[n_dims-1];
+                    str = (char *)NclMalloc(sizeof(char)*(cur_str_len + 1));
+                    if (str == NULL)
+                    {
+                            NHLPERROR((NhlFATAL, errno, "tostring: memory allocation error."));
+                            return NhlFATAL;
+                    }
+                    str[cur_str_len] = '\0';
+
                     if(has_missing)
                     {
-                        sprintf(buffer, "%c", missing.charval);
+                        str[0] = missing.charval;
+                        str[1] = '\0';
+                        ret_missing.stringval = NrmStringToQuark(str);
+                    }
+
+                    if(n_dims > 1)
+                    {
+                        n_dims --;
+                        dimsizes[n_dims] = 0;
+                    }
+                    else
+                    {
+                        dimsizes[0] = 1;
+                    }
+
+                    total_elements = 1;
+                    for(j = 0; j < n_dims; j++)
+                    {
+                        total_elements *= dimsizes[j];
+                    }
+
+                    output = (string *)NclRealloc(output, sizeof(string)*total_elements);
+                    if (output == NULL)
+                    {
+                            NHLPERROR((NhlFATAL, errno, "tostring: memory allocation error."));
+                            return NhlFATAL;
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        n = i * cur_str_len;
+                        for(j = 0; j < cur_str_len; j++)
+                        {
+                            str[j] = ptr[n++];
+                            if(!str[j])
+                                break;
+                        }
+                        output[i] = NrmStringToQuark(str);
+                    }
+                    free(str);
+                }
+                break;
+            case NCL_ubyte:
+                {
+                    unsigned char *ptr;
+    
+                    ptr = (unsigned char *) in_value;
+   
+                    if(has_missing)
+                    {
+                        sprintf(buffer, "%d", missing.ubyteval);
                         ret_missing.stringval = NrmStringToQuark(buffer);
                     }
 
                     for(i = 0; i < total_elements; i++)
                     {
-                        sprintf(buffer, "%c", ptr[i]);
+                        sprintf(buffer, "%d", (int)ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
                     }
                 }
@@ -23550,23 +26012,23 @@ NhlErrorTypes _NclItostring
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "tostring: don't know how to convert logical to string.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "tostring: don't know how to convert object to string.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "tostring: don't know how to convert list to string.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "tostring: don't know how to convert NCL_none to string.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "tostring: don't know how to convert unkown type to string.");
                 return NhlFATAL;
         }
 
@@ -23589,16 +26051,18 @@ NhlErrorTypes _NclItostring_with_format
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
 
-        int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
+        int ndim_str;
+	ng_size_t dimsz_str[NCL_MAX_DIMENSIONS];
         int has_missing_str = 0;
         NclScalar   missing_str;
         NclBasicDataTypes type_str;
@@ -23619,9 +26083,9 @@ NhlErrorTypes _NclItostring_with_format
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
@@ -23641,6 +26105,11 @@ NhlErrorTypes _NclItostring_with_format
         strcpy(fmt, (char *) NrmQuarkToString(format[0]));
 
         output = (string *)NclMalloc(sizeof(string)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "tostring_with_format: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -23707,9 +26176,9 @@ NhlErrorTypes _NclItostring_with_format
                 break;
             case NCL_byte:
                 {
-                    char *ptr;
+                    byte *ptr;
 
-                    ptr = (char *) in_value;
+                    ptr = (byte *) in_value;
 
                     if(has_missing)
                     {
@@ -23726,9 +26195,9 @@ NhlErrorTypes _NclItostring_with_format
                 break;
             case NCL_char:
                 {
-                    unsigned char *ptr;
+                    char *ptr;
 
-                    ptr = (unsigned char *) in_value;
+                    ptr = (char *) in_value;
 
                     if(has_missing)
                     {
@@ -23896,23 +26365,23 @@ NhlErrorTypes _NclItostring_with_format
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "tostring_with_format: don't know how to convert logical to string.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "tostring_with_format: don't know how to convert object to string.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "tostring_with_format: don't know how to convert list to string.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "tostring_with_format: don't know how to convert NCL_none to string.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "tostring_with_format: don't know how to convert unkown type to string.");
                 return NhlFATAL;
         }
 
@@ -23939,18 +26408,16 @@ NhlErrorTypes _NclItodouble
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         double *output;
-
-        int overflowed = 0;
-        int underflowed = 0;
 
         in_value = (void *)NclGetArgValue(
                         0,
@@ -23962,14 +26429,21 @@ NhlErrorTypes _NclItodouble
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        errno = 0;
+
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.doubleval = (double) ((NclTypeClass) nclTypedoubleClass)->type_class.default_mis.doubleval;
 
         output = (double *)NclMalloc(sizeof(double)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "todouble: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -24021,7 +26495,7 @@ NhlErrorTypes _NclItodouble
                         errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         dval = strtod(str,&end);
-                        if (end == str || errno == ERANGE)
+                        if((strcmp(end, str) == 0) || (errno == ERANGE))
                         {
                             ret_missing.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
                         }
@@ -24041,10 +26515,10 @@ NhlErrorTypes _NclItodouble
                             else
                             {
                                 dval = strtod(str,&end);
-                                if (strcmp(end, str) == 0)
+                                if((strcmp(end, str) == 0) || (errno == ERANGE))
                                 {
-                                    NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                        "A bad value was passed to (string) todouble, input strings must contain numeric digits, replacing with missing value");
+                                    NhlPError(NhlWARNING,NhlEUNKNOWN,
+                                        "todouble: A bad value was passed to (string) todouble, input strings must contain numeric digits, replacing with missing value");
                                     output[i] = ret_missing.doubleval;
                                     has_missing = 1;
                                 }
@@ -24062,10 +26536,10 @@ NhlErrorTypes _NclItodouble
                             str = NrmQuarkToString(ptr[i]);
    
                             dval = strtod(str,&end);
-                            if (strcmp(end, str) == 0)
+                            if((strcmp(end, str) == 0) || (errno == ERANGE))
                             {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                    "A bad value was passed to (string) todouble, input strings must contain numeric digits, replacing with missing value");
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,
+                                    "todouble: A bad value was passed to (string) todouble, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.doubleval;
                                 has_missing = 1;
                             }
@@ -24079,9 +26553,9 @@ NhlErrorTypes _NclItodouble
                 break;
             case NCL_byte:
                 {
-                    char *ptr;
+                    byte *ptr;
 
-                    ptr = (char *) in_value;
+                    ptr = (byte *) in_value;
     
                     if(has_missing)
                     {
@@ -24104,6 +26578,23 @@ NhlErrorTypes _NclItodouble
                     {
                         ret_missing.doubleval = (double) missing.charval;
                     }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (double) ptr[i];
+                    }
+                }
+                break;
+            case NCL_ubyte:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.doubleval = (char) missing.ubyteval;
+                    }
+
+                    ptr = (unsigned char *) in_value;
 
                     for(i = 0; i < total_elements; i++)
                     {
@@ -24248,23 +26739,23 @@ NhlErrorTypes _NclItodouble
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "todouble: don't know how to convert logical to double.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "todouble: don't know how to convert object to double.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "todouble: don't know how to convert list to double.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "todouble: don't know how to convert NCL_none to double.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "todouble: don't know how to convert unkown type to double.");
                 return NhlFATAL;
         }
 
@@ -24287,15 +26778,16 @@ NhlErrorTypes _NclItobyte
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
-        char *output;
+        int j;
+	ng_size_t i;
+        byte *output;
 
         int overflowed = 0;
         int underflowed = 0;
@@ -24310,14 +26802,19 @@ NhlErrorTypes _NclItobyte
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.byteval = (byte) ((NclTypeClass) nclTypebyteClass)->type_class.default_mis.byteval;
 
         output = (char *)NclMalloc(sizeof(byte)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "tobyte: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -24326,13 +26823,13 @@ NhlErrorTypes _NclItobyte
                     double val, dmin, dmax;
                     double *ptr;
 
-                    dmin = 0.0;
-                    dmax = (double) UCHAR_MAX;
+                    dmin = (double) SCHAR_MIN;
+                    dmax = (double) SCHAR_MAX;
 
                     if(has_missing)
                     {
                         val = missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                            ret_missing.byteval = (unsigned char) val;
                     }
 
@@ -24362,14 +26859,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than CHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d double larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than CHAR_MIN, which has been flagged missing.",
+                            "tobyte: there are %d double less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24379,13 +26876,13 @@ NhlErrorTypes _NclItobyte
                     float val, fmin, fmax;
                     float *ptr;
 
-                    fmin = 0.0;
-                    fmax = (float) UCHAR_MAX;
+                    fmin = (float) SCHAR_MIN;
+                    fmax = (float) SCHAR_MAX;
 
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
+                        if((val <= fmax) && (val >= fmin))
                            ret_missing.byteval = (unsigned char) val;
                     }
 
@@ -24415,14 +26912,14 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than CHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d float larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than CHAR_MIN, which has been flagged missing.",
+                            "tobyte: there are %d float less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24436,7 +26933,6 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        errno = 0;
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
                         if (end == str || errno == ERANGE)
@@ -24445,7 +26941,7 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            if((llval < UCHAR_MAX) && (llval >= 0))
+                            if((llval < SCHAR_MAX) && (llval >= SCHAR_MIN))
                                 ret_missing.byteval = (unsigned char) llval;
                         }
                     }
@@ -24455,7 +26951,7 @@ NhlErrorTypes _NclItobyte
                     {
                         str = NrmQuarkToString(ptr[i]);
     
-                        if(missing.stringval == ptr[i])
+                        if(has_missing && (missing.stringval == ptr[i]))
                         {
                             output[i] = ret_missing.byteval;
                         }
@@ -24465,16 +26961,16 @@ NhlErrorTypes _NclItobyte
                             if (strcmp(end, str) == 0)
                             {
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                    "A bad value was passed to tobyte, input strings must contain numeric digits, replacing with missing value");
+                                    "tobyte: A bad value was passed to tobyte, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.byteval;
                             }
-                            else if (llval > UCHAR_MAX)
+                            else if (llval > SCHAR_MAX)
                             {
                                 has_missing = 1;
                                 overflowed ++;
                                 output[i] = ret_missing.byteval;
                             }
-                            else if (llval < 0)
+                            else if (llval < SCHAR_MIN)
                             {
                                 has_missing = 1;
                                 underflowed ++;
@@ -24490,24 +26986,23 @@ NhlErrorTypes _NclItobyte
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than CHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d double larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than CHAR_MIN, which has been flagged missing.",
+                            "tobyte: there are %d double less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
                 break;
             case NCL_byte:
                 {
-                    char val;
-                    char *ptr;
+                    byte *ptr;
 
-                    ptr = (char *) in_value;
+                    ptr = (byte *) in_value;
     
                     if(has_missing)
                     {
@@ -24516,42 +27011,78 @@ NhlErrorTypes _NclItobyte
 
                     for(i = 0; i < total_elements; i++)
                     {
-                        val = ptr[i];
-                        output[i] = val;
+                        output[i] = ptr[i];
                     }
                 }
                 break;
             case NCL_char:
                 {
-                    char val;
-                    char *ptr;
+                    unsigned char val;
+                    unsigned char *ptr;
 
                     if(has_missing)
                     {
-                        ret_missing.byteval = (char) missing.charval;
+                        if(missing.charval < SCHAR_MAX)
+                            ret_missing.byteval = (byte) missing.charval;
                     }
 
-                    ptr = (char *) in_value;
+                    ptr = (unsigned char *) in_value;
     
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val < 0)
+                        if(val > SCHAR_MAX)
                         {
-                            has_missing = 1;
-                            overflowed ++;
+                            if(has_missing && (val != missing.charval))
+                            {
+                                has_missing = 1;
+                                overflowed ++;
+                            }
                             output[i] = ret_missing.byteval;
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
 
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than CHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d char great than SCHAR_MAX, which has been flagged missing.",
+                            overflowed);
+                    }
+                }
+                break;
+            case NCL_ubyte:
+                {
+                    unsigned char val;
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.byteval = (byte) missing.ubyteval;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        val = ptr[i];
+                        if(val > SCHAR_MAX)
+                        {
+                            has_missing = 1;
+                            overflowed ++;
+                            output[i] = ret_missing.byteval;
+                        }
+                        else
+                            output[i] = (byte) val;
+                    }
+
+                    if(underflowed)
+                    {
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "tobyte: there are %d ubyte great than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -24563,8 +27094,8 @@ NhlErrorTypes _NclItobyte
     
                     if(has_missing)
                     {
-                        if((missing.shortval <= CHAR_MAX) && (missing.shortval >= CHAR_MIN))
-                            ret_missing.byteval = (char) missing.shortval;
+                        if((missing.shortval <= SCHAR_MAX) && (missing.shortval >= SCHAR_MIN))
+                            ret_missing.byteval = (byte) missing.shortval;
                     }
 
                     ptr = (short *) in_value;
@@ -24572,13 +27103,13 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.byteval;
                         }
-                        else if(val < 0)
+                        else if(val < SCHAR_MIN)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -24586,21 +27117,21 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
 
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than CHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d short larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than CHAR_MIN, which has been flagged missing.",
+                            "tobyte: there are %d int short less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24612,8 +27143,8 @@ NhlErrorTypes _NclItobyte
     
                     if(has_missing)
                     {
-                        if(missing.ushortval <= CHAR_MAX)
-                            ret_missing.byteval = (char) missing.ushortval;
+                        if(missing.ushortval <= SCHAR_MAX)
+                            ret_missing.byteval = (byte) missing.ushortval;
                     }
 
                     ptr = (unsigned short *) in_value;
@@ -24621,7 +27152,7 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -24629,14 +27160,14 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
   
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than CHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d ushort larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -24648,8 +27179,8 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if((missing.intval <= CHAR_MAX) && (missing.intval >= CHAR_MIN))
-                            ret_missing.byteval = (char) missing.intval;
+                        if((missing.intval <= SCHAR_MAX) && (missing.intval >= SCHAR_MIN))
+                            ret_missing.byteval = (byte) missing.intval;
                     }
 
                     ptr = (int *) in_value;
@@ -24657,13 +27188,13 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.byteval;
                         }
-                        else if(val < 0)
+                        else if(val < SCHAR_MIN)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -24671,21 +27202,21 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
    
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than CHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d int larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than CHAR_MIN, which has been flagged missing.",
+                            "tobyte: there are %d int less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24697,8 +27228,8 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if(missing.uintval <= UCHAR_MAX)
-                            ret_missing.byteval = (char) missing.uintval;
+                        if(missing.uintval <= SCHAR_MAX)
+                            ret_missing.byteval = (byte) missing.uintval;
                     }
 
                     ptr = (unsigned int *) in_value;
@@ -24706,7 +27237,7 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -24714,14 +27245,14 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than CHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d unsigned int larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -24733,8 +27264,8 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if((missing.longval <= CHAR_MAX) && (missing.longval >= CHAR_MIN))
-                            ret_missing.byteval = (char) missing.longval;
+                        if((missing.longval <= SCHAR_MAX) && (missing.longval >= SCHAR_MIN))
+                            ret_missing.byteval = (byte) missing.longval;
                     }
 
                     ptr = (long *) in_value;
@@ -24742,13 +27273,13 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.byteval;
                         }
-                        else if(val < 0)
+                        else if(val < SCHAR_MIN)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -24756,21 +27287,21 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than CHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d long larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than CHAR_MIN, which has been flagged missing.",
+                            "tobyte: there are %d long less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24782,8 +27313,8 @@ NhlErrorTypes _NclItobyte
     
                     if(has_missing)
                     {
-                        if(missing.ulongval <= UCHAR_MAX)
-                            ret_missing.byteval = (char) missing.ulongval;
+                        if(missing.ulongval <= SCHAR_MAX)
+                            ret_missing.byteval = (byte) missing.ulongval;
                     }
 
                     ptr = (unsigned long *) in_value;
@@ -24791,7 +27322,7 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -24799,14 +27330,14 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned long larger than CHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d unsigned ulong larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -24818,8 +27349,8 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if((missing.int64val <= CHAR_MAX) && (missing.int64val >= CHAR_MIN))
-                            ret_missing.byteval = (char) missing.int64val;
+                        if((missing.int64val <= SCHAR_MAX) && (missing.int64val >= SCHAR_MIN))
+                            ret_missing.byteval = (byte) missing.int64val;
                     }
 
                     ptr = (long long *) in_value;
@@ -24827,13 +27358,13 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.byteval;
                         }
-                        else if(val < 0)
+                        else if(val < SCHAR_MIN)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -24841,21 +27372,21 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
 
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than CHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d int64 larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than CHAR_MIN, which has been flagged missing.",
+                            "tobyte: there are %d int64 less than SCHAR_MIN, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -24867,8 +27398,8 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if(missing.uint64val <= UCHAR_MAX)
-                            ret_missing.byteval = (char) missing.uint64val;
+                        if(missing.uint64val <= SCHAR_MAX)
+                            ret_missing.byteval = (byte) missing.uint64val;
                     }
 
                     ptr = (unsigned long long *) in_value;
@@ -24876,7 +27407,7 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > UCHAR_MAX)
+                        if(val > SCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -24884,36 +27415,36 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (byte) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than CHAR_MAX, which has been flagged missing.",
+                            "tobyte: there are %d uint64 larger than SCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "tobyte: don't know how to convert logical to byte.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "tobyte: don't know how to convert object to byte.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "tobyte: don't know how to convert list to byte.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "tobyte: don't know how to convert NCL_none to byte.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "tobyte: don't know how to convert unkown type to byte.");
                 return NhlFATAL;
         }
 
@@ -24936,15 +27467,16 @@ NhlErrorTypes _NclItochar
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
         int has_missing;
-        int i;
-        unsigned char *output;
+        int j;
+	ng_size_t i;
+        char *output;
 
         int overflowed = 0;
         int underflowed = 0;
@@ -24959,14 +27491,19 @@ NhlErrorTypes _NclItochar
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         ret_missing.charval = (unsigned char) ((NclTypeClass) nclTypecharClass)->type_class.default_mis.charval;
 
         output = (unsigned char *)NclMalloc(sizeof(unsigned char)*total_elements);
+	if (output == NULL)
+	{
+        	NHLPERROR((NhlFATAL, errno, "tochar: memory allocation error."));
+		return NhlFATAL;
+	}
 
         switch(type)
         {
@@ -24975,13 +27512,13 @@ NhlErrorTypes _NclItochar
                     double val, dmin, dmax;
                     double *ptr;
 
-                    dmin = 0.0;
+                    dmin = (double) 0.0;
                     dmax = (double) UCHAR_MAX;
 
                     if(has_missing)
                     {
                         val = missing.doubleval;
-                        if((val < dmax) && (val > dmin))
+                        if((val <= dmax) && (val >= dmin))
                            ret_missing.charval = (char) val;
                     }
 
@@ -24989,36 +27526,38 @@ NhlErrorTypes _NclItochar
 
                     for(i = 0; i < total_elements; i++)
                     {
-                        val = (double) ptr[i];
+                        val = ptr[i];
                         if(val > dmax)
                         {
+                            if(has_missing && (val != missing.doubleval))
+                                overflowed ++;
                             has_missing = 1;
-                            overflowed ++;
                             output[i] = ret_missing.charval;
                         }
                         else if(val < dmin)
                         {
+                            if(has_missing && (val != missing.doubleval))
+                                underflowed ++;
                             has_missing = 1;
-                            underflowed ++;
                             output[i] = ret_missing.charval;
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (unsigned char) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d double larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
+                            "tochar: there are %d double less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -25028,78 +27567,70 @@ NhlErrorTypes _NclItochar
                     float val, fmin, fmax;
                     float *ptr;
 
-                    fmin = 0.0;
+                    fmin = (float) 0;
                     fmax = (float) UCHAR_MAX;
 
                     if(has_missing)
                     {
                         val = missing.floatval;
-                        if((val < fmax) && (val > fmin))
-                           ret_missing.charval = (char) val;
+                        if((val <= fmax) && (val >= fmin))
+                           ret_missing.charval = (unsigned char) val;
                     }
 
                     ptr = (float *) in_value;
     
                     for(i = 0; i < total_elements; i++)
                     {
-                        val = (float) ptr[i];
+                        val = ptr[i];
                         if(val > fmax)
                         {
+                            if(has_missing && (val != missing.floatval))
+                                overflowed ++;
                             has_missing = 1;
-                            overflowed ++;
                             output[i] = ret_missing.charval;
                         }
                         else if(val < fmin)
                         {
+                            if(has_missing && (val != missing.floatval))
+                                underflowed ++;
                             has_missing = 1;
-                            underflowed ++;
                             output[i] = ret_missing.charval;
                         }
                         else
                         {
-                            output[i] = (char) val;
+                            output[i] = (unsigned char) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d float larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d float less than 0, which has been flagged missing.",
+                            "tochar: there are %d float less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
                 break;
             case NCL_string:
                 {
-                    long long llval;
-                    long lval;
                     string *ptr;
                     char *str;
-                    char *end;
-                    char buff[128];
-                    int  buffsize = 128;
+                    int   cur_str_len = 1;
+                    int   max_str_len = 1;
+                    int   n = 0;
 
                     if(has_missing)
                     {
                         errno = 0;
                         str = NrmQuarkToString(missing.stringval);
-                        llval = _Nclstrtoll(str,&end);
-                        if (end == str || errno == ERANGE)
-                        {
-                            ret_missing.intval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.intval;
-                        }
-                        else
-                        {
-                            if((llval <= UCHAR_MAX) && (llval >= 0))
-                                ret_missing.charval = (int) llval;
-                        }
+                        if(missing.stringval != ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval)
+                            ret_missing.charval = '\0';		/* default missing char value is 0 */
                     }
 
                     ptr = (string *) in_value;
@@ -25107,53 +27638,65 @@ NhlErrorTypes _NclItochar
                     {
                         str = NrmQuarkToString(ptr[i]);
     
-                        if(missing.stringval == ptr[i])
+                        if(has_missing && (missing.stringval == ptr[i]))
                         {
-                            has_missing = 1;
-                            output[i] = ret_missing.charval;
+                            continue;
                         }
                         else
                         {
-                            lval = _Nclstrtol(str,&end);
-                            if (end == str || errno == ERANGE)
-                            {
-                                has_missing = 1;
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                    "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
-                                output[i] = ret_missing.charval;
-                            }
-                            else if (lval > UCHAR_MAX)
-                            {
-                                has_missing = 1;
-                                overflowed ++;
-                                output[i] = ret_missing.charval;
-                            }
-                            else if (lval < 0)
-                            {
-                                has_missing = 1;
-                                underflowed ++;
-                                output[i] = ret_missing.charval;
-                            }
-                            else
-                            {
-                                output[i] = (unsigned char) lval;
-                            }
+                            cur_str_len = strlen(str) + 1;
+                            if(max_str_len < cur_str_len)
+                               max_str_len = cur_str_len;
                         }
                     }
-    
-                    if(overflowed)
+
+                    output = (char *)NclRealloc(output, sizeof(char)*total_elements*max_str_len);
+                    if (output == NULL)
                     {
-                        NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double larger than UCHAR_MAX, which has been flagged missing.",
-                            overflowed);
+                        NHLPERROR((NhlFATAL, errno, "tochar: memory allocation error."));
+                        return NhlFATAL;
                     }
-    
-                    if(underflowed)
+
+                    if(total_elements > 1)
                     {
-                        NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d double less than 0, which has been flagged missing.",
-                            underflowed);
+                       dimsizes[n_dims] = max_str_len;
+                       n_dims ++;
                     }
+                    else
+                    {
+                       dimsizes[0] = max_str_len;
+                    }
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        n = i * max_str_len;
+                        str = NrmQuarkToString(ptr[i]);
+    
+                        if(has_missing && (missing.stringval == ptr[i]))
+                        {
+                            output[n++] = ret_missing.charval;
+                        }
+                        else
+                        {
+                            for(j = 0; j < strlen(str); j++)
+                            {
+                                output[n++] = str[j];
+                            }
+
+                            for(j = strlen(str); j < max_str_len; j++)
+                            {
+                                output[n++] = '\0';
+                            }
+                        }
+                        output[n++] = '\0';
+                    }
+
+                    return(NclReturnValue((void*)output,
+                                           n_dims,
+                                           dimsizes,
+                                           (has_missing ? &ret_missing : NULL),
+                                           NCL_char,
+                                           0));
                 }
                 break;
             case NCL_char:
@@ -25162,7 +27705,7 @@ NhlErrorTypes _NclItochar
 
                     if(has_missing)
                     {
-                        ret_missing.charval = (unsigned char) missing.charval;
+                        ret_missing.charval = missing.charval;
                     }
 
                     ptr = (unsigned char *) in_value;
@@ -25175,14 +27718,15 @@ NhlErrorTypes _NclItochar
                 break;
             case NCL_byte:
                 {
-                    char val;
-                    char *ptr;
+                    byte val;
+                    byte *ptr;
 
-                    ptr = (char *) in_value;
+                    ptr = (byte *) in_value;
     
                     if(has_missing)
                     {
-                        ret_missing.charval = (unsigned char) missing.byteval;
+                        if(missing.byteval >= 0)
+                            ret_missing.charval = (unsigned char) missing.byteval;
                     }
 
                     for(i = 0; i < total_elements; i++)
@@ -25200,11 +27744,28 @@ NhlErrorTypes _NclItochar
                         }
                     }
 
-                    if(overflowed)
+                    if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d char less than, which has been flagged missing.",
+                            "tochar: there are %d byte leass than 0, which has been flagged missing.",
                             underflowed);
+                    }
+                }
+                break;
+            case NCL_ubyte:
+                {
+                    unsigned char *ptr;
+
+                    if(has_missing)
+                    {
+                        ret_missing.charval = (char) missing.ubyteval;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = ptr[i];
                     }
                 }
                 break;
@@ -25216,7 +27777,7 @@ NhlErrorTypes _NclItochar
                     if(has_missing)
                     {
                         if((missing.shortval <= UCHAR_MAX) && (missing.shortval >= 0))
-                            ret_missing.charval = (unsigned char) missing.shortval;
+                            ret_missing.charval = (char) missing.shortval;
                     }
 
                     ptr = (short *) in_value;
@@ -25245,14 +27806,14 @@ NhlErrorTypes _NclItochar
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d short larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "tochar: there are %d short less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -25265,7 +27826,7 @@ NhlErrorTypes _NclItochar
                     if(has_missing)
                     {
                         if(missing.ushortval <= UCHAR_MAX)
-                            ret_missing.charval = (unsigned char) missing.ushortval;
+                            ret_missing.charval = (char) missing.ushortval;
                     }
 
                     ptr = (unsigned short *) in_value;
@@ -25281,14 +27842,14 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
   
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d ushort larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -25301,7 +27862,7 @@ NhlErrorTypes _NclItochar
                     if(has_missing)
                     {
                         if((missing.intval <= UCHAR_MAX) && (missing.intval >= 0))
-                            ret_missing.charval = (unsigned char) missing.intval;
+                            ret_missing.charval = (char) missing.intval;
                     }
 
                     ptr = (int *) in_value;
@@ -25315,7 +27876,7 @@ NhlErrorTypes _NclItochar
                             overflowed ++;
                             output[i] = ret_missing.charval;
                         }
-                        else if(val < 0)
+                        else if(val <  0)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -25323,21 +27884,21 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
    
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d int larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int less than 0, which has been flagged missing.",
+                            "tochar: there are %d int less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -25350,7 +27911,7 @@ NhlErrorTypes _NclItochar
                     if(has_missing)
                     {
                         if(missing.uintval <= UCHAR_MAX)
-                            ret_missing.charval = (unsigned char) missing.uintval;
+                            ret_missing.charval = (char) missing.uintval;
                     }
 
                     ptr = (unsigned int *) in_value;
@@ -25366,14 +27927,14 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned int larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d unsigned int larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -25386,7 +27947,7 @@ NhlErrorTypes _NclItochar
                     if(has_missing)
                     {
                         if((missing.longval <= UCHAR_MAX) && (missing.longval >= 0))
-                            ret_missing.charval = (unsigned char) missing.longval;
+                            ret_missing.charval = (char) missing.longval;
                     }
 
                     ptr = (long *) in_value;
@@ -25408,21 +27969,21 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d long larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
     
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d long less than 0, which has been flagged missing.",
+                            "tochar: there are %d long less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -25435,7 +27996,7 @@ NhlErrorTypes _NclItochar
                     if(has_missing)
                     {
                         if(missing.ulongval <= UCHAR_MAX)
-                            ret_missing.charval = (unsigned char) missing.ulongval;
+                            ret_missing.charval = (char) missing.ulongval;
                     }
 
                     ptr = (unsigned long *) in_value;
@@ -25451,14 +28012,14 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d unsigned long larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d unsigned long larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
@@ -25471,7 +28032,7 @@ NhlErrorTypes _NclItochar
                     if(has_missing)
                     {
                         if((missing.int64val <= UCHAR_MAX) && (missing.int64val >= 0))
-                            ret_missing.charval = (unsigned char) missing.int64val;
+                            ret_missing.charval = (char) missing.int64val;
                     }
 
                     ptr = (long long *) in_value;
@@ -25493,21 +28054,21 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
 
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d int64 larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
 
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d int64 less than 0, which has been flagged missing.",
+                            "tochar: there are %d int64 less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
@@ -25521,7 +28082,7 @@ NhlErrorTypes _NclItochar
                     if(has_missing)
                     {
                         if(missing.uint64val <= UCHAR_MAX)
-                            ret_missing.charval = (unsigned char) missing.uint64val;
+                            ret_missing.charval = (char) missing.uint64val;
                     }
 
                     ptr = (unsigned long long *) in_value;
@@ -25537,36 +28098,36 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) val;
+                            output[i] = (char) val;
                         }
                     }
     
                     if(overflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "There are %d uint64 larger than UCHAR_MAX, which has been flagged missing.",
+                            "tochar: there are %d uint64 larger than UCHAR_MAX, which has been flagged missing.",
                             overflowed);
                     }
                 }
                 break;
             case NCL_logical:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_logical to integer.");
+                NhlPError(NhlFATAL, errno, "tochar: don't know how to convert logical to char.");
                 return NhlFATAL;
                 break;
             case NCL_obj:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_ob to integer.");
+                NhlPError(NhlFATAL, errno, "tochar: don't know how to convert object to char.");
                 return NhlFATAL;
                 break;
             case NCL_list:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_list to integer.");
+                NhlPError(NhlFATAL, errno, "tochar: don't know how to convert list to char.");
                 return NhlFATAL;
                 break;
             case NCL_none:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert NCL_none to integer.");
+                NhlPError(NhlFATAL, errno, "tochar: don't know how to convert NCL_none to char.");
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "tochar: don't know how to convert unkown type to char.");
                 return NhlFATAL;
         }
 
@@ -25588,14 +28149,15 @@ NhlErrorTypes _NclItosigned
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type, out_type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         void *output;
 
         in_value = (void *)NclGetArgValue(
@@ -25608,9 +28170,9 @@ NhlErrorTypes _NclItosigned
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         if(has_missing)
@@ -25620,20 +28182,20 @@ NhlErrorTypes _NclItosigned
 
         switch(type)
         {
-            case NCL_char:
+            case NCL_byte:
                 {
-                    unsigned char *ptr;
+                    byte *ptr;
                     char *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(char)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
-                    if(has_missing)
-                    {
-                        ret_missing.byteval = (char) missing.charval;
-                    }
-
-                    ptr = (unsigned char *) in_value;
+                    ptr = (byte *) in_value;
     
                     for(i = 0; i < total_elements; i++)
                     {
@@ -25642,19 +28204,29 @@ NhlErrorTypes _NclItosigned
                     out_type = NCL_byte;
                 }
                 break;
-            case NCL_byte:
+            case NCL_ubyte:
                 {
-                    char *ptr;
+                    unsigned char *ptr;
                     char *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(char)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
-                    ptr = (char *) in_value;
-    
+                    if(has_missing)
+                    {
+                        ret_missing.byteval = (char) missing.ubyteval;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+
                     for(i = 0; i < total_elements; i++)
                     {
-                        out_ptr[i] = ptr[i];
+                        out_ptr[i] = (char) ptr[i];
                     }
                     out_type = NCL_byte;
                 }
@@ -25665,6 +28237,11 @@ NhlErrorTypes _NclItosigned
                     short *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(short)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     ptr = (short *) in_value;
@@ -25682,6 +28259,11 @@ NhlErrorTypes _NclItosigned
                     short *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(short)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     if(has_missing)
@@ -25704,6 +28286,11 @@ NhlErrorTypes _NclItosigned
                     int *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(int)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     ptr = (int *) in_value;
@@ -25721,6 +28308,11 @@ NhlErrorTypes _NclItosigned
                     int *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(int)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     if(has_missing)
@@ -25743,6 +28335,11 @@ NhlErrorTypes _NclItosigned
                     long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     ptr = (long *) in_value;
@@ -25760,6 +28357,11 @@ NhlErrorTypes _NclItosigned
                     long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     if(has_missing)
@@ -25782,6 +28384,11 @@ NhlErrorTypes _NclItosigned
                     long long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(long long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     ptr = (long long *) in_value;
@@ -25799,6 +28406,11 @@ NhlErrorTypes _NclItosigned
                     long long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(long long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tosigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     if(has_missing)
@@ -25816,7 +28428,7 @@ NhlErrorTypes _NclItosigned
                 }
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert type to singed.");
+                NhlPError(NhlFATAL, errno, "tosigned: don't know how to convert type to singed.");
                 return NhlFATAL;
         }
 
@@ -25839,14 +28451,15 @@ NhlErrorTypes _NclItounsigned
 #endif
 {
         void *in_value;
-        int total_elements = 1;
+        ng_size_t total_elements = 1;
         int n_dims = 0;
-        int dimsizes[NCL_MAX_DIMENSIONS];
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type, out_type;
         int has_missing;
-        int i;
+        int j;
+	ng_size_t i;
         void *output;
 
         in_value = (void *)NclGetArgValue(
@@ -25859,9 +28472,9 @@ NhlErrorTypes _NclItounsigned
                         &type,
                         0);
 
-        for(i = 0; i < n_dims; i++)
+        for(j = 0; j < n_dims; j++)
         {
-            total_elements *= dimsizes[i];
+            total_elements *= dimsizes[j];
         }
 
         if(has_missing)
@@ -25877,37 +28490,47 @@ NhlErrorTypes _NclItounsigned
                     unsigned char *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     if(has_missing)
                     {
-                        ret_missing.charval = (unsigned char) missing.byteval;
+                        ret_missing.ubyteval = (char) missing.byteval;
                     }
 
                     ptr = (char *) in_value;
     
                     for(i = 0; i < total_elements; i++)
                     {
-                        out_ptr[i] = (unsigned char) ptr[i];
+                        out_ptr[i] = (unsigned char)ptr[i];
                     }
-                    out_type = NCL_char;
+                    out_type = NCL_ubyte;
                 }
                 break;
-            case NCL_char:
+            case NCL_ubyte:
                 {
                     unsigned char *ptr;
                     unsigned char *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     ptr = (unsigned char *) in_value;
-    
+
                     for(i = 0; i < total_elements; i++)
                     {
-                        out_ptr[i] = ptr[i];
+                        out_ptr[i] = (unsigned char) ptr[i];
                     }
-                    out_type = NCL_char;
+                    out_type = NCL_ubyte;
                 }
                 break;
             case NCL_ushort:
@@ -25916,6 +28539,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned short *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned short)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     ptr = (unsigned short *) in_value;
@@ -25933,6 +28561,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned short *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned short)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     if(has_missing)
@@ -25955,6 +28588,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned int *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned int)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     ptr = (unsigned int *) in_value;
@@ -25972,6 +28610,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned int *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned int)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     if(has_missing)
@@ -25994,6 +28637,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
 
                     ptr = (unsigned long *) in_value;
@@ -26011,6 +28659,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     if(has_missing)
@@ -26033,6 +28686,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned long long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned long long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
    
                     ptr = (unsigned long long *) in_value;
@@ -26050,6 +28708,11 @@ NhlErrorTypes _NclItounsigned
                     unsigned long long *out_ptr;
 
                     output = (void *)NclMalloc(sizeof(unsigned long long)*total_elements);
+                    if (output == NULL)
+                    {
+                        NHLPERROR((NhlFATAL, errno, "tounsigned: memory allocation error."));
+                        return NhlFATAL;
+                    }
                     out_ptr = output;
     
                     if(has_missing)
@@ -26067,7 +28730,7 @@ NhlErrorTypes _NclItounsigned
                 }
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "Don't know how to convert type to singed.");
+                NhlPError(NhlFATAL, errno, "tounsigned: don't know how to convert type to singed.");
                 return NhlFATAL;
         }
 
@@ -26081,7 +28744,317 @@ NhlErrorTypes _NclItounsigned
         ));
 }
 
+NhlErrorTypes _NclIIsUnsigned
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	logical *out_val;
+        void *in_value;
+        int n_dims = 0;
+        ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+        NclScalar missing;
+        NclBasicDataTypes type;
+        int has_missing;
 
+        in_value = (void *)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+
+	out_val = (logical*)NclMalloc(sizeof(logical));
+	*out_val = 0;
+
+        switch(type)
+        {
+            case NCL_ubyte:
+            case NCL_ushort:
+            case NCL_uint:
+            case NCL_ulong:
+            case NCL_uint64:
+		*out_val = 1;
+		break;
+            default:
+		*out_val = 0;
+		break;
+        }
+
+	type = NCL_logical;
+        dimsizes[0] = 1;
+	return(NclReturnValue(
+		out_val,
+		1,
+		dimsizes,
+		NULL,
+		type,
+		0
+	));
+}
+
+NhlErrorTypes _Ncldefault_fillvalue
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        void *in_type;
+        int n_dims = 0;
+        ng_size_t dimsizes;
+        NclScalar missing;
+        NclBasicDataTypes type, out_type;
+        int has_missing;
+	NclTypeClass type_class;
+        void *output;
+
+	dimsizes = 1;
+        in_type = (void *)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        &dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+
+	type_class = _NclNameToTypeClass(*(NrmQuark *)in_type);
+	
+        if (! type_class) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"default_fillvalue: invalid type string: %s", NrmQuarkToString(*(NrmQuark *)in_type));
+		return NhlFATAL;
+	}
+
+	output = NclMalloc(type_class->type_class.size);
+	out_type = type_class->type_class.data_type;
+	switch (out_type) {
+	case NCL_short:
+		*(short *) output = type_class->type_class.default_mis.shortval;
+		break;
+	case NCL_int:
+		*(int *) output = type_class->type_class.default_mis.intval;
+		break;
+	case NCL_long:
+		*(long *) output = type_class->type_class.default_mis.longval;
+		break;
+	case NCL_int64:
+		*(long long *) output = type_class->type_class.default_mis.int64val;
+		break;
+        case NCL_ushort:
+		*(unsigned short *) output = type_class->type_class.default_mis.ushortval;
+		break;
+        case NCL_uint:
+		*(unsigned int *) output = type_class->type_class.default_mis.uintval;
+		break;
+        case NCL_ulong:
+		*(unsigned long *) output = type_class->type_class.default_mis.ulongval;
+		break;
+        case NCL_uint64:
+		*(unsigned long long *) output = type_class->type_class.default_mis.uint64val;
+		break;
+        case NCL_ubyte:
+		*(unsigned char *) output = type_class->type_class.default_mis.ubyteval;
+		break;
+	case NCL_float:
+		*(float *) output = type_class->type_class.default_mis.floatval;
+		break;
+	case NCL_double:
+		*(double *) output = type_class->type_class.default_mis.doubleval;
+		break;
+	case NCL_char:
+		*(unsigned char *) output = type_class->type_class.default_mis.charval;
+		break;
+	case NCL_byte:
+		*(char *) output = type_class->type_class.default_mis.byteval;
+		break;
+	case NCL_string:
+		*(NrmQuark *) output = type_class->type_class.default_mis.stringval;
+		break;
+	case NCL_logical:
+		*(int *) output = type_class->type_class.default_mis.logicalval;
+		break;
+	case NCL_obj:
+		*(int *) output = type_class->type_class.default_mis.objval;
+		break;
+	case NCL_group:
+		*(int *) output = type_class->type_class.default_mis.groupval;
+		break;
+	case NCL_compound:
+		*(int *) output = type_class->type_class.default_mis.compoundval;
+		break;
+	case NCL_list:
+	default:
+		*(int *) output = type_class->type_class.default_mis.intval;
+		break;
+	}
+
+        return(NclReturnValue(
+                (void*)output,
+                1,
+                &dimsizes,
+                NULL,
+                out_type,
+                0
+        ));
+
+}
+
+
+NhlErrorTypes _Nclset_default_fillvalue
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        void *in_type;
+        int n_dims = 0;
+        NclScalar missing;
+	int has_missing;
+        ng_size_t dimsizes;
+        NclBasicDataTypes type, set_type;
+	NclTypeClass type_class;
+        void *in_value;
+	NclScalar in_value_coerced;
+	static int first = 1;
+	static NrmQuark q_all,q_nclv5,q_nclv6,q_default;
+
+	if (first) {
+		q_all = NrmStringToQuark("all");
+		q_nclv5 = NrmStringToQuark("ncl_v5");
+		q_nclv6 = NrmStringToQuark("ncl_v6");
+		q_default = NrmStringToQuark("default");
+		first = 0;
+	}
+
+	dimsizes = 1;
+        in_type = (void *)NclGetArgValue(
+                        0,
+                        2,
+                        &n_dims,
+                        &dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+
+        in_value = (void *)NclGetArgValue(
+                        1,
+                        2,
+                        &n_dims,
+                        &dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+
+        if (_NclGetLower(*(NrmQuark*)in_type) == q_all) {
+		NrmQuark q_inval;
+		if (type != NCL_string) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"set_default_fillvalue: value type must be string when setting 'all'");
+			return NhlFATAL;
+		}
+		q_inval = _NclGetLower(*(NrmQuark*)in_value);
+		if  (q_inval == q_nclv5) {
+			return (_NclSetDefaultFillValues(NCL_5_DEFAULT_FILLVALUES));
+		}
+		else if (q_inval == q_default || q_inval == q_nclv6) {
+			return (_NclSetDefaultFillValues(NCL_6_DEFAULT_FILLVALUES));
+		}
+	        else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"set_default_fillvalue: invalid value for setting 'all'");
+			return NhlFATAL;
+		}
+	}
+		
+	type_class = _NclNameToTypeClass(*(NrmQuark *)in_type);
+	
+        if (! type_class) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"set_default_fillvalue: invalid type string: %s", NrmQuarkToString(*(NrmQuark *)in_type));
+		return NhlFATAL;
+	}
+	set_type = type_class->type_class.data_type;
+
+	if (type != set_type) {
+		if (!_NclScalarCoerce(in_value,type,&in_value_coerced,set_type)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"set_default_fillvalue: value cannot be coerced to type: %s", NrmQuarkToString(*(NrmQuark *)in_type));
+			return NhlFATAL;
+		}
+		in_value = &in_value_coerced;
+	}
+
+	switch (set_type) {
+	case NCL_short:
+		type_class->type_class.default_mis.shortval = *(short *) in_value;
+		break;
+	case NCL_int:
+		type_class->type_class.default_mis.intval = *(int *) in_value;
+		break;
+	case NCL_long:
+		type_class->type_class.default_mis.longval = *(long *) in_value;
+		break;
+	case NCL_int64:
+		type_class->type_class.default_mis.int64val = *(long long *) in_value;
+		break;
+        case NCL_ushort:
+		type_class->type_class.default_mis.ushortval = *(unsigned short *) in_value;
+		break;
+        case NCL_uint:
+		type_class->type_class.default_mis.uintval = *(unsigned int *) in_value;
+		break;
+        case NCL_ulong:
+		type_class->type_class.default_mis.ulongval = *(unsigned long *) in_value;
+		break;
+        case NCL_uint64:
+		type_class->type_class.default_mis.uint64val = *(unsigned long long *) in_value;
+		break;
+        case NCL_ubyte:
+		type_class->type_class.default_mis.ubyteval = *(unsigned char *) in_value;
+		break;
+	case NCL_float:
+		type_class->type_class.default_mis.floatval = *(float *) in_value;
+		break;
+	case NCL_double:
+		type_class->type_class.default_mis.doubleval = *(double *) in_value;
+		break;
+	case NCL_char:
+		type_class->type_class.default_mis.charval = *(unsigned char *) in_value;
+		break;
+	case NCL_byte:
+		type_class->type_class.default_mis.byteval = *(char *) in_value;
+		break;
+	case NCL_string:
+		type_class->type_class.default_mis.stringval = *(NrmQuark *) in_value;
+		break;
+	case NCL_logical:
+		if (*(int*)in_value == 0 || *(int*) in_value == -1)
+			type_class->type_class.default_mis.logicalval = *(int *) in_value;
+		else
+			type_class->type_class.default_mis.logicalval = 1;
+		break;
+	case NCL_obj:
+		type_class->type_class.default_mis.objval = *(int*) in_value;
+	case NCL_group:
+		type_class->type_class.default_mis.objval = *(int*) in_value;
+		break;
+	case NCL_compound:
+		type_class->type_class.default_mis.objval = *(int*) in_value;
+		break;
+	case NCL_list:
+	default:
+		type_class->type_class.default_mis.objval = *(int*) in_value;
+
+	}
+	return NhlNOERROR;
+
+}
 
 #ifdef __cplusplus
 }

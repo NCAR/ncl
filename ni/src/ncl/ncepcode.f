@@ -1831,10 +1831,11 @@ C$$$
      $ 121.737742088, 124.879308913, 128.020877005, 131.162446275,
      $ 134.304016638, 137.445588020, 140.587160352, 143.728733573,
      $ 146.870307625, 150.011882457, 153.153458019, 156.295034268 /
-      DOUBLE PRECISION DLT,D1
-      DOUBLE PRECISION AWORK((JMAX+1)/2,(JMAX+1)/2), BWORK((JMAX+1)/2)
+C      DOUBLE PRECISION DLT
+      DOUBLE PRECISION D1
+C      DOUBLE PRECISION AWORK((JMAX+1)/2,(JMAX+1)/2), BWORK((JMAX+1)/2)
       INTEGER JHE,JHO,J0,NEXP
-      INTEGER IPVT((JMAX+1)/2)
+C      INTEGER IPVT((JMAX+1)/2)
       PARAMETER(PI=3.14159265358979,C=(1.-(2./PI)**2)*0.25)
       D1 = 1.
       J0 = 0
@@ -1988,11 +1989,11 @@ C
 C     .......... FIND BOTH EIGENVALUES AND EIGENVECTORS ..........
    20 DO 40 I = 1, N
 C
-	 DO 30 J = 1, N
-	    Z(J,I) = 0.0D0
+         DO 30 J = 1, N
+            Z(J,I) = 0.0D0
    30    CONTINUE
 C
-	 Z(I,I) = 1.0D0
+         Z(I,I) = 1.0D0
    40 CONTINUE
 C
       CALL  DINTQLNIO(NM,N,W,E,Z,IERR)
@@ -2016,84 +2017,84 @@ C
       E(N) = 0.0D0
 C
       DO 240 L = 1, N
-	 J = 0
+         J = 0
 C     .......... LOOK FOR SMALL SUB-DIAGONAL ELEMENT ..........
 C   
   105    NM1 = N-1     
          IF(L .GT. NM1) GO TO 111
          DO 110 MDO = L, NM1
             M = MDO
-	    TST1 = DABS(D(M)) + DABS(D(M+1))
-	    TST2 = TST1 + DABS(E(M))
-	    IF (TST2 .EQ. TST1) GO TO 120
+            TST1 = DABS(D(M)) + DABS(D(M+1))
+            TST2 = TST1 + DABS(E(M))
+            IF (TST2 .EQ. TST1) GO TO 120
   110    CONTINUE
   111    M = N
 C
   120    P = D(L)
-	 IF (M .EQ. L) GO TO 240
-	 IF (J .EQ. 30) GO TO 1000
-	 J = J + 1
+         IF (M .EQ. L) GO TO 240
+         IF (J .EQ. 30) GO TO 1000
+         J = J + 1
 C     .......... FORM SHIFT ..........
-	 G = (D(L+1) - P) / (2.0D0 * E(L))
-	 R = DPYTHANIO(G,1.0D0)
-	 G = D(M) - P + E(L) / (G + SIGN(R,G))
-	 S = 1.0D0
-	 C = 1.0D0
-	 P = 0.0D0
-	 MML = M - L
+         G = (D(L+1) - P) / (2.0D0 * E(L))
+         R = DPYTHANIO(G,1.0D0)
+         G = D(M) - P + E(L) / (G + SIGN(R,G))
+         S = 1.0D0
+         C = 1.0D0
+         P = 0.0D0
+         MML = M - L
 C     .......... FOR I=M-1 STEP -1 UNTIL L DO -- ..........
-	 DO 200 II = 1, MML
-	    I = M - II
-	    F = S * E(I)
-	    B = C * E(I)
-	    R = DPYTHANIO(F,G)
-	    E(I+1) = R
-	    IF (R .EQ. 0.0D0) GO TO 210
-	    S = F / R
-	    C = G / R
-	    G = D(I+1) - P
-	    R = (D(I) - G) * S + 2.0D0 * C * B
-	    P = S * R
-	    D(I+1) = G + P
-	    G = C * R - B
+         DO 200 II = 1, MML
+            I = M - II
+            F = S * E(I)
+            B = C * E(I)
+            R = DPYTHANIO(F,G)
+            E(I+1) = R
+            IF (R .EQ. 0.0D0) GO TO 210
+            S = F / R
+            C = G / R
+            G = D(I+1) - P
+            R = (D(I) - G) * S + 2.0D0 * C * B
+            P = S * R
+            D(I+1) = G + P
+            G = C * R - B
 C     .......... FORM VECTOR ..........
-	    DO 180 K = 1, N
-	       F = Z(K,I+1)
-	       Z(K,I+1) = S * Z(K,I) + C * F
-	       Z(K,I) = C * Z(K,I) - S * F
+            DO 180 K = 1, N
+               F = Z(K,I+1)
+               Z(K,I+1) = S * Z(K,I) + C * F
+               Z(K,I) = C * Z(K,I) - S * F
   180       CONTINUE
 C
   200    CONTINUE
 C
-	 D(L) = D(L) - P
-	 E(L) = G
-	 E(M) = 0.0D0
-	 GO TO 105
+         D(L) = D(L) - P
+         E(L) = G
+         E(M) = 0.0D0
+         GO TO 105
 C     .......... RECOVER FROM UNDERFLOW ..........
   210    D(I+1) = D(I+1) - P
-	 E(M) = 0.0D0
-	 GO TO 105
+         E(M) = 0.0D0
+         GO TO 105
   240 CONTINUE
 C     .......... ORDER EIGENVALUES AND EIGENVECTORS ..........
       DO 300 II = 2, N
-	 I = II - 1
-	 K = I
-	 P = D(I)
+         I = II - 1
+         K = I
+         P = D(I)
 C
-	 DO 260 J = II, N
-	    IF (D(J) .GE. P) GO TO 260
-	    K = J
-	    P = D(J)
+         DO 260 J = II, N
+            IF (D(J) .GE. P) GO TO 260
+            K = J
+            P = D(J)
   260    CONTINUE
 C
-	 IF (K .EQ. I) GO TO 300
-	 D(K) = D(I)
-	 D(I) = P
+         IF (K .EQ. I) GO TO 300
+         D(K) = D(I)
+         D(I) = P
 C
-	 DO 280 J = 1, N
-	    P = Z(J,I)
-	    Z(J,I) = Z(J,K)
-	    Z(J,K) = P
+         DO 280 J = 1, N
+            P = Z(J,I)
+            Z(J,I) = Z(J,K)
+            Z(J,K) = P
   280    CONTINUE
 C
   300 CONTINUE
@@ -2122,12 +2123,12 @@ C     P = AMAX1(DABS(A),DABS(B))
       IF (DABS(B).LT.DABS(A)) R = (DABS(B)/P)**2
 C     R = (AMIN1(DABS(A),DABS(B))/P)**2
    10 CONTINUE
-	 T = 4.0D0 + R
-	 IF (T .EQ. 4.0D0) GO TO 20
-	 S = R/T
-	 U = 1.0D0 + 2.0D0*S
-	 P = U*P
-	 R = (S/U)**2 * R
+         T = 4.0D0 + R
+         IF (T .EQ. 4.0D0) GO TO 20
+         S = R/T
+         U = 1.0D0 + 2.0D0*S
+         P = U*P
+         R = (S/U)**2 * R
       GO TO 10
    20 DPYTHANIO = P
       RETURN

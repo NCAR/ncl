@@ -22,7 +22,7 @@ NhlErrorTypes nice_mnmxintvl_W( void )
   double min_out, max_out, step_size;
   void *mnmxintvl;
   NclScalar missing_dmnmxintvl, missing_rmnmxintvl;
-  int dsizes_mnmxintvl[1];
+  ng_size_t dsizes_mnmxintvl[1];
   NclBasicDataTypes type_mnmxintvl;
 /*
  * Declare various variables for random purposes.

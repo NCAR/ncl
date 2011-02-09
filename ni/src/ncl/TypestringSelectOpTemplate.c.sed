@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypestringSelectOpTemplate.c.sed,v 1.1 1995-01-28 01:53:21 ethan Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
  */
 NhlErrorTypes Ncl_Type_string_FUNCNAME
 #if	NhlNeedProto
-(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, int nlhs, int nrhs)
+(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, ng_size_t nlhs, ng_size_t nrhs)
 #else
 (result,lhs,rhs,lhs_m,rhs_m,nlhs,nrhs)
 void *result;
@@ -30,16 +30,16 @@ void *lhs;
 void* rhs;
 NclScalar* lhs_m;
 NclScalar* rhs_m;
-int nlhs;
-int nrhs;
+ng_size_t nlhs;
+ng_size_t nrhs;
 #endif
 {
         string *ls,*rs;
 	string *res;
-	int stopi = 1;
-	int linc = 0;
-	int rinc = 0;
-	int i;
+	ng_size_t stopi = 1;
+	ng_size_t linc = 0;
+	ng_size_t rinc = 0;
+	ng_size_t i;
 
 	ls = (string*)lhs;
 	rs = (string*)rhs;

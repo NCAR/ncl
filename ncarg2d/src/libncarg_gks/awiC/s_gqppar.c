@@ -16,6 +16,7 @@
  */
 
 #include <ncarg/gks.h>
+#include <stdlib.h>
 
 extern void NGCALLF(gqppar,GQPPAR)(Gint*,Gint*,int*,int*,Gint*,int*,
                                    int*,int*);
@@ -43,5 +44,10 @@ void ginq_pred_pat_rep
  */
     int nmx, mmx, n, m;
     int *parray;
-    NGCALLF(gqppar,GQPPAR)(&ws_type,&ind,&nmx,&mmx,err_ind,&n,&m,parray);
+
+    parray = (Gint *)malloc(nmx*mmx*sizeof(Gint));
+
+    (void)NGCALLF(gqppar,GQPPAR)(&ws_type,&ind,&nmx,&mmx,err_ind,&n,&m,parray);
+
+    free(parray);
 }

@@ -28,14 +28,14 @@
 
 NhlErrorTypes _NclTFUNC
 #if	NhlNeedProto
-(NclTypeClass the_type, void * result, void* lhs, NclScalar* lhs_m, int nlhs)
+(NclTypeClass the_type, void * result, void* lhs, NclScalar* lhs_m, ng_size_t nlhs)
 #else
 (the_type, result, lhs, lhs_m, nlhs)
 NclTypeClass the_type;
 void * result;
 void* lhs;
 NclScalar* lhs_m;
-int nlhs;
+ng_size_t nlhs;
 #endif
 {
 	NclTypeClass tmp;

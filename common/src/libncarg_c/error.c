@@ -134,7 +134,7 @@ const char	*ESprintf(err_code, format, va_alist)
 	/*
 	 * see if its an error we know about. If so append the message.
 	 */
-	if (message = get_error(err_code)) {
+	if ( (message = get_error(err_code)) ) {
 		(void) strcat(ErrorBuf, " : ");
 		(void) strcat(ErrorBuf, message);
 	}
@@ -207,7 +207,7 @@ const char	*LFESprintf(err_code, file, line, format, va_alist)
 	/*
 	 * see if its an error we know about. If so append the message.
 	 */
-	if (message = get_error(err_code)) {
+	if ( (message = get_error(err_code)) ) {
 		(void) strcat(buf, " : ");
 		(void) strcat(buf, message);
 	}

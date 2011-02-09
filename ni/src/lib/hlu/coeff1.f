@@ -1,6 +1,6 @@
 C
 C
-C	$Id: coeff1.f,v 1.2 1997-05-05 21:45:41 boote Exp $
+C       $Id: coeff1.f,v 1.2 1997-05-05 21:45:41 boote Exp $
 C
 C PACKAGE CUBSPL         NOTE--DOCUMENTATION FOR INDIVIDUAL ROUTINES
 C                              FOLLOWS THE GENERAL PACKAGE INFORMATION

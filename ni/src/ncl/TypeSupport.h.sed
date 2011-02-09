@@ -62,7 +62,7 @@ extern NhlErrorTypes _Nclcoerce(
 NclTypeClass /* to_type */,
 void * /* result */,
 void* /* from */,
-int /* n */,
+ng_size_t /* n */,
 NclScalar* /* from_m */,
 NclScalar* /* to_m */,
 NclTypeClass  /*from_type*/
@@ -75,7 +75,7 @@ NclTypeClass /* the_type*/,
 void * /*val*/,
 NclScalar* /*old_m*/,
 NclScalar* /*new_m*/,
-int /*nval*/
+ng_size_t /*nval*/
 #endif
 );
 
@@ -84,7 +84,7 @@ extern NclMonoTypes _Nclis_mono(
 NclTypeClass /* the_type */,
 void * /* val */,
 NclScalar* /* val_m */,
-int /* nval */
+ng_size_t /* nval */
 #endif
 );
 
@@ -93,5 +93,15 @@ extern NclQuark _NclGetLower(
 NclQuark qstr
 #endif
 );
+
+#define NCL_5_DEFAULT_FILLVALUES 0
+#define NCL_6_DEFAULT_FILLVALUES 1
+
+extern NhlErrorTypes _NclSetDefaultFillValues(
+#if	NhlNeedProto
+int default_type
+#endif
+);
+
 
 #endif /* TypeSupport_h*/

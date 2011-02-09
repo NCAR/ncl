@@ -39,8 +39,8 @@
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
 
-#define ArchRecLibSearch    -L/usr/X11R6/lib -L/sw/lib
-#define ArchRecIncSearch    -I/usr/X11R6/include -I/sw/include
+#define ArchRecLibSearch    -L/usr/X11R6/lib
+#define ArchRecIncSearch    -I/usr/X11R6/include
 
 FC = $(F77)
 

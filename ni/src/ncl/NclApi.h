@@ -170,9 +170,9 @@ struct _NclExtValueRec {
 	int 	has_missing;
 	NclApiScalar missing;
 	int elem_size;
-	int totalelements;
+	ng_size_t totalelements;
 	int n_dims;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 };
 
 typedef struct _NclExtValueRec NclExtValueRec;

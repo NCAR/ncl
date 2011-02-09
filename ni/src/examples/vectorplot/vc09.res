@@ -52,3 +52,7 @@
 *cnHighLabelsOn : false
 *cnLowLabelsOn : false
 *cnInfoLabelOn : false
+
+*FuncCode           : :
+*TextFuncCode       : :
+

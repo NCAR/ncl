@@ -1,5 +1,5 @@
 /*
- *      $Id: ResListP.h,v 1.5 1997-09-19 14:41:17 boote Exp $
+ *      $Id: ResListP.h,v 1.5.4.1 2008-03-28 20:37:37 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -59,12 +59,13 @@ struct _NhlRLHead_ {
 typedef struct _NhlExpArrayRec_ _NhlExpArrayRec, *_NhlExpArray;
 struct	_NhlExpArrayRec_ {
 	int		*num_dimensions;
-	int		**len_dimensions;
+	ng_size_t		**len_dimensions;
 	NhlString	*type;
 	unsigned int	*size;
 	NhlPointer	*data;
 
-	int		*num_elements;
+/*	int		*num_elements;*/
+	ng_size_t		*num_elements;
 	int		num_dim_req;
 	NrmQuark	type_req;
 	unsigned int	size_req;

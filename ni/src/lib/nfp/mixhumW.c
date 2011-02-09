@@ -18,10 +18,18 @@ NhlErrorTypes mixhum_ptrh_W( void )
  */
   void *p, *tk, *rh;
   int *iswit;
-  double *tmp_p, *tmp_tk, *tmp_rh;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS], has_missing_p;
-  int ndims_tk, dsizes_tk[NCL_MAX_DIMENSIONS], has_missing_tk;
-  int ndims_rh, dsizes_rh[NCL_MAX_DIMENSIONS], has_missing_rh;
+  double *tmp_p = NULL;
+  double *tmp_tk = NULL;
+  double *tmp_rh = NULL;
+  int ndims_p;
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  int has_missing_p;
+  int ndims_tk;
+  ng_size_t dsizes_tk[NCL_MAX_DIMENSIONS];
+  int has_missing_tk;
+  int ndims_rh;
+  ng_size_t dsizes_rh[NCL_MAX_DIMENSIONS];
+  int has_missing_rh;
   NclBasicDataTypes type_p, type_tk, type_rh;
   NclScalar missing_p, missing_tk, missing_rh;
   NclScalar missing_dp, missing_dtk, missing_drh;
@@ -30,7 +38,7 @@ NhlErrorTypes mixhum_ptrh_W( void )
  * Output array variables
  */
   void *qw;
-  double *tmp_qw;
+  double *tmp_qw = NULL;
   NclBasicDataTypes type_qw;
   NclScalar missing_qw;
 /*
@@ -251,9 +259,14 @@ NhlErrorTypes dewtemp_trh_W( void )
  * Input array variables
  */
   void *tk, *rh;
-  double *tmp_tk, *tmp_rh;
-  int ndims_tk, dsizes_tk[NCL_MAX_DIMENSIONS], has_missing_tk;
-  int ndims_rh, dsizes_rh[NCL_MAX_DIMENSIONS], has_missing_rh;
+  double *tmp_tk = NULL;
+  double *tmp_rh = NULL;
+  int ndims_tk;
+  ng_size_t dsizes_tk[NCL_MAX_DIMENSIONS];
+  int has_missing_tk;
+  int ndims_rh;
+  ng_size_t dsizes_rh[NCL_MAX_DIMENSIONS];
+  int has_missing_rh;
   NclBasicDataTypes type_tk, type_rh;
   NclScalar missing_tk, missing_rh;
   NclScalar missing_dtk, missing_drh;
@@ -262,7 +275,7 @@ NhlErrorTypes dewtemp_trh_W( void )
  * Output array variables
  */
   void *tdk;
-  double *tmp_tdk;
+  double *tmp_tdk = NULL;
   NclBasicDataTypes type_tdk;
   NclScalar missing_tdk;
 /*
@@ -443,10 +456,18 @@ NhlErrorTypes lclvl_W( void )
  * Input array variables
  */
   void *p, *tk, *tdk;
-  double *tmp_p, *tmp_tk, *tmp_tdk;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS], has_missing_p;
-  int ndims_tk, dsizes_tk[NCL_MAX_DIMENSIONS], has_missing_tk;
-  int ndims_tdk, dsizes_tdk[NCL_MAX_DIMENSIONS], has_missing_tdk;
+  double *tmp_p = NULL;
+  double *tmp_tk = NULL;
+  double *tmp_tdk = NULL;
+  int ndims_p;
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  int has_missing_p;
+  int ndims_tk;
+  ng_size_t dsizes_tk[NCL_MAX_DIMENSIONS];
+  int has_missing_tk;
+  int ndims_tdk;
+  ng_size_t dsizes_tdk[NCL_MAX_DIMENSIONS];
+  int has_missing_tdk;
   NclBasicDataTypes type_p, type_tk, type_tdk;
   NclScalar missing_p, missing_tk, missing_tdk;
   NclScalar missing_dp, missing_dtk, missing_dtdk;
@@ -455,7 +476,7 @@ NhlErrorTypes lclvl_W( void )
  * Output array variables
  */
   void *plcl;
-  double *tmp_plcl;
+  double *tmp_plcl = NULL;
   NclBasicDataTypes type_plcl;
   NclScalar missing_plcl;
 /*
@@ -668,10 +689,15 @@ NhlErrorTypes mixhum_ptd_W( void )
  * Input array variables
  */
   void *p, *tdk;
-  double *tmp_p, *tmp_tdk;
+  double *tmp_p = NULL;
+  double *tmp_tdk = NULL;
   int *iswit;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS], has_missing_p;
-  int ndims_tdk, dsizes_tdk[NCL_MAX_DIMENSIONS], has_missing_tdk;
+  int ndims_p;
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  int has_missing_p;
+  int ndims_tdk;
+  ng_size_t dsizes_tdk[NCL_MAX_DIMENSIONS];
+  int has_missing_tdk;
   NclBasicDataTypes type_p, type_tdk;
   NclScalar missing_p, missing_tdk;
   NclScalar missing_dp, missing_dtdk;
@@ -680,13 +706,14 @@ NhlErrorTypes mixhum_ptd_W( void )
  * Output array variables
  */
   void *q;
-  double *tmp_q;
+  double *tmp_q = NULL;
   NclBasicDataTypes type_q;
   NclScalar missing_q;
 /*
  * Random variables.
  */
-  int i, index, size_q, size_leftmost, nmax;
+  ng_size_t i, index, size_q, size_leftmost, nmax;
+  int inmax;
 /*
  * Retrieve parameters.
  *
@@ -745,6 +772,15 @@ NhlErrorTypes mixhum_ptd_W( void )
 
   nmax   = dsizes_p[ndims_p-1];
   size_q = size_leftmost * nmax;
+
+/*
+ * Test dimension sizes.
+ */
+  if(nmax > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"mixhum_ptd: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inmax  = (int) nmax;
 
 /*
  * Allocate space for temporary input/output arrays.
@@ -842,7 +878,7 @@ NhlErrorTypes mixhum_ptd_W( void )
       }
     }
     else {
-      NGCALLF(dwmrq,DWMRQ)(tmp_p,tmp_tdk,&missing_dtdk.doubleval,&nmax,tmp_q,
+      NGCALLF(dwmrq,DWMRQ)(tmp_p,tmp_tdk,&missing_dtdk.doubleval,&inmax,tmp_q,
                            iswit);
 /*
  * Copy output values from temporary tmp_q to q.

@@ -26,55 +26,61 @@
 extern void coerce_missing(NclBasicDataTypes,int,NclScalar *,
                            NclScalar *,NclScalar *);
 
-extern double *coerce_input_double(void*,NclBasicDataTypes,int,int,
+extern double *coerce_input_double(void*,NclBasicDataTypes,ng_size_t,int,
                                    NclScalar*,NclScalar*);
 
-extern void coerce_subset_input_double(void *,double *,int,NclBasicDataTypes,
-                                       int,int,NclScalar*,NclScalar*);
+extern void coerce_subset_input_double(void *,double *,ng_size_t,NclBasicDataTypes,
+                                       ng_size_t,int,NclScalar*,NclScalar*);
 
-extern void coerce_subset_input_double_step(void *,double *,int,int,
-					    NclBasicDataTypes,int,int,
+extern void coerce_subset_input_double_step(void *,double *,ng_size_t,ng_size_t,
+					    NclBasicDataTypes,ng_size_t,int,
 					    NclScalar*,NclScalar*);
 
-extern double *copy_scalar_to_array(double *, int, int *, int);
+extern double *copy_scalar_to_array(double *, int, ng_size_t *, ng_size_t);
 
-extern float *coerce_output_float(double *, void *, int, int);
+extern float *coerce_output_float(double *, void *, ng_size_t, int);
 
-extern void coerce_output_float_only(void *,double *,int, int);
+extern void coerce_output_float_only(void *,double *,ng_size_t, ng_size_t);
 
-extern void coerce_output_int_only(void *,double *,int, int);
+extern void coerce_output_int_only(void *,double *,ng_size_t, ng_size_t);
 
 extern void coerce_output_float_or_double(void *,double *,
-					   NclBasicDataTypes,int,int);
+					   NclBasicDataTypes,ng_size_t,ng_size_t);
 
 extern void coerce_output_float_or_double_step(void *,double *,
-					       NclBasicDataTypes,int,int,int);
+					       NclBasicDataTypes,ng_size_t,ng_size_t,ng_size_t);
 
-extern float *coerce_input_float(void*,NclBasicDataTypes,int,int,
+extern float *coerce_input_float(void*,NclBasicDataTypes,ng_size_t,int,
                                    NclScalar*,NclScalar*);
 
-extern void coerce_subset_input_float(void *,float *,int,NclBasicDataTypes,
-                                       int,int,NclScalar*,NclScalar*);
+extern void coerce_subset_input_float(void *,float *,ng_size_t,NclBasicDataTypes,
+                                       ng_size_t,int,NclScalar*,NclScalar*);
 
-extern double *coerce_output_double(void*,NclBasicDataTypes,int);
+extern double *coerce_output_double(void*,NclBasicDataTypes,ng_size_t);
 
-extern int contains_missing(double *,int,int,double);
-extern int contains_missing_float(float *,int,int,float);
+extern int contains_missing(double *,ng_size_t,int,double);
+extern int contains_missing_float(float *,ng_size_t,int,float);
 
-extern void set_subset_output_missing(void *,int,NclBasicDataTypes,int,
+extern void set_subset_output_missing(void *,ng_size_t,NclBasicDataTypes,ng_size_t,
 				      double);
-extern void set_subset_output_missing_step(void *,int,int,NclBasicDataTypes,
-					   int,double);
+extern void set_subset_output_missing_step(void *,ng_size_t,ng_size_t,NclBasicDataTypes,
+					   ng_size_t,double);
 
-extern int is_scalar(int,int*);
+extern int is_scalar(int,ng_size_t*);
 
 
-extern void compute_nlatnlon(int *, int, int *, int *, int *, int *, int *);
+extern void compute_nlatnlon(ng_size_t *, int, ng_size_t *, ng_size_t *,
+                             ng_size_t *, ng_size_t *, ng_size_t *);
 
-extern void compute_nlatanlona(int *,int *,int,int,int *,int *,int *,int *,
-                               int *,int *,int *,int *,int *);
+extern void compute_nlatanlona(ng_size_t *,ng_size_t *,int,int,
+                               ng_size_t *,ng_size_t *,ng_size_t *,ng_size_t *,
+                               ng_size_t *,ng_size_t *,ng_size_t *,ng_size_t *,ng_size_t *);
 
-extern void print_minmax(void *,int,NclBasicDataTypes);
+extern void print_minmax(void *,ng_size_t,NclBasicDataTypes);
 
 
 extern NclDimRec *get_dim_info(int, int);
+
+extern ng_size_t *get_dimensions(void *tmp_dimensions,ng_size_t n_dimensions,
+				 NclBasicDataTypes type_dimensions,
+				 const char *);

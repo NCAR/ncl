@@ -25,7 +25,8 @@ NhlErrorTypes gc_aangle_W( void )
  */
   void *lat, *lon;
   double *dlat, *dlon;
-  int dsizes_lat[NCL_MAX_DIMENSIONS], dsizes_lon[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lat[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lon[NCL_MAX_DIMENSIONS];
   int ndims_lat, ndims_lon;
   NclBasicDataTypes type_lat, type_lon;
  
@@ -34,13 +35,13 @@ NhlErrorTypes gc_aangle_W( void )
  */
   void *aangle; 
   double *tmp_aangle;
-  int size_aangle;
+  ng_size_t size_aangle;
   NclBasicDataTypes type_aangle;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i;
+  ng_size_t i;
 
 /*
  * Retrieve parameters
@@ -191,7 +192,8 @@ NhlErrorTypes gc_qarea_W( void )
  */
   void *lat, *lon;
   double *dlat, *dlon;
-  int dsizes_lat[NCL_MAX_DIMENSIONS], dsizes_lon[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lat[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lon[NCL_MAX_DIMENSIONS];
   int ndims_lat, ndims_lon;
   NclBasicDataTypes type_lat, type_lon;
  
@@ -200,13 +202,13 @@ NhlErrorTypes gc_qarea_W( void )
  */
   void *qarea; 
   double *tmp_qarea;
-  int size_qarea;
+  ng_size_t size_qarea;
   NclBasicDataTypes type_qarea;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i;
+  ng_size_t i;
 
 /*
  * Retrieve parameters
@@ -357,7 +359,8 @@ NhlErrorTypes gc_clkwise_W( void )
  */
   void *lat, *lon;
   double *dlat, *dlon, *tlat, *tlon;
-  int dsizes_lat[NCL_MAX_DIMENSIONS], dsizes_lon[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lat[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lon[NCL_MAX_DIMENSIONS];
   int ndims_lat, ndims_lon;
   NclBasicDataTypes type_lat, type_lon;
  
@@ -365,14 +368,14 @@ NhlErrorTypes gc_clkwise_W( void )
  * output variable 
  */
   logical *tfval; 
-  int *tmp_tfval,itmp;
-  int size_tfval,tsize,npts,nptsp1,jpol;
+  int itmp, inpts, inptsp1;
+  ng_size_t size_tfval,tsize,npts,nptsp1,jpol;
   NclBasicDataTypes type_tfval;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i,j;
+  ng_size_t i;
 
 /*
  * Retrieve parameters
@@ -432,6 +435,16 @@ NhlErrorTypes gc_clkwise_W( void )
   }
 
 /*
+ * Test input dimension sizes.
+ */
+  if(npts > INT_MAX || nptsp1 > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_clkwise: npts and/or nptsp1 is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts   = (int) npts;
+  inptsp1 = (int) nptsp1;
+
+/*
  * Determine size for the return array.
  */
   size_tfval = 1;
@@ -487,7 +500,9 @@ NhlErrorTypes gc_clkwise_W( void )
       memcpy(tlon,dlon+jpol,npts*sizeof(double));
       tlat[npts] = tlat[0];
       tlon[npts] = tlon[0];
-      itmp = NGCALLF(gccwise,GCCWISE)(tlat,tlon,&nptsp1);
+
+      itmp = NGCALLF(gccwise,GCCWISE)(tlat,tlon,&inptsp1);
+
       if (itmp == 0) {
         tfval[i] = True;
       }
@@ -498,7 +513,8 @@ NhlErrorTypes gc_clkwise_W( void )
       free(tlon);
     }
     else {
-      itmp = NGCALLF(gccwise,GCCWISE)(dlat+jpol,dlon+jpol,&npts);
+      itmp = NGCALLF(gccwise,GCCWISE)(dlat+jpol,dlon+jpol,&inpts);
+
       if (itmp == 0) {
         tfval[i] = True;
       }
@@ -535,7 +551,8 @@ NhlErrorTypes gc_tarea_W( void )
  */
   void *lat, *lon;
   double *dlat, *dlon;
-  int dsizes_lat[NCL_MAX_DIMENSIONS], dsizes_lon[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lat[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lon[NCL_MAX_DIMENSIONS];
   int ndims_lat, ndims_lon;
   NclBasicDataTypes type_lat, type_lon;
  
@@ -544,13 +561,13 @@ NhlErrorTypes gc_tarea_W( void )
  */
   void *tarea; 
   double *tmp_tarea;
-  int size_tarea;
+  ng_size_t size_tarea;
   NclBasicDataTypes type_tarea;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i;
+  ng_size_t i;
 
 /*
  * Retrieve parameters
@@ -700,8 +717,10 @@ NhlErrorTypes gc_inout_W( void )
   void *plat, *plon, *lat, *lon;
   double *dplat, *dplon, *dlat, *dlon, *tlat, *tlon;
 
-  int dsizes_plat[NCL_MAX_DIMENSIONS], dsizes_plon[NCL_MAX_DIMENSIONS];
-  int dsizes_lat[NCL_MAX_DIMENSIONS], dsizes_lon[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_plat[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_plon[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lat[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lon[NCL_MAX_DIMENSIONS];
   int ndims_lat, ndims_lon, ndims_plat, ndims_plon;
   NclBasicDataTypes type_lat, type_lon, type_plat, type_plon;
  
@@ -709,13 +728,14 @@ NhlErrorTypes gc_inout_W( void )
  * output variable 
  */
   logical *tfval;
-  int size_tfval;
+  ng_size_t size_tfval;
   NclBasicDataTypes type_tfval;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i,itmp,npts,nptsp1,jpol,tsize;
+  ng_size_t i,itmp,npts,nptsp1,jpol,tsize;
+  int inpts, inptsp1;
   double *work;
 
 /*
@@ -795,7 +815,7 @@ NhlErrorTypes gc_inout_W( void )
   if (ndims_lat == 1) {
     if ( ndims_plat != 1 || ndims_plon != 1) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,
-        "gc_inout: if the final two arrays are singly dimensioned, the the first two must be as well.");
+        "gc_inout: if the final two arrays are singly dimensioned, then the first two must be as well.");
       return(NhlFATAL);
     }
   }
@@ -832,6 +852,16 @@ NhlErrorTypes gc_inout_W( void )
          "gc_clkwise: the polygon must have at least three points.");
     return(NhlFATAL);
   }
+
+/*
+ * Test input dimension sizes.
+ */
+  if(npts > INT_MAX || nptsp1 > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_inout: npts and/or nptsp1 is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts   = (int) npts;
+  inptsp1 = (int) nptsp1;
 
 /*
  * Determine size for the return array.
@@ -892,7 +922,7 @@ NhlErrorTypes gc_inout_W( void )
       memcpy(tlon,dlon+jpol,npts*sizeof(double));
       tlat[npts] = tlat[0];
       tlon[npts] = tlon[0];
-      itmp = NGCALLF(gcinout,GCINOUT)(dplat+i,dplon+i,tlat,tlon,&nptsp1,work);
+      itmp = NGCALLF(gcinout,GCINOUT)(dplat+i,dplon+i,tlat,tlon,&inptsp1,work);
       if (itmp == 0) {
         tfval[i] = True;
       }
@@ -904,7 +934,8 @@ NhlErrorTypes gc_inout_W( void )
     }
     else {
       itmp = NGCALLF(gcinout,GCINOUT)(dplat+i,dplon+i,dlat+jpol,dlon+jpol,
-                                      &npts,work);
+				      &inpts,work);
+
       if (itmp == 0) {
         tfval[i] = True;
       }
@@ -945,8 +976,10 @@ NhlErrorTypes gc_onarc_W( void )
   void *plat, *plon, *lat, *lon;
   double *dplat, *dplon, *dlat, *dlon;
 
-  int dsizes_plat[NCL_MAX_DIMENSIONS], dsizes_plon[NCL_MAX_DIMENSIONS];
-  int dsizes_lat[NCL_MAX_DIMENSIONS], dsizes_lon[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_plat[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_plon[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lat[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lon[NCL_MAX_DIMENSIONS];
   int ndims_lat, ndims_lon, ndims_plat, ndims_plon;
   NclBasicDataTypes type_lat, type_lon, type_plat, type_plon;
  
@@ -954,13 +987,13 @@ NhlErrorTypes gc_onarc_W( void )
  * output variable 
  */
   logical *tfval;
-  int size_tfval;
+  ng_size_t size_tfval;
   NclBasicDataTypes type_tfval;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i,tsize,itmp;
+  ng_size_t i,tsize,itmp;
   double tol = 1.e-10;
 
 /*
@@ -1165,8 +1198,10 @@ NhlErrorTypes gc_pnt2gc_W( void )
   void *plat, *plon, *lat, *lon;
   double *dplat, *dplon, *dlat, *dlon;
 
-  int dsizes_plat[NCL_MAX_DIMENSIONS], dsizes_plon[NCL_MAX_DIMENSIONS];
-  int dsizes_lat[NCL_MAX_DIMENSIONS], dsizes_lon[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_plat[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_plon[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lat[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lon[NCL_MAX_DIMENSIONS];
   int ndims_lat, ndims_lon, ndims_plat, ndims_plon;
   NclBasicDataTypes type_lat, type_lon, type_plat, type_plon;
  
@@ -1175,13 +1210,13 @@ NhlErrorTypes gc_pnt2gc_W( void )
  */
   void *dist; 
   double *tmp_dist;
-  int size_dist;
+  ng_size_t size_dist;
   NclBasicDataTypes type_dist;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i,*size_tmp;
+  ng_size_t i;
 
 /*
  * Retrieve parameters
@@ -1397,7 +1432,8 @@ NhlErrorTypes gc_dangle_W( void )
  */
   void *lat, *lon;
   double *dlat, *dlon;
-  int dsizes_lat[NCL_MAX_DIMENSIONS], dsizes_lon[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lat[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lon[NCL_MAX_DIMENSIONS];
   int ndims_lat, ndims_lon;
   NclBasicDataTypes type_lat, type_lon;
  
@@ -1406,13 +1442,13 @@ NhlErrorTypes gc_dangle_W( void )
  */
   void *dangle; 
   double *tmp_dangle;
-  int size_dangle;
+  ng_size_t size_dangle;
   NclBasicDataTypes type_dangle;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i;
+  ng_size_t i;
 
 /*
  * Retrieve parameters

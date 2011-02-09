@@ -2,9 +2,9 @@
 #include "wrapper.h"
 
 extern void NGCALLF(dfourinfo,DFOURINFO)(double*, int*, int*, int*, double*,
-										 double*, double*, double*,
-										 double*, double*, double*,
-										 double*, double*, double*, int*);
+                                         double*, double*, double*,
+                                         double*, double*, double*,
+                                         double*, double*, double*, int*);
 
 NhlErrorTypes fourier_info_W( void )
 {
@@ -12,8 +12,11 @@ NhlErrorTypes fourier_info_W( void )
  * Input array variables
  */
   void *x, *sclphase;
-  double *tmp_x, *tmp_sclphase;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  double *tmp_x = NULL;
+  double *tmp_sclphase;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   int found_missing, found_any_missing;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x, type_sclphase;
@@ -26,13 +29,16 @@ NhlErrorTypes fourier_info_W( void )
   double *tmp_ampx, *tmp_phax, *tmp_pcvx;
   double *a, *b, *wrk;
   NclBasicDataTypes type_finfo;
-  int lwrk, ndims_finfo, *dsizes_finfo;
+  ng_size_t lwrk;
+  int ndims_finfo;
+  ng_size_t *dsizes_finfo;
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_x, index_amp, index_pha, index_pcv;
-  int npts, size_leftmost, size_output;
-  double anot;
+  ng_size_t i;
+  int index_x, index_amp, index_pha, index_pcv;
+  int ilwrk, inpts;
+  ng_size_t npts, size_leftmost, size_output;
 
 /*
  * Retrieve arguments.
@@ -71,13 +77,21 @@ NhlErrorTypes fourier_info_W( void )
  * Check input sizes.
  */
   npts = dsizes_x[ndims_x-1];
-  nhar = npts/2;
-
   if(npts < 1) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: The last dimension of x must be greater than 1");
     return(NhlFATAL);
   }
   
+  nhar = npts/2;
+  lwrk = 4*npts+15; 
+  
+  if((lwrk > INT_MAX) || (npts > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: npts and/or lwrk is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  ilwrk = (int) lwrk;
+  inpts = (int) npts;
+
   if(*nhret == 0) {
     nht = nhar;
   }
@@ -130,14 +144,13 @@ NhlErrorTypes fourier_info_W( void )
  * length "nhar" for "a" and "b", but for some reason, on Sun systems,
  * a core dump occurs if you use just "nhar" and "npts" is odd.
  */
-  lwrk    = 4*npts+15; 
   a       = (double *)calloc(nhar+1,sizeof(double));
   b       = (double *)calloc(nhar+1,sizeof(double));
   wrk     = (double *)calloc(lwrk,sizeof(double));
   
   if(tmp_amp == NULL || tmp_pha == NULL || tmp_pcv == NULL ||
-	 tmp_ampx== NULL || tmp_phax== NULL || tmp_pcvx== NULL ||
-	 a == NULL || b == NULL || wrk == NULL) {
+     tmp_ampx== NULL || tmp_phax== NULL || tmp_pcvx== NULL ||
+     a == NULL || b == NULL || wrk == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: Cannot allocate space for work arrays");
     return(NhlFATAL);
   }
@@ -146,7 +159,7 @@ NhlErrorTypes fourier_info_W( void )
  */
   size_output  = 3 * nht * size_leftmost;
   ndims_finfo  = ndims_x + 1;
-  dsizes_finfo = (int *)calloc(ndims_finfo,sizeof(int));
+  dsizes_finfo = (ng_size_t *)calloc(ndims_finfo,sizeof(ng_size_t));
   dsizes_finfo[0] = 3;
   for( i = 1; i <= ndims_x-1; i++ ) {
     dsizes_finfo[i] = dsizes_x[i-1];
@@ -201,13 +214,14 @@ NhlErrorTypes fourier_info_W( void )
       NhlPError(NhlWARNING,NhlEUNKNOWN,"fourier_info: An input array contains missing values. No analysis performed on this array.");
     }
     else {
-      NGCALLF(dfourinfo,DFOURINFO)(tmp_x,&npts,&nht,&nhar,tmp_sclphase,
-								   tmp_amp,tmp_pha,tmp_pcv,a,b,tmp_ampx,
-								   tmp_phax,tmp_pcvx,wrk,&lwrk);
 
-	  coerce_output_float_or_double(finfo,tmp_amp,type_finfo,nht,index_amp);
-	  coerce_output_float_or_double(finfo,tmp_pha,type_finfo,nht,index_pha);
-	  coerce_output_float_or_double(finfo,tmp_pcv,type_finfo,nht,index_pcv);
+      NGCALLF(dfourinfo,DFOURINFO)(tmp_x,&inpts,&nht,&nhar,tmp_sclphase,
+                                   tmp_amp,tmp_pha,tmp_pcv,a,b,tmp_ampx,
+                                   tmp_phax,tmp_pcvx,wrk,&ilwrk);
+
+      coerce_output_float_or_double(finfo,tmp_amp,type_finfo,nht,index_amp);
+      coerce_output_float_or_double(finfo,tmp_pha,type_finfo,nht,index_pha);
+      coerce_output_float_or_double(finfo,tmp_pcv,type_finfo,nht,index_pcv);
     }
     index_x   += npts;
     index_amp += nht;

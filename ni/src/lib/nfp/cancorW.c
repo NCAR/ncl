@@ -17,7 +17,7 @@ NhlErrorTypes cancor_W( void )
   void *x, *y;
   double *tmp_x, *tmp_y;
   logical *opt;
-  int dsizes_y[2], dsizes_x[2];
+  ng_size_t dsizes_y[2], dsizes_x[2];
   NclBasicDataTypes type_x, type_y;
 /*
  * Attribute variables.
@@ -36,15 +36,16 @@ NhlErrorTypes cancor_W( void )
  */
   void *canr;
   double *tmp_canr;
-  int dsizes_canr[1], dsizes_coefx[2], dsizes_coefy[2];
+  ng_size_t dsizes_canr[1], dsizes_coefx[2], dsizes_coefy[2];
   NclBasicDataTypes type_canr;
 /*
  * various
  */
-  int size_coefx, size_coefy;
+  ng_size_t size_coefx, size_coefy;
   int nobs, nobsx, nobsy, nx, ny, nxy, minxy, maxxy, lrdim, lrr;
   double *eval, *rr, *yx, *rx;
-  int i, ier;
+  ng_size_t i;
+  int ier;
 
 /*
  * Retrieve parameters

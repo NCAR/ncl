@@ -197,6 +197,7 @@ static NhlErrorTypes InitializeHLUVarClass
 		Ncl_HLUVar,
 		(NclObjClass)&nclHLUVarClassRec
 	);
+	return NhlNOERROR;
 }
 
 void _NclHLUVarValChange
@@ -250,7 +251,6 @@ NclStatus status)
 {
 	NclHLUVar hvar = NULL;
 	NclObjClass	cptr = (theclass ? theclass : nclHLUVarClass);
-	int *ncl_hlu_ids;
 	NhlArgVal udata;
 	int i;
 	NclMultiDValData tmp_md;

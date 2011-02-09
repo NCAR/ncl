@@ -11,7 +11,7 @@ typedef struct _NclFDimRec	NclFDimRec;
 struct _NclFAttRec {
 	NclQuark att_name_quark;
 	NclBasicDataTypes data_type;
-	int	num_elements;
+	ng_size_t	num_elements;
 };
 
 struct _NclFGrpRec {
@@ -30,18 +30,18 @@ struct _NclFVarRec {
 	NclBasicDataTypes data_type;
 	int	num_dimensions;
 /*
-	int	dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t	dim_sizes[NCL_MAX_DIMENSIONS];
 */
 	int     file_dim_num[NCL_MAX_DIMENSIONS];
 
 	int	 num_compounds;
-	NclQuark component_name[NCL_MAX_DIMENSIONS];
-	NclBasicDataTypes component_type[NCL_MAX_DIMENSIONS];
+	NclQuark component_name[NCL_MAX_COMPOUND_COMPONETS];
+	NclBasicDataTypes component_type[NCL_MAX_COMPOUND_COMPONETS];
 };
 
 struct _NclFDimRec {
 	NclQuark dim_name_quark;
-	long dim_size;
+	ng_size_t dim_size;
 	int is_unlimited;
 };	
 
@@ -67,13 +67,14 @@ typedef enum _NclFileFormat {
 	_NclCCM = 1,
 	_NclNETCDF,
 	_NclHDF,
-#ifdef BuildHDF5
 	_NclHDF5,
-#endif
 	_NclHDFEOS,
 	_NclHDFEOS5,
 	_NclGRIB,
 	_NclGRIB2,
+#ifdef BuildOPENDAP
+	_NclOPENDAP,
+#endif
         _NclOGR
 } NclFileFormat;
 
@@ -342,7 +343,7 @@ typedef NhlErrorTypes (*NclAddDimFunc) (
 #if	NhlNeedProto
 void *,
 NclQuark,
-int,
+ng_size_t,
 int
 #endif
 );
@@ -351,7 +352,7 @@ typedef NhlErrorTypes (*NclAddChunkDimFunc) (
 #if	NhlNeedProto
 void *,
 NclQuark,
-int,
+ng_size_t,
 int
 #endif
 );
@@ -370,7 +371,7 @@ NclQuark, /*var_name */
 NclBasicDataTypes, /* data_type */
 int, /* n_dims */
 NclQuark *, /* dim_names */
-long * /* dim_sizes */
+ng_size_t * /* dim_sizes */
 #endif
 );
 
@@ -379,7 +380,7 @@ typedef NhlErrorTypes (*NclAddVarChunkFunc) (
 void*, /* record */
 NclQuark, /*var_name */
 int, /* n_dims */
-int * /* dims */
+ng_size_t * /* dims */
 #endif
 );
 
@@ -387,8 +388,8 @@ typedef NhlErrorTypes (*NclAddVarChunkCacheFunc) (
 #if     NhlNeedProto
 void *,   /* record */
 NclQuark, /* var_name */
-size_t,   /* cache_size */
-size_t,   /* cache_nelems */
+ng_size_t,   /* cache_size */
+ng_size_t,   /* cache_nelems */
 float     /* cache_preemption */
 #endif
 );

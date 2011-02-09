@@ -266,7 +266,8 @@ C
      +             -218, -219, -220, -221, 2200, 2201, 2202, 2203,
      +             2204,   90, -113, -400, -401, -402, -403, -404,
      +             -405, -406, -350, -351, -352, -353, -450, -451,
-     +             -452, -453, -354, -501, -502, -355, -356, -503/
+     +             -452, -453, -354, -501, -502, -355, -356, -503,
+     *             -504/
 C  Error 1
       DATA ERMSGS(  1)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
      +E GKCL'/
@@ -634,6 +635,9 @@ C  Error -356
 C  Error -503
       DATA ERMSGS(144)/' -- cairo driver error, null or invalid argument
      + passed to function.'/
+C  Error -504
+      DATA ERMSGS(145)/' -- cairo driver error, unable to rename output
+     *file.'/
 C
       DATA GNAM(001),GNAM(002),GNAM(003)/'GOPKS' ,'GCLKS' ,'GOPWK' /
       DATA GNAM(004),GNAM(005),GNAM(006)/'GCLWK' ,'GACWK' ,'GDAWK' /

@@ -10,10 +10,17 @@ NhlErrorTypes lspoly_W( void )
  * Input variables
  */
   void *x, *y, *wgt;
-  double *tmp_x, *tmp_y, *tmp_wgt, *tmp_wgt_copy, *wgt_scalar;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
-  int ndims_wgt, dsizes_wgt[NCL_MAX_DIMENSIONS];
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
+  double *tmp_wgt, *wgt_scalar;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
+  int ndims_wgt;
+  ng_size_t dsizes_wgt[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_dx, missing_y, missing_dy;
   int *ncoef;
   NclBasicDataTypes type_x, type_y, type_wgt;
@@ -21,14 +28,15 @@ NhlErrorTypes lspoly_W( void )
  * Output variables.
  */
   void *coef;
-  double *tmp_coef;
+  double *tmp_coef = NULL;
   NclBasicDataTypes type_coef;
-  int ndims_coef, *dsizes_coef;
+  ng_size_t *dsizes_coef;
 /*
  * Other variables
  */
-  int i, j, ierr, index_x, index_coef, ret;
-  int size_leftmost, total_size_x, total_size_coef, npts, is_scalar_wgt;
+  int ierr, ret, inpts;
+  ng_size_t i, j, index_x, index_coef;
+  ng_size_t size_leftmost, total_size_x, total_size_coef, npts, is_scalar_wgt;
 /*
  * Retrieve parameters
  *
@@ -106,10 +114,19 @@ NhlErrorTypes lspoly_W( void )
   }
 
 /*
+ * Test input dimension size.
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lspoly: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
+/*
  * Compute the total number of elements in our x,y arrays, and set the 
  * dimension sizes for the output array.
  */
-  dsizes_coef = (int*)calloc(ndims_x,sizeof(int));
+  dsizes_coef = (ng_size_t*)calloc(ndims_x,sizeof(ng_size_t));
   size_leftmost = 1;
   for( i = 0; i < ndims_x-1; i++ ) {
     size_leftmost *= dsizes_x[i];
@@ -231,7 +248,7 @@ NhlErrorTypes lspoly_W( void )
 
     if(type_coef == NCL_double) tmp_coef = &((double*)coef)[index_coef];
 
-    NGCALLF(dlspoly,DLSPOLY)(ncoef,&npts,tmp_x,tmp_y,&tmp_wgt[index_x],
+    NGCALLF(dlspoly,DLSPOLY)(ncoef,&inpts,tmp_x,tmp_y,&tmp_wgt[index_x],
                              tmp_coef,&ierr);
 
     coerce_output_float_or_double(coef,tmp_coef,type_coef,*ncoef,index_coef);

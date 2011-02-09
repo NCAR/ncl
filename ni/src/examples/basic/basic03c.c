@@ -41,7 +41,7 @@ main()
                         {3,4,4,4,3},
                         {3,3,3,3,3} };
 
-    int dims[2] = { 5, 5 };
+    ng_size_t  dims[2] = { 5, 5 };
 
 /*
  * Initialize the graphics libraries and create a resource list that

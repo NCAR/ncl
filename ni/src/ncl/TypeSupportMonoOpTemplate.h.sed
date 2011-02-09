@@ -32,7 +32,7 @@ NclTypeClass /* the_type */,
 void * /* result */,
 void* /* lhs */,
 NclScalar* /* lhs_m */,
-int /* nlhs */
+ng_size_t /* nlhs */
 #endif
 );
 

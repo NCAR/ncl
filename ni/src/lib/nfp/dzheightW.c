@@ -11,9 +11,14 @@ NhlErrorTypes dz_height_W( void )
  */
   void *z, *zsfc, *ztop;
   int *iopt;
-  double *tmp_z, *tmp_zsfc, *tmp1_zsfc, *tmp_ztop;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
-  int ndims_zsfc, dsizes_zsfc[NCL_MAX_DIMENSIONS];
+  double *tmp_z = NULL;
+  double *tmp_zsfc = NULL;
+  double *tmp1_zsfc = NULL;
+  double *tmp_ztop;
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  int ndims_zsfc;
+  ng_size_t dsizes_zsfc[NCL_MAX_DIMENSIONS];
   int has_missing_zsfc, is_scalar_zsfc;
   NclScalar missing_zsfc, missing_dzsfc, missing_rzsfc;
   NclBasicDataTypes type_z, type_zsfc, type_ztop;
@@ -21,14 +26,17 @@ NhlErrorTypes dz_height_W( void )
  * Output variables
  */
   void *dz;
-  double *tmp_dz;
+  double *tmp_dz = NULL;
   NclBasicDataTypes type_dz;
   NclScalar missing_dz;
 /*
  * Various.
  */
-  int i, nlat, nlon, klvl, nlatnlon, klvlnlatnlon, ier, der;
-  int size_z, index_zsfc, index_z, size_leftmost, ret;
+  ng_size_t i, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
+  ng_size_t size_z, index_zsfc, index_z, size_leftmost;
+  int ier, der, ret;
+  int inlon, inlat, iklvl;
+
 /*
  * Retrieve parameters
  *
@@ -86,6 +94,19 @@ NhlErrorTypes dz_height_W( void )
   nlon = dsizes_z[ndims_z-1];
 
 /*
+ * Check input dimension sizes.
+ */
+    if((nlon > INT_MAX) ||
+       (nlat > INT_MAX) ||
+       (klvl > INT_MAX)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dz_height: one or more input dimension sizes are greater than INT_MAX");
+      return(NhlFATAL);
+    }
+    inlon = (int) nlon;
+    inlat = (int) nlat;
+    iklvl = (int) klvl;
+
+/*
  * Check dimension sizes for zsfc. It must be a scalar, an nlat x nlon
  * array, or the same size as z.
  */
@@ -127,9 +148,9 @@ NhlErrorTypes dz_height_W( void )
   size_z = size_leftmost * klvlnlatnlon;
 
 /*
- * Determine type of output. It depends on the type of zsfc only.
+ * Determine type of output.
  */
-  if(type_zsfc == NCL_double) {
+  if(type_z == NCL_double || type_zsfc == NCL_double || type_ztop == NCL_double) {
     type_dz = NCL_double;
   }
   else {
@@ -141,8 +162,9 @@ NhlErrorTypes dz_height_W( void )
                    &missing_dzsfc,&missing_rzsfc);
   }
   else {
-    missing_dzsfc.doubleval = 1.e20;   /* Don't use NCL default of -9999. */
-    missing_rzsfc.floatval  = 1.e20;
+    missing_dzsfc.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    missing_rzsfc.floatval  = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+
   }
 
 /*
@@ -266,7 +288,7 @@ NhlErrorTypes dz_height_W( void )
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dzhgtdrv,DZHGTDRV)(&nlon,&nlat,&klvl,tmp_z,tmp_zsfc,
+    NGCALLF(dzhgtdrv,DZHGTDRV)(&inlon,&inlat,&iklvl,tmp_z,tmp_zsfc,
                                &missing_dzsfc.doubleval,tmp_ztop,tmp_dz,
                                iopt,&ier);
 /*

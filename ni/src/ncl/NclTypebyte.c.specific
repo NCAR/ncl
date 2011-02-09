@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypebyte.c.specific,v 1.6 2005-02-05 00:13:55 dbrown Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -35,7 +35,7 @@ void *val;
         byte sp = *(byte *)val;
 	int ret;
 
-        ret = nclfprintf(fp,"0x%02x",sp);
+        ret = nclfprintf(fp,"%d",sp);
 	if(ret < 0) {
 		return(NhlWARNING);
 	} else {
@@ -44,18 +44,18 @@ void *val;
 }
 static NhlErrorTypes Ncl_Type_byte_coerce
 #if     NhlNeedProto
-(void * result, void* from, int n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
+(void * result, void* from, ng_size_t n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
 #else
 (result, from, n, from_m, to_m, fc)
 void * result;
 void* from;
-int n;
+ng_size_t n;
 NclScalar* from_m;
 NclScalar *to_m;
 NclTypeClass fc;
 #endif
 {
-        int i;
+        ng_size_t i;
         byte *res = (byte*)result;
         logical tmp;
         NclTypeOp eq;
@@ -94,6 +94,25 @@ NclTypeClass fc;
                 }
                 return(NhlNOERROR);
         }	
+        case Ncl_Typeubyte: {
+                unsigned char *fl = (unsigned char *)from;
+                if((from_m == NULL)||(to_m == NULL)) {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                *res = (byte)*fl;
+                        }
+                } else {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                tmp = 0;
+                                (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+                                if(tmp) {
+                                        *res = tmp_mis.byteval;
+                                } else {
+                                        *res = (byte)*fl;
+                                }
+                        }
+                }
+                return(NhlNOERROR);
+        }
 	default:
 		return(NhlFATAL);
 	}

@@ -8,7 +8,7 @@ C
 C The use of this Software is governed by a License Agreement.
 C
 C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
-      PARAMETER(MXNWK=15,NSEG=100,IWDIM=10000,NUMERS=144)
+      PARAMETER(MXNWK=15,NSEG=100,IWDIM=10000,NUMERS=145)
       COMMON/GKINTR/ NOPWK , NACWK , WCONID, NUMSEG,
      +               SEGS(NSEG)    , CURSEG, SEGLEN(NSEG)  , MXSREC,
      +               SEGT(NSEG,2,3), CURTM(2,3)            , SEGDEL,

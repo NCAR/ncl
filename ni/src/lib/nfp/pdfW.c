@@ -17,7 +17,8 @@ NhlErrorTypes pdfxy_bin_W( void )
  */
   void *x;
   double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
   NclScalar missing_x, missing_dbl_x;
   NclBasicDataTypes type_x;
@@ -27,7 +28,8 @@ NhlErrorTypes pdfxy_bin_W( void )
  */
   void *y;
   double *tmp_y;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   int has_missing_y;
   NclScalar missing_y, missing_dbl_y;
   NclBasicDataTypes type_y;
@@ -37,7 +39,7 @@ NhlErrorTypes pdfxy_bin_W( void )
  */
   void *binxbnd;
   double *tmp_binxbnd;
-  int dsizes_binxbnd[1];
+  ng_size_t dsizes_binxbnd[1];
   NclBasicDataTypes type_binxbnd;
 
 /*
@@ -45,7 +47,7 @@ NhlErrorTypes pdfxy_bin_W( void )
  */
   void *binybnd;
   double *tmp_binybnd;
-  int dsizes_binybnd[1];
+  ng_size_t dsizes_binybnd[1];
   NclBasicDataTypes type_binybnd;
 
 /*
@@ -57,15 +59,16 @@ NhlErrorTypes pdfxy_bin_W( void )
  * Return variable
  */
   void *pdf;
-  double *tmp_pdf;
-  int dsizes_pdf[2];
+  double *tmp_pdf = NULL;
+  ng_size_t dsizes_pdf[2];
   NclBasicDataTypes type_pdf;
 
 /*
  * Various
  */
-  int i, nxy, mbxp1, nbyp1, nby, mbx, nbymbx, ier, ret;
-
+  ng_size_t i, nxy, mbxp1, nbyp1, nby, mbx, nbymbx;
+  int ier, ret;
+  int inxy, imbx, inby, imbxp1, inbyp1;
 
 /*
  * Variables for retrieving attributes from "opt".
@@ -159,6 +162,20 @@ NhlErrorTypes pdfxy_bin_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: The binybnd array must have at least two values");
     return(NhlFATAL);
   }
+
+/*
+ * Test input dimension sizes.
+ */
+  if((nxy > INT_MAX) || (mbx > INT_MAX) || (nby > INT_MAX) ||
+     (mbxp1 > INT_MAX) || (nbyp1 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inxy = (int) nxy;
+  imbx = (int) mbx;
+  inby = (int) nby;
+  imbxp1 = (int) mbxp1;
+  inbyp1 = (int) nbyp1;
 
 /*
  * Get argument # 4
@@ -303,11 +320,10 @@ NhlErrorTypes pdfxy_bin_W( void )
 /*
  * Call the Fortran routine.
  */
-  NGCALLF(xy2pdf77,XY2PDF77)(&nxy, tmp_x, tmp_y, &missing_dbl_x.doubleval,
-                             &missing_dbl_y.doubleval, &nby, &mbx, 
-                             tmp_pdf, &mbxp1, &nbyp1, tmp_binxbnd, 
+  NGCALLF(xy2pdf77,XY2PDF77)(&inxy, tmp_x, tmp_y, &missing_dbl_x.doubleval,
+                             &missing_dbl_y.doubleval, &inby, &imbx, 
+                             tmp_pdf, &imbxp1, &inbyp1, tmp_binxbnd, 
                              tmp_binybnd, &ipcnt, &ier);
-
 /*
  * Coerce output back to float if necessary.
  */

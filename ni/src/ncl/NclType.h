@@ -1,5 +1,5 @@
 /*
- *      $Id: NclType.h,v 1.5 1997-09-02 20:26:44 ethan Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -30,10 +30,10 @@ void * /* lhs */,
 void * /* rhs */,
 NclScalar * /* lhs_m */, 
 NclScalar * /* rhs_m */,
-int /* ndimslhs */, 
-int */* dimsizeslhs */, 
-int /* ndimsrhs */,
-int */* dimsizesrhs */ 
+int         /* ndimslhs */, 
+ng_size_t * /* dimsizeslhs */, 
+int         /* ndimsrhs */,
+ng_size_t * /* dimsizesrhs */ 
 #endif
 );
 typedef NhlErrorTypes (*NclTypeOp)  (
@@ -43,8 +43,8 @@ void * /* lhs */,
 void * /* rhs */,
 NclScalar * /* lhs_m */, 
 NclScalar * /* rhs_m */,
-int /* nlhs */, 
-int /* nrhs */
+ng_size_t /* nlhs */, 
+ng_size_t /* nrhs */
 #endif
 );
 
@@ -69,7 +69,7 @@ typedef NclMonoTypes (*NclTypeMonotonicTestFunction) (
 #if	NhlNeedProto
 void * /*val*/,
 NclScalar * /*val_m*/,
-int	/*nval*/
+ng_size_t	/*nval*/
 #endif
 );
 
@@ -91,7 +91,7 @@ typedef NhlErrorTypes (*NclTypeCoerceFunction) (
 #if	NhlNeedProto
 void*	/*result*/,
 void*	/*from*/,
-int	/*n*/,
+ng_size_t  /*n*/,
 NclScalar* /*from_m*/,
 NclScalar* /*to_m*/,
 struct _NclTypeClassRec */*from*/
@@ -103,7 +103,7 @@ typedef NhlErrorTypes (*NclTypeResetMissing) (
 void 	* /*val*/,
 NclScalar * /*old_m*/,
 NclScalar * /*new_m*/,
-int	/* nval */
+ng_size_t   /* nval */
 #endif
 );
 
@@ -119,7 +119,7 @@ void	* /*val*/
 typedef struct _NclTypeClassPart {
 	NclObjTypes		type;
 	NclBasicDataTypes	data_type;
-	int			size;
+	ng_size_t		size;
 	char*			hlu_type_rep[2];
 	NclScalar		default_mis;
 	char*			format;

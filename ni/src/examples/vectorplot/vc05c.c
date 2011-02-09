@@ -61,7 +61,7 @@ main(int argc, char *argv[])
 {
     float       U[25][25];
     float       V[25][25];
-    int         len_dims[2];
+    ng_size_t   len_dims[2];
     int         appid,wid,dataid,vcid,mapid;
     int         srlist;
     float       x,y;

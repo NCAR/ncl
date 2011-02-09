@@ -197,34 +197,54 @@ NhlErrorTypes dv2uvf_W( void )
  * Input array variables
  */
   void *dv;
-  double *tmp_dv;
-  int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS], nt, nlat, nlon, nlatnlon;
+  double *tmp_dv = NULL;
+  int ndims_dv;
+  ng_size_t dsizes_dv[NCL_MAX_DIMENSIONS];
+  ng_size_t nt, nlat, nlon, nlatnlon;
   NclScalar missing_dv, missing_ddv;
   NclBasicDataTypes type_dv;
   int has_missing_dv, found_missing_dv;
 /*
  * Output array variables
  */
-  void *ud, *vd;
-  double *tmp_ud, *tmp_vd;
-  int ndims_ud, dsizes_ud[NCL_MAX_DIMENSIONS];
-  int ndims_vd, dsizes_vd[NCL_MAX_DIMENSIONS];
+  void *ud = NULL;
+  void *vd = NULL;
+  double *tmp_ud = NULL;
+  double *tmp_vd = NULL;
+  int ndims_ud;
+  ng_size_t dsizes_ud[NCL_MAX_DIMENSIONS];
+  int ndims_vd;
+  ng_size_t dsizes_vd[NCL_MAX_DIMENSIONS];
   int has_missing_ud, has_missing_vd;
   NclScalar missing_ud, missing_vd, missing_dud, missing_dvd;
   NclBasicDataTypes type_ud, type_vd;
 /*
  * various
  */
-  int total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_dv, nmiss;
+  ng_size_t index_dv;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshaec, *wvhsec, *pertrb, *a, *b;
+  int inlon;
+  int inlat;
+  int ilshaec;
+  int ilvhsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -323,7 +343,7 @@ NhlErrorTypes dv2uvf_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvf: Unable to allocate memory for coercing ud array to double precision");
       return(NhlFATAL);
     }
-  } 
+  }
 
   if(type_vd != NCL_double) {
     tmp_vd = (double*)calloc(nlatnlon,sizeof(double));
@@ -331,7 +351,7 @@ NhlErrorTypes dv2uvf_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvf: Unable to allocate memory for coercing vd array to double precision");
       return(NhlFATAL);
     }
-  } 
+  }
 
 /*
  * Allocate memory for work arrays.
@@ -368,6 +388,38 @@ NhlErrorTypes dv2uvf_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvf: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
+
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshaec > INT_MAX) ||
+     (lvhsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvf: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshaec = (int) lshaec;
+  ilvhsec = (int) lvhsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
 
 /*
  * Loop through the rightmost nt dimensions and call the various
@@ -431,50 +483,50 @@ NhlErrorTypes dv2uvf_W( void )
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_dv,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
 /*
  * shaec performs the spherical harmonic analysis on a (scalar) gaussian
  * grid(s) and returns the coefficients in array(s) a,b.
  * Here the scalar grid is "dv" (divergence) 
  */
-      NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,
-                             a,b,&mdab,&ndab,wshaec,&lshaec,work2,&lwork2,
-                             &ker);
+      NGCALLF(dshaeci,DSHAECI)(&inlat,&inlon,wshaec,&ilshaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,
+			     a,b,&imdab,&indab,wshaec,&ilshaec,work2,&ilwork2,
+			     &ker);
 
       NGCALLF(dchkerr,DCHKERR)("dv2uvf","shaec",&ier,&jer,&ker,&mer,6,5);
 /* 
  * Reconstruct the divergent (irrotational) wind components.
  * Note the argument order idivec(...,vd,ud,...)
  */
-      NGCALLF(dvhseci,DVHSECI)(&nlat,&nlon,wvhsec,&lvhsec,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(didivec,DIDIVEC)(&nlat,&nlon,&isym,&one,tmp_vd,tmp_ud,
-                               &idvw,&jdvw,a,b,&mdab,&ndab,wvhsec,&lvhsec,
-                               work3,&lwork3,pertrb,&ker);
+      NGCALLF(dvhseci,DVHSECI)(&inlat,&inlon,wvhsec,&ilvhsec,dwork2,&ildwork2,
+			       &jer);
+      NGCALLF(didivec,DIDIVEC)(&inlat,&inlon,&isym,&one,tmp_vd,tmp_ud,
+			       &iidvw,&ijdvw,a,b,&imdab,&indab,wvhsec,&ilvhsec,
+			       work3,&ilwork3,pertrb,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("dv2uvf","vhseci,idivec",&ier,&jer,&ker,&mer,
-                               6,13);
+			       6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_ud,tmp_vd,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ud,tmp_vd,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_ud,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vd,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_ud,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vd,&scale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
       if(type_ud == NCL_float) {
-        coerce_output_float_only(ud,tmp_ud,nlatnlon,index_dv);
+	coerce_output_float_only(ud,tmp_ud,nlatnlon,index_dv);
       }
       if(type_vd == NCL_float) {
-        coerce_output_float_only(vd,tmp_vd,nlatnlon,index_dv);
+	coerce_output_float_only(vd,tmp_vd,nlatnlon,index_dv);
       }
     }
     index_dv += nlatnlon;
@@ -507,41 +559,60 @@ NhlErrorTypes dv2uvf_W( void )
   return(NhlNOERROR);
 }
 
-
 NhlErrorTypes dv2uvg_W( void )
 {
 /*
  * Input array variables
  */
   void *dv;
-  double *tmp_dv;
-  int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS], nt, nlat, nlon, nlatnlon;
+  double *tmp_dv = NULL;
+  int ndims_dv;
+  ng_size_t dsizes_dv[NCL_MAX_DIMENSIONS];
+  ng_size_t nt, nlat, nlon, nlatnlon;
   NclScalar missing_dv, missing_ddv;
   NclBasicDataTypes type_dv;
   int has_missing_dv, found_missing_dv;
 /*
  * Output array variables
  */
-  void *ud, *vd;
-  double *tmp_ud, *tmp_vd;
-  int ndims_ud, dsizes_ud[NCL_MAX_DIMENSIONS];
-  int ndims_vd, dsizes_vd[NCL_MAX_DIMENSIONS];
+  void *ud = NULL;
+  void *vd = NULL;
+  double *tmp_ud = NULL;
+  double *tmp_vd = NULL;
+  int ndims_ud;
+  ng_size_t dsizes_ud[NCL_MAX_DIMENSIONS];
+  int ndims_vd;
+  ng_size_t dsizes_vd[NCL_MAX_DIMENSIONS];
   int has_missing_ud, has_missing_vd;
   NclScalar missing_ud, missing_vd, missing_dud, missing_dvd;
   NclBasicDataTypes type_ud, type_vd;
 /*
  * various
  */
-  int total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_dv, nmiss;
+  ng_size_t index_dv;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshagc, *wvhsgc, *pertrb, *a, *b;
+  int inlon;
+  int inlat;
+  int ilshagc;
+  int ilvhsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -667,7 +738,7 @@ NhlErrorTypes dv2uvg_W( void )
   ldwork2 = 2*nlat*(nlat+1)+1;
   lshagc  = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
   lvhsgc  = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
-
+     
   work1  = (double*)calloc(lwork1,sizeof(double));
   work2  = (double*)calloc(lwork2,sizeof(double));
   work3  = (double*)calloc(lwork3,sizeof(double));
@@ -685,7 +756,38 @@ NhlErrorTypes dv2uvg_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvg: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-
+     
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshagc > INT_MAX) ||
+     (lvhsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvg: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshagc = (int) lshagc;
+  ilvhsgc = (int) lvhsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
 /*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
@@ -748,17 +850,17 @@ NhlErrorTypes dv2uvg_W( void )
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_dv,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
 /*
  * shagc performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b.
  * Here the scalar grid is "dv" (divergence) 
  */
-      NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,
-                             a,b,&mdab,&ndab,wshagc,&lshagc,work2,&lwork2,
-                             &ker);
+      NGCALLF(dshagci,DSHAGCI)(&inlat,&inlon,wshagc,&ilshagc,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,
+			     a,b,&imdab,&indab,wshagc,&ilshagc,work2,&ilwork2,
+			     &ker);
 
       NGCALLF(dchkerr,DCHKERR)("dv2uvg","shagc",&ier,&jer,&ker,&mer,6,5);
 
@@ -766,33 +868,33 @@ NhlErrorTypes dv2uvg_W( void )
  * Reconstruct the divergent (irrotational) wind components.
  * note the argument order idivgc(...,vd,ud,...)
  */
-      NGCALLF(dvhsgci,DVHSGCI)(&nlat,&nlon,wvhsgc,&lvhsgc,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(didivgc,DIDIVGC)(&nlat,&nlon,&isym,&one,tmp_vd,tmp_ud,
-                               &idvw,&jdvw,a,b,&mdab,&ndab,wvhsgc,&lvhsgc,
-                               work3,&lwork3,pertrb,&ker);
-
+      NGCALLF(dvhsgci,DVHSGCI)(&inlat,&inlon,wvhsgc,&ilvhsgc,dwork2,&ildwork2,
+			       &jer);
+      NGCALLF(didivgc,DIDIVGC)(&inlat,&inlon,&isym,&one,tmp_vd,tmp_ud,
+			       &iidvw,&ijdvw,a,b,&imdab,&indab,wvhsgc,&ilvhsgc,
+			       work3,&ilwork3,pertrb,&ker);
+      
       NGCALLF(dchkerr,DCHKERR)("dv2uvg","vhsgci,idivgc",&ier,&jer,&ker,&mer,
-                               6,13);
+			       6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_ud,tmp_vd,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ud,tmp_vd,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_ud,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vd,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_ud,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vd,&scale,&ner);
 /*
  * Coerce output back to float if necessary.
  */
       if(type_ud == NCL_float) {
-        coerce_output_float_only(ud,tmp_ud,nlatnlon,index_dv);
+	coerce_output_float_only(ud,tmp_ud,nlatnlon,index_dv);
       }
       if(type_vd == NCL_float) {
-        coerce_output_float_only(vd,tmp_vd,nlatnlon,index_dv);
+	coerce_output_float_only(vd,tmp_vd,nlatnlon,index_dv);
       }
     }
     index_dv += nlatnlon;
@@ -831,33 +933,51 @@ NhlErrorTypes dv2uvF_W( void )
 /*
  * Input array variables
  */
-  void *dv;
-  double *tmp_dv;
-  int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS], nt, nlat, nlon, nlatnlon;
+  void *dv = NULL;
+  double *tmp_dv = NULL;
+  int ndims_dv;
+  ng_size_t dsizes_dv[NCL_MAX_DIMENSIONS];
+  ng_size_t nt, nlat, nlon, nlatnlon;
   NclScalar missing_dv, missing_ddv, missing_rdv;
   NclBasicDataTypes type_dv;
   int has_missing_dv, found_missing_dv;
 /*
  * Output array variables
  */
-  void *uvd;
-  double *tmp_ud, *tmp_vd;
-  int ndims_uvd, *dsizes_uvd;
+  void *uvd = NULL;
+  double *tmp_ud = NULL;
+  double *tmp_vd = NULL;
+  int ndims_uvd;
+  ng_size_t *dsizes_uvd;
   NclScalar missing_uvd;
   NclBasicDataTypes type_uvd;
 /*
  * various
  */
-  int total_size_in, ret;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym, ret;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_dv, index_ud, index_vd, nmiss;
+  ng_size_t index_dv, index_ud, index_vd;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshaec, *wvhsec, *pertrb, *a, *b;
+  int inlon;
+  int inlat;
+  int ilshaec;
+  int ilvhsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -930,7 +1050,7 @@ NhlErrorTypes dv2uvF_W( void )
  * dimension represents ud, and the 1th dimension represents vd.
  */
   ndims_uvd  = ndims_dv + 1;
-  dsizes_uvd = (int*)calloc(ndims_uvd,sizeof(int));  
+  dsizes_uvd = (ng_size_t*)calloc(ndims_uvd,sizeof(ng_size_t));  
   dsizes_uvd[0] = 2;
   for(i = 1; i <= ndims_dv; i++ ) dsizes_uvd[i] = dsizes_dv[i-1];
 
@@ -969,6 +1089,38 @@ NhlErrorTypes dv2uvF_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvF: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
+
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshaec > INT_MAX) ||
+     (lvhsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvF: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshaec = (int) lshaec;
+  ilvhsec = (int) lvhsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
 
 /*
  * Loop through the rightmost nt dimensions and call the various
@@ -1019,46 +1171,48 @@ NhlErrorTypes dv2uvF_W( void )
                                 missing_ddv.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_dv,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
 /*
  * shaec performs the spherical harmonic analysis on a (scalar) gaussian
  * grid(s) and returns the coefficients in array(s) a,b.
  * Here the scalar grid is "dv" (divergence) 
  */
-      NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,
-                             a,b,&mdab,&ndab,wshaec,&lshaec,work2,&lwork2,
-                             &ker);
+      NGCALLF(dshaeci,DSHAECI)(&inlat,&inlon,wshaec,&ilshaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,
+			     a,b,&imdab,&indab,wshaec,&ilshaec,work2,&ilwork2,
+			     &ker);
 
       NGCALLF(dchkerr,DCHKERR)("dv2uvF","shaec",&ier,&jer,&ker,&mer,6,5);
 /* 
  * Reconstruct the divergent (irrotational) wind components.
  * Note the argument order idivec(...,vd,ud,...)
  */
-      NGCALLF(dvhseci,DVHSECI)(&nlat,&nlon,wvhsec,&lvhsec,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(didivec,DIDIVEC)(&nlat,&nlon,&isym,&one,tmp_vd,tmp_ud,
-                               &idvw,&jdvw,a,b,&mdab,&ndab,wvhsec,&lvhsec,
-                               work3,&lwork3,pertrb,&ker);
+      NGCALLF(dvhseci,DVHSECI)(&inlat,&inlon,wvhsec,&ilvhsec,dwork2,&ildwork2,
+			       &jer);
+      NGCALLF(didivec,DIDIVEC)(&inlat,&inlon,&isym,&one,tmp_vd,tmp_ud,
+			       &iidvw,&ijdvw,a,b,&imdab,&indab,wvhsec,&ilvhsec,
+                               work3,&ilwork3,pertrb,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("dv2uvF","vhseci,idivec",&ier,&jer,&ker,&mer,
-                               6,13);
+			       6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_ud,tmp_vd,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ud,tmp_vd,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_ud,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vd,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_ud,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vd,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -1111,8 +1265,10 @@ NhlErrorTypes dv2uvG_W( void )
  * Input array variables
  */
   void *dv;
-  double *tmp_dv;
-  int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS], nt, nlat, nlon, nlatnlon;
+  double *tmp_dv = NULL;
+  int ndims_dv;
+  ng_size_t dsizes_dv[NCL_MAX_DIMENSIONS];
+  ng_size_t nt, nlat, nlon, nlatnlon;
   NclScalar missing_dv, missing_ddv, missing_rdv;
   NclBasicDataTypes type_dv;
   int has_missing_dv, found_missing_dv;
@@ -1120,23 +1276,39 @@ NhlErrorTypes dv2uvG_W( void )
  * Output array variables
  */
   void *uvd;
-  double *tmp_ud, *tmp_vd;
-  int ndims_uvd, *dsizes_uvd;
+  double *tmp_ud = NULL;
+  double *tmp_vd = NULL;
+  int ndims_uvd;
+  ng_size_t *dsizes_uvd;
   NclScalar missing_uvd;
   NclBasicDataTypes type_uvd;
 /*
  * various
  */
-  int total_size_in, ret;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym, ret;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_dv, index_ud, index_vd, nmiss;
+  ng_size_t index_dv, index_ud, index_vd;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshagc, *wvhsgc, *pertrb, *a, *b;
+  int inlon;
+  int inlat;
+  int ilshagc;
+  int ilvhsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -1209,7 +1381,7 @@ NhlErrorTypes dv2uvG_W( void )
  * dimension represents ud, and the 1th dimension represents vd.
  */
   ndims_uvd  = ndims_dv + 1;
-  dsizes_uvd = (int*)calloc(ndims_uvd,sizeof(int));  
+  dsizes_uvd = (ng_size_t*)calloc(ndims_uvd,sizeof(ng_size_t));  
   dsizes_uvd[0] = 2;
   for(i = 1; i <= ndims_dv; i++ ) dsizes_uvd[i] = dsizes_dv[i-1];
 
@@ -1249,6 +1421,37 @@ NhlErrorTypes dv2uvG_W( void )
     return(NhlFATAL);
   }
 
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshagc > INT_MAX) ||
+     (lvhsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvG: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshagc = (int) lshagc;
+  ilvhsgc = (int) lvhsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
 /*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
@@ -1298,21 +1501,22 @@ NhlErrorTypes dv2uvG_W( void )
                                 missing_ddv.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_dv,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
 /*
  * shagc performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b.
  * Here the scalar grid is "dv" (divergence) 
  */
-      NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,
-                             a,b,&mdab,&ndab,wshagc,&lshagc,work2,&lwork2,
-                             &ker);
+      NGCALLF(dshagci,DSHAGCI)(&inlat,&inlon,wshagc,&ilshagc,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,
+			     a,b,&imdab,&indab,wshagc,&ilshagc,work2,&ilwork2,
+			     &ker);
 
       NGCALLF(dchkerr,DCHKERR)("dv2uvG","shagc",&ier,&jer,&ker,&mer,6,5);
 
@@ -1320,25 +1524,26 @@ NhlErrorTypes dv2uvG_W( void )
  * Reconstruct the divergent (irrotational) wind components.
  * note the argument order idivgc(...,vd,ud,...)
  */
-      NGCALLF(dvhsgci,DVHSGCI)(&nlat,&nlon,wvhsgc,&lvhsgc,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(didivgc,DIDIVGC)(&nlat,&nlon,&isym,&one,tmp_vd,tmp_ud,
-                               &idvw,&jdvw,a,b,&mdab,&ndab,wvhsgc,&lvhsgc,
-                               work3,&lwork3,pertrb,&ker);
+      NGCALLF(dvhsgci,DVHSGCI)(&inlat,&inlon,wvhsgc,&ilvhsgc,dwork2,&ildwork2,
+			       &jer);
+      NGCALLF(didivgc,DIDIVGC)(&inlat,&inlon,&isym,&one,tmp_vd,tmp_ud,
+			       &iidvw,&ijdvw,a,b,&imdab,&indab,wvhsgc,&ilvhsgc,
+			       work3,&ilwork3,pertrb,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("dv2uvG","vhsgci,idivgc",&ier,&jer,&ker,&mer,
-                               6,13);
+			       6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_ud,tmp_vd,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ud,tmp_vd,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_ud,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vd,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_ud,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vd,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -1391,8 +1596,10 @@ NhlErrorTypes gradsf_W( void )
  * Input array variables
  */
   void *z;
-  double *tmp_z;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS], nt, nlat, nlon, nlatnlon;
+  double *tmp_z = NULL;
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t nt, nlat, nlon, nlatnlon;
   NclScalar missing_z, missing_dz;
   NclBasicDataTypes type_z;
   int has_missing_z, found_missing_z;
@@ -1400,26 +1607,43 @@ NhlErrorTypes gradsf_W( void )
  * Output array variables
  */
   void *gzx, *gzy;
-  double *tmp_gzx, *tmp_gzy;
-  int ndims_gzx, dsizes_gzx[NCL_MAX_DIMENSIONS];
-  int ndims_gzy, dsizes_gzy[NCL_MAX_DIMENSIONS];
+  double *tmp_gzx = NULL;
+  double *tmp_gzy = NULL;
+  int ndims_gzx;
+  ng_size_t dsizes_gzx[NCL_MAX_DIMENSIONS];
+  int ndims_gzy;
+  ng_size_t dsizes_gzy[NCL_MAX_DIMENSIONS];
   int has_missing_gzx, has_missing_gzy;
   NclScalar missing_gzx, missing_gzy, missing_dgzx, missing_dgzy;
   NclBasicDataTypes type_gzx, type_gzy;
 /*
  * various
  */
-  int total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_z, nmiss;
+  ng_size_t index_z;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshaec, *wvhsec, *a, *b, *pertrb;
+  int inlon;
+  int inlat;
+  int ilshaec;
+  int ilvhsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -1572,6 +1796,37 @@ NhlErrorTypes gradsf_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshaec > INT_MAX) ||
+     (lvhsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsf: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshaec = (int) lshaec;
+  ilvhsec = (int) lvhsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -1630,46 +1885,48 @@ NhlErrorTypes gradsf_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_z,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_z,work1);
 /*
  * shaec performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b.
  * Here the scalar grid is "z" (a scalar divergence)
  */
-      NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_z,&idvw,&jdvw,
-                             a,b,&mdab,&ndab,wshaec,&lshaec,work2,&lwork2,
-                             &ker);
+      NGCALLF(dshaeci,DSHAECI)(&inlat,&inlon,wshaec,&ilshaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&one,tmp_z,&iidvw,&ijdvw,
+			     a,b,&imdab,&indab,wshaec,&ilshaec,work2,&ilwork2,
+			     &ker);
 
       NGCALLF(dchkerr,DCHKERR)("gradsf","shaec",&ier,&jer,&ker,&mer,6,5);
 /*
  * Compute the gradient.
  * note the argument order (...,gzy,gzx,...)
  */ 
-      NGCALLF(dvhseci,DVHSECI)(&nlat,&nlon,wvhsec,&lvhsec,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(dgradec,DGRADEC)(&nlat,&nlon,&isym,&one,tmp_gzy,tmp_gzx,
-                               &idvw,&jdvw,a,b,&mdab,&ndab,wvhsec,&lvhsec,
-                               work3,&lwork3,&ker);
-
+      NGCALLF(dvhseci,DVHSECI)(&inlat,&inlon,wvhsec,&ilvhsec,dwork2,&ildwork2,
+			       &jer);
+      NGCALLF(dgradec,DGRADEC)(&inlat,&inlon,&isym,&one,tmp_gzy,tmp_gzx,
+			       &iidvw,&ijdvw,a,b,&imdab,&indab,wvhsec,&ilvhsec,
+			       work3,&ilwork3,&ker);
+      
       NGCALLF(dchkerr,DCHKERR)("gradsf","vhseci+gradec",&ier,&jer,&ker,&mer,
-                               6,13);
+			       6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_z,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_gzx,tmp_gzy,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_gzx,tmp_gzy,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_gzx,&invscale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_gzy,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_gzx,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_gzy,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -1717,8 +1974,10 @@ NhlErrorTypes gradsg_W( void )
  * Input array variables
  */
   void *z;
-  double *tmp_z;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS], nt, nlat, nlon, nlatnlon;
+  double *tmp_z = NULL;
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t nt, nlat, nlon, nlatnlon;
   NclScalar missing_z, missing_dz;
   NclBasicDataTypes type_z;
   int has_missing_z, found_missing_z;
@@ -1726,26 +1985,43 @@ NhlErrorTypes gradsg_W( void )
  * Output array variables
  */
   void *gzx, *gzy;
-  double *tmp_gzx, *tmp_gzy;
-  int ndims_gzx, dsizes_gzx[NCL_MAX_DIMENSIONS];
-  int ndims_gzy, dsizes_gzy[NCL_MAX_DIMENSIONS];
+  double *tmp_gzx = NULL;
+  double *tmp_gzy = NULL;
+  int ndims_gzx;
+  ng_size_t dsizes_gzx[NCL_MAX_DIMENSIONS];
+  int ndims_gzy;
+  ng_size_t dsizes_gzy[NCL_MAX_DIMENSIONS];
   int has_missing_gzx, has_missing_gzy;
   NclScalar missing_gzx, missing_gzy, missing_dgzx, missing_dgzy;
   NclBasicDataTypes type_gzx, type_gzy;
 /*
  * various
  */
-  int total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_z, nmiss;
+  ng_size_t index_z;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshagc, *wvhsgc, *a, *b, *pertrb;
+  int inlon;
+  int inlat;
+  int ilshagc;
+  int ilvhsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -1898,6 +2174,37 @@ NhlErrorTypes gradsg_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshagc > INT_MAX) ||
+     (lvhsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsg: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshagc = (int) lshagc;
+  ilvhsgc = (int) lvhsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -1956,46 +2263,48 @@ NhlErrorTypes gradsg_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_z,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_z,work1);
 /*
  * shagc performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b.
  * Here the scalar grid is "z" (a scalar divergence)
  */
-      NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_z,&idvw,&jdvw,
-                             a,b,&mdab,&ndab,wshagc,&lshagc,work2,&lwork2,
-                             &ker);
+      NGCALLF(dshagci,DSHAGCI)(&inlat,&inlon,wshagc,&ilshagc,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&one,tmp_z,&iidvw,&ijdvw,
+			     a,b,&imdab,&indab,wshagc,&ilshagc,work2,&ilwork2,
+			     &ker);
 
       NGCALLF(dchkerr,DCHKERR)("gradsg","shagc",&ier,&jer,&ker,&mer,6,5);
 /*
  * Compute the gradient.
  * Note the argument order (...,gzy,gzx,...)
  */ 
-      NGCALLF(dvhsgci,DVHSGCI)(&nlat,&nlon,wvhsgc,&lvhsgc,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(dgradgc,DGRADGC)(&nlat,&nlon,&isym,&one,tmp_gzy,tmp_gzx,
-                               &idvw,&jdvw,a,b,&mdab,&ndab,wvhsgc,&lvhsgc,
-                               work3,&lwork3,&ker);
+      NGCALLF(dvhsgci,DVHSGCI)(&inlat,&inlon,wvhsgc,&ilvhsgc,dwork2,&ildwork2,
+			       &jer);
+      NGCALLF(dgradgc,DGRADGC)(&inlat,&inlon,&isym,&one,tmp_gzy,tmp_gzx,
+			       &iidvw,&ijdvw,a,b,&imdab,&indab,wvhsgc,&ilvhsgc,
+			       work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("gradsg","vhsgci+gradgc",&ier,&jer,&ker,&mer,
-                               6,13);
+			       6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_z,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_gzx,tmp_gzy,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_gzx,tmp_gzy,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_gzx,&invscale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_gzy,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_gzx,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_gzy,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -2042,35 +2351,53 @@ NhlErrorTypes igradsf_W( void )
  * Input array variables
  */
   void *gzx, *gzy;
-  double *tmp_gzx, *tmp_gzy;
-  int ndims_gzx, dsizes_gzx[NCL_MAX_DIMENSIONS];
-  int ndims_gzy, dsizes_gzy[NCL_MAX_DIMENSIONS];
+  double *tmp_gzx = NULL;
+  double *tmp_gzy = NULL;
+  int ndims_gzx;
+  ng_size_t dsizes_gzx[NCL_MAX_DIMENSIONS];
+  int ndims_gzy;
+  ng_size_t dsizes_gzy[NCL_MAX_DIMENSIONS];
   NclScalar missing_gzx, missing_gzy, missing_dgzx, missing_dgzy;
   NclBasicDataTypes type_gzx, type_gzy;
   int has_missing_gzx, has_missing_gzy, found_missing_gzx, found_missing_gzy;
-  int nt, nlat, nlon, nlatnlon;
+  ng_size_t nt, nlat, nlon, nlatnlon;
 /*
  * Output array variables
  */
   void *z;
-  double *tmp_z;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
+  double *tmp_z = NULL;
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
   NclScalar missing_z, missing_dz;
   NclBasicDataTypes type_z;
   int has_missing_z;
 /*
  * various
  */
-  int total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  ng_size_t total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_gzxy, nmiss;
+  ng_size_t index_gzxy;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhaec;
+  int ilshsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -2222,10 +2549,41 @@ NhlErrorTypes igradsf_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+    if((nlon > INT_MAX) ||
+       (nlat > INT_MAX) ||
+       (nt > INT_MAX) ||
+       (lvhaec > INT_MAX) ||
+       (lshsec > INT_MAX) ||
+       (idvw > INT_MAX) ||
+       (jdvw > INT_MAX) ||
+       (mdab > INT_MAX) ||
+       (ndab > INT_MAX) ||
+       (ldwork1 > INT_MAX) ||
+       (ldwork2 > INT_MAX) ||
+       (lwork2 > INT_MAX) ||
+       (lwork3 > INT_MAX)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsf: one or more input dimension sizes is greater than INT_MAX");
+      return(NhlFATAL);
+    }
+    inlon = (int) nlon;
+    inlat = (int) nlat;
+    ilvhaec = (int) lvhaec;
+    ilshsec = (int) lshsec;
+    iidvw = (int) idvw;
+    ijdvw = (int) jdvw;
+    imdab = (int) mdab;
+    indab = (int) ndab;
+    ildwork1 = (int) ldwork1;
+    ildwork2 = (int) ldwork2;
+    ilwork2 = (int) lwork2;
+    ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
- * but then you can't check each individual nlat x nlon array to see
+ * but then you cannot check each individual nlat x nlon array to see
  * if contains missing values.  In the case below, if an nlat x nlon
  * array contains missing values, then only that subsection is set to
  * all missing.
@@ -2285,44 +2643,45 @@ NhlErrorTypes igradsf_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_gzx,tmp_gzy,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_gzx,tmp_gzy,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhaec(...,v,u,....)
  */
-      NGCALLF(dvhaeci,DVHAECI)(&nlat,&nlon,wvhaec,&lvhaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhaec,DVHAEC)(&nlat,&nlon,&isym,&one,tmp_gzy,tmp_gzx,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhaec,&lvhaec,work2,&lwork2,&ker);
+      NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&isym,&one,tmp_gzy,tmp_gzx,
+			     &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+			     wvhaec,&ilvhaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("igradsf","vhaec",&ier,&jer,&ker,&mer,7,5);
 /*
  * Compute the scalar function given the input vector
  */
-      NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(digradec,DIGRADEC)(&nlat,&nlon,&isym,&one,tmp_z,&idvw,&jdvw,
-                                 br,bi,&mdab,&ndab,wshsec,&lshsec,
-                                 work3,&lwork3,&ker);
-                           
+      NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,dwork2,&ildwork2,
+			       &jer);
+      NGCALLF(digradec,DIGRADEC)(&inlat,&inlon,&isym,&one,tmp_z,&iidvw,&ijdvw,
+				 br,bi,&imdab,&indab,wshsec,&ilshsec,
+				 work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("igradsf","shseci+igradec",&ier,&jer,&ker,
-                               &mer,7,14);
+			       &mer,7,14);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_z,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_gzx,tmp_gzy,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_gzx,tmp_gzy,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_z,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -2368,34 +2727,51 @@ NhlErrorTypes igradsF_W( void )
  * Input array variables
  */
   void *gzx, *gzy;
-  double *tmp_gzx, *tmp_gzy;
-  int ndims_gzx, dsizes_gzx[NCL_MAX_DIMENSIONS];
-  int ndims_gzy, dsizes_gzy[NCL_MAX_DIMENSIONS];
+  double *tmp_gzx = NULL;
+  double *tmp_gzy = NULL;
+  int ndims_gzx;
+  ng_size_t dsizes_gzx[NCL_MAX_DIMENSIONS];
+  int ndims_gzy;
+  ng_size_t dsizes_gzy[NCL_MAX_DIMENSIONS];
   NclScalar missing_gzx, missing_gzy;
   NclScalar missing_dgzx, missing_rgzx, missing_dgzy, missing_rgzy;
   NclBasicDataTypes type_gzx, type_gzy;
   int has_missing_gzx, has_missing_gzy, found_missing_gzx, found_missing_gzy;
-  int nt, nlat, nlon, nlatnlon;
+  ng_size_t nt, nlat, nlon, nlatnlon;
 /*
  * Output array variables
  */
   void *z;
-  double *tmp_z;
+  double *tmp_z = NULL;
   NclScalar missing_z, missing_dz;
   NclBasicDataTypes type_z;
 /*
  * various
  */
-  int total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  ng_size_t total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_gzxy, nmiss;
+  ng_size_t index_gzxy;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhaec;
+  int ilshsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -2537,6 +2913,37 @@ NhlErrorTypes igradsF_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (lshsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsF: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhaec = (int) lvhaec;
+  ilshsec = (int) lshsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -2598,43 +3005,45 @@ NhlErrorTypes igradsF_W( void )
                                 missing_dz.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_gzx,tmp_gzy,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_gzx,tmp_gzy,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhaec(...,v,u,....)
  */
-      NGCALLF(dvhaeci,DVHAECI)(&nlat,&nlon,wvhaec,&lvhaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhaec,DVHAEC)(&nlat,&nlon,&isym,&one,tmp_gzy,tmp_gzx,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhaec,&lvhaec,work2,&lwork2,&ker);
+      NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&isym,&one,tmp_gzy,tmp_gzx,
+			     &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+			     wvhaec,&ilvhaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("igradsF","vhaec",&ier,&jer,&ker,&mer,7,5);
 /*
  * Compute the scalar function given the input vector
  */
-      NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(digradec,DIGRADEC)(&nlat,&nlon,&isym,&one,tmp_z,&idvw,&jdvw,
-                                 br,bi,&mdab,&ndab,wshsec,&lshsec,
-                                 work3,&lwork3,&ker);
+      NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,dwork2,&ildwork2,
+			       &jer);
+      NGCALLF(digradec,DIGRADEC)(&inlat,&inlon,&isym,&one,tmp_z,&iidvw,&ijdvw,
+				 br,bi,&imdab,&indab,wshsec,&ilshsec,
+				 work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("igradsF","shseci+igradec",&ier,&jer,&ker,
-                               &mer,7,14);
+			       &mer,7,14);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_z,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_gzx,tmp_gzy,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_gzx,tmp_gzy,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_z,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -2682,35 +3091,53 @@ NhlErrorTypes igradsg_W( void )
  * Input array variables
  */
   void *gzx, *gzy;
-  double *tmp_gzx, *tmp_gzy;
-  int ndims_gzx, dsizes_gzx[NCL_MAX_DIMENSIONS];
-  int ndims_gzy,dsizes_gzy[NCL_MAX_DIMENSIONS];
+  double *tmp_gzx = NULL;
+  double *tmp_gzy = NULL;
+  int ndims_gzx;
+  ng_size_t dsizes_gzx[NCL_MAX_DIMENSIONS];
+  int ndims_gzy;
+  ng_size_t dsizes_gzy[NCL_MAX_DIMENSIONS];
   NclScalar missing_gzx, missing_gzy, missing_dgzx, missing_dgzy;
   NclBasicDataTypes type_gzx, type_gzy;
   int has_missing_gzx, has_missing_gzy, found_missing_gzx, found_missing_gzy;
-  int nt, nlat, nlon, nlatnlon;
+  ng_size_t nt, nlat, nlon, nlatnlon;
 /*
  * Output array variables
  */
   void *z;
-  double *tmp_z;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
+  double *tmp_z = NULL;
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
   NclScalar missing_z, missing_dz;
   NclBasicDataTypes type_z;
   int has_missing_z;
 /*
  * various
  */
-  int total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  ng_size_t total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_gzxy, nmiss;
+  ng_size_t index_gzxy;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhagc;
+  int ilshsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -2861,6 +3288,37 @@ NhlErrorTypes igradsg_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsg: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhagc = (int) lvhagc;
+  ilshsgc = (int) lshsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -2924,44 +3382,46 @@ NhlErrorTypes igradsg_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_gzx,tmp_gzy,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_gzx,tmp_gzy,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhagc(...,v,u,....)
  */
-      NGCALLF(dvhagci,DVHAGCI)(&nlat,&nlon,wvhagc,&lvhagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhagc,DVHAGC)(&nlat,&nlon,&isym,&one,tmp_gzy,tmp_gzx,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhagc,&lvhagc,work2,&lwork2,&ker);
+      NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&isym,&one,tmp_gzy,tmp_gzx,
+			     &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+			     wvhagc,&ilvhagc,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("igradsg","vhagc",&ier,&jer,&ker,&mer,7,5);
 /*
  * Compute the scalar function given the input vector
  */
-      NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(digradgc,DIGRADGC)(&nlat,&nlon,&isym,&one,tmp_z,&idvw,&jdvw,
-                                 br,bi,&mdab,&ndab,wshsgc,&lshsgc,
-                                 work3,&lwork3,&ker);
+      NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork2,&ildwork2, &jer);
+
+      NGCALLF(digradgc,DIGRADGC)(&inlat,&inlon,&isym,&one,tmp_z,&iidvw,&ijdvw,
+				 br,bi,&imdab,&indab,wshsgc,&ilshsgc,
+				 work3,&ilwork3,&ker);
                              
       NGCALLF(dchkerr,DCHKERR)("igradsg","shsgci+igradgc",&ier,&jer,&ker,
-                               &mer,7,14);
+			       &mer,7,14);
 
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_z,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_gzx,tmp_gzy,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_gzx,tmp_gzy,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_z,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -3007,34 +3467,51 @@ NhlErrorTypes igradsG_W( void )
  * Input array variables
  */
   void *gzx, *gzy;
-  double *tmp_gzx, *tmp_gzy;
-  int ndims_gzx, dsizes_gzx[NCL_MAX_DIMENSIONS];
-  int ndims_gzy, dsizes_gzy[NCL_MAX_DIMENSIONS];
+  double *tmp_gzx = NULL;
+  double *tmp_gzy = NULL;
+  int ndims_gzx;
+  ng_size_t dsizes_gzx[NCL_MAX_DIMENSIONS];
+  int ndims_gzy;
+  ng_size_t dsizes_gzy[NCL_MAX_DIMENSIONS];
   NclScalar missing_gzx, missing_gzy;
   NclScalar missing_dgzx, missing_rgzx, missing_dgzy, missing_rgzy;
   NclBasicDataTypes type_gzx, type_gzy;
   int has_missing_gzx, has_missing_gzy, found_missing_gzx, found_missing_gzy;
-  int nt, nlat, nlon, nlatnlon;
+  ng_size_t nt, nlat, nlon, nlatnlon;
 /*
  * Output array variables
  */
   void *z;
-  double *tmp_z;
+  double *tmp_z = NULL;
   NclScalar missing_z, missing_dz;
   NclBasicDataTypes type_z;
 /*
  * various
  */
-  int total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  ng_size_t total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_gzxy, nmiss;
+  ng_size_t index_gzxy;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhagc;
+  int ilshsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -3177,6 +3654,37 @@ NhlErrorTypes igradsG_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsG: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhagc = (int) lvhagc;
+  ilshsgc = (int) lshsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -3238,43 +3746,44 @@ NhlErrorTypes igradsG_W( void )
                                 missing_dz.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_gzx,tmp_gzy,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_gzx,tmp_gzy,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhagc(...,v,u,....)
  */
-      NGCALLF(dvhagci,DVHAGCI)(&nlat,&nlon,wvhagc,&lvhagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhagc,DVHAGC)(&nlat,&nlon,&isym,&one,tmp_gzy,tmp_gzx,&idvw,
-                             &jdvw,br,bi,cr,ci,&mdab,&ndab,wvhagc,&lvhagc,
-                             work2,&lwork2,&ker);
-
+      NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&isym,&one,tmp_gzy,tmp_gzx,&iidvw,
+			     &ijdvw,br,bi,cr,ci,&imdab,&indab,wvhagc,&ilvhagc,
+			     work2,&ilwork2,&ker);
+      
       NGCALLF(dchkerr,DCHKERR)("igradsG","vhagc",&ier,&jer,&ker,&mer,7,5);
 /*
  * Compute the scalar function given the input vector
  */
-      NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(digradgc,DIGRADGC)(&nlat,&nlon,&isym,&one,tmp_z,&idvw,&jdvw,
-                                 br,bi,&mdab,&ndab,wshsgc,&lshsgc,work3,
-                                 &lwork3,&ker);
+      NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork2,&ildwork2,&jer);
+      NGCALLF(digradgc,DIGRADGC)(&inlat,&inlon,&isym,&one,tmp_z,&iidvw,&ijdvw,
+				 br,bi,&imdab,&indab,wshsgc,&ilshsgc,work3,
+				 &ilwork3,&ker);
                              
       NGCALLF(dchkerr,DCHKERR)("igradsG","shsgci+igradgc",&ier,&jer,&ker,
-                               &mer,7,14);
+			       &mer,7,14);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_z,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_gzx,tmp_gzy,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_gzx,tmp_gzy,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_z,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -3320,9 +3829,12 @@ NhlErrorTypes ilapsf_W( void )
  * Input array variables
  */
   void *zlap, *zlmbda;
-  double *tmp_zlap, *tmp_zlmbda;
-  int ndims_zlap, dsizes_zlap[NCL_MAX_DIMENSIONS];
-  int ndims_zlmbda, dsizes_zlmbda[NCL_MAX_DIMENSIONS];
+  double *tmp_zlap = NULL;
+  double *tmp_zlmbda = NULL;
+  int ndims_zlap;
+  ng_size_t dsizes_zlap[NCL_MAX_DIMENSIONS];
+  int ndims_zlmbda;
+  ng_size_t dsizes_zlmbda[NCL_MAX_DIMENSIONS];
   NclScalar missing_zlap, missing_zlmbda, missing_dzlap, missing_dzlmbda;
   NclBasicDataTypes type_zlap, type_zlmbda;
   int has_missing_zlap, has_missing_zlmbda;
@@ -3330,26 +3842,40 @@ NhlErrorTypes ilapsf_W( void )
  * Output array variables
  */
   void *z;
-  double *tmp_z;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
+  double *tmp_z = NULL;
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
   NclScalar missing_z, missing_dz;
   int has_missing_z;
   NclBasicDataTypes type_z;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
-  int total_size_in, scalar_zlmbda;
-  int nt, nlat, nlon, nlatnlon;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
+  ng_size_t total_size_in, scalar_zlmbda;
+  ng_size_t nt, nlat, nlon, nlatnlon;
   int found_missing_zlap, found_missing_zlmbda;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_zlap, nmiss;
+  ng_size_t index_zlap;
+  int nmiss;
   double scalesqrd;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork, lshaec, lshsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork, lshaec, lshsec;
   double *work1, *work2, *work3, *wshaec, *wshsec, *pertrb, *a, *b, *dwork;
+  int inlon;
+  int inlat;
+  int ilshaec;
+  int ilshsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -3508,6 +4034,35 @@ NhlErrorTypes ilapsf_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshaec > INT_MAX) ||
+     (lshsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshaec = (int) lshaec;
+  ilshsec = (int) lshsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork = (int) ldwork;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -3578,43 +4133,45 @@ NhlErrorTypes ilapsf_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_zlap,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_zlap,work1);
 /* 
  * shaec performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b
  * Here the scalar grid is "z" (a scalar function)
  */ 
-      NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_zlap,&idvw,&jdvw,a,b,
-                             &mdab,&ndab,wshaec,&lshaec,work2,&lwork2,&ker);
-
+      NGCALLF(dshaeci,DSHAECI)(&inlat,&inlon,wshaec,&ilshaec,dwork,&ildwork,
+			       &jer);
+      NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&one,tmp_zlap,&iidvw,&ijdvw,a,b,
+			     &imdab,&indab,wshaec,&ilshaec,work2,&ilwork2,&ker);
+      
       NGCALLF(dchkerr,DCHKERR)("ilapsf","shaec",&ier,&jer,&ker,&mer,6,5);
 /* 
  * Invert the laplacian
  */ 
-      NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dislapec,DISLAPEC)(&nlat,&nlon,&isym,&one,tmp_zlmbda,tmp_z,
-                                 &idvw,&jdvw,a,b,&mdab,&ndab,wshsec,&lshsec,
-                                 work3,&lwork3,pertrb,&ker);
+      NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,dwork,&ildwork,
+			       &jer);
+      NGCALLF(dislapec,DISLAPEC)(&inlat,&inlon,&isym,&one,tmp_zlmbda,tmp_z,
+				 &iidvw,&ijdvw,a,b,&imdab,&indab,wshsec,&ilshsec,
+				 work3,&ilwork3,pertrb,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("ilapsf","shseci+islapec",&ier,&jer,&ker,&mer,
-                               6,14);
+			       6,14);
 /*
  * Transform from math coordinates to geophysical coordinates
  *  (math) nlat is the first dim
  */ 
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_z,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_zlap,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_z,&scalesqrd,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -3658,9 +4215,12 @@ NhlErrorTypes ilapsF_W( void )
  * Input array variables
  */
   void *zlap, *zlmbda;
-  double *tmp_zlap, *tmp_zlmbda;
-  int ndims_zlap, dsizes_zlap[NCL_MAX_DIMENSIONS];
-  int ndims_zlmbda, dsizes_zlmbda[NCL_MAX_DIMENSIONS];
+  double *tmp_zlap = NULL;
+  double *tmp_zlmbda = NULL;
+  int ndims_zlap;
+  ng_size_t dsizes_zlap[NCL_MAX_DIMENSIONS];
+  int ndims_zlmbda;
+  ng_size_t dsizes_zlmbda[NCL_MAX_DIMENSIONS];
   NclScalar missing_zlap, missing_zlmbda, missing_dzlap, missing_dzlmbda;
   NclScalar missing_rzlap;
   NclBasicDataTypes type_zlap, type_zlmbda;
@@ -3669,25 +4229,38 @@ NhlErrorTypes ilapsF_W( void )
  * Output array variables
  */
   void *z;
-  double *tmp_z;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
+  double *tmp_z = NULL;
   NclScalar missing_z, missing_dz;
   NclBasicDataTypes type_z;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
-  int total_size_in, scalar_zlmbda;
-  int nt, nlat, nlon, nlatnlon;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
+  ng_size_t total_size_in;
+  int scalar_zlmbda;
+  ng_size_t nt, nlat, nlon, nlatnlon;
   int found_missing_zlap, found_missing_zlmbda;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_zlap, nmiss;
+  ng_size_t index_zlap;
+  int nmiss;
   double scalesqrd;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork, lshaec, lshsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork, lshaec, lshsec;
   double *work1, *work2, *work3, *wshaec, *wshsec, *pertrb, *a, *b, *dwork;
+  int inlon;
+  int inlat;
+  int ilshaec;
+  int ilshsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -3835,6 +4408,35 @@ NhlErrorTypes ilapsF_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshaec > INT_MAX) ||
+     (lshsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshaec = (int) lshaec;
+  ilshsec = (int) lshsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork = (int) ldwork;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -3905,43 +4507,45 @@ NhlErrorTypes ilapsF_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_zlap,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_zlap,work1);
 /* 
  * shaec performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b
  * Here the scalar grid is "z" (a scalar function)
  */ 
-      NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_zlap,&idvw,&jdvw,a,b,
-                             &mdab,&ndab,wshaec,&lshaec,work2,&lwork2,&ker);
+      NGCALLF(dshaeci,DSHAECI)(&inlat,&inlon,wshaec,&ilshaec,dwork,&ildwork,
+			       &jer);
+      NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&one,tmp_zlap,&iidvw,&ijdvw,a,b,
+			     &imdab,&indab,wshaec,&ilshaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("ilapsF","shaec",&ier,&jer,&ker,&mer,6,5);
 /* 
  * Invert the laplacian
  */ 
-      NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dislapec,DISLAPEC)(&nlat,&nlon,&isym,&one,tmp_zlmbda,tmp_z,
-                                 &idvw,&jdvw,a,b,&mdab,&ndab,wshsec,&lshsec,
-                                 work3,&lwork3,pertrb,&ker);
+      NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,dwork,&ildwork,
+			       &jer);
+      NGCALLF(dislapec,DISLAPEC)(&inlat,&inlon,&isym,&one,tmp_zlmbda,tmp_z,
+				 &iidvw,&ijdvw,a,b,&imdab,&indab,wshsec,&ilshsec,
+				 work3,&ilwork3,pertrb,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("ilapsF","shseci+islapec",&ier,&jer,&ker,&mer,
-                               6,14);
+			       6,14);
 /*
  * Transform from math coordinates to geophysical coordinates
  *  (math) nlat is the first dim
  */ 
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_z,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_zlap,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_z,&scalesqrd,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -3987,9 +4591,12 @@ NhlErrorTypes ilapsg_W( void )
  * Input array variables
  */
   void *zlap, *zlmbda;
-  double *tmp_zlap, *tmp_zlmbda;
-  int ndims_zlap, dsizes_zlap[NCL_MAX_DIMENSIONS];
-  int ndims_zlmbda, dsizes_zlmbda[NCL_MAX_DIMENSIONS];
+  double *tmp_zlap = NULL;
+  double *tmp_zlmbda = NULL;
+  int ndims_zlap;
+  ng_size_t dsizes_zlap[NCL_MAX_DIMENSIONS];
+  int ndims_zlmbda;
+  ng_size_t dsizes_zlmbda[NCL_MAX_DIMENSIONS];
   NclScalar missing_zlap, missing_zlmbda, missing_dzlap, missing_dzlmbda;
   NclBasicDataTypes type_zlap, type_zlmbda;
   int has_missing_zlap, has_missing_zlmbda;
@@ -3997,26 +4604,40 @@ NhlErrorTypes ilapsg_W( void )
  * Output array variables
  */
   void *z;
-  double *tmp_z;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
+  double *tmp_z = NULL;
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
   NclScalar missing_z, missing_dz;
   int has_missing_z;
   NclBasicDataTypes type_z;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
-  int total_size_in, scalar_zlmbda;
-  int nt, nlat, nlon, nlatnlon;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
+  ng_size_t total_size_in, scalar_zlmbda;
+  ng_size_t nt, nlat, nlon, nlatnlon;
   int found_missing_zlap, found_missing_zlmbda;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_zlap, nmiss;
+  ng_size_t index_zlap;
+  int nmiss;
   double scalesqrd;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork, lshagc, lshsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork, lshagc, lshsgc;
   double *work1, *work2, *work3, *wshagc, *wshsgc, *pertrb, *a, *b, *dwork;
+  int inlon;
+  int inlat;
+  int ilshagc;
+  int ilshsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -4176,6 +4797,35 @@ NhlErrorTypes ilapsg_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshagc > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshagc = (int) lshagc;
+  ilshsgc = (int) lshsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork = (int) ldwork;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -4246,44 +4896,44 @@ NhlErrorTypes ilapsg_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_zlap,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_zlap,work1);
 /* 
  * shagc performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b
  * Here the scalar grid is "z" (a scalar function)
  */ 
-      NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_zlap,&idvw,&jdvw,a,b,
-                             &mdab,&ndab,wshagc,&lshagc,work2,&lwork2,&ker);
-
+      NGCALLF(dshagci,DSHAGCI)(&inlat,&inlon,wshagc,&ilshagc,dwork,&ildwork,
+			       &jer);
+      NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&one,tmp_zlap,&iidvw,&ijdvw,a,b,
+			     &imdab,&indab,wshagc,&ilshagc,work2,&ilwork2,&ker);
+      
       NGCALLF(dchkerr,DCHKERR)("ilapsg","shagc",&ier,&jer,&ker,&mer,6,5);
 /* 
  * Invert the laplacian
  */ 
-      NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dislapgc,DISLAPGC)(&nlat,&nlon,&isym,&one,tmp_zlmbda,tmp_z,
-                                 &idvw,&jdvw,a,b,&mdab,&ndab,wshsgc,&lshsgc,
-                                 work3,&lwork3,pertrb,&ker);
+      NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork,&ildwork,&jer);
+      NGCALLF(dislapgc,DISLAPGC)(&inlat,&inlon,&isym,&one,tmp_zlmbda,tmp_z,
+				 &iidvw,&ijdvw,a,b,&imdab,&indab,wshsgc,&ilshsgc,
+				 work3,&ilwork3,pertrb,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("ilapsg","shsgci+islapgc",&ier,&jer,&ker,&mer,
-                               6,14);
+                                 6,14);
 /*
  * Transform from math coordinates to geophysical coordinates
  *  (math) nlat is the first dim
  */ 
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_z,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_zlap,work1);
-
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_z,&scalesqrd,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -4327,9 +4977,12 @@ NhlErrorTypes ilapsG_W( void )
  * Input array variables
  */
   void *zlap, *zlmbda;
-  double *tmp_zlap, *tmp_zlmbda;
-  int ndims_zlap, dsizes_zlap[NCL_MAX_DIMENSIONS];
-  int ndims_zlmbda, dsizes_zlmbda[NCL_MAX_DIMENSIONS];
+  double *tmp_zlap = NULL;
+  double *tmp_zlmbda = NULL;
+  int ndims_zlap;
+  ng_size_t dsizes_zlap[NCL_MAX_DIMENSIONS];
+  int ndims_zlmbda;
+  ng_size_t dsizes_zlmbda[NCL_MAX_DIMENSIONS];
   NclScalar missing_zlap, missing_zlmbda, missing_dzlap, missing_dzlmbda;
   NclScalar missing_rzlap;
   NclBasicDataTypes type_zlap, type_zlmbda;
@@ -4338,25 +4991,37 @@ NhlErrorTypes ilapsG_W( void )
  * Output array variables
  */
   void *z;
-  double *tmp_z;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
+  double *tmp_z = NULL;
   NclScalar missing_z, missing_dz;
   NclBasicDataTypes type_z;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
-  int total_size_in, scalar_zlmbda;
-  int nt, nlat, nlon, nlatnlon;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
+  ng_size_t total_size_in, scalar_zlmbda;
+  ng_size_t nt, nlat, nlon, nlatnlon;
   int found_missing_zlap, found_missing_zlmbda;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_zlap, nmiss;
+  ng_size_t index_zlap;
+  int nmiss;
   double scalesqrd;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork, lshagc, lshsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork, lshagc, lshsgc;
   double *work1, *work2, *work3, *wshagc, *wshsgc, *pertrb, *a, *b, *dwork;
+  int inlon;
+  int inlat;
+  int ilshagc;
+  int ilshsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -4503,6 +5168,35 @@ NhlErrorTypes ilapsG_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshagc > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshagc = (int) lshagc;
+  ilshsgc = (int) lshsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork = (int) ldwork;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -4573,43 +5267,44 @@ NhlErrorTypes ilapsG_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_zlap,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_zlap,work1);
 /* 
  * shagc performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b
  * Here the scalar grid is "z" (a scalar function)
  */ 
-      NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_zlap,&idvw,&jdvw,a,b,
-                             &mdab,&ndab,wshagc,&lshagc,work2,&lwork2,&ker);
+      NGCALLF(dshagci,DSHAGCI)(&inlat,&inlon,wshagc,&ilshagc,dwork,&ildwork,
+			       &jer);
+      NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&one,tmp_zlap,&iidvw,&ijdvw,a,b,
+			     &imdab,&indab,wshagc,&ilshagc,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("ilapsG","shagc",&ier,&jer,&ker,&mer,6,5);
 /* 
  * Invert the laplacian
  */ 
-      NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dislapgc,DISLAPGC)(&nlat,&nlon,&isym,&one,tmp_zlmbda,tmp_z,
-                                 &idvw,&jdvw,a,b,&mdab,&ndab,wshsgc,&lshsgc,
-                                 work3,&lwork3,pertrb,&ker);
+      NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork,&ildwork,&jer);
+      NGCALLF(dislapgc,DISLAPGC)(&inlat,&inlon,&isym,&one,tmp_zlmbda,tmp_z,
+				 &iidvw,&ijdvw,a,b,&imdab,&indab,wshsgc,&ilshsgc,
+				 work3,&ilwork3,pertrb,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("ilapsG","shsgci+islapgc",&ier,&jer,&ker,&mer,
-                               6,14);
+                                 6,14);
 /*
  * Transform from math coordinates to geophysical coordinates
  *  (math) nlat is the first dim
  */ 
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_z,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_zlap,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_z,&scalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_z,&scalesqrd,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -4655,9 +5350,12 @@ NhlErrorTypes ilapvf_W( void )
  * Input array variables
  */
   void *ulap, *vlap;
-  double *tmp_ulap, *tmp_vlap;
-  int ndims_ulap, dsizes_ulap[NCL_MAX_DIMENSIONS];
-  int ndims_vlap, dsizes_vlap[NCL_MAX_DIMENSIONS];
+  double *tmp_ulap = NULL;
+  double *tmp_vlap = NULL;
+  int ndims_ulap;
+  ng_size_t dsizes_ulap[NCL_MAX_DIMENSIONS];
+  int ndims_vlap;
+  ng_size_t dsizes_vlap[NCL_MAX_DIMENSIONS];
   NclScalar missing_ulap, missing_vlap, missing_dulap, missing_dvlap;
   NclBasicDataTypes type_ulap, type_vlap;
   int has_missing_ulap, has_missing_vlap;
@@ -4666,9 +5364,12 @@ NhlErrorTypes ilapvf_W( void )
  * Output array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_du;
   NclScalar missing_v, missing_dv;
   int has_missing_u, has_missing_v;
@@ -4676,16 +5377,29 @@ NhlErrorTypes ilapvf_W( void )
 /*
  * various
  */
-  int total_size_in, nt, nlat, nlon, nlatnlon;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  ng_size_t total_size_in, nt, nlat, nlon, nlatnlon;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
   double scalesqrd;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork, lvhaec, lvhsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork, lvhaec, lvhsec;
   double *work1, *work2, *work3, *wvhaec, *wvhsec, *br, *bi, *cr, *ci, *dwork;
+  int inlon;
+  int inlat;
+  int ilvhaec;
+  int ilvhsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -4854,6 +5568,35 @@ NhlErrorTypes ilapvf_W( void )
     return(NhlFATAL);
   }
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (lvhsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvf: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhaec = (int) lvhaec;
+  ilvhsec = (int) lvhsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork = (int) ldwork;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -4928,44 +5671,46 @@ NhlErrorTypes ilapvf_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_ulap,tmp_vlap,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_ulap,tmp_vlap,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhaec(...,v,u,....)
  */
-      NGCALLF(dvhaeci,DVHAECI)(&nlat,&nlon,wvhaec,&lvhaec,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dvhaec,DVHAEC)(&nlat,&nlon,&isym,&one,tmp_vlap,tmp_ulap,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhaec,&lvhaec,work2,&lwork2,&ker);
+      NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork,&ildwork,
+			       &jer);
+      NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&isym,&one,tmp_vlap,tmp_ulap,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhaec,&ilvhaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("ilapvf","vhaec",&ier,&jer,&ker,&mer,6,5);
 /* 
  * Compute the vector laplacian using the vector spherical harmonic 
  */ 
-      NGCALLF(dvhseci,DVHSECI)(&nlat,&nlon,wvhsec,&lvhsec,dwork,&ldwork,
-                               &jer);
-      NGCALLF(divlapec,DIVLAPEC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                                 &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                                 wvhsec,&lvhsec,work3,&lwork3,&ker);
+      NGCALLF(dvhseci,DVHSECI)(&inlat,&inlon,wvhsec,&ilvhsec,dwork,&ildwork,
+			       &jer);
+      NGCALLF(divlapec,DIVLAPEC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                                   &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                                   wvhsec,&ilvhsec,work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("ilapvf","vhseci,ivlapec",&ier,&jer,&ker,&mer,
-                               6,14);
+                                 6,14);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_ulap,tmp_vlap,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ulap,tmp_vlap,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_u,&scalesqrd,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_v,&scalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_u,&scalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_v,&scalesqrd,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -5014,9 +5759,12 @@ NhlErrorTypes ilapvg_W( void )
  * Input array variables
  */
   void *ulap, *vlap;
-  double *tmp_ulap, *tmp_vlap;
-  int ndims_ulap, dsizes_ulap[NCL_MAX_DIMENSIONS];
-  int ndims_vlap, dsizes_vlap[NCL_MAX_DIMENSIONS];
+  double *tmp_ulap = NULL;
+  double *tmp_vlap = NULL;
+  int ndims_ulap;
+  ng_size_t dsizes_ulap[NCL_MAX_DIMENSIONS];
+  int ndims_vlap;
+  ng_size_t dsizes_vlap[NCL_MAX_DIMENSIONS];
   NclScalar missing_ulap, missing_vlap, missing_dulap, missing_dvlap;
   NclBasicDataTypes type_ulap, type_vlap;
   int has_missing_ulap, has_missing_vlap;
@@ -5025,9 +5773,12 @@ NhlErrorTypes ilapvg_W( void )
  * Output array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_du;
   NclScalar missing_v, missing_dv;
   int has_missing_u, has_missing_v;
@@ -5035,16 +5786,29 @@ NhlErrorTypes ilapvg_W( void )
 /*
  * various
  */
-  int total_size_in, nt, nlat, nlon, nlatnlon;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  ng_size_t total_size_in, nt, nlat, nlon, nlatnlon;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
   double scalesqrd;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork, lvhagc, lvhsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork, lvhagc, lvhsgc;
   double *work1, *work2, *work3, *wvhagc, *wvhsgc, *br, *bi, *cr, *ci, *dwork;
+  int inlon;
+  int inlat;
+  int ilvhagc;
+  int ilvhsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -5214,6 +5978,35 @@ NhlErrorTypes ilapvg_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (lvhsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvg: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhagc = (int) lvhagc;
+  ilvhsgc = (int) lvhsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork = (int) ldwork;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -5288,44 +6081,46 @@ NhlErrorTypes ilapvg_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_ulap,tmp_vlap,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_ulap,tmp_vlap,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhagc(...,v,u,....)
  */
-      NGCALLF(dvhagci,DVHAGCI)(&nlat,&nlon,wvhagc,&lvhagc,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dvhagc,DVHAGC)(&nlat,&nlon,&isym,&one,tmp_vlap,tmp_ulap,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhagc,&lvhagc,work2,&lwork2,&ker);
+      NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork,&ildwork,
+			       &jer);
+      NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&isym,&one,tmp_vlap,tmp_ulap,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhagc,&ilvhagc,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("ilapvg","vhagc",&ier,&jer,&ker,&mer,6,5);
 /* 
  * Compute the vector laplacian using the vector spherical harmonic 
  */ 
-      NGCALLF(dvhsgci,DVHSGCI)(&nlat,&nlon,wvhsgc,&lvhsgc,dwork,&ldwork,
-                               &jer);
-      NGCALLF(divlapgc,DIVLAPGC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                                 &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                                 wvhsgc,&lvhsgc,work3,&lwork3,&ker);
+      NGCALLF(dvhsgci,DVHSGCI)(&inlat,&inlon,wvhsgc,&ilvhsgc,dwork,&ildwork,
+			       &jer);
+      NGCALLF(divlapgc,DIVLAPGC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                                   &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                                   wvhsgc,&ilvhsgc,work3,&ilwork3,&ker);
       
       NGCALLF(dchkerr,DCHKERR)("ilapvg","vhsgci,ivlapgc",&ier,&jer,&ker,&mer,
-                               6,14);
+                                 6,14);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_ulap,tmp_vlap,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ulap,tmp_vlap,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_u,&scalesqrd,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_v,&scalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_u,&scalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_v,&scalesqrd,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -5374,34 +6169,49 @@ NhlErrorTypes lapsf_W( void )
  * Input array variables
  */
   void *z;
-  double *tmp_z;
-  int dsizes_z[NCL_MAX_DIMENSIONS], ndims_z;
+  double *tmp_z = NULL;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  int ndims_z;
   NclScalar missing_z, missing_dz;
   NclBasicDataTypes type_z;
   int has_missing_z, found_missing_z;
-  int nt, nlat, nlon, nlatnlon;
+  ng_size_t nt, nlat, nlon, nlatnlon;
 /*
  * Output array variables
  */
   void *zlap;
-  double *tmp_zlap;
+  double *tmp_zlap = NULL;
   NclBasicDataTypes type_zlap;
   NclScalar missing_zlap, missing_dzlap;
   int has_missing_zlap;
-  int ndims_zlap, dsizes_zlap[NCL_MAX_DIMENSIONS];
+  int ndims_zlap;
+  ng_size_t dsizes_zlap[NCL_MAX_DIMENSIONS];
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int total_size_in;
-  int index_z, nmiss;
+  ng_size_t total_size_in;
+  ng_size_t index_z;
+  int nmiss;
   double invscalesqrd;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork, lshaec, lshsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork, lshaec, lshsec;
   double *work1, *work2, *work3, *wshaec, *wshsec, *a, *b, *dwork;
+  int inlon;
+  int inlat;
+  int ilshaec;
+  int ilshsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -5526,6 +6336,35 @@ NhlErrorTypes lapsf_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshaec > INT_MAX) ||
+     (lshsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsf: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshaec = (int) lshaec;
+  ilshsec = (int) lshsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork = (int) ldwork;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -5574,43 +6413,44 @@ NhlErrorTypes lapsf_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_z,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_z,work1);
 /* 
  * shaec performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b
  * Here the scalar grid is "z" (a scalar function)
  */ 
-      NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_z,&idvw,&jdvw,a,b,
-                             &mdab,&ndab,wshaec,&lshaec,work2,&lwork2,&ker);
+      NGCALLF(dshaeci,DSHAECI)(&inlat,&inlon,wshaec,&ilshaec,dwork,&ildwork,
+			       &jer);
+      NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&one,tmp_z,&iidvw,&ijdvw,a,b,
+                               &imdab,&indab,wshaec,&ilshaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("lapsf","shaec",&ier,&jer,&ker,&mer,5,5);
 /* 
  * Compute the laplacian
  */ 
-      NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dslapec,DSLAPEC)(&nlat,&nlon,&isym,&one,tmp_zlap,&idvw,&jdvw,
-                               a,b,&mdab,&ndab,wshsec,&lshsec,work3,&lwork3,
-                               &ker);
+      NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,dwork,&ildwork,
+			       &jer);
+      NGCALLF(dslapec,DSLAPEC)(&inlat,&inlon,&isym,&one,tmp_zlap,&iidvw,&ijdvw,
+                                 a,b,&imdab,&indab,wshsec,&ilshsec,work3,&ilwork3,
+                                 &ker);
                                
       NGCALLF(dchkerr,DCHKERR)("lapsf","shseci+slapec",&ier,&jer,&ker,&mer,
-                               5,13);
+                                 5,13);
 /*
  * Transform from math coordinates to geophysical coordinates
  *  (math) nlat is the first dim
  */ 
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_z,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_zlap,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_zlap,&invscalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_zlap,&invscalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -5652,32 +6492,46 @@ NhlErrorTypes lapsF_W( void )
  * Input array variables
  */
   void *z;
-  double *tmp_z;
-  int dsizes_z[NCL_MAX_DIMENSIONS], ndims_z;
+  double *tmp_z = NULL;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  int ndims_z;
   NclScalar missing_z, missing_dz, missing_rz;
   NclBasicDataTypes type_z;
   int has_missing_z, found_missing_z;
-  int nt, nlat, nlon, nlatnlon;
+  ng_size_t nt, nlat, nlon, nlatnlon;
 /*
  * Output array variables
  */
   void *zlap;
-  double *tmp_zlap;
+  double *tmp_zlap = NULL;
   NclScalar missing_zlap, missing_dzlap;
   NclBasicDataTypes type_zlap;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int total_size_in;
-  int index_z, nmiss;
+  ng_size_t total_size_in;
+  ng_size_t index_z;
+  int nmiss;
   double invscalesqrd;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork, lshaec, lshsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork, lshaec, lshsec;
   double *work1, *work2, *work3, *wshaec, *wshsec, *a, *b, *dwork;
+  int inlon;
+  int inlat;
+  int ilshaec;
+  int ilshsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -5783,6 +6637,35 @@ NhlErrorTypes lapsF_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshaec > INT_MAX) ||
+     (lshsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsF: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshaec = (int) lshaec;
+  ilshsec = (int) lshsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork = (int) ldwork;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -5829,43 +6712,44 @@ NhlErrorTypes lapsF_W( void )
                                 missing_dzlap.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_z,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_z,work1);
 /* 
  * shaec performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b
  * Here the scalar grid is "z" (a scalar function)
  */ 
-      NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_z,&idvw,&jdvw,a,b,
-                             &mdab,&ndab,wshaec,&lshaec,work2,&lwork2,&ker);
+      NGCALLF(dshaeci,DSHAECI)(&inlat,&inlon,wshaec,&ilshaec,dwork,&ildwork,
+			       &jer);
+      NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&one,tmp_z,&iidvw,&ijdvw,a,b,
+                               &imdab,&indab,wshaec,&ilshaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("lapsF","shaec",&ier,&jer,&ker,&mer,5,5);
 /* 
  * Compute the laplacian
  */ 
-      NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dslapec,DSLAPEC)(&nlat,&nlon,&isym,&one,tmp_zlap,&idvw,&jdvw,
-                               a,b,&mdab,&ndab,wshsec,&lshsec,work3,&lwork3,
-                               &ker);
+      NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,dwork,&ildwork,
+			       &jer);
+      NGCALLF(dslapec,DSLAPEC)(&inlat,&inlon,&isym,&one,tmp_zlap,&iidvw,&ijdvw,
+                                 a,b,&imdab,&indab,wshsec,&ilshsec,work3,&ilwork3,
+                                 &ker);
 
       NGCALLF(dchkerr,DCHKERR)("lapsF","shseci+slapec",&ier,&jer,&ker,&mer,
-                               5,13);
+                                 5,13);
 /*
  * Transform from math coordinates to geophysical coordinates
  *  (math) nlat is the first dim
  */ 
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_z,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_zlap,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_zlap,&invscalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_zlap,&invscalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -5909,34 +6793,49 @@ NhlErrorTypes lapsg_W( void )
  * Input array variables
  */
   void *z;
-  double *tmp_z;
-  int dsizes_z[NCL_MAX_DIMENSIONS], ndims_z;
+  double *tmp_z = NULL;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  int ndims_z;
   NclScalar missing_z, missing_dz;
   NclBasicDataTypes type_z;
   int has_missing_z, found_missing_z;
-  int nt, nlat, nlon, nlatnlon;
+  ng_size_t nt, nlat, nlon, nlatnlon;
 /*
  * Output array variables
  */
   void *zlap;
-  double *tmp_zlap;
+  double *tmp_zlap = NULL;
   NclBasicDataTypes type_zlap;
   NclScalar missing_zlap, missing_dzlap;
   int has_missing_zlap;
-  int ndims_zlap, dsizes_zlap[NCL_MAX_DIMENSIONS];
+  int ndims_zlap;
+  ng_size_t dsizes_zlap[NCL_MAX_DIMENSIONS];
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int total_size_in;
-  int index_z, nmiss;
+  ng_size_t total_size_in;
+  ng_size_t index_z;
+  int nmiss;
   double invscalesqrd;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork, lshagc, lshsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork, lshagc, lshsgc;
   double *work1, *work2, *work3, *wshagc, *wshsgc, *a, *b, *dwork;
+  int inlon;
+  int inlat;
+  int ilshagc;
+  int ilshsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -6060,6 +6959,35 @@ NhlErrorTypes lapsg_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshagc > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsg: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshagc = (int) lshagc;
+  ilshsgc = (int) lshsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork = (int) ldwork;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -6108,42 +7036,42 @@ NhlErrorTypes lapsg_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_z,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_z,work1);
 /* 
  * shagc performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b
  * Here the scalar grid is "z" (a scalar function)
  */ 
-      NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork,&ldwork,&jer);
-      NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_z,&idvw,&jdvw,a,b,
-                             &mdab,&ndab,wshagc,&lshagc,work2,&lwork2,&ker);
+      NGCALLF(dshagci,DSHAGCI)(&inlat,&inlon,wshagc,&ilshagc,dwork,&ildwork,&jer);
+      NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&one,tmp_z,&iidvw,&ijdvw,a,b,
+                               &imdab,&indab,wshagc,&ilshagc,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("lapsg","shagc",&ier,&jer,&ker,&mer,5,5);
 /* 
  * Compute the laplacian
  */ 
-      NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dslapgc,DSLAPGC)(&nlat,&nlon,&isym,&one,tmp_zlap,&idvw,&jdvw,
-                               a,b,&mdab,&ndab,wshsgc,&lshsgc,work3,&lwork3,
-                               &ker);
+      NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork,&ildwork,&jer);
+      NGCALLF(dslapgc,DSLAPGC)(&inlat,&inlon,&isym,&one,tmp_zlap,&iidvw,&ijdvw,
+                                 a,b,&imdab,&indab,wshsgc,&ilshsgc,work3,&ilwork3,
+                                 &ker);
 
       NGCALLF(dchkerr,DCHKERR)("lapsg","shsgci+slapgc",&ier,&jer,&ker,&mer,
-                               5,13);
+                                 5,13);
 /*
  * Transform from math coordinates to geophysical coordinates
  *  (math) nlat is the first dim
  */ 
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_z,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_zlap,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_zlap,&invscalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_zlap,&invscalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -6185,32 +7113,46 @@ NhlErrorTypes lapsG_W( void )
  * Input array variables
  */
   void *z;
-  double *tmp_z;
-  int dsizes_z[NCL_MAX_DIMENSIONS], ndims_z;
+  double *tmp_z = NULL;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  int ndims_z;
   NclScalar missing_z, missing_dz, missing_rz;
   NclBasicDataTypes type_z;
   int has_missing_z, found_missing_z;
-  int nt, nlat, nlon, nlatnlon;
+  ng_size_t nt, nlat, nlon, nlatnlon;
 /*
  * Output array variables
  */
   void *zlap;
-  double *tmp_zlap;
+  double *tmp_zlap = NULL;
   NclScalar missing_zlap, missing_dzlap;
   NclBasicDataTypes type_zlap;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int total_size_in;
-  int index_z, nmiss;
+  ng_size_t total_size_in;
+  ng_size_t index_z;
+  int nmiss;
   double invscalesqrd;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork, lshagc, lshsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork, lshagc, lshsgc;
   double *work1, *work2, *work3, *wshagc, *wshsgc, *a, *b, *dwork;
+  int inlon;
+  int inlat;
+  int ilshagc;
+  int ilshsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -6316,6 +7258,35 @@ NhlErrorTypes lapsG_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshagc > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsG: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshagc = (int) lshagc;
+  ilshsgc = (int) lshsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork = (int) ldwork;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -6362,42 +7333,42 @@ NhlErrorTypes lapsG_W( void )
                                 missing_dzlap.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_z,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_z,work1);
 /* 
  * shagc performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b
  * Here the scalar grid is "z" (a scalar function)
  */ 
-      NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork,&ldwork,&jer);
-      NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_z,&idvw,&jdvw,a,b,
-                             &mdab,&ndab,wshagc,&lshagc,work2,&lwork2,&ker);
+      NGCALLF(dshagci,DSHAGCI)(&inlat,&inlon,wshagc,&ilshagc,dwork,&ildwork,&jer);
+      NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&one,tmp_z,&iidvw,&ijdvw,a,b,
+                               &imdab,&indab,wshagc,&ilshagc,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("lapsG","shagc",&ier,&jer,&ker,&mer,5,5);
 /* 
  * Compute the laplacian
  */ 
-      NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dslapgc,DSLAPGC)(&nlat,&nlon,&isym,&one,tmp_zlap,&idvw,&jdvw,
-                               a,b,&mdab,&ndab,wshsgc,&lshsgc,work3,&lwork3,
-                               &ker);
+      NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork,&ildwork,&jer);
+      NGCALLF(dslapgc,DSLAPGC)(&inlat,&inlon,&isym,&one,tmp_zlap,&iidvw,&ijdvw,
+                                 a,b,&imdab,&indab,wshsgc,&ilshsgc,work3,&ilwork3,
+                                 &ker);
 
       NGCALLF(dchkerr,DCHKERR)("lapsG","shsgci+slapgc",&ier,&jer,&ker,&mer,
-                               5,13);
+                                 5,13);
 /*
  * Transform from math coordinates to geophysical coordinates
  *  (math) nlat is the first dim
  */ 
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_z,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_zlap,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_zlap,&invscalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_zlap,&invscalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -6440,9 +7411,12 @@ NhlErrorTypes lapvf_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
   NclBasicDataTypes type_u, type_v;
@@ -6450,8 +7424,10 @@ NhlErrorTypes lapvf_W( void )
  * Output array variables
  */
   void *ulap, *vlap;
-  double *tmp_ulap, *tmp_vlap;
-  int dsizes_ulap[NCL_MAX_DIMENSIONS], dsizes_vlap[NCL_MAX_DIMENSIONS];
+  double *tmp_ulap = NULL;
+  double *tmp_vlap = NULL;
+  ng_size_t dsizes_ulap[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_vlap[NCL_MAX_DIMENSIONS];
   int ndims_ulap, ndims_vlap;
   NclScalar missing_ulap, missing_dulap;
   NclScalar missing_vlap, missing_dvlap;
@@ -6460,16 +7436,29 @@ NhlErrorTypes lapvf_W( void )
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int index_uv, nmiss;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t index_uv;
+  int nmiss;
   double invscalesqrd;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork, lvhaec, lvhsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork, lvhaec, lvhsec;
   double *work1, *work2, *work3, *wvhaec, *wvhsec, *br, *bi, *cr, *ci, *dwork;
+  int inlon;
+  int inlat;
+  int ilvhaec;
+  int ilvhsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -6638,6 +7627,35 @@ NhlErrorTypes lapvf_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (lvhsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvf: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhaec = (int) lvhaec;
+  ilvhsec = (int) lvhsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork = (int) ldwork;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -6714,43 +7732,44 @@ NhlErrorTypes lapvf_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhaec(...,v,u,....)
  */
-      NGCALLF(dvhaeci,DVHAECI)(&nlat,&nlon,wvhaec,&lvhaec,dwork,&ldwork,&jer);
-      NGCALLF(dvhaec,DVHAEC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhaec,&lvhaec,work2,&lwork2,&ker);
+      NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork,&ildwork,&jer);
+      NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhaec,&ilvhaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("lapvf","vhaec",&ier,&jer,&ker,&mer,5,5);
 /* 
  * Compute the vector laplacian using the vector spherical harmonic 
  */ 
-      NGCALLF(dvhseci,DVHSECI)(&nlat,&nlon,wvhsec,&lvhsec,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dvlapec,DVLAPEC)(&nlat,&nlon,&isym,&one,tmp_vlap,tmp_ulap,
-                               &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                               wvhsec,&lvhsec,work3,&lwork3,&ker);
+      NGCALLF(dvhseci,DVHSECI)(&inlat,&inlon,wvhsec,&ilvhsec,dwork,&ildwork,
+			       &jer);
+      NGCALLF(dvlapec,DVLAPEC)(&inlat,&inlon,&isym,&one,tmp_vlap,tmp_ulap,
+                                 &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                                 wvhsec,&ilvhsec,work3,&ilwork3,&ker);
                            
       NGCALLF(dchkerr,DCHKERR)("lapvf","vhseci,vlapec",&ier,&jer,&ker,&mer,
-                               5,13);
+                                 5,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_ulap,tmp_vlap,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ulap,tmp_vlap,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_ulap,&invscalesqrd,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vlap,&invscalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_ulap,&invscalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vlap,&invscalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -6799,9 +7818,12 @@ NhlErrorTypes lapvg_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
   NclBasicDataTypes type_u, type_v;
@@ -6809,8 +7831,10 @@ NhlErrorTypes lapvg_W( void )
  * Output array variables
  */
   void *ulap, *vlap;
-  double *tmp_ulap, *tmp_vlap;
-  int dsizes_ulap[NCL_MAX_DIMENSIONS], dsizes_vlap[NCL_MAX_DIMENSIONS];
+  double *tmp_ulap = NULL;
+  double *tmp_vlap = NULL;
+  ng_size_t dsizes_ulap[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_vlap[NCL_MAX_DIMENSIONS];
   int ndims_ulap, ndims_vlap;
   NclScalar missing_ulap, missing_dulap;
   NclScalar missing_vlap, missing_dvlap;
@@ -6819,16 +7843,29 @@ NhlErrorTypes lapvg_W( void )
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int index_uv, nmiss;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t index_uv;
+  int nmiss;
   double invscalesqrd;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork, lvhagc, lvhsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork, lvhagc, lvhsgc;
   double *work1, *work2, *work3, *wvhagc, *wvhsgc, *br, *bi, *cr, *ci, *dwork;
+  int inlon;
+  int inlat;
+  int ilvhagc;
+  int ilvhsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -6997,6 +8034,35 @@ NhlErrorTypes lapvg_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (lvhsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvg: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhagc = (int) lvhagc;
+  ilvhsgc = (int) lvhsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork = (int) ldwork;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -7072,43 +8138,44 @@ NhlErrorTypes lapvg_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhagc(...,v,u,....)
  */
-      NGCALLF(dvhagci,DVHAGCI)(&nlat,&nlon,wvhagc,&lvhagc,dwork,&ldwork,&jer);
-      NGCALLF(dvhagc,DVHAGC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhagc,&lvhagc,work2,&lwork2,&ker);
+      NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork,&ildwork,&jer);
+      NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhagc,&ilvhagc,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("lapvg","vhagc",&ier,&jer,&ker,&mer,5,5);
 /* 
  * Compute the vector laplacian using the vector spherical harmonic 
  */ 
-      NGCALLF(dvhsgci,DVHSGCI)(&nlat,&nlon,wvhsgc,&lvhsgc,dwork,&ldwork,
-                               &jer);
-      NGCALLF(dvlapgc,DVLAPGC)(&nlat,&nlon,&isym,&one,tmp_vlap,tmp_ulap,
-                               &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                               wvhsgc,&lvhsgc,work3,&lwork3,&ker);
+      NGCALLF(dvhsgci,DVHSGCI)(&inlat,&inlon,wvhsgc,&ilvhsgc,dwork,&ildwork,
+			       &jer);
+      NGCALLF(dvlapgc,DVLAPGC)(&inlat,&inlon,&isym,&one,tmp_vlap,tmp_ulap,
+                                 &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                                 wvhsgc,&ilvhsgc,work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("lapvg","vhsgci,vlapgc",&ier,&jer,&ker,&mer,
-                               5,13);
+                                 5,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_ulap,tmp_vlap,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ulap,tmp_vlap,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_ulap,&invscalesqrd,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vlap,&invscalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_ulap,&invscalesqrd,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vlap,&invscalesqrd,&ner);
 /*
  * Coerce output back to float if necessary.
  */
@@ -7158,9 +8225,12 @@ NhlErrorTypes uv2sfvpf_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
@@ -7168,25 +8238,42 @@ NhlErrorTypes uv2sfvpf_W( void )
  * Output array variables
  */
   void *sf, *vp;
-  double *tmp_sf, *tmp_vp;
+  double *tmp_sf = NULL;
+  double *tmp_vp = NULL;
   NclBasicDataTypes type_sf, type_vp;
-  int ndims_sf, dsizes_sf[NCL_MAX_DIMENSIONS];
-  int ndims_vp, dsizes_vp[NCL_MAX_DIMENSIONS];
+  int ndims_sf;
+  ng_size_t dsizes_sf[NCL_MAX_DIMENSIONS];
+  int ndims_vp;
+  ng_size_t dsizes_vp[NCL_MAX_DIMENSIONS];
   NclScalar missing_sf, missing_dsf, missing_vp, missing_dvp;
   int has_missing_sf, has_missing_vp;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int index_uv, nmiss;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t index_uv;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhaec;
+  int ilshsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -7350,6 +8437,37 @@ NhlErrorTypes uv2sfvpf_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (lshsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpf: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhaec = (int) lvhaec;
+  ilshsec = (int) lshsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -7422,43 +8540,45 @@ NhlErrorTypes uv2sfvpf_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhaec(...,v,u,....)
  */
-      NGCALLF(dvhaeci,DVHAECI)(&nlat,&nlon,wvhaec,&lvhaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhaec,DVHAEC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhaec,&lvhaec,work2,&lwork2,&ker);
+      NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhaec,&ilvhaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2sfvpf","vhaec",&ier,&jer,&ker,&mer,8,5);
-
-      NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(dsfvpec,DSFVPEC)(&nlat,&nlon,&isym,&one,tmp_sf,tmp_vp,
-                               &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                               wshsec,&lshsec,work3,&lwork3,&ker);
+  
+      NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,dwork2,&ildwork2,
+			       &jer);
+      NGCALLF(dsfvpec,DSFVPEC)(&inlat,&inlon,&isym,&one,tmp_sf,tmp_vp,
+                                 &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                                 wshsec,&ilshsec,work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2sfvpf","sfvpec+shseci",&ier,&jer,&ker,
-                               &mer,8,13);
+                                 &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_sf,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vp,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_sf,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vp,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_sf,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vp,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_sf,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vp,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -7508,9 +8628,12 @@ NhlErrorTypes uv2sfvpF_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
@@ -7518,23 +8641,40 @@ NhlErrorTypes uv2sfvpF_W( void )
  * Output array variables
  */
   void *sfvp;
-  double *tmp_sf, *tmp_vp;
+  double *tmp_sf = NULL;
+  double *tmp_vp = NULL;
   NclBasicDataTypes type_sfvp;
-  int ndims_sfvp, *dsizes_sfvp;
+  int ndims_sfvp;
+  ng_size_t *dsizes_sfvp;
   NclScalar missing_sfvp, missing_dsfvp;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, ret;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int ret;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int index_uv, index_sf, index_vp, nmiss;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t index_uv, index_sf, index_vp;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhaec;
+  int ilshsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -7632,7 +8772,7 @@ NhlErrorTypes uv2sfvpF_W( void )
  * dimension represents ud, and the 1th dimension represents vd.
  */
   ndims_sfvp  = ndims_u + 1;
-  dsizes_sfvp = (int*)calloc(ndims_sfvp,sizeof(int));  
+  dsizes_sfvp = (ng_size_t*)calloc(ndims_sfvp,sizeof(ng_size_t));  
   dsizes_sfvp[0] = 2;
   for(i = 1; i <= ndims_u; i++ ) dsizes_sfvp[i] = dsizes_u[i-1];
 
@@ -7673,6 +8813,37 @@ NhlErrorTypes uv2sfvpF_W( void )
     return(NhlFATAL);
   }
 
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (lshsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpF: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhaec = (int) lvhaec;
+  ilshsec = (int) lshsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
 /*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
@@ -7735,43 +8906,45 @@ NhlErrorTypes uv2sfvpF_W( void )
                                 missing_dsfvp.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhaec(...,v,u,....)
  */
-      NGCALLF(dvhaeci,DVHAECI)(&nlat,&nlon,wvhaec,&lvhaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhaec,DVHAEC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhaec,&lvhaec,work2,&lwork2,&ker);
+      NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhaec,&ilvhaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2sfvpF","vhaec",&ier,&jer,&ker,&mer,8,5);
 
-      NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(dsfvpec,DSFVPEC)(&nlat,&nlon,&isym,&one,tmp_sf,tmp_vp,
-                               &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                               wshsec,&lshsec,work3,&lwork3,&ker);
+      NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,dwork2,&ildwork2,
+			       &jer);
+      NGCALLF(dsfvpec,DSFVPEC)(&inlat,&inlon,&isym,&one,tmp_sf,tmp_vp,
+                                 &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                                 wshsec,&ilshsec,work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2sfvpF","sfvpec+shseci",&ier,&jer,&ker,
-                               &mer,8,13);
+                                 &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_sf,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vp,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_sf,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vp,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_sf,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vp,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_sf,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vp,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -7828,9 +9001,12 @@ NhlErrorTypes uv2sfvpg_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
@@ -7838,25 +9014,42 @@ NhlErrorTypes uv2sfvpg_W( void )
  * Output array variables
  */
   void *sf, *vp;
-  double *tmp_sf, *tmp_vp;
+  double *tmp_sf = NULL;
+  double *tmp_vp = NULL;
   NclBasicDataTypes type_sf, type_vp;
-  int ndims_sf, dsizes_sf[NCL_MAX_DIMENSIONS];
-  int ndims_vp, dsizes_vp[NCL_MAX_DIMENSIONS];
+  int ndims_sf;
+  ng_size_t dsizes_sf[NCL_MAX_DIMENSIONS];
+  int ndims_vp;
+  ng_size_t dsizes_vp[NCL_MAX_DIMENSIONS];
   NclScalar missing_sf, missing_dsf, missing_vp, missing_dvp;
   int has_missing_sf, has_missing_vp;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int index_uv, nmiss;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t index_uv;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhagc;
+  int ilshsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -8020,6 +9213,37 @@ NhlErrorTypes uv2sfvpg_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpg: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhagc = (int) lvhagc;
+  ilshsgc = (int) lshsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -8092,43 +9316,44 @@ NhlErrorTypes uv2sfvpg_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhagc(...,v,u,....)
  */
-      NGCALLF(dvhagci,DVHAGCI)(&nlat,&nlon,wvhagc,&lvhagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhagc,DVHAGC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhagc,&lvhagc,work2,&lwork2,&ker);
+      NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhagc,&ilvhagc,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2sfvpg","vhagc",&ier,&jer,&ker,&mer,8,5);
 
-      NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(dsfvpgc,DSFVPGC)(&nlat,&nlon,&isym,&one,tmp_sf,tmp_vp,
-                               &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                               wshsgc,&lshsgc,work3,&lwork3,&ker);
+      NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork2,&ildwork2,&jer);
+      NGCALLF(dsfvpgc,DSFVPGC)(&inlat,&inlon,&isym,&one,tmp_sf,tmp_vp,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wshsgc,&ilshsgc,work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2sfvpg","sfvpgc+shsgci",&ier,&jer,&ker,
-                               &mer,8,13);
+                                &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_sf,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vp,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_sf,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vp,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_sf,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vp,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_sf,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vp,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -8178,9 +9403,12 @@ NhlErrorTypes uv2sfvpG_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
@@ -8188,23 +9416,40 @@ NhlErrorTypes uv2sfvpG_W( void )
  * Output array variables
  */
   void *sfvp;
-  double *tmp_sf, *tmp_vp;
+  double *tmp_sf = NULL;
+  double *tmp_vp = NULL;
   NclBasicDataTypes type_sfvp;
-  int ndims_sfvp, *dsizes_sfvp;
+  int ndims_sfvp;
+  ng_size_t *dsizes_sfvp;
   NclScalar missing_sfvp, missing_dsfvp;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, ret;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int ret;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int index_uv, index_sf, index_vp, nmiss;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t index_uv, index_sf, index_vp;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhagc;
+  int ilshsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -8302,7 +9547,7 @@ NhlErrorTypes uv2sfvpG_W( void )
  * dimension represents ud, and the 1th dimension represents vd.
  */
   ndims_sfvp  = ndims_u + 1;
-  dsizes_sfvp = (int*)calloc(ndims_sfvp,sizeof(int));  
+  dsizes_sfvp = (ng_size_t*)calloc(ndims_sfvp,sizeof(ng_size_t));  
   dsizes_sfvp[0] = 2;
   for(i = 1; i <= ndims_u; i++ ) dsizes_sfvp[i] = dsizes_u[i-1];
 
@@ -8343,6 +9588,37 @@ NhlErrorTypes uv2sfvpG_W( void )
     return(NhlFATAL);
   }
 
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpG: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhagc = (int) lvhagc;
+  ilshsgc = (int) lshsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
 /*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
@@ -8405,43 +9681,44 @@ NhlErrorTypes uv2sfvpG_W( void )
                                 missing_dsfvp.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhagc(...,v,u,....)
  */
-      NGCALLF(dvhagci,DVHAGCI)(&nlat,&nlon,wvhagc,&lvhagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhagc,DVHAGC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhagc,&lvhagc,work2,&lwork2,&ker);
+      NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhagc,&ilvhagc,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2sfvpG","vhagc",&ier,&jer,&ker,&mer,8,5);
 
-      NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(dsfvpgc,DSFVPGC)(&nlat,&nlon,&isym,&one,tmp_sf,tmp_vp,
-                               &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                               wshsgc,&lshsgc,work3,&lwork3,&ker);
+      NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork2,&ildwork2,&jer);
+      NGCALLF(dsfvpgc,DSFVPGC)(&inlat,&inlon,&isym,&one,tmp_sf,tmp_vp,
+                                 &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                                 wshsgc,&ilshsgc,work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2sfvpG","sfvpgc+shsgci",&ier,&jer,&ker,
-                               &mer,8,13);
+                                 &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_sf,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vp,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_sf,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vp,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_sf,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vp,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_sf,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vp,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -8498,9 +9775,12 @@ NhlErrorTypes lderuvf_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
@@ -8508,26 +9788,43 @@ NhlErrorTypes lderuvf_W( void )
  * Output array variables
  */
   void *uy, *vy;
-  double *tmp_uy, *tmp_vy;
+  double *tmp_uy = NULL;
+  double *tmp_vy = NULL;
   NclBasicDataTypes type_uy, type_vy;
-  int ndims_uy, dsizes_uy[NCL_MAX_DIMENSIONS];
-  int ndims_vy, dsizes_vy[NCL_MAX_DIMENSIONS];
+  int ndims_uy;
+  ng_size_t dsizes_uy[NCL_MAX_DIMENSIONS];
+  int ndims_vy;
+  ng_size_t dsizes_vy[NCL_MAX_DIMENSIONS];
   int has_missing_uy, has_missing_vy;
   NclScalar missing_uy, missing_vy, missing_duy, missing_dvy;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int i, j, l, ityp, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int ityp;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lwvts;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lwvts;
   double *work1, *work2, *work3, *wvhaec, *wvts, *br, *bi, *cr, *ci;
   double *dwork1, *dwork2;
+  int inlon;
+  int inlat;
+  int ilvhaec;
+  int ilwvts;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -8695,6 +9992,37 @@ NhlErrorTypes lderuvf_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (lwvts > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvf: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhaec = (int) lvhaec;
+  ilwvts = (int) lwvts;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -8768,43 +10096,45 @@ NhlErrorTypes lderuvf_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhaec(...,v,u,....)
  */
-      NGCALLF(dvhaeci,DVHAECI)(&nlat,&nlon,wvhaec,&lvhaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhaec,DVHAEC)(&nlat,&nlon,&ityp,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhaec,&lvhaec,work2,&lwork2,&ker);
+      NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&ityp,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhaec,&ilvhaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("lderuvf","vhaec",&ier,&jer,&ker,&mer,7,5);
 /*
  * Compute derivative of (u,v) with respect to colatitude theta
  * [upon return: derivative of (u,v) with respect to latitude]
  */ 
-      NGCALLF(dvtseci,DVTSECI)(&nlat,&nlon,wvts,&lwvts,dwork2,&ldwork2,&jer);
-      NGCALLF(dvtsec,DVTSEC)(&nlat,&nlon,&ityp,&one,tmp_vy,tmp_uy,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,wvts,&lwvts,
-                             work3,&lwork3,&ker);
+      NGCALLF(dvtseci,DVTSECI)(&inlat,&inlon,wvts,&ilwvts,dwork2,&ildwork2,&jer);
+      NGCALLF(dvtsec,DVTSEC)(&inlat,&inlon,&ityp,&one,tmp_vy,tmp_uy,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,wvts,&ilwvts,
+                               work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("lderuvf","vtsec",&ier,&jer,&ker,&mer,7,5);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_uy,tmp_vy,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_uy,tmp_vy,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_uy,&invscale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vy,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_uy,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vy,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -8854,9 +10184,12 @@ NhlErrorTypes lderuvg_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
@@ -8864,26 +10197,43 @@ NhlErrorTypes lderuvg_W( void )
  * Output array variables
  */
   void *uy, *vy;
-  double *tmp_uy, *tmp_vy;
+  double *tmp_uy = NULL;
+  double *tmp_vy = NULL;
   NclBasicDataTypes type_uy, type_vy;
-  int ndims_uy, dsizes_uy[NCL_MAX_DIMENSIONS];
-  int ndims_vy, dsizes_vy[NCL_MAX_DIMENSIONS];
+  int ndims_uy;
+  ng_size_t dsizes_uy[NCL_MAX_DIMENSIONS];
+  int ndims_vy;
+  ng_size_t dsizes_vy[NCL_MAX_DIMENSIONS];
   int has_missing_uy, has_missing_vy;
   NclScalar missing_uy, missing_vy, missing_duy, missing_dvy;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int i, j, l, ityp, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int ityp;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lwvts;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lwvts;
   double *work1, *work2, *work3, *wvhagc, *wvts, *br, *bi, *cr, *ci;
   double *dwork1, *dwork2;
+  int inlon;
+  int inlat;
+  int ilvhagc;
+  int ilwvts;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -9051,6 +10401,37 @@ NhlErrorTypes lderuvg_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (lwvts > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvg: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhagc = (int) lvhagc;
+  ilwvts = (int) lwvts;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -9124,43 +10505,45 @@ NhlErrorTypes lderuvg_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhagc(...,v,u,....)
  */
-      NGCALLF(dvhagci,DVHAGCI)(&nlat,&nlon,wvhagc,&lvhagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhagc,DVHAGC)(&nlat,&nlon,&ityp,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhagc,&lvhagc,work2,&lwork2,&ker);
+      NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&ityp,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhagc,&ilvhagc,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("lderuvg","vhagc",&ier,&jer,&ker,&mer,7,5);
 /*
  * Compute derivative of (u,v) with respect to colatitude theta
  * [upon return: derivative of (u,v) with respect to latitude]
  */ 
-      NGCALLF(dvtsgci,DVTSGCI)(&nlat,&nlon,wvts,&lwvts,dwork2,&ldwork2,&jer);
-      NGCALLF(dvtsgc,DVTSGC)(&nlat,&nlon,&ityp,&one,tmp_vy,tmp_uy,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,wvts,&lwvts,
-                             work3,&lwork3,&ker);
+      NGCALLF(dvtsgci,DVTSGCI)(&inlat,&inlon,wvts,&ilwvts,dwork2,&ildwork2,&jer);
+      NGCALLF(dvtsgc,DVTSGC)(&inlat,&inlon,&ityp,&one,tmp_vy,tmp_uy,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,wvts,&ilwvts,
+                               work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("lderuvg","vtsgc",&ier,&jer,&ker,&mer,7,5);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_uy,tmp_vy,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_uy,tmp_vy,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_uy,&invscale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vy,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_uy,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vy,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -9210,9 +10593,12 @@ NhlErrorTypes uv2dvf_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
@@ -9220,25 +10606,40 @@ NhlErrorTypes uv2dvf_W( void )
  * Output array variables
  */
   void *dv;
-  double *tmp_dv;
-  int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS];
+  double *tmp_dv = NULL;
+  int ndims_dv;
+  ng_size_t dsizes_dv[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_dv;
   NclScalar missing_dvo, missing_ddvo;
   int has_missing_dv;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhaec;
+  int ilshsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -9388,6 +10789,37 @@ NhlErrorTypes uv2dvf_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (lshsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvf: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhaec = (int) lvhaec;
+  ilshsec = (int) lshsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -9451,44 +10883,46 @@ NhlErrorTypes uv2dvf_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhaec(...,v,u,....)
  */
-      NGCALLF(dvhaeci,DVHAECI)(&nlat,&nlon,wvhaec,&lvhaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhaec,DVHAEC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhaec,&lvhaec,work2,&lwork2,&ker);
+      NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhaec,&ilvhaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2dvf","vhaec",&ier,&jer,&ker,&mer,6,5);
 /*
  * Compute the divergence using the vector spherical harmonic 
  * coefficients br and bi computed by 'sub vhaec'
  */
-      NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(ddivec,DDIVEC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,
-                             br,bi,&mdab,&ndab,wshsec,&lshsec,work3,&lwork3,
-                             &ker);
+      NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,dwork2,&ildwork2,
+			       &jer);
+      NGCALLF(ddivec,DDIVEC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,
+                               br,bi,&imdab,&indab,wshsec,&ilshsec,work3,&ilwork3,
+                               &ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2dvf","shseci+divec",&ier,&jer,&ker,&mer,
-                               6,12);
+                                 6,12);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine.
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_dv,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -9534,9 +10968,12 @@ NhlErrorTypes uv2dvF_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v;
   NclScalar missing_du, missing_dv, missing_ru, missing_rv;
   NclBasicDataTypes type_u, type_v;
@@ -9545,23 +10982,37 @@ NhlErrorTypes uv2dvF_W( void )
  * Output array variables
  */
   void *dv;
-  double *tmp_dv;
+  double *tmp_dv = NULL;
   NclBasicDataTypes type_dv;
   NclScalar missing_dvo, missing_ddvo;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhaec;
+  int ilshsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -9700,6 +11151,37 @@ NhlErrorTypes uv2dvF_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (lshsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvF: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhaec = (int) lvhaec;
+  ilshsec = (int) lshsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -9761,45 +11243,47 @@ NhlErrorTypes uv2dvF_W( void )
                                 missing_ddvo.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhaec(...,v,u,....)
  */
-      NGCALLF(dvhaeci,DVHAECI)(&nlat,&nlon,wvhaec,&lvhaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhaec,DVHAEC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhaec,&lvhaec,work2,&lwork2,&ker);
+      NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhaec,&ilvhaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2dvF","vhaec",&ier,&jer,&ker,&mer,6,5);
 /*
  * Compute the divergence using the vector spherical harmonic 
  * coefficients br and bi computed by 'sub vhaec'
  */
-      NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(ddivec,DDIVEC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,
-                             br,bi,&mdab,&ndab,wshsec,&lshsec,work3,&lwork3,
-                             &ker);
+      NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,dwork2,&ildwork2,
+			       &jer);
+      NGCALLF(ddivec,DDIVEC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,
+                               br,bi,&imdab,&indab,wshsec,&ilshsec,work3,&ilwork3,
+                               &ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2dvF","shseci+divec",&ier,&jer,&ker,&mer,
-                               6,12);
+                                 6,12);
 
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine.
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_dv,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -9847,9 +11331,12 @@ NhlErrorTypes uv2dvg_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
@@ -9857,25 +11344,40 @@ NhlErrorTypes uv2dvg_W( void )
  * Output array variables
  */
   void *dv;
-  double *tmp_dv;
-  int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS];
+  double *tmp_dv = NULL;
+  int ndims_dv;
+  ng_size_t dsizes_dv[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_dv;
   NclScalar missing_dvo, missing_ddvo;
   int has_missing_dv;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhagc;
+  int ilshsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -10025,6 +11527,37 @@ NhlErrorTypes uv2dvg_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvg: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhagc = (int) lvhagc;
+  ilshsgc = (int) lshsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -10088,44 +11621,45 @@ NhlErrorTypes uv2dvg_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhagc(...,v,u,....)
  */
-      NGCALLF(dvhagci,DVHAGCI)(&nlat,&nlon,wvhagc,&lvhagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhagc,DVHAGC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhagc,&lvhagc,work2,&lwork2,&ker);
+      NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhagc,&ilvhagc,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2dvg","vhagc",&ier,&jer,&ker,&mer,6,5);
 /*
  * Compute the divergence using the vector spherical harmonic 
  * coefficients br and bi computed by 'sub vhagc'
  */
-      NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,
-                               dwork2,&ldwork2,&jer);
-      NGCALLF(ddivgc,DDIVGC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,
-                             br,bi,&mdab,&ndab,wshsgc,&lshsgc,work3,&lwork3,
-                             &ker);
+      NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork2,&ildwork2,&jer);
+      NGCALLF(ddivgc,DDIVGC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,
+                               br,bi,&imdab,&indab,wshsgc,&ilshsgc,work3,&ilwork3,
+                               &ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2dvg","shsgci+divgc",&ier,&jer,&ker,&mer,
-                               6,12);
+                                 6,12);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_dv,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -10171,9 +11705,12 @@ NhlErrorTypes uv2dvG_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v;
   NclScalar missing_du, missing_dv, missing_ru, missing_rv;
   NclBasicDataTypes type_u, type_v;
@@ -10182,23 +11719,37 @@ NhlErrorTypes uv2dvG_W( void )
  * Output array variables
  */
   void *dv;
-  double *tmp_dv;
+  double *tmp_dv = NULL;
   NclBasicDataTypes type_dv;
   NclScalar missing_dvo, missing_ddvo;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhagc;
+  int ilshsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -10337,6 +11888,37 @@ NhlErrorTypes uv2dvG_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvG: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhagc = (int) lvhagc;
+  ilshsgc = (int) lshsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -10398,43 +11980,44 @@ NhlErrorTypes uv2dvG_W( void )
                                 missing_ddvo.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhagc(...,v,u,....)
  */
-      NGCALLF(dvhagci,DVHAGCI)(&nlat,&nlon,wvhagc,&lvhagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhagc,DVHAGC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhagc,&lvhagc,work2,&lwork2,&ker);
+      NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhagc,&ilvhagc,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2dvG","vhagc",&ier,&jer,&ker,&mer,6,5);
 /*
  * Compute the divergence using the vector spherical harmonic 
  * coefficients br and bi computed by 'sub vhagc'
  */
-      NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(ddivgc,DDIVGC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,br,bi,
-                             &mdab,&ndab,wshsgc,&lshsgc,work3,&lwork3,&ker);
+      NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork2,&ildwork2,&jer);
+      NGCALLF(ddivgc,DDIVGC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,br,bi,
+                               &imdab,&indab,wshsgc,&ilshsgc,work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2dvG","shsgci+divgc",&ier,&jer,&ker,&mer,
-                               6,12);
+                                 6,12);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_dv,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -10481,9 +12064,12 @@ NhlErrorTypes uv2vrf_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
@@ -10491,25 +12077,40 @@ NhlErrorTypes uv2vrf_W( void )
  * Output array variables
  */
   void *vort;
-  double *tmp_vort;
-  int ndims_vort, dsizes_vort[NCL_MAX_DIMENSIONS];
+  double *tmp_vort = NULL;
+  int ndims_vort;
+  ng_size_t dsizes_vort[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_vort;
   NclScalar missing_vort, missing_dvort;
   int has_missing_vort;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhaec;
+  int ilshsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -10657,6 +12258,37 @@ NhlErrorTypes uv2vrf_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (lshsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrf: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhaec = (int) lvhaec;
+  ilshsec = (int) lshsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -10721,44 +12353,46 @@ NhlErrorTypes uv2vrf_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhaec(...,v,u,....)
  */
-      NGCALLF(dvhaeci,DVHAECI)(&nlat,&nlon,wvhaec,&lvhaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhaec,DVHAEC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhaec,&lvhaec,work2,&lwork2,&ker);
+      NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhaec,&ilvhaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2vrf","vhaec",&ier,&jer,&ker,&mer,6,5);
 /*
  * Compute the vorticity using the vector spherical harmonic 
  * coefficients br and bi computed by 'sub vhaec'
  */
-      NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,
-                               dwork2,&ldwork2,&jer);
-      NGCALLF(dvrtec,DVRTEC)(&nlat,&nlon,&isym,&one,tmp_vort,&idvw,&jdvw,
-                             cr,ci,&mdab,&ndab,wshsec,&lshsec,work3,&lwork3,
-                             &ker);
+      NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,
+			       dwork2,&ildwork2,&jer);
+      NGCALLF(dvrtec,DVRTEC)(&inlat,&inlon,&isym,&one,tmp_vort,&iidvw,&ijdvw,
+                               cr,ci,&imdab,&indab,wshsec,&ilshsec,work3,&ilwork3,
+                               &ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2vrf","shseci+vrtec",&ier,&jer,&ker,&mer,
-                               6,12);
+                                 6,12);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vort,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine.
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vort,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vort,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -10804,9 +12438,12 @@ NhlErrorTypes uv2vrF_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v;
   NclScalar missing_du, missing_dv, missing_ru, missing_rv;
   NclBasicDataTypes type_u, type_v;
@@ -10815,23 +12452,37 @@ NhlErrorTypes uv2vrF_W( void )
  * Output array variables
  */
   void *vort;
-  double *tmp_vort;
+  double *tmp_vort = NULL;
   NclBasicDataTypes type_vort;
   NclScalar missing_vort, missing_dvort;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhaec;
+  int ilshsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -10971,6 +12622,37 @@ NhlErrorTypes uv2vrF_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (lshsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrF: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhaec = (int) lvhaec;
+  ilshsec = (int) lshsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -11032,44 +12714,46 @@ NhlErrorTypes uv2vrF_W( void )
                                 missing_dvort.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhaec(...,v,u,....)
  */
-      NGCALLF(dvhaeci,DVHAECI)(&nlat,&nlon,wvhaec,&lvhaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhaec,DVHAEC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhaec,&lvhaec,work2,&lwork2,&ker);
+      NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhaec,&ilvhaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2vrF","vhaec",&ier,&jer,&ker,&mer,6,5);
 /*
  * Compute the vorticity using the vector spherical harmonic 
  * coefficients br and bi computed by 'sub vhaec'
  */
-      NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,
-                               dwork2,&ldwork2,&jer);
-      NGCALLF(dvrtec,DVRTEC)(&nlat,&nlon,&isym,&one,tmp_vort,&idvw,&jdvw,
-                             cr,ci,&mdab,&ndab,wshsec,&lshsec,work3,&lwork3,
-                             &ker);
+      NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,
+			       dwork2,&ildwork2,&jer);
+      NGCALLF(dvrtec,DVRTEC)(&inlat,&inlon,&isym,&one,tmp_vort,&iidvw,&ijdvw,
+                               cr,ci,&imdab,&indab,wshsec,&ilshsec,work3,&ilwork3,
+                               &ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2vrF","shseci+vrtec",&ier,&jer,&ker,&mer,
-                               6,12);
+                                 6,12);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vort,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine.
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vort,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vort,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -11117,9 +12801,12 @@ NhlErrorTypes uv2vrg_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
@@ -11127,25 +12814,40 @@ NhlErrorTypes uv2vrg_W( void )
  * Output array variables
  */
   void *vort;
-  double *tmp_vort;
-  int ndims_vort, dsizes_vort[NCL_MAX_DIMENSIONS];
+  double *tmp_vort = NULL;
+  int ndims_vort;
+  ng_size_t dsizes_vort[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_vort;
   NclScalar missing_vort, missing_dvort;
   int has_missing_vort;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhagc;
+  int ilshsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -11293,6 +12995,37 @@ NhlErrorTypes uv2vrg_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrg: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhagc = (int) lvhagc;
+  ilshsgc = (int) lshsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -11356,44 +13089,45 @@ NhlErrorTypes uv2vrg_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhagc(...,v,u,....)
  */
-      NGCALLF(dvhagci,DVHAGCI)(&nlat,&nlon,wvhagc,&lvhagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhagc,DVHAGC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhagc,&lvhagc,work2,&lwork2,&ker);
+      NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhagc,&ilvhagc,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2vrg","vhagc",&ier,&jer,&ker,&mer,6,5);
 /*
  * Compute the vorticity using the vector spherical harmonic 
  * coefficients br and bi computed by 'sub vhagc'
  */
-      NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,
-                               dwork2,&ldwork2,&jer);
-      NGCALLF(dvrtgc,DVRTGC)(&nlat,&nlon,&isym,&one,tmp_vort,&idvw,&jdvw,
-                             cr,ci,&mdab,&ndab,wshsgc,&lshsgc,work3,&lwork3,
-                             &ker);
+      NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork2,&ildwork2,&jer);
+      NGCALLF(dvrtgc,DVRTGC)(&inlat,&inlon,&isym,&one,tmp_vort,&iidvw,&ijdvw,
+                               cr,ci,&imdab,&indab,wshsgc,&ilshsgc,work3,&ilwork3,
+                               &ker);
                              
       NGCALLF(dchkerr,DCHKERR)("uv2vrg","shsgci+vrtgc",&ier,&jer,&ker,&mer,
-                               6,12);
+                                 6,12);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vort,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vort,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vort,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -11439,9 +13173,12 @@ NhlErrorTypes uv2vrG_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v;
   NclScalar missing_du, missing_dv, missing_ru, missing_rv;
   NclBasicDataTypes type_u, type_v;
@@ -11450,23 +13187,37 @@ NhlErrorTypes uv2vrG_W( void )
  * Output array variables
  */
   void *vort;
-  double *tmp_vort;
+  double *tmp_vort = NULL;
   NclBasicDataTypes type_vort;
   NclScalar missing_vort, missing_dvort;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhagc;
+  int ilshsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -11606,6 +13357,37 @@ NhlErrorTypes uv2vrG_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrG: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhagc = (int) lvhagc;
+  ilshsgc = (int) lshsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -11667,44 +13449,45 @@ NhlErrorTypes uv2vrG_W( void )
                                 missing_dvort.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  * Note the order "vhagc(...,v,u,....)
  */
-      NGCALLF(dvhagci,DVHAGCI)(&nlat,&nlon,wvhagc,&lvhagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhagc,DVHAGC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhagc,&lvhagc,work2,&lwork2,&ker);
+      NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhagc,&ilvhagc,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2vrG","vhagc",&ier,&jer,&ker,&mer,6,5);
 /*
  * Compute the vorticity using the vector spherical harmonic 
  * coefficients br and bi computed by 'sub vhagc'
  */
-      NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,
-                               dwork2,&ldwork2,&jer);
-      NGCALLF(dvrtgc,DVRTGC)(&nlat,&nlon,&isym,&one,tmp_vort,&idvw,&jdvw,
-                             cr,ci,&mdab,&ndab,wshsgc,&lshsgc,work3,&lwork3,
-                             &ker);
+      NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork2,&ildwork2,&jer);
+      NGCALLF(dvrtgc,DVRTGC)(&inlat,&inlon,&isym,&one,tmp_vort,&iidvw,&ijdvw,
+                               cr,ci,&imdab,&indab,wshsgc,&ilshsgc,work3,&ilwork3,
+                               &ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2vrG","shsgci+vrtgc",&ier,&jer,&ker,&mer,
-                               6,12);
+                                 6,12);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vort,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vort,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vort,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -11749,9 +13532,12 @@ NhlErrorTypes uv2vrdvf_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
@@ -11759,26 +13545,43 @@ NhlErrorTypes uv2vrdvf_W( void )
  * Output array variables
  */
   void *vr, *dv;
-  double *tmp_vr, *tmp_dv;
+  double *tmp_vr = NULL;
+  double *tmp_dv = NULL;
   NclBasicDataTypes type_vr, type_dv;
-  int ndims_vr, dsizes_vr[NCL_MAX_DIMENSIONS];
-  int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS];
+  int ndims_vr;
+  ng_size_t dsizes_vr[NCL_MAX_DIMENSIONS];
+  int ndims_dv;
+  ng_size_t dsizes_dv[NCL_MAX_DIMENSIONS];
   NclScalar missing_vr, missing_dvr, missing_dvo, missing_ddvo;
   int has_missing_vr, has_missing_dvo;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int index_uv, nmiss;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t index_uv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhaec;
+  int ilshsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -11943,6 +13746,37 @@ NhlErrorTypes uv2vrdvf_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (lshsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvf: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhaec = (int) lvhaec;
+  ilshsec = (int) lshsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -12016,47 +13850,49 @@ NhlErrorTypes uv2vrdvf_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  *  Note the order "vhaec(...,v,u,....)
  */
-      NGCALLF(dvhaeci,DVHAECI)(&nlat,&nlon,wvhaec,&lvhaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhaec,DVHAEC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhaec,&lvhaec,work2,&lwork2,&ker);
+      NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhaec,&ilvhaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2vrdvf","vhaec",&ier,&jer,&ker,&mer,8,5);
 /* 
  * Compute the divergence using the vector spherical harmonic 
  *  coefficients br and bi computed by 'sub vhaec'
  */
-      NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(ddivec,DDIVEC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,br,bi,
-                             &mdab,&ndab,wshsec,&lshsec,work3,&lwork3,&ker);
-      NGCALLF(dvrtec,DVRTEC)(&nlat,&nlon,&isym,&one,tmp_vr,&idvw,&jdvw,cr,ci,
-                             &mdab,&ndab,wshsec,&lshsec,work3,&lwork3,&ker);
+      NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,dwork2,&ildwork2,
+			       &jer);
+      NGCALLF(ddivec,DDIVEC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,br,bi,
+                               &imdab,&indab,wshsec,&ilshsec,work3,&ilwork3,&ker);
+      NGCALLF(dvrtec,DVRTEC)(&inlat,&inlon,&isym,&one,tmp_vr,&iidvw,&ijdvw,cr,ci,
+                               &imdab,&indab,wshsec,&ilshsec,work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2vrdvf","shseci+divec+vrtec",&ier,&jer,
-                               &ker,&mer,8,18);
+                                 &ker,&mer,8,18);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vr,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&invscale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vr,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_dv,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vr,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -12106,9 +13942,12 @@ NhlErrorTypes uv2vrdvF_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
@@ -12116,24 +13955,41 @@ NhlErrorTypes uv2vrdvF_W( void )
  * Output array variables
  */
   void *vrdv;
-  double *tmp_vr, *tmp_dv;
+  double *tmp_vr = NULL;
+  double *tmp_dv = NULL;
   NclBasicDataTypes type_vrdv;
-  int ndims_vrdv, *dsizes_vrdv;
+  int ndims_vrdv;
+  ng_size_t *dsizes_vrdv;
   NclScalar missing_vrdv, missing_dvrdv;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, ret;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int ret;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int index_uv, index_vr, index_dv, nmiss;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t index_uv, index_vr, index_dv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhaec, lshsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhaec, *wshsec, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhaec;
+  int ilshsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -12232,7 +14088,7 @@ NhlErrorTypes uv2vrdvF_W( void )
  * dimension represents ud, and the 1th dimension represents vd.
  */
   ndims_vrdv  = ndims_u + 1;
-  dsizes_vrdv = (int*)calloc(ndims_vrdv,sizeof(int));  
+  dsizes_vrdv = (ng_size_t*)calloc(ndims_vrdv,sizeof(ng_size_t));  
   dsizes_vrdv[0] = 2;
   for(i = 1; i <= ndims_u; i++ ) dsizes_vrdv[i] = dsizes_u[i-1];
 
@@ -12273,6 +14129,37 @@ NhlErrorTypes uv2vrdvF_W( void )
     return(NhlFATAL);
   }
 
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (lshsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvF: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhaec = (int) lvhaec;
+  ilshsec = (int) lshsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
 /*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
@@ -12336,47 +14223,49 @@ NhlErrorTypes uv2vrdvF_W( void )
                                 missing_dvrdv.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  *  Note the order "vhaec(...,v,u,....)
  */
-      NGCALLF(dvhaeci,DVHAECI)(&nlat,&nlon,wvhaec,&lvhaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhaec,DVHAEC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhaec,&lvhaec,work2,&lwork2,&ker);
+      NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhaec,&ilvhaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2vrdvF","vhaec",&ier,&jer,&ker,&mer,8,5);
 /* 
  * Compute the divergence using the vector spherical harmonic 
  *  coefficients br and bi computed by 'sub vhaec'
  */
-      NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(ddivec,DDIVEC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,br,bi,
-                             &mdab,&ndab,wshsec,&lshsec,work3,&lwork3,&ker);
-      NGCALLF(dvrtec,DVRTEC)(&nlat,&nlon,&isym,&one,tmp_vr,&idvw,&jdvw,cr,ci,
-                             &mdab,&ndab,wshsec,&lshsec,work3,&lwork3,&ker);
+      NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,dwork2,&ildwork2,
+			       &jer);
+      NGCALLF(ddivec,DDIVEC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,br,bi,
+                               &imdab,&indab,wshsec,&ilshsec,work3,&ilwork3,&ker);
+      NGCALLF(dvrtec,DVRTEC)(&inlat,&inlon,&isym,&one,tmp_vr,&iidvw,&ijdvw,cr,ci,
+                               &imdab,&indab,wshsec,&ilshsec,work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2vrdvF","shseci+divec+vrtec",&ier,&jer,
-                               &ker,&mer,8,18);
+                                 &ker,&mer,8,18);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vr,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&invscale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vr,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_dv,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vr,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -12433,9 +14322,12 @@ NhlErrorTypes uv2vrdvg_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
@@ -12443,26 +14335,43 @@ NhlErrorTypes uv2vrdvg_W( void )
  * Output array variables
  */
   void *vr, *dv;
-  double *tmp_vr, *tmp_dv;
+  double *tmp_vr = NULL;
+  double *tmp_dv = NULL;
   NclBasicDataTypes type_vr, type_dv;
-  int ndims_vr, dsizes_vr[NCL_MAX_DIMENSIONS];
-  int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS];
+  int ndims_vr;
+  ng_size_t dsizes_vr[NCL_MAX_DIMENSIONS];
+  int ndims_dv;
+  ng_size_t dsizes_dv[NCL_MAX_DIMENSIONS];
   NclScalar missing_vr, missing_dvr, missing_dvo, missing_ddvo;
   int has_missing_vr, has_missing_dvo;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int index_uv, nmiss;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t index_uv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhagc;
+  int ilshsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -12629,6 +14538,37 @@ NhlErrorTypes uv2vrdvg_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvg: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhagc = (int) lvhagc;
+  ilshsgc = (int) lshsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -12702,47 +14642,48 @@ NhlErrorTypes uv2vrdvg_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  *  Note the order "vhaec(...,v,u,....)
  */
-      NGCALLF(dvhagci,DVHAGCI)(&nlat,&nlon,wvhagc,&lvhagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhagc,DVHAGC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhagc,&lvhagc,work2,&lwork2,&ker);
+      NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhagc,&ilvhagc,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2vrdvg","vhagc",&ier,&jer,&ker,&mer,8,5);
 /* 
  * Compute the divergence using the vector spherical harmonic 
  *  coefficients br and bi computed by 'sub vhagc'
  */
-      NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(ddivgc,DDIVGC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,br,bi,
-                             &mdab,&ndab,wshsgc,&lshsgc,work3,&lwork3,&ker);
-      NGCALLF(dvrtgc,DVRTGC)(&nlat,&nlon,&isym,&one,tmp_vr,&idvw,&jdvw,cr,ci,
-                             &mdab,&ndab,wshsgc,&lshsgc,work3,&lwork3,&ker);
+      NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork2,&ildwork2,&jer);
+      NGCALLF(ddivgc,DDIVGC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,br,bi,
+                               &imdab,&indab,wshsgc,&ilshsgc,work3,&ilwork3,&ker);
+      NGCALLF(dvrtgc,DVRTGC)(&inlat,&inlon,&isym,&one,tmp_vr,&iidvw,&ijdvw,cr,ci,
+                               &imdab,&indab,wshsgc,&ilshsgc,work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2vrdvg","shsgci+divgc+vrtgc",&ier,&jer,
-                               &ker,&mer,8,18);
+                                 &ker,&mer,8,18);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vr,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&invscale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vr,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_dv,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vr,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -12792,9 +14733,12 @@ NhlErrorTypes uv2vrdvG_W( void )
  * Input array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclScalar missing_u, missing_v, missing_du, missing_dv;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v, found_missing_u, found_missing_v;
@@ -12802,24 +14746,41 @@ NhlErrorTypes uv2vrdvG_W( void )
  * Output array variables
  */
   void *vrdv;
-  double *tmp_vr, *tmp_dv;
+  double *tmp_vr = NULL;
+  double *tmp_dv = NULL;
   NclBasicDataTypes type_vrdv;
-  int ndims_vrdv, *dsizes_vrdv;
+  int ndims_vrdv;
+  ng_size_t *dsizes_vrdv;
   NclScalar missing_vrdv, missing_dvrdv;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, ret;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int ret;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int index_uv, index_vr, index_dv, nmiss;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t index_uv, index_vr, index_dv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lvhagc, lshsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wvhagc, *wshsgc, *br, *bi, *cr, *ci;
+  int inlon;
+  int inlat;
+  int ilvhagc;
+  int ilshsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -12918,7 +14879,7 @@ NhlErrorTypes uv2vrdvG_W( void )
  * dimension represents ud, and the 1th dimension represents vd.
  */
   ndims_vrdv  = ndims_u + 1;
-  dsizes_vrdv = (int*)calloc(ndims_vrdv,sizeof(int));  
+  dsizes_vrdv = (ng_size_t*)calloc(ndims_vrdv,sizeof(ng_size_t));  
   dsizes_vrdv[0] = 2;
   for(i = 1; i <= ndims_u; i++ ) dsizes_vrdv[i] = dsizes_u[i-1];
 
@@ -12959,6 +14920,37 @@ NhlErrorTypes uv2vrdvG_W( void )
     return(NhlFATAL);
   }
 
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvG: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilvhagc = (int) lvhagc;
+  ilshsgc = (int) lshsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
 /*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
@@ -13022,47 +15014,48 @@ NhlErrorTypes uv2vrdvG_W( void )
                                 missing_dvrdv.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,tmp_u,tmp_v,work1);
+      NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
  * Perform vector spherical harmonic analysis to get coefficients 
  *  Note the order "vhaec(...,v,u,....)
  */
-      NGCALLF(dvhagci,DVHAGCI)(&nlat,&nlon,wvhagc,&lvhagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dvhagc,DVHAGC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                             &idvw,&jdvw,br,bi,cr,ci,&mdab,&ndab,
-                             wvhagc,&lvhagc,work2,&lwork2,&ker);
+      NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                               &iidvw,&ijdvw,br,bi,cr,ci,&imdab,&indab,
+                               wvhagc,&ilvhagc,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2vrdvG","vhagc",&ier,&jer,&ker,&mer,8,5);
 /* 
  * Compute the divergence using the vector spherical harmonic 
  *  coefficients br and bi computed by 'sub vhagc'
  */
-      NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(ddivgc,DDIVGC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,br,bi,
-                             &mdab,&ndab,wshsgc,&lshsgc,work3,&lwork3,&ker);
-      NGCALLF(dvrtgc,DVRTGC)(&nlat,&nlon,&isym,&one,tmp_vr,&idvw,&jdvw,cr,ci,
-                             &mdab,&ndab,wshsgc,&lshsgc,work3,&lwork3,&ker);
+      NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork2,&ildwork2,&jer);
+      NGCALLF(ddivgc,DDIVGC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,br,bi,
+                               &imdab,&indab,wshsgc,&ilshsgc,work3,&ilwork3,&ker);
+      NGCALLF(dvrtgc,DVRTGC)(&inlat,&inlon,&isym,&one,tmp_vr,&iidvw,&ijdvw,cr,ci,
+                               &imdab,&indab,wshsgc,&ilshsgc,work3,&ilwork3,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("uv2vrdvG","shsgci+divgc+vrtgc",&ier,&jer,
-                               &ker,&mer,8,18);
+                                 &ker,&mer,8,18);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vr,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_dv,&invscale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vr,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_dv,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vr,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -13111,15 +15104,15 @@ NhlErrorTypes uv2vrdvG_W( void )
   return(ret);
 }
 
-
 NhlErrorTypes vr2uvf_W( void )
 {
 /*
  * Input array variables
  */
   void *vort;
-  double *tmp_vort;
-  int ndims_vort, dsizes_vort[NCL_MAX_DIMENSIONS];
+  double *tmp_vort = NULL;
+  int ndims_vort;
+  ng_size_t dsizes_vort[NCL_MAX_DIMENSIONS];
   NclScalar missing_vort, missing_dvort;
   NclBasicDataTypes type_vort;
   int has_missing_vort, found_missing_vort;
@@ -13127,25 +15120,42 @@ NhlErrorTypes vr2uvf_W( void )
  * Output array variables
  */
   void *ur, *vr;
-  double *tmp_ur, *tmp_vr;
-  int ndims_ur, dsizes_ur[NCL_MAX_DIMENSIONS];
-  int ndims_vr, dsizes_vr[NCL_MAX_DIMENSIONS];
+  double *tmp_ur = NULL;
+  double *tmp_vr = NULL;
+  int ndims_ur;
+  ng_size_t dsizes_ur[NCL_MAX_DIMENSIONS];
+  int ndims_vr;
+  ng_size_t dsizes_vr[NCL_MAX_DIMENSIONS];
   int has_missing_ur, has_missing_vr;
   NclScalar missing_ur, missing_vr, missing_dur, missing_dvr;
   NclBasicDataTypes type_ur, type_vr;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_vr, nmiss;
+  ng_size_t index_vr;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshaec, *wvhsec, *a, *b, *pertrb;
+  int inlon;
+  int inlat;
+  int ilshaec;
+  int ilvhsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -13290,6 +15300,37 @@ NhlErrorTypes vr2uvf_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshaec > INT_MAX) ||
+     (lvhsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvf: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshaec = (int) lshaec;
+  ilvhsec = (int) lvhsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -13347,46 +15388,48 @@ NhlErrorTypes vr2uvf_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_vort,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vort,work1);
 /*
  * shaec performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b.
  * Here the scalar grid is "vort" (relative vorticity)
  */
-      NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_vort,
-                             &idvw,&jdvw,a,b,&mdab,&ndab,
-                             wshaec,&lshaec,work2,&lwork2,&ker);
+      NGCALLF(dshaeci,DSHAECI)(&inlat,&inlon,wshaec,&ilshaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&one,tmp_vort,
+                               &iidvw,&ijdvw,a,b,&imdab,&indab,
+                               wshaec,&ilshaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("vr2uvf","shaec",&ier,&jer,&ker,&mer,6,5);
 /*
  * Reconstruct the divergent (irrotational) wind components
  * note the argument order idivec(...,v,u,...)
  */
-      NGCALLF(dvhseci,DVHSECI)(&nlat,&nlon,wvhsec,&lvhsec,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(divrtec,DIVRTEC)(&nlat,&nlon,&isym,&one,tmp_vr,tmp_ur,
-                               &idvw,&jdvw,a,b,&mdab,&ndab,
-                               wvhsec,&lvhsec,work3,&lwork3,pertrb,&ker);
+      NGCALLF(dvhseci,DVHSECI)(&inlat,&inlon,wvhsec,&ilvhsec,dwork2,&ildwork2,
+			       &jer);
+      NGCALLF(divrtec,DIVRTEC)(&inlat,&inlon,&isym,&one,tmp_vr,tmp_ur,
+                                 &iidvw,&ijdvw,a,b,&imdab,&indab,
+                                 wvhsec,&ilvhsec,work3,&ilwork3,pertrb,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("vr2uvf","vhseci+ivrtec",&ier,&jer,&ker,&mer,
-                               6,13);
+                                 6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vort,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_ur,tmp_vr,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ur,tmp_vr,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_ur,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vr,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_ur,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vr,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -13434,8 +15477,9 @@ NhlErrorTypes vr2uvF_W( void )
  * Input array variables
  */
   void *vort;
-  double *tmp_vort;
-  int ndims_vort, dsizes_vort[NCL_MAX_DIMENSIONS];
+  double *tmp_vort = NULL;
+  int ndims_vort;
+  ng_size_t dsizes_vort[NCL_MAX_DIMENSIONS];
   NclScalar missing_vort, missing_dvort, missing_rvort;
   NclBasicDataTypes type_vort;
   int has_missing_vort, found_missing_vort;
@@ -13443,23 +15487,40 @@ NhlErrorTypes vr2uvF_W( void )
  * Output array variables
  */
   void *uvr;
-  double *tmp_ur, *tmp_vr;
-  int ndims_uvr, *dsizes_uvr;
+  double *tmp_ur = NULL;
+  double *tmp_vr = NULL;
+  int ndims_uvr;
+  ng_size_t *dsizes_uvr;
   NclScalar missing_uvr;
   NclBasicDataTypes type_uvr;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3, ret;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  int ret;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_vr, index_ur, index_vort, nmiss;
+  ng_size_t index_vr, index_ur, index_vort;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshaec, *wvhsec, *a, *b, *pertrb;
+  int inlon;
+  int inlat;
+  int ilshaec;
+  int ilvhsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -13530,7 +15591,7 @@ NhlErrorTypes vr2uvF_W( void )
  * dimension represents ud, and the 1th dimension represents vd.
  */
   ndims_uvr  = ndims_vort + 1;
-  dsizes_uvr = (int*)calloc(ndims_uvr,sizeof(int));  
+  dsizes_uvr = (ng_size_t*)calloc(ndims_uvr,sizeof(ng_size_t));  
   dsizes_uvr[0] = 2;
   for(i = 1; i <= ndims_vort; i++ ) dsizes_uvr[i] = dsizes_vort[i-1];
 
@@ -13571,6 +15632,37 @@ NhlErrorTypes vr2uvF_W( void )
     return(NhlFATAL);
   }
 
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshaec > INT_MAX) ||
+     (lvhsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvF: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshaec = (int) lshaec;
+  ilvhsec = (int) lvhsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
 /*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
@@ -13618,46 +15710,47 @@ NhlErrorTypes vr2uvF_W( void )
                                 missing_dvort.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_vort,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vort,work1);
 /*
  * shaec performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b.
  * Here the scalar grid is "vort" (relative vorticity)
  */
-      NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_vort,
-                             &idvw,&jdvw,a,b,&mdab,&ndab,
-                             wshaec,&lshaec,work2,&lwork2,&ker);
+      NGCALLF(dshaeci,DSHAECI)(&inlat,&inlon,wshaec,&ilshaec,dwork1,&ildwork1,
+			       &jer);
+      NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&one,tmp_vort,
+                               &iidvw,&ijdvw,a,b,&imdab,&indab,
+                               wshaec,&ilshaec,work2,&ilwork2,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("vr2uvF","shaec",&ier,&jer,&ker,&mer,6,5);
 /*
  * Reconstruct the divergent (irrotational) wind components
  * note the argument order idivec(...,v,u,...)
  */
-      NGCALLF(dvhseci,DVHSECI)(&nlat,&nlon,wvhsec,&lvhsec,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(divrtec,DIVRTEC)(&nlat,&nlon,&isym,&one,tmp_vr,tmp_ur,
-                               &idvw,&jdvw,a,b,&mdab,&ndab,
-                               wvhsec,&lvhsec,work3,&lwork3,pertrb,&ker);
+      NGCALLF(dvhseci,DVHSECI)(&inlat,&inlon,wvhsec,&ilvhsec,dwork2,&ildwork2,&jer);
+      NGCALLF(divrtec,DIVRTEC)(&inlat,&inlon,&isym,&one,tmp_vr,tmp_ur,
+                                 &iidvw,&ijdvw,a,b,&imdab,&indab,
+                                 wvhsec,&ilvhsec,work3,&ilwork3,pertrb,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("vr2uvF","vhseci+ivrtec",&ier,&jer,&ker,&mer,
-                               6,13);
+                                 6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vort,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_ur,tmp_vr,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ur,tmp_vr,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_ur,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vr,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_ur,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vr,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -13710,8 +15803,9 @@ NhlErrorTypes vr2uvg_W( void )
  * Input array variables
  */
   void *vort;
-  double *tmp_vort;
-  int ndims_vort, dsizes_vort[NCL_MAX_DIMENSIONS];
+  double *tmp_vort = NULL;
+  int ndims_vort;
+  ng_size_t dsizes_vort[NCL_MAX_DIMENSIONS];
   NclScalar missing_vort, missing_dvort;
   NclBasicDataTypes type_vort;
   int has_missing_vort, found_missing_vort;
@@ -13719,25 +15813,42 @@ NhlErrorTypes vr2uvg_W( void )
  * Output array variables
  */
   void *ur, *vr;
-  double *tmp_ur, *tmp_vr;
-  int ndims_ur, dsizes_ur[NCL_MAX_DIMENSIONS];
-  int ndims_vr, dsizes_vr[NCL_MAX_DIMENSIONS];
+  double *tmp_ur = NULL;
+  double *tmp_vr = NULL;
+  int ndims_ur;
+  ng_size_t dsizes_ur[NCL_MAX_DIMENSIONS];
+  int ndims_vr;
+  ng_size_t dsizes_vr[NCL_MAX_DIMENSIONS];
   int has_missing_ur, has_missing_vr;
   NclScalar missing_ur, missing_vr, missing_dur, missing_dvr;
   NclBasicDataTypes type_ur, type_vr;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_vr, nmiss;
+  ng_size_t index_vr;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshagc, *wvhsgc, *a, *b, *pertrb;
+  int inlon;
+  int inlat;
+  int ilshagc;
+  int ilvhsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -13883,6 +15994,37 @@ NhlErrorTypes vr2uvg_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshagc > INT_MAX) ||
+     (lvhsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvg: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshagc = (int) lshagc;
+  ilvhsgc = (int) lvhsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -13940,46 +16082,46 @@ NhlErrorTypes vr2uvg_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_vort,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vort,work1);
 /*
  * shagc performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b.
  * Here the scalar grid is "vort" (relative vorticity)
  */
-      NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_vort,&idvw,&jdvw,
-                             a,b,&mdab,&ndab,wshagc,&lshagc,work2,&lwork2,
-                             &ker);
+      NGCALLF(dshagci,DSHAGCI)(&inlat,&inlon,wshagc,&ilshagc,dwork1,&ildwork1,&jer);
+      NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&one,tmp_vort,&iidvw,&ijdvw,
+                               a,b,&imdab,&indab,wshagc,&ilshagc,work2,&ilwork2,
+                               &ker);
 
       NGCALLF(dchkerr,DCHKERR)("vr2uvg","shagc",&ier,&jer,&ker,&mer,6,5);
 /*
  * Reconstruct the divergent (irrotational) wind components
  * note the argument order idivgc(...,v,u,...)
  */
-      NGCALLF(dvhsgci,DVHSGCI)(&nlat,&nlon,wvhsgc,&lvhsgc,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(divrtgc,DIVRTGC)(&nlat,&nlon,&isym,&one,tmp_vr,tmp_ur,
-                               &idvw,&jdvw,a,b,&mdab,&ndab,
-                               wvhsgc,&lvhsgc,work3,&lwork3,pertrb,&ker);
+      NGCALLF(dvhsgci,DVHSGCI)(&inlat,&inlon,wvhsgc,&ilvhsgc,dwork2,&ildwork2,&jer);
+      NGCALLF(divrtgc,DIVRTGC)(&inlat,&inlon,&isym,&one,tmp_vr,tmp_ur,
+                                 &iidvw,&ijdvw,a,b,&imdab,&indab,
+                                 wvhsgc,&ilvhsgc,work3,&ilwork3,pertrb,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("vr2uvg","vhsgci+ivrtgc",&ier,&jer,&ker,
-                               &mer,6,13);
+                                 &mer,6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vort,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_ur,tmp_vr,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ur,tmp_vr,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_ur,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vr,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_ur,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vr,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -14027,8 +16169,9 @@ NhlErrorTypes vr2uvG_W( void )
  * Input array variables
  */
   void *vort;
-  double *tmp_vort;
-  int ndims_vort, dsizes_vort[NCL_MAX_DIMENSIONS];
+  double *tmp_vort = NULL;
+  int ndims_vort;
+  ng_size_t dsizes_vort[NCL_MAX_DIMENSIONS];
   NclScalar missing_vort, missing_dvort, missing_rvort;
   NclBasicDataTypes type_vort;
   int has_missing_vort, found_missing_vort;
@@ -14036,23 +16179,40 @@ NhlErrorTypes vr2uvG_W( void )
  * Output array variables
  */
   void *uvr;
-  double *tmp_ur, *tmp_vr;
-  int ndims_uvr, *dsizes_uvr;
+  double *tmp_ur = NULL;
+  double *tmp_vr = NULL;
+  int ndims_uvr;
+  ng_size_t *dsizes_uvr;
   NclScalar missing_uvr;
   NclBasicDataTypes type_uvr;
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_vr, index_ur, index_vort, nmiss;
+  ng_size_t index_vr, index_ur, index_vort;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in, ret;
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  int ret;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshagc, *wvhsgc, *a, *b, *pertrb;
+  int inlon;
+  int inlat;
+  int ilshagc;
+  int ilvhsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -14123,7 +16283,7 @@ NhlErrorTypes vr2uvG_W( void )
  * dimension represents ud, and the 1th dimension represents vd.
  */
   ndims_uvr  = ndims_vort + 1;
-  dsizes_uvr = (int*)calloc(ndims_uvr,sizeof(int));  
+  dsizes_uvr = (ng_size_t*)calloc(ndims_uvr,sizeof(ng_size_t));  
   dsizes_uvr[0] = 2;
   for(i = 1; i <= ndims_vort; i++ ) dsizes_uvr[i] = dsizes_vort[i-1];
 
@@ -14164,6 +16324,37 @@ NhlErrorTypes vr2uvG_W( void )
     return(NhlFATAL);
   }
 
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshagc > INT_MAX) ||
+     (lvhsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvG: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshagc = (int) lshagc;
+  ilvhsgc = (int) lvhsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
 /*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
@@ -14211,46 +16402,46 @@ NhlErrorTypes vr2uvG_W( void )
                                 missing_dvort.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-      NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_vort,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vort,work1);
 /*
  * shagc performs the spherical harmonic analysis on a (scalar) gaussian 
  * grid(s) and returns the coefficients in array(s) a,b.
  * Here the scalar grid is "vort" (relative vorticity)
  */
-      NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork1,&ldwork1,
-                               &jer);
-      NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_vort,&idvw,&jdvw,
-                             a,b,&mdab,&ndab,wshagc,&lshagc,work2,&lwork2,
-                             &ker);
+      NGCALLF(dshagci,DSHAGCI)(&inlat,&inlon,wshagc,&ilshagc,dwork1,&ildwork1,&jer);
+      NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&one,tmp_vort,&iidvw,&ijdvw,
+                               a,b,&imdab,&indab,wshagc,&ilshagc,work2,&ilwork2,
+                               &ker);
 
       NGCALLF(dchkerr,DCHKERR)("vr2uvG","shagc",&ier,&jer,&ker,&mer,6,5);
 /*
  * Reconstruct the divergent (irrotational) wind components
  * note the argument order idivgc(...,v,u,...)
  */
-      NGCALLF(dvhsgci,DVHSGCI)(&nlat,&nlon,wvhsgc,&lvhsgc,dwork2,&ldwork2,
-                               &jer);
-      NGCALLF(divrtgc,DIVRTGC)(&nlat,&nlon,&isym,&one,tmp_vr,tmp_ur,
-                               &idvw,&jdvw,a,b,&mdab,&ndab,
-                               wvhsgc,&lvhsgc,work3,&lwork3,pertrb,&ker);
+      NGCALLF(dvhsgci,DVHSGCI)(&inlat,&inlon,wvhsgc,&ilvhsgc,dwork2,&ildwork2,&jer);
+      NGCALLF(divrtgc,DIVRTGC)(&inlat,&inlon,&isym,&one,tmp_vr,tmp_ur,
+                                 &iidvw,&ijdvw,a,b,&imdab,&indab,
+                                 wvhsgc,&ilvhsgc,work3,&ilwork3,pertrb,&ker);
 
       NGCALLF(dchkerr,DCHKERR)("vr2uvG","vhsgci+ivrtgc",&ier,&jer,&ker,
-                               &mer,6,13);
+                                 &mer,6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-      NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vort,work1);
-      NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_ur,tmp_vr,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ur,tmp_vr,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_ur,&scale,&ner);
-      NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_vr,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_ur,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_vr,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -14303,9 +16494,12 @@ NhlErrorTypes vrdv2uvf_W( void )
  * Input array variables
  */
   void *vr, *dv;
-  double *tmp_vr, *tmp_dv;
-  int ndims_vr, dsizes_vr[NCL_MAX_DIMENSIONS];
-  int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS];
+  double *tmp_vr = NULL;
+  double *tmp_dv = NULL;
+  int ndims_vr;
+  ng_size_t dsizes_vr[NCL_MAX_DIMENSIONS];
+  int ndims_dv;
+  ng_size_t dsizes_dv[NCL_MAX_DIMENSIONS];
   NclScalar missing_vr, missing_dvo, missing_dvr, missing_ddvo;
   NclBasicDataTypes type_vr, type_dv;
   int has_missing_vr, has_missing_dvo, found_missing_vr, found_missing_dv;
@@ -14313,25 +16507,42 @@ NhlErrorTypes vrdv2uvf_W( void )
  * Output array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v;
   NclScalar missing_u, missing_du, missing_v, missing_dv;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshaec, *wvhsec, *ad, *bd, *av, *bv, *pertbd, *pertbv;
+  int inlon;
+  int inlat;
+  int ilshaec;
+  int ilvhsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -14507,6 +16718,37 @@ NhlErrorTypes vrdv2uvf_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshaec > INT_MAX) ||
+     (lvhsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvf: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshaec = (int) lshaec;
+  ilvhsec = (int) lvhsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -14580,48 +16822,48 @@ NhlErrorTypes vrdv2uvf_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_dv,work1);
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_vr,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vr,work1);
 /*
  * shaec performs the spherical harmonic analysis on a (scalar) equal 
  * grid(s) and returns the coefficients in array(s) ad,bd for divergence
  * and av,bv for vortivity
  */
-    NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork1,&ldwork1,
-                             &jer);
-    NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,ad,bd,
-                           &mdab,&ndab,wshaec,&lshaec,work2,&lwork2,&ker);
-    NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_vr,&idvw,&jdvw,av,bv,
-                           &mdab,&ndab,wshaec,&lshaec,work2,&lwork2,&ker);
+      NGCALLF(dshaeci,DSHAECI)(&inlat,&inlon,wshaec,&ilshaec,dwork1,&ildwork1,&jer);
+      NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,ad,bd,
+                               &imdab,&indab,wshaec,&ilshaec,work2,&ilwork2,&ker);
+      NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&one,tmp_vr,&iidvw,&ijdvw,av,bv,
+                               &imdab,&indab,wshaec,&ilshaec,work2,&ilwork2,&ker);
 
-    NGCALLF(dchkerr,DCHKERR)("vrdv2uvf","shaec",&ier,&jer,&ker,&mer,8,5);
+      NGCALLF(dchkerr,DCHKERR)("vrdv2uvf","shaec",&ier,&jer,&ker,&mer,8,5);
 /* 
  * Compute the u and v components from vr,dv
  */ 
-    NGCALLF(dvhseci,DVHSECI)(&nlat,&nlon,wvhsec,&lvhsec,dwork2,&ldwork2,
-                             &jer);
-    NGCALLF(didvtec,DIDVTEC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,&idvw,&jdvw,
-                             ad,bd,av,bv,&mdab,&ndab,wvhsec,&lvhsec,
-                             work3,&lwork3,pertbd,pertbv,&ker);
+      NGCALLF(dvhseci,DVHSECI)(&inlat,&inlon,wvhsec,&ilvhsec,dwork2,&ildwork2,&jer);
+      NGCALLF(didvtec,DIDVTEC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,&iidvw,&ijdvw,
+                                 ad,bd,av,bv,&imdab,&indab,wvhsec,&ilvhsec,
+                                 work3,&ilwork3,pertbd,pertbv,&ker);
 
-    NGCALLF(dchkerr,DCHKERR)("vrdv2uvf","vhseci+idvtec",&ier,&jer,&ker,
-                             &mer,8,13);
+      NGCALLF(dchkerr,DCHKERR)("vrdv2uvf","vhseci+idvtec",&ier,&jer,&ker,
+                                 &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vr,work1);
-    NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_u,&scale,&ner);
-    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_v,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_u,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_v,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -14673,9 +16915,12 @@ NhlErrorTypes vrdv2uvF_W( void )
  * Input array variables
  */
   void *vr, *dv;
-  double *tmp_vr, *tmp_dv;
-  int ndims_vr, dsizes_vr[NCL_MAX_DIMENSIONS];
-  int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS];
+  double *tmp_vr = NULL;
+  double *tmp_dv = NULL;
+  int ndims_vr;
+  ng_size_t dsizes_vr[NCL_MAX_DIMENSIONS];
+  int ndims_dv;
+  ng_size_t dsizes_dv[NCL_MAX_DIMENSIONS];
   NclScalar missing_vr, missing_dv, missing_dvr, missing_ddv;
   NclBasicDataTypes type_vr, type_dv;
   int has_missing_vr, has_missing_dv, found_missing_vr, found_missing_dv;
@@ -14683,23 +16928,40 @@ NhlErrorTypes vrdv2uvF_W( void )
  * Output array variables
  */
   void *uv;
-  double *tmp_u, *tmp_v;
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
   NclBasicDataTypes type_uv;
   NclScalar missing_uv, missing_duv;
-  int ndims_uv, *dsizes_uv;
+  int ndims_uv;
+  ng_size_t *dsizes_uv;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in, ret;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  int ret;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_u, index_v, index_vrdv, nmiss;
+  ng_size_t index_u, index_v, index_vrdv;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshaec, *wvhsec, *ad, *bd, *av, *bv, *pertbd, *pertbv;
+  int inlon;
+  int inlat;
+  int ilshaec;
+  int ilvhsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -14800,7 +17062,7 @@ NhlErrorTypes vrdv2uvF_W( void )
  * dimension represents ud, and the 1th dimension represents vd.
  */
   ndims_uv  = ndims_vr + 1;
-  dsizes_uv = (int*)calloc(ndims_uv,sizeof(int));  
+  dsizes_uv = (ng_size_t*)calloc(ndims_uv,sizeof(ng_size_t));  
   dsizes_uv[0] = 2;
   for(i = 1; i <= ndims_vr; i++ ) dsizes_uv[i] = dsizes_vr[i-1];
 
@@ -14844,6 +17106,37 @@ NhlErrorTypes vrdv2uvF_W( void )
     return(NhlFATAL);
   }
 
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshaec > INT_MAX) ||
+     (lvhsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvF: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshaec = (int) lshaec;
+  ilvhsec = (int) lvhsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
 /*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
@@ -14907,48 +17200,48 @@ NhlErrorTypes vrdv2uvF_W( void )
                                 missing_duv.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_dv,work1);
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_vr,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vr,work1);
 /*
  * shaec performs the spherical harmonic analysis on a (scalar) equal 
  * grid(s) and returns the coefficients in array(s) ad,bd for divergence
  * and av,bv for vortivity
  */
-    NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork1,&ldwork1,
-                             &jer);
-    NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,ad,bd,
-                           &mdab,&ndab,wshaec,&lshaec,work2,&lwork2,&ker);
-    NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_vr,&idvw,&jdvw,av,bv,
-                           &mdab,&ndab,wshaec,&lshaec,work2,&lwork2,&ker);
+      NGCALLF(dshaeci,DSHAECI)(&inlat,&inlon,wshaec,&ilshaec,dwork1,&ildwork1,&jer);
+      NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,ad,bd,
+                               &imdab,&indab,wshaec,&ilshaec,work2,&ilwork2,&ker);
+      NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&one,tmp_vr,&iidvw,&ijdvw,av,bv,
+                               &imdab,&indab,wshaec,&ilshaec,work2,&ilwork2,&ker);
 
-    NGCALLF(dchkerr,DCHKERR)("vrdv2uvF","shaec",&ier,&jer,&ker,&mer,8,5);
+      NGCALLF(dchkerr,DCHKERR)("vrdv2uvF","shaec",&ier,&jer,&ker,&mer,8,5);
 /* 
  * Compute the u and v components from vr,dv
  */ 
-    NGCALLF(dvhseci,DVHSECI)(&nlat,&nlon,wvhsec,&lvhsec,dwork2,&ldwork2,
-                             &jer);
-    NGCALLF(didvtec,DIDVTEC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,&idvw,&jdvw,
-                             ad,bd,av,bv,&mdab,&ndab,wvhsec,&lvhsec,
-                             work3,&lwork3,pertbd,pertbv,&ker);
+      NGCALLF(dvhseci,DVHSECI)(&inlat,&inlon,wvhsec,&ilvhsec,dwork2,&ildwork2,&jer);
+      NGCALLF(didvtec,DIDVTEC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,&iidvw,&ijdvw,
+                                 ad,bd,av,bv,&imdab,&indab,wvhsec,&ilvhsec,
+                                 work3,&ilwork3,pertbd,pertbv,&ker);
 
-    NGCALLF(dchkerr,DCHKERR)("vrdv2uvF","vhseci+idvtec",&ier,&jer,&ker,
-                             &mer,8,13);
+      NGCALLF(dchkerr,DCHKERR)("vrdv2uvF","vhseci+idvtec",&ier,&jer,&ker,
+                                 &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vr,work1);
-    NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_u,&scale,&ner);
-    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_v,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_u,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_v,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -15006,9 +17299,12 @@ NhlErrorTypes vrdv2uvg_W( void )
  * Input array variables
  */
   void *vr, *dv;
-  double *tmp_vr, *tmp_dv;
-  int ndims_vr, dsizes_vr[NCL_MAX_DIMENSIONS];
-  int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS];
+  double *tmp_vr = NULL;
+  double *tmp_dv = NULL;
+  int ndims_vr;
+  ng_size_t dsizes_vr[NCL_MAX_DIMENSIONS];
+  int ndims_dv;
+  ng_size_t dsizes_dv[NCL_MAX_DIMENSIONS];
   NclScalar missing_vr, missing_dvo, missing_dvr, missing_ddvo;
   NclBasicDataTypes type_vr, type_dv;
   int has_missing_vr, has_missing_dvo, found_missing_vr, found_missing_dv;
@@ -15016,25 +17312,42 @@ NhlErrorTypes vrdv2uvg_W( void )
  * Output array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v;
   NclScalar missing_u, missing_du, missing_v, missing_dv;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshagc, *wvhsgc, *ad, *bd, *av, *bv, *pertbd, *pertbv;
+  int inlon;
+  int inlat;
+  int ilshagc;
+  int ilvhsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ildwork2;
+  int ilwork2;
+  int ilwork3;
 /*
  * Retrieve parameters
  *
@@ -15207,6 +17520,37 @@ NhlErrorTypes vrdv2uvg_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshagc > INT_MAX) ||
+     (lvhsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (ldwork2 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvg: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshagc = (int) lshagc;
+  ilvhsgc = (int) lvhsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -15280,48 +17624,48 @@ NhlErrorTypes vrdv2uvg_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_dv,work1);
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_vr,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vr,work1);
 /*
  * shagc performs the spherical harmonic analysis on a (scalar) equal 
  * grid(s) and returns the coefficients in array(s) ad,bd for divergence
  * and av,bv for vortivity
  */
-    NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork1,&ldwork1,
-                             &jer); 
-    NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,ad,bd,
-                           &mdab,&ndab,wshagc,&lshagc,work2,&lwork2,&ker);
-    NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_vr,&idvw,&jdvw,av,bv,
-                           &mdab,&ndab,wshagc,&lshagc,work2,&lwork2,&ker);
+      NGCALLF(dshagci,DSHAGCI)(&inlat,&inlon,wshagc,&ilshagc,dwork1,&ildwork1,&jer); 
+      NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,ad,bd,
+                               &imdab,&indab,wshagc,&ilshagc,work2,&ilwork2,&ker);
+      NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&one,tmp_vr,&iidvw,&ijdvw,av,bv,
+                               &imdab,&indab,wshagc,&ilshagc,work2,&ilwork2,&ker);
     
-    NGCALLF(dchkerr,DCHKERR)("vrdv2uvg","shagc",&ier,&jer,&ker,&mer,8,5);
+      NGCALLF(dchkerr,DCHKERR)("vrdv2uvg","shagc",&ier,&jer,&ker,&mer,8,5);
 /* 
  * Compute the u and v components from vr,dv
  */ 
-    NGCALLF(dvhsgci,DVHSGCI)(&nlat,&nlon,wvhsgc,&lvhsgc,dwork2,&ldwork2,
-                             &jer);
-    NGCALLF(didvtgc,DIDVTGC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,&idvw,&jdvw,
-                             ad,bd,av,bv,&mdab,&ndab,wvhsgc,&lvhsgc,
-                             work3,&lwork3,pertbd,pertbv,&ker);
+      NGCALLF(dvhsgci,DVHSGCI)(&inlat,&inlon,wvhsgc,&ilvhsgc,dwork2,&ildwork2,&jer);
+      NGCALLF(didvtgc,DIDVTGC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,&iidvw,&ijdvw,
+                                 ad,bd,av,bv,&imdab,&indab,wvhsgc,&ilvhsgc,
+                                 work3,&ilwork3,pertbd,pertbv,&ker);
 
-    NGCALLF(dchkerr,DCHKERR)("vrdv2uvg","vhsgci+idvtgc",&ier,&jer,&ker,
-                             &mer,8,13);
+      NGCALLF(dchkerr,DCHKERR)("vrdv2uvg","vhsgci+idvtgc",&ier,&jer,&ker,
+                                 &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vr,work1);
-    NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_u,&scale,&ner);
-    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_v,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_u,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_v,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -15373,9 +17717,12 @@ NhlErrorTypes vrdv2uvG_W( void )
  * Input array variables
  */
   void *vr, *dv;
-  double *tmp_vr, *tmp_dv;
-  int ndims_vr, dsizes_vr[NCL_MAX_DIMENSIONS];
-  int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS];
+  double *tmp_vr = NULL;
+  double *tmp_dv = NULL;
+  int ndims_vr;
+  ng_size_t dsizes_vr[NCL_MAX_DIMENSIONS];
+  int ndims_dv;
+  ng_size_t dsizes_dv[NCL_MAX_DIMENSIONS];
   NclScalar missing_vr, missing_dv, missing_dvr, missing_ddv;
   NclBasicDataTypes type_vr, type_dv;
   int has_missing_vr, has_missing_dv, found_missing_vr, found_missing_dv;
@@ -15383,23 +17730,40 @@ NhlErrorTypes vrdv2uvG_W( void )
  * Output array variables
  */
   void *uv;
-  double *tmp_u, *tmp_v;
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
   NclBasicDataTypes type_uv;
   NclScalar missing_uv, missing_duv;
-  int ndims_uv, *dsizes_uv;
+  int ndims_uv;
+  ng_size_t *dsizes_uv;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in, ret;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  int ret;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_u, index_v, index_vrdv, nmiss;
+  ng_size_t index_u, index_v, index_vrdv;
+  int nmiss;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshagc, *wvhsgc, *ad, *bd, *av, *bv, *pertbd, *pertbv;
+  int inlon;
+  int inlat;
+  int ilshagc;
+  int ilvhsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ilwork2;
+  int ilwork3;
+  int ildwork2;
 /*
  * Retrieve parameters
  *
@@ -15499,7 +17863,7 @@ NhlErrorTypes vrdv2uvG_W( void )
  * dimension represents ud, and the 1th dimension represents vd.
  */
   ndims_uv  = ndims_vr + 1;
-  dsizes_uv = (int*)calloc(ndims_uv,sizeof(int));  
+  dsizes_uv = (ng_size_t*)calloc(ndims_uv,sizeof(ng_size_t));  
   dsizes_uv[0] = 2;
   for(i = 1; i <= ndims_vr; i++ ) dsizes_uv[i] = dsizes_vr[i-1];
 
@@ -15543,6 +17907,37 @@ NhlErrorTypes vrdv2uvG_W( void )
     return(NhlFATAL);
   }
 
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshagc > INT_MAX) ||
+     (lvhsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX) ||
+     (ldwork2 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvG: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshagc = (int) lshagc;
+  ilvhsgc = (int) lvhsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
 /*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
@@ -15606,47 +18001,46 @@ NhlErrorTypes vrdv2uvG_W( void )
                                 missing_duv.doubleval);
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_dv,work1);
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_vr,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vr,work1);
 /*
  * shagc performs the spherical harmonic analysis on a (scalar) equal 
  * grid(s) and returns the coefficients in array(s) ad,bd for divergence
  * and av,bv for vortivity
  */
-    NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork1,&ldwork1,
-                             &jer);
-    NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,ad,bd,
-                           &mdab,&ndab,wshagc,&lshagc,work2,&lwork2,&ker);
-    NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_vr,&idvw,&jdvw,av,bv,
-                           &mdab,&ndab,wshagc,&lshagc,work2,&lwork2,&ker);
-    NGCALLF(dchkerr,DCHKERR)("vrdv2uvG","shagc",&ier,&jer,&ker,&mer,8,5);
+      NGCALLF(dshagci,DSHAGCI)(&inlat,&inlon,wshagc,&ilshagc,dwork1,&ildwork1,&jer);
+      NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&one,tmp_dv,&iidvw,&ijdvw,ad,bd,
+                               &imdab,&indab,wshagc,&ilshagc,work2,&ilwork2,&ker);
+      NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&one,tmp_vr,&iidvw,&ijdvw,av,bv,
+                               &imdab,&indab,wshagc,&ilshagc,work2,&ilwork2,&ker);
+      NGCALLF(dchkerr,DCHKERR)("vrdv2uvG","shagc",&ier,&jer,&ker,&mer,8,5);
 /* 
  * Compute the u and v components from vr,dv
  */ 
-    NGCALLF(dvhsgci,DVHSGCI)(&nlat,&nlon,wvhsgc,&lvhsgc,dwork2,&ldwork2,
-                             &jer);
-    NGCALLF(didvtgc,DIDVTGC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,&idvw,&jdvw,
-                             ad,bd,av,bv,&mdab,&ndab,wvhsgc,&lvhsgc,
-                             work3,&lwork3,pertbd,pertbv,&ker);
-
-    NGCALLF(dchkerr,DCHKERR)("vrdv2uvG","vhsgci+idvtgc",&ier,&jer,&ker,
-                             &mer,8,13);
+      NGCALLF(dvhsgci,DVHSGCI)(&inlat,&inlon,wvhsgc,&ilvhsgc,dwork2,&ildwork2,&jer);
+      NGCALLF(didvtgc,DIDVTGC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,&iidvw,&ijdvw,
+                                 ad,bd,av,bv,&imdab,&indab,wvhsgc,&ilvhsgc,
+                                 work3,&ilwork3,pertbd,pertbv,&ker);
+      NGCALLF(dchkerr,DCHKERR)("vrdv2uvG","vhsgci+idvtgc",&ier,&jer,&ker,
+                                 &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vr,work1);
-    NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_u,&scale,&ner);
-    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_v,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_u,&scale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_v,&scale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -15704,9 +18098,12 @@ NhlErrorTypes sfvp2uvf_W( void )
  * Input array variables
  */
   void *sf, *vp;
-  double *tmp_sf, *tmp_vp;
-  int ndims_sf, dsizes_sf[NCL_MAX_DIMENSIONS];
-  int ndims_vp, dsizes_vp[NCL_MAX_DIMENSIONS];
+  double *tmp_sf = NULL;
+  double *tmp_vp = NULL;
+  int ndims_sf;
+  ng_size_t dsizes_sf[NCL_MAX_DIMENSIONS];
+  int ndims_vp;
+  ng_size_t dsizes_vp[NCL_MAX_DIMENSIONS];
   NclScalar missing_sf, missing_vpo, missing_dsf, missing_dvpo;
   NclBasicDataTypes type_sf, type_vp;
   int has_missing_sf, has_missing_vpo, found_missing_sf, found_missing_vp;
@@ -15714,26 +18111,43 @@ NhlErrorTypes sfvp2uvf_W( void )
  * Output array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v;
   NclScalar missing_u, missing_du, missing_v, missing_vp;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshaec, *wvhsec, *as, *bs, *av, *bv;
+  int inlon;
+  int inlat;
+  int ilshaec;
+  int ilvhsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ilwork3;
+  int ilwork2;
+  int ildwork2;
 /*
  * Retrieve parameters
  *
@@ -15904,6 +18318,37 @@ NhlErrorTypes sfvp2uvf_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshaec > INT_MAX) ||
+     (lvhsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (lwork3 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (ldwork2 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvf: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshaec = (int) lshaec;
+  ilvhsec = (int) lvhsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -15979,47 +18424,47 @@ NhlErrorTypes sfvp2uvf_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_vp,work1);
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_sf,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vp,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_sf,work1);
 /*
  * shaec performs the spherical harmonic analysis on a (scalar) equal 
  * grid(s) and returns the coefficients in array(s) as,bs for divergence
  * and av,bv for vortivity
  */
-    NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork1,&ldwork1,
-                             &jer);
-    NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_vp,&idvw,&jdvw,av,bv,
-                           &mdab,&ndab,wshaec,&lshaec,work2,&lwork2,&ker);
-    NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_sf,&idvw,&jdvw,as,bs,
-                           &mdab,&ndab,wshaec,&lshaec,work2,&lwork2,&ker);
+      NGCALLF(dshaeci,DSHAECI)(&inlat,&inlon,wshaec,&ilshaec,dwork1,&ildwork1,&jer);
+      NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&one,tmp_vp,&iidvw,&ijdvw,av,bv,
+                               &imdab,&indab,wshaec,&ilshaec,work2,&ilwork2,&ker);
+      NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&one,tmp_sf,&iidvw,&ijdvw,as,bs,
+                               &imdab,&indab,wshaec,&ilshaec,work2,&ilwork2,&ker);
 
-    NGCALLF(dchkerr,DCHKERR)("sfvp2uvf","shaec",&ier,&jer,&ker,&mer,8,5);
+      NGCALLF(dchkerr,DCHKERR)("sfvp2uvf","shaec",&ier,&jer,&ker,&mer,8,5);
 /* 
  * Compute the u and v components from sf,vp
  */ 
-    NGCALLF(dvhseci,DVHSECI)(&nlat,&nlon,wvhsec,&lvhsec,dwork2,&ldwork2,
-                             &jer);
-    NGCALLF(disfvpec,DISFVPEC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                               &idvw,&jdvw,as,bs,av,bv,&mdab,&ndab,
-                               wvhsec,&lvhsec,work3,&lwork3,&ker);
-    NGCALLF(dchkerr,DCHKERR)("sfvp2uvf","isfvpec",&ier,&jer,&ker,
-                             &mer,8,13);
+      NGCALLF(dvhseci,DVHSECI)(&inlat,&inlon,wvhsec,&ilvhsec,dwork2,&ildwork2,&jer);
+      NGCALLF(disfvpec,DISFVPEC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                                   &iidvw,&ijdvw,as,bs,av,bv,&imdab,&indab,
+                                   wvhsec,&ilvhsec,work3,&ilwork3,&ker);
+      NGCALLF(dchkerr,DCHKERR)("sfvp2uvf","isfvpec",&ier,&jer,&ker,
+                                 &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vp,work1);
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_sf,work1);
-    NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vp,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_sf,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_u,&invscale,&ner);
-    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_v,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_u,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_v,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -16069,9 +18514,12 @@ NhlErrorTypes sfvp2uvg_W( void )
  * Input array variables
  */
   void *sf, *vp;
-  double *tmp_sf, *tmp_vp;
-  int ndims_sf, dsizes_sf[NCL_MAX_DIMENSIONS];
-  int ndims_vp, dsizes_vp[NCL_MAX_DIMENSIONS];
+  double *tmp_sf = NULL;
+  double *tmp_vp = NULL;
+  int ndims_sf;
+  ng_size_t dsizes_sf[NCL_MAX_DIMENSIONS];
+  int ndims_vp;
+  ng_size_t dsizes_vp[NCL_MAX_DIMENSIONS];
   NclScalar missing_sf, missing_vpo, missing_dsf, missing_dvpo;
   NclBasicDataTypes type_sf, type_vp;
   int has_missing_sf, has_missing_vpo, found_missing_sf, found_missing_vp;
@@ -16079,26 +18527,43 @@ NhlErrorTypes sfvp2uvg_W( void )
  * Output array variables
  */
   void *u, *v;
-  double *tmp_u, *tmp_v;
+  double *tmp_u = NULL;
+  double *tmp_v = NULL;
   NclBasicDataTypes type_u, type_v;
   int has_missing_u, has_missing_v;
   NclScalar missing_u, missing_du, missing_v, missing_vp;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in;
+  ng_size_t i, idvw, jdvw, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
-  int index_uv, nmiss;
+  ng_size_t index_uv;
+  int nmiss;
   double invscale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
+  ng_size_t lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshagc, *wvhsgc, *as, *bs, *av, *bv;
+  int inlon;
+  int inlat;
+  int ilshagc;
+  int ilvhsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork1;
+  int ilwork2;
+  int ilwork3;
+  int ildwork2;
 /*
  * Retrieve parameters
  *
@@ -16269,6 +18734,37 @@ NhlErrorTypes sfvp2uvg_W( void )
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshagc > INT_MAX) ||
+     (lvhsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork1 > INT_MAX) ||
+     (lwork2 > INT_MAX) ||
+     (lwork3 > INT_MAX) ||
+     (ldwork2 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvg: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshagc = (int) lshagc;
+  ilvhsgc = (int) lvhsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ildwork1 = (int) ldwork1;
+  ildwork2 = (int) ldwork2;
+  ilwork2 = (int) lwork2;
+  ilwork3 = (int) lwork3;
+/*
  * Loop through the rightmost nt dimensions and call the various
  * underlying Fortran routines. This code could also be written
  * so that the full input arrays are passed to the Fortran routines,
@@ -16343,47 +18839,47 @@ NhlErrorTypes sfvp2uvg_W( void )
       }
     }
     else {
+
 /*
  * Transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_vp,work1);
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_sf,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vp,work1);
+      NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_sf,work1);
 /*
  * shagc performs the spherical harmonic analysis on a (scalar) equal 
  * grid(s) and returns the coefficients in array(s) as,bs for divergence
  * and av,bv for vortivity
  */
-    NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork1,&ldwork1,
-                             &jer); 
-    NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_vp,&idvw,&jdvw,av,bv,
-                           &mdab,&ndab,wshagc,&lshagc,work2,&lwork2,&ker);
-    NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_sf,&idvw,&jdvw,as,bs,
-                           &mdab,&ndab,wshagc,&lshagc,work2,&lwork2,&ker);
-    
-    NGCALLF(dchkerr,DCHKERR)("sfvp2uvg","shagc",&ier,&jer,&ker,&mer,8,5);
+      NGCALLF(dshagci,DSHAGCI)(&inlat,&inlon,wshagc,&ilshagc,dwork1,&ildwork1,&jer); 
+      NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&one,tmp_vp,&iidvw,&ijdvw,av,bv,
+                               &imdab,&indab,wshagc,&ilshagc,work2,&ilwork2,&ker);
+      NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&one,tmp_sf,&iidvw,&ijdvw,as,bs,
+                               &imdab,&indab,wshagc,&ilshagc,work2,&ilwork2,&ker);
+      
+      NGCALLF(dchkerr,DCHKERR)("sfvp2uvg","shagc",&ier,&jer,&ker,&mer,8,5);
 /* 
  * Compute the u and v components from sf, vp
  */ 
-    NGCALLF(dvhsgci,DVHSGCI)(&nlat,&nlon,wvhsgc,&lvhsgc,dwork2,&ldwork2,
-                             &jer);
-    NGCALLF(disfvpgc,DISFVPGC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
-                               &idvw,&jdvw,as,bs,av,bv,&mdab,&ndab,
-                               wvhsgc,&lvhsgc,work3,&lwork3,&ker);
-    NGCALLF(dchkerr,DCHKERR)("sfvp2uvg","isfvpgc",&ier,&jer,&ker,
-                             &mer,8,13);
+      NGCALLF(dvhsgci,DVHSGCI)(&inlat,&inlon,wvhsgc,&ilvhsgc,dwork2,&ildwork2,&jer);
+      NGCALLF(disfvpgc,DISFVPGC)(&inlat,&inlon,&isym,&one,tmp_v,tmp_u,
+                                   &iidvw,&ijdvw,as,bs,av,bv,&imdab,&indab,
+                                   wvhsgc,&ilvhsgc,work3,&ilwork3,&ker);
+      NGCALLF(dchkerr,DCHKERR)("sfvp2uvg","isfvpgc",&ier,&jer,&ker,
+                                 &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
  * (math) nlon is the last dim
  */
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vp,work1);
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_sf,work1);
-    NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vp,work1);
+      NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_sf,work1);
+      NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
 /*
  * (Possibly) scale the quantities calculated by this routine
  */
-    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_u,&invscale,&ner);
-    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_v,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_u,&invscale,&ner);
+      NGCALLF(dgeoscl,DGEOSCL)(&inlon,&inlat,&one,tmp_v,&invscale,&ner);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -16434,8 +18930,10 @@ NhlErrorTypes vhaec_W( void )
  */
   void *u, *v;
   double *du, *dv;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_u, type_v;
 /*
  * Output array variables
@@ -16443,22 +18941,37 @@ NhlErrorTypes vhaec_W( void )
   void    *br,  *bi,  *cr,  *ci;
   double *dbr, *dbi, *dcr, *dci;
   float  *rbr, *rbi, *rcr, *rci;
-  int ndims_br, dsizes_br[NCL_MAX_DIMENSIONS];
-  int ndims_bi, dsizes_bi[NCL_MAX_DIMENSIONS];
-  int ndims_cr, dsizes_cr[NCL_MAX_DIMENSIONS];
-  int ndims_ci, dsizes_ci[NCL_MAX_DIMENSIONS];
+  int ndims_br;
+  ng_size_t dsizes_br[NCL_MAX_DIMENSIONS];
+  int ndims_bi;
+  ng_size_t dsizes_bi[NCL_MAX_DIMENSIONS];
+  int ndims_cr;
+  ng_size_t dsizes_cr[NCL_MAX_DIMENSIONS];
+  int ndims_ci;
+  ng_size_t dsizes_ci[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_br, type_bi, type_cr, type_ci;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
-  int i, j, l, ityp, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
+  ng_size_t i, j, idvw, jdvw, mdab, ndab, l1, l2;
+  int ityp;
   int ier=0, jer=0, ker=0, mer=0;
 /*
  * Workspace variables
  */
-  int lwork, ldwork, lvhaec, lvhsec;
+  ng_size_t lwork, ldwork, lvhaec;
   double *work, *wvhaec, *dwork;
+  int inlon;
+  int inlat;
+  int i_nt;
+  int ilvhaec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork;
 /*
  * Retrieve parameters
  *
@@ -16604,13 +19117,25 @@ NhlErrorTypes vhaec_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaec: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+
+/*
+ * Test dimension sizes
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaec: nlat and/or nlon is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+
 /*
  * transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
-    NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,&du[j],&dv[j],work);
+    NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,&du[j],&dv[j],work);
     j += nlatnlon;
   }
   NclFree(work);
@@ -16631,6 +19156,29 @@ NhlErrorTypes vhaec_W( void )
   ldwork = 2*(nlat+2);
   lvhaec = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
 
+/*
+ * Test dimension sizes
+ */
+  if((nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaec: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  i_nt = (int) nt;
+  ilvhaec = (int) lvhaec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+
   wvhaec = (double*)calloc(lvhaec,sizeof(double));
   work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
@@ -16639,10 +19187,11 @@ NhlErrorTypes vhaec_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaec: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dvhaeci,DVHAECI)(&nlat,&nlon,wvhaec,&lvhaec,dwork,&ldwork,&jer);
-  NGCALLF(dvhaec,DVHAEC)(&nlat,&nlon,&ityp,&nt,&dv[0],&du[0],
-                         &idvw,&jdvw,dbr,dbi,dcr,dci,
-                         &mdab,&ndab,wvhaec,&lvhaec,work,&lwork,&ker);
+
+  NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork,&ildwork,&jer);
+  NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&ityp,&i_nt,&dv[0],&du[0],
+                             &iidvw,&ijdvw,dbr,dbi,dcr,dci,
+                             &imdab,&indab,wvhaec,&ilvhaec,work,&ilwork,&ker);
   NclFree(wvhaec);
   NclFree(work);
   NclFree(dwork);
@@ -16659,7 +19208,7 @@ NhlErrorTypes vhaec_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,&du[j],&dv[j],work);
+    NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,&du[j],&dv[j],work);
     j += nlatnlon;
   }
 /*
@@ -16687,26 +19236,40 @@ NhlErrorTypes vhaeC_W( void )
  */
   void *u, *v;
   double *du, *dv;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_u, type_v;
 /*
  * Output array variables
  */
   double *dbc;
   float  *rbc;
-  int ndims_bc, dsizes_bc[NCL_MAX_DIMENSIONS];
+  int ndims_bc;
+  ng_size_t dsizes_bc[NCL_MAX_DIMENSIONS];
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
-  int i, j, l, ityp, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
+  ng_size_t i, j, idvw, jdvw, mdab, ndab, l1, l2;
+  int ityp;
   int ier=0, jer=0, ker=0, mer=0;
 /*
  * Workspace variables
  */
-  int lwork, ldwork, lvhaec, lvhsec;
+  ng_size_t lwork, ldwork, lvhaec;
   double *work, *wvhaec, *dwork;
+  int inlon;
+  int inlat;
+  int i_nt;
+  int ilvhaec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork;
 /*
  * Retrieve parameters
  *
@@ -16779,13 +19342,20 @@ NhlErrorTypes vhaeC_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaeC: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+  if((nlon > INT_MAX) || (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaeC: nlat and/or nlon is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+
 /*
  * transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
-    NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,&du[j],&dv[j],work);
+    NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,&du[j],&dv[j],work);
     j += nlatnlon;
   }
   NclFree(work);
@@ -16806,6 +19376,26 @@ NhlErrorTypes vhaeC_W( void )
   ldwork = 2*(nlat+2);
   lvhaec = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
 
+  if((nt > INT_MAX) ||
+     (lvhaec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaeC: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  i_nt = (int) nt;
+  ilvhaec = (int) lvhaec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+
   wvhaec = (double*)calloc(lvhaec,sizeof(double));
   work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
@@ -16814,15 +19404,16 @@ NhlErrorTypes vhaeC_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaeC: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dvhaeci,DVHAECI)(&nlat,&nlon,wvhaec,&lvhaec,dwork,&ldwork,&jer);
+
+  NGCALLF(dvhaeci,DVHAECI)(&inlat,&inlon,wvhaec,&ilvhaec,dwork,&ildwork,&jer);
   j = nt * nlat * nlat;
-  NGCALLF(dvhaec,DVHAEC)(&nlat,&nlon,&ityp,&nt,&dv[0],&du[0],
-                         &idvw,&jdvw,&dbc[0],&dbc[j],&dbc[2*j],&dbc[3*j],
-                         &mdab,&ndab,wvhaec,&lvhaec,work,&lwork,&ker);
+  NGCALLF(dvhaec,DVHAEC)(&inlat,&inlon,&ityp,&i_nt,&dv[0],&du[0],
+			 &iidvw,&ijdvw,&dbc[0],&dbc[j],&dbc[2*j],&dbc[3*j],
+			 &imdab,&indab,wvhaec,&ilvhaec,work,&ilwork,&ker);
   NclFree(wvhaec);
   NclFree(work);
   NclFree(dwork);
-  NGCALLF(dchkerr,DCHKERR)("vhaeC","vhaec",&ier,&jer,&ker,&mer,5,5);
+  NGCALLF(dchkerr,DCHKERR)("vhaec","vhaec",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
  * (math) nlon is the first dim
@@ -16835,7 +19426,7 @@ NhlErrorTypes vhaeC_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,&du[j],&dv[j],work);
+    NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,&du[j],&dv[j],work);
     j += nlatnlon;
   }
 /*
@@ -16885,8 +19476,10 @@ NhlErrorTypes vhagc_W( void )
  */
   void *u, *v;
   double *du, *dv;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_u, type_v;
 /*
  * Output array variables
@@ -16894,22 +19487,37 @@ NhlErrorTypes vhagc_W( void )
   void    *br,  *bi,  *cr,  *ci;
   double *dbr, *dbi, *dcr, *dci;
   float  *rbr, *rbi, *rcr, *rci;
-  int ndims_br, dsizes_br[NCL_MAX_DIMENSIONS];
-  int ndims_bi, dsizes_bi[NCL_MAX_DIMENSIONS];
-  int ndims_cr, dsizes_cr[NCL_MAX_DIMENSIONS];
-  int ndims_ci, dsizes_ci[NCL_MAX_DIMENSIONS];
+  int ndims_br;
+  ng_size_t dsizes_br[NCL_MAX_DIMENSIONS];
+  int ndims_bi;
+  ng_size_t dsizes_bi[NCL_MAX_DIMENSIONS];
+  int ndims_cr;
+  ng_size_t dsizes_cr[NCL_MAX_DIMENSIONS];
+  int ndims_ci;
+  ng_size_t dsizes_ci[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_br, type_bi, type_cr, type_ci;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
-  int i, j, l, ityp, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
+  ng_size_t i, j, idvw, jdvw, mdab, ndab, l1, l2;
+  int ityp;
   int ier=0, jer=0, ker=0, mer=0;
 /*
  * Workspace variables
  */
-  int lwork, ldwork, lvhagc, lvhsec;
+  ng_size_t lwork, ldwork, lvhagc;
   double *work, *wvhagc, *dwork;
+  int inlon;
+  int inlat;
+  int i_nt;
+  int ilvhagc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork;
 /*
  * Retrieve parameters
  *
@@ -17051,13 +19659,25 @@ NhlErrorTypes vhagc_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagc: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+
+/*
+ * Test dimension sizes
+ */
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagc: nlat and/or nlon is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+
 /*
  * transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
-    NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,&du[j],&dv[j],work);
+    NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,&du[j],&dv[j],work);
     j += nlatnlon;
   }
   NclFree(work);
@@ -17078,6 +19698,30 @@ NhlErrorTypes vhagc_W( void )
   lvhagc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+l2+15;
   ldwork = 2*nlat*(nlat+1)+1;
 
+
+/*
+ * Test dimension sizes.
+ */
+  if((nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagc: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  i_nt = (int) nt;
+  ilvhagc = (int) lvhagc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+
   wvhagc = (double*)calloc( lvhagc,sizeof(double));
   work   = (double*)calloc(  lwork,sizeof(double));
   dwork  = (double*)calloc( ldwork,sizeof(double));
@@ -17086,10 +19730,11 @@ NhlErrorTypes vhagc_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagc: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dvhagci,DVHAGCI)(&nlat,&nlon,wvhagc,&lvhagc,dwork,&ldwork,&jer);
-  NGCALLF(dvhagc,DVHAGC)(&nlat,&nlon,&ityp,&nt,&dv[0],&du[0],
-                         &idvw,&jdvw,dbr,dbi,dcr,dci,
-                         &mdab,&ndab,wvhagc,&lvhagc,work,&lwork,&ker);
+
+  NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork,&ildwork,&jer);
+  NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&ityp,&i_nt,&dv[0],&du[0],
+                             &iidvw,&ijdvw,dbr,dbi,dcr,dci,
+                             &imdab,&indab,wvhagc,&ilvhagc,work,&ilwork,&ker);
   NclFree(wvhagc);
   NclFree(work);
   NclFree(dwork);
@@ -17106,7 +19751,7 @@ NhlErrorTypes vhagc_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,&du[j],&dv[j],work);
+    NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,&du[j],&dv[j],work);
     j += nlatnlon;
   }
 /*
@@ -17133,26 +19778,40 @@ NhlErrorTypes vhagC_W( void )
  */
   void *u, *v;
   double *du, *dv;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_u, type_v;
 /*
  * Output array variables
  */
   double *dbc;
   float  *rbc;
-  int ndims_bc, dsizes_bc[NCL_MAX_DIMENSIONS];
+  int ndims_bc;
+  ng_size_t dsizes_bc[NCL_MAX_DIMENSIONS];
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
-  int i, j, l, ityp, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
+  ng_size_t i, j, idvw, jdvw, mdab, ndab, l1, l2;
+  int ityp;
   int ier=0, jer=0, ker=0, mer=0;
 /*
  * Workspace variables
  */
-  int lwork, ldwork, lvhagc, lvhsec;
+  ng_size_t lwork, ldwork, lvhagc;
   double *work, *wvhagc, *dwork;
+  int inlon;
+  int inlat;
+  int i_nt;
+  int ilvhagc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork;
 /*
  * Retrieve parameters
  *
@@ -17226,12 +19885,22 @@ NhlErrorTypes vhagC_W( void )
     return(NhlFATAL);
   }
 /*
+ * Test dimension sizes
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagC: nlat and/or nlon is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+
+/*
  * transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
-    NGCALLF(dgeomatv,DGEOMATV)(&nlon,&nlat,&du[j],&dv[j],work);
+    NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,&du[j],&dv[j],work);
     j += nlatnlon;
   }
   NclFree(work);
@@ -17252,6 +19921,30 @@ NhlErrorTypes vhagC_W( void )
   lvhagc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+l2+15;
   ldwork = 2*nlat*(nlat+1)+1;
 
+/*
+ * Test dimension sizes
+ */
+  if((nt > INT_MAX) ||
+     (lvhagc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagC: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  i_nt = (int) nt;
+  ilvhagc = (int) lvhagc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+
+
   wvhagc = (double*)calloc( lvhagc,sizeof(double));
   work   = (double*)calloc(  lwork,sizeof(double));
   dwork  = (double*)calloc( ldwork,sizeof(double));
@@ -17260,11 +19953,12 @@ NhlErrorTypes vhagC_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagC: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dvhagci,DVHAGCI)(&nlat,&nlon,wvhagc,&lvhagc,dwork,&ldwork,&jer);
+
+  NGCALLF(dvhagci,DVHAGCI)(&inlat,&inlon,wvhagc,&ilvhagc,dwork,&ildwork,&jer);
   j = nt * nlat * nlat;
-  NGCALLF(dvhagc,DVHAGC)(&nlat,&nlon,&ityp,&nt,&dv[0],&du[0],
-                         &idvw,&jdvw,&dbc[0],&dbc[j],&dbc[2*j],&dbc[3*j],
-                         &mdab,&ndab,wvhagc,&lvhagc,work,&lwork,&ker);
+  NGCALLF(dvhagc,DVHAGC)(&inlat,&inlon,&ityp,&i_nt,&dv[0],&du[0],
+			 &iidvw,&ijdvw,&dbc[0],&dbc[j],&dbc[2*j],&dbc[3*j],
+			 &imdab,&indab,wvhagc,&ilvhagc,work,&ilwork,&ker);
   NclFree(wvhagc);
   NclFree(work);
   NclFree(dwork);
@@ -17281,7 +19975,7 @@ NhlErrorTypes vhagC_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,&du[j],&dv[j],work);
+    NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,&du[j],&dv[j],work);
     j += nlatnlon;
   }
 /*
@@ -17330,10 +20024,14 @@ NhlErrorTypes vhsec_W( void )
  */
   void *br, *bi, *cr, *ci;
   double *dbr, *dbi, *dcr, *dci;
-  int ndims_br, dsizes_br[NCL_MAX_DIMENSIONS];
-  int ndims_bi, dsizes_bi[NCL_MAX_DIMENSIONS];
-  int ndims_cr, dsizes_cr[NCL_MAX_DIMENSIONS];
-  int ndims_ci, dsizes_ci[NCL_MAX_DIMENSIONS];
+  int ndims_br;
+  ng_size_t dsizes_br[NCL_MAX_DIMENSIONS];
+  int ndims_bi;
+  ng_size_t dsizes_bi[NCL_MAX_DIMENSIONS];
+  int ndims_cr;
+  ng_size_t dsizes_cr[NCL_MAX_DIMENSIONS];
+  int ndims_ci;
+  ng_size_t dsizes_ci[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_br, type_bi, type_cr, type_ci;
 /*
  * Output array variables
@@ -17341,20 +20039,33 @@ NhlErrorTypes vhsec_W( void )
   void    *u,  *v;
   double *du, *dv;
   float  *ru, *rv;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_u, type_v;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
-  int i, j, l, ityp, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
+  ng_size_t i, j, idvw, jdvw, mdab, ndab, l1, l2;
+  int ityp;
   int ier=0, jer=0, ker=0, mer=0;
 /*
  * Workspace variables
  */
-  int lwork, ldwork, lvhsec;
+  ng_size_t lwork, ldwork, lvhsec;
   double *work, *wvhsec, *dwork;
+  int inlon;
+  int inlat;
+  int i_nt;
+  int ilvhsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork;
 /*
  * Retrieve parameters
  *
@@ -17499,6 +20210,30 @@ NhlErrorTypes vhsec_W( void )
   lvhsec = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
   ldwork = 2*(nlat+2);
 
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsec: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  i_nt = (int) nt;
+  ilvhsec = (int) lvhsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+
   wvhsec = (double*)calloc(lvhsec,sizeof(double));
   work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
@@ -17507,10 +20242,12 @@ NhlErrorTypes vhsec_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsec: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dvhseci,DVHSECI)(&nlat,&nlon,wvhsec,&lvhsec,dwork,&ldwork,&jer);
-  NGCALLF(dvhsec,DVHSEC)(&nlat,&nlon,&ityp,&nt,&dv[0],&du[0],
-                         &idvw,&jdvw,dbr,dbi,dcr,dci,&mdab,&ndab,
-                         wvhsec,&lvhsec,work,&lwork,&ker);
+
+  NGCALLF(dvhseci,DVHSECI)(&inlat,&inlon,wvhsec,&ilvhsec,dwork,&ildwork,&jer);
+  NGCALLF(dvhsec,DVHSEC)(&inlat,&inlon,&ityp,&i_nt,&dv[0],&du[0],
+			 &iidvw,&ijdvw,dbr,dbi,dcr,dci,&imdab,&indab,
+			 wvhsec,&ilvhsec,work,&ilwork,&ker);
+
   NclFree(wvhsec);
   NclFree(work);
   NclFree(dwork);
@@ -17527,7 +20264,7 @@ NhlErrorTypes vhsec_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,&du[j],&dv[j],work);
+    NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,&du[j],&dv[j],work);
     j += nlatnlon;
   }
 /*
@@ -17555,26 +20292,41 @@ NhlErrorTypes vhseC_W( void )
  */
   void *bc;
   double *dbc;
-  int ndims_bc, dsizes_bc[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_bc;
+  int ndims_bc;
+  ng_size_t dsizes_bc[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_bc, type_nlon;
 /*
  * Output array variables
  */
   double *duv;
   float  *ruv;
-  int ndims_uv, dsizes_uv[NCL_MAX_DIMENSIONS];
+  int ndims_uv;
+  ng_size_t dsizes_uv[NCL_MAX_DIMENSIONS];
 /*
  * various
  */
-  int nt, nlat, *nlon, nlatnlon, ntnlatnlon, ntnlatnlat;
-  int total_size_in, total_size_out;
-  int i, j, l, ityp, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, ntnlatnlon, ntnlatnlat;
+  ng_size_t total_size_in, total_size_out;
+  ng_size_t i, j, idvw, jdvw, mdab, ndab, l1, l2;
+  int ityp;
   int ier=0, jer=0, ker=0, mer=0;
+  ng_size_t *nlon_dims;
+  void *nlon_in;
 /*
  * Workspace variables
  */
-  int lwork, ldwork, lvhsec;
+  ng_size_t lwork, ldwork, lvhsec;
   double *work, *wvhsec, *dwork;
+  int inlon;
+  int inlat;
+  int i_nt;
+  int ilvhsec;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork;
 /*
  * Retrieve parameters
  *
@@ -17590,15 +20342,23 @@ NhlErrorTypes vhseC_W( void )
            NULL,
            &type_bc,
            DONT_CARE);
-  nlon = (int*)NclGetArgValue(
+  nlon_in = (void*)NclGetArgValue(
            1,
            2,
            NULL,
            NULL,
            NULL,
            NULL,
-           NULL,
+           &type_nlon,
            DONT_CARE);
+/*
+ * Convert the input dimensions to ng_size_t.
+ */
+  nlon_dims = get_dimensions(nlon_in,1,type_nlon,"vhseC");
+  if(nlon_dims == NULL) 
+    return(NhlFATAL);
+  nlon = *nlon_dims;
+  NclFree(nlon_dims);
 
 /*
  * The grid coming in must be at least 3-dimensional.
@@ -17615,7 +20375,7 @@ NhlErrorTypes vhseC_W( void )
  * Compute the total number of elements in our array.
  */
   nlat = dsizes_bc[ndims_bc-1];
-  nlatnlon = *nlon * nlat; 
+  nlatnlon = nlon * nlat; 
 
   nt = 1;
   for(i = 1; i < ndims_bc-2; i++) nt *= dsizes_bc[i];
@@ -17646,14 +20406,14 @@ NhlErrorTypes vhseC_W( void )
  */
   ityp   = 0;
   idvw   = nlat;
-  jdvw   = *nlon;
+  jdvw   = nlon;
   ndab   = nlat;
   mdab   = nlat;
-  l1     = min(nlat,(*nlon+2)/2);
+  l1     = min(nlat,(nlon+2)/2);
   l2     = (nlat+1)/2;
 
-  lwork  = max(4*(nlat+1),nlat*(2*nt* *nlon +max(6*l2,*nlon)));
-  lvhsec = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+ *nlon+15;
+  lwork  = max(4*(nlat+1),nlat*(2*nt* nlon +max(6*l2,nlon)));
+  lvhsec = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+ nlon+15;
   ldwork = 2*(nlat+2);
 
   wvhsec = (double*)calloc(lvhsec,sizeof(double));
@@ -17664,15 +20424,43 @@ NhlErrorTypes vhseC_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhseC: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dvhseci,DVHSECI)(&nlat,nlon,wvhsec,&lvhsec,dwork,&ldwork,&jer);
+
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhsec > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhseC: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  i_nt = (int) nt;
+  ilvhsec = (int) lvhsec;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+
+  NGCALLF(dvhseci,DVHSECI)(&inlat,&inlon,wvhsec,&ilvhsec,dwork,&ildwork,&jer);
   i = ntnlatnlat;
   j = ntnlatnlon;
-  NGCALLF(dvhsec,DVHSEC)(&nlat,nlon,&ityp,&nt,&duv[j],&duv[0],
-                         &idvw,&jdvw,&dbc[0],&dbc[i],&dbc[2*i],&dbc[3*i],
-                         &mdab,&ndab,wvhsec,&lvhsec,work,&lwork,&ker);
+  NGCALLF(dvhsec,DVHSEC)(&inlat,&inlon,&ityp,&i_nt,&duv[j],&duv[0],
+			 &iidvw,&ijdvw,&dbc[0],&dbc[i],&dbc[2*i],&dbc[3*i],
+			 &imdab,&indab,wvhsec,&ilvhsec,work,&ilwork,&ker);
+
   NclFree(wvhsec);
   NclFree(work);
   NclFree(dwork);
+  if(type_bc != NCL_double) NclFree(dbc);
+
   NGCALLF(dchkerr,DCHKERR)("vhseC","vhsec",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
@@ -17686,7 +20474,7 @@ NhlErrorTypes vhseC_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeov,DMATGEOV)(&nlat,nlon,&duv[j],&duv[j+ntnlatnlon],work);
+    NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,&duv[j],&duv[j+ntnlatnlon],work);
     j += nlatnlon;
   }
 /*
@@ -17700,8 +20488,8 @@ NhlErrorTypes vhseC_W( void )
   ndims_uv = ndims_bc;
   dsizes_uv[0] = 2;
   for( i = 1; i < ndims_uv-2; i++ ) dsizes_uv[i] = dsizes_bc[i];
-  dsizes_uv[ndims_uv-2] =  nlat;
-  dsizes_uv[ndims_uv-1] = *nlon;
+  dsizes_uv[ndims_uv-2] = nlat;
+  dsizes_uv[ndims_uv-1] = nlon;
 /*
  * Determine whether to return float or double.
  */
@@ -17735,10 +20523,14 @@ NhlErrorTypes vhsgc_W( void )
  */
   void *br, *bi, *cr, *ci;
   double *dbr, *dbi, *dcr, *dci;
-  int ndims_br, dsizes_br[NCL_MAX_DIMENSIONS];
-  int ndims_bi, dsizes_bi[NCL_MAX_DIMENSIONS];
-  int ndims_cr, dsizes_cr[NCL_MAX_DIMENSIONS];
-  int ndims_ci, dsizes_ci[NCL_MAX_DIMENSIONS];
+  int ndims_br;
+  ng_size_t dsizes_br[NCL_MAX_DIMENSIONS];
+  int ndims_bi;
+  ng_size_t dsizes_bi[NCL_MAX_DIMENSIONS];
+  int ndims_cr;
+  ng_size_t dsizes_cr[NCL_MAX_DIMENSIONS];
+  int ndims_ci;
+  ng_size_t dsizes_ci[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_br, type_bi, type_cr, type_ci;
 /*
  * Output array variables
@@ -17746,20 +20538,33 @@ NhlErrorTypes vhsgc_W( void )
   void    *u,  *v;
   double *du, *dv;
   float  *ru, *rv;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_u, type_v;
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
-  int i, j, l, ityp, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
+  ng_size_t i, j, idvw, jdvw, mdab, ndab, l1, l2;
+  int ityp;
   int ier=0, jer=0, ker=0, mer=0;
 /*
  * Workspace variables
  */
-  int lwork, ldwork, lvhsgc;
+  ng_size_t lwork, ldwork, lvhsgc;
   double *work, *wvhsgc, *dwork;
+  int inlon;
+  int inlat;
+  int i_nt;
+  int ilvhsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork;
 /*
  * Retrieve parameters
  *
@@ -17914,10 +20719,36 @@ NhlErrorTypes vhsgc_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgc: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dvhsgci,DVHSGCI)(&nlat,&nlon,wvhsgc,&lvhsgc,dwork,&ldwork,&jer);
-  NGCALLF(dvhsgc,DVHSGC)(&nlat,&nlon,&ityp,&nt,&dv[0],&du[0],
-                         &idvw,&jdvw,dbr,dbi,dcr,dci,&mdab,&ndab,
-                         wvhsgc,&lvhsgc,work,&lwork,&ker);
+
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgc: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  i_nt = (int) nt;
+  ilvhsgc = (int) lvhsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+
+  NGCALLF(dvhsgci,DVHSGCI)(&inlat,&inlon,wvhsgc,&ilvhsgc,dwork,&ildwork,&jer);
+  NGCALLF(dvhsgc,DVHSGC)(&inlat,&inlon,&ityp,&i_nt,&dv[0],&du[0],
+			 &iidvw,&ijdvw,dbr,dbi,dcr,dci,&imdab,&indab,
+			 wvhsgc,&ilvhsgc,work,&ilwork,&ker);
+
   NclFree(wvhsgc);
   NclFree(work);
   NclFree(dwork);
@@ -17934,7 +20765,7 @@ NhlErrorTypes vhsgc_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,&du[j],&dv[j],work);
+    NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,&du[j],&dv[j],work);
     j += nlatnlon;
   }
 /*
@@ -17962,26 +20793,41 @@ NhlErrorTypes vhsgC_W( void )
  */
   void *bc;
   double *dbc;
-  int ndims_bc, dsizes_bc[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_bc;
+  int ndims_bc;
+  ng_size_t dsizes_bc[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_bc, type_nlon;
 /*
  * Output array variables
  */
   double *duv;
   float  *ruv;
-  int ndims_uv, dsizes_uv[NCL_MAX_DIMENSIONS];
+  int ndims_uv;
+  ng_size_t dsizes_uv[NCL_MAX_DIMENSIONS];
 /*
  * various
  */
-  int nt, nlat, *nlon, nlatnlon, ntnlatnlon, ntnlatnlat;
-  int total_size_in, total_size_out;
-  int i, j, l, ityp, idvw, jdvw, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, ntnlatnlon, ntnlatnlat;
+  ng_size_t total_size_in, total_size_out;
+  ng_size_t i, j, idvw, jdvw, mdab, ndab, l1, l2;
+  int ityp;
   int ier=0, jer=0, ker=0, mer=0;
+  ng_size_t *nlon_dims;
+  void *nlon_in;
 /*
  * Workspace variables
  */
-  int lwork, ldwork, lvhsgc;
+  ng_size_t lwork, ldwork, lvhsgc;
   double *work, *wvhsgc, *dwork;
+  int inlon;
+  int inlat;
+  int i_nt;
+  int ilvhsgc;
+  int iidvw;
+  int ijdvw;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork;
 /*
  * Retrieve parameters
  *
@@ -17997,15 +20843,23 @@ NhlErrorTypes vhsgC_W( void )
            NULL,
            &type_bc,
            DONT_CARE);
-  nlon = (int*)NclGetArgValue(
+  nlon_in = (void*)NclGetArgValue(
            1,
            2,
            NULL,
            NULL,
            NULL,
            NULL,
-           NULL,
+           &type_nlon,
            DONT_CARE);
+/*
+ * Convert the input dimensions to ng_size_t.
+ */
+  nlon_dims = get_dimensions(nlon_in,1,type_nlon,"vhsgC");
+  if(nlon_dims == NULL) 
+    return(NhlFATAL);
+  nlon = *nlon_dims;
+  NclFree(nlon_dims);
 
 /*
  * The grid coming in must be at least 3-dimensional.
@@ -18022,7 +20876,7 @@ NhlErrorTypes vhsgC_W( void )
  * Compute the total number of elements in our array.
  */
   nlat = dsizes_bc[ndims_bc-1];
-  nlatnlon = *nlon * nlat; 
+  nlatnlon = nlon * nlat; 
 
   nt = 1;
   for(i = 1; i < ndims_bc-2; i++) nt *= dsizes_bc[i];
@@ -18053,15 +20907,39 @@ NhlErrorTypes vhsgC_W( void )
  */
   ityp   = 0;
   idvw   = nlat;
-  jdvw   = *nlon;
+  jdvw   = nlon;
   ndab   = nlat;
   mdab   = nlat;
-  l1     = min(nlat,(*nlon+2)/2);
+  l1     = min(nlat,(nlon+2)/2);
   l2     = (nlat+1)/2;
 
-  lwork  = max(4*nlat*(nlat+1)+2,nlat*(2*nt* *nlon+max(6*l2,*nlon)));
-  lvhsgc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+*nlon+15;
+  lwork  = max(4*nlat*(nlat+1)+2,nlat*(2*nt*nlon+max(6*l2,nlon)));
+  lvhsgc = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
   ldwork = 2*nlat*(nlat+1)+1;
+
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lvhsgc > INT_MAX) ||
+     (idvw > INT_MAX) ||
+     (jdvw > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgC: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  i_nt = (int) nt;
+  ilvhsgc = (int) lvhsgc;
+  iidvw = (int) idvw;
+  ijdvw = (int) jdvw;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
 
   wvhsgc = (double*)calloc(lvhsgc,sizeof(double));
   work   = (double*)calloc( lwork,sizeof(double));
@@ -18071,15 +20949,18 @@ NhlErrorTypes vhsgC_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgC: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dvhsgci,DVHSGCI)(&nlat,nlon,wvhsgc,&lvhsgc,dwork,&ldwork,&jer);
+
+  NGCALLF(dvhsgci,DVHSGCI)(&inlat,&inlon,wvhsgc,&ilvhsgc,dwork,&ildwork,&jer);
   i = ntnlatnlat;
   j = ntnlatnlon;
-  NGCALLF(dvhsgc,DVHSGC)(&nlat,nlon,&ityp,&nt,&duv[j],&duv[0],
-                         &idvw,&jdvw,&dbc[0],&dbc[i],&dbc[2*i],&dbc[3*i],
-                         &mdab,&ndab,wvhsgc,&lvhsgc,work,&lwork,&ker);
+  NGCALLF(dvhsgc,DVHSGC)(&inlat,&inlon,&ityp,&i_nt,&duv[j],&duv[0],
+			 &iidvw,&ijdvw,&dbc[0],&dbc[i],&dbc[2*i],&dbc[3*i],
+			 &imdab,&indab,wvhsgc,&ilvhsgc,work,&ilwork,&ker);
   NclFree(wvhsgc);
   NclFree(work);
   NclFree(dwork);
+  if(type_bc != NCL_double) NclFree(dbc);
+
   NGCALLF(dchkerr,DCHKERR)("vhsgC","vhsgc",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
@@ -18093,7 +20974,7 @@ NhlErrorTypes vhsgC_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeov,DMATGEOV)(&nlat,nlon,&duv[j],&duv[j+ntnlatnlon],work);
+    NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,&duv[j],&duv[j+ntnlatnlon],work);
     j += nlatnlon;
   }
 /*
@@ -18107,8 +20988,8 @@ NhlErrorTypes vhsgC_W( void )
   ndims_uv = ndims_bc;
   dsizes_uv[0] = 2;
   for( i = 1; i < ndims_uv-2; i++ ) dsizes_uv[i] = dsizes_bc[i];
-  dsizes_uv[ndims_uv-2] =  nlat;
-  dsizes_uv[ndims_uv-1] = *nlon;
+  dsizes_uv[ndims_uv-2] = nlat;
+  dsizes_uv[ndims_uv-1] = nlon;
 /*
  * Determine whether to return float or double.
  */
@@ -18142,7 +21023,8 @@ NhlErrorTypes shaec_W( void )
  */
   void *g;
   double *dg;
-  int ndims_g, dsizes_g[NCL_MAX_DIMENSIONS];
+  int ndims_g;
+  ng_size_t dsizes_g[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_g;
 /*
  * Output array variables
@@ -18150,20 +21032,33 @@ NhlErrorTypes shaec_W( void )
   void *a, *b;
   double *da, *db;
   float *ra, *rb;
-  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
-  int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
+  int ndims_a;
+  ng_size_t dsizes_a[NCL_MAX_DIMENSIONS];
+  int ndims_b;
+  ng_size_t dsizes_b[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_a, type_b;
 /*
  * various
  */
-  int i, j, l, isym, idg, jdg, mdab, ndab, l1, l2;
+  ng_size_t i, j, idg, jdg, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0;
 /*
  * Workspace variables
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
-  int lwork, ldwork, lshaec;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
+  ng_size_t lwork, ldwork, lshaec;
   double *work, *wshaec, *dwork;
+  int inlon;
+  int inlat;
+  int i_nt;
+  int ilshaec;
+  int iidg;
+  int ijdg;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork;
 /*
  * Retrieve parameters
  *
@@ -18243,6 +21138,7 @@ NhlErrorTypes shaec_W( void )
     mdab   = min(nlat,(nlon+2)/2);
   }
   total_size_out = nt * ndab * mdab;
+
 /*
  * Check last two dimensions of a and b.
  */
@@ -18268,6 +21164,13 @@ NhlErrorTypes shaec_W( void )
     return(NhlFATAL);
   }
 
+  if((nlon > INT_MAX) || (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: nlat and/or nlon is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+
 /*
  * Determine the workspace size.
  */
@@ -18277,13 +21180,14 @@ NhlErrorTypes shaec_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+
 /*
  * transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,&dg[j],work);
+    NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,&dg[j],work);
     j += nlatnlon;
   }
   NclFree(work);
@@ -18314,9 +21218,31 @@ NhlErrorTypes shaec_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork,&ldwork,&jer);
-  NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&nt,dg,&idg,&jdg,da,db,
-                         &mdab,&ndab,wshaec,&lshaec,work,&lwork,&ker);
+
+  if((nt > INT_MAX) ||
+     (lshaec > INT_MAX) ||
+     (idg > INT_MAX) ||
+     (jdg > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  i_nt = (int) nt;
+  ilshaec = (int) lshaec;
+  iidg = (int) idg;
+  ijdg = (int) jdg;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+
+  NGCALLF(dshaeci,DSHAECI)(&inlat,&inlon,wshaec,&ilshaec,dwork,&ildwork,&jer);
+  NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&i_nt,dg,&iidg,&ijdg,da,db,
+			 &imdab,&indab,wshaec,&ilshaec,work,&ilwork,&ker);
+
   NclFree(wshaec);
   NclFree(work);
   NclFree(dwork);
@@ -18333,7 +21259,7 @@ NhlErrorTypes shaec_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dg[j],work);
+    NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,&dg[j],work);
     j += nlatnlon;
   }
 /*
@@ -18357,7 +21283,8 @@ NhlErrorTypes shagc_W( void )
  */
   void    *g;
   double *dg;
-  int ndims_g, dsizes_g[NCL_MAX_DIMENSIONS];
+  int ndims_g;
+  ng_size_t dsizes_g[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_g;
 /*
  * Output array variables
@@ -18365,20 +21292,33 @@ NhlErrorTypes shagc_W( void )
   void *a, *b;
   double *da, *db;
   float *ra, *rb;
-  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
-  int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
+  int ndims_a;
+  ng_size_t dsizes_a[NCL_MAX_DIMENSIONS];
+  int ndims_b;
+  ng_size_t dsizes_b[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_a, type_b;
 /*
  * various
  */
-  int i, j, l, isym, idg, jdg, mdab, ndab, l1, l2;
+  ng_size_t i, j, idg, jdg, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0;
 /*
  * Workspace variables
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
-  int lwork, ldwork, lshagc;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
+  ng_size_t lwork, ldwork, lshagc;
   double *work, *wshagc, *dwork;
+  int inlon;
+  int inlat;
+  int i_nt;
+  int ilshagc;
+  int iidg;
+  int ijdg;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork;
 /*
  * Retrieve parameters
  *
@@ -18491,13 +21431,20 @@ NhlErrorTypes shagc_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shagc: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+
+  if((nlon > INT_MAX) || (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shagc: nlat and/or nlon is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
 /*
  * transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,&dg[j],work);
+    NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,&dg[j],work);
     j += nlatnlon;
   }
   NclFree(work);
@@ -18529,9 +21476,31 @@ NhlErrorTypes shagc_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shagc: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork,&ldwork,&jer);
-  NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&nt,dg,&idg,&jdg,da,db,
-                         &mdab,&ndab,wshagc,&lshagc,work,&lwork,&ker);
+  
+  if((nt > INT_MAX) ||
+     (lshagc > INT_MAX) ||
+     (idg > INT_MAX) ||
+     (jdg > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shagc: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  i_nt = (int) nt;
+  ilshagc = (int) lshagc;
+  iidg = (int) idg;
+  ijdg = (int) jdg;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+
+  NGCALLF(dshagci,DSHAGCI)(&inlat,&inlon,wshagc,&ilshagc,dwork,&ildwork,&jer);
+  NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&i_nt,dg,&iidg,&ijdg,da,db,
+			 &imdab,&indab,wshagc,&ilshagc,work,&ilwork,&ker);
+
   NclFree(wshagc);
   NclFree(work);
   NclFree(dwork);
@@ -18548,7 +21517,7 @@ NhlErrorTypes shagc_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dg[j],work);
+    NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,&dg[j],work);
     j += nlatnlon;
   }
 /*
@@ -18573,8 +21542,10 @@ NhlErrorTypes shsec_W( void )
  */
   void *a, *b;
   double *da, *db;
-  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
-  int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
+  int ndims_a;
+  ng_size_t dsizes_a[NCL_MAX_DIMENSIONS];
+  int ndims_b;
+  ng_size_t dsizes_b[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_a, type_b;
 /*
  * Output array variables
@@ -18582,19 +21553,33 @@ NhlErrorTypes shsec_W( void )
   void *g;
   double *dg;
   float *rg;
-  int ndims_g, dsizes_g[NCL_MAX_DIMENSIONS];
+  int ndims_g;
+  ng_size_t dsizes_g[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_g;
 /*
  * various
  */
-  int i, j, l, isym, idg, jdg, mdab, ndab, l1, l2;
+  ng_size_t i, j;
+  ng_size_t idg, jdg, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0;
 /*
  * Workspace variables
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
-  int lwork, ldwork, lshsec;
+  ng_size_t nt, nlat, nlon, nlatnlon;
+  ng_size_t total_size_in, total_size_out;
+  ng_size_t lwork, ldwork, lshsec;
   double *work, *wshsec, *dwork;
+  int inlon;
+  int inlat;
+  int i_nt;
+  int ilshsec;
+  int iidg;
+  int ijdg;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork;
 /*
  * Retrieve parameters
  *
@@ -18604,7 +21589,7 @@ NhlErrorTypes shsec_W( void )
   a = (void*)NclGetArgValue(
            0,
            3,
-           &ndims_a, 
+           &ndims_a,
            dsizes_a,
            NULL,
            NULL,
@@ -18613,7 +21598,7 @@ NhlErrorTypes shsec_W( void )
   b = (void*)NclGetArgValue(
            1,
            3,
-           &ndims_b, 
+           &ndims_b,
            dsizes_b,
            NULL,
            NULL,
@@ -18719,14 +21704,41 @@ NhlErrorTypes shsec_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shsec: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dshseci,DSHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork,&ldwork,&jer);
-  NGCALLF(dshsec,DSHSEC)(&nlat,&nlon,&isym,&nt,&dg[0],&idg,&jdg,da,db,
-                         &mdab,&ndab,wshsec,&lshsec,work,&lwork,&ker);
+
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshsec > INT_MAX) ||
+     (idg > INT_MAX) ||
+     (jdg > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsec: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  i_nt = (int) nt;
+  ilshsec = (int) lshsec;
+  iidg = (int) idg;
+  ijdg = (int) jdg;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+
+  NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,dwork,&ildwork,&jer);
+  NGCALLF(dshsec,DSHSEC)(&inlat,&inlon,&isym,&i_nt,&dg[0],&iidg,&ijdg,da,db,
+			 &imdab,&indab,wshsec,&ilshsec,work,&ilwork,&ker);
+
   NclFree(wshsec);
   NclFree(work);
   NclFree(dwork);
+
   NGCALLF(dchkerr,DCHKERR)("shsec","shsec",&ier,&jer,&ker,&mer,5,5);
-/* 
+/*
  * transform from math coordinates to geophysical coordinates
  * (math) nlon is the first dim
  */
@@ -18738,7 +21750,7 @@ NhlErrorTypes shsec_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dg[j],work);
+    NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,&dg[j],work);
     j += nlatnlon;
   }
 /*
@@ -18763,8 +21775,10 @@ NhlErrorTypes shsgc_W( void )
  */
   void *a, *b;
   double *da, *db;
-  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
-  int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
+  int ndims_a;
+  ng_size_t dsizes_a[NCL_MAX_DIMENSIONS];
+  int ndims_b;
+  ng_size_t dsizes_b[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_a, type_b;
 /*
  * Output array variables
@@ -18772,19 +21786,32 @@ NhlErrorTypes shsgc_W( void )
   void *g;
   double *dg;
   float *rg;
-  int ndims_g, dsizes_g[NCL_MAX_DIMENSIONS];
+  int ndims_g;
+  ng_size_t dsizes_g[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_g;
 /*
  * various
  */
-  int i, j, l, isym, idg, jdg, mdab, ndab, l1, l2;
+  ng_size_t i, j;
+  int isym;
+  ng_size_t idg, jdg, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0;
 /*
  * Workspace variables
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
-  int lwork, ldwork, lshsgc;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
+  ng_size_t lwork, ldwork, lshsgc;
   double *work, *wshsgc, *dwork;
+  int inlon;
+  int inlat;
+  int ilshsgc;
+  int ilwork;
+  int ildwork;
+  int iidg;
+  int ijdg;
+  int imdab;
+  int indab;
+  int i_nt;
 /*
  * Retrieve parameters
  *
@@ -18908,9 +21935,35 @@ NhlErrorTypes shsgc_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dshsgci,DSHSGCI)(&nlat,&nlon,wshsgc,&lshsgc,dwork,&ldwork,&jer);
-  NGCALLF(dshsgc,DSHSGC)(&nlat,&nlon,&isym,&nt,&dg[0],&idg,&jdg,da,db,
-                         &mdab,&ndab,wshsgc,&lshsgc,work,&lwork,&ker);
+
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (lwork > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (idg > INT_MAX) ||
+     (jdg > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (nt > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshsgc = (int) lshsgc;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+  iidg = (int) idg;
+  ijdg = (int) jdg;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  i_nt = (int) nt;
+
+  NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork,&ildwork,&jer);
+  NGCALLF(dshsgc,DSHSGC)(&inlat,&inlon,&isym,&i_nt,&dg[0],&iidg,&ijdg,da,db,
+			 &imdab,&indab,wshsgc,&ilshsgc,work,&ilwork,&ker);
+
   NclFree(wshsgc);
   NclFree(work);
   NclFree(dwork);
@@ -18927,7 +21980,7 @@ NhlErrorTypes shsgc_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dg[j],work);
+    NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,&dg[j],work);
     j += nlatnlon;
   }
 /*
@@ -18951,24 +22004,32 @@ NhlErrorTypes shsgc_R42_W( void )
  * Input array variables
  */
   void *a, *b;
-  double *tmp_a, *tmp_b;
-  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
-  int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
+  double *tmp_a = NULL;
+  double *tmp_b = NULL;
+  int ndims_a;
+  ng_size_t dsizes_a[NCL_MAX_DIMENSIONS];
+  int ndims_b;
+  ng_size_t dsizes_b[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_a, type_b;
 /*
  * Output array variables
  */
   void *g;
-  double *tmp_g;
-  int size_g, *dsizes_g;
+  double *tmp_g = NULL;
+  ng_size_t size_g;
+  ng_size_t *dsizes_g;
   NclBasicDataTypes type_g;
 /*
  * various
  */
   double *work;
-  int i, index_ab, index_g, ret, lwork, nlat=108;
-  int size_leftmost, size_rightmost_g, size_rightmost_ab;
+  ng_size_t index_ab, index_g;
+  int ret;
+  ng_size_t nlat=108;
+  ng_size_t i, lwork;
+  ng_size_t size_leftmost, size_rightmost_g, size_rightmost_ab;
 
+  int ilwork;
 /*
  * Retrieve parameters
  *
@@ -19012,7 +22073,7 @@ NhlErrorTypes shsgc_R42_W( void )
  * Calculate size of leftmost dimensions as we loop through dimentions
  * and make sure a and b are the same size.
  */
-  dsizes_g = (int*)calloc(ndims_a,sizeof(int));
+  dsizes_g = (ng_size_t*)calloc(ndims_a,sizeof(ng_size_t));
   size_leftmost = 1;
   for( i = 0; i < ndims_a-2; i++ ) {
     size_leftmost *= dsizes_a[i];
@@ -19048,9 +22109,18 @@ NhlErrorTypes shsgc_R42_W( void )
   }
 
 /*
- * Allocate space for work array.
+ * Test dimension size
  */
   lwork = 4*nlat*(nlat+1)+2;
+  if(lwork > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc_R42: lwork = %ld is greater than INT_MAX", lwork);
+    return(NhlFATAL);
+  }
+  ilwork = (int) lwork;
+
+/*
+ * Allocate space for work array.
+ */
   work  = (double*)calloc(lwork,sizeof(double));
   if(work == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc_R42: Unable to allocate memory for work array");
@@ -19119,7 +22189,7 @@ NhlErrorTypes shsgc_R42_W( void )
       tmp_g = &((double*)g)[index_g];
     }
 
-    NGCALLF(dshsgcr42,DSHSGCR42)(tmp_a,tmp_b,tmp_g,work,&lwork);
+    NGCALLF(dshsgcr42,DSHSGCR42)(tmp_a,tmp_b,tmp_g,work,&ilwork);
 
     if(type_g == NCL_float) {
       coerce_output_float_only(g,tmp_g,size_rightmost_g,index_g);
@@ -19149,25 +22219,38 @@ NhlErrorTypes shaeC_W( void )
  */
   void *g;
   double *dg;
-  int ndims_g, dsizes_g[NCL_MAX_DIMENSIONS];
+  int ndims_g;
+  ng_size_t dsizes_g[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_g;
 /*
  * Output array variables
  */
   double *dab;
   float  *rab;
-  int ndims_ab, dsizes_ab[NCL_MAX_DIMENSIONS];
+  int ndims_ab;
+  ng_size_t dsizes_ab[NCL_MAX_DIMENSIONS];
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
-  int i, j, l, isym, idg, jdg, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
+  ng_size_t i, j, idg, jdg, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0;
 /*
  * Workspace variables
  */
-  int lwork, ldwork, lshaec;
+  ng_size_t lwork, ldwork, lshaec;
   double *work, *wshaec, *dwork;
+  int inlon;
+  int inlat;
+  int i_nt;
+  int ilshaec;
+  int iidg;
+  int ijdg;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork;
 /*
  * Retrieve parameters
  *
@@ -19231,13 +22314,22 @@ NhlErrorTypes shaeC_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shaeC: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shaeC: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+
 /*
  * transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,&dg[j],work);
+    NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,&dg[j],work);
     j += nlatnlon;
   }
   NclFree(work);
@@ -19260,6 +22352,26 @@ NhlErrorTypes shaeC_W( void )
   lshaec = 2*nlat*l2+3*(max(l1-2,0)*(2*nlat-l1-1))/2+nlon+15;
   ldwork = nlat+1;
 
+  if((nt > INT_MAX) ||
+     (lshaec > INT_MAX) ||
+     (idg > INT_MAX) ||
+     (jdg > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shaeC: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  i_nt = (int) nt;
+  ilshaec = (int) lshaec;
+  iidg = (int) idg;
+  ijdg = (int) jdg;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+
   wshaec = (double*)calloc(lshaec,sizeof(double));
   work   = (double*)calloc( lwork,sizeof(double));
   dwork  = (double*)calloc(ldwork,sizeof(double));
@@ -19268,10 +22380,12 @@ NhlErrorTypes shaeC_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shaeC: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork,&ldwork,&jer);
+
+  NGCALLF(dshaeci,DSHAECI)(&inlat,&inlon,wshaec,&ilshaec,dwork,&ildwork,&jer);
   j = nt * ndab * mdab;
-  NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&nt,dg,&idg,&jdg,&dab[0],&dab[j],
-                         &mdab,&ndab,wshaec,&lshaec,work,&lwork,&ker);
+  NGCALLF(dshaec,DSHAEC)(&inlat,&inlon,&isym,&i_nt,dg,&iidg,&ijdg,&dab[0],&dab[j],
+			 &imdab,&indab,wshaec,&ilshaec,work,&ilwork,&ker);
+
   NclFree(wshaec);
   NclFree(work);
   NclFree(dwork);
@@ -19288,7 +22402,7 @@ NhlErrorTypes shaeC_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dg[j],work);
+    NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,&dg[j],work);
     j += nlatnlon;
   }
 /*
@@ -19335,25 +22449,38 @@ NhlErrorTypes shagC_W( void )
  */
   void    *g;
   double *dg;
-  int ndims_g, dsizes_g[NCL_MAX_DIMENSIONS];
+  int ndims_g;
+  ng_size_t dsizes_g[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_g;
 /*
  * Output array variables
  */
   double *dab;
   float  *rab;
-  int ndims_ab, dsizes_ab[NCL_MAX_DIMENSIONS];
+  int ndims_ab;
+  ng_size_t dsizes_ab[NCL_MAX_DIMENSIONS];
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
-  int i, j, l, isym, idg, jdg, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
+  ng_size_t i, j, idg, jdg, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0;
 /*
  * Workspace variables
  */
-  int lwork, ldwork, lshagc;
+  ng_size_t lwork, ldwork, lshagc;
   double *work, *wshagc, *dwork;
+  int inlon;
+  int inlat;
+  int i_nt;
+  int ilshagc;
+  int iidg;
+  int ijdg;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork;
 /*
  * Retrieve parameters
  *
@@ -19418,13 +22545,21 @@ NhlErrorTypes shagC_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shagC: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shagC: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+
 /*
  * transform from geophysical coordinates to math coordinates.
  * (geo) nlon is the last dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
-    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,&dg[j],work);
+    NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,&dg[j],work);
     j += nlatnlon;
   }
   NclFree(work);
@@ -19455,10 +22590,30 @@ NhlErrorTypes shagC_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shagC: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork,&ldwork,&jer);
+  if((nt > INT_MAX) ||
+     (lshagc > INT_MAX) ||
+     (idg > INT_MAX) ||
+     (jdg > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shagC: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  i_nt = (int) nt;
+  ilshagc = (int) lshagc;
+  iidg = (int) idg;
+  ijdg = (int) jdg;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+
   j = nt * ndab * mdab;
-  NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&nt,dg,&idg,&jdg,&dab[0],&dab[j],
-                         &mdab,&ndab,wshagc,&lshagc,work,&lwork,&ker);
+  NGCALLF(dshagci,DSHAGCI)(&inlat,&inlon,wshagc,&ilshagc,dwork,&ildwork,&jer);
+  NGCALLF(dshagc,DSHAGC)(&inlat,&inlon,&isym,&i_nt,dg,&iidg,&ijdg,&dab[0],&dab[j],
+			 &imdab,&indab,wshagc,&ilshagc,work,&ilwork,&ker);
 
   NclFree(wshagc);
   NclFree(work);
@@ -19476,7 +22631,7 @@ NhlErrorTypes shagC_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,&dg[j],work);
+    NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,&dg[j],work);
     j += nlatnlon;
   }
 /*
@@ -19523,25 +22678,40 @@ NhlErrorTypes shseC_W( void )
  */
   void *ab;
   double *dab;
-  int ndims_ab, dsizes_ab[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_ab;
+  int ndims_ab;
+  ng_size_t dsizes_ab[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_ab, type_nlon;
 /*
  * Output array variables
  */
   double *dg;
   float *rg;
-  int ndims_g, dsizes_g[NCL_MAX_DIMENSIONS];
+  int ndims_g;
+  ng_size_t dsizes_g[NCL_MAX_DIMENSIONS];
 /*
  * various
  */
-  int nt, nlat, *nlon, nlatnlon, total_size_in, total_size_out;
-  int i, j, l, isym, idg, jdg, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
+  ng_size_t i, j, idg, jdg, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0;
+  ng_size_t *nlon_dims;
+  void *nlon_in;
 /*
  * Workspace variables
  */
-  int lwork, ldwork, lshsec;
+  ng_size_t lwork, ldwork, lshsec;
   double *work, *wshsec, *dwork;
+  int inlon;
+  int inlat;
+  int i_nt;
+  int ilshsec;
+  int iidg;
+  int ijdg;
+  int imdab;
+  int indab;
+  int ildwork;
+  int ilwork;
 /*
  * Retrieve parameters
  *
@@ -19560,15 +22730,23 @@ NhlErrorTypes shseC_W( void )
 /*
  * Get nlon
  */
-  nlon = (int*)NclGetArgValue(
+  nlon_in = (void*)NclGetArgValue(
            1,
            2,
            NULL,
            NULL,
            NULL,
            NULL,
-           NULL,
+           &type_nlon,
            DONT_CARE);
+/*
+ * Convert the input dimensions to ng_size_t.
+ */
+  nlon_dims = get_dimensions(nlon_in,1,type_nlon,"shseC");
+  if(nlon_dims == NULL) 
+    return(NhlFATAL);
+  nlon = *nlon_dims;
+  NclFree(nlon_dims);
 
 /*
  * The grid coming in must be at least 3-dimensional.
@@ -19585,11 +22763,11 @@ NhlErrorTypes shseC_W( void )
  * Check the last dimension of ab.
  */
   ndab = nlat = dsizes_ab[ndims_ab-2];
-  if (*nlon % 2) {
-    mdab   = min(nlat,(*nlon+1)/2);
+  if (nlon % 2) {
+    mdab   = min(nlat,(nlon+1)/2);
   }
   else {
-    mdab   = min(nlat,(*nlon+2)/2);
+    mdab   = min(nlat,(nlon+2)/2);
   }
   if(dsizes_ab[ndims_ab-1] != mdab) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shseC: The last dimension of the coefficient array must be min(nlat,(nlon+2)/2) if nlon is even or min(nlat,(nlon+1)/2) if nlon is odd");
@@ -19599,13 +22777,13 @@ NhlErrorTypes shseC_W( void )
  * Compute the total number of elements in our array, minus last
  * two dimensions.
  */
-  nlatnlon = *nlon * nlat;
+  nlatnlon = nlon * nlat;
 
   nt = 1;
   for(i = 1; i < ndims_ab-2; nt*=dsizes_ab[i],i++);
 
   total_size_in  = 2 * nt * mdab * ndab;
-  total_size_out = nt * *nlon * nlat;
+  total_size_out = nt * nlon * nlat;
 /*
  * Coerce ab.
  */
@@ -19629,12 +22807,12 @@ NhlErrorTypes shseC_W( void )
  */
   isym   = 0;
   idg    = nlat;
-  jdg    = *nlon;
+  jdg    = nlon;
   l1     = mdab;
   l2     = (nlat+1)/2;
 
-  lwork  = nlat*(*nlon*nt+max(3*l2,*nlon));
-  lshsec = 2*nlat*l2+3*(max(l1-2,0)*(2*nlat-l1-1))/2+ *nlon +15;
+  lwork  = nlat*(nlon*nt+max(3*l2,nlon));
+  lshsec = 2*nlat*l2+3*(max(l1-2,0)*(2*nlat-l1-1))/2+ nlon +15;
   ldwork = nlat+1;
 
   wshsec = (double*)calloc(lshsec,sizeof(double));
@@ -19645,11 +22823,36 @@ NhlErrorTypes shseC_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shseC: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dshseci,DSHSECI)(&nlat,nlon,wshsec,&lshsec,dwork,&ldwork,&jer);
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (nt > INT_MAX) ||
+     (lshsec > INT_MAX) ||
+     (idg > INT_MAX) ||
+     (jdg > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (lwork > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shseC: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  i_nt = (int) nt;
+  ilshsec = (int) lshsec;
+  iidg = (int) idg;
+  ijdg = (int) jdg;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+
   j = nt * ndab * mdab;
-  NGCALLF(dshsec,DSHSEC)(&nlat,nlon,&isym,&nt,&dg[0],&idg,&jdg,
-                         &dab[0],&dab[j],
-                         &mdab,&ndab,wshsec,&lshsec,work,&lwork,&ker);
+  NGCALLF(dshseci,DSHSECI)(&inlat,&inlon,wshsec,&ilshsec,dwork,&ildwork,&jer);
+  NGCALLF(dshsec,DSHSEC)(&inlat,&inlon,&isym,&i_nt,&dg[0],&iidg,&ijdg,
+			 &dab[0],&dab[j],
+			 &imdab,&indab,wshsec,&ilshsec,work,&ilwork,&ker);
+
   NclFree(wshsec);
   NclFree(work);
   NclFree(dwork);
@@ -19666,7 +22869,7 @@ NhlErrorTypes shseC_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,nlon,&dg[j],work);
+    NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,&dg[j],work);
     j += nlatnlon;
   }
 /*
@@ -19679,7 +22882,7 @@ NhlErrorTypes shseC_W( void )
  */
   ndims_g = ndims_ab-1;
   for( i = 0; i <= ndims_g-2; i++ ) dsizes_g[i] = dsizes_ab[i+1];
-  dsizes_g[ndims_g-1] = *nlon;
+  dsizes_g[ndims_g-1] = nlon;
 /*
  * Determine whether to return float or double.
  */
@@ -19713,25 +22916,40 @@ NhlErrorTypes shsgC_W( void )
  */
   void *ab;
   double *dab;
-  int ndims_ab, dsizes_ab[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_ab;
+  int ndims_ab;
+  ng_size_t dsizes_ab[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_ab, type_nlon;
 /*
  * Output array variables
  */
   double *dg;
   float *rg;
-  int ndims_g, dsizes_g[NCL_MAX_DIMENSIONS];
+  int ndims_g;
+  ng_size_t dsizes_g[NCL_MAX_DIMENSIONS];
 /*
  * various
  */
-  int nt, nlat, *nlon, nlatnlon, total_size_in, total_size_out;
-  int i, j, l, isym, idg, jdg, mdab, ndab, l1, l2;
+  ng_size_t nt, nlat, nlon, nlatnlon, total_size_in, total_size_out;
+  ng_size_t i, j, idg, jdg, mdab, ndab, l1, l2;
+  int isym;
   int ier=0, jer=0, ker=0, mer=0;
+  ng_size_t *nlon_dims;
+  void *nlon_in;
 /*
  * Workspace variables
  */
-  int lwork, ldwork, lshsgc;
+  ng_size_t lwork, ldwork, lshsgc;
   double *work, *wshsgc, *dwork;
+  int inlon;
+  int inlat;
+  int ilshsgc;
+  int ilwork;
+  int ildwork;
+  int iidg;
+  int ijdg;
+  int imdab;
+  int indab;
+  int i_nt;
 /*
  * Retrieve parameters
  *
@@ -19750,15 +22968,24 @@ NhlErrorTypes shsgC_W( void )
 /*
  * Get nlon
  */
-  nlon = (int*)NclGetArgValue(
+  nlon_in = (void*)NclGetArgValue(
            1,
            2,
            NULL,
            NULL,
            NULL,
            NULL,
-           NULL,
+           &type_nlon,
            DONT_CARE);
+
+/*
+ * Convert the input dimensions to ng_size_t.
+ */
+  nlon_dims = get_dimensions(nlon_in,1,type_nlon,"shsgC");
+  if(nlon_dims == NULL) 
+    return(NhlFATAL);
+  nlon = *nlon_dims;
+  NclFree(nlon_dims);
 
 /*
  * The grid coming in must be at least 3-dimensional.
@@ -19775,11 +23002,11 @@ NhlErrorTypes shsgC_W( void )
  * Check the last dimension of ab.
  */
   ndab = nlat = dsizes_ab[ndims_ab-2];
-  if (*nlon % 2) {
-    mdab   = min(nlat,(*nlon+1)/2);
+  if (nlon % 2) {
+    mdab   = min(nlat,(nlon+1)/2);
   }
   else {
-    mdab   = min(nlat,(*nlon+2)/2);
+    mdab   = min(nlat,(nlon+2)/2);
   }
   if(dsizes_ab[ndims_ab-1] != mdab) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgC: The last dimension of the coefficient array must be min(nlat,(nlon+2)/2) if nlon is even or min(nlat,(nlon+1)/2) if nlon is odd");
@@ -19789,13 +23016,13 @@ NhlErrorTypes shsgC_W( void )
  * Compute the total number of elements in our array, minus last
  * two dimensions.
  */
-  nlatnlon = *nlon * nlat;
+  nlatnlon = nlon * nlat;
 
   nt = 1;
   for(i = 1; i < ndims_ab-2; nt*=dsizes_ab[i],i++);
 
   total_size_in  = 2 * nt * mdab * ndab;
-  total_size_out = nt * *nlon * nlat;
+  total_size_out = nt * nlon * nlat;
 /*
  * Coerce ab.
  */
@@ -19818,7 +23045,7 @@ NhlErrorTypes shsgC_W( void )
  */
   isym   = 0;
   idg    = nlat;
-  jdg    = *nlon;
+  jdg    = nlon;
   l1     = mdab;
   if (nlat % 2) {
     l2 = (nlat+1)/2;
@@ -19827,9 +23054,9 @@ NhlErrorTypes shsgC_W( void )
     l2 = nlat/2;
   }
 
-  lwork  = nlat*(*nlon*nt+max(3*l2,*nlon));
+  lwork  = nlat*(nlon*nt+max(3*l2,nlon));
   ldwork = nlat*(nlat+4);
-  lshsgc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+ *nlon +15;
+  lshsgc = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+ nlon +15;
 
   wshsgc = (double*)calloc(lshsgc,sizeof(double));
   work   = (double*)calloc( lwork,sizeof(double));
@@ -19839,11 +23066,35 @@ NhlErrorTypes shsgC_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgC: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
-  NGCALLF(dshsgci,DSHSGCI)(&nlat,nlon,wshsgc,&lshsgc,dwork,&ldwork,&jer);
+  if((nlon > INT_MAX) ||
+     (nlat > INT_MAX) ||
+     (lshsgc > INT_MAX) ||
+     (lwork > INT_MAX) ||
+     (ldwork > INT_MAX) ||
+     (idg > INT_MAX) ||
+     (jdg > INT_MAX) ||
+     (mdab > INT_MAX) ||
+     (ndab > INT_MAX) ||
+     (nt > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgC: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  ilshsgc = (int) lshsgc;
+  ilwork = (int) lwork;
+  ildwork = (int) ldwork;
+  iidg = (int) idg;
+  ijdg = (int) jdg;
+  imdab = (int) mdab;
+  indab = (int) ndab;
+  i_nt = (int) nt;
+
+  NGCALLF(dshsgci,DSHSGCI)(&inlat,&inlon,wshsgc,&ilshsgc,dwork,&ildwork,&jer);
   j = nt * ndab * mdab;
-  NGCALLF(dshsgc,DSHSGC)(&nlat,nlon,&isym,&nt,&dg[0],&idg,&jdg,
-                         &dab[0],&dab[j],
-                         &mdab,&ndab,wshsgc,&lshsgc,work,&lwork,&ker);
+  NGCALLF(dshsgc,DSHSGC)(&inlat,&inlon,&isym,&i_nt,&dg[0],&iidg,&ijdg,
+			 &dab[0],&dab[j],
+			 &imdab,&indab,wshsgc,&ilshsgc,work,&ilwork,&ker);
   NclFree(wshsgc);
   NclFree(work);
   NclFree(dwork);
@@ -19860,7 +23111,7 @@ NhlErrorTypes shsgC_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(dmatgeo,DMATGEO)(&nlat,nlon,&dg[j],work);
+    NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,&dg[j],work);
     j += nlatnlon;
   }
 /*
@@ -19873,7 +23124,7 @@ NhlErrorTypes shsgC_W( void )
  */
   ndims_g = ndims_ab-1;
   for( i = 0; i <= ndims_g-2; i++ ) dsizes_g[i] = dsizes_ab[i+1];
-  dsizes_g[ndims_g-1] = *nlon;
+  dsizes_g[ndims_g-1] = nlon;
 /*
  * Determine whether to return float or double.
  */
@@ -19928,7 +23179,7 @@ NhlErrorTypes set_sphere_radius_W(void)
 
 NhlErrorTypes get_sphere_radius_W(void)
 {
-  int dsizes[1];
+  ng_size_t dsizes[1];
 
   dsizes[0] = 1;
   return(NclReturnValue((void*)&scale,1,dsizes,NULL,NCL_double,0));

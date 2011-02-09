@@ -1,5 +1,5 @@
 /*
- *      $Id: Palette.c,v 1.10 2002-02-22 18:12:38 haley Exp $
+ *      $Id: Palette.c,v 1.10.4.1 2008-03-28 20:37:36 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include <machine/types.h>
 #endif
 #include <dirent.h>
+#include <ctype.h>
 
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/WorkstationP.h>
@@ -38,7 +39,7 @@
 #define Oset(field)	NhlOffset(NhlPaletteLayerRec,pal.field)
 static NhlResource resources[] = {
 	{_NhlNpalWorkClass,_NhlCpalWorkClass,NhlTPointer,sizeof(NhlPointer),
-		Oset(work_class),NhlTImmediate,NULL,_NhlRES_CONLY,NULL}
+		 Oset(work_class),NhlTImmediate,_NhlUSET(NULL),_NhlRES_CONLY,NULL}
 };
 #undef Oset
 
@@ -1055,7 +1056,7 @@ CvtStringGenArrayToCmap
 	NhlGenArray		tgen;
 	NhlString		*sptr;
 	float			*fptr;
-	int			dimlen[2] = {0,3};
+	ng_size_t		dimlen[2] = {0,3};
 	int			i;
 	NhlErrorTypes		ret = NhlNOERROR;
 
@@ -1164,12 +1165,11 @@ PaletteInitialize
 	int		nargs;
 #endif
 {
-	char			func[]="PaletteInitialize";
 	NhlPaletteLayerPart	*pp = &((NhlPaletteLayer)new)->pal;
 	NhlPaletteClass		pc = (NhlPaletteClass)lc;
 	_NhlPalCmap		*cmptr = pc->pal_class.default_maps;
 	NhlPalList		list,*tmp;
-	int			dimlen[2] = {0,3};
+	ng_size_t		dimlen[2] = {0,3};
 	NhlConvertArg		arg;
 	
 	arg.addressmode = NhlLAYEROFFSET;
@@ -1438,7 +1438,7 @@ NhlPalSetColormap
 	int		cmap_len;
 #endif
 {
-	int			dimlen[2] = {0,3};
+	ng_size_t		dimlen[2] = {0,3};
 	char			func[] = "NhlPalSetColormap";
 	NhlWorkstationClass	wc;
 	NhlPaletteLayer		pl;
@@ -1569,7 +1569,7 @@ static NhlErrorTypes GetColormapsInPath
 		}
 		i = min_ix;
 		max_cval = 0.0;
-		while (cp = fgets(buf,255,fp)) {
+		while ((cp = fgets(buf,255,fp))) {
 			char *next,*tcp = cp;
 			float f;
 			while (isspace(*tcp))

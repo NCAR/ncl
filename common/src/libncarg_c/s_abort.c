@@ -15,5 +15,5 @@
  * This routine is missing from certain versions of DECRISC systems.
  */
 
-s_abort()
+void s_abort()
 {}

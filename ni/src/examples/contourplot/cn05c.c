@@ -59,11 +59,11 @@ main()
     int     appid, workid, field1, con1;
     int     mapid, lb1id, lb2id;
     int     srlist, i, day;
-    int     icount[2];
+    ng_size_t  icount[2];
 /*
  * Declare variables for defining color map.
  */
-    int     length[2];
+    ng_size_t     length[2];
     float   cmap[NCOLORS][3];
     extern void gen_colormap();
 /*
@@ -197,7 +197,7 @@ main()
  */
     icount[0] = latlen; icount[1] = lonlen;
     NhlRLClear(srlist);
-    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&T[0][0],2,(int *)icount);
+    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&T[0][0],2,icount);
     NhlRLSetInteger(srlist,NhlNsfXCStartV,lon[0]);
     NhlRLSetInteger(srlist,NhlNsfXCEndV,lon[lonlen-1]);
     NhlRLSetInteger(srlist,NhlNsfYCStartV,lat[0]);
@@ -366,7 +366,7 @@ main()
         ncvarget(ncid,t_id,(long const *)start,(long const *)count,T);
         icount[0] = latlen; icount[1] = lonlen;
         NhlRLClear(srlist);
-        NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&T[0][0],2,(int *)icount);
+        NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&T[0][0],2,icount);
         NhlSetValues(field1,srlist);
 /*
  * Increment day string.

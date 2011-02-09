@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.32 2007-08-22 21:03:53 grubin Exp $
+ *      $Id: Error.c,v 1.32.4.1 2008-03-28 20:37:35 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -41,7 +41,6 @@
 #define	TABLELISTINC	10
 #define	ERRLISTINC	32
 
-static char		def_file[] = "stderr";
 static NhlErrorLayer	errorLayer = NULL;
 #define	DEF_UNIT	(74)
 
@@ -59,18 +58,18 @@ static NhlResource resources[] = {
 /* Begin-documented-resources */
 
 	{NhlNerrBuffer,NhlCerrBuffer,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(buffer_errors),NhlTImmediate,False,0,NULL},
+	 Oset(buffer_errors),NhlTImmediate,{False},0,NULL},
 	{NhlNerrLevel,NhlCerrLevel,NhlTErrorTypes,sizeof(NhlErrorTypes),
-		Oset(error_level),NhlTImmediate,(NhlPointer)NhlWARNING,0,NULL},
+	 Oset(error_level),NhlTImmediate,{(NhlPointer)NhlWARNING},0,NULL},
 	{NhlNerrPrint,NhlCerrPrint,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(print_errors),NhlTImmediate,(NhlPointer)True,0,NULL},
+	 Oset(print_errors),NhlTImmediate,{(NhlPointer)True},0,NULL},
 	{NhlNerrFileName,NhlCerrFileName,NhlTString,sizeof(NhlString),
-		Oset(error_file),NhlTImmediate,(NhlPointer)NULL,0,
+	 Oset(error_file),NhlTImmediate,{(NhlPointer)NULL},0,
 							(_NhlFreeFunc)NhlFree},
 /* End-documented-resources */
 
 	{_NhlNerrMode,_NhlCerrMode,NhlTInteger,sizeof(_NhlC_OR_F),
-		Oset(error_mode),NhlTImmediate,(NhlPointer)_NhlNONE,
+	 Oset(error_mode),NhlTImmediate,{(NhlPointer)_NhlNONE},
          	_NhlRES_PRIVATE,NULL}
 };
 #undef Oset
@@ -81,7 +80,7 @@ static NhlResource cresources[] = {
 /* Begin-documented-resources */
 
 	{NhlNerrFilePtr,NhlCerrFilePtr,NhlTPointer,sizeof(NhlPointer),
-		Oset(fp),NhlTImmediate,(NhlPointer)NULL,0,NULL}
+	 Oset(fp),NhlTImmediate,{(NhlPointer)NULL},0,NULL}
 
 /* End-documented-resources */
 
@@ -94,7 +93,7 @@ static NhlResource fresources[] = {
 /* Begin-documented-resources */
 
 	{NhlNerrUnitNumber,NhlCerrUnitNumber,NhlTInteger,sizeof(int),
-		Oset(eunit),NhlTImmediate,(NhlPointer)-1,0,NULL}
+	 Oset(eunit),NhlTImmediate,{(NhlPointer)-1},0,NULL}
 
 /* End-documented-resources */
 
@@ -387,10 +386,6 @@ ErrorInitialize
 	int		nargs;	/* nargs	*/
 #endif
 {
-/***
-	extern int	sys_nerr;
-	extern char	*sys_errlist[];
-***/
 	NhlErrorClass	elc = (NhlErrorClass)lc;
 	NhlErrorLayer		enew = (NhlErrorLayer)new;
 	NhlClass		childclass;
@@ -610,8 +605,7 @@ ErrorInitialize
 
 	errorLayer = enew;
 
-/*	ret = NhlErrAddTable(0,sys_nerr,(Const char **)sys_errlist);*/
-	ret = NhlErrAddTable(0, errno, (Const char **) strerror(errno));
+	ret = NhlErrAddTable(0,errno,(Const char **) strerror(errno));
 	if (ret != NhlNOERROR){
 		NHLPERROR((ret,NhlEUNKNOWN,"Error loading System Error Table"));
 	}

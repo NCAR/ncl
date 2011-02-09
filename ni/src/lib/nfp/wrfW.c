@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <strings.h>
 #include <math.h>
 #include "wrapper.h"
 
@@ -13,7 +14,8 @@ extern void NGCALLF(dcomputeseaprs,DCOMPUTESEAPRS)(int *,int *,int *,
                                                    double *,double *);
 
 extern void NGCALLF(dinterp3dz,DINTERP3DZ)(double *,double *,double *,
-                                           double *,int *,int *, int*);
+                                           double *,int *,int *, int*,
+					   double *);
 
 extern void NGCALLF(dinterp2dxy,DINTERP2DXY)(double *,double *,double *,
                                              int *,int *,int *, int*);
@@ -29,7 +31,7 @@ extern void NGCALLF(filter2d,FILTER2D)(float *, float *, int *, int *,
 
 extern void NGCALLF(dgetijlatlong,DGETIJLATLONG)(double *, double *, double *,
                                                  double *, int *, int *,
-                                                 int *, int *);
+                                                 int *, int *, int *);
 
 
 extern void NGCALLF(dcomputeuvmet,DCOMPUTEUVMET)(double *, double *, double *,
@@ -98,13 +100,13 @@ extern void NGCALLF(dcalcuh,DCALCUH)(int *, int *, int *, int *, double *,
                                      double *, double *, double *, double *,
                                      double *, double *, double *);
 
-extern NclDimRec *get_wrf_dim_info(int,int,int,int*);
+extern NclDimRec *get_wrf_dim_info(int,int,int,ng_size_t*);
 
-extern void var_zero(double *, int);
+extern void var_zero(double *, ng_size_t);
 
-extern void convert_to_hPa(double *, int);
+extern void convert_to_hPa(double *, ng_size_t);
 
-extern void flip_it(double *, double *, int, int);
+extern void flip_it(double *, double *, ng_size_t, ng_size_t);
 
 NhlErrorTypes wrf_tk_W( void )
 {
@@ -112,9 +114,11 @@ NhlErrorTypes wrf_tk_W( void )
  * Input array variables
  */
   void *p, *theta;
-  double *tmp_p, *tmp_theta;
+  double *tmp_p = NULL;
+  double *tmp_theta = NULL;
   int ndims_p, ndims_theta;
-  int dsizes_p[NCL_MAX_DIMENSIONS], dsizes_theta[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_theta[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p, type_theta;
 /*
  * Variable for getting/setting dimension name info.
@@ -127,20 +131,21 @@ NhlErrorTypes wrf_tk_W( void )
   void *t;
   NclQuark *description, *units;
   char *cdescription, *cunits;
-  double *tmp_t;
+  double *tmp_t = NULL;
   int size_tt;
   NclBasicDataTypes type_t;
   NclObjClass type_obj_t;
 /*
  * Various
  */
-  int i, nx, size_leftmost, index_p;
+  ng_size_t i, nx, size_leftmost, index_p;
+  int inx;
 
 /*
  * Variables for returning the output array with attributes attached.
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -197,6 +202,15 @@ NhlErrorTypes wrf_tk_W( void )
   for(i = 0; i < ndims_p-1; i++) size_leftmost *= dsizes_p[i];
   nx = dsizes_p[ndims_p-1];
   size_tt = size_leftmost * nx;
+
+/*
+ * Test dimension sizes.
+ */
+  if(nx > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_tk: nx = %ld is greater than INT_MAX", nx);
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
 
 /* 
  * Allocate space for coercing input arrays.  If the input p or theta
@@ -284,7 +298,7 @@ NhlErrorTypes wrf_tk_W( void )
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dcomputetk,DCOMPUTETK)(tmp_t,tmp_p,tmp_theta,&nx);
+      NGCALLF(dcomputetk,DCOMPUTETK)(tmp_t,tmp_p,tmp_theta,&inx);
 
 /*
  * Coerce output back to float if necessary.
@@ -321,6 +335,8 @@ NhlErrorTypes wrf_tk_W( void )
   units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
   *units       = NrmStringToQuark(cunits);
+  free(cunits);
+  free(cdescription);
 
 /*
  * Set up return value.
@@ -399,6 +415,7 @@ NhlErrorTypes wrf_tk_W( void )
                           TEMPORARY
                           );
 
+  NclFree(dim_info);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -417,7 +434,8 @@ NhlErrorTypes wrf_td_W( void )
   void *p, *qv;
   double *tmp_p, *tmp_qv;
   int ndims_p, ndims_qv;
-  int dsizes_p[NCL_MAX_DIMENSIONS], dsizes_qv[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_qv[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p, type_qv;
 /*
  * Variable for getting/setting dimension name info.
@@ -430,20 +448,21 @@ NhlErrorTypes wrf_td_W( void )
   void *t;
   NclQuark *description, *units;
   char *cdescription, *cunits;
-  double *tmp_t;
+  double *tmp_t = NULL;
   int size_tt;
   NclBasicDataTypes type_t;
   NclObjClass type_obj_t;
 /*
  * Various
  */
-  int i, np, nx, size_leftmost, index_p;
+  ng_size_t i, np, nx, size_leftmost, index_p;
+  int inx;
 
 /*
  * Variables for returning the output array with attributes attached.
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -501,6 +520,15 @@ NhlErrorTypes wrf_td_W( void )
   for(i = 0; i < ndims_p-1; i++) size_leftmost *= dsizes_p[i];
   nx = dsizes_p[ndims_p-1];
   size_tt = size_leftmost * nx;
+
+/*
+ * Test dimension sizes.
+ */
+  if(nx > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_td: nx = %ld is greater than INT_MAX", nx);
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
 
 /* 
  * Allocate space for coercing input arrays.  If the input p or qv
@@ -604,7 +632,7 @@ NhlErrorTypes wrf_td_W( void )
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dcomputetd,DCOMPUTETD)(tmp_t,tmp_p,tmp_qv,&nx);
+    NGCALLF(dcomputetd,DCOMPUTETD)(tmp_t,tmp_p,tmp_qv,&inx);
 
 /*
  * Coerce output back to float if necessary.
@@ -641,6 +669,8 @@ NhlErrorTypes wrf_td_W( void )
   units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
   *units       = NrmStringToQuark(cunits);
+  free(cdescription);
+  free(cunits);
 
 /*
  * Set up return value.
@@ -720,6 +750,7 @@ NhlErrorTypes wrf_td_W( void )
                           TEMPORARY
                           );
 
+  NclFree(dim_info);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -736,10 +767,13 @@ NhlErrorTypes wrf_rh_W( void )
  * Input array variables
  */
   void *qv, *p, *t;
-  double *tmp_qv, *tmp_p, *tmp_t;
+  double *tmp_qv = NULL; 
+  double *tmp_p = NULL; 
+  double *tmp_t = NULL;
   int ndims_qv, ndims_p, ndims_t;
-  int dsizes_qv[NCL_MAX_DIMENSIONS], dsizes_p[NCL_MAX_DIMENSIONS];
-  int dsizes_t[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_qv[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_t[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_qv, type_p, type_t;
 /*
  * Variable for getting/setting dimension name info.
@@ -752,21 +786,22 @@ NhlErrorTypes wrf_rh_W( void )
   void *rh;
   NclQuark *description, *units;
   char *cdescription, *cunits;
-  double *tmp_rh;
+  double *tmp_rh = NULL;
   int size_rh;
   NclBasicDataTypes type_rh;
   NclObjClass type_obj_rh;
 /*
  * Various
  */
-  int i, nx, size_leftmost, index_qv;
+  ng_size_t i, nx, size_leftmost, index_qv;
+  int inx;
 
 /*
  * Variables for returning the output array with attributes and/or
  * dimension names attached.
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -834,6 +869,15 @@ NhlErrorTypes wrf_rh_W( void )
   for(i = 0; i < ndims_qv-1; i++) size_leftmost *= dsizes_qv[i];
   nx = dsizes_qv[ndims_qv-1];
   size_rh = size_leftmost * nx;
+
+/*
+ * Test dimension sizes.
+ */
+  if(nx > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_rh: nx = %ld is greater than INT_MAX", nx);
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
 
 /* 
  * Allocate space for coercing input arrays.  If the input p or t
@@ -950,7 +994,7 @@ NhlErrorTypes wrf_rh_W( void )
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dcomputerh,DCOMPUTERH)(tmp_qv,tmp_p,tmp_t,tmp_rh,&nx);
+    NGCALLF(dcomputerh,DCOMPUTERH)(tmp_qv,tmp_p,tmp_t,tmp_rh,&inx);
 
 /*
  * Coerce output back to float if necessary.
@@ -980,6 +1024,8 @@ NhlErrorTypes wrf_rh_W( void )
   units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
   *units       = NrmStringToQuark(cunits);
+  free(cdescription);
+  free(cunits);
 
 /*
  * Set up return value.
@@ -1058,6 +1104,7 @@ NhlErrorTypes wrf_rh_W( void )
                           TEMPORARY
                           );
 
+  NclFree(dim_info);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -1073,15 +1120,21 @@ NhlErrorTypes wrf_slp_W( void )
  * Input array variables
  */
   void *z, *t, *p, *q;
-  double *tmp_z, *tmp_t, *tmp_p, *tmp_q;
+  double *tmp_z = NULL; 
+  double *tmp_t = NULL; 
+  double *tmp_p = NULL; 
+  double *tmp_q = NULL; 
   int ndims_z, ndims_t, ndims_p, ndims_q;
-  int dsizes_z[NCL_MAX_DIMENSIONS], dsizes_t[NCL_MAX_DIMENSIONS];
-  int dsizes_p[NCL_MAX_DIMENSIONS], dsizes_q[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_t[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_z, type_t, type_p, type_q;
 /*
  * Variable for getting/setting dimension name info.
  */
-  NclDimRec *dim_info, *dim_info_t;
+  NclDimRec *dim_info = NULL;
+  NclDimRec *dim_info_t = NULL;
 
 /*
  * Output variable.
@@ -1089,21 +1142,24 @@ NhlErrorTypes wrf_slp_W( void )
   void *slp;
   NclQuark *description, *units;
   char *cdescription, *cunits;
-  double *tmp_slp;
-  int ndims_slp, *dsizes_slp, size_slp;
+  double *tmp_slp = NULL;
+  int ndims_slp;
+  ng_size_t *dsizes_slp;
+  ng_size_t size_slp;
   NclBasicDataTypes type_slp;
   NclObjClass type_obj_slp;
 /*
  * Various
  */
-  int i, nx, ny, nz, nxy, nxyz, size_leftmost, index_nxy, index_nxyz;
+  ng_size_t i, nx, ny, nz, nxy, nxyz, size_leftmost, index_nxy, index_nxyz;
   double *tmp_t_sea_level, *tmp_t_surf, *tmp_level;
+  int inx, iny, inz;
 /*
  * Variables for returning the output array with attributes and/or
  * dimension names attached.
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -1177,7 +1233,7 @@ NhlErrorTypes wrf_slp_W( void )
  * Allocate space to set dimension sizes.
  */
   ndims_slp  = ndims_z-1;
-  dsizes_slp = (int*)calloc(ndims_slp,sizeof(int));  
+  dsizes_slp = (ng_size_t*)calloc(ndims_slp,sizeof(ng_size_t));  
   if( dsizes_slp == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -1199,6 +1255,17 @@ NhlErrorTypes wrf_slp_W( void )
   nxy  = nx * ny;
   nxyz = nxy * nz;
   size_slp = size_leftmost * nxy;
+/*
+ * Test dimension sizes.
+ */
+  if((nx > INT_MAX) || (ny > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: nx, ny, and/or nz is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inz = (int) nz;
+
 /*
  * Get dimension info to see if we have named dimensions.
  * This will be used for return variable.
@@ -1365,7 +1432,7 @@ NhlErrorTypes wrf_slp_W( void )
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dcomputeseaprs,DCOMPUTESEAPRS)(&nx,&ny,&nz,tmp_z,tmp_t,tmp_p,
+    NGCALLF(dcomputeseaprs,DCOMPUTESEAPRS)(&inx,&iny,&inz,tmp_z,tmp_t,tmp_p,
                                            tmp_q,tmp_slp,tmp_t_sea_level,
                                            tmp_t_surf,tmp_level);
 /*
@@ -1402,6 +1469,8 @@ NhlErrorTypes wrf_slp_W( void )
   units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
   *units       = NrmStringToQuark(cunits);
+  free(cdescription);
+  free(cunits);
 
 /*
  * Set up return value.
@@ -1481,9 +1550,8 @@ NhlErrorTypes wrf_slp_W( void )
                           );
 
   NclFree(dsizes_slp);
-  NclFree(cunits);
-  NclFree(cdescription);
   if(dim_info != NULL) NclFree(dim_info);
+  NclFree(dim_info_t);
 
 /*
  * Return output grid and attributes to NCL.
@@ -1501,14 +1569,18 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  * Input array variables
  */
   void *v3d, *z, *loc;
-  double *tmp_v3d, *tmp_z, *tmp_loc;
-  int ndims_v3d, ndims_z, ndims_loc;
-  int dsizes_v3d[NCL_MAX_DIMENSIONS], dsizes_z[NCL_MAX_DIMENSIONS];
+  double *tmp_v3d = NULL; 
+  double *tmp_z = NULL; 
+  double *tmp_loc = NULL; 
+  int ndims_v3d, ndims_z;
+  ng_size_t dsizes_v3d[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_v3d, type_z, type_loc;
 /*
  * Variable for getting/setting dimension name info.
  */
-  NclDimRec *dim_info_v3d, *dim_info;
+  NclDimRec *dim_info_v3d;
+  NclDimRec *dim_info = NULL;
 
 /*
  * Variables for retrieving attributes from "v3d".
@@ -1517,14 +1589,17 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
   string *description, *units;
-  char *cdesc, *cunits;
+  char *cdesc = NULL;
+  char *cunits = NULL;
   logical found_desc = False, found_units = False;
 /*
  * Output variable.
  */
   void *v2d;
-  double *tmp_v2d;
-  int ndims_v2d, *dsizes_v2d, size_v2d;
+  double *tmp_v2d = NULL;
+  int ndims_v2d;
+  ng_size_t *dsizes_v2d;
+  ng_size_t size_v2d;
   NclBasicDataTypes type_v2d;
   NclObjClass type_obj_v2d;
   NclScalar missing_v2d;
@@ -1533,7 +1608,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  * Variables for returning the output array with attributes attached.
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -1542,7 +1617,9 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
 /*
  * Various
  */
-  int i, nx, ny, nz, nxy, nxyz, size_leftmost, index_v3d, index_v2d;
+  ng_size_t i, nx, ny, nz, nxy, nxyz, size_leftmost, index_v3d, index_v2d;
+  int inx, iny, inz;
+  double vmsg;
 
 /*
  * Retrieve parameters.
@@ -1664,8 +1741,19 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   nxy  = nx * ny;
   nxyz = nxy * nz;
 
+/*
+ * Test dimension sizes.
+ */
+  if((nx > INT_MAX) || (ny > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: nx, ny, and/or nz is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inz = (int) nz;
+
   ndims_v2d = ndims_v3d-1;
-  dsizes_v2d = (int*)calloc(ndims_v2d,sizeof(int));  
+  dsizes_v2d = (ng_size_t*)calloc(ndims_v2d,sizeof(ng_size_t));  
   if( dsizes_v2d == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -1745,7 +1833,8 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
-    missing_v2d.doubleval = -999999;
+    missing_v2d.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    vmsg = missing_v2d.doubleval;
   }
   else {
     v2d     = (float *)calloc(size_v2d,sizeof(float));
@@ -1754,7 +1843,9 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
-    missing_v2d.floatval = -999999;
+    missing_v2d.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    vmsg = (double)missing_v2d.floatval;
+
   }
 /*
  * Loop across leftmost dimensions and call the Fortran routine
@@ -1790,7 +1881,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  * Call Fortran routine.
  */
     NGCALLF(dinterp3dz,DINTERP3DZ)(tmp_v3d,tmp_v2d,tmp_z,tmp_loc,
-                                   &nx,&ny,&nz);
+                                   &inx,&iny,&inz,&vmsg);
 /*
  * Coerce output back to float if necessary.
  */
@@ -1826,10 +1917,14 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  */
   qdesc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *qdesc = NrmStringToQuark(cdesc);
+  if (!found_desc)
+          free(cdesc);
+
   if(found_units) {
     qunits  = (NclQuark*)NclMalloc(sizeof(NclQuark));
     *qunits = NrmStringToQuark(cunits);
   }
+
 /*
  * Set up return value.
  */
@@ -1909,6 +2004,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
                           );
   NclFree(dsizes_v2d);
   if(dim_info != NULL) NclFree(dim_info);
+  NclFree(dim_info_v3d);
 
 /*
  * Return output grid and attributes to NCL.
@@ -1926,14 +2022,12 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  * Input array variables
  */
   void *v3d, *xy;
-  double *tmp_v3d, *tmp_xy;
+  double *tmp_v3d = NULL; 
+  double *tmp_xy = NULL; 
   int ndims_v3d, ndims_xy;
-  int dsizes_v3d[NCL_MAX_DIMENSIONS], dsizes_xy[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_v3d[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xy[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_v3d, type_xy;
-/*
- * Variable for getting/setting dimension name info.
- */
-  NclDimRec *dim_info;
 
 /*
  * Variables for retrieving attributes from "v3d".
@@ -1942,14 +2036,16 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
   string *description, *units;
-  char *cdesc, *cunits;
+  char *cdesc = NULL;
+  char *cunits = NULL;
   logical found_desc = False, found_units = False;
 /*
  * Output variable.
  */
   void *v2d;
-  double *tmp_v2d;
-  int ndims_v2d, *dsizes_v2d, size_v2d;
+  double *tmp_v2d = NULL;
+  int ndims_v2d;
+  ng_size_t *dsizes_v2d, size_v2d;
   NclBasicDataTypes type_v2d;
   NclObjClass type_obj_v2d;
   NclScalar missing_v2d;
@@ -1958,7 +2054,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  * Variables for returning the output array with attributes attached.
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -1967,8 +2063,9 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
 /*
  * Various
  */
-  int i, nx, ny, nz, nxnynz, nxy, nxy_nz , nxy_2, size_leftmost;
-  int index_v3d, index_v2d, index_xy;
+  ng_size_t i, nx, ny, nz, nxnynz, nxy, nxy_nz , nxy_2, size_leftmost;
+  ng_size_t index_v3d, index_v2d, index_xy;
+  int inx, iny, inz, inxy;
 /*
  * Retrieve parameters.
  *
@@ -2019,11 +2116,23 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   nxy_2    = nxy * 2;
 
 /*
+ * Test dimension sizes.
+ */
+  if((nxy > INT_MAX) || (nx > INT_MAX) || (ny > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_2d_xy: one or more dimension sizes is greater than INT_MAX", nxy);
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inz = (int) nz;
+  inxy = (int) nxy;
+
+/*
  * Check leftmost dimensions, if any, and calculate their size.
  * Also set dimension sizes for output array.
  */
   ndims_v2d = ndims_xy;     /* leftmost dims x nz x nxy */
-  dsizes_v2d = (int*)calloc(ndims_v2d,sizeof(int));  
+  dsizes_v2d = (ng_size_t*)calloc(ndims_v2d,sizeof(ng_size_t));  
   if( dsizes_v2d == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_2d_xy: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -2182,8 +2291,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dinterp2dxy,DINTERP2DXY)(tmp_v3d,tmp_v2d,tmp_xy,&nx,&ny,&nz,&nxy);
-
+    NGCALLF(dinterp2dxy,DINTERP2DXY)(tmp_v3d,tmp_v2d,tmp_xy,&inx,&iny,&inz,&inxy);
 /*
  * Coerce output back to float if necessary.
  */
@@ -2219,6 +2327,8 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  */
   qdesc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *qdesc = NrmStringToQuark(cdesc);
+  if (!found_desc)
+          free(cdesc);
   if(found_units) {
     qunits  = (NclQuark*)NclMalloc(sizeof(NclQuark));
     *qunits = NrmStringToQuark(cunits);
@@ -2317,10 +2427,13 @@ NhlErrorTypes wrf_interp_1d_W( void )
  * Input array variables
  */
   void *v_in, *z_in, *z_out;
-  double *tmp_v_in, *tmp_z_in, *tmp_z_out;
+  double *tmp_v_in = NULL; 
+  double *tmp_z_in = NULL; 
+  double *tmp_z_out = NULL; 
   int ndims_v_in, ndims_z_in, ndims_z_out;
-  int dsizes_v_in[NCL_MAX_DIMENSIONS], dsizes_z_in[NCL_MAX_DIMENSIONS];
-  int dsizes_z_out[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_v_in[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_z_in[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_z_out[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_v_in, type_z_in, type_z_out;
 /*
  * Variable for getting/setting dimension name info.
@@ -2334,15 +2447,17 @@ NhlErrorTypes wrf_interp_1d_W( void )
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
   string *description, *units;
-  char *cdesc, *cunits;
+  char *cdesc = NULL;
+  char *cunits = NULL;
   logical found_desc = False, found_units = False;
 
 /*
  * Output variable.
  */
   void *v_out;
-  double *tmp_v_out, v_out_msg;
-  int *dsizes_v_out, size_v_out;
+  double *tmp_v_out = NULL;
+  double v_out_msg;
+  ng_size_t *dsizes_v_out, size_v_out;
   NclBasicDataTypes type_v_out;
   NclObjClass type_obj_v_out;
   NclScalar missing_v_out;
@@ -2351,7 +2466,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
  * Variables for returning the output array with attributes attached.
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -2360,7 +2475,8 @@ NhlErrorTypes wrf_interp_1d_W( void )
 /*
  * Various
  */
-  int i, nz_in, nz_out, size_leftmost, index_v_in, index_v_out;
+  ng_size_t i, nz_in, nz_out, size_leftmost, index_v_in, index_v_out;
+  int inz_in, inz_out;
 
 /*
  * Retrieve parameters.
@@ -2411,6 +2527,16 @@ NhlErrorTypes wrf_interp_1d_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: The rightmost dimension of v_in and z_in must be the same");
     return(NhlFATAL);
   }
+
+/*
+ * Test dimension sizes.
+ */
+  if((nz_in > INT_MAX) || (nz_out > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: nz_in and/or nz_out is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inz_in = (int) nz_in;
+  inz_out = (int) nz_out;
 
 /*
  * Retrieve dimension names from the "v3d" variable, if any.
@@ -2474,7 +2600,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
  * Calculate leftmost dimensions, if any, and check their sizes.
  * Also set dimension sizes for output array.
  */
-  dsizes_v_out = (int*)calloc(ndims_z_out,sizeof(int));  
+  dsizes_v_out = (ng_size_t*)calloc(ndims_z_out,sizeof(ng_size_t));  
   if( dsizes_v_out == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -2606,8 +2732,8 @@ NhlErrorTypes wrf_interp_1d_W( void )
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dinterp1d,DINTERP1D)(tmp_v_in,tmp_v_out,tmp_z_in,tmp_z_out,&nz_in,
-                                 &nz_out,&v_out_msg);
+    NGCALLF(dinterp1d,DINTERP1D)(tmp_v_in,tmp_v_out,tmp_z_in,tmp_z_out,&inz_in,
+                                 &inz_out,&v_out_msg);
 /*
  * Coerce output back to float if necessary.
  */
@@ -2643,6 +2769,8 @@ NhlErrorTypes wrf_interp_1d_W( void )
  */
   qdesc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *qdesc = NrmStringToQuark(cdesc);
+  if (!found_desc)
+          free(cdesc);
   if(found_units) {
     qunits  = (NclQuark*)NclMalloc(sizeof(NclQuark));
     *qunits = NrmStringToQuark(cunits);
@@ -2725,6 +2853,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
                           TEMPORARY
                           );
   NclFree(dsizes_v_out);
+  NclFree(dim_info);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -2743,7 +2872,8 @@ NhlErrorTypes wrf_smooth_2d_W( void )
  *
  */
   void *a;
-  int has_missing_a, ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
+  int has_missing_a, ndims_a;
+  ng_size_t dsizes_a[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_a;
   NclScalar missing_a;
   int *it;
@@ -2751,9 +2881,11 @@ NhlErrorTypes wrf_smooth_2d_W( void )
 /*
  * Various
  */
-  double *db;
-  float *fb;
+  double *db = NULL;
+  float *fb = NULL;
   int ny, nx, nynx,  i, index_a, size_leftmost;
+  double d_missing;
+  float  f_missing;
 
 /*
  * Retrieve parameters.
@@ -2818,6 +2950,7 @@ NhlErrorTypes wrf_smooth_2d_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: Unable to allocate memory for temporary array");
       return(NhlFATAL);
     }
+    d_missing = has_missing_a ? missing_a.doubleval : ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
   }
   else {
     fb = (float *)malloc(nynx*sizeof(float));
@@ -2825,6 +2958,7 @@ NhlErrorTypes wrf_smooth_2d_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: Unable to allocate memory for temporary array");
       return(NhlFATAL);
     } 
+    f_missing = has_missing_a ? missing_a.floatval : ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.floatval;
  }
 
 /*
@@ -2836,11 +2970,11 @@ NhlErrorTypes wrf_smooth_2d_W( void )
   for(i = 0; i < size_leftmost; i++) {
     if(type_a == NCL_double) {
       NGCALLF(dfilter2d,DFILTER2D)(&((double*)a)[index_a], db, &nx, &ny, it,
-                                   &missing_a.doubleval);
+                                   &d_missing);
     }
     else {
       NGCALLF(filter2d,FILTER2D)(&((float*)a)[index_a], fb, &nx, &ny, it,
-                                   &missing_a.floatval);
+                                   &f_missing);
     }
     index_a += nynx;
   }
@@ -2864,10 +2998,16 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
  * Input variables
  */
   void *lat_array, *lon_array, *lat_loc, *lon_loc;
-  double *tmp_lat_array, *tmp_lon_array, *tmp_lat_loc, *tmp_lon_loc;
-  int ndims_lat_array, dsizes_lat_array[NCL_MAX_DIMENSIONS];
-  int ndims_lon_array, dsizes_lon_array[NCL_MAX_DIMENSIONS];
-  int dsizes_lat_loc[1], dsizes_lon_loc[1];
+  double *tmp_lat_array = NULL; 
+  double *tmp_lon_array = NULL; 
+  double *tmp_lat_loc = NULL; 
+  double *tmp_lon_loc = NULL; 
+  int ndims_lat_array;
+  ng_size_t dsizes_lat_array[NCL_MAX_DIMENSIONS];
+  int ndims_lon_array;
+  ng_size_t dsizes_lon_array[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lat_loc[1];
+  ng_size_t dsizes_lon_loc[1];
   NclBasicDataTypes type_lat_array, type_lon_array;
   NclBasicDataTypes type_lat_loc, type_lon_loc;
   int is_scalar_latlon_loc;
@@ -2876,15 +3016,17 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
  * Return variable
  */
   int iret, *ret;
-  int ndims_ret, *dsizes_ret;
+  int ndims_ret;
+  ng_size_t *dsizes_ret;
   NclScalar missing_ret;
 
 /*
  * Various
  */
-  int ny, nx, nynx, nretlocs;
-  int index_array, index_ret;
-  int i, j, ndims_leftmost, size_leftmost, size_output;
+  ng_size_t ny, nx, nynx, nretlocs;
+  ng_size_t index_array, index_ret;
+  ng_size_t i, j, ndims_leftmost, size_leftmost, size_output;
+  int inx, iny;
 
 /*
  * Retrieve parameters.
@@ -2931,6 +3073,16 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
   ny = dsizes_lat_array[ndims_lat_array-2];
   nx = dsizes_lat_array[ndims_lat_array-1];
   nynx = ny * nx;
+
+/*
+ * Test dimension sizes.
+ */
+  if((nx > INT_MAX) || (ny > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: nx and/or ny is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
 
   size_leftmost  = 1;
   ndims_leftmost = ndims_lat_array-2;
@@ -3068,7 +3220,7 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
   else {
     ndims_ret = ndims_leftmost + 2;
   }
-  dsizes_ret = (int*)calloc(ndims_ret,sizeof(int));  
+  dsizes_ret = (ng_size_t*)calloc(ndims_ret,sizeof(ng_size_t));  
   if( dsizes_ret == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -3113,6 +3265,11 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
     }
 
 /*
+ * Get default integer missing value.
+ */
+  missing_ret.intval =  ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+
+/*
  * Loop across lat,lon locations.
  */
     for(j = 0; j < dsizes_lat_loc[0]; j++) {
@@ -3146,7 +3303,8 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
       NGCALLF(dgetijlatlong,DGETIJLATLONG)(tmp_lat_array, tmp_lon_array, 
                                            tmp_lat_loc, tmp_lon_loc,
                                            &ret[index_ret+1], 
-                                           &ret[index_ret], &nx, &ny);
+                                           &ret[index_ret], &inx, &iny,
+					   &missing_ret.intval);
       index_ret+=2;
     }
     index_array += nynx;
@@ -3160,7 +3318,6 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
   if(type_lat_loc   != NCL_double) NclFree(tmp_lat_loc);
   if(type_lon_loc   != NCL_double) NclFree(tmp_lon_loc);
 
-  missing_ret.intval = -999;
   iret = NclReturnValue(ret,ndims_ret,dsizes_ret,&missing_ret,NCL_int,0);
   NclFree(dsizes_ret);
   return(iret);
@@ -3176,8 +3333,9 @@ NhlErrorTypes wrf_uvmet_W( void )
  * Argument # 0
  */
   void *u;
-  double *tmp_u;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
   int has_missing_u;
   NclBasicDataTypes type_u;
   NclScalar missing_u, missing_du;
@@ -3186,8 +3344,9 @@ NhlErrorTypes wrf_uvmet_W( void )
  * Argument # 1
  */
   void *v;
-  double *tmp_v;
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_v = NULL;
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   int has_missing_v;
   NclBasicDataTypes type_v;
   NclScalar missing_v, missing_dv;
@@ -3196,16 +3355,18 @@ NhlErrorTypes wrf_uvmet_W( void )
  * Argument # 2
  */
   void *lat;
-  double *tmp_lat;
-  int ndims_lat, dsizes_lat[NCL_MAX_DIMENSIONS];
+  double *tmp_lat = NULL;
+  int ndims_lat;
+  ng_size_t dsizes_lat[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_lat;
 
 /*
  * Argument # 3
  */
   void *lon;
-  double *tmp_lon;
-  int ndims_lon, dsizes_lon[NCL_MAX_DIMENSIONS];
+  double *tmp_lon = NULL;
+  int ndims_lon;
+  ng_size_t dsizes_lon[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_lon;
 
 /*
@@ -3227,28 +3388,33 @@ NhlErrorTypes wrf_uvmet_W( void )
  */
   void *uvmet;
   double *tmp_uvmet, tmp_uvmet_msg;
-  int ndims_uvmet, *dsizes_uvmet;
+  int ndims_uvmet;
+  ng_size_t *dsizes_uvmet;
   int has_missing;
   NclScalar missing_uvmet;
   NclBasicDataTypes type_uvmet;
   NclObjClass type_obj_uvmet;
   NclQuark *description, *units;
   char *cdescription, *cunits;
-  NclDimRec *dim_info, *dim_info_u, *dim_info_v;
+  NclDimRec *dim_info = NULL; 
+  NclDimRec *dim_info_u, *dim_info_v;
 
 /*
  * Various
  */
-  int nx, ny, nz, nxp1, nynxp1, nyp1, nyp1nx, nynx, twonynx;
-  int index_u, index_v, index_latlon, index_uvmet_u, index_uvmet_v;
-  int i, j, istag, ndims_leftmost;
-  int size_leftmost, size_leftmost_uvmet, size_uvmet, size_output;
+  ng_size_t nx, ny, nz, nxp1, nynxp1, nyp1, nyp1nx, nynx, twonynx;
+  ng_size_t index_u, index_v, index_latlon, index_uvmet_u, index_uvmet_v;
+  ng_size_t i, j;
+  ng_size_t size_leftmost, size_leftmost_uvmet, size_uvmet, size_output;
   double rpd, *longca, *longcb;
+  int istag, ndims_leftmost;
+  int inx, iny, inxp1, inyp1;
+
 /*
  * Variables for returning the output array with attributes attached.
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -3309,12 +3475,26 @@ NhlErrorTypes wrf_uvmet_W( void )
   nyp1nx = nyp1 * nx;
 
 /*
+ * Test dimension sizes.
+ */
+  if((nxp1 > INT_MAX) || (nyp1 > INT_MAX) || (nx > INT_MAX) || (ny > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_uvmet: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inxp1 = (int) nxp1;
+  inyp1 = (int) nyp1;
+
+/*
  * Coerce the missing values.
  */
   coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
   coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
   if(has_missing_u || has_missing_v) {
     has_missing = True;
+    /*fprintf(stderr, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);*/
+    /* fprintf(stderr, "\tu or v has missing.\n");*/
   }
   else {
     has_missing = False;
@@ -3582,7 +3762,7 @@ NhlErrorTypes wrf_uvmet_W( void )
  * Allocate space for output dimension sizes and set them.
  */
   ndims_uvmet = ndims_u + 1;
-  dsizes_uvmet = (int*)calloc(ndims_uvmet,sizeof(int));  
+  dsizes_uvmet = (ng_size_t*)calloc(ndims_uvmet,sizeof(ng_size_t));  
   if( dsizes_uvmet == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_uvmet: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -3652,10 +3832,11 @@ NhlErrorTypes wrf_uvmet_W( void )
       NGCALLF(dcomputeuvmet,DCOMPUTEUVMET)(tmp_u, tmp_v, tmp_uvmet, longca, 
                                            longcb, tmp_lon, tmp_lat, 
                                            tmp_cenlon, tmp_cone, &rpd, 
-                                           &nx, &ny, &nxp1, &nyp1, &istag,
+                                           &inx, &iny, &inxp1, &inyp1, &istag,
                                            &has_missing,&missing_du.doubleval,
                                            &missing_du.doubleval,
                                            &tmp_uvmet_msg);
+
 /*
  * Coerce output back to float if necessary.
  */
@@ -3684,6 +3865,8 @@ NhlErrorTypes wrf_uvmet_W( void )
   if(type_cenlon != NCL_double) NclFree(tmp_cenlon);
   if(type_cone   != NCL_double) NclFree(tmp_cone);
   NclFree(tmp_uvmet);
+  NclFree(longca);
+  NclFree(longcb);
 
 /*
  * Set up some attributes ("description" and "units") to return.
@@ -3698,6 +3881,8 @@ NhlErrorTypes wrf_uvmet_W( void )
   units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
   *units       = NrmStringToQuark(cunits);
+  free(cdescription);
+  free(cunits);
 
 /*
  * Get dimension info of U and V to see if we have named dimensions.
@@ -3801,6 +3986,9 @@ NhlErrorTypes wrf_uvmet_W( void )
                           TEMPORARY
                           );
   NclFree(dsizes_uvmet);
+  NclFree(dim_info);
+  NclFree(dim_info_u);
+  NclFree(dim_info_v);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -3819,48 +4007,56 @@ NhlErrorTypes wrf_dbz_W( void )
  * Argument # 0
  */
   void *prs;
-  double *tmp_prs;
-  int ndims_prs, dsizes_prs[NCL_MAX_DIMENSIONS];
+  double *tmp_prs = NULL;
+  int ndims_prs;
+  ng_size_t dsizes_prs[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_prs;
 
 /*
  * Argument # 1
  */
   void *tmk;
-  double *tmp_tmk;
-  int ndims_tmk, dsizes_tmk[NCL_MAX_DIMENSIONS];
+  double *tmp_tmk = NULL;
+  int ndims_tmk;
+  ng_size_t dsizes_tmk[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_tmk;
 
 /*
  * Argument # 2
  */
   void *qvp;
-  double *tmp_qvp;
-  int ndims_qvp, dsizes_qvp[NCL_MAX_DIMENSIONS];
+  double *tmp_qvp = NULL;
+  int ndims_qvp;
+  ng_size_t dsizes_qvp[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_qvp;
 
 /*
  * Argument # 3
  */
   void *qra;
-  double *tmp_qra;
-  int ndims_qra, dsizes_qra[NCL_MAX_DIMENSIONS];
+  double *tmp_qra = NULL;
+  int ndims_qra;
+  ng_size_t dsizes_qra[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_qra;
 
 /*
  * Argument # 4
  */
   void *qsn;
-  double *tmp_qsn, *tmp1_qsn;
-  int is_scalar_qsn, ndims_qsn, dsizes_qsn[NCL_MAX_DIMENSIONS];
+  double *tmp_qsn;
+  double *tmp1_qsn = NULL;
+  int is_scalar_qsn, ndims_qsn;
+  ng_size_t dsizes_qsn[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_qsn;
 
 /*
  * Argument # 5
  */
   void *qgr;
-  double *tmp_qgr, *tmp1_qgr;
-  int is_scalar_qgr, ndims_qgr, dsizes_qgr[NCL_MAX_DIMENSIONS];
+  double *tmp_qgr = NULL;
+  double *tmp1_qgr = NULL;
+  int is_scalar_qgr, ndims_qgr;
+  ng_size_t dsizes_qgr[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_qgr;
 
 /*
@@ -3875,7 +4071,7 @@ NhlErrorTypes wrf_dbz_W( void )
  * Return variable
  */
   void *dbz;
-  double *tmp_dbz;
+  double *tmp_dbz = NULL;
   NclBasicDataTypes type_dbz;
   NclObjClass type_obj_dbz;
   NclQuark *description, *units;
@@ -3883,7 +4079,8 @@ NhlErrorTypes wrf_dbz_W( void )
 /*
  * Variables for returning the output array with dimension names attached.
  */
-  int att_id, dsizes[1];
+  int att_id;
+  ng_size_t dsizes[1];
   NclMultiDValData return_md, att_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -3896,8 +4093,9 @@ NhlErrorTypes wrf_dbz_W( void )
 /*
  * Various
  */
-  int btdim, sndim, wedim, nbtsnwe, index_dbz;
-  int i, j, sn0, size_leftmost, size_output;
+  ng_size_t btdim, sndim, wedim, nbtsnwe, index_dbz;
+  ng_size_t i, j, size_leftmost, size_output;
+  int sn0 = 0, iwedim, isndim, ibtdim;
 
 /*
  * Retrieve parameters.
@@ -3929,6 +4127,17 @@ NhlErrorTypes wrf_dbz_W( void )
   sndim = dsizes_prs[ndims_prs-2];
   wedim = dsizes_prs[ndims_prs-1];
   nbtsnwe = btdim * sndim * wedim;
+  
+/*
+ * Test dimension sizes.
+ */
+  if((wedim > INT_MAX) || (sndim > INT_MAX) || (btdim > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: one or more dimension sizes is greater than INT_MAX");    
+    return(NhlFATAL);
+  }
+  iwedim = (int) wedim;
+  isndim = (int) sndim;
+  ibtdim = (int) btdim;
 
 /*
  * Get argument # 1
@@ -4300,6 +4509,7 @@ NhlErrorTypes wrf_dbz_W( void )
  * Coerce subsection of qgr (tmp_qgr) to double if necessary.
  */
     if(!is_scalar_qgr) {
+      double *tmp_qgr_save = tmp_qgr;
       if(type_qgr != NCL_double) {
         coerce_subset_input_double(qgr,tmp_qgr,index_dbz,type_qgr,nbtsnwe,
                                    0,NULL,NULL);
@@ -4307,6 +4517,8 @@ NhlErrorTypes wrf_dbz_W( void )
       else {
         tmp_qgr = &((double*)qgr)[index_dbz];
       }
+      if (tmp_qgr_save != NULL && tmp_qgr_save != tmp_qgr)
+              NclFree(tmp_qgr);
     }
 
 /*
@@ -4318,9 +4530,8 @@ NhlErrorTypes wrf_dbz_W( void )
  * Call the Fortran routine.
  */
     NGCALLF(calcdbz,CALCDBZ)(tmp_dbz, tmp_prs, tmp_tmk, tmp_qvp, tmp_qra, 
-                             tmp_qsn, tmp_qgr, &wedim, &sndim, &btdim, 
+                             tmp_qsn, tmp_qgr, &iwedim, &isndim, &ibtdim, 
                              &sn0, ivarint, iliqskin);
-
 /*
  * Coerce output back to float if necessary.
  */
@@ -4376,11 +4587,14 @@ NhlErrorTypes wrf_dbz_W( void )
   strcpy(cdescription,"Reflectivity");
   description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
+  free(cdescription);
 
   cunits       = (char *)calloc(4,sizeof(char));
   strcpy(cunits,"dBZ");
   units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *units       = NrmStringToQuark(cunits);
+  free(cunits);
+
 
 /*
  * Set up attributes to return.
@@ -4442,6 +4656,7 @@ NhlErrorTypes wrf_dbz_W( void )
                           NULL,
                           TEMPORARY
                           );
+  NclFree(dim_info);
 
 /*
  * Return output grid and attributes to NCL.
@@ -4462,78 +4677,86 @@ NhlErrorTypes wrf_pvo_W( void )
  * Argument # 0
  */
   void *u;
-  double *tmp_u;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_u;
 
 /*
  * Argument # 1
  */
   void *v;
-  double *tmp_v;
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_v = NULL;
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_v;
 
 /*
  * Argument # 2
  */
   void *th;
-  double *tmp_th;
-  int ndims_th, dsizes_th[NCL_MAX_DIMENSIONS];
+  double *tmp_th = NULL;
+  int ndims_th;
+  ng_size_t dsizes_th[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_th;
 
 /*
  * Argument # 3
  */
   void *p;
-  double *tmp_p;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
+  double *tmp_p = NULL;
+  int ndims_p;
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p;
 
 /*
  * Argument # 4
  */
   void *msfu;
-  double *tmp_msfu;
-  int ndims_msfu, dsizes_msfu[NCL_MAX_DIMENSIONS];
+  double *tmp_msfu = NULL;
+  int ndims_msfu;
+  ng_size_t dsizes_msfu[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_msfu;
 
 /*
  * Argument # 5
  */
   void *msfv;
-  double *tmp_msfv;
-  int ndims_msfv, dsizes_msfv[NCL_MAX_DIMENSIONS];
+  double *tmp_msfv = NULL;
+  int ndims_msfv;
+  ng_size_t dsizes_msfv[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_msfv;
 
 /*
  * Argument # 6
  */
   void *msft;
-  double *tmp_msft;
-  int ndims_msft, dsizes_msft[NCL_MAX_DIMENSIONS];
+  double *tmp_msft = NULL;
+  int ndims_msft;
+  ng_size_t dsizes_msft[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_msft;
 
 /*
  * Argument # 7
  */
   void *cor;
-  double *tmp_cor;
-  int ndims_cor, dsizes_cor[NCL_MAX_DIMENSIONS];
+  double *tmp_cor = NULL;
+  int ndims_cor;
+  ng_size_t dsizes_cor[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_cor;
 
 /*
  * Argument # 8
  */
   void *dx;
-  double *tmp_dx;
+  double *tmp_dx = NULL;
   NclBasicDataTypes type_dx;
 
 /*
  * Argument # 9
  */
   void *dy;
-  double *tmp_dy;
+  double *tmp_dy = NULL;
   NclBasicDataTypes type_dy;
 
 /*
@@ -4550,7 +4773,7 @@ NhlErrorTypes wrf_pvo_W( void )
  * Return variable
  */
   void *pv;
-  double *tmp_pv;
+  double *tmp_pv = NULL;
   int att_id;
   NclBasicDataTypes type_pv;
   NclObjClass type_obj_pv;
@@ -4560,15 +4783,15 @@ NhlErrorTypes wrf_pvo_W( void )
 /*
  * Various
  */
-  int nx, ny, nz, nxp1, nyp1, ret;
-  int nznynxp1, nznyp1nx, nznynx, nynxp1, nyp1nx, nynx;
-  int i, size_pv, size_leftmost;
-  int index_u, index_v, index_th, index_msfu, index_msfv, index_msft;
-
+  ng_size_t nx, ny, nz, nxp1, nyp1;
+  ng_size_t nznynxp1, nznyp1nx, nznynx, nynxp1, nyp1nx, nynx;
+  ng_size_t i, size_pv, size_leftmost;
+  ng_size_t index_u, index_v, index_th, index_msfu, index_msfv, index_msft;
+  int inx, iny, inz, inxp1, inyp1;
 /*
  * Variables for returning the output array with dimension names attached.
  */
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -4894,6 +5117,20 @@ NhlErrorTypes wrf_pvo_W( void )
   nznyp1nx = nz * nyp1nx;
 
 /*
+ * Test dimension sizes.
+ */
+    if((nxp1 > INT_MAX) || (nyp1 > INT_MAX) || (nz > INT_MAX) || 
+       (nx > INT_MAX) ||(ny > INT_MAX)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: one or more dimension sizes is greater than INT_MAX");
+      return(NhlFATAL);
+    }
+    inx = (int) nx;
+    iny = (int) ny;
+    inz = (int) nz;
+    inxp1 = (int) nxp1;
+    inyp1 = (int) nyp1;
+
+/*
  * Calculate size of leftmost dimensions.
  */
   size_leftmost = 1;
@@ -5137,10 +5374,9 @@ NhlErrorTypes wrf_pvo_W( void )
  */
     if(type_pv == NCL_double) tmp_pv = &((double*)pv)[index_th];
 
-    NGCALLF(dcomputepv,DCOMPUTEPV)(tmp_pv, tmp_u, tmp_v, tmp_th, tmp_p, 
-                                   tmp_msfu, tmp_msfv, tmp_msft, tmp_cor, 
-                                   tmp_dx, tmp_dy, &nx, &ny, &nz, &nxp1, &nyp1);
-
+      NGCALLF(dcomputepv,DCOMPUTEPV)(tmp_pv, tmp_u, tmp_v, tmp_th, tmp_p, 
+                                     tmp_msfu, tmp_msfv, tmp_msft, tmp_cor, 
+                                     tmp_dx, tmp_dy, &inx, &iny, &inz, &inxp1, &inyp1);
     if(type_pv != NCL_double) {
       coerce_output_float_only(pv,tmp_pv,nznynx,index_th);
     }
@@ -5191,11 +5427,13 @@ NhlErrorTypes wrf_pvo_W( void )
   strcpy(cdescription,"Potential Vorticity");
   description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
+  free(cdescription);
 
   cunits       = (char *)calloc(4,sizeof(char));
   strcpy(cunits,"PVU");
   units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *units       = NrmStringToQuark(cunits);
+  free(cunits);
 
 /*
  * Set up attributes to return.
@@ -5258,6 +5496,7 @@ NhlErrorTypes wrf_pvo_W( void )
                           TEMPORARY
                           );
 
+  NclFree(dim_info);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -5276,62 +5515,68 @@ NhlErrorTypes wrf_avo_W( void )
  * Argument # 0
  */
   void *u;
-  double *tmp_u;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_u;
 
 /*
  * Argument # 1
  */
   void *v;
-  double *tmp_v;
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_v = NULL;
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_v;
 
 /*
  * Argument # 2
  */
   void *msfu;
-  double *tmp_msfu;
-  int ndims_msfu, dsizes_msfu[NCL_MAX_DIMENSIONS];
+  double *tmp_msfu = NULL;
+  int ndims_msfu;
+  ng_size_t dsizes_msfu[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_msfu;
 
 /*
  * Argument # 3
  */
   void *msfv;
-  double *tmp_msfv;
-  int ndims_msfv, dsizes_msfv[NCL_MAX_DIMENSIONS];
+  double *tmp_msfv = NULL;
+  int ndims_msfv;
+  ng_size_t dsizes_msfv[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_msfv;
 
 /*
  * Argument # 4
  */
   void *msft;
-  double *tmp_msft;
-  int ndims_msft, dsizes_msft[NCL_MAX_DIMENSIONS];
+  double *tmp_msft = NULL;
+  int ndims_msft;
+  ng_size_t dsizes_msft[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_msft;
 
 /*
  * Argument # 5
  */
   void *cor;
-  double *tmp_cor;
-  int ndims_cor, dsizes_cor[NCL_MAX_DIMENSIONS];
+  double *tmp_cor = NULL;
+  int ndims_cor;
+  ng_size_t dsizes_cor[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_cor;
 
 /*
  * Argument # 6
  */
   void *dx;
-  double *tmp_dx;
+  double *tmp_dx = NULL;
   NclBasicDataTypes type_dx;
 
 /*
  * Argument # 7
  */
   void *dy;
-  double *tmp_dy;
+  double *tmp_dy = NULL;
   NclBasicDataTypes type_dy;
 
 /*
@@ -5348,8 +5593,9 @@ NhlErrorTypes wrf_avo_W( void )
  * Return variable
  */
   void *av;
-  double *tmp_av;
-  int att_id, *dsizes_av;
+  double *tmp_av = NULL;
+  int att_id;
+  ng_size_t *dsizes_av;
   NclBasicDataTypes type_av;
   NclObjClass type_obj_av;
   NclQuark *description, *units;
@@ -5358,15 +5604,16 @@ NhlErrorTypes wrf_avo_W( void )
 /*
  * Various
  */
-  int nx, ny, nz, nxp1, nyp1, ret;
-  int nznynxp1, nznyp1nx, nznynx, nynxp1, nyp1nx, nynx;
-  int i, size_av, size_leftmost;
-  int index_u, index_v, index_msfu, index_msfv, index_msft, index_av;
+  ng_size_t nx, ny, nz, nxp1, nyp1;
+  ng_size_t nznynxp1, nznyp1nx, nznynx, nynxp1, nyp1nx, nynx;
+  ng_size_t i, size_av, size_leftmost;
+  ng_size_t index_u, index_v, index_msfu, index_msfv, index_msft, index_av;
+  int inx, iny, inz, inxp1, inyp1;
 
 /*
  * Variables for returning the output array with dimension names attached.
  */
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -5626,10 +5873,24 @@ NhlErrorTypes wrf_avo_W( void )
   nznyp1nx = nz * nyp1nx;
 
 /*
+ * Test dimension sizes.
+ */
+    if((nxp1 > INT_MAX) || (nyp1 > INT_MAX) || (nz > INT_MAX) || 
+       (nx > INT_MAX) ||(ny > INT_MAX)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: one or more dimension sizes is greater than INT_MAX");
+      return(NhlFATAL);
+    }
+    inx = (int) nx;
+    iny = (int) ny;
+    inz = (int) nz;
+    inxp1 = (int) nxp1;
+    inyp1 = (int) nyp1;
+
+/*
  * Calculate size of leftmost dimensions, and set
  * dimension sizes for output array.
  */
-  dsizes_av = (int*)calloc(ndims_u,sizeof(int));  
+  dsizes_av = (ng_size_t*)calloc(ndims_u,sizeof(ng_size_t));  
   if( dsizes_av == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -5851,9 +6112,8 @@ NhlErrorTypes wrf_avo_W( void )
 
     NGCALLF(dcomputeabsvort,DCOMPUTEABSVORT)(tmp_av, tmp_u, tmp_v, tmp_msfu,
                                              tmp_msfv, tmp_msft, tmp_cor,
-                                             tmp_dx, tmp_dy, &nx, &ny, &nz,
-                                             &nxp1, &nyp1);
-
+                                             tmp_dx, tmp_dy, &inx, &iny, &inz,
+                                             &inxp1, &inyp1);
     if(type_av != NCL_double) {
       coerce_output_float_only(av,tmp_av,nznynx,index_av);
     }
@@ -5895,6 +6155,7 @@ NhlErrorTypes wrf_avo_W( void )
                             type_obj_av
                             );
 
+  NclFree(dsizes_av);
 /*
  * Set up some attributes ("description" and "units") to return.
  */
@@ -5902,11 +6163,13 @@ NhlErrorTypes wrf_avo_W( void )
   strcpy(cdescription,"Absolute Vorticity");
   description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
+  free(cdescription);
 
   cunits       = (char *)calloc(9,sizeof(char));
   strcpy(cunits,"10-5 s-1");
   units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *units       = NrmStringToQuark(cunits);
+  free(cunits);
 
 /*
  * Set up attributes to return.
@@ -5972,6 +6235,8 @@ NhlErrorTypes wrf_avo_W( void )
 /*
  * Return output grid and attributes to NCL.
  */
+  NclFree(dim_info);
+  NclFree(dim_info_v);
   return_data.kind = NclStk_VAR;
   return_data.u.data_var = tmp_var;
   _NclPlaceReturn(return_data);
@@ -5988,51 +6253,55 @@ NhlErrorTypes wrf_helicity_W( void )
  * Argument # 0
  */
   void *u;
-  double *tmp_u;
-  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
+  double *tmp_u = NULL;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_u;
 
 /*
  * Argument # 1
  */
   void *v;
-  double *tmp_v;
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+  double *tmp_v = NULL;
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_v;
 
 /*
  * Argument # 2
  */
   void *z;
-  double *tmp_z;
-  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
+  double *tmp_z = NULL;
+  int ndims_z;
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_z;
 
 /*
  * Argument # 3
  */
   void *ter;
-  double *tmp_ter;
-  int ndims_ter, dsizes_ter[NCL_MAX_DIMENSIONS];
+  double *tmp_ter = NULL;
+  int ndims_ter;
+  ng_size_t dsizes_ter[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_ter;
 
 /*
  * Argument # 4
  */
   void *top;
-  double *tmp_top;
+  double *tmp_top = NULL;
   NclBasicDataTypes type_top;
 
 /*
  * Variable for getting/setting dimension name info.
  */
-  NclDimRec *dim_info, *dim_info_v;
+  NclDimRec *dim_info;
 
 /*
  * Return variable
  */
   void *sreh;
-  double *tmp_sreh;
+  double *tmp_sreh = NULL;
   int att_id;
   NclBasicDataTypes type_sreh;
   NclObjClass type_obj_sreh;
@@ -6042,13 +6311,13 @@ NhlErrorTypes wrf_helicity_W( void )
 /*
  * Various
  */
-  int i, miy, mjx, mkzh, mxy, mxyz;
-  int size_sreh, size_leftmost, index_u, index_ter;
-
+  ng_size_t i, miy, mjx, mkzh, mxy, mxyz;
+  ng_size_t size_sreh, size_leftmost, index_u, index_ter;
+  int imiy, imjx, imkzh;
 /*
  * Variables for returning the output array with dimension names attached.
  */
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -6175,6 +6444,14 @@ NhlErrorTypes wrf_helicity_W( void )
 
   mxy  = mjx * miy;
   mxyz = mxy * mkzh;
+
+  if((miy > INT_MAX) || (mjx > INT_MAX) || (mkzh > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: one or more dimension sizes is greater than INT_MAX");
+      return(NhlFATAL);
+  }
+  imiy = (int) miy;
+  imjx = (int) mjx;
+  imkzh = (int) mkzh;
 
 /*
  * Calculate size of leftmost dimensions.
@@ -6326,8 +6603,7 @@ NhlErrorTypes wrf_helicity_W( void )
     if(type_sreh == NCL_double) tmp_sreh = &((double*)sreh)[index_ter];
 
     NGCALLF(dcalrelhl,DCALRELHL)(tmp_u, tmp_v, tmp_z, tmp_ter, tmp_top,
-                                 tmp_sreh, &miy, &mjx, &mkzh);
-
+                                 tmp_sreh, &imiy, &imjx, &imkzh);
     if(type_sreh != NCL_double) {
       coerce_output_float_only(sreh,tmp_sreh,mxy,index_ter);
     }
@@ -6343,6 +6619,7 @@ NhlErrorTypes wrf_helicity_W( void )
   if(type_z    != NCL_double) NclFree(tmp_z);
   if(type_ter  != NCL_double) NclFree(tmp_ter);
   if(type_sreh != NCL_double) NclFree(tmp_sreh);
+  if(type_top != NCL_double) NclFree(tmp_top);
 
 /*
  * Set up return value.
@@ -6368,11 +6645,13 @@ NhlErrorTypes wrf_helicity_W( void )
   strcpy(cdescription,"Storm Relative Helicity");
   description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
+  free(cdescription);
 
   cunits       = (char *)calloc(8,sizeof(char));
   strcpy(cunits,"m-2/s-2");
   units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *units       = NrmStringToQuark(cunits);
+  free(cunits);
 
 /*
  * Set up attributes to return.
@@ -6434,6 +6713,7 @@ NhlErrorTypes wrf_helicity_W( void )
                           NULL,
                           TEMPORARY
                           );
+  NclFree(dim_info);
 
 /*
  * Return output grid and attributes to NCL.
@@ -6456,54 +6736,59 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
  * Argument # 0
  */
   void *zp;
-  double *tmp_zp;
-  int ndims_zp, dsizes_zp[NCL_MAX_DIMENSIONS];
+  double *tmp_zp = NULL;
+  int ndims_zp;
+  ng_size_t dsizes_zp[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_zp;
 
 /*
  * Argument # 1
  */
   void *mapfct;
-  double *tmp_mapfct;
-  int ndims_mapfct, dsizes_mapfct[NCL_MAX_DIMENSIONS];
+  double *tmp_mapfct = NULL;
+  int ndims_mapfct;
+  ng_size_t dsizes_mapfct[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_mapfct;
 
 /*
  * Argument # 2
  */
   void *dx;
-  double *tmp_dx;
+  double *tmp_dx = NULL;
   NclBasicDataTypes type_dx;
 
 /*
  * Argument # 3
  */
   void *dy;
-  double *tmp_dy;
+  double *tmp_dy = NULL;
   NclBasicDataTypes type_dy;
 
 /*
  * Argument # 4
  */
   void *us;
-  double *tmp_us;
-  int ndims_us, dsizes_us[NCL_MAX_DIMENSIONS];
+  double *tmp_us = NULL;
+  int ndims_us;
+  ng_size_t dsizes_us[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_us;
 
 /*
  * Argument # 5
  */
   void *vs;
-  double *tmp_vs;
-  int ndims_vs, dsizes_vs[NCL_MAX_DIMENSIONS];
+  double *tmp_vs = NULL;
+  int ndims_vs;
+  ng_size_t dsizes_vs[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_vs;
 
 /*
  * Argument # 6
  */
   void *w;
-  double *tmp_w;
-  int ndims_w, dsizes_w[NCL_MAX_DIMENSIONS];
+  double *tmp_w = NULL;
+  int ndims_w;
+  ng_size_t dsizes_w[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_w;
 
 /*
@@ -6514,10 +6799,12 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
 /*
  * Possible attributes.
  */
-  void *uhmnhgt, *uhmxhgt;
+  void *uhmnhgt = NULL;
+  void *uhmxhgt = NULL;
   double *tmp_uhmnhgt, *tmp_uhmxhgt;
   logical set_uhmnhgt, set_uhmxhgt;
-  NclBasicDataTypes type_uhmnhgt, type_uhmxhgt;
+  NclBasicDataTypes type_uhmnhgt = NCL_none;
+  NclBasicDataTypes type_uhmxhgt = NCL_none;
 
 /*
  * Variables for retrieving attributes from "opt".
@@ -6529,14 +6816,16 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
 /*
  * Variable for getting/setting dimension name info.
  */
-  NclDimRec *dim_info, *dim_info_us;
+  NclDimRec *dim_info = NULL;
+  NclDimRec *dim_info_us;
 
 /*
  * Return variable
  */
   void *uh;
-  double *tmp_uh;
-  int ndims_uh, *dsizes_uh;
+  double *tmp_uh = NULL;
+  int ndims_uh;
+  ng_size_t *dsizes_uh;
   NclBasicDataTypes type_uh;
   NclObjClass type_obj_uh;
   int att_id;
@@ -6547,15 +6836,16 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
 /*
  * Various
  */
-  int nx, ny, nzp1, nzp1nynx, nynx, nz, nznynx;
-  int index_zp, index_uh, index_us;
+  ng_size_t nx, ny, nzp1, nzp1nynx, nynx, nz, nznynx;
+  ng_size_t index_zp, index_uh, index_us;
   double *tem1, *tem2;
-  int i, ndims_leftmost, size_leftmost, size_output, ret;
+  ng_size_t i, ndims_leftmost, size_leftmost, size_output;
+  int inx, iny, inz, inzp1;
 
 /*
  * Variables for returning the output array with dimension names attached.
  */
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -6644,6 +6934,18 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
   }
   nz = dsizes_us[ndims_us-3];
   nznynx = nz * nynx;
+
+/*
+ * Test dimension sizes.
+ */
+  if((nx > INT_MAX) || (ny > INT_MAX) || (nzp1 > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inz = (int) nz;
+  inzp1 = (int) nzp1;
 
 /*
  * Get argument # 3
@@ -6844,7 +7146,7 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
  * 2D array and we'll coerce the values in the loop below along with
  * everybody else.
  */
-  if(ndims_mapfct = 2) {
+  if(ndims_mapfct == 2) {
     tmp_mapfct = coerce_input_double(mapfct,type_mapfct,nynx,0,NULL,NULL);
   }
   else {
@@ -6942,7 +7244,7 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
  * Allocate space for output dimension sizes and set them.
  */
   ndims_uh = ndims_leftmost + 2;
-  dsizes_uh = (int*)calloc(ndims_uh,sizeof(int));  
+  dsizes_uh = (ng_size_t*)calloc(ndims_uh,sizeof(ng_size_t));  
   if( dsizes_uh == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -7042,10 +7344,9 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(dcalcuh,DCALCUH)(&nx, &ny, &nz, &nzp1, tmp_zp, tmp_mapfct, 
+    NGCALLF(dcalcuh,DCALCUH)(&inx, &iny, &inz, &inzp1, tmp_zp, tmp_mapfct, 
                              tmp_dx, tmp_dy, tmp_uhmnhgt, tmp_uhmxhgt, 
                              tmp_us, tmp_vs, tmp_w, tmp_uh, tem1, tem2);
-
 /*
  * Coerce output back to float if necessary.
  */
@@ -7068,8 +7369,10 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
   if(type_vs != NCL_double)      NclFree(tmp_vs);
   if(type_w != NCL_double)       NclFree(tmp_w);
   if(type_uh != NCL_double)      NclFree(tmp_uh);
-  if(type_uhmnhgt != NCL_double) NclFree(tmp_uhmnhgt);
-  if(type_uhmxhgt != NCL_double) NclFree(tmp_uhmxhgt);
+  if(type_uhmnhgt != NCL_double || ! set_uhmnhgt) NclFree(tmp_uhmnhgt);
+  if(type_uhmxhgt != NCL_double || ! set_uhmxhgt) NclFree(tmp_uhmxhgt);
+  NclFree(tem1);
+  NclFree(tem2);
 
 /*
  * Set up return value.
@@ -7088,6 +7391,7 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
                             type_obj_uh
                             );
 
+  NclFree(dsizes_uh);
 /*
  * Set up some attributes ("description" and "units") to return.
  */
@@ -7095,11 +7399,13 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
   strcpy(cdescription,"Updraft Helicity");
   description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
+  free(cdescription);
 
   cunits       = (char *)calloc(8,sizeof(char));
   strcpy(cunits,"m-2/s-2");
   units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *units       = NrmStringToQuark(cunits);
+  free(cunits);
 
 /*
  * Set up attributes to return.
@@ -7161,6 +7467,8 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
                           NULL,
                           TEMPORARY
                           );
+  NclFree(dim_info);
+  NclFree(dim_info_us);
 
 /*
  * Return output grid and attributes to NCL.
@@ -7181,15 +7489,17 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
  * Argument # 0
  */
   void *lon;
-  double *tmp_lon;
-  int ndims_lon, dsizes_lon[NCL_MAX_DIMENSIONS];
+  double *tmp_lon = NULL;
+  int ndims_lon;
+  ng_size_t dsizes_lon[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_lon;
 /*
  * Argument # 1
  */
   void *lat;
-  double *tmp_lat;
-  int ndims_lat, dsizes_lat[NCL_MAX_DIMENSIONS];
+  double *tmp_lat = NULL;
+  int ndims_lat;
+  ng_size_t dsizes_lat[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_lat;
 
 /*
@@ -7208,16 +7518,37 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
  * Variables that can be set via attributes.
  */
   int map_proj;
-  void *truelat1, *truelat2, *stand_lon, *ref_lat, *ref_lon;
-  void *pole_lat, *pole_lon, *knowni, *knownj, *dx, *dy, *latinc, *loninc;
+  void *truelat1 = NULL;
+  void *truelat2 = NULL;
+  void *stand_lon = NULL;
+  void *ref_lat = NULL;
+  void *ref_lon = NULL;
+  void *pole_lat = NULL;
+  void *pole_lon = NULL;
+  void *knowni = NULL;
+  void *knownj = NULL;
+  void *dx = NULL;
+  void *dy = NULL;
+  void *latinc = NULL;
+  void *loninc = NULL;
 
   double *tmp_truelat1, *tmp_truelat2, *tmp_stand_lon;
   double *tmp_ref_lat, *tmp_ref_lon, *tmp_pole_lat, *tmp_pole_lon;
   double *tmp_knowni, *tmp_knownj, *tmp_dx, *tmp_dy, *tmp_latinc, *tmp_loninc;
 
-  NclBasicDataTypes type_truelat1, type_truelat2, type_stand_lon, type_ref_lat;
-  NclBasicDataTypes type_ref_lon, type_pole_lat, type_pole_lon, type_knowni;
-  NclBasicDataTypes type_knownj, type_dx, type_dy, type_latinc, type_loninc;
+  NclBasicDataTypes type_truelat1 = NCL_none;
+  NclBasicDataTypes type_truelat2 = NCL_none;
+  NclBasicDataTypes type_stand_lon = NCL_none;
+  NclBasicDataTypes type_ref_lat = NCL_none;
+  NclBasicDataTypes type_ref_lon = NCL_none;
+  NclBasicDataTypes type_pole_lat = NCL_none;
+  NclBasicDataTypes type_pole_lon = NCL_none;
+  NclBasicDataTypes type_knowni = NCL_none;
+  NclBasicDataTypes type_knownj = NCL_none;
+  NclBasicDataTypes type_dx = NCL_none;
+  NclBasicDataTypes type_dy = NCL_none;
+  NclBasicDataTypes type_latinc = NCL_none;
+  NclBasicDataTypes type_loninc = NCL_none;
 
   logical set_map_proj, set_truelat1, set_truelat2, set_stand_lon, set_ref_lat;
   logical set_ref_lon, set_pole_lat, set_pole_lon,  set_knowni, set_knownj;
@@ -7228,15 +7559,14 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
  */
   void *loc;
   double *tmp_loc;
-  int ndims_loc, *dsizes_loc;
+  int ndims_loc;
+  ng_size_t *dsizes_loc;
   NclBasicDataTypes type_loc;
   NclObjClass type_obj_loc;
 /*
  * Variables for returning the output array with attributes attached.
  */
-  int att_id;
-  int dsizes[1];
-  NclMultiDValData att_md, return_md;
+  NclMultiDValData return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
@@ -7644,7 +7974,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
   else {
     ndims_loc = ndims_lat + 1;
   }
-  dsizes_loc = (int*)calloc(ndims_loc,sizeof(int));  
+  dsizes_loc = (ng_size_t*)calloc(ndims_loc,sizeof(ng_size_t));  
   if( dsizes_loc == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -7759,6 +8089,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
                           );
 
   NclFree(dsizes_loc);
+  NclFree(dim_info);
 
 /*
  * Return output grid and attributes to NCL.
@@ -7779,16 +8110,18 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
  * Argument # 0
  */
   void *iloc;
-  double *tmp_iloc;
-  int ndims_iloc, dsizes_iloc[NCL_MAX_DIMENSIONS];
+  double *tmp_iloc = NULL;
+  int ndims_iloc;
+  ng_size_t dsizes_iloc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_iloc;
 
 /*
  * Argument # 1
  */
   void *jloc;
-  double *tmp_jloc;
-  int ndims_jloc, dsizes_jloc[NCL_MAX_DIMENSIONS];
+  double *tmp_jloc = NULL;
+  int ndims_jloc;
+  ng_size_t dsizes_jloc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_jloc;
 
 /*
@@ -7807,16 +8140,47 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
  * Variables that can be set via attributes.
  */
   int map_proj;
-  void *truelat1, *truelat2, *stand_lon, *ref_lat, *ref_lon;
-  void *pole_lat, *pole_lon, *knowni, *knownj, *dx, *dy, *latinc, *loninc;
+  void *truelat1 = NULL;
+  void *truelat2 = NULL;
+  void *stand_lon = NULL;
+  void *ref_lat = NULL;
+  void *ref_lon = NULL;
+  void *pole_lat = NULL;
+  void *pole_lon = NULL;
+  void *knowni = NULL;
+  void *knownj = NULL;
+  void *dx = NULL;
+  void *dy = NULL;
+  void *latinc = NULL;
+  void *loninc = NULL;
 
-  double *tmp_truelat1, *tmp_truelat2, *tmp_stand_lon;
-  double *tmp_ref_lat, *tmp_ref_lon, *tmp_pole_lat, *tmp_pole_lon;
-  double *tmp_knowni, *tmp_knownj, *tmp_dx, *tmp_dy, *tmp_latinc, *tmp_loninc;
+  double *tmp_truelat1 = NULL;
+  double *tmp_truelat2 = NULL;
+  double *tmp_stand_lon = NULL;
+  double *tmp_ref_lat = NULL;
+  double *tmp_ref_lon = NULL;
+  double *tmp_pole_lat = NULL;
+  double *tmp_pole_lon = NULL;
+  double *tmp_knowni = NULL;
+  double *tmp_knownj = NULL;
+  double *tmp_dx = NULL;
+  double *tmp_dy = NULL;
+  double *tmp_latinc = NULL;
+  double *tmp_loninc = NULL;
 
-  NclBasicDataTypes type_truelat1, type_truelat2, type_stand_lon, type_ref_lat;
-  NclBasicDataTypes type_ref_lon, type_pole_lat, type_pole_lon, type_knowni;
-  NclBasicDataTypes type_knownj, type_dx, type_dy, type_latinc, type_loninc;
+  NclBasicDataTypes type_truelat1 = NCL_none;
+  NclBasicDataTypes type_truelat2 = NCL_none;
+  NclBasicDataTypes type_stand_lon = NCL_none;
+  NclBasicDataTypes type_ref_lat = NCL_none;
+  NclBasicDataTypes type_ref_lon = NCL_none;
+  NclBasicDataTypes type_pole_lat = NCL_none;
+  NclBasicDataTypes type_pole_lon = NCL_none;
+  NclBasicDataTypes type_knowni = NCL_none;
+  NclBasicDataTypes type_knownj = NCL_none;
+  NclBasicDataTypes type_dx = NCL_none;
+  NclBasicDataTypes type_dy = NCL_none;
+  NclBasicDataTypes type_latinc = NCL_none;
+  NclBasicDataTypes type_loninc = NCL_none;
 
   logical set_map_proj, set_truelat1, set_truelat2, set_stand_lon, set_ref_lat;
   logical set_ref_lon, set_pole_lat, set_pole_lon,  set_knowni, set_knownj;
@@ -7827,15 +8191,14 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
  */
   void *loc;
   double *tmp_loc;
-  int ndims_loc, *dsizes_loc;
+  int ndims_loc;
+  ng_size_t *dsizes_loc;
   NclBasicDataTypes type_loc;
   NclObjClass type_obj_loc;
 /*
  * Variables for returning the output array with attributes attached.
  */
-  int att_id;
-  int dsizes[1];
-  NclMultiDValData att_md, return_md;
+  NclMultiDValData return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
@@ -8243,7 +8606,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
   else {
     ndims_loc = ndims_iloc + 1;
   }
-  dsizes_loc = (int*)calloc(ndims_loc,sizeof(int));  
+  dsizes_loc = (ng_size_t*)calloc(ndims_loc,sizeof(ng_size_t));  
   if( dsizes_loc == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -8358,6 +8721,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
                           );
 
   NclFree(dsizes_loc);
+  NclFree(dim_info);
 
 /*
  * Return output grid and attributes to NCL.
@@ -8391,12 +8755,23 @@ NhlErrorTypes wrf_cape_3d_W( void )
  */
   void *p, *t, *q, *z, *zsfc, *psfc;
   logical *ter_follow;
-  double *tmp_p, *tmp_t, *tmp_q, *tmp_z, *tmp_zsfc, *tmp_psfc;
-  double *tmp_p_orig, *tmp_t_orig, *tmp_q_orig, *tmp_z_orig;
+  double *tmp_p = NULL;
+  double *tmp_t = NULL;
+  double *tmp_q = NULL;
+  double *tmp_z = NULL;
+  double *tmp_zsfc = NULL;
+  double *tmp_psfc = NULL;
+  double *tmp_p_orig = NULL;
+  double *tmp_t_orig = NULL;
+  double *tmp_q_orig = NULL;
+  double *tmp_z_orig = NULL;
   int ndims_p, ndims_t, ndims_q, ndims_z, ndims_zsfc, ndims_psfc;
-  int dsizes_p[NCL_MAX_DIMENSIONS], dsizes_t[NCL_MAX_DIMENSIONS];
-  int dsizes_q[NCL_MAX_DIMENSIONS], dsizes_z[NCL_MAX_DIMENSIONS];
-  int dsizes_zsfc[NCL_MAX_DIMENSIONS], dsizes_psfc[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_t[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_zsfc[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_psfc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p, type_t, type_q, type_z, type_zsfc, type_psfc;
 
 /*
@@ -8407,7 +8782,8 @@ NhlErrorTypes wrf_cape_3d_W( void )
   double *tmp_cape, *tmp_cin;
   NclBasicDataTypes type_cape;
   NclObjClass type_obj_cape;
-  int ndims_cape, *dsizes_cape;
+  int ndims_cape;
+  ng_size_t *dsizes_cape;
 /*
  * File input variables.
  */
@@ -8417,23 +8793,31 @@ NhlErrorTypes wrf_cape_3d_W( void )
 /*
  * Variable for getting/setting dimension name info.
  */
-  NclDimRec *dim_info, *dim_info_t;
+  NclDimRec *dim_info = NULL;
+  NclDimRec *dim_info_t;
 
 /*
  * Variables for returning the output array with attributes and/or
  * dimension names attached.
  */
-  int att_id;
-  int dsizes[1];
-  NclMultiDValData att_md, return_md;
+  NclMultiDValData return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
  * Declare various variables for random purposes.
  */
-  int i, miy, mjx, mkzh, ntime, nz, size_cape, size_output, size_zsfc;
-  int i3dflag=1, scalar_zsfc, index_cape, index_zsfc, index_cin, iter;
+  ng_size_t i;
+  ng_size_t miy = 0;
+  ng_size_t mjx = 0;
+  ng_size_t mkzh = 0;
+  ng_size_t ntime = 0;
+  ng_size_t nz = 0;
+  ng_size_t size_cape, size_output, size_zsfc;
+  int i3dflag=1, scalar_zsfc;
+  ng_size_t index_cape, index_zsfc, index_cin;
+  int iter;
   logical flip;
+  int imiy, imjx, imkzh;
 
 /*
  * The default is to use $NCARG_ROOT/lib/ncarg/data/asc/psadilookup.dat
@@ -8616,6 +9000,17 @@ NhlErrorTypes wrf_cape_3d_W( void )
   }
 
 /*
+ * Test input dimension sizes.
+ */
+  if((miy > INT_MAX) || (mjx > INT_MAX) || (mkzh > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imiy = (int) miy;
+  imjx = (int) mjx;
+  imkzh = (int) mkzh;
+
+/*
  * Check some more dimension sizes.
  */
   if(ndims_p == 5) {
@@ -8652,7 +9047,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
  *       output array: (2,lev)
  */
   ndims_cape = ndims_p+1;
-  dsizes_cape = (int *)calloc(ndims_cape,sizeof(int));
+  dsizes_cape = (ng_size_t *)calloc(ndims_cape,sizeof(ng_size_t));
   if(dsizes_cape == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for array dimensionality");
     return(NhlFATAL);
@@ -8872,8 +9267,9 @@ NhlErrorTypes wrf_cape_3d_W( void )
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
                                      tmp_psfc, tmp_cape_orig, tmp_cin_orig,
-                                     &miy, &mjx, &mkzh, &i3dflag, &iter,
+                                     &imiy, &imjx, &imkzh, &i3dflag, &iter,
                                      psa_file,strlen(psa_file));
+
 /*
  * If we flipped arrays before going into the Fortran routine, we need
  * to flip the output values as well.
@@ -8972,6 +9368,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
 
   NclFree(dsizes_cape);
   if(dim_info   != NULL) NclFree(dim_info);
+  NclFree(dim_info_t);
 
 /*
  * Return output grid and attributes to NCL.
@@ -9006,12 +9403,23 @@ NhlErrorTypes wrf_cape_2d_W( void )
  */
   void *p, *t, *q, *z, *zsfc, *psfc;
   logical *ter_follow;
-  double *tmp_p, *tmp_t, *tmp_q, *tmp_z, *tmp_zsfc, *tmp_psfc;
-  double *tmp_p_orig, *tmp_t_orig, *tmp_q_orig, *tmp_z_orig;
+  double *tmp_p = NULL;
+  double *tmp_t = NULL;
+  double *tmp_q = NULL;
+  double *tmp_z = NULL;
+  double *tmp_zsfc = NULL;
+  double *tmp_psfc = NULL;
+  double *tmp_p_orig = NULL;
+  double *tmp_t_orig = NULL;
+  double *tmp_q_orig = NULL;
+  double *tmp_z_orig = NULL;
   int ndims_p, ndims_t, ndims_q, ndims_z, ndims_zsfc, ndims_psfc;
-  int dsizes_p[NCL_MAX_DIMENSIONS], dsizes_t[NCL_MAX_DIMENSIONS];
-  int dsizes_q[NCL_MAX_DIMENSIONS], dsizes_z[NCL_MAX_DIMENSIONS];
-  int dsizes_zsfc[NCL_MAX_DIMENSIONS], dsizes_psfc[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_t[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_zsfc[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_psfc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p, type_t, type_q, type_z, type_zsfc, type_psfc;
 
 /*
@@ -9021,7 +9429,8 @@ NhlErrorTypes wrf_cape_2d_W( void )
   double *tmp_cape, *tmp_cin;
   NclBasicDataTypes type_cape;
   NclObjClass type_obj_cape;
-  int ndims_cape, *dsizes_cape;
+  int ndims_cape = 0;
+  ng_size_t *dsizes_cape;
 /*
  * File input variables.
  */
@@ -9031,24 +9440,34 @@ NhlErrorTypes wrf_cape_2d_W( void )
 /*
  * Variable for getting/setting dimension name info.
  */
-  NclDimRec *dim_info, *dim_info_t;
+  NclDimRec *dim_info = NULL;
+  NclDimRec *dim_info_t;
 
 /*
  * Variables for returning the output array with attributes and/or
  * dimension names attached.
  */
-  int att_id;
-  int dsizes[1];
-  NclMultiDValData att_md, return_md;
+  NclMultiDValData return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
  * Declare various variables for random purposes.
  */
-  int i, miy, mjx, mkzh, ntime, nz, size_cape, size_output, size_zsfc;
-  int size_left_zsfc, i3dflag=0, scalar_zsfc, index_cape, index_zsfc;
-  int index_output_cape, index_output_cin, index_output_lcl;
-  int index_output_lfc, mkzh0_index, mkzh1_index, mkzh2_index, iter;
+  ng_size_t i;
+  ng_size_t miy = 0;
+  ng_size_t mjx = 0;
+  ng_size_t mkzh = 0;
+  ng_size_t ntime = 0;
+  ng_size_t nz = 0;
+  ng_size_t size_cape, size_output, size_zsfc;
+  ng_size_t size_left_zsfc;
+  ng_size_t index_cape, index_zsfc;
+  ng_size_t index_output_cape, index_output_cin, index_output_lcl;
+  ng_size_t index_output_lfc, mkzh0_index, mkzh1_index, mkzh2_index;
+  int imiy, imjx, imkzh;
+
+  int i3dflag=0;
+  int iter;
   logical flip;
 
 /*
@@ -9255,6 +9674,18 @@ NhlErrorTypes wrf_cape_2d_W( void )
   }
 
 /*
+ * Test input dimension sizes.
+ */
+  if((miy > INT_MAX) || (mjx > INT_MAX) || (mkzh > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imiy = (int) miy;
+  imjx = (int) mjx;
+  imkzh = (int) mkzh;
+
+
+/*
  * Calculate size of output array. The output array size depends on
  * the size of p,t,q,z:
  *
@@ -9265,7 +9696,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
  *  - p,t,q,z (lev,lat,lon) and psfc,zsfc (lat,lon)
  *       output array: (4,lat,lon)
  */
-  dsizes_cape = (int *)calloc(ndims_cape,sizeof(int));
+  dsizes_cape = (ng_size_t *)calloc(ndims_cape,sizeof(ng_size_t));
   if(dsizes_cape == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for array dimensionality");
     return(NhlFATAL);
@@ -9499,7 +9930,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
                                      tmp_psfc, tmp_cape, tmp_cin,
-                                     &miy, &mjx, &mkzh, &i3dflag, &iter,
+                                     &imiy, &imjx, &imkzh, &i3dflag, &iter,
                                      psa_file,strlen(psa_file));
 /*
  * Even if we flipped arrays before going into the Fortran routine, do
@@ -9609,6 +10040,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
 
   NclFree(dsizes_cape);
   if(dim_info   != NULL) NclFree(dim_info);
+  NclFree(dim_info_t);
 
 /*
  * Return output grid and attributes to NCL.
@@ -9627,12 +10059,12 @@ NhlErrorTypes wrf_cape_2d_W( void )
  * array, then set the last two dimension names to
  * "south_north" x "west_east".
  */
-NclDimRec *get_wrf_dim_info(arg_num,num_args,ndims_arg,dsizes_arg)
-int arg_num, num_args, ndims_arg, *dsizes_arg;
+NclDimRec *get_wrf_dim_info(int arg_num,int num_args,int ndims_arg,ng_size_t *dsizes_arg)
 {
   NclDimRec *dim_info;
   int i, is_named;
 
+  /* this is now separately malloced */
   dim_info = get_dim_info(arg_num,num_args);
 
   is_named = 0;
@@ -9679,31 +10111,34 @@ NhlErrorTypes wrf_eth_W( void )
  * Argument # 0
  */
   void *qv;
-  double *tmp_qv;
-  int ndims_qv, dsizes_qv[NCL_MAX_DIMENSIONS];
+  double *tmp_qv = NULL;
+  int ndims_qv;
+  ng_size_t dsizes_qv[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_qv;
 
 /*
  * Argument # 1
  */
   void *t;
-  double *tmp_t;
-  int ndims_t, dsizes_t[NCL_MAX_DIMENSIONS];
+  double *tmp_t = NULL;
+  int ndims_t;
+  ng_size_t dsizes_t[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_t;
 
 /*
  * Argument # 2
  */
   void *p;
-  double *tmp_p;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
+  double *tmp_p = NULL;
+  int ndims_p;
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p;
 
 /*
  * Return variable
  */
   void *eth;
-  double *tmp_eth;
+  double *tmp_eth = NULL;
   NclBasicDataTypes type_eth;
   NclObjClass type_obj_eth;
   NclQuark *description, *units;
@@ -9712,7 +10147,8 @@ NhlErrorTypes wrf_eth_W( void )
 /*
  * Variables for returning the output array with dimension names attached.
  */
-  int att_id, dsizes[1];
+  int att_id;
+  ng_size_t dsizes[1];
   NclMultiDValData return_md, att_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -9726,7 +10162,7 @@ NhlErrorTypes wrf_eth_W( void )
  * Various
  */
   int btdim, sndim, wedim, nbtsnwe;
-  int index_eth, i, ndims_leftmost, size_leftmost, size_eth, ret;
+  ng_size_t index_eth, i, size_leftmost, size_eth;
 
 /*
  * Retrieve parameters.
@@ -9990,11 +10426,13 @@ NhlErrorTypes wrf_eth_W( void )
   strcpy(cdescription,"Equivalent Potential Temperature");
   description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
+  free(cdescription);
 
   cunits       = (char *)calloc(2,sizeof(char));
   strcpy(cunits,"K");
   units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *units       = NrmStringToQuark(cunits);
+  free(cunits);
 
 /*
  * Set up attributes to return.
@@ -10057,6 +10495,7 @@ NhlErrorTypes wrf_eth_W( void )
                           TEMPORARY
                           );
 
+  NclFree(dim_info);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -10081,26 +10520,31 @@ NhlErrorTypes wrf_bint_W( void )
  * Input array variables
  */
   void *data_in, *obsii, *obsjj;
-  double *tmp_data_in, *tmp_obsii, *tmp_obsjj;
+  double *tmp_data_in = NULL;
+  double *tmp_obsii = NULL;
+  double *tmp_obsjj = NULL;
+
   int *icrs, *jcrs;
   int ndims_data_in, ndims_obsii, ndims_obsjj;
-  int dsizes_data_in[NCL_MAX_DIMENSIONS]; 
-  int dsizes_obsii[NCL_MAX_DIMENSIONS], dsizes_obsjj[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_data_in[NCL_MAX_DIMENSIONS]; 
+  ng_size_t dsizes_obsii[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_obsjj[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_data_in, type_obsii, type_obsjj;
   
 /*
  * Output variable.
  */
   void *data_out;
-  double *tmp_data_out;
-  int *dsizes_data_out, size_data_out;
+  double *tmp_data_out = NULL;
+  ng_size_t *dsizes_data_out, size_data_out;
   NclBasicDataTypes type_data_out;
 /*
  * Various
  */
-  int i, nx, ny, nz, nobsicrs, nobsjcrs, size_leftmost, ret;
-  int nxyz, nobsij, nobsijz, index_data_in, index_data_out, index_nobsij;
-
+  int ret;
+  ng_size_t i, nx, ny, nz, nobsicrs, nobsjcrs, size_leftmost;
+  ng_size_t nxyz, nobsij, nobsijz, index_data_in, index_data_out, index_nobsij;
+  int inx, iny, inz, inobsicrs, inobsjcrs;
 /*
  * Retrieve parameters.
  *
@@ -10217,6 +10661,20 @@ NhlErrorTypes wrf_bint_W( void )
 
   size_data_out = size_leftmost * nobsijz;
 
+/*
+ * Test input dimension sizes.
+ */
+  if((nx > INT_MAX) || (ny > INT_MAX) || (nobsicrs > INT_MAX) || 
+     (nobsjcrs > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+    }
+    inx = (int) nx;
+    iny = (int) ny;
+    inz = (int) nz;
+    inobsicrs = (int) nobsicrs;
+    inobsjcrs = (int) nobsjcrs;
+
 /* 
  * Allocate space for coercing input arrays.  If the input data_in, obsii,
  * or obsjj are already double, then we don't need to allocate space for
@@ -10282,7 +10740,7 @@ NhlErrorTypes wrf_bint_W( void )
 /*
  * Create dimension sizes for output array.
  */
-  dsizes_data_out = (int*)calloc(ndims_data_in,sizeof(int));  
+  dsizes_data_out = (ng_size_t*)calloc(ndims_data_in,sizeof(ng_size_t));  
   if( dsizes_data_out == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -10338,8 +10796,7 @@ NhlErrorTypes wrf_bint_W( void )
  * Call Fortran routine.
  */
     NGCALLF(dbint3d,DBINT3D)(tmp_data_out,tmp_obsii,tmp_obsjj,tmp_data_in,
-                             &nx,&ny,&nz,&nobsicrs,&nobsjcrs,icrs,jcrs);
-
+                             &inx,&iny,&inz,&inobsicrs,&inobsjcrs,icrs,jcrs);
 /*
  * Coerce output back to float if necessary.
  */
@@ -10379,16 +10836,18 @@ NhlErrorTypes wrf_iclw_W( void )
  * Argument # 0
  */
   void *p;
-  double *tmp_p;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
+  double *tmp_p = NULL;
+  int ndims_p;
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p;
 
 /*
  * Argument # 1
  */
   void *qc;
-  double *tmp_qc;
-  int ndims_qc, dsizes_qc[NCL_MAX_DIMENSIONS];
+  double *tmp_qc = NULL;
+  int ndims_qc;
+  ng_size_t dsizes_qc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_qc;
 
 /*
@@ -10397,17 +10856,16 @@ NhlErrorTypes wrf_iclw_W( void )
   void *iclw;
   NclQuark *description, *units;
   char *cdescription, *cunits;
-  double *tmp_iclw;
-  int ndims_iclw, *dsizes_iclw;
-  int has_missing_iclw;
-  NclScalar missing_iclw;
+  double *tmp_iclw = NULL;
+  int ndims_iclw;
+  ng_size_t *dsizes_iclw;
   NclBasicDataTypes type_iclw;
   NclObjClass type_obj_iclw;
 /*
  * Variables for returning the output array with attributes attached.
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -10415,9 +10873,10 @@ NhlErrorTypes wrf_iclw_W( void )
 /*
  * Various
  */
-  int nz, ny, nx, nznynx, nynx;
-  int index_p, index_iclw;
-  int i, ndims_leftmost, size_leftmost, size_output;
+  ng_size_t nz, ny, nx, nznynx, nynx;
+  ng_size_t index_p, index_iclw;
+  ng_size_t i, ndims_leftmost, size_leftmost, size_output;
+  int inx, iny, inz;
 
 /*
  * Retrieve parameters.
@@ -10450,6 +10909,17 @@ NhlErrorTypes wrf_iclw_W( void )
   nx = dsizes_p[ndims_p-1];
   nynx   = ny * nx;
   nznynx = nz * nynx;
+
+/*
+ * Test dimension sizes.
+ */
+  if((nx > INT_MAX) || (ny > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_iclw: nx, ny and/or is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inz = (int) nz;
 
 /*
  * Get argument # 1
@@ -10561,7 +11031,7 @@ NhlErrorTypes wrf_iclw_W( void )
  * Allocate space for output dimension sizes and set them.
  */
   ndims_iclw = ndims_leftmost + 2;
-  dsizes_iclw = (int*)calloc(ndims_iclw,sizeof(int));  
+  dsizes_iclw = (ng_size_t*)calloc(ndims_iclw,sizeof(ng_size_t));  
   if( dsizes_iclw == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_iclw: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -10604,8 +11074,7 @@ NhlErrorTypes wrf_iclw_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(dcomputeiclw,DCOMPUTEICLW)(tmp_iclw, tmp_p, tmp_qc, &nx, &ny, &nz);
-
+    NGCALLF(dcomputeiclw,DCOMPUTEICLW)(tmp_iclw, tmp_p, tmp_qc, &inx, &iny, &inz);
 /*
  * Coerce output back to float if necessary.
  */
@@ -10634,6 +11103,8 @@ NhlErrorTypes wrf_iclw_W( void )
   units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
   *units       = NrmStringToQuark(cunits);
+  free(cdescription);
+  free(cunits);
 
 /*
  * Set up return value.
@@ -10731,9 +11202,9 @@ NhlErrorTypes wrf_iclw_W( void )
  * tmp_var = tmp_var > 0.0
  *
  */
-void var_zero(double *tmp_var, int n)
+void var_zero(double *tmp_var, ng_size_t n)
 {
-  int i;
+  ng_size_t i;
 
   for(i = 0; i < n; i++) {
     if(tmp_var[i] < 0.0) tmp_var[i] = 0.0;
@@ -10743,9 +11214,9 @@ void var_zero(double *tmp_var, int n)
 
 /* Converts from hPa to Pa. */
 
-void convert_to_hPa(double *pp, int np)
+void convert_to_hPa(double *pp, ng_size_t np)
 {
-  int i;
+  ng_size_t i;
   for(i = 0; i < np; i++) pp[i] *= 0.01;
 }
 
@@ -10755,9 +11226,9 @@ void convert_to_hPa(double *pp, int np)
  * leftmost dimension, given the size of the leftmost
  * dimension, and the product of the rightmost two dimensions.
  */
-void flip_it(double *tmp_from, double *tmp_to, int nz, int nynx)
+void flip_it(double *tmp_from, double *tmp_to, ng_size_t nz, ng_size_t nynx)
 {
-  int i, index_from, index_to, size_copy;
+  ng_size_t i, index_from, index_to, size_copy;
 
   size_copy = nynx*sizeof(double);
   for(i = 0; i < nz; i++) {

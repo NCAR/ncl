@@ -1,5 +1,5 @@
 /*
- *      $Id: BoundingBox.c,v 1.9 2001-01-23 23:58:54 dbrown Exp $
+ *      $Id: BoundingBox.c,v 1.9.4.1 2008-03-28 20:37:33 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -155,7 +155,8 @@ NhlErrorTypes NhlGetBB
 	}	
 	else if (NhlIsWorkstation(pid)) {
 		int *views;
-		int i,count;
+		int i;
+		ng_size_t count;
 		int grlist;
 		NhlErrorTypes ret = NhlNOERROR,subret;
 

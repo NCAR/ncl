@@ -28,6 +28,7 @@
 #include "NclDataDefs.h"
 #include "NclBuiltInSupport.h"
 #include "NclMdInc.h"
+#include "TypeSupport.h"
 
 
 

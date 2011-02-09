@@ -20,12 +20,15 @@ NhlErrorTypes specx_anal_W( void )
  */
   void *x, *pct;
   double *dx, *dpct;
-  int dsizes[1], nx, *iopt, *jave;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes[1];
+  ng_size_t nx;
+  int *iopt, *jave;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
   NclScalar missing_x, missing_dx;
   NclBasicDataTypes type_x, type_pct;
-  int lwork;
+  ng_size_t lwork;
   double scl, *work;
 /*
  * Output variables
@@ -45,7 +48,8 @@ NhlErrorTypes specx_anal_W( void )
 /*
  * Declare variables for random purposes.
  */
-  int i, j, l, nspcmx, nspc, total_size_x, ier;
+  ng_size_t i, nspcmx, nspc, total_size_x;
+  int ier;
 
 /*
  * Retrieve arguments.
@@ -214,8 +218,22 @@ NhlErrorTypes specx_anal_W( void )
  * Call the Fortran version of this routine.
  */
   scl = 2.0;
-  NGCALLF(dspecx,DSPECX)(dx,&nx,iopt,jave,dpct,&scl,work,&lwork,
-                         frq_tmp,spcx_tmp,&nspc,sinfo,&ier);
+  if((nx <= INT_MAX) &&
+     (lwork <= INT_MAX) &&
+     (nspc <= INT_MAX))
+  {
+      int inx = (int) nx;
+      int ilwork = (int) lwork;
+      int inspc = (int) nspc;
+      NGCALLF(dspecx,DSPECX)(dx,&inx,iopt,jave,dpct,&scl,work,&ilwork,
+                             frq_tmp,spcx_tmp,&inspc,sinfo,&ier);
+  }
+  else
+  {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: one or more input dimensions is greater than INT_MAX", nx);
+    return(NhlFATAL);
+  }
+
 
   if( ier > 700000 ) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"specx_anal: 'x' contains all constant values");
@@ -453,13 +471,16 @@ NhlErrorTypes specxy_anal_W( void )
  */
   void *x, *y, *pct;
   double *dx, *dy, *dpct;
-  int dsizes[1], nx, *iopt, *jave;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes[1], nx;
+  int *iopt, *jave;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   int has_missing_x, has_missing_y;
   NclScalar missing_x, missing_y, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y, type_pct;
-  int lwork;
+  ng_size_t lwork;
   double scl, *work;
 /*
  * Output variables
@@ -484,7 +505,8 @@ NhlErrorTypes specxy_anal_W( void )
 /*
  * Declare variables for random purposes.
  */
-  int i, j, l, nspc, nspcmx, total_size_x, total_size_y, ier;
+  ng_size_t i, nspc, nspcmx, total_size_x, total_size_y;
+  int ier;
 /*
  * Retrieve arguments.
  */
@@ -672,7 +694,7 @@ NhlErrorTypes specxy_anal_W( void )
         frq == NULL ||  spcx == NULL ||  spcy == NULL || cospc == NULL ||
       quspc == NULL || coher == NULL || phase == NULL || xvaro == NULL ||
       xlag1 == NULL ||xslope == NULL || yavei == NULL || yvari == NULL ||
-      yvaro == NULL || ylag1 == NULL | yslope == NULL ||  prob == NULL) {
+      yvaro == NULL || ylag1 == NULL ||yslope == NULL ||  prob == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: Unable to allocate memory for output variables");
     return(NhlFATAL);
   }
@@ -707,9 +729,22 @@ NhlErrorTypes specxy_anal_W( void )
  * Call the Fortran version of this routine.
  */
   scl = 2.0;
-  NGCALLF(dspecxy,DSPECXY)(dx,dy,&nx,iopt,jave,dpct,&scl,work,&lwork,
-                           frq_tmp,spcx_tmp,spcy_tmp,cospc_tmp,quspc_tmp,
-                           coher_tmp,phase_tmp,&nspc,sinfo,&ier);
+  if((nx <= INT_MAX) &&
+     (lwork <= INT_MAX) &&
+     (nspc <= INT_MAX))
+  {
+      int inx = (int) nx;
+      int ilwork = (int) lwork;
+      int inspc = (int) nspc;
+      NGCALLF(dspecxy,DSPECXY)(dx,dy,&inx,iopt,jave,dpct,&scl,work,&ilwork,
+                               frq_tmp,spcx_tmp,spcy_tmp,cospc_tmp,quspc_tmp,
+                               coher_tmp,phase_tmp,&inspc,sinfo,&ier);
+  }
+  else
+  {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: one or more input dimensions is greater than INT_MAX", nx);
+    return(NhlFATAL);
+  }
 
   if( ier > 700000 ) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"specxy_anal: 'x' and/or 'y' contains all constant values");

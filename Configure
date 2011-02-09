@@ -151,7 +151,9 @@ set buildcairo=`$makecmd CAIROSTUFF`
 echo -n "..."
 set buildgdal=`$makecmd GDALSTUFF`
 echo -n "..."
-set buildhdf=`$makecmd HDFSTUFF`
+set buildhdf4=`$makecmd HDF5STUFF`
+echo -n "..."
+set buildrasterhdf=`$makecmd RASTERHDFSTUFF`
 echo -n "..."
 set buildnetcdf4=`$makecmd NETCDF4STUFF`
 echo -n "..."
@@ -172,6 +174,8 @@ echo -n "..."
 # set buildpyngl=`$makecmd PYNGLSTUFF`
 # echo -n "..."
 set builddods=`$makecmd DODSSTUFF`
+echo -n "..."
+set buildgridspec=`$makecmd GRIDSPECSTUFF`
 echo -n "..."
 set ncargversion=`$makecmd NGVERS`
 echo -n "..."
@@ -245,8 +249,8 @@ if (-e ni) then
 	read in netCDF, HDF4, HDF-EOS2, HDF-EOS5, HDF5, GRIB 1/2, binary
 	and ASCII data.
 
-	It requires several external packages (like netCDF and HDF4),
-	and has several optional packages you can build in (UDUNITS2,
+	It requires some external packages (like netCDF),
+	and has several optional packages you can build in (HDF4, UDUNITS2,
 	Triangle, HDF-EOS2, HDF-EOS5, HDF5, and Vis5D functions).
 
 	NCL is a separate software package from NCAR Graphics. You
@@ -471,15 +475,18 @@ if (("$answer" != "") && ("$answer" != "$buildcairo")) then
 endif
 
 #
-# HDF. This is not optional if you are building NCL.
+# HDF4 is now optional for NCL. Nevertheless because it is also an option 
+# for the raster library, ask about it here prior to the NCL-only section. 
 #
 if ($?verbose_option) then
   cat <<"EOF"
 ======================================================================
 
-	If you answered yes to the "build NCL?" question, then you must
-	build the HDF libraries according to the NCL/NCAR Graphics
-	source code installation instructions at:
+	NCL can optionally provide read/write access to HDF4 and and 
+        read access to HDF-EOS2 files. If you answered yes to the 
+        "build NCL?" question, and you want HDF4 and/or HDF-EOS2 file
+        support then you must build the HDF libraries according to 
+        the NCL/NCAR Graphics source code installation instructions at:
 
 	http://www.ncl.ucar.edu/Download/build_from_src.shtml#HDF-4
 
@@ -497,31 +504,50 @@ endif
 
 if ("$buildncl" == "y" || "$buildncl" == "Y") then
   echo ""
-  echo "Informational note: since you are building NCL, you must build the"
-  echo "external HDF-4 libraries available from "
-  echo "http://www.hdfgroup.org/release4/obtain.html."
+  echo "Build HDF4 support (optional) into NCL? ($buildhdf4)"
+  echo "Informational note: HDF4 is no longer required to build NCL,"
+  echo "but it is a prerequisite if you need HDF-EOS2 support."
+  echo "(Requires external HDF-4 libraries available from "
+  echo "http://www.hdfgroup.org/release4/obtain.html)"
   echo "Please see the instructions at"
   echo "http://www.ncl.ucar.edu/Download/build_from_src.shtml#HDF-4"
   echo "to make sure your HDF software is built according to NCL requirements."
-else
-  echo ""
-  echo "Build HDF-4 support (optional) into raster library? ($buildhdf)"
-  echo "(Requires the external HDF-4 libraries available from http://www.hdfgroup.org/release4/obtain.html) "
-  echo "(Note: HDF-4 is required if you plan to build NCL HDF-5 is not.)"
   echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
   set answer="$<"
   if ("$answer" == "q") goto cleanup
-  if (("$answer" != "") && ("$answer" != "$buildhdf")) then
-  	set buildhdf = $answer
-  	set newbuildhdf
+  if (("$answer" != "") && ("$answer" != "$buildhdf4")) then
+      set buildhdf4 = $answer
+      set newbuildhdf4
+      set altered
+  endif
+  echo ""
+  echo "Also build HDF4 support (optional) into raster library? ($buildrasterhdf)"
+  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+  set answer="$<"
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$buildrasterhdf")) then
+      set buildrasterhdf = $answer
+      set newbuildrasterhdf
+      set altered
+  endif
+else
+  echo ""
+  echo "Build HDF4 support (optional) into raster library? ($buildrasterhdf)"
+  echo "(Requires the external HDF4 libraries available from http://www.hdfgroup.org/release4/obtain.html) "
+  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+  set answer="$<"
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$buildhdf4")) then
+    set buildrasterhdf = $answer
+    set newbuildrasterhdf
     set altered
   endif
 endif
-
 set hdfwithszip = "n"
-if (("$buildhdf" == "y") || ("$buildhdf" == "Y")) then
+if (("$buildhdf4" == "y") || ("$buildhdf4" == "Y") || \
+    ("$buildrasterhdf" == "y") || ("$buildrasterhdf" == "Y")) then
     echo ""
-    echo "Did you build HDF-4 with szip support? ($hdfwithszip)"
+    echo "Did you build HDF4 with szip support? ($hdfwithszip)"
     echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
     set answer="$<"
     if ("$answer" == "q") goto cleanup
@@ -677,6 +703,34 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
   endif
 
 #
+# GRIDSPEC
+#
+  if ($?verbose_option) then
+    cat <<"EOF"
+======================================================================
+
+	If you want to use the experimental interface to gridspec, you 
+	will need to link to the CF library. This library is now built 
+        as part of NetCDF V4.1 and later if '--with-libcf' is set.  
+
+	THIS LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
+
+======================================================================
+"EOF"
+  endif
+
+  echo ""
+  echo "Build experimental gridspec support (optional) into NCL? ($buildgridspec)"
+  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+  set answer="$<"
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$buildgridspec")) then
+      set buildgridspec = $answer
+      set newbuildgridspec
+      set altered
+  endif
+
+#
 # Udunits
 #
   if ($?verbose_option) then
@@ -753,7 +807,8 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
 	The hdfeos library supports the HDF-EOS2 data format, and NCL
 	has some capability to read these files in. In order to have
 	this functionality, you must have the HDF-EOS2 libraries
-	installed on your system.
+	installed on your system. You must also have answered yes to
+        including support for HDF4 in NCL.
 
 	THIS LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
 
@@ -764,7 +819,8 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
   echo ""
   echo "Build HDF-EOS2 support (optional) into NCL ($buildhdfeos)"
   echo "(Requires the external HDF-EOS2 libraries available from"
-  echo "http://newsroom.gsfc.nasa.gov/sdptoolkit/toolkit.html) "
+  echo "http://newsroom.gsfc.nasa.gov/sdptoolkit/toolkit.html. You"
+  echo "must also have included support for HDF4.) "
   echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
   set answer="$<"
   if ("$answer" == "q") goto cleanup
@@ -774,36 +830,6 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
         set altered
   endif
 
-#
-# HDF-EOS5
-#
-  if ($?verbose_option) then
-    cat <<"EOF"
-======================================================================
-
-	The hdfeos5 library supports the HDF-EOS5 data format, and NCL
-	has some capability to read these files in. In order to have
-	this functionality, you must have the HDF-EOS5 library
-	installed on your system. 
-
-	THIS LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
-
-======================================================================
-"EOF"
-  endif
-
-  echo ""
-  echo "Build HDF-EOS5 support (optional) into NCL ($buildhdfeos5)"
-  echo "(Requires the external HDF-EOS5 library available from"
-  echo "ftp://edhs1.gsfc.nasa.gov/pub) "
-  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
-  set answer="$<"
-  if ("$answer" == "q") goto cleanup
-  if (("$answer" != "") && ("$answer" != "$buildhdfeos5")) then
-  	set buildhdfeos5 = $answer
-  	set newbuildhdfeos5
-        set altered
-  endif
 
 #
 # HDF5
@@ -837,6 +863,37 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
   endif
 
 #
+# HDF-EOS5
+#
+  if ($?verbose_option) then
+    cat <<"EOF"
+======================================================================
+
+	The hdfeos5 library supports the HDF-EOS5 data format, and NCL
+	has some capability to read these files in. In order to have
+	this functionality, you must have the HDF-EOS5 library
+	installed on your system. 
+
+	THIS LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
+
+======================================================================
+"EOF"
+  endif
+
+  echo ""
+  echo "Build HDF-EOS5 support (optional) into NCL ($buildhdfeos5)"
+  echo "(Requires the external HDF-EOS5 library available from"
+  echo "ftp://edhs1.gsfc.nasa.gov/pub)"
+  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+  set answer="$<"
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$buildhdfeos5")) then
+  	set buildhdfeos5 = $answer
+  	set newbuildhdfeos5
+        set altered
+  endif
+
+#
 # GRIB2
 #
   if ($?verbose_option) then
@@ -865,9 +922,11 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
   	set newbuildgrib2
         set altered
   endif
+
 else
   set buildhdfeos  = "n"
   set buildhdfeos5 = "n"
+  set buildhdf4 = "n"
   set buildhdf5 = "n"
   set buildnetcdf4 = "n"
   set buildtriangle = "n"
@@ -875,6 +934,7 @@ else
   set buildgrib2 = "n"
   set buildv5d = "n"
   set builddods = "n"
+  set buildgridspec = "n"
   set netcdfwithdap = "n"
   set netcdflib = ""
   set newbuildhdfeos
@@ -886,6 +946,7 @@ else
   set newbuildgrib2
   set newbuildv5d
   set newbuilddods
+  set newbuildgridspec
   set altered
 endif
 
@@ -1190,14 +1251,28 @@ endif
 
 echo "" >> Site.local
 
-if ($?newbuildhdf) then
-	if ("$buildhdf" == "y") then
+if ($?newbuildrasterhdf) then
+	if ("$buildrasterhdf" == "y") then
 		echo "#define BuildRasterHDF 1" >> Site.local
 	else
 		echo "#define BuildRasterHDF 0" >> Site.local
-		echo "#define HDFlib" >> Site.local
+		if ($buildhdf4 != "y") then
+		    echo "#define HDFlib" >> Site.local
+	        endif
 	endif
 endif
+
+if ($?newbuildhdf4) then
+	if ("$buildhdf4" == "y") then
+		echo "#define BuildHDF4 1" >> Site.local
+	else
+		echo "#define BuildHDF4 0" >> Site.local
+		if ($buildrasterhdf != "y") then
+		    echo "#define HDFlib" >> Site.local
+	        endif
+	endif
+endif
+
 
 #
 # This is the old PNG stuff. Commented out for now.
@@ -1226,6 +1301,10 @@ endif
 
 if ($?newbuildgdal && "$buildgdal" == "y") then
 	echo "#define BuildGDAL 1" >> Site.local
+endif
+
+if ($?newbuildgridspec && "$buildgridspec" == "y") then
+	echo "#define BuildGRIDSPEC 1" >> Site.local
 endif
 
 if ($?newbuildtriangle) then

@@ -39,14 +39,17 @@
 #define G1BYTE(p,q,b) ((unsigned) p << q >> (SWORD - b))
 /* right justify b bits, located q bits from left of p.  */
 
-NGCALLF(gbytes,GBYTES)(p, u, q, b, s, n)
+extern void NGCALLF(gbyte,GBYTE)(long *p, long *u, long *q, long *b);
+extern void NGCALLF(sbyte,SBYTE)(long *p, long *u, long *q, long *b);
+
+void NGCALLF(gbytes,GBYTES)(p, u, q, b, s, n)
 	long           *p, *u, *q, *b, *s, *n;
 {
 	register long   i = 0, jp = 0;
 	long            jq = *q;
 	if (*n > 0) {
 		while (1) {
-			NGCALLF(gbyte,GBYTE)(p + jp, u + i, &jq, b);
+  		        NGCALLF(gbyte,GBYTE)(p + jp, u + i, &jq, b);
 			if (++i == *n)
 				break;
 			jq += *b + *s;
@@ -57,7 +60,7 @@ NGCALLF(gbytes,GBYTES)(p, u, q, b, s, n)
 }
 
 
-NGCALLF(sbytes,SBYTES)(p, u, q, b, s, n)
+void NGCALLF(sbytes,SBYTES)(p, u, q, b, s, n)
 	long           *p, *u, *q, *b, *s, *n;
 {
 	register long   i = 0, jp = 0;
@@ -75,7 +78,7 @@ NGCALLF(sbytes,SBYTES)(p, u, q, b, s, n)
 }
 
 
-NGCALLF(gbyte,GBYTE)(p, u, q, b)
+void NGCALLF(gbyte,GBYTE)(p, u, q, b)
 	long           *p, *u, *q, *b;
 {
 	register long   j, jq = *q, jb = *b, lb, qb;
@@ -99,7 +102,7 @@ NGCALLF(gbyte,GBYTE)(p, u, q, b)
 }
 
 
-NGCALLF(sbyte,SBYTE)(p, u, q, b)
+void NGCALLF(sbyte,SBYTE)(p, u, q, b)
 	long           *p, *u, *q, *b;
 {
 	register long  *t, jq = *q, jb = *b, qb;
@@ -128,7 +131,7 @@ NGCALLF(sbyte,SBYTE)(p, u, q, b)
 }
 
 
-NGCALLF(g8bits,G8BITS)(p, u, k, n)
+void NGCALLF(g8bits,G8BITS)(p, u, k, n)
 	long           *u, *k, *n;
 	char           *p;
 
@@ -145,7 +148,7 @@ NGCALLF(g8bits,G8BITS)(p, u, k, n)
 }
 
 
-NGCALLF(s8bits,S8BITS)(p, u, k, n)
+void NGCALLF(s8bits,S8BITS)(p, u, k, n)
 	char           *p, *u;
 	long           *k, *n;
 

@@ -17,12 +17,13 @@ extern "C" {
 #include "Machine.h"
 #include "NclFile.h"
 #include "NclVar.h"
-#include "NclList.h"
 #include "NclCoordVar.h"
+#include "NclHLUObj.h"
 #include "VarSupport.h"
 #include "DataSupport.h"
+#include "ListSupport.h"
+#include "HLUSupport.h"
 #include "NclMdInc.h"
-#include "NclHLUObj.h"
 #include "parser.h"
 #include "OpsList.h"
 #include "ApiRecords.h"
@@ -339,13 +340,13 @@ NhlErrorTypes _NclBuildArray
 	logical tmp;
 	void *value;
 	char *ptr;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	NclMultiDValData theobj,coerce_res = NULL;
 	NclStackEntry *data_ptr;
 	NclObjTypes result_type ;
 	NclObjTypes obj_type ;
 	int must_be_numeric = 1,i,j;
-	int ndims;
+	ng_size_t ndims;
 	NclScalar *mis_ptr = NULL,themissing;
 	int still_no_missing = 1;
 
@@ -366,6 +367,9 @@ NhlErrorTypes _NclBuildArray
 				result->u.data_obj = _NclCopyVal(_NclVarValueRead(data.u.data_var,NULL,NULL),NULL);
 			}
 			return(NhlNOERROR);
+		default:
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+			return (NhlFATAL);
 		}
 	}
 /*
@@ -810,11 +814,10 @@ NhlErrorTypes _NclBuildListVar
 	NclStackEntry *result;
 #endif
 {
-	NclStackEntry data;
 	NclStackEntry *data_ptr;
 	int i;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
-        int ndims = 1;
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
+	int ndims = 1;
 
 	NclList thelist;
 	obj *id;
@@ -859,14 +862,14 @@ NhlErrorTypes _NclBuildConcatArray
 	logical tmp;
 	void *value;
 	char *ptr;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	NclMultiDValData theobj,coerce_res = NULL;
 	NclStackEntry *data_ptr;
 	NclObjTypes result_type ;
 	NclTypeClass result_type_class;
 	NclObjTypes obj_type ;
 	int must_be_numeric = 1,i,j;
-	int ndims;
+	ng_size_t ndims;
 	NclScalar *mis_ptr = NULL,themissing;
 	int still_no_missing = 1;
 
@@ -887,6 +890,9 @@ NhlErrorTypes _NclBuildConcatArray
 				result->u.data_obj = _NclCopyVal(_NclVarValueRead(data.u.data_var,NULL,NULL),NULL);
 			}
 			return(NhlNOERROR);
+		default:
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+			return (NhlFATAL);
 		}
 	}
 /*
@@ -1327,9 +1333,7 @@ NhlErrorTypes _NclProcCallOp
 {
 	NhlErrorTypes ret = NhlNOERROR;
 	NclExecuteReturnStatus eret;
-	NclStackEntry data;
 	void* previous_fp = NULL;
-	int i;
 
 /*
 * By the time you get here all of the arguments should've been checked against
@@ -1379,11 +1383,8 @@ NhlErrorTypes _NclFuncCallOp
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
-	NclStackEntry data;
 	NclExecuteReturnStatus eret;
 	void *previous_fp= NULL;
-	
-	int i;
 
 /*
 * By the time you get here all of the arguments should've been checked against
@@ -1489,18 +1490,18 @@ NclStackEntry _NclCreateHLUObjOp
 	NclMultiDValData parent;
 #endif
 {
-	int i,j,m;
+	int i,j;
+	ng_size_t m;
 	NclStackEntry *data,*resname;
 	NclStackEntry data_out;
 	int rl_list;
 	static int local_rl_list = 0;
-	int grl_list =0;
 	NhlGenArray *gen_array;
 	NclMultiDValData tmp_md = NULL;
 	NclMultiDValData tmp2_md = NULL;
 	NclHLUObj tmp_ho = NULL;
 	int *tmp_id = NULL,tmp_ho_id;
-	int dim_size = 1;
+	ng_size_t dim_size = 1;
 	int parent_id = -1;
 	int parent_hluobj_id = -1;
 	int *ids;
@@ -1573,6 +1574,12 @@ NclStackEntry _NclCreateHLUObjOp
 		case NclStk_NOVAL:
 			tmp_md = NULL;
 		break;
+		default:
+			_NclCleanUpStack(2*nres);
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+			data_out.kind = NclStk_NOVAL;
+			data_out.u.data_obj = NULL;
+			return(data_out);
 		}
 		switch(resname->kind) {
 		case NclStk_VAL:
@@ -1581,6 +1588,12 @@ NclStackEntry _NclCreateHLUObjOp
 		case NclStk_VAR:
 			tmp2_md = _NclVarValueRead(resname->u.data_var,NULL,NULL);
 		break;
+		default:
+			_NclCleanUpStack(2*nres);
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+			data_out.kind = NclStk_NOVAL;
+			data_out.u.data_obj = NULL;
+			return(data_out);
 		}
 		if((tmp2_md->multidval.type != (NclTypeClass)nclTypestringClass)||(tmp2_md->multidval.kind != SCALAR)) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in resource name. Resources must be scalar strings\n");
@@ -1690,6 +1703,12 @@ NclStackEntry _NclCreateHLUObjOp
 		case NclStk_VAR:
 			tmp_md = _NclVarValueRead(data->u.data_var,NULL,NULL);
 		break;
+		default:
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+			_NclCleanUpStack(2*nres);
+			data_out.kind = NclStk_NOVAL;
+			data_out.u.data_obj = NULL;
+			return(data_out);
 		}
 		if(tmp_md->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
 			for(j = 0; j < tmp_md->multidval.totalelements;j++) {
@@ -1703,7 +1722,7 @@ NclStackEntry _NclCreateHLUObjOp
 					tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[j]);
 				}
 				if(tmp_ho != NULL) 
-					_NclAddHLUToExpList(_NclGetObj(*tmp_id),tmp_ho->obj.id);
+					_NclAddHLUToExpList((NclHLUObj)_NclGetObj(*tmp_id),tmp_ho->obj.id);
 			}
 		}
 	}
@@ -1839,7 +1858,8 @@ NclMultiDValData the_hlu_data_obj;
 int nres;
 #endif
 {
-	int i,j,k,m;
+	int i,j,k;
+    ng_size_t m;
 	NclStackEntry *data,*resname;
 	int rl_list;
 	static int local_rl_list = 0;
@@ -1884,6 +1904,9 @@ int nres;
 		case NclStk_NOVAL:
 			tmp_md = NULL;
 		break;
+		default:
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+			return (NhlFATAL);
 		}
 		switch(resname->kind) {
 		case NclStk_VAL:
@@ -1892,6 +1915,9 @@ int nres;
 		case NclStk_VAR:
 			tmp2_md = _NclVarValueRead(resname->u.data_var,NULL,NULL);
 		break;
+		default:
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+			return (NhlFATAL);
 		}
 		if((tmp2_md->multidval.type != (NclTypeClass)nclTypestringClass)||(tmp2_md->multidval.kind != SCALAR)) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in resource name. Resources must be scalar strings\n");
@@ -2010,11 +2036,12 @@ NclStackEntry missing_expr;
 	NclScalar missing_val;
 	NclMultiDValData missing_md,tmp_md,size_md,tmp1_md;
 	void *tmp_val;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	short tmp_missing = NCL_DEFAULT_MISSING_VALUE;
-	long *dim_size_list,total;
+	long long *dim_size_list;
+	ng_size_t total;
 	long long ll_total;
-	int i,j;
+	ng_size_t i,j;
 	char *tp;
 	NclTypeClass typec = NULL;
 	int tsize;
@@ -2089,8 +2116,8 @@ NclStackEntry missing_expr;
 
 	}
 	if(size_md != NULL) {
-		if(!(size_md->multidval.type->type_class.type & Ncl_Typelong)) {
-			tmp1_md = _NclCoerceData(size_md,Ncl_Typelong,NULL);
+		if(!(size_md->multidval.type->type_class.type & Ncl_Typeint64)) {
+			tmp1_md = _NclCoerceData(size_md,Ncl_Typeint64,NULL);
 			if(tmp1_md == NULL) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"New: the dimension size parameter is the wrong type an integer value was expected");
 				return(NhlFATAL);
@@ -2098,7 +2125,7 @@ NclStackEntry missing_expr;
 		} else {
 			tmp1_md = size_md;
 		}
-		dim_size_list = (long*)tmp1_md->multidval.val;
+		dim_size_list = (long long *)tmp1_md->multidval.val;
 		if(tmp1_md->multidval.missing_value.has_missing) {
 			for(i = 0; i < tmp1_md->multidval.totalelements; i++ ) {
 				if(tmp1_md->multidval.missing_value.value.longval == dim_size_list[i]) {
@@ -2111,16 +2138,20 @@ NclStackEntry missing_expr;
 		j = 0;
 		if((tmp1_md->multidval.dim_sizes[0] == 1)&&(dim_size_list[0] > 0)) {
 			ll_total *= dim_size_list[0];
-			dim_sizes[0] = (int)dim_size_list[0];
+			dim_sizes[0] = (ng_size_t)dim_size_list[0];
 			j++;
 		} else {
 			for(i = 0; i< tmp1_md->multidval.dim_sizes[0]; i++) {
 				if(dim_size_list[i] < 1) {	
+#if 0
+					printf("_NclNewOp: i is %ld; dim_size_list[%ld] is %zd, tmp1_md->multidval.dim_sizes[0] is %zd\n",
+					       (long)i, (long)i, dim_size_list[i], tmp1_md->multidval.dim_sizes[0]);
+#endif
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"New: a zero or negative value has been passed in in the dimension size parameter");
 					return(NhlFATAL);
 				} else {
 					ll_total *= dim_size_list[i];
-					dim_sizes[j] = (int)dim_size_list[i];
+					dim_sizes[j] = (ng_size_t)dim_size_list[i];
 					j++;
 				}
 			}
@@ -2131,11 +2162,18 @@ NclStackEntry missing_expr;
 		}
 		total = (long) ll_total;
 		ll_total *= _NclSizeOf(the_type);
+#ifdef NG32BIT
 		if (ll_total > INT_MAX) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"New: requested size of variable (%lld bytes) exceeds the current maximum allowed on this system",ll_total);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"New: requested size of variable (%lld bytes) exceeds the current maximum %d allowed on this system",INT_MAX,ll_total);
+#else
+		if (ll_total > LONG_MAX) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"New: requested size of variable (%lld bytes) exceeds the current maximum %d allowed on this system",LONG_MAX,ll_total);
+#endif
 			return(NhlFATAL);
 		}
-		tmp_val = (void*)NclMalloc((unsigned int)ll_total);
+		tmp_val = (void*)NclMalloc((ng_usize_t)ll_total);
 		if (! tmp_val) {
 			NhlPError(NhlFATAL,ENOMEM,"New: could not create new array");
 			return(NhlFATAL);

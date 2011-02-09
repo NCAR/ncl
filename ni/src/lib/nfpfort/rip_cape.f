@@ -401,20 +401,22 @@ c                                                                     c
 c*********************************************************************c
 c                                                                     c
 C NCLFORTSTART
-      FUNCTION TONPSADIABAT(THTE,PRS,PSADITHTE,PSADIPRS,PSADITMK,GAMMA)
-      DOUBLE PRECISION TONPSADIABAT
+      DOUBLE PRECISION FUNCTION TONPSADIABAT(THTE,PRS,PSADITHTE,
+     &                                       PSADIPRS,PSADITMK,GAMMA)
+      IMPLICIT NONE
       DOUBLE PRECISION THTE
       DOUBLE PRECISION PRS
       DOUBLE PRECISION PSADITHTE
       DOUBLE PRECISION PSADIPRS
       DOUBLE PRECISION PSADITMK
       DOUBLE PRECISION GAMMA
+C NCLEND
       DOUBLE PRECISION FRACJT
       DOUBLE PRECISION FRACJT2
       DOUBLE PRECISION FRACIP
       DOUBLE PRECISION FRACIP2
       DIMENSION PSADITHTE(150),PSADIPRS(150),PSADITMK(150,150)
-C NCLEND
+      INTEGER IP, IPCH, JT, JTCH
 c                                                                     c
 c   This function gives the temperature (in K) on a moist adiabat
 c   (specified by thte in K) given pressure in hPa.  It uses a
@@ -559,18 +561,36 @@ C  pressure-level data
 c
       RETURN
       END
-c*********************************************************************c
+c======================================================================
 c
+c !IROUTINE: VIRTUAL -- Calculate virtual temperature (K)
+c
+c !DESCRIPTION:
+c
+c   This function returns a single value of virtual temperature in
+c   K, given temperature in K and mixing ratio in kg/kg.  For an
+c   array of virtual temperatures, use subroutine VIRTUAL_TEMP.
+c
+c !INPUT:
+c    RATMIX - water vapor mixing ratio (kg/kg)
+c    TEMP   - temperature (K)
+c
+c !OUTPUT:
+c    TV     - Virtual temperature (K)
+c
+c !ASSUMPTIONS:
+c
+c !REVISION HISTORY:
+c     2009-March  - Mark T. Stoelinga - from RIP4.5
+c     2010-August - J. Schramm - modified to run with NCL and ARW wrf output
+c
+c ------------------------------------------------------------------
 C NCLFORTSTART
-      FUNCTION VIRTUAL(TEMP,RATMIX)
-      DOUBLE PRECISION VIRTUAL
-      DOUBLE PRECISION EPS
-c
-c   This function returns virtual temperature in K, given temperature
-c      in K and mixing ratio in kg/kg.
-c
+      DOUBLE PRECISION FUNCTION VIRTUAL(TEMP,RATMIX)
+      IMPLICIT NONE
       DOUBLE PRECISION TEMP,RATMIX
 C NCLEND
+      DOUBLE PRECISION EPS
       EPS = 0.622D0
       VIRTUAL = TEMP* (EPS+RATMIX)/ (EPS* (1.D0+RATMIX))
       RETURN

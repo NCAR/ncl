@@ -31,6 +31,7 @@
 #include "NclType.h"
 #include "TypeSupport.h"
 #include "NclMdInc.h"
+#include <ctype.h>
 
 INSERTHERE
 
@@ -56,8 +57,7 @@ NhlErrorTypes _NclInitTypeClasses
 	_NclInitClass(nclTypeuintClass);
 	_NclInitClass(nclTypeulongClass);
 	_NclInitClass(nclTypeuint64Class);
-	_NclInitClass(nclTypeint8Class);
-	_NclInitClass(nclTypeuint8Class);
+	_NclInitClass(nclTypeubyteClass);
 	return(NhlNOERROR);
 }
 
@@ -89,7 +89,7 @@ double *result;
 			}
 		}
 	}
-
+	return NhlFATAL;
 }
 
 NclTypeClass _NclTypeEnumToTypeClass
@@ -131,10 +131,8 @@ NclObjTypes obj_type_enum;
 		return((NclTypeClass)nclTypeulongClass);
 	case Ncl_Typeuint64:
 		return((NclTypeClass)nclTypeuint64Class);
-	case Ncl_Typeint8:
-		return((NclTypeClass)nclTypeint8Class);
-	case Ncl_Typeuint8:
-		return((NclTypeClass)nclTypeuint8Class);
+	case Ncl_Typeubyte:
+		return((NclTypeClass)nclTypeubyteClass);
 	default:
 		return((NclTypeClass)nclTypeClass);
 	}
@@ -164,18 +162,19 @@ void* val;
 			}
 		}
 	}
+	return NhlFATAL;
 
 }
 
 NhlErrorTypes _Nclcoerce
 #if	NhlNeedProto
-(NclTypeClass to_type, void * result, void* from, int n, NclScalar* from_m, NclScalar* to_m, NclTypeClass from_type)
+(NclTypeClass to_type, void * result, void* from, ng_size_t n, NclScalar* from_m, NclScalar* to_m, NclTypeClass from_type)
 #else
-(t0_type, result, from, int n, from_m, to_m, from_type)
+(t0_type, result, from, n, from_m, to_m, from_type)
 NclTypeClass to_type;
 void * result;
 void* from;
-int n;
+ng_size_t n;
 NclScalar* from_m;
 NclScalar* to_m;
 NclTypeClass from_type;
@@ -200,14 +199,14 @@ NclTypeClass from_type;
 
 NhlErrorTypes _Nclreset_mis
 #if	NhlNeedProto
-(NclTypeClass the_type,void *val, NclScalar* old_m, NclScalar * new_m,int nval)
+(NclTypeClass the_type,void *val, NclScalar* old_m, NclScalar * new_m,ng_size_t nval)
 #else
 (the_type,val, old_m, new_m,nval)
 NclTypeClass the_type;
 void *val;
 NclScalar* old_m;
 NclScalar* new_m;
-int nval;
+ng_size_t nval;
 #endif
 {
 	NclTypeClass tmp;
@@ -228,13 +227,13 @@ int nval;
 
 NclMonoTypes _Nclis_mono
 #if	NhlNeedProto
-(NclTypeClass the_type, void *val, NclScalar* val_m, int nval)
+(NclTypeClass the_type, void *val, NclScalar* val_m, ng_size_t nval)
 #else
 (the_type, val, val_m, nval)
 NclTypeClass the_type;
 void *val;
 NclScalar* val_m;
-int nval;
+ng_size_t nval;
 #endif
 {
 	NclTypeClass tmp;
@@ -263,9 +262,13 @@ NclQuark _NclGetLower
 	char buffer[256];
 	char *cp;
 	char *instr = NrmQuarkToString(qstr);
-	int size = strlen(instr);
+	int size;
 	NrmQuark outq;
 	
+	if (! instr) {
+	        return NrmNULLQUARK;
+        }
+        size  = strlen(instr);
 	if (size < 256) {
 		buf = buffer;
 	}
@@ -283,4 +286,46 @@ NclQuark _NclGetLower
 		NclFree(buf);
 
 	return outq;
+}
+
+NhlErrorTypes _NclSetDefaultFillValues
+(
+	int default_type
+)
+{
+	if (default_type == NCL_5_DEFAULT_FILLVALUES) {
+		((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval = -99;
+		((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval = -999;
+		((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval = -9999;
+		((NclTypeClass)nclTypeint64Class)->type_class.default_mis.int64val = -99999999;
+		((NclTypeClass)nclTypeushortClass)->type_class.default_mis.ushortval = 0;
+		((NclTypeClass)nclTypeuintClass)->type_class.default_mis.uintval = 0;
+		((NclTypeClass)nclTypeulongClass)->type_class.default_mis.ulongval = 0;
+		((NclTypeClass)nclTypeuint64Class)->type_class.default_mis.uint64val = 0;
+		((NclTypeClass)nclTypeubyteClass)->type_class.default_mis.ubyteval = 0;
+		((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval = -999.0;
+		((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval = -9999.0;
+		((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval = 0;
+		((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval = (char) 0xff;
+		((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval = NrmStringToQuark("missing");
+		((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval = -1;
+	}
+	else if (default_type == NCL_6_DEFAULT_FILLVALUES) {
+		((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval = -32767;
+		((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval = -2147483647;
+		((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval = -2147483647;
+		((NclTypeClass)nclTypeint64Class)->type_class.default_mis.int64val = (long long)-9223372036854775806LL;
+		((NclTypeClass)nclTypeushortClass)->type_class.default_mis.ushortval = 65535;
+		((NclTypeClass)nclTypeuintClass)->type_class.default_mis.uintval = 4294967295U;
+		((NclTypeClass)nclTypeulongClass)->type_class.default_mis.ulongval = 4294967295U;
+		((NclTypeClass)nclTypeuint64Class)->type_class.default_mis.uint64val = (unsigned long long)18446744073709551614ULL;
+		((NclTypeClass)nclTypeubyteClass)->type_class.default_mis.ubyteval = 255;
+		((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval = 9.9692099683868690e+36f;
+		((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval = 9.9692099683868690e+36;
+		((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval = 0;
+		((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval = -127;
+		((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval = NrmStringToQuark("missing");
+		((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval = -1;
+	}
+	return NhlNOERROR;
 }

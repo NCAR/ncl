@@ -46,11 +46,9 @@
 #define RINT(A) ((A) > 0 ? (int) ((A) + 0.5) : -(int) (0.5 - (A)))
 #define NUM_CONTEXT 20  /* number of allowable contexts */
 
-static char *getFileNameRoot(int, char*, char*);
-static char *getCPSFileName(int, char *);
-static char *getCPNGFileName(int, int, char *);
-static char *getCPDFFileName(int, char *);
-static char *getCTIFFFileName(int, int, char *);
+static const char *getFileNameRoot(int, const char*, const char*);
+static char *getRegularOutputFilename(int, const char*, const char*, const char*);
+static char *getIndexedOutputFilename(int, const char*, int, const char*, const char*);
 static void setSurfaceTransform(CROddp *psa);
 static void CROinit(CROddp *, int *);
 static void CROpict_init(GKSC *gksc);
@@ -71,7 +69,6 @@ void cro_SoftFill(GKSC *gksc, float angle, float spl);
 /*
  *  Globals
  */
-FILE *fp;
 
 /*
  *  Functions for mapping workstation IDs into indices for the
@@ -454,8 +451,14 @@ int cro_Cellarray(GKSC *gksc) {
 
     cairo_set_source_surface(cairo_context[context_index(psa->wks_id)],
             cell_image, x_offset, y_offset);
-    cairo_surface_destroy(cell_image);
     cairo_paint(cairo_context[context_index(psa->wks_id)]);
+
+    /* free up resources need to create the cairo_surface... */
+    cairo_surface_finish(cell_image);
+    cairo_surface_destroy(cell_image);
+    free(data);
+    free(rows);
+    free(cols);
 
     /*
      *  Restore color.
@@ -484,7 +487,8 @@ int cro_ClearWorkstation(GKSC *gksc) {
         cairo_surface_flush(cairo_surface[context_index(psa->wks_id)]);
 
     } else if (psa->wks_type == CPNG) {
-        outputFile = getCPNGFileName(psa->wks_id, psa->frame_count, psa->output_file);
+        outputFile = getIndexedOutputFilename(psa->wks_id, psa->output_file, psa->frame_count,
+            "NCARG_GKS_CPNGOUTPUT", ".png");
         ret = cairo_surface_write_to_png(cairo_surface[context_index(psa->wks_id)],
                 outputFile);
         if (ret != 0)
@@ -494,7 +498,8 @@ int cro_ClearWorkstation(GKSC *gksc) {
     }
 
     else if (psa->wks_type == CTIFF) {
-        outputFile = getCTIFFFileName(psa->wks_id, psa->frame_count, psa->output_file);
+        outputFile = getIndexedOutputFilename(psa->wks_id, psa->output_file, psa->frame_count,
+            "NCARG_GKS_CTIFFOUTPUT", ".tif");
         ret = crotiff_writeImage(outputFile, cairo_surface[context_index(psa->wks_id)]);
         psa->frame_count++;
         free(outputFile);
@@ -517,8 +522,12 @@ int cro_CloseWorkstation(GKSC *gksc) {
     if (psa->output_file)
         free(psa->output_file);
 
+    if (psa->max_color > 0)
+        free(psa->ctable);
+
     cairo_destroy(cairo_context[context_index(psa->wks_id)]);
     remove_context(psa->wks_id);
+    free(psa);
 
     return (0);
 }
@@ -810,23 +819,25 @@ int cro_OpenWorkstation(GKSC *gksc) {
         /*
          *  Create a Postscript workstation.
          */
-        psa->output_file = getCPSFileName(psa->wks_id, sptr);
+        psa->output_file = getRegularOutputFilename(psa->wks_id, sptr, "NCARG_GKS_CPSOUTPUT", ".ps");
         cairo_surface[context_num] = cairo_ps_surface_create(psa->output_file,
                 psa->paper_width, psa->paper_height);
         cairo_ps_surface_set_size(cairo_surface[context_num], psa->paper_width, psa->paper_height);
         cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
         add_context_index(context_num, orig_wks_id);
+        psa->orientation = PORTRAIT;
     }
 
     else if (psa->wks_type == CPDF) {
         /*
          *  Create a PDF workstation.
          */
-        psa->output_file = getCPDFFileName(psa->wks_id, sptr);
+        psa->output_file = getRegularOutputFilename(psa->wks_id, sptr, "NCARG_GKS_CPDFOUTPUT", ".pdf");
         cairo_surface[context_num] = cairo_pdf_surface_create(psa->output_file,
                 psa->paper_width, psa->paper_height);
         cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
         add_context_index(context_num, orig_wks_id);
+        psa->orientation = PORTRAIT;
     }
 
     else if (psa->wks_type == CPNG) {
@@ -2056,9 +2067,11 @@ int cro_UpdateWorkstation(GKSC *gksc) {
  *        only makes sense in the case of having a single output file for
  *        a given workstation type (i.e., postscript, pdf, png, etc.)
  */
-char *getFileNameRoot(int wkid, char *file_name, char *envVar) {
+const char *getFileNameRoot(int wkid, const char *file_name, const char *envVar) {
+    static const int maxName = 256;
     static char tname[257];
     static char *tch;
+    static const char* defaultName = "DEFAULT";
 
     /*
      *  Name set by an environment variable
@@ -2073,10 +2086,16 @@ char *getFileNameRoot(int wkid, char *file_name, char *envVar) {
      *  Name set by a call to NGMISC.
      */
     if (file_name != NULL && strlen(file_name) > 0 && strncmp(file_name,
-            "DEFAULT", 7) != 0) {
-        tch = strtok(file_name, " ");
-        if (tch)
-            return tch;
+            defaultName, strlen(defaultName)) != 0)
+    {
+    	char* space = strchr(file_name, ' ');
+    	if (!space)
+    		return file_name;
+        int len = (int)(space - file_name);
+        len = (len > maxName) ? maxName : len;
+        strncpy(tname, file_name, len);
+        tname[len] = '\0';
+        return tname;
     }
 
     /*
@@ -2087,107 +2106,97 @@ char *getFileNameRoot(int wkid, char *file_name, char *envVar) {
     return (tname);
 }
 
-
 /*
- * getCPSFileName()
+ * getRegularOutputFilename()
  *
- * Returns a suitable filename for a postscript file.
- * Caller is responsible for free-ing the returned string.
+ * A utility function to create appropriate filenames for formats such as
+ * postscript/PDF, which support multiple pages in a single file.
  *
  */
-char *getCPSFileName(int wks_id, char *file_name) {
-
+char* getRegularOutputFilename(int wks_id, const char* file_name, const char* envVar, const char* suffix) {
     /* get a root name */
-    char* root = getFileNameRoot(wks_id, file_name, "NCARG_GKS_CPSOUTPUT");
+    const char* root = getFileNameRoot(wks_id, file_name, envVar);
     int rootLen = strlen(root);
 
-    /* we append a ".ps" suffix below, but file_name may already have it */
-    if (rootLen >= 3 && strncmp(root + strlen(root) - 3, ".ps", 3) == 0)
-        rootLen -= 3;
+    /* we append a suffix below, but file_name may already have it */
+    int suffixLen = (suffix) ? strlen(suffix) : 0;
+    if (rootLen >= suffixLen && strncmp(root + strlen(root) - suffixLen, suffix, suffixLen) == 0)
+        rootLen -= suffixLen;
 
-    char* name = (char*) calloc(rootLen + 4, 1); /* 4 = ".ps" + null */
+    char* name = (char*) calloc(rootLen + suffixLen+1, 1); /* room for suffix + null */
     strncpy(name, root, rootLen);
-    strcat(name, ".ps");
+    strcat(name, suffix);
 
     return name;
+
 }
 
-
 /*
- * getCPNGFileName()
+ * getIndexedOutputFilename()
  *
- *  Set up the file name for the PNG output file. Caller is responsible for
- *  freeing the returned string.
+ * A utility function to create filenames for formats that do no support multiple
+ * images/pages. If more than one such file is to be written, then an index-number
+ * is appended to the filename root. The index is omitted on the first such file,
+ * and later added if there is indeed more than one file to be written.
  *
  */
-char *getCPNGFileName(int wks_id, int frame_count, char *file_name) {
-    char tmp[12];
-
-    /* get a root name */
-    char* root = getFileNameRoot(wks_id, file_name, "NCARG_GKS_CPNGOUTPUT");
+char* getIndexedOutputFilename(int wks_id, const char* file_name, int frameNumber,
+		const char* envVar, const char* suffix)
+{
+	/* get a root name... */
+	const char* root = getFileNameRoot(wks_id, file_name, envVar);
     int rootLen = strlen(root);
 
-    /* we append a ".png" suffix below, but file_name may already have it */
-    if (rootLen >= 4 && strncmp(root + strlen(root) - 4, ".png", 4) == 0)
-        rootLen -= 4;
+    /* we append a suffix; remove it if already present on file_name */
+    int suffixLen = (suffix) ? strlen(suffix) : 0;
+    if (rootLen >= suffixLen && strncmp(root + strlen(root) - suffixLen, suffix, suffixLen) == 0)
+        rootLen -= suffixLen;
 
-    char* name = (char*) calloc(rootLen + 12, 1); /* 12 = ".nnnnnn.png" + null */
-    sprintf(tmp, ".%06d.png", frame_count + 1);
+    /* If only one file is generated, we want it named with out the .nnnnnn sequence number.
+     * Unfortunately, we won't know until and unless we write a subsequent file. So the scheme is to
+     * assume only one file is to be written, and we'll rename it if we find we are writing
+     * more than one.
+     */
 
-    strncpy(name, root, rootLen);
-    strcat(name, tmp);
-    return name;
-}
+    char* name;
+    if (frameNumber == 0) {
+    	name = (char*) calloc(rootLen + suffixLen+1, 1); /* room for suffix + null */
+    	strncpy(name, root, rootLen);
+        strcat(name, suffix);
+    }
+    else {
+        const int seqNumLen = 8;  /* sequence num written as ".nnnnnn" plus a null */
+        char seqNum[seqNumLen];
+    	name = (char*) calloc(rootLen + suffixLen + seqNumLen + 1, 1);  /* +1 for a null */
 
+        if (frameNumber == 1) {
+            /* have to rename the first file that was written so that it has a sequence number */
 
-/*
- * getCPDFFileName()
- *
- *  Set up the file name for the PDF output file. Caller is responsible for
- *  freeing the returned string.
- *
- */
-char *getCPDFFileName(int wks_id, char *file_name) {
+            /* reconstruct old name... */
+        	char* oldName = (char*) calloc(rootLen + suffixLen+1, 1); /* room for suffix + null */
+        	strncpy(oldName, root, rootLen);
+            strcat(oldName, suffix);
 
-    /* get a root name */
-    char* root = getFileNameRoot(wks_id, file_name, "NCARG_GKS_CPDFOUTPUT");
-    int rootLen = strlen(root);
+            /* new name... */
+        	sprintf(seqNum, ".%06d", 1);
+            strncpy(name, root, rootLen);
+            strcat(name, seqNum);
+            strcat(name, suffix);
+            int status = rename(oldName, name);
+            if (status) {
+                ESprintf(ERR_CRO_RENAME, "CRO: error renaming file from \"%s\" to \"%s\"; reason: (%d)\n",
+                	oldName, name, status);
+            }
+            free(oldName);
+            memset(name, '\0', strlen(name));  /* reset this for subsequent calls to strncpy/strcat */
+        }
 
-    /* we append a ".pdf" suffix below, but file_name may already have it */
-    if (rootLen >= 4 && strncmp(root + strlen(root) - 4, ".pdf", 4) == 0)
-        rootLen -= 4;
+    	sprintf(seqNum, ".%06d", frameNumber + 1);
+        strncpy(name, root, rootLen);
+        strcat(name, seqNum);
+        strcat(name, suffix);
+    }
 
-    char* name = (char*) calloc(rootLen + 5, 1); /* 5 = ".pdf" + null */
-    strncpy(name, root, rootLen);
-    strcat(name, ".pdf");
-
-    return name;
-}
-
-
-/*
- * getCTIFFFileName()
- *
- *  Set up the file name for the TIFF output file. Caller is responsible for
- *  freeing the returned string.
- *
- */
-char *getCTIFFFileName(int wks_id, int frame_count, char *file_name) {
-    char tmp[12];
-
-    /* get a root name */
-    char* root = getFileNameRoot(wks_id, file_name, NULL);
-    int rootLen = strlen(root);
-
-    /* we append a ".tif" suffix below, but file_name may already have it */
-    if (rootLen >= 4 && strncmp(root + strlen(root) - 4, ".tif", 4) == 0)
-        rootLen -= 4;
-
-    char* name = (char*) calloc(rootLen + 12, 1); /* 12 = ".nnnnnn.tif" + null */
-    sprintf(tmp, ".%06d.tif", frame_count + 1);
-
-    strncpy(name, root, rootLen);
-    strcat(name, tmp);
     return name;
 }
 
@@ -2341,8 +2350,7 @@ void setSurfaceTransform(CROddp *psa) {
 
     double angle, tx, ty;
     /* Landscape is only supported for PS/PDF, not for image-based formats. */
-    if (psa->orientation == LANDSCAPE && (psa->wks_type == CPS || psa->wks_type
-            == CPDF)) {
+    if ((psa->wks_type == CPS || psa->wks_type == CPDF) && psa->orientation == LANDSCAPE) {
         angle = PI / 2.0;
         tx = psa->dspace.lly;
         ty = -psa->dspace.llx;

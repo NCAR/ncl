@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunchd.c,v 1.14 2008-07-27 03:10:12 haley Exp $
+ * $Id: nncrunchd.c,v 1.14 2008/07/27 03:10:12 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -251,6 +251,7 @@ data_limits:
       if (error_status) return (error_status);
       curdat = rootdat->nextdat;
       rootdat->nextdat = NULL;
+      free(rootdat);
       for (i0 = 0; i0 < datcnt; i0++)
       {  sumx += points[i0][0] = 
             curdat->values[0] * magx;
@@ -356,7 +357,7 @@ double **MakeGridd(int nxi, int nyi, double *xi, double *yi)
 {  
    double wxd, wyd, wxde, wydn, surf, surfe, surfn, aspect, slope;
    int i0, j7, j8;
-   static int first_c = 1, first_as = 1;
+   static int first_as = 1;
    static double **data_out;
 
    if (optim) {
@@ -664,6 +665,7 @@ void c_nnpntd(double x, double y, double *point)
    }
    
    *point = out[3*1 +1];
+   free(out);
 }
 void c_nnpntendd()
 {

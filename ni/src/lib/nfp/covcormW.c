@@ -17,9 +17,11 @@ NhlErrorTypes covcorm_W( void )
   void *x, *trace;
   int *iopt;
   double *dx, *dtrace;
-  int dsizes_x[NCL_MAX_DIMENSIONS], ndims_x, has_missing_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x, has_missing_x;
   NclScalar missing_x, missing_dx;
-  int size_x, nvar, ntim, lvcm, ier;
+  ng_size_t size_x, nvar, ntim, lvcm;
+  int ier;
   NclBasicDataTypes type_x;
 
 /*
@@ -27,7 +29,9 @@ NhlErrorTypes covcorm_W( void )
  */
   void  *vcm;
   double *dvcm;
-  int *dsizes_vcm, ndims_vcm, size_vcm;
+  ng_size_t *dsizes_vcm;
+  int ndims_vcm;
+  ng_size_t size_vcm;
   NclBasicDataTypes type_vcm;
   NclTypeClass type_vcm_class;
   NclScalar missing_vcm;
@@ -36,11 +40,12 @@ NhlErrorTypes covcorm_W( void )
  * Variables for returning attributes.
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
-  int i;
+
+  int intim, invar, ilvcm;
 
 /*
  * Retrieve x.
@@ -68,6 +73,20 @@ NhlErrorTypes covcorm_W( void )
   nvar = dsizes_x[0];
   ntim = dsizes_x[1];
   size_x = nvar * ntim;
+  lvcm = (nvar*(nvar+1))/2;
+
+/*
+ * Test dimension sizes to make sure they are <= INT_MAX.
+ */
+  if((ntim > INT_MAX) ||
+     (nvar > INT_MAX) ||
+     (lvcm > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"covcorm: one or more dimension sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  intim = (int) ntim;
+  invar = (int) nvar;
+  ilvcm = (int) lvcm;
 
 /*
  * Coerce missing values, if any.
@@ -77,17 +96,16 @@ NhlErrorTypes covcorm_W( void )
 /*
  * Allocate space for input/output arrays.
  */
-  lvcm = (nvar*(nvar+1))/2;
   if(!iopt[0]) {
     size_vcm      = lvcm;
     ndims_vcm     = 1;
-    dsizes_vcm    = (int*)malloc(sizeof(int));
+    dsizes_vcm    = (ng_size_t*)malloc(sizeof(ng_size_t));
     dsizes_vcm[0] = size_vcm;
   }
   else {
     size_vcm      = nvar*nvar;
     ndims_vcm     = 2;
-    dsizes_vcm    = (int*)malloc(2*sizeof(int));
+    dsizes_vcm    = (ng_size_t*)malloc(2*sizeof(ng_size_t));
     dsizes_vcm[0] = nvar;
     dsizes_vcm[1] = nvar;
   }
@@ -123,12 +141,12 @@ NhlErrorTypes covcorm_W( void )
  * Depending on iopt[0], call one of two Fortran routines.
  */
   if(!iopt[0]) {
-    NGCALLF(dcovcormssm,DCOVCORMSSM)(&ntim,&nvar,dx,&missing_dx.doubleval,
-                                     &iopt[1],dvcm,&lvcm,dtrace,&ier);
+    NGCALLF(dcovcormssm,DCOVCORMSSM)(&intim,&invar,dx,&missing_dx.doubleval,
+				     &iopt[1],dvcm,&ilvcm,dtrace,&ier);
   }
   else {
-    NGCALLF(dcovcorm,DCOVCORM)(&ntim,&nvar,dx,&missing_dx.doubleval,
-                               &iopt[1],dvcm,&lvcm,dtrace,&ier);
+    NGCALLF(dcovcorm,DCOVCORM)(&intim,&invar,dx,&missing_dx.doubleval,
+			       &iopt[1],dvcm,&ilvcm,dtrace,&ier);
   }
 
   if(type_vcm == NCL_float) {

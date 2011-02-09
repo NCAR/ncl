@@ -32,14 +32,18 @@ char csmsg[61];
 NhlErrorTypes css2c_W(void)
 {
 
-  int ndims[2], dsizes[2][NCL_MAX_DIMENSIONS], has_missing[2],dflag;
-  int return_dsizes[NCL_MAX_DIMENSIONS];
+  int ndims[2];
+  ng_size_t dsizes[2][NCL_MAX_DIMENSIONS];
+  int has_missing[2],dflag;
+  ng_size_t return_dsizes[NCL_MAX_DIMENSIONS];
   NclScalar missing[2],missingd[2],return_missing,*missing_ptr;
   void *datav[2];
-  double platd, plond, *return_value_d;
-  float  platf, plonf, mvalf, *return_value_f;
+  double platd, plond;
+  double *return_value_d = NULL;
+  float  platf, plonf, mvalf;
+  float  *return_value_f = NULL;
 
-  int i,j,k,nt;
+  ng_size_t i,j,nt;
 
   NclBasicDataTypes atypes[2];  
 
@@ -90,7 +94,7 @@ NhlErrorTypes css2c_W(void)
   nt = 1;
   for (i = 0; i < ndims[0]; i++) {
     nt *= dsizes[0][i];
-  }	
+  }
 
 /*
  *  Coerce the missing values to double.
@@ -127,7 +131,7 @@ NhlErrorTypes css2c_W(void)
       }
       else {
         return_missing.floatval = (float) missingd[1].doubleval;
-      }	
+      }
       missing_ptr = &return_missing;
     }
     else {
@@ -204,19 +208,24 @@ NhlErrorTypes css2c_W(void)
     NclReturnValue( (void *) return_value_f, ndims[0]+1, 
                     return_dsizes, missing_ptr, NCL_float,0);
   }
+  return(NhlNOERROR);
 }
 
 NhlErrorTypes csc2s_W(void)
 {
 
-  int ndims[3], dsizes[3][NCL_MAX_DIMENSIONS], has_missing[3],dflag;
-  int return_dsizes[NCL_MAX_DIMENSIONS];
+  int ndims[3];
+  ng_size_t dsizes[3][NCL_MAX_DIMENSIONS];
+  int has_missing[3],dflag;
+  ng_size_t return_dsizes[NCL_MAX_DIMENSIONS];
   NclScalar missing[3],missingd[3],return_missing,*missing_ptr;
   void *datav[3];
-  double xid,yid,zid,*return_value_d;
-  float   xi, yi, zi,*return_value_f,mvalf;
+  double xid,yid,zid;
+  double *return_value_d = NULL;
+  float   xi, yi, zi, mvalf;
+  float   *return_value_f = NULL;
 
-  int i,j,nt;
+  ng_size_t i,j,nt;
 
   NclBasicDataTypes atypes[3];  
 
@@ -268,7 +277,7 @@ NhlErrorTypes csc2s_W(void)
   nt = 1;
   for (i = 0; i < ndims[0]; i++) {
     nt *= dsizes[0][i];
-  }	
+  }
 
 /*
  *  Coerce the missing values to double.
@@ -393,12 +402,13 @@ NhlErrorTypes csc2s_W(void)
     NclReturnValue( (void *) return_value_f, ndims[0]+1,
                     return_dsizes, missing_ptr, NCL_float,0);
   }
+  return(NhlNOERROR);
 }
 
 NhlErrorTypes cssetp_W(void)
 {
 
-  char  *arg1, *cval;
+  char  *arg1;
   int   numpi, numpf, numpd, i;
 
 /*
@@ -415,9 +425,11 @@ NhlErrorTypes cssetp_W(void)
  * Input array variables
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int ndims_pname;
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
-  int ndims_pvalue, dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  int ndims_pvalue;
+  ng_size_t dsizes_pvalue[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname, type_pvalue;
 
 /*
@@ -529,9 +541,8 @@ NhlErrorTypes csgetp_W(void)
  *  Get values for csgrid parameters.
  */
 
-  char  *arg1, *cval;
+  char  *arg1;
   int   numpi, numpf, numpd, i;
-  string *pvalue, *qvalue;
 
 /*
  *  List the parameter names (integer, float, double).  To add new ones,
@@ -545,12 +556,13 @@ NhlErrorTypes csgetp_W(void)
  * Input array variable
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int ndims_pname;
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname;
   float  *fval;
   double *dval;
   int    *ival;
-  int    ret_size = 1; 
+  ng_size_t    ret_size = 1; 
 
 /*
  * Retrieve argument #1
@@ -632,13 +644,18 @@ OK_NAME:
 NhlErrorTypes csstri_W(void)
 {
 
-  int ndims[2], dsizes[2][NCL_MAX_DIMENSIONS], has_missing[2];
+  int ndims[2];
+  ng_size_t dsizes[2][NCL_MAX_DIMENSIONS];
+  int has_missing[2];
   NclScalar missing[2],missingd[2];
   void *datav[2];
   double *platd, *plond, platdt, plondt;
 
-  int i,j,nt,num_points,num_missing=0;
-  int *trlist,dsizes_trlist[2],*indices;
+  ng_size_t i,j,num_points;
+  int nt, inum_points;
+  int *trlist;
+  ng_size_t dsizes_trlist[2];
+  ng_size_t *indices;
 
   NclBasicDataTypes atypes[2];  
 
@@ -691,7 +708,7 @@ NhlErrorTypes csstri_W(void)
  *  to the original vertices rather than the vertices stored
  *  in platd and plond.
  */
-  indices = (int *) calloc(dsizes[0][0],sizeof(int));
+  indices = (ng_size_t *) calloc(dsizes[0][0],sizeof(ng_size_t));
 
 /*
  *  Loop through the input lat/lon values, coerce to double,
@@ -733,9 +750,19 @@ NhlErrorTypes csstri_W(void)
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if (num_points > INT_MAX) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, 
+      "csstri: number of valid input points > INT_MAX.\n");
+    return(NhlFATAL);
+  }
+  inum_points = (int) num_points;
+
+/*
  *  Make the call to the C function.
  */
-  trlist = c_csstrid(num_points, platd, plond, &nt, &cserr);
+  trlist = c_csstrid(inum_points, platd, plond, &nt, &cserr);
   if (cserr != 0) {
     free (platd);
     free (plond);
@@ -755,7 +782,7 @@ NhlErrorTypes csstri_W(void)
  *  original array.
  */
   for (i = 0; i < 3*nt; i++) {
-    trlist[i] = indices[trlist[i]];
+    trlist[i] = (int)indices[trlist[i]];
   }
   free (indices);
   return(NclReturnValue((void *) trlist, 2, dsizes_trlist, NULL, NCL_int, 0));
@@ -765,19 +792,24 @@ NhlErrorTypes csstri_W(void)
 NhlErrorTypes csvoro_W(void)
 {
 
-  static int ndims[10], dsizes[10][NCL_MAX_DIMENSIONS], has_missing[10];
-  static int dflag;
-  static NclScalar missing[10],missingd[10];
-  static void *callp,*indexp;
+  int ndims[10];
+  ng_size_t dsizes[10][NCL_MAX_DIMENSIONS];
+  int has_missing[10];
+  int dflag;
+  NclScalar missing[10],missingd[10];
+  void *callp,*indexp;
+
+  int i,callv,indexv;
+  int np2;
+
+  double platdt, plondt;
+  NclBasicDataTypes atypes[10];
+
+  static int num_points;
+  static double *platd, *plond;
   static void *datav[10];
-
-  static int i,j,nt,num_points,num_missing=0,callv,indexv;
-  static int np2,nf,nca,numv;
-
-  static double *platd, *plond, platdt, plondt;
   static double *rlatd,*rlond, *rcd;
 
-  static NclBasicDataTypes atypes[10];
 
 /*
  *  See if this is the first call to csvoro for the current
@@ -816,7 +848,7 @@ NhlErrorTypes csvoro_W(void)
                 " have the same dimension sizes\n");
       return(NhlFATAL);
     }
-    num_points = dsizes[0][0];
+    num_points = (int) dsizes[0][0];
 
 /*
  *  Check that arguments 4-6 (starting with argument 0) have 
@@ -941,15 +973,20 @@ NhlErrorTypes csvoro_W(void)
 NhlErrorTypes cssgrid_W(void)
 {
 
-  int ndims[5], dsizes[5][NCL_MAX_DIMENSIONS], has_missing[5];
+  int ndims[5];
+  ng_size_t dsizes[5][NCL_MAX_DIMENSIONS];
+  int has_missing[5];
   NclScalar missing[5],missingd[5];
   void *datav[5];
 
-  float     *fgrid,*zout;
-  double    *platd,*plond,*fvald,*rlatd,*rlond,*platdt,*plondt,*fvaldt,
-            *zoutd,*ztmp;
-  int       nt,psize,zdim,zsize[NCL_MAX_DIMENSIONS];
-  int       i,j,k,jo,ji,nxo,nyo,num_points,num_missing,test_missing;
+  float     *zout = NULL;
+  double    *zoutd = NULL;
+  double    *platd,*plond,*fvald,*rlatd,*rlond,*platdt,*plondt,*fvaldt,*ztmp;
+  ng_size_t nt, psize;
+  int       zdim;
+  ng_size_t zsize[NCL_MAX_DIMENSIONS];
+  ng_size_t i,j,k,jo,ji,num_points;
+  int       nxo,nyo,inum_points,num_missing,test_missing;
 
   NclBasicDataTypes atypes[5],ztype;
 
@@ -978,7 +1015,17 @@ NhlErrorTypes cssgrid_W(void)
         return(NhlFATAL);
   }
   else {
-    num_points = dsizes[0][0]; 
+
+/*
+ * Test dimension sizes.
+ */
+    if(dsizes[0][0] > INT_MAX) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,
+                "cssgrid: number of possible valid points > INT_MAX\n");
+      return(NhlFATAL);
+    }
+    num_points  = dsizes[0][0]; 
+    inum_points = (int) num_points;
     num_missing = 0;
   }
 
@@ -1019,12 +1066,20 @@ NhlErrorTypes cssgrid_W(void)
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if( (dsizes[3][0] > INT_MAX) || (dsizes[4][0] > INT_MAX)) { 
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+       "cssgrid: nxo and/or nyo > INT_MAX\n");
+    return(NhlFATAL);
+  }
+  nxo = (int) dsizes[3][0];
+  nyo = (int) dsizes[4][0];
+
+/*
  *  Coerce the output grid to double and check for missing values.
  *  Missing values are not allowed in latitude or longitude arrays.
  */
-  nxo = dsizes[3][0];
-  nyo = dsizes[4][0];
-
   rlatd = coerce_input_double(datav[3],atypes[3],dsizes[3][0],
                             has_missing[3],missing,missingd);
   if (rlatd == NULL) {
@@ -1155,9 +1210,18 @@ NhlErrorTypes cssgrid_W(void)
         "of valid points to less than 3.\n");
       return(NhlFATAL);
     }
+/*
+ * Test dimension sizes.
+ */
+    if(num_points > INT_MAX) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,
+                "cssgrid: number of valid points > INT_MAX\n");
+      return(NhlFATAL);
+    }
+    inum_points = (int) num_points;
 
-    ztmp = c_cssgridd(num_points,platdt,plondt,fvaldt,nxo,nyo,
-                        rlatd,rlond,&cserr);
+    ztmp = c_cssgridd(inum_points,platdt,plondt,fvaldt,nxo,nyo,
+                      rlatd,rlond,&cserr);
     if (cserr != 0) {
       sprintf(csmsg, "cssgrid: Error number %d.", cserr);
       NhlPError(NhlFATAL, NhlEUNKNOWN, csmsg);

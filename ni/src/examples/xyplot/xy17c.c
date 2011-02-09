@@ -50,7 +50,7 @@ void main ()
    int i=0, rlist, wks, appid, field1, field2, field3, xy1, xy2, xy3;
    int grlist, datadepid[1];
    int *dspec = datadepid;
-   int num_dspec;
+   ng_size_t num_dspec;
 
 /*
  *  Create variables to contain data.

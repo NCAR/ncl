@@ -38,8 +38,11 @@
 #include "VarSupport.h"
 #include "DataSupport.h"
 #include "NclAtt.h"
+#include "AttSupport.h"
+#include "TypeSupport.h"
 #include "ApiRecords.h"
 
+#include <math.h>
 
 NclSelectionRecord* _NclGetVarSelRec
 #if	NhlNeedProto
@@ -84,11 +87,16 @@ struct _NclMultiDValDataRec* _NclStripVarData
 {
 	NclMultiDValData tmp;
 	if(inst->obj.status == TEMPORARY) {
+		NclRefList *tref;
 		tmp = (NclMultiDValData)_NclGetObj(inst->var.thevalue_id);	
 		tmp->obj.status = TEMPORARY;
-		tmp->obj.ref_count = 0;
-		NclFree(tmp->obj.parents);
-		tmp->obj.parents = NULL;
+		tref = tmp->obj.parents;
+		while (tref != NULL && tref->pid == inst->obj.id) {
+			tmp->obj.parents = tref->next;
+			NclFree(tref);
+			tref = tmp->obj.parents;
+			tmp->obj.ref_count--;
+		}
 		inst->var.thevalue_id = -1;
 		return(tmp);
 	} else {
@@ -243,12 +251,11 @@ NhlErrorTypes  _NclBuildCoordVSelection
 {	
 	NclMultiDValData vect_md;
 	long *thevector;
-	int i;
+	ng_size_t i;
 	char * v_name;
 	int index = -1;
 	NclQuark cname;
-	NclMultiDValData name_md = NULL,result_md = NULL,tmp_md = NULL,coord_md = NULL;
-	long start = 0,finish = 0;
+	NclMultiDValData name_md = NULL,tmp_md = NULL,coord_md = NULL;
 	NclCoordVar cvar = NULL;
 	NclObjTypes the_type;
 /*
@@ -377,8 +384,7 @@ NhlErrorTypes _NclBuildCoordRSelection
 	char * v_name = NULL;
 	int index = -1;
 	NclQuark cname;
-	NclMultiDValData name_md = NULL,result_md = NULL,tmp_md = NULL,coord_md = NULL;
-	long start = 0,finish = 0;
+	NclMultiDValData name_md = NULL,tmp_md = NULL,coord_md = NULL;
 	NclCoordVar cvar = NULL;
 	NclObjTypes the_type;
 /*
@@ -1064,7 +1070,7 @@ NhlErrorTypes  _NclBuildVSelection
 	NclMultiDValData vect_md;
 	NclMultiDValData tmp_md;
 	long *thevector;
-	int i;
+	ng_size_t i;
 	char * v_name;
 	int index = -1;
 /*
@@ -1263,7 +1269,7 @@ struct _NclVarRec* self;
 	NclMultiDValData tmp_md= NULL;
 	int ret;
 	NhlErrorTypes ret0 = NhlNOERROR;
-	NhlErrorTypes ret1 = NhlNOERROR;
+
 	FILE *fp = _NclGetOutputStream();
 
 	if((self!= NULL)&&(self->obj.obj_type_mask & Ncl_Var)) {
@@ -1343,19 +1349,20 @@ struct _NclVarRec* self;
 			ret0 = _PrintListVarSummary((NclObj)thevalue,fp);
 		} else {
 			if(thevalue != NULL) 
+			{
 				ret = nclfprintf(fp,"Type: %s\n",_NclBasicDataTypeToName(thevalue->multidval.data_type));
+				if(ret < 0) {
+					return(NhlWARNING);
+				}
 
-
-			if(ret < 0) {
-				return(NhlWARNING);
-			}
-			ret = nclfprintf(fp,"Total Size: %d bytes\n",thevalue->multidval.totalsize);
-			if(ret < 0) {
-				return(NhlWARNING);
-			}
-			ret = nclfprintf(fp,"            %d values\n",thevalue->multidval.totalelements);
-			if(ret < 0) {
-				return(NhlWARNING);
+				ret = nclfprintf(fp,"Total Size: %lld bytes\n",(long long)thevalue->multidval.totalsize);
+				if(ret < 0) {
+					return(NhlWARNING);
+				}
+				ret = nclfprintf(fp,"            %lld values\n",(long long)thevalue->multidval.totalelements);
+				if(ret < 0) {
+					return(NhlWARNING);
+				}
 			}
 			ret = nclfprintf(fp,"Number of Dimensions: %d\n",self->var.n_dims);
 			if(ret < 0) {
@@ -1376,7 +1383,7 @@ struct _NclVarRec* self;
 						return(NhlWARNING);
 					}
 				}
-				ret = nclfprintf(fp,"%d]",self->var.dim_info[i].dim_size);
+				ret = nclfprintf(fp,"%lld]",(long long)self->var.dim_info[i].dim_size);
 				if(ret < 0) {
 					return(NhlWARNING);
 				}
@@ -1454,12 +1461,10 @@ NclApiDataList *_NclGetVarInfo2
 NclVar;
 #endif
 {
-	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclApiDataList *tmp = NULL;
 	NclAtt tmp_att = NULL;
 	NclAttList *att_list = NULL;
 	NclMultiDValData the_value = NULL;
-	NclSymTableListNode *st;
-	NclSymbol *s;
 	int j;
 
 
@@ -1510,64 +1515,73 @@ NclObj self;
 FILE *fp;
 #endif
 {
+	NclMultiDValData thevalue = (NclMultiDValData) self;
 	NclList tmp_list;
-	NclListObjList *step;
-	NclObjClass oc;
-	NclMultiDValData self_md = (NclMultiDValData)self;
 	NhlErrorTypes ret;
-	int nv = 0;
-	NclObj cur_obj;
 
-	tmp_list = (NclList) _NclGetObj(*(obj*)self_md->multidval.val);
-
-	step = tmp_list->list.first;
-	
-	while(step != NULL)
-	{
-	    oc = _NclObjTypeToPointer(step->orig_type);
-
-	    if(oc != NULL)
-	    {
-	 	ret = nclfprintf(fp,"\nList Elem %d:\t%s\n\n", nv, oc->obj_class.class_name);
-	    }
-	    else
-	    {
-	        ret = NhlWARNING;
-	    }
-
-            if(ret < 0)
-	    {
-                return(NhlWARNING);
-            }
-
-	    cur_obj = (NclObj)_NclGetObj(step->obj_id);
-
-	    switch(cur_obj->obj.obj_type)
-	    {
-	        case Ncl_Var:
-		{
-		    NclVar var;
-		    var = (NclVar)_NclGetObj(cur_obj->obj.id);
-		    VarPrintVarSummary((NclObj)var, fp);
-		    break;
-		}
-	        case Ncl_FileVar:
-		{
-		    NclFileVar fv;
-		    fv = (NclFileVar)_NclGetObj(cur_obj->obj.id);
-		    FileVarPrintVarSummary((NclObj)fv, fp);
-		    break;
-		}
-	        default:
-		    fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
-		    fprintf(stderr, "\tUNRECOGANIZED cur_obj->obj.obj_type %d: %o\n", nv, cur_obj->obj.obj_type);
-	    }
-
-	    step = step->next;
-	    nv++;
- 	    nclfprintf(fp,"\n");
+	tmp_list = (NclList) _NclGetObj(*(int *)thevalue->multidval.val);
+	ret = nclfprintf(fp,"Type: %s\n",
+		_NclBasicDataTypeToName(thevalue->multidval.data_type));
+	if(ret < 0) {
+		return(NhlWARNING);
+	}
+	ret = nclfprintf(fp,"Total objects: %ld\n",(long)tmp_list->list.nelem);
+	if(ret < 0) {
+		return(NhlWARNING);
 	}
 
         return(NhlNOERROR);
+}
+
+unsigned int _closest_prime(unsigned int prime_in)
+{
+    int i, number, k;
+    unsigned int primes[MAX_ALLOWED_NUMBER];
+    unsigned int prime_out;
+    unsigned int bound;
+    int check_this;
+
+    prime_out = 2*prime_in + 1;
+
+    primes[0] = 2U;
+    primes[1] = 3U;
+    for(i = 2; i < MAX_ALLOWED_NUMBER; i++)
+    {
+         number = primes[i-1];
+         check_this = 1;
+         while(check_this)
+         {
+             number += 2U;
+             check_this = 0;
+             bound = (unsigned int) sqrt((double) number);
+             for(k = 1; k < i; k++)
+             {
+                 if(primes[k] > bound)
+                     break; /*Not a viable shortcut for small quantities*/
+
+                 if(!(number % primes[k]))
+                 {
+                     check_this = 1;
+                     break;
+                 }
+             }
+         }
+         primes[i] = number;
+         if(number == prime_in)
+         {
+             prime_out = number;
+             break;
+         }
+         else if(number > prime_in)
+         {
+             if((number - prime_in) > (prime_in - number))
+                 prime_out = number;
+             else
+                 prime_out = primes[i-1];
+             break;
+         }
+    }
+
+    return prime_out;
 }
 

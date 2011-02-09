@@ -199,7 +199,7 @@ void DoDimsizes(NclSymbol* sym) {
 
 	sprintf(buffer,"%s_dimsizes",sym->name);
 	if( _NclLookUpInScope(current->crec,buffer) == NULL) {
-		(void)WNewVDef(buffer,NCL_int,0,"[NCL_MAX_DIMENSIONS]",0);
+		(void)WNewVDef(buffer,NCL_long,0,"[NCL_MAX_DIMENSIONS]",0);
 		sym->u.wparam->getarg->dimsizes = (char*)malloc(strlen(buffer)+1);
 		strcpy(sym->u.wparam->getarg->dimsizes,buffer);
 	}
@@ -219,7 +219,7 @@ void DoTotal(NclSymbol *sym) {
 
 	sprintf(buffer,"%s_total",sym->name);
 	if( _NclLookUpInScope(current->crec,buffer) == NULL) {
-		tmp = WNewVDef(buffer,NCL_int,0,NULL,0);
+		tmp = WNewVDef(buffer,NCL_long,0,NULL,0);
 		sprintf(buffer,"\t%s_total = 1;\n\tfor(i = 0; i < %s_ndims; i++) {\n\t\t%s_total *= %s_dimsizes[i];\n\t}\n", sym->name,sym->name,sym->name,sym->name);
 		tmp->additional_src = WNewAdditionalSrc(buffer,0);
 	}

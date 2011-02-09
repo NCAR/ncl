@@ -253,8 +253,6 @@ static NhlErrorTypes 	TmTransClassInitialize(
 
 static NrmQuark QtrXCoordPoints;
 static NrmQuark QtrYCoordPoints;
-static NrmQuark QtrXInterPoints;
-static NrmQuark QtrYInterPoints;
 
 NhlTriMeshTransObjClassRec NhltriMeshTransObjClassRec = {
         {
@@ -338,9 +336,6 @@ static NhlErrorTypes TmTransSetValues
 	int	num_args;
 #endif
 {
-	NhlTriMeshTransObjLayer inew = (NhlTriMeshTransObjLayer) new;
-	NhlTriMeshTransObjLayerPart *tmp = &inew->tmtrans;
-	NhlTransObjLayerPart	*tp = &inew->trobj;
 
 	return(SetUpTrans(new,old,SET,args,num_args));	
 }
@@ -446,11 +441,10 @@ static NhlErrorTypes SetUpTrans
 	NhlTriMeshTransObjLayer inew = (NhlTriMeshTransObjLayer)new;
 	NhlTriMeshTransObjLayer iold = (NhlTriMeshTransObjLayer)old;
 	NhlTriMeshTransObjLayerPart *tmp = &inew->tmtrans;
-	NhlTriMeshTransObjLayerPart *otmp = &iold->tmtrans;
 	NhlTransObjLayerPart	*tp = &inew->trobj;
 	NhlTransObjLayerPart	*otp = &iold->trobj;
-	char *error_lead,*e_text;
-	NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+	char *error_lead;
+	NhlErrorTypes ret = NhlNOERROR;
 	NhlBoolean new_coords = False;
         NhlBoolean data_extent_def;
         NhlBoolean new_data_extent;
@@ -1127,15 +1121,11 @@ static NhlErrorTypes TmDataToCompc
 	int * status;
 #endif
 {
-	NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 	NhlTriMeshTransObjLayer iinstance =
                 (NhlTriMeshTransObjLayer)instance;
 	NhlTriMeshTransObjLayerPart *tmp = &iinstance->tmtrans;
 	int i;
-	int ix,iy;
-	float x0,y0;
-	double xf,yf;
-	double sc[4],dlon,dlat,xdout,ydout;
 
 	*status = 0;
 	for(i=0; i< n;i++) {
@@ -1225,10 +1215,6 @@ static NhlErrorTypes TmCompcToData
 		(NhlTriMeshTransObjLayer)instance;
 	NhlTriMeshTransObjLayerPart *tmp = &iinstance->tmtrans;
 	int i;
-	int ix,iy;
-	float x0,y0;
-	double xf,yf;
-	double out[4],dlon,dlat,xdout,ydout;
 
 	*status = 0;
 	for(i = 0; i< n ; i++) {
@@ -2099,10 +2085,8 @@ int nargs;
 {
 	NhlTriMeshTransObjLayerPart* tmp = 
 		(&((NhlTriMeshTransObjLayer)l)->tmtrans);
-	int i, count;
+	int i;
 	NhlGenArray ga;
-	char *e_text;
-	NhlString entry_name = "TmTransGetValues";
 
 
 	for( i = 0; i < nargs ; i++) {

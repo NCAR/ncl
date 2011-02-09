@@ -43,9 +43,6 @@ static NhlResource resources[] = {
 	{NhlNmpAreaGroupCount,NhlCmpAreaGroupCount,NhlTInteger,
 		 sizeof(int),Oset(area_group_count),NhlTImmediate,
 		 _NhlUSET((NhlPointer) Nhl_mpMIN_AREA_GROUPS),0,NULL},
-	{NhlNmpDataSetName,NhlCmpDataSetName,NhlTString,
-		 sizeof(NhlString),Oset(data_set_name),NhlTImmediate,
-		 _NhlUSET((NhlPointer) NULL),0,NULL}
 };
 #undef Oset
 
@@ -56,6 +53,12 @@ static NhlErrorTypes MapDHInitialize(
         NhlLayer	new,
         _NhlArgList	args,
         int             num_args
+#endif
+);
+
+static NhlErrorTypes    MapDHDestroy(
+#if	NhlNeedProto
+	NhlLayer        l
 #endif
 );
 
@@ -83,7 +86,7 @@ NhlMapDataHandlerClassRec NhlmapDataHandlerClassRec = {
 /* layer_set_values_hook */  	NULL,
 /* layer_get_values 	*/  	NULL,
 /* layer_reparent 	*/  	NULL,
-/* layer_destroy 	*/    	NULL,
+/* layer_destroy 	*/    	MapDHDestroy,
 	},
 	{
 /* update_draw_list */		NULL,
@@ -130,11 +133,48 @@ MapDHInitialize
         int             num_args;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name = "MapV40DHInitialize";
-	char			*e_text;
+	NhlErrorTypes		ret = NhlNOERROR;
 
         return ret;
+}
+
+
+/*
+ * Function:    MapV41DHDestroy
+ *
+ * Description: Retrieves the current setting of MapV41DataHandler resources.
+ *      Actually the resources belong to the superclass MapDataHandler --
+ *      but they get their contents from the subclass.
+ *
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ *      Memory is allocated when any of the following resources are retrieved:
+ *		NhlNmpAreaNames
+ *		NhlNmpAreaTypes
+ *		NhlNmpDynamicAreaGroups
+ *		NhlNmpSpecifiedFillColors
+ *
+ *      The caller is responsible for freeing this memory.
+ */
+
+static NhlErrorTypes    MapDHDestroy
+#if	NhlNeedProto
+(
+        NhlLayer l
+        )
+#else
+(l)
+        NhlLayer        l;
+#endif
+{
+
+        return NhlNOERROR;
 }
 
 NhlErrorTypes _NhlUpdateDrawList

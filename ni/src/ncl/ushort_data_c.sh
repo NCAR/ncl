@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sh op_funcs.sh ushort NhlTUshort NhlTUshortGenArray 0 > .tmp.$$
+sh op_funcs.sh ushort NhlTUshort NhlTUshortGenArray 65535U > .tmp.$$
 
 if [ ! $? ]
 then
@@ -13,8 +13,8 @@ sed \
 -e 's/LOCALTYPE/unsigned short/g' \
 -e 's/HLUTYPEREP/NhlTUshort/g' \
 -e 's/HLUGENTYPEREP/NhlTUshortGenArray/g' \
--e 's/DEFAULT_MISS/0/g' \
--e 's/DEFAULT_FORMAT/%hd/g' \
+-e 's/DEFAULT_MISS/65535U/g' \
+-e 's/DEFAULT_FORMAT/%hu/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypeushort.c.specific' \

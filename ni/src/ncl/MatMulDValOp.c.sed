@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MatMulDValOp.c.sed,v 1.1 1997-09-02 20:26:15 ethan Exp $
+ *      $Id: MatMulDValOp.c.sed,v 1.1.4.1 2008-03-28 20:37:48 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -40,9 +40,8 @@ NclData result;
 	NclMissingRec themissing;
 	void *result_val;
 	int n_dims =0;
-	int dims[2];
-	
-	int i,total;
+	ng_size_t dims[2];
+	ng_size_t total;
 	
 
 	if((other_md == NULL)||(self_md == NULL))
@@ -140,7 +139,7 @@ NclData result;
 			}
 			result_val = (void*)NclMalloc(total * the_type->type_class.size);
 			if(result_val == NULL) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNNAME: Could not allocate memory for result type, can't continue\n");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: Could not allocate memory for result type, can't continue\n");
 				return(NULL);
 			}
 		}

@@ -18,6 +18,7 @@
 #include "NclCCM.h"
 #include <math.h>
 #include "ccmhdr.h"
+#include <unistd.h>
 
 
 #ifndef ByteSwapped
@@ -33,6 +34,7 @@
 #endif
 static unsigned char cray_missing_value[8] = { 0x40,0x78,0xc0,0x97,0xce,0x7b,0xc9,0x07 };
 
+#if 0
 static int printbinary(FILE *fp,int val,int val2) {
 
         static int count = 0;
@@ -187,6 +189,7 @@ static int printbinary(FILE *fp,int val,int val2) {
                 fprintf(fp,"\n");
         return(count);
 }
+#endif
 
 long sz(int n)
 {
@@ -322,6 +325,8 @@ static int extractCCM(int which,char buf[8])
 		tmp[BYTE3] = buf[7];
 		return(*(int*)tmp);
 	}
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+	return -9999;
 }
 
 static int IsF77Blocked
@@ -886,12 +891,12 @@ void* s2;
 
 CcmIntVarInqRecList *CcmAddIntVar
 #if	NhlNeedProto
-(CCMFileRec *therec,NclQuark vname,int size,NclTypeClass type,void *value,int status,int dim_number)
+(CCMFileRec *therec,NclQuark vname,ng_size_t size,NclTypeClass type,void *value,int status,int dim_number)
 #else
 (therec,vname,size,type,value,status,dim_number)
 CCMFileRec  *therec;
 NclQuark vname;
-int size;
+ng_size_t size;
 NclTypeClass type;
 void *value;
 int status;
@@ -941,7 +946,7 @@ NclQuark att_val;
 {
 	CcmAttInqRecList *tmp_att = tmp_var->theatts;
 	NclQuark *tmp_q;
-	int dimsizes = 1;
+	ng_size_t dimsizes = 1;
 
 	tmp_q = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_q = att_val;
@@ -1953,7 +1958,7 @@ NclQuark dim_name;
 
 static int MyUnPack
 #if	NhlNeedProto
-(CCMFileRec* therec,FILE* fd,void *rbuffer, void* buffer, int poff, long coff, int packing,int *dimsizes,int level_type )
+(CCMFileRec* therec,FILE* fd,void *rbuffer, void* buffer, int poff, long coff, int packing,ng_size_t *dimsizes,int level_type )
 #else
 (therec, fd, rbuffer, buffer,poff, coff, packing,dimsizes, level_type)
 CCMFileRec* therec;
@@ -1963,20 +1968,20 @@ void* buffer;
 int poff;
 long coff;
 int packing;
-int n_elem;
-int *dimsizes;
+ng_size_t *dimsizes;
 int level_type;
 #endif
 {
 	long tmp_off;
 	int zero = 0;
-	int total = 0;
-	int n_elem= 0;
+	ng_size_t total = 0;
+	ng_size_t n_elem= 0;
 	double ll[2];
 	unsigned int uval;
 	unsigned short sval;
 	int k,i,j;
-	int mul_lev,index;
+	ng_size_t mul_lev = 0;
+    ng_size_t index;
 
 	switch(level_type) {
 	case 1:
@@ -2117,7 +2122,7 @@ void *storage
 	int to = 0;
 	NclMultiDValData tmp_md;
 	NclMultiDValData tmp_md2;
-	int dimsizes[4];
+	ng_size_t dimsizes[4];
 	CcmIntVarInqRecList *tmp;
 	void *vbuf;
 

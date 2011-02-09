@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <ctype.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/CnTriMeshRendererP.h>
 #include <ncarg/hlu/WorkstationI.h>
@@ -372,8 +373,6 @@ static NhlErrorTypes BuildTriangularMesh
 		cnp->sfp->missing_value : -FLT_MAX;
 
 	if (cnp->sfp->x_arr && cnp->sfp->x_arr->num_dimensions == 2) {
-		float x[9],y[9];
-			
 		
 		/* 
 		 * since the triangular mesh algorithm does not handle
@@ -451,7 +450,6 @@ static NhlErrorTypes BuildTriangularMesh
 		}
 	}
 	else {
-		float *x;
 		rlat = NhlMalloc(idim * jdim * sizeof(float));
 		rlon = NhlMalloc(idim * jdim * sizeof(float));
 		coords_alloced = 1;
@@ -548,7 +546,6 @@ static NhlErrorTypes BuildNativeMesh
 #endif
 {
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
-	int coords_alloced = 0;
 	int mnot  = cnp->sfp->element_nodes->len_dimensions[0];
 	int mnop = cnp->sfp->fast_len;
 	int mnoe = 3 * mnot;
@@ -568,7 +565,7 @@ static NhlErrorTypes BuildNativeMesh
 	int nppe = 0;
 	int nbuf = 0;
 	int ntri = 0;
-	int i,j;
+	int i;
 	int ix_offset = cnp->sfp->ix_start;
 	int err_num;
 	char *e_msg;
@@ -742,7 +739,7 @@ static void AddElement
 	float *y;
 #endif       
 {
-	int n0,n1,n2,n3;
+	int n0,n1,n2;
 	float detleft, detright,det;
 	float xt[3],yt[3];
 	int i;
@@ -906,7 +903,6 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 #endif
 {
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
-	int coords_alloced = 0;
 	int mnot;
 	int mtri;
 	int mnop = cnp->sfp->fast_len;
@@ -926,7 +922,7 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 	int nppe = 0;
 	int nbuf = 0;
 	int ntri = 0;
-	int i,j;
+	int i;
 	int ix_offset = 0;
 	int err_num;
 	char *e_msg;
@@ -1076,7 +1072,6 @@ static NhlErrorTypes BuildDelaunayMesh
 #endif
 {
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
-	int coords_alloced = 0;
 	int mnop = cnp->sfp->fast_len;
 	int mpnt = mnop * Lopn;
 	int mnot;
@@ -1159,6 +1154,8 @@ static NhlErrorTypes BuildDelaunayMesh
 	}
 	triangulate(flags,&in,&out,NULL);
 
+	if (points != out.pointlist)
+		NhlFree(points);
 	points = out.pointlist;
 	el = out.trianglelist;
 	mnop = out.numberofpoints;
@@ -1250,6 +1247,7 @@ static NhlErrorTypes BuildDelaunayMesh
 	NhlFree(ippe);
 	NhlFree(points);
 	NhlFree(dat);
+	NhlFree(el);
 
 	return NhlNOERROR;
 
@@ -1293,9 +1291,7 @@ CnTriMeshRendererInitialize
         int             num_args;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name = "CnTriMeshRendererInitialize";
-	char			*e_text;
+	NhlErrorTypes		ret = NhlNOERROR;
 	NhlCnTriMeshRendererLayer tml = (NhlCnTriMeshRendererLayer) new;
 	NhlCnTriMeshRendererLayerPart *tmp =  &tml->cntrimeshrenderer;
 	NhlContourPlotLayer     cnl;
@@ -2636,12 +2632,8 @@ static NhlErrorTypes CnTriMeshRender
         NhlCnTriMeshRendererLayer tml = (NhlCnTriMeshRendererLayer) instance;
 	NhlCnTriMeshRendererLayerPart	  *tmp = &tml->cntrimeshrenderer;
 	NhlContourPlotLayerPart 	  *cnp = &cnl->contourplot;
-	NhlTransformLayerPart 		  *tfp = &cnl->trans;
 	NhlString e_text;
         NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
-	float rwrk[10000];
-	int iwrk[1000];
-	int lrwk = 10000, liwk = 1000; 
 	int mesh_inited = 0;
         Gint            err_ind;
         Gclip           clip_ind_rect;
@@ -3066,10 +3058,9 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	NhlErrorTypes	ret = NhlNOERROR;
 	char		*e_text;
 
-	float		xmn,xmx,ymn,ymx;
-	int		i,j,k,n,indx,indy,icaf,map,imap,iaid;
+	int		i,j,k,n,icaf,map,imap,iaid;
 	float		xccf,xccd,xcci,yccf,yccd,ycci;
-	float		zval,orv,spv;
+	float		zval,orv;
         float		*levels;
 	float		cxstep,cystep;
 	float           xsoff,xeoff,ysoff,yeoff;
@@ -3082,7 +3073,6 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	float           xd12,xd23,xd31,yd12,yd23,yd31;
 	float           fva1,fva2,fva3;
 	float           dn12,dn23,dn31;
-	float           area;
 	int             bound1,bound2;
 	int             ibeg,iend,jbeg,jend;
 
@@ -3212,7 +3202,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	     (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
 		     (&map,&rpnt[ipp3],&rpnt[ipp3+1],&rpnt[ipp3+2],
 		      &xcu3,&ycu3);
-	     if (orv != 0.0 && (xcu3 == orv || ycu2 == orv))
+	     if (orv != 0.0 && (xcu3 == orv || ycu3 == orv))
 		     continue;	     
 
 	     xcf1 = c_cufx(xcu1);
@@ -3411,10 +3401,8 @@ NhlErrorTypes CnTriMeshWriteCellData
 	NhlErrorTypes	ret = NhlNOERROR;
 	char		*e_text;
 
-	double		xmn,xmx,ymn,ymx;
-	int		i,j,k,n,indx,indy,icaf,map,iaid;
-	double		xccf,xccd,xcci,yccf,yccd,ycci;
-	float		zval,orv,spv;
+	int		i,j,n,icaf,map;
+	float		orv;
         float		*levels;
 	double		cxstep,cystep;
 	double          xsoff,xeoff,ysoff,yeoff;
@@ -3427,12 +3415,9 @@ NhlErrorTypes CnTriMeshWriteCellData
 	double           xd12,xd23,xd31,yd12,yd23,yd31;
 	double           fva1,fva2,fva3;
 	double           dn12,dn23,dn31;
-	double           area;
 	int             bound1,bound2;
 	int             ibeg,iend,jbeg,jend;
 	float           *data;
-	float           *xarray;
-	float           *yarray;
 	float           init_val;
 	FILE 		*fp;
 	float           out_of_range;
@@ -3642,13 +3627,11 @@ NhlErrorTypes CnTriMeshWriteCellData
 		     double ts12,ts23,ts31;
 		     double dnc1,dnc2,dnc3;
 		     double yfp,xfp;
-		     int jplus = j+1;
 		     double a1,a2,a3;
 
 		     yfp = ycpf + ((double)j+.5)/lican * (ycqf - ycpf);
 
 		     for (i = ibeg; i <= iend; i++) {
-			     int iplus = i+1;
 			     double atot;
 			     xfp = xcpf + ((float)i+.5)/licam * (xcqf - xcpf);
 			     ts12 = (yd12*xfp-xd12*yfp-yd12*xcf1+xd12*ycf1)/

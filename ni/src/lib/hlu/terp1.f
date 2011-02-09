@@ -1,6 +1,6 @@
 C
 C
-C	$Id: terp1.f,v 1.1 1994-08-11 23:17:36 boote Exp $
+C       $Id: terp1.f,v 1.1 1994-08-11 23:17:36 boote Exp $
 C
 C PACKAGE CUBSPL         NOTE--DOCUMENTATION FOR INDIVIDUAL ROUTINES
 C                              FOLLOWS THE GENERAL PACKAGE INFORMATION

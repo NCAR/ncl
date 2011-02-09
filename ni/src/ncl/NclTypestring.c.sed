@@ -1,5 +1,5 @@
 /*
- *      $Id: NclTypestring.c.sed,v 1.18 2009-10-26 20:27:40 dbrown Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -55,7 +55,7 @@ int nargs;
         char func[] = "CvtNhlTStringGenArrayToNclData";
         NclQuark *val;
         NclMultiDValData tmp_md;
-        int len_dimensions = 1;
+        ng_size_t len_dimensions = 1;
 	char **strar;
 	int i;
  
@@ -118,7 +118,8 @@ int nargs;
 {
 	NclQuark *tmp;
 	NclMultiDValData tmp_md;
-	int n_dims = 1,len_dims = 1;
+	int n_dims = 1;
+	ng_size_t len_dims = 1;
 
 	tmp = NclMalloc((unsigned)sizeof(NclQuark));
 	*tmp = NrmStringToQuark((char*)(from->data.ptrval));
@@ -469,16 +470,16 @@ string rs;
 
 static NclMonoTypes Ncl_Type_string_is_mono
 #if	NhlNeedProto
-(void *val,NclScalar* val_m,int nval)
+(void *val,NclScalar* val_m,ng_size_t nval)
 #else
 (val, val_m, nval)
 void *val;
 NclScalar* val_m;
-int nval;
+ng_size_t nval;
 #endif
 {
 	string *value = (string*)val;
-	int i = 0,j = 1;
+	ng_size_t i = 0,j = 1;
 
 	if(nval == 1) 
 		return(1);
@@ -581,7 +582,7 @@ INSERTTMPSTRING
 
 NhlErrorTypes Ncl_Type_string_plus
 #if	NhlNeedProto
-(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, int nlhs, int nrhs)
+(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, ng_size_t nlhs, ng_size_t nrhs)
 #else
 (result,lhs,rhs,lhs_m,rhs_m,nlhs,nrhs)
 void *result;
@@ -589,16 +590,16 @@ void *lhs;
 void* rhs;
 NclScalar* lhs_m;
 NclScalar* rhs_m;
-int nlhs;
-int nrhs;
+ng_size_t nlhs;
+ng_size_t nrhs;
 #endif
 {
         string *ls,*rs;
 	string *res;
-	int stopi = 1;
-	int linc = 0;
-	int rinc = 0;
-	int i;
+	ng_size_t stopi = 1;
+	ng_size_t linc = 0;
+	ng_size_t rinc = 0;
+	ng_size_t i;
 
 	ls = (string*)lhs;
 	rs = (string*)rhs;
@@ -648,7 +649,7 @@ NclTypeClass Ncl_Type_string_plus_type
 
 NhlErrorTypes Ncl_Type_string_eq
 #if	NhlNeedProto
-(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, int nlhs, int nrhs)
+(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, ng_size_t nlhs, ng_size_t nrhs)
 #else
 (result,lhs,rhs,lhs_m,rhs_m,nlhs,nrhs)
 void *result;
@@ -656,16 +657,16 @@ void *lhs;
 void* rhs;
 NclScalar* lhs_m;
 NclScalar* rhs_m;
-int nlhs;
-int nrhs;
+ng_size_t nlhs;
+ng_size_t nrhs;
 #endif
 {
         string *ls,*rs;
 	logical *res;
-	int stopi = 1;
-	int linc = 0;
-	int rinc = 0;
-	int i;
+	ng_size_t stopi = 1;
+	ng_size_t linc = 0;
+	ng_size_t rinc = 0;
+	ng_size_t i;
 
 	ls = (string*)lhs;
 	rs = (string*)rhs;
@@ -714,7 +715,7 @@ NclTypeClass Ncl_Type_string_eq_type
 }
 NhlErrorTypes Ncl_Type_string_ne
 #if	NhlNeedProto
-(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, int nlhs, int nrhs)
+(void *result,void *lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, ng_size_t nlhs, ng_size_t nrhs)
 #else
 (result,lhs,rhs,lhs_m,rhs_m,nlhs,nrhs)
 void *result;
@@ -722,16 +723,16 @@ void *lhs;
 void* rhs;
 NclScalar* lhs_m;
 NclScalar* rhs_m;
-int nlhs;
-int nrhs;
+ng_size_t nlhs;
+ng_size_t nrhs;
 #endif
 {
         string *ls,*rs;
 	logical *res;
-	int stopi = 1;
-	int linc = 0;
-	int rinc = 0;
-	int i;
+	ng_size_t stopi = 1;
+	ng_size_t linc = 0;
+	ng_size_t rinc = 0;
+	ng_size_t i;
 
 	ls = (string*)lhs;
 	rs = (string*)rhs;

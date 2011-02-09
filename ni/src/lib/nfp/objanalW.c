@@ -5,8 +5,8 @@ extern void NGCALLF(dobjanlx,DOBJANLX)(double *, double *, double *, int *,
                                        int *, double *, int *, int *, double *,
                                        double *, double *, int *, double *, 
                                        double *, double *, logical *, 
-				       double *, double *, double *, int *,
-				       double *, int *, int *);
+                                       double *, double *, double *, int *,
+                                       double *, int *, int *);
 
 #define NSCANMX 10
 
@@ -21,7 +21,7 @@ NhlErrorTypes obj_anal_ic_W( void )
  */
   void *plon;
   double *tmp_plon;
-  int dsizes_plon[1];
+  ng_size_t dsizes_plon[1];
   int has_missing_plon;
   NclScalar missing_plon, missing_flt_plon, missing_dbl_plon;
   NclBasicDataTypes type_plon;
@@ -31,7 +31,7 @@ NhlErrorTypes obj_anal_ic_W( void )
  */
   void *plat;
   double *tmp_plat;
-  int dsizes_plat[1];
+  ng_size_t dsizes_plat[1];
   int has_missing_plat;
   NclScalar missing_plat, missing_flt_plat, missing_dbl_plat;
   NclBasicDataTypes type_plat;
@@ -41,7 +41,8 @@ NhlErrorTypes obj_anal_ic_W( void )
  */
   void *pval;
   double *tmp_pval;
-  int ndims_pval, dsizes_pval[NCL_MAX_DIMENSIONS], size_pval;
+  int ndims_pval;
+  ng_size_t dsizes_pval[NCL_MAX_DIMENSIONS], size_pval;
   int has_missing_pval;
   NclScalar missing_pval, missing_flt_pval, missing_dbl_pval;
   NclBasicDataTypes type_pval;
@@ -51,7 +52,7 @@ NhlErrorTypes obj_anal_ic_W( void )
  */
   void *glon;
   double *tmp_glon;
-  int dsizes_glon[1];
+  ng_size_t dsizes_glon[1];
   NclBasicDataTypes type_glon;
 
 /*
@@ -59,7 +60,7 @@ NhlErrorTypes obj_anal_ic_W( void )
  */
   void *glat;
   double *tmp_glat;
-  int dsizes_glat[1];
+  ng_size_t dsizes_glat[1];
   NclBasicDataTypes type_glat;
 
 /*
@@ -67,7 +68,7 @@ NhlErrorTypes obj_anal_ic_W( void )
  */
   void *rscan;
   double *tmp_rscan;
-  int dsizes_rscan[1];
+  ng_size_t dsizes_rscan[1];
   NclBasicDataTypes type_rscan;
 
 /*
@@ -79,9 +80,9 @@ NhlErrorTypes obj_anal_ic_W( void )
  */
   void *grid;
   double *tmp_grid;
-  int ndims_grid, *dsizes_grid;
-  int has_missing_grid;
-  NclScalar missing_grid, missing_flt_grid, missing_dbl_grid;
+  int ndims_grid;
+  ng_size_t *dsizes_grid;
+  NclScalar missing_grid, missing_dbl_grid;
   NclBasicDataTypes type_grid;
 
 
@@ -92,17 +93,18 @@ NhlErrorTypes obj_anal_ic_W( void )
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
   int set_wgts;
-  double *wgts;
+  double *wgts = NULL;
   double def_wgts[NSCANMX] = {1.0, 0.85, 0.70, 0.50, 0.25,0.25,0.25,0.25,
                               0.25,0.25};
-  NclBasicDataTypes type_wgts;
+  NclBasicDataTypes type_wgts = NCL_none;
 /*
  * Various
  */
-  double pmsg, *work, *zval, *zlat, *zlon;
-  int npts, ntim, mlon, nlat, nscan;
-  int index_pval, index_grid, ier;
-  int *ip, i, size_output, lwork, ret;
+  double xmsg, *work, *zval, *zlat, *zlon;
+  int ret, ier;
+  int *ip, imlon, inlat, intim, inscan, ilwork, inpts;
+  ng_size_t npts, ntim, mlon, nlat, nscan;
+  ng_size_t i, size_output, lwork;
 
 /*
  * Retrieve parameters.
@@ -255,13 +257,13 @@ NhlErrorTypes obj_anal_ic_W( void )
     return(NhlFATAL);
   }
   if(has_missing_plon) {
-    pmsg = missing_plon.doubleval;
+    xmsg = missing_plon.doubleval;
   }
   else if(has_missing_plat) {
-    pmsg = missing_plat.doubleval;
+    xmsg = missing_plat.doubleval;
   }
   else {
-    pmsg = 1.e20;
+    xmsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
   }
 
  /*
@@ -346,17 +348,22 @@ NhlErrorTypes obj_anal_ic_W( void )
     else                        missing_grid = missing_flt_pval;
     missing_dbl_grid = missing_dbl_pval;
   }
-  {
-    if(type_grid == NCL_double) missing_grid.doubleval = 1.e20;
-    else                        missing_grid.floatval  = 1.e20;
-    missing_dbl_grid.doubleval = 1.e20;
+  else {
+    if(type_grid == NCL_double) {
+      missing_dbl_grid.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      missing_grid.doubleval = missing_dbl_grid.doubleval;
+    }
+    else {
+      missing_dbl_grid.doubleval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_grid.floatval = (float)missing_dbl_grid.doubleval;
+    }
   }
 
 /* 
  * Allocate space for output dimension sizes and set them.
  */
   ndims_grid = ndims_pval + 1;
-  dsizes_grid = (int*)calloc(ndims_grid,sizeof(int));  
+  dsizes_grid = (ng_size_t*)calloc(ndims_grid,sizeof(ng_size_t));  
   if( dsizes_grid == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"obj_anal_ic: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -421,6 +428,23 @@ NhlErrorTypes obj_anal_ic_W( void )
   }
 
 /*
+ * Check dimension sizes.
+ */
+  if((mlon > INT_MAX) || (nlat > INT_MAX) ||
+     (ntim > INT_MAX) || (nscan > INT_MAX) ||
+     (lwork > INT_MAX) || (npts > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"obj_anal_ic: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imlon = (int) mlon;
+  inlat = (int) nlat;
+  intim = (int) ntim;
+  inscan = (int) nscan;
+  ilwork = (int) lwork;
+  inpts = (int) npts;
+
+
+/*
  * If "blend_wgt" attribute not set by user, then set some defaults here.
  */
   if(!set_wgts) {
@@ -436,12 +460,11 @@ NhlErrorTypes obj_anal_ic_W( void )
  * There are no leftmost dimensions to loop across, b/c the 
  * the Fortran routine handles this through its "ntim" variable.
  */
-  NGCALLF(dobjanlx,DOBJANLX)(tmp_plon, tmp_plat, tmp_pval, &ntim, &npts,
-                             tmp_grid, &mlon, &nlat, 
-                             &missing_dbl_pval.doubleval, &pmsg, tmp_rscan,
-                             &nscan, tmp_glat, tmp_glon, wgts, opt, zval, zlat,
-			     zlon,ip,work,&lwork,&ier);
-
+  NGCALLF(dobjanlx,DOBJANLX)(tmp_plon, tmp_plat, tmp_pval, &intim, &inpts,
+                             tmp_grid, &imlon, &inlat, 
+                             &xmsg, &missing_dbl_pval.doubleval, tmp_rscan,
+                             &inscan, tmp_glat, tmp_glon, wgts, opt, zval, zlat,
+                             zlon,ip,work,&ilwork,&ier);
 /*
  * Coerce output back to float if necessary.
  */

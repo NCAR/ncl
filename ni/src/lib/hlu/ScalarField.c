@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.42 2004-10-05 22:50:33 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.42.4.1 2008-03-28 20:37:37 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -573,8 +573,8 @@ DataToFloatArray
 				return NULL;
 			}
 			out_ga->num_dimensions = 2;
-			if ((out_ga->len_dimensions = (int *)
-			     NhlConvertMalloc(2 * sizeof(int))) == NULL) {
+			if ((out_ga->len_dimensions = (ng_size_t *)
+			     NhlConvertMalloc(2 * sizeof(ng_size_t))) == NULL) {
 				e_text = "%s: dynamic memory allocation error";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name);
@@ -809,8 +809,8 @@ DataToFloatArrayExchDim
 			return NULL;
 		}
 		out_ga->num_dimensions = 2;
-		if ((out_ga->len_dimensions = (int *)
-		     NhlConvertMalloc(2 * sizeof(int))) == NULL) {
+		if ((out_ga->len_dimensions = (ng_size_t *)
+		     NhlConvertMalloc(2 * sizeof(ng_size_t))) == NULL) {
 			e_text = "%s: dynamic memory allocation error";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  e_text,entry_name);
@@ -921,8 +921,8 @@ ValidCoordArray
 #endif
 {
 	char *e_text;
-	int len_dim;
-	char *name;
+	int len_dim = 0;
+	char *name = "sf[X|Y]Array";
 	NhlBoolean error = False;
 
 
@@ -988,6 +988,7 @@ ValidCoordArray
 		else if (sfp->xc_el_count != sfp->xd_el_count) {
 			sfp->xc_el_count = sfp->xd_el_count;
 			error = True;
+			len_dim = sfp->xc_el_count;
 		}
 	}
 	else {
@@ -999,6 +1000,7 @@ ValidCoordArray
 		else if (sfp->yc_el_count != sfp->yd_el_count) {
 			sfp->yc_el_count = sfp->yd_el_count;
 			error = True;
+			len_dim = sfp->yc_el_count;
 		}
 	}
 	if (error) {
@@ -1498,16 +1500,11 @@ GetSubsetBounds2D
 #endif
 {
 	char		*e_text;
-	NhlErrorTypes   ret = NhlNOERROR,subret = NhlNOERROR;
 	NhlBoolean      do_subset = False;
 	NhlBoolean	rev;
-	NhlGenArray	*subset_start,*subset_end;
         NhlGenArray     out_ga;
-	NhlBoolean	nullstart = False,nullend = False;
-        NhlBoolean	start_byindex,end_byindex;
 	char		*c_name;
 	float		*fp, *nfp;
-	int		rem,stride;
 	float           min, max;
 	int		yi,xi;
 	int		yimin,yimax,ximin,ximax;
@@ -1641,8 +1638,8 @@ GetSubsetBounds2D
 		return NhlFATAL;
 	}
 	out_ga->num_dimensions = 2;
-	if ((out_ga->len_dimensions = (int *)
-	     NhlConvertMalloc(2 * sizeof(int))) == NULL) {
+	if ((out_ga->len_dimensions = (ng_size_t *)
+	     NhlConvertMalloc(2 * sizeof(ng_size_t))) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  e_text,entry_name);
@@ -2688,7 +2685,7 @@ VTypeValuesEqual
         if (_NhlConvertData(context,Qgen_array,Qfloat,&from,&to) < NhlWARNING)
                 return False;
 
-        if (_NhlCmpFAny(f1,f2,5) == 0.0)
+        if (_NhlCmpFAny(f1,f2,6) == 0.0)
                 return True;
         
         return False;
@@ -3655,15 +3652,14 @@ static NhlErrorTypes    ScalarFieldGetValues
         int i;
         NrmQuark resQ;
 	NrmQuark typeQ = NrmNULLQUARK;
-	NhlPointer	data,value;
-	int		dlen[2];
+	NhlPointer	data;
+	ng_size_t	dlen[2];
 	int		ndim;
 	int		size;
 	NhlBoolean	nocopy = False, do_genarray;
 	float		tmp;
 	int		ival;
 	float		fval;
-	float		*farray;
 		
 	/*
 	 * subclasses of ScalarField completely override it.
@@ -4176,7 +4172,7 @@ ScalarFieldDestroy
 
 	if (sfl->base.layer_class->base_class.class_name != 
 	    NhlscalarFieldClass->base_class.class_name)
-		return;
+		return NhlNOERROR;
 
 	NhlFreeGenArray(sfp->d_arr);
 	NhlFreeGenArray(sfp->x_arr);

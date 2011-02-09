@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 #include <errno.h>
 #include "c.h"
@@ -161,7 +162,7 @@ char	**AToArgv(str, prog_name, argc)
 	if (compile_string(str) < 0) return(NULL);
 
 	i = prog_name ? 1 : 0;
-	while (t = next_token()) {
+	while ( (t = next_token()) ) {
 		if (! (argv[i] = (char *) malloc (strlen(t) + 1))) {
 			ESprintf(errno, "malloc(%d)", strlen(t) + 1);
 			return((char **) NULL);

@@ -30,6 +30,7 @@
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/WorkspaceI.h>
+#include <ncarg/hlu/Transform.h>
 
 static NhlResource resources[] = {
 
@@ -1401,7 +1402,7 @@ static NhlErrorTypes GetMinMaxLatLon
 	NhlBoolean rel_lon,rel_lat;
 	NhlBoolean northpole = False, southpole = False;
 	float xdist,ydist,xinc,yinc;
-	float xmin = 999,ymin = 999,xmax = -999,ymax = -999,lastx;
+	float xmin = 999,ymin = 999,xmax = -999,ymax = -999;
 	int status;
 	float cycle_point;
 	float lat,lon,uval,vval;
@@ -1931,11 +1932,9 @@ static NhlErrorTypes GetWindowLimits
 	NhlMapTransObjLayerPart	*mtp = &(mnew->mptrans);
         float tlat,tlon,uval,vval;
         float umin=1E12,umax=-1E12,vmin=1E12,vmax=-1E12;
-        float latmin,latmax,lonmin,lonmax,lonmax2;
-	float fl,fr,fb,ft,ul,ur,ub,ut;
+        float lonmin,lonmax,lonmax2;
         float latinc,loninc;
 	float clon;
-	int ll;
 	NhlBoolean two_step = False;
 	NhlBoolean lon_done,lat_done;
 
@@ -2432,7 +2431,6 @@ int upordown;
 #endif
 {
 	
-	NhlString entry_name = "MapDataLineTo";
 	NhlMapTransObjLayer	mpl = (NhlMapTransObjLayer) instance;
 	static float x_last,y_last;
 	float *xbuf, *ybuf;
@@ -2736,7 +2734,6 @@ int n;
 	NhlBoolean	edges_on;
 	float		*xl,*yl;
 	int		nl;
-	int             npoints = mptrans->trobj.point_count;
 
 	Wkptr = mptrans->trobj.wkptr;
 /*
