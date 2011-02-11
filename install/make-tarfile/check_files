@@ -462,10 +462,14 @@ lib/ncarg/colormaps/BlueDarkRed18.rgb
 lib/ncarg/colormaps/BlueGreen14.rgb
 lib/ncarg/colormaps/BlueRed.rgb
 lib/ncarg/colormaps/BlueRedGray.rgb
+lib/ncarg/colormaps/BlueWhiteOrangeRed.rgb
+lib/ncarg/colormaps/BlueYellowRed.rgb
 lib/ncarg/colormaps/BrownBlue12.rgb
 lib/ncarg/colormaps/Cat12.rgb
+lib/ncarg/colormaps/GrayWhiteGray.rgb
 lib/ncarg/colormaps/GreenMagenta16.rgb
 lib/ncarg/colormaps/GreenYellow.rgb
+lib/ncarg/colormaps/OceanLakeLandSnow.rgb
 lib/ncarg/colormaps/StepSeq25.rgb
 lib/ncarg/colormaps/ViBlGrWhYeOrRe.gp
 lib/ncarg/colormaps/ViBlGrWhYeOrRe.rgb
@@ -476,6 +480,10 @@ lib/ncarg/colormaps/WhViBlGrYeOrRe.gp
 lib/ncarg/colormaps/WhViBlGrYeOrRe.rgb
 lib/ncarg/colormaps/WhViBlGrYeOrReWh.gp
 lib/ncarg/colormaps/WhViBlGrYeOrReWh.rgb
+lib/ncarg/colormaps/WhiteBlue.rgb
+lib/ncarg/colormaps/WhiteBlueGreenYellowRed.rgb
+lib/ncarg/colormaps/WhiteGreen.rgb
+lib/ncarg/colormaps/WhiteYellowOrangeRed.rgb
 lib/ncarg/colormaps/amwg.rgb
 lib/ncarg/colormaps/amwg_blueyellowred.rgb
 lib/ncarg/colormaps/cosam.rgb
