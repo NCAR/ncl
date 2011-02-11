@@ -79,7 +79,7 @@ typedef struct g2_ft_list {
 
 typedef struct _g2codeTable {
     int oct;
-    char    *cat;
+    int cat;
     char    *descrip;
     char    *shname;
     char    *units;

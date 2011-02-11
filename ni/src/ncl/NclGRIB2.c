@@ -42,6 +42,7 @@ char *center,
 int secid, 
 char *table, 
 int oct, 
+int cat,
 g2codeTable *ct
 #endif
 );
@@ -3447,7 +3448,7 @@ Grib2FileRecord *therec;
 				att_list_ptr->att_inq->name = NrmStringToQuark("type_of_spatial_processing");
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 				if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
-						       "4.15.table",grib_rec->spatial_proc,ct) < NhlWARNING) {
+						       "4.15.table",grib_rec->spatial_proc,-1,ct) < NhlWARNING) {
 					return;
 				}
 				if (ct->descrip) {
@@ -3570,7 +3571,7 @@ Grib2FileRecord *therec;
 			att_list_ptr->att_inq->name = NrmStringToQuark("type_of_statistical_processing");
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 			if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
-					       "4.10.table",step->traits.stat_proc_type,ct) < NhlWARNING) {
+					       "4.10.table",step->traits.stat_proc_type, -1,ct) < NhlWARNING) {
 				return;
 			}
 			if (ct->descrip) {
@@ -3671,7 +3672,7 @@ Grib2FileRecord *therec;
 			}
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 			Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
-					   "4.5.table",step->traits.first_level_type,ct);
+					   "4.5.table",step->traits.first_level_type,-1,ct);
 			if (ct->descrip) {
 				if (ct->units && strcmp("none",ct->units)) {
 					sprintf(buf,"%s (%s)",ct->descrip,ct->units);
@@ -3701,7 +3702,7 @@ Grib2FileRecord *therec;
 			att_list_ptr->att_inq->name = NrmStringToQuark("second_level_type");
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 			Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
-					   "4.5.table",step->traits.second_level_type,ct);
+					   "4.5.table",step->traits.second_level_type,-1,ct);
 			if (ct->descrip) {
 				if (ct->units && strcmp("none",ct->units)) {
 					sprintf(buf,"%s (%s)",ct->descrip,ct->units);
@@ -3753,7 +3754,7 @@ Grib2FileRecord *therec;
 		att_list_ptr->att_inq->name = NrmStringToQuark("parameter_discipline_and_category");
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 0, 
-				       "0.0.table",step->traits.discipline,ct) < NhlWARNING) {
+				       "0.0.table",step->traits.discipline,-1,ct) < NhlWARNING) {
 			return;
 		}
 		if (ct->descrip) {
@@ -3764,7 +3765,7 @@ Grib2FileRecord *therec;
 			sprintf(buf,"%d, ",step->traits.discipline);
 		}
 		if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
-				       "4.1.table",step->traits.param_cat,ct) < NhlWARNING) {
+				       "4.2.table",step->traits.discipline,step->traits.param_cat,ct) < NhlWARNING) {
 			return;
 		}
 		if (ct->descrip) {
@@ -3792,7 +3793,7 @@ Grib2FileRecord *therec;
 		att_list_ptr->att_inq->name = NrmStringToQuark("grid_type");
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 3, 
-				       "3.1.table",grib_rec->grid_number,ct) < NhlWARNING) {
+				       "3.1.table",grib_rec->grid_number,-1,ct) < NhlWARNING) {
 			return;
 		}
 		if (step->gds->is_thinned_grid) {
@@ -3914,7 +3915,7 @@ Grib2FileRecord *therec;
 		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
 		att_list_ptr->att_inq->name = NrmStringToQuark("production_status");
 
-		if (Grib2ReadCodeTable(grib_rec->table_source, 1, "1.3.table", grib_rec->traits.prod_status, ct) < NhlWARNING) {
+		if (Grib2ReadCodeTable(grib_rec->table_source, 1, "1.3.table", grib_rec->traits.prod_status,-1,ct) < NhlWARNING) {
 			return;
 		}
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -6489,7 +6490,7 @@ static void _g2SetFileDimsAndCoordVars
 		if (dstep == NULL) {
 			/* Need a new dimension entry name and number */
 			Grib2ReadCodeTable(g2inqrec->table_source, 4, 
-					   "4.5.table",g2inqrec->level_indicator,ct);
+					   "4.5.table",g2inqrec->level_indicator,-1,ct);
 			tmp = (Grib2DimInqRec *) NclMalloc((unsigned)sizeof(Grib2DimInqRec));
 			tmp->gds = NULL;
 			tmp->dim_number = therec->total_dims;
@@ -6575,7 +6576,7 @@ static void _g2SetFileDimsAndCoordVars
 		if (dstep == NULL) {
 			/* Need a new dimension entry w name and number */
 			Grib2ReadCodeTable(g2inqrec->table_source, 4, 
-					   "4.5.table",g2inqrec->level_indicator,ct);
+					   "4.5.table",g2inqrec->level_indicator,-1,ct);
 			tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
 			tmp->gds = NULL;
 			tmp->dim_number = therec->total_dims;
@@ -7706,9 +7707,6 @@ static void Grib2FreeCodeTableRec
 # endif
 {
 
-    if (ct->cat != NULL)
-        NclFree(ct->cat);
-
     if (ct->descrip != NULL)
         NclFree(ct->descrip);
 
@@ -7724,13 +7722,14 @@ static void Grib2FreeCodeTableRec
 
 static NhlErrorTypes Grib2ReadCodeTable
 # if NhlNeedProto
-(char *center, int secid, char *table, int oct, g2codeTable *ct)
+(char *center, int secid, char *table, int oct, int cat, g2codeTable *ct)
 # else
-(center, secid, table, oct)
+(center, secid, table, oct, cat, ct)
     char    *center;
     int secid;
     char    *table;
     int oct;
+    int cat;
     g2codetable *ct;
 # endif
 {
@@ -7751,9 +7750,7 @@ static NhlErrorTypes Grib2ReadCodeTable
 
     /* default values */
     ct->oct = -1;
-    if (ct->cat != NULL)
-        NclFree(ct->cat);
-    ct->cat = NULL;
+    ct->cat = -1;
 
     if (ct->descrip != NULL)
         NclFree(ct->descrip);
@@ -7808,6 +7805,8 @@ static NhlErrorTypes Grib2ReadCodeTable
         return err = NhlWARNING;
     } else {
         while (fgets(s, 256, fp)) {
+	    int go_to_outer_loop = 0;
+	    where = 0;
             sp = &s[0];
     	    len = strlen(s);
             if (len < 2)
@@ -7832,18 +7831,11 @@ static NhlErrorTypes Grib2ReadCodeTable
 
                             case 1:
                                 /* Category */
-                                len = strlen(rol);
-                                ct->cat = NclMalloc(len * sizeof(char) + 1);
-                                if (ct->cat == NULL) {
-                                    NhlPError(NhlFATAL, NhlEUNKNOWN,
-                                        "Could not allocate memory for code table entry.");
-                                    (void) fclose(fp);
-                                    NclFree(ctf);
-                                    return err = NhlFATAL;
-                                }
-    
-                                strncpy(ct->cat, rol, len);
-                                ++where;
+ 	                        ct->cat = (int) strtol(rol, (char **) NULL, 10);
+				if (cat > -1 && ct->cat != cat) 
+					go_to_outer_loop = 1;
+				else 
+					++where;
                                 break;
 
                             case 2:
@@ -7905,9 +7897,12 @@ static NhlErrorTypes Grib2ReadCodeTable
                                 return err = NhlWARNING;
                                 break;
                         }
-  
+			if (go_to_outer_loop)
+				break;
                         rol = strtok(NULL, sep);
                     }
+		    if (go_to_outer_loop)
+			    continue;
 
                     (void) fclose(fp);
                     NclFree(ctf);
@@ -7922,7 +7917,7 @@ static NhlErrorTypes Grib2ReadCodeTable
         NhlPError(NhlWARNING, NhlEUNKNOWN,
 		  " Entry (%d) not found in code table file %s", oct, ctf);
         ct->oct = -1;
-        ct->cat = NULL;
+        ct->cat = -1;
         ct->descrip = NULL;
         ct->shname = NULL;
         ct->units = NULL;
@@ -8548,7 +8543,7 @@ Grib2ParamList  *g2plist;
 	}
 	memset(ct,0,sizeof(g2codeTable));
 	sprintf(buf, "4.2.%d.%d.table", trp->discipline,trp->param_cat);
-	cterr = Grib2ReadCodeTable(g2inqrec->table_source, 4, buf,trp->param_number,ct);
+	cterr = Grib2ReadCodeTable(g2inqrec->table_source, 4, buf,trp->param_number,-1,ct);
 	if (cterr < NhlWARNING) {
 		return;
 	}
@@ -8876,7 +8871,7 @@ static void *Grib2OpenFile
                 g2rec[nrecs]->sec1.subcenter_name = NULL;
             }
         } else {
-            cterr = Grib2ReadCodeTable("", -1, "centers.table", g2rec[nrecs]->sec1.centerID, ct);
+		cterr = Grib2ReadCodeTable("", -1, "centers.table", g2rec[nrecs]->sec1.centerID,-1,ct);
             if (cterr < NhlWARNING) {
                 NhlFree(g2rec);
                 return NULL;
@@ -8985,7 +8980,7 @@ static void *Grib2OpenFile
         g2rec[nrecs]->sec1.sig_ref_time = NULL;
 #if 0
         table = "1.2.table";
-        cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec1.ref_time, ct);
+        cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec1.ref_time,-1,ct);
         if (cterr < NhlWARNING) {
             NhlFree(g2rec);
             return NULL;
@@ -9018,7 +9013,7 @@ static void *Grib2OpenFile
         g2rec[nrecs]->sec1.proc_prod_status = NULL;
 #if 0
         table = "1.3.table";
-        cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec1.prod_status, ct);
+        cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec1.prod_status, -1,ct);
         if (cterr < NhlWARNING) {
             NhlFree(g2rec);
             return NULL;
@@ -9033,7 +9028,7 @@ static void *Grib2OpenFile
         g2rec[nrecs]->sec1.proc_data_type = NULL;
 #if 0
         table = "1.4.table";
-        cterr = Grib2ReadCodeTable(center,secid,table, g2rec[nrecs]->sec1.data_type, ct);
+        cterr = Grib2ReadCodeTable(center,secid,table, g2rec[nrecs]->sec1.data_type,-1,ct);
         if (cterr < NhlWARNING) {
             NhlFree(g2rec);
             return NULL;
@@ -9257,7 +9252,7 @@ static void *Grib2OpenFile
 	       to figure out what to do next */
             /* table 3.0: Source of Grid Defn */
             table = "3.0.table";
-            cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec3[i]->grid_def_src, ct);
+            cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec3[i]->grid_def_src,-1,ct);
             if (cterr < NhlWARNING) {
                 NhlFree(g2rec);
                 return;
@@ -9272,7 +9267,7 @@ static void *Grib2OpenFile
                 case 0:
                     /* table 3.1: Grid Defn Template Num */
                     table = "3.1.table";
-                    cterr = Grib2ReadCodeTable(center, secid, table, g2fld->igdtnum, ct);
+                    cterr = Grib2ReadCodeTable(center, secid, table, g2fld->igdtnum,-1,ct);
                     if (cterr < NhlWARNING) {
                         NhlFree(g2rec);
                         return NULL;
@@ -9309,7 +9304,7 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec3[i]->interp_opt_num_pts = g2fld->interp_opt;
             table = "3.11.table";
             cterr = Grib2ReadCodeTable(center, secid, table,
-                    g2rec[nrecs]->sec3[i]->interp_opt_num_pts, ct);
+				       g2rec[nrecs]->sec3[i]->interp_opt_num_pts,-1,ct);
             if (cterr < NhlWARNING) {
                 NhlFree(g2rec);
                 return NULL;
@@ -9357,7 +9352,7 @@ static void *Grib2OpenFile
 #if 0
             table = "3.2.table";
             cterr = Grib2ReadCodeTable(center, secid, table,
-                    g2rec[nrecs]->sec3[i]->shape_of_earth->shapeOfEarth, ct);
+				       g2rec[nrecs]->sec3[i]->shape_of_earth->shapeOfEarth,-1,ct);
             if (cterr < NhlWARNING) {
                 NhlFree(g2rec);
                 return NULL;
@@ -9449,7 +9444,7 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec4[i]->prod_def_name = NULL;
 #if 0
             table = "4.0.table";
-            cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec4[i]->pds_num, ct);
+            cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec4[i]->pds_num,-1, ct);
             if (cterr < NhlWARNING) {
                 NhlFree(g2rec);
                 return NULL;
@@ -9474,7 +9469,7 @@ static void *Grib2OpenFile
 #if 0
             table = "4.1.table";
             cterr = Grib2ReadCodeTable(center, secid, table,
-                    g2rec[nrecs]->sec4[i]->prod_params->param_cat, ct);
+				       g2rec[nrecs]->sec4[i]->prod_params->param_cat,-1, ct);
             if (cterr < NhlWARNING) {
                 NhlFree(g2rec);
                 return NULL;
@@ -9502,7 +9497,7 @@ static void *Grib2OpenFile
             (void) sprintf(fnam, "4.2.%d.%d.table", g2rec[nrecs]->sec0.discipline,
                     g2rec[nrecs]->sec4[i]->prod_params->param_cat);
             cterr = Grib2ReadCodeTable(center, secid, fnam,
-                    g2rec[nrecs]->sec4[i]->prod_params->param_num, ct);
+				       g2rec[nrecs]->sec4[i]->prod_params->param_num,-1, ct);
             if (cterr < NhlWARNING) {
                 NhlFree(g2rec);
                 return NULL;
@@ -9563,7 +9558,7 @@ static void *Grib2OpenFile
 #if 0
 	    table = "4.3.table";
             cterr = Grib2ReadCodeTable(center, secid, table,
-                    g2rec[nrecs]->sec4[i]->prod_params->gen_process, ct);
+				       g2rec[nrecs]->sec4[i]->prod_params->gen_process,-1,ct);
             if (cterr < NhlWARNING) {
                 NhlFree(g2rec);
                 return NULL;
@@ -9613,7 +9608,7 @@ static void *Grib2OpenFile
 #if 0
 		    table = "4.4.table";
 		    cterr = Grib2ReadCodeTable(center, secid, table,
-					       g2rec[nrecs]->sec4[i]->prod_params->time_range, ct);
+					       g2rec[nrecs]->sec4[i]->prod_params->time_range,-1, ct);
 		    if (cterr < NhlWARNING) {
 			    NhlFree(g2rec);
 			    return NULL;
@@ -9646,7 +9641,7 @@ static void *Grib2OpenFile
 #if 0
 		    table = "4.5.table";
 		    cterr = Grib2ReadCodeTable(center, secid, table,
-					       g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc, ct);
+					       g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc,-1, ct);
 		    if (cterr < NhlWARNING) {
 			    NhlFree(g2rec);
 			    return NULL;
@@ -9688,7 +9683,7 @@ static void *Grib2OpenFile
 		    g2rec[nrecs]->sec4[i]->prod_params->units_second_fixed_sfc = NULL;
 #if 0
 		    cterr = Grib2ReadCodeTable(center, secid, table,
-					       g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc, ct);
+					       g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc,-1,ct);
 		    if (cterr < NhlWARNING) {
 			    NhlFree(g2rec);
 			    return NULL;
@@ -9897,7 +9892,7 @@ static void *Grib2OpenFile
 #if 0
                     table = "4.10.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
-                            g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc, ct);
+					       g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc,-1,ct);
                     if (cterr < NhlWARNING) {
                         NhlFree(g2rec);
                         return NULL;
@@ -9923,7 +9918,7 @@ static void *Grib2OpenFile
 #if 0		    
 			    table = "4.11.table";
 			    cterr = Grib2ReadCodeTable(center, secid, table,
-						       g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields, ct);
+						       g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields,-1,ct);
 			    if (cterr < NhlWARNING) {
 				    NhlFree(g2rec);
 				    return NULL;
@@ -9942,7 +9937,7 @@ static void *Grib2OpenFile
 #if 0
 			    table = "4.4.table";
 			    cterr = Grib2ReadCodeTable(center, secid, table,
-						       g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done, ct);
+						       g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done,-1,ct);
 			    if (cterr < NhlWARNING) {
 				    NhlFree(g2rec);
 				    return NULL;
@@ -9962,7 +9957,7 @@ static void *Grib2OpenFile
 #if 0
 			    table = "4.4.table";
 			    cterr = Grib2ReadCodeTable(center, secid, table,
-						       g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields, ct);
+						       g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields,-1,ct);
 			    if (cterr < NhlWARNING) {
 				    NhlFree(g2rec);
 				    return NULL;
@@ -10008,7 +10003,7 @@ static void *Grib2OpenFile
 #if 0
                     table = "4.6.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
-                            g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx, ct);
+					       g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx,-1,ct);
                     if (cterr < NhlWARNING) {
                         NhlFree(g2rec);
                         return NULL;
@@ -10053,7 +10048,7 @@ static void *Grib2OpenFile
 #if 0
                     table = "4.10.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
-                            g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc, ct);
+					       g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc,-1,ct);
                     if (cterr < NhlWARNING) {
                         NhlFree(g2rec);
                         return NULL;
@@ -10072,7 +10067,7 @@ static void *Grib2OpenFile
 #if 0
                     table = "4.11.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
-                            g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields, ct);
+					       g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields,-1,ct);
                     if (cterr < NhlWARNING) {
                         NhlFree(g2rec);
                         return NULL;
@@ -10091,7 +10086,7 @@ static void *Grib2OpenFile
 #if 0
                     table = "4.4.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
-                        g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done, ct);
+					       g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done,-1,ct);
                     if (cterr < NhlWARNING) {
                         NhlFree(g2rec);
                         return NULL;
@@ -10111,7 +10106,7 @@ static void *Grib2OpenFile
 #if 0
                     table = "4.4.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
-                            g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields, ct);
+					       g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields,-1,ct);
                     if (cterr < NhlWARNING) {
                         NhlFree(g2rec);
                         return NULL;
@@ -10380,7 +10375,7 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec5[i]->drt_desc = NULL;
 #if 0
             table = "5.0.table";
-            cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec5[i]->drt_templ_num, ct);
+            cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec5[i]->drt_templ_num,-1,ct);
             if (cterr < NhlWARNING) {
                 NhlFree(g2rec);
                 return NULL;
@@ -10438,7 +10433,7 @@ static void *Grib2OpenFile
 #if 0
             table = "5.1.table";
             cterr = Grib2ReadCodeTable(center, secid, table,
-                    g2rec[nrecs]->sec5[i]->data_repr->typeof_field_vals, ct);
+				       g2rec[nrecs]->sec5[i]->data_repr->typeof_field_vals,-1,ct);
             if (cterr < NhlWARNING) {
                 NhlFree(g2rec);
                 return NULL;
@@ -10462,7 +10457,7 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec6[i]->bmap_desc = NULL;
 #if 0
             table = "6.0.table";
-            cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec6[i]->bmap_ind, ct);
+            cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec6[i]->bmap_ind,-1,ct);
             if (cterr < NhlWARNING) {
                 NhlFree(g2rec);
                 return NULL;
@@ -12471,7 +12466,7 @@ static void _g2UpdateGridTypeAttribute
 				}
 				tmp_string = (NrmQuark *) step_att->att_inq->thevalue->multidval.val;
 				if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 3, 
-						       "3.1.table",step->grid_number,ct) < NhlWARNING) {
+						       "3.1.table",step->grid_number,-1,ct) < NhlWARNING) {
 					return;
 				}
 				if (ct->descrip) {
