@@ -91,6 +91,7 @@
 /* public int types supported */
 #define NhlTCharacter	"Character"
 #define NhlTByte	"Byte"
+#define NhlTUbyte	"Ubyte"
 #define NhlTShort	"Short"
 #define NhlTInteger	"Integer"
 #define NhlTLong	"Long"
@@ -99,8 +100,6 @@
 #define NhlTUint	"Uint"
 #define NhlTUlong	"Ulong"
 #define NhlTUint64	"Uint64"
-#define NhlTInt8	"Int8"
-#define NhlTUint8	"Uint8"
 
 /* public real types supported */
 #define NhlTFloat	"Float"
@@ -123,6 +122,7 @@
 #define NhlTStringGenArray	"StringGenArray"
 
 #define NhlTByteGenArray	"ByteGenArray"
+#define NhlTUbyteGenArray	"UbyteGenArray"
 #define NhlTCharacterGenArray	"CharacterGenArray"
 #define NhlTShortGenArray	"ShortGenArray"
 #define NhlTIntegerGenArray	"IntegerGenArray"
@@ -132,8 +132,6 @@
 #define NhlTUintGenArray	"UintGenArray"
 #define NhlTUlongGenArray	"UlongGenArray"
 #define NhlTUint64GenArray	"Uint64GenArray"
-#define NhlTInt8GenArray	"Int8GenArray"
-#define NhlTUint8GenArray	"Uint8GenArray"
 
 #define NhlTFloatGenArray	"FloatGenArray"
 #define NhlTDoubleGenArray	"DoubleGenArray"
