@@ -211,6 +211,11 @@ c local stuff
 c change as required
       DATA RAD/0.01745329238474369D0/
 
+c special test if RLAT1=RLAT2 and RLON1=RLON2
+      IF(RLAT1.EQ.RLAT2.AND.RLON1.EQ.RLON2) THEN
+         DGCDIST = 0.D0
+         RETURN
+      END IF
       RLAT1R = RLAT1*RAD
       RLAT2R = RLAT2*RAD
       DLONR = DMIN1(ABS(RLON1-RLON2),ABS(360.D0-RLON1+RLON2),
