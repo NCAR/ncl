@@ -100,7 +100,15 @@ FILES		= \
 		temp_diff_18lev.rgb \
 		temp_diff_1lev.rgb \
 		topo_15lev.rgb \
-		wind_17lev.rgb
+		wind_17lev.rgb \
+		BlueWhiteOrangeRed.rgb \
+		BlueYellowRed.rgb \
+		GrayWhiteGray.rgb \
+		WhiteBlueGreenYellowRed.rgb \
+		OceanLakeLandSnow.rgb \
+		WhiteBlue.rgb \
+		WhiteYellowOrangeRed.rgb \
+		WhiteGreen.rgb
 
 
 CMPATH	= $(LIBNCARGPATH)/colormaps
