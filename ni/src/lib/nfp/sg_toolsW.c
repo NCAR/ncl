@@ -734,8 +734,8 @@ NhlErrorTypes gc_inout_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  ng_size_t i,itmp,npts,nptsp1,jpol,tsize;
-  int inpts, inptsp1;
+  ng_size_t i,npts,nptsp1,jpol,tsize;
+  int itmp,inpts, inptsp1;
   double *work;
 
 /*
@@ -849,7 +849,7 @@ NhlErrorTypes gc_inout_W( void )
   nptsp1 = npts+1;
   if (npts < 3) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
-         "gc_clkwise: the polygon must have at least three points.");
+         "gc_inout: the polygon must have at least three points.");
     return(NhlFATAL);
   }
 
@@ -968,6 +968,299 @@ NhlErrorTypes gc_inout_W( void )
   }
 }
 
+NhlErrorTypes gc_inout_mask_W( void )
+{
+/*
+ * Input variables
+ */
+  void *data, *latdata, *londata, *latmask, *lonmask;
+  int *opt;
+  double *dlatdata, *dlondata, *dlatmask, *dlonmask;
+  double *dlatmask_tmp, *dlonmask_tmp;
+  ng_size_t dsizes_data[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_latdata[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_londata[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_latmask[1];
+  ng_size_t dsizes_lonmask[1];
+  int has_missing_data, ndims_data, size_data, size_data_bytes;
+  int ndims_latdata, ndims_londata;
+  NclScalar missing_data;
+  NclBasicDataTypes type_data, type_latmask, type_lonmask, type_latdata, type_londata;
+ 
+/*
+ * Output
+ */
+  void *data_out;
+
+/*
+ * Declare various variables for random purposes.
+ */
+  ng_size_t i, j, npts, nptsp1, nlatlon, size_leftmost;
+  int itmp, inpts, inptsp1;
+  double *work;
+
+/*
+ * Retrieve parameters
+ *
+ * Note that any of the pointer parameters can be set to NULL,
+ * which implies you don't care about its value.
+ */
+  data = (void*)NclGetArgValue(
+          0,
+          6,
+          &ndims_data,
+          dsizes_data,
+          &missing_data,
+          &has_missing_data,
+          &type_data,
+          DONT_CARE);
+
+  latdata = (void*)NclGetArgValue(
+          1,
+          6,
+          &ndims_latdata,
+          dsizes_latdata,
+          NULL,
+          NULL,
+          &type_latdata,
+          DONT_CARE);
+
+  londata = (void*)NclGetArgValue(
+          2,
+          6,
+          &ndims_londata,
+          dsizes_londata,
+          NULL,
+          NULL,
+          &type_londata,
+          DONT_CARE);
+  latmask = (void*)NclGetArgValue(
+          3,
+          6,
+          NULL,
+          dsizes_latmask,
+          NULL,
+          NULL,
+          &type_latmask,
+          DONT_CARE);
+
+  lonmask = (void*)NclGetArgValue(
+          4,
+          6,
+          NULL,
+          dsizes_lonmask,
+          NULL,
+          NULL,
+          &type_lonmask,
+          DONT_CARE);
+
+  opt = (int*)NclGetArgValue(
+          5,
+          6,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          DONT_CARE);
+
+/*
+ * Error checking for input/output arrays.
+ */
+  if(type_data != NCL_float && type_data != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+	      "gc_inout_mask: the data array must be float or double");
+   return(NhlFATAL);
+  }
+  if(!has_missing_data) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+         "gc_inout_mask: the data array must have a _FillValue attribute set");
+   return(NhlFATAL);
+  }
+
+/*
+ * Check that latdata/londata have the same dimensions, and the
+ * same rightmost dimensions as data.
+ */
+  if (ndims_latdata != ndims_londata) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+         "gc_inout_mask: the lat/lon data arrays must have the same number of dimensions.");
+    return(NhlFATAL);
+  }
+
+  nlatlon = 1;
+  for(i = 0; i < ndims_latdata; i++) {
+    if (dsizes_latdata[i] != dsizes_londata[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,
+           "gc_inout_mask: the lat/lon data arrays must have the same dimensionality.");
+      return(NhlFATAL);
+    }
+    nlatlon *= dsizes_latdata[i];
+  }
+
+  if (ndims_data == ndims_londata) {
+    for(i = 0; i < ndims_latdata; i++) {
+      if (dsizes_data[i] != dsizes_londata[i]) {
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
+             "gc_inout_mask: if the data/lat/lon arrays have the same number of dimensions, then the dimensions must be the same");
+        return(NhlFATAL);
+      }
+    }
+  }
+  else if (ndims_data > ndims_londata) {
+    for(i = 0; i < ndims_latdata; i++) {
+      if (dsizes_data[ndims_data-ndims_londata+i] != dsizes_londata[i]) {
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
+             "gc_inout_mask: the rightmost dimensions of data must be the same as the dimensions of lat/lon");
+        return(NhlFATAL);
+      }
+    }
+  }
+  else {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+         "gc_inout_mask: either the rightmost dimensions of data must be the same as the dimensions of lat/lon, or all the dimensions must be the same");
+    return(NhlFATAL);
+  }
+
+  if (dsizes_lonmask[0] != dsizes_latmask[0]) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN, 
+         "gc_inout_mask: the latmask/lonmask arrays must be the same length");
+    return(NhlFATAL);
+  }
+/*
+ * Test dimension sizes for mask arrays.
+ */
+  npts   = dsizes_latmask[0];
+  nptsp1 = npts+1;
+  if (npts < 3) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+         "gc_inout_mask: the lat/lon mask array have at least three points.");
+    return(NhlFATAL);
+  }
+  if(npts > INT_MAX || nptsp1 > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_inout_mask: npts and/or nptsp1 is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts   = (int) npts;
+  inptsp1 = (int) nptsp1;
+
+/*
+ * Calculate size of data.
+ */
+  size_leftmost = 1;
+  for(i = 0; i < ndims_data-ndims_latdata; i++) {
+    size_leftmost *= dsizes_data[i];
+  }
+  size_data = size_leftmost * nlatlon;
+
+/*
+ * Make copy of input array
+ */
+  if(type_data == NCL_float) {
+    size_data_bytes = size_data * sizeof(float);
+    data_out = (float *) calloc(size_data,sizeof(float));
+  }
+  else {
+    size_data_bytes = size_data * sizeof(double);
+    data_out = (double *) calloc(size_data,sizeof(double));
+  }
+  if(data_out == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_inout_mask: unable to make copy of new data array");
+    return(NhlFATAL);
+  }
+  memcpy(data_out,data,size_data_bytes);
+
+/*
+ * Coerce input variables to double if necessary.
+ */
+  dlatmask_tmp = coerce_input_double(latmask, type_latmask, npts,
+				     0, NULL, NULL);
+  dlonmask_tmp = coerce_input_double(lonmask, type_lonmask, npts,
+				     0, NULL, NULL);
+
+  if(dlatmask_tmp == NULL || dlonmask_tmp == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_inout_mask: unable to allocate memory for coercing lat/lon mask arrays to double precision");
+    return(NhlFATAL);
+  }
+
+/*
+ * Close the latmask/lonmask polygon if necessary.
+ */
+  if (dlatmask_tmp[0] != dlatmask_tmp[npts-1] || 
+      dlonmask_tmp[0] != dlonmask_tmp[npts-1]) {
+    dlatmask = (double *) calloc(npts+1,sizeof(double));
+    dlonmask = (double *) calloc(npts+1,sizeof(double));
+    if(dlatmask == NULL || dlonmask == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_inout_mask: unable to allocate memory for closing lat/lon mask array");
+      return(NhlFATAL);
+    }
+    memcpy(dlatmask,dlatmask_tmp,npts*sizeof(double));
+    memcpy(dlonmask,dlonmask_tmp,npts*sizeof(double));
+    dlatmask[npts] = dlatmask[0];
+    dlonmask[npts] = dlonmask[0];
+    if(type_latmask != NCL_double) NclFree(dlatmask_tmp);
+    if(type_lonmask != NCL_double) NclFree(dlonmask_tmp);
+   
+  }
+  else {
+    dlatmask = dlatmask_tmp;
+    dlonmask = dlonmask_tmp;
+  }
+
+  work = (double *)calloc(4*(npts+1), sizeof(double));
+  if(work == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_inout_mask: unable to allocate memory for work array");
+    return(NhlFATAL);
+  }
+/*
+ * Loop through each lat/lon point of the data and see if it is in or out
+ * of the lat/lon mask array.
+ */
+  dlatdata = coerce_input_double(latdata, type_latdata, nlatlon, 
+				 0, NULL, NULL);
+  dlondata = coerce_input_double(londata, type_londata, nlatlon, 
+				 0, NULL, NULL);
+  if(dlatdata == NULL || dlondata == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_inout_mask: unable to coerce input lat/lon arrays to double");
+    return(NhlFATAL);
+  }
+
+  for( i = 0; i < nlatlon; i++ ) {
+    itmp = NGCALLF(gcinout,GCINOUT)(&dlatdata[i],&dlondata[i],
+				    dlatmask,dlonmask,&inpts,work);
+/*
+ * itmp==0 implies lat/lon point is inside the mask.
+ * 
+ * If opt==0, then mask points outside mask. 
+ *    opt==1, then mask points inside mask.
+ */
+    if( (itmp == 0 && *opt == 1) || (itmp != 0 && *opt == 0)) {
+      if(type_data == NCL_double) {
+	for(j = 0; j < size_leftmost; j++) {
+	  ((double*)data_out)[i+(j*nlatlon)] = missing_data.doubleval;
+	}
+      }
+      else {
+	for(j = 0; j < size_leftmost; j++) {
+	  ((float*)data_out)[i+(j*nlatlon)] = missing_data.floatval;
+	}
+      }
+    }
+  }
+
+/*
+ * Free memory.
+ */
+  if((void*)dlatmask != latmask) NclFree(dlatmask);
+  if((void*)dlonmask != lonmask) NclFree(dlonmask);
+  if((void*)dlatdata != latdata) NclFree(dlatdata);
+  if((void*)dlondata != londata) NclFree(dlondata);
+  NclFree(work);
+
+  return(NclReturnValue(data_out,ndims_data,dsizes_data,&missing_data,
+			type_data,0));
+}
+
 NhlErrorTypes gc_onarc_W( void )
 {
 /*
@@ -993,7 +1286,8 @@ NhlErrorTypes gc_onarc_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  ng_size_t i,tsize,itmp;
+  ng_size_t i,tsize;
+  int itmp;
   double tol = 1.e-10;
 
 /*

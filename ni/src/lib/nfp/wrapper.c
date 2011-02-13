@@ -111,6 +111,7 @@ extern NhlErrorTypes gc_dangle_W(void);
 extern NhlErrorTypes gc_aangle_W(void);
 extern NhlErrorTypes gc_clkwise_W(void);
 extern NhlErrorTypes gc_inout_W(void);
+extern NhlErrorTypes gc_inout_mask_W(void);
 extern NhlErrorTypes gc_onarc_W(void);
 
 extern NhlErrorTypes dv2uvf_W(void);
@@ -1891,6 +1892,22 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     NclRegisterFunc(gc_inout_W,args,"gc_inout",nargs);
+
+/*
+ * Register "gc_inout_mask".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(6);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(gc_inout_mask_W,args,"gc_inout_mask",nargs);
 
 /*
  * Register "gc_qarea".
