@@ -2611,6 +2611,7 @@ void CallLOOP_VALIDATE_OP(void) {
 						estatus = NhlFATAL;
 					}
 					if(estatus != NhlFATAL) {	
+						char buffer[32];
 						if(tmp_md->multidval.kind != SCALAR) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop strides must be scalar, can't execute loop");
 							estatus = NhlFATAL;
@@ -2623,6 +2624,10 @@ void CallLOOP_VALIDATE_OP(void) {
 							}
 							if(tmp2_md->obj.status != PERMANENT) {
 								_NclDestroyObj((NclObj)tmp2_md);
+							}
+							if (! _NclScalarCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,inc_md->multidval.type->type_class.data_type)) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop stride type must be coercible to loop variable type, can't execute loop");
+								estatus = NhlFATAL;
 							}
 						} else {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop strides must be numeric values, can't execute loop");
@@ -2651,7 +2656,7 @@ void CallLOOP_VALIDATE_OP(void) {
 							if(dir) {
 								_Ncllt(tmp_md->multidval.type,&result,tmp_md->multidval.val,tmp2_md->multidval.val,NULL,NULL,1,1);
 							} else {
-								_Nclgt(inc_md->multidval.type,&result,tmp_md->multidval.val,tmp2_md->multidval.val,NULL,NULL,1,1);
+								_Nclgt(tmp_md->multidval.type,&result,tmp_md->multidval.val,tmp2_md->multidval.val,NULL,NULL,1,1);
 							}
 							if(tmp2_md->obj.status != PERMANENT) {
 								_NclDestroyObj((NclObj)tmp2_md);
@@ -2693,10 +2698,11 @@ void CallLOOP_INC_OP(void) {
 					NclSymbol *l_dir;
 					NclMultiDValData end_md = NULL;;
 					NclMultiDValData inc_md = NULL;
-					char *buffer[10];
+					char *buffer[32],*buffer2[32];
 					logical dir = False;
-					logical result;
+					logical result,result2;
 					NclStackEntry data;
+					int tmp_estatus;
 
 					ptr++;lptr++;fptr++;
 					l_inc = (NclSymbol*)*ptr;
@@ -2741,49 +2747,75 @@ void CallLOOP_INC_OP(void) {
 						NHLPERROR((NhlFATAL,NhlEUNKNOWN, "Internal error"));
 						return;
 					}
-					if(dir) {
-/*
-* decreasing
-*/
-						if(tmp_md->multidval.type->type_class.type != inc_md->multidval.type->type_class.type) {
-							_NclScalarCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,inc_md->multidval.type->type_class.data_type);
-							_Nclminus(tmp_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,buffer,NULL,NULL,1,1);
-						} else {
-							_Nclminus(tmp_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,tmp_md->multidval.val,NULL,NULL,1,1);
+					result = False;
+
+					/*
+					 * Assuming an incrementing situation (dir == False) if the increment variable is incremented prior to testing,
+					 * it can possibly overflow before testing positively
+					 * for a loop end. Therefore the test decrements the end variable and tests the current value of the increment variable
+					 * prior to incrementing it. This could be made faster if the decremented loop variable was saved separately, so we do
+					 * not have to do this calculation at each step. 
+					 */ 
+
+					if (tmp_md->multidval.type->type_class.type == inc_md->multidval.type->type_class.type &&
+					    inc_md->multidval.type->type_class.type == end_md->multidval.type->type_class.type) {
+						if (dir) {
+							_Nclplus(end_md->multidval.type,buffer,end_md->multidval.val,tmp_md->multidval.val,NULL,NULL,1,1);
+							_Ncllt(inc_md->multidval.type,&result,inc_md->multidval.val,buffer,NULL,NULL,1,1);
+							_Nclminus(inc_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,tmp_md->multidval.val,NULL,NULL,1,1);
 						}
-					} else {
-/*
-* increasing
-*/
-						if(tmp_md->multidval.type->type_class.type != inc_md->multidval.type->type_class.type) {
-							_NclScalarCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,inc_md->multidval.type->type_class.data_type);
-							_Nclplus(tmp_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,buffer,NULL,NULL,1,1);
-						} else {
-							_Nclplus(tmp_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,tmp_md->multidval.val,NULL,NULL,1,1);
-						}
-					}
-					if(inc_md->multidval.type->type_class.type != end_md->multidval.type->type_class.type) {
-						tmp_md = _NclCoerceData(inc_md,Ncl_Typedouble,NULL) ;
-						tmp2_md = _NclCoerceData(end_md,Ncl_Typedouble,NULL) ;
-	
-						if(dir) {
-							_Ncllt(tmp_md->multidval.type,&result,tmp_md->multidval.val,tmp2_md->multidval.val,NULL,NULL,1,1);
-						} else {
-							_Nclgt(tmp_md->multidval.type,&result,tmp_md->multidval.val,tmp2_md->multidval.val,NULL,NULL,1,1);
-						}
-						if(tmp2_md->obj.status != PERMANENT) {
-							_NclDestroyObj((NclObj)tmp2_md);
-						}
-						if(tmp_md->obj.status != PERMANENT) {
-							_NclDestroyObj((NclObj)tmp_md);
-						}
-					} else {
-						if(dir) {
-							_Ncllt(inc_md->multidval.type,&result,inc_md->multidval.val,end_md->multidval.val,NULL,NULL,1,1);
-						} else {
-							_Nclgt(inc_md->multidval.type,&result,inc_md->multidval.val,end_md->multidval.val,NULL,NULL,1,1);
+						else {
+							_Nclminus(end_md->multidval.type,buffer,end_md->multidval.val,tmp_md->multidval.val,NULL,NULL,1,1);
+							_Nclgt(inc_md->multidval.type,&result,inc_md->multidval.val,buffer,NULL,NULL,1,1);
+							_Nclplus(inc_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,tmp_md->multidval.val,NULL,NULL,1,1);
 						}
 					}
+					else if (inc_md->multidval.type->type_class.type == end_md->multidval.type->type_class.type) {
+						_NclScalarCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,inc_md->multidval.type->type_class.data_type);
+						if (dir) {
+							_Nclplus(end_md->multidval.type,buffer,end_md->multidval.val,buffer,NULL,NULL,1,1);
+							_Ncllt(inc_md->multidval.type,&result,inc_md->multidval.val,buffer,NULL,NULL,1,1);
+							_Nclminus(inc_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,tmp_md->multidval.val,NULL,NULL,1,1);
+						}
+						else {
+							_Nclminus(end_md->multidval.type,buffer,end_md->multidval.val,buffer,NULL,NULL,1,1);
+							_Nclgt(inc_md->multidval.type,&result,inc_md->multidval.val,buffer,NULL,NULL,1,1);
+							_Nclplus(inc_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,tmp_md->multidval.val,NULL,NULL,1,1);
+						}
+					}
+					else {
+						_NclScalarCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,end_md->multidval.type->type_class.data_type);
+						_NclScalarCoerce(inc_md->multidval.val,inc_md->multidval.data_type,buffer2,NCL_double);
+						if (dir) {
+							_Nclplus(end_md->multidval.type,buffer,end_md->multidval.val,buffer,NULL,NULL,1,1);
+							_NclScalarCoerce(buffer,end_md->multidval.type->type_class.data_type,buffer,NCL_double);
+							_Ncllt((NclTypeClass)nclTypedoubleClass,&result,buffer2,buffer,NULL,NULL,1,1);
+							_NclScalarForcedCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,inc_md->multidval.type->type_class.data_type);
+							_Nclminus(inc_md->multidval.type,buffer,inc_md->multidval.val,buffer,NULL,NULL,1,1);
+						        _Nclgt(inc_md->multidval.type,&result2,buffer,inc_md->multidval.val,NULL,NULL,1,1);
+							if (result2 && ! result) {
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"Prematurely ending loop due to increment overflow");
+								estatus = MIN(estatus,NhlWARNING);
+								result = True;
+							}
+							memcpy(inc_md->multidval.val,buffer,inc_md->multidval.type->type_class.size);
+						}
+						else {
+							_Nclminus(end_md->multidval.type,buffer,end_md->multidval.val,buffer,NULL,NULL,1,1);
+							_NclScalarCoerce(buffer,end_md->multidval.type->type_class.data_type,buffer,NCL_double);
+							_Nclgt((NclTypeClass)nclTypedoubleClass,&result,buffer2,buffer,NULL,NULL,1,1);
+							_NclScalarForcedCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,inc_md->multidval.type->type_class.data_type);
+							_Nclplus(inc_md->multidval.type,buffer,inc_md->multidval.val,buffer,NULL,NULL,1,1);
+						        _Ncllt(inc_md->multidval.type,&result2,buffer,inc_md->multidval.val,NULL,NULL,1,1);
+							if (result2 && ! result) {
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"Prematurely ending loop due to increment overflow");
+								estatus = MIN(estatus,NhlWARNING);
+								result = True;
+							}
+							memcpy(inc_md->multidval.val,buffer,inc_md->multidval.type->type_class.size);
+						}
+					}
+
 					data.kind = NclStk_VAL;
 					if(result) {
 /*
@@ -2803,7 +2835,8 @@ void CallLOOP_INC_OP(void) {
 					} else {
 						data.u.data_obj = _NclCreateTrue();
 					}
-					estatus = _NclPush(data);
+					tmp_estatus = _NclPush(data);
+					estatus = MIN(estatus,tmp_estatus);
 					if(inc_var.u.data_obj->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)inc_var.u.data_obj);
 					}
