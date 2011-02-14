@@ -442,8 +442,8 @@ NhlErrorTypes exp_tapersh_wgts_W( void )
 /*
  * Return values. 
  */
-  NclFree(nwgt);
   dsizes_s[0] = *nwgt;
+  NclFree(nwgt);
   return(NclReturnValue(s,1,dsizes_s,NULL,type_s,0));
 }
 
