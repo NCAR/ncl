@@ -407,15 +407,14 @@ include/ncarg/nio/NclTypedouble.h
 include/ncarg/nio/NclTypefloat.h
 include/ncarg/nio/NclTypeint.h
 include/ncarg/nio/NclTypeint64.h
-include/ncarg/nio/NclTypeint8.h
 include/ncarg/nio/NclTypelogical.h
 include/ncarg/nio/NclTypelong.h
 include/ncarg/nio/NclTypeobj.h
 include/ncarg/nio/NclTypeshort.h
 include/ncarg/nio/NclTypestring.h
+include/ncarg/nio/NclTypeubyte.h
 include/ncarg/nio/NclTypeuint.h
 include/ncarg/nio/NclTypeuint64.h
-include/ncarg/nio/NclTypeuint8.h
 include/ncarg/nio/NclTypeulong.h
 include/ncarg/nio/NclTypeushort.h
 include/ncarg/nio/NclVar.h
