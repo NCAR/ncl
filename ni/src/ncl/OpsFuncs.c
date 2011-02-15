@@ -815,6 +815,7 @@ NhlErrorTypes _NclBuildListVar
 #endif
 {
 	NclStackEntry *data_ptr;
+	NclStackEntry data;
 	int i;
 	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	int ndims = 1;
@@ -827,7 +828,7 @@ NhlErrorTypes _NclBuildListVar
 	*id = thelist->obj.id;
 	_NclListSetType((NclObj)thelist,NCL_FIFO);
 
-        dim_sizes[0] = n_items;
+        dim_sizes[0] = 1;
 	result->kind = NclStk_VAL;
 	result->u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,
 				(Ncl_List | Ncl_MultiDVallistData | Ncl_ListVar | Ncl_Typelist),id,NULL,
@@ -835,8 +836,12 @@ NhlErrorTypes _NclBuildListVar
 
 	for(i = n_items - 1; i > -1; i--)
 	{
+/*
 		data_ptr = _NclPeek(i);
 		ListPush((NclObj)thelist, (NclObj)(data_ptr->u.data_obj));
+*/
+		data = _NclPop();
+		ListPush((NclObj)thelist, (NclObj)(data.u.data_obj)); 
 	}
 
 	_NclPlaceReturn(*result);

@@ -58,7 +58,12 @@ FILE *fp;
 	
 	while(step != NULL)
 	{
-	    oc = _NclObjTypeToPointer(step->orig_type);
+	   
+	    cur_obj = (NclObj)_NclGetObj(step->obj_id);
+	    /* orig_type is a mask it wont work with this func 
+	       oc = _NclObjTypeToPointer(step->orig_type); */
+
+	    oc = _NclObjTypeToPointer(cur_obj->obj.obj_type);
 
 	    if(oc != NULL)
 	    {
@@ -74,7 +79,6 @@ FILE *fp;
                 return(NhlWARNING);
             }
 
-	    cur_obj = (NclObj)_NclGetObj(step->obj_id);
 
 	    switch(cur_obj->obj.obj_type)
 	    {
