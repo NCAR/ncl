@@ -2698,24 +2698,25 @@ void CallLOOP_INC_OP(void) {
 					NclSymbol *l_dir;
 					NclMultiDValData end_md = NULL;;
 					NclMultiDValData inc_md = NULL;
-					char *buffer[32],*buffer2[32];
+					char *buffer[32],*inc_buf[32],*end_buf[32];
 					logical dir = False;
 					logical result,result2;
 					NclStackEntry data;
 					int tmp_estatus;
+					NrmQuark inc_varname = NrmNULLQUARK;
 
 					ptr++;lptr++;fptr++;
 					l_inc = (NclSymbol*)*ptr;
 					ptr++,lptr++,fptr++;
 					l_dir = (NclSymbol*)*ptr;
 					inc_var= _NclPop();
-
 					switch(inc_var.kind) {
 					case NclStk_VAL:
 						inc_md= inc_var.u.data_obj;
 						break;
 					case NclStk_VAR:
 						inc_md= _NclVarValueRead(inc_var.u.data_var,NULL,NULL);
+						inc_varname = inc_var.u.data_var->var.var_quark;
 						break;
 					default:
 						estatus = NhlFATAL;
@@ -2784,35 +2785,32 @@ void CallLOOP_INC_OP(void) {
 						}
 					}
 					else {
-						_NclScalarCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,end_md->multidval.type->type_class.data_type);
-						_NclScalarCoerce(inc_md->multidval.val,inc_md->multidval.data_type,buffer2,NCL_double);
+						_NclScalarCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,NCL_double);
+						_NclScalarCoerce(end_md->multidval.val,end_md->multidval.type->type_class.data_type,end_buf,NCL_double);
+						_NclScalarCoerce(inc_md->multidval.val,inc_md->multidval.data_type,inc_buf,NCL_double);
 						if (dir) {
-							_Nclplus(end_md->multidval.type,buffer,end_md->multidval.val,buffer,NULL,NULL,1,1);
-							_NclScalarCoerce(buffer,end_md->multidval.type->type_class.data_type,buffer,NCL_double);
-							_Ncllt((NclTypeClass)nclTypedoubleClass,&result,buffer2,buffer,NULL,NULL,1,1);
-							_NclScalarForcedCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,inc_md->multidval.type->type_class.data_type);
+							_Nclplus((NclTypeClass)nclTypedoubleClass,buffer,end_buf,buffer,NULL,NULL,1,1);
+							_Ncllt((NclTypeClass)nclTypedoubleClass,&result,inc_buf,buffer,NULL,NULL,1,1);
+							_NclScalarCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,inc_md->multidval.type->type_class.data_type);
 							_Nclminus(inc_md->multidval.type,buffer,inc_md->multidval.val,buffer,NULL,NULL,1,1);
 						        _Nclgt(inc_md->multidval.type,&result2,buffer,inc_md->multidval.val,NULL,NULL,1,1);
-							if (result2 && ! result) {
-								NhlPError(NhlWARNING,NhlEUNKNOWN,"Prematurely ending loop due to increment overflow");
-								estatus = MIN(estatus,NhlWARNING);
-								result = True;
-							}
 							memcpy(inc_md->multidval.val,buffer,inc_md->multidval.type->type_class.size);
 						}
 						else {
-							_Nclminus(end_md->multidval.type,buffer,end_md->multidval.val,buffer,NULL,NULL,1,1);
-							_NclScalarCoerce(buffer,end_md->multidval.type->type_class.data_type,buffer,NCL_double);
-							_Nclgt((NclTypeClass)nclTypedoubleClass,&result,buffer2,buffer,NULL,NULL,1,1);
-							_NclScalarForcedCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,inc_md->multidval.type->type_class.data_type);
+							_Nclminus((NclTypeClass)nclTypedoubleClass,buffer,end_buf,buffer,NULL,NULL,1,1);
+							_Nclgt((NclTypeClass)nclTypedoubleClass,&result,inc_buf,buffer,NULL,NULL,1,1);
+							_NclScalarCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,inc_md->multidval.type->type_class.data_type);
 							_Nclplus(inc_md->multidval.type,buffer,inc_md->multidval.val,buffer,NULL,NULL,1,1);
 						        _Ncllt(inc_md->multidval.type,&result2,buffer,inc_md->multidval.val,NULL,NULL,1,1);
-							if (result2 && ! result) {
-								NhlPError(NhlWARNING,NhlEUNKNOWN,"Prematurely ending loop due to increment overflow");
-								estatus = MIN(estatus,NhlWARNING);
-								result = True;
-							}
 							memcpy(inc_md->multidval.val,buffer,inc_md->multidval.type->type_class.size);
+						}
+						if (result2 && ! result) {
+							if (inc_varname != NrmNULLQUARK) 
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"Prematurely ending loop due to overflow in loop variable '%s'",NrmQuarkToString(inc_varname));
+							else 
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"Prematurely ending loop due to overflow in loop variable");
+							estatus = MIN(estatus,NhlWARNING);
+							result = True;
 						}
 					}
 
