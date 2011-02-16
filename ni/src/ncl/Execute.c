@@ -2774,14 +2774,14 @@ void CallLOOP_INC_OP(void) {
 					else if (inc_md->multidval.type->type_class.type == end_md->multidval.type->type_class.type) {
 						_NclScalarCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,(void*)buffer,inc_md->multidval.type->type_class.data_type);
 						if (dir) {
-							_Nclplus(end_md->multidval.type,buffer,end_md->multidval.val,buffer,NULL,NULL,1,1);
-							_Ncllt(inc_md->multidval.type,&result,inc_md->multidval.val,buffer,NULL,NULL,1,1);
-							_Nclminus(inc_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,tmp_md->multidval.val,NULL,NULL,1,1);
+							_Nclplus(end_md->multidval.type,end_buf,end_md->multidval.val,buffer,NULL,NULL,1,1);
+							_Ncllt(inc_md->multidval.type,&result,inc_md->multidval.val,end_buf,NULL,NULL,1,1);
+							_Nclminus(inc_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,buffer,NULL,NULL,1,1);
 						}
 						else {
-							_Nclminus(end_md->multidval.type,buffer,end_md->multidval.val,buffer,NULL,NULL,1,1);
-							_Nclgt(inc_md->multidval.type,&result,inc_md->multidval.val,buffer,NULL,NULL,1,1);
-							_Nclplus(inc_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,tmp_md->multidval.val,NULL,NULL,1,1);
+							_Nclminus(end_md->multidval.type,end_buf,end_md->multidval.val,buffer,NULL,NULL,1,1);
+							_Nclgt(inc_md->multidval.type,&result,inc_md->multidval.val,end_buf,NULL,NULL,1,1);
+							_Nclplus(inc_md->multidval.type,inc_md->multidval.val,inc_md->multidval.val,buffer,NULL,NULL,1,1);
 						}
 					}
 					else {
