@@ -148,7 +148,8 @@ FILE *fp;
         } else {
                 v_name = "unnamed";
         }
-	nclfprintf(fp,"Variable: %s (file variable)\n",v_name);
+	nclfprintf(fp,"\nVariable: %s\n",v_name);
+	nclfprintf(fp,"Type: file\n");
 
 	return(NhlNOERROR);;
 }
@@ -184,7 +185,41 @@ FILE *fp;
 			return(_NclPrint((NclObj)thefile,fp));
 		}
 	}
-	return(NhlNOERROR);;
+	return(NhlNOERROR);
+}
+
+NhlErrorTypes FileVarPrintSummary
+#if	NhlNeedProto
+(NclObj theobj,FILE *fp)
+#else
+(theobj,fp)
+NclObj theobj;
+FILE *fp;
+#endif
+{
+	NclVar thevar = (NclVar) theobj;
+	NclFile thefile;
+	NclMultiDValData theval;
+
+	FileVarPrintVarSummary(theobj, fp);
+
+	theval = (NclMultiDValData)_NclGetObj(thevar->var.thevalue_id);
+	if(theval != NULL) {
+		if(theval->multidval.missing_value.has_missing) {
+			if(theval->multidval.missing_value.value.objval == *(obj*)theval->multidval.val) {
+				nclfprintf(fp,"(0) File Missing Value : %d\n",*(obj*)theval->multidval.val);
+				thefile = NULL;
+			} else {
+				thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
+			}
+		} else {
+			thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
+		}
+		if(thefile != NULL) {
+			FilePrintSummary((NclObj)thefile,fp);
+		}
+	}
+	return(NhlNOERROR);
 }
 
 static NhlErrorTypes InitializeFileVarClass(
@@ -322,6 +357,8 @@ char *var_name,NclStatus status)
 	NclFileVar fvar = NULL;
 	NclFile thefile;
 	NclObjClass	cptr = (theclass ? theclass : nclFileVarClass);
+
+	_NclInitClass(cptr);
 
 	thefile = (NclFile)_NclGetObj(*(int*)value->multidval.val);
 	if(inst != NULL) {

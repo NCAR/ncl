@@ -34,13 +34,14 @@
 #include "NclMdInc.h"
 #include "NclAtt.h"
 #include "NclVar.h"
+#include "NclList.h"
+#include "NclCoordVar.h"
 #include "DataSupport.h"
 #include "TypeSupport.h"
 #include "AttSupport.h"
 #include "VarSupport.h"
-#include "NclCoordVar.h"
+#include "ListSupport.h"
 #include "NclCallBacksI.h"
-#include "NclList.h"
 #include <math.h>
 #ifdef NIO_LIB_ONLY
 #define UNDEF 255
@@ -526,18 +527,9 @@ FILE *fp;
 		NclList thelist = (NclList) _NclGetObj(*(int *)thevalue->multidval.val);
 		ret0 = NhlNOERROR;
 
-		ret = nclfprintf(fp,"Total objects: %ld\n",(long)thelist->list.nelem);
+		ret = nclfprintf(fp,"Total items: %ld\n\n",(long)thelist->list.nelem);
 		if(ret < 0) {
 			return(NhlWARNING);
-		}
-		step = thelist->list.first;
-		for(i = 0; i < thelist->list.nelem; i++)
-		{
-			obj = _NclGetObj(step->obj_id);
-			ret = nclfprintf(fp,"\n\n********Object[%d]********", i);
-
-			VarPrintVarSummary(obj, fp);
-			step = step->next;
 		}
 
 		return(ret0);

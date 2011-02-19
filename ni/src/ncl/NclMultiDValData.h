@@ -28,8 +28,6 @@
 #include "NclData.h"
 #include "NclType.h"
 
-#define NCL_DEFAULT_MISSING_VALUE -9999.0
-
 typedef enum {
 MULTID = 0,
 SCALAR = 01

@@ -31,6 +31,7 @@
 #include "NclType.h"
 #include "TypeSupport.h"
 #include "NclMdInc.h"
+#include "NclTypelist.h"
 #include <ctype.h>
 
 INSERTHERE
@@ -58,6 +59,7 @@ NhlErrorTypes _NclInitTypeClasses
 	_NclInitClass(nclTypeulongClass);
 	_NclInitClass(nclTypeuint64Class);
 	_NclInitClass(nclTypeubyteClass);
+	_NclInitClass(nclTypelistClass);
 	return(NhlNOERROR);
 }
 
@@ -117,8 +119,6 @@ NclObjTypes obj_type_enum;
 		return((NclTypeClass)nclTypestringClass);
 	case Ncl_Typechar:
 		return((NclTypeClass)nclTypecharClass);
-	case Ncl_Typeobj:
-		return((NclTypeClass)nclTypeobjClass);
 	case Ncl_Typelogical:
 		return((NclTypeClass)nclTypelogicalClass);
 	case Ncl_Typeint64:
@@ -133,6 +133,10 @@ NclObjTypes obj_type_enum;
 		return((NclTypeClass)nclTypeuint64Class);
 	case Ncl_Typeubyte:
 		return((NclTypeClass)nclTypeubyteClass);
+	case Ncl_Typeobj:
+		return((NclTypeClass)nclTypeobjClass);
+	case Ncl_Typelist:
+		return((NclTypeClass)nclTypelistClass);
 	default:
 		return((NclTypeClass)nclTypeClass);
 	}

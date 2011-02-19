@@ -825,6 +825,38 @@ NclQuark var;
 	}
 }
 
+NhlErrorTypes FilePrintSummary
+#if	NhlNeedProto
+(NclObj self, FILE    *fp)
+#else
+(self, fp)
+NclObj self;
+FILE    *fp;
+#endif
+{
+	NclFile thefile = (NclFile)self;
+	int i,j;
+	NclFileAttInfoList* step;
+	int ret = 0;
+	NclMultiDValData tmp_md;
+	NhlErrorTypes ret1 = NhlNOERROR;
+	char *tmp_str;
+
+	ret = nclfprintf(fp,"File path:\t%s\n",NrmQuarkToString(thefile->file.fpath));
+	if(ret < 0) {	
+		return(NhlWARNING);
+	}
+	
+	ret = nclfprintf(fp,"Number of global attributes:\t %d\n",thefile->file.n_file_atts);
+        ret = nclfprintf(fp,"Number of dimensions:\t %d\n",thefile->file.n_file_dims);
+	if (thefile->file.n_grps > 0) {
+		ret = nclfprintf(fp,"Number of groups:\t %d\n",thefile->file.n_grps);
+	}
+        ret = nclfprintf(fp,"Number of variables:\t %d\n",thefile->file.n_vars);
+
+	return ret;
+}
+
 NhlErrorTypes FilePrint
 #if	NhlNeedProto
 (NclObj self, FILE    *fp)
@@ -843,7 +875,7 @@ FILE    *fp;
 	char *tmp_str;
 	
 
-	ret = nclfprintf(fp,"\nfilename:\t%s\n",NrmQuarkToString(thefile->file.fname));
+	ret = nclfprintf(fp,"filename:\t%s\n",NrmQuarkToString(thefile->file.fname));
 	if(ret < 0) {	
 		return(NhlWARNING);
 	}
@@ -6388,7 +6420,7 @@ struct _NclSelectionRecord* sel_ptr;
 		}
 		return(tmp_var);
 	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a coordinate variable for file (%s)",NrmQuarkToString(coord_name),NrmQuarkToString(thefile->file.fname));
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is no  a coordinate variable for file (%s)",NrmQuarkToString(coord_name),NrmQuarkToString(thefile->file.fname));
 	}
 	return(NULL);
 }

@@ -606,7 +606,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			agg_dim_count[i] = 1;
 		}
 		list_index = newlist->list.nelem - 1;
-		while ((the_obj_id = _NclGetNext((NclObj)newlist)) != -1) {
+		while ((the_obj_id = _NclListGetNext((NclObj)newlist)) != -1) {
 			NclMultiDValData file_md = NULL;
 			NclFile thefile = NULL;
 			int index;
@@ -666,7 +666,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	else {
 		total_agg_dim_size = 0;
 		list_index = newlist->list.nelem - 1;
-		while ((the_obj_id = _NclGetNext((NclObj)newlist)) != -1) {
+		while ((the_obj_id = _NclListGetNext((NclObj)newlist)) != -1) {
 			NclMultiDValData file_md = NULL;
 			NclFile thefile = NULL;
 			int index;
@@ -1481,7 +1481,7 @@ void CallSET_NEXT_OP(void)
 	list = list_ptr->u.data_list;
 	
 
-	the_obj_id = _NclGetNext((NclObj)list);
+	the_obj_id = _NclListGetNext((NclObj)list);
 	if(the_obj_id != -1 ) {
 		the_obj = _NclGetObj(the_obj_id);
 		if(the_obj == NULL) {

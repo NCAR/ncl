@@ -67,7 +67,7 @@ FILE *fp;
 
 	    if(oc != NULL)
 	    {
-	 	ret = nclfprintf(fp,"\nList Elem %d:\t%s\n\n", nv, oc->obj_class.class_name);
+	 	ret = nclfprintf(fp,"List Item %d:\t%s", nv, oc->obj_class.class_name);
 	    }
 	    else
 	    {
@@ -79,23 +79,14 @@ FILE *fp;
                 return(NhlWARNING);
             }
 
-
 	    switch(cur_obj->obj.obj_type)
 	    {
+	        NclObj obj;
 	        case Ncl_Var:
-		{
-		    NclVar var;
-		    var = (NclVar)_NclGetObj(cur_obj->obj.id);
-		    VarPrint((NclObj)var, fp);
-		    break;
-		}
 	        case Ncl_FileVar:
-		{
-		    NclFileVar fv;
-		    fv = (NclFileVar)_NclGetObj(cur_obj->obj.id);
-		    FileVarPrint((NclObj)fv, fp);
-		    break;
-		}
+			obj = _NclGetObj(cur_obj->obj.id);
+			_NclPrintVarSummary(obj);
+			break;
 	        default:
 		    fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
 		    fprintf(stderr, "\tUNRECOGANIZED cur_obj->obj.obj_type %d: %o\n", nv, cur_obj->obj.obj_type);

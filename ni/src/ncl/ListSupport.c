@@ -27,7 +27,7 @@
 
 
 
-int _NclGetNext(NclObj thelist)
+int _NclListGetNext(NclObj thelist)
 {
 	NclListClass lc;
 	if(thelist == NULL) {
@@ -131,3 +131,21 @@ NclList _NclListSelect(NclList thelist, NclSelection* sel_ptr)
 	return(NULL);
 }
 
+
+void  _NclListDestroy(NclObj thelist)
+{
+	NclListClass lc;
+	if(thelist == NULL) {
+		return;
+	} else {
+		lc = (NclListClass)thelist->obj.class_ptr;
+	}
+	while((NclObjClass)lc != nclObjClass) {
+		if(lc->obj_class.destroy != NULL) {
+			(*lc->obj_class.destroy)(thelist);
+		} else {
+			lc = (NclListClass)lc->obj_class.super_class;
+		}
+	}
+	return;
+}

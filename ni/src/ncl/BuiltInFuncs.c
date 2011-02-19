@@ -2217,31 +2217,54 @@ NhlErrorTypes _NclIDelete
 	int sub_sel = 0;
 	NclObj tmp,pobj;
 	NclRefList *rlist = NULL;
+	int obj_id;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 
 	switch(data.kind) {
 	case NclStk_VAL:
-/*
-		if(data.u.data_obj->obj.ref_count != 0) {
-			rlist = data.u.data_obj->obj.parents;
-			while(rlist != NULL) {
-				switch(rlist->pptr->obj.obj_type) {
-				case Ncl_Att:
-					_NclDeleteAttMDID((NclObj)rlist->pptr->obj.id,(NclObj)data.u.data_obj->obj.id);
-					break;
-				default:
-					_NclDelParent((NclObj)data.u.data_obj,(NclObj)rlist->pptr);
-					break;
+		if (data.u.data_obj->obj.obj_type == Ncl_MultiDVallistData) {
+			NclObj list_obj = _NclGetObj(*(int*) data.u.data_obj->multidval.val);
+			while ((tmp = _NclListPop(list_obj))) {
+				if (tmp->obj.obj_type == Ncl_Var) {
+					switch(((NclVar)tmp)->var.var_type) {
+					case VARSUBSEL:
+					case COORDSUBSEL:
+					case FILEVARSUBSEL:
+						sub_sel = 1;
+						break;
+					case PARAM:
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Deletion of parameters to functions and procedures is not allowed in NCL");
+						return(NhlFATAL);
+					case NORMAL:
+					case COORD:
+					case FILEVAR: 
+					case RETURNVAR:
+					case HLUOBJ :
+					default:
+						sub_sel = 0;
+						break;
+					}
+					if(((NclVar)tmp)->var.thesym != NULL && !sub_sel) {
+						var = _NclRetrieveRec(((NclVar)tmp)->var.thesym,DONT_CARE);
+						thesym = ((NclVar)tmp)->var.thesym;
+						if(((NclVar)tmp)->var.var_type == NORMAL) {
+                                                       /*
+							* Can't destroy symbol since it may be referenced from the instruction
+							* sequence. Changing it to UNDEF should do the trick though
+							*/
+							_NclChangeSymbolType(thesym,UNDEF);
+						}
+						_NclDestroyObj((NclObj)tmp);
+						if(var != NULL) {
+							var->u.data_var = NULL;
+							var->kind = NclStk_NOVAL;
+						}
+					}
 				}
-				rlist = rlist->next;
 			}
-		} else {
-*/
-			_NclDestroyObj((NclObj)data.u.data_obj);
-/*
 		}
-*/
+		_NclDestroyObj((NclObj)data.u.data_obj);
 		break;
 	case NclStk_VAR:
 		if(data.u.data_var != NULL) {
@@ -2263,6 +2286,7 @@ NhlErrorTypes _NclIDelete
 					sub_sel = 0;
 					break;
 			}
+
 		}
 		if((data.u.data_var != NULL)&&(data.u.data_var->var.thesym != NULL)&&(!sub_sel)) {
 			var = _NclRetrieveRec(data.u.data_var->var.thesym,DONT_CARE);

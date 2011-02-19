@@ -1282,7 +1282,7 @@ struct _NclVarRec* self;
 			v_name = "unnamed";
 		}
 
-		ret = nclfprintf(fp,"\n\n");
+		ret = nclfprintf(fp,"\n");
 		if(ret < 0) {
 			return(NhlWARNING);
 		}
@@ -1331,7 +1331,7 @@ struct _NclVarRec* self;
 			}
 			break;
 		case FILEVARSUBSEL:
-			ret = nclfprintf(fp,"Variable: %s (file variable subsection)\n",v_name);
+			ret = nclfprintf(fp,"Variable: %s (file variable)\n",v_name);
 			if(ret < 0) {
 				return(NhlWARNING);
 			}
@@ -1344,8 +1344,17 @@ struct _NclVarRec* self;
 			break;
 		}
 		if(thevalue->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
-			ret0 = _NclPrint((NclObj)thevalue,fp);
-		} else if(thevalue->obj.obj_type_mask & Ncl_MultiDVallistData) {
+			ret = nclfprintf(fp,"Type: file\n");
+			if (thevalue->multidval.missing_value.has_missing && 
+			    *(obj*)thevalue->multidval.val == thevalue->multidval.missing_value.value.objval) {
+				nclfprintf(fp,"(0) File Missing Value : %d\n",*(obj*)thevalue->multidval.val);
+			}	
+			else {
+				NclObj file = _NclGetObj(*(int*)thevalue->multidval.val);
+				FilePrintSummary(file,fp);
+			}
+		} 
+		else if(thevalue->obj.obj_type_mask & Ncl_MultiDVallistData) {
 			ret0 = _PrintListVarSummary((NclObj)thevalue,fp);
 		} else {
 			if(thevalue != NULL) 
@@ -1525,7 +1534,7 @@ FILE *fp;
 	if(ret < 0) {
 		return(NhlWARNING);
 	}
-	ret = nclfprintf(fp,"Total objects: %ld\n",(long)tmp_list->list.nelem);
+	ret = nclfprintf(fp,"Total items: %ld\n",(long)tmp_list->list.nelem);
 	if(ret < 0) {
 		return(NhlWARNING);
 	}

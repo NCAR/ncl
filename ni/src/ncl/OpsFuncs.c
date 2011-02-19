@@ -2042,7 +2042,6 @@ NclStackEntry missing_expr;
 	NclMultiDValData missing_md,tmp_md,size_md,tmp1_md;
 	void *tmp_val;
 	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
-	short tmp_missing = NCL_DEFAULT_MISSING_VALUE;
 	long long *dim_size_list;
 	ng_size_t total;
 	long long ll_total;
@@ -2055,6 +2054,10 @@ NclStackEntry missing_expr;
 	
 
 	the_type = _NclKeywordToDataType(data_type);
+	if (the_type == NCL_list) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: currently unable to create list type variable; use NewList or [/ ... /] list syntax");
+		return(NhlFATAL);
+	}		
 	the_obj_type = _NclKeywordToObjType(data_type);
 	typec = (NclTypeClass)_NclTypeEnumToTypeClass(the_obj_type);
 	if(the_obj_type == NCL_NUMERIC_TYPE_MASK) {
@@ -2084,7 +2087,7 @@ NclStackEntry missing_expr;
 			else {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"New: file variables cannot be created as an undefined value, setting default _FillValue");
 				fill = 1;
-				missing_val.objval = (obj)tmp_missing;
+				missing_val.objval = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
 			}
 		}
 		else if(missing_md->multidval.type->type_class.type != the_obj_type) {
@@ -2105,7 +2108,7 @@ NclStackEntry missing_expr;
 			missing_val = typec->type_class.default_mis;
 		} else if(the_obj_type & NCL_MD_MASK) {
 			
-			missing_val.objval = (obj)tmp_missing;
+			missing_val.objval = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
 		} else {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Incorrect type passed in to be created");
 			return(NhlFATAL);
