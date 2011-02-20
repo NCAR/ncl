@@ -68,10 +68,9 @@ NhlErrorTypes linrood_latwgt_W( void )
   }
   NclFree(lat);
   NclFree(wgt);
-  NclFree(npts);
-
   dsizes_output[0] = *npts;
   dsizes_output[1] = 2;
+  NclFree(npts);
   return(NclReturnValue((void*)output,2,dsizes_output,NULL,NCL_double,0));
 }
 
