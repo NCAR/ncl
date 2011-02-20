@@ -1715,7 +1715,7 @@ NhlErrorTypes _NclISizeOf
 		return_int = True;
 		lsize = (long)_NclSizeOf(tmp_md->multidval.data_type)*tmp_md->multidval.totalelements;
 #if !defined(NG32BIT)
-		if(lsize > INT32_MAX) {
+		if(lsize > INT_MAX) {
 		  return_int = False;
 		}
 #endif
@@ -1804,8 +1804,8 @@ NhlErrorTypes _NclIDimSizes
  * The rules for when to return an int versus a long:
  *    - On a 32-bit system, return ints.
  *    - On a 64-bit system, return longs if any of the
- *      individual dimension sizes are > INT32_MAX, or
- *      if the product of the dimension sizes is > INT32_MAX.
+ *      individual dimension sizes are > INT_MAX, or
+ *      if the product of the dimension sizes is > INT_MAX.
  */
         dim_size   = tmp_md->multidval.n_dims;
 	return_int = True;
@@ -1814,8 +1814,8 @@ NhlErrorTypes _NclIDimSizes
 	product_size = 1;
         while(i < dim_size && return_int) {
 	  product_size *= tmp_md->multidval.dim_sizes[i];
-	  if(tmp_md->multidval.dim_sizes[i] > INT32_MAX ||
-	     product_size > INT32_MAX) {
+	  if(tmp_md->multidval.dim_sizes[i] > INT_MAX ||
+	     product_size > INT_MAX) {
 	    return_int = False;
 	  }
 	  i++;
@@ -13233,7 +13233,7 @@ NhlErrorTypes _Nclnum
 /*
  * The rules for when to return an int versus a long:
  *    - On a 32-bit system, return int.
- *    - On a 64-bit system, return long if the count > INT32_MAX.
+ *    - On a 64-bit system, return long if the count > INT_MAX.
  */
 	return_size = ((NclTypeClass)nclTypeintClass)->type_class.size;
 	return_type = NCL_int;
@@ -13252,7 +13252,7 @@ NhlErrorTypes _Nclnum
 		}
 	}
 #if !defined(NG32BIT)
-	if(count > INT32_MAX) {
+	if(count > INT_MAX) {
 	  return_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
 	  return_type = NCL_long;
 	}
@@ -13303,7 +13303,7 @@ NhlErrorTypes _Nclind
 /*
  * The rules for when to return an int versus a long:
  *    - On a 32-bit system, return ints.
- *    - On a 64-bit system, return longs if any indexes > INT32_MAX.
+ *    - On a 64-bit system, return longs if any indexes > INT_MAX.
  *
  * There are six main sections below, handling six possible ways
  * of returning indexes:
@@ -13326,7 +13326,7 @@ NhlErrorTypes _Nclind
 		  if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval)) {
 		    count++;
 #if !defined(NG32BIT)
-		    if(return_int && i > INT32_MAX) {
+		    if(return_int && i > INT_MAX) {
 		      return_int = False;
 		    }
 #endif
@@ -13344,7 +13344,7 @@ NhlErrorTypes _Nclind
 		  out_val = (void*)NclMalloc(return_size * count);
 		  if(return_int) {
 /*
- * Return ints because indexes <= INT32_MAX.
+ * Return ints because indexes <= INT_MAX.
  */
 		    j = 0;
 		    for(i = 0; i < tmp_md->multidval.totalelements; i++) {
@@ -13356,7 +13356,7 @@ NhlErrorTypes _Nclind
 		  }
 		  else {
 /*
- * Return longs b/c one or more indexes > INT32_MAX.
+ * Return longs b/c one or more indexes > INT_MAX.
  */
 		    j = 0;
 		    for(i = 0; i < tmp_md->multidval.totalelements; i++) {
@@ -13391,7 +13391,7 @@ NhlErrorTypes _Nclind
 		  if(tmp[i]) {
 		    count++;
 #if !defined(NG32BIT)
-		    if(return_int && i > INT32_MAX) {
+		    if(return_int && i > INT_MAX) {
 		      return_int = False;
 		    }
 #endif
@@ -13409,7 +13409,7 @@ NhlErrorTypes _Nclind
 		  out_val = (void*)NclMalloc(return_size * count);
 		  if(return_int) {
 /*
- * Return ints because indexes <= INT32_MAX.
+ * Return ints because indexes <= INT_MAX.
  */
 		    j = 0;
 		    for(i = 0; i < tmp_md->multidval.totalelements; i++) {
@@ -13421,7 +13421,7 @@ NhlErrorTypes _Nclind
 		  }
 		  else {
 /*
- * Return longs because one or more indexes > INT32_MAX.
+ * Return longs because one or more indexes > INT_MAX.
  */
 		    j = 0;
 		    for(i = 0; i < tmp_md->multidval.totalelements; i++) {
@@ -14682,7 +14682,7 @@ NhlErrorTypes _Nclminind
  * Array is all missing.
  */
 #if !defined(NG32BIT)
-		  if(i > INT32_MAX) ret_type = NCL_long;
+		  if(i > INT_MAX) ret_type = NCL_long;
 #endif
 		  if(ret_type == NCL_int) {
 		    return(NclReturnValue(
@@ -14720,7 +14720,7 @@ NhlErrorTypes _Nclminind
 			}
 		}
 #if !defined(NG32BIT)
-		if(j > INT32_MAX) {
+		if(j > INT_MAX) {
 		  ret_type = NCL_long;
 		  ret_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
 		}
@@ -14759,7 +14759,7 @@ NhlErrorTypes _Nclminind
 			}
 		}
 #if !defined(NG32BIT)
-		if(j > INT32_MAX) {
+		if(j > INT_MAX) {
 		  ret_type = NCL_long;
 		  ret_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
 		}
@@ -14828,7 +14828,7 @@ NhlErrorTypes _Nclmaxind
  * Array is all missing.
  */
 #if !defined(NG32BIT)
-		  if(i > INT32_MAX) ret_type = NCL_long;
+		  if(i > INT_MAX) ret_type = NCL_long;
 #endif
 		  if(ret_type == NCL_int) {
 			return(NclReturnValue(
@@ -14866,7 +14866,7 @@ NhlErrorTypes _Nclmaxind
 			}
 		}
 #if !defined(NG32BIT)
-		if(j > INT32_MAX) {
+		if(j > INT_MAX) {
 		  ret_type = NCL_long;
 		  ret_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
 		}
@@ -14901,7 +14901,7 @@ NhlErrorTypes _Nclmaxind
 			}
 		}
 #if !defined(NG32BIT)
-		if(j > INT32_MAX) {
+		if(j > INT_MAX) {
 		  ret_type = NCL_long;
 		  ret_size = ((NclTypeClass)nclTypelongClass)->type_class.size;
 		}
@@ -16703,12 +16703,12 @@ NhlErrorTypes _NclIgaus
 	  ret_missing = True;
 	  NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: number of latitudes must be positive");
 	} 
-	else if(*nlat > INT32_MAX || nl_tmp > INT32_MAX || lwork_tmp > INT32_MAX ) {
+	else if(*nlat > INT_MAX || nl_tmp > INT_MAX || lwork_tmp > INT_MAX ) {
 /*
- * The Fortran gaus only accepts integers for now, so can't have an nlat > INT32_MAX.
+ * The Fortran gaus only accepts integers for now, so can't have an nlat > INT_MAX.
  */
 	  ret_missing = True;
-	  NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: number of input/output latitudes and/or size of work array can't be > INT32_MAX");
+	  NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: number of input/output latitudes and/or size of work array can't be > INT_MAX");
 	}
 	nl    = (int) nl_tmp;
 	lwork = (int) lwork_tmp;
@@ -16995,8 +16995,8 @@ NhlErrorTypes _NclIFileVarDimsizes
  * The rules for when to return an int versus a long:
  *    - On a 32-bit system, return ints.
  *    - On a 64-bit system, return longs if any of the
- *      individual dimension sizes are > INT32_MAX, or
- *      if the product of the dimension sizes is > INT32_MAX.
+ *      individual dimension sizes are > INT_MAX, or
+ *      if the product of the dimension sizes is > INT_MAX.
  */
 		ndims = data->u.var->n_dims;
 		return_type = NCL_int;
@@ -17005,8 +17005,8 @@ NhlErrorTypes _NclIFileVarDimsizes
 		product_size = 1;
 		while(i < ndims && (return_type == NCL_int)) {
 			product_size *= data->u.var->dim_info[i].dim_size;
-			if(data->u.var->dim_info[i].dim_size > INT32_MAX || 
-			   product_size > INT32_MAX) {
+			if(data->u.var->dim_info[i].dim_size > INT_MAX || 
+			   product_size > INT_MAX) {
 			  return_type = NCL_long;
 			}
 			i++;
@@ -19653,8 +19653,8 @@ NhlErrorTypes   _NclIGetFileDimsizes
  * The rules for when to return an int versus a long:
  *    - On a 32-bit system, return ints.
  *    - On a 64-bit system, return longs if any of the
- *      individual dimension sizes are > INT32_MAX, or
- *      if the product of the dimension sizes is > INT32_MAX.
+ *      individual dimension sizes are > INT_MAX, or
+ *      if the product of the dimension sizes is > INT_MAX.
  */
 	ndims = f->file.n_file_dims;
         if (ndims != 0) {
@@ -19664,8 +19664,8 @@ NhlErrorTypes   _NclIGetFileDimsizes
 	  product_size = 1;
 	  while(i < ndims && (return_type == NCL_int)) {
 	    product_size *= f->file.file_dim_info[i]->dim_size;
-	    if(f->file.file_dim_info[i]->dim_size > INT32_MAX || 
-	       product_size > INT32_MAX) {
+	    if(f->file.file_dim_info[i]->dim_size > INT_MAX || 
+	       product_size > INT_MAX) {
 	      return_type = NCL_long;
 	    }
 	    i++;
