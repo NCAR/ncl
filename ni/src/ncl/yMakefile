@@ -234,7 +234,7 @@ NIO_HDRS        =       nio.h
 NIO_EXTRA_HDRS  =       nio_path.h
 
 NIO_NCL_HDR_FILES = ApiRecords.h AttSupport.h DataSupport.h		\
-		FileSupport.h HLUSupport.h NclAtt.h NclCCM.h		\
+		FileSupport.h HLUSupport.h ListSupport.h NclAtt.h NclCCM.h		\
 		NclCallBacksI.h NclCoordVar.h NclData.h NclDataDefs.h	\
 		NclGroup.h NclFile.h NclFileInterfaces.h NclFileVar.h NclGRIB.h	\
 		NclGRIB2.h NclHLUObj.h NclHLUVar.h NclList.h		\
