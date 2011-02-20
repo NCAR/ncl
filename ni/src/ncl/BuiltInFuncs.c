@@ -13212,7 +13212,8 @@ NhlErrorTypes _Nclnum
 	logical *tmp;
 	ng_size_t count;
 	ng_size_t  i;
-	int return_size;
+	int icount,return_size;
+	long lcount;
 	NclBasicDataTypes return_type;
 
 	data = _NclGetArg(0,1,DONT_CARE);
@@ -13258,7 +13259,15 @@ NhlErrorTypes _Nclnum
 	}
 #endif
 	out_val = (void*)NclMalloc(return_size);
-	memcpy(out_val,&count,return_size);
+	if(return_type == NCL_int) {
+	  icount = (int)count;
+	  memcpy(out_val,&icount,return_size);
+	}
+	else {
+	  lcount = (long)count;
+	  memcpy(out_val,&lcount,return_size);
+	}
+
 	return(NclReturnValue(
 			      out_val,
 			      1,
