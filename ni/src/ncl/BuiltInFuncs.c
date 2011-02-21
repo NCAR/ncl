@@ -6041,7 +6041,7 @@ NhlErrorTypes _NclIushorttoint
 	NclScalar missing, missing2;
 	int has_missing;
 	ng_size_t i;
-	ng_size_t *output;
+	int *output;
 	
         value = (unsigned short*)NclGetArgValue(
                         0,
@@ -6055,14 +6055,14 @@ NhlErrorTypes _NclIushorttoint
 	for (i = 0; i < n_dims; i++) {
 		total_elements *= dimsizes[i];
 	}
-	output = (ng_size_t*)NclMalloc(sizeof(ng_size_t)*total_elements);
+	output = NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size *total_elements);
         if (output == NULL)
         {
             NHLPERROR((NhlFATAL, errno, "ushorttoint output: memory allocation error."));
             return NhlFATAL;
         }
 	for(i = 0; i < total_elements; i++) {
-		output[i] = (ng_size_t)((unsigned short*)value)[i];
+		output[i] = (int)((unsigned short*)value)[i];
 	}
 	if(has_missing) {
 		missing2.intval = (int)*((unsigned short*)&missing);
