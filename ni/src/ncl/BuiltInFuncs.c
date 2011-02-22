@@ -27715,11 +27715,6 @@ NhlErrorTypes _NclItochar
                             {
                                 output[n++] = str[j];
                             }
-
-                            for(j = strlen(str); j < max_str_len; j++)
-                            {
-                                output[n++] = '\0';
-                            }
                         }
                         output[n++] = '\0';
                     }
