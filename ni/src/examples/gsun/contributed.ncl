@@ -6059,7 +6059,15 @@ begin
 
   areaAve  = wgt_areaave (x, wgty, wgtx, 0)   
 
-  copy_VarMeta (x, areaAve)          ; contributed.ncl (copy meta data)
+  if (rank.gt.2) then
+      copy_VarMeta (x, areaAve)          ; contributed.ncl (copy meta data)
+  else
+      copy_VarAtts (x, areaAve)
+      if (isatt(areaAve,"gwt")) then
+          delete(areaAve@gwt)
+      end if
+  end if
+
   areaAve@wgt_areaave_op_ncl = "Area Average"
 
   return(areaAve)
