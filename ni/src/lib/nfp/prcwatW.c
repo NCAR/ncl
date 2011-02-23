@@ -73,7 +73,7 @@ NhlErrorTypes prcwater_dp_W( void )
   }
 
   if(ndims_dp > 1) {
-    for(i = 0; i < ndims_q-1; i++) {
+    for(i = 0; i < ndims_q; i++) {
       if(dsizes_q[i] != dsizes_dp[i]) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"prcwater_dp: 'dp' must either be one-dimensionial and have the same length as the last (rightmost) dimension of 'q', or it must be the same size as 'q'");
         return(NhlFATAL);
