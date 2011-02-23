@@ -1245,10 +1245,12 @@ begin
     varType = getfilevartypes(f, fVarNames)
 
     long_size = sizeof(1L)
-    enumeric_types = (/"ushort","uint","ulong","uint64","int64","string","int8","uint8"/)
-    convert_types = (/"short","integer","long","double","double","character","byte","character"/)
+    enumeric_types = (/"ubyte","ushort","uint","ulong","uint64","int64","string"/)
+    convert_types = (/"byte","short","integer","long","double","double","character"/)
+    str_to_c_ix = 6
+    uint_to_sint_max_ix = 3
     if (long_size .eq. 8) then
-        convert_types(2) = "double"
+        convert_types(3) = "double"
     end if 
     do_conversion = new(nfNames,logical)
     do_conversion = False
@@ -1280,7 +1282,7 @@ begin
             ; note that no actual conversion is required when going from unsigned to signed integers, but clearly a conversion is 
 	    ; required to go to double from integer
             ;
-	    if (en_ix .eq. 5) then
+	    if (en_ix .eq. str_to_c_ix) then
 	        if (string_to_char .eq. 0) then
 		    print ("Classic model NetCDF does not support string types: " + fVarNames(i) + " will be skipped")
 		    do_conversion(i) = _Missing
@@ -1310,7 +1312,7 @@ begin
 		    end if
                 end if
 	    else
-	        if (en_ix .lt. 5) then
+	        if (en_ix .le. uint_to_sint_max_ix) then
 	            if (unsigned_to_signed .eq. 0) then
 	                print ("Classic mode NetCDf does not support unsigned integer types: " + fVarNames(i) + " will be skipped")
 			do_conversion(i) = _Missing
