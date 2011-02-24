@@ -677,8 +677,10 @@ static NclBasicDataTypes _HDF52Ncl_type(const char *type_name)
         type = NCL_compound;
     else
     {
-        fprintf(stderr, "\n\nUNKNOWN TYPE (in _HDF52Ncl_type): <%s>\n", type_name);
-        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+      /*
+       *fprintf(stderr, "\n\nUNKNOWN TYPE (in _HDF52Ncl_type): <%s>\n", type_name);
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       */
         type = NCL_none;
     }
     
@@ -1262,9 +1264,9 @@ int *num_dims;
     int i;
 
   /*
+   *fprintf(stderr, "\nhit HDF5GetDimNames. file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tthefile->n_dims = %d\n", thefile->n_dims);
    */
-    fprintf(stderr, "\nhit HDF5GetDimNames. file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tthefile->n_dims = %d\n", thefile->n_dims);
 
     thelist = thefile->dim_list;
     names = NclMalloc(sizeof(NclQuark)*thefile->n_dims);
@@ -1479,9 +1481,12 @@ void _setHDF5AttValue(HDF5AttInqRecList *new_att_list,
              }
              break;
         default:
-             fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-             fprintf(stderr, "\tnew_att->type: <0%o>\n", (unsigned int) new_att->type);
-             fprintf(stderr, "\tDONOT know how to print new_att->value\n");
+           /*
+            *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+            *fprintf(stderr, "\tnew_att->type: <0%o>\n", (unsigned int) new_att->type);
+            *fprintf(stderr, "\tDONOT know how to print new_att->value\n");
+            */
+             break;
     }
 }
 
@@ -2248,7 +2253,7 @@ int _HDF5Build_dim_list_from_dim_group(HDF5DimInqRecList **dim_list,
            *fprintf(stderr, "\tAttr %d, type_name: <%s>\n", n, attr_list->attr_node->type_name);
            *fprintf(stderr, "\tAttr %d, ndims: <%d>\n", n, attr_list->attr_node->ndims);
            *if(attr_list->attr_node->ndims)
-           *    fprintf(stderr, "\tAttr %d, dims[0]: <%d>\n", n, attr_list->attr_node->dims[0]);
+           *   *fprintf(stderr, "\tAttr %d, dims[0]: <%d>\n", n, attr_list->attr_node->dims[0]);
            */
 
             if(0 == strcmp(attr_list->attr_node->name, "Size"))
@@ -2274,12 +2279,14 @@ int _HDF5Build_dim_list_from_dim_group(HDF5DimInqRecList **dim_list,
                *fprintf(stderr, "\tdescription: <%s>\n", cp);
                */
             }
-            else
-            {
-                fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-                fprintf(stderr, "\tAttr %d, name: <%s>\n", n, attr_list->attr_node->name);
-                fprintf(stderr, "\tAttr %d, type_name: <%s>\n", n, attr_list->attr_node->type_name);
-            }
+          /*
+           *else
+           *{
+               *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr, "\tAttr %d, name: <%s>\n", n, attr_list->attr_node->name);
+               *fprintf(stderr, "\tAttr %d, type_name: <%s>\n", n, attr_list->attr_node->type_name);
+           *}
+           */
             attr_list = attr_list->next;
         }
 
@@ -2959,12 +2966,12 @@ int wr_status;
         the_file->dim_list = dim_list;
     }
 
-#ifdef DEBUG
-    fprintf(stderr, "\n\tin file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tn_dims = %d\n", n_dims);
+  /*
+   *fprintf(stderr, "\n\tin file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tn_dims = %d\n", n_dims);
 
-    _printHDF5dim_list(the_file->dim_list, n_dims);
-#endif
+   *_printHDF5dim_list(the_file->dim_list, n_dims);
+   */
 
     grp_inq = _HDF5Build_grp_list(h5_group);
 
@@ -5121,7 +5128,9 @@ float cache_preemption;
     int ret = NhlNOERROR;
     int fid;
 
-    fprintf(stderr, "Enter HDF5AddVarChunkCache, file: %s, line: %d\n", __FILE__, __LINE__);
+  /*
+   *fprintf(stderr, "Enter HDF5AddVarChunkCache, file: %s, line: %d\n", __FILE__, __LINE__);
+   */
 
     if(rec->wr_status <= 0)
     {
@@ -5182,7 +5191,9 @@ float cache_preemption;
         ret = NhlFATAL;
     }
 
-    fprintf(stderr, "Leave HDF5AddVarChunkCache, file: %s, line: %d\n", __FILE__, __LINE__);
+  /*
+   *fprintf(stderr, "Leave HDF5AddVarChunkCache, file: %s, line: %d\n", __FILE__, __LINE__);
+   */
 
     return(ret);
 }
