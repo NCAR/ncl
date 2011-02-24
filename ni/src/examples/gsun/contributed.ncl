@@ -11981,3 +11981,81 @@ begin
       return(TIME)
   end if
 end
+
+undef("sigma_interface")
+function sigma_interface (sigma[*]:numeric, sigma_top[1]:numeric)
+; -------------------------------------------------
+; create "interface" sigma levels to mimic the
+;  CAM models interface hybrid levels
+; -------------------------------------------------
+local ksig, SIGMA, sigmai, sigName
+begin
+
+  ksig  = dimsizes(sigma)
+  if (sigma_top.gt.sigma(0)) then
+      print("sigma_interface: sigma_top must be less than/equal to sigma(0)")
+      print("                 sigma_top= "+sigma_top+"  ; sigma(0)="+sigma(0))
+      exit
+  end if
+                         ; 'super' sigma .. include top and bottom
+  SIGMA = new(ksig+2, typeof(sigma),"No_FillValue")
+  SIGMA(0)      = sigma_top        ; anything less than sigma(0)
+  SIGMA(1:ksig) = (/ sigma /)
+  SIGMA(ksig+1) = 1.0
+;;print(SIGMA)
+                                   ; interface sigma levels
+  sigmai = (SIGMA(1:) + SIGMA(0:ksig))*0.5
+  sigmai(0)     = SIGMA(0)         ; force top for full thickness
+  sigmai(ksig)  = 1.0              ; force bot
+  copy_VarAtts(sigma, sigmai)
+  sigmai@long_name = "Sigma at model interface layers"
+
+  return(sigmai)
+end
+
+undef("dpres_sigma")
+function dpres_sigma (ps:numeric, sigma[*]:numeric, sigma_top[1]:numeric)
+; -------------------------------------------------
+; use the  dpres_hybrid_ccm function to get layer thicknesses
+; -------------------------------------------------
+
+local sigmai, A, P0, dp_sigma, rank_ps, nd, psName, sigName
+begin
+  sigmai    = sigma_interface (sigma, sigma_top)
+  A         = sigmai
+  A         = 0.0
+  P0        = 0.0
+
+  dp_sigma  =  dpres_hybrid_ccm(ps,P0,A,sigmai)
+  dp_sigma@long_name = "pressure thickness"
+  if (isatt(ps, "units")) then
+      dp_sigma@units = ps@units
+  end if
+
+  rank_ps    = dimsizes( dimsizes(ps) )
+  if (rank_ps.eq.3) then
+      psName     = getvardims(ps)      ; dimension names
+      dp_sigma!0 = ps!0
+      dp_sigma!2 = ps!1
+      dp_sigma!3 = ps!2
+      do nd=0,2
+         if (.not.ismissing(psName(nd)) .and. \
+             iscoord(ps,psName(nd))) then
+             dp_sigma&$psName(nd)$ = ps&$psName(nd)$
+         end if
+      end do
+
+      sigName   = getvardims(sigma)
+      if (.not.ismissing(sigName) .and. iscoord(sigma,sigName)) then
+          dp_sigma!1         = sigName
+          dp_sigma&$sigName$ = sigma&$sigName$
+      else
+          dp_sigma!1 = "sigma"
+          dp_sigma&sigma = sigma
+      end if
+  end if
+
+  return(dp_sigma)
+end
+
+
