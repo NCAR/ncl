@@ -3165,19 +3165,19 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
                     else
                         strcpy(var_name, "integer");
                 }
-                else if(size == (hsize_t) sizeof(long))
-                {
-                    if(1 == NclHDF5datatype->usign)
-                        strcpy(var_name, "ulong");
-                    else
-                        strcpy(var_name, "long");
-                }
                 else if(size == (hsize_t) sizeof(long long))
                 {
                     if(1 == NclHDF5datatype->usign)
                         strcpy(var_name, "uint64");
                     else
                         strcpy(var_name, "int64");
+                }
+                else if(size == (hsize_t) sizeof(long))
+                {
+                    if(1 == NclHDF5datatype->usign)
+                        strcpy(var_name, "ulong");
+                    else
+                        strcpy(var_name, "long");
                 }
                 else
                 {
