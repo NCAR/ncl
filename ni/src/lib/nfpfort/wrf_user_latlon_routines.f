@@ -371,8 +371,8 @@ ccc       ! Compute the radius to our known point
 
 ccc       ! Find pole point
           ALO1 = CONE* (DELTALON1*RAD_PER_DEG)
-          POLEI = KNOWNI - RSW*SIN(ALO1)
-          POLEJ = KNOWNJ + HEMI*RSW*COS(ALO1)
+          POLEI = HEMI*KNOWNI - HEMI*RSW*SIN(ALO1)
+          POLEJ = HEMI*KNOWNJ + RSW*COS(ALO1)
 
           CHI1 = (90.D0-HEMI*TRUELAT1)*RAD_PER_DEG
           CHI2 = (90.D0-HEMI*TRUELAT2)*RAD_PER_DEG
