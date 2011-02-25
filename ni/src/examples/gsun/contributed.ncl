@@ -2741,12 +2741,20 @@ end
 
 
 undef("modCheck")
-procedure modCheck (name:string, N:integer, n:integer)
+procedure modCheck (name:string, N, n)
+local valid_types
 begin
-  if ((N%n).ne.0) then
-       print ("contributed.ncl: "+name+": dimension must be a multiple of "+n)
+  valid_types = (/"integer","long"/)
+
+  if(.not.any(typeof(N).eq.valid_types).or.\
+     .not.any(typeof(n).eq.valid_types)) then
+       print ("modCheck: n and N must be integers or longs")
        exit
   end if
+  if ((N%n).ne.0) then
+       print ("contributed.ncl: "+name+": dimension must be a multiple of "+n)
+       exit 
+ end if
 end
 ; ******************************************************************
 ; D. Shea
