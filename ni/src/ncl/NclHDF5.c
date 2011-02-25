@@ -66,6 +66,8 @@ static NrmQuark Qfill_val;
 #define H5_CACHE_PREEMPTION_OPT  4
 #define H5_NUM_OPTIONS           5
 
+void *_Ncl2HDF5type(NclBasicDataTypes type);
+
 typedef struct _HDF5compound_component_t HDF5compound_component_t;
 typedef struct _HDF5compound_t HDF5compound_t;
 typedef struct _HDF5FileRecord HDF5FileRecord;
@@ -449,6 +451,7 @@ int n_dims;
       /*
        *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
        *fprintf(stderr, "\tvar_info->name: <%s>", NrmQuarkToString(var_inq->name));
+       *fprintf(stderr, "\tvar_info->type: <%s>", (char *)_Ncl2HDF5type(var_inq->type));
        *fprintf(stderr, "\tcompound->nom: <%d>\n", var_inq->compound->nom);
        */
         var_info->num_compounds = var_inq->compound->nom;
@@ -456,7 +459,8 @@ int n_dims;
         for(n = 0; n < var_info->num_compounds; n++)
         {
           /*
-           *fprintf(stderr, "\tvar_info->component_name[%d]: <%s>\n", n, NrmQuarkToString(var_inq->compound->name[n]));
+           *fprintf(stderr, "\tvar_info->component_name[%d]: <%s>\n", n, NrmQuarkToString(var_inq->compound->member[n].name));
+           *fprintf(stderr, "\tvar_info->component_type[%d]: <%s>\n", n, (char *)_Ncl2HDF5type(var_inq->compound->member[n].type));
            */
             var_info->component_name[n] = var_inq->compound->member[n].name;
             var_info->component_type[n] = var_inq->compound->member[n].type;
@@ -544,8 +548,8 @@ NclQuark var_name;
         {
             var_info = (NclFVarRec *) NclMalloc(sizeof(NclFVarRec));
             var_info->var_name_quark = var_name;
-            HDF5Set_var_info(varlist->var_inq, var_info, dim_list, n_dims);
             var_info->num_compounds = 0;
+            HDF5Set_var_info(varlist->var_inq, var_info, dim_list, n_dims);
             return(var_info);
         }
         varlist = varlist->next;
@@ -674,6 +678,8 @@ static NclBasicDataTypes _HDF52Ncl_type(const char *type_name)
         type = NCL_char;
     else if(strcmp(type_name, "byte") == 0)
         type = NCL_byte;
+    else if(strcmp(type_name, "ubyte") == 0)
+        type = NCL_ubyte;
     else if(strcmp(type_name, "compound") == 0)
         type = NCL_compound;
     else
@@ -688,7 +694,7 @@ static NclBasicDataTypes _HDF52Ncl_type(const char *type_name)
     return type;
 }
 
-static void *_Ncl2HDF5type(NclBasicDataTypes type)
+void *_Ncl2HDF5type(NclBasicDataTypes type)
 { 
     char *HDF5type;
 
@@ -736,6 +742,9 @@ static void *_Ncl2HDF5type(NclBasicDataTypes type)
             break;
         case NCL_byte:
             HDF5type = strdup("byte");
+            break;
+        case NCL_ubyte:
+            HDF5type = strdup("ubyte");
             break;
         case NCL_compound:
             HDF5type = strdup("compound");
@@ -1263,11 +1272,6 @@ int *num_dims;
     HDF5DimInqRecList * thelist;
     NclQuark* names;
     int i;
-
-  /*
-   *fprintf(stderr, "\nhit HDF5GetDimNames. file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tthefile->n_dims = %d\n", thefile->n_dims);
-   */
 
     thelist = thefile->dim_list;
     names = NclMalloc(sizeof(NclQuark)*thefile->n_dims);
@@ -1811,10 +1815,6 @@ void _HDF5Build_grp_list_inGroup(HDF5GrpInqRec **the_grp, NclHDF5group_node_t *H
 
         HDF5SetVarDimName(var_cur_list->var_inq);
 
-          /*
-        if(dataset_node->compound)
-        {
-           */
         if(var_cur_list->var_inq->type == NCL_compound)
         {
           /*
@@ -1822,8 +1822,6 @@ void _HDF5Build_grp_list_inGroup(HDF5GrpInqRec **the_grp, NclHDF5group_node_t *H
            *fprintf(stderr, "dataset_node->type_name: <%s>\n", dataset_node->type_name);
            *fprintf(stderr, "dataset_node->type: 0%o\n", (long) dataset_node->type);
            *fprintf(stderr, "dataset_node->ndims: %d\n", dataset_node->ndims);
-           *fprintf(stderr, "dataset_node->compound->nom: %d\n", dataset_node->compound->nom);
-           *fprintf(stderr, "dataset_node->compound->size: %d\n", dataset_node->compound->size);
            */
             var_cur_list->var_inq->compound = (HDF5compound_t *) NclMalloc(sizeof(HDF5compound_t));
             if(! var_cur_list->var_inq->compound)
@@ -1846,13 +1844,13 @@ void _HDF5Build_grp_list_inGroup(HDF5GrpInqRec **the_grp, NclHDF5group_node_t *H
             {
               /*
                *fprintf(stderr, "\tcompound->member[%d].name: <%s>\n",
-               *            i, dataset_node->compound->member[i].name);
+               *            i, dataset_node->compound.member[i].name);
                *fprintf(stderr, "\tcompound->member[%d].type: <%s>\n",
-               *            i, dataset_node->compound->member[i].type);
+               *            i, dataset_node->compound.member[i].type);
                *fprintf(stderr, "\tcompound->member[%d].type: %s\n",
-               *            i, dataset_node->compound->member[i].type);
+               *            i, dataset_node->compound.member[i].type);
                *fprintf(stderr, "\tcompound->member[%d].offset: %d\n",
-               *            i, dataset_node->compound->member[i].offset);
+               *            i, dataset_node->compound.member[i].offset);
                */
                 var_cur_list->var_inq->compound->member[i].name = NrmStringToQuark(dataset_node->compound.member[i].name);
                 var_cur_list->var_inq->compound->member[i].type = _HDF52Ncl_type(dataset_node->compound.member[i].type);
@@ -2229,7 +2227,7 @@ int _HDF5Build_dim_list_from_dim_group(HDF5DimInqRecList **dim_list,
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list, in file: %s, line: %d\n",
                     __FILE__, __LINE__);
-            return;
+            return NhlFATAL;
         }
 
         cur_list->dim_inq = calloc(1, sizeof(HDF5DimInqRec));
@@ -2237,7 +2235,7 @@ int _HDF5Build_dim_list_from_dim_group(HDF5DimInqRecList **dim_list,
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list->dim_inq, in file: %s, line: %d\n",
                     __FILE__, __LINE__);
-            return;
+            return NhlFATAL;
         }
 
         cur_list->dim_inq->is_dataset = 0;
@@ -2428,6 +2426,7 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
                             cur_list->dim_inq->dataset_name = new_dim_name[i];
                         }
 
+                      /*
                         if(0 == strcmp("LONGITUDE", NrmQuarkToString(tmp_name)))
                         {
                             cur_list->dim_inq->ncldim_id = 0;
@@ -2440,9 +2439,12 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
                         }
                         else
                         {
+                       */
                             cur_list->dim_inq->ncldim_id = *n_dims;
                             cur_list->dim_inq->size = (long) dataset_node->dims[i];
+                      /*
                         }
+                       */
                         old_dim_name[*n_dims] = tmp_name;
 
                       /*
@@ -3473,6 +3475,7 @@ NclHDF5group_node_t *h5_group;
             }
 
           /*
+           *fprintf(stderr, "\n\n\nhit HDF5ReadVar_inGroup, file: <%s>, line: %d\n", __FILE__, __LINE__);
            *fprintf(stderr, "\tfound thelist->var_inq->full_name = <%s>\n",
            *       NrmQuarkToString(thelist->var_inq->full_name));
            *fprintf(stderr, "\ttype = 0%o\n", thelist->var_inq->type);
