@@ -34,6 +34,7 @@
 #include "NclFileInterfaces.h"
 #include <math.h>
 #include <ctype.h>
+#include <string.h>
 
 #ifndef MAX_HDF5_NAME_LENGTH
 #define MAX_HDF5_NAME_LENGTH    256
@@ -3093,7 +3094,7 @@ int n_grps;
         cur_list->next = NULL;
 
         _HDF5free_att_list(cur_list->grp_inq->att_list, cur_list->grp_inq->n_atts);
-        _HDF5free_att_list(cur_list->grp_inq->var_list, cur_list->grp_inq->n_vars);
+        _HDF5free_var_list(cur_list->grp_inq->var_list, cur_list->grp_inq->n_vars);
         _HDF5free_grp_list(cur_list->grp_inq->grp_list, cur_list->grp_inq->n_grps);
 
         free(cur_list->grp_inq);
@@ -3112,7 +3113,7 @@ void *rec;
 {
     HDF5FileRecord *the_file = (HDF5FileRecord *) rec;
     _NclHDF5free_group(the_file->h5_group);
-    _HDF5free_att_list(the_file->dim_list, the_file->n_dims);
+    _HDF5free_dim_list(the_file->dim_list, the_file->n_dims);
     _HDF5free_att_list(the_file->att_list, the_file->n_atts);
     _HDF5free_var_list(the_file->var_list, the_file->n_vars);
     _HDF5free_grp_list(the_file->grp_list, the_file->n_grps);

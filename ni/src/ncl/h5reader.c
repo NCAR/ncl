@@ -3825,18 +3825,19 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
             }
             else
             {
-                char cp[HDF5_BUF_SIZE];
-                status = H5Aread(attr_id, tmp_type, &cp);
-
-                attr_node->nbytes = strlen(cp) + 1;
+                attr_node->nbytes = 16*1024*HDF5_BUF_SIZE;
                 attr_node->value = malloc(attr_node->nbytes);
                 assert(attr_node->value);
 
-                memcpy(attr_node->value, cp, attr_node->nbytes);
+                status = H5Aread(attr_id, tmp_type, (char *)attr_node->value);
+
+                attr_node->nbytes = strlen((char *)attr_node->value) + 1;
+                attr_node->value = realloc(attr_node->value, attr_node->nbytes);
               /*
-               *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-               *fprintf(stderr, "\tvalue: <%s>\n", cp);
-               *fprintf(stderr, "\tattr_node->nbytes: %d\n", attr_node->nbytes);
+                fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                fprintf(stderr, "\tattr_node->value: <%s>\n", (char *)attr_node->value);
+                fprintf(stderr, "\tattr_node->nbytes: %d\n", attr_node->nbytes);
+                fprintf(stderr, "\tstrlen(attr_node->value): <%d>\n", strlen((char *)attr_node->value));
                */
             }
         }
