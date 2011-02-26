@@ -2347,7 +2347,7 @@ void _NclAddBuiltIns
     args = NewArgs(2);
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"snumeric",0,NclANY);nargs++;
     NclRegisterFunc(sprinti_W,args,"sprinti",nargs);
 
     nargs = 0;

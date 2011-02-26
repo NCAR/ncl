@@ -18074,6 +18074,7 @@ NhlErrorTypes _NclIFileVarAttDef
 
 	return(ret0);
 }
+
 NhlErrorTypes sprinti_W( void )
 {
 /*
@@ -18081,12 +18082,19 @@ NhlErrorTypes sprinti_W( void )
  */
   int *input_var;
   string *format_string;
+  int format_len = 256;
+  char format_buf[256];
+  char format_tail[256];
+  char *v_loc, *pc_loc;
   int ndims_input_var;
   ng_size_t dsizes_input_var[NCL_MAX_DIMENSIONS];  /* not used: nlata, nlona, igrida[2]; */
   NclScalar missing_input_var;
   int has_missing_input_var;
   ng_size_t total_elements,i;
-  char buffer[80];
+  char buffer[1024];
+  size_t bufsiz = 1023;
+  NclBasicDataTypes   type;
+
 /*
  * Output array variables
  */
@@ -18108,14 +18116,49 @@ NhlErrorTypes sprinti_W( void )
            NULL,
            0);
 
-  input_var = (int*)NclGetArgValue(
+  if (strlen(NrmQuarkToString(*format_string)) > format_len - 32) {
+	  /* need to leave room in the format string buffer for changes */
+	  NhlPError(NhlFATAL, NhlEUNKNOWN, "sprinti: format string cannot be longer than %d", format_len - 32);
+	  return NhlFATAL;
+  }
+	  
+  memset(format_buf,0,format_len);
+  strncpy(format_buf,NrmQuarkToString(*format_string),format_len);
+  
+  pc_loc = format_buf;
+  while (pc_loc = strchr(pc_loc,'%')) {
+	  if (*(pc_loc + 1) == '%') {
+		  pc_loc += 2;
+		  continue;
+	  }
+	  else 
+		  break;
+  }
+  v_loc = strchr(pc_loc,'V');
+  memset(format_tail,0,format_len);
+  if (v_loc)
+	  strcpy(format_tail,v_loc + 1);
+  pc_loc = format_tail;
+  while (pc_loc = strchr(pc_loc,'%')) {
+	  if (*(pc_loc + 1) == '%') {
+		  pc_loc += 2;
+		  continue;
+	  }
+	  else {
+		  /* error -- only one format substitution allowed by this function */
+		  NhlPError(NhlFATAL, NhlEUNKNOWN, "sprinti: only one format substitution allowed");
+		  return NhlFATAL;
+	  }
+  }
+  	  
+  input_var = (void*)NclGetArgValue(
            1,
            2,
            &ndims_input_var, 
            dsizes_input_var,
 	   &missing_input_var,
 	   &has_missing_input_var,
-           NULL,
+           &type,
            0);
   /*
   * compute total number of elements
@@ -18125,15 +18168,108 @@ NhlErrorTypes sprinti_W( void )
 	total_elements *= dsizes_input_var[i];
   }
   output_var = (string*)malloc(sizeof(string)*total_elements);
-
-  for(i = 0; i < total_elements; i++) {
-	sprintf(buffer,NrmQuarkToString(*format_string),input_var[i]);
-	output_var[i] = NrmStringToQuark(buffer);
+  if (output_var == (string *) NULL) {
+	  NhlPError(NhlFATAL, errno, " sprinti: memory allocation error");
+	  return NhlFATAL;
   }
-  
+
+  /*
+   * If a 'V' is found in a format string it is replaced with the appropriate format character(s) for the NCL integer type 
+   * if and when required. Type sizes up to int can be printed as integers with no effect on the output.
+   * Otherwise the string is left alone and it is assumed the user knows how to specify for the type involved.
+   */
+  switch (type) {
+  case NCL_double:
+  case NCL_float:
+  default:
+	  NhlPError(NhlFATAL, NhlEUNKNOWN, " sprinti: invalid type for input data array: must be an integer type (any size signed or unsigned)");
+	  return NhlFATAL;
+  case NCL_byte:
+	  for(i = 0; i < total_elements; i++) {
+		  snprintf(buffer,bufsiz,format_buf,(int)((char*)input_var)[i]);
+		  output_var[i] = NrmStringToQuark(buffer);
+	  }
+	  break;
+  case NCL_ubyte:
+	  if (v_loc)
+		  *v_loc = 'u';
+	  for(i = 0; i < total_elements; i++) {
+		  snprintf(buffer,bufsiz,format_buf,(unsigned int)((unsigned char*)input_var)[i]);
+		  output_var[i] = NrmStringToQuark(buffer);
+	  }
+	  break;
+  case NCL_short:
+	  for(i = 0; i < total_elements; i++) {
+		  snprintf(buffer,bufsiz,format_buf,(unsigned int)((short*)input_var)[i]);
+		  output_var[i] = NrmStringToQuark(buffer);
+	  }
+	  break;
+  case NCL_ushort:
+	  if (v_loc)
+		  *v_loc = 'u';
+	  for(i = 0; i < total_elements; i++) {
+		  snprintf(buffer,bufsiz,format_buf,(unsigned int)((unsigned short*)input_var)[i]);
+		  output_var[i] = NrmStringToQuark(buffer);
+	  }
+	  break;
+  case NCL_int:
+	  for(i = 0; i < total_elements; i++) {
+		  snprintf(buffer,bufsiz,format_buf,((int*)input_var)[i]);
+		  output_var[i] = NrmStringToQuark(buffer);
+	  }
+	  break;
+  case NCL_uint:
+	  if (v_loc)
+		  *v_loc = 'u';
+	  for(i = 0; i < total_elements; i++) {
+		  snprintf(buffer,bufsiz,format_buf,((unsigned int*)input_var)[i]);
+		  output_var[i] = NrmStringToQuark(buffer);
+	  }
+	  break;
+  case NCL_long:
+	  if (v_loc && ! strstr(format_buf,"ld")) {
+		  strcpy(v_loc,"ld");
+		  strcpy(v_loc + 2,format_tail);
+	  }
+	  for(i = 0; i < total_elements; i++) {
+		  snprintf(buffer,bufsiz,format_buf,((long*)input_var)[i]);
+		  output_var[i] = NrmStringToQuark(buffer);
+	  }
+	  break;
+  case NCL_ulong:	
+	  if (v_loc && ! strstr(format_buf,"ld")) {
+		  strcpy(v_loc,"lu");
+		  strcpy(v_loc + 2,format_tail);
+	  }
+	  for(i = 0; i < total_elements; i++) {
+		  snprintf(buffer,bufsiz,format_buf,((unsigned long*)input_var)[i]);
+		  output_var[i] = NrmStringToQuark(buffer);
+	  }
+	  break;
+  case NCL_int64:
+	  if (v_loc && ! strstr(format_buf,"lld")) {
+		  strcpy(v_loc,"lld");
+		  strcpy(v_loc + 3,format_tail);
+	  }
+	  for(i = 0; i < total_elements; i++) {
+		  snprintf(buffer,bufsiz,format_buf,((long long*)input_var)[i]);
+		  output_var[i] = NrmStringToQuark(buffer);
+	  }
+	  break;
+  case NCL_uint64:
+	  if (v_loc && ! strstr(format_buf,"lld")) {
+		  strcpy(v_loc,"llu");
+		  strcpy(v_loc + 3,format_tail);
+	  }
+	  for(i = 0; i < total_elements; i++) {
+		  snprintf(buffer,bufsiz,format_buf,((unsigned long long*)input_var)[i]);
+		  output_var[i] = NrmStringToQuark(buffer);
+	  }
+	  break;
+  }
+	  
   return(NclReturnValue((void*)output_var,ndims_input_var,dsizes_input_var,NULL,NCL_string,0));
 }
-
 
 NhlErrorTypes sprintf_W(void)
 {
@@ -19545,6 +19681,14 @@ NhlErrorTypes   _NclIGetFileVarTypes
 
     		case Ncl_Typefloat:
 	    		vartypes[i] = NrmStringToQuark("float");
+		    	break;
+
+    		case Ncl_Typeint64:
+	    		vartypes[i] = NrmStringToQuark("int64");
+		    	break;
+
+    		case Ncl_Typeuint64:
+	    		vartypes[i] = NrmStringToQuark("uint64");
 		    	break;
 
     		case Ncl_Typelong:
