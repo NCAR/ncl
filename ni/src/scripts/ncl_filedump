@@ -335,58 +335,78 @@ set tmp_nclfile = "$tmpdir/tmp$$.ncl"
 /bin/rm $tmp_nclfile >& /dev/null
 
 cat << 'EOF_NCL' >! $tmp_nclfile
-    function set_fmt(v:numeric)
+    function set_fmt(v:snumeric)
     begin
-        if (isbyte(v)) then              ; 8 [+/- 127]
-            return("15i5")
-        end if
-
-        if (isshort(v)) then             ; 16 [+/-32767]
-            return("11i7")
-        end if
-
-        if (isinteger(v)) then           ; 32 [+/- 2147483647]
-            mxv = max(abs(v))
-            if (mxv .le. 9999) then
-                return("13i6")
-            end if
-
-            if (mxv .le. 999999) then
-                return("10i8")
-            end if
-
-            if (mxv .le. 9999999) then
-                return("9i9")
-            end if
-
-            return("7i12")               ; yyyymmddhh +/- 214748364
-        end if
-
-        if (islong(v)) then              ; 64
-            mxv = new(1, "long")
-            mxv = max(abs(v))
-            if (mxv .le. 9999) then
-                return("13i6")
-            end if
-
-            if (mxv .le. 999999) then
-                return("10i8")
-            end if
-
-            if (mxv .le. 9999999) then
-                return("9i9")
-            end if
-
-            if (mxv .gt. 9999999 .and. mxv .le. 214748364) then
-                return("7i12")
-            end if
-
-            return("5i16")
-        end if
-
         if (isfloat(v) .or. isdouble(v)) then
             return("6g12.4")
         end if
+
+        left_digits = toint(log10(max(abs(v)))) + 1
+	size = sizeof(v(0,0))
+	if (isunsigned(v)) then
+	    ; no sign required
+	    spaces = left_digits + 2
+	else
+	    spaces = left_digits + 3
+        end if
+        count = toint(80.0 / spaces) 
+
+	format = "" + count + "i" + spaces
+ 	return (format)
+	    
+;        if (isbyte(v)) then              ; 8 [+/- 127]
+;            return("15i5")
+;        end if
+;        if (isubyte(v)) then              ; 8 [+/- 127]
+;            return("15i5")
+;        end if
+;
+;        if (isshort(v)) then             ; 16 [+/-32767]
+;            return("11i7")
+;        end if
+;        if (isushort(v)) then             ; 16 [+/-32767]
+;            return("11i7")
+;        end if
+;
+;        if (isinteger(v).or.isuint(v)) then           ; 32 [+/- 2147483647]
+;            mxv = max(abs(v))
+;            if (mxv .le. 9999) then
+;                return("13i6")
+;            end if
+;
+;            if (mxv .le. 999999) then
+;                return("10i8")
+;            end if
+;
+;            if (mxv .le. 9999999) then
+;                return("9i9")
+;            end if
+;
+;            return("7i12")               ; yyyymmddhh +/- 214748364
+;        end if
+;
+;        if (islong(v)) then              ; 64
+;            mxv = new(1, "long")
+;            mxv = max(abs(v))
+;            if (mxv .le. 9999) then
+;                return("13i6")
+;            end if
+;
+;            if (mxv .le. 999999) then
+;                return("10i8")
+;            end if
+;
+;            if (mxv .le. 9999999) then
+;                return("9i9")
+;            end if
+;
+;            if (mxv .gt. 9999999 .and. mxv .le. 214748364) then
+;                return("7i12")
+;            end if
+;
+;            return("5i16")
+;        end if
+
     end
 
     procedure set_opt(o:logical, t:string)
@@ -395,7 +415,7 @@ cat << 'EOF_NCL' >! $tmp_nclfile
         o@tspace = 5
     end
 
-    function make_var2d(v:numeric, r:integer, d:integer)
+    function make_var2d(v:snumeric, r:integer, d:integer)
     begin
         if (r .eq. 1) then
             mv2d = onedtond(v, (/1, d(0)/))
@@ -404,6 +424,34 @@ cat << 'EOF_NCL' >! $tmp_nclfile
         end if
 
         return(mv2d)
+    end
+
+    ; added to handle types that write_matrix can't handle
+    procedure multi_column_write(v2d,fmt,name) 
+    local count, spaces, v2d1d, v_strings, dsize, i, j
+    begin
+        count = toint(str_get_field(fmt,1,"i"))
+	spaces = str_get_field(fmt,2,"i")
+	v2d1d = ndtooned(v2d)
+	v_strings = sprinti("%" + spaces + "V",v2d1d)
+	dsize = dimsizes(v2d1d)
+	delete(v2d1d)
+        print("     " + name + ":")
+        print("")
+	i = 0
+	do while (i .lt. dsize)
+	    out_str = ""
+            do j = 0, count -1
+	        out_str = out_str + v_strings(i)
+		i = i + 1
+		if (i .eq. dsize) then
+		    break
+		end if
+            end do
+      	    print("" + out_str)
+	end do
+        print("")
+        return
     end
 
     ; main
@@ -434,8 +482,8 @@ cat << 'EOF_NCL' >! $tmp_nclfile
                     if (dNames(n) .eq. vNames(m)) then
                         dims = getfilevardimsizes(f, vNames(m))
                         rank = dimsizes(dims)
- 
-                        if ((getfilevartypes(f, vNames(m))) .eq. "string") then
+			type = getfilevartypes(f,vNames(m))
+                        if (type .eq. "string") then
                             print(f->$vNames(m)$)
                             print(" ")
                         else
@@ -443,14 +491,18 @@ cat << 'EOF_NCL' >! $tmp_nclfile
                             fmt = set_fmt(v2d)
                             opt = True
                             set_opt(opt, dNames(n))
-                            write_matrix(v2d, fmt, opt)
+		            if (isunsigned(v2d) .or. isint64(v2d)) then
+			        ; types not supported by write_matrix
+                                multi_column_write(v2d,fmt,vNames(m))
+			    else
+                                write_matrix(v2d, fmt, opt)
+			    end if
                             delete(v2d)
                         end if
-
                         delete(dims)
                     end if
                 end do
-            end do
+                                          end do
         end if
     
         print(" ")
@@ -462,7 +514,8 @@ cat << 'EOF_NCL' >! $tmp_nclfile
             do n = 0, nvars - 1
                 print("Variable No. " + n)
                 if (isfilevar(f, vars(n))) then
-                    if ((getfilevartypes(f, vars(n))) .eq. "string") then
+		    type = getfilevartypes(f,vars(n))
+                    if (type .eq. "string") then
                         print(f->$vars(n)$)
                         print(" ")
                     else
@@ -473,11 +526,26 @@ cat << 'EOF_NCL' >! $tmp_nclfile
                         fmt = set_fmt(v2d)
                         opt = True
                         set_opt(opt, vars(n))
-                        write_matrix(v2d, fmt, opt)
 
-                        delete(v2d)
-                        delete(dims)
+                        if (isubyte(v2d) .or. isushort(v2d) ) then
+                            ; not supported by write_matrix; convert to supported types
+                            if (isubyte(v2d)) then
+                                tmp = toshort(v2d)
+                            else
+                                tmp = toint(v2d)
+                            end if
+                            write_matrix(tmp,fmt, opt)
+                            delete(tmp)
+                        else if (isunsigned(v2d) .or. isint64(v2d)) then
+                            ; types not supported by write_matrix; no conversion possible
+                            multi_column_write(v2d,fmt,vars(n))
+                        else
+                            write_matrix(v2d, fmt, opt)
+                        end if
+                        end if
                     end if
+                    delete(v2d)
+                    delete(dims)
                 else
                     print("${progname}: error: '" + vars(n) + "' is not a variable in '" + filename + "'.")
                 end if
@@ -503,12 +571,12 @@ endif
 # Clean up.
 #
 
-/bin/rm $tmp_nclfile
+#/bin/rm $tmp_nclfile
 
 exit 0
 
 cleanup:
-    /bin/rm -f $tmp_nclfile
+#    /bin/rm -f $tmp_nclfile
     exit 1
 
 usage:
