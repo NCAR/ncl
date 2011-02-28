@@ -12191,7 +12191,7 @@ begin
 
       if (opt) then
 
-          if (isatt(opt,"float")) then
+          if (isatt(opt,"return_type") .and. opt@return_type.eq."float") then
               xoutf = tofloat( xout )
               copy_VarMeta(xout,xoutf)
               delete(xout)
