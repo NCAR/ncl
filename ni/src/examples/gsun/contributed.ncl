@@ -12190,6 +12190,15 @@ begin
       copy_VarAtts(xin, xout)
 
       if (opt) then
+
+          if (isatt(opt,"float")) then
+              xoutf = tofloat( xout )
+              copy_VarMeta(xout,xoutf)
+              delete(xout)
+              xout  = xoutf
+              delete(xoutf)
+          end if              ; float
+
           if (isatt(opt,"latS") .and. isatt(opt,"latN")   .or. \
               isatt(opt,"lonL") .and. isatt(opt,"lonR") ) then  
               if (rank.eq.2) then
@@ -12197,8 +12206,9 @@ begin
               else
                   return( xout(:,:,{latS:latN},{lonL:lonR}) ) 
               end if
-          end if
-      end if
+          end if              ; latS, ...
+
+      end if                  ; (opt)
 
       return( xout )
 end
