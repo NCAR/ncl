@@ -2755,7 +2755,7 @@ end
 
 
 undef("smth9_Wrap")
-function smth9_Wrap(var:float, p[1]:float, q[1]:float, cyclic:logical)
+function smth9_Wrap(var:numeric, p[1]:numeric, q[1]:numeric, cyclic:logical)
 local var_out
 begin
   if (isatt(var,"missing_value") .and. .not.isatt(var,"_FillValue")) then
@@ -11674,11 +11674,11 @@ begin
         copy_VarCoords(x(0,:,:), xReturn(0,:,:))
     end if
     if (rankx.eq.4) then
-        copy_VarCoords(x(0,0,:,:), xReturn(0,0,:,:))
+        copy_VarCoords(x(0,:,:,:), xReturn(0,:,:,:))
 
     end if
     if (rankx.eq.5) then
-        copy_VarCoords(x(:,0,0,:,:), xReturn(:,0,0,:,:))
+        copy_VarCoords(x(:,0,:,:,:), xReturn(:,0,:,:,:))
     end if
 
     xReturn@operation_tag = "calculate_monthly_values: "+arith

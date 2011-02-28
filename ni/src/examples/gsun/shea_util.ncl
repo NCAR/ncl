@@ -2461,7 +2461,8 @@ function boxplot (wks:graphic,x[*]:numeric,y[*][*]:numeric,boxOpts:logical,plotr
 ;
 ;	This function creates a blank linLog plot object, on which box plots are created by extensive
 ;	use of gsn_add_polyline. The user can draw as many or as few box plots as they wish.
-;	The plot is not drawn, and the frame is not advanced. May be used with gsn_panel.
+;	The plot is not drawn, and the frame is not advanced. May be used with gsn_panel. Missing data
+; may be present in the input Y array, but not the input X array.
 ;	The function options are as follows:
 ;
 ;	wks     ----- The workstation
@@ -2490,6 +2491,10 @@ begin
 	   print("Fatal: X must be one-dimensional and both X and Y must have the same rightmost dimension")
 	   exit
 	end if
+ if (any(ismissing(x))) then
+    print("Fatal: X array cannot contain missing data, exiting")
+    exit
+ end if
 
 ;	Developing x-axis
 	xAxis = new(numbox+2,typeof(x))
@@ -2524,18 +2529,18 @@ begin
         maximize = get_res_value(plotres,"gsnMaximize",False) 
 
 	if (plotres) then
-	   print("Plot resources detected, accepting")
+;	   print("Plot resources detected, accepting")
 	   fsatts = getvaratts(plotres)
 	   do ty = 0,dimsizes(fsatts)-1
 	      if (fsatts(ty).eq."tmXBLabels") then		;Special section to test for XBLabels
 	         if (dimsizes(plotres@tmXBLabels).ne.numbox) then
-		    print("Fatal:Number of XB Labels does not match number of boxes, exiting")
-		    exit
-		 else
-		    labarr(1:numbox) = plotres@$fsatts(ty)$
-		 end if
-		 xblab = plotres@tmXBLabels
-		 delete(plotres@tmXBLabels)		;Delete so tmXBLabels is not used when all
+		           print("Fatal:Number of XB Labels does not match number of boxes, exiting")
+		           exit
+		        else
+		           labarr(1:numbox) = plotres@$fsatts(ty)$
+		        end if
+		        xblab = plotres@tmXBLabels
+		        delete(plotres@tmXBLabels)		;Delete so tmXBLabels is not used when all
 	      end if					;atts are assigned below...
 	   end do
 	   delete(fsatts)
@@ -2600,55 +2605,73 @@ begin
 	   end if
 	   yy = (/y(gg,4),y(gg,4)/)
 	   xx = (/(ff-(boxwidth/8.)),(ff+(boxwidth/8.))/)
-	   dum(gg,0) = gsn_add_polyline(wks,plot,xx,yy,polyres)   
-
+    if (.not.(any(ismissing(xx).or.ismissing(yy)))) then
+	      dum(gg,0) = gsn_add_polyline(wks,plot,xx,yy,polyres)   
+    end if
+    
 	   yy = (/y(gg,3),y(gg,4)/)
 	   xx = (/ff,ff/)
 	   polyres@gsLineDashPattern = 1
-	   dum(gg,1) = gsn_add_polyline(wks,plot,xx,yy,polyres)   
-	   polyres@gsLineDashPattern = 0
+    if (.not.(any(ismissing(xx).or.ismissing(yy)))) then
+	      dum(gg,1) = gsn_add_polyline(wks,plot,xx,yy,polyres)   
+	   end if
+    polyres@gsLineDashPattern = 0
 
 	   yy = (/y(gg,3),y(gg,3)/)
 	   xx = (/(ff-(boxwidth/2.)),(ff+(boxwidth/2.))/)
-	   dum(gg,2) = gsn_add_polyline(wks,plot,xx,yy,polyres)
+    if (.not.(any(ismissing(xx).or.ismissing(yy)))) then
+	      dum(gg,2) = gsn_add_polyline(wks,plot,xx,yy,polyres)
+    end if
 
 	   yy = (/y(gg,1),y(gg,3)/)
 	   xx = (/(ff-(boxwidth/2.)),(ff-(boxwidth/2.))/)
-	   dum(gg,3) = gsn_add_polyline(wks,plot,xx,yy,polyres)   
+    if (.not.(any(ismissing(xx).or.ismissing(yy)))) then
+	      dum(gg,3) = gsn_add_polyline(wks,plot,xx,yy,polyres)   
+    end if
 
 	   yy = (/y(gg,2),y(gg,2)/)
 	   xx = (/(ff-(boxwidth/2.)),(ff+(boxwidth/2.))/)
-	   dum(gg,4) = gsn_add_polyline(wks,plot,xx,yy,polyres)   
-
+    if (.not.(any(ismissing(xx).or.ismissing(yy)))) then
+	      dum(gg,4) = gsn_add_polyline(wks,plot,xx,yy,polyres)   
+    end if
+    
 	   yy = (/y(gg,1),y(gg,3)/)
 	   xx = (/(ff+(boxwidth/2.)),(ff+(boxwidth/2.))/)
-	   dum(gg,5) = gsn_add_polyline(wks,plot,xx,yy,polyres)   
+    if (.not.(any(ismissing(xx).or.ismissing(yy)))) then
+	      dum(gg,5) = gsn_add_polyline(wks,plot,xx,yy,polyres)   
+    end if
 
 	   yy = (/y(gg,1),y(gg,1)/)
 	   xx = (/(ff-(boxwidth/2.)),(ff+(boxwidth/2.))/)
-	   dum(gg,6) = gsn_add_polyline(wks,plot,xx,yy,polyres)   
+    if (.not.(any(ismissing(xx).or.ismissing(yy)))) then
+	      dum(gg,6) = gsn_add_polyline(wks,plot,xx,yy,polyres)   
+    end if
 
 	   yy = (/y(gg,0),y(gg,1)/)
 	   xx = (/ff,ff/)
 	   polyres@gsLineDashPattern = 1
-	   dum(gg,7) = gsn_add_polyline(wks,plot,xx,yy,polyres)   
-	   polyres@gsLineDashPattern = 0
+    if (.not.(any(ismissing(xx).or.ismissing(yy)))) then
+	      dum(gg,7) = gsn_add_polyline(wks,plot,xx,yy,polyres)   
+	   end if
+    polyres@gsLineDashPattern = 0
 
 	   yy = (/y(gg,0),y(gg,0)/)
 	   xx = (/(ff-(boxwidth/8.)),(ff+(boxwidth/8.))/)
-	   dum(gg,8) = gsn_add_polyline(wks,plot,xx,yy,polyres)
-	end do
+    if (.not.(any(ismissing(xx).or.ismissing(yy)))) then
+	      dum(gg,8) = gsn_add_polyline(wks,plot,xx,yy,polyres)
+	   end if
+ end do
 	dumname = unique_string("dum")								
 	plot@$dumname$ = dum									
 	if (isvar("xblab").eq."True") then							
 	   plotres@tmXBLabels = xblab		;reassign XBLabels for possible future plots	
 	end if				
-	if(maximize) then
-          mres = True
-          mres@gsnDraw  = False
-          mres@gsnFrame = False
-          maximize_output(wks,mres)
-        end if
+ if (maximize) then
+    mres = True
+    mres@gsnDraw  = False
+    mres@gsnFrame = False
+    maximize_output(wks,mres)
+ end if
 	return(plot)
 end
 ; ---------------------------------

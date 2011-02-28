@@ -153,7 +153,7 @@ NhlErrorTypes ut_calendar_W( void )
  */
   void *x;
   double *tmp_x;
-  string *sspec;
+  string *sspec = NULL;
   char *cspec, *cspec_orig;
   int *option;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
@@ -307,6 +307,10 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * Convert sspec to character string.
  */
+  if(sspec == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: no 'units' attribute provided");
+    return(NhlFATAL);
+  }
   cspec = NrmQuarkToString(*sspec);
 
 /*

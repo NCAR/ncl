@@ -3051,9 +3051,9 @@ NhlErrorTypes esccr_W( void )
         if(ier < 0) ier_count++;
       }
       index_x += npts;
-      if(ier_count > 0) {
-        NhlPError(NhlWARNING,NhlEUNKNOWN,"esccr: Non-fatal conditions encountered: all missing or constant values");
-      }
+    }
+    if(ier_count > 0) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"esccr: Non-fatal conditions encountered: all missing or constant values");
     }
   }
 /*
@@ -3795,9 +3795,9 @@ NhlErrorTypes esccv_W( void )
         if(ier < 0) ier_count++;
       }
       index_x += npts;
-      if(ier_count > 0) {
-        NhlPError(NhlWARNING,NhlEUNKNOWN,"esccv: Non-fatal conditions encountered: all missing or constant values");
-      }
+    }
+    if(ier_count > 0) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"esccv: Non-fatal conditions encountered: all missing or constant values");
     }
   }
 /*

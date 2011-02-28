@@ -2957,8 +2957,8 @@ begin
 ;
   max_device = False
   class = NhlClassName(wks)
-  if((class.eq."psWorkstationClass").or. \
-     (class.eq."pdfWorkstationClass")) then
+  if(any(class.eq.(/"psWorkstationClass","pdfWorkstationClass",\
+                    "documentWorkstationClass"/)))
     max_device = True
 ;
 ; Calculate device coords to maximize these plots on the PDF or PS 
@@ -3046,9 +3046,8 @@ begin
     end if
 
     class = NhlClassName(wks)
-    if((class(0).eq."psWorkstationClass").or. \
-       (class(0).eq."pdfWorkstationClass").or. \
-       (class(0).eq."documentWorkstationClass")) then
+    if(any(class(0).eq.(/"psWorkstationClass","pdfWorkstationClass",\
+                         "documentWorkstationClass"/))) then
 ;
 ; Keep track of whether device coordinates were recalculated.
 ;
@@ -3835,6 +3834,7 @@ begin
     wks_res = True
     res_list = (/"wkColorMap","wkWidth","wkHeight","wkColorModel", \
                  "wkPSResolution","wkPDFResolution","wkVisualType", \
+                 "wkPaperSize","wkPaperWidthF","wkPaperHeightF", \
                  "_FillValue"/)
     do i=0,dimsizes(varatts)-1
       if(all(varatts(i).ne.res_list)) then
@@ -5379,7 +5379,8 @@ begin
 ; 
   if(maxbb) then
     class = NhlClassName(wks)
-    if((class(0).ne."psWorkstationClass").and.(class(0).ne."pdfWorkstationClass")) then
+    if(.not.any(class(0).eq.(/"psWorkstationClass", "pdfWorkstationClass", \
+                              "documentWorkstationClass"/)))
       maxbb = False
     end if
     delete(class)

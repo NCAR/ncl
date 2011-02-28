@@ -2134,9 +2134,14 @@ begin
 ; than actual min/max of data) because the labels will already be 
 ; formatted correctly.
 ;
+  nlev = dimsizes(levels)
+  if(end_labels_on.and.end_labelbar_style.eq.1.and. \
+      (lbstrings(0).eq."".or.lbstrings(nlev+1).eq."")) then
+    print("Warning:add_labelbar: invalid end labels, turning them off.")
+    end_labels_on = False
+  end if
   if(end_labels_on) then
     if(end_labelbar_style.eq.1) then
-      nlev              = dimsizes(levels)
       newlevels         = new(nlev+2,typeof(levels))
       newlevels(1:nlev) = levels
       newlevels(0)      = stringtoxxx(lbstrings(0),typeof(newlevels))
@@ -4313,7 +4318,6 @@ begin
       if(left_string.or.center_string.or.right_string)
         main_zone   = main_zone+1
       end if
-<<<<<<< .working
 ;
 ; These resources allow you to control the look of the fill patterns
 ; in the bars. You can change the fill line thickness, the density of
@@ -4323,12 +4327,6 @@ begin
       bar_fill_line_thickness = get_res_value(res2,"gsnXYBarChartFillLineThicknessF",1.0)
       bar_fill_scale = get_res_value(res2,"gsnXYBarChartFillScaleF",1.0)
       bar_fill_dot_size = get_res_value(res2,"gsnXYBarChartFillDotSizeF",0.0)
-=======
-;
-; Do we want thicker bar outlines?
-;
-      bar_outline_thickness = get_res_value(res2,"gsnXYBarOutlineThicknessF",1.0)
->>>>>>> .merge-right.r11564
     end if                  ; Done checking special resources.
 
     res2          = True
@@ -10636,10 +10634,14 @@ begin
 ; Pick some "nice" values for this single vertical axis, and
 ; use them if the user hasn't already set their own.
 ;
-  mnmxint               = nice_mnmxintvl(min(y3), max(y3), 10, True)
-  res3_new@trYMinF      = get_res_value(res3_new,"trYMinF",mnmxint(0))
-  res3_new@trYMaxF      = get_res_value(res3_new,"trYMaxF",mnmxint(1))
-
+  if(.not.isatt(res3_new,"trYMinF").or..not.isatt(res3_new,"trYMaxF")) then
+    mnmxint               = nice_mnmxintvl(min(y3), max(y3), 10, True)
+    res3_new@trYMinF      = get_res_value(res3_new,"trYMinF",mnmxint(0))
+    res3_new@trYMaxF      = get_res_value(res3_new,"trYMaxF",mnmxint(1))
+  else
+    res3_new@trYMinF      = get_res_value(res3_new,"trYMinF",0)
+    res3_new@trYMaxF      = get_res_value(res3_new,"trYMaxF",0)
+  end if
   res3_new@tmXBOn       = get_res_value(res3_new,"tmXBOn",False)
   res3_new@tmXBBorderOn = get_res_value(res3_new,"tmXBBorderOn",False)
   res3_new@tmXTOn       = get_res_value(res3_new,"tmXTOn",False)
