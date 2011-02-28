@@ -620,7 +620,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					goto fatal_err;
 				}
 				thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
-				if (var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
+				if (thefile && var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
 					int bad = 0;
 					struct _NclFVarRec *var_info = thefile->file.var_info[index];
 					if (first) { /* save the dimension sizes */
@@ -659,7 +659,12 @@ void CallLIST_READ_FILEVAR_OP(void) {
 						list_index--;
 					}
 				}
-			
+				else {
+					files[list_index] = NULL;
+					agg_dim_count[list_index] = 0;
+					total_agg_dim_size--;
+					list_index--;
+				}
 			}
 		}
 	}
@@ -681,12 +686,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					goto fatal_err;
 				}
 				thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
-				if (! thefile) {
-					files[list_index] = NULL;
-					agg_dim_count[list_index] = 0;
-					list_index--;
-				}
-				else if (var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
+				if (thefile && var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
 					int bad = 0;
 					struct _NclFVarRec *var_info = thefile->file.var_info[index];
 					if (first) { /* save the dimension sizes */
@@ -728,7 +728,11 @@ void CallLIST_READ_FILEVAR_OP(void) {
 						list_index--;
 					}
 				}
-			
+				else {
+					files[list_index] = NULL;
+					agg_dim_count[list_index] = 0;
+					list_index--;
+				}
 			}
 		}
 		if (good_file_count == 0 || agg_dim_name == NrmNULLQUARK) {
