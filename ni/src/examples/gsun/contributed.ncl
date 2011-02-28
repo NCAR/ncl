@@ -12067,10 +12067,9 @@ begin
 end
 
 ;---------------------------------------------------------
-undef("homme2latlon")
-function homme2latlon(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
+undef("remap_elements")
+function remap_elements(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
 ;
-; remap from original HOMME grid to rectilinear grid
 ; Usage:
 ;  dirw   = "./"
 ;  filw   = "map_ne30np4_fv0.9x1.25_bilinear.nc"   ; weight file
@@ -12079,8 +12078,8 @@ function homme2latlon(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
 ;  filh   = "camrun.cam2.h0.1995-01-01-00000.nc"   ; cubed sphere
 ;  fh     = addfile(dirh+filh, "r")
 ;
-;  psl    = homme2latlon(fw, fc, "PSL", False)     ; (time,lat,lon)
-;  temp   = homme2latlon(fw, fc, "T"  , False)     ; (time,lev,lat,lon)
+;  psl    = remap_elements(fw, fc, "PSL", False)   ; (time,lat,lon)
+;  temp   = remap_elements(fw, fc, "T"  , False)   ; (time,lev,lat,lon)
 ;  ----
 local ier, xin, dimx, rank, dim_dst, ntim, klev, nlat, mlon, lat, lon \
     , errMsg, dst_add , src_add, s, nS, map_wts, xout1d, xout, xoutf
@@ -12088,7 +12087,7 @@ begin
          ; check 'fhom' argument
       if (.not.(typeof(fhom).eq."file"    .or. \
                 typeof(fhom).eq."list"))  then
-          print("homme2latlon: fhom is not of type file or list")
+          print("remap_elements: fhom is not of type file or list")
           print("              fhom="+typeof(fhom))
           exit
       end if
@@ -12112,14 +12111,14 @@ begin
       end if
 
       if (ier) then
-          print("homme2latlon: variable ="+var+" not on file")
+          print("remap_elements: variable ="+var+" not on file")
           exit
       end if
       
       dimx    = dimsizes( xin  )
       rank    = dimsizes( dimx )
       if (rank.eq.1 .or. rank.gt.3) then
-          print("homme2latlon: bad rank: rank="+rank)
+          print("remap_elements: bad rank: rank="+rank)
           exit
       end if
                                             ; destination grid
@@ -12219,4 +12218,25 @@ begin
       end if
 
       return( xout )
+end
+
+undef("homme2latlon")
+function homme2latlon(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
+;
+; entry for backward compatibility
+;
+; remap from original HOMME grid to rectilinear grid
+; Usage:
+;  dirw   = "./"
+;  filw   = "map_ne30np4_fv0.9x1.25_bilinear.nc"   ; weight file
+;  fw     = addfile(dirw+filw, "r")
+;  dirh   = "./"
+;  filh   = "camrun.cam2.h0.1995-01-01-00000.nc"   ; cubed sphere
+;  fh     = addfile(dirh+filh, "r")
+;
+;  psl    = homme2latlon(fw, fc, "PSL", False)     ; (time,lat,lon)
+;  temp   = homme2latlon(fw, fc, "T"  , False)     ; (time,lev,lat,lon)
+;  ----
+begin
+   return( remap_elements(fwt, fhom, var, opt) )
 end
