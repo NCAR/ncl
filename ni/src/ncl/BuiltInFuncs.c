@@ -2819,7 +2819,7 @@ NhlErrorTypes _NclIfbindirread(void)
 			step = step + totalsize % buf.st_blksize;
 		}
 		if (swap_bytes) {
-			int count = (int)(step - (char*)tmp_ptr) / thetype->type_class.size;
+			ng_size_t count = (ng_size_t)(step - (char*)tmp_ptr) / thetype->type_class.size;
 			ret = _NclSwapBytes(NULL,tmp_ptr,count,thetype->type_class.size);
 			if (ret < NhlWARNING)
 				return ret;
@@ -3026,7 +3026,7 @@ NhlErrorTypes _NclIcbinread
 		n = read(fd,step,totalsize % buf.st_blksize);
 		step = step + totalsize % buf.st_blksize;
 		if (swap_bytes) {
-			int count = ((int)(step - (char*)tmp_ptr)) / thetype->type_class.size;
+		        ng_size_t count = ((ng_size_t)(step - (char*)tmp_ptr)) / thetype->type_class.size;
 			ret = _NclSwapBytes(NULL,tmp_ptr,count,thetype->type_class.size);
 			if (ret < NhlWARNING)
 				return ret;

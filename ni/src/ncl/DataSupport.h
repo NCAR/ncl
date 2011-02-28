@@ -305,7 +305,7 @@ extern NhlErrorTypes _NclSwapBytes(
 #if     NhlNeedProto
 void *outdata,
 void *indata,
-int  count,
+ng_size_t count,
 int  type_size
 #endif
 );

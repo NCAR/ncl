@@ -2739,14 +2739,14 @@ NhlErrorTypes _NclSwapBytes
 (
 void *outdata,
 void *indata,
-int  count,
+ng_size_t  count,
 int  type_size
 )
 #else
 (outdata,indata,count,type_size)
 void *outdata;
 void *indata;
-int  count;
+ng_size_t count;
 int  type_size;
 #endif
 {
