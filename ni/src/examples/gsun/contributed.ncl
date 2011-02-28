@@ -12078,12 +12078,12 @@ function homme2latlon(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
 ;  dirh   = "./"
 ;  filh   = "camrun.cam2.h0.1995-01-01-00000.nc"   ; cubed sphere
 ;  fh     = addfile(dirh+filh, "r")
-
+;
 ;  psl    = homme2latlon(fw, fc, "PSL", False)     ; (time,lat,lon)
 ;  temp   = homme2latlon(fw, fc, "T"  , False)     ; (time,lev,lat,lon)
 ;  ----
 local ier, xin, dimx, rank, dim_dst, ntim, klev, nlat, mlon, lat, lon \
-    , dst_add , src_add, s, nS, map_wts, xout1d, xout
+    , errMsg, dst_add , src_add, s, nS, map_wts, xout1d, xout, xoutf
 begin
          ; check 'fhom' argument
       if (.not.(typeof(fhom).eq."file"    .or. \
@@ -12147,6 +12147,11 @@ begin
       ntim    = dimx(0)
       xout1d  = new ( nlat*mlon, typeof(xin), 1e20)
 
+      errMsg = NhlGetErrorObjectId()       ; only print Fatal messages
+      setvalues errMsg
+          "errLevel" : "Fatal"
+      end setvalues
+
       if (rank.eq.2) then               ; (ntim,ncol
           xout = new ( (/ntim,nlat,mlon/), typeof(xin), 1e20)
 
@@ -12181,6 +12186,10 @@ begin
       xout&lat  =  lat 
       xout&lon  =  lon 
 
+      setvalues errMsg
+          "errLevel" : "Warning"          ; return to default
+      end setvalues
+
       if (isatt(xin,"_FillValue")) then
           xout@_FillValue = xin@_FillValue
       else
@@ -12206,9 +12215,8 @@ begin
               else
                   return( xout(:,:,{latS:latN},{lonL:lonR}) ) 
               end if
-          end if              ; latS, ...
-
-      end if                  ; (opt)
+          end if
+      end if
 
       return( xout )
 end
