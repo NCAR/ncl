@@ -12066,4 +12066,139 @@ begin
   return(dp_sigma)
 end
 
+;---------------------------------------------------------
+undef("homme2latlon")
+function homme2latlon(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
+;
+; remap from original HOMME grid to rectilinear grid
+; Usage:
+;  dirw   = "./"
+;  filw   = "map_ne30np4_fv0.9x1.25_bilinear.nc"   ; weight file
+;  fw     = addfile(dirw+filw, "r")
+;  dirh   = "./"
+;  filh   = "camrun.cam2.h0.1995-01-01-00000.nc"   ; cubed sphere
+;  fh     = addfile(dirh+filh, "r")
 
+;  psl    = homme2latlon(fw, fc, "PSL", False)     ; (time,lat,lon)
+;  temp   = homme2latlon(fw, fc, "T"  , False)     ; (time,lev,lat,lon)
+;  ----
+local ier, xin, dimx, rank, dim_dst, ntim, klev, nlat, mlon, lat, lon \
+    , dst_add , src_add, s, nS, map_wts, xout1d, xout
+begin
+         ; check 'fhom' argument
+      if (.not.(typeof(fhom).eq."file"    .or. \
+                typeof(fhom).eq."list"))  then
+          print("homme2latlon: fhom is not of type file or list")
+          print("              fhom="+typeof(fhom))
+          exit
+      end if
+
+         ; read variable
+      ier = False
+      if (typeof(fhom).eq."file") then
+         if (isfilevar(fhom,var)) then 
+             xin = fhom->$var$
+         else
+             ier = True
+         end if
+      end if
+
+      if (typeof(fhom).eq."list") then
+          if (isfilevar(fhom[0],var)) then 
+              xin = fhom[:]->$var$
+          else
+              ier = True
+          end if
+      end if
+
+      if (ier) then
+          print("homme2latlon: variable ="+var+" not on file")
+          exit
+      end if
+      
+      dimx    = dimsizes( xin  )
+      rank    = dimsizes( dimx )
+      if (rank.eq.1 .or. rank.gt.3) then
+          print("homme2latlon: bad rank: rank="+rank)
+          exit
+      end if
+                                            ; destination grid
+      if (isfilevar(fwt,"dst_grid_dims") ) then
+          dim_dst = fwt->dst_grid_dims      ; size destination grid
+      else
+          dim_dst = (/192,288/)
+      end if
+      nlat    = dim_dst(0)   
+      mlon    = dim_dst(1)    
+                                        ; define output grid
+                                        ; coordinate variables
+      lat  = latGlobeF(nlat, "lat", "latitude", "degrees_north")
+      lon  = lonGlobeF(mlon, "lon", "longitude", "degrees_east")
+
+                                        ; read info from file
+      dst_add = fwt->row                ; destination grid [linear] 
+      src_add = fwt->col                ; source grid [linear] 
+
+      s       = fwt->S                  ; wts 
+      nS      = dimsizes(s)
+      map_wts = new ( (/nS,1/), typeof(s), "No_FillValue")
+      map_wts(:,0) = s 
+
+      ntim    = dimx(0)
+      xout1d  = new ( nlat*mlon, typeof(xin), 1e20)
+
+      if (rank.eq.2) then               ; (ntim,ncol
+          xout = new ( (/ntim,nlat,mlon/), typeof(xin), 1e20)
+
+          do nt=0,ntim-1
+              pop_remap(xout1d,map_wts,dst_add,src_add,xin(nt,:)) 
+              xout(nt,:,:) = onedtond(xout1d, (/nlat,mlon/))
+          end do
+
+          xout!1   = "lat"
+          xout!2   = "lon"
+      end if
+
+      if (rank.eq.3) then               ; (ntim,klev,ncol)
+          klev = dimx(1)
+          xout = new ( (/ntim,klev,nlat,mlon/), typeof(xin), 1e20)
+
+          do nt=0,ntim-1
+            do kl=0,klev-1
+               pop_remap(xout1d,map_wts,dst_add,src_add,xin(nt,kl,:)) 
+               xout(nt,kl,:,:) = onedtond(xout1d, (/nlat,mlon/))
+            end do
+          end do
+
+          xout!1   = "lev"                ; xout!1 = xin!1
+          xout&lev = xin&lev              ; xout!&$xin!1$ = xin&$xin!1$
+          xout!2   = "lat"
+          xout!3   = "lon"
+      end if
+
+      xout!0    = "time"
+      xout&time =  xin&time
+      xout&lat  =  lat 
+      xout&lon  =  lon 
+
+      if (isatt(xin,"_FillValue")) then
+          xout@_FillValue = xin@_FillValue
+      else
+          delete(xout@_FillValue)
+      end if
+
+      copy_VarAtts(xin, xout)
+
+      if (opt) then
+          if (isatt(opt,"latS") .and. isatt(opt,"latN")   .or. \
+              isatt(opt,"lonL") .and. isatt(opt,"lonR") ) then  
+              if (rank.eq.2) then
+                  return( xout(:,{latS:latN},{lonL:lonR}) ) 
+              else
+                  return( xout(:,:,{latS:latN},{lonL:lonR}) ) 
+              end if
+          end if
+      end if
+
+      return( xout )
+end
