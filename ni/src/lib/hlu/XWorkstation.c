@@ -29,40 +29,40 @@ static NhlResource resources[] = {
 /* Begin-documented-resources */
 
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(window_id_set),
-		NhlTImmediate,(NhlPointer)True,
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{NhlNwkWindowId,NhlCwkWindowId,NhlTInteger,sizeof(int),Oset(window_id),
-		NhlTProcedure,(NhlPointer)_NhlResUnset,_NhlRES_NOSACCESS,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_NOSACCESS,NULL},
 	{NhlNwkXColorMode,NhlCwkXColorMode,NhlTXColorMode,sizeof(NhlXColorMode),
-		Oset(xcolor_mode),NhlTImmediate,(NhlPointer)-1,
+	 	Oset(xcolor_mode),NhlTImmediate,_NhlUSET((NhlPointer)-1),
 		0,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(pause_set),
-		NhlTImmediate,(NhlPointer)True,
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{NhlNwkPause,NhlCwkPause,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(pause),NhlTProcedure,(NhlPointer)_NhlResUnset,0,NULL},
+		 Oset(pause),NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 
 	{"no.res","no.res",NhlTInteger,sizeof(int),Oset(xwinconfig.type),
-		NhlTImmediate,(NhlPointer)NGC_XWINCONFIG,
+		 NhlTImmediate,_NhlUSET((NhlPointer)NGC_XWINCONFIG),
          	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{"no.res","no.res",NhlTInteger,sizeof(int),Oset(xwinconfig.work_id),
-		NhlTImmediate,(NhlPointer)-1,
+		 NhlTImmediate,_NhlUSET((NhlPointer)-1),
          	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{NhlNwkX,NhlCwkX,NhlTInteger,sizeof(int),Oset(xwinconfig.x),
-		NhlTImmediate,(NhlPointer)-1,_NhlRES_NOSACCESS,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)-1),_NhlRES_NOSACCESS,NULL},
 	{NhlNwkY,NhlCwkY,NhlTInteger,sizeof(int),Oset(xwinconfig.y),
-		NhlTImmediate,(NhlPointer)-1,_NhlRES_NOSACCESS,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)-1),_NhlRES_NOSACCESS,NULL},
 	{NhlNwkWidth,NhlCwkWidth,NhlTInteger,sizeof(int),
          	Oset(xwinconfig.width),
-		NhlTImmediate,(NhlPointer)-1,_NhlRES_NOSACCESS,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)-1),_NhlRES_NOSACCESS,NULL},
 	{NhlNwkHeight,NhlCwkHeight,NhlTInteger,sizeof(int),
 		Oset(xwinconfig.height),NhlTImmediate,
-		(NhlPointer)-1,_NhlRES_NOSACCESS,NULL},
+		 _NhlUSET((NhlPointer)-1),_NhlRES_NOSACCESS,NULL},
 	{NhlNwkTitle,NhlCwkTitle,NhlTString,sizeof(NhlString),
-		Oset(xwinconfig.title),NhlTImmediate,(NhlPointer)NULL,
+		 Oset(xwinconfig.title),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
 		_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
 	{NhlNwkIconTitle,NhlCwkIconTitle,NhlTString,sizeof(NhlString),
-		Oset(xwinconfig.icon_title),NhlTImmediate,(NhlPointer)NULL,
+		 Oset(xwinconfig.icon_title),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
 		_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
 /* End-documented-resources */
 
@@ -394,7 +394,6 @@ XWorkstationDestroy
 	NhlLayer	l;
 #endif
 {
-	char				func[]="XWorkstationDestroy";
 	NhlXWorkstationLayer		xl = (NhlXWorkstationLayer)l;
 
 	NhlFree(xl->xwork.xwinconfig.title);
@@ -638,7 +637,6 @@ XWorkstationOpen
 	NhlXWorkstationLayerPart	*xp = &xl->xwork;
 	NhlWorkstationClassPart	*wcp =
 		&((NhlWorkstationClass)xl->base.layer_class)->work_class;
-	int				i=2;
 	_NGCXGetSizeChg			xgsc;
 	Gescape_in_data			gesc_in_xgsc;
 	Gescape_in_data			gesc_in_xwconf;

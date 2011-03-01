@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sh op_funcs.sh short NhlTShort NhlTShortGenArray -99 > .tmp.$$
+sh op_funcs.sh short NhlTShort NhlTShortGenArray \(short\)-32767 > .tmp.$$
 
 if [ ! $? ]
 then
@@ -13,7 +13,7 @@ sed \
 -e 's/LOCALTYPE/short/g' \
 -e 's/HLUTYPEREP/NhlTShort/g' \
 -e 's/HLUGENTYPEREP/NhlTShortGenArray/g' \
--e 's/DEFAULT_MISS/0/g' \
+-e 's/DEFAULT_MISS/-32767/g' \
 -e 's/DEFAULT_FORMAT/%hd/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \

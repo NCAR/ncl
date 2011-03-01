@@ -11,9 +11,7 @@ elif [ $1 = "int64" ]; then
     def_type="long long"
 elif [ $1 = "uint64" ]; then
     def_type="unsigned long long"
-elif [ $1 = "int8" ]; then
-    def_type="char"
-elif [ $1 = "uint8" ]; then
+elif [ $1 = "ubyte" ]; then
     def_type="unsigned char"
 else
     def_type=$1
@@ -471,7 +469,7 @@ sed \
 -e "s/LOCALTYPE/$def_type/g" \
 TypeIsMonoFunc.c.sed
 
-if [ \( $1 = "int" \) -o \( $1 = "long" \) -o \( $1 = "short" \) -o \( $1 = "uint" \) -o \( $1 = "ulong" \) -o \( $1 = "ushort" \) -o \( $1 = "int8" \) -o \( $1 = "uint8" \) ]
+if [ \( $1 = "int" \) -o \( $1 = "long" \) -o \( $1 = "short" \) -o \( $1 = "uint" \) -o \( $1 = "ulong" \) -o \( $1 = "ushort" \) -o \( $1 = "ubyte" \) ]
 then
 sed \
 -e "s/OUTDATATYPE/float/g" \
@@ -583,7 +581,7 @@ sed \
 -e 's/FUNCNAME/divide/' \
 TypeDivOpTemplate.c.sed
 
-if [ \( $1 = "int" \) -o \( $1 = "long" \) -o \( $1 = "short" \) -o \( $1 = "int64" \) -o \( $1 = "uint" \) -o \( $1 = "ulong" \) -o \( $1 = "ushort" \) -o \( $1 = "uint64" \) -o \( $1 = "int8" \) -o \( $1 = "uint8" \) ]
+if [ \( $1 = "int" \) -o \( $1 = "long" \) -o \( $1 = "short" \) -o \( $1 = "int64" \) -o \( $1 = "uint" \) -o \( $1 = "ulong" \) -o \( $1 = "ushort" \) -o \( $1 = "uint64" \) -o \( $1 = "ubyte" \) ]
 then
 sed \
 -e "s/OUTDATATYPE/$1/g" \

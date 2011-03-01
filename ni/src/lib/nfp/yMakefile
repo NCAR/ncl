@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.124 2010-02-07 00:05:20 haley Exp $
+#      $Id: yMakefile,v 1.124 2010/02/07 00:05:20 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -15,14 +15,14 @@
 #                               National Center for Atmospheric Research
 #                               POB 3000, Boulder, Colorado
 #
-#       $Date: 2010-02-07 00:05:20 $
+#       $Date: 2010/02/07 00:05:20 $
 #
 #       Description:    
 
 MYNAME          =       libnfp
 
 EXTRA_INCLUDES  = -I../../ncl
-EXTRA_CDEFINES  = $(UDUNITS_DEFS) $(V5D_DEFS)
+EXTRA_CDEFINES  = $(UDUNITS_DEFS) $(V5D_DEFS) $(GRIDSPEC_DEFS)
 
 HDRS = wrapper.h
 
@@ -44,6 +44,24 @@ V5D_OBJS = ncl2v5dW.o
 # define    V5D_OBJS
 # endif
 
+# ifdef BuildGRIDSPEC
+GRIDSPEC_DEFS = -DBuildGRIDSPEC
+GRIDSPEC_SRCS = nccffregridW.c nccfmakeconformalcubichgridW.c nccfmakegnomoniccubichgridW.c	\
+		nccfmakehgridfromfileW.c nccfmakeregularlatlonhgridW.c 				\
+		nccfmakesimplecartesianhgridW.c nccfmakespectralhgridW.c 			\
+		nccfmaketripolarhgridW.c nccfmakecouplermosaicW.c nccfmakemosaicW.c		\
+		nccfmaketopogW.c nccfmakevgridW.c
+
+GRIDSPEC_OBJS = nccffregridW.o nccfmakeconformalcubichgridW.o nccfmakegnomoniccubichgridW.o	\
+		nccfmakehgridfromfileW.o nccfmakeregularlatlonhgridW.o 				\
+		nccfmakesimplecartesianhgridW.o nccfmakespectralhgridW.o 			\
+		nccfmaketripolarhgridW.o nccfmakecouplermosaicW.o nccfmakemosaicW.o		\
+		nccfmaketopogW.o nccfmakevgridW.o
+# else
+# define    GRIDSPEC_SRCS
+# define    GRIDSPEC_OBJS
+# endif
+
 CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cancorW.c cdf_dpW.c chiinvW.c         \
         conformW.c csagridW.c cssgridW.c ctwrapW.c cz2ccmW.c datesW.c                   \
         drwvctc.c dsgridW.c dtrendW.c echoW.c eofW.c erfW.c extaperW.c ezfftW.c         \
@@ -61,7 +79,8 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cancorW.c cdf_dpW.c chiinvW.c 
         lspolyW.c wgtvertbetaW.c dimavgwgtW.c studentW.c fft2dW.c                       \
         sg_toolsW.c colconvW.c convert_datum.c cfftW.c wksmoothW.c dzheightW.c          \
 	covcormW.c kronprodW.c space_timeW.c spcorrW.c  bindataW.c tropwmoW.c pdfW.c    \
-	mocloopsW.c spanW.c vinth2pnodesW.c vinth2penodesW.c objanalW.c
+	mocloopsW.c spanW.c vinth2pnodesW.c vinth2penodesW.c objanalW.c                 \
+	areaconremapW.c 
 
 COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o         \
         conformW.o csagridW.o cssgridW.o ctwrapW.o cz2ccmW.o datesW.o                   \
@@ -80,15 +99,16 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o 
         lspolyW.o wgtvertbetaW.o dimavgwgtW.o studentW.o fft2dW.o poissonW.o            \
         sg_toolsW.o colconvW.o convert_datum.o cfftW.o wksmoothW.o dzheightW.o          \
 	covcormW.o kronprodW.o space_timeW.o spcorrW.o bindataW.o tropwmoW.o pdfW.o     \
-	mocloopsW.o spanW.o vinth2pnodesW.o vinth2penodesW.o objanalW.o \
-	areaconremapW.o
+	mocloopsW.o spanW.o vinth2pnodesW.o vinth2penodesW.o objanalW.o                 \
+	areaconremapW.o	
 
-OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS)
+OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS) $(GRIDSPEC_OBJS)
+SRCS = $(CSRCS) $(UDUNITS_SRCS) $(V5D_SRCS) $(GRIDSPEC_SRCS)
 
 BuildSharedLibTarget(libNGnfp,$(OBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
 LibraryTarget($(MYNAME),$(OBJS))
 BuildIncludes($(HDRS),ncarg/nfp,../..)
-DependTarget($(CSRCS))
+DependTarget($(SRCS))
 
 #if defined(Linux)
 wrfW.o: wrfW.c

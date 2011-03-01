@@ -9,19 +9,19 @@ NhlErrorTypes shgrid_W(void)
   int ier = 0;
 
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
   float *zi;
-  int dsizes_zi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
   float *fval;
-  int dsizes_fval[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_fval[NCL_MAX_DIMENSIONS];
   float *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xo[NCL_MAX_DIMENSIONS];
   float *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_yo[NCL_MAX_DIMENSIONS];
   float *zo;
-  int dsizes_zo[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_zo[NCL_MAX_DIMENSIONS];
 
   int       has_missing_xi, has_missing_yi, has_missing_zi, has_missing_fval;
   int       has_missing_xo, has_missing_yo, has_missing_zo;
@@ -29,7 +29,8 @@ NhlErrorTypes shgrid_W(void)
   NclScalar missing_xo, missing_yo, missing_zo;
 
   float *uo;
-  int i, j, ndims_uo, dsizes_uo[3], num_missing, num_points;
+  int nxi, nxo, nyo, nzo, ndims_uo;
+  ng_size_t i, j, dsizes_uo[3], num_points, num_missing;
 
 /*
  * Retrieve argument #0 (x coordinates).
@@ -43,6 +44,7 @@ NhlErrorTypes shgrid_W(void)
        &has_missing_xi,
        NULL,
        DONT_CARE);
+
 /*
  * Retrieve argument #1 (y coordinates).
  */
@@ -103,6 +105,7 @@ NhlErrorTypes shgrid_W(void)
        &has_missing_yo,
        NULL,
        DONT_CARE);
+
 /*
  *  Retrieve argument #6 (output z coordinates)
  */
@@ -131,6 +134,19 @@ NhlErrorTypes shgrid_W(void)
     num_points = dsizes_xi[0];
     num_missing = 0;
   }
+
+/*
+ * Test the dimension sizes.
+ */
+  if( (dsizes_xi[0] > INT_MAX) || (dsizes_xo[0] > INT_MAX) || 
+      (dsizes_yo[0] > INT_MAX) || (dsizes_zo[0] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shgrid: the length of one or more input arrays is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxi = (int) num_points;
+  nxo = (int) dsizes_xo[0];
+  nyo = (int) dsizes_yo[0];
+  nzo = (int) dsizes_zo[0];
 
 /*
  *  Check for missing values.  Each argument xi, yi, zi, and fval must 
@@ -279,8 +295,8 @@ NhlErrorTypes shgrid_W(void)
 /*
  *  Call the C procedure.
  */
-  uo = c_shgrid(dsizes_xi[0], xi, yi, zi, fval, dsizes_xo[0], 
-                dsizes_yo[0], dsizes_zo[0], xo, yo, zo, &ier);
+  uo = c_shgrid(nxi, xi, yi, zi, fval, nxo, nyo, nzo,
+                xo, yo, zo, &ier);
   if (ier != 0) {
     sprintf(shmsg, "shgrid: Error number %d.", ier);
     NhlPError(NhlFATAL, NhlEUNKNOWN, shmsg);
@@ -296,31 +312,32 @@ NhlErrorTypes shgrid_W(void)
 
 NhlErrorTypes shgetnp_W(void)
 {
-  int i, j, ier = 0, num_missing, num_points, *k, ll;
+  int ier = 0, nxi;
+  ng_size_t i, j, num_points, num_missing;
 
   float *px;
-  int dsizes_px[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_px[NCL_MAX_DIMENSIONS];
   float *py;
-  int dsizes_py[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_py[NCL_MAX_DIMENSIONS];
   float *pz;
-  int dsizes_pz[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pz[NCL_MAX_DIMENSIONS];
 
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_yi[NCL_MAX_DIMENSIONS];
   float *zi;
-  int dsizes_zi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_zi[NCL_MAX_DIMENSIONS];
  
   int *flag;
-  int dsizes_flag[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_flag[NCL_MAX_DIMENSIONS];
 
   int       has_missing_px, has_missing_py, has_missing_pz;
   NclScalar missing_px, missing_py, missing_pz;
   int       has_missing_xi, has_missing_yi, has_missing_zi;
   NclScalar missing_xi, missing_yi, missing_zi;
   int       *index;
-  int       index_dims = 1;
+  ng_size_t index_dims = 1;
 
 /*
  * Retrieve argument #0 (x coordinate of reference point).
@@ -423,6 +440,15 @@ NhlErrorTypes shgetnp_W(void)
   }
 
 /*
+ * Test the dimension sizes.
+ */
+  if(dsizes_xi[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shgetnp: the length of xi is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nxi = (int) num_points;
+
+/*
  *  Check for missing values.  Each argument xi, yi, and zi must 
  *  be checked separately, since it may be that _FillValue may be
  *  set for just one or two of the arguments.
@@ -505,7 +531,7 @@ NhlErrorTypes shgetnp_W(void)
  */
   if (num_missing > 0) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,
-      "shgrid: missing values in %d input points - those points ignored.",
+      "shgetnp: missing values in %d input points - those points ignored.",
       num_missing);
   }
 
@@ -513,7 +539,7 @@ NhlErrorTypes shgetnp_W(void)
  *  Call the C procedure.
  */
   index = (int*)malloc(sizeof(int));
-  *index = c_shgetnp(*px, *py, *pz, dsizes_xi[0], xi, yi, zi, *flag, &ier);
+  *index = c_shgetnp(*px, *py, *pz, nxi, xi, yi, zi, *flag, &ier);
   if (ier != 0) {
     sprintf(shmsg, "shgetnp: Error number %d.", ier);
     NhlPError(NhlFATAL, NhlEUNKNOWN, shmsg);
@@ -525,8 +551,8 @@ NhlErrorTypes shgetnp_W(void)
 NhlErrorTypes shsetp_W(void)
 {
 
-  char  *arg1, *cval;
-  int   numpi, numpf, numpc, i;
+  char  *arg1;
+  int   numpi, i;
 
 /*
  *  List the integer parameter names.  To add new ones,
@@ -538,9 +564,9 @@ NhlErrorTypes shsetp_W(void)
  * Input array variables
  */
   string *pname;
-  int dsizes_pname[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
-  int dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pvalue[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname, type_pvalue;
 
 /*
@@ -610,9 +636,8 @@ NhlErrorTypes shgetp_W(void)
  *  Get values for shgrid parameters.
  */
 
-  char  *arg1, *cval;
-  int   numpi, numpf, numpc, i;
-  string *pvalue, *qvalue;
+  char  *arg1;
+  int   numpi, i;
 
 /*
  *  List the integer parameter names.  To add new ones,
@@ -624,11 +649,10 @@ NhlErrorTypes shgetp_W(void)
  * Input array variable
  */
   string *pname;
-  int dsizes_pname[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname;
-  float *fval;
   int *ival;
-  int ret_size = 1; 
+  ng_size_t ret_size = 1; 
 
 /*
  * Retrieve argument #1

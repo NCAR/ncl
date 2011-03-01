@@ -195,7 +195,7 @@ unsigned int /*obj_type_mask*/,
 void * /*val*/, 
 NclScalar * /*missing_value*/, 
 int /*n_dims*/, 
-int * /*dim_sizes*/, 
+ng_size_t * /*dim_sizes*/, 
 NclStatus /*status*/, 
 NclSelectionRecord * /*sel_rec*/,
 NclObjClass  /*type*/
@@ -305,7 +305,7 @@ extern NhlErrorTypes _NclSwapBytes(
 #if     NhlNeedProto
 void *outdata,
 void *indata,
-int  count,
+ng_size_t count,
 int  type_size
 #endif
 );

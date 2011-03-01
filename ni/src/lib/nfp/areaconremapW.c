@@ -17,7 +17,7 @@ NhlErrorTypes area_conserve_remap_W( void )
  */
   void *loni;
   double *tmp_loni;
-  int dsizes_loni[1];
+  ng_size_t dsizes_loni[1];
   NclBasicDataTypes type_loni;
 
 /*
@@ -25,15 +25,16 @@ NhlErrorTypes area_conserve_remap_W( void )
  */
   void *lati;
   double *tmp_lati;
-  int dsizes_lati[1];
+  ng_size_t dsizes_lati[1];
   NclBasicDataTypes type_lati;
 
 /*
  * Argument # 2
  */
   void *fi;
-  double *tmp_fi;
-  int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS];
+  double *tmp_fi = NULL;
+  int ndims_fi;
+  ng_size_t dsizes_fi[NCL_MAX_DIMENSIONS];
   int has_missing_fi;
   NclScalar missing_fi, missing_flt_fi, missing_dbl_fi;
   NclBasicDataTypes type_fi;
@@ -43,7 +44,7 @@ NhlErrorTypes area_conserve_remap_W( void )
  */
   void *lono;
   double *tmp_lono;
-  int dsizes_lono[1];
+  ng_size_t dsizes_lono[1];
   NclBasicDataTypes type_lono;
 
 /*
@@ -51,7 +52,7 @@ NhlErrorTypes area_conserve_remap_W( void )
  */
   void *lato;
   double *tmp_lato;
-  int dsizes_lato[1];
+  ng_size_t dsizes_lato[1];
   NclBasicDataTypes type_lato;
 
 /*
@@ -63,16 +64,17 @@ NhlErrorTypes area_conserve_remap_W( void )
  */
   void *fo;
   double *tmp_fo;
-  int *dsizes_fo;
+  ng_size_t *dsizes_fo;
   NclBasicDataTypes type_fo;
 
 
 /*
  * Various
  */
-  int nloni, nlati, nlevi, nlono, nlato, nlevnlatnloni, nlevnlatnlono;
-  int NLATi, NLATo, i, ret;
-  double *bin_factor;
+  ng_size_t nloni, nlati, nlevi, nlono, nlato, nlevnlatnloni, nlevnlatnlono;
+  ng_size_t NLATi, NLATo, i;
+  int ret;
+  double *bin_factor = NULL;
   logical set_binf;
   NclBasicDataTypes type_bin_factor;
 
@@ -82,6 +84,11 @@ NhlErrorTypes area_conserve_remap_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
+
+/*
+ * Variables for coercing input dimension sizes to integer.
+ */
+  int inlono, inlato, iNLATo, iNLATi, inloni, inlati, inlevi;
 
 /*
  * Retrieve parameters.
@@ -279,6 +286,27 @@ NhlErrorTypes area_conserve_remap_W( void )
   nlevi = 1;
   for(i = 0; i < ndims_fi-2; i++) nlevi *= dsizes_fi[i];
 
+/*
+ * Test input dimension sizes to make sure they are <= INT_MAX.
+ */
+  if((nlono > INT_MAX) ||
+     (nlato > INT_MAX) ||
+     (NLATi > INT_MAX) ||
+     (NLATo > INT_MAX) ||
+     (nloni > INT_MAX) ||
+     (nlati > INT_MAX) ||
+     (nlevi > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"area_conserve_remap: One of the input array dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlono = (int) nlono;
+  inlato = (int) nlato;
+  iNLATo = (int) NLATo;
+  iNLATi = (int) NLATi;
+  inloni = (int) nloni;
+  inlati = (int) nlati;
+  inlevi = (int) nlevi;
+
   nlevnlatnloni = nlevi * nlati * nloni;   /* input array size */
   nlevnlatnlono = nlevi * nlato * nlono;   /* output array size */
 
@@ -309,14 +337,8 @@ NhlErrorTypes area_conserve_remap_W( void )
  *
  * The output type defaults to float, unless fi is double.
  */
-
   if(type_fi != NCL_double) {
     type_fo = NCL_float;
-    tmp_fi = (double *)calloc(nlevnlatnloni,sizeof(double));
-    if(tmp_fi == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"area_conserve_remap: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
-    }
   }
   else {
     type_fo = NCL_double;
@@ -369,7 +391,7 @@ NhlErrorTypes area_conserve_remap_W( void )
 /* 
  * Allocate space for output dimension sizes and set them.
  */
-  dsizes_fo = (int*)calloc(ndims_fi,sizeof(int));  
+  dsizes_fo = (ng_size_t*)calloc(ndims_fi,sizeof(ng_size_t));  
   if( dsizes_fo == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"area_conserve_remap: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -381,10 +403,13 @@ NhlErrorTypes area_conserve_remap_W( void )
 /*
  * Call the Fortran routine.
  */
-  NGCALLF(cremapbin,CREMAPBIN)(&nlevi, &nlato, &nlono, &nlati, &nloni, 
+  NGCALLF(cremapbin,CREMAPBIN)(&inlevi, &inlato, &inlono, &inlati, &inloni, 
                                tmp_fi, tmp_fo, tmp_lati, tmp_loni, tmp_lato,
-                               tmp_lono, &NLATi, &NLATo, bin_factor, 
-			       &missing_dbl_fi.doubleval);
+                               tmp_lono, &iNLATi, &iNLATo, bin_factor, 
+                               &missing_dbl_fi.doubleval);
+  if (!set_binf || (set_binf && type_bin_factor != NCL_double)) {
+          free(bin_factor);
+  }
 
 /*
  * Coerce output back to float if necessary.

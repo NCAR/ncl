@@ -1611,7 +1611,7 @@ begin
 
   if ( returnI  ) then
     loci = new(dimsizes(loc),integer)
-    loci@_FillValue = -999
+    loci@_FillValue = default_fillvalue("integer")   ; was -999
     loci = tointeger(loc + .5)
     loci!0 = loc!0
     return(loci)
@@ -3331,6 +3331,7 @@ function wrf_map_overlays(in_file[1]:file, \
 ;     NoTitles                  (don't do any titles) 
 ;     CommonTitle & PlotTile is used to overwrite field titles
 ;        CommonTitle will super-seed NoTitles
+;     LatLonOverlay
 ;
 ; If FramePlot False, then Draw the plot but do not Frame.
 ; In this case a user want to add to the drawing, and will
@@ -3347,6 +3348,10 @@ function wrf_map_overlays(in_file[1]:file, \
 ; (unless gsnDraw and/or gsnFrame are explicitly set to True),
 ; and 2) the overlays and titles should not be removed with
 ; NhlRemoveOverlay and NhlRemoveAnnotation.
+;
+; If LatLonOverlay is set to True, then this means the user is
+; using the 2D lat/lon coordinates to do the overlay, and hence
+; tfDoNDCOverlay should not be set to True. (The default is False.)
 ;
 begin
 
@@ -3372,6 +3377,7 @@ begin
   call_draw  = True
   call_frame = get_res_value(opts,"FramePlot",True)     ; Do we want to frame the plot?
   panel_plot = get_res_value(opts,"PanelPlot",False)    ; Are we paneling?
+  latlon_overlay = get_res_value(opts,"LatLonOverlay",False) ; Lat/lon Overlay?
   opts@gsnMaximize = get_res_value_keep(opts,"gsnMaximize", True)
 
   nplots = dimsizes(plots)
@@ -3406,10 +3412,16 @@ begin
         end getvalues
         SubTitles = plot_title
       end if
-      setvalues plots(i)
-        "tfDoNDCOverlay" : True
-        "tiMainOn"       : False
-      end setvalues
+      if(.not.latlon_overlay) then
+        setvalues plots(i)
+          "tfDoNDCOverlay" : True
+          "tiMainOn"       : False
+        end setvalues
+      else
+        setvalues plots(i)
+          "tiMainOn"       : False
+        end setvalues
+      end if
       overlay(base,plots(i))
     else
       print("wrf_map_overlays: Warning: overlay plot #" + i + " is not valid.")
@@ -3509,11 +3521,16 @@ function wrf_overlays(in_file[1]:file, \
 ; and 2) the overlays and titles should not be removed with
 ; NhlRemoveOverlay and NhlRemoveAnnotation.
 ;
+; If LatLonOverlay is set to True, then this means the user is
+; using the 2D lat/lon coordinates to do the overlay, and hence
+; tfDoNDCOverlay should not be set to True. (The default is False.)
+;
 begin
   opts = opt_arg      ; Make a copy of the resource list.
 
   no_titles  = get_res_value(opts,"NoTitles",False)     ; Do we want field titles?
   com_title  = get_res_value(opts,"CommonTitle",False)     ; Do we have a common title?
+  latlon_overlay = get_res_value(opts,"LatLonOverlay",False) ; Lat/lon Overlay?
   if ( com_title ) then
     plot_title = get_res_value(opts,"PlotTitle","  ")
     no_titles = True
@@ -3532,14 +3549,22 @@ begin
       "tiMainString" : SubTitle
     end getvalues
     SubTitles = SubTitle
-    setvalues plots(0)
-      "tfDoNDCOverlay" : True
-      "tiMainOn"       : False
-    end setvalues
+    if(.not.latlon_overlay) then
+      setvalues plots(0)
+        "tfDoNDCOverlay" : True
+        "tiMainOn"       : False
+      end setvalues
+    else
+      setvalues plots(0)
+        "tiMainOn"       : False
+      end setvalues
+    end if
   else
-    setvalues plots(0)
-      "tfDoNDCOverlay" : True
-    end setvalues
+    if(.not.latlon_overlay) then
+      setvalues plots(0)
+        "tfDoNDCOverlay" : True
+      end setvalues
+    end if
   end if
 
   if (nplots.eq.1) then 
@@ -3567,10 +3592,16 @@ begin
         end getvalues
         SubTitles = plot_title
       end if
-      setvalues plots(i)
-        "tfDoNDCOverlay" : True
-        "tiMainOn"       : False
-      end setvalues
+      if(.not.latlon_overlay) then
+        setvalues plots(i)
+          "tfDoNDCOverlay" : True
+          "tiMainOn"       : False
+        end setvalues
+      else
+        setvalues plots(i)
+          "tiMainOn"       : False
+        end setvalues
+      end if
       overlay(base,plots(i))
     else
       print("wrf_overlays: Warning: overlay plot #" + i + " is not valid.")
@@ -3711,6 +3742,7 @@ begin
   end if
 
   panel_plot = get_res_value(opts,"PanelPlot",False)    ; Are we paneling?
+  latlon_overlay = get_res_value(opts,"LatLonOverlay",False) ; Lat/lon Overlay?
 
   nplots = dimsizes(plots)
 ;  font_color = "Black"
@@ -3737,14 +3769,22 @@ begin
         else
           SubTitles = SubTitles + "~C~" + SubTitle
         end if
-	setvalues plots(i)
-          "tfDoNDCOverlay" : True
-          "tiMainOn"       : False
-        end setvalues
+        if(.not.latlon_overlay) then
+    	  setvalues plots(i)
+            "tfDoNDCOverlay" : True
+            "tiMainOn"       : False
+          end setvalues
+        else
+    	  setvalues plots(i)
+            "tiMainOn"       : False
+          end setvalues
+        end if
       else
-	setvalues plots(i)
-          "tfDoNDCOverlay" : True
-        end setvalues
+        if(.not.latlon_overlay) then
+  	  setvalues plots(i)
+            "tfDoNDCOverlay" : True
+          end setvalues
+        end if
       end if
       overlay(base,plots(i))
     else
@@ -3841,6 +3881,10 @@ procedure wrf_overlay(wks:graphic, plots[*]:graphic, \
 ; and 2) the overlays and titles should not be removed with
 ; NhlRemoveOverlay and NhlRemoveAnnotation.
 ;
+; If LatLonOverlay is set to True, then this means the user is
+; using the 2D lat/lon coordinates to do the overlay, and hence
+; tfDoNDCOverlay should not be set to True. (The default is False.)
+;
 begin
   print("wrf_overlay: Warning: This procedure is obsolete. Consider using")
   print("                      wrf_overlays instead.")
@@ -3855,6 +3899,7 @@ begin
   end if
 
   panel_plot = get_res_value(opts,"PanelPlot",False)    ; Are we paneling?
+  latlon_overlay = get_res_value(opts,"LatLonOverlay",False)  ; lat/lon overlay?
 
   nplots = dimsizes(plots)
     
@@ -3864,10 +3909,16 @@ begin
       "tiMainString" : SubTitle
     end getvalues
     SubTitles = SubTitle
-    setvalues plots(0)
-      "tfDoNDCOverlay" : True
-      "tiMainOn"       : False
-    end setvalues
+    if(.not.latlon_overlay) then
+      setvalues plots(0)
+        "tfDoNDCOverlay" : True
+        "tiMainOn"       : False
+      end setvalues
+    else
+      setvalues plots(0)
+        "tiMainOn"       : False
+      end setvalues
+    end if
   else
     setvalues plots(0)
       "tfDoNDCOverlay" : True
@@ -3888,14 +3939,22 @@ begin
           "tiMainString" : SubTitle
         end getvalues
         SubTitles = SubTitles + "~C~" + SubTitle
-        setvalues plots(i)
-          "tfDoNDCOverlay" : True
-          "tiMainOn"       : False
-        end setvalues
+        if(.not.latlon_overlay) then
+          setvalues plots(i)
+            "tfDoNDCOverlay" : True
+            "tiMainOn"       : False
+          end setvalues
+        else
+          setvalues plots(i)
+            "tiMainOn"       : False
+          end setvalues
+        end if
       else
-        setvalues plots(i)
-          "tfDoNDCOverlay" : True
-        end setvalues
+        if(.not.latlon_overlay) then
+          setvalues plots(i)
+            "tfDoNDCOverlay" : True
+          end setvalues
+        end if
       end if
       overlay(base,plots(i))
     else

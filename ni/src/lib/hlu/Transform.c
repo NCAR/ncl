@@ -325,6 +325,12 @@ static NhlErrorTypes    TransformGetValues(
 	int             /* num_args */
 #endif
 );
+static NhlErrorTypes TransformDestroy(
+#if	NhlNeedProto
+        NhlLayer           /* inst */
+#endif
+);
+
 NhlTransformClassRec NhltransformClassRec = {
         {
 /* class_name			*/      "transformClass",
@@ -349,7 +355,7 @@ NhlTransformClassRec NhltransformClassRec = {
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	TransformGetValues,
 /* layer_reparent		*/	NULL,
-/* layer_destroy		*/	NULL,
+/* layer_destroy		*/	TransformDestroy,
 
 /* child_resources		*/	NULL,
 
@@ -521,7 +527,6 @@ TransformInitialize
         int             num_args;
 #endif
 {
-	char			*entry_name = "TransformInitialize";
 	NhlTransformLayer	tnew = (NhlTransformLayer) new;
 	NhlTransformLayerPart	*tfp = &(tnew->trans);
 
@@ -642,7 +647,6 @@ static NhlErrorTypes TransformSetValues
 	int		num_args;
 #endif
 {
-	char			*entry_name = "TransformSetValues";
 	NhlTransformLayer	tnew = (NhlTransformLayer) new;
  	NhlTransformLayerPart	*tfp = &(tnew->trans);
 	NhlTransformLayer	told = (NhlTransformLayer) old;
@@ -797,6 +801,34 @@ static NhlErrorTypes    TransformGetValues
         return(NhlNOERROR);
 }
 
+
+/*
+ * Function:	TransformDestroy
+ *
+ * Description: Destroys Transform instance.
+ *
+ * In Args:	inst		instance record pointer
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:	NONE
+ */
+static NhlErrorTypes TransformDestroy
+#if	NhlNeedProto
+(NhlLayer inst)
+#else
+(inst)
+NhlLayer inst;
+#endif
+{
+        NhlTransformLayer tfl = (NhlTransformLayer)inst;
+        NhlTransformLayerPart *tfp = &(tfl->trans);
+
+	NhlFreeGenArray(tfp->poly_draw_list);
+	return NhlNOERROR;
+}
 
 /*
  * Function:	TransformDataToNDC
@@ -2635,12 +2667,11 @@ NhlErrorTypes NhlAddPrimitive
 	char			*e_text;
 	char			*entry_name = "NhlAddPrimitive";
 	NhlLayer	transform = _NhlGetLayer(transform_id);
-	NhlLayer	primitive = _NhlGetLayer(primitive_id);
-	NhlLayer	before = _NhlGetLayer(before_id);
 	NhlTransformLayer tf;
 	NhlTransformLayerPart *tfp;
-	int i,j,count,bid;
+	int j,bid;
 	int *pids;
+	ng_size_t i, count;
 	NhlGenArray gen;
 
 /*
@@ -2780,7 +2811,6 @@ NhlErrorTypes NhlRemovePrimitive
 	char			*e_text;
 	char			*entry_name = "NhlRemovePrimitive";
 	NhlLayer	transform = _NhlGetLayer(transform_id);
-	NhlLayer	primitive = _NhlGetLayer(primitive_id);
 	NhlTransformLayer tf;
 	NhlTransformLayerPart *tfp;
 	int i,j,count;

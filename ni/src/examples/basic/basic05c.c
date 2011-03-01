@@ -47,7 +47,7 @@ main()
     int appid,wks,lbar,rlist,glist,text;
     char *colorindices[232];
     int num_dims;
-    int *len_dims;
+    ng_size_t *len_dims;
     float *cmap;
     float newcmap[100*3];
     char const *wks_type = "x11";

@@ -1,6 +1,6 @@
 C
 C
-C	$Id: interp.f,v 1.1 1994-08-11 23:17:27 boote Exp $
+C       $Id: interp.f,v 1.1 1994-08-11 23:17:27 boote Exp $
 C
 C This subprogram is used by subroutines TERP1 and TERP2 in 
 C library ncarm.  It is lower-level, i.e. not called by users.

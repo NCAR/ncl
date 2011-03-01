@@ -3,11 +3,11 @@
  *      $Id: defs.h,v 1.27 2010-04-14 21:29:48 huangwei Exp $
  */
 /************************************************************************
-*									*
-*			     Copyright (C)  1993			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
+*                                                                       *
+*                Copyright (C)  1993                                    *
+*        University Corporation for Atmospheric Research                *
+*                All Rights Reserved                                    *
+*                                                                       *
 ************************************************************************/
 /*
  *	File:		defs.h 
@@ -26,10 +26,16 @@ extern "C" {
 #ifndef _NCdefs_h
 #define _NCdefs_h
 
+#ifndef NIO_LIB_ONLY
+#include "ncarg/hlu/NgSizeT.h"
+#endif
+#include    <stddef.h>
+
 #define NCL_MAX_DIMENSIONS 32
 #define NCL_MAX_FVARS 2048
 #define NCL_MAX_GVARS 2048
 #define NCL_MAX_STRING 256
+#define NCL_MAX_COMPOUND_COMPONETS 256
 #define NCL_MAX_ATTRIBUTES 32
 #define NCL_MAX_SYMS_PER_STMNT 300
 #define NCL_SRC_TREE_NODE_LIST_SIZE 1000
@@ -51,8 +57,8 @@ typedef enum {	NORMAL = 0,
 
 typedef struct _NclDimRec {
         int   dim_quark;
-        long   dim_num;
-        int   dim_size;
+        int   dim_num;
+        ng_size_t   dim_size;
 } NclDimRec;
 
 
@@ -80,30 +86,30 @@ typedef NrmQuark NclQuark;
 #define NclQuarkIsDef
 #endif
 
-typedef long NclValue;
+typedef size_t  NclValue;
 
 typedef struct _NclGenericVal {
-	int kind;
+	size_t  kind;
 	char *name;
 } NclGenericVal;
 
 extern void *NclMalloc(
 #if	NhlNeedProto
-unsigned  int	/* size */
+ng_usize_t	/* size */
 #endif
 );
 
 extern void *NclCalloc(
 #if	NhlNeedProto
-unsigned int	/* num */,
-unsigned int	/* size */
+ng_usize_t	/* num */,
+ng_usize_t	/* size */
 #endif
 );
 
 extern void *NclRealloc(
 #if	NhlNeedProto
-void 	*  /* ptr */	,
-unsigned int	/* size */
+void 	*	/* ptr */	,
+ng_usize_t	/* size */
 #endif
 );
 

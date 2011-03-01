@@ -13,17 +13,20 @@ NhlErrorTypes sindex_yrmo_W( void )
  */
   void *x, *y;
   double *dx, *dy;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_rx, missing_dx, missing_dy;
   int has_missing_x, has_missing_y;
-  int nyrs, nmos, *iprnt;
+  ng_size_t nyrs, nmos;
+  int inyrs, inmos, *iprnt;
   NclBasicDataTypes type_x, type_y;
 /*
  * Attribute variables
  */
   int att_id;
-  int nelem = 1;
+  ng_size_t nelem = 1;
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -37,7 +40,8 @@ NhlErrorTypes sindex_yrmo_W( void )
 /*
  * various
  */
-  int i, lwork, ler = 0, total_size_xy;
+  int ler = 0, ilwork;
+  ng_size_t lwork, total_size_xy;
   double *work;
 /*
  * Retrieve parameters
@@ -85,6 +89,19 @@ NhlErrorTypes sindex_yrmo_W( void )
   nyrs = dsizes_x[0];
   nmos = dsizes_x[1];
   total_size_xy = nyrs * nmos;
+  lwork = 2*nyrs*nmos + 4*nmos + nyrs;
+
+/*
+ * Test dimension sizes.
+ */
+  if((lwork > INT_MAX) || (nyrs > INT_MAX) || (nmos > INT_MAX)){
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sindex_yrmo: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  ilwork = (int) lwork;
+  inyrs  = (int) nyrs;
+  inmos  = (int) nmos;
+
 /*
  * Coerce missing values to double.
  *
@@ -133,17 +150,18 @@ NhlErrorTypes sindex_yrmo_W( void )
 /*
  * Allocate memory for work array.
  */
-  lwork = 2*nyrs*nmos + 4*nmos + nyrs;
   work = (double *)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"sindex_yrmo: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+
 /*
  * Call the f77 version of 'sindex' with the full argument list.
  */
-  NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
-                           work,&lwork,tmp_soi,soi_noise,&ler);
+  NGCALLF(dindx77,DINDX77)(dx,dy,&inmos,&inyrs,&missing_dx.doubleval,iprnt,
+                           work,&ilwork,tmp_soi,soi_noise,&ler);
+
   if (ler == 2) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"sindex_yrmo: One or both of the input data arrays contains all missing values");
   }
@@ -299,17 +317,20 @@ NhlErrorTypes snindex_yrmo_W( void )
  */
   void *x, *y;
   double *dx, *dy;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   NclScalar missing_x, missing_y, missing_rx, missing_dx, missing_dy;
   int has_missing_x, has_missing_y;
-  int nyrs, nmos, *iprnt;
+  int inyrs, inmos, *iprnt;
+  ng_size_t nyrs, nmos;
   NclBasicDataTypes type_x, type_y, type_soi_noise;
 /*
  * Attribute variables
  */
   int att_id;
-  int nelem = 1;
+  ng_size_t nelem = 1;
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -323,7 +344,9 @@ NhlErrorTypes snindex_yrmo_W( void )
 /*
  * various
  */
-  int i, lwork, ler = 0, total_size_xy;
+  int ler = 0, ilwork;
+  ng_size_t lwork;
+  ng_size_t total_size_xy;
   double *work;
 /*
  * Retrieve parameters
@@ -381,6 +404,19 @@ NhlErrorTypes snindex_yrmo_W( void )
   nyrs = dsizes_x[0];
   nmos = dsizes_x[1];
   total_size_xy = nyrs * nmos;
+  lwork = 2*nyrs*nmos + 4*nmos + nyrs;
+
+/*
+ * Test dimension sizes.
+ */
+  if((lwork > INT_MAX) || (nyrs > INT_MAX) || (nmos > INT_MAX)){
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  ilwork = (int) lwork;
+  inyrs  = (int) nyrs;
+  inmos  = (int) nmos;
+
 /*
  * Coerce missing values to double.
  *
@@ -450,17 +486,18 @@ NhlErrorTypes snindex_yrmo_W( void )
 /*
  * Allocate memory for work array.
  */
-  lwork = 2*nyrs*nmos + 4*nmos + nyrs;
   work = (double *)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"snindex_yrmo: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+
 /*
  * Call the f77 version of 'sindex' with the full argument list.
  */
-  NGCALLF(dindx77,DINDX77)(dx,dy,&nmos,&nyrs,&missing_dx.doubleval,iprnt,
-                           work,&lwork,tmp_soi,tmp_soi_noise,&ler);
+  NGCALLF(dindx77,DINDX77)(dx,dy,&inmos,&inyrs,&missing_dx.doubleval,iprnt,
+			   work,&ilwork,tmp_soi,tmp_soi_noise,&ler);
+
   if (ler == 2) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"snindex_yrmo: One or both of the input data arrays contains all missing values");
   }

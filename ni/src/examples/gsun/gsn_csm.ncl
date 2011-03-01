@@ -68,11 +68,6 @@ undef("ref_line_interp")
 function ref_line_interp(x,y,xinterp,yinterp,ref_line)
 local ncurves, nref_lines, nlines, i, j, location, xnew, ynew, npts
 begin
-
-; Check for missing values.
-
-  xmsg = get_res_value_keep(x,"_FillValue",-999)
-  ymsg = get_res_value_keep(y,"_FillValue",-999)
 ;
 ; Convert x and y into two dimensional arrays so we don't have to
 ; test for whether we have one line or multiple lines.  Convert
@@ -457,10 +452,8 @@ function find_cross_xy(x1:numeric,x2:numeric,y11:numeric,y12:numeric, \
                        y21:numeric,y22:numeric)
 begin
   if((x2-x1).eq.0.or.(y12-y11+y21-y22).eq.0)
-    x0 = new(1,double,-9999)
-    y0 = new(1,double,-9999)
-    x0 = -9999
-    y0 = -9999
+    x0 = new(1,double)
+    y0 = new(1,double)
   else
     x0 = (x2*y21 - x2*y11 + x1*y12 - x1*y22)/(y12-y11+y21-y22)
     y0 = (y11*y22 - y12*y21) / (y11-y12+y22-y21)
@@ -902,29 +895,27 @@ end
 ; Function : is_tm_obj_valid                                            ;
 ;                                                                       ;
 ;          pobj : plot object to retrieve trGridType from               ;
-;          tdata: data variable to see if it has 2D lat/lon coords      ;
 ;                                                                       ;
-; This function checks to see if the given plot object has had a tick   ;
-; mark object created for it. A tickmark object can't be created if     ;
-; you have 2D lat/lon coordinates *and* trGridType was not set to       ;
-; "TriangularMesh".                                                     ;
+; This function checks to see if the given plot object is using a       ;
+; spherical or curvilinear transformation. If so, you can't have a      ;
+; tickmark objects. This function used to additionally check for 2D     ;
+; lat/lon coords, but Dave B and I decided this wasn't necessary.       ;
 ;                                                                       ;
 ;***********************************************************************;
 undef("is_tm_obj_valid")
-function is_tm_obj_valid(pobj,tdata)
+function is_tm_obj_valid(pobj)
 local tr_grid_type
 begin
-  if(is_valid_latlon2d_attr(tdata,"lat2d").and. \
-     is_valid_latlon2d_attr(tdata,"lon2d")) then
-    getvalues pobj
-      "trGridType" : tr_grid_type
-    end getvalues
-; trGridType == 5 --> TriangularMesh
-    if(tr_grid_type.ne.5) then
-      return(False)
-    end if
+; trGridType == 3 --> Curvilinear
+; trGridType == 4 --> Spherical
+  getvalues pobj
+    "trGridType" : tr_grid_type
+  end getvalues
+  if(any(tr_grid_type.eq.(/3,4/))) then
+    return(False)
+  else
+    return(True)
   end if
-  return(True)
 end
 
 
@@ -2933,7 +2924,7 @@ begin
   if(min_lat.lt.-90.or.max_lat.gt.90) then
     print("get_lat_values: Warning: Your latitude values do not fall between -90 and 90 inclusive.")
     print("You will not get 'nice' latitude labels.")
-    lat_values = new(1,float,-999)
+    lat_values = new(1,float)
     return(lat_values)
   end if
 
@@ -3591,8 +3582,8 @@ begin
     lat_object = gsn_contour(wks,a->LAT,latlon_res)
 
     tmplon            = a->LON - 360.0
-    tmplon(242:,190)  = -999.0
-    tmplon@_FillValue = -999.0
+    tmplon(242:,190)  = default_fillvalue("float")
+    tmplon@_FillValue = default_fillvalue("float")
 
     latlon_res@cnMinLevelValF     = -90
     latlon_res@cnMaxLevelValF     = 270
@@ -3985,6 +3976,120 @@ begin
 
   return(maplc)
 end             
+
+
+;***********************************************************************;
+; Function : gsn_csm_blank_plot                                         ;
+;               wks : workstation                                       ;
+;               res : optional resources                                ;
+;                                                                       ;
+; This function creates a blank tickmark object that can be used for    ;
+; drawing primitives. This function is similar to gsn_blank_plot        ;
+; except the tickmarks point outward and the gsnXXXString resources are ;
+; recognized.                                                           ;
+;                                                                       ;
+;***********************************************************************;
+undef("gsn_csm_blank_plot")
+function gsn_csm_blank_plot(wks:graphic,res:logical)
+local calldraw, callframe, center_string, font_height, height, left_string, \
+main_zone, major_length, maxbb, minor_length, point_outward, ratio, \
+res2, right_string, scale, shape, subres, ticks, title, tmres, width, \
+xfontf, xlength, xmlength, yfontf, ylength, ymlength
+begin
+  res2          = res    ; Copy of resources.
+
+  point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
+
+  calldraw      = get_res_value(res2,"gsnDraw", True)
+  callframe     = get_res_value(res2,"gsnFrame",False)
+  shape         = get_res_value(res2,"gsnShape",False)
+  scale         = get_res_value(res2,"gsnScale",shape)
+  ticks         = get_res_value(res2,"pmTickMarkDisplayMode","Always")
+  title         = get_res_value(res2,"pmTitleDisplayMode","Always")
+  maxbb         = get_bb_res(res2)
+
+; Check for existence of the left, center, and right subtitles.
+
+  left_string   = new(1,logical)
+  center_string = new(1,logical)
+  right_string  = new(1,logical)
+
+  check_for_subtitles(res2,left_string,center_string,right_string)
+  if(left_string.or.center_string.or.right_string)
+    main_zone = 4
+  else
+    main_zone = 3
+  end if
+
+  canvas = create "canvas" irregularPlotClass wks
+    "pmTickMarkDisplayMode" : ticks
+    "pmTitleDisplayMode"    : title
+    "pmTitleZone"           : main_zone    ; Zone for main title
+  end create
+
+  attsetvalues_check(canvas,res2)
+
+; If gsnShape was set to True, then resize the X or Y axis so that
+; the scales are proportionally correct.
+
+  if(shape)
+    gsnp_shape_plot(canvas)
+  end if
+
+; If gsnScale was set to True, then make sure the X and Y axis labels
+; and tick marks are the same size.
+
+  if(scale)
+    gsnp_scale_plot(canvas,"",False)
+  end if
+
+; Get title label sizes and tickmark lengths.
+  getvalues canvas
+    "vpWidthF"             : width
+    "vpHeightF"            : height
+    "tiXAxisFontHeightF"   : xfontf
+    "tiYAxisFontHeightF"   : yfontf
+
+    "tmYLMajorLengthF"     : ylength
+    "tmXBMajorLengthF"     : xlength
+    "tmYLMinorLengthF"     : ymlength
+    "tmXBMinorLengthF"     : xmlength
+  end getvalues
+
+  font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
+                                        ; the size of the X/Y axis labels.
+  major_length = min((/ylength,xlength/))
+  minor_length = min((/ymlength,xmlength/))
+
+; If the plot is close to square in size, then make the 
+; three top titles smaller.
+
+  ratio = height/width
+  if(ratio.gt.1) 
+    ratio = 1./ratio
+  end if
+  if(ratio.gt.0.5)
+    font_height  = 0.75 * font_height
+    major_length = 0.75 * major_length
+    minor_length = 0.75 * minor_length
+  end if
+
+  tmres = get_res_eq(res2,"tm")
+  gsnp_point_tickmarks_outward(canvas,tmres,xlength,ylength,xmlength, \
+                               ymlength,major_length,minor_length, \
+                               point_outward)
+
+; Set up three subtitles at top, if they exist.
+  subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
+  subres                  = True
+  set_attr(subres,"txFontHeightF",font_height)
+  add_subtitles(wks,canvas,left_string,center_string,\
+                right_string,subres)
+
+  draw_and_frame(wks,canvas,calldraw,callframe,False,maxbb)
+
+  return(canvas)
+end
 
 
 ;***********************************************************************;
@@ -8939,7 +9044,7 @@ begin
 ; If gsnScale is True, then make sure we have a valid tickmark
 ; object before we do anything else.
 ;
-    if(tm_scale.and.is_tm_obj_valid(vector_object,unew)) then
+    if(tm_scale.and.is_tm_obj_valid(vector_object)) then
 ;
 ; Make tick marks same length and point outward.
 ;
@@ -11091,7 +11196,7 @@ begin
 ;
 ; Make tick marks same length and point outward.
 ;
-      if(tm_scale.and.is_tm_obj_valid(contour_plot,datanew)) then
+      if(tm_scale.and.is_tm_obj_valid(contour_plot)) then
         getvalues contour_plot
           "tmYLMajorLengthF"     : ylength
           "tmXBMajorLengthF"     : xlength
@@ -11720,7 +11825,7 @@ begin
     scale = font_scale(index(0))
     font_height  = scale * font_height
 
-    if(tm_scale.and.is_tm_obj_valid(vector_plot,unew)) then
+    if(tm_scale.and.is_tm_obj_valid(vector_plot)) then
 ;
 ; Make tick marks same length and point outward.
 ;
@@ -11838,11 +11943,14 @@ begin
   vcres@gsnFrame        = False
   vcres@gsnRightString  = ""  ; Use gsnRightString and gsnLeftString
   vcres@gsnLeftString   = ""  ; from contour plot.
-;
-; Create vector plot. We have to check the pressure values.  If they
-; are not in descending order, then reverse 'em.
-;
-  if(is_valid_coord(u,"y"))
+
+;---If pressure values are Pascals, convert them to millibars.
+  if(is_valid_coord(u,"y").and.isatt(u&$u!0$,"units").and.\
+     any(u&$u!0$@units.eq.get_allowed_pres_units_pa()))
+    set_attr(vcres,"vfYArray",tofloat_wunits(u&$u!0$) * 0.01)
+  end if
+;---If pressure values are not in descending order, reverse them.
+  if(is_valid_coord(u,"y")) then
     npres = dimsizes(u&$u!0$)
     if(u&$u!0$(0).lt.u&$u!0$(npres-1))
       vector = gsn_csm_vector(wks,u(::-1,:),v(::-1,:),vcres)
@@ -12004,7 +12112,7 @@ begin
     scale = font_scale(index(0))
     font_height  = scale * font_height
 
-    if(tm_scale.and.is_tm_obj_valid(streamline_plot,unew)) then
+    if(tm_scale.and.is_tm_obj_valid(streamline_plot)) then
 ;
 ; Make tick marks same length and point outward.
 ;

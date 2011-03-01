@@ -10,22 +10,29 @@ NhlErrorTypes betainc_W( void )
  * Input array variables
  */
   void *x, *a, *b;
-  double *tmp_x, *tmp_a, *tmp_b;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
-  int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
+  double *tmp_x = NULL;
+  double *tmp_a = NULL;
+  double *tmp_b = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_a;
+  ng_size_t dsizes_a[NCL_MAX_DIMENSIONS];
+  int ndims_b;
+  ng_size_t dsizes_b[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_a, type_b;
   NclScalar missing_x, missing_dx;
 /*
  * output variable 
  */
   void *alpha;
-  double *tmp_alpha;
-  int size_alpha;
+  double *tmp_alpha = NULL;
+  ng_size_t size_alpha;
 /*
  * Declare various variables for random purposes.
  */
-  int i, ret;
+  ng_size_t i;
+  int ret;
 /*
  * Retrieve parameters
  *
@@ -221,20 +228,25 @@ NhlErrorTypes gammainc_W( void )
  * Input array variables
  */
   void *x, *a;
-  double *tmp_x, *tmp_a;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
-  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
+  double *tmp_x = NULL;
+  double *tmp_a = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_a;
+  ng_size_t dsizes_a[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_a;
 /*
  * output variable 
  */
   void *cum;
-  double *tmp_cum, tmp_ccum;
-  int size_cum;
+  double *tmp_cum = NULL;
+  double tmp_ccum;
+  ng_size_t size_cum;
 /*
  * Declare various variables for random purposes.
  */
-  int i, ret;
+  ng_size_t i;
+  int ret;
 /*
  * Retrieve parameters
  *

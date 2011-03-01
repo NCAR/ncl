@@ -277,7 +277,7 @@ extern NhlErrorTypes _NclFileAddDim(
 #if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* dimname */,
-int	/* dimsize */,
+ng_size_t	/* dimsize */,
 int	/* is_unlimited*/
 #endif
 );
@@ -286,7 +286,7 @@ extern NhlErrorTypes _NclFileAddChunkDim(
 #if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* dimname */,
-int	/* dimsize */,
+ng_size_t	/* dimsize */,
 int	/* is_unlimited*/
 #endif
 );
@@ -304,15 +304,15 @@ extern NhlErrorTypes _NclFileAddVarChunk(
 NclFile /* thefile */,
 NclQuark /* varname */,
 int	 /* n_dims */,
-int *    /* dims */
+ng_size_t *    /* dims */
 #endif
 );
 extern NhlErrorTypes _NclFileAddVarChunkCache(
 #if NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* varname */,
-size_t	 /* cache_size */,
-size_t   /* cache_nelems */,
+ng_size_t	 /* cache_size */,
+ng_size_t   /* cache_nelems */,
 float    /* cache_preemption */
 #endif
 );

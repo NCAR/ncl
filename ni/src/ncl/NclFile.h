@@ -212,7 +212,7 @@ typedef NhlErrorTypes (*NclAddFileDimFunc)(
 #if	NhlNeedProto
 NclFile	/*thefile*/,
 NclQuark /* dimname */,
-int	/*dimsize*/,
+ng_size_t	/*dimsize*/,
 int	/*is_unlimited*/
 #endif
 );
@@ -221,7 +221,7 @@ typedef NhlErrorTypes (*NclAddFileChunkDimFunc)(
 #if	NhlNeedProto
 NclFile	/*thefile*/,
 NclQuark /* dimname */,
-int	/*dimsize*/,
+ng_size_t	/*dimsize*/,
 int	/*is_unlimited*/
 #endif
 );
@@ -241,7 +241,7 @@ typedef NhlErrorTypes (*NclAddFileVarChunkFunc)(
 NclFile	/*thefile*/,
 NclQuark /* var_name */,
 int	 /*n_dims*/,
-int *    /* dims */
+ng_size_t *    /* dims */
 #endif
 );
 
@@ -249,8 +249,8 @@ typedef NhlErrorTypes (*NclAddFileVarChunkCacheFunc)(
 #if	NhlNeedProto
 NclFile	 /* thefile */,
 NclQuark /* var_name */,
-size_t	 /* cache_size */,
-size_t	 /* cache_nelems */,
+ng_size_t	 /* cache_size */,
+ng_size_t	 /* cache_nelems */,
 float    /* cache_preemption */
 #endif
 );

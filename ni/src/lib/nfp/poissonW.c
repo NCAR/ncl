@@ -14,8 +14,9 @@ NhlErrorTypes poisson_grid_fill_W( void )
  * Argument # 0
  */
   void *x;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
   NclScalar missing_x, missing_dx;
   NclBasicDataTypes type_x;
@@ -40,8 +41,10 @@ NhlErrorTypes poisson_grid_fill_W( void )
 /*
  * Various
  */
-  int i, j, ii, jj, ndims_leftmost, size_leftmost;
-  int ny, mx, nymx, index_x, mscan, ier;
+  int ndims_leftmost;
+  ng_size_t i, size_leftmost;
+  ng_size_t ny, mx, nymx, index_x;
+  int mscan, ier, iny, imx;
 
 /*
  * Retrieve parameters.
@@ -85,6 +88,16 @@ NhlErrorTypes poisson_grid_fill_W( void )
   ny   = dsizes_x[ndims_x-2];
   mx   = dsizes_x[ndims_x-1];
   nymx = ny * mx;
+
+/*
+ * Test input dimension sizes.
+ */
+    if((mx > INT_MAX) || (ny > INT_MAX)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"poisson_grid_fill: one or more input dimension sizes is greater than INT_MAX");
+      return(NhlFATAL);
+    }
+    imx = (int) mx;
+    iny = (int) ny;
 
 /*
  * Get argument # 1
@@ -203,7 +216,7 @@ NhlErrorTypes poisson_grid_fill_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(poisxy1,POISXY1)(tmp_x, &mx, &ny, &missing_dx.doubleval, 
+    NGCALLF(poisxy1,POISXY1)(tmp_x, &imx, &iny, &missing_dx.doubleval, 
                              guess_type, is_cyclic, nscan, tmp_epsx,
                              tmp_relc, &mscan, &ier);
 /*
@@ -217,7 +230,9 @@ NhlErrorTypes poisson_grid_fill_W( void )
 /*
  * Free unneeded memory.
  */
- if(type_x != NCL_double) NclFree(tmp_x);
+ if(type_x    != NCL_double) NclFree(tmp_x);
+ if(type_epsx != NCL_double) NclFree(tmp_epsx);
+ if(type_relc != NCL_double) NclFree(tmp_relc);
 
 /*
  * This is a procedure, so no values are returned.

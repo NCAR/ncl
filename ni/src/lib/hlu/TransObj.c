@@ -344,7 +344,7 @@ TransInitialize
         int             num_args;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 	char			*entry_name = "TransInitialize";
 	char			*e_text;
 	NhlTransObjLayer	tnew = (NhlTransObjLayer) new;
@@ -445,9 +445,6 @@ static NhlErrorTypes TransSetValues
 	int	num_args;
 #endif
 {
-        NhlErrorTypes		ret = NhlNOERROR;
-	char			*entry_name  = "TransSetValues";
-	char			*e_text;
 	NhlTransObjLayer tnew = (NhlTransObjLayer) new;
 	NhlTransObjLayerPart *tp = &tnew->trobj;
 

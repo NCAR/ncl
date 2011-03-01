@@ -42,13 +42,13 @@
 
 void *NclGetArgValue
 #if NhlNeedProto
-(int arg_num, int n_args,int* n_dims, int* dimsizes, NclScalar* missing, int * has_missing, NclBasicDataTypes *type,int access_type)
+(int arg_num, int n_args,int* n_dims, ng_size_t* dimsizes, NclScalar* missing, int * has_missing, NclBasicDataTypes *type,int access_type)
 #else
 (arg_num, n_args,n_dims, dimsizes, missing, has_missing, type, access_type)
 int arg_num;
 int n_args;
 int* n_dims;
-int* dimsizes;
+ng_size_t* dimsizes;
 NclScalar* missing;
 int * has_missing;
 NclBasicDataTypes *type;
@@ -75,7 +75,7 @@ int access_type;
 		*n_dims = tmp_md->multidval.n_dims;
 	}
 	if(dimsizes != NULL) {
-		memcpy((void*)dimsizes,(void*)tmp_md->multidval.dim_sizes,tmp_md->multidval.n_dims * sizeof(int));
+		memcpy((void*)dimsizes,(void*)tmp_md->multidval.dim_sizes,tmp_md->multidval.n_dims * sizeof(ng_size_t));
 	}
 	if((missing != NULL)&&(has_missing != NULL)){
 		if(tmp_md->multidval.missing_value.has_missing) {
@@ -98,12 +98,12 @@ int access_type;
 
 extern NhlErrorTypes NclReturnValue
 #if NhlNeedProto
-(void *value, int n_dims, int* dimsizes, NclScalar* missing, NclBasicDataTypes type, int copy_data)
+(void *value, int n_dims, ng_size_t* dimsizes, NclScalar* missing, NclBasicDataTypes type, int copy_data)
 #else
 (value, n_dims, dimsizes, missing, type, copy_data)
 void *value;
 int n_dims;
-int* dimsizes;
+ng_size_t* dimsizes;
 NclScalar* missing;
 NclBasicDataTypes type;
 int copy_data;
@@ -113,7 +113,8 @@ int copy_data;
 	void *tmp;
 	NclObjTypes obj_type;
 	NclTypeClass tc;
-	int i,total=1;
+	int i;
+	ng_size_t total=1;
 	NclMultiDValData tmp_md;
 	NclObj theobj;
 

@@ -22,7 +22,9 @@ NhlErrorTypes utm2latlon_W( void )
   void *xy;
   double *tmp_xy;
   int *datum;
-  int ndims_xy, dsizes_xy[NCL_MAX_DIMENSIONS], has_missing_xy;
+  int ndims_xy;
+  ng_size_t dsizes_xy[NCL_MAX_DIMENSIONS];
+  int has_missing_xy;
   NclScalar missing_xy, missing_dxy;
   NclBasicDataTypes type_xy;
 
@@ -32,19 +34,19 @@ NhlErrorTypes utm2latlon_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
-  string *grid_zone;
-  int total_size_grid_zone;
+  string *grid_zone = NULL;
+  ng_size_t total_size_grid_zone = 0;
 /*
  * Output variables.
  */
   void *latlon;
-  double *dlatlon;
   NclScalar missing_latlon;
   NclBasicDataTypes type_latlon;
 /*
  * various
  */
-  int i, total_size_xy, npts, inpts,  ret, ier;
+  ng_size_t i, total_size_xy, npts, inpts;
+  int ret, ier;
   int zlen, bad_datum = 0, found_grid_zone = 0;
   UTM utm;
   LL ll;
@@ -282,7 +284,9 @@ NhlErrorTypes latlon2utm_W( void )
   void *latlon;
   double *tmp_latlon;
   int *datum;
-  int ndims_latlon, dsizes_latlon[NCL_MAX_DIMENSIONS], has_missing_latlon;
+  int ndims_latlon;
+  ng_size_t dsizes_latlon[NCL_MAX_DIMENSIONS];
+  int has_missing_latlon;
   NclScalar missing_latlon, missing_dlatlon;
   NclBasicDataTypes type_latlon;
 
@@ -290,14 +294,14 @@ NhlErrorTypes latlon2utm_W( void )
  * Output variables.
  */
   void *xy;
-  double *dxy;
   NclScalar missing_xy;
   NclBasicDataTypes type_xy;
   NclObjClass type_obj_xy;
 /*
  * various
  */
-  int i, total_size_latlon, npts, inpts, ret, ier;
+  ng_size_t i, total_size_latlon, npts, inpts;
+  int ret, ier;
   UTM utm;
   LL ll;
 
@@ -305,7 +309,8 @@ NhlErrorTypes latlon2utm_W( void )
  * Attribute variable for returning "grid_zone"
  */
   NclQuark *grid_zone;
-  int att_id, dsizes_grid_zone[NCL_MAX_DIMENSIONS], ndims_grid_zone;
+  int att_id;
+  ng_size_t dsizes_grid_zone[NCL_MAX_DIMENSIONS], ndims_grid_zone;
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;

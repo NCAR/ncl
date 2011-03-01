@@ -56,6 +56,7 @@ the "year 0" problem exactly the same as does the udunits-1 library.
 #include <stdlib.h>
 #include <udunits2.h>
 #include <string.h>
+#include <strings.h>
 #include "utCalendar2_cal.h"
 
 /* define DEBUG */
@@ -129,6 +130,9 @@ static void make_udu_origin_zero( ut_unit *units )
 
 	sprintf( u_str, "seconds since %04d-%02d-%02d %02d:%02d:%.12lf",
 		y0, m0, d0, h0, min0, s0 );
+
+	if (udu_origin_zero) 
+		ut_free(udu_origin_zero);
 
 	udu_origin_zero = ut_parse( unitSystem, u_str, UT_ASCII );	/* NOTE: sets a global (udu_origin_zero) */
 	if( udu_origin_zero == NULL ) {

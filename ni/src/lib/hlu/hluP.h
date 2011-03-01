@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.42 2003-04-04 18:34:08 dbrown Exp $
+ *      $Id: hluP.h,v 1.42.4.1 2008-03-28 20:37:38 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -156,7 +156,7 @@ typedef NhlFreeFunc _NhlFreeFunc;
 
 typedef NhlPointer (*_NhlAllocFunc)(
 #if     NhlNeedProto
-	unsigned int	size
+	ng_usize_t	size
 #endif
 );
 
@@ -204,9 +204,9 @@ struct _NhlChildArgRec{
  */
 typedef struct NhlGenArrayRec_ NhlGenArrayRec;
 struct NhlGenArrayRec_{
-	int		num_dimensions;
-	int		*len_dimensions;
-	int		num_elements;
+	int	num_dimensions;
+	ng_size_t	*len_dimensions;
+	ng_size_t	num_elements;
 	NrmQuark	typeQ;
 	unsigned int	size;
 	NhlPointer	data;
@@ -228,7 +228,7 @@ extern NhlGenArray _NhlAllocCreateGenArray(
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	int		*len_dimensions,/* number of dimensions	*/
+	ng_size_t	*len_dimensions,/* number of dimensions	*/
 	NhlBoolean	copy_data,	/* copy data pointer?	*/
 	_NhlAllocFunc	alloc_func	/* alloc func to use	*/
 #endif
@@ -240,7 +240,7 @@ extern NhlGenArray _NhlCreateGenArray(
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	int		*len_dimensions,/* number of dimensions	*/
+	ng_size_t		*len_dimensions,/* number of dimensions	*/
 	NhlBoolean	copy_data	/* copy data pointer?	*/
 #endif
 );
@@ -256,7 +256,7 @@ extern NhlErrorTypes _NhlValidatedGenArrayCopy(
 #if	NhlNeedProto
 	 NhlGenArray	*gto, 		/* destination gen array */
 	 NhlGenArray	gfrom,		/* source gen array */
-	 int		max_el,	      /* maximum number of elements allowed */
+	 ng_size_t	max_el,	        /* maximum number of elements allowed */
 	 NhlBoolean	copy_data,	/* copy data part? */
 	 NhlBoolean	exact_count,    /* ensure dest counts match source */
 	 char		*res_name,	/* associated resource name */

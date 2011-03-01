@@ -1139,7 +1139,6 @@ _NhlMergeArgLists
 	int		num_args;	/* num args		*/
 #endif
 {
-	NhlBoolean	argfound;
 	int		i,j,k;
 	int		total_args;
 
@@ -1207,7 +1206,6 @@ _NhlResInClass
 	NrmQuark	res;	/* resource to look for		*/
 #endif
 {
-	int		i;
 	NrmResourceList	nrmres = (NrmResourceList)lc->base_class.resources;
 	NrmResource	key;
 
@@ -1233,7 +1231,6 @@ _NhlGetResInfo
 	NrmQuark	res;
 #endif
 {
-	int			i;
 	NrmResourceList		nrmres = (NrmResourceList)
 						lc->base_class.resources;
 	NrmResource		key;
@@ -1357,7 +1354,7 @@ _NhlGetUserResources
         int		*res_count;
 #endif
 {
-        NhlErrorTypes ret=NhlNOERROR, subret=NhlNOERROR;
+        NhlErrorTypes ret=NhlNOERROR;
         int i,j,count;
         NrmNameList all_res,qnames;
                 

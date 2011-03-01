@@ -15,17 +15,17 @@ static NhlResource resourcesPSPDFWS[] = {
 		/* Begin-documented-resources */
 
     {NhlNwkFormat,NhlCwkFormat,NhlTCairoFormat,sizeof(NhlCairoFormat),
-        Oset(format),NhlTImmediate,(NhlPointer)NhlCPS,
+        Oset(format),NhlTImmediate,_NhlUSET((NhlPointer)NhlCPS),
         _NhlRES_NOSACCESS,NULL},
     {NhlNwkFileName,NhlCwkFileName,NhlTString,
         sizeof(NhlString),Oset(filename),NhlTImmediate,
-        (NhlPointer)NULL,_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
+        _NhlUSET((NhlPointer)NULL),_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
     {NhlNwkOrientation,NhlCwkOrientation,NhlTWorkOrientation,
         sizeof(NhlWorkOrientation),Oset(orientation),NhlTImmediate,
-        (NhlPointer)NhlPORTRAIT,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)NhlPORTRAIT),_NhlRES_DEFAULT,NULL},
     {NhlNwkPDFResolution,NhlCwkPDFResolution,NhlTInteger,
         sizeof(int),Oset(dpi),NhlTImmediate,
-        (NhlPointer)1800,_NhlRES_NOSACCESS,NULL},
+        _NhlUSET((NhlPointer)1800),_NhlRES_NOSACCESS,NULL},
 
     /* these page size and margins are initialized as "-1" here, and are given appropriate
      * values when the workstation is opened, depending upon which resources are actually
@@ -33,7 +33,7 @@ static NhlResource resourcesPSPDFWS[] = {
      */
     {NhlNwkPaperSize,NhlCwkPaperSize,NhlTString,
         sizeof(NhlString),Oset(paper_size),NhlTImmediate,
-        _NhlUSET(PAGEUTIL_DEFAULT_PAPERSIZE),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
+        _NhlUSET(PAGEUTIL_DEFAULT_PAPERSIZE),_NhlRES_NOSACCESS,NULL},
     {NhlNwkPaperWidthF, NhlCwkPaperWidthF, NhlTFloat,
         sizeof(float), Oset(page_width), NhlTString,
         _NhlUSET("-1."), _NhlRES_DEFAULT, NULL},
@@ -42,16 +42,16 @@ static NhlResource resourcesPSPDFWS[] = {
         _NhlUSET("-1."), _NhlRES_DEFAULT, NULL},
     {NhlNwkDeviceLowerX,NhlCwkDeviceLowerX,NhlTInteger,
         sizeof(int),Oset(lower_x),NhlTImmediate,
-        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)-1),_NhlRES_DEFAULT,NULL},
     {NhlNwkDeviceLowerY,NhlCwkDeviceLowerY,NhlTInteger,
         sizeof(int),Oset(lower_y),NhlTImmediate,
-        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)-1),_NhlRES_DEFAULT,NULL},
     {NhlNwkDeviceUpperX,NhlCwkDeviceUpperX,NhlTInteger,
         sizeof(int),Oset(upper_x),NhlTImmediate,
-        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)-1),_NhlRES_DEFAULT,NULL},
     {NhlNwkDeviceUpperY,NhlCwkDeviceUpperY,NhlTInteger,
         sizeof(int),Oset(upper_y),NhlTImmediate,
-        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)-1),_NhlRES_DEFAULT,NULL},
 
 /* End-documented-resources */
 };
@@ -61,40 +61,40 @@ static NhlResource resourcesImageWS[] = {
         /* Begin-documented-resources */
 
     {NhlNwkFormat,NhlCwkFormat,NhlTCairoFormat,sizeof(NhlCairoFormat),
-        Oset(format),NhlTImmediate,(NhlPointer)NhlCPNG,
+        Oset(format),NhlTImmediate,_NhlUSET((NhlPointer)NhlCPNG),
         _NhlRES_NOSACCESS,NULL},
     {NhlNwkFileName,NhlCwkFileName,NhlTString,
         sizeof(NhlString),Oset(filename),NhlTImmediate,
-        (NhlPointer)NULL,_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
+        _NhlUSET((NhlPointer)NULL),_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
     {NhlNwkOrientation,NhlCwkOrientation,NhlTWorkOrientation,
         sizeof(NhlWorkOrientation),Oset(orientation),NhlTImmediate,
-        (NhlPointer)NhlPORTRAIT,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)NhlPORTRAIT),_NhlRES_DEFAULT,NULL},
 
     {NhlNwkDeviceLowerX,NhlCwkDeviceLowerX,NhlTInteger,
         sizeof(int),Oset(lower_x),NhlTImmediate,
-        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)-1),_NhlRES_DEFAULT,NULL},
     {NhlNwkDeviceLowerY,NhlCwkDeviceLowerY,NhlTInteger,
         sizeof(int),Oset(lower_y),NhlTImmediate,
-        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)-1),_NhlRES_DEFAULT,NULL},
     {NhlNwkDeviceUpperX,NhlCwkDeviceUpperX,NhlTInteger,
         sizeof(int),Oset(upper_x),NhlTImmediate,
-        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)-1),_NhlRES_DEFAULT,NULL},
     {NhlNwkDeviceUpperY,NhlCwkDeviceUpperY,NhlTInteger,
         sizeof(int),Oset(upper_y),NhlTImmediate,
-        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)-1),_NhlRES_DEFAULT,NULL},
 
     /* Resources for image-based output formats. We'll use the existing NGC_PIXCONFIG struct
      * for this purpose, but not all of its fields will be utilized.
      */
     {_NhlNwkPixConf,_NhlCwkPixConf,NhlTInteger,sizeof(int),Oset(pixconfig.type),
-        NhlTImmediate,(NhlPointer)NGC_PIXCONFIG,
+        NhlTImmediate,_NhlUSET((NhlPointer)NGC_PIXCONFIG),
         _NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
     {NhlNwkWidth,NhlCwkWidth,NhlTInteger,sizeof(int),
         Oset(pixconfig.width),NhlTImmediate,
-        (NhlPointer)1024,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)1024),_NhlRES_DEFAULT,NULL},
     {NhlNwkHeight,NhlCwkHeight,NhlTInteger,sizeof(int),
         Oset(pixconfig.height),NhlTImmediate,
-        (NhlPointer)1024,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)1024),_NhlRES_DEFAULT,NULL},
 };
 
 /*
@@ -407,11 +407,6 @@ CairoWorkstationClassInitialize(void)
 static NhlErrorTypes CairoWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
 {
     char    func[]= "CairoWorkstationInitialize";
-    NhlCairoWorkstationLayer  newCairo = (NhlCairoWorkstationLayer) new;
-    NhlCairoWorkstationLayerPart  *cairo = &newCairo->cairo;
-    char    *tfname = NULL;
-    char    buff[_NhlMAXFNAMELEN];
-    NhlErrorTypes   ret = NhlNOERROR;
 
 #ifndef BuildCAIRO
 
@@ -420,6 +415,13 @@ static NhlErrorTypes CairoWorkstationInitialize(NhlClass lclass, NhlLayer req, N
     return NhlFATAL;
 
 #else
+
+    NhlCairoWorkstationLayer  newCairo = (NhlCairoWorkstationLayer) new;
+    NhlCairoWorkstationLayerPart  *cairo = &newCairo->cairo;
+    char    *tfname = NULL;
+    char    buff[_NhlMAXFNAMELEN];
+    NhlErrorTypes   ret = NhlNOERROR;
+
     /*
      * Set gkswkstype
      */
@@ -654,9 +656,12 @@ CairoWorkstationGetValues(NhlLayer l, _NhlArgList args, int nargs)
 static NhlErrorTypes
 CairoWorkstationDestroy(NhlLayer l)
 {
+    NhlCairoWorkstationLayer  layer = (NhlCairoWorkstationLayer) l;
     NhlCairoWorkstationLayerPart   *cairo = &((NhlCairoWorkstationLayer)l)->cairo;
 
     NhlFree(cairo->filename);
+    if (layer->work.gkswkstype == CPS || layer->work.gkswkstype == CPDF)
+        NhlFree(cairo->paper_size);
 
     return NhlNOERROR;
 }
@@ -678,13 +683,11 @@ CairoWorkstationDestroy(NhlLayer l)
 static NhlErrorTypes
 CairoPSPDFWorkstationOpen(NhlLayer l)
 {
-    char func[]              = "CairoPSPDFWorkstationOpen";
     NhlWorkstationLayer work = (NhlWorkstationLayer)l;
     NhlCairoWorkstationLayerPart  *pp = &((NhlCairoWorkstationLayer)l)->cairo;
-    Gescape_in_data gesc_in_pixconf;
     NhlErrorTypes   ret;
     int d, w, h;
-    int su = 0;
+
 
     /* make use of a shared utility method that contains all the page-sizing logic common to cairo-document,
      * postscript, and PDF workstations. See pageutil.c
@@ -734,8 +737,6 @@ CairoPSPDFWorkstationOpen(NhlLayer l)
 static NhlErrorTypes
 CairoImageWorkstationOpen(NhlLayer l)
 {
-    char func[]              = "CairoImageWorkstationOpen";
-    NhlWorkstationLayer work = (NhlWorkstationLayer)l;
     NhlCairoWorkstationLayerPart  *pp = &((NhlCairoWorkstationLayer)l)->cairo;
     Gescape_in_data gesc_in_pixconf;
     NhlErrorTypes   ret;
@@ -784,7 +785,6 @@ CairoImageWorkstationOpen(NhlLayer l)
 static NhlErrorTypes
 CairoPSPDFWorkstationActivate(NhlLayer l)
 {
-    char    func[] = "CairoPSPDFWorkstationActivate";
     NhlWorkstationClass lc = (NhlWorkstationClass) NhlworkstationClass;
     NhlWorkstationLayerPart *wp = &((NhlWorkstationLayer)l)->work;
     NhlCairoWorkstationLayerPart *pp = &((NhlCairoWorkstationLayer)l)->cairo;
@@ -811,7 +811,6 @@ CairoPSPDFWorkstationActivate(NhlLayer l)
 static NhlErrorTypes
 CairoImageWorkstationActivate(NhlLayer l)
 {
-    char    func[] = "CairoImageWorkstationActivate";
     NhlWorkstationClass lc = (NhlWorkstationClass) NhlworkstationClass;
     return (*(lc->work_class.activate_work))(l);
 }

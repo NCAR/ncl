@@ -190,7 +190,6 @@ NhlErrorTypes tdgetp_W(void)
  */
   char  *arg1;
   int   numpi, numpf, i;
-  string *pvalue, *qvalue;
 
 /*
  *  List the integer and float parameter names.  To add new ones,
@@ -212,10 +211,11 @@ NhlErrorTypes tdgetp_W(void)
  * Input array variable
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int ndims_pname;
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   float *fval;
   int *ival;
-  int ret_size = 1; 
+  ng_size_t ret_size = 1; 
 
 /*
  * Retrieve argument #1
@@ -338,9 +338,11 @@ NhlErrorTypes tdsetp_W(void)
  * Input array variables
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int ndims_pname;
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
-  int ndims_pvalue, dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  int ndims_pvalue;
+  ng_size_t dsizes_pvalue[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pvalue;
 
 /*
@@ -451,9 +453,11 @@ NhlErrorTypes pcsetp_W(void)
  * Input array variables
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int ndims_pname;
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
-  int ndims_pvalue, dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  int ndims_pvalue;
+  ng_size_t dsizes_pvalue[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pvalue;
 
 /*
@@ -581,7 +585,7 @@ NhlErrorTypes tdstrs_W( void )
 NhlErrorTypes tdprpt_W( void )
 {
   float *uvw, xy[2];
-  int dsizes_xy[1];
+  ng_size_t dsizes_xy[1];
 
 /*
  * Retrieve parameter.
@@ -598,7 +602,7 @@ NhlErrorTypes tdprpt_W( void )
 NhlErrorTypes tdprpa_W( void )
 {
   float *xy_in, xy_out[2];
-  int dsizes_xy[1];
+  ng_size_t dsizes_xy[1];
 
 /*
  * Retrieve parameter.
@@ -615,7 +619,7 @@ NhlErrorTypes tdprpa_W( void )
 NhlErrorTypes tdprpi_W( void )
 {
   float *xy_in, xy_out[2];
-  int dsizes_xy[1];
+  ng_size_t dsizes_xy[1];
 
 /*
  * Retrieve parameter.
@@ -724,7 +728,11 @@ NhlErrorTypes tdcurv_W( void )
  */
   int grlist, gkswid, nid;
   NclHLUObj tmp_hlu_obj;
-  int ncrv, dsizes_ucrv[1], dsizes_vcrv[1], dsizes_wcrv[1];
+  ng_size_t ncrv;
+  int incrv;
+  ng_size_t dsizes_ucrv[1];
+  ng_size_t dsizes_vcrv[1];
+  ng_size_t dsizes_wcrv[1];
 
 /*
  * Retrieve parameters.
@@ -742,6 +750,15 @@ NhlErrorTypes tdcurv_W( void )
     return(NhlFATAL);
   }
   ncrv = dsizes_ucrv[0];
+
+/*
+ * Test dimension sizes. 
+ */
+  if(ncrv > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdcurv: the length of the input arrays are > INT_MAX");
+    return(NhlFATAL);
+  }
+  incrv = (int) ncrv;
 
 /*
  *  Determine the NCL identifier for the graphic object in nid.
@@ -762,7 +779,7 @@ NhlErrorTypes tdcurv_W( void )
  * c_tdcurv function, and then deactivates the workstation.
  */
   gactivate_ws (gkswid);
-  NGCALLF(tdcurv,TDCURV)(ucrv, vcrv, wcrv, &ncrv, iarh, arhl, arhw);
+  NGCALLF(tdcurv,TDCURV)(ucrv, vcrv, wcrv, &incrv, iarh, arhl, arhw);
 
   gdeactivate_ws (gkswid);
 
@@ -974,7 +991,7 @@ NhlErrorTypes tdlbla_W( void )
 
 NhlErrorTypes tdplch_W( void )
 {
-  int *nwid, *iaxs;
+  int *nwid;
   float *xpos, *ypos, *size, *angd, *cntr;
   string *chrs;
   char *cchrs;
@@ -1025,7 +1042,8 @@ NhlErrorTypes tdplch_W( void )
 
 NhlErrorTypes tddtri_W( void )
 {
-  int *nwid, *ntri, *itwk, mtri, dsizes_rtri[2];
+  int *nwid, *ntri, *itwk, imtri;
+  ng_size_t mtri, dsizes_rtri[2];
   float *rtri;
 /*
  * Variables for retrieving workstation information.
@@ -1043,9 +1061,18 @@ NhlErrorTypes tddtri_W( void )
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tddtri: the second dimension of ntri must be 10");
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tddtri: the rightmost dimension of rtri must be 10");
     return(NhlFATAL);
   }
+/*
+ * Test dimension sizes. 
+ */
+  if(mtri > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tddtri: the leftmost dimension of rtri is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imtri = (int) mtri;
+
 /*
  *  Determine the NCL identifier for the graphic object in nid.
  */
@@ -1065,7 +1092,7 @@ NhlErrorTypes tddtri_W( void )
  * c_tddtri function, and then deactivates the workstation.
  */
   gactivate_ws (gkswid);
-  c_tddtri(rtri, mtri, ntri, itwk);
+  c_tddtri(rtri, imtri, ntri, itwk);
   gdeactivate_ws (gkswid);
 
   return(NhlNOERROR);
@@ -1075,8 +1102,12 @@ NhlErrorTypes tddtri_W( void )
 NhlErrorTypes tdstri_W( void )
 {
   float *u, *v, *w, *rtri;
-  int nu, nv, *ntri, mtri, *irst;
-  int dsizes_u[1], dsizes_v[1], dsizes_w[2], dsizes_rtri[2];
+  ng_size_t nu, nv, mtri;
+  int inu, inv, *ntri, imtri, *irst;
+  ng_size_t dsizes_u[1];
+  ng_size_t dsizes_v[1];
+  ng_size_t dsizes_w[2];
+  ng_size_t dsizes_rtri[2];
 /*
  * Retrieve parameters.
  */
@@ -1101,9 +1132,20 @@ NhlErrorTypes tdstri_W( void )
     return(NhlFATAL);
   }
 
-  NGCALLF(tdstri,TDSTRI)(u, &nu, v, &nv, w, &nu, rtri, &mtri, ntri, irst);
+/*
+ * Test dimension sizes.
+ */
+  if( (nu > INT_MAX) || (nv > INT_MAX) || (mtri > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdstri: one or more input arrays sizes is greater than INT_MAX");
+      return(NhlFATAL);
+  }
+  inu   = (int) nu;
+  inv   = (int) nv;
+  imtri = (int) mtri;
 
-  if(*ntri == mtri) {
+  NGCALLF(tdstri,TDSTRI)(u, &inu, v, &inv, w, &inu, rtri, &imtri, ntri, irst);
+
+  if(*ntri == imtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tdstri: triangle list overflow");
     return(NhlFATAL);
   }
@@ -1115,8 +1157,13 @@ NhlErrorTypes tdstri_W( void )
 NhlErrorTypes tditri_W( void )
 {
   float *u, *v, *w, *f, *fiso, *rtri;
-  int nu, nv, nw, *ntri, mtri, *irst;
-  int dsizes_u[1], dsizes_v[1], dsizes_w[1], dsizes_f[3], dsizes_rtri[2];
+  ng_size_t nu, nv, nw, mtri;
+  int inu, inv, inw, *ntri, imtri, *irst;
+  ng_size_t dsizes_u[1];
+  ng_size_t dsizes_v[1];
+  ng_size_t dsizes_w[1];
+  ng_size_t dsizes_f[3];
+  ng_size_t dsizes_rtri[2];
 /*
  * Retrieve parameters.
  */
@@ -1144,10 +1191,22 @@ NhlErrorTypes tditri_W( void )
     return(NhlFATAL);
   }
 
-  NGCALLF(tditri,TDITRI)(u,&nu,v,&nv,w,&nw,f,&nu,&nv,fiso,rtri,&mtri,ntri,
-			 irst);
+/*
+ * Test dimension sizes.
+ */
+  if((nu > INT_MAX) || (nv > INT_MAX) || (nw > INT_MAX) || (mtri > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tditri: one or more input arrays sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inu   = (int) nu;
+  inv   = (int) nv;
+  inw   = (int) nw;
+  imtri = (int) mtri;
 
-  if(*ntri == mtri) {
+  NGCALLF(tditri,TDITRI)(u,&inu,v,&inv,w,&inw,f,&inu,&inv,fiso,rtri,&imtri,
+			 ntri,irst);
+
+  if(*ntri == imtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tditri: triangle list overflow");
     return(NhlFATAL);
   }
@@ -1160,8 +1219,9 @@ NhlErrorTypes tdmtri_W( void )
 {
   float *uvw, *s, *rtri;
   float *uvwmin, *uvwmax;
-  int *imrk, *ntri, mtri, *irst;
-  int dsizes_rtri[2];
+  ng_size_t mtri;
+  int *imrk, *ntri, imtri, *irst;
+  ng_size_t dsizes_rtri[2];
 /*
  * Retrieve parameters.
  */
@@ -1180,11 +1240,20 @@ NhlErrorTypes tdmtri_W( void )
     return(NhlFATAL);
   }
 
-  c_tdmtri(*imrk, uvw[0], uvw[1], uvw[2], *s, rtri, mtri, ntri, *irst, 
+/*
+ * Test dimension sizes.
+ */
+  if(mtri > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdmtri: mtri is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imtri = (int) mtri;
+
+  c_tdmtri(*imrk, uvw[0], uvw[1], uvw[2], *s, rtri, imtri, ntri, *irst, 
            uvwmin[0], uvwmin[1], uvwmin[2], 
            uvwmax[0], uvwmax[1], uvwmax[2]);
 
-  if(*ntri == mtri) {
+  if(*ntri == imtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tdmtri: triangle list overflow");
     return(NhlFATAL);
   }
@@ -1197,8 +1266,12 @@ NhlErrorTypes tdttri_W( void )
 {
   float *ucra, *vcra, *wcra, *uvwmin, *uvwmax;
   float *rmrk, *smrk, *rtri;
-  int *imrk, *ntri, *irst, mtri, ncra;
-  int dsizes_rtri[2], dsizes_ucra[1], dsizes_vcra[1], dsizes_wcra[1];
+  ng_size_t mtri, ncra;
+  int *imrk, *ntri, *irst, imtri, incra;
+  ng_size_t dsizes_rtri[2];
+  ng_size_t dsizes_ucra[1];
+  ng_size_t dsizes_vcra[1];
+  ng_size_t dsizes_wcra[1];
 /*
  * Retrieve parameters.
  */
@@ -1229,12 +1302,22 @@ NhlErrorTypes tdttri_W( void )
     return(NhlFATAL);
   }
 
-  NGCALLF(tdttri,TDTTRI)(ucra, vcra, wcra, &ncra, imrk, rmrk, smrk, rtri, 
-                         &mtri, ntri, irst, 
+/*
+ * Test dimension sizes.
+ */
+  if((mtri > INT_MAX) || (ncra > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tddtri: one or more input arrays sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imtri = (int) mtri;
+  incra = (int) ncra;
+
+  NGCALLF(tdttri,TDTTRI)(ucra, vcra, wcra, &incra, imrk, rmrk, smrk, rtri, 
+                         &imtri, ntri, irst, 
                          &uvwmin[0], &uvwmin[1], &uvwmin[2],
 			 &uvwmax[0], &uvwmax[1], &uvwmax[2]);
 
-  if(*ntri == mtri) {
+  if(*ntri == imtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tdttri: triangle list overflow");
     return(NhlFATAL);
   }
@@ -1246,7 +1329,9 @@ NhlErrorTypes tdttri_W( void )
 NhlErrorTypes tdctri_W( void )
 {
   float *rtri, *rcut;
-  int *ntri, *iaxs, mtri, dsizes_rtri[2];
+  ng_size_t mtri;
+  int *ntri, *iaxs, imtri;
+  ng_size_t dsizes_rtri[2];
 
 /*
  * Retrieve parameters.
@@ -1261,9 +1346,19 @@ NhlErrorTypes tdctri_W( void )
     NhlPError(NhlFATAL, NhlEUNKNOWN, "tdctri: the second dimension of ntri must be 10");
     return(NhlFATAL);
   }
+
+/*
+ * Test dimension sizes.
+ */
+  if(mtri > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdctri: mtri is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imtri = (int) mtri;
+
   c_tdctri(rtri, mtri, ntri, *iaxs, *rcut);
 
-  if(*ntri == mtri) {
+  if(*ntri == imtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tdctri: triangle list overflow");
     return(NhlFATAL);
   }
@@ -1274,7 +1369,11 @@ NhlErrorTypes tdctri_W( void )
 
 NhlErrorTypes tdotri_W( void )
 {
-  int *ntri, mtri, *iord, dsizes_rtri[2], dsizes_rtwk[2], dsizes_itwk[1];
+  ng_size_t mtri;
+  int *ntri, imtri, *iord;
+  ng_size_t dsizes_rtri[2];
+  ng_size_t dsizes_rtwk[2];
+  ng_size_t dsizes_itwk[1];
   float *rtri;
 /*
  * Work arrays.
@@ -1300,13 +1399,22 @@ NhlErrorTypes tdotri_W( void )
     return(NhlFATAL);
   }
 
+/*
+ * Test dimension sizes.
+ */
+  if(mtri > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdotri: mtri is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imtri = (int) mtri;
+
   itwk = (int*)calloc(mtri,sizeof(int));
   if(itwk == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tdotri: Unable to allocate memory for permutation vector");
     return(NhlFATAL);
   }
 
-  NGCALLF(tdotri,TDOTRI)(rtri, &mtri, ntri, rtwk, itwk, iord);
+  NGCALLF(tdotri,TDOTRI)(rtri, &imtri, ntri, rtwk, itwk, iord);
 
   if(*ntri == mtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tdotri: triangle list overflow");
@@ -1315,13 +1423,17 @@ NhlErrorTypes tdotri_W( void )
 
   dsizes_itwk[0] = mtri;
   ret = NclReturnValue(itwk,1,dsizes_itwk,NULL,NCL_int,0);
+  return(NhlNOERROR);
 }
 
 
 NhlErrorTypes tdsort_W( void )
 {
   float *rwrk;
-  int *iwrk, *iord, nwrk, dsizes_rwrk[1], ret;
+  ng_size_t nwrk;
+  int *iwrk, *iord, inwrk;
+  ng_size_t dsizes_rwrk[1];
+  int ret;
 /*
  * Retrieve parameters.
  */
@@ -1329,27 +1441,37 @@ NhlErrorTypes tdsort_W( void )
   iord =   (int*)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
   nwrk = dsizes_rwrk[0];
 
+/*
+ * Test dimension sizes.
+ */
+  if(nwrk > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdsort: the length of rwrk is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inwrk = (int) nwrk;
+
   iwrk = (int*)calloc(nwrk,sizeof(int));
   if(iwrk == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tdsort: Unable to allocate memory for permutation vector");
     return(NhlFATAL);
   }
 
-  c_tdsort(rwrk, nwrk, *iord, iwrk);
+  c_tdsort(rwrk, inwrk, *iord, iwrk);
 
   ret = NclReturnValue(iwrk,1,dsizes_rwrk,NULL,NCL_int,0);
+  return(NhlNOERROR);
 }
 
 
 NhlErrorTypes tdez2d_W( void )
 {
   float *x, *y, *z, *zp;
-  int dsizes_x[NCL_MAX_DIMENSIONS];
-  int dsizes_y[NCL_MAX_DIMENSIONS];
-  int dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t nx, dsizes_x[NCL_MAX_DIMENSIONS];
+  ng_size_t ny, dsizes_y[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
   float *rmult, *theta, *phi;
   int *style, *nwid;
-  int i, j;
+  ng_size_t i, j, inx, iny;
 /*
  * Variables for retrieving workstation information.
  */
@@ -1373,16 +1495,28 @@ NhlErrorTypes tdez2d_W( void )
   style  = (int*)NclGetArgValue(7,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
 /*
+ * Test dimension sizes.
+ */
+  nx = dsizes_x[0];
+  ny = dsizes_y[0];
+  if((nx > INT_MAX) || (ny > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdez2d: the length of x and/or y is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+
+/*
  * Check input sizes.
  */
-  if( (dsizes_x[0] == dsizes_z[0]) && (dsizes_y[0] == dsizes_z[1]) ) {
+  if( (dsizes_z[0] == nx) && (dsizes_z[1] == ny) ) {
 /*
  * Reverse the order of the dimensions.
  */
-    zp = (float *) calloc(dsizes_x[0] * dsizes_y[0],sizeof(float));
-    for (i = 0; i < dsizes_x[0]; i++) {
-      for (j = 0; j < dsizes_y[0]; j++) { 
-        zp[j*dsizes_x[0] + i] = z[i*dsizes_y[0] + j];
+    zp = (float *) calloc(nx * ny,sizeof(float));
+    for (i = 0; i < nx; i++) {
+      for (j = 0; j < ny; j++) { 
+        zp[j*nx + i] = z[i*ny + j];
       }
     }
 /*
@@ -1403,7 +1537,7 @@ NhlErrorTypes tdez2d_W( void )
  * c_tdez2d function, and then deactivates the workstation.
  */
     gactivate_ws (gkswid);
-    c_tdez2d(dsizes_x[0],dsizes_y[0],x,y,zp,*rmult,*theta,*phi,*style);
+    c_tdez2d(inx,iny,x,y,zp,*rmult,*theta,*phi,*style);
     gdeactivate_ws (gkswid);
     free(zp);
   }
@@ -1420,10 +1554,10 @@ NhlErrorTypes tdez2d_W( void )
 NhlErrorTypes tdez3d_W( void )
 {
   float *x, *y, *z, *u, *value, *up;
-  int dsizes_x[NCL_MAX_DIMENSIONS];
-  int dsizes_y[NCL_MAX_DIMENSIONS];
-  int dsizes_z[NCL_MAX_DIMENSIONS];
-  int dsizes_u[NCL_MAX_DIMENSIONS];
+  ng_size_t nx, dsizes_x[NCL_MAX_DIMENSIONS];
+  ng_size_t ny, dsizes_y[NCL_MAX_DIMENSIONS];
+  ng_size_t nz, dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
   float *rmult, *theta, *phi;
   int *nwid, *style;
 /*
@@ -1432,7 +1566,7 @@ NhlErrorTypes tdez3d_W( void )
   int grlist, gkswid, nid;
   NclHLUObj tmp_hlu_obj;
 
-  int i, j, k;
+  ng_size_t i, j, k, inx, iny, inz;
 /*
  * Retrieve parameters.
  *
@@ -1453,19 +1587,32 @@ NhlErrorTypes tdez3d_W( void )
   style = (int*)NclGetArgValue(9,10,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
 /*
+ * Test dimension sizes.
+ */
+  nx = dsizes_x[0];
+  ny = dsizes_y[0];
+  nz = dsizes_z[0];
+  if((nx > INT_MAX) || (ny > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdez3d: the length of x, y and/or z is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inz = (int) nz;
+
+/*
  * Check input sizes.
  */
-  if( (dsizes_x[0] == dsizes_u[0]) && (dsizes_y[0] == dsizes_u[1]) && 
-      (dsizes_z[0] == dsizes_u[2]) ) {
+  if( (dsizes_u[0] == nx) && (dsizes_u[1] == ny) && (dsizes_u[2] == nz) ) {
 /*
  * Reverse the order of the dimensions.
  */
-    up = (float *) calloc(dsizes_x[0]*dsizes_y[0]*dsizes_z[0],sizeof(float));
-    for (i = 0; i < dsizes_x[0]; i++) {
-      for (j = 0; j < dsizes_y[0]; j++) { 
-        for (k = 0; k < dsizes_z[0]; k++) { 
-          up[dsizes_x[0]*dsizes_y[0]*k + j*dsizes_x[0] + i] = 
-            u[i*dsizes_z[0]*dsizes_y[0] + dsizes_z[0]*j + k];
+    up = (float *) calloc(nx*ny*nz,sizeof(float));
+    for (i = 0; i < nx; i++) {
+      for (j = 0; j < ny; j++) { 
+        for (k = 0; k < nz; k++) { 
+          up[nx*ny*k + j*nx + i] = 
+            u[i*nz*ny + nz*j + k];
         }
       }
     }
@@ -1489,7 +1636,7 @@ NhlErrorTypes tdez3d_W( void )
  * c_tdez3d function, and then deactivates the workstation.
  */
     gactivate_ws (gkswid);
-    c_tdez3d(dsizes_x[0],dsizes_y[0],dsizes_z[0],x,y,z,up,*value,
+    c_tdez3d(nx,ny,nz,x,y,z,up,*value,
              *rmult,*theta,*phi,*style);
     gdeactivate_ws (gkswid);
     free(up);
@@ -1507,11 +1654,13 @@ NhlErrorTypes tdez1d_W( void )
 {
   int *nwid, *imrk, *style;
   float *x, *y, *z, *rmrk, *smrk, *rmult, *theta, *phi;
-  int dsizes_x[1], dsizes_y[1], dsizes_z[1];
+  ng_size_t dsizes_x[1];
+  ng_size_t dsizes_y[1];
+  ng_size_t dsizes_z[1];
 /*
  * Variables for retrieving workstation information.
  */
-  int grlist, gkswid, nid;
+  int grlist, gkswid, nid, x0;
   NclHLUObj tmp_hlu_obj;
 /*
  * Retrieve parameters.
@@ -1539,6 +1688,12 @@ NhlErrorTypes tdez1d_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tdez1d: the length of the x, y, and z arrays must be the same");
     return(NhlFATAL);
   }
+  if(dsizes_x[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdez1d: dsizes_x[0] = %ld is greater than INT_MAX", dsizes_x[0]);
+    return(NhlFATAL);
+  }
+  x0 = (int) dsizes_x[0];
+
 /*
  *  Determine the NCL identifier for the graphic object in nid.
  */
@@ -1557,8 +1712,9 @@ NhlErrorTypes tdez1d_W( void )
  * tdez1d function, and then deactivates the workstation.
  */
   gactivate_ws (gkswid);
-  NGCALLF(tdez1d,TDEZ1D)(&dsizes_x[0],x,y,z,imrk,rmrk,smrk,rmult,theta,phi,
-                         style);
+
+  NGCALLF(tdez1d,TDEZ1D)(&x0,x,y,z,imrk,rmrk,smrk,rmult,theta,phi,style);
+
   gdeactivate_ws (gkswid);
 
   return(NhlNOERROR);

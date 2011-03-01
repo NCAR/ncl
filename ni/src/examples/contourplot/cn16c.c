@@ -71,7 +71,7 @@ main()
   int  ncid, lon_id, lat_id, stid;
   float lat[NLAT];
   long start[3], count[3], lonlen, latlen;
-  int icount[2];
+  ng_size_t icount[2];
   char filename[256];
   char recname[50];
   const char *dir = _NGGetNCARGEnv("data");

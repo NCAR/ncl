@@ -16,8 +16,21 @@
  */
 
 #include <ncarg/gks.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+/* this is the length of each row of the data	*/
+
+#define MAX_ARRAY_LEN	80
 
 extern void NGCALLF(gopwk,GOPWK)(Gint*,int*,Gint*);
+extern void NGCALLF(gesc,GESC)(Gint*,int*,char*,int*,int*,
+                               char out_array[MAX_ARRAY_LEN],int,int);
+extern void NGCALLF(gerhnd,GERHND)(Gint*,Gint*,int*);
+
+extern void get_conn_id(int*);
+extern void add_conn_id(int*);
 
 #define MAXSTRLEN 80
 
@@ -50,6 +63,7 @@ void gopen_ws
     int error_num, fctid;
     char stmp[81];
     NGstring stmp2;
+    char dum_array[MAX_ARRAY_LEN];
     if( ws_type == 1 ) {
 /*
  *  If conn_id is non-NULL, then use it as the metafile name.
@@ -65,9 +79,10 @@ void gopen_ws
                 mlodr = 0;
                 for( i = strlen(stmp); i < MAXSTRLEN; i++ ) stmp[i] = ' ';
                 stmp[MAXSTRLEN] = '\0';
-                len = NGSTRLEN(stmp);
+                len = MAXSTRLEN;
                 stmp2 = NGCstrToFstr(stmp,len);
-                NGCALLF(gesc,GESC)(&fctid,&lidr,stmp2,&mlodr,&lodr,NULL,len);
+                NGCALLF(gesc,GESC)(&fctid,&lidr,stmp2,&mlodr,&lodr,dum_array,
+				   len,MAX_ARRAY_LEN);
             }
 /*
  * metafiles can only be of length <= 80 for now.  In the future

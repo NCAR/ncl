@@ -78,8 +78,6 @@ NclObj /*thelistobj*/
 );
 
 
-
-
 typedef struct _NclListClassPart {
 	NclListSetTypeFunction	set_type;
 	NclListGetTypeFunction	get_type;

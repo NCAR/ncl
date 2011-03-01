@@ -9,30 +9,47 @@ NhlErrorTypes gaus_lobat_W( void )
 /*
  * Input array variables
  */
-  int *npts;
+  void *N;
+  ng_size_t *npts;
+  int inpts;
+  NclBasicDataTypes type_N;
 /*
  * Output array variables
  */
-  int dsizes_output[2];
+  ng_size_t i, dsizes_output[2];
   double *xgl, *wgt, *output;
-  int i;
+  int ret;
 /*
  * Retrieve arguments.
  */
-  npts = (int*)NclGetArgValue(
+  N = (void*)NclGetArgValue(
           0,
           1,
           NULL,
           NULL,
           NULL,
           NULL,
-          NULL,
+          &type_N,
           DONT_CARE);
+
+/*
+ * Check the input dimension size.
+ */
+  npts = get_dimensions(N,1,type_N,"gaus_lobat");
+  if(npts == NULL) 
+    return(NhlFATAL);
+
 
   if( *npts < 1) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"gaus_lobat: npts must be at least 1");
     return(NhlFATAL);
   }
+
+  if( *npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gaus_lobat: npts is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts = (int) *npts;
 /*
  * Allocate space for output array
  */
@@ -47,7 +64,7 @@ NhlErrorTypes gaus_lobat_W( void )
 /*
  * Call the Fortran version of this routine.
  */
-  NGCALLF(gauslobat,GAUSLOBAT)(xgl,wgt,npts);
+  NGCALLF(gauslobat,GAUSLOBAT)(xgl,wgt,&inpts);
   for( i = 0; i < *npts; i++ ) {
     output[2*i]   = xgl[i];
     output[2*i+1] = wgt[i];
@@ -57,7 +74,9 @@ NhlErrorTypes gaus_lobat_W( void )
 
   dsizes_output[0] = *npts;
   dsizes_output[1] = 2;
-  return(NclReturnValue((void*)output,2,dsizes_output,NULL,NCL_double,0));
+  ret = NclReturnValue((void*)output,2,dsizes_output,NULL,NCL_double,0);
+  NclFree(npts);
+  return(ret);
 }
 
 
@@ -68,17 +87,18 @@ NhlErrorTypes gaus_lobat_wgt_W( void )
  */
   void *lat;
   double *tmp_lat;
-  int dsizes_lat[1];
+  ng_size_t dsizes_lat[1];
   NclBasicDataTypes type_lat;
 /*
  * Output array variables
  */
   double *wgt;
-  int dsizes_wgt[1];
+  ng_size_t dsizes_wgt[1];
 /*
  * Declare various variables for random purposes.
  */
-  int npts;
+  ng_size_t npts;
+  int inpts;
 /*
  * Retrieve arguments.
  */
@@ -92,7 +112,12 @@ NhlErrorTypes gaus_lobat_wgt_W( void )
           &type_lat,
           DONT_CARE);
 
-  npts = dsizes_lat[0];
+  if( dsizes_lat[0] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gaus_lobat_wgt: the length of lat is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  npts  = dsizes_lat[0];
+  inpts = (int) npts;
 /*
  * Coerce data to double no matter what, since input array may get
  * changed by Fortran routine.
@@ -115,7 +140,7 @@ NhlErrorTypes gaus_lobat_wgt_W( void )
 /*
  * Call the Fortran version of this routine.
  */
-  NGCALLF(findglw,FINDGLW)(tmp_lat,wgt,&npts);
+  NGCALLF(findglw,FINDGLW)(tmp_lat,wgt,&inpts);
 
 /*
  * Free memory.

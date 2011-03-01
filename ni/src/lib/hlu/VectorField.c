@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.23 2003-09-10 21:29:59 dbrown Exp $
+ *      $Id: VectorField.c,v 1.23.4.1 2008-03-28 20:37:37 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -512,7 +512,8 @@ SplitArray
 			return NhlFATAL;
 		}
 		(*vga)->len_dimensions =
-			(int *) NhlConvertMalloc(2 * sizeof(int));
+			(ng_size_t *) NhlConvertMalloc(2 * sizeof(ng_size_t));
+/*			(int *) NhlConvertMalloc(2 * sizeof(int));*/
 		if (! (*vga)->len_dimensions) {
 			e_text = "%s: dynamic memory allocation error";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -548,8 +549,10 @@ SplitArray
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-	(*uga)->len_dimensions = (int *) NhlConvertMalloc(2 * sizeof(int));
-	(*vga)->len_dimensions = (int *) NhlConvertMalloc(2 * sizeof(int));
+/*	(*uga)->len_dimensions = (int *) NhlConvertMalloc(2 * sizeof(int));*/
+/*	(*vga)->len_dimensions = (int *) NhlConvertMalloc(2 * sizeof(int));*/
+	(*uga)->len_dimensions = (ng_size_t *) NhlConvertMalloc(2 * sizeof(ng_size_t));
+	(*vga)->len_dimensions = (ng_size_t *) NhlConvertMalloc(2 * sizeof(ng_size_t));
 	       
 	if (! (*uga)->len_dimensions || ! (*vga)->len_dimensions) {
 		e_text = "%s: dynamic memory allocation error";
@@ -840,9 +843,11 @@ DataToVFField
 
 			uga->num_dimensions = vga->num_dimensions = 2;
 			uga->len_dimensions = 
-				(int *) NhlConvertMalloc(2 * sizeof(int));
+				(ng_size_t *) NhlConvertMalloc(2 * sizeof(ng_size_t));
+/*				(int *) NhlConvertMalloc(2 * sizeof(int));*/
 			vga->len_dimensions = 
-				(int *) NhlConvertMalloc(2 * sizeof(int));
+				(ng_size_t *) NhlConvertMalloc(2 * sizeof(ng_size_t));
+/*				(int *) NhlConvertMalloc(2 * sizeof(int));*/
 			if (! uga->len_dimensions || ! vga->len_dimensions) {
 				e_text = "%s: dynamic memory allocation error";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1162,9 +1167,11 @@ DataToVFFieldExchDim
 		}
 		uga->num_dimensions = vga->num_dimensions = 2;
 		uga->len_dimensions = 
-			(int *) NhlConvertMalloc(2 * sizeof(int));
+			(ng_size_t *) NhlConvertMalloc(2 * sizeof(ng_size_t));
+/*			(int *) NhlConvertMalloc(2 * sizeof(int));*/
 		vga->len_dimensions = 
-			(int *) NhlConvertMalloc(2 * sizeof(int));
+			(ng_size_t *) NhlConvertMalloc(2 * sizeof(ng_size_t));
+/*			(int *) NhlConvertMalloc(2 * sizeof(int));*/
 		if (! uga->len_dimensions || ! vga->len_dimensions) {
 			e_text = "%s: dynamic memory allocation error";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1868,16 +1875,12 @@ GetSubsetBounds2D
 #endif
 {
         char            *e_text;
-        NhlErrorTypes   ret = NhlNOERROR,subret = NhlNOERROR;
+        NhlErrorTypes   ret = NhlNOERROR;
         NhlBoolean      do_subset = False;
         NhlBoolean      rev;
-        NhlGenArray     *subset_start,*subset_end;
         NhlGenArray     out_ga;
-        NhlBoolean      nullstart = False,nullend = False;
-        NhlBoolean      start_byindex,end_byindex;
         char            *c_name;
         float           *fp, *nfp;
-        int             rem,stride;
         float           min, max;
         int             yi,xi;
         int             yimin,yimax,ximin,ximax;
@@ -2011,8 +2014,8 @@ GetSubsetBounds2D
                 return NhlFATAL;
         }
         out_ga->num_dimensions = 2;
-        if ((out_ga->len_dimensions = (int *)
-             NhlConvertMalloc(2 * sizeof(int))) == NULL) {
+        if ((out_ga->len_dimensions = (ng_size_t *)
+             NhlConvertMalloc(2 * sizeof(ng_size_t))) == NULL) {
                 e_text = "%s: dynamic memory allocation error";
                 NhlPError(NhlFATAL,NhlEUNKNOWN,
                           e_text,entry_name);
@@ -4296,7 +4299,7 @@ static NhlErrorTypes    VectorFieldGetValues
         NrmQuark resQ;
 	NrmQuark typeQ = NrmNULLQUARK;
 	NhlPointer	data;
-	int		dlen[2];
+	ng_size_t	dlen[2];
 	int		ndim;
 	int		size;
 	NhlBoolean	nocopy = False, do_genarray;

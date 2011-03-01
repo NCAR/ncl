@@ -10,21 +10,27 @@ NhlErrorTypes pres_sigma_W( void )
  * Input variables
  */
   void *sigma, *ps;
-  double *tmp_sigma, *tmp_ps;
-  int ndims_ps, dsizes_sigma[1], dsizes_ps[NCL_MAX_DIMENSIONS];
+  double *tmp_sigma;
+  double *tmp_ps = NULL;
+  int ndims_ps;
+  ng_size_t dsizes_sigma[1];
+  ng_size_t dsizes_ps[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_ps, type_sigma;
 /*
  * Output variables
  */
   void *psigma;
-  double *tmp_psigma;
-  int ndims_psigma, *dsizes_psigma;
+  double *tmp_psigma = NULL;
+  int ndims_psigma;
+  ng_size_t *dsizes_psigma;
   NclBasicDataTypes type_psigma;
 /*
  * Various.
  */
-  int i, j, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
-  int index_psigma, index_ps, size_leftmost, size_psigma;
+  ng_size_t i, j, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
+  int index_psigma, index_ps, ret;
+  ng_size_t size_leftmost, size_psigma;
+  int inlon, inlat, iklvl;
 /*
  * Retrieve parameters
  *
@@ -64,6 +70,18 @@ NhlErrorTypes pres_sigma_W( void )
 
   nlatnlon     = nlat * nlon;
   klvlnlatnlon = klvl * nlatnlon;
+
+/*
+ * Test input dimension sizes.
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX) || (klvl > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_sigma: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  iklvl = (int) klvl;
+
 /*
  * Determine type of output.
  */
@@ -78,7 +96,7 @@ NhlErrorTypes pres_sigma_W( void )
  */
   ndims_psigma = ndims_ps + 1;
 
-  dsizes_psigma = (int*)calloc(ndims_psigma,sizeof(int));  
+  dsizes_psigma = (ng_size_t*)calloc(ndims_psigma,sizeof(ng_size_t));  
   if( dsizes_psigma == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_sigma: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -157,7 +175,8 @@ NhlErrorTypes pres_sigma_W( void )
       tmp_psigma = &((double*)psigma)[index_psigma];
     }
 
-    NGCALLF(dpsigma,DPSIGMA)(tmp_sigma,tmp_ps,&nlon,&nlat,&klvl,tmp_psigma);
+    NGCALLF(dpsigma,DPSIGMA)(tmp_sigma,tmp_ps,&inlon,&inlat,&iklvl,tmp_psigma);
+
 /*
  * Copy output values from temporary tmp_psigma to psigma.
  */
@@ -178,7 +197,9 @@ NhlErrorTypes pres_sigma_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(psigma,ndims_psigma,dsizes_psigma,NULL,type_psigma,0));
+  ret = NclReturnValue(psigma,ndims_psigma,dsizes_psigma,NULL,type_psigma,0);
+  NclFree(dsizes_psigma);
+  return(ret);
 }
 
 

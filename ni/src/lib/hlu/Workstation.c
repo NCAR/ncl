@@ -169,7 +169,6 @@ static int Marker_Table_Len;
 static int Fill_Table_Len;
 static NhlFillTable Fill_Table;
 static int Dash_Table_Len;
-static NhlDashTable Dash_Table;
 
 static NrmQuark intQ;
 static NrmQuark scalarQ;
@@ -615,7 +614,7 @@ static void StoreGksWksType (
  
 static int	CurrentWksCount = 0;
 static wkGksWksRec Gks_Wks_Recs[MAX_OPEN_WKS] =
-			{ -1,-1,-1 }; /* uninitialized */
+	{ {-1},{-1},{-1} }; /* uninitialized */
 
 static NhlBoolean Hlu_Wks_Flag = False;
 
@@ -1232,7 +1231,7 @@ _NhlStringToColorDefStringGenArray
 	_NhlCITokens	token;
 	char		**ptr;
 	char		*data;
-	int		ptri=0;
+	ng_size_t  ptri = 0;
 	int		datai=0;
 	int		stri = 0;
 	
@@ -1513,7 +1512,6 @@ CvtStringToColorIndexGenArray
 	NhlString		s1 = from->data.strval;
 	NrmValue		val;
 	NhlGenArray		sgen;
-	NhlErrorTypes		ret = NhlNOERROR;
 	NhlPointer		data;
 
 	if(nargs != 1){
@@ -1868,7 +1866,7 @@ CvtStringToColorDefinitionGenArray
 
 	if(_NhlLookupColor(wc,s1,&rgb)){
 		NhlGenArray	tgen;
-		int		tint=3;
+		ng_size_t  	tint = 3;
 		float		*fptr;
 
 		tgen = _NhlConvertCreateGenArray(NULL,NhlTFloat,sizeof(float),
@@ -1934,7 +1932,6 @@ CvtStringGenArrayToColorDefinitionGenArray
 	char	func[] = "CvtStringGenArrayToColorDefinitionGenArray";
 	NhlGenArray	fgen = from->data.ptrval;
 	NhlString	*sptr;
-	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid args?",func);
@@ -2427,7 +2424,7 @@ static void InitializeGksWksRecs
         Gint			list[MAX_OPEN_WKS],gerror,wks_list_len;
         wkGksWksRec		*gksp = wcp->gks_wks_recs;
         int errind,iconn_id,ws_type;
-        int i,j,k;
+        int i,j;
 
 /*
  * The Gks workstation records are kept in ascending order by gks_id. This
@@ -2845,14 +2842,8 @@ static NhlErrorTypes WorkstationInitialize
 	NhlWorkstationClassPart	*wcp =
 				&((NhlWorkstationClass)lc)->work_class;
 	int			i;
-	NhlErrorTypes		retcode=NhlNOERROR,subret=NhlNOERROR;
-	NhlGenArray		ga;
-	char			*e_text;
+	NhlErrorTypes		retcode=NhlNOERROR;
 	char			*entry_name = "WorkstationInitialize";
-	int			count[2];
-	int			len1, len2;
-	NhlMarkerTableParams	*mparams;
-	NhlString		*mstrings;
         int 			num_allowed = MAX_OPEN_WKS;
 
             /* if the segment workstation is not yet open,
@@ -3169,14 +3160,10 @@ WorkstationSetValues
 #endif
 {
 	NhlWorkstationLayer	newl = (NhlWorkstationLayer) new;
-	int i;
 	NhlWorkstationLayer	oldl = (NhlWorkstationLayer) old;
 	NhlErrorTypes	retcode = NhlNOERROR,subret = NhlNOERROR;
 	char *tmp;
 	char *entry_name = "WorkstationSetValues";
-	int len1,len2;
-	NhlMarkerTableParams *mparams;
-	NhlString *mstrings;
 	char *e_text;
 
 	/*
@@ -3454,7 +3441,7 @@ WorkstationGetValues
 	NhlColor* tmp;
 	NhlPrivateColor *private;
 	NhlGenArray ga;
-	int count[2];
+	ng_size_t  count[2];
 	NhlMarkerTableParams *mtp_p;
 	char **s_p = NULL;
 	char *e_text;
@@ -3734,8 +3721,6 @@ static NhlErrorTypes WorkstationDestroy
 #endif
 {
 	NhlWorkstationLayerPart	*wp = &((NhlWorkstationLayer)inst)->work;
-	NhlWorkstationClassPart	*wcp =
-                &((NhlWorkstationClass)inst->base.layer_class)->work_class;
 	NhlErrorTypes	retcode = NhlNOERROR;
 	int i;
 
@@ -3881,7 +3866,6 @@ WorkstationOpen
 {	
 	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
 	char			func[] = "WorkstationOpen";
-	int			i = 3; /* default segment wks is 2 */
 
 	if(wl->work.gkswkstype == NhlFATAL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unknown workstation type");
@@ -4546,13 +4530,9 @@ _NhlWorkstationCellFill
         int             *clrixs;
 #endif
 {
-	char			func[] = "WorkstationRasterFill";
-	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
-	NhlWorkstationLayerPart	*wk_p = &wl->work;
+	char			func[] = "WorkstationCellFill";
         float			fl,fr,fb,ft,ul,ur,ub,ut;
-	int			ll, ix;
-	Gfill_int_style		save_fillstyle;
-	Gint			err_ind;
+	int			ll;
 	int                     xs = 1;
 	int                     ys = 1;
 	
@@ -4881,7 +4861,6 @@ _NhlGetColor
 #endif
 {
 	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
-	char			func[] = "_NhlGetColor";
 	NhlPrivateColor		*pcmap = wl->work.private_color_map;
 	int			maxi = wl->work.color_map_len - 1;
 
@@ -5199,7 +5178,6 @@ int _NhlIsAllocatedColor
 #endif
 {
 	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
-	char			func[]="NhlIsAllocatedColor";
 
 	if((ci < NhlTRANSPARENT) || (ci >= wl->work.color_map_len))
 		return False;
@@ -5987,7 +5965,6 @@ _NhlSetFillInfo
         float			x0,x1;
         int			ll,ix;
         char			buffer[80];
-	int			i;
 	int			edge_dash_dollar_size;
 	
 
@@ -6075,7 +6052,7 @@ _NhlSetFillInfo
 }
 
 
-static NhlErrorTypes
+NhlErrorTypes
 _NhlWorkstationRasterFill
 #if  NhlNeedProto
 (
@@ -6101,12 +6078,8 @@ _NhlWorkstationRasterFill
 #endif
 {
 	char			func[] = "WorkstationRasterFill";
-	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
-	NhlWorkstationLayerPart	*wk_p = &wl->work;
         float			fl,fr,fb,ft,ul,ur,ub,ut;
-	int			ll, ix;
-	Gfill_int_style		save_fillstyle;
-	Gint			err_ind;
+	int			ll;
 	int                     xs = 1;
 	int                     ys = 1;
 	
@@ -7366,7 +7339,6 @@ NhlErrorTypes _NhlUpdateGksWksRecs
 {
 	NhlWorkstationLayer wl;
         NhlWorkstationClassPart *wcp;
-	NhlErrorTypes subret = NhlNOERROR;
         char func[] = "_NhlUpdateGksWksRecs";
         wkGksWksRec		*gksp;
         int i,j;

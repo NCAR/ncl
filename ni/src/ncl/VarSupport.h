@@ -22,6 +22,10 @@
 #ifndef _VarSupport_h
 #define _VarSupport_h
 
+#define MAX_ALLOWED_NUMBER 10001
+
+unsigned int _closest_prime(unsigned int prime_in);
+
 extern NclSelectionRecord* _NclGetVarSelRec(
 #if     NhlNeedProto
 	struct _NclVarRec * /*inst*/

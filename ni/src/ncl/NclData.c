@@ -831,9 +831,8 @@ NclObj self;
 #endif
 {
 	int tmp;
-	NclObjList *last_ptr,*ptr;
+	NclObjList *ptr;
 	static int first = 1;
-	int new_id;
 
 	if(first) {
 		first  = 0;
@@ -873,7 +872,7 @@ NclObj self;
 	tmp = current_id % current_size;
 	if (objs[tmp].id == current_id) {
 		NhlPError(NhlFATAL, NhlEUNKNOWN, 
-			  "_NclRegisterObj: internal error; invalid duplication of object id %d\n",new_id);
+			  "_NclRegisterObj: internal error; invalid duplication of object id %d\n",current_id);
 		return (NhlFATAL);
 	}
 
@@ -890,7 +889,7 @@ NclObj self;
 		while (ptr->next != NULL) {
 			if (ptr->id == current_id) {
 				NhlPError(NhlFATAL, NhlEUNKNOWN, 
-					  "_NclRegisterObj: internal error; invalid duplication of object id %d\n",new_id);
+					  "_NclRegisterObj: internal error; invalid duplication of object id %d\n",current_id);
 				return (NhlFATAL);
 			}
 			ptr = ptr->next;
@@ -921,5 +920,5 @@ void _NclObjsSize
 	FILE *fp;
 #endif
 {
-	fprintf(fp,"The size of objs list is %d elements of size %d; %lld total objects have been created\n",current_size,sizeof(NclObjList),total_obj_count);
+	fprintf(fp,"The size of objs list is %d elements of size %ld; %lld total objects have been created\n",current_size,sizeof(NclObjList),total_obj_count);
 }

@@ -18,6 +18,14 @@
 #include "NclBuiltInSupport.h"
 
 
+/* 
+ * Function to coerce dimension sizes to int or long
+ * Located in ../lib/nfp/wrapper.[ch].
+ */
+extern ng_size_t *get_dimensions(void *tmp_dimensions,ng_size_t n_dimensions,
+				 NclBasicDataTypes type_dimensions,
+				 const char *);
+
 static unsigned char cray_missing_value[8] = { 0x40,0x78,0xc0,0x97,0xce,0x7b,0xc9,0x07 };
 
 
@@ -35,7 +43,7 @@ int* /*finish_offset*/
 extern char EndOfRec(
 );
 
-extern forward_index(
+extern int forward_index(
 #if NhlNeedProto
 unsigned char *
 #endif
@@ -117,6 +125,7 @@ static int extract(int which,char buf[8])
                 tmp[BYTE3] = buf[7];
                 return(*(int*)tmp);
         }
+	return 0;
 }
 
 static int IsCOSBlocked
@@ -129,7 +138,6 @@ FILE* fd;
 {
         char thebuff[8];
         char bytes[8][511];
-        int tmp;
         int type;
         int junk;
         int bnhi;
@@ -180,7 +188,7 @@ static int 	HandleSingle
 (FILE* fd,int eoff) 
 #endif
 {
-	int n =0;
+	ng_size_t n =0;
 	unsigned char control_word[WORD_SIZE];
 	int done = 0;
 	int total = 0;
@@ -229,25 +237,16 @@ NhlErrorTypes _NclICrayBinNumRec
 ()
 #endif
 {
-        NclStackEntry data;
-        NclMultiDValData tmp_md;
         string *fpath;
         NclScalar missing;
         int     has_missing = 0;
-        unsigned char    control_word[WORD_SIZE];
         FILE* fd = NULL;
-        int ind;
-	int cb_off = 0;
-        int cb = 0;
-        int i;
-        int dimsize = 1;
-	long real_offset = 0;
+        ng_size_t dimsize = 1;
         long end_offset = 0;
         int total = 0;
         int len;
-        int n;
+        ng_size_t n;
         int index = 0;
-        char tmpc;
 	int done = 0;
 	unsigned char buffer[READ_SIZE];
 
@@ -358,8 +357,10 @@ NhlErrorTypes _NclICrayBinRecRead
 {
 	string *fpath;
 	int	*recnum;
-	int	*dimensions;
-	int	dimsize;
+	ng_size_t  *dimensions;
+	void  *tmp_dsz;
+	ng_size_t  dimsize;
+        NclBasicDataTypes type_dsz;
 	string *type;
 	NclScalar missing;
 	NclMultiDValData tmp_md;
@@ -371,11 +372,12 @@ NhlErrorTypes _NclICrayBinRecRead
 	char *cbin_buf,*tmp;
 	int cb;
 	int cb_off;
-	int i;
+	ng_size_t i;
 	int ind;
 	FILE* fd = NULL;
-	int size = 1;
-	int n;
+	ng_size_t size = 1;
+	ng_size_t tmp_size = 0;
+	ng_size_t n;
 	int cur_off = 0;
 	NhlErrorTypes ret = NhlNOERROR;
 	int done = 0;
@@ -410,16 +412,17 @@ NhlErrorTypes _NclICrayBinRecRead
 		return(NhlFATAL);
 	}
 	
-	dimensions = (int*)NclGetArgValue(
+	tmp_dsz = (void *)NclGetArgValue(
 		2,
 		4,
 		NULL,
 		&dimsize,
 		&missing,
 		&has_missing,
-		NULL,
+		&type_dsz,
 		0);
 
+	dimensions = get_dimensions(tmp_dsz,dimsize,type_dsz,"craybinrecread");
 	if(*dimensions!= -1) {
 		for(i = 0; i < 	dimsize; i++) {
 			if(missing.intval == *(dimensions + i)) {
@@ -429,7 +432,8 @@ NhlErrorTypes _NclICrayBinRecRead
 			size *= dimensions[i];
 		}
 	} else {
-		size = -1;
+/*		size = -1;*/
+		tmp_size = -1;
 	}
 	type = (string*)NclGetArgValue(
 		3,

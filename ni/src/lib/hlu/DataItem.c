@@ -42,7 +42,7 @@
 #define	Oset(field)	NhlOffset(NhlDataItemLayerRec,dataitem.field)
 static NhlResource resources[] = {
 	{ NhlNnoManager, NhlCnoManager, NhlTBoolean, sizeof(NhlBoolean),
-			Oset(no_manager), NhlTImmediate,(NhlPointer)False,
+		  Oset(no_manager), NhlTImmediate,_NhlUSET((NhlPointer)False),
           		_NhlRES_PRIVATE,NULL}
 };
 

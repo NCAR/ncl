@@ -10,9 +10,16 @@ NhlErrorTypes zonal_mpsi_W( void )
  * Input variables
  */
   void *v, *lat, *p, *ps;
-  double *tmp_v, *tmp_lat, *tmp_p, *tmp_ps;
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS], dsizes_lat[1];
-  int ndims_ps, dsizes_ps[NCL_MAX_DIMENSIONS], dsizes_p[1];
+  double *tmp_v = NULL;
+  double *tmp_lat;
+  double *tmp_p;
+  double *tmp_ps = NULL;
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lat[1];
+  int ndims_ps;
+  ng_size_t dsizes_ps[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_p[1];
   int has_missing_v;
   NclScalar missing_v, missing_dv, missing_rv;
   NclBasicDataTypes type_lat, type_v, type_p, type_ps;
@@ -20,14 +27,16 @@ NhlErrorTypes zonal_mpsi_W( void )
  * Output variables
  */
   void *zmpsi;
-  double *tmp_zmpsi;
-  int ndims_zmpsi, *dsizes_zmpsi;
+  double *tmp_zmpsi = NULL;
+  int ndims_zmpsi;
+  ng_size_t *dsizes_zmpsi;
   NclBasicDataTypes type_zmpsi;
 /*
  * Various.
  */
-  int i, index_v, index_ps, index_zmpsi, size_zmpsi;
-  int nlat, nlon, nlev, ntim, nlatlon, nlatlev, nlatlonlev, ret;
+  ng_size_t i, index_v, index_ps, index_zmpsi, size_zmpsi;
+  ng_size_t nlat, nlon, nlev, ntim, nlatlon, nlatlev, nlatlonlev;
+  int ret, inlon, inlat, inlev;
 /*
  * Retrieve parameters
  *
@@ -113,6 +122,18 @@ NhlErrorTypes zonal_mpsi_W( void )
       return(NhlFATAL);
     }
   }
+
+/*
+ * Test dimension sizes.
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX) || (nlev > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"zonal_mpsi: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  inlev = (int) nlev;
+
 /*
  * Coerce missing value to double.
  */
@@ -133,7 +154,7 @@ NhlErrorTypes zonal_mpsi_W( void )
   size_zmpsi  = ntim * nlatlev;
   ndims_zmpsi = ndims_v-1;
 
-  dsizes_zmpsi = (int*)calloc(ndims_zmpsi,sizeof(int));  
+  dsizes_zmpsi = (ng_size_t*)calloc(ndims_zmpsi,sizeof(ng_size_t));  
   if( dsizes_zmpsi == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"zonal_mpsi: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -257,8 +278,8 @@ NhlErrorTypes zonal_mpsi_W( void )
     
     if(type_zmpsi == NCL_double) tmp_zmpsi = &((double*)zmpsi)[index_zmpsi];
 
-    NGCALLF(dzpsidrv,DZPSIDRV)(&nlon,&nlat,&nlev,tmp_v,tmp_lat,tmp_p,tmp_ps,
-                               &missing_dv.doubleval,tmp_zmpsi);
+    NGCALLF(dzpsidrv,DZPSIDRV)(&inlon,&inlat,&inlev,tmp_v,tmp_lat,tmp_p,tmp_ps,
+                                 &missing_dv.doubleval,tmp_zmpsi);
 /*
  * Copy output values from temporary tmp_zmpsi to zmpsi.
  */

@@ -203,8 +203,8 @@ struct _NhlChildArgRec{
 typedef struct NhlGenArrayRec_ NhlGenArrayRec;
 struct NhlGenArrayRec_{
 	int		num_dimensions;
-	int		*len_dimensions;
-	int		num_elements;
+	ng_size_t	*len_dimensions;
+	ng_size_t	num_elements;
 	NrmQuark	typeQ;
 	unsigned int	size;
 	NhlPointer	data;
@@ -226,7 +226,7 @@ extern NhlGenArray _NhlAllocCreateGenArray(
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	int		*len_dimensions,/* number of dimensions	*/
+	ng_size_t	*len_dimensions,/* number of dimensions	*/
 	NhlBoolean	copy_data,	/* copy data pointer?	*/
 	_NhlAllocFunc	alloc_func	/* alloc func to use	*/
 #endif
@@ -238,7 +238,7 @@ extern NhlGenArray _NhlCreateGenArray(
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	int		*len_dimensions,/* number of dimensions	*/
+	ng_size_t	*len_dimensions,/* number of dimensions	*/
 	NhlBoolean	copy_data	/* copy data pointer?	*/
 #endif
 );

@@ -21,6 +21,10 @@
 MYNAME		= libhlu
 MYNAME_CAIRO	= libhlu_cairo
 
+#ifdef Build32BITS
+ALLDEFINES = $(ALLDEFINES) -DNCL32BITS
+#endif
+
 #ifdef BuildPNG
 PNG_DEF = -DBuildPNG
 #else
@@ -52,7 +56,7 @@ HDRS1   	= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		Transform.h TransformP.h TransformI.h VarArg.h \
 		View.h ViewI.h ViewP.h \
 		Workstation.h WorkstationI.h WorkstationP.h XWorkstation.h \
-		XWorkstationP.h XyPlot.h XyPlotP.h defs.h hluutil.h hlu.h \
+		XWorkstationP.h XyPlot.h XyPlotP.h NgSizeT.h defs.h hluutil.h hlu.h \
 		hluP.h DataComm.h DataCommP.h DataCommF.h DataItem.h \
 		DataItemP.h DataMgr.h DataMgrF.h DataMgrP.h Legend.h \
 		LegendP.h LabelBar.h LabelBarP.h  CoordArrTable.h \

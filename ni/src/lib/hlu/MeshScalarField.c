@@ -1,5 +1,5 @@
 /*
- *      $Id: MeshScalarField.c,v 1.8 2005-04-15 21:50:34 dbrown Exp $
+ *      $Id: MeshScalarField.c,v 1.8.4.1 2008-03-28 20:37:36 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -550,9 +550,8 @@ DataToFloatArray
 	NhlGenArray	ga,out_ga;
 	NhlBoolean	overwrite_ok = False;
 	int		out_len;
-	int		i,j;
+	int		i;
 	float		*ifp,*fp;
-	int		inlen_1;
 	float		tmp;
 	int		istart = sfp->istart - sfp->first_node_index;
 	int		iend = sfp->iend - sfp->first_node_index;
@@ -786,8 +785,7 @@ GetDataBounds
 	NhlString		entry_name;
 #endif
 {
-	NhlErrorTypes	ret = NhlNOERROR, subret = NhlNOERROR;
-	char		*e_text;
+	NhlErrorTypes	ret = NhlNOERROR;
 	int             i;
 	float           *cdata;
 
@@ -846,7 +844,6 @@ GetIndexBounds
 	NhlString		entry_name;
 #endif
 {
-	char			*e_text;
 	NhlErrorTypes		ret = NhlNOERROR;
 	int                     i;
 
@@ -866,7 +863,7 @@ GetIndexBounds
 	}
 	return ret;
 }
-
+#if 0
 /*
  * Function:	GetSubsetBounds
  *
@@ -1082,7 +1079,7 @@ GetSubsetBounds
 
 	return ret;
 }
-
+#endif
 
 /*
  * Function:	GetCoordBounds
@@ -1190,12 +1187,8 @@ CvtGenSFObjToFloatSFObj
 	NhlGenArray             x_cell_bounds = NULL, y_cell_bounds = NULL;
 	int                     istart,iend;
 	float                   xmin,xmax,ymin,ymax;
-	float			xstart,xend,ystart,yend;
-	float			sxstart,sxend,systart,syend;
-	int			ixstart,ixend,iystart,iyend;
-	NhlBoolean		xirr = False, yirr = False;
 	float			missing_value;
-	NhlBoolean		do_minmax,do_missing,new_data,overwrite_ok;
+	NhlBoolean		do_minmax,do_missing,new_data;
 	float			dmin,dmax,tmin,tmax;
 	NhlScalarFieldFloatLayer	sffl;
 	NhlScalarFieldFloatLayerPart	*sffp;
@@ -1519,8 +1512,6 @@ MeshScalarFieldClassPartInitialize
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR;
-	NhlMeshScalarFieldClass msfc = (NhlMeshScalarFieldClass) lc;
-	NhlScalarFieldClass     sfc = (NhlScalarFieldClass) msfc->base_class.superclass;
 
 	return ret;
 }
@@ -1844,7 +1835,7 @@ MeshScalarFieldInitialize
                 }
 	}
 	if ((sfp->x_cell_bounds && ! sfp->y_cell_bounds) ||
-	    sfp->y_cell_bounds && ! sfp->x_cell_bounds) {
+	    (sfp->y_cell_bounds && ! sfp->x_cell_bounds)) {
 		e_text = 
        "%s:If either %s or %s is specified, both must be specified and valid";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
@@ -2256,7 +2247,7 @@ MeshScalarFieldSetValues
 	}
 
 	if ((sfp->x_cell_bounds && ! sfp->y_cell_bounds) ||
-	    sfp->y_cell_bounds && ! sfp->x_cell_bounds) {
+	    (sfp->y_cell_bounds && ! sfp->x_cell_bounds)) {
 		sfp->x_cell_bounds = osfp->x_cell_bounds;
 		sfp->y_cell_bounds = osfp->y_cell_bounds;
 		e_text = 
@@ -2789,15 +2780,13 @@ static NhlErrorTypes    MeshScalarFieldGetValues
         int i;
         NrmQuark resQ;
 	NrmQuark typeQ = NrmNULLQUARK;
-	NhlPointer	data,value;
-	int		dlen[2];
+	NhlPointer	data;
+	ng_size_t       dlen[2];
 	int		ndim;
 	int		size;
 	NhlBoolean	nocopy = False, do_genarray;
-	float		tmp;
 	int		ival;
 	float		fval;
-	float		*farray;
 		
 	if (sfp->d_arr == NULL) {
 		e_text = "%s: internal inconsistency";

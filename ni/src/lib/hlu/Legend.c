@@ -868,10 +868,8 @@ static NhlErrorTypes LegendSetValues
 {
 	NhlLegendLayer		told = (NhlLegendLayer) old;
 	NhlLegendLayer		tnew = (NhlLegendLayer) new;
-	NhlLegendLayerPart	*olg_p = &(told->legend);
 	NhlLegendLayerPart	*lg_p = &(tnew->legend);
 	NhlErrorTypes		ret = NhlNOERROR,ret1 = NhlNOERROR;
-	char 			*e_text;
 	char			*entry_name = SetValues_Name;
 	int			view_args = 0;
 	NhlBoolean		do_scaling = False;
@@ -1052,7 +1050,8 @@ static NhlErrorTypes    InitializeDynamicArrays
 	NhlLegendLayer	tnew = (NhlLegendLayer) new;
 	NhlLegendLayerPart *lg_p = &(tnew->legend);
 	NhlErrorTypes ret = NhlNOERROR, ret_1;
-	int i,count;
+	int i;
+	ng_size_t  count;
 	int len_1, len_2;
 	char number[10];
 	NhlGenArray ga;
@@ -1823,7 +1822,8 @@ static NhlErrorTypes    ManageDynamicArrays
 	NhlLegendLayerPart *olg_p = &(told->legend);
 	NhlErrorTypes ret = NhlNOERROR, ret_1 = NhlNOERROR;
 	int i;
-	int count, len_1, len_2;
+	int len_1, len_2;
+	ng_size_t count;
 	char number[10];
 	char *entry_name = SetValues_Name;
 	char *e_text;

@@ -1,0 +1,158 @@
+/*
+ *      $Id$
+ */
+
+/************************************************************************
+*									*
+*			     Copyright (C)  2009			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+
+/*
+ *	File:		
+ *
+ *	Author:		Wei Huang
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Mon Jan 5 18:26:41 MST 2009
+ *
+ *	Description:	
+ */
+
+#include "NclTypelogical.h"
+#include "NclTypefloat.h"
+#include "NclTypeint.h"
+#include "NclTypelong.h"
+
+static NhlErrorTypes Ncl_Type_ubyte_print
+#if     NhlNeedProto
+(FILE *fp, void * val)
+#else
+(fp,val)
+FILE *fp;
+void *val;
+#endif
+{
+        unsigned char *lp = (unsigned char*)val;
+	int ret;
+
+        ret = nclfprintf(fp,"%u",*lp);
+
+	if(ret < 0) {
+                return(NhlWARNING);
+        } else {
+                return(NhlNOERROR);
+        }
+
+}
+
+
+
+
+
+
+static NhlErrorTypes Ncl_Type_ubyte_coerce
+#if	NhlNeedProto
+(void * result, void* from, ng_size_t n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
+#else
+(result, from, n, from_m, to_m, fc)
+void * result;
+void* from;
+ng_size_t n;
+NclScalar* from_m;
+NclScalar *to_m;
+NclTypeClass fc;
+#endif
+{
+	ng_size_t i;
+	unsigned char *res = (unsigned char*)result;
+	logical tmp;
+	NclTypeOp eq;
+	NclScalar tmp_mis;
+	
+
+        if((fc == NULL)||(fc->type_class.eq == NULL)
+                ||(result == NULL)
+                ||(from==NULL))
+                return(NhlFATAL);
+        else
+                eq = fc->type_class.eq;
+
+        if(to_m == NULL){  
+		tmp_mis.ubyteval = ((NclTypeClass)nclTypeubyteClass)->type_class.default_mis.ubyteval;
+        } else {
+		tmp_mis.ubyteval = to_m->ubyteval;
+	}
+
+	switch(fc->type_class.type) {
+        case Ncl_Typeubyte: {
+                unsigned char *fl = (unsigned char*)from;
+                if((from_m == NULL)||(to_m == NULL)) {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                *res = (unsigned char)*fl;
+                        }
+                } else {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                tmp = 0;
+                                (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+                                if(tmp) {
+                                        *res = tmp_mis.ubyteval;
+                                } else {
+                                        *res = *fl;
+                                }
+                        }
+                }
+                return(NhlNOERROR);
+        }
+	case Ncl_Typebyte: {
+		byte *fl = (byte*)from;
+
+		if((from_m == NULL)||(to_m == NULL)) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				*res = (unsigned char)*fl;
+			}
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = tmp_mis.ubyteval;
+				} else {
+					*res = (unsigned char)*fl;
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
+	default:
+		return(NhlFATAL);
+	}
+}
+static NhlErrorTypes Ncl_Type_ubyte_cmpf
+#if     NhlNeedProto
+(void *lhs, void* rhs, NclScalar* lhs_m, NclScalar *rhs_m,int digits, double* result)
+#else
+(lhs, rhs, lhs_m, rhs_m, digits, result)
+void *lhs;
+void* rhs;
+NclScalar* lhs_m;
+NclScalar *rhs_m;
+int digits;
+double * result;
+#endif
+{
+        
+        if((lhs_m != NULL)&&(lhs_m->ubyteval == *(unsigned char*)lhs)) {
+                return(NhlFATAL);
+        } else if((rhs_m != NULL)&&(rhs_m->ubyteval == *(unsigned char*)rhs)) {
+                return(NhlFATAL);
+        } else {
+                *result = (double)(*(unsigned char*)lhs-*(unsigned char*)rhs);
+                return(NhlNOERROR);
+        }
+        
+}
+

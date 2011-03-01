@@ -84,17 +84,18 @@ main()
  */
     int     appid, xworkid, plotid, dataid;
     int     grlist, rlist, i, j;
-    int     length[2];
+    ng_size_t    length[2];
     int     datadepid[1];
     int     *dspec = datadepid;
-    int     num_dspec;
+    ng_size_t   num_dspec;
     float   special_value = -9999.;
     float   cmap[NCOLORS][3];
 /*
  * Declare variables for getting information from netCDF file.
  */
     int     ncid, stid, stdmid, tempid, presid, windid, recid;
-    int     ndims, nvars, ngatts, nhour, numids = NSTATIONS;
+    int     ndims, nvars, ngatts, nhour; 
+    ng_size_t numids = NSTATIONS;
     int     num_values, have_value[NSTATIONS];
     long    stid_len, rec_len;
     long    ststart[2], stcount[2], var_index[1];

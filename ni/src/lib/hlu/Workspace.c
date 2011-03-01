@@ -5208,14 +5208,12 @@ NhlErrorTypes _NhlVvectr
 	char		*entry_name;
 #endif
 {
-	NhlErrorTypes	ret = NhlNOERROR;
 	char		*e_text;
 	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
 	NhlWorkspaceRec *awsrp = (NhlWorkspaceRec *) amap_ws;
 	int		save_mode;
 	NhlBoolean	done = False;
 	char		*e_msg;
-	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
 	int		err_num;
 	void		*awp,*fwp;
 
@@ -5384,14 +5382,12 @@ NhlErrorTypes _NhlStream
 	char		*entry_name;
 #endif
 {
-	NhlErrorTypes	ret = NhlNOERROR;
 	char		*e_text;
 	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
 	NhlWorkspaceRec *awsrp = (NhlWorkspaceRec *) amap_ws;
 	int		save_mode;
 	NhlBoolean	done = False;
 	char		*e_msg;
-	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
 	int		err_num;
 	void		*awp;
 

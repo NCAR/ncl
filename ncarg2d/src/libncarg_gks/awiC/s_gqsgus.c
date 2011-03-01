@@ -19,6 +19,8 @@
 
 #define min(x,y)    ((x) < (y) ? (x) : (y))
 
+extern void NGCALLF(gqsgus,GQSGUS)(Gint*,Gint*,Gint*,Gint*);
+
 void ginq_set_seg_names
 #ifdef NeedFuncProto
 (

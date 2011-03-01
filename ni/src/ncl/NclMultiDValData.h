@@ -1,13 +1,13 @@
 
 /*
- *      $Id: NclMultiDValData.h,v 1.6 2003-08-08 00:10:45 dbrown Exp $
+ *      $Id: NclMultiDValData.h,v 1.6.4.1 2008-03-28 20:37:51 grubin Exp $
  */
 /************************************************************************
-*									*
-*			     Copyright (C)  1994			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
+*                                                                       *
+*                   Copyright (C)  1994                                 *
+*           University Corporation for Atmospheric Research             *
+*                   All Rights Reserved                                 *
+*                                                                       *
 ************************************************************************/
 /*
  *	File:		
@@ -22,10 +22,11 @@
  */
 #ifndef NclMultiDValData_h
 #define NclMultiDValData_h
+
+#include    <stddef.h>
+
 #include "NclData.h"
 #include "NclType.h"
-
-#define NCL_DEFAULT_MISSING_VALUE -9999.0
 
 typedef enum {
 MULTID = 0,
@@ -43,9 +44,9 @@ typedef struct _NclMultiDValDataPart {
 	void *val;
 	NclMissingRec missing_value;
 	int n_dims;
-	int dim_sizes[NCL_MAX_DIMENSIONS];
-	int totalsize; /* bytes */
-	int totalelements; /* number of values*/
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
+	ng_size_t  totalsize;      /* bytes */
+	ng_size_t  totalelements;  /* number of values*/
 	NclSelectionRecord *sel_rec; /* Set only when creating data as a 
 					subsection */
 	NhlString hlu_type_rep[2];
@@ -83,7 +84,7 @@ unsigned int  /* obj_type_mask */,
 void * /* val */,
 NclScalar * /* missing_value */,
 int  /* n_dims */,
-int * /* dim_sizes */,
+ng_size_t * /*dim_sizes */,
 NclStatus  /* status */,
 NclSelectionRecord * /* sel_rec */,
 NclTypeClass /* type */

@@ -49,7 +49,8 @@ float xdra[NPTS], ydra[NPTS];
 main()
 {
     int     appid,xworkid,plotid,dataid[2];
-    int     rlist, i, j, len[2];
+    int     rlist, i, j;
+    ng_size_t len[2];
     float   x;
     float cmap[4][3];
     char datastr[10];

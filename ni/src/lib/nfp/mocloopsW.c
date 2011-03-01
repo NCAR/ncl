@@ -17,14 +17,14 @@ NhlErrorTypes moc_globe_atl_W( void )
  */
   void *lat_aux_grid;
   double *tmp_lat_aux_grid;
-  int dsizes_lat_aux_grid[1];
+  ng_size_t dsizes_lat_aux_grid[1];
   NclBasicDataTypes type_lat_aux_grid;
 /*
  * Argument # 1
  */
   void *a_wvel;
   double *tmp_a_wvel;
-  int dsizes_a_wvel[3];
+  ng_size_t dsizes_a_wvel[3];
   int has_missing_a_wvel;
   NclScalar missing_a_wvel, missing_dbl_a_wvel;
   NclBasicDataTypes type_a_wvel;
@@ -34,7 +34,7 @@ NhlErrorTypes moc_globe_atl_W( void )
  */
   void *a_bolus;
   double *tmp_a_bolus;
-  int dsizes_a_bolus[3];
+  ng_size_t dsizes_a_bolus[3];
   NclBasicDataTypes type_a_bolus;
 
 /*
@@ -42,7 +42,7 @@ NhlErrorTypes moc_globe_atl_W( void )
  */
   void *a_submeso;
   double *tmp_a_submeso;
-  int dsizes_a_submeso[3];
+  ng_size_t dsizes_a_submeso[3];
   NclBasicDataTypes type_a_submeso;
 
 /*
@@ -50,28 +50,31 @@ NhlErrorTypes moc_globe_atl_W( void )
  */
   void *tlat;
   double *tmp_tlat;
-  int dsizes_tlat[2];
+  ng_size_t dsizes_tlat[2];
   NclBasicDataTypes type_tlat;
 
 /*
  * Argument # 5
  */
   int *rmlak;
-  int dsizes_rmlak[3];
+  ng_size_t dsizes_rmlak[3];
 /*
  * Return variable
  */
   void *tmp;
   double *dtmp1, *dtmp2, *dtmp3;
-  int ndims_tmp, *dsizes_tmp;
+  int ndims_tmp;
+  ng_size_t *dsizes_tmp;
   NclBasicDataTypes type_tmp;
 
 
 /*
  * Various
  */
-  int nyaux, kdep, nlat, mlon, nlatmlon, kdepnlatmlon, kdepnyaux2, nrx;
-  int i, size_output, ret;
+  ng_size_t nyaux, kdep, nlat, mlon, nlatmlon, kdepnlatmlon, kdepnyaux2;
+  ng_size_t i, size_output;
+  int nrx, inlat, imlon, ikdep, inyaux;
+  int ret;
 
 /*
  * Retrieve parameters.
@@ -167,6 +170,19 @@ NhlErrorTypes moc_globe_atl_W( void )
   kdepnyaux2   = 2 * kdep * nyaux;
   nlatmlon     = nlat * mlon;
   kdepnlatmlon = kdep * nlatmlon;
+
+/*
+ * Test dimension sizes.
+ */
+  if((mlon > INT_MAX) || (nlat > INT_MAX) ||
+     (kdep > INT_MAX) || (nyaux > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: one or more input dimension sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  imlon = (int) mlon;
+  inlat = (int) nlat;
+  ikdep = (int) kdep;
+  inyaux = (int) nyaux;
 
   for(i = 0; i <= 2; i++) {
     if(dsizes_a_bolus[i] != dsizes_a_wvel[i] || 
@@ -276,7 +292,7 @@ NhlErrorTypes moc_globe_atl_W( void )
  * Allocate space for output dimension sizes and set them.
  */
   ndims_tmp  = 4;
-  dsizes_tmp = (int*)calloc(ndims_tmp,sizeof(int));  
+  dsizes_tmp = (ng_size_t*)calloc(ndims_tmp,sizeof(ng_size_t));  
   if( dsizes_tmp == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -290,7 +306,8 @@ NhlErrorTypes moc_globe_atl_W( void )
  * Call the Fortran routine.
  */
   nrx = 2;
-  NGCALLF(mocloops,MOCLOOPS)(&nyaux, &mlon, &nlat, &kdep, &nrx, tmp_tlat, 
+
+  NGCALLF(mocloops,MOCLOOPS)(&inyaux, &imlon, &inlat, &ikdep, &nrx, tmp_tlat, 
                              tmp_lat_aux_grid, rmlak, tmp_a_wvel, tmp_a_bolus, 
                              tmp_a_submeso, &missing_dbl_a_wvel.doubleval, 
                              dtmp1, dtmp2, dtmp3);

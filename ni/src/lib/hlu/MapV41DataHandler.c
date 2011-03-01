@@ -20,9 +20,18 @@
  *	Description:	
  */
 
+/* Uncomment this to write out tables of the recognized map boundaries, with area id info, etc. in html  */
 /*#define HLU_WRITE_TABLES*/
 
 #include <ncarg/hlu/MapV41DataHandlerP.h>
+#include <ctype.h>
+
+#define Oset(field)	NhlOffset(NhlMapV41DataHandlerLayerRec,mapv41dh.field)
+static NhlResource resources[] = {
+	{NhlNmpDataSetName,NhlCmpDataSetName,NhlTString,
+		 sizeof(NhlString),Oset(data_set_name),NhlTImmediate,
+		 _NhlUSET((NhlPointer) NULL),0,NULL}
+};
 
 static NhlErrorTypes MapV41DHClassPartInit(
 #if	NhlNeedProto
@@ -112,8 +121,8 @@ NhlMapV41DataHandlerClassRec NhlmapV41DataHandlerClassRec = {
 /* superclass		*/      (NhlClass)&NhlmapDataHandlerClassRec,
 /* cvt_table		*/	NULL,
 
-/* layer_resources 	*/   	NULL,
-/* num_resources 	*/     	0,
+/* layer_resources 	*/   	resources,
+/* num_resources 	*/     	NhlNumber(resources),
 /* all_resources 	*/	NULL,
 /* callbacks		*/	NULL,
 /* num_callbacks	*/	0,
@@ -154,9 +163,7 @@ static NhlMapV41DataHandlerClassPart	*Mv41cp;
 static NhlMapV41DataHandlerLayerPart	*Mv41p;
 static NhlMapDataHandlerLayerPart *Mdhp;
 static NhlBoolean Grid_Setup;
-static mpDrawOp Draw_Op;
 static NhlBoolean Count_Points_Only = False;
-static NhlString Last_Data_Set_Name = NULL;
 
 static mpDrawIdRec *DrawIds = NULL;
 static int	    DrawIdCount = 0;
@@ -169,7 +176,7 @@ static char OutBuf[512];
 static NhlString DefDataSetName = "Earth..2";
 
 
-static char *BorderWater[] = {
+static char *BorderWater_1[] = {
 "ocean",
 "aral sea (eurasia)",
 "azov sea (eurasia)",
@@ -182,8 +189,8 @@ static char *BorderWater[] = {
 "lake tanganyika (africa)",
 "lake titicaca (south america)",
 "lake victoria (africa)",
-"lake champlain (north america)",
 
+"lake champlain (north america)",
 "lake erie (north america)",
 "lake george (north america)",
 "lake of the woods (north america)",
@@ -209,14 +216,56 @@ static char *BorderWater[] = {
 
 };
 
-static int BorderWaterEids[NhlNumber(BorderWater)];
+static char *BorderWater_4[] = {
+
+"ocean",
+
+"aral sea",
+"azov sea",
+"black sea",
+"caspian sea",
+"lake albert",
+"lake chad",
+"lake kariba",
+"lake malawi",
+"lake tanganyika",
+"lake titicaca",
+"lake victoria",
+
+"lake champlain",
+"lake erie",
+"lake george",
+"lake of the woods",
+"lake ontario",
+"lake saint clair",
+"lake superior",
+"lakes michigan and huron",
+"namakan lake",
+"rainy lake",
+"sault sainte marie",  /* national count */
+
+"clark hill reservoir",
+"lake mead",
+"lake seminole",
+"lake tahoe",
+"lake texoma",
+"sabine lake",     /* state count */
+
+"great salt lake",
+"lake maurepas",
+"lake okeechobee",
+"lake pontchartrain"
+};
+
+static char **BorderWater;
 static int GeoBorderWaterCount = 1;
 static int NatBorderWaterCount = 23;
 static int StateBorderWaterCount = 29;
-static int CountyBorderWaterCount = NhlNumber(BorderWater);
+static int CountyBorderWaterCount = 33;
 static int USStartIndex = 13; /* this is for  NhlGEOPHYSICALANDUSSTATES */
+static int BorderWaterEids[33];
 
-static NrmQuark RDatasets[4];
+static NrmQuark RDatasets[5];
 
 /*
  * special entity recs for broad subcategories
@@ -309,7 +358,6 @@ static char *SimplifyString(char *string)
 {
 	char *cp = string;
         char *bp = OutBuf;
-        NhlBoolean last_space = False;
 
 	while (*cp != '\0') {
                 switch (*cp) {
@@ -344,7 +392,6 @@ static char *UpNameHierarchy
 #endif
 {
         char *cp,*bcp;
-        int i;
 
         cp = string;
         
@@ -377,8 +424,6 @@ MapV41DHClassPartInit
 #endif
 {
 	NhlMapV41DataHandlerClass	mdhc = (NhlMapV41DataHandlerClass)lc;
-	NhlErrorTypes		ret = NhlNOERROR;
-        NhlString		entry_name = "MapV41DHClassPartInit";
         
 	Qstring = NrmStringToQuark(NhlTString);
 	Qarea_names = NrmStringToQuark(NhlNmpAreaNames);
@@ -454,8 +499,7 @@ static NhlErrorTypes Init_Entity_Recs
 {
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
 	char *e_text;
-        int i,j,us_ix=0;
-        int us_child_count[3] = {0,0,0};
+        int i,j;
         LongNameRec *lname_recs;
         char lname_buf[256];
 	NrmQuark cur_dataset_q;
@@ -463,7 +507,8 @@ static NhlErrorTypes Init_Entity_Recs
 	RDatasets[0] = NrmStringToQuark("Earth..1");
 	RDatasets[1] = NrmStringToQuark("Earth..2");
 	RDatasets[2] = NrmStringToQuark("Earth..3");
-	RDatasets[3] = NrmNULLQUARK;
+	RDatasets[3] = NrmStringToQuark("Earth..4");
+	RDatasets[4] = NrmNULLQUARK;
 
         mv41p->entity_recs = NhlMalloc
                 (sizeof(v41EntityRec) * mv41p->entity_rec_count);
@@ -641,23 +686,38 @@ static NhlErrorTypes Init_Entity_Recs
                c_mpname(UsIds[2]),us_child_count[2]);
 #endif                
 
-	cur_dataset_q = NrmStringToQuark(mv41l->mapdh.data_set_name);
+	cur_dataset_q = NrmStringToQuark(mv41p->data_set_name);
 	for (i = 0; RDatasets[i] != NrmNULLQUARK; i++) {
-		if (cur_dataset_q == RDatasets[i])
+		if (cur_dataset_q == RDatasets[i]) {
+			if (i == 3)
+				BorderWater = BorderWater_4;
+			else
+				BorderWater = BorderWater_1;
 			break;
+		}
 	}
-	if (RDatasets[i] == NrmNULLQUARK)
+	if (RDatasets[i] == NrmNULLQUARK) {
+		if (lname_recs != NULL) {
+			for (i = 0; i < mv41p->entity_rec_count; i++) {
+				NhlFree(lname_recs[i].lname);
+			}
+			NhlFree(lname_recs);
+		}
 		return (NhlNOERROR);
+	}
+#if 0
+	printf("initializing dataset %s\n",mv41p->data_set_name);
+#endif
 		
+	memset(BorderWaterEids,0,sizeof(int) * CountyBorderWaterCount);
 	j = 0;
-	memset(BorderWaterEids,0,sizeof(int) * NhlNumber(BorderWater));
-	for (i = 0; i < NhlNumber(BorderWater); i++) {
+	for (i = 0; i < CountyBorderWaterCount; i++) {
 		int found = 0;
 		while (! found) {
 			if (j == mv41p->entity_rec_count) {
 				j = 0;
 #if 0				
-				printf("recycling j at %d\n",i);
+				printf("recycling j at i=%d, \n",i);
 #endif
 			}
 			if (! strcmp(mv41p->alpha_recs[j]->name,BorderWater[i])) {
@@ -672,6 +732,10 @@ static NhlErrorTypes Init_Entity_Recs
 			j++;
 		}
 	}
+        for (i = 0; i < mv41p->entity_rec_count; i++) {
+		NhlFree(lname_recs[i].lname);
+	}
+	NhlFree(lname_recs);
 		
 	return NhlNOERROR;
 }    
@@ -720,7 +784,7 @@ static NhlErrorTypes SetUpEntityRecs
 	Mv41p->basic_ids.water_id = WaterId = -1;
 	Mv41p->basic_ids.ocean_id = OceanId = -1;
 
-	c_mplnri(mv41l->mapdh.data_set_name);
+	c_mplnri(Mv41p->data_set_name);
         
 	for (i = 1; ;i++) {
 		int type = NGCALLF(mpiaty,MPIATY)(&i);
@@ -756,7 +820,7 @@ static NhlErrorTypes SetUpEntityRecs
 	Mv41p->basic_ids.us_id_count = UsIdCount = us_ix;
 	Mv41p->entity_rec_count = Mv41p->outline_rec_count = i-1;
 
-	if (! strcmp(mdhp->data_set_name,DefDataSetName)) {
+	if (! strcmp(Mv41p->data_set_name,DefDataSetName)) {
 		if (! Mv41cp->entity_rec_count) {
 			ret = Init_Entity_Recs(mv41l,entry_name);
 			if (ret < NhlWARNING) {
@@ -827,11 +891,11 @@ static NhlErrorTypes    mdhManageDynamicArrays
 	NhlMapDataHandlerLayerPart	*omdhp = &(mv4old->mapdh);
         NhlMapV41DataHandlerLayerPart	*mv41p = &mv4new->mapv41dh;
         
-	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 	char *entry_name;
 	char *e_text;
 	NhlGenArray ga;
-	int i,count;
+	int i;
 	int *ip;
 	NhlString *sp;
 	NhlBoolean need_check;
@@ -1068,12 +1132,12 @@ MapV41DHInitialize
 	mv41p->alpha_recs = NULL;
 	mv41p->long_alpha_recs = NULL;
 
-	if (mdhp->data_set_name) {
-		dsname = (char*)_NGResolvePath(mdhp->data_set_name);
+	if (mv41p->data_set_name) {
+		dsname = (char*)_NGResolvePath(mv41p->data_set_name);
 		if(!dsname){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"%s:Unable to resolve path name for \"%s\", defaulting %s",
-				  entry_name,mdhp->data_set_name,
+				  entry_name,mv41p->data_set_name,
 				  NhlNmpDataSetName);
 			ret = NhlWARNING;
 		}
@@ -1081,12 +1145,12 @@ MapV41DHInitialize
 	if (! dsname) {
 		dsname = DefDataSetName;
 	}
-	mdhp->data_set_name = NhlMalloc(strlen(dsname)+1);
-	if(!mdhp->data_set_name){
+	mv41p->data_set_name = NhlMalloc(strlen(dsname)+1);
+	if(! mv41p->data_set_name){
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return NhlFATAL;
 	}
-	strcpy(mdhp->data_set_name,dsname);
+	strcpy(mv41p->data_set_name,dsname);
 
 	SetUpEntityRecs(mv41l,entry_name);
         
@@ -1142,36 +1206,38 @@ static NhlErrorTypes MapV41DHSetValues
 {
         NhlMapV41DataHandlerLayer mv41l = (NhlMapV41DataHandlerLayer) new;
 	NhlMapDataHandlerLayerPart *mdhp = &(mv41l->mapdh);
+	NhlMapV41DataHandlerLayerPart *mv41p = &(mv41l->mapv41dh);
         NhlMapV41DataHandlerLayer omv41l = (NhlMapV41DataHandlerLayer) old;
 	NhlMapDataHandlerLayerPart *omdhp = &(omv41l->mapdh);
+	NhlMapV41DataHandlerLayerPart *omv41p = &(omv41l->mapv41dh);
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "MapV41DHSetValues";
 	char			*e_text;
 	char			*dsname = NULL;
 
-	if (mdhp->data_set_name != omdhp->data_set_name) {
-		if (mdhp->data_set_name) {
-			dsname = (char*)_NGResolvePath(mdhp->data_set_name);
+	if (mv41p->data_set_name != omv41p->data_set_name) {
+		if (mv41p->data_set_name) {
+			dsname = (char*)_NGResolvePath(mv41p->data_set_name);
 			if(!dsname){
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"%s:Unable to resolve path name for \"%s\", defaulting %s",
-					  entry_name,mdhp->data_set_name,
+					  entry_name,mv41p->data_set_name,
 					  NhlNmpDataSetName);
 				ret = NhlWARNING;
-				dsname = omdhp->data_set_name;
+				dsname = omv41p->data_set_name;
 			}
 		}
 		if (! dsname)
 			dsname = DefDataSetName;
-		mdhp->data_set_name = NhlMalloc(strlen(dsname)+1);
-		if(!mdhp->data_set_name){
+		mv41p->data_set_name = NhlMalloc(strlen(dsname)+1);
+		if(!mv41p->data_set_name){
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return NhlFATAL;
 		}
-		strcpy(mdhp->data_set_name,dsname);
-		if (omdhp->data_set_name) {
-			NhlFree(omdhp->data_set_name);
-			omdhp->data_set_name = NULL;
+		strcpy(mv41p->data_set_name,dsname);
+		if (omv41p->data_set_name) {
+			NhlFree(omv41p->data_set_name);
+			omv41p->data_set_name = NULL;
 		}
 		SetUpEntityRecs(mv41l,entry_name);
 	}
@@ -1180,7 +1246,7 @@ static NhlErrorTypes MapV41DHSetValues
 		 * this is necessary to ensure that Ezmap is using the
 		 * correct data set.
 		 */
-		c_mplnri(mv41l->mapdh.data_set_name);
+		c_mplnri(mv41p->data_set_name);
 	}
 
 		
@@ -1228,9 +1294,8 @@ static NhlGenArray BuildAreaNamesGenArray
         NhlMapDataHandlerLayerPart 	*mdhp = &mv41l->mapdh;
         NhlMapV41DataHandlerLayerPart	*mv41p = &mv41l->mapv41dh;
 	char *e_text;
-	int i;
 	NhlGenArray ga;
-        int entity_rec_count;
+        ng_size_t i, entity_rec_count;
         v41EntityRec *entity_recs;
         v41EntityRec **long_alpha_recs;
         char lbuf[512];
@@ -1321,9 +1386,10 @@ static NhlGenArray mdhGetNewGenArray
         NhlMapDataHandlerLayerPart 	*mdhp = &mv41l->mapdh;
         NhlMapV41DataHandlerLayerPart	*mv41p = &mv41l->mapv41dh;
 	char *e_text;
-	int i, len;
+	int i;
+	ng_size_t len;
 	NhlGenArray ga;
-        int entity_rec_count;
+        ng_size_t entity_rec_count;
         v41EntityRec *entity_recs;
         v41EntityRec **long_alpha_recs;
         char lbuf[512];
@@ -1438,7 +1504,6 @@ static NhlGenArray mdhGetNewGenArray
         }
 	else if (quark == Qdynamic_groups) {
 		int	*ip;
-		int	index = quark == Qdynamic_groups ? 1 : 0;
 
 		len = entity_rec_count;
 		if ((ip = NhlMalloc(sizeof(int)*len)) == NULL) {
@@ -1530,8 +1595,6 @@ static NhlGenArray mdhGenArraySubsetCopy
  * Function:    MapV41DHGetValues
  *
  * Description: Retrieves the current setting of MapV41DataHandler resources.
- *      Actually the resources belong to the superclass MapDataHandler --
- *      but they get their contents from the subclass.
  *
  *
  * In Args:
@@ -1562,7 +1625,7 @@ static NhlErrorTypes    MapV41DHGetValues
 {
         NhlMapV41DataHandlerLayer mv41l = (NhlMapV41DataHandlerLayer) l;
         NhlMapDataHandlerLayerPart *mdhp = &mv41l->mapdh;
-        NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
+        NhlMapV41DataHandlerLayerPart	*mv41p = &mv41l->mapv41dh;
         NhlGenArray ga;
 	NhlString ts;
         NhlString e_text,entry_name = "MapV41DHGetValues";
@@ -1624,7 +1687,7 @@ static NhlErrorTypes    MapV41DHGetValues
 		}
 		ts = NULL;
 		if(args[i].quark == Qdata_set_name){
-			ts = mdhp->data_set_name;
+			ts = mv41p->data_set_name;
 		}
                 if (ts != NULL) {
 			*((NhlString*)(args[i].value.ptrval)) =
@@ -1648,7 +1711,7 @@ static NhlErrorTypes    MapV41DHGetValues
 /*
  * Function:    MapV41DHDestroy
  *
- * Description: Retrieves the current setting of MapV41DataHandler resources.
+ * Description: Destroys memory specifically the responsibility of the V41 Map DataHandler
  *      Actually the resources belong to the superclass MapDataHandler --
  *      but they get their contents from the subclass.
  *
@@ -1659,14 +1722,6 @@ static NhlErrorTypes    MapV41DHGetValues
  *
  * Return Values:
  *
- * Side Effects:
- *      Memory is allocated when any of the following resources are retrieved:
- *		NhlNmpAreaNames
- *		NhlNmpAreaTypes
- *		NhlNmpDynamicAreaGroups
- *		NhlNmpSpecifiedFillColors
- *
- *      The caller is responsible for freeing this memory.
  */
 
 static NhlErrorTypes    MapV41DHDestroy
@@ -1706,6 +1761,9 @@ static NhlErrorTypes    MapV41DHDestroy
 		NhlFree(mv41p->long_alpha_recs);
 	}
 
+	if (mv41p->data_set_name) NhlFree(mv41p->data_set_name);
+
+
         return NhlNOERROR;
 }
 
@@ -1725,7 +1783,6 @@ static int fill_sort
         v41SpecFillRec frec2 = *(v41SpecFillRec *) p2;
         int lev1,lev2;
         int pix;
-        int ret = 0;
 /*
  * The draw id records are set up based on the specified fill records -
  * Later entries in the list modify the list last, and therefore override
@@ -1809,8 +1866,6 @@ static NhlErrorTypes    ExpandSpecFillRecord
 
         for (i = 0; i < mv41p->entity_rec_count; i++) {
                 int count = mv41p->fill_rec_count;
-		int plevel;
-		int is_child = 0;
 		v41EntityRec *erec = mv41p->alpha_recs[i];
 
 		if (! c_mpipai(erec->eid,eid))
@@ -1839,6 +1894,7 @@ static NhlErrorTypes    ExpandSpecFillRecord
 		mv41p->fill_recs[count].level = level;
 		mv41p->fill_rec_count++;
 	}
+	return NhlNOERROR;
 }
 
 
@@ -1878,7 +1934,7 @@ static NhlErrorTypes    UpdateSpecFillRecords
 {
         NhlMapDataHandlerLayerPart *mdhp = &mv41l->mapdh;
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
         char *comp_string, *parent_string = NULL;
         char *e_text;
 	NhlString *area_names = NULL;
@@ -2148,7 +2204,6 @@ static int outline_sort
         v41SpecLineRec lrec2 = *(v41SpecLineRec *) p2;
         int lev1,lev2;
         int pix;
-        int ret = 0;
 /*
  * The draw id records are set up based on the specified outline records -
  * Later entries in the list modify the list last, and therefore override
@@ -2224,9 +2279,8 @@ static NhlErrorTypes    UpdateSpecLineRecords
         NhlString			entry_name;
 #endif
 {
-        NhlMapDataHandlerLayerPart *mdhp = &mv41l->mapdh;
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
         char *comp_string, *parent_string = NULL;
 	NhlString *area_names = NULL;
         char *e_text;
@@ -2379,7 +2433,6 @@ static NhlErrorTypes    mv41BuildOutlineDrawList
         NhlString			entry_name;
 #endif
 {
-        NhlMapDataHandlerLayerPart *mdhp = &mv41l->mapdh;
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	int			i;
@@ -2453,7 +2506,7 @@ static NhlErrorTypes MapV41DHUpdateDrawList
 		(NhlMapV41DataHandlerLayer) instance;
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
 	NhlMapPlotLayerPart	*mpp = &(newmp->mapplot);
-	NhlString e_text, entry_name = "MapV41DHUpdateDrawList";
+	NhlString entry_name = "MapV41DHUpdateDrawList";
         NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
         NhlBoolean build_fill_list = False, build_outline_list = False;
         
@@ -2545,9 +2598,8 @@ static int (_NHLCALLF(hlumapfill,HLUMAPFILL))
 	int *nai;
 #endif
 {
-	int ix, pat_ix, col_ix, id;
+	int pat_ix, col_ix;
 	float fscale;
-	unsigned char s_ix;
         int i,gid,geo_ix = -1 ,vs_ix = -1;
 
 	if (Mpp == NULL) return 0;
@@ -2707,8 +2759,7 @@ static NhlErrorTypes mpSetUpFillDrawList
 #endif
 {
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
+	NhlErrorTypes		ret = NhlNOERROR;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
 	int	i;
 
@@ -2738,7 +2789,6 @@ static NhlErrorTypes mpSetUpFillDrawList
         for (i = 0; i < mv41p->fill_rec_count; i++) {
                 int eid = mv41p->fill_recs[i].eid;
                 int spec_fill_index = mv41p->fill_recs[i].spec_ix;
-                int spec_level = c_mpiaty(eid);
                 int j;
                 
                 mv41p->fill_recs[i].spec_col = 0;
@@ -2811,7 +2861,7 @@ static NhlErrorTypes mpSetUpAreamap
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
-	int			aws_id = -1,i;
+	int			aws_id = -1;
 	int			last_fill_level;
 	int			req_size;
 
@@ -2823,7 +2873,7 @@ static NhlErrorTypes mpSetUpAreamap
 	    last_fill_level != mv41p->min_fill_level) {
 		mv41p->data_set_point_count = 0;
 		Count_Points_Only = True;
-		c_mplndr(mv41l->mapdh.data_set_name,mv41p->min_fill_level);
+		c_mplndr(mv41p->data_set_name,mv41p->min_fill_level);
 		Count_Points_Only = False;
 	}
 
@@ -2856,9 +2906,6 @@ static NhlErrorTypes mpSetUpAreamap
 	}
 	
 	if (! _NhlWorkspaceDataIntact(aws_id) || mv41p->new_amap_req ) {
-                float fl,fr,fb,ft,ul,ur,ub,ut;
-                int ll;
-                float xp[5],yp[5];
                 
 		c_mpseti("VS",1);
 		c_mpseti("G2",2);
@@ -2868,7 +2915,7 @@ static NhlErrorTypes mpSetUpAreamap
 		subret = _NhlArinam(*aws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
                 subret = _NhlMplnam
-                        (*aws,mv41l->mapdh.data_set_name,
+                        (*aws,mv41p->data_set_name,
 			 mv41p->min_fill_level,entry_name);
                 if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
                 if (mpp->dump_area_map)
@@ -2910,9 +2957,7 @@ static NhlErrorTypes mpFill
 	NhlString			entry_name;
 #endif
 {
-        NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
         NhlWorkspace		*aws = NULL;
 
         subret = mpSetUpAreamap(mv41l,mpl,&aws,entry_name);
@@ -2969,8 +3014,7 @@ static int (_NHLCALLF(hlumaskgrid,HLUMASKGRID))
 #endif
 {
 	NhlBoolean draw_line = False;
-	int i,id,ix = 0;
-	int type;
+	int i;
         int geo_ix = -1 ,vs_ix = -1;
         
 	if (Mpp == NULL) return 0;
@@ -3089,13 +3133,9 @@ static NhlErrorTypes mpGrid
 	NhlString			entry_name;
 #endif
 {
-        NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
 	NhlWorkspace		*aws;
-        float flx,frx,fby,fuy,wlx,wrx,wby,wuy,lon1,lon2,lat1,lat2,spacing;
-	float avlat,avlon;
-	int ll,status;
         float pole_param;
 
 	Grid_Setup = False;
@@ -3163,7 +3203,7 @@ static NhlErrorTypes mpOutline
 #endif
 {
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
 	int			i;
 
@@ -3207,7 +3247,6 @@ static NhlErrorTypes mpOutline
         for (i = 0; i < mv41p->outline_rec_count; i++) {
                 int eid = mv41p->outline_recs[i].eid;
 		char eidname[128];
-                int spec_level = c_mpiaty(eid);
                 int j;
 
 		strcpy(eidname,c_mdname(eid));
@@ -3231,7 +3270,7 @@ static NhlErrorTypes mpOutline
                 }
         }
 
-        c_mplndr(mv41l->mapdh.data_set_name,mv41p->min_outline_level);
+        c_mplndr(mv41p->data_set_name,mv41p->min_outline_level);
         
 	return ret;
 }
@@ -3255,8 +3294,8 @@ static NhlErrorTypes MapV41DHDrawMapList
         NhlMapV41DataHandlerLayer mv41l = 
 		(NhlMapV41DataHandlerLayer) instance;
 	NhlMapPlotLayerPart	  *mpp = &mpl->mapplot;
-	NhlString e_text, entry_name = "MapV41DHDrawMapList";
-        NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlString entry_name = "MapV41DHDrawMapList";
+        NhlErrorTypes ret = NhlNOERROR;
 	int i;
         
 	Mpp = mpp;
@@ -3268,7 +3307,7 @@ static NhlErrorTypes MapV41DHDrawMapList
 	 * this is necessary to ensure that Ezmap is using the
 	 * correct data set.
 	 */
-	c_mplnri(mv41l->mapdh.data_set_name);
+	c_mplnri(Mv41p->data_set_name);
 
         if (DrawIdCount < Mv41p->entity_rec_count) {
                 DrawIds = NhlRealloc
@@ -3287,12 +3326,17 @@ static NhlErrorTypes MapV41DHDrawMapList
 	OceanId = Mv41p->basic_ids.ocean_id;
         
         switch (draw_op) {
-            case mpDRAWFILL:
-                    return mpFill(mv41l,mpl,entry_name);
-            case mpDRAWOUTLINE:
-                    return mpOutline(mv41l,mpl,entry_name);
-            case mpDRAWGRID:
-                    return mpGrid(mv41l,mpl,entry_name);
+	case mpDRAWFILL:
+		ret = mpFill(mv41l,mpl,entry_name);
+		break;
+	case mpDRAWOUTLINE:
+		ret = mpOutline(mv41l,mpl,entry_name);
+		break;
+	case mpDRAWGRID:
+		ret =  mpGrid(mv41l,mpl,entry_name);
+		break;
+	default:
+		break;
         }
 
 	Mpp = NULL;
@@ -3472,7 +3516,6 @@ static void SetLineAttrs
                 float	p0,p1,jcrt;
                 int	slen;
                 char	buffer[128];
-		int     i;
                 
                 dpat = dash_pattern % Mpp->dash_table->num_elements;
                 sp = (NhlString *) Mpp->dash_table->data;

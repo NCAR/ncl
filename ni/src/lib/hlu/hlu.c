@@ -45,7 +45,7 @@
  *		for memory allocation in one place and so we can impliment
  *		our own memory management code if we need to.
  *
- * In Args:	unsigned int	size	size of memory requested
+ * In Args:	ng_usize_t	size	size of memory requested
  *
  * Out Args:	
  *
@@ -57,11 +57,11 @@ void
 *NhlMalloc
 #if	NhlNeedProto
 (
-	unsigned int	size	/* size of memory requested	*/
+	ng_usize_t	size	/* size of memory requested	*/
 )
 #else
 (size)
-	unsigned int	size;	/* size of memory requested	*/
+	ng_usize_t	size;	/* size of memory requested	*/
 #endif
 {
 	void *ptr;
@@ -86,7 +86,7 @@ void
  *		our own memory management code if we need to.
  *
  * In Args:	void		*ptr	pointer to old memory
- *		unsigned int	size	size of memory requested
+ *		ng_usize_t	size	size of memory requested
  *
  * Out Args:	
  *
@@ -99,12 +99,12 @@ void
 #if	NhlNeedProto
 (
 	void		*ptr,	/* pointer to old memory	*/
-	unsigned int	size	/* size of memory requested	*/
+	ng_usize_t	size	/* size of memory requested	*/
 )
 #else
 (ptr,size)
 	void		*ptr;	/* pointer to old memory	*/
-	unsigned int	size;	/* size of memory requested	*/
+	ng_usize_t	size;	/* size of memory requested	*/
 #endif
 {
 	void *tptr;
@@ -912,7 +912,7 @@ _NhlAllocCreateGenArray
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	int		*len_dimensions,/* number of dimensions	*/
+	ng_size_t	*len_dimensions,/* number of dimensions	*/
 	NhlBoolean	copy_data,	/* copy data pointer?	*/
 	_NhlAllocFunc	alloc_func	/* func to alloc	*/
 )
@@ -921,8 +921,8 @@ _NhlAllocCreateGenArray
 	NhlPointer	data;			/* data array		*/
 	NhlString	type;			/* type of each element	*/
 	unsigned int	size;			/* size of each element	*/
-	int		num_dimensions;		/* number of dimensions	*/
-	int		*len_dimensions;	/* number of dimensions	*/
+	int	num_dimensions;		/* number of dimensions	*/
+	ng_size_t	*len_dimensions;	/* number of dimensions	*/
 	NhlBoolean	copy_data;		/* copy data pointer?	*/
 	_NhlAllocFunc	alloc_func;		/* func to alloc	*/
 #endif
@@ -966,7 +966,7 @@ _NhlAllocCreateGenArray
 	}
 	else{
 		gen->num_dimensions = num_dimensions;
-		gen->len_dimensions = alloc_func(num_dimensions * sizeof(int));
+		gen->len_dimensions = alloc_func(num_dimensions * sizeof(ng_size_t));
 		if(gen->len_dimensions == NULL)
 			return NULL;
 		gen->num_elements = 1;
@@ -1043,7 +1043,7 @@ _NhlCreateGenArray
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	int		*len_dimensions,/* number of dimensions	*/
+	ng_size_t	*len_dimensions,/* number of dimensions	*/
 	NhlBoolean	copy_data	/* copy data pointer?	*/
 )
 #else
@@ -1052,7 +1052,7 @@ _NhlCreateGenArray
 	NhlString	type;			/* type of each element	*/
 	unsigned int	size;			/* size of each element	*/
 	int		num_dimensions;		/* number of dimensions	*/
-	int		*len_dimensions;	/* number of dimensions	*/
+	ng_size_t	*len_dimensions;	/* number of dimensions	*/
 	NhlBoolean	copy_data;		/* copy data pointer?	*/
 #endif
 {
@@ -1084,7 +1084,7 @@ NhlCreateGenArray
 	NhlString	type,		/* type of each element	*/
 	unsigned int	size,		/* size of each element	*/
 	int		num_dimensions,	/* number of dimensions	*/
-	int		*len_dimensions	/* number of dimensions	*/
+	ng_size_t	*len_dimensions	/* number of dimensions	*/
 )
 #else
 (data,type,size,num_dimensions,len_dimensions)
@@ -1092,7 +1092,7 @@ NhlCreateGenArray
 	NhlString	type;			/* type of each element	*/
 	unsigned int	size;			/* size of each element	*/
 	int		num_dimensions;		/* number of dimensions	*/
-	int		*len_dimensions;	/* number of dimensions	*/
+	ng_size_t	*len_dimensions;	/* number of dimensions	*/
 #endif
 {
 	return
@@ -1177,7 +1177,7 @@ NhlFreeGenArray
 
 	if(gen->my_data){
 		if(gen->typeQ == QString){
-			int i;
+			int	 i;
 			NhlString	*table = gen->data;
 
 			for(i=0;i<gen->num_elements;i++)
@@ -1251,7 +1251,7 @@ NhlErrorTypes _NhlValidatedGenArrayCopy
 #if NhlNeedProto
 	(NhlGenArray	*gto, 
 	 NhlGenArray	gfrom,
-	 int		max_el,
+	 ng_size_t	max_el,
 	 NhlBoolean	copy_data,
 	 NhlBoolean	exact_count,
 	 char		*res_name,
@@ -1260,7 +1260,7 @@ NhlErrorTypes _NhlValidatedGenArrayCopy
 (gto,gfrom,max_el,copy_data,exact_count,res_name,caller)
 	NhlGenArray	*gto; 
 	NhlGenArray	gfrom;
-	int		max_el;
+	ng_size_t	max_el;
 	NhlBoolean	copy_data;
 	NhlBoolean	exact_count;
 	char		*res_name;
@@ -1268,8 +1268,8 @@ NhlErrorTypes _NhlValidatedGenArrayCopy
 #endif
 {
 	char		*e_text;
-	int		i;
-	int		el_count;
+	ng_size_t	i;
+	ng_size_t	el_count;
 	static NrmQuark Qstring;
 	static NhlBoolean first = True;
 

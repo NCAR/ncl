@@ -9,10 +9,18 @@ NhlErrorTypes relhum_W( void )
  * Input variables
  */
   void *t, *w, *p;
-  double *tmp_t, *tmp_w, *tmp_p;
-  int ndims_t, dsizes_t[NCL_MAX_DIMENSIONS], has_missing_t;
-  int ndims_w, dsizes_w[NCL_MAX_DIMENSIONS], has_missing_w;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS], has_missing_p;
+  double *tmp_t = NULL;
+  double *tmp_w = NULL;
+  double *tmp_p = NULL;
+  int ndims_t;
+  ng_size_t dsizes_t[NCL_MAX_DIMENSIONS];
+  int has_missing_t;
+  int ndims_w;
+  ng_size_t dsizes_w[NCL_MAX_DIMENSIONS];
+  int has_missing_w;
+  int ndims_p;
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
+  int has_missing_p;
   NclScalar missing_t, missing_dt;
   NclScalar missing_w, missing_dw;
   NclScalar missing_p, missing_dp;
@@ -22,12 +30,13 @@ NhlErrorTypes relhum_W( void )
  * Output variables
  */
   void *rh;
-  double *tmp_rh;
+  double *tmp_rh = NULL;
   NclBasicDataTypes type_rh;
 /*
  * Various.
  */
-  int i, found_missing_t, found_missing_w, found_missing_p, total_size_rh;
+  int found_missing_t, found_missing_w, found_missing_p;
+  ng_size_t i, total_size_rh;
 /*
  * Retrieve parameters
  *
@@ -150,7 +159,7 @@ NhlErrorTypes relhum_W( void )
  */
   if(type_rh == NCL_float) {
     rh     = (void*)calloc(total_size_rh,sizeof(float));
-    tmp_rh = (void*)calloc(1,sizeof(float));
+    tmp_rh = (void*)calloc(1,sizeof(double));
     if(tmp_rh == NULL || rh == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"relhum: Unable to allocate memory for output array");
       return(NhlFATAL);

@@ -30,6 +30,8 @@
 #include "defs.h"
 #include "NclDataDefs.h"
 #include "NclFileInterfaces.h"
+#include "NclVar.h"
+#include "VarSupport.h"
 #include "NclData.h"
 
 #include   <stdio.h>
@@ -48,8 +50,7 @@
 
 #define NETCDF_DEBUG 0
 
-unsigned int _closest_prime(unsigned int prime_in);
-static size_t ChunkSizeHint;
+static ng_usize_t ChunkSizeHint;
 
 typedef struct _NetCdfFileRecord NetCdfFileRecord;
 typedef struct _NetCdfVarInqRec NetCdfVarInqRec;
@@ -83,10 +84,10 @@ struct _NetCdfVarInqRec {
 	int	dim[MAX_VAR_DIMS];
 	int	compress_level;
 	int	n_chunk_dims;
-	size_t	chunk_dim[MAX_VAR_DIMS];
+	ng_size_t	chunk_dim[MAX_VAR_DIMS];
 	int	use_cache;
-	size_t	cache_size;
-	size_t	cache_nelems;
+	ng_size_t	cache_size;
+	ng_size_t	cache_nelems;
 	float	cache_preemption;
 	int	natts;
 	NetCdfAttInqRecList *att_list;
@@ -164,12 +165,12 @@ int             header_reserve_space;
 int             define_mode;
 int             format;
 int		use_cache;
-size_t		cache_size;
-size_t		cache_nelems;
+ng_size_t		cache_size;
+ng_size_t		cache_nelems;
 float		cache_preemption;
 };
 
-static NhlErrorTypes NetAddVarChunk(void* therec, NclQuark thevar, int n_chunk_dims, int *chunk_dims);
+static NhlErrorTypes NetAddVarChunk(void* therec, NclQuark thevar, int n_chunk_dims, ng_size_t *chunk_dims);
 
 static NclBasicDataTypes NetMapToNcl 
 #if	NhlNeedProto
@@ -326,11 +327,11 @@ NetCdfAttInqRec* frec
 	long start = 0;
 	int ret;
 
-	for(dl; dl != NULL; dl = dl->next) {
+	for(; dl != NULL; dl = dl->next) {
 		NetCdfDimInqRec *dim_inq = dl->dim_inq;
 		NetCdfVarInqRecList *vl = frec->vars;
 
-		for (vl; vl != NULL; vl = vl->next) {
+		for (; vl != NULL; vl = vl->next) {
 			if (vl->var_inq->name != dim_inq->name)
 				continue;
 			break;
@@ -398,8 +399,8 @@ int cdfid;
 	NetCdfDimInqRec *dim_inq;
 	NetCdfDimInqRec *chunk_dim_inq;
 
-	size_t *dims;
-	size_t *chunk_dims;
+	ng_size_t *dims;
+	ng_size_t *chunk_dims;
 
 	int shuffle = 0;
 	int deflate = 1;
@@ -411,8 +412,8 @@ int cdfid;
 
 	if(rec->n_chunk_dims)
 	{
-		dims = (size_t *) NclMalloc(rec->n_dims*sizeof(size_t));
-		chunk_dims = (size_t *) NclMalloc(rec->n_dims*sizeof(size_t));
+		dims = (ng_size_t *) NclMalloc(rec->n_dims*sizeof(ng_size_t));
+		chunk_dims = (ng_size_t *) NclMalloc(rec->n_dims*sizeof(ng_size_t));
 
 		nd = 0;
 		file_dim_list = rec->dims;
@@ -452,7 +453,7 @@ int cdfid;
 				}
 				var_inq->n_chunk_dims = var_inq->n_dims;
                 		nc_ret = nc_def_var_chunking(cdfid, var_inq->varid, storage,
-                                             	var_inq->chunk_dim);
+							     (size_t *)var_inq->chunk_dim);
 
             			if((rec->compress_level > 0) && (var_inq->compress_level < 1))
             			{
@@ -531,7 +532,6 @@ NetCdfFileRecord *tmp;
 #endif
 {
 	NetCdfOptions *options;
-	int i;
 
 	tmp->n_options = NC_NUM_OPTIONS;
 	
@@ -606,7 +606,7 @@ NclFileFormatType *format;
 {
 	static int first = True;
 	NetCdfFileRecord *therec = NULL;
-	size_t blksize = getpagesize();
+	ng_size_t blksize = getpagesize();
 
 	if (first) {
 		Qmissing_val = NrmStringToQuark("missing_value");
@@ -659,7 +659,6 @@ int wr_status;
 	NetCdfVarInqRecList *tmpvlptr;
 	NetCdfDimInqRecList **stepdlptr;
 	NetCdfDimInqRecList *tmpdlptr;
-	static int count = 0;
 
 	if(tmp == NULL) {
 		return(NULL);
@@ -683,7 +682,7 @@ int wr_status;
 		nc_ret = nc__open(NrmQuarkToString(path),NC_NOWRITE,&ChunkSizeHint,&cdfid);
 #if NETCDF_DEBUG
 		fprintf(stderr,"nc__open(\"%s\",NC_NOWRITE,&ChunkSizeHint,&cdfid);\n",NrmQuarkToString(path));
-		fprintf(stderr,"%d: cdfid = %d\n",count++,cdfid);
+		fprintf(stderr,"%d: cdfid = %d\n",cdfid);
 #endif                
 		tmp->define_mode = 0;
 		tmp->cdfid = cdfid;
@@ -1059,7 +1058,7 @@ NclQuark var_name;
 	NetCdfVarInqRecList *stepvl;
 	NetCdfDimInqRecList *stepdl;
 	NclFVarRec *tmp;
-	int i,j;
+	int j;
 
 	stepvl = rec->vars;
 	while(stepvl != NULL) {
@@ -1893,7 +1892,7 @@ NclQuark theatt;
 	NetCdfAttInqRecList *prev;
 	int cdfid;
 	int nc_ret;
-	int ret;
+	int ret = 0;
 
 	if(rec->wr_status <= 0) {
 		stepal = rec->file_atts;
@@ -1978,7 +1977,7 @@ NclQuark theatt;
 	NetCdfVarInqRecList *stepvl;
 	int cdfid;
 	int nc_ret;
-	int ret;
+	int ret = 0;
 
 	if(rec->wr_status <= 0) {
 		stepvl = rec->vars;
@@ -2083,9 +2082,16 @@ void* data;
 					if(stepal->att_inq->name == theatt) {
 						if (! stepal->att_inq->virtual) {
 							/* if the value is the same as before don't bother writing it */
-							if (! memcmp(stepal->att_inq->value,data,
-								     nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len)) {
-								return NhlNOERROR;
+							if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {	
+								if (*(NrmQuark*)stepal->att_inq->value == *(NrmQuark*)data) {
+									return NhlNOERROR;
+								}
+							}
+							else {
+								if (! memcmp(stepal->att_inq->value,data,
+									     nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len)) {
+									return NhlNOERROR;
+								}
 							}
 						}
 						if (rec->open) {
@@ -2184,13 +2190,13 @@ void* data;
 
 static NhlErrorTypes NetAddVarChunk
 #if    NhlNeedProto
-(void* therec, NclQuark thevar, int n_chunk_dims, int *chunk_dims)
+(void* therec, NclQuark thevar, int n_chunk_dims, ng_size_t *chunk_dims)
 #else
 (therec,thevar,n_chunk_dims,chunk_dims)
 void* therec;
 NclQuark thevar;
 int n_chunk_dims;
-int *chunk_dims;
+ng_size_t *chunk_dims;
 #endif
 {
     NetCdfFileRecord* rec = (NetCdfFileRecord*)therec;
@@ -2238,10 +2244,10 @@ int *chunk_dims;
                 stepvl->var_inq->n_chunk_dims = n_chunk_dims;
                 for(i = 0 ; i < n_chunk_dims; i++)
                 {
-                    stepvl->var_inq->chunk_dim[i] = (size_t)chunk_dims[i];
+                    stepvl->var_inq->chunk_dim[i] = (ng_size_t)chunk_dims[i];
                 }
                 nc_ret = nc_def_var_chunking(cdfid, stepvl->var_inq->varid, storage,
-                                             stepvl->var_inq->chunk_dim);
+                                             (size_t *)stepvl->var_inq->chunk_dim);
                 ret = NhlNOERROR;
                 break;
             }
@@ -2261,19 +2267,19 @@ int *chunk_dims;
 
 static NhlErrorTypes NetAddVarChunkCache
 #if    NhlNeedProto
-(void* therec, NclQuark thevar, size_t cache_size, size_t cache_nelems, float cache_preemption)
+(void* therec, NclQuark thevar, ng_size_t cache_size, ng_size_t cache_nelems, float cache_preemption)
 #else
 (therec, thevar, cache_size, cache_nelems, cache_preemption)
 void* therec;
 NclQuark thevar;
-size_t cache_size;
-size_t cache_nelems;
+ng_size_t cache_size;
+ng_size_t cache_nelems;
 float cache_preemption;
 #endif
 {
     NetCdfFileRecord* rec = (NetCdfFileRecord*)therec;
     NetCdfVarInqRecList *stepvl = NULL;
-    int i,ret = NhlNOERROR;
+    int ret = NhlNOERROR;
     int cdfid;
     int nc_ret;
 
@@ -2349,7 +2355,7 @@ int compress_level;
 {
     NetCdfFileRecord* rec = (NetCdfFileRecord*)therec;
     NetCdfVarInqRecList *stepvl = NULL;
-    int i,ret = NhlNOERROR;
+    int ret = NhlNOERROR;
     int cdfid;
     int shuffle = 0;
     int deflate = compress_level;
@@ -2406,12 +2412,12 @@ int compress_level;
 
 static NhlErrorTypes NetAddDim
 #if	NhlNeedProto
-(void* therec, NclQuark thedim, int size,int is_unlimited)
+(void* therec, NclQuark thedim, ng_size_t size,int is_unlimited)
 #else
 (therec, thedim, size,is_unlimited)
 void* therec;
 NclQuark thedim;
-int size;
+ng_size_t size;
 int is_unlimited;
 #endif
 {
@@ -2535,12 +2541,12 @@ int is_unlimited;
 
 static NhlErrorTypes NetAddChunkDim
 #if	NhlNeedProto
-(void* therec, NclQuark thedim, int size,int is_unlimited)
+(void* therec, NclQuark thedim, ng_size_t size,int is_unlimited)
 #else
 (therec, thedim, size,is_unlimited)
 void* therec;
 NclQuark thedim;
-int size;
+ng_size_t size;
 int is_unlimited;
 #endif
 {
@@ -3273,9 +3279,6 @@ static NhlErrorTypes NetSetOption
 #endif
 {
 	NetCdfFileRecord *rec = (NetCdfFileRecord*)therec;
-	NetCdfAttInqRecList* stepal;
-	nc_type *the_data_type;
-	int i,ret;
 
 	if (option ==  NrmStringToQuark("prefill")) {
 		rec->options[NC_PREFILL_OPT].values = (void*) *(int*)values;
@@ -3355,60 +3358,6 @@ static NhlErrorTypes NetSetOption
 #endif
 	
 	return NhlNOERROR;
-}
-
-#define MAX_ALLOWED_NUMBER 10001
-
-unsigned int _closest_prime(unsigned int prime_in)
-{
-    int i, number, k;
-    unsigned int primes[MAX_ALLOWED_NUMBER];
-    unsigned int prime_out;
-    unsigned int bound;
-    int check_this;
-
-    prime_out = 2*prime_in + 1;
-
-    primes[0] = 2U;
-    primes[1] = 3U;
-    for(i = 2; i < MAX_ALLOWED_NUMBER; i++)
-    {
-         number = primes[i-1];
-         check_this = 1;
-         while(check_this)
-         {
-             number += 2U;
-             check_this = 0;
-             bound = (unsigned int) sqrt((double) number);
-             for(k = 1; k < i; k++)
-             {
-                 if(primes[k] > bound)
-                     break; /*Not a viable shortcut for small quantities*/
-
-                 if(!(number % primes[k]))
-                 {
-                     check_this = 1;
-                     break;
-                 }
-             }
-         }
-         primes[i] = number;
-         if(number == prime_in)
-         {
-             prime_out = number;
-             break;
-         }
-         else if(number > prime_in)
-         {
-             if((number - prime_in) > (prime_in - number))
-                 prime_out = number;
-             else
-                 prime_out = primes[i-1];
-             break;
-         }
-    }
-
-    return prime_out;
 }
 
 NclFormatFunctionRec NetCdfRec = {

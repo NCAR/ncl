@@ -12,9 +12,11 @@ extern "C" {
 #include   <strings.h>
 #include   <dirent.h>
 #include   <stdlib.h>
+#include   <ctype.h>
 
 #include   <ncarg/hlu/hlu.h>
 #include   <ncarg/hlu/NresDB.h>
+#include   <ncarg/hlu/Workstation.h>
 #include   "defs.h"
 #include   "Symbol.h"
 #include   "NclData.h"
@@ -71,6 +73,13 @@ extern void InitializeReadLine(
 #endif /* NhlNeedProto */
 );
 
+extern void NclSetPromptFunc(
+#if	NhlNeedProto
+NclPromptFunc /*prmf*/, 
+void * /*user_data */
+#endif
+);
+
 extern NhlErrorTypes _NclPreLoadScript(
 #if NhlNeedProto
     char *  /* path */,
@@ -85,6 +94,8 @@ short   NCLoverrideEcho = 0;    /* override echo; non-advertised option */
 short   NCLnoCopyright = 0;     /* override copyright notice; non-advertised option */
 short   NCLnoPrintElem = 0;     /* don't enumerate values in print() */
 short   NCLnoSysPager = 0;      /* don't pipe commands to system() to PAGER */
+short   NCLoldBehavior = 0;     /* retain former behavior for certain backwards-incompatible changes */
+	                        /* behaviors could be revised after an adoption period */
 
 char    *nclf = NULL;           /* script of NCL commands, may or may not be provided */
 
@@ -94,8 +105,7 @@ main(int argc, char **argv) {
 
     int errid = -1;
     int appid;
-    int i, j,
-        k = 0;
+    int i, k = 0;
     int reset = 1;
     DIR *d;
     struct dirent   *ent;
@@ -120,10 +130,8 @@ main(int argc, char **argv) {
     int NCL_ARGC;           /* local argv/argc -- future use for NCL scripts? */
 
     int c;
-    char    *s = NULL;
-    char    sc[NCL_MAX_STRING];
 
-    char    **cargs;
+    char    **cargs = NULL;
     int nargs = 0;
 
     struct stat sbuf;
@@ -168,14 +176,14 @@ main(int argc, char **argv) {
      *  -n      element print: don't enumerate elements in print()
      *  -x      echo: turns on command echo
      *  -V      version: output NCARG/NCL version, exit
-     *
+     *  -o      old behavior: retain former behavior for backwards incompatible changes
      *  -h      help: output options and exit
      *
      *  -X      override: echo every stmt regardless (unannounced option)
      *  -Q      override: don't echo copyright notice (unannounced option)
      */
     opterr = 0;     /* turn off getopt() msgs */
-    while ((c = getopt (argc, argv, "hnxVXQp")) != -1) {
+    while ((c = getopt (argc, argv, "hnoxVXQp")) != -1) {
         switch (c) {
             case 'p':
                 NCLnoSysPager = 1;
@@ -183,6 +191,10 @@ main(int argc, char **argv) {
 
             case 'n':
                 NCLnoPrintElem = 1;
+                break;
+
+            case 'o':
+                NCLoldBehavior = 1;
                 break;
 
             case 'x':
@@ -208,6 +220,7 @@ main(int argc, char **argv) {
                 (void) fprintf(stdout, "Usage: ncl -hnpxV <args> <file.ncl>\n");
                 (void) fprintf(stdout, "\t -n: don't enumerate values in print()\n");
                 (void) fprintf(stdout, "\t -p: don't page output from the system() command\n");
+                (void) fprintf(stdout, "\t -o: retain former behavior for certain backwards-incompatible changes\n");
                 (void) fprintf(stdout, "\t -x: echo NCL commands\n");
                 (void) fprintf(stdout, "\t -V: print NCL version and exit\n");
                 (void) fprintf(stdout, "\t -h: print this message and exit\n");
@@ -231,7 +244,7 @@ main(int argc, char **argv) {
      */
     if (!NCLnoCopyright) 
         (void) fprintf(stdout,
-            " Copyright (C) 1995-2010 - All Rights Reserved\n University Corporation for Atmospheric Research\n NCAR Command Language Version %s\n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n", GetNCLVersion());
+            " Copyright (C) 1995-2011 - All Rights Reserved\n University Corporation for Atmospheric Research\n NCAR Command Language Version %s\n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n", GetNCLVersion());
 
     /* Process any user-defined arguments */
     for (i = optind; i < argc; i++) {
@@ -288,15 +301,15 @@ main(int argc, char **argv) {
     theoptr = NULL;
 #endif /* NCLDEBUG */
 
-    /* 
-     * Note:  child processes should use _exit() instead of exit() to avoid calling the atexit() functions prematurely 
+    /*
+     * Note: child processes should use _exit() instead of exit() to avoid calling the atexit()
+     * functions prematurely 
      */
-
 
     NhlInitialize();
     NhlVACreate(&appid, "ncl", NhlappClass, NhlDEFAULT_APP,
         NhlNappDefaultParent, 1, NhlNappUsrDir, "./", NULL);
-    NhlPalLoadColormapFiles(NhlworkstationClass);
+    NhlPalLoadColormapFiles(NhlworkstationClass,False);
     errid = NhlErrGetID();
     NhlVAGetValues(errid, NhlNerrFileName, &tmp, NULL);
 	
@@ -307,6 +320,10 @@ main(int argc, char **argv) {
     _NclInitSymbol();	
     _NclInitTypeClasses();
     _NclInitDataClasses();
+    /* if the -o flag is specified do stuff to make NCL backwards compatible */
+    if (NCLoldBehavior) {
+	    _NclSetDefaultFillValues(NCL_5_DEFAULT_FILLVALUES);
+    }
 
     /* Handle default directories */
     if ((libpath = getenv("NCL_DEF_LIB_DIR")) != NULL) {
@@ -462,6 +479,8 @@ main(int argc, char **argv) {
     (void) fprintf(stdout,"Number of constants used %d\n",number_of_constants);
     (void) fclose(theoptr);
 #endif /* NCLDEBUG */
+
+    NclFree(myName);
 
     _NclExit(0);
 }

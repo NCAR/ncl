@@ -8,15 +8,19 @@ extern void   NGCALLF(juli2greg,JULI2GREG)(int *,int *,int *,int *);
 
 NhlErrorTypes greg2jul_W( void )
 {
-  int i, j, total;
+  ng_size_t i, total;
 /*
  * Input variables
  */
   int *year, *month, *day, *hour;
-  int ndims_year, dsizes_year[NCL_MAX_DIMENSIONS];
-  int ndims_month, dsizes_month[NCL_MAX_DIMENSIONS];
-  int ndims_day, dsizes_day[NCL_MAX_DIMENSIONS];
-  int ndims_hour, dsizes_hour[NCL_MAX_DIMENSIONS];
+  int ndims_year;
+  ng_size_t dsizes_year[NCL_MAX_DIMENSIONS];
+  int ndims_month;
+  ng_size_t dsizes_month[NCL_MAX_DIMENSIONS];
+  int ndims_day;
+  ng_size_t dsizes_day[NCL_MAX_DIMENSIONS];
+  int ndims_hour;
+  ng_size_t dsizes_hour[NCL_MAX_DIMENSIONS];
 /*
  * Output variables
  */
@@ -170,17 +174,20 @@ NhlErrorTypes jul2greg_W( void )
  * Input variables
  */
   NclStackEntry data;
-  NclMultiDValData tmp_md = NULL, tmp1_md;
+  NclMultiDValData tmp_md = NULL;
+  NclMultiDValData tmp1_md = NULL;
   int ndims_jul;
 /*
  * Output variables
  */
   int *date;
-  int ndims_date, dsizes_date[NCL_MAX_DIMENSIONS];
+  int ndims_date;
+  ng_size_t dsizes_date[NCL_MAX_DIMENSIONS];
 /*
  * Other variables
  */
-  int i, j, total, num_elems, is_double;
+  ng_size_t i, j, total, num_elems;
+  int is_double;
 /*
  * Retrieve argument.
  *
@@ -193,6 +200,9 @@ NhlErrorTypes jul2greg_W( void )
   case NclStk_VAL:
 	tmp_md = (NclMultiDValData)data.u.data_obj;
 	break;
+  default:
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"jul2greg: invalid input.");
+        return(NhlFATAL);
   }
 /*
  * Calculate total size of array.

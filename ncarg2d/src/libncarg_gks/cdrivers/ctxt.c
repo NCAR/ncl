@@ -49,20 +49,20 @@ static  void    print_points(points, num)
 }
 
 /*ARGSUSED*/
-ctxt_OpenWorkstation(gksc)
+int ctxt_OpenWorkstation(gksc)
         GKSC    *gksc;
 {
         _NGCesc *cesc;
 
         (void) printf("OpenWorkstation\n");
-        while(cesc = _NGGetCEscInit()){
+        while( (cesc = _NGGetCEscInit()) ){
                 gerr_hand(182,11,NULL);
         }
         return(0);
 }
 
 /*ARGSUSED*/
-ctxt_ActivateWorkstation(gksc)
+int ctxt_ActivateWorkstation(gksc)
         GKSC    *gksc;
 {
         (void) printf("ActivateWorkstation\n");
@@ -70,7 +70,7 @@ ctxt_ActivateWorkstation(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_DeactivateWorkstation(gksc)
+int ctxt_DeactivateWorkstation(gksc)
         GKSC    *gksc;
 {
         (void) printf("DeactivateWorkstation\n");
@@ -80,7 +80,7 @@ ctxt_DeactivateWorkstation(gksc)
 
 
 /*ARGSUSED*/
-ctxt_CloseWorkstation(gksc)
+int ctxt_CloseWorkstation(gksc)
         GKSC    *gksc;
 {
         (void) printf("CloseWorkstation\n");
@@ -88,7 +88,7 @@ ctxt_CloseWorkstation(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_ClearWorkstation(gksc)
+int ctxt_ClearWorkstation(gksc)
         GKSC    *gksc;
 {
         (void) printf("ClearWorkstation\n");
@@ -97,7 +97,7 @@ ctxt_ClearWorkstation(gksc)
 
 
 /*ARGSUSED*/
-ctxt_Polyline(gksc)
+int ctxt_Polyline(gksc)
         GKSC    *gksc;
 {
         CTXTPoint       *pptr = (CTXTPoint *) gksc->p.list;
@@ -108,7 +108,7 @@ ctxt_Polyline(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_Polymarker(gksc)
+int ctxt_Polymarker(gksc)
         GKSC    *gksc;
 {
         CTXTPoint       *pptr = (CTXTPoint *) gksc->p.list;
@@ -119,7 +119,7 @@ ctxt_Polymarker(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_Text(gksc)
+int ctxt_Text(gksc)
         GKSC    *gksc;
 {
         CTXTPoint       *pptr = (CTXTPoint *) gksc->p.list;
@@ -132,7 +132,7 @@ ctxt_Text(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_FillArea(gksc)
+int ctxt_FillArea(gksc)
         GKSC    *gksc;
 {
         CTXTPoint       *pptr = (CTXTPoint *) gksc->p.list;
@@ -144,7 +144,7 @@ ctxt_FillArea(gksc)
 
 
 /*ARGSUSED*/
-ctxt_Cellarray(gksc)
+int ctxt_Cellarray(gksc)
         GKSC    *gksc;
 {
         CTXTPoint       *pptr = (CTXTPoint *) gksc->p.list;
@@ -180,7 +180,7 @@ ctxt_Cellarray(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_SetLinetype(gksc)
+int ctxt_SetLinetype(gksc)
         GKSC    *gksc;
 {
         int             *iptr = (int *) gksc->i.list;
@@ -213,7 +213,7 @@ ctxt_SetLinetype(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_SetLineWidthScaleFactor(gksc)
+int ctxt_SetLineWidthScaleFactor(gksc)
         GKSC    *gksc;
 {
         float           *fptr = (float *) gksc->f.list;
@@ -227,7 +227,7 @@ ctxt_SetLineWidthScaleFactor(gksc)
 
 
 /*ARGSUSED*/
-ctxt_SetPolylineColorIndex(gksc)
+int ctxt_SetPolylineColorIndex(gksc)
         GKSC    *gksc;
 {
         int             *xptr = (int *) gksc->x.list;
@@ -240,7 +240,7 @@ ctxt_SetPolylineColorIndex(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_SetMarkerType(gksc)
+int ctxt_SetMarkerType(gksc)
         GKSC    *gksc;
 {
         int             *iptr = (int *) gksc->i.list;
@@ -276,7 +276,7 @@ ctxt_SetMarkerType(gksc)
 
 
 /*ARGSUSED*/
-ctxt_SetMarkerSizeScaleFactor(gksc)
+int ctxt_SetMarkerSizeScaleFactor(gksc)
         GKSC    *gksc;
 {
         float           *fptr = (float *) gksc->f.list;
@@ -289,7 +289,7 @@ ctxt_SetMarkerSizeScaleFactor(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_SetPolymarkerColorIndex(gksc)
+int ctxt_SetPolymarkerColorIndex(gksc)
         GKSC    *gksc;
 {
         int             *xptr = (int *) gksc->x.list;
@@ -303,7 +303,7 @@ ctxt_SetPolymarkerColorIndex(gksc)
 
 
 /*ARGSUSED*/
-ctxt_SetTextFontAndPrecision(gksc)
+int ctxt_SetTextFontAndPrecision(gksc)
         GKSC    *gksc;
 {
         int             *iptr = (int *) gksc->i.list;
@@ -333,7 +333,7 @@ ctxt_SetTextFontAndPrecision(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_SetCharacterExpansionFactor(gksc)
+int ctxt_SetCharacterExpansionFactor(gksc)
         GKSC    *gksc;
 {
         float           *fptr = (float *) gksc->f.list;
@@ -347,7 +347,7 @@ ctxt_SetCharacterExpansionFactor(gksc)
 
 
 /*ARGSUSED*/
-ctxt_SetCharacterSpacing(gksc)
+int ctxt_SetCharacterSpacing(gksc)
         GKSC    *gksc;
 {
         float           *fptr = (float *) gksc->f.list;
@@ -360,7 +360,7 @@ ctxt_SetCharacterSpacing(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_SetTextColorIndex(gksc)
+int ctxt_SetTextColorIndex(gksc)
         GKSC    *gksc;
 {
         int             *xptr = (int *) gksc->x.list;
@@ -374,7 +374,7 @@ ctxt_SetTextColorIndex(gksc)
 
 
 /*ARGSUSED*/
-ctxt_SetCharacterHeightAndUpVector(gksc)
+int ctxt_SetCharacterHeightAndUpVector(gksc)
         GKSC    *gksc;
 {
         float           *fptr = (float *) gksc->f.list;
@@ -391,7 +391,7 @@ ctxt_SetCharacterHeightAndUpVector(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_SetTextPath(gksc)
+int ctxt_SetTextPath(gksc)
         GKSC    *gksc;
 {
         int             *iptr = (int *) gksc->i.list;
@@ -423,7 +423,7 @@ ctxt_SetTextPath(gksc)
 
 
 /*ARGSUSED*/
-ctxt_SetTextAlignment(gksc)
+int ctxt_SetTextAlignment(gksc)
         GKSC    *gksc;
 {
         int             *iptr = (int *) gksc->i.list;
@@ -480,7 +480,7 @@ ctxt_SetTextAlignment(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_SetFillAreaInteriorStyle(gksc)
+int ctxt_SetFillAreaInteriorStyle(gksc)
         GKSC    *gksc;
 {
         int             *iptr = (int *) gksc->i.list;
@@ -512,7 +512,7 @@ ctxt_SetFillAreaInteriorStyle(gksc)
 
 
 /*ARGSUSED*/
-ctxt_SetFillAreaStyleIndex(gksc)
+int ctxt_SetFillAreaStyleIndex(gksc)
         GKSC    *gksc;
 {
         int             *iptr = (int *) gksc->i.list;
@@ -549,7 +549,7 @@ ctxt_SetFillAreaStyleIndex(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_SetFillAreaColorIndex(gksc)
+int ctxt_SetFillAreaColorIndex(gksc)
         GKSC    *gksc;
 {
         int             *xptr = (int *) gksc->x.list;
@@ -563,7 +563,7 @@ ctxt_SetFillAreaColorIndex(gksc)
 
 
 /*ARGSUSED*/
-ctxt_SetColorRepresentation(gksc)
+int ctxt_SetColorRepresentation(gksc)
         GKSC    *gksc;
 {
         int             *xptr = (int *) gksc->x.list;
@@ -582,7 +582,7 @@ ctxt_SetColorRepresentation(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_SetClipIndicator(gksc)
+int ctxt_SetClipIndicator(gksc)
         GKSC    *gksc;
 {
         int             *iptr = (int *) gksc->i.list;
@@ -603,7 +603,7 @@ ctxt_SetClipIndicator(gksc)
 
 
 /*ARGSUSED*/
-ctxt_SetWindow(gksc)
+int ctxt_SetWindow(gksc)
         GKSC    *gksc;
 {
         float           *fptr = (float *) gksc->f.list;
@@ -620,7 +620,7 @@ ctxt_SetWindow(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_SetViewport(gksc)
+int ctxt_SetViewport(gksc)
         GKSC    *gksc;
 {
         float           *fptr = (float *) gksc->f.list;
@@ -637,7 +637,7 @@ ctxt_SetViewport(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_GetColorRepresentation(gksc)
+int ctxt_GetColorRepresentation(gksc)
         GKSC    *gksc;
 {
         int             *xptr = (int *) gksc->x.list;
@@ -651,7 +651,7 @@ ctxt_GetColorRepresentation(gksc)
 
 
 /*ARGSUSED*/
-ctxt_Esc(gksc)
+int ctxt_Esc(gksc)
         GKSC    *gksc;
 {
         char    *sptr = (char *) gksc->s.list;
@@ -666,7 +666,7 @@ ctxt_Esc(gksc)
 }
 
 /*ARGSUSED*/
-ctxt_UpdateWorkstation(gksc)
+int ctxt_UpdateWorkstation(gksc)
         GKSC    *gksc;
 {
         (void) printf("UpdateWorkstation\n");

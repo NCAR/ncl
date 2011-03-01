@@ -27,7 +27,7 @@
 
 NhlErrorTypes _NclTFUNC
 #if	NhlNeedProto
-(NclTypeClass the_type, void * result, void* lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, int nlhs, int nrhs)
+(NclTypeClass the_type, void * result, void* lhs, void* rhs, NclScalar* lhs_m, NclScalar* rhs_m, ng_size_t nlhs, ng_size_t nrhs)
 #else
 (the_type, result, lhs, rhs, lhs_m, rhs_m, nlhs, nrhs)
 NclTypeClass the_type;
@@ -36,8 +36,8 @@ void* lhs;
 void* rhs;
 NclScalar* lhs_m;
 NclScalar* rhs_m;
-int nlhs;
-int nrhs;
+ng_size_t nlhs;
+ng_size_t nrhs;
 #endif
 {
 	NclTypeClass tmp;

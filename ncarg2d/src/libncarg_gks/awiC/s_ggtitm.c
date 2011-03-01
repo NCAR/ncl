@@ -17,6 +17,8 @@
 
 #include <ncarg/gks.h>
 
+extern void NGCALLF(ggtitm,GGTITM)(Gint*,Gint*,Gint*);
+
 void gget_item_type
 #ifdef NeedFuncProto
 (

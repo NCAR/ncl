@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.84 2006-04-07 18:42:35 dbrown Exp $
+ *      $Id: TickMark.c,v 1.84.4.1 2008-03-28 20:37:37 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -4100,7 +4100,6 @@ static NhlErrorTypes ComputeMinorTickMarks
 	float min,max,min2,min_compare,max_compare;
 	float logminor;
 	NhlErrorTypes ret = NhlNOERROR;
-	float tmnstart,tmnend,mnspacing;
 
 	if (_NhlCmpFAny2(dmin,dmax,7,min_nonzero) == 0.0) {
 		*nminor = 0;
@@ -5196,7 +5195,7 @@ static NhlErrorTypes CheckExplicit
 	int		c_or_s;
 #endif
 {
-	char		*error_lead,*e_text;
+	char		*error_lead;
 	NhlGenArray	gen;
 	NhlErrorTypes	ret = NhlNOERROR;
 	NhlBoolean	free_xb_val=False, skip_xb_val=False;
@@ -6642,7 +6641,7 @@ static NhlErrorTypes CheckGeographic
 {
 	char * error_lead;
 	NhlErrorTypes ret = NhlNOERROR;
-	NhlBoolean xb_geo,yl_geo,xt_geo,yr_geo;
+	/*NhlBoolean xb_geo,yl_geo,xt_geo,yr_geo;*/
 	
 	if(c_or_s == CREATE) {
 		error_lead = "TickMarkInitialize";
@@ -8556,6 +8555,7 @@ int num_args;
 			break;
 		case NhlTIME:
 		case NhlGEOGRAPHIC:
+		default:
 			break;
 		}
 		switch(tnew->tick.x_b_style) {
@@ -8571,6 +8571,7 @@ int num_args;
 			break;
 		case NhlTIME:
 		case NhlGEOGRAPHIC:
+		default:
 			break;
 		}
 		NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,(tnew->tick.x_b_data_left>tnew->tick.x_b_data_right ? 1 : 0));
@@ -8690,6 +8691,7 @@ int num_args;
 			break;
 		case NhlTIME:
 		case NhlGEOGRAPHIC:
+		default:
 			break;
 		}
 		switch(tnew->tick.x_t_style) {
@@ -8705,6 +8707,7 @@ int num_args;
 			break;
 		case NhlTIME:
 		case NhlGEOGRAPHIC:
+		default:
 			break;
 		}
 		trans_class = NhllogLinTransObjClass;
@@ -8753,7 +8756,6 @@ static NhlErrorTypes ScaleValuesForMove
 {
 
 	NhlTickMarkLayerPart *tmp = &tnew->tick;
-	NhlTickMarkLayerPart *otmp = &told->tick;
 	float deltax,deltay;
 	float h;
 	NhlBoolean xbylset,xtyrset;
@@ -9323,6 +9325,7 @@ int num_args;
                                 break;
                         case NhlTIME:
                         case NhlGEOGRAPHIC:
+			default:
                                 break;
 
 			}
@@ -9511,6 +9514,7 @@ int num_args;
                                 break;
                         case NhlTIME:
                         case NhlGEOGRAPHIC:
+			default:
                                 break;
 
 			}
@@ -9527,6 +9531,7 @@ int num_args;
                                 break;
                         case NhlTIME:
                         case NhlGEOGRAPHIC:
+			default:
                                 break;
                         }
 			ret = NhlALSetValues(tnew->tick.xt_yr_trans_obj->base.id
@@ -9550,12 +9555,11 @@ static NhlGenArray CreateGetValuesData
         _NhlArg		*arg;
 #endif
 {
-	NhlString type;
+	NhlString  type;
 	NhlPointer data;
-	int	size;
-	int 	count;
+	int	   size;
+	ng_size_t count;
 	NhlTickMarkLayerPart *tmp = &((NhlTickMarkLayer)l)->tick;
-	NhlGenArray gen;
 	
 	if(arg->quark == QXBValues) {
 		data = (NhlPointer) tmp->x_b_major_data_locs; 

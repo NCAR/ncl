@@ -45,6 +45,15 @@
 #       [-cl compression_level]  compression level 0 - 9 [ default 0 - only meaningful for NetCDF 4 output]
 #       [-th size_in_megabytes] theshold size: variables larger than specified size will be written incrementally
 #                             in order to limit in-core memory requirements; 0 (the default) means no threshold
+#                             -- ignored for variables that require a type conversion
+#       [-no-uc]              turn off default conversion of unsigned integer types to corresponding signed types
+#                             -- unsigned variables in the input will be skipped
+#       [-no-i64c]            turn off default conversion of 64-bit integer types to double
+#                             -- 64-bit integer types in the input will be skipped
+#       [-no-sc]              turn off default conversion of string types to character
+#                             -- string types in the input will be skipped
+#       [-no-aa]              turn off default addition of the ncl_converted_from_type attribute
+#                             when variable types are converted
 #       [-c comment]          text to be included in netCDF file attribute [default: no comment]
 #       [-l]                  list information about each variable as it is copied
 #       [-d]                  upon exit: print contents of each netCDF file [like ncdump -h]
@@ -84,6 +93,10 @@ set ncdflrgf_t = "classic"
 set ncdf_type = "nc3"
 set compression_level = -1
 set threshold_level = 0
+set unsigned_to_signed = 1
+set int64_to_double = 1
+set string_to_char  = 1
+set add_attribute = 1
 set list = 0
 
 # Single Element Dimension variables
@@ -338,6 +351,29 @@ while ($#argv > 0)
             shift
             breaksw
 
+	case "-no-uc"
+	case "-no-unsigned-conversion"
+            set unsigned_to_signed = 0
+            shift
+            breaksw
+	case "-no-i64c"
+	case "-no-int64-conversion"
+            set int64_to_double = 0
+            shift
+            breaksw
+
+	case "-no-sc"
+	case "-no-string-conversion"
+            set string_to_char = 0
+            shift
+            breaksw
+
+	case "-no-aa"
+	case "-no-added-attributes"
+            set add_attribute = 0
+            shift
+            breaksw
+	
         case "-c":
         case "-comment":
             shift
@@ -1156,7 +1192,8 @@ begin
 ; and types
 ;***********************************************
     dimNames = getvardims(f)
-    if (dimNames(0) .eq. "ncl_scalar") then
+    ind_ncl_scalar = ind(dimNames .eq. "ncl_scalar")
+    if (.not. ismissing(ind_ncl_scalar)) then
 	has_scalar_dim = True
     else
 	has_scalar_dim = False
@@ -1181,7 +1218,17 @@ begin
 ; if there is a scalar dimension then it should be the first one listed
 ;
     if (has_scalar_dim) then
-        filedimdef(fnc, dimNames(1:), dimSizes(1:), dimUnlim(1:))
+        if (ind_ncl_scalar .eq. 0) then
+            filedimdef(fnc, dimNames(1:), dimSizes(1:), dimUnlim(1:))
+	else
+	    endix = dimsizes(dimNames) - 2
+  	    do i = ind_ncl_scalar, endix
+                dimNames(i) = dimNames(i+1)
+		dimSizes(i) = dimSizes(i+1)
+		dimUnlim(i) = dimUnlim(i+1)
+	    end do
+	    filedimdef(fnc, dimNames(:endix), dimSizes(:endix), dimUnlim(:endix)) 
+	end if
     else
         filedimdef(fnc, dimNames, dimSizes, dimUnlim)
     end if
@@ -1196,6 +1243,19 @@ begin
 ; determine the type of each variable
 ;***********************************************
     varType = getfilevartypes(f, fVarNames)
+
+    long_size = sizeof(1L)
+    enumeric_types = (/"ubyte","ushort","uint","ulong","uint64","int64","string"/)
+    convert_types = (/"byte","short","integer","long","double","double","character"/)
+    str_to_c_ix = 6
+    uint_to_sint_max_ix = 3
+    if (long_size .eq. 8) then
+        convert_types(3) = "double"
+    end if 
+    do_conversion = new(nfNames,logical)
+    do_conversion = False
+    str_dim_names = new(nfNames,string)
+    num_strings = 0
 
 ;***********************************************
 ; loop over each variable: skip variables of type
@@ -1212,21 +1272,80 @@ begin
             print(i + "  ncl_type = " + varType(i))
             print(i + "  dim_names " + getfilevardims(f, fVarNames(i)))
         end if
+	
+	en_ix = ind(varType(i) .eq. enumeric_types)
+	create_attribute = False
+        old_type = varType(i)
+	if (.not. ismissing(en_ix)) then
+	    new_type = convert_types(en_ix)
+	    ; 
+            ; note that no actual conversion is required when going from unsigned to signed integers, but clearly a conversion is 
+	    ; required to go to double from integer
+            ;
+	    if (en_ix .eq. str_to_c_ix) then
+	        if (string_to_char .eq. 0) then
+		    print ("Classic model NetCDF does not support string types: " + fVarNames(i) + " will be skipped")
+		    do_conversion(i) = _Missing
+		else 
+		    print ("Classic model NetCDF does not support string types, converting " +  fVarNames(i) + " to a character array")
+		    print("Dimension 'ncl_strlen_" + num_strings + "' will be added")
+	            do_conversion(i) = True
+		    if (add_attribute .eq. 1) then
+		        create_attribute = True
+		    end if
+		    dim_name = "ncl_strlen_" + num_strings
+		    num_strings = num_strings + 1
+		    dim_size = max(strlen(f->$fVarNames(i)$))
+                    filedimdef(fnc, dim_name, dim_size, False)
+	            str_dim_names(i) = dim_name
+                end if
+            end if
+	    if (new_type .eq. "double") then
+	        if (int64_to_double .eq. 0) then
+		    print ("Classic model NetCDF does not support 64bit integer types: " + fVarNames(i) + " will be skipped")
+		    do_conversion = _Missing
+		else 
+		    print ("Classic model NetCDF does not support 64bit integer types, converting " +  fVarNames(i) + " to double")
+	            do_conversion(i) = True
+		    if (add_attribute .eq. 1) then
+		        create_attribute = True
+		    end if
+                end if
+	    else
+	        if (en_ix .le. uint_to_sint_max_ix) then
+	            if (unsigned_to_signed .eq. 0) then
+	                print ("Classic mode NetCDf does not support unsigned integer types: " + fVarNames(i) + " will be skipped")
+			do_conversion(i) = _Missing
+		    else 
+                        print ("Classic mode NetCDf does not support unsigned integer types: " + fVarNames(i) + " will be written as type " + new_type)
+		        if (add_attribute .eq. 1) then
+		            create_attribute = True
+		        end if
+		    end if
+		end  if
+	    end if
+	    varType(i) = new_type
+        end if
 
-        if (varType(i) .ne. "string") then      ; netCDF (currently no strings)
+        if (.not. ismissing(do_conversion(i))) then      ; netCDF (currently no strings)
                                                 ; predefine variable
-            if (TIME_NAME .eq. "") then
-                filevardef(fnc, ncVarNames(i), varType(i), (/ getfilevardims(f, fVarNames(i)) /))
-            else
-                dimVarNames = getfilevardims(f, fVarNames(i))
+             dimVarNames = getfilevardims(f, fVarNames(i))
+            if (TIME_NAME .ne. "") then
                 if (any(dimVarNames .eq. time_name)) then
                     tu_dim  = ind(dimVarNames .eq. time_name)
                     dimVarNames(tu_dim) = TIME_NAME
                 end if
-
-                filevardef(fnc, ncVarNames(i), varType(i), dimVarNames)
-                delete(dimVarNames)
+	    end if
+            if (do_conversion(i) .and. varType(i) .eq. "character") then
+		dim_names = new(dimsizes(dimVarNames) + 1, string)
+		dim_names(:dimsizes(dimVarNames) - 1) = dimVarNames
+		dim_names(dimsizes(dim_names) -1) = str_dim_names(i)
+		delete(dimVarNames)
+		dimVarNames = dim_names
+		delete(dim_names)
             end if
+            filevardef(fnc, ncVarNames(i), varType(i), dimVarNames)
+            delete(dimVarNames)
 
             varAtts = getfilevaratts(f, fVarNames(i))
             if (.not. all(ismissing(varAtts))) then
@@ -1236,8 +1355,27 @@ begin
                 delete(dumAtts@_FillValue)       ; delete auto assigned _FillValue
 
                 do j = 0, nAtts - 1
-                    dumAtts@$varAtts(j)$ = f->$fVarNames(i)$@$varAtts(j)$
+		    att_val = f->$fVarNames(i)$@$varAtts(j)$
+		    if (old_type .eq. "byte" .and. varAtts(j) .eq. "_FillValue") then
+			print("_FillValue: " + typeof(att_val) + " " + att_val)
+		    end if
+	            att_en_ix = ind(typeof(att_val) .eq. enumeric_types)
+		    if (.not. ismissing(att_en_ix) .and. att_en_ix .lt. 5) then
+		        if (convert_types(att_en_ix) .eq. "double") then
+			    tmp_att_val = todouble(att_val)
+			else
+		            tmp_att_val = tosigned(att_val)
+			end if
+			delete(att_val)
+			att_val = tmp_att_val
+		        delete(tmp_att_val)
+		    end if
+                    dumAtts@$varAtts(j)$ = att_val
+		    delete(att_val)
                 end do
+		if (create_attribute) then
+                    dumAtts@NCL_converted_from_type = old_type
+		end if
 
                 if (debug) then                    ; can lead to much output
                     print(varAtts)
@@ -1264,21 +1402,20 @@ begin
 ; inefficient if the leftmost dimensions have more elements than the rightmost.        *
 ; Hopefully that is a rare occurence -- certainly it would be very rare in GRIB files. *
 ;***************************************************************************************
-    fvar_types = getfilevartypes(f,fVarNames)
     threshold_size = threshold_level * 1000000
     do i = 0, nfNames - 1
-        if (varType(i) .ne. "string") then
+        if (.not. ismissing(do_conversion(i))) then
             if (debug) then
                 print("write loop: i = " + i + "  " + fVarNames(i))
             end if
 
             dsizes = getfilevardimsizes(f,fVarNames(i))
             type_size = 1
-            if (fvar_types(i) .eq. "double") then
+            if (varType(i) .eq. "double") then
                 type_size =  8
-            else if (fvar_types(i) .eq. "short") then
+            else if (varType(i) .eq. "short") then
                 type_size = 2
-            else if (fvar_types(i) .ne. "byte" .and. fvar_types(i) .ne. "character") then
+            else if (varType(i) .ne. "byte" .and. varType(i) .ne. "character") then
                 type_size = 4
             end if
             end if
@@ -1290,8 +1427,19 @@ begin
             end if
 
             ndims = dimsizes(dsizes)
-            ; no special handling for ndims greater than 6 or less than 3
-            if (threshold_size .eq. 0 .or. tsize .lt. threshold_size .or. ndims .gt. 7 .or. ndims .lt. 3) then
+            ; no special handling for ndims greater than 6 or less than 3 or if doing a type conversion
+	    ;
+	    if (do_conversion(i)) then
+	        if (varType(i) .eq. "character") then
+		    tmp_char = stringtocharacter ( (/ f->$fVarNames(i)$ /)  ) 
+		    tmp_size = dimsizes(tmp_char)
+                    fnc->$ncVarNames(i)$ = (/ tmp_char(:,:tmp_size(1)-2) /)
+		    delete(tmp_size)
+		    delete(tmp_char)
+		else
+                    fnc->$ncVarNames(i)$ = todouble ( (/ f->$fVarNames(i)$ /)  )
+	        end if
+            else if (threshold_size .eq. 0 .or. tsize .lt. threshold_size .or. ndims .gt. 7 .or. ndims .lt. 3) then
                 fnc->$ncVarNames(i)$ = (/ f->$fVarNames(i)$ /)
             else
                 if (ndims .eq. 7) then
@@ -1405,6 +1553,7 @@ begin
                     end if
                 end if
             end if
+	    end if
             
             delete(dsizes)
         end if
@@ -1423,17 +1572,17 @@ while ($n <= $nfiles)
     if ("$redirect" == 0) then
         echo "Processing file: $ifiles_r[$n]..."
         if ($?vars) then
-            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf
+            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf
         else
-            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf
+            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf
         endif
     else
         # redirection requested
         (echo "Processing file: $ifiles_r[$n]..." >&! $f_rdir)
         if ($?vars) then
-            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf >! $fout) >&! $f_rdir
+            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf >! $fout) >&! $f_rdir
         else
-            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf >! $fout) >&! $f_rdir
+            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf >! $fout) >&! $f_rdir
         endif
     endif
 
@@ -1505,6 +1654,15 @@ echo "  [-nc4c]               output a NetCDF 4 classic format file"
 echo "  [-cl compression_level]  compression level 0 - 9 [ default 0 - only meaningful for NetCDF 4 output]"
 echo "  [-th size_in_megabytes] theshold size: variables larger than specified size will be written incrementally"
 echo "                        in order to limit in-core memory requirements; 0 (the default) means no threshold"
+echo "                        -- ignored for variables that require a type conversion"
+echo "  [-no-uc]              turn off default conversion of unsigned integer types to corresponding signed types"
+echo "                        -- unsigned variables in the input will be skipped"
+echo "  [-no-i64c]            turn off default conversion of 64-bit integer types to double"
+echo "                        -- 64-bit integer types in the input will be skipped"
+echo "  [-no-sc]              turn off default conversion of string types to character"
+echo "                        -- string types in the input will be skipped"
+echo "  [-no-aa]              turn off default addition of the 'ncl_converted_from_type' attribute"
+echo "                        when variable types are converted"
 echo "  [-c comment]          text to be included in netCDF file attribute [default: no comment]"
 echo "  [-l]                  list some information about each variable as it is copied"
 echo "  [-d]                  upon exit: print contents of each netCDF file [like ncdump -h]"

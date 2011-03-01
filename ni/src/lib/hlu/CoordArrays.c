@@ -112,40 +112,40 @@ static NhlResource resources[] = {
 /* Begin-documented-resources */
 
 	{NhlNcaXArray,NhlCcaXArray,NhlTGenArray,sizeof(NhlGenArray),
-		Oset(xarray),NhlTImmediate,(NhlPointer)NULL,0,
+		Oset(xarray),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
 						(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcaYArray,NhlCcaYArray,NhlTGenArray,sizeof(NhlGenArray),
-		Oset(yarray),NhlTImmediate,(NhlPointer)NULL,0,
+		Oset(yarray),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
 						(NhlFreeFunc)NhlFreeGenArray},
 	{"no.res","No.Res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(xcast_set),NhlTImmediate,(NhlPointer)True,
+		Oset(xcast_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
          	_NhlRES_PRIVATE,NULL},
 	{"no.res","No.Res",NhlTBoolean,sizeof(int),
-		Oset(ycast_set),NhlTImmediate,(NhlPointer)True,
+		Oset(ycast_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
          	_NhlRES_PRIVATE,NULL},
 	{NhlNcaXCast,NhlCcaCast,NhlTcaCastMode,sizeof(NhlcaCastMode),
-		Oset(xcast),NhlTProcedure,(NhlPointer)XCastSet,0,NULL},
+		Oset(xcast),NhlTProcedure,_NhlUSET((NhlPointer)XCastSet),0,NULL},
 	{NhlNcaYCast,NhlCcaCast,NhlTcaCastMode,sizeof(NhlcaCastMode),
-		Oset(ycast),NhlTProcedure,(NhlPointer)YCastSet,0,NULL},
+		Oset(ycast),NhlTProcedure,_NhlUSET((NhlPointer)YCastSet),0,NULL},
 	{NhlNcaCopyArrays,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(copy_arrays),NhlTImmediate,(NhlPointer)True,0,NULL},
+		Oset(copy_arrays),NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNcaXMissingV,NhlCdiMissingValue,NhlTVariable,sizeof(NhlGenArray),
-		Oset(missing_x),NhlTImmediate,(NhlPointer)NULL,0,
+		Oset(missing_x),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
 						(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcaYMissingV,NhlCdiMissingValue,NhlTVariable,sizeof(NhlGenArray),
-		Oset(missing_y),NhlTImmediate,(NhlPointer)NULL,0,
+		Oset(missing_y),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
 						(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcaXMaxV,NhlCcaXMaxV,NhlTVariable,sizeof(NhlGenArray),
-		Oset(max_x),NhlTImmediate,(NhlPointer)NULL,0,
+		Oset(max_x),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
 						(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcaYMaxV,NhlCcaYMaxV,NhlTVariable,sizeof(NhlGenArray),
-		Oset(max_y),NhlTImmediate,(NhlPointer)NULL,0,
+		Oset(max_y),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
 						(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcaXMinV,NhlCcaXMinV,NhlTVariable,sizeof(NhlGenArray),
-		Oset(min_x),NhlTImmediate,(NhlPointer)NULL,0,
+		Oset(min_x),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
 						(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcaYMinV,NhlCcaYMinV,NhlTVariable,sizeof(NhlGenArray),
-		Oset(min_y),NhlTImmediate,(NhlPointer)NULL,0,
+		Oset(min_y),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
 						(NhlFreeFunc)NhlFreeGenArray},
 
 /* End-documented-resources */
@@ -154,22 +154,22 @@ static NhlResource resources[] = {
 	 * init private fields
 	 */
 	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
-		Oset(my_xarray),NhlTImmediate,(NhlPointer)NULL,
+		Oset(my_xarray),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
          	_NhlRES_PRIVATE,NULL},
 	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
-		Oset(my_yarray),NhlTImmediate,(NhlPointer)NULL,
+		Oset(my_yarray),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
          	_NhlRES_PRIVATE,NULL},
 	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
-		Oset(xctxt),NhlTImmediate,(NhlPointer)NULL,
+		Oset(xctxt),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
          	_NhlRES_PRIVATE,NULL},
 	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
-		Oset(yctxt),NhlTImmediate,(NhlPointer)NULL,
+		Oset(yctxt),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
          	_NhlRES_PRIVATE,NULL},
 	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
-		Oset(my_missing_x),NhlTImmediate,(NhlPointer)NULL,
+		Oset(my_missing_x),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
          	_NhlRES_PRIVATE,NULL},
 	{"no.res","No.Res",NhlTPointer,sizeof(NhlPointer),
-		Oset(my_missing_y),NhlTImmediate,(NhlPointer)NULL,
+		Oset(my_missing_y),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
          	_NhlRES_PRIVATE,NULL},
 };
 #undef Oset
@@ -336,8 +336,8 @@ CreateFloatTable
 	NhlGenArray	*tbl_lens;
 #endif
 {
-	int	vectors, elements;
-	int	i,j;
+	ng_size_t vectors, elements;
+	ng_size_t i,j;
 	float	**flttable, *fltvect;
 	int	*intvect;
 

@@ -253,8 +253,6 @@ static NhlErrorTypes 	CrTransClassInitialize(
 
 static NrmQuark QtrXCoordPoints;
 static NrmQuark QtrYCoordPoints;
-static NrmQuark QtrXInterPoints;
-static NrmQuark QtrYInterPoints;
 static NrmQuark Qdouble;
 
 NhlCurvilinearTransObjClassRec NhlcurvilinearTransObjClassRec = {
@@ -340,7 +338,6 @@ static NhlErrorTypes CrTransSetValues
 #endif
 {
 	NhlCurvilinearTransObjLayer inew = (NhlCurvilinearTransObjLayer) new;
-	NhlCurvilinearTransObjLayerPart *crp = &inew->crtrans;
 	NhlTransObjLayerPart	*tp = &inew->trobj;
 
 	if (_NhlArgIsSet(args,num_args,NhlNtrDoBounds)) {
@@ -574,11 +571,10 @@ static NhlErrorTypes SetUpTrans
 	NhlCurvilinearTransObjLayer inew = (NhlCurvilinearTransObjLayer)new;
 	NhlCurvilinearTransObjLayer iold = (NhlCurvilinearTransObjLayer)old;
 	NhlCurvilinearTransObjLayerPart *crp = &inew->crtrans;
-	NhlCurvilinearTransObjLayerPart *ocrp = &iold->crtrans;
 	NhlTransObjLayerPart	*tp = &inew->trobj;
 	NhlTransObjLayerPart	*otp = &iold->trobj;
-	char *error_lead,*e_text;
-	NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+	char *error_lead;
+	NhlErrorTypes ret = NhlNOERROR;
 	NhlBoolean new_coords = False;
         NhlBoolean x_crv_coords_set = False,y_crv_coords_set = False;
         NhlBoolean data_extent_def;
@@ -1553,8 +1549,6 @@ static NhlBoolean SetCompcBox
 
 #endif
 {
-	double *xp = (double *)crp->x_crv_ga->data;
-	double *yp = (double *)crp->y_crv_ga->data;
 	int msz = crp->msize;
 	int ix,iy;
 	int ixb,iyb,ixe,iye,ixt,iyt;
@@ -1730,133 +1724,6 @@ static NhlErrorTypes GetFracCoordsD
 }
 
 /*
- * Function:	GetFracCoords
- *
- * Description: Once it is known what compc grid box a data point lies,
- *              this routine determines the fractional component within
- *              the grid box, and sets the final data values.
- *              Note this routine assumes that 
- *              (ixe == ixb+1 && iye == iyb+1)
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-/*ARGSUSED*/
-static NhlErrorTypes GetFracCoords
-#if	NhlNeedProto
-(
-	NhlCurvilinearTransObjLayerPart *crp,
-        float   x,
-        float   y,
-        float*  xout,
-        float*  yout
-)
-#else
-(crp,x,y,xout,yout)
-	NhlCurvilinearTransObjLayerPart *crp;
-        float   x;
-        float   y;
-        float*  xout;
-        float*  yout;
-
-#endif
-{
-	NhlErrorTypes ret = NhlNOERROR;
-	double *xp = (double *)crp->x_crv_ga->data;
-	double *yp = (double *)crp->y_crv_ga->data;
-	int xsz = crp->xaxis_size;
-	int ixb = crp->ixb;
-	int iyb = crp->iyb;
-	int ixe = crp->ixe;
-	int iye = crp->iyb;
-	float fx,fy,fx_last;
-	int i;
-	float xlb = *(xp + iyb * xsz + ixb);
-	float xrb = *(xp + iyb * xsz + ixe);
-	float xlt = *(xp + iye * xsz + ixb);
-	float xrt = *(xp + iye * xsz + ixe);
-	float ylb = *(yp + iyb * xsz + ixb);
-	float yrb = *(yp + iyb * xsz + ixe);
-	float ylt = *(yp + iye * xsz + ixb);
-	float yrt = *(yp + iye * xsz + ixe);
-	float sfos,sdos;
-	float xtm,ytm;
-	NhlBoolean do_bin = False;
-	int sign = crp->handedness_sign;
-	
-/*
- * first use Newton's rule (10 trys), and if that doesn't work try a binary
- * search technique
- */
-	fx = 0.5;
-	for (i = 0; i < 10; i++) {
-		sfos = RIGHTOF(sign,x,y,
-			       ((1.0 - fx) * xlt + fx * xrt),
-			       ((1.0 - fx) * ylt + fx * yrt),
-			       ((1.0 - fx) * xlb + fx * xrb),
-			       ((1.0 - fx) * ylb + fx * yrb));
-
-		sdos = 2.0 * fx * ((xrt - xlt) * (ylb - yrb) -
-				   (xrb - xlb) * (ylt - yrt)) +
-			(xlt - x) * (ylb - yrb) +
-			(xrt - xlt) * (y - ylb) -
-			(xlb - x) * (ylt - yrt) - 
-			(xrb - xlb) * (y - ylt);
-		if (sdos == 0.0) {
-			do_bin = True;
-			break;
-		}
-		fx_last = fx;
-		fx = fx - sfos / sdos;
-		if (fabs(fx - fx_last) < EPS) {
-			if (fx < -EPS || fx > 1.0 + EPS) {
-				do_bin = True;
-			}
-			break;
-		}
-	}
-
-	if (do_bin) {
-		float fx1 = 0.0;
-		float fx2 = 1.0;
-
-		while (fabs(fx2-fx1) > EPS) {
-
-			fx = 0.5 * (fx1 + fx2);
-			sfos =  RIGHTOF(sign,x,y,
-					((1.0 - fx) * xlt + fx * xrt),
-					((1.0 - fx) * ylt + fx * yrt),
-					((1.0 - fx) * xlb + fx * xrb),
-					((1.0 - fx) * ylb + fx * yrb));
-			if (sfos < 0.0)
-				fx1 = fx;
-			else
-				fx2 = fx;
-		}
-	}
-			
-	xtm = (1.0 - fx) * (xlt - xlb) + fx * (xrt - xrb);
-	ytm = (1.0 - fx) * (ylt - ylb) + fx * (yrt - yrb);
-
-	if (fabs(xtm) > fabs(ytm))
-		fy = (x - (1.0 - fx) * xlb - fx * xrb) / xtm;
-	else
-		fy = (y - (1.0 - fx) * ylb - fx * yrb) / ytm;
-
-
-	*xout = (float)ixb + MAX(0.0,MIN(1.0,fx));
-	*yout = (float)iyb + MAX(0.0,MIN(1.0,fy));
-			
-
-	return ret;
-}
-
-/*
  * Function:	CrDataToCompc
  *
  * Description: Transforms data coordinates into the computation coordinate
@@ -1996,7 +1863,6 @@ static NhlErrorTypes CrCompcToData
 	double *yp = (double *)crp->y_crv_ga->data;
 	int xsz = crp->xaxis_size;
 	double x0,y0;
-	double xt,yt;
 	double xo,yo;
 
 	*status = 0;
@@ -2827,10 +2693,8 @@ int nargs;
 {
 	NhlCurvilinearTransObjLayerPart* crp = 
 		(&((NhlCurvilinearTransObjLayer)l)->crtrans);
-	int i, count;
+	int i;
 	NhlGenArray ga;
-	char *e_text;
-	NhlString entry_name = "CrTransGetValues";
 
 
 	for( i = 0; i < nargs ; i++) {

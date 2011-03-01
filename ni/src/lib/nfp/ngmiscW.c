@@ -15,13 +15,14 @@ NhlErrorTypes nggcog_W(void)
  *  Output variables
  */
   float     *alat, *alon;
-  int       ndims_alat, dsizes_alat[1];
-  int       ndims_alon, dsizes_alon[1];
+  ng_size_t  dsizes_alat[1];
+  ng_size_t  dsizes_alon[1];
 
 /*
  *  Local variables.
  */
-  int       i, num_points;
+  ng_size_t num_points;
+  int       inum_points;
 
 /*
  *  Retrieve argument #1 (input)
@@ -101,9 +102,18 @@ NhlErrorTypes nggcog_W(void)
   }
 
 /*
+ * Test dimension sizes.
+ */
+  if(num_points > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"nggcog: the length of lat/lon is > INT_MAX");
+    return(NhlFATAL);
+  }
+  inum_points = (int) num_points;
+
+/*
  *  Make the call to c_nggcog.
  */
-    c_nggcog(*clat, *clon, *crad, alat, alon, num_points);
+    c_nggcog(*clat, *clon, *crad, alat, alon, inum_points);
     return(NhlNOERROR);
 }
 
@@ -296,7 +306,7 @@ NhlErrorTypes nggetp_W(void)
   string *pname;
   float *fval;
   int *ival;
-  int ret_size = 1; 
+  ng_size_t ret_size = 1; 
 
 /*
  * Retrieve argument #1

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 # set echo verbose timestamp
-set version = 100111    # YYMMDD
+set version = 110125    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
 if ($#argv == 0) then
@@ -623,7 +623,7 @@ echo WRAPIT.o > objects
 
 foreach arg ($args) 
   if (-e $arg) then
-    if ($arg:e == "f" || $arg:e == "f90") then 
+    if ($arg:e == "f" || $arg:e == "f90" || $arg:e == "F90") then 
       echo COMPILING $arg
       if ($OS == AIX) then                 # AIX
         if ($arg:e == "f") then            # fixed format
@@ -636,7 +636,7 @@ foreach arg ($args)
         endif
         $cmd
       else if ($OS == Linux || $OS == Darwin || $OS == FreeBSD) then  
-        if ($arg:e == "f90" && $f90c == "g77") then           
+        if (($arg:e == "f90" || $arg:e == "F90") && $f90c == "g77") then
           echo FATAL ERROR: g77 can not compile f90 code
           echo " "
           exit 1
@@ -648,7 +648,7 @@ foreach arg ($args)
           $cmd
         endif
       else if ($OS == SunOS) then          # SunOS
-        if ($arg:e == "f90") then           
+        if ($arg:e == "f90" || $arg:e == "F90") then
           set cmd = "/opt/SUNWspro/bin/f90 $fopts $arg"
         else
           set cmd = "/opt/SUNWspro/bin/f77 $fopts $arg"

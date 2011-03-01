@@ -15,8 +15,6 @@ NhlErrorTypes testspan_W( void )
   NclStackEntry data0;
   double *tmp_start;
   NclBasicDataTypes type_start;
-  int has_missing_start;
-  NclScalar missing_start;
 
 /*
  * Argument # 1
@@ -25,8 +23,6 @@ NhlErrorTypes testspan_W( void )
   NclStackEntry data1;
   double *tmp_finish;
   NclBasicDataTypes type_finish;
-  int has_missing_finish;
-  NclScalar missing_finish;
 
 /*
  * Argument # 2
@@ -35,20 +31,18 @@ NhlErrorTypes testspan_W( void )
   NclStackEntry data2;
   double *tmp_spacing;
   NclBasicDataTypes type_spacing;
-  int has_missing_spacing;
-  NclScalar missing_spacing;
 
 /*
  * Return variable
  */
   void *xspan;
-  int dsizes_xspan[1];
+  ng_size_t dsizes_xspan[1];
   NclBasicDataTypes type_xspan;
 
 /*
  * Various
  */
-  int i, npts;
+  ng_size_t i, npts;
 
 /*
  * Retrieve parameters.
@@ -68,6 +62,8 @@ NhlErrorTypes testspan_W( void )
   case NclStk_VAL:
     start = (NclMultiDValData) data0.u.data_obj;
     break;
+  default:
+    break;
   }
 
   data1 = _NclGetArg(1, 3, DONT_CARE);
@@ -78,6 +74,8 @@ NhlErrorTypes testspan_W( void )
 
   case NclStk_VAL:
     finish = (NclMultiDValData) data1.u.data_obj;
+    break;
+  default:
     break;
   }
 
@@ -92,6 +90,8 @@ NhlErrorTypes testspan_W( void )
 
   case NclStk_VAL:
     spacing = (NclMultiDValData)data2.u.data_obj;
+    break;
+  default:
     break;
   }
 

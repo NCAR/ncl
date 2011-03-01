@@ -51,12 +51,13 @@ main()
 {
     float dval, oor,  icra[NCLS][NCLS], miss_val = 1.e12;
     int appid, workid, dataid, cnid, mpid;
-    int srlist, i, j, l, status, count[2];
+    int srlist, i, j, l, status;
+    ng_size_t count[2];
     NhlErrorTypes ierr;
 /*
  * Declare variables for defining color map.
  */
-    int     length[2];
+    ng_size_t   length[2];
     float   cmap[NCOLORS][3];
 /*
  * Default is to display to an X11 window.
@@ -197,7 +198,7 @@ main()
  */
     count[0] = count[1] = NCLS;
     NhlRLClear(srlist);
-    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&icra[0][0],2,(int *)count);
+    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&icra[0][0],2,count);
     NhlRLSetFloat(srlist,NhlNsfMissingValueV,miss_val);
     NhlCreate(&dataid,"DataItem",NhlscalarFieldClass,appid,srlist);
 /*

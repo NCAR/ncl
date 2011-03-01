@@ -26,14 +26,15 @@ NhlErrorTypes filwgts_lanczos_W( void )
 /*
  * Attribute variables
  */
-  int att_id, dsizes[1];
+  int att_id;
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, nfreq, ier, nwgt2;
+  int nfreq, ier, nwgt2;
 /*
  * Retrieve arguments.
  */
@@ -198,6 +199,9 @@ NhlErrorTypes filwgts_lanczos_W( void )
  * Free memory.
  */
   NclFree(tmp_wgt);
+  if(type_fca    != NCL_double) NclFree(tmp_fca);
+  if(type_fcb    != NCL_double) NclFree(tmp_fcb);
+  if(type_nsigma != NCL_double) NclFree(tmp_nsigma);
   if(type_wgt != NCL_double) {
     NclFree(tmp_freq);
     NclFree(tmp_resp);
@@ -309,7 +313,8 @@ NhlErrorTypes filwgts_normal_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, dsizes[1], ier;
+  ng_size_t dsizes[1];
+  int ier;
 /*
  * Retrieve arguments.
  */

@@ -91,8 +91,7 @@ char *ncl_cur_func = NULL;
 %token <str> DIM DIMNAME ATTNAME COORDV FVAR 
 %token <str> GVAR
 %token <sstr> STRING
-%token <sym> INTEGER UINT FLOAT LONG ULONG INT64 UINT64 DOUBLE BYTE CHARACTER GRAPHIC STRNG
-%token <sym> INT8 UINT8
+%token <sym> INTEGER UINT FLOAT LONG ULONG INT64 UINT64 DOUBLE BYTE UBYTE CHARACTER GRAPHIC STRNG
 %token <sym> NUMERIC ENUMERIC SNUMERIC FILETYPE SHORT USHORT LOGICAL
 %token <sym> GROUP GROUPTYPE COMPOUND UNDEFFILEGROUP
 %token <sym> UNDEF VAR WHILE DO QUIT  NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT NCLNULL LIST
@@ -130,7 +129,7 @@ char *ncl_cur_func = NULL;
 %left '^'
 %left UNOP NOT
 %type <array> expr_list
-%type <listvar> expr_list
+%type <listvar> list_expr_list
 %type <src_node> statement assignment 
 %type <src_node> procedure function_def procedure_def fp_block block do conditional
 %type <src_node> visblk statement_list
@@ -1450,8 +1449,6 @@ datatype : FLOAT	{ $$ = $1; }
 	| ULONG		{ $$ = $1; }
 	| INT64		{ $$ = $1; }
 	| UINT64	{ $$ = $1; }
-	| INT8		{ $$ = $1; }
-	| UINT8		{ $$ = $1; }
 	| INTEGER	{ $$ = $1; }
 	| UINT		{ $$ = $1; }
 	| SHORT		{ $$ = $1; }
@@ -1459,6 +1456,7 @@ datatype : FLOAT	{ $$ = $1; }
 	| DOUBLE	{ $$ = $1; }
 	| CHARACTER	{ $$ = $1; }
 	| BYTE		{ $$ = $1; }
+	| UBYTE		{ $$ = $1; }
 	| FILETYPE	{ $$ = $1; }
 	| GROUP		{ $$ = $1; }
 	| GROUPTYPE	{ $$ = $1; }
@@ -2217,16 +2215,13 @@ anysym : FLOAT {
 	| UINT64 {
 		$$ = $1;
 	}
-	| INT8 {
-		$$ = $1;
-	}
-	| UINT8 {
-		$$ = $1;
-	}
 	| DOUBLE {
 		$$ = $1;
 	}
 	| BYTE {
+		$$ = $1;
+	}
+	| UBYTE {
 		$$ = $1;
 	}
 	| CHARACTER {
@@ -2644,10 +2639,40 @@ array : LPSLSH expr_list SLSHRP	 {
 					}
 
 ;
-listvar : LBKSLSH expr_list SLSHRBK	{ 
+listvar : LBKSLSH list_expr_list SLSHRBK	{ 
 							$$ = _NclMakeListVarNode($2);
 					}
 
+;
+list_expr_list :  expr				{	
+							$$ = _NclMakeRowList();
+							$$->list = _NclMakeNewListNode();
+							$$->list->next = NULL;
+							$$->list->node = $1;
+							$$->currentitem= NULL; 
+							$$->nelem = 1;
+						}
+	| list_expr_list ',' expr   		{ 
+						/* pushed on backwards so they can be popped of in correct order*/
+							if($1 == NULL) {
+								$$ = _NclMakeRowList();
+								$$->nelem = 1;
+								$$->list = _NclMakeNewListNode();
+								$$->list->next = NULL;
+								$$->list->node = $1;
+								$$->currentitem= NULL; 
+								$$->nelem = 1;
+							} else {
+								NclSrcListNode *tmp;
+
+								tmp = _NclMakeNewListNode();
+								tmp->next = $1->list;
+								tmp->node = $3;
+								$1->list = tmp;
+								$1->nelem++;
+								$$ = $1;
+							}
+						}
 ;
 expr_list :  expr				{	
 							_NclValOnly($1);

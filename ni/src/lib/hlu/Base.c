@@ -28,6 +28,7 @@
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/BaseP.h>
+#include <ncarg/hlu/AppI.h>
 
 static _NhlRawObjCB bcallbacks[] = {
 	{_NhlCBobjDestroy,NhlOffset(NhlBaseLayerRec,base.destroycb),

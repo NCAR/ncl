@@ -12,11 +12,12 @@ NhlErrorTypes NhlGetNamedColorIndex_W( void )
   int i, j, ii, *ci, *wks, nid, total_cname_elements, total_wks_elements;
   NclHLUObj tmp_hlu_obj;
   string *cname;
-  char *cval;
-  int ndims_cname, dsizes_cname[NCL_MAX_DIMENSIONS];
-  int ndims_wks, dsizes_wks[NCL_MAX_DIMENSIONS];
-  int ndims_out, dsizes_out[NCL_MAX_DIMENSIONS];
-  int ret_size = 1;	
+  int ndims_cname;
+  ng_size_t dsizes_cname[NCL_MAX_DIMENSIONS];
+  int ndims_wks;
+  ng_size_t dsizes_wks[NCL_MAX_DIMENSIONS];
+  int ndims_out;
+  ng_size_t dsizes_out[NCL_MAX_DIMENSIONS];
 
 /*
  * Retrieve parameters

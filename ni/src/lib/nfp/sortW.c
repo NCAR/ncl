@@ -4,7 +4,7 @@
 #include "wrapper.h"
 
 extern void NGCALLF(dpsortdriver,DPSORTDRIVER)(double*, int*, int*, int*,
-                           int*);
+											   int*);
 
 NhlErrorTypes dim_pqsort_W( void )
 {
@@ -13,8 +13,10 @@ NhlErrorTypes dim_pqsort_W( void )
  */
   void *x;
   int *kflag;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
 /*
@@ -24,7 +26,9 @@ NhlErrorTypes dim_pqsort_W( void )
 /*
  * various
  */
-  int i, j, index_x, total_elements, ier = 0, ndim;
+  ng_size_t index_x, ndim;
+  ng_size_t i, j, total_elements;
+  int ier = 0, indim;
 /*
  * Retrieve parameter.
  */
@@ -48,10 +52,11 @@ NhlErrorTypes dim_pqsort_W( void )
            NULL,
            DONT_CARE);
 /*
- * Input array must be integer, float, or double.
+ * Input array must be integer, long, float, or double.
  */
-  if(type_x != NCL_int && type_x != NCL_float && type_x != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_pqsort: The input array must be of type integer, float, or double");
+  if(type_x != NCL_int && type_x != NCL_long && type_x != NCL_float && 
+	 type_x != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_pqsort: The input array must be of type integer, long, float, or double");
     return(NhlFATAL);
   }
 /*
@@ -63,8 +68,7 @@ NhlErrorTypes dim_pqsort_W( void )
   }
 
 /*
- * Compute the total number of elements in output and input, minus
- * the last dimension.
+ * Compute the total number of leftmost elements.
  */
   total_elements = 1;
   for(i = 0; i < ndims_x-1; i++) {
@@ -72,6 +76,16 @@ NhlErrorTypes dim_pqsort_W( void )
   }    
 
   ndim = dsizes_x[ndims_x-1];
+
+/*
+ * Test dimension sizes.
+ */
+  if(ndim > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_pqsort: one or more input dimensions sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  indim = (int) ndim;
+
 /*
  * Coerce missing values, if any.
  */
@@ -107,7 +121,7 @@ NhlErrorTypes dim_pqsort_W( void )
       tmp_x = &((double*)x)[index_x];
     }
 
-    NGCALLF(dpsortdriver,DPSORTDRIVER)(tmp_x,&ndim,&iperm[index_x],kflag,&ier);
+    NGCALLF(dpsortdriver,DPSORTDRIVER)(tmp_x,&indim,&iperm[index_x],kflag,&ier);
 
     if((*kflag ==2 || *kflag == -2) && type_x != NCL_double) {
       if(type_x == NCL_int) {
@@ -115,6 +129,11 @@ NhlErrorTypes dim_pqsort_W( void )
           ((int*)x)[index_x+j] = (int)(tmp_x[j]);
         }
       }
+      else if(type_x == NCL_long) {
+        for(j = 0; j < ndim; j++) {
+          ((long*)x)[index_x+j] = (long)(tmp_x[j]);
+        }
+	  }
       else {
         coerce_output_float_only(x,tmp_x,ndim,index_x);
       }
@@ -141,7 +160,9 @@ NhlErrorTypes dim_pqsort_n_W( void )
   int *kflag;
   int *dims;
   double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
 /*
@@ -151,7 +172,9 @@ NhlErrorTypes dim_pqsort_n_W( void )
 /*
  * various
  */
-  int i, j, k, inr, index_x, total_nl, total_nr, total_elements, ier = 0, ndim;
+  ng_size_t index_x, ndim;
+  ng_size_t i, j, k, inr, total_nl, total_nr, total_elements;
+  int ier = 0, indim;
 /*
  * Retrieve parameter.
  */
@@ -196,8 +219,9 @@ NhlErrorTypes dim_pqsort_n_W( void )
 /*
  * Input array must be integer, float, or double.
  */
-  if(type_x != NCL_int && type_x != NCL_float && type_x != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_pqsort_n: The input array must be of type integer, float, or double");
+  if(type_x != NCL_int && type_x != NCL_long && type_x != NCL_float && 
+	 type_x != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_pqsort_n: The input array must be of type integer, long, float, or double");
     return(NhlFATAL);
   }
 /*
@@ -218,6 +242,15 @@ NhlErrorTypes dim_pqsort_n_W( void )
   total_elements = total_nr * total_nl;
 
   ndim = dsizes_x[*dims];
+/*
+ * Test dimension sizes.
+ */
+  if(ndim > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_pqsort_n: one or more input dimensions sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  indim = (int) ndim;
+
 /*
  * Coerce missing values, if any.
  */
@@ -248,25 +281,25 @@ NhlErrorTypes dim_pqsort_n_W( void )
  */
       index_x = inr + j;
       coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,ndim,
-				      0,NULL,NULL);
-      NGCALLF(dpsortdriver,DPSORTDRIVER)(tmp_x,&ndim,tmp_iperm,kflag,&ier);
+                                      0,NULL,NULL);
+      NGCALLF(dpsortdriver,DPSORTDRIVER)(tmp_x,&indim,tmp_iperm,kflag,&ier);
 
       for(k = 0; k < ndim; k++) {
-	index_x = inr + j + (k*total_nr);
+        index_x = inr + j + (k*total_nr);
 
-	iperm[index_x] = tmp_iperm[k]; /* Output permutation vector */
+        iperm[index_x] = tmp_iperm[k]; /* Output permutation vector */
 
-	if(*kflag ==2 || *kflag == -2) {
+        if(*kflag ==2 || *kflag == -2) {
 /*
  * Need to sort the original x array as well.
  */
-	  if(type_x == NCL_int) {
-	    ((int*)x)[index_x] = (int)(tmp_x[k]);
-	  }
-	  else {
-	    coerce_output_float_or_double(x,&tmp_x[k],type_x,1,index_x);
-	  }
-	}
+          if(type_x == NCL_int) {
+            ((int*)x)[index_x] = (int)(tmp_x[k]);
+          }
+          else {
+            coerce_output_float_or_double(x,&tmp_x[k],type_x,1,index_x);
+          }
+        }
       }
     }
   }
@@ -274,6 +307,7 @@ NhlErrorTypes dim_pqsort_n_W( void )
  * Free unneeded memory.
  */
   NclFree(tmp_x);
+  NclFree(tmp_iperm);
 /*
  * Return.
  */

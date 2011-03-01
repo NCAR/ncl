@@ -36,6 +36,7 @@
 #include "NclGroup.h"
 #include "NclFileInterfaces.h"
 #include "DataSupport.h"
+#include "TypeSupport.h"
 #include "Symbol.h"
 #include "NclCoordVar.h"
 #include "FileSupport.h"
@@ -58,8 +59,7 @@ NhlErrorTypes _NclBuildFileCoordRSelection
 #endif
 {
 	NclQuark cname;
-        NclMultiDValData name_md = NULL,result_md = NULL,tmp_md = NULL,coord_md = NULL;
-        long start = 0,finish = 0;
+        NclMultiDValData name_md = NULL,tmp_md = NULL,coord_md = NULL;
         NclCoordVar cvar = NULL;
         NclObjTypes the_type;
 	char * v_name;
@@ -300,12 +300,12 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 {	
 	NclMultiDValData vect_md;
 	long *thevector;
-	int i;
+	ng_size_t i;
 	char * v_name;
 	char * f_name;
 	int index = -1;
 	int vindex = -1;
-	NclQuark cname;
+	NclQuark cname = NrmNULLQUARK;
 	NclMultiDValData name_md = NULL,tmp_md = NULL,coord_md = NULL;
         NclCoordVar cvar = NULL;
         NclObjTypes the_type;
@@ -324,7 +324,8 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 
 	if(vect_md != NULL) {
 		if(dim_name != NULL) {
-			index = _NclFileVarIsDim(file,var,NrmStringToQuark(dim_name));
+			cname = NrmStringToQuark(dim_name);
+			index = _NclFileVarIsDim(file,var,cname);
 			if((index >= 0)&&(index < file->file.var_info[vindex]->num_dimensions)){
 				sel->dim_num = index;
 			} else {
@@ -553,7 +554,7 @@ NhlErrorTypes  _NclBuildFileVSelection
 	NclMultiDValData vect_md;
 	NclMultiDValData tmp_md;
 	long *thevector;
-	int i;
+	ng_size_t i;
 	char * v_name;
 	char * f_name;
 	int index = -1;
@@ -1318,13 +1319,13 @@ NclQuark *dimnames;
 }
 extern NhlErrorTypes _NclFileAddVarChunk
 #if     NhlNeedProto
-(NclFile thefile, NclQuark varname, int n_dims, int *dims)
+(NclFile thefile, NclQuark varname, int n_dims, ng_size_t *dims)
 #else
 (thefile, varname, n_dims, dims)
 NclFile thefile;
 NclQuark varname;
 int n_dims;
-int *dims;
+ng_size_t *dims;
 #endif
 {
 	NclFileClass fc = NULL;
@@ -1344,13 +1345,13 @@ int *dims;
 }
 extern NhlErrorTypes _NclFileAddVarChunkCache
 #if     NhlNeedProto
-(NclFile thefile, NclQuark varname, size_t cache_size, size_t cache_nelems, float cache_preemption)
+(NclFile thefile, NclQuark varname, ng_size_t cache_size, ng_size_t cache_nelems, float cache_preemption)
 #else
 (thefile, varname, cache_size, cache_nelems, cache_preemption)
 NclFile thefile;
 NclQuark varname;
-size_t cache_size;
-size_t cache_nelems;
+ng_size_t cache_size;
+ng_size_t cache_nelems;
 float cache_preemption;
 #endif
 {
@@ -1397,12 +1398,12 @@ int compress_level;
 }
 extern NhlErrorTypes _NclFileAddDim
 #if     NhlNeedProto
-(NclFile thefile, NclQuark dimname, int dimsize, int is_unlimited)
+(NclFile thefile, NclQuark dimname, ng_size_t dimsize, int is_unlimited)
 #else
 (thefile, dimname, dimsize, is_unlimited)
 NclFile thefile;
 NclQuark dimname;
-int dimsize;
+ng_size_t dimsize;
 int is_unlimited;
 #endif
 {
@@ -1424,12 +1425,12 @@ int is_unlimited;
 
 extern NhlErrorTypes _NclFileAddChunkDim
 #if     NhlNeedProto
-(NclFile thefile, NclQuark dimname, int dimsize, int is_unlimited)
+(NclFile thefile, NclQuark dimname, ng_size_t dimsize, int is_unlimited)
 #else
 (thefile, dimname, dimsize, is_unlimited)
 NclFile thefile;
 NclQuark dimname;
-int dimsize;
+ng_size_t dimsize;
 int is_unlimited;
 #endif
 {
@@ -1463,7 +1464,6 @@ NclQuark  varname;
 	int i,j;
 	int ret;
 	long long total;
-	char *dimnames[100];
 	NclMultiDValData tmp_md;
 	NclVar tmp_var;
 	int vindex = -1;
@@ -1490,11 +1490,11 @@ NclQuark  varname;
                		 	if(ret < 0) {
                        			return(NhlWARNING);
                 		}
-				ret = nclfprintf(fp,"Total Size: %lld bytes\n",total * _NclSizeOf(thefile->file.var_info[i]->data_type));
+				ret = nclfprintf(fp,"Total Size: %lld bytes\n",(long long)total * _NclSizeOf(thefile->file.var_info[i]->data_type));
                 		if(ret < 0) {
                         		return(NhlWARNING);
                 		}
-				ret = nclfprintf(fp,"            %lld values\n",total);
+				ret = nclfprintf(fp,"            %lld values\n",(long long)total);
                 		if(ret < 0) {
                         		return(NhlWARNING);
                 		}
@@ -1531,7 +1531,7 @@ NclQuark  varname;
 				ret = nclfprintf(fp,"\nCoordinates: \n");
 				for(j = 0; j < thefile->file.var_info[i]->num_dimensions;j++) {
 					if(_NclFileVarIsCoord(thefile,thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark)!= -1) {
-						int size = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_size;
+						ng_size_t size = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_size;
 						ret = nclfprintf(fp,"            ");
 						if(ret < 0) {
 							return(NhlWARNING);
@@ -1549,9 +1549,10 @@ NclQuark  varname;
 						}
 						tmp_var = _NclFileReadCoord(thefile,thefile->file.file_dim_info
 									    [thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark,NULL);
-						if(tmp_var != NULL) {
-							tmp_md = (NclMultiDValData)_NclGetObj(tmp_var->var.thevalue_id);
+						if (! tmp_var) {
+							return NhlFATAL;
 						}
+						tmp_md = (NclMultiDValData)_NclGetObj(tmp_var->var.thevalue_id);
 						ret =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
 						if(ret < NhlWARNING) {
 							return(NhlWARNING);
@@ -1629,11 +1630,10 @@ NclQuark  varname;
 				return(NhlNOERROR);
 			}
 		}
-	} else {
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"in _NclPrintFileVarSummary"));
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"printFileVarSummary: (%s) is not a variable in the file (%s)",NrmQuarkToString(varname),NrmQuarkToString(thefile->file.fname));
-		return(NhlFATAL);	
 	}
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"in _NclPrintFileVarSummary"));
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"printFileVarSummary: (%s) is not a variable in the file (%s)",NrmQuarkToString(varname),NrmQuarkToString(thefile->file.fname));
+	return(NhlFATAL);	
 }
 
 NclQuark *_NclSplitGroupPath
@@ -1642,7 +1642,7 @@ NclQuark *_NclSplitGroupPath
 #else
 (group_name, n_lvls)
 NclQuark group_name;
-int *lvls;
+int *n_lvls;
 #endif
 {
 	NclQuark *splited_group_names = NULL;
@@ -1967,62 +1967,61 @@ NclApiDataList *_NclGetFileVarInfoList2
 	struct _NclFileRec *thefile;
 #endif
 {
-	NclApiDataList *tmp = NULL,*thelist = NULL;
-	NclSymbol *s = NULL;
+	NclApiDataList *tmp = NULL, *thelist = NULL;
 	int i,j;
-	NclStackEntry *thevar = NULL;
-	NclMultiDValData theid = NULL;
 	NclFileAttInfoList *step;
-	if(thefile!=NULL) {
-					for(i = 0; i < thefile->file.n_vars; i++) {
-						tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
-						tmp->kind = VARIABLE_LIST;
-						tmp->u.var = (NclApiVarInfoRec*)NclMalloc(sizeof(NclApiVarInfoRec));
-						tmp->u.var->name = thefile->file.var_info[i]->var_name_quark;
-						tmp->u.var->data_type = thefile->file.var_info[i]->data_type;
-						tmp->u.var->type = FILEVAR;
-						tmp->u.var->n_dims = thefile->file.var_info[i]->num_dimensions;
-						tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.var->n_dims);
 
-						for(j = 0 ; j < tmp->u.var->n_dims ; j++) {
-							tmp->u.var->dim_info[j].dim_quark =thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
-							tmp->u.var->dim_info[j].dim_num = thefile->file.var_info[i]->file_dim_num[j];
-							tmp->u.var->dim_info[j].dim_size = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_size;
-							if(thefile->file.coord_vars[thefile->file.var_info[i]->file_dim_num[j]] != NULL) {
-								tmp->u.var->coordnames[j] = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
-
-							} else {
-								tmp->u.var->coordnames[j] = -1;
-							}
-						}
-						if(thefile->file.var_att_info[i] != NULL) {
-							j = 0;
-							step = thefile->file.var_att_info[i];
-							while(step != NULL) {
-								step = step->next;
-								j++;
-							}
-							tmp->u.var->n_atts = j;
-							tmp->u.var->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark)*j);
-							step = thefile->file.var_att_info[i];
-							j = 0;
-							while(step != NULL) {
-								tmp->u.var->attnames[j]= step->the_att->att_name_quark;
-								j++;
-								step = step->next;
-							}
-						} else {
-							tmp->u.var->n_atts = 0;
-							tmp->u.var->attnames = NULL;
-						}
-						tmp->next = thelist;
-						thelist = tmp;
-						tmp = NULL;
-					}
-	} else {
-		return(NULL);
+	if(thefile ==NULL) {
+		return NULL;
 	}
+	for(i = 0; i < thefile->file.n_vars; i++) {
+		tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+		tmp->kind = VARIABLE_LIST;
+		tmp->u.var = (NclApiVarInfoRec*)NclMalloc(sizeof(NclApiVarInfoRec));
+		tmp->u.var->name = thefile->file.var_info[i]->var_name_quark;
+		tmp->u.var->data_type = thefile->file.var_info[i]->data_type;
+		tmp->u.var->type = FILEVAR;
+		tmp->u.var->n_dims = thefile->file.var_info[i]->num_dimensions;
+		tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.var->n_dims);
+
+		for(j = 0 ; j < tmp->u.var->n_dims ; j++) {
+			tmp->u.var->dim_info[j].dim_quark =thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
+			tmp->u.var->dim_info[j].dim_num = thefile->file.var_info[i]->file_dim_num[j];
+			tmp->u.var->dim_info[j].dim_size = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_size;
+			if(thefile->file.coord_vars[thefile->file.var_info[i]->file_dim_num[j]] != NULL) {
+				tmp->u.var->coordnames[j] = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
+
+			} else {
+				tmp->u.var->coordnames[j] = -1;
+			}
+		}
+		if(thefile->file.var_att_info[i] != NULL) {
+			j = 0;
+			step = thefile->file.var_att_info[i];
+			while(step != NULL) {
+				step = step->next;
+				j++;
+			}
+			tmp->u.var->n_atts = j;
+			tmp->u.var->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark)*j);
+			step = thefile->file.var_att_info[i];
+			j = 0;
+			while(step != NULL) {
+				tmp->u.var->attnames[j]= step->the_att->att_name_quark;
+				j++;
+				step = step->next;
+			}
+		} else {
+			tmp->u.var->n_atts = 0;
+			tmp->u.var->attnames = NULL;
+		}
+		tmp->next = thelist;
+		thelist = tmp;
+		tmp = NULL;
+	}
+	return thelist;
 }
+
 
 NclApiDataList *_NclGetFileVarInfo2
 #if	NhlNeedProto
@@ -2033,14 +2032,9 @@ struct _NclFileRec *thefile;
 NclQuark file_var_name;
 #endif
 {
-	NclApiDataList *tmp = NULL,*thelist = NULL;
-	NclSymbol *s = NULL;
+	NclApiDataList *tmp = NULL;
 	int i,j;
-	NclStackEntry *thevar = NULL;
-	NclMultiDValData theid = NULL;
 	NclFileAttInfoList *step;
-
-
 
 	if(thefile != NULL) {
 		for(i = 0; i < thefile->file.n_vars; i++) {
@@ -2100,10 +2094,7 @@ NclFile thefile;
 #endif
 {
 	NclApiDataList *tmp = NULL;
-	NclSymTableListNode *st;
-	NclSymbol *s;
-	int i,j;
-	NclMultiDValData theid;
+	int j;
 
 	tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
 	tmp->kind = FILE_LIST;
@@ -2144,6 +2135,7 @@ NclFile thefile;
 		tmp->next = NULL;
 		return(tmp);
 	}
+	return NULL;
 }
 
 

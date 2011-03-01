@@ -47,7 +47,7 @@ static const int M=25, N=25;
 main(int argc, char *argv[])
 {
     float   T[25 * 25];
-    int     len_dims[2];
+    ng_size_t   len_dims[2];
     int     appid,wid,dataid,cnid;
     int     srlist;
     float   x,y;

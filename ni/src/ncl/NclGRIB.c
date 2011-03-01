@@ -123,7 +123,7 @@ static PtableInfo *Ptables = NULL;
 
 extern void GribPushAtt(
 #if NhlNeedProto
-GribAttInqRecList **att_list_ptr,char* name,void *val,int dimsize,NclObjClass type
+GribAttInqRecList **att_list_ptr,char* name,void *val,ng_size_t dimsize,NclObjClass type
 #endif
 );
 
@@ -158,7 +158,6 @@ static void _AdjustCacheTypeAndMissing
 		}
 	}
 }
-
 static void _NewGridCache
 #if NhlNeedProto
 (GribFileRecord *therec,GribParamList *step)
@@ -169,7 +168,7 @@ GribParamList *step
 #endif
 {
 	NclGribCacheList *newlist;
-    int nvar_dims;
+	int nvar_dims;
 
 	if(therec->grib_grid_cache == NULL) {
 		therec->grib_grid_cache = NclMalloc(sizeof(NclGribCacheList));
@@ -179,7 +178,6 @@ GribParamList *step
                 therec->grib_grid_cache = NclMalloc(sizeof(NclGribCacheList));
 	}
 		
-
 	therec->grib_grid_cache->grid_number = step->grid_number;
 	therec->grib_grid_cache->has_gds = step->has_gds;
 	therec->grib_grid_cache->grid_gds_tbl_index = step->grid_gds_tbl_index;
@@ -197,7 +195,7 @@ GribParamList *step
 	} else if ((n_dims_lon ==2) &&(n_dims_lat ==2)) {
 		therec->grib_grid_cache->n_dims = 2;
 		therec->grib_grid_cache->dimsizes[1] = dimsizes_lon[1];
-		therec->grib_grid_cache->dimsizes[0] = dimsizes_lon[0];
+		therec->grib_grid_cache->dimsizes[0] = dimsizes_lat[0];
 	} else {
 		if(n_dims_lat ==2) {
 			therec->grib_grid_cache->n_dims = 2;
@@ -223,36 +221,36 @@ GribFileRecord *therec;
 GribParamList *step;
 #endif
 {
-	NclGribCacheList *newlist;
-    int nvar_dims;
+        NclGribCacheList *newlist;
+	int nvar_dims;
 
-	if(therec->grib_grid_cache == NULL) {
-		therec->grib_grid_cache = NclMalloc(sizeof(NclGribCacheList));
-		newlist = NULL;
-	} else {
-		newlist = therec->grib_grid_cache;
+        if(therec->grib_grid_cache == NULL) {
                 therec->grib_grid_cache = NclMalloc(sizeof(NclGribCacheList));
-	}
-		
-	therec->grib_grid_cache->grid_number = step->grid_number;
-	therec->grib_grid_cache->has_gds = step->has_gds;
-	therec->grib_grid_cache->grid_gds_tbl_index = step->grid_gds_tbl_index;
-	therec->grib_grid_cache->n_dims = 3;
-	nvar_dims = step->var_info.num_dimensions;
-	therec->grib_grid_cache->dimsizes[0] = 2;
-	therec->grib_grid_cache->dimsizes[1] = step->var_info.dim_sizes[nvar_dims - 2];
-	therec->grib_grid_cache->dimsizes[2] = step->var_info.dim_sizes[nvar_dims - 1];
-	therec->grib_grid_cache->dim_ids[0] = step->var_info.file_dim_num[nvar_dims - 3];
-	therec->grib_grid_cache->dim_ids[1] = step->var_info.file_dim_num[nvar_dims - 2];
-	therec->grib_grid_cache->dim_ids[2] = step->var_info.file_dim_num[nvar_dims - 1];
-	therec->grib_grid_cache->int_missing_rec = NULL;
-	therec->grib_grid_cache->float_missing_rec = NULL;
-	therec->grib_grid_cache->n_entries = 0;
-	therec->grib_grid_cache->thelist = NULL;
-	therec->grib_grid_cache->next = newlist;
+                newlist = NULL;
+        } else {
+                newlist = therec->grib_grid_cache;
+                therec->grib_grid_cache = NclMalloc(sizeof(NclGribCacheList));
+        }
+
+        therec->grib_grid_cache->grid_number = step->grid_number;
+        therec->grib_grid_cache->has_gds = step->has_gds;
+        therec->grib_grid_cache->grid_gds_tbl_index = step->grid_gds_tbl_index;
+        therec->grib_grid_cache->n_dims = 3;
+        nvar_dims = step->var_info.num_dimensions;
+        therec->grib_grid_cache->dimsizes[0] = 2;
+        therec->grib_grid_cache->dimsizes[1] = step->var_info.dim_sizes[nvar_dims - 2];
+        therec->grib_grid_cache->dimsizes[2] = step->var_info.dim_sizes[nvar_dims - 1];
+        therec->grib_grid_cache->dim_ids[0] = step->var_info.file_dim_num[nvar_dims - 3];
+        therec->grib_grid_cache->dim_ids[1] = step->var_info.file_dim_num[nvar_dims - 2];
+        therec->grib_grid_cache->dim_ids[2] = step->var_info.file_dim_num[nvar_dims - 1];
+        therec->grib_grid_cache->int_missing_rec = NULL;
+        therec->grib_grid_cache->float_missing_rec = NULL;
+        therec->grib_grid_cache->n_entries = 0;
+        therec->grib_grid_cache->thelist = NULL;
+        therec->grib_grid_cache->next = newlist;
 }
 static NclMultiDValData  _GetCacheVal
-#if	NhlNeedProto
+#if     NhlNeedProto
 (GribFileRecord *therec,GribParamList *step,GribRecordInqRec *current_rec)
 #else
 (therec,step,current_rec)
@@ -261,105 +259,104 @@ GribParamList *step;
 GribRecordInqRec *current_rec;
 #endif
 {
-	NclGribCacheList *thelist;
-	NclGribCacheRec *tmp;
-	int i;
-	int tg;
-	void *val;
-	int nvar_dims;
+        NclGribCacheList *thelist;
+        NclGribCacheRec *tmp;
+        int i;
+        int tg;
+        void *val;
+        int nvar_dims;
 
-	thelist = therec->grib_grid_cache;
-	nvar_dims = step->var_info.num_dimensions;
-	while(thelist != NULL) {
-	  /*
-		if((thelist->grid_number == step->grid_number)&&(thelist->has_gds ==step->has_gds)
+        thelist = therec->grib_grid_cache;
+        nvar_dims = step->var_info.num_dimensions;
+        while(thelist != NULL) {
+		/*      
+                if((thelist->grid_number == step->grid_number)&&(thelist->has_gds ==step->has_gds)
 		   &&(thelist->grid_gds_tbl_index == step->grid_gds_tbl_index)) {
-	  */
-	        if (step->var_info.doff == 2) {
-	                if (thelist->n_dims != 3 ||
-			    thelist->dim_ids[1] != step->var_info.file_dim_num[nvar_dims-2] ||
-			    thelist->dim_ids[2] != step->var_info.file_dim_num[nvar_dims-1]) {
-			        thelist = thelist->next;
-			        continue;
-			}
-		}		    
-		else if (thelist->n_dims != 2 ||
-			 thelist->dim_ids[0] != step->var_info.file_dim_num[nvar_dims-2] ||
-			 thelist->dim_ids[1] != step->var_info.file_dim_num[nvar_dims-1]) {
-		         thelist = thelist->next;
-		         continue;
-		}		    
-		
-		if(thelist->n_entries == NCL_GRIB_CACHE_SIZE) {
-		        tmp = thelist->tail;
-			tmp->rec->the_dat = NULL;
-			tmp->rec = current_rec;
-			tmp->prev->next = NULL;
-			thelist->tail = tmp->prev;
-			tmp->prev = NULL;
-			tmp->next = thelist->thelist;
-			tmp->next->prev = tmp;
-			thelist->thelist = tmp;
-			return(tmp->thevalue);
-		} 
-		if(thelist->n_entries == 0) {
-			thelist->thelist = NclMalloc(sizeof(NclGribCacheRec));
-			thelist->thelist->prev = NULL;
-			thelist->thelist->next = NULL;
-			thelist->thelist->rec = current_rec;
-			thelist->tail = thelist->thelist;
-			tg = 1;
-			for(i = 0; i< thelist->n_dims; i++) {
-			        tg*=thelist->dimsizes[i];
-			}
-			val = NclMalloc(sizeof(float)*tg);
-			thelist->thelist->thevalue = _NclCreateVal(NULL,
-								   NULL,
-								   Ncl_MultiDValData,
-								   0,
-								   val,
-								   NULL,
-								   thelist->n_dims,
-								   thelist->dimsizes,
-								   PERMANENT,
-								   NULL,
-								   nclTypefloatClass);
-			thelist->n_entries = 1;
-			return(thelist->thelist->thevalue);
-		} else {
-			tmp = NclMalloc(sizeof(NclGribCacheRec));
-			tmp->prev = NULL;
-			tmp->next = thelist->thelist;
-			tmp->next->prev = tmp;
-			tmp->rec = current_rec;
-			tg = 1;
-			for(i = 0; i< thelist->n_dims; i++) {
-				tg*=thelist->dimsizes[i];
-			}
-			val = NclMalloc(sizeof(float)*tg);
-			tmp->thevalue = _NclCreateVal(NULL,
-						      NULL,
-						      Ncl_MultiDValData,
-						      0,
-						      val,
-						      NULL,
-						      thelist->n_dims,
-						      thelist->dimsizes,
-						      PERMANENT,
-						      NULL,
-						      nclTypefloatClass);
-			++thelist->n_entries;
-				
-			thelist->thelist = tmp;
-			return(tmp->thevalue);
-		}
-	}
-	return(NULL);
-}
+		*/
+                if (step->var_info.doff == 2) {
+                        if (thelist->n_dims != 3 ||
+                            thelist->dim_ids[1] != step->var_info.file_dim_num[nvar_dims-2] ||
+                            thelist->dim_ids[2] != step->var_info.file_dim_num[nvar_dims-1]) {
+                                thelist = thelist->next;
+                                continue;
+                        }
+                }
+                else if (thelist->n_dims != 2 ||
+                         thelist->dim_ids[0] != step->var_info.file_dim_num[nvar_dims-2] ||
+                         thelist->dim_ids[1] != step->var_info.file_dim_num[nvar_dims-1]) {
+			thelist = thelist->next;
+			continue;
+                }
 
+                if(thelist->n_entries == NCL_GRIB_CACHE_SIZE) {
+                        tmp = thelist->tail;
+                        tmp->rec->the_dat = NULL;
+                        tmp->rec = current_rec;
+                        tmp->prev->next = NULL;
+                        thelist->tail = tmp->prev;
+                        tmp->prev = NULL;
+                        tmp->next = thelist->thelist;
+                        tmp->next->prev = tmp;
+                        thelist->thelist = tmp;
+                        return(tmp->thevalue);
+                }
+                if(thelist->n_entries == 0) {
+                        thelist->thelist = NclMalloc(sizeof(NclGribCacheRec));
+                        thelist->thelist->prev = NULL;
+                        thelist->thelist->next = NULL;
+                        thelist->thelist->rec = current_rec;
+                        thelist->tail = thelist->thelist;
+                        tg = 1;
+                        for(i = 0; i< thelist->n_dims; i++) {
+                                tg*=thelist->dimsizes[i];
+                        }
+                        val = NclMalloc(sizeof(float)*tg);
+                        thelist->thelist->thevalue = _NclCreateVal(NULL,
+                                                                   NULL,
+                                                                   Ncl_MultiDValData,
+                                                                   0,
+                                                                   val,
+                                                                   NULL,
+                                                                   thelist->n_dims,
+                                                                   thelist->dimsizes,
+                                                                   PERMANENT,
+                                                                   NULL,
+                                                                   nclTypefloatClass);
+                        thelist->n_entries = 1;
+                        return(thelist->thelist->thevalue);
+                } else {
+                        tmp = NclMalloc(sizeof(NclGribCacheRec));
+                        tmp->prev = NULL;
+                        tmp->next = thelist->thelist;
+                        tmp->next->prev = tmp;
+                        tmp->rec = current_rec;
+                        tg = 1;
+                        for(i = 0; i< thelist->n_dims; i++) {
+                                tg*=thelist->dimsizes[i];
+                        }
+                        val = NclMalloc(sizeof(float)*tg);
+                        tmp->thevalue = _NclCreateVal(NULL,
+                                                      NULL,
+                                                      Ncl_MultiDValData,
+                                                      0,
+                                                      val,
+                                                      NULL,
+                                                      thelist->n_dims,
+                                                      thelist->dimsizes,
+                                                      PERMANENT,
+                                                      NULL,
+                                                      nclTypefloatClass);
+                        ++thelist->n_entries;
+
+                        thelist->thelist = tmp;
+                        return(tmp->thevalue);
+                }
+        }
+        return(NULL);
+}
 
 static NclMultiDValData  _GetCacheMissingVal
-#if	NhlNeedProto
+#if     NhlNeedProto
 (GribFileRecord *therec,GribParamList *step,GribRecordInqRec *current_rec)
 #else
 (therec,step,current_rec)
@@ -368,92 +365,90 @@ GribParamList *step;
 GribRecordInqRec *current_rec;
 #endif
 {
-	NclGribCacheList *thelist;
-	int i;
-	int tg;
-	void *tmp;
-	NclScalar missingv;
-	int nvar_dims;
+        NclGribCacheList *thelist;
+        int i;
+        int tg;
+        void *tmp;
+        NclScalar missingv;
+        int nvar_dims;
 
-	thelist = therec->grib_grid_cache;
-	nvar_dims = step->var_info.num_dimensions;
-	while(thelist != NULL) {
-	        if (step->var_info.doff == 2) {
-	                if (thelist->n_dims != 3 ||
-			    thelist->dim_ids[1] != step->var_info.file_dim_num[nvar_dims-2] ||
-			    thelist->dim_ids[2] != step->var_info.file_dim_num[nvar_dims-1]) {
-			        thelist = thelist->next;
-			        continue;
-			}
-		}
-		else if (thelist->n_dims != 2 ||
-			 thelist->dim_ids[0] != step->var_info.file_dim_num[nvar_dims-2] ||
-			 thelist->dim_ids[1] != step->var_info.file_dim_num[nvar_dims-1]) {
-		         thelist = thelist->next;
-		         continue;
-		}
-		
-		if(step->var_info.data_type == NCL_int) {
-			if (thelist->int_missing_rec != NULL) {
-				return thelist->int_missing_rec;
-			}
-			tg = 1;
-			for(i = 0; i <  thelist->n_dims; i++) {
-				tg *= thelist->dimsizes[i];	
-			}
-			tmp = NclMalloc(sizeof(int) * tg);
-			for( i = 0; i < tg; i++){
-				((int*)tmp)[i] = DEFAULT_MISSING_INT;
-			}
-			missingv.intval = DEFAULT_MISSING_INT;
-			
-			thelist->int_missing_rec  = _NclCreateVal(
-				NULL,
-				NULL,
-				Ncl_MultiDValData,
-				0,
-				tmp,
-				&missingv,
-				thelist->n_dims,
-				thelist->dimsizes,
-				PERMANENT,
-				NULL,
-				nclTypeintClass);
-			return thelist->int_missing_rec;
-		} else {
-			if (thelist->float_missing_rec != NULL) {
-				return thelist->float_missing_rec;
-			}
-			tg = 1;
-			for(i = 0; i <  thelist->n_dims; i++) {
-				tg *= thelist->dimsizes[i];	
-			}
-			tmp = NclMalloc(sizeof(float) * tg);
-			for( i = 0; i < tg; i++){
-				((float*)tmp)[i] = DEFAULT_MISSING_FLOAT;
-			}
-			missingv.floatval = DEFAULT_MISSING_FLOAT;
-			
-			thelist->float_missing_rec  = _NclCreateVal(
-				NULL,
-				NULL,
-				Ncl_MultiDValData,
-				0,
-				tmp,
-				&missingv,
-				thelist->n_dims,
-				thelist->dimsizes,
-				PERMANENT,
-				NULL,
-				nclTypefloatClass
-				);
-			return thelist->float_missing_rec;
-		}
-	}
-	return(NULL);
+        thelist = therec->grib_grid_cache;
+        nvar_dims = step->var_info.num_dimensions;
+        while(thelist != NULL) {
+                if (step->var_info.doff == 2) {
+                        if (thelist->n_dims != 3 ||
+                            thelist->dim_ids[1] != step->var_info.file_dim_num[nvar_dims-2] ||
+                            thelist->dim_ids[2] != step->var_info.file_dim_num[nvar_dims-1]) {
+                                thelist = thelist->next;
+                                continue;
+                        }
+                }
+                else if (thelist->n_dims != 2 ||
+                         thelist->dim_ids[0] != step->var_info.file_dim_num[nvar_dims-2] ||
+                         thelist->dim_ids[1] != step->var_info.file_dim_num[nvar_dims-1]) {
+			thelist = thelist->next;
+			continue;
+                }
+
+                if(step->var_info.data_type == NCL_int) {
+                        if (thelist->int_missing_rec != NULL) {
+                                return thelist->int_missing_rec;
+                        }
+                        tg = 1;
+                        for(i = 0; i <  thelist->n_dims; i++) {
+                                tg *= thelist->dimsizes[i];
+                        }
+                        tmp = NclMalloc(sizeof(int) * tg);
+                        for( i = 0; i < tg; i++){
+                                ((int*)tmp)[i] = DEFAULT_MISSING_INT;
+                        }
+                        missingv.intval = DEFAULT_MISSING_INT;
+
+                        thelist->int_missing_rec  = _NclCreateVal(
+                                NULL,
+                                NULL,
+                                Ncl_MultiDValData,
+                                0,
+                                tmp,
+                                &missingv,
+                                thelist->n_dims,
+                                thelist->dimsizes,
+                                PERMANENT,
+                                NULL,
+                                nclTypeintClass);
+                        return thelist->int_missing_rec;
+                } else {
+                        if (thelist->float_missing_rec != NULL) {
+                                return thelist->float_missing_rec;
+                        }
+                        tg = 1;
+                        for(i = 0; i <  thelist->n_dims; i++) {
+                                tg *= thelist->dimsizes[i];
+                        }
+                        tmp = NclMalloc(sizeof(float) * tg);
+                        for( i = 0; i < tg; i++){
+                                ((float*)tmp)[i] = DEFAULT_MISSING_FLOAT;
+                        }
+                        missingv.floatval = DEFAULT_MISSING_FLOAT;
+
+                        thelist->float_missing_rec  = _NclCreateVal(
+                                NULL,
+                                NULL,
+                                Ncl_MultiDValData,
+                                0,
+                                tmp,
+                                &missingv,
+                                thelist->n_dims,
+                                thelist->dimsizes,
+                                PERMANENT,
+                                NULL,
+                                nclTypefloatClass
+                                );
+                        return thelist->float_missing_rec;
+                }
+        }
+        return(NULL);
 }
-
-
 
 static NclMultiDValData  _GribGetInternalVar
 #if	NhlNeedProto
@@ -539,59 +534,6 @@ GribRecordInqRec *grib_rec;
 	NclFree(grib_rec);
 }
 
-
-static void _GribFreeParamRec0
-#if	NhlNeedProto
-(GribParamList * vstep)
-#else
-(vstep)
-GribParamList * vstep;
-#endif
-{
-	int i;
-	GribAttInqRecList *astep= NULL,*tmp =NULL;
-	GribRecordInqRecList *list,*tlist;
-
-	if(vstep != NULL){
-		if(vstep->it_vals != NULL) {
-			NclFree(vstep->it_vals);
-		}
-		list = vstep->thelist;
-		for(i= 0; i< vstep->n_entries; i++) {
-			if(list->rec_inq != NULL) {
-				_GribFreeGribRec(list->rec_inq);
-			}
-			tlist = list;
-			list = list->next;
-			NclFree(tlist);
-		}
-		if(vstep->forecast_time != NULL) {
-			_NclDestroyObj((NclObj)vstep->forecast_time);
-		}
-		if(vstep->yymmddhh!= NULL) {
-			_NclDestroyObj((NclObj)vstep->yymmddhh);
-		}
-		if(vstep->levels!= NULL) {
-			_NclDestroyObj((NclObj)vstep->levels);
-		}
-		if(vstep->levels0!= NULL) {
-			_NclDestroyObj((NclObj)vstep->levels0);
-		}
-		if(vstep->levels1!= NULL) {
-			_NclDestroyObj((NclObj)vstep->levels1);
-		}
-		astep = vstep->theatts;
-		for(i = 0; i < vstep->n_atts; i++) {
-			_NclDestroyObj((NclObj)astep->att_inq->thevalue);
-			NclFree(astep->att_inq);	
-			tmp = astep;
-			astep = astep->next;
-			NclFree(tmp);
-		}
-		NclFree(vstep);
-	}
-	return;
-}
 static void _GribFreeParamRec
 #if	NhlNeedProto
 (GribParamList * vstep)
@@ -1329,7 +1271,7 @@ GribFileRecord *therec;
 	GribParamList *step = NULL;
 	NclQuark *tmp_string = NULL;
 	int *tmp_int = NULL;
-	int tmp_dimsizes = 1;
+	ng_size_t tmp_dimsizes = 1;
 	GribRecordInqRec *grib_rec = NULL;
 	GribAttInqRecList *att_list_ptr= NULL;
 	int i;
@@ -1863,15 +1805,15 @@ float bytes2float (unsigned char *bytes)
 					
 
 void _Do109(GribFileRecord *therec,GribParamList *step) {
-	int dimsizes_level;
+	ng_size_t dimsizes_level;
 	int tmp_file_dim_number;
 	int i;
 	char buffer[256];
 	NclGribFVarRec *test;
 	int ok = 0;
 	NclMultiDValData tmp_md;
-	float *af, *afi;
-	float *bf, *bfi;
+	float *af, *afi = NULL;
+	float *bf, *bfi = NULL;
 	float *tmpf;
 	int nv;
 	int pl;
@@ -1879,11 +1821,11 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 	int sign;
 	float tmpb;
 	float tmpa;
-	int count;
+	ng_size_t count;
 	int interface = 0;
 	GribAttInqRecList *att_list_ptr= NULL;	
 	int attcount;
-	GribDimInqRec *tdim;
+	GribDimInqRec *tdim = NULL;
 	GribDimInqRecList *dimptr;
 	int new_dim_number;
 	NrmQuark *qstr = NULL;
@@ -2315,7 +2257,6 @@ GribFileRecord *therec;
 {
 	GribDimInqRecList *step;
 	GribInternalVarList *vstep,*nvstep;
-	GribDimInqRec *tmp;
 	int i,j,k;
 
 	step = therec->it_dims;
@@ -2391,13 +2332,13 @@ static void _CreateSupplementaryTimeVariables
 GribFileRecord *therec;
 #endif
 {
-	GribDimInqRecList *step,*ptr;
+	GribDimInqRecList *step;
 	GribInternalVarList *vstep;
 	int i,j;
 
 	step = therec->it_dims;
 	for (i = 0; i < therec->n_it_dims; i++) {
-		int dimsize;
+		ng_size_t dimsize;
 		NrmQuark *vals;
 		double *dates;
 		double *hours;
@@ -2471,7 +2412,7 @@ GribFileRecord *therec;
 {
 	GribParamList *step,*last,*tmpstep;
 	char buffer[80];
-	NclQuark gridx_q,lat_q;
+	NclQuark gridx_q = NrmNULLQUARK,lat_q = NrmNULLQUARK;
 	GribDimInqRecList *dstep,*ptr;
 	GribDimInqRec *tmp;
 	NclQuark *it_rhs, *it_lhs;
@@ -2486,10 +2427,9 @@ GribFileRecord *therec;
 	int n_dims_lat = 0;
 	int n_dims_lon = 0;
 	int n_dims_rot = 0;
-	int n_dims_level = 0;
-	int *dimsizes_lat = NULL;
-	int *dimsizes_lon = NULL;
-	int *dimsizes_rot = NULL;
+	ng_size_t *dimsizes_lat = NULL;
+	ng_size_t *dimsizes_lon = NULL;
+	ng_size_t *dimsizes_rot = NULL;
 	float *tmp_lat = NULL;
 	float *tmp_lon = NULL;
 	float *tmp_rot = NULL;
@@ -2498,12 +2438,8 @@ GribFileRecord *therec;
 	char name_buffer[80];
 	GribAttInqRecList *att_list_ptr= NULL;
 	GribAttInqRecList *tmp_att_list_ptr= NULL;
-        GribAttInqRec   *att_ptr= NULL;
-	int natts = 0;
 	NclQuark *tmp_string = NULL;
 	float *tmp_float = NULL;
-	int tmp_dimsizes = 1;
-	int dimsizes_level = 1;
 	int nlonatts = 0;
 	int nlatatts = 0;
 	int nrotatts = 0;
@@ -2624,12 +2560,12 @@ GribFileRecord *therec;
 							tmp_md = _GribGetInternalVar(therec,NrmStringToQuark(name_buffer),&test);
 							sprintf(name_buffer,"%s%s",NrmQuarkToString(dstep->dim_inq->dim_name),"_lower");
 							tmp_md1 = _GribGetInternalVar(therec,NrmStringToQuark(name_buffer),&test);
+							j = 0;
 							if((tmp_md != NULL )&&(tmp_md1 != NULL) ) {
 								lhs_f = (float*)tmp_md->multidval.val;
 								rhs_f = (float*)step->levels0->multidval.val;
 								lhs_f1 = (float*)tmp_md1->multidval.val;
 								rhs_f1 = (float*)step->levels1->multidval.val;
-								j = 0;
 								while(j<dstep->dim_inq->size) {
 									if((lhs_f[j] != rhs_f[j])||(lhs_f1[j] != rhs_f1[j])) {
 										break;
@@ -3274,7 +3210,7 @@ GribFileRecord *therec;
 						 &tmp_rot,&n_dims_rot,&dimsizes_rot,
 						 &lat_att_list_ptr,&nlatatts,&lon_att_list_ptr,&nlonatts,&rot_att_list_ptr,&nrotatts);
 				}
-	
+
 	/*
 	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	* Grids always need to be inserted into the grid_dim list in the right order. First lon is pushed then lat so that dstep->dim_inq
@@ -3571,10 +3507,10 @@ GribFileRecord *therec;
 							}
 						} else {
 							if (step->gds_type != 203) {
-								sprintf(buffer,"gridrot_%d",step->grid_number,therec->total_dims);
+								sprintf(buffer,"gridrot_%d",step->grid_number);
 							}
 							else {
-								sprintf(buffer,"gridrot_%d%s",step->grid_number,uv_m,therec->total_dims);
+								sprintf(buffer,"gridrot_%d%s",step->grid_number,uv_m);
 							}
 						}
 						_GribAddInternalVar(therec,NrmStringToQuark(buffer),tmp_file_dim_numbers,
@@ -3687,9 +3623,8 @@ int** valid_lv_vals1;
 	int i;
 	GribRecordInqRecList *strt,*fnsh,*istep,*last;
 	int n_its = 0;
-	int n_nodes;
 	ITLIST header;
-	ITLIST *the_end,*tmp;
+	ITLIST *the_end;
 	int tmp_n_ft;
 	int *tmp_ft_vals = NULL;
 	int *tmp_lvs = NULL;
@@ -3860,7 +3795,6 @@ GribParamList* step;
 #endif
 {
 	GribRecordInqRecList *rstep,*strt,*fnsh,*free_rec;
-	int current_ens_ix;
 	int n_ens = 0,i,j,k,m,icount = 0;
 	ENS current_ens;
 	ENSLIST  header;
@@ -3879,8 +3813,7 @@ GribParamList* step;
 	int *ens_indexes = NULL;
 	int n_tmp_ens_vals = 0;
 	ENS *tmp_ens_vals;
-/*	int total;*/
-	int total, tmp_dim_siz = 0;
+	ng_size_t total, tmp_dim_siz = 0;
 	int doff;
 	char *name;
 	float *lprob, *uprob;
@@ -4027,7 +3960,6 @@ GribParamList* step;
 	step->var_info.num_dimensions = 0;
 	if (step->prob_param && n_tmp_ens_vals > 0) {
 		float minlp, maxlp, minup, maxup;
-		NhlBoolean const_lp, const_up;
 		lprob = NclMalloc(n_tmp_ens_vals * sizeof(float));
 		uprob = NclMalloc(n_tmp_ens_vals * sizeof(float));
 		minlp = maxlp = tmp_ens_vals[0].lower_prob;
@@ -4050,7 +3982,7 @@ GribParamList* step;
 		step->upper_probs = NULL;
 		step->probability = NULL;
 		if (tmp_ens_vals[0].prob_type == 1) {
-            tmp_dim_siz = (int) n_tmp_ens_vals;
+			tmp_dim_siz = (ng_size_t) n_tmp_ens_vals;
 			step->probability = (NclOneDValCoordData)_NclCreateVal(
 				NULL,
 				NULL,
@@ -4067,7 +3999,7 @@ GribParamList* step;
 			NclFree(uprob);
 		}
 		else if (tmp_ens_vals[0].prob_type == 2) {
-            tmp_dim_siz = (int) n_tmp_ens_vals;
+			tmp_dim_siz = (ng_size_t) n_tmp_ens_vals;
 			step->probability = (NclOneDValCoordData)_NclCreateVal(
 				NULL,
 				NULL,
@@ -4084,7 +4016,7 @@ GribParamList* step;
 			NclFree(lprob);
 		}
 		else {
-            tmp_dim_siz = (int) n_tmp_ens_vals;
+			tmp_dim_siz = (ng_size_t) n_tmp_ens_vals;
 			step->lower_probs = (NclMultiDValData)_NclCreateVal(
 				NULL,
 				NULL,
@@ -4120,7 +4052,7 @@ GribParamList* step;
 			ens_vals_q[j] = GetEnsQuark(&(tmp_ens_vals[j]));
 			ens_indexes[j] = j;
 		}
-        tmp_dim_siz = (int) n_tmp_ens_vals;
+		tmp_dim_siz = (ng_size_t) n_tmp_ens_vals;
 		step->ensemble = (NclMultiDValData)_NclCreateVal(
 					NULL,
 					NULL,
@@ -4167,8 +4099,8 @@ GribParamList* step;
 			it_vals_q[j] = GetItQuark(&(tmp_it_vals[j]));
 	}
 	if(n_tmp_it_vals > 1 || (n_tmp_it_vals > 0 && (therec->single_dims & GRIB_Initial_Time_Dims))) {
-		step->var_info.dim_sizes[i] = (int) n_tmp_it_vals;
-        tmp_dim_siz = (int) n_tmp_it_vals;
+		step->var_info.dim_sizes[i] = (ng_size_t) n_tmp_it_vals;
+		tmp_dim_siz = (ng_size_t) n_tmp_it_vals;
 		step->yymmddhh = (NclOneDValCoordData)_NclCreateVal(
 					NULL,
 					NULL,
@@ -4188,7 +4120,7 @@ GribParamList* step;
 		i++;
 	} else if(n_tmp_it_vals == 1) {
 		step->yymmddhh_isatt = 1;
-        tmp_dim_siz = (int) n_tmp_it_vals;
+		tmp_dim_siz = (ng_size_t) n_tmp_it_vals;
 		step->yymmddhh = (NclOneDValCoordData)_NclCreateVal(
 					NULL,
 					NULL,
@@ -4212,8 +4144,8 @@ GribParamList* step;
 */
 	}
 	if(n_tmp_ft_vals > 1 || (n_tmp_ft_vals > 0 && (therec->single_dims & GRIB_Forecast_Time_Dims))) {
-		step->var_info.dim_sizes[i] = (int) n_tmp_ft_vals;
-        tmp_dim_siz = (int) n_tmp_ft_vals;
+		step->var_info.dim_sizes[i] = (ng_size_t) n_tmp_ft_vals;
+		tmp_dim_siz = (ng_size_t) n_tmp_ft_vals;
 		step->forecast_time = (NclOneDValCoordData)_NclCreateVal(
 					NULL,
 					NULL,
@@ -4230,7 +4162,7 @@ GribParamList* step;
 		step->forecast_time_isatt = 0;
 		i++;
 	} else if(n_tmp_ft_vals == 1) {
-        tmp_dim_siz = (int) n_tmp_ft_vals;
+		tmp_dim_siz = (ng_size_t) n_tmp_ft_vals;
 		step->forecast_time = (NclOneDValCoordData)_NclCreateVal(
 					NULL,
 					NULL,
@@ -4253,8 +4185,8 @@ GribParamList* step;
 	}
 	if((tmp_lv_vals != NULL)&&(tmp_lv_vals1 == NULL)) {
 		if(n_tmp_lv_vals > 1 || (n_tmp_lv_vals > 0 && (therec->single_dims & GRIB_Level_Dims))) {
-			step->var_info.dim_sizes[i] = (int) n_tmp_lv_vals;
-            tmp_dim_siz = (int) n_tmp_lv_vals;
+			step->var_info.dim_sizes[i] = (ng_size_t) n_tmp_lv_vals;
+			tmp_dim_siz = (ng_size_t) n_tmp_lv_vals;
 			step->levels = (NclOneDValCoordData)_NclCreateVal(
 						NULL,
 						NULL,
@@ -4274,7 +4206,7 @@ GribParamList* step;
 				step->levels_isatt = 0;
 		} else if (n_tmp_lv_vals == 1) {
 			step->levels_isatt = 1;
-            tmp_dim_siz = (int) n_tmp_lv_vals;
+			tmp_dim_siz = (ng_size_t) n_tmp_lv_vals;
 			step->levels = (NclOneDValCoordData)_NclCreateVal(
 						NULL,
 						NULL,
@@ -4298,8 +4230,8 @@ GribParamList* step;
 		}
 	} else if((tmp_lv_vals != NULL)&&(tmp_lv_vals1 != NULL)) { 
 		if(n_tmp_lv_vals > 1 || (n_tmp_lv_vals > 0 && (therec->single_dims & GRIB_Level_Dims))) {
-			step->var_info.dim_sizes[i] = (int) n_tmp_lv_vals;
-            tmp_dim_siz = (int) n_tmp_lv_vals;
+			step->var_info.dim_sizes[i] = (ng_size_t) n_tmp_lv_vals;
+			tmp_dim_siz = (ng_size_t) n_tmp_lv_vals;
 			step->levels = NULL;
 			step->levels0 = (NclMultiDValData)_NclCreateVal(
 						NULL,
@@ -4333,7 +4265,7 @@ GribParamList* step;
 		} else if (n_tmp_lv_vals == 1) {
 			step->levels_isatt = 1;
 			step->levels = NULL;
-            tmp_dim_siz = (int) n_tmp_lv_vals;
+			tmp_dim_siz = (ng_size_t) n_tmp_lv_vals;
 			step->levels0 = (NclMultiDValData)_NclCreateVal(
 						NULL,
 						NULL,
@@ -4434,11 +4366,14 @@ GribParamList* step;
 		sprintf(&(buf[strlen(buf)])," it: %s",NrmQuarkToString(it_vals_q[it_ix])); \
 	if (n_tmp_ft_vals > 1) \
 		sprintf(&(buf[strlen(buf)])," ft: %d",tmp_ft_vals[ft_ix]); \
-	if (n_tmp_lv_vals > 1) \
-		if (! step->levels_has_two) \
+	if (n_tmp_lv_vals > 1) { \
+		if (! step->levels_has_two) {	\
 			sprintf(&(buf[strlen(buf)])," lv: %d",tmp_lv_vals[lv_ix]); \
-		else \
+		} \
+		else {	\
 			sprintf(&(buf[strlen(buf)])," lv: (%d, %d)",tmp_lv_vals[lv_ix],tmp_lv_vals1[lv_ix]); \
+		} \
+	} \
 	NhlPError(NhlWARNING,NhlEUNKNOWN,buf)
 			
 	while(the_end != NULL) {
@@ -4791,9 +4726,8 @@ int *version;
 				}
 				else if(*version == 0){
 					int has_bms,has_gds;
-					int pdssize, gdssize,bmssize,bdssize;
+					int pdssize, gdssize = 0,bmssize,bdssize;
 					unsigned char *pds;
-					unsigned char *cp;
 					int k;
 					int tsize;
 
@@ -5247,7 +5181,6 @@ void *s2;
 {
 	GribRecordInqRecList *s_1 = *(GribRecordInqRecList**)s1;
 	GribRecordInqRecList *s_2 = *(GribRecordInqRecList**)s2;
-	int d1,m1,year1,d2,m2,year2;
 	short result = 0;
 
 	result = s_1->rec_inq->initial_time.year - s_2->rec_inq->initial_time.year;
@@ -5381,7 +5314,7 @@ static GribParamList *_NewListNode
 	    (grib_rec->param_number == 3 || grib_rec->param_number == 4)) {
 		char buf[256];
 		char *desc = NULL;
-		char *wave;
+		char *wave = NULL;
 		char *cp;
 		int pos;
 		char *name = NrmQuarkToString(tmp->var_info.var_name_quark);
@@ -5619,7 +5552,7 @@ GribParamList *node;
 GribRecordInqRec *grib_rec;
 #endif
 {
-	int cix,nix, ret_val;
+	int cix,nix;
 	int common_time_unit;
 	int time_unit;
 	double c_factor = 1.0;
@@ -5982,13 +5915,12 @@ char *name;
 	int index;
 	char *cp,*lcp;
 	char sepstr[3] = "";
-	int seplen;
+	int seplen = 1;
 	int len;
 	char *tablename = NULL;
 	TBLE2 *param;
 	char *abrev, *units, *long_name;
 	PtableInfo *ptable = NULL;
-	int i;
 	int table_count = 0;
 	
 	while (fgets(buf,510,fp)) {
@@ -6216,7 +6148,6 @@ GribFileRecord *tmp;
 #endif
 {
 	GribOptions *options;
-	int i;
 
 	tmp->n_options = GRIB_NUM_OPTIONS;
 	
@@ -6292,27 +6223,19 @@ int wr_status;
 	GribRecordInqRec *grib_rec = NULL;
 	GribRecordInqRecList *grib_rec_list = NULL;
 	GribParamList *step = NULL,*step2 = NULL, *tmpstep = NULL ;
-	int i,j,k,l;
+	int i,k;
 	int ret;
-	int toff;
 	unsigned char tmpc[4];
 	unsigned char buffer[80];
-	GribRecordInqRecList **sortar,**ptr,**start_ptr;
+	GribRecordInqRecList **sortar;
 	TBLE2 *name_rec = NULL;
 	TBLE2 *tmp_name_rec = NULL;
-	int tmp_month;
-	int tmp_year;
-	int tmp_century;
-	int tmp_day;
-	int tmp_hour;
-	int tmp_minute;
 	int version;
 	int error_count = 0;
 	int rec_num = 0;
 	int subcenter, center, process,ptable_version;
 	NhlErrorTypes retvalue;
 	struct stat statbuf;
-	int probability_index;
 	int suffix;
 
 	if (! Ptables) {
@@ -6350,7 +6273,6 @@ int wr_status;
 				done = 1;
 			} 
 			if((ret != GRIBERROR)&&(size != 0)) {
-				int tmp_size;
 				rec_num++;
 				grib_rec = NclMalloc((unsigned)sizeof(GribRecordInqRec));
 				grib_rec->rec_num = rec_num;
@@ -7401,11 +7323,9 @@ void *therec;
 {
 	GribFileRecord *thefile = (GribFileRecord*)therec;
 	GribParamList *vstep,*vstep1;
-	GribRecordInqRecList *rstep;
 	GribDimInqRecList *dim,*dim1;
 	GribInternalVarList *ivars,*itmp;
 	GribAttInqRecList *theatts,*tmp;
-	int i;
 	NclGribCacheList *thelist,*thelist0;
 	NclGribCacheRec *ctmp,*ctmp0;
 
@@ -7758,20 +7678,19 @@ void* storage;
 	long *grid_start;
 	long *grid_finish;
 	long *grid_stride;
-/*	int n_other_dims;*/
-	int n_other_dims;
+	int n_other_dims = 0;
 	int current_index[5] = {0,0,0,0,0};
 	int dim_offsets[5] = {-1,-1,-1,-1,-1};
-	int i,j,tg;
+	int i,j;
 	int offset;
 	int done = 0,inc_done =0;
 	int data_offset = 0;
 	void *tmp;
 	void *missing;
 	NclScalar missingv;
-	int int_or_float;
+	int int_or_float = 0;
 	int fd;
-	int grid_dim_sizes[3];
+	ng_size_t grid_dim_sizes[3];
 	int n_grid_dims;
 	NclMultiDValData tmp_md;
 	NclSelectionRecord  sel_ptr;
@@ -7908,9 +7827,9 @@ void* storage;
 	*/
 				if(current_rec == NULL) {
 					step->thelist[offset].rec_inq = _MakeMissingRec();
-					current_rec = step->thelist[offset].rec_inq;
-					current_rec->the_dat = _GetCacheMissingVal(therec,step,current_rec);
-				}
+                                        current_rec = step->thelist[offset].rec_inq;
+                                        current_rec->the_dat = _GetCacheMissingVal(therec,step,current_rec);
+                                }
 				
 				if((current_rec->the_dat == NULL) || 
 				   (current_rec->interp_method != current_interp_method &&
@@ -8042,11 +7961,11 @@ static NclFVarRec *GribGetCoordInfo
 (void* therec, NclQuark thevar)
 #else
 (therec, thevar)
-void* therec;
-NclQuark thevar;
+	void* therec;
+	NclQuark thevar;
 #endif
 {
-return(GribGetVarInfo(therec, thevar));
+	return(GribGetVarInfo(therec, thevar));
 }
 
 static void *GribReadCoord
@@ -8054,15 +7973,15 @@ static void *GribReadCoord
 (void* therec, NclQuark thevar, long* start, long* finish,long* stride,void* storage)
 #else
 (therec, thevar, start, finish,stride,storage)
-void* therec;
-NclQuark thevar;
-long* start;
-long* finish;
-long* stride;
-void* storage;
+	void* therec;
+	NclQuark thevar;
+	long* start;
+	long* finish;
+	long* stride;
+	void* storage;
 #endif
 {
-return(GribReadVar(therec, thevar, start, finish,stride,storage));
+	return(GribReadVar(therec, thevar, start, finish,stride,storage));
 }
 
 static NclQuark *GribGetAttNames
@@ -8070,12 +7989,12 @@ static NclQuark *GribGetAttNames
 (void* therec,int *num_atts)
 #else
 (therec,num_atts)
-void* therec;
-int *num_atts;
+	void* therec;
+	int *num_atts;
 #endif
 {	
-*num_atts = 0;
-return(NULL);
+	*num_atts = 0;
+	return(NULL);
 }
 
 static NclFAttRec* GribGetAttInfo
@@ -8087,7 +8006,7 @@ void* therec;
 NclQuark att_name_q;
 #endif
 {
-return(NULL);
+	return(NULL);
 }
 
 static NclQuark *GribGetVarAttNames
@@ -8095,70 +8014,69 @@ static NclQuark *GribGetVarAttNames
 (void *therec , NclQuark thevar, int* num_atts)
 #else
 (therec , thevar, num_atts)
-void *therec;
-NclQuark thevar;
-int* num_atts;
+	void *therec;
+	NclQuark thevar;
+	int* num_atts;
 #endif
 {
-GribFileRecord *thefile = (GribFileRecord*)therec;
-GribParamList *step;
-GribInternalVarList *vstep;
-NclQuark *arout;
-GribAttInqRecList *theatts;
-int i;
+	GribFileRecord *thefile = (GribFileRecord*)therec;
+	GribParamList *step;
+	GribInternalVarList *vstep;
+	NclQuark *arout = NULL;
+	GribAttInqRecList *theatts = NULL;
+	int i;
 
 
-vstep = thefile->internal_var_list;
-while(vstep != NULL) {
-	if(vstep->int_var->var_info.var_name_quark == thevar) {
-		*num_atts = vstep->int_var->n_atts;
-		arout = (NclQuark*)NclMalloc(sizeof(NclQuark)*vstep->int_var->n_atts);
-		theatts = vstep->int_var->theatts;
-		break;
-	} else {
-		vstep = vstep->next;
-	}
-}	
-
-if(vstep == NULL ) {
-	step = thefile->var_list;	
-	while(step != NULL) {
-		if(step->var_info.var_name_quark == thevar) {
-			*num_atts = step->n_atts;
-			arout = (NclQuark*)NclMalloc(sizeof(NclQuark)*step->n_atts);
-			theatts = step->theatts;
+	vstep = thefile->internal_var_list;
+	while(vstep != NULL) {
+		if(vstep->int_var->var_info.var_name_quark == thevar) {
+			*num_atts = vstep->int_var->n_atts;
+			arout = (NclQuark*)NclMalloc(sizeof(NclQuark)*vstep->int_var->n_atts);
+			theatts = vstep->int_var->theatts;
 			break;
 		} else {
-			step = step->next;
+			vstep = vstep->next;
+		}
+	}	
+
+	if(vstep == NULL ) {
+		step = thefile->var_list;	
+		while(step != NULL) {
+			if(step->var_info.var_name_quark == thevar) {
+				*num_atts = step->n_atts;
+				arout = (NclQuark*)NclMalloc(sizeof(NclQuark)*step->n_atts);
+				theatts = step->theatts;
+				break;
+			} else {
+				step = step->next;
+			}
 		}
 	}
-}
-if((arout != NULL)&&(theatts!= NULL))  {
-	for(i = 0; i < *num_atts; i++) {
-		arout[i] = theatts->att_inq->name;
-		theatts = theatts->next;
+	if((arout != NULL)&&(theatts!= NULL))  {
+		for(i = 0; i < *num_atts; i++) {
+			arout[i] = theatts->att_inq->name;
+			theatts = theatts->next;
+		}
+		return(arout);
+	} else {
+		*num_atts = 0;	
+		return(NULL);
 	}
-	return(arout);
-} else {
-	*num_atts = 0;	
-	return(NULL);
-}
 }
 static NclFAttRec *GribGetVarAttInfo
 #if	NhlNeedProto
 (void *therec, NclQuark thevar, NclQuark theatt)
 #else
 (therec, thevar, theatt)
-void *therec;
-NclQuark thevar;
-NclQuark theatt;
+	void *therec;
+	NclQuark thevar;
+	NclQuark theatt;
 #endif
 {
 	GribFileRecord *thefile = (GribFileRecord*)therec;
 	GribParamList *step;
 	GribInternalVarList *vstep;
-	GribAttInqRecList *theatts;
-	int i;
+	GribAttInqRecList *theatts = NULL;
 	NclFAttRec *tmp;
 
 
@@ -8212,8 +8130,7 @@ void* storage;
 	GribFileRecord *thefile = (GribFileRecord*)therec;
 	GribParamList *step;
 	GribInternalVarList *vstep;
-	GribAttInqRecList *theatts;
-	int i;
+	GribAttInqRecList *theatts = NULL;
 	void *out_dat;
 
 	vstep = thefile->internal_var_list;
@@ -8282,9 +8199,7 @@ static NhlErrorTypes GribSetOption
 #endif
 {
 	GribFileRecord *rec = (GribFileRecord*)therec;
-	nc_type *the_data_type;
-	int i,ret;
-	int cdfid;
+	int i;
 
 	if (option ==  NrmStringToQuark("thinnedgridinterpolation")) {
 		rec->options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values = (void*) *(NrmQuark *)values;

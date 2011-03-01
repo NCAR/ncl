@@ -970,7 +970,6 @@ static NhlErrorTypes RearrangePlotSequence
 	char			*entry_name;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
         char *e_text;
         int i,j;
         int *seq_ids = (int *)ovp->overlay_seq_ids->data;
@@ -1077,9 +1076,8 @@ static NhlErrorTypes PlotManagerSetValues
 	NhlTransformLayer       baseplotmanager = (NhlTransformLayer)ovnew->trans.overlay_object;
 	int			i;
 	int			trans_change_count;
-	NhlBoolean		is_map;
+	NhlBoolean		is_map = False;
 	float			x,y,w,h;
-	NhlViewLayer		ovl_view;
 
 	if (_NhlArgIsSet(args,num_args,NhlNpmLabelBarWidthF))
 		ovp->lbar_width_set = True;
@@ -1362,6 +1360,7 @@ static NhlErrorTypes PlotManagerSetValues
 		
 	return ret;
 }
+#if 0
 static NhlAnnoRec *CopyAnnoList
 (
 NhlAnnoRec *list
@@ -1380,6 +1379,7 @@ NhlAnnoRec *list
 	}
 	return *to_list;
 }
+#endif
 
 /*
  * Function:	PlotManagerGetValues
@@ -1411,17 +1411,18 @@ static NhlErrorTypes	PlotManagerGetValues
 	char			*entry_name = "PlotManagerGetValues";
 	char			*e_text;
 	NhlPlotManagerLayerPart	*ovp = &((NhlPlotManagerLayer) l)->plotmanager;
-	int 			i,j;
+	int 			i;
 	int			*ids;
 	NhlGenArray		ga;
 	NhlpmRec		**pm_recs;
-	int			count;
+	ng_size_t		j,count;
 
 	for ( i = 0; i< num_args; i++ ) {
 
 		if (args[i].quark == Qoverlay_seq_ids) {
+			count = ovp->overlay_count;
 
-			if ((ids = (int *) NhlMalloc(ovp->overlay_count * 
+			if ((ids = (int *) NhlMalloc(count * 
 						     sizeof(int))) == NULL) {
 				
 				e_text = "%s: dynamic memory allocation error";
@@ -1430,13 +1431,12 @@ static NhlErrorTypes	PlotManagerGetValues
 				return NhlFATAL;
 			}
 
-			for (j = 0; j < ovp->overlay_count; j++) {
+			for (j = 0; j < count; j++) {
 				ids[j] = ovp->pm_recs[j]->plot->base.id; 
 			}
-			
 			if ((ga = NhlCreateGenArray((NhlPointer)ids,
 						    NhlTInteger,sizeof(int),
-						    1,&ovp->overlay_count)) 
+						    1, &count)) 
 			    == NULL) {
 				e_text = "%s: error creating %s GenArray";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1448,10 +1448,9 @@ static NhlErrorTypes	PlotManagerGetValues
 			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 		}
 		else if (args[i].quark == Qoverlay_recs) {
-				
+			count = ovp->overlay_count;
 			pm_recs = (NhlpmRec **) 
-			      NhlMalloc(ovp->overlay_count * 
-					sizeof(NhlpmRec *));
+			      NhlMalloc(count * sizeof(NhlpmRec *));
 			if (pm_recs == NULL) {
 				e_text = "%s: dynamic memory allocation error";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1459,7 +1458,7 @@ static NhlErrorTypes	PlotManagerGetValues
 				return NhlFATAL;
 			}
 
-			for (j = 0; j < ovp->overlay_count; j++) {
+			for (j = 0; j < count; j++) {
 
 				pm_recs[j] = (NhlpmRec *)
 					NhlMalloc(sizeof(NhlpmRec));
@@ -1482,7 +1481,7 @@ static NhlErrorTypes	PlotManagerGetValues
 			
 			ga = NhlCreateGenArray((NhlPointer)pm_recs,
 					       NhlTPointer,sizeof(NhlpmRec *),
-					       1,&ovp->overlay_count);
+					       1,  &count);
 			if (ga == NULL) {
 				e_text = "%s: error creating %s GenArray";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -3522,8 +3521,6 @@ ManageExtAnnotation
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name;
 	char			*e_text;
-	NhlPlotManagerLayerPart	*ovp = &ovnew->plotmanager;
-	NhlPlotManagerLayerPart	*oovp = &ovold->plotmanager;
 	NhlTransformLayerPart   *tfp = &((NhlTransformLayer)ovnew)->trans;
 	NhlTransformLayerPart   *otfp = &((NhlTransformLayer)ovold)->trans;
 	NhlJustification	just = NhlCENTERCENTER;
@@ -3737,7 +3734,7 @@ UpdateAnnoData
 	NhlString		entry_name;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 	NhlAnnoRec		*anlp;
 	NhlBoolean		on;
         NhlBoolean		viewable = _NhlViewOn((NhlLayer) plot);
@@ -5456,8 +5453,6 @@ NhlErrorTypes NhlAddOverlay
 		int			nargs = 0;
 		NhlTransformLayer	plot = sub_recs[i]->plot;
 		NhlTransformLayerPart	*plot_tfp = &plot->trans;
-		NhlPlotManagerLayer	pml = 
-			(NhlPlotManagerLayer)sub_recs[i]->ov_obj;
 
 		NhlSetSArg(&sargs[nargs++],NhlNtfOverlayStatus, 
 			   _tfCurrentOverlayMember);
@@ -5853,7 +5848,6 @@ int NhlAddAnnotation
 	int anno_view_id;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "NhlAddAnnotation";
 	NhlLayer		base = _NhlGetLayer(plot_id);
@@ -6562,8 +6556,6 @@ NhlAnnoRec *UnregisterAnnotation
 	NhlString	entry_name;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
 	NhlPlotManagerLayerPart	*ovp;
 	NhlAnnoRec		**tanrp;
 	NhlAnnoRec		*anrp = NULL;
@@ -6737,7 +6729,7 @@ RemoveOverlayBase
 	NhlSArg			sargs[10];
         int			nargs = 0;
 	int			i;
-	int			count = 1;
+	ng_size_t		count = 1;
 
 /*
  * Create a GenArray of 1 element in order to set the PlotManagerRecs resource

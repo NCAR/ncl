@@ -1,0 +1,34 @@
+VisAreaMap is a java-based tool to interactively display and query an
+"AreaMap" data structure produced from the ncarg package "Areas". It
+is intended only as a programmer's tool for debugging problems with
+Areas that lead to the so-called ARSCAM/ARPRAM class of
+errors. Typically VisAreaMap would be used in conjunction with a
+debugger (i.e., gdb) to visualize events leading up to the error.  See
+Jira ticket #32 for a document describing strategies for debugging
+Areas problems.
+
+Use of this program presumes the Java SDK is installed and in the path
+on the target machine. To build VisAreaMap.jar simply type:
+
+   make
+
+To run the program:
+
+   java -jar VisAreaMap.jar <...input area map file...>
+
+
+The area-map input file is obtained by annotating modules in the Areas
+package with a strategically placed bit of code to dump the area-map:
+
+      open(unit=11, file="AreaMapPrePhase6") 
+      do 99999 i=1,iam(1) 
+          write(11,'(i8,1x,i8)') i, iam(i) 
+99999 continue 
+      close(11)
+
+Where precisely this should be placed depends upon where the error
+originates. To date, errors have arisen in either phases 5 or 6 of
+both the source modules arscam.f and arpram.f. Once the location of
+the error is determined, it is useful to insert the code to dump the
+area-map at the beginning of the associated phase.
+

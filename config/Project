@@ -24,8 +24,8 @@
  *			etc are in the Template file.
  */
 
-#define NcargVersion 6.0.0
-#define NclVersion 6.0.0
+#define NcargVersion 6.0.0-beta
+#define NclVersion 6.0.0-beta
 
 #ifndef	BuildNCL
 #define	BuildNCL
@@ -42,6 +42,14 @@
 #undef BuildNetCDF4
 #endif
 #endif /* BuildNetCDF4 */
+
+#ifndef	BuildHDF4
+#define	BuildHDF4
+#else
+#if	!BuildHDF4
+#undef	BuildHDF4
+#endif
+#endif	/* BuildHDF4 */
 
 #ifndef	BuildHDFEOS
 #define	BuildHDFEOS
@@ -92,11 +100,7 @@
 #endif	/* BuildUdunits */
 
 #ifndef    BuildV5D
-#define    BuildV5D
-#else
-#if    !BuildV5D
 #undef BuildV5D
-#endif
 #endif /* BuildV5D */
 
 /* No longer build the old PNG driver since we have the new cairo one. */
@@ -111,6 +115,10 @@
 
 #if !BuildGDAL
 #undef BuildGDAL
+#endif
+
+#if !BuildGRIDSPEC
+#undef BuildGRIDSPEC
 #endif
 
 #ifndef	BuildRasterHDF
@@ -233,6 +241,14 @@
 #endif
 #else
 #define GDALlib
+#endif
+
+#ifdef BuildGRIDSPEC
+#ifndef	GRIDSPEClib
+#define	GRIDSPEClib   -lcf
+#endif
+#else
+#define GRIDSPEClib
 #endif
 
 #ifndef	GRIB2lib
@@ -604,7 +620,8 @@ HDF5LIB		= HDF5lib
 GDALLIB		= GDALlib
 GRIB2LIB	= GRIB2lib
 UDUNITSLIB	= UdUnitslib
-V5DLIB      = V5Dlib
+V5DLIB      	= V5Dlib
+GRIDSPECLIB     = GRIDSPEClib
 XDRLIB		= XdrLibrary
 HDFDEFINES	= HdfDefines
 VDEFINE		= -DNGVERSION='"$(NGVERSION)"'  -DNCLVERSION='"$(NCLVERSION)"'

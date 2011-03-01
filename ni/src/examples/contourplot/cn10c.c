@@ -60,11 +60,12 @@ main()
     int     dataspec, mapid, y_dataid, xy_id;
     int     srlist, grlist, i;
     float   ymin, ymax, special_value = -9999.;
-    int     icount[2];
+    ng_size_t   icount[2];
 /*
  * Declare variables for defining color map.
  */
-    int     length[2], colors[13];
+    ng_size_t   length[2];
+    int       colors[13];
     float   cmap[NCOLORS][3];
 /*
  * Declare variables for getting information from netCDF file.
@@ -220,7 +221,7 @@ main()
  */
     icount[0] = xlen; icount[1] = ylen;
     NhlRLClear(srlist);
-    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&mound[0][0],2,(int *)icount);
+    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&mound[0][0],2,icount);
     NhlRLSetFloat(srlist,NhlNsfMissingValueV,special_value);
     NhlRLSetFloat(srlist,NhlNsfXCStartV,ydim[0]);
     NhlRLSetFloat(srlist,NhlNsfXCEndV,ydim[ylen-1]);
@@ -301,7 +302,7 @@ main()
 
     icount[0] = icount[1] = 5;
     NhlRLClear(srlist);
-    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&mound2[0][0],2,(int *)icount);
+    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&mound2[0][0],2,icount);
     NhlRLSetFloat(srlist,NhlNsfXCStartV,-20.);
     NhlRLSetFloat(srlist,NhlNsfXCEndV,20.);
     NhlRLSetFloat(srlist,NhlNsfYCStartV, -20.);
@@ -436,7 +437,7 @@ main()
 
     NhlRLClear(srlist);
     icount[0] = xlen; icount[1] = ylen;
-    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&mound[0][0],2,(int *)icount);
+    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&mound[0][0],2,icount);
     NhlRLSetFloat(srlist,NhlNsfXCStartV,-109.05);
     NhlRLSetFloat(srlist,NhlNsfXCEndV,-102.05);
     NhlRLSetFloat(srlist,NhlNsfYCStartV,37.);

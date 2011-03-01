@@ -106,8 +106,8 @@ struct _NclGribCacheList {
 	int has_gds;
 	int grid_gds_tbl_index;
 	int n_dims;
+	ng_size_t dimsizes[3];
         int dim_ids[3];
-	int dimsizes[3];
 	int n_entries;
 	NclMultiDValData int_missing_rec;       /* shared by all integer vars */
 	NclMultiDValData float_missing_rec;     /* shared by all float vars */
@@ -130,7 +130,7 @@ struct _NclGribFVarRec {
         NclBasicDataTypes data_type;
 	int 	doff;
         int     num_dimensions;
-        int     dim_sizes[NCL_MAX_DIMENSIONS];
+        ng_size_t     dim_sizes[NCL_MAX_DIMENSIONS];
         int     file_dim_num[NCL_MAX_DIMENSIONS];
 };
 struct _GribInternalVarList {
@@ -255,7 +255,8 @@ struct _GribDimInqRec {
 	int gds_size;
 	unsigned char *gds;
 	NclQuark dim_name;
-	long size;
+/*	long size;*/
+	ng_size_t size;
 	int is_uv; /* only applicable to staggered grids */
 };
 	
@@ -327,13 +328,13 @@ typedef void (*GribGetGDSGrid)(
 GribParamList* thevarrec,
 float** lat,
 int * n_dims_lat,
-int ** dimsizes_lat,
+ng_size_t ** dimsizes_lat,
 float ** lon,
 int * n_dims_lon,
-int **dimsizes_lon,
+ng_size_t **dimsizes_lon,
 float **rot,
 int * n_dims_rot,
-int **dimsizes_rot,
+ng_size_t **dimsizes_rot,
 GribAttInqRecList ** lat_att_list,
 int * nlatatts,
 GribAttInqRecList ** lon_att_list,
@@ -348,10 +349,10 @@ typedef void (*GribGetGrid)(
 GribParamList* thevarrec,
 float** lat,
 int * n_dims_lat,
-int ** dimsizes_lat,
+ng_size_t ** dimsizes_lat,
 float ** lon,
 int * n_dims_lon,
-int **dimsizes_lon,
+ng_size_t **dimsizes_lon,
 float **rot,
 GribAttInqRecList ** lat_att_list,
 int * nlatatts,

@@ -12,7 +12,7 @@ NhlErrorTypes paleo_outline_W( void )
   void *oro, *lat, *lon;
   float *landmask;
   double *tmp_oro, *tmp_lat, *tmp_lon;
-  int dsizes_oro[2], dsizes_lat[1], dsizes_lon[1];
+  ng_size_t dsizes_oro[2], dsizes_lat[1], dsizes_lon[1];
   NclBasicDataTypes type_oro, type_lat, type_lon;
   string *name;
 /*
@@ -20,7 +20,8 @@ NhlErrorTypes paleo_outline_W( void )
  */
   float *zdat;
   char *cname;
-  int *iwrk, liwk, nlat, nlon, jm, im;
+  int *iwrk, inlon, inlat, iliwk, iim, ijm;
+  ng_size_t liwk, nlat, nlon, jm, im;
 /*
  * Retrieve arguments.
  */
@@ -100,6 +101,23 @@ NhlErrorTypes paleo_outline_W( void )
   liwk = max(im * jm,2000);         /* 2000 is the old value that iwrk 
                                        was hard-wired to. */
 
+/*
+ * Test input dimension sizes.
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX) || (liwk > INT_MAX) || 
+     (im > INT_MAX) || (jm > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"paleo_outline: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  iliwk = (int) liwk;
+  iim = (int) im;
+  ijm = (int) jm;
+
+/*
+ * Allocate work arrays.
+ */
   zdat = (float*)malloc(jm*im*sizeof(float));
   iwrk = (int*)malloc(liwk*sizeof(int));
   if(zdat == NULL || iwrk == NULL) {
@@ -111,8 +129,9 @@ NhlErrorTypes paleo_outline_W( void )
  * Call the Fortran paleo_outline routine.
  */
   NGCALLF(paleooutline,PALEOOUTLINE)(tmp_oro,zdat,tmp_lat,tmp_lon,
-                                     &nlat,&nlon,&jm,&im,iwrk,&liwk,
+                                     &inlat,&inlon,&ijm,&iim,iwrk,&iliwk,
                                      cname,landmask,strlen(cname));
+
   if(type_oro != NCL_double) NclFree(tmp_oro);
   if(type_lat != NCL_double) NclFree(tmp_lat);
   if(type_lon != NCL_double) NclFree(tmp_lon);

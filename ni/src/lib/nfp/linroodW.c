@@ -9,30 +9,44 @@ NhlErrorTypes linrood_latwgt_W( void )
 /*
  * Input array variables
  */
-  int *npts;
+  void *N;
+  ng_size_t *npts;
+  int inpts;
+  NclBasicDataTypes type_N;
 /*
  * Output array variables
  */
-  int dsizes_output[2];
+  ng_size_t i, dsizes_output[2];
   double *lat, *wgt, *output;
-  int i;
 /*
  * Retrieve arguments.
  */
-  npts = (int*)NclGetArgValue(
+  N = (void*)NclGetArgValue(
           0,
           1,
           NULL,
           NULL,
           NULL,
           NULL,
-          NULL,
+          &type_N,
           DONT_CARE);
+
+/*
+ * Check the input dimension size.
+ */
+  npts = get_dimensions(N,1,type_N,"linrood_latwgt");
+  if(npts == NULL) 
+    return(NhlFATAL);
 
   if( *npts < 1) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linrood_latwgt: npts must be at least 1");
     return(NhlFATAL);
   }
+  if(*npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linrood_latwgt: npts is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts = (int) *npts;
 /*
  * Allocate space for output array
  */
@@ -47,16 +61,16 @@ NhlErrorTypes linrood_latwgt_W( void )
 /*
  * Call the Fortran version of this routine.
  */
-  NGCALLF(linrood,LINROOD)(lat,wgt,npts);
+  NGCALLF(linrood,LINROOD)(lat,wgt,&inpts);
   for( i = 0; i < *npts; i++ ) {
     output[2*i]   = lat[i];
     output[2*i+1] = wgt[i];
   }
   NclFree(lat);
   NclFree(wgt);
-
   dsizes_output[0] = *npts;
   dsizes_output[1] = 2;
+  NclFree(npts);
   return(NclReturnValue((void*)output,2,dsizes_output,NULL,NCL_double,0));
 }
 
@@ -66,25 +80,41 @@ NhlErrorTypes linrood_wgt_W( void )
 /*
  * Input array variables
  */
-  int *nlat;
+  void *N;
+  ng_size_t *nlat;
+  int inlat;
+  NclBasicDataTypes type_N;
 /*
  * Output array variables
  */
   double *wgt;
-  int dsizes_wgt[1];
+  ng_size_t dsizes_wgt[1];
 
 /*
  * Retrieve arguments.
  */
-  nlat = (int*)NclGetArgValue(
+  N = (void*)NclGetArgValue(
           0,
           1,
           NULL,
           NULL,
           NULL,
           NULL,
-          NULL,
+          &type_N,
           DONT_CARE);
+
+/*
+ * Check the input dimension size.
+ */
+  nlat = get_dimensions(N,1,type_N,"linrood_wgt");
+  if(nlat == NULL) 
+    return(NhlFATAL);
+
+  if(*nlat > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linrood_wgt: nlat is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlat = (int) *nlat;
 
 /*
  * Allocate space for output array
@@ -98,7 +128,7 @@ NhlErrorTypes linrood_wgt_W( void )
 /*
  * Call the Fortran version of this routine.
  */
-  NGCALLF(linroodwt,LINROODWT)(wgt,nlat);
+  NGCALLF(linroodwt,LINROODWT)(wgt,&inlat);
 
   dsizes_wgt[0] = *nlat;
   return(NclReturnValue(wgt,1,dsizes_wgt,NULL,NCL_double,0));

@@ -5,8 +5,8 @@
 extern void NGCALLF(cfftfdriver,CFFTFDRIVER)(int*,double*,double*,double*,
                                              double*,double*,int*);
 
-extern void NGCALLF(cfftbfdriver,CFFTBDRIVER)(int*,double*,double*,double*,
-                                              double*,double*,int*);
+extern void NGCALLF(cfftbdriver,CFFTBDRIVER)(int*,double*,double*,double*,
+                                             double*,double*,int*);
 
 extern void NGCALLF(frqcfft,FRQCFFT)(int*,double*);
 
@@ -20,18 +20,25 @@ NhlErrorTypes cfftf_W( void )
  */
   void *xr, *xi;
   int *opt;
-  int size_x, ndims_xr, dsizes_xr[NCL_MAX_DIMENSIONS];
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS], is_scalar_xi;
+  ng_size_t size_x;
+  int ndims_xr;
+  ng_size_t dsizes_xr[NCL_MAX_DIMENSIONS];
+  int ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_xr, type_xi;
   NclScalar missing_xr, missing_dxr, missing_rxr;
   NclScalar missing_xi, missing_dxi;
   int has_missing_xr, has_missing_xi, scalar_xi;
-  double *tmp_xr, *tmp_xi, *tmp_multid_xi, *tmp_scalar_xi;
+  double *tmp_xr = NULL;
+  double *tmp_xi = NULL;
+  double *tmp_multid_xi = NULL;
+  double *tmp_scalar_xi = NULL;
 /*
  * Output array variables
  */
   void *cf;
-  int ndims_cf, *dsizes_cf;
+  int ndims_cf;
+  ng_size_t *dsizes_cf;
   double *tmp_cfa, *tmp_cfb;
   NclBasicDataTypes type_cf;
   NclTypeClass type_cf_class;
@@ -43,7 +50,7 @@ NhlErrorTypes cfftf_W( void )
   double *tmp_frq;
   int *N;
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -51,8 +58,9 @@ NhlErrorTypes cfftf_W( void )
  * various
  */
   double *work;
-  int i, npts, npts2, nwrk, index_x, index_cfb, size_leftmost, size_cf;
+  ng_size_t i, npts, npts2, nwrk, index_x, index_cfb, size_leftmost, size_cf;
   int found_missing_xr, found_missing_xi, any_missing;
+  int inpts, inwrk;
 /*
  * Retrieve parameters
  *
@@ -106,7 +114,7 @@ NhlErrorTypes cfftf_W( void )
  * Calculate number of leftmost elements and dimension sizes of output.
  */
   ndims_cf     = ndims_xr + 1;
-  dsizes_cf = (int *)malloc(ndims_cf*sizeof(int));
+  dsizes_cf = (ng_size_t *)malloc(ndims_cf*sizeof(ng_size_t));
   dsizes_cf[0] = 2;
   size_leftmost = 1;
   for( i = 0; i < ndims_xr-1; i++ ) {
@@ -156,9 +164,20 @@ NhlErrorTypes cfftf_W( void )
     }
   }
 /*
+ * Test input dimension sizes.
+ */
+  nwrk= (4*npts) + 25;
+
+  if((npts > INT_MAX) || (nwrk > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftf: One of the input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+  inwrk = (int) nwrk;
+
+/*
  * Allocate space for other arrays.
  */
-  nwrk     = (4*npts) + 25;
   tmp_frq  = (double*)calloc(npts,sizeof(double));
   tmp_cfa  = (double*)calloc(npts,sizeof(double));
   tmp_cfb  = (double*)calloc(npts,sizeof(double));
@@ -227,8 +246,8 @@ NhlErrorTypes cfftf_W( void )
                                 missing_dxr.doubleval);
     }
     else {
-      NGCALLF(cfftfdriver,CFFTFDRIVER)(&npts,tmp_xr,tmp_xi,tmp_cfa,tmp_cfb,
-                                       work,&nwrk);
+      NGCALLF(cfftfdriver,CFFTFDRIVER)(&inpts,tmp_xr,tmp_xi,tmp_cfa,tmp_cfb,
+                                       work,&inwrk);
 /*
  * Copy results back into cf.
  */
@@ -291,13 +310,14 @@ NhlErrorTypes cfftf_W( void )
                               (NclObjClass)type_cf_class
                               );
   }
+  NclFree(dsizes_cf);
 /*
  * Attributes "frq" and "npts".
  */
   att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
 /* Calculate frequences */
-  NGCALLF(frqcfft,FRQCFFT)(&npts,tmp_frq);
+  NGCALLF(frqcfft,FRQCFFT)(&inpts,tmp_frq);
   coerce_output_float_or_double(frq,tmp_frq,type_cf,npts,0);
   free(tmp_frq);
 
@@ -378,26 +398,32 @@ NhlErrorTypes cfftb_W( void )
  */
   void *cf;
   int *opt;
-  int size_cf, ndims_cf, dsizes_cf[NCL_MAX_DIMENSIONS];
+  ng_size_t size_cf;
+  int ndims_cf;
+  ng_size_t dsizes_cf[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_cf;
   NclScalar missing_cf, missing_dcf, missing_rcf;
   int has_missing_cf;
-  double *tmp_cfa, *tmp_cfb;
+  double *tmp_cfa = NULL;
+  double *tmp_cfb = NULL;
 /*
  * Output array variables
  */
   void *x;
   double *tmp_xr, *tmp_xi;
-  int ndims_x, *dsizes_x;
+  int ndims_x;
+  ng_size_t *dsizes_x;
   NclBasicDataTypes type_x;
-  NclTypeClass type_x_class;
   NclScalar missing_x;
 /*
  * various
  */
   double *work;
-  int i, j, ret, npts, nwrk, index_cfa, index_cfb, size_xr, size_x;
+  int ret;
+  ng_size_t i, npts, nwrk, index_cfa, index_cfb, size_xr, size_x;
   int found_missing_cfa, found_missing_cfb, any_missing, size_leftmost;
+  int inpts, inwrk;
+
 /*
  * Retrieve parameters
  *
@@ -454,7 +480,7 @@ NhlErrorTypes cfftb_W( void )
       ndims_x = 1;
     }
   }
-  dsizes_x = (int *)malloc(ndims_x*sizeof(int));
+  dsizes_x = (ng_size_t *)malloc(ndims_x*sizeof(ng_size_t));
   size_leftmost = 1;
   for( i = 1; i < ndims_cf-1; i++ ) {
     size_leftmost *= dsizes_cf[i];
@@ -497,9 +523,19 @@ NhlErrorTypes cfftb_W( void )
     }
   }
 /*
+ * Test input dimension sizes.
+ */
+  nwrk= (4*npts) + 25;
+  if((npts > INT_MAX) || (nwrk > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftb: One of the input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+  inwrk = (int) nwrk;
+
+/*
  * Allocate space for other arrays.
  */
-  nwrk   = (4*npts) + 25;
   work   = (double*)calloc(nwrk,sizeof(double));
   tmp_xr = (double*)calloc(npts,sizeof(double));
   tmp_xi = (double*)calloc(npts,sizeof(double));
@@ -555,8 +591,8 @@ NhlErrorTypes cfftb_W( void )
       }
     }
     else {
-      NGCALLF(cfftbdriver,CFFTBDRIVER)(&npts,tmp_xr,tmp_xi,tmp_cfa,tmp_cfb,
-                                       work,&nwrk);
+      NGCALLF(cfftbdriver,CFFTBDRIVER)(&inpts,tmp_xr,tmp_xi,tmp_cfa,tmp_cfb,
+                                       work,&inwrk);
 /*
  * Copy real or complex results back into x. Note that opt should have
  * been checked above to be between 0 and 2. Eventually, opt may have
@@ -601,6 +637,7 @@ NhlErrorTypes cfftb_W( void )
   else {
     ret = NclReturnValue(x,ndims_x,dsizes_x,NULL,type_x,0);
   }
+  NclFree(dsizes_x);
   return(ret);
 }
 
@@ -611,9 +648,11 @@ NhlErrorTypes cfftf_frq_reorder_W( void )
  * Input array variables
  */
   void *cf;
-  int size_cf, ndims_cf, dsizes_cf[NCL_MAX_DIMENSIONS];
+  ng_size_t size_cf;
+  int ndims_cf;
+  ng_size_t dsizes_cf[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_cf;
-  NclScalar missing_cf, missing_dcf, missing_rcf;
+  NclScalar missing_cf;
   int has_missing_cf;
 /*
  * Output array variables
@@ -624,9 +663,9 @@ NhlErrorTypes cfftf_frq_reorder_W( void )
 /*
  * Variables for retrieving attributes from "cf".
  */
-  void *frq;
-  int size_frq;
-  NclBasicDataTypes type_frq;  
+  void *frq = NULL;
+  ng_size_t size_frq = 0;
+  NclBasicDataTypes type_frq = NCL_none;  
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
@@ -634,19 +673,21 @@ NhlErrorTypes cfftf_frq_reorder_W( void )
  * Attribute variables
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
-  double *dfrq;
-  float *rfrq;
 
 /*
  * various
  */
-  double *tmp_cfa, *tmp_cfb, *tmp_cfar, *tmp_cfbr, *tmp_frq, *tmp_frqr;
-  int i, size_x, ret, *N, npts, index_cfa, index_cfb, size_leftmost;
+  double *tmp_cfa = NULL;
+  double *tmp_cfb = NULL;
+  double *tmp_cfar, *tmp_cfbr, *tmp_frq, *tmp_frqr;
+  ng_size_t i, size_x, *N, npts, index_cfa, index_cfb, size_leftmost;
   logical found_frq;
+  int inpts;
+
 /*
  * Retrieve parameters
  *
@@ -669,11 +710,20 @@ NhlErrorTypes cfftf_frq_reorder_W( void )
   }
 
 /*
+ * Test input dimension size.
+ */
+  npts = dsizes_cf[ndims_cf-1];
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftf_frq_reorder: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
+/*
  * Calculate size of input array.
  */
   size_leftmost = 1;
   for( i = 1; i < ndims_cf-1; i++ ) size_leftmost *= dsizes_cf[i];
-  npts    = dsizes_cf[ndims_cf-1];
   size_x  = size_leftmost * npts;
   size_cf = 2 * size_x;
 
@@ -787,7 +837,7 @@ NhlErrorTypes cfftf_frq_reorder_W( void )
       tmp_cfb = &((double*)cf)[index_cfb];
     }
 
-    NGCALLF(cfftffrqreorder,CFFTFFRQREORDER)(&npts,tmp_frq,tmp_cfa,tmp_cfb,
+    NGCALLF(cfftffrqreorder,CFFTFFRQREORDER)(&inpts,tmp_frq,tmp_cfa,tmp_cfb,
                                              tmp_frqr,tmp_cfar,tmp_cfbr);
 /*
  * Copy results back into cfr.

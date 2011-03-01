@@ -14,14 +14,15 @@ NhlErrorTypes exp_tapershC_W( void )
  */
   void *ab, *new_ab, *n0;
   double *tmp_a, *tmp_b, *tmp_n0;
-  int ndims_ab, dsizes_ab[NCL_MAX_DIMENSIONS];
+  int ndims_ab;
+  ng_size_t dsizes_ab[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_ab, type_new_ab, type_n0;
   int *rate;
 /*
  * various
  */
-  int i, j, total_leftmost, total_size_ab, total_size_ab2;
-  int start, index_ab, nm, nb, mb, ier;
+  ng_size_t i, start, nm, index_ab, total_leftmost, total_size_ab, total_size_ab2;
+  int nb, mb, ier;
 /*
  * Retrieve parameters
  *
@@ -75,8 +76,12 @@ NhlErrorTypes exp_tapershC_W( void )
 /*
  * Compute the total number of elements in our array.
  */
-  nb  = dsizes_ab[ndims_ab-2];
-  mb  = dsizes_ab[ndims_ab-1];
+  if( (dsizes_ab[ndims_ab-2] > INT_MAX) || (dsizes_ab[ndims_ab-1] > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_tapershC: One of the rightmost two dimensions of the input array is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  nb  = (int) dsizes_ab[ndims_ab-2];
+  mb  = (int) dsizes_ab[ndims_ab-1];
   nm = nb * mb;
 
   total_leftmost = 1;
@@ -154,15 +159,19 @@ NhlErrorTypes exp_tapersh_W( void )
  * Input array variables
  */
   void *a, *b, *n0;
-  double *tmp_a, *tmp_b, *tmp_n0;
-  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
-  int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
+  double *tmp_a = NULL;
+  double *tmp_b = NULL;
+  double *tmp_n0;
+  int ndims_a;
+  ng_size_t dsizes_a[NCL_MAX_DIMENSIONS];
+  int ndims_b;
+  ng_size_t dsizes_b[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_a, type_b, type_n0;
   int *rate;
 /*
  * various
  */
-  int i, total_leftmost, total_size_ab;
+  ng_size_t i, total_leftmost, total_size_ab;
   int index_ab, nm, nb, mb, ier;
 /*
  * Retrieve parameters
@@ -320,7 +329,9 @@ NhlErrorTypes exp_tapersh_wgts_W( void )
 /*
  * Input array variables
  */
-  int *nwgt, *rate;
+  void *nwgt_tmp;
+  ng_size_t *nwgt;
+  int inwgt, *rate;
   void *n0;
   double *tmp_n0;
   NclBasicDataTypes type_n0;
@@ -333,23 +344,37 @@ NhlErrorTypes exp_tapersh_wgts_W( void )
  */
   void *s;
   double *tmp_s;
-  int dsizes_s[1];
-  NclBasicDataTypes type_s;
+  ng_size_t dsizes_s[1];
+  NclBasicDataTypes type_s, type_nwgt;
 /*
  * Retrieve parameters
  *
  * Note any of the pointer parameters can be set to NULL, which
  * implies you don't care sout its value.
  */
-  nwgt = (int*)NclGetArgValue(
+  nwgt_tmp = (void*)NclGetArgValue(
           0,
           3,
           NULL,
           NULL,
           NULL,
           NULL,
-          NULL,
+          &type_nwgt,
           DONT_CARE);
+
+/*
+ * Check the input dimension size.
+ */
+  nwgt = get_dimensions(nwgt_tmp,1,type_nwgt,"exp_tapersh_wgts");
+  if(nwgt == NULL) 
+    return(NhlFATAL);
+
+  if(*nwgt > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_taper_wgts: nwgt is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inwgt = (int) *nwgt;
+
 /*
  * Get n0 and rate.
  */
@@ -404,7 +429,7 @@ NhlErrorTypes exp_tapersh_wgts_W( void )
 /*
  * Call Fortran routine.
  */
-  NGCALLF(dexptaper,DEXPTAPER)(tmp_n0,rate,tmp_s,nwgt,&ier);
+  NGCALLF(dexptaper,DEXPTAPER)(tmp_n0,rate,tmp_s,&inwgt,&ier);
 
 /*
  * Coerce back to float if necessary and free array.
@@ -418,6 +443,7 @@ NhlErrorTypes exp_tapersh_wgts_W( void )
  * Return values. 
  */
   dsizes_s[0] = *nwgt;
+  NclFree(nwgt);
   return(NclReturnValue(s,1,dsizes_s,NULL,type_s,0));
 }
 

@@ -11,9 +11,14 @@ NhlErrorTypes prcwater_dp_W( void )
  * Input array variables
  */
   void *q, *dp;
-  double *tmp_q, *tmp_dp;
-  int ndims_q, dsizes_q[NCL_MAX_DIMENSIONS], has_missing_q;
-  int ndims_dp, dsizes_dp[NCL_MAX_DIMENSIONS], has_missing_dp;
+  double *tmp_q = NULL;
+  double *tmp_dp = NULL;
+  int ndims_q;
+  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS];
+  int has_missing_q;
+  int ndims_dp;
+  ng_size_t dsizes_dp[NCL_MAX_DIMENSIONS];
+  int has_missing_dp;
   NclScalar missing_dp, missing_ddp;
   NclScalar missing_q, missing_dq, missing_rq;
   NclBasicDataTypes type_q, type_dp;
@@ -21,13 +26,16 @@ NhlErrorTypes prcwater_dp_W( void )
  * Output array variables
  */
   void *prcwat;
-  int ndims_prcwat, *dsizes_prcwat; 
-  double *tmp_prcwat;
+  int ndims_prcwat;
+  ng_size_t *dsizes_prcwat; 
+  double *tmp_prcwat = NULL;
   NclBasicDataTypes type_prcwat;
 /*
  * various
  */
-  int i, klvl, total_size_leftmost, index_q, ret;
+  ng_size_t i, klvl, total_size_leftmost, index_q, ret;
+  int iklvl;
+
 /*
  * Retrieve parameters
  *
@@ -65,7 +73,7 @@ NhlErrorTypes prcwater_dp_W( void )
   }
 
   if(ndims_dp > 1) {
-    for(i = 0; i < ndims_q-1; i++) {
+    for(i = 0; i < ndims_q; i++) {
       if(dsizes_q[i] != dsizes_dp[i]) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"prcwater_dp: 'dp' must either be one-dimensionial and have the same length as the last (rightmost) dimension of 'q', or it must be the same size as 'q'");
         return(NhlFATAL);
@@ -77,6 +85,15 @@ NhlErrorTypes prcwater_dp_W( void )
  * of output array.
  */
   klvl = dsizes_q[ndims_q-1];
+
+/*
+ * Test input dimension sizes.
+ */
+  if(klvl > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"prcwater_dp: klvl = %ld is greater than INT_MAX", klvl);
+    return(NhlFATAL);
+  }
+  iklvl = (int) klvl;
 
   total_size_leftmost = 1;
   for( i = 0; i < ndims_q-1; i++ ) {
@@ -112,12 +129,12 @@ NhlErrorTypes prcwater_dp_W( void )
  */
   if(ndims_q > 1) {
     ndims_prcwat = ndims_q - 1;
-    dsizes_prcwat = (int*)calloc(ndims_prcwat,sizeof(int));  
+    dsizes_prcwat = (ng_size_t*)calloc(ndims_prcwat,sizeof(ng_size_t));  
     for(i = 0; i < ndims_q-1; i++ ) dsizes_prcwat[i] = dsizes_q[i];
   }
   else {
     ndims_prcwat = 1;
-    dsizes_prcwat = (int*)calloc(1,sizeof(int));  
+    dsizes_prcwat = (ng_size_t*)calloc(1,sizeof(ng_size_t));  
     dsizes_prcwat[0] = 1;
   }
 
@@ -177,8 +194,8 @@ NhlErrorTypes prcwater_dp_W( void )
 
     if(type_prcwat == NCL_double) tmp_prcwat = &((double*)prcwat)[i];
 
-    NGCALLF(dprcwatdp,DPRCWATDP)(tmp_q,tmp_dp,&klvl,&missing_dq.doubleval,
-                                 &missing_ddp.doubleval,tmp_prcwat);
+        NGCALLF(dprcwatdp,DPRCWATDP)(tmp_q,tmp_dp,&iklvl,&missing_dq.doubleval,
+                                  &missing_ddp.doubleval,tmp_prcwat);
 /*
  * Coerce output to float if necessary.
  */
@@ -195,6 +212,7 @@ NhlErrorTypes prcwater_dp_W( void )
  */
   if(type_dp != NCL_double) NclFree(tmp_dp);
   if(type_q  != NCL_double) NclFree(tmp_q);
+  if(type_prcwat != NCL_double) NclFree(tmp_prcwat);
 
 /*
  * Return.

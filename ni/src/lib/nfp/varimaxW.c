@@ -23,11 +23,13 @@ NhlErrorTypes eof_varimax_W( void )
 
   void *evec = NULL, *trace = NULL;
   double *devec;
-  int *dsizes_evec, ndims_evec, has_missing_evec;
+  ng_size_t *dsizes_evec;
+  int ndims_evec, has_missing_evec;
   NclScalar missing_evec, missing_devec;
-  int nvar, nfac, ldevec, total_size_evec;
+  int nvar, nfac, ldevec;
+  ng_size_t total_size_evec;
   NclBasicDataTypes type_evec;
-  NclTypeClass type_trace_class;
+  NclTypeClass type_trace_class = NCL_none;
 
 /*
  * Work array variables.
@@ -44,11 +46,11 @@ NhlErrorTypes eof_varimax_W( void )
  * Variables for returning attributes.
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
-  int i;
+  int i, invar, infac, ildevec;
   float *pcvar;
   logical return_trace;
 
@@ -63,6 +65,8 @@ NhlErrorTypes eof_varimax_W( void )
     break;
   case NclStk_VAL:
     tmp_md = (NclMultiDValData)data.u.data_obj;
+    break;
+  default:
     break;
   }
 
@@ -140,6 +144,17 @@ NhlErrorTypes eof_varimax_W( void )
   }
   ldevec = nvar;
 
+/*
+ * Test dimension sizes. 
+ */
+  if((nvar > INT_MAX) || (nfac > INT_MAX) || (ldevec > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  invar = (int) nvar;
+  infac = (int) nfac;
+  ildevec = (int) ldevec;
+
   if( nvar < 1 || nfac < 1 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
@@ -205,7 +220,7 @@ NhlErrorTypes eof_varimax_W( void )
 /*
  * Call the Fortran 77 version of 'vors' with the full argument list.
  */
-  NGCALLF(vors,VORS)(&nvar, &nfac, devec, a, b, w, &ldevec);
+  NGCALLF(vors,VORS)(&invar, &infac, devec, a, b, w, &ildevec);
 
 /*
  * Free unneeded memory.
@@ -329,17 +344,22 @@ NhlErrorTypes eofunc_varimax_W( void )
  * Input array variables
  */
   void *evec = NULL, *trace = NULL, *opt = NULL;
-  double *devec, *deval, *dpcvar;
-  int dsizes_evec[NCL_MAX_DIMENSIONS], ndims_evec, has_missing_evec;
+  double *devec;
+  double *deval = NULL; 
+  double *dpcvar = NULL; 
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
+  int ndims_evec, has_missing_evec;
   NclScalar missing_evec, missing_devec, missing_revec, missing_evec_out;
   NclBasicDataTypes type_evec, type_eval, type_pcvar, type_opt;
-  NclTypeClass type_trace_class;
+  NclTypeClass type_trace_class = NCL_none;
 
 /*
  * Various and work array variables.
  */
   double *drotvar;
-  int iopt, kflag, nvar, nfac, ldevec, total_size_evec;
+  int iopt, kflag;
+  ng_size_t nvar, nfac, ldevec;
+  ng_size_t total_size_evec;
 
 /*
  * Variables for retrieving attributes from "opt".
@@ -359,11 +379,11 @@ NhlErrorTypes eofunc_varimax_W( void )
  * Variables for returning attributes.
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
-  int i;
+  int i, invar, infac, ildevec;
   void *rotvar;
   float *pcvar;
   logical return_trace = False, found_eval = False, found_pcvar = False;
@@ -512,6 +532,17 @@ NhlErrorTypes eofunc_varimax_W( void )
   total_size_evec = nvar * nfac;
 
 /*
+ * Test input dimension sizes.
+ */
+  if((nvar > INT_MAX) || (nfac > INT_MAX) || (ldevec > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  invar = (int) nvar;
+  infac = (int) nfac;
+  ildevec = (int) ldevec;
+
+/*
  * Coerce missing values, if any. Prior to 4.2.0.a034, this routine
  * didn't handle missing values.
  */
@@ -559,7 +590,7 @@ NhlErrorTypes eofunc_varimax_W( void )
 /*
  * Call the Fortran 77 version of 'roteof' with the full argument list.
  */
-  NGCALLF(roteof,ROTEOF)(&nvar, &nfac, devec, &ldevec, deval, dpcvar, drotvar,
+  NGCALLF(roteof,ROTEOF)(&invar, &infac, devec, &ildevec, deval, dpcvar, drotvar,
                          &missing_devec.doubleval,&iopt,&kflag);
 
   if(type_evec_out == NCL_float) {
@@ -713,6 +744,12 @@ NhlErrorTypes eofunc_varimax_W( void )
                           TEMPORARY
                           );
 /*
+ * Free memory.
+ */
+  if(type_eval  != NCL_double) NclFree(deval);
+  if(type_pcvar != NCL_double) NclFree(dpcvar);
+
+/*
  * Return output grid and attributes to NCL.
  */
   return_data.kind = NclStk_VAR;
@@ -728,17 +765,22 @@ NhlErrorTypes eofunc_varimax_jl_W( void )
  * Input array variables
  */
   void *evec = NULL, *trace = NULL, *opt = NULL;
-  double *devec, *deval, *dpcvar;
-  int dsizes_evec[NCL_MAX_DIMENSIONS], ndims_evec, has_missing_evec;
+  double *devec;
+  double *deval = NULL;
+  double *dpcvar = NULL;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
+  int ndims_evec, has_missing_evec;
   NclScalar missing_evec, missing_devec, missing_revec, missing_evec_out;
   NclBasicDataTypes type_evec, type_eval, type_pcvar, type_opt;
-  NclTypeClass type_trace_class;
+  NclTypeClass type_trace_class = NCL_none;
 
 /*
  * Various and work array variables.
  */
   double *drotvar;
-  int iopt, kflag, nvar, nfac, ldevec, total_size_evec;
+  int iopt, kflag;
+  ng_size_t nvar, nfac, ldevec;
+  ng_size_t total_size_evec;
 
 /*
  * Variables for retrieving attributes from "opt".
@@ -758,11 +800,11 @@ NhlErrorTypes eofunc_varimax_jl_W( void )
  * Variables for returning attributes.
  */
   int att_id;
-  int dsizes[1];
+  ng_size_t dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
-  int i;
+  int i, invar, infac, ildevec;
   void *rotvar;
   float *pcvar;
   logical return_trace = False, found_eval = False, found_pcvar = False;
@@ -911,6 +953,17 @@ NhlErrorTypes eofunc_varimax_jl_W( void )
   total_size_evec = nvar * nfac;
 
 /*
+ * Test input dimension sizes.
+ */
+  if((nvar > INT_MAX) || (nfac > INT_MAX) || (ldevec > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax_jl: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  invar = (int) nvar;
+  infac = (int) nfac;
+  ildevec = (int) ldevec;
+
+/*
  * Coerce missing values, if any. Prior to 4.2.0.a034, this routine
  * didn't handle missing values.
  */
@@ -958,7 +1011,7 @@ NhlErrorTypes eofunc_varimax_jl_W( void )
 /*
  * Call the Fortran 77 version of 'roteof' with the full argument list.
  */
-  NGCALLF(zroteof,ZROTEOF)(&nvar, &nfac, devec, &ldevec, deval, dpcvar, drotvar,
+  NGCALLF(zroteof,ZROTEOF)(&invar, &infac, devec, &ildevec, deval, dpcvar, drotvar,
                            &missing_devec.doubleval,&iopt,&kflag);
 
   if(type_evec_out == NCL_float) {

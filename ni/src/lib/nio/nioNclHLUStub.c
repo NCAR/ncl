@@ -125,7 +125,14 @@ NclStatus status)
 
 struct _NclHLUObjRec * _NclHLUObjCreate
 #if	NhlNeedProto
-(NclObj inst , NclObjClass theclass , NclObjTypes obj_type , unsigned int obj_type_mask, NclStatus status, int id,int parentid,NhlClass class_ptr)
+(NclObj inst, 
+ NclObjClass theclass, 
+ NclObjTypes obj_type, 
+ unsigned int obj_type_mask, 
+ NclStatus status, 
+ int id,
+ int parentid,
+ NhlClass class_ptr)
 #else
 (inst , theclass , obj_type ,obj_type_mask, status,id,parentid,class_ptr)
 NclObj inst ;
@@ -206,7 +213,16 @@ NclObjClass nclMultiDValHLUObjDataClass = (NclObjClass)&nclMultiDValHLUObjDataCl
 
 struct _NclMultiDValDataRec * _NclMultiDValHLUObjDataCreate
 #if	NhlNeedProto
-(NclObj inst,NclObjClass theclass,NclObjTypes obj_type,unsigned int obj_type_mask,void *val,NclScalar *missing_value,int n_dims, int *dim_sizes,NclStatus status,NclSelectionRecord *sel_rec)
+(NclObj inst,
+ NclObjClass theclass,
+ NclObjTypes obj_type,
+ unsigned int obj_type_mask,
+ void *val,
+ NclScalar *missing_value,
+ int n_dims, 
+ ng_size_t *dim_sizes,
+ NclStatus status,
+ NclSelectionRecord *sel_rec)
 #else
 (inst,theclass,obj_type,obj_type_mask, val,missing_value,n_dims,dim_sizes,status,sel_rec)
 NclObj inst ;
@@ -216,7 +232,7 @@ unsigned int obj_type_mask;
 void *val;
 NclScalar *missing_value;
 int n_dims;
-int *dim_sizes;
+ng_size_t *dim_sizes;
 NclStatus status;
 NclSelectionRecord *sel_rec;
 #endif

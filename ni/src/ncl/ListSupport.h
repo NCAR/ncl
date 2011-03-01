@@ -23,8 +23,6 @@
 #ifndef _ListSupport_h
 #define _ListSupport_h
 
-extern int _NclGetNext(struct _NclObjRec *);
-
 
 extern struct _NclListRec* _NclListSelect(struct _NclListRec *, NclSelection *);
 
@@ -33,7 +31,12 @@ extern NhlErrorTypes _NclListPush(NclObj , NclObj );
 extern struct _NclObjRec* _NclListPop(NclObj );
 
 extern NhlErrorTypes _NclListSetType(NclObj , int );
+
 extern int _NclListGetType(NclObj );
+
+extern int _NclListGetNext(NclObj );
+
+extern void _NclListDestroy(NclObj);
 
 
 #endif /*_ListSupport_h */

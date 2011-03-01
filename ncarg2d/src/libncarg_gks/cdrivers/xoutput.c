@@ -60,7 +60,7 @@
  * on exit
  *      return          : 0 => error, else gks error returned
  */
-static  hatch_fill
+static  int hatch_fill
 #ifdef  NeedFuncProto
 (
         Display         *dpy,
@@ -90,7 +90,7 @@ static  hatch_fill
                 Pixmap  tileid;
                 int     width,
                 height;
-                } tile = { 0,0, 0,0, 0,0, 0,0, 0, 0, 0 };
+	} tile = { {{0,0}, {0,0}, {0,0}, {0,0}}, 0, 0, 0 };
 
         static  Boolean first = TRUE;
 
@@ -259,7 +259,7 @@ static  void    text_strokes(x, y, num, lines_data)
 }
 
 /*ARGSUSED*/
-static  non_rect_cell_array(dpy, win, gc, color_pal, P, Q, R, nx, ny, xptr)
+static  int non_rect_cell_array(dpy, win, gc, color_pal, P, Q, R, nx, ny, xptr)
         Display *dpy;
         Window  win;
         GC      gc;
@@ -506,7 +506,7 @@ static  void    encode_pixels(src, dst, n, pixel_size, byte_order)
  * on exit
  *      return          : 0 => Ok, else error
  */
-static  cell_array
+static  int cell_array
 #if     NeedFuncProto
 (
         Display         *dpy,
@@ -694,7 +694,7 @@ static  cell_array
         return(0);
 }
 /*ARGSUSED*/
-X11_Polyline(gksc)
+int X11_Polyline(gksc)
         GKSC    *gksc;
 {
         Xddp    *xi = (Xddp *) gksc->ddp;
@@ -710,7 +710,7 @@ X11_Polyline(gksc)
 }
 
 /*ARGSUSED*/
-X11_Polymarker(gksc)
+int X11_Polymarker(gksc)
         GKSC    *gksc;
 {
         Xddp    *xi = (Xddp *) gksc->ddp;
@@ -795,7 +795,7 @@ X11_Polymarker(gksc)
 }
 
 /*ARGSUSED*/
-X11_Text(gksc)
+int X11_Text(gksc)
         GKSC    *gksc;
 {
         Xddp    *xi = (Xddp *) gksc->ddp;
@@ -817,7 +817,7 @@ X11_Text(gksc)
 }
 
 /*ARGSUSED*/
-X11_FillArea(gksc)
+int X11_FillArea(gksc)
         GKSC    *gksc;
 {
         Xddp    *xi = (Xddp *) gksc->ddp;
@@ -894,7 +894,7 @@ X11_FillArea(gksc)
 
 
 /*ARGSUSED*/
-X11_Cellarray(gksc)
+int X11_Cellarray(gksc)
         GKSC    *gksc;
 {
         Xddp    *xi = (Xddp *) gksc->ddp;

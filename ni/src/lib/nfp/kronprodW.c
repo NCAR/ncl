@@ -16,7 +16,7 @@ NhlErrorTypes kron_product_W( void )
  */
   void *x;
   double *tmp_x;
-  int dsizes_x[2];
+  ng_size_t dsizes_x[2];
   int has_missing_x;
   NclScalar missing_x, missing_flt_x, missing_dbl_x;
   NclBasicDataTypes type_x;
@@ -26,7 +26,7 @@ NhlErrorTypes kron_product_W( void )
  */
   void *y;
   double *tmp_y;
-  int dsizes_y[2];
+  ng_size_t dsizes_y[2];
   int has_missing_y;
   NclScalar missing_y, missing_flt_y, missing_dbl_y;
   NclBasicDataTypes type_y;
@@ -36,15 +36,16 @@ NhlErrorTypes kron_product_W( void )
  */
   void *kprod;
   double *tmp_kprod;
-  int *dsizes_kprod;
+  ng_size_t *dsizes_kprod;
   NclScalar missing_kprod, missing_dbl_kprod;
   NclBasicDataTypes type_kprod;
 
 /*
  * Various
  */
-  int nx1, nx2, nx1nx2, ny1, ny2, ny1ny2;
-  int i, j, k, l, ix, iy, ikp, size_output, ret;
+  ng_size_t nx1, nx2, nx1nx2, ny1, ny2, ny1ny2;
+  ng_size_t i, j, k, l, ix, iy, ikp, size_output;
+  int ret;
 
 /*
  * Retrieve parameters.
@@ -150,7 +151,7 @@ NhlErrorTypes kron_product_W( void )
 /* 
  * Allocate space for output dimension sizes and set them.
  */
-  dsizes_kprod = (int*)calloc(2,sizeof(int));  
+  dsizes_kprod = (ng_size_t*)calloc(2,sizeof(ng_size_t));  
   if( dsizes_kprod == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"kron_product: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);

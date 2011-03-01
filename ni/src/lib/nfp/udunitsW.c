@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 #include "wrapper.h"
 #include <udunits2.h>
 #include <udunits.h>
@@ -10,11 +11,16 @@
  * Function for initializing Udunits-2 package.
  */
 
+extern int isleapyear(int);
+extern int day_of_year (int, int, int);
+
 ut_system *utopen_ncl()
 {
   ut_system *us;
   const char *path = NULL;
   char udunits_file[_NhlMAXFNAMELEN];
+  extern int setenv(__const char *__name, __const char *__value, int __replace);
+
 
 /*
  *  If NCARG_UDUNITS is set, then this directory is used to
@@ -40,7 +46,7 @@ ut_system *utopen_ncl()
  * Internally set UDUNITS2_XML_PATH, forcing it to overwrite
  * any setting the user might have.
  */
-  setenv("UDUNITS2_XML_PATH",udunits_file,1);
+  (void)setenv("UDUNITS2_XML_PATH",udunits_file,1);
 
   /* Turn annoying "override" errors off */
   ut_set_error_message_handler( ut_ignore );
@@ -62,6 +68,7 @@ void *utclose_ncl(ut_system *us)
 {
     ut_free_system(us);
     us = NULL;
+    return us;
 }
 
 
@@ -156,7 +163,9 @@ NhlErrorTypes ut_calendar_W( void )
   string *sspec = NULL;
   char *cspec, *cspec_orig;
   int *option;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclScalar missing_x, missing_dx;
   NclBasicDataTypes type_x;
 /* 
@@ -184,11 +193,12 @@ NhlErrorTypes ut_calendar_W( void )
  */
   int year, month, day, hour, minute;
   double second;
-  void *date;
-  int ndims_date, *dsizes_date;
+  void *date = NULL;
+  int ndims_date = 0;
+  ng_size_t *dsizes_date;
   NclScalar missing_date;
-  NclBasicDataTypes type_date;
-  NclObjClass type_date_t;
+  NclBasicDataTypes type_date = NCL_none;
+  NclObjClass type_date_t = NCL_none;
 /*
  * Variables for returning "calendar" attribute.
  */
@@ -201,11 +211,13 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * various
  */
-  int i, ret, return_missing, dsizes[1];
-  int total_size_x, total_size_date, index_date;
+  int ret, return_missing;
+  ng_size_t dsizes[1];
+  ng_size_t i, total_size_x;
+  ng_size_t total_size_date = 0;
+  ng_size_t index_date;
   int months_to_days_fix=0, years_to_days_fix=0;
   extern float truncf(float);
-  ut_system *unitSystem;
 
 /*
  * Before we do anything, initialize the Udunits package.
@@ -335,7 +347,6 @@ NhlErrorTypes ut_calendar_W( void )
     NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: Invalid specification string. Missing values will be returned.");
     return_missing = 1;
   }
-
 /*
  * Calculate size of input array.
  */
@@ -387,7 +398,7 @@ NhlErrorTypes ut_calendar_W( void )
         ndims_date      = ndims_x;
         date            = (int *)calloc(total_size_date,sizeof(int));
   }
-  dsizes_date = (int *)calloc(ndims_date,sizeof(int));
+  dsizes_date = (ng_size_t *)calloc(ndims_date,sizeof(ng_size_t));
 
 /*
  * Make sure we have enough memory for output.
@@ -632,6 +643,8 @@ NhlErrorTypes ut_calendar_W( void )
  */
   NclFree(cspec_orig);
 
+  ut_free(utunit);
+
 /*
  * Set up variable to return.
  */
@@ -738,16 +751,28 @@ NhlErrorTypes ut_inv_calendar_W( void )
  */
   int *year, *month, *day, *hour, *minute;
   void *second;
-  double *tmp_second;
+  double *tmp_second = NULL;
   string *sspec;
   int *option;
   char *cspec, *cspec_orig;
-  int ndims_year,   dsizes_year[NCL_MAX_DIMENSIONS],   has_missing_year;
-  int ndims_month,  dsizes_month[NCL_MAX_DIMENSIONS],  has_missing_month;
-  int ndims_day,    dsizes_day[NCL_MAX_DIMENSIONS],    has_missing_day;
-  int ndims_hour,   dsizes_hour[NCL_MAX_DIMENSIONS],   has_missing_hour;
-  int ndims_minute, dsizes_minute[NCL_MAX_DIMENSIONS], has_missing_minute;
-  int ndims_second, dsizes_second[NCL_MAX_DIMENSIONS], has_missing_second;
+  int ndims_year;
+  ng_size_t dsizes_year[NCL_MAX_DIMENSIONS];
+  int has_missing_year;
+  int ndims_month;
+  ng_size_t dsizes_month[NCL_MAX_DIMENSIONS];
+  int has_missing_month;
+  int ndims_day;
+  ng_size_t dsizes_day[NCL_MAX_DIMENSIONS];
+  int has_missing_day;
+  int ndims_hour;
+  ng_size_t dsizes_hour[NCL_MAX_DIMENSIONS];
+  int has_missing_hour;
+  int ndims_minute;
+  ng_size_t dsizes_minute[NCL_MAX_DIMENSIONS];
+  int has_missing_minute;
+  int ndims_second;
+  ng_size_t dsizes_second[NCL_MAX_DIMENSIONS];
+  int has_missing_second;
   NclScalar missing_year;
   NclScalar missing_month;
   NclScalar missing_day;
@@ -786,7 +811,8 @@ NhlErrorTypes ut_inv_calendar_W( void )
 /*
  * various
  */
-  int i, total_size_input, dsizes[1], return_missing;
+  ng_size_t i, total_size_input;
+  ng_size_t dsizes[1], return_missing;
   int months_to_days_fix=0, years_to_days_fix=0;
 
 /*
@@ -1207,3 +1233,521 @@ NhlErrorTypes ut_inv_calendar_W( void )
   return(NhlNOERROR);
 
 }
+
+NhlErrorTypes ut_calendar_test_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x;
+  double *tmp_x;
+  string *sspec = NULL;
+  char *cspec;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  NclScalar missing_x, missing_dx;
+  NclBasicDataTypes type_x;
+/*
+ * Variables for retrieving attributes from the first argument.
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
+/*
+ * Variables for Udunits package.
+ */
+  ut_system *utopen_ncl(), *unit_system;
+  ut_unit *utunit;
+/*
+ * Output variables.
+ */
+  int year, month, day, hour, minute;
+  double second;
+  void *date = NULL;
+  int ndims_date = 0;
+  ng_size_t *dsizes_date;
+  NclBasicDataTypes type_date = NCL_none;
+
+/*
+ * various
+ */
+  int ret;
+  ng_size_t i, total_size_x;
+  ng_size_t total_size_date = 0;
+  ng_size_t index_date;
+
+/*
+ * Before we do anything, initialize the Udunits package.
+ */
+  unit_system = utopen_ncl();
+
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  x = (void*)NclGetArgValue(
+           0,
+           1,
+           &ndims_x, 
+           dsizes_x,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
+           DONT_CARE);
+/* 
+ * The "units" attribute of "time" must be set, otherwise missing
+ * values will be returned.
+ */
+  stack_entry = _NclGetArg(0, 1, DONT_CARE);
+  switch (stack_entry.kind) {
+  case NclStk_VAR:
+    attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+/*
+ * Get list of attributes.
+ */
+    attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them.
+ */
+    while (attr_list != NULL) {
+      if ((strcmp(attr_list->attname, "units")) == 0) {
+	sspec = (string *) attr_list->attvalue->multidval.val;
+      }
+      attr_list = attr_list->next;
+    }
+  default:
+    break;
+  }
+
+/*
+ * Convert sspec to character string.
+ */
+  if(sspec == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: no 'units' attribute provided");
+    return(NhlFATAL);
+  }
+  cspec = NrmQuarkToString(*sspec);
+
+/*
+ * Make sure cspec is a valid udunits string.
+ */
+  utunit = ut_parse(unit_system, cspec, UT_ASCII);
+  if(utunit == NULL) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar_test: Invalid specification string. Missing values will be returned.");
+    return(NhlFATAL);
+  }
+/*
+ * Calculate size of input array.
+ */
+  total_size_x = 1;
+  for( i = 0; i < ndims_x; i++ ) total_size_x *= dsizes_x[i];
+
+/*
+ * Calculate size and dimensions for output array, and allocate
+ * memory for output array.
+ */
+
+  type_date   = NCL_float;
+  total_size_date = 6 * total_size_x;
+  ndims_date      = ndims_x + 1;
+  date            = (float *)calloc(total_size_date,sizeof(float));
+
+  dsizes_date = (ng_size_t *)calloc(ndims_date,sizeof(ng_size_t));
+
+/*
+ * Make sure we have enough memory for output.
+ */
+  if( date == NULL || dsizes_date == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: Unable to allocate memory for output arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Calculate output dimension sizes.
+ */
+  for( i = 0; i < ndims_x; i++ ) dsizes_date[i] = dsizes_x[i];
+  dsizes_date[ndims_x] = 6;
+
+/*
+ * Coerce missing values to double.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+
+/*
+ * Convert input to double if necessary.
+ */
+  tmp_x = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
+                  &missing_dx);
+
+/* 
+ * Loop through each element and get the 6 values.
+ */
+  index_date = 0;
+  for( i = 0; i < total_size_x; i++ ) {
+    (void) utCalendar2(tmp_x[i],utunit,&year,&month,&day,
+			   &hour,&minute,&second);
+/*
+ * Calculate the return values.
+ */
+    ((float*)date)[index_date]   = (float)year;
+    ((float*)date)[index_date+1] = (float)month;
+    ((float*)date)[index_date+2] = (float)day;
+    ((float*)date)[index_date+3] = (float)hour;
+    ((float*)date)[index_date+4] = (float)minute;
+    ((float*)date)[index_date+5] = second;
+    index_date += 6;
+  }
+
+/*
+ * Free the work arrays.
+ */
+
+  if(type_x != NCL_double) NclFree(tmp_x);
+
+/*
+ * Close up Udunits.
+ */
+  utclose_ncl(unit_system);
+
+  ut_free(utunit);
+
+/*
+ * Set up variable to return.
+ */
+  ret = NclReturnValue(date,ndims_date,dsizes_date,NULL,type_date,0);
+  NclFree(dsizes_date);
+  return(ret);
+}
+
+NhlErrorTypes ut_inv_calendar_test_W( void )
+{
+/*
+ * Input array variables
+ */
+  int *year, *month, *day, *hour, *minute;
+  void *second;
+  double *tmp_second = NULL;
+  string *sspec;
+  int *option;
+  char *cspec;
+  int ndims_year;
+  ng_size_t dsizes_year[NCL_MAX_DIMENSIONS];
+  int has_missing_year;
+  int ndims_month;
+  ng_size_t dsizes_month[NCL_MAX_DIMENSIONS];
+  int has_missing_month;
+  int ndims_day;
+  ng_size_t dsizes_day[NCL_MAX_DIMENSIONS];
+  int has_missing_day;
+  int ndims_hour;
+  ng_size_t dsizes_hour[NCL_MAX_DIMENSIONS];
+  int has_missing_hour;
+  int ndims_minute;
+  ng_size_t dsizes_minute[NCL_MAX_DIMENSIONS];
+  int has_missing_minute;
+  int ndims_second;
+  ng_size_t dsizes_second[NCL_MAX_DIMENSIONS];
+  int has_missing_second;
+  NclScalar missing_year;
+  NclScalar missing_month;
+  NclScalar missing_day;
+  NclScalar missing_hour;
+  NclScalar missing_minute;
+  NclScalar missing_second;
+  NclBasicDataTypes type_second;
+/*
+ * Variables for Udunits package.
+ */
+  ut_system *utopen_ncl(), *unit_system;
+  ut_unit *utunit;
+/*
+ * Output variables.
+ */
+  double *x;
+  int has_missing_x = 0;
+  NclScalar missing_x;
+/*
+ * Variables for returning "units" and "calendar" attributes.
+ */
+  NclQuark *units;
+  int att_id;
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+
+/*
+ * various
+ */
+  ng_size_t i, total_size_input;
+  ng_size_t dsizes[1];
+
+/*
+ * Before we do anything, initialize the Udunits package.
+ */
+  unit_system = utopen_ncl();
+
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ * The first size input arrays must be the same dimension sizes.
+ */
+  year = (int*)NclGetArgValue(
+           0,
+           8,
+           &ndims_year, 
+           dsizes_year,
+           &missing_year,
+           &has_missing_year,
+           NULL,
+           DONT_CARE);
+  month = (int*)NclGetArgValue(
+           1,
+           8,
+           &ndims_month, 
+           dsizes_month,
+           &missing_month,
+           &has_missing_month,
+           NULL,
+           DONT_CARE);
+  day = (int*)NclGetArgValue(
+           2,
+           8,
+           &ndims_day, 
+           dsizes_day,
+           &missing_day,
+           &has_missing_day,
+           NULL,
+           DONT_CARE);
+  hour = (int*)NclGetArgValue(
+           3,
+           8,
+           &ndims_hour, 
+           dsizes_hour,
+           &missing_hour,
+           &has_missing_hour,
+           NULL,
+           DONT_CARE);
+  minute = (int*)NclGetArgValue(
+           4,
+           8,
+           &ndims_minute, 
+           dsizes_minute,
+           &missing_minute,
+           &has_missing_minute,
+           NULL,
+           DONT_CARE);
+  second = (void*)NclGetArgValue(
+           5,
+           8,
+           &ndims_second, 
+           dsizes_second,
+           &missing_second,
+           &has_missing_second,
+           &type_second,
+           DONT_CARE);
+
+  if(ndims_year != ndims_month || ndims_year != ndims_day    || 
+     ndims_year != ndims_hour  || ndims_year != ndims_minute ||
+     ndims_year != ndims_second) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar_test: The first six arguments must have the same dimensionality");
+    return(NhlFATAL);
+  }
+
+  for(i = 0; i < ndims_year; i++ ) {
+    if(dsizes_year[i] != dsizes_month[i]  ||
+       dsizes_year[i] != dsizes_day[i]    || 
+       dsizes_year[i] != dsizes_hour[i]   || 
+       dsizes_year[i] != dsizes_minute[i] ||
+       dsizes_year[i] != dsizes_second[i]) {
+      
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar_test: The first six arguments must have the same dimensionality");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Get spec string.
+ */
+  sspec = (string*)NclGetArgValue(
+           6,
+           8,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           1);
+/*
+ * Get option.
+ */
+  option = (int*)NclGetArgValue(
+           7,
+           8,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           1);
+
+/*
+ * Convert sspec to character string.
+ */
+  cspec = NrmQuarkToString(*sspec);
+
+/*
+ * Make sure cspec is a valid udunits string.
+ */
+  utunit = ut_parse(unit_system, cspec, UT_ASCII);
+  if(utunit == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar_test: Invalid specification string");
+    return(NhlFATAL);
+  }
+
+/*
+ * Calculate total size of input arrays, and size and dimensions for
+ * output array, and alloc memory for output array.
+ */
+  total_size_input = 1;
+  for( i = 0; i < ndims_year; i++ ) total_size_input *= dsizes_year[i];
+
+  x = (double *)calloc(total_size_input,sizeof(double));
+
+  if( x == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar_test: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+/*
+ * Create tmp array for coercing second to double if necessary.
+ */
+  if(type_second != NCL_double) {
+    tmp_second = (double*)calloc(1,sizeof(double));
+    if(tmp_second == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar_test: Unable to allocate memory for coercing second array to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+/* 
+ * Loop through each data value, and call Udunits routine.
+ */ 
+  for( i = 0; i < total_size_input; i++ ) {
+/*
+ * Coerce "second" to double, since this is what the original Udunits
+ * routine is expecting. 
+ */
+    if(type_second != NCL_double) {
+      coerce_subset_input_double(second,tmp_second,i,type_second,1,
+                                 has_missing_second,&missing_second,NULL);
+    }
+    else {
+      tmp_second = &((double*)second)[i];
+    }
+
+	(void)utInvCalendar2(year[i],month[i],day[i],hour[i],
+						 minute[i],*tmp_second,utunit,&x[i]);
+  }
+
+/*
+ * Close up Udunits.
+ */
+  utclose_ncl(unit_system);
+
+/*
+ * Set up variable to return.
+ */
+  if(has_missing_x) {
+        return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            x,
+                            &missing_x,
+                            ndims_year,
+                            dsizes_year,
+                            TEMPORARY,
+                            NULL,
+                            (NclObjClass)nclTypedoubleClass
+                            );
+  }
+  else {
+        return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            x,
+                            NULL,
+                            ndims_year,
+                            dsizes_year,
+                            TEMPORARY,
+                            NULL,
+                            (NclObjClass)nclTypedoubleClass
+                            );
+  }
+
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+  dsizes[0] = 1;
+
+/*
+ * Return "units" attribute.
+ *
+ * We can't just return "sspec" here, because it's an NCL input
+ * parameter and this seems to screw things up if we try to
+ * return it as an attribute.
+ */
+  units  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *units = NrmStringToQuark(cspec);
+
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)units,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "units",
+             att_md,
+             NULL
+             );
+
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+
+}
+

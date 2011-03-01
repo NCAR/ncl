@@ -79,7 +79,7 @@ typedef struct g2_ft_list {
 
 typedef struct _g2codeTable {
     int oct;
-    char    *cat;
+    int cat;
     char    *descrip;
     char    *shname;
     char    *units;
@@ -493,7 +493,7 @@ struct _NclGrib2CacheList {
     int grid_index;
     int grid_number;
     int n_dims;
-    int dimsizes[3];
+    ng_size_t dimsizes[3];
     int n_entries;
     NclMultiDValData int_missing_rec;       /* shared by all integer vars */
     NclMultiDValData float_missing_rec;     /* shared by all float vars */
@@ -517,7 +517,7 @@ struct _NclGrib2FVarRec {
     NclBasicDataTypes data_type;
     int doff;
     int num_dimensions;
-    int dim_sizes[NCL_MAX_DIMENSIONS];
+    ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
     int file_dim_num[NCL_MAX_DIMENSIONS];
 };
 struct _Grib2InternalVarList {
@@ -727,13 +727,13 @@ typedef void (*Grib2GetGDSGrid)(
     Grib2ParamList* thevarrec,
     float** lat,
     int * n_dims_lat,
-    int ** dimsizes_lat,
+    ng_size_t ** dimsizes_lat,
     float ** lon,
     int * n_dims_lon,
-    int **dimsizes_lon,
+    ng_size_t **dimsizes_lon,
     float **rot,
     int * n_dims_rot,
-    int **dimsizes_rot,
+    ng_size_t **dimsizes_rot,
     Grib2AttInqRecList ** lat_att_list,
     int * nlatatts,
     Grib2AttInqRecList ** lon_att_list,
@@ -748,10 +748,10 @@ typedef void (*Grib2GetGrid)(
 Grib2ParamList* thevarrec,
 float** lat,
 int * n_dims_lat,
-int ** dimsizes_lat,
+ng_size_t ** dimsizes_lat,
 float ** lon,
 int * n_dims_lon,
-int **dimsizes_lon,
+ng_size_t **dimsizes_lon,
 float **rot,
 Grib2AttInqRecList ** lat_att_list,
 int * nlatatts,

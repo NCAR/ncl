@@ -11,14 +11,12 @@ NhlErrorTypes wk_smooth121_W( void )
  * Input array variables
  */
   void *x;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  double *tmp_x = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
   NclBasicDataTypes type_x;
   NclScalar missing_x, missing_dx, missing_rx;
-/*
- * Output variable.
- */
-  void *wrunave;
 /*
  * Work array.
  */
@@ -26,7 +24,8 @@ NhlErrorTypes wk_smooth121_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_x, npts, nwgt, ier, total_leftmost, total_size_x;
+  ng_size_t i, index_x, npts, total_leftmost, total_size_x;
+  int inpts;
 
 /*
  * Retrieve arguments.
@@ -46,8 +45,16 @@ NhlErrorTypes wk_smooth121_W( void )
     return(NhlFATAL);
   }
 
+/*
+ * Test dimension size.
+ */
   npts = dsizes_x[ndims_x-1];
-
+  
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wk_smooth121: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
 /*
  * Compute the total size of the output array (minus the last dimension).
  */
@@ -93,8 +100,8 @@ NhlErrorTypes wk_smooth121_W( void )
       tmp_x = &((double*)x)[index_x];
     }
 
-    NGCALLF(wksmooth121,WKSMOOTH121)(tmp_x,&npts,&npts,&missing_dx.doubleval,
-                                     work);
+    NGCALLF(wksmooth121,WKSMOOTH121)(tmp_x,&inpts,&inpts,&missing_dx.doubleval,
+				     work);
 
     if(type_x != NCL_double) {
       coerce_output_float_only(x,tmp_x,npts,index_x);

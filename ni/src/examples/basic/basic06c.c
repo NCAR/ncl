@@ -68,7 +68,7 @@ main()
                  { 0.0, 0.0, 1.0 },
                  { 0.0, 1.0, 0.0 },
                  { 1.0, 0.0, 0.0 } };
-    int dims[] = {4,3};
+    ng_size_t dims[] = {4,3};
 /*
  * Set the display. Default is to display output to an X workstation.
  */

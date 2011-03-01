@@ -54,7 +54,6 @@ _NhlVarToSetArgList
 { 
 	register int	i=0;
 	NhlString	name=NULL;
-	unsigned int	size;
 
 	for(name = va_arg(list,NhlString); name != NULL;
 						name = va_arg(list,NhlString)){

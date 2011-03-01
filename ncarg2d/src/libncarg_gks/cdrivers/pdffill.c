@@ -57,7 +57,7 @@ void pdf_SoftFill (GKSC *gksc, float angle, float spl)
   int     *ind, nnd, nra;
   int     jnd, knd, ipt, ipe, indx1, indx2, previous_point, following_point;
   int     i, isp, ipx, lnd, ip1, ip2, in1, in2, jn1, jn2, jnt;
-  int     ocounter, counter_inc=3;
+  int     ocounter;
   PDFPoint *points,opoint;
   PDFddp   *psa;
 

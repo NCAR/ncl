@@ -31,21 +31,27 @@ NhlErrorTypes pres_hybrid_W( void )
  * Input variables
  */
   void *psfc, *p0, *hya, *hyb;
-  double *tmp_psfc, *tmp_p0, *tmp_hya, *tmp_hyb;
-  int ndims_psfc, dsizes_psfc[NCL_MAX_DIMENSIONS];
-  int dsizes_hya[NCL_MAX_DIMENSIONS], dsizes_hyb[NCL_MAX_DIMENSIONS];
+  double *tmp_psfc = NULL;
+  double *tmp_p0, *tmp_hya, *tmp_hyb;
+  int ndims_psfc;
+  ng_size_t dsizes_psfc[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hya[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hyb[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p0, type_psfc, type_hya, type_hyb;
 /*
  * Output variables
  */
   void *phy;
-  double *tmp_phy;
-  int ndims_phy, *dsizes_phy;
+  double *tmp_phy = NULL;
+  int ndims_phy;
+  ng_size_t *dsizes_phy;
   NclBasicDataTypes type_phy;
 /*
  * Various.
  */
-  int i, j, index_phy, klvl, size_leftmost, size_phy, ret;
+  int index_phy;
+  ng_size_t i, klvl, size_leftmost, size_phy;
+  int ret, iklvl;
 /*
  * Retrieve parameters
  *
@@ -97,6 +103,15 @@ NhlErrorTypes pres_hybrid_W( void )
     return(NhlFATAL);
   }
 /*
+ * Test input dimension sizes.
+ */
+  if(klvl > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: klvl = %ld is greater than INT_MAX", klvl);
+    return(NhlFATAL);
+  }
+  iklvl = (int) klvl;
+
+/*
  * Determine type of output.
  */
   if(type_psfc == NCL_double) {
@@ -115,7 +130,7 @@ NhlErrorTypes pres_hybrid_W( void )
     ndims_phy = ndims_psfc + 1;
   }
 
-  dsizes_phy = (int*)calloc(ndims_phy,sizeof(int));  
+  dsizes_phy = (ng_size_t*)calloc(ndims_phy,sizeof(ng_size_t));  
   if( dsizes_phy == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -192,8 +207,10 @@ NhlErrorTypes pres_hybrid_W( void )
 
     if(type_phy == NCL_double) tmp_phy = &((double*)phy)[index_phy];
 
-    NGCALLF(preshybrid,PRESHYBRID)(tmp_p0,tmp_psfc,tmp_hya,tmp_hyb,&klvl,
+
+    NGCALLF(preshybrid,PRESHYBRID)(tmp_p0,tmp_psfc,tmp_hya,tmp_hyb,&iklvl,
                                    tmp_phy);
+
 /*
  * Copy output values from temporary tmp_phy to phy.
  */
@@ -226,21 +243,27 @@ NhlErrorTypes dpres_hybrid_W( void )
  * Input variables
  */
   void *psfc, *p0, *hya, *hyb;
-  double *tmp_psfc, *tmp_p0, *tmp_hya, *tmp_hyb;
-  int ndims_psfc, dsizes_psfc[NCL_MAX_DIMENSIONS];
-  int dsizes_hya[NCL_MAX_DIMENSIONS], dsizes_hyb[NCL_MAX_DIMENSIONS];
+  double *tmp_psfc = NULL;
+  double *tmp_p0, *tmp_hya, *tmp_hyb;
+  int ndims_psfc;
+  ng_size_t dsizes_psfc[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hya[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hyb[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p0, type_psfc, type_hya, type_hyb;
 /*
  * Output variables
  */
   void *phy;
-  double *tmp_phy;
-  int ndims_phy, *dsizes_phy;
+  double *tmp_phy = NULL;
+  int ndims_phy;
+  ng_size_t *dsizes_phy;
   NclBasicDataTypes type_phy;
 /*
  * Various.
  */
-  int i, j, index_phy, klvl, klvl1, size_leftmost, size_phy, ret;
+  int index_phy;
+  ng_size_t i, klvl, klvl1, size_leftmost, size_phy;
+  int ret, iklvl;
 /*
  * Retrieve parameters
  *
@@ -293,6 +316,15 @@ NhlErrorTypes dpres_hybrid_W( void )
     return(NhlFATAL);
   }
 /*
+ * Test input dimension sizes.
+ */
+  if(klvl > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid: klvl = %ld is greater than INT_MAX", klvl);
+    return(NhlFATAL);
+  }
+  iklvl = (int) klvl;
+
+/*
  * Determine type of output.
  */
   if(type_psfc == NCL_double) {
@@ -311,7 +343,7 @@ NhlErrorTypes dpres_hybrid_W( void )
     ndims_phy = ndims_psfc + 1;
   }
 
-  dsizes_phy = (int*)calloc(ndims_phy,sizeof(int));  
+  dsizes_phy = (ng_size_t*)calloc(ndims_phy,sizeof(ng_size_t));  
   if( dsizes_phy == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -387,8 +419,9 @@ NhlErrorTypes dpres_hybrid_W( void )
 
     if(type_phy == NCL_double) tmp_phy = &((double*)phy)[index_phy];
 
-    NGCALLF(dpreshybrid,DPRESHYBRID)(tmp_p0,tmp_psfc,tmp_hya,tmp_hyb,&klvl,
+    NGCALLF(dpreshybrid,DPRESHYBRID)(tmp_p0,tmp_psfc,tmp_hya,tmp_hyb,&iklvl,
                                      tmp_phy);
+
 /*
  * Copy output values from temporary tmp_phy to phy.
  */
@@ -419,9 +452,12 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
  * Input variables
  */
   void *psfc, *p0, *hya, *hyb;
-  double *tmp_psfc, *tmp_p0, *tmp_hya, *tmp_hyb;
-  int ndims_psfc, dsizes_psfc[NCL_MAX_DIMENSIONS];
-  int dsizes_hya[NCL_MAX_DIMENSIONS], dsizes_hyb[NCL_MAX_DIMENSIONS];
+  double *tmp_psfc = NULL;
+  double *tmp_p0, *tmp_hya, *tmp_hyb;
+  int ndims_psfc;
+  ng_size_t dsizes_psfc[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hya[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hyb[NCL_MAX_DIMENSIONS];
   int has_missing_psfc;
   NclBasicDataTypes type_p0, type_psfc, type_hya, type_hyb;
   NclScalar missing_psfc, missing_dpsfc, missing_rpsfc;
@@ -429,14 +465,17 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
  * Output variables
  */
   void *phy;
-  double *tmp_phy;
-  int ndims_phy, *dsizes_phy;
+  double *tmp_phy = NULL;
+  int ndims_phy;
+  ng_size_t *dsizes_phy;
   NclBasicDataTypes type_phy;
 /*
  * Various.
  */
-  int i, j, index_psfc, index_phy, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
-  int size_leftmost, size_phy, ret;
+  ng_size_t i, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
+  int index_psfc, index_phy;
+  ng_size_t size_leftmost, size_phy;
+  int ret, inlon, inlat, iklvl;
 /*
  * Retrieve parameters
  *
@@ -495,6 +534,18 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
   nlon = dsizes_psfc[ndims_psfc-1];
   nlatnlon     = nlat * nlon;
   klvlnlatnlon = klvl * nlatnlon;
+
+/*
+ * Test input dimension sizes.
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX) || (klvl > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_ccm: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  iklvl = (int) klvl;
+
 /*
  * Determine type of output.
  */
@@ -514,7 +565,7 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
  */
   ndims_phy = ndims_psfc + 1;
 
-  dsizes_phy = (int*)calloc(ndims_phy,sizeof(int));  
+  dsizes_phy = (ng_size_t*)calloc(ndims_phy,sizeof(ng_size_t));  
   if( dsizes_phy == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_ccm: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -594,8 +645,9 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
 
     if(type_phy == NCL_double) tmp_phy = &((double*)phy)[index_phy];
 
-    NGCALLF(dphybrid,DPHYBRID)(tmp_p0,tmp_hya,tmp_hyb,tmp_psfc,&nlon,&nlat,
-                               &klvl,tmp_phy,&missing_dpsfc.doubleval);
+    NGCALLF(dphybrid,DPHYBRID)(tmp_p0,tmp_hya,tmp_hyb,tmp_psfc,&inlon,&inlat,
+                               &iklvl,tmp_phy,&missing_dpsfc.doubleval);
+
 /*
  * Copy output values from temporary tmp_phy to phy.
  */
@@ -641,9 +693,12 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
  * Input variables
  */
   void *psfc, *p0, *hya, *hyb;
-  double *tmp_psfc, *tmp_p0, *tmp_hya, *tmp_hyb;
-  int ndims_psfc, dsizes_psfc[NCL_MAX_DIMENSIONS];
-  int dsizes_hya[NCL_MAX_DIMENSIONS], dsizes_hyb[NCL_MAX_DIMENSIONS];
+  double *tmp_psfc = NULL;
+  double *tmp_p0, *tmp_hya, *tmp_hyb;
+  int ndims_psfc;
+  ng_size_t dsizes_psfc[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hya[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hyb[NCL_MAX_DIMENSIONS];
   int has_missing_psfc;
   NclBasicDataTypes type_p0, type_psfc, type_hya, type_hyb;
   NclScalar missing_psfc, missing_dpsfc, missing_rpsfc;
@@ -651,14 +706,17 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
  * Output variables
  */
   void *phy;
-  double *tmp_phy;
-  int ndims_phy, *dsizes_phy;
+  double *tmp_phy = NULL;
+  int ndims_phy;
+  ng_size_t *dsizes_phy;
   NclBasicDataTypes type_phy;
 /*
  * Various.
  */
-  int i, j, nlat, nlon, klvl, klvl1, nlatnlon, klvl1nlatnlon;
-  int index_psfc, index_phy, size_leftmost, size_phy, ret;
+  ng_size_t i, nlat, nlon, klvl, klvl1, nlatnlon, klvl1nlatnlon;
+  int index_psfc, index_phy;
+  ng_size_t size_leftmost, size_phy;
+  int ret, iklvl, inlat, inlon;
 /*
  * Retrieve parameters
  *
@@ -719,6 +777,17 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
   nlatnlon      = nlat * nlon;
   klvl1nlatnlon = klvl1 * nlatnlon;
 /*
+ * Test input dimension sizes.
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX) || (klvl > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid_ccm: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  iklvl = (int) klvl;
+
+/*
  * Determine type of output.
  */
   if(type_psfc == NCL_double) {
@@ -732,7 +801,7 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
  */
   ndims_phy = ndims_psfc + 1;
 
-  dsizes_phy = (int*)calloc(ndims_phy,sizeof(int));  
+  dsizes_phy = (ng_size_t*)calloc(ndims_phy,sizeof(ng_size_t));  
   if( dsizes_phy == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid_ccm: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -816,8 +885,9 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
 
     if(type_phy == NCL_double) tmp_phy = &((double*)phy)[index_phy];
 
-    NGCALLF(ddphybrid,DDPHYBRID)(tmp_p0,tmp_hya,tmp_hyb,tmp_psfc,&nlon,&nlat,
-                                 &klvl,tmp_phy,&missing_dpsfc.doubleval);
+    NGCALLF(ddphybrid,DDPHYBRID)(tmp_p0,tmp_hya,tmp_hyb,tmp_psfc,&inlon,&inlat,
+                                 &iklvl,tmp_phy,&missing_dpsfc.doubleval);
+
 /*
  * Copy output values from temporary tmp_phy to phy.
  */
@@ -863,24 +933,27 @@ NhlErrorTypes dpres_plevel_W( void )
   void *plev, *psfc, *ptop;
   int *iopt;
   double *tmp_plev, *tmp_psfc, *tmp_ptop;
-  int ndims_psfc, dsizes_psfc[NCL_MAX_DIMENSIONS], dsizes_plev[1];
+  int ndims_psfc;
+  ng_size_t dsizes_psfc[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_plev[1];
   int has_missing_psfc, is_scalar_psfc;
-  NclScalar missing_psfc, missing_dpsfc, missing_rpsfc;
+  NclScalar missing_psfc, missing_dpsfc;
   NclBasicDataTypes type_plev, type_psfc, type_ptop;
 /*
  * Output variables
  */
   void *dp;
   double *tmp_dp;
-  int ndims_dp, *dsizes_dp;
+  int ndims_dp;
+  ng_size_t *dsizes_dp;
   NclBasicDataTypes type_dp;
   NclScalar missing_dp;
 /*
  * Various.
  */
-  int i, j, ntim, nlat, nlon, klvl, kflag, ier;
-  int nlatnlon, klvlnlatnlon, ntimnlatnlon, ntimklvlnlatnlon;
-  int index_psfc, index_dp, size_leftmost, ret;
+  ng_size_t ntim, nlat, nlon, klvl;
+  ng_size_t nlatnlon, klvlnlatnlon, ntimnlatnlon, ntimklvlnlatnlon;
+  int intim, inlat, inlon, iklvl, kflag, ier, ret;
 /*
  * Retrieve parameters
  *
@@ -954,6 +1027,19 @@ NhlErrorTypes dpres_plevel_W( void )
     nlon = dsizes_psfc[ndims_psfc-1];
   }
 
+/*
+ * Test input dimension sizes.
+ */
+  if((klvl > INT_MAX) || (ntim > INT_MAX) || (nlat > INT_MAX) ||
+     (nlon > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_plevel: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  iklvl = (int) klvl;
+  intim = (int) ntim;
+  inlat = (int) nlat;
+  inlon = (int) nlon;
+
   nlatnlon         = nlat * nlon;
   ntimnlatnlon     = ntim * nlatnlon;
   klvlnlatnlon     = klvl * nlatnlon;
@@ -979,7 +1065,7 @@ NhlErrorTypes dpres_plevel_W( void )
     ndims_dp = ndims_psfc + 1;
   }
 
-  dsizes_dp = (int*)calloc(ndims_dp,sizeof(int));  
+  dsizes_dp = (ng_size_t*)calloc(ndims_dp,sizeof(ng_size_t));  
   if( dsizes_dp == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_plevel: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -1000,16 +1086,31 @@ NhlErrorTypes dpres_plevel_W( void )
     dsizes_dp[3] = nlon;
   }
 
+/*
+ * Set the input and output missing values.
+ */
   if(has_missing_psfc) {
     coerce_missing(type_psfc,has_missing_psfc,&missing_psfc,
-                   &missing_dpsfc,&missing_rpsfc);
+                   &missing_dpsfc,NULL);
   }
   else {
-    missing_dpsfc.doubleval = 1.e20;   /* Don't use NCL default of -9999. */
-    missing_rpsfc.floatval  = 1.e20;
+    if(type_dp == NCL_float) {
+/*
+ * These were set to 1e20 before default missing values were 
+ * changed in V6.0.0.
+ */
+      missing_dpsfc.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    }
+    else {
+      missing_dpsfc.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
   }
-
-
+  if(type_dp == NCL_float) {
+    missing_dp.floatval = (float)missing_dpsfc.doubleval;
+  }
+  else {
+    missing_dp.doubleval = missing_dpsfc.doubleval;
+  }
 /*
  * Coerce data to double if necessary.
  */
@@ -1031,7 +1132,6 @@ NhlErrorTypes dpres_plevel_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_plevel: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
-    missing_dp = missing_rpsfc;
   }
   else {
     dp = (void*)calloc(ntimklvlnlatnlon,sizeof(double));
@@ -1040,10 +1140,9 @@ NhlErrorTypes dpres_plevel_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_plevel: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
-    missing_dp = missing_dpsfc;
   }
 
-  NGCALLF(dpresplvl,DPRESPLVL)(&klvl,tmp_plev,&ntim,&nlat,&nlon,tmp_psfc,
+  NGCALLF(dpresplvl,DPRESPLVL)(&iklvl,tmp_plev,&intim,&inlat,&inlon,tmp_psfc,
                                &missing_dpsfc.doubleval,tmp_ptop,tmp_dp,
                                iopt,&kflag,&ier);
   if(ier < 0) {
@@ -1084,25 +1183,31 @@ NhlErrorTypes sigma2hybrid_W( void )
  */
   void *x, *sigma, *hya, *hyb, *p0, *psfc;
   int *intyp;
-  double *tmp_x, *tmp_sigma, *tmp_hya, *tmp_hyb, *tmp_p0, *tmp_psfc;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
-  int dsizes_sigma[1], dsizes_hya[1], dsizes_hyb[1];
-  int ndims_psfc, dsizes_psfc[NCL_MAX_DIMENSIONS];
+  double *tmp_x = NULL;
+  double *tmp_sigma, *tmp_hya, *tmp_hyb, *tmp_p0, *tmp_psfc;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_sigma[1];
+  ng_size_t dsizes_hya[1];
+  ng_size_t dsizes_hyb[1];
+  int ndims_psfc;
+  ng_size_t dsizes_psfc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_sigma, type_hya, type_hyb;
   NclBasicDataTypes type_p0, type_psfc;
 /*
  * Output variables
  */
   void *xhybrid;
-  double *tmp_xhybrid;
-  int *dsizes_xhybrid;
+  double *tmp_xhybrid = NULL;
+  ng_size_t *dsizes_xhybrid;
   NclBasicDataTypes type_xhybrid;
 /*
  * Various.
  */
   double *tmp_sigo;
-  int i, scalar_psfc, nlvi, nlvo;
-  int index_x, index_xhybrid, size_leftmost, size_xhybrid, ret;
+  ng_size_t i, nlvi, nlvo, index_x, index_xhybrid;
+  ng_size_t size_leftmost, size_xhybrid;
+  int inlvi, inlvo, scalar_psfc, ret;
 /*
  * Retrieve parameters
  *
@@ -1188,6 +1293,17 @@ NhlErrorTypes sigma2hybrid_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"sigma2hybrid: 'hya' and 'hyb' must be the same length");
     return(NhlFATAL);
   }
+
+/*
+ * Test input dimension sizes.
+ */
+  if((nlvi > INT_MAX) || (nlvo > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sigma2hybrid: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlvi = (int) nlvi;
+  inlvo = (int) nlvo;
+
 /*
  * psfc must be the same as the leftmost N-1 dimensions of X. If x is
  * a 1D array, then psfc must be a scalar.
@@ -1221,7 +1337,7 @@ NhlErrorTypes sigma2hybrid_W( void )
  * xhybrid will be dimensioned N x nlvo, where N represents all but the
  * last dimension of x. 
  */
-  dsizes_xhybrid = (int*)calloc(ndims_x,sizeof(int));  
+  dsizes_xhybrid = (ng_size_t*)calloc(ndims_x,sizeof(ng_size_t));  
   if( dsizes_xhybrid == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"sigma2hybrid: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -1236,6 +1352,9 @@ NhlErrorTypes sigma2hybrid_W( void )
   dsizes_xhybrid[ndims_x-1] = nlvo;
 /*
  * Coerce data to double if necessary.
+ *
+ * psfc might be a scalar and it might be an array.
+ * Just allocate one double for it.
  */
   tmp_sigma= coerce_input_double(sigma,type_sigma,nlvi,0,NULL,NULL);
   tmp_hya  = coerce_input_double(hya,type_hya,nlvo,0,NULL,NULL);
@@ -1251,23 +1370,36 @@ NhlErrorTypes sigma2hybrid_W( void )
 /*
  * Allocate space for output array.
  */
+  if(type_x != NCL_double) {
+    tmp_x = (double*)calloc(nlvi,sizeof(double));
+    if(tmp_x == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sigma2hybrid: Unable to allocate memory for coercing x to double");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Allocate space for output array.
+ */
   if(type_xhybrid == NCL_float) {
     xhybrid     = (void*)calloc(size_xhybrid,sizeof(float));
-    tmp_x       = (double*)calloc(nlvi,sizeof(double));
-    tmp_sigo    = (double*)calloc(nlvo,sizeof(double));
     tmp_xhybrid = (double*)calloc(nlvo,sizeof(double));
-    if(tmp_x == NULL || tmp_xhybrid == NULL || xhybrid == NULL) {
+    if(tmp_xhybrid == NULL || xhybrid == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"sigma2hybrid: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
   else {
-    tmp_sigo = (double*)calloc(nlvo,sizeof(double));
     xhybrid  = (void*)calloc(size_xhybrid,sizeof(double));
-    if(tmp_sigo == NULL || xhybrid == NULL) {
+    if(xhybrid == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"sigma2hybrid: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
+  }
+  tmp_sigo = (double*)calloc(nlvo,sizeof(double));
+  if(tmp_sigo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sigma2hybrid: Unable to allocate memory for sigo array");
+    return(NhlFATAL);
   }
 
 /*
@@ -1310,7 +1442,7 @@ NhlErrorTypes sigma2hybrid_W( void )
     }
 
     NGCALLF(dh2sdrv,DH2SDRV)(tmp_x,tmp_xhybrid,tmp_hya,tmp_hyb,tmp_p0,
-                             tmp_sigma,tmp_sigo,intyp,tmp_psfc,&nlvi,&nlvo);
+                             tmp_sigma,tmp_sigo,intyp,tmp_psfc,&inlvi,&inlvo);
 /*
  * Copy output values from temporary tmp_xhybrid to xhybrid.
  */
@@ -1330,6 +1462,8 @@ NhlErrorTypes sigma2hybrid_W( void )
   if(type_p0      != NCL_double) NclFree(tmp_p0);
   if(type_psfc    != NCL_double) NclFree(tmp_psfc);
   if(type_xhybrid != NCL_double) NclFree(tmp_xhybrid);
+  NclFree(tmp_sigo);
+
 /*
  * Return.
  */
@@ -1347,26 +1481,35 @@ NhlErrorTypes pres2hybrid_W( void )
  */
   void *p, *ps, *p0, *xi, *hyao, *hybo;
   int *kflag;
-  double *tmp_p, *tmp_ps, *tmp_p0, *tmp_xi, *tmp_hyao, *tmp_hybo;
-  int ndims_ps, dsizes_ps[NCL_MAX_DIMENSIONS];
-  int has_missing_xi, ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
-  int  dsizes_p[1], dsizes_hyao[1], dsizes_hybo[1];
+  double *tmp_p, *tmp_p0, *tmp_hyao, *tmp_hybo;
+  double *tmp_ps = NULL;
+  double *tmp_xi = NULL;
+  int ndims_ps;
+  ng_size_t dsizes_ps[NCL_MAX_DIMENSIONS];
+  int has_missing_xi, ndims_xi;
+  ng_size_t dsizes_xi[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_p[1];
+  ng_size_t dsizes_hyao[1];
+  ng_size_t dsizes_hybo[1];
   NclBasicDataTypes type_p, type_p0, type_ps, type_xi, type_hyao, type_hybo;
   NclScalar missing_xi, missing_dxi;
 /*
  * Output variables
  */
   void *xo;
-  double *tmp_xo;
-  int *dsizes_xo;
+  double *tmp_xo = NULL;
+  ng_size_t *dsizes_xo;
   NclBasicDataTypes type_xo;
   NclScalar missing_xo;
 /*
  * Various.
  */
-  int i, j, index_xi, index_xo, index_ps, size_leftmost, size_xo;
-  int nlat, nlon, nlevi, nlevo, nlat_nlon, nlat_nlon_nlevi, nlat_nlon_nlevo;
+  int index_xi, index_xo, index_ps;
+  ng_size_t i, size_leftmost, size_xo;
+  ng_size_t nlat, nlon, nlevi, nlevo, nlat_nlon, nlat_nlon_nlevi, nlat_nlon_nlevo;
   int iflag, ret, ier, return_missing;
+  int inlon, inlat, inlevi, inlevo;
+
 /*
  * Retrieve parameters
  *
@@ -1463,6 +1606,18 @@ NhlErrorTypes pres2hybrid_W( void )
   nlat_nlon_nlevi = nlat_nlon*nlevi;
   nlat_nlon_nlevo = nlat_nlon*nlevo;
 
+/*
+ * Test input dimension sizes.
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX) || (nlevi > INT_MAX) || (nlevo > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  inlevi = (int) nlevi;
+  inlevo = (int) nlevo;
+
   if( dsizes_xi[ndims_xi-3] != nlevi || dsizes_xi[ndims_xi-2] != nlat || 
       dsizes_xi[ndims_xi-1] != nlon) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: The three rightmost dimensions of 'xi' must be nlevi x nlat x nlon");
@@ -1480,21 +1635,6 @@ NhlErrorTypes pres2hybrid_W( void )
   }
 
 /*
- * Get missing value of xi, in case we need to use it for setting
- * output values to missing. Otherwise, set the missing value to
- * a default of 1.e20.
- *
- * This was added in version 4.3.0 of ncl to cover the extrapolation
- * algorithms Dennis added.
- */
-  if(has_missing_xi) {
-    coerce_missing(type_xi,has_missing_xi,&missing_xi,&missing_dxi,NULL);
-  }
-  else {
-    missing_dxi.doubleval = 1.e20;   /* Don't use NCL default of -9999. */
-  }
-
-/*
  * Determine type of output.
  */
   if(type_ps == NCL_double || type_xi == NCL_double) {
@@ -1504,9 +1644,34 @@ NhlErrorTypes pres2hybrid_W( void )
     type_xo = NCL_float;
   }
 /*
+ * Get missing value of xi, in case we need to use it for setting
+ * output values to missing. Otherwise, set the missing value to
+ * the default for float or missing (it was 1.e20 before V6.0.0)
+ *
+ * This was added in version 4.3.0 of ncl to cover the extrapolation
+ * algorithms Dennis added.
+ */
+  if(has_missing_xi) {
+    coerce_missing(type_xi,has_missing_xi,&missing_xi,&missing_dxi,NULL);
+  }
+  else {
+    if(type_xo == NCL_float) {
+      missing_dxi.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    }
+    else {
+      missing_dxi.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
+  }
+  if(type_xo == NCL_float) {
+    missing_xo.floatval = (float)missing_dxi.doubleval;
+  }
+  else {
+    missing_xo.doubleval = missing_dxi.doubleval;
+  }
+/*
  * Calculate total size of output array.
  */
-  dsizes_xo = (int*)calloc(ndims_xi,sizeof(int));  
+  dsizes_xo = (ng_size_t*)calloc(ndims_xi,sizeof(ng_size_t));  
   if( dsizes_xo == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -1614,9 +1779,10 @@ NhlErrorTypes pres2hybrid_W( void )
 
     if(type_xo == NCL_double) tmp_xo = &((double*)xo)[index_xo];
 
-    NGCALLF(p2hyo,P2HYO)(tmp_p,&nlon,&nlat,&nlevi,tmp_xi,tmp_ps,tmp_p0,
-                         tmp_hyao,tmp_hybo,&nlevo,tmp_xo,
+    NGCALLF(p2hyo,P2HYO)(tmp_p,&inlon,&inlat,&inlevi,tmp_xi,tmp_ps,tmp_p0,
+                         tmp_hyao,tmp_hybo,&inlevo,tmp_xo,
                          &missing_dxi.doubleval,&iflag,kflag,&ier);
+
 /*
  * If iflag is 1, then this means there are missing values present in
  * the output, and hence we need to make sure the return value has a
@@ -1650,12 +1816,6 @@ NhlErrorTypes pres2hybrid_W( void )
  * set a _FillValue attribute for the return variable.
  */
   if(return_missing) {
-    if(type_xo == NCL_double) {
-      missing_xo.doubleval = missing_dxi.doubleval;
-    }
-    else {
-      missing_xo.floatval = (float)missing_dxi.doubleval;
-    }
     ret = NclReturnValue(xo,ndims_xi,dsizes_xo,&missing_xo,type_xo,0);
   }
   else {

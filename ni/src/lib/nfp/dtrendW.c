@@ -16,26 +16,32 @@ NhlErrorTypes dtrend_W( void )
  */
   void *y;
   double *tmp_y;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   NclScalar missing_y, missing_dy, missing_ry;
   logical *return_slope;
   NclBasicDataTypes type_y, type_dtrend_y;
 /*
  * Output array variables
  */
-  void *dtrend_y, *slope, *yintp;
+  void *dtrend_y;
+  void *slope = NULL;
+  void *yintp = NULL;
   double xmean, yvari, yvaro;
 /*
  * Attribute variables
  */
-  int att_id, dsizes[NCL_MAX_DIMENSIONS];
+  int att_id;
+  ng_size_t dsizes[NCL_MAX_DIMENSIONS];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_y, npts, size_leftmost, size_y, ier, iopt = 1;
+  ng_size_t i, npts, size_leftmost, size_y;
+  int index_y, ier, iopt = 1, inpts;
   double c[3];
 /*
  * Retrieve arguments.
@@ -68,6 +74,12 @@ NhlErrorTypes dtrend_W( void )
     return(NhlFATAL);
   }
   
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend: npts = %d is larger than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Compute the total size of the output array.
  */
@@ -148,8 +160,8 @@ NhlErrorTypes dtrend_W( void )
  */
     coerce_subset_input_double(y,tmp_y,index_y,type_y,npts,0,NULL,NULL);
 
-    NGCALLF(ddtrndx,DDTRNDX)(tmp_y,&npts,&iopt,&xmean,&yvari,&yvaro,
-                             c,&ier);
+    NGCALLF(ddtrndx,DDTRNDX)(tmp_y,&inpts,&iopt,&xmean,&yvari,&yvaro,c,&ier);
+
 /*
  * Copy output back out as float or double.
  */
@@ -387,27 +399,34 @@ NhlErrorTypes dtrend_n_W( void )
   void *y;
   double *tmp_y;
   int *dim;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   NclScalar missing_y, missing_dy, missing_ry;
   logical *return_slope;
   NclBasicDataTypes type_y, type_dtrend_y;
 /*
  * Output array variables
  */
-  void *dtrend_y, *slope, *yintp;
+  void *dtrend_y;
+  void *slope = NULL;
+  void *yintp = NULL;
   double xmean, yvari, yvaro;
 /*
  * Attribute variables
  */
-  int att_id, dsizes[NCL_MAX_DIMENSIONS];
+  int att_id;
+  ng_size_t dsizes[NCL_MAX_DIMENSIONS];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_y, index_s, npts, size_leftmost, size_rightmost, size_rl;
-  int size_y, index_nr, index_nrnpts, ier, iopt = 1;
+  int index_y, index_s;
+  ng_size_t i, j, npts, size_leftmost, size_rightmost, size_rl;
+  ng_size_t size_y;
+  int inpts, index_nr, index_nrnpts, ier, iopt = 1;
   double c[3];
 /*
  * Retrieve arguments.
@@ -459,6 +478,12 @@ NhlErrorTypes dtrend_n_W( void )
     return(NhlFATAL);
   }
   
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_n: npts = %d is larger than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Compute the total size of the output array.
  */
@@ -547,8 +572,8 @@ NhlErrorTypes dtrend_n_W( void )
       coerce_subset_input_double_step(y,tmp_y,index_y,size_rightmost,type_y,
                                       npts,0,NULL,NULL);
 
-      NGCALLF(ddtrndx,DDTRNDX)(tmp_y,&npts,&iopt,&xmean,&yvari,&yvaro,
-                               c,&ier);
+      NGCALLF(ddtrndx,DDTRNDX)(tmp_y,&inpts,&iopt,&xmean,&yvari,&yvaro,c,&ier);
+
 /*
  * Copy output back out as float or double.
  */
@@ -785,7 +810,9 @@ NhlErrorTypes dtrend_quadratic_W( void )
  */
   void *y;
   double *tmp_y;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y, found_missing;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y, found_missing;
   NclScalar missing_y, missing_dy, missing_ry;
   int *option;
   NclBasicDataTypes type_y, type_dtrend_y;
@@ -798,7 +825,8 @@ NhlErrorTypes dtrend_quadratic_W( void )
  * Declare various variables for random purposes.
  * Setting iopt to 2 removes the quadratic trend.
  */
-  int i, j, index_y, npts, size_leftmost, size_y, ier, iopt = 2;
+  ng_size_t i, npts, size_leftmost, size_y;
+  int inpts, index_y, ier, iopt = 2;
   double c[3];
 /*
  * Retrieve arguments.
@@ -836,6 +864,12 @@ NhlErrorTypes dtrend_quadratic_W( void )
     return(NhlFATAL);
   }
   
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_quadratic: npts = %d is larger than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Compute the total size of the output array.
  */
@@ -892,9 +926,8 @@ NhlErrorTypes dtrend_quadratic_W( void )
       NhlPError(NhlWARNING,NhlEUNKNOWN,"dtrend_quadratic: An input array contains missing values. No dtrending performed on this array.");
     }
     else {
+      NGCALLF(ddtrndx,DDTRNDX)(tmp_y,&inpts,&iopt,&xmean,&yvari,&yvaro,c,&ier);
 
-      NGCALLF(ddtrndx,DDTRNDX)(tmp_y,&npts,&iopt,&xmean,&yvari,&yvaro,
-                               c,&ier);
 /*
  * Copy output back out as float or double.
  */
@@ -932,9 +965,13 @@ NhlErrorTypes dtrend_msg_W( void )
  * Input array variables
  */
   void *x, *y;
-  double *tmp_x, *tmp_y;
-  int dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   NclScalar missing_x, missing_dx, missing_rx;
   NclScalar missing_y, missing_dy, missing_ry;
   logical *return_slope, *remove_mean;
@@ -943,19 +980,23 @@ NhlErrorTypes dtrend_msg_W( void )
 /*
  * Output array variables
  */
-  void *dtrend_y, *slope, *yintp;
+  void *dtrend_y;
+  void *slope = NULL;
+  void *yintp = NULL;
   double *ydt, slpe, yint;
 /*
  * Attribute variables
  */
-  int att_id, dsizes[NCL_MAX_DIMENSIONS];
+  int att_id;
+  ng_size_t dsizes[NCL_MAX_DIMENSIONS];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_y, npts, size_leftmost, size_y, ier, iopt = 1;
+  ng_size_t i, npts, size_leftmost, size_y;
+  int inpts, index_y, ier;
 /*
  * Retrieve arguments.
  */
@@ -1019,6 +1060,12 @@ NhlErrorTypes dtrend_msg_W( void )
     return(NhlFATAL);
   }
   
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: npts = %d is larger than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Compute the total size of the output array.
  */
@@ -1103,7 +1150,7 @@ NhlErrorTypes dtrend_msg_W( void )
       tmp_y = &((double*)y)[index_y];
     }
 
-    NGCALLF(ddtrndmsg,DDTRNDMSG)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
+    NGCALLF(ddtrndmsg,DDTRNDMSG)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
                                  &missing_dy.doubleval,&iremove_mean,ydt,
                                  &slpe,&yint,&ier);
 
@@ -1304,8 +1351,11 @@ NhlErrorTypes dtrend_msg_n_W( void )
   void *x, *y;
   int *dim;
   double *tmp_x, *tmp_y;
-  int dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  int has_missing_y;
   NclScalar missing_x, missing_dx, missing_rx;
   NclScalar missing_y, missing_dy, missing_ry;
   logical *return_slope, *remove_mean;
@@ -1314,21 +1364,24 @@ NhlErrorTypes dtrend_msg_n_W( void )
 /*
  * Output array variables
  */
-  void *dtrend_y, *slope, *yintp;
+  void *dtrend_y;
+  void *slope = NULL;
+  void *yintp = NULL;
   double *ydt, slpe, yint;
 /*
  * Attribute variables
  */
-  int att_id, dsizes[NCL_MAX_DIMENSIONS];
+  int att_id;
+  ng_size_t dsizes[NCL_MAX_DIMENSIONS];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
  * Declare various variables for random purposes.
  */
-  int index_y, index_nr, index_nrnpts, index_s, npts;
-  int size_leftmost, size_rightmost, size_rl, size_y;
-  int i, j, ier, iopt = 1;
+  int index_y, index_nr, index_nrnpts, index_s;
+  ng_size_t i, j, npts, size_leftmost, size_rightmost, size_rl, size_y;
+  int inpts, ier;
 /*
  * Retrieve arguments.
  */
@@ -1410,6 +1463,12 @@ NhlErrorTypes dtrend_msg_n_W( void )
     return(NhlFATAL);
   }
   
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg_n: npts = %d is larger than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Compute the total size of the output array.
  */
@@ -1488,7 +1547,8 @@ NhlErrorTypes dtrend_msg_n_W( void )
       index_s = index_nr + j;
       coerce_subset_input_double_step(y,tmp_y,index_y,size_rightmost,
                                       type_y,npts,0,NULL,NULL);
-      NGCALLF(ddtrndmsg,DDTRNDMSG)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
+
+      NGCALLF(ddtrndmsg,DDTRNDMSG)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
                                    &missing_dy.doubleval,&iremove_mean,ydt,
                                    &slpe,&yint,&ier);
 

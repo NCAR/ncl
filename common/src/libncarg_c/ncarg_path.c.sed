@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -98,7 +99,6 @@ const char
 	char		tmpfname[PATH_MAX];
 	char		buffer[PATH_MAX];
 	char		*piece = NULL;
-	char		*tptr;
 	const char	*cs;
 	struct passwd	*pw = NULL;
 	int		first = 1;
@@ -223,8 +223,6 @@ const	char	*_NGGetNCARGEnv(name)
 	static char	*env_vars[] = SED_ENV_DEFS;
 	static char	*env_vals[(sizeof(env_vars)/sizeof(env_vars[0]))] =
 					{ NULL };
-
-	static 		tt = 1;
 
 	int		i=0;
 	char		**current;

@@ -54,12 +54,12 @@ main(int argc, char *argv[])
     float z[N*M];
     int mlow = 20, mhigh = 20;
     float dlow = .000025, dhigh = .000075;
-    int len_dims[2];
+    ng_size_t len_dims[2];
 
     int i;
     int *lvlflags, *pats; 
     float *levels, *thicknesses;
-    int lvlflag_count, pat_count, level_count,thick_count;
+    ng_size_t lvlflag_count, pat_count, level_count,thick_count;
 
     extern void bndary();
     extern void gendat (float *,int,int,int,int,int,float,float);

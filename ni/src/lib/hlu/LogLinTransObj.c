@@ -230,7 +230,6 @@ static NhlErrorTypes LlTransSetValues
 	NhlString e_text, entry_name = "LlSetValues";
 	float tmp;
 	NhlTransObjLayerPart	*tp = &lnew->trobj;
-	NhlTransObjLayerPart	*otp = &lold->trobj;
         NhlErrorTypes ret = NhlNOERROR;
 
         if (lnew->lltrans.x_log && tp->x_min <= 0.0) {
@@ -702,7 +701,6 @@ static NhlErrorTypes LlSetTrans
 	NhlLogLinTransObjLayer	linstance = (NhlLogLinTransObjLayer)tobj;
 	NhlTransObjLayerPart	*tp = &linstance->trobj;
 	NhlString		entry_name = "LlSetTrans";
-	NhlString		e_text;
 	NhlErrorTypes		ret;
 	float xr,yb;
 	
@@ -2132,13 +2130,9 @@ int n;
 		(NhlLogLinTransObjLayerPart *) &llinst->lltrans;
 	NhlString e_text;
 	NhlString entry_name = "LlDataPolygon";
-	float out_of_range = llinst->trobj.out_of_range;
-	int i,j;
-	float px,py,cx,cy;
+	int i;
 	float *xbuf,*ybuf;
-	int *ixbuf;
 	NhlBoolean open;
-	NhlBoolean status = False, log_mode = False,done = False;
 	int count;
 	
 	if ((ltp->x_log || ltp->y_log) && 

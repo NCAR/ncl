@@ -52,9 +52,8 @@ long * ind;
 	void *coord_ptr;
 	NclOneDValCoordData the_coord;
 	NclTypeClass type_coord;
-	NclTypeClass type_ind;
 	double cmp_val;
-	int i;
+	ng_size_t i;
 	logical lres;
 	NclScalar m1_res;
 	NclScalar m2_res;
@@ -156,12 +155,10 @@ long *finish;
 	void* finish_ptr;
 	void* coord_ptr;
 	NclOneDValCoordData the_coord;
-	NclTypeClass type_start;
-	NclTypeClass type_finish;
 	NclTypeClass type_coord;
 	logical result;
 	double cmp_val;
-	int i=0;
+	ng_size_t i=0;
 
 	if((coord_md == NULL)||!(coord_md->obj.obj_type_mask & Ncl_OneDValCoordData)) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclOneDValGetRangeIndex: Non-Coordinate type value object passed, can't continue"); 
@@ -434,14 +431,12 @@ NclScalar *new_missing;
 #endif
 {
 	NclMultiDValData self_md = (NclMultiDValData) self;
-	int *toval;
-	int *frval;
-	int missing;
+	ng_size_t *toval;
+	ng_size_t *frval;
 	NclScalar themissing;
 	NclMultiDValData output_md = NULL;
-	int i;
-	toval = (int*)NclMalloc(self_md->multidval.totalsize);
-	frval = (int*)self_md->multidval.val;
+	toval = (ng_size_t *)NclMalloc(self_md->multidval.totalsize);
+	frval = (ng_size_t *)self_md->multidval.val;
 	if(toval == NULL) {
 		return(NULL);
         }
@@ -641,7 +636,7 @@ static NhlErrorTypes InitializeOneDClass
 
 struct _NclMultiDValDataRec * _NclOneDValCoordDataCreate
 #if	NhlNeedProto
-(NclObj inst,NclObjClass theclass,NclObjTypes obj_type,unsigned int obj_type_mask,void *val,NclScalar *missing_value,int n_dims, int *dim_sizes,NclStatus status,NclSelectionRecord *sel_rec,NclTypeClass type)
+(NclObj inst,NclObjClass theclass,NclObjTypes obj_type,unsigned int obj_type_mask,void *val,NclScalar *missing_value,int n_dims, ng_size_t *dim_sizes,NclStatus status,NclSelectionRecord *sel_rec,NclTypeClass type)
 #else
 (inst,theclass,obj_type,obj_type_mask, val,missing_value,n_dims,dim_sizes,status,sel_rec,type)
 NclObj inst ;
@@ -651,7 +646,7 @@ unsigned int obj_type_mask;
 void *val;
 NclScalar *missing_value;
 int n_dims;
-int *dim_sizes;
+ng_size_t *dim_sizes;
 NclStatus status;
 NclSelectionRecord *sel_rec;
 NclTypeClass type;
@@ -659,10 +654,7 @@ NclTypeClass type;
 {
 	NclOneDValCoordData thevalobj;
 	NclObjClass class_ptr= nclOneDValCoordDataClass;
-	int i;
 	NhlErrorTypes ret1= NhlNOERROR;
-	int *obj_ids;
-	NclFile tmp_file;
 
 	ret1 = _NclInitClass(nclOneDValCoordDataClass);
 	if(ret1 < NhlWARNING) {

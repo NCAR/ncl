@@ -254,8 +254,6 @@ static NhlErrorTypes 	SpTransClassInitialize(
 
 static NrmQuark QtrXCoordPoints;
 static NrmQuark QtrYCoordPoints;
-static NrmQuark QtrXInterPoints;
-static NrmQuark QtrYInterPoints;
 
 NhlSphericalTransObjClassRec NhlsphericalTransObjClassRec = {
         {
@@ -339,9 +337,6 @@ static NhlErrorTypes SpTransSetValues
 	int	num_args;
 #endif
 {
-	NhlSphericalTransObjLayer inew = (NhlSphericalTransObjLayer) new;
-	NhlSphericalTransObjLayerPart *spp = &inew->sptrans;
-	NhlTransObjLayerPart	*tp = &inew->trobj;
 
 	return(SetUpTrans(new,old,SET,args,num_args));	
 }
@@ -412,6 +407,8 @@ NhlLayer inst;
 		NhlFree(sp->sptrans.iymin);
 	if (sp->sptrans.iymax)
 		NhlFree(sp->sptrans.iymax);
+	if (sp->sptrans.llcs)
+		NhlFree(sp->sptrans.llcs);
 
  	free(sp->sptrans.xmin_dat);
 	free(sp->sptrans.xmax_dat);
@@ -472,11 +469,10 @@ static NhlErrorTypes SetUpTrans
 	NhlSphericalTransObjLayer inew = (NhlSphericalTransObjLayer)new;
 	NhlSphericalTransObjLayer iold = (NhlSphericalTransObjLayer)old;
 	NhlSphericalTransObjLayerPart *spp = &inew->sptrans;
-	NhlSphericalTransObjLayerPart *ospp = &iold->sptrans;
 	NhlTransObjLayerPart	*tp = &inew->trobj;
 	NhlTransObjLayerPart	*otp = &iold->trobj;
-	char *error_lead,*e_text;
-	NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+	char *error_lead;
+	NhlErrorTypes ret = NhlNOERROR;
 	NhlBoolean new_coords = False;
         NhlBoolean x_sph_coords_set = False,y_sph_coords_set = False;
         NhlBoolean data_extent_def;
@@ -1467,19 +1463,12 @@ static NhlErrorTypes SpDataToCompc
 	int * status;
 #endif
 {
-	NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 	NhlSphericalTransObjLayer iinstance =
                 (NhlSphericalTransObjLayer)instance;
 	NhlSphericalTransObjLayerPart *spp = &iinstance->sptrans;
 	int i;
-	int ix,iy;
-	float *xp = (float *)spp->x_sph_ga->data;
-	float *yp = (float *)spp->y_sph_ga->data;
-	int xsz = spp->xaxis_size;
-	float x0,y0;
-	LLCosSin *llcs = spp->llcs;
-	double xf,yf;
-	double sc[4],dlon,dlat,xdout,ydout;
+	double sc[4];
 
 	*status = 0;
 	for(i=0; i< n;i++) {
@@ -1565,13 +1554,10 @@ static NhlErrorTypes SpCompcToData
 	NhlSphericalTransObjLayerPart *spp = &iinstance->sptrans;
 	int i;
 	int ix,iy;
-	float *xp = (float *)spp->x_sph_ga->data;
-	float *yp = (float *)spp->y_sph_ga->data;
 	int xsz = spp->xaxis_size;
-	float x0,y0;
 	LLCosSin *llcs = spp->llcs;
 	double xf,yf;
-	double out[4],dlon,dlat,xdout,ydout;
+	double out[4],dlon,dlat;
 
 	*status = 0;
 	for(i = 0; i< n ; i++) {
@@ -2461,10 +2447,8 @@ int nargs;
 {
 	NhlSphericalTransObjLayerPart* spp = 
 		(&((NhlSphericalTransObjLayer)l)->sptrans);
-	int i, count;
+	int i;
 	NhlGenArray ga;
-	char *e_text;
-	NhlString entry_name = "SpTransGetValues";
 
 
 	for( i = 0; i < nargs ; i++) {

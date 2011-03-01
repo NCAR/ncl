@@ -21,11 +21,11 @@ NhlErrorTypes omega_ccm_W( void )
   double *tmp_pmid, *tmp_pdel, *tmp_psfc, *tmp_hybd, *tmp_hybm;
   int ndims_u, ndims_v, ndims_div, ndims_dpsl, ndims_dpsm;
   int ndims_pmid, ndims_pdel, ndims_psfc, ndims_hybd, ndims_hybm;
-  int dsizes_u[NCL_MAX_DIMENSIONS], dsizes_v[NCL_MAX_DIMENSIONS];
-  int dsizes_div[NCL_MAX_DIMENSIONS], dsizes_dpsl[NCL_MAX_DIMENSIONS];
-  int dsizes_dpsm[NCL_MAX_DIMENSIONS], dsizes_pmid[NCL_MAX_DIMENSIONS];
-  int dsizes_pdel[NCL_MAX_DIMENSIONS], dsizes_psfc[NCL_MAX_DIMENSIONS];
-  int dsizes_hybd[1], dsizes_hybm[1];
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS], dsizes_v[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_div[NCL_MAX_DIMENSIONS], dsizes_dpsl[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_dpsm[NCL_MAX_DIMENSIONS], dsizes_pmid[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_pdel[NCL_MAX_DIMENSIONS], dsizes_psfc[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hybd[1], dsizes_hybm[1];
   NclBasicDataTypes type_u, type_v, type_div, type_dpsl, type_dpsm;
   NclBasicDataTypes type_pmid, type_pdel, type_psfc, type_hybd, type_hybm;
 
@@ -39,9 +39,9 @@ NhlErrorTypes omega_ccm_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, nt, nlat, nlon, nlev, ntim, nlatlon, nlevlatlon, size_omega;
+  ng_size_t i, nt, nlat, nlon, nlev, ntim, nlatlon, nlevlatlon, size_omega;
   int index_u, index_psfc;
-
+  int inlon, inlat, inlev;
 /*
  * Retrieve parameters
  *
@@ -216,6 +216,17 @@ NhlErrorTypes omega_ccm_W( void )
   }
 
 /*
+ * Test input dimension sizes.
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX) || (nlev > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+  inlev = (int) nlev;
+
+/*
  * Test the sizes of 'dpsl', 'dpsm', and 'psfc' which should be one
  * dimension smaller than the others.
  */
@@ -386,8 +397,8 @@ NhlErrorTypes omega_ccm_W( void )
     }
     NGCALLF(omcalcccm,OMCALCCCM)(tmp_u, tmp_v, tmp_div, tmp_dpsl, tmp_dpsm, 
                                  tmp_pmid, tmp_pdel, tmp_psfc, tmp_hybd, 
-                                 tmp_hybm, nprlev, tmp_omega, &nlon, &nlat,
-                                 &nlev);
+                                 tmp_hybm, nprlev, tmp_omega, &inlon, &inlat,
+                                 &inlev);
 /*
  * If the output is to be float, then do the coercion here.
  */

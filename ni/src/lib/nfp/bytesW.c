@@ -12,23 +12,29 @@ NhlErrorTypes dim_gbits_W( void )
  * Input.
  */
   void *npack;
-  int ndims_npack, dsizes_npack[NCL_MAX_DIMENSIONS];
+  int ndims_npack;
+  ng_size_t dsizes_npack[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_npack;
   int *ibit, *nbits, *nskip, *iter;
 /*  
  * Output.
  */
   void *isam;
-  int *tmp_isam, *dsizes_isam;
+  int *tmp_isam = NULL;
+  ng_size_t *dsizes_isam;
 
 /*
  * Various.
  */
-  int i, j, n, size_leftmost, size_isam, tmp_ibit, tmp_nbits, tmp_nskip;
-  int *tmp_npack, *tmp_npack2;
+  ng_size_t i, j;
+  ng_size_t size_leftmost, size_isam;
+  int n, tmp_ibit, tmp_nbits, tmp_nskip;
+  int *tmp_npack = NULL;
+  int *tmp_npack2 = NULL;
 
-  int size_npack_type, size_int_type, ret;
-  int index_npack = 0, index_isam = 0;
+  int size_npack_type, size_int_type;
+  int ret;
+  ng_size_t index_npack = 0, index_isam = 0;
   NclTypeClass typeclass_npack;
 /*
  * Retrieve first argument.
@@ -45,9 +51,10 @@ NhlErrorTypes dim_gbits_W( void )
 /*
  * Check type of npack.
  */
-  if(type_npack != NCL_int && type_npack != NCL_byte &&
-     type_npack != NCL_short) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_gbits: npack must either be of type byte, short, or integer");
+  if(type_npack != NCL_byte && type_npack != NCL_ubyte && 
+     type_npack != NCL_short && type_npack != NCL_ushort && 
+     type_npack != NCL_int) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_gbits: npack must either be of type byte, unsigned byte, short, unsigned short, or int");
       return(NhlFATAL);
   }
 
@@ -105,8 +112,13 @@ NhlErrorTypes dim_gbits_W( void )
   for(i = 0; i < ndims_npack-1; i++) {
     size_leftmost *= dsizes_npack[i];
   }
-  n         = dsizes_npack[ndims_npack-1];
   size_isam = *iter * size_leftmost;
+
+  if(dsizes_npack[ndims_npack-1] > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_gbits: the rightmost dimension of npack is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  n = (int)dsizes_npack[ndims_npack-1];
 
 /*
  * Allocate space for input/output arrays.
@@ -123,8 +135,14 @@ NhlErrorTypes dim_gbits_W( void )
     if(type_npack == NCL_byte) {
       isam = (void*)calloc(size_isam,sizeof(byte));
     }
-    else {
+    else if(type_npack == NCL_ubyte) {
+      isam = (void*)calloc(size_isam,sizeof(unsigned char));
+    }
+    else if(type_npack == NCL_short) {
       isam = (void*)calloc(size_isam,sizeof(short));
+    }
+    else {   /* if(type_npack == NCL_ushort) */
+      isam = (void*)calloc(size_isam,sizeof(unsigned short));
     }
   }
   else {
@@ -137,7 +155,7 @@ NhlErrorTypes dim_gbits_W( void )
 /*
  * Allocate space for dimension sizes of output array.
  */
-  dsizes_isam = (int*)calloc(ndims_npack,sizeof(int));
+  dsizes_isam = (ng_size_t *)calloc(ndims_npack,sizeof(ng_size_t));
   if(dsizes_isam == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_gbits: Unable to allocate memory for holding size of output array");
     return(NhlFATAL);
@@ -182,14 +200,24 @@ NhlErrorTypes dim_gbits_W( void )
 
     NGCALLF(gbytes,GBYTES)(tmp_npack2,tmp_isam,ibit,nbits,nskip,iter);
 
-    if(type_npack == NCL_short) {
+    if(type_npack == NCL_byte) {
+      for(j = 0; j < *iter; j++ ) {
+        ((byte*)isam)[index_isam+j] = (byte)(tmp_isam[j]);
+      }
+    }
+    else if(type_npack == NCL_ubyte) {
+      for(j = 0; j < *iter; j++ ) {
+        ((unsigned char*)isam)[index_isam+j] = (unsigned char)(tmp_isam[j]);
+      }
+    }
+    else if(type_npack == NCL_short) {
       for(j = 0; j < *iter; j++ ) {
         ((short*)isam)[index_isam+j] = (short)(tmp_isam[j]);
       }
     }
-    else if(type_npack == NCL_byte) {
+    else if(type_npack == NCL_ushort) {
       for(j = 0; j < *iter; j++ ) {
-        ((byte*)isam)[index_isam+j] = (byte)(tmp_isam[j]);
+        ((unsigned short*)isam)[index_isam+j] = (unsigned short)(tmp_isam[j]);
       }
     }
     index_npack += n;
@@ -219,19 +247,26 @@ NhlErrorTypes getbitsone_W( void )
  * Input.
  */
   void *npack;
-  int ndims_npack, dsizes_npack[NCL_MAX_DIMENSIONS];
+  int ndims_npack;
+  ng_size_t dsizes_npack[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_npack;
 /*  
  * Output.
  */
   void *isam;
-  int *tmp_isam, *dsizes_isam;
+  int *tmp_isam = NULL;
+  ng_size_t *dsizes_isam;
 
 /*
  * Various.
  */
-  int i, j, n, size_npack, size_isam, ibit, nbits, nskip, size_npack_type, ret;
-  int *tmp_npack, *tmp_npack2;
+  ng_size_t i, j;
+  int size_npack, size_isam;
+  int size_npack_type;
+  int ibit, nbits, nskip;
+  int ret;
+  int *tmp_npack = NULL;
+  int *tmp_npack2 = NULL;
 
   NclTypeClass typeclass_npack;
 
@@ -250,9 +285,10 @@ NhlErrorTypes getbitsone_W( void )
 /*
  * Check type of npack.
  */
-  if(type_npack != NCL_int && type_npack != NCL_byte &&
-     type_npack != NCL_short) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"getbitsone: npack must either be of type byte, short, or integer");
+  if(type_npack != NCL_byte && type_npack != NCL_ubyte && 
+     type_npack != NCL_short && type_npack != NCL_ushort && 
+     type_npack != NCL_int) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"getbitsone_gbits: npack must either be of type byte, unsigned byte, short, unsigned short, or int");
       return(NhlFATAL);
   }
 
@@ -287,8 +323,14 @@ NhlErrorTypes getbitsone_W( void )
     if(type_npack == NCL_byte) {
       isam = (void*)calloc(size_isam,sizeof(byte));
     }
-    else {
+    else if(type_npack == NCL_ubyte) {
+      isam = (void*)calloc(size_isam,sizeof(unsigned char));
+    }
+    else if(type_npack == NCL_short) {
       isam = (void*)calloc(size_isam,sizeof(short));
+    }
+    else {   /* if(type_npack == NCL_ushort) */
+      isam = (void*)calloc(size_isam,sizeof(unsigned short));
     }
   }
   else {
@@ -301,7 +343,7 @@ NhlErrorTypes getbitsone_W( void )
 /*
  * Allocate space for dimension sizes of output array.
  */
-  dsizes_isam = (int*)calloc(ndims_npack+1,sizeof(int));
+  dsizes_isam = (ng_size_t *)calloc(ndims_npack+1,sizeof(ng_size_t));
   if(dsizes_isam == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"getbitsone: Unable to allocate memory for holding size of output array");
     return(NhlFATAL);
@@ -347,14 +389,24 @@ NhlErrorTypes getbitsone_W( void )
   nbits = 1;
   NGCALLF(gbytes,GBYTES)(tmp_npack2,tmp_isam,&ibit,&nbits,&nskip,&size_isam);
 
-  if(type_npack == NCL_short) {
+  if(type_npack == NCL_byte) {
+    for(j = 0; j < size_isam; j++ ) {
+      ((byte*)isam)[j] = (byte)(tmp_isam[j]);
+    }
+  }
+  else if(type_npack == NCL_ubyte) {
+    for(j = 0; j < size_isam; j++ ) {
+      ((unsigned char*)isam)[j] = (unsigned char)(tmp_isam[j]);
+    }
+  }
+  else if(type_npack == NCL_short) {
     for(j = 0; j < size_isam; j++ ) {
       ((short*)isam)[j] = (short)(tmp_isam[j]);
     }
   }
-  else if(type_npack == NCL_byte) {
+  else if(type_npack == NCL_ushort) {
     for(j = 0; j < size_isam; j++ ) {
-      ((byte*)isam)[j] = (byte)(tmp_isam[j]);
+      ((unsigned short*)isam)[j] = (unsigned short)(tmp_isam[j]);
     }
   }
 

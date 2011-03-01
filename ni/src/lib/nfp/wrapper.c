@@ -111,6 +111,8 @@ extern NhlErrorTypes gc_dangle_W(void);
 extern NhlErrorTypes gc_aangle_W(void);
 extern NhlErrorTypes gc_clkwise_W(void);
 extern NhlErrorTypes gc_inout_W(void);
+extern NhlErrorTypes gc_inout_mask_func_W(void);
+extern NhlErrorTypes gc_inout_mask_proc_W(void);
 extern NhlErrorTypes gc_onarc_W(void);
 
 extern NhlErrorTypes dv2uvf_W(void);
@@ -452,7 +454,9 @@ extern NhlErrorTypes latlon2utm_W(void);
 
 #ifdef BuildUdunits
 extern NhlErrorTypes ut_calendar_W(void);
+extern NhlErrorTypes ut_calendar_test_W(void);
 extern NhlErrorTypes ut_inv_calendar_W(void);
+extern NhlErrorTypes ut_inv_calendar_test_W(void);
 #endif
 
 /*
@@ -559,10 +563,25 @@ extern NhlErrorTypes ctwrap_W(void);
 
 extern NhlErrorTypes kron_product_W(void);
 
+#ifdef BuildGRIDSPEC
+extern NhlErrorTypes nccffregridW(void);
+extern NhlErrorTypes nccfmakeconformalcubichgridW(void);
+extern NhlErrorTypes nccfmakecouplermosaicW(void);
+extern NhlErrorTypes nccfmakegnomoniccubichgridW(void);
+extern NhlErrorTypes nccfmakehgridfromfileW(void);
+extern NhlErrorTypes nccfmakemosaicW(void);
+extern NhlErrorTypes nccfmakeregularlatlonhgridW(void);
+extern NhlErrorTypes nccfmakesimplecartesianhgridW(void);
+extern NhlErrorTypes nccfmakespectralhgridW(void);
+extern NhlErrorTypes nccfmaketopogW(void);
+extern NhlErrorTypes nccfmaketripolarhgridW(void);
+extern NhlErrorTypes nccfmakevgridW(void);
+#endif
+
 void NclAddUserFuncs(void)
 {
     void *args;
-    int dimsizes[NCL_MAX_DIMENSIONS];
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
     int nargs;
 /*
  * Register "vinth2p".
@@ -682,7 +701,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(3);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 2;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
@@ -696,7 +715,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(3);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 2;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
@@ -710,7 +729,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 2;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(g2fsh_W,args,"g2fsh",nargs);
 /*
@@ -721,7 +740,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
     NclRegisterFunc(f2fsh_W,args,"f2fsh",nargs);
 /*
@@ -1664,7 +1683,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(1);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(gaus_lobat_W,args,"gaus_lobat",nargs);
 /*
@@ -1685,7 +1704,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(1);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(linrood_latwgt_W,args,"linrood_latwgt",nargs);
 /*
@@ -1696,7 +1715,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(1);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(linrood_wgt_W,args,"linrood_wgt",nargs);
 /*
@@ -1874,6 +1893,38 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     NclRegisterFunc(gc_inout_W,args,"gc_inout",nargs);
+
+/*
+ * Register "gc_inout_mask_func".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(6);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(gc_inout_mask_func_W,args,"gc_inout_mask_func",nargs);
+
+/*
+ * Register "gc_inout_mask_proc".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(6);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterProc(gc_inout_mask_proc_W,args,"gc_inout_mask_proc",nargs);
 
 /*
  * Register "gc_qarea".
@@ -2680,7 +2731,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(vhseC_W,args,"vhseC",nargs);
 
@@ -2709,7 +2760,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(vhsgC_W,args,"vhsgC",nargs);
 
@@ -2807,7 +2858,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(shseC_W,args,"shseC",nargs);
 
@@ -2819,7 +2870,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(shsgC_W,args,"shsgC",nargs);
 
@@ -2929,7 +2980,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(3);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
@@ -5899,7 +5950,8 @@ void NclAddUserFuncs(void)
     args = NewArgs(3);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(linmsg_n_W,args,"linmsg_n",nargs);
 
 /*
@@ -6243,7 +6295,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(gc_latlon_W,args,"gc_latlon",nargs);
@@ -6351,6 +6403,30 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(ut_inv_calendar_W,args,"ut_inv_calendar",nargs);
+/*
+ * Register "ut_calendar_test".
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    NclRegisterFunc(ut_calendar_test_W,args,"ut_calendar_test",nargs);
+
+/*
+ * Register "ut_inv_calendar_test".
+ */
+    nargs = 0;
+    args = NewArgs(8);
+    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(ut_inv_calendar_test_W,args,"ut_inv_calendar_test",nargs);
+
 #endif
 
 /*
@@ -6868,7 +6944,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(5);
-    SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
+    /* 'snumeric' allows ushort, ubyte, etc. */
+    SetArgTemplate(args, nargs, "snumeric", 0, NclANY);  nargs++;
 
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
@@ -6882,7 +6959,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(1);
-    SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
+    /* 'snumeric' allows ushort, ubyte, etc. */
+    SetArgTemplate(args, nargs, "snumeric", 0, NclANY);  nargs++;
     NclRegisterFunc(getbitsone_W, args, "getbitsone", nargs);
 
 /*
@@ -6899,7 +6977,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
     SetArgTemplate(args, nargs, 0, 0, NclANY);  nargs++;
     SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
     NclRegisterFunc(conform_dims_W, args, "conform_dims", nargs);
@@ -7065,7 +7143,7 @@ void NclAddUserFuncs(void)
 
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
-    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
 
     NclRegisterFunc(random_chi_W, args, "random_chi", nargs);
 
@@ -7078,7 +7156,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
-    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
 
     NclRegisterFunc(random_gamma_W, args, "random_gamma", nargs);
 
@@ -7091,7 +7169,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
-    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
 
     NclRegisterFunc(random_normal_W, args, "random_normal", nargs);
 
@@ -7104,7 +7182,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
-    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
 
     NclRegisterFunc(random_uniform_W, args, "random_uniform", nargs);
 
@@ -7116,7 +7194,7 @@ void NclAddUserFuncs(void)
 
     SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
     dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
 
     NclRegisterFunc(round_W, args, "round", nargs);
 
@@ -7133,7 +7211,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
     SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
     dimsizes[0] = 2;
-    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
 
     NclRegisterFunc(generate_2d_array_W, args, "generate_2d_array", nargs);
 
@@ -7294,8 +7372,8 @@ void NclAddUserFuncs(void)
     args = NewArgs(2);
 
     dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
-    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
 
     NclRegisterFunc(ind_resolve_W, args, "ind_resolve", nargs);
 
@@ -7494,6 +7572,315 @@ void NclAddUserFuncs(void)
 
 # endif /* BuildV5D */
 
+
+#ifdef BuildGRIDSPEC
+
+/**** BEGIN GRIDSPEC WRAPPERS****/
+
+    /*
+    * nccffregridW
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(34);
+ 
+    /*SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"uint",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"uint",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterProc(nccffregridW,args,"fregrid",nargs);
+
+    /*
+    * nccf_make_conformal_cubic_hgrid_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args= NewArgs(6);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+
+    NclRegisterProc(nccfmakeconformalcubichgridW, args,"make_conformal_cubic_hgrid",nargs);
+
+    /*
+    * nccf_make_coupler_mosaic_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(9);
+    dimsizes[0] = 1;
+    /*SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    
+    NclRegisterProc(nccfmakecouplermosaicW,args,"make_coupler_mosaic",nargs);
+
+    /*
+    * nccf_make_gnomonic_cubic_hgrid_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args= NewArgs(5);
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+
+    NclRegisterProc(nccfmakegnomoniccubichgridW, args,"make_gnomonic_cubic_hgrid",nargs);
+    
+    /*
+    * nccf_make_hgrid_from_file_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(7);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    /*SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    
+    NclRegisterProc(nccfmakehgridfromfileW,args,"make_hgrid_from_file",nargs);
+
+    /*
+    * nccf_make_mosaic_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(11);
+    dimsizes[0] = 1;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    
+    NclRegisterProc(nccfmakemosaicW,args,"make_mosaic",nargs);
+
+    /*
+    * nccf_make_regular_latlon_hgrid_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(10);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    
+    NclRegisterProc(nccfmakeregularlatlonhgridW,args,"make_regular_latlon_hgrid",nargs);
+
+    /*
+    * nccf_make_simple_cartesian_hgrid_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(11);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    
+    NclRegisterProc(nccfmakesimplecartesianhgridW,args,"make_simple_cartesian_hgrid",nargs);
+
+    /*
+    * nccf_make_spectral_hgrid_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(7);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    
+    NclRegisterProc(nccfmakespectralhgridW,args,"make_spectral_hgrid",nargs);
+
+    /*
+    * nccf_make_topog
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(26);
+    dimsizes[0] = 1; 
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+
+    NclRegisterProc(nccfmaketopogW,args,"make_topog",nargs);
+
+    /*
+    * nccf_make_tripolar_hgrid_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(11);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    
+    NclRegisterProc(nccfmaketripolarhgridW,args,"make_tripolar_hgrid",nargs);
+
+    /*
+    * nccf_make_vgrid_W
+    */
+
+    nargs = 0;
+
+    /* Create Private Argument Array*/
+    args = NewArgs(5);
+    dimsizes[0] = 1;
+   /* SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;*/
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+   /* SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;*/
+   /* SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;*/
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"string",1,NclANY);nargs++;
+    
+    NclRegisterProc(nccfmakevgridW,args,"make_vgrid",nargs);
+
+/**** END GRIDSPEC WRAPPERS ****/
+
+#endif
+
     return;
 }
 
@@ -7577,7 +7964,7 @@ NclScalar         *missing_rx)
 double *coerce_input_double(
 void              *x,
 NclBasicDataTypes type_x,
-int               size_x,
+ng_size_t         size_x,
 int               has_missing_x,
 NclScalar         *missing_x,
 NclScalar         *missing_dx)
@@ -7623,9 +8010,9 @@ NclScalar         *missing_dx)
 void coerce_subset_input_double(
 void              *x,
 double            *tmp_x,
-int               index_x,
+ng_size_t         index_x,
 NclBasicDataTypes type_x,
-int               size_x,
+ng_size_t         size_x,
 int               has_missing_x,
 NclScalar         *missing_x,
 NclScalar         *missing_dx
@@ -7672,16 +8059,16 @@ NclScalar         *missing_dx
 void coerce_subset_input_double_step(
 void              *x,
 double            *tmp_x,
-int               index_x,
-int               step_x,
+ng_size_t         index_x,
+ng_size_t         step_x,
 NclBasicDataTypes type_x,
-int               size_x,
+ng_size_t         size_x,
 int               has_missing_x,
 NclScalar         *missing_x,
 NclScalar         *missing_dx
 )
 {
-  int i, ii;
+  ng_size_t i, ii;
   NclTypeClass typeclass_x;
   
 /*
@@ -7728,8 +8115,8 @@ NclScalar         *missing_dx
  * Returns 1 if it is, and a 0 if it isn't.
  */
 int is_scalar(
-int    ndims_x,
-int    *dsizes_x
+int        ndims_x,
+ng_size_t *dsizes_x
 )
 {
   int is_scalar;
@@ -7749,10 +8136,10 @@ int    *dsizes_x
 double *copy_scalar_to_array(
 double       *x,
 int          ndims_x,
-int          *dsizes_x,
-int          size_x)
+ng_size_t    *dsizes_x,
+ng_size_t    size_x)
 {
-  int i;
+  ng_size_t i;
   double *dx;
 /*
  * Check if x is a scalar. If so, then allocate an array to hold
@@ -7780,11 +8167,11 @@ int          size_x)
 float *coerce_output_float(
 double *dx,
 void   *x,
-int    size_x,
+ng_size_t size_x,
 int    has_allocated
 )
 {
-  int i;
+  ng_size_t i;
   float *rx;
 
   if(!has_allocated) {
@@ -7817,11 +8204,11 @@ int    has_allocated
 void coerce_output_int_only(
 void   *x,
 double *dx,
-int    size_x,
-int    index_x
+ng_size_t size_x,
+ng_size_t index_x
 )
 {
-  int i;
+  ng_size_t i;
 
   for( i = 0; i < size_x; i++ ) ((int*)x)[index_x+i]  = (int)dx[i];
 }
@@ -7835,7 +8222,7 @@ int    index_x
 double *coerce_output_double(
 void              *x,
 NclBasicDataTypes type_x,
-int               size_x)
+ng_size_t         size_x)
 {
   double *dx;
 /*
@@ -7865,7 +8252,7 @@ int               size_x)
  */
 int contains_missing(
 double *x,
-int    size_x,
+ng_size_t size_x,
 int    has_missing_x,
 double missing
 )
@@ -7889,7 +8276,7 @@ double missing
  */
 int contains_missing_float(
 float *x,
-int    size_x,
+ng_size_t size_x,
 int    has_missing_x,
 float missing
 )
@@ -7912,12 +8299,12 @@ float missing
  */
 void set_subset_output_missing(
 void              *x,
-int               index_x,
+ng_size_t         index_x,
 NclBasicDataTypes type_x,
-int               size_x,
+ng_size_t         size_x,
 double            missing_x)
 {
-  int i;
+  ng_size_t i;
   for(i = 0; i < size_x; i++) {
     if(type_x != NCL_double) {
       ((float*)x)[index_x+i] = (float)missing_x;
@@ -7934,13 +8321,13 @@ double            missing_x)
  */
 void set_subset_output_missing_step(
 void              *x,
-int               index_x,
-int               step_x,
+ng_size_t         index_x,
+ng_size_t         step_x,
 NclBasicDataTypes type_x,
-int               size_x,
+ng_size_t         size_x,
 double            missing_x)
 {
-  int i;
+  ng_size_t i;
   for(i = 0; i < size_x; i++) {
     if(type_x != NCL_double) {
       ((float*)x)[index_x + i*step_x] = (float)missing_x;
@@ -7953,16 +8340,16 @@ double            missing_x)
 
 
 void compute_nlatnlon(
-int *dsizes,
+ng_size_t *dsizes,
 int ndims,
-int *nlat,
-int *nlon,
-int *nlatnlon,
-int *nt,
-int *total
+ng_size_t *nlat,
+ng_size_t *nlon,
+ng_size_t *nlatnlon,
+ng_size_t *nt,
+ng_size_t *total
 )
 {
-  int i;
+  ng_size_t i;
 
   *nlat = dsizes[ndims-2];
   *nlon = dsizes[ndims-1];
@@ -7973,22 +8360,22 @@ int *total
 }
 
 void compute_nlatanlona(
-int *dsizes_in,
-int *dsizes_out,
+ng_size_t *dsizes_in,
+ng_size_t *dsizes_out,
 int ndims_in,
 int ndims_out,
-int *nlata,
-int *nlona,
-int *nlatanlona,
-int *nlatb,
-int *nlonb,
-int *nlatbnlonb,
-int *size_leftmost,
-int *size_in,
-int *size_out
+ng_size_t *nlata,
+ng_size_t *nlona,
+ng_size_t *nlatanlona,
+ng_size_t *nlatb,
+ng_size_t *nlonb,
+ng_size_t *nlatbnlonb,
+ng_size_t *size_leftmost,
+ng_size_t *size_in,
+ng_size_t *size_out
 )
 {
-  int i;
+  ng_size_t i;
 
   *nlata = dsizes_in[ndims_in-2];
   *nlona = dsizes_in[ndims_in-1];
@@ -8007,12 +8394,12 @@ int *size_out
  */
 void print_minmax(
 void *x,
-int size_x,
+ng_size_t size_x,
 NclBasicDataTypes type_x
 )
 {
   double xmin, xmax;
-  int i;
+  ng_size_t i;
   if(type_x != NCL_double) {
         xmin = xmax = (double)((float*)x)[0];
   }
@@ -8041,11 +8428,11 @@ NclBasicDataTypes type_x
 void coerce_output_float_only(
 void   *x,
 double *dx,
-int    size_x,
-int    index_x
+ng_size_t size_x,
+ng_size_t index_x
 )
 {
-  int i;
+  ng_size_t i;
 
   for( i = 0; i < size_x; i++ ) ((float*)x)[index_x+i]  = (float)dx[i];
 }
@@ -8057,11 +8444,11 @@ void coerce_output_float_or_double(
 void   *x,
 double *dx,
 NclBasicDataTypes type_x,
-int    size_x,
-int    index_x
+ng_size_t size_x,
+ng_size_t index_x
 )
 {
-  int i;
+  ng_size_t i;
 
   if(type_x == NCL_double) {
     for( i = 0; i < size_x; i++ ) ((double*)x)[index_x+i]  = dx[i];
@@ -8080,12 +8467,12 @@ void coerce_output_float_or_double_step(
 void   *x,
 double *dx,
 NclBasicDataTypes type_x,
-int    size_x,
-int    index_x,
-int    step_x
+ng_size_t size_x,
+ng_size_t index_x,
+ng_size_t step_x
 )
 {
-  int i;
+  ng_size_t i;
 
   if(type_x == NCL_double) {
     for( i = 0; i < size_x; i++ ) ((double*)x)[index_x+(step_x*i)] = dx[i];
@@ -8104,7 +8491,7 @@ int    step_x
 float *coerce_input_float(
 void              *x,
 NclBasicDataTypes type_x,
-int               size_x,
+ng_size_t         size_x,
 int               has_missing_x,
 NclScalar         *missing_x,
 NclScalar         *missing_fx)
@@ -8150,9 +8537,9 @@ NclScalar         *missing_fx)
 void coerce_subset_input_float(
 void              *x,
 float             *tmp_x,
-int               index_x,
+ng_size_t         index_x,
 NclBasicDataTypes type_x,
-int               size_x,
+ng_size_t         size_x,
 int               has_missing_x,
 NclScalar         *missing_x,
 NclScalar         *missing_fx
@@ -8201,13 +8588,49 @@ NclDimRec *get_dim_info(arg_num,num_args)
 int arg_num, num_args;
 {
   NclStackEntry tmp_var;
+  NclDimRec *dim_info;
+  int i;
 
   tmp_var = _NclGetArg(arg_num,num_args,DONT_CARE);
 
   if(tmp_var.kind == NclStk_VAR) {
-    return(tmp_var.u.data_var->var.dim_info);
+	  dim_info = malloc(sizeof(NclDimRec) * tmp_var.u.data_var->var.n_dims);
+	  for (i = 0; i < tmp_var.u.data_var->var.n_dims; i++) {
+		  dim_info[i].dim_quark = tmp_var.u.data_var->var.dim_info[i].dim_quark;
+		  dim_info[i].dim_num = tmp_var.u.data_var->var.dim_info[i].dim_num;
+		  dim_info[i].dim_size = tmp_var.u.data_var->var.dim_info[i].dim_size;
+	  }
+	  return(dim_info);
   }
   else {
-    return(NULL);
+	  return(NULL);
   }
 }
+
+ng_size_t *get_dimensions(void *tmp_dimensions,ng_size_t n_dimensions,
+                          NclBasicDataTypes type_dimensions, const char *name)
+{
+  ng_size_t i, *dimensions;
+
+  switch (type_dimensions) {
+  case NCL_int:
+    dimensions = (ng_size_t *)NclMalloc(sizeof(ng_size_t) * n_dimensions);
+    for (i = 0; i < n_dimensions; i++) {
+      ((ng_size_t *)dimensions)[i] = ((int*)tmp_dimensions)[i];
+    }
+    break;
+    
+  case NCL_long:
+    dimensions = (ng_size_t *)NclMalloc(sizeof(ng_size_t) * n_dimensions);
+    for (i = 0; i < n_dimensions; i++) {
+      ((ng_size_t *)dimensions)[i] = ((long*)tmp_dimensions)[i];
+    }
+    break;
+
+  default:
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: The input dimension sizes must be integer or long",name);
+    return(NULL);
+  }
+  return(dimensions);
+}
+

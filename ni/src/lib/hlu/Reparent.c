@@ -103,8 +103,6 @@ Reparent
 	NhlLayer	parent;	/* new parent		*/
 #endif
 {
-	_NhlAllChildList	*tnodeptr;
-	_NhlAllChildList	tnode;
 
 	if(child->base.parent == (NhlLayer)NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,

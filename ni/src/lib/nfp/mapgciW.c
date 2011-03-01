@@ -8,9 +8,9 @@ extern void NGCALLF(dmapgci,DMAPGCI)(double *,double *,double *,double *,
 extern double NGCALLF(dgcdist,DGCDIST)(double *,double *,double *,double *,
                                        int *);
 
-void convert_lon(double *tmplon, int jcode, int nlon)
+void convert_lon(double *tmplon, int jcode, ng_size_t nlon)
 {
-  int i;
+  ng_size_t i;
 /*
  * jcode >= 0 --> lon:    0 to 360
  * jcode <  0 --> lon: -180 to 180
@@ -50,18 +50,23 @@ NhlErrorTypes gc_latlon_W( void )
 /*
  * Input variables
  */
-  void *lat1, *lon1, *lat2, *lon2;
-  int dsizes_lat1[NCL_MAX_DIMENSIONS], dsizes_lat2[NCL_MAX_DIMENSIONS];
-  int dsizes_lon1[NCL_MAX_DIMENSIONS], dsizes_lon2[NCL_MAX_DIMENSIONS]; 
+  void *lat1, *lon1, *lat2, *lon2, *tmp_nlatlon;
+  ng_size_t dsizes_lat1[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lat2[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lon1[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_lon2[NCL_MAX_DIMENSIONS]; 
   int ndims_lat1, ndims_lon1, ndims_lat2, ndims_lon2;
-  int *nlatlon, *code;
-  NclBasicDataTypes type_lat1, type_lon1, type_lat2, type_lon2;
+  ng_size_t *nlatlon;
+  int *code;
+  NclBasicDataTypes type_lat1, type_lon1, type_lat2, type_lon2, type_nlatlon;
 /*
  * Output variables.
  */
   void *dist, *spac, *lat, *lon;
   NclBasicDataTypes type_lon, type_lat, type_dist;
-  int ndims_dist, *dsizes_dist, dsizes[1];
+  int ndims_dist;
+  ng_size_t *dsizes_dist;
+  ng_size_t dsizes[1];
   NclQuark *units;
 /*
  * Attribute variables
@@ -73,11 +78,13 @@ NhlErrorTypes gc_latlon_W( void )
 /*
  * Other variables
  */
-  double *tmp_lat1, *tmp_lon1, *tmp_lat2, *tmp_lon2, *tmp_lat, *tmp_lon;
+  double *tmp_lat1, *tmp_lon1, *tmp_lat2, *tmp_lon2;
+  double *tmp_lat = NULL;
+  double *tmp_lon = NULL;
   double *tmp_dist, *tmp_spac;
-  int i, nlatlon2, npts, nlatlon_output, nlatlon_new;
-  int is_scalar_latlon1, index2, icode;
-  extern void convert_lon(double*,int,int);
+  ng_size_t i, nlatlon2, npts, nlatlon_output, nlatlon_new, index2;
+  int inpts, is_scalar_latlon1, icode;
+  extern void convert_lon(double*,int,ng_size_t);
 
 /*
  * Retrieve parameters
@@ -125,15 +132,19 @@ NhlErrorTypes gc_latlon_W( void )
           &type_lon2,
           DONT_CARE);
 
-  nlatlon = (int*)NclGetArgValue(
+  tmp_nlatlon = (void*)NclGetArgValue(
           4,
           6,
           NULL,
           NULL,
           NULL,
           NULL,
-          NULL,
+          &type_nlatlon,
           DONT_CARE);
+
+  nlatlon = get_dimensions(tmp_nlatlon,1,type_nlatlon,"gc_latlon");
+  if(nlatlon == NULL) 
+    return(NhlFATAL);
 
   code = (int*)NclGetArgValue(
           5,
@@ -208,6 +219,16 @@ NhlErrorTypes gc_latlon_W( void )
     npts        = *nlatlon - 2;
     nlatlon_new = *nlatlon;
   }
+
+/*
+ * Test dimension sizes.
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_latlon: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * nlatlon_output will be the total size of the interpolated lat/lon
  * points that are returned with this function.
@@ -270,7 +291,7 @@ NhlErrorTypes gc_latlon_W( void )
   }
 
   ndims_dist = ndims_lat2;
-  dsizes_dist = (int*)malloc(ndims_dist*sizeof(int));
+  dsizes_dist = (ng_size_t*)malloc(ndims_dist*sizeof(ng_size_t));
   for(i = 0; i < ndims_dist; i++) dsizes_dist[i] = dsizes_lat2[i];
 
   if(type_dist == NCL_double) {
@@ -344,7 +365,7 @@ NhlErrorTypes gc_latlon_W( void )
 /*
  * Call Fortran function.
  */
-      NGCALLF(dmapgci,DMAPGCI)(tmp_lat1,tmp_lon1,tmp_lat2,tmp_lon2,&npts,
+      NGCALLF(dmapgci,DMAPGCI)(tmp_lat1,tmp_lon1,tmp_lat2,tmp_lon2,&inpts,
                                tmp_lat,tmp_lon);
 /*
  * Copy latitudes and longitudes to output array.
@@ -612,6 +633,7 @@ NhlErrorTypes gc_latlon_W( void )
                           );
 
   NclFree(dsizes_dist);
+  NclFree(nlatlon);
 /*
  * Return output grid and attributes to NCL.
  */

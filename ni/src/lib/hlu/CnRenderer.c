@@ -110,9 +110,7 @@ CnRendererInitialize
         int             num_args;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name = "CnRendererInitialize";
-	char			*e_text;
+	NhlErrorTypes		ret = NhlNOERROR;
 
         return ret;
 }
@@ -233,7 +231,7 @@ static void GetCellInfo
 	float			*yexact_count;
 #endif
 {
-	float offset,ddiff,wdiff,stepsize;
+	float offset,ddiff,stepsize;
 	float xmin,xmax,ymin,ymax;
 	double pint;
 /*
@@ -347,7 +345,6 @@ NhlErrorTypes CnGetDataBound
 		(NhlTransformLayerPart *) &cl->trans;
 	int			status;
 	NhlBoolean		x_irr = False,y_irr = False;
-	NhlBoolean		curvy = False;
 	float			xexact,yexact;
 	float                   center_lon = 0.0;
 	float			cxd[2],cyd[2];

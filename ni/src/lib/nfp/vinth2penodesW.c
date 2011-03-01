@@ -18,22 +18,25 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W
 ()
 #endif
 {
-    int i, j, nc, nt, sz,nblk,nblk_out,psf_blk, index_phis;
+    ng_size_t i, j, nc, nt;
+    ng_size_t sz = 0;
+    ng_size_t nblk = 0;
+    ng_size_t nblk_out, psf_blk, index_phis;
     NclVar  tmp_var;
-    NclMultiDValData x_coord_md;
     NclVar lev_coord_var;
     NclMultiDValData lev_coord_md;
     int ids[4];
     NclDimRec dim_info[4];
 
     NclStackEntry data,val,plevo_val;
-    NclMultiDValData tmp_md,datai_md;
+    NclMultiDValData tmp_md = NULL;
+    NclMultiDValData datai_md;
     char *datai = NULL,*datao;
-    int datao_dimsizes[4];
+    ng_size_t datao_dimsizes[4];
     int datai_n_dims,datai_has_missing;
     NclBasicDataTypes datai_type;
     NclScalar datai_missing;
-    NclQuark plevo_quark;
+    NclQuark plevo_quark = 0;
     double *tmp_datao;
     double *tmp_datai;
 
@@ -42,21 +45,21 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W
     void *hbcofa_ptr = NULL;
     int hbcofa_n_dims,hbcofa_has_missing;
     NclBasicDataTypes hbcofa_type;
-    int hbcofa_dimsizes;
+    ng_size_t hbcofa_dimsizes;
     NclScalar hbcofa_missing;
 
     double *hbcofb = NULL;
     void *hbcofb_ptr = NULL;
     int hbcofb_n_dims,hbcofb_has_missing;
     NclBasicDataTypes hbcofb_type;
-    int hbcofb_dimsizes;
+    ng_size_t hbcofb_dimsizes;
     NclScalar hbcofb_missing;
 
     char *plevo = NULL;
     char *plevo2 = NULL;
     int plevo_n_dims,plevo_has_missing;
-    NclBasicDataTypes plevo_type;
-    int nlevo;
+    NclBasicDataTypes plevo_type = NCL_none;
+    ng_size_t nlevo;
     NclScalar plevo_missing;
     int plevo_was_val = 0;
     
@@ -69,13 +72,11 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W
     double *psfc_d = NULL;
     int psfc_n_dims,psfc_has_missing;
     NclBasicDataTypes psfc_type;
-    int psfc_dimsizes[4];
+    ng_size_t psfc_dimsizes[4];
     NclScalar psfc_missing;
 
     void *p0_ptr = NULL;
     double *p0 = NULL;
-    int p0_has_missing;
-    NclScalar p0_missing;
     NclBasicDataTypes p0_type;
 
     int *ilev = NULL;
@@ -93,13 +94,13 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W
     double *tbot_d = NULL;
     int tbot_n_dims;
     NclBasicDataTypes tbot_type;
-    int tbot_dimsizes[3];
+    ng_size_t tbot_dimsizes[3];
 
     void *phis = NULL;
     double *phis_d = NULL;
     int phis_n_dims;
     NclBasicDataTypes phis_type;
-    int phis_dimsizes[3];
+    ng_size_t phis_dimsizes[3];
 
     double *plevi;
     NclScalar missing;
@@ -107,10 +108,11 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W
     int was_val = 0;
     int not_double = 0;
     int psf_elem, phis_elem;
-    NclTypeClass plevo_type_class;
+    NclTypeClass plevo_type_class = NCL_none;
     
-    int ncase, ntime, nlevi, nodes;  /* The 4 possible dims of datai */
-    int nlevi_nodes, nlevip1;
+    ng_size_t ncase, ntime, nlevi, nodes;  /* The 4 possible dims of datai */
+    ng_size_t nlevi_nodes, nlevip1;
+    int inodes, inlevi, inlevip1, inlevo;
 
     val = _NclGetArg(0,12,DONT_CARE);
 /*
@@ -301,6 +303,8 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W
         plevo = (char*)tmp_md->multidval.val;
       }
       break;
+    default:
+      break;
     }
     if(plevo_type != NCL_double) {
       plevo2 = (char*)NclMalloc(tmp_md->multidval.totalsize);
@@ -470,6 +474,20 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W
     }
 
     nlevip1 = nlevi+1;
+
+/*
+ * Check dimension sizes.
+ */
+    if((nodes > INT_MAX) || (nlevi > INT_MAX) ||
+       (nlevip1 > INT_MAX) || (nlevo > INT_MAX))  {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: one or more dimension sizes is greater than INT_MAX");
+      return(NhlFATAL);
+    }
+    inodes = (int) nodes;
+    inlevi = (int) nlevi;
+    inlevip1 = (int) nlevip1;
+    inlevo = (int) nlevo;
+
     plevi = (double*)NclMalloc(nlevip1*sizeof(double));
     if(not_double) {
       datao = (char*)NclMalloc(total * nblk_out * sizeof(float));
@@ -509,13 +527,13 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W
                        ((char*)phis+sz*psf_blk*index_phis),psf_blk,NULL,NULL,
                        (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(phis_type))));
           }
-          NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(tmp_datai,tmp_datao,
-                                             hbcofa,hbcofb,p0,plevi,plevo,
-                                             intyp,ilev,psfc_d,
-                                             &missing,kxtrp,
-                                             &nodes,&nlevi,&nlevip1,
-                                             &nlevo,varflg,
-                                             tbot_d,phis_d);
+	  NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(tmp_datai,tmp_datao,
+					 hbcofa,hbcofb,p0,plevi,(double *)plevo,
+					 intyp,ilev,psfc_d,
+					 (double *)(&missing),kxtrp,
+					 &inodes,&inlevi,&inlevip1,
+					 &inlevo,varflg,
+					 tbot_d,phis_d);
           for(j = 0; j< nblk_out; j++) {
             ((float*)datao)[i*nblk_out + j] = (float)tmp_datao[j];
           }
@@ -578,40 +596,33 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W
 /*
  * phis_n_dims is 2D and needs to be coerced.
  */
-            NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(
-                                               (datai+sizeof(double)*i*nblk),
-                                               (((char*)datao)+
-                                               sizeof(double)*nblk_out*i),
-                                               hbcofa,hbcofb,p0,plevi,plevo,
-                                               intyp,ilev,
-                                               (((char*)psfc_d)+
-                                                sizeof(double)*psf_blk*i),
-                                               &missing,kxtrp,
-                                               &nodes,&nlevi,&nlevip1,
-                                               &nlevo,varflg,
-                                               (((char*)tbot_d)+
-                                                sizeof(double)*psf_blk*i),
-                                               (((char*)phis_d)+
-                                                sizeof(double)*psf_blk*index_phis));
+	    NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(
+					   (double *)(datai+sizeof(double)*i*nblk),
+					   (double *)(((char*)datao)+sizeof(double)*nblk_out*i),
+					   hbcofa,hbcofb,p0,plevi,(double *)plevo,
+					   intyp,ilev,
+					   (double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
+					   (double *)(&missing),kxtrp,
+					   &inodes,&inlevi,&inlevip1,
+					   &inlevo,varflg,
+					   (double *)(((char*)tbot_d)+sizeof(double)*psf_blk*i),
+					   (double *)(((char*)phis_d)+sizeof(double)*psf_blk*index_phis));
           }
           else {
 /*
  * phis_n_dims is 1D and has already been coerced.
  */
-            NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(
-                                               (datai+sizeof(double)*i*nblk),
-                                               (((char*)datao)+
-                                                sizeof(double)*nblk_out*i),
-                                               hbcofa,hbcofb,p0,plevi,plevo,
-                                               intyp,ilev,
-                                               (((char*)psfc_d)+
-                                                sizeof(double)*psf_blk*i),
-                                               &missing,kxtrp,
-                                               &nodes,&nlevi,&nlevip1,
-                                               &nlevo,varflg,
-                                               (((char*)tbot_d)+
-                                                sizeof(double)*psf_blk*i),
-                                               phis_d);
+	    NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(
+                                          (double *)(datai+sizeof(double)*i*nblk),
+					  (double *)(((char*)datao)+sizeof(double)*nblk_out*i),
+					  hbcofa,hbcofb,p0,plevi,(double *)plevo,
+					  intyp,ilev,
+					  (double *)(((char*)psfc_d)+sizeof(double)*psf_blk*i),
+					  (double *)(&missing),kxtrp,
+					  &inodes,&inlevi,&inlevip1,
+					  &inlevo,varflg,
+					  (double *)(((char*)tbot_d)+sizeof(double)*psf_blk*i),
+					  phis_d);
           }
           i++;
           index_phis++;

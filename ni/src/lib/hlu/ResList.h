@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.h,v 1.8 1997-01-17 18:57:43 boote Exp $
+ *      $Id: ResList.h,v 1.8.4.1 2008-03-28 20:37:37 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -113,9 +113,9 @@ extern NhlErrorTypes NhlRLSetMDArray(
 	NhlString	resname,	/* resource to set		*/
 	NhlPointer	data,		/* array			*/
 	NhlString	type,		/* type of elements of array	*/
-	unsigned int	size,		/* size of elements of array	*/
+	ng_size_t	size,		/* size of elements of array	*/
 	int		num_dimensions,	/* number dimensions in array	*/
-	int		*len_dimensions	/* len each dimension in array	*/
+	ng_size_t	*len_dimensions	/* len each dimension in array	*/
 #endif
 );
 
@@ -125,7 +125,7 @@ extern NhlErrorTypes NhlRLSetMDIntegerArray(
 	NhlString	resname,	/* resource to set		*/
 	int		*data,		/* array			*/
 	int		num_dimensions,	/* number dimensions in array	*/
-	int		*len_dimensions	/* len each dimension in array	*/
+	ng_size_t	*len_dimensions	/* len each dimension in array	*/
 #endif
 );
 
@@ -135,7 +135,7 @@ extern NhlErrorTypes NhlRLSetMDLongArray(
 	NhlString	resname,	/* resource to set		*/
 	long		*data,		/* array			*/
 	int		num_dimensions,	/* number dimensions in array	*/
-	int		*len_dimensions	/* len each dimension in array	*/
+	ng_size_t	*len_dimensions	/* len each dimension in array	*/
 #endif
 );
 
@@ -145,7 +145,7 @@ extern NhlErrorTypes NhlRLSetMDFloatArray(
 	NhlString	resname,	/* resource to set		*/
 	float		*data,		/* array			*/
 	int		num_dimensions,	/* number dimensions in array	*/
-	int		*len_dimensions	/* len each dimension in array	*/
+	ng_size_t	*len_dimensions	/* len each dimension in array	*/
 #endif
 );
 
@@ -155,7 +155,7 @@ extern NhlErrorTypes NhlRLSetMDDoubleArray(
 	NhlString	resname,	/* resource to set		*/
 	double		*data,		/* array			*/
 	int		num_dimensions,	/* number dimensions in array	*/
-	int		*len_dimensions	/* len each dimension in array	*/
+	ng_size_t	*len_dimensions	/* len each dimension in array	*/
 #endif
 );
 
@@ -165,8 +165,8 @@ extern NhlErrorTypes NhlRLSetArray(
 	NhlString	resname,	/* resource to set		*/
 	NhlPointer	data,		/* array			*/
 	NhlString	type,		/* type of elements of array	*/
-	unsigned int	size,		/* size of elements of array	*/
-	int		num_elements	/* number elements in array	*/
+	ng_size_t	size,		/* size of elements of array	*/
+	ng_size_t	num_elements	/* number elements in array	*/
 #endif
 );
 
@@ -175,7 +175,7 @@ extern NhlErrorTypes NhlRLSetIntegerArray(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	int		*data,		/* array			*/
-	int		num_elements	/* number elements in array	*/
+	ng_size_t		num_elements	/* number elements in array	*/
 #endif
 );
 
@@ -184,7 +184,7 @@ extern NhlErrorTypes NhlRLSetLongArray(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	long		*data,		/* array			*/
-	int		num_elements	/* number elements in array	*/
+	ng_size_t		num_elements	/* number elements in array	*/
 #endif
 );
 
@@ -193,7 +193,7 @@ extern NhlErrorTypes NhlRLSetFloatArray(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	float		*data,		/* array			*/
-	int		num_elements	/* number elements in array	*/
+	ng_size_t	num_elements	/* number elements in array	*/
 #endif
 );
 
@@ -202,7 +202,7 @@ extern NhlErrorTypes NhlRLSetDoubleArray(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	double		*data,		/* array			*/
-	int		num_elements	/* number elements in array	*/
+	ng_size_t	num_elements	/* number elements in array	*/
 #endif
 );
 
@@ -211,7 +211,7 @@ extern NhlErrorTypes NhlRLSetStringArray(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	NhlString	*data,		/* array			*/
-	int		num_elements	/* number elements in array	*/
+	ng_size_t	num_elements	/* number elements in array	*/
 #endif
 );
 
@@ -273,7 +273,7 @@ extern NhlErrorTypes NhlRLGetMDArray(
 	NhlString	*type,		/* type of elements of array	*/
 	unsigned int	*size,		/* size of elements of array	*/
 	int		*num_dimensions,/* number dimensions in array	*/
-	int		**len_dimensions/* len each dimension in array	*/
+	ng_size_t	**len_dimensions/* len each dimension in array	*/
 #endif
 );
 
@@ -283,7 +283,7 @@ extern NhlErrorTypes NhlRLGetMDIntegerArray(
 	NhlString	resname,	/* resource to set		*/
 	int		**data,		/* array			*/
 	int		*num_dimensions,/* number dimensions in array	*/
-	int		**len_dimensions/* len each dimension in array	*/
+	ng_size_t	**len_dimensions/* len each dimension in array	*/
 #endif
 );
 
@@ -293,7 +293,7 @@ extern NhlErrorTypes NhlRLGetMDLongArray(
 	NhlString	resname,	/* resource to set		*/
 	long		**data,		/* array			*/
 	int		*num_dimensions,/* number dimensions in array	*/
-	int		**len_dimensions/* len each dimension in array	*/
+	ng_size_t	**len_dimensions/* len each dimension in array	*/
 #endif
 );
 
@@ -303,7 +303,7 @@ extern NhlErrorTypes NhlRLGetMDFloatArray(
 	NhlString	resname,	/* resource to set		*/
 	float		**data,		/* array			*/
 	int		*num_dimensions,/* number dimensions in array	*/
-	int		**len_dimensions/* len each dimension in array	*/
+	ng_size_t	**len_dimensions/* len each dimension in array	*/
 #endif
 );
 
@@ -313,7 +313,7 @@ extern NhlErrorTypes NhlRLGetMDDoubleArray(
 	NhlString	resname,	/* resource to set		*/
 	double		**data,		/* array			*/
 	int		*num_dimensions,/* number dimensions in array	*/
-	int		**len_dimensions/* len each dimension in array	*/
+	ng_size_t	**len_dimensions/* len each dimension in array	*/
 #endif
 );
 
@@ -324,7 +324,7 @@ extern NhlErrorTypes NhlRLGetArray(
 	NhlPointer	*data,		/* array			*/
 	NhlString	*type,		/* type of elements of array	*/
 	unsigned int	*size,		/* size of elements of array	*/
-	int		*num_elements	/* number elements in array	*/
+	ng_size_t	*num_elements	/* number elements in array	*/
 #endif
 );
 
@@ -333,7 +333,7 @@ extern NhlErrorTypes NhlRLGetIntegerArray(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	int		**data,		/* array			*/
-	int		*num_elements	/* number elements in array	*/
+	ng_size_t	*num_elements	/* number elements in array	*/
 #endif
 );
 
@@ -342,7 +342,7 @@ extern NhlErrorTypes NhlRLGetLongArray(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	long		**data,		/* array			*/
-	int		*num_elements	/* number elements in array	*/
+	ng_size_t	*num_elements	/* number elements in array	*/
 #endif
 );
 
@@ -351,7 +351,7 @@ extern NhlErrorTypes NhlRLGetFloatArray(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	float		**data,		/* array			*/
-	int		*num_elements	/* number elements in array	*/
+	ng_size_t	*num_elements	/* number elements in array	*/
 #endif
 );
 
@@ -360,7 +360,7 @@ extern NhlErrorTypes NhlRLGetDoubleArray(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	double		**data,		/* array			*/
-	int		*num_elements	/* number elements in array	*/
+	ng_size_t	*num_elements	/* number elements in array	*/
 #endif
 );
 
@@ -369,7 +369,7 @@ extern NhlErrorTypes NhlRLGetStringArray(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	NhlString	**data,		/* array			*/
-	int		*num_elements	/* number elements in array	*/
+	ng_size_t	*num_elements	/* number elements in array	*/
 #endif
 );
 

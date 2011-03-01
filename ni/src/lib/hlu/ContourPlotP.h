@@ -27,6 +27,7 @@
 #include <ncarg/hlu/LogLinTransObjP.h>
 #include <ncarg/hlu/PlotManagerI.h>
 #include <ncarg/hlu/ContourPlot.h>
+#include <ncarg/hlu/ContourPlotI.h>
 #include <ncarg/hlu/WorkspaceI.h>
 #include <ncarg/hlu/ScalarFieldFloatP.h>
 #include <ncarg/hlu/FormatI.h>

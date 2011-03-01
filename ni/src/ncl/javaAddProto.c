@@ -51,7 +51,7 @@ void NclAddJavaBuiltInFuncs
 #endif
 {
     void *args;
-    int dimsizes[NCL_MAX_DIMENSIONS];
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
     int nargs = 0;
 
     nargs = 0;

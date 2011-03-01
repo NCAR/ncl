@@ -781,11 +781,13 @@ function skewT_PlotData_Original \
 
   delete (gsOpts)
 
+  fmsg = default_fillvalue("float")   ; get default missing for float
+
   if (localOpts@ThermoInfo) then
       nP   = localOpts@Parcel  ; default is the lowest level [0]
       nlvls= dimsizes(p)
-      plcl = -999.             ; p (hPa) Lifting Condensation Lvl (lcl)
-      tlcl = -999.             ; temperature (C) of lcl
+      plcl = fmsg             ; p (hPa) Lifting Condensation Lvl (lcl)
+      tlcl = fmsg             ; temperature (C) of lcl
      ;THERMO::ptlcl(p(nP),tc(nP),tdc(nP),plcl,tlcl)
       ptlcl_skewt(p(nP),tc(nP),tdc(nP),plcl,tlcl)
      ;shox = THERMO::showal(p,tc,tdc,nlvls)   ; Showwalter Index
@@ -1824,11 +1826,13 @@ function skewT_PlotData_Panel (wks:graphic, skewt_bkgd:graphic \
 
   delete (gsOpts)
 
+  fmsg = default_fillvalue("float")   ; get default missing for float
+
   if (localOpts@ThermoInfo) then
       nP   = localOpts@Parcel  ; default is the lowest level [0]
       nlvls= dimsizes(p)
-      plcl = -999.             ; p (hPa) Lifting Condensation Lvl (lcl)
-      tlcl = -999.             ; temperature (C) of lcl
+      plcl = fmsg             ; p (hPa) Lifting Condensation Lvl (lcl)
+      tlcl = fmsg             ; temperature (C) of lcl
      ;THERMO::ptlcl(p(nP),tc(nP),tdc(nP),plcl,tlcl)
       ptlcl_skewt(p(nP),tc(nP),tdc(nP),plcl,tlcl)
      ;shox = THERMO::showal(p,tc,tdc,nlvls)   ; Showwalter Index

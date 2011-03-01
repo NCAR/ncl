@@ -30,33 +30,33 @@ static NhlResource resources[] = {
 /* Begin-documented-resources */
 
 	{NhlNwkPSFormat,NhlCwkPSFormat,NhlTPSFormat,sizeof(NhlPSFormat),
-		Oset(format),NhlTImmediate,(NhlPointer)NhlPS,
+		Oset(format),NhlTImmediate,_NhlUSET((NhlPointer)NhlPS),
 		_NhlRES_NOSACCESS,NULL},
 	{NhlNwkVisualType,NhlCwkVisualType,NhlTVisualType,sizeof(NhlVisualType),
-		Oset(visual),NhlTImmediate,(NhlPointer)NhlCOLOR,
+		Oset(visual),NhlTImmediate,_NhlUSET((NhlPointer)NhlCOLOR),
 		_NhlRES_NOSACCESS,NULL},
 	{NhlNwkOrientation,NhlCwkOrientation,NhlTWorkOrientation,
 		sizeof(NhlWorkOrientation),Oset(orientation),NhlTImmediate,
-		(NhlPointer)NhlPORTRAIT,_NhlRES_DEFAULT,NULL},
+		_NhlUSET((NhlPointer)NhlPORTRAIT),_NhlRES_DEFAULT,NULL},
 	{NhlNwkPSFileName,NhlCwkPSFileName,NhlTString,
 		sizeof(NhlString),Oset(filename),NhlTImmediate,
-		(NhlPointer)NULL,_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
+		_NhlUSET((NhlPointer)NULL),_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
 	{NhlNwkPSResolution,NhlCwkPSResolution,NhlTInteger,
 		sizeof(int),Oset(resolution),NhlTImmediate,
-		(NhlPointer)1800,_NhlRES_NOSACCESS,NULL},
+		_NhlUSET((NhlPointer)1800),_NhlRES_NOSACCESS,NULL},
 	{NhlNwkFullBackground,NhlCwkFullBackground,NhlTBoolean,
 		sizeof(NhlBoolean),Oset(full_background),NhlTImmediate,
-		(NhlPointer)False,_NhlRES_DEFAULT,NULL},
+		_NhlUSET((NhlPointer)False),_NhlRES_DEFAULT,NULL},
 	{NhlNwkColorModel,NhlCwkColorModel,NhlTColorModel,
 	 	sizeof(NhlColorModel),
-		Oset(color_model),NhlTImmediate,(NhlPointer)NhlRGB,
+		Oset(color_model),NhlTImmediate,_NhlUSET((NhlPointer)NhlRGB),
 		_NhlRES_NOSACCESS,NULL},
  	{NhlNwkSuppressBackground,NhlCwkSuppressBackground,NhlTBoolean,
 		sizeof(NhlBoolean),Oset(suppress_background),NhlTImmediate,
-		(NhlPointer)False,_NhlRES_NOSACCESS,NULL},
+		_NhlUSET((NhlPointer)False),_NhlRES_NOSACCESS,NULL},
  	{NhlNwkSuppressBBInfo,NhlCwkSuppressBBInfo,NhlTBoolean,
 		sizeof(NhlBoolean),Oset(suppress_bbinfo),NhlTImmediate,
-		(NhlPointer)False,_NhlRES_NOSACCESS,NULL},
+		_NhlUSET((NhlPointer)False),_NhlRES_NOSACCESS,NULL},
 
     /* these page size and margins are initialized as "-1" here, and are given appropriate
      * values when the workstation is opened, depending upon which resources are actually
@@ -64,7 +64,7 @@ static NhlResource resources[] = {
      */
     {NhlNwkPaperSize,NhlCwkPaperSize,NhlTString,
         sizeof(NhlString),Oset(paper_size),NhlTImmediate,
-        _NhlUSET(PAGEUTIL_DEFAULT_PAPERSIZE),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
+        _NhlUSET(PAGEUTIL_DEFAULT_PAPERSIZE),_NhlRES_NOSACCESS,NULL},
     {NhlNwkPaperWidthF, NhlCwkPaperWidthF, NhlTFloat,
         sizeof(float), Oset(page_width), NhlTString,
         _NhlUSET("-1."), _NhlRES_DEFAULT, NULL},
@@ -73,16 +73,16 @@ static NhlResource resources[] = {
         _NhlUSET("-1."), _NhlRES_DEFAULT, NULL},
     {NhlNwkDeviceLowerX,NhlCwkDeviceLowerX,NhlTInteger,
         sizeof(int),Oset(lower_x),NhlTImmediate,
-        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)-1),_NhlRES_DEFAULT,NULL},
     {NhlNwkDeviceLowerY,NhlCwkDeviceLowerY,NhlTInteger,
         sizeof(int),Oset(lower_y),NhlTImmediate,
-        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)-1),_NhlRES_DEFAULT,NULL},
     {NhlNwkDeviceUpperX,NhlCwkDeviceUpperX,NhlTInteger,
         sizeof(int),Oset(upper_x),NhlTImmediate,
-        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)-1),_NhlRES_DEFAULT,NULL},
     {NhlNwkDeviceUpperY,NhlCwkDeviceUpperY,NhlTInteger,
         sizeof(int),Oset(upper_y),NhlTImmediate,
-        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+        _NhlUSET((NhlPointer)-1),_NhlRES_DEFAULT,NULL},
 
 
 /* End-documented-resources */
@@ -279,8 +279,6 @@ PSWorkstationClassPartInitialize
         NhlClass	lc;
 #endif
 {
-	NhlPSWorkstationClass	psc = (NhlPSWorkstationClass)lc;
-	NhlPSWorkstationClass	pssc;
 
 	return NhlNOERROR;
 }
@@ -605,6 +603,7 @@ PSWorkstationDestroy
 	NhlPSWorkstationLayerPart	*psp = &((NhlPSWorkstationLayer)l)->ps;
 
 	NhlFree(psp->filename);
+    NhlFree(psp->paper_size);
 
 	return NhlNOERROR;
 }
@@ -719,7 +718,6 @@ PSWorkstationActivate
 	NhlLayer	l;
 #endif
 {
-	char	func[] = "PSWorkstationActivate";
 	NhlWorkstationClass lc = (NhlWorkstationClass) NhlworkstationClass;
 	NhlWorkstationLayerPart *wp = &((NhlWorkstationLayer)l)->work;
 	NhlPSWorkstationLayerPart *pp = &((NhlPSWorkstationLayer)l)->ps;
@@ -767,9 +765,7 @@ PSWorkstationClear
 	NhlLayer	l;	/* workstation layer to update	*/
 #endif
 {
-	char	func[] = "PSWorkstationClear";
 	NhlWorkstationClass lc = (NhlWorkstationClass) NhlworkstationClass;
-	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
 	NhlPSWorkstationLayerPart *pp = &((NhlPSWorkstationLayer)l)->ps;
 	int w,h;
 	int bblx,bbux,bbly,bbuy;
@@ -856,8 +852,6 @@ NhlErrorTypes PSUpdateDrawBB
 	NhlBoundingBox *bbox
 #endif
 {
-	char	func[] = "PSUpdateDrawBB";
-	NhlWorkstationLayerPart *wp = &((NhlWorkstationLayer)wl)->work;
 	NhlPSWorkstationLayerPart *pp = &((NhlPSWorkstationLayer)wl)->ps;
 
 	if (! pp->bbox.set) {

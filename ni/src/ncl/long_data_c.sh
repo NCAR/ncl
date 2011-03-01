@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sh op_funcs.sh long NhlTLong NhlTLongGenArray -9999 > .tmp.$$
+sh op_funcs.sh long NhlTLong NhlTLongGenArray -2147483647 > .tmp.$$
 
 if [ ! $? ]
 then
@@ -13,7 +13,7 @@ sed \
 -e 's/LOCALTYPE/long/g' \
 -e 's/HLUTYPEREP/NhlTLong/g' \
 -e 's/HLUGENTYPEREP/NhlTLongGenArray/g' \
--e 's/DEFAULT_MISS/-9999/g' \
+-e 's/DEFAULT_MISS/-2147483647/g' \
 -e 's/DEFAULT_FORMAT/%ld/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \

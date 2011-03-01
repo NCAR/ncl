@@ -3,7 +3,7 @@
 #include <ncarg/hlu/Workstation.h>
 #include "wrapper.h"
 
-extern NGCALLF(ctdriver,CTDRIVER)(int *wks, float *lat, float *lon, 
+extern void NGCALLF(ctdriver,CTDRIVER)(int *wks, float *lat, float *lon, 
                                   float *data, int *nlat, int *nlon, 
                                   int *idim, int *jdim, float *rpnt,
                                   int *mpnt, float *rwrk, int *lrwk,
@@ -24,8 +24,8 @@ NhlErrorTypes ctwrap_W( void )
 {
   int *wks;
   float *lat, *lon, *data;
-  int dsizes_lat[2], dsizes_lon[2], dsizes_data[2];
-  int nlat, nlon, nlon8, idim, jdim;
+  ng_size_t nlat, nlon, nlon8, dsizes_lat[2], dsizes_lon[2], dsizes_data[2];
+  int inlat, inlon, idim, jdim;
   logical *opt;
 
 /*
@@ -79,7 +79,14 @@ NhlErrorTypes ctwrap_W( void )
  * SEAM grid), so get that number here.
  */
   nlon8 = nlon/8; 
-  idim  = jdim = nlon8;
+
+  if ((nlat > INT_MAX) || (nlon > INT_MAX) || (nlon8 > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ctwrap: one or more input dimension sizes is > INT_MAX");
+    return(NhlFATAL);
+  }
+  inlat = (int) nlat;
+  inlon = (int) nlon;
+  idim  = jdim = (int) nlon8;
 
 /*
  *  Determine the NCL identifier for the graphic object.
@@ -334,7 +341,7 @@ NhlErrorTypes ctwrap_W( void )
       strcpy(cnam,"");
     }
 
-    NGCALLF(ctdriver,CTDRIVER)(&gkswid,lat,lon,data,&nlat,&nlon,&idim,&jdim,
+    NGCALLF(ctdriver,CTDRIVER)(&gkswid,lat,lon,data,&inlat,&inlon,&idim,&jdim,
                                rpnt,&mpnt,rwrk,&lrwk,xcra,ycra,&ncra,iwrk,
                                &liwk,iama,&lama,iaai,iagi,&ngps,icra,&icam,
                                &ican,iedg,&medg,itri,&mtri,ippp,&mnop,ippe,

@@ -87,8 +87,8 @@ struct _NclCcmFVarRec {
         NclQuark var_name_quark;
         NclBasicDataTypes data_type;
         int     num_dimensions;
-        int     dim_sizes[NCL_MAX_DIMENSIONS];
-        int     file_dim_num[NCL_MAX_DIMENSIONS];
+        ng_size_t     dim_sizes[NCL_MAX_DIMENSIONS];
+        ng_size_t     file_dim_num[NCL_MAX_DIMENSIONS];
 };
 
 

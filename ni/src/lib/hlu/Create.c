@@ -351,7 +351,6 @@ _NhlCreate
 	NhlLayer		parent;
 	NhlLayer		layer;
 	NhlLayer		request;
-	NhlLayer		app;
 	NhlErrorTypes		ret=NhlNOERROR, lret=NhlNOERROR;
 	_NhlArg			stackargs[_NhlMAXARGLIST];
 	_NhlArgList		largs=stackargs;
@@ -435,7 +434,7 @@ _NhlCreate
 		layer->base.appobj = layer;
 	}
 	else{
-		if(i = _NhlArgIsSet(args,nargs,NhlNobjAppObj)){
+		if((i = _NhlArgIsSet(args,nargs,NhlNobjAppObj))){
 			int		appid;
 	
 			from.size = args[i-1].size;
@@ -1051,7 +1050,6 @@ _NhlInitAllResources
 {
 	NrmQuark		list[_NhlMAXRESLIST+1];
 	NrmQuark		tlist[_NhlMAXRESLIST+1];
-	NrmQuark		tquark;
 	int			i,j,k=0;
 	NrmResourceList		parentlist =
 				(NrmResourceList)lc->base_class.resources;

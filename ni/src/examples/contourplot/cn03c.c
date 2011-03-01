@@ -73,7 +73,7 @@ main()
 {
     int appid,wid,cnid,dataid,llid;
     int rlist, grlist;
-    int len_dims[2];
+    ng_size_t len_dims[2];
     float xvp,yvp,heightvp,widthvp;
     char const *wks_type = "x11";
 /*

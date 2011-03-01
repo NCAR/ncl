@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeint.c.specific,v 1.6 2009-07-10 19:54:05 huangwei Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -49,18 +49,18 @@ void *val;
 
 static NhlErrorTypes Ncl_Type_int_coerce
 #if	NhlNeedProto
-(void * result, void* from, int n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
+(void * result, void* from, ng_size_t n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
 #else
 (result, from, n, from_m, to_m, fc)
 void * result;
 void* from;
-int n;
+ng_size_t n;
 NclScalar* from_m;
 NclScalar *to_m;
 NclTypeClass fc;
 #endif
 {
-	int i;
+	ng_size_t i;
 	int *res = (int*)result;
 	logical tmp;
 	NclTypeOp eq;
@@ -121,6 +121,25 @@ NclTypeClass fc;
 	}
         case Ncl_Typeushort: {
                 unsigned short *fl = (unsigned short*)from;
+                if((from_m == NULL)||(to_m == NULL)) {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                *res = (int)*fl;
+                        }
+                } else {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                tmp = 0;
+                                (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+                                if(tmp) {
+                                        *res = tmp_mis.intval;
+                                } else {
+                                        *res = (int)*fl;
+                                }
+                        }
+                }
+                return(NhlNOERROR);
+        }
+        case Ncl_Typeubyte: {
+                unsigned char *fl = (unsigned char *)from;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {
                                 *res = (int)*fl;

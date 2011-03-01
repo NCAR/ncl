@@ -13,7 +13,8 @@ NhlErrorTypes rdsstoi_W( void )
  * Output array variables
  */
     float *sstoi;
-    int ndims_sstoi = 2, dsizes_sstoi[2] = {180,360};
+    int ndims_sstoi = 2;
+    ng_size_t dsizes_sstoi[2] = {180,360};
 /*
  * Retrieve parameters
  *

@@ -157,10 +157,10 @@ XSTUFF:
 #endif
 
 #ifdef	BuildRasterHDF
-HDFSTUFF:
+RASTERHDFSTUFF:
 	@echo "y"
 #else
-HDFSTUFF:
+RASTERHDFSTUFF:
 	@echo "n"
 #endif
 
@@ -185,6 +185,14 @@ NETCDF4STUFF:
 	@echo "y"
 #else
 NETCDF4STUFF:
+	@echo "n"
+#endif
+
+#ifdef	BuildHDF
+HDFSTUFF:
+	@echo "y"
+#else
+HDFSTUFF:
 	@echo "n"
 #endif
 
@@ -225,6 +233,14 @@ GDALSTUFF:
 	@echo "y"
 #else
 GDALSTUFF:
+	@echo "n"
+#endif
+
+#ifdef	BuildGRIDSPEC
+GRIDSPECSTUFF:
+	@echo "y"
+#else
+GRIDSPECSTUFF:
 	@echo "n"
 #endif
 

@@ -20,23 +20,22 @@ NhlErrorTypes rgbhsv_W( void )
  */
   void *rgb;
   double *drgb;
-  int dsizes_rgb[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_rgb[NCL_MAX_DIMENSIONS];
   int ndims_rgb;
   NclBasicDataTypes type_rgb;
  
 /*
  * output variable 
  */
-  void *hsv; 
   float *fhsv = NULL;
   double *dhsv = NULL;
-  int size_hsv;
+  ng_size_t size_hsv;
   NclBasicDataTypes type_hsv;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i,j;
+  ng_size_t i,j;
   double *thsv;
 
 /*
@@ -147,23 +146,22 @@ NhlErrorTypes hsvrgb_W( void )
  */
   void *hsv;
   double *dhsv;
-  int dsizes_hsv[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hsv[NCL_MAX_DIMENSIONS];
   int ndims_hsv;
   NclBasicDataTypes type_hsv;
  
 /*
  * output variable 
  */
-  void *rgb; 
   float *frgb = NULL;
   double *drgb = NULL;
-  int size_rgb;
+  ng_size_t size_rgb;
   NclBasicDataTypes type_rgb;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i,j;
+  ng_size_t i,j;
   double *trgb;
 
 /*
@@ -274,23 +272,22 @@ NhlErrorTypes rgbhls_W( void )
  */
   void *rgb;
   double *drgb;
-  int dsizes_rgb[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_rgb[NCL_MAX_DIMENSIONS];
   int ndims_rgb;
   NclBasicDataTypes type_rgb;
  
 /*
  * output variable 
  */
-  void *hls; 
   float *fhls = NULL;
   double *dhls = NULL;
-  int size_hls;
+  ng_size_t size_hls;
   NclBasicDataTypes type_hls;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i,j;
+  ng_size_t i,j;
   double *thls;
 
 /*
@@ -401,23 +398,22 @@ NhlErrorTypes hlsrgb_W( void )
  */
   void *hls;
   double *dhls;
-  int dsizes_hls[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hls[NCL_MAX_DIMENSIONS];
   int ndims_hls;
   NclBasicDataTypes type_hls;
  
 /*
  * output variable 
  */
-  void *rgb; 
   float *frgb = NULL;
   double *drgb = NULL;
-  int size_rgb;
+  ng_size_t size_rgb;
   NclBasicDataTypes type_rgb;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i,j;
+  ng_size_t i,j;
   double *trgb;
 
 /*
@@ -528,23 +524,22 @@ NhlErrorTypes rgbyiq_W( void )
  */
   void *rgb;
   double *drgb;
-  int dsizes_rgb[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_rgb[NCL_MAX_DIMENSIONS];
   int ndims_rgb;
   NclBasicDataTypes type_rgb;
  
 /*
  * output variable 
  */
-  void *yiq; 
   float *fyiq = NULL;
   double *dyiq = NULL;
-  int size_yiq;
+  ng_size_t size_yiq;
   NclBasicDataTypes type_yiq;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i,j;
+  ng_size_t i,j;
   double *tyiq;
 
 /*
@@ -655,23 +650,22 @@ NhlErrorTypes yiqrgb_W( void )
  */
   void *yiq;
   double *dyiq;
-  int dsizes_yiq[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_yiq[NCL_MAX_DIMENSIONS];
   int ndims_yiq;
   NclBasicDataTypes type_yiq;
  
 /*
  * output variable 
  */
-  void *rgb; 
   float *frgb = NULL;
   double *drgb = NULL;
-  int size_rgb;
+  ng_size_t size_rgb;
   NclBasicDataTypes type_rgb;
 
 /*
  * Declare various variables for random purposes.
  */
-  int i,j;
+  ng_size_t i,j;
   double *trgb;
 
 /*

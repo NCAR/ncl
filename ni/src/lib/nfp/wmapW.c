@@ -68,9 +68,11 @@ NhlErrorTypes wmsetp_W(void)
  * Input array variables
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int ndims_pname;
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
-  int ndims_pvalue, dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  int ndims_pvalue;
+  ng_size_t dsizes_pvalue[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname, type_pvalue;
 
 /*
@@ -205,7 +207,7 @@ NhlErrorTypes wmgetp_W(void)
 
   char  *arg1, *cval;
   int   numpi, numpf, numpc, i;
-  string *pvalue, *qvalue;
+  string *qvalue;
 
 /*
  *  List the integer and float parameter names.  To add new ones,
@@ -253,11 +255,12 @@ NhlErrorTypes wmgetp_W(void)
  * Input array variable
  */
   string *pname;
-  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  int ndims_pname;
+  ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname;
   float *fval;
   int *ival;
-  int ret_size = 1;	
+  ng_size_t ret_size = 1;
 
 /*
  * Retrieve argument #1
@@ -351,7 +354,8 @@ OK_NAME:  for (i = 0; i < numpi; i++) {
 
 NhlErrorTypes wmbarb_W( void )
 {
-  int grlist,gkswid,i,btot;
+  ng_size_t i;
+  int grlist,gkswid,btot;
   int *nwid,nid,ezf;
   float xt,yt,xtn,ytn,ang1,ang2,utmp,vtmp,vlen,d2r=0.01745329;
  
@@ -364,13 +368,19 @@ NhlErrorTypes wmbarb_W( void )
   NclHLUObj tmp_hlu_obj;
 
   float *x;
-  int ndims_x,dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   float *y;
-  int ndims_y,dsizes_y[NCL_MAX_DIMENSIONS];
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   float *u;
-  int ndims_u,dsizes_u[NCL_MAX_DIMENSIONS],has_missing_u;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int has_missing_u;
   float *v;
-  int ndims_v,dsizes_v[NCL_MAX_DIMENSIONS],has_missing_v;
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
+  int has_missing_v;
 
   NclScalar missing_u, missing_v;
   NclScalar missing_du, missing_dv;
@@ -496,7 +506,8 @@ NhlErrorTypes wmbarb_W( void )
 
 NhlErrorTypes wmbarbmap_W( void )
 {
-  int grlist,gkswid,i,btot;
+  ng_size_t i;
+  int grlist,gkswid,btot;
   int *nwid,nid,ezf,wdf;
   float xt,yt,xtn,ytn,ang1,ang2,utmp,vtmp,vlen,d2r=0.01745329;
 
@@ -506,13 +517,19 @@ NhlErrorTypes wmbarbmap_W( void )
   NclHLUObj tmp_hlu_obj;
 
   float *x;
-  int ndims_x,dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   float *y;
-  int ndims_y,dsizes_y[NCL_MAX_DIMENSIONS];
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   float *u;
-  int ndims_u,dsizes_u[NCL_MAX_DIMENSIONS],has_missing_u;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int has_missing_u;
   float *v;
-  int ndims_v,dsizes_v[NCL_MAX_DIMENSIONS],has_missing_v;
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
+  int has_missing_v;
 
   NclScalar missing_u, missing_v;
   NclScalar missing_du, missing_dv;
@@ -649,7 +666,8 @@ NhlErrorTypes wmbarbmap_W( void )
 
 NhlErrorTypes wmvect_W( void )
 {
-  int grlist,gkswid,i,btot;
+  ng_size_t i;
+  int grlist,gkswid,btot;
   int *nwid,nid,ezf;
   float xt,yt,xtn,ytn,ang1,ang2,utmp,vtmp,vlen,d2r=0.01745329;
  
@@ -662,13 +680,19 @@ NhlErrorTypes wmvect_W( void )
   NclHLUObj tmp_hlu_obj;
 
   float *x;
-  int ndims_x,dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   float *y;
-  int ndims_y,dsizes_y[NCL_MAX_DIMENSIONS];
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   float *u;
-  int ndims_u,dsizes_u[NCL_MAX_DIMENSIONS],has_missing_u;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int has_missing_u;
   float *v;
-  int ndims_v,dsizes_v[NCL_MAX_DIMENSIONS],has_missing_v;
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
+  int has_missing_v;
 
   NclScalar missing_u, missing_v;
   NclScalar missing_du, missing_dv;
@@ -794,26 +818,29 @@ NhlErrorTypes wmvect_W( void )
 
 NhlErrorTypes wmvectmap_W( void )
 {
-  int grlist,gkswid,i,btot;
-  int *nwid,nid,ezf;
-  float xt,yt,xtn,ytn,ang1,ang2,utmp,vtmp,vlen,d2r=0.01745329;
+  ng_size_t i;
+  int grlist,gkswid,btot;
+  int *nwid,nid;
  
-  int itrn;
-  float x1,x2,y1,y2,xx1,xx2,yy1,yy2;
-
 /*
  *  Define a variable to store the HLU object identifier.
  */
   NclHLUObj tmp_hlu_obj;
 
   float *x;
-  int ndims_x,dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   float *y;
-  int ndims_y,dsizes_y[NCL_MAX_DIMENSIONS];
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   float *u;
-  int ndims_u,dsizes_u[NCL_MAX_DIMENSIONS],has_missing_u;
+  int ndims_u;
+  ng_size_t dsizes_u[NCL_MAX_DIMENSIONS];
+  int has_missing_u;
   float *v;
-  int ndims_v,dsizes_v[NCL_MAX_DIMENSIONS],has_missing_v;
+  int ndims_v;
+  ng_size_t dsizes_v[NCL_MAX_DIMENSIONS];
+  int has_missing_v;
 
   NclScalar missing_u, missing_v;
   NclScalar missing_du, missing_dv;
@@ -910,22 +937,21 @@ NhlErrorTypes wmvectmap_W( void )
 
 NhlErrorTypes wmvlbl_W( void )
 {
-  int grlist,gkswid,i,btot;
-  int *nwid,nid,ezf;
-  float xt,yt,xtn,ytn,ang1,ang2,vlen,d2r=0.01745329;
+  ng_size_t i;
+  int grlist,gkswid;
+  int *nwid,nid;
  
-  int itrn;
-  float x1,x2,y1,y2,xx1,xx2,yy1,yy2;
-
 /*
  *  Define a variable to store the HLU object identifier.
  */
   NclHLUObj tmp_hlu_obj;
 
   float *x;
-  int ndims_x,dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   float *y;
-  int ndims_y,dsizes_y[NCL_MAX_DIMENSIONS];
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
 
 /*
  * Retrieve parameters
@@ -993,7 +1019,8 @@ NhlErrorTypes wmdrft_W( void )
   int ier;
   Gclip clip_ind_rect;
 
-  int grlist,gkswid,i;
+  ng_size_t i;
+  int grlist,gkswid;
   int *nwid,nid,ezf,j,indx,numi;
   float *xd,*yd,*ud,*vd,xt,yt,mval=1.e12;
 
@@ -1003,9 +1030,11 @@ NhlErrorTypes wmdrft_W( void )
   NclHLUObj tmp_hlu_obj;
 
   float *x;
-  int ndims_x,dsizes_x[1];
+  int ndims_x;
+  ng_size_t dsizes_x[1];
   float *y;
-  int ndims_y,dsizes_y[1];
+  int ndims_y;
+  ng_size_t dsizes_y[1];
 
 /*
  * Retrieve parameters
@@ -1177,7 +1206,7 @@ NhlErrorTypes wmfndn(float x1, float y1, float x2, float y2,
  */
   float eps=0.000001;
   
-  float xl,yl,xr,yr,xh,yh,xho,yho,x1t,y1t,x2t,y2t,xht,yht,u1,v1,u2,v2;
+  float xh,yh,xho,yho,x1t,y1t,x2t,y2t,xht,yht,u1,v1,u2,v2;
 
   c_maptrn(x1,y1,&u1,&v1);
   c_maptrn(x2,y2,&u2,&v2);
@@ -1241,11 +1270,14 @@ NhlErrorTypes wmlabs_W( void )
   NclHLUObj tmp_hlu_obj;
 
   float *x;
-  int ndims_x,dsizes_x[1];
+  int ndims_x;
+  ng_size_t dsizes_x[1];
   float *y;
-  int ndims_y,dsizes_y[1];
+  int ndims_y;
+  ng_size_t dsizes_y[1];
   string *symtyp;
-  int ndims_symtyp, dsizes_symtyp[NCL_MAX_DIMENSIONS];
+  int ndims_symtyp;
+  ng_size_t dsizes_symtyp[NCL_MAX_DIMENSIONS];
   
 
 /*
@@ -1352,7 +1384,8 @@ NhlErrorTypes wmstnm_W( void )
   int ier;
   Gclip clip_ind_rect;
 
-  int grlist,gkswid,i,num_strings;
+  ng_size_t i;
+  int grlist,gkswid,num_strings;
   int *nwid,nid,ezf,iang;
   char *arg1,tang[3],*tsym;
   float xt,yt,xtt,ytt,fang;
@@ -1363,11 +1396,16 @@ NhlErrorTypes wmstnm_W( void )
   NclHLUObj tmp_hlu_obj;
 
   float *x;
-  int ndims_x,dsizes_x[1],has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[1];
+  int has_missing_x;
   float *y;
-  int ndims_y,dsizes_y[1],has_missing_y;
+  int ndims_y;
+  ng_size_t dsizes_y[1];
+  int has_missing_y;
   string *symtyp;
-  int ndims_symtyp, dsizes_symtyp[NCL_MAX_DIMENSIONS];
+  int ndims_symtyp;
+  ng_size_t dsizes_symtyp[NCL_MAX_DIMENSIONS];
 
   NclScalar missing_x, missing_y;
   NclScalar missing_dx, missing_dy;

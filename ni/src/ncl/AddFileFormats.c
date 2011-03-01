@@ -32,6 +32,14 @@ void
 );
 #endif
 
+#ifdef BuildHDF4
+extern NclFormatFunctionRecPtr HDFAddFileFormat(
+#if	NhlNeedProto
+void
+#endif
+);
+#endif
+
 #ifdef BuildHDFEOS5
 extern NclFormatFunctionRecPtr HDFEOS5AddFileFormat(
 #if     NhlNeedProto
@@ -48,12 +56,15 @@ void
 );
 #endif
 
-extern NclFormatFunctionRecPtr NetCdfAddFileFormat(
-#if	NhlNeedProto
+#ifdef BuildOPENDAP
+extern NclFormatFunctionRecPtr OpenDapAddFileFormat(
+#if     NhlNeedProto
 void
 #endif
 );
-extern NclFormatFunctionRecPtr HDFAddFileFormat(
+#endif
+
+extern NclFormatFunctionRecPtr NetCdfAddFileFormat(
 #if	NhlNeedProto
 void
 #endif
@@ -90,9 +101,11 @@ void _NclAddFileFormats
 	_NclRegisterFormat(NetCdfAddFileFormat,"nc3");
 	_NclRegisterFormat(NetCdfAddFileFormat,"nc4");
 	_NclRegisterFormat(NetCdfAddFileFormat,"netcdf");
+#ifdef BuildHDF4
 	_NclRegisterFormat(HDFAddFileFormat,"hdf");
 	_NclRegisterFormat(HDFAddFileFormat,"hd");
 	_NclRegisterFormat(HDFAddFileFormat,"h4");
+#endif
 #ifdef BuildHDFEOS
 	_NclRegisterFormat(HDFEOSAddFileFormat,"hdfeos");
 	_NclRegisterFormat(HDFEOSAddFileFormat,"he2");
@@ -118,6 +131,10 @@ void _NclAddFileFormats
 #endif  /* BuildGRIB2 */
 	_NclRegisterFormat(CcmAddFileFormat,"ccm");
 
+#ifdef BuildOPENDAP
+	_NclRegisterFormat(OpenDapAddFileFormat,"opendap");
+#endif
+
 #ifdef  BuildGDAL
         /* file types supported by OGR... */
         _NclRegisterFormat(OGRAddFileFormat, "shp");  /* shapefile */
@@ -130,27 +147,27 @@ void _NclAddFileFormats
          **** -- RLB, 5/2009
          ****/
         _NclRegisterFormat(OGRAddFileFormat, "rt1");  /* TIGER */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rt2");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rt3");  /*   "   */  /* for pre-2002 files */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rt4");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rt5");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rt6");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rt7");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rt8");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rt9");  /*   "   */  /* for pre-2002 files */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rta");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rtb");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rtc");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rte");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rth");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rti");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rtm");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rtp");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rtr");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rts");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rtt");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rtu");  /*   "   */
-        /** _NclRegisterFormat(OGRAddFileFormat, "rtz");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt2");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt3");     */  /* for pre-2002 files */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt4");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt5");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt6");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt7");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt8");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt9");     */  /* for pre-2002 files */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rta");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtb");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtc");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rte");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rth");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rti");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtm");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtp");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtr");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rts");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtt");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtu");     */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtz");     */
         /* TIGER: see http://www.census.gov/geo/www/tiger/tiger2006se/tgr2006se.html */
 #endif
 

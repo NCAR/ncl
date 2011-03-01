@@ -48,7 +48,8 @@ main(int argc, char *argv[])
 {
     int appid,wid,mapid;
     int rlist,grlist;
-    int i, num_am_ids;
+    int i;
+    ng_size_t   num_am_ids;
     int *am_ids;
 
     Anno_List anno_list[] = {

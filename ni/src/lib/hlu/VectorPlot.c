@@ -679,10 +679,10 @@ static NhlResource resources[] = {
 /* Intercepted resources */
 
 	{NhlNtrXTensionF,NhlCtrXTensionF,NhlTFloat,sizeof(float),
-		Oset(x_tension),NhlTString,"2.0",
+		 Oset(x_tension),NhlTString,_NhlUSET("2.0"),
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{NhlNtrYTensionF,NhlCtrYTensionF,NhlTFloat,sizeof(float),
-		Oset(y_tension),NhlTString,"2.0",
+		 Oset(y_tension),NhlTString,_NhlUSET("2.0"),
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 
 	{ NhlNpmLabelBarDisplayMode,NhlCpmLabelBarDisplayMode,
@@ -877,14 +877,6 @@ static NhlErrorTypes SetUpLLTransObj(
 #endif
 );
 
-static NhlErrorTypes SetCoordBounds(
-#if	NhlNeedProto
-	NhlVectorPlotLayerPart	*vcp,
-	vcCoord			ctype,
-	int			count,
-	NhlString		entry_name
-#endif
-);
 
 static NhlErrorTypes SetUpIrrTransObj(
 #if	NhlNeedProto
@@ -1104,16 +1096,6 @@ static NhlErrorTypes    SetupLevelsExplicit(
 #endif
 );
 
-static NhlErrorTypes ChooseSpacingLin(
-#if	NhlNeedProto
-	float		*tstart,
-	float		*tend,
-	float		*spacing,
-	int		convert_precision,
-	int		max_ticks,
-	NhlString	entry_name
-#endif
-);
 
 static NhlErrorTypes    ManageVectorData(
 #if	NhlNeedProto
@@ -1175,12 +1157,12 @@ static NhlErrorTypes    ManageDynamicArrays(
 static NhlErrorTypes    ManageGenArray(
 #if	NhlNeedProto
 	NhlGenArray	*ga,
-	int		count,
+	ng_size_t	count,
 	NhlGenArray	copy_ga,
 	NrmQuark	type,
 	NhlPointer	init_val,
-	int		*old_count,
-	int		*init_count,
+	ng_size_t	*old_count,
+	ng_size_t	*init_count,
 	NhlBoolean	*need_check,
 	NhlBoolean	*changed,				       
 	NhlString	resource_name,
@@ -1191,7 +1173,7 @@ static NhlErrorTypes    ManageGenArray(
 static NhlGenArray GenArraySubsetCopy(
 #if	NhlNeedProto
         NhlGenArray     ga,
-        int             length
+        ng_size_t       length
 #endif
 );
 
@@ -1729,9 +1711,7 @@ CurlyVectorInitialize
         int             num_args;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name = InitName;
-	char			*e_text;
+	NhlErrorTypes		ret = NhlNOERROR;
 	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
 	char buffer[_NhlMAXRESNAMLEN];
 	float afr;
@@ -2286,12 +2266,8 @@ CurlyVectorSetValues
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name = InitName;
-	char			*e_text;
  	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
  	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
-        NhlSArg			sargs[32];
-        int			nargs = 0;
 	float			afr;
 	int			rlist;
 
@@ -2719,7 +2695,8 @@ static NhlErrorTypes    VectorPlotGetValues
         NhlGenArray ga;
 	NhlString ts;
         char *e_text;
-        int i, count = 0;
+        int i;
+	ng_size_t count = 0;
         char *type = "";
 
         for( i = 0; i< num_args; i++ ) {
@@ -2843,11 +2820,11 @@ static NhlErrorTypes    VectorPlotGetValues
 static NhlGenArray GenArraySubsetCopy
 #if	NhlNeedProto
         (NhlGenArray    ga,
-        int             length)
+        ng_size_t       length)
 #else
 (ga,length)
         NhlGenArray     ga;
-        int             length;
+        ng_size_t       length;
 #endif
 {
         NhlGenArray gto;
@@ -3170,7 +3147,6 @@ static NhlErrorTypes vcInitDraw
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
 	NhlTransformLayerPart	*tfp = &(vcl->trans);
-	NhlString		e_text;
 
  /*
  * Set up LLU interface coordinate boundaries 
@@ -3311,7 +3287,6 @@ static NhlErrorTypes vcUpdateTrans
                 if ((vcp->trans_obj->base.layer_class)->base_class.class_name 
 		    == NhlmapTransObjClass->base_class.class_name) {
 			float xmin, xmax;
-			float cell_size;
 
 			xmin = MIN (vcp->vfp->x_start,vcp->vfp->x_end);
 			xmax = MAX (vcp->vfp->x_start,vcp->vfp->x_end);
@@ -3411,7 +3386,6 @@ static NhlErrorTypes SetVecAnnoParams
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
 	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
 	float wlx,wrx,wby,wty; 
 	int lnlg,invx,invy;
@@ -3496,12 +3470,10 @@ static NhlErrorTypes CurlyVectorDraw
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
 	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
 	NhlTransformLayerPart	*tfp = &(vcl->trans);
 	NhlStreamlinePlotLayer stl = (NhlStreamlinePlotLayer) 
 		_NhlGetLayer(vcp->curly_vector_id);
-	NhlStreamlinePlotLayerPart *stp = &(stl->streamlineplot);
 	NhlTransformLayerPart *stfp = &(stl->trans);
 	NhlTransformLayerPart save_trans;
 
@@ -3565,7 +3537,7 @@ static NhlErrorTypes VectorPlotPreDraw
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlString		e_text,entry_name = "VectorPlotPreDraw";
+	NhlString		entry_name = "VectorPlotPreDraw";
 	NhlVectorPlotLayer	vcl = (NhlVectorPlotLayer) layer;
 	NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
         NhlBoolean		seg_draw;
@@ -3640,7 +3612,7 @@ static NhlErrorTypes VectorPlotDraw
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlVectorPlotLayer	vcl = (NhlVectorPlotLayer) layer;
 	NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
-	NhlString		e_text,entry_name = "VectorPlotDraw";
+	NhlString		entry_name = "VectorPlotDraw";
         NhlBoolean		seg_draw;
 
 	if (! vcp->data_init || vcp->zero_field) {
@@ -3704,7 +3676,7 @@ static NhlErrorTypes VectorPlotPostDraw
 	NhlVectorPlotLayer		vcl = (NhlVectorPlotLayer) layer;
 	NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
 	NhlTransformLayerPart	*tfp = &vcl->trans;
-	NhlString		e_text,entry_name = "VectorPostPlotDraw";
+	NhlString		entry_name = "VectorPostPlotDraw";
         NhlBoolean		seg_draw;
 
 	Vcp = vcp;
@@ -4220,7 +4192,6 @@ static NhlErrorTypes InitCoordBounds
 	NhlErrorTypes	ret = NhlNOERROR;
         NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
         NhlTransformLayerPart	*tfp = &vcl->trans;
-	char		*e_text;
 
 	vcp->do_low_level_log = False;
         
@@ -4340,7 +4311,6 @@ static NhlErrorTypes SetUpLLTransObj
 	char			*e_text;
 	char			*entry_name;
 	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
-	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
 	NhlTransformLayerPart	*tfp = &(vcnew->trans);
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
@@ -5172,7 +5142,6 @@ static NhlErrorTypes SetScale
 {
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
-	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
 	NhlString entry_name, e_text;
 	float sigval,t;
 	int power,i,count;
@@ -5653,7 +5622,7 @@ static NhlErrorTypes ManageLabelBar
 		NhlGenArray ga;
 		NhlString *to_sp, *from_sp;
 		NhlString s;
-		int i, count;
+		ng_size_t i,count;
 		NhlBoolean copy = False;
 
 		from_sp = (NhlString *) vcp->level_strings;
@@ -6079,7 +6048,7 @@ static NhlErrorTypes ManageVecAnno
                     break;
         }
 	if (ilp->aap->use_vec_color) {
-		int i;
+		ng_size_t i;
 		float *fp = (float *) vcp->levels->data;
 		int *ip = (int *) vcp->level_colors->data;
 		float mag = ilp->aap->real_vec_mag;
@@ -7133,7 +7102,6 @@ static NhlErrorTypes    ManageVectorData
 	char			*entry_name;
 	char			*e_text;
 	NhlVectorPlotLayerPart	*vcp = &vcnew->vectorplot;
-	NhlVectorPlotLayerPart	*ovcp = &vcold->vectorplot;
 	NhlVectorFieldFloatLayer	vfl;
 	_NhlDataNodePtr			*dlist = NULL;
 	NhlBoolean			new;
@@ -7298,7 +7266,6 @@ static NhlErrorTypes    ManageScalarData
 	char			*entry_name;
 	char			*e_text;
 	NhlVectorPlotLayerPart	*vcp = &vcnew->vectorplot;
-	NhlVectorPlotLayerPart	*ovcp = &vcold->vectorplot;
 	NhlScalarFieldFloatLayer	sfl;
 	_NhlDataNodePtr			*dlist = NULL;
 	NhlBoolean			new;
@@ -7446,7 +7413,6 @@ static NhlErrorTypes    ManageViewDepResources
 	NhlVectorPlotLayer	vcold = (NhlVectorPlotLayer) old;
 	NhlBoolean		view_changed;
 	float			ratio,old_width,old_height;
-	NhlBoolean		ref_len_inited = False;
 
 	entry_name = (init) ? InitName : SetValuesName;
 
@@ -7785,13 +7751,14 @@ static NhlErrorTypes    ManageDynamicArrays
 	NhlVectorPlotLayer	vcold = (NhlVectorPlotLayer) old;
 	NhlVectorPlotLayerPart *ovcp = &(vcold->vectorplot);
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
-	int i,count;
+	int i;
+	ng_size_t count;
 	NhlGenArray ga;
 	char *entry_name;
 	char *e_text;
-	int	init_count;
+	ng_size_t init_count;
 	NhlBoolean need_check,changed;
-	int old_count;
+	ng_size_t old_count;
 	int *ip;
 	float *levels = NULL;
 	NhlBoolean levels_modified = False;
@@ -7992,12 +7959,12 @@ static NhlErrorTypes    ManageDynamicArrays
 static NhlErrorTypes    ManageGenArray
 #if	NhlNeedProto
 	(NhlGenArray	*ga,
-	 int		count,
+	 ng_size_t	count,
 	 NhlGenArray	copy_ga,
 	 NrmQuark	type,
 	 NhlPointer	init_val,
-	 int		*old_count,
-	 int		*init_count,
+	 ng_size_t	*old_count,
+	 ng_size_t	*init_count,
 	 NhlBoolean	*need_check,
 	 NhlBoolean	*changed,
 	 NhlString	resource_name,
@@ -8006,12 +7973,12 @@ static NhlErrorTypes    ManageGenArray
 (ga,count,copy_ga,type,init_val,old_count,init_count,
  need_check,changed,resource_name,entry_name)
 	NhlGenArray	*ga;
-	int		count;
+	ng_size_t	count;
 	NhlGenArray	copy_ga;
 	NrmQuark	type;
 	NhlPointer	init_val;
-	int		*old_count;
-	int		*init_count;
+	ng_size_t	*old_count;
+	ng_size_t	*init_count;
 	NhlBoolean	*need_check;
 	NhlBoolean	*changed;
 	NhlString	resource_name;
@@ -8020,7 +7987,8 @@ static NhlErrorTypes    ManageGenArray
 {
 	char		*str_type;
 	NhlErrorTypes	ret = NhlNOERROR;
-	int		i, size;
+	int		size;
+	ng_size_t       i;
 	NhlPointer	datap;
 	char		*e_text;
 
@@ -8145,7 +8113,7 @@ static NhlErrorTypes    ManageGenArray
 			char *init_str = (char *) init_val;
 			char numstr[10];
 			for (i = *init_count; i< count; i++) {
-				sprintf(numstr,"%d",i);
+				sprintf(numstr,"%d",(int)i);
 				if ((sp = (char *) 
 				     NhlMalloc(sizeof(init_str)+
 					       sizeof(numstr)+1)) == NULL) {
@@ -8739,7 +8707,6 @@ static NhlErrorTypes    SetupLevelsExplicit
 	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
 	char			*e_text;
 	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
-	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
 	int			i,j,count;
 	float			*fp;
 	float			ftmp;

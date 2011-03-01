@@ -20,7 +20,6 @@ int _writeH5dataset(hid_t fid, hsize_t rank, hsize_t *dims, void *data,
                     char *typename, char *dataname,
                     NclHDF5group_node_t *group_node)
 {
-    NclHDF5datatype_t *NclHDF5datatype;
     NclHDF5dataset_node_t *dataset_node;
 
     NclHDF5attr_list_t *curAttrList;
@@ -260,11 +259,9 @@ int _add_attr2group(hid_t fid, hsize_t rank, hsize_t *dims, void *attrdata,
                     char *groupname, NclHDF5group_node_t *group_node)
 {
     NclHDF5group_node_t *current_group_node = NULL;
-    NclHDF5attr_list_t *curAttrList;
     NclHDF5attr_node_t *curAttrNode;
     int size = 1;
     int i;
-    int ret_val = 0;
 
     if(! group_node)
     {
@@ -706,10 +703,10 @@ NclHDF5group_node_t *_find_group(char *groupname, string_list_t *sl, int depth,
 NclHDF5group_node_t *_find_group_with_name(char *groupname,
                                            NclHDF5group_node_t *group_node)
 {
-    string_queue_t *sq;
-    string_list_t *sl;
-    NclHDF5group_list_t *current_group_list;
-    NclHDF5group_node_t *current_group_node;
+    string_queue_t *sq = NULL;
+    string_list_t *sl = NULL;
+    NclHDF5group_list_t *current_group_list = NULL;
+    NclHDF5group_node_t *current_group_node = NULL;
     NclHDF5group_node_t *parent_group_node = group_node;
     char new_groupname[HDF5_NAME_LEN];
     char tmp_groupname[HDF5_NAME_LEN];
@@ -987,7 +984,6 @@ NclHDF5dataset_node_t *_find_dataset(char *dataname, NclHDF5group_node_t *group_
 
         current_dataset_node->num_attrs = 0;
         current_dataset_node->attr_list = NULL;
-        current_dataset_node->compound = NULL;
 
         strcpy(current_dataset_node->name, fullname);
         strcpy(current_dataset_node->group_name, groupname);
@@ -1030,10 +1026,7 @@ herr_t _addH5dataset(hsize_t rank, hsize_t *dims,
                      char *typename, char *dataname,
                      NclHDF5group_node_t *group_node)
 {
-    NclHDF5group_node_t *current_group_node;
-    NclHDF5dataset_list_t *current_dataset_list;
     NclHDF5dataset_node_t *dataset_node;
-    NclHDF5datatype_t *NclHDF5datatype;
 
     int i;
 
@@ -1247,7 +1240,6 @@ herr_t _write_dataset_attribute(hid_t did, NclHDF5attr_node_t *attr_node)
     hid_t   atype;              /* Attribute type */
     hid_t   attr;
     herr_t  ret;                /* Return value */
-    int i = 0;
     
     if((0 == strcmp("string", attr_node->type_name)) || (0 == strcmp("char", attr_node->type_name)))
     {
@@ -1320,7 +1312,6 @@ int _write_chunkedH5dataset(hid_t fid, hsize_t rank,
                             char *typename, char *dataname,
                             NclHDF5group_node_t *group_node)
 {
-    NclHDF5datatype_t *NclHDF5datatype;
     NclHDF5dataset_node_t *dataset_node;
 
     NclHDF5attr_list_t *curAttrList;
@@ -1465,10 +1456,7 @@ herr_t _addChunk2H5dataset(hsize_t rank, hsize_t *dims,
                            char *dataname,
                            NclHDF5group_node_t *group_node)
 {
-    NclHDF5group_node_t *current_group_node;
-    NclHDF5dataset_list_t *current_dataset_list;
     NclHDF5dataset_node_t *dataset_node;
-    NclHDF5datatype_t *NclHDF5datatype;
 
     int i;
 

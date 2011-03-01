@@ -55,7 +55,8 @@ float explicit_values[14];
 main()
 {
     int     appid,xworkid,plotid,dataid;
-    int     rlist, i, j, clen[2];
+    int     rlist, i, j;
+    ng_size_t clen[2];
     float   cmap[NCOLORS][3];
     FILE    *fp;
 
