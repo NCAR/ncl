@@ -9,12 +9,12 @@
 0:6:Cloud
 0:7:Thermodynamic stability indices
 0:13:Aerosols
-0:14:Trace gases (e.g. Ozone, CO2)
+0:14:Trace gases (e.g. ozone, CO2)
 0:15:Radar
-0:16:Forecast Radar Imagery
+0:16:Forecast radar imagery
 0:18:Nuclear/radiology
 0:19:Physical atmospheric properties
-0:20:Atmospheric Chemical Constituents
+0:20:Atmospheric chemical constituents
 0:190:CCITT IA5 string
 0:191:Miscellaneous
 0:192:Covariance
@@ -22,11 +22,11 @@
 1:0:Hydrology basic products
 1:1:Hydrology probabilities
 #Product Discipline 2, Land Surface products
-2:0:Vegetation/Biomass
+2:0:Vegetation/biomass
 2:1:Agricultural/aquacultural special products
 2:2:Transportation related products
 2:3:Soil products
-2:192:Fire Weather
+2:192:Fire weather
 #Product Discipline 3, Space products
 3:0:Image format products
 3:1:Quantitative products
