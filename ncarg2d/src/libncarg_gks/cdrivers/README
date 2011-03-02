@@ -5,3 +5,7 @@ you might try compiling it with the -D__UNIXOS2__ option.  This worked
 on hemlock, a 32-bit linux system with gcc/gfortran V4.2.
 
 ----------------------------------------------------------------------
+If on a Cygwin system it complains about M_PI being undefined in cro.c,
+trying compiling without -ansi.
+----------------------------------------------------------------------
+
