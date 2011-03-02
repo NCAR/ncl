@@ -705,6 +705,7 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
 #
 # GRIDSPEC
 #
+  if(0) then
   if ($?verbose_option) then
     cat <<"EOF"
 ======================================================================
@@ -728,6 +729,7 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
       set buildgridspec = $answer
       set newbuildgridspec
       set altered
+  endif
   endif
 
 #
