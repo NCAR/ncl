@@ -12115,6 +12115,7 @@ begin
           exit
       end if
       
+      dnam    = getvardims(xin)
       dimx    = dimsizes( xin  )
       rank    = dimsizes( dimx )
       if (rank.eq.1 .or. rank.gt.3) then
@@ -12165,6 +12166,7 @@ begin
 
       if (rank.eq.3) then               ; (ntim,klev,ncol)
           klev = dimx(1)
+          knam = dnam(1)
           xout = new ( (/ntim,klev,nlat,mlon/), typeof(xin), 1e20)
 
           do nt=0,ntim-1
@@ -12174,8 +12176,8 @@ begin
             end do
           end do
 
-          xout!1   = "lev"                ; xout!1 = xin!1
-          xout&lev = xin&lev              ; xout!&$xin!1$ = xin&$xin!1$
+          xout!1   = knam                 ; xout!1 = xin!1
+          xout&$knam$ = xin&$knam$        ; xout!&$xin!1$ = xin&$xin!1$
           xout!2   = "lat"
           xout!3   = "lon"
       end if
