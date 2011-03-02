@@ -90,10 +90,11 @@ NclTypeClass fc;
 	case Ncl_Typelogical: {
 		string true = NrmStringToQuark("True");
 		string false = NrmStringToQuark("False");
+		string missing = NrmStringToQuark("Missing");
 		logical *fl = (logical*)from;
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (*fl?true:false) ;
+			      *res = (*fl == (logical) -1) ? missing :  (*fl?true:false) ;	
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
