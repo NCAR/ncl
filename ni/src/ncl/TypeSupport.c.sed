@@ -333,3 +333,21 @@ NhlErrorTypes _NclSetDefaultFillValues
 	}
 	return NhlNOERROR;
 }
+
+NhlErrorTypes _NclGetDefaultFillValue
+(NclBasicDataTypes type,
+ NclScalar *def_val)
+{
+	char *ctype = NULL;
+	NclTypeClass class = NULL;
+
+	ctype = _NclBasicDataTypeToName(type);
+	if (ctype) {
+		class = _NclNameToTypeClass(NrmStringToQuark(ctype));
+		if (class) {
+				*def_val = class->type_class.default_mis;
+				return NhlNOERROR;
+                }
+        }
+	return NhlFATAL;
+}
