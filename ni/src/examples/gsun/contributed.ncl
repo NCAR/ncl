@@ -374,17 +374,73 @@ end
 
 undef("copy_VarAtts")
 procedure copy_VarAtts(var_from,var_to)    
-local att_names, i
+local att_names, i, fromType, toType, sameType
 begin                                       
-  att_names =getvaratts(var_from);
-    if(.not.all(ismissing(att_names)))
-      do i = 0,dimsizes(att_names)-1
-         if (isatt(var_to,att_names(i))) then
-             delete(var_to@$att_names(i)$)  ; var_from att may be diff size/type
-         end if
-	 var_to@$att_names(i)$ = var_from@$att_names(i)$
-      end do
-  end if
+    att_names =getvaratts(var_from);
+
+    if(.not.all(ismissing(att_names))) then
+
+       fromType = typeof(var_from)
+       toType   = typeof(var_to)
+       sameType = fromType .eq. toType
+
+       if (sameType .or. .not.(isatt(var_from,"_FillValue"))) then
+           do i = 0,dimsizes(att_names)-1
+              if (isatt(var_to,att_names(i))) then
+                  delete(var_to@$att_names(i)$)  ; var_from att may be diff size/type
+              end if
+           end do
+
+       else      ; handle _FillValue with different type than var_to
+           do i = 0,dimsizes(att_names)-1
+              if (isatt(var_to,att_names(i))) then
+                  delete(var_to@$att_names(i)$)  ; var_from att may be diff size/type
+              end if
+
+              if (.not.(att_names(i).eq."_FillValue" .or. \
+                        att_names(i).eq."missing_value")) then
+	          var_to@$att_names(i)$ = var_from@$att_names(i)$
+              else    ; attribute must be _FillValue or missing_value
+                  if (att_names(i).eq."_FillValue") then
+                      if (typeof(var_to).eq.typeof(var_from@_FillValue)) then
+                          var_to@_FillValue = var_from@_FillValue
+                      else
+                          if (typeof(var_to).eq."float") then
+                              var_to@_FillValue = tofloat(var_from@_FillValue)
+                          end if
+                          if (typeof(var_to).eq."integer") then
+                              var_to@_FillValue = toint(var_from@_FillValue)
+                          end if
+                          if (typeof(var_to).eq."short") then
+                              var_to@_FillValue = toshort(var_from@_FillValue)
+                          end if
+                          if (typeof(var_to).eq."byte") then
+                              var_to@_FillValue = tobyte(var_from@_FillValue)
+                          end if
+                      end if
+                  end if
+                  if (att_names(i).eq."missing_value") then
+                      if (typeof(var_to).eq.typeof(var_from@missing_value)) then
+                          var_to@missing_value = var_from@missing_value
+                      else
+                          if (typeof(var_to).eq."float") then
+                              var_to@missing_value = tofloat(var_from@missing_value)
+                          end if
+                          if (typeof(var_to).eq."integer") then
+                              var_to@missing_value = toint(var_from@missing_value)
+                          end if
+                          if (typeof(var_to).eq."short") then
+                              var_to@missing_value = toshort(var_from@missing_value)
+                          end if
+                          if (typeof(var_to).eq."byte") then
+                              var_to@missing_value = tobyte(var_from@missing_value)
+                          end if
+                      end if 
+                  end if     ; if (att_names(i).eq."missing_value")
+              end if
+           end do            ; handle _FillValue
+       end if                ; if (sameType .or. ....
+    end if                   ; if(.not.all(ismissing(att_names))) 
 end
 
 ;***********************************************
@@ -12201,9 +12257,17 @@ begin
 
       if (opt) then
 
-          if (isatt(opt,"return_type") .and. opt@return_type.eq."float") then
+          if (typeof(xout).eq."double" .and. \
+              isatt(opt,"return_type") .and. opt@return_type.eq."float") then
               xoutf = tofloat( xout )
+                    ; the following to to get around an irritating Warning
+                    ; message about _FillValue when copy_VarMeta is used
+              if (isatt(xout,"_FillValue")) then   ; xout is 'double'
+                  delete(xout@_FillValue)
+              end if
+
               copy_VarMeta(xout,xoutf)
+
               delete(xout)
               xout  = xoutf
               delete(xoutf)
