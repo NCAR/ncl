@@ -6237,6 +6237,7 @@ int wr_status;
 	NhlErrorTypes retvalue;
 	struct stat statbuf;
 	int suffix;
+	int table_warning = 0;
 
 	if (! Ptables) {
 		InitPtables();
@@ -6592,6 +6593,7 @@ int wr_status;
 						}
 						break;
 					case 78: /* DWD */
+					case 146: /* Brazilian Navy Hydrographic Center -- uses DWD tables according to wgrib */
 						switch (ptable_version) {
 						case 2:
 							ptable = &dwd_002_params[0];
@@ -6747,7 +6749,13 @@ int wr_status;
 							break;
 						}
 					}
-					if (ptable == NULL && ptable_version <= 3 && grib_rec->param_number < 128) {
+					if (ptable == NULL && grib_rec->param_number < 128) {
+						if (ptable_version > 3 && table_warning == 0) {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,
+								  "NclGRIB: Unrecognized parameter table (center %d, subcenter %d, table %d), defaulting to NCEP operational table for standard parameters (1-127): variable names and units may be incorrect",
+								  center, subcenter, ptable_version);
+							table_warning = 1;
+						}
 						/* 
 						 * if the ptable_version <= 3 and the parameter # is less than 128 then 
 						 * the NCEP operational table is the legitimate default; 
