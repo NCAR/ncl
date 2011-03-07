@@ -367,14 +367,11 @@ begin
                 end  do
   end if
 end
-;****************************************
-; D. Shea
-; Copies all of a variables attributes (e.g. long_name) from
-; one variable to another
-
+;==============================
 undef("copy_VarAtts")
 procedure copy_VarAtts(var_from,var_to)    
-local att_names, i, fromType, toType, sameType
+local att_names, i, fromType, toType, sameType \
+    , fromFillValue, fromFillType, fromMissType, fromMissValue, logical_FillValue
 begin                                       
     att_names =getvaratts(var_from);
 
@@ -384,56 +381,115 @@ begin
        toType   = typeof(var_to)
        sameType = fromType .eq. toType
 
-       if (sameType .or. .not.(isatt(var_from,"_FillValue"))) then
+       if (sameType .or. fromType.eq."file"  \
+                    .or. .not.(isatt(var_from,"_FillValue"))) then
            do i = 0,dimsizes(att_names)-1
-              if (isatt(var_to,att_names(i))) then
+              if (isatt(var_to,att_names(i)) .and. isatt(var_from,att_names(i)) ) then
                   delete(var_to@$att_names(i)$)  ; var_from att may be diff size/type
               end if
+              var_to@$att_names(i)$ = var_from@$att_names(i)$
            end do
 
        else      ; handle _FillValue with different type than var_to
+
            do i = 0,dimsizes(att_names)-1
-              if (isatt(var_to,att_names(i))) then
+              if (isatt(var_to,att_names(i)) .and. isatt(var_from,att_names(i)) ) then
                   delete(var_to@$att_names(i)$)  ; var_from att may be diff size/type
               end if
 
               if (.not.(att_names(i).eq."_FillValue" .or. \
                         att_names(i).eq."missing_value")) then
 	          var_to@$att_names(i)$ = var_from@$att_names(i)$
+
               else    ; attribute must be _FillValue or missing_value
+
                   if (att_names(i).eq."_FillValue") then
-                      if (typeof(var_to).eq.typeof(var_from@_FillValue)) then
+                      fromFillValue = var_from@_FillValue 
+                      fromFillType  = typeof(var_from@_FillValue) 
+
+                      if (toType.eq.fromFillType) then
                           var_to@_FillValue = var_from@_FillValue
                       else
-                          if (typeof(var_to).eq."float") then
-                              var_to@_FillValue = tofloat(var_from@_FillValue)
+                          var_to@_FillValue_original = fromFillValue   ; output original _FillValue
+                                                                       ; ne _FillValue
+                          if (toType.eq."float") then
+                              var_to@_FillValue = tofloat(fromFillValue)
                           end if
-                          if (typeof(var_to).eq."integer") then
-                              var_to@_FillValue = toint(var_from@_FillValue)
+                          if (toType.eq."integer") then
+                              var_to@_FillValue = toint(fromFillValue)
                           end if
-                          if (typeof(var_to).eq."short") then
-                              var_to@_FillValue = toshort(var_from@_FillValue)
+                          if (toType.eq."short") then
+                              var_to@_FillValue = toshort(fromFillValue)
                           end if
-                          if (typeof(var_to).eq."byte") then
-                              var_to@_FillValue = tobyte(var_from@_FillValue)
+                          if (toType.eq."byte") then
+                              var_to@_FillValue = tobyte(fromFillValue)
+                          end if
+                          if (toType.eq."logical") then
+                              logical_FillValue = new(1,"logical")
+                              var_to@_FillValue = logical_FillValue
+                          end if
+                          if (toType.eq."ubyte") then
+                              var_to@_FillValue = toubyte(fromFillValue)
+                          end if
+                          if (toType.eq."uint") then
+                              var_to@_FillValue = touint(fromFillValue)
+                          end if
+                          if (toType.eq."int64") then
+                              var_to@_FillValue = toint64(fromFillValue)
+                          end if
+                          if (toType.eq."uint64") then
+                              var_to@_FillValue = touint64(fromFillValue)
+                          end if
+                          if (toType.eq."ulong") then
+                              var_to@_FillValue = toulong(fromFillValue)
+                          end if
+                          if (toType.eq."ushort") then
+                              var_to@_FillValue = toushort(fromFillValue)
                           end if
                       end if
                   end if
                   if (att_names(i).eq."missing_value") then
-                      if (typeof(var_to).eq.typeof(var_from@missing_value)) then
+                      fromMissValue = var_from@missing_value
+                      fromMissType  = typeof(var_from@missing_value)
+
+                      if (toType.eq.fromMissType) then
                           var_to@missing_value = var_from@missing_value
                       else
-                          if (typeof(var_to).eq."float") then
-                              var_to@missing_value = tofloat(var_from@missing_value)
+                          var_to@missing_value_original = fromMissValue  ; output original missing_value
+     
+                          if (toType.eq."float") then
+                              var_to@missing_value = tofloat(fromMissValue)
                           end if
-                          if (typeof(var_to).eq."integer") then
-                              var_to@missing_value = toint(var_from@missing_value)
+                          if (toType.eq."integer") then
+                              var_to@missing_value = toint(fromMissValue)
                           end if
-                          if (typeof(var_to).eq."short") then
-                              var_to@missing_value = toshort(var_from@missing_value)
+                          if (toType.eq."short") then
+                              var_to@missing_value = toshort(fromMissValue)
                           end if
-                          if (typeof(var_to).eq."byte") then
-                              var_to@missing_value = tobyte(var_from@missing_value)
+                          if (toType.eq."byte") then
+                              var_to@missing_value = tobyte(fromMissValue)
+                          end if
+                          if (toType.eq."logical") then
+                              logicalmissing_value = new(1,"logical")
+                              var_to@missing_value = logicalmissing_value
+                          end if
+                          if (toType.eq."ubyte") then
+                              var_to@missing_value = toubyte(fromMissValue)
+                          end if
+                          if (toType.eq."uint") then
+                              var_to@missing_value = touint(fromMissValue)
+                          end if
+                          if (toType.eq."int64") then
+                              var_to@missing_value = toint64(fromMissValue)
+                          end if
+                          if (toType.eq."uint64") then
+                              var_to@missing_value = touint64(fromMissValue)
+                          end if
+                          if (toType.eq."ulong") then
+                              var_to@missing_value = toulong(fromMissValue)
+                          end if
+                          if (toType.eq."ushort") then
+                              var_to@missing_value = toushort(fromMissValue)
                           end if
                       end if 
                   end if     ; if (att_names(i).eq."missing_value")
