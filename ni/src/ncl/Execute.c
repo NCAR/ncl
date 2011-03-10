@@ -2998,8 +2998,20 @@ void CallASSIGN_VAR_DIM_OP(void) {
 						dim_num,
 						dim_name);
 					}
-					if((dim_expr_md->obj.status != PERMANENT)&&(dim_expr_md->obj.ref_count == 0)) {
-						_NclDestroyObj((NclObj)dim_expr_md);
+					switch (dim_expr.kind) {
+					case NclStk_VAL:
+						if((dim_expr_md->obj.status != PERMANENT)&&(dim_expr_md->obj.ref_count == 0)) {
+							_NclDestroyObj((NclObj)dim_expr_md);
+						}
+						break;
+					case NclStk_VAR:	
+						if((dim_expr.u.data_var->var.var_type == VARSUBSEL) &&
+						   (dim_expr.u.data_var->obj.status != PERMANENT)&&(dim_expr.u.data_var->obj.ref_count == 0)) {
+							_NclDestroyObj((NclObj)dim_expr.u.data_var);
+						}
+						break;
+					default:
+						break;
 					}
 					if((dim_ref_md->obj.status != PERMANENT)&&(dim_ref_md->obj.ref_count == 0)) {
 						_NclDestroyObj((NclObj)dim_ref_md);
@@ -3089,6 +3101,22 @@ void CallNEW_OP(void) {
 						break;
 					default:
 						break;
+					}
+					if((NclSymbol*)*ptr ==NULL) {
+						switch(data_type_expr.kind) {
+						case NclStk_VAL:
+							if(data_type_expr.u.data_obj->obj.status != PERMANENT) {	
+								_NclDestroyObj((NclObj)data_type_expr.u.data_obj);
+							}
+							break;
+						case NclStk_VAR:
+							if(data_type_expr.u.data_var->obj.status != PERMANENT) {	
+								_NclDestroyObj((NclObj)data_type_expr.u.data_var);
+							}
+							break;
+						default:
+							break;
+						}
 					}
 				}
 				
