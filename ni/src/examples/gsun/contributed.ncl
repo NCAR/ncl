@@ -10787,12 +10787,12 @@ begin
   if (typeof(xAve).eq."double" .or. typeof(xAve).eq."double") then
       zero = 0.0d
       one  = 1.0d
-      pi   = 4.0d*atan(1.0d)/180.0d
+      pi   = 4.0d*atan(1.0d)
       spn  = 3.0d                    ; 99.7% of normal
   else
       zero = 0.0 
       one  = 1.0
-      pi   = 4.0*atan(1.0)/180.0
+      pi   = 4.0*atan(1.0)
       spn  = 3.0
   end if
 
