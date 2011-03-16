@@ -6676,6 +6676,7 @@ void CallASSIGN_VAR_VAR_OP(void) {
 						lhs_var->u.data_var = _NclVarRead(rhs_var->u.data_var,rhs_sel_ptr);
 						if(lhs_var->u.data_var == NULL) {
 							estatus = NhlFATAL;
+							lhs_var->kind = NclStk_NOVAL;
 						} else {
 							if(!_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT)) {	
 								tmp_var = lhs_var->u.data_var;
