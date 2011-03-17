@@ -99,6 +99,10 @@ short   NCLoldBehavior = 0;     /* retain former behavior for certain backwards-
 
 char    *nclf = NULL;           /* script of NCL commands, may or may not be provided */
 
+int quark_comp(const void *q1, const void *q2)
+{
+	return(strcmp((const char*)NrmQuarkToString(*(NrmQuark *)q1),(const char*)NrmQuarkToString(*(NrmQuark *) q2)));
+}
 
 int
 main(int argc, char **argv) {
@@ -392,35 +396,53 @@ main(int argc, char **argv) {
     }
 	
     /* Load default scripts */
+    /* These need to be loaded in alphabetical order to ensure that users can control
+     * the order of loading. There is a BSD function scandir that would do it all but it 
+     * might not be standardized enough to be uniformly available on all systems, so for
+     * now it must be coded just using readdir.
+     */
+    
     if ((scriptpath = getenv("NCL_DEF_SCRIPTS_DIR")) != NULL) {
-        d = opendir(_NGResolvePath(scriptpath));
-        if (d!= NULL) {
-            while((ent = readdir(d)) != NULL) {
-                if (*ent->d_name != '.') {
-                    (void) sprintf(buffer, "%s/%s", _NGResolvePath(scriptpath), ent->d_name);
-                    pt = strrchr(buffer, '.');
-                    if (pt != NULL) {
-                        pt++;
-                        if (strncmp(pt, "ncl", 3) == 0) {
-                            if (_NclPreLoadScript(buffer, 1) == NhlFATAL) {
-                                NhlPError(NhlFATAL, NhlEUNKNOWN, "Error loading default script.");
-                            } else {
-                                yyparse(reset);
-                            }
-                        } else {
-                            NhlPError(NhlFATAL, NhlEUNKNOWN,
-                                "Scripts must have the \".ncl\" file extension.");
-                        }
-                    } else {
-                        NhlPError(NhlFATAL, NhlEUNKNOWN,
-                            "Scripts must have the \".ncl\" file extension.");
-                    }
-                }
-            }
-        } else {
-            NhlPError(NhlWARNING, NhlEUNKNOWN,
-                " Could not open default script path (%s), no scripts loaded.", scriptpath);
-        }
+	    d = opendir(_NGResolvePath(scriptpath));
+	    if (d!= NULL) {
+		    int script_count = 0, alloc_count = 32;
+		    NrmQuark *qscript_names = NclMalloc(alloc_count * sizeof(NrmQuark));
+		    while((ent = readdir(d)) != NULL) {
+			    if (*ent->d_name != '.') {
+				    (void) sprintf(buffer, "%s/%s", _NGResolvePath(scriptpath), ent->d_name);
+				    pt = strrchr(buffer, '.');
+				    if (pt != NULL) {
+					    pt++;
+					    if (strncmp(pt, "ncl", 3) == 0) {
+						    if (script_count == alloc_count) {
+							    alloc_count *= 2;
+							    qscript_names = NclRealloc(qscript_names,alloc_count * sizeof(NrmQuark));
+						    }
+						    qscript_names[script_count++] = NrmStringToQuark(ent->d_name);
+					    }
+				    }
+			    }
+		    }
+		    if (script_count == 0)  {
+			    NhlPError(NhlWARNING, NhlEUNKNOWN,
+				      "No scripts found: scripts must have the \".ncl\" file extension.");
+		    }
+		    else {
+			    qsort(qscript_names,script_count,sizeof(NrmQuark),quark_comp);
+			    for (i = 0; i < script_count; i++) {
+				    (void) sprintf(buffer, "%s/%s", _NGResolvePath(scriptpath), NrmQuarkToString(qscript_names[i]));
+				    if (_NclPreLoadScript(buffer, 1) == NhlFATAL) {
+					    NhlPError(NhlFATAL, NhlEUNKNOWN, "Error loading default script.");
+				    } else {
+					    yyparse(reset);
+				    }
+			    }
+			    NclFree(qscript_names);
+		    }
+	    } else {
+		    NhlPError(NhlWARNING, NhlEUNKNOWN,
+			      " Could not open default script path (%s), no scripts loaded.", scriptpath);
+	    }
     }
 
     /*
