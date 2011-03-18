@@ -12238,10 +12238,10 @@ begin
       if (isfilevar(fwt,"dst_grid_dims") ) then
           dim_dst = fwt->dst_grid_dims      ; size destination grid
       else
-          dim_dst = (/192,288/)
+          dim_dst = (/288,192/)
       end if
-      nlat    = dim_dst(0)   
-      mlon    = dim_dst(1)    
+      mlon    = dim_dst(0)    
+      nlat    = dim_dst(1)   
                                         ; define output grid
                                         ; coordinate variables
       lat  = latGlobeF(nlat, "lat", "latitude", "degrees_north")
@@ -12259,7 +12259,7 @@ begin
       ntim    = dimx(0)
       xout1d  = new ( nlat*mlon, typeof(xin), 1e20)
 
-      errMsg = NhlGetErrorObjectId()       ; only print Fatal messages
+      errMsg = NhlGetErrorObjectId()    ; only print Fatal messages
       setvalues errMsg
           "errLevel" : "Fatal"
       end setvalues
@@ -12310,6 +12310,16 @@ begin
       end if
 
       copy_VarAtts(xin, xout)
+                            ; get rid of any spaces at end
+      if (isatt(xout,"long_name")) then
+          xout@long_name = str_squeeze(xout@long_name)
+      end if
+      if (isatt(xout,"units")) then
+          xout@units     = str_squeeze(xout@units)
+      end if
+      if (isatt(xout,"cell_methods")) then
+          xout@cell_methods= str_squeeze(xout@cell_methods)
+      end if
 
       if (opt) then
 
@@ -12362,3 +12372,75 @@ function homme2latlon(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
 begin
    return( remap_elements(fwt, fhom, var, opt) )
 end
+; ------------------------------------
+undef("pattern_cor")
+function pattern_cor (x[*][*],y[*][*],w[*])
+; Compute the pattern correlation between two fields
+; (lat,lon)  .... wgt(lat)
+
+local dimx, dimy, dimw \ 
+    , WGT, sumWGT, xAvgArea, xAnom, yAnom, xyCov, xAnom2, yAnom2, r
+begin
+  if (isatt(x,"_FillValue")) then
+      if (all(ismissing(x))) then
+          return(x@_FillValue)
+      end if
+  end if
+  if (isatt(y,"_FillValue")) then
+      if (all(ismissing(y))) then
+          return(y@_FillValue)
+      end if
+  end if
+
+  dimx = dimsizes(x)
+  dimy = dimsizes(y)
+  if (.not.all(dimx.eq.dimy)) then
+      print("pattern_cor: Fatal: x and y do not have the same dimension sizes")
+      print("       dimx: "+dimx+"    dimy="+dimy)
+      exit
+  end if
+
+  dimw = dimsizes(w)
+  if (dimw.gt.1) then 
+      if (dimx(0).eq.dimw) then
+          wgt = w
+      else
+          print("pattern_cor: Fatal: leftmost x/y dimension mismatch with w")
+          print("       dimx(0): "+dimx(0)+"    dimy(0)="+dimy(0)+"  dimw="+dimw)
+          exit
+      end if
+  else
+      wgt = conform_dims(dimx, w, 0) ; broadcst scalar
+  end if
+      
+  WGT      = conform(x, wgt, 1)    ; broadcast dimensions
+  sumWGT   = sum(WGT)
+  xAvgArea = x*WGT/sumWGT          ; weighted area average
+  yAvgArea = y*WGT/sumWGT
+  xAnom    = x - xAvgArea          ; anomalies
+  yAnom    = y - yAvgArea
+
+  xyCov    = sum(WGT*xAnom*yAnom)
+  xAnom2   = sum(WGT*xAnom)
+  yAnom2   = sum(WGT*yAnom)
+
+  if (xAnom2.gt.0.0 .and. yAnom2.gt.0.0) then
+      r   = xycov/(sqrt(xAnom2)*sqrt(yAnom2))
+  else
+      if (isatt(x,"_FillValue")) then
+          r = x@_FillValue
+      else
+          if (isatt(y,"_FillValue")) then
+              r = y@_FillValue
+          else            
+              r = -999.0 
+          end if
+      end if
+  end if
+
+  r@long_name = "pattern correlation"
+ ;r@units     = ""
+
+  return(r)
+end
+
