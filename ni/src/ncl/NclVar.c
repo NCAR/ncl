@@ -34,19 +34,19 @@
 #include "NclMdInc.h"
 #include "NclAtt.h"
 #include "NclVar.h"
-#include "NclList.h"
 #include "NclCoordVar.h"
+#include "NclList.h"
 #include "DataSupport.h"
 #include "TypeSupport.h"
 #include "AttSupport.h"
 #include "VarSupport.h"
-#include "ListSupport.h"
 #include "NclCallBacksI.h"
 #include <math.h>
 #ifdef NIO_LIB_ONLY
 #define UNDEF 255
 #else
 #include "parser.h"
+#include "ListSupport.h"
 #endif
 
 static NhlErrorTypes VarWrite(
@@ -518,6 +518,7 @@ FILE *fp;
 		return(NhlWARNING);
 	}
 
+#ifndef NIO_LIB_ONLY
 	/* Wei added for print list information */
 	strcpy(v_type, _NclBasicDataTypeToName(thevalue->multidval.data_type));
 	if(0 == strcmp(v_type, "list"))
@@ -534,6 +535,7 @@ FILE *fp;
 
 		return(ret0);
 	}
+#endif
 
 	ret = nclfprintf(fp,"Total Size: %lld bytes\n",(long long)thevalue->multidval.totalsize);
 	if(ret < 0) {
@@ -1339,6 +1341,9 @@ NclSelectionRecord *sel_ptr;
 * When id's are equal a write screws things up
 */
 	if(thevalue->obj.id != value->obj.id) {
+#ifdef NIO_LIB_ONLY
+		if (sel_ptr == NULL) {
+#else
 		/*Handle NCL_list*/
 		if(NCL_list == thevalue->multidval.data_type)
 		{
@@ -1362,6 +1367,7 @@ NclSelectionRecord *sel_ptr;
 			return (NhlNOERROR);
 		}
 		else if(sel_ptr == NULL) {
+#endif
 			if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
 				tmp_md = _NclCoerceData(value,
 						thevalue->multidval.type->type_class.type,
