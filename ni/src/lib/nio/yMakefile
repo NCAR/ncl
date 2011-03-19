@@ -133,10 +133,10 @@ STATIC_HDRS	=	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h  \
 			OpsList.h Symbol.h VarSupport.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \
 			NclType.h defs.h NclGroup.h NclVar.h NclDataDefs.h NclFileInterfaces.h \
-			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
+			NclList.h NclMultiDValnclfileData.h \
 			NclOneDValCoordData.h h5data_struct.h \
 			date.h NclCCM.h NclGRIB.h NclGRIB2.h date.h tables.h \
-			NclList.h NclMultiDVallistData.h NclTypelist.h ccmhdr.h \
+			NclMultiDVallistData.h NclTypelist.h ccmhdr.h \
 			cptec_254_gtb.h dwd_002_gtb.h dwd_201_gtb.h dwd_202_gtb.h \
 			dwd_203_gtb.h dwd_204_gtb.h dwd_205_gtb.h dwd_206_gtb.h dwd_207_gtb.h \
 			ecmwf_128_gtb.h ecmwf_129_gtb.h ecmwf_130_gtb.h ecmwf_131_gtb.h \
