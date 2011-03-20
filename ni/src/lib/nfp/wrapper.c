@@ -452,6 +452,8 @@ extern NhlErrorTypes jul2greg_W(void);
 extern NhlErrorTypes utm2latlon_W(void);
 extern NhlErrorTypes latlon2utm_W(void);
 
+extern NhlErrorTypes cdtime_W(void);
+
 #ifdef BuildUdunits
 extern NhlErrorTypes ut_calendar_W(void);
 extern NhlErrorTypes ut_calendar_test_W(void);
@@ -6376,6 +6378,17 @@ void NclAddUserFuncs(void)
     args = NewArgs(1);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     NclRegisterFunc(jul2greg_W,args,"jul2greg",nargs);
+
+/*
+ * Register "cdtime".
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(cdtime_W,args,"cdtime",nargs);
+
 
 #ifdef BuildUdunits
 /*
