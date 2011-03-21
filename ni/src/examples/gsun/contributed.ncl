@@ -12372,14 +12372,15 @@ function homme2latlon(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
 begin
    return( remap_elements(fwt, fhom, var, opt) )
 end
-; ------------------------------------
+;---------------------------------------------------
+; Rob Nichols [U. Washington] & D. Shea
 undef("pattern_cor")
 function pattern_cor (x[*][*],y[*][*],w[*])
 ; Compute the pattern correlation between two fields
 ; (lat,lon)  .... wgt(lat)
 
-local dimx, dimy, dimw \ 
-    , WGT, sumWGT, xAvgArea, xAnom, yAnom, xyCov, xAnom2, yAnom2, r
+local dimx, dimy, dimw, wgt, WGT, sumWGT, xAvgArea, xAnom, yAnom \
+    , i, j, W1D, z1d, xyCov, xAnom2, yAnom2, r
 begin
   if (isatt(x,"_FillValue")) then
       if (all(ismissing(x))) then
@@ -12391,7 +12392,7 @@ begin
           return(y@_FillValue)
       end if
   end if
-
+                             ; x and y must have the same sizes
   dimx = dimsizes(x)
   dimy = dimsizes(y)
   if (.not.all(dimx.eq.dimy)) then
@@ -12400,32 +12401,52 @@ begin
       exit
   end if
 
-  dimw = dimsizes(w)
+  dimw = dimsizes(w)         ; if w is scalar set to 1.0 
   if (dimw.gt.1) then 
       if (dimx(0).eq.dimw) then
-          wgt = w
+          wgt = w            ; copy to local array
       else
           print("pattern_cor: Fatal: leftmost x/y dimension mismatch with w")
           print("       dimx(0): "+dimx(0)+"    dimy(0)="+dimy(0)+"  dimw="+dimw)
           exit
       end if
   else
-      wgt = conform_dims(dimx, w, 0) ; broadcst scalar
+      wgt = new(dimx(0), typeof(w),"No_FillValue")
+      wgt = 1.0
   end if
       
-  WGT      = conform(x, wgt, 1)    ; broadcast dimensions
+  WGT     = conform(x, wgt, 0)    ; broadcast dimensions to match x/y
+
+; if x/y  has _Fillvalue attribute; set WGT=0.0 where x or y = _FillValue
+
+  if (isatt(x,"_FillValue") .or. isatt(y,"_FillValue")) then
+      W1D  = ndtooned(WGT)
+      if (isatt(x,"_FillValue") .and. any(ismissing(x)) ) then
+          z1d    = ndtooned(x)
+          i      = ind(ismissing(z1d))
+          W1D(i) = 0.0
+      end if
+      if (isatt(y,"_FillValue") .and. any(ismissing(y)) ) then
+          z1d    = ndtooned(y)
+          j      = ind(ismissing(z1d))
+          W1D(j) = 0.0
+      end if
+      WGT  = onedtond(W1D, dimx)
+  end if
+
   sumWGT   = sum(WGT)
-  xAvgArea = x*WGT/sumWGT          ; weighted area average
-  yAvgArea = y*WGT/sumWGT
+  xAvgArea = sum(x*WGT)/sumWGT          ; weighted area average
+  yAvgArea = sum(y*WGT)/sumWGT
+
   xAnom    = x - xAvgArea          ; anomalies
   yAnom    = y - yAvgArea
 
   xyCov    = sum(WGT*xAnom*yAnom)
-  xAnom2   = sum(WGT*xAnom)
-  yAnom2   = sum(WGT*yAnom)
+  xAnom2   = sum(WGT*xAnom^2)
+  yAnom2   = sum(WGT*yAnom^2)
 
   if (xAnom2.gt.0.0 .and. yAnom2.gt.0.0) then
-      r   = xycov/(sqrt(xAnom2)*sqrt(yAnom2))
+      r   = xyCov/(sqrt(xAnom2)*sqrt(yAnom2))
   else
       if (isatt(x,"_FillValue")) then
           r = x@_FillValue
@@ -12443,4 +12464,3 @@ begin
 
   return(r)
 end
-
