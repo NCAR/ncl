@@ -332,6 +332,8 @@ CdAddDelTime(double begEtm, long nDel, CdDeltaTime delTime, CdTimeType timeType,
 		delHours *= (nDel * delTime.count);
 		*endEtm = begEtm + delHours;
 		break;
+	  default:
+		cdError("Invalid delta time units: %d\n",delTime.units);
 	}
 	return;
 }
@@ -559,6 +561,8 @@ CdDivDelTime(double begEtm, double endEtm, CdDeltaTime delTime, CdTimeType timeT
 		}
 		*nDel = (frange + 1.e-10*delHours)/delHours;
 		break;
+	  default:
+		cdError("Invalid delta time units: %d\n",delTime.units);
 	}
 	return;
 }
@@ -808,7 +812,7 @@ cdComp2Rel(cdCalenType timetype, cdCompTime comptime, char* relunits, double* re
 	CdTime humantime;
 	CdTimeType old_timetype;
 	cdUnitTime unit;
-	double base_etm, etm, delta;
+	double base_etm, etm, delta=0.;
 	long ndel, hoursInYear;
 	
 					     /* Parse the relunits */
@@ -825,6 +829,7 @@ cdComp2Rel(cdCalenType timetype, cdCompTime comptime, char* relunits, double* re
 			timetype = cdStandard;
 			break;
 		case cdFraction:
+		case cdBadUnit:
 		        cdError("invalid unit in conversion");
 		        break;
 		}
@@ -865,6 +870,7 @@ cdComp2Rel(cdCalenType timetype, cdCompTime comptime, char* relunits, double* re
 		CdDivDelTime(base_etm, etm, deltime, old_timetype, 1970, &ndel);
 		break;
 	  case cdFraction:
+	  case cdBadUnit:
 	        cdError("invalid unit in conversion");
 		break;
 	}
@@ -996,8 +1002,8 @@ cdRel2Comp(cdCalenType timetype, char* relunits, double reltime, cdCompTime* com
 	cdCompTime base_comptime;
 	cdUnitTime unit, baseunits;
 	double base_etm, result_etm;
-	double delta;
-	long idelta;
+	double delta=0.;
+	long idelta=0;
 
 					     /* Parse the relunits */
 	if(cdParseRelunits(timetype, relunits, &unit, &base_comptime))
@@ -1012,6 +1018,7 @@ cdRel2Comp(cdCalenType timetype, char* relunits, double reltime, cdCompTime* com
 			timetype = cdStandard;
 			break;
 		case cdFraction:
+		case cdBadUnit:
 		        cdError("invalid unit in conversion");
 		        break;
 		}
@@ -1106,7 +1113,7 @@ cdComp2Iso_minsec(cdCalenType timetype, cdCompTime *comptime, int *imin,
 		  double *sec)
 {
 	double dtmp;
-	int ihr, isec;
+	int ihr;
 
 	if(cdValidateTime(timetype,*comptime))
 		return;
