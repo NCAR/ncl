@@ -195,6 +195,7 @@ C VLN - length of the current vector in fractional coordinates
 C XGV,YGV - X and Y grid value, the scaled distance between each
 C           array grid point
 C VPL,VPR,VPB,VPT,WDL,WDR,WDB,WDT,ILG - Saved SET call values
+C ICI - NGDOT state 'CT' 1 or 0
 C IER,ICL,IAR - Clip query values
 C 
 C ---------------------------------------------------------------------
@@ -236,6 +237,7 @@ C linewidth. Color must be set on a per vector basis within the
 C main loop. Label text color is set here if a single color is
 C specified for all labels. 
 C
+      CALL NGGETI('CT',ICI)
       CALL GQPLCI(IER,IOC)
       CALL GQTXCI(IER,IOT)
       CALL GQFAIS(IER,IOF)
@@ -282,7 +284,6 @@ C
       IF (IAST.EQ.1) THEN
          CALL VVINFA
       ELSE IF (IAST.GE.2) THEN
-         CALL NGGETI('CT',ICI)
          CALL NGSETI('CT',1)
          CALL GSFACI(IOC)
          CALL VVINWB
