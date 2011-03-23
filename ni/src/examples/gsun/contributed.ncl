@@ -12312,13 +12312,13 @@ begin
       copy_VarAtts(xin, xout)
                             ; get rid of any spaces at end
       if (isatt(xout,"long_name")) then
-          xout@long_name = str_squeeze(xout@long_name)
+          xout@long_name = str_right_strip(xout@long_name)
       end if
       if (isatt(xout,"units")) then
-          xout@units     = str_squeeze(xout@units)
+          xout@units     = str_right_strip(xout@units)
       end if
       if (isatt(xout,"cell_methods")) then
-          xout@cell_methods= str_squeeze(xout@cell_methods)
+          xout@cell_methods= str_right_strip(xout@cell_methods)
       end if
 
       if (opt) then
