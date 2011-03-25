@@ -12396,8 +12396,8 @@ begin
 end
 ;---------------------------------------------------
 ; Rob Nichols [U. Washington] & D. Shea
-undef("pattern_cor")
-function pattern_cor (x[*][*],y[*][*],w[*])
+undef("pattern_cor2")
+function pattern_cor2 (x[*][*],y[*][*],w[*])
 ; Compute the pattern correlation between two fields
 ; (lat,lon)  .... wgt(lat)
 
@@ -12485,4 +12485,70 @@ begin
  ;r@units     = ""
 
   return(r)
+end
+;---------------------------------------------------
+; Rob Nichols [U. Washington] & D. Shea
+undef("pattern_cor")
+function pattern_cor (x,y,w[*])
+; Compute the pattern correlation between two fields
+; (lat,lon)  .... wgt(lat)
+
+local dimx, dimy, rankx, ranky, nt, kl, xc, rpc
+begin
+  if (isatt(x,"_FillValue")) then
+      if (all(ismissing(x))) then
+          return(x@_FillValue)
+      end if
+  end if
+  if (isatt(y,"_FillValue")) then
+      if (all(ismissing(y))) then
+          return(y@_FillValue)
+      end if
+  end if
+                             ; x and y must have the same sizes
+  dimx  = dimsizes(x)
+  dimy  = dimsizes(y)
+  rankx = dimsizes(dimx)
+  ranky = dimsizes(dimy)
+  if (rankx.ne.ranky) then
+      print("pattern_cor: Fatal: x and y do not have the rank")
+      print("      rankx: "+rankx+"   ranky="+ranky)
+      exit
+  end if
+  if (rankx.ge.5) then
+      print("pattern_cor: Fatal: function only works with 2D, 3D or 4D")
+      print("       rank: "+rankx+"D")
+      exit
+  end if
+  if (.not.all(dimx.eq.dimy)) then
+      print("pattern_cor: Fatal: x and y do not have the same dimension sizes")
+      print("       dimx: "+dimx+"    dimy="+dimy)
+      exit
+  end if
+
+  if (rankx.eq.2) then
+      return( pattern_cor2 (x,y,w) )    ; scalar returned
+  end if
+
+  if (rankx.eq.3) then
+      rpc = new ( dimx(0), typeof(x), "No_FillValue")
+      do nt=0,dimx(0)-1
+         rpc(nt) = pattern_cor2 (x(nt,:,:),y(nt,:,:),w)
+      end do
+      xc = x(:,0,0)
+      copy_VarCoords(xc, rpc)
+      return( rpc )
+  end if
+
+  if (rankx.eq.4) then
+      rpc = new ( (/dimx(0),dimx(1)/), typeof(x), "No_FillValue")
+      do nt=0,dimx(0)-1
+        do kl=0,dimx(1)-1
+           rpc(nt,kl) = pattern_cor2 (x(nt,kl,:,:),y(nt,kl,:,:),w)
+        end do
+      end do
+      xc = x(:,:,0,0)
+      copy_VarCoords(xc, rpc)
+      return( rpc )
+  end if
 end
