@@ -12397,7 +12397,7 @@ end
 ;---------------------------------------------------
 ; Rob Nichols [U. Washington] & D. Shea
 undef("pattern_cor2")
-function pattern_cor2 (x[*][*],y[*][*],w[*])
+function pattern_cor2 (x[*][*],y[*][*],w[*], opt:integer)
 ; Compute the pattern correlation between two fields
 ; (lat,lon)  .... wgt(lat)
 
@@ -12460,8 +12460,13 @@ begin
   xAvgArea = sum(x*WGT)/sumWGT          ; weighted area average
   yAvgArea = sum(y*WGT)/sumWGT
 
-  xAnom    = x - xAvgArea          ; anomalies
-  yAnom    = y - yAvgArea
+;;if (opt.eq.0) then                    ; centered correlation
+      xAnom    = x - xAvgArea           ; anomalies
+      yAnom    = y - yAvgArea
+;;else
+;;    xAnom    = x 
+;;    yAnom    = y
+;;end if
 
   xyCov    = sum(WGT*xAnom*yAnom)
   xAnom2   = sum(WGT*xAnom^2)
@@ -12489,7 +12494,7 @@ end
 ;---------------------------------------------------
 ; Rob Nichols [U. Washington] & D. Shea
 undef("pattern_cor")
-function pattern_cor (x,y,w[*])
+function pattern_cor (x, y, w[*], opt:integer)
 ; Compute the pattern correlation between two fields
 ; (lat,lon)  .... wgt(lat)
 
@@ -12527,13 +12532,13 @@ begin
   end if
 
   if (rankx.eq.2) then
-      return( pattern_cor2 (x,y,w) )    ; scalar returned
+      return( pattern_cor2 (x,y,w,opt) )    ; scalar returned
   end if
 
   if (rankx.eq.3) then
       rpc = new ( dimx(0), typeof(x), "No_FillValue")
       do nt=0,dimx(0)-1
-         rpc(nt) = pattern_cor2 (x(nt,:,:),y(nt,:,:),w)
+         rpc(nt) = pattern_cor2 (x(nt,:,:),y(nt,:,:),w,opt)
       end do
       xc = x(:,0,0)
       copy_VarCoords(xc, rpc)
@@ -12544,7 +12549,7 @@ begin
       rpc = new ( (/dimx(0),dimx(1)/), typeof(x), "No_FillValue")
       do nt=0,dimx(0)-1
         do kl=0,dimx(1)-1
-           rpc(nt,kl) = pattern_cor2 (x(nt,kl,:,:),y(nt,kl,:,:),w)
+           rpc(nt,kl) = pattern_cor2 (x(nt,kl,:,:),y(nt,kl,:,:),w,opt)
         end do
       end do
       xc = x(:,:,0,0)
