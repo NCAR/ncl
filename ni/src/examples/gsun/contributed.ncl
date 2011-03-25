@@ -12194,7 +12194,8 @@ function remap_elements(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
 ;  temp   = remap_elements(fw, fc, "T"  , False)   ; (time,lev,lat,lon)
 ;  ----
 local ier, xin, dimx, rank, dim_dst, ntim, klev, nlat, mlon, lat, lon \
-    , errMsg, dst_add , src_add, s, nS, map_wts, xout1d, xout, xoutf
+    , errMsg, dst_add , src_add, s, nS, map_wts, xout1d, xout, xoutf  \
+    , fdimNames, fdimSizes, ib, jb, kib, kjb 
 begin
          ; check 'fhom' argument
       if (.not.(typeof(fhom).eq."file"    .or. \
@@ -12227,9 +12228,9 @@ begin
           exit
       end if
       
-      dnam    = getvardims(xin)
-      dimx    = dimsizes( xin  )
-      rank    = dimsizes( dimx )
+      dnam = getvardims(xin)                ; input variable dim names
+      dimx = dimsizes( xin  )
+      rank = dimsizes( dimx )
       if (rank.eq.1 .or. rank.gt.3) then
           print("remap_elements: bad rank: rank="+rank)
           exit
@@ -12238,7 +12239,27 @@ begin
       if (isfilevar(fwt,"dst_grid_dims") ) then
           dim_dst = fwt->dst_grid_dims      ; size destination grid
       else
-          dim_dst = (/288,192/)
+          fdimNames = getvardims(fwt)       ; names of dimensions on file     
+          fdimSizes = getfiledimsizes(fwt)  ; sizes of dimensions on file
+          dim_dst  = (/0,0/)
+          if (any(fdimNames.eq."ni_b") .and. any(fdimNames.eq."nj_b")) then
+              ib  = ind(fdimNames.eq."ni_b")
+              jb  = ind(fdimNames.eq."nj_b")
+              kib = fdimSizes(ib) 
+              kjb = fdimSizes(jb) 
+              if (typeof(kib).eq."long") then
+                  dim_dst(0) = toint(fdimSizes(ib)) 
+                  dim_dst(1) = toint(fdimSizes(jb))
+              else
+                  dim_dst(0) = fdimSizes(ib) 
+                  dim_dst(1) = fdimSizes(jb)
+              end if
+          else
+              print("remap_elements: Fatal error")
+              print("                Variable dst_grid_dims not on file")
+              print("                Dimension names ni_b and/or nj_b not on file")
+              exit
+          end if
       end if
       mlon    = dim_dst(0)    
       nlat    = dim_dst(1)   
@@ -12264,7 +12285,7 @@ begin
           "errLevel" : "Fatal"
       end setvalues
 
-      if (rank.eq.2) then               ; (ntim,ncol
+      if (rank.eq.2) then               ; (ntim,ncol)
           xout = new ( (/ntim,nlat,mlon/), typeof(xin), 1e20)
 
           do nt=0,ntim-1
@@ -12352,6 +12373,7 @@ begin
       return( xout )
 end
 
+;---------------------------------------------------------
 undef("homme2latlon")
 function homme2latlon(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
 ;
