@@ -5553,8 +5553,8 @@ GribRecordInqRec *grib_rec;
 #endif
 {
 	int cix,nix;
-	int common_time_unit;
-	int time_unit;
+	int common_time_unit = 1;
+	int time_unit = 1;
 	double c_factor = 1.0;
 
 	if (!(node->time_range_indicator < 2 && (int)grib_rec->pds[20] < 2)) {
