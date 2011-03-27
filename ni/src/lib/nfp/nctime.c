@@ -344,41 +344,55 @@ int
 cdParseRelunits(cdCalenType timetype, char* relunits, cdUnitTime* unit, cdCompTime* base_comptime)
 {
 	char charunits[CD_MAX_RELUNITS];
+	char relword[CD_MAX_CHARTIME];
 	char basetime_1[CD_MAX_CHARTIME];
 	char basetime_2[CD_MAX_CHARTIME];
 	char basetime[CD_MAX_CHARTIME];
 	int nconv;
 					     /* Parse the relunits */
-	nconv = sscanf(relunits,"%s since %s %s",charunits,basetime_1,basetime_2);
-	if(nconv==EOF || nconv==0){
-		cdError("Error on relative units conversion, string = %s\n",relunits);
-		return 1;
-	}
 
+/*
+ * Mods for NCL: allow for upper or lower case (since/SINCE)
+ * and for multiple "relative" words (since,after,ref,from)
+ */
+	nconv = sscanf(relunits,"%s %s %s %s",
+		       charunits,relword,basetime_1,basetime_2);
+	if(nconv == EOF ||
+	   (nconv >=3 && strcasecmp(relword,"since") && 
+    	                 strcasecmp(relword,"after") &&  
+ 	                 strcasecmp(relword,"ref")  && 
+	                 strcasecmp(relword,"from"))) {
+	  cdError("Error on relative units conversion, string = %s\n",relunits);
+	  return 1;
+	}
 					     /* Get the units */
 	cdTrim(charunits,CD_MAX_RELUNITS);
-	if(!strncmp(charunits,"sec",3) || !strcmp(charunits,"s")){
+/*
+ * Mods for NCL: allow for upper or lower case units (hours/HOURS).
+ * Simply changed "strncmp" and "strcmp" to "strncasecmp" and "strcasecmp".
+ */
+	if(!strncasecmp(charunits,"sec",3) || !strcasecmp(charunits,"s")){
 		*unit = cdSecond;
 	}
-	else if(!strncmp(charunits,"min",3) || !strcmp(charunits,"mn")){
+	else if(!strncasecmp(charunits,"min",3) || !strcasecmp(charunits,"mn")){
 		*unit = cdMinute;
 	}
-	else if(!strncmp(charunits,"hour",4) || !strcmp(charunits,"hr")){
+	else if(!strncasecmp(charunits,"hour",4) || !strcasecmp(charunits,"hr")){
 		*unit = cdHour;
 	}
-	else if(!strncmp(charunits,"day",3) || !strcmp(charunits,"dy")){
+	else if(!strncasecmp(charunits,"day",3) || !strcasecmp(charunits,"dy")){
 		*unit = cdDay;
 	}
-	else if(!strncmp(charunits,"week",4) || !strcmp(charunits,"wk")){
+	else if(!strncasecmp(charunits,"week",4) || !strcasecmp(charunits,"wk")){
 		*unit = cdWeek;
 	}
-	else if(!strncmp(charunits,"month",5) || !strcmp(charunits,"mo")){
+	else if(!strncasecmp(charunits,"month",5) || !strcasecmp(charunits,"mo")){
 		*unit = cdMonth;
 	}
-	else if(!strncmp(charunits,"season",6)){
+	else if(!strncasecmp(charunits,"season",6)){
 		*unit = cdSeason;
 	}
-	else if(!strncmp(charunits,"year",4) || !strcmp(charunits,"yr")){
+	else if(!strncasecmp(charunits,"year",4) || !strcasecmp(charunits,"yr")){
 		if(!(timetype & cdStandardCal)){
 			cdError("Error on relative units conversion: climatological units cannot be 'years'.\n");
 			return 1;
