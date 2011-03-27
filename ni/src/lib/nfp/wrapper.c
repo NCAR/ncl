@@ -456,9 +456,7 @@ extern NhlErrorTypes cdtime_W(void);
 
 #ifdef BuildUdunits
 extern NhlErrorTypes ut_calendar_W(void);
-extern NhlErrorTypes ut_calendar_test_W(void);
 extern NhlErrorTypes ut_inv_calendar_W(void);
-extern NhlErrorTypes ut_inv_calendar_test_W(void);
 #endif
 
 /*
@@ -6416,30 +6414,6 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(ut_inv_calendar_W,args,"ut_inv_calendar",nargs);
-/*
- * Register "ut_calendar_test".
- */
-    nargs = 0;
-    args = NewArgs(1);
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    NclRegisterFunc(ut_calendar_test_W,args,"ut_calendar_test",nargs);
-
-/*
- * Register "ut_inv_calendar_test".
- */
-    nargs = 0;
-    args = NewArgs(8);
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    NclRegisterFunc(ut_inv_calendar_test_W,args,"ut_inv_calendar_test",nargs);
-
 #endif
 
 /*
