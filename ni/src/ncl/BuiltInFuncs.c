@@ -19793,7 +19793,7 @@ NhlErrorTypes   _NclIGetFileDimsizes
     int *fid;
 
     /* dimensions */
-    ng_size_t dimsizes = 1, ndims, product_size;
+    ng_size_t dimsizes = 1, ndims;
     void *dim_sizes;
     NclBasicDataTypes return_type;
 
@@ -19822,19 +19822,17 @@ NhlErrorTypes   _NclIGetFileDimsizes
  * The rules for when to return an int versus a long:
  *    - On a 32-bit system, return ints.
  *    - On a 64-bit system, return longs if any of the
- *      individual dimension sizes are > INT_MAX, or
- *      if the product of the dimension sizes is > INT_MAX.
+ *      individual dimension sizes are > INT_MAX.
+ *      We used to also do so if the product of the dimension 
+ *      was > INT_MAX, but this was removed before 6.0.0.
  */
 	ndims = f->file.n_file_dims;
         if (ndims != 0) {
 	  return_type = NCL_int;
 #if !defined(NG32BIT)
 	  i = 0;
-	  product_size = 1;
 	  while(i < ndims && (return_type == NCL_int)) {
-	    product_size *= f->file.file_dim_info[i]->dim_size;
-	    if(f->file.file_dim_info[i]->dim_size > INT_MAX || 
-	       product_size > INT_MAX) {
+	    if(f->file.file_dim_info[i]->dim_size > INT_MAX) {
 	      return_type = NCL_long;
 	    }
 	    i++;
