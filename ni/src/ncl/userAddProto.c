@@ -156,6 +156,11 @@ extern NhlErrorTypes _Nclstr_match(
 void
 #endif
 );
+extern NhlErrorTypes _Nclstr_match_ind(
+#if NhlNeedProto
+void
+#endif
+);
 
 extern NhlErrorTypes _Nclstr_get_comma();
 extern NhlErrorTypes _Nclstr_get_space();
@@ -310,6 +315,12 @@ void NclAddUserBuiltInFuncs
     SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
     NclRegisterFunc(_Nclstr_match, args, "str_match", nargs);
 
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    NclRegisterFunc(_Nclstr_match_ind, args, "str_match_ind", nargs);
 
     nargs = 0;
     args = NewArgs(0);
