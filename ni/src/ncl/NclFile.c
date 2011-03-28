@@ -2737,7 +2737,13 @@ int vtype;
 			mis_md = FileReadVarAtt(thefile,var_name,NrmStringToQuark(NCL_MISSING_VALUE_ATT),NULL);
 			if(mis_md != NULL) {
 				has_missing = 1;
-				if (mis_md->multidval.data_type == thefile->file.var_info[index]->data_type) {
+				if (mis_md->multidval.val == NULL) {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+						  "FileReadVar: _FillValue attribute for  variable (%s) in file (%s) has NULL value, substituting default fill value of variable type",
+						  NrmQuarkToString(var_name),NrmQuarkToString(thefile->file.fname));
+					_NclGetDefaultFillValue(thefile->file.var_info[index]->data_type,&missing_value);
+				}
+				else if (mis_md->multidval.data_type == thefile->file.var_info[index]->data_type) {
 					memcpy((void*)&missing_value,mis_md->multidval.val,_NclSizeOf(mis_md->multidval.data_type));
 				}
 				else {
@@ -3681,6 +3687,12 @@ int vtype;
 		mis_md = FileReadVarAtt(thefile,var_name,NrmStringToQuark(NCL_MISSING_VALUE_ATT),NULL);
 		if(mis_md != NULL) {
 			has_missing = 1;
+			if (mis_md->multidval.val == NULL) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  "FileReadVar: _FillValue attribute for  variable (%s) in file (%s) has NULL value, substituting default fill value of variable type",
+					  NrmQuarkToString(var_name),NrmQuarkToString(thefile->file.fname));
+				_NclGetDefaultFillValue(thefile->file.var_info[index]->data_type,&missing_value);
+			}
 			if (mis_md->multidval.data_type == thefile->file.var_info[index]->data_type) {
 				memcpy((void*)&missing_value,mis_md->multidval.val,_NclSizeOf(mis_md->multidval.data_type));
 			}
@@ -3909,7 +3921,7 @@ struct _NclSelectionRecord* sel_ptr;
 			att_id = att_obj->obj.id;
 			if (_NclIsAtt(att_id,"_FillValue")) {
 				tmp_att_md = _NclGetAtt(att_id,"_FillValue",NULL);
-				if (tmp_att_md->multidval.data_type != tmp_md->multidval.data_type) {
+				if (tmp_att_md->multidval.data_type != tmp_md->multidval.data_type || tmp_att_md->multidval.val == NULL) {
 					ng_size_t tmp_size = 1;
 					NclScalar *tmp_mis = (NclScalar*)NclMalloc((unsigned)sizeof(NclScalar));
 					*tmp_mis = tmp_md->multidval.missing_value.value;
@@ -4096,16 +4108,22 @@ struct _NclSelectionRecord *sel_ptr;
 		tmp_md = _NclGetAtt(thefile->file.var_att_ids[index],NrmQuarkToString(attname),sel_ptr);
 		if (attname != NrmStringToQuark("_FillValue")) 
 			return (tmp_md);
+		else if (tmp_md->multidval.val == NULL) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  "FileReadVar: _FillValue attribute for  variable (%s) in file (%s) has NULL value, substituting default fill value of variable type",
+				  NrmQuarkToString(var),NrmQuarkToString(thefile->file.fname));
+			_NclGetDefaultFillValue(thefile->file.var_info[index]->data_type,&missing_value);
+		}
 		else if (tmp_md->multidval.data_type == thefile->file.var_info[index]->data_type) 
 			return (tmp_md);
-
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		else {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "FileReadVarAtt: _FillValue attribute type differs from variable (%s) type in file (%s), forcing type conversion; may result in overflow and/or loss of precision",
-			  NrmQuarkToString(var),NrmQuarkToString(thefile->file.fname));
-		_NclScalarForcedCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,
-				       (void*)&missing_value,thefile->file.var_info[index]->data_type);
+				  NrmQuarkToString(var),NrmQuarkToString(thefile->file.fname));
+			_NclScalarForcedCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,
+					       (void*)&missing_value,thefile->file.var_info[index]->data_type);
+		}
 		
-		/*_NclDestroyObj((NclObj)tmp_md);*/
 		type_name = _NclBasicDataTypeToName(thefile->file.var_info[index]->data_type);
 		type_class = _NclNameToTypeClass(NrmStringToQuark(type_name));
 		return (_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)&missing_value,NULL,1,&dim_size,PERMANENT,NULL,type_class));

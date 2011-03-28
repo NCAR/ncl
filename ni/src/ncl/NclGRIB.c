@@ -6237,6 +6237,7 @@ int wr_status;
 	NhlErrorTypes retvalue;
 	struct stat statbuf;
 	int suffix;
+	int table_warning = 0;
 
 	if (! Ptables) {
 		InitPtables();
@@ -6592,6 +6593,7 @@ int wr_status;
 						}
 						break;
 					case 78: /* DWD */
+					case 146: /* Brazilian Navy Hydrographic Center -- uses DWD tables according to wgrib */
 						switch (ptable_version) {
 						case 2:
 							ptable = &dwd_002_params[0];
@@ -6627,22 +6629,6 @@ int wr_status;
 							break;
 						}
 						break;
-					case 59: /* FSL */
-						switch (subcenter) {
-						case 0: /* FSL: The NOAA Forecast Systems Laboratory, Boulder, CO, USA */
-							ptable = &fsl0_params[0];
-							ptable_count = sizeof(fsl0_params)/sizeof(TBLE2);
-							break;
-						case 1: /* RAPB: FSL/FRD Regional Analysis and Prediction Branch */
-							ptable = &fsl1_params[0];
-							ptable_count = sizeof(fsl1_params)/sizeof(TBLE2);
-							break;
-						case 2: /* LAPB: FSL/FRD Local Analysis and Prediction Branch */
-							ptable = &fsl2_params[0];
-							ptable_count = sizeof(fsl2_params)/sizeof(TBLE2);
-							break;
-						}
-						break;
 					case 58: /* FNMOC */
 						ptable = &fnmoc_params[0];
 						ptable_count = sizeof(fnmoc_params)/sizeof(TBLE2);
@@ -6664,6 +6650,25 @@ int wr_status;
 						ptable = &ncep_reanal_params[0];
 						ptable_count = sizeof(ncep_reanal_params)/sizeof(TBLE2);
 						break;
+					case 59: /* FSL */
+						if (ptable_version < 128) {
+							switch (subcenter) {
+							case 0: /* FSL: The NOAA Forecast Systems Laboratory, Boulder, CO, USA */
+								ptable = &fsl0_params[0];
+								ptable_count = sizeof(fsl0_params)/sizeof(TBLE2);
+								break;
+							case 1: /* RAPB: FSL/FRD Regional Analysis and Prediction Branch */
+								ptable = &fsl1_params[0];
+								ptable_count = sizeof(fsl1_params)/sizeof(TBLE2);
+								break;
+							case 2: /* LAPB: FSL/FRD Local Analysis and Prediction Branch */
+								ptable = &fsl2_params[0];
+								ptable_count = sizeof(fsl2_params)/sizeof(TBLE2);
+								break;
+							}
+							break;
+						}
+						/* fall through to NCEP tables for table versions above 127 */
 					case 7: /* NCEP */
 					case 60: /* NCAR */ 
 						switch (ptable_version) {
@@ -6747,7 +6752,13 @@ int wr_status;
 							break;
 						}
 					}
-					if (ptable == NULL && ptable_version <= 3 && grib_rec->param_number < 128) {
+					if (ptable == NULL && grib_rec->param_number < 128) {
+						if (ptable_version > 3 && table_warning == 0) {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,
+								  "NclGRIB: Unrecognized parameter table (center %d, subcenter %d, table %d), defaulting to NCEP operational table for standard parameters (1-127): variable names and units may be incorrect",
+								  center, subcenter, ptable_version);
+							table_warning = 1;
+						}
 						/* 
 						 * if the ptable_version <= 3 and the parameter # is less than 128 then 
 						 * the NCEP operational table is the legitimate default; 

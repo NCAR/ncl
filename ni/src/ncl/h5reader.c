@@ -2811,9 +2811,9 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
                 if(size == (hsize_t) sizeof(char))
                 {
                     if(1 == NclHDF5datatype->usign)
-                        strcpy(var_name, "byte");
+                        strcpy(var_name, "ubyte");
                     else
-                        strcpy(var_name, "char");
+                        strcpy(var_name, "byte");
                 }
                 else if(size == (hsize_t) sizeof(short))
                 {

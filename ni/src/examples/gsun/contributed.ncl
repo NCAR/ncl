@@ -367,24 +367,136 @@ begin
                 end  do
   end if
 end
-;****************************************
-; D. Shea
-; Copies all of a variables attributes (e.g. long_name) from
-; one variable to another
-
+;==============================
 undef("copy_VarAtts")
 procedure copy_VarAtts(var_from,var_to)    
-local att_names, i
+local att_names, i, fromType, toType, sameType \
+    , fromFillValue, fromFillType, fromMissType, fromMissValue, logical_FillValue
 begin                                       
-  att_names =getvaratts(var_from);
-    if(.not.all(ismissing(att_names)))
-      do i = 0,dimsizes(att_names)-1
-         if (isatt(var_to,att_names(i))) then
-             delete(var_to@$att_names(i)$)  ; var_from att may be diff size/type
-         end if
-	 var_to@$att_names(i)$ = var_from@$att_names(i)$
-      end do
-  end if
+    att_names =getvaratts(var_from);
+
+    if(.not.all(ismissing(att_names))) then
+
+       fromType = typeof(var_from)
+       toType   = typeof(var_to)
+       sameType = fromType .eq. toType
+
+       if (sameType .or. fromType.eq."file"  \
+                    .or. .not.(isatt(var_from,"_FillValue"))) then
+           do i = 0,dimsizes(att_names)-1
+              if (isatt(var_to,att_names(i)) .and. isatt(var_from,att_names(i)) ) then
+                  delete(var_to@$att_names(i)$)  ; var_from att may be diff size/type
+              end if
+              var_to@$att_names(i)$ = var_from@$att_names(i)$
+           end do
+
+       else      ; handle _FillValue with different type than var_to
+
+           do i = 0,dimsizes(att_names)-1
+              if (isatt(var_to,att_names(i)) .and. isatt(var_from,att_names(i)) ) then
+                  delete(var_to@$att_names(i)$)  ; var_from att may be diff size/type
+              end if
+
+              if (.not.(att_names(i).eq."_FillValue" .or. \
+                        att_names(i).eq."missing_value")) then
+	          var_to@$att_names(i)$ = var_from@$att_names(i)$
+
+              else    ; attribute must be _FillValue or missing_value
+
+                  if (att_names(i).eq."_FillValue") then
+                      fromFillValue = var_from@_FillValue 
+                      fromFillType  = typeof(var_from@_FillValue) 
+
+                      if (toType.eq.fromFillType) then
+                          var_to@_FillValue = var_from@_FillValue
+                      else
+                          var_to@_FillValue_original = fromFillValue   ; output original _FillValue
+                                                                       ; ne _FillValue
+                          if (toType.eq."float") then
+                              var_to@_FillValue = tofloat(fromFillValue)
+                          end if
+                          if (toType.eq."integer") then
+                              var_to@_FillValue = toint(fromFillValue)
+                          end if
+                          if (toType.eq."short") then
+                              var_to@_FillValue = toshort(fromFillValue)
+                          end if
+                          if (toType.eq."byte") then
+                              var_to@_FillValue = tobyte(fromFillValue)
+                          end if
+                          if (toType.eq."logical") then
+                              logical_FillValue = new(1,"logical")
+                              var_to@_FillValue = logical_FillValue
+                          end if
+                          if (toType.eq."ubyte") then
+                              var_to@_FillValue = toubyte(fromFillValue)
+                          end if
+                          if (toType.eq."uint") then
+                              var_to@_FillValue = touint(fromFillValue)
+                          end if
+                          if (toType.eq."int64") then
+                              var_to@_FillValue = toint64(fromFillValue)
+                          end if
+                          if (toType.eq."uint64") then
+                              var_to@_FillValue = touint64(fromFillValue)
+                          end if
+                          if (toType.eq."ulong") then
+                              var_to@_FillValue = toulong(fromFillValue)
+                          end if
+                          if (toType.eq."ushort") then
+                              var_to@_FillValue = toushort(fromFillValue)
+                          end if
+                      end if
+                  end if
+                  if (att_names(i).eq."missing_value") then
+                      fromMissValue = var_from@missing_value
+                      fromMissType  = typeof(var_from@missing_value)
+
+                      if (toType.eq.fromMissType) then
+                          var_to@missing_value = var_from@missing_value
+                      else
+                          var_to@missing_value_original = fromMissValue  ; output original missing_value
+     
+                          if (toType.eq."float") then
+                              var_to@missing_value = tofloat(fromMissValue)
+                          end if
+                          if (toType.eq."integer") then
+                              var_to@missing_value = toint(fromMissValue)
+                          end if
+                          if (toType.eq."short") then
+                              var_to@missing_value = toshort(fromMissValue)
+                          end if
+                          if (toType.eq."byte") then
+                              var_to@missing_value = tobyte(fromMissValue)
+                          end if
+                          if (toType.eq."logical") then
+                              logicalmissing_value = new(1,"logical")
+                              var_to@missing_value = logicalmissing_value
+                          end if
+                          if (toType.eq."ubyte") then
+                              var_to@missing_value = toubyte(fromMissValue)
+                          end if
+                          if (toType.eq."uint") then
+                              var_to@missing_value = touint(fromMissValue)
+                          end if
+                          if (toType.eq."int64") then
+                              var_to@missing_value = toint64(fromMissValue)
+                          end if
+                          if (toType.eq."uint64") then
+                              var_to@missing_value = touint64(fromMissValue)
+                          end if
+                          if (toType.eq."ulong") then
+                              var_to@missing_value = toulong(fromMissValue)
+                          end if
+                          if (toType.eq."ushort") then
+                              var_to@missing_value = toushort(fromMissValue)
+                          end if
+                      end if 
+                  end if     ; if (att_names(i).eq."missing_value")
+              end if
+           end do            ; handle _FillValue
+       end if                ; if (sameType .or. ....
+    end if                   ; if(.not.all(ismissing(att_names))) 
 end
 
 ;***********************************************
@@ -10675,12 +10787,12 @@ begin
   if (typeof(xAve).eq."double" .or. typeof(xAve).eq."double") then
       zero = 0.0d
       one  = 1.0d
-      pi   = 4.0d*atan(1.0d)/180.0d
+      pi   = 4.0d*atan(1.0d)
       spn  = 3.0d                    ; 99.7% of normal
   else
       zero = 0.0 
       one  = 1.0
-      pi   = 4.0*atan(1.0)/180.0
+      pi   = 4.0*atan(1.0)
       spn  = 3.0
   end if
 
@@ -12067,10 +12179,9 @@ begin
 end
 
 ;---------------------------------------------------------
-undef("homme2latlon")
-function homme2latlon(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
+undef("remap_elements")
+function remap_elements(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
 ;
-; remap from original HOMME grid to rectilinear grid
 ; Usage:
 ;  dirw   = "./"
 ;  filw   = "map_ne30np4_fv0.9x1.25_bilinear.nc"   ; weight file
@@ -12079,8 +12190,8 @@ function homme2latlon(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
 ;  filh   = "camrun.cam2.h0.1995-01-01-00000.nc"   ; cubed sphere
 ;  fh     = addfile(dirh+filh, "r")
 ;
-;  psl    = homme2latlon(fw, fc, "PSL", False)     ; (time,lat,lon)
-;  temp   = homme2latlon(fw, fc, "T"  , False)     ; (time,lev,lat,lon)
+;  psl    = remap_elements(fw, fc, "PSL", False)   ; (time,lat,lon)
+;  temp   = remap_elements(fw, fc, "T"  , False)   ; (time,lev,lat,lon)
 ;  ----
 local ier, xin, dimx, rank, dim_dst, ntim, klev, nlat, mlon, lat, lon \
     , errMsg, dst_add , src_add, s, nS, map_wts, xout1d, xout, xoutf
@@ -12088,7 +12199,7 @@ begin
          ; check 'fhom' argument
       if (.not.(typeof(fhom).eq."file"    .or. \
                 typeof(fhom).eq."list"))  then
-          print("homme2latlon: fhom is not of type file or list")
+          print("remap_elements: fhom is not of type file or list")
           print("              fhom="+typeof(fhom))
           exit
       end if
@@ -12112,14 +12223,15 @@ begin
       end if
 
       if (ier) then
-          print("homme2latlon: variable ="+var+" not on file")
+          print("remap_elements: variable ="+var+" not on file")
           exit
       end if
       
+      dnam    = getvardims(xin)
       dimx    = dimsizes( xin  )
       rank    = dimsizes( dimx )
       if (rank.eq.1 .or. rank.gt.3) then
-          print("homme2latlon: bad rank: rank="+rank)
+          print("remap_elements: bad rank: rank="+rank)
           exit
       end if
                                             ; destination grid
@@ -12166,6 +12278,7 @@ begin
 
       if (rank.eq.3) then               ; (ntim,klev,ncol)
           klev = dimx(1)
+          knam = dnam(1)
           xout = new ( (/ntim,klev,nlat,mlon/), typeof(xin), 1e20)
 
           do nt=0,ntim-1
@@ -12175,8 +12288,8 @@ begin
             end do
           end do
 
-          xout!1   = "lev"                ; xout!1 = xin!1
-          xout&lev = xin&lev              ; xout!&$xin!1$ = xin&$xin!1$
+          xout!1   = knam                 ; xout!1 = xin!1
+          xout&$knam$ = xin&$knam$        ; xout!&$xin!1$ = xin&$xin!1$
           xout!2   = "lat"
           xout!3   = "lon"
       end if
@@ -12200,9 +12313,17 @@ begin
 
       if (opt) then
 
-          if (isatt(opt,"return_type") .and. opt@return_type.eq."float") then
+          if (typeof(xout).eq."double" .and. \
+              isatt(opt,"return_type") .and. opt@return_type.eq."float") then
               xoutf = tofloat( xout )
+                    ; the following to to get around an irritating Warning
+                    ; message about _FillValue when copy_VarMeta is used
+              if (isatt(xout,"_FillValue")) then   ; xout is 'double'
+                  delete(xout@_FillValue)
+              end if
+
               copy_VarMeta(xout,xoutf)
+
               delete(xout)
               xout  = xoutf
               delete(xoutf)
@@ -12219,4 +12340,25 @@ begin
       end if
 
       return( xout )
+end
+
+undef("homme2latlon")
+function homme2latlon(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
+;
+; entry for backward compatibility
+;
+; remap from original HOMME grid to rectilinear grid
+; Usage:
+;  dirw   = "./"
+;  filw   = "map_ne30np4_fv0.9x1.25_bilinear.nc"   ; weight file
+;  fw     = addfile(dirw+filw, "r")
+;  dirh   = "./"
+;  filh   = "camrun.cam2.h0.1995-01-01-00000.nc"   ; cubed sphere
+;  fh     = addfile(dirh+filh, "r")
+;
+;  psl    = homme2latlon(fw, fc, "PSL", False)     ; (time,lat,lon)
+;  temp   = homme2latlon(fw, fc, "T"  , False)     ; (time,lev,lat,lon)
+;  ----
+begin
+   return( remap_elements(fwt, fhom, var, opt) )
 end

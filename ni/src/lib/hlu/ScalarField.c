@@ -922,9 +922,10 @@ ValidCoordArray
 {
 	char *e_text;
 	int len_dim = 0;
-	char *name = "sf[X|Y]Array";
+	char *name;
 	NhlBoolean error = False;
 
+	name = (ctype == sfXCOORD) ? "sfXArray" : "sfYArray";
 
 	if (ga->num_dimensions > 2 || ga->num_dimensions < 1) {
 		e_text = 

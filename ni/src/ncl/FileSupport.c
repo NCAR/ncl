@@ -1605,7 +1605,13 @@ NclQuark  varname;
 					if(ret < 0) {
 						return(NhlWARNING);
 					 }
-					if(step->the_att->num_elements == 1) {
+					if (step->the_att->num_elements == 0) {
+						ret = nclfprintf(fp,"<NULL>\n");
+						if(ret < 0) {
+							return(NhlWARNING);
+						}
+					}						
+					else if(step->the_att->num_elements == 1) {
 						tmp_md = _NclFileReadVarAtt(thefile,thefile->file.var_info[i]->var_name_quark,step->the_att->att_name_quark,NULL);
 						ret = _Nclprint(tmp_md->multidval.type, fp,tmp_md->multidval.val);
 						if(ret < NhlINFO) {

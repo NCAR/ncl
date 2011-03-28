@@ -307,6 +307,7 @@ begin
       gDst.eq."TwoD" .or.gDst.eq."OneD".or. \
       gDst.eq."HlfD" .or.gDst.eq."1x1d".or. \
       gDst.eq."T31"  .or.gDst.eq."1.9x2.5" .or. \
+      gDst.eq."fv0.9x1.25" .or. gDst.eq."fv1.9x2.5" .or. \
       gDst.eq."0.1x0.1") then
 
       if (gDst.eq."T170".or. gDst.eq."T85" .or. \
@@ -355,19 +356,23 @@ begin
           lon@long_name = "longitude"   
           lon@units     = "degrees_east"
       end if
-
-printMinMax(lat, True)
-printMinMax(lon, True)
-;                                    ; MAJOR kluge 3/16/2008
-      if (gDst.eq."1.9x2.5") then 
+;                                    ; MAJOR kluge 3/16/2008, 3/2/2011
+      if (gDst.eq."1.9x2.5" .or. gDst.eq."fv1.9x2.5" .or.  \  
+          gDst.eq."0.9x1.25".or. gDst.eq."fv0.9x1.25") then 
           if (isvar("lat")) then
               delete(lat)                     ; DJS stuck this in 3/16/2008
           end if
           if (isvar("lon")) then
               delete(lon)
           end if
-          nlat = 96
-          mlon = 144
+          if (gDst.eq."1.9x2.5" .or. gDst.eq."fv1.9x2.5") then
+              nlat = 96
+              mlon = 144
+          end if
+          if (gDst.eq."0.9x1.25".or. gDst.eq."fv0.9x1.25") then
+              nlat = 192
+              mlon = 288
+          end if
           lat  = latGlobeF(nlat, "lat", "latitude", "degrees_north")
           lon  = lonGlobeF(mlon, "lon", "longitude", "degrees_east")
       end if

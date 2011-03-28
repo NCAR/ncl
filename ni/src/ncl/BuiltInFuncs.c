@@ -2653,7 +2653,7 @@ NhlErrorTypes _NclIfbindirread(void)
 	int fd = -1;
 	ng_size_t totalsize = 0;
 	off_t f_off;
-	int n;
+	ssize_t n;
 	char *step = NULL;
 	NclStackEntry data_out;
 	int *recnum;
@@ -2891,7 +2891,7 @@ NhlErrorTypes _NclIcbinread
 	struct stat buf;
 	int fd = -1;
 	ng_size_t totalsize = 0;
-	int n;
+	ssize_t n;
 	char *step = NULL;
 	NclStackEntry data_out;
 	ng_size_t dim2;
@@ -3059,7 +3059,8 @@ NhlErrorTypes _NclIfbinnumrec
 	int fd = -1;
 	int ind1,ind2;
 	off_t cur_off;
-	int i,n;
+	int i;
+	ssize_t n;
 	ng_size_t dimsize = 1;
 	int swap_bytes = 0;
 	NhlErrorTypes ret = NhlNOERROR;
@@ -3158,13 +3159,14 @@ NhlErrorTypes _NclIfbinrecwrite
 	ng_size_t i;
 	int ind1,ind2;
 	int fd = -1;
-	int n;
+	ssize_t n;
 	int n_dims;
 	off_t cur_off = 0;
 	NhlErrorTypes ret = NhlNOERROR;
 	int rsize = 0;
 	NclBasicDataTypes datai_type;
 	ng_size_t total;
+	int itotal;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
@@ -3229,7 +3231,13 @@ NhlErrorTypes _NclIfbinrecwrite
 		total *= dimsizes[i];
 	}
 	total *= type->type_class.size;
-
+#if !defined(NG32BIT)
+	if(total > INT_MAX) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecwrite: cannot write more than 2 Gb values to a file.");
+	  return(NhlFATAL);
+	}
+#endif
+	itotal = (int)total;
 
 	fd = open(_NGResolvePath(NrmQuarkToString(*fpath)),(O_CREAT | O_RDWR),0666);
 	if(fd == -1) {
@@ -3292,19 +3300,19 @@ NhlErrorTypes _NclIfbinrecwrite
 			char *outdata = NclMalloc(total);
 			if (!outdata)
 				return (NhlFATAL);
-			_NclSwapBytes(outdata,value,total / type->type_class.size,type->type_class.size);
-			_NclSwapBytes(&ltotal,&total,1,4);
+			_NclSwapBytes(outdata,value,itotal / type->type_class.size,type->type_class.size);
+			_NclSwapBytes(&ltotal,&itotal,1,4);
 			n = write(fd,&ltotal,4);
-			n = write(fd,outdata,total);
+			n = write(fd,outdata,itotal);
 			n = write(fd,&ltotal,4);
 			close(fd);
 			NclFree(outdata);
 			return(NhlNOERROR);
 		}
 		else {
-			n = write(fd,&total,4);
-			n = write(fd,value,total);
-			n = write(fd,&total,4);
+			n = write(fd,&itotal,4);
+			n = write(fd,value,itotal);
+			n = write(fd,&itotal,4);
 			close(fd);
 			return(NhlNOERROR);
 		}
@@ -3341,7 +3349,7 @@ NhlErrorTypes _NclIfbinrecread
 	int ind1,ind2;
 	int fd = -1;
 	ng_size_t size = 1, tmp_size = 1;
-	int n;
+	ssize_t n;
 	off_t cur_off = 0;
 	NhlErrorTypes ret = NhlNOERROR;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
@@ -4855,8 +4863,8 @@ NhlErrorTypes _NclIfbindirwrite
 	Const char *path_string;
 	void *tmp_ptr;
 	int fd = -1;
-	int totalsize = 0;
-	int n;
+	ng_size_t totalsize = 0;
+	ssize_t n;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
@@ -4946,7 +4954,7 @@ NhlErrorTypes _NclIcbinwrite
 	void *tmp_ptr;
 	int fd = -1;
 	ng_size_t  totalsize = 0;
-	int n;
+	ng_size_t n;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
@@ -5044,7 +5052,8 @@ NhlErrorTypes _NclIfbinwrite
 	void *tmp_ptr;
 	int fd = -1;
 	ng_size_t  totalsize = 0;
-	int n;
+	int itotalsize;
+	ssize_t n;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
@@ -5108,6 +5117,13 @@ NhlErrorTypes _NclIfbinwrite
 	tmp_ptr = tmp_md->multidval.val;
 	thetype = tmp_md->multidval.type;
 	totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
+#if !defined(NG32BIT)
+	if(totalsize > INT_MAX) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinwrite: cannot write more than 2 Gb values to a file.");
+	  return(NhlFATAL);
+	}
+#endif
+	itotalsize = (int)totalsize;
 	if (swap_bytes) {
 		char *outdata = NclMalloc(totalsize);
 		int ltotal;
@@ -5116,22 +5132,22 @@ NhlErrorTypes _NclIfbinwrite
 			return (NhlFATAL);
 		}
 		_NclSwapBytes(outdata,tmp_ptr,tmp_md->multidval.totalelements,thetype->type_class.size);
-		_NclSwapBytes(&ltotal,&totalsize,1,4);
+		_NclSwapBytes(&ltotal,&itotalsize,1,4);
 		n = write(fd,&ltotal,4);
-		n = write(fd,outdata,totalsize);
+		n = write(fd,outdata,itotalsize);
 		n = write(fd,&ltotal,4);
 #if 0
-		NGCALLF(nclpfortranwrite,NCLPFORTRANWRITE)(path_string,outdata,&totalsize,&ret,strlen(path_string));
+		NGCALLF(nclpfortranwrite,NCLPFORTRANWRITE)(path_string,outdata,&itotalsize,&ret,strlen(path_string));
 #endif
 		NclFree(outdata);
 	}
 	else {
 #if 0
-		NGCALLF(nclpfortranwrite,NCLPFORTRANWRITE)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
+		NGCALLF(nclpfortranwrite,NCLPFORTRANWRITE)(path_string,tmp_ptr,&itotalsize,&ret,strlen(path_string));
 #endif
-		n = write(fd,&totalsize,4);
+		n = write(fd,&itotalsize,4);
 		n = write(fd,tmp_ptr,totalsize);
-		n = write(fd,&totalsize,4);
+		n = write(fd,&itotalsize,4);
 	}
 	close(fd);
 	return(ret);
@@ -18126,7 +18142,7 @@ NhlErrorTypes sprinti_W( void )
   strncpy(format_buf,NrmQuarkToString(*format_string),format_len);
   
   pc_loc = format_buf;
-  while (pc_loc = strchr(pc_loc,'%')) {
+  while ((pc_loc = strchr(pc_loc,'%'))) {
 	  if (*(pc_loc + 1) == '%') {
 		  pc_loc += 2;
 		  continue;
@@ -18139,7 +18155,7 @@ NhlErrorTypes sprinti_W( void )
   if (v_loc)
 	  strcpy(format_tail,v_loc + 1);
   pc_loc = format_tail;
-  while (pc_loc = strchr(pc_loc,'%')) {
+  while ((pc_loc = strchr(pc_loc,'%'))) {
 	  if (*(pc_loc + 1) == '%') {
 		  pc_loc += 2;
 		  continue;
@@ -19132,7 +19148,7 @@ NhlErrorTypes _NclIListIndex(void)
 	ng_size_t dimsize = 1;
 	int *ret_val;
 	int nm = 0;
-	int i, j;
+	int i;
 
 	NclObj the_obj;
 	NclVar cur_var;

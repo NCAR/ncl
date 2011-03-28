@@ -103,5 +103,12 @@ int default_type
 #endif
 );
 
+extern NhlErrorTypes _NclGetDefaultFillValue(
+#if	NhlNeedProto
+NclBasicDataTypes type,
+NclScalar *def_val;
+#endif
+);
+
 
 #endif /* TypeSupport_h*/

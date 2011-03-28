@@ -620,7 +620,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					goto fatal_err;
 				}
 				thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
-				if (var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
+				if (thefile && var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
 					int bad = 0;
 					struct _NclFVarRec *var_info = thefile->file.var_info[index];
 					if (first) { /* save the dimension sizes */
@@ -659,7 +659,12 @@ void CallLIST_READ_FILEVAR_OP(void) {
 						list_index--;
 					}
 				}
-			
+				else {
+					files[list_index] = NULL;
+					agg_dim_count[list_index] = 0;
+					total_agg_dim_size--;
+					list_index--;
+				}
 			}
 		}
 	}
@@ -681,12 +686,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					goto fatal_err;
 				}
 				thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
-				if (! thefile) {
-					files[list_index] = NULL;
-					agg_dim_count[list_index] = 0;
-					list_index--;
-				}
-				else if (var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
+				if (thefile && var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
 					int bad = 0;
 					struct _NclFVarRec *var_info = thefile->file.var_info[index];
 					if (first) { /* save the dimension sizes */
@@ -728,7 +728,11 @@ void CallLIST_READ_FILEVAR_OP(void) {
 						list_index--;
 					}
 				}
-			
+				else {
+					files[list_index] = NULL;
+					agg_dim_count[list_index] = 0;
+					list_index--;
+				}
 			}
 		}
 		if (good_file_count == 0 || agg_dim_name == NrmNULLQUARK) {
@@ -2994,8 +2998,20 @@ void CallASSIGN_VAR_DIM_OP(void) {
 						dim_num,
 						dim_name);
 					}
-					if((dim_expr_md->obj.status != PERMANENT)&&(dim_expr_md->obj.ref_count == 0)) {
-						_NclDestroyObj((NclObj)dim_expr_md);
+					switch (dim_expr.kind) {
+					case NclStk_VAL:
+						if((dim_expr_md->obj.status != PERMANENT)&&(dim_expr_md->obj.ref_count == 0)) {
+							_NclDestroyObj((NclObj)dim_expr_md);
+						}
+						break;
+					case NclStk_VAR:	
+						if((dim_expr.u.data_var->var.var_type == VARSUBSEL) &&
+						   (dim_expr.u.data_var->obj.status != PERMANENT)&&(dim_expr.u.data_var->obj.ref_count == 0)) {
+							_NclDestroyObj((NclObj)dim_expr.u.data_var);
+						}
+						break;
+					default:
+						break;
 					}
 					if((dim_ref_md->obj.status != PERMANENT)&&(dim_ref_md->obj.ref_count == 0)) {
 						_NclDestroyObj((NclObj)dim_ref_md);
@@ -3085,6 +3101,22 @@ void CallNEW_OP(void) {
 						break;
 					default:
 						break;
+					}
+					if((NclSymbol*)*ptr ==NULL) {
+						switch(data_type_expr.kind) {
+						case NclStk_VAL:
+							if(data_type_expr.u.data_obj->obj.status != PERMANENT) {	
+								_NclDestroyObj((NclObj)data_type_expr.u.data_obj);
+							}
+							break;
+						case NclStk_VAR:
+							if(data_type_expr.u.data_var->obj.status != PERMANENT) {	
+								_NclDestroyObj((NclObj)data_type_expr.u.data_var);
+							}
+							break;
+						default:
+							break;
+						}
 					}
 				}
 				
@@ -6644,6 +6676,7 @@ void CallASSIGN_VAR_VAR_OP(void) {
 						lhs_var->u.data_var = _NclVarRead(rhs_var->u.data_var,rhs_sel_ptr);
 						if(lhs_var->u.data_var == NULL) {
 							estatus = NhlFATAL;
+							lhs_var->kind = NclStk_NOVAL;
 						} else {
 							if(!_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT)) {	
 								tmp_var = lhs_var->u.data_var;
