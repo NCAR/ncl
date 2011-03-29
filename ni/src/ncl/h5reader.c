@@ -1256,6 +1256,10 @@ hid_t Ncl2HDF5type(const char *type)
     {
         h5type = H5T_NATIVE_CHAR;
     }
+    else if(strcmp("ubyte", type) == 0)
+    {
+        h5type = H5T_NATIVE_UCHAR;
+    }
     else if(strcmp("char", type) == 0)
     {
         h5type = H5T_NATIVE_CHAR;
@@ -1326,6 +1330,10 @@ unsigned long NclHDF5sizeof(const char *type)
         size = sizeof(unsigned short);
     }
     else if(strcmp("byte", type) == 0)
+    {
+        size = sizeof(char);
+    }
+    else if(strcmp("ubyte", type) == 0)
     {
         size = sizeof(unsigned char);
     }
@@ -2652,8 +2660,11 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
 
         if(H5Oget_info(type, &oi) >= 0)
         {
-            fprintf(stderr, "shared-%lu:"H5_PRINTF_HADDR_FMT" ",
-                    oi.fileno, oi.addr);
+          /*
+           *fprintf(stderr, "shared-%lu:"H5_PRINTF_HADDR_FMT" ",
+           *        oi.fileno, oi.addr);
+           *fprintf(stderr, "shared-%lu:"H5_PRINTF_HADDR_FMT" ",
+           */
             strcpy(NclHDF5datatype->type_name, "shared");
         }
         else
@@ -4203,11 +4214,11 @@ herr_t _NclHDF5search_obj(char *name, H5O_info_t *oinfo,
             }
             break;
         case H5O_TYPE_NAMED_DATATYPE:
+#if 0
             fprintf(stderr, "\nin file: %s, line: %d\n", __FILE__, __LINE__);
             fprintf(stderr, "\tH5O_TYPE_NAMED_DATATYPE\n");
             fprintf(stderr, "\ttype obj_id   = %d\n", obj_id);
             fprintf(stderr, "\ttype obj_type = %d\n", obj_type);
-#if 0
             strcpy(NclHDF5group_list->group_node->type_name, "Type");
             H5Aiterate2(obj_id, H5_INDEX_NAME, H5_ITER_INC, NULL, _NclHDF5check_attr, &curAttrList);
 #endif
