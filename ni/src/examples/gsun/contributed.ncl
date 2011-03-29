@@ -12532,7 +12532,10 @@ end
 ;---------------------------------------------------
 ; Rob Nichols [U. Washington] & D. Shea
 undef("pattern_cor2")
-function pattern_cor2 (x[*][*],y[*][*],w[*], opt:integer)
+function pattern_cor2 (x[*][*],y[*][*],w, opt:integer)
+; This function should NOT be called directly by  users.
+; Please use "pattern_cor"
+; --
 ; Compute the pattern correlation between two fields
 ; (lat,lon)  .... wgt(lat)
 
@@ -12550,29 +12553,39 @@ begin
       end if
   end if
                              ; x and y must have the same sizes
-  dimx = dimsizes(x)
-  dimy = dimsizes(y)
+  dimx  = dimsizes(x)
+  dimy  = dimsizes(y)
   if (.not.all(dimx.eq.dimy)) then
       print("pattern_cor: Fatal: x and y do not have the same dimension sizes")
       print("       dimx: "+dimx+"    dimy="+dimy)
       exit
+  end if 
+
+  dimw  = dimsizes(w)      
+  rankw = dimsizes(dimw)
+  if (rankw.gt.2) then
+      print("pattern_cor: Fatal: w can be a scalar, w[*] or w[*][*]")
+      print("      rankw: "+rankw)
+      exit
   end if
 
-  dimw = dimsizes(w)         ; if w is scalar set to 1.0 
-  if (dimw.gt.1) then 
-      if (dimx(0).eq.dimw) then
-          wgt = w            ; copy to local array
-      else
-          print("pattern_cor: Fatal: leftmost x/y dimension mismatch with w")
-          print("       dimx(0): "+dimx(0)+"    dimy(0)="+dimy(0)+"  dimw="+dimw)
-          exit
-      end if
-  else
-      wgt = new(dimx(0), typeof(w),"No_FillValue")
-      wgt = 1.0
+  if (rankw.eq.2 .and. .not.all(dimx.eq.dimw)) then
+      print("pattern_cor: Fatal: w[*][*] must have the same dimensions as x[*][*]")
+      print("       dimx: "+dimx+"    dimw="+dimw)
+      exit
   end if
-      
-  WGT     = conform(x, wgt, 0)    ; broadcast dimensions to match x/y
+                                     ; w can be w[1], w[*] or w[*][*]
+  if (rankw.eq.1) then
+      if (dimw.eq.1) then            ; if w is w(1) (scalar) set to 1.0 
+          WGT = new(dimx, typeof(w),"No_FillValue")
+          WGT = 1.0
+      end if
+      if (dimx(0).eq.dimw .and. .not.isvar("WGT")) then
+          WGT = conform(x, w, 0)     ; broadcast dimensions to match x/y
+      end if
+  else                               ; must be 2D
+      WGT     = w
+  end if
 
 ; if x/y  has _Fillvalue attribute; set WGT=0.0 where x or y = _FillValue
 
@@ -12635,9 +12648,10 @@ end
 ;---------------------------------------------------
 ; Rob Nichols [U. Washington] & D. Shea
 undef("pattern_cor")
-function pattern_cor (x, y, w[*], opt:integer)
-; Compute the pattern correlation between two fields
-; (lat,lon)  .... wgt(lat)
+function pattern_cor (x, y, w, opt:integer)
+; Compute the centered or uncentered pattern correlation 
+; between two fields
+; (lat,lon)  .... wgt(1) or wgt(lat) or wgt(lat,lon)
 
 local dimx, dimy, rankx, ranky, nt, kl, xc, rpc
 begin
@@ -12654,10 +12668,14 @@ begin
                              ; x and y must have the same sizes
   dimx  = dimsizes(x)
   dimy  = dimsizes(y)
+  dimw  = dimsizes(w)         ; if w is scalar set to 1.0 
+
   rankx = dimsizes(dimx)
   ranky = dimsizes(dimy)
+  rankw = dimsizes(dimw)
+
   if (rankx.ne.ranky) then
-      print("pattern_cor: Fatal: x and y do not have the rank")
+      print("pattern_cor: Fatal: x and y do not have the same rank")
       print("      rankx: "+rankx+"   ranky="+ranky)
       exit
   end if
@@ -12669,6 +12687,11 @@ begin
   if (.not.all(dimx.eq.dimy)) then
       print("pattern_cor: Fatal: x and y do not have the same dimension sizes")
       print("       dimx: "+dimx+"    dimy="+dimy)
+      exit
+  end if
+  if (rankw.gt.2) then
+      print("pattern_cor: Fatal: w can be a scalar, w[*] or w[*][*]")
+      print("      rankw: "+rankw)
       exit
   end if
 
