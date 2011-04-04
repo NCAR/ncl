@@ -24,6 +24,7 @@
 #include <ctype.h>
 #include <math.h>
 #include <string.h>
+#include <strings.h>
 #include <stdarg.h>
 #include "nctime.h"
 

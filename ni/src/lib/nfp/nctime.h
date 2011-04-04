@@ -130,3 +130,5 @@ extern void cdRel2Comp(cdCalenType timetype, char* relunits, double reltime, cdC
 extern void cdRel2Iso_minsec(cdCalenType timetype, char* relunits, double reltime, cdCompTime *comptime, int *min, double *sec);
 extern int cdParseRelunits(cdCalenType timetype, char* relunits, cdUnitTime* unit, cdCompTime* base_comptime);
 void cdRel2CompMixed(double reltime, cdUnitTime unit, cdCompTime basetime, cdCompTime *comptime);
+
+extern cdCalenType calendar_type(const char *calstr);
