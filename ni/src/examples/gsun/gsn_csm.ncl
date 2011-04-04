@@ -2506,7 +2506,7 @@ undef("fill_bw_xy")
 function fill_bw_xy(wks,plot,xx:numeric,yy:numeric,res:logical)
 local y1_gt_y2, y1, y2, i, ab, bpt, ept, x, y, color, first, last, \
 dsizes_y, rank_y, ncurves, npts, ppts, ppts2, res2, above_fill_colors, \
-below_fill_colors, gsres, dum, fill_x, xi, yi
+below_fill_colors, gsres, dum, fill_x, xi, yi, rgbArrayA, rgbArrayB, tmp
 begin
 ;
 ; Determine whether we're filling between Y curves or X curves.
@@ -2600,6 +2600,54 @@ begin
   nbcol = dimsizes(below_fill_colors)
 
 ;
+; This function originally assumed that if [above|below]_fill_colors were arrays,
+; then they were arrays of color indices, and were indexed accordingly. 
+; In the 32bit color scheme, an individual RGBa color is also an array (of floats), but should
+; be treated as one logical entity. When we get a singular RGBa color, we'll convert it
+; to a 1xN doubly dimensioned array, and we'll therefore always have 2D arrays when
+; dealing with RGBa colors (either a 1xN or a MxN array of RGBa). Lastly, the original
+; indexing scheme below will work as before if applied only to the first dimension of these
+; 2D RGBa arrays. 
+;
+  rgbArrayA = False
+  if (dimsizes(nacol).eq.1 .and. typeof(above_fill_colors).eq."float") then
+    ;
+    tmp = above_fill_colors
+    delete(above_fill_colors)
+    above_fill_colors = new((/1, nacol /), float)
+    above_fill_colors(0,:) = tmp
+    delete(tmp)
+    delete(nacol)
+    nacol = dimsizes(above_fill_colors)
+  end if
+  if (dimsizes(nacol).eq.2) then
+    rgbArrayA = True    
+    tmp = nacol(0) 
+    delete(nacol)
+    nacol = tmp
+    delete(tmp)
+  end if
+
+  rgbArrayB = False
+  if (dimsizes(nbcol).eq.1 .and. typeof(below_fill_colors).eq."float") then
+    ;
+    tmp = below_fill_colors
+    delete(below_fill_colors)
+    below_fill_colors = new((/1, nbcol /), float)
+    below_fill_colors(0,:) = tmp
+    delete(tmp)
+    delete(nbcol)
+    nbcol = dimsizes(below_fill_colors)
+  end if 
+  if (dimsizes(nbcol).eq.2) then
+    rgbArrayB = True    
+    tmp = nbcol(0) 
+    delete(nbcol)
+    nbcol = tmp
+    delete(tmp)
+  end if 
+
+;
 ; Convert input arrays to double.
 ;
   x  = new(npts,double)
@@ -2650,13 +2698,21 @@ begin
 ; polygons where y2 is above y1.
 ;
     do ab = 0,1
-      gsres@gsFillColor = above_fill_colors(iacol)
+      if (rgbArrayA.eq.True) then
+        gsres@gsFillColor = above_fill_colors(iacol,:)
+      else
+        gsres@gsFillColor = above_fill_colors(iacol)
+      end if
       if(ab.eq.1)
         y1 = (/yi(n+1,:)/)
         y2 = (/yi(n,:)/)
 ; Color for when first curve is > second curve
         delete(gsres@gsFillColor)    ; just in case
-        gsres@gsFillColor = below_fill_colors(ibcol)
+        if (rgbArrayB.eq.True) then
+          gsres@gsFillColor = below_fill_colors(ibcol,:)
+        else
+          gsres@gsFillColor = below_fill_colors(ibcol)
+	end if
       end if
 ;
 ; Get areas where y1 > y2.
