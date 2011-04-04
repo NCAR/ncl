@@ -27933,7 +27933,7 @@ NhlErrorTypes _NclItochar
                     if(underflowed)
                     {
                         NhlPError(NhlWARNING, NhlEUNKNOWN,
-                            "tochar: there are %d byte leass than 0, which has been flagged missing.",
+                            "tochar: there are %d byte less than 0, which has been flagged missing.",
                             underflowed);
                     }
                 }
