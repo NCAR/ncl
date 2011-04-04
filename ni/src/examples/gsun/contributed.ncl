@@ -12192,9 +12192,16 @@ function remap_elements(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
 ;  psl    = remap_elements(fw, fc, "PSL", False)   ; (time,lat,lon)
 ;  temp   = remap_elements(fw, fc, "T"  , False)   ; (time,lev,lat,lon)
 ;****************************************************************
+;  The original weight files given to me did not have all the expected
+;  information. Hence, there is some extra coding. 
+;****************************************************************
+;  The fact that we want t return the full data object (including level/depth)
+;  makes it difficult to unambiguously determine the target grid. 
+;****************************************************************
 local ier, xin, dimx, rank, dim_dst, ntim, klev, nlat, mlon, lat, lon \
     , errMsg, dst_add , src_add, s, nS, map_wts, xout1d, xout, xoutf  \
-    , fdimNames, fdimSizes, ib, jb, knam, nt, kl, radUnits 
+    , fdimNames, fdimSizes, ia, ja, ib, jb, knam, nt, kl, ilon, jlon  \
+    , radUnints, latUnits, lonUnits, gridType_a , gridType_b, dim_src
 begin
          ; check 'fhom' argument
       if (.not.(typeof(fhom).eq."file"    .or. \
@@ -12234,6 +12241,40 @@ begin
           print("remap_elements: bad rank: rank="+rank)
           exit
       end if
+
+      radUnits = (/"radians","radian","Radians","Radian"/)
+
+      latUnits = (/"degrees"      \ ; not udunits but .....
+                 ,"degrees_north","degrees-north","degree_north" \ 
+                 ,"degrees north","degrees_N","Degrees_north"    \
+                 ,"degree_N","degreeN","degreesN","deg north"    /)
+
+      lonUnits = (/"degrees"      \ ; not udunits but .....
+                  ,"degrees_east","degrees-east","degree_east" \
+                  ,"degrees east","degrees_E","Degrees_east"   \
+                  ,"degree_E","degreeE","degreesE","deg east"  /)
+                                               ; sizes source grid
+;;    if (iscilevar(fwt,"src_grid_dims") ) then   
+;;        dim_src = fwt->src_grid_dims         ; straight forward       
+;;        ilon    = dim_src(0)
+;;        jlat    = dim_src(1)
+;;    else                                     ; try another approach
+;;        fdimNames = getvardims(fwt)          ; names of dimensions on file 
+;;        if (any(fdimNames.eq."ni_a") .and. any(fdimNames.eq."nj_a")) then
+;;            dim_src   = (/0,0/)
+;;            fdimSizes = getfiledimsizes(fwt) ; sizes of dimensions on file
+;;            ia        = ind(fdimNames.eq."ni_a")     ; index 
+;;            ja        = ind(fdimNames.eq."nj_a")
+;;            ilon      = toint(fdimSizes(ia))
+;;            jlat      = toint(fdimSizes(ja))
+;;            dim_src(0)= ilon
+;;            dim_src(1)= ilat
+;;        else
+;;            print("remap_elements: FATAL: src_grid_dims, ni_a, nj_a missing")
+;;            print("                Cannot determine the output grid sizes")
+;;            exit
+;;        end if
+;;    end if
                                                ; sizes destination grid
       if (isfilevar(fwt,"dst_grid_dims") ) then   
           dim_dst = fwt->dst_grid_dims         ; straight forward       
@@ -12248,23 +12289,55 @@ begin
               jb        = ind(fdimNames.eq."nj_b")
               mlon      = toint(fdimSizes(ib))
               nlat      = toint(fdimSizes(jb))
-              dim_dst(0) = mlon
-              dim_dst(1) = nlat
+              dim_dst(0)= mlon
+              dim_dst(1)= nlat
           else
               print("remap_elements: FATAL: dst_grid_dims, ni_b, nj_b missing")
               print("                Cannot determine the output grid sizes")
               exit
           end if
       end if
-      print("remap_elements: mlon="+mlon+"   nlat="+nlat)
+;     print("remap_elements: mlon="+mlon+"   nlat="+nlat)
 
 ; coordinate information: rectilinear or curvilinear
 ; rectilinear: return coordinate variables with xout
 
-      if (all(isfilevar(fwt,(/"xc_b","yc_b"/))) ) then
-          radUnits = (/"radians","radian","Radians","Radian"/)
+      if (all(isfilevar(fwt,(/"xc_a","yc_a"/))) ) then
+                   ; Is grid "a" rectilinear or curvilinear; only way I can test?
+          xc_a     = fwt->xc_a
+          yc_a     = fwt->yc_a
+          nycb     = dimsizes(yc_a)
+          nycb     = nycb - mlon
+          if (isMonotonic(xc_a(0:mlon-1)).ne.0  .and. \
+              all(yc_a(0:mlon-1).eq.yc_a(0))    .and. \
+              all(yc_a(nycb:).eq.yc_a(nycb))   ) then 
+              gridType_a = "rectilinear"              ; rectilinear grid (hopefully)
+              lon        = fwt->xc_a(0:mlon-1)  
+              lon!0      = "lon"
+              if (isatt(lon,"units").and.any(radUnits.eq.lon@units)) then
+                  lon    = 57.29577951308232d0*lon    ; convert to degrees_east
+              end if
+              lon@units  = "degrees_east"             ; force these units
+              lon&lon    = lon
+             
+              lat        = fwt->yc_a(::mlon)
+              lat!0      = "lat"
+              if (isatt(lat,"units").and.any(radUnits.eq.lat@units)) then
+                  lat = 57.29577951308232d0*lat       ; convert to degrees_north
+              end if
+              lat@units  = "degrees_north"
+              lat&lat    = lat
+          else
+              gridType_a = "curvilinear"     
+          end if
+      else
+          print("remap_elements: FATAL: xc_a and/or yc_a missing")
+          print("                Cannot determine the output lat/lon locations")
+          exit
+      end if
 
-                   ; Is grid rectilinear or curvilinear; only way I can test?
+      if (all(isfilevar(fwt,(/"xc_b","yc_b"/))) ) then
+                   ; Is grid "b" rectilinear or curvilinear; only way I can test?
           xc_b     = fwt->xc_b
           yc_b     = fwt->yc_b
           nycb     = dimsizes(yc_b)
@@ -12272,38 +12345,34 @@ begin
           if (isMonotonic(xc_b(0:mlon-1)).ne.0  .and. \
               all(yc_b(0:mlon-1).eq.yc_b(0))    .and. \
               all(yc_b(nycb:).eq.yc_b(nycb))   ) then 
-              gridType = "rectilinear"                 ; rectilinear grid (hopefully)
-              lon      = fwt->xc_b(0:mlon-1)  
-              lon!0    = "lon"
+              gridType_b = "rectilinear"              ; rectilinear grid (hopefully)
+              lon        = fwt->xc_b(0:mlon-1)  
+              lon!0      = "lon"
               if (isatt(lon,"units").and.any(radUnits.eq.lon@units)) then
-                  lon  = 57.29577951308232d0*lon       ; convert to degrees_east
+                  lon    = 57.29577951308232d0*lon    ; convert to degrees_east
               end if
-             ;lonUnits = (/"degrees"      \ ; not udunits but .....
-             ;            ,"degrees_east","degrees-east","degree_east" \
-             ;            ,"degrees east","degrees_E","Degrees_east"   \
-             ;            ,"degree_E","degreeE","degreesE","deg east"  /)
-              lon@units = "degrees_east"              ; force these units
-              lon&lon   = lon
+              lon@units  = "degrees_east"             ; force these units
+              lon&lon    = lon
              
-              lat       = fwt->yc_b(::mlon)
-              lat!0     = "lat"
+              lat        = fwt->yc_b(::mlon)
+              lat!0      = "lat"
               if (isatt(lat,"units").and.any(radUnits.eq.lat@units)) then
                   lat = 57.29577951308232d0*lat       ; convert to degrees_north
               end if
-             ;latUnits = (/"degrees"      \ ; not udunits but .....
-             ;            ,"degrees_north","degrees-north","degree_north" \ 
-             ;            ,"degrees north","degrees_N","Degrees_north"    \
-             ;            ,"degree_N","degreeN","degreesN","deg north"    /)
-              lat@units = "degrees_north"
-              lat&lat   = lat
+              lat@units  = "degrees_north"
+              lat&lat    = lat
           else
-              gridType = "curvilinear"     
+              gridType_b = "curvilinear"     
           end if
       else
           print("remap_elements: FATAL: xc_b and/or yc_b missing")
           print("                Cannot determine the output lat/lon locations")
           exit
       end if
+;print(lat)
+;print(lon)
+print(gridType_a)
+print(gridType_b)
                                         ; read info from file
       dst_add = fwt->row                ; destination grid [linear] 
       src_add = fwt->col                ; source grid [linear] 
@@ -12335,56 +12404,113 @@ begin
           end if
       end if
 
-      if (rank.eq.2) then               ; (ntim,ncol)
-          
-          xout = new ( (/ntim,nlat,mlon/), typeof(xin), dFill)
-
-          do nt=0,ntim-1
-              pop_remap(xout1d,map_wts,dst_add,src_add,xin(nt,:)) 
-              if (doMask) then
-                  xout1d = mask(xout1d, mask_b.eq.0, False)
-              end if
-              xout(nt,:,:) = onedtond(xout1d, (/nlat,mlon/))
-          end do
-
-          if (gridType.eq."rectilinear") then
-              xout!1   = "lat"
-              xout!2   = "lon"
-          else
-              xout!1   = "lat2d"
-              xout!2   = "lon2d"
-          end if
+      xinDimNames = getvardims(xin)
+print(xinDimNames)
+      if (any(xinDimNames.eq."ncol")) then
+          ncolFlag = True 
+      else
+          ncolFlag = False 
       end if
 
-      if (rank.eq.3) then               ; (ntim,klev,ncol)
+      if (rank.eq.2) then     ; xin(ntim,ncol) 
+          if (ncolFlag) then  ; xin(ntim,ncol)
+print("DEBUG A")
+              xout = new ( (/ntim,nlat,mlon/), typeof(xin), dFill)
+    
+              do nt=0,ntim-1
+                  pop_remap(xout1d,map_wts,dst_add,src_add,xin(nt,:)) 
+                  if (doMask) then
+                      xout1d = mask(xout1d, mask_b.eq.0, False)
+                  end if
+                  xout(nt,:,:) = onedtond(xout1d, (/nlat,mlon/))
+              end do
+    
+              if (gridType_b.eq."rectilinear") then
+                  xout!1   = "lat"
+                  xout!2   = "lon"
+              else
+                  xout!1   = "lat2d"
+                  xout!2   = "lon2d"
+              end if
+          end if           ; ncolFlag
+      end if
+
+      if (rank.eq.3) then     ; xin(ntim,klev,ncol) or (time,lat,lon)
+          if (ncolFlag) then  ; xin(ntim,klev,ncol)
+print("DEBUG B: ")
+              klev = dimx(1)
+              knam = dnam(1)
+              xout = new ( (/ntim,klev,nlat,mlon/), typeof(xin), 1e20)
+    
+              do nt=0,ntim-1
+                do kl=0,klev-1
+                   pop_remap(xout1d,map_wts,dst_add,src_add,xin(nt,kl,:)) 
+                   if (doMask) then
+                      xout1d = mask(xout1d, mask_b.eq.0, False)
+                   end if
+                   xout(nt,kl,:,:) = onedtond(xout1d, (/nlat,mlon/))
+                end do
+              end do
+
+              xout!1   = knam                 ; xout!1 = xin!1
+              xout&$knam$ = xin&$knam$        ; xout!&$xin!1$ = xin&$xin!1$
+              if (gridType_b.eq."rectilinear") then
+                  xout!2   = "lat"
+                  xout!3   = "lon"
+              else
+                  xout!2   = "lat2d"
+                  xout!3   = "lon2d"
+              end if
+          else
+              xout = new ( (/ntim,nlat,mlon/), typeof(xin), 1e20)
+    
+              do nt=0,ntim-1
+                 pop_remap(xout1d,map_wts,dst_add,src_add,ndtooned(xin(nt,:,:))) 
+                 if (doMask) then
+                     xout1d = mask(xout1d, mask_b.eq.0, False)
+                 end if
+                 xout(nt,:,:) = onedtond(xout1d, (/nlat,mlon/))
+              end do
+              if (gridType_b.eq."rectilinear") then
+                  xout!1   = "lat"
+                  xout!2   = "lon"
+              else
+                  xout!1   = "lat2d"
+                  xout!2   = "lon2d"
+              end if
+          end if           ; ncolFlag
+      end if
+print("DEBUG C: ")
+
+      if (rank.eq.4) then     ; xin(ntim,klev,lat,lon) 
+print("DEBUG D: ")
           klev = dimx(1)
           knam = dnam(1)
           xout = new ( (/ntim,klev,nlat,mlon/), typeof(xin), 1e20)
-
+    
           do nt=0,ntim-1
             do kl=0,klev-1
-               pop_remap(xout1d,map_wts,dst_add,src_add,xin(nt,kl,:)) 
+               pop_remap(xout1d,map_wts,dst_add,src_add,ndtooned(xin(nt,kl,:,:)))
                if (doMask) then
-                  xout1d = mask(xout1d, mask_b.eq.0, False)
+                   xout1d = mask(xout1d, mask_b.eq.0, False)
                end if
                xout(nt,kl,:,:) = onedtond(xout1d, (/nlat,mlon/))
             end do
           end do
-
-          xout!1   = knam                 ; xout!1 = xin!1
-          xout&$knam$ = xin&$knam$        ; xout!&$xin!1$ = xin&$xin!1$
-          if (gridType.eq."rectilinear") then
+          if (gridType_b.eq."rectilinear") then
               xout!2   = "lat"
               xout!3   = "lon"
           else
               xout!2   = "lat2d"
               xout!3   = "lon2d"
-          end if
-      end if
+           end if
+      end if               ; rank=4
 
       xout!0    = "time"
       xout&time =  xin&time
-      if (gridType.eq."rectilinear") then
+print("DEBUG E: ")
+printVarSummary(xout)
+      if (gridType_b.eq."rectilinear") then
           xout&lat  =  lat 
           xout&lon  =  lon 
       end if
@@ -12451,7 +12577,8 @@ end
 undef("remap_elements_2d")
 function remap_elements_2d(fwt[1]:file, latlon[1]:string)
 ; latlon="lat2d" or "lon2d"
-local dim_dst, nlat, mlon, coords, fdimNames, fdimSizes, ib, jb, radUnits 
+local dim_dst, nlat, mlon, coords, fdimNames, fdimSizes \
+    , ib, jb, radUnits, slatlon, latNames 
 begin
                                                ; sizes destination grid
       if (isfilevar(fwt,"dst_grid_dims") ) then   
@@ -12481,8 +12608,11 @@ begin
 
       if (all(isfilevar(fwt,(/"xc_b","yc_b"/))) ) then
           radUnits = (/"radians","radian","Radians","Radian"/)
+          latNames = (/"lat2d", "LAT2D", "LAT2d", "lat2D"  \
+                      ,"lat"  , "latitude"/) 
 
-          if (str_lower(latlon).eq."lat2d") then
+          slatlon = str_lower(latlon)
+          if (any(latNames.eq.slatlon)) then
               c1d    = fwt->yc_b
           else
               c1d    = fwt->xc_b
@@ -12493,7 +12623,7 @@ begin
               coords  = 57.29577951308232d0*coords       ; convert to degrees
           end if
                                                          ; had to repeat this
-          if (str_lower(latlon).eq."lat2d") then
+          if (any(latNames.eq.slatlon)) then
               coords@long_name = "array of latitudes"
               coords@units = "degrees_north"             ; force these units
           else
