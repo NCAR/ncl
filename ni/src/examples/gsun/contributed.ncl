@@ -8148,7 +8148,7 @@ begin
       table = asciiread(fName, (/nrow,ncol/), datatype)
   else
     ;;if (opt(0).gt.0) then
-      if ((nopt.eq.1 .and. typeof(opt).eq."string") .or. 
+      if ((nopt.eq.1 .and. typeof(opt).eq."string") .or. \
            opt(0).gt.0) then
         head = readAsciiHead( fName, opt(0))
         nh   = dimsizes(head)                 ; # header records
