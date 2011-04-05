@@ -3192,6 +3192,166 @@ NhlErrorTypes _Nclstr_match
        */
         if(strlen(reg_exp) > 0)
         {
+            if(regcomp(&expr,reg_exp,REG_EXTENDED) != 0)
+            {
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"str_match: Invalid expression");
+                return NhlFATAL;
+            }
+        }
+    }
+    else
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match: input expression is not a string.");
+        return NhlFATAL;
+    }
+
+    str_size = 1;
+    for(i=0; i<ndim_input_strs; i++)
+        str_size *= dimsz_input_strs[i];
+
+    output_strs = (string *) NclMalloc(str_size*sizeof(string));
+    if (! output_strs)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    for(i=0; i<str_size; i++)
+    {
+        if(has_missing_input_strs && input_strs[i] == missing_input_strs.stringval)
+        {
+            has_missing = 1;
+            continue;
+        }
+
+        if(has_missing_input_expr && (input_expr[i] == missing_input_expr.stringval))
+        {
+            continue;
+        }
+
+        tmp_str = (char *) NrmQuarkToString(input_strs[i]);
+      /*
+       *fprintf(stderr, "\tinput_strs[%d]: <%s>\n", i, tmp_str);
+       */
+
+        if(regexec(&expr,tmp_str,1,&rm,0) == 0)
+        {
+            output_strs[output_str_size] = input_strs[i];
+          /*
+           *fprintf(stderr, "\toutput_strs[%d]: <%s>\n",
+           *        output_str_size, NrmQuarkToString(output_strs[output_str_size]));
+           */
+            output_str_size ++;
+        }
+    }
+
+    if(output_str_size)
+        output_strs = (string *) NclRealloc(output_strs, output_str_size*sizeof(string));
+    else
+    {
+        has_missing = 1;
+        output_strs = (string *) NclRealloc(output_strs, sizeof(string));
+        output_strs[output_str_size] = ret_missing.stringval;
+      /*
+       *output_strs[output_str_size] = NrmStringToQuark("NO MATCH");
+       */
+        output_str_size = 1;
+    }
+
+    return NclReturnValue(output_strs, 1, &output_str_size, ( has_missing ? &ret_missing : NULL ), NCL_string, 0);
+}
+
+NhlErrorTypes _Nclstr_match_ic
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    string *input_strs;
+    string *input_expr;
+
+    int ndim_input_strs;
+    ng_size_t dimsz_input_strs[NCL_MAX_DIMENSIONS];
+    int has_missing_input_strs;
+    int has_missing_input_expr;
+    int has_missing = 0;
+    NclScalar missing_input_strs;
+    NclScalar missing_input_expr;
+    NclScalar ret_missing;
+
+    NclBasicDataTypes type;
+
+    char *tmp_str;
+    string *output_strs;
+    ng_size_t i;
+    ng_size_t str_size;
+    ng_size_t output_str_size = 0;
+
+    regex_t expr;
+    regmatch_t rm;
+
+  /*
+   *fprintf(stderr, "in file: %s, line: %d\n", __FILE__, __LINE__);
+   */
+
+    input_strs = (string *) NclGetArgValue(
+                        0,
+                        2,
+                        &ndim_input_strs,
+                        dimsz_input_strs,
+                        &missing_input_strs,
+                        &has_missing_input_strs,
+                        &type,
+                        0);
+
+    if (input_strs == NULL)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match: input string is null.");
+        return NhlFATAL;
+    }
+
+    if(type != NCL_string)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match: Invalid input string.");
+        return NhlFATAL;
+    }
+
+    if(has_missing_input_strs)
+    {
+        ret_missing.stringval = missing_input_strs.stringval;
+        has_missing = 1;
+    }
+    else
+    {
+        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
+    }
+
+    input_expr = (string *) NclGetArgValue(
+                        1,
+                        2,
+                        NULL,
+                        NULL,
+                        &missing_input_expr,
+                        &has_missing_input_expr,
+                        &type,
+                        0);
+
+    if (input_expr == NULL)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match: input expression is null.");
+        return NhlFATAL;
+    }
+
+    if(type == NCL_string)
+    {
+        char *reg_exp = NrmQuarkToString(input_expr[0]);
+      /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\treg_exp: <%s>\n", reg_exp);
+       */
+        if(strlen(reg_exp) > 0)
+        {
             if(regcomp(&expr,reg_exp,REG_ICASE|REG_EXTENDED) != 0)
             {
                 NhlPError(NhlWARNING,NhlEUNKNOWN,"str_match: Invalid expression");
