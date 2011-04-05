@@ -175,6 +175,7 @@ extern NhlErrorTypes _Nclstr_get_tab();
 extern NhlErrorTypes _Nclstr_get_sq();
 extern NhlErrorTypes _Nclstr_get_dq();
 extern NhlErrorTypes _Nclstr_get_nl();
+extern NhlErrorTypes _Nclstr_get_cr();
 
 void NclAddUserBuiltInFuncs
 #if     NhlNeedProto
@@ -359,6 +360,10 @@ void NclAddUserBuiltInFuncs
     nargs = 0;
     args = NewArgs(0);
     NclRegisterFunc(_Nclstr_get_nl, args, "str_get_nl", nargs);
+
+    nargs = 0;
+    args = NewArgs(0);
+    NclRegisterFunc(_Nclstr_get_cr, args, "str_get_cr", nargs);
 
     return;
 }

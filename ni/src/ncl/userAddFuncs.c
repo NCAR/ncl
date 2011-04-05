@@ -3101,6 +3101,33 @@ NhlErrorTypes _Nclstr_get_nl
     NclFree(new_string);
 }
 
+NhlErrorTypes _Nclstr_get_cr
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    int ndim;
+    ng_size_t dimsz[1];
+    string *new_string;
+
+    new_string = (string *) NclMalloc(sizeof(string));
+    if (! new_string)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    new_string[0] = NrmStringToQuark("\r");
+
+    ndim = 1;
+    dimsz[0] = 1;
+    return NclReturnValue(new_string, ndim, dimsz, NULL, NCL_string, 0);
+
+    NclFree(new_string);
+}
+
 NhlErrorTypes _Nclstr_match
 #if     NhlNeedProto
 (void)
