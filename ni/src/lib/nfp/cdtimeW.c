@@ -9,7 +9,7 @@
 extern int isleapyear(int);
 extern int day_of_year (int, int, int);
 
-NhlErrorTypes cdtime_W( void )
+NhlErrorTypes cd_calendar_W( void )
 {
 /*
  * Input array variables
@@ -153,11 +153,11 @@ NhlErrorTypes cdtime_W( void )
              strcasecmp(ccal,"366_day") && strcasecmp(ccal,"366") &&
              strcasecmp(ccal,"360_day") && strcasecmp(ccal,"360") &&
              strcasecmp(ccal,"julian")) {
-            NhlPError(NhlWARNING,NhlEUNKNOWN,"cdtime: the 'calendar' attribute (%s) is not equal to a recognized calendar. Returning all missing values.",ccal);
+            NhlPError(NhlWARNING,NhlEUNKNOWN,"cd_calendar: the 'calendar' attribute (%s) is not equal to a recognized calendar. Returning all missing values.",ccal);
 	    return_missing = 1;
           }
           if(!strcasecmp(ccal,"none")) {
-            NhlPError(NhlWARNING,NhlEUNKNOWN,"cdtime: a 'calendar' of 'none' is not recognized by NCL. Returning all missing values.");
+            NhlPError(NhlWARNING,NhlEUNKNOWN,"cd_calendar: a 'calendar' of 'none' is not recognized by NCL. Returning all missing values.");
             return_missing = 1;
           }
         }
@@ -185,7 +185,7 @@ NhlErrorTypes cdtime_W( void )
  * Convert sspec to character string.
  */
   if(sspec == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cdtime: no 'units' attribute provided");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_calendar: no 'units' attribute provided");
     return(NhlFATAL);
   }
   cspec = NrmQuarkToString(*sspec);
@@ -204,7 +204,7 @@ NhlErrorTypes cdtime_W( void )
  */
 
   if(*option < -5 || *option > 4 || *option == -4) {
-        NhlPError(NhlWARNING,NhlEUNKNOWN,"cdtime: Unknown option, defaulting to 0.");
+        NhlPError(NhlWARNING,NhlEUNKNOWN,"cd_calendar: Unknown option, defaulting to 0.");
         *option = 0;
   }
 
@@ -247,7 +247,7 @@ NhlErrorTypes cdtime_W( void )
  * Make sure we have enough memory for output.
  */
   if( date == NULL || dsizes_date == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cdtime: Unable to allocate memory for output arrays");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_calendar: Unable to allocate memory for output arrays");
     return(NhlFATAL);
   }
 
@@ -567,7 +567,7 @@ NhlErrorTypes cdtime_W( void )
   return(NhlNOERROR);
 }
 
-NhlErrorTypes cdtime_inv_W( void )
+NhlErrorTypes cd_inv_calendar_W( void )
 {
 /*
  * Input array variables
@@ -700,7 +700,7 @@ NhlErrorTypes cdtime_inv_W( void )
   if(ndims_year != ndims_month || ndims_year != ndims_day    || 
      ndims_year != ndims_hour  || ndims_year != ndims_minute ||
      ndims_year != ndims_second) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cdtime_inv: The first six arguments must have the same dimensionality");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_inv_calendar: The first six arguments must have the same dimensionality");
     return(NhlFATAL);
   }
 
@@ -711,7 +711,7 @@ NhlErrorTypes cdtime_inv_W( void )
        dsizes_year[i] != dsizes_minute[i] ||
        dsizes_year[i] != dsizes_second[i]) {
       
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cdtime_inv: The first six arguments must have the same dimensionality");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_inv_calendar: The first six arguments must have the same dimensionality");
       return(NhlFATAL);
     }
   }
@@ -799,11 +799,11 @@ NhlErrorTypes cdtime_inv_W( void )
              strcasecmp(ccal,"366_day") && strcasecmp(ccal,"366") &&
              strcasecmp(ccal,"360_day") && strcasecmp(ccal,"360") &&
              strcasecmp(ccal,"julian")) {
-            NhlPError(NhlWARNING,NhlEUNKNOWN,"cdtime_inv: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
+            NhlPError(NhlWARNING,NhlEUNKNOWN,"cd_inv_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
             return_missing = has_missing_x = 1;
           }
           if(!strcasecmp(ccal,"none")) {
-            NhlPError(NhlWARNING,NhlEUNKNOWN,"cdtime_inv: a 'calendar' of 'none' is not recognized by NCL. Returning all missing values.");
+            NhlPError(NhlWARNING,NhlEUNKNOWN,"cd_inv_calendar: a 'calendar' of 'none' is not recognized by NCL. Returning all missing values.");
             return_missing = 1;
           }
         }
@@ -839,7 +839,7 @@ NhlErrorTypes cdtime_inv_W( void )
   x = (double *)calloc(total_size_input,sizeof(double));
 
   if( x == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cdtime_inv: Unable to allocate memory for output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_inv_calendar: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 /*
@@ -848,7 +848,7 @@ NhlErrorTypes cdtime_inv_W( void )
   if(type_second != NCL_double) {
     tmp_second = (double*)calloc(1,sizeof(double));
     if(tmp_second == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cdtime_inv: Unable to allocate memory for coercing second array to double precision");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_inv_calendar: Unable to allocate memory for coercing second array to double precision");
       return(NhlFATAL);
     }
   }

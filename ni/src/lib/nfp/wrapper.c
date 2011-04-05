@@ -452,8 +452,8 @@ extern NhlErrorTypes jul2greg_W(void);
 extern NhlErrorTypes utm2latlon_W(void);
 extern NhlErrorTypes latlon2utm_W(void);
 
-extern NhlErrorTypes cdtime_W(void);
-extern NhlErrorTypes cdtime_inv_W(void);
+extern NhlErrorTypes cd_calendar_W(void);
+extern NhlErrorTypes cd_inv_calendar_W(void);
 
 #ifdef BuildUdunits
 extern NhlErrorTypes ut_calendar_W(void);
@@ -6379,14 +6379,14 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(jul2greg_W,args,"jul2greg",nargs);
 
 /*
- * Register "cdtime".
+ * Register "cd_calendar".
  */
     nargs = 0;
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    NclRegisterFunc(cdtime_W,args,"cdtime",nargs);
+    NclRegisterFunc(cd_calendar_W,args,"cd_calendar",nargs);
 
 /*
  * Register "ut_inv_calendar".
@@ -6402,7 +6402,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    NclRegisterFunc(cdtime_inv_W,args,"cdtime_inv",nargs);
+    NclRegisterFunc(cd_inv_calendar_W,args,"cd_inv_calendar",nargs);
 
 #ifdef BuildUdunits
 /*
