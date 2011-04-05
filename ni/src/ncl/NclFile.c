@@ -2359,28 +2359,16 @@ static int FileIsVar
 
 	if(NULL == slash_ptr)
 	{
-	      /*
-               *fprintf(stdout, "\n\n\nhit FileIsVar. file: %s, line: %d\n", __FILE__, __LINE__);
-	       *fprintf(stdout, "\tvar: <%s>\n", NrmQuarkToString(var));
-	       */
 		for(i = 0; i < thefile->file.n_vars; i++) {
-		      /*
-	               *fprintf(stdout, "\tthefile->file.var_info[%d]->var_name_quark: <%s>\n",
-		       *	i, NrmQuarkToString(thefile->file.var_info[i]->var_name_quark));
-		       */
 			if((thefile->file.var_info[i]->var_full_name_quark == var) ||
 			   (thefile->file.var_info[i]->var_real_name_quark == var) ||
 			   (thefile->file.var_info[i]->var_name_quark == var)) {
-			      /*
-			       *fprintf(stdout, "\tFind var_quark <%s>\n\n", NrmQuarkToString(var_quark));
-			       */
 				return(i);
 			}
 		}
 	}
 	else
 	{
-		var_quark = NrmStringToQuark(slash_ptr+1);
 	      /*
                *fprintf(stdout, "\n\n\nhit FileIsVar. file: %s, line: %d\n", __FILE__, __LINE__);
 	       *fprintf(stdout, "\tvar: <%s> has / in it.\n\n", var_str);
@@ -2388,15 +2376,17 @@ static int FileIsVar
 	       */
 		for(i = 0; i < thefile->file.n_vars; i++) {
 		      /*
-		       *fprintf(stdout, "\tCheck %d: var_full_name <%s>\n\n", i, 
+		       *fprintf(stdout, "\tCheck %d: var_full_name <%s>\n", i, 
 		       *	NrmQuarkToString(thefile->file.var_info[i]->var_full_name_quark));
 		       */
 			if((thefile->file.var_info[i]->var_full_name_quark == var) ||
 			   (thefile->file.var_info[i]->var_real_name_quark == var) ||
 			   (thefile->file.var_info[i]->var_name_quark == var)) {
 			      /*
-			       *fprintf(stdout, "\tFind var_quark <%s>\n\n", NrmQuarkToString(var_quark));
+			       *fprintf(stdout, "\tFind var_quark <%s>\n", NrmQuarkToString(var));
 			       */
+				if(thefile->file.var_info[i]->var_full_name_quark == var)
+					thefile->file.var_info[i]->var_name_quark = var;
 				return(i);
 			}
 		}
