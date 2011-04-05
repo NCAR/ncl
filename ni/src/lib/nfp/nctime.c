@@ -5,15 +5,16 @@
  *********************************************************************/
 
 /* 
- * The "nctime.c" file was extracted from the NetCDF-4.1.1 source code.
- * Permission pending...
+ * The "nctime.c" file was extracted from the NetCDF-4.1.1 source code
+ * and permission was granted for inclusion in NCL.
  *
- * This code was originally extracted with permission from the CDMS time
- * conversion and arithmetic routines developed by Bob Drach, Lawrence
- * Livermore National Laboratory as part of the cdtime library.  Russ
- * Rew of the UCAR Unidata Program made changes and additions to
- * support the "-t" option of the netCDF ncdump utility, including a
- * 366-day climate calendar.
+ * This code was originally extracted with permission from the CDMS
+ * time conversion and arithmetic routines developed by Bob Drach,
+ * Program for Climate Model Diagnosis and Intercomparison (PCMDI) at
+ * Lawrence Livermore National Laboratory as part of the cdtime
+ * library.  Russ Rew of the UCAR Unidata Program made changes and
+ * additions to support the "-t" option of the netCDF ncdump utility,
+ * including a 366-day climate calendar.
  *
  * For the complete time conversion and climate calendar facilities of
  * the CDMS library, get the original sources from LLNL.

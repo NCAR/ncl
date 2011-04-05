@@ -1,3 +1,10 @@
+/* 
+ * This code provides wrappers to "cdtime", a software package
+ * developed by the Program for Climate Model Diagnosis and
+ * Intercomparison (PCMDI) at Lawrence Livermore National Laboratory
+ * (LLNL).
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
