@@ -3128,6 +3128,89 @@ NhlErrorTypes _Nclstr_get_cr
     NclFree(new_string);
 }
 
+NhlErrorTypes _Nclshow_ascii
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    char percent = '\%';
+    fprintf(stderr, "\t\t\tThe decimal set:\n");
+    fprintf(stderr, "       0 nul    1 soh    2 stx    3 etx    4 eot    5 enq    6 ack    7 bel\n");
+    fprintf(stderr, "       8 bs     9 ht    10 nl    11 vt    12 np    13 cr    14 so    15 si\n");
+    fprintf(stderr, "      16 dle   17 dc1   18 dc2   19 dc3   20 dc4   21 nak   22 syn   23 etb\n");
+    fprintf(stderr, "      24 can   25 em    26 sub   27 esc   28 fs    29 gs    30 rs    31 us\n");
+    fprintf(stderr, "      32 sp    33  !    34  \"    35  #    36  $    37  %c    38  &    39  \'\n", percent);
+    fprintf(stderr, "      40  (    41  )    42  *    43  +    44  ,    45  -    46  .    47  /\n");
+    fprintf(stderr, "      48  0    49  1    50  2    51  3    52  4    53  5    54  6    55  7\n");
+    fprintf(stderr, "      56  8    57  9    58  :    59  ;    60  <    61  =    62  >    63  ?\n");
+    fprintf(stderr, "      64  @    65  A    66  B    67  C    68  D    69  E    70  F    71  G\n");
+    fprintf(stderr, "      72  H    73  I    74  J    75  K    76  L    77  M    78  N    79  O\n");
+    fprintf(stderr, "      80  P    81  Q    82  R    83  S    84  T    85  U    86  V    87  W\n");
+    fprintf(stderr, "      88  X    89  Y    90  Z    91  [    92  \\    93  ]    94  ^    95  _\n");
+    fprintf(stderr, "      96  `    97  a    98  b    99  c   100  d   101  e   102  f   103  g\n");
+    fprintf(stderr, "     104  h   105  i   106  j   107  k   108  l   109  m   110  n   111  o\n");
+    fprintf(stderr, "     112  p   113  q   114  r   115  s   116  t   117  u   118  v   119  w\n");
+    fprintf(stderr, "     120  x   121  y   122  z   123  {   124  |   125  }   126  ~   127 del\n");
+
+    return(NhlNOERROR);
+}
+
+NhlErrorTypes _Nclstr_from_int
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    int    *in;
+
+    int ndim_n;
+    ng_size_t dimsz_n[NCL_MAX_DIMENSIONS];
+    int has_missing_n;
+    NclScalar   missing_n;
+
+    int ndim;
+    ng_size_t dimsz[1];
+    string *new_string;
+    char cs[2];
+  
+    in = (int *) NclGetArgValue(
+                        0,
+                        1,
+                        &ndim_n,
+                        dimsz_n,
+                        &missing_n,
+                        &has_missing_n,
+                        NULL,
+                        DONT_CARE);
+
+    if (in == NULL)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_from_int: input in is null.");
+        return NhlFATAL;
+    }
+
+    cs[0] = in[0];
+    cs[1] = '\0';
+
+    new_string = (string *) NclMalloc(sizeof(string));
+    if (! new_string)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    new_string[0] = NrmStringToQuark(cs);
+
+    ndim = 1;
+    dimsz[0] = 1;
+    return NclReturnValue(new_string, ndim, dimsz, NULL, NCL_string, 0);
+
+    NclFree(new_string);
+}
+
 NhlErrorTypes _Nclstr_match
 #if     NhlNeedProto
 (void)

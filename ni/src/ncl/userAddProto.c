@@ -182,6 +182,8 @@ extern NhlErrorTypes _Nclstr_get_sq();
 extern NhlErrorTypes _Nclstr_get_dq();
 extern NhlErrorTypes _Nclstr_get_nl();
 extern NhlErrorTypes _Nclstr_get_cr();
+extern NhlErrorTypes _Nclstr_from_int(void);
+extern NhlErrorTypes _Nclshow_ascii();
 
 void NclAddUserBuiltInFuncs
 #if     NhlNeedProto
@@ -377,6 +379,15 @@ void NclAddUserBuiltInFuncs
     nargs = 0;
     args = NewArgs(0);
     NclRegisterFunc(_Nclstr_get_cr, args, "str_get_cr", nargs);
+
+    nargs = 0;
+    args = NewArgs(0);
+    NclRegisterProc(_Nclshow_ascii, args, "show_ascii", nargs);
+    
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args, nargs, "integer", 0, NclANY); nargs++;
+    NclRegisterFunc(_Nclstr_from_int, args, "str_from_int", nargs);
 
     return;
 }
