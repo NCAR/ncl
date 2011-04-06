@@ -95,8 +95,6 @@ begin
     ymdhms1i = ymdhms0
   end if
 
-  doy = day_of_year( ymdhms1i(:,0), ymdhms1i(:,1), ymdhms1i(:,2) )
-
   retVal = new(nt,"string")
 
   chFormat = stringtochar(stFormat)
@@ -104,6 +102,11 @@ begin
   do i = 0, dimsizes(time)-1
     retVal(i) = ""
     inside = False
+    if( .not.ismissing(time(i)) ) then
+      doy = day_of_year( ymdhms1i(i,0), ymdhms1i(i,1), ymdhms1i(i,2) )
+    else
+      doy = -99
+    end if
     j = 0
     do while(j .lt. dimsizes(chFormat))
       if (chFormat(j) .eq. "%") then
@@ -155,11 +158,11 @@ begin
           inside = False
         end if
         if (chFormat(j) .eq. "J") then
-          retVal(i) = retVal(i)+sprinti("%03d",doy(i))
+          retVal(i) = retVal(i)+sprinti("%03d",doy)
           inside = False
         end if
         if (chFormat(j) .eq. "j") then
-          retVal(i) = retVal(i)+sprinti("%d",doy(i))
+          retVal(i) = retVal(i)+sprinti("%d",doy)
           inside = False
         end if
         if (chFormat(j) .eq. "H") then
