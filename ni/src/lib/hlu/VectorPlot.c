@@ -5795,7 +5795,7 @@ static NhlErrorTypes PrepareAnnoString
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlString		lstring;
 	NhlBoolean		done = False;
-	char			buffer[_NhlMAXRESNAMLEN];
+	char			buffer[256];
 	char			*matchp,*subst;
 	float			val;
 	NhlvcScaleInfo		*sip;
@@ -6691,7 +6691,7 @@ static NhlErrorTypes ReplaceSubstitutionChars
 {
 	NhlErrorTypes		ret = NhlNOERROR;
 	char			*e_text;
-	char			buffer[_NhlMAXRESNAMLEN];
+	char			buffer[256];
 
 	*text_changed = False;
 
@@ -8850,13 +8850,17 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
 	float tmpx,tmpy;
 	float xout, yout;
 	float xdata,ydata;
-	float dv1, duv, dv2, xt, xtf, yt, ytf, sgn = 1.0;
+	double xdata_d, ydata_d;
+	float  dv1, duv, dv2, xt, xtf, yt, ytf, sgn = 1.0;
+	double xtd, ytd, dv,xt_data,yt_data, dv_in,dv_frac;
+	double cos_lat,xd, yd, ud, vd, xbd, ybd;
 	int ict = 0;
 	NhlLayer trans_p;
         static int imap,itrt;
         static float dvmx,sxdc,sydc,wxmn,wxmx,wymn,wymx;
 	static NhlLayer trans_obj, overlay_trans_obj;
 	static NhlBoolean over_map;
+	static double rlen_d;
 	float xsc = 1.0, ysc = 1.0;
 
         if (Vcp == NULL) {
@@ -8879,10 +8883,15 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
 			trans_obj = Vcl->trans.trans_obj;
 			if (!_NhlIsTransObj(overlay_trans_obj)) {
 				overlay_trans_obj = NULL;
-				printf("error- overlay_trans_obj is NULL\n");
+				printf("error- overlay_trans_obj is  NULL\n");
 			}
 			else if ((overlay_trans_obj->base.layer_class)->base_class.class_name ==
 				NhlmapTransObjClass->base_class.class_name) {
+				float xvpl,xvpr,xvpb,xvpt,wlx,wrx,wby,wty;
+				int lnlg;
+				c_getset(&xvpl,&xvpr,&xvpb,&xvpt,
+					 &wlx,&wrx,&wby,&wty,&lnlg);
+				rlen_d = fabs(dvmx * (wrx - wlx) / (xvpr - xvpl));
 				over_map = True;
 			}
 		}
@@ -8900,7 +8909,7 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
 		*ist = -5;
 		return;
 	}
-	else if (overlay_trans_obj == NULL) {
+	if (overlay_trans_obj == NULL) {
 		trans_p = trans_obj;
 
 		_NhlCompcToWin(trans_p,x,y,1,&xout,&yout,&status,NULL,NULL);
@@ -8910,6 +8919,12 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
 		}
 		*xb = c_cufx(xout);
 		*yb = c_cufy(yout);
+		if (*uvm <= 0.0) {
+			*ist = -999;
+			*xe = *xb;
+			*ye = *yb;
+			return;
+		}
 		*xe = *xb + *u * sxdc * xsc;
 		*ye = *yb + *v * sydc * ysc;
 #if 0
@@ -8954,6 +8969,12 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
 
 		*xb = c_cufx(xout);
 		*yb = c_cufy(yout);
+		if (*uvm <= 0.0) {
+			*ist = -999;
+			*xe = *xb;
+			*ye = *yb;
+			return;
+		}
 		*xe = *xb + *u * sxdc * xsc;
 		*ye = *yb + *v * sydc * ysc;
 
@@ -8964,50 +8985,114 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
 			
 	}
 
-	
-	dv1=sqrt((*xe-*xb)*(*xe-*xb)+(*ye-*yb)*(*ye-*yb));
+	if (over_map) {
+#define DEG2RAD 0.017453292519943 
+		/* bail out if over a pole */
+		if ((int)(fabs(ydata)*1e5+0.5) == (int) (1e5*90)) {
+			*ist = -1;
+			return;
+		}
+		xd = *x;
+		yd = *y;
+		duv = rlen_d * 1e-4;
+		ydata_d = ydata;
+		xdata_d = xdata;
+		c_mdptra(ydata_d,xdata_d,&xbd,&ybd);
+		if (xbd > 1e10) {
+			*ist = -5;
+			return;
+		}
+		ud = *u;
+		vd = *v;
+		cos_lat = cos(DEG2RAD*ydata_d);
+		dv_in = sqrt((*xe - *xb) * (*xe - *xb) + (*ye - *yb) * (*ye - *yb));
+		dv_frac = dv_in / dvmx;
 
-	duv = 0.1 / *uvm;
-
-	do {
+		do {
 
 /*
  * calculate the incremental end points, then check to see if 
  * they take us out of the user coordinate boundaries. if they
  * do, try incrementing in the other direction
  */
-#define DEG2RAD 0.017453292519943 
+			xt_data = xdata + (sgn * ud * duv * xsc) / cos_lat;
+			yt_data = ydata + sgn * vd * duv * ysc;
+		
+			c_mdptra(yt_data,xt_data,&xtd,&ytd);
 
-		if (over_map) {
-			if ((int)(fabs(ydata)*1e5+0.5) == (int) (1e5*90)) {
-				*ist = -1;
-				return;
-			}
-			else 
-				xt = xdata + (sgn * *u * duv * xsc) /
-					cos(DEG2RAD*ydata);
-		}
-		else {
-			xt = xdata + sgn * *u * duv * xsc;
-		}
-		yt = ydata + sgn * *v * duv * ysc;
-		
-		_NhlDataToWin(trans_p,&xt,&yt,1,&tmpx,&tmpy,
-			      &status,NULL,NULL);
-		if (status)
-			tmpx = xt, tmpy = yt;
-		
-		if (tmpx < wxmn || tmpx > wxmx || 
-		    tmpy < wymn || tmpy > wymx) {
-			if (sgn == 1.0) {
-				sgn = -1.0;
+			if (xtd > 1e10) {
+				if (sgn == 1.0) {
+					sgn = -1.0;
+				}
+				else {
+					ict = ict + 1;
+					duv = duv / 2.0;
+				}
 				continue;
 			}
-			else {
-				*ist=-4;
-			 	return;
+		
+/*
+ * To ensure that this distance is small enough to adequately represent
+ * the tangent angle at the vector location, we require that it be between 1e3 and 1e4
+ * times smaller than the maximum vector length.
+ */ 
+			dv=sqrt((xtd-xbd)*(xtd-xbd)+(ytd-ybd)*(ytd-ybd));
+			if (dv * 1e3 > rlen_d) {
+				if (sgn == 1.0) {
+					sgn = -1.0;
+					continue;
+				}
+				else {
+					ict=ict+1;
+					duv=duv/2.0;
+					continue;
+				}
 			}
+			else if (dv*1e4 < rlen_d) {
+				ict=ict+1;
+				duv=duv*2.0;
+				continue;
+			}
+/*
+ * the actual endpoints are found using the ratio of the desired length (dv_frac * rlen_d)
+ * to the length of the incremental endpoints.
+ */
+			xtd = xbd + sgn * (xtd - xbd) * dv_frac * rlen_d / dv;
+			ytd = ybd + sgn * (ytd - ybd) * dv_frac * rlen_d / dv;
+			*xe=c_cufx((float)xtd);
+			*ye=c_cufy((float)ytd);
+			return;
+
 		}
+		while (ict < 40);
+	}
+	else {
+		dv1=sqrt((*xe-*xb)*(*xe-*xb)+(*ye-*yb)*(*ye-*yb));
+
+		duv = *uvm * 1e-3;
+
+		do {
+
+/*
+ * calculate the incremental end points, then check to see if 
+ * they take us out of the user coordinate boundaries. if they
+ * do, try incrementing in the other direction
+ */
+
+			xt = xdata + sgn * *u * duv * xsc;
+			yt = ydata + sgn * *v * duv * ysc;
+		
+			_NhlDataToWin(trans_p,&xt,&yt,1,&tmpx,&tmpy,
+				      &status,NULL,NULL);
+			if (status)
+				tmpx = xt, tmpy = yt;
+			if (tmpx < wxmn || tmpx > wxmx || 
+			    tmpy < wymn || tmpy > wymx) {
+				if (sgn == 1.0) {
+					sgn = -1.0;
+					continue;
+				}
+			}
 		
 /*
  * convert to fractional coordinates and find the incremental
@@ -9015,31 +9100,32 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
  * is meaningful, we require that it be between 1e3 and 1e4
  * times smaller than the maximum vector length.
  */ 
-		xtf=c_cufx(tmpx);
-		ytf=c_cufy(tmpy);
-		dv2=sqrt((xtf-*xb)*(xtf-*xb)+
-			 (ytf-*yb)*(ytf-*yb));
-		if (dv2*1e3 > dvmx) {
-			ict=ict+1;
-			duv=duv/2.0;
-			continue;
-		}
-		else if (dv2*1e4 < dvmx) {
-			ict=ict+1;
-			duv=duv*2.0;
-			continue;
-		}
+			xtf=c_cufx(tmpx);
+			ytf=c_cufy(tmpy);
+			dv2=sqrt((xtf-*xb)*(xtf-*xb)+
+				 (ytf-*yb)*(ytf-*yb));
+			if (dv2*1e3 > dvmx) {
+				ict=ict+1;
+				duv=duv/2.0;
+				continue;
+			}
+			else if (dv2*1e4 < dvmx) {
+				ict=ict+1;
+				duv=duv*2.0;
+				continue;
+			}
 /*
  * the actual endpoints are found using the ratio of the incremental
  * distance to the actual distance times the fractional component
  * length
  */
-		*xe=*xb+sgn*(xtf-*xb)*dv1/dv2;
-		*ye=*yb+sgn*(ytf-*yb)*dv1/dv2;
-		return;
+			*xe=*xb+sgn*(xtf-*xb)*dv1/dv2;
+			*ye=*yb+sgn*(ytf-*yb)*dv1/dv2;
+			return;
 
+		}
+		while (ict < 40);
 	}
-	while (ict < 40);
 	*ist = -3;
 	return;
 }
