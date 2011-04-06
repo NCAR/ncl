@@ -3334,13 +3334,13 @@ NhlErrorTypes _Nclstr_match_ic
 
     if (input_strs == NULL)
     {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match: input string is null.");
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ic: input string is null.");
         return NhlFATAL;
     }
 
     if(type != NCL_string)
     {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match: Invalid input string.");
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ic: Invalid input string.");
         return NhlFATAL;
     }
 
@@ -3366,7 +3366,7 @@ NhlErrorTypes _Nclstr_match_ic
 
     if (input_expr == NULL)
     {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match: input expression is null.");
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ic: input expression is null.");
         return NhlFATAL;
     }
 
@@ -3381,14 +3381,14 @@ NhlErrorTypes _Nclstr_match_ic
         {
             if(regcomp(&expr,reg_exp,REG_ICASE|REG_EXTENDED) != 0)
             {
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"str_match: Invalid expression");
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"str_match_ic: Invalid expression");
                 return NhlFATAL;
             }
         }
     }
     else
     {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match: input expression is not a string.");
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ic: input expression is not a string.");
         return NhlFATAL;
     }
 
@@ -3535,6 +3535,148 @@ NhlErrorTypes _Nclstr_match_ind
     else
     {
         NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ind: input expression is not a string.");
+        return NhlFATAL;
+    }
+
+    str_size = 1;
+    for(i=0; i<ndim_input_strs; i++)
+        str_size *= dimsz_input_strs[i];
+
+    output_inds = (int *) NclMalloc(str_size*sizeof(int));
+    if (! output_inds)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    for(i=0; i<str_size; i++)
+    {
+        if(has_missing_input_strs && input_strs[i] == missing_input_strs.stringval)
+        {
+            has_missing = 1;
+            continue;
+        }
+
+        if(has_missing_input_expr && (input_expr[i] == missing_input_expr.stringval))
+        {
+            continue;
+        }
+
+        tmp_str = (char *) NrmQuarkToString(input_strs[i]);
+      /*
+       *fprintf(stderr, "\tinput_strs[%d]: <%s>\n", i, tmp_str);
+       */
+
+        if(regexec(&expr,tmp_str,1,&rm,0) == 0)
+        {
+            output_inds[output_ind_size] = i;
+            output_ind_size ++;
+        }
+    }
+
+    if(output_ind_size)
+        output_inds = (int *) NclRealloc(output_inds, output_ind_size*sizeof(int));
+    else
+    {
+        has_missing = 1;
+        output_inds = (int *) NclRealloc(output_inds, sizeof(int));
+        output_inds[output_ind_size] = ret_missing.intval;
+      /*
+       *output_inds[output_ind_size] = NrmStringToQuark("NO MATCH");
+       */
+        output_ind_size = 1;
+    }
+
+    return NclReturnValue(output_inds, 1, &output_ind_size, ( has_missing ? &ret_missing : NULL ), NCL_int, 0);
+}
+
+NhlErrorTypes _Nclstr_match_ind_ic
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    string *input_strs;
+    string *input_expr;
+
+    int ndim_input_strs;
+    ng_size_t dimsz_input_strs[NCL_MAX_DIMENSIONS];
+    int has_missing_input_strs;
+    int has_missing_input_expr;
+    int has_missing = 0;
+    NclScalar missing_input_strs;
+    NclScalar missing_input_expr;
+    NclScalar ret_missing;
+
+    NclBasicDataTypes type;
+
+    char *tmp_str;
+    int *output_inds;
+    ng_size_t i;
+    ng_size_t str_size;
+    ng_size_t output_ind_size = 0;
+
+    regex_t expr;
+    regmatch_t rm;
+
+  /*
+   *fprintf(stderr, "in file: %s, line: %d\n", __FILE__, __LINE__);
+   */
+
+    input_strs = (string *) NclGetArgValue(
+                        0,
+                        2,
+                        &ndim_input_strs,
+                        dimsz_input_strs,
+                        &missing_input_strs,
+                        &has_missing_input_strs,
+                        &type,
+                        0);
+
+    if (input_strs == NULL)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ind_ic: input string is null.");
+        return NhlFATAL;
+    }
+
+    if(has_missing_input_strs)
+    {
+        has_missing = 1;
+    }
+    ret_missing.intval =  (int) ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
+
+    input_expr = (string *) NclGetArgValue(
+                        1,
+                        2,
+                        NULL,
+                        NULL,
+                        &missing_input_expr,
+                        &has_missing_input_expr,
+                        &type,
+                        0);
+
+    if (input_expr == NULL)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ind_ic: input expression is null.");
+        return NhlFATAL;
+    }
+
+    if(type == NCL_string)
+    {
+        char *reg_exp = NrmQuarkToString(input_expr[0]);
+        if(strlen(reg_exp) > 0)
+        {
+            if(regcomp(&expr,reg_exp,REG_ICASE|REG_EXTENDED) != 0)
+            {
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"str_match_ind_ic: Invalid expression");
+                return NhlFATAL;
+            }
+        }
+    }
+    else
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ind_ic: input expression is not a string.");
         return NhlFATAL;
     }
 
