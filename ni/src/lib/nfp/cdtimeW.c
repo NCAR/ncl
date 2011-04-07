@@ -161,7 +161,7 @@ NhlErrorTypes cd_calendar_W( void )
              strcasecmp(ccal,"360_day") && strcasecmp(ccal,"360") &&
              strcasecmp(ccal,"julian")) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"cd_calendar: the 'calendar' attribute (%s) is not equal to a recognized calendar. Returning all missing values.",ccal);
-	    return_missing = 1;
+            return_missing = 1;
           }
           if(!strcasecmp(ccal,"none")) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"cd_calendar: a 'calendar' of 'none' is not recognized by NCL. Returning all missing values.");
@@ -901,6 +901,8 @@ NhlErrorTypes cd_inv_calendar_W( void )
     }
   }
 
+
+  if(type_second != NCL_double) NclFree(tmp_second);
 
 /*
  * Set up variable to return.
