@@ -9,6 +9,8 @@
 ;   Add default input string for ""
 ; Modified October 2010 by Carl Schreck (carl.schreck@noaa.gov)
 ;   Add support for "day of year"
+; Modified April 2011 by Carl Schreck (carl.schreck@noaa.gov)
+;   Now handles missing values without error messages, and removed "ChangeCase"
 ;******************************************************************************
 
 undef("ut_string")
@@ -105,7 +107,7 @@ begin
     if( .not.ismissing(time(i)) ) then
       doy = day_of_year( ymdhms1i(i,0), ymdhms1i(i,1), ymdhms1i(i,2) )
     else
-      doy = -99
+      doy = default_fillvalue("integer")
     end if
     j = 0
     do while(j .lt. dimsizes(chFormat))
@@ -126,19 +128,35 @@ begin
           inside = False
         end if
         if (chFormat(j) .eq. "C") then
-          retVal(i) = retVal(i)+changeCase(months(ymdhms1i(i,1)),"up")
+          if( .not.ismissing(time(i)) ) then
+            retVal(i) = retVal(i)+str_upper(months(ymdhms1i(i,1)))
+          else
+            retVal(i) = retVal(i)+default_fillvalue("integer")
+          end if
           inside = False
         end if
         if (chFormat(j) .eq. "c") then
-          retVal(i) = retVal(i)+months(ymdhms1i(i,1))
+          if( .not.ismissing(time(i)) ) then
+            retVal(i) = retVal(i)+months(ymdhms1i(i,1))
+          else
+            retVal(i) = retVal(i)+default_fillvalue("integer")
+          end if
           inside = False
         end if
         if (chFormat(j) .eq. "F") then
-          retVal(i) = retVal(i)+changeCase(fmonths(ymdhms1i(i,1)),"up")
+          if( .not.ismissing(time(i)) ) then
+            retVal(i) = retVal(i)+str_upper(fmonths(ymdhms1i(i,1)))
+          else
+            retVal(i) = retVal(i)+default_fillvalue("integer")
+          end if
           inside = False
         end if
         if (chFormat(j) .eq. "f") then
-          retVal(i) = retVal(i)+fmonths(ymdhms1i(i,1))
+          if( .not.ismissing(time(i)) ) then
+            retVal(i) = retVal(i)+fmonths(ymdhms1i(i,1))
+          else
+            retVal(i) = retVal(i)+default_fillvalue("integer")
+          end if
           inside = False
         end if
         if (chFormat(j) .eq. "N") then
