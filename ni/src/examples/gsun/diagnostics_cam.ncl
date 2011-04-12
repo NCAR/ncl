@@ -1864,9 +1864,13 @@ begin
   plot(2) = gsn_csm_xy(wks,yrfrac,xts(2,:),res)
 ;************************************************
   resP                     = True                ; modify the panel plot
-  resP@txString            = xts@long_name+": Areal Averaged & Filtered: "  \
+  if (opt .and. isatt(opt,"pltTitle")) then
+      resP@txString        = opt@pltTitle
+  else
+      resP@txString        = xts@long_name+": Areal Averaged & Filtered: "  \
                             +xts@bpfStrt+"-"+xts@bpfLast+" days: nw="  \
                             +xts@bpfNwgt 
+  end if
   resP@gsnMaximize         = True
   resP@gsnPaperOrientation = "portrait"          ; force portrait
   resP@gsnPanelBottom      = 0.05                ; add some space at bottom 
