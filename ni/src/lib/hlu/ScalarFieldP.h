@@ -88,6 +88,8 @@ typedef struct _NhlScalarFieldLayerPart{
 
 	NhlBoolean	xc_is_bounds;
 	NhlBoolean	yc_is_bounds;
+	NhlBoolean	xc_is_linear;
+	NhlBoolean	yc_is_linear;
 
         NhlBoolean	up_to_date;
 	NhlScalarFieldFloatLayer	sffloat;

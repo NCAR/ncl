@@ -3054,9 +3054,10 @@ static NhlErrorTypes InitCoordBounds
 	char			*entry_name;
 #endif
 {
-	NhlErrorTypes	ret = NhlNOERROR;
+	NhlErrorTypes	subret, ret = NhlNOERROR;
         NhlStreamlinePlotLayerPart	*stp = &stl->streamlineplot;
         NhlTransformLayerPart	*tfp = &stl->trans;
+	char *e_text;
 
 	stp->do_low_level_log = False;
         
@@ -3103,7 +3104,13 @@ static NhlErrorTypes InitCoordBounds
 		/* leave the set flag as is */
 	}
         else if (stp->vfp->x_arr || stp->vfp->y_arr) { /* ignore set value */
-		tfp->grid_type = NhltrIRREGULAR;
+		/* if the coords are evenly spaced then use linear */
+		if (stp->vfp->xc_is_linear && stp->vfp->yc_is_linear)  {
+			tfp->grid_type = NhltrLOGLIN;
+		}
+		else {
+			tfp->grid_type = NhltrIRREGULAR;
+		}
 		tfp->grid_type_set = False;
 	}
 	else { /* ignore set value */
@@ -3113,13 +3120,25 @@ static NhlErrorTypes InitCoordBounds
         
         if (tfp->grid_type == NhltrIRREGULAR) {
                 if (stp->vfp->x_arr && ! tfp->x_axis_type_set) {
-			if (! stp->ovfp || (stp->data_changed  &&
+			if (ostl || (stp->data_changed  &&
 			    (stp->vfp->changed & _NhlvfXARR_CHANGED)))
 				tfp->x_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! stp->vfp->x_arr && tfp->x_axis_type == NhlIRREGULARAXIS)
                         tfp->x_axis_type = NhlLINEARAXIS;
-                if (stp->vfp->x_arr && tfp->x_axis_type != NhlIRREGULARAXIS) {
+                if (tfp->x_axis_type != NhlIRREGULARAXIS &&
+		    stp->vfp->x_arr &&  ! stp->vfp->xc_is_linear) {
+			if (! ostl || ostl->trans.y_axis_type != tfp->y_axis_type) {
+				if (tfp->x_axis_type == NhlLOGAXIS) {
+					e_text = "%s: Log axis not possible with irregular coordinate spacing; switching to linear index coordinates for X Axis";
+					tfp->x_axis_type = NhlLINEARAXIS;
+				}
+				else {
+					e_text = "%s: coordinate spacing is irregular; linear spacing only possible using index coordinates for X Axis";
+				}
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+				ret = NhlWARNING;
+			}
                         tfp->data_xstart = stp->vfp->ix_start;
                         tfp->data_xend = stp->vfp->ix_end;
                 }
@@ -3130,17 +3149,29 @@ static NhlErrorTypes InitCoordBounds
 		}
                 if (! stp->vfp->y_arr && tfp->y_axis_type == NhlIRREGULARAXIS)
                         tfp->y_axis_type = NhlLINEARAXIS;
-                if (stp->vfp->y_arr && tfp->y_axis_type != NhlIRREGULARAXIS) {
+                if (tfp->y_axis_type != NhlIRREGULARAXIS &&
+		    stp->vfp->y_arr &&  ! stp->vfp->yc_is_linear) {
+			if (! ostl || ostl->trans.y_axis_type != tfp->y_axis_type) {
+				if (tfp->y_axis_type == NhlLOGAXIS) {
+					e_text = "%s: Log axis not possible with irregular coordinate spacing; switching to linear index coordinates for Y Axis";
+					tfp->y_axis_type = NhlLINEARAXIS;
+				}
+				else {
+					e_text = "%s: coordinate spacing is irregular; linear spacing only possible using index coordinates for Y Axis";
+				}
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+				ret = NhlWARNING;
+			}
                         tfp->data_ystart = stp->vfp->iy_start;
                         tfp->data_yend = stp->vfp->iy_end;
                 }
         }
         
-	ret = _NhltfCheckCoordBounds
+	subret = _NhltfCheckCoordBounds
                 ((NhlTransformLayer)stl,(NhlTransformLayer)ostl,
                  entry_name);
 
-	return ret;
+	return MIN(subret,ret);
 }
 
 /*

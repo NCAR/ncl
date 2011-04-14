@@ -3843,10 +3843,11 @@ static NhlErrorTypes InitCoordBounds
 	char			*entry_name;
 #endif
 {
-	NhlErrorTypes	ret = NhlNOERROR;
+	NhlErrorTypes	subret, ret = NhlNOERROR;
         NhlContourPlotLayerPart	*cnp = &cl->contourplot;
         NhlTransformLayerPart	*tfp = &cl->trans;
         NhlTransformLayerPart	*otfp;
+	char *e_text;
 
 	cnp->do_low_level_log = False;
         
@@ -3903,6 +3904,11 @@ static NhlErrorTypes InitCoordBounds
 		else if (tfp->grid_type < NhltrTRIANGULARMESH) {
 			tfp->grid_type = NhltrIRREGULAR;
 		}
+		if (tfp->grid_type == NhltrIRREGULAR) {
+			/* if the coords are evenly spaced then switch to linear */
+			if (cnp->sfp->xc_is_linear && cnp->sfp->yc_is_linear) 
+				tfp->grid_type = NhltrLOGLIN;
+		}
 	}
         else if (cnp->sfp->x_arr || cnp->sfp->y_arr) { 
 		/* ignore set value  unless triangular */
@@ -3912,6 +3918,11 @@ static NhlErrorTypes InitCoordBounds
 		else if (tfp->grid_type < NhltrTRIANGULARMESH) {
 			tfp->grid_type_set = False;
 			tfp->grid_type = NhltrIRREGULAR;
+		}
+		if (tfp->grid_type == NhltrIRREGULAR) {
+			/* if the coords are evenly spaced then switch to linear */
+			if (cnp->sfp->xc_is_linear && cnp->sfp->yc_is_linear)
+				tfp->grid_type = NhltrLOGLIN;
 		}
 	}
 	else { /* ignore set value unless triangular */
@@ -3926,32 +3937,57 @@ static NhlErrorTypes InitCoordBounds
         
         if (tfp->grid_type == NhltrIRREGULAR) {
                 if (cnp->sfp->x_arr && ! tfp->x_axis_type_set) {
-			if (! cnp->osfp || (cnp->data_changed  &&
+			if (! ocl || (cnp->data_changed  &&
 			    (cnp->sfp->changed & _NhlsfXARR_CHANGED)))
 				tfp->x_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! cnp->sfp->x_arr && tfp->x_axis_type == NhlIRREGULARAXIS)
                         tfp->x_axis_type = NhlLINEARAXIS;
-                if (cnp->sfp->x_arr && tfp->x_axis_type != NhlIRREGULARAXIS) {
+                if (tfp->x_axis_type != NhlIRREGULARAXIS &&
+		    cnp->sfp->x_arr &&  ! cnp->sfp->xc_is_linear) {
+			if (! ocl || ocl->trans.y_axis_type != tfp->y_axis_type) {
+				if (tfp->x_axis_type == NhlLOGAXIS) {
+					e_text = "%s: Log axis not possible with irregular coordinate spacing; switching to linear index coordinates for X Axis";
+					tfp->x_axis_type = NhlLINEARAXIS;
+				}
+				else {
+					e_text = "%s: coordinate spacing is irregular; linear spacing only possible using index coordinates for X Axis";
+				}
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+				ret = NhlWARNING;
+			}
                         tfp->data_xstart = cnp->sfp->ix_start;
                         tfp->data_xend = cnp->sfp->ix_end;
                 }
                 if (cnp->sfp->y_arr && ! tfp->y_axis_type_set) {
-			if (! cnp->osfp || (cnp->data_changed  &&
+			if (! ocl || (cnp->data_changed  &&
 			    (cnp->sfp->changed & _NhlsfYARR_CHANGED)))
 				tfp->y_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! cnp->sfp->y_arr && tfp->y_axis_type == NhlIRREGULARAXIS)
                         tfp->y_axis_type = NhlLINEARAXIS;
-                if (cnp->sfp->y_arr && tfp->y_axis_type != NhlIRREGULARAXIS) {
+                if (tfp->y_axis_type != NhlIRREGULARAXIS &&
+		    cnp->sfp->y_arr &&  ! cnp->sfp->yc_is_linear) {
+			if (! ocl || ocl->trans.y_axis_type != tfp->y_axis_type) {
+				if (tfp->y_axis_type == NhlLOGAXIS) {
+					e_text = "%s: Log axis not possible with irregular coordinate spacing; switching to linear index coordinates for Y Axis";
+					tfp->y_axis_type = NhlLINEARAXIS;
+				}
+				else {
+					e_text = "%s: coordinate spacing is irregular; linear spacing only possible using index coordinates for Y Axis";
+				}
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+				ret = NhlWARNING;
+			}
                         tfp->data_ystart = cnp->sfp->iy_start;
                         tfp->data_yend = cnp->sfp->iy_end;
                 }
         }
         
-	ret = _NhltfCheckCoordBounds
+	subret = _NhltfCheckCoordBounds
                 ((NhlTransformLayer)cl,(NhlTransformLayer)ocl,
                  entry_name);
+	ret = MIN(subret,ret);
 	if (ocl) {
 		otfp = &ocl->trans;
 		if ((tfp->grid_type == NhltrTRIANGULARMESH &&

@@ -1305,6 +1305,54 @@ Monotonic
 }
 
 /*
+ * Function:	Linear
+ *
+ * Description:	This function decides whether an array of floats has
+ *		linear spacing between elements
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	private
+ * Returns:	NhlGenArray or NULL on error
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlBoolean
+Linear
+#if	NhlNeedProto
+(
+	float		*flts,
+	int		count
+)
+#else
+(flts,count)
+	float		*flts;
+	int		count;
+#endif
+{
+
+#define EPSILON 1e-4
+
+	int i;
+	float range, initial_diff, eps, diff;
+
+
+	range = fabs(flts[count - 1] - flts[0]);
+	initial_diff = range / (count - 1);
+	eps = initial_diff * EPSILON;
+
+	for (i = 1; i < count; i++) {
+		diff = flts[i] - flts[i - 1];
+		if (fabs(diff - initial_diff) > eps)
+			return False;
+	}
+	return True;
+			
+}
+
+/*
  * Function:	ValidCoordArray
  *
  * Description:	This function checks the coordinate arrays used to
@@ -2667,6 +2715,7 @@ CvtGenVFObjToFloatVFObj
  * if defined.
  */
 	vffp->x_arr = NULL;
+	vffp->xc_is_linear = vfp->xc_is_linear = False;
 	if (vfp->x_arr != NULL && vfp->x_arr->num_elements > 0) {
 		if ((x_arr = GenToFloatGenArray(vfp->x_arr)) == NULL) {
 			e_text = 
@@ -2688,6 +2737,7 @@ CvtGenVFObjToFloatVFObj
 	}
 
 	if (! xirr) {
+		vffp->xc_is_linear = vfp->xc_is_linear = True;
 		subret = GetCoordBounds(vfp,vfXCOORD,&xstart,&xend,
 					&ixstart,&ixend,&sxstart,&sxend,
 					entry_name);
@@ -2711,6 +2761,7 @@ CvtGenVFObjToFloatVFObj
                                                          &ixstart,&ixend,
                                                          &sxstart,&sxend,
                                                          entry_name);
+			vffp->xc_is_linear = vfp->xc_is_linear = Linear((float *)x_arr->data,x_arr->num_elements);
                 }
                 if ((ret = MIN(ret,subret))  < NhlWARNING)
                         return ret;
@@ -2725,6 +2776,7 @@ CvtGenVFObjToFloatVFObj
         }
 
 	vffp->y_arr = NULL;
+	vffp->yc_is_linear = vfp->yc_is_linear = False;
 	if (vfp->y_arr != NULL && vfp->y_arr->num_elements > 0) {
 		if ((y_arr = GenToFloatGenArray(vfp->y_arr)) == NULL) {
 			e_text = 
@@ -2746,6 +2798,7 @@ CvtGenVFObjToFloatVFObj
 	}
 
 	if (! yirr) {
+		vffp->yc_is_linear = vfp->yc_is_linear = True;
 		subret = GetCoordBounds(vfp,vfYCOORD,&ystart,&yend,
 					&iystart,&iyend,&systart,&syend,
 					entry_name);
@@ -2769,6 +2822,7 @@ CvtGenVFObjToFloatVFObj
                                                          &iystart,&iyend,
                                                          &systart,&syend,
                                                          entry_name);
+			vffp->yc_is_linear = vfp->yc_is_linear = Linear((float *)y_arr->data,y_arr->num_elements);
                 }
                 if ((ret = MIN(ret,subret))  < NhlWARNING)
                         return ret;

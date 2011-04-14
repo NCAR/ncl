@@ -49,7 +49,9 @@ typedef struct _NhlScalarFieldFloatLayerPart{
 	NhlGenArray	y_arr;
 	NhldiGridType   grid_type;
 	NhlBoolean	xc_is_bounds;
+	NhlBoolean      xc_is_linear;
 	NhlBoolean	yc_is_bounds;
+	NhlBoolean      yc_is_linear;
 
 	NhlBoolean	missing_value_set;
 	float		missing_value;

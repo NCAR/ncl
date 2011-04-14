@@ -885,6 +885,54 @@ Monotonic
 }
 
 /*
+ * Function:	Linear
+ *
+ * Description:	This function decides whether an array of floats has
+ *		linear spacing between elements
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	private
+ * Returns:	NhlGenArray or NULL on error
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlBoolean
+Linear
+#if	NhlNeedProto
+(
+	float		*flts,
+	int		count
+)
+#else
+(flts,count)
+	float		*flts;
+	int		count;
+#endif
+{
+
+#define EPSILON 1e-4
+
+	int i;
+	float range, initial_diff, eps, diff;
+
+
+	range = fabs(flts[count - 1] - flts[0]);
+	initial_diff = range / (count - 1);
+	eps = initial_diff * EPSILON;
+
+	for (i = 1; i < count; i++) {
+		diff = flts[i] - flts[i - 1];
+		if (fabs(diff - initial_diff) > eps)
+			return False;
+	}
+	return True;
+			
+}
+
+/*
  * Function:	ValidCoordArray
  *
  * Description:	This function checks the coordinate arrays used to
@@ -2277,6 +2325,7 @@ CvtGenSFObjToFloatSFObj
  * if defined.
  */
 	sffp->x_arr = NULL;
+	sffp->xc_is_linear = sfp->xc_is_linear = False;
 	if (sfp->x_arr != NULL && sfp->x_arr->num_elements > 0) {
 		if ((x_arr = GenToFloatGenArray(sfp->x_arr)) == NULL) {
 			e_text = 
@@ -2298,6 +2347,7 @@ CvtGenSFObjToFloatSFObj
 	}
 
 	if (! xirr) {
+		sffp->xc_is_linear = sfp->xc_is_linear = True;
 		subret = GetCoordBounds(sfp,sfXCOORD,&xstart,&xend,
 					&ixstart,&ixend,&sxstart,&sxend,
 					entry_name);
@@ -2321,6 +2371,7 @@ CvtGenSFObjToFloatSFObj
 							 &ixstart,&ixend,
 							 &sxstart,&sxend,
 							 entry_name);
+			sffp->xc_is_linear = sfp->xc_is_linear = Linear((float *)x_arr->data,x_arr->num_elements);
 		}
 		if ((ret = MIN(ret,subret))  < NhlWARNING) 
 			return ret;
@@ -2337,6 +2388,7 @@ CvtGenSFObjToFloatSFObj
         }
 
 	sffp->y_arr = NULL;
+	sffp->yc_is_linear = sfp->yc_is_linear = False;
 	if (sfp->y_arr != NULL && sfp->y_arr->num_elements > 0) {
 		if ((y_arr = GenToFloatGenArray(sfp->y_arr)) == NULL) {
 			e_text = 
@@ -2358,6 +2410,7 @@ CvtGenSFObjToFloatSFObj
 	}
 
 	if (! yirr) {
+		sffp->yc_is_linear = sfp->yc_is_linear = True;
 		subret = GetCoordBounds(sfp,sfYCOORD,&ystart,&yend,
 					&iystart,&iyend,&systart,&syend,
 					entry_name);
@@ -2381,6 +2434,7 @@ CvtGenSFObjToFloatSFObj
 							 &iystart,&iyend,
 							 &systart,&syend,
 							 entry_name);
+			sffp->yc_is_linear = sfp->yc_is_linear = Linear((float *)y_arr->data,y_arr->num_elements);
 		}
 		if ((ret = MIN(ret,subret))  < NhlWARNING) 
 			return ret;
@@ -2394,6 +2448,7 @@ CvtGenSFObjToFloatSFObj
                 sfp->y_index_start = sfp->iy_start;
                 sfp->y_index_end = sfp->iy_end;
         }
+
 /*
  * Set flags to tell the array conversion routines whether to find
  * data max and mins (and if so whether to check for missing values) 

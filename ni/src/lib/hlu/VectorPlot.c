@@ -1709,6 +1709,7 @@ CurlyVectorInitialize
 {
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
+	NhlTransformLayerPart	*tfp = &(vcl->trans);
 	char buffer[_NhlMAXRESNAMLEN];
 	float afr;
 	int rlist;
@@ -1732,6 +1733,8 @@ CurlyVectorInitialize
 	NhlRLSetFloat(rlist,NhlNvpYF,vcl->view.y);
 	NhlRLSetFloat(rlist,NhlNvpWidthF,vcl->view.width);
 	NhlRLSetFloat(rlist,NhlNvpHeightF,vcl->view.height);
+	NhlRLSetFloat(rlist,NhlNtrXAxisType,tfp->x_axis_type);
+	NhlRLSetFloat(rlist,NhlNtrYAxisType,tfp->y_axis_type);
 	NhlRLSetFloat(rlist,NhlNstLineThicknessF,vcp->l_arrow_thickness);
 	NhlRLSetFloat(rlist,NhlNstArrowLengthF,vcp->l_arrowhead_max_size);
 	NhlRLSetFloat(rlist,NhlNstArrowFracLengthF,afr);
@@ -2263,6 +2266,7 @@ CurlyVectorSetValues
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
  	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
  	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
+	NhlTransformLayerPart	*tfp = &(vcnew->trans);
 	float			afr;
 	int			rlist;
 
@@ -2284,6 +2288,10 @@ CurlyVectorSetValues
 	if (vcnew->view.use_segments != vcold->view.use_segments)
 		NhlRLSetInteger(rlist,NhlNvpUseSegments,
 				vcnew->view.use_segments);
+	if (tfp->x_axis_type != vcold->trans.x_axis_type)        
+		NhlRLSetFloat(rlist,NhlNtrXAxisType,tfp->x_axis_type);
+	if (tfp->y_axis_type != vcold->trans.y_axis_type)        
+		NhlRLSetFloat(rlist,NhlNtrYAxisType,tfp->y_axis_type);
 	if (vcp->new_draw_req || (vcp->vector_order != ovcp->vector_order))
 		NhlRLSetInteger(rlist,NhlNstStreamlineDrawOrder,
 				vcp->vector_order);
@@ -4179,9 +4187,10 @@ static NhlErrorTypes InitCoordBounds
 	char			*entry_name;
 #endif
 {
-	NhlErrorTypes	ret = NhlNOERROR;
+	NhlErrorTypes	subret, ret = NhlNOERROR;
         NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
         NhlTransformLayerPart	*tfp = &vcl->trans;
+	char *e_text;
 
 	vcp->do_low_level_log = False;
         
@@ -4228,7 +4237,13 @@ static NhlErrorTypes InitCoordBounds
 		/* leave the set flag as is */
 	}
         else if (vcp->vfp->x_arr || vcp->vfp->y_arr) { /* ignore set value */
-		tfp->grid_type = NhltrIRREGULAR;
+		/* if the coords are evenly spaced then use linear */
+		if (vcp->vfp->xc_is_linear && vcp->vfp->yc_is_linear)  {
+			tfp->grid_type = NhltrLOGLIN;
+		}
+		else {
+			tfp->grid_type = NhltrIRREGULAR;
+		}
 		tfp->grid_type_set = False;
 	}
 	else { /* ignore set value */
@@ -4238,34 +4253,58 @@ static NhlErrorTypes InitCoordBounds
         
         if (tfp->grid_type == NhltrIRREGULAR) {
                 if (vcp->vfp->x_arr && ! tfp->x_axis_type_set) {
-			if (! vcp->ovfp || (vcp->data_changed  &&
+			if (! ovcl || (vcp->data_changed  &&
 			    (vcp->vfp->changed & _NhlvfXARR_CHANGED)))
 				tfp->x_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! vcp->vfp->x_arr && tfp->x_axis_type == NhlIRREGULARAXIS)
                         tfp->x_axis_type = NhlLINEARAXIS;
-                if (vcp->vfp->x_arr && tfp->x_axis_type != NhlIRREGULARAXIS) {
+                if (tfp->x_axis_type != NhlIRREGULARAXIS &&
+		    vcp->vfp->x_arr &&  ! vcp->vfp->xc_is_linear) {
+			if (! ovcl || ovcl->trans.y_axis_type != tfp->y_axis_type) {
+				if (tfp->x_axis_type == NhlLOGAXIS) {
+					e_text = "%s: Log axis not possible with irregular coordinate spacing; switching to linear index coordinates for X Axis";
+					tfp->x_axis_type = NhlLINEARAXIS;
+				}
+				else {
+					e_text = "%s: coordinate spacing is irregular; linear spacing only possible using index coordinates for X Axis";
+				}
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+				ret = NhlWARNING;
+			}
                         tfp->data_xstart = vcp->vfp->ix_start;
                         tfp->data_xend = vcp->vfp->ix_end;
                 }
                 if (vcp->vfp->y_arr && ! tfp->y_axis_type_set) {
-			if (! vcp->ovfp || (vcp->data_changed  &&
+			if (! ovcl || (vcp->data_changed  &&
 			    (vcp->vfp->changed & _NhlvfYARR_CHANGED)))
 				tfp->y_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! vcp->vfp->y_arr && tfp->y_axis_type == NhlIRREGULARAXIS)
                         tfp->y_axis_type = NhlLINEARAXIS;
-                if (vcp->vfp->y_arr && tfp->y_axis_type != NhlIRREGULARAXIS) {
+                if (tfp->y_axis_type != NhlIRREGULARAXIS &&
+		    vcp->vfp->y_arr &&  ! vcp->vfp->yc_is_linear) {
+			if (! ovcl || ovcl->trans.y_axis_type != tfp->y_axis_type) {
+				if (tfp->y_axis_type == NhlLOGAXIS) {
+					e_text = "%s: Log axis not possible with irregular coordinate spacing; switching to linear index coordinates for Y Axis";
+					tfp->y_axis_type = NhlLINEARAXIS;
+				}
+				else {
+					e_text = "%s: coordinate spacing is irregular; linear spacing only possible using index coordinates for Y Axis";
+				}
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+				ret = NhlWARNING;
+			}
                         tfp->data_ystart = vcp->vfp->iy_start;
                         tfp->data_yend = vcp->vfp->iy_end;
                 }
         }
         
-	ret = _NhltfCheckCoordBounds
+	subret = _NhltfCheckCoordBounds
                 ((NhlTransformLayer)vcl,(NhlTransformLayer)ovcl,
                  entry_name);
 
-	return ret;
+	return MIN(ret,subret);
 }
 
 /*
