@@ -1756,10 +1756,10 @@ begin
   fca  = 1.0/(spd*bpfLast)             ; freq start/end
   fcb  = 1.0/(spd*bpfStrt)             ; bpf{Strt/Last}
 
-  if (typeof(x).eq."double" .or. typeof(wy).eq."double") then
-      xts  = new( (/3,ntim/), "double", getFillValue(x))
-  else
-      xts  = new( (/3,ntim/), "float" , getFillValue(x))
+  if (isatt(x,"_FillValue")) then 
+      xts  = new( (/3,ntim/), "double", todouble(getFillValue(x)))
+  else 
+      xts  = new( (/3,ntim/), "double"); use default _FillValue
   end if
   xts!0 = "var"
                                        ; weighted area averages
