@@ -380,7 +380,6 @@ int sync;
 	}
 }
 
-#ifdef USE_NETCDF4
 static void _checking_nc4_chunking
 #if     NhlNeedProto
 (NetCdfFileRecord *rec, int cdfid)
@@ -390,6 +389,7 @@ NetCdfFileRecord *rec;
 int cdfid;
 #endif
 {
+#ifdef USE_NETCDF4
 	NetCdfVarInqRecList *stepvl;
 	NetCdfVarInqRec *var_inq;
 
@@ -485,8 +485,8 @@ int cdfid;
 		free(dims);
 		free(chunk_dims);
 	}
-}
 #endif                
+}
 
 static void EndDefineModeIf
 #if	NhlNeedProto
@@ -2202,6 +2202,7 @@ ng_size_t *chunk_dims;
     NetCdfFileRecord* rec = (NetCdfFileRecord*)therec;
     NetCdfVarInqRecList *stepvl = NULL;
     int i,ret = NhlNOERROR;
+#ifdef USE_NETCDF4
     int cdfid;
     int nc_ret;
     int storage = NC_CHUNKED;
@@ -2262,6 +2263,7 @@ ng_size_t *chunk_dims;
         ret = NhlFATAL;
     }
 
+#endif
     return(ret);
 }
 
@@ -2282,6 +2284,7 @@ float cache_preemption;
     int ret = NhlNOERROR;
     int cdfid;
     int nc_ret;
+#ifdef USE_NETCDF4
 
     if(rec->wr_status <= 0)
     {
@@ -2340,6 +2343,7 @@ float cache_preemption;
         ret = NhlFATAL;
     }
 
+#endif
     return(ret);
 }
 
@@ -2361,6 +2365,7 @@ int compress_level;
     int deflate = compress_level;
     int deflate_level = compress_level;
     int nc_ret;
+#ifdef USE_NETCDF4
 
     if(rec->wr_status <= 0)
     {
@@ -2406,6 +2411,7 @@ int compress_level;
                   NrmQuarkToString(rec->file_path_q));
         ret = NhlFATAL;
     }
+#endif
 
     return(ret);
 }
@@ -2550,6 +2556,7 @@ ng_size_t size;
 int is_unlimited;
 #endif
 {
+#ifdef USE_NETCDF4
 	NetCdfFileRecord *rec = (NetCdfFileRecord*) therec;
 	int cdfid;
 	int nc_ret;
@@ -2640,8 +2647,10 @@ int is_unlimited;
 			"File (%s) was opened as a read only file, can not write to it",
 			NrmQuarkToString(rec->file_path_q)));
 	}
+#endif
 	return(NhlFATAL);
 }
+
 /*ARGSUSED*/
 static NhlErrorTypes NetAddVar
 #if	NhlNeedProto
