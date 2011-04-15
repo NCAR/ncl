@@ -1525,6 +1525,7 @@ C
           ELSE
             IF (LPO.EQ.0)
               IF (NPO.EQ.0)
+C               -- last point in, next point in
                 IXN=NINT(XNX)
                 IYN=NINT(YNX)
                 IF (IXN.NE.IXL.OR.IYN.NE.IYL)
@@ -1532,6 +1533,7 @@ C
                 END IF
                 GO TO 112
               ELSE
+C               -- last point in, next point out
                 XPE=XLS
                 YPE=YLS
                 XDI=XNX-XLS
@@ -1548,16 +1550,14 @@ C                 IF (YDI.GE.0.) YPE=RLC
 C                 XPE=XLS+(YPE-YLS)*XDI/YDI
 C               END IF
 C The 2 tests above were rewritten below in response to Jira #654 --RLB
-                IF (XNX.LT.0. .OR. XNX.GT.RLC) THEN
-                  XPE=0.
-                  IF (XDI.GE.0.) XPE=RLC
-                  IF (ABS(XDI).GT..000001*RLC) YPE=YLS+(XPE-XLS)*YDI/XDI
-                ENDIF
-                IF (YNX.LT.0. .OR. YNX.GT.RLC) THEN
-                  YPE=0.
-                  IF (YDI.GE.0.) YPE=RLC
-                  IF (ABS(YDI).gt..000001*RLC) XPE=XLS+(YPE-YLS)*XDI/YDI
-                ENDIF
+C (and rewritten again in response to Jira 1083,  4/2011)
+                XPE=0.
+                IF (XDI.GE.0.) XPE=RLC
+                IF (ABS(XDI).GT..000001*RLC) YPE=YLS+(XPE-XLS)*YDI/XDI
+                IF (YPE.GE.0..AND.YPE.LE.RLC) GO TO 101
+                YPE=0.
+                IF (YDI.GE.0.) YPE=RLC
+                IF (ABS(YDI).GT..000001*RLC) XPE=XLS+(YPE-YLS)*XDI/YDI
   101           IXN=NINT(XPE)
                 IYN=NINT(YPE)
                 IF (IXN.NE.IXL.OR.IYN.NE.IYL)
@@ -1567,6 +1567,7 @@ C The 2 tests above were rewritten below in response to Jira #654 --RLB
               END IF
             ELSE
               IF (NPO.EQ.0)
+C               -- last point out, next point in
                 XPE=XNX
                 YPE=YNX
                 XDI=XLS-XNX
@@ -1583,16 +1584,14 @@ C                 IF (YDI.GE.0.) YPE=RLC
 C                 XPE=XNX+(YPE-YNX)*XDI/YDI
 C               END IF
 C The 2 tests above were rewritten below in response to Jira #654 --RLB
-                IF (XLS.LT.0. .OR. XLS.GT.RLC) THEN
-                  XPE=0.
-                  IF (XDI.GE.0.) XPE=RLC
-                  IF (ABS(XDI).GT..000001*RLC) YPE=YNX+(XPE-XNX)*YDI/XDI
-                ENDIF
-                IF (YLS.LT.0. .OR. YLS.GT.RLC) THEN
-                  YPE=0.
-                  IF (YDI.GE.0.) YPE=RLC
-                  IF (ABS(YDI).gt..000001*RLC) XPE=XNX+(YPE-YNX)*XDI/YDI
-                ENDIF
+C (and rewritten again in response to Jira 1083,  4/2011)
+                XPE=0.
+                IF (XDI.GE.0.) XPE=RLC
+                IF (ABS(XDI).GT..000001*RLC) YPE=YNX+(XPE-XNX)*YDI/XDI
+                IF (YPE.GE.0..AND.YPE.LE.RLC) GO TO 102
+                YPE=0.
+                IF (YDI.GE.0.) YPE=RLC
+                IF (ABS(YDI).GT..000001*RLC) XPE=XNX+(YPE-YNX)*XDI/YDI
   102           IXN=NINT(XPE)
                 IYN=NINT(YPE)
                 IF (IXN.NE.IXL.OR.IYN.NE.IYL)
@@ -1608,6 +1607,7 @@ C The 2 tests above were rewritten below in response to Jira #654 --RLB
                 END IF
                 GO TO 112
               ELSE
+C               -- last point out, next point out
                 MPOW=9*LPO+NPO+41
                 GO TO ( 112,112,112,112,112,103,112,103,103,
      +                  112,112,112,104,112,103,104,103,103,
