@@ -447,8 +447,7 @@ NhlErrorTypes _Nclstr_split
     else
         ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
-    tmp_str = (char *) NrmQuarkToString(delim[0]);
-    tmp_delim = (char *) NclMalloc(strlen(tmp_str)+2);
+    tmp_delim = (char *) NclMalloc(strlen(NrmQuarkToString(delim[0]))+2);
     if (! tmp_delim)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -501,9 +500,10 @@ NhlErrorTypes _Nclstr_split
         arraySubString = (string *) NclRealloc(arraySubString, n*sizeof(string));
         ndim_strs = 1;
         dimsz_strs[0] = n;
+
+        NclFree(tmp_str);
     }
 
-    NclFree(tmp_str);
     NclFree(tmp_delim);
     
     return NclReturnValue(arraySubString, ndim_strs, dimsz_strs, (has_missing_ret ? &ret_missing : NULL), NCL_string, 0);
