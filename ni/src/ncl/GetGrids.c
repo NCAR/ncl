@@ -6662,6 +6662,9 @@ GribParamList* thevarrec;
 
 
 	spherical_harm = (int)(bds[3] & (char)0200) ? 1 : 0;
+	if (therec->gds_type < 50 || therec->gds_type > 80) {
+		spherical_harm = False;
+	}
 	second_order = (int)(bds[3] & (char)0100) ? 1 : 0;
 	integer = (int)(bds[3] & (char)0040) ? 1 : 0;
 	additional_flags = (bds[3] & (char)0020) ? 1 : 0;
