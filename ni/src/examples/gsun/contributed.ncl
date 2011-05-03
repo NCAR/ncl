@@ -1177,11 +1177,15 @@ end
 
 ; *******************************************************************
 ; u.utku.turuncoglu@be.itu.edu.tr
+; The following procedure to sorts x,y coordinate pair based on
+; selected one. The opt controls the behavior of the sort procedure. If the
+; value is equal to 1 then, it sorts the x values and match the correct y
+; with it. 
 
 undef("sort_xy")
 procedure sort_xy(x:numeric, y:numeric, eps:numeric, opt:numeric)
 
-local x_old, y_old, x_ind, y_ind, x_eps, y_eps
+local x_old, y_old, x_ind, y_ind, x_eps, y_eps, i
 begin
   ;--- sort x ---
   if (opt .eq. 1) then
