@@ -1175,6 +1175,49 @@ begin
   return (x)
 end
 
+; *******************************************************************
+; u.utku.turuncoglu@be.itu.edu.tr
+
+undef("sort_xy")
+procedure sort_xy(x:numeric, y:numeric, eps:numeric, opt:numeric)
+
+local x_old, y_old, x_ind, y_ind, x_eps, y_eps
+begin
+  ;--- sort x ---
+  if (opt .eq. 1) then
+    ;--- fix, the arguments of the get1Dindex must unique ---
+    x_eps = new(dimsizes(x), typeof(x))
+    do i = 0, dimsizes(x)-1
+      x_eps(i) = (i+1)*eps
+    end do
+
+    ;--- add artifical small number to get unique array ---
+    x = x+x_eps
+
+    ;--- sort arrays ---
+    x_old = x
+    qsort(x)
+    x_ind = get1Dindex(x_old, x)
+    y = y(x_ind)
+  ;--- sort y ---
+  else
+    ;--- fix, the arguments of the get1Dindex must unique ---
+    y_eps = new(dimsizes(y), typeof(y))
+    do i = 0, dimsizes(y)-1
+      y_eps(i) = (i+1)*eps
+    end do
+
+    ;--- add artifical small number to get unique array ---
+    y = y+y_eps
+
+    ;--- sort arrays ---
+    y_old = y
+    qsort(y)
+    y_ind = get1Dindex(y_old, y)
+    x = x(y_ind)
+  end if
+end
+
 
 ; **************************************************************
 ; D. Shea
@@ -12183,6 +12226,8 @@ end
 undef("remap_elements")
 function remap_elements(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
 ;
+; remap a scalar variable
+;
 ; Usage:
 ;  dirw   = "./"
 ;  filw   = "map_ne120np4_to_fv0.23_aave_da_100310"; weight file
@@ -12195,15 +12240,16 @@ function remap_elements(fwt[1]:file, fhom, var[1]:string, opt[1]:logical)
 ;  temp   = remap_elements(fw, fc, "T"  , False)   ; (time,lev,lat,lon)
 ;****************************************************************
 ;  The original weight files given to me did not have all the expected
-;  information. Hence, there is some extra coding. 
+;  information. Hence, there is extra coding to try to deduce info. 
 ;****************************************************************
-;  The fact that we want t return the full data object (including level/depth)
+;  The fact that we want to return the full data object (including level/depth)
 ;  makes it difficult to unambiguously determine the target grid. 
 ;****************************************************************
 local ier, xin, dimx, rank, dim_dst, ntim, klev, nlat, mlon, lat, lon \
     , errMsg, dst_add , src_add, s, nS, map_wts, xout1d, xout, xoutf  \
     , fdimNames, fdimSizes, ia, ja, ib, jb, knam, nt, kl, ilon, jlon  \
-    , radUnints, latUnits, lonUnits, gridType_a , gridType_b, dim_src
+    , radUnints, latUnits, lonUnits, gridType_a , gridType_b, dim_src \
+    , irnk, src_rank, dst_rank
 begin
          ; check 'fhom' argument
       if (.not.(typeof(fhom).eq."file"    .or. \
@@ -12244,39 +12290,57 @@ begin
           exit
       end if
 
-      radUnits = (/"radians","radian","Radians","Radian"/)
+      fdimNames = getvardims(fwt)           ; dimension names on wgt file 
+      fdimSizes = getfiledimsizes(fwt)      ; dimension sizes on wgt file
 
-      latUnits = (/"degrees"      \ ; not udunits but .....
-                 ,"degrees_north","degrees-north","degree_north" \ 
-                 ,"degrees north","degrees_N","Degrees_north"    \
-                 ,"degree_N","degreeN","degreesN","deg north"    /)
+      if (any(fdimNames.eq."src_grid_rank")) then
+          irnk     = ind(fdimNames.eq."src_grid_rank")     ; index 
+          src_rank = toint(fdimSizes(irnk))
+      else
+          src_rank = -999                                  ; missing info
+      end if
+     ;print("remap_elements: src_rank="+src_rank)
 
-      lonUnits = (/"degrees"      \ ; not udunits but .....
-                  ,"degrees_east","degrees-east","degree_east" \
-                  ,"degrees east","degrees_E","Degrees_east"   \
-                  ,"degree_E","degreeE","degreesE","deg east"  /)
+      if (any(fdimNames.eq."dst_grid_rank")) then
+          irnk     = ind(fdimNames.eq."dst_grid_rank")     ; index 
+          dst_rank = toint(fdimSizes(irnk))
+      else
+          dst_rank = -999                                  ; missing info
+      end if
+     ;print("remap_elements: dst_rank="+dst_rank)
+          
+      radUnits  = (/"radians","radian","Radians","Radian"/)
+
+      latUnits  = (/"degrees"      \ ; not udunits but .....
+                  ,"degrees_north","degrees-north","degree_north" \ 
+                  ,"degrees north","degrees_N","Degrees_north"    \
+                  ,"degree_N","degreeN","degreesN","deg north"    /)
+
+      lonUnits  = (/"degrees"      \ ; not udunits but .....
+                   ,"degrees_east","degrees-east","degree_east"   \
+                   ,"degrees east","degrees_E","Degrees_east"     \
+                   ,"degree_E","degreeE","degreesE","deg east"    /)
                                                ; sizes source grid
-;;    if (iscilevar(fwt,"src_grid_dims") ) then   
-;;        dim_src = fwt->src_grid_dims         ; straight forward       
-;;        ilon    = dim_src(0)
-;;        jlat    = dim_src(1)
-;;    else                                     ; try another approach
-;;        fdimNames = getvardims(fwt)          ; names of dimensions on file 
-;;        if (any(fdimNames.eq."ni_a") .and. any(fdimNames.eq."nj_a")) then
-;;            dim_src   = (/0,0/)
-;;            fdimSizes = getfiledimsizes(fwt) ; sizes of dimensions on file
-;;            ia        = ind(fdimNames.eq."ni_a")     ; index 
-;;            ja        = ind(fdimNames.eq."nj_a")
-;;            ilon      = toint(fdimSizes(ia))
-;;            jlat      = toint(fdimSizes(ja))
-;;            dim_src(0)= ilon
-;;            dim_src(1)= ilat
-;;        else
-;;            print("remap_elements: FATAL: src_grid_dims, ni_a, nj_a missing")
-;;            print("                Cannot determine the output grid sizes")
-;;            exit
-;;        end if
-;;    end if
+      if (isfilevar(fwt,"src_grid_dims") ) then   
+          dim_src = fwt->src_grid_dims         ; straight forward       
+          ilon    = dim_src(0)
+          jlat    = dim_src(1)
+      else                                     ; try another approach
+          if (any(fdimNames.eq."ni_a") .and. any(fdimNames.eq."nj_a")) then
+              dim_src   = (/0,0/)
+              ia        = ind(fdimNames.eq."ni_a")     ; index 
+              ja        = ind(fdimNames.eq."nj_a")
+              ilon      = toint(fdimSizes(ia))
+              jlat      = toint(fdimSizes(ja))
+              dim_src(0)= ilon
+              dim_src(1)= ilat
+          else
+              print("remap_elements: FATAL: src_grid_dims, ni_a, nj_a missing")
+              print("                Cannot determine the output grid sizes")
+              exit
+          end if
+      end if
+     ;print("remap_elements: ilon="+ilon+"   jlat="+jlat)
                                                ; sizes destination grid
       if (isfilevar(fwt,"dst_grid_dims") ) then   
           dim_dst = fwt->dst_grid_dims         ; straight forward       
@@ -12299,7 +12363,7 @@ begin
               exit
           end if
       end if
-;     print("remap_elements: mlon="+mlon+"   nlat="+nlat)
+     ;print("remap_elements: mlon="+mlon+"   nlat="+nlat)
 
 ; coordinate information: rectilinear or curvilinear
 ; rectilinear: return coordinate variables with xout
@@ -12371,10 +12435,7 @@ begin
           print("                Cannot determine the output lat/lon locations")
           exit
       end if
-;print(lat)
-;print(lon)
-print(gridType_a)
-print(gridType_b)
+     ;print("remap_elements: gridType_a="+gridType_a+"    gridType_b="+gridType_b)
                                         ; read info from file
       dst_add = fwt->row                ; destination grid [linear] 
       src_add = fwt->col                ; source grid [linear] 
@@ -12407,7 +12468,6 @@ print(gridType_b)
       end if
 
       xinDimNames = getvardims(xin)
-print(xinDimNames)
       if (any(xinDimNames.eq."ncol")) then
           ncolFlag = True 
       else
@@ -12416,7 +12476,6 @@ print(xinDimNames)
 
       if (rank.eq.2) then     ; xin(ntim,ncol) 
           if (ncolFlag) then  ; xin(ntim,ncol)
-print("DEBUG A")
               xout = new ( (/ntim,nlat,mlon/), typeof(xin), dFill)
     
               do nt=0,ntim-1
@@ -12439,7 +12498,6 @@ print("DEBUG A")
 
       if (rank.eq.3) then     ; xin(ntim,klev,ncol) or (time,lat,lon)
           if (ncolFlag) then  ; xin(ntim,klev,ncol)
-print("DEBUG B: ")
               klev = dimx(1)
               knam = dnam(1)
               xout = new ( (/ntim,klev,nlat,mlon/), typeof(xin), 1e20)
@@ -12482,10 +12540,8 @@ print("DEBUG B: ")
               end if
           end if           ; ncolFlag
       end if
-print("DEBUG C: ")
 
       if (rank.eq.4) then     ; xin(ntim,klev,lat,lon) 
-print("DEBUG D: ")
           klev = dimx(1)
           knam = dnam(1)
           xout = new ( (/ntim,klev,nlat,mlon/), typeof(xin), 1e20)
@@ -12510,8 +12566,6 @@ print("DEBUG D: ")
 
       xout!0    = "time"
       xout&time =  xin&time
-print("DEBUG E: ")
-printVarSummary(xout)
       if (gridType_b.eq."rectilinear") then
           xout&lat  =  lat 
           xout&lon  =  lon 
@@ -12662,7 +12716,7 @@ begin
    return( remap_elements(fwt, fhom, var, opt) )
 end
 ;---------------------------------------------------
-; Rob Nichols [U. Washington] & D. Shea
+; Rob Nicholas [U. Washington] & D. Shea
 undef("pattern_cor2")
 function pattern_cor2 (x[*][*],y[*][*],w, opt:integer)
 ; This function should NOT be called directly by  users.
