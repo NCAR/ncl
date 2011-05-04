@@ -32,8 +32,8 @@ extern "C" {
 #include    <stddef.h>
 
 #define NCL_MAX_DIMENSIONS 32
-#define NCL_MAX_FVARS 2048
-#define NCL_MAX_GVARS 2048
+#define NCL_MAX_FVARS 16
+#define NCL_MAX_GVARS 2
 #define NCL_MAX_STRING 256
 #define NCL_MAX_COMPOUND_COMPONETS 256
 #define NCL_MAX_ATTRIBUTES 32

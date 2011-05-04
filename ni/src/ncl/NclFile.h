@@ -26,6 +26,9 @@
 #include "NclData.h"
 #include "NclFileInterfaces.h"
 
+#define FILE_COORD_VAR_ACCESS 0
+#define FILE_VAR_ACCESS 1
+
 typedef struct _NclFileRec NclFileRec;
 typedef struct _NclFileClassRec NclFileClassRec;
 typedef NclFileRec *NclFile;
@@ -388,26 +391,31 @@ typedef struct _NclFilePart {
 	NclQuark	file_ext_q;
 	int		wr_status;
 	NclFileFormat	file_format;
+
+	int		         max_grps;
 	int		         n_grps;
-	struct _NclFGrpRec      *grp_info[NCL_MAX_FVARS];
-	NclFileAttInfoList      *grp_att_info[NCL_MAX_FVARS];
-	_NhlCB		         grp_att_cb[NCL_MAX_FVARS];
-	struct _FileCallBackRec *grp_att_udata[NCL_MAX_FVARS];
-	int 		         grp_att_ids[NCL_MAX_FVARS];
+	struct _NclFGrpRec      **grp_info;
+	NclFileAttInfoList      **grp_att_info;
+	_NhlCB		         *grp_att_cb;
+	struct _FileCallBackRec **grp_att_udata;
+	int 		         *grp_att_ids;
 
+	int		         max_vars;
 	int		         n_vars;
-	struct _NclFVarRec      *var_info[NCL_MAX_FVARS];
-	NclFileAttInfoList      *var_att_info[NCL_MAX_FVARS];
-	_NhlCB		         var_att_cb[NCL_MAX_FVARS];
-	struct _FileCallBackRec *var_att_udata[NCL_MAX_FVARS];
-	int 		         var_att_ids[NCL_MAX_FVARS];
+	struct _NclFVarRec      **var_info;
+	NclFileAttInfoList      **var_att_info;
+	_NhlCB		         *var_att_cb;
+	struct _FileCallBackRec **var_att_udata;
+	int 		         *var_att_ids;
 
+	int 	   	         max_file_dims;
 	int 	   	         n_file_dims;
-	struct _NclFDimRec  	*file_dim_info[NCL_MAX_FVARS];
-	struct _NclFVarRec	*coord_vars[NCL_MAX_FVARS];
+	struct _NclFDimRec  	**file_dim_info;
+	struct _NclFVarRec	**coord_vars;
 
+	int                      max_file_atts;
 	int                      n_file_atts;
-	struct _NclFAttRec	*file_atts[NCL_MAX_FVARS];
+	struct _NclFAttRec	**file_atts;
 	int 	                 file_atts_id;
 	_NhlCB 		         file_att_cb;
 	struct _FileCallBackRec *file_att_udata;
@@ -478,5 +486,15 @@ typedef struct _FileCallBackRec {
 	int	theattid;
 	int	thevar;
 }FileCallBackRec;
+
+NclFile _NclFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
+                        unsigned int obj_type_mask, NclStatus status,
+                        NclQuark path, int rw_status);
+extern void ReverseIt(void *val,void* swap_space,int ndims,int *compare_sel,
+			ng_size_t *dim_sizes,int el_size);
+void _NclReallocFilePart(NclFilePart *file,
+                                int n_grps, int n_vars,
+                                int n_file_dims, int n_file_atts);
+NhlErrorTypes FilePrintSummary(NclObj self, FILE *fp);
 
 #endif /* NclFile_h */

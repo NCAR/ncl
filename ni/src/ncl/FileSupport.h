@@ -385,5 +385,9 @@ NclQuark option /* if NULL set defaults for all options */
 #endif
 );
 
+extern NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
+                              unsigned int obj_type_mask, NclStatus status,
+                              NclQuark path, int rw_status);
+
 #endif /*_FileSupport_h */
 

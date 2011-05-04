@@ -36,6 +36,8 @@
 #include <ctype.h>
 #include <string.h>
 
+char *strdup(const char *s);
+
 #ifndef MAX_HDF5_NAME_LENGTH
 #define MAX_HDF5_NAME_LENGTH    256
 #endif
@@ -5402,11 +5404,11 @@ static NhlErrorTypes HDF5SetOption
                       NrmQuarkToString(option));
             return(NhlWARNING);
         }
-        rec->options[H5_COMPRESSION_LEVEL_OPT].values = (void*) *(int*)values;
+        rec->options[H5_COMPRESSION_LEVEL_OPT].values = (void*) values;
     }
     else if (option == NrmStringToQuark("usecache"))
     {
-        rec->options[H5_USE_CACHE_OPT].values = (void*) *(int*)values;
+        rec->options[H5_USE_CACHE_OPT].values = values;
     }
     else if (option == NrmStringToQuark("cachesize"))
     {
@@ -5417,7 +5419,7 @@ static NhlErrorTypes HDF5SetOption
                      NrmQuarkToString(option));
             return(NhlWARNING);
         }
-        rec->options[H5_CACHE_SIZE_OPT].values = (void*) *(int*)values;
+        rec->options[H5_CACHE_SIZE_OPT].values = values;
     }
     else if (option == NrmStringToQuark("cachenelems"))
     {
@@ -5432,7 +5434,7 @@ static NhlErrorTypes HDF5SetOption
         {
             unsigned int *iv = (unsigned int *)values;
             *iv = _closest_prime(*iv);
-            rec->options[H5_CACHE_NELEMS_OPT].values = (void*) *(int*)iv;
+            rec->options[H5_CACHE_NELEMS_OPT].values = (void*) iv;
         }
     }
     else if (option == NrmStringToQuark("cachepreemption"))

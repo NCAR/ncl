@@ -2268,3 +2268,16 @@ NclQuark option;
 	return NhlNOERROR;
 			
 }
+
+NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
+                        unsigned int obj_type_mask, NclStatus status,
+                        NclQuark path, int rw_status)
+{
+        NclFile file_out = NULL;
+        NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+
+        file_out = _NclFileCreate(inst, theclass, obj_type, obj_type_mask, status, path, rw_status);
+
+        return file_out;
+}
+
