@@ -8615,23 +8615,35 @@ ng_size_t *get_dimensions(void *tmp_dimensions,ng_size_t n_dimensions,
 {
   ng_size_t i, *dimensions;
 
+  dimensions = (ng_size_t *)NclMalloc(sizeof(ng_size_t) * n_dimensions);
   switch (type_dimensions) {
+  case NCL_byte:
+    for (i = 0; i < n_dimensions; i++) {
+      ((ng_size_t *)dimensions)[i] = ((byte*)tmp_dimensions)[i];
+    }
+    break;
+
+  case NCL_short:
+    for (i = 0; i < n_dimensions; i++) {
+      ((ng_size_t *)dimensions)[i] = ((short*)tmp_dimensions)[i];
+    }
+    break;
+
   case NCL_int:
-    dimensions = (ng_size_t *)NclMalloc(sizeof(ng_size_t) * n_dimensions);
     for (i = 0; i < n_dimensions; i++) {
       ((ng_size_t *)dimensions)[i] = ((int*)tmp_dimensions)[i];
     }
     break;
     
   case NCL_long:
-    dimensions = (ng_size_t *)NclMalloc(sizeof(ng_size_t) * n_dimensions);
     for (i = 0; i < n_dimensions; i++) {
       ((ng_size_t *)dimensions)[i] = ((long*)tmp_dimensions)[i];
     }
     break;
 
   default:
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: The input dimension sizes must be integer or long",name);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: The input dimension sizes must be byte, short, integer or long",name);
+    NclFree(dimensions);
     return(NULL);
   }
   return(dimensions);
