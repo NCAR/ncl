@@ -543,9 +543,9 @@ cat << 'EOF_NCL' >! $tmp_nclfile
                             write_matrix(v2d, fmt, opt)
                         end if
                         end if
+                        delete(v2d)
+                        delete(dims)
                     end if
-                    delete(v2d)
-                    delete(dims)
                 else
                     print("${progname}: error: '" + vars(n) + "' is not a variable in '" + filename + "'.")
                 end if
@@ -571,12 +571,12 @@ endif
 # Clean up.
 #
 
-#/bin/rm $tmp_nclfile
+/bin/rm $tmp_nclfile
 
 exit 0
 
 cleanup:
-#    /bin/rm -f $tmp_nclfile
+    /bin/rm -f $tmp_nclfile
     exit 1
 
 usage:
