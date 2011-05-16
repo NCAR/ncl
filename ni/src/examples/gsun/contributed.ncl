@@ -3984,6 +3984,46 @@ begin
 end
 
 ; =====================================
+undef("smthClmDayTLLL")
+function smthClmDayTLLL (clmDay[*][*][*][*]:numeric, nHarm:integer)
+;  lxf: Li 2011-05-15
+local nFill, dn, z, cf, clmDaySmth
+begin
+
+  if (isatt(clmDay, "_FillValue")) then
+      nFill = num(ismissing(clmDay))
+      if (nFill.gt.0) then
+          print("smthClmDay_TLLL: No missing values allowed: ezfftf does not allow")
+          print("smthClmDay_TLLL: nFill="+nFill)
+          exit
+      end if
+  end if
+
+  dn = getvardims(clmDay)                   ; get dimension names
+  if (dn(0).ne."year_day") then
+      print("smthClmDayTLLL: Warning: Usually expect year_day to be the dimension name")
+  end if
+
+  z  = clmDay($dn(1)$|:,$dn(2)$|:,$dn(3)$|:,$dn(0)$|:); reorder make time fastest varying dimension
+  cf = ezfftf( z )                          ; [2] x [klev] x [nlat] x [mlon] x [183]
+
+                                            ; remember NCL is 0-based
+                                            ; cf(:,0:nHarm-1) are retained unaltered
+  cf(:,:,:,:,nHarm   ) = 0.5*cf(:,:,:,:,nHarm)  ; mini-taper
+  cf(:,:,:,:,nHarm+1:) = 0.0                  ; set all higher coef to 0.0
+
+  z  = ezfftb( cf, cf@xbar)                 ; reconstructed series
+
+  clmDaySmth = z($dn(0)$|:,$dn(1)$|:,$dn(2)$|:,$dn(3)$|:)
+  clmDaySmth@information = "Smoothed daily climatological averages"
+  clmDaySmth@smoothing   = "FFT: "+nHarm+" harmonics were retained."
+
+  return(clmDaySmth)
+end
+
+
+
+; =====================================
 undef("calcDayAnomTLL")
 function calcDayAnomTLL (x[*][*][*]:numeric, yyyyddd:integer, clmDay[*][*][*]:numeric)   
 
