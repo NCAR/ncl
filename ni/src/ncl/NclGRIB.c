@@ -5956,7 +5956,7 @@ char *name;
 			}
 			cp = lcp;
 		}
-		if (index <= 0) {
+		if (index == -1) {
 			TOKENSTART(cp);
 			if (cp)
 				center =  strtol(cp,&cp,10);
@@ -6004,6 +6004,10 @@ char *name;
 			ptable = InitParamTableInfo(center,subcenter,version,tablename);
 			if (! ptable)
 				return (ptables);
+			continue;
+		}
+		else if (index < -1 || index > 255) {
+			/* ignore */
 			continue;
 		}
 		param = &(ptable->table[ptable->pcount++]);
