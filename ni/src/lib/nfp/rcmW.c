@@ -14,7 +14,7 @@ extern void NGCALLF(drgrid2rcm,DRGRID2RCM)(int *,int *,int *,double *,double *,
 extern void NGCALLF(drcm2points,DRCM2POINTS)(int *,int *,int *,double *,
                                              double *,double *,int *,double *,
                                              double *,double *,double*,
-                                             int *,int *,int *);
+                                             int *,int *,int *,int*);
 
 
 NhlErrorTypes rcm2rgrid_W( void )
@@ -532,6 +532,13 @@ NhlErrorTypes rcm2points_W( void )
   NclBasicDataTypes type_lat2d, type_lon2d, type_lat1d, type_lon1d;
   NclBasicDataTypes type_fi;
 /*
+ * Variables for retrieving attributes from "opt".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
+  logical set_k;
+/*
  * Output variables.
  */
   void *fo;
@@ -545,7 +552,7 @@ NhlErrorTypes rcm2points_W( void )
  */
   ng_size_t nlon2d, nlat2d, nfi, nlat1d, nfo, ngrid, size_fi, size_fo;
   ng_size_t i;
-  int ier, ret;
+  int k, ier, ret;
   int inlon2d, inlat2d, ingrid, inlat1d;
 /*
  * Retrieve parameters
@@ -727,10 +734,74 @@ NhlErrorTypes rcm2points_W( void )
  */
   tmp_ncrit = 1;
 
-  NGCALLF(drcm2points,DRCM2POINTS)(&ingrid,&inlat2d,&inlon2d,tmp_lat2d,tmp_lon2d,
-                                   tmp_fi,&inlat1d,tmp_lat1d,tmp_lon1d,
-                                   tmp_fo,&missing_dfi.doubleval,
-                                   opt,&tmp_ncrit,&ier);
+/* 
+ * Check if any attributes have been attached to opt.
+ */
+  set_k = False;
+  stack_entry = _NclGetArg(5, 6, DONT_CARE);
+  switch (stack_entry.kind) {;;
+  case NclStk_VAR:
+    if (stack_entry.u.data_var->var.att_id != -1) {;;
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj == NULL) {;
+	break;
+      };
+    }
+    else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+      break;
+    }
+/* 
+ * Get optional arguments.
+ */
+    if (attr_obj->att.n_atts > 0) {
+/*
+ * Get list of attributes.
+ */
+      attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them. The current ones recognized are:
+ *
+ *   "k"
+ */
+      while (attr_list != NULL) {
+/*
+ * Check for "jopt".
+ */
+	if (!strcmp(attr_list->attname, "k")) {
+	  if(attr_list->attvalue->multidval.data_type != NCL_int) {
+	    NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2points: The 'k' attribute must be an integer, defaulting to 2.");
+	    k = 2;
+	  }
+	  else {
+	    k = *(int*) attr_list->attvalue->multidval.val;
+	    if(k <= 0) {
+	      NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2points: The 'k' attribute is < 0. Defaulting to 2.");
+	      k = 2;
+	    }
+	    else {
+	      set_k = True;
+	    }
+	  }
+	}
+	attr_list = attr_list->next;
+      }
+    }
+  default:
+    break;
+  }
+
+/*
+ * If user didn't set k, then set it here.
+ */
+  if(!set_k) k = 2;
+
+  NGCALLF(drcm2points,DRCM2POINTS)(&ingrid,&inlat2d,&inlon2d,tmp_lat2d,
+                                   tmp_lon2d,tmp_fi,&inlat1d,tmp_lat1d,
+                                   tmp_lon1d,tmp_fo,&missing_dfi.doubleval,
+                                   opt,&tmp_ncrit,&k,&ier);
   if(ier) {
     if(ier == 1) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2points: not enough points in input/output array");
