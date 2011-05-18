@@ -1,9 +1,9 @@
 c ----------------------------------------------------------- 
 C NCLFORTSTART
       SUBROUTINE DRCM2POINTS(NGRD,NYI,NXI,YI,XI,FI,NXYO,YO,XO,FO
-     +                      ,XMSG,OPT,NCRIT,IER)
+     +                      ,XMSG,OPT,NCRIT,KVAL,IER)
       IMPLICIT NONE
-      INTEGER NGRD,NXI,NYI,NXYO,OPT,NCRIT,IER
+      INTEGER NGRD,NXI,NYI,NXYO,OPT,NCRIT,KVAL,IER
       DOUBLE PRECISION XI(NXI,NYI),YI(NXI,NYI),FI(NXI,NYI,NGRD)
       DOUBLE PRECISION XO(NXYO),YO(NXYO),FO(NXYO,NGRD),XMSG
 C NCLEND
@@ -21,7 +21,7 @@ c .   xo      - lon coordinates of fo (eg, lon [1D])
 c .   yo      - lat coordinates of fo (eg, lat [1D])
 c .   fo      - functional output values [interpolated]
 c .   xmsg    - missing code
-c .   opt     - unused
+c .   opt     - 0/1 = inv distance, 2 = bilinear
 c .   ier     - error code
 c .             =0;   no error
 c .             =1;   not enough points in input/output array
@@ -55,12 +55,15 @@ c c c    print *,"chklon: nx=",nx,"  chklon=",chklon(nx)
       IF (IER.NE.0) RETURN
 
 C ORIGINAL  (k = op, never implemented)
-C .   OLIVER_F ... opt=2 yields k=1
-      K = 2 
-      IF (OPT.EQ.2) THEN
-           K = 1
-      end if
-
+C .   OLIVER_F ... opt=2 yields k=1, 
+C Later...OLIVER_F DECIDED K should always be 2.
+C DECIDED TO ALLOW USER TO INPUT. IF KVAL <= 0, THEN
+C USE DEFAULT OF 2.
+      IF (KVAL.LE.0) THEN
+         K = 2
+      ELSE
+         K = KVAL
+      END IF
       DO NG = 1,NGRD
         DO NXY = 1,NXYO
            FO(NXY,NG) = XMSG
