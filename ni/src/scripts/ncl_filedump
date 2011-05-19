@@ -516,9 +516,18 @@ cat << 'EOF_NCL' >! $tmp_nclfile
                 if (isfilevar(f, vars(n))) then
 		    type = getfilevartypes(f,vars(n))
                     if (type .eq. "string") then
-                        print(f->$vars(n)$)
+		        print("     " + vars(n) + ":")
+			print(" ")
+                        print((/f->$vars(n)$/))
                         print(" ")
-                    else
+                    else if (type .eq. "character") then
+			vstrings = tostring(f->$vars(n)$)
+			print("     " + vars(n) + ":")
+			print("")
+			print((/vstrings/))
+			print(" ")
+			delete(vstrings)
+		    else
                         dims = getfilevardimsizes(f, vars(n))
                         rank = dimsizes(dims)
 
@@ -546,6 +555,7 @@ cat << 'EOF_NCL' >! $tmp_nclfile
                         delete(v2d)
                         delete(dims)
                     end if
+		    end if
                 else
                     print("${progname}: error: '" + vars(n) + "' is not a variable in '" + filename + "'.")
                 end if
