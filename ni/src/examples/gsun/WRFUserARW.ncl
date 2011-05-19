@@ -7,8 +7,8 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 ;                            loc_param:numeric, angle:numeric, opts:logical )
 ; function wrf_user_intrp2d( var2d:numeric, \
 ;                            loc_param:numeric, angle:numeric, opts:logical )
-; function wrf_user_getvar( nc_file:file, variable:string, time:integer )
-; function wrf_user_list_times( nc_file:file )
+; function wrf_user_getvar( file_handle, variable:string, time:integer )
+; function wrf_user_list_times( file_handle )
 ; function wrf_user_ll_to_ij( nc_file:file, longitude:numeric, latitude:numeric, \
 ;                             opts:logical )
 ; function wrf_user_ij_to_ll( nc_file:file, i:numeric, j:numeric \
@@ -584,11 +584,26 @@ begin
 end
 
 ;--------------------------------------------------------------------------------
+; This function was modified in May 2011 to allow a list of files.
+;
 undef("wrf_user_getvar")
-function wrf_user_getvar( nc_file:file, varin[*]:string, time_in:integer )
+function wrf_user_getvar( file_handle, varin[*]:string, time_in:integer )
 local variable, time, var, u, v, u_in, v_in, pii, radians_per_degree, \
 dims, nd, latitude, longitude, rank
 begin
+
+;---As of NCL V6.0.0, wrf_user_getvar can now handle a file or a list of files.
+  if(typeof(file_handle).eq."file") then
+    ISFILE = True
+    nc_file = file_handle
+  else if(typeof(file_handle).eq."list") then
+    ISFILE = False
+    nc_file = file_handle[0]
+  else
+    print("wrf_user_getvar: error: the first argument must be a file or a list of files opened with addfile or addfiles")
+    return
+  end if
+  end if
 
   variable = varin(0)
   time = time_in(0)
@@ -609,13 +624,23 @@ begin
            end if
          end if
          if ( time .eq. -1 ) then
-           u_in = nc_file->$getU$
-           v_in = nc_file->$getV$
+           if(ISFILE) then
+             u_in = nc_file->$getU$
+             v_in = nc_file->$getV$
+           else
+             u_in = file_handle[:]->$getU$
+             v_in = file_handle[:]->$getV$
+           end if
            u = wrf_user_unstagger(u_in,u_in@stagger)
            v = wrf_user_unstagger(v_in,v_in@stagger)
-         else
-           u_in   = nc_file->$getU$(time_in,:,:,:)
-           v_in   = nc_file->$getV$(time_in,:,:,:)
+       else
+           if(ISFILE) then
+             u_in   = nc_file->$getU$(time_in,:,:,:)
+             v_in   = nc_file->$getV$(time_in,:,:,:)
+           else
+             u_in   = file_handle[:]->$getU$(time_in,:,:,:)
+             v_in   = file_handle[:]->$getV$(time_in,:,:,:)
+           end if
            u = wrf_user_unstagger(u_in,u_in@stagger)
            v = wrf_user_unstagger(v_in,v_in@stagger)
          end if
@@ -624,27 +649,47 @@ begin
        if( (variable .eq. "uvmet10") )  then
          if(isfilevar(nc_file,"U10")) then
            if ( time .eq. -1 ) then
-             u_in   = nc_file->U10
-             v_in   = nc_file->V10
+             if(ISFILE) then
+               u_in   = nc_file->U10
+               v_in   = nc_file->V10
+             else
+               u_in   = file_handle[:]->U10
+               v_in   = file_handle[:]->V10
+             end if
              u = wrf_user_unstagger(u_in,u_in@stagger)
              v = wrf_user_unstagger(v_in,v_in@stagger)
            else
-             u_in  = nc_file->U10(time_in,:,:)
-             v_in  = nc_file->V10(time_in,:,:)
+             if(ISFILE) then
+               u_in  = nc_file->U10(time_in,:,:)
+               v_in  = nc_file->V10(time_in,:,:)
+             else
+               u_in  = file_handle[:]->U10(time_in,:,:)
+               v_in  = file_handle[:]->V10(time_in,:,:)
+             end if
              u = wrf_user_unstagger(u_in,u_in@stagger)
              v = wrf_user_unstagger(v_in,v_in@stagger)
            end if
          else  ; may be a met file, so get lowest level of UU and VV
            if(isfilevar(nc_file,"UU")) then
-             print("Assume this is a met_em file - getting lowest level from UU and VV fields")
+             print("wrf_user_getvar: Assume this is a met_em file - getting lowest level from UU and VV fields")
              if ( time .eq. -1 ) then
-               u_in  = nc_file->UU(:,0,:,:)
-               v_in  = nc_file->VV(:,0,:,:)
+               if(ISFILE) then
+                 u_in  = nc_file->UU(:,0,:,:)
+                 v_in  = nc_file->VV(:,0,:,:)
+               else
+                 u_in  = file_handle[:]->UU(:,0,:,:)
+                 v_in  = file_handle[:]->VV(:,0,:,:)
+               end if
                u = wrf_user_unstagger(u_in,u_in@stagger)
                v = wrf_user_unstagger(v_in,v_in@stagger)
              else
-               u_in  = nc_file->UU(time_in,0,:,:)
-               v_in  = nc_file->VV(time_in,0,:,:)
+               if(ISFILE) then
+                 u_in  = nc_file->UU(time_in,0,:,:)
+                 v_in  = nc_file->VV(time_in,0,:,:)
+               else
+                 u_in  = file_handle[:]->UU(time_in,0,:,:)
+                 v_in  = file_handle[:]->VV(time_in,0,:,:)
+               end if
                u = wrf_user_unstagger(u_in,u_in@stagger)
                v = wrf_user_unstagger(v_in,v_in@stagger)
              end if
@@ -705,11 +750,21 @@ begin
            end if
          end if
          if ( time .eq. -1 ) then
-           latitude  = nc_file->$getLAT$
-           longitude = nc_file->$getLON$
+           if(ISFILE) then
+             latitude  = nc_file->$getLAT$
+             longitude = nc_file->$getLON$
+           else
+             latitude  = file_handle[:]->$getLAT$
+             longitude = file_handle[:]->$getLON$
+           end if
          else
-           latitude  = nc_file->$getLAT$(time_in,:,:)
-           longitude = nc_file->$getLON$(time_in,:,:)
+           if(ISFILE) then
+             latitude  = nc_file->$getLAT$(time_in,:,:)
+             longitude = nc_file->$getLON$(time_in,:,:)
+           else
+             latitude  = file_handle[:]->$getLAT$(time_in,:,:)
+             longitude = file_handle[:]->$getLON$(time_in,:,:)
+           end if
          end if
 
          cone = 1.
@@ -755,9 +810,17 @@ begin
          end if
        end if
        if ( time .eq. -1 ) then
-         var = nc_file->$getTHIS$
+         if(ISFILE) then
+           var = nc_file->$getTHIS$
+         else
+           var = file_handle[:]->$getTHIS$
+         end if
        else
-         var = nc_file->$getTHIS$(time_in,:,:,:)
+         if(ISFILE) then
+           var = nc_file->$getTHIS$(time_in,:,:,:)
+         else
+           var = file_handle[:]->$getTHIS$(time_in,:,:,:)
+         end if
        end if
 
        ua = wrf_user_unstagger(var,var@stagger)
@@ -776,9 +839,17 @@ begin
          end if
        end if
        if ( time .eq. -1 ) then
-         var = nc_file->$getTHIS$
+         if(ISFILE) then
+           var = nc_file->$getTHIS$
+         else
+           var = file_handle[:]->$getTHIS$
+         end if
        else
-         var = nc_file->$getTHIS$(time_in,:,:,:)
+         if(ISFILE) then
+           var = nc_file->$getTHIS$(time_in,:,:,:)
+         else
+           var = file_handle[:]->$getTHIS$(time_in,:,:,:)
+         end if
        end if
 
        va = wrf_user_unstagger(var,var@stagger)
@@ -791,9 +862,17 @@ begin
   if( variable .eq. "wa" ) then
        ; W interpolated to mass points
        if ( time .eq. -1 ) then
-         var = nc_file->W
+         if(ISFILE) then
+           var = nc_file->W
+         else
+           var = file_handle[:]->W
+         end if
        else
-         var = nc_file->W(time_in,:,:,:)
+         if(ISFILE) then
+           var = nc_file->W(time_in,:,:,:)
+         else
+           var = file_handle[:]->W(time_in,:,:,:)
+         end if
        end if
 
        wa = wrf_user_unstagger(var,var@stagger)
@@ -807,20 +886,38 @@ begin
        ; Full model pressure [=base pressure (PB) + pertubation pressure (P)]
        if(isfilevar(nc_file,"P")) then
          if ( time .eq. -1 ) then
-           var = nc_file->P
-           PB  = nc_file->PB
+           if(ISFILE) then
+             var = nc_file->P
+             PB  = nc_file->PB
+           else
+             var = file_handle[:]->P
+             PB  = file_handle[:]->PB
+           end if
          else
-           var = nc_file->P(time_in,:,:,:)
-           PB  = nc_file->PB(time_in,:,:,:)
+           if(ISFILE) then
+             var = nc_file->P(time_in,:,:,:)
+             PB  = nc_file->PB(time_in,:,:,:)
+           else
+             var = file_handle[:]->P(time_in,:,:,:)
+             PB  = file_handle[:]->PB(time_in,:,:,:)
+           end if
          end if
          var = var + PB
        else
          ;; may be a met_em file - see if we can get PRES
          if(isfilevar(nc_file,"PRES")) then
            if ( time .eq. -1 ) then
-             var = nc_file->PRES
+             if(ISFILE) then
+               var = nc_file->PRES
+             else
+               var = file_handle[:]->PRES
+             end if
            else
-             var = nc_file->PRES(time_in,:,:,:)
+             if(ISFILE) then
+               var = nc_file->PRES(time_in,:,:,:)
+             else
+               var = file_handle[:]->PRES(time_in,:,:,:)
+             end if
            end if
          end if
        end if
@@ -838,11 +935,21 @@ begin
        ; Height [=full geopotentail height / 9.81]
        if(isfilevar(nc_file,"PH")) then
          if ( time .eq. -1 ) then
-           var = nc_file->PH
-           PHB = nc_file->PHB
+           if(ISFILE) then
+             var = nc_file->PH
+             PHB = nc_file->PHB
+           else
+             var = file_handle[:]->PH
+             PHB = file_handle[:]->PHB
+           end if
          else
-           var = nc_file->PH(time,:,:,:)
-           PHB = nc_file->PHB(time,:,:,:)
+           if(ISFILE) then
+             var = nc_file->PH(time,:,:,:)
+             PHB = nc_file->PHB(time,:,:,:)
+           else
+             var = file_handle[:]->PH(time,:,:,:)
+             PHB = file_handle[:]->PHB(time,:,:,:)
+           end if
          end if
 
          var = var + PHB
@@ -853,9 +960,17 @@ begin
          ;; may be a met_em file - see if we can get GHT - data in met_em file is Height in M
          if(isfilevar(nc_file,"GHT")) then
            if ( time .eq. -1 ) then
-             z = nc_file->GHT
+             if(ISFILE) then
+               z = nc_file->GHT
+             else
+               z = file_handle[:]->GHT
+             end if
            else
-             z = nc_file->GHT(time,:,:,:)
+             if(ISFILE) then
+               z = nc_file->GHT(time,:,:,:)
+             else
+               z = file_handle[:]->GHT(time,:,:,:)
+             end if
            end if
            z = z * 9.81
            z@description = "Geopotential"
@@ -876,9 +991,17 @@ begin
   if( any( variable .eq. (/"th","theta"/) ) ) then
        ; Potentail Temperature is model output T + 300K
        if ( time .eq. -1 ) then
-         var = nc_file->T
+         if(ISFILE) then
+           var = nc_file->T
+         else
+           var = file_handle[:]->T
+         end if
        else
-         var = nc_file->T(time_in,:,:,:)
+         if(ISFILE) then
+           var = nc_file->T(time_in,:,:,:)
+         else
+           var = file_handle[:]->T(time_in,:,:,:)
+         end if
        end if  
        var = var + 300.
        var@description = "Potential Temperature (theta) "
@@ -891,13 +1014,25 @@ begin
        ;; function wrf_tk needs theta and pressure (Pa) on input and returns temperature in K on return
        if(isfilevar(nc_file,"T")) then
          if ( time .eq. -1 ) then
-           T  = nc_file->T
-           P  = nc_file->P
-           PB = nc_file->PB
+           if(ISFILE) then
+             T  = nc_file->T
+             P  = nc_file->P
+             PB = nc_file->PB
+           else
+             T  = file_handle[:]->T
+             P  = file_handle[:]->P
+             PB = file_handle[:]->PB
+           end if
          else
-           T  = nc_file->T(time_in,:,:,:)
-           P  = nc_file->P(time_in,:,:,:)
-           PB = nc_file->PB(time_in,:,:,:)
+           if(ISFILE) then
+             T  = nc_file->T(time_in,:,:,:)
+             P  = nc_file->P(time_in,:,:,:)
+             PB = nc_file->PB(time_in,:,:,:)
+           else
+             T  = file_handle[:]->T(time_in,:,:,:)
+             P  = file_handle[:]->P(time_in,:,:,:)
+             PB = file_handle[:]->PB(time_in,:,:,:)
+           end if
          end if  
          T = T + 300.
          P = P + PB
@@ -908,9 +1043,17 @@ begin
          ;; may be a met_em file - see if we can get TT
          if(isfilevar(nc_file,"TT")) then
            if ( time .eq. -1 ) then
-             t = nc_file->TT
+             if(ISFILE) then
+               t = nc_file->TT
+             else
+               t = file_handle[:]->TT
+             end if
            else
-             t = nc_file->TT(time_in,:,:,:)
+             if(ISFILE) then
+               t = nc_file->TT(time_in,:,:,:)
+             else
+               t = file_handle[:]->TT(time_in,:,:,:)
+             end if
            end if  
          end if  
        end if  
@@ -926,13 +1069,25 @@ begin
   if( variable .eq. "td" ) then
        ;; function wrf_td needs qv and pressure (Pa) on input and returns dewpoint temperature on return
        if ( time .eq. -1 ) then
-         P      = nc_file->P
-         PB     = nc_file->PB
-         QVAPOR = nc_file->QVAPOR
+         if(ISFILE) then
+           P      = nc_file->P
+           PB     = nc_file->PB
+           QVAPOR = nc_file->QVAPOR
+         else
+           P      = file_handle[:]->P
+           PB     = file_handle[:]->PB
+           QVAPOR = file_handle[:]->QVAPOR
+         end if
        else
-         P      = nc_file->P(time_in,:,:,:)
-         PB     = nc_file->PB(time_in,:,:,:)
-         QVAPOR = nc_file->QVAPOR(time_in,:,:,:)
+         if(ISFILE) then
+           P      = nc_file->P(time_in,:,:,:)
+           PB     = nc_file->PB(time_in,:,:,:)
+           QVAPOR = nc_file->QVAPOR(time_in,:,:,:)
+         else
+           P      = file_handle[:]->P(time_in,:,:,:)
+           PB     = file_handle[:]->PB(time_in,:,:,:)
+           QVAPOR = file_handle[:]->QVAPOR(time_in,:,:,:)
+         end if
        end if
        P = P + PB
        td  = wrf_td( P , QVAPOR )
@@ -946,11 +1101,21 @@ begin
   if( variable .eq. "td2" ) then
        ;; function wrf_td needs qv and pressure (Pa) on input and returns dewpoint temperature on return
        if ( time .eq. -1 ) then
-         PSFC = nc_file->PSFC
-         Q2   = nc_file->Q2
+         if(ISFILE) then
+           PSFC = nc_file->PSFC
+           Q2   = nc_file->Q2
+         else
+           PSFC = file_handle[:]->PSFC
+           Q2   = file_handle[:]->Q2
+         end if
        else
-         PSFC = nc_file->PSFC(time_in,:,:) 
-         Q2   = nc_file->Q2(time_in,:,:)
+         if(ISFILE) then
+           PSFC = nc_file->PSFC(time_in,:,:) 
+           Q2   = nc_file->Q2(time_in,:,:)
+         else
+           PSFC = file_handle[:]->PSFC(time_in,:,:) 
+           Q2   = file_handle[:]->Q2(time_in,:,:)
+         end if
        end if
        td = wrf_td( PSFC , Q2 )
        delete_VarAtts(Q2,(/"description","units"/))
@@ -966,19 +1131,37 @@ begin
          ;; first compute theta - function wrf_tk needs theta and pressure (Pa) on input
          ;; THEN compute sea level pressure, from qv, p (Pa), tk, z
          if ( time .eq. -1 ) then
-           T      = nc_file->T
-           P      = nc_file->P
-           PB     = nc_file->PB
-           QVAPOR = nc_file->QVAPOR
-           PH     = nc_file->PH
-           PHB    = nc_file->PHB
+           if(ISFILE) then
+             T      = nc_file->T
+             P      = nc_file->P
+             PB     = nc_file->PB
+             QVAPOR = nc_file->QVAPOR
+             PH     = nc_file->PH
+             PHB    = nc_file->PHB
+           else
+             T      = file_handle[:]->T
+             P      = file_handle[:]->P
+             PB     = file_handle[:]->PB
+             QVAPOR = file_handle[:]->QVAPOR
+             PH     = file_handle[:]->PH
+             PHB    = file_handle[:]->PHB
+           end if
          else
-           T      = nc_file->T(time_in,:,:,:)
-           P      = nc_file->P(time_in,:,:,:)
-           PB     = nc_file->PB(time_in,:,:,:)
-           QVAPOR = nc_file->QVAPOR(time_in,:,:,:)
-           PH     = nc_file->PH(time_in,:,:,:)
-           PHB    = nc_file->PHB(time_in,:,:,:)
+           if(ISFILE) then
+             T      = nc_file->T(time_in,:,:,:)
+             P      = nc_file->P(time_in,:,:,:)
+             PB     = nc_file->PB(time_in,:,:,:)
+             QVAPOR = nc_file->QVAPOR(time_in,:,:,:)
+             PH     = nc_file->PH(time_in,:,:,:)
+             PHB    = nc_file->PHB(time_in,:,:,:)
+           else
+             T      = file_handle[:]->T(time_in,:,:,:)
+             P      = file_handle[:]->P(time_in,:,:,:)
+             PB     = file_handle[:]->PB(time_in,:,:,:)
+             QVAPOR = file_handle[:]->QVAPOR(time_in,:,:,:)
+             PH     = file_handle[:]->PH(time_in,:,:,:)
+             PHB    = file_handle[:]->PHB(time_in,:,:,:)
+           end if
          end if
          T = T + 300.
          P = P + PB
@@ -993,10 +1176,19 @@ begin
        else
          ;; may be a met_em file - see if we can get PMSL
          if(isfilevar(nc_file,"PMSL")) then
+print("here1")
            if ( time .eq. -1 ) then
-             slp = nc_file->PMSL
+             if(ISFILE) then
+               slp = nc_file->PMSL
+             else
+               slp = file_handle[:]->PMSL
+             end if
            else
-             slp = nc_file->PMSL(time_in,:,:)
+             if(ISFILE) then
+               slp = nc_file->PMSL(time_in,:,:)
+             else
+               slp = file_handle[:]->PMSL(time_in,:,:)
+             end if
            end if
          end if
        end if  
@@ -1011,15 +1203,29 @@ begin
          ;; first compute theta - function wrf_tk needs theta and pressure (Pa) on input
          ;; THEN compute rh, using tk, p (Pa), QVAPOR
          if ( time .eq. -1 ) then
-           T      = nc_file->T
-           P      = nc_file->P
-           PB     = nc_file->PB
-           QVAPOR = nc_file->QVAPOR
+           if(ISFILE) then
+             T      = nc_file->T
+             P      = nc_file->P
+             PB     = nc_file->PB
+             QVAPOR = nc_file->QVAPOR
+           else
+             T      = file_handle[:]->T
+             P      = file_handle[:]->P
+             PB     = file_handle[:]->PB
+             QVAPOR = file_handle[:]->QVAPOR
+           end if
          else
-           T      = nc_file->T(time_in,:,:,:)
-           P      = nc_file->P(time_in,:,:,:)
-           PB     = nc_file->PB(time_in,:,:,:)
-           QVAPOR = nc_file->QVAPOR(time_in,:,:,:)
+           if(ISFILE) then
+             T      = nc_file->T(time_in,:,:,:)
+             P      = nc_file->P(time_in,:,:,:)
+             PB     = nc_file->PB(time_in,:,:,:)
+             QVAPOR = nc_file->QVAPOR(time_in,:,:,:)
+           else
+             T      = file_handle[:]->T(time_in,:,:,:)
+             P      = file_handle[:]->P(time_in,:,:,:)
+             PB     = file_handle[:]->PB(time_in,:,:,:)
+             QVAPOR = file_handle[:]->QVAPOR(time_in,:,:,:)
+           end if
          end if  
          T = T + 300.
          P  = P + PB
@@ -1032,9 +1238,17 @@ begin
          ;; may be a met_em file - see if we can get RH
          if(isfilevar(nc_file,"RH")) then
            if ( time .eq. -1 ) then
-             rh = nc_file->RH
+             if(ISFILE) then
+               rh = nc_file->RH
+             else
+               rh = file_handle[:]->RH
+             end if
            else
-             rh = nc_file->RH(time_in,:,:,:)
+             if(ISFILE) then
+               rh = nc_file->RH(time_in,:,:,:)
+             else
+               rh = file_handle[:]->RH(time_in,:,:,:)
+             end if
            end if
          end if
        end if  
@@ -1047,13 +1261,25 @@ begin
        if(isfilevar(nc_file,"T2")) then
          ;; Compute rh2, using T2, PSFC, Q2
          if ( time .eq. -1 ) then
-           T2   = nc_file->T2
-           PSFC = nc_file->PSFC
-           Q2   = nc_file->Q2
+           if(ISFILE) then
+             T2   = nc_file->T2
+             PSFC = nc_file->PSFC
+             Q2   = nc_file->Q2
+           else
+             T2   = file_handle[:]->T2
+             PSFC = file_handle[:]->PSFC
+             Q2   = file_handle[:]->Q2
+           end if
          else
-           T2   = nc_file->T2(time_in,:,:)
-           PSFC = nc_file->PSFC(time_in,:,:)
-           Q2   = nc_file->Q2(time_in,:,:)
+           if(ISFILE) then
+             T2   = nc_file->T2(time_in,:,:)
+             PSFC = nc_file->PSFC(time_in,:,:)
+             Q2   = nc_file->Q2(time_in,:,:)
+           else
+             T2   = file_handle[:]->T2(time_in,:,:)
+             PSFC = file_handle[:]->PSFC(time_in,:,:)
+             Q2   = file_handle[:]->Q2(time_in,:,:)
+           end if
          end if  
          Q2 = Q2 > 0.000
          rh = wrf_rh( Q2, PSFC, T2 )
@@ -1065,9 +1291,17 @@ begin
          if(isfilevar(nc_file,"RH")) then
            print("Probably a met_em file - get lowerst level from RH field")
            if ( time .eq. -1 ) then
-             rh2 = nc_file->RH(:,0,:,:)
+             if(ISFILE) then
+               rh2 = nc_file->RH(:,0,:,:)
+             else
+               rh2 = file_handle[:]->RH(:,0,:,:)
+             end if
            else
-             rh2 = nc_file->RH(time_in,0,:,:)
+             if(ISFILE) then
+               rh2 = nc_file->RH(time_in,0,:,:)
+             else
+               rh2 = file_handle[:]->RH(time_in,0,:,:)
+             end if
            end if
          end if
        end if  
@@ -1078,25 +1312,49 @@ begin
 
   if( variable .eq. "pvo" ) then
        if ( time .eq. -1 ) then
-         U    = nc_file->U
-         V    = nc_file->V
-         T    = nc_file->T
-         P    = nc_file->P
-         PB   = nc_file->PB
-         MSFU = nc_file->MAPFAC_U
-         MSFV = nc_file->MAPFAC_V
-         MSFM = nc_file->MAPFAC_M
-         COR  = nc_file->F
+         if(ISFILE) then
+           U    = nc_file->U
+           V    = nc_file->V
+           T    = nc_file->T
+           P    = nc_file->P
+           PB   = nc_file->PB
+           MSFU = nc_file->MAPFAC_U
+           MSFV = nc_file->MAPFAC_V
+           MSFM = nc_file->MAPFAC_M
+           COR  = nc_file->F
+         else
+           U    = file_handle[:]->U
+           V    = file_handle[:]->V
+           T    = file_handle[:]->T
+           P    = file_handle[:]->P
+           PB   = file_handle[:]->PB
+           MSFU = file_handle[:]->MAPFAC_U
+           MSFV = file_handle[:]->MAPFAC_V
+           MSFM = file_handle[:]->MAPFAC_M
+           COR  = file_handle[:]->F
+         end if
        else
-         U    = nc_file->U(time_in,:,:,:)
-         V    = nc_file->V(time_in,:,:,:)
-         T    = nc_file->T(time_in,:,:,:)
-         P    = nc_file->P(time_in,:,:,:)
-         PB   = nc_file->PB(time_in,:,:,:)
-         MSFU = nc_file->MAPFAC_U(time_in,:,:)
-         MSFV = nc_file->MAPFAC_V(time_in,:,:)
-         MSFM = nc_file->MAPFAC_M(time_in,:,:)
-         COR  = nc_file->F(time_in,:,:)
+         if(ISFILE) then
+           U    = nc_file->U(time_in,:,:,:)
+           V    = nc_file->V(time_in,:,:,:)
+           T    = nc_file->T(time_in,:,:,:)
+           P    = nc_file->P(time_in,:,:,:)
+           PB   = nc_file->PB(time_in,:,:,:)
+           MSFU = nc_file->MAPFAC_U(time_in,:,:)
+           MSFV = nc_file->MAPFAC_V(time_in,:,:)
+           MSFM = nc_file->MAPFAC_M(time_in,:,:)
+           COR  = nc_file->F(time_in,:,:)
+         else
+           U    = file_handle[:]->U(time_in,:,:,:)
+           V    = file_handle[:]->V(time_in,:,:,:)
+           T    = file_handle[:]->T(time_in,:,:,:)
+           P    = file_handle[:]->P(time_in,:,:,:)
+           PB   = file_handle[:]->PB(time_in,:,:,:)
+           MSFU = file_handle[:]->MAPFAC_U(time_in,:,:)
+           MSFV = file_handle[:]->MAPFAC_V(time_in,:,:)
+           MSFM = file_handle[:]->MAPFAC_M(time_in,:,:)
+           COR  = file_handle[:]->F(time_in,:,:)
+         end if
        end if  
        T = T + 300.
        P = P + PB
@@ -1114,19 +1372,37 @@ begin
 
   if( variable .eq. "avo" ) then
        if ( time .eq. -1 ) then
-         U    = nc_file->U
-         V    = nc_file->V
-         MSFU = nc_file->MAPFAC_U
-         MSFV = nc_file->MAPFAC_V
-         MSFM = nc_file->MAPFAC_M
-         COR  = nc_file->F
+         if(ISFILE) then
+           U    = nc_file->U
+           V    = nc_file->V
+           MSFU = nc_file->MAPFAC_U
+           MSFV = nc_file->MAPFAC_V
+           MSFM = nc_file->MAPFAC_M
+           COR  = nc_file->F
+         else
+           U    = file_handle[:]->U
+           V    = file_handle[:]->V
+           MSFU = file_handle[:]->MAPFAC_U
+           MSFV = file_handle[:]->MAPFAC_V
+           MSFM = file_handle[:]->MAPFAC_M
+           COR  = file_handle[:]->F
+         end if
        else
-         U    = nc_file->U(time_in,:,:,:)
-         V    = nc_file->V(time_in,:,:,:)
-         MSFU = nc_file->MAPFAC_U(time_in,:,:)
-         MSFV = nc_file->MAPFAC_V(time_in,:,:)
-         MSFM = nc_file->MAPFAC_M(time_in,:,:)
-         COR  = nc_file->F(time_in,:,:)
+         if(ISFILE) then
+           U    = nc_file->U(time_in,:,:,:)
+           V    = nc_file->V(time_in,:,:,:)
+           MSFU = nc_file->MAPFAC_U(time_in,:,:)
+           MSFV = nc_file->MAPFAC_V(time_in,:,:)
+           MSFM = nc_file->MAPFAC_M(time_in,:,:)
+           COR  = nc_file->F(time_in,:,:)
+         else
+           U    = file_handle[:]->U(time_in,:,:,:)
+           V    = file_handle[:]->V(time_in,:,:,:)
+           MSFU = file_handle[:]->MAPFAC_U(time_in,:,:)
+           MSFV = file_handle[:]->MAPFAC_V(time_in,:,:)
+           MSFM = file_handle[:]->MAPFAC_M(time_in,:,:)
+           COR  = file_handle[:]->F(time_in,:,:)
+         end if
        end if  
        DX = nc_file@DX
        DY = nc_file@DY
@@ -1159,28 +1435,60 @@ begin
        end do
 
        if ( time .eq. -1 ) then
-         T  = nc_file->T
-         P  = nc_file->P
-         PB = nc_file->PB
-         qv = nc_file->QVAPOR
-         qr = nc_file->QRAIN
+         if(ISFILE) then
+           T  = nc_file->T
+           P  = nc_file->P
+           PB = nc_file->PB
+           qv = nc_file->QVAPOR
+           qr = nc_file->QRAIN
+         else
+           T  = file_handle[:]->T
+           P  = file_handle[:]->P
+           PB = file_handle[:]->PB
+           qv = file_handle[:]->QVAPOR
+           qr = file_handle[:]->QRAIN
+         end if
          if(isfilevar(nc_file,"QSNOW"))
-           qs = nc_file->QSNOW
+           if(ISFILE) then
+             qs = nc_file->QSNOW
+           else
+             qs = file_handle[:]->QSNOW
+           end if
          end if
          if(isfilevar(nc_file,"QGRAUP"))
-           qg = nc_file->QGRAUP
+           if(ISFILE) then
+             qg = nc_file->QGRAUP
+           else
+             qg = file_handle[:]->QGRAUP
+           end if
          end if
        else
-         T  = nc_file->T(time_in,:,:,:)
-         P  = nc_file->P(time_in,:,:,:)
-         PB = nc_file->PB(time_in,:,:,:)
-         qv = nc_file->QVAPOR(time_in,:,:,:)
-         qr = nc_file->QRAIN(time_in,:,:,:)
+         if(ISFILE) then
+           T  = nc_file->T(time_in,:,:,:)
+           P  = nc_file->P(time_in,:,:,:)
+           PB = nc_file->PB(time_in,:,:,:)
+           qv = nc_file->QVAPOR(time_in,:,:,:)
+           qr = nc_file->QRAIN(time_in,:,:,:)
+         else
+           T  = file_handle[:]->T(time_in,:,:,:)
+           P  = file_handle[:]->P(time_in,:,:,:)
+           PB = file_handle[:]->PB(time_in,:,:,:)
+           qv = file_handle[:]->QVAPOR(time_in,:,:,:)
+           qr = file_handle[:]->QRAIN(time_in,:,:,:)
+         end if
          if(isfilevar(nc_file,"QSNOW"))
-           qs = nc_file->QSNOW(time_in,:,:,:)
+           if(ISFILE) then
+             qs = nc_file->QSNOW(time_in,:,:,:)
+           else
+             qs = file_handle[:]->QSNOW(time_in,:,:,:)
+           end if
          end if
          if(isfilevar(nc_file,"QGRAUP"))
-           qg = nc_file->QGRAUP(time_in,:,:,:)
+           if(ISFILE) then
+             qg = nc_file->QGRAUP(time_in,:,:,:)
+           else
+             qg = file_handle[:]->QGRAUP(time_in,:,:,:)
+           end if
          end if
        end if
        T  = T + 300.
@@ -1238,23 +1546,45 @@ begin
 
   if( any( variable .eq. (/"cape_3d","cape_2d"/) ) ) then
        if ( time .eq. -1 ) then
-         T  = nc_file->T
-         P  = nc_file->P
-         PB = nc_file->PB
-         QV = nc_file->QVAPOR
-         PH  = nc_file->PH
-         PHB = nc_file->PHB
-         HGT = nc_file->HGT
-         PSFC = nc_file->PSFC
+         if(ISFILE) then
+           T  = nc_file->T
+           P  = nc_file->P
+           PB = nc_file->PB
+           QV = nc_file->QVAPOR
+           PH  = nc_file->PH
+           PHB = nc_file->PHB
+           HGT = nc_file->HGT
+           PSFC = nc_file->PSFC
+         else
+           T  = file_handle[:]->T
+           P  = file_handle[:]->P
+           PB = file_handle[:]->PB
+           QV = file_handle[:]->QVAPOR
+           PH  = file_handle[:]->PH
+           PHB = file_handle[:]->PHB
+           HGT = file_handle[:]->HGT
+           PSFC = file_handle[:]->PSFC
+         end if
        else
-         T  = nc_file->T(time_in,:,:,:)
-         P  = nc_file->P(time_in,:,:,:)
-         PB = nc_file->PB(time_in,:,:,:)
-         QV = nc_file->QVAPOR(time_in,:,:,:)
-         PH  = nc_file->PH(time_in,:,:,:)
-         PHB = nc_file->PHB(time_in,:,:,:)
-         HGT = nc_file->HGT(time_in,:,:)
-         PSFC = nc_file->PSFC(time_in,:,:)
+         if(ISFILE) then
+           T  = nc_file->T(time_in,:,:,:)
+           P  = nc_file->P(time_in,:,:,:)
+           PB = nc_file->PB(time_in,:,:,:)
+           QV = nc_file->QVAPOR(time_in,:,:,:)
+           PH  = nc_file->PH(time_in,:,:,:)
+           PHB = nc_file->PHB(time_in,:,:,:)
+           HGT = nc_file->HGT(time_in,:,:)
+           PSFC = nc_file->PSFC(time_in,:,:)
+         else
+           T  = file_handle[:]->T(time_in,:,:,:)
+           P  = file_handle[:]->P(time_in,:,:,:)
+           PB = file_handle[:]->PB(time_in,:,:,:)
+           QV = file_handle[:]->QVAPOR(time_in,:,:,:)
+           PH  = file_handle[:]->PH(time_in,:,:,:)
+           PHB = file_handle[:]->PHB(time_in,:,:,:)
+           HGT = file_handle[:]->HGT(time_in,:,:)
+           PSFC = file_handle[:]->PSFC(time_in,:,:)
+         end if
        end if
        T = T + 300.
        P  = P + PB 
@@ -1265,13 +1595,13 @@ begin
 
        if( variable .eq. "cape_3d" ) then
          cape = wrf_cape_3d( P, tk, QV, z, HGT, PSFC, True )
-         cape@descriptsion = "cape ; cin"
+         cape@description = "cape ; cin"
        end if
        if( variable .eq. "cape_2d" ) then
          cape = wrf_cape_2d( P, tk, QV, z, HGT, PSFC, True )
          delete_VarAtts(T,(/"MemoryOrder"/))
          cape@MemoryOrder = "XY"
-         cape@descriptsion = "mcape ; mcin ; lcl ; lfc"
+         cape@description = "mcape ; mcin ; lcl ; lfc"
        end if
        delete_VarAtts(T,(/"description","units"/))
        copy_VarAtts(T,cape)
@@ -1307,9 +1637,17 @@ begin
 
   if( any( variable .eq. (/"times"/) ) ) then
     if ( time .eq. -1 ) then
-      var = nc_file->Times
+      if(ISFILE) then
+        var = nc_file->Times
+      else
+        var = file_handle[:]->Times
+      end if
     else
-      var = nc_file->Times(time_in,:)
+      if(ISFILE) then
+        var = nc_file->Times(time_in,:)
+      else
+        var = file_handle[:]->Times(time_in,:)
+      end if
     end if
     dims = dimsizes(var)
     times = new(dims(0),string)
@@ -1325,21 +1663,41 @@ begin
 ;  end of diagnostic variable list - we must want a variable already in the file.  
 
   if ( time .eq. -1 ) then
-    var = nc_file->$variable$
+    if(ISFILE) then
+      var = nc_file->$variable$
+    else
+      var = file_handle[:]->$variable$
+    end if
   else
     ;  check variable dimensionality and pull proper time  out of file
     ndims = dimsizes(filevardimsizes(nc_file,variable))
     if( ndims .eq. 4) then
-      var = nc_file->$variable$(time_in,:,:,:)
+      if(ISFILE) then
+        var = nc_file->$variable$(time_in,:,:,:)
+      else
+        var = file_handle[:]->$variable$(time_in,:,:,:)
+      end if
     end if
     if( ndims .eq. 3) then
-      var = nc_file->$variable$(time_in,:,:)
+      if(ISFILE) then
+        var = nc_file->$variable$(time_in,:,:)
+      else
+        var = file_handle[:]->$variable$(time_in,:,:)
+      end if
     end if
     if( ndims .eq. 2) then
-      var = nc_file->$variable$(time_in,:)
+      if(ISFILE) then
+        var = nc_file->$variable$(time_in,:)
+      else
+        var = file_handle[:]->$variable$(time_in,:)
+      end if
     end if
     if( ndims .eq. 1) then
+      if(ISFILE) then
       var = nc_file->$variable$(time_in)
+      else
+      var = file_handle[:]->$variable$(time_in)
+      end if
     end if
   end if
 
@@ -1513,14 +1871,25 @@ end
 
 
 ;--------------------------------------------------------------------------------
-
+; This function was modified in May 2011 to allow a list of files.
+;
 undef("wrf_user_list_times")
-function wrf_user_list_times( nc_file:file )
+function wrf_user_list_times( nc_file )
 
 local times, times_in_file, dims, i
 begin
 
-  times_in_file = nc_file->Times
+;---As of NCL V6.0.0, wrf_user_getvar can now handle a file or a list of files.
+  if(all(typeof(nc_file).ne.(/"file","list"/))) then
+    print("wrf_user_list_times: error: the input argument must be a file or a list of files opened with addfile or addfiles")
+    return
+  end if
+
+  if(typeof(nc_file).eq."file") then
+    times_in_file = nc_file->Times
+  else
+    times_in_file = nc_file[:]->Times
+  end if
   dims = dimsizes(times_in_file)
   times = new(dims(0),string)
   do i=0,dims(0)-1
@@ -1539,7 +1908,6 @@ function wrf_user_latlon_to_ij( nc_file:file, latitude:numeric, \
                                 longitude:numeric )
 
 begin
-
   WE       = "WEST-EAST_GRID_DIMENSION"
   SN       = "SOUTH-NORTH_GRID_DIMENSION"
   wedim    = nc_file@$WE$
@@ -1563,10 +1931,25 @@ end
 ;--------------------------------------------------------------------------------
 
 undef("wrf_user_ll_to_ij")
-function wrf_user_ll_to_ij( nc_file:file, longitude:numeric, latitude:numeric, \
+function wrf_user_ll_to_ij( file_handle, longitude:numeric, latitude:numeric, \
                             opts_args:logical )
 
 begin
+;
+; As of NCL V6.0.0, wrf_user_ll_to_ij can now handle a file 
+; or a list of files.
+;
+  if(typeof(file_handle).eq."file") then
+    ISFILE = True
+    nc_file = file_handle
+  else if(typeof(file_handle).eq."list") then
+    ISFILE = False
+    nc_file = file_handle[0]
+  else
+    print("wrf_user_ll_to_ij: error: the first argument must be a file or a list of files opened with addfile or addfiles")
+    return
+  end if
+  end if
 
   opts = opts_args
   useT  = get_res_value(opts,"useTime",0)
@@ -1592,13 +1975,22 @@ begin
     res@LONINC = 0.0
   end if
 
-
   if(isfilevar(nc_file,"XLAT"))
-    XLAT  = nc_file->XLAT(useT,:,:)
-    XLONG = nc_file->XLONG(useT,:,:)
+    if(ISFILE) then
+      XLAT  = nc_file->XLAT(useT,:,:)
+      XLONG = nc_file->XLONG(useT,:,:)
+    else
+      XLAT  = file_handle[useT]->XLAT(useT,:,:)
+      XLONG = file_handle[useT]->XLONG(useT,:,:)
+    end if
   else
-    XLAT  = nc_file->XLAT_M(useT,:,:)
-    XLONG = nc_file->XLONG_M(useT,:,:)
+    if(ISFILE) then
+      XLAT  = nc_file->XLAT_M(useT,:,:)
+      XLONG = nc_file->XLONG_M(useT,:,:)
+    else
+      XLAT  = file_handle[useT]->XLAT_M(useT,:,:)
+      XLONG = file_handle[useT]->XLONG_M(useT,:,:)
+    end if
   end if
 
 
@@ -1625,10 +2017,25 @@ end
 ;--------------------------------------------------------------------------------
 
 undef("wrf_user_ij_to_ll")
-function wrf_user_ij_to_ll( nc_file:file, i:numeric, j:numeric, \
+function wrf_user_ij_to_ll( file_handle, i:numeric, j:numeric, \
                             opts_args:logical )
 
 begin
+;
+; As of NCL V6.0.0, wrf_user_ll_to_ij can now handle a file 
+; or a list of files.
+;
+  if(typeof(file_handle).eq."file") then
+    ISFILE = True
+    nc_file = file_handle
+  else if(typeof(file_handle).eq."list") then
+    ISFILE = False
+    nc_file = file_handle[0]
+  else
+    print("wrf_user_ij_to_ll: error: the first argument must be a file or a list of files opened with addfile or addfiles")
+    return
+  end if
+  end if
 
   opts = opts_args
   useT  = get_res_value(opts,"useTime",0)
@@ -1654,14 +2061,23 @@ begin
   end if
 
 
-  if(isfilevar(nc_file,"XLAT"))
-    XLAT  = nc_file->XLAT(useT,:,:)
-    XLONG = nc_file->XLONG(useT,:,:)
+  if(isfilevar(nc_file,"XLAT")) then
+    if(ISFILE) then
+      XLAT  = nc_file->XLAT(useT,:,:)
+      XLONG = nc_file->XLONG(useT,:,:)
+    else
+      XLAT  = file_handle[useT]->XLAT(useT,:,:)
+      XLONG = file_handle[useT]->XLONG(useT,:,:)
+    end if
   else
-    XLAT  = nc_file->XLAT_M(useT,:,:)
-    XLONG = nc_file->XLONG_M(useT,:,:)
+    if(ISFILE) then
+      XLAT  = nc_file->XLAT_M(useT,:,:)
+      XLONG = nc_file->XLONG_M(useT,:,:)
+    else
+      XLAT  = file_handle[useT]->XLAT_M(useT,:,:)
+      XLONG = file_handle[useT]->XLONG_M(useT,:,:)
+    end if
   end if
-
 
   res@REF_LAT = XLAT(0,0)
   res@REF_LON = XLONG(0,0)
@@ -2220,7 +2636,7 @@ begin
     MTOPosF = 0.20
   end if
 
-  txt0 = create "MainPlotTilte" textItemClass wks
+  txt0 = create "MainPlotTitle" textItemClass wks
     "txString"      : opts@MainTitle
     "txFontHeightF" : font_height*1.5
   end create
