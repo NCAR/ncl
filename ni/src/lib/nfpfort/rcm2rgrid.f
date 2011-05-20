@@ -43,6 +43,7 @@ c .             =4/5; xo or yo are not monotonically increasing
 c
 c                              local
       INTEGER          NG, NX,NY,NEXACT,IX,IY,M,N,NW,NER,K,NCRT
+      INTEGER          MFLAG, MPTCRT, MKNT
       DOUBLE PRECISION FW(2,2),W(2,2),SUMF,SUMW,CHKLAT(NYI),CHKLON(NXI)
       DOUBLE PRECISION EPS
       DOUBLE PRECISION DGCDIST
@@ -171,6 +172,25 @@ c                                             nw =1 nearest neighbor
    20          CONTINUE
        END DO
       END DO
+
+C Since the RCM grid is curvilinear the above algorithm may not work 
+C .   for all of the locations on regular grid. Fill via linear interp.
+
+      MKNT   =  0
+      MFLAG  =  0
+      MPTCRT =  2
+      DO NG=1,NGRD
+        DO NY=1,NYO
+          DO NX=1,NXO
+             IF (FO(NX,NY,NG).EQ.XMSG) THEN
+                 CALL DLINMSG(FO(1,NY,NG),NXO,XMSG,MFLAG,MPTCRT)
+                 MKNT = MKNT + 1
+             END IF
+          END DO
+        END DO
+      END DO
+
+C C C PRINT *,"MKNT=",MKNT
 
       RETURN
       END
