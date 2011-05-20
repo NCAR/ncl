@@ -1,6 +1,6 @@
 C NCLFORTSTART
       SUBROUTINE DRCM2RGRID(NGRD,NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO
-     +                     ,XMSG,NCRIT,OPT,IER)
+     +                      ,XMSG,NCRIT,OPT,IER)
       IMPLICIT NONE
       INTEGER          NGRD,NXI,NYI,NXO,NYO,NCRIT,OPT,IER
       DOUBLE PRECISION XI(NXI,NYI),YI(NXI,NYI),FI(NXI,NYI,NGRD)
@@ -83,11 +83,11 @@ c c c k = opt
       END IF
 c                              initialize to xmsg
       DO NG=1,NGRD      
-	DO NY = 1,NYO
-          DO NX = 1,NXO
-              FO(NX,NY,NG) = XMSG
-          END DO
-	END DO
+         DO NY = 1,NYO
+            DO NX = 1,NXO
+               FO(NX,NY,NG) = XMSG
+            END DO
+         END DO
       END DO
 c                              main loop [exact matches]
 c                              people want bit-for-bit match
@@ -96,24 +96,23 @@ c                              people want bit-for-bit match
 
       DO NY = 1,NYO
         DO NX = 1,NXO
-	  
-          DO IY = 1,NYI
-            DO IX = 1,NXI
-               IF (XO(NX).GE.(XI(IX,IY)-EPS) .AND.
-     +             XO(NX).LE.(XI(IX,IY)+EPS) .AND.
-     +             YO(NY).GE.(YI(IX,IY)-EPS) .AND.
-     +             YO(NY).LE.(YI(IX,IY)+EPS) ) THEN
-
-                   DO NG=1,NGRD
-                      FO(NX,NY,NG) = FI(IX,IY,NG)
-                      NEXACT = NEXACT + 1
-                   END DO
-                   GO TO 10
-               END IF
-            END DO
-          END DO
-
-   10      CONTINUE
+           DO IY = 1,NYI
+              DO IX = 1,NXI
+                 IF (XO(NX).GE.(XI(IX,IY)-EPS) .AND.
+     +                XO(NX).LE.(XI(IX,IY)+EPS) .AND.
+     +                YO(NY).GE.(YI(IX,IY)-EPS) .AND.
+     +                YO(NY).LE.(YI(IX,IY)+EPS) ) THEN
+                    
+                    DO NG=1,NGRD
+                       FO(NX,NY,NG) = FI(IX,IY,NG)
+                       NEXACT = NEXACT + 1
+                    END DO
+                    GO TO 10
+                 END IF
+              END DO
+           END DO
+           
+ 10        CONTINUE
         END DO
       END DO
 
