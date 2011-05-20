@@ -1980,22 +1980,29 @@ begin
       XLAT  = nc_file->XLAT(useT,:,:)
       XLONG = nc_file->XLONG(useT,:,:)
     else
-      XLAT  = file_handle[useT]->XLAT(useT,:,:)
-      XLONG = file_handle[useT]->XLONG(useT,:,:)
+      XLAT  = file_handle[useT]->XLAT
+      XLONG = file_handle[useT]->XLONG
     end if
   else
     if(ISFILE) then
       XLAT  = nc_file->XLAT_M(useT,:,:)
       XLONG = nc_file->XLONG_M(useT,:,:)
     else
-      XLAT  = file_handle[useT]->XLAT_M(useT,:,:)
-      XLONG = file_handle[useT]->XLONG_M(useT,:,:)
+      XLAT  = file_handle[useT]->XLAT_M
+      XLONG = file_handle[useT]->XLONG_M
     end if
   end if
 
 
-  res@REF_LAT = XLAT(0,0)
-  res@REF_LON = XLONG(0,0)
+  if(dimsizes(dimsizes(XLAT)).eq.2) then
+; Rank 2
+    res@REF_LAT = XLAT(0,0)
+    res@REF_LON = XLONG(0,0)
+  else
+; Rank 3
+    res@REF_LAT = XLAT(0,0,0)
+    res@REF_LON = XLONG(0,0,0)
+  end if
   res@KNOWNI  = 1.0
   res@KNOWNJ  = 1.0
 
@@ -2066,21 +2073,28 @@ begin
       XLAT  = nc_file->XLAT(useT,:,:)
       XLONG = nc_file->XLONG(useT,:,:)
     else
-      XLAT  = file_handle[useT]->XLAT(useT,:,:)
-      XLONG = file_handle[useT]->XLONG(useT,:,:)
+      XLAT  = file_handle[useT]->XLAT
+      XLONG = file_handle[useT]->XLONG
     end if
   else
     if(ISFILE) then
       XLAT  = nc_file->XLAT_M(useT,:,:)
       XLONG = nc_file->XLONG_M(useT,:,:)
     else
-      XLAT  = file_handle[useT]->XLAT_M(useT,:,:)
-      XLONG = file_handle[useT]->XLONG_M(useT,:,:)
+      XLAT  = file_handle[useT]->XLAT_M
+      XLONG = file_handle[useT]->XLONG_M
     end if
   end if
 
-  res@REF_LAT = XLAT(0,0)
-  res@REF_LON = XLONG(0,0)
+  if(dimsizes(dimsizes(XLAT)).eq.2) then
+; Rank 2
+    res@REF_LAT = XLAT(0,0)
+    res@REF_LON = XLONG(0,0)
+  else
+; Rank 3
+    res@REF_LAT = XLAT(0,0,0)
+    res@REF_LON = XLONG(0,0,0)
+  end if
   res@KNOWNI  = 1.0
   res@KNOWNJ  = 1.0
 
