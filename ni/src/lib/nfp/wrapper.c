@@ -425,7 +425,6 @@ extern NhlErrorTypes area_conserve_remap_W(void);
 extern NhlErrorTypes rcm2rgrid_W(void);
 extern NhlErrorTypes rgrid2rcm_W(void);
 extern NhlErrorTypes rcm2points_W(void);
-extern NhlErrorTypes rcm2points_test_W(void);
 extern NhlErrorTypes pres_hybrid_W(void);
 extern NhlErrorTypes pres_hybrid_ccm_W(void);
 extern NhlErrorTypes dpres_hybrid_W(void);
@@ -6099,19 +6098,6 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     NclRegisterFunc(rcm2points_W,args,"rcm2points",nargs);
-
-/*
- * Register "rcm2points_test". This may eventually replace "rcm2points".
- */
-    nargs = 0;
-    args = NewArgs(6);
-    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    NclRegisterFunc(rcm2points_test_W,args,"rcm2points_test",nargs);
 
 /*
  * Register "pres_hybrid".
