@@ -772,14 +772,14 @@ NhlErrorTypes rcm2points_W( void )
  */
 	if (!strcmp(attr_list->attname, "k")) {
 	  if(attr_list->attvalue->multidval.data_type != NCL_int) {
-	    NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2points: The 'k' attribute must be an integer, defaulting to 2.");
-	    k = 2;
+	    NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2points: The 'k' attribute must be an integer, defaulting to 1.");
+	    k = 1;
 	  }
 	  else {
 	    k = *(int*) attr_list->attvalue->multidval.val;
 	    if(k <= 0) {
-	      NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2points: The 'k' attribute is < 0. Defaulting to 2.");
-	      k = 2;
+	      NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2points: The 'k' attribute is < 0. Defaulting to 1.");
+	      k = 1;
 	    }
 	    else {
 	      set_k = True;
@@ -796,7 +796,7 @@ NhlErrorTypes rcm2points_W( void )
 /*
  * If user didn't set k, then set it here.
  */
-  if(!set_k) k = 2;
+  if(!set_k) k = 1;
 
   NGCALLF(drcm2points,DRCM2POINTS)(&ingrid,&inlat2d,&inlon2d,tmp_lat2d,
                                    tmp_lon2d,tmp_fi,&inlat1d,tmp_lat1d,
