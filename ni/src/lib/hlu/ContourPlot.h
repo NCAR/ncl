@@ -296,11 +296,17 @@ typedef enum _NhlcnFillMode {
 #define NhlNcnGridBoundPerimThicknessF	"cnGridBoundPerimThicknessF"
 #define NhlNcnGridBoundPerimDashPattern "cnGridBoundPerimDashPattern"
 #define NhlNcnGridBoundPerimColor	"cnGridBoundPerimColor"
+#define NhlNcnGridBoundFillColor	"cnGridBoundFillColor"
+#define NhlNcnGridBoundFillPattern	"cnGridBoundFillPattern"
+#define NhlNcnGridBoundFillScaleF	"cnGridBoundFillScaleF"
 
 #define NhlNcnOutOfRangePerimOn		"cnOutOfRangePerimOn"
 #define NhlNcnOutOfRangePerimThicknessF	"cnOutOfRangePerimThicknessF"
 #define NhlNcnOutOfRangePerimDashPattern "cnOutOfRangePerimDashPattern"
 #define NhlNcnOutOfRangePerimColor	"cnOutOfRangePerimColor"
+#define NhlNcnOutOfRangeFillColor	"cnOutOfRangeFillColor"
+#define NhlNcnOutOfRangeFillPattern	"cnOutOfRangeFillPattern"
+#define NhlNcnOutOfRangeFillScaleF	"cnOutOfRangeFillScaleF"
 
 #define NhlNcnDumpAreaMap		"cnDumpAreaMap"
 #define NhlNcnFixFillBleed		"cnFixFillBleed"
@@ -522,6 +528,7 @@ typedef enum _NhlcnFillMode {
 #define NhlCcnConstFLabelPerimThicknessF "CnConstFLabelPerimThicknessF"
 #define NhlCcnConstFLabelPerimColor	"CnConstFLabelPerimColor"
 
+#if 0
 #define NhlCcnMissingValPerimOn		"CnMissingValPerimOn"
 #define NhlCcnMissingValPerimGridBoundOn "CnMissingValPerimGridBoundOn"
 #define NhlCcnMissingValPerimThicknessF	"CnMissingValPerimThicknessF"
@@ -544,6 +551,7 @@ typedef enum _NhlcnFillMode {
 #define NhlCcnOutOfRangeFillColor	"CnOutOfRangeFillColor"
 #define NhlCcnOutOfRangeFillPattern	"CnOutOfRangeFillPattern"
 #define NhlCcnOutOfRangeFillScaleF	"CnOutOfRangeFillScaleF"
+#endif
 
 #endif
 

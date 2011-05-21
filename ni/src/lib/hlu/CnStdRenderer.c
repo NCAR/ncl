@@ -361,9 +361,11 @@ static void SetRegionAttrs
 		c_cpseti("CLU",1);
 
 	if (cpix == -1)
-		c_cpseti("AIA",0);
+		c_cpseti("AIA",99);
 	else if (cpix == -2)
 		c_cpseti("AIA",98);
+	else if (cpix == -3)
+		c_cpseti("AIA",97);
 	else
 		c_cpseti("AIA",-1);
 
@@ -1846,8 +1848,14 @@ int (_NHLCALLF(hlucpfill,HLUCPFILL))
 				NhlcnRegionAttrs *reg_attrs;
 
 				switch (iai[i]) {
+				case 99:
+					reg_attrs = &Cnp->grid_bound;
+					break;
 				case 98:
 					reg_attrs = &Cnp->missing_val;
+					break;
+				case 97:
+					reg_attrs = &Cnp->out_of_range;
 					break;
 				default:
 					return 0;
@@ -1937,8 +1945,16 @@ void  (_NHLCALLF(hlucpscae,HLUCPSCAE))
 		col_ix = Cnp->gks_fill_colors[*iaid - 100];
 		if (col_ix < 0) col_ix = NhlBACKGROUND;
 	}
+	else if (*iaid == 99) {
+		col_ix = Cnp->grid_bound.gks_fcolor;
+		if (col_ix < 0) col_ix = NhlBACKGROUND;
+	}
 	else if (*iaid == 98) {
 		col_ix = Cnp->missing_val.gks_fcolor;
+		if (col_ix < 0) col_ix = NhlBACKGROUND;
+	}
+	else if (*iaid == 97) {
+		col_ix = Cnp->out_of_range.gks_fcolor;
 		if (col_ix < 0) col_ix = NhlBACKGROUND;
 	}
 	else {
@@ -2840,10 +2856,12 @@ NhlErrorTypes _NhlRasterFill
 			(_NHLCALLF(hlucpmpxy,HLUCPMPXY))
 				(&map,&xccu,&yccu,&xccd,&yccd);
 			zval = spv;
-			if (xccd == orv ||
-			    xccd < xmn || xccd > xmx || 
-			    yccd < ymn || yccd > ymx) {
+			if (xccd == orv) {
 				iaid = 97;
+			}
+			else if (xccd < xmn || xccd > xmx || 
+				 yccd < ymn || yccd > ymx) {
+				iaid = 99;
 			}
 			else {
 				xcci =(xccd-xc1) / dxstep;
@@ -2854,7 +2872,7 @@ NhlErrorTypes _NhlRasterFill
 					(int) ycci : (int)(ycci + 0.5);
 				if (indx < 0 || indx > izdm-1 ||
 				    indy < 0 || indy > izdn-1)
-					iaid = 97;
+					iaid = 99;
 				else if (spv != 0.0 &&
 					 *(zdat + indy * izd1 + indx) == spv)
 					iaid = 98;

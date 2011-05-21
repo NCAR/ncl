@@ -742,6 +742,15 @@ static NhlResource resources[] = {
 	{NhlNcnGridBoundPerimColor,NhlCEdgeColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(grid_bound.perim_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNcnGridBoundFillColor,NhlCFillColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(grid_bound.fill_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlTRANSPARENT),0,NULL},
+	{NhlNcnGridBoundFillPattern,NhlCFillPattern,NhlTFillIndex,
+		 sizeof(NhlFillIndex),Oset(grid_bound.fill_pat),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlSOLIDFILL),0,NULL},
+	{NhlNcnGridBoundFillScaleF,NhlCFillScaleF,
+		 NhlTFloat,sizeof(float),Oset(grid_bound.fill_scale),
+		 NhlTString, _NhlUSET("1.0"),0,NULL},
 
 /* Out of range area resources */
 
@@ -758,6 +767,15 @@ static NhlResource resources[] = {
 	{NhlNcnOutOfRangePerimColor,NhlCEdgeColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(out_of_range.perim_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNcnOutOfRangeFillColor,NhlCFillColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(out_of_range.fill_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlTRANSPARENT),0,NULL},
+	{NhlNcnOutOfRangeFillPattern,NhlCFillPattern,NhlTFillIndex,
+		 sizeof(NhlFillIndex),Oset(out_of_range.fill_pat),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlSOLIDFILL),0,NULL},
+	{NhlNcnOutOfRangeFillScaleF,NhlCFillScaleF,
+		 NhlTFloat,sizeof(float),Oset(out_of_range.fill_scale),
+		 NhlTString, _NhlUSET("1.0"),0,NULL},
 	{NhlNcnConpackParams, NhlCcnConpackParams,NhlTStringGenArray,
 		 sizeof(NhlPointer),Oset(conpack_params),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),
@@ -2004,9 +2022,6 @@ ContourPlotInitialize
         cnp->gks_fill_colors = NULL;
         cnp->gks_line_colors = NULL;
         cnp->gks_llabel_colors = NULL;
-        cnp->grid_bound.fill_color = cnp->out_of_range.fill_color = 0;
-        cnp->grid_bound.fill_pat = cnp->out_of_range.fill_pat = 0;
-        cnp->grid_bound.fill_scale = cnp->out_of_range.fill_scale = 1.0;
 	cnp->levels_set = True;
 	cnp->render_obj = NULL;
 
