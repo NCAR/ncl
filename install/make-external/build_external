@@ -524,6 +524,8 @@ then
       ./configure --disable-f90 --prefix\=$PREFIX
     else
 # This is for NetCDF 4.1.2.
+      export LDFLAGS="-L$PREFIX/lib"
+      export CPPFLAGS="-I$PREFIX/include"
       ./configure --enable-netcdf-4 --enable-opendap --disable-f90 --disable-shared --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX --enable-large-file-tests --enable-dap-remote-tests
 # This is for NetCDF 4.0.1.
 #      ./configure --enable-netcdf-4 --disable-f90 --disable-shared --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
