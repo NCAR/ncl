@@ -537,7 +537,7 @@ NhlErrorTypes rcm2points_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
-  logical set_k;
+  logical set_search_width;
 /*
  * Output variables.
  */
@@ -552,7 +552,7 @@ NhlErrorTypes rcm2points_W( void )
  */
   ng_size_t nlon2d, nlat2d, nfi, nlat1d, nfo, ngrid, size_fi, size_fo;
   ng_size_t i;
-  int k, ier, ret;
+  int search_width, ier, ret;
   int inlon2d, inlat2d, ingrid, inlat1d;
 /*
  * Retrieve parameters
@@ -737,7 +737,7 @@ NhlErrorTypes rcm2points_W( void )
 /* 
  * Check if any attributes have been attached to opt.
  */
-  set_k = False;
+  set_search_width = False;
   stack_entry = _NclGetArg(5, 6, DONT_CARE);
   switch (stack_entry.kind) {;;
   case NclStk_VAR:
@@ -764,25 +764,22 @@ NhlErrorTypes rcm2points_W( void )
 /*
  * Loop through attributes and check them. The current ones recognized are:
  *
- *   "k"
+ *   "search_width"
  */
       while (attr_list != NULL) {
-/*
- * Check for "jopt".
- */
-	if (!strcmp(attr_list->attname, "k")) {
+	if (!strcmp(attr_list->attname, "search_width")) {
 	  if(attr_list->attvalue->multidval.data_type != NCL_int) {
-	    NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2points: The 'k' attribute must be an integer, defaulting to 1.");
-	    k = 1;
+	    NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2points: The 'search_width' attribute must be an integer, defaulting to 1.");
+	    search_width = 1;
 	  }
 	  else {
-	    k = *(int*) attr_list->attvalue->multidval.val;
-	    if(k <= 0) {
-	      NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2points: The 'k' attribute is < 0. Defaulting to 1.");
-	      k = 1;
+	    search_width = *(int*) attr_list->attvalue->multidval.val;
+	    if(search_width <= 0) {
+	      NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2points: The 'search_width' attribute is < 0. Defaulting to 1.");
+	      search_width = 1;
 	    }
 	    else {
-	      set_k = True;
+	      set_search_width = True;
 	    }
 	  }
 	}
@@ -794,14 +791,14 @@ NhlErrorTypes rcm2points_W( void )
   }
 
 /*
- * If user didn't set k, then set it here.
+ * If user didn't set search_width, then set it here.
  */
-  if(!set_k) k = 1;
+  if(!set_search_width) search_width = 1;
 
   NGCALLF(drcm2points,DRCM2POINTS)(&ingrid,&inlat2d,&inlon2d,tmp_lat2d,
                                    tmp_lon2d,tmp_fi,&inlat1d,tmp_lat1d,
                                    tmp_lon1d,tmp_fo,&missing_dfi.doubleval,
-                                   opt,&tmp_ncrit,&k,&ier);
+                                   opt,&tmp_ncrit,&search_width,&ier);
   if(ier) {
     if(ier == 1) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2points: not enough points in input/output array");
