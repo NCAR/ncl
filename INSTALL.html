@@ -1,11 +1,11 @@
-<html>
+s<html>
 <head>
-<title>How to build NCL and NCAR Graphics V6.0.0-beta from source code</title>
+<title>How to build NCL and NCAR Graphics V6.0.0 from source code</title>
 </head>
 
-<h1>How to build NCL and NCAR Graphics V6.0.0-beta from source code</h1>
+<h1>How to build NCL and NCAR Graphics V6.0.0 from source code</h1>
 <p>
-<i>March 2, 2011</i><p>
+<i>May 23, 2011</i><p>
 
 This is an all-encompassing document on:
 
@@ -250,7 +250,7 @@ use gfortran or g95.
 <p>
 
 <li>Some external software packages have newer versions. For example,
-NetCDF is at version 4.1.1 and now includes OPeNDAP software. We
+NetCDF is at version 4.1.x and now includes OPeNDAP software. We
 highly recommend that you link against this version and not an older
 version.
 <p>
@@ -501,7 +501,7 @@ href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF</a> - do
 not install if you are only doing an NCAR Graphics build.
 <p>
 
-Download version 4.1.1 or later (do <b>not</b> download 4.1.0).
+Download version 4.1.x or later (do <b>not</b> download 4.1.0).
 <p>
 
 NetCDF versions 4 and later support both NetCDF-3 files and NetCDF-4
@@ -510,12 +510,13 @@ and the "classic" version of NetCDF-4 files, which optionally allows
 compression for potentially smaller files.
 <p>
 
-NetCDF versions 4.1.1 and later support OPenDAP, and this is built in by
-default. We recommend you use V4.1.1 as 4.1.0 had a serious bug. NetCDF
-4.1.x also includes the UDUNITS-2 software, but the stand-alone
-UDUNITS-2 library is more up-to-date so we recommend this over the
-one that comes with NetCDF. See <a href="#UDUNITS2">instructions
-on building and installing UDUNITS-2</a>.
+NetCDF versions 4.1.1 and later support OPenDAP, and this is built in
+by default. We recommend you do NOT use V4.1.0 as it had a serious
+bug. NetCDF 4.1.x also includes the UDUNITS-2 software, but the
+stand-alone UDUNITS-2 library is more up-to-date so we recommend this
+over the one that comes with
+NetCDF. See <a href="#UDUNITS2">instructions on building and
+installing UDUNITS-2</a>.
 <p>
 
 This software can be built different ways: with or without "classic"
@@ -572,10 +573,9 @@ szip page.
 <p>
 
 <A NAME="HDF5"></A>
-<li><a
-href="http://www.hdfgroup.org/HDF5/release/obtain5.html">HDF-5</a> -
-Download version 1.8.4-patch1 or 1.8.5-patch1. <b>Do not download hdf5
-versions 1.8.0 through 1.8.5!</b>
+<li><a href="http://www.hdfgroup.org/HDF5/release/obtain5.html">HDF-5</a>
+- Download version 1.8.6. <b>Do not download hdf5 versions 1.8.0
+through 1.8.5 (1.8.5-patch1 is okay).</b>
 <p>
 
 <pre>
@@ -815,10 +815,6 @@ Now type:
 <A NAME="GDAL_PROJ4"></A>
 <b>GDAL/PROJ.4 software</b> - not needed if you are only doing an NCAR
 Graphics build.<p>
-
-<b>The NCL support for this software is currently in beta testing so
-use at your own risk.</b>
-<p>
 
 If you need support for reading shapefile, mapinfo, TIGER, etc, file
 formats, then you will need to download and install the following
@@ -1261,18 +1257,18 @@ HREF="http://www.ncl.ucar.edu/Download/">http://www.ncl.ucar.edu/Download/</A>
 </BLOCKQUOTE>
 
 The NCL source code you download will be a single compressed tar
-file (we'll call it "ncl_ncarg_src-6.0.0-beta.tar.gz"). Move the
-"ncl_ncarg_src-6.0.0-beta.tar.gz" file to a temporary directory where you
+file (we'll call it "ncl_ncarg_src-6.0.0.tar.gz"). Move the
+"ncl_ncarg_src-6.0.0.tar.gz" file to a temporary directory where you
 have plenty of disk space (around 250 megabytes to hold all of the
 source code, object files, binaries, and so on). Then, uncompress and
 untar the file as follows:<P>
 
 <pre>
-  gunzip ncl_ncarg_src-6.0.0-beta.tar.gz
-  tar -xvf ncl_ncarg_src-6.0.0-beta.tar
+  gunzip ncl_ncarg_src-6.0.0.tar.gz
+  tar -xvf ncl_ncarg_src-6.0.0.tar
 </pre>
 
-The above steps will create a directory called "ncl_ncarg-6.0.0-beta".  For
+The above steps will create a directory called "ncl_ncarg-6.0.0".  For
 convenience, we'll use the notation $NCARG to mean the top level of
 the NCL/NCAR Graphics source tree. Set the environment variable NCARG
 to the full path of this directory.
@@ -1284,21 +1280,21 @@ From tcsh or csh:
 <p>
 
 <pre>
-  setenv NCARG /usr/local/src/ncl_ncarg-6.0.0-beta
+  setenv NCARG /usr/local/src/ncl_ncarg-6.0.0
 </pre>
 
 From ksh or bash:
 <p>
 
 <pre>
-  export NCARG=/usr/local/src/ncl_ncarg-6.0.0-beta
+  export NCARG=/usr/local/src/ncl_ncarg-6.0.0
 </pre>
 
 sh:
 <p>
 
 <pre>
-  NCARG=/usr/local/src/ncl_ncarg-6.0.0-beta
+  NCARG=/usr/local/src/ncl_ncarg-6.0.0
   export NCARG
 </pre>
 <p>
