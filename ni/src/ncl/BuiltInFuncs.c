@@ -4691,7 +4691,7 @@ NhlErrorTypes _NclIasciiread
 			Ncl_MultiDValData,
 			0,
 			tmp_ptr,
-			NULL,
+			&(thetype->type_class.default_mis),
 			n_dimensions,
 			dimsizes,
 			TEMPORARY,
