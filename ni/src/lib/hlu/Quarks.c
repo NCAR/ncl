@@ -55,7 +55,7 @@ SOFTWARE.
 /* Not cost effective, at least for vanilla MIT clients */
 /* #define PERMQ */
 
-typedef unsigned long Entry;
+typedef unsigned int Entry;
 #ifdef PERMQ
 typedef unsigned char Bits;
 #endif
@@ -72,26 +72,30 @@ static Bits **permTable = NULL;
 static NrmQuark nextUniq = -1;	/* next quark from NrmUniqueQuark */
 
 #define QUANTUMSHIFT	8
-#define QUANTUMMASK	((1 << QUANTUMSHIFT) - 1)
+#define QUANTUMMASK	((1 << QUANTUMSHIFT) - 1)    /* 255 */
 #define CHUNKPER	8
-#define CHUNKMASK	((CHUNKPER << QUANTUMSHIFT) - 1)
+#define CHUNKMASK	((CHUNKPER << QUANTUMSHIFT) - 1) /* 2047 */
 
 #define LARGEQUARK	((Entry)0x80000000L)
 #define QUARKSHIFT	18
-#define QUARKMASK	((LARGEQUARK - 1) >> QUARKSHIFT)
-#define SIGMASK		((1L << QUARKSHIFT) - 1)
 
-#define STRQUANTSIZE	(sizeof(NrmString) * (QUANTUMMASK + 1))
+#define QUARKMASK	((LARGEQUARK - 1) >> QUARKSHIFT) /* 8191 */
+#define SIGMASK		((1L << QUARKSHIFT) - 1)  /* 262143 */
+
+#define STRQUANTSIZE	(sizeof(NrmString) * (QUANTUMMASK + 1))  /* 4 or 8 * 256 */
 #ifdef PERMQ
 #define QUANTSIZE	(STRQUANTSIZE + \
 			 (sizeof(Bits) * ((QUANTUMMASK + 1) >> 3))
 #else
 #define QUANTSIZE	STRQUANTSIZE
 #endif
-
+/*long long  rehash_count = 0;*/
 #define HASH(sig) ((sig) & quarkMask)
 #define REHASHVAL(sig) ((((sig) % quarkRehash) + 2) | 1)
-#define REHASH(idx,rehash) ((idx + rehash) & quarkMask)
+/*
+#define REHASH(idx,rehash) ((idx + rehash) & quarkMask) ; rehash_count++
+*/
+#define REHASH(idx,rehash) ((idx + rehash) & quarkMask) 
 #define NAME(q) stringTable[(q) >> QUANTUMSHIFT][(q) & QUANTUMMASK]
 #ifdef PERMQ
 #define BYTEREF(q) permTable[(q) >> QUANTUMSHIFT][((q) & QUANTUMMASK) >> 3]
@@ -162,7 +166,8 @@ ExpandQuarkTable()
     register Entry *oldentries, *entries;
     register Entry entry;
     register int oldidx, newidx, rehash;
-    Signature sig;
+    Signature sig,sum;
+    int count;
     NrmQuark q;
 
     oldentries = quarkTable;
@@ -189,7 +194,7 @@ ExpandQuarkTable()
 #ifdef PERMQ
 	permTable[0] = (Bits *)((char *)stringTable[0] + STRQUANTSIZE);
 #endif
-	newmask = 0x1ff;
+	newmask = 0x7ffff;
     }
     entries = (Entry *)NhlMalloc(sizeof(Entry) * (newmask + 1));
     if (!entries)
@@ -206,8 +211,15 @@ ExpandQuarkTable()
 	    else
 		q = (entry >> QUARKSHIFT) & QUARKMASK;
 	    /* SUPPRESS 624 */
-	    for (sig = 0, s = NAME(q); ((c = *s++)!=0); )
+	    for (sig = sum = count = 0, s = NAME(q), c = *s; c != 0; c = *(++s)) {
+	        count++;
+		if (count % 32 == 0) {
+			sum += sig;
+			sig = 0;
+		}
 		sig = (sig << 1) + c;
+	    }
+	    sig += sum;
 	    newidx = HASH(sig);
 	    if (entries[newidx]) {
 		rehash = REHASHVAL(sig);
@@ -217,6 +229,7 @@ ExpandQuarkTable()
 	    }
 	    entries[newidx] = entry;
 	}
+
     }
     if (oldmask)
 	NhlFree((char *)oldentries);
@@ -249,8 +262,9 @@ NrmQuark _NrmInternalStringToQuark(name, len, sig, permstring)
 	if (entry & LARGEQUARK)
 	    q = entry & (LARGEQUARK-1);
 	else {
-	    if ((entry - sig) & SIGMASK)
-		goto nomatch;
+		if ((entry - sig) & SIGMASK) {
+			goto nomatch;
+		}
 	    q = (entry >> QUARKSHIFT) & QUARKMASK;
 	}
 	for (i = len, s1 = (char *)name, s2 = NAME(q); --i >= 0; ) {
@@ -343,15 +357,23 @@ NrmQuark NrmStringToQuark(name)
 {
     register char c, *tname;
     register Signature sig = 0;
+    register Signature sum = 0;
+    register int count = 0;
 
     if (!name)
 	return (NrmNULLQUARK);
     
-    /* SUPPRESS 624 */
-    for (tname = (char *)name; ((c = *tname++)!=0); )
-	sig = (sig << 1) + c;
+    for (tname = (char *)name, c = *tname; c != 0; c = *(++tname)) {
+	    count++;
+	    if (count % 32 == 0) {
+		    sum += sig;
+		    sig = 0;
+	    }
+	    sig = (sig << 1) + c;
+    }
+    sig += sum;
 
-    return _NrmInternalStringToQuark(name, tname-(char *)name-1, sig, False);
+    return _NrmInternalStringToQuark(name, count, sig, False);
 }
 
 #if NeedFunctionPrototypes
@@ -364,15 +386,23 @@ NrmQuark NrmPermStringToQuark(name)
 {
     register char c, *tname;
     register Signature sig = 0;
+    register Signature sum = 0;
+    register int count = 0;
 
     if (!name)
 	return (NrmNULLQUARK);
+    
+    for (tname = (char *)name, c = *tname; c != 0; c = *(++tname)) {
+	    count++;
+	    if (count % 32 == 0) {
+		    sum += sig;
+		    sig = 0;
+	    }
+	    sig = (sig << 1) + c;
+    }
+    sig += sum;
 
-    /* SUPPRESS 624 */
-    for (tname = (char *)name; ((c = *tname++)!=0); )
-	sig = (sig << 1) + c;
-
-    return _NrmInternalStringToQuark(name, tname-(char *)name-1, sig, True);
+    return _NrmInternalStringToQuark(name, count, sig, True);
 }
 
 NrmQuark NrmUniqueQuark()
