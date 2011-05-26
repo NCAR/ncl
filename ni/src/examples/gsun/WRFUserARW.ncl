@@ -1176,7 +1176,6 @@ begin
        else
          ;; may be a met_em file - see if we can get PMSL
          if(isfilevar(nc_file,"PMSL")) then
-print("here1")
            if ( time .eq. -1 ) then
              if(ISFILE) then
                slp = nc_file->PMSL
