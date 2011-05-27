@@ -2701,7 +2701,7 @@ NhlBoolean *out_of_range;
 		}
 		if (lon1 > max_lon) max_lon = lon1;
 		if (lon1 < min_lon) min_lon = lon1;
-		NGCALLF(gproj,GPROJ)(&lat0,&lon0,&lat1,&lon1,&x1,&y1);
+		NGCALLF(hlugproj,HLUGPROJ)(&lat0,&lon0,&lat1,&lon1,&x1,&y1);
 		area += x0 * y1 - x1 * y0;
 		x0 = x1;
 		y0 = y1;
