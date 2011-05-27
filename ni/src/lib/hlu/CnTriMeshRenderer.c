@@ -3112,6 +3112,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
  *      initialize cell array with the missing value.
  */      
 	grid_fill_ix = MAX(Cnp->missing_val.gks_fcolor, Cnp->grid_bound.gks_fcolor);
+	grid_fill_ix = grid_fill_ix < 0 ? NhlBACKGROUND : grid_fill_ix;
 	for (j = 0; j < ican; j++) {
 		for (i = 0; i < icam; i++) {
 			*(cell + j * ica1 + i) = grid_fill_ix;
@@ -3121,6 +3122,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
 /*
  * Now overwrite out-of-range areas with the out-of-range color
  */
+	grid_fill_ix = Cnp->out_of_range.gks_fcolor < 0 ? NhlBACKGROUND : Cnp->out_of_range.gks_fcolor;
 	if (Tmp->ezmap) {
 		imap = -map;
 		zval = 0;
@@ -3143,7 +3145,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
 				(_NHLCALLF(hluctmxyz,HLUCTMXYZ))
 					(&imap,&xccd,&yccd,&zval,&xcci,&ycci);
 				if (xcci == orv) {
-					*(cell + j * ica1 + i) = Cnp->out_of_range.gks_fcolor;
+					*(cell + j * ica1 + i) = grid_fill_ix;
 				}
 			}
 		}
@@ -3906,8 +3908,6 @@ void  (_NHLCALLF(hluctscae,HLUCTSCAE))
 #endif
 	}
 	else  {
-		col_ix = Cnp->out_of_range.gks_fcolor;
-
 #if 0
 		printf("hluctscae iaid = %d\n",*iaid);
 #endif
