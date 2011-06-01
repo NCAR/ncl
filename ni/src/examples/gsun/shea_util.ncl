@@ -3829,7 +3829,9 @@ begin
 
   vr  = vr + conform(vr,f,nlt)     ; absolute vorticity   
   con = R/(s*conform(t,p,npr))  
-                                   ; G* added to get common pv units pv    = -G*(vr + con*(dvdp*dtdx-dudp*dtdy))*dthdp  pv@long_name  = "potential vorticity" pv@short_name = "PV"
+                                   ; G* added to get common pv units 
+  pv    = -G*(vr + con*(dvdp*dtdx-dudp*dtdy))*dthdp  
+  pv@long_name  = "potential vorticity" pv@short_name = "PV"
   pv@units      = "K m2/kg/s"      ; common units
   copy_VarCoords(t,pv)
 
