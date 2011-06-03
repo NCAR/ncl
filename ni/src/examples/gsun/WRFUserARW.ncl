@@ -17,6 +17,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 ;                      opt_args[1]:logical)
 ; function wrf_vector(nc_file:file,wks[1]: graphic, data_u[*][*]:numeric, \
 ;                     data_v[*][*]:numeric, opt_args[1]:logical)
+; function wrf_map_resources(in_file[1]:file,opt_args[1]:logical)   
 ; function wrf_map(wks[1]:graphic,in_file[1]:file,opt_args[1]:logical)   
 ; function wrf_map_overlays(in_file[1]:file,wks:graphic,base[1]:graphic, \
 ;                           plots[*]:graphic,opt_arg[1]:logical,mp_arg[1]:logical)
@@ -3536,29 +3537,15 @@ begin
 end
 
 ;--------------------------------------------------------------------------------
-undef("wrf_map")
-function wrf_map(wks[1]:graphic,in_file[1]:file,opt_args[1]:logical)   
-
+undef("wrf_map_resources")
+function wrf_map_resources(in_file[1]:file,map_args[1]:logical)   
+local lat, lon, x1, x2, y1, y2, dims, ii, jj
 begin
 ;
-; This function creates a map plot, and bases the projection on
-; the MAP_PROJ attribute in the given file.
+; This function sets resources for a WRF map plot, basing the projection on
+; the MAP_PROJ attribute in the given file. It's intended to be callable
+; by users who need to set mpXXXX resources for other plotting scripts.
 ;
-;   1. Make a copy of the resource list, and set some resources
-;      common to all map projections.
-;
-;   2. Determine the projection being used, and set resources based
-;      on that projection.
-;
-;   3. Create the map plot, and draw and advance the frame
-;      (if requested).
-
-    if(opt_args.and.isatt(opt_args,"gsnDebugWriteFileName")) then
-      wrf_debug_file = get_res_value(opt_args,"gsnDebugWriteFileName",  "")    
-    end if
-
-    opts = opt_args      ; Make a copy of the resource list
-    opts  = True
 
 ; Set some resources depending on what kind of map projection is 
 ; chosen.
@@ -3573,14 +3560,14 @@ begin
 
 ;   CylindricalEquidistant
       if(in_file@MAP_PROJ .eq. 0)
-        projection          = "CylindricalEquidistant"
-        opts@mpGridSpacingF = 45
-        opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", 0.0)
+        map_args@mpProjection          = "CylindricalEquidistant"
+        map_args@mpGridSpacingF = 45
+        map_args@mpCenterLatF   = get_res_value_keep(map_args, "mpCenterLatF", 0.0)
         if(isatt(in_file,"STAND_LON"))
-          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@STAND_LON)
+          map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@STAND_LON)
         else
           if(isatt(in_file,"CEN_LON"))
-            opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
+            map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@CEN_LON)
           else
            print("ERROR: Found neither STAND_LON or CEN_LON in file")
           end if
@@ -3589,14 +3576,14 @@ begin
 
 ;   LambertConformal projection
       if(in_file@MAP_PROJ .eq. 1)
-        projection               = "LambertConformal"
-        opts@mpLambertParallel1F = get_res_value_keep(opts, "mpLambertParallel1F",in_file@TRUELAT1)
-        opts@mpLambertParallel2F = get_res_value_keep(opts, "mpLambertParallel2F",in_file@TRUELAT2)
+        map_args@mpProjection               = "LambertConformal"
+        map_args@mpLambertParallel1F = get_res_value_keep(map_args, "mpLambertParallel1F",in_file@TRUELAT1)
+        map_args@mpLambertParallel2F = get_res_value_keep(map_args, "mpLambertParallel2F",in_file@TRUELAT2)
         if(isatt(in_file,"STAND_LON"))
-          opts@mpLambertMeridianF  = get_res_value_keep(opts, "mpLambertMeridianF",in_file@STAND_LON)
+          map_args@mpLambertMeridianF  = get_res_value_keep(map_args, "mpLambertMeridianF",in_file@STAND_LON)
         else
           if(isatt(in_file,"CEN_LON"))
-            opts@mpLambertMeridianF  = get_res_value_keep(opts, "mpLambertMeridianF",in_file@CEN_LON)
+            map_args@mpLambertMeridianF  = get_res_value_keep(map_args, "mpLambertMeridianF",in_file@CEN_LON)
           else
            print("ERROR: Found neither STAND_LON or CEN_LON in file")
           end if
@@ -3605,13 +3592,13 @@ begin
   
 ;   Stereographic projection
       if(in_file@MAP_PROJ .eq. 2)
-        projection          = "Stereographic"
-        opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", in_file@CEN_LAT)
+        map_args@mpProjection          = "Stereographic"
+        map_args@mpCenterLatF   = get_res_value_keep(map_args, "mpCenterLatF", in_file@CEN_LAT)
         if(isatt(in_file,"STAND_LON"))
-          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@STAND_LON)
+          map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@STAND_LON)
         else
           if(isatt(in_file,"CEN_LON"))
-            opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
+            map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@CEN_LON)
           else
            print("ERROR: Found neither STAND_LON or CEN_LON in file")
           end if
@@ -3620,13 +3607,13 @@ begin
   
 ;   Mercator projection
       if(in_file@MAP_PROJ .eq. 3)
-        projection          = "Mercator"
-        opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", 0.0)
+        map_args@mpProjection          = "Mercator"
+        map_args@mpCenterLatF   = get_res_value_keep(map_args, "mpCenterLatF", 0.0)
         if(isatt(in_file,"STAND_LON"))
-          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@STAND_LON)
+          map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@STAND_LON)
         else
           if(isatt(in_file,"CEN_LON"))
-            opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
+            map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@CEN_LON)
           else
            print("ERROR: Found neither STAND_LON or CEN_LON in file")
           end if
@@ -3635,32 +3622,31 @@ begin
   
 ;    global WRF CylindricalEquidistant
       if(in_file@MAP_PROJ .eq. 6)
-        projection          = "CylindricalEquidistant"
-        opts@mpGridSpacingF = 45
-        opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
+        map_args@mpProjection          = "CylindricalEquidistant"
+        map_args@mpGridSpacingF = 45
+        map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@CEN_LON)
         if( isatt(in_file,"POLE_LAT") ) then
-          opts@mpCenterRotF = get_res_value_keep(opts, "mpCenterRotF", 90.0 - in_file@POLE_LAT) 
-          delete(opts@mpCenterLonF)
+          map_args@mpCenterRotF = get_res_value_keep(map_args, "mpCenterRotF", 90.0 - in_file@POLE_LAT) 
+          delete(map_args@mpCenterLonF)
           calcen = -190.
-          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF", calcen )
+          map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF", calcen )
         end if
       end if
   
     else
   
-      print("wrf_map: Error: no MAP_PROJ attribute in input file")
-      return(new(1,graphic))
+      return(map_args)
   
     end if
 
-    opts@mpNestTime = get_res_value_keep(opts, "mpNestTime",0)
+    map_args@mpNestTime = get_res_value_keep(map_args, "mpNestTime",0)
 
       if(isfilevar(in_file,"XLAT"))
-        lat = in_file->XLAT(opts@mpNestTime,:,:)
-        lon = in_file->XLONG(opts@mpNestTime,:,:)
+        lat = in_file->XLAT(map_args@mpNestTime,:,:)
+        lon = in_file->XLONG(map_args@mpNestTime,:,:)
       else
-        lat = in_file->XLAT_M(opts@mpNestTime,:,:)
-        lon = in_file->XLONG_M(opts@mpNestTime,:,:)
+        lat = in_file->XLAT_M(map_args@mpNestTime,:,:)
+        lon = in_file->XLONG_M(map_args@mpNestTime,:,:)
       end if
       dims = dimsizes(lat)
 
@@ -3672,53 +3658,90 @@ begin
       end do
       end do
 
-      opts@start_lat = lat(0,0)
-      opts@start_lon = lon(0,0)
-      opts@end_lat   = lat(dims(0)-1,dims(1)-1)
-      opts@end_lon   = lon(dims(0)-1,dims(1)-1)
+      map_args@start_lat = lat(0,0)
+      map_args@start_lon = lon(0,0)
+      map_args@end_lat   = lat(dims(0)-1,dims(1)-1)
+      map_args@end_lon   = lon(dims(0)-1,dims(1)-1)
 
 
 ; Set some resources common to all map projections.
-  opts = set_mp_resources(opts)
+      map_args = set_mp_resources(map_args)
 
-      if ( isatt(opts,"ZoomIn") .and. opts@ZoomIn ) then
+      if ( isatt(map_args,"ZoomIn") .and. map_args@ZoomIn ) then
         y1 = 0
         x1 = 0
         y2 = dims(0)-1
         x2 = dims(1)-1
-        if ( isatt(opts,"Ystart") ) then
-          y1 = opts@Ystart
-          delete(opts@Ystart)
+        if ( isatt(map_args,"Ystart") ) then
+          y1 = map_args@Ystart
+          delete(map_args@Ystart)
         end if
-        if ( isatt(opts,"Xstart") ) then
-          x1 = opts@Xstart
-          delete(opts@Xstart)
+        if ( isatt(map_args,"Xstart") ) then
+          x1 = map_args@Xstart
+          delete(map_args@Xstart)
         end if
-        if ( isatt(opts,"Yend") ) then
-          if ( opts@Yend .le. y2 ) then
-            y2 = opts@Yend
+        if ( isatt(map_args,"Yend") ) then
+          if ( map_args@Yend .le. y2 ) then
+            y2 = map_args@Yend
           end if
-          delete(opts@Yend)
+          delete(map_args@Yend)
         end if
-        if ( isatt(opts,"Xend") ) then
-          if ( opts@Xend .le. x2 ) then
-            x2 = opts@Xend
+        if ( isatt(map_args,"Xend") ) then
+          if ( map_args@Xend .le. x2 ) then
+            x2 = map_args@Xend
           end if
-          delete(opts@Xend)
+          delete(map_args@Xend)
         end if
 
-        opts@mpLeftCornerLatF      = lat(y1,x1)
-        opts@mpLeftCornerLonF      = lon(y1,x1)
-        opts@mpRightCornerLatF     = lat(y2,x2)
-        opts@mpRightCornerLonF     = lon(y2,x2)
+        map_args@mpLeftCornerLatF      = lat(y1,x1)
+        map_args@mpLeftCornerLonF      = lon(y1,x1)
+        map_args@mpRightCornerLatF     = lat(y2,x2)
+        map_args@mpRightCornerLonF     = lon(y2,x2)
 
-        if ( opts@mpRightCornerLonF .lt. 0.0 ) then
-          opts@mpRightCornerLonF  = opts@mpRightCornerLonF + 360.0
+        if ( map_args@mpRightCornerLonF .lt. 0.0 ) then
+          map_args@mpRightCornerLonF  = map_args@mpRightCornerLonF + 360.0
         end if 
 
-        delete(opts@ZoomIn)
+        delete(map_args@ZoomIn)
       end if
 
+      return(map_args)
+end
+
+;--------------------------------------------------------------------------------
+undef("wrf_map")
+function wrf_map(wks[1]:graphic,in_file[1]:file,opt_args[1]:logical)   
+
+begin
+;
+; This function creates a map plot, and bases the projection on
+; the MAP_PROJ attribute in the given file.
+;
+;   1. Make a copy of the resource list, and call a function to set
+;      some resources common to all map projections.
+;
+;   2. Determine the projection being used, and set resources based
+;      on that projection.
+;
+;   3. Create the map plot, and draw and advance the frame
+;      (if requested).
+
+    if(opt_args.and.isatt(opt_args,"gsnDebugWriteFileName")) then
+      wrf_debug_file = get_res_value(opt_args,"gsnDebugWriteFileName",  "")    
+    end if
+
+    opts = opt_args      ; Make a copy of the resource list
+    opts  = True
+
+;---Set some map resources based on parameters and variables in input file.
+    opts = wrf_map_resources(in_file,opts)
+
+    if(.not.isatt(opts,"mpProjection")) then
+      print("wrf_map: Error: no MAP_PROJ attribute in input file")
+      return(new(1,graphic))
+    else
+      projection = opts@mpProjection
+    end if
 
 ; The default is not to draw the plot or advance the frame, and
 ; to maximize the plot in the frame.
