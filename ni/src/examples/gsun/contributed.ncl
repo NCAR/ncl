@@ -2373,6 +2373,54 @@ begin
 end
 
 ; *******************************************************************
+; M. Haley
+; Compute a dimension min of "x" [x may have many dimensions]
+; return with one less dimension. There is no dim_min_Wrap.
+; Copies over all the attributes and coordinate variables
+; x    - multidimensional variable 
+; dims - dimension(s) to do min across
+
+undef ("dim_min_n_Wrap")
+function dim_min_n_Wrap (x:numeric,dims[*]:integer)
+local xmin
+begin
+
+ xmin = dim_min_n(x,dims)   ; min of data [no meta data]
+ 
+ copy_VarAtts (x, xmin)     ; copy attributes
+                            ; copy dim names and coord variables
+ copy_VarCoords_n (x, xmin, dims)
+                                       ; add an extra attribute
+ xmin@min_op_ncl = dimWrapString("dim_min_n",x,dims)
+
+ return (xmin)
+end
+
+; *******************************************************************
+; M. Haley
+; Compute a dimension max of "x" [x may have many dimensions]
+; return with one less dimension. There is no dim_max_Wrap.
+; Copies over all the attributes and coordinate variables
+; x    - multidimensional variable 
+; dims - dimension(s) to do max across
+
+undef ("dim_max_n_Wrap")
+function dim_max_n_Wrap (x:numeric,dims[*]:integer)
+local xmax
+begin
+
+ xmax = dim_max_n(x,dims)   ; max of data [no meta data]
+ 
+ copy_VarAtts (x, xmax)     ; copy attributes
+                            ; copy dim names and coord variables
+ copy_VarCoords_n (x, xmax, dims)
+                                       ; add an extra attribute
+ xmax@max_op_ncl = dimWrapString("dim_max_n",x,dims)
+
+ return (xmax)
+end
+
+; *******************************************************************
 ; D. Shea
 ; Compute a dimension sum of "x" [x may have many dimensions]
 ; return with one less dimension
