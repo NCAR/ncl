@@ -2829,7 +2829,7 @@ function get_lon_values(min_lon:numeric,max_lon:numeric,lon_spacing:numeric,\
                         mlon_spacing:numeric,range_array,lonspacing_array, \
                         mlonspacing_array)
 local lon_range, lcheck_arr, lspcng_arr, mlspcng_arr, lon_spcng, mlon_spcng, \
-start_lon, end_lon, xstart_lon, xend_lon
+start_lon, end_lon, xstart_lon, xend_lon, lon
 begin
 
 ; Initialize
@@ -2916,7 +2916,7 @@ undef("get_lat_values")
 function get_lat_values(min_lat:numeric,max_lat:numeric,lat_spacing:numeric,\
                         mlat_spacing:numeric)
 local lat_range, lcheck_arr, lspcng_arr, mlspcng_arr, lat_spcng, mlat_spcng, \
-start_lat, end_lat, lat, found
+start_lat, end_lat, lat, found, lat
 begin
 
 ; Initialize
