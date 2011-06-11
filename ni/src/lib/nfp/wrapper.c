@@ -5514,7 +5514,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(dim_numrun_n_W,args,"dim_numrun_n",nargs);
 /*

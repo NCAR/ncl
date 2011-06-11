@@ -10,9 +10,9 @@ NhlErrorTypes dim_numrun_n_W( void)
 /*
  * Input
  */
-  int *x, *opt, *dims;
+  int *x, *opt, *dim;
   int ndims_x;
-  ng_size_t dims_dsizes[1], dsizes_x[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
 /*
  * Output
  */
@@ -47,11 +47,11 @@ NhlErrorTypes dim_numrun_n_W( void)
            NULL,
            DONT_CARE);
 
-  dims = (int*)NclGetArgValue(
+  dim = (int*)NclGetArgValue(
            2,
            3,
            NULL,
-           dims_dsizes,
+           NULL,
            NULL,
            NULL,
            NULL,
@@ -59,15 +59,9 @@ NhlErrorTypes dim_numrun_n_W( void)
 /*
  * Some error checking. Make sure input dimensions are valid.
  */
-  for(i = 0; i < dims_dsizes[0]; i++ ) {
-    if(dims[i] < 0 || dims[i] >= ndims_x) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_numrun_n: Invalid dimension sizes to do count across, can't continue");
-      return(NhlFATAL);
-    }
-    if(i > 0 && dims[i] != (dims[i-1]+1)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_numrun_n: Input dimension sizes must be monotonically increasing, can't continue");
-      return(NhlFATAL);
-    }
+  if(*dim < 0 || *dim >= ndims_x) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_numrun_n: Invalid dimension size to do count across, can't continue");
+    return(NhlFATAL);
   }
 
 /*
@@ -75,16 +69,14 @@ NhlErrorTypes dim_numrun_n_W( void)
  * the dimensions to the right and left of the dimensions
  * to do the operation across.
  *
- * The dimension(s) to do the count across are "dims".
+ * The dimension to do the count across is "dim".
  */
   nx = total_nl = total_nr = total_elements = 1;
-  for(i = 0; i < dims[0];   i++) {
+  for(i = 0; i < *dim;   i++) {
     total_nl *= dsizes_x[i];
   }
-  for(i = 0; i < dims_dsizes[0] ; i++) {
-    nx = nx*dsizes_x[dims[i]];
-  }
-  for(i = dims[dims_dsizes[0]-1]+1; i < ndims_x; i++) {
+  nx = nx*dsizes_x[*dim];
+  for(i = *dim+1; i < ndims_x; i++) {
     total_nr *= dsizes_x[i];
   }
   
