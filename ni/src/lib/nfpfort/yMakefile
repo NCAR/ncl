@@ -31,7 +31,8 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	wrf_user_latlon_routines.o vpower.o VSPCORR.o MOC.loops.o \
 	eqthecalc.o bindata.o binavg.o stattrop_dp.o xy2pdf77.o \
 	vinth2p_ecmwf_nodes_dp.o vinth2p_nodes_dp.o obsp1_mult_time_dp.o \
-	area_conremap.o varimax_JiangLing_dp.o wrf_relhl.o calc_uh.o
+	area_conremap.o varimax_JiangLing_dp.o wrf_relhl.o calc_uh.o runknt.o
+
 
 LibraryTarget($(MYNAME),$(FOBJS))
 
