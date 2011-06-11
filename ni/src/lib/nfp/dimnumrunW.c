@@ -20,10 +20,10 @@ NhlErrorTypes dim_numrun_n_W( void)
 /*
  * various
  */
-  ng_size_t i, j, k, nrnx, index_x, index_nrx;
-  ng_size_t total_nl, total_nr, total_elements, npts;
-  int inpts, ret, one=1;
-
+  ng_size_t i, j, k, ii, nrnx, index_x, index_nrx;
+  ng_size_t total_nl, total_nr, total_elements, nx;
+  int inx, ret, one=1;
+  int *tmp_x, *tmp_xrun;
 /* 
  * Retrieve input from NCL script.
  */
@@ -77,43 +77,53 @@ NhlErrorTypes dim_numrun_n_W( void)
  *
  * The dimension(s) to do the count across are "dims".
  */
-  npts = total_nl = total_nr = total_elements = 1;
+  nx = total_nl = total_nr = total_elements = 1;
   for(i = 0; i < dims[0];   i++) {
     total_nl *= dsizes_x[i];
   }
   for(i = 0; i < dims_dsizes[0] ; i++) {
-    npts = npts*dsizes_x[dims[i]];
+    nx = nx*dsizes_x[dims[i]];
   }
   for(i = dims[dims_dsizes[0]-1]+1; i < ndims_x; i++) {
     total_nr *= dsizes_x[i];
   }
   
-  if(npts > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_numrun_n: npts = %ld is greater than INT_MAX", npts);
+  if(nx > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_numrun_n: nx = %ld is greater than INT_MAX", nx);
     return(NhlFATAL);
   }
-  inpts = (int) npts;
+  inx = (int) nx;
 
-  total_elements = npts * total_nr * total_nl;
+  total_elements = nx * total_nr * total_nl;
 
 /*
- * Allocate space for output.
+ * Allocate space for output and temporary input.
  */
-  xrun = (int*)calloc(total_elements, sizeof(int));
+  tmp_x    = (int*)calloc(nx, sizeof(int));
+  xrun     = (int*)calloc(total_elements, sizeof(int));
+  tmp_xrun = (int*)calloc(nx, sizeof(int));
 
-  if(xrun == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_numrun_n: Unable to allocate memory for output");
+  if(tmp_x == NULL || xrun == NULL || tmp_xrun == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_numrun_n: Unable to allocate memory for input/output");
     return(NhlFATAL);
   }
 /*
- * Call the f77 double version of 'medmrng' with the full argument list.
+ * Call the f77 subroutine.
  */
-  nrnx = total_nr * npts;
+  nrnx = total_nr * nx;
   for(i = 0; i < total_nl; i++) {
     index_nrx = i*nrnx;
     for(j = 0; j < total_nr; j++) {
       index_x   = index_nrx + j;
-      NGCALLF(numrun2,NUMRUN2)(&inpts,&one,&x[index_x],opt, &xrun[index_x]);
+      for(k = 0; k < nx; k++ ) {
+	ii = total_nr*k;
+	tmp_x[k] = x[index_x+ii];
+      }
+      NGCALLF(numrun2,NUMRUN2)(&inx,&one,tmp_x,opt, tmp_xrun);
+      for(k = 0; k < nx; k++ ) {
+	ii = total_nr*k;
+	xrun[index_x+ii] = tmp_xrun[k];
+      }
     }
   }
 
