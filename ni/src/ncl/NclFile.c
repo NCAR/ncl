@@ -1428,10 +1428,10 @@ NclMultiDValData value;
 		for (i = 0; i < fcp->num_options; i++) {
 			if (fcp->options[i].name != loption)
 				continue;
-			found = 1;
 			idx = i;
 			if (thefile->file.format_funcs == _NclGetFormatFuncs(fcp->options[i].format))
 			{
+				found = 1;
 				break;
 			}
 		}
@@ -1548,19 +1548,22 @@ NclMultiDValData value;
 		return(NhlWARNING);
 	}
 	else if (format != NrmNULLQUARK) {
+		found = 0;
 		for (i = 0; i < fcp->num_options; i++) {
 			if (fcp->options[i].name != loption)
 				continue;
-			if (! (_NclGetFormatFuncs(format) &&
-			       _NclGetFormatFuncs(format) == _NclGetFormatFuncs(fcp->options[i].format)) ) {
-				if (! (_NclGetLower(format) == NrmStringToQuark("bin") &&
-				       fcp->options[i].format == _NclGetLower(format)) ) {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-						  "FileSetFileOption: %s is not a recognized option for format %s",
-						  NrmQuarkToString(option),NrmQuarkToString(format));
-					return(NhlWARNING);
-				}
+			if ((_NclGetFormatFuncs(format) &&
+			     _NclGetFormatFuncs(format) == _NclGetFormatFuncs(fcp->options[i].format)) ) {
+				found = 1;
+				break;
 			}
+			else if (_NclGetLower(format) == NrmStringToQuark("bin") &&
+				 fcp->options[i].format == _NclGetLower(format)) {
+				found = 1;
+				break;
+			}
+		}
+		if (found) {
 			if (! value) {
 				/* if no value specified restore default - it's not an error */
 				tmp_md = fcp->options[i].def_value;
