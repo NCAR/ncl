@@ -12341,7 +12341,7 @@ local ier, xin, dimx, rank, dim_dst, ntim, klev, nlat, mlon, lat, lon \
     , errMsg, dst_add , src_add, s, nS, map_wts, xout1d, xout, xoutf  \
     , fdimNames, fdimSizes, ia, ja, ib, jb, knam, nt, kl, ilon, jlon  \
     , radUnints, latUnits, lonUnits, gridType_a , gridType_b, dim_src \
-    , irnk, src_rank, dst_rank
+    , irnk, src_rank, dst_rank, ranko
 begin
          ; check 'fhom' argument
       if (.not.(typeof(fhom).eq."file"    .or. \
@@ -12560,7 +12560,7 @@ begin
       end if
 
       xinDimNames = getvardims(xin)
-      if (any(xinDimNames.eq."ncol")) then
+      if (any(xinDimNames.eq."ncol")) then  ; test for orig HOMME [pain!!]
           ncolFlag = True 
       else
           ncolFlag = False 
@@ -12584,6 +12584,22 @@ begin
               else
                   xout!1   = "lat2d"
                   xout!2   = "lon2d"
+              end if
+          else
+              xout = new ( (/nlat,mlon/), typeof(xin), dFill)
+    
+              pop_remap(xout1d,map_wts,dst_add,src_add,ndtooned(xin)) 
+              if (doMask) then
+                      xout1d = mask(xout1d, mask_b.eq.0, False)
+              end if
+              xout     = onedtond(xout1d, (/nlat,mlon/))
+    
+              if (gridType_b.eq."rectilinear") then
+                  xout!0   = "lat"
+                  xout!1   = "lon"
+              else
+                  xout!0   = "lat2d"
+                  xout!1   = "lon2d"
               end if
           end if           ; ncolFlag
       end if
@@ -12656,8 +12672,13 @@ begin
            end if
       end if               ; rank=4
 
-      xout!0    = "time"
-      xout&time =  xin&time
+      ranko    = dimsizes(dimsizes(xout))
+
+      if (ranko.gt.2) then
+          xout!0    = "time"
+          xout&time =  xin&time
+      end if
+
       if (gridType_b.eq."rectilinear") then
           xout&lat  =  lat 
           xout&lon  =  lon 
@@ -12685,6 +12706,10 @@ begin
           xout@cell_methods= str_right_strip(xout@cell_methods)
       end if
 
+      if (gridType_b.eq."rectilinear" .and. isatt(xout,"coordinates")) then
+          delete(xout@coordinates)
+      end if
+
       if (opt) then
 
           if (typeof(xout).eq."double" .and. \
@@ -12703,7 +12728,7 @@ begin
               delete(xoutf)
           end if              ; float
 
-          if (gridType.eq."rectilinear") then
+          if (gridType_b.eq."rectilinear") then
               if (isatt(opt,"latS") .and. isatt(opt,"latN")   .or. \
                   isatt(opt,"lonL") .and. isatt(opt,"lonR") ) then  
              
@@ -12718,6 +12743,8 @@ begin
               print("                requires a rectilinear grid.         ")
           end if
       end if
+      
+
 
       return( xout )
 end
