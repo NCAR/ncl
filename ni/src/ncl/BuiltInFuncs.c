@@ -40,6 +40,8 @@ extern "C" {
 #include <ncarg/c.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
@@ -29242,6 +29244,34 @@ NhlErrorTypes _Nclset_default_fillvalue
 
 }
 
+NhlErrorTypes _Nclget_cpu_time(void)
+{
+	int tmp ;
+	ng_size_t dimsize = 1;
+
+	struct rusage usage;
+	extern int errno;
+
+	int status = getrusage(RUSAGE_SELF, &usage);
+	if (status) {
+        NhlPError(NhlWARNING, NhlEUNKNOWN,
+            "unable to get process cpu time: %d", status);
+		return(NhlWARNING);
+	}
+
+	float time = (usage.ru_stime.tv_sec + usage.ru_utime.tv_sec) +
+			(usage.ru_stime.tv_usec + usage.ru_utime.tv_usec) / 1000000.;
+
+	return(NclReturnValue(
+		&time,
+		1,
+		&dimsize,
+		NULL,
+		NCL_float,
+		1
+	));
+
+}
 #ifdef __cplusplus
 }
 #endif

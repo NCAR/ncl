@@ -1042,6 +1042,12 @@ void
 #endif
 );
 
+NhlErrorTypes _Nclget_cpu_time(
+#if NhlNeedProto
+void
+#endif
+);
+
 void _NclAddBuiltIns
 #if     NhlNeedProto
 (void)
@@ -2516,6 +2522,7 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,NclANY,1,dimsizes); nargs++;
     NclRegisterProc(_Nclset_default_fillvalue,args,"set_default_fillvalue",nargs);
 
+	NclRegisterFunc(_Nclget_cpu_time,NULL,"get_cpu_time",0);
 /*
 	nargs = 0;
 	args = NewArgs(1);
