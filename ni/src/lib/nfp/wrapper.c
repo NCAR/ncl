@@ -8625,10 +8625,11 @@ int arg_num, num_args;
   }
 }
 
-ng_size_t *get_dimensions(void *tmp_dimensions,ng_size_t n_dimensions,
+ng_size_t *get_dimensions(void *tmp_dimensions,int n_dimensions,
                           NclBasicDataTypes type_dimensions, const char *name)
 {
-  ng_size_t i, *dimensions;
+  int i;
+  ng_size_t *dimensions;
 
   dimensions = (ng_size_t *)NclMalloc(sizeof(ng_size_t) * n_dimensions);
   switch (type_dimensions) {
