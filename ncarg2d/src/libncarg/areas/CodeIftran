@@ -4536,7 +4536,7 @@ C
               IAX=ICZ
             END IF
             DO (ITM=IAM($UL$),LAM-1)
-              IF (IAM(ITM-IOS).GT.IAX)
+              IF (IAM(ITM-IOS).GE.IAX)
                 IAI=ITM
                 IAX=IAM(ITM-IOS)
               END IF
