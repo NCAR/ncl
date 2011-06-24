@@ -1860,7 +1860,7 @@ int (_NHLCALLF(hlucpfill,HLUCPFILL))
 				default:
 					return 0;
 				}
-				col_ix = reg_attrs->fill_color;
+				col_ix = reg_attrs->gks_fcolor;
 				pat_ix = reg_attrs->fill_pat;
 				fscale = reg_attrs->fill_scale;
 			}
