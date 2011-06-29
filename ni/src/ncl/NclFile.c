@@ -2316,6 +2316,7 @@ static int FileIsVar
 #endif
 {
 	int i, n;
+	int has_compound = 0;
 	char *dot_ptr;
 	char *slash_ptr;
 	char var_str[1024];
@@ -2346,6 +2347,9 @@ static int FileIsVar
 	       *fprintf(stdout, "\tcomponent_name_quark: <%s>\n", NrmQuarkToString(component_name_quark));
 	       */
 		for(i = 0; i < thefile->file.n_vars; i++) {
+			if(thefile->file.var_info[i]->num_compounds)
+			{
+			has_compound++;
 			strcpy(var_name, NrmQuarkToString(thefile->file.var_info[i]->var_full_name_quark));
 			dot_ptr = strchr(var_name, '.');
 			if(dot_ptr)
@@ -2363,7 +2367,11 @@ static int FileIsVar
 				dot_ptr[0] = '\0';
 				thefile->file.var_info[i]->var_name_quark = NrmStringToQuark(var_name);
 			}
+			}
 		}
+
+		if(has_compound)
+		{
 		for(i = 0; i < thefile->file.n_vars; i++) {
 		      /*
 		       *fprintf(stdout, "\tCheck %d: var_full_name <%s>\n\n", i, 
@@ -2408,6 +2416,7 @@ static int FileIsVar
 				}
 				return(i);
 			}
+		}
 		}
 	}
 
@@ -4320,35 +4329,35 @@ void _NclInitFilePart(NclFilePart *file)
 	file->file_att_udata = NULL;
 	file->private_rec = NULL;
 
-	file->grp_info = (struct _NclFGrpRec **)calloc(file->max_grps, sizeof(struct _NclFGrpRec *));
+	file->grp_info = (struct _NclFGrpRec **)NclCalloc(file->max_grps, sizeof(struct _NclFGrpRec *));
 	assert(file->grp_info);
-	file->grp_att_info = (NclFileAttInfoList **)calloc(file->max_grps, sizeof(NclFileAttInfoList *));
+	file->grp_att_info = (NclFileAttInfoList **)NclCalloc(file->max_grps, sizeof(NclFileAttInfoList *));
 	assert(file->grp_att_info);
-	file->grp_att_udata = (struct _FileCallBackRec **)calloc(file->max_grps, sizeof(struct _FileCallBackRec *));
+	file->grp_att_udata = (struct _FileCallBackRec **)NclCalloc(file->max_grps, sizeof(struct _FileCallBackRec *));
 	assert(file->grp_att_udata);
-	file->grp_att_cb = (_NhlCB *)calloc(file->max_grps, sizeof(_NhlCB));
+	file->grp_att_cb = (_NhlCB *)NclCalloc(file->max_grps, sizeof(_NhlCB));
 	assert(file->grp_att_cb);
-	file->grp_att_ids = (int *)calloc(file->max_grps, sizeof(int));
+	file->grp_att_ids = (int *)NclCalloc(file->max_grps, sizeof(int));
 	assert(file->grp_att_ids);
 
-	file->var_info = (struct _NclFVarRec **)calloc(file->max_vars, sizeof(struct _NclFVarRec *));
+	file->var_info = (struct _NclFVarRec **)NclCalloc(file->max_vars, sizeof(struct _NclFVarRec *));
 	assert(file->var_info);
-	file->var_att_info = (NclFileAttInfoList **)calloc(file->max_vars, sizeof(NclFileAttInfoList *));
+	file->var_att_info = (NclFileAttInfoList **)NclCalloc(file->max_vars, sizeof(NclFileAttInfoList *));
 	assert(file->var_att_info);
-	file->var_att_udata = (struct _FileCallBackRec **)calloc(file->max_vars, sizeof(struct _FileCallBackRec *));
+	file->var_att_udata = (struct _FileCallBackRec **)NclCalloc(file->max_vars, sizeof(struct _FileCallBackRec *));
 	assert(file->var_att_udata);
-	file->var_att_cb = (_NhlCB *)calloc(file->max_vars, sizeof(_NhlCB));
+	file->var_att_cb = (_NhlCB *)NclCalloc(file->max_vars, sizeof(_NhlCB));
 	assert(file->var_att_cb);
-	file->var_att_ids = (int *)calloc(file->max_vars, sizeof(int));
+	file->var_att_ids = (int *)NclCalloc(file->max_vars, sizeof(int));
 	assert(file->var_att_ids);
 
-	file->file_atts = (struct _NclFAttRec **)calloc(file->max_file_atts, sizeof(struct _NclFAttRec *));
+	file->file_atts = (struct _NclFAttRec **)NclCalloc(file->max_file_atts, sizeof(struct _NclFAttRec *));
         assert(file->file_atts);
 
-	file->file_dim_info = (struct _NclFDimRec **)calloc(file->max_file_dims, sizeof(struct _NclFDimRec *));
+	file->file_dim_info = (struct _NclFDimRec **)NclCalloc(file->max_file_dims, sizeof(struct _NclFDimRec *));
 	assert(file->file_dim_info);
 
-	file->coord_vars = (struct _NclFVarRec **)calloc(file->max_file_dims, sizeof(struct _NclFVarRec *));
+	file->coord_vars = (struct _NclFVarRec **)NclCalloc(file->max_file_dims, sizeof(struct _NclFVarRec *));
         assert(file->coord_vars);
 
 	for(i = 0; i < file->max_grps; i++)
@@ -4401,18 +4410,18 @@ void _NclReallocFilePart(NclFilePart *file,
 				file->max_grps *= 2;
 		}
 
-		file->grp_info = (struct _NclFGrpRec **)realloc(file->grp_info,
+		file->grp_info = (struct _NclFGrpRec **)NclRealloc(file->grp_info,
 							file->max_grps * sizeof(struct _NclFGrpRec *));
 		assert(file->grp_info);
-		file->grp_att_info = (NclFileAttInfoList **)realloc(file->grp_att_info,
+		file->grp_att_info = (NclFileAttInfoList **)NclRealloc(file->grp_att_info,
 							file->max_grps * sizeof(NclFileAttInfoList *));
 		assert(file->grp_att_info);
-		file->grp_att_udata = (struct _FileCallBackRec **)realloc(file->grp_att_udata,
+		file->grp_att_udata = (struct _FileCallBackRec **)NclRealloc(file->grp_att_udata,
 							file->max_grps * sizeof(struct _FileCallBackRec *));
 		assert(file->grp_att_udata);
-		file->grp_att_cb = (_NhlCB *)realloc(file->grp_att_cb, file->max_grps * sizeof(_NhlCB));
+		file->grp_att_cb = (_NhlCB *)NclRealloc(file->grp_att_cb, file->max_grps * sizeof(_NhlCB));
 		assert(file->grp_att_cb);
-		file->grp_att_ids = (int *)realloc(file->grp_att_ids, file->max_grps * sizeof(int));
+		file->grp_att_ids = (int *)NclRealloc(file->grp_att_ids, file->max_grps * sizeof(int));
 		assert(file->grp_att_ids);
 
 		for(i = pre_max_grps; i < file->max_grps; i++)
@@ -4439,18 +4448,18 @@ void _NclReallocFilePart(NclFilePart *file,
 				file->max_vars *= 2;
 		}
 
-		file->var_info = (struct _NclFVarRec **)realloc(file->var_info,
+		file->var_info = (struct _NclFVarRec **)NclRealloc(file->var_info,
 							file->max_vars * sizeof(struct _NclFVarRec *));
 		assert(file->var_info);
-		file->var_att_info = (NclFileAttInfoList **)realloc(file->var_att_info,
+		file->var_att_info = (NclFileAttInfoList **)NclRealloc(file->var_att_info,
 							file->max_vars * sizeof(NclFileAttInfoList *));
 		assert(file->var_att_info);
-		file->var_att_udata = (struct _FileCallBackRec **)realloc(file->var_att_udata,
+		file->var_att_udata = (struct _FileCallBackRec **)NclRealloc(file->var_att_udata,
 							file->max_vars * sizeof(struct _FileCallBackRec *));
 		assert(file->var_att_udata);
-		file->var_att_cb = (_NhlCB *)realloc(file->var_att_cb, file->max_vars * sizeof(_NhlCB));
+		file->var_att_cb = (_NhlCB *)NclRealloc(file->var_att_cb, file->max_vars * sizeof(_NhlCB));
 		assert(file->var_att_cb);
-		file->var_att_ids = (int *)realloc(file->var_att_ids, file->max_vars * sizeof(int));
+		file->var_att_ids = (int *)NclRealloc(file->var_att_ids, file->max_vars * sizeof(int));
 		assert(file->var_att_ids);
 
 		for(i = pre_max_vars; i < file->max_vars; i++)
@@ -4477,11 +4486,11 @@ void _NclReallocFilePart(NclFilePart *file,
 				file->max_file_dims *= 2;
 		}
 
-		file->file_dim_info = (struct _NclFDimRec **)realloc(file->file_dim_info,
+		file->file_dim_info = (struct _NclFDimRec **)NclRealloc(file->file_dim_info,
 							file->max_file_dims * sizeof(struct _NclFDimRec *));
 		assert(file->file_dim_info);
 
-		file->coord_vars = (struct _NclFVarRec **)realloc(file->coord_vars,
+		file->coord_vars = (struct _NclFVarRec **)NclRealloc(file->coord_vars,
 							file->max_file_dims * sizeof(struct _NclFVarRec *));
         	assert(file->coord_vars);
 
@@ -4506,7 +4515,7 @@ void _NclReallocFilePart(NclFilePart *file,
 				file->max_file_atts *= 2;
 		}
 
-		file->file_atts = (struct _NclFAttRec **)realloc(file->file_atts,
+		file->file_atts = (struct _NclFAttRec **)NclRealloc(file->file_atts,
 						file->max_file_atts * sizeof(struct _NclFAttRec *));
         	assert(file->file_atts);
 
