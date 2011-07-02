@@ -506,6 +506,14 @@ local latN, latS, lonL, lonR, spd, fCrit, tim_taper        \
 
   begin
 
+  if (typeof(x).eq."float" .or. typeof(x).eq."double") then
+      print(" ")
+  else
+      print("wkSpaceTime: input variable must be type float or double")
+      print("             input variable type is "+typeof(x))
+      exit
+  end if
+
   debug   = False    ; default
   if (opt .and. isatt(opt, "debug") ) then
       debug = opt@debug
