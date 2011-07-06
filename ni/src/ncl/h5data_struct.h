@@ -26,6 +26,9 @@ char *strdup(const char *s);
 #endif
 #endif
 
+#include <ncarg/hlu/hlu.h>
+#include <ncarg/hlu/NresDB.h>
+#include "defs.h"
 #include "hdf5.h"
 
 #ifndef FALSE

@@ -68,6 +68,7 @@ extern "C" {
 #include "FileSupport.h"
 #include "NclAtt.h"
 #include "NclList.h"
+#include "NclNewList.h"
 #include "ListSupport.h"
 #include "NclFileInterfaces.h"
 #include <signal.h>
@@ -547,15 +548,13 @@ NhlErrorTypes _NclIGetFileVarNames
 #endif
 {
 	NclStackEntry data;
-	NclApiDataList *tmp,*step;
 	NclQuark *var_names = NULL;
 	NclQuark file_q;
-	int i;
 	ng_size_t dimsize = 0;
-	NclFile thefile;
+	int num_vars = 0;
+	NclFile thefile = NULL;
 	NclMultiDValData tmp_md = NULL;
 	
-	tmp = NULL;
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
 	case NclStk_VAR:
@@ -568,49 +567,104 @@ NhlErrorTypes _NclIGetFileVarNames
 	default:
 		return(NhlFATAL);
 	}
-	if(file_q == -1) {
+	if(file_q == -1)
+	{
 		if(tmp_md==NULL) 
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
 		thefile = (NclFile)_NclGetObj(*(int*)tmp_md->multidval.val);
-		
-		var_names = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)*thefile->file.n_vars);
-		dimsize = thefile->file.n_vars;
-	
-		for(i = thefile->file.n_vars-1; i>=0;i-- 	) {
-			if(thefile->file.var_info[i] != NULL) {
-				var_names[i] = thefile->file.var_info[i]->var_name_quark;
-			} else {
-				var_names[i] = 0;
+	}
+	else
+	{
+		NclSymbol *s = NULL;
+		NclStackEntry *thevar = NULL;
+		NclMultiDValData theid = NULL;
+
+		s = _NclLookUp(NrmQuarkToString(file_q));
+		if((s != NULL)&&(s->type != UNDEF))
+		{
+			thevar = _NclRetrieveRec(s,DONT_CARE);
+			if(thevar->kind == NclStk_VAR)
+			{
+				theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
+				if(theid->obj.obj_type_mask & Ncl_MultiDValnclfileData)
+				{
+					thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+				}
 			}
 		}
-	} else {
-		tmp = _NclGetFileVarInfoList(file_q);
-		if(tmp==NULL){
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"getfilevarnames: file does not exist");
-			return(NhlFATAL);
-		} 
-		step = tmp;
-		i = 0;
-		while(step != NULL) {
-			i++;
-			step = step->next;
-		}
-		var_names = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)*i);
-		step = tmp;
-		dimsize = i;
-		i = 0;
-		while(step != NULL) {
-			var_names[i] = step->u.var->name;
-			step = step->next;
-			i++;
-		}
 	}
+
+	if(NULL != thefile)
+		var_names = _NclFileReadVarNames(thefile, &num_vars);
 		
+	dimsize = (ng_size_t)num_vars;
 	data.kind = NclStk_VAL;
 	data.u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)var_names,NULL,1,&dimsize,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
 	_NclPlaceReturn(data);
-	if(tmp != NULL) 
-		_NclFreeApiDataList((void*)tmp);
+       	return(NhlNOERROR);
+}
+
+NhlErrorTypes _NclIGetFileGrpNames
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclQuark *grp_names = NULL;
+	NclQuark file_q;
+	ng_size_t dimsize = 0;
+	int num_vars = 0;
+	NclFile thefile = NULL;
+	NclMultiDValData tmp_md = NULL;
+	
+	data = _NclGetArg(0,1,DONT_CARE);
+	switch(data.kind) {
+	case NclStk_VAR:
+		file_q = data.u.data_var->var.var_quark;
+		break;
+	case NclStk_VAL:
+		file_q = -1;
+		tmp_md = data.u.data_obj;
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(file_q == -1)
+	{
+		if(tmp_md==NULL) 
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		thefile = (NclFile)_NclGetObj(*(int*)tmp_md->multidval.val);
+	}
+	else
+	{
+		NclSymbol *s = NULL;
+		NclStackEntry *thevar = NULL;
+		NclMultiDValData theid = NULL;
+
+		s = _NclLookUp(NrmQuarkToString(file_q));
+		if((s != NULL)&&(s->type != UNDEF))
+		{
+			thevar = _NclRetrieveRec(s,DONT_CARE);
+			if(thevar->kind == NclStk_VAR)
+			{
+				theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
+				if(theid->obj.obj_type_mask & Ncl_MultiDValnclfileData)
+				{
+					thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+				}
+			}
+		}
+	}
+
+	if(NULL != thefile)
+		grp_names = _NclFileReadGrpNames(thefile, &num_vars);
+		
+	dimsize = (ng_size_t)num_vars;
+	data.kind = NclStk_VAL;
+	data.u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)grp_names,NULL,1,&dimsize,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
+	_NclPlaceReturn(data);
        	return(NhlNOERROR);
 }
 
@@ -17242,6 +17296,456 @@ NhlErrorTypes _NclIGetFileVarAtts
 
 }
 
+NhlErrorTypes _NclIFileVlenDef(void)
+{
+    ng_size_t n_vlens;
+    NclScalar missing;
+    int has_missing;
+
+    obj *thefile_id;
+    string *vlen_name;
+    string *var_name;
+    string *type;
+    string *dim_name;
+    NclFile thefile;
+    NhlErrorTypes ret=NhlNOERROR;
+
+    thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        5,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+    thefile = (NclFile)_NclGetObj((int)*thefile_id);
+    if(thefile == NULL)
+    {
+        NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+            "_NclIFileVlenDef: CANNOT add vlen to empty file.\n"));
+        return(NhlFATAL);
+    }
+
+    vlen_name = (string*)NclGetArgValue(
+                        1,
+                        5,
+                        NULL,
+                        &n_vlens,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((string)*vlen_name == missing.stringval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileVlenDef: CANNOT add vlen named <%s>, which is same as missing-value.\n",
+                NrmQuarkToString((string)*vlen_name)));
+            return(NhlFATAL);
+        }
+    }
+
+    var_name = (string*)NclGetArgValue(
+                        2,
+                        5,
+                        NULL,
+                        &n_vlens,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((string)*var_name == missing.stringval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileVlenDef: CANNOT add var named <%s>, which is same as missing-value.\n",
+                NrmQuarkToString((string)*var_name)));
+            return(NhlFATAL);
+        }
+    }
+
+    type = (string*)NclGetArgValue(
+                        3,
+                        5,
+                        NULL,
+                        &n_vlens,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((string)*type == missing.stringval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileVlenDef: CANNOT add vlen type <%s>, which is same as missing-value.\n",
+                NrmQuarkToString((string)*type)));
+            return(NhlFATAL);
+        }
+    }
+
+    dim_name = (string*)NclGetArgValue(
+                        4,
+                        5,
+                        NULL,
+                        &n_vlens,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((string)*dim_name == missing.stringval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileVlenDef: CANNOT add vlen dimension named <%s>, which is same as missing-value.\n",
+                NrmQuarkToString((string)*dim_name)));
+            return(NhlFATAL);
+        }
+    }
+
+    ret = _NclFileAddVlen(thefile, *vlen_name, *var_name, *type, *dim_name);
+
+    return(ret);
+}
+
+NhlErrorTypes _NclIFileEnumDef(void)
+{
+    ng_size_t n_enums;
+    NclScalar missing;
+    int has_missing;
+
+    obj *thefile_id;
+    string *enum_name;
+    string *var_name;
+    string *dim_name;
+    int n;
+    NclFile thefile;
+    NhlErrorTypes ret=NhlNOERROR;
+
+    ng_size_t n_mems;
+    NclScalar mem_missing;
+    int mem_has_missing;
+    string *mem_name;
+
+    ng_size_t n_vals;
+    NclScalar val_missing;
+    int val_has_missing;
+    void *mem_value;
+    NclBasicDataTypes val_type;
+
+    thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        6,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+    thefile = (NclFile)_NclGetObj((int)*thefile_id);
+    if(thefile == NULL)
+    {
+        NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+            "_NclIFileEnumDef: CANNOT add enum to empty file.\n"));
+        return(NhlFATAL);
+    }
+
+    enum_name = (string*)NclGetArgValue(
+                        1,
+                        6,
+                        NULL,
+                        &n_enums,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((string)*enum_name == missing.stringval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileEnumDef: CANNOT add enum named <%s>, which is same as missing-value.\n",
+                NrmQuarkToString((string)*enum_name)));
+            return(NhlFATAL);
+        }
+    }
+
+    var_name = (string*)NclGetArgValue(
+                        2,
+                        6,
+                        NULL,
+                        &n_enums,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((string)*var_name == missing.stringval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileEnumDef: CANNOT add var named <%s>, which is same as missing-value.\n",
+                NrmQuarkToString((string)*var_name)));
+            return(NhlFATAL);
+        }
+    }
+
+    dim_name = (string*)NclGetArgValue(
+                        3,
+                        6,
+                        NULL,
+                        &n_enums,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((string)*dim_name == missing.stringval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileEnumDef: CANNOT add enum dimension named <%s>, which is same as missing-value.\n",
+                NrmQuarkToString((string)*dim_name)));
+            return(NhlFATAL);
+        }
+    }
+
+    mem_name = (string*)NclGetArgValue(
+                        4,
+                        6,
+                        NULL,
+                        &n_mems,
+                        &mem_missing,
+                        &mem_has_missing,
+                        NULL,
+                        0);
+
+    if(mem_has_missing)
+    {
+        int num_missing = 0;
+
+        for(n = 0; n < n_mems; n++)
+        {
+            if((string)mem_name[n] == missing.stringval)
+                num_missing++;
+        }
+
+        if(num_missing == n_mems)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileEnumDef: Can not have all members as missing.\n"));
+            return(NhlFATAL);
+        }
+    }
+
+    mem_value = (void *)NclGetArgValue(
+                        5,
+                        6,
+                        NULL,
+                        &n_vals,
+                        &val_missing,
+                        &val_has_missing,
+                        &val_type,
+                        0);
+
+    ret = _NclFileAddEnum(thefile, *enum_name, *var_name, *dim_name,
+                          mem_name, mem_value, n_mems, val_type);
+
+    return(ret);
+}
+
+NhlErrorTypes _NclIFileGrpDef(void)
+{
+	ng_size_t n_grps;
+	NclScalar missing;
+	int has_missing;
+
+	obj *thefile_id;
+	string *grpnames;
+	int i;
+	NclFile thefile;
+	NhlErrorTypes ret=NhlNOERROR;
+
+        thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        2,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+	thefile = (NclFile)_NclGetObj((int)*thefile_id);
+	if(thefile == NULL)
+	{
+		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+			"_NclIFileGrpDef: CANNOT add group to empty file.\n"));
+		return(NhlFATAL);
+	}
+
+        grpnames = (string*)NclGetArgValue(
+                        1,
+                        2,
+                        NULL,
+                        &n_grps,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+	if(has_missing)
+	{
+		for(i = 0; i < n_grps; i++)
+		{
+			if(grpnames[i] == missing.stringval)
+			{
+				NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+					"_NclIFileGrpDef: CANNOT add group <%s>, which is same as missing-value.\n",
+					NrmQuarkToString(grpnames[i])));
+				return(NhlFATAL);
+			}
+		}
+	}
+
+	for(i = 0; i < n_grps; i ++)
+	{
+		ret = _NclFileAddGrp(thefile,grpnames[i]);
+	}
+
+	return(ret);
+}
+
+NhlErrorTypes _NclIFileOpaqueDef(void)
+{
+    ng_size_t n_opaques;
+    NclScalar missing;
+    int has_missing;
+
+    obj *thefile_id;
+    string *opaque_name;
+    string *var_name;
+    string *dim_name;
+    int    *var_size;
+    NclFile thefile;
+    NhlErrorTypes ret=NhlNOERROR;
+
+    thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        5,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+    thefile = (NclFile)_NclGetObj((int)*thefile_id);
+    if(thefile == NULL)
+    {
+        NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+            "_NclIFileOpaqueDef: CANNOT add opaque to empty file.\n"));
+        return(NhlFATAL);
+    }
+
+    opaque_name = (string*)NclGetArgValue(
+                        1,
+                        5,
+                        NULL,
+                        &n_opaques,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((string)*opaque_name == missing.stringval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileOpaqueDef: CANNOT add opaque named <%s>, which is same as missing-value.\n",
+                NrmQuarkToString((string)*opaque_name)));
+            return(NhlFATAL);
+        }
+    }
+
+    var_name = (string*)NclGetArgValue(
+                        2,
+                        5,
+                        NULL,
+                        &n_opaques,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((string)*var_name == missing.stringval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileOpaqueDef: CANNOT add var named <%s>, which is same as missing-value.\n",
+                NrmQuarkToString((string)*var_name)));
+            return(NhlFATAL);
+        }
+    }
+
+    var_size = (int *)NclGetArgValue(
+                        3,
+                        5,
+                        NULL,
+                        &n_opaques,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((int)*var_size == missing.intval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileOpaqueDef: CANNOT add opaque var_size <%d>, which is same as missing-value.\n",
+                *var_size));
+            return(NhlFATAL);
+        }
+    }
+
+    dim_name = (string*)NclGetArgValue(
+                        4,
+                        5,
+                        NULL,
+                        &n_opaques,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((string)*dim_name == missing.stringval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileOpaqueDef: CANNOT add opaque dimension named <%s>, which is same as missing-value.\n",
+                NrmQuarkToString((string)*dim_name)));
+            return(NhlFATAL);
+        }
+    }
+
+    ret = _NclFileAddOpaque(thefile, *opaque_name, *var_name, *var_size, *dim_name);
+
+    return(ret);
+}
+
 NhlErrorTypes _NclIFileVarDef
 #if NhlNeedProto
 (void)
@@ -18678,6 +19182,18 @@ NhlErrorTypes _NclINewList( void )
 	{
 		list_type = (int) (NCL_LIFO);
 	}
+        else if(0 == strcmp("vlen",buffer))
+	{
+		list_type = (int) (NCL_VLEN);
+	}
+        else if(0 == strcmp("item",buffer))
+	{
+		list_type = (int) (NCL_ITEM);
+	}
+        else if(0 == strcmp("struct",buffer))
+	{
+		list_type = (int) (NCL_STRUCT);
+	}
         else
 	{
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"NewList: unknow list type");
@@ -19027,6 +19543,12 @@ NhlErrorTypes _NclIListGetType(void)
 		ret_val[i++] = NrmStringToQuark("fifo");
 	} else if(list_type & NCL_LIFO) {
 		ret_val[i++] = NrmStringToQuark("lifo");
+	} else if(list_type & NCL_VLEN) {
+		ret_val[i++] = NrmStringToQuark("vlen");
+	} else if(list_type & NCL_ITEM) {
+		ret_val[i++] = NrmStringToQuark("item");
+	} else if(list_type & NCL_STRUCT) {
+		ret_val[i++] = NrmStringToQuark("struct");
 	}
 	
 	if(i == 1)
@@ -19094,6 +19616,14 @@ NhlErrorTypes _NclIListSetType(void)
 		_NclListSetType(thelist, NCL_JOIN);
 	} else if(strcmp(buffer,"cat") == 0) {
 		_NclListSetType(thelist, NCL_CONCAT);
+	} else if(strcmp(buffer,"item") == 0) {
+		_NclListSetType(thelist, NCL_ITEM);
+	} else if(strcmp(buffer,"vlen") == 0) {
+		_NclListSetType(thelist, NCL_VLEN);
+	} else if(strcmp(buffer,"struct") == 0) {
+		_NclListSetType(thelist, NCL_STRUCT);
+	} else if(strcmp(buffer,"compound") == 0) {
+		_NclListSetType(thelist, NCL_COMPOUND);
 	} else if(strcmp(buffer,"fifo") == 0) {
 		_NclListSetType(thelist, NCL_FIFO);
 	} else if(strcmp(buffer,"lifo") == 0) {
@@ -19108,9 +19638,10 @@ NhlErrorTypes _NclIListSetType(void)
 NhlErrorTypes _NclIListCount(void)
 {
 	obj *list_id;
-	NclList thelist = NULL;
 	ng_size_t dimsize = 1;
 	int *ret_val;
+	NclObj theobj;
+	NclObjClass oc;
 
    	list_id = (obj*)NclGetArgValue(
            0,
@@ -19122,16 +19653,40 @@ NhlErrorTypes _NclIListCount(void)
            NULL,
            DONT_CARE);
 
-	thelist = (NclList)_NclGetObj(*list_id);
-
-	ret_val = (int*)NclMalloc(sizeof(int));
+	ret_val = (int*)NclCalloc(1, sizeof(int));
 	if(ret_val == NULL)
 	{
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"ListCount: problem to allocate memory.");
 		return(NhlFATAL);
 	}
 
-	ret_val[0] = (int)thelist->list.nelem;
+	theobj = (NclObj)_NclGetObj(*list_id);
+
+	if(theobj == NULL)
+	{
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			"_NclIListCount: Cannot get count of NULL list."));
+		return(NhlWARNING);
+	}
+	else
+	{
+		if(0 == strcmp("NclNewListClass", theobj->obj.class_ptr->obj_class.class_name))
+		{
+			NclNewList thelist = (NclNewList) theobj;
+			ret_val[0] = (int)thelist->newlist.n_elem;
+		}
+		else if(0 == strcmp("NclListClass",theobj->obj.class_ptr->obj_class.class_name))
+		{
+			NclList thelist = (NclList) theobj;
+			ret_val[0] = (int)thelist->list.nelem;
+		}
+		else
+		{
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"_NclIListCount: Cannot figure out list class."));
+			return(NhlFATAL);
+		}
+	}
 
 	return(NclReturnValue(
 		ret_val,

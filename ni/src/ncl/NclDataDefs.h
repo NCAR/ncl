@@ -110,16 +110,24 @@ NCL_logical = 	010000,
 NCL_obj = 	020000,
 NCL_list = 	040000,
 NCL_group = 	0100000,
-NCL_compound = 	0200000
+NCL_compound = 	0200000,
+NCL_opaque =	0400000,
+NCL_enum =	01000000
 } NclBasicDataTypes;
 
 typedef NclQuark string; /* Makes this a quark type */
 typedef char byte;
+typedef unsigned char ubyte;
+typedef unsigned short ushort;
+typedef unsigned int uint;
+typedef unsigned long ulong;
+typedef long long int64;
+typedef unsigned long long uint64;
 typedef int logical;
 typedef int obj;
 typedef int list;
 typedef int group;
-typedef int compound;
+typedef int nclcompound;
 
 typedef union _NclScalar {
 	double             doubleval;
@@ -140,7 +148,7 @@ typedef union _NclScalar {
 	logical            logicalval;
 	obj                objval;
 	group              groupval;
-	compound           compoundval;
+	nclcompound        compoundval;
 }NclScalar;
 
 typedef struct _NclRefList{

@@ -1,0 +1,8 @@
+/* NclGetGrpNamesFunc      get_grp_names; */            NULL,
+/* NclGetGrpInfoFunc       get_grp_info; */             NULL,
+/* NclGetGrpAttNamesFunc   get_grp_att_names; */        NULL, 
+/* NclGetGrpAttInfoFunc    get_grp_att_info; */         NULL,
+/* NclAddGrpFunc           add_grp; */                  NULL,
+/* NclAddVlenFunc          add_vlen; */                 NULL,
+/* NclAddEnumFunc          add_enum; */                 NULL,
+/* NclAddOpaqueFunc        add_opaque; */               NULL,

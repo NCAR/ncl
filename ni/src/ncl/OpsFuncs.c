@@ -13,6 +13,7 @@ extern "C" {
 #include <errno.h>
 #include "Symbol.h"
 #include "NclList.h"
+#include "NclNewList.h"
 #include "NclDataDefs.h"
 #include "Machine.h"
 #include "NclFile.h"
@@ -842,6 +843,46 @@ NhlErrorTypes _NclBuildListVar
 */
 		data = _NclPop();
 		ListPush((NclObj)thelist, (NclObj)(data.u.data_obj)); 
+	}
+
+	_NclPlaceReturn(*result);
+
+	if(result->u.data_obj != NULL) 
+		return(NhlNOERROR);
+	else 
+		return(NhlFATAL);
+}
+
+NhlErrorTypes _NclBuildNewListVar(int n_items,NclStackEntry *result)
+{
+	NclStackEntry data;
+	NclNewList thelist = NULL;
+	NclObj oneobj;
+	int i;
+	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
+	int ndims = 1;
+
+	NclNewList tmplist;
+	obj *id;
+
+	thelist =(NclNewList)_NclNewListCreate(NULL,NULL,Ncl_List,0,n_items,NCL_ITEM);
+	id = (obj*)NclMalloc(sizeof(obj));
+	*id = thelist->obj.id;
+	thelist->newlist.type = NrmStringToQuark("item");
+
+        dim_sizes[0] = 1;
+	result->kind = NclStk_VAL;
+	result->u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,
+				(Ncl_List | Ncl_MultiDVallistData | Ncl_ListVar | Ncl_Typelist),id,NULL,
+				ndims,dim_sizes,TEMPORARY,NULL);
+	data = _NclPop();
+
+	tmplist = (NclNewList)data.u.data_list;
+
+	for(i = 0; i < n_items; i++)
+	{
+		oneobj = (NclObj)_NclGetObj(tmplist->newlist.item[i]->obj_id);
+		_NclListAppend((NclObj)thelist, oneobj);
 	}
 
 	_NclPlaceReturn(*result);

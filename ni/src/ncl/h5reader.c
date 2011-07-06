@@ -108,7 +108,7 @@ NclHDF5group_node_t *_NclHDF5allocate_group(hid_t id, const char *fname, char *g
 {
     NclHDF5group_node_t *group_node;
 
-    group_node = calloc(1, sizeof(NclHDF5group_node_t));
+    group_node = NclCalloc(1, sizeof(NclHDF5group_node_t));
     if(group_node == NULL)
     {
         fprintf(stderr, "Failed to allocated memory for group_node.\n");
@@ -177,7 +177,7 @@ void _NclHDF5dim_info(NclHDF5dim_list_t **NclHDF5dim_list,
             i = 0;
             while(result != NULL)
             {
-                cur_dim_list = calloc(1, sizeof(NclHDF5dim_list_t));
+                cur_dim_list = NclCalloc(1, sizeof(NclHDF5dim_list_t));
 
                 strcpy(cur_dim_list->name, result);
 
@@ -219,7 +219,7 @@ void _NclAddNewDim(NclHDF5dim_list_t **NclHDF5dim_list,
 {
     NclHDF5dim_list_t *new_dim_list;
 
-    new_dim_list = calloc(1, sizeof(NclHDF5dim_list_t));
+    new_dim_list = NclCalloc(1, sizeof(NclHDF5dim_list_t));
     if(!new_dim_list)
     {
        fprintf(stderr, "ERROR to allocate memory for new_dim_list in file: %s, line: %d\n",
@@ -307,7 +307,7 @@ void _NclHDF5var_list(NclHDF5var_list_t **var_list, NclHDF5group_node_t *HDF5gro
                 _NclHDF5dim_info_from_dataset(&NclHDF5dim_list, dataset_node);
         }
 
-        cur_list = calloc(1, sizeof(NclHDF5var_list_t));
+        cur_list = NclCalloc(1, sizeof(NclHDF5var_list_t));
         if(!cur_list)
         {
             fprintf(stderr, "UNABLE TO ALLOCATE MEMORY for cur_list, in file: %s, line: %d\n",
@@ -570,7 +570,7 @@ int _NclHDF5print_simple_dataset(hid_t dset, hid_t p_type, char *type_name)
     }
 
     assert(sm_nbytes == (hsize_t)((size_t)sm_nbytes)); /*check for overflow*/
-    sm_buf = malloc((size_t)sm_nbytes);
+    sm_buf = NclMalloc((size_t)sm_nbytes);
 
     sm_nelmts = sm_nbytes / p_type_nbytes;
 
@@ -957,7 +957,7 @@ NclHDF5data_t *_NclHDF5allocate_data(hid_t id)
 {
     NclHDF5data_t *NclHDF5data;
 
-    NclHDF5data = calloc(1, sizeof(NclHDF5data_t));
+    NclHDF5data = NclCalloc(1, sizeof(NclHDF5data_t));
 
     NclHDF5data->id = id;
 
@@ -1155,7 +1155,7 @@ unsigned char *_NclHDF5get_simple_dataset(hid_t dset, hid_t p_type, char *type_n
     }
 
     assert(sm_nbytes == (hsize_t)((size_t)sm_nbytes)); /*check for overflow*/
-    sm_buf = malloc((size_t)sm_nbytes);
+    sm_buf = NclMalloc((size_t)sm_nbytes);
 
     sm_nelmts = sm_nbytes / p_type_nbytes;
 
@@ -1427,12 +1427,12 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
     dataspace = H5Dget_space(did);    /* dataspace handle */
     rank      = H5Sget_simple_extent_ndims(dataspace);
 
-    count = calloc(rank, sizeof(hsize_t));
-    offset = calloc(rank, sizeof(hsize_t));
-    count_out = calloc(rank, sizeof(hsize_t));
-    offset_out = calloc(rank, sizeof(hsize_t));
-    dims_mem = calloc(rank, sizeof(hsize_t));
-    dims_out = calloc(rank, sizeof(hsize_t));
+    count = NclCalloc(rank, sizeof(hsize_t));
+    offset = NclCalloc(rank, sizeof(hsize_t));
+    count_out = NclCalloc(rank, sizeof(hsize_t));
+    offset_out = NclCalloc(rank, sizeof(hsize_t));
+    dims_mem = NclCalloc(rank, sizeof(hsize_t));
+    dims_out = NclCalloc(rank, sizeof(hsize_t));
 
     length = 1;
 
@@ -1537,7 +1537,7 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
             }
         }
         nbytes = component_datasize * length;
-        value = calloc(nbytes, sizeof(char));
+        value = NclCalloc(nbytes, sizeof(char));
 
         status = H5Dread(did, datatype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, value);
 
@@ -1572,13 +1572,13 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
        
             status = H5Dread(did, datatype, H5S_ALL, H5S_ALL, xfer_pid, cp);
 
-            tmp_char_array = malloc(length * sizeof(char *));
+            tmp_char_array = NclMalloc(length * sizeof(char *));
             assert(tmp_char_array);
 
             for(i = 0; i < length; i++)
             {
                 nbytes = strlen(cp[i]) + 1;
-                tmp_char_array[i] = malloc(nbytes * sizeof(char));
+                tmp_char_array[i] = NclMalloc(nbytes * sizeof(char));
                 assert(tmp_char_array[i]);
                 memcpy(tmp_char_array[i], cp[i], nbytes);
                 free(cp[i]);
@@ -1590,11 +1590,11 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
             char cp[2048];
 
             status = H5Dread(did, datatype, H5S_ALL, H5S_ALL, xfer_pid, &cp);
-            tmp_char_array = malloc(length * sizeof(char *));
+            tmp_char_array = NclMalloc(length * sizeof(char *));
             assert(tmp_char_array);
 
             nbytes = strlen(cp) + 1;
-            tmp_char_array[0] = malloc(nbytes * sizeof(char));
+            tmp_char_array[0] = NclMalloc(nbytes * sizeof(char));
             assert(tmp_char_array[0]);
             memcpy(tmp_char_array[0], cp, nbytes);
             *is_str = 1;
@@ -1605,7 +1605,7 @@ unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *t
     else
     {
         nbytes = datasize * length;
-        value = calloc(nbytes, sizeof(char));
+        value = NclCalloc(nbytes, sizeof(char));
         status = H5Dread(did, h5type, memspace, dataspace,
                          H5P_DEFAULT, value);
     }
@@ -2246,7 +2246,7 @@ herr_t _NclHDF5dataset_attr(hid_t dset, char *name, NclHDF5dataset_node_t *datas
     NclHDF5attr_list_t *curAttrList;
     NclHDF5datatype_t *NclHDF5datatype;
 
-    curAttrList = calloc(1, sizeof(NclHDF5attr_list_t));
+    curAttrList = NclCalloc(1, sizeof(NclHDF5attr_list_t));
     if(!curAttrList)
     {
         fprintf(stderr, "Failed to allocated memory for curAttrList. in file: %s, line: %d\n",
@@ -2257,7 +2257,7 @@ herr_t _NclHDF5dataset_attr(hid_t dset, char *name, NclHDF5dataset_node_t *datas
     curAttrList->next = dataset_node->attr_list;
     dataset_node->attr_list = curAttrList;
 
-    attr_node = calloc(1, sizeof(NclHDF5attr_node_t));
+    attr_node = NclCalloc(1, sizeof(NclHDF5attr_node_t));
     if(!attr_node)
     {
         fprintf(stderr, "Failed to allocated memory for attr_node. in file: %s, line: %d\n",
@@ -2425,7 +2425,7 @@ herr_t _NclHDF5search_by_name(hid_t loc_id, char *path, H5L_info_t *linfo,
         hsize_t base_len = strlen(udata->base_grp_name);
         hsize_t add_slash = base_len ? ((udata->base_grp_name)[base_len-1] != '/') : 1;
             
-        if(NULL == (new_name = malloc(base_len + add_slash + strlen(path) + 1)))
+        if(NULL == (new_name = NclMalloc(base_len + add_slash + strlen(path) + 1)))
             return(H5_ITER_ERROR);
         strcpy(new_name, udata->base_grp_name);
         if (add_slash)
@@ -2627,7 +2627,7 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
 
     NclHDF5datatype_t *NclHDF5datatype;
 
-    NclHDF5datatype = calloc(1, sizeof(NclHDF5datatype_t));
+    NclHDF5datatype = NclCalloc(1, sizeof(NclHDF5datatype_t));
     if (! NclHDF5datatype)
     {
         fprintf(stderr, "Error to allocate memory for NclHDF5datatype, in file: %s, line: %d\n",
@@ -2976,11 +2976,11 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
                 NclHDF5datatype->bit = (unsigned) (8*dst_size);
 
                 /* Get the names and raw values of all members */
-                name = calloc(nmembs, sizeof(char*));
+                name = NclCalloc(nmembs, sizeof(char*));
                 if(dst_size > size)
-                    value = calloc(nmembs, dst_size);
+                    value = NclCalloc(nmembs, dst_size);
                 else
-                    value = calloc(nmembs, size);
+                    value = NclCalloc(nmembs, size);
 
                 for (i=0; i<nmembs; i++)
                 {
@@ -3193,7 +3193,7 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
                 NclHDF5datatype->ndims = ndims;
                 if (ndims)
                 {
-                    dims = malloc(ndims*sizeof(dims[0]));
+                    dims = NclMalloc(ndims*sizeof(dims[0]));
                     H5Tget_array_dims2(type, dims);
 
                     /* Print dimensions */
@@ -3324,10 +3324,10 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
 
     space = H5Aget_space(attr_id);
 
-    cur_attr_list = (NclHDF5attr_list_t *)malloc(sizeof(NclHDF5attr_list_t));
+    cur_attr_list = (NclHDF5attr_list_t *)NclMalloc(sizeof(NclHDF5attr_list_t));
     cur_attr_list->next = NULL;
 
-    cur_attr_list->attr_node = calloc(1, sizeof(NclHDF5attr_node_t));
+    cur_attr_list->attr_node = NclCalloc(1, sizeof(NclHDF5attr_node_t));
     if(!cur_attr_list->attr_node)
     {
         fprintf(stderr, "Failed to allocated memory for cur_attr_list->attr_node. in file: %s, line: %d\n",
@@ -3488,7 +3488,7 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
                 status = H5Aread(attr_id, type, &cp);
 
                 attr_node->nbytes = strlen(cp) + 1;
-                attr_node->value = malloc(attr_node->nbytes);
+                attr_node->value = NclMalloc(attr_node->nbytes);
                 assert(attr_node->value);
 
                 memcpy(attr_node->value, cp, attr_node->nbytes);
@@ -3506,7 +3506,7 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
 
                 attr_node->nbytes = strlen(cp) + 1;
 
-                attr_node->value = malloc(attr_node->nbytes);
+                attr_node->value = NclMalloc(attr_node->nbytes);
                 assert(attr_node->value);
                 memcpy(attr_node->value, cp, attr_node->nbytes);
               /*
@@ -3520,7 +3520,7 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
         else
         {
             attr_node->nbytes = need;
-            attr_node->value = malloc(attr_node->nbytes);
+            attr_node->value = NclMalloc(attr_node->nbytes);
             assert(attr_node->value);
 
             n = H5Aread(attr_id, p_type, attr_node->value);
@@ -3550,7 +3550,7 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
             fprintf(stderr, "\tattr_node->value: <%s>\n", osp);
            */
 
-            new_str = malloc(attr_node->nbytes);
+            new_str = NclMalloc(attr_node->nbytes);
             n = 0;
             j = 0;
             for(m = 0; m < attr_node->ndims; m++)
@@ -3598,7 +3598,7 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
                 }
             }
 
-            new_str = malloc(n*sizeof(char));
+            new_str = NclMalloc(n*sizeof(char));
             j = 0;
             for(m = 0; m < attr_node->ndims; m++)
             {
@@ -3671,7 +3671,7 @@ char *_find_parent_group_name(char *name)
         strcat(fullname, name);
     }
 
-    parent_group_name = calloc(strlen(name) + 2, sizeof(char));
+    parent_group_name = NclCalloc(strlen(name) + 2, sizeof(char));
     sq = _split_string2queue(fullname, "/");
     parent_group_name[0] = '\0';
 
@@ -3719,7 +3719,7 @@ char *_get_group_name(char *name)
     char *group_name;
     int len;
 
-    group_name = calloc(strlen(name) + 2, sizeof(char));
+    group_name = NclCalloc(strlen(name) + 2, sizeof(char));
     strcpy(group_name, name);
 
     tmp_str = strrchr(group_name, '/');
@@ -4064,7 +4064,7 @@ herr_t _NclHDF5search_obj(char *name, H5O_info_t *oinfo,
                    *fprintf(stderr, "\nnew group: <%s>\n", name);
                    */
 
-                    new_list = calloc(1, sizeof(NclHDF5group_list_t));
+                    new_list = NclCalloc(1, sizeof(NclHDF5group_list_t));
                     if(new_list == NULL)
                     {
                         fprintf(stderr, "Failed to allocated memory for new_list.\n");
@@ -4170,7 +4170,7 @@ herr_t _NclHDF5search_obj(char *name, H5O_info_t *oinfo,
                    *fprintf(stderr, "\nnew dataset: <%s>\n", name);
                    */
 
-                    curHDF5dataset_list = calloc(1, sizeof(NclHDF5dataset_list_t));
+                    curHDF5dataset_list = NclCalloc(1, sizeof(NclHDF5dataset_list_t));
                     if(!curHDF5dataset_list)
                     {
                         fprintf(stderr, "Failed to allocated memory for curHDF5dataset_list. in file: %s, line: %d\n",
@@ -4178,7 +4178,7 @@ herr_t _NclHDF5search_obj(char *name, H5O_info_t *oinfo,
                         return FAILED;
                     }
 
-                    dataset_node = calloc(1, sizeof(NclHDF5dataset_node_t));
+                    dataset_node = NclCalloc(1, sizeof(NclHDF5dataset_node_t));
                     if(!dataset_node)
                     {
                         fprintf(stderr, "Failed to allocated memory for dataset_node. in file: %s, line: %d\n",
@@ -4283,7 +4283,7 @@ herr_t _NclHDF5search_link(char *name, H5O_info_t *oinfo, void *_NclHDF5Rec)
     switch(linfo->type)
     {
         case H5L_TYPE_SOFT:
-            if((buf = malloc(linfo->u.val_size)) == NULL)
+            if((buf = NclMalloc(linfo->u.val_size)) == NULL)
                 return SUCCEED;
 
             if(H5Lget_val(NclHDF5FileRec->fid, name, buf, linfo->u.val_size, H5P_DEFAULT) < 0) {
@@ -4302,7 +4302,7 @@ herr_t _NclHDF5search_link(char *name, H5O_info_t *oinfo, void *_NclHDF5Rec)
             const char *filename;
             const char *path;
 
-            if((buf = malloc(linfo->u.val_size)) == NULL)
+            if((buf = NclMalloc(linfo->u.val_size)) == NULL)
                 return SUCCEED;
             if(H5Lget_val(NclHDF5FileRec->fid, name, buf, linfo->u.val_size, H5P_DEFAULT) < 0)
             {

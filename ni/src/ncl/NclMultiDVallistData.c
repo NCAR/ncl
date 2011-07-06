@@ -29,13 +29,49 @@
 #include "NclVar.h"
 #include "NclFileVar.h"
 #include "NclList.h"
+#include "NclNewList.h"
 #include "NclMultiDVallistData.h"
 #include "DataSupport.h"
 #include <math.h>
 #include "NclTypelist.h"
 #include "ListSupport.h"
 
-static NhlErrorTypes MultiDValPrint
+static NhlErrorTypes MultiDValListPrintSummary(NclObj self, FILE *fp)
+{
+	NclMultiDValData self_md = (NclMultiDValData)self;
+	NhlErrorTypes ret;
+	NclObj theobj;
+	NclObjClass oc;
+
+	theobj = (NclObj) _NclGetObj(*(obj*)self_md->multidval.val);
+
+	if(self == NULL)
+	{
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			"MultiDValListPrintSummary: Cannot print info of NULL list."));
+		return(NhlWARNING);
+	}
+	else
+	{
+		oc = theobj->obj.class_ptr;
+	}
+
+	while(oc != NULL)
+	{
+		if(oc->obj_class.print_summary != NULL)
+		{
+			return((*(oc->obj_class.print_summary))(theobj,fp));
+		}
+		else
+		{
+			oc = oc->obj_class.super_class;
+		}
+	} 
+
+        return(NhlWARNING);
+}
+
+static NhlErrorTypes MultiDValListPrint
 #if     NhlNeedProto
 (NclObj self, FILE *fp)
 #else
@@ -44,6 +80,39 @@ NclObj self;
 FILE *fp;
 #endif
 {
+	NclMultiDValData self_md = (NclMultiDValData)self;
+	NhlErrorTypes ret;
+	NclObj theobj;
+	NclObjClass oc;
+
+	theobj = (NclObj) _NclGetObj(*(obj*)self_md->multidval.val);
+
+	if(self == NULL)
+	{
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			"MultiDValListPrintSummary: Cannot print info of NULL list."));
+		return(NhlWARNING);
+	}
+	else
+	{
+		oc = theobj->obj.class_ptr;
+	}
+
+	while(oc != NULL)
+	{
+		if(oc->obj_class.print != NULL)
+		{
+			return((*(oc->obj_class.print))(theobj,fp));
+		}
+		else
+		{
+			oc = oc->obj_class.super_class;
+		}
+	} 
+
+        return(NhlWARNING);
+#if 0
+        return(NhlWARNING);
 	NclList tmp_list;
 	NclListObjList *step;
 	NclObjClass oc;
@@ -51,8 +120,13 @@ FILE *fp;
 	NhlErrorTypes ret;
 	int nv = 0;
 	NclObj cur_obj;
+	int is_vlen = 0;
 
 	tmp_list = (NclList) _NclGetObj(*(obj*)self_md->multidval.val);
+
+	is_vlen = (NCL_VLEN & tmp_list->list.list_type);
+
+	fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
 
 	step = tmp_list->list.first;
 	
@@ -85,7 +159,7 @@ FILE *fp;
 	        case Ncl_Var:
 	        case Ncl_FileVar:
 			obj = _NclGetObj(cur_obj->obj.id);
-			_NclPrintVarSummary(obj);
+			_NclPrintVarSummary((NclVar)obj);
 			break;
 	        default:
 		    fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
@@ -96,8 +170,8 @@ FILE *fp;
 	    nv++;
  	    nclfprintf(fp,"\n");
 	}
-
         return(NhlNOERROR);
+#endif
 }
 	
 static struct _NclDataRec *MultiDVal_list_ReadSection
@@ -1659,8 +1733,9 @@ NclMultiDVallistDataClassRec nclMultiDVallistDataClassRec = {
 /* NclInitPartFunction initialize_part; 	*/	NULL,
 /* NclInitClassFunction initialize_class; 	*/	InitializelistDataClass,
 	(NclAddParentFunction)NULL,
-                (NclDelParentFunction)NULL,
-	/* NclPrintFunction print; 	*/	MultiDValPrint,
+	(NclDelParentFunction)NULL,
+/* NclPrintSummaryFunction print_summary */ MultiDValListPrintSummary,
+/* NclPrintFunction print; 	*/	MultiDValListPrint,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
 /* NclCallBackList* modify_callback*/   NULL,

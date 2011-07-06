@@ -13,6 +13,29 @@
 #include "NclFileVar.h"
 #include "VarSupport.h"
 
+static NhlErrorTypes ListPrintSummary(NclObj theobj, FILE *fp)
+{
+	NclList tmp_list;
+	NhlErrorTypes ret;
+
+	tmp_list = (NclList) theobj;
+
+	ret = nclfprintf(fp,"Type: %s\n",
+		_NclBasicDataTypeToName(tmp_list->list.list_type));
+	if(ret < 0)
+	{
+		return(NhlWARNING);
+	}
+
+	ret = nclfprintf(fp,"Total items: %ld\n",(long)tmp_list->list.nelem);
+	if(ret < 0)
+	{
+		return(NhlWARNING);
+	}
+
+	return(NhlNOERROR);
+}
+
 static NhlErrorTypes ListPrint
 #if     NhlNeedProto
 (NclObj list, FILE *fp)
@@ -22,7 +45,49 @@ NclObj list;
 FILE *fp;
 #endif
 {
-	nclfprintf(fp,"  %d\n",list->obj.id);
+	NclList tmp_list = (NclList) list;
+	NhlErrorTypes ret = -1;
+
+        if(NCL_VLEN & tmp_list->list.list_type)
+	{
+		ret = nclfprintf(fp,"Type: list <vlen>\n");
+	}
+        else if(NCL_ITEM & tmp_list->list.list_type)
+	{
+		ret = nclfprintf(fp,"Type: list <item>\n");
+	}
+        else if(NCL_STRUCT & tmp_list->list.list_type)
+	{
+		ret = nclfprintf(fp,"Type: list <struct>\n");
+	}
+        else if(NCL_CONCAT & tmp_list->list.list_type)
+	{
+        	if(NCL_FIFO & tmp_list->list.list_type)
+			ret = nclfprintf(fp,"Type: list <concat | fifo>\n");
+        	else if(NCL_LIFO & tmp_list->list.list_type)
+			ret = nclfprintf(fp,"Type: list <concat | lifo>\n");
+        	else
+			ret = nclfprintf(fp,"Type: list <concat>\n");
+	}
+        else if(NCL_JOIN & tmp_list->list.list_type)
+	{
+        	if(NCL_FIFO & tmp_list->list.list_type)
+			ret = nclfprintf(fp,"Type: list <join | fifo>\n");
+        	else if(NCL_LIFO & tmp_list->list.list_type)
+			ret = nclfprintf(fp,"Type: list <join | lifo>\n");
+        	else
+			ret = nclfprintf(fp,"Type: list <join>\n");
+	}
+
+	if(ret < 0)
+	{
+		return(NhlWARNING);
+	}
+	ret = nclfprintf(fp,"Total items: %ld\n",(long)tmp_list->list.nelem);
+	if(ret < 0)
+	{
+		return(NhlWARNING);
+	}
 
 	return(NhlNOERROR);
 }
@@ -297,14 +362,19 @@ int new_type;
 #endif
 {
 	NclList thelist = (NclList)list;
+
 	int fo_mask =  ~(NCL_LIFO | NCL_FIFO);
 	int jo_mask =  ~(NCL_JOIN | NCL_CONCAT);
+	int so_mask =  ~(NCL_ITEM | NCL_VLEN | NCL_STRUCT);
 
 	if((new_type & NCL_LIFO)||(new_type & NCL_FIFO)) {
 		thelist->list.list_type = (new_type & jo_mask) | (thelist->list.list_type & fo_mask);
 	}
-	if((new_type & NCL_JOIN )||(new_type & NCL_CONCAT)) {
+	else if((new_type & NCL_JOIN )||(new_type & NCL_CONCAT)) {
 		thelist->list.list_type = (new_type & fo_mask) | (thelist->list.list_type & jo_mask);
+	}
+	else {
+		thelist->list.list_type = new_type;
 	}
 	return(NhlNOERROR) ;
 }
@@ -349,7 +419,6 @@ int new_type;
 	NclList outlist= (NclList)_NclListCreate(NULL,NULL,Ncl_List,0,thelist->list.list_type);
 	long *ind;
 	
-
 	if(sel_ptr == NULL) {
 /*
 * List select must copy entire list because list has to be sequenced 
@@ -665,7 +734,8 @@ NclListClassRec nclListClassRec = {
 		(NclInitClassFunction)InitializeListClass,
 /* NclAddParentFunction add_parent */   ListAddParent,
 /* NclDelParentFunction del_parent */   ListDelParent,
-/* NclAttPrintFunction print */         ListPrint,
+/* NclPrintSummaryFunction print_summary */ ListPrintSummary,
+/* NclPrintFunction print */            ListPrint,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
 /* NclCallBackList* modify_callback*/   NULL,

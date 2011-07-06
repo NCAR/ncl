@@ -101,8 +101,8 @@ GRIB2_OBJS = NclGRIB2.o
 
 #ifdef BuildGDAL
 GDAL_DEFS = -DBuildGDAL
-GDAL_SRCS = NclOGR.c
-GDAL_OBJS = NclOGR.o
+GDAL_SRCS = NclOGR.c NclNewOGR.c
+GDAL_OBJS = NclOGR.o NclNewOGR.o
 #else
 #define GDAL_SRCS
 #define GDAL_OBJS
@@ -204,6 +204,7 @@ GEN_HDRS	=	NclTypeobj.h NclTypelogical.h \
 STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			Machine.h NclAtt.h NclData.h \
 			NclGroup.h NclFile.h NclFileInterfaces.h NclHLUObj.h NclMdInc.h \
+			NclNewFile.h NclNewGroup.h NclNewFileStructure.h \
 			NclMultiDValData.h NclMultiDValHLUObjData.h \
 			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \
@@ -211,7 +212,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
 			NclOneDValCoordData.h HLUFunctions.h \
 			NclCallBacksI.h date.h NclCCM.h NclGRIB.h NclGRIB2.h date.h tables.h \
-			ccmhdr.h editline.h editline_unix.h ListSupport.h NclList.h \
+			ccmhdr.h editline.h editline_unix.h ListSupport.h NclList.h NclNewList.h \
 			NclMultiDVallistData.h NclTypelist.h \
 			cptec_254_gtb.h dwd_002_gtb.h dwd_201_gtb.h dwd_202_gtb.h \
 			dwd_203_gtb.h dwd_204_gtb.h dwd_205_gtb.h dwd_206_gtb.h dwd_207_gtb.h \
@@ -237,7 +238,8 @@ NIO_NCL_HDR_FILES = ApiRecords.h AttSupport.h DataSupport.h		\
 		FileSupport.h HLUSupport.h ListSupport.h NclAtt.h NclCCM.h		\
 		NclCallBacksI.h NclCoordVar.h NclData.h NclDataDefs.h	\
 		NclGroup.h NclFile.h NclFileInterfaces.h NclFileVar.h NclGRIB.h	\
-		NclGRIB2.h NclHLUObj.h NclHLUVar.h NclList.h		\
+		NclNewGroup.h NclNewFile.h NclNewFileStructure.h \
+		NclGRIB2.h NclHLUObj.h NclHLUVar.h NclList.h NclNewList.h 	\
 		NclMdInc.h NclMultiDValData.h NclMultiDValData.h.sed	\
 		NclMultiDValHLUObjData.h NclMultiDVallistData.h		\
 		NclMultiDValnclfileData.h NclOneDValCoordData.h		\
@@ -266,10 +268,11 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		FileSupport.c Formats.c GetGrids.c InitData.c		\
 		MatMulDValOp.c.sed Memory.c MultiDValOp.c.sed NclAtt.c	\
 		NclCCM.c NclCoordVar.c NclData.c NclGroup.c NclFile.c	\
-		NclFileVar.c NclGRIB.c NclGRIB2.c NclHDF.c		\
+		NclFileVar.c NclGRIB.c NclGRIB2.c NclHDF.c NclNewFile.c	\
 		NclHDFEOS.c NclHDFEOS5.c NclHDF5.c h5reader.c h5writer.c \
 		NclMultiDValData.c.sed NclMultiDValnclfileData.c	\
 		NclNetCdf.c NclOneDValCoordData.c NclType.c NclOGR.c	\
+		NclNewGroup.c NclNetCDF4.c NclNewOGR.c			\
 		NclType.c.sed NclTypebyte.c.specific			\
 		NclTypechar.c.specific NclTypedouble.c.specific		\
 		NclTypefloat.c.specific NclTypeint.c.specific		\
@@ -337,8 +340,10 @@ STATIC_IO_SRCS  =       AddFileFormats.c AttSupport.c DataSupport.c \
 			FileSupport.c Formats.c GetGrids.c \
 			InitData.c Memory.c NclAtt.c NclCCM.c \
 			NclCoordVar.c NclData.c NclGroup.c NclFile.c NclFileVar.c \
+			NclNewGroup.c NclNewFile.c \
 			NclGRIB.c NclHDF.c NclMultiDValnclfileData.c \
 			NclNetCdf.c NclOneDValCoordData.c NclType.c \
+			NclNetCDF4.c				\
 			NclTypelist.c NclVar.c VarSupport.c \
 			ctoiee.c date.c 
 
@@ -351,7 +356,7 @@ STATIC_SRCS	=	AddBuiltIns.c AddHLUObjs.c \
 			BuiltInSupport.c BuiltInFuncs.c \
 			HLUFunctions.c yywrap.c craybin.c \
 			complete.c editline.c sysunix.c ListSupport.c \
-			NclList.c NclMultiDVallistData.c 
+			NclList.c NclNewList.c NclMultiDVallistData.c 
 
 
 
@@ -379,8 +384,10 @@ STATIC_IO_OBJS  =       AddFileFormats.o AttSupport.o DataSupport.o \
 			FileSupport.o Formats.o GetGrids.o \
 			InitData.o Memory.o NclAtt.o NclCCM.o \
 			NclCoordVar.o NclData.o NclGroup.o NclFile.o NclFileVar.o \
+			NclNewGroup.o NclNewFile.o \
 			NclGRIB.o NclMultiDValnclfileData.o \
 			NclNetCdf.o NclOneDValCoordData.o NclType.o \
+			NclNetCDF4.o	\
 			NclTypelist.o NclVar.o VarSupport.o \
 			ctoiee.o date.o 
 
@@ -395,7 +402,7 @@ STATIC_OBJS	=	AddBuiltIns.o AddHLUObjs.o \
 			userAddProto.o userAddFuncs.o \
 			HLUFunctions.o yywrap.o craybin.o \
 			complete.o editline.o sysunix.o ListSupport.o \
-			NclList.o NclMultiDVallistData.o 
+			NclList.o NclNewList.o NclMultiDVallistData.o 
 
 
 FOBJS		=	qu2reg3.o rowina3.o scm0.o ncepcode.o

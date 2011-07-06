@@ -91,6 +91,10 @@ typedef struct _NclListClassPart {
 #define NCL_LIFO 02
 #define NCL_CONCAT 04
 #define NCL_JOIN 010
+#define NCL_VLEN 020
+#define NCL_ITEM 040
+#define NCL_STRUCT 0100
+#define NCL_COMPOUND NCL_STRUCT
 
 #define NCL_LIST_IDLE 1
 #define NCL_LIST_SEQUENCING 0
@@ -131,4 +135,5 @@ extern NclObjClass nclListClass;
 
 extern NclListClassRec nclListClassRec;
 
+extern void ListItemDestroyNotify(NhlArgVal cbdata, NhlArgVal udata);
 #endif /* NclList_h */

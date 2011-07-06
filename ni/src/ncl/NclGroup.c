@@ -286,7 +286,7 @@ NclFile thefile;
     }
 }
 
-NclGroup *_NclCreateGroup
+NclGroup *_NclGroupCreate
 #if    NhlNeedProto
 (NclObj  inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, NclStatus status, NclFile file_in, NclQuark group_name)
 #else
@@ -343,7 +343,7 @@ NclQuark group_name;
     gl = strlen(grp_str);
 
   /*
-    fprintf(stdout, "\n\nhit _NclCreateGroup, file: %s, line:%d\n", __FILE__, __LINE__);
+    fprintf(stdout, "\n\nhit _NclGroupCreate, file: %s, line:%d\n", __FILE__, __LINE__);
     fprintf(stdout, "\tgroup_name: <%s>\n", NrmQuarkToString(group_name));
    */
 
@@ -493,7 +493,7 @@ NclQuark group_name;
 
   /*
     fprintf(stdout, "\tgroup_out->file.n_vars = %d\n", group_out->file.n_vars);
-    fprintf(stdout, "\n\nend _NclCreateGroup, file: %s, line:%d\n", __FILE__, __LINE__);
+    fprintf(stdout, "\n\nend _NclGroupCreate, file: %s, line:%d\n", __FILE__, __LINE__);
    */
     return(group_out);
 }

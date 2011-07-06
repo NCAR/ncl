@@ -38,6 +38,7 @@ extern int _NclListGetNext(NclObj );
 
 extern void _NclListDestroy(NclObj);
 
+extern NhlErrorTypes _NclListAppend(NclObj , NclObj );
 
 #endif /*_ListSupport_h */
 

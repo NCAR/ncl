@@ -12655,10 +12655,7 @@ NclFormatFunctionRec Grib2Rec = {
 /* NclMapNclTypeToFormat   map_ncl_type_to_format; */	Grib2MapFromNcl,
 /* NclDelAttFunc           del_att; */			NULL,
 /* NclDelVarAttFunc        del_var_att; */		NULL,
-/* NclGetGrpNamesFunc      get_grp_names; */            NULL,
-/* NclGetGrpInfoFunc       get_grp_info; */             NULL,
-/* NclGetGrpAttNamesFunc   get_grp_att_names; */        NULL, 
-/* NclGetGrpAttInfoFunc    get_grp_att_info; */         NULL,
+#include "NclGrpFuncs.null"
 /* NclSetOptionFunc        set_option;  */              Grib2SetOption
 };
 

@@ -3646,7 +3646,9 @@ void* storage;
 						for(j = 0; j < total_size; j++)
 						{
 							quark_ptr[j] = NrmStringToQuark(datbuf[j]);
+							NclFree(datbuf[j]);
 						}
+						NclFree(datbuf);
 					}
 					else
 					{

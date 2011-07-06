@@ -1,5 +1,5 @@
 /*
- *      $Id: NclGroup.h,v 1.2 2010-04-14 21:29:47 huangwei Exp $
+ *      $Id$
  */
 /************************************************************************
 *									*
@@ -26,25 +26,14 @@
 #include "NclFile.h"
 #include "NclFileInterfaces.h"
 
-typedef NclFileClassRec         *NclGroupClass;
-typedef struct _NclFileClassRec  NclGroupClassRec;
-typedef struct _NclFileClassPart NclGroupClassPart;
-typedef struct _NclFilePart      NclGroupPart;
-
-extern NclObjClass nclGroupClass;
-
-extern NclGroupClassRec nclGroupClassRec;
-
-extern NclFile _NclCreateGroup(
-#if NhlNeedProto
-    NclObj		/* inst */,
-    NclObjClass		/* theclass */,
-    NclObjTypes		/* obj_type */,
-    unsigned int	/* obj_type_mask */,
-    NclStatus		/* status */,
-    NclFile		/* file_in */,
-    NclQuark		/* group_name */
-#endif
+extern NclGroup *_NclGroupCreate(
+       NclObj		/* inst */,
+       NclObjClass		/* theclass */,
+       NclObjTypes		/* obj_type */,
+       unsigned int	/* obj_type_mask */,
+       NclStatus		/* status */,
+       NclFile		/* file_in */,
+       NclQuark		/* group_name */
 );
 
 #endif /* NclGroup_h */

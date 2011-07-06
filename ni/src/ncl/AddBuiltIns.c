@@ -125,6 +125,11 @@ void
 #endif
 );
 
+extern NhlErrorTypes _NclIFileVlenDef(void);
+extern NhlErrorTypes _NclIFileEnumDef(void);
+extern NhlErrorTypes _NclIFileOpaqueDef(void);
+
+extern NhlErrorTypes _NclIFileGrpDef(void);
 
 extern NhlErrorTypes _NclIFileVarDef(
 #if NhlNeedProto
@@ -2280,6 +2285,41 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,2,"snumeric",1,NclANY);nargs++;
 	SetArgTemplate(args,3,"logical",1,NclANY);nargs++;
 	NclRegisterProc(_NclIFileDimDef,args,"filedimdef",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFileGrpDef,args,"filegrpdef",nargs);
+
+	nargs = 0;
+	args = NewArgs(5);
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"string",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFileVlenDef,args,"filevlendef",nargs);
+
+	nargs = 0;
+	args = NewArgs(6);
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,6,"snumeric",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFileEnumDef,args,"fileenumdef",nargs);
+
+	nargs = 0;
+	args = NewArgs(5);
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"snumeric",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"string",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFileOpaqueDef,args,"fileopaquedef",nargs);
 
 	nargs = 0;
 	args = NewArgs(4);

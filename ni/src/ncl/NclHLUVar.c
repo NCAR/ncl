@@ -86,6 +86,7 @@ NclHLUVarClassRec nclHLUVarClassRec = {
 		(NclInitClassFunction)InitializeHLUVarClass,
 		(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
+/* NclPrintSummaryFunction print_summary */ NULL,
 /* NclPrintFunction print */	NULL,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,

@@ -91,6 +91,8 @@ NclBasicDataTypes /*dt*/
 #endif
 );
 
+extern NclBasicDataTypes _nameToNclBasicDataType(NclQuark name);
+
 extern NclBasicDataTypes _NclPromoteType(
 #if  	NhlNeedProto
 	NclBasicDataTypes /*dt*/

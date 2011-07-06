@@ -1351,7 +1351,7 @@ struct _NclVarRec* self;
 			}	
 			else {
 				NclObj file = _NclGetObj(*(int*)thevalue->multidval.val);
-				FilePrintSummary(file,fp);
+				_NclPrintFileSummary(file,fp);
 			}
 		} 
 		else if(thevalue->obj.obj_type_mask & Ncl_MultiDVallistData) {
@@ -1524,22 +1524,33 @@ NclObj self;
 FILE *fp;
 #endif
 {
-	NclMultiDValData thevalue = (NclMultiDValData) self;
-	NclList tmp_list;
 	NhlErrorTypes ret;
+	NclObjClass oc;
 
-	tmp_list = (NclList) _NclGetObj(*(int *)thevalue->multidval.val);
-	ret = nclfprintf(fp,"Type: %s\n",
-		_NclBasicDataTypeToName(thevalue->multidval.data_type));
-	if(ret < 0) {
+	if(self == NULL)
+	{
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			"_PrintListVarSummary: Cannot print info of NULL list."));
 		return(NhlWARNING);
 	}
-	ret = nclfprintf(fp,"Total items: %ld\n",(long)tmp_list->list.nelem);
-	if(ret < 0) {
-		return(NhlWARNING);
+	else
+	{
+		oc = self->obj.class_ptr;
 	}
 
-        return(NhlNOERROR);
+	while(oc != NULL)
+	{
+		if(oc->obj_class.print_summary != NULL)
+		{
+			return((*(oc->obj_class.print_summary))(self,fp));
+		}
+		else
+		{
+			oc = oc->obj_class.super_class;
+		}
+	} 
+
+	return(NhlWARNING);
 }
 
 unsigned int _closest_prime(unsigned int prime_in)

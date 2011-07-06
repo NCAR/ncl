@@ -230,6 +230,7 @@ NclVarClassRec nclVarClassRec = {
 		(NclInitClassFunction)InitializeVarClass,
 		(NclAddParentFunction)VarAddParent,
                 (NclDelParentFunction)VarDelParent,
+/* NclPrintSummaryFunction print_summary */ NULL,
 /* NclPrintFunction print */	VarPrint,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
@@ -517,25 +518,6 @@ FILE *fp;
 	if(ret < 0) {
 		return(NhlWARNING);
 	}
-
-#ifndef NIO_LIB_ONLY
-	/* Wei added for print list information */
-	strcpy(v_type, _NclBasicDataTypeToName(thevalue->multidval.data_type));
-	if(0 == strcmp(v_type, "list"))
-	{
-		NclObj obj;
-		NclListObjList *step;
-		NclList thelist = (NclList) _NclGetObj(*(int *)thevalue->multidval.val);
-		ret0 = NhlNOERROR;
-
-		ret = nclfprintf(fp,"Total items: %ld\n\n",(long)thelist->list.nelem);
-		if(ret < 0) {
-			return(NhlWARNING);
-		}
-
-		return(ret0);
-	}
-#endif
 
 	ret = nclfprintf(fp,"Total Size: %lld bytes\n",(long long)thevalue->multidval.totalsize);
 	if(ret < 0) {

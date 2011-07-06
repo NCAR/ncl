@@ -840,7 +840,7 @@ NclQuark var;
 	}
 }
 
-NhlErrorTypes FilePrintSummary(NclObj self, FILE *fp)
+NhlErrorTypes _NclFilePrintSummary(NclObj self, FILE *fp)
 {
 	NclFile thefile = (NclFile)self;
 	int i,j;
@@ -1226,7 +1226,7 @@ struct _NclObjRec *parent;
         int found = 0;
 
         if(theobj->obj.parents == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"FileDelParent: Attempt to delete parent from empty list");
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"FileDelParent: Attempt to delete parent from empty list"));
                 return(NhlFATAL);
         }
 
@@ -1542,9 +1542,9 @@ NclMultiDValData value;
 			}
 			return NhlNOERROR;
 		}
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 			  "FileSetFileOption: %s is not a recognized file option for format %s",
-			  NrmQuarkToString(option),NrmQuarkToString(format));
+			  NrmQuarkToString(option),NrmQuarkToString(format)));
 		return(NhlWARNING);
 	}
 	else if (format != NrmNULLQUARK) {
@@ -1561,6 +1561,20 @@ NclMultiDValData value;
 				 fcp->options[i].format == _NclGetLower(format)) {
 				found = 1;
 				break;
+			}
+			else if (! (_NclGetFormatFuncs(format) &&
+			       _NclGetFormatFuncs(format) == _NclGetFormatFuncs(fcp->options[i].format)) ) {
+				if (_NclGetLower(format) == NrmStringToQuark("shp"))
+				{
+					fcp->options[i].format = _NclGetLower(format);
+					found = 1;
+					break;
+				}
+				else if (! (_NclGetLower(format) == NrmStringToQuark("bin") &&
+					fcp->options[i].format == _NclGetLower(format)) ) {
+					found = 1;
+					break;
+				}
 			}
 		}
 		if (found) {
@@ -1638,9 +1652,9 @@ NclMultiDValData value;
 				_NclDestroyObj((NclObj)tmp_md);
 			return NhlNOERROR;
 		}
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 			  "FileSetFileOption: %s is not a recognized file option for format %s",
-			  NrmQuarkToString(option),NrmQuarkToString(format));
+			  NrmQuarkToString(option),NrmQuarkToString(format)));
 		return(NhlWARNING);
 	}
 	else {
@@ -1724,7 +1738,8 @@ NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB default NCEP parameter table */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB print record info */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB single element dimensions */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }  /* GRIB time period suffix */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB time period suffix */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }   /* new file-structure */
 };
 
 NclFileClassRec nclFileClassRec = {
@@ -1739,6 +1754,7 @@ NclFileClassRec nclFileClassRec = {
 		(NclInitClassFunction)InitializeFileClass,
 		(NclAddParentFunction)FileAddParent,
 		(NclDelParentFunction)FileDelParent,
+/* NclPrintSummaryFunction print_summary */ NULL,
 		(NclPrintFunction) FilePrint,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
@@ -1910,7 +1926,7 @@ NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_FORMAT].def_value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 #ifdef USE_NETCDF4
-	len_dims = 4;
+	len_dims = 5;
 #else
 	len_dims = 3;
 #endif
@@ -1921,6 +1937,7 @@ NhlErrorTypes InitializeFileOptions
 
 #ifdef USE_NETCDF4
 	sval[3] = NrmStringToQuark("netcdf4classic");
+	sval[4] = NrmStringToQuark("netcdf4");
 #endif
 
 	fcp->options[Ncl_FORMAT].valid_values = 
@@ -2257,6 +2274,23 @@ NhlErrorTypes InitializeFileOptions
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
 	fcp->options[Ncl_TIME_PERIOD_SUFFIX].valid_values = NULL;
+
+	/* new file-structure */
+
+	fcp->options[Ncl_USE_NEW_HLFS].format = NrmStringToQuark("nc");
+	fcp->options[Ncl_USE_NEW_HLFS].name = NrmStringToQuark("usenewhlfs");
+	len_dims = 1;
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = False;
+	fcp->options[Ncl_USE_NEW_HLFS].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = False;
+	fcp->options[Ncl_USE_NEW_HLFS].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	fcp->options[Ncl_USE_NEW_HLFS].valid_values = NULL;
 
 	/* End of options */
 
@@ -4773,9 +4807,9 @@ int rw_status;
 	if(file_out->file.format_funcs->get_grp_names != NULL)
 	{
 		name_list = (*file_out->file.format_funcs->get_grp_names)(file_out->file.private_rec,&n_names);
-		file_out->file.n_grps = n_names;
 
 		_NclReallocFilePart(&(file_out->file), n_names, -1, -1, -1);
+		file_out->file.n_grps = n_names;
 
 		for(i = 0; i < n_names; i++){
 			file_out->file.grp_info[i] = (*file_out->file.format_funcs->get_grp_info)(file_out->file.private_rec,name_list[i]);

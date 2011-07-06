@@ -42,6 +42,9 @@ extern "C" {
 #define NCL_MISSING_VALUE_ATT "_FillValue"
 #define NclANY NULL
 #define NhlTNclData "nclData"
+
+extern int use_new_hlfs;
+
 typedef enum {	NORMAL = 0,
 		VARSUBSEL = 1,
 		COORD = 2,

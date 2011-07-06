@@ -705,7 +705,7 @@ inttype [bBChHiIlLqQ]
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return FSTRING;
 }
-"=>/"{file_grp_var_alnum}+ {
+"=>"{file_grp_var_alnum}+ {
 	char *tmp;
 
 	tmp = yytext + 2;

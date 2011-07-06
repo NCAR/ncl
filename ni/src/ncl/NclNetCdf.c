@@ -3409,10 +3409,7 @@ NclFormatFunctionRec NetCdfRec = {
 /* NclMapNclTypeToFormat   map_ncl_type_to_format; */	NetMapFromNcl,
 /* NclDelAttFunc           del_att; */			NetDelAtt,
 /* NclDelVarAttFunc        del_var_att; */		NetDelVarAtt,
-/* NclGetGrpNamesFunc      get_grp_names; */            NULL,
-/* NclGetGrpInfoFunc       get_grp_info; */             NULL,
-/* NclGetGrpAttNamesFunc   get_grp_att_names; */        NULL, 
-/* NclGetGrpAttInfoFunc    get_grp_att_info; */         NULL,
+#include "NclGrpFuncs.null"
 /* NclSetOptionFunc        set_option;  */              NetSetOption
 };
 NclFormatFunctionRecPtr NetCdfAddFileFormat 

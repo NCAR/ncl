@@ -1780,7 +1780,7 @@ NclObj parent;
 		}
 		else
 		{
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"MultiDValDelParent: Attempt to delete parent from empty list");
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"MultiDValDelParent: Attempt to delete parent from empty list"));
 			return(NhlFATAL);
 		}
 	} 
@@ -2322,7 +2322,8 @@ NclMultiDValDataClassRec nclMultiDValDataClassRec = {
 /* NclInitClassFunction initialize_class; 	*/	MultiDValClassInitialize,
 		(NclAddParentFunction)MultiDValAddParent,
                 (NclDelParentFunction)MultiDValDelParent,
-	/* NclPrintFunction print; 	*/	MultiDValPrint	,
+/* NclPrintSummaryFunction print_summary; */    NULL,
+/* NclPrintFunction print; 	*/	MultiDValPrint	,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
 /* NclCallBackList* modify_callback*/   NULL,
