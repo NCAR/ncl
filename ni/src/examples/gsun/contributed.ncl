@@ -12377,6 +12377,7 @@ begin
       dnam = getvardims(xin)                ; input variable dim names
       dimx = dimsizes( xin  )
       rank = dimsizes( dimx )
+print("rank(xin)="+rank)
       if (rank.eq.1 .or. rank.gt.3) then
           print("remap_elements: bad rank: rank="+rank)
           exit
@@ -12391,7 +12392,7 @@ begin
       else
           src_rank = -999                                  ; missing info
       end if
-     ;print("remap_elements: src_rank="+src_rank)
+      print("remap_elements: src_rank="+src_rank)
 
       if (any(fdimNames.eq."dst_grid_rank")) then
           irnk     = ind(fdimNames.eq."dst_grid_rank")     ; index 
@@ -12399,7 +12400,7 @@ begin
       else
           dst_rank = -999                                  ; missing info
       end if
-     ;print("remap_elements: dst_rank="+dst_rank)
+      print("remap_elements: dst_rank="+dst_rank)
           
       radUnits  = (/"radians","radian","Radians","Radian"/)
 
@@ -12432,7 +12433,7 @@ begin
               exit
           end if
       end if
-     ;print("remap_elements: ilon="+ilon+"   jlat="+jlat)
+      print("remap_elements: ilon="+ilon+"   jlat="+jlat)
                                                ; sizes destination grid
       if (isfilevar(fwt,"dst_grid_dims") ) then   
           dim_dst = fwt->dst_grid_dims         ; straight forward       
@@ -12455,7 +12456,7 @@ begin
               exit
           end if
       end if
-     ;print("remap_elements: mlon="+mlon+"   nlat="+nlat)
+      print("remap_elements: mlon="+mlon+"   nlat="+nlat)
 
 ; coordinate information: rectilinear or curvilinear
 ; rectilinear: return coordinate variables with xout
@@ -12527,7 +12528,8 @@ begin
           print("                Cannot determine the output lat/lon locations")
           exit
       end if
-     ;print("remap_elements: gridType_a="+gridType_a+"    gridType_b="+gridType_b)
+      print("remap_elements: gridType_a="+gridType_a+"    gridType_b="+gridType_b)
+
                                         ; read info from file
       dst_add = fwt->row                ; destination grid [linear] 
       src_add = fwt->col                ; source grid [linear] 
@@ -12560,6 +12562,7 @@ begin
       end if
 
       xinDimNames = getvardims(xin)
+print(xinDimNames)
       if (any(xinDimNames.eq."ncol")) then  ; test for orig HOMME [pain!!]
           ncolFlag = True 
       else
@@ -12676,7 +12679,7 @@ begin
 
       if (ranko.gt.2) then
           xout!0    = "time"
-          xout&time =  xin&time
+          xout&time =  xin&$xinDimNames(0)$     ; xin&time
       end if
 
       if (gridType_b.eq."rectilinear") then
