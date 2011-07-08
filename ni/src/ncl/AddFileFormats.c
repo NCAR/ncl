@@ -183,6 +183,7 @@ void _NclAddFileFormats
 	 *where this file will be scanned to find the second match.
 	 *The new file-structure is used when found the second match.
 	 */
+#ifdef USE_NETCDF4_FEATURES
 	_NclRegisterFormat(NC4AddFileFormat,"cdf");
 	_NclRegisterFormat(NC4AddFileFormat,"nc");
 	_NclRegisterFormat(NC4AddFileFormat,"nc3");
@@ -194,6 +195,7 @@ void _NclAddFileFormats
         _NclRegisterFormat(NewOGRAddFileFormat, "shp");  /* shapefile */
         _NclRegisterFormat(NewOGRAddFileFormat, "mif");  /* mapinfo */
         _NclRegisterFormat(NewOGRAddFileFormat, "gmt");  /* GMT   */
+#endif
 #endif
 
 	return;

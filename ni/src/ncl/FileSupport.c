@@ -46,6 +46,8 @@
 #include "ApiRecords.h"
 #include "NclAtt.h"
 
+int use_new_hlfs = 0;
+
 NhlErrorTypes _NclBuildFileCoordRSelection
 #if	NhlNeedProto
 (struct _NclFileRec *file,NclQuark var,struct _NclRangeRec * range, struct _NclSelection* sel,int  dim_num, char * dim_name)
@@ -2410,9 +2412,11 @@ struct _NclMultiDValDataRec *value;
 {
 	NclFileClass fc = NULL;
 
+#ifdef USE_NETCDF4_FEATURES
 	if(use_new_hlfs)
 		fc = (NclFileClass) &nclNewFileClassRec;
 	else
+#endif
 		fc = &nclFileClassRec;
 
 	while(fc)
@@ -2474,7 +2478,12 @@ NclQuark option;
 	NclFileClass fc = NULL;
 	int i = 5;
 
-	fc = (NclFileClass)&nclNewFileClassRec;
+#ifdef USE_NETCDF4_FEATURES
+	if(use_new_hlfs)
+		fc = (NclFileClass) &nclNewFileClassRec;
+	else
+#endif
+		fc = &nclFileClassRec;
 
         while((! fc) && i)
 	{
@@ -2557,11 +2566,13 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
        *fprintf(stderr, "\tuse_new_hlfs = %d\n", use_new_hlfs);
        */
 
+#ifdef USE_NETCDF4_FEATURES
 	if(use_new_hlfs)
 	{
 		file_out = _NclNewFileCreate(inst, theclass, obj_type, obj_type_mask, status, path, rw_status);
 	}					
 	else
+#endif
 	{
 		file_out = _NclFileCreate(inst, theclass, obj_type, obj_type_mask, status, path, rw_status);
 	}					
@@ -2574,11 +2585,13 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 NhlErrorTypes _NclPrintFileSummary(NclObj self, FILE *fp)
 {
+#ifdef USE_NETCDF4_FEATURES
 	if(use_new_hlfs)
 	{
 		return (_NclNewFilePrintSummary(self, fp));
 	}
 	else
+#endif
 	{
 		return (_NclFilePrintSummary(self, fp));
 	}
@@ -2595,12 +2608,14 @@ NclGroup *_NclCreateGroup(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
    *fprintf(stderr, "\tuse_new_hlfs = %d\n", use_new_hlfs);
    */
 
+#ifdef USE_NETCDF4_FEATURES
     if(use_new_hlfs)
     {
         group_out = _NclNewGroupCreate(inst, theclass, obj_type, obj_type_mask,
                                        status, file_in, group_name);
     }                    
     else
+#endif
     {
         group_out = _NclGroupCreate(inst, theclass, obj_type, obj_type_mask,
                                     status, file_in, group_name);

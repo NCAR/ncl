@@ -5146,6 +5146,7 @@ void CallASSIGN_FILE_VAR_OP(void) {
 						if((file != NULL)&&((index = _NclFileIsVar(file,var)) != -1)) {
 							int ndims = 0;
 
+#ifdef USE_NETCDF4_FEATURES
 							if(use_new_hlfs)
 							{
 								NclNewFile newfile = (NclNewFile) file;
@@ -5154,6 +5155,7 @@ void CallASSIGN_FILE_VAR_OP(void) {
 								ndims = varnode->dim_rec->n_dims;
 							}
 							else
+#endif
 								ndims = file->file.var_info[index]->num_dimensions;
 
 							if((nsubs != ndims) && (nsubs != 0)){
@@ -5503,6 +5505,7 @@ void CallFILE_VAR_OP(void) {
 					return;
 				}
 
+#ifdef USE_NETCDF4_FEATURES
 				if(use_new_hlfs)
 				{
 					NclNewFile newfile = (NclNewFile)file;
@@ -5543,6 +5546,7 @@ void CallFILE_VAR_OP(void) {
 
 				}
 				else
+#endif
 				{
 					index = _NclFileIsVar(file,var);
 
@@ -5642,6 +5646,7 @@ void CallFILE_GROUP_OP(void) {
 				int *id = (int*)NclMalloc((unsigned)sizeof(int));
 				ng_size_t dim_size = 1;
 
+#ifdef USE_NETCDF4_FEATURES
 				gvar = _NclPop();
 
 				switch(gvar.kind)
@@ -5727,6 +5732,7 @@ void CallFILE_GROUP_OP(void) {
 				}
 
 				estatus = _NclPush(out_group);
+#endif
 			}
 
 void CallASSIGN_VARATT_OP(void) {

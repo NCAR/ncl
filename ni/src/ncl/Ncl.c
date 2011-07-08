@@ -43,7 +43,6 @@ FILE    *thefptr;
 FILE    *theoptr;
 
 int cmd_line;
-int use_new_hlfs = 0;
 
 extern int  cmd_line_is_set;
 extern int  cur_line_number;

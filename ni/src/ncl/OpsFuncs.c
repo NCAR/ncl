@@ -855,6 +855,7 @@ NhlErrorTypes _NclBuildListVar
 
 NhlErrorTypes _NclBuildNewListVar(int n_items,NclStackEntry *result)
 {
+#ifdef USE_NETCDF4_FEATURES
 	NclStackEntry data;
 	NclNewList thelist = NULL;
 	NclObj oneobj;
@@ -890,6 +891,7 @@ NhlErrorTypes _NclBuildNewListVar(int n_items,NclStackEntry *result)
 	if(result->u.data_obj != NULL) 
 		return(NhlNOERROR);
 	else 
+#endif
 		return(NhlFATAL);
 }
 

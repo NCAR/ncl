@@ -6829,7 +6829,9 @@ NclQuark group_name;
 	if(index < 0)
 		return (NULL);
 
+#ifdef USE_NETCDF4_FEATURES
 	group_out = _NclCreateGroup(NULL,NULL,Ncl_File,0,TEMPORARY,thefile,group_name);
+#endif
 
 #if 0
 	if(group_out != NULL) {
