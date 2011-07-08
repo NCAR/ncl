@@ -2312,7 +2312,7 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
 	SetArgTemplate(args,3,"string",1,NclANY);nargs++;
 	SetArgTemplate(args,4,"string",1,NclANY);nargs++;
-	SetArgTemplate(args,6,"snumeric",1,NclANY);nargs++;
+	SetArgTemplate(args,5,"snumeric",1,NclANY);nargs++;
 	NclRegisterProc(_NclIFileEnumDef,args,"fileenumdef",nargs);
 
 	nargs = 0;

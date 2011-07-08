@@ -70,11 +70,13 @@ void
 #endif
 );
 
+#ifdef USE_NETCDF4_FEATURES
 extern NclFormatFunctionRecPtr NC4AddFileFormat(
 #if	NhlNeedProto
 void
 #endif
 );
+#endif
 
 extern NclFormatFunctionRecPtr GribAddFileFormat(
 #if	NhlNeedProto
