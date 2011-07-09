@@ -1420,7 +1420,7 @@ void* storage;
 	HDFFileRecord *rec = (HDFFileRecord*) therec;
 	HDFVarInqRecList *stepvl;
 	void *out_data;
-	int n_elem = 1;
+	ng_size_t n_elem = 1;
 	int cdfid = -1;
 	int ret = -1,i;
 	int no_stride = 1;
@@ -1430,7 +1430,7 @@ void* storage;
 	while(stepvl != NULL) {
 		if(stepvl->var_inq->name == thevar) {
 			for(i= 0; i< stepvl->var_inq->n_dims; i++) {
-				count[i] = (int)floor((finish[i] - start[i])/(double)stride[i]) + 1;
+				count[i] = (long)((finish[i] - start[i])/stride[i]) + 1;
 				n_elem *= count[i];
 				if(stride[i] != 1) {
 					no_stride = 0;
@@ -1645,7 +1645,8 @@ long *stride;
 	int cdfid;
 	HDFVarInqRecList *stepvl; 
 	long count[MAX_NC_DIMS];
-	int i,n_elem = 1,no_stride = 1;
+	ng_size_t n_elem = 1;
+	int i,no_stride = 1;
 	int ret;
 
 	if(rec->wr_status <= 0) {
@@ -1653,7 +1654,7 @@ long *stride;
 		while(stepvl != NULL) {
 			if(stepvl->var_inq->name == thevar) {
 				for(i= 0; i< stepvl->var_inq->n_dims; i++) {
-					count[i] = (int)floor((finish[i] - start[i])/(double)stride[i]) + 1;
+					count[i] = (long)((finish[i] - start[i])/stride[i]) + 1;
 					n_elem *= count[i];
 					if(stride[i] != 1) {
 						no_stride = 0;

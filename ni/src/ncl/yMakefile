@@ -255,13 +255,13 @@ NIO_NCL_HDR_FILES = ApiRecords.h AttSupport.h DataSupport.h		\
 		FileSupport.h HLUSupport.h ListSupport.h NclAtt.h NclCCM.h		\
 		NclCallBacksI.h NclCoordVar.h NclData.h NclDataDefs.h	\
 		NclGroup.h NclFile.h NclFileInterfaces.h NclFileVar.h NclGRIB.h	\
-		NclNewGroup.h NclNewFile.h NclNewFileStructure.h \
+		NclNewGroup.h NclNewFile.h NclNewFileStructure.h NclOptions.h \
 		NclGRIB2.h NclHLUObj.h NclHLUVar.h NclList.h NclNewList.h 	\
 		NclMdInc.h NclMultiDValData.h NclMultiDValData.h.sed	\
 		NclMultiDValHLUObjData.h NclMultiDVallistData.h		\
 		NclMultiDValnclfileData.h NclOneDValCoordData.h		\
 		NclType.h NclType.h.sed NclTypelist.h NclVar.h		\
-		OpsList.h Symbol.h TypeSupport.h.sed			\
+		OpsList.h Symbol.h TypeSupport.h.sed NclGrpFuncs.null	\
 		TypeSupportMatTemplate.h.sed				\
 		TypeSupportMonoOpTemplate.h.sed				\
 		TypeSupportOpTemplate.h.sed VarSupport.h ccmhdr.h	\
