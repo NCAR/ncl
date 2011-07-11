@@ -220,6 +220,14 @@ HDF5STUFF:
 	@echo "n"
 #endif
 
+#ifdef	UseNetCDF4Features
+NC4STUFF:
+	@echo "y"
+#else
+NC4STUFF:
+	@echo "n"
+#endif
+
 #ifdef	BuildCAIRO
 CAIROSTUFF:
 	@echo "y"

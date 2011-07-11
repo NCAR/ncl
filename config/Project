@@ -43,6 +43,14 @@
 #endif
 #endif /* BuildNetCDF4 */
 
+#ifndef    UseNetCDF4Features
+#define    UseNetCDF4Features
+#else
+#if    !UseNetCDF4Features
+#undef UseNetCDF4Features
+#endif
+#endif /* UseNetCDF4Features */
+
 #ifndef	BuildHDF4
 #define	BuildHDF4
 #else

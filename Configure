@@ -147,6 +147,8 @@ set buildtriangle=`$makecmd TRIANGLESTUFF`
 echo -n "..."
 # set buildpng=`$makecmd PNGSTUFF`
 # echo -n "..."
+set buildnc4=`$makecmd NC4STUFF`
+echo -n "..."
 set buildcairo=`$makecmd CAIROSTUFF`
 echo -n "..."
 set buildgdal=`$makecmd GDALSTUFF`
@@ -408,6 +410,34 @@ if ($?verbose_option) then
 
 ======================================================================
 "EOF"
+endif
+
+#
+# NetCDF 4 support.
+#
+if ($?verbose_option) then
+  cat <<"EOF"
+======================================================================
+
+	If you want access to some new NetCDF 4 features.
+	This is experimental for now,
+	so unless you know what you're doing,
+	answer "n" to this question.
+
+======================================================================
+"EOF"
+endif
+
+echo ""
+echo "Build NetCDF4 feature support (optional)? ($buildnc4support)"
+echo "Requires the NetCDF version 4.1.2 or later."
+echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+set answer="$<"
+if ("$answer" == "q") goto cleanup
+if (("$answer" != "") && ("$answer" != "$buildnc4support")) then
+	set buildnc4support = $answer
+	set newbuildnc4support
+    set altered
 endif
 
 #
@@ -1287,6 +1317,10 @@ endif
 # 		echo "#define PNGlib" >> Site.local
 # 	endif
 # endif
+
+if ($?newbuildnc4support  && "$buildnc4support" == "y") then
+	echo "#define UseNetCDF4Features 1" >> Site.local
+endif
 
 if ($?newbuildcairo  && "$buildcairo" == "y") then
 	echo "#define BuildCAIRO 1" >> Site.local
