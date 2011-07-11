@@ -147,7 +147,7 @@ set buildtriangle=`$makecmd TRIANGLESTUFF`
 echo -n "..."
 # set buildpng=`$makecmd PNGSTUFF`
 # echo -n "..."
-set buildnc4=`$makecmd NC4STUFF`
+set buildnc4support=`$makecmd NC4STUFF`
 echo -n "..."
 set buildcairo=`$makecmd CAIROSTUFF`
 echo -n "..."
