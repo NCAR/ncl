@@ -5131,7 +5131,7 @@ static NhlErrorTypes NC4AddAtt(void *therec, NclQuark theatt,
     return(NhlFATAL);
 }
 
-static NhlErrorTypes NC4AddVarAtt(void *therec,NclQuark thevar, NclQuark theatt,
+static NhlErrorTypes NC4AddVarAtt(void *therec, NclQuark thevar, NclQuark theatt,
                                   NclBasicDataTypes data_type, int n_items, void * values)
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
@@ -5141,6 +5141,12 @@ static NhlErrorTypes NC4AddVarAtt(void *therec,NclQuark thevar, NclQuark theatt,
     int fid,ret;
     int nc_ret;
     
+  /*
+   *fprintf(stderr, "\nEnter NC4AddVarAtt, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tthevar: <%s>, theatt: <%s>\n",
+   *        NrmQuarkToString(thevar), NrmQuarkToString(theatt));
+   */
+
     if(grpnode->status <= 0)
     {
         the_data_type = (nc_type*)NC4MapFromNcl(data_type);
@@ -5190,7 +5196,7 @@ static NhlErrorTypes NC4AddVarAtt(void *therec,NclQuark thevar, NclQuark theatt,
                         strcpy(tmpstr[i], NrmQuarkToString(qv[i]));
                     }
 
-                    ret = nc_put_att_string(fid, NC_GLOBAL, NrmQuarkToString(theatt),
+                    ret = nc_put_att_string(fid, varnode->id, NrmQuarkToString(theatt),
                                             (size_t)n_items, tmpstr);
                     for(i = 0; i < n_items; i++)
                     {
@@ -5209,6 +5215,9 @@ static NhlErrorTypes NC4AddVarAtt(void *therec,NclQuark thevar, NclQuark theatt,
                     ret = _addNclAttNode(&(varnode->att_rec), theatt,
                                          data_type, n_items, values);
                     NclFree(the_data_type);
+                  /*
+                   *fprintf(stderr, "Leave NC4AddVarAtt, file: %s, line: %d\n\n", __FILE__, __LINE__);
+                   */
                     return(NhlNOERROR);
                 } 
 
@@ -6220,6 +6229,7 @@ NclFormatFunctionRec NC4Rec =
     /* NclAddVlenFunc          add_vlen; */                  NC4AddVlen,
     /* NclAddEnumFunc          add_enum; */                  NC4AddEnum,
     /* NclAddOpaqueFunc        add_opaque; */                NC4AddOpaque,
+    /* NclAddCompoundFunc      add_compound; */              NULL,
     /* NclSetOptionFunc        set_option;  */               NC4SetOption
 };
 

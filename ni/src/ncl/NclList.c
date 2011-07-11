@@ -15,37 +15,7 @@
 
 static NhlErrorTypes ListPrintSummary(NclObj theobj, FILE *fp)
 {
-	NclList tmp_list;
-	NhlErrorTypes ret;
-
-	tmp_list = (NclList) theobj;
-
-	ret = nclfprintf(fp,"Type: %s\n",
-		_NclBasicDataTypeToName(tmp_list->list.list_type));
-	if(ret < 0)
-	{
-		return(NhlWARNING);
-	}
-
-	ret = nclfprintf(fp,"Total items: %ld\n",(long)tmp_list->list.nelem);
-	if(ret < 0)
-	{
-		return(NhlWARNING);
-	}
-
-	return(NhlNOERROR);
-}
-
-static NhlErrorTypes ListPrint
-#if     NhlNeedProto
-(NclObj list, FILE *fp)
-#else
-(list,fp)
-NclObj list;
-FILE *fp;
-#endif
-{
-	NclList tmp_list = (NclList) list;
+	NclList tmp_list = (NclList) theobj;
 	NhlErrorTypes ret = -1;
 
         if(NCL_VLEN & tmp_list->list.list_type)
@@ -89,8 +59,78 @@ FILE *fp;
 		return(NhlWARNING);
 	}
 
+	nclfprintf(fp,"\n");
+
 	return(NhlNOERROR);
 }
+
+static NhlErrorTypes ListPrint
+#if     NhlNeedProto
+(NclObj list, FILE *fp)
+#else
+(list,fp)
+NclObj list;
+FILE *fp;
+#endif
+{
+	NclList tmp_list = (NclList) list;
+	NclListObjList *step;
+	NclObjClass oc;
+	NclObj cur_obj;
+	int nv = 0;
+	NhlErrorTypes ret = -1;
+
+	ret = ListPrintSummary(list, fp);
+
+	step = tmp_list->list.first;
+	
+	while(step != NULL)
+	{
+	    cur_obj = (NclObj)_NclGetObj(step->obj_id);
+	   /* orig_type is a mask it wont work with this func 
+	   *oc = _NclObjTypeToPointer(step->orig_type);
+           */
+
+	    oc = _NclObjTypeToPointer(cur_obj->obj.obj_type);
+
+	    if(oc != NULL)
+	    {
+	 	ret = nclfprintf(fp,"List Item %d:\t%s", nv, oc->obj_class.class_name);
+	    }
+	    else
+	    {
+	        ret = NhlWARNING;
+	    }
+
+            if(ret < 0)
+	    {
+                return(NhlWARNING);
+            }
+
+	    switch(cur_obj->obj.obj_type)
+	    {
+	        NclObj obj;
+	        case Ncl_Var:
+	        case Ncl_FileVar:
+			obj = _NclGetObj(cur_obj->obj.id);
+			_NclPrintVarSummary((NclVar)obj);
+			break;
+	        default:
+		    fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
+		    fprintf(stderr, "\tUNRECOGANIZED cur_obj->obj.obj_type %d: %o\n", nv, cur_obj->obj.obj_type);
+	    }
+
+	    step = step->next;
+	    nv++;
+ 	    nclfprintf(fp,"\n");
+	}
+
+	nclfprintf(fp,"\n");
+
+	return(NhlNOERROR);
+}
+
+
 static void ListDestroy
 #if     NhlNeedProto
 (NclObj list)

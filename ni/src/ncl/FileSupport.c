@@ -1461,6 +1461,52 @@ extern NhlErrorTypes _NclFileAddEnum(NclFile infile, NclQuark enum_name, NclQuar
 	return(NhlFATAL);
 }
 
+extern NhlErrorTypes _NclFileAddCompound(NclFile infile, NclQuark compound_name, NclQuark var_name,
+                                         NclQuark dim_name, ng_size_t n_mems,
+                                         NclQuark *mem_name, NclQuark *mem_type)
+{
+	NclNewFile thefile = (NclNewFile) infile;
+	NclNewFileClass fc = NULL;
+
+        fprintf(stderr, "\nHit _NclFileAddCompound, file: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tcompound name: <%s>, var name: <%s>, dim_name: <%s>\n",
+                         NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
+                         NrmQuarkToString(dim_name));
+      /*
+       */
+
+	if(infile == NULL)
+	{
+		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+			"_NclFileAddCompound: CANNOT add compound to empty file.\n"));
+		return(NhlFATAL);
+	}
+
+	if(! thefile->use_new_hlfs)
+	{
+		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+			"_NclFileAddCompound: Old File Structure DO NOT Support compound.\n"));
+		return(NhlFATAL);
+	}
+
+	fc = (NclNewFileClass)thefile->obj.class_ptr;
+	while((NclObjClass)fc != nclObjClass)
+	{
+		if(fc->newfile_class.create_compound_type != NULL)
+		{
+			return((*fc->newfile_class.create_compound_type)
+                               (infile, compound_name, var_name, dim_name,
+                                n_mems, mem_name, mem_type));
+		}
+		else
+		{
+			fc = (NclNewFileClass)fc->obj_class.super_class;
+		}
+	}
+
+	return(NhlFATAL);
+}
+
 extern NhlErrorTypes _NclFileAddOpaque(NclFile infile, NclQuark opaque_name, NclQuark var_name,
                                        int var_size, NclQuark dim_name)
 {

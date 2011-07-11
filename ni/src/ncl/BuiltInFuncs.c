@@ -17565,6 +17565,172 @@ NhlErrorTypes _NclIFileEnumDef(void)
     return(ret);
 }
 
+NhlErrorTypes _NclIFileCompoundDef(void)
+{
+    ng_size_t n_compounds;
+    NclScalar missing;
+    int has_missing;
+
+    obj *thefile_id;
+    string *compound_name;
+    string *var_name;
+    string *dim_name;
+    int n;
+    NclFile thefile;
+    NhlErrorTypes ret=NhlNOERROR;
+
+    ng_size_t n_mems;
+    NclScalar mem_missing;
+    int mem_has_missing;
+    string *mem_name;
+
+    ng_size_t n_types;
+    NclScalar type_missing;
+    int type_has_missing;
+    string *mem_type;
+
+    thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        6,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+    thefile = (NclFile)_NclGetObj((int)*thefile_id);
+    if(thefile == NULL)
+    {
+        NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+            "_NclIFileCompoundDef: CANNOT add compound to empty file.\n"));
+        return(NhlFATAL);
+    }
+
+    compound_name = (string*)NclGetArgValue(
+                        1,
+                        6,
+                        NULL,
+                        &n_compounds,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((string)*compound_name == missing.stringval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileCompoundDef: CANNOT add compound named <%s>, which is same as missing-value.\n",
+                NrmQuarkToString((string)*compound_name)));
+            return(NhlFATAL);
+        }
+    }
+
+    var_name = (string*)NclGetArgValue(
+                        2,
+                        6,
+                        NULL,
+                        &n_compounds,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((string)*var_name == missing.stringval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileCompoundDef: CANNOT add var named <%s>, which is same as missing-value.\n",
+                NrmQuarkToString((string)*var_name)));
+            return(NhlFATAL);
+        }
+    }
+
+    dim_name = (string*)NclGetArgValue(
+                        3,
+                        6,
+                        NULL,
+                        &n_compounds,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((string)*dim_name == missing.stringval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileCompoundDef: CANNOT add compound dimension named <%s>, which is same as missing-value.\n",
+                NrmQuarkToString((string)*dim_name)));
+            return(NhlFATAL);
+        }
+    }
+
+    mem_name = (string*)NclGetArgValue(
+                        4,
+                        6,
+                        NULL,
+                        &n_mems,
+                        &mem_missing,
+                        &mem_has_missing,
+                        NULL,
+                        0);
+
+    if(mem_has_missing)
+    {
+        int num_missing = 0;
+
+        for(n = 0; n < n_mems; n++)
+        {
+            if((string)mem_name[n] == missing.stringval)
+                num_missing++;
+        }
+
+        if(num_missing == n_mems)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileCompoundDef: Can not have all members as missing.\n"));
+            return(NhlFATAL);
+        }
+    }
+
+    mem_type = (string *)NclGetArgValue(
+                        5,
+                        6,
+                        NULL,
+                        &n_types,
+                        &type_missing,
+                        &type_has_missing,
+                        NULL,
+                        0);
+
+    if(type_has_missing)
+    {
+        int num_missing = 0;
+
+        for(n = 0; n < n_types; n++)
+        {
+            if((string)mem_type[n] == missing.stringval)
+                num_missing++;
+        }
+
+        if(num_missing == n_types)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileCompoundDef: Can not have all members as missing.\n"));
+            return(NhlFATAL);
+        }
+    }
+
+    ret = _NclFileAddCompound(thefile, *compound_name, *var_name, *dim_name,
+                              n_mems, mem_name, mem_type);
+
+    return(ret);
+}
+
 NhlErrorTypes _NclIFileGrpDef(void)
 {
 	ng_size_t n_grps;

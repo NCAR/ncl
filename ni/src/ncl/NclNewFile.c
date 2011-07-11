@@ -4772,16 +4772,19 @@ static struct _NclVarRec* NewFileReadCoord(NclFile infile, NclQuark coord_name,
         if(NULL == tmp_md) 
             return(NULL);
 
-        if(varnode->att_rec->id < 0) 
-            NewLoadVarAtts(thefile, coord_name);
+        if(NULL != varnode->att_rec) 
+        {
+            if(varnode->att_rec->id < 0) 
+                NewLoadVarAtts(thefile, coord_name);
 
-        att_id = varnode->att_rec->id;
+            att_id = varnode->att_rec->id;
     
-        att_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
-        if(att_obj != NULL)
-            att_id = att_obj->obj.id;
-        else
-            att_id = -1;
+            att_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
+            if(att_obj != NULL)
+                att_id = att_obj->obj.id;
+            else
+                att_id = -1;
+        }
 
         if(NULL != sel_ptr)
             sel = sel_ptr->selection;
@@ -5663,9 +5666,9 @@ static NhlErrorTypes NewFileWriteVarAtt(NclFile infile, NclQuark var, NclQuark a
 
     if((exists)&&(thefile->newfile.format_funcs->write_att != NULL))
     {
+        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\texists = %d\n", exists);
       /*
-       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\texists = %d\n", exists);
        */
 
         /* get the last att val in case there's an error writing the att */
@@ -5701,11 +5704,11 @@ static NhlErrorTypes NewFileWriteVarAtt(NclFile infile, NclQuark var, NclQuark a
     }
     else if((!exists)&&(thefile->newfile.format_funcs->add_att != NULL))
     {
-        /*
-        *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        *fprintf(stderr, "\texists = %d\n", exists);
-        */
-         ret = _addNclAttNode(&(varnode->att_rec), attname, value->multidval.data_type,
+      /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\texists = %d\n", exists);
+       */
+        ret = _addNclAttNode(&(varnode->att_rec), attname, value->multidval.data_type,
                               value->multidval.totalelements, value->multidval.val);
 
         if(value->multidval.data_type == NCL_char)
@@ -5799,9 +5802,12 @@ static NhlErrorTypes NewFileWriteVarAtt(NclFile infile, NclQuark var, NclQuark a
                 tmp_md = value;
             }
 
-            if(varnode->att_rec->id < 0)
-                NewLoadVarAtts(thefile, var);
-            att_id = varnode->att_rec->id;
+            if(NULL != varnode->att_rec)
+            {
+                if(varnode->att_rec->id < 0)
+                    NewLoadVarAtts(thefile, var);
+                att_id = varnode->att_rec->id;
+            }
 
             ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
             if(ret < NhlWARNING)
@@ -8450,6 +8456,7 @@ NclNewFileClassRec nclNewFileClassRec =
        /*NclAssignFileVlenFunc          create_vlen_type*/             NewFileCreateVlenType,
        /*NclAssignFileEnumFunc          create_enum_type*/             NewFileCreateEnumType,
        /*NclAssignFileOpaqueFunc        create_opaque_type*/           NewFileCreateOpaqueType,
+       /*NclAssignFileCompoundFunc      create_compound_type*/         NULL,
          0
     }
 };

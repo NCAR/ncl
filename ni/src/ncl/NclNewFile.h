@@ -67,6 +67,9 @@ typedef NhlErrorTypes (*NclAssignFileEnumFunc)(NclFile thefile, NclQuark vlen_na
                                                ng_size_t n_mems, NclBasicDataTypes val_type);
 typedef NhlErrorTypes (*NclAssignFileOpaqueFunc)(NclFile thefile, NclQuark vlen_name, NclQuark var_name,
                                                  int var_size, NclQuark dim_name);
+typedef NhlErrorTypes (*NclAssignFileCompoundFunc)(NclFile thefile, NclQuark vlen_name, NclQuark var_name,
+                                                   NclQuark dim_name, ng_size_t n_mems,
+                                                   NclQuark *mem_name, NclQuark *mem_type);
 
 typedef struct _NclNewFileClassPart
 {
@@ -74,6 +77,7 @@ typedef struct _NclNewFileClassPart
     NclAssignFileVlenFunc   create_vlen_type;
     NclAssignFileEnumFunc   create_enum_type;
     NclAssignFileOpaqueFunc   create_opaque_type;
+    NclAssignFileCompoundFunc create_compound_type;
     int new_stuff;	/* New part(s) beyond _NclFileClasspart */
 } NclNewFileClassPart;
 

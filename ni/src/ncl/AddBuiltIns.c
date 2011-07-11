@@ -128,6 +128,7 @@ void
 #ifdef USE_NETCDF4_FEATURES
 extern NhlErrorTypes _NclIFileVlenDef(void);
 extern NhlErrorTypes _NclIFileEnumDef(void);
+extern NhlErrorTypes _NclIFileCompoundDef(void);
 extern NhlErrorTypes _NclIFileOpaqueDef(void);
 
 extern NhlErrorTypes _NclIFileGrpDef(void);
@@ -2314,6 +2315,16 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,4,"string",1,NclANY);nargs++;
 	SetArgTemplate(args,5,"snumeric",1,NclANY);nargs++;
 	NclRegisterProc(_NclIFileEnumDef,args,"fileenumdef",nargs);
+
+	nargs = 0;
+	args = NewArgs(6);
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,5,"string",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFileCompoundDef,args,"fileecompounddef",nargs);
 
 	nargs = 0;
 	args = NewArgs(5);
