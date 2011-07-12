@@ -1320,9 +1320,14 @@ NclSelectionRecord *sel_ptr;
 */
 	thevalue = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
 /*
-* When id's are equal a write screws things up
+* When id's are equal a write screws things up 
+* dib -- except it's okay if it references a scalar logical variable - 2011-07-12
 */
-	if(thevalue->obj.id != value->obj.id) {
+	if(thevalue->obj.id == value->obj.id && thevalue->multidval.data_type == NCL_logical &&
+		thevalue->multidval.kind == SCALAR) {
+		return NhlNOERROR;
+	}
+	else if (thevalue->obj.id != value->obj.id) {
 #ifdef NIO_LIB_ONLY
 		if (sel_ptr == NULL) {
 #else
