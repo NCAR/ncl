@@ -1339,16 +1339,32 @@ NclSelectionRecord *sel_ptr;
 			NclObj tmp = NULL;
 			NclList thelist = (NclList) theobj;
 			NclList rhslist = (NclList) rhsobj;
+			NclListObjList *step;
 
 			while(0 < thelist->list.nelem)
 			{
 				tmp = (NclObj)_NclListPop((NclObj)thelist);
 			}
 
-			while(0 < rhslist->list.nelem)
+		      /*Comment out this paragraph (as this removed items from rhslist),
+		       *and use the paragraph below (which copy items for rhslist).
+		       *Wei, 7/12/2011.
+		       *
+		       *while(0 < rhslist->list.nelem)
+		       *{
+		       *	tmp = (NclObj)_NclListPop((NclObj)rhslist);
+		       *	_NclListPush((NclObj)thelist, tmp);
+		       *}
+		       */
+
+			step = rhslist->list.last;
+			while(step != NULL)
 			{
-				tmp = (NclObj)_NclListPop((NclObj)rhslist);
+				tmp = _NclGetObj(step->obj_id);
+	
 				_NclListPush((NclObj)thelist, tmp);
+
+				step = step->prev;
 			}
 
 			return (NhlNOERROR);
