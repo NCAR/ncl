@@ -8776,6 +8776,7 @@ NhlErrorTypes _NclIstringtofloat
 				tval = strtod(val,&end);
 				dtest = fabs(tval);
 				if (end == val) {
+				  printf("val = '%s'\n", val); 
                                         NhlPError(NhlWARNING,NhlEUNKNOWN,
 					"stringtofloat: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.floatval;
@@ -13834,6 +13835,15 @@ NhlErrorTypes _Nclfspan
 	ng_size_t dimsizes = 1;
 	ng_size_t i;
 
+ /*
+  * The internal calculation is now done in double precision, regardless
+  * of the type of the input. This was implemented after 6.0.0 was 
+  * released, due to some precision issues that users were having.
+  */
+	double  strt,           /* span start */
+	        fnsh,           /* span finish */
+              spacing;          /* span interval */
+
 	void    *out_val;       /* may be of type float or of type double */
 
     /*
@@ -13937,18 +13947,15 @@ NhlErrorTypes _Nclfspan
     data0_type = tmp_md0->multidval.data_type;
     data1_type = tmp_md1->multidval.data_type;
 
+   /*
+    * promote arguments to type double
+    */
+    tmp_md0 = _NclCoerceData(tmp_md0, Ncl_Typedouble, NULL);
+    tmp_md1 = _NclCoerceData(tmp_md1, Ncl_Typedouble, NULL);
+
     if ((data0_type == NCL_double)  ||  (data1_type == NCL_double)) {
-        /*
-         * promote arguments to type double
-         */
-        tmp_md0 = _NclCoerceData(tmp_md0, Ncl_Typedouble, NULL);
-        tmp_md1 = _NclCoerceData(tmp_md1, Ncl_Typedouble, NULL);
 
         if (dimsizes > 1) {
-        	double  strt,           /* span start */
-                    fnsh,           /* span finish */
-                    spacing;        /* span interval */
-
             fnsh = *(double *) tmp_md1->multidval.val;
             strt = *(double *) tmp_md0->multidval.val;
 
@@ -13963,7 +13970,7 @@ NhlErrorTypes _Nclfspan
                 ((double *) out_val)[i] = strt + (i * spacing);
             }
 
-            ((double *) out_val)[0] = strt;
+            ((double *) out_val)[0]            = strt;
             ((double *) out_val)[dimsizes - 1] = fnsh;
         } else {
             /* dimsizes == 1 */
@@ -13977,19 +13984,10 @@ NhlErrorTypes _Nclfspan
 
         return NclReturnValue(out_val, 1, &dimsizes, NULL, NCL_double, 0);
     } else {
-        /*
-         * arguments are, or are to be promoted to, type float
-         */
-        tmp_md0 = _NclCoerceData(tmp_md0, Ncl_Typefloat, NULL);
-        tmp_md1 = _NclCoerceData(tmp_md1, Ncl_Typefloat, NULL);
 
         if (dimsizes > 1) {
-        	float   strt,           /* span start */
-                    fnsh,           /* span finish */
-                    spacing;        /* span interval */
-
-            fnsh = *(float *) tmp_md1->multidval.val;
-            strt = *(float *) tmp_md0->multidval.val;
+            fnsh = *(double *) tmp_md1->multidval.val;
+            strt = *(double *) tmp_md0->multidval.val;
 
             spacing = (fnsh - strt) / (dimsizes - 1);
 
@@ -13999,11 +13997,11 @@ NhlErrorTypes _Nclfspan
 	      return(NhlFATAL);
 	    }
             for (i = 0; i < dimsizes; i++) {
-                ((float *) out_val)[i] = strt + (i * spacing);
+	      ((float *) out_val)[i] = (float)(strt + (i * spacing));
             }
 
-            ((float *) out_val)[0] = strt;
-            ((float *) out_val)[dimsizes-1] = fnsh;
+            ((float *) out_val)[0]          = (float)strt;
+            ((float *) out_val)[dimsizes-1] = (float)fnsh;
         } else {
             /* dimsizes == 1 */
             out_val = (void *) NclMalloc(sizeof(float));
