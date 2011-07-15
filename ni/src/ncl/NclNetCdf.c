@@ -1716,32 +1716,29 @@ long *stride;
 
 	
 				if(no_stride) {
-					ret = ncvarputg(cdfid,
-						stepvl->var_inq->varid,
-						start,
-						count,
-						NULL,
-						NULL,
-						data);
+					ret = nc_put_vara(cdfid,
+							  stepvl->var_inq->varid,
+							  (const size_t *)start,
+							  (const size_t *)count,
+							  data);
 #if NETCDF_DEBUG
-				fprintf(stderr,"ncvarputg(%d,%d,start,count,NULL,NULL,outdata);\n",cdfid,stepvl->var_inq->varid);
+				fprintf(stderr,"nc_put_vara(%d,%d,start,count,NULL,NULL,outdata);\n",cdfid,stepvl->var_inq->varid);
 #endif
 				} else {
-					ret = ncvarputg(cdfid,
-						stepvl->var_inq->varid,
-						start,
-						count,
-						stride,
-						NULL,
-						data);
+					ret = nc_put_vars(cdfid,
+							  stepvl->var_inq->varid,
+							  (const size_t *)start,
+							  (const size_t *)count,
+							  (const ptrdiff_t *)stride,
+							  data);
 #if NETCDF_DEBUG
-				fprintf(stderr,"ncvarputg(%d,%d,start,count,stride,NULL,outdata);\n",cdfid,stepvl->var_inq->varid);
+				fprintf(stderr,"nc_put_vars(%d,%d,start,count,stride,NULL,outdata);\n",cdfid,stepvl->var_inq->varid);
 #endif
 				}
 	
 				CloseOrNot(rec,cdfid,1);
-				if(ret == -1) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to write variable (%s) to file (%s)",NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
+				if(ret != NC_NOERR) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: error attempting to write variable (%s) to file (%s)",nc_strerror(ret),NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
 					return(NhlFATAL);
 				} else {
 					return(NhlNOERROR);
