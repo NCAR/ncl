@@ -17566,6 +17566,7 @@ NhlErrorTypes _NclIFileEnumDef(void)
 NhlErrorTypes _NclIFileCompoundDef(void)
 {
     ng_size_t n_compounds;
+    ng_size_t n_dims;
     NclScalar missing;
     int has_missing;
 
@@ -17587,9 +17588,16 @@ NhlErrorTypes _NclIFileCompoundDef(void)
     int type_has_missing;
     string *mem_type;
 
+    ng_size_t n_sizes;
+    NclScalar size_missing;
+    int size_has_missing;
+    int *mem_size;
+
+    int num_missing = 0;
+
     thefile_id = (obj*)NclGetArgValue(
                         0,
-                        6,
+                        7,
                         NULL,
                         NULL,
                         NULL,
@@ -17606,7 +17614,7 @@ NhlErrorTypes _NclIFileCompoundDef(void)
 
     compound_name = (string*)NclGetArgValue(
                         1,
-                        6,
+                        7,
                         NULL,
                         &n_compounds,
                         &missing,
@@ -17627,7 +17635,7 @@ NhlErrorTypes _NclIFileCompoundDef(void)
 
     var_name = (string*)NclGetArgValue(
                         2,
-                        6,
+                        7,
                         NULL,
                         &n_compounds,
                         &missing,
@@ -17648,9 +17656,9 @@ NhlErrorTypes _NclIFileCompoundDef(void)
 
     dim_name = (string*)NclGetArgValue(
                         3,
-                        6,
+                        7,
                         NULL,
-                        &n_compounds,
+                        &n_dims,
                         &missing,
                         &has_missing,
                         NULL,
@@ -17658,7 +17666,15 @@ NhlErrorTypes _NclIFileCompoundDef(void)
 
     if(has_missing)
     {
-        if((string)*dim_name == missing.stringval)
+        num_missing = 0;
+
+        for(n = 0; n < n_dims; n++)
+        {
+            if((string)dim_name[n] == missing.stringval)
+                num_missing++;
+        }
+
+        if(num_missing == n_dims)
         {
             NHLPERROR((NhlFATAL, NhlEUNKNOWN,
                 "_NclIFileCompoundDef: CANNOT add compound dimension named <%s>, which is same as missing-value.\n",
@@ -17669,7 +17685,7 @@ NhlErrorTypes _NclIFileCompoundDef(void)
 
     mem_name = (string*)NclGetArgValue(
                         4,
-                        6,
+                        7,
                         NULL,
                         &n_mems,
                         &mem_missing,
@@ -17679,7 +17695,7 @@ NhlErrorTypes _NclIFileCompoundDef(void)
 
     if(mem_has_missing)
     {
-        int num_missing = 0;
+        num_missing = 0;
 
         for(n = 0; n < n_mems; n++)
         {
@@ -17697,7 +17713,7 @@ NhlErrorTypes _NclIFileCompoundDef(void)
 
     mem_type = (string *)NclGetArgValue(
                         5,
-                        6,
+                        7,
                         NULL,
                         &n_types,
                         &type_missing,
@@ -17707,7 +17723,7 @@ NhlErrorTypes _NclIFileCompoundDef(void)
 
     if(type_has_missing)
     {
-        int num_missing = 0;
+        num_missing = 0;
 
         for(n = 0; n < n_types; n++)
         {
@@ -17723,8 +17739,37 @@ NhlErrorTypes _NclIFileCompoundDef(void)
         }
     }
 
-    ret = _NclFileAddCompound(thefile, *compound_name, *var_name, *dim_name,
-                              n_mems, mem_name, mem_type);
+    mem_size = (int *)NclGetArgValue(
+                        6,
+                        7,
+                        NULL,
+                        &n_sizes,
+                        &size_missing,
+                        &size_has_missing,
+                        NULL,
+                        0);
+
+    if(size_has_missing)
+    {
+        num_missing = 0;
+
+        for(n = 0; n < n_sizes; n++)
+        {
+            if((string)mem_size[n] == missing.intval)
+                num_missing++;
+        }
+
+        if(num_missing == n_sizes)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileCompoundDef: Can not have all members as missing.\n"));
+            return(NhlFATAL);
+        }
+    }
+
+    ret = _NclFileAddCompound(thefile, *compound_name, *var_name,
+                              n_dims, dim_name,
+                              n_mems, mem_name, mem_type, mem_size);
 
     return(ret);
 }

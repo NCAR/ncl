@@ -368,8 +368,8 @@ typedef NhlErrorTypes (*NclAddEnumFunc)(void *record, NclQuark enum_name, NclQua
 typedef NhlErrorTypes (*NclAddOpaqueFunc)(void *record, NclQuark opaque_name, NclQuark var_name,
                                           int var_size, NclQuark dim_name);
 typedef NhlErrorTypes (*NclAddCompoundFunc)(void *record, NclQuark compound_name, NclQuark var_name,
-                                            NclQuark dim_name, ng_size_t n_mems,
-                                            NclQuark *mem_name, NclQuark *mem_type);
+                                            ng_size_t n_dims, NclQuark *dim_name, ng_size_t n_mems,
+                                            NclQuark *mem_name, NclQuark *mem_type, int *mem_size);
 
 typedef NhlErrorTypes (*NclAddVarCoordFunc) (
 #if	NhlNeedProto

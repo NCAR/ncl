@@ -314,6 +314,7 @@ void _NC4_add_udt(NclFileUDTRecord **rootudtrec,
 {
     NclFileUDTRecord *udtrec = *rootudtrec;
     NclFileUDTNode   *udtnode;
+    int n = 0;
 
   /*
    *fprintf(stderr, "\nEnter _NC4_add_udt, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -344,8 +345,17 @@ void _NC4_add_udt(NclFileUDTRecord **rootudtrec,
     udtnode->ncl_class = ncl_class;
     udtnode->max_fields = nfields;
     udtnode->n_fields = nfields;
-    udtnode->mem_name = mem_name;
-    udtnode->mem_type = mem_type;
+
+    udtnode->mem_name = (NclQuark *)NclCalloc(nfields, sizeof(NclQuark));
+    assert(udtnode->mem_name);
+    udtnode->mem_type = (NclBasicDataTypes *)NclCalloc(nfields, sizeof(NclBasicDataTypes));
+    assert(udtnode->mem_type);
+
+    for(n = 0; n < nfields; n++)
+    {
+        udtnode->mem_name[n] = mem_name[n];
+        udtnode->mem_type[n] = mem_type[n];
+    }
 
     udtrec->n_udts ++;
   /*
@@ -6179,6 +6189,148 @@ NhlErrorTypes NC4AddOpaque(void *rec, NclQuark opaque_name, NclQuark var_name,
     return ret;
 }
 
+static get_sizeof(int nv, int ts)
+{
+     int ns = nv * ts;
+     int os = 4 * (ns / 4);
+     while(os < ns)
+        os += 4;
+
+     return os;
+}
+
+NhlErrorTypes NC4AddCompound(void *rec, NclQuark compound_name, NclQuark var_name,
+                             ng_size_t n_dims, NclQuark *dim_name, ng_size_t n_mems,
+                             NclQuark *mem_name, NclQuark *mem_type, int *mem_size)
+{
+    NclFileGrpNode *rootgrpnode = (NclFileGrpNode *) rec;
+    NhlErrorTypes ret = NhlNOERROR;
+    NclFileDimNode   *dimnode = NULL;
+    NclFileGrpNode   *grpnode = NULL;
+    NclFileGrpRecord *grprec = NULL;
+    char buffer[NC_MAX_NAME];
+    int id;
+    int n = -1;
+    int nc_ret = 0;
+
+    nc_type nc_compound_type_id;
+
+    NclQuark *udt_mem_name = NULL;
+    NclBasicDataTypes *udt_mem_type = NULL;
+
+    long *dim_size = NULL;
+
+    size_t compound_length = 1;
+    size_t component_size  = 4;
+    size_t *mem_offset = NULL;
+    nc_type **mem_nc_type;
+    nc_type *tmp_nc_type;
+
+    fprintf(stderr, "\nEnter NC4AddCompound, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tcompound_name: <%s>, var_name: <%s>, dim_name: <%s>\n",
+                     NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
+                     NrmQuarkToString(dim_name));
+  /*
+   */
+
+    udt_mem_name = (NclQuark *)NclCalloc(n_mems, sizeof(NclQuark));
+    assert(udt_mem_name);
+    udt_mem_type = (NclBasicDataTypes *)NclCalloc(n_mems, sizeof(NclBasicDataTypes));
+    assert(udt_mem_type);
+
+    mem_nc_type = (nc_type **)NclCalloc(n_mems, sizeof(NclBasicDataTypes *));
+    assert(mem_nc_type);
+
+    mem_offset = (size_t *)NclCalloc(n_mems, sizeof(size_t));
+    assert(mem_offset);
+
+    dim_size = (long *)NclCalloc(n_dims, sizeof(long));
+    assert(dim_size);
+
+    for(n = 0; n < n_mems; n++)
+    {
+        udt_mem_name[n] = mem_name[n];
+        udt_mem_type[n] = _nameToNclBasicDataType(mem_type[n]);
+
+        mem_nc_type[n] = NC4MapFromNcl(udt_mem_type[n]);
+
+        if(0 == n)
+           mem_offset[n] = 0;
+        else
+        {
+           mem_offset[n] = mem_offset[n-1] + component_size;
+        }
+
+        if(mem_size[n] < 1)
+            mem_size[n] = 1;
+
+        component_size = get_sizeof(mem_size[n], _NclSizeOf(udt_mem_type[n]));
+        compound_length *= component_size;
+
+        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tmem: %d, name: <%s>, type: <%s>, size: %d, offset: %d\n",
+                         n, NrmQuarkToString(mem_name[n]), NrmQuarkToString(mem_type[n]),
+                         component_size, mem_offset[n]);
+    }
+
+    nc_ret = nc_def_compound(rootgrpnode->id, compound_length,
+                             NrmQuarkToString(compound_name),
+                             &nc_compound_type_id);
+
+    if(NC_NOERR != nc_ret)
+        check_err(nc_ret, __LINE__, __FILE__);
+
+    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tnc_compound_type_id = %d\n", nc_compound_type_id);
+
+    for(n = 0; n < n_mems; n++)
+    {
+        tmp_nc_type = mem_nc_type[n];
+        nc_insert_compound(rootgrpnode->id, nc_compound_type_id,
+                           NrmQuarkToString(mem_name[n]),
+                           mem_offset[n], *tmp_nc_type);
+    }
+
+    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\n\nNEED MORE WORK HERE.\n\n");
+
+    _NC4_add_udt(&(rootgrpnode->udt_rec),
+                  rootgrpnode->id, nc_compound_type_id, compound_name,
+                  NC_COMPOUND, NC_COMPOUND,
+                  compound_length, n_mems, udt_mem_name, udt_mem_type);
+
+    for(n = 0; n < n_dims; n++)
+    {
+        dimnode = _getDimNodeFromNclFileGrpNode(rootgrpnode, dim_name[n]);
+        dim_size[n] = (long) dimnode->size;
+
+        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tdim %d, name: <%s>, size: %d\n",
+                         n, NrmQuarkToString(dim_name[n]), dim_size[n]);
+    }
+  /*
+    ret = NC4AddCompoundVar(rec, var_name, nc_compound_type_id,
+                            n_dims, dim_name, dim_size, mem_type);
+   */
+
+    NclFree(udt_mem_name);
+    NclFree(udt_mem_type);
+    NclFree(mem_offset);
+    NclFree(dim_size);
+
+    for(n = 0; n < n_mems; n++)
+    {
+        NclFree(mem_nc_type[n]);
+    }
+
+    NclFree(mem_nc_type);
+
+  /*
+   */
+    fprintf(stderr, "Leave NC4AddCompound, file: %s, line: %d\n\n", __FILE__, __LINE__);
+    return ret;
+}
+
 
 NclFormatFunctionRec NC4Rec =
 {
@@ -6229,7 +6381,7 @@ NclFormatFunctionRec NC4Rec =
     /* NclAddVlenFunc          add_vlen; */                  NC4AddVlen,
     /* NclAddEnumFunc          add_enum; */                  NC4AddEnum,
     /* NclAddOpaqueFunc        add_opaque; */                NC4AddOpaque,
-    /* NclAddCompoundFunc      add_compound; */              NULL,
+    /* NclAddCompoundFunc      add_compound; */              NC4AddCompound,
     /* NclSetOptionFunc        set_option;  */               NC4SetOption
 };
 

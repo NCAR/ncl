@@ -1462,8 +1462,8 @@ extern NhlErrorTypes _NclFileAddEnum(NclFile infile, NclQuark enum_name, NclQuar
 }
 
 extern NhlErrorTypes _NclFileAddCompound(NclFile infile, NclQuark compound_name, NclQuark var_name,
-                                         NclQuark dim_name, ng_size_t n_mems,
-                                         NclQuark *mem_name, NclQuark *mem_type)
+                                         ng_size_t n_dims, NclQuark *dim_name, ng_size_t n_mems,
+                                         NclQuark *mem_name, NclQuark *mem_type, int *mem_size)
 {
 	NclNewFile thefile = (NclNewFile) infile;
 	NclNewFileClass fc = NULL;
@@ -1495,7 +1495,8 @@ extern NhlErrorTypes _NclFileAddCompound(NclFile infile, NclQuark compound_name,
 		if(fc->newfile_class.create_compound_type != NULL)
 		{
 			return((*fc->newfile_class.create_compound_type)
-                               (infile, compound_name, var_name, dim_name,
+                               (infile, compound_name, var_name,
+                                n_dims, dim_name,
                                 n_mems, mem_name, mem_type));
 		}
 		else

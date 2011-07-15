@@ -8336,6 +8336,45 @@ NhlErrorTypes NewFileCreateOpaqueType(NclFile infile, NclQuark opaque_name, NclQ
     return ret;
 }
 
+NhlErrorTypes NewFileCreateCompoundType(NclFile infile, NclQuark compound_name,
+                                        NclQuark var_name, 
+                                        ng_size_t n_dims, NclQuark *dim_name,
+                                        ng_size_t n_mems, NclQuark *mem_name,
+                                        NclQuark *mem_type, int mem_size)
+{
+    NclNewFile thefile = (NclNewFile) infile;
+    NhlErrorTypes ret = NhlNOERROR;
+
+    fprintf(stderr, "\nEnter NewFileCreateCompoundType, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tcompound_name: <%s>\n", NrmQuarkToString(compound_name));
+    fprintf(stderr, "\tvar_name: <%s>\n", NrmQuarkToString(var_name));
+    fprintf(stderr, "\tdim_name: <%s>\n", NrmQuarkToString(dim_name));
+  /*
+   */
+
+    if(thefile->newfile.wr_status > 0)
+    {
+        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+            "NewFileCreateCompoundType: file (%s) was opened for reading only, can not write",
+             NrmQuarkToString(thefile->newfile.fname)));
+        fprintf(stderr, "Leave NewFileCreateCompoundType, file: %s, line: %d\n\n", __FILE__, __LINE__);
+        return (NhlFATAL);
+    }
+
+    if(thefile->newfile.format_funcs->add_compound != NULL)
+    {
+        ret = (*thefile->newfile.format_funcs->add_compound)
+               ((void *)thefile->newfile.grpnode, compound_name, var_name,
+                n_dims, dim_name,
+                n_mems, mem_name, mem_type, mem_size);
+    }
+    
+  /*
+   */
+    fprintf(stderr, "Leave NewFileCreateCompoundType, file: %s, line: %d\n\n", __FILE__, __LINE__);
+    return ret;
+}
+
 NclQuark *_NclGetGrpNames(void *therec, int *num_grps)
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
@@ -8456,7 +8495,7 @@ NclNewFileClassRec nclNewFileClassRec =
        /*NclAssignFileVlenFunc          create_vlen_type*/             NewFileCreateVlenType,
        /*NclAssignFileEnumFunc          create_enum_type*/             NewFileCreateEnumType,
        /*NclAssignFileOpaqueFunc        create_opaque_type*/           NewFileCreateOpaqueType,
-       /*NclAssignFileCompoundFunc      create_compound_type*/         NULL,
+       /*NclAssignFileCompoundFunc      create_compound_type*/         NewFileCreateCompoundType,
          0
     }
 };
