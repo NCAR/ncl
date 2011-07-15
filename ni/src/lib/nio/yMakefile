@@ -147,7 +147,8 @@ STATIC_HDRS	=	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h  \
 			ecmwf_230_gtb.h ecmwf_234_gtb.h fnmoc_gtb.h \
 			fsl0_gtb.h fsl1_gtb.h fsl2_gtb.h ncep_opn_gtb.h \
 			ncep_reanal_gtb.h ncep_128_gtb.h ncep_129_gtb.h	 ncep_130_gtb.h \
-			ncep_131_gtb.h	ncep_133_gtb.h	ncep_140_gtb.h	ncep_141_gtb.h jma_3_gtb.h
+			ncep_131_gtb.h	ncep_133_gtb.h	ncep_140_gtb.h	ncep_141_gtb.h jma_3_gtb.h \
+			NclOptions.h NclGrpFuncs.null NclNewFile.h NclNewGroup.h NclNewFileStructure.h
 
 INSTALL_HDRS	=	nio.h niohlu.h nioNresDB.h defs.h Symbol.h NclDataDefs.h NclFile.h \
 			nioc.h nioError.h NclData.h nioBase.h nioCallbacks.h nioConvertP.h NclType.h \
@@ -182,7 +183,7 @@ STATIC_SRCS	=	AddFileFormats.c AttSupport.c DataSupport.c \
 			NclGRIB.c NclMultiDValnclfileData.c \
 			NclNetCdf.c NclOneDValCoordData.c NclType.c \
 			NclTypelist.c NclGroup.c NclVar.c VarSupport.c \
-			ctoiee.c date.c cmpf.c 
+			ctoiee.c date.c cmpf.c NclNewFile.c NclNewGroup.c
 
 NIO_ONLY_CSRCS	=	cmpf.c nioBase.c nio.c nioCallbacks.c nioConvert.c nioError.c niohlu.c nio_io.c \
 			nioNclHLUStub.c nioNresDB.c nioQuarks.c nio_path.c
@@ -219,7 +220,7 @@ STATIC_OBJS	=	AddFileFormats.o AttSupport.o DataSupport.o \
 			NclGRIB.o NclHDF.o NclMultiDValnclfileData.o \
 			NclNetCdf.o NclOneDValCoordData.o NclType.o \
 			NclTypelist.o NclGroup.o NclVar.o VarSupport.o \
-			ctoiee.o date.o 
+			ctoiee.o date.o NclNewFile.o NclNewGroup.o
 
 NIO_ONLY_COBJS	=	nio.o nio_io.o nioError.o nioNresDB.o nioCallbacks.o \
 			nioQuarks.o cmpf.o nioBase.o \
