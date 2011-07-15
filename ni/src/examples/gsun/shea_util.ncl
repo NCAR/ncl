@@ -4036,3 +4036,71 @@ function pie_chart(wks:graphic, percent[*]:numeric, name[*]:string        \
 
   return (plotPC)
  end
+;-------------------------------------------------------
+
+undef("sstLandFill")
+procedure sstLandFill(sst)
+; Fill all land with interpolated values 
+local dims, ntim,nlat,mlon,sstice,latSH,ni,ml  \
+    , opts, optp, nscan, eps, gtype, guess, relc
+
+begin
+  dims   = dimsizes(sst)
+  ntim   = dims(0)
+  nlat   = dims(1)
+  mlon   = dims(2)
+
+  sstice = -1.8
+  latSH  = -70.    ; all pts polward set to sstice
+  ni     = 4       ; max # of pts in longitude direction
+
+;-----------------------------------------------------------------
+; Arbitrarily set all grid pts poleward of 70S to sstice
+;-----------------------------------------------------------------
+  work = conform(sst, sst&lat, 1)
+  sst  = where(work.le.latSH, sstice, sst)
+  delete(work)     ; not necessary       
+
+;-----------------------------------------------------------------
+; Set nearest neighbor values                              
+;-----------------------------------------------------------------
+  work = sst
+
+  do ml=0,mlon-2   ; left-to-right
+     sst(:,:,ml+1) = where(.not.ismissing(work(:,:,ml)) .and. ismissing(work(:,:,ml+1)) \
+                          ,work(:,:,ml), work(:,:,ml+1))
+  end do
+
+  work = sst       ; use 'updated' sst
+
+  do ml=mlon-1,1,1 ; right-to-left
+     sst(:,:,ml-1) = where(.not.ismissing(work(:,:,ml)) .and. ismissing(work(:,:,ml-1)) \
+                          ,work(:,:,ml), work(:,:,ml-1))
+  end do
+  delete(work)     ; not necessary       
+  
+;-----------------------------------------------------------------
+; Linearly interpolate in longitude spannin a max of "ni" pts
+; Rationale: SST contours have small variations in longitude
+;-----------------------------------------------------------------
+  opts  = (/0, ni/)
+  sst   = linmsg(sst,opts)
+
+;-----------------------------------------------------------------
+; Set the poisson_grid_fill variables
+; Global grid: Fill in over land             
+;-----------------------------------------------------------------
+  nscan = 2000     ; usually *much* fewer
+  eps   = 0.001    ; variable depended
+  gtype = True     ; Cyclic in longitude [global]
+  guess = 0        ; use zonal means
+  relc  = 0.6      ; standard relaxation coef
+  optp  = 0
+
+  poisson_grid_fill( sst, gtype, guess, nscan, eps, relc, optp)
+
+;-----------------------------------------------------------------
+; Make sure no SST are .lt. sstice
+;-----------------------------------------------------------------
+  sst   = sst > sstice
+end
