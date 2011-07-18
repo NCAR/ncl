@@ -6,7 +6,8 @@
 
 MYNAME = shp
 
-DATA  = states.dbf states.prj states.shp states.shx
+DATA  = states.dbf states.prj states.shp states.shx \
+	mrb.dbf mrb.prj mrb.shp mrb.shx
 
 InstallTarget($(DATA),$(INSTALL_LIB),$(DATAROOT)/shp)
 #ifdef BuildPyNGL
