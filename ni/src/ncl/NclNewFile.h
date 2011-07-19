@@ -52,7 +52,7 @@
 char blank_space[MAX_BLANK_SPACE_LENGTH];
 int indentation_level;
 int indentation_length;
-int grib_version;
+extern int grib_version;
 
 typedef struct _NclNewFileRec NclNewFileRec;
 typedef struct _NclNewFileClassRec NclNewFileClassRec;
