@@ -3338,7 +3338,7 @@ end
 
 ;--------------------------------------------------------------------------------
 undef("wrf_wps_dom")
-function wrf_wps_dom(wks[1]:graphic,opt_args[1]:logical,lnres[1]:logical,txres[1]:logical)   
+function wrf_wps_dom(wks[1]:graphic,opt_args[1]:logical,lnres[1]:logical,txres[1]:logical) 
 
 begin
 
@@ -3441,7 +3441,8 @@ begin
           aj_start = aj_start/mpres@parent_grid_ratio(nd-1) + mpres@j_parent_start(nd-1)
           i_points = (i_points/mpres@parent_grid_ratio(nd-1))
           j_points = (j_points/mpres@parent_grid_ratio(nd-1))
-          nd = nd - 1
+          ;nd = nd - 1
+          nd = mpres@parent_id(nd-1)
         end do
         i_start = tointeger(ai_start + .5 )
         j_start = tointeger(aj_start + .5 )
@@ -3449,85 +3450,48 @@ begin
         i_end = i_points + i_start + 1
         j_end = j_points + j_start + 1
       end if
+
+      ; get the four corners
+
       xx = int2flt(i_start)
       yy = int2flt(j_start)
       loc = wrf_ij_to_ll (xx,yy,res)
-      cor_lon = loc(0)
-      cor_lat = loc(1)
+      lon_SW = loc(0)
+      lat_SW = loc(1)
 
-      delete(start_lat)
-      delete(start_lon)
-      start_lat = cor_lat
-      start_lon = cor_lon
-      do ii = i_start, i_end
-        xx = int2flt(ii)
-        loc = wrf_ij_to_ll (xx,yy,res)
-        end_lon = loc(0)
-        end_lat = loc(1)
-        if ( start_lon .gt. 0. .and. end_lon .lt. 0. ) then
-          start_lon = start_lon - 360.0
-        end if
-        if ( start_lon .lt. 0. .and. end_lon .gt. 0. ) then
-          start_lon = start_lon + 360.0
-        end if
-        gsn_polyline(wks,mp,(/start_lon,end_lon/),(/start_lat,end_lat/),lnres)
-        start_lat = end_lat
-        start_lon = end_lon
-      end do
-      do ii = j_start, j_end
-        yy = int2flt(ii)
-        loc = wrf_ij_to_ll (xx,yy,res)
-        end_lon = loc(0)
-        end_lat = loc(1)
-        if ( start_lon .gt. 0. .and. end_lon .lt. 0. ) then
-          start_lon = start_lon - 360.0
-        end if
-        if ( start_lon .lt. 0. .and. end_lon .gt. 0. ) then
-          start_lon = start_lon + 360.0
-        end if
-        gsn_polyline(wks,mp,(/start_lon,end_lon/),(/start_lat,end_lat/),lnres)
-        start_lat = end_lat
-        start_lon = end_lon
-      end do
+      xx = int2flt(i_end)
+      yy = int2flt(j_start)
+      loc = wrf_ij_to_ll (xx,yy,res)
+      lon_SE = loc(0)
+      lat_SE = loc(1)
 
-      delete(start_lat)
-      delete(start_lon)
-      start_lat = cor_lat
-      start_lon = cor_lon
       xx = int2flt(i_start)
-      do ii = j_start, j_end
-        yy = int2flt(ii)
-        loc = wrf_ij_to_ll (xx,yy,res)
-        end_lon = loc(0)
-        end_lat = loc(1)
-        if ( start_lon .gt. 0. .and. end_lon .lt. 0. ) then
-          end_lon = 0.0
-        end if
-        if ( start_lon .lt. 0. .and. end_lon .gt. 0. ) then
-          start_lon = start_lon + 360.0
-        end if
-        gsn_polyline(wks,mp,(/start_lon,end_lon/),(/start_lat,end_lat/),lnres)
-        start_lat = end_lat
-        start_lon = end_lon
-      end do
+      yy = int2flt(j_end)
+      loc = wrf_ij_to_ll (xx,yy,res)
+      lon_NW = loc(0)
+      lat_NW = loc(1)
+
+      xx = int2flt(i_end)
+      yy = int2flt(j_end)
+      loc = wrf_ij_to_ll (xx,yy,res)
+      lon_NE = loc(0)
+      lat_NE = loc(1)
+
+      xbox = (/lon_SW, lon_SE, lon_NE, lon_NW, lon_SW /)
+      ybox = (/lat_SW, lat_SE, lat_NE, lat_NW, lat_SW /)
+      x_out = new(dimsizes(xbox),typeof(xbox))
+      y_out = new(dimsizes(ybox),typeof(ybox))
+      datatondc(mp, xbox, ybox, x_out, y_out)
+      gsn_polyline_ndc(wks, x_out, y_out, lnres)
+
       idd = idom + 1
       dom_text = "d0"+idd
-      gsn_text(wks,mp,dom_text,end_lon,end_lat,txres)
-      do ii = i_start, i_end
-        xx = int2flt(ii)
-        loc = wrf_ij_to_ll (xx,yy,res)
-        end_lon = loc(0)
-        end_lat = loc(1)
-        if ( start_lon .gt. 0. .and. end_lon .lt. 0. ) then
-          start_lon = start_lon - 360.0
-        end if
-        if ( start_lon .lt. 0. .and. end_lon .gt. 0. ) then
-          start_lon = start_lon + 360.0
-        end if
-        gsn_polyline(wks,mp,(/start_lon,end_lon/),(/start_lat,end_lat/),lnres)
-        start_lat = end_lat
-        start_lon = end_lon
-      end do
+      if ( txres@txJust .eq. "BottomLeft" ) then
+        gsn_text(wks,mp,dom_text,lon_NW,lat_NW,txres)
+      else
+        gsn_text_ndc(wks,dom_text,x_out(3)+0.01,y_out(3)-0.01,txres)
+      end if
+
     end do
 
   end if
