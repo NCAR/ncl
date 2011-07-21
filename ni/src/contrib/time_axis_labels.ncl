@@ -169,7 +169,7 @@ begin
     restick@ttmNumTicks = 4
    end if
    if(.not.isatt(restick,"ttmMajorStride")) then
-    restick@ttmMajorStride = floattoint((nt-1)/restick@nTicks)
+    restick@ttmMajorStride = floattoint((nt-1)/restick@ttmNumTicks)
    end if
    ymdhms1 = ymdhms0(::restick@ttmMajorStride,:)
   else
