@@ -36,7 +36,7 @@
 #include <ctype.h>
 #include <string.h>
 
-char *strdup(const char *s);
+extern char *strdup(const char *s);
 
 #ifndef MAX_HDF5_NAME_LENGTH
 #define MAX_HDF5_NAME_LENGTH    256
