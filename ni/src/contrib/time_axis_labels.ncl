@@ -189,7 +189,7 @@ begin
 
   if( ( .not.isatt(restick,"ttmMinorStride") ) \\
        .and.(isatt(restick,"ttmMajorStride") ) ) then
-    restick@ttmMinorStride = restick@ttmMajorStride / 5
+    restick@ttmMinorStride = max((/restick@ttmMajorStride / 5, 1/))
   end if
 
   if( isatt(restick,"ttmMinorStride") ) then
