@@ -1075,6 +1075,7 @@ NclFormatFunctionRec NewOGRRec = {
 /* NclAddEnumFunc          add_enum; */                 NULL,
 /* NclAddOpaqueFunc        add_opaque; */               NULL,
 /* NclAddCompoundFunc      add_compound; */             NULL,
+/* NclWriteCompoundFunc    write_compound; */           NULL,
 /* NclSetOptionFunc        set_option;  */              NULL
 };
 

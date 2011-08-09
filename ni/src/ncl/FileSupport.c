@@ -30,9 +30,11 @@
 #include <ncarg/hlu/NresDB.h>
 #include "ncarg/hlu/Error.h"
 #endif
+
 #include "defs.h"
 #include "NclMultiDValData.h"
 #include "NclFile.h"
+#include "NclList.h"
 #include "NclNewFile.h"
 #include "NclGroup.h"
 #include "NclNewGroup.h"
@@ -1469,9 +1471,9 @@ extern NhlErrorTypes _NclFileAddCompound(NclFile infile, NclQuark compound_name,
 	NclNewFileClass fc = NULL;
 
         fprintf(stderr, "\nHit _NclFileAddCompound, file: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tcompound name: <%s>, var name: <%s>, dim_name: <%s>\n",
+        fprintf(stderr, "\tcompound name: <%s>, var name: <%s>, n_dims = %d, dim_name: <%s>\n",
                          NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
-                         NrmQuarkToString(dim_name));
+                         n_dims, NrmQuarkToString(dim_name[0]));
       /*
        */
 
@@ -1497,7 +1499,51 @@ extern NhlErrorTypes _NclFileAddCompound(NclFile infile, NclQuark compound_name,
 			return((*fc->newfile_class.create_compound_type)
                                (infile, compound_name, var_name,
                                 n_dims, dim_name,
-                                n_mems, mem_name, mem_type));
+                                n_mems, mem_name, mem_type, mem_size));
+		}
+		else
+		{
+			fc = (NclNewFileClass)fc->obj_class.super_class;
+		}
+	}
+
+	return(NhlFATAL);
+}
+
+extern NhlErrorTypes _NclFileWriteCompound(NclFile infile, NclQuark compound_name, NclQuark var_name,
+                                           ng_size_t n_mems, NclQuark *mem_name, NclObj listobj)
+{
+	NclNewFile thefile = (NclNewFile) infile;
+	NclList thelist = (NclList) listobj;
+	NclNewFileClass fc = NULL;
+
+        fprintf(stderr, "\nHit _NclFileWriteCompound, file: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tcompound name: <%s>, var name: <%s>, n_mems = %d, mem_name: <%s>\n",
+                         NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
+                         n_mems, NrmQuarkToString(mem_name[0]));
+
+	if(thefile == NULL)
+	{
+		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+			"_NclFileWriteCompound: CANNOT add compound to empty file.\n"));
+		return(NhlFATAL);
+	}
+
+	if(! thefile->use_new_hlfs)
+	{
+		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+			"_NclFileWriteCompound: Old File Structure DO NOT Support compound.\n"));
+		return(NhlFATAL);
+	}
+
+	fc = (NclNewFileClass)thefile->obj.class_ptr;
+	while((NclObjClass)fc != nclObjClass)
+	{
+		if(fc->newfile_class.create_compound_type != NULL)
+		{
+			return((*fc->newfile_class.write_compound)
+                               (infile, compound_name, var_name,
+                                n_mems, mem_name, thelist));
 		}
 		else
 		{

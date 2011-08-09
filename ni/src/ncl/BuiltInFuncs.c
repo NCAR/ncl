@@ -17774,6 +17774,141 @@ NhlErrorTypes _NclIFileCompoundDef(void)
     return(ret);
 }
 
+NhlErrorTypes _NclIFileWriteCompound(void)
+{
+    ng_size_t n_compounds;
+    NclScalar missing;
+    int has_missing;
+
+    obj *thefile_id;
+    string *compound_name;
+    string *var_name;
+    int n;
+    NclFile thefile;
+    NhlErrorTypes ret=NhlNOERROR;
+
+    ng_size_t n_mems;
+    NclScalar mem_missing;
+    int mem_has_missing;
+    string *mem_name;
+
+    int num_missing = 0;
+
+    obj *list_id;
+    NclObj listobj;
+
+    thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        5,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+    thefile = (NclFile)_NclGetObj((int)*thefile_id);
+    if(thefile == NULL)
+    {
+        NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+            "_NclIFileWriteCompound: CANNOT add compound to empty file.\n"));
+        return(NhlFATAL);
+    }
+
+    compound_name = (string*)NclGetArgValue(
+                        1,
+                        5,
+                        NULL,
+                        &n_compounds,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((string)*compound_name == missing.stringval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileWriteCompound: CANNOT add compound named <%s>, which is same as missing-value.\n",
+                NrmQuarkToString((string)*compound_name)));
+            return(NhlFATAL);
+        }
+    }
+
+    var_name = (string*)NclGetArgValue(
+                        2,
+                        5,
+                        NULL,
+                        &n_compounds,
+                        &missing,
+                        &has_missing,
+                        NULL,
+                        0);
+
+    if(has_missing)
+    {
+        if((string)*var_name == missing.stringval)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileWriteCompound: CANNOT add var named <%s>, which is same as missing-value.\n",
+                NrmQuarkToString((string)*var_name)));
+            return(NhlFATAL);
+        }
+    }
+
+    mem_name = (string*)NclGetArgValue(
+                        3,
+                        5,
+                        NULL,
+                        &n_mems,
+                        &mem_missing,
+                        &mem_has_missing,
+                        NULL,
+                        0);
+
+    if(mem_has_missing)
+    {
+        num_missing = 0;
+
+        for(n = 0; n < n_mems; n++)
+        {
+            if((string)mem_name[n] == missing.stringval)
+                num_missing++;
+        }
+
+        if(num_missing == n_mems)
+        {
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                "_NclIFileWriteCompound: Can not have all members as missing.\n"));
+            return(NhlFATAL);
+        }
+    }
+
+    list_id = (obj*)NclGetArgValue(
+           4,
+           5,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+
+    listobj = (NclObj)_NclGetObj(*list_id);
+
+    if(listobj == NULL)
+    {
+        NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+                  "_NclIFileWriteCompound: NULL list."));
+        return(NhlWARNING);
+    }
+
+    ret = _NclFileWriteCompound(thefile, *compound_name, *var_name,
+                                n_mems, mem_name, listobj);
+
+    return(ret);
+}
+
 NhlErrorTypes _NclIFileGrpDef(void)
 {
 	ng_size_t n_grps;

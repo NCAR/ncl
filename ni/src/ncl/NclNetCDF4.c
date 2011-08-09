@@ -6191,12 +6191,16 @@ NhlErrorTypes NC4AddOpaque(void *rec, NclQuark opaque_name, NclQuark var_name,
 
 static get_sizeof(int nv, int ts)
 {
-     int ns = nv * ts;
-     int os = 4 * (ns / 4);
-     while(os < ns)
+    int ns = nv * ts;
+    int os = 4 * (ns / 4);
+
+    fprintf(stderr, "\nin get_sizeof, file: %s, line: %d\n\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tnv = %d, ts = %d\n\n", nv, ts);
+
+    while(os < ns)
         os += 4;
 
-     return os;
+    return os;
 }
 
 NhlErrorTypes NC4AddCompound(void *rec, NclQuark compound_name, NclQuark var_name,
@@ -6218,7 +6222,7 @@ NhlErrorTypes NC4AddCompound(void *rec, NclQuark compound_name, NclQuark var_nam
     NclQuark *udt_mem_name = NULL;
     NclBasicDataTypes *udt_mem_type = NULL;
 
-    long *dim_size = NULL;
+    int *dim_size = NULL;
 
     size_t compound_length = 1;
     size_t component_size  = 4;
@@ -6227,9 +6231,9 @@ NhlErrorTypes NC4AddCompound(void *rec, NclQuark compound_name, NclQuark var_nam
     nc_type *tmp_nc_type;
 
     fprintf(stderr, "\nEnter NC4AddCompound, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tcompound_name: <%s>, var_name: <%s>, dim_name: <%s>\n",
+    fprintf(stderr, "\tcompound_name: <%s>, var_name: <%s>, n_dims = %d, dim_name[0]: <%s>\n",
                      NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
-                     NrmQuarkToString(dim_name));
+                     n_dims, NrmQuarkToString(dim_name[0]));
   /*
    */
 
@@ -6244,7 +6248,7 @@ NhlErrorTypes NC4AddCompound(void *rec, NclQuark compound_name, NclQuark var_nam
     mem_offset = (size_t *)NclCalloc(n_mems, sizeof(size_t));
     assert(mem_offset);
 
-    dim_size = (long *)NclCalloc(n_dims, sizeof(long));
+    dim_size = (int *)NclCalloc(n_dims, sizeof(int));
     assert(dim_size);
 
     for(n = 0; n < n_mems; n++)
@@ -6268,9 +6272,10 @@ NhlErrorTypes NC4AddCompound(void *rec, NclQuark compound_name, NclQuark var_nam
         compound_length *= component_size;
 
         fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tmem: %d, name: <%s>, type: <%s>, size: %d, offset: %d\n",
+        fprintf(stderr, "\tmem_size[%d] = %d\n", n, mem_size[n]);
+        fprintf(stderr, "\tmem: %d, name: <%s>, type: <%s>, size: %ld, offset: %ld\n",
                          n, NrmQuarkToString(mem_name[n]), NrmQuarkToString(mem_type[n]),
-                         component_size, mem_offset[n]);
+                         (long)component_size, (long)mem_offset[n]);
     }
 
     nc_ret = nc_def_compound(rootgrpnode->id, compound_length,
@@ -6286,9 +6291,19 @@ NhlErrorTypes NC4AddCompound(void *rec, NclQuark compound_name, NclQuark var_nam
     for(n = 0; n < n_mems; n++)
     {
         tmp_nc_type = mem_nc_type[n];
-        nc_insert_compound(rootgrpnode->id, nc_compound_type_id,
-                           NrmQuarkToString(mem_name[n]),
-                           mem_offset[n], *tmp_nc_type);
+        if(mem_size[n] > 1)
+        {
+           dim_size[0] = mem_size[n];
+           nc_insert_array_compound(rootgrpnode->id, nc_compound_type_id,
+                                    NrmQuarkToString(mem_name[n]),
+                                    mem_offset[n], *tmp_nc_type, 1, dim_size);
+        }
+        else
+        {
+           nc_insert_compound(rootgrpnode->id, nc_compound_type_id,
+                              NrmQuarkToString(mem_name[n]),
+                              mem_offset[n], *tmp_nc_type);
+        }
     }
 
     fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -6308,6 +6323,7 @@ NhlErrorTypes NC4AddCompound(void *rec, NclQuark compound_name, NclQuark var_nam
         fprintf(stderr, "\tdim %d, name: <%s>, size: %d\n",
                          n, NrmQuarkToString(dim_name[n]), dim_size[n]);
     }
+
   /*
     ret = NC4AddCompoundVar(rec, var_name, nc_compound_type_id,
                             n_dims, dim_name, dim_size, mem_type);
@@ -6382,6 +6398,7 @@ NclFormatFunctionRec NC4Rec =
     /* NclAddEnumFunc          add_enum; */                  NC4AddEnum,
     /* NclAddOpaqueFunc        add_opaque; */                NC4AddOpaque,
     /* NclAddCompoundFunc      add_compound; */              NC4AddCompound,
+    /* NclWriteCompoundFunc    write_compound; */            NULL,
     /* NclSetOptionFunc        set_option;  */               NC4SetOption
 };
 

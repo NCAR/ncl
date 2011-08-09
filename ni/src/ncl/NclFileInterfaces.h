@@ -1,5 +1,8 @@
 #ifndef NclFileInterfaces_h
 #define NclFileInterfaces_h
+
+#include "NclList.h"
+
 typedef struct _NclFormatFunctionRecord *NclFormatFunctionRecPtr;
 typedef struct _NclFormatFunctionRecord NclFormatFunctionRec;
 typedef struct _NclFAttRec	NclFAttRec;
@@ -370,6 +373,8 @@ typedef NhlErrorTypes (*NclAddOpaqueFunc)(void *record, NclQuark opaque_name, Nc
 typedef NhlErrorTypes (*NclAddCompoundFunc)(void *record, NclQuark compound_name, NclQuark var_name,
                                             ng_size_t n_dims, NclQuark *dim_name, ng_size_t n_mems,
                                             NclQuark *mem_name, NclQuark *mem_type, int *mem_size);
+typedef NhlErrorTypes (*NclWriteCompoundFunc)(void *record, NclQuark compound_name, NclQuark var_name,
+                                              ng_size_t n_mems, NclQuark *mem_name, NclList thelist);
 
 typedef NhlErrorTypes (*NclAddVarCoordFunc) (
 #if	NhlNeedProto
@@ -564,6 +569,7 @@ NclAddVlenFunc		add_vlen;
 NclAddEnumFunc		add_enum;
 NclAddOpaqueFunc	add_opaque;
 NclAddCompoundFunc	add_compound;
+NclWriteCompoundFunc	write_compound;
 NclSetOptionFunc        set_option;  
 };
 

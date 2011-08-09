@@ -8340,7 +8340,7 @@ NhlErrorTypes NewFileCreateCompoundType(NclFile infile, NclQuark compound_name,
                                         NclQuark var_name, 
                                         ng_size_t n_dims, NclQuark *dim_name,
                                         ng_size_t n_mems, NclQuark *mem_name,
-                                        NclQuark *mem_type, int mem_size)
+                                        NclQuark *mem_type, int *mem_size)
 {
     NclNewFile thefile = (NclNewFile) infile;
     NhlErrorTypes ret = NhlNOERROR;
@@ -8348,7 +8348,7 @@ NhlErrorTypes NewFileCreateCompoundType(NclFile infile, NclQuark compound_name,
     fprintf(stderr, "\nEnter NewFileCreateCompoundType, file: %s, line: %d\n", __FILE__, __LINE__);
     fprintf(stderr, "\tcompound_name: <%s>\n", NrmQuarkToString(compound_name));
     fprintf(stderr, "\tvar_name: <%s>\n", NrmQuarkToString(var_name));
-    fprintf(stderr, "\tdim_name: <%s>\n", NrmQuarkToString(dim_name));
+    fprintf(stderr, "\tdim_name: <%s>\n", NrmQuarkToString(dim_name[0]));
   /*
    */
 
@@ -8372,6 +8372,41 @@ NhlErrorTypes NewFileCreateCompoundType(NclFile infile, NclQuark compound_name,
   /*
    */
     fprintf(stderr, "Leave NewFileCreateCompoundType, file: %s, line: %d\n\n", __FILE__, __LINE__);
+    return ret;
+}
+
+NhlErrorTypes NewFileWriteCompound(NclFile infile, NclQuark compound_name, NclQuark var_name, 
+                                   ng_size_t n_mems, NclQuark *mem_name, NclList thelist)
+{
+    NclNewFile thefile = (NclNewFile) infile;
+    NhlErrorTypes ret = NhlNOERROR;
+
+    fprintf(stderr, "\nEnter NewFileWriteCompound, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tcompound_name: <%s>\n", NrmQuarkToString(compound_name));
+    fprintf(stderr, "\tvar_name: <%s>\n", NrmQuarkToString(var_name));
+    fprintf(stderr, "\tmem_name: <%s>\n", NrmQuarkToString(mem_name[0]));
+  /*
+   */
+
+    if(thefile->newfile.wr_status > 0)
+    {
+        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+            "NewFileWriteCompound: file (%s) was opened for reading only, can not write",
+             NrmQuarkToString(thefile->newfile.fname)));
+        fprintf(stderr, "Leave NewFileWriteCompound, file: %s, line: %d\n\n", __FILE__, __LINE__);
+        return (NhlFATAL);
+    }
+
+    if(thefile->newfile.format_funcs->write_compound != NULL)
+    {
+        ret = (*thefile->newfile.format_funcs->write_compound)
+               ((void *)thefile->newfile.grpnode, compound_name, var_name,
+                n_mems, mem_name, thelist);
+    }
+    
+  /*
+   */
+    fprintf(stderr, "Leave NewFileWriteCompound, file: %s, line: %d\n\n", __FILE__, __LINE__);
     return ret;
 }
 
@@ -8496,6 +8531,7 @@ NclNewFileClassRec nclNewFileClassRec =
        /*NclAssignFileEnumFunc          create_enum_type*/             NewFileCreateEnumType,
        /*NclAssignFileOpaqueFunc        create_opaque_type*/           NewFileCreateOpaqueType,
        /*NclAssignFileCompoundFunc      create_compound_type*/         NewFileCreateCompoundType,
+       /*NclWriteFileCompoundFunc       write_compound*/               NewFileWriteCompound,
          0
     }
 };

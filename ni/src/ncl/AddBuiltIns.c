@@ -129,6 +129,7 @@ void
 extern NhlErrorTypes _NclIFileVlenDef(void);
 extern NhlErrorTypes _NclIFileEnumDef(void);
 extern NhlErrorTypes _NclIFileCompoundDef(void);
+extern NhlErrorTypes _NclIFileWriteCompound(void);
 extern NhlErrorTypes _NclIFileOpaqueDef(void);
 
 extern NhlErrorTypes _NclIFileGrpDef(void);
@@ -2326,6 +2327,15 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,5,"string",1,NclANY);nargs++;
 	SetArgTemplate(args,6,"integer",1,NclANY);nargs++;
 	NclRegisterProc(_NclIFileCompoundDef,args,"filecompounddef",nargs);
+
+	nargs = 0;
+	args = NewArgs(5);
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"list",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFileWriteCompound,args,"filewritecompound",nargs);
 
 	nargs = 0;
 	args = NewArgs(5);

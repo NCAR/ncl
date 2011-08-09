@@ -22,6 +22,9 @@
 #ifndef _FileSupport_h
 #define _FileSupport_h
 
+#include "defs.h"
+#include "NclMultiDValData.h"
+#include "NclList.h"
 
 extern NhlErrorTypes  _NclBuildFileCoordRSelection(
 #if	NhlNeedProto
@@ -292,6 +295,8 @@ extern NhlErrorTypes _NclFileAddOpaque(NclFile thefile, NclQuark vlen_name, NclQ
 extern NhlErrorTypes _NclFileAddCompound(NclFile thefile, NclQuark compound_name, NclQuark var_name,
                                          ng_size_t n_dims, NclQuark *dim_name, ng_size_t n_mems,
                                          NclQuark *mem_name, NclQuark *mem_type, int *mem_size);
+extern NhlErrorTypes _NclFileWriteCompound(NclFile thefile, NclQuark compound_name, NclQuark var_name,
+                                           ng_size_t n_mems, NclQuark *mem_name, NclObj listobj);
 
 extern NhlErrorTypes _NclFileAddGrp(NclFile thefile, NclQuark grpname);
 
