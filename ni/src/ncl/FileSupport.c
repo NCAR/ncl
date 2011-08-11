@@ -1470,11 +1470,11 @@ extern NhlErrorTypes _NclFileAddCompound(NclFile infile, NclQuark compound_name,
 	NclNewFile thefile = (NclNewFile) infile;
 	NclNewFileClass fc = NULL;
 
-        fprintf(stderr, "\nHit _NclFileAddCompound, file: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tcompound name: <%s>, var name: <%s>, n_dims = %d, dim_name: <%s>\n",
-                         NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
-                         n_dims, NrmQuarkToString(dim_name[0]));
       /*
+       *fprintf(stderr, "\nHit _NclFileAddCompound, file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tcompound name: <%s>, var name: <%s>, n_dims = %d, dim_name: <%s>\n",
+       *                 NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
+       *                 n_dims, NrmQuarkToString(dim_name[0]));
        */
 
 	if(infile == NULL)

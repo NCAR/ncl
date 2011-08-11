@@ -8345,11 +8345,11 @@ NhlErrorTypes NewFileCreateCompoundType(NclFile infile, NclQuark compound_name,
     NclNewFile thefile = (NclNewFile) infile;
     NhlErrorTypes ret = NhlNOERROR;
 
-    fprintf(stderr, "\nEnter NewFileCreateCompoundType, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tcompound_name: <%s>\n", NrmQuarkToString(compound_name));
-    fprintf(stderr, "\tvar_name: <%s>\n", NrmQuarkToString(var_name));
-    fprintf(stderr, "\tdim_name: <%s>\n", NrmQuarkToString(dim_name[0]));
   /*
+   *fprintf(stderr, "\nEnter NewFileCreateCompoundType, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tcompound_name: <%s>\n", NrmQuarkToString(compound_name));
+   *fprintf(stderr, "\tvar_name: <%s>\n", NrmQuarkToString(var_name));
+   *fprintf(stderr, "\tdim_name: <%s>\n", NrmQuarkToString(dim_name[0]));
    */
 
     if(thefile->newfile.wr_status > 0)
@@ -8357,7 +8357,9 @@ NhlErrorTypes NewFileCreateCompoundType(NclFile infile, NclQuark compound_name,
         NHLPERROR((NhlFATAL,NhlEUNKNOWN,
             "NewFileCreateCompoundType: file (%s) was opened for reading only, can not write",
              NrmQuarkToString(thefile->newfile.fname)));
-        fprintf(stderr, "Leave NewFileCreateCompoundType, file: %s, line: %d\n\n", __FILE__, __LINE__);
+      /*
+       *fprintf(stderr, "Leave NewFileCreateCompoundType, file: %s, line: %d\n\n", __FILE__, __LINE__);
+       */
         return (NhlFATAL);
     }
 
@@ -8370,8 +8372,8 @@ NhlErrorTypes NewFileCreateCompoundType(NclFile infile, NclQuark compound_name,
     }
     
   /*
+   *fprintf(stderr, "Leave NewFileCreateCompoundType, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "Leave NewFileCreateCompoundType, file: %s, line: %d\n\n", __FILE__, __LINE__);
     return ret;
 }
 
