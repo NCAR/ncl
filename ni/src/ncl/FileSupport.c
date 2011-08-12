@@ -1424,11 +1424,11 @@ extern NhlErrorTypes _NclFileAddEnum(NclFile infile, NclQuark enum_name, NclQuar
 	NclNewFile thefile = (NclNewFile) infile;
 	NclNewFileClass fc = NULL;
 
-        fprintf(stderr, "\nHit _NclFileAddEnum, file: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tenum name: <%s>, var name: <%s>, dim_name: <%s>\n",
-                         NrmQuarkToString(enum_name), NrmQuarkToString(var_name),
-                         NrmQuarkToString(dim_name));
       /*
+       *fprintf(stderr, "\nHit _NclFileAddEnum, file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tenum name: <%s>, var name: <%s>, dim_name: <%s>\n",
+       *                 NrmQuarkToString(enum_name), NrmQuarkToString(var_name),
+       *                 NrmQuarkToString(dim_name));
        */
 
 	if(infile == NULL)
@@ -1517,10 +1517,12 @@ extern NhlErrorTypes _NclFileWriteCompound(NclFile infile, NclQuark compound_nam
 	NclList thelist = (NclList) listobj;
 	NclNewFileClass fc = NULL;
 
-        fprintf(stderr, "\nHit _NclFileWriteCompound, file: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tcompound name: <%s>, var name: <%s>, n_mems = %d, mem_name: <%s>\n",
-                         NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
-                         n_mems, NrmQuarkToString(mem_name[0]));
+      /*
+       *fprintf(stderr, "\nHit _NclFileWriteCompound, file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tcompound name: <%s>, var name: <%s>, n_mems = %d, mem_name: <%s>\n",
+       *                 NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
+       *                 n_mems, NrmQuarkToString(mem_name[0]));
+       */
 
 	if(thefile == NULL)
 	{
@@ -1561,11 +1563,11 @@ extern NhlErrorTypes _NclFileAddOpaque(NclFile infile, NclQuark opaque_name, Ncl
 	NclNewFileClass fc = NULL;
 
       /*
+       *fprintf(stderr, "\nHit _NclFileAddOpaque, file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\topaque name: <%s>, var name: <%s>, size: %d, dim_name: <%s>\n",
+       *                 NrmQuarkToString(opaque_name), NrmQuarkToString(var_name),
+       *                 var_size, NrmQuarkToString(dim_name));
        */
-        fprintf(stderr, "\nHit _NclFileAddOpaque, file: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\topaque name: <%s>, var name: <%s>, size: %d, dim_name: <%s>\n",
-                         NrmQuarkToString(opaque_name), NrmQuarkToString(var_name),
-                         var_size, NrmQuarkToString(dim_name));
 
 	if(infile == NULL)
 	{
