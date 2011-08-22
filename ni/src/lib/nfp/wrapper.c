@@ -5500,7 +5500,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"logical",0,NclANY);nargs++;
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(dim_num_n_W,args,"dim_num_n",nargs);
 
