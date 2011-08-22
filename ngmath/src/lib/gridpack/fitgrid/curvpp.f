@@ -1,5 +1,5 @@
 C
-C $Id: curvpp.f,v 1.7 2008-07-27 03:10:10 haley Exp $
+C $Id:$
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -13,14 +13,14 @@ C
       subroutine curvpp (n,x,y,p,d,isw,s,eps,ys,ysp,sigma,
      *                   td,tsd1,hd,hsd1,hsd2,rd,rsd1,rsd2,
      *                   rnm1,rn,v,ierr)
-c
+C
       integer n,isw,ierr
       real x(n),y(n),p,d(n),s,eps,ys(n),ysp(n),sigma,td(n),
      *     tsd1(n),hd(n),hsd1(n),hsd2(n),rd(n),rsd1(n),
      *     rsd2(n),rnm1(n),rn(n),v(n)
 c
 c                                 coded by alan kaylor cline
-c                           from fitpack -- january 26, 1987
+c                              from fitpack -- april 8, 1991
 c                        a curve and surface fitting package
 c                      a product of pleasant valley software
 c                  8603 altus cove, austin, texas 78759, usa
@@ -119,8 +119,8 @@ c and
 c
 c   n, x, y, d, isw, s, eps, and sigma are unaltered.
 c
-c this subroutine references package modules terms and
-c snhcsh.
+c this subroutine references package modules ftstore, terms,
+c and snhcsh.
 c
 c-----------------------------------------------------------
 c
@@ -334,8 +334,8 @@ c
       rdn = q*td(n)+hd(n)-sumn
       rd(n) = 0.
 c
-c modified test based on communication with Alan Cline, 21-May-02.
-c problems with the original test (rdn .gt. 0.) surfaced in a demo
+c Modified test based on communication with Alan Cline, 21-May-2002.
+c Problems with the original test (rdn .gt. 0.) surfaced in a demo
 c example run on a Linux system.
 c
       if (rdn .gt. 0. .and. q .ne. 0.) rd(n) = 1./rdn
@@ -383,8 +383,7 @@ c
 c
 c test for convergence
 c
-      if (sum .le. su .and. sum .ge. sl .and. q .gt. 0.)
-     *    go to 21
+      if (sum .le. su) go to 21
 c
 c calculation of newton correction
 c
@@ -418,12 +417,13 @@ c
       f = f+tui*ysp(n)
       g = g+wi*wi*rd(n)
       h = f-q*g
-      if (h .le. 0. .and. q .gt. 0.) go to 21
+      if (h .le. 0.) go to 21
 c
 c update q - newton step
 c
       step = (sum-sqrt(sum*sl))/h
       if (sl .ne. 0.) step = step*sqrt(sum/sl)
+      if (ftstore(q+step) .eq. q) go to 21
       q = q+step
       go to 8
 c

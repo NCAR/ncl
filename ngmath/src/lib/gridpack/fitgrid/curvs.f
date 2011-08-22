@@ -17,7 +17,7 @@ c
       real x(n),y(n),d(n),s,eps,ys(n),ysp(n),sigma,temp(n,9)
 c
 c                                 coded by alan kaylor cline
-c                           from fitpack -- january 26, 1987
+c                              from fitpack -- april 8, 1991
 c                        a curve and surface fitting package
 c                      a product of pleasant valley software
 c                  8603 altus cove, austin, texas 78759, usa
@@ -112,8 +112,8 @@ c and
 c
 c   n, x, y, d, isw, s, eps, and sigma are unaltered.
 c
-c this subroutine references package modules curvss, terms,
-c and snhcsh.
+c this subroutine references package modules curvss, ftstore,
+c terms, and snhcsh.
 c
 c-----------------------------------------------------------
 c

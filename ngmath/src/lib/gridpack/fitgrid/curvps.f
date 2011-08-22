@@ -1,5 +1,5 @@
 C
-C $Id: curvps.f,v 1.5 2008-07-27 03:10:10 haley Exp $
+C $Id:$
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -12,13 +12,13 @@ C make the same changes to the corresponding double precision routine.
 C
       subroutine curvps (n,x,y,p,d,isw,s,eps,ys,ysp,sigma,
      *                   temp,ierr)
-c
+C
       integer n,isw,ierr
       real x(n),y(n),p,d(n),s,eps,ys(n),ysp(n),sigma,
      *     temp(n,11)
 c
 c                                 coded by alan kaylor cline
-c                           from fitpack -- january 26, 1987
+c                              from fitpack -- april 8, 1991
 c                        a curve and surface fitting package
 c                      a product of pleasant valley software
 c                  8603 altus cove, austin, texas 78759, usa
@@ -119,8 +119,8 @@ c and
 c
 c   n, x, y, p, d, isw, s, eps, and sigma are unaltered.
 c
-c this subroutine references package modules curvpp, terms,
-c and snhcsh.
+c this subroutine references package modules curvpp, ftstore,
+c terms, and snhcsh.
 c
 c-----------------------------------------------------------
 c

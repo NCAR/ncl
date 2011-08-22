@@ -17,7 +17,7 @@ c
      +                 TEMP(N,11)
 c
 c                                 coded by alan kaylor cline
-c                           from fitpack -- january 26, 1987
+c                              from fitpack -- april 8, 1991
 c                        a curve and surface fitting package
 c                      a product of pleasant valley software
 c                  8603 altus cove, austin, texas 78759, usa
@@ -124,6 +124,7 @@ c
 c-----------------------------------------------------------
 c
 c decompose temp into eleven arrays and call curvpp
+c
 c
       CALL CURVPPDP(N,X,Y,P,D,ISW,S,EPS,YS,YSP,SIGMA,TEMP(1,1),
      +  TEMP(1,2),TEMP(1,3),TEMP(1,4),TEMP(1,5),TEMP(1,6),TEMP(1,7),
