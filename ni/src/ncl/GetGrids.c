@@ -375,12 +375,7 @@ void GetThinnedLatParams
 	}
 
 	*nlat = nmax;
-	if (jdir == 1) {
-		diff = la2 - la1;
-	}
-	else {
-		diff = la1 - la2;
-	}
+	diff = MAX(la2,la1) - MIN(la1,la2);
 	*dj =  diff / (double)(*nlat - 1);
 	return;
 }
@@ -7910,6 +7905,7 @@ int* nrotatts;
 	double nx0,nx1,ny0,ny1;
 	double tmplon,tmplat;
 	double latin1;
+	double starty;
 	
 	*lat = NULL;
 	*n_dims_lat = 0;
@@ -8111,14 +8107,15 @@ int* nrotatts;
 	NGCALLF(mdptrn,MDPTRN)(&lat1,&lon1,&nx1,&ny1);
         udx = fabs(nx1 - nx0) / (ni -1);
 	udy = fabs(ny1 - ny0) / (nj-1);
+	starty = jdir == 1 ? MIN(ny0,ny1) : MAX(ny0,ny1);
 
 	for(i = 0; i < nj; i++) {
-		double uy = ny0 + i * udy * idir;
+		double uy = starty + i * udy * jdir;
 		NGCALLF(mdptri,MDPTRI)(&dumx,&uy,&tmplat,&tmplon);
 		(*lat)[i] = (float) tmplat;
 	}
 	for(j = 0; j < ni; j++) {
-		double ux = nx0 + j * udx * jdir;
+		double ux = nx0 + j * udx * idir;
 		NGCALLF(mdptri,MDPTRI)(&ux,&dumy,&tmplat,&tmplon);
 		(*lon)[j] = (float) tmplon;
 	}
@@ -9250,6 +9247,7 @@ int* nrotatts;
 	float *tmp_float;
 	NclQuark* tmp_string;
 	int nlon, nlat;
+        int start_lat;
 	
 	
 	*lat = NULL;
@@ -9378,8 +9376,9 @@ int* nrotatts;
 	*n_dims_lon = 1;
 	*lat = (float*)NclMalloc((unsigned)sizeof(float)* nlat);
 	*lon = (float*)NclMalloc((unsigned)sizeof(float)* nlon);
+        start_lat = jdir == 1 ? MIN(la1,la2) : MAX(la1,la2);
 	for(i = 0;i < *(*dimsizes_lat) ; i++) {
-		(*lat)[i] = (float)((double)(la1 + jdir * i * dj)) / 1000.0;
+		(*lat)[i] = (float)((double)(start_lat + jdir * i * dj)) / 1000.0;
 	}
 	for(i = 0;i < *(*dimsizes_lon) ; i++) {
 		(*lon)[i] = (float)((double)(lo1 + idir * i * di)) / 1000.0;

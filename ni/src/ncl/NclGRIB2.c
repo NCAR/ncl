@@ -630,6 +630,7 @@ void g2GDSCEGrid
     int nlon, nlat;
     g2CETemplate *ce;
     double scale_factor;
+    double start_lat;
 	
     *lat = NULL;
     *n_dims_lat = 0;
@@ -733,9 +734,10 @@ void g2GDSCEGrid
     *n_dims_lon = 1;
     *lat = (float *) NclMalloc((unsigned)sizeof(float) * nlat);
     *lon = (float *) NclMalloc((unsigned)sizeof(float) * nlon);
+    start_lat = jdir == 1 ? MIN(la1,la2) : MAX(la1,la2);
 
     for (i = 0; i < *(*dimsizes_lat) ; i++)
-        (*lat)[i] = (float) (la1 + jdir * i * dj) ;
+        (*lat)[i] = (float) (start_lat + jdir * i * dj) ;
 
     for (i = 0; i < *(*dimsizes_lon) ; i++)
         (*lon)[i] = (float)(lo1 + idir * i * di) ;
