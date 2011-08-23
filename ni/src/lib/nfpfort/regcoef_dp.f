@@ -111,7 +111,7 @@ C t-statistic and standard deviation of reg coef
 C degrees of freedom
           DF = XYN - 2.D0
 C y-intercept
-          YINT = YAVE*RCOEF*XAVE
+          YINT = YAVE - RCOEF*XAVE
       ELSE
 c XVAR = 0.0
           IER    = 7
