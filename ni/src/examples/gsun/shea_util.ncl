@@ -61,7 +61,7 @@ begin
           ;else                            ; debug print
           ;    print (label+": no zero contours")
            end if
-       end if
+       end if 
        return (cnlvls)                                      
 end
 ; -------------------------------------------------------
