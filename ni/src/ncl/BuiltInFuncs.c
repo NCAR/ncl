@@ -4581,16 +4581,24 @@ NhlErrorTypes _NclIasciiread
 						}
 						if(!feof(fp)) {
 							*step = fgetc(fp);
-							if(*step == '\n') {
-								*step = '\0';
-								*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
-								step = buffer;
-								tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-								total++;
-								break;
-							} else {
+							if(! (*step == '\n' || *step == '\r')) {
 								step++;
+								continue;
 							}
+							if (*step == '\r') {
+								char c;
+								/* throw away next character if it's a CRLF sequence */
+								c = getc(fp);
+								if (c != '\n') { 
+									ungetc(c,fp);
+								}
+							}
+							*step = '\0';
+							*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+							step = buffer;
+							tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+							total++;
+							break;
 						} else {
 							break;
 						}
@@ -4701,9 +4709,17 @@ NhlErrorTypes _NclIasciiread
 			totalsize = statbuf.st_size;
 		}
 		else if(thetype->type_class.type==Ncl_Typestring) {
+			char c;
 			totalsize = 0;
 			while(!feof(fp)) {
-				if(fgetc(fp) == '\n') {
+				c = getc(fp);
+				if (c == '\r') {
+					totalsize++;
+					c = getc(fp); /* handle CRLF (\r\n) style EOL by ignoring LF after CR */
+					if (c == '\r') /* if another CR push it back so it will count as an (empty) line */
+						ungetc(c,fp);
+				}
+				else if(c == '\n' ) {
 					totalsize++;
 				} 
 			}
@@ -4844,17 +4860,25 @@ NhlErrorTypes _NclIasciiread
 						step = &buffer[j];
 					}
 					if(!feof(fp)) {
-						*step = fgetc(fp);
-						if(*step == '\n') {
-							*step = '\0';
-							*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
-							step = buffer;
-							tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-							total++;
-							break;
-						} else {
+						*step = getc(fp);
+						if (! (*step == '\n' || *step == '\r')) {
 							step++;
+							continue;
 						}
+						if (*step == '\r') {
+							char c;
+							/* throw away next character if it's a CRLF sequence */
+							c = getc(fp);
+							if (c != '\n') { 
+								ungetc(c,fp);
+							}
+						}
+						*step = '\0';
+						*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+						step = buffer;
+						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+						total++;
+						break;
 					} else {
 						break;
 					}
