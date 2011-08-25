@@ -565,6 +565,8 @@ extern NhlErrorTypes ctwrap_W(void);
 
 extern NhlErrorTypes kron_product_W(void);
 
+extern NhlErrorTypes sparse_matrix_mult_W(void);
+
 #ifdef BuildGRIDSPEC
 extern NhlErrorTypes nccffregridW(void);
 extern NhlErrorTypes nccfmakeconformalcubichgridW(void);
@@ -7471,6 +7473,20 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
 
         NclRegisterFunc(kron_product_W,args,"kron_product",nargs);
+
+/*
+ * Register "sparse_matrix_mult".
+ *
+ * Create private argument array.
+ */
+ 
+        nargs = 0;
+        args = NewArgs(4);
+        SetArgTemplate(args,0,"integer",1,NclANY);nargs++;
+        SetArgTemplate(args,1,"integer",1,NclANY);nargs++;
+        SetArgTemplate(args,2,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,3,"numeric",2,NclANY);nargs++;
+        NclRegisterFunc(sparse_matrix_mult_W,args,"sparse_matrix_mult",nargs);
 
 /*
  *  Register ctwrap.
