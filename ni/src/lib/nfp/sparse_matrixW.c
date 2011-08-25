@@ -9,19 +9,23 @@ NhlErrorTypes sparse_matrix_mult_W
 #endif
 {
     /* Locally used variables */
-    int nElement;
-    int ncol, nrow, nrowcol;
-    int i, j;
-    int xInd, yInd;
+    ng_size_t nElement;
+    ng_size_t ncol, nrow, nrowcol;
+    ng_size_t i, j;
+    ng_size_t xInd, yInd;
     
     /* Defining the arguments */
     /* Argument # 0 */
-    int *row;
+    void *row_in;
+    ng_size_t *row;
     ng_size_t dsizes_row[1];
+    NclBasicDataTypes type_row;
     
     /* Argument # 1 */
-    int *col;
+    void *col_in;
+    ng_size_t *col;
     ng_size_t dsizes_col[1];
+    NclBasicDataTypes type_col;
     
     /* Argument # 2 */
     void   *S;
@@ -45,26 +49,34 @@ NhlErrorTypes sparse_matrix_mult_W
     /* Getting Arguments values */
 
     /* Argument # 0 */
-    row = (int*)NclGetArgValue(
+    row_in = (void*)NclGetArgValue(
                 0,
                 4,
                 NULL,
                 dsizes_row,
                 NULL,
                 NULL,
-                NULL,
+                &type_row,
                 DONT_CARE);    
 
     /* Argument # 1 */
-    col = (int*)NclGetArgValue(
+    col_in = (void*)NclGetArgValue(
                 1,
                 4,
                 NULL,
                 dsizes_col,
                 NULL,
                 NULL,
-                NULL,
+                &type_col,
                 DONT_CARE);    
+
+/*
+ * Convert the input dimensions to ng_size_t.
+ */
+    row = get_dimensions(row_in,dsizes_row[0],type_row,"sparse_matrix_mult");
+    col = get_dimensions(col_in,dsizes_col[0],type_col,"sparse_matrix_mult");
+    if(row == NULL || col == NULL) 
+      return(NhlFATAL);
 
     /* Argument # 2 */
     S = (void*)NclGetArgValue(
