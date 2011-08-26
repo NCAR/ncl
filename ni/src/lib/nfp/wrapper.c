@@ -551,6 +551,7 @@ extern NhlErrorTypes cdfnor_x_W(void);
 extern NhlErrorTypes cdfchi_p_W(void);
 extern NhlErrorTypes cdft_t_W(void);
 extern NhlErrorTypes cdft_p_W(void);
+extern NhlErrorTypes gamma_W(void);
 extern NhlErrorTypes ind_resolve_W(void);
 extern NhlErrorTypes unique_string_W(void);
 extern NhlErrorTypes tempnam_W(void);
@@ -7384,6 +7385,16 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
     NclRegisterFunc(cdft_p_W,args,"cdft_p",nargs);
+
+/*
+ *  Registering gamma
+ */
+    nargs = 0;
+    args = NewArgs(1);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+    NclRegisterFunc(gamma_W,args,"gamma",nargs);
 
 /*
  *  Register ind_resolve.
