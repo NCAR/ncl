@@ -43,6 +43,7 @@ NhlErrorTypes sparse_matrix_mult_W
     
     /* Output argument # 4 */
     void   *y;
+    double *dy;
     NclBasicDataTypes type_y;
     int ret;
 
@@ -125,14 +126,14 @@ NhlErrorTypes sparse_matrix_mult_W
 /*
  * Coerce missing values to double if necessary.
  */
-  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_fx);
+    coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_fx);
 
 /*
  * Coerce x and S to double if necessary.
  */
-  dx = coerce_input_double(x,type_x,nrowcol,has_missing_x,&missing_x,
-                           &missing_dx);
-  dS = coerce_input_double(S,type_S,dsizes_S[0],0,NULL,NULL);
+    dx = coerce_input_double(x,type_x,nrowcol,has_missing_x,&missing_x,
+                             &missing_dx);
+    dS = coerce_input_double(S,type_S,dsizes_S[0],0,NULL,NULL);
 
 /*
  * Create output variable.
@@ -144,11 +145,13 @@ NhlErrorTypes sparse_matrix_mult_W
         NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: Unable to allocate memory for output array");
         return(NhlFATAL);
       }
+      dy = &((double*)y)[0];
     }
     else {
       type_y = NCL_float;
       y      = (void*)calloc(nrowcol,sizeof(float));
-      if(y == NULL) {
+      dy     = (double*)calloc(nrowcol,sizeof(double));
+      if(y == NULL || dy == NULL) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: Unable to allocate memory for output array");
         return(NhlFATAL);
       }
@@ -157,29 +160,20 @@ NhlErrorTypes sparse_matrix_mult_W
     /* performing the real multiplication */
     if (has_missing_x)
     {
-        for(i=0;i<nvector;i++)
+        for(i=0; i<nvector; i++)
         {
-            for (j=0;j<ncol;j++)
+            for (j=0; j<ncol; j++)
             {
-                xInd=(col[i])*ncol+j;
-                yInd=(row[i])*ncol+j;
-                if ( dx[xInd]==missing_dx.doubleval ) 
+                xInd = col[i]*ncol+j;
+                yInd = row[i]*ncol+j;
+                if ( dx[xInd] == missing_dx.doubleval ||
+                     dy[yInd] == missing_dx.doubleval)
                 {
-                  if(type_y == NCL_double) {
-                    ((double*)y)[yInd] = missing_dx.doubleval;
-                  }
-                  else {
-                    ((float*)y)[yInd] = missing_fx.floatval;
-                  }
+                  dy[yInd] = missing_dx.doubleval;
                 }
                 else
                 {
-                  if(type_y == NCL_double) {
-                    ((double*)y)[yInd] += dx[xInd]*dS[i];
-                  }
-                  else {
-                    ((float*)y)[yInd] += (float)(dx[xInd]*dS[i]);
-                  }
+                  dy[yInd] += dx[xInd]*dS[i];
                 }
             }
         }
@@ -190,18 +184,25 @@ NhlErrorTypes sparse_matrix_mult_W
         {
             for (j=0;j<ncol;j++)
             {
-                xInd=(col[i])*ncol+j;
-                yInd=(row[i])*ncol+j;
-                if(type_y == NCL_double) {
-                  ((double*)y)[yInd] += dx[xInd]*dS[i];
-                }
-                else {
-                  ((float*)y)[yInd] += (float)(dx[xInd]*dS[i]);
-                }
+                xInd = col[i]*ncol+j;
+                yInd = row[i]*ncol+j;
+                dy[yInd] += dx[xInd]*dS[i];
             }
         }    
     }
     
+/*
+ * Coerce output back to float if necessary.
+ */
+  if(type_y == NCL_float) {
+    coerce_output_float_only(y,dy,nrowcol,0);
+    NclFree(dy);
+  }
+  NclFree(row);
+  NclFree(col);
+  if(type_x != NCL_double) NclFree(dx);
+  if(type_S != NCL_double) NclFree(dS);
+
 /*
  * Return value back to NCL script.
  */

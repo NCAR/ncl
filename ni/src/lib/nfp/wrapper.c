@@ -7493,8 +7493,8 @@ void NclAddUserFuncs(void)
  
         nargs = 0;
         args = NewArgs(4);
-        SetArgTemplate(args,0,"integer",1,NclANY);nargs++;
-        SetArgTemplate(args,1,"integer",1,NclANY);nargs++;
+        SetArgTemplate(args,0,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,1,"numeric",1,NclANY);nargs++;
         SetArgTemplate(args,2,"numeric",1,NclANY);nargs++;
         SetArgTemplate(args,3,"numeric",2,NclANY);nargs++;
         NclRegisterFunc(sparse_matrix_mult_W,args,"sparse_matrix_mult",nargs);
