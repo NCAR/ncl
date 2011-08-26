@@ -9,7 +9,7 @@ NhlErrorTypes sparse_matrix_mult_W
 #endif
 {
     /* Locally used variables */
-    ng_size_t nElement;
+    ng_size_t nvector;
     ng_size_t ncol, nrow, nrowcol;
     ng_size_t i, j;
     ng_size_t xInd, yInd;
@@ -106,11 +106,22 @@ NhlErrorTypes sparse_matrix_mult_W
         return(NhlFATAL);
     }
 
-    nElement = dsizes_S[0];
-    nrow     = dsizes_x[0];
-    ncol     = dsizes_x[1];
-    nrowcol  = nrow * ncol;
+    nvector = dsizes_S[0];
+    nrow    = dsizes_x[0];
+    ncol    = dsizes_x[1];
+    nrowcol = nrow * ncol;
 
+/* Error checking for input vector indexes. */
+    for(i=0; i < nvector; i++){
+      if(row[i] < 0 || row[i] >= nrow) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: invalid row index");
+        return(NhlFATAL);
+      }
+      if(col[i] < 0 || col[i] >= ncol) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: invalid column index");
+        return(NhlFATAL);
+      }
+    }
 /*
  * Coerce missing values to double if necessary.
  */
@@ -146,12 +157,12 @@ NhlErrorTypes sparse_matrix_mult_W
     /* performing the real multiplication */
     if (has_missing_x)
     {
-        for(i=0;i<nElement;i++)
+        for(i=0;i<nvector;i++)
         {
             for (j=0;j<ncol;j++)
             {
-                xInd=(col[i]-1)*ncol+j;
-                yInd=(row[i]-1)*ncol+j;
+                xInd=(col[i])*ncol+j;
+                yInd=(row[i])*ncol+j;
                 if ( dx[xInd]==missing_dx.doubleval ) 
                 {
                   if(type_y == NCL_double) {
@@ -175,12 +186,12 @@ NhlErrorTypes sparse_matrix_mult_W
     }
     else
     {
-        for(i=0;i<nElement;i++)
+        for(i=0;i<nvector;i++)
         {
             for (j=0;j<ncol;j++)
             {
-                xInd=(col[i]-1)*ncol+j;
-                yInd=(row[i]-1)*ncol+j;
+                xInd=(col[i])*ncol+j;
+                yInd=(row[i])*ncol+j;
                 if(type_y == NCL_double) {
                   ((double*)y)[yInd] += dx[xInd]*dS[i];
                 }
