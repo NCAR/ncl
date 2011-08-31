@@ -84,3 +84,6 @@ extern NclDimRec *get_dim_info(int, int);
 extern ng_size_t *get_dimensions(void *tmp_dimensions,int n_dimensions,
 				 NclBasicDataTypes type_dimensions,
 				 const char *);
+
+extern int *get_dims_for_n_funcs(int arg_num,  int num_args, NclStackEntry tmpdata,
+				  const char *name, int *ndims);
