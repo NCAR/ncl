@@ -49,6 +49,12 @@ void
 #endif
 );
 
+extern NhlErrorTypes _Nclstr_split_csv(
+#if NhlNeedProto
+void
+#endif
+);
+
 extern NhlErrorTypes _Nclstr_get_cols(
 #if NhlNeedProto
 void
@@ -219,6 +225,14 @@ void NclAddUserBuiltInFuncs
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
     NclRegisterFunc(_Nclstr_split, args, "str_split", nargs);
+
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes); nargs++;
+    NclRegisterFunc(_Nclstr_split_csv, args, "str_split_csv", nargs);
     
     nargs = 0;
     args = NewArgs(3);
