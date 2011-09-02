@@ -2770,7 +2770,6 @@ NhlErrorTypes _Nclstr_capital
     NclScalar   missing_str;
     NclScalar   ret_missing;
   
-    char *tmp_str;
     ng_size_t i;
     int n;
     ng_size_t str_size;
@@ -2810,23 +2809,9 @@ NhlErrorTypes _Nclstr_capital
     for(i=0; i<ndim_str; i++)
         str_size *= dimsz_str[i];
 
-    for(i=0; i<str_size; i++)
-    {
-        tmp_str = (char *) NrmQuarkToString(str[i]);
-        if (max_length < strlen(tmp_str))
-            max_length = strlen(tmp_str);
-    }
-    max_length ++;
 
     arrayOfString = (string *) NclMalloc(str_size*sizeof(string));
     if (! arrayOfString)
-    {
-        NHLPERROR((NhlFATAL,ENOMEM,NULL));
-        return NhlFATAL;
-    }
-
-    result = (char *) NclMalloc(max_length);
-    if (! result)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
         return NhlFATAL;
@@ -2841,10 +2826,10 @@ NhlErrorTypes _Nclstr_capital
            continue;
         }
 
-        strcpy(result, (char *) NrmQuarkToString(str[i]));
+        result = (char *) NrmQuarkToString(str[i]);
 
         capitalize = 1;
-        max_length = strlen(tmp_str);
+        max_length = strlen(result);
         for(n=0; n<max_length; n++)
         {
             switch (result[n])
@@ -2856,11 +2841,13 @@ NhlErrorTypes _Nclstr_capital
                 case '\r':
                 case '\v':
                     capitalize = 1;
-                    continue;
+                    break;
                 default:
                     if(capitalize)
+                    {
                         if((result[n] >= 'a') && (result[n] <= 'z'))
                             result[n] += 'A' - 'a';
+                    }
                     capitalize = 0;
             }
         }
@@ -2868,7 +2855,6 @@ NhlErrorTypes _Nclstr_capital
         arrayOfString[i] = NrmStringToQuark(result);
     }
 
-    NclFree(result);
     return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
 
 }
