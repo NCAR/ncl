@@ -476,8 +476,8 @@ undef("get_valid_long_names")
 function get_valid_long_names()
 begin
   return((/"long_name","standard_name","description","DESCRIPTION", \
-           "DataFieldName"/))
-end
+           "Description","DataFieldName","hdf_name","hdfeos_name"/))
+End
 
 ;***********************************************************************;
 ; Function : get_valid_units()                                          ;
