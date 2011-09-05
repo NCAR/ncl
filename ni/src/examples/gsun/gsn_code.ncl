@@ -5472,6 +5472,7 @@ begin
   else
     if(.not.ismissing(msgclr).and..not.is_msgclr_trans) then
       pres@gsMarkerColor = msgclr
+      pres@gsMarkerIndex = defmrk
       ii = ind(ismissing(ndtooned(data)))
       if(.not.all(ismissing(ii))) then
         if(attach_coords) then
@@ -5495,14 +5496,16 @@ begin
           delete(pres@gsMarkerColor)
         end if
         pres@gsMarkerColor = nonmsgclr
-        draw_non_msg        = True
+        pres@gsMarkerIndex = defmrk
+        draw_non_msg       = True
       else
         if(ismissing(nonmsgclr).and..not.is_defclr_trans) then
           if(isatt(pres,"gsMarkerColor")) then
             delete(pres@gsMarkerColor)
           end if
           pres@gsMarkerColor = defclr
-          draw_non_msg        = True
+          pres@gsMarkerIndex = defmrk
+          draw_non_msg       = True
         end if
       end if
       if(draw_non_msg) then
@@ -5523,6 +5526,7 @@ begin
     if(ismissing(msgclr).and.ismissing(nonmsgclr).and. \
        .not.is_defclr_trans) then
       pres@gsMarkerColor = defclr
+      pres@gsMarkerIndex = defmrk
       if(attach_coords) then
         tmpstr = unique_string("markers_all")
         plot@$tmpstr$ = gsn_add_polymarker(wks,plot,xcoord_1d,\
