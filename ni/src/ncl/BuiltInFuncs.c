@@ -8808,7 +8808,6 @@ NhlErrorTypes _NclIstringtofloat
 				tval = strtod(val,&end);
 				dtest = fabs(tval);
 				if (end == val) {
-				  printf("val = '%s'\n", val); 
                                         NhlPError(NhlWARNING,NhlEUNKNOWN,
 					"stringtofloat: a bad value was passed; input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.floatval;
@@ -11780,7 +11779,8 @@ NhlErrorTypes _Ncldim_avg_n
 		return(NhlFATAL);
 
 /*
- * Get dimension(s) to do average across. These can be dimension indexes or dimension names.
+ * Get dimension(s) to do average across. These can be dimension 
+ * indexes or dimension names.
  */
 	dims = get_dims_for_n_funcs(1,2,data,"dim_avg_n",&ndims);
 	if(dims == NULL) { 
@@ -11954,6 +11954,7 @@ NhlErrorTypes _Ncldim_avg_n
 			       NULL,
 			       out_data_type,
 			       0);
+	  NclFree(dims);
 	  NclFree(dimsizes);
 	  if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
 	  return(ret);
