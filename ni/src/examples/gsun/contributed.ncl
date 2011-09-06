@@ -271,6 +271,45 @@ begin
         end if
   end if
 end
+
+;************************************************************
+; M. Haley
+; Return a list of dimension indexes that correspond with
+;  the dimension names.
+;
+; Used internally.
+
+undef("dimnames_to_indexes")
+function dimnames_to_indexes(var_from,dim_args[*])
+local vdims_from, ndims, dims, i, imsg
+begin
+  ndims = dimsizes(dim_args)
+  imsg = new(ndims,"integer")
+
+  if(.not.any(typeof(dim_args).eq.(/"string","integer"/))) then
+    print("dimnames_to_indexes: error: invalid type for last argument")
+    return(imsg)
+  end if
+
+  if(typeof(dim_args).eq."string") then
+    vdims_from = getvardims(var_from)
+    dims = new(ndims,integer)
+    do i=0,dimsizes(dim_args)-1
+      ii = ind(dim_args(i).eq.vdims_from)
+      if(.not.any(ismissing(ii))) then
+        dims(i) = ii(0)
+      else
+        print("dimnames_to_indexes: error: invalid dimension name")
+        return(imsg)
+      end if
+      delete(ii)
+    end do
+  else
+    dims = dim_args
+  end if
+  return(dims)
+end
+
 ;************************************************************
 ; M. Haley
 ; Copy the coordinate variables from one variable to another,
@@ -283,7 +322,7 @@ end
 ; Used internally, based on copy_VarCoords_1
 
 undef ("copy_VarCoords_n")
-procedure copy_VarCoords_n(var_from,var_to,dims[*]:integer)  
+procedure copy_VarCoords_n(var_from,var_to,dims)
 local dimt, dimf, rfrom, rto, i, dName, ndims
 begin                      
 
@@ -2160,14 +2199,16 @@ end
 ; dims - dimension(s) to do average across
 
 undef ("dim_avg_n_Wrap")
-function dim_avg_n_Wrap (x:numeric,dims[*]:integer)
-local xave
+function dim_avg_n_Wrap (x:numeric,dim_args[*])
+local xave, dims
 begin
 
+ dims = dimnames_to_indexes(x,dim_args)
  xave = dim_avg_n(x,dims)   ; arithmetic ave [no meta data]
  
  copy_VarAtts (x, xave)     ; copy attributes
                             ; copy dim names and coord variables
+
  copy_VarCoords_n (x, xave, dims)
                                        ; add an extra attribute
  xave@average_op_ncl = dimWrapString("dim_avg_n",x,dims)
