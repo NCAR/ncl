@@ -8698,7 +8698,7 @@ int *get_dims_for_n_funcs(int arg_num,  int num_args, NclStackEntry tmpdata,
   NclBasicDataTypes type_dims;
   void *dims_ptr;
   int i, *dims; 
-  ng_size_t dims_ndims;
+  ng_size_t num_dims[1];
   string *dim_names;
   NclVar tmpvar;
 
@@ -8714,31 +8714,38 @@ int *get_dims_for_n_funcs(int arg_num,  int num_args, NclStackEntry tmpdata,
     return(NULL);
   }
 
-  dims_ptr = (void *)NclGetArgValue(arg_num,num_args,NULL,NULL,NULL,
+  dims_ptr = (void *)NclGetArgValue(arg_num,num_args,NULL,num_dims,NULL,
                                     NULL,&type_dims,0);
   if(type_dims != NCL_int && type_dims != NCL_string) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: The input dimensions must be integers representing dimension numbers, or strings representing dimension names",name);
     return(NULL);
   }
+  dims   = (int*)calloc(num_dims[0],sizeof(int));
+  if(dims == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Can't allocate memory for dimension indexes");
+    return(NULL);
+  }
+
   if(type_dims == NCL_int) {
-    dims = (int *)NclGetArgValue(1,2,NULL,&dims_ndims,NULL,NULL,NULL,0);
+    for(i = 0; i < num_dims[0]; i++) {
+      dims[i] = ((int*)dims_ptr)[i];
+    }
   }
   else {
     if(tmpvar != NULL) {
-      dim_names = (string *)NclGetArgValue(1,2,NULL,&dims_ndims,NULL,NULL,NULL,0);
+      dim_names = (string *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,0);
     }
     else {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Can't determine dimension names from input array",name);
       return(NULL);
     }
-    *ndims = (int)dims_ndims;
-    dims = (int*)calloc(*ndims,sizeof(int));
-    for(i = 0; i < *ndims; i++) {
+    for(i = 0; i < num_dims[0]; i++) {
 /*
  * Don't do any error checking here. Let the calling routine do it.
  */
       dims[i] = _NclIsDim(tmpvar,NrmQuarkToString(dim_names[i]));
     }
   }
+  *ndims = num_dims[0];
   return(dims);
 }
