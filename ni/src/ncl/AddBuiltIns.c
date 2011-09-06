@@ -1881,7 +1881,7 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(2);
 	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
-	SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,1,NclANY); nargs++;
 	NclRegisterFunc( _Ncldim_avg_n,args,"dim_avg_n",nargs);
 
 	nargs = 0;

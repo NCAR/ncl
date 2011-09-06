@@ -84,9 +84,17 @@ long long local_strtoll(const char *nptr, char **endptr, int base);
  * Function to coerce dimension sizes to int or long
  * Located in ../lib/nfp/wrapper.[ch].
  */
-extern ng_size_t *get_dimensions(void *tmp_dimensions,ng_size_t n_dimensions,
-				 NclBasicDataTypes type_dimensions,
-				 const char *);
+extern ng_size_t *get_dimensions(void *tmp_dimensions, int n_dimensions,
+			   NclBasicDataTypes type_dimensions,
+			   const char *);
+
+/* 
+ * Function to get dimension indexes via integers or dimension names. 
+ * Located in ../lib/nfp/wrapper.[ch].
+ */
+extern int *get_dims_for_n_funcs(int arg_num,  int num_args, 
+				 NclStackEntry tmpdata,
+				 const char *name, int *ndims);
 
 NhlErrorTypes _NclIGetScriptPrefixName
 #if     NhlNeedProto
@@ -11738,7 +11746,7 @@ NhlErrorTypes _Ncldim_avg_n
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
 	int *dims;
-	ng_size_t ndims;
+	int ndims;
 	double sum_val ;
 	double *val = NULL;
 	ng_size_t *dimsizes = NULL;
@@ -11753,11 +11761,6 @@ NhlErrorTypes _Ncldim_avg_n
 	NclTypeClass the_type;
 	NclScalar missing;
 	int did_coerce = 0;
-
-/*
- * Get dimension(s) to do average across.
- */
-	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,0);
 /*
  * Read data values off stack (or not)
  */
@@ -11776,6 +11779,14 @@ NhlErrorTypes _Ncldim_avg_n
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
+/*
+ * Get dimension(s) to do average across. These can be dimension indexes or dimension names.
+ */
+	dims = get_dims_for_n_funcs(1,2,data,"dim_avg_n",&ndims);
+	if(dims == NULL) { 
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_avg_n: Invalid input dimensions specified");
+	  return(NhlFATAL);
+	}
 /*
  * Some error checking. Make sure input dimensions are valid.
  */
@@ -30169,7 +30180,6 @@ NhlErrorTypes _Nclset_default_fillvalue
 
 NhlErrorTypes _Nclget_cpu_time(void)
 {
-	int tmp ;
 	ng_size_t dimsize = 1;
 
 	struct rusage usage;
