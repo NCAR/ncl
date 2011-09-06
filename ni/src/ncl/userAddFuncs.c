@@ -807,6 +807,9 @@ loop_through_strings:
                         if(strlen(prt_str))
                         {
                             return_strs[m] = NrmStringToQuark(prt_str);
+                          /*
+                           *fprintf(stderr, "\tnew string %d: <%s>\n", num_fields, prt_str);
+                           */
                         }
                         else
                         {
@@ -852,6 +855,9 @@ loop_through_strings:
             {
                 strcpy(prt_str, new_str);
                 return_strs[m] = NrmStringToQuark(prt_str);
+              /*
+               *fprintf(stderr, "\tnew string %d: <%s>\n", num_fields, prt_str);
+               */
             }
             else
             {
@@ -861,8 +867,8 @@ loop_through_strings:
 
             for(n = num_fields; n < max_fields; n++)
             {
-                return_strs[m] = ret_missing.stringval;
                 m ++;
+                return_strs[m] = ret_missing.stringval;
             }
         }
 
