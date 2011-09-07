@@ -10700,7 +10700,7 @@ begin
   res3_new@tmYLOn      = get_res_value_keep(res3, "tmYLOn",   False)
   res3_new@tiYAxisOn   = get_res_value_keep(res3,"tiYAxisOn",False)
   res3_new@tiXAxisOn   = get_res_value_keep(res3,"tiXAxisOn",False)
-
+  res3_new@tmEqualizeXYSizes = get_res_value_keep(res3,"tmEqualizeXYSizes",True)
   if(plot_type.eq."csm") then
     xy3 = gsn_csm_xy(wks, (/x1/), (/y3/), res3_new)
   else
@@ -10770,6 +10770,8 @@ begin
                                  "tmXBFontHeightF",xlab_fh)
   res3_new@tmYLLabelFontHeightF  = get_res_value(res3_new, \
                                  "tmYLFontHeightF",ylab_fh)
+  res3_new@tmEqualizeXYSizes     = get_res_value_keep(res3_new,\
+                                  "tmEqualizeXYSizes",True)
 ;
 ; Generate some dummy data for our plot.
 ;
