@@ -415,7 +415,7 @@ cat << 'EOF_NCL' >! $tmp_nclfile
         o@tspace = 5
     end
 
-    function make_var2d(v:snumeric, r:integer, d:integer)
+    function make_var2d(v, r:integer, d:integer)
     begin
         if (r .eq. 1) then
             mv2d = onedtond(v, (/1, d(0)/))

@@ -27,7 +27,10 @@
 #       [-i input_directory]  location of input file  [default: current directory]
 #       [-o output_directory] location of output file [default: current directory]
 #       [-e extension]        file type, defined by extension, to convert
-#       [-u time_name]        name of the NCL-named time dimension to be UNLIMITED
+#       [-u [time_name]]      name of the NCL-named time dimension to be UNLIMITED
+#                               if time_name not specified NCL will attempt to find a suitable time dimension:
+#                               if GRIB it will contain the substring "initial_time", otherwise "time" (any case);
+#                               error will occur if the dimension found is not the left-most dimension
 #       [-U new_time_name]    if -u is specified, will rename the NCL-named time dimension for netCDF 
 #       [-sed sed1[,...]]     GRIB files only; set single element dimensions [default: none]
 #                                choices are initial_time, forecast_time, level, ensemble,
@@ -80,6 +83,7 @@ set dirout = `pwd`
 #
 # Default values for script commandline parameters for NCL commands
 #
+set dynamic_unlim_name = 0
 set time_name = ""
 set TIME_NAME = ""
 unset tmnm_set
@@ -215,6 +219,12 @@ while ($#argv > 0)
         case "-u":
         case "-unlim":
             shift
+	    if ("$1" =~ "-*" || "$1" == "") then
+	        set dynamic_unlim_name = 1
+                echo "determining unlimited dimension dynamically"
+                set tmnm_set = 1
+		breaksw
+            endif
             set time_name = "$1"
             set len = `echo $time_name | awk '{print length($0)}'`
             if ($len > 0) then
@@ -439,10 +449,10 @@ end
 # If "-U" (rename NCL-name time dimension) was specified, "-u" (UNLIMITED dimension)
 # had to also be specified.
 #
-if ($?tmnm_set && ! $?TMNM_set) then
-    echo "NCL-named time dimension '$time_name' specified for renaming, but"
-    echo "new netCDF time dimension not named; ignoring '$time_name'."
-endif
+#if ($?tmnm_set && ! $?TMNM_set) then
+#    echo "NCL-named time dimension '$time_name' specified for renaming, but"
+#    echo "new netCDF time dimension not named; ignoring '$time_name'."
+#endif
 
 if ($?TMNM_set && ! $?tmnm_set) then
     echo "New netCDF time dimension '$TIME_NAME' specified but no NCL-named time"
@@ -859,6 +869,7 @@ unset ifiles_t
 #
 set tmp_nclf = "$tmpdir/tmp$$.ncl"
 /bin/rm $tmp_nclf >& /dev/null
+echo $tmp_nclf
 cat << 'EOF_NCL' >! $tmp_nclf
 
 ;***************************************************
@@ -1039,6 +1050,7 @@ begin
 ; Specify the type(s) of time record dimension
 ; NOTE: valid for GRIB files only
 ;***************************************************
+    time_dim_substring = "time"
     if (ftype .eq. "GRIB") then
 ;        setfileoption(f, "InitialTimeCoordinateType", "numeric")
 
@@ -1055,6 +1067,10 @@ begin
         end if
 
         setfileoption("grib", "TimePeriodSuffix", tps)
+
+        if (dynamic_unlim_name .eq. 1) then
+             time_dim_substring = "initial_time"
+        end if
     end if
 
 ;***************************************************
@@ -1097,17 +1113,6 @@ begin
         print(fVarNames)
     end if
 
-;***************************************************
-; optionally, create new names for the output netcdf
-; file.  Add variable renaming later.
-;***************************************************
-    ncVarNames  = fVarNames         ; default: netCDF names <==>  NCL names
-    if (time_name .ne. "" .and. TIME_NAME .ne. "") then
-        if (any(ncVarNames .eq. time_name)) then
-            tu_dim = ind(ncVarNames .eq. time_name)
-            ncVarNames(tu_dim) = TIME_NAME
-        end if
-    end if
 
 ;***************************************************
 ; open output netcdf file
@@ -1167,7 +1172,7 @@ begin
         fAtt@hdfeos5_source   = fili
     end if
 
-    fAtt@conventions   = "None"
+    fAtt@Conventions   = "None"
     fAtt@system        = systemfunc("uname -a")
     fAtt@NCL_Version   = get_ncl_version()
     fAtt@creation_date = systemfunc ("date")
@@ -1213,6 +1218,25 @@ begin
                 dimNames(tu_dim) = TIME_NAME
             end if
         end if
+    else if (dynamic_unlim_name .ne. 0) then
+        if ((ftype .eq. "GRIB") .and. \
+           (.not. (ismissing(all(str_match_ind(dimNames,"ensemble"))) .and. \
+                ismissing(all(str_match_ind(dimNames,"probability"))))))
+                print("Dimensions left of the initial_time dimension exist; initial_time dimension cannot be unlimited")
+        else
+            dim_ind = str_match_ind_ic(dimNames,time_dim_substring)
+            if (.not. any(ismissing(dim_ind))) then
+	        max_ind = maxind(dimSizes(dim_ind))
+	        unlim_ind = dim_ind(max_ind)
+                dimUnlim(unlim_ind) = True
+                if (TIME_NAME .ne. "") then 
+                    time_name = dimNames(unlim_ind)
+                    dimNames(unlim_ind) = TIME_NAME
+                end if
+	    end if
+            delete(dim_ind)
+        end if
+    end if
     end if
 ;
 ; if there is a scalar dimension then it should be the first one listed
@@ -1237,6 +1261,18 @@ begin
         print(dimNames)
         print(dimSizes)
         print(dimUnlim)
+    end if
+
+;***************************************************
+; optionally, create new names for the output netcdf
+; file.  Add variable renaming later.
+;***************************************************
+    ncVarNames  = fVarNames         ; default: netCDF names <==>  NCL names
+    if (time_name .ne. "" .and. TIME_NAME .ne. "") then
+        if (any(ncVarNames .eq. time_name)) then
+            tu_dim = ind(ncVarNames .eq. time_name)
+            ncVarNames(tu_dim) = TIME_NAME
+        end if
     end if
 
 ;***********************************************
@@ -1356,9 +1392,6 @@ begin
 
                 do j = 0, nAtts - 1
 		    att_val = f->$fVarNames(i)$@$varAtts(j)$
-		    if (old_type .eq. "byte" .and. varAtts(j) .eq. "_FillValue") then
-			print("_FillValue: " + typeof(att_val) + " " + att_val)
-		    end if
 	            att_en_ix = ind(typeof(att_val) .eq. enumeric_types)
 		    if (.not. ismissing(att_en_ix) .and. att_en_ix .lt. 5) then
 		        if (convert_types(att_en_ix) .eq. "double") then
@@ -1433,7 +1466,11 @@ begin
 	        if (varType(i) .eq. "character") then
 		    tmp_char = stringtocharacter ( (/ f->$fVarNames(i)$ /)  ) 
 		    tmp_size = dimsizes(tmp_char)
-                    fnc->$ncVarNames(i)$ = (/ tmp_char(:,:tmp_size(1)-2) /)
+                    if (dimsizes(tmp_size) .eq. 1) then
+                        fnc->$ncVarNames(i)$(0,:) = (/ tmp_char(:tmp_size-2) /)
+                    else
+                        fnc->$ncVarNames(i)$ = (/ tmp_char(:,:tmp_size(1)-2) /)
+                    end if
 		    delete(tmp_size)
 		    delete(tmp_char)
 		else
@@ -1572,17 +1609,17 @@ while ($n <= $nfiles)
     if ("$redirect" == 0) then
         echo "Processing file: $ifiles_r[$n]..."
         if ($?vars) then
-            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf
+            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' dynamic_unlim_name=$dynamic_unlim_name 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf
         else
-            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf
+            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' dynamic_unlim_name=$dynamic_unlim_name 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf
         endif
     else
         # redirection requested
         (echo "Processing file: $ifiles_r[$n]..." >&! $f_rdir)
         if ($?vars) then
-            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf >! $fout) >&! $f_rdir
+            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' dynamic_unlim_name=$dynamic_unlim_name 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf >! $fout) >&! $f_rdir
         else
-            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf >! $fout) >&! $f_rdir
+            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' dynamic_unlim_name=$dynamic_unlim_name 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf >! $fout) >&! $f_rdir
         endif
     endif
 
@@ -1635,7 +1672,10 @@ echo "                        [valid types: GRIB1 GRIB2 HDF HDF-EOS netCDF shape
 echo "  [-i input_directory]  location of input file(s)  [default: current directory]"
 echo "  [-o output_directory] location of output file(s) [default: current directory]"
 echo "  [-e extension]        file type, defined by extension, to convert [example: grb]"
-echo "  [-u time_name]        name of the NCL-named time dimension to be UNLIMITED"
+echo "  [-u [time_name]]      name of the NCL-named time dimension to be UNLIMITED"
+echo "                          if time_name not specified NCL will attempt to find a suitable time dimension:"
+echo "                          if GRIB it will contain the substring "initial_time", otherwise "time" (any case);"
+echo "                          error will occur if the dimension found is not the left-most dimension"
 echo "  [-U new_time_name]    if -u is specified: new name of UNLIMITED variable and dimension"
 echo "  [-sed sed1[,...]]     GRIB files only; set single element dimensions [default: none]"
 echo "                          choices are initial_time, forecast_time, level, ensemble,"
