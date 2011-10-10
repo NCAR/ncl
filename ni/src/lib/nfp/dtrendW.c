@@ -1928,7 +1928,7 @@ NhlErrorTypes dtrend_quadratic_msg_n_W( void )
       if(*return_info) {
         coerce_output_float_or_double(yintp,&c[0],type_dtrend_y,1,index_s);
         coerce_output_float_or_double(slope,&c[1],type_dtrend_y,1,index_s);
-        coerce_output_float_or_double(quad,&c[2],type_dtrend_y,1,index_s);
+        coerce_output_float_or_double(quad, &c[2],type_dtrend_y,1,index_s);
       }
     }
   }
@@ -2022,6 +2022,26 @@ NhlErrorTypes dtrend_quadratic_msg_n_W( void )
       _NclAddAtt(
                  att_id,
                  "y_intercept",
+                 att_md,
+                 NULL
+                 );
+
+      att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             quad,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypefloatClass
+                             );
+      _NclAddAtt(
+                 att_id,
+                 "quadratic",
                  att_md,
                  NULL
                  );
