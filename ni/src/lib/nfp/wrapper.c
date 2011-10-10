@@ -495,6 +495,7 @@ extern NhlErrorTypes dtrend_n_W(void);
 extern NhlErrorTypes dtrend_quadratic_W(void);
 extern NhlErrorTypes dtrend_msg_W(void);
 extern NhlErrorTypes dtrend_msg_n_W(void);
+extern NhlErrorTypes dtrend_quadratic_msg_n_W(void);
 extern NhlErrorTypes local_min_W(void);
 extern NhlErrorTypes local_max_W(void);
 extern NhlErrorTypes fluxEddy_W(void);
@@ -6729,6 +6730,18 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(dtrend_msg_n_W,args,"dtrend_msg_n",nargs);
+
+/*
+ * Register "dtrend_msg_n".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(dtrend_quadratic_msg_n_W,args,"dtrend_quadratic_msg_n",nargs);
 
 /*
  * Register "local_min".
