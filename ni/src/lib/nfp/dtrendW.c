@@ -1758,8 +1758,6 @@ NhlErrorTypes dtrend_quadratic_msg_n_W( void )
  * Output array variables
  */
   void *dtrend_y;
-  void *slope = NULL;
-  void *yintp = NULL;
   void *quad  = NULL;
   double c[3];
 /*
@@ -1885,21 +1883,17 @@ NhlErrorTypes dtrend_quadratic_msg_n_W( void )
   }
 
 /*
- * Allocate space for slope, y intercept, and quadtractic.
+ * Allocate space for quadtratic value.
  */
   if(*return_info) {
     if(type_dtrend_y != NCL_double) {
-      slope = (void *)calloc(size_rl,sizeof(float));
-      yintp = (void *)calloc(size_rl,sizeof(float));
       quad  = (void *)calloc(size_rl,sizeof(float));
     }
     else {
-      slope = (void *)calloc(size_rl,sizeof(double));
-      yintp = (void *)calloc(size_rl,sizeof(double));
       quad  = (void *)calloc(size_rl,sizeof(double));
     }
-    if( slope == NULL || yintp == NULL || quad == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_quadratic_msg_n: Cannot allocate space for output attributes");
+    if( quad == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_quadratic_msg_n: Cannot allocate space for output attribute");
       return(NhlFATAL);
     }
   }
@@ -1926,8 +1920,6 @@ NhlErrorTypes dtrend_quadratic_msg_n_W( void )
       coerce_output_float_or_double_step(dtrend_y,tmp_y,type_dtrend_y,
                                          npts,index_y,size_rightmost);
       if(*return_info) {
-        coerce_output_float_or_double(yintp,&c[0],type_dtrend_y,1,index_s);
-        coerce_output_float_or_double(slope,&c[1],type_dtrend_y,1,index_s);
         coerce_output_float_or_double(quad, &c[2],type_dtrend_y,1,index_s);
       }
     }
@@ -1942,7 +1934,7 @@ NhlErrorTypes dtrend_quadratic_msg_n_W( void )
  */
   if(*return_info) {
 /*
- * The slope, y-intercept, and quadratic will be returned as attributes.
+ * quadratic will be returned as an attribute.
  */
     if(type_dtrend_y == NCL_float) {
 /*
@@ -1991,46 +1983,6 @@ NhlErrorTypes dtrend_quadratic_msg_n_W( void )
                              NULL,
                              Ncl_MultiDValData,
                              0,
-                             slope,
-                             NULL,
-                             1,
-                             dsizes,
-                             TEMPORARY,
-                             NULL,
-                             (NclObjClass)nclTypefloatClass
-                             );
-      _NclAddAtt(
-                 att_id,
-                 "slope",
-                 att_md,
-                 NULL
-                 );
-
-      att_md = _NclCreateVal(
-                             NULL,
-                             NULL,
-                             Ncl_MultiDValData,
-                             0,
-                             yintp,
-                             NULL,
-                             1,
-                             dsizes,
-                             TEMPORARY,
-                             NULL,
-                             (NclObjClass)nclTypefloatClass
-                             );
-      _NclAddAtt(
-                 att_id,
-                 "y_intercept",
-                 att_md,
-                 NULL
-                 );
-
-      att_md = _NclCreateVal(
-                             NULL,
-                             NULL,
-                             Ncl_MultiDValData,
-                             0,
                              quad,
                              NULL,
                              1,
@@ -2049,48 +2001,8 @@ NhlErrorTypes dtrend_quadratic_msg_n_W( void )
     }
     else {
 /*
- * Set up attributes to return.
+ * Set up attribute to return.
  */
-      att_md = _NclCreateVal(
-                             NULL,
-                             NULL,
-                             Ncl_MultiDValData,
-                             0,
-                             slope,
-                             NULL,
-                             1,
-                             dsizes,
-                             TEMPORARY,
-                             NULL,
-                             (NclObjClass)nclTypedoubleClass
-                             );
-      _NclAddAtt(
-                 att_id,
-                 "slope",
-                 att_md,
-                 NULL
-                 );
-
-      att_md = _NclCreateVal(
-                             NULL,
-                             NULL,
-                             Ncl_MultiDValData,
-                             0,
-                             yintp,
-                             NULL,
-                             1,
-                             dsizes,
-                             TEMPORARY,
-                             NULL,
-                             (NclObjClass)nclTypedoubleClass
-                             );
-      _NclAddAtt(
-                 att_id,
-                 "y_intercept",
-                 att_md,
-                 NULL
-                 );
-
       att_md = _NclCreateVal(
                              NULL,
                              NULL,
@@ -2106,7 +2018,7 @@ NhlErrorTypes dtrend_quadratic_msg_n_W( void )
                              );
       _NclAddAtt(
                  att_id,
-                 "quadractic",
+                 "quadratic",
                  att_md,
                  NULL
                  );
