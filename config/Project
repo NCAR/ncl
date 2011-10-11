@@ -129,6 +129,10 @@
 #undef BuildGRIDSPEC
 #endif
 
+#if !BuildESMF
+#undef BuildESMF
+#endif
+
 #ifndef	BuildRasterHDF
 #define	BuildRasterHDF
 #else
@@ -257,6 +261,14 @@
 #endif
 #else
 #define GRIDSPEClib
+#endif
+
+#ifdef BuildESMF
+#ifndef	ESMFlib
+#define	ESMFlib   -lxxxxx
+#endif
+#else
+#define ESMFlib
 #endif
 
 #ifndef	GRIB2lib
@@ -630,6 +642,7 @@ GRIB2LIB	= GRIB2lib
 UDUNITSLIB	= UdUnitslib
 V5DLIB      	= V5Dlib
 GRIDSPECLIB     = GRIDSPEClib
+ESMFLIB         = ESMFlib
 XDRLIB		= XdrLibrary
 HDFDEFINES	= HdfDefines
 VDEFINE		= -DNGVERSION='"$(NGVERSION)"'  -DNCLVERSION='"$(NCLVERSION)"'
