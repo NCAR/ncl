@@ -44,6 +44,11 @@ V5D_OBJS = ncl2v5dW.o
 # define    V5D_OBJS
 # endif
 
+#ifdef BuildESMF
+ESMF_DEFS = -DBuildESMF
+ESFM_SRCS = KML_UTILS.c Unstruct2KMLW.c SCRIP2KMLW.c
+#endif
+
 # ifdef BuildGRIDSPEC
 GRIDSPEC_DEFS = -DBuildGRIDSPEC
 GRIDSPEC_SRCS = nccffregridW.c nccfmakeconformalcubichgridW.c nccfmakegnomoniccubichgridW.c	\

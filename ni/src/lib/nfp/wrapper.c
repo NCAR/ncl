@@ -569,6 +569,15 @@ extern NhlErrorTypes kron_product_W(void);
 
 extern NhlErrorTypes sparse_matrix_mult_W(void);
 
+/* 
+ * ESMF regridding functions.
+ */
+
+#ifdef BuildESMF
+extern NhlErrorTypes Unstruct2KML_W(void);
+extern NhlErrorTypes SCRIP2KML_W(void);
+#endif
+
 #ifdef BuildGRIDSPEC
 extern NhlErrorTypes nccffregridW(void);
 extern NhlErrorTypes nccfmakeconformalcubichgridW(void);
@@ -7555,6 +7564,37 @@ void NclAddUserFuncs(void)
 
     NclRegisterProc(write_matrix_W, args, "write_matrix", nargs);
 
+/* 
+ * ESMF regridding functions.
+ */
+#ifdef BuildESMF
+/*
+ * Register "Unstruct2KML".
+ *
+ * Create private argument array.
+ */
+       nargs = 0;
+       args = NewArgs(6);
+       SetArgTemplate(args,0,"string",1,NclANY);nargs++;
+       SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+       SetArgTemplate(args,2,"double",1,NclANY);nargs++;
+       SetArgTemplate(args,3,"double",1,NclANY);nargs++;
+       SetArgTemplate(args,4,"integer",2,NclANY);nargs++;
+       SetArgTemplate(args,5,"integer",1,NclANY);nargs++;
+       NclRegisterProc(Unstruct2KML_W,args,"Unstruct2KML",nargs);        
+/*
+ * Register "Unstruct2KML".
+ *
+ * Create private argument array.
+ */
+       nargs = 0;
+       args = NewArgs(3);
+       SetArgTemplate(args,0,"string",1,NclANY);nargs++;
+       SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+       SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+       NclRegisterProc(SCRIP2KML_W,args,"SCRIP2KML",nargs);
+#endif
+        
 # ifdef BuildV5D
 /*
  *  Register vis5d+ functions
