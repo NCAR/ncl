@@ -574,6 +574,7 @@ extern NhlErrorTypes sparse_matrix_mult_W(void);
  */
 
 #ifdef BuildESMF
+extern NhlErrorTypes SMMul_W(void);
 extern NhlErrorTypes Unstruct2KML_W(void);
 extern NhlErrorTypes SCRIP2KML_W(void);
 #endif
@@ -7568,6 +7569,20 @@ void NclAddUserFuncs(void)
  * ESMF regridding functions.
  */
 #ifdef BuildESMF
+/*
+ * Register "SMMul".
+ *
+ * Create private argument array.
+ */
+ 
+        nargs = 0;
+        args = NewArgs(5);
+        SetArgTemplate(args,0,"integer",1,NclANY);nargs++;
+        SetArgTemplate(args,1,"integer",1,NclANY);nargs++;
+        SetArgTemplate(args,2,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,3,"double",2,NclANY);nargs++;
+        SetArgTemplate(args,4,"double",2,NclANY);nargs++;
+        NclRegisterProc(SMMul_W,args,"SMMulFast",nargs);
 /*
  * Register "Unstruct2KML".
  *
