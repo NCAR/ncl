@@ -4,6 +4,13 @@
 ;              May 22nd, July 30th, 2011
 ;
 ;        http://sites.google.com/site/maboualihome/
+;
+; This script was added to the NCL trunk on 13 Oct 2011.
+;    Modifications:
+
+;       14 Oct 2011: Removed references to $ESMFBINDIR. This should
+;                    be on user's path. Also, executable had wrong name,
+;                    changed to "ESMF_RegridWeightGen".
 
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 ; This is the modified version of copy_VarAtts originaly developed by Dennis Shea.
@@ -352,7 +359,7 @@ begin
     ; Checking if the file already exists
     if (isfilepresent(FName)) then
         if (.not.isbothvaratt_logical_true(Opt,"OverWrite")) then
-            print("The file already exists.")
+            print("The '" + FName + "' file already exists.")
             return(tointeger(1))
         else
             print("removing an existing file...")
@@ -448,8 +455,8 @@ begin
     ; Preparing the file to store the values
     setfileoption(fid,"DefineMode",False)
     
-    ; Storing Node Cooridnates
-    print("Storing Node Cooridnates ...")
+    ; Storing Node Coordinates
+    print("Storing Node Coordinates ...")
     nodeCoords=new((/nodeCount,coordDim/),"double","No_FillValue")
     nodeCoords(:,0)=lon
     nodeCoords(:,1)=lat
@@ -523,7 +530,7 @@ begin
     ; Checking if the file already exists
     if (isfilepresent(FName)) then
         if (.not.isbothvaratt_logical_true(Opt,"OverWrite")) then
-            print("The file already exists.")
+            print("The file '" + FName + "' already exists.")
             return(tointeger(1))
         else
             print("Removing an existing file ...")
@@ -703,7 +710,7 @@ begin
     
     ; Checking if the variable is present in the file
     if (.not.isfilevar(fid,VarName)) then
-        print("The "+VarName+" variable does not exists.")
+        print("The "+VarName+" variable does not exist.")
         return(tointeger(1))
     else
         VarData=fid->$VarName$
@@ -830,14 +837,14 @@ begin
     ; getting the coordinate variable names and coordinate data
     if (coordType.eq."variable")    
         if(isfilevar(fid,LatVarName)) then
-            print("Retriveing latitude coordinates from "+LatVarName+" variable.")
+            print("Retrieving latitude coordinates from "+LatVarName+" variable.")
             LatData=fid->$LatVarName$
         else
             print("Can't read latitude information.")
             return(tointeger(1))
         end if
         if(isfilevar(fid,LonVarName)) then
-            print("Retriveing longitude coordinates from "+LonVarName+" variable.")
+            print("Retrieving longitude coordinates from "+LonVarName+" variable.")
             LonData=fid->$LonVarName$
         else
             print("Can't read longitude information.")
@@ -846,7 +853,7 @@ begin
 
     else if (coordType.eq."lat/lon") then
         nCoords=dimsizes(VarData)
-        print("Reading coordinate informatino from "+LonDimName+" and "+LatDimName+" dimensions...")
+        print("Reading coordinate information from "+LonDimName+" and "+LatDimName+" dimensions...")
         LonData=VarData&$LonDimName$
         LatData=VarData&$LatDimName$
     else ; at this point it means coordType=="lat2d/lon2d"
@@ -881,7 +888,7 @@ begin
         delete(LatData)
         delete(LonData)
     else 
-        print("Can't help with the recognizing the coordinates.")
+        print("Can't help with recognizing the coordinates.")
         return(tointeger(1))
     end if
     end if
@@ -950,7 +957,7 @@ begin
     ; Generating the latitudes and longitudes
     if ( isbothvaratt_logical_true(Opt,"isSpacing") ) then
         if (Rot.ne.0.0) then
-            print("The box is rotated.Spacing may be different than what you meant.")
+            print("The box is rotated. Spacing may be different than what you meant.")
         end if
         nlat=tointeger(BoxDiag(0)/nlat_dlat+1)
         nlon=tointeger(BoxDiag(1)/nlon_dlon+1)
@@ -978,7 +985,7 @@ begin
         end if    
     end if
 
-    ; Now that the rotation was successfull translating it back.
+    ; Now that the rotation was successful translating it back.
     grid_center_lat=grid_center_lat+LLCorner(0)
     grid_center_lon=grid_center_lon+LLCorner(1)
 	Err=(Curvilinear2SCRIP(FName,FTitle,grid_center_lat,grid_center_lon,mask2d,Opt))
@@ -1095,7 +1102,7 @@ begin
         if ( .not.(isbothvaratt_logical_true(Opt,"isSrcESMF")) ) then
             ; Checking if the source grid file is a SCRIP file.
             if (.not.(ncl_isSCRIP(srcGrid))) then
-                print("Srouce Grid file is not a SCRIP file.")
+                print("Source Grid file is not a SCRIP file.")
                 return(tointeger(1))
             end if
         end if
@@ -1109,12 +1116,12 @@ begin
     end if
     ; Checking if the ESMF regriding weight generator is present.
     print("Checking if the ESMF regriding weight generator is present ...")
-    if (.not.(isfilepresent("$ESMFBINDIR/ESMF_regridWeightGen"))) then
-        print("ESMF regriding weight generator is not present.")
-        return(tointeger(1))
-    else 
-        print(" ==> OK")
-    end if
+  ;;if (.not.(isfilepresent("ESMF_RegridWeightGen"))) then
+  ;;    print("ESMF regriding weight generator is not present.")
+  ;;    return(tointeger(1))
+  ;;else 
+  ;;    print(" ==> OK")
+  ;;end if
     ; All seems ok. So, run the ESMF regrid weight generator.
 
     ; Checking the number of processor supported by the system
@@ -1131,7 +1138,7 @@ begin
     ; Checking if the file already exists
     if (isfilepresent(weight)) then
         if (.not.isbothvaratt_logical_true(Opt,"OverWrite")) then
-            print("The file already exists.")
+            print("The file '" + weight + "' already exists.")
             return(tointeger(1))
         else
             print("Removing an existing file ...")
@@ -1146,12 +1153,12 @@ begin
     
     ; Building the command (First Pass - nonoptional features)
     if (ismissing(getenv("ESMFBINDIR"))) then
-        ESMFCMD= Executer+"$NCARG_ROOT/bin/ESMF_regridWeightGen " \
+        ESMFCMD= Executer+"ESMF_RegridWeightGen " \
                 +"--source "+srcGrid \
                 +" --destination "+dstGrid \
                 +" --weight "+weight
     else 
-        ESMFCMD= Executer+"$ESMFBINDIR/ESMF_regridWeightGen " \
+        ESMFCMD= Executer+"$ESMFBINDIR/ESMF_RegridWeightGen " \
                 +"--source "+srcGrid \
                 +" --destination "+dstGrid \
                 +" --weight "+weight
@@ -1225,8 +1232,8 @@ begin
         
     ; The binary tools performs more sophisticated tests.
     ; Here it is checked that everything went ok.
-    if (.not.(any(str_squeeze(RegridOut).eq."Completed weight generation successfully."))) then
-        esmfErr="ESMF Offline Weight Generator was not successfull."
+    if (.not.(any(str_squeeze(RegridOut).eq."Completed weight generation successfuly."))) then
+        esmfErr="ESMF Offline Weight Generator was not successful."
         ; no need to return, this is the last statement anyway.
     end if
     
@@ -1245,7 +1252,7 @@ begin
 	; Making sure that the Weight file is accessible
 	print("Checking the weight file ...")
 	if (.not.(isfilepresent(WFile))) then
-		print("Weight file does not exists or is not accesible")
+		print("Weight file does not exist or is not accessible")
 		esmfErr=tointeger(1)
 		return(0.0)
 	else
@@ -1319,7 +1326,7 @@ begin
     ; currently there is a problem with ESMF files.
     ; once it is fixed by ESMF people This can be reinstated.
 ;    if( max(row).gt.product(dst_grid_dims) ) then  
-;        print("Weight file has internal mistmatched data or corrupted.")
+;        print("Weight file has internal mistmatched data or is corrupted.")
 ;        esmfErr=tointeger(1)
 ;        return(0.0)
 ;    end if
