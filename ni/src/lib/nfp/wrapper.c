@@ -199,6 +199,7 @@ extern NhlErrorTypes simpne_W(void);
 extern NhlErrorTypes poisson_grid_fill_W(void);
 extern NhlErrorTypes wk_smooth121_W(void);
 extern NhlErrorTypes spcorr_W(void);
+extern NhlErrorTypes spcorr_n_W(void);
 extern NhlErrorTypes pdfxy_bin_W(void);
 
 extern NhlErrorTypes nggcog_W(void);
@@ -3090,6 +3091,20 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
     NclRegisterFunc(spcorr_W,args,"spcorr",nargs);
+
+/*
+ * Register "spcorr".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(spcorr_n_W,args,"spcorr_n",nargs);
 
 /*
  * Register "pdfxy_bin".
