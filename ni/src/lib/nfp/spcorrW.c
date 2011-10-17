@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include "wrapper.h"
 
-extern void NGCALLF(spcorr,SPCORR)(double *, double *, int *, int *, double *);
+extern void NGCALLF(spcorrz,SPCORRZ)(double *, double *, int *, int *, 
+                                     double *,int *, double *, int *,
+                                     double *, int *);
 
 NhlErrorTypes spcorr_W( void )
 {
@@ -14,8 +16,9 @@ NhlErrorTypes spcorr_W( void )
  */
   void *x;
   double *tmp_x = NULL;
-  int ndims_x;
+  int has_missing_x, ndims_x;
   ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  NclScalar missing_x, missing_dx;
   NclBasicDataTypes type_x;
 
 /*
@@ -23,8 +26,9 @@ NhlErrorTypes spcorr_W( void )
  */
   void *y;
   double *tmp_y = NULL;
-  int ndims_y;
+  int has_missing_y, ndims_y;
   ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  NclScalar missing_y, missing_dy;
   NclBasicDataTypes type_y;
 
 /*
@@ -34,6 +38,8 @@ NhlErrorTypes spcorr_W( void )
   double tmp_spc;
   int ndims_spc;
   ng_size_t *dsizes_spc;
+  int has_missing_spc;
+  NclScalar missing_spc;
   NclBasicDataTypes type_spc;
 
 /*
@@ -41,7 +47,7 @@ NhlErrorTypes spcorr_W( void )
  */
   ng_size_t i, n, index_x, size_spc;
   int iwrite;
-  int ret, in;
+  int ret, in, inmsg;
 
 /*
  * Retrieve parameters.
@@ -57,8 +63,8 @@ NhlErrorTypes spcorr_W( void )
            2,
            &ndims_x,
            dsizes_x,
-           NULL,
-           NULL,
+           &missing_x,
+           &has_missing_x,
            &type_x,
            DONT_CARE);
 
@@ -77,8 +83,8 @@ NhlErrorTypes spcorr_W( void )
            2,
            &ndims_y,
            dsizes_y,
-           NULL,
-           NULL,
+           &missing_y,
+           &has_missing_y,
            &type_y,
            DONT_CARE);
 
@@ -119,6 +125,12 @@ NhlErrorTypes spcorr_W( void )
       dsizes_spc[i] = dsizes_x[i];
     }
   }
+
+/*
+ * Coerce missing values, if any.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
 
 /*
  * The output type defaults to float, unless the input arrays are double.
@@ -175,6 +187,7 @@ NhlErrorTypes spcorr_W( void )
  */
   index_x = 0;
   iwrite = 0;
+  has_missing_spc = 0;
   for(i = 0; i < size_spc; i++) {
 /*
  * Coerce subsection of x (tmp_x) to double if necessary.
@@ -199,8 +212,32 @@ NhlErrorTypes spcorr_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(spcorr,SPCORR)(tmp_x, tmp_y, &in, &iwrite, &tmp_spc);
-
+    inmsg = 0;
+    NGCALLF(spcorrz,SPCORRZ)(tmp_x, tmp_y, &in, &iwrite, &tmp_spc,
+                             &has_missing_x,&missing_dx.doubleval,
+                             &has_missing_y,&missing_dy.doubleval,
+                             &inmsg);
+    if(in == inmsg) {
+/*
+ * All input pairs had an X or Y missing value, so set output to 
+ * missing.
+ */
+      if(!has_missing_spc) {
+        has_missing_spc = 1;
+        if(type_spc == NCL_float) {
+          missing_spc = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis;
+        }
+        else {
+          missing_spc = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis;
+        }
+      }
+      if(type_spc == NCL_float) {
+        tmp_spc = (double)missing_spc.floatval;
+      }
+      else {
+        tmp_spc = missing_spc.doubleval;
+      }
+    }
 /*
  * Coerce output back to float if necessary.
  */
@@ -218,7 +255,12 @@ NhlErrorTypes spcorr_W( void )
 /*
  * Return value back to NCL script.
  */
-  ret = NclReturnValue(spc,ndims_spc,dsizes_spc,NULL,type_spc,0);
+  if(!has_missing_spc) {
+    ret = NclReturnValue(spc,ndims_spc,dsizes_spc,NULL,type_spc,0);
+  }
+  else {
+    ret = NclReturnValue(spc,ndims_spc,dsizes_spc,&missing_spc,type_spc,0);
+  }
   NclFree(dsizes_spc);
   return(ret);
 }

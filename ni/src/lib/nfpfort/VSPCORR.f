@@ -1,3 +1,42 @@
+C
+C This subroutine removes missing values before
+C calling SPCORR. It keeps count of the missing
+C values via NMSG. 
+C
+       SUBROUTINE SPCORRZ(X,Y,N,IWRITE,SPC,HASXMSG,XMSG,
+     +                    HASYMSG,YMSG,NMSG)
+C INPUT
+       INTEGER N, IWRITE
+       INTEGER HASXMSG, HASYMSG
+       DOUBLE PRECISION X(N), Y(N), XMSG,YMSG
+C OUTPUT
+       DOUBLE PRECISION SPC
+       INTEGER NMSG
+C
+C LOCAL
+       INTEGER NN, K
+       DOUBLE PRECISION XX(N), YY(N)
+
+       IF(HASXMSG.EQ.0.AND.HASYMSG.EQ.0) THEN
+          CALL SPCORR(X,Y,N,IWRITE,SPC)
+          NMSG = 0
+       ELSE
+          NN   = 0
+          DO K=1,N
+             IF (.NOT.((HASXMSG.EQ.1.AND.X(K).EQ.XMSG) .OR. 
+     +                 (HASYMSG.EQ.1.AND.Y(K).EQ.YMSG))) THEN
+                NN = NN+1
+                XX(NN) = X(K)
+                YY(NN) = Y(K)
+             END IF
+          END DO
+          IF (NN.GT.0) THEN
+             CALL SPCORR(XX,YY,NN,IWRITE,SPC)
+          END IF
+          NMSG = N - NN
+       END IF
+       RETURN
+       END
 C NCLFORTSTART
       SUBROUTINE SPCORR(X,Y,N,IWRITE,SPC)
 C                                                  INPUT
