@@ -315,7 +315,9 @@ end
 ; Copy the coordinate variables from one variable to another,
 ;    except for the indicated dimension(s).  
 ; Note that this makes the assumption that var_from has "dims"
-;     more dimensions than var_to.
+;     more dimensions than var_to. This also makes the 
+;     assumption that "dims" dimensions are consecutive
+;     and increasing.
 ; If you want to copy var coords and skip a dimension, use
 ;     copy_VarCoords_not_n.
 ;
@@ -325,12 +327,21 @@ undef ("copy_VarCoords_n")
 procedure copy_VarCoords_n(var_from,var_to,dims)
 local dimt, dimf, rfrom, rto, i, dName, ndims
 begin                      
-
   dimf  = dimsizes(var_from)            
   dimt  = dimsizes(var_to)
   rfrom = dimsizes(dimf)      ; rank of var_from
   rto   = dimsizes(dimt)      ; rank of var_to
   ndims = dimsizes(dims)
+
+;---Error checking for "dims"
+  if(any(dims.lt.0.or.dims.gt.dimsizes(dimf))) then
+    print("Error: copy_VarCoords_n: invalid dimensions to copy from")
+    return
+  end if
+;---Must be monotonically increasing and consecutive.
+  if(ndims.gt.1.and.any(dims(1:)-dims(0:ndims-2).ne.1)) then
+    print("Error: copy_VarCoords_n: invalid dimensions to copy from")
+  end if
 
   dName = getvardims(var_from)               ; Oct 18, 2005
 
