@@ -1,4 +1,3 @@
-
 ; The following functions and procedures are written by:
 ;        Mohammad Abouali, maboualiedu@gmail.com
 ;              May 22nd, July 30th, 2011
@@ -6,11 +5,17 @@
 ;        http://sites.google.com/site/maboualihome/
 ;
 ; This script was added to the NCL trunk on 13 Oct 2011.
+;
 ;    Modifications:
-
-;       14 Oct 2011: Removed references to $ESMFBINDIR. This should
-;                    be on user's path. Also, executable had wrong name,
-;                    changed to "ESMF_RegridWeightGen".
+;       31 Oct 2011: 
+;            Replaced "return(tointeger(1))" with just "return(1)"
+;            Removed SMM and squeeze, since they don't seemed to be
+;            used by anybody.
+;
+;       14 Oct 2011:
+;            Removed references to $ESMFBINDIR. This should be on 
+;            user's search path. Also, executable had wrong name,
+;            changed to "ESMF_RegridWeightGen".
 
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 ; This is the modified version of copy_VarAtts originaly developed by Dennis Shea.
@@ -148,72 +153,13 @@ begin
 end     ; of totypeof(...)
 
 ;===================================================================================================
-; This function multiplies a sparse matrix stored in coordinate list,
-; i.e. (row,col,value) by a vector and adds it to the output vector.
-; or: y <= Ax+y
-;
-; NOTE: Try to use SMMulFast instead of this.
-undef("SMM")
-function SMM(row[*]:integer,col[*]:integer,v[*]:double,x:double,y:double)
-begin
-    Err="OK"
-    n_s=dimsizes(row)
-    if ( (n_s.ne.dimsizes(col)).or.(n_s.ne.dimsizes(v)) ) then
-        print("Row, Col, and/or V dimension do not match")
-        return(tointeger(1))
-    end if
-    n_x=dimsizes(x);
-    n_y=dimsizes(y);
-    if ( (dimsizes(n_x).gt.2).or.(dimsizes(n_y).gt.2) ) then
-        print("x and/or y can be either a vector or 2 dimensional variable.")
-        return(tointeger(1))
-    end if
-    
-    if ( max(col).gt.n_x(0) ) then
-        print("Sparse matrix is indexing elements that do not exist in x.")
-        return(tointeger(1))
-    end if
-    
-    if ( max(row).gt.n_y(0) ) then
-        print("Sparse matrix is indexing elements that do not exist in y.")
-        return(tointeger(1))
-    end if
-    
-    if (dimsizes(n_x).ne.dimsizes(n_y)) then
-        print("x and y must be the same dimension.")
-        return(tointeger(1))
-    end if
-    
-    if (dimsizes(n_x).eq.2) then
-        if( n_x(1).ne.n_y(1) ) then
-            print("the second dimension of both x and y must be the same")
-            return(tointeger(1))
-        end if
-        nDataField=n_x(1)
-    else
-        nDataField=1
-    end if
-    
-    xReshaped=reshape(x,(/n_x(0), nDataField/))
-    yReshaped=todouble(reshape(y,(/n_y(0), nDataField/)))
-    
-    ; The core of computation; so far it was just error checking and reshaping
-    do i=0,n_s-1
-        yReshaped(row(i)-1,:)=yReshaped(row(i)-1,:)+xReshaped(col(i)-1,:)*v(i)
-    end do
-
-    y=totypeof(reshape(yReshaped,n_y),typeof(y))
-    return(tointeger(0))
-end     ; of SMM(...)
-
-;===================================================================================================
 ; This function Rotates the given input.
 undef("Rotate2D")
 function Rotate2D(lat:snumeric,lon:snumeric,Rot)
 begin
     if ( any(dimsizes(lat).ne.dimsizes(lon) ) ) then
         print("lat and lon must have same dimension.")
-        return(tointeger(1))
+        return(1)
     end if
     
     dime=dimsizes(lat)
@@ -228,7 +174,7 @@ begin
     tmpPoints=RotateMat#tmpPoints
     lat=onedtond(tmpPoints(1,:),dime)
     lon=onedtond(tmpPoints(0,:),dime)
-    return(tointeger(0))
+    return(0)
 end     ; of Rotate2D(...)
 
 ;===================================================================================================
@@ -353,14 +299,14 @@ begin
     ; Checking if the user has requested the unstructured grid
     if ( .not.(isbothvaratt_logical_true(Opt,"ForceUnstructured")) ) then
         print("Can not use this function for Structured grid.")
-        return(tointeger(1))
+        return(1)
     end if
     
     ; Checking if the file already exists
     if (isfilepresent(FName)) then
         if (.not.isbothvaratt_logical_true(Opt,"OverWrite")) then
             print("The '" + FName + "' file already exists.")
-            return(tointeger(1))
+            return(1)
         else
             print("removing an existing file...")
             if (isbothvaratt_logical_true(Opt,"ForceOverWrite")) then
@@ -377,11 +323,11 @@ begin
     
     if (dimsizes(lat).ne.dimsizes(lon)) then
         print("Latitude and longitude must have the same number of elements.")
-        return(tointeger(1))
+        return(1)
     end if
     if (dimsizes(NodeMask).ne.dimsizes(lat)) then
         print("Mask must have the same number of elements as lat and lon.")
-        return(tointeger(1))
+        return(1)
     end if
     
     ; Triangulating and getting the element connectivity
@@ -501,7 +447,7 @@ begin
     elementMask=where(elementMask.eq.3,1,0)
     fid->elementMask=(/elementMask/)
     
-    return(tointeger(0))
+    return(0)
 end     ; of Unstructured2ESMF(...)
 ;===================================================================================================
 ; This function receives a 2D curvilinear grid and mask and stores
@@ -525,13 +471,13 @@ function Curvilinear2SCRIP(FName[1]:string,FTitle[1]:string,lat2d[*][*]:double,l
 begin
     if (isbothvaratt_logical_true(Opt,"ForceUnstructured")) then
         print("Can not use this function for unstructured grid.")
-        return(tointeger(1))
+        return(1)
     end if
     ; Checking if the file already exists
     if (isfilepresent(FName)) then
         if (.not.isbothvaratt_logical_true(Opt,"OverWrite")) then
             print("The file '" + FName + "' already exists.")
-            return(tointeger(1))
+            return(1)
         else
             print("Removing an existing file ...")
             if (isbothvaratt_logical_true(Opt,"ForceOverWrite")) then
@@ -548,12 +494,12 @@ begin
     ; dimsizes(lat2d)=dimsizes(lon2d)=(/ nlat, nlon /)
     if ( any(dimsizes(lat2d).ne.dimsizes(lon2d)) ) then
         print("lat2d and lon2d dimension doesn't match.")
-        return(tointeger(1))
+        return(1)
     end if
     g_dim_sizes=dimsizes(lat2d)
     if (dimsizes(g_dim_sizes).ne.2) then
         print("Only a 2D logically rectangular grid is accepted by this function.")
-        return(tointeger(1))
+        return(1)
     end if
     nlat=g_dim_sizes(0)
     nlon=g_dim_sizes(1)
@@ -624,7 +570,7 @@ begin
 	print("Storing the mask ...")
 	if (grid_size.ne.dimsizes(ndtooned(mask2d))) then
 	    print("Mask is not with appropriate sizes.")
-	    return(tointeger(1))
+	    return(1)
 	else
 	    fid->grid_imask=(/ tointeger(ndtooned(mask2d)) /)
 	end if
@@ -657,7 +603,7 @@ begin
     fid->grid_corner_lon=(/ todouble(grid_corner_lon) /)
 
 	; If the code made it here, it must return OK.
-    return(tointeger(0))
+    return(0)
 end     ; of Curvilinear2SCRIP(...)
 
 ;===================================================================================================
@@ -669,7 +615,7 @@ function Rectilinear2SCRIP(FName[1]:string,FTitle[1]:string,lat[*]:double,lon[*]
 begin
     if ( (dimsizes(dimsizes(lat)).ne.1).or.(dimsizes(dimsizes(lon)).ne.1) ) then
         print("lat and lon must be a one dimensional array.")
-        return(tointeger(1))
+        return(1)
     end if
     nlat=dimsizes(lat)
     nlon=dimsizes(lon)
@@ -703,7 +649,7 @@ begin
     ; Opening the file if it exists
     if (.not.isfilepresent(srcFile)) then
         print("Can not find "+srcFile+".")
-        return(tointeger(1))
+        return(1)
     else
         fid=addfile(srcFile,"r")
     end if
@@ -711,7 +657,7 @@ begin
     ; Checking if the variable is present in the file
     if (.not.isfilevar(fid,VarName)) then
         print("The "+VarName+" variable does not exist.")
-        return(tointeger(1))
+        return(1)
     else
         VarData=fid->$VarName$
     end if
@@ -750,7 +696,7 @@ begin
                 nCoords=str_fields_count(CoordAtt," ")
                 if (nCoords.lt.2) then
                     print("At least two coordinates must be present")
-                    return(tointeger(1))
+                    return(1)
                 else
                     VarNamesInCoordAtt=new(nCoords,"string","No_FillValue")
                     do j=0,nCoords-1
@@ -769,7 +715,7 @@ begin
                     end if
                     if(.not.(isLonFound.and.isLatFound)) then
                         print("Can not locate coordinates. Sorry can't help!")
-                        return(tointeger(1))
+                        return(1)
                     end if
                 end if
             end if
@@ -829,7 +775,7 @@ begin
         end if      ; end of checking if there is any attributes containing the coordinates.
         if(.not.(isLonFound.and.isLatFound)) then
             print("Can not locate coordinates. Sorry can't help!")
-            return(tointeger(1))
+            return(1)
         end if
     end if
     
@@ -841,14 +787,14 @@ begin
             LatData=fid->$LatVarName$
         else
             print("Can't read latitude information.")
-            return(tointeger(1))
+            return(1)
         end if
         if(isfilevar(fid,LonVarName)) then
             print("Retrieving longitude coordinates from "+LonVarName+" variable.")
             LonData=fid->$LonVarName$
         else
             print("Can't read longitude information.")
-            return(tointeger(1))
+            return(1)
         end if
 
     else if (coordType.eq."lat/lon") then
@@ -862,7 +808,7 @@ begin
         LatData=VarData@$LatAttName$
         if ((dimsizes(dimsizes(LonData)).ne.2).or.(dimsizes(dimsizes(LatData)))) then
             print((LonAttName+" and "+LatAttName+" must be 2D."))
-            return(tointeger(1))
+            return(1)
         end if
     end if
     end if  ; end of getting coordinate variables names and data
@@ -870,7 +816,7 @@ begin
         
     if (.not.all(dimsizes(LonData).eq.dimsizes(LatData))) then
         print("latitude and longitude must have the same number of dimensions.")
-        return(tointeger(1))
+        return(1)
     end if
     
     CoordDim=dimsizes(dimsizes(LonData))
@@ -889,7 +835,7 @@ begin
         delete(LonData)
     else 
         print("Can't help with recognizing the coordinates.")
-        return(tointeger(1))
+        return(1)
     end if
     end if
     
@@ -924,11 +870,11 @@ begin
     ; checking the LLCorner and URCorner variables.
     if ( (dimsizes(LLCorner).ne.2).or.(dimsizes(URCorner).ne.2) ) then
         print("LL/URCorner must be a vector with two elements.")
-        return(tointeger(1))
+        return(1)
     end if
     if ( (abs(LLCorner(0)).gt.90).or.(abs(URCorner(0)).gt.90) ) then
         print("LL/URCorner must be follow (/lat, lon/) standard.")
-        return(tointeger(1))
+        return(1)
     end if
 
     BoxDiag=URCorner-LLCorner 
@@ -938,7 +884,7 @@ begin
             ; alliging the box diagonal to make box sides parallel/perpendicular
             ; to equator.
             if(Rotate2D(BoxDiag(0),BoxDiag(1),-1.0*Rot).ne.0) then
-                return(tointeger(1))
+                return(1)
             end if
         end if
     else
@@ -947,11 +893,11 @@ begin
         
     if ( BoxDiag(0).le.(0.0) ) then
         print("The corner latitudes do not meet the criteria of a bounding box.")
-        return(tointeger(1))
+        return(1)
     end if
     if ( BoxDiag(1).le.(0.0) ) then
         print("The corner longitudes do not meet the criteria of a bounding box.")
-        return(tointeger(1))
+        return(1)
     end if
         
     ; Generating the latitudes and longitudes
@@ -981,7 +927,7 @@ begin
     if (Rot.ne.(0.0)) then
         if (Rotate2D(grid_center_lat,grid_center_lon,Rot).ne.0) then
             print("Cannot rotate the box.")
-            return(tointeger(1))
+            return(1)
         end if    
     end if
 
@@ -1006,7 +952,7 @@ begin
         Rot=tofloat(Opt@Rotation)
         if (Rot.ne.(0.0)) then
             if (Rotate2D(Height,Width,Rot).ne.0) then
-                return(tointeger(1))
+                return(1)
             end if
         end if
     else
@@ -1103,22 +1049,22 @@ begin
             ; Checking if the source grid file is a SCRIP file.
             if (.not.(ncl_isSCRIP(srcGrid))) then
                 print("Source Grid file is not a SCRIP file.")
-                return(tointeger(1))
+                return(1)
             end if
         end if
         if ( .not.(isbothvaratt_logical_true(Opt,"isDstESMF")) ) then
             ; Checking if the destination grid file is a SCRIP file.
             if (.not.(ncl_isSCRIP(dstGrid))) then
                 print("Destination Grid file is not a SCRIP file.")
-                return(tointeger(1))
+                return(1)
             end if
         end if
     end if
     ; Checking if the ESMF regriding weight generator is present.
-    print("Checking if the ESMF regriding weight generator is present ...")
+  ;;print("Checking if the ESMF regriding weight generator is present ...")
   ;;if (.not.(isfilepresent("ESMF_RegridWeightGen"))) then
   ;;    print("ESMF regriding weight generator is not present.")
-  ;;    return(tointeger(1))
+  ;;    return(1)
   ;;else 
   ;;    print(" ==> OK")
   ;;end if
@@ -1139,7 +1085,7 @@ begin
     if (isfilepresent(weight)) then
         if (.not.isbothvaratt_logical_true(Opt,"OverWrite")) then
             print("The file '" + weight + "' already exists.")
-            return(tointeger(1))
+            return(1)
         else
             print("Removing an existing file ...")
             if (isbothvaratt_logical_true(Opt,"ForceOverWrite")) then
@@ -1232,12 +1178,12 @@ begin
         
     ; The binary tools performs more sophisticated tests.
     ; Here it is checked that everything went ok.
-    if (.not.(any(str_squeeze(RegridOut).eq."Completed weight generation successfuly."))) then
+    if (.not.(any(str_squeeze(RegridOut).eq."Completed weight generation successfully."))) then
         esmfErr="ESMF Offline Weight Generator was not successful."
         ; no need to return, this is the last statement anyway.
     end if
     
-    return(tointeger(0))
+    return(0)
 end     ; of esmf_remap_weights(...)
 
 ;===================================================================================================
@@ -1476,34 +1422,4 @@ begin
     return(lon)
     
 end     ; of retrieve_srcGrid_lon
-
-;===================================================================================================
-; Removes those dimensions with one element.
-undef("squeeze")
-function squeeze(inVar)
-begin
-    inVardimsizes=dimsizes(inVar)
-    newdimsizes=inVardimsizes(ind(inVardimsizes.ne.1))
-    outVar=reshape(inVar,newdimsizes)
-    
-    ;copying the dimension names.
-    counter=0;
-    do i=0,dimsizes(inVardimsizes)-1
-        if (inVardimsizes(i).ne.1) then
-            if (isdefined(inVar!i)) then
-                tmpName=inVar!i
-                outVar!counter=tmpName
-                outVar&$tmpName$=inVar&$tmpName$
-                counter=counter+1
-            end if
-        end if
-    end do
-    
-    return(outVar)
-end
-;===================================================================================================
-;===================================================================================================
-;===================================================================================================
-;===================================================================================================
-
 
