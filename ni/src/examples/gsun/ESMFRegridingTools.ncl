@@ -18,7 +18,8 @@
 ;            changed to "ESMF_RegridWeightGen".
 
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
-; This is the modified version of copy_VarAtts originaly developed by Dennis Shea.
+; This is the modified version of copy_VarAtts originaly developed by
+; Dennis Shea.
 undef("copy_VarAtts_Except")
 procedure copy_VarAtts_Except(var_from,var_to, Except [*]:string)    
 local att_names, i
@@ -35,7 +36,7 @@ begin
         end do
     end if
 end     ; of copy_VarAtts_Except
-;===================================================================================================
+;======================================================================
 ; This function accept an array with any dimensionality, 
 ; and outputs the same array with the new requested dimension.
 ; Note:
@@ -62,7 +63,7 @@ begin
     return(outVar)
 end     ; of reshape(...)
 
-;===================================================================================================
+;======================================================================
 ; This function receives a set of variable names and checks 
 ; if their units attribute contains north or east
 ; If it contains:
@@ -94,7 +95,7 @@ begin
     end do
     return(OutPut)
 end
-;===================================================================================================
+;======================================================================
 ; This function change the type of a variable to the given type.
 ; sometime it is needed to change to either float or double. But
 ; which type is only know at the runtime. So, this tool will become handy.
@@ -152,7 +153,7 @@ begin
     return(outVar)
 end     ; of totypeof(...)
 
-;===================================================================================================
+;======================================================================
 ; This function Rotates the given input.
 undef("Rotate2D")
 function Rotate2D(lat:snumeric,lon:snumeric,Rot)
@@ -177,7 +178,7 @@ begin
     return(0)
 end     ; of Rotate2D(...)
 
-;===================================================================================================
+;======================================================================
 ; This functions calculates the mirror of p1
 ; respect to po
 undef("mirrorP2P")
@@ -188,7 +189,7 @@ begin
     return(MirrorP)
 end     ; of mirrorP2P(...)
 
-;===================================================================================================
+;======================================================================
 ; This function will check:
 ; (1) if the Attname attribute is defined
 ; (2) if the Attname attribute is a logical attribute
@@ -208,7 +209,7 @@ begin
     end if
 end     ; of isatt_logical_true(...)
 
-;===================================================================================================
+;======================================================================
 ; This function will check:
 ; (1) if Opt is a logical variable.
 ; (2) if Opt is set to true
@@ -230,9 +231,12 @@ begin
     end if
 end     ; of isbothvaratt_logical_true(...)
 
-;===================================================================================================
-; This procedure is used within Curvilinear2SCRIP function. Given a structured grid, it looks
-; for the four corners surrounding each node. It returns the center of the cells for the corners.
+;======================================================================
+;
+; This procedure is used within Curvilinear2SCRIP function. Given a
+; structured grid, it looks for the four corners surrounding each
+; node. It returns the center of the cells for the corners.
+;
 undef("findCorners")
 procedure findCorners(lat2d,lon2d,grid_corner_lat,grid_corner_lon)
 begin
@@ -289,7 +293,7 @@ begin
 
 end     ; of findCorners(...)
 
-;===================================================================================================
+;======================================================================
 ; This functions Generates an ESMF file for an unstructured grid.
 ; However, it is sometimes better to even store logically rectangular and structured grid
 ; as unstructured grid. (Refer to TriPolar - TGrid)
@@ -449,7 +453,7 @@ begin
     
     return(0)
 end     ; of Unstructured2ESMF(...)
-;===================================================================================================
+;======================================================================
 ; This function receives a 2D curvilinear grid and mask and stores
 ; it in FName NetCDF file based on SCRIP standard.
 ; lat2d and lon2d must have (nlat,nlot) dimension.
@@ -606,7 +610,7 @@ begin
     return(0)
 end     ; of Curvilinear2SCRIP(...)
 
-;===================================================================================================
+;======================================================================
 ; This function accept an array of latitudes and longitudes, creates
 ; a rectilinear grid based on the given input and then stores it as SCRIP File
 ; This functions make use of Curvilinear2SCRIP(...)
@@ -637,7 +641,7 @@ begin
     return(Err)
 end     ; of Rectilinear2SCRIP(...)
 
-;===================================================================================================
+;======================================================================
 ; This function Automatically retrieves the grid information from the file
 ; and converts the grid to a SCRIP file.
 ; The variable must have an attribute called coordinates which defines where
@@ -854,7 +858,7 @@ begin
     return(Err)    
 end     ; of Auto2SCRIP(...)
 
-;===================================================================================================
+;======================================================================
 ; This procedure receives the latitude and longitude of the Lower Left and 
 ; the Upper Right corner of a rectangle and generates a regularly spaced cartesian
 ; grids based on the lat/lon coordinates. It stores the grid in a NetCDF file
@@ -938,7 +942,7 @@ begin
     return(Err)
 end     ; of GenBox_with_LLURCorner(...)
 
-;===================================================================================================
+;======================================================================
 ; This function generates a SCRIP file describing a uniform box
 ; based on a given boxcenter and width and height. How the box is 
 ; rotated can be controled via the options.
@@ -965,7 +969,7 @@ begin
     return(Err)
 end     ; of GenBox_with_Center_Dim(...)
 
-;===================================================================================================
+;======================================================================
 ; Checks if the required dimensions in the SCRIP file are present
 undef("ncl_CheckSCRIPDims")
 function ncl_CheckSCRIPDims(fid[1]:file)
@@ -988,7 +992,7 @@ begin
     end if
 end     ; of ncl_CheckSCRIPDims(...)
 
-;===================================================================================================
+;======================================================================
 ; Checks if the required variables in SCRIP file are present
 undef("ncl_CheckSCRIPVars")
 function ncl_CheckSCRIPVars(fid[1]:file)
@@ -1021,7 +1025,7 @@ begin
     end if
 end     ; ncl_CheckSCRIPVars(...)
 
-;===================================================================================================
+;======================================================================
 ; Checks if the input filename is following SCRIP standard
 undef("ncl_isSCRIP")
 function ncl_isSCRIP(FileName[1]:string)
@@ -1035,7 +1039,7 @@ begin
     return ncl_CheckSCRIPDims(fid).and.ncl_CheckSCRIPVars(fid)
 end     ; of ncl_isSCRIP(...)
 
-;===================================================================================================
+;======================================================================
 ; calls system function ESMF_RegridGenWeight
 ; Note: ESMFBINDIR environmental variable must be set 
 ;       prior to calling this procedure
@@ -1186,7 +1190,7 @@ begin
     return(0)
 end     ; of esmf_remap_weights(...)
 
-;===================================================================================================
+;======================================================================
 ; Using the provided weight file, remaps the data 
 ; from source grid into destination grid
 undef("esmf_remap")
@@ -1199,8 +1203,8 @@ begin
 	print("Checking the weight file ...")
 	if (.not.(isfilepresent(WFile))) then
 		print("Weight file does not exist or is not accessible")
-		esmfErr=tointeger(1)
-		return(0.0)
+		esmfErr=1
+		return(0)
 	else
 		fid=addfile(WFile,"r")
 	end if
@@ -1234,8 +1238,8 @@ begin
 	; Checking dimension of srcData
 	if (dimsizes(dimsizes(srcData)).ne.(src_rank)) then
 		print("Source Data does not have proper dimensions.")
-		esmfErr=tointeger(1)
-		return(0.0)
+		esmfErr=1
+		return(0)
 	end if
 	
 	; Reading the dstData sizes
@@ -1255,14 +1259,14 @@ begin
     if (src_rank.gt.1) then
         if ( .not.(all(dimsizes(srcData).eq.src_grid_dims(::-1))) ) then
             print("Source Data does not have proper dimensions.")
-            esmfErr=tointeger(1)
-            return(0.0)
+            esmfErr=1
+            return(0)
         end if
     else ; this means src_rank=1
         if ( max(col).gt.product(dimsizes(srcData)) ) then
             print("Source Data does not have proper dimensions.")
-            esmfErr=tointeger(1)
-            return(0.0)
+            esmfErr=1
+            return(0)
         end if
     end if    
     
@@ -1273,7 +1277,7 @@ begin
     ; once it is fixed by ESMF people This can be reinstated.
 ;    if( max(row).gt.product(dst_grid_dims) ) then  
 ;        print("Weight file has internal mistmatched data or is corrupted.")
-;        esmfErr=tointeger(1)
+;        esmfErr=1
 ;        return(0.0)
 ;    end if
     
@@ -1335,7 +1339,7 @@ begin
 	return(dstData)
 end     ; of esmf_remap(...)
 
-;===================================================================================================
+;======================================================================
 ; This function will retrieve the latitude coordinate of a grid
 ; from a SCRIP formatted file.
 undef("retrieve_SCRIP_lat")
@@ -1353,7 +1357,7 @@ begin
     return( todouble(grid_center_lat) )
 end     ; of retrieve_SCRIP_lat
 
-;===================================================================================================
+;======================================================================
 ; This function will retrieve the longitude coordinate of a grid
 ; from a SCRIP formatted file.
 undef("retrieve_SCRIP_lon")
@@ -1371,7 +1375,7 @@ begin
     return( todouble(grid_center_lon) )
 end     ; of retrieve_SCRIP_lon
 
-;===================================================================================================
+;======================================================================
 undef("retrieve_dstGrid_lat")
 function retrieve_dstGrid_lat(fileName[1]:string)
 begin
@@ -1384,7 +1388,7 @@ begin
     
 end     ; of retrieve_dstGrid_lat
 
-;===================================================================================================
+;======================================================================
 undef("retrieve_dstGrid_lon")
 function retrieve_dstGrid_lon(fileName[1]:string)
 begin
@@ -1397,7 +1401,7 @@ begin
     
 end     ; of retrieve_dstGrid_lon
 
-;===================================================================================================
+;======================================================================
 undef("retrieve_srcGrid_lat")
 function retrieve_srcGrid_lat(fileName[1]:string)
 begin
@@ -1410,7 +1414,7 @@ begin
     
 end     ; of retrieve_srcGrid_lat
 
-;===================================================================================================
+;======================================================================
 undef("retrieve_srcGrid_lon")
 function retrieve_srcGrid_lon(fileName[1]:string)
 begin
