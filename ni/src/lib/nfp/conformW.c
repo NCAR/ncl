@@ -61,7 +61,6 @@ NhlErrorTypes conform_W( void )
  */
   void *conform;
   int ndims;
-  ng_size_t *dsizes;
 /*
  * various
  */
@@ -258,12 +257,12 @@ NhlErrorTypes conform_W( void )
  */
   if(tmp_md->multidval.missing_value.has_missing) {
     ret = NclReturnValue(conform,ndims,dsizes_x,
-			 &tmp_md->multidval.missing_value.value,
-			 tmp_md->multidval.data_type,0);
+                         &tmp_md->multidval.missing_value.value,
+                         tmp_md->multidval.data_type,0);
   }
   else {
     ret = NclReturnValue(conform,ndims,dsizes_x,NULL,
-			 tmp_md->multidval.data_type,0);
+                         tmp_md->multidval.data_type,0);
   }
   return(ret);
 }
@@ -495,13 +494,111 @@ NhlErrorTypes conform_dims_W( void )
  */
   if(tmp_md->multidval.missing_value.has_missing) {
     ret = NclReturnValue(conform,ndims,dsizes_x,
-			 &tmp_md->multidval.missing_value.value,
-			 tmp_md->multidval.data_type,0);
+                         &tmp_md->multidval.missing_value.value,
+                         tmp_md->multidval.data_type,0);
   }
   else {
     ret = NclReturnValue(conform,ndims,dsizes_x,NULL,
-			 tmp_md->multidval.data_type,0);
+                         tmp_md->multidval.data_type,0);
   }
   NclFree(dsizes_x);
   return(ret);
 }
+
+NhlErrorTypes reshape_W( void )
+{
+/*
+ * Input argument #1
+ */
+  NclMultiDValData tmp_md = NULL;
+  NclStackEntry data;
+
+/*
+ * Input argument #2
+ */
+  void *tmp_reshape_dsizes;
+  ng_size_t *reshape_dsizes;
+  ng_size_t dsizes_reshape_dsizes[1];
+  NclBasicDataTypes type_reshape_dsizes;
+
+/*
+ * Output array variable.
+ */
+  void *xreshape;
+
+/*
+ * various
+ */
+  ng_size_t i, totalelements;
+  int ret;
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  data = _NclGetArg(0,2,DONT_CARE);
+
+  switch(data.kind) {
+  case NclStk_VAR:
+    tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+    break;
+  case NclStk_VAL:
+    tmp_md = (NclMultiDValData)data.u.data_obj;
+    break;
+  default:
+    break;
+  }
+
+  tmp_reshape_dsizes = (void*)NclGetArgValue(
+           1,
+           2,
+           NULL,
+           dsizes_reshape_dsizes,
+           NULL,
+           NULL,
+           &type_reshape_dsizes,
+           DONT_CARE);
+
+  reshape_dsizes = get_dimensions(tmp_reshape_dsizes,dsizes_reshape_dsizes[0],
+                                  type_reshape_dsizes,"reshape");
+  if(reshape_dsizes == NULL) 
+    return(NhlFATAL);
+
+  totalelements = 1;
+  for(i = 0; i < dsizes_reshape_dsizes[0]; i++) totalelements *= reshape_dsizes[i];
+
+  if(totalelements != tmp_md->multidval.totalelements) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"reshape: new dimension sizes will not work with size of input array");
+    return(NhlFATAL);
+  }
+/*
+ * Allocate space for output array.
+ */
+  xreshape = (void*)malloc(tmp_md->multidval.totalsize);
+  if( xreshape == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"reshape: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+/*
+ * Copy values to new array.
+ */
+  memcpy(xreshape,tmp_md->multidval.val,
+         totalelements*tmp_md->multidval.type->type_class.size);
+
+/*
+ * Return values.
+ */
+  if(tmp_md->multidval.missing_value.has_missing) {
+    ret = NclReturnValue(xreshape,dsizes_reshape_dsizes[0],
+                         reshape_dsizes,
+                         &tmp_md->multidval.missing_value.value,
+                         tmp_md->multidval.data_type,0);
+  }
+  else {
+    ret = NclReturnValue(xreshape,dsizes_reshape_dsizes[0],reshape_dsizes,
+                         NULL,tmp_md->multidval.data_type,0);
+  }
+  return(ret);
+}
+

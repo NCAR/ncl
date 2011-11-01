@@ -522,6 +522,7 @@ extern NhlErrorTypes dim_gbits_W(void);
 extern NhlErrorTypes getbitsone_W(void);
 extern NhlErrorTypes conform_W(void);
 extern NhlErrorTypes conform_dims_W(void);
+extern NhlErrorTypes reshape_W(void);
 extern NhlErrorTypes paleo_outline_W(void);
 extern NhlErrorTypes inverse_matrix_W(void);
 extern NhlErrorTypes solve_linsys_W(void);
@@ -7040,6 +7041,16 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, 0, 0, NclANY);  nargs++;
     SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
     NclRegisterFunc(conform_dims_W, args, "conform_dims", nargs);
+
+/*
+ *  Register reshape
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+    NclRegisterFunc(reshape_W, args, "reshape", nargs);
+
 /*
  *  Register omega_ccm.
  */
@@ -8722,16 +8733,16 @@ int arg_num, num_args;
   tmp_var = _NclGetArg(arg_num,num_args,DONT_CARE);
 
   if(tmp_var.kind == NclStk_VAR) {
-	  dim_info = malloc(sizeof(NclDimRec) * tmp_var.u.data_var->var.n_dims);
-	  for (i = 0; i < tmp_var.u.data_var->var.n_dims; i++) {
-		  dim_info[i].dim_quark = tmp_var.u.data_var->var.dim_info[i].dim_quark;
-		  dim_info[i].dim_num = tmp_var.u.data_var->var.dim_info[i].dim_num;
-		  dim_info[i].dim_size = tmp_var.u.data_var->var.dim_info[i].dim_size;
-	  }
-	  return(dim_info);
+          dim_info = malloc(sizeof(NclDimRec) * tmp_var.u.data_var->var.n_dims);
+          for (i = 0; i < tmp_var.u.data_var->var.n_dims; i++) {
+                  dim_info[i].dim_quark = tmp_var.u.data_var->var.dim_info[i].dim_quark;
+                  dim_info[i].dim_num = tmp_var.u.data_var->var.dim_info[i].dim_num;
+                  dim_info[i].dim_size = tmp_var.u.data_var->var.dim_info[i].dim_size;
+          }
+          return(dim_info);
   }
   else {
-	  return(NULL);
+          return(NULL);
   }
 }
 
