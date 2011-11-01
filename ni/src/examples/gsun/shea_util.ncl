@@ -2410,7 +2410,7 @@ begin
 	end if
 
 	if (max(inlon).ge.360) then
-	   if (inlon.ge.361) then
+	   if (max(inlon).ge.361) then
 	      print("Fatal error: invalid longitude point > 360.999, outside valid longitude range")
 	      print("Exiting")
 	      exit
