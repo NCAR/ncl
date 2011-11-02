@@ -705,8 +705,8 @@ while ($n <= $nfiles)
                 set of = $ifiles_t[$n]:r
             endif
         else
-            if (( !(-e $ifiles_t[$n]:r) && !(-r $ifiles_t[$n]:r)) \
-                    || ( !(-e $dirin/$ifiles_t[$n]:r) && !(-r $dirin/$ifiles_t[$n]:r))) then
+	    if ( !( ((-e $ifiles_t[$n]:r) && (-r $ifiles_t[$n]:r))  \
+                    || ((-e $dirin/$ifiles_t[$n]:r) && (-r $dirin/$ifiles_t[$n]:r)) ) ) then
             goto VALID_FILE
             endif
         endif
