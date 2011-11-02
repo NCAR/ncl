@@ -319,14 +319,15 @@ NhlErrorTypes sparse_matrix_mult_W
  */
     if(has_missing_x) {
       if(type_y == NCL_double) {
-        ret = NclReturnValue(y,ndims_x,dsizes_x,&missing_dx,type_y,0);
+        ret = NclReturnValue(y,ndims_x,dsizes_y,&missing_dx,type_y,0);
       }
       else {
-        ret = NclReturnValue(y,ndims_x,dsizes_x,&missing_fx,type_y,0);
+        ret = NclReturnValue(y,ndims_x,dsizes_y,&missing_fx,type_y,0);
       }
     }
     else {
-      ret = NclReturnValue(y,ndims_x,dsizes_x,NULL,type_y,0);
+      ret = NclReturnValue(y,ndims_x,dsizes_y,NULL,type_y,0);
     }
+    NclFree(dsizes_y);
     return(ret);
 }
