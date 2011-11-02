@@ -12212,6 +12212,12 @@ begin
 ; Create streamline plot. We have to check the pressure values.  If they
 ; are not in descending order, then reverse 'em.
 ;
+;---If pressure values are Pascals, convert them to millibars.
+  if(is_valid_coord(u,"y").and.isatt(u&$u!0$,"units").and.\
+     any(u&$u!0$@units.eq.get_allowed_pres_units_pa()))
+    set_attr(stres,"vfYArray",tofloat_wunits(u&$u!0$) * 0.01)
+  end if
+
   if(is_valid_coord(u,"y"))
     npres = dimsizes(u&$u!0$)
     if(u&$u!0$(0).lt.u&$u!0$(npres-1))
