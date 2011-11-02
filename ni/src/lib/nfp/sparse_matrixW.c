@@ -10,11 +10,12 @@ NhlErrorTypes sparse_matrix_mult_W
 {
     /* Locally used variables */
     ng_size_t nvector, nmatrices, ntotal;
-    ng_size_t ncol, nrow, nrowcol;
-    ng_size_t i, j, k, l, index_x;
+    ng_size_t ncoly, nrowy, nrowcoly, ncolx, nrowx, nrowcolx;
+    ng_size_t i, j, k, l, index_x, index_y;
     ng_size_t xInd, yInd;
     int ndims;
-    
+    logical found_missing;
+
     /* Defining the arguments */
     /* Argument # 0 */
     void *row_in;
@@ -42,10 +43,17 @@ NhlErrorTypes sparse_matrix_mult_W
     NclBasicDataTypes type_x;
     ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
     
-    /* Output argument # 4 */
+    /* Argument # 4 */
+    void *tmp_output_dsizes;
+    ng_size_t *output_dsizes;
+    ng_size_t dsizes_output_dsizes[1];
+    NclBasicDataTypes type_output_dsizes;
+
+    /* Output argument */
     void   *y;
     double *dy;
     NclBasicDataTypes type_y;
+    ng_size_t *dsizes_y;
     int ret;
 
     /* Getting Arguments values */
@@ -53,7 +61,7 @@ NhlErrorTypes sparse_matrix_mult_W
     /* Argument # 0 */
     row_in = (void*)NclGetArgValue(
                 0,
-                4,
+                5,
                 NULL,
                 dsizes_row,
                 NULL,
@@ -64,7 +72,7 @@ NhlErrorTypes sparse_matrix_mult_W
     /* Argument # 1 */
     col_in = (void*)NclGetArgValue(
                 1,
-                4,
+                5,
                 NULL,
                 dsizes_col,
                 NULL,
@@ -78,9 +86,7 @@ NhlErrorTypes sparse_matrix_mult_W
         return(NhlFATAL);
     }
 
-/*
- * Convert the input dimensions to ng_size_t.
- */
+  /* Convert the row,col indexes to ng_size_t. */
     ndims = (int)dsizes_row[0];
     row = get_dimensions(row_in,ndims,type_row,"sparse_matrix_mult");
     col = get_dimensions(col_in,ndims,type_col,"sparse_matrix_mult");
@@ -90,7 +96,7 @@ NhlErrorTypes sparse_matrix_mult_W
     /* Argument # 2 */
     S = (void*)NclGetArgValue(
                 2,
-                4,
+                5,
                 NULL,
                 dsizes_S,
                 NULL,
@@ -106,7 +112,7 @@ NhlErrorTypes sparse_matrix_mult_W
       /* Argument # 3 */
     x = (void*)NclGetArgValue(
                 3,
-                4,
+                5,
                 &ndims_x,
                 dsizes_x,
                 &missing_x,
@@ -118,23 +124,56 @@ NhlErrorTypes sparse_matrix_mult_W
       NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: x must be at least a 2-dimensional array");
       return(NhlFATAL);
     }
+
+    nrowx = dsizes_x[ndims_x-2];
+    ncolx = dsizes_x[ndims_x-1];
+
+      /* Argument #4 */
+    tmp_output_dsizes = (void*)NclGetArgValue(
+           4,
+           5,
+           NULL,
+           dsizes_output_dsizes,
+           NULL,
+           NULL,
+           &type_output_dsizes,
+           DONT_CARE);
+
+/* Convert the output dimensions to ng_size_t. */
+    output_dsizes = get_dimensions(tmp_output_dsizes,dsizes_output_dsizes[0],
+                                   type_output_dsizes,"sparse_matrix_mult");
+    if(output_dsizes == NULL) 
+      return(NhlFATAL);
+
+    /* nrowy and ncoly for output array */
+    nrowy = output_dsizes[0];
+    ncoly = output_dsizes[1];
+
+    if(ncolx != ncoly) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: input array is not the correct dimensionality");
+      return(NhlFATAL);
+    }
     nvector   = dsizes_S[0];
-    nrow      = dsizes_x[ndims_x-2];
-    ncol      = dsizes_x[ndims_x-1];
-    nrowcol   = nrow * ncol;
+    nrowcoly  = nrowy * ncoly;
+    nrowcolx  = nrowx * ncolx;
+
+    dsizes_y = (ng_size_t*)malloc(ndims_x*sizeof(ng_size_t));
     nmatrices = 1;
     for(i = 0; i < ndims_x-2; i++) {
       nmatrices *= dsizes_x[i];
+      dsizes_y[i] = dsizes_x[i];
     }
-    ntotal = nmatrices * nrowcol;
+    dsizes_y[ndims_x-2] = nrowy;
+    dsizes_y[ndims_x-1] = ncoly;
+    ntotal = nmatrices * nrowcoly;
 
 /* Error checking for input vector indexes. */
     for(i = 0; i < nvector; i++) {
-      if(row[i] < 0 || row[i] >= nrow) {
+      if(row[i] < 0 || row[i] >= nrowy) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: invalid row index");
         return(NhlFATAL);
       }
-      if(col[i] < 0 || col[i] >= ncol) {
+      if(col[i] < 0 || col[i] >= ncoly) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: invalid column index");
         return(NhlFATAL);
       }
@@ -153,14 +192,13 @@ NhlErrorTypes sparse_matrix_mult_W
       return(NhlFATAL);
     }    
 /*
- * Create temporary array for x if necessary.
+ * Create temporary array for x no matter what, because we might need
+ * to set values to missing.
  */
-    if(type_x != NCL_double) {
-      dx = (double*)calloc(nrowcol,sizeof(double));
-      if(dx == NULL) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: Unable to allocate memory for coercing input to double");
-        return(NhlFATAL);
-      }
+    dx = (double*)calloc(nrowcolx,sizeof(double));
+    if(dx == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: Unable to allocate memory for coercing input to double");
+      return(NhlFATAL);
     }
 /*
  * Create output variable.
@@ -176,7 +214,7 @@ NhlErrorTypes sparse_matrix_mult_W
     else {
       type_y = NCL_float;
       y      = (void*)calloc(ntotal,sizeof(float));
-      dy     = (double*)calloc(nrowcol,sizeof(double));
+      dy     = (double*)calloc(nrowcoly,sizeof(double));
       if(y == NULL || dy == NULL) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: Unable to allocate memory for output array");
         return(NhlFATAL);
@@ -188,20 +226,26 @@ NhlErrorTypes sparse_matrix_mult_W
  * matrix multiplication.
  */
     for(l = 0; l < nmatrices; l++) {
-      index_x = l*nrowcol;
+      index_x = l*nrowcolx;
+      index_y = l*nrowcoly;
 /*
- * Coerce nrow x ncol subsection of x (dx) to double.
+ * Coerce nrowx x ncolx subsection of x (dx) to double.
  */
-      if(type_x != NCL_double) {
-        coerce_subset_input_double(x,dx,index_x,type_x,nrowcol,0,NULL,NULL);
-      }
-      else {
-        dx = &((double*)x)[index_x];
-      }
+      coerce_subset_input_double(x,dx,index_x,type_x,nrowcolx,0,NULL,NULL);
+
 /*
  * Point dy to appropriate location in y
  */
-      if(type_y == NCL_double) dy = &((double*)y)[index_x];
+      if(type_y == NCL_double) {
+        dy = &((double*)y)[index_y];
+      }
+      else if(l) {
+/*
+ * Be sure to zero out the dy array again (if it's not
+ * pointing into the "y" array which is already zeroed out).
+ */
+        for (i = 0; i < nrowcoly; i++) dy[i] = 0.0;
+      }
 
       if (has_missing_x) {
 /* 
@@ -209,28 +253,33 @@ NhlErrorTypes sparse_matrix_mult_W
  * in any column of "x", then all values in that column of "y" will
  * also be missing. Go ahead and set "x" to missing too, for later.
  */
-        for (i = 0; i < nrow; i++) {
-          for (j = 0; j < ncol; j++) {
-            xInd = i*nrow+j;
+        for (i = 0; i < ncolx; i++) {
+          found_missing = False;
+          j = 0;
+          while( j < nrowx && !found_missing ) {
+            xInd = j*ncolx+i;
             if (dx[xInd] == missing_dx.doubleval) {
-              for (k = 0; k < nrow; k++) {
-                xInd = k*nrow+j;
+              found_missing = True;
+              for (k = 0; k < nrowy; k++) {
+                yInd = k*ncoly+i;
+                dy[yInd] = missing_dx.doubleval;
+              }
+              for (k = 0; k < nrowx; k++) {
+                xInd = k*ncolx+i;
                 dx[xInd] = missing_dx.doubleval;
-                dy[xInd] = missing_dx.doubleval;
               }
             }
-            else{
-              dy[xInd] = 0.0;
-            }
+            j++;
           }
         }
+
 /*        
  * This is the loop for the calculation.
  */
         for(i = 0; i < nvector; i++) {
-          for (j = 0; j < ncol; j++) {
-            xInd = col[i]*ncol+j;
-            yInd = row[i]*ncol+j;
+          for (j = 0; j < ncoly; j++) {
+            xInd = col[i]*ncoly+j;
+            yInd = row[i]*ncoly+j;
             if (dx[xInd] != missing_dx.doubleval) {
               dy[yInd] += dx[xInd]*dS[i];
             }
@@ -241,16 +290,10 @@ NhlErrorTypes sparse_matrix_mult_W
 /*
  * Case for no input missing values.
  */
-        for (i = 0; i < nrow; i++) {
-          for (j = 0; j < ncol; j++) {
-            xInd = i*nrow+j;
-            dy[xInd] = 0.0;
-          }
-        }
         for(i = 0; i < nvector; i++) {
-          for (j = 0; j < ncol; j++) {
-            xInd = col[i]*ncol+j;
-            yInd = row[i]*ncol+j;
+          for (j = 0; j < ncoly; j++) {
+            xInd = col[i]*ncoly+j;
+            yInd = row[i]*ncoly+j;
             dy[yInd] += dx[xInd]*dS[i];
           }
         }
@@ -259,13 +302,13 @@ NhlErrorTypes sparse_matrix_mult_W
  * Coerce output back to float if necessary.
  */
       if(type_y == NCL_float) {
-        coerce_output_float_only(y,dy,nrowcol,index_x);
+        coerce_output_float_only(y,dy,nrowcoly,index_y);
       }
     }
 /*
  * Clean up
  */
-    if(type_x != NCL_double) NclFree(dx);
+    NclFree(dx);
     if(type_S != NCL_double) NclFree(dS);
     if(type_y != NCL_double) NclFree(dy);
     NclFree(row);
