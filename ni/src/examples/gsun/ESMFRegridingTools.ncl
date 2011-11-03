@@ -25,8 +25,10 @@
 ;            Removed references to $ESMFBINDIR. This should be on 
 ;            user's search path. Also, executable had wrong name,
 ;            changed to "ESMF_RegridWeightGen".
+;======================================================================
 ; This is the modified version of copy_VarAtts originaly developed by
 ; Dennis Shea.
+;======================================================================
 undef("copy_VarAtts_Except")
 procedure copy_VarAtts_Except(var_from,var_to, Except [*]:string)    
 local att_names, i
@@ -51,6 +53,7 @@ end     ; of copy_VarAtts_Except
 ;           north, it returns latitude
 ;           east, it returns longitude
 ; otherwise it returns unknown
+;======================================================================
 undef("isLatorLon")
 function isLatorLon(fid,VarNames[*]:string)
 begin
@@ -81,6 +84,7 @@ end
 ; sometime it is needed to change to either float or double. But
 ; which type is only know at the runtime. So, this tool will become handy.
 ; It will also copies the attributes
+;======================================================================
 undef("totypeof")
 function totypeof(inVar,outType)
 begin
@@ -136,6 +140,7 @@ end     ; of totypeof(...)
 
 ;======================================================================
 ; This function Rotates the given input.
+;======================================================================
 undef("Rotate2D")
 function Rotate2D(lat:snumeric,lon:snumeric,Rot)
 begin
@@ -162,6 +167,7 @@ end     ; of Rotate2D(...)
 ;======================================================================
 ; This functions calculates the mirror of p1
 ; respect to po
+;======================================================================
 undef("mirrorP2P")
 function mirrorP2P(p1,po)
 begin
@@ -176,6 +182,7 @@ end     ; of mirrorP2P(...)
 ; (2) if the Attname attribute is a logical attribute
 ; (3) if the Attname is True
 ; It will return true only if all above conditions are satisfied.
+;======================================================================
 undef("isatt_logical_true")
 function isatt_logical_true(Opt[1]:logical,AttName[1]:string)
 begin
@@ -198,6 +205,7 @@ end     ; of isatt_logical_true(...)
 ; (4) if the Attname attribute of Opt is a logical attribute
 ; (5) if the Attname is True
 ; It will return true only if all above conditions are satisfied.
+;======================================================================
 undef("isbothvaratt_logical_true")
 function isbothvaratt_logical_true(Opt[1]:logical,AttName[1]:string)
 begin
@@ -218,6 +226,7 @@ end     ; of isbothvaratt_logical_true(...)
 ; structured grid, it looks for the four corners surrounding each
 ; node. It returns the center of the cells for the corners.
 ;
+;======================================================================
 undef("findCorners")
 procedure findCorners(lat2d,lon2d,grid_corner_lat,grid_corner_lon)
 begin
@@ -278,6 +287,7 @@ end     ; of findCorners(...)
 ; This functions Generates an ESMF file for an unstructured grid.
 ; However, it is sometimes better to even store logically rectangular and structured grid
 ; as unstructured grid. (Refer to TriPolar - TGrid)
+;======================================================================
 undef("Unstructured2ESMF")
 function Unstructured2ESMF(FName[1]:string,inPutFName[1]:string,inLat,inLon,inNodeMask,Opt[1]:logical)
 begin
@@ -451,6 +461,7 @@ end     ; of Unstructured2ESMF(...)
 ; (4) ForcedCorners [Logical] if set to true, insted of calculating the
 ;     the corner points for the cells, these values are read from
 ;     CornerLat and CornerLon attribute of Opt.
+;======================================================================
 undef("Curvilinear2SCRIP")
 function Curvilinear2SCRIP(FName[1]:string,FTitle[1]:string,lat2d[*][*]:double,lon2d[*][*]:double,mask2d[*][*]:integer, Opt[1]:logical)
 begin
@@ -595,6 +606,7 @@ end     ; of Curvilinear2SCRIP(...)
 ; This function accept an array of latitudes and longitudes, creates
 ; a rectilinear grid based on the given input and then stores it as SCRIP File
 ; This functions make use of Curvilinear2SCRIP(...)
+;======================================================================
 undef("Rectilinear2SCRIP")
 function Rectilinear2SCRIP(FName[1]:string,FTitle[1]:string,lat[*]:double,lon[*]:double, Opt[1]:logical)
 begin
@@ -627,6 +639,7 @@ end     ; of Rectilinear2SCRIP(...)
 ; and converts the grid to a SCRIP file.
 ; The variable must have an attribute called coordinates which defines where
 ; the coordinate information are stored.
+;======================================================================
 undef("Auto2SCRIP")
 function Auto2SCRIP(srcFile[1]:string,VarName[1]:string,SCRIPFName[1]:string,FTitle[1]:string,Opt[1]:logical)
 begin
@@ -845,6 +858,7 @@ end     ; of Auto2SCRIP(...)
 ; grids based on the lat/lon coordinates. It stores the grid in a NetCDF file
 ; based on SCRIP standard.
 ; This functions make use of Curvilinear2SCRIP(...)
+;======================================================================
 undef("GenBox_with_LLURCorner")
 function GenBox_with_LLURCorner(FName[1]:string,FTitle[1]:string,LLCorner[2]:double,URCorner[2]:double,nlat_dlat[1]:numeric,nlon_dlon[1]:numeric,Opt[1]:logical)
 begin
@@ -928,6 +942,7 @@ end     ; of GenBox_with_LLURCorner(...)
 ; based on a given boxcenter and width and height. How the box is 
 ; rotated can be controled via the options.
 ; This functions make use of Curvilinear2SCRIP(...) and GenUniformLatLon2SCRIP(...)
+;======================================================================
 undef("GenBox_with_Center_Dim")
 function GenBox_with_Center_Dim(FName[1]:string,FTitle[1]:string,BoxCenter[2]:double,BoxDim[2]:double,nlat_dlat[1]:numeric,nlon_dlon[1]:numeric,Opt[1]:logical)
 begin
@@ -952,6 +967,7 @@ end     ; of GenBox_with_Center_Dim(...)
 
 ;======================================================================
 ; Checks if the required dimensions in the SCRIP file are present
+;======================================================================
 undef("ncl_CheckSCRIPDims")
 function ncl_CheckSCRIPDims(fid[1]:file)
 begin
@@ -975,6 +991,7 @@ end     ; of ncl_CheckSCRIPDims(...)
 
 ;======================================================================
 ; Checks if the required variables in SCRIP file are present
+;======================================================================
 undef("ncl_CheckSCRIPVars")
 function ncl_CheckSCRIPVars(fid[1]:file)
 begin
@@ -1008,6 +1025,7 @@ end     ; ncl_CheckSCRIPVars(...)
 
 ;======================================================================
 ; Checks if the input filename is following SCRIP standard
+;======================================================================
 undef("ncl_isSCRIP")
 function ncl_isSCRIP(FileName[1]:string)
 begin
@@ -1024,20 +1042,21 @@ end     ; of ncl_isSCRIP(...)
 ; calls system function ESMF_RegridGenWeight
 ; Note: ESMFBINDIR environmental variable must be set 
 ;       prior to calling this procedure
+;======================================================================
 undef("esmf_remap_weights")
 function esmf_remap_weights(srcGrid[1]:string, dstGrid[1]:string, \
-                            weight[1]:string, Opt[1]:logical)
-local Opt2, debug, fmsg
+                            weight[1]:string, opt[1]:logical)
+local opt2, debug, fmsg
 begin
-  Opt2  = Opt    ; Make a copy
+  opt2  = opt    ; Make a copy
   debug = isatt_logical_true(opt2,"Debug")
 
   if(debug) then
     print("Calling ESMF Regrid Weight Generation tool ...")
   end if
     
-  if ( .not.(isbothvaratt_logical_true(Opt2,"isBothESMF")) ) then
-    if ( .not.(isbothvaratt_logical_true(Opt2,"isSrcESMF")) ) then
+  if ( .not.(isbothvaratt_logical_true(opt2,"isBothESMF")) ) then
+    if ( .not.(isbothvaratt_logical_true(opt2,"isSrcESMF")) ) then
 ;---Check if the source grid file is a SCRIP file.
       if (.not.(ncl_isSCRIP(srcGrid))) then
         if(debug) then
@@ -1046,7 +1065,7 @@ begin
         return(1)
       end if
     end if
-    if ( .not.(isbothvaratt_logical_true(Opt2,"isDstESMF")) ) then
+    if ( .not.(isbothvaratt_logical_true(opt2,"isDstESMF")) ) then
 ;---Check if the destination grid file is a SCRIP file.
       if (.not.(ncl_isSCRIP(dstGrid))) then
         if(debug) then
@@ -1084,7 +1103,7 @@ begin
 
 ;---Check if the file already exists
   if (isfilepresent(weight)) then
-    if (isatt_logical_true(Opt2,"OverWrite")) then
+    if (isatt_logical_true(opt2,"OverWrite")) then
       if(debug) then
         print("esmf_remap_weights: the file '" + weight + "' already exists.")
       end if
@@ -1093,7 +1112,7 @@ begin
       if(debug) then
         print("esmf_remap_weights: removing an existing file ...")
       end if
-      if (isatt_logical_true(Opt2,"ForceOverWrite")) then
+      if (isatt_logical_true(opt2,"ForceOverWrite")) then
         system("rm -rf "+weight)
       else
         system("rm -rfi "+weight)
@@ -1115,27 +1134,27 @@ begin
   end if
 
 ;---Build the command (Second Pass - optional features)            
-  if (Opt2) then
+  if (opt2) then
 ;
 ; Check if the user has requested a certain method.
 ; Otherwise, the default will be used.
 ;
-    if (isatt(Opt2,"method")) then
-      ESMFCMD=ESMFCMD+" --method " + str_lower(Opt2@method)
+    if (isatt(opt2,"method")) then
+      ESMFCMD=ESMFCMD+" --method " + str_lower(opt2@method)
     end if
 ;
 ; Check if the user has specified how to handle the poles
 ; Otherwise, the default will be used.
 ;
-    if (isatt(Opt2,"pole")) then
-      ESMFCMD=ESMFCMD+" --pole " + str_lower(Opt2@pole)
+    if (isatt(opt2,"pole")) then
+      ESMFCMD=ESMFCMD+" --pole " + str_lower(opt2@pole)
     end if
 ;        
 ; Check if the user is specifying that both source and destination
 ; grids are regional
 ;
-    if (isatt(Opt2,"bothRegional")) then
-      if (Opt2@bothRegional) then
+    if (isatt(opt2,"bothRegional")) then
+      if (opt2@bothRegional) then
         ESMFCMD=ESMFCMD+" -r"
       end if
     end if
@@ -1143,8 +1162,8 @@ begin
 ; Check if the user is specifying that the source grid is regional 
 ; and the destination grid is global
 ;
-    if (isatt(Opt2,"srcGridRegional")) then
-      if (Opt2@srcGridRegional) then
+    if (isatt(opt2,"srcGridRegional")) then
+      if (opt2@srcGridRegional) then
         ESMFCMD=ESMFCMD+" --src_regional"
       end if
     end if
@@ -1152,30 +1171,30 @@ begin
 ; Check if the user is specifying that the destination grid is 
 ; regional and the source grid is global
 ;
-    if (isatt(Opt2,"dstGridRegional")) then
-      if (Opt2@dstGridRegional) then
+    if (isatt(opt2,"dstGridRegional")) then
+      if (opt2@dstGridRegional) then
         ESMFCMD=ESMFCMD+" --dst_regional"
       end if
     end if
 
 ;---Check if the user specifies that both grids are ESMF			
-    if (isatt_logical_true(Opt2,"isBothESMF")) then
+    if (isatt_logical_true(opt2,"isBothESMF")) then
       ESMFCMD=ESMFCMD+" -t"
     end if
         
 ;---Checking if the user specifies that source grids are ESMF			
-    if (isatt_logical_true(Opt2,"isSrcESMF")) then
+    if (isatt_logical_true(opt2,"isSrcESMF")) then
         ESMFCMD=ESMFCMD+" --src_type ESMF"
     end if
 
 ;---Check if the user specifies that source grids are ESMF			
-    if (isatt_logical_true(Opt2,"isDstESMF")) then
+    if (isatt_logical_true(opt2,"isDstESMF")) then
       ESMFCMD=ESMFCMD+" --dst_type ESMF"
     end if
 
 ;---Check if the user has requested to print out the full command to be run.
-    if (isatt(Opt2,"showCMD")) then
-      if (Opt2@showCMD) then
+    if (isatt(opt2,"showCMD")) then
+      if (opt2@showCMD) then
         print("The following command is about to be executed on the system:")
         print(""+ ESMFCMD)
       end if
@@ -1205,41 +1224,46 @@ end     ; of esmf_remap_weights(...)
 ;======================================================================
 ; Using the provided weight file, remaps the data 
 ; from source grid into destination grid
+;======================================================================
 undef("esmf_remap")
 function esmf_remap(srcData:numeric,WFile[1]:string, opt[1]:logical)
-local Opt2, debug, fmsg
+local opt2, debug, fmsg, fid, srclat, srclon, dstlat, dstlon, src_grid_dims, \
+      src_grid_rank, srcData_dims, srcData_rank, srcData_rgt_dims, \
+      srcData_lft_dims, has_leftmost_dims, dst_grid_dims, dst_grid_rank, \
+      row, col, v, x, minDataValue, maxDataValue
 begin
-  opt2  = opt     ; Make a copy
+  opt2  = opt                                  ; Make a copy
+  fmsg = new(1,float)                          ; For error return
   debug = isatt_logical_true(opt2,"Debug")
-  fmsg = new(1,float)      ; For error return.
     
   if(debug) then
-    print("esmf_remap: Remapping using interpolation weights ...")
+    print("esmf_remap: remapping using interpolation weights ...")
   end if
 
 ;---Make sure the weight file is accessible
   if (.not.(isfilepresent(WFile))) then
-    print("esmf_remap: Weight file does not exist or is not accessible")
+    print("esmf_remap: weight file does not exist or is not accessible")
     return(fmsg)
   else
     fid = addfile(WFile,"r")
   end if
 	
-;---Check the lat/lon coverage
+;---Get the min/max lat/lon of source and destination grids
   srclat = fid->yc_a
   srclon = fid->xc_a
   dstlat = fid->yc_b
   dstlon = fid->xc_b
   if(debug) then
     print("esmf_remap: Source Grid:")
-    print("esmf_remap: Latitude min:"+min(srclat)+" max:"+max(srclat))
-    print("esmf_remap: Longitude min:"+min(srclon)+" max:"+max(srclon))
+    print("esmf_remap: Latitude min: " + min(srclat) + " max:" + max(srclat))
+    print("esmf_remap: Longitude min:" + min(srclon) + " max:" + max(srclon))
     print("esmf_remap: Destination Grid:")
-    print("esmf_remap: Latitude min:"+min(dstlat)+" max:"+max(dstlat))
-    print("esmf_remap: Longitude min:"+min(dstlon)+" max:"+max(dstlon))
+    print("esmf_remap: Latitude min: " + min(dstlat) + " max:" + max(dstlat))
+    print("esmf_remap: Longitude min:" + min(dstlon) + " max:" + max(dstlon))
   end if
 	
-  if ( .not.( \
+;---Check that the source grid "covers" the destination grid 
+ if ( .not.( \
        (min(dstlat).ge.min(srclat)).and.  \
        (max(dstlat).le.max(srclat)).and.  \
        (min(dstlon).ge.min(srclon)).and.  \
@@ -1252,18 +1276,37 @@ begin
     print("esmf_remap: checking source data rank with those given in the weight file ...")
   end if
 
-  src_grid_dims = fid->src_grid_dims
-  src_rank      = dimsizes(src_grid_dims)
+;---Get the dimensions and rank of the source grid and input grid.
+  src_grid_dims = fid->src_grid_dims(::-1)   ; dimensions are Fortran-based
+  src_grid_rank = dimsizes(src_grid_dims)
+
+  srcData_dims = dimsizes(srcData)
+  srcData_rank = dimsizes(srcData_dims)
 
 ;---Check dimension of srcData
-  if (dimsizes(dimsizes(srcData)).ne.(src_rank)) then
-    print("esmf_remap: error: source data does not have proper dimensions.")
+  if(src_grid_rank.gt.srcData_rank) then
+    print("esmf_remap: error: input or source data does not have proper dimensions.")
     return(fmsg)
   end if
-	
+
+;---Check that the rightmost dimensions are the same.
+  if(srcData_rank.gt.src_grid_rank) then
+    srcData_rgt_dims  = srcData_dims((srcData_rank-src_grid_rank):)
+    srcData_lft_dims  = srcData_dims(0:(srcData_rank-src_grid_rank-1))
+    has_leftmost_dims = True
+    if(.not.all(srcData_rgt_dims.eq.src_grid_dims)) then
+      print("esmf_remap: error: input or source data does not have proper rightost dimensions.")
+      return(fmsg)
+    end if
+  else
+    srcData_rgt_dims  = srcData_dims
+    srcData_lft_dims  = 1
+    has_leftmost_dims = False
+  end if
+
 ;---Read the dstData sizes
-  dst_grid_dims = fid->dst_grid_dims
-  dst_rank      = dimsizes(dst_grid_dims)	
+  dst_grid_dims = fid->dst_grid_dims(::-1)    ; dimensions are Fortran based
+  dst_grid_rank = dimsizes(dst_grid_dims)	
 
 ;
 ; Retrieve the interpolation weights. They are stored as a 
@@ -1278,21 +1321,19 @@ begin
   v   = fid->S
     
 ;---Check srcData dimensions
-  if (src_rank.gt.1) then
-      if ( .not.(all(dimsizes(srcData).eq.src_grid_dims(::-1))) ) then
-          print("esmf_remap: error: source data does not have proper dimensions.")
-          return(fmsg)
-      end if
-  else ; this means src_rank=1
-    if ( max(col).gt.product(dimsizes(srcData)) ) then
-      print("esmf_remap: error: source data does not have proper dimensions.")
-      return(fmsg)
-    end if
-  end if    
+  if ( max(col).gt.product(srcData_rgt_dims) ) then
+    print("esmf_remap: error: source data does not have proper dimensions.")
+    return(fmsg)
+  end if
     
-;---Convert the source data to a 1D array (not sure why yet)
-    x = reshape(srcData,(/product(dimsizes(srcData)),1/))
-
+  if(srcData_rank.gt.src_grid_rank) then
+;---Convert the source data to a N x M x 1 array
+    x = reshape(srcData,(/product(srcData_lft_dims),\
+                          product(srcData_rgt_dims),1/))
+  else
+;---Convert the source data to a M x 1 array
+    x = reshape(srcData,(/product(srcData_dims),1/))
+  end if
 ;
 ; Note from Mohammad:
 ;   Currently there is a problem with ESMF files.
@@ -1306,25 +1347,15 @@ begin
     print("esmf_remap: calling sparse_matrix_mult to apply weights...")
   end if
 
-  if (dst_rank.gt.1) then
-    y = sparse_matrix_mult(row-1,col-1,v,x,(/product(dst_grid_dims),1/))
-  else    ; This means dst_rank=1
-          ; this else section is only needed currently due to the
-          ; bug that exists in ESMF. Once it is corrected that bug, 
-          ; then this else section is not needed.
-          ; The outer section can be removed too.
-    y = sparse_matrix_mult(row-1,col-1,v,x,(/max(row),1/))
-  end if
-
-  if (dst_rank.gt.1) then
 ;
-; The dimensions are reversed. This is due to differences between 
-; array indexing in FORTRAN and C. Note that data itself is not
-; reversed!
+; If dsg_grid_rank=1, then we likely have an unstructured grid.
+; We need to convert this to a 2D array for the sparse matrix
+; multiply, and then deal with it accordingly when done.
 ;
-    dstData = reshape(y,dst_grid_dims(::-1))
+  if (dst_grid_rank.gt.1) then
+    dstData = sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims)
   else
-    dstData = ndtooned(y)
+    dstData = ndtooned(sparse_matrix_mult(row-1,col-1,v,x,(/max(row),1/)))
   end if
 
 ;---Find data range +- 20%
@@ -1362,6 +1393,7 @@ end     ; of esmf_remap(...)
 ;======================================================================
 ; This function will retrieve the latitude coordinate of a grid
 ; from a SCRIP formatted file.
+;======================================================================
 undef("retrieve_SCRIP_lat")
 function retrieve_SCRIP_lat(fileName[1]:string)
 begin
@@ -1380,6 +1412,7 @@ end     ; of retrieve_SCRIP_lat
 ;======================================================================
 ; This function will retrieve the longitude coordinate of a grid
 ; from a SCRIP formatted file.
+;======================================================================
 undef("retrieve_SCRIP_lon")
 function retrieve_SCRIP_lon(fileName[1]:string)
 begin
