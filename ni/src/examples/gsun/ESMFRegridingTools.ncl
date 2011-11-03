@@ -7,6 +7,15 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       02 Nov 2011: 
+;            Replaced the SMM call with the new sparse_matrix_mult
+;            function.
+;
+;       01 Nov 2011: 
+;            Created a built-in version of "reshape" which doesn't
+;            copy any metadata. Removed the "reshape" that was in
+;            this file.
+;
 ;       31 Oct 2011: 
 ;            Replaced "return(tointeger(1))" with just "return(1)"
 ;            Removed SMM and squeeze, since they don't seemed to be
@@ -36,32 +45,6 @@ begin
         end do
     end if
 end     ; of copy_VarAtts_Except
-;======================================================================
-; This function accept an array with any dimensionality, 
-; and outputs the same array with the new requested dimension.
-; Note:
-;     - Number of elements can not change.
-;     - Rearranging is done based on the C/NCL array indexing.
-undef("reshape")
-function reshape(inVar,newdimension [*]:integer)
-begin
-    if ( product(dimsizes(inVar)).ne.product(newdimension) ) then
-        print("The number of element can not be changed.")
-        return(inVar)
-    end if
-    tmp=ndtooned(inVar)
-    outVar=onedtond(tmp,newdimension)    
-    copy_VarAtts(inVar,outVar)
-    
-    ; since it is rearranged, the coordinate may not be meaningful anymore.
-    if (isatt(outVar,"coordinates") )then
-        delete(outVar@coordinates)
-    end if
-    if (isatt(outVar,"Coordinates") )then
-        delete(outVar@Coordinates)
-    end if    
-    return(outVar)
-end     ; of reshape(...)
 
 ;======================================================================
 ; This function receives a set of variable names and checks 
@@ -1249,9 +1232,9 @@ begin
     ; retrieving the interpolation weigths; 
     ; It is stored as a sparse matrix in a coordinate list format
     print("Retrieving interpolation Weights ...")
-    row=tointeger( fid->row )
-    col=tointeger( fid->col )
-    v=todouble( fid->S )
+    row = fid->row
+    col = fid->col
+    v   = fid->S
     
     ; Checking srcData dimensions
     print("Checking Source Data dimensions with those given in the weight file ...")
@@ -1271,7 +1254,7 @@ begin
     end if    
     
     ; linearizing the source data
-    x=reshape(todouble(srcData),(/product(dimsizes(srcData)),1/))
+    x=reshape(srcData,(/product(dimsizes(srcData)),1/))
 
     ; currently there is a problem with ESMF files.
     ; once it is fixed by ESMF people This can be reinstated.
@@ -1281,26 +1264,16 @@ begin
 ;        return(0.0)
 ;    end if
     
+    print("Interpolating using the weights ...")
     if (dst_rank.gt.1) then
-        if( any(ismissing(x)) ) then 
-            y=new((/product(dst_grid_dims),1/),"double")
-        else
-            y=new((/product(dst_grid_dims),1/),"double","No_FillValue")
-        end if
+      y = sparse_matrix_mult(row-1,col-1,v,x,(/product(dst_grid_dims),1/))
     else    ; This means dst_rank=1
             ; this else section is only needed currently due to the bug that exists
             ; in ESMF. Once it is corrected that bug, then this else section is not needed.
             ; and the outer can be removed too.
-        if( any(ismissing(x)) ) then 
-            y=new((/max(row),1/),"double")
-        else
-            y=new((/max(row),1/),"double","No_FillValue")
-        end if        
+      y = sparse_matrix_mult(row-1,col-1,v,x,(/max(row),1/))
     end if
-    y=0.0;
 
-    print("Interpolating using the weights ...")
-    SMMulFast(row,col,v,x,y)
     if (dst_rank.gt.1) then
         dstData=reshape(y,dst_grid_dims(::-1))  ; the dimensions are reversed;
                                                 ; It's due to differences between 
