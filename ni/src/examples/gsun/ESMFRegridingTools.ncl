@@ -25,8 +25,6 @@
 ;            Removed references to $ESMFBINDIR. This should be on 
 ;            user's search path. Also, executable had wrong name,
 ;            changed to "ESMF_RegridWeightGen".
-
-load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 ; This is the modified version of copy_VarAtts originaly developed by
 ; Dennis Shea.
 undef("copy_VarAtts_Except")
@@ -1027,289 +1025,338 @@ end     ; of ncl_isSCRIP(...)
 ; Note: ESMFBINDIR environmental variable must be set 
 ;       prior to calling this procedure
 undef("esmf_remap_weights")
-function esmf_remap_weights(srcGrid[1]:string, dstGrid[1]:string, weight[1]:string, Opt[1]:logical)
+function esmf_remap_weights(srcGrid[1]:string, dstGrid[1]:string, \
+                            weight[1]:string, Opt[1]:logical)
+local Opt2, debug, fmsg
 begin
+  Opt2  = Opt    ; Make a copy
+  debug = isatt_logical_true(opt2,"Debug")
+
+  if(debug) then
     print("Calling ESMF Regrid Weight Generation tool ...")
+  end if
     
-    if ( .not.(isbothvaratt_logical_true(Opt,"isBothESMF")) ) then
-        if ( .not.(isbothvaratt_logical_true(Opt,"isSrcESMF")) ) then
-            ; Checking if the source grid file is a SCRIP file.
-            if (.not.(ncl_isSCRIP(srcGrid))) then
-                print("Source Grid file is not a SCRIP file.")
-                return(1)
-            end if
+  if ( .not.(isbothvaratt_logical_true(Opt2,"isBothESMF")) ) then
+    if ( .not.(isbothvaratt_logical_true(Opt2,"isSrcESMF")) ) then
+;---Check if the source grid file is a SCRIP file.
+      if (.not.(ncl_isSCRIP(srcGrid))) then
+        if(debug) then
+          print("esmf_remap_weights: source Grid file is not a SCRIP file.")
         end if
-        if ( .not.(isbothvaratt_logical_true(Opt,"isDstESMF")) ) then
-            ; Checking if the destination grid file is a SCRIP file.
-            if (.not.(ncl_isSCRIP(dstGrid))) then
-                print("Destination Grid file is not a SCRIP file.")
-                return(1)
-            end if
-        end if
+        return(1)
+      end if
     end if
-    ; Checking if the ESMF regriding weight generator is present.
-  ;;print("Checking if the ESMF regriding weight generator is present ...")
-  ;;if (.not.(isfilepresent("ESMF_RegridWeightGen"))) then
-  ;;    print("ESMF regriding weight generator is not present.")
-  ;;    return(1)
-  ;;else 
-  ;;    print(" ==> OK")
-  ;;end if
-    ; All seems ok. So, run the ESMF regrid weight generator.
-
-    ; Checking the number of processor supported by the system
-    ; The user must have compiled ESMF with parallel features.
-    if(ismissing(getenv("NumProc"))) then  
-        NumProc=1
-        Executer=" "
-    else 
-        NumProc=getenv("NumProc")
-        Executer="mpirun -n " +NumProc+" "
+    if ( .not.(isbothvaratt_logical_true(Opt2,"isDstESMF")) ) then
+;---Check if the destination grid file is a SCRIP file.
+      if (.not.(ncl_isSCRIP(dstGrid))) then
+        if(debug) then
+          print("esmf_remap_weights: destination grid file is not a SCRIP file.")
+        end if
+        return(1)
+      end if
     end if
-    print("Number of Processors used: "+NumProc)
+  end if
 
-    ; Checking if the file already exists
-    if (isfilepresent(weight)) then
-        if (.not.isbothvaratt_logical_true(Opt,"OverWrite")) then
-            print("The file '" + weight + "' already exists.")
-            return(1)
-        else
-            print("Removing an existing file ...")
-            if (isbothvaratt_logical_true(Opt,"ForceOverWrite")) then
-                system("rm -rf "+weight)
-            else
-                system("rm -rfi "+weight)
-            end if
-        end if
-    end if    
+;---Checking if the ESMF regriding weight generator is present.
+;;  print("Checking if the ESMF regriding weight generator is present ...")
+;;  if (.not.(isfilepresent("ESMF_RegridWeightGen"))) then
+;;    print("ESMF regriding weight generator is not present.")
+;;    return(1)
+;;  end if
 
-    
-    ; Building the command (First Pass - nonoptional features)
-    if (ismissing(getenv("ESMFBINDIR"))) then
-        ESMFCMD= Executer+"ESMF_RegridWeightGen " \
-                +"--source "+srcGrid \
-                +" --destination "+dstGrid \
-                +" --weight "+weight
-    else 
-        ESMFCMD= Executer+"$ESMFBINDIR/ESMF_RegridWeightGen " \
-                +"--source "+srcGrid \
-                +" --destination "+dstGrid \
-                +" --weight "+weight
+;
+; All seems ok. Run the ESMF regrid weight generator.
+;
+; Check the number of processor supported by the system.
+;
+; The user must have compiled ESMF with parallel features.
+;
+  if(ismissing(getenv("NumProc"))) then  
+    NumProc  = 1
+    Executer = " "
+  else 
+    NumProc = getenv("NumProc")
+    Executer = "mpirun -n " +NumProc+" "
+  end if
+  if(debug) then
+    print("esmf_remap_weights: number of processors used: "+NumProc)
+  end if
+
+;---Check if the file already exists
+  if (isfilepresent(weight)) then
+    if (isatt_logical_true(Opt2,"OverWrite")) then
+      if(debug) then
+        print("esmf_remap_weights: the file '" + weight + "' already exists.")
+      end if
+      return(1)
+    else
+      if(debug) then
+        print("esmf_remap_weights: removing an existing file ...")
+      end if
+      if (isatt_logical_true(Opt2,"ForceOverWrite")) then
+        system("rm -rf "+weight)
+      else
+        system("rm -rfi "+weight)
+      end if
+    end if
+  end if    
+
+;---Build the command (First Pass - non-optional features)
+  if (ismissing(getenv("ESMFBINDIR"))) then
+    ESMFCMD = Executer+"ESMF_RegridWeightGen " \
+              + "--source "+srcGrid \
+              + " --destination "+dstGrid \
+              + " --weight "+weight
+  else 
+    ESMFCMD= Executer+"$ESMFBINDIR/ESMF_RegridWeightGen " \
+              + "--source "+srcGrid \
+              + " --destination "+dstGrid \
+              + " --weight "+weight
+  end if
+
+;---Build the command (Second Pass - optional features)            
+  if (Opt2) then
+;
+; Check if the user has requested a certain method.
+; Otherwise, the default will be used.
+;
+    if (isatt(Opt2,"method")) then
+      ESMFCMD=ESMFCMD+" --method " + str_lower(Opt2@method)
+    end if
+;
+; Check if the user has specified how to handle the poles
+; Otherwise, the default will be used.
+;
+    if (isatt(Opt2,"pole")) then
+      ESMFCMD=ESMFCMD+" --pole " + str_lower(Opt2@pole)
+    end if
+;        
+; Check if the user is specifying that both source and destination
+; grids are regional
+;
+    if (isatt(Opt2,"bothRegional")) then
+      if (Opt2@bothRegional) then
+        ESMFCMD=ESMFCMD+" -r"
+      end if
+    end if
+;        
+; Check if the user is specifying that the source grid is regional 
+; and the destination grid is global
+;
+    if (isatt(Opt2,"srcGridRegional")) then
+      if (Opt2@srcGridRegional) then
+        ESMFCMD=ESMFCMD+" --src_regional"
+      end if
+    end if
+;        
+; Check if the user is specifying that the destination grid is 
+; regional and the source grid is global
+;
+    if (isatt(Opt2,"dstGridRegional")) then
+      if (Opt2@dstGridRegional) then
+        ESMFCMD=ESMFCMD+" --dst_regional"
+      end if
     end if
 
-    ; Building the command (Second Pass - optional features)            
-    if (Opt) then
-        ; Checking if the user has requested a certain method
-        ; otherwise, the default will be used
-        if (isatt(Opt,"method")) then
-            ESMFCMD=ESMFCMD+" --method " + str_lower(Opt@method)
-        end if
+;---Check if the user specifies that both grids are ESMF			
+    if (isatt_logical_true(Opt2,"isBothESMF")) then
+      ESMFCMD=ESMFCMD+" -t"
+    end if
         
-        ; Checking if the user has specified how to handle the poles
-        ; otherwise, the default will be used.
-        if (isatt(Opt,"pole")) then
-            ESMFCMD=ESMFCMD+" --pole " + str_lower(Opt@pole)
-        end if
-        
-        ; Checking if the user is specifying that both source and destination
-        ; grids are regional
-        if (isatt(Opt,"bothRegional")) then
-            if (Opt@bothRegional) then
-                ESMFCMD=ESMFCMD+" -r"
-            end if
-        end if
-        
-        ; Checking if the user is specifying that the source grid is regional 
-        ; and the destination grid is global
-        if (isatt(Opt,"srcGridRegional")) then
-            if (Opt@srcGridRegional) then
-                ESMFCMD=ESMFCMD+" --src_regional"
-            end if
-        end if
-        
-        ; Checking if the user is specifying that the destination grid is 
-        ; regional and the source grid is global
-        if (isatt(Opt,"dstGridRegional")) then
-            if (Opt@dstGridRegional) then
-                ESMFCMD=ESMFCMD+" --dst_regional"
-            end if
-        end if
+;---Checking if the user specifies that source grids are ESMF			
+    if (isatt_logical_true(Opt2,"isSrcESMF")) then
+        ESMFCMD=ESMFCMD+" --src_type ESMF"
+    end if
 
-        ; Checking if the user specifies that both grids are ESMF			
-        if (isatt_logical_true(Opt,"isBothESMF")) then
-            ESMFCMD=ESMFCMD+" -t"
-        end if
-        
-        ; Checking if the user specifies that source grids are ESMF			
-        if (isatt_logical_true(Opt,"isSrcESMF")) then
-            ESMFCMD=ESMFCMD+" --src_type ESMF"
-        end if
+;---Check if the user specifies that source grids are ESMF			
+    if (isatt_logical_true(Opt2,"isDstESMF")) then
+      ESMFCMD=ESMFCMD+" --dst_type ESMF"
+    end if
 
-        ; Checking if the user specifies that source grids are ESMF			
-        if (isatt_logical_true(Opt,"isDstESMF")) then
-            ESMFCMD=ESMFCMD+" --dst_type ESMF"
-        end if
-
-        ; Checking if the user has requested to print out the full command to be run.
-        if (isatt(Opt,"showCMD")) then
-            if (Opt@showCMD) then
-                print("The following command is about to be executed on the system:")
-                print(""+ ESMFCMD)
-            end if
-        end if
-    end if  ; end of Building the command (Second Pass - optional features)
+;---Check if the user has requested to print out the full command to be run.
+    if (isatt(Opt2,"showCMD")) then
+      if (Opt2@showCMD) then
+        print("The following command is about to be executed on the system:")
+        print(""+ ESMFCMD)
+      end if
+    end if
+  end if  ; end of building the command (Second Pass - optional features)
 		
-    ; calling the the system function
-    RegridOut=systemfunc(ESMFCMD)
-    print(""+RegridOut(:))
+;---Execute the regridding command
+    RegridOut = systemfunc(ESMFCMD)
+    print(""+RegridOut)
         
-    ; The binary tools performs more sophisticated tests.
-    ; Here it is checked that everything went ok.
-    if (.not.(any(str_squeeze(RegridOut).eq."Completed weight generation successfully."))) then
-        esmfErr="ESMF Offline Weight Generator was not successful."
-        ; no need to return, this is the last statement anyway.
+;
+; The binary tools performs more sophisticated tests.
+; Here it is checked that everything went ok.
+;
+  if (.not.(any(str_squeeze(RegridOut).eq. \
+            "Completed weight generation successfully."))) then
+    if(debug) then
+      print("esmf_remap_weights: ESMF Offline Weight Generator was not successful.")
     end if
-    
-    return(0)
+  end if
+  if(debug) then
+    print("esmf_remap_weights: ESMF Offline Weight Generator was successful.")
+  end if    
+  return(0)
 end     ; of esmf_remap_weights(...)
 
 ;======================================================================
 ; Using the provided weight file, remaps the data 
 ; from source grid into destination grid
 undef("esmf_remap")
-function esmf_remap(srcData:numeric,WFile[1]:string, esmfErr[1]:integer)
+function esmf_remap(srcData:numeric,WFile[1]:string, opt[1]:logical)
+local Opt2, debug, fmsg
 begin
-    esmfErr=0
-    print("Remapping using Interpolation weights ...")
+  opt2  = opt     ; Make a copy
+  debug = isatt_logical_true(opt2,"Debug")
+  fmsg = new(1,float)      ; For error return.
+    
+  if(debug) then
+    print("esmf_remap: Remapping using interpolation weights ...")
+  end if
 
-	; Making sure that the Weight file is accessible
-	print("Checking the weight file ...")
-	if (.not.(isfilepresent(WFile))) then
-		print("Weight file does not exist or is not accessible")
-		esmfErr=1
-		return(0)
-	else
-		fid=addfile(WFile,"r")
-	end if
+;---Make sure the weight file is accessible
+  if (.not.(isfilepresent(WFile))) then
+    print("esmf_remap: Weight file does not exist or is not accessible")
+    return(fmsg)
+  else
+    fid = addfile(WFile,"r")
+  end if
 	
-	; Checking the coverage
-	srclat=fid->yc_a
-	srclon=fid->xc_a
-	dstlat=fid->yc_b
-	dstlon=fid->xc_b
-	print("Source Grid:")
-	print("Latitude min:"+min(srclat)+" max:"+max(srclat))
-	print("Longitude min:"+min(srclon)+" max:"+max(srclon))
-	print("Destination Grid:")
-	print("Latitude min:"+min(dstlat)+" max:"+max(dstlat))
-	print("Longitude min:"+min(dstlon)+" max:"+max(dstlon))
+;---Check the lat/lon coverage
+  srclat = fid->yc_a
+  srclon = fid->xc_a
+  dstlat = fid->yc_b
+  dstlon = fid->xc_b
+  if(debug) then
+    print("esmf_remap: Source Grid:")
+    print("esmf_remap: Latitude min:"+min(srclat)+" max:"+max(srclat))
+    print("esmf_remap: Longitude min:"+min(srclon)+" max:"+max(srclon))
+    print("esmf_remap: Destination Grid:")
+    print("esmf_remap: Latitude min:"+min(dstlat)+" max:"+max(dstlat))
+    print("esmf_remap: Longitude min:"+min(dstlon)+" max:"+max(dstlon))
+  end if
 	
-	if ( .not.( \
-	     (min(dstlat).ge.min(srclat)).and.  \
-	     (max(dstlat).le.max(srclat)).and.  \
-	     (min(dstlon).ge.min(srclon)).and.  \
-	     (max(dstlon).le.max(srclon))   ) ) then
-        print("WARNING!!!")
-        print("Destination grid is not completely covered by the source grid.")
+  if ( .not.( \
+       (min(dstlat).ge.min(srclat)).and.  \
+       (max(dstlat).le.max(srclat)).and.  \
+       (min(dstlon).ge.min(srclon)).and.  \
+       (max(dstlon).le.max(srclon))   ) ) then
+      print("esmf_remap: warning: destination grid is not completely")
+      print("            covered by the source grid.")
+  end if
+	
+  if(debug) then
+    print("esmf_remap: checking source data rank with those given in the weight file ...")
+  end if
+
+  src_grid_dims = fid->src_grid_dims
+  src_rank      = dimsizes(src_grid_dims)
+
+;---Check dimension of srcData
+  if (dimsizes(dimsizes(srcData)).ne.(src_rank)) then
+    print("esmf_remap: error: source data does not have proper dimensions.")
+    return(fmsg)
+  end if
+	
+;---Read the dstData sizes
+  dst_grid_dims = fid->dst_grid_dims
+  dst_rank      = dimsizes(dst_grid_dims)	
+
+;
+; Retrieve the interpolation weights. They are stored as a 
+; sparse matrix in a coordinate list format
+;
+  if(debug) then
+    print("esmf_remap: retrieving interpolation weights ...")
+   end if
+
+  row = fid->row
+  col = fid->col
+  v   = fid->S
+    
+;---Check srcData dimensions
+  if (src_rank.gt.1) then
+      if ( .not.(all(dimsizes(srcData).eq.src_grid_dims(::-1))) ) then
+          print("esmf_remap: error: source data does not have proper dimensions.")
+          return(fmsg)
+      end if
+  else ; this means src_rank=1
+    if ( max(col).gt.product(dimsizes(srcData)) ) then
+      print("esmf_remap: error: source data does not have proper dimensions.")
+      return(fmsg)
     end if
+  end if    
     
-	
-	print("Checking Source Data rank with those given in the weight file ...")
-	src_grid_dims=fid->src_grid_dims
-	src_rank=dimsizes(src_grid_dims)
+;---Convert the source data to a 1D array (not sure why yet)
+    x = reshape(srcData,(/product(dimsizes(srcData)),1/))
 
-	; Checking dimension of srcData
-	if (dimsizes(dimsizes(srcData)).ne.(src_rank)) then
-		print("Source Data does not have proper dimensions.")
-		esmfErr=1
-		return(0)
-	end if
-	
-	; Reading the dstData sizes
-	dst_grid_dims=fid->dst_grid_dims
-	dst_rank=dimsizes(dst_grid_dims)	
+;
+; Note from Mohammad:
+;   Currently there is a problem with ESMF files.
+;   once it is fixed by ESMF people This can be reinstated.
+;  if( max(row).gt.product(dst_grid_dims) ) then  
+;    print("esmf_remap: error: weight file has internal mistmatched data or is corrupted.")
+;    return(fmsg)
+;  end if
+      
+  if(debug)
+    print("esmf_remap: calling sparse_matrix_mult to apply weights...")
+  end if
 
-    ; retrieving the interpolation weigths; 
-    ; It is stored as a sparse matrix in a coordinate list format
-    print("Retrieving interpolation Weights ...")
-    row = fid->row
-    col = fid->col
-    v   = fid->S
-    
-    ; Checking srcData dimensions
-    print("Checking Source Data dimensions with those given in the weight file ...")
+  if (dst_rank.gt.1) then
+    y = sparse_matrix_mult(row-1,col-1,v,x,(/product(dst_grid_dims),1/))
+  else    ; This means dst_rank=1
+          ; this else section is only needed currently due to the
+          ; bug that exists in ESMF. Once it is corrected that bug, 
+          ; then this else section is not needed.
+          ; The outer section can be removed too.
+    y = sparse_matrix_mult(row-1,col-1,v,x,(/max(row),1/))
+  end if
 
-    if (src_rank.gt.1) then
-        if ( .not.(all(dimsizes(srcData).eq.src_grid_dims(::-1))) ) then
-            print("Source Data does not have proper dimensions.")
-            esmfErr=1
-            return(0)
-        end if
-    else ; this means src_rank=1
-        if ( max(col).gt.product(dimsizes(srcData)) ) then
-            print("Source Data does not have proper dimensions.")
-            esmfErr=1
-            return(0)
-        end if
-    end if    
-    
-    ; linearizing the source data
-    x=reshape(srcData,(/product(dimsizes(srcData)),1/))
+  if (dst_rank.gt.1) then
+;
+; The dimensions are reversed. This is due to differences between 
+; array indexing in FORTRAN and C. Note that data itself is not
+; reversed!
+;
+    dstData = reshape(y,dst_grid_dims(::-1))
+  else
+    dstData = ndtooned(y)
+  end if
 
-    ; currently there is a problem with ESMF files.
-    ; once it is fixed by ESMF people This can be reinstated.
-;    if( max(row).gt.product(dst_grid_dims) ) then  
-;        print("Weight file has internal mistmatched data or is corrupted.")
-;        esmfErr=1
-;        return(0.0)
-;    end if
-    
-    print("Interpolating using the weights ...")
-    if (dst_rank.gt.1) then
-      y = sparse_matrix_mult(row-1,col-1,v,x,(/product(dst_grid_dims),1/))
-    else    ; This means dst_rank=1
-            ; this else section is only needed currently due to the bug that exists
-            ; in ESMF. Once it is corrected that bug, then this else section is not needed.
-            ; and the outer can be removed too.
-      y = sparse_matrix_mult(row-1,col-1,v,x,(/max(row),1/))
-    end if
+;---Find data range +- 20%
+  minDataValue = min(srcData)-0.2d*abs(min(srcData))
+  maxDataValue = max(srcData)+0.2d*abs(max(srcData))
+  if(debug) then
+    print("esmf_remap: minDataValue = " + minDataValue)
+    print("esmf_remap: maxDataValue = " + maxDataValue)
+  end if
 
-    if (dst_rank.gt.1) then
-        dstData=reshape(y,dst_grid_dims(::-1))  ; the dimensions are reversed;
-                                                ; It's due to differences between 
-                                                ; array indexing in FORTRAN and C.
-    else ; this means dst_rank=1
-        dstData=ndtooned(y)
-    end if
-
-    ; finding data range +-20%
-    minDataValue=min(srcData)-0.2d*abs(min(srcData))
-    maxDataValue=max(srcData)+0.2d*abs(max(srcData))
-;    print("minDataValue:"+minDataValue)
-;    print("maxDataValue:"+maxDataValue)
-
-    ; masking out outliers
-    dstData@_FillValue=-999.0
-    dstData=where( (dstData.lt.minDataValue).or.(dstData.gt.maxDataValue),  \
+;---Mask out outliers
+  if(isatt(srcData,"_FillValue")) then
+    dstData@_FillValue = srcData@_FillValue
+  else
+    dstData@_FillValue = default_fillvalue(typeof(dstData))
+  end if
+  dstData = where( (dstData.lt.minDataValue).or.(dstData.gt.maxDataValue),  \
                     dstData@_FillValue,dstData)
                     
-	; Copying some attributes.
-	; Note: The user is responsible for attributes in general.
-	if (isatt(srcData,"units")) then
-	    print("Copying units attribute ...")
-	    dstData@units=srcData@units
-	end if
-	if (isatt(srcData,"long_name")) then
-	    print("Copying long_name attribute ...")
-	    dstData@long_name="remapped "+srcData@long_name
-	end if
-	if (isatt(srcData,"short_name")) then
-	    print("Copying short_name attribute ...")
-	    dstData@short_name=srcData@short_name
-	end if
-	print("Don't forget to copy the attributes accordingly from original data!")
+;---Copy some attributes.
+; Note: The user is responsible for attributes in general.
+  if (isatt(srcData,"units")) then
+    dstData@units=srcData@units
+  end if
+  if (isatt(srcData,"long_name")) then
+    dstData@long_name="remapped "+srcData@long_name
+  end if
+  if (isatt(srcData,"short_name")) then
+    dstData@short_name=srcData@short_name
+  end if
 	
-	return(dstData)
+  return(dstData)
 end     ; of esmf_remap(...)
 
 ;======================================================================
