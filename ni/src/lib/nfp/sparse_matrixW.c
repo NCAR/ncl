@@ -81,18 +81,6 @@ NhlErrorTypes sparse_matrix_mult_W
                 DONT_CARE);    
 
 
-    if(dsizes_row[0] != dsizes_col[0]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: row and col must have same number of elements");
-        return(NhlFATAL);
-    }
-
-  /* Convert the row,col indexes to ng_size_t. */
-    ndims = (int)dsizes_row[0];
-    row = get_dimensions(row_in,ndims,type_row,"sparse_matrix_mult");
-    col = get_dimensions(col_in,ndims,type_col,"sparse_matrix_mult");
-    if(row == NULL || col == NULL) 
-      return(NhlFATAL);
-
     /* Argument # 2 */
     S = (void*)NclGetArgValue(
                 2,
@@ -104,10 +92,17 @@ NhlErrorTypes sparse_matrix_mult_W
                 &type_S,
                 DONT_CARE); 
 
-    if(dsizes_col[0] != dsizes_S[0]) { 
+    if(dsizes_col[0] != dsizes_S[0] || dsizes_col[0] != dsizes_row[0]) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: row, col, and S must have same number of elements");
         return(NhlFATAL);
     }
+
+  /* Convert the row,col indexes to ng_size_t. */
+    ndims = (int)dsizes_row[0];
+    row = get_dimensions(row_in,ndims,type_row,"sparse_matrix_mult");
+    col = get_dimensions(col_in,ndims,type_col,"sparse_matrix_mult");
+    if(row == NULL || col == NULL) 
+      return(NhlFATAL);
 
       /* Argument # 3 */
     x = (void*)NclGetArgValue(
@@ -167,17 +162,6 @@ NhlErrorTypes sparse_matrix_mult_W
     dsizes_y[ndims_x-1] = ncoly;
     ntotal = nmatrices * nrowcoly;
 
-/* Error checking for input vector indexes. */
-    for(i = 0; i < nvector; i++) {
-      if(row[i] < 0 || row[i] >= nrowy) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: invalid row index");
-        return(NhlFATAL);
-      }
-      if(col[i] < 0 || col[i] >= ncoly) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: invalid column index");
-        return(NhlFATAL);
-      }
-    }
 /*
  * Coerce missing values to double if necessary.
  */
