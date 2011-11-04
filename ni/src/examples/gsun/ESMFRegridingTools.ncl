@@ -1291,17 +1291,16 @@ begin
 
 ;---Check that the rightmost dimensions are the same.
   if(srcData_rank.gt.src_grid_rank) then
-    srcData_rgt_dims  = srcData_dims((srcData_rank-src_grid_rank):)
-    srcData_lft_dims  = srcData_dims(0:(srcData_rank-src_grid_rank-1))
-    has_leftmost_dims = True
+    srcData_lft_ndims = srcData_rank - src_grid_rank
+    srcData_rgt_dims  = srcData_dims(srcData_lft_ndims:)
+    srcData_lft_dims  = srcData_dims(0:srcData_lft_ndims-1)
     if(.not.all(srcData_rgt_dims.eq.src_grid_dims)) then
       print("esmf_remap: error: input or source data does not have proper rightost dimensions.")
       return(fmsg)
     end if
   else
     srcData_rgt_dims  = srcData_dims
-    srcData_lft_dims  = 1
-    has_leftmost_dims = False
+    srcData_lft_ndims = 0
   end if
 
 ;---Read the dstData sizes
@@ -1314,7 +1313,7 @@ begin
 ;
   if(debug) then
     print("esmf_remap: retrieving interpolation weights ...")
-   end if
+  end if
 
   row = fid->row
   col = fid->col
@@ -1326,14 +1325,13 @@ begin
     return(fmsg)
   end if
     
-  if(srcData_rank.gt.src_grid_rank) then
-;---Convert the source data to a N x M x 1 array
-    x = reshape(srcData,(/product(srcData_lft_dims),\
-                          product(srcData_rgt_dims),1/))
+  if (dst_grid_rank.gt.1) then
+    x = srcData
   else
-;---Convert the source data to a M x 1 array
-    x = reshape(srcData,(/product(srcData_dims),1/))
+;;; x = reshape(srcData,(/product(srcData_dims),1/))
+    x = reshape(srcData,product(srcData_dims))
   end if
+
 ;
 ; Note from Mohammad:
 ;   Currently there is a problem with ESMF files.
@@ -1355,7 +1353,8 @@ begin
   if (dst_grid_rank.gt.1) then
     dstData = sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims)
   else
-    dstData = ndtooned(sparse_matrix_mult(row-1,col-1,v,x,(/max(row),1/)))
+;;; dstData = ndtooned(sparse_matrix_mult(row-1,col-1,v,x,(/max(row),1/)))
+    dstData = ndtooned(sparse_matrix_mult(row-1,col-1,v,x,max(row)))
   end if
 
 ;---Find data range +- 20%
