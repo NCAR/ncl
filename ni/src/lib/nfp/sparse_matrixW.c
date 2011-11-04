@@ -188,7 +188,7 @@ NhlErrorTypes sparse_matrix_mult_W
     }
     ntotal = nmatrices * nrowcoly;
 #ifdef DEBUG
-    for(i = 0; i < ndims_x-1; i++) {
+    for(i = 0; i < ndims_x; i++) {
       printf("dsizes_y[%ld] =  %ld\n", i, dsizes_y[i]);
     }
 #endif
