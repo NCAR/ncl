@@ -115,14 +115,6 @@ NhlErrorTypes sparse_matrix_mult_W
                 &type_x,
                 DONT_CARE); 
 
-    if(ndims_x < 2) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: x must be at least a 2-dimensional array");
-      return(NhlFATAL);
-    }
-
-    nrowx = dsizes_x[ndims_x-2];
-    ncolx = dsizes_x[ndims_x-1];
-
       /* Argument #4 */
     tmp_output_dsizes = (void*)NclGetArgValue(
            4,
@@ -134,15 +126,40 @@ NhlErrorTypes sparse_matrix_mult_W
            &type_output_dsizes,
            DONT_CARE);
 
+    if(dsizes_output_dsizes[0] < 0 || dsizes_output_dsizes[0] > 2)  {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: the output dimensions must represent a 1D or 2D array.");
+      return(NhlFATAL);
+    }
+
+
 /* Convert the output dimensions to ng_size_t. */
     output_dsizes = get_dimensions(tmp_output_dsizes,dsizes_output_dsizes[0],
                                    type_output_dsizes,"sparse_matrix_mult");
-    if(output_dsizes == NULL) 
-      return(NhlFATAL);
 
-    /* nrowy and ncoly for output array */
-    nrowy = output_dsizes[0];
-    ncoly = output_dsizes[1];
+/* nrowy and ncoly for output array */
+    if(dsizes_output_dsizes[0] == 2) {
+      if(ndims_x < 2) {
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: the input array must be at least 2-dimensional if the output dimensions represent a 2D array");
+	return(NhlFATAL);
+      }
+      nrowx = dsizes_x[ndims_x-2];
+      ncolx = dsizes_x[ndims_x-1];
+      nrowy = output_dsizes[0];
+      ncoly = output_dsizes[1];
+    }
+    else {
+      nrowx = dsizes_x[ndims_x-1];
+      ncolx = 1;
+      nrowy = output_dsizes[0];
+      ncoly = 1;
+    }
+
+#ifdef DEBUG
+    printf("nrowx = %ld\n", nrowx);
+    printf("ncolx = %ld\n", ncolx);
+    printf("nrowy = %ld\n", nrowy);
+    printf("ncoly = %ld\n", ncoly);
+#endif
 
     if(ncolx != ncoly) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: input array is not the correct dimensionality");
@@ -154,13 +171,27 @@ NhlErrorTypes sparse_matrix_mult_W
 
     dsizes_y = (ng_size_t*)malloc(ndims_x*sizeof(ng_size_t));
     nmatrices = 1;
-    for(i = 0; i < ndims_x-2; i++) {
-      nmatrices *= dsizes_x[i];
-      dsizes_y[i] = dsizes_x[i];
+    if(dsizes_output_dsizes[0] == 2) {
+      for(i = 0; i < ndims_x-2; i++) {
+	nmatrices *= dsizes_x[i];
+	dsizes_y[i] = dsizes_x[i];
+      }
+      dsizes_y[ndims_x-2] = nrowy;
+      dsizes_y[ndims_x-1] = ncoly;
     }
-    dsizes_y[ndims_x-2] = nrowy;
-    dsizes_y[ndims_x-1] = ncoly;
+    else {
+      for(i = 0; i < ndims_x-1; i++) {
+	nmatrices *= dsizes_x[i];
+	dsizes_y[i] = dsizes_x[i];
+      }
+      dsizes_y[ndims_x-1] = nrowy;
+    }
     ntotal = nmatrices * nrowcoly;
+#ifdef DEBUG
+    for(i = 0; i < ndims_x-1; i++) {
+      printf("dsizes_y[%ld] =  %ld\n", i, dsizes_y[i]);
+    }
+#endif
 
 /*
  * Coerce missing values to double if necessary.
@@ -209,7 +240,11 @@ NhlErrorTypes sparse_matrix_mult_W
  * Loop across each set of 2D matrices and do the sparse
  * matrix multiplication.
  */
+#ifdef DEBUG
+    printf("nmatrices = %ld\n", nmatrices);
+#endif
     for(l = 0; l < nmatrices; l++) {
+      /*      printf("l = %ld\n", l); */
       index_x = l*nrowcolx;
       index_y = l*nrowcoly;
 /*
