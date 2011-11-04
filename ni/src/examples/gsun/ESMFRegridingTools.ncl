@@ -1253,14 +1253,6 @@ begin
   srclon = fid->xc_a
   dstlat = fid->yc_b
   dstlon = fid->xc_b
-  if(debug) then
-    print("esmf_remap: Source Grid:")
-    print("esmf_remap: Latitude min: " + min(srclat) + " max:" + max(srclat))
-    print("esmf_remap: Longitude min:" + min(srclon) + " max:" + max(srclon))
-    print("esmf_remap: Destination Grid:")
-    print("esmf_remap: Latitude min: " + min(dstlat) + " max:" + max(dstlat))
-    print("esmf_remap: Longitude min:" + min(dstlon) + " max:" + max(dstlon))
-  end if
 	
 ;---Check that the source grid "covers" the destination grid 
  if ( .not.( \
@@ -1273,20 +1265,46 @@ begin
   end if
 	
   if(debug) then
-    print("esmf_remap: checking source data rank with those given in the weight file ...")
+    print("esmf_remap: checking source data rank with those")
+    print("            given in the weight file ...")
   end if
 
 ;---Get the dimensions and rank of the source grid and input grid.
-  src_grid_dims = fid->src_grid_dims(::-1)   ; dimensions are Fortran-based
+  src_grid_dims = fid->src_grid_dims(::-1)    ; dimensions are Fortran-based
   src_grid_rank = dimsizes(src_grid_dims)
 
   srcData_dims = dimsizes(srcData)
   srcData_rank = dimsizes(srcData_dims)
 
+;---Get the dimensions and rank of the destination grid
+  dst_grid_dims = fid->dst_grid_dims(::-1)    ; dimensions are Fortran based
+  dst_grid_rank = dimsizes(dst_grid_dims)	
+
 ;---Check dimension of srcData
   if(src_grid_rank.gt.srcData_rank) then
     print("esmf_remap: error: input or source data does not have proper dimensions.")
     return(fmsg)
+  end if
+
+  if(debug) then
+;---Source grid info
+    print("esmf_remap: Source Grid:")
+    str = "            Dimensions:"
+    do i=0,src_grid_rank-1
+      str = str + " " + src_grid_dims(i)
+    end do
+    print("" + str)
+    print("            Latitude min/max: " + min(srclat) + "/" + max(srclat))
+    print("            Longitude min/max:" + min(srclon) + "/" + max(srclon))
+;---Destination grid info
+    print("esmf_remap: Destination Grid:")
+    str = "            Dimensions:"
+    do i=0,dst_grid_rank-1
+      str = str + " " + dst_grid_dims(i)
+    end do
+    print("" + str)
+    print("            Latitude min/max: " + min(dstlat) + "/" + max(dstlat))
+    print("            Longitude min/max:" + min(dstlon) + "/" + max(dstlon))
   end if
 
 ;---Check that the rightmost dimensions are the same.
@@ -1302,10 +1320,6 @@ begin
     srcData_rgt_dims  = srcData_dims
     srcData_lft_ndims = 0
   end if
-
-;---Read the dstData sizes
-  dst_grid_dims = fid->dst_grid_dims(::-1)    ; dimensions are Fortran based
-  dst_grid_rank = dimsizes(dst_grid_dims)	
 
 ;
 ; Retrieve the interpolation weights. They are stored as a 
@@ -1328,8 +1342,18 @@ begin
   if (dst_grid_rank.gt.1) then
     x = srcData
   else
-;;; x = reshape(srcData,(/product(srcData_dims),1/))
-    x = reshape(srcData,product(srcData_dims))
+;
+; If the destination grid is 1D, then we must convert the rightmost
+; dimensions of the input grid to 1D as well.
+;
+    if (srcData_rank.gt.src_grid_rank) then
+      src_grid_dims_tmp                        = new(srcData_lft_ndims+1,long)
+      src_grid_dims_tmp(0:srcData_lft_ndims-1) = srcData_lft_dims
+      src_grid_dims_tmp(srcData_lft_ndims)     = product(srcData_rgt_dims)
+      x = reshape(srcData,src_grid_dims_tmp)
+    else
+      x = reshape(srcData,product(srcData_dims))
+    end if
   end if
 
 ;
@@ -1346,23 +1370,36 @@ begin
   end if
 
 ;
-; If dsg_grid_rank=1, then we likely have an unstructured grid.
-; We need to convert this to a 2D array for the sparse matrix
-; multiply, and then deal with it accordingly when done.
+; If dst_grid_rank=1, then we likely have an unstructured grid.
+; and the dimensions on the weight file will simply be equal to 1.
+; We have to use max(row) to get the dimension of the output.
 ;
   if (dst_grid_rank.gt.1) then
-    dstData = sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims)
+    if (srcData_rank.gt.src_grid_rank) then
+      dst_grid_dims_tmp = new(srcData_lft_ndims+dst_grid_rank,long)
+      dst_grid_dims_tmp(0:srcData_lft_ndims-1) = srcData_lft_dims
+      dst_grid_dims_tmp(srcData_lft_ndims:)    = dst_grid_dims
+      dstData = sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims_tmp)
+    else
+      dstData = sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims)
+    end if
   else
-;;; dstData = ndtooned(sparse_matrix_mult(row-1,col-1,v,x,(/max(row),1/)))
-    dstData = ndtooned(sparse_matrix_mult(row-1,col-1,v,x,max(row)))
+    dstData = sparse_matrix_mult(row-1,col-1,v,x,max(row))
   end if
 
 ;---Find data range +- 20%
   minDataValue = min(srcData)-0.2d*abs(min(srcData))
   maxDataValue = max(srcData)+0.2d*abs(max(srcData))
   if(debug) then
-    print("esmf_remap: minDataValue = " + minDataValue)
-    print("esmf_remap: maxDataValue = " + maxDataValue)
+    print("esmf_remap: dstData")
+    str = "            Dimensions:"
+    nd = dimsizes(dstData)
+    do i=0,dimsizes(nd)-1
+      str = str + " " + nd(i)
+    end do
+    print("" + str)
+    print("            min: " + minDataValue)
+    print("            max: " + maxDataValue)
   end if
 
 ;---Mask out outliers
