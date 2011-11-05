@@ -523,6 +523,7 @@ extern NhlErrorTypes getbitsone_W(void);
 extern NhlErrorTypes conform_W(void);
 extern NhlErrorTypes conform_dims_W(void);
 extern NhlErrorTypes reshape_W(void);
+extern NhlErrorTypes reshape_ind_W(void);
 extern NhlErrorTypes paleo_outline_W(void);
 extern NhlErrorTypes inverse_matrix_W(void);
 extern NhlErrorTypes solve_linsys_W(void);
@@ -7050,6 +7051,16 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
     SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
     NclRegisterFunc(reshape_W, args, "reshape", nargs);
+
+/*
+ *  Register reshape_ind
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+    NclRegisterFunc(reshape_ind_W, args, "reshape_ind", nargs);
 
 /*
  *  Register omega_ccm.

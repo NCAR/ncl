@@ -56,6 +56,7 @@ NhlErrorTypes conform_W( void )
   ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   ng_size_t dsizes_conform[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x;
+
 /*
  * Output array variables
  */
@@ -600,5 +601,186 @@ NhlErrorTypes reshape_W( void )
                          NULL,tmp_md->multidval.data_type,0);
   }
   return(ret);
+  NclFree(reshape_dsizes);
 }
 
+
+NhlErrorTypes reshape_ind_W( void )
+{
+/*
+ * Input argument #0
+ */
+  void *x;
+  int ndims_x, has_missing_x;
+  NclScalar missing_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_x;
+  NclTypeClass typeclass_x;
+  int size_x_type;
+/*
+ * Input argument #1
+ */
+  void *tmp_indexes;
+  ng_size_t *indexes;
+  ng_size_t dsizes_indexes[1];
+  NclBasicDataTypes type_indexes;
+
+/*
+ * Input argument #2
+ */
+  void *tmp_reshape_dsizes;
+  ng_size_t *reshape_dsizes;
+  ng_size_t dsizes_reshape_dsizes[1];
+  NclBasicDataTypes type_reshape_dsizes;
+
+/*
+ * Output array variable.
+ */
+  void *xreshape;
+  ng_size_t *dsizes_xreshape;
+  int ndims_xreshape;
+  NclScalar missing_xreshape;
+
+/*
+ * various
+ */
+  ng_size_t total_leftmost, total_reshape, total_output;
+  ng_size_t i, j, nvals, invals, inreshape, index_x, index_xreshape;
+  int ret;
+
+  x = (void*)NclGetArgValue(
+           0,
+           3,
+           &ndims_x, 
+           dsizes_x,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
+           DONT_CARE);
+
+  nvals = dsizes_x[ndims_x-1];
+
+  tmp_indexes = (void*)NclGetArgValue(
+           1,
+           3,
+           NULL,
+           dsizes_indexes,
+           NULL,
+           NULL,
+           &type_indexes,
+           DONT_CARE);
+
+  if(dsizes_indexes[0] != nvals) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"reshape_ind: the number of indexes must be the same as the rightmost dimension of x");
+    return(NhlFATAL);
+  }
+
+  indexes = get_dimensions(tmp_indexes,nvals,type_indexes,"reshape_ind");
+
+  if(indexes == NULL) 
+    return(NhlFATAL);
+
+  tmp_reshape_dsizes = (void*)NclGetArgValue(
+           2,
+           3,
+           NULL,
+           dsizes_reshape_dsizes,
+           NULL,
+           NULL,
+           &type_reshape_dsizes,
+           DONT_CARE);
+
+  reshape_dsizes = get_dimensions(tmp_reshape_dsizes,dsizes_reshape_dsizes[0],
+                                  type_reshape_dsizes,"reshape_ind");
+  if(reshape_dsizes == NULL) 
+    return(NhlFATAL);
+
+/*
+ * Get size and default missing value of x.
+ */
+  typeclass_x = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
+  size_x_type = typeclass_x->type_class.size;
+
+/*
+ * Get input missing value, or default missing value for the input type.
+ */
+  if(has_missing_x) {
+    missing_xreshape = missing_x;
+  }
+  else {
+    missing_xreshape = typeclass_x->type_class.default_mis;
+  }
+
+/*
+ * Construct dimensions for output array
+ */
+  ndims_xreshape = (ndims_x-1) + dsizes_reshape_dsizes[0];
+  dsizes_xreshape = (ng_size_t*)malloc(ndims_xreshape*sizeof(ng_size_t));
+  
+  if(dsizes_xreshape == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"reshape_ind: unable to allocate space for output array dimension sizes");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get total elements in leftmost dimensions. 
+ */
+  total_leftmost = 1;
+  for(i = 0; i < ndims_x-1; i++) {
+    total_leftmost *= dsizes_x[i];
+    dsizes_xreshape[i] = dsizes_x[i];
+  }
+/*
+ * Get total elements in reshape dimensions. 
+ */
+  total_reshape = 1;
+  for(i = 0; i < dsizes_reshape_dsizes[0]; i++) {
+    total_reshape *= reshape_dsizes[i];
+    dsizes_xreshape[(ndims_x-1)+i] = reshape_dsizes[i];
+  }
+
+/*
+ * Allocate space for output.
+ */
+  total_output = total_leftmost * total_reshape;
+  xreshape     = (void*)malloc(total_output*size_x_type);
+  
+  if(xreshape == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"reshape_ind: unable to allocate space for output array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Initially set all values to missing.
+ */
+  for(i = 0; i < total_output; i++) {
+    memcpy((void*)((char*)xreshape + (i*size_x_type)),
+           (void*)((char*)&missing_xreshape),size_x_type);
+  }
+/*
+ * Copy values to new array.
+ */
+  for(i = 0; i < total_leftmost; i++) {
+    invals    = i*nvals;
+    inreshape = i*total_reshape;
+    for(j = 0; j < nvals; j++) {
+      index_xreshape = inreshape + indexes[j];
+      index_x        = invals + j;
+      memcpy((void*)((char*)xreshape + (index_xreshape*size_x_type)),
+             (void*)((char*)x+(index_x*size_x_type)),size_x_type);
+    }
+  }
+
+/*
+ * Return values.
+ */
+  ret = NclReturnValue(xreshape,ndims_xreshape,dsizes_xreshape,
+                       &missing_xreshape,type_x,0);
+/*
+ * Clean up
+ */
+  NclFree(dsizes_xreshape);
+  NclFree(reshape_dsizes);
+  NclFree(indexes);
+  return(ret);
+}
