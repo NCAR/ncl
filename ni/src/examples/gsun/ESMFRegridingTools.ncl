@@ -7,6 +7,14 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       06 Nov 2011: 
+;            Tried to make code faster by adding option
+;            ("RemoveOutliers", True by default) to not
+;            remove outliers. Need to do some testing
+;            with CAM grid to see what kind of impact this has.
+;            Added PrintTimings to time the sparse matrix multiply
+;            and the removing outliers code.
+;
 ;       02 Nov 2011: 
 ;            Replaced the SMM call with the new sparse_matrix_mult
 ;            function.
@@ -1233,29 +1241,33 @@ local opt2, debug, fmsg, fid, srclat, srclon, dstlat, dstlon, src_grid_dims, \
       row, col, v, x, minDataValue, maxDataValue
 begin
   opt2  = opt                                  ; Make a copy
-  fmsg = new(1,float)                          ; For error return
-  debug = isatt_logical_true(opt2,"Debug")
-    
-  if(debug) then
-    print("esmf_remap: remapping using interpolation weights ...")
+  fmsg  = new(1,float)                         ; For error return
+
+;---Check for options
+  RemoveOutliers = isatt_logical_true(opt2,"RemoveOutliers")
+  PrintTimings   = isatt_logical_true(opt2,"PrintTimings")
+  DEBUG          = isatt_logical_true(opt2,"Debug")
+
+  if(DEBUG) then
+    print("esmf_remap: regridding using interpolation weights ...")
   end if
 
 ;---Make sure the weight file is accessible
   if (.not.(isfilepresent(WFile))) then
-    print("esmf_remap: weight file does not exist or is not accessible")
+    print("esmf_remap: weight file doesn't exist or isn't accessible")
     return(fmsg)
   else
     fid = addfile(WFile,"r")
   end if
 	
-;---Get the min/max lat/lon of source and destination grids
+;---Get the lat/lon of source and destination grids
   srclat = fid->yc_a
   srclon = fid->xc_a
   dstlat = fid->yc_b
   dstlon = fid->xc_b
 	
 ;---Check that the source grid "covers" the destination grid 
- if ( .not.( \
+  if ( .not.( \
        (min(dstlat).ge.min(srclat)).and.  \
        (max(dstlat).le.max(srclat)).and.  \
        (min(dstlon).ge.min(srclon)).and.  \
@@ -1264,11 +1276,6 @@ begin
       print("            covered by the source grid.")
   end if
 	
-  if(debug) then
-    print("esmf_remap: checking source data rank with those")
-    print("            given in the weight file ...")
-  end if
-
 ;---Get the dimensions and rank of the source grid and input grid.
   src_grid_dims = fid->src_grid_dims(::-1)    ; dimensions are Fortran-based
   src_grid_rank = dimsizes(src_grid_dims)
@@ -1280,31 +1287,33 @@ begin
   dst_grid_dims = fid->dst_grid_dims(::-1)    ; dimensions are Fortran based
   dst_grid_rank = dimsizes(dst_grid_dims)	
 
-;---Check dimension of srcData
+;---Check dimensions of srcData
   if(src_grid_rank.gt.srcData_rank) then
-    print("esmf_remap: error: input or source data does not have proper dimensions.")
+    print("esmf_remap: error: the rank of the source dimensions on the")
+    print("            weight file is more than the rank of the data")
+    print("            to be regridded. Can't continue.")
     return(fmsg)
   end if
 
-  if(debug) then
+  if(DEBUG) then
 ;---Source grid info
     print("esmf_remap: Source Grid:")
-    str = "            Dimensions:"
+    str = "            dimensions:"
     do i=0,src_grid_rank-1
       str = str + " " + src_grid_dims(i)
     end do
     print("" + str)
-    print("            Latitude min/max: " + min(srclat) + "/" + max(srclat))
-    print("            Longitude min/max:" + min(srclon) + "/" + max(srclon))
+    print("            latitude min/max: " + min(srclat) + "/" + max(srclat))
+    print("            longitude min/max:" + min(srclon) + "/" + max(srclon))
 ;---Destination grid info
     print("esmf_remap: Destination Grid:")
-    str = "            Dimensions:"
+    str = "            dimensions:"
     do i=0,dst_grid_rank-1
       str = str + " " + dst_grid_dims(i)
     end do
     print("" + str)
-    print("            Latitude min/max: " + min(dstlat) + "/" + max(dstlat))
-    print("            Longitude min/max:" + min(dstlon) + "/" + max(dstlon))
+    print("            latitude min/max: " + min(dstlat) + "/" + max(dstlat))
+    print("            longitude min/max:" + min(dstlon) + "/" + max(dstlon))
   end if
 
 ;---Check that the rightmost dimensions are the same.
@@ -1325,7 +1334,7 @@ begin
 ; Retrieve the interpolation weights. They are stored as a 
 ; sparse matrix in a coordinate list format
 ;
-  if(debug) then
+  if(DEBUG) then
     print("esmf_remap: retrieving interpolation weights ...")
   end if
 
@@ -1365,8 +1374,11 @@ begin
 ;    return(fmsg)
 ;  end if
       
-  if(debug)
+  if(DEBUG)
     print("esmf_remap: calling sparse_matrix_mult to apply weights...")
+  end if
+  if(PrintTimings) then
+    start_time = get_cpu_time()
   end if
 
 ;
@@ -1387,10 +1399,20 @@ begin
     dstData = sparse_matrix_mult(row-1,col-1,v,x,max(row))
   end if
 
-;---Find data range +- 20%
-  minDataValue = min(srcData)-0.2d*abs(min(srcData))
-  maxDataValue = max(srcData)+0.2d*abs(max(srcData))
-  if(debug) then
+  if(PrintTimings) then
+    end_time = get_cpu_time()
+    print("esmf_remap: sparse_matrix_mult took " + \
+           (end_time-start_time) + " seconds.")
+  end if
+
+;---Make sure dstData has a missing value
+  if(isatt(srcData,"_FillValue")) then
+    dstData@_FillValue = srcData@_FillValue
+  else
+    dstData@_FillValue = default_fillvalue(typeof(dstData))
+  end if
+
+  if(DEBUG) then
     print("esmf_remap: dstData")
     str = "            Dimensions:"
     nd = dimsizes(dstData)
@@ -1398,21 +1420,47 @@ begin
       str = str + " " + nd(i)
     end do
     print("" + str)
-    print("            min: " + minDataValue)
-    print("            max: " + maxDataValue)
   end if
 
-;---Mask out outliers
-  if(isatt(srcData,"_FillValue")) then
-    dstData@_FillValue = srcData@_FillValue
+  if(RemoveOutliers) then
+    if(DEBUG) then
+      print("esmf_remap: removing outliers...")
+    end if
+    if(PrintTimings) then
+      start_time = get_cpu_time()
+    end if
+
+;---Find data range +- 20%
+    minSrcData   = min(srcData)
+    maxSrcData   = max(srcData)
+    minDataValue = minSrcData-0.2d*abs(minSrcData)
+    maxDataValue = maxSrcData+0.2d*abs(maxSrcData)
+    if(DEBUG) then
+      print("            minSrcData:   " + minSrcData)
+      print("            maxSrcData:   " + maxSrcData)
+      print("            minDataValue: " + minDataValue)
+      print("            maxDataValue: " + maxDataValue)
+    end if
+
+;---Mask out outliers: warning, this can be slow!
+    dstData = where( (dstData.lt.minDataValue).or. \
+                     (dstData.gt.maxDataValue),  \
+                      dstData@_FillValue,dstData)
+
+    if(PrintTimings) then
+      end_time = get_cpu_time()
+      print("esmf_remap: removing outliers took " + \
+             (end_time-start_time) + " seconds.")
+    end if
   else
-    dstData@_FillValue = default_fillvalue(typeof(dstData))
+    if(DEBUG) then
+      print("esmf_remap: NOT removing outliers...")
+    end if
   end if
-  dstData = where( (dstData.lt.minDataValue).or.(dstData.gt.maxDataValue),  \
-                    dstData@_FillValue,dstData)
-                    
-;---Copy some attributes.
+;
+; Copy some attributes.
 ; Note: The user is responsible for attributes in general.
+;
   if (isatt(srcData,"units")) then
     dstData@units=srcData@units
   end if
