@@ -3655,7 +3655,9 @@ NhlErrorTypes _Nclstr_match
       /*
        *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
        *fprintf(stderr, "\treg_exp: <%s>\n", reg_exp);
+       *fprintf(stderr, "\tstrlen(reg_exp) = %d\n", strlen(reg_exp));
        */
+
         if(strlen(reg_exp) > 0)
         {
             if(regcomp(&expr,reg_exp,REG_EXTENDED) != 0)
@@ -3663,6 +3665,22 @@ NhlErrorTypes _Nclstr_match
                 NhlPError(NhlWARNING,NhlEUNKNOWN,"str_match: Invalid expression");
                 return NhlFATAL;
             }
+        }
+        else
+        {
+            str_size = 1;
+
+            output_strs = (string *) NclMalloc(str_size*sizeof(string));
+            if (! output_strs)
+            {
+                NHLPERROR((NhlFATAL,ENOMEM,NULL));
+                return NhlFATAL;
+            }
+            
+            output_str_size = 1;
+            output_strs[0] = ret_missing.stringval;
+            return NclReturnValue(output_strs, 1, &output_str_size,
+                                  &ret_missing, NCL_string, 0);
         }
     }
     else
