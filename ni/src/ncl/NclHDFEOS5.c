@@ -34,6 +34,7 @@
 #include "NclFileInterfaces.h"
 #include <math.h>
 #include <ctype.h>
+#include <string.h>
 #include <HE5_HdfEosDef.h>
 
 #ifndef MAX_VAR_DIMS
@@ -339,7 +340,7 @@ static char *_make_proper_string_end(const char *input_name)
 
     name = strdup(input_name);
     n = strlen(name);
-    i = strlen(name) - 1;
+    i = n - 1;
 
     while(i)
     {
@@ -3665,9 +3666,11 @@ void* storage;
 				}
 				break;
 			case POINT:
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"NclHDFEOS5 can not hanlde POINT data yet."));
 				return(NULL);
 				break;
 			case ZA:
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"NclHDFEOS5 can not hanlde ZA data yet."));
 				return(NULL);
 				break;
 			}
