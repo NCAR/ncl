@@ -1329,7 +1329,7 @@ begin
     srcData_rgt_dims  = srcData_dims(srcData_lft_ndims:)
     srcData_lft_dims  = srcData_dims(0:srcData_lft_ndims-1)
     if(.not.all(srcData_rgt_dims.eq.src_grid_dims)) then
-      print("esmf_remap: error: input or source data does not have proper rightost dimensions.")
+      print("esmf_remap: error: input or source data does not have proper rightmost dimensions.")
       return(fmsg)
     end if
   else
