@@ -7,11 +7,19 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       09 Nov 2011: 
+;            Decided to completely remove "remove outlier" code.
+;            Cleaned up the sparse_matrix_mult code to correctly
+;            handle the case of the source grid being 1D.
+;
 ;       06 Nov 2011: 
-;            Tried to make code faster by adding option
-;            ("RemoveOutliers", True by default) to not
-;            remove outliers. Need to do some testing
-;            with CAM grid to see what kind of impact this has.
+;            Made code faster by adding option
+;            ("RemoveOutliers", False by default) to not
+;            remove outliers. It turns out this code was
+;            added to fix bug in original SMM code in
+;            handling missing values. This code should no
+;            longer be needed.
+;
 ;            Added PrintTimings to time the sparse matrix multiply
 ;            and the removing outliers code.
 ;
@@ -1244,7 +1252,6 @@ begin
   fmsg  = new(1,float)                         ; For error return
 
 ;---Check for options
-  RemoveOutliers = isatt_logical_true(opt2,"RemoveOutliers")
   PrintTimings   = isatt_logical_true(opt2,"PrintTimings")
   DEBUG          = isatt_logical_true(opt2,"Debug")
 
@@ -1348,13 +1355,13 @@ begin
     return(fmsg)
   end if
     
-  if (dst_grid_rank.gt.1) then
-    x = srcData
-  else
 ;
-; If the destination grid is 1D, then we must convert the rightmost
-; dimensions of the input grid to 1D as well.
+; If either the source or destination grid is 1D, then we must 
+; convert the rightmost dimensions of the input grid to 1D as 
+; well. We have to take into account the potential leftmost 
+; dimensions as well; rcData_rank provides us with this info.
 ;
+  if (src_grid_rank.eq.1.or.dst_grid_rank.eq.1) then
     if (srcData_rank.gt.src_grid_rank) then
       src_grid_dims_tmp                        = new(srcData_lft_ndims+1,long)
       src_grid_dims_tmp(0:srcData_lft_ndims-1) = srcData_lft_dims
@@ -1363,6 +1370,8 @@ begin
     else
       x = reshape(srcData,product(srcData_dims))
     end if
+  else
+    x = srcData
   end if
 
 ;
@@ -1382,21 +1391,46 @@ begin
   end if
 
 ;
-; If dst_grid_rank=1, then we likely have an unstructured grid.
-; and the dimensions on the weight file will simply be equal to 1.
-; We have to use max(row) to get the dimension of the output.
+; If dst_grid_rank=1 or src_grid_rank=1, then one of our grids 
+; is unstructured, and the dimensions on the weight file will 
+; simply be equal to 1. This means we need to treat both the
+; input "x" array as nX x 1, and hence the output array will
+; have to be nY x 1.  sparse_matrix_mult recognizes the special
+; case of the output dimensions being 1D, and will assume that
+; the input array is also 1D. If the input array has multiple
+; dimensions, then all but the rightmost dimension are considered
+; to be "leftmost dimensions" that we simply loop across to apply
+; the weights.
 ;
-  if (dst_grid_rank.gt.1) then
-    if (srcData_rank.gt.src_grid_rank) then
-      dst_grid_dims_tmp = new(srcData_lft_ndims+dst_grid_rank,long)
-      dst_grid_dims_tmp(0:srcData_lft_ndims-1) = srcData_lft_dims
-      dst_grid_dims_tmp(srcData_lft_ndims:)    = dst_grid_dims
-      dstData = sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims_tmp)
-    else
-      dstData = sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims)
-    end if
+; For the code below, we have to make sure we pass in the 
+; correct output dimensions *and* handle the return array 
+; appropriately.
+;
+; If we have a 1D dst_grid_rank, then use max(row) to get
+; the  dimension of the output array.
+;
+;
+; I'M IN THE MIDDLE OF MODIFYING THIS. CHECK TO MAKE SURE
+; ALL THE LOGIC IS CORRECT!
+;
+  if (src_grid_rank.gt.1.and.dst_grid_rank.gt.1) then
+    dstData = sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims)
   else
-    dstData = sparse_matrix_mult(row-1,col-1,v,x,max(row))
+    if(src_grid_rank.gt.1.and.dst_grid_rank.eq.1) then
+      dstData = sparse_matrix_mult(row-1,col-1,v,x,max(row))
+    else
+      if(src_grid_rank.eq.1.and.dst_grid_rank.gt.1) then
+        if(srcData_rank.gt.1) then
+          dst_output_dims = new(srcData_lft_ndims+dst_grid_rank,long)
+          dst_output_dims(0:srcData_lft_ndims-1) = srcData_lft_dims
+          dst_output_dims(srcData_lft_ndims:)    = dst_grid_dims
+        else
+          dst_output_dims = dst_grid_dims
+        end if
+      end if
+      dstData_tmp = sparse_matrix_mult(row-1,col-1,v,x,product(dst_grid_dims))
+      dstData = reshape(dstData_tmp,dst_output_dims)
+    end if
   end if
 
   if(PrintTimings) then
@@ -1420,43 +1454,12 @@ begin
       str = str + " " + nd(i)
     end do
     print("" + str)
+    print("            minSrcData: " + min(srcData))
+    print("            maxSrcData: " + max(srcData))
+    print("            minDstData: " + min(dstData))
+    print("            maxDstData: " + max(dstData))
   end if
 
-  if(RemoveOutliers) then
-    if(DEBUG) then
-      print("esmf_remap: removing outliers...")
-    end if
-    if(PrintTimings) then
-      start_time = get_cpu_time()
-    end if
-
-;---Find data range +- 20%
-    minSrcData   = min(srcData)
-    maxSrcData   = max(srcData)
-    minDataValue = minSrcData-0.2d*abs(minSrcData)
-    maxDataValue = maxSrcData+0.2d*abs(maxSrcData)
-    if(DEBUG) then
-      print("            minSrcData:   " + minSrcData)
-      print("            maxSrcData:   " + maxSrcData)
-      print("            minDataValue: " + minDataValue)
-      print("            maxDataValue: " + maxDataValue)
-    end if
-
-;---Mask out outliers: warning, this can be slow!
-    dstData = where( (dstData.lt.minDataValue).or. \
-                     (dstData.gt.maxDataValue),  \
-                      dstData@_FillValue,dstData)
-
-    if(PrintTimings) then
-      end_time = get_cpu_time()
-      print("esmf_remap: removing outliers took " + \
-             (end_time-start_time) + " seconds.")
-    end if
-  else
-    if(DEBUG) then
-      print("esmf_remap: NOT removing outliers...")
-    end if
-  end if
 ;
 ; Copy some attributes.
 ; Note: The user is responsible for attributes in general.
