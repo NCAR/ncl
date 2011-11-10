@@ -479,7 +479,7 @@ end     ; of Unstructured2ESMF(...)
 ;     CornerLat and CornerLon attribute of Opt.
 ;======================================================================
 undef("Curvilinear2SCRIP")
-function Curvilinear2SCRIP(FName[1]:string,FTitle[1]:string,lat2d[*][*]:double,lon2d[*][*]:double,mask2d[*][*]:integer, Opt[1]:logical)
+function Curvilinear2SCRIP(FName[1]:string,FTitle[1]:string,lat2d[*][*]:numeric,lon2d[*][*]:numeric,mask2d[*][*]:integer, Opt[1]:logical)
 begin
     if (isbothvaratt_logical_true(Opt,"ForceUnstructured")) then
         print("Can not use this function for unstructured grid.")
@@ -1356,22 +1356,17 @@ begin
   end if
     
 ;
-; If either the source or destination grid is 1D, then we must 
-; convert the rightmost dimensions of the input grid to 1D as 
-; well. We have to take into account the potential leftmost 
-; dimensions as well; rcData_rank provides us with this info.
+; We have to convert the src grid to 1D no matter what.
+; However, we have to determine if there are any leftmost 
+; dimensions to account for.
 ;
-  if (src_grid_rank.eq.1.or.dst_grid_rank.eq.1) then
-    if (srcData_rank.gt.src_grid_rank) then
-      src_grid_dims_tmp                        = new(srcData_lft_ndims+1,long)
-      src_grid_dims_tmp(0:srcData_lft_ndims-1) = srcData_lft_dims
-      src_grid_dims_tmp(srcData_lft_ndims)     = product(srcData_rgt_dims)
-      x = reshape(srcData,src_grid_dims_tmp)
-    else
-      x = reshape(srcData,product(srcData_dims))
-    end if
+  if (srcData_rank.gt.src_grid_rank) then
+    src_grid_dims_tmp                        = new(srcData_lft_ndims+1,long)
+    src_grid_dims_tmp(0:srcData_lft_ndims-1) = srcData_lft_dims
+    src_grid_dims_tmp(srcData_lft_ndims)     = product(srcData_rgt_dims)
+    x = reshape(srcData,src_grid_dims_tmp)
   else
-    x = srcData
+    x = reshape(srcData,product(srcData_dims))
   end if
 
 ;
@@ -1391,46 +1386,41 @@ begin
   end if
 
 ;
-; If dst_grid_rank=1 or src_grid_rank=1, then one of our grids 
-; is unstructured, and the dimensions on the weight file will 
-; simply be equal to 1. This means we need to treat both the
-; input "x" array as nX x 1, and hence the output array will
-; have to be nY x 1.  sparse_matrix_mult recognizes the special
-; case of the output dimensions being 1D, and will assume that
-; the input array is also 1D. If the input array has multiple
-; dimensions, then all but the rightmost dimension are considered
-; to be "leftmost dimensions" that we simply loop across to apply
-; the weights.
+; We have to always treat the output grid as N x 1
+; (or M x N x 1 if we have leftmost dimensions) 
+; because the input grid has to be 1D.
 ;
-; For the code below, we have to make sure we pass in the 
-; correct output dimensions *and* handle the return array 
-; appropriately.
+; If dst_grid_dims is 1, then we have to set N=max(row).
 ;
-; If we have a 1D dst_grid_rank, then use max(row) to get
-; the  dimension of the output array.
-;
-;
-; I'M IN THE MIDDLE OF MODIFYING THIS. CHECK TO MAKE SURE
-; ALL THE LOGIC IS CORRECT!
-;
-  if (src_grid_rank.gt.1.and.dst_grid_rank.gt.1) then
-    dstData = sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims)
-  else
-    if(src_grid_rank.gt.1.and.dst_grid_rank.eq.1) then
-      dstData = sparse_matrix_mult(row-1,col-1,v,x,max(row))
+  if(srcData_rank.gt.src_grid_rank) then
+    dst_grid_dims_in = new(srcData_lft_ndims+1,long)
+    dst_grid_dims_in(0:srcData_lft_ndims-1) = srcData_lft_dims
+    if(dst_grid_rank.eq.1) then
+      dst_grid_dims_in(srcData_lft_ndims) = max(row)
     else
-      if(src_grid_rank.eq.1.and.dst_grid_rank.gt.1) then
-        if(srcData_rank.gt.1) then
-          dst_output_dims = new(srcData_lft_ndims+dst_grid_rank,long)
-          dst_output_dims(0:srcData_lft_ndims-1) = srcData_lft_dims
-          dst_output_dims(srcData_lft_ndims:)    = dst_grid_dims
-        else
-          dst_output_dims = dst_grid_dims
-        end if
-      end if
-      dstData_tmp = sparse_matrix_mult(row-1,col-1,v,x,product(dst_grid_dims))
-      dstData = reshape(dstData_tmp,dst_output_dims)
+      dst_grid_dims_in(srcData_lft_ndims) = product(dst_grid_dims)
     end if
+  else
+    if(dst_grid_rank.eq.1) then
+      dst_grid_dims_in = max(row)
+    else
+      dst_grid_dims_in = product(dst_grid_dims)
+    end if
+  end if
+;
+; We need to reshape our (M) x N x 1 grid if the output dimensions
+; are not 1D.
+;
+  if(dst_grid_rank.gt.1) then
+    dst_grid_dims_out = new(srcData_lft_ndims+dst_grid_rank,long)
+    if(srcData_rank.gt.src_grid_rank) then
+      dst_grid_dims_out(0:srcData_lft_ndims-1) = srcData_lft_dims
+    end if
+    dst_grid_dims_out(srcData_lft_ndims:) = dst_grid_dims
+    dstData = reshape(sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims_in),\
+                      dst_grid_dims_out)
+  else
+    dstData = sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims_in)
   end if
 
   if(PrintTimings) then
