@@ -820,7 +820,7 @@ NclBasicDataTypes data_type;
 		case NCL_group:
 			return(sizeof(group));	
 		case NCL_compound:
-			return(sizeof(compound));
+			return(sizeof(nclcompound));
 		case NCL_logical:
 			return(sizeof(int));	
 		case NCL_list:
@@ -2528,7 +2528,7 @@ NclBasicDataTypes dt;
 #endif
 {
 	static int first = 1;
-	static NclQuark quarks[22];
+	static NclQuark quarks[24];
 
 	if(first) {
 		first = 0;
@@ -2553,7 +2553,9 @@ NclBasicDataTypes dt;
                 quarks[18] = NrmStringToQuark("group");
                 quarks[19] = NrmStringToQuark("compound");
                 quarks[20] = NrmStringToQuark("ubyte");
-                quarks[21] = NrmStringToQuark("none");
+                quarks[21] = NrmStringToQuark("opaque");
+                quarks[22] = NrmStringToQuark("enum");
+                quarks[23] = NrmStringToQuark("none");
 	}	
 
 	switch(dt) {
@@ -2595,10 +2597,83 @@ NclBasicDataTypes dt;
 		return(NrmQuarkToString(quarks[19]));
 	case NCL_ubyte:
 		return(NrmQuarkToString(quarks[20]));
+	case NCL_opaque:
+		return(NrmQuarkToString(quarks[21]));
+	case NCL_enum:
+		return(NrmQuarkToString(quarks[22]));
 	case NCL_none:
         default:
-		return(NrmQuarkToString(quarks[21]));
+		return(NrmQuarkToString(quarks[23]));
 	}
+}
+
+NclBasicDataTypes _nameToNclBasicDataType(NclQuark name)
+{
+	static int first = 1;
+	static NclQuark quarks[24];
+	static NclBasicDataTypes nbd_type[24];
+	int n;
+
+	if(first) {
+		first = 0;
+                quarks[0] = NrmStringToQuark("double");
+                quarks[1] = NrmStringToQuark("float");
+                quarks[2] = NrmStringToQuark("long");
+                quarks[3] = NrmStringToQuark("integer");
+                quarks[4] = NrmStringToQuark("short");
+                quarks[5] = NrmStringToQuark("string");
+                quarks[6] = NrmStringToQuark("character");
+                quarks[7] = NrmStringToQuark("byte");
+                quarks[8] = NrmStringToQuark("logical");
+                quarks[9] = NrmStringToQuark("file");
+                quarks[10] = NrmStringToQuark("graphic");
+                quarks[11] = NrmStringToQuark("obj");
+                quarks[12] = NrmStringToQuark("list");
+                quarks[13] = NrmStringToQuark("int64");
+                quarks[14] = NrmStringToQuark("ushort");
+                quarks[15] = NrmStringToQuark("uint");
+                quarks[16] = NrmStringToQuark("ulong");
+                quarks[17] = NrmStringToQuark("uint64");
+                quarks[18] = NrmStringToQuark("group");
+                quarks[19] = NrmStringToQuark("compound");
+                quarks[20] = NrmStringToQuark("ubyte");
+                quarks[21] = NrmStringToQuark("opaque");
+                quarks[22] = NrmStringToQuark("enum");
+                quarks[23] = NrmStringToQuark("none");
+
+		nbd_type[0] = NCL_double;
+		nbd_type[1] = NCL_float;
+		nbd_type[2] = NCL_long;
+		nbd_type[3] = NCL_int;
+		nbd_type[4] = NCL_short;
+		nbd_type[5] = NCL_string;
+		nbd_type[6] = NCL_char;
+		nbd_type[7] = NCL_byte;
+		nbd_type[8] = NCL_logical;
+		nbd_type[9] = NCL_numeric;
+		nbd_type[10] = NCL_snumeric;
+		nbd_type[11] = NCL_obj;
+		nbd_type[12] = NCL_list;
+		nbd_type[13] = NCL_int64;
+		nbd_type[14] = NCL_ushort;
+		nbd_type[15] = NCL_uint;
+		nbd_type[16] = NCL_ulong;
+		nbd_type[17] = NCL_uint64;
+		nbd_type[18] = NCL_group;
+		nbd_type[19] = NCL_compound;
+		nbd_type[20] = NCL_ubyte;
+		nbd_type[21] = NCL_opaque;
+		nbd_type[22] = NCL_enum;
+		nbd_type[23] = NCL_none;
+	}	
+
+	for(n = 0; n < 24; n++)
+	{
+		if(name == quarks[n])
+			return (nbd_type[n]);
+	}
+
+	return NCL_none;
 }
 
 NclBasicDataTypes _NclPromoteType

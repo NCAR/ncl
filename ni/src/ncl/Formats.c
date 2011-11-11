@@ -85,6 +85,30 @@ NclFormatFunctionRecPtr _NclGetFormatFuncs
 	return(NULL);
 }
 
+NclFormatFunctionRecPtr _NclGetFormatFuncsWithNewHLFS(NclQuark file_extension)
+{
+	int i, n=1; 
+	NclQuark lfile_ext;
+
+	lfile_ext = _NclGetLower(file_extension);
+	
+	for(i = 0; i<num_formats; i++)
+	{
+		if(formats[i].file_extension == lfile_ext)
+		{
+			n = i+1;
+			break;
+		}
+	}
+
+	for(i = n; i<num_formats; i++)
+	{
+		if(formats[i].file_extension == lfile_ext)
+			return((*formats[i].format_func)());
+	}
+
+	return(NULL);
+}
 
 
 logical _NclFormatEqual

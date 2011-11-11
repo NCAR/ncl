@@ -1,6 +1,6 @@
 C NCLFORTSTART
       SUBROUTINE DRCM2RGRID(NGRD,NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO
-     +                     ,XMSG,NCRIT,OPT,IER)
+     +                      ,XMSG,NCRIT,OPT,IER)
       IMPLICIT NONE
       INTEGER          NGRD,NXI,NYI,NXO,NYO,NCRIT,OPT,IER
       DOUBLE PRECISION XI(NXI,NYI),YI(NXI,NYI),FI(NXI,NYI,NGRD)
@@ -43,6 +43,7 @@ c .             =4/5; xo or yo are not monotonically increasing
 c
 c                              local
       INTEGER          NG, NX,NY,NEXACT,IX,IY,M,N,NW,NER,K,NCRT
+      INTEGER          MFLAG, MPTCRT, MKNT
       DOUBLE PRECISION FW(2,2),W(2,2),SUMF,SUMW,CHKLAT(NYI),CHKLON(NXI)
       DOUBLE PRECISION EPS
       DOUBLE PRECISION DGCDIST
@@ -83,11 +84,11 @@ c c c k = opt
       END IF
 c                              initialize to xmsg
       DO NG=1,NGRD      
-	DO NY = 1,NYO
-          DO NX = 1,NXO
-              FO(NX,NY,NG) = XMSG
-          END DO
-	END DO
+         DO NY = 1,NYO
+            DO NX = 1,NXO
+               FO(NX,NY,NG) = XMSG
+            END DO
+         END DO
       END DO
 c                              main loop [exact matches]
 c                              people want bit-for-bit match
@@ -96,24 +97,23 @@ c                              people want bit-for-bit match
 
       DO NY = 1,NYO
         DO NX = 1,NXO
-	  
-          DO IY = 1,NYI
-            DO IX = 1,NXI
-               IF (XO(NX).GE.(XI(IX,IY)-EPS) .AND.
-     +             XO(NX).LE.(XI(IX,IY)+EPS) .AND.
-     +             YO(NY).GE.(YI(IX,IY)-EPS) .AND.
-     +             YO(NY).LE.(YI(IX,IY)+EPS) ) THEN
-
-                   DO NG=1,NGRD
-                      FO(NX,NY,NG) = FI(IX,IY,NG)
-                      NEXACT = NEXACT + 1
-                   END DO
-                   GO TO 10
-               END IF
-            END DO
-          END DO
-
-   10      CONTINUE
+           DO IY = 1,NYI
+              DO IX = 1,NXI
+                 IF (XO(NX).GE.(XI(IX,IY)-EPS) .AND.
+     +                XO(NX).LE.(XI(IX,IY)+EPS) .AND.
+     +                YO(NY).GE.(YI(IX,IY)-EPS) .AND.
+     +                YO(NY).LE.(YI(IX,IY)+EPS) ) THEN
+                    
+                    DO NG=1,NGRD
+                       FO(NX,NY,NG) = FI(IX,IY,NG)
+                       NEXACT = NEXACT + 1
+                    END DO
+                    GO TO 10
+                 END IF
+              END DO
+           END DO
+           
+ 10        CONTINUE
         END DO
       END DO
 
@@ -172,6 +172,25 @@ c                                             nw =1 nearest neighbor
    20          CONTINUE
        END DO
       END DO
+
+C Since the RCM grid is curvilinear the above algorithm may not work 
+C .   for all of the locations on regular grid. Fill via linear interp.
+
+      MKNT   =  0
+      MFLAG  =  0
+      MPTCRT =  2
+      DO NG=1,NGRD
+        DO NY=1,NYO
+          DO NX=1,NXO
+             IF (FO(NX,NY,NG).EQ.XMSG) THEN
+                 CALL DLINMSG(FO(1,NY,NG),NXO,XMSG,MFLAG,MPTCRT)
+                 MKNT = MKNT + 1
+             END IF
+          END DO
+        END DO
+      END DO
+
+C C C PRINT *,"MKNT=",MKNT
 
       RETURN
       END

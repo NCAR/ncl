@@ -125,6 +125,15 @@ void
 #endif
 );
 
+#ifdef USE_NETCDF4_FEATURES
+extern NhlErrorTypes _NclIFileVlenDef(void);
+extern NhlErrorTypes _NclIFileEnumDef(void);
+extern NhlErrorTypes _NclIFileCompoundDef(void);
+extern NhlErrorTypes _NclIFileWriteCompound(void);
+extern NhlErrorTypes _NclIFileOpaqueDef(void);
+
+extern NhlErrorTypes _NclIFileGrpDef(void);
+#endif
 
 extern NhlErrorTypes _NclIFileVarDef(
 #if NhlNeedProto
@@ -1042,6 +1051,12 @@ void
 #endif
 );
 
+NhlErrorTypes _Nclget_cpu_time(
+#if NhlNeedProto
+void
+#endif
+);
+
 void _NclAddBuiltIns
 #if     NhlNeedProto
 (void)
@@ -1866,7 +1881,7 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(2);
 	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
-	SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,1,NclANY); nargs++;
 	NclRegisterFunc( _Ncldim_avg_n,args,"dim_avg_n",nargs);
 
 	nargs = 0;
@@ -2275,6 +2290,63 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,3,"logical",1,NclANY);nargs++;
 	NclRegisterProc(_NclIFileDimDef,args,"filedimdef",nargs);
 
+#ifdef USE_NETCDF4_FEATURES
+	nargs = 0;
+	args = NewArgs(2);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFileGrpDef,args,"filegrpdef",nargs);
+
+	nargs = 0;
+	args = NewArgs(5);
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"string",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFileVlenDef,args,"filevlendef",nargs);
+
+	nargs = 0;
+	args = NewArgs(6);
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,5,"snumeric",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFileEnumDef,args,"fileenumdef",nargs);
+
+	nargs = 0;
+	args = NewArgs(7);
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,5,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,6,"integer",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFileCompoundDef,args,"filecompounddef",nargs);
+
+	nargs = 0;
+	args = NewArgs(5);
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"list",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFileWriteCompound,args,"filewritecompound",nargs);
+
+	nargs = 0;
+	args = NewArgs(5);
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"string",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"snumeric",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"string",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFileOpaqueDef,args,"fileopaquedef",nargs);
+#endif
+
 	nargs = 0;
 	args = NewArgs(4);
 	dimsizes[0] = 1;
@@ -2516,6 +2588,7 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,NclANY,1,dimsizes); nargs++;
     NclRegisterProc(_Nclset_default_fillvalue,args,"set_default_fillvalue",nargs);
 
+	NclRegisterFunc(_Nclget_cpu_time,NULL,"get_cpu_time",0);
 /*
 	nargs = 0;
 	args = NewArgs(1);

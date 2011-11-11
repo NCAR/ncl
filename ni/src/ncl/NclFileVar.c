@@ -216,7 +216,7 @@ FILE *fp;
 			thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
 		}
 		if(thefile != NULL) {
-			FilePrintSummary((NclObj)thefile,fp);
+			_NclPrintFileSummary((NclObj)thefile,fp);
 		}
 	}
 	return(NhlNOERROR);
@@ -244,6 +244,7 @@ NclFileVarClassRec nclFileVarClassRec = {
 		(NclInitClassFunction)InitializeFileVarClass,
 		(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
+/* NclPrintSummaryFunction print_summary */ NULL,
 /* NclPrintFunction print */	FileVarPrint,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,

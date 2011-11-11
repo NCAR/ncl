@@ -96,6 +96,7 @@ short   NCLnoPrintElem = 0;     /* don't enumerate values in print() */
 short   NCLnoSysPager = 0;      /* don't pipe commands to system() to PAGER */
 short   NCLoldBehavior = 0;     /* retain former behavior for certain backwards-incompatible changes */
 	                        /* behaviors could be revised after an adoption period */
+short   NCLnewfs = 0;           /* Use new file structure */
 
 char    *nclf = NULL;           /* script of NCL commands, may or may not be provided */
 
@@ -187,7 +188,7 @@ main(int argc, char **argv) {
      *  -Q      override: don't echo copyright notice (unannounced option)
      */
     opterr = 0;     /* turn off getopt() msgs */
-    while ((c = getopt (argc, argv, "hnoxVXQp")) != -1) {
+    while ((c = getopt (argc, argv, "fhnoxVXQp")) != -1) {
         switch (c) {
             case 'p':
                 NCLnoSysPager = 1;
@@ -220,8 +221,14 @@ main(int argc, char **argv) {
                 exit(0);
                 break;
 
+            case 'f':
+                NCLnewfs = 1;
+                use_new_hlfs = 1;
+                break;
+
             case 'h':
-                (void) fprintf(stdout, "Usage: ncl -hnpxV <args> <file.ncl>\n");
+                (void) fprintf(stdout, "Usage: ncl -fhnpxV <args> <file.ncl>\n");
+                (void) fprintf(stdout, "\t -f: Use New File Structure, and NetCDF4 features\n");
                 (void) fprintf(stdout, "\t -n: don't enumerate values in print()\n");
                 (void) fprintf(stdout, "\t -p: don't page output from the system() command\n");
                 (void) fprintf(stdout, "\t -o: retain former behavior for certain backwards-incompatible changes\n");

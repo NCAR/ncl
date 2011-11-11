@@ -9,6 +9,8 @@
 ;   Add default input string for ""
 ; Modified October 2010 by Carl Schreck (carl.schreck@noaa.gov)
 ;   Add support for "day of year"
+; Modified April 2011 by Carl Schreck (carl.schreck@noaa.gov)
+;   Now handles missing values without error messages, and removed "ChangeCase"
 ;******************************************************************************
 
 undef("ut_string")
@@ -95,8 +97,6 @@ begin
     ymdhms1i = ymdhms0
   end if
 
-  doy = day_of_year( ymdhms1i(:,0), ymdhms1i(:,1), ymdhms1i(:,2) )
-
   retVal = new(nt,"string")
 
   chFormat = stringtochar(stFormat)
@@ -104,6 +104,11 @@ begin
   do i = 0, dimsizes(time)-1
     retVal(i) = ""
     inside = False
+    if( .not.ismissing(time(i)) ) then
+      doy = day_of_year( ymdhms1i(i,0), ymdhms1i(i,1), ymdhms1i(i,2) )
+    else
+      doy = default_fillvalue("integer")
+    end if
     j = 0
     do while(j .lt. dimsizes(chFormat))
       if (chFormat(j) .eq. "%") then
@@ -123,19 +128,35 @@ begin
           inside = False
         end if
         if (chFormat(j) .eq. "C") then
-          retVal(i) = retVal(i)+changeCase(months(ymdhms1i(i,1)),"up")
+          if( .not.ismissing(time(i)) ) then
+            retVal(i) = retVal(i)+str_upper(months(ymdhms1i(i,1)))
+          else
+            retVal(i) = retVal(i)+default_fillvalue("integer")
+          end if
           inside = False
         end if
         if (chFormat(j) .eq. "c") then
-          retVal(i) = retVal(i)+months(ymdhms1i(i,1))
+          if( .not.ismissing(time(i)) ) then
+            retVal(i) = retVal(i)+months(ymdhms1i(i,1))
+          else
+            retVal(i) = retVal(i)+default_fillvalue("integer")
+          end if
           inside = False
         end if
         if (chFormat(j) .eq. "F") then
-          retVal(i) = retVal(i)+changeCase(fmonths(ymdhms1i(i,1)),"up")
+          if( .not.ismissing(time(i)) ) then
+            retVal(i) = retVal(i)+str_upper(fmonths(ymdhms1i(i,1)))
+          else
+            retVal(i) = retVal(i)+default_fillvalue("integer")
+          end if
           inside = False
         end if
         if (chFormat(j) .eq. "f") then
-          retVal(i) = retVal(i)+fmonths(ymdhms1i(i,1))
+          if( .not.ismissing(time(i)) ) then
+            retVal(i) = retVal(i)+fmonths(ymdhms1i(i,1))
+          else
+            retVal(i) = retVal(i)+default_fillvalue("integer")
+          end if
           inside = False
         end if
         if (chFormat(j) .eq. "N") then
@@ -155,11 +176,11 @@ begin
           inside = False
         end if
         if (chFormat(j) .eq. "J") then
-          retVal(i) = retVal(i)+sprinti("%03d",doy(i))
+          retVal(i) = retVal(i)+sprinti("%03d",doy)
           inside = False
         end if
         if (chFormat(j) .eq. "j") then
-          retVal(i) = retVal(i)+sprinti("%d",doy(i))
+          retVal(i) = retVal(i)+sprinti("%d",doy)
           inside = False
         end if
         if (chFormat(j) .eq. "H") then

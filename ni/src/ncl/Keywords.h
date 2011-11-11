@@ -85,6 +85,7 @@ static struct {
 {"nclexternal",	NCLEXTERNAL},
 {"null",	NCLNULL},
 {"_Missing",      NCLMISSING},
+{"Missing",      NCLMISSING},
 /*
 {"objdata",	RKEY},
 */

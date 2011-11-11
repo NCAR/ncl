@@ -10,9 +10,10 @@
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <assert.h>
+#include <math.h>
 #include "defs.h"
 #include "Symbol.h"
-#include <math.h>
 #include "NclVar.h"
 #include "NclFile.h"
 #include "NclGroup.h"
@@ -48,9 +49,6 @@ NclFile /* thefile */,
 NclQuark /* var */
 #endif
 );
-
-#define FILE_COORD_VAR_ACCESS 0
-#define FILE_VAR_ACCESS 1
 
 static int FileIsVar(
 #if	NhlNeedProto
@@ -353,6 +351,11 @@ int is_unlimited;
 			{
 				return(ret);
 			}
+			if(thefile->file.n_file_dims >= thefile->file.max_file_dims)
+			{
+				_NclReallocFilePart(&(thefile->file), -1, -1, thefile->file.n_file_dims, -1);
+			}
+
 			thefile->file.file_dim_info[thefile->file.n_file_dims] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,dimname);
 			thefile->file.n_file_dims++;
 			return(NhlNOERROR);
@@ -476,6 +479,18 @@ NclQuark *dimnames;
 			if (add_scalar_dim) {
 				AdjustForScalarDim(thefile);
 			}
+
+			/*
+			*fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+			*fprintf(stderr, "\tthefile->file.n_vars = %d, thefile->file.max_vars = %d\n",
+			*		thefile->file.n_vars, thefile->file.max_vars);
+			*/
+
+			if(thefile->file.n_vars >= thefile->file.max_vars)
+			{
+				_NclReallocFilePart(&(thefile->file), -1, thefile->file.n_vars, -1, -1);
+			}
+
 			thefile->file.var_info[thefile->file.n_vars] = (*thefile->file.format_funcs->get_var_info)(thefile->file.private_rec,varname);
 			thefile->file.var_att_info[thefile->file.n_vars] = NULL;
 			thefile->file.var_att_ids[thefile->file.n_vars] = -1;
@@ -825,14 +840,7 @@ NclQuark var;
 	}
 }
 
-NhlErrorTypes FilePrintSummary
-#if	NhlNeedProto
-(NclObj self, FILE    *fp)
-#else
-(self, fp)
-NclObj self;
-FILE    *fp;
-#endif
+NhlErrorTypes _NclFilePrintSummary(NclObj self, FILE *fp)
 {
 	NclFile thefile = (NclFile)self;
 	int i,j;
@@ -853,6 +861,13 @@ FILE    *fp;
 		ret = nclfprintf(fp,"Number of groups:\t %d\n",thefile->file.n_grps);
 	}
         ret = nclfprintf(fp,"Number of variables:\t %d\n",thefile->file.n_vars);
+	
+	/*
+	*ret = nclfprintf(fp,"Number of attributes capacity:\t %d\n",thefile->file.max_file_atts);
+        *ret = nclfprintf(fp,"Number of dimensions capacity:\t %d\n",thefile->file.max_file_dims);
+	*ret = nclfprintf(fp,"Number of groups     capacity:\t %d\n",thefile->file.max_grps);
+        *ret = nclfprintf(fp,"Number of variables  capacity:\t %d\n",thefile->file.max_vars);
+	*/
 
 	return ret;
 }
@@ -1083,13 +1098,14 @@ NclObj self;
 		if(thefile->file.private_rec != NULL)
 			(*thefile->file.format_funcs->free_file_rec)(thefile->file.private_rec);
 	}
-	for(i =0 ; i < thefile->file.n_grps; i++) {
-		NclFree(thefile->file.grp_info[i]);
+	for(i =0 ; i < thefile->file.max_grps; i++) {
+		if(NULL != thefile->file.grp_info[i])
+			NclFree(thefile->file.grp_info[i]);
 		if(thefile->file.grp_att_cb[i] != NULL) {
 			NclFree(thefile->file.grp_att_udata[i]);
 			_NhlCBDelete(thefile->file.grp_att_cb[i]);
 		}
-		if(thefile->file.grp_att_ids[i]!= -1) {
+		if(thefile->file.grp_att_ids[i] != -1) {
 			_NclDelParent(_NclGetObj(thefile->file.grp_att_ids[i]),self);
 		}
 		step = thefile->file.grp_att_info[i];	
@@ -1100,13 +1116,26 @@ NclObj self;
 			NclFree(tmp);
 		}
 	}
-	for(i =0 ; i < thefile->file.n_vars; i++) {
-		NclFree(thefile->file.var_info[i]);
+
+	if(NULL != thefile->file.grp_info)
+        	NclFree(thefile->file.grp_info);
+	if(NULL != thefile->file.grp_att_info)
+        	NclFree(thefile->file.grp_att_info);
+	if(NULL != thefile->file.grp_att_udata)
+        	NclFree(thefile->file.grp_att_udata);
+	if(NULL != thefile->file.grp_att_cb)
+        	NclFree(thefile->file.grp_att_cb);
+	if(NULL != thefile->file.grp_att_ids)
+        	NclFree(thefile->file.grp_att_ids);
+
+	for(i =0 ; i < thefile->file.max_vars; i++) {
+		if(NULL != thefile->file.var_info[i])
+			NclFree(thefile->file.var_info[i]);
 		if(thefile->file.var_att_cb[i] != NULL) {
 			NclFree(thefile->file.var_att_udata[i]);
 			_NhlCBDelete(thefile->file.var_att_cb[i]);
 		}
-		if(thefile->file.var_att_ids[i]!= -1) {
+		if(thefile->file.var_att_ids[i] != -1) {
 			_NclDelParent(_NclGetObj(thefile->file.var_att_ids[i]),self);
 		}
 		step = thefile->file.var_att_info[i];	
@@ -1117,17 +1146,39 @@ NclObj self;
 			NclFree(tmp);
 		}
 	}
-	for(i =0 ; i < thefile->file.n_file_dims; i++) {
-		NclFree(thefile->file.file_dim_info[i]);
+
+	if(NULL != thefile->file.var_info)
+        	NclFree(thefile->file.var_info);
+	if(NULL != thefile->file.var_att_info)
+        	NclFree(thefile->file.var_att_info);
+	if(NULL != thefile->file.var_att_udata)
+        	NclFree(thefile->file.var_att_udata);
+	if(NULL != thefile->file.var_att_cb)
+        	NclFree(thefile->file.var_att_cb);
+	if(NULL != thefile->file.var_att_ids)
+        	NclFree(thefile->file.var_att_ids);
+
+	for(i =0 ; i < thefile->file.max_file_dims; i++) {
+		if(NULL != thefile->file.file_dim_info[i])
+			NclFree(thefile->file.file_dim_info[i]);
 	}
+
+	if(NULL != thefile->file.file_dim_info)
+		NclFree(thefile->file.file_dim_info);
+
 	if(thefile->file.file_atts_id != -1) {
 		NclFree(thefile->file.file_att_udata);
 		_NhlCBDelete(thefile->file.file_att_cb);
 		_NclDelParent(_NclGetObj(thefile->file.file_atts_id),self);
 	}
-	for(i =0 ; i < thefile->file.n_file_atts; i++) {
-		NclFree(thefile->file.file_atts[i]);
+	for(i =0 ; i < thefile->file.max_file_atts; i++) {
+		if(NULL != thefile->file.file_atts[i])
+			NclFree(thefile->file.file_atts[i]);
 	}
+
+	if(NULL != thefile->file.file_atts)
+		NclFree(thefile->file.file_atts);
+
 	if(thefile->obj.cblist != NULL) {
 		_NhlCBDestroy(thefile->obj.cblist);
 	}
@@ -1175,7 +1226,7 @@ struct _NclObjRec *parent;
         int found = 0;
 
         if(theobj->obj.parents == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"FileDelParent: Attempt to delete parent from empty list");
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"FileDelParent: Attempt to delete parent from empty list"));
                 return(NhlFATAL);
         }
 
@@ -1377,10 +1428,10 @@ NclMultiDValData value;
 		for (i = 0; i < fcp->num_options; i++) {
 			if (fcp->options[i].name != loption)
 				continue;
-			found = 1;
 			idx = i;
 			if (thefile->file.format_funcs == _NclGetFormatFuncs(fcp->options[i].format))
 			{
+				found = 1;
 				break;
 			}
 		}
@@ -1491,25 +1542,42 @@ NclMultiDValData value;
 			}
 			return NhlNOERROR;
 		}
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 			  "FileSetFileOption: %s is not a recognized file option for format %s",
-			  NrmQuarkToString(option),NrmQuarkToString(format));
+			  NrmQuarkToString(option),NrmQuarkToString(format)));
 		return(NhlWARNING);
 	}
 	else if (format != NrmNULLQUARK) {
+		found = 0;
 		for (i = 0; i < fcp->num_options; i++) {
 			if (fcp->options[i].name != loption)
 				continue;
-			if (! (_NclGetFormatFuncs(format) &&
+			if ((_NclGetFormatFuncs(format) &&
+			     _NclGetFormatFuncs(format) == _NclGetFormatFuncs(fcp->options[i].format)) ) {
+				found = 1;
+				break;
+			}
+			else if (_NclGetLower(format) == NrmStringToQuark("bin") &&
+				 fcp->options[i].format == _NclGetLower(format)) {
+				found = 1;
+				break;
+			}
+			else if (! (_NclGetFormatFuncs(format) &&
 			       _NclGetFormatFuncs(format) == _NclGetFormatFuncs(fcp->options[i].format)) ) {
-				if (! (_NclGetLower(format) == NrmStringToQuark("bin") &&
-				       fcp->options[i].format == _NclGetLower(format)) ) {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-						  "FileSetFileOption: %s is not a recognized option for format %s",
-						  NrmQuarkToString(option),NrmQuarkToString(format));
-					return(NhlWARNING);
+				if (_NclGetLower(format) == NrmStringToQuark("shp"))
+				{
+					fcp->options[i].format = _NclGetLower(format);
+					found = 1;
+					break;
+				}
+				else if (! (_NclGetLower(format) == NrmStringToQuark("bin") &&
+					fcp->options[i].format == _NclGetLower(format)) ) {
+					found = 1;
+					break;
 				}
 			}
+		}
+		if (found) {
 			if (! value) {
 				/* if no value specified restore default - it's not an error */
 				tmp_md = fcp->options[i].def_value;
@@ -1584,9 +1652,9 @@ NclMultiDValData value;
 				_NclDestroyObj((NclObj)tmp_md);
 			return NhlNOERROR;
 		}
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 			  "FileSetFileOption: %s is not a recognized file option for format %s",
-			  NrmQuarkToString(option),NrmQuarkToString(format));
+			  NrmQuarkToString(option),NrmQuarkToString(format)));
 		return(NhlWARNING);
 	}
 	else {
@@ -1598,7 +1666,7 @@ NclMultiDValData value;
 	return NhlNOERROR;
 }
 
-static NhlErrorTypes UpdateGridTypeAtt 
+NhlErrorTypes UpdateGridTypeAtt 
 #if	NhlNeedProto
 (
 	NclFile  thefile
@@ -1667,10 +1735,11 @@ NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 1009, NULL },      /* HDF5 cache nelems */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0.50, NULL },      /* HDF5 cache preemption */
 #endif
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }, /* GRIB default NCEP parameter table */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB default NCEP parameter table */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB print record info */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB single element dimensions */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }  /* GRIB time period suffix */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB time period suffix */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }   /* new file-structure */
 };
 
 NclFileClassRec nclFileClassRec = {
@@ -1685,6 +1754,7 @@ NclFileClassRec nclFileClassRec = {
 		(NclInitClassFunction)InitializeFileClass,
 		(NclAddParentFunction)FileAddParent,
 		(NclDelParentFunction)FileDelParent,
+/* NclPrintSummaryFunction print_summary */ NULL,
 		(NclPrintFunction) FilePrint,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
@@ -1734,7 +1804,7 @@ NclFileClassRec nclFileClassRec = {
 NclObjClass nclFileClass = (NclObjClass)&nclFileClassRec;
 
 
-static NhlErrorTypes InitializeFileOptions
+NhlErrorTypes InitializeFileOptions
 #if NhlNeedProto
 (void)
 #else
@@ -1856,7 +1926,7 @@ static NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_FORMAT].def_value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 #ifdef USE_NETCDF4
-	len_dims = 4;
+	len_dims = 5;
 #else
 	len_dims = 3;
 #endif
@@ -1867,6 +1937,7 @@ static NhlErrorTypes InitializeFileOptions
 
 #ifdef USE_NETCDF4
 	sval[3] = NrmStringToQuark("netcdf4classic");
+	sval[4] = NrmStringToQuark("netcdf4");
 #endif
 
 	fcp->options[Ncl_FORMAT].valid_values = 
@@ -2204,6 +2275,23 @@ static NhlErrorTypes InitializeFileOptions
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
 	fcp->options[Ncl_TIME_PERIOD_SUFFIX].valid_values = NULL;
 
+	/* new file-structure */
+
+	fcp->options[Ncl_USE_NEW_HLFS].format = NrmStringToQuark("nc");
+	fcp->options[Ncl_USE_NEW_HLFS].name = NrmStringToQuark("usenewhlfs");
+	len_dims = 1;
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = False;
+	fcp->options[Ncl_USE_NEW_HLFS].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = False;
+	fcp->options[Ncl_USE_NEW_HLFS].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	fcp->options[Ncl_USE_NEW_HLFS].valid_values = NULL;
+
 	/* End of options */
 
 	return ret;
@@ -2262,6 +2350,7 @@ static int FileIsVar
 #endif
 {
 	int i, n;
+	int has_compound = 0;
 	char *dot_ptr;
 	char *slash_ptr;
 	char var_str[1024];
@@ -2292,6 +2381,9 @@ static int FileIsVar
 	       *fprintf(stdout, "\tcomponent_name_quark: <%s>\n", NrmQuarkToString(component_name_quark));
 	       */
 		for(i = 0; i < thefile->file.n_vars; i++) {
+			if(thefile->file.var_info[i]->num_compounds)
+			{
+			has_compound++;
 			strcpy(var_name, NrmQuarkToString(thefile->file.var_info[i]->var_full_name_quark));
 			dot_ptr = strchr(var_name, '.');
 			if(dot_ptr)
@@ -2309,7 +2401,11 @@ static int FileIsVar
 				dot_ptr[0] = '\0';
 				thefile->file.var_info[i]->var_name_quark = NrmStringToQuark(var_name);
 			}
+			}
 		}
+
+		if(has_compound)
+		{
 		for(i = 0; i < thefile->file.n_vars; i++) {
 		      /*
 		       *fprintf(stdout, "\tCheck %d: var_full_name <%s>\n\n", i, 
@@ -2355,32 +2451,21 @@ static int FileIsVar
 				return(i);
 			}
 		}
+		}
 	}
 
 	if(NULL == slash_ptr)
 	{
-	      /*
-               *fprintf(stdout, "\n\n\nhit FileIsVar. file: %s, line: %d\n", __FILE__, __LINE__);
-	       *fprintf(stdout, "\tvar: <%s>\n", NrmQuarkToString(var));
-	       */
 		for(i = 0; i < thefile->file.n_vars; i++) {
-		      /*
-	               *fprintf(stdout, "\tthefile->file.var_info[%d]->var_name_quark: <%s>\n",
-		       *	i, NrmQuarkToString(thefile->file.var_info[i]->var_name_quark));
-		       */
 			if((thefile->file.var_info[i]->var_full_name_quark == var) ||
 			   (thefile->file.var_info[i]->var_real_name_quark == var) ||
 			   (thefile->file.var_info[i]->var_name_quark == var)) {
-			      /*
-			       *fprintf(stdout, "\tFind var_quark <%s>\n\n", NrmQuarkToString(var_quark));
-			       */
 				return(i);
 			}
 		}
 	}
 	else
 	{
-		var_quark = NrmStringToQuark(slash_ptr+1);
 	      /*
                *fprintf(stdout, "\n\n\nhit FileIsVar. file: %s, line: %d\n", __FILE__, __LINE__);
 	       *fprintf(stdout, "\tvar: <%s> has / in it.\n\n", var_str);
@@ -2388,15 +2473,17 @@ static int FileIsVar
 	       */
 		for(i = 0; i < thefile->file.n_vars; i++) {
 		      /*
-		       *fprintf(stdout, "\tCheck %d: var_full_name <%s>\n\n", i, 
+		       *fprintf(stdout, "\tCheck %d: var_full_name <%s>\n", i, 
 		       *	NrmQuarkToString(thefile->file.var_info[i]->var_full_name_quark));
 		       */
 			if((thefile->file.var_info[i]->var_full_name_quark == var) ||
 			   (thefile->file.var_info[i]->var_real_name_quark == var) ||
 			   (thefile->file.var_info[i]->var_name_quark == var)) {
 			      /*
-			       *fprintf(stdout, "\tFind var_quark <%s>\n\n", NrmQuarkToString(var_quark));
+			       *fprintf(stdout, "\tFind var_quark <%s>\n", NrmQuarkToString(var));
 			       */
+				if(thefile->file.var_info[i]->var_full_name_quark == var)
+					thefile->file.var_info[i]->var_name_quark = var;
 				return(i);
 			}
 		}
@@ -2465,8 +2552,7 @@ NclQuark var;
 	}
 }
 
-
-static void ReverseIt
+void ReverseIt
 #if	NhlNeedProto
 (void *val,void* swap_space,int ndims,int *compare_sel,ng_size_t *dim_sizes,int el_size)
 #else
@@ -4217,8 +4303,264 @@ NclQuark coord_name;
 	return(-1);
 }
 
+static void _NclNullifyFilePart(NclFilePart *file)
+{
+	int i;
 
-NclFile _NclCreateFile
+	file->max_grps = 0;
+	file->max_vars = 0;
+	file->max_file_dims = 0;
+	file->max_file_atts = 0;
+
+	file->n_grps = 0;
+	file->n_vars = 0;
+	file->n_file_dims = 0;
+	file->n_file_atts = 0;
+
+	file->file_atts_id = -1;
+
+	file->file_att_cb = NULL;
+	file->file_att_udata = NULL;
+	file->format_funcs = NULL;
+	file->private_rec = NULL;
+
+	file->grp_info = NULL;
+	file->grp_att_info = NULL;
+	file->grp_att_udata = NULL;
+	file->grp_att_cb = NULL;
+	file->grp_att_ids = NULL;
+
+	file->var_info = NULL;
+	file->var_att_info = NULL;
+	file->var_att_udata = NULL;
+	file->var_att_cb = NULL;
+	file->var_att_ids = NULL;
+
+	file->file_atts = NULL;
+
+	file->file_dim_info = NULL;
+
+	file->coord_vars = NULL;
+}
+
+void _NclInitFilePart(NclFilePart *file)
+{
+	int i;
+
+	file->max_grps = NCL_MAX_FVARS;
+	file->max_vars = NCL_MAX_FVARS;
+	file->max_file_dims = NCL_MAX_FVARS;
+	file->max_file_atts = NCL_MAX_FVARS;
+
+	file->n_grps = 0;
+	file->n_vars = 0;
+	file->n_file_dims = 0;
+	file->n_file_atts = 0;
+
+	file->file_atts_id = -1;
+
+	file->file_att_cb = NULL;
+	file->file_att_udata = NULL;
+	file->private_rec = NULL;
+
+	file->grp_info = (struct _NclFGrpRec **)NclCalloc(file->max_grps, sizeof(struct _NclFGrpRec *));
+	assert(file->grp_info);
+	file->grp_att_info = (NclFileAttInfoList **)NclCalloc(file->max_grps, sizeof(NclFileAttInfoList *));
+	assert(file->grp_att_info);
+	file->grp_att_udata = (struct _FileCallBackRec **)NclCalloc(file->max_grps, sizeof(struct _FileCallBackRec *));
+	assert(file->grp_att_udata);
+	file->grp_att_cb = (_NhlCB *)NclCalloc(file->max_grps, sizeof(_NhlCB));
+	assert(file->grp_att_cb);
+	file->grp_att_ids = (int *)NclCalloc(file->max_grps, sizeof(int));
+	assert(file->grp_att_ids);
+
+	file->var_info = (struct _NclFVarRec **)NclCalloc(file->max_vars, sizeof(struct _NclFVarRec *));
+	assert(file->var_info);
+	file->var_att_info = (NclFileAttInfoList **)NclCalloc(file->max_vars, sizeof(NclFileAttInfoList *));
+	assert(file->var_att_info);
+	file->var_att_udata = (struct _FileCallBackRec **)NclCalloc(file->max_vars, sizeof(struct _FileCallBackRec *));
+	assert(file->var_att_udata);
+	file->var_att_cb = (_NhlCB *)NclCalloc(file->max_vars, sizeof(_NhlCB));
+	assert(file->var_att_cb);
+	file->var_att_ids = (int *)NclCalloc(file->max_vars, sizeof(int));
+	assert(file->var_att_ids);
+
+	file->file_atts = (struct _NclFAttRec **)NclCalloc(file->max_file_atts, sizeof(struct _NclFAttRec *));
+        assert(file->file_atts);
+
+	file->file_dim_info = (struct _NclFDimRec **)NclCalloc(file->max_file_dims, sizeof(struct _NclFDimRec *));
+	assert(file->file_dim_info);
+
+	file->coord_vars = (struct _NclFVarRec **)NclCalloc(file->max_file_dims, sizeof(struct _NclFVarRec *));
+        assert(file->coord_vars);
+
+	for(i = 0; i < file->max_grps; i++)
+	{
+		file->grp_info[i] = NULL;
+		file->grp_att_info[i] = NULL;
+		file->grp_att_udata[i] = NULL;
+		file->grp_att_cb[i] = NULL;
+		file->grp_att_ids[i] = -1;
+	}
+
+	for(i = 0; i < file->max_vars; i++)
+	{
+		file->var_info[i] = NULL;
+		file->var_att_info[i] = NULL;
+		file->var_att_udata[i] = NULL;
+		file->var_att_cb[i] = NULL;
+		file->var_att_ids[i] = -1;
+	}
+
+	for(i = 0; i < file->max_file_atts; i++)
+	{
+		file->file_atts[i] = NULL;
+	}
+
+	for(i = 0; i < file->max_file_dims; i++)
+	{
+		file->file_dim_info[i] = NULL;
+		file->coord_vars[i] = NULL;
+	}
+}
+
+void _NclReallocFilePart(NclFilePart *file,
+				int n_grps, int n_vars,
+				int n_file_dims, int n_file_atts)
+{
+	int i;
+
+	if(n_grps > 0)
+	{
+		int pre_max_grps = file->max_grps;
+
+		if(n_grps < file->max_grps)
+		{
+			file->max_grps = n_grps + 1;
+		}
+		else
+		{
+			while(n_grps >= file->max_grps)
+				file->max_grps *= 2;
+		}
+
+		file->grp_info = (struct _NclFGrpRec **)NclRealloc(file->grp_info,
+							file->max_grps * sizeof(struct _NclFGrpRec *));
+		assert(file->grp_info);
+		file->grp_att_info = (NclFileAttInfoList **)NclRealloc(file->grp_att_info,
+							file->max_grps * sizeof(NclFileAttInfoList *));
+		assert(file->grp_att_info);
+		file->grp_att_udata = (struct _FileCallBackRec **)NclRealloc(file->grp_att_udata,
+							file->max_grps * sizeof(struct _FileCallBackRec *));
+		assert(file->grp_att_udata);
+		file->grp_att_cb = (_NhlCB *)NclRealloc(file->grp_att_cb, file->max_grps * sizeof(_NhlCB));
+		assert(file->grp_att_cb);
+		file->grp_att_ids = (int *)NclRealloc(file->grp_att_ids, file->max_grps * sizeof(int));
+		assert(file->grp_att_ids);
+
+		for(i = pre_max_grps; i < file->max_grps; i++)
+		{
+			file->grp_info[i] = NULL;
+			file->grp_att_info[i] = NULL;
+			file->grp_att_udata[i] = NULL;
+			file->grp_att_cb[i] = NULL;
+			file->grp_att_ids[i] = -1;
+		}
+	}
+
+	if(n_vars > 0)
+	{
+		int pre_max_vars = file->max_vars;
+
+		if(n_vars < file->max_vars)
+		{
+			file->max_vars = n_vars + 1;
+		}
+		else
+		{
+			while(n_vars >= file->max_vars)
+				file->max_vars *= 2;
+		}
+
+		file->var_info = (struct _NclFVarRec **)NclRealloc(file->var_info,
+							file->max_vars * sizeof(struct _NclFVarRec *));
+		assert(file->var_info);
+		file->var_att_info = (NclFileAttInfoList **)NclRealloc(file->var_att_info,
+							file->max_vars * sizeof(NclFileAttInfoList *));
+		assert(file->var_att_info);
+		file->var_att_udata = (struct _FileCallBackRec **)NclRealloc(file->var_att_udata,
+							file->max_vars * sizeof(struct _FileCallBackRec *));
+		assert(file->var_att_udata);
+		file->var_att_cb = (_NhlCB *)NclRealloc(file->var_att_cb, file->max_vars * sizeof(_NhlCB));
+		assert(file->var_att_cb);
+		file->var_att_ids = (int *)NclRealloc(file->var_att_ids, file->max_vars * sizeof(int));
+		assert(file->var_att_ids);
+
+		for(i = pre_max_vars; i < file->max_vars; i++)
+		{
+			file->var_info[i] = NULL;
+			file->var_att_info[i] = NULL;
+			file->var_att_udata[i] = NULL;
+			file->var_att_cb[i] = NULL;
+			file->var_att_ids[i] = -1;
+		}
+	}
+
+	if(n_file_dims > 0)
+	{
+		int pre_max_file_dims = file->max_file_dims;
+
+		if(n_file_dims < file->max_file_dims)
+		{
+			file->max_file_dims = n_file_dims + 1;
+		}
+		else
+		{
+			while(n_file_dims >= file->max_file_dims)
+				file->max_file_dims *= 2;
+		}
+
+		file->file_dim_info = (struct _NclFDimRec **)NclRealloc(file->file_dim_info,
+							file->max_file_dims * sizeof(struct _NclFDimRec *));
+		assert(file->file_dim_info);
+
+		file->coord_vars = (struct _NclFVarRec **)NclRealloc(file->coord_vars,
+							file->max_file_dims * sizeof(struct _NclFVarRec *));
+        	assert(file->coord_vars);
+
+		for(i = pre_max_file_dims; i < file->max_file_dims; i++)
+		{
+			file->file_dim_info[i] = NULL;
+			file->coord_vars[i] = NULL;
+		}
+	}
+
+	if(n_file_atts > 0)
+	{
+		int pre_max_file_atts = file->max_file_atts;
+
+		if(n_file_atts < file->max_file_atts)
+		{
+			file->max_file_atts = n_file_atts + 1;
+		}
+		else
+		{
+			while(n_file_atts >= file->max_file_atts)
+				file->max_file_atts *= 2;
+		}
+
+		file->file_atts = (struct _NclFAttRec **)NclRealloc(file->file_atts,
+						file->max_file_atts * sizeof(struct _NclFAttRec *));
+        	assert(file->file_atts);
+
+		for(i = pre_max_file_atts; i < file->max_file_atts; i++)
+		{
+			file->file_atts[i] = NULL;
+		}
+	}
+}
+
+NclFile _NclFileCreate
 #if	NhlNeedProto
 (NclObj  inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, NclStatus status, NclQuark path,int rw_status)
 #else
@@ -4342,7 +4684,7 @@ int rw_status;
 			tmp_path[len_path] = '\0';
 			if(stat(_NGResolvePath(tmp_path),&buf) == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  "_NclCreateFile: Requested file does not exist as (%s) or as (%s), can't add file",
+					  "_NclFileCreate: Requested file does not exist as (%s) or as (%s), can't add file",
 					  the_path,tmp_path);
 				NclFree(tmp_path);
 				return(NULL);
@@ -4362,28 +4704,10 @@ int rw_status;
 	}
 	file_out->file.fname = fname_q;
 	file_out->file.file_format = 0;
-	file_out->file.n_grps = 0;
-	for(i = 0; i < NCL_MAX_FVARS; i++) {
-		file_out->file.grp_info[i] = NULL;
-		file_out->file.file_atts[i] = NULL;
-		file_out->file.grp_att_info[i] = NULL;
-		file_out->file.grp_att_udata[i] = NULL;
-		file_out->file.grp_att_cb[i] = NULL;
-		file_out->file.grp_att_ids[i] = -1;
-	}
-	file_out->file.n_vars = 0;
-	file_out->file.file_atts_id = -1;
-	for(i = 0; i < NCL_MAX_FVARS; i++) {
-		file_out->file.var_info[i] = NULL;
-		file_out->file.file_atts[i] = NULL;
-		file_out->file.var_att_info[i] = NULL;
-		file_out->file.var_att_udata[i] = NULL;
-		file_out->file.var_att_cb[i] = NULL;
-		file_out->file.var_att_ids[i] = -1;
-		file_out->file.file_dim_info[i] = NULL;
-		file_out->file.coord_vars[i] = NULL;
-	}
 	file_out->file.file_ext_q = file_ext_q;
+
+	_NclInitFilePart(&(file_out->file));
+
 	file_out->file.format_funcs = _NclGetFormatFuncs(file_ext_q);
 	if (! file_out->file.format_funcs) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"An internal error has occurred. The file format requested does not appear to be supported, could not open (%s)",NrmQuarkToString(path));
@@ -4449,7 +4773,7 @@ int rw_status;
 					strncpy(tmp_path,the_path,len_path);
 					tmp_path[len_path] = '\0';
 					if(stat(_NGResolvePath(tmp_path),&buf) == -1) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclCreateFile: Requested file does not exist as (%s) or as (%s), can't add file",the_path,tmp_path);
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclFileCreate: Requested file does not exist as (%s) or as (%s), can't add file",the_path,tmp_path);
 						NclFree(tmp_path);
 						return(NULL);
 					} else {
@@ -4483,14 +4807,10 @@ int rw_status;
 	if(file_out->file.format_funcs->get_grp_names != NULL)
 	{
 		name_list = (*file_out->file.format_funcs->get_grp_names)(file_out->file.private_rec,&n_names);
+
+		_NclReallocFilePart(&(file_out->file), n_names, -1, -1, -1);
 		file_out->file.n_grps = n_names;
-		if(n_names > NCL_MAX_FVARS) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"The file (%s) contains (%d) variable which  exceeds the number of allowable variables (%d), ",NrmQuarkToString(path),n_names,NCL_MAX_FVARS);
-			NclFree((void*)name_list);
-			if(file_out_free) 
-				NclFree((void*)file_out);
-			return(NULL);
-		}
+
 		for(i = 0; i < n_names; i++){
 			file_out->file.grp_info[i] = (*file_out->file.format_funcs->get_grp_info)(file_out->file.private_rec,name_list[i]);
 			if(file_out->file.format_funcs->get_grp_att_names != NULL) {
@@ -4509,14 +4829,10 @@ int rw_status;
 
 	if(file_out->file.format_funcs->get_var_names != NULL) {
 		name_list = (*file_out->file.format_funcs->get_var_names)(file_out->file.private_rec,&n_names);
+
+		_NclReallocFilePart(&(file_out->file), file_out->file.n_grps + 1, n_names, -1, -1);
 		file_out->file.n_vars = n_names;
-		if(n_names > NCL_MAX_FVARS) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"The file (%s) contains (%d) variable which  exceeds the number of allowable variables (%d), ",NrmQuarkToString(path),n_names,NCL_MAX_FVARS);
-			NclFree((void*)name_list);
-			if(file_out_free) 
-				NclFree((void*)file_out);
-			return(NULL);
-		}
+
 		for(i = 0; i < n_names; i++){
 			file_out->file.var_info[i] = (*file_out->file.format_funcs->get_var_info)(file_out->file.private_rec,name_list[i]);
 			if(file_out->file.format_funcs->get_var_att_names != NULL) {
@@ -4539,7 +4855,10 @@ int rw_status;
 	}
 	if(file_out->file.format_funcs->get_dim_names!= NULL) {
 		name_list = (*file_out->file.format_funcs->get_dim_names)(file_out->file.private_rec,&n_names);
+
+		_NclReallocFilePart(&(file_out->file), -1, -1, n_names, -1);
 		file_out->file.n_file_dims = n_names;
+
 		for(i = 0; i < n_names; i++){
 			file_out->file.file_dim_info[i] = (*file_out->file.format_funcs->get_dim_info)(file_out->file.private_rec,name_list[i]);
 			index = FileIsVar(file_out,name_list[i]);
@@ -4561,11 +4880,10 @@ int rw_status;
 	}
 	if(file_out->file.format_funcs->get_att_names != NULL) {
 		name_list = (*file_out->file.format_funcs->get_att_names)(file_out->file.private_rec,&n_names);
+
+		_NclReallocFilePart(&(file_out->file), -1, -1, -1, n_names);
 		file_out->file.n_file_atts = n_names;
-		if(n_names > NCL_MAX_FVARS) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"Maximum number of file attributes (%d) exceeded, must ignore some attributes",NCL_MAX_FVARS);
-			n_names = NCL_MAX_FVARS;
-		}
+
 		for(i = 0; i < n_names; i++) {
 			file_out->file.file_atts[i] = (*file_out->file.format_funcs->get_att_info)(file_out->file.private_rec,name_list[i]);
 		}
@@ -4610,14 +4928,16 @@ int type;
 	long stride[NCL_MAX_DIMENSIONS];
 	long real_stride[NCL_MAX_DIMENSIONS];
 	int i,j,k,done = 0,inc_done = 0;
-	int n_dims_target,n_elem = 1;
+	int n_dims_target;
+	ng_size_t n_elem = 1;
 	int n_dims_selection;
-	int total_elements = 1;
+	ng_size_t total_elements = 1;
 	int has_vectors = 0;
 	int has_stride = 0;
 	int has_reverse = 0;
 	int has_reorder = 0;
-	int from = 0,block_write_limit,n_elem_block;
+	ng_size_t from = 0,n_elem_block;
+	int block_write_limit;
 	NclFDimRec *tmpfdim = NULL;
 	
 	int multiplier_target[NCL_MAX_DIMENSIONS];
@@ -5302,6 +5622,12 @@ int type;
 						if(ret < NhlWARNING) {
 							return(ret);
 						}
+
+						if(thefile->file.n_file_dims >= thefile->file.max_file_dims)
+						{
+							_NclReallocFilePart(&(thefile->file), -1, -1, thefile->file.n_file_dims, -1);
+						}
+
 						thefile->file.file_dim_info[thefile->file.n_file_dims] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,new_dim_quarks[i]);
 						thefile->file.n_file_dims++;
 				
@@ -5331,6 +5657,11 @@ int type;
 								AdjustForScalarDim(thefile);
 							}
 							else {
+								if(thefile->file.n_file_dims >= thefile->file.max_file_dims)
+								{
+									_NclReallocFilePart(&(thefile->file), -1, -1, thefile->file.n_file_dims, -1);
+								}
+
 								thefile->file.file_dim_info[thefile->file.n_file_dims] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,new_dim_quarks[i]);
 								thefile->file.n_file_dims++;
 							}
@@ -5456,6 +5787,11 @@ int type;
 			if(ret < NhlWARNING) {
 				return(ret);
 			}
+			if(thefile->file.n_vars >= thefile->file.max_vars)
+			{
+				_NclReallocFilePart(&(thefile->file), -1, thefile->file.n_vars, -1, -1);
+			}
+
 			thefile->file.var_info[thefile->file.n_vars] = (*thefile->file.format_funcs->get_var_info)(thefile->file.private_rec,var);
 			thefile->file.var_att_info[thefile->file.n_vars] = NULL;
 			thefile->file.var_att_ids[thefile->file.n_vars] = -1;
@@ -6090,6 +6426,11 @@ struct _NclSelectionRecord *sel_ptr;
 					value->multidval.val
 					);
 				if(ret > NhlFATAL) {
+					if(thefile->file.n_file_atts >= thefile->file.max_file_atts)
+					{
+						_NclReallocFilePart(&(thefile->file), -1, -1, -1, thefile->file.n_file_atts);
+					}
+
 					thefile->file.file_atts[thefile->file.n_file_atts] = (*thefile->file.format_funcs->get_att_info)(thefile->file.private_rec,attname);
 					if(thefile->file.file_atts[thefile->file.n_file_atts] != NULL) {
 						thefile->file.n_file_atts++;
@@ -6154,6 +6495,11 @@ struct _NclSelectionRecord *sel_ptr;
 					_NclDestroyObj((NclObj)tmp_md);
 				}
 				if(ret > NhlWARNING) {
+					if(thefile->file.n_file_atts >= thefile->file.max_file_atts)
+					{
+						_NclReallocFilePart(&(thefile->file), -1, -1, -1, thefile->file.n_file_atts);
+					}
+
 					thefile->file.file_atts[thefile->file.n_file_atts] = (*thefile->file.format_funcs->get_att_info)(thefile->file.private_rec,attname);
 					if(thefile->file.file_atts[thefile->file.n_file_atts] != NULL) {
 						thefile->file.n_file_atts++;
@@ -6485,7 +6831,9 @@ NclQuark group_name;
 	if(index < 0)
 		return (NULL);
 
+#ifdef USE_NETCDF4_FEATURES
 	group_out = _NclCreateGroup(NULL,NULL,Ncl_File,0,TEMPORARY,thefile,group_name);
+#endif
 
 #if 0
 	if(group_out != NULL) {
@@ -6531,3 +6879,4 @@ NclQuark group_name;
        */
 	return (group_out);
 }
+

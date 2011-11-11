@@ -154,7 +154,7 @@ HDFAttInqRec* att_inq
 		NclFree(tmp);
 	} 
 	else {
-		att_inq->value = NclMalloc(nctypelen(att_inq->data_type)*att_inq->len);
+		att_inq->value = NclMalloc(sd_nctypelen(att_inq->data_type)*att_inq->len);
 		ret = sd_ncattget(ncid,att_inq->varid,NrmQuarkToString(att_inq->name),att_inq->value);
 	}
 }
@@ -192,7 +192,7 @@ HDFAttInqRec* att_inq
 		NclFree(tmp);
 	} 
 	else {
-		att_inq->value = NclMalloc(nctypelen(att_inq->data_type)*att_inq->len);
+		att_inq->value = NclMalloc(sd_nctypelen(att_inq->data_type)*att_inq->len);
 		ret = SDreadattr(sd_id,att_inq->attr_ix,att_inq->value);
 		
 	}
@@ -220,8 +220,8 @@ static void HDFCacheAttValue
 		NclFree(tmp);
 	}
 	else {
-		att_inq->value = NclMalloc(nctypelen(att_inq->data_type) * att_inq->len);
-		memcpy(att_inq->value,value,nctypelen(att_inq->data_type) * att_inq->len);
+		att_inq->value = NclMalloc(sd_nctypelen(att_inq->data_type) * att_inq->len);
+		memcpy(att_inq->value,value,sd_nctypelen(att_inq->data_type) * att_inq->len);
 	}
 	return;
 }
@@ -429,10 +429,10 @@ static void *HDFMapFromNcl
 		*(nc_type*)out_type = NC_DOUBLE;
 		break;
 	case NCL_int64:
-	case NCL_uint64:
-		/* fall through */
+	case NCL_uint64:		
+                /* fall through */
         default:
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"Can't map type");
+		NhlPError(NhlINFO,NhlEUNKNOWN,"Can't map type");
 		NclFree(out_type);
 		out_type = NULL;
 	}
@@ -1420,7 +1420,7 @@ void* storage;
 	HDFFileRecord *rec = (HDFFileRecord*) therec;
 	HDFVarInqRecList *stepvl;
 	void *out_data;
-	int n_elem = 1;
+	ng_size_t n_elem = 1;
 	int cdfid = -1;
 	int ret = -1,i;
 	int no_stride = 1;
@@ -1430,7 +1430,7 @@ void* storage;
 	while(stepvl != NULL) {
 		if(stepvl->var_inq->name == thevar) {
 			for(i= 0; i< stepvl->var_inq->n_dims; i++) {
-				count[i] = (int)floor((finish[i] - start[i])/(double)stride[i]) + 1;
+				count[i] = (long)((finish[i] - start[i])/stride[i]) + 1;
 				n_elem *= count[i];
 				if(stride[i] != 1) {
 					no_stride = 0;
@@ -1518,7 +1518,7 @@ void* storage;
 					*(string*)storage = *(string*)(stepal->att_inq->value);
 				} else {
 					memcpy(storage,stepal->att_inq->value,
-					       nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
+					       sd_nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
 				}
 				return(storage);
 			}
@@ -1582,7 +1582,7 @@ void* storage;
 				if(stepal->att_inq->name == theatt) {
 					if (theatt == NrmStringToQuark("hdf_group_id")) {
 						memcpy(storage,&(stepvl->var_inq->vg_ref),
-						       nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
+						       sd_nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
 						return storage;
 					}
 					if (stepal->att_inq->value != NULL) {
@@ -1590,7 +1590,7 @@ void* storage;
 							*(string*)storage = *(string*)(stepal->att_inq->value);
 						} else {
 							memcpy(storage,stepal->att_inq->value,
-							       nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
+							       sd_nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
 						}
 						return(storage);
 					}
@@ -1645,7 +1645,8 @@ long *stride;
 	int cdfid;
 	HDFVarInqRecList *stepvl; 
 	long count[MAX_NC_DIMS];
-	int i,n_elem = 1,no_stride = 1;
+	ng_size_t n_elem = 1;
+	int i,no_stride = 1;
 	int ret;
 
 	if(rec->wr_status <= 0) {
@@ -1653,7 +1654,7 @@ long *stride;
 		while(stepvl != NULL) {
 			if(stepvl->var_inq->name == thevar) {
 				for(i= 0; i< stepvl->var_inq->n_dims; i++) {
-					count[i] = (int)floor((finish[i] - start[i])/(double)stride[i]) + 1;
+					count[i] = (long)((finish[i] - start[i])/stride[i]) + 1;
 					n_elem *= count[i];
 					if(stride[i] != 1) {
 						no_stride = 0;
@@ -1770,7 +1771,7 @@ void *data;
 				} else {
 					ret = sd_ncattput(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),stepal->att_inq->data_type,stepal->att_inq->len,data);
 					memcpy(stepal->att_inq->value,data,
-					       nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
+					       sd_nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
 				}
 	
 	
@@ -2012,7 +2013,7 @@ void* data;
 							ret = sd_ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,stepal->att_inq->len,data);
 							if (stepal->att_inq->value != NULL) {
 								memcpy(stepal->att_inq->value,data,
-								       nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
+								       sd_nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
 							}
 							sd_ncendef(cdfid);
 						}
@@ -2703,7 +2704,6 @@ static NhlErrorTypes HDFAddVarAtt
 				stepal->next->att_inq->att_num = i;
 				stepal->next->att_inq->name = theatt;
 				stepal->next->att_inq->len = n_items;
-				HDFCacheAttValue(stepal->next->att_inq,lvalues);
 				if (! is_unsigned) {
 					stepal->next->att_inq->data_type = *the_data_type;
 					stepal->next->att_inq->hdf_type = *the_data_type;
@@ -2712,7 +2712,7 @@ static NhlErrorTypes HDFAddVarAtt
 					stepal->next->att_inq->data_type = HDFMapToNC(*the_data_type - NC_UOFFSET);
 					stepal->next->att_inq->hdf_type = NCMapToHDF(*the_data_type);
 				}
-				HDFCacheAttValue(stepvl->var_inq->att_list->att_inq,lvalues);
+				HDFCacheAttValue(stepal->next->att_inq,lvalues);
 				stepvl->var_inq->natts++ ;
 			}
 			NclFree(the_data_type);
@@ -2765,10 +2765,7 @@ NclFormatFunctionRec HDFRec = {
 /* NclMapNclTypeToFormat   map_ncl_type_to_format; */	HDFMapFromNcl,
 /* NclDelAttFunc           del_att; */			HDFDelAtt,
 /* NclDelVarAttFunc        del_var_att; */		HDFDelVarAtt,
-/* NclGetGrpNamesFunc      get_grp_names; */		NULL,
-/* NclGetGrpInfoFunc       get_grp_info; */		NULL,
-/* NclGetGrpAttNamesFunc   get_grp_att_names; */	NULL, 
-/* NclGetGrpAttInfoFunc    get_grp_att_info; */		NULL,
+#include "NclGrpFuncs.null"
 /* NclSetOptionFunc        set_option;  */		NULL
 };
 NclFormatFunctionRecPtr HDFAddFileFormat 

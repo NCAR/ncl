@@ -2635,11 +2635,15 @@ NhlBoolean *out_of_range;
 	NhlBoolean clockwise = False;
 	double area = 0.0;
 	double lat0,lon0,lat1,lon1;
-
+	double x0,y0,x1,y1;
+	double min_lon,max_lon;
+	
 /*
  * From comp.graphics.algorithms FAQ: orientation is clockwise if 
  * the signed area is less than 0.0; counter-clockwise otherwise.
+ * (adapted for spherical surface - project to flat surface first)
  */
+	min_lon = max_lon = x[0];
 	*out_of_range = False;
 	if (y[0] > 90.0) {
 		lat0 = 90.0;
@@ -2663,6 +2667,8 @@ NhlBoolean *out_of_range;
 	else {
 		lon0 = x[0];
 	}
+	x0 = 0.0;
+        y0 = 0.0;
 	for (i=0; i < n; i++) {
 		int nexti = i + 1;
 		if (i == n - 1) {
@@ -2693,14 +2699,55 @@ NhlBoolean *out_of_range;
 		else {
 			lon1 = x[nexti];
 		}
-		area += lon0 * lat1 - lon1 * lat0;
-		lon0 = lon1;
-		lat0 = lat1;
+		if (lon1 > max_lon) max_lon = lon1;
+		if (lon1 < min_lon) min_lon = lon1;
+		NGCALLF(hlugproj,HLUGPROJ)(&lat0,&lon0,&lat1,&lon1,&x1,&y1);
+		area += x0 * y1 - x1 * y0;
+		x0 = x1;
+		y0 = y1;
 	}
+	if (max_lon - min_lon < 180) {
+		clockwise = area < 0.0;
+		return clockwise;
+	}
+	/* can't use gproj -- so just try pretending its not spherical */
+	area = 0.0;
+        for (i=0; i < n; i++) {
+                int nexti = i + 1;
+                if (i == n - 1) {
+                        if (closed)
+                                break;
+                        else
+                                nexti = 0;
+                }
+                if (y[nexti] > 90.0) {
+                        lat1 = 90.0;
+                        *out_of_range = True;
+                }
+                else if (y[nexti] < -90.0) {
+                        lat1 = -90.0;
+                        *out_of_range = True;
+                }
+                else {
+                        lat1 = y[nexti];
+                }
+                if (x[nexti] > 540.0) {
+                        lon1 = 540.0;
+                        *out_of_range = True;
+                }
+                else if (x[nexti] < -540.0) {
+                        lon1 = -540.0;
+                        *out_of_range = True;
+                }
+                else {
+                        lon1 = x[nexti];
+                }
+                area += lon0 * lat1 - lon1 * lat0;
+                lon0 = lon1;
+                lat0 = lat1;
+        }
 	clockwise = area < 0.0;
-
 	return clockwise;
-		
 }
 /*ARGSUSED*/
 static NhlErrorTypes MapDataPolygon
@@ -2787,7 +2834,7 @@ int n;
 	}
 	else {
 		e_text = 
-	     "%s: out of range lat/lon coordinates encountered: constraining";
+			"%s: out of range lat/lon coordinates encountered: constraining";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ret = MIN(ret,NhlWARNING);
 
@@ -2844,7 +2891,7 @@ int n;
 	c_mpseti("VS",0);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	subret = _NhlArinam(aws,entry_name);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	if ((ret = MIN(subret,ret)) < NhlWARNING) goto err_ret;
 
 	c_mpgetc("OU",cval,3);
 	c_mpsetc("OU","NO");
@@ -2853,7 +2900,7 @@ int n;
 	c_mpsetc("OU",cval);
 	
 	subret = _NhlMapita(aws,yl[0],xl[0],0,3,left_id,right_id,entry_name); 
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	if ((ret = MIN(subret,ret)) < NhlWARNING) goto err_ret;
 
 
 	if (mptrans->mptrans.great_circle_lines_on) {
@@ -2882,7 +2929,8 @@ int n;
 				e_text = "%s: dynamic memory allocation error";
 				NhlPError(NhlFATAL,
 					  NhlEUNKNOWN,e_text,entry_name);
-				return(NhlFATAL);
+				ret = NhlFATAL;
+				goto err_ret;
 			}
 			lastsize = size;
 			c_mapgci(yl[i],xl[i],
@@ -2891,12 +2939,12 @@ int n;
 				subret = _NhlMapita(aws,ybuf[j],xbuf[j],
 					   2,3,left_id,right_id,entry_name);
 				if ((ret = MIN(subret,ret)) < NhlWARNING)
-					return ret;
+					goto err_ret;
 			}
 			subret = _NhlMapita(aws,yl[nexti],xl[nexti],
 					    2,3,left_id,right_id,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING)
-				return ret;
+				goto err_ret;
 		}
 		NhlFree(xbuf);
 		NhlFree(ybuf);
@@ -2919,7 +2967,7 @@ int n;
 					   xl[i] + xdist *(j+1)/ (float)size,2,
 					   3,left_id,right_id,entry_name);
 				if ((ret = MIN(subret,ret)) < NhlWARNING)
-					return ret;
+					goto err_ret;
 			}
 		}
 	}
@@ -2930,13 +2978,13 @@ int n;
 		_NhlDumpAreaMap(aws,entry_name);
 
 	subret = _NhlArpram(aws,0,0,0,entry_name);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	if ((ret = MIN(subret,ret)) < NhlWARNING) goto err_ret;
 
 	subret = _NhlArscam(aws,(_NHLCALLF(hlumappolygon,HLUMAPPOLYGON)),
 			    entry_name);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	if ((ret = MIN(subret,ret)) < NhlWARNING) goto err_ret;
 
-
+err_ret:
 	subret = _NhlIdleWorkspace(aws);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 

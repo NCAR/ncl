@@ -5553,8 +5553,8 @@ GribRecordInqRec *grib_rec;
 #endif
 {
 	int cix,nix;
-	int common_time_unit;
-	int time_unit;
+	int common_time_unit = 1;
+	int time_unit = 1;
 	double c_factor = 1.0;
 
 	if (!(node->time_range_indicator < 2 && (int)grib_rec->pds[20] < 2)) {
@@ -5956,7 +5956,7 @@ char *name;
 			}
 			cp = lcp;
 		}
-		if (index <= 0) {
+		if (index == -1) {
 			TOKENSTART(cp);
 			if (cp)
 				center =  strtol(cp,&cp,10);
@@ -6004,6 +6004,10 @@ char *name;
 			ptable = InitParamTableInfo(center,subcenter,version,tablename);
 			if (! ptable)
 				return (ptables);
+			continue;
+		}
+		else if (index < -1 || index > 255) {
+			/* ignore */
 			continue;
 		}
 		param = &(ptable->table[ptable->pcount++]);
@@ -8305,9 +8309,6 @@ NclFormatFunctionRec GribRec = {
 /* NclMapNclTypeToFormat   map_ncl_type_to_format; */	GribMapFromNcl,
 /* NclDelAttFunc           del_att; */			NULL,
 /* NclDelVarAttFunc        del_var_att; */		NULL,
-/* NclGetGrpNamesFunc      get_grp_names; */            NULL,
-/* NclGetGrpInfoFunc       get_grp_info; */             NULL,
-/* NclGetGrpAttNamesFunc   get_grp_att_names; */        NULL,
-/* NclGetGrpAttInfoFunc    get_grp_att_info; */         NULL,
+#include "NclGrpFuncs.null"
 /* NclSetOptionFunc        set_option;  */              GribSetOption
 };

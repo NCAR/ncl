@@ -697,7 +697,7 @@ SetDrawFlags
 			if (!mtp->do_draw[i])
 				continue;
 			if ((0.5 * 
-			     (end_extent + mtp->extents[i]) + 2 * sep) >
+			     (end_extent + mtp->extents[i]) + sep) >
 			    fabs(mtp->pos_array[i] - mtp->pos_array[0])) {
 				mtp->do_draw[i] = False;
 				continue;
@@ -710,7 +710,7 @@ SetDrawFlags
 			if (!mtp->do_draw[i])
 				continue;
 			if ((0.5 * 
-			     (end_extent + mtp->extents[i]) +2 * sep) >
+			     (end_extent + mtp->extents[i]) + sep) >
 			    fabs(mtp->pos_array[last] - mtp->pos_array[i])) {
 				mtp->do_draw[i] = False;
 				continue;

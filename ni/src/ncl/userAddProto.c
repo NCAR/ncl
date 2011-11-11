@@ -49,6 +49,12 @@ void
 #endif
 );
 
+extern NhlErrorTypes _Nclstr_split_csv(
+#if NhlNeedProto
+void
+#endif
+);
+
 extern NhlErrorTypes _Nclstr_get_cols(
 #if NhlNeedProto
 void
@@ -157,12 +163,33 @@ void
 #endif
 );
 
+extern NhlErrorTypes _Nclstr_match_ic(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _Nclstr_match_ind(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _Nclstr_match_ind_ic(
+#if NhlNeedProto
+void
+#endif
+);
+
 extern NhlErrorTypes _Nclstr_get_comma();
 extern NhlErrorTypes _Nclstr_get_space();
 extern NhlErrorTypes _Nclstr_get_tab();
 extern NhlErrorTypes _Nclstr_get_sq();
 extern NhlErrorTypes _Nclstr_get_dq();
 extern NhlErrorTypes _Nclstr_get_nl();
+extern NhlErrorTypes _Nclstr_get_cr();
+extern NhlErrorTypes _Nclstr_from_int(void);
+extern NhlErrorTypes _Nclshow_ascii();
 
 void NclAddUserBuiltInFuncs
 #if     NhlNeedProto
@@ -198,6 +225,14 @@ void NclAddUserBuiltInFuncs
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
     NclRegisterFunc(_Nclstr_split, args, "str_split", nargs);
+
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes); nargs++;
+    NclRegisterFunc(_Nclstr_split_csv, args, "str_split_csv", nargs);
     
     nargs = 0;
     args = NewArgs(3);
@@ -310,6 +345,26 @@ void NclAddUserBuiltInFuncs
     SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
     NclRegisterFunc(_Nclstr_match, args, "str_match", nargs);
 
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    NclRegisterFunc(_Nclstr_match_ic, args, "str_match_ic", nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    NclRegisterFunc(_Nclstr_match_ind, args, "str_match_ind", nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    NclRegisterFunc(_Nclstr_match_ind_ic, args, "str_match_ind_ic", nargs);
 
     nargs = 0;
     args = NewArgs(0);
@@ -334,6 +389,19 @@ void NclAddUserBuiltInFuncs
     nargs = 0;
     args = NewArgs(0);
     NclRegisterFunc(_Nclstr_get_nl, args, "str_get_nl", nargs);
+
+    nargs = 0;
+    args = NewArgs(0);
+    NclRegisterFunc(_Nclstr_get_cr, args, "str_get_cr", nargs);
+
+    nargs = 0;
+    args = NewArgs(0);
+    NclRegisterProc(_Nclshow_ascii, args, "show_ascii", nargs);
+    
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args, nargs, "integer", 0, NclANY); nargs++;
+    NclRegisterFunc(_Nclstr_from_int, args, "str_from_int", nargs);
 
     return;
 }

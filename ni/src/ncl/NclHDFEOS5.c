@@ -131,6 +131,39 @@ static void getHDFEOS5ZonalAverageData(HDFEOS5FileRecord *the_file, NclQuark pat
 static NrmQuark Qmissing_val;
 static NrmQuark Qfill_val;
 
+static int MyHDFEOS5setOrigincode(double *upper_left, double *lower_right)
+{
+    int origincode = HE5_HDFE_GD_UL;
+
+  /*x-direction*/
+    if(lower_right[0] > upper_left[0])
+    {
+      /*y-direction*/
+        if(lower_right[1] > upper_left[1])
+        {
+             origincode = HE5_HDFE_GD_UL;
+        }
+        else
+        {
+             origincode = HE5_HDFE_GD_LL;
+        }
+    }
+    else
+    {
+      /*y-direction*/
+        if(lower_right[1] > upper_left[1])
+        {
+             origincode = HE5_HDFE_GD_UR;
+        }
+        else
+        {
+             origincode = HE5_HDFE_GD_LR;
+        }
+    }
+
+    return origincode;
+}
+
 int HDFEOS5unsigned(long typenumber)
 {
         if((typenumber == H5T_NATIVE_INT) ||
@@ -1470,11 +1503,11 @@ NclQuark path;
     hsize_t *dimsizes;
     int max_ndims = MAX_NDIMS;
 
-    int projcode = 0;
-    int zonecode = 0;
-    int spherecode = 0;
-    int origincode = 0;
-    int pixregcode = 0;
+    int projcode = -1;
+    int zonecode = -1;
+    int spherecode = -1;
+    int origincode = -1;
+    int pixregcode = -1;
     double projparm[MAX_VAR];
     double upper_left[2],lower_right[2];
 
@@ -1979,22 +2012,50 @@ NclQuark path;
             }
         }
 
+      /*
+       *Some he5 files do not have GridOrigin, and PixelRegistration,
+       *which result HE5_GDorigininfo and HE5_GDpixreginfo failure.
+       *By default, as these two functions (actually all other eos5 functions)
+       *they print some diagnostic info.
+       *But some users do not want to see these, so we turn it off for these
+       *two functions.
+       *
+       *Wei Huang, 06/30/2011.
+       */
+        HE5_EHset_error_on(2, 0);
         status = HE5_GDorigininfo(HE5_GDid,&origincode);
-        if (status == SUCCEED)
-            status = HE5_GDpixreginfo(HE5_GDid,&pixregcode);
-        if (status == SUCCEED)
+        if(status == FAIL)
         {
-            status = HE5_GDgridinfo(HE5_GDid,&xdimsize,&ydimsize,upper_left,lower_right);
+            NHLPERROR((NhlINFO,NhlEUNKNOWN,
+                "NclHDFEOS GDorigininfo: origincode = %d\n", origincode));
+            /*origincode = HE5_HDFE_GD_UL;*/
         }
-        if (status == SUCCEED)
-            status = HE5_GDprojinfo(HE5_GDid,&projcode,&zonecode,&spherecode,projparm);
+
+        status = HE5_GDpixreginfo(HE5_GDid,&pixregcode);
+        if(status == FAIL)
+        {
+            NHLPERROR((NhlINFO,NhlEUNKNOWN,
+                "NclHDFEOS HE5_GDpixreginfo: pixregcode = %d\n", pixregcode));
+            pixregcode = HE5_HDFE_CENTER;
+        }
+      /*Turn error diagnose back on*/
+        HE5_EHset_error_on(1, 0);
+
+        status = HE5_GDgridinfo(HE5_GDid,&xdimsize,&ydimsize,upper_left,lower_right);
+        if(status == FAIL)
+        {
+            NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+                "NclHDFEOS HE5_GDgridinfo: xdimsize = %d, ydimsize = %d\n", xdimsize, ydimsize));
+        }
+
+        status = HE5_GDprojinfo(HE5_GDid,&projcode,&zonecode,&spherecode,projparm);
         if (status == FAIL)
         {
-            NhlPError(NhlWARNING,NhlEUNKNOWN, 
+            NHLPERROR((NhlWARNING,NhlEUNKNOWN, 
                   "NclHDFEOS5: Invalid projection information for GRID (%s); no coordinates will be provided",
-                  NrmQuarkToString(gd_hdf_names[i]));
+                  NrmQuarkToString(gd_hdf_names[i])));
         }
-        else
+      /*else*/
         {
             NrmQuark dim_names[2];
             hsize_t dim_sizes[2];
@@ -2008,9 +2069,11 @@ NclQuark path;
 
             dim_sizes[0] = ydimsize;
             dim_sizes[1] = xdimsize;
+
             if (projcode == HE5_GCTP_GEO) /* 1D coordinate */
             {
                 HDFEOS5VarInqRec *var = NULL;
+
                 if (! has_xdim_var)
                 {
                     the_file->n_vars++;
@@ -2105,6 +2168,11 @@ NclQuark path;
                 rows[2] = ydimsize - 1;
                 cols[3] = 0;
                 rows[3] = ydimsize - 1;
+
+                if(origincode < 0)
+                {
+                    origincode = MyHDFEOS5setOrigincode(upper_left, lower_right);
+                }
 
                 HE5_GDij2ll(projcode,zonecode,projparm,spherecode,xdimsize,ydimsize,
                     upper_left,lower_right,4,rows,cols,lon2d,lat2d,pixregcode,origincode);
@@ -3330,11 +3398,11 @@ NclQuark thevar;
 static int HE5_GDreadCoordVar
 (long HE5_GDid, HDFEOS5VarInqRec *var, hssize_t *start, hsize_t *stride, hsize_t *edge, void *storage)
 {
-	int origincode;
-	int projcode;
-	int zonecode;
-	int spherecode;
-	int pixregcode;
+	int origincode = -1;
+	int projcode = -1;
+	int zonecode = -1;
+	int spherecode = -1;
+	int pixregcode = -1;
 	long xdimsize,ydimsize;
 	float64 upper_left[2],lower_right[2];
 	float64 projparm[15];
@@ -3345,16 +3413,48 @@ static int HE5_GDreadCoordVar
 	intn status;
 	int islon;
 
-	status = HE5_GDorigininfo(HE5_GDid,&origincode);
-	if (status == SUCCEED)
-		status = HE5_GDpixreginfo(HE5_GDid,&pixregcode);
-	if (status == SUCCEED)
-		status = HE5_GDgridinfo(HE5_GDid,&xdimsize,&ydimsize,upper_left,lower_right);
-	if (status == SUCCEED)
-		status = HE5_GDprojinfo(HE5_GDid,&projcode,&zonecode,&spherecode,projparm);
-	if (status == FAIL) {
-		return -1;
-	}
+      /*
+       *Some he5 files do not have GridOrigin, and PixelRegistration,
+       *which result HE5_GDorigininfo and HE5_GDpixreginfo failure.
+       *By default, as these two functions (actually all other eos5 functions)
+       *they print some diagnostic info.
+       *But some users do not want to see these, so we turn it off for these
+       *two functions.
+       *
+       *Wei Huang, 06/30/2011.
+       */
+        HE5_EHset_error_on(2, 0);
+        status = HE5_GDorigininfo(HE5_GDid,&origincode);
+        if(status == FAIL)
+        {
+            NHLPERROR((NhlINFO,NhlEUNKNOWN,
+                "NclHDFEOS GDorigininfo: origincode = %d\n", origincode));
+            /*origincode = HE5_HDFE_GD_UL;*/
+        }   
+
+        status = HE5_GDpixreginfo(HE5_GDid,&pixregcode);
+        if(status == FAIL)
+        {
+            NHLPERROR((NhlINFO,NhlEUNKNOWN,
+                "NclHDFEOS HE5_GDpixreginfo: pixregcode = %d\n", pixregcode));
+            pixregcode = HE5_HDFE_CENTER;
+        }
+      /*Turn error diagnose back on*/
+        HE5_EHset_error_on(1, 0);
+
+        status = HE5_GDgridinfo(HE5_GDid,&xdimsize,&ydimsize,upper_left,lower_right);
+        if(status == FAIL)
+        {
+            NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+                "NclHDFEOS HE5_GDgridinfo: xdimsize = %d, ydimsize = %d\n", xdimsize, ydimsize));
+        }
+
+        status = HE5_GDprojinfo(HE5_GDid,&projcode,&zonecode,&spherecode,projparm);
+        if (status == FAIL)
+        {
+            NHLPERROR((NhlWARNING,NhlEUNKNOWN, 
+                  "NclHDFEOS5: Invalid projection information.\n"));
+        }
 
 	if (var->hdf_name == NrmStringToQuark("lon")) {
 		islon = 1;
@@ -3406,9 +3506,13 @@ static int HE5_GDreadCoordVar
 		latitude = (double *) storage;
 	}
 
+        if(origincode < 0)
+        {
+            origincode = MyHDFEOS5setOrigincode(upper_left, lower_right);
+        }
+
 	HE5_GDij2ll(projcode,zonecode,projparm,spherecode,xdimsize,ydimsize,
 		upper_left,lower_right,total,rows,cols,longitude,latitude,pixregcode,origincode);
-
 				
 	if (islon)
 		NclFree(latitude);
@@ -3542,7 +3646,9 @@ void* storage;
 						for(j = 0; j < total_size; j++)
 						{
 							quark_ptr[j] = NrmStringToQuark(datbuf[j]);
+							NclFree(datbuf[j]);
 						}
+						NclFree(datbuf);
 					}
 					else
 					{

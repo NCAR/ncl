@@ -69,7 +69,7 @@ void _NclAddHLUObjs
 	_NclAddSingleObj(NhlstreamlinePlotClass->base_class.class_name,NhlstreamlinePlotClass);
 	_NclAddSingleObj(NhlgraphicStyleClass->base_class.class_name,NhlgraphicStyleClass);
 	_NclAddSingleObj(NhlprimitiveClass->base_class.class_name,NhlprimitiveClass);
-	_NclAddSingleObj(NhlcairoPSPDFWorkstationClass->base_class.class_name, NhlcairoPSPDFWorkstationClass);
+	_NclAddSingleObj(NhlcairoDocumentWorkstationClass->base_class.class_name, NhlcairoDocumentWorkstationClass);
     _NclAddSingleObj(NhlcairoImageWorkstationClass->base_class.class_name, NhlcairoImageWorkstationClass);
 	return;
 

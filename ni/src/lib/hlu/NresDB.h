@@ -427,7 +427,7 @@ extern NhlBoolean NrmQinQList(
 #endif
 );
 
-typedef unsigned long Signature;
+typedef unsigned int Signature;
 
 extern NrmQuark _NrmInternalStringToQuark(
 #if	NhlNeedProto

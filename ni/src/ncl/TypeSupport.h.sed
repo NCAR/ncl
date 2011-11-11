@@ -106,7 +106,7 @@ int default_type
 extern NhlErrorTypes _NclGetDefaultFillValue(
 #if	NhlNeedProto
 NclBasicDataTypes type,
-NclScalar *def_val;
+NclScalar *def_val
 #endif
 );
 

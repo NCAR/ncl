@@ -70,6 +70,14 @@ void
 #endif
 );
 
+#ifdef USE_NETCDF4_FEATURES
+extern NclFormatFunctionRecPtr NC4AddFileFormat(
+#if	NhlNeedProto
+void
+#endif
+);
+#endif
+
 extern NclFormatFunctionRecPtr GribAddFileFormat(
 #if	NhlNeedProto
 void
@@ -87,6 +95,8 @@ extern NclFormatFunctionRecPtr OGRAddFileFormat(
 void
 #endif
 );
+
+extern NclFormatFunctionRecPtr NewOGRAddFileFormat(void);
 #endif
 
 void _NclAddFileFormats
@@ -169,6 +179,25 @@ void _NclAddFileFormats
         /** _NclRegisterFormat(OGRAddFileFormat, "rtu");     */
         /** _NclRegisterFormat(OGRAddFileFormat, "rtz");     */
         /* TIGER: see http://www.census.gov/geo/www/tiger/tiger2006se/tgr2006se.html */
+#endif
+
+	/*These is for NetCDF4.
+	 *where this file will be scanned to find the second match.
+	 *The new file-structure is used when found the second match.
+	 */
+#ifdef USE_NETCDF4_FEATURES
+	_NclRegisterFormat(NC4AddFileFormat,"cdf");
+	_NclRegisterFormat(NC4AddFileFormat,"nc");
+	_NclRegisterFormat(NC4AddFileFormat,"nc3");
+	_NclRegisterFormat(NC4AddFileFormat,"nc4");
+	_NclRegisterFormat(NC4AddFileFormat,"netcdf");
+
+#ifdef  BuildGDAL
+        /* file types supported by OGR in new file structure */
+        _NclRegisterFormat(NewOGRAddFileFormat, "shp");  /* shapefile */
+        _NclRegisterFormat(NewOGRAddFileFormat, "mif");  /* mapinfo */
+        _NclRegisterFormat(NewOGRAddFileFormat, "gmt");  /* GMT   */
+#endif
 #endif
 
 	return;

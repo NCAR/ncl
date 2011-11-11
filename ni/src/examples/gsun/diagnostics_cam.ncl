@@ -506,6 +506,14 @@ local latN, latS, lonL, lonR, spd, fCrit, tim_taper        \
 
   begin
 
+  if (typeof(x).eq."float" .or. typeof(x).eq."double") then
+      print(" ")
+  else
+      print("wkSpaceTime: input variable must be type float or double")
+      print("             input variable type is "+typeof(x))
+      exit
+  end if
+
   debug   = False    ; default
   if (opt .and. isatt(opt, "debug") ) then
       debug = opt@debug
@@ -1756,10 +1764,10 @@ begin
   fca  = 1.0/(spd*bpfLast)             ; freq start/end
   fcb  = 1.0/(spd*bpfStrt)             ; bpf{Strt/Last}
 
-  if (typeof(x).eq."double" .or. typeof(wy).eq."double") then
-      xts  = new( (/3,ntim/), "double", getFillValue(x))
-  else
-      xts  = new( (/3,ntim/), "float" , getFillValue(x))
+  if (isatt(x,"_FillValue")) then 
+      xts  = new( (/3,ntim/), "double", todouble(getFillValue(x)))
+  else 
+      xts  = new( (/3,ntim/), "double"); use default _FillValue
   end if
   xts!0 = "var"
                                        ; weighted area averages
@@ -1864,9 +1872,13 @@ begin
   plot(2) = gsn_csm_xy(wks,yrfrac,xts(2,:),res)
 ;************************************************
   resP                     = True                ; modify the panel plot
-  resP@txString            = xts@long_name+": Areal Averaged & Filtered: "  \
+  if (opt .and. isatt(opt,"pltTitle")) then
+      resP@txString        = opt@pltTitle
+  else
+      resP@txString        = xts@long_name+": Areal Averaged & Filtered: "  \
                             +xts@bpfStrt+"-"+xts@bpfLast+" days: nw="  \
                             +xts@bpfNwgt 
+  end if
   resP@gsnMaximize         = True
   resP@gsnPaperOrientation = "portrait"          ; force portrait
   resP@gsnPanelBottom      = 0.05                ; add some space at bottom 

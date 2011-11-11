@@ -306,6 +306,7 @@ begin
       gDst.eq."T42" .or. gDst.eq."T21" .or. \
       gDst.eq."TwoD" .or.gDst.eq."OneD".or. \
       gDst.eq."HlfD" .or.gDst.eq."1x1d".or. \
+      gDst.eq."1x1125" .or. gDst.eq."2x25d".or. \
       gDst.eq."T31"  .or.gDst.eq."1.9x2.5" .or. \
       gDst.eq."fv0.9x1.25" .or. gDst.eq."fv1.9x2.5" .or. \
       gDst.eq."0.1x0.1") then
@@ -339,14 +340,22 @@ begin
       if (gDst.eq."0.1x0.1" ) then
           latStart = -89.95
       end if
+      if (gDst.eq."2x25d" ) then
+          latStart = 90.    
+      end if
                                                 ; END OVERRIDE
-      if (gDst.eq."HlfD" .or. gDst.eq."OneD" .or. \
-          gDst.eq."TwoD" .or. gDst.eq."1x1d" .or. gDst.eq."0.1x0.1") then
+      if (gDst.eq."HlfD"   .or. gDst.eq."OneD" .or. \
+          gDst.eq."TwoD"   .or. gDst.eq."1x1d" .or.  \
+          gDst.eq."1x1125" .or. gDst.eq."0.1x0.1" .or. gDst.eq."2x25d") then
           lat =  latStart + fspan (0,(nlat-1)*dlat, nlat); generate latitudes
       end if
 
       lon  = lonStart + fspan (0,(mlon-1)*dlon, mlon); generate longitudes
      ;print(lon)
+      if (gDst.eq."2x25d" ) then
+          lat(0) = -89.45              ; stranger than fiction
+          lat(nlat-1) = 89.45   
+      end if
 
       if (isvar("lat")) then
           lat@long_name = "latitude"   

@@ -98,6 +98,9 @@ typedef struct _NhlVectorFieldLayerPart{
         NhlBoolean	ystart_byindex;
         NhlBoolean	yend_byindex;
 
+	NhlBoolean	xc_is_linear;
+	NhlBoolean	yc_is_linear;
+
         NhlBoolean	up_to_date;
 	NhlVectorFieldFloatLayer	vffloat;
 	int		changed;

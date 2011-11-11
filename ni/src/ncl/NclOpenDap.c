@@ -2435,10 +2435,7 @@ NclFormatFunctionRec OpenDapRec =
 /* NclMapNclTypeToFormat   map_ncl_type_to_format; */    DapMapFromNcl,
 /* NclDelAttFunc           del_att; */            DapDelAtt,
 /* NclDelVarAttFunc        del_var_att; */        DapDelVarAtt,
-/* NclGetGrpNamesFunc      get_grp_names; */            NULL,
-/* NclGetGrpInfoFunc       get_grp_info; */             NULL,
-/* NclGetGrpAttNamesFunc   get_grp_att_names; */        NULL, 
-/* NclGetGrpAttInfoFunc    get_grp_att_info; */         NULL,
+#include "NclGrpFuncs.null"
 /* NclSetOptionFunc        set_option;  */              NULL
 };
 NclFormatFunctionRecPtr OpenDapAddFileFormat 

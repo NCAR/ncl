@@ -722,10 +722,10 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 	{NhlNcnMissingValFillColor,NhlCFillColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(missing_val.fill_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlTRANSPARENT),0,NULL},
 	{NhlNcnMissingValFillPattern,NhlCFillPattern,NhlTFillIndex,
 		 sizeof(NhlFillIndex),Oset(missing_val.fill_pat),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHOLLOWFILL),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlSOLIDFILL),0,NULL},
 	{NhlNcnMissingValFillScaleF,NhlCFillScaleF,
 		 NhlTFloat,sizeof(float),Oset(missing_val.fill_scale),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
@@ -745,6 +745,15 @@ static NhlResource resources[] = {
 	{NhlNcnGridBoundPerimColor,NhlCEdgeColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(grid_bound.perim_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNcnGridBoundFillColor,NhlCFillColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(grid_bound.fill_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlTRANSPARENT),0,NULL},
+	{NhlNcnGridBoundFillPattern,NhlCFillPattern,NhlTFillIndex,
+		 sizeof(NhlFillIndex),Oset(grid_bound.fill_pat),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlSOLIDFILL),0,NULL},
+	{NhlNcnGridBoundFillScaleF,NhlCFillScaleF,
+		 NhlTFloat,sizeof(float),Oset(grid_bound.fill_scale),
+		 NhlTString, _NhlUSET("1.0"),0,NULL},
 
 /* Out of range area resources */
 
@@ -761,6 +770,15 @@ static NhlResource resources[] = {
 	{NhlNcnOutOfRangePerimColor,NhlCEdgeColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(out_of_range.perim_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNcnOutOfRangeFillColor,NhlCFillColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(out_of_range.fill_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlTRANSPARENT),0,NULL},
+	{NhlNcnOutOfRangeFillPattern,NhlCFillPattern,NhlTFillIndex,
+		 sizeof(NhlFillIndex),Oset(out_of_range.fill_pat),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlSOLIDFILL),0,NULL},
+	{NhlNcnOutOfRangeFillScaleF,NhlCFillScaleF,
+		 NhlTFloat,sizeof(float),Oset(out_of_range.fill_scale),
+		 NhlTString, _NhlUSET("1.0"),0,NULL},
 	{NhlNcnConpackParams, NhlCcnConpackParams,NhlTStringGenArray,
 		 sizeof(NhlPointer),Oset(conpack_params),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),
@@ -2007,9 +2025,6 @@ ContourPlotInitialize
         cnp->gks_fill_colors = NULL;
         cnp->gks_line_colors = NULL;
         cnp->gks_llabel_colors = NULL;
-        cnp->grid_bound.fill_color = cnp->out_of_range.fill_color = 0;
-        cnp->grid_bound.fill_pat = cnp->out_of_range.fill_pat = 0;
-        cnp->grid_bound.fill_scale = cnp->out_of_range.fill_scale = 1.0;
 	cnp->levels_set = True;
 	cnp->render_obj = NULL;
 
@@ -3846,10 +3861,11 @@ static NhlErrorTypes InitCoordBounds
 	char			*entry_name;
 #endif
 {
-	NhlErrorTypes	ret = NhlNOERROR;
+	NhlErrorTypes	subret, ret = NhlNOERROR;
         NhlContourPlotLayerPart	*cnp = &cl->contourplot;
         NhlTransformLayerPart	*tfp = &cl->trans;
         NhlTransformLayerPart	*otfp;
+	char *e_text;
 
 	cnp->do_low_level_log = False;
         
@@ -3906,6 +3922,11 @@ static NhlErrorTypes InitCoordBounds
 		else if (tfp->grid_type < NhltrTRIANGULARMESH) {
 			tfp->grid_type = NhltrIRREGULAR;
 		}
+		if (tfp->grid_type == NhltrIRREGULAR) {
+			/* if the coords are evenly spaced then switch to linear */
+			if (cnp->sfp->xc_is_linear && cnp->sfp->yc_is_linear) 
+				tfp->grid_type = NhltrLOGLIN;
+		}
 	}
         else if (cnp->sfp->x_arr || cnp->sfp->y_arr) { 
 		/* ignore set value  unless triangular */
@@ -3915,6 +3936,11 @@ static NhlErrorTypes InitCoordBounds
 		else if (tfp->grid_type < NhltrTRIANGULARMESH) {
 			tfp->grid_type_set = False;
 			tfp->grid_type = NhltrIRREGULAR;
+		}
+		if (tfp->grid_type == NhltrIRREGULAR) {
+			/* if the coords are evenly spaced then switch to linear */
+			if (cnp->sfp->xc_is_linear && cnp->sfp->yc_is_linear)
+				tfp->grid_type = NhltrLOGLIN;
 		}
 	}
 	else { /* ignore set value unless triangular */
@@ -3929,32 +3955,57 @@ static NhlErrorTypes InitCoordBounds
         
         if (tfp->grid_type == NhltrIRREGULAR) {
                 if (cnp->sfp->x_arr && ! tfp->x_axis_type_set) {
-			if (! cnp->osfp || (cnp->data_changed  &&
+			if (! ocl || (cnp->data_changed  &&
 			    (cnp->sfp->changed & _NhlsfXARR_CHANGED)))
 				tfp->x_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! cnp->sfp->x_arr && tfp->x_axis_type == NhlIRREGULARAXIS)
                         tfp->x_axis_type = NhlLINEARAXIS;
-                if (cnp->sfp->x_arr && tfp->x_axis_type != NhlIRREGULARAXIS) {
+                if (tfp->x_axis_type != NhlIRREGULARAXIS &&
+		    cnp->sfp->x_arr &&  ! cnp->sfp->xc_is_linear) {
+			if (! ocl || ocl->trans.y_axis_type != tfp->y_axis_type) {
+				if (tfp->x_axis_type == NhlLOGAXIS) {
+					e_text = "%s: Log axis not possible with irregular coordinate spacing; switching to linear index coordinates for X Axis";
+					tfp->x_axis_type = NhlLINEARAXIS;
+				}
+				else {
+					e_text = "%s: coordinate spacing is irregular; linear spacing only possible using index coordinates for X Axis";
+				}
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+				ret = NhlWARNING;
+			}
                         tfp->data_xstart = cnp->sfp->ix_start;
                         tfp->data_xend = cnp->sfp->ix_end;
                 }
                 if (cnp->sfp->y_arr && ! tfp->y_axis_type_set) {
-			if (! cnp->osfp || (cnp->data_changed  &&
+			if (! ocl || (cnp->data_changed  &&
 			    (cnp->sfp->changed & _NhlsfYARR_CHANGED)))
 				tfp->y_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! cnp->sfp->y_arr && tfp->y_axis_type == NhlIRREGULARAXIS)
                         tfp->y_axis_type = NhlLINEARAXIS;
-                if (cnp->sfp->y_arr && tfp->y_axis_type != NhlIRREGULARAXIS) {
+                if (tfp->y_axis_type != NhlIRREGULARAXIS &&
+		    cnp->sfp->y_arr &&  ! cnp->sfp->yc_is_linear) {
+			if (! ocl || ocl->trans.y_axis_type != tfp->y_axis_type) {
+				if (tfp->y_axis_type == NhlLOGAXIS) {
+					e_text = "%s: Log axis not possible with irregular coordinate spacing; switching to linear index coordinates for Y Axis";
+					tfp->y_axis_type = NhlLINEARAXIS;
+				}
+				else {
+					e_text = "%s: coordinate spacing is irregular; linear spacing only possible using index coordinates for Y Axis";
+				}
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+				ret = NhlWARNING;
+			}
                         tfp->data_ystart = cnp->sfp->iy_start;
                         tfp->data_yend = cnp->sfp->iy_end;
                 }
         }
         
-	ret = _NhltfCheckCoordBounds
+	subret = _NhltfCheckCoordBounds
                 ((NhlTransformLayer)cl,(NhlTransformLayer)ocl,
                  entry_name);
+	ret = MIN(subret,ret);
 	if (ocl) {
 		otfp = &ocl->trans;
 		if ((tfp->grid_type == NhltrTRIANGULARMESH &&

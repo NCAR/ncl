@@ -30,7 +30,7 @@ int _writeH5dataset(hid_t fid, hsize_t rank, hsize_t *dims, void *data,
     int i;
     herr_t      status;
     hid_t groupID = 0;
-    hsize_t *max_dims = calloc(rank, sizeof(hsize_t));
+    hsize_t *max_dims = NclCalloc(rank, sizeof(hsize_t));
 
     dataset_node = _find_dataset(dataname, group_node);
 
@@ -84,7 +84,7 @@ int _writeH5dataset(hid_t fid, hsize_t rank, hsize_t *dims, void *data,
 
     if(NclHDF5datatype->compound_nom)
     {
-        dataset_node->compound = calloc(1, sizeof(NclHDF5compound_t));
+        dataset_node->compound = NclCalloc(1, sizeof(NclHDF5compound_t));
         if(! dataset_node->compound)
         {
             fprintf(stdout, "UNABLE TO ALLOCATE MEMORY for dataset_node->compound, in file: %s, line: %d\n",
@@ -92,7 +92,7 @@ int _writeH5dataset(hid_t fid, hsize_t rank, hsize_t *dims, void *data,
             free(NclHDF5datatype);
             return FAILED;
         }
-        dataset_node->compound->member = calloc(NclHDF5datatype->compound_nom,
+        dataset_node->compound->member = NclCalloc(NclHDF5datatype->compound_nom,
                                                 sizeof(NclHDF5compound_component_list_t));
         if(! dataset_node->compound->member)
         {
@@ -182,7 +182,7 @@ hid_t _get_groupID(NclHDF5dataset_node_t *dataset_node,
         {
             groupID = H5Gcreate2(group_node->id, dataset_node->group_name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
-            current_group_list = calloc(1, sizeof(NclHDF5group_list_t));
+            current_group_list = NclCalloc(1, sizeof(NclHDF5group_list_t));
             current_group_node = _NclHDF5allocate_group(groupID, parent_group_node->file,
                                                         dataset_node->group_name, H5O_TYPE_GROUP);
             current_group_list->group_node = current_group_node;
@@ -210,7 +210,7 @@ hid_t _get_groupID(NclHDF5dataset_node_t *dataset_node,
 
     if(new_dataset)
     {
-        current_dataset_list = calloc(1, sizeof(NclHDF5dataset_list_t));
+        current_dataset_list = NclCalloc(1, sizeof(NclHDF5dataset_list_t));
         if(!current_dataset_list)
         {
             fprintf(stdout, "Failed to allocated memory for current_dataset_list. in file: %s, line: %d\n",
@@ -296,7 +296,7 @@ int _add_attr2group(hid_t fid, hsize_t rank, hsize_t *dims, void *attrdata,
         curAttrNode->nbytes = size* (int)NclHDF5sizeof(typename);
     }
 
-    curAttrNode->value = (void *)malloc(curAttrNode->nbytes);
+    curAttrNode->value = (void *) NclMalloc(curAttrNode->nbytes);
     memcpy(curAttrNode->value, attrdata, curAttrNode->nbytes);
 
     _write_group_attribute(fid, rank, dims, attrdata,
@@ -360,7 +360,7 @@ herr_t _write_attribute(hid_t fid, hsize_t rank, hsize_t *dims, void *attrdata,
     fprintf(stdout, "\tattr_node->nbytes = <%d>\n", attr_node->nbytes);
    */
 
-    attr_node->value = (void *)malloc(attr_node->nbytes);
+    attr_node->value = (void *) NclMalloc(attr_node->nbytes);
     memcpy(attr_node->value, attrdata, attr_node->nbytes);
 
   /*
@@ -452,7 +452,7 @@ int _add_attr2dataset(hid_t fid, hsize_t rank, hsize_t *dims, void *attrdata,
         curAttrNode->nbytes = size* (int)NclHDF5sizeof(typename);
     }
 
-    curAttrNode->value = (void *)malloc(curAttrNode->nbytes);
+    curAttrNode->value = (void *) NclMalloc(curAttrNode->nbytes);
     memcpy(curAttrNode->value, attrdata, curAttrNode->nbytes);
 
     did = H5Dopen2(group_node->id, datasetname, H5P_DEFAULT);
@@ -554,14 +554,14 @@ string_queue_t *_split_string2queue(char *str, char *delim)
     string_queue_t *sq;
     string_list_t *slist;
     
-    sq = calloc(1, sizeof(string_queue_t));
+    sq = NclCalloc(1, sizeof(string_queue_t));
     sq->ns = 0;
 
     result = strtok(tmp_str, delim);
 
     while(result != NULL)
     {
-        slist = calloc(1, sizeof(string_list_t));
+        slist = NclCalloc(1, sizeof(string_list_t));
         if(slist == NULL)
         {
             fprintf(stdout, "Failed to allocated memory for slist.\n");
@@ -663,7 +663,7 @@ NclHDF5group_node_t *_find_group(char *groupname, string_list_t *sl, int depth,
             current_group_list = current_group_list->next;
         }
 
-        current_group_list = calloc(1, sizeof(NclHDF5group_list_t));
+        current_group_list = NclCalloc(1, sizeof(NclHDF5group_list_t));
         if(current_group_list == NULL)
         {
             fprintf(stdout, "Failed to allocated memory for current_group_list.\n");
@@ -754,7 +754,7 @@ NclHDF5group_node_t *_find_group_with_name(char *groupname,
 
         if(! found)
         {
-            current_group_list = calloc(1, sizeof(NclHDF5group_list_t));
+            current_group_list = NclCalloc(1, sizeof(NclHDF5group_list_t));
             if(current_group_list == NULL)
             {
                 fprintf(stdout, "Failed to allocated memory for current_group_list.\n");
@@ -807,7 +807,7 @@ herr_t _write_group_attribute(hid_t fid, hsize_t rank, hsize_t *dims, void *attr
 
     if(! found_attribute)
     {
-        curAttrList = calloc(1, sizeof(NclHDF5attr_list_t));
+        curAttrList = NclCalloc(1, sizeof(NclHDF5attr_list_t));
         if(!curAttrList)
         {
             fprintf(stdout, "Failed to allocated memory for curAttrList. in file: %s, line: %d\n",
@@ -818,7 +818,7 @@ herr_t _write_group_attribute(hid_t fid, hsize_t rank, hsize_t *dims, void *attr
         curAttrList->next = group_node->attr_list;
         group_node->attr_list = curAttrList;
 
-        attr_node = calloc(1, sizeof(NclHDF5attr_node_t));
+        attr_node = NclCalloc(1, sizeof(NclHDF5attr_node_t));
         if(!attr_node)
         {
             fprintf(stdout, "Failed to allocated memory for attr_node. in file: %s, line: %d\n",
@@ -867,7 +867,7 @@ herr_t _write_group_attribute(hid_t fid, hsize_t rank, hsize_t *dims, void *attr
     fprintf(stdout, "\tattr_node->nbytes = <%d>\n", attr_node->nbytes);
    */
 
-    attr_node->value = (void *)malloc(attr_node->nbytes);
+    attr_node->value = (void *) NclMalloc(attr_node->nbytes);
     memcpy(attr_node->value, attrdata, attr_node->nbytes);
 
   /*
@@ -974,7 +974,7 @@ NclHDF5dataset_node_t *_find_dataset(char *dataname, NclHDF5group_node_t *group_
 
     if(new_dataset)
     {
-        current_dataset_node = calloc(1, sizeof(NclHDF5dataset_node_t));
+        current_dataset_node = NclCalloc(1, sizeof(NclHDF5dataset_node_t));
         if(!current_dataset_node)
         {
             fprintf(stdout, "Failed to allocated memory for current_dataset_node. in file: %s, line: %d\n",
@@ -989,7 +989,7 @@ NclHDF5dataset_node_t *_find_dataset(char *dataname, NclHDF5group_node_t *group_
         strcpy(current_dataset_node->group_name, groupname);
         strcpy(current_dataset_node->short_name, shortname);
 
-        current_dataset_list = calloc(1, sizeof(NclHDF5dataset_list_t));
+        current_dataset_list = NclCalloc(1, sizeof(NclHDF5dataset_list_t));
         if(!current_dataset_list)
         {
             fprintf(stdout, "Failed to allocated memory for current_dataset_list. in file: %s, line: %d\n",
@@ -1048,7 +1048,7 @@ herr_t _addH5dataset(hsize_t rank, hsize_t *dims,
 
     if(NclHDF5datatype->compound_nom)
     {
-        dataset_node->compound = calloc(1, sizeof(NclHDF5compound_t));
+        dataset_node->compound = NclCalloc(1, sizeof(NclHDF5compound_t));
         if(! dataset_node->compound)
         {
             fprintf(stdout, "UNABLE TO ALLOCATE MEMORY for dataset_node->compound, in file: %s, line: %d\n",
@@ -1056,7 +1056,7 @@ herr_t _addH5dataset(hsize_t rank, hsize_t *dims,
             free(NclHDF5datatype);
             return FAILED;
         }
-        dataset_node->compound->member = calloc(NclHDF5datatype->compound_nom,
+        dataset_node->compound->member = NclCalloc(NclHDF5datatype->compound_nom,
                                                 sizeof(NclHDF5compound_component_list_t));
         if(! dataset_node->compound->member)
         {
@@ -1122,7 +1122,7 @@ NclHDF5attr_node_t *_find_dataset_attribute(char *attrname,
 
     if(new_attr)
     {
-        curAttrList = calloc(1, sizeof(NclHDF5attr_list_t));
+        curAttrList = NclCalloc(1, sizeof(NclHDF5attr_list_t));
         if(!curAttrList)
         {
             fprintf(stdout, "Failed to allocated memory for curAttrList. in file: %s, line: %d\n",
@@ -1130,7 +1130,7 @@ NclHDF5attr_node_t *_find_dataset_attribute(char *attrname,
             return NULL;
         }
 
-        curAttrList->attr_node = calloc(1, sizeof(NclHDF5attr_node_t));
+        curAttrList->attr_node = NclCalloc(1, sizeof(NclHDF5attr_node_t));
         if(!curAttrList->attr_node)
         {
             fprintf(stdout, "Failed to allocated memory for curAttrList->attr_node. in file: %s, line: %d\n",
@@ -1189,7 +1189,7 @@ NclHDF5attr_node_t *_find_group_attribute(char *attrname,
 
     if(new_attr)
     {
-        curAttrList = calloc(1, sizeof(NclHDF5attr_list_t));
+        curAttrList = NclCalloc(1, sizeof(NclHDF5attr_list_t));
         if(!curAttrList)
         {
             fprintf(stdout, "Failed to allocated memory for curAttrList. in file: %s, line: %d\n",
@@ -1197,7 +1197,7 @@ NclHDF5attr_node_t *_find_group_attribute(char *attrname,
             return NULL;
         }
 
-        curAttrList->attr_node = calloc(1, sizeof(NclHDF5attr_node_t));
+        curAttrList->attr_node = NclCalloc(1, sizeof(NclHDF5attr_node_t));
         if(!curAttrList->attr_node)
         {
             fprintf(stdout, "Failed to allocated memory for curAttrList->attr_node. in file: %s, line: %d\n",
@@ -1325,7 +1325,7 @@ int _write_chunkedH5dataset(hid_t fid, hsize_t rank,
     hid_t did = 0;
 
     hid_t plist = H5P_DEFAULT;
-    hsize_t *max_dims = calloc(rank, sizeof(hsize_t));
+    hsize_t *max_dims = NclCalloc(rank, sizeof(hsize_t));
 
     dataset_node = _find_dataset(dataname, group_node);
 
@@ -1393,7 +1393,7 @@ int _write_chunkedH5dataset(hid_t fid, hsize_t rank,
 
     if(NclHDF5datatype->compound_nom)
     {
-        dataset_node->compound = calloc(1, sizeof(NclHDF5compound_t));
+        dataset_node->compound = NclCalloc(1, sizeof(NclHDF5compound_t));
         if(! dataset_node->compound)
         {
             fprintf(stdout, "UNABLE TO ALLOCATE MEMORY for dataset_node->compound, in file: %s, line: %d\n",
@@ -1401,7 +1401,7 @@ int _write_chunkedH5dataset(hid_t fid, hsize_t rank,
             free(NclHDF5datatype);
             return FAILED;
         }
-        dataset_node->compound->member = calloc(NclHDF5datatype->compound_nom,
+        dataset_node->compound->member = NclCalloc(NclHDF5datatype->compound_nom,
                                                 sizeof(NclHDF5compound_component_list_t));
         if(! dataset_node->compound->member)
         {

@@ -668,6 +668,8 @@ statement :     					{ $$ = NULL; }
 */
 								if(rec ==1 ) {
 									fclose(recfp);
+									recfp = NULL;
+									rec = 0;
 								} 
 								$$ = NULL;
 							}

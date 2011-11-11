@@ -476,7 +476,7 @@ undef("get_valid_long_names")
 function get_valid_long_names()
 begin
   return((/"long_name","standard_name","description","DESCRIPTION", \
-           "DataFieldName"/))
+           "Description","DataFieldName","hdf_name","hdfeos_name"/))
 end
 
 ;***********************************************************************;
@@ -2885,7 +2885,7 @@ function get_lon_values(min_lon:numeric,max_lon:numeric,lon_spacing:numeric,\
                         mlon_spacing:numeric,range_array,lonspacing_array, \
                         mlonspacing_array)
 local lon_range, lcheck_arr, lspcng_arr, mlspcng_arr, lon_spcng, mlon_spcng, \
-start_lon, end_lon, xstart_lon, xend_lon
+start_lon, end_lon, xstart_lon, xend_lon, lon
 begin
 
 ; Initialize
@@ -2972,7 +2972,7 @@ undef("get_lat_values")
 function get_lat_values(min_lat:numeric,max_lat:numeric,lat_spacing:numeric,\
                         mlat_spacing:numeric)
 local lat_range, lcheck_arr, lspcng_arr, mlspcng_arr, lat_spcng, mlat_spcng, \
-start_lat, end_lat, lat, found
+start_lat, end_lat, lat, found, lat
 begin
 
 ; Initialize
@@ -10753,7 +10753,7 @@ begin
   res3_new@tmYLOn      = get_res_value_keep(res3, "tmYLOn",   False)
   res3_new@tiYAxisOn   = get_res_value_keep(res3,"tiYAxisOn",False)
   res3_new@tiXAxisOn   = get_res_value_keep(res3,"tiXAxisOn",False)
-
+  res3_new@tmEqualizeXYSizes = get_res_value_keep(res3,"tmEqualizeXYSizes",True)
   if(plot_type.eq."csm") then
     xy3 = gsn_csm_xy(wks, (/x1/), (/y3/), res3_new)
   else
@@ -10823,6 +10823,8 @@ begin
                                  "tmXBFontHeightF",xlab_fh)
   res3_new@tmYLLabelFontHeightF  = get_res_value(res3_new, \
                                  "tmYLFontHeightF",ylab_fh)
+  res3_new@tmEqualizeXYSizes     = get_res_value_keep(res3_new,\
+                                  "tmEqualizeXYSizes",True)
 ;
 ; Generate some dummy data for our plot.
 ;
@@ -12263,6 +12265,12 @@ begin
 ; Create streamline plot. We have to check the pressure values.  If they
 ; are not in descending order, then reverse 'em.
 ;
+;---If pressure values are Pascals, convert them to millibars.
+  if(is_valid_coord(u,"y").and.isatt(u&$u!0$,"units").and.\
+     any(u&$u!0$@units.eq.get_allowed_pres_units_pa()))
+    set_attr(stres,"vfYArray",tofloat_wunits(u&$u!0$) * 0.01)
+  end if
+
   if(is_valid_coord(u,"y"))
     npres = dimsizes(u&$u!0$)
     if(u&$u!0$(0).lt.u&$u!0$(npres-1))

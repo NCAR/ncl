@@ -618,8 +618,8 @@ void g2GDSCEGrid
 {
     G2_GDS *gds;
     double la1,la2,lo1,lo2;
-    double di;
-    double dj;
+    double di = 1;
+    double dj = 1;
     int idir;
     int jdir;
     int is_thinned_lat;
@@ -630,6 +630,7 @@ void g2GDSCEGrid
     int nlon, nlat;
     g2CETemplate *ce;
     double scale_factor;
+    double start_lat;
 	
     *lat = NULL;
     *n_dims_lat = 0;
@@ -680,7 +681,25 @@ void g2GDSCEGrid
     if (is_thinned_lon) {
         g2GetThinnedLonParams(gds, nlat, lo1, lo2, idir, &nlon, &di);
 	thevarrec->gds->is_thinned_grid = 1;
-    } else {
+    } else if (nlon > 1) {
+	    if (lo1 == lo2) {
+		    if (idir == 1) {
+			    if (lo1 > 0) {
+				    lo1 -= 360.0;
+			    }
+			    else {
+				    lo2 += 360.0;
+			    }
+		    }
+		    else {
+			    if (lo1 > 0) {
+				    lo2 -= 360.0;
+			    }
+			    else {
+				    lo1 += 360.0;
+			    }
+		    }
+	    }
 	    if (idir == 1) {
 		    float ti = lo2;
 		    while (ti < lo1) {
@@ -700,7 +719,7 @@ void g2GDSCEGrid
     if (is_thinned_lat) {
 	thevarrec->gds->is_thinned_grid = 1;
         g2GetThinnedLatParams(gds, nlon, la1, la2, jdir, &nlat, &dj);
-    } else {
+    } else  if (nlat > 1) {
         /* Not specified: must be calculated from the endpoints and number of steps */
         dj = (la2 - la1) / (double) (nlat - 1);
         if (dj < 0)
@@ -715,9 +734,10 @@ void g2GDSCEGrid
     *n_dims_lon = 1;
     *lat = (float *) NclMalloc((unsigned)sizeof(float) * nlat);
     *lon = (float *) NclMalloc((unsigned)sizeof(float) * nlon);
+    start_lat = jdir == 1 ? MIN(la1,la2) : MAX(la1,la2);
 
     for (i = 0; i < *(*dimsizes_lat) ; i++)
-        (*lat)[i] = (float) (la1 + jdir * i * dj) ;
+        (*lat)[i] = (float) (start_lat + jdir * i * dj) ;
 
     for (i = 0; i < *(*dimsizes_lon) ; i++)
         (*lon)[i] = (float)(lo1 + idir * i * di) ;
@@ -922,8 +942,8 @@ void g2GDSRLLGrid
 {
     G2_GDS *gds;
     double la1,la2,lo1,lo2;
-    double di;
-    double dj;
+    double di = 1;
+    double dj = 1;
     int idir;
     int jdir;
     int is_thinned_lat;
@@ -1405,6 +1425,25 @@ void g2GDSMEGrid
     *lon = (float *) NclMalloc((unsigned)sizeof(float) * nlon);
 
     InitMapTrans("ME",0,idir * (lo2 - lo1)/2.0,0.0);
+
+    if (lo1 == lo2) { /* global grid probably specified according to GRIB2 spec (lo1 and lo2 both must be positive - but this is too inconvenient for us)  */
+	    if (idir == 1) {
+		    if (lo1 > 0) {
+			    lo1 -= 360000;
+		    }
+		    else {
+			    lo2 += 360000;
+		    }
+	    }
+	    else {
+		    if (lo1 > 0) {
+			    lo2 -= 360000;
+		    }
+		    else {
+			    lo1 += 360000;
+		    }
+	    }
+    }
 
     tlo1 = lo1;
     tlo2 = lo2;
@@ -2081,7 +2120,7 @@ int* nrotatts;
 	int idir,jdir;
 	int try = 0;
 	double la1,la2,lo1,lo2;
-	double di;
+	double di = 1;
 	G2_GDS *gds;
 	g2GATemplate *ga;
 	double scale_factor;
@@ -2141,6 +2180,24 @@ int* nrotatts;
 		thevarrec->gds->is_thinned_grid = 1;
 		g2GetThinnedLonParams(gds, nlat, lo1, lo2, idir, &nlon, &di);
 	} else {
+		if (lo1 == lo2) { /* global grid probably specified according to GRIB2 spec (lo1 and lo2 both must be positive - but this is too inconvenient for us)  */
+			if (idir == 1) {
+				if (lo1 > 0) {
+					lo1 -= 360000;
+				}
+				else {
+					lo2 += 360000;
+				}
+			}
+			else {
+				if (lo1 > 0) {
+					lo2 -= 360000;
+				}
+				else {
+					lo1 += 360000;
+				}
+			}
+		}
 		if (idir == 1) {
 			float ti = lo2;
 			while (ti < lo1) {
@@ -4035,7 +4092,7 @@ Grib2FileRecord *therec;
 		if (cp && ! strcmp(cp,"_hours")) {
 			if ((NrmQuark)therec->options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].values == NrmStringToQuark("numeric"))
 				continue;
-			sprintf(buffer,NrmQuarkToString(dimq));
+			sprintf(buffer,"%s",NrmQuarkToString(dimq));
 			cp = strrchr(buffer,'_');
 			*cp = '\0';
 			newdimq = NrmStringToQuark(buffer);
@@ -12600,10 +12657,7 @@ NclFormatFunctionRec Grib2Rec = {
 /* NclMapNclTypeToFormat   map_ncl_type_to_format; */	Grib2MapFromNcl,
 /* NclDelAttFunc           del_att; */			NULL,
 /* NclDelVarAttFunc        del_var_att; */		NULL,
-/* NclGetGrpNamesFunc      get_grp_names; */            NULL,
-/* NclGetGrpInfoFunc       get_grp_info; */             NULL,
-/* NclGetGrpAttNamesFunc   get_grp_att_names; */        NULL, 
-/* NclGetGrpAttInfoFunc    get_grp_att_info; */         NULL,
+#include "NclGrpFuncs.null"
 /* NclSetOptionFunc        set_option;  */              Grib2SetOption
 };
 

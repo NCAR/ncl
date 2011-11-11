@@ -60,6 +60,9 @@ NclStackEntry */*result*/
 #endif
 );
 
+NhlErrorTypes _NclBuildNewListVar(int n_items,
+                                  NclStackEntry *result);
+
 NhlErrorTypes _NclFuncCallOp(
 #if	NhlNeedProto
 NclSymbol * /*func*/,

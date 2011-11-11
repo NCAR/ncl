@@ -415,7 +415,7 @@ cat << 'EOF_NCL' >! $tmp_nclfile
         o@tspace = 5
     end
 
-    function make_var2d(v:snumeric, r:integer, d:integer)
+    function make_var2d(v, r:integer, d:integer)
     begin
         if (r .eq. 1) then
             mv2d = onedtond(v, (/1, d(0)/))
@@ -516,9 +516,18 @@ cat << 'EOF_NCL' >! $tmp_nclfile
                 if (isfilevar(f, vars(n))) then
 		    type = getfilevartypes(f,vars(n))
                     if (type .eq. "string") then
-                        print(f->$vars(n)$)
+		        print("     " + vars(n) + ":")
+			print(" ")
+                        print((/f->$vars(n)$/))
                         print(" ")
-                    else
+                    else if (type .eq. "character") then
+			vstrings = tostring(f->$vars(n)$)
+			print("     " + vars(n) + ":")
+			print("")
+			print((/vstrings/))
+			print(" ")
+			delete(vstrings)
+		    else
                         dims = getfilevardimsizes(f, vars(n))
                         rank = dimsizes(dims)
 
@@ -543,9 +552,10 @@ cat << 'EOF_NCL' >! $tmp_nclfile
                             write_matrix(v2d, fmt, opt)
                         end if
                         end if
+                        delete(v2d)
+                        delete(dims)
                     end if
-                    delete(v2d)
-                    delete(dims)
+		    end if
                 else
                     print("${progname}: error: '" + vars(n) + "' is not a variable in '" + filename + "'.")
                 end if
@@ -571,12 +581,12 @@ endif
 # Clean up.
 #
 
-#/bin/rm $tmp_nclfile
+/bin/rm $tmp_nclfile
 
 exit 0
 
 cleanup:
-#    /bin/rm -f $tmp_nclfile
+    /bin/rm -f $tmp_nclfile
     exit 1
 
 usage:

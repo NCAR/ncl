@@ -14,16 +14,23 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern char *strdup(const char *s);
+
 #ifdef NIO_LIB_ONLY
 #include "nioNgSizeT.h"
+#include "niohlu.h"
+#include "nioNresDB.h"
 #else
 #ifdef STANDALONE
 #include "NgSizeT.h"
 #else
 #include <ncarg/hlu/NgSizeT.h>
+#include <ncarg/hlu/hlu.h>
+#include <ncarg/hlu/NresDB.h>
 #endif
 #endif
 
+#include "defs.h"
 #include "hdf5.h"
 
 #ifndef FALSE

@@ -59,6 +59,9 @@ typedef struct _NhlVectorFieldFloatLayerPart{
 	NhlGenArray	y_arr;
 
 	NhldiGridType   grid_type;
+	NhlBoolean      xc_is_linear;
+	NhlBoolean      yc_is_linear;
+
 	NhlvfMissMode	miss_mode;
 	float		u_missing_value;
 	float		v_missing_value;

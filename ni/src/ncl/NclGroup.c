@@ -167,30 +167,7 @@ void setGroupAttributes(NclFile group_out)
 
 void initializeGroup(NclFile group_out)
 {
-    int i;
-
-    group_out->file.n_grps = 0;
-    group_out->file.n_vars = 0;
-    group_out->file.file_atts_id = -1;
-    for(i = 0; i < NCL_MAX_FVARS; i++)
-    {
-        group_out->file.grp_info[i] = NULL;
-        group_out->file.grp_att_info[i] = NULL;
-        group_out->file.grp_att_cb[i] = NULL;
-        group_out->file.grp_att_udata[i] = NULL;
-        group_out->file.grp_att_ids[i] = -1;
-    
-        group_out->file.var_info[i] = NULL;
-        group_out->file.var_att_info[i] = NULL;
-        group_out->file.var_att_cb[i] = NULL;
-        group_out->file.var_att_udata[i] = NULL;
-        group_out->file.var_att_ids[i] = -1;
-
-        group_out->file.file_dim_info[i] = NULL;
-        group_out->file.coord_vars[i] = NULL;
-
-        group_out->file.file_atts[i] = NULL;
-    }
+    _NclInitFilePart(&(group_out->file));
 }
 
 void readFileAtt
@@ -309,7 +286,7 @@ NclFile thefile;
     }
 }
 
-NclGroup *_NclCreateGroup
+NclGroup *_NclGroupCreate
 #if    NhlNeedProto
 (NclObj  inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, NclStatus status, NclFile file_in, NclQuark group_name)
 #else
@@ -331,7 +308,7 @@ NclQuark group_name;
     char grp_str[NCL_MAX_STRING];
     char tmp_str[NCL_MAX_STRING];
     char buffer[NCL_MAX_STRING];
-    NclQuark selected_group[NCL_MAX_FVARS];
+    NclQuark *selected_group;
     int nsg = 0;
     int new_group = 0;
     int i, j, n;
@@ -366,7 +343,7 @@ NclQuark group_name;
     gl = strlen(grp_str);
 
   /*
-    fprintf(stdout, "\n\nhit _NclCreateGroup, file: %s, line:%d\n", __FILE__, __LINE__);
+    fprintf(stdout, "\n\nhit _NclGroupCreate, file: %s, line:%d\n", __FILE__, __LINE__);
     fprintf(stdout, "\tgroup_name: <%s>\n", NrmQuarkToString(group_name));
    */
 
@@ -415,6 +392,8 @@ NclQuark group_name;
     }
 
     readFileAtt(group_out);
+
+    selected_group = (NclQuark *)NclMalloc((1 + file_in->file.n_grps) * sizeof(NclQuark));
 
     nsg = 0;
     for(i = 0; i < file_in->file.n_grps; i++)
@@ -510,9 +489,11 @@ NclQuark group_name;
         _NclCallCallBacks((NclObj)group_out,CREATED);
     }
 
+    NclFree(selected_group);
+
   /*
     fprintf(stdout, "\tgroup_out->file.n_vars = %d\n", group_out->file.n_vars);
-    fprintf(stdout, "\n\nend _NclCreateGroup, file: %s, line:%d\n", __FILE__, __LINE__);
+    fprintf(stdout, "\n\nend _NclGroupCreate, file: %s, line:%d\n", __FILE__, __LINE__);
    */
     return(group_out);
 }

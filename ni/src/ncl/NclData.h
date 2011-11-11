@@ -100,6 +100,9 @@ NclStatus /*requested*/
 #endif
 );
 
+typedef NhlErrorTypes (*NclPrintSummaryFunction)
+                      (NclObj obj, FILE	*fp);
+
 typedef NhlErrorTypes (*NclPrintFunction)(
 #if	NhlNeedProto
 NclObj /*self*/,
@@ -146,6 +149,7 @@ typedef struct _NclObjClassPart {
 
         NclAddParentFunction            add_parent;
         NclDelParentFunction            del_parent;
+	NclPrintSummaryFunction print_summary;
 	NclPrintFunction        print;
 	NclCallBackList		*create_callback;
 	NclCallBackList		*delete_callback;

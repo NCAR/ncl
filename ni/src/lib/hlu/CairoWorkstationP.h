@@ -65,7 +65,7 @@ typedef struct _NhlCairoWorkstationLayerRec   *NhlCairoWorkstationLayer;
 typedef struct _NhlCairoWorkstationClassRec   *NhlCairoWorkstationClass;
 
 
-extern NhlCairoWorkstationClassRec    NhlcairoPSPDFWorkstationClassRec;
+extern NhlCairoWorkstationClassRec    NhlcairoDocumentWorkstationClassRec;
 extern NhlCairoWorkstationClassRec    NhlcairoImageWorkstationClassRec;
 
 # endif /* _NCairoWorkstationP_h */

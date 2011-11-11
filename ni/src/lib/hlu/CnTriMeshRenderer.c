@@ -1457,7 +1457,9 @@ static void SetRegionAttrs
 		c_ctseti("CLU",1);
 
 	if (cpix == -1)
-		c_ctseti("AIA",98);
+		c_ctseti("AIA",99);
+	else if (cpix == -2)
+		c_ctseti("AIA",97);
 	else
 		c_ctseti("AIA",-1);
 
@@ -1579,7 +1581,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
                         _NhlGetGksCi(cl->base.wkptr,
                                      cnp->low_lbls.perim_lcolor);
 
-/*	SetRegionAttrs(cl,&cnp->grid_bound,-1); */
+	SetRegionAttrs(cl,&cnp->grid_bound,-1); 
 	SetRegionAttrs(cl,&cnp->missing_val,-1);
 	SetRegionAttrs(cl,&cnp->out_of_range,-2);
 
@@ -3075,6 +3077,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	float           dn12,dn23,dn31;
 	int             bound1,bound2;
 	int             ibeg,iend,jbeg,jend;
+	int             grid_fill_ix;
 
 	
         if (Cnp == NULL) {
@@ -3108,15 +3111,18 @@ NhlErrorTypes _NhlTriMeshRasterFill
 /*
  *      initialize cell array with the missing value.
  */      
+	grid_fill_ix = MAX(Cnp->missing_val.gks_fcolor, Cnp->grid_bound.gks_fcolor);
+	grid_fill_ix = grid_fill_ix < 0 ? NhlBACKGROUND : grid_fill_ix;
 	for (j = 0; j < ican; j++) {
 		for (i = 0; i < icam; i++) {
-			*(cell + j * ica1 + i) = Cnp->missing_val.gks_fcolor;
+			*(cell + j * ica1 + i) = grid_fill_ix;
 		}
 	}
 
 /*
  * Now overwrite out-of-range areas with the out-of-range color
  */
+	grid_fill_ix = Cnp->out_of_range.gks_fcolor < 0 ? NhlBACKGROUND : Cnp->out_of_range.gks_fcolor;
 	if (Tmp->ezmap) {
 		imap = -map;
 		zval = 0;
@@ -3139,7 +3145,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
 				(_NHLCALLF(hluctmxyz,HLUCTMXYZ))
 					(&imap,&xccd,&yccd,&zval,&xcci,&ycci);
 				if (xcci == orv) {
-					*(cell + j * ica1 + i) = Cnp->out_of_range.gks_fcolor;
+					*(cell + j * ica1 + i) = grid_fill_ix;
 				}
 			}
 		}
@@ -3786,15 +3792,21 @@ int (_NHLCALLF(hluctfill,HLUCTFILL))
 #endif
 
 				switch (iai[i]) {
-				case 98:
-					reg_attrs = &Cnp->missing_val;
+				case 99:
+					col_ix = MAX(Cnp->missing_val.fill_color,Cnp->grid_bound.fill_color);
+					pat_ix = MAX(Cnp->missing_val.fill_pat,Cnp->grid_bound.fill_pat);
+					fscale = Cnp->missing_val.fill_scale == 1.0 ? 
+						Cnp->grid_bound.fill_scale : Cnp->missing_val.fill_scale;
+					break;
+				case 97:
+					reg_attrs = &Cnp->out_of_range;
+					col_ix = reg_attrs->fill_color;
+					pat_ix = reg_attrs->fill_pat;
+					fscale = reg_attrs->fill_scale;
 					break;
 				default:
 					return 0;
 				}
-				col_ix = reg_attrs->fill_color;
-				pat_ix = reg_attrs->fill_pat;
-				fscale = reg_attrs->fill_scale;
 			}
 			NhlVASetValues(Cnl->base.wkptr->base.id,
 				       _NhlNwkFillIndex, pat_ix,
@@ -3877,14 +3889,25 @@ void  (_NHLCALLF(hluctscae,HLUCTSCAE))
 		col_ix = Cnp->gks_fill_colors[*iaid - 100];
 		if (col_ix < 0) col_ix = NhlBACKGROUND;
 	}
-	else if (*iaid == 98) {
+	else if (*iaid == 99) {
 #if 0
 		printf("hluctscae iaid = %d\n",*iaid);
 #endif
 		col_ix = Cnp->missing_val.gks_fcolor;
-		if (col_ix < 0) col_ix = NhlBACKGROUND;
+		if (col_ix <= 0 && Cnp->grid_bound.gks_fcolor > 0) 
+			col_ix = Cnp->grid_bound.gks_fcolor;
+		if (col_ix < 0)
+			col_ix = NhlBACKGROUND;
 	}
-	else {
+	else if (*iaid == 97) {
+		col_ix = Cnp->out_of_range.gks_fcolor;
+		if (col_ix < 0)
+			col_ix = NhlBACKGROUND;
+#if 0
+		printf("hluctscae iaid = %d\n",*iaid);
+#endif
+	}
+	else  {
 #if 0
 		printf("hluctscae iaid = %d\n",*iaid);
 #endif

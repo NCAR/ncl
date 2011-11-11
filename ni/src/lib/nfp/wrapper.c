@@ -199,6 +199,7 @@ extern NhlErrorTypes simpne_W(void);
 extern NhlErrorTypes poisson_grid_fill_W(void);
 extern NhlErrorTypes wk_smooth121_W(void);
 extern NhlErrorTypes spcorr_W(void);
+extern NhlErrorTypes spcorr_n_W(void);
 extern NhlErrorTypes pdfxy_bin_W(void);
 
 extern NhlErrorTypes nggcog_W(void);
@@ -377,6 +378,7 @@ extern NhlErrorTypes dim_pqsort_W(void);
 extern NhlErrorTypes dim_pqsort_n_W(void);
 extern NhlErrorTypes dim_num_W(void);
 extern NhlErrorTypes dim_num_n_W(void);
+extern NhlErrorTypes dim_numrun_n_W(void);
 extern NhlErrorTypes dim_avg_wgt_W(void);
 extern NhlErrorTypes dim_avg_wgt_n_W(void);
 extern NhlErrorTypes dim_sum_wgt_W(void);
@@ -452,11 +454,12 @@ extern NhlErrorTypes jul2greg_W(void);
 extern NhlErrorTypes utm2latlon_W(void);
 extern NhlErrorTypes latlon2utm_W(void);
 
+extern NhlErrorTypes cd_calendar_W(void);
+extern NhlErrorTypes cd_inv_calendar_W(void);
+
 #ifdef BuildUdunits
 extern NhlErrorTypes ut_calendar_W(void);
-extern NhlErrorTypes ut_calendar_test_W(void);
 extern NhlErrorTypes ut_inv_calendar_W(void);
-extern NhlErrorTypes ut_inv_calendar_test_W(void);
 #endif
 
 /*
@@ -493,6 +496,7 @@ extern NhlErrorTypes dtrend_n_W(void);
 extern NhlErrorTypes dtrend_quadratic_W(void);
 extern NhlErrorTypes dtrend_msg_W(void);
 extern NhlErrorTypes dtrend_msg_n_W(void);
+extern NhlErrorTypes dtrend_quadratic_msg_n_W(void);
 extern NhlErrorTypes local_min_W(void);
 extern NhlErrorTypes local_max_W(void);
 extern NhlErrorTypes fluxEddy_W(void);
@@ -518,6 +522,7 @@ extern NhlErrorTypes dim_gbits_W(void);
 extern NhlErrorTypes getbitsone_W(void);
 extern NhlErrorTypes conform_W(void);
 extern NhlErrorTypes conform_dims_W(void);
+extern NhlErrorTypes reshape_W(void);
 extern NhlErrorTypes paleo_outline_W(void);
 extern NhlErrorTypes inverse_matrix_W(void);
 extern NhlErrorTypes solve_linsys_W(void);
@@ -549,6 +554,7 @@ extern NhlErrorTypes cdfnor_x_W(void);
 extern NhlErrorTypes cdfchi_p_W(void);
 extern NhlErrorTypes cdft_t_W(void);
 extern NhlErrorTypes cdft_p_W(void);
+extern NhlErrorTypes gamma_W(void);
 extern NhlErrorTypes ind_resolve_W(void);
 extern NhlErrorTypes unique_string_W(void);
 extern NhlErrorTypes tempnam_W(void);
@@ -562,6 +568,18 @@ extern NhlErrorTypes write_matrix_W(void);
 extern NhlErrorTypes ctwrap_W(void);
 
 extern NhlErrorTypes kron_product_W(void);
+
+extern NhlErrorTypes sparse_matrix_mult_W(void);
+
+/* 
+ * ESMF regridding functions.
+ */
+
+#ifdef BuildESMF
+extern NhlErrorTypes SMMul_W(void);
+extern NhlErrorTypes Unstruct2KML_W(void);
+extern NhlErrorTypes SCRIP2KML_W(void);
+#endif
 
 #ifdef BuildGRIDSPEC
 extern NhlErrorTypes nccffregridW(void);
@@ -3076,6 +3094,20 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(spcorr_W,args,"spcorr",nargs);
 
 /*
+ * Register "spcorr".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(spcorr_n_W,args,"spcorr_n",nargs);
+
+/*
  * Register "pdfxy_bin".
  *
  * Create private argument array
@@ -5496,11 +5528,25 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"logical",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(dim_num_n_W,args,"dim_num_n",nargs);
+
+/*
+ * Register "dim_numrun_n".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(dim_numrun_n_W,args,"dim_numrun_n",nargs);
 /*
  * Register "dim_avg_wgt".
  *
@@ -6377,6 +6423,32 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     NclRegisterFunc(jul2greg_W,args,"jul2greg",nargs);
 
+/*
+ * Register "cd_calendar".
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(cd_calendar_W,args,"cd_calendar",nargs);
+
+/*
+ * Register "ut_inv_calendar".
+ */
+    nargs = 0;
+    args = NewArgs(8);
+    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(cd_inv_calendar_W,args,"cd_inv_calendar",nargs);
+
 #ifdef BuildUdunits
 /*
  * Register "ut_calendar".
@@ -6403,30 +6475,6 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(ut_inv_calendar_W,args,"ut_inv_calendar",nargs);
-/*
- * Register "ut_calendar_test".
- */
-    nargs = 0;
-    args = NewArgs(1);
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    NclRegisterFunc(ut_calendar_test_W,args,"ut_calendar_test",nargs);
-
-/*
- * Register "ut_inv_calendar_test".
- */
-    nargs = 0;
-    args = NewArgs(8);
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    NclRegisterFunc(ut_inv_calendar_test_W,args,"ut_inv_calendar_test",nargs);
-
 #endif
 
 /*
@@ -6710,6 +6758,18 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(dtrend_msg_n_W,args,"dtrend_msg_n",nargs);
 
 /*
+ * Register "dtrend_msg_n".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(dtrend_quadratic_msg_n_W,args,"dtrend_quadratic_msg_n",nargs);
+
+/*
  * Register "local_min".
  */
     nargs = 0;
@@ -6981,6 +7041,16 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, 0, 0, NclANY);  nargs++;
     SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
     NclRegisterFunc(conform_dims_W, args, "conform_dims", nargs);
+
+/*
+ *  Register reshape
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+    NclRegisterFunc(reshape_W, args, "reshape", nargs);
+
 /*
  *  Register omega_ccm.
  */
@@ -7366,6 +7436,16 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(cdft_p_W,args,"cdft_p",nargs);
 
 /*
+ *  Registering gamma
+ */
+    nargs = 0;
+    args = NewArgs(1);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+    NclRegisterFunc(gamma_W,args,"gamma",nargs);
+
+/*
  *  Register ind_resolve.
  */
     nargs = 0;
@@ -7455,6 +7535,22 @@ void NclAddUserFuncs(void)
         NclRegisterFunc(kron_product_W,args,"kron_product",nargs);
 
 /*
+ * Register "sparse_matrix_mult".
+ *
+ * Create private argument array.
+ */
+ 
+        nargs = 0;
+        args = NewArgs(5);
+        SetArgTemplate(args,0,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,1,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,2,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,3,"numeric",0,NclANY);nargs++;
+        dimsizes[0] = 2;
+        SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+        NclRegisterFunc(sparse_matrix_mult_W,args,"sparse_matrix_mult",nargs);
+
+/*
  *  Register ctwrap.
  */
     nargs = 0;
@@ -7497,6 +7593,51 @@ void NclAddUserFuncs(void)
 
     NclRegisterProc(write_matrix_W, args, "write_matrix", nargs);
 
+/* 
+ * ESMF regridding functions.
+ */
+#ifdef BuildESMF
+/*
+ * Register "SMMul".
+ *
+ * Create private argument array.
+ */
+ 
+        nargs = 0;
+        args = NewArgs(5);
+        SetArgTemplate(args,0,"integer",1,NclANY);nargs++;
+        SetArgTemplate(args,1,"integer",1,NclANY);nargs++;
+        SetArgTemplate(args,2,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,3,"double",2,NclANY);nargs++;
+        SetArgTemplate(args,4,"double",2,NclANY);nargs++;
+        NclRegisterProc(SMMul_W,args,"SMMulFast",nargs);
+/*
+ * Register "Unstruct2KML".
+ *
+ * Create private argument array.
+ */
+       nargs = 0;
+       args = NewArgs(6);
+       SetArgTemplate(args,0,"string",1,NclANY);nargs++;
+       SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+       SetArgTemplate(args,2,"double",1,NclANY);nargs++;
+       SetArgTemplate(args,3,"double",1,NclANY);nargs++;
+       SetArgTemplate(args,4,"integer",2,NclANY);nargs++;
+       SetArgTemplate(args,5,"integer",1,NclANY);nargs++;
+       NclRegisterProc(Unstruct2KML_W,args,"Unstruct2KML",nargs);        
+/*
+ * Register "Unstruct2KML".
+ *
+ * Create private argument array.
+ */
+       nargs = 0;
+       args = NewArgs(3);
+       SetArgTemplate(args,0,"string",1,NclANY);nargs++;
+       SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+       SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+       NclRegisterProc(SCRIP2KML_W,args,"SCRIP2KML",nargs);
+#endif
+        
 # ifdef BuildV5D
 /*
  *  Register vis5d+ functions
@@ -8594,43 +8735,113 @@ int arg_num, num_args;
   tmp_var = _NclGetArg(arg_num,num_args,DONT_CARE);
 
   if(tmp_var.kind == NclStk_VAR) {
-	  dim_info = malloc(sizeof(NclDimRec) * tmp_var.u.data_var->var.n_dims);
-	  for (i = 0; i < tmp_var.u.data_var->var.n_dims; i++) {
-		  dim_info[i].dim_quark = tmp_var.u.data_var->var.dim_info[i].dim_quark;
-		  dim_info[i].dim_num = tmp_var.u.data_var->var.dim_info[i].dim_num;
-		  dim_info[i].dim_size = tmp_var.u.data_var->var.dim_info[i].dim_size;
-	  }
-	  return(dim_info);
+          dim_info = malloc(sizeof(NclDimRec) * tmp_var.u.data_var->var.n_dims);
+          for (i = 0; i < tmp_var.u.data_var->var.n_dims; i++) {
+                  dim_info[i].dim_quark = tmp_var.u.data_var->var.dim_info[i].dim_quark;
+                  dim_info[i].dim_num = tmp_var.u.data_var->var.dim_info[i].dim_num;
+                  dim_info[i].dim_size = tmp_var.u.data_var->var.dim_info[i].dim_size;
+          }
+          return(dim_info);
   }
   else {
-	  return(NULL);
+          return(NULL);
   }
 }
 
-ng_size_t *get_dimensions(void *tmp_dimensions,ng_size_t n_dimensions,
+ng_size_t *get_dimensions(void *tmp_dimensions,int n_dimensions,
                           NclBasicDataTypes type_dimensions, const char *name)
 {
-  ng_size_t i, *dimensions;
+  int i;
+  ng_size_t *dimensions;
 
+  dimensions = (ng_size_t *)NclMalloc(sizeof(ng_size_t) * n_dimensions);
   switch (type_dimensions) {
+  case NCL_byte:
+    for (i = 0; i < n_dimensions; i++) {
+      ((ng_size_t *)dimensions)[i] = ((byte*)tmp_dimensions)[i];
+    }
+    break;
+
+  case NCL_short:
+    for (i = 0; i < n_dimensions; i++) {
+      ((ng_size_t *)dimensions)[i] = ((short*)tmp_dimensions)[i];
+    }
+    break;
+
   case NCL_int:
-    dimensions = (ng_size_t *)NclMalloc(sizeof(ng_size_t) * n_dimensions);
     for (i = 0; i < n_dimensions; i++) {
       ((ng_size_t *)dimensions)[i] = ((int*)tmp_dimensions)[i];
     }
     break;
     
   case NCL_long:
-    dimensions = (ng_size_t *)NclMalloc(sizeof(ng_size_t) * n_dimensions);
     for (i = 0; i < n_dimensions; i++) {
       ((ng_size_t *)dimensions)[i] = ((long*)tmp_dimensions)[i];
     }
     break;
 
   default:
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: The input dimension sizes must be integer or long",name);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: The input dimension sizes must be byte, short, integer or long",name);
+    NclFree(dimensions);
     return(NULL);
   }
   return(dimensions);
 }
 
+int *get_dims_for_n_funcs(int arg_num,  int num_args, NclStackEntry tmpdata,
+                           const char *name, int *ndims)
+{
+  NclBasicDataTypes type_dims;
+  void *dims_ptr;
+  int i, *dims; 
+  ng_size_t num_dims[1];
+  string *dim_names;
+  NclVar tmpvar;
+
+  switch(tmpdata.kind) {
+  case NclStk_VAR:
+    tmpvar = tmpdata.u.data_var;
+    break;
+  case NclStk_VAL:
+    tmpvar = NULL;
+    break;
+  default:
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Internal error", name);
+    return(NULL);
+  }
+
+  dims_ptr = (void *)NclGetArgValue(arg_num,num_args,NULL,num_dims,NULL,
+                                    NULL,&type_dims,0);
+  if(type_dims != NCL_int && type_dims != NCL_string) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: The input dimensions must be integers representing dimension numbers, or strings representing dimension names",name);
+    return(NULL);
+  }
+  dims   = (int*)calloc(num_dims[0],sizeof(int));
+  if(dims == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Can't allocate memory for dimension indexes");
+    return(NULL);
+  }
+
+  if(type_dims == NCL_int) {
+    for(i = 0; i < num_dims[0]; i++) {
+      dims[i] = ((int*)dims_ptr)[i];
+    }
+  }
+  else {
+    if(tmpvar != NULL) {
+      dim_names = (string *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,0);
+    }
+    else {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Can't determine dimension names from input array",name);
+      return(NULL);
+    }
+    for(i = 0; i < num_dims[0]; i++) {
+/*
+ * Don't do any error checking here. Let the calling routine do it.
+ */
+      dims[i] = _NclIsDim(tmpvar,NrmQuarkToString(dim_names[i]));
+    }
+  }
+  *ndims = num_dims[0];
+  return(dims);
+}

@@ -1,5 +1,8 @@
 #ifndef NclFileInterfaces_h
 #define NclFileInterfaces_h
+
+#include "NclList.h"
+
 typedef struct _NclFormatFunctionRecord *NclFormatFunctionRecPtr;
 typedef struct _NclFormatFunctionRecord NclFormatFunctionRec;
 typedef struct _NclFAttRec	NclFAttRec;
@@ -75,7 +78,9 @@ typedef enum _NclFileFormat {
 #ifdef BuildOPENDAP
 	_NclOPENDAP,
 #endif
-        _NclOGR
+        _NclOGR,
+        _NclNewOGR,
+	_NclNETCDF4
 } NclFileFormat;
 
 typedef void * (*NclInitializeFileRecFunc)(
@@ -357,6 +362,20 @@ int
 #endif
 );
 
+typedef NhlErrorTypes (*NclAddGrpFunc)(void *record, NclQuark grpname);
+typedef NhlErrorTypes (*NclAddVlenFunc)(void *record, NclQuark vlen_name, NclQuark var_name,
+                                        NclQuark type, NclQuark dim_name);
+typedef NhlErrorTypes (*NclAddEnumFunc)(void *record, NclQuark enum_name, NclQuark var_name,
+                                        NclQuark dim_name, NclQuark  *mem_name, void *mem_value,
+                                        ng_size_t n_mems, NclBasicDataTypes val_type);
+typedef NhlErrorTypes (*NclAddOpaqueFunc)(void *record, NclQuark opaque_name, NclQuark var_name,
+                                          int var_size, NclQuark dim_name);
+typedef NhlErrorTypes (*NclAddCompoundFunc)(void *record, NclQuark compound_name, NclQuark var_name,
+                                            ng_size_t n_dims, NclQuark *dim_name, ng_size_t n_mems,
+                                            NclQuark *mem_name, NclQuark *mem_type, int *mem_size);
+typedef NhlErrorTypes (*NclWriteCompoundFunc)(void *record, NclQuark compound_name, NclQuark var_name,
+                                              ng_size_t n_mems, NclQuark *mem_name, NclList thelist);
+
 typedef NhlErrorTypes (*NclAddVarCoordFunc) (
 #if	NhlNeedProto
 void*, /* record */
@@ -545,6 +564,12 @@ NclGetGrpNamesFunc	get_grp_names;
 NclGetGrpInfoFunc       get_grp_info;
 NclGetGrpAttNamesFunc   get_grp_att_names;
 NclGetGrpAttInfoFunc    get_grp_att_info;
+NclAddGrpFunc		add_grp;
+NclAddVlenFunc		add_vlen;
+NclAddEnumFunc		add_enum;
+NclAddOpaqueFunc	add_opaque;
+NclAddCompoundFunc	add_compound;
+NclWriteCompoundFunc	write_compound;
 NclSetOptionFunc        set_option;  
 };
 
@@ -573,5 +598,8 @@ int _NclGribVersion(
 	NclQuark path
 #endif
 );
+
+extern NclFormatFunctionRecPtr _NclGetFormatFuncsWithNewHLFS
+                               (NclQuark file_extension);
 
 #endif

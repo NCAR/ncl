@@ -34,19 +34,19 @@
 #include "NclMdInc.h"
 #include "NclAtt.h"
 #include "NclVar.h"
-#include "NclList.h"
 #include "NclCoordVar.h"
+#include "NclList.h"
 #include "DataSupport.h"
 #include "TypeSupport.h"
 #include "AttSupport.h"
 #include "VarSupport.h"
-#include "ListSupport.h"
 #include "NclCallBacksI.h"
 #include <math.h>
 #ifdef NIO_LIB_ONLY
 #define UNDEF 255
 #else
 #include "parser.h"
+#include "ListSupport.h"
 #endif
 
 static NhlErrorTypes VarWrite(
@@ -230,6 +230,7 @@ NclVarClassRec nclVarClassRec = {
 		(NclInitClassFunction)InitializeVarClass,
 		(NclAddParentFunction)VarAddParent,
                 (NclDelParentFunction)VarDelParent,
+/* NclPrintSummaryFunction print_summary */ NULL,
 /* NclPrintFunction print */	VarPrint,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
@@ -516,23 +517,6 @@ FILE *fp;
 	ret = nclfprintf(fp,"Type: %s\n",_NclBasicDataTypeToName(thevalue->multidval.data_type));
 	if(ret < 0) {
 		return(NhlWARNING);
-	}
-
-	/* Wei added for print list information */
-	strcpy(v_type, _NclBasicDataTypeToName(thevalue->multidval.data_type));
-	if(0 == strcmp(v_type, "list"))
-	{
-		NclObj obj;
-		NclListObjList *step;
-		NclList thelist = (NclList) _NclGetObj(*(int *)thevalue->multidval.val);
-		ret0 = NhlNOERROR;
-
-		ret = nclfprintf(fp,"Total items: %ld\n\n",(long)thelist->list.nelem);
-		if(ret < 0) {
-			return(NhlWARNING);
-		}
-
-		return(ret0);
 	}
 
 	ret = nclfprintf(fp,"Total Size: %lld bytes\n",(long long)thevalue->multidval.totalsize);
@@ -1336,9 +1320,17 @@ NclSelectionRecord *sel_ptr;
 */
 	thevalue = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
 /*
-* When id's are equal a write screws things up
+* When id's are equal a write screws things up 
+* dib -- except it's okay if it references a scalar logical variable - 2011-07-12
 */
-	if(thevalue->obj.id != value->obj.id) {
+	if(thevalue->obj.id == value->obj.id && thevalue->multidval.data_type == NCL_logical &&
+		thevalue->multidval.kind == SCALAR) {
+		return NhlNOERROR;
+	}
+	else if (thevalue->obj.id != value->obj.id) {
+#ifdef NIO_LIB_ONLY
+		if (sel_ptr == NULL) {
+#else
 		/*Handle NCL_list*/
 		if(NCL_list == thevalue->multidval.data_type)
 		{
@@ -1347,21 +1339,38 @@ NclSelectionRecord *sel_ptr;
 			NclObj tmp = NULL;
 			NclList thelist = (NclList) theobj;
 			NclList rhslist = (NclList) rhsobj;
+			NclListObjList *step;
 
 			while(0 < thelist->list.nelem)
 			{
 				tmp = (NclObj)_NclListPop((NclObj)thelist);
 			}
 
-			while(0 < rhslist->list.nelem)
+		      /*Comment out this paragraph (as this removed items from rhslist),
+		       *and use the paragraph below (which copy items for rhslist).
+		       *Wei, 7/12/2011.
+		       *
+		       *while(0 < rhslist->list.nelem)
+		       *{
+		       *	tmp = (NclObj)_NclListPop((NclObj)rhslist);
+		       *	_NclListPush((NclObj)thelist, tmp);
+		       *}
+		       */
+
+			step = rhslist->list.last;
+			while(step != NULL)
 			{
-				tmp = (NclObj)_NclListPop((NclObj)rhslist);
+				tmp = _NclGetObj(step->obj_id);
+	
 				_NclListPush((NclObj)thelist, tmp);
+
+				step = step->prev;
 			}
 
 			return (NhlNOERROR);
 		}
 		else if(sel_ptr == NULL) {
+#endif
 			if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
 				tmp_md = _NclCoerceData(value,
 						thevalue->multidval.type->type_class.type,

@@ -32,8 +32,8 @@ extern "C" {
 #include    <stddef.h>
 
 #define NCL_MAX_DIMENSIONS 32
-#define NCL_MAX_FVARS 2048
-#define NCL_MAX_GVARS 2048
+#define NCL_MAX_FVARS 16
+#define NCL_MAX_GVARS 2
 #define NCL_MAX_STRING 256
 #define NCL_MAX_COMPOUND_COMPONETS 256
 #define NCL_MAX_ATTRIBUTES 32
@@ -42,6 +42,9 @@ extern "C" {
 #define NCL_MISSING_VALUE_ATT "_FillValue"
 #define NclANY NULL
 #define NhlTNclData "nclData"
+
+extern int use_new_hlfs;
+
 typedef enum {	NORMAL = 0,
 		VARSUBSEL = 1,
 		COORD = 2,

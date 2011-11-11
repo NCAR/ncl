@@ -39,7 +39,7 @@ typedef enum _NhlCairoFormat {
     NhlCTIFF = 3
 } NhlCairoFormat;
 
-extern NhlClass NhlcairoPSPDFWorkstationClass;
+extern NhlClass NhlcairoDocumentWorkstationClass;
 extern NhlClass NhlcairoImageWorkstationClass;
 
 

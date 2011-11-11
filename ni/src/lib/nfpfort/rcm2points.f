@@ -1,9 +1,9 @@
 c ----------------------------------------------------------- 
 C NCLFORTSTART
       SUBROUTINE DRCM2POINTS(NGRD,NYI,NXI,YI,XI,FI,NXYO,YO,XO,FO
-     +                      ,XMSG,OPT,NCRIT,IER)
+     +                      ,XMSG,OPT,NCRIT,KVAL,IER)
       IMPLICIT NONE
-      INTEGER NGRD,NXI,NYI,NXYO,OPT,NCRIT,IER
+      INTEGER NGRD,NXI,NYI,NXYO,OPT,NCRIT,KVAL,IER
       DOUBLE PRECISION XI(NXI,NYI),YI(NXI,NYI),FI(NXI,NYI,NGRD)
       DOUBLE PRECISION XO(NXYO),YO(NXYO),FO(NXYO,NGRD),XMSG
 C NCLEND
@@ -21,7 +21,7 @@ c .   xo      - lon coordinates of fo (eg, lon [1D])
 c .   yo      - lat coordinates of fo (eg, lat [1D])
 c .   fo      - functional output values [interpolated]
 c .   xmsg    - missing code
-c .   opt     - unused
+c .   opt     - 0/1 = inv distance, 2 = bilinear
 c .   ier     - error code
 c .             =0;   no error
 c .             =1;   not enough points in input/output array
@@ -32,6 +32,7 @@ c                              local
       INTEGER NG,NX,NY,NXY,NEXACT,IX,IY,M,N,NW,NER,K
       DOUBLE PRECISION FW(2,2),W(2,2),SUMF,SUMW,CHKLAT(NYI),CHKLON(NXI)
       DOUBLE PRECISION DGCDIST, WX, WY
+      DOUBLE PRECISION REARTH, DLAT, PI, RAD, DKM, DIST 
 c                              error checking
       IER = 0
       IF (NXI.LE.1 .OR. NYI.LE.1 .OR. NXYO.LE.0) THEN
@@ -55,12 +56,11 @@ c c c    print *,"chklon: nx=",nx,"  chklon=",chklon(nx)
       IF (IER.NE.0) RETURN
 
 C ORIGINAL  (k = op, never implemented)
-C .   OLIVER_F ... opt=2 yields k=1
-      K = 2 
-      IF (OPT.EQ.2) THEN
-           K = 1
-      end if
-
+      IF (KVAL.LE.0) THEN
+         K = 1
+      ELSE
+         K = KVAL
+      END IF
       DO NG = 1,NGRD
         DO NXY = 1,NXYO
            FO(NXY,NG) = XMSG
@@ -149,6 +149,66 @@ c                                             nw >=3 arbitrary
               END DO
 
    20         CONTINUE
+      END DO
+
+C Are all the output points filled in? Check the 1st grid
+C If so, return
+
+      DO NG = 1,NGRD   
+        DO NXY = 1,NXYO
+           IF (FO(NXY,NG).EQ.XMSG) GO TO 30
+        END DO
+      END DO
+      RETURN
+
+C only enter if some points are not interpolated to
+C DLAT is arbitrary.  It ould be made an option.
+C DLAT is expressed in terms of degrees of latitude.
+C DKM  is DLAT in KILOMETERS
+
+   30 REARTH= 6371D0
+      DLAT  = 5  
+      PI    = 4D0*ATAN(1.0D0)
+      RAD   = PI/180D0
+      DKM   = DLAT*(2D0*PI*REARTH)/360D0
+
+C LOOP OVER EACH GRID ... INEFFICIENT 
+C THE RUB IS THAT SOME LEVELS COULD HAVE XMSG.
+
+      DO NG = 1,NGRD   
+
+        DO NXY = 1,NXYO
+           IF(FO(NXY,NG).EQ.XMSG) THEN
+
+C FIND ALL GRID POINTS WITHIN 'DKM' KILOMETERS OF PT 
+
+              NW   = 0
+              SUMF = 0.0D0
+              SUMW = 0.0D0
+
+              DO IY = 1,NYI
+                DO IX = 1,NXI
+                   IF ((YI(IX,IY).GE.YO(NXY)-DLAT)  .AND.
+     +                 (YI(IX,IY).LE.YO(NXY)+DLAT)) THEN      
+                        DIST = DGCDIST(YO(NXY),XO(NXY) 
+     +                                ,YI(IX,IY),XI(IX,IY),2)
+                        IF (DIST.LE.DKM .AND. DIST.GT.0.0D0 .AND.
+     +                      FI(IX,IY,NG).NE.XMSG) THEN
+                            DIST = 1.0D0/DIST**2
+                            SUMF = SUMF + FI(IX,IY,NG)*DIST
+                            SUMW = SUMW + DIST
+                            NW   = NW + 1
+                        END IF
+                   END IF
+                END DO
+              END DO
+
+C C C         IF (NW.GE.NCRIT .AND. SUMW.GT. 0.0D0) THEN
+              IF (SUMW.GT.0.0D0) THEN
+                  FO(NXY,NG) = SUMF/SUMW
+              END IF
+           END IF
+        END DO
       END DO
 
       RETURN

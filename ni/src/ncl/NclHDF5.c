@@ -36,6 +36,8 @@
 #include <ctype.h>
 #include <string.h>
 
+extern char *strdup(const char *s);
+
 #ifndef MAX_HDF5_NAME_LENGTH
 #define MAX_HDF5_NAME_LENGTH    256
 #endif
@@ -1416,7 +1418,7 @@ void _setHDF5AttValue(HDF5AttInqRecList *new_att_list,
         case NCL_ushort:
         case NCL_byte:
              new_att->n_elem = len;
-             new_att->value = malloc(attr_node->nbytes);
+             new_att->value = NclMalloc(attr_node->nbytes);
     
              if(!new_att->value)
              {
@@ -1509,8 +1511,8 @@ static int _HDF5get_var_att_list(HDF5AttInqRecList **HDF5var_att_list,
     while(curHDF5attr_list)
     {
         NclHDF5attr_node_t *attr_node = curHDF5attr_list->attr_node;
-        HDF5AttInqRecList *new_att_list = calloc(1, sizeof(HDF5AttInqRecList));
-        HDF5AttInqRec *new_att = calloc(1, sizeof(HDF5AttInqRec));
+        HDF5AttInqRecList *new_att_list = NclCalloc(1, sizeof(HDF5AttInqRecList));
+        HDF5AttInqRec *new_att = NclCalloc(1, sizeof(HDF5AttInqRec));
 
         if(!new_att_list)
         {
@@ -1641,7 +1643,7 @@ void _HDF5Build_grp_list_inGroup(HDF5GrpInqRec **the_grp, NclHDF5group_node_t *H
     int n_vars = 0;
     int n_atts = 0;
 
-    *the_grp = calloc(1, sizeof(HDF5GrpInqRec));
+    *the_grp = NclCalloc(1, sizeof(HDF5GrpInqRec));
     if(!the_grp)
     {
         NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for the_grp, in file: %s, line: %d\n",
@@ -1690,14 +1692,14 @@ void _HDF5Build_grp_list_inGroup(HDF5GrpInqRec **the_grp, NclHDF5group_node_t *H
 
     while(h5grp_att_list)
     {
-        HDF5AttInqRec *new_att = calloc(1, sizeof(HDF5AttInqRec));
+        HDF5AttInqRec *new_att = NclCalloc(1, sizeof(HDF5AttInqRec));
         HDF5AttInqRecList *new_att_list;
 
         attr_node = h5grp_att_list->attr_node;
 
         n_atts++;
 
-        new_att_list = calloc(1, sizeof(HDF5AttInqRecList));
+        new_att_list = NclCalloc(1, sizeof(HDF5AttInqRecList));
         if(!new_att_list)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for new_att_list, in file: %s, line: %d\n",
@@ -1705,7 +1707,7 @@ void _HDF5Build_grp_list_inGroup(HDF5GrpInqRec **the_grp, NclHDF5group_node_t *H
             return;
         }
 
-        new_att = calloc(1, sizeof(HDF5DimInqRec));
+        new_att = NclCalloc(1, sizeof(HDF5DimInqRec));
         if(!new_att)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for new_att, in file: %s, line: %d\n",
@@ -1744,7 +1746,7 @@ void _HDF5Build_grp_list_inGroup(HDF5GrpInqRec **the_grp, NclHDF5group_node_t *H
 
         dataset_node = dataset_list->dataset_node;
 
-        var_cur_list = calloc(1, sizeof(HDF5VarInqRecList));
+        var_cur_list = NclCalloc(1, sizeof(HDF5VarInqRecList));
         if(!var_cur_list)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for var_cur_list, in file: %s, line: %d\n",
@@ -1752,7 +1754,7 @@ void _HDF5Build_grp_list_inGroup(HDF5GrpInqRec **the_grp, NclHDF5group_node_t *H
             return;
         }
 
-        var_cur_list->var_inq = calloc(1, sizeof(HDF5VarInqRec));
+        var_cur_list->var_inq = NclCalloc(1, sizeof(HDF5VarInqRec));
         if(!var_cur_list->var_inq)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for var_cur_list->var_inq, in file: %s, line: %d\n",
@@ -1882,7 +1884,7 @@ void _HDF5Build_grp_list_inGroup(HDF5GrpInqRec **the_grp, NclHDF5group_node_t *H
 
         h5group_node = h5group_list->group_node;
 
-        grp_cur_list = calloc(1, sizeof(HDF5GrpInqRecList));
+        grp_cur_list = NclCalloc(1, sizeof(HDF5GrpInqRecList));
         if(!grp_cur_list)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for grp_cur_list, in file: %s, line: %d\n",
@@ -1932,7 +1934,7 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
     int n_vars = 0;
     int n_atts = 0;
 
-    the_grp = calloc(1, sizeof(HDF5GrpInqRec));
+    the_grp = NclCalloc(1, sizeof(HDF5GrpInqRec));
     if(!the_grp)
     {
         NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for the_grp, in file: %s, line: %d\n",
@@ -1980,14 +1982,14 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
 
     while(h5grp_att_list)
     {
-        HDF5AttInqRec *new_att = calloc(1, sizeof(HDF5AttInqRec));
+        HDF5AttInqRec *new_att = NclCalloc(1, sizeof(HDF5AttInqRec));
         HDF5AttInqRecList *new_att_list;
 
         attr_node = h5grp_att_list->attr_node;
 
         n_atts++;
 
-        new_att_list = calloc(1, sizeof(HDF5AttInqRecList));
+        new_att_list = NclCalloc(1, sizeof(HDF5AttInqRecList));
         if(!new_att_list)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for new_att_list, in file: %s, line: %d\n",
@@ -1995,7 +1997,7 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
             return NULL;
         }
 
-        new_att = calloc(1, sizeof(HDF5DimInqRec));
+        new_att = NclCalloc(1, sizeof(HDF5DimInqRec));
         if(!new_att)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for new_att, in file: %s, line: %d\n",
@@ -2034,7 +2036,7 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
 
         dataset_node = dataset_list->dataset_node;
 
-        var_cur_list = calloc(1, sizeof(HDF5VarInqRecList));
+        var_cur_list = NclCalloc(1, sizeof(HDF5VarInqRecList));
         if(!var_cur_list)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for var_cur_list, in file: %s, line: %d\n",
@@ -2042,7 +2044,7 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
             return NULL;
         }
 
-        var_cur_list->var_inq = calloc(1, sizeof(HDF5VarInqRec));
+        var_cur_list->var_inq = NclCalloc(1, sizeof(HDF5VarInqRec));
         if(!var_cur_list->var_inq)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for var_cur_list->var_inq, in file: %s, line: %d\n",
@@ -2167,7 +2169,7 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
 
         h5group_node = h5group_list->group_node;
 
-        grp_cur_list = calloc(1, sizeof(HDF5GrpInqRecList));
+        grp_cur_list = NclCalloc(1, sizeof(HDF5GrpInqRecList));
         if(!grp_cur_list)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for grp_cur_list, in file: %s, line: %d\n",
@@ -2222,7 +2224,7 @@ int _HDF5Build_dim_list_from_dim_group(HDF5DimInqRecList **dim_list,
        *fprintf(stderr, "\tGroup %d, type_name: <%s>\n", n, group_node->type_name);
        */
 
-        cur_list = calloc(1, sizeof(HDF5DimInqRecList));
+        cur_list = NclCalloc(1, sizeof(HDF5DimInqRecList));
         if(!cur_list)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list, in file: %s, line: %d\n",
@@ -2230,7 +2232,7 @@ int _HDF5Build_dim_list_from_dim_group(HDF5DimInqRecList **dim_list,
             return NhlFATAL;
         }
 
-        cur_list->dim_inq = calloc(1, sizeof(HDF5DimInqRec));
+        cur_list->dim_inq = NclCalloc(1, sizeof(HDF5DimInqRec));
         if(!cur_list->dim_inq)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list->dim_inq, in file: %s, line: %d\n",
@@ -2401,7 +2403,7 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
                     {
                         HDF5DimInqRecList *cur_list = NULL;
 
-                        cur_list = calloc(1, sizeof(HDF5DimInqRecList));
+                        cur_list = NclCalloc(1, sizeof(HDF5DimInqRecList));
                         if(!cur_list)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list, in file: %s, line: %d\n",
@@ -2409,7 +2411,7 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
                             return;
                         }
 
-                        cur_list->dim_inq = calloc(1, sizeof(HDF5DimInqRec));
+                        cur_list->dim_inq = NclCalloc(1, sizeof(HDF5DimInqRec));
                         if(!cur_list->dim_inq)
                         {
                             NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list->dim_inq, in file: %s, line: %d\n",
@@ -2534,7 +2536,7 @@ static void _HDF5Create_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclH
                *fprintf(stderr, "\tnew_dim_size: %d\n", new_dim_size[i]);
                */
 
-                cur_list = calloc(1, sizeof(HDF5DimInqRecList));
+                cur_list = NclCalloc(1, sizeof(HDF5DimInqRecList));
                 if(!cur_list)
                 {
                     NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list, in file: %s, line: %d\n",
@@ -2542,7 +2544,7 @@ static void _HDF5Create_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclH
                     return;
                 }
 
-                cur_list->dim_inq = calloc(1, sizeof(HDF5DimInqRec));
+                cur_list->dim_inq = NclCalloc(1, sizeof(HDF5DimInqRec));
                 if(!cur_list->dim_inq)
                 {
                     NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list->dim_inq, in file: %s, line: %d\n",
@@ -2917,7 +2919,7 @@ int wr_status;
         the_file->n_dims = n_dims;
         for(n = 0; n < n_dims; n++)
         {
-            cur_list = calloc(1, sizeof(HDF5DimInqRecList));
+            cur_list = NclCalloc(1, sizeof(HDF5DimInqRecList));
             if(!cur_list)
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list, in file: %s, line: %d\n",
@@ -2925,7 +2927,7 @@ int wr_status;
                 return NULL;
             }
     
-            cur_list->dim_inq = calloc(1, sizeof(HDF5DimInqRec));
+            cur_list->dim_inq = NclCalloc(1, sizeof(HDF5DimInqRec));
             if(!cur_list->dim_inq)
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list->dim_inq, in file: %s, line: %d\n",
@@ -3540,7 +3542,7 @@ NclHDF5group_node_t *h5_group;
                             }
                         }
 
-                        qp = (NclQuark *) calloc(NclHDF5data->nbytes, sizeof(NclQuark));
+                        qp = (NclQuark *) NclCalloc(NclHDF5data->nbytes, sizeof(NclQuark));
                         assert(qp);
 
                         tmp_char_array = (char **) NclHDF5data->value;
@@ -3717,7 +3719,7 @@ void* storage;
                 {
                     if(NclHDF5data->is_str)
                     {
-                        NclQuark *qp = calloc(NclHDF5data->nbytes, sizeof(NclQuark));
+                        NclQuark *qp = NclCalloc(NclHDF5data->nbytes, sizeof(NclQuark));
                         if(!qp)
                         {
                             NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Failed to allocated memory for curAttrList. in file: %s, line: %d\n",
@@ -3945,14 +3947,14 @@ long *stride;
             }
 
             rank = (hsize_t) thelist->var_inq->n_dims;
-            dims = (hsize_t *) calloc(rank, sizeof(hsize_t));
+            dims = (hsize_t *) NclCalloc(rank, sizeof(hsize_t));
             if(dims == NULL)
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
                           "HDF5WriteVar: Could not allocate memory for dims. %s, %d", __FILE__, __LINE__));
                 return(NhlFATAL);
             }
-            chunk_dims = (hsize_t *) calloc(rank, sizeof(hsize_t));
+            chunk_dims = (hsize_t *) NclCalloc(rank, sizeof(hsize_t));
             if(chunk_dims == NULL)
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -4367,7 +4369,7 @@ ng_size_t *dims;
 
     if(rec->wr_status <= 0)
     {
-        chunk_dims = (hsize_t *) calloc(n_dims, sizeof(hsize_t));
+        chunk_dims = (hsize_t *) NclCalloc(n_dims, sizeof(hsize_t));
         if(chunk_dims == NULL)
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -5402,11 +5404,11 @@ static NhlErrorTypes HDF5SetOption
                       NrmQuarkToString(option));
             return(NhlWARNING);
         }
-        rec->options[H5_COMPRESSION_LEVEL_OPT].values = (void*) *(int*)values;
+        rec->options[H5_COMPRESSION_LEVEL_OPT].values = (void*) values;
     }
     else if (option == NrmStringToQuark("usecache"))
     {
-        rec->options[H5_USE_CACHE_OPT].values = (void*) *(int*)values;
+        rec->options[H5_USE_CACHE_OPT].values = values;
     }
     else if (option == NrmStringToQuark("cachesize"))
     {
@@ -5417,7 +5419,7 @@ static NhlErrorTypes HDF5SetOption
                      NrmQuarkToString(option));
             return(NhlWARNING);
         }
-        rec->options[H5_CACHE_SIZE_OPT].values = (void*) *(int*)values;
+        rec->options[H5_CACHE_SIZE_OPT].values = values;
     }
     else if (option == NrmStringToQuark("cachenelems"))
     {
@@ -5432,7 +5434,7 @@ static NhlErrorTypes HDF5SetOption
         {
             unsigned int *iv = (unsigned int *)values;
             *iv = _closest_prime(*iv);
-            rec->options[H5_CACHE_NELEMS_OPT].values = (void*) *(int*)iv;
+            rec->options[H5_CACHE_NELEMS_OPT].values = (void*) iv;
         }
     }
     else if (option == NrmStringToQuark("cachepreemption"))
@@ -5488,6 +5490,7 @@ NclFormatFunctionRec HDF5Rec = {
 /* NclGetGrpInfoFunc        get_grp_info; */       HDF5GetGrpInfo,
 /* NclGetGrpAttNamesFunc    get_grp_att_names; */  HDF5GetGrpAttNames,
 /* NclGetGrpAttInfoFunc     get_grp_att_info; */   HDF5GetGrpAttInfo,
+/* NclAddGrpFunc           add_grp; */                  NULL,
 /* NclSetOptionFunc         set_option;  */        HDF5SetOption
 };
 

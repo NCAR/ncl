@@ -22,7 +22,7 @@
 MYNAME          =       libnfp
 
 EXTRA_INCLUDES  = -I../../ncl
-EXTRA_CDEFINES  = $(UDUNITS_DEFS) $(V5D_DEFS) $(GRIDSPEC_DEFS)
+EXTRA_CDEFINES  = $(UDUNITS_DEFS) $(V5D_DEFS) $(GRIDSPEC_DEFS) $(ESMF_DEFS)
 
 HDRS = wrapper.h
 
@@ -44,23 +44,14 @@ V5D_OBJS = ncl2v5dW.o
 # define    V5D_OBJS
 # endif
 
-# ifdef BuildGRIDSPEC
-GRIDSPEC_DEFS = -DBuildGRIDSPEC
-GRIDSPEC_SRCS = nccffregridW.c nccfmakeconformalcubichgridW.c nccfmakegnomoniccubichgridW.c	\
-		nccfmakehgridfromfileW.c nccfmakeregularlatlonhgridW.c 				\
-		nccfmakesimplecartesianhgridW.c nccfmakespectralhgridW.c 			\
-		nccfmaketripolarhgridW.c nccfmakecouplermosaicW.c nccfmakemosaicW.c		\
-		nccfmaketopogW.c nccfmakevgridW.c
-
-GRIDSPEC_OBJS = nccffregridW.o nccfmakeconformalcubichgridW.o nccfmakegnomoniccubichgridW.o	\
-		nccfmakehgridfromfileW.o nccfmakeregularlatlonhgridW.o 				\
-		nccfmakesimplecartesianhgridW.o nccfmakespectralhgridW.o 			\
-		nccfmaketripolarhgridW.o nccfmakecouplermosaicW.o nccfmakemosaicW.o		\
-		nccfmaketopogW.o nccfmakevgridW.o
-# else
-# define    GRIDSPEC_SRCS
-# define    GRIDSPEC_OBJS
-# endif
+#ifdef BuildESMF
+ESMF_DEFS = -DBuildESMF
+ESMF_SRCS = KML_UTILS.c Unstruct2KMLW.c SCRIP2KMLW.c SMMulW.c
+ESMF_OBJS = KML_UTILS.o Unstruct2KMLW.o SCRIP2KMLW.o SMMulW.o
+#else
+#define ESMF_SRCS
+#define ESMF_OBJS
+#endif
 
 CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cancorW.c cdf_dpW.c chiinvW.c         \
         conformW.c csagridW.c cssgridW.c ctwrapW.c cz2ccmW.c datesW.c                   \
@@ -80,7 +71,8 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cancorW.c cdf_dpW.c chiinvW.c 
         sg_toolsW.c colconvW.c convert_datum.c cfftW.c wksmoothW.c dzheightW.c          \
 	covcormW.c kronprodW.c space_timeW.c spcorrW.c  bindataW.c tropwmoW.c pdfW.c    \
 	mocloopsW.c spanW.c vinth2pnodesW.c vinth2penodesW.c objanalW.c                 \
-	areaconremapW.c 
+	areaconremapW.c nctime.c cdtimeW.c dimnumrunW.c sparse_matrixW.c \
+	gammaW.c
 
 COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o         \
         conformW.o csagridW.o cssgridW.o ctwrapW.o cz2ccmW.o datesW.o                   \
@@ -100,10 +92,11 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o 
         sg_toolsW.o colconvW.o convert_datum.o cfftW.o wksmoothW.o dzheightW.o          \
 	covcormW.o kronprodW.o space_timeW.o spcorrW.o bindataW.o tropwmoW.o pdfW.o     \
 	mocloopsW.o spanW.o vinth2pnodesW.o vinth2penodesW.o objanalW.o                 \
-	areaconremapW.o	
+	areaconremapW.o	nctime.o cdtimeW.o dimnumrunW.o sparse_matrixW.o \
+	gammaW.o
 
-OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS) $(GRIDSPEC_OBJS)
-SRCS = $(CSRCS) $(UDUNITS_SRCS) $(V5D_SRCS) $(GRIDSPEC_SRCS)
+OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS) $(ESMF_OBJS)
+SRCS = $(CSRCS) $(UDUNITS_SRCS) $(V5D_SRCS) $(ESMF_SRCS)
 
 BuildSharedLibTarget(libNGnfp,$(OBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
 LibraryTarget($(MYNAME),$(OBJS))

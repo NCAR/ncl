@@ -1,8 +1,9 @@
 c -------------------------------------------------------------
       SUBROUTINE DREGCOEF(X,Y,NPTS,XMSG,YMSG,RCOEF,TVAL,NPTXY,XAVE,
-     +     YAVE,RSTD,IER)
+     +     YAVE,RSTD,YINT,IER)
       IMPLICIT NONE
 
+c NCL:  rcoef = regCoef (x,y)
 c NCL:  rcoef = regcoef (x,y,tval,nptxy)
 c NCL:  rcoef = regline (x,y,tval,nptxy,xave,yave)
 
@@ -26,7 +27,7 @@ c .   nptxy    - number of points used
 c .   rstd     - standard deviation of the regression coefficient
 c .   xave     - average of x
 c .   yave     - average of y
-c .   yave     - average of y
+c .   yint     - y-intercept
 c .   ier      - if (ier.ne.0) an error has occurred
 
 C input
@@ -36,7 +37,7 @@ C input
 C output
       INTEGER IER
 C output
-      DOUBLE PRECISION RCOEF,TVAL,YAVE,XAVE,RSTD
+      DOUBLE PRECISION RCOEF,TVAL,YAVE,XAVE,RSTD,YINT
 
 C local
       LOGICAL REGDBG
@@ -109,6 +110,8 @@ C t-statistic and standard deviation of reg coef
           END IF
 C degrees of freedom
           DF = XYN - 2.D0
+C y-intercept
+          YINT = YAVE - RCOEF*XAVE
       ELSE
 c XVAR = 0.0
           IER    = 7
@@ -118,6 +121,7 @@ c XVAR = 0.0
           SQRTVB = YMSG
           TVAL   = YMSG
           RCOEF  = YMSG
+          YINT   = YMSG
       END IF
 
       REGDBG = .false.
@@ -138,6 +142,7 @@ c XVAR = 0.0
           WRITE (*,FMT='('' vb    ='',f15.9)') VB
           WRITE (*,FMT='('' rstd(=sqrtvb)='',f15.9)') RSTD   
           WRITE (*,FMT='('' tval  ='',f15.9)') TVAL
+          WRITE (*,FMT='('' yint  ='',f15.9)') YINT
       END IF
 
       RETURN

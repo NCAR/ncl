@@ -1713,6 +1713,7 @@ CurlyVectorInitialize
 {
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
+	NhlTransformLayerPart	*tfp = &(vcl->trans);
 	char buffer[_NhlMAXRESNAMLEN];
 	float afr;
 	int rlist;
@@ -1736,6 +1737,8 @@ CurlyVectorInitialize
 	NhlRLSetFloat(rlist,NhlNvpYF,vcl->view.y);
 	NhlRLSetFloat(rlist,NhlNvpWidthF,vcl->view.width);
 	NhlRLSetFloat(rlist,NhlNvpHeightF,vcl->view.height);
+	NhlRLSetFloat(rlist,NhlNtrXAxisType,tfp->x_axis_type);
+	NhlRLSetFloat(rlist,NhlNtrYAxisType,tfp->y_axis_type);
 	NhlRLSetFloat(rlist,NhlNstLineThicknessF,vcp->l_arrow_thickness);
 	NhlRLSetFloat(rlist,NhlNstArrowLengthF,vcp->l_arrowhead_max_size);
 	NhlRLSetFloat(rlist,NhlNstArrowFracLengthF,afr);
@@ -2268,6 +2271,7 @@ CurlyVectorSetValues
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
  	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
  	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
+	NhlTransformLayerPart	*tfp = &(vcnew->trans);
 	float			afr;
 	int			rlist;
 
@@ -2289,6 +2293,10 @@ CurlyVectorSetValues
 	if (vcnew->view.use_segments != vcold->view.use_segments)
 		NhlRLSetInteger(rlist,NhlNvpUseSegments,
 				vcnew->view.use_segments);
+	if (tfp->x_axis_type != vcold->trans.x_axis_type)        
+		NhlRLSetFloat(rlist,NhlNtrXAxisType,tfp->x_axis_type);
+	if (tfp->y_axis_type != vcold->trans.y_axis_type)        
+		NhlRLSetFloat(rlist,NhlNtrYAxisType,tfp->y_axis_type);
 	if (vcp->new_draw_req || (vcp->vector_order != ovcp->vector_order))
 		NhlRLSetInteger(rlist,NhlNstStreamlineDrawOrder,
 				vcp->vector_order);
@@ -4189,9 +4197,10 @@ static NhlErrorTypes InitCoordBounds
 	char			*entry_name;
 #endif
 {
-	NhlErrorTypes	ret = NhlNOERROR;
+	NhlErrorTypes	subret, ret = NhlNOERROR;
         NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
         NhlTransformLayerPart	*tfp = &vcl->trans;
+	char *e_text;
 
 	vcp->do_low_level_log = False;
         
@@ -4238,7 +4247,13 @@ static NhlErrorTypes InitCoordBounds
 		/* leave the set flag as is */
 	}
         else if (vcp->vfp->x_arr || vcp->vfp->y_arr) { /* ignore set value */
-		tfp->grid_type = NhltrIRREGULAR;
+		/* if the coords are evenly spaced then use linear */
+		if (vcp->vfp->xc_is_linear && vcp->vfp->yc_is_linear)  {
+			tfp->grid_type = NhltrLOGLIN;
+		}
+		else {
+			tfp->grid_type = NhltrIRREGULAR;
+		}
 		tfp->grid_type_set = False;
 	}
 	else { /* ignore set value */
@@ -4248,34 +4263,58 @@ static NhlErrorTypes InitCoordBounds
         
         if (tfp->grid_type == NhltrIRREGULAR) {
                 if (vcp->vfp->x_arr && ! tfp->x_axis_type_set) {
-			if (! vcp->ovfp || (vcp->data_changed  &&
+			if (! ovcl || (vcp->data_changed  &&
 			    (vcp->vfp->changed & _NhlvfXARR_CHANGED)))
 				tfp->x_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! vcp->vfp->x_arr && tfp->x_axis_type == NhlIRREGULARAXIS)
                         tfp->x_axis_type = NhlLINEARAXIS;
-                if (vcp->vfp->x_arr && tfp->x_axis_type != NhlIRREGULARAXIS) {
+                if (tfp->x_axis_type != NhlIRREGULARAXIS &&
+		    vcp->vfp->x_arr &&  ! vcp->vfp->xc_is_linear) {
+			if (! ovcl || ovcl->trans.y_axis_type != tfp->y_axis_type) {
+				if (tfp->x_axis_type == NhlLOGAXIS) {
+					e_text = "%s: Log axis not possible with irregular coordinate spacing; switching to linear index coordinates for X Axis";
+					tfp->x_axis_type = NhlLINEARAXIS;
+				}
+				else {
+					e_text = "%s: coordinate spacing is irregular; linear spacing only possible using index coordinates for X Axis";
+				}
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+				ret = NhlWARNING;
+			}
                         tfp->data_xstart = vcp->vfp->ix_start;
                         tfp->data_xend = vcp->vfp->ix_end;
                 }
                 if (vcp->vfp->y_arr && ! tfp->y_axis_type_set) {
-			if (! vcp->ovfp || (vcp->data_changed  &&
+			if (! ovcl || (vcp->data_changed  &&
 			    (vcp->vfp->changed & _NhlvfYARR_CHANGED)))
 				tfp->y_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! vcp->vfp->y_arr && tfp->y_axis_type == NhlIRREGULARAXIS)
                         tfp->y_axis_type = NhlLINEARAXIS;
-                if (vcp->vfp->y_arr && tfp->y_axis_type != NhlIRREGULARAXIS) {
+                if (tfp->y_axis_type != NhlIRREGULARAXIS &&
+		    vcp->vfp->y_arr &&  ! vcp->vfp->yc_is_linear) {
+			if (! ovcl || ovcl->trans.y_axis_type != tfp->y_axis_type) {
+				if (tfp->y_axis_type == NhlLOGAXIS) {
+					e_text = "%s: Log axis not possible with irregular coordinate spacing; switching to linear index coordinates for Y Axis";
+					tfp->y_axis_type = NhlLINEARAXIS;
+				}
+				else {
+					e_text = "%s: coordinate spacing is irregular; linear spacing only possible using index coordinates for Y Axis";
+				}
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+				ret = NhlWARNING;
+			}
                         tfp->data_ystart = vcp->vfp->iy_start;
                         tfp->data_yend = vcp->vfp->iy_end;
                 }
         }
         
-	ret = _NhltfCheckCoordBounds
+	subret = _NhltfCheckCoordBounds
                 ((NhlTransformLayer)vcl,(NhlTransformLayer)ovcl,
                  entry_name);
 
-	return ret;
+	return MIN(ret,subret);
 }
 
 /*
@@ -5805,7 +5844,7 @@ static NhlErrorTypes PrepareAnnoString
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlString		lstring;
 	NhlBoolean		done = False;
-	char			buffer[_NhlMAXRESNAMLEN];
+	char			buffer[256];
 	char			*matchp,*subst;
 	float			val;
 	NhlvcScaleInfo		*sip;
@@ -6701,7 +6740,7 @@ static NhlErrorTypes ReplaceSubstitutionChars
 {
 	NhlErrorTypes		ret = NhlNOERROR;
 	char			*e_text;
-	char			buffer[_NhlMAXRESNAMLEN];
+	char			buffer[256];
 
 	*text_changed = False;
 
@@ -8860,13 +8899,17 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
 	float tmpx,tmpy;
 	float xout, yout;
 	float xdata,ydata;
-	float dv1, duv, dv2, xt, xtf, yt, ytf, sgn = 1.0;
+	double xdata_d, ydata_d;
+	float  dv1, duv, dv2, xt, xtf, yt, ytf, sgn = 1.0;
+	double xtd, ytd, dv,xt_data,yt_data, dv_in,dv_frac;
+	double cos_lat,xd, yd, ud, vd, xbd, ybd;
 	int ict = 0;
 	NhlLayer trans_p;
         static int imap,itrt;
         static float dvmx,sxdc,sydc,wxmn,wxmx,wymn,wymx;
 	static NhlLayer trans_obj, overlay_trans_obj;
 	static NhlBoolean over_map;
+	static double rlen_d;
 	float xsc = 1.0, ysc = 1.0;
 
         if (Vcp == NULL) {
@@ -8889,10 +8932,15 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
 			trans_obj = Vcl->trans.trans_obj;
 			if (!_NhlIsTransObj(overlay_trans_obj)) {
 				overlay_trans_obj = NULL;
-				printf("error- overlay_trans_obj is NULL\n");
+				printf("error- overlay_trans_obj is  NULL\n");
 			}
 			else if ((overlay_trans_obj->base.layer_class)->base_class.class_name ==
 				NhlmapTransObjClass->base_class.class_name) {
+				float xvpl,xvpr,xvpb,xvpt,wlx,wrx,wby,wty;
+				int lnlg;
+				c_getset(&xvpl,&xvpr,&xvpb,&xvpt,
+					 &wlx,&wrx,&wby,&wty,&lnlg);
+				rlen_d = fabs(dvmx * (wrx - wlx) / (xvpr - xvpl));
 				over_map = True;
 			}
 		}
@@ -8910,7 +8958,7 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
 		*ist = -5;
 		return;
 	}
-	else if (overlay_trans_obj == NULL) {
+	if (overlay_trans_obj == NULL) {
 		trans_p = trans_obj;
 
 		_NhlCompcToWin(trans_p,x,y,1,&xout,&yout,&status,NULL,NULL);
@@ -8920,6 +8968,12 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
 		}
 		*xb = c_cufx(xout);
 		*yb = c_cufy(yout);
+		if (*uvm <= 0.0) {
+			*ist = -999;
+			*xe = *xb;
+			*ye = *yb;
+			return;
+		}
 		*xe = *xb + *u * sxdc * xsc;
 		*ye = *yb + *v * sydc * ysc;
 #if 0
@@ -8964,6 +9018,12 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
 
 		*xb = c_cufx(xout);
 		*yb = c_cufy(yout);
+		if (*uvm <= 0.0) {
+			*ist = -999;
+			*xe = *xb;
+			*ye = *yb;
+			return;
+		}
 		*xe = *xb + *u * sxdc * xsc;
 		*ye = *yb + *v * sydc * ysc;
 
@@ -8974,50 +9034,114 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
 			
 	}
 
-	
-	dv1=sqrt((*xe-*xb)*(*xe-*xb)+(*ye-*yb)*(*ye-*yb));
+	if (over_map) {
+#define DEG2RAD 0.017453292519943 
+		/* bail out if over a pole */
+		if ((int)(fabs(ydata)*1e5+0.5) == (int) (1e5*90)) {
+			*ist = -1;
+			return;
+		}
+		xd = *x;
+		yd = *y;
+		duv = rlen_d * 1e-4;
+		ydata_d = ydata;
+		xdata_d = xdata;
+		c_mdptra(ydata_d,xdata_d,&xbd,&ybd);
+		if (xbd > 1e10) {
+			*ist = -5;
+			return;
+		}
+		ud = *u;
+		vd = *v;
+		cos_lat = cos(DEG2RAD*ydata_d);
+		dv_in = sqrt((*xe - *xb) * (*xe - *xb) + (*ye - *yb) * (*ye - *yb));
+		dv_frac = dv_in / dvmx;
 
-	duv = 0.1 / *uvm;
-
-	do {
+		do {
 
 /*
  * calculate the incremental end points, then check to see if 
  * they take us out of the user coordinate boundaries. if they
  * do, try incrementing in the other direction
  */
-#define DEG2RAD 0.017453292519943 
+			xt_data = xdata + (sgn * ud * duv * xsc) / cos_lat;
+			yt_data = ydata + sgn * vd * duv * ysc;
+		
+			c_mdptra(yt_data,xt_data,&xtd,&ytd);
 
-		if (over_map) {
-			if ((int)(fabs(ydata)*1e5+0.5) == (int) (1e5*90)) {
-				*ist = -1;
-				return;
-			}
-			else 
-				xt = xdata + (sgn * *u * duv * xsc) /
-					cos(DEG2RAD*ydata);
-		}
-		else {
-			xt = xdata + sgn * *u * duv * xsc;
-		}
-		yt = ydata + sgn * *v * duv * ysc;
-		
-		_NhlDataToWin(trans_p,&xt,&yt,1,&tmpx,&tmpy,
-			      &status,NULL,NULL);
-		if (status)
-			tmpx = xt, tmpy = yt;
-		
-		if (tmpx < wxmn || tmpx > wxmx || 
-		    tmpy < wymn || tmpy > wymx) {
-			if (sgn == 1.0) {
-				sgn = -1.0;
+			if (xtd > 1e10) {
+				if (sgn == 1.0) {
+					sgn = -1.0;
+				}
+				else {
+					ict = ict + 1;
+					duv = duv / 2.0;
+				}
 				continue;
 			}
-			else {
-				*ist=-4;
-			 	return;
+		
+/*
+ * To ensure that this distance is small enough to adequately represent
+ * the tangent angle at the vector location, we require that it be between 1e3 and 1e4
+ * times smaller than the maximum vector length.
+ */ 
+			dv=sqrt((xtd-xbd)*(xtd-xbd)+(ytd-ybd)*(ytd-ybd));
+			if (dv * 1e3 > rlen_d) {
+				if (sgn == 1.0) {
+					sgn = -1.0;
+					continue;
+				}
+				else {
+					ict=ict+1;
+					duv=duv/2.0;
+					continue;
+				}
 			}
+			else if (dv*1e4 < rlen_d) {
+				ict=ict+1;
+				duv=duv*2.0;
+				continue;
+			}
+/*
+ * the actual endpoints are found using the ratio of the desired length (dv_frac * rlen_d)
+ * to the length of the incremental endpoints.
+ */
+			xtd = xbd + sgn * (xtd - xbd) * dv_frac * rlen_d / dv;
+			ytd = ybd + sgn * (ytd - ybd) * dv_frac * rlen_d / dv;
+			*xe=c_cufx((float)xtd);
+			*ye=c_cufy((float)ytd);
+			return;
+
 		}
+		while (ict < 40);
+	}
+	else {
+		dv1=sqrt((*xe-*xb)*(*xe-*xb)+(*ye-*yb)*(*ye-*yb));
+
+		duv = *uvm * 1e-3;
+
+		do {
+
+/*
+ * calculate the incremental end points, then check to see if 
+ * they take us out of the user coordinate boundaries. if they
+ * do, try incrementing in the other direction
+ */
+
+			xt = xdata + sgn * *u * duv * xsc;
+			yt = ydata + sgn * *v * duv * ysc;
+		
+			_NhlDataToWin(trans_p,&xt,&yt,1,&tmpx,&tmpy,
+				      &status,NULL,NULL);
+			if (status)
+				tmpx = xt, tmpy = yt;
+			if (tmpx < wxmn || tmpx > wxmx || 
+			    tmpy < wymn || tmpy > wymx) {
+				if (sgn == 1.0) {
+					sgn = -1.0;
+					continue;
+				}
+			}
 		
 /*
  * convert to fractional coordinates and find the incremental
@@ -9025,31 +9149,32 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
  * is meaningful, we require that it be between 1e3 and 1e4
  * times smaller than the maximum vector length.
  */ 
-		xtf=c_cufx(tmpx);
-		ytf=c_cufy(tmpy);
-		dv2=sqrt((xtf-*xb)*(xtf-*xb)+
-			 (ytf-*yb)*(ytf-*yb));
-		if (dv2*1e3 > dvmx) {
-			ict=ict+1;
-			duv=duv/2.0;
-			continue;
-		}
-		else if (dv2*1e4 < dvmx) {
-			ict=ict+1;
-			duv=duv*2.0;
-			continue;
-		}
+			xtf=c_cufx(tmpx);
+			ytf=c_cufy(tmpy);
+			dv2=sqrt((xtf-*xb)*(xtf-*xb)+
+				 (ytf-*yb)*(ytf-*yb));
+			if (dv2*1e3 > dvmx) {
+				ict=ict+1;
+				duv=duv/2.0;
+				continue;
+			}
+			else if (dv2*1e4 < dvmx) {
+				ict=ict+1;
+				duv=duv*2.0;
+				continue;
+			}
 /*
  * the actual endpoints are found using the ratio of the incremental
  * distance to the actual distance times the fractional component
  * length
  */
-		*xe=*xb+sgn*(xtf-*xb)*dv1/dv2;
-		*ye=*yb+sgn*(ytf-*yb)*dv1/dv2;
-		return;
+			*xe=*xb+sgn*(xtf-*xb)*dv1/dv2;
+			*ye=*yb+sgn*(ytf-*yb)*dv1/dv2;
+			return;
 
+		}
+		while (ict < 40);
 	}
-	while (ict < 40);
 	*ist = -3;
 	return;
 }

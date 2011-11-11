@@ -10,8 +10,8 @@
 
 # define    Oset(field)     NhlOffset(NhlCairoWorkstationLayerRec, cairo.field)
 
-/* resources for the PS-PDF Workstation */
-static NhlResource resourcesPSPDFWS[] = {
+/* resources for the Document (PS-PDF) Workstation */
+static NhlResource resourcesDocumentWS[] = {
 		/* Begin-documented-resources */
 
     {NhlNwkFormat,NhlCwkFormat,NhlTCairoFormat,sizeof(NhlCairoFormat),
@@ -139,7 +139,7 @@ static NhlErrorTypes CairoWorkstationGetValues(
  * CairoWorkstation work_class method declarations
  */
 
-static NhlErrorTypes CairoPSPDFWorkstationOpen(
+static NhlErrorTypes CairoDocumentWorkstationOpen(
     NhlLayer    /* instance */
 );
 
@@ -147,7 +147,7 @@ static NhlErrorTypes CairoImageWorkstationOpen(
     NhlLayer    /* instance */
 );
 
-static NhlErrorTypes CairoPSPDFWorkstationActivate(
+static NhlErrorTypes CairoDocumentWorkstationActivate(
     NhlLayer    l   /* instance */
 );
 
@@ -156,7 +156,7 @@ static NhlErrorTypes CairoImageWorkstationActivate(
 );
 
 /* class-record for PS/PDF output formats */
-NhlCairoWorkstationClassRec NhlcairoPSPDFWorkstationClassRec = {
+NhlCairoWorkstationClassRec NhlcairoDocumentWorkstationClassRec = {
     {
         /* class_name           */  "documentWorkstationClass",
         /* nrm_class            */  NrmNULLQUARK,
@@ -165,8 +165,8 @@ NhlCairoWorkstationClassRec NhlcairoPSPDFWorkstationClassRec = {
         /* superclass           */  (NhlClass)&NhlworkstationClassRec,
         /* cvt_table            */  NULL,
 
-        /* layer_resources      */  resourcesPSPDFWS,
-        /* num_resources        */  NhlNumber(resourcesPSPDFWS),
+        /* layer_resources      */  resourcesDocumentWS,
+        /* num_resources        */  NhlNumber(resourcesDocumentWS),
         /* all_resources        */  NULL,
         /* callbacks            */  NULL,
         /* num_callbacks        */  0,
@@ -199,9 +199,9 @@ NhlCairoWorkstationClassRec NhlcairoPSPDFWorkstationClassRec = {
         /* def_background    */     {1.0,1.0,1.0},
         /* rgb_dbm           */     NULL,
         /* pal               */     NhlInheritPalette,
-        /* open_work         */     CairoPSPDFWorkstationOpen,
+        /* open_work         */     CairoDocumentWorkstationOpen,
         /* close_work        */     NhlInheritClose,
-        /* activate_work     */     CairoPSPDFWorkstationActivate,
+        /* activate_work     */     CairoDocumentWorkstationActivate,
         /* deactivate_work   */     NhlInheritDeactivate,
         /* alloc_colors      */     NhlInheritAllocateColors,
         /* update_work       */     NhlInheritUpdate,
@@ -283,7 +283,7 @@ NhlCairoWorkstationClassRec NhlcairoImageWorkstationClassRec = {
 
 };
 
-NhlClass NhlcairoPSPDFWorkstationClass = (NhlClass) &NhlcairoPSPDFWorkstationClassRec;
+NhlClass NhlcairoDocumentWorkstationClass = (NhlClass) &NhlcairoDocumentWorkstationClassRec;
 NhlClass NhlcairoImageWorkstationClass = (NhlClass) &NhlcairoImageWorkstationClassRec;
 
 /*
@@ -301,12 +301,12 @@ NhlClass NhlcairoImageWorkstationClass = (NhlClass) &NhlcairoImageWorkstationCla
  */
 
 NhlClass
-_NHLCALLF(nhlfcairopspdfworkstationclass, NHLFCAIROPSPDFWORKSTATIONCLASS)
+_NHLCALLF(nhlfcairopspdfworkstationclass, NHLFCAIRODOCUMENTWORKSTATIONCLASS)
 (
     void
 )
 {
-    return NhlcairoPSPDFWorkstationClass;
+    return NhlcairoDocumentWorkstationClass;
 }
 
 NhlClass
@@ -358,7 +358,7 @@ static NrmQuark fnameQ = NrmNULLQUARK;
 static NhlErrorTypes
 CairoWorkstationClassInitialize(void)
 {
-    _NhlEnumVals    psPdfFormats[] = {
+    _NhlEnumVals    documentFormats[] = {
         {NhlCPS,     "NEWPS"},
         {NhlCPDF,    "NEWPDF"}
     };
@@ -375,13 +375,13 @@ CairoWorkstationClassInitialize(void)
     };
 
 
-    (void) _NhlRegisterEnumType(NhlcairoPSPDFWorkstationClass,NhlTCairoFormat,
-        psPdfFormats,NhlNumber(psPdfFormats));
+    (void) _NhlRegisterEnumType(NhlcairoDocumentWorkstationClass,NhlTCairoFormat,
+        documentFormats,NhlNumber(documentFormats));
 
     (void) _NhlRegisterEnumType(NhlcairoImageWorkstationClass,NhlTCairoFormat,
         imageFormats,NhlNumber(imageFormats));
 
-    (void) _NhlRegisterEnumType(NhlcairoPSPDFWorkstationClass,NhlTWorkOrientation,
+    (void) _NhlRegisterEnumType(NhlcairoDocumentWorkstationClass,NhlTWorkOrientation,
         orientvals,NhlNumber(orientvals));
 
     fnameQ = NrmStringToQuark(NhlNwkFileName);
@@ -402,9 +402,8 @@ CairoWorkstationClassInitialize(void)
  *
  * Side Effects:
  */
-
-/*ARGSUSED*/
-static NhlErrorTypes CairoWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
+static NhlErrorTypes
+CairoWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
 {
     char    func[]= "CairoWorkstationInitialize";
 
@@ -544,9 +543,8 @@ static NhlErrorTypes CairoWorkstationInitialize(NhlClass lclass, NhlLayer req, N
  *
  * Side Effects:
  */
-
-/*ARGSUSED*/
-static NhlErrorTypes CairoWorkstationSetValues
+static NhlErrorTypes
+CairoWorkstationSetValues
 (
     NhlLayer    old,
     NhlLayer    ref,
@@ -606,7 +604,6 @@ static NhlErrorTypes CairoWorkstationSetValues
  * Returns:
  * Side Effect:
  */
-
 static NhlErrorTypes
 CairoWorkstationGetValues(NhlLayer l, _NhlArgList args, int nargs)
 {
@@ -652,7 +649,6 @@ CairoWorkstationGetValues(NhlLayer l, _NhlArgList args, int nargs)
  *
  * Side Effects:
  */
-
 static NhlErrorTypes
 CairoWorkstationDestroy(NhlLayer l)
 {
@@ -667,7 +663,7 @@ CairoWorkstationDestroy(NhlLayer l)
 }
 
 /*
- * Function:    CairoXXXXXWorkstationOpen
+ * Function:    CairoXXXXWorkstationOpen
  *
  * Description:
  *
@@ -681,7 +677,7 @@ CairoWorkstationDestroy(NhlLayer l)
  */
 
 static NhlErrorTypes
-CairoPSPDFWorkstationOpen(NhlLayer l)
+CairoDocumentWorkstationOpen(NhlLayer l)
 {
     NhlWorkstationLayer work = (NhlWorkstationLayer)l;
     NhlCairoWorkstationLayerPart  *pp = &((NhlCairoWorkstationLayer)l)->cairo;
@@ -782,8 +778,9 @@ CairoImageWorkstationOpen(NhlLayer l)
  * Returns: NhlErrorTypes
  * Side Effect:
  */
+
 static NhlErrorTypes
-CairoPSPDFWorkstationActivate(NhlLayer l)
+CairoDocumentWorkstationActivate(NhlLayer l)
 {
     NhlWorkstationClass lc = (NhlWorkstationClass) NhlworkstationClass;
     NhlWorkstationLayerPart *wp = &((NhlWorkstationLayer)l)->work;

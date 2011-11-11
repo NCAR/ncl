@@ -80,6 +80,10 @@ fatal:Execute: Error occurred at or near line 2 in file test.ncl
 On wedge.rap.ucar.edu, compiling HLUFunctions.c *and* Memory.c with
 optimization turned off makes it work.
 
+Later, in version 6.0.0 of NCL, and on k7.rap.ucar.edu, I had to
+compile just Execute.c and Machine.c with -g instead of -O. It's never
+consistent!  Grrr
+
 2. For same system as above, I also had to turn off optimization for
 "lib/hlu/Format.c" because it would cause the "tm04n.ncl" example to
 not generate the correct graphic.
