@@ -853,6 +853,93 @@ NhlErrorTypes _NclBuildListVar
 		return(NhlFATAL);
 }
 
+NclStackEntry _NclCreateAList(const char *buffer)
+{
+	NclStackEntry data;
+
+	NclList tmp_list;
+	obj *id;
+	ng_size_t one = 1;
+	int list_type = (int) (NCL_FIFO);
+	
+	data.kind = NclStk_VAL;
+
+        if(0 == strcmp("join",buffer))
+	{
+		list_type = (int) (NCL_JOIN | NCL_FIFO);
+	}
+        else if(0 == strcmp("concat",buffer))
+	{
+		list_type = (int) (NCL_CONCAT | NCL_FIFO);
+	}
+        else if(0 == strcmp("fifo",buffer))
+	{
+		list_type = (int) (NCL_FIFO);
+	}
+        else if(0 == strcmp("lifo",buffer))
+	{
+		list_type = (int) (NCL_LIFO);
+	}
+        else if(0 == strcmp("vlen",buffer))
+	{
+		list_type = (int) (NCL_VLEN);
+	}
+        else if(0 == strcmp("item",buffer))
+	{
+		list_type = (int) (NCL_ITEM);
+	}
+        else if(0 == strcmp("struct",buffer))
+	{
+		list_type = (int) (NCL_STRUCT);
+	}
+
+	tmp_list =(NclList)_NclListCreate(NULL,NULL,0,0,list_type);
+	id = (obj*)NclMalloc(sizeof(obj));
+	*id = tmp_list->obj.id;
+	_NclListSetType((NclObj)tmp_list,list_type);
+
+	data.u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,id,NULL,1,&one,TEMPORARY,NULL);
+	
+	return(data);
+}
+
+NhlErrorTypes _NclBuildListArray(ng_size_t ngdims, ng_size_t *dim_sizes,
+				 NclStackEntry *result)
+{
+	NclStackEntry *data_ptr;
+	NclStackEntry data;
+	ng_size_t i;
+	int ndims = (int) ngdims;
+	ng_size_t n_items = 1;
+
+	NclList thelist;
+	obj *id;
+
+	thelist =(NclList)_NclListCreate(NULL,NULL,0,0,(NCL_CONCAT|NCL_FIFO));
+	id = (obj*)NclMalloc(sizeof(obj));
+	*id = thelist->obj.id;
+	_NclListSetType((NclObj)thelist,NCL_FIFO);
+
+	result->kind = NclStk_VAL;
+	result->u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,
+				(Ncl_List | Ncl_MultiDVallistData | Ncl_ListVar | Ncl_Typelist),id,NULL,
+				ndims,dim_sizes,TEMPORARY,NULL);
+
+	for(i = 0; i < ngdims; i++)
+		n_items *= dim_sizes[i];
+
+	for(i = 0; i < n_items; i++)
+	{
+		data = _NclCreateAList("fifo");
+		ListPush((NclObj)thelist, (NclObj)(data.u.data_obj)); 
+	}
+
+	if(result->u.data_obj != NULL) 
+		return(NhlNOERROR);
+	else 
+		return(NhlFATAL);
+}
+
 NhlErrorTypes _NclBuildNewListVar(int n_items,NclStackEntry *result)
 {
 #ifdef USE_NETCDF4_FEATURES
@@ -2084,6 +2171,7 @@ NclStackEntry missing_expr;
 	NclScalar missing_val;
 	NclMultiDValData missing_md,tmp_md,size_md,tmp1_md;
 	void *tmp_val;
+	ng_size_t ndims = 1;
 	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	long long *dim_size_list;
 	ng_size_t total;
@@ -2097,10 +2185,12 @@ NclStackEntry missing_expr;
 	
 
 	the_type = _NclKeywordToDataType(data_type);
+/*Wei commented out this block to allow of using "new function" for list. 11/9/2011.
 	if (the_type == NCL_list) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: currently unable to create list type variable; use NewList or [/ ... /] list syntax");
 		return(NhlFATAL);
 	}		
+*/
 	the_obj_type = _NclKeywordToObjType(data_type);
 	typec = (NclTypeClass)_NclTypeEnumToTypeClass(the_obj_type);
 	if(the_obj_type == NCL_NUMERIC_TYPE_MASK) {
@@ -2187,6 +2277,7 @@ NclStackEntry missing_expr;
 		}
 		ll_total = 1;
 		j = 0;
+		ndims = tmp1_md->multidval.dim_sizes[0];
 		if((tmp1_md->multidval.dim_sizes[0] == 1)&&(dim_size_list[0] > 0)) {
 			ll_total *= dim_size_list[0];
 			dim_sizes[0] = (ng_size_t)dim_size_list[0];
@@ -2208,10 +2299,11 @@ NclStackEntry missing_expr;
 			}
 		}
 		if(j == 0) {
+			ndims = 1;
 			dim_sizes[0] = 1;
 			j = 1;
 		}
-		total = (long) ll_total;
+		total = (ng_size_t) ll_total;
 		ll_total *= _NclSizeOf(the_type);
 #ifdef NG32BIT
 		if (ll_total > INT_MAX) {
@@ -2224,6 +2316,20 @@ NclStackEntry missing_expr;
 #endif
 			return(NhlFATAL);
 		}
+
+		/*Wei, 11/9/2011.
+		* Add code here to generate an array of list.
+		*/
+
+		if((Ncl_Typelist == the_obj_type) && (NCL_list == the_type))
+		{
+			_NclBuildListArray(ndims, dim_sizes, &data);
+			return(_NclPush(data));
+		}
+		/*Wei, 11/9/2011.
+		* End code of generating array of list.
+		*/
+
 		tmp_val = (void*)NclMalloc((ng_usize_t)ll_total);
 		if (! tmp_val) {
 			NhlPError(NhlFATAL,ENOMEM,"New: could not create new array");
