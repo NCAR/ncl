@@ -8609,6 +8609,38 @@ ng_size_t index_x
   }
 }
 
+/*
+ * Copy double data back to double or float array, using a void array. 
+ * This is identical to coerce_output_float_or_double, except it only
+ * copies values where the corresponding indexes value is != 0.
+ */
+void coerce_output_float_or_double_ind(
+void   *x,
+double *dx,
+NclBasicDataTypes type_x,
+ng_size_t size_x,
+ng_size_t index_x,
+ng_size_t *indexes
+)
+{
+  ng_size_t i;
+
+  if(type_x == NCL_double) {
+    for( i = 0; i < size_x; i++ ) {
+      if(indexes[i] != 0) {
+        ((double*)x)[index_x+i]  = dx[i];
+      }
+    }
+  }
+  else {
+    for( i = 0; i < size_x; i++ ) {
+      if(indexes[i] != 0) {
+        ((float*)x)[index_x+i]  = (float)dx[i];
+      }
+    }
+  }
+}
+
 
 /*
  * Copy double data back to double or float non-contiguous array,

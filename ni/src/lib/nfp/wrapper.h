@@ -45,7 +45,12 @@ extern void coerce_output_float_only(void *,double *,ng_size_t, ng_size_t);
 extern void coerce_output_int_only(void *,double *,ng_size_t, ng_size_t);
 
 extern void coerce_output_float_or_double(void *,double *,
-					   NclBasicDataTypes,ng_size_t,ng_size_t);
+					   NclBasicDataTypes,ng_size_t,
+					  ng_size_t);
+
+extern void coerce_output_float_or_double_ind(void *,double *,
+					      NclBasicDataTypes,ng_size_t,
+					      ng_size_t,ng_size_t*);
 
 extern void coerce_output_float_or_double_step(void *,double *,
 					       NclBasicDataTypes,ng_size_t,ng_size_t,ng_size_t);

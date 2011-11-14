@@ -13,6 +13,7 @@ NhlErrorTypes sparse_matrix_mult_W
     ng_size_t ncoly, nrowy, nrowcoly, ncolx, nrowx, nrowcolx;
     ng_size_t i, j, l, index_x, index_y;
     ng_size_t xInd, yInd;
+    ng_size_t *iy;
     int ndims;
 
     /* Defining the arguments */
@@ -235,7 +236,8 @@ NhlErrorTypes sparse_matrix_mult_W
       }
     }
     dy = (double*)calloc(nrowcoly,sizeof(double));
-    if(dy == NULL) {
+    iy = (ng_size_t*)calloc(nrowcoly,sizeof(ng_size_t));
+    if(iy == NULL || dy == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: Unable to allocate memory for temporary output array");
       return(NhlFATAL);
     }
@@ -265,8 +267,11 @@ NhlErrorTypes sparse_matrix_mult_W
  */
       coerce_subset_input_double(x,dx,index_x,type_x,nrowcolx,0,NULL,NULL);
 
-/* This array needs to be zeroed out every time. */
-      for (i = 0; i < nrowcoly; i++) dy[i] = 0.0;
+/* These arrays need to be zeroed out every time. */
+      for (i = 0; i < nrowcoly; i++) {
+        dy[i] = 0.0;
+        iy[i] = 0;
+      }
 
       if (has_missing_x) {
 /*        
@@ -278,6 +283,7 @@ NhlErrorTypes sparse_matrix_mult_W
             yInd = row[i]*ncoly+j;
             if (dx[xInd] != missing_dx.doubleval) {
               dy[yInd] += dx[xInd]*dS[i];
+              iy[yInd] = 1;   /* keep track of where there are values */
             }
           }
         }
@@ -291,19 +297,23 @@ NhlErrorTypes sparse_matrix_mult_W
             xInd = col[i]*ncoly+j;
             yInd = row[i]*ncoly+j;
             dy[yInd] += dx[xInd]*dS[i];
+            iy[yInd] = 1;   /* keep track of where there are values */
           }
         }
       }
 /*
- * Coerce output back to float or double. 
+ * Coerce output back to float or double at indices where there
+ * are real values. (It's not enough to just check if dy==0.0,
+ * because this could be a real value.)
  */
-      coerce_output_float_or_double(y,dy,type_y,nrowcoly,index_y);
+      coerce_output_float_or_double_ind(y,dy,type_y,nrowcoly,index_y,iy);
     }
 /*
  * Clean up
  */
     NclFree(dx);
     NclFree(dy);
+    NclFree(iy);
     NclFree(row);
     NclFree(col);
     if(type_S != NCL_double) NclFree(dS);
