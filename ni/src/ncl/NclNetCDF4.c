@@ -6532,7 +6532,168 @@ NhlErrorTypes NC4AddCompound(void *rec, NclQuark compound_name, NclQuark var_nam
     return ret;
 }
 
+#if 1
 NhlErrorTypes NC4WriteCompound(void *rec, NclQuark compound_name, NclQuark var_name,
+                               ng_size_t n_mems, NclQuark *mem_name, NclList thelist)
+{
+    NclFileGrpNode   *grpnode = (NclFileGrpNode *) rec;
+    NhlErrorTypes ret = NhlNOERROR;
+    NclFileDimNode   *dimnode = NULL;
+    NclFileVarNode   *varnode = NULL;
+    NclFileGrpRecord *grprec = NULL;
+    char buffer[NC_MAX_NAME];
+    int fid;
+    int n = -1;
+    int nc_ret = 0;
+
+    nc_type var_id;
+
+    int n_dims = 1;
+
+    size_t data_size = 1;
+    void  *data_value = NULL;
+
+    fprintf(stderr, "\nEnter NC4WriteCompound, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tcompound_name: <%s>, var_name: <%s>, n_mems = %d, mem_name[0]: <%s>\n",
+                     NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
+                     n_mems, NrmQuarkToString(mem_name[0]));
+  /*
+   */
+
+    if(grpnode->open)
+    {
+        fid = grpnode->id;
+    }
+    else
+    {
+        nc_ret = nc__open(NrmQuarkToString(grpnode->path),NC_WRITE,
+                         &ChunkSizeHint,&fid);
+        if(nc_ret != NC_NOERR)
+        {
+            NhlPError(NhlFATAL,NhlEUNKNOWN,
+                "NC4WriteCompound: Could not reopen the file (%s) for writing",
+                 NrmQuarkToString(grpnode->path));
+            check_err(nc_ret, __LINE__, __FILE__);
+            return(NhlFATAL);
+        }
+        grpnode->fid = fid;
+        grpnode->id = fid;
+        grpnode->define_mode = 0;
+        grpnode->open = 1;
+    }
+
+    nc_ret = nc_inq_varid(grpnode->id, NrmQuarkToString(var_name), &var_id);
+
+    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tvar_name: <%s>, var_id = %d\n", NrmQuarkToString(var_name), var_id);
+    fprintf(stderr, "\tgrpnode->id = %d\n", grpnode->id);
+    fprintf(stderr, "\tNC_NOERR = %d, nc_ret = %d\n", NC_NOERR, nc_ret);
+
+    if(NC_NOERR != nc_ret)
+        check_err(nc_ret, __LINE__, __FILE__);
+
+    varnode = _getVarNodeFromNclFileGrpNode(grpnode, var_name);
+
+    if((NULL != varnode) && (NULL != thelist))
+    {
+        NclObj tmp, ret_obj;
+        NclListObjList *list_list = thelist->list.first;
+        NclList  comp_list;
+        NclListObjList *tmp_list;
+
+        NclVar self = NULL;
+        NclMultiDValData theval = NULL;
+
+        NclFileCompoundRecord *comp_rec = varnode->comprec;
+        NclFileCompoundNode   *compnode = NULL;
+
+        n_dims = varnode->dim_rec->n_dims;
+
+        data_size = 1;
+        for(n = 0; n < n_dims; n++)
+        {
+            dimnode = &(varnode->dim_rec->dim_node[n]);
+            data_size *= (size_t) dimnode->size;
+        }
+
+        if(NULL != comp_rec)
+        {
+            size_t cur_mem_loc = 0;
+            size_t compound_size = 0;
+            int current_component = 0;
+
+            size_t *mem_len = (size_t *)NclCalloc(n_mems, sizeof(size_t));
+            if (! mem_len)
+            {
+                NHLPERROR((NhlFATAL,ENOMEM,NULL));
+                return NhlFATAL;
+            }
+
+            if(comp_rec->n_comps == n_mems)
+            {
+                for(n = 0; n < n_mems; n++)
+                {
+                    compnode = &(comp_rec->compnode[n]);
+
+                    mem_len[n] = (size_t) _NclSizeOf(compnode->type)
+                               * (size_t) compnode->nvals;
+
+                    compound_size += mem_len[n];
+                }
+            }
+
+            data_value = (void *)NclCalloc((ng_usize_t)(data_size*compound_size), sizeof(void));
+            assert(data_value);
+
+            cur_mem_loc = 0;
+            while(NULL != list_list)
+            {
+                current_component = 0;
+
+                self = (NclVar)_NclGetObj(list_list->obj_id);
+                if(self != NULL)
+                {
+                    theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
+                    comp_list = (NclList)_NclGetObj(*(int*)theval->multidval.val);
+                    tmp_list = comp_list->list.last;
+
+                    while(NULL != tmp_list)
+                    {
+                        self = (NclVar)_NclGetObj(tmp_list->obj_id);
+                        if(self != NULL)
+                        {
+                            theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
+
+                            memcpy(data_value + cur_mem_loc,
+                                   theval->multidval.val, mem_len[current_component]);
+
+                            cur_mem_loc += mem_len[current_component];
+                        }
+                        tmp_list = tmp_list->prev;
+                        current_component++;
+                    }
+                }
+
+                list_list = list_list->next;
+            }
+
+            ret = nc_put_var(fid, varnode->id, data_value);
+            if(NC_NOERR != ret)
+                check_err(ret, __LINE__, __FILE__);
+
+            ret = nc_close(fid);
+            grpnode->open = 0;
+
+            NclFree(data_value);
+        }
+    }
+
+    fprintf(stderr, "Leave NC4WriteCompound, file: %s, line: %d\n\n", __FILE__, __LINE__);
+    return ret;
+}
+#else
+/*This block code worked with "list of component arrays"*/
+NhlErrorTypes listOfComponentArray_NC4WriteCompound(void *rec, NclQuark compound_name, NclQuark var_name,
                                ng_size_t n_mems, NclQuark *mem_name, NclList thelist)
 {
     NclFileGrpNode   *grpnode = (NclFileGrpNode *) rec;
@@ -6717,6 +6878,7 @@ NhlErrorTypes NC4WriteCompound(void *rec, NclQuark compound_name, NclQuark var_n
     fprintf(stderr, "Leave NC4WriteCompound, file: %s, line: %d\n\n", __FILE__, __LINE__);
     return ret;
 }
+#endif
 
 NclFormatFunctionRec NC4Rec =
 {
