@@ -50,3 +50,4 @@ extern NhlClass NhlgraphicStyleClass;
 extern NhlClass NhlprimitiveClass;
 extern NhlClass NhlcairoDocumentWorkstationClass;
 extern NhlClass NhlcairoImageWorkstationClass;
+extern NhlClass NhlcairoWindowWorkstationClass;
