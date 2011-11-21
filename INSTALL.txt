@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------
-How to build NCL and NCAR Graphics V6.0.0-beta from source code
+How to build NCL and NCAR Graphics V6.0.0 from source code
 
     The latest version of this document can be found at:
     http://www.ncl.ucar.edu/Download/build_from_src.shtml 
 
-March 2, 2011
+May 23, 2011
 ------------------------------------------------------------------------
-How to build NCL and NCAR Graphics V6.0.0-beta from source code
+How to build NCL and NCAR Graphics V6.0.0 from source code
 
 This is an all-encompassing document on:
 
@@ -130,7 +130,7 @@ earlier versions of NCL (5.2.0 and earlier):
    compiler. Instead, use gfortran or g95.
 
    2. Some external software packages have newer versions. For
-   example, NetCDF is at version 4.1.1 and now includes OPeNDAP
+   example, NetCDF is at version 4.1.x and now includes OPeNDAP
    software. We highly recommend that you link against this version
    and not an older version.
 
@@ -281,7 +281,7 @@ permission to install software to /usr/local. If you don't have the
 
     * NetCDF - do not install if you are only doing an NCAR Graphics build.
 
-      Download version 4.1.1 or later (do not download 4.1.0).
+      Download version 4.1.x or later (do not download 4.1.0).
 
       NetCDF versions 4 and later support both NetCDF-3 files and
       NetCDF-4 files. These are different file formats. NCL supports
@@ -290,11 +290,11 @@ permission to install software to /usr/local. If you don't have the
       files.
 
       NetCDF versions 4.1.1 and later support OPenDAP, and this is
-      built in by default. We recommend you use V4.1.1 as 4.1.0 had a
-      serious bug. NetCDF 4.1.x also includes the UDUNITS-2 software,
-      but the stand-alone UDUNITS-2 library is more up-to-date so we
-      recommend this over the one that comes with NetCDF. See
-      instructions on building and installing UDUNITS-2.
+      built in by default. We recommend you do NOT use V4.1.0 as it
+      had a serious bug. NetCDF 4.1.x also includes the UDUNITS-2
+      software, but the stand-alone UDUNITS-2 library is more
+      up-to-date so we recommend this over the one that comes with
+      NetCDF. See instructions on building and installing UDUNITS-2.
 
       This software can be built different ways: with or without
       "classic" NetCDF-4 support, and with or without OPeNDAP
@@ -331,8 +331,8 @@ permission to install software to /usr/local. If you don't have the
               ./configure --prefix=/usr/local  --disable-shared
               make all install >& make-output
 
-          o HDF-5 - Download version 1.8.4-patch1 or 1.8.5-patch1. Do
-          not download hdf5 versions 1.8.0 through 1.8.5!
+          o HDF-5 - Download version 1.8.6. Do not download hdf5
+          versions 1.8.0 through 1.8.5 (1.8.5-patch1 is okay).
 
               ./configure --with-zlib=/usr/local --with-szlib=/usr/local --prefix=/usr/local --disable-shared
               make all install >& make-output
@@ -478,9 +478,6 @@ download and install the following packages.
 
 GDAL/PROJ.4 software - not needed if you are only doing an NCAR
 Graphics build.
-
-The NCL support for this software is currently in beta testing so use
-at your own risk.
 
 If you need support for reading shapefile, mapinfo, TIGER, etc, file
 formats, then you will need to download and install the following two
@@ -731,31 +728,31 @@ To download the NCL source code, follow the instructions at the URL:
     http://www.ncl.ucar.edu/Download/ 
 
 The NCL source code you download will be a single compressed tar file
-(we'll call it "ncl_ncarg_src-6.0.0-beta.tar.gz"). Move the
-"ncl_ncarg_src-6.0.0-beta.tar.gz" file to a temporary directory where
+(we'll call it "ncl_ncarg_src-6.0.0.tar.gz"). Move the
+"ncl_ncarg_src-6.0.0.tar.gz" file to a temporary directory where
 you have plenty of disk space (around 250 megabytes to hold all of the
 source code, object files, binaries, and so on). Then, uncompress and
 untar the file as follows:
 
-  gunzip ncl_ncarg_src-6.0.0-beta.tar.gz
-  tar -xvf ncl_ncarg_src-6.0.0-beta.tar
+  gunzip ncl_ncarg_src-6.0.0.tar.gz
+  tar -xvf ncl_ncarg_src-6.0.0.tar
 
 The above steps will create a directory called
-"ncl_ncarg-6.0.0-beta". For convenience, we'll use the notation $NCARG
+"ncl_ncarg-6.0.0". For convenience, we'll use the notation $NCARG
 to mean the top level of the NCL/NCAR Graphics source tree. Set the
 environment variable NCARG to the full path of this directory. For
 example, if you untarred the files from the directory /usr/local/src,
 then you would do one of the following: From tcsh or csh:
 
-  setenv NCARG /usr/local/src/ncl_ncarg-6.0.0-beta
+  setenv NCARG /usr/local/src/ncl_ncarg-6.0.0
 
 From ksh or bash:
 
-  export NCARG=/usr/local/src/ncl_ncarg-6.0.0-beta
+  export NCARG=/usr/local/src/ncl_ncarg-6.0.0
 
 sh:
 
-  NCARG=/usr/local/src/ncl_ncarg-6.0.0-beta
+  NCARG=/usr/local/src/ncl_ncarg-6.0.0
   export NCARG
 
 Be sure to see the troubleshooting section below for any known

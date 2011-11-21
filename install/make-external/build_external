@@ -35,12 +35,12 @@
 #   cairo-1.8.6            NCL/NCARG: optional (needed for cairo support)
 #
 # NCL only:
-#   hdf5-1.8.5             Required if you want classic NetCDF-4 support
+#   hdf5-1.8.6             Required if you want classic NetCDF-4 support
 #   szip-2.1               Required if you want classic NetCDF-4 support
 #   jasper-1.900.1         Required if you want GRIB2 support
 #   g2clib-1.1.9           Required if you want GRIB2 support
 #   gdal-1.6.3             Required if you want GDAL support
-#   netcdf-4.1.1           Required (classic NetCDF-4 support is optional)
+#   netcdf-4.1.2           Required (classic NetCDF-4 support is optional)
 #   proj-4.7.0             Required if you want GDAL support
 #   udunits-2.1.14         Required if you want ut_calendar/ut_inv_calendar
 #   HDF-EOS2.16v1.00       Required if you want HDF-EOS 2 support
@@ -156,11 +156,11 @@ fi
 G2CLIB_DIR="g2clib-1.1.9"
 GDAL_DIR="gdal-1.6.3"
 HDF4_DIR="hdf-4.2.5"
-HDF5_DIR="hdf5-1.8.5"
+HDF5_DIR="hdf5-1.8.6"
 HDFEOS5_DIR="hdfeos5-1.12"
 JASPER_DIR="jasper-1.900.1"
 JPEG_DIR="jpeg-6b"
-NETCDF_DIR="netcdf-4.1.1"
+NETCDF_DIR="netcdf-4.1.2"
 PNG_DIR="libpng-1.2.41"
 PROJ4_DIR="proj-4.7.0"
 SZIP_DIR="szip-2.1"
@@ -523,7 +523,9 @@ then
     then
       ./configure --disable-f90 --prefix\=$PREFIX
     else
-# This is for NetCDF 4.1.1.
+# This is for NetCDF 4.1.2.
+      export LDFLAGS="-L$PREFIX/lib"
+      export CPPFLAGS="-I$PREFIX/include"
       ./configure --enable-netcdf-4 --enable-opendap --disable-f90 --disable-shared --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX --enable-large-file-tests --enable-dap-remote-tests
 # This is for NetCDF 4.0.1.
 #      ./configure --enable-netcdf-4 --disable-f90 --disable-shared --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX

@@ -24,8 +24,8 @@
  *			etc are in the Template file.
  */
 
-#define NcargVersion 6.0.0
-#define NclVersion 6.0.0
+#define NcargVersion 6.1.0
+#define NclVersion 6.1.0
 
 #ifndef	BuildNCL
 #define	BuildNCL
@@ -42,6 +42,14 @@
 #undef BuildNetCDF4
 #endif
 #endif /* BuildNetCDF4 */
+
+#ifndef    UseNetCDF4Features
+#define    UseNetCDF4Features
+#else
+#if    !UseNetCDF4Features
+#undef UseNetCDF4Features
+#endif
+#endif /* UseNetCDF4Features */
 
 #ifndef	BuildHDF4
 #define	BuildHDF4
@@ -119,6 +127,10 @@
 
 #if !BuildGRIDSPEC
 #undef BuildGRIDSPEC
+#endif
+
+#if !BuildESMF
+#undef BuildESMF
 #endif
 
 #ifndef	BuildRasterHDF
@@ -217,7 +229,7 @@
 
 #ifdef BuildCAIRO
 #ifndef CAIROlib
-#define CAIROlib  -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz
+#define CAIROlib  -lcairo -lXrender -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz
 #endif
 #else
 #define CAIROlib
@@ -249,6 +261,14 @@
 #endif
 #else
 #define GRIDSPEClib
+#endif
+
+#ifdef BuildESMF
+#ifndef	ESMFlib
+#define	ESMFlib   -lxxxxx
+#endif
+#else
+#define ESMFlib
 #endif
 
 #ifndef	GRIB2lib
@@ -622,6 +642,7 @@ GRIB2LIB	= GRIB2lib
 UDUNITSLIB	= UdUnitslib
 V5DLIB      	= V5Dlib
 GRIDSPECLIB     = GRIDSPEClib
+ESMFLIB         = ESMFlib
 XDRLIB		= XdrLibrary
 HDFDEFINES	= HdfDefines
 VDEFINE		= -DNGVERSION='"$(NGVERSION)"'  -DNCLVERSION='"$(NCLVERSION)"'

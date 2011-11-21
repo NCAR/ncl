@@ -16,7 +16,7 @@ c
       DOUBLE PRECISION X(N),Y(N),D(N),S,EPS,YS(N),YSP(N),SIGMA,TEMP(N,9)
 c
 c                                 coded by alan kaylor cline
-c                           from fitpack -- january 26, 1987
+c                              from fitpack -- april 8, 1991
 c                        a curve and surface fitting package
 c                      a product of pleasant valley software
 c                  8603 altus cove, austin, texas 78759, usa
@@ -37,8 +37,8 @@ c function determined is a spline under tension with third
 c derivative discontinuities at (x(i)), i = 2,..., n-1. for
 c actual computation of points on the curve it is necessary
 c to call the function curv2dp. the determination of the curve
-c is performed by subroutine curvss, the subroutine curvs
-c only decomposes the workspace for curvss.
+c is performed by subroutine curvssdp, the subroutine curvsdp
+c only decomposes the workspace for curvssdp.
 c
 c on input--
 c
@@ -67,12 +67,12 @@ c   must be non-negative. for s equal to zero, the
 c   subroutine does interpolation, larger values lead to
 c   smoother funtions. if parameter d contains standard
 c   deviation estimates, a reasonable value for s is
-c   float(n).
+c   dble(n).
 c
 c   eps contains a tolerance on the relative precision to
 c   which s is to be interpreted. this must be greater than
 c   or equal to zero and less than or equal to one. a
-c   reasonable value for eps is sqrt(2./float(n)).
+c   reasonable value for eps is sqrt(2./dble(n)).
 c
 c   ys is an array of length at least n.
 c
@@ -83,8 +83,8 @@ c   the degree to which the first derivative part of the
 c   smoothing functional is emphasized. if sigma is nearly
 c   zero (e. g. .001) the resulting curve is approximately a
 c   cubic spline. if sigma is large (e. g. 50.) the
-c   resulting curve is nearly a polygonal line. if sigma
-c   equals zero a cubic spline results. a standard value for
+c   resulting curve is nearly a polygonal line.  If sigma
+c   equals zero a cubic spline results. A standard value for
 c   sigma is approximately 1.
 c
 c and
@@ -111,8 +111,8 @@ c and
 c
 c   n, x, y, d, isw, s, eps, and sigma are unaltered.
 c
-c this subroutine references package modules curvss, terms,
-c and snhcsh.
+c this subroutine references package modules curvssdp, termsdp,
+c and snhcshdp.
 c
 c-----------------------------------------------------------
 c

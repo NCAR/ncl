@@ -10,47 +10,23 @@ C
 C NOTE: If you make any changes to this software, please remember to
 C make the same changes to the corresponding single precision routine.
 C
-      SUBROUTINE CURVSSDP(N,X,Y,D,ISW,S,EPS,YS,YSP,SIGMA,TD,TSD1,HD,HSD1,
-     +                  HSD2,RD,RSD1,RSD2,V,IERR)
-      DOUBLE PRECISION P
-      DOUBLE PRECISION RDIM1
-      DOUBLE PRECISION YSPIM2
-      DOUBLE PRECISION SIGMAP
-      DOUBLE PRECISION DELXI1
-      DOUBLE PRECISION DELYI1
-      DOUBLE PRECISION DIM1
-      DOUBLE PRECISION DELXI
-      DOUBLE PRECISION DELYI
-      DOUBLE PRECISION DI
-      DOUBLE PRECISION SL
-      DOUBLE PRECISION SU
-      DOUBLE PRECISION BETAPP
-      DOUBLE PRECISION BETAP
-      DOUBLE PRECISION ALPHAP
-      DOUBLE PRECISION ALPHA
-      DOUBLE PRECISION BETA
-      DOUBLE PRECISION HSD1P
-      DOUBLE PRECISION HDIM1
-      DOUBLE PRECISION HDI
-      DOUBLE PRECISION RSD2I
-      DOUBLE PRECISION RSD1I
-      DOUBLE PRECISION SUM
-      DOUBLE PRECISION F
-      DOUBLE PRECISION G
-      DOUBLE PRECISION WIM2
-      DOUBLE PRECISION WIM1
-      DOUBLE PRECISION TUI
-      DOUBLE PRECISION WI
-      DOUBLE PRECISION H
-      DOUBLE PRECISION STEP
+      subroutine curvssdp (n,x,y,d,isw,s,eps,ys,ysp,sigma,td,
+     *                     tsd1,hd,hsd1,hsd2,rd,rsd1,rsd2,v,
+     *                     ierr)
 c
-      INTEGER N,ISW,IERR
-      DOUBLE PRECISION X(N),Y(N),D(N),S,EPS,YS(N),YSP(N),SIGMA,TD(N),
-     +                 TSD1(N),HD(N),HSD1(N),HSD2(N),RD(N),RSD1(N),
-     +                 RSD2(N),V(N)
+      integer n,isw,ierr
+      double precision x(n),y(n),d(n),s,eps,ys(n),ysp(n),sigma,td(n),       
+     *                 tsd1(n),hd(n),hsd1(n),hsd2(n),rd(n),rsd1(n),
+     *                 rsd2(n),v(n)
+      double precision p,rdim1,yspim2,sigmap,delxi1,delyi1,dim1,
+     *                 delxi,delyi,di,sl,su,betapp,betap,alphap,
+     *                 alpha,beta,hsd1p,hdim1,hdi,rsd2i,rsd1I,
+     *                 sum,f,g,wim2,wim1,tui,wi,h,step,sumx,sumy,
+     *                 dinvsq,xbar,ybar,fac,slp
+
 c
 c                                 coded by alan kaylor cline
-c                           from fitpack -- january 26, 1987
+c                              from fitpack -- april 8, 1991
 c                        a curve and surface fitting package
 c                      a product of pleasant valley software
 c                  8603 altus cove, austin, texas 78759, usa
@@ -99,12 +75,12 @@ c   must be non-negative. for s equal to zero, the
 c   subroutine does interpolation, larger values lead to
 c   smoother funtions. if parameter d contains standard
 c   deviation estimates, a reasonable value for s is
-c   float(n).
+c   dble(n).
 c
 c   eps contains a tolerance on the relative precision to
 c   which s is to be interpreted. this must be greater than
 c   or equal to zero and less than equal or equal to one. a
-c   reasonable value for eps is sqrt(2./float(n)).
+c   reasonable value for eps is sqrt(2./dble(n)).
 c
 c   ys is an array of length at least n.
 c
@@ -144,192 +120,246 @@ c and
 c
 c   n, x, y, d, isw, s, eps, and sigma are unaltered.
 c
-c this subroutine references package modules terms and
-c snhcsh.
+c this subroutine references package modules ftstoredp, termsdp,
+c and snhcshdp.
 c
 c-----------------------------------------------------------
 c
-      IF (N.LT.2) GO TO 16
-      IF (S.LT.0.D0) GO TO 17
-      IF (EPS.LT.0.D0 .OR. EPS.GT.1.D0) GO TO 18
-      IERR = 0
-      P = 0.D0
-      V(1) = 0.D0
-      V(N) = 0.D0
-      YSP(1) = 0.D0
-      YSP(N) = 0.D0
-      IF (N.EQ.2) GO TO 14
-      RSD1(1) = 0.D0
-      RD(1) = 0.D0
-      RSD2(N) = 0.D0
-      RDIM1 = 0.D0
-      YSPIM2 = 0.D0
+      if (n .lt. 2) go to 24
+      if (s .lt. 0.d0) go to 25
+      if (eps .lt. 0.d0 .or. eps .gt. 1.d0) go to 26
+      ierr = 0
+      p = 0.d0
+      v(1) = 0.d0
+      v(n) = 0.d0
+      ysp(1) = 0.d0
+      ysp(n) = 0.d0
+      if (n .eq. 2) go to 14
+      rsd1(1) = 0.d0
+      rd(1) = 0.d0
+      rsd2(n) = 0.d0
+      rdim1 = 0.d0
+      yspim2 = 0.d0
 c
 c denormalize tension factor
 c
-      SIGMAP = ABS(SIGMA)*DBLE(N-1)/ (X(N)-X(1))
+      sigmap = abs(sigma)*dble(n-1)/(x(n)-x(1))
 c
 c form t matrix and second differences of y into ys
 c
-      NM1 = N - 1
-      NM3 = N - 3
-      DELXI1 = 1.D0
-      DELYI1 = 0.D0
-      DIM1 = 0.D0
-      DO 1 I = 1,NM1
-          DELXI = X(I+1) - X(I)
-          IF (DELXI.LE.0.D0) GO TO 19
-          DELYI = (Y(I+1)-Y(I))/DELXI
-          YS(I) = DELYI - DELYI1
-          CALL TERMSDP(DI,TSD1(I+1),SIGMAP,DELXI)
-          TD(I) = DI + DIM1
-          HD(I) = - (1.D0/DELXI+1.D0/DELXI1)
-          HSD1(I+1) = 1.D0/DELXI
-          DELXI1 = DELXI
-          DELYI1 = DELYI
-    1 DIM1 = DI
+      nm1 = n-1
+      nm3 = n-3
+      delxi1 = 1.d0
+      delyi1 = 0.d0
+      dim1 = 0.d0
+      do 1 i = 1,nm1
+        delxi = x(i+1)-x(i)
+        if (delxi .le. 0.d0) go to 27
+        delyi = (y(i+1)-y(i))/delxi
+        ys(i) = delyi-delyi1
+        call termsdp (di,tsd1(i+1),sigmap,delxi)
+        td(i) = di+dim1
+        hd(i) = -(1.d0/delxi+1.d0/delxi1)
+        hsd1(i+1) = 1.d0/delxi
+        delxi1 = delxi
+        delyi1 = delyi
+    1   dim1 = di
 c
 c calculate lower and upper tolerances
 c
-      SL = S* (1.D0-EPS)
-      SU = S* (1.D0+EPS)
-      IF (ISW.EQ.1) GO TO 3
+      sl = s*(1.d0-eps)
+      su = s*(1.d0+eps)
+      if (isw .eq. 1) go to 3
 c
 c form h matrix - d array
 c
-      IF (D(1).LE.0.D0 .OR. D(2).LE.0.D0) GO TO 20
-      BETAPP = 0.D0
-      BETAP = 0.D0
-      ALPHAP = 0.D0
-      DO 2 I = 2,NM1
-          ALPHA = HD(I)*D(I)*D(I)
-          IF (D(I+1).LE.0.D0) GO TO 20
-          BETA = HSD1(I+1)*D(I+1)*D(I+1)
-          HD(I) = (HSD1(I)*D(I-1))**2 + ALPHA*HD(I) + BETA*HSD1(I+1)
-          HSD2(I) = HSD1(I)*BETAPP
-          HSD1(I) = HSD1(I)* (ALPHA+ALPHAP)
-          ALPHAP = ALPHA
-          BETAPP = BETAP
-    2 BETAP = BETA
-      GO TO 5
+      if (d(1) .le. 0.d0 .or. d(2) .le. 0.d0) go to 28
+      betapp = 0.d0
+      betap = 0.d0
+      alphap = 0.d0
+      do 2 i = 2,nm1
+        alpha = hd(i)*d(i)*d(i)
+        if (d(i+1) .le. 0.d0) go to 28
+        beta = hsd1(i+1)*d(i+1)*d(i+1)
+        hd(i) = (hsd1(i)*d(i-1))**2+alpha*hd(i)
+     *                             +beta*hsd1(i+1)
+        hsd2(i) = hsd1(i)*betapp
+        hsd1(i) = hsd1(i)*(alpha+alphap)
+        alphap = alpha
+        betapp = betap
+    2   betap = beta
+      go to 5
 c
 c form h matrix - d constant
 c
-    3 IF (D(1).LE.0.D0) GO TO 20
-      SL = D(1)*D(1)*SL
-      SU = D(1)*D(1)*SU
-      HSD1P = 0.D0
-      HDIM1 = 0.D0
-      DO 4 I = 2,NM1
-          HDI = HD(I)
-          HD(I) = HSD1(I)*HSD1(I) + HDI*HDI + HSD1(I+1)*HSD1(I+1)
-          HSD2(I) = HSD1(I)*HSD1P
-          HSD1P = HSD1(I)
-          HSD1(I) = HSD1P* (HDI+HDIM1)
-    4 HDIM1 = HDI
+    3 if (d(1) .le. 0.d0) go to 28
+      sl = d(1)*d(1)*sl
+      su = d(1)*d(1)*su
+      hsd1p = 0.d0
+      hdim1 = 0.d0
+      do 4 i = 2,nm1
+        hdi = hd(i)
+        hd(i) = hsd1(i)*hsd1(i)+hdi*hdi+hsd1(i+1)*hsd1(i+1)
+        hsd2(i) = hsd1(i)*hsd1p
+        hsd1p = hsd1(i)
+        hsd1(i) = hsd1p*(hdi+hdim1)
+    4   hdim1 = hdi
 c
 c top of iteration
 c cholesky factorization of p*t+h into r
 c
-    5 DO 6 I = 2,NM1
-          RSD2I = HSD2(I)
-          RSD1I = P*TSD1(I) + HSD1(I) - RSD2I*RSD1(I-1)
-          RSD2(I) = RSD2I*RDIM1
-          RDIM1 = RD(I-1)
-          RSD1(I) = RSD1I*RDIM1
-          RD(I) = 1.D0/ (P*TD(I)+HD(I)-RSD1I*RSD1(I)-RSD2I*RSD2(I))
-          YSP(I) = YS(I) - RSD1(I)*YSP(I-1) - RSD2(I)*YSPIM2
-    6 YSPIM2 = YSP(I-1)
+    5 do 6 i = 2,nm1
+        rsd2i = hsd2(i)
+        rsd1i = p*tsd1(i)+hsd1(i)-rsd2i*rsd1(i-1)
+        rsd2(i) = rsd2i*rdim1
+        rdim1 = rd(i-1)
+        rsd1(i) = rsd1i*rdim1
+        rd(i) = 1.d0/(p*td(i)+hd(i)-rsd1i*rsd1(i)
+     *                           -rsd2i*rsd2(i))
+        ysp(i) = ys(i)-rsd1(i)*ysp(i-1)-rsd2(i)*yspim2
+    6   yspim2 = ysp(i-1)
 c
 c back solve of r(transpose)* r * ysp = ys
 c
-      YSP(NM1) = RD(NM1)*YSP(NM1)
-      IF (N.EQ.3) GO TO 8
-      DO 7 IBAK = 1,NM3
-          I = NM1 - IBAK
-    7 YSP(I) = RD(I)*YSP(I) - RSD1(I+1)*YSP(I+1) - RSD2(I+2)*YSP(I+2)
-    8 SUM = 0.D0
-      DELYI1 = 0.D0
-      IF (ISW.EQ.1) GO TO 10
+      ysp(nm1) = rd(nm1)*ysp(nm1)
+      if (n .eq. 3) go to 8
+      do 7 ibak = 1,nm3
+        i = nm1-ibak
+    7   ysp(i) = rd(i)*ysp(i)-rsd1(i+1)*ysp(i+1)
+     *                       -rsd2(i+2)*ysp(i+2)
+    8 sum = 0.d0
+      delyi1 = 0.d0
+      if (isw .eq. 1) go to 10
 c
 c calculation of residual norm
 c  - d array
 c
-      DO 9 I = 1,NM1
-          DELYI = (YSP(I+1)-YSP(I))/ (X(I+1)-X(I))
-          V(I) = (DELYI-DELYI1)*D(I)*D(I)
-          SUM = SUM + V(I)* (DELYI-DELYI1)
-    9 DELYI1 = DELYI
-      V(N) = -DELYI1*D(N)*D(N)
-      GO TO 12
+      do 9 i = 1,nm1
+        delyi = (ysp(i+1)-ysp(i))/(x(i+1)-x(i))
+        v(i) = (delyi-delyi1)*d(i)*d(i)
+        sum = sum+v(i)*(delyi-delyi1)
+    9   delyi1 = delyi
+      v(n) = -delyi1*d(n)*d(n)
+      go to 12
 c
 c calculation of residual norm
 c  - d constant
 c
-   10 DO 11 I = 1,NM1
-          DELYI = (YSP(I+1)-YSP(I))/ (X(I+1)-X(I))
-          V(I) = DELYI - DELYI1
-          SUM = SUM + V(I)* (DELYI-DELYI1)
-   11 DELYI1 = DELYI
-      V(N) = -DELYI1
-   12 SUM = SUM - V(N)*DELYI1
+   10 do 11 i = 1,nm1
+        delyi = (ysp(i+1)-ysp(i))/(x(i+1)-x(i))
+        v(i) = delyi-delyi1
+        sum = sum+v(i)*(delyi-delyi1)
+   11   delyi1 = delyi
+      v(n) = -delyi1
+   12 sum = sum-v(n)*delyi1
 c
 c test for convergence
 c
-      IF (SUM.LE.SU) GO TO 14
+      if (sum .le. su) go to 14
 c
 c calculation of newton correction
 c
-      F = 0.D0
-      G = 0.D0
-      WIM2 = 0.D0
-      WIM1 = 0.D0
-      DO 13 I = 2,NM1
-          TUI = TSD1(I)*YSP(I-1) + TD(I)*YSP(I) + TSD1(I+1)*YSP(I+1)
-          WI = TUI - RSD1(I)*WIM1 - RSD2(I)*WIM2
-          F = F + TUI*YSP(I)
-          G = G + WI*WI*RD(I)
-          WIM2 = WIM1
-   13 WIM1 = WI
-      H = F - P*G
-      IF (H.LE.0.D0) GO TO 14
+      f = 0.d0
+      g = 0.d0
+      wim2 = 0.d0
+      wim1 = 0.d0
+      do 13 i = 2,nm1
+        tui = tsd1(i)*ysp(i-1)+td(i)*ysp(i)
+     *                        +tsd1(i+1)*ysp(i+1)
+        wi = tui-rsd1(i)*wim1-rsd2(i)*wim2
+        f = f+tui*ysp(i)
+        g = g+wi*wi*rd(i)
+        wim2 = wim1
+   13   wim1 = wi
+      h = f-p*g
+      if (h .le. 0.d0) go to 14
 c
 c update p - newton step
 c
-      STEP = (SUM-SQRT(SUM*SL))/H
-      IF (SL.NE.0.D0) STEP = STEP*SQRT(SUM/SL)
-      P = P + STEP
-      GO TO 5
+      step = (sum-sqrt(sum*sl))/h
+      if (sl .ne. 0.d0) step = step*sqrt(sum/sl)
+      if (ftstoredp(p+step) .eq. p) go to 14
+      p = p+step
+      go to 5
 c
 c store smoothed y-values and second derivatives
 c
-   14 DO 15 I = 1,N
-          YS(I) = Y(I) - V(I)
-   15 YSP(I) = P*YSP(I)
-      RETURN
+   14 if (p .eq. 0.d0) go to 16
+      do 15 i = 1,n
+        ys(i) = y(i)-v(i)
+   15   ysp(i) = p*ysp(i)
+      return
+c
+c straight line is acceptable
+c
+   16 sumx = 0.d0
+      sumy = 0.d0
+      if (isw .eq. 1) go to 19
+      sum = 0.d0
+c
+c compute straight line coefficients
+c   d - vector
+c
+      do 17 i = 1, n
+        dinvsq = 1.d0/(d(i)*d(i))
+        sum = sum+dinvsq
+        sumx = sumx+x(i)*dinvsq
+   17   sumy = sumy+y(i)*dinvsq
+      xbar = sumx/sum
+      ybar = sumy/sum
+      sumx = 0.d0
+      sumy = 0.d0
+      do 18 i = 1, n
+        fac = (x(i)-xbar)/(d(i)*d(i))
+        sumx = sumx+(x(i)-xbar)*fac
+   18   sumy = sumy+(y(i)-ybar)*fac
+      go to 22
+c
+c compute straight line coefficients
+c   d - constant
+c
+   19 sum = dble(n)*dinvsq
+      do 20 i = 1, n
+        sumx = sumx+x(i)
+   20   sumy = sumy+y(i)
+      xbar = sumx/dble(n)
+      ybar = sumy/dble(n)
+      sumx = 0.d0
+      sumy = 0.d0
+      do 21 i = 1, n
+        sumx = sumx+(x(i)-xbar)*(x(i)-xbar)
+   21   sumy = sumy+(y(i)-ybar)*(x(i)-xbar)
+c
+c store straight line values
+c
+   22 slp = sumy/sumx
+      do 23 i = 1, n
+        ys(i) = ybar+slp*(x(i)-xbar)
+   23   ysp(i) = 0.d0
+      return
 c
 c n less than 2
 c
-   16 IERR = 1
-      RETURN
+   24 ierr = 1
+      return
 c
 c s negative
 c
-   17 IERR = 2
-      RETURN
+   25 ierr = 2
+      return
 c
 c eps negative or greater than 1
 c
-   18 IERR = 3
-      RETURN
+   26 ierr = 3
+      return
 c
 c x-values not strictly increasing
 c
-   19 IERR = 4
-      RETURN
+   27 ierr = 4
+      return
 c
 c weight non-positive
 c
-   20 IERR = 5
-      RETURN
-      END
+   28 ierr = 5
+      return
+      end

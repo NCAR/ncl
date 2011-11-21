@@ -20,7 +20,7 @@ c
      *     rsd2(n),v(n)
 c
 c                                 coded by alan kaylor cline
-c                           from fitpack -- january 26, 1987
+c                              from fitpack -- april 8, 1991
 c                        a curve and surface fitting package
 c                      a product of pleasant valley software
 c                  8603 altus cove, austin, texas 78759, usa
@@ -114,14 +114,14 @@ c and
 c
 c   n, x, y, d, isw, s, eps, and sigma are unaltered.
 c
-c this subroutine references package modules terms and
-c snhcsh.
+c this subroutine references package modules ftstore, terms,
+c and snhcsh.
 c
 c-----------------------------------------------------------
 c
-      if (n .lt. 2) go to 16
-      if (s .lt. 0.) go to 17
-      if (eps .lt. 0. .or. eps .gt. 1.) go to 18
+      if (n .lt. 2) go to 24
+      if (s .lt. 0.) go to 25
+      if (eps .lt. 0. .or. eps .gt. 1.) go to 26
       ierr = 0
       p = 0.
       v(1) = 0.
@@ -148,7 +148,7 @@ c
       dim1 = 0.
       do 1 i = 1,nm1
         delxi = x(i+1)-x(i)
-        if (delxi .le. 0.) go to 19
+        if (delxi .le. 0.) go to 27
         delyi = (y(i+1)-y(i))/delxi
         ys(i) = delyi-delyi1
         call terms (di,tsd1(i+1),sigmap,delxi)
@@ -167,13 +167,13 @@ c
 c
 c form h matrix - d array
 c
-      if (d(1) .le. 0. .or. d(2) .le. 0.) go to 20
+      if (d(1) .le. 0. .or. d(2) .le. 0.) go to 28
       betapp = 0.
       betap = 0.
       alphap = 0.
       do 2 i = 2,nm1
         alpha = hd(i)*d(i)*d(i)
-        if (d(i+1) .le. 0.) go to 20
+        if (d(i+1) .le. 0.) go to 28
         beta = hsd1(i+1)*d(i+1)*d(i+1)
         hd(i) = (hsd1(i)*d(i-1))**2+alpha*hd(i)
      *                             +beta*hsd1(i+1)
@@ -186,7 +186,7 @@ c
 c
 c form h matrix - d constant
 c
-    3 if (d(1) .le. 0.) go to 20
+    3 if (d(1) .le. 0.) go to 28
       sl = d(1)*d(1)*sl
       su = d(1)*d(1)*su
       hsd1p = 0.
@@ -272,38 +272,88 @@ c update p - newton step
 c
       step = (sum-sqrt(sum*sl))/h
       if (sl .ne. 0.) step = step*sqrt(sum/sl)
+      if (ftstore(p+step) .eq. p) go to 14
       p = p+step
       go to 5
 c
 c store smoothed y-values and second derivatives
 c
-   14 do 15 i = 1,n
+   14 if (p .eq. 0.) go to 16
+      do 15 i = 1,n
         ys(i) = y(i)-v(i)
    15   ysp(i) = p*ysp(i)
       return
 c
+c straight line is acceptable
+c
+   16 sumx = 0.
+      sumy = 0.
+      if (isw .eq. 1) go to 19
+      sum = 0.
+c
+c compute straight line coefficients
+c   d - vector
+c
+      do 17 i = 1, n
+        dinvsq = 1./(d(i)*d(i))
+        sum = sum+dinvsq
+        sumx = sumx+x(i)*dinvsq
+   17   sumy = sumy+y(i)*dinvsq
+      xbar = sumx/sum
+      ybar = sumy/sum
+      sumx = 0.
+      sumy = 0.
+      do 18 i = 1, n
+        fac = (x(i)-xbar)/(d(i)*d(i))
+        sumx = sumx+(x(i)-xbar)*fac
+   18   sumy = sumy+(y(i)-ybar)*fac
+      go to 22
+c
+c compute straight line coefficients
+c   d - constant
+c
+   19 sum = float(n)*dinvsq
+      do 20 i = 1, n
+        sumx = sumx+x(i)
+   20   sumy = sumy+y(i)
+      xbar = sumx/float(n)
+      ybar = sumy/float(n)
+      sumx = 0.
+      sumy = 0.
+      do 21 i = 1, n
+        sumx = sumx+(x(i)-xbar)*(x(i)-xbar)
+   21   sumy = sumy+(y(i)-ybar)*(x(i)-xbar)
+c
+c store straight line values
+c
+   22 slp = sumy/sumx
+      do 23 i = 1, n
+        ys(i) = ybar+slp*(x(i)-xbar)
+   23   ysp(i) = 0.
+      return
+c
 c n less than 2
 c
-   16 ierr = 1
+   24 ierr = 1
       return
 c
 c s negative
 c
-   17 ierr = 2
+   25 ierr = 2
       return
 c
 c eps negative or greater than 1
 c
-   18 ierr = 3
+   26 ierr = 3
       return
 c
 c x-values not strictly increasing
 c
-   19 ierr = 4
+   27 ierr = 4
       return
 c
 c weight non-positive
 c
-   20 ierr = 5
+   28 ierr = 5
       return
       end
