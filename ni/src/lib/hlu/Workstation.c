@@ -1815,7 +1815,7 @@ CvtColorDefinitionGenArrayToColorIndex
 	g = (int)(*(fptr+1) * 255) << 8;
 	b = (int)(*(fptr+2) * 255);
 	a = (fgen->len_dimensions[0] == 4) ?
-			(int)(*(fptr+3) * 64) << 24 | ALPHA_MASK :
+			(int)(*(fptr+3) * 63) << 24 | ALPHA_MASK :
 			ALPHA_OPAQUE;
 	tint = a | r | g | b;
 
