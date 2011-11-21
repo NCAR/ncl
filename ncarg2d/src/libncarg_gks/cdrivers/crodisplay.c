@@ -9,6 +9,7 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <cairo/cairo.h>
+#include <cairo/cairo-xlib.h>
 #include <ncarg/gksP.h>
 #include "gksc.h"
 #include "croddi.h"
@@ -16,30 +17,25 @@
 
 static Window createXWorkWindow(
     Display         *dpy,
-    _NGCXWinConfig  *xwc
+    CROddp          *xwc
     );
 
+/*
+ * croCreateNativeDisplaySurface()
+ *
+ * Currently only returns an X11 window; named with high hopes that someday this will support
+ * native windows on all platforms.
+ *
+ */
 cairo_surface_t*
 croCreateNativeDisplaySurface(CROddp* psa)
 {
-    _NGCesc                 *cesc;
-    _NGCXWinConfig          *xwc=NULL;
     static char             dpy_mem[MAX_DPY_LEN];
     static char             *dpy_name=NULL; /* Display name */
     Display*                display;
     Window                  window;
     XWindowAttributes       xwa;
     cairo_surface_t*        surface;
-
-    while(cesc = _NGGetCEscInit()){
-        switch(cesc->type){
-        case NGC_XWINCONFIG:
-            xwc = (_NGCXWinConfig*)cesc;
-            break;
-        default:
-            gerr_hand(182,11,NULL);
-        }
-    }
 
     /*
      * only get the DISPLAY env. var the first time we get called.
@@ -62,7 +58,7 @@ croCreateNativeDisplaySurface(CROddp* psa)
         return NULL;
     }
 
-    window = createXWorkWindow(display, xwc);
+    window = createXWorkWindow(display, psa);
 
 
     if(XGetWindowAttributes(display, window ,&xwa) == 0){
@@ -132,14 +128,22 @@ croCreateNativeDisplaySurface(CROddp* psa)
 }
 
 /*
+
+ */
+void
+croFreeNativeSurface(cairo_surface_t* surface) {
+    /* free all X11 resources...  */
+    XCloseDisplay(cairo_xlib_surface_get_display(surface));
+}
+/*
  * createXworkWindow()
  *
  * Utility to create an X-Window.
- * Copied from function by the same name in xcontrol.c
+ * Borrowed heavily from function by the same name in xcontrol.c
  *
  */
 static Window
-createXWorkWindow(Display *dpy, _NGCXWinConfig  *xwc)
+createXWorkWindow(Display *dpy, CROddp* psa)
 {
     Window                  win;
     static  XWMHints        xwmh = {
@@ -152,9 +156,9 @@ createXWorkWindow(Display *dpy, _NGCXWinConfig  *xwc)
         0,                      /* icon mask                    */
         0                       /* Window group                 */
     };
-    static  XClassHint      xch = {
-        "xgks",                 /* resource name                */
-        "Xgks"                  /* class name                   */
+    static XClassHint xch = {
+        "xgks", /* resource name                */
+        "Xgks"  /* class name                   */
     };
     XSizeHints              xsh = { /* Size hints for window manager*/
         (PMinSize),
@@ -178,43 +182,11 @@ createXWorkWindow(Display *dpy, _NGCXWinConfig  *xwc)
     XEvent                   event; /* Event received               */
     Atom                    wm_del;
 
-    /*
-     * get the geometry resource string from the resource manager
-     */
-    if (!geometry) geometry = XGetDefault (dpy, xch.res_name, "geometry");
-    if (!geometry) geometry = XGetDefault (dpy, xch.res_name, "Geometry");
-    if (!geometry) geometry = XGetDefault (dpy, xch.res_class, "geometry");
-    if (!geometry) geometry = XGetDefault (dpy, xch.res_class, "Geometry");
-
-    if (geometry) {
-        geom_mask = XParseGeometry (geometry, &xsh.x, &xsh.y,
-                                    (unsigned int *)&xsh.width,
-                                    (unsigned int *)&xsh.height);
-    }
-
-    /*
-     * if xwc is set, it takes precedence over "geometry" resource.
-     */
-    if(xwc){
-        if(xwc->x >= 0){
-            xsh.x = xwc->x;
-            geom_mask &= ~XNegative;
-            geom_mask |= XValue;
-        }
-        if(xwc->y >= 0){
-            xsh.y = xwc->y;
-            geom_mask &= ~YNegative;
-            geom_mask |= YValue;
-        }
-        if(xwc->width >= 0){
-            xsh.width = xwc->width;
-            geom_mask |= WidthValue;
-        }
-        if(xwc->height >= 0){
-            xsh.height = xwc->height;
-            geom_mask |= HeightValue;
-        }
-    }
+    xsh.x = psa->window_pos_x;
+    xsh.y = psa->window_pos_y;
+    xsh.width = psa->image_width;
+    xsh.height = psa->image_height;
+    geom_mask = XValue | YValue | WidthValue | HeightValue;
 
     /*
      * see if user specified a window position.
@@ -271,18 +243,12 @@ createXWorkWindow(Display *dpy, _NGCXWinConfig  *xwc)
      */
     window_name.encoding = XA_STRING;
     window_name.format = 8;
-    if(xwc && xwc->title)
-        window_name.value = (unsigned char *) xwc->title;
-    else
-        window_name.value = (unsigned char *) "NCAR Xgks";
+    window_name.value = (unsigned char *) psa->window_title;
     window_name.nitems = strlen ((char *)window_name.value);
 
     icon_name.encoding = XA_STRING;
     icon_name.format = 8;
-    if(xwc && xwc->icon_title)
-        icon_name.value = (unsigned char *) xwc->icon_title;
-    else
-        icon_name.value = (unsigned char *) "xgks";
+    icon_name.value = (unsigned char *) psa->icon_title;
     icon_name.nitems = strlen ((char *)icon_name.value);
 
     XSetWMProperties(dpy,win,&window_name,&icon_name,NULL,0,&xsh,&xwmh,
@@ -339,6 +305,13 @@ createXWorkWindow(Display *dpy, _NGCXWinConfig  *xwc)
     return win;
 }
 
+/*
+ * croX11Pause()
+ *
+ * Mechanism by which the X11 workstation's windows remain visible until the user
+ * clicks a mouse button or types a key.
+ *
+ */
 void croX11Pause(cairo_surface_t* surface) {
     XEvent  event;
     Display* display = cairo_xlib_surface_get_display(surface);
@@ -352,7 +325,7 @@ void croX11Pause(cairo_surface_t* surface) {
     }
     /*
      * discard all events that a impatient user
-     * may have aquired while waiting for a plot to finnish
+     * may have acquired while waiting for a plot to finnish
      */
     while(XCheckMaskEvent(display,ButtonPressMask|KeyPressMask,&event));
 

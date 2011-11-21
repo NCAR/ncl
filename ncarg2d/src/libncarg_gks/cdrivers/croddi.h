@@ -28,7 +28,9 @@ typedef struct  CROddi_ {
   Transform2D     transform;
   TransSystem     tsystem;
   CRODeviceSpace  dspace;
-  char          *output_file;
+  char          *output_file;      /* for file-based formats               */
+  char          *window_title;     /* for window-based formats (i.e., X11) */
+  char          *icon_title;       /*                "                     */
   cro_color     color;
   cro_orientation  orientation;    /* applicable only to PS/PDF formats */
   float         sfill_spacing;
@@ -41,10 +43,12 @@ typedef struct  CROddi_ {
   float         nominal_width_scale;
   int           full_background;
   float         scaling;
-  int           image_width;       /* resolution, for image-based output formats only */
-  int           image_height;      /*                     "                           */
-  int           paper_width;       /* paper size, for document-based formats only     */
-  int           paper_height;      /*                     "                           */
+  int           image_width;       /* resolution, for image/window output formats only */
+  int           image_height;      /*                     "                            */
+  int           paper_width;       /* paper size, for document-based formats only      */
+  int           paper_height;      /*                     "                            */
+  int           window_pos_x;      /* window-based formats only                        */
+  int           window_pos_y;      /*                     "                            */
   int           background;
   int           pict_empty;
   int           page_number;

@@ -68,8 +68,10 @@ extern crotiff_writeImage(const char* filename, cairo_surface_t* surface);
  */
 void cro_SoftFill(GKSC *gksc, float angle, float spl);
 
+/* helper functions for X11-based surfaces */
 extern cairo_surface_t* croCreateNativeDisplaySurface(CROddp* psa);
 extern void croX11Pause(cairo_surface_t* surface);
+extern void croFreeNativeSurface(cairo_surface_t* surface);
 
 /*
  *  Globals
@@ -536,6 +538,9 @@ int cro_CloseWorkstation(GKSC *gksc) {
     if (psa->max_color > 0)
         free(psa->ctable);
 
+    if (psa->wks_type == CX11)
+        croFreeNativeSurface(cairo_surface[context_index(psa->wks_id)]);
+
     cairo_destroy(cairo_context[context_index(psa->wks_id)]);
     remove_context(psa->wks_id);
     free(psa);
@@ -621,6 +626,12 @@ int cro_Esc(GKSC *gksc) {
         psa->paper_height = atoi(strng);
         break;
 
+    case ESCAPE_PAUSE:
+        if (psa->wks_type == CX11) {
+            croX11Pause(cairo_surface[context_index(psa->wks_id)]);
+        }
+        break;
+        
     case NGESC_CNATIVE: /* C-escape mechanism;  get resolution of image-based output formats */
         switch (cesc->type) {
         case NGC_PIXCONFIG:
@@ -834,7 +845,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
     if (getenv("CRO_TRACE")) {
         printf("Got to cro_OpenWorkstation\n");
     }
-
+    
     /*
      *  Provide the gksc with the device dependent data.
      */
@@ -910,33 +921,14 @@ int cro_OpenWorkstation(GKSC *gksc) {
         strcpy(psa->output_file, sptr);
     }
 
-#if 0
-    else if (psa->wks_type == CDPY) {
-    psa->wks_type = CDPY;
-	cairo_surface[context_num] = croCreateNativeDisplaySurface(psa);
-	cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
-	add_context_index(context_num, orig_wks_id);
-
-	psa->image_width = cairo_xlib_surface_get_width(cairo_surface[context_num]);
-	psa->image_height = cairo_xlib_surface_get_height(
-			cairo_surface[context_num]);
-
-	/* THIS IS SOMEWHAT MESSED UP AND NEEDS TO BE RETHOUGHT -- SEE CROInit() */
-	psa->dspace.llx = 10;
-	psa->dspace.urx = psa->image_width - 10;
-	psa->dspace.lly = 10;
-	psa->dspace.ury = psa->image_height - 10;
-
-	psa->dspace.xspan = ((psa->dspace.urx) - (psa->dspace.llx));
-	psa->dspace.yspan = ((psa->dspace.ury) - (psa->dspace.lly));
-
-	psa->cro_clip.llx = psa->dspace.llx;
-	psa->cro_clip.lly = psa->dspace.lly;
-	psa->cro_clip.urx = psa->dspace.urx;
-	psa->cro_clip.ury = psa->dspace.ury;
-
+    else if (psa->wks_type == CX11) {
+        cairo_surface[context_num] = croCreateNativeDisplaySurface(psa);
+        cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
+        add_context_index(context_num, orig_wks_id);
+        psa->image_width = cairo_xlib_surface_get_width(cairo_surface[context_num]);
+        psa->image_height = cairo_xlib_surface_get_height(
+                cairo_surface[context_num]);
     }
-#endif
 
     /*
      *  Set fill rule to even/odd.
@@ -2286,6 +2278,8 @@ static void CROinit(CROddp *psa, int *coords) {
     }
 
     psa->output_file = NULL;
+    psa->window_title = NULL;
+    psa->icon_title = NULL;
     psa->hatch_spacing = CRO_HATCH_SPACING;
     psa->path_size = MAX_PATH;
     psa->line_join = ROUND;
@@ -2343,6 +2337,8 @@ static void CROinit(CROddp *psa, int *coords) {
     psa->image_height = DEFAULT_IMAGE_HEIGHT;
     psa->paper_width = PSPDF_PAGESIZE_X;
     psa->paper_height = PSPDF_PAGESIZE_Y;
+    psa->window_pos_x = 0;
+    psa->window_pos_y = 0;
 
     int paperWidth = *(coords+4);
     int paperHeight = *(coords+5);
@@ -2354,12 +2350,22 @@ static void CROinit(CROddp *psa, int *coords) {
     /* apply any escapes */
     _NGCesc *cesc;
     _NGCPixConfig *pixc;
+    _NGCXWinConfig *xwinc;
     while (cesc = _NGGetCEscInit()) {
         switch (cesc->type) {
         case NGC_PIXCONFIG:
             pixc = (_NGCPixConfig*) cesc;
             psa->image_width = pixc->width;
             psa->image_height = pixc->height;
+            break;
+        case NGC_XWINCONFIG:
+            xwinc = (_NGCXWinConfig*) cesc;
+            psa->window_title = xwinc->title;
+            psa->icon_title = xwinc->icon_title;
+            psa->image_width = xwinc->width;
+            psa->image_height = xwinc->height;
+            psa->window_pos_x = xwinc->x;
+            psa->window_pos_y = xwinc->y;
             break;
         }
     }

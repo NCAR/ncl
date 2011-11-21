@@ -46,7 +46,7 @@ PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
 PartialLibraryTarget(libbasegks.a,$(BASICOBJ))
 
 #ifdef BuildCAIRO
-CAIROOBJ	=  cro_device.o cro.o cro_conv.o gks_device_cairo.o crotiff.o
+CAIROOBJ	=  cro_device.o cro.o cro_conv.o gks_device_cairo.o crotiff.o crodisplay.o
 OBJECTS_CAIRO	= $(BASICOBJ) $(CTXTOBJ) $(XOBJ) $(PSOBJ) $(PDFOBJ) $(PIXOBJ) $(CAIROOBJ)
 
 gks_device_cairo.c: gks_device.c
