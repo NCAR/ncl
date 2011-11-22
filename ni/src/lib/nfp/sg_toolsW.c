@@ -763,6 +763,7 @@ NhlErrorTypes gc_inout_W( void )
           NULL,
           &type_plon,
           DONT_CARE);
+
   lat = (void*)NclGetArgValue(
           2,
           4,
@@ -786,16 +787,23 @@ NhlErrorTypes gc_inout_W( void )
 /*
  * Check number of dimensions for lat and lon.
  */
-  if (ndims_lon != ndims_lat) {
+  if (ndims_lat != ndims_lon) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_inout: the lat/lon arguments must have the same number of dimensions");
     return(NhlFATAL);
   }
+
+  if (ndims_plat != ndims_plon) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+      "gc_inout: the first two input arrays must have the same number of dimensions.");
+   return(NhlFATAL);
+  }
+
 
 /*
  * Check that the dimension sizes for the lat/lon arrays are the same.
  */ 
   for(i = 0; i < ndims_lat; i++) {
-    if (!(dsizes_lat[i] == dsizes_lon[i]))  {
+    if (dsizes_lat[i] != dsizes_lon[i])  {
       NhlPError(NhlFATAL,NhlEUNKNOWN,
         "gc_inout: the lat/lon arrays must have the same dimension sizes");
       return(NhlFATAL);
@@ -803,26 +811,28 @@ NhlErrorTypes gc_inout_W( void )
   }
 
 /*
- * Check that plat and plon have the same number of dimesions and
- * one less dimension than lat and lon, except in the case that 
- * they all have one dimension.
- */
-  if (!(ndims_plat == ndims_plon)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,
-      "gc_inout: the first two input arrays must have the same number of dimensions.");
-   return(NhlFATAL);
-  }
-  if (ndims_lat == 1) {
-    if ( ndims_plat != 1 || ndims_plon != 1) {
+ * Check that the dimension sizes for the plat/plon arrays are the same.
+ */ 
+  for(i = 0; i < ndims_plat; i++) {
+    if (dsizes_plat[i] != dsizes_plon[i])  {
       NhlPError(NhlFATAL,NhlEUNKNOWN,
-        "gc_inout: if the final two arrays are singly dimensioned, then the first two must be as well.");
+        "gc_inout: the plat/plon arrays must have the same dimension sizes");
       return(NhlFATAL);
     }
   }
+
+/*
+ * Check for multiple dimensioned arrays. 
+ */
+  if (ndims_lat == 1 && ndims_plat != 1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+      "gc_inout: if the lat/lon arrays are singly dimensioned, then the plat/plon arrays must be as well.");
+    return(NhlFATAL);
+  }
   else {
-    if (ndims_plat != ndims_lat-1) {
+    if (ndims_plat != (ndims_lat-1)) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,
-        "gc_inout: the first two input arrays must have exactly one less dimension than the last two.");
+        "gc_inout: if the plat/plon arrays are multi-dimensional, then they must have one fewer dimensions than the lat/lon arrays.");
       return(NhlFATAL);
     }
   }
@@ -833,9 +843,9 @@ NhlErrorTypes gc_inout_W( void )
   if (ndims_lat > 0) {
     for(i = 0; i < ndims_lat-1; i++) {
       if ((dsizes_plat[i] != dsizes_lon[i]) || 
-              (dsizes_plon[i] != dsizes_lon[i]))  {
+          (dsizes_plon[i] != dsizes_lon[i]))  {
         NhlPError(NhlFATAL,NhlEUNKNOWN,
-          "gc_inout: the dimensions sizes for the first two arrays must agree with the dimension sizes of the last two up through the penultimate dimension of the last two.");
+          "gc_inout: the dimensions sizes for the plat/plon arrays must be the same as the dimension sizes of the lat/lon arrays through the penultimate dimension of plat/plon.");
         return(NhlFATAL);
       }
     }
@@ -845,11 +855,11 @@ NhlErrorTypes gc_inout_W( void )
  * Find the number of points in each polygon and check that it
  * is at least three.
  */
-  npts = dsizes_lat[ndims_lat-1];
+  npts   = dsizes_lat[ndims_lat-1];
   nptsp1 = npts+1;
   if (npts < 3) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
-         "gc_inout: the polygon must have at least three points.");
+         "gc_inout: the rightmost dimension of lat/lon must be at least three.");
     return(NhlFATAL);
   }
 
@@ -864,27 +874,19 @@ NhlErrorTypes gc_inout_W( void )
   inptsp1 = (int) nptsp1;
 
 /*
- * Determine size for the return array.
+ * Determine size for the return array and lat/lon input arrays.
  */
   size_tfval = 1;
   for (i = 0; i < ndims_lat-1; i++) {
     size_tfval *= dsizes_lat[i];
   }
-
-/*
- * Determine total size of input arrays.
- */
-  tsize = 1;
-  for (i = 0; i < ndims_lat; i++) {
-    tsize *= dsizes_lat[i];
-  }
-
+  tsize = size_tfval*dsizes_lat[ndims_lat-1];
 
 /*
  * Coerce input variables to double if necessary.
  */
-  dlat  = coerce_input_double(lat, type_lat, tsize, 0, NULL, NULL);
-  dlon  = coerce_input_double(lon, type_lon, tsize, 0, NULL, NULL);
+  dlat   = coerce_input_double(lat, type_lat, tsize, 0, NULL, NULL);
+  dlon   = coerce_input_double(lon, type_lon, tsize, 0, NULL, NULL);
   dplat  = coerce_input_double(plat, type_plat, size_tfval, 0, NULL, NULL);
   dplon  = coerce_input_double(plon, type_plon, size_tfval, 0, NULL, NULL);
 
