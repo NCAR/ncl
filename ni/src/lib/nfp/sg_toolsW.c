@@ -830,7 +830,7 @@ NhlErrorTypes gc_inout_W( void )
     return(NhlFATAL);
   }
   else {
-    if (ndims_plat != (ndims_lat-1)) {
+    if (ndims_lat > 1 && ndims_plat != (ndims_lat-1)) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,
         "gc_inout: if the plat/plon arrays are multi-dimensional, then they must have one fewer dimensions than the lat/lon arrays.");
       return(NhlFATAL);
