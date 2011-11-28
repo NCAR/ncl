@@ -1074,6 +1074,17 @@ NhlErrorTypes gc_inout_W( void )
   return(NclReturnValue(output,ndims_plat,dsizes_plat,NULL,type_output,0));
 }
 
+/*
+ * This function was to test if it was faster to mask a data array
+ * based on gc_inout values, as a built-in function, rather than
+ * in an NCL script like we've done with some of the shapefiles
+ * example. We didn't notice a huge improvement, probably because
+ * most of the time is spent in the internal Fortran routine for gc_inout.
+ *
+ * This function hasn't been updated to keep up with changes to gc_inout,
+ * so it may be out-of-date. The main changes to gc_inout were to allow
+ * leftmost dimemsnions.
+ */
 NhlErrorTypes gc_inout_mask_func_W( void )
 {
 /*
@@ -1437,6 +1448,17 @@ NhlErrorTypes gc_inout_mask_func_W( void )
                         type_data,0));
 }
 
+/*
+ * This function was to test if it was faster to mask a data array
+ * based on gc_inout values, as a built-in function, rather than
+ * in an NCL script like we've done with some of the shapefiles
+ * example. We didn't notice a huge improvement, probably because
+ * most of the time is spent in the internal Fortran routine for gc_inout.
+ *
+ * This function hasn't been updated to keep up with changes to gc_inout,
+ * so it may be out-of-date. The main changes to gc_inout were to allow
+ * leftmost dimemsnions.
+ */
 NhlErrorTypes gc_inout_mask_proc_W( void )
 {
 /*
