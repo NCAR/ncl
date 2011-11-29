@@ -20717,6 +20717,138 @@ NhlErrorTypes   _NclIGetFileVarTypes
 
 }
 
+NhlErrorTypes  _NclIGetFileChunkSizes(void)
+{
+    /* file variables */
+    NclFile f;
+    int *fid;
+
+    /* chunk dimensions */
+    int nchunks, islong = 0;
+    ng_size_t *chunk_sizes;
+    NclBasicDataTypes return_type = NCL_int;
+
+    NhlErrorTypes   ret;
+
+    ng_size_t i = 0;
+
+    void *retvalue = NULL;
+    
+#ifdef USE_NETCDF4_FEATURES
+    /* get file information */
+    fid = (int *) NclGetArgValue(
+                    0,
+                    1,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    0);
+    f = (NclFile) _NclGetObj((int) *fid);
+
+    if (f != NULL)
+    {
+	chunk_sizes = _NclFileReadChunkSizes(f, &nchunks);
+
+	if(NULL == chunk_sizes)
+	{
+            int *iptr = NULL;
+            retvalue = (void *)NclMalloc(sizeof(int));
+            iptr = (int *)retvalue;
+            *iptr = -1;
+            i = 1;
+	    ret = NclReturnValue((void *)retvalue, 1, &i, NULL, return_type, 1);
+	    free(chunk_sizes);
+	    free(retvalue);
+	    return ret;
+	}
+
+        for(i = 0; i < nchunks; i++)
+            if(chunk_sizes[i] > INT_MAX)
+                islong = 1;
+
+	if(islong)
+        {
+            long *lptr = NULL;
+            return_type = NCL_long;
+            retvalue = (void *)NclMalloc(nchunks * sizeof(long));
+            lptr = (long *)retvalue;
+            for(i = 0; i < nchunks; i++)
+                lptr[i] = (long) chunk_sizes[i];
+        }
+	else
+        {
+            int *iptr = NULL;
+            return_type = NCL_int;
+            retvalue = (void *)NclMalloc(nchunks * sizeof(int));
+            iptr = (int *)retvalue;
+            for(i = 0; i < nchunks; i++)
+                iptr[i] = (int) chunk_sizes[i];
+        }
+
+	i = (ng_size_t) nchunks;
+	ret = NclReturnValue((void *)retvalue, 1, &i, NULL, return_type, 1);
+	free(chunk_sizes);
+        free(retvalue);
+	return ret;
+    }
+
+    NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+              "getfilechunksizes: undefined file variable or file has no chunking"));
+#endif
+    i = 1;
+    NclReturnValue(
+            (void*) &((NclTypeClass) nclTypeintClass)->type_class.default_mis, 1,
+            &i, &((NclTypeClass) nclTypeintClass)->type_class.default_mis,
+            ((NclTypeClass) nclTypeintClass)->type_class.data_type, 1);
+	
+    return NhlWARNING;
+}
+
+NhlErrorTypes _NclIGetFileCompressionLevel(void)
+{
+    /* file variables */
+    NclFile f;
+    int *fid;
+
+    /* chunk dimensions */
+    ng_size_t ns = 1;
+    int compressionlevel = 0;
+    NclBasicDataTypes return_type = NCL_int;
+
+    NhlErrorTypes ret;
+    
+#ifdef USE_NETCDF4_FEATURES
+    /* get file information */
+    fid = (int *) NclGetArgValue(
+                    0,
+                    1,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    0);
+    f = (NclFile) _NclGetObj((int) *fid);
+
+    if (f != NULL)
+    {
+	compressionlevel = _NclFileReadCompressionLevel(f);
+
+	ret = NclReturnValue((void *)(&compressionlevel), 1, &ns, NULL, return_type, 1);
+	return ret;
+    }
+    else
+    {
+        NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+              "getfilechunksizes: undefined file variable or file has no compression"));
+    }
+#endif
+    NclReturnValue((void *)(&compressionlevel), 1, &ns, NULL, return_type, 1);
+	
+    return NhlWARNING;
+}
 
 NhlErrorTypes   _NclIGetFileDimsizes
 # if	NhlNeedProto

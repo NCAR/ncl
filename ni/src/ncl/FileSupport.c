@@ -2722,3 +2722,74 @@ NclGroup *_NclCreateGroup(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
     return group_out;
 }
 
+ng_size_t *_NclFileReadChunkSizes(NclFile thefile, int *nchunks)
+{
+	ng_size_t *chunksize = NULL;
+
+	char *class_name;
+
+	if(thefile == NULL)
+	{
+		return(NULL);
+	}
+
+	class_name = thefile->obj.class_ptr->obj_class.class_name;
+
+	if((0 == strcmp("NclFileClass", class_name)) ||
+	   (0 == strcmp("NclNewFileClass", class_name)))
+	{
+		NclNewFile newfile = (NclNewFile) thefile;
+		NclFileDimRecord *chunkdimrec = newfile->newfile.grpnode->chunk_dim_rec;
+		int n;
+		if(NULL != chunkdimrec)
+		{
+			*nchunks = chunkdimrec->n_dims;
+			chunksize = (ng_size_t *)NclMalloc(chunkdimrec->n_dims * sizeof(ng_size_t));
+			if(NULL == chunksize)
+			{
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"_NclFileReadChunkSizes: Can not allocate memory for chunksize\n"));
+				return (NULL);
+			}
+			for(n = 0; n < chunkdimrec->n_dims; n++)
+				chunksize[n] = chunkdimrec->dim_node[n].size;
+
+			return chunksize;
+		}
+		else
+		{
+			*nchunks = 0;
+			return NULL;
+		}
+	}
+
+	*nchunks = 0;
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+		"_NclFileReadChunkSizes: Unknown Class <%s>\n", class_name));
+	return (NULL);
+}
+
+int _NclFileReadCompressionLevel(NclFile thefile)
+{
+	int cl = 0;
+	char *class_name;
+
+	if(thefile == NULL)
+	{
+		return(0);
+	}
+
+	class_name = thefile->obj.class_ptr->obj_class.class_name;
+
+	if(0 == strcmp("NclNewFileClass", class_name))
+	{
+		NclNewFile newfile = (NclNewFile) thefile;
+		cl = newfile->newfile.grpnode->compress_level;
+		return cl;
+	}
+
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+		"_NclFileReadChunkSizes: Unknown Class <%s>\n", class_name));
+	return (0);
+}
+

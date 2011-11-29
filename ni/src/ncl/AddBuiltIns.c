@@ -80,6 +80,8 @@ void
 # endif /* NhlNeedProto */
 );
 
+extern NhlErrorTypes _NclIGetFileChunkSizes(void);
+extern NhlErrorTypes _NclIGetFileCompressionLevel(void);
 
 extern NhlErrorTypes    _NclIGetFileDimsizes(
 # if    NhlNeedProto
@@ -2249,11 +2251,23 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
 	NclRegisterFunc(_NclIGetFileVarAtts,args,"getfilevaratts",nargs);
 
-    nargs = 0;
-    args = NewArgs(1);
-    dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "file", 0, NclANY);  nargs++;
-    NclRegisterFunc(_NclIGetFileDimsizes, args, "getfiledimsizes", nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	dimsizes[0] = 1;
+	SetArgTemplate(args, nargs, "file", 0, NclANY);  nargs++;
+	NclRegisterFunc(_NclIGetFileChunkSizes, args, "getfilechunksizes", nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	dimsizes[0] = 1;
+	SetArgTemplate(args, nargs, "file", 0, NclANY);  nargs++;
+	NclRegisterFunc(_NclIGetFileCompressionLevel, args, "getfilecompressionlevel", nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	dimsizes[0] = 1;
+	SetArgTemplate(args, nargs, "file", 0, NclANY);  nargs++;
+	NclRegisterFunc(_NclIGetFileDimsizes, args, "getfiledimsizes", nargs);
 
 	nargs = 0;
 	args = NewArgs(2);

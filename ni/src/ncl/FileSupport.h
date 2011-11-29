@@ -412,6 +412,8 @@ extern NclGroup *_NclCreateGroup(NclObj inst, NclObjClass theclass, NclObjTypes 
 extern NhlErrorTypes _NclPrintFileSummary(NclObj self, FILE *fp);
 extern NclQuark *_NclFileReadVarNames(NclFile thefile, int *num_vars);
 extern NclQuark *_NclFileReadGrpNames(NclFile thefile, int *num_grps);
+extern ng_size_t *_NclFileReadChunkSizes(NclFile thefile, int *nchunks);
+extern int _NclFileReadCompressionLevel(NclFile thefile);
 
 #endif /*_FileSupport_h */
 

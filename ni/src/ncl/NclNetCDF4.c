@@ -2076,6 +2076,9 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
     int    storage_in;
     size_t chunksizes[MAX_VAR_DIMS];
 
+    int *shufflep;
+    int *deflatep;
+
   /*
    *fprintf(stderr, "\nEnter _NC4_get_vars, file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tgid = %d\n", gid);
@@ -2241,10 +2244,12 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
        *     A pointer to an array list of chunk sizes.
        *     The array must have one chunksize for each dimension in the variable. 
        */
-        varnode->is_chunked = 0;
         rc = nc_inq_var_chunking(gid, i, &storage_in, chunksizes);
+        varnode->is_chunked = 0;
         if(NC_CHUNKED == storage_in)
         {
+            rc = nc_inq_var_deflate(gid, i, shufflep, deflatep, &(varnode->compress_level));
+
             varnode->is_chunked = 1;
             dimrec = _NclFileDimAlloc(n_dims);
             dimrec->gid = gid;
@@ -2279,6 +2284,10 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
 void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *) rootgrp;
+    NclFileDimNode *dimnode;
+    NclFileDimNode *vardimnode;
+    NclFileVarNode *varnode;
+
     int fid;
     int nc_ret = NC_NOERR;
     int unlimited_dim_idx;
@@ -2286,6 +2295,8 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
     int numgrps = 0;
     int ntypes = 0;
     int n_atts, n_dims, n_vars;
+
+    int i, j, k;
 
     if(NULL == grpnode)
     {
@@ -2372,6 +2383,44 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
     if(n_vars)
         grpnode->var_rec = _NC4_get_vars(fid, n_vars, &has_scalar_dim,
                                          unlimited_dim_idx, NrmQuarkToString(grpnode->real_name));
+
+    /*check chunking info*/
+    if((NULL != grpnode->dim_rec) && (NULL != grpnode->var_rec) && (! grpnode->is_chunked))
+    {
+        grpnode->compress_level = 0;
+        i = 0;
+        dimnode = &(grpnode->dim_rec->dim_node[i]);
+
+        for(j = 0; j < grpnode->var_rec->n_vars; ++j)
+        {
+            varnode = &(grpnode->var_rec->var_node[j]);
+
+            if(grpnode->compress_level < varnode->compress_level)
+                grpnode->compress_level = varnode->compress_level;
+
+            if(varnode->dim_rec->n_dims < 2)
+                continue;
+
+            if(varnode->is_chunked)
+            {
+                grpnode->is_chunked = varnode->is_chunked;
+                for(k = 0; k < varnode->chunk_dim_rec->n_dims; ++k)
+                {
+                    vardimnode = &(varnode->chunk_dim_rec->dim_node[k]);
+                    if(vardimnode->name == dimnode->name)
+                    {
+                        _addNclDimNode(&(grpnode->chunk_dim_rec), dimnode->name, vardimnode->id,
+                                       vardimnode->size, vardimnode->is_unlimited);
+                        ++i;
+                        dimnode = &(grpnode->dim_rec->dim_node[i]);
+                    }
+                }
+            }
+    
+            if(i >= grpnode->dim_rec->n_dims)
+                break;
+        }
+    }
 
     nc_inq_format(fid,&(grpnode->format));
 
