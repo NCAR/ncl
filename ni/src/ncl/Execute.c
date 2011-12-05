@@ -199,10 +199,12 @@ void CallTERM_LIST_OP(void) {
 				{
 					estatus = _NclBuildArray(n_elements,&output);
 				}
+/*
 				else if(temporary_list_ptr->u.data_list->list.list_type & NCL_CONCAT)
 				{
 					estatus = _NclBuildConcatArray(n_elements,&output);
 				}
+*/
 				else
 				{
 					/*This code will make the output a new list.*/
@@ -224,6 +226,7 @@ void CallLIST_READ_OP(void) {
 	NclSymbol *temporary;
 	NclStackEntry *list_ptr;
 	NclStackEntry *temporary_list_ptr;
+	NclStackEntry result;
 	NclStackEntry data;
 	NclList list;
 	NclList newlist;
@@ -234,8 +237,6 @@ void CallLIST_READ_OP(void) {
 	NclMultiDValData vect_md,tmp_md;
 	long *thevector;
 	
-	
-
 	ptr++;lptr++;fptr++;
 	listsym = (NclSymbol*)(*ptr);
 	ptr++;lptr++;fptr++;
@@ -384,6 +385,22 @@ void CallLIST_READ_OP(void) {
 
 	newlist =_NclListSelect(list,sel_ptr);
 	if(newlist != NULL) {
+		ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
+		int ndims = 1;
+		obj *id;
+		id = (obj*)NclMalloc(sizeof(obj));
+		*id = newlist->obj.id;
+		_NclListSetType((NclObj)newlist,NCL_FIFO);
+
+		dim_sizes[0] = 1;
+		result.kind = NclStk_VAL;
+		result.u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,
+						0,id,NULL,
+						ndims,dim_sizes,TEMPORARY,NULL);
+		_NclPush(result);
+
+/*
+*/
 		temporary_list_ptr->kind = NclStk_LIST;
 		temporary_list_ptr->u.data_list = newlist;
 	} else {
