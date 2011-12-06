@@ -2756,7 +2756,7 @@ int id;
         }
         else
         {
-            ncendef(id);
+            nc_enddef(id);
         }
         rootgrp->define_mode = 0;
     }
