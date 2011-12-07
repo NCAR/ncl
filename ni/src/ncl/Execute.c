@@ -385,6 +385,7 @@ void CallLIST_READ_OP(void) {
 
 	newlist =_NclListSelect(list,sel_ptr);
 	if(newlist != NULL) {
+/*
 		ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 		int ndims = 1;
 		obj *id;
@@ -399,7 +400,6 @@ void CallLIST_READ_OP(void) {
 						ndims,dim_sizes,TEMPORARY,NULL);
 		_NclPush(result);
 
-/*
 */
 		temporary_list_ptr->kind = NclStk_LIST;
 		temporary_list_ptr->u.data_list = newlist;
@@ -7489,9 +7489,9 @@ NclExecuteReturnStatus _NclExecute
 		}
 		if(estatus < NhlINFO) {
 			if(*fptr == NULL) {
-				NhlPError(estatus,NhlEUNKNOWN,"Execute: Error occurred at or near line %d\n",(cmd_line ? (*lptr): *lptr));
+				NHLPERROR((estatus,NhlEUNKNOWN,"Execute: Error occurred at or near line %d\n",(cmd_line ? (*lptr): *lptr)));
 			} else {
-				NhlPError(estatus,NhlEUNKNOWN,"Execute: Error occurred at or near line %d in file %s\n", *lptr, *fptr);
+				NHLPERROR((estatus,NhlEUNKNOWN,"Execute: Error occurred at or near line %d in file %s\n", *lptr, *fptr));
 			}
 			if(estatus < NhlWARNING) {
 /*
