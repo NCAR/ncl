@@ -1408,7 +1408,7 @@ begin
 ;
   if(dst_grid_rank.gt.1) then
     dst_grid_dims_out = new(srcData_lft_ndims+dst_grid_rank,long)
-    if(srcData_rank.gt.src_grid_rank) then
+    if(.not.is_src_grid_scalar.and.srcData_rank.gt.src_grid_rank) then
       dst_grid_dims_out(0:srcData_lft_ndims-1) = srcData_lft_dims
     end if
     dst_grid_dims_out(srcData_lft_ndims:) = dst_grid_dims
