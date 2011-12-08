@@ -1218,6 +1218,7 @@ begin
   end if  ; end of building the command (Second Pass - optional features)
 		
 ;---Execute the regridding command
+    print("ESMFCMD = '"  + ESMFCMD + "'")
     RegridOut = systemfunc(ESMFCMD)
     print(""+RegridOut)
         
@@ -1246,7 +1247,7 @@ function esmf_remap(srcData:numeric,WFile[1]:string, opt[1]:logical)
 local opt2, debug, fmsg, fid, srclat, srclon, dstlat, dstlon, src_grid_dims, \
       src_grid_rank, srcData_dims, srcData_rank, srcData_rgt_dims, \
       srcData_lft_dims, has_leftmost_dims, dst_grid_dims, dst_grid_rank, \
-      row, col, v, x, minDataValue, maxDataValue
+      dst_grid_dims_in, row, col, v, x, minDataValue, maxDataValue
 begin
   opt2  = opt                                  ; Make a copy
   fmsg  = new(1,float)                         ; For error return
@@ -1286,6 +1287,7 @@ begin
 ;---Get the dimensions and rank of the source grid and input grid.
   src_grid_dims = fid->src_grid_dims(::-1)    ; dimensions are Fortran-based
   src_grid_rank = dimsizes(src_grid_dims)
+  is_src_grid_scalar = src_grid_rank.eq.1.and.src_grid_dims(0).eq.1
 
   srcData_dims = dimsizes(srcData)
   srcData_rank = dimsizes(srcData_dims)
@@ -1305,11 +1307,13 @@ begin
   if(DEBUG) then
 ;---Source grid info
     print("esmf_remap: Source Grid:")
+    print("            rank:      " + src_grid_rank)
     str = "            dimensions:"
     do i=0,src_grid_rank-1
       str = str + " " + src_grid_dims(i)
     end do
     print("" + str)
+    print("            original source rank: " + srcData_rank)
     print("            latitude min/max: " + min(srclat) + "/" + max(srclat))
     print("            longitude min/max:" + min(srclon) + "/" + max(srclon))
 ;---Destination grid info
@@ -1324,7 +1328,7 @@ begin
   end if
 
 ;---Check that the rightmost dimensions are the same.
-  if(srcData_rank.gt.src_grid_rank) then
+  if(.not.is_src_grid_scalar.and.srcData_rank.gt.src_grid_rank) then
     srcData_lft_ndims = srcData_rank - src_grid_rank
     srcData_rgt_dims  = srcData_dims(srcData_lft_ndims:)
     srcData_lft_dims  = srcData_dims(0:srcData_lft_ndims-1)
@@ -1360,7 +1364,7 @@ begin
 ; However, we have to determine if there are any leftmost 
 ; dimensions to account for.
 ;
-  if (srcData_rank.gt.src_grid_rank) then
+  if(.not.is_src_grid_scalar.and.srcData_rank.gt.src_grid_rank) then
     src_grid_dims_tmp                        = new(srcData_lft_ndims+1,long)
     src_grid_dims_tmp(0:srcData_lft_ndims-1) = srcData_lft_dims
     src_grid_dims_tmp(srcData_lft_ndims)     = product(srcData_rgt_dims)
@@ -1386,30 +1390,21 @@ begin
   end if
 
 ;
-; We have to always treat the output grid as N x 1
-; (or M x N x 1 if we have leftmost dimensions) 
-; because the input grid has to be 1D.
+; We have to always treat the output grid as a 1D array
+; of length N because ESMF gives us the indices into a
+; 1D array. 
 ;
 ; If dst_grid_dims is 1, then we have to set N=max(row).
 ;
-  if(srcData_rank.gt.src_grid_rank) then
-    dst_grid_dims_in = new(srcData_lft_ndims+1,long)
-    dst_grid_dims_in(0:srcData_lft_ndims-1) = srcData_lft_dims
-    if(dst_grid_rank.eq.1) then
-      dst_grid_dims_in(srcData_lft_ndims) = max(row)
-    else
-      dst_grid_dims_in(srcData_lft_ndims) = product(dst_grid_dims)
-    end if
+  if(dst_grid_rank.eq.1) then
+    dst_grid_dims_in = max(row)
   else
-    if(dst_grid_rank.eq.1) then
-      dst_grid_dims_in = max(row)
-    else
-      dst_grid_dims_in = product(dst_grid_dims)
-    end if
+    dst_grid_dims_in = product(dst_grid_dims)
   end if
+
 ;
-; We need to reshape our (M) x N x 1 grid if the output dimensions
-; are not 1D.
+; We will need to reshape the return (M) x N grid from
+; sparse_matrix_mult if the output dimensions are not 1D.
 ;
   if(dst_grid_rank.gt.1) then
     dst_grid_dims_out = new(srcData_lft_ndims+dst_grid_rank,long)
