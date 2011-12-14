@@ -499,6 +499,9 @@ begin
             end if
         end if
     end if
+    if (isbothvaratt_logical_true(Opt,"LargeFile")) then
+      setfileoption("nc","Format","LargeFile") 
+    end if
     ; Getting the nlat and nlon
     ; remember that nlat must be the first dimension
     ; and the nlot the second dimension of both lat2d
