@@ -307,6 +307,8 @@ end     ; of findCorners(...)
 undef("Unstructured2ESMF")
 function Unstructured2ESMF(FName[1]:string,inPutFName[1]:string,inLat,inLon,inNodeMask,Opt[1]:logical)
 begin
+    debug = isbothvaratt_logical_true(Opt,"Debug")
+
     ; Checking if the user has requested the unstructured grid
     if ( .not.(isbothvaratt_logical_true(Opt,"ForceUnstructured")) ) then
         print("Can not use this function for Structured grid.")
@@ -344,6 +346,10 @@ begin
     ; Triangulating and getting the element connectivity
     print("Triangulating the data ...")
     ElementVertices=csstri(lat,lon)
+    if(debug) then
+      print("min/max ElementVertices = " + min(ElementVertices) + "/" + \
+                                           max(ElementVertices))
+    end if
     ElementVertices_Dim=dimsizes(ElementVertices)
     print("Total number of elements created: "+ElementVertices_Dim(0))
 
@@ -627,7 +633,8 @@ end     ; of Curvilinear2SCRIP(...)
 ; This functions make use of Curvilinear2SCRIP(...)
 ;======================================================================
 undef("Rectilinear2SCRIP")
-function Rectilinear2SCRIP(FName[1]:string,FTitle[1]:string,lat[*]:double,lon[*]:double, Opt[1]:logical)
+function Rectilinear2SCRIP(FName[1]:string,FTitle[1]:string,\
+                           lat[*]:numeric,lon[*]:numeric, Opt[1]:logical)
 begin
     if ( (dimsizes(dimsizes(lat)).ne.1).or.(dimsizes(dimsizes(lon)).ne.1) ) then
         print("lat and lon must be a one dimensional array.")
@@ -879,9 +886,11 @@ end     ; of Auto2SCRIP(...)
 ; This functions make use of Curvilinear2SCRIP(...)
 ;======================================================================
 undef("GenBox_with_LLURCorner")
-function GenBox_with_LLURCorner(FName[1]:string,FTitle[1]:string,LLCorner[2]:double,URCorner[2]:double,nlat_dlat[1]:numeric,nlon_dlon[1]:numeric,Opt[1]:logical)
+function GenBox_with_LLURCorner(FName[1]:string,FTitle[1]:string,\
+         LLCorner[2]:numeric,URCorner[2]:numeric,nlat_dlat[1]:numeric,\
+         nlon_dlon[1]:numeric,Opt[1]:logical)
 begin
-    ; Remeber that the existance of the outfile is check in 
+    ; Remeber that the existence of the outfile is check in 
     ; Curvilinear2SCRIP(...), which is called here. So, no need to
     ; recheck it.
     
@@ -895,7 +904,11 @@ begin
         return(1)
     end if
 
-    BoxDiag=URCorner-LLCorner 
+;---Convert corners to double precision.
+   LLCornerD = todouble(LLCorner)
+   URCornerD = todouble(URCorner)
+
+    BoxDiag=URCornerD-LLCornerD
     if (Opt.and.(isatt(Opt,"Rotation"))) then
         Rot=tofloat(Opt@Rotation)
         if (Rot.ne.(0.0)) then
@@ -950,8 +963,8 @@ begin
     end if
 
     ; Now that the rotation was successful translating it back.
-    grid_center_lat=grid_center_lat+LLCorner(0)
-    grid_center_lon=grid_center_lon+LLCorner(1)
+    grid_center_lat=grid_center_lat+LLCornerD(0)
+    grid_center_lon=grid_center_lon+LLCornerD(1)
 	Err=(Curvilinear2SCRIP(FName,FTitle,grid_center_lat,grid_center_lon,mask2d,Opt))
     return(Err)
 end     ; of GenBox_with_LLURCorner(...)
@@ -963,7 +976,10 @@ end     ; of GenBox_with_LLURCorner(...)
 ; This functions make use of Curvilinear2SCRIP(...) and GenUniformLatLon2SCRIP(...)
 ;======================================================================
 undef("GenBox_with_Center_Dim")
-function GenBox_with_Center_Dim(FName[1]:string,FTitle[1]:string,BoxCenter[2]:double,BoxDim[2]:double,nlat_dlat[1]:numeric,nlon_dlon[1]:numeric,Opt[1]:logical)
+function GenBox_with_Center_Dim(FName[1]:string,FTitle[1]:string,\
+                                BoxCenter[2]:numeric,BoxDim[2]:numeric,\
+                                nlat_dlat[1]:numeric,nlon_dlon[1]:numeric,\
+                                Opt[1]:logical)
 begin
     Height=BoxDim(0)
     Width=BoxDim(1)
@@ -1068,7 +1084,7 @@ function esmf_remap_weights(srcGrid[1]:string, dstGrid[1]:string, \
 local opt2, debug, fmsg
 begin
   opt2  = opt    ; Make a copy
-  debug = isatt_logical_true(opt2,"Debug")
+  debug = isbothvaratt_logical_true(opt2,"Debug")
 
   if(debug) then
     print("Calling ESMF Regrid Weight Generation tool ...")
