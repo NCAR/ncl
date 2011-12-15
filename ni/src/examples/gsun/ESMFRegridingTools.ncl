@@ -7,6 +7,11 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       15 Dec 2011: 
+;            Added the "-i" flag to the ESMF_RegridWeightGen
+;            command to properly handle regional grids like WRF. 
+;            The WRF regridding example wasn't working otherwise.
+;
 ;       09 Nov 2011: 
 ;            Decided to completely remove "remove outlier" code.
 ;            Cleaned up the sparse_matrix_mult code to correctly
@@ -1225,6 +1230,11 @@ begin
 ;---Check if the user specifies that source grids are ESMF			
     if (isatt_logical_true(opt2,"isDstESMF")) then
       ESMFCMD=ESMFCMD+" --dst_type ESMF"
+    end if
+
+;---This flag is necessary for V5.2.0r1 and grids like WRF.
+    if (isatt_logical_true(Opt,"ignoreUnmappedPoints")) then
+        ESMFCMD=ESMFCMD+" -i"
     end if
 
 ;---Check if the user has requested to print out the full command to be run.
