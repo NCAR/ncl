@@ -3113,7 +3113,7 @@ begin
   PDFXY(1:ny2-1,mx2-1) = PDFXY@_FillValue
 
   xAxis   = fspan(p@binx_bound_min, p@binx_bound_max, mx2)
-  yAxis   = fspan(p@biny_bound_min, p@biny_bound_max, mx2)
+  yAxis   = fspan(p@biny_bound_min, p@biny_bound_max, ny2)
 
   PDFXY!0 = "Y"
   PDFXY!1 = "X"
