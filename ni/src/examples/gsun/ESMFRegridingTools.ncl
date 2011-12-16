@@ -1233,7 +1233,7 @@ begin
     end if
 
 ;---This flag is necessary for V5.2.0r1 and grids like WRF.
-    if (isatt_logical_true(Opt,"ignoreUnmappedPoints")) then
+    if (isatt_logical_true(opt2,"ignoreUnmappedPoints")) then
         ESMFCMD=ESMFCMD+" -i"
     end if
 
