@@ -7,6 +7,13 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       18 Dec 2011: 
+;            Cleaned up this script to:
+;               - rename some functions and/or change to procedures
+;               - use better functions where appropriate
+;               - align code to make it easier to read
+;               - add routine names to error prints
+;
 ;       15 Dec 2011: 
 ;            Added the "-i" flag to the ESMF_RegridWeightGen
 ;            command to properly handle regional grids like WRF. 
@@ -49,12 +56,14 @@
 ;======================================================================
 ; This is the modified version of copy_VarAtts originaly developed by
 ; Dennis Shea.
+;
+; This function probably should be moved to contributed.ncl.
 ;======================================================================
 undef("copy_VarAtts_Except")
 procedure copy_VarAtts_Except(var_from,var_to, Except [*]:string)    
 local att_names, i
 begin                                       
-    att_names =getvaratts(var_from);
+    att_names = getvaratts(var_from);
     if(.not.all(ismissing(att_names)))
         do i = 0,dimsizes(att_names)-1
             if (.not.any(att_names(i).eq.Except)) then
@@ -100,11 +109,78 @@ begin
     end do
     return(OutPut)
 end
+
 ;======================================================================
-; This function change the type of a variable to the given type.
-; sometime it is needed to change to either float or double. But
-; which type is only know at the runtime. So, this tool will become handy.
-; It will also copies the attributes
+; This function will check:
+; (1) if the Attname attribute is defined
+; (2) if the Attname attribute is a logical attribute
+; (3) if the Attname is True
+; It will return true only if all above conditions are satisfied.
+;======================================================================
+undef("isatt_logical_true")
+function isatt_logical_true(Opt[1]:logical,AttName[1]:string)
+begin
+    if (isatt(Opt,AttName).and.islogical(Opt@$AttName$)) then
+        return(Opt@$AttName$)
+    end if
+    return(False)
+end     ; of isatt_logical_true(...)
+
+;======================================================================
+; This function will check:
+; (1) if Opt is a logical variable.
+; (2) if Opt is set to true
+; (3) if the Attname attribute of Opt is defined
+; (4) if the Attname attribute of Opt is a logical attribute
+; (5) if the Attname is True
+; It will return true only if all above conditions are satisfied.
+;======================================================================
+undef("isbothvaratt_logical_true")
+function isbothvaratt_logical_true(Opt[1]:logical,AttName[1]:string)
+begin
+    if (islogical(Opt).and.Opt) then
+        return(isatt_logical_true(Opt,AttName))
+    end if
+    return(False)
+end     ; of isbothvaratt_logical_true(...)
+
+;======================================================================
+; This procedure checks if a file already exists, and removes if 
+; certain options are set.
+;
+; If opt=True and opt@OverWrite = True, then user will be prompted
+; whether to remove file.
+;
+; Otherwise, if opt=True and opt@ForceOverWrite = True, then file
+; will be removed with no prompting.
+;======================================================================
+undef("check_for_file")
+procedure check_for_file(fname,opt)
+local debug
+begin
+    debug = isbothvaratt_logical_true(opt,"Debug")
+    if (isfilepresent(fname)) then
+        if (.not.isbothvaratt_logical_true(opt,"OverWrite")) then
+            print("check_for_file: the file '" + fname + "' already exists.")
+            print("                Set opt@OverWrite      = True or")
+            print("                    opt@ForceOverWrite = True to override.")
+            exit
+        else
+            if(debug) then
+                print("check_for_file: removing '" + fname + "'")
+            end if
+            if (isbothvaratt_logical_true(opt,"ForceOverWrite")) then
+                system("rm -rf "+fname)
+            else
+                system("rm -rfi "+fname)
+            end if
+        end if
+    end if
+end
+
+;======================================================================
+; This function coerces the type of a variable to the given type.
+; It will also copy the attributes.
 ;======================================================================
 undef("totypeof")
 function totypeof(inVar,outType)
@@ -139,8 +215,8 @@ begin
     else if (outType.eq."character") then
         outVar=tocharacter(inVar)
     else
-        print("conversion to the provided type is not supported.")
-        return(0)
+        print("totypeof: Error: conversion to the provided type is not supported.")
+        exit
     end if
     end if
     end if
@@ -160,248 +236,217 @@ begin
 end     ; of totypeof(...)
 
 ;======================================================================
-; This function Rotates the given input.
+; This procedure rotates the given lat/lon grid, given a rotation angle.
+; It operates directly on the input lat/lon.
 ;======================================================================
-undef("Rotate2D")
-function Rotate2D(lat:snumeric,lon:snumeric,Rot)
+undef("rotate_latlon")
+procedure rotate_latlon(lat:snumeric,lon:snumeric,Rot[1]:numeric)
+local d2r, tmpPoints, latlon_dims
 begin
     if ( any(dimsizes(lat).ne.dimsizes(lon) ) ) then
-        print("lat and lon must have same dimension.")
-        return(1)
+        print("rotate_latlon: lat and lon must have the same dimensions.")
+        exit
     end if
     
-    dime=dimsizes(lat)
-    
-    tmplat=ndtooned(lat)
-    tmplon=ndtooned(lon)
-    d2r=atan(1)/45.0;
-    tmpPoints=new( (/2,dimsizes(tmplat)/),typeof(lat) )
-    tmpPoints(0,:)=tmplon(:);
-    tmpPoints(1,:)=tmplat(:);
-    RotateMat=(/ (/cos(Rot*d2r), -sin(Rot*d2r)/),(/sin(Rot*d2r), cos(Rot*d2r)/) /)
-    tmpPoints=RotateMat#tmpPoints
-    lat=onedtond(tmpPoints(1,:),dime)
-    lon=onedtond(tmpPoints(0,:),dime)
-    return(0)
-end     ; of Rotate2D(...)
+    latlon_dims    = dimsizes(lat)
+    d2r            = atan(1)/45.0;
+    RotateMat      = (/(/cos(Rot*d2r), -sin(Rot*d2r)/), \
+                       (/sin(Rot*d2r),  cos(Rot*d2r)/) /)
+
+    tmpPoints      = new( (/2,product(latlon_dims)/),typeof(lat) )
+    tmpPoints(0,:) = ndtooned(lat)
+    tmpPoints(1,:) = ndtooned(lon)
+    tmpPoints      = RotateMat#tmpPoints
+    lat            = onedtond(tmpPoints(1,:),latlon_dims)
+    lon            = onedtond(tmpPoints(0,:),latlon_dims)
+end
 
 ;======================================================================
-; This functions calculates the mirror of p1
-; respect to po
+; This functions calculates the mirror of p1 with respect to po.
 ;======================================================================
 undef("mirrorP2P")
 function mirrorP2P(p1,po)
+local dVec
 begin
-    dVec=p1-po
-    MirrorP=po-dVec
+    dVec    = p1-po
+    MirrorP = po-dVec
     return(MirrorP)
 end     ; of mirrorP2P(...)
 
 ;======================================================================
-; This function will check:
-; (1) if the Attname attribute is defined
-; (2) if the Attname attribute is a logical attribute
-; (3) if the Attname is True
-; It will return true only if all above conditions are satisfied.
-;======================================================================
-undef("isatt_logical_true")
-function isatt_logical_true(Opt[1]:logical,AttName[1]:string)
-begin
-    if (isatt(Opt,AttName) ) then
-        if (islogical(Opt@$AttName$)) then
-            return(Opt@$AttName$)
-        else 
-            return(False)
-        end if
-    else
-        return(False)
-    end if
-end     ; of isatt_logical_true(...)
-
-;======================================================================
-; This function will check:
-; (1) if Opt is a logical variable.
-; (2) if Opt is set to true
-; (3) if the Attname attribute of Opt is defined
-; (4) if the Attname attribute of Opt is a logical attribute
-; (5) if the Attname is True
-; It will return true only if all above conditions are satisfied.
-;======================================================================
-undef("isbothvaratt_logical_true")
-function isbothvaratt_logical_true(Opt[1]:logical,AttName[1]:string)
-begin
-    if (islogical(Opt)) then
-        if (Opt) then
-            return(isatt_logical_true(Opt,AttName))
-        else 
-            return(False)
-        end if
-    else
-        return(False)
-    end if
-end     ; of isbothvaratt_logical_true(...)
-
-;======================================================================
 ;
-; This procedure is used within Curvilinear2SCRIP function. Given a
-; structured grid, it looks for the four corners surrounding each
+; This procedure is used within the curvilinear_to_scrip function. Given
+; a structured grid, it looks for the four corners surrounding each
 ; node. It returns the center of the cells for the corners.
 ;
 ;======================================================================
-undef("findCorners")
-procedure findCorners(lat2d,lon2d,grid_corner_lat,grid_corner_lon)
+undef("find_SCRIP_corners")
+procedure find_SCRIP_corners(lat2d[*][*],lon2d[*][*], \
+                             grid_corner_lat,grid_corner_lon)
+local latlon_dims, nlat, nlon, Extlon2d, Extlat2d, ExtGridCenter_lat, \
+      ExtGridCenter_lon, tmp, ii, jj
 begin
-    dimgrid=dimsizes(lat2d)
-    nlat=dimgrid(0)
-    nlon=dimgrid(1)
-    
-    ; Extending the lat/lon grid (needed to calculate the corners at the boundaries)
-    Extlat2d=new( (/nlat+2, nlon+2/),typeof(lat2d))
-    Extlon2d=new( (/nlat+2, nlon+2/),typeof(lon2d))
-    Extlat2d(1:nlat,1:nlon)=(/lat2d/)
-    Extlon2d(1:nlat,1:nlon)=(/lon2d/)
-    
-    Extlat2d(0,1:nlon)=mirrorP2P(lat2d(1,:),lat2d(0,:))
-    Extlat2d(nlat+1,1:nlon)=mirrorP2P(lat2d(nlat-2,:),lat2d(nlat-1,:))
-    Extlat2d(1:nlat,0)=mirrorP2P(lat2d(:,1),lat2d(:,0))
-    Extlat2d(1:nlat,nlon+1)=mirrorP2P(lat2d(:,nlon-2),lat2d(:,nlon-1))
-    Extlat2d(0,0)=mirrorP2P(lat2d(1,1),lat2d(0,0))
-    Extlat2d(nlat+1,nlon+1)=mirrorP2P(lat2d(nlat-2,nlon-2),lat2d(nlat-1,nlon-1))
-    Extlat2d(0,nlon+1)=mirrorP2P(lat2d(1,nlon-2),lat2d(0,nlon-1))
-    Extlat2d(nlat+1,0)=mirrorP2P(lat2d(nlat-2,1),lat2d(nlat-1,0))
+    if ( any(dimsizes(lat2d).ne.dimsizes(lon2d) ) ) then
+        print("find_SCRIP_corners: lat and lon must have the same dimensions.")
+        exit
+    end if
 
-    Extlon2d(0,1:nlon)=mirrorP2P(lon2d(1,:),lon2d(0,:))
-    Extlon2d(nlat+1,1:nlon)=mirrorP2P(lon2d(nlat-2,:),lon2d(nlat-1,:))
-    Extlon2d(1:nlat,0)=mirrorP2P(lon2d(:,1),lon2d(:,0))
-    Extlon2d(1:nlat,nlon+1)=mirrorP2P(lon2d(:,nlon-2),lon2d(:,nlon-1))
-    Extlon2d(0,0)=mirrorP2P(lon2d(1,1),lon2d(0,0))
-    Extlon2d(nlat+1,nlon+1)=mirrorP2P(lon2d(nlat-2,nlon-2),lon2d(nlat-1,nlon-1))
-    Extlon2d(0,nlon+1)=mirrorP2P(lon2d(1,nlon-2),lon2d(0,nlon-1))
-    Extlon2d(nlat+1,0)=mirrorP2P(lon2d(nlat-2,1),lon2d(nlat-1,0))
+    latlon_dims = dimsizes(lat2d)
+    nlat        = latlon_dims(0)
+    nlon        = latlon_dims(1)
     
-    ; Calculating the cell center of the extended grid,
-    ; which would be the corner coordinates for the original grid.
-    tmp=Extlat2d(:,1:nlon+1)+Extlat2d(:,0:nlon)
-    ExtGridCenter_lat=ndtooned((tmp(1:nlat+1,:)+tmp(0:nlat,:))*0.25)    
-                                                            ; Multiplying by 0.25
-                                                            ; instead of dividing by 4.
-                                                            ; Multiplication is cheaper
-    tmp=Extlon2d(:,1:nlon+1)+Extlon2d(:,0:nlon)             ; than the division.
-    ExtGridCenter_lon=ndtooned((tmp(1:nlat+1,:)+tmp(0:nlat,:))*0.25)
+;
+; Extend the lat/lon grid (needed to calculate the
+; corners at the boundaries).
+;
+    Extlat2d = new( (/nlat+2, nlon+2/),typeof(lat2d))
+    Extlon2d = new( (/nlat+2, nlon+2/),typeof(lon2d))
+
+    Extlat2d(1:nlat,1:nlon) = (/lat2d/)
+    Extlon2d(1:nlat,1:nlon) = (/lon2d/)
+    
+    Extlat2d(0,1:nlon)      = mirrorP2P(lat2d(1,:),lat2d(0,:))
+    Extlat2d(nlat+1,1:nlon) = mirrorP2P(lat2d(nlat-2,:),lat2d(nlat-1,:))
+    Extlat2d(1:nlat,0)      = mirrorP2P(lat2d(:,1),lat2d(:,0))
+    Extlat2d(1:nlat,nlon+1) = mirrorP2P(lat2d(:,nlon-2),lat2d(:,nlon-1)) 
+    Extlat2d(0,0)           = mirrorP2P(lat2d(1,1),lat2d(0,0))
+    Extlat2d(nlat+1,nlon+1) = mirrorP2P(lat2d(nlat-2,nlon-2), \
+                                        lat2d(nlat-1,nlon-1))
+    Extlat2d(0,nlon+1)      = mirrorP2P(lat2d(1,nlon-2),lat2d(0,nlon-1))
+    Extlat2d(nlat+1,0)      = mirrorP2P(lat2d(nlat-2,1),lat2d(nlat-1,0))
+
+    Extlon2d(0,1:nlon)      = mirrorP2P(lon2d(1,:),lon2d(0,:))
+    Extlon2d(nlat+1,1:nlon) = mirrorP2P(lon2d(nlat-2,:),lon2d(nlat-1,:))
+    Extlon2d(1:nlat,0)      = mirrorP2P(lon2d(:,1),lon2d(:,0))
+    Extlon2d(1:nlat,nlon+1) = mirrorP2P(lon2d(:,nlon-2),lon2d(:,nlon-1))
+    Extlon2d(0,0)           = mirrorP2P(lon2d(1,1),lon2d(0,0))
+    Extlon2d(nlat+1,nlon+1) = mirrorP2P(lon2d(nlat-2,nlon-2),\
+                                        lon2d(nlat-1,nlon-1))
+    Extlon2d(0,nlon+1)      = mirrorP2P(lon2d(1,nlon-2),lon2d(0,nlon-1))
+    Extlon2d(nlat+1,0)      = mirrorP2P(lon2d(nlat-2,1),lon2d(nlat-1,0))
+    
+;
+; Calculate the cell center of the extended grid, which 
+; would be the corner coordinates for the original grid.
+;
+    tmp = Extlat2d(:,1:nlon+1)+Extlat2d(:,0:nlon)
+    ExtGridCenter_lat       = ndtooned((tmp(1:nlat+1,:)+tmp(0:nlat,:))*0.25)
+    tmp = Extlon2d(:,1:nlon+1)+Extlon2d(:,0:nlon)
+    ExtGridCenter_lon       = ndtooned((tmp(1:nlat+1,:)+tmp(0:nlat,:))*0.25)
     delete(tmp)
-    ; Now extracting the grid Cell Corners
-    ii=ndtooned(conform_dims((/nlat,nlon/),ispan(0,nlon-1,1),1))
-    jj=ndtooned(conform_dims((/nlat,nlon/),ispan(0,nlat-1,1),0))
-    grid_corner_lat(:,0)=ExtGridCenter_lat(jj*(nlon+1)+ii)
-    grid_corner_lat(:,1)=ExtGridCenter_lat(jj*(nlon+1)+(ii+1))
-    grid_corner_lat(:,2)=ExtGridCenter_lat((jj+1)*(nlon+1)+(ii+1))
-    grid_corner_lat(:,3)=ExtGridCenter_lat((jj+1)*(nlon+1)+ii)
+
+;---Extract the grid cell corners
+    ii = ndtooned(conform_dims((/nlat,nlon/),ispan(0,nlon-1,1),1))
+    jj = ndtooned(conform_dims((/nlat,nlon/),ispan(0,nlat-1,1),0))
+
+    grid_corner_lat(:,0) = ExtGridCenter_lat(jj*(nlon+1)+ii)
+    grid_corner_lat(:,1) = ExtGridCenter_lat(jj*(nlon+1)+(ii+1))
+    grid_corner_lat(:,2) = ExtGridCenter_lat((jj+1)*(nlon+1)+(ii+1))
+    grid_corner_lat(:,3) = ExtGridCenter_lat((jj+1)*(nlon+1)+ii)
     
-    grid_corner_lon(:,0)=ExtGridCenter_lon(jj*(nlon+1)+ii)
-    grid_corner_lon(:,1)=ExtGridCenter_lon(jj*(nlon+1)+(ii+1))
-    grid_corner_lon(:,2)=ExtGridCenter_lon((jj+1)*(nlon+1)+(ii+1))
-    grid_corner_lon(:,3)=ExtGridCenter_lon((jj+1)*(nlon+1)+ii)
+    grid_corner_lon(:,0) = ExtGridCenter_lon(jj*(nlon+1)+ii)
+    grid_corner_lon(:,1) = ExtGridCenter_lon(jj*(nlon+1)+(ii+1))
+    grid_corner_lon(:,2) = ExtGridCenter_lon((jj+1)*(nlon+1)+(ii+1))
+    grid_corner_lon(:,3) = ExtGridCenter_lon((jj+1)*(nlon+1)+ii)
 
-end     ; of findCorners(...)
+end     ; of find_SCRIP_corners(...)
 
 ;======================================================================
-; This functions Generates an ESMF file for an unstructured grid.
-; However, it is sometimes better to even store logically rectangular and structured grid
-; as unstructured grid. (Refer to TriPolar - TGrid)
+; This procedure generates an ESMF file for an unstructured grid.
+; It is sometimes better to even store logically rectangular and 
+; structured grids as unstructured grids. (Refer to TriPolar - TGrid)
 ;======================================================================
-undef("Unstructured2ESMF")
-function Unstructured2ESMF(FName[1]:string,inPutFName[1]:string,inLat,inLon,inNodeMask,Opt[1]:logical)
+undef("unstructured_to_esmf")
+procedure unstructured_to_esmf(FName[1]:string,inputFName[1]:string,\
+                             inLat,inLon,inNodeMask,Opt[1]:logical)
+local debug, lat, lon, NodeMask, ElementVertices
 begin
     debug = isbothvaratt_logical_true(Opt,"Debug")
 
-    ; Checking if the user has requested the unstructured grid
+;---Check if the user has requested the unstructured grid
     if ( .not.(isbothvaratt_logical_true(Opt,"ForceUnstructured")) ) then
-        print("Can not use this function for Structured grid.")
+        print("unstructured_to_esmf: Cannot use this function for structured grids.")
         return(1)
     end if
     
-    ; Checking if the file already exists
-    if (isfilepresent(FName)) then
-        if (.not.isbothvaratt_logical_true(Opt,"OverWrite")) then
-            print("The '" + FName + "' file already exists.")
-            return(1)
-        else
-            print("removing an existing file...")
-            if (isbothvaratt_logical_true(Opt,"ForceOverWrite")) then
-                system("rm -rf "+FName)
-            else
-                system("rm -rfi "+FName)
-            end if
-        end if
+;---Check if the file already exists
+    check_for_file(FName,Opt)
+
+;---Do we need to create a large file?
+    if (isbothvaratt_logical_true(Opt,"LargeFile")) then
+      setfileoption("nc","Format","LargeFile") 
     end if
 
-    lat=ndtooned(inLat)
-    lon=ndtooned(inLon)
-    NodeMask=ndtooned(inNodeMask)
+    lat      = ndtooned(inLat)
+    lon      = ndtooned(inLon)
+    NodeMask = ndtooned(inNodeMask)
     
     if (dimsizes(lat).ne.dimsizes(lon)) then
-        print("Latitude and longitude must have the same number of elements.")
-        return(1)
+        print("unstructured_to_esmf: latitude and longitude must have the same number of elements.")
+        exit
     end if
     if (dimsizes(NodeMask).ne.dimsizes(lat)) then
-        print("Mask must have the same number of elements as lat and lon.")
-        return(1)
+        print("unstructured_to_esmf: mask must have the same number of elements as lat and lon.")
+        exit
     end if
-    
-    ; Triangulating and getting the element connectivity
-    print("Triangulating the data ...")
-    ElementVertices=csstri(lat,lon)
+  
+;---Triangulate and get the element connectivity
+    if(debug) then
+      print("unstructured_to_esmf: triangulating the data ...")
+    end if
+    ElementVertices = csstri(lat,lon)
     if(debug) then
       print("min/max ElementVertices = " + min(ElementVertices) + "/" + \
                                            max(ElementVertices))
     end if
-    ElementVertices_Dim=dimsizes(ElementVertices)
-    print("Total number of elements created: "+ElementVertices_Dim(0))
+    ElementVertices_Dim = dimsizes(ElementVertices)
 
-    ; Creating the file
-    fid=addfile(FName,"c")
+    if(debug) then
+      print("unstructured_to_esmf: total number of elements created: "+ \
+               ElementVertices_Dim(0))
+    end if
+
+;---Create the file
+    fid = addfile(FName,"c")
     setfileoption(fid,"DefineMode",True)
 
-    ; Defining the file attributes
-    print("Setting File attributes ...")
-    FileAtt=True
-    FileAtt@gridType="unstructured"
-    FileAtt@Conventions="ESMF"
-    FileAtt@Createdby="ESMFRegridingTools.ncl"
-    FileAtt@version="0.9"
-    FileAtt@inputFile=inPutFName
-    FileAtt@timeGenerated=systemfunc("date")
-    FileAtt@date_created=FileAtt@timeGenerated
+;---Define the file attributes
+    FileAtt               = True
+    FileAtt@gridType      = "unstructured"
+    FileAtt@Conventions   = "ESMF"
+    FileAtt@Createdby     = "ESMFRegridingTools.ncl"
+    FileAtt@version       = "0.9"
+    FileAtt@inputFile     = inputFName
+    FileAtt@timeGenerated = systemfunc("date")
+    FileAtt@date_created  = FileAtt@timeGenerated
     fileattdef(fid,FileAtt)
     
-    ; Defining the ESMF dimensions
-    print("Defining Dimensions ...")
-	nodeCount = dimsizes(lat)
-    elementCount=ElementVertices_Dim(0)
-    maxNodePElement=3
-    coordDim=2
-	;                0            1               2               3
-	FDimNames=(/ "nodeCount","elementCount","maxNodePElement","coordDim" /)
-	FDimSizes=(/  nodeCount , elementCount , maxNodePElement , coordDim  /)
-	FDimUnlim=(/    False   ,    False     ,      False      ,   False   /)
+;---Define the ESMF dimensions
+    nodeCount       = dimsizes(lat)
+    elementCount    = ElementVertices_Dim(0)
+    maxNodePElement = 3
+    coordDim        = 2
+;                    0            1               2               3
+    FDimNames=(/ "nodeCount","elementCount","maxNodePElement","coordDim" /)
+    FDimSizes=(/  nodeCount , elementCount , maxNodePElement , coordDim  /)
+    FDimUnlim=(/    False   ,    False     ,      False      ,   False   /)
 	
-	filedimdef(fid,FDimNames,FDimSizes,FDimUnlim)    
+    filedimdef(fid,FDimNames,FDimSizes,FDimUnlim)    
 
-	; Defining Variables
-    print("Defining Variables and their attributes ...")
-	filevardef(fid,"nodeCoords","double",(/ FDimNames(0),FDimNames(3) /))
-    filevardef(fid,"elementConn","integer",(/ FDimNames(1), FDimNames(2) /))
-    filevardef(fid,"numElementConn","byte",(/ FDimNames(1) /))
-    filevardef(fid,"centerCoords","double",(/ FDimNames(1), FDimNames(3) /))
-    filevardef(fid,"elementArea","double",(/ FDimNames(1) /))
-    filevardef(fid,"elementMask","integer",(/ FDimNames(1) /))
+;---Define variables
+    filevardef(fid,"nodeCoords",    "double", (/ FDimNames(0), FDimNames(3) /))
+    filevardef(fid,"elementConn",   "integer",(/ FDimNames(1), FDimNames(2) /))
+    filevardef(fid,"numElementConn","byte",   (/ FDimNames(1) /))
+    filevardef(fid,"centerCoords",  "double", (/ FDimNames(1), FDimNames(3) /))
+    filevardef(fid,"elementArea",   "double", (/ FDimNames(1) /))
+    filevardef(fid,"elementMask",   "integer",(/ FDimNames(1) /))
     
-    ; Defining the variables unit attribute
-    AttNodeCoords= 0
-    AttNodeCoords@units="degrees"
+;---Define the variables unit attribute
+    AttNodeCoords       = 0
+    AttNodeCoords@units = "degrees"
     
-    AttElementConn=0
-    AttElementConn@long_name="Node Indices that define the element connectivity"
+    AttElementConn           = 0
+    AttElementConn@long_name = "Node Indices that define the element connectivity"
     AttElementConn@_FillValue=-1
     
     AttNumElementConn=0
@@ -414,63 +459,60 @@ begin
     AttElementArea@units="radians^2"
     AttElementArea@long_name="area weights"
     
-    filevarattdef(fid,"nodeCoords",AttNodeCoords)
-    filevarattdef(fid,"elementConn",AttElementConn)
+    filevarattdef(fid,"nodeCoords",    AttNodeCoords)
+    filevarattdef(fid,"elementConn",   AttElementConn)
     filevarattdef(fid,"numElementConn",AttNumElementConn)
-    filevarattdef(fid,"centerCoords",AttCenterCoords)
-    filevarattdef(fid,"elementArea",AttElementArea)
+    filevarattdef(fid,"centerCoords",  AttCenterCoords)
+    filevarattdef(fid,"elementArea",   AttElementArea)
     
-    ; Preparing the file to store the values
+;---Prepare the file to store the values
     setfileoption(fid,"DefineMode",False)
     
-    ; Storing Node Coordinates
-    print("Storing Node Coordinates ...")
-    nodeCoords=new((/nodeCount,coordDim/),"double","No_FillValue")
+;---Store Node Coordinates
+    nodeCoords = new((/nodeCount,coordDim/),"double","No_FillValue")
     nodeCoords(:,0)=lon
     nodeCoords(:,1)=lat
     fid->nodeCoords=(/nodeCoords/)
     
-    ; Storing Element Connectivity
-    print("Storing Element Connectivity ...")
+;---Store Element Connectivity
     fid->elementConn=(/ElementVertices+1/)
     
-    ; Storing numElementConn
-    print("Storing numElementConn ...")
+;---Store numElementConn
     numElementConn=new((/elementCount/),"byte","No_FillValue")
     numElementConn=tobyte(3)
     fid->numElementConn=(/numElementConn/)
-    
 
-    ; Storing center of each element
-    ; But first calculating the centeroids
-    print("Storing center of each element ...")
-    centerCoords=new((/elementCount,coordDim/),"double","No_FillValue")
-    centerCoords(:,0)=dim_avg(reshape(lon(ndtooned(ElementVertices)),(/elementCount,3/)))
-    centerCoords(:,1)=dim_avg(reshape(lat(ndtooned(ElementVertices)),(/elementCount,3/)))
+;---Store center of each element, but first calculating the centeroids.
+    centerCoords      = new((/elementCount,coordDim/),"double","No_FillValue")
+    centerCoords(:,0) = dim_avg(reshape(lon(ndtooned(ElementVertices)), \
+                                            (/elementCount,3/)))
+    centerCoords(:,1) = dim_avg(reshape(lat(ndtooned(ElementVertices)), \
+                                            (/elementCount,3/)))
     fid->centerCoords=(/centerCoords/)
     
-    ; Storing element area
-    print("Storing element area ...")
-    d2r=atan(1)/45.0;
-    elementArea=new(elementCount,"double","No_FillValue")
-    elementalLat=new((/elementCount,3/),"double","No_FillValue")
-    elementalLon=new((/elementCount,3/),"double","No_FillValue")
-    elementalLat=reshape(lat(ndtooned(ElementVertices)),(/elementCount,3/))
-    elementalLon=reshape(lon(ndtooned(ElementVertices)),(/elementCount,3/))
-    elementArea=gc_tarea(elementalLat,elementalLon)
+;---Store element area
+    d2r = atan(1)/45.0;
+;;  elementArea  = new(elementCount,"double","No_FillValue")
+;; Redundant? Maybe needed to remove _FillValue?
+;;  elementalLat = new((/elementCount,3/),"double","No_FillValue")
+;;  elementalLon = new((/elementCount,3/),"double","No_FillValue")
+    elementalLat = todouble(reshape(lat(ndtooned(ElementVertices)),(/elementCount,3/)))
+    elementalLon = todouble(reshape(lon(ndtooned(ElementVertices)),(/elementCount,3/)))
+    elementArea  = todouble(gc_tarea(elementalLat,elementalLon))
     delete(elementalLat)
     delete(elementalLon)
-    print("Element Area: min:"+min(elementArea)+" max:"+max(elementArea))
+    if(debug) then
+      print("unstructured_to_esmf: Element Area: min:" + min(elementArea) + \
+                                               " max:" + max(elementArea))
+    end if
     fid->elementArea=(/elementArea/)
 
-    ; Storing the element Mask
-    print("Storing element Mask ...")
-    elementMask=dim_sum(reshape(NodeMask(ndtooned(ElementVertices)),(/elementCount,3/)))
-    elementMask=where(elementMask.eq.3,1,0)
-    fid->elementMask=(/elementMask/)
-    
-    return(0)
-end     ; of Unstructured2ESMF(...)
+;---Store the element Mask
+    elementMask = dim_sum(reshape(NodeMask(ndtooned(ElementVertices)), \
+                                  (/elementCount,3/)))
+    elementMask      =  where(elementMask.eq.3,1,0)
+    fid->elementMask = (/elementMask/)
+end     ; of unstructured_to_esmf(...)
 ;======================================================================
 ; This function receives a 2D curvilinear grid and mask and stores
 ; it in FName NetCDF file based on SCRIP standard.
@@ -489,83 +531,67 @@ end     ; of Unstructured2ESMF(...)
 ;     the corner points for the cells, these values are read from
 ;     CornerLat and CornerLon attribute of Opt.
 ;======================================================================
-undef("Curvilinear2SCRIP")
-function Curvilinear2SCRIP(FName[1]:string,FTitle[1]:string,lat2d[*][*]:numeric,lon2d[*][*]:numeric,mask2d[*][*]:integer, Opt[1]:logical)
+undef("curvilinear_to_scrip")
+procedure curvilinear_to_scrip(FName[1]:string,FTitle[1]:string, \
+                            lat2d[*][*]:numeric,lon2d[*][*]:numeric, \
+                            mask2d[*][*]:integer, Opt[1]:logical)
+local latlon_dims, nlat, nlon, fid, FileAtt, grid_siz, grid_corners, \
+grid_rank, FDimNames, FDimSizes, FDimUnlim, DummyAtt1, DummyAtt2, \
+CornerLat, CornerLon, grid_corner_lat, grid_corner_lon
 begin
     if (isbothvaratt_logical_true(Opt,"ForceUnstructured")) then
-        print("Can not use this function for unstructured grid.")
+        print("curvilinear_to_scrip: cannot use this function for unstructured grid.")
         return(1)
     end if
-    ; Checking if the file already exists
-    if (isfilepresent(FName)) then
-        if (.not.isbothvaratt_logical_true(Opt,"OverWrite")) then
-            print("The file '" + FName + "' already exists.")
-            return(1)
-        else
-            print("Removing an existing file ...")
-            if (isbothvaratt_logical_true(Opt,"ForceOverWrite")) then
-                system("rm -rf "+FName)
-            else
-                system("rm -rfi "+FName)
-            end if
-        end if
-    end if
+;---Check if the file already exists
+    check_for_file(FName,Opt)
+
+;---Do we need to create a large file?
     if (isbothvaratt_logical_true(Opt,"LargeFile")) then
       setfileoption("nc","Format","LargeFile") 
     end if
-    ; Getting the nlat and nlon
-    ; remember that nlat must be the first dimension
-    ; and the nlot the second dimension of both lat2d
-    ; and lon2d; in other word,
-    ; dimsizes(lat2d)=dimsizes(lon2d)=(/ nlat, nlon /)
-    if ( any(dimsizes(lat2d).ne.dimsizes(lon2d)) ) then
-        print("lat2d and lon2d dimension doesn't match.")
-        return(1)
-    end if
-    g_dim_sizes=dimsizes(lat2d)
-    if (dimsizes(g_dim_sizes).ne.2) then
-        print("Only a 2D logically rectangular grid is accepted by this function.")
-        return(1)
-    end if
-    nlat=g_dim_sizes(0)
-    nlon=g_dim_sizes(1)
 
-    ; Creating the file
-    print("Creating a new file ...")
-    fid=addfile(FName,"c")
+    if ( any(dimsizes(lat2d).ne.dimsizes(lon2d)) ) then
+        print("curvilinear_to_scrip: latitude and longitude must have the same number of elements.")
+        exit
+    end if
+
+    latlon_dims = dimsizes(lat2d)
+    nlat        = latlon_dims(0)
+    nlon        = latlon_dims(1)
+
+;---Create the file
+    fid = addfile(FName,"c")
     setfileoption(fid,"DefineMode",True)
 
-    ; Defining the file attributes
-    print("Setting file attributes ...")
-    FileAtt=True
-    FileAtt@title=FTitle
-    FileAtt@Conventions="SCRIP"
-    FileAtt@Createdby="ESMFRegridingTools.ncl"
-    FileAtt@date_created=systemfunc("date")
+;---Define the file attributes
+    FileAtt              = True
+    FileAtt@title        = FTitle
+    FileAtt@Conventions  = "SCRIP"
+    FileAtt@Createdby    = "ESMFRegridingTools.ncl"
+    FileAtt@date_created = systemfunc("date")
     fileattdef(fid,FileAtt)
     
-    ; Defining the SCRIP dimensions
-    print("Setting NetCDF dimensions ...")
-	grid_size = nlat*nlon   ; This is number of data points (grid nodes)
-	grid_corners = 4	
+;---Define the SCRIP dimensions
+    grid_size = nlat*nlon   ; This is number of data points (grid nodes)
+    grid_corners = 4	
     grid_rank = 2
 	
-	FDimNames=(/ "grid_size","grid_corners","grid_rank" /)
-	FDimSizes=(/ grid_size,grid_corners,grid_rank /)
-	FDimUnlim=(/ False,False,False /)
+    FDimNames=(/ "grid_size","grid_corners","grid_rank" /)
+    FDimSizes=(/ grid_size,grid_corners,grid_rank /)
+    FDimUnlim=(/ False,False,False /)
 	
-	filedimdef(fid,FDimNames,FDimSizes,FDimUnlim)
+    filedimdef(fid,FDimNames,FDimSizes,FDimUnlim)
 	
-	; Defining Variables
-	print("Defining the variables ...")
-	filevardef(fid,"grid_dims","integer","grid_rank")
+;---Define Variables
+    filevardef(fid,"grid_dims","integer","grid_rank")
     filevardef(fid,"grid_center_lat","double","grid_size")
     filevardef(fid,"grid_center_lon","double","grid_size")
     filevardef(fid,"grid_imask","integer","grid_size")
     filevardef(fid,"grid_corner_lat","double",(/ "grid_size", "grid_corners" /) )
     filevardef(fid,"grid_corner_lon","double",(/ "grid_size", "grid_corners" /) )
     
-    ; Defining the variables unit attribute
+;---Define the variables unit attribute
     DummyAtt1= 0
     DummyAtt1@units="degrees"
     DummyAtt2= 0
@@ -578,47 +604,40 @@ begin
     delete(DummyAtt1)
     delete(DummyAtt2)
     
-    ; Preparing the file to store the values
+;---Prepare the file to store the values
     setfileoption(fid,"DefineMode",False)
     
-    ; Storing Grid Dims
-    print("Storing grid dimensions ...")
-    fid->grid_dims=(/ nlon, nlat /)     ; Remember SCRIP is FORTRAN Code.
-                                        ; so (nlat,nlon) in NCL is equivalent to
+;---Storing Grid Dims
+    fid->grid_dims=(/ nlon, nlat /)     ; SCRIP is FORTRAN-based.
+                                        ; (nlat,nlon) in NCL is equivalent to
                                         ; (nlon,nlat) in FORTRAN
     
-	; Storing Cell Center Lat/Lon
-	print("Storing node coordinates ...")
-	fid->grid_center_lat=(/ ndtooned(lat2d) /)
-	fid->grid_center_lon=(/ ndtooned(lon2d) /)
+;---Store Cell Center Lat/Lon
+    fid->grid_center_lat=(/ ndtooned(lat2d) /)
+    fid->grid_center_lon=(/ ndtooned(lon2d) /)
 	
-	; Storing Cell Maskes
-	print("Storing the mask ...")
-	if (grid_size.ne.dimsizes(ndtooned(mask2d))) then
-	    print("Mask is not with appropriate sizes.")
-	    return(1)
-	else
-	    fid->grid_imask=(/ tointeger(ndtooned(mask2d)) /)
-	end if
+;---Store Cell Maskes
+    if (grid_size.ne.dimsizes(ndtooned(mask2d))) then
+        print("curvilinear_to_scrip: Mask array is not the appropriate size.")
+        exit
+    else
+        fid->grid_imask=(/ tointeger(ndtooned(mask2d)) /)
+    end if
 	
-    ; Storing the grid cell corners
-    print("Storing node corners ...")
-    ; But first computing them:
+;---Store the grid cell corners, but first compute them.
     if (isbothvaratt_logical_true(Opt,"ForcedCorners")) then
-        print("Corners are provided. Reading the information ...")
-        CornerLat=Opt@CornerLat
-        CornerLon=Opt@CornerLon
-        grid_corner_lat=reshape( CornerLat,(/ grid_size, grid_corners /))
-        grid_corner_lon=reshape( CornerLon,(/ grid_size, grid_corners /))
-	else
-        ; Now extracting the grid Cell Corners
-        print("Calculating the corner nodes ...")
-        grid_corner_lat=new( (/ grid_size, grid_corners /), typeof(lat2d) )
-        grid_corner_lon=new( (/ grid_size, grid_corners /), typeof(lon2d) )
-        findCorners(lat2d,lon2d,grid_corner_lat,grid_corner_lon)
+        CornerLat = Opt@CornerLat
+        CornerLon = Opt@CornerLon
+        grid_corner_lat = reshape( CornerLat,(/ grid_size, grid_corners /))
+        grid_corner_lon = reshape( CornerLon,(/ grid_size, grid_corners /))
+    else
+;---Extract the grid cell corners
+        grid_corner_lat = new( (/ grid_size, grid_corners /), typeof(lat2d) )
+        grid_corner_lon = new( (/ grid_size, grid_corners /), typeof(lon2d) )
+        find_SCRIP_corners(lat2d,lon2d,grid_corner_lat,grid_corner_lon)
     end if
    
-    ; Now storing the cell corners
+;---Store the cell corners
     if (isatt(grid_corner_lat,"_FillValue")) then
         delete(grid_corner_lat@_FillValue)
     end if
@@ -627,105 +646,97 @@ begin
     end if
     fid->grid_corner_lat=(/ todouble(grid_corner_lat) /)
     fid->grid_corner_lon=(/ todouble(grid_corner_lon) /)
-
-	; If the code made it here, it must return OK.
-    return(0)
-end     ; of Curvilinear2SCRIP(...)
+end     ; of curvilinear_to_scrip(...)
 
 ;======================================================================
 ; This function accept an array of latitudes and longitudes, creates
 ; a rectilinear grid based on the given input and then stores it as SCRIP File
-; This functions make use of Curvilinear2SCRIP(...)
+; This functions make use of curvilinear_to_scrip(...)
 ;======================================================================
-undef("Rectilinear2SCRIP")
-function Rectilinear2SCRIP(FName[1]:string,FTitle[1]:string,\
-                           lat[*]:numeric,lon[*]:numeric, Opt[1]:logical)
+undef("rectilinear_to_scrip")
+procedure rectilinear_to_scrip(FName[1]:string,FTitle[1]:string,\
+                               lat[*]:numeric,lon[*]:numeric, Opt[1]:logical)
 begin
-    if ( (dimsizes(dimsizes(lat)).ne.1).or.(dimsizes(dimsizes(lon)).ne.1) ) then
-        print("lat and lon must be a one dimensional array.")
-        return(1)
-    end if
-    nlat=dimsizes(lat)
-    nlon=dimsizes(lon)
+    nlat = dimsizes(lat)
+    nlon = dimsizes(lon)
     
-    ; generating the grid centers
-    print("Constructing the 2D grid based on the given coordinates ...")
-	grid_center_lat=todouble(conform_dims((/nlat, nlon/),lat,0))
-	grid_center_lon=todouble(conform_dims((/nlat, nlon/),lon,1))
+;---Conform the lat/lon to 2D arrays
+    grid_center_lat=todouble(conform_dims((/nlat, nlon/),lat,0))
+    grid_center_lon=todouble(conform_dims((/nlat, nlon/),lon,1))
 
-    ; Generating the mask
-    print("Assuming all nodes are participating ...")
-    print("Change the mask accordingly if needed!")
-    mask2d=new((/nlat,nlon/),"integer","No_FillValue")
-    mask2d=1
+;---Generate the mask
+    mask2d = new((/nlat,nlon/),"integer","No_FillValue")
+    mask2d = 1
     
-    ; now converting to SCRIP
-    Err=(Curvilinear2SCRIP(FName,FTitle,grid_center_lat,grid_center_lon,mask2d,Opt))
-
-    return(Err)
-end     ; of Rectilinear2SCRIP(...)
+;---Convert to SCRIP
+    curvilinear_to_scrip(FName,FTitle,grid_center_lat,grid_center_lon,\
+                         mask2d,Opt)
+end     ; of rectilinear_to_scrip
 
 ;======================================================================
-; This function Automatically retrieves the grid information from the file
-; and converts the grid to a SCRIP file.
-; The variable must have an attribute called coordinates which defines where
-; the coordinate information are stored.
+; This procedure automatically retrieves the grid information from the
+; file and converts the grid to a SCRIP file.
+;
+; The variable must have an attribute called coordinates which defines
+; where the coordinate information are stored.
 ;======================================================================
-undef("Auto2SCRIP")
-function Auto2SCRIP(srcFile[1]:string,VarName[1]:string,SCRIPFName[1]:string,FTitle[1]:string,Opt[1]:logical)
+undef("auto_to_scrip")
+procedure auto_to_scrip(srcFile[1]:string,VarName[1]:string, \
+                        SCRIPFName[1]:string,FTitle[1]:string,Opt[1]:logical)
 begin
-    print("Automatically recognizing the grid and converting to SCRIP standard...")
-    ; Opening the file if it exists
+;---Open the file if it exists
     if (.not.isfilepresent(srcFile)) then
-        print("Can not find "+srcFile+".")
-        return(1)
+        print("auto_to_script: cannot find " + srcFile + ".")
+        exit
     else
         fid=addfile(srcFile,"r")
     end if
     
-    ; Checking if the variable is present in the file
+;---Check if the variable is present in the file
     if (.not.isfilevar(fid,VarName)) then
-        print("The "+VarName+" variable does not exist.")
-        return(1)
+        print("auto_to_script: the "+VarName+" variable does not exist.")
+        exit
     else
         VarData=fid->$VarName$
     end if
     
-    ; Checking if the coordinates attribute is defined for the variable.
-    ; The coordinates can be defined using four methods
-    ; (1) having the coordinates stored in a separate variable, but the name of those
-    ;     variables are defined in the coordinates attribute for the variable.
-    ;     coordType="variable"
-    ; (2) the variable have an attribute called lat and lon
-    ;     coordType="lat/lan"
-    ; (3) the Variable have an attribute called lat2d and lon2d
-    ;     coordType="lat2d/lon2d"
-    ; (4) having a named dimension where its units attribute is has 
-    ;     either "north" or "east" in it
-    ; (5) having an attributes where its units attribute is set to either
-    ;     "north" or "east"
-    
+;
+; Check if the coordinates attribute is defined for the variable.
+; The coordinates can be defined using five methods:
+;
+; (1) having the coordinates stored in a separate variable, but the 
+;     name of those variables are defined in the coordinates 
+;     attribute for the variable.
+;     coordType="variable"
+; (2) the variable have an attribute called lat and lon
+;     coordType="lat/lan"
+; (3) the Variable have an attribute called lat2d and lon2d
+;     coordType="lat2d/lon2d"
+; (4) having a named dimension where its units attribute is has 
+;     either "north" or "east" in it
+; (5) having an attributes where its units attribute is set to either
+;     "north" or "east"
+;  
     coordType="unknown"
     if( all(iscoord(VarData,(/"lat","lon"/))) ) then
         coordType="lat/lon"
         LonDimName="lon"
         LatDimName="lat"
     else 
-        ; checking if the coordinate information can be found in the attributes.
+;---Check if the coordinate information can be found in the attributes.
         isLatFound=False
         isLonFound=False        
         attNames=getvaratts(VarData)
         NumAtt=dimsizes(attNames)
         do i=0,NumAtt-1
-            ; Checking if the coordinate attribute is set
+;---Check if the coordinate attribute is set
             if( isStrSubset(str_lower(attNames(i)),"coordinate") ) then
-                print("coordinate attribute found")
                 coordType="variable"
                 CoordAtt=VarData@$attNames(i)$
                 nCoords=str_fields_count(CoordAtt," ")
                 if (nCoords.lt.2) then
-                    print("At least two coordinates must be present")
-                    return(1)
+                    print("auto_to_script: at least two coordinates must be present")
+                    exit
                 else
                     VarNamesInCoordAtt=new(nCoords,"string","No_FillValue")
                     do j=0,nCoords-1
@@ -743,8 +754,8 @@ begin
                         LonVarName=VarNamesInCoordAtt(LonVarInd)
                     end if
                     if(.not.(isLonFound.and.isLatFound)) then
-                        print("Can not locate coordinates. Sorry can't help!")
-                        return(1)
+                        print("auto_to_script: cannot locate coordinates.")
+                        exit
                     end if
                 end if
             end if
@@ -786,7 +797,6 @@ begin
             do i=0,NumAtt-1
                 tmpAtt=VarData@$attNames(i)$
                 if(isatt(tmpAtt,"units")) then
-                    print("made it here")
                     tmpunits=tmpAtt@units
                     if(isStrSubset(tmpunits,"north")) then
                         isLatFound=True
@@ -803,110 +813,100 @@ begin
             end if 
         end if      ; end of checking if there is any attributes containing the coordinates.
         if(.not.(isLonFound.and.isLatFound)) then
-            print("Can not locate coordinates. Sorry can't help!")
-            return(1)
+            print("auto_to_script: cannot locate coordinates.")
+            exit
         end if
     end if
-    
 
-    ; getting the coordinate variable names and coordinate data
+;---Get the coordinate variable names and coordinate data
     if (coordType.eq."variable")    
         if(isfilevar(fid,LatVarName)) then
-            print("Retrieving latitude coordinates from "+LatVarName+" variable.")
             LatData=fid->$LatVarName$
         else
-            print("Can't read latitude information.")
-            return(1)
+            print("auto_to_script: can't read latitude information.")
+            exit
         end if
         if(isfilevar(fid,LonVarName)) then
-            print("Retrieving longitude coordinates from "+LonVarName+" variable.")
             LonData=fid->$LonVarName$
         else
-            print("Can't read longitude information.")
-            return(1)
+            print("auto_to_script: can't read longitude information.")
+            exit
         end if
 
     else if (coordType.eq."lat/lon") then
         nCoords=dimsizes(VarData)
-        print("Reading coordinate information from "+LonDimName+" and "+LatDimName+" dimensions...")
         LonData=VarData&$LonDimName$
         LatData=VarData&$LatDimName$
     else ; at this point it means coordType=="lat2d/lon2d"
-        print("Reading coordinate information from "+LonAttName+" and "+LatAttName+" Attributes...")
         LonData=VarData@$LonAttName$
         LatData=VarData@$LatAttName$
         if ((dimsizes(dimsizes(LonData)).ne.2).or.(dimsizes(dimsizes(LatData)))) then
             print((LonAttName+" and "+LatAttName+" must be 2D."))
-            return(1)
+            exit
         end if
     end if
     end if  ; end of getting coordinate variables names and data
             ; at this point lat/lon data is stored in LatData and LonData
         
     if (.not.all(dimsizes(LonData).eq.dimsizes(LatData))) then
-        print("latitude and longitude must have the same number of dimensions.")
-        return(1)
+        print("auto_to_scrip: latitude and longitude must have the same number of dimensions.")
+        exit
     end if
     
     CoordDim=dimsizes(dimsizes(LonData))
     if ((CoordDim.eq.1).and.(coordType.eq."lat/lon")) then
-        print("Rectilinear Coordinate found...")
         nlat=dimsizes(LatData)
         nlon=dimsizes(LonData)
         ; generating the grid centers
     	grid_center_lat=todouble(conform_dims((/nlat, nlon/),LatData,0))
 	    grid_center_lon=todouble(conform_dims((/nlat, nlon/),LonData,1))
     else if ((CoordDim.eq.2).and.((coordType.eq."lat2d/lon2d").or.(coordType.eq."variable"))) then
-        print("Curvilinear Grid is found...")
         grid_center_lat=todouble(LatData)
         grid_center_lon=todouble(LonData)
         delete(LatData)
         delete(LonData)
     else 
-        print("Can't help with recognizing the coordinates.")
-        return(1)
+        print("auto_to_scrip: Can't help with recognizing the coordinates.")
+        exit
     end if
     end if
     
     ; getting Mask
     if (isatt(Opt,"Mask2d")) then
-        print("Mask information is provided")
-        print("Retrieving mask data ...")
         mask2d=tointeger(Opt@Mask2d)
     else
-        print("No mask information. Not masking any nodes out")
         mask2d=new(dimsizes(grid_center_lat),"integer","No_FillValue")
         mask2d=1
     end if
 
-    Err=Curvilinear2SCRIP(SCRIPFName,FTitle,grid_center_lat,grid_center_lon,mask2d,Opt)
-    return(Err)    
-end     ; of Auto2SCRIP(...)
+    curvilinear_to_scrip(SCRIPFName,FTitle,grid_center_lat,\
+                         grid_center_lon,mask2d,Opt)
+end     ; of auto_to_scrip(...)
 
 ;======================================================================
 ; This procedure receives the latitude and longitude of the Lower Left and 
 ; the Upper Right corner of a rectangle and generates a regularly spaced cartesian
 ; grids based on the lat/lon coordinates. It stores the grid in a NetCDF file
 ; based on SCRIP standard.
-; This functions make use of Curvilinear2SCRIP(...)
+; This functions make use of curvilinear_to_scrip(...)
 ;======================================================================
 undef("GenBox_with_LLURCorner")
-function GenBox_with_LLURCorner(FName[1]:string,FTitle[1]:string,\
+procedure GenBox_with_LLURCorner(FName[1]:string,FTitle[1]:string,\
          LLCorner[2]:numeric,URCorner[2]:numeric,nlat_dlat[1]:numeric,\
          nlon_dlon[1]:numeric,Opt[1]:logical)
 begin
-    ; Remeber that the existence of the outfile is check in 
-    ; Curvilinear2SCRIP(...), which is called here. So, no need to
+    ; Remember that the existence of the outfile is check in 
+    ; curvilinear_to_scrip(...), which is called here. So, no need to
     ; recheck it.
     
     ; checking the LLCorner and URCorner variables.
     if ( (dimsizes(LLCorner).ne.2).or.(dimsizes(URCorner).ne.2) ) then
         print("LL/URCorner must be a vector with two elements.")
-        return(1)
+        exit
     end if
     if ( (abs(LLCorner(0)).gt.90).or.(abs(URCorner(0)).gt.90) ) then
         print("LL/URCorner must be follow (/lat, lon/) standard.")
-        return(1)
+        exit
     end if
 
 ;---Convert corners to double precision.
@@ -915,25 +915,25 @@ begin
 
     BoxDiag=URCornerD-LLCornerD
     if (Opt.and.(isatt(Opt,"Rotation"))) then
-        Rot=tofloat(Opt@Rotation)
-        if (Rot.ne.(0.0)) then
-            ; alliging the box diagonal to make box sides parallel/perpendicular
-            ; to equator.
-            if(Rotate2D(BoxDiag(0),BoxDiag(1),-1.0*Rot).ne.0) then
-                return(1)
-            end if
+        Rot = Opt@Rotation
+        if (Rot.ne.0.0) then
+;
+; Align the box diagonal to make box sides parallel/perpendicular
+; to equator.
+;
+            rotate_latlon(BoxDiag(0),BoxDiag(1),-1.0*Rot)
         end if
     else
         Rot=0.0;
     end if
         
-    if ( BoxDiag(0).le.(0.0) ) then
+    if ( BoxDiag(0).le.0.0 ) then
         print("The corner latitudes do not meet the criteria of a bounding box.")
-        return(1)
+        exit
     end if
-    if ( BoxDiag(1).le.(0.0) ) then
+    if ( BoxDiag(1).le.0.0 ) then
         print("The corner longitudes do not meet the criteria of a bounding box.")
-        return(1)
+        exit
     end if
         
     ; Generating the latitudes and longitudes
@@ -961,48 +961,42 @@ begin
 
     ; Rotating back the box, if needed
     if (Rot.ne.(0.0)) then
-        if (Rotate2D(grid_center_lat,grid_center_lon,Rot).ne.0) then
-            print("Cannot rotate the box.")
-            return(1)
-        end if    
+        rotate_latlon(grid_center_lat,grid_center_lon,Rot)
     end if
 
     ; Now that the rotation was successful translating it back.
     grid_center_lat=grid_center_lat+LLCornerD(0)
     grid_center_lon=grid_center_lon+LLCornerD(1)
-	Err=(Curvilinear2SCRIP(FName,FTitle,grid_center_lat,grid_center_lon,mask2d,Opt))
-    return(Err)
+    curvilinear_to_scrip(FName,FTitle,grid_center_lat,grid_center_lon,mask2d,Opt)
 end     ; of GenBox_with_LLURCorner(...)
 
 ;======================================================================
 ; This function generates a SCRIP file describing a uniform box
 ; based on a given boxcenter and width and height. How the box is 
 ; rotated can be controled via the options.
-; This functions make use of Curvilinear2SCRIP(...) and GenUniformLatLon2SCRIP(...)
+; This functions make use of curvilinear_to_scrip(...) and GenUniformLatLon2SCRIP(...)
 ;======================================================================
 undef("GenBox_with_Center_Dim")
-function GenBox_with_Center_Dim(FName[1]:string,FTitle[1]:string,\
-                                BoxCenter[2]:numeric,BoxDim[2]:numeric,\
-                                nlat_dlat[1]:numeric,nlon_dlon[1]:numeric,\
-                                Opt[1]:logical)
+procedure GenBox_with_Center_Dim(FName[1]:string,FTitle[1]:string,\
+                                 BoxCenter[2]:numeric,BoxDim[2]:numeric,\
+                                 nlat_dlat[1]:numeric,nlon_dlon[1]:numeric,\
+                                 Opt[1]:logical)
+local Height, Width, Rot
 begin
     Height=BoxDim(0)
     Width=BoxDim(1)
     if (Opt.and.(isatt(Opt,"Rotation"))) then
         Rot=tofloat(Opt@Rotation)
         if (Rot.ne.(0.0)) then
-            if (Rotate2D(Height,Width,Rot).ne.0) then
-                return(1)
-            end if
+            rotate_latlon(Height,Width,Rot)
         end if
     else
-        Rot=0.0;
+        Rot=0.0
     end if
-    URCorner=todouble(BoxCenter+0.5*(/Height, Width/))
-    LLCorner=todouble(BoxCenter-0.5*(/Height, Width/))
-    Err=GenBox_with_LLURCorner(FName,FTitle,LLCorner,URCorner,nlat_dlat,nlon_dlon,Opt)
+    URCorner = BoxCenter+0.5d*(/Height, Width/)
+    LLCorner = BoxCenter-0.5d*(/Height, Width/)
+    GenBox_with_LLURCorner(FName,FTitle,LLCorner,URCorner,nlat_dlat,nlon_dlon,Opt)
     
-    return(Err)
 end     ; of GenBox_with_Center_Dim(...)
 
 ;======================================================================
@@ -1142,23 +1136,7 @@ begin
   end if
 
 ;---Check if the file already exists
-  if (isfilepresent(weight)) then
-    if (isatt_logical_true(opt2,"OverWrite")) then
-      if(debug) then
-        print("esmf_remap_weights: the file '" + weight + "' already exists.")
-      end if
-      return(1)
-    else
-      if(debug) then
-        print("esmf_remap_weights: removing an existing file ...")
-      end if
-      if (isatt_logical_true(opt2,"ForceOverWrite")) then
-        system("rm -rf "+weight)
-      else
-        system("rm -rfi "+weight)
-      end if
-    end if
-  end if    
+  check_for_file(weight,opt2)
 
 ;---Build the command (First Pass - non-optional features)
   if (ismissing(getenv("ESMFBINDIR"))) then
