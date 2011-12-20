@@ -7,6 +7,17 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       20 Dec 2011:
+;            Combined GenBox_with_LLURCorner and GenBox_with_Center_Dim
+;            into one script called "cartesian_to_scrip".
+;
+;       18 Dec 2011: 
+;            Cleaned up Auto2SCRIP:
+;               - changed to procedure
+;               - renamed to auto_to_scrip
+;               - changed values for "coordType"
+;               - cleaned up "if-else-endif" statements
+;
 ;       18 Dec 2011: 
 ;            Cleaned up this script to:
 ;               - rename some functions and/or change to procedures
@@ -650,12 +661,13 @@ end     ; of curvilinear_to_scrip(...)
 
 ;======================================================================
 ; This function accept an array of latitudes and longitudes, creates
-; a rectilinear grid based on the given input and then stores it as SCRIP File
-; This functions make use of curvilinear_to_scrip(...)
+; a rectilinear grid based on the given input and then stores it as a
+; SCRIP file. This procedure calls curvilinear_to_scrip.
 ;======================================================================
 undef("rectilinear_to_scrip")
 procedure rectilinear_to_scrip(FName[1]:string,FTitle[1]:string,\
                                lat[*]:numeric,lon[*]:numeric, Opt[1]:logical)
+local nlat, nlon, grid_center_lat, grid_center_lon, mask2d
 begin
     nlat = dimsizes(lat)
     nlon = dimsizes(lon)
@@ -677,171 +689,193 @@ end     ; of rectilinear_to_scrip
 ; This procedure automatically retrieves the grid information from the
 ; file and converts the grid to a SCRIP file.
 ;
-; The variable must have an attribute called coordinates which defines
-; where the coordinate information are stored.
+; The variable must have one of the following:
+;   - an attribute called "coordinates" which defines
+;      where the coordinate information are stored.
+;   - 1D coordinate arrays called "lat" and "lon"
+;   - 1D coordinate arrays with units that contain "east" and "north"
+;   - attributes with units that contain "east" and "north"
 ;======================================================================
 undef("auto_to_scrip")
 procedure auto_to_scrip(srcFile[1]:string,VarName[1]:string, \
                         SCRIPFName[1]:string,FTitle[1]:string,Opt[1]:logical)
+local i, j, fid, nDim, nlat, nlon, VarData, coordType, mask2d, \
+  grid_center_lon, grid_center_lat, CoordDim, LonData, LatData, \
+  LonAttName, LatAttName, tmpAtt, LonDimName, LatDimName, tmpunits, \
+  tmpdimname, LonVarName, LatVarName, LonVarInd, LatVarInd, \
+  ResultIsLatorLon, VarNamesInCoordAtt, nCoords, CoordAtt, NumAtt, attNames, \
+  isLonFound, isLatFound
 begin
 ;---Open the file if it exists
     if (.not.isfilepresent(srcFile)) then
-        print("auto_to_script: cannot find " + srcFile + ".")
+        print("auto_to_scrip: cannot find " + srcFile + ".")
         exit
     else
-        fid=addfile(srcFile,"r")
     end if
+
+    fid = addfile(srcFile,"r")
     
 ;---Check if the variable is present in the file
     if (.not.isfilevar(fid,VarName)) then
-        print("auto_to_script: the "+VarName+" variable does not exist.")
+        print("auto_to_scrip: the '" + VarName + \
+              "' variable doesn't exist on the '" + srcFile + "' file.")
         exit
-    else
-        VarData=fid->$VarName$
     end if
+
+    VarData = fid->$VarName$
     
 ;
-; Check if the coordinates attribute is defined for the variable.
-; The coordinates can be defined using five methods:
+; Check if the lat/lon coordinates are defined for the variable.
+; The coordinates can be defined using one of the following methods:
 ;
-; (1) having the coordinates stored in a separate variable, but the 
-;     name of those variables are defined in the coordinates 
+; coordType = "coordinate":
+;     The variable has either:
+;      - coordinate arrays called "lat" and "lon".
+;      - coordinate arrays whose units attributes contain 
+;        "north" and "east"
+;
+; coordType = "variable":
+;     The coordinates are stored in a separate variable, with the 
+;     name of those variables defined in the "coordinates"
 ;     attribute for the variable.
-;     coordType="variable"
-; (2) the variable have an attribute called lat and lon
-;     coordType="lat/lan"
-; (3) the Variable have an attribute called lat2d and lon2d
-;     coordType="lat2d/lon2d"
-; (4) having a named dimension where its units attribute is has 
-;     either "north" or "east" in it
-; (5) having an attributes where its units attribute is set to either
-;     "north" or "east"
-;  
-    coordType="unknown"
+;
+; coordType = "attribute"
+;     The variable has either:
+;      - attributes called "lat2d" and "lon2d"
+;      - attributes whose units attributes contain "north" and "east".
+;
+    coordType = "unknown"
     if( all(iscoord(VarData,(/"lat","lon"/))) ) then
-        coordType="lat/lon"
-        LonDimName="lon"
-        LatDimName="lat"
-    else 
+        coordType  = "coordinate"
+        LonDimName = "lon"
+        LatDimName = "lat"
+    end if
+
 ;---Check if the coordinate information can be found in the attributes.
+    if (coordType.eq."unknown") then
         isLatFound=False
         isLonFound=False        
         attNames=getvaratts(VarData)
         NumAtt=dimsizes(attNames)
         do i=0,NumAtt-1
-;---Check if the coordinate attribute is set
+;---Check if the "coordinate" attribute is set
             if( isStrSubset(str_lower(attNames(i)),"coordinate") ) then
-                coordType="variable"
-                CoordAtt=VarData@$attNames(i)$
-                nCoords=str_fields_count(CoordAtt," ")
+                coordType = "variable"
+                CoordAtt  = VarData@$attNames(i)$
+                nCoords   = str_fields_count(CoordAtt," ")
                 if (nCoords.lt.2) then
-                    print("auto_to_script: at least two coordinates must be present")
+                    print("auto_to_scrip: at least two coordinates must be present")
                     exit
                 else
-                    VarNamesInCoordAtt=new(nCoords,"string","No_FillValue")
+                    VarNamesInCoordAtt = new(nCoords,"string","No_FillValue")
                     do j=0,nCoords-1
                         VarNamesInCoordAtt(j)=str_get_field(CoordAtt,j+1," ")                        
                     end do
-                    ResultIsLatorLon=isLatorLon(fid,VarNamesInCoordAtt)
-                    LatVarInd=ind(ResultIsLatorLon.eq."latitude")
-                    LonVarInd=ind(ResultIsLatorLon.eq."longitude")
+                    ResultIsLatorLon = isLatorLon(fid,VarNamesInCoordAtt)
+                    LatVarInd = ind(ResultIsLatorLon.eq."latitude")
+                    LonVarInd = ind(ResultIsLatorLon.eq."longitude")
                     if (.not.ismissing(LatVarInd)) then
-                        isLatFound=True
-                        LatVarName=VarNamesInCoordAtt(LatVarInd)
+                        isLatFound = True
+                        LatVarName = VarNamesInCoordAtt(LatVarInd)
                     end if
                     if (.not.ismissing(LonVarInd)) then
-                        isLonFound=True
-                        LonVarName=VarNamesInCoordAtt(LonVarInd)
+                        isLonFound = True
+                        LonVarName = VarNamesInCoordAtt(LonVarInd)
                     end if
                     if(.not.(isLonFound.and.isLatFound)) then
-                        print("auto_to_script: cannot locate coordinates.")
+                        print("auto_to_scrip: cannot locate lat/lon coordinates for ")
+                        print("               variable " + VarName + \
+                              " on file " + srcFile)
                         exit
                     end if
                 end if
             end if
         end do  ; end of checking if the coordinate information can be found in the attributes.
+    end if
         
-        ; checking if there is any coordinate dimension
-        if (coordType.eq."unknown")
-            isLatFound=False
-            isLonFound=False  
-            nDim=dimsizes(dimsizes(VarData))
-            do i=0,nDim-1
-                if(isdimnamed(VarData,i)) then
-                    tmpDimName=VarData!i
-                    if (iscoord(VarData,tmpDimName)) then
-                        if(isatt(VarData&$tmpDimName$,"units")) then
-                            tmpunits=VarData&$tmpDimName$@units
-                            if(isStrSubset(tmpunits,"north")) then
-                                isLatFound=True
-                                LatDimName=tmpDimName
-                            end if
-                            if(isStrSubset(tmpunits,"east")) then
-                                isLonFound=True
-                                LonDimName=tmpDimName
-                            end if
+;---Check if there is any coordinate dimension
+    if (coordType.eq."unknown") then
+        isLatFound = False
+        isLonFound = False  
+        nDim = dimsizes(dimsizes(VarData))
+        do i=0,nDim-1
+            if(isdimnamed(VarData,i)) then
+                tmpdimname = VarData!i
+                if (iscoord(VarData,tmpdimname)) then
+                    if(isatt(VarData&$tmpdimname$,"units")) then
+                        tmpunits = VarData&$tmpdimname$@units
+                        if(isStrSubset(tmpunits,"north")) then
+                            isLatFound = True
+                            LatDimName = tmpdimname
+                        end if
+                        if(isStrSubset(tmpunits,"east")) then
+                            isLonFound = True
+                            LonDimName = tmpdimname
                         end if
                     end if
                 end if
-            end do
-            if(isLonFound.and.isLatFound) then
-                coordType="lat/lon"
-            end if            
-        end if      ; end of checking if there is any coordinate dimension
-        
-        ; checking if there is any attributes containing the coordinates.
-        ; it won't work if the attributes are stored as a 1D array.
-        if (coordType.eq."unknown") 
-            isLatFound=False
-            isLonFound=False  
-            do i=0,NumAtt-1
-                tmpAtt=VarData@$attNames(i)$
-                if(isatt(tmpAtt,"units")) then
-                    tmpunits=tmpAtt@units
-                    if(isStrSubset(tmpunits,"north")) then
-                        isLatFound=True
-                        LatAttName=attNames(i)
-                    end if
-                    if(isStrSubset(tmpunits,"east")) then
-                        isLonFound=True
-                        LonAttName=attNames(i)
-                    end if                
+            end if
+        end do
+        if(isLonFound.and.isLatFound) then
+            coordType = "coordinate"
+        end if            
+    end if      ; end of checking if there is any coordinate dimension
+;
+; Check if there is any attributes containing the coordinates.
+; It won't work if the attributes are stored as a 1D array.
+;
+    if (coordType.eq."unknown") then
+        isLatFound = False
+        isLonFound = False  
+        do i=0,NumAtt-1
+            tmpAtt = VarData@$attNames(i)$
+            if(isatt(tmpAtt,"units")) then
+                tmpunits = tmpAtt@units
+                if(isStrSubset(tmpunits,"north")) then
+                    isLatFound = True
+                    LatAttName = attNames(i)
                 end if
-            end do
-            if(isLonFound.and.isLatFound) then
-                coordType="lat2d/lon2d"
-            end if 
-        end if      ; end of checking if there is any attributes containing the coordinates.
-        if(.not.(isLonFound.and.isLatFound)) then
-            print("auto_to_script: cannot locate coordinates.")
-            exit
-        end if
+                if(isStrSubset(tmpunits,"east")) then
+                    isLonFound = True
+                    LonAttName = attNames(i)
+                end if                
+            end if
+        end do
+        if(isLonFound.and.isLatFound) then
+            coordType = "attribute"
+        end if 
+    end if      ; end of checking if there is any attributes containing the coordinates.
+    if(.not.(isLonFound.and.isLatFound)) then
+        print("auto_to_scrip: cannot locate lat/lon coordinates for ")
+        print("               variable " + VarName + " on file " + srcFile)
+        exit
     end if
 
 ;---Get the coordinate variable names and coordinate data
-    if (coordType.eq."variable")    
+    if (coordType.eq."variable") then
         if(isfilevar(fid,LatVarName)) then
-            LatData=fid->$LatVarName$
+            LatData = fid->$LatVarName$
         else
-            print("auto_to_script: can't read latitude information.")
+            print("auto_to_scrip: can't read latitude information.")
             exit
         end if
         if(isfilevar(fid,LonVarName)) then
-            LonData=fid->$LonVarName$
+            LonData = fid->$LonVarName$
         else
-            print("auto_to_script: can't read longitude information.")
+            print("auto_to_scrip: can't read longitude information.")
             exit
         end if
-
-    else if (coordType.eq."lat/lon") then
-        nCoords=dimsizes(VarData)
-        LonData=VarData&$LonDimName$
-        LatData=VarData&$LatDimName$
-    else ; at this point it means coordType=="lat2d/lon2d"
-        LonData=VarData@$LonAttName$
-        LatData=VarData@$LatAttName$
-        if ((dimsizes(dimsizes(LonData)).ne.2).or.(dimsizes(dimsizes(LatData)))) then
-            print((LonAttName+" and "+LatAttName+" must be 2D."))
+    else if (coordType.eq."coordinate") then
+        nCoords = dimsizes(VarData)
+        LonData = VarData&$LonDimName$
+        LatData = VarData&$LatDimName$
+    else ; coordType.eq."attribute"
+        LonData = VarData@$LonAttName$
+        LatData = VarData@$LatAttName$
+        if ((dimsizes(dimsizes(LonData)).ne.2).or.\
+            (dimsizes(dimsizes(LatData)))) then
+            print("auto_to_scrip: " + LonAttName + " and " + \
+                                      LatAttName + " must be 2D.")
             exit
         end if
     end if
@@ -853,16 +887,17 @@ begin
         exit
     end if
     
-    CoordDim=dimsizes(dimsizes(LonData))
-    if ((CoordDim.eq.1).and.(coordType.eq."lat/lon")) then
-        nlat=dimsizes(LatData)
-        nlon=dimsizes(LonData)
-        ; generating the grid centers
-    	grid_center_lat=todouble(conform_dims((/nlat, nlon/),LatData,0))
-	    grid_center_lon=todouble(conform_dims((/nlat, nlon/),LonData,1))
-    else if ((CoordDim.eq.2).and.((coordType.eq."lat2d/lon2d").or.(coordType.eq."variable"))) then
-        grid_center_lat=todouble(LatData)
-        grid_center_lon=todouble(LonData)
+    CoordDim = dimsizes(dimsizes(LonData))
+    if ((CoordDim.eq.1).and.(coordType.eq."coordinate")) then
+        nlat = dimsizes(LatData)
+        nlon = dimsizes(LonData)
+;---Generate the grid centers
+    	grid_center_lat = conform_dims((/nlat, nlon/),LatData,0)
+        grid_center_lon = conform_dims((/nlat, nlon/),LonData,1)
+    else if ((CoordDim.eq.2).and.((coordType.eq."attribute").or. \
+                                  (coordType.eq."variable"))) then
+        grid_center_lat = LatData
+        grid_center_lon = LonData
         delete(LatData)
         delete(LonData)
     else 
@@ -871,49 +906,86 @@ begin
     end if
     end if
     
-    ; getting Mask
+;---Get mask
     if (isatt(Opt,"Mask2d")) then
-        mask2d=tointeger(Opt@Mask2d)
+        mask2d = tointeger(Opt@Mask2d)
     else
-        mask2d=new(dimsizes(grid_center_lat),"integer","No_FillValue")
-        mask2d=1
+        mask2d = new(dimsizes(grid_center_lat),"integer","No_FillValue")
+        mask2d = 1
     end if
 
     curvilinear_to_scrip(SCRIPFName,FTitle,grid_center_lat,\
                          grid_center_lon,mask2d,Opt)
-end     ; of auto_to_scrip(...)
+end     ; of auto_to_scrip
 
 ;======================================================================
-; This procedure receives the latitude and longitude of the Lower Left and 
-; the Upper Right corner of a rectangle and generates a regularly spaced cartesian
-; grids based on the lat/lon coordinates. It stores the grid in a NetCDF file
-; based on SCRIP standard.
-; This functions make use of curvilinear_to_scrip(...)
+; This procedure generates a regularly-spaced cartesian grid based on 
+; either input corners of a lat/lon box, or a box center and the width
+; and height of the box, and the spacing or the number of values.
+;
+; Recognized attributes for "Opt":
+;   BoxCenter - used in conjunction with BoxWidth and BoxHeight
+;   BoxWidth
+;   BoxHeight
+;
+;   LLCorner  - defaults to (-90,-180)
+;   URCorner  - defaults to ( 90, 180)
+;
+;   Rotation  - rotation angle
+;   isSpacing - whether nlat_dlat and nlon_dlon represent lat/lon
+;               spacing or number of values (the default)
+; It stores the grid in a NetCDF file based on SCRIP standard.
+;
+; This procedure calls curvilinear_to_scrip.
 ;======================================================================
-undef("GenBox_with_LLURCorner")
-procedure GenBox_with_LLURCorner(FName[1]:string,FTitle[1]:string,\
-         LLCorner[2]:numeric,URCorner[2]:numeric,nlat_dlat[1]:numeric,\
-         nlon_dlon[1]:numeric,Opt[1]:logical)
+undef("cartesian_to_scrip")
+procedure cartesian_to_scrip(FName[1]:string,FTitle[1]:string,\
+                             nlat_dlat[1]:numeric,nlon_dlon[1]:numeric,\
+                             Opt[1]:logical)
+local BoxDiag, Rot, nlat, nlon, lat, lon, mask2d, height, width, \
+      grid_center_lat, grid_center_lon
 begin
-    ; Remember that the existence of the outfile is check in 
-    ; curvilinear_to_scrip(...), which is called here. So, no need to
-    ; recheck it.
-    
-    ; checking the LLCorner and URCorner variables.
-    if ( (dimsizes(LLCorner).ne.2).or.(dimsizes(URCorner).ne.2) ) then
-        print("LL/URCorner must be a vector with two elements.")
-        exit
+;---Check for attributes
+    if (Opt.and.(isatt(Opt,"Rotation"))) then
+        Rot = Opt@Rotation
+    else
+        Rot = 0.0
     end if
+
+    if (Opt.and.isatt(Opt,"BoxHeight").and.isatt(Opt,"BoxWidth").and.\
+                isatt(Opt,"BoxCenter")) then
+        height = Opt@BoxHeight
+        width  = Opt@BoxWidth
+        if (Rot.ne.0.0) then
+            rotate_latlon(Height,Width,Rot)
+        end if
+        URCorner = Opt@BoxCenter+0.5d*(/height, width/)
+        LLCorner = Opt@BoxCenter-0.5d*(/height, width/)
+    end if
+
+    if(.not.isvar("LLCorner")) then
+        if(isatt(Opt,"LLCorner")) then
+            LLCorner = Opt@LLCorner
+        else
+            LLCorner = (/-90,-180/)
+        end if
+    end if
+
+    if(.not.isvar("URCorner").and.isatt(Opt,"URCorner")) then
+        if(isatt(Opt,"URCorner")) then
+            URCorner = Opt@URCorner
+        else
+            URCorner = (/90,180/)
+        end if
+    end if
+
+;---Check the LLCorner and URCorner variables.
     if ( (abs(LLCorner(0)).gt.90).or.(abs(URCorner(0)).gt.90) ) then
-        print("LL/URCorner must be follow (/lat, lon/) standard.")
+        print("cartesian_to_scrip: lat corners must be within -90 to 90")
         exit
     end if
 
-;---Convert corners to double precision.
-   LLCornerD = todouble(LLCorner)
-   URCornerD = todouble(URCorner)
-
-    BoxDiag=URCornerD-LLCornerD
+    BoxDiag = URCorner-LLCorner
     if (Opt.and.(isatt(Opt,"Rotation"))) then
         Rot = Opt@Rotation
         if (Rot.ne.0.0) then
@@ -924,80 +996,52 @@ begin
             rotate_latlon(BoxDiag(0),BoxDiag(1),-1.0*Rot)
         end if
     else
-        Rot=0.0;
+        Rot = 0.0
     end if
         
     if ( BoxDiag(0).le.0.0 ) then
-        print("The corner latitudes do not meet the criteria of a bounding box.")
+        print("cartesian_to_scrip: The corner latitudes do not meet the criteria of a bounding box.")
         exit
     end if
     if ( BoxDiag(1).le.0.0 ) then
-        print("The corner longitudes do not meet the criteria of a bounding box.")
+        print("cartesian_to_scrip: The corner longitudes do not meet the criteria of a bounding box.")
         exit
     end if
         
-    ; Generating the latitudes and longitudes
+;---Generate the latitudes and longitudes
     if ( isbothvaratt_logical_true(Opt,"isSpacing") ) then
         if (Rot.ne.0.0) then
-            print("The box is rotated. Spacing may be different than what you meant.")
+            print("cartesian_to_scrip: The box is rotated. Spacing may be different than what you meant.")
         end if
-        nlat=tointeger(BoxDiag(0)/nlat_dlat+1)
-        nlon=tointeger(BoxDiag(1)/nlon_dlon+1)
+        nlat = tointeger(BoxDiag(0)/nlat_dlat+1)
+        nlon = tointeger(BoxDiag(1)/nlon_dlon+1)
     else
-        nlat=nlat_dlat
-        nlon=nlon_dlon
+        nlat = nlat_dlat
+        nlon = nlon_dlon
     end if
 
-    lat=fspan(0.0,BoxDiag(0),nlat)
-    lon=fspan(0.0,BoxDiag(1),nlon)
+    lat = fspan(0.0,BoxDiag(0),nlat)
+    lon = fspan(0.0,BoxDiag(1),nlon)
 
-	; Generating the Cell Center Lat/Lon
-	print("Calculating the coordinates of the inner nodes ...")
-	grid_center_lat=todouble(conform_dims((/nlat, nlon/),lat,0))
-	grid_center_lon=todouble(conform_dims((/nlat, nlon/),lon,1))
+;---Generate the cell center Lat/Lon
+    grid_center_lat = conform_dims((/nlat, nlon/),lat,0)
+    grid_center_lon = conform_dims((/nlat, nlon/),lon,1)
 	
-	mask2d=tointeger(new((/nlat,nlon/),"integer","No_FillValue"))
-	mask2d=1
+    mask2d = new((/nlat,nlon/),"integer","No_FillValue")
+    mask2d = 1
 
-    ; Rotating back the box, if needed
+;---Rotate back the box, if needed.
     if (Rot.ne.(0.0)) then
         rotate_latlon(grid_center_lat,grid_center_lon,Rot)
     end if
 
-    ; Now that the rotation was successful translating it back.
-    grid_center_lat=grid_center_lat+LLCornerD(0)
-    grid_center_lon=grid_center_lon+LLCornerD(1)
-    curvilinear_to_scrip(FName,FTitle,grid_center_lat,grid_center_lon,mask2d,Opt)
-end     ; of GenBox_with_LLURCorner(...)
+;---Now that the rotation was successful translating it back.
+    grid_center_lat = grid_center_lat + LLCorner(0)
+    grid_center_lon = grid_center_lon + LLCorner(1)
 
-;======================================================================
-; This function generates a SCRIP file describing a uniform box
-; based on a given boxcenter and width and height. How the box is 
-; rotated can be controled via the options.
-; This functions make use of curvilinear_to_scrip(...) and GenUniformLatLon2SCRIP(...)
-;======================================================================
-undef("GenBox_with_Center_Dim")
-procedure GenBox_with_Center_Dim(FName[1]:string,FTitle[1]:string,\
-                                 BoxCenter[2]:numeric,BoxDim[2]:numeric,\
-                                 nlat_dlat[1]:numeric,nlon_dlon[1]:numeric,\
-                                 Opt[1]:logical)
-local Height, Width, Rot
-begin
-    Height=BoxDim(0)
-    Width=BoxDim(1)
-    if (Opt.and.(isatt(Opt,"Rotation"))) then
-        Rot=tofloat(Opt@Rotation)
-        if (Rot.ne.(0.0)) then
-            rotate_latlon(Height,Width,Rot)
-        end if
-    else
-        Rot=0.0
-    end if
-    URCorner = BoxCenter+0.5d*(/Height, Width/)
-    LLCorner = BoxCenter-0.5d*(/Height, Width/)
-    GenBox_with_LLURCorner(FName,FTitle,LLCorner,URCorner,nlat_dlat,nlon_dlon,Opt)
-    
-end     ; of GenBox_with_Center_Dim(...)
+    curvilinear_to_scrip(FName,FTitle,grid_center_lat, \
+                                      grid_center_lon,mask2d,Opt)
+end     ; of cartesian_to_scrip(...)
 
 ;======================================================================
 ; Checks if the required dimensions in the SCRIP file are present
