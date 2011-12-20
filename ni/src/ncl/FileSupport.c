@@ -2789,7 +2789,41 @@ int _NclFileReadCompressionLevel(NclFile thefile)
 	}
 
 	NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-		"_NclFileReadChunkSizes: Unknown Class <%s>\n", class_name));
+		"_NclFileReadCompressionLevel: Unknown Class <%s>\n", class_name));
 	return (0);
+}
+
+NclQuark _NclFileReadVersion(NclFile thefile)
+{
+	NclQuark version = NrmStringToQuark("unknown");
+	char *class_name;
+
+	if(thefile == NULL)
+	{
+		return version;
+	}
+
+	class_name = thefile->obj.class_ptr->obj_class.class_name;
+
+	if(0 == strcmp("NclNewFileClass", class_name))
+	{
+		NclNewFile newfile = (NclNewFile) thefile;
+		version = newfile->newfile.grpnode->kind;
+	}
+	else
+	{
+		if(thefile->file.file_ext_q == NrmStringToQuark("nc"))
+		{
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"_NclFileReadVersion: add <setfileoption(\"nc\", \"usenewhlfs\", True)> before open a NetCDF file\n\t\t\tto use new-file structure to get the version/kind info.\n"));
+		}
+		else
+		{
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"_NclFileReadVersion: Unknown Class <%s>\n", class_name));
+		}
+	}
+
+	return version;
 }
 

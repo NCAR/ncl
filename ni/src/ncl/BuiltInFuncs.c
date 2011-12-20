@@ -20842,11 +20842,50 @@ NhlErrorTypes _NclIGetFileCompressionLevel(void)
     else
     {
         NHLPERROR((NhlWARNING, NhlEUNKNOWN,
-              "getfilechunksizes: undefined file variable or file has no compression"));
+              "getfilecompressionlevel: undefined file variable or file has no compression"));
     }
 #endif
     NclReturnValue((void *)(&compressionlevel), 1, &ns, NULL, return_type, 1);
 	
+    return NhlWARNING;
+}
+
+NhlErrorTypes _NclIGetFileVersion(void)
+{
+    /* file variables */
+    NclFile f;
+    int *fid;
+
+    /* chunk dimensions */
+    ng_size_t ns = 1;
+    NclQuark version = NrmStringToQuark("unknown");
+    NclBasicDataTypes return_type = NCL_string;
+
+    NhlErrorTypes ret;
+    
+    /* get file information */
+    fid = (int *) NclGetArgValue(
+                    0,
+                    1,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    0);
+    f = (NclFile) _NclGetObj((int) *fid);
+
+    if (f != NULL)
+    {
+	version = _NclFileReadVersion(f);
+
+	ret = NclReturnValue((void *)(&version), 1, &ns, NULL, return_type, 1);
+	return ret;
+    }
+
+    NHLPERROR((NhlWARNING, NhlEUNKNOWN,
+          "getfileversion: undefined file variable or file version unknown"));
+    NclReturnValue((void *)(&version), 1, &ns, NULL, return_type, 1);
     return NhlWARNING;
 }
 

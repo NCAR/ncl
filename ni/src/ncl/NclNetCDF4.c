@@ -445,7 +445,7 @@ static void *NC4CreateFile(void *rootgrp,NclQuark path)
     else
 #endif
     {
-        mode = (NC_NOCLOBBER|NC_NETCDF4);
+        mode = NC_NETCDF4;
         format = 4;
     }
 
@@ -2423,6 +2423,25 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
     }
 
     nc_inq_format(fid,&(grpnode->format));
+
+    switch(grpnode->format)
+    {
+          case NC_FORMAT_NETCDF4:
+               grpnode->kind = NrmStringToQuark("NETCDF4");
+               break;
+          case NC_FORMAT_NETCDF4_CLASSIC:
+               grpnode->kind = NrmStringToQuark("NETCDF4 CLASSIC");
+               break;
+          case NC_FORMAT_64BIT:
+               grpnode->kind = NrmStringToQuark("64BIT OFFSET");
+               break;
+          case NC_FORMAT_CLASSIC:
+               grpnode->kind = NrmStringToQuark("CLASSIC");
+               break;
+          default:
+               grpnode->kind = NrmStringToQuark("UNKNOWN");
+               break;
+    }
 
   /*Are there any user defined types?*/
     nc_inq_typeids(fid, &ntypes, NULL);

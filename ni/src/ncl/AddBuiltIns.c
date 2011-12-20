@@ -83,6 +83,8 @@ void
 extern NhlErrorTypes _NclIGetFileChunkSizes(void);
 extern NhlErrorTypes _NclIGetFileCompressionLevel(void);
 
+extern NhlErrorTypes _NclIGetFileVersion(void);
+
 extern NhlErrorTypes    _NclIGetFileDimsizes(
 # if    NhlNeedProto
 void
@@ -2262,6 +2264,12 @@ void _NclAddBuiltIns
 	dimsizes[0] = 1;
 	SetArgTemplate(args, nargs, "file", 0, NclANY);  nargs++;
 	NclRegisterFunc(_NclIGetFileCompressionLevel, args, "getfilecompressionlevel", nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	dimsizes[0] = 1;
+	SetArgTemplate(args, nargs, "file", 0, NclANY);  nargs++;
+	NclRegisterFunc(_NclIGetFileVersion, args, "getfileversion", nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
