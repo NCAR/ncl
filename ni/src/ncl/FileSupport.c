@@ -2814,8 +2814,13 @@ NclQuark _NclFileReadVersion(NclFile thefile)
 	{
 		if(thefile->file.file_ext_q == NrmStringToQuark("nc"))
 		{
-			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				"_NclFileReadVersion: add <setfileoption(\"nc\", \"usenewhlfs\", True)> before open a NetCDF file\n\t\t\tto use new-file structure to get the version/kind info.\n"));
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+				"_NclFileReadVersion: \n%s%s%s%s%s\n",
+				"\t\t\t add line: <setfileoption(\"nc\", \"usenewhlfs\", True)>\n",
+				"\t\t\t before open a NetCDF file(in your script)\n",
+				"\t\t\t or add '-f' option to run ncl\n",
+				"\t\t\t to use the new-file-structure\n",
+				"\t\t\t to get the version/kind info.\n"));
 		}
 		else
 		{
