@@ -616,7 +616,8 @@ NhlErrorTypes _Nclstr_split_csv(void)
     else
     {
         int len_delim = strlen(tmp_delim);
-        int len_str = strlen((char *) NrmQuarkToString(strs[0]));
+        int len_str = 1 + strlen((char *) NrmQuarkToString(strs[0]));
+        int max_str_len = len_str;
         int cur_pos = 0;
         char *cur_str = NULL;
         char *new_str = NULL;
@@ -628,13 +629,10 @@ NhlErrorTypes _Nclstr_split_csv(void)
         ndim_strs ++;
         max_fields = 1;
 
-        if(len_str < strlen((char *) NrmQuarkToString(strs[0])))
-            len_str = strlen((char *) NrmQuarkToString(strs[0]));
-
         if(NULL == tmp_str)
-            tmp_str = (char *) NclCalloc(2 + len_str, sizeof(char));
+            tmp_str = (char *) NclCalloc(max_str_len, sizeof(char));
         else
-            tmp_str = (char *) NclRealloc(tmp_str, (2 + len_str) * sizeof(char));
+            tmp_str = (char *) NclRealloc(tmp_str, max_str_len * sizeof(char));
         if (! tmp_str)
         {
             NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -683,11 +681,6 @@ NhlErrorTypes _Nclstr_split_csv(void)
             if((0 == strncmp(cur_str, tmp_delim, len_delim)) &&
                (! in_sq) && (! in_dq))
             {
-              /*
-               *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-               *fprintf(stderr, "\tcur_pos = %d\n\n", cur_pos);
-               */
-
                 if(cur_pos)
                 {
                     strncpy(prt_str, new_str, cur_pos);
@@ -718,24 +711,11 @@ NhlErrorTypes _Nclstr_split_csv(void)
             }
         }
 
-      /*
-       *if(strlen(new_str))
-       *{
-       *    strcpy(prt_str, new_str);
-       *    fprintf(stderr, "\tnew string %d: <%s>\n", num_fields, prt_str);
-       *}
-       *else
-       *{
-       *    fprintf(stderr, "\tnew string %d is a missing value.\n", num_fields);
-       *}
-       */
-
         num_fields ++;
 
         max_fields = num_fields;
 
 loop_through_strings:
-
         dimsz_strs[ndim_strs - 1] = max_fields;
 
         total_out_strs = total_in_strs * max_fields;
@@ -750,13 +730,19 @@ loop_through_strings:
             return NhlFATAL;
         }
 
+        for(n = 0; n < total_out_strs; n++)
+        {
+            return_strs[n] = ret_missing.stringval;
+        }
+
         for(i = 0; i < total_in_strs; i++)
         {
-            while(len_str < strlen((char *) NrmQuarkToString(strs[i])))
+            len_str = 1 + strlen((char *) NrmQuarkToString(strs[i]));
+            while(max_str_len < len_str)
             {
-                len_str *= 2;
+                max_str_len *= 2;
 
-                tmp_str = (char *) NclRealloc(tmp_str, (2 + len_str) * sizeof(char));
+                tmp_str = (char *) NclRealloc(tmp_str, max_str_len * sizeof(char));
                 if (! tmp_str)
                 {
                     NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -765,6 +751,10 @@ loop_through_strings:
             }
 
             strcpy(tmp_str, (char *) NrmQuarkToString(strs[i]));
+
+          /*
+           *fprintf(stderr, "Input string %d: <%s>\n", i, tmp_str);
+           */
 
             cur_str = tmp_str;
             new_str = tmp_str;
@@ -808,19 +798,17 @@ loop_through_strings:
                         {
                             return_strs[m] = NrmStringToQuark(prt_str);
                           /*
-                           *fprintf(stderr, "\tnew string %d: <%s>\n", num_fields, prt_str);
+                           *fprintf(stderr, "\tnew string %d: <%s>\n", m, prt_str);
                            */
                         }
                         else
                         {
                             has_missing_ret = 1;
-                            return_strs[m] = ret_missing.stringval;
                         }
                     }
                     else
                     {
                         has_missing_ret = 1;
-                        return_strs[m] = ret_missing.stringval;
                     }
 
                     m ++;
@@ -829,7 +817,8 @@ loop_through_strings:
 
                     if(max_fields < num_fields)
                     {
-                        m = 0;
+                        max_fields = num_fields + 1;
+                        goto loop_through_strings;
                     }
 
                     new_str = cur_str + len_delim;
@@ -845,30 +834,18 @@ loop_through_strings:
                 }
             }
 
-            if(max_fields < num_fields)
-            {
-                max_fields = num_fields + 1;
-                goto loop_through_strings;
-            }
-
             if(strlen(new_str))
             {
                 strcpy(prt_str, new_str);
                 return_strs[m] = NrmStringToQuark(prt_str);
               /*
-               *fprintf(stderr, "\tnew string %d: <%s>\n", num_fields, prt_str);
+               *fprintf(stderr, "\t\tnew string %d: <%s>\n", m, new_str);
+               *fprintf(stderr, "\t\tcur string %d: <%s>\n", cur_pos, cur_str);
                */
             }
             else
             {
-                return_strs[m] = ret_missing.stringval;
                 has_missing_ret = 1;
-            }
-
-            for(n = num_fields; n < max_fields; n++)
-            {
-                m ++;
-                return_strs[m] = ret_missing.stringval;
             }
         }
 
