@@ -835,14 +835,14 @@ NhlErrorTypes _NclBuildListVar
 				(Ncl_List | Ncl_MultiDVallistData | Ncl_ListVar | Ncl_Typelist),id,NULL,
 				ndims,dim_sizes,TEMPORARY,NULL);
 
-	for(i = n_items - 1; i > -1; i--)
+	for(i = 0; i < n_items; i++)
 	{
-/*
-		data_ptr = _NclPeek(i);
-		ListPush((NclObj)thelist, (NclObj)(data_ptr->u.data_obj));
-*/
+              /*
+	       *data_ptr = _NclPeek(i);
+	       *ListPush((NclObj)thelist, (NclObj)(data_ptr->u.data_obj));
+              */
 		data = _NclPop();
-		ListPush((NclObj)thelist, (NclObj)(data.u.data_obj)); 
+		Append2List((NclObj)thelist, (NclObj)(data.u.data_obj)); 
 	}
 
 	_NclPlaceReturn(*result);
