@@ -4605,12 +4605,10 @@ void   (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
 			else {
 				xtmp = rtod * atan2(*yinp,*xinp);
 			}
-#if 0
 			if (xtmp < Cnp->xlb)
 				xtmp += 360.0;
 			if (xtmp > Cnp->xub) 
 				xtmp -= 360.0;
-#endif
 			OverlayMapXY(&Cnl->trans,&xtmp,&ytmp,xotp,yotp);
 		}
 		else

@@ -1216,14 +1216,15 @@ static NhlErrorTypes TmCompcToData
 	NhlTriMeshTransObjLayerPart *tmp = &iinstance->tmtrans;
 	int i;
 
+	/* 
+	 * this code assumes that the X coordinates have been put into the correct cyclic period prior to this call
+         */
 	*status = 0;
 	for(i = 0; i< n ; i++) {
 		if(((xmissing != NULL)&&(*xmissing == x[i]))
 			||((ymissing != NULL)&&(*ymissing == y[i]))
-#if 0
 			||(x[i] > tmp->x_max)
 			||(x[i] < tmp->x_min)
-#endif
 			||(y[i] > tmp->y_max)
 			||(y[i] < tmp->y_min)) {
 
