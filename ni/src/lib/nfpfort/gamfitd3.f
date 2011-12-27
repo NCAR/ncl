@@ -95,6 +95,10 @@ c	They were all zeroes.
       end if
 
 c	Use MLE  (Maximum Liklihood Estimate)
+c       A Note on the Gamma Distribution
+c       Thom (1958): Monthly Weather Review, pp 117-122.
+c       eqn 22 for gamma; just above eqn 21 "A" => alpha
+
 
       alpha = log(av)-(sumlog/nact)
       eta   = (1.0d0+sqrt(1.0d0+4.0d0*alpha/3.0d0))/(4.0d0*alpha)
