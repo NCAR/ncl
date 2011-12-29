@@ -573,6 +573,7 @@ extern NhlErrorTypes kron_product_W(void);
 extern NhlErrorTypes sparse_matrix_mult_W(void);
 
 extern NhlErrorTypes dim_gamfit_n_W(void);
+extern NhlErrorTypes dim_spi_n_W(void);
 
 /* 
  * ESMF regridding functions.
@@ -5621,6 +5622,22 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(dim_gamfit_n_W,args,"dim_gamfit_n",nargs);
+
+/*
+ * Register "dim_spi_n".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(4);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+
+    NclRegisterFunc(dim_spi_n_W,args,"dim_spi_n",nargs);
 
 /*
  * Register "esacr".
