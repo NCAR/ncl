@@ -81,7 +81,7 @@ NhlErrorTypes dim_gamfit_n_W( void )
            DONT_CARE);
 
 /*
- * Get argument # 2
+ * Get argument # 1
  */
   optgam = (logical*)NclGetArgValue(
            1,
@@ -92,13 +92,6 @@ NhlErrorTypes dim_gamfit_n_W( void )
            NULL,
            NULL,
            DONT_CARE);
-
-
-/*
- * Coerce missing value to double if necessary.
- */
-  coerce_missing(type_x,has_missing_x,&missing_x,
-                 &missing_dbl_x,&missing_flt_x);
 
 /*
  * Get dimension(s) to do computation on.
@@ -178,6 +171,12 @@ NhlErrorTypes dim_gamfit_n_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_gamfit_n: Unable to allocate memory for coercing input array to double");
     return(NhlFATAL);
   }
+
+/*
+ * Coerce missing value to double if necessary.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,
+                 &missing_dbl_x,&missing_flt_x);
 
 /* 
  * Allocate space for output array.
@@ -294,10 +293,10 @@ NhlErrorTypes dim_gamfit_n_W( void )
 /*
  * Coerce output back to float or double
  */
-      coerce_output_float_or_double(xpar,&shape,type_x,1,index_xpar);
-      coerce_output_float_or_double(xpar,&scale,type_x,1,
+      coerce_output_float_or_double(xpar,&shape,type_xpar,1,index_xpar);
+      coerce_output_float_or_double(xpar,&scale,type_xpar,1,
                                     index_xpar+total_nlnr);
-      coerce_output_float_or_double(xpar,&pzero,type_x,1,
+      coerce_output_float_or_double(xpar,&pzero,type_xpar,1,
                                     index_xpar+(2*total_nlnr));
     }
   }
