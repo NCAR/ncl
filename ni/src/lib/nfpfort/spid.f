@@ -243,16 +243,16 @@ c	Otherwise adjust prob
 c	Make initial guess. Keep doubling estimate until prob is
 c	bracketed.
       thigh = 2.0*eps
-   10	continue
+ 10   continue
       phigh = gamcdfd (beta, gamm, pzero, thigh)
       if(phigh .ge. prob) goto 20
       thigh = thigh*2.0
       goto 10
-   20	continue
+ 20   continue
       tlow = thigh / 2.0
-c	Iterate to find root.
+c     Iterate to find root.
       niter = 0
-   30	continue
+ 30   continue
       if((thigh - tlow) .le. eps) goto 40
          niter = niter + 1
          t = (tlow + thigh) / 2.0
@@ -263,7 +263,7 @@ c	Iterate to find root.
             thigh = t
          endif
       goto 30
-   40	continue
+ 40   continue
 
       gaminvd = (tlow + thigh) / 2.0
       return
@@ -295,7 +295,7 @@ c
       double precision eps, ap, sum, del, gln
       double precision gammlnd
 
-c	Maximum number of iterations, and bound on error.
+c     Maximum number of iterations, and bound on error.
       parameter (maxitr=100, eps=3.0e-7)
       data iwarn /0/
 
@@ -321,7 +321,7 @@ c djs if (iwarn .lt. 20) then
 c djs     write (*, *) 'gamserd(',a,x,'): not converging.'
 c djs     write (*, *) 'Approximate value of ',sum,' + /-',del,' used.'
 c djs endif
-   20	continue
+ 20   continue
 
       gamserd= sum*exp(-x+a*log(x)-gln)
 
@@ -363,7 +363,7 @@ c
              if (abs((g - gold) / g) .lt. eps) goto 20
              gold = g
          endif
-   10	continue
+ 10   continue
 
       nwarn = nwarn + 1
 c djs if (nwarn .lt. 20) then
@@ -371,7 +371,7 @@ c djs     write (*, *) 'gammcfd(',a,x,'): not converging.'
 c djs     write (*, *) 'Inaccurate value of ', g, ' +/- ',
 c djs1	  abs(g - gold), ' used.'
 c djs endif
-   20	continue
+ 20   continue
 
       gammcfd= g*exp(-x+a*log(x)-gln)
       return
@@ -419,7 +419,7 @@ c
       integer j
       double precision cof(6), x, tmp, ser
       data cof /76.18009173, -86.50532033, 24.01409822, -1.231739516,
-     1	0.120858003e-2, -0.536382e-5/
+     1           0.120858003e-2, -0.536382e-5/
 
       x   = xx - 1.0
       tmp = x + 5.5
@@ -429,7 +429,7 @@ c
       do 10 j = 1, 5
          x   = x + 1.0
          ser = ser + cof(j) / x
-   10	continue
+ 10   continue
 
       gammlnd = -tmp + log(2.50662827465 * ser)
 
