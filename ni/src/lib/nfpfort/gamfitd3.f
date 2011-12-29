@@ -28,7 +28,7 @@ c                                                        LOCAL
       integer i, nact, nmsg
       double precision    sum, sumlog, av, pobs, pc
       double precision    beta, eta
-      double precision    s, kappa
+c     double precision    s, kappa
 
       shape = dmsg
       scale = dmsg
