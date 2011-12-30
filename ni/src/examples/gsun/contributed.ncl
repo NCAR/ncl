@@ -319,9 +319,13 @@ end
 ;
 ; This function makes the assumption that the "dims"
 ;     dimensions represent dimensions in the "var_from"
-;     array. They do not have to be monotonic. Coordinates
-;     are copied to the "var_to" variable starting with the
-;     leftmost dimension and going to the next one, etc.
+;     array. They do not have to be monotonic.
+;
+; Note: in the special case where the rank of the two arrays are
+;  the same, then the assumption that the dimensions to copy are
+;  in the same dimension locations in both arrays. Otherwise,
+;  coordinates are copied to the "var_to" variable starting
+;  with the leftmost dimension and going to the next one, etc.
 ;
 undef ("copy_VarCoords_n")
 procedure copy_VarCoords_n(var_from,var_to,dims_to_copy)
@@ -349,15 +353,21 @@ begin
 
   ito = 0     ; leftmost dimension of var_to array
   if (.not.all(ismissing(dName))) then
-    do i = 0,ndims-1
-      ifrom = dims_to_copy(i)
-      if (.not.ismissing(dName(ifrom)).and.dimf(ifrom).eq.dimt(ito)) then  
-        var_to!ito = var_from!ifrom
-        if(iscoord(var_from,var_from!ifrom))
-          var_to&$var_to!ito$ = var_from&$var_from!ifrom$
+    do i = 0,rfrom-1
+      if(any(i.eq.dims_to_copy)) then
+        ifrom = i
+        if (.not.ismissing(dName(ifrom)).and.dimf(ifrom).eq.dimt(ito)) then  
+          var_to!ito = var_from!ifrom
+          if(iscoord(var_from,var_from!ifrom))
+            var_to&$var_to!ito$ = var_from&$var_from!ifrom$
+          end if
+        end if
+        ito = ito + 1
+      else
+        if(rfrom.eq.rto) then
+          ito = ito + 1
         end if
       end if
-      ito = ito + 1
     end  do
   end if
 end
@@ -380,8 +390,11 @@ end
 ;    "dims_to_copy" must represent valid dimensions in 
 ;    the "var_from" array.
 ;
-; Coordinates are copied to the "var_to" variable starting
-;    with the leftmost dimension and going to the next one, etc.
+; Note: in the special case where the rank of the two arrays are
+;  the same, then the assumption that the dimensions to skip are
+;  in the same dimension locations in both arrays. Otherwise,
+;  coordinates are copied to the "var_to" variable starting
+;  with the leftmost dimension and going to the next one, etc.
 ;
 undef ("copy_VarCoords_not_n")
 procedure copy_VarCoords_not_n(var_from,var_to,dims_to_skip)
@@ -419,6 +432,10 @@ begin
           end if
         end if
         ito = ito + 1
+      else
+        if(rfrom.eq.rto) then
+          ito = ito + 1
+        end if
       end if
     end  do
   end if
