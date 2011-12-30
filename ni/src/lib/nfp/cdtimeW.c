@@ -154,17 +154,13 @@ NhlErrorTypes cd_calendar_W( void )
           ccal = NrmQuarkToString(*scal);
           if(strcasecmp(ccal,"standard") && strcasecmp(ccal,"gregorian") &&
              strcasecmp(ccal,"proleptic_gregorian") &&
-             strcasecmp(ccal,"noleap") && strcasecmp(ccal,"no_leap") &&
+             strcasecmp(ccal,"noleap")  && strcasecmp(ccal,"no_leap") &&
              strcasecmp(ccal,"allleap") && strcasecmp(ccal,"all_leap") &&
              strcasecmp(ccal,"365_day") && strcasecmp(ccal,"365") &&
              strcasecmp(ccal,"366_day") && strcasecmp(ccal,"366") &&
              strcasecmp(ccal,"360_day") && strcasecmp(ccal,"360") &&
-             strcasecmp(ccal,"julian")) {
+             strcasecmp(ccal,"julian")  && strcasecmp(ccal,"none")) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"cd_calendar: the 'calendar' attribute (%s) is not equal to a recognized calendar. Returning all missing values.",ccal);
-            return_missing = 1;
-          }
-          if(!strcasecmp(ccal,"none")) {
-            NhlPError(NhlWARNING,NhlEUNKNOWN,"cd_calendar: a 'calendar' of 'none' is not recognized by NCL. Returning all missing values.");
             return_missing = 1;
           }
         }
@@ -179,9 +175,10 @@ NhlErrorTypes cd_calendar_W( void )
   }
 
 /*
- * If no calendar attribute set, use the default "standard".
+ * If no calendar attribute set, or "none" was selected, then use 
+ * the default "standard".
  */
-  if(ccal == NULL) {
+  if(ccal == NULL || !strcasecmp(ccal,"none")) {
     ctype = calendar_type("standard");
   }
   else {
@@ -800,18 +797,14 @@ NhlErrorTypes cd_inv_calendar_W( void )
           ccal = NrmQuarkToString(*scal);
           if(strcasecmp(ccal,"standard") && strcasecmp(ccal,"gregorian") &&
              strcasecmp(ccal,"proleptic_gregorian") &&
-             strcasecmp(ccal,"noleap") && strcasecmp(ccal,"no_leap") &&
+             strcasecmp(ccal,"noleap")  && strcasecmp(ccal,"no_leap") &&
              strcasecmp(ccal,"allleap") && strcasecmp(ccal,"all_leap") &&
              strcasecmp(ccal,"365_day") && strcasecmp(ccal,"365") &&
              strcasecmp(ccal,"366_day") && strcasecmp(ccal,"366") &&
              strcasecmp(ccal,"360_day") && strcasecmp(ccal,"360") &&
-             strcasecmp(ccal,"julian")) {
+             strcasecmp(ccal,"julian")  && strcasecmp(ccal,"none")) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"cd_inv_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
             return_missing = has_missing_x = 1;
-          }
-          if(!strcasecmp(ccal,"none")) {
-            NhlPError(NhlWARNING,NhlEUNKNOWN,"cd_inv_calendar: a 'calendar' of 'none' is not recognized by NCL. Returning all missing values.");
-            return_missing = 1;
           }
         }
         attr_list = attr_list->next;
@@ -822,9 +815,10 @@ NhlErrorTypes cd_inv_calendar_W( void )
   }
 
 /*
- * If no calendar attribute set, use the default "standard".
+ * If no calendar attribute set, or "none" was selected, then use 
+ * the default "standard".
  */
-  if(ccal == NULL) {
+  if(ccal == NULL || !strcasecmp(ccal,"none")) {
     ctype = calendar_type("standard");
   }
   else {
