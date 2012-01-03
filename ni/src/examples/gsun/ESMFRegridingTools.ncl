@@ -7,6 +7,12 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       01 Jan 2012:
+;            Changed behavior of ForceOverWrite. No longer
+;            requires OverWrite to be set. Removed
+;            ForceUnstructured since it's not really needed.
+;            Added get_start_time and print_elapsed_time.
+;
 ;       22 Dec 2011:
 ;            Renamed some more functions: changed "esmf" to "ESMF"
 ;            and "scrip" to "SCRIP".
@@ -73,6 +79,42 @@
 ;            Removed references to $ESMFBINDIR. This should be on 
 ;            user's search path. Also, executable had wrong name,
 ;            changed to "ESMF_RegridWeightGen".
+
+;======================================================================
+; This function returns the start time, either in CPU or wall
+; clock seconds, depending on your version of NCL. Use this function
+; with print_elapsed_time, below.
+;======================================================================
+undef("get_start_time")
+function get_start_time()
+local s
+begin
+  s = str_split(get_ncl_version(),".")        
+  if(s(0).eq."5".or.(s(0).eq."6".and.s(1).eq."0")) then
+    return(systemfunc("date"))
+  else
+    return(get_cpu_time())
+  end if
+end
+
+;======================================================================
+; This procedure prints the elapsed time, either in CPU or wall
+; clock seconds, depending on your version of NCL. Use this procedure
+; with get_start_time, above.
+;======================================================================
+undef("print_elapsed_time")
+procedure print_elapsed_time(stime,title)
+local s 
+begin
+  s = str_split(get_ncl_version(),".")        
+  if(s(0).eq."5".or.(s(0).eq."6".and.s(1).eq."0")) then
+    wallClockElapseTime(stime, title, 0)
+  else
+    diff_time = get_cpu_time() - stime
+    print("=====> CPU Elapsed Time: " + title + ": " + diff_time + " <=====")
+  end if
+end
+
 ;======================================================================
 ; This is the modified version of copy_VarAtts originaly developed by
 ; Dennis Shea.
@@ -175,20 +217,16 @@ local debug
 begin
     debug = isbothvaratt_logical_true(opt,"Debug")
     if (isfilepresent(fname)) then
-        if (.not.isbothvaratt_logical_true(opt,"OverWrite")) then
+        if (isbothvaratt_logical_true(opt,"OverWrite")) then
+            system("rm -rfi "+fname)
+        else if (isbothvaratt_logical_true(opt,"ForceOverWrite")) then
+            system("rm -rf "+fname)
+        else
             print("check_for_file: the file '" + fname + "' already exists.")
             print("                Set opt@OverWrite      = True or")
             print("                    opt@ForceOverWrite = True to override.")
             exit
-        else
-            if(debug) then
-                print("check_for_file: removing '" + fname + "'")
-            end if
-            if (isbothvaratt_logical_true(opt,"ForceOverWrite")) then
-                system("rm -rf "+fname)
-            else
-                system("rm -rfi "+fname)
-            end if
+        end if
         end if
     end if
 end
@@ -378,12 +416,6 @@ local debug, lat, lon, NodeMask, ElementVertices
 begin
     debug = isbothvaratt_logical_true(Opt,"Debug")
 
-;---Check if the user has requested the unstructured grid
-    if ( .not.(isbothvaratt_logical_true(Opt,"ForceUnstructured")) ) then
-        print("unstructured_to_ESMF: Cannot use this function for structured grids.")
-        return(1)
-    end if
-    
 ;---Check if the file already exists
     check_for_file(FName,Opt)
 
@@ -540,9 +572,7 @@ end     ; of unstructured_to_ESMF(...)
 ;     for removing an existing file. If set to false the user permission
 ;     is required to remove an existing file. This is ineffective if
 ;     OverWrite is set to False.
-; (3) ForceUnstructured [Logical] if set to true, this function will
-;     not be executed.
-; (4) ForcedCorners [Logical] if set to true, insted of calculating the
+; (3) ForcedCorners [Logical] if set to true, insted of calculating the
 ;     the corner points for the cells, these values are read from
 ;     CornerLat and CornerLon attribute of Opt.
 ;======================================================================
@@ -554,10 +584,6 @@ local latlon_dims, nlat, nlon, fid, FileAtt, grid_siz, grid_corners, \
 grid_rank, FDimNames, FDimSizes, FDimUnlim, DummyAtt1, DummyAtt2, \
 CornerLat, CornerLon, grid_corner_lat, grid_corner_lon
 begin
-    if (isbothvaratt_logical_true(Opt,"ForceUnstructured")) then
-        print("curvilinear_to_SCRIP: cannot use this function for unstructured grid.")
-        return(1)
-    end if
 ;---Check if the file already exists
     check_for_file(FName,Opt)
 
@@ -677,8 +703,8 @@ begin
     nlon = dimsizes(lon)
     
 ;---Conform the lat/lon to 2D arrays
-    grid_center_lat = todouble(conform_dims((/nlat, nlon/),lat,0))
-    grid_center_lon = todouble(conform_dims((/nlat, nlon/),lon,1))
+    grid_center_lat = conform_dims((/nlat, nlon/),lat,0)
+    grid_center_lon = conform_dims((/nlat, nlon/),lon,1)
 
 ;---Generate the mask
     mask2d = new((/nlat,nlon/),"integer","No_FillValue")
@@ -1127,25 +1153,25 @@ end     ; of is_SCRIP(...)
 ;  srcGridFile - the name of the NetCDF source grid file (ESMF or SCRIP)
 ;  dstGridFile - the name of the NetCDF destination grid file (ESMF or SCRIP)
 ;  wgtFile     - the name of the NetCDF weight file to create.
-;   opt        - Set to True to indicate optional attributes are attached.
+;  opt         - Set to True to indicate optional attributes are attached.
 ;
 ;  The following attributes are allowed with "opt":
 ;        Debug - Turns on debug print statements
-;           True or False (default)
+;           True or False (default=False)
 ;        isBothESMF - whether both grid files are ESMF files
-;           True or False (default)
+;           True or False (default=False)
 ;        isSrcESMF - whether only the src grid file is an ESMF file
-;           True or False (default)
+;           True or False (default=False)
 ;        isDstESMF - whether only the dst grid file is an ESMF file
-;           True or False (default)
+;           True or False (default=False)
 ;        isBothRegional - whether both grids are regional
-;           True or False (default)
+;           True or False (default=False)
 ;        srcGridRegional - whether only the src grid file is regional
-;           True or False (default)
+;           True or False (default=False)
 ;        dstGridRegional - whether only the dst grid file is regional
-;           True or False (default)
+;           True or False (default=False)
 ;        ignoreUnmappedPoints - whether to ignore unmapped points
-;           True or False (default)
+;           True or False (default=False, maybe change to True?)
 ;        method
 ;           "bilinear" (default), "patch" (slow), "conserve"
 ;        pole
@@ -1467,7 +1493,7 @@ begin
     print("ESMF_regrid: calling sparse_matrix_mult to apply weights...")
   end if
   if(PrintTimings) then
-    start_time = get_cpu_time()
+    start_time = get_start_time()
   end if
 
 ;
@@ -1500,9 +1526,7 @@ begin
   end if
 
   if(PrintTimings) then
-    end_time = get_cpu_time()
-    print("ESMF_regrid: sparse_matrix_mult took " + \
-           (end_time-start_time) + " seconds.")
+    print_elapsed_time(start_time,"ESMF_regrid: sparse_matrix_mult")
   end if
 
 ;---Make sure dstData has a missing value
@@ -1559,7 +1583,7 @@ begin
     grid_dims=fid->grid_dims;
     grid_center_lat= reshape( fid->grid_center_lat , grid_dims(::-1))
     grid_center_lat@units="degrees_north"
-    return( todouble(grid_center_lat) )
+    return(grid_center_lat)
 end     ; of retrieve_SCRIP_lat
 
 ;======================================================================
@@ -1579,7 +1603,7 @@ begin
     grid_dims       = fid->grid_dims;
     grid_center_lon = reshape( fid->grid_center_lon , grid_dims(::-1))
     grid_center_lon@units="degrees_east"
-    return( grid_center_lon )
+    return(grid_center_lon)
 end     ; of retrieve_SCRIP_lon
 
 ;======================================================================
