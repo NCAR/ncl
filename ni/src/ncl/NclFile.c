@@ -1171,7 +1171,7 @@ NclObj self;
 		_NhlCBDelete(thefile->file.file_att_cb);
 		_NclDelParent(_NclGetObj(thefile->file.file_atts_id),self);
 	}
-	for(i =0 ; i < thefile->file.max_file_atts; i++) {
+	for(i =0 ; i < thefile->file.n_file_atts; i++) {
 		if(NULL != thefile->file.file_atts[i])
 			NclFree(thefile->file.file_atts[i]);
 	}
