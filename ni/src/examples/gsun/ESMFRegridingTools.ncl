@@ -1,3 +1,4 @@
+;----------------------------------------------------------------------
 ; The following functions and procedures are written by:
 ;        Mohammad Abouali, maboualiedu@gmail.com
 ;              May 22nd, July 30th, 2011
@@ -1355,13 +1356,37 @@ function ESMF_regrid(srcData:numeric,wgtFile[1]:string, opt[1]:logical)
 local DEBUG, fmsg, fid, srclat, srclon, dstlat, dstlon, src_grid_dims, \
       src_grid_rank, srcData_dims, srcData_rank, srcData_rgt_dims, \
       srcData_lft_dims, has_leftmost_dims, dst_grid_dims, dst_grid_rank, \
-      dst_grid_dims_in, row, col, v, x, minDataValue, maxDataValue
+      dst_grid_dims_in, row, col, v, x, minDataValue, maxDataValue, \
+      RemapIndexes, Indexes, IndexesDims, dstData_tmp2d
 begin
   fmsg  = new(1,float)                         ; For error return
 
 ;---Check for options
   PrintTimings = isatt_logical_true(opt,"PrintTimings")
   DEBUG        = isatt_logical_true(opt,"Debug")
+
+;
+; Check if the indexes on the file actually represent indexes
+; into a larger 2D grid. If so, we have get the Indexes and
+; the dimension sizes of the larger 2D grid, for remapping
+; later.
+;
+  RemapIndexes = isatt_logical_true(opt,"RemapIndexes")
+  if(RemapIndexes) then
+    if(isatt(opt,"Indexes")) then
+      Indexes = opt@Indexes
+    else
+      print("ESMF_regrid: error: you set RemapIndexes=True, but didn't provide 'Indexes'.")
+      exit
+    end if
+    if(isatt(opt,"IndexesDims")) then
+      IndexesDims = opt@IndexesDims
+    else
+      print("ESMF_regrid: error: you set RemapIndexes=True, but didn't provide the ")
+      print("             dimension sizes of the nD array (IndexesDims")
+      exit
+    end if
+  end if
 
   if(DEBUG) then
     print("ESMF_regrid: regridding using interpolation weights ...")
@@ -1526,7 +1551,7 @@ begin
   end if
 
   if(PrintTimings) then
-    print_elapsed_time(start_time,"ESMF_regrid: sparse_matrix_mult")
+    print_elapsed_time(start_time,"sparse_matrix_mult")
   end if
 
 ;---Make sure dstData has a missing value
@@ -1551,17 +1576,30 @@ begin
   end if
 
 ;
-; Copy some attributes.
-; Note: The user is responsible for attributes in general.
+; Check if we need to remap the values onto a larger 2D
+; grid.
+;
+  if(RemapIndexes) then
+    if(DEBUG)
+      print("ESMF_regrid: putting interpolated values back onto larger 2D grid...")
+    end if
+    dstData_tmp2d = reshape_ind(dstData,Indexes,IndexesDims)
+    delete(dstData)
+    dstData = dstData_tmp2d
+  end if
+
+;
+; Copy some attributes. In general, the user is responsible 
+; for setting their own attributes.
 ;
   if (isatt(srcData,"units")) then
-    dstData@units=srcData@units
+    dstData@units = srcData@units
   end if
   if (isatt(srcData,"long_name")) then
-    dstData@long_name="remapped "+srcData@long_name
+    dstData@long_name = "remapped " + srcData@long_name
   end if
   if (isatt(srcData,"short_name")) then
-    dstData@short_name=srcData@short_name
+    dstData@short_name = srcData@short_name
   end if
 	
   return(dstData)
