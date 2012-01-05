@@ -6060,6 +6060,7 @@ void CallASSIGN_FILEVARATT_OP(void) {
 				int nsubs;
 				NhlErrorTypes ret = NhlNOERROR;
 				NclMultiDValData thevalue;
+				int id;
 
 				avar = _NclPop();
 				switch(avar.kind) {
@@ -6169,10 +6170,15 @@ void CallASSIGN_FILEVARATT_OP(void) {
 							}
 	
 							if(estatus != NhlFATAL) {
+/*
+ * if the att is "virtual", the rhs_md gets destroyed. Therefore capture the obj id now so we can checke whether it
+ * exists after this call.
+ */
+								id = rhs_md->obj.id;
 								estatus = _NclFileWriteVarAtt(file,var,att,rhs_md,NULL);
 							}
 							if(estatus != NhlFATAL) {
-								if(rhs_md->obj.status != PERMANENT) {
+								if(_NclGetObj(id) && rhs_md->obj.status != PERMANENT) {
 									_NclDestroyObj((NclObj)rhs_md);
 								}
 							}
