@@ -8,6 +8,12 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       09 Jan 2012:
+;            Renamed cartesian_to_SCRIP to latlon_to_SCRIP
+;               Renamed some of the attributes in this function.
+;            Added PrintTimings to the xxxx_to_SCRIP, xxxx_to_ESMF,
+;            and ESMF_gen_weight functions.
+;
 ;       01 Jan 2012:
 ;            Changed behavior of ForceOverWrite. No longer
 ;            requires OverWrite to be set. Removed
@@ -415,6 +421,12 @@ procedure unstructured_to_ESMF(FName[1]:string,inputFName[1]:string,\
                              inLat,inLon,inNodeMask,Opt[1]:logical)
 local debug, lat, lon, NodeMask, ElementVertices
 begin
+;---Check for options
+    PrintTimings = isatt_logical_true(opt,"PrintTimings")
+    if(PrintTimings) then
+      start_time = get_start_time()
+    end if
+
     debug = isbothvaratt_logical_true(Opt,"Debug")
 
 ;---Check if the file already exists
@@ -560,6 +572,10 @@ begin
                                   (/elementCount,3/)))
     elementMask      =  where(elementMask.eq.3,1,0)
     fid->elementMask = (/elementMask/)
+
+    if(PrintTimings) then
+      print_elapsed_time(start_time,"unstructured_to_ESMF")
+    end if
 end     ; of unstructured_to_ESMF(...)
 ;======================================================================
 ; This function receives a 2D curvilinear grid and mask and stores
@@ -585,6 +601,12 @@ local latlon_dims, nlat, nlon, fid, FileAtt, grid_siz, grid_corners, \
 grid_rank, FDimNames, FDimSizes, FDimUnlim, DummyAtt1, DummyAtt2, \
 CornerLat, CornerLon, grid_corner_lat, grid_corner_lon
 begin
+;---Check for options
+    PrintTimings = isatt_logical_true(Opt,"PrintTimings")
+    if(PrintTimings) then
+      start_time = get_start_time()
+    end if
+
 ;---Check if the file already exists
     check_for_file(FName,Opt)
 
@@ -688,6 +710,10 @@ begin
     end if
     fid->grid_corner_lat = (/ todouble(grid_corner_lat) /)
     fid->grid_corner_lon = (/ todouble(grid_corner_lon) /)
+
+    if(PrintTimings) then
+      print_elapsed_time(start_time,"curvilinear_to_SCRIP")
+    end if
 end     ; of curvilinear_to_SCRIP(...)
 
 ;======================================================================
@@ -698,8 +724,17 @@ end     ; of curvilinear_to_SCRIP(...)
 undef("rectilinear_to_SCRIP")
 procedure rectilinear_to_SCRIP(FName[1]:string,FTitle[1]:string,\
                                lat[*]:numeric,lon[*]:numeric, Opt[1]:logical)
-local nlat, nlon, grid_center_lat, grid_center_lon, mask2d
+local nlat, nlon, grid_center_lat, grid_center_lon, mask2d, Opt2
 begin
+   Opt2 = Opt
+
+;---Check for options
+    PrintTimings = isatt_logical_true(Opt2,"PrintTimings")
+    if(PrintTimings) then
+      start_time = get_start_time()
+      delete(Opt2@PrintTimings)
+    end if
+
     nlat = dimsizes(lat)
     nlon = dimsizes(lon)
     
@@ -713,7 +748,11 @@ begin
     
 ;---Convert to SCRIP
     curvilinear_to_SCRIP(FName,FTitle,grid_center_lat,grid_center_lon,\
-                         mask2d,Opt)
+                         mask2d,Opt2)
+
+    if(PrintTimings) then
+      print_elapsed_time(start_time,"rectilinear_to_SCRIP")
+    end if
 end     ; of rectilinear_to_SCRIP
 
 ;======================================================================
@@ -950,9 +989,9 @@ begin
 end     ; of auto_to_SCRIP
 
 ;======================================================================
-; This procedure generates a regularly-spaced cartesian grid based on 
-; either input corners of a lat/lon box, or a box center and the width
-; and height of the box, and the spacing or the number of values.
+; This procedure generates a regularly-spaced lat/lon grid based on 
+; the corners of a lat/lon box, or a box center and the width
+; and height of the box and the spacing or the number of values.
 ;
 ; Recognized attributes for "Opt":
 ;   BoxCenter - used in conjunction with BoxWidth and BoxHeight
@@ -969,8 +1008,8 @@ end     ; of auto_to_SCRIP
 ;
 ; This procedure calls curvilinear_to_SCRIP.
 ;======================================================================
-undef("cartesian_to_SCRIP")
-procedure cartesian_to_SCRIP(FName[1]:string,FTitle[1]:string,\
+undef("latlon_to_SCRIP")
+procedure latlon_to_SCRIP(FName[1]:string,FTitle[1]:string,\
                              nlat_dlat[1]:numeric,nlon_dlon[1]:numeric,\
                              Opt[1]:logical)
 local BoxDiag, Rot, nlat, nlon, lat, lon, mask2d, height, width, \
@@ -988,7 +1027,7 @@ begin
         height = Opt@BoxHeight
         width  = Opt@BoxWidth
         if (Rot.ne.0.0) then
-            rotate_latlon(Height,Width,Rot)
+            rotate_latlon(height,width,Rot)
         end if
         URCorner = Opt@BoxCenter+0.5d*(/height, width/)
         LLCorner = Opt@BoxCenter-0.5d*(/height, width/)
@@ -1002,7 +1041,7 @@ begin
         end if
     end if
 
-    if(.not.isvar("URCorner").and.isatt(Opt,"URCorner")) then
+    if(.not.isvar("URCorner")) then
         if(isatt(Opt,"URCorner")) then
             URCorner = Opt@URCorner
         else
@@ -1012,7 +1051,7 @@ begin
 
 ;---Check the LLCorner and URCorner variables.
     if ( (abs(LLCorner(0)).gt.90).or.(abs(URCorner(0)).gt.90) ) then
-        print("cartesian_to_SCRIP: lat corners must be within -90 to 90")
+        print("latlon_to_SCRIP: lat corners must be within -90 to 90")
         exit
     end if
 
@@ -1031,18 +1070,18 @@ begin
     end if
         
     if ( BoxDiag(0).le.0.0 ) then
-        print("cartesian_to_SCRIP: The corner latitudes do not meet the criteria of a bounding box.")
+        print("latlon_to_SCRIP: The corner latitudes do not meet the criteria of a bounding box.")
         exit
     end if
     if ( BoxDiag(1).le.0.0 ) then
-        print("cartesian_to_SCRIP: The corner longitudes do not meet the criteria of a bounding box.")
+        print("latlon_to_SCRIP: The corner longitudes do not meet the criteria of a bounding box.")
         exit
     end if
         
 ;---Generate the latitudes and longitudes
     if ( isbothvaratt_logical_true(Opt,"isSpacing") ) then
         if (Rot.ne.0.0) then
-            print("cartesian_to_SCRIP: The box is rotated. Spacing may be different than what you meant.")
+            print("latlon_to_SCRIP: The box is rotated. Spacing may be different than what you meant.")
         end if
         nlat = tointeger(BoxDiag(0)/nlat_dlat+1)
         nlon = tointeger(BoxDiag(1)/nlon_dlon+1)
@@ -1072,7 +1111,7 @@ begin
 
     curvilinear_to_SCRIP(FName,FTitle,grid_center_lat, \
                                       grid_center_lon,mask2d,Opt)
-end     ; of cartesian_to_SCRIP(...)
+end     ; of latlon_to_SCRIP(...)
 
 ;======================================================================
 ; Checks if the required dimensions in the SCRIP file are present
@@ -1190,6 +1229,12 @@ procedure ESMF_gen_weights(srcGridFile[1]:string, dstGridFile[1]:string, \
                            wgtFile[1]:string, opt[1]:logical)
 local DEBUG, NumProc, Executer, ESMFCMD
 begin
+;---Check for options
+  PrintTimings   = isatt_logical_true(opt,"PrintTimings")
+  if(PrintTimings) then
+    start_time = get_cpu_time()
+  end if
+
   DEBUG = isbothvaratt_logical_true(opt,"Debug")
 
   if(DEBUG) then
@@ -1345,6 +1390,11 @@ begin
   if(DEBUG) then
     print("ESMF_gen_weights: ESMF_RegridWeightGen was successful.")
   end if    
+
+  if(PrintTimings) then
+    print_elapsed_time(start_time,"ESMF_gen_weights")
+  end if
+
 end     ; of ESMF_gen_weights(...)
 
 ;======================================================================
@@ -1364,6 +1414,10 @@ begin
 ;---Check for options
   PrintTimings = isatt_logical_true(opt,"PrintTimings")
   DEBUG        = isatt_logical_true(opt,"Debug")
+
+  if(PrintTimings) then
+    start_time = get_start_time()
+  end if
 
 ;
 ; Check if the indexes on the file actually represent indexes
@@ -1517,9 +1571,6 @@ begin
   if(DEBUG)
     print("ESMF_regrid: calling sparse_matrix_mult to apply weights...")
   end if
-  if(PrintTimings) then
-    start_time = get_start_time()
-  end if
 
 ;
 ; We have to always treat the output grid as a 1D array
@@ -1548,10 +1599,6 @@ begin
                       dst_grid_dims_out)
   else
     dstData = sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims_in)
-  end if
-
-  if(PrintTimings) then
-    print_elapsed_time(start_time,"sparse_matrix_mult")
   end if
 
 ;---Make sure dstData has a missing value
@@ -1602,6 +1649,10 @@ begin
     dstData@short_name = srcData@short_name
   end if
 	
+  if(PrintTimings) then
+    print_elapsed_time(start_time,"ESMF_regrid")
+  end if
+
   return(dstData)
 end     ; of ESMF_regrid(...)
 
