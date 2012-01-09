@@ -422,7 +422,7 @@ procedure unstructured_to_ESMF(FName[1]:string,inputFName[1]:string,\
 local debug, lat, lon, NodeMask, ElementVertices
 begin
 ;---Check for options
-    PrintTimings = isatt_logical_true(opt,"PrintTimings")
+    PrintTimings = isatt_logical_true(Opt,"PrintTimings")
     if(PrintTimings) then
       start_time = get_start_time()
     end if
