@@ -977,8 +977,8 @@ begin
     end if
     
 ;---Get mask
-    if (isatt(Opt,"Mask2d")) then
-        mask2d = tointeger(Opt@Mask2d)
+    if (isatt(Opt,"Mask2D")) then
+        mask2d = tointeger(Opt@Mask2D)
     else
         mask2d = new(dimsizes(grid_center_lat),"integer","No_FillValue")
         mask2d = 1
@@ -1002,8 +1002,8 @@ end     ; of auto_to_SCRIP
 ;   URCorner  - defaults to ( 90, 180)
 ;
 ;   Rotation  - rotation angle
-;   isSpacing - whether nlat_dlat and nlon_dlon represent lat/lon
-;               spacing or number of values (the default)
+;   IsSpacing - whether nlat_dlat and nlon_dlon represent lat/lon
+;               spacing (the default) or the number of values
 ; It stores the grid in a NetCDF file based on SCRIP standard.
 ;
 ; This procedure calls curvilinear_to_SCRIP.
@@ -1079,15 +1079,15 @@ begin
     end if
         
 ;---Generate the latitudes and longitudes
-    if ( isbothvaratt_logical_true(Opt,"isSpacing") ) then
+    if ( isatt(Opt,"IsSpacing").and..not.Opt@IsSpacing ) then
+        nlat = nlat_dlat
+        nlon = nlon_dlon
+    else
         if (Rot.ne.0.0) then
             print("latlon_to_SCRIP: The box is rotated. Spacing may be different than what you meant.")
         end if
         nlat = tointeger(BoxDiag(0)/nlat_dlat+1)
         nlon = tointeger(BoxDiag(1)/nlon_dlon+1)
-    else
-        nlat = nlat_dlat
-        nlon = nlon_dlon
     end if
 
     lat = fspan(0.0,BoxDiag(0),nlat)
@@ -1198,19 +1198,19 @@ end     ; of is_SCRIP(...)
 ;  The following attributes are allowed with "opt":
 ;        Debug - Turns on debug print statements
 ;           True or False (default=False)
-;        isBothESMF - whether both grid files are ESMF files
+;        BothESMF - whether both grid files are ESMF files
 ;           True or False (default=False)
-;        isSrcESMF - whether only the src grid file is an ESMF file
+;        SrcESMF - whether only the src grid file is an ESMF file
 ;           True or False (default=False)
-;        isDstESMF - whether only the dst grid file is an ESMF file
+;        DstESMF - whether only the dst grid file is an ESMF file
 ;           True or False (default=False)
-;        isBothRegional - whether both grids are regional
+;        BothRegional - whether both grids are regional
 ;           True or False (default=False)
-;        srcGridRegional - whether only the src grid file is regional
+;        SrcRegional - whether only the src grid file is regional
 ;           True or False (default=False)
-;        dstGridRegional - whether only the dst grid file is regional
+;        DstRegional - whether only the dst grid file is regional
 ;           True or False (default=False)
-;        ignoreUnmappedPoints - whether to ignore unmapped points
+;        IgnoreUnmappedPoints - whether to ignore unmapped points
 ;           True or False (default=False, maybe change to True?)
 ;        method
 ;           "bilinear" (default), "patch" (slow), "conserve"
@@ -1241,15 +1241,15 @@ begin
     print("ESMF_gen_weights: Calling ESMF Regrid Weight Generation tool ...")
   end if
     
-  if ( .not.(isbothvaratt_logical_true(opt,"isBothESMF")) ) then
-    if ( .not.(isbothvaratt_logical_true(opt,"isSrcESMF")) ) then
+  if ( .not.(isbothvaratt_logical_true(opt,"BothESMF")) ) then
+    if ( .not.(isbothvaratt_logical_true(opt,"SrcESMF")) ) then
 ;---Check if the source grid file is a SCRIP file.
       if (.not.(is_SCRIP(srcGridFile))) then
         print("ESMF_gen_weights: source grid file is not a SCRIP file.")
         exit
       end if
     end if
-    if ( .not.(isbothvaratt_logical_true(opt,"isDstESMF")) ) then
+    if ( .not.(isbothvaratt_logical_true(opt,"DstESMF")) ) then
 ;---Check if the destination grid file is a SCRIP file.
       if (.not.(is_SCRIP(dstGridFile))) then
         print("ESMF_gen_weights: destination grid file is not a SCRIP file.")
@@ -1319,56 +1319,48 @@ begin
 ; Check if the user is specifying that both source and destination
 ; grids are regional
 ;
-    if (isatt(opt,"isBothRegional")) then
-      if (opt@isBothRegional) then
-        ESMFCMD = ESMFCMD + " -r"
-      end if
+    if (isatt_logical_true(opt,"BothRegional")) then
+      ESMFCMD = ESMFCMD + " -r"
     end if
 ;        
 ; Check if the user is specifying that the source grid is regional 
 ; and the destination grid is global
 ;
-    if (isatt(opt,"isSrcGridRegional")) then
-      if (opt@srcGridRegional) then
-        ESMFCMD = ESMFCMD + " --src_regional"
-      end if
+    if (isatt_logical_true(opt,"SrcRegional")) then
+      ESMFCMD = ESMFCMD + " --src_regional"
     end if
 ;        
 ; Check if the user is specifying that the destination grid is 
 ; regional and the source grid is global
 ;
-    if (isatt(opt,"isDstGridRegional")) then
-      if (opt@dstGridRegional) then
-        ESMFCMD = ESMFCMD + " --dst_regional"
-      end if
+    if (isatt_logical_true(opt,"DstRegional")) then
+      ESMFCMD = ESMFCMD + " --dst_regional"
     end if
 
 ;---Check if the user specifies that both grids are ESMF
-    if (isatt_logical_true(opt,"isBothESMF")) then
+    if (isatt_logical_true(opt,"BothESMF")) then
       ESMFCMD = ESMFCMD + " -t"
     end if
         
 ;---Checking if the user specifies that source grids are ESMF
-    if (isatt_logical_true(opt,"isSrcESMF")) then
+    if (isatt_logical_true(opt,"SrcESMF")) then
         ESMFCMD = ESMFCMD + " --src_type ESMF"
     end if
 
 ;---Check if the user specifies that source grids are ESMF
-    if (isatt_logical_true(opt,"isDstESMF")) then
+    if (isatt_logical_true(opt,"DstESMF")) then
       ESMFCMD = ESMFCMD + " --dst_type ESMF"
     end if
 
 ;---This flag is necessary for V5.2.0r1 and grids like WRF.
-    if (isatt_logical_true(opt,"ignoreUnmappedPoints")) then
+    if (isatt_logical_true(opt,"IgnoreUnmappedPoints")) then
         ESMFCMD = ESMFCMD + " -i"
     end if
 
 ;---Check if the user has requested to print out the full command to be run.
-    if (isatt(opt,"showCMD")) then
-      if (opt@showCMD) then
-        print("ESMF_gen_weights: the following command is about to be executed on the system:")
-        print(""+ ESMFCMD)
-      end if
+    if (isatt_logical_true(opt,"ShowCmd")) then
+      print("ESMF_gen_weights: the following command is about to be executed on the system:")
+      print(""+ ESMFCMD)
     end if
   end if  ; end of building the command (Second Pass - optional features)
 		
