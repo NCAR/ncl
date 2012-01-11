@@ -1331,7 +1331,7 @@ begin
 ;---Check for options
   PrintTimings   = isatt_logical_true(opt,"PrintTimings")
   if(PrintTimings) then
-    start_time = get_cpu_time()
+    start_time = get_start_time()
   end if
 
   DEBUG = isbothvaratt_logical_true(opt,"Debug")
