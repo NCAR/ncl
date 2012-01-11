@@ -8,6 +8,15 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       10 Jan 2012:
+;            Overhauled latlon_to_SCRIP to accept a grid type
+;            as input, like "1x1", "0.25", "G64", etc. 
+;            Overhauled rectilinear_to_SCRIP, curvilinear_to_SCRIP
+;            latlon_to_SCRIP, and unstructured_to_ESMF to turn some
+;            of the input arguments (like a title) into "opt"
+;            attributes. Also removed "mask2d" as an input argument,
+;            and made it an "opt" attribute.
+;
 ;       09 Jan 2012:
 ;            Renamed cartesian_to_SCRIP to latlon_to_SCRIP
 ;               Renamed some of the attributes in this function.
@@ -417,9 +426,8 @@ end     ; of find_SCRIP_corners(...)
 ; structured grids as unstructured grids. (Refer to TriPolar - TGrid)
 ;======================================================================
 undef("unstructured_to_ESMF")
-procedure unstructured_to_ESMF(FName[1]:string,inputFName[1]:string,\
-                             inLat,inLon,inNodeMask,Opt[1]:logical)
-local debug, lat, lon, NodeMask, ElementVertices
+procedure unstructured_to_ESMF(FName[1]:string,inLat,inLon,Opt[1]:logical)
+local debug, lat, lon, NodeMask, ElementVertices, title
 begin
 ;---Check for options
     PrintTimings = isatt_logical_true(Opt,"PrintTimings")
@@ -437,19 +445,33 @@ begin
       setfileoption("nc","Format","LargeFile") 
     end if
 
-    lat      = ndtooned(inLat)
-    lon      = ndtooned(inLon)
-    NodeMask = ndtooned(inNodeMask)
-    
+    lat = ndtooned(inLat)
+    lon = ndtooned(inLon)
+
     if (dimsizes(lat).ne.dimsizes(lon)) then
         print("unstructured_to_ESMF: latitude and longitude must have the same number of elements.")
         exit
     end if
-    if (dimsizes(NodeMask).ne.dimsizes(lat)) then
-        print("unstructured_to_ESMF: mask must have the same number of elements as lat and lon.")
+;---Was a mask provided?
+    if(Opt.and.isatt(Opt,"Mask2D")) then
+      if(.not.all(product(dimsizes(Opt@Mask2D)).eq.dimsizes(lat))) then
+        print("unstructured_to_ESMF: Opt@Mask2D is not the correct dimensionality")
         exit
+      else
+        NodeMask = ndtooned(Opt@Mask2D)
+      end if
+    else
+;---No masking
+      NodeMask = new(dimsizes(lat), "integer","No_FillValue")
+      NodeMask = 1
     end if
-  
+    
+    if(Opt.and.isatt(Opt,"InputFileName")) then
+      inputFName = Opt@InputFileName
+    else
+      inputFName = "none provided"
+    end if
+
 ;---Triangulate and get the element connectivity
     if(debug) then
       print("unstructured_to_ESMF: triangulating the data ...")
@@ -594,12 +616,11 @@ end     ; of unstructured_to_ESMF(...)
 ;     CornerLat and CornerLon attribute of Opt.
 ;======================================================================
 undef("curvilinear_to_SCRIP")
-procedure curvilinear_to_SCRIP(FName[1]:string,FTitle[1]:string, \
-                            lat2d[*][*]:numeric,lon2d[*][*]:numeric, \
-                            mask2d[*][*]:integer, Opt[1]:logical)
+procedure curvilinear_to_SCRIP(FName[1]:string,lat2d[*][*]:numeric,\
+                               lon2d[*][*]:numeric,Opt[1]:logical)
 local latlon_dims, nlat, nlon, fid, FileAtt, grid_siz, grid_corners, \
 grid_rank, FDimNames, FDimSizes, FDimUnlim, DummyAtt1, DummyAtt2, \
-CornerLat, CornerLon, grid_corner_lat, grid_corner_lon
+CornerLat, CornerLon, grid_corner_lat, grid_corner_lon, mask2d
 begin
 ;---Check for options
     PrintTimings = isatt_logical_true(Opt,"PrintTimings")
@@ -623,6 +644,26 @@ begin
     latlon_dims = dimsizes(lat2d)
     nlat        = latlon_dims(0)
     nlon        = latlon_dims(1)
+
+    if(Opt.and.isatt(Opt,"Title")) then
+      FTitle = Opt@Title
+    else
+      FTitle = "curvilinear_to_SCRIP (" + nlat + "," + nlon + ")"
+    end if
+
+;---Was a mask provided?
+    if(Opt.and.isatt(Opt,"Mask2D")) then
+      if(.not.all(dimsizes(Opt@Mask2D).eq.latlon_dims)) then
+        print("curvilinear_to_SCRIP: Opt@Mask2D is not the correct dimensionality")
+        exit
+      else
+        mask2d = Opt@Mask2D
+      end if
+    else
+;---No masking
+      mask2d = new(latlon_dims, "integer","No_FillValue")
+      mask2d = 1
+    end if
 
 ;---Create the file
     fid = addfile(FName,"c")
@@ -722,9 +763,9 @@ end     ; of curvilinear_to_SCRIP(...)
 ; SCRIP file. This procedure calls curvilinear_to_SCRIP.
 ;======================================================================
 undef("rectilinear_to_SCRIP")
-procedure rectilinear_to_SCRIP(FName[1]:string,FTitle[1]:string,\
-                               lat[*]:numeric,lon[*]:numeric, Opt[1]:logical)
-local nlat, nlon, grid_center_lat, grid_center_lon, mask2d, Opt2
+procedure rectilinear_to_SCRIP(FName[1]:string,lat[*]:numeric,\
+                               lon[*]:numeric, Opt[1]:logical)
+local nlat, nlon, grid_center_lat, grid_center_lon, Opt2, FTitle
 begin
    Opt2 = Opt
 
@@ -735,6 +776,11 @@ begin
       delete(Opt2@PrintTimings)
     end if
 
+    if(.not.isatt(Opt2,"Title")) then
+      Opt2@Title = "rectilinear_to_SCRIP (" + dimsizes(lat) + "," + \
+                                              dimsizes(lon) + ")"
+    end if
+
     nlat = dimsizes(lat)
     nlon = dimsizes(lon)
     
@@ -743,12 +789,12 @@ begin
     grid_center_lon = conform_dims((/nlat, nlon/),lon,1)
 
 ;---Generate the mask
-    mask2d = new((/nlat,nlon/),"integer","No_FillValue")
-    mask2d = 1
+    if(.not.isatt(Opt2,"Mask2D")) then
+      Opt2@Mask2D = onedtond(1,(/nlat,nlon/))
+    end if
     
 ;---Convert to SCRIP
-    curvilinear_to_SCRIP(FName,FTitle,grid_center_lat,grid_center_lon,\
-                         mask2d,Opt2)
+    curvilinear_to_SCRIP(FName,grid_center_lat,grid_center_lon,Opt2)
 
     if(PrintTimings) then
       print_elapsed_time(start_time,"rectilinear_to_SCRIP")
@@ -769,7 +815,7 @@ end     ; of rectilinear_to_SCRIP
 undef("auto_to_SCRIP")
 procedure auto_to_SCRIP(srcFile[1]:string,VarName[1]:string, \
                         SCRIPFName[1]:string,FTitle[1]:string,Opt[1]:logical)
-local i, j, fid, nDim, nlat, nlon, VarData, coordType, mask2d, \
+local i, j, fid, nDim, nlat, nlon, VarData, coordType, \
   grid_center_lon, grid_center_lat, CoordDim, LonData, LatData, \
   LonAttName, LatAttName, tmpAtt, LonDimName, LatDimName, tmpunits, \
   tmpdimname, LonVarName, LatVarName, LonVarInd, LatVarInd, \
@@ -977,15 +1023,13 @@ begin
     end if
     
 ;---Get mask
-    if (isatt(Opt,"Mask2D")) then
-        mask2d = tointeger(Opt@Mask2D)
-    else
-        mask2d = new(dimsizes(grid_center_lat),"integer","No_FillValue")
-        mask2d = 1
+    if (.not.isatt(Opt,"Mask2D")) then
+      Opt@Mask2D = new(dimsizes(grid_center_lat),"integer","No_FillValue")
+      Opt@Mask2D = 1
     end if
+    Opt@Title = FTitle
 
-    curvilinear_to_SCRIP(SCRIPFName,FTitle,grid_center_lat,\
-                         grid_center_lon,mask2d,Opt)
+    curvilinear_to_SCRIP(SCRIPFName,grid_center_lat,grid_center_lon,Opt)
 end     ; of auto_to_SCRIP
 
 ;======================================================================
@@ -993,44 +1037,96 @@ end     ; of auto_to_SCRIP
 ; the corners of a lat/lon box, or a box center and the width
 ; and height of the box and the spacing or the number of values.
 ;
-; Recognized attributes for "Opt":
-;   BoxCenter - used in conjunction with BoxWidth and BoxHeight
-;   BoxWidth
-;   BoxHeight
+; It was overhauled on Jan 10 2012 to allow for input of a grid type
+; rather than inputing nlat and nlon.
 ;
+; GridType can be one of the following types of input:
+;
+;    "1x1", "2x3", "0.25x0.25", etc
+;    "1deg", "0.25deg" "0.25 deg" "0.25" (which means "0.25deg")
+;    "G64", "G128"
+;
+; Recognized attributes for "Opt":
 ;   LLCorner  - defaults to (-90,-180)
 ;   URCorner  - defaults to ( 90, 180)
-;
 ;   Rotation  - rotation angle
-;   IsSpacing - whether nlat_dlat and nlon_dlon represent lat/lon
-;               spacing (the default) or the number of values
+;
 ; It stores the grid in a NetCDF file based on SCRIP standard.
 ;
 ; This procedure calls curvilinear_to_SCRIP.
 ;======================================================================
 undef("latlon_to_SCRIP")
-procedure latlon_to_SCRIP(FName[1]:string,FTitle[1]:string,\
-                             nlat_dlat[1]:numeric,nlon_dlon[1]:numeric,\
-                             Opt[1]:logical)
-local BoxDiag, Rot, nlat, nlon, lat, lon, mask2d, height, width, \
-      grid_center_lat, grid_center_lon
+procedure latlon_to_SCRIP(FName[1]:string,GridType[1]:string,Opt[1]:logical)
+local BoxDiag, Rot, nlat, nlon, grid_type, dlat, dlon,\
+      lat, lon, gau_info, grid_center_lat, grid_center_lon, FTitle
 begin
-;---Check for attributes
+;---Check for "1x1", "2x3", "0.25x0.25" format
+    if(isStrSubset(GridType,"x")) then
+      str = str_split(GridType,"x")
+      if(dimsizes(str).ne.2) then
+        print("latlon_to_SCRIP: invalid format for grid type")
+        exit
+      end if
+      dlat = tofloat(str(0))
+      dlon = tofloat(str(1))
+      if(ismissing(dlat).or.ismissing(dlon)) then
+        print("latlon_to_SCRIP: invalid format for grid type")
+        exit
+      end if
+      grid_type = "degree"
+      delete(str)
+    else if(isStrSubset(GridType,"deg")) then
+;---Check for "1deg", "0.25 deg" format
+      str = str_split(GridType,"deg")
+      if(dimsizes(str).ne.1) then
+        print("latlon_to_SCRIP: invalid format for grid type")
+        exit
+      end if
+      dlat = tofloat(str(0))
+      if(ismissing(dlat)) then
+        print("latlon_to_SCRIP: invalid format for grid type")
+        exit
+      end if
+      dlon = dlat
+      grid_type = "degree"
+      delete(str)
+    else if(isStrSubset(GridType,"G")) then
+;---Check for "G64", "G 128" format
+      str = str_split(GridType,"G")
+      if(dimsizes(str).ne.1) then
+        print("latlon_to_SCRIP: invalid format for grid type")
+        exit
+      end if
+      nlon = tointeger(str(0))
+      if(ismissing(nlon)) then
+        print("latlon_to_SCRIP: invalid value for gaussian grid")
+        exit
+      end if
+      if((nlon%2).ne.0) then
+        print("latlon_to_SCRIP: invalid value for gaussian grid")
+        exit
+      end if
+      nlat = nlon/2
+      grid_type = "gaussian"
+      delete(str)
+    else
+      print("latlon_to_SCRIP: invalid format for grid type")
+      exit
+    end if
+    end if
+    end if
+
+;---Check for Opt attributes
+    if(Opt.and.isatt(Opt,"Title")) then
+      FTitle = Opt@Title
+    else
+      FTitle = GridType + " grid"
+    end if
+
     if (Opt.and.(isatt(Opt,"Rotation"))) then
         Rot = Opt@Rotation
     else
         Rot = 0.0
-    end if
-
-    if (Opt.and.isatt(Opt,"BoxHeight").and.isatt(Opt,"BoxWidth").and.\
-                isatt(Opt,"BoxCenter")) then
-        height = Opt@BoxHeight
-        width  = Opt@BoxWidth
-        if (Rot.ne.0.0) then
-            rotate_latlon(height,width,Rot)
-        end if
-        URCorner = Opt@BoxCenter+0.5d*(/height, width/)
-        LLCorner = Opt@BoxCenter-0.5d*(/height, width/)
     end if
 
     if(.not.isvar("LLCorner")) then
@@ -1078,27 +1174,29 @@ begin
         exit
     end if
         
-;---Generate the latitudes and longitudes
-    if ( isatt(Opt,"IsSpacing").and..not.Opt@IsSpacing ) then
-        nlat = nlat_dlat
-        nlon = nlon_dlon
-    else
-        if (Rot.ne.0.0) then
-            print("latlon_to_SCRIP: The box is rotated. Spacing may be different than what you meant.")
-        end if
-        nlat = tointeger(BoxDiag(0)/nlat_dlat+1)
-        nlon = tointeger(BoxDiag(1)/nlon_dlon+1)
+    if (Rot.ne.0.0) then
+        print("latlon_to_SCRIP: The box is rotated. Spacing may be different than what you meant.")
     end if
+    if(grid_type.eq."degree") then
+      nlat = tointeger(BoxDiag(0)/dlat+1)
+      nlon = tointeger(BoxDiag(1)/dlon+1)
 
-    lat = fspan(0.0,BoxDiag(0),nlat)
-    lon = fspan(0.0,BoxDiag(1),nlon)
+      lat = fspan(0.0,BoxDiag(0),nlat)
+      lon = fspan(0.0,BoxDiag(1),nlon)
+    else if(grid_type.eq."gaussian") then
+      gau_info = gaus(nlat)
+      lat      = gau_info(:,0)  ; gaussian latitudes
+      lon      = (/lonGlobeFo(nlon,"","","")/)
+    end if
+    end if
 
 ;---Generate the cell center Lat/Lon
     grid_center_lat = conform_dims((/nlat, nlon/),lat,0)
     grid_center_lon = conform_dims((/nlat, nlon/),lon,1)
 	
-    mask2d = new((/nlat,nlon/),"integer","No_FillValue")
-    mask2d = 1
+    if(.not.isatt(Opt,"Mask2D")) then
+      Opt@Mask2D = onedtond(1,(/nlat,nlon/))
+    end if
 
 ;---Rotate back the box, if needed.
     if (Rot.ne.(0.0)) then
@@ -1109,8 +1207,9 @@ begin
     grid_center_lat = grid_center_lat + LLCorner(0)
     grid_center_lon = grid_center_lon + LLCorner(1)
 
-    curvilinear_to_SCRIP(FName,FTitle,grid_center_lat, \
-                                      grid_center_lon,mask2d,Opt)
+    Opt@Title = FTitle
+
+    curvilinear_to_SCRIP(FName,grid_center_lat,grid_center_lon,Opt)
 end     ; of latlon_to_SCRIP(...)
 
 ;======================================================================

@@ -1038,7 +1038,7 @@ end
 
 ; *****************************************************************
 ; D. Shea
-; Generate longitudes for a Fixed-OfGSUNset global grid
+; Generate longitudes for a Fixed-Offset global grid
 ; Example: lon = lonGlobeFo (72, "lon", "longitude", "degrees_east")
 ;          lon will run from -> 2.5 to 357.5 in the above example
 ;
