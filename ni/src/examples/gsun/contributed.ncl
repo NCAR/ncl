@@ -572,6 +572,31 @@ begin
     end if                   ; if(.not.all(ismissing(att_names))) 
 end
 
+;======================================================================
+; This is the modified version of copy_VarAtts originaly developed by
+; Dennis Shea.
+;
+; Jan 12, 2012
+; This function was originally developed for use in the ESMF software,
+; and moved to contributed.ncl.
+;======================================================================
+undef("copy_VarAtts_except")
+procedure copy_VarAtts_except(var_from,var_to, Except [*]:string)    
+local att_names, i
+begin                                       
+    att_names = getvaratts(var_from);
+    if(.not.all(ismissing(att_names)))
+        do i = 0,dimsizes(att_names)-1
+            if (.not.any(att_names(i).eq.Except)) then
+                if (isatt(var_to,att_names(i))) then
+                    delete(var_to@$att_names(i)$)  ; var_from att may be diff size/type
+                end if
+                var_to@$att_names(i)$ = var_from@$att_names(i)$
+            end if
+        end do
+    end if
+end     ; of copy_VarAtts_except
+
 ;***********************************************
 ; D. Shea
 ; delete one or more attributes of a variable

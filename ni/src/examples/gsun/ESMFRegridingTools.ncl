@@ -8,6 +8,10 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       12 Jan 2012:
+;            Moved copy_VarAtts_Except to contributed.ncl and 
+;            renamed to copy_VarAtts_except.
+;
 ;       10 Jan 2012:
 ;            Overhauled latlon_to_SCRIP to accept a grid type
 ;            as input, like "1x1", "0.25", "G64", etc. 
@@ -130,29 +134,6 @@ begin
     print("=====> CPU Elapsed Time: " + title + ": " + diff_time + " <=====")
   end if
 end
-
-;======================================================================
-; This is the modified version of copy_VarAtts originaly developed by
-; Dennis Shea.
-;
-; This function probably should be moved to contributed.ncl.
-;======================================================================
-undef("copy_VarAtts_Except")
-procedure copy_VarAtts_Except(var_from,var_to, Except [*]:string)    
-local att_names, i
-begin                                       
-    att_names = getvaratts(var_from);
-    if(.not.all(ismissing(att_names)))
-        do i = 0,dimsizes(att_names)-1
-            if (.not.any(att_names(i).eq.Except)) then
-                if (isatt(var_to,att_names(i))) then
-                    delete(var_to@$att_names(i)$)  ; var_from att may be diff size/type
-                end if
-                var_to@$att_names(i)$ = var_from@$att_names(i)$
-            end if
-        end do
-    end if
-end     ; of copy_VarAtts_Except
 
 ;======================================================================
 ; This function receives a set of variable names and checks 
@@ -300,7 +281,7 @@ begin
     end if
     end if
     end if
-    copy_VarAtts_Except(inVar,outVar,"_FillValue")
+    copy_VarAtts_except(inVar,outVar,"_FillValue")
     return(outVar)
 end     ; of totypeof(...)
 
