@@ -380,7 +380,9 @@ C
       RETURN
       END
 C
-      SUBROUTINE VVINWB ()
+      SUBROUTINE VVINWB (IHM)
+C
+C IHM      -  Hemisphere (1 - North, -1 - South)
 C
 C Initializes wind barb specific common block values.
 C
@@ -499,7 +501,7 @@ c$$$      WBDF = 0.1
 c$$$C     parameter WBC wind barb scale factor 
 c$$$      WBSC = 1.0
 C     
-      RAG = WBAD * D2RAD
+      RAG = IHM * WBAD * D2RAD
 C
 C Use the first four elements of the fill arrow array to store the 
 C pennant triangle. Elements 2 and 3 work for the barb line.
