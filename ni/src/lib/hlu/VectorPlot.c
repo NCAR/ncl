@@ -8900,6 +8900,8 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
 	static NhlLayer trans_obj, overlay_trans_obj;
 	static NhlBoolean over_map;
 	static double rlen_d;
+	static int save_hemisphere = 0;
+	int hemisphere;
 	float xsc = 1.0, ysc = 1.0;
 
         if (Vcp == NULL) {
@@ -9100,6 +9102,13 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
 			ytd = ybd + sgn * (ytd - ybd) * dv_frac * rlen_d / dv;
 			*xe=c_cufx((float)xtd);
 			*ye=c_cufy((float)ytd);
+
+			hemisphere = ydata >= 0 ? 1 : -1;
+			if (hemisphere != save_hemisphere) {
+				NGCALLF(vvinwb,VVINWB)(&hemisphere);
+				save_hemisphere = hemisphere;
+			}
+
 			return;
 
 		}
