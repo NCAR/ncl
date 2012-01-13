@@ -880,8 +880,29 @@ begin
   end if
 end ; END extractAsciiRows
 
+; *****************************************************************
+; Calculate meteorological wind direction
+; *****************************************************************
+undef ("wind_direction")
+function wind_direction(u:numeric, v:numeric)
+local wdir, radi, con
+begin
+  if (typeof(u).eq."double") then
+      radi = 1.0d0/0.0174532925199433d0
+      con  = 180d0
+  else
+      radi = 1.0/0.01745329
+      con  = 180
+  end if
 
-
+  wdir = u       ; create an array with meta data
+  wdir = (/ atan2(u,v)*radi + con /)
+  wdir@long_name = "wind direction (meteorological)"
+  if (isatt(wdir,"units")) then
+      delete(wdir@units)
+  end if
+  return(wdir)
+end
 ;***************************************************************
 ; D. Shea   
 ; There is no NCL built-in function to get the dimension names
