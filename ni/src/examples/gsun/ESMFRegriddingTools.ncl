@@ -8,6 +8,9 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       13 Jan 2012:
+;            Renamed this script to ESMFRegriddingTools.ncl
+;
 ;       12 Jan 2012:
 ;            Moved copy_VarAtts_Except to contributed.ncl and 
 ;            renamed to copy_VarAtts_except.
@@ -477,7 +480,7 @@ begin
     FileAtt               = True
     FileAtt@gridType      = "unstructured"
     FileAtt@Conventions   = "ESMF"
-    FileAtt@Createdby     = "ESMFRegridingTools.ncl"
+    FileAtt@Createdby     = "ESMFRegriddingTools.ncl"
     FileAtt@version       = "0.9"
     FileAtt@inputFile     = inputFName
     FileAtt@timeGenerated = systemfunc("date")
@@ -654,7 +657,7 @@ begin
     FileAtt              = True
     FileAtt@title        = FTitle
     FileAtt@Conventions  = "SCRIP"
-    FileAtt@Createdby    = "ESMFRegridingTools.ncl"
+    FileAtt@Createdby    = "ESMFRegriddingTools.ncl"
     FileAtt@date_created = systemfunc("date")
     fileattdef(fid,FileAtt)
     
@@ -1338,10 +1341,10 @@ begin
     end if
   end if
 
-;---Checking if the ESMF regriding weight generator is present.
-;;  print("Checking if the ESMF regriding weight generator is present ...")
+;---Checking if the ESMF regridding weight generator is present.
+;;  print("Checking if the ESMF regridding weight generator is present ...")
 ;;  if (.not.(isfilepresent("ESMF_RegridWeightGen"))) then
-;;    print("ESMF regriding weight generator is not present.")
+;;    print("ESMF regridding weight generator is not present.")
 ;;    return(1)
 ;;  end if
 
