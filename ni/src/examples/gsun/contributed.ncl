@@ -880,29 +880,6 @@ begin
   end if
 end ; END extractAsciiRows
 
-; *****************************************************************
-; Calculate meteorological wind direction
-; *****************************************************************
-undef ("wind_direction")
-function wind_direction(u:numeric, v:numeric)
-local wdir, radi, con
-begin
-  if (typeof(u).eq."double") then
-      radi = 1.0d0/0.0174532925199433d0
-      con  = 180d0
-  else
-      radi = 1.0/0.01745329
-      con  = 180
-  end if
-
-  wdir = u       ; create an array with meta data
-  wdir = (/ atan2(u,v)*radi + con /)
-  wdir@long_name = "wind direction (meteorological)"
-  if (isatt(wdir,"units")) then
-      delete(wdir@units)
-  end if
-  return(wdir)
-end
 ;***************************************************************
 ; D. Shea   
 ; There is no NCL built-in function to get the dimension names
@@ -1292,6 +1269,129 @@ begin
   end if
   
   return (x)
+end
+; *****************************************************************
+; Calculate meteorological wind direction
+; *****************************************************************
+undef ("wind_direction")
+function wind_direction(u:numeric, v:numeric, opt:integer)
+; meteorological wind direction. 
+; This is over-kill. Only need: wdir=atan2(u,v)*radi + 180
+local wdir, radi, con, wcrit, wmsg, zero, dimu
+begin
+  if (.not.(typeof(u).eq."double" .or. \
+            typeof(u).eq."float"  .or. \
+            typeof(u).eq."integer" )) then
+      print("wind_direction: illegal numeric type: "+typeof(u))
+      exit
+  end if
+
+  dimu = dimsizes(u)
+
+  if (typeof(u).eq."double") then
+      zero = 0.0d
+      wmsg = 1d20
+      con  = 180.0d
+      wcrit= 360d0-0.00002d0
+      radi = 1.0d0/0.0174532925199433d0
+      wdir = new (dimu, typeof(u), wmsg) 
+  else
+      zero = 0.0
+      wmsg = 1e20
+      con  = 180.0
+      wcrit= 360-0.00002
+      radi = 1.0/0.01745329
+      wdir = new (dimu, "float", wmsg) 
+  end if
+
+  wdir = (/ atan2(u,v)*radi + con  /)
+  wdir = where(wdir.ge.wcrit, zero, wdir)  ; force 360 "north winds" to 0
+                          
+  if (typeof(opt).eq."integer" .and. opt.eq.0) then 
+      cdir = zero                          ; calm 0.0->_FillValue
+      wdir = where (u.eq.zero .and. v.eq.zero, cdir, wdir)
+  end if
+                          
+  if (typeof(opt).eq."integer" .and. opt.eq.1) then 
+      cdir = wdir@_FillValue               ; calm 0.0->_FillValue
+      wdir = where (u.eq.zero .and. v.eq.zero, cdir, wdir)
+  end if
+
+  if (typeof(opt).eq."float" .or. typeof(opt).eq."double") then  
+                                           ; calm 0.0->user_value
+      wdir = where (u.eq.zero .and. v.eq.zero, opt, wdir)
+  end if
+  
+  wdir@long_name = "wind direction (meteorological)"
+  if (isatt(wdir,"units")) then
+      delete(wdir@units)
+  end if
+  return(wdir)
+end
+; *****************************************************************
+; Calculate meteorological wind components
+; *****************************************************************
+undef ("wind_component")
+function wind_component(wspd:numeric, wdir:numeric, opt:integer)
+local wdir, rad , ivmsg, uveps, uvzero, dimw, rankw, dimuv, uv
+begin
+  if (typeof(wspd).eq."double" .or. typeof(wspd).eq."double") then
+      rad   = 0.0174532925199433d0
+      uvmsg = 1d20
+      uveps = 1.0d-5
+      uvzero= 0.0d0
+  else
+      rad   = 0.01745329
+      uvmsg = 1e20
+      uveps = 1.0e-5
+      uvzero= 0.0
+  end if
+
+  dimw = dimsizes(wspd)
+  rankw= dimsizes(dimw)
+
+  dimuv= new ( rankw+1, "integer", "No_FillValue")
+  dimuv(0)  = 2
+  dimuv(1:) = dimw
+  uv        = new (dimuv, typeof(wspd), uvmsg) 
+
+  if (rankw.eq.1 .and. dimw(0).eq.1) then
+      uv(0) = -wspd*sin(wdir*rad)
+      uv(1) = -wspd*cos(wdir*rad)
+      copy_VarMeta(wspd, uv)
+  else if (rankw.eq.1) then
+      uv(0,:) = -wspd*sin(wdir*rad)
+      uv(1,:) = -wspd*cos(wdir*rad)
+      copy_VarMeta(wspd, uv(0,:))
+  else if (rankw.eq.2) then
+      uv(0,:,:) = -wspd*sin(wdir*rad)
+      uv(1,:,:) = -wspd*cos(wdir*rad)
+      copy_VarMeta(wspd, uv(0,:,:))
+  else if (rankw.eq.3) then
+      uv(0,:,:,:) = -wspd*sin(wdir*rad)
+      uv(1,:,:,:) = -wspd*cos(wdir*rad)
+      copy_VarMeta(wspd, uv(0,:,:,:))
+  else if (rankw.eq.4) then
+      uv(0,:,:,:,:) = -wspd*sin(wdir*rad)
+      uv(1,:,:,:,:) = -wspd*cos(wdir*rad)
+      copy_VarMeta(wspd, uv(0,:,:,:,:))
+  else if (rankw.eq.5) then
+      uv(0,:,:,:,:,:) = -wspd*sin(wdir*rad)
+      uv(1,:,:,:,:,:) = -wspd*cos(wdir*rad)
+      copy_VarMeta(wspd, uv(0,:,:,:,:,:))
+  end if           ; 5
+  end if           ; 4
+  end if           ; 3
+  end if           ; 2
+  end if           ; 1
+  end if           ; scalar
+
+  uv   = where(abs(uv).le.uveps, uvzero, uv) ; make near zero => 0
+
+  uv!0 = "uv"
+  uv@long_name = "zonal and meridional wind components"
+
+  return(uv)
 end
 
 ; *******************************************************************
