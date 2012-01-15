@@ -1981,6 +1981,7 @@ begin
       delete(cf)
       work@process  =  "FFT with digital respoonse mapped tp FFT space"
   else
+printVarSummary(work)
       work   = wgt_runave_n_Wrap(work,bpfwgt,0,0)
     ;;work   = wgt_runave_Wrap(work,bpfwgt,0)
       work@process  =  "wgt_runave"
@@ -3042,10 +3043,11 @@ begin
   res@gsnSpreadColors     = True          ; use full range of colormap
   res@lbLabelAutoStride   = True
   
-  if (isatt(opt,"tiMainString")) then
+  if (isatt(opt,"tiMainString") .and. opt@tiMainString.ne."") then
       res@tiMainString    = opt@tiMainString
-  else 
-      res@tiMainString    = changeCase(seaName, "up")
+    else if (seaName.ne."") then
+             res@tiMainString    = str_upper(seaName)
+    end if
   end if
   if (isatt(opt,"gsnLeftString")) then
       res@gsnLeftString   = opt@gsnLeftString
@@ -3080,6 +3082,12 @@ begin
   if (isatt(opt,"cnLevels")) then
       res@cnLevels  = opt@cnLevels
   end if
+  if (isatt(opt,"cnLevels")) then
+      res@cnLevels  = opt@cnLevels
+  end if
+  if (isatt(opt,"lbOrientation")) then
+      res@lbOrientation = opt@lbOrientation
+  end if
   
   NW = 6
   if (isatt(opt,"maxWavePlot")) then     ; wave [Y] axis
@@ -3107,6 +3115,10 @@ begin
 
   izero = ind(WORK&freq .eq. 0.0)
   WORK(:,izero) = min(WORK)       ; 0th freq
+
+  if (isatt(opt,"label_freq") .and. .not.opt@label_freq) then
+      delete(WORK&freq@long_name)
+  end if
   
   plot = gsn_csm_contour(wks, WORK , res)
 
