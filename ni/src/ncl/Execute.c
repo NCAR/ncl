@@ -5506,7 +5506,7 @@ void CallFILE_VAR_OP(void) {
 					file = (NclFile)_NclGetObj((int)*(obj*)value->multidval.val);
 				else
 				{
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) obj_type_mask did notmask Ncl_MultiDValnclfileData",dfile->name);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) not reference to a valid file",dfile->name);
 					_NclCleanUpStack(nsubs);
 					estatus = NhlFATAL;
 					return;
