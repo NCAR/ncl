@@ -949,49 +949,112 @@ int wr_status;
 			}
 			else {
 				switch(projcode) {
-				case GCTP_GEO:
+				case GCTP_GEO: /* 0 */
 					qproj_name = NrmStringToQuark("Geographic");
 					break;
-				case GCTP_UTM:
+				case GCTP_UTM: /* 1 */
 					qproj_name = NrmStringToQuark("Universal Transverse Mercator");
 					break;
-				case GCTP_ALBERS:
+				case GCTP_SPCS: /* 2 */
+					qproj_name = NrmStringToQuark("State Plane Coordinates");
+					break;
+				case GCTP_ALBERS: /* 3 */
 					qproj_name = NrmStringToQuark("Albers Conical Equal_Area");
 					break;
-				case GCTP_LAMCC:
+				case GCTP_LAMCC: /* 4 */
 					qproj_name = NrmStringToQuark("Lambert Conformal Conic");
 					break;
-				case GCTP_MERCAT:
+				case GCTP_MERCAT: /* 5 */
 					qproj_name = NrmStringToQuark("Mercator");
 					break;
-				case GCTP_PS:
+				case GCTP_PS: /* 6 */
 					qproj_name = NrmStringToQuark("Polar Stereographic");
 					break;
-				case GCTP_POLYC:
+				case GCTP_POLYC: /* 7 */
 					qproj_name = NrmStringToQuark("Polyconic");
 					break;
-				case GCTP_TM:
+				case GCTP_EQUIDC: /* 8 */
+					qproj_name = NrmStringToQuark("Equidistant Conic");
+					break;
+				case GCTP_TM:  /* 9 */
 					qproj_name = NrmStringToQuark("Transverse Mercator");
 					break;
-				case GCTP_LAMAZ:
+				case GCTP_STEREO:  /* 10 */
+					qproj_name = NrmStringToQuark("Stereographic");
+					break;
+				case GCTP_LAMAZ: /* 11 */
 					qproj_name = NrmStringToQuark("Lambert Azimuthal Equal Area");
 					break;
-				case GCTP_HOM:
+				case GCTP_AZMEQD: /* 12 */
+					qproj_name = NrmStringToQuark("Azimuthal Equidistant");
+					break;
+				case GCTP_GNOMON: /* 13 */
+					qproj_name = NrmStringToQuark("Gnomonic");
+					break;
+				case GCTP_ORTHO: /* 14 */
+					qproj_name = NrmStringToQuark("Orthographic");
+					break;
+				case GCTP_GVNSP: /* 15 */
+					qproj_name = NrmStringToQuark("General Vertical Near-Side Perspective");
+					break;
+				case GCTP_SNSOID: /* 16 */
+					qproj_name = NrmStringToQuark("Sinusoidal");
+					break;
+				case GCTP_EQRECT: /* 17 */
+					qproj_name = NrmStringToQuark("Equirectangular");
+					break;
+				case GCTP_MILLER: /* 18 */
+					qproj_name = NrmStringToQuark("Miller Cylindrical");
+					break;
+				case GCTP_VGRINT: /* 19 */
+					qproj_name = NrmStringToQuark("Van der Grinten");
+					break;
+				case GCTP_HOM:   /* 20 */
 					qproj_name = NrmStringToQuark("Hotine Oblique Mercator");
 					break;
-				case GCTP_SOM:
+				case GCTP_ROBIN:   /* 21 */
+					qproj_name = NrmStringToQuark("Robinson");
+					break;
+				case GCTP_SOM: /* 22 */
 					qproj_name = NrmStringToQuark("Space Oblique Mercator");
 					break;
-				case GCTP_GOOD:
+				case GCTP_ALASKA: /* 23 */
+					qproj_name = NrmStringToQuark("Alaska Conformal");
+					break;
+				case GCTP_GOOD:  /* 24 */
 					qproj_name = NrmStringToQuark("Interrupted Goode Homolosine");
 					break;
-				case GCTP_ISINUS:
-				case GCTP_ISINUS1:
+				case GCTP_MOLL:  /* 25 */
+					qproj_name = NrmStringToQuark("Mollweide");
+					break;
+				case GCTP_IMOLL:  /* 26 */
+					qproj_name = NrmStringToQuark("Interrupted Mollweide");
+					break;
+				case GCTP_HAMMER:  /* 27 */
+					qproj_name = NrmStringToQuark("Hammer");
+					break;
+				case GCTP_WAGIV:  /* 28 */
+					qproj_name = NrmStringToQuark("Wagner IV");
+					break;
+				case GCTP_WAGVII:  /* 29 */
+					qproj_name = NrmStringToQuark("Wagner VII");
+					break;
+				case GCTP_OBLEQA:  /* 30 */
+					qproj_name = NrmStringToQuark("Oblated Equal Area");
+					break;
+				case GCTP_ISINUS: /* 99 */
+				case GCTP_ISINUS1: /* 31 */
 					qproj_name = NrmStringToQuark("Integerized Sinusoidal Projection");
 					break;
-				case GCTP_CEA:
-				case GCTP_BCEA:
-					qproj_name = NrmStringToQuark("Cylindrical Equal-Area Projection");
+				case GCTP_CEA: /* 97 */
+					qproj_name = NrmStringToQuark("Cylindrical Equal Area (Grid corners set in meters for EASE grid)");
+					break;
+
+				case GCTP_BCEA: /* 98 */
+					qproj_name = NrmStringToQuark("Cylindrical Equal-Area (Grid corners set in DMS degs for EASE grid)");
+					break;
+				default:
+					qproj_name = NrmStringToQuark("unknown");
 					break;
 				}
 			}			
