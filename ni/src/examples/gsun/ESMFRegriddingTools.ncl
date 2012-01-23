@@ -8,6 +8,10 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       23 Jan 2012:
+;            Removed BothRegional and BothESMF, since they might
+;            confuse users. Use Src/DstRegional and Src/DstESMF.
+;
 ;       13 Jan 2012:
 ;            Renamed this script to ESMFRegriddingTools.ncl
 ;
@@ -1281,13 +1285,9 @@ end     ; of is_SCRIP(...)
 ;  The following attributes are allowed with "opt":
 ;        Debug - Turns on debug print statements
 ;           True or False (default=False)
-;        BothESMF - whether both grid files are ESMF files
-;           True or False (default=False)
 ;        SrcESMF - whether only the src grid file is an ESMF file
 ;           True or False (default=False)
 ;        DstESMF - whether only the dst grid file is an ESMF file
-;           True or False (default=False)
-;        BothRegional - whether both grids are regional
 ;           True or False (default=False)
 ;        SrcRegional - whether only the src grid file is regional
 ;           True or False (default=False)
@@ -1324,29 +1324,19 @@ begin
     print("ESMF_gen_weights: Calling ESMF Regrid Weight Generation tool ...")
   end if
     
-  if ( .not.(isbothvaratt_logical_true(opt,"BothESMF")) ) then
-    if ( .not.(isbothvaratt_logical_true(opt,"SrcESMF")) ) then
 ;---Check if the source grid file is a SCRIP file.
-      if (.not.(is_SCRIP(srcGridFile))) then
-        print("ESMF_gen_weights: source grid file is not a SCRIP file.")
-        exit
-      end if
-    end if
-    if ( .not.(isbothvaratt_logical_true(opt,"DstESMF")) ) then
-;---Check if the destination grid file is a SCRIP file.
-      if (.not.(is_SCRIP(dstGridFile))) then
-        print("ESMF_gen_weights: destination grid file is not a SCRIP file.")
-        exit
-      end if
-    end if
+  if (.not.(isbothvaratt_logical_true(opt,"SrcESMF")).and. \
+      .not.(is_SCRIP(srcGridFile))) then
+    print("ESMF_gen_weights: source grid file is not a SCRIP file.")
+    exit
   end if
 
-;---Checking if the ESMF regridding weight generator is present.
-;;  print("Checking if the ESMF regridding weight generator is present ...")
-;;  if (.not.(isfilepresent("ESMF_RegridWeightGen"))) then
-;;    print("ESMF regridding weight generator is not present.")
-;;    return(1)
-;;  end if
+;---Check if the destination grid file is a SCRIP file.
+  if (.not.(isbothvaratt_logical_true(opt,"DstESMF")).and. \
+      .not.(is_SCRIP(dstGridFile))) then
+    print("ESMF_gen_weights: destination grid file is not a SCRIP file.")
+    exit
+  end if
 
 ;
 ; All seems ok. Run the ESMF regrid weight generator.
@@ -1399,13 +1389,6 @@ begin
       ESMFCMD = ESMFCMD + " --pole " + str_lower(opt@pole)
     end if
 ;        
-; Check if the user is specifying that both source and destination
-; grids are regional
-;
-    if (isatt_logical_true(opt,"BothRegional")) then
-      ESMFCMD = ESMFCMD + " -r"
-    end if
-;        
 ; Check if the user is specifying that the source grid is regional 
 ; and the destination grid is global
 ;
@@ -1420,11 +1403,6 @@ begin
       ESMFCMD = ESMFCMD + " --dst_regional"
     end if
 
-;---Check if the user specifies that both grids are ESMF
-    if (isatt_logical_true(opt,"BothESMF")) then
-      ESMFCMD = ESMFCMD + " -t"
-    end if
-        
 ;---Checking if the user specifies that source grids are ESMF
     if (isatt_logical_true(opt,"SrcESMF")) then
         ESMFCMD = ESMFCMD + " --src_type ESMF"
