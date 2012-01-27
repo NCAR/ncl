@@ -1835,7 +1835,7 @@ begin
      return(xS)
  end if
 
- if (typeof(xS).ne."short") then
+ if (.not.(typeof(xS).eq."short" .or. typeof(xS).eq."ushort")) then
      if (isatt(xS,"long_name")) then
          print("short2flt: input variable is not type short: "+xS@long_name)
      else
@@ -1915,7 +1915,9 @@ begin
      xF = xS*scale + offset 
  end if
 
- if (isatt(xS,"valid_range") .and. typeof(xS@valid_range).eq."short") then
+ if (isatt(xS,"valid_range") .and. \
+    (typeof(xS@valid_range).eq."short" .or. \
+     typeof(xS@valid_range).eq."ushort")    ) then
      vrS = xS@valid_range
      vrF = new ( dimsizes(vrS), float)
      vrF = vrS*scale + offset 
@@ -1940,7 +1942,7 @@ end
 ; This follows these conventions.
 
 undef("byte2flt")
-function byte2flt (xB:byte)
+function byte2flt (xB)
 local xF, oNames, sNames, offset, scale, xAtts, nAtts, n
 begin
  xF = new ( dimsizes(xB), float)
@@ -2003,7 +2005,9 @@ begin
      xF = xB*scale + offset 
  end if
 
- if (isatt(xB,"valid_range") .and. typeof(xB@valid_range).eq."byte") then
+ if (isatt(xB,"valid_range") .and. \
+    (typeof(xB@valid_range).eq."byte" .or. \
+     typeof(xB@valid_range).eq."ubyte")    ) then
      vrB = xB@valid_range
      vrF = new ( dimsizes(vrB), float)
      vrF = vrB*scale + offset 
