@@ -285,6 +285,7 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		FileSupport.c Formats.c GetGrids.c InitData.c		\
 		MatMulDValOp.c.sed Memory.c MultiDValOp.c.sed NclAtt.c	\
 		NclCCM.c NclCoordVar.c NclData.c NclGroup.c NclFile.c	\
+		NclNewFile.c NclNewGroup.c NclNewList.c                 \
 		NclFileVar.c NclGRIB.c NclGRIB2.c NclHDF.c \
 		NclHDFEOS.c NclHDFEOS5.c NclHDF5.c h5reader.c h5writer.c \
 		NclMultiDValData.c.sed NclMultiDValnclfileData.c	\
