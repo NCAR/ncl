@@ -1837,35 +1837,52 @@ begin
 
  if (.not.(typeof(xS).eq."short" .or. typeof(xS).eq."ushort")) then
      if (isatt(xS,"long_name")) then
-         print("short2flt: input variable is not type short: "+xS@long_name)
+         print("short2flt: input variable is not type short or ushort: "+xS@long_name)
      else
-         print("short2flt: input variable is not type short")
+         print("short2flt: input variable is not type short or ushort")
      end if
      exit
  end if
 
 ;xF = new ( dimsizes(xS), float)
  xF = new ( dimsizes(xS), float, 1.e20)  ; 20 Nov 2002
- 
- copy_VarAtts   (xS, xF)
- copy_VarCoords (xS, xF)
                                      ; added 19 Dec 2002
                                      ; the type stuff added Sept 2003
  if (isatt(xS,"missing_value") .and. .not.isatt(xS,"_FillValue")) then
      type_missing_value = typeof(xS@missing_value)
-     if (type_missing_value.eq."short") then
-         xS@_FillValue = xS@missing_value
+     if (typeof(xS).eq."short") then
+         if (type_missing_value.eq."short") then
+             xS@_FillValue = xS@missing_value
+         end if
+         if (type_missing_value.eq."ushort") then
+             xS@_FillValue = toshort(xS@missing_value)
+         end if
+         if (type_missing_value.eq."integer") then
+             xS@_FillValue = toshort(xS@missing_value)
+         end if
      end if
-     if (type_missing_value.eq."integer") then
-         xS@_FillValue = integertoshort(xS@missing_value)
+
+     if (typeof(xS).eq."ushort") then
+         if (type_missing_value.eq."ushort") then
+             xS@_FillValue = xS@missing_value
+         end if
+         if (type_missing_value.eq."short") then
+             xS@_FillValue = toushort(xS@missing_value)
+         end if
+         if (type_missing_value.eq."integer") then
+             xS@_FillValue = toushort(xS@missing_value)
+         end if
      end if
- end if
+ end if   ; end of assigning _FillValue
+ 
+ copy_VarAtts   (xS, xF)
+ copy_VarCoords (xS, xF)
 
           ; should data be 'scaled' and/or 'offset' ?
 
           ; names to check
  oNames = (/"add_offset", "offset", "OFFSET", "Offset", "_offset" \
-           ,"Intercept", "intercept", "add_off", "ADD_OFF"/)
+           ,"Intercept", "intercept"/)
  sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor", "factor" \
            ,"Scale_factor", "Slope" , "slope", "ScaleFactor", "Scale_Factor" /)
 
@@ -1915,9 +1932,7 @@ begin
      xF = xS*scale + offset 
  end if
 
- if (isatt(xS,"valid_range") .and. \
-    (typeof(xS@valid_range).eq."short" .or. \
-     typeof(xS@valid_range).eq."ushort")    ) then
+ if (isatt(xS,"valid_range") .and. typeof(xS@valid_range).eq."short") then
      vrS = xS@valid_range
      vrF = new ( dimsizes(vrS), float)
      vrF = vrS*scale + offset 
