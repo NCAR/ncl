@@ -1388,27 +1388,23 @@ begin
     if (isatt(opt,"pole")) then
       ESMFCMD = ESMFCMD + " --pole " + str_lower(opt@pole)
     end if
-;        
-; Check if the user is specifying that the source grid is regional 
-; and the destination grid is global
-;
+
+;---Check if the user specifies that source grid is regional
     if (isatt_logical_true(opt,"SrcRegional")) then
       ESMFCMD = ESMFCMD + " --src_regional"
     end if
-;        
-; Check if the user is specifying that the destination grid is 
-; regional and the source grid is global
-;
+
+;---Check if the user specifies that destination grid is regional
     if (isatt_logical_true(opt,"DstRegional")) then
       ESMFCMD = ESMFCMD + " --dst_regional"
     end if
 
-;---Checking if the user specifies that source grids are ESMF
+;---Checking if the user specifies that source grid is ESMF
     if (isatt_logical_true(opt,"SrcESMF")) then
         ESMFCMD = ESMFCMD + " --src_type ESMF"
     end if
 
-;---Check if the user specifies that source grids are ESMF
+;---Check if the user specifies that destination grid is ESMF
     if (isatt_logical_true(opt,"DstESMF")) then
       ESMFCMD = ESMFCMD + " --dst_type ESMF"
     end if
@@ -1416,6 +1412,11 @@ begin
 ;---This flag is necessary for V5.2.0r1 and grids like WRF.
     if (isatt_logical_true(opt,"IgnoreUnmappedPoints")) then
         ESMFCMD = ESMFCMD + " -i"
+    end if
+
+;---This flag is necessary for writing vars > 2 GB
+    if (isatt_logical_true(opt,"LargeFile")) then
+        ESMFCMD = ESMFCMD + " --64bit_offset"
     end if
 
 ;---Check if the user has requested to print out the full command to be run.
