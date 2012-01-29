@@ -8459,6 +8459,7 @@ int* nrotatts;
 	int ila2;
 	int ilo1;
 	int ilo2;
+        int start, end;
 	double loinc;
 	float *tmp_float;
 	NclQuark *tmp_string;
@@ -8509,8 +8510,19 @@ int* nrotatts;
 			int done = 0;
 			int redo_nlat = 0;
 			i = nlat - 1;
+			/* 
+			 * ila1 should be the start and ila2 should be the end but allow for the possibility that they
+			 * are reversed
+			 */
+			if (ila1 < ila2) {
+				start = ila2;
+				end = ila1;
+			} else {
+				start = ila1;
+				end = ila2;
+			}
 			while (! done) {
-				if (ila1 > (int)(rtod*theta[i] * 1000.0 + .5) - 90000) {
+				if (start > (int)(rtod*theta[i] * 1000.0 + .5) - 90000) {
 					if (nlat < (*dimsizes_lat)[0]) {
 						redo_nlat = 1;
 					}
@@ -8524,13 +8536,12 @@ int* nrotatts;
 					 * nlat can legitimately be larger than the size of the lat array if the grid is not global 
 					 */
 					while(i >= 0) {
-						if((ila1 == (int)(rtod*theta[i] * 1000.0) - 90000)||(ila1 == (int)(rtod*theta[i] * 1000.0 + .5) - 90000)) {
+						if((start == (int)(rtod*theta[i] * 1000.0) - 90000)||(start == (int)(rtod*theta[i] * 1000.0 + .5) - 90000)) {
 							break;
 						} else {
 							i--;
 						}
 					}
-					/*if (2 + 2 * i - nlat != (*dimsizes_lat)[0]) {   nlat - 2((nlat -1) - i : might be invalid to assume symmetry in the subselection of gaussian coordinates */
 					if (i < (*dimsizes_lat)[0] - 1) { /* this is the only thing that is clearly going to generate some undefined values */
 						if (nlat != *(dimsizes_lat)[0]) {
 							redo_nlat = 1;
@@ -8560,7 +8571,7 @@ int* nrotatts;
 			}
 			k = 0;
 			while((k<(*dimsizes_lat)[0])&&(i>=0)) {
-				if((ila2 == (int)(rtod*theta[i] * 1000.0) - 90000)||(ila2 == (int)(rtod*theta[i] * 1000.0+.5) - 90000)) {
+				if((end == (int)(rtod*theta[i] * 1000.0) - 90000)||(end == (int)(rtod*theta[i] * 1000.0+.5) - 90000)) {
 					break;
 				} else {
 					(*lat)[k++] = rtod*theta[i] - 90.0;
@@ -8576,8 +8587,19 @@ int* nrotatts;
 			int done = 0;
 			int redo_nlat = 0;
 			i = 0;
+			/* 
+			 * ila1 should be the start and ila2 should be the end but allow for the possibility that they
+			 * are reversed
+			 */
+			if (ila2 < ila1) {
+				start = ila2;
+				end = ila1;
+			} else {
+				start = ila1;
+				end = ila2;
+			}
 			while (! done) {
-				if (ila1 <  (int)(rtod*theta[i] * 1000.0) - 90000) {
+				if (start <  (int)(rtod*theta[i] * 1000.0) - 90000) {
 					if (nlat < (*dimsizes_lat)[0]) {
 						redo_nlat = 1;
 					}
@@ -8586,12 +8608,11 @@ int* nrotatts;
 							  "GdsGAGrid: GRIB attributes La1 and/or La2 are incorrectly out of range of the gaussian latitude array (See GRIB Section 2 documentation)");
 					}
 				}
-				else {
-					/* 
+				else {					/* 
 					 * nlat can legitimately be larger than the size of the lat array if the grid is not global 
 					 */
 					while(i < nlat) {
-						if((ila1 == (int)(rtod*theta[i] * 1000.0) - 90000)||(ila1 == (int)(rtod*theta[i] * 1000.0 + .5) - 90000)) {
+						if((start == (int)(rtod*theta[i] * 1000.0) - 90000)||(start == (int)(rtod*theta[i] * 1000.0 + .5) - 90000)) {
 							break;
 						} else {
 							i++;
@@ -8626,7 +8647,7 @@ int* nrotatts;
 			}
 			k = 0;
 			while((i<nlat)&&(k<(*dimsizes_lat)[0])) {
-				if((ila2 == (int)(rtod*theta[i] * 1000.0 + .5) - 90000)||(ila2 == (int)(rtod*theta[i] * 1000.0) - 90000)) {
+				if((end == (int)(rtod*theta[i] * 1000.0 + .5) - 90000)||(end == (int)(rtod*theta[i] * 1000.0) - 90000)) {
 					break;
 				} else {
 					(*lat)[k++] = rtod*theta[i] - 90.0;
