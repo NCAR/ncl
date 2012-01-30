@@ -39,14 +39,13 @@
 #include "cro_device.h"
 #include "croddi.h"
 #include "cro.h"
+#include "argb.h"
 
 #define JIRA_494 1   /* temporary, until issued resolved */
 
 #define PI 3.1415926
 #define RINT(A) ((A) > 0 ? (int) ((A) + 0.5) : -(int) (0.5 - (A)))
 #define NUM_CONTEXT 20  /* number of allowable contexts */
-#define ARGB_MASK 0x40000000
-#define ALPHA_BLEND(a1, a2) (a1 * a2)
 
 static const char *getFileNameRoot(int, const char*, const char*);
 static char *getRegularOutputFilename(int, const char*, const char*, const char*);
@@ -2423,12 +2422,12 @@ struct color_value unpack_argb(unsigned int* ctable, unsigned int index) {
     struct color_value cval;
 
     unsigned int argb = ((index & ARGB_MASK) > 0)
-    		? index            /* ARGB color... */
-			: ctable[index];   /* color-index */
-    cval.alpha = ((0x3F000000 & argb) >> 24) / 63.;   /* recall alpha is encoded with a limited dynamic range */
-    cval.red   = ((0x00FF0000 & argb) >> 16) / 255.;
-    cval.green = ((0x0000FF00 & argb) >>  8) / 255.;
-    cval.blue  = ((0x000000FF & argb))       / 255.;
+            ? index          /* ARGB color... */
+            : ctable[index]; /* color-index */
+    cval.alpha = ((ALPHA_MASK & argb) >> 24) / 63.;   /* recall alpha is encoded with a limited dynamic range */
+    cval.red   = ((RED_MASK   & argb) >> 16) / 255.;
+    cval.green = ((GREEN_MASK & argb) >>  8) / 255.;
+    cval.blue  = ((BLUE_MASK  & argb))       / 255.;
 
     return cval;
 }

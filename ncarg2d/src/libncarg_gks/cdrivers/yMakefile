@@ -5,7 +5,7 @@
 MYNAME		= cdrivers
 
 INCLUDES	= gksP.h
-BASICSRC	= fort_c.c gksc.c transform.c gksP.c
+BASICSRC	= fort_c.c gksc.c transform.c gksP.c argb.c
 DEVSRC		= gks_device.c
 CTXTSRC		= ctxt_device.c ctxt.c ctxt_conv.c
 XSRC		= xdevice.c font.c text.c x_conv.c xattribute.c xcontrol.c \
@@ -25,7 +25,7 @@ PNG_DEFINES  	=  -DBuildPNG
 #define PNGOBJ
 #endif
 
-BASICOBJ	= fort_c.o gksc.o transform.o gksP.o
+BASICOBJ	= fort_c.o gksc.o transform.o gksP.o argb.o
 DEVOBJ		= gks_device.o
 CTXTOBJ		= ctxt_device.o ctxt.o ctxt_conv.o
 XOBJ		= xdevice.o font.o text.o x_conv.o xattribute.o xcontrol.o \
