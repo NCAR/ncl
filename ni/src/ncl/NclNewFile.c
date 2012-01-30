@@ -5436,13 +5436,15 @@ static NhlErrorTypes NewFileAddDim(NclFile infile, NclQuark dimname,
                 ret = NhlFATAL;
             }
         }
-        else
-        {
-            NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                "NewFileAddDim: Dimension %s is already defined",
-                NrmQuarkToString(dimname)));
-            ret = NhlWARNING;
-        }
+      /*
+       *else
+       *{
+       *    NHLPERROR((NhlINFO,NhlEUNKNOWN,
+       *        "NewFileAddDim: Dimension %s is already defined",
+       *        NrmQuarkToString(dimname)));
+       *    ret = NhlINFO;
+       *}
+       */
     }
 
   /*
@@ -7180,7 +7182,9 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
     NclFileVarNode *varnode;
     NclFileDimNode *dimnode;
 
-    fprintf(stderr, "\nHit NewFileWriteVarVar, file: %s, line: %d\n", __FILE__, __LINE__);
+  /*
+   *fprintf(stderr, "\nHit NewFileWriteVarVar, file: %s, line: %d\n", __FILE__, __LINE__);
+   */
 
     if(thefile->newfile.wr_status<=0)
     {
@@ -7419,7 +7423,7 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
                      /*
                       * Dimnames are unequal give warning then overwrite
                       */
-                        NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+                        NHLPERROR((NhlINFO,NhlEUNKNOWN,
                             "Dimension names of left hand side and right hand side do not match, overwriting dimension (%s), use (/ .. /) if this is not the desired result",
                              NrmQuarkToString(dimnode->name)));
                         _NclFileWriteDim(infile,tmp_var->var.dim_info[j].dim_quark,dimnode->id);
@@ -8272,11 +8276,11 @@ NhlErrorTypes NewFileCreateEnumType(NclFile infile, NclQuark enum_name, NclQuark
     NclNewFile thefile = (NclNewFile) infile;
     NhlErrorTypes ret = NhlNOERROR;
 
-    fprintf(stderr, "\nEnter NewFileCreateEnumType, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tenum_name: <%s>\n", NrmQuarkToString(enum_name));
-    fprintf(stderr, "\tvar_name: <%s>\n", NrmQuarkToString(var_name));
-    fprintf(stderr, "\tdim_name: <%s>\n", NrmQuarkToString(dim_name));
   /*
+   *fprintf(stderr, "\nEnter NewFileCreateEnumType, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tenum_name: <%s>\n", NrmQuarkToString(enum_name));
+   *fprintf(stderr, "\tvar_name: <%s>\n", NrmQuarkToString(var_name));
+   *fprintf(stderr, "\tdim_name: <%s>\n", NrmQuarkToString(dim_name));
    */
 
     if(thefile->newfile.wr_status > 0)
@@ -8284,7 +8288,6 @@ NhlErrorTypes NewFileCreateEnumType(NclFile infile, NclQuark enum_name, NclQuark
         NHLPERROR((NhlFATAL,NhlEUNKNOWN,
             "NewFileCreateEnumType: file (%s) was opened for reading only, can not write",
              NrmQuarkToString(thefile->newfile.fname)));
-        fprintf(stderr, "Leave NewFileCreateEnumType, file: %s, line: %d\n\n", __FILE__, __LINE__);
         return (NhlFATAL);
     }
 
@@ -8296,8 +8299,8 @@ NhlErrorTypes NewFileCreateEnumType(NclFile infile, NclQuark enum_name, NclQuark
     }
     
   /*
+   *fprintf(stderr, "Leave NewFileCreateEnumType, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "Leave NewFileCreateEnumType, file: %s, line: %d\n\n", __FILE__, __LINE__);
     return ret;
 }
 
@@ -8307,12 +8310,12 @@ NhlErrorTypes NewFileCreateOpaqueType(NclFile infile, NclQuark opaque_name, NclQ
     NclNewFile thefile = (NclNewFile) infile;
     NhlErrorTypes ret = NhlNOERROR;
 
-    fprintf(stderr, "\nEnter NewFileCreateOpaqueType, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\topaque_name: <%s>\n", NrmQuarkToString(opaque_name));
-    fprintf(stderr, "\tvar_name: <%s>\n", NrmQuarkToString(var_name));
-    fprintf(stderr, "\tvar_size: <%d>\n", var_size);
-    fprintf(stderr, "\tdim_name: <%s>\n", NrmQuarkToString(dim_name));
   /*
+   *fprintf(stderr, "\nEnter NewFileCreateOpaqueType, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\topaque_name: <%s>\n", NrmQuarkToString(opaque_name));
+   *fprintf(stderr, "\tvar_name: <%s>\n", NrmQuarkToString(var_name));
+   *fprintf(stderr, "\tvar_size: <%d>\n", var_size);
+   *fprintf(stderr, "\tdim_name: <%s>\n", NrmQuarkToString(dim_name));
    */
 
     if(thefile->newfile.wr_status > 0)
@@ -8331,8 +8334,8 @@ NhlErrorTypes NewFileCreateOpaqueType(NclFile infile, NclQuark opaque_name, NclQ
     }
     
   /*
+   *fprintf(stderr, "Leave NewFileCreateOpaqueType, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "Leave NewFileCreateOpaqueType, file: %s, line: %d\n\n", __FILE__, __LINE__);
     return ret;
 }
 

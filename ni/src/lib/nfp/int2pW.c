@@ -215,9 +215,15 @@ NhlErrorTypes int2p_W( void )
 
   size_xout   = size_leftmost * npout;
 
-  if(type_xin  != NCL_double && type_pin != NCL_double &&
-     type_pout != NCL_double) {
-
+/*
+ * Set type for return array.
+ *
+ * We used to check the types of xin, pin, and pout. Dennis asked
+ * that we change this in V6.1.0 so that it only checks xin. 
+ *
+ * See JIRA NCL-1201.
+ */
+  if(type_xin != NCL_double) {
     type_xout = NCL_float;
 
     xout     = (void*)calloc(size_xout,sizeof(float));
@@ -611,10 +617,13 @@ NhlErrorTypes int2p_n_W( void )
 
 /*
  * Set type for return array.
+ *
+ * We used to check the types of xin, pin, and pout. Dennis asked
+ * that we change this in V6.1.0 so that it only checks xin. 
+ *
+ * See JIRA NCL-1201.
  */
-  if(type_xin  != NCL_double && type_pin != NCL_double &&
-     type_pout != NCL_double) {
-
+  if(type_xin != NCL_double) {
     type_xout = NCL_float;
 
     xout     = (void*)calloc(size_xout,sizeof(float));

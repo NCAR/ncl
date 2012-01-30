@@ -11,10 +11,10 @@ NhlErrorTypes sparse_matrix_mult_W
     /* Locally used variables */
     ng_size_t nvector, nmatrices, ntotal;
     ng_size_t ncoly, nrowy, nrowcoly, ncolx, nrowx, nrowcolx;
-    ng_size_t i, j, k, l, index_x, index_y;
+    ng_size_t i, j, l, index_x, index_y;
     ng_size_t xInd, yInd;
+    ng_size_t *iy;
     int ndims;
-    logical found_missing;
 
     /* Defining the arguments */
     /* Argument # 0 */
@@ -115,14 +115,6 @@ NhlErrorTypes sparse_matrix_mult_W
                 &type_x,
                 DONT_CARE); 
 
-    if(ndims_x < 2) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: x must be at least a 2-dimensional array");
-      return(NhlFATAL);
-    }
-
-    nrowx = dsizes_x[ndims_x-2];
-    ncolx = dsizes_x[ndims_x-1];
-
       /* Argument #4 */
     tmp_output_dsizes = (void*)NclGetArgValue(
            4,
@@ -134,15 +126,40 @@ NhlErrorTypes sparse_matrix_mult_W
            &type_output_dsizes,
            DONT_CARE);
 
+    if(dsizes_output_dsizes[0] < 0 || dsizes_output_dsizes[0] > 2)  {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: the output dimensions must represent a 1D or 2D array.");
+      return(NhlFATAL);
+    }
+
+
 /* Convert the output dimensions to ng_size_t. */
     output_dsizes = get_dimensions(tmp_output_dsizes,dsizes_output_dsizes[0],
                                    type_output_dsizes,"sparse_matrix_mult");
-    if(output_dsizes == NULL) 
-      return(NhlFATAL);
 
-    /* nrowy and ncoly for output array */
-    nrowy = output_dsizes[0];
-    ncoly = output_dsizes[1];
+/* nrowy and ncoly for output array */
+    if(dsizes_output_dsizes[0] == 2) {
+      if(ndims_x < 2) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: the input array must be at least 2-dimensional if the output dimensions represent a 2D array");
+        return(NhlFATAL);
+      }
+      nrowx = dsizes_x[ndims_x-2];
+      ncolx = dsizes_x[ndims_x-1];
+      nrowy = output_dsizes[0];
+      ncoly = output_dsizes[1];
+    }
+    else {
+      nrowx = dsizes_x[ndims_x-1];
+      ncolx = 1;
+      nrowy = output_dsizes[0];
+      ncoly = 1;
+    }
+
+#ifdef DEBUG
+    printf("nrowx = %ld\n", nrowx);
+    printf("ncolx = %ld\n", ncolx);
+    printf("nrowy = %ld\n", nrowy);
+    printf("ncoly = %ld\n", ncoly);
+#endif
 
     if(ncolx != ncoly) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: input array is not the correct dimensionality");
@@ -154,13 +171,27 @@ NhlErrorTypes sparse_matrix_mult_W
 
     dsizes_y = (ng_size_t*)malloc(ndims_x*sizeof(ng_size_t));
     nmatrices = 1;
-    for(i = 0; i < ndims_x-2; i++) {
-      nmatrices *= dsizes_x[i];
-      dsizes_y[i] = dsizes_x[i];
+    if(dsizes_output_dsizes[0] == 2) {
+      for(i = 0; i < ndims_x-2; i++) {
+        nmatrices *= dsizes_x[i];
+        dsizes_y[i] = dsizes_x[i];
+      }
+      dsizes_y[ndims_x-2] = nrowy;
+      dsizes_y[ndims_x-1] = ncoly;
     }
-    dsizes_y[ndims_x-2] = nrowy;
-    dsizes_y[ndims_x-1] = ncoly;
+    else {
+      for(i = 0; i < ndims_x-1; i++) {
+        nmatrices *= dsizes_x[i];
+        dsizes_y[i] = dsizes_x[i];
+      }
+      dsizes_y[ndims_x-1] = nrowy;
+    }
     ntotal = nmatrices * nrowcoly;
+#ifdef DEBUG
+    for(i = 0; i < ndims_x; i++) {
+      printf("dsizes_y[%ld] =  %ld\n", i, dsizes_y[i]);
+    }
+#endif
 
 /*
  * Coerce missing values to double if necessary.
@@ -185,7 +216,8 @@ NhlErrorTypes sparse_matrix_mult_W
       return(NhlFATAL);
     }
 /*
- * Create output variable.
+ * Create output variable. Create space for dy no matter what, because we need
+ * to set it to zero, but y to missing.
  */
     if(type_x == NCL_double || type_S == NCL_double) {
       type_y = NCL_double;
@@ -198,17 +230,35 @@ NhlErrorTypes sparse_matrix_mult_W
     else {
       type_y = NCL_float;
       y      = (void*)calloc(ntotal,sizeof(float));
-      dy     = (double*)calloc(nrowcoly,sizeof(double));
-      if(y == NULL || dy == NULL) {
+      if(y == NULL) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: Unable to allocate memory for output array");
         return(NhlFATAL);
       }
+    }
+    dy = (double*)calloc(nrowcoly,sizeof(double));
+    iy = (ng_size_t*)calloc(nrowcoly,sizeof(ng_size_t));
+    if(iy == NULL || dy == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: Unable to allocate memory for temporary output array");
+      return(NhlFATAL);
+    }
+
+/*
+ * Set all output Y values to missing initially.
+ */
+    if(type_y == NCL_double) {
+      for(i = 0; i < ntotal; i++) ((double*)y)[i] = missing_dx.doubleval;
+    }
+    else {
+      for(i = 0; i < ntotal; i++) ((float*)y)[i] = missing_fx.floatval;
     }
     
 /*
  * Loop across each set of 2D matrices and do the sparse
  * matrix multiplication.
  */
+#ifdef DEBUG
+    printf("nmatrices = %ld\n", nmatrices);
+#endif
     for(l = 0; l < nmatrices; l++) {
       index_x = l*nrowcolx;
       index_y = l*nrowcoly;
@@ -217,48 +267,15 @@ NhlErrorTypes sparse_matrix_mult_W
  */
       coerce_subset_input_double(x,dx,index_x,type_x,nrowcolx,0,NULL,NULL);
 
-/*
- * Point dy to appropriate location in y
- */
-      if(type_y == NCL_double) {
-        dy = &((double*)y)[index_y];
-      }
-      else if(l) {
-/*
- * Be sure to zero out the dy array again (if it's not
- * pointing into the "y" array which is already zeroed out).
- */
-        for (i = 0; i < nrowcoly; i++) dy[i] = 0.0;
+/* These arrays need to be zeroed out every time. */
+      for (i = 0; i < nrowcoly; i++) {
+        dy[i] = 0.0;
+        iy[i] = 0;
       }
 
       if (has_missing_x) {
-/* 
- * Search ahead for missing values. If there's a missing value
- * in any column of "x", then all values in that column of "y" will
- * also be missing. Go ahead and set "x" to missing too, for later.
- */
-        for (i = 0; i < ncolx; i++) {
-          found_missing = False;
-          j = 0;
-          while( j < nrowx && !found_missing ) {
-            xInd = j*ncolx+i;
-            if (dx[xInd] == missing_dx.doubleval) {
-              found_missing = True;
-              for (k = 0; k < nrowy; k++) {
-                yInd = k*ncoly+i;
-                dy[yInd] = missing_dx.doubleval;
-              }
-              for (k = 0; k < nrowx; k++) {
-                xInd = k*ncolx+i;
-                dx[xInd] = missing_dx.doubleval;
-              }
-            }
-            j++;
-          }
-        }
-
 /*        
- * This is the loop for the calculation.
+ * This is the loop for the calculation, with checks for missing x values.
  */
         for(i = 0; i < nvector; i++) {
           for (j = 0; j < ncoly; j++) {
@@ -266,51 +283,49 @@ NhlErrorTypes sparse_matrix_mult_W
             yInd = row[i]*ncoly+j;
             if (dx[xInd] != missing_dx.doubleval) {
               dy[yInd] += dx[xInd]*dS[i];
+              iy[yInd] = 1;   /* keep track of where there are values */
             }
           }
         }
       }
       else {
 /*
- * Case for no input missing values.
+ * This is the loop for the calculation, with NO checks for missing x values.
  */
         for(i = 0; i < nvector; i++) {
           for (j = 0; j < ncoly; j++) {
             xInd = col[i]*ncoly+j;
             yInd = row[i]*ncoly+j;
             dy[yInd] += dx[xInd]*dS[i];
+            iy[yInd] = 1;   /* keep track of where there are values */
           }
         }
       }
 /*
- * Coerce output back to float if necessary.
+ * Coerce output back to float or double at indices where there
+ * are real values. (It's not enough to just check if dy==0.0,
+ * because this could be a real value.)
  */
-      if(type_y == NCL_float) {
-        coerce_output_float_only(y,dy,nrowcoly,index_y);
-      }
+      coerce_output_float_or_double_ind(y,dy,type_y,nrowcoly,index_y,iy);
     }
 /*
  * Clean up
  */
     NclFree(dx);
-    if(type_S != NCL_double) NclFree(dS);
-    if(type_y != NCL_double) NclFree(dy);
+    NclFree(dy);
+    NclFree(iy);
     NclFree(row);
     NclFree(col);
+    if(type_S != NCL_double) NclFree(dS);
 
 /*
  * Return value back to NCL script.
  */
-    if(has_missing_x) {
-      if(type_y == NCL_double) {
-        ret = NclReturnValue(y,ndims_x,dsizes_y,&missing_dx,type_y,0);
-      }
-      else {
-        ret = NclReturnValue(y,ndims_x,dsizes_y,&missing_fx,type_y,0);
-      }
+    if(type_y == NCL_double) {
+      ret = NclReturnValue(y,ndims_x,dsizes_y,&missing_dx,type_y,0);
     }
     else {
-      ret = NclReturnValue(y,ndims_x,dsizes_y,NULL,type_y,0);
+      ret = NclReturnValue(y,ndims_x,dsizes_y,&missing_fx,type_y,0);
     }
     NclFree(dsizes_y);
     return(ret);

@@ -34,6 +34,7 @@
 #include "NclFileInterfaces.h"
 #include <math.h>
 #include <ctype.h>
+#include <string.h>
 #include <HE5_HdfEosDef.h>
 
 #ifndef MAX_VAR_DIMS
@@ -339,7 +340,7 @@ static char *_make_proper_string_end(const char *input_name)
 
     name = strdup(input_name);
     n = strlen(name);
-    i = strlen(name) - 1;
+    i = n - 1;
 
     while(i)
     {
@@ -3665,10 +3666,95 @@ void* storage;
 				}
 				break;
 			case POINT:
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"NclHDFEOS5 can not hanlde POINT data yet."));
 				return(NULL);
 				break;
 			case ZA:
-				return(NULL);
+				fid = HE5_ZAopen(NrmQuarkToString(thefile->file_path_q),H5F_ACC_RDONLY);
+				did = HE5_ZAattach(fid,NrmQuarkToString(thelist->var_inq->var_class_name));
+				for(j = 0; j < thelist->var_inq->n_dims; j++)
+				{
+					starti[j] = (hssize_t)start[j] ;
+					stridei[j] = (hsize_t)stride[j];
+					tmpf = stridei[j];
+	                                edgei[j] =(hsize_t)(fabs(((double)(finish[j] - start[j]))) /tmpf) + 1;
+	                                total_size *= edgei[j];
+	                                total_size *= edgei[j];
+				}
+
+				if (thelist->var_inq->index_dim != NrmNULLQUARK)
+				{
+					long dimsize = (long) HE5_ZAdiminfo(did,NrmQuarkToString(thelist->var_inq->index_dim));
+					if (edgei[0] == dimsize)
+					{
+#if 1
+						NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+							"NclHDFEOS5: Error ocurred while reading ZA data."));
+#else
+Wei, 11/9/2011.
+This part of code is from Swath, but did not find coresponding ZA code.
+H. Joe Lee case worked.
+We will come back if someone hit it.
+						 HE5_ZAidxmapinfo(did,NrmQuarkToString(thelist->var_inq->index_dim),
+							      NrmQuarkToString(thelist->var_inq->hdf_name),storage);
+#endif
+					}
+					else
+					{
+#if 1
+						NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+							"NclHDFEOS5: Error ocurred while reading ZA data."));
+#else
+Wei, 11/9/2011.
+This part of code is from Swath, but did not find coresponding ZA code.
+H. Joe Lee case worked.
+We will come back if someone hit it.
+						long* tmpout;
+						tmpout = NclMalloc(sizeof(long) * dimsize);
+						HE5_ZAidxmapinfo(did,NrmQuarkToString(thelist->var_inq->index_dim),
+							     NrmQuarkToString(thelist->var_inq->hdf_name),tmpout);
+						for (j = 0; j < edgei[0]; j++) {
+							*(((int*)storage) + j) = (int) (*(tmpout + (long)starti[0] + (long)(stridei[0] * j)));
+						}
+						NclFree(tmpout);
+#endif
+					}
+				}
+				else
+				{
+					if(thelist->var_inq->typenumber == HE5T_CHARSTRING)
+					{
+        					char **datbuf;
+        					NrmQuark *quark_ptr;
+        					datbuf = (char **)NclMalloc(total_size * sizeof(char *));
+						for(j = 0; j < total_size; j++)
+						{
+							datbuf[j] = (char *)NclMalloc(HDFEOS5_BUF_SIZE * sizeof(char));
+						}
+						out = HE5_ZAread(did,NrmQuarkToString(thelist->var_inq->hdf_name),starti,stridei,edgei,datbuf);
+						quark_ptr = (NrmQuark *) storage;
+						for(j = 0; j < total_size; j++)
+						{
+							quark_ptr[j] = NrmStringToQuark(datbuf[j]);
+							NclFree(datbuf[j]);
+						}
+						NclFree(datbuf);
+					}
+					else
+					{
+						out = HE5_ZAread(did,NrmQuarkToString(thelist->var_inq->hdf_name),starti,stridei,edgei,storage);
+					}
+				}
+
+				if(out == 0) {
+					HE5_ZAdetach(did);
+					HE5_ZAclose(fid);
+					return(storage);
+				} else {
+					NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+						"NclHDFEOS5: Error ocurred while reading ZA data."));
+					return(NULL);
+				}
 				break;
 			}
 			

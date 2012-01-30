@@ -523,6 +523,7 @@ extern NhlErrorTypes getbitsone_W(void);
 extern NhlErrorTypes conform_W(void);
 extern NhlErrorTypes conform_dims_W(void);
 extern NhlErrorTypes reshape_W(void);
+extern NhlErrorTypes reshape_ind_W(void);
 extern NhlErrorTypes paleo_outline_W(void);
 extern NhlErrorTypes inverse_matrix_W(void);
 extern NhlErrorTypes solve_linsys_W(void);
@@ -570,6 +571,9 @@ extern NhlErrorTypes ctwrap_W(void);
 extern NhlErrorTypes kron_product_W(void);
 
 extern NhlErrorTypes sparse_matrix_mult_W(void);
+
+extern NhlErrorTypes dim_gamfit_n_W(void);
+extern NhlErrorTypes dim_spi_n_W(void);
 
 /* 
  * ESMF regridding functions.
@@ -5603,6 +5607,38 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(dim_sum_wgt_n_W,args,"dim_sum_wgt_n",nargs);
+
+/*
+ * Register "dim_gamfit_n".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+
+    NclRegisterFunc(dim_gamfit_n_W,args,"dim_gamfit_n",nargs);
+
+/*
+ * Register "dim_spi_n".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(4);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+
+    NclRegisterFunc(dim_spi_n_W,args,"dim_spi_n",nargs);
+
 /*
  * Register "esacr".
  *
@@ -7052,6 +7088,16 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(reshape_W, args, "reshape", nargs);
 
 /*
+ *  Register reshape_ind
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+    NclRegisterFunc(reshape_ind_W, args, "reshape_ind", nargs);
+
+/*
  *  Register omega_ccm.
  */
     nargs = 0;
@@ -7546,8 +7592,7 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,1,"numeric",1,NclANY);nargs++;
         SetArgTemplate(args,2,"numeric",1,NclANY);nargs++;
         SetArgTemplate(args,3,"numeric",0,NclANY);nargs++;
-        dimsizes[0] = 2;
-        SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+        SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
         NclRegisterFunc(sparse_matrix_mult_W,args,"sparse_matrix_mult",nargs);
 
 /*
@@ -8596,6 +8641,38 @@ ng_size_t index_x
   }
   else {
     for( i = 0; i < size_x; i++ ) ((float*)x)[index_x+i]  = (float)dx[i];
+  }
+}
+
+/*
+ * Copy double data back to double or float array, using a void array. 
+ * This is identical to coerce_output_float_or_double, except it only
+ * copies values where the corresponding indexes value is != 0.
+ */
+void coerce_output_float_or_double_ind(
+void   *x,
+double *dx,
+NclBasicDataTypes type_x,
+ng_size_t size_x,
+ng_size_t index_x,
+ng_size_t *indexes
+)
+{
+  ng_size_t i;
+
+  if(type_x == NCL_double) {
+    for( i = 0; i < size_x; i++ ) {
+      if(indexes[i] != 0) {
+        ((double*)x)[index_x+i]  = dx[i];
+      }
+    }
+  }
+  else {
+    for( i = 0; i < size_x; i++ ) {
+      if(indexes[i] != 0) {
+        ((float*)x)[index_x+i]  = (float)dx[i];
+      }
+    }
   }
 }
 

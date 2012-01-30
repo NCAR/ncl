@@ -375,6 +375,68 @@ NclObj list;
 		return(NULL);
 	}
 }
+
+NhlErrorTypes Append2List(NclObj list,NclObj theobj)
+{
+	NclList thelist = (NclList)list;
+	NclListObjList *tmp = (NclListObjList*)NclMalloc(sizeof(NclListObjList));
+	NhlErrorTypes  ret = NhlNOERROR;
+	NclObj tmp_obj;
+	if((thelist!=NULL)&&(theobj != NULL))
+	{
+		tmp->orig_type = theobj->obj.obj_type_mask;
+		if(!(theobj->obj.obj_type_mask & Ncl_Var))
+		{
+			if(theobj->obj.obj_type_mask & Ncl_MultiDValnclfileData)
+			{
+				tmp_obj= (NclObj)_NclFileVarCreate(NULL,NULL,Ncl_FileVar,0,NULL,(NclMultiDValData)theobj,NULL,-1,NULL,NORMAL,NULL,PERMANENT);
+			}
+			else if(theobj->obj.obj_type_mask & Ncl_MultiDValHLUObjData)
+			{
+				tmp_obj= (NclObj)_NclHLUVarCreate(NULL,NULL,Ncl_HLUVar,0,NULL,(NclMultiDValData)theobj,NULL,-1,NULL,NORMAL,NULL,PERMANENT);
+			}
+			else
+			{
+				tmp_obj= (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,(NclMultiDValData)theobj, NULL,-1,NULL,NORMAL,NULL,PERMANENT);
+			}
+		}
+		else
+		{
+			tmp_obj = theobj;
+		}
+			
+		ret = _NclAddParent(tmp_obj,list);
+		tmp->cb = _NclAddCallback( tmp_obj, list, ListItemDestroyNotify,DESTROYED,NULL);
+
+		if(tmp_obj->obj.status == TEMPORARY)
+		{
+			_NclSetStatus(tmp_obj,PERMANENT);
+		}
+		if(ret != NhlNOERROR)
+		{
+			return(ret);
+		}
+		tmp->obj_id = tmp_obj->obj.id;
+
+		tmp->next = NULL;
+		if(thelist->list.last == NULL)
+		{
+			thelist->list.first = tmp;
+			thelist->list.first->prev = NULL;	
+			thelist->list.last = tmp;
+		}
+		else
+		{
+			thelist->list.last->next = tmp;
+			tmp->prev = thelist->list.last;
+			thelist->list.last = tmp;
+		}
+		thelist->list.nelem++;
+		return(NhlNOERROR);
+	} else {
+		return(NhlFATAL);
+	}
+}
 static int ListGetType
 #if     NhlNeedProto
 (NclObj list)

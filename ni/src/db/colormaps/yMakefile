@@ -108,7 +108,10 @@ FILES		= \
 		OceanLakeLandSnow.rgb \
 		WhiteBlue.rgb \
 		WhiteYellowOrangeRed.rgb \
-		WhiteGreen.rgb
+		WhiteGreen.rgb \
+		cmp_b2r.rgb \
+		cmp_flux.rgb \
+		cmp_haxby.rgb
 
 
 CMPATH	= $(LIBNCARGPATH)/colormaps

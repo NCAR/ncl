@@ -633,6 +633,13 @@ lib/ncarg/data/cdf/vinth2p.nc
 lib/ncarg/data/grb/ced1.lf00.t00z.eta.grb
 lib/ncarg/data/grb/fh.0012_tl.press_gr.awp211.grb2
 lib/ncarg/data/grb/wafsgfs_L_t06z_intdsk60.grib2
+lib/ncarg/data/hdf/avhrr.hdf
+lib/ncarg/data/hdf/MLS-Aura_L2GP-IWC_v02-21-c02_2007d210.he5
+lib/ncarg/data/hdf/MOD04_L2.A2001066.0000.004.2003078090622.he2
+lib/ncarg/data/shp/mrb.dbf
+lib/ncarg/data/shp/mrb.prj
+lib/ncarg/data/shp/mrb.shp
+lib/ncarg/data/shp/mrb.shx
 lib/ncarg/data/shp/states.dbf
 lib/ncarg/data/shp/states.prj
 lib/ncarg/data/shp/states.shp

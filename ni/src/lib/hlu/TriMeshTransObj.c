@@ -1216,6 +1216,10 @@ static NhlErrorTypes TmCompcToData
 	NhlTriMeshTransObjLayerPart *tmp = &iinstance->tmtrans;
 	int i;
 
+	/* 
+	 * this code assumes that the X coordinates have been put into the correct cyclic period prior to this call
+         * (except that it doesn't work ; dib 12/30/2011 -- needs investigation)
+         */
 	*status = 0;
 	for(i = 0; i< n ; i++) {
 		if(((xmissing != NULL)&&(*xmissing == x[i]))

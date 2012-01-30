@@ -3,7 +3,7 @@
 #	$Id: version.sed,v 1.27 2010-03-14 16:32:51 haley Exp $
 #
 
-set year = "2011"
+set year = "2012"
 set sitefile = `ncargpath NCARGDIR`/NCARGSITEFILE
 if (-f $sitefile) then
   set sitenum = `head -1 $sitefile`

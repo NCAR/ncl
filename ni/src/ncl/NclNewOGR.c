@@ -178,7 +178,7 @@ static char* _mapOGRGeom2Ncl(OGRwkbGeometryType type)
  */
 static void _setSubGroupDims(NclFileGrpNode *sub_grpnode)
 {
-    _addNclDimNode(&(sub_grpnode->dim_rec), NrmStringToQuark("list_scalar"),
+    _addNclDimNode(&(sub_grpnode->dim_rec), NrmStringToQuark("segment"),
                    0, 1, 0);
 }
 
@@ -255,7 +255,7 @@ static void _setSubGroupVars(NclFileGrpNode *grpnode)
     long dim_sizes[NCL_MAX_DIMENSIONS];
 
     /* the "segments" encodes the segments (x, y[, z]) */
-    dim_names[0] = NrmStringToQuark("list_scalar");
+    dim_names[0] = NrmStringToQuark("segment");
     dim_sizes[0] = 1;
     _addNclVarNodeToGrpNode(grpnode, NrmStringToQuark("segments"),
                             0, NCL_list, 1, dim_names, dim_sizes);
@@ -306,7 +306,7 @@ static void _setGroupVars(NclFileGrpNode *grpnode,
     }
 
     /* the "segments" encodes the segments (x, y[, z]) */
-    dim_names[0] = NrmStringToQuark("list_scalar");
+    dim_names[0] = NrmStringToQuark("segment");
     dim_sizes[0] = 1;
     _addNclVarNodeToGrpNode(grpnode, NrmStringToQuark("segments"),
                             i, NCL_list, 1, dim_names, dim_sizes);
@@ -706,7 +706,7 @@ static void *_getGeometryVariable(NclFileGrpNode *grpnode, NclQuark thevar,
         ng_size_t one = 1;
         int *id = (int *)NclMalloc(sizeof(int));
 
-        vlist = (NclNewList)_NclNewListCreate(NULL, NULL, 0, 0, -1, (NCL_ITEM | NCL_FIFO));
+        vlist = (NclNewList)_NclNewListCreate(NULL, NULL, 0, 0, 0, (NCL_ITEM | NCL_FIFO));
         assert(vlist);
         _NclListSetType((NclObj)vlist,NCL_ITEM);
         vlist->newlist.name = NrmStringToQuark("segments_list");

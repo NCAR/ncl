@@ -1098,7 +1098,7 @@ NclObj self;
 		if(thefile->file.private_rec != NULL)
 			(*thefile->file.format_funcs->free_file_rec)(thefile->file.private_rec);
 	}
-	for(i =0 ; i < thefile->file.max_grps; i++) {
+	for(i =0 ; i < thefile->file.n_grps; i++) {
 		if(NULL != thefile->file.grp_info[i])
 			NclFree(thefile->file.grp_info[i]);
 		if(thefile->file.grp_att_cb[i] != NULL) {
@@ -1128,7 +1128,7 @@ NclObj self;
 	if(NULL != thefile->file.grp_att_ids)
         	NclFree(thefile->file.grp_att_ids);
 
-	for(i =0 ; i < thefile->file.max_vars; i++) {
+	for(i =0 ; i < thefile->file.n_vars; i++) {
 		if(NULL != thefile->file.var_info[i])
 			NclFree(thefile->file.var_info[i]);
 		if(thefile->file.var_att_cb[i] != NULL) {
@@ -1158,7 +1158,7 @@ NclObj self;
 	if(NULL != thefile->file.var_att_ids)
         	NclFree(thefile->file.var_att_ids);
 
-	for(i =0 ; i < thefile->file.max_file_dims; i++) {
+	for(i =0 ; i < thefile->file.n_file_dims; i++) {
 		if(NULL != thefile->file.file_dim_info[i])
 			NclFree(thefile->file.file_dim_info[i]);
 	}
@@ -1171,7 +1171,7 @@ NclObj self;
 		_NhlCBDelete(thefile->file.file_att_cb);
 		_NclDelParent(_NclGetObj(thefile->file.file_atts_id),self);
 	}
-	for(i =0 ; i < thefile->file.max_file_atts; i++) {
+	for(i =0 ; i < thefile->file.n_file_atts; i++) {
 		if(NULL != thefile->file.file_atts[i])
 			NclFree(thefile->file.file_atts[i]);
 	}

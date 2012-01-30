@@ -3,6 +3,13 @@
  */
 
 #include "NclNewList.h"
+#include <assert.h>
+
+#include <ncarg/hlu/hlu.h>
+#include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Callbacks.h>
+#include "defs.h"
+#include "NclDataDefs.h"
 
 struct _NclObjRec *_NclNewListCreate(struct _NclObjRec      *inst,
                                      struct _NclObjClassRec *theclass,

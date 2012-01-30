@@ -2722,3 +2722,113 @@ NclGroup *_NclCreateGroup(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
     return group_out;
 }
 
+ng_size_t *_NclFileReadChunkSizes(NclFile thefile, int *nchunks)
+{
+	ng_size_t *chunksize = NULL;
+
+	char *class_name;
+
+	if(thefile == NULL)
+	{
+		return(NULL);
+	}
+
+	class_name = thefile->obj.class_ptr->obj_class.class_name;
+
+	if((0 == strcmp("NclFileClass", class_name)) ||
+	   (0 == strcmp("NclNewFileClass", class_name)))
+	{
+		NclNewFile newfile = (NclNewFile) thefile;
+		NclFileDimRecord *chunkdimrec = newfile->newfile.grpnode->chunk_dim_rec;
+		int n;
+		if(NULL != chunkdimrec)
+		{
+			*nchunks = chunkdimrec->n_dims;
+			chunksize = (ng_size_t *)NclMalloc(chunkdimrec->n_dims * sizeof(ng_size_t));
+			if(NULL == chunksize)
+			{
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"_NclFileReadChunkSizes: Can not allocate memory for chunksize\n"));
+				return (NULL);
+			}
+			for(n = 0; n < chunkdimrec->n_dims; n++)
+				chunksize[n] = chunkdimrec->dim_node[n].size;
+
+			return chunksize;
+		}
+		else
+		{
+			*nchunks = 0;
+			return NULL;
+		}
+	}
+
+	*nchunks = 0;
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+		"_NclFileReadChunkSizes: Unknown Class <%s>\n", class_name));
+	return (NULL);
+}
+
+int _NclFileReadCompressionLevel(NclFile thefile)
+{
+	int cl = 0;
+	char *class_name;
+
+	if(thefile == NULL)
+	{
+		return(0);
+	}
+
+	class_name = thefile->obj.class_ptr->obj_class.class_name;
+
+	if(0 == strcmp("NclNewFileClass", class_name))
+	{
+		NclNewFile newfile = (NclNewFile) thefile;
+		cl = newfile->newfile.grpnode->compress_level;
+		return cl;
+	}
+
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+		"_NclFileReadCompressionLevel: Unknown Class <%s>\n", class_name));
+	return (0);
+}
+
+NclQuark _NclFileReadVersion(NclFile thefile)
+{
+	NclQuark version = NrmStringToQuark("unknown");
+	char *class_name;
+
+	if(thefile == NULL)
+	{
+		return version;
+	}
+
+	class_name = thefile->obj.class_ptr->obj_class.class_name;
+
+	if(0 == strcmp("NclNewFileClass", class_name))
+	{
+		NclNewFile newfile = (NclNewFile) thefile;
+		version = newfile->newfile.grpnode->kind;
+	}
+	else
+	{
+		if(thefile->file.file_ext_q == NrmStringToQuark("nc"))
+		{
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+				"_NclFileReadVersion: \n%s%s%s%s%s\n",
+				"\t\t\t add line: <setfileoption(\"nc\", \"usenewhlfs\", True)>\n",
+				"\t\t\t before open a NetCDF file(in your script)\n",
+				"\t\t\t or add '-f' option to run ncl\n",
+				"\t\t\t to use the new-file-structure\n",
+				"\t\t\t to get the version/kind info.\n"));
+		}
+		else
+		{
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"_NclFileReadVersion: Unknown Class <%s>\n", class_name));
+		}
+	}
+
+	return version;
+}
+

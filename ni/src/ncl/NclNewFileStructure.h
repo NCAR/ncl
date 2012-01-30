@@ -230,6 +230,7 @@ struct _NclFileGrpNode
 
     NclQuark             path;
     NclQuark             extension;
+    NclQuark             kind;
 
     NclFileFormat        file_format;
     int                  status;

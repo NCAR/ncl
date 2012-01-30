@@ -312,109 +312,132 @@ end
 
 ;************************************************************
 ; M. Haley
-; Copy the coordinate variables from one variable to another,
-;    except for the indicated dimension(s).  
-; Note that this makes the assumption that var_from has "dims"
-;     more dimensions than var_to. This also makes the 
-;     assumption that "dims" dimensions are consecutive
-;     and increasing.
-; If you want to copy var coords and skip a dimension, use
-;     copy_VarCoords_not_n.
 ;
-; Used internally, based on copy_VarCoords_1
-
+; Dec 30 2001
+; Copy the coordinate arrays of the given dimensions from
+;    one array to another.  
+;
+; This function makes the assumption that the "dims"
+;     dimensions represent dimensions in the "var_from"
+;     array. They do not have to be monotonic.
+;
+; Note: in the special case where the rank of the two arrays are
+;  the same, then the assumption that the dimensions to copy are
+;  in the same dimension locations in both arrays. Otherwise,
+;  coordinates are copied to the "var_to" variable starting
+;  with the leftmost dimension and going to the next one, etc.
+;
 undef ("copy_VarCoords_n")
-procedure copy_VarCoords_n(var_from,var_to,dims)
-local dimt, dimf, rfrom, rto, i, dName, ndims
+procedure copy_VarCoords_n(var_from,var_to,dims_to_copy)
+local dimt, dimf, rfrom, rto, ifrom, ito, dName, ndims
 begin                      
   dimf  = dimsizes(var_from)            
   dimt  = dimsizes(var_to)
   rfrom = dimsizes(dimf)      ; rank of var_from
   rto   = dimsizes(dimt)      ; rank of var_to
-  ndims = dimsizes(dims)
+  ndims = dimsizes(dims_to_copy)
 
-;---Error checking for "dims"
-  if(any(dims.lt.0.or.dims.gt.dimsizes(dimf))) then
+;---Error checking for "dims_to_copy"
+  if(any(dims_to_copy.lt.0.or.dims_to_copy.gt.dimsizes(dimf))) then
     print("Error: copy_VarCoords_n: invalid dimensions to copy from")
     return
   end if
-;---Must be monotonically increasing and consecutive.
-  if(ndims.gt.1.and.any(dims(1:)-dims(0:ndims-2).ne.1)) then
-    print("Error: copy_VarCoords_n: invalid dimensions to copy from")
-  end if
 
-  dName = getvardims(var_from)               ; Oct 18, 2005
-
-  if (.not.all(ismissing(dName))) then
-       ;if (rto.eq.(rfrom-1)) then
-                do i = 0,dims(0)-1            ; don't use dims' dimensions
-                   if (.not.ismissing(dName(i)).and.dimf(i).eq.dimt(i)) then  
-                        var_to!i = var_from!i
-                        if(iscoord(var_from,var_from!i))
-                                var_to&$var_to!i$ = var_from&$var_from!i$
-                        end if
-                   end if
-                end  do
-                do i = dims(ndims-1)+1,rfrom-1  ; don't use dims' dimensions
-                   i1 = i-ndims
-                   if (.not.ismissing(dName(i)).and.dimf(i).eq.dimt(i1)) then  
-                        var_to!i1 = var_from!i
-                        if(iscoord(var_from,var_from!i))
-                                var_to&$var_to!i1$ = var_from&$var_from!i$
-                        end if
-                   end if
-                end  do
-       ;else
-       ;        print("ERROR: copy_VarCoords_n: rank problem")
-       ;end if
-  end if
-end
-;************************************************************
-; M. Haley
-; Copy the coordinate variables from one variable to another,
-;    skipping the indicated dimension(s).  
-; Note that this makes the assumption that var_from and
-;    var_to have the same dimensionality, except for the
-;    dimensions to skip.
-;
-; Used internally, based on copy_VarCoords_n
-; Added Oct 25, 2009
-
-undef ("copy_VarCoords_not_n")
-procedure copy_VarCoords_not_n(var_from,var_to,dims[*]:integer)  
-local dimt, dimf, rfrom, rto, i, dName, ndims
-begin                      
-
-  dimf  = dimsizes(var_from)            
-  dimt  = dimsizes(var_to)
-  rfrom = dimsizes(dimf)      ; rank of var_from
-  rto   = dimsizes(dimt)      ; rank of var_to
-  ndims = dimsizes(dims)
-
-  if(rfrom.ne.rto)
-    print("copy_VarCoords_not_n: var_from and var_to must be the same rank.")
+;---Error checking for rank
+  if(rto.gt.rfrom) then
+    print("Error: copy_VarCoords_n: arrays must be same rank, or second array must be subset in size of first array.")
     return
   end if
 
   dName = getvardims(var_from)
 
+  ito = 0     ; leftmost dimension of var_to array
   if (.not.all(ismissing(dName))) then
-                do i = 0,dims(0)-1            ; don't use dims' dimensions
-                   if (.not.ismissing(dName(i)).and.dimf(i).eq.dimt(i)) then  
-                        var_to!i = var_from!i
-                        if(iscoord(var_from,var_from!i))
-                                var_to&$var_to!i$ = var_from&$var_from!i$
-                        end if
-                   end if
-                end  do
-                do i = dims(ndims-1)+1,rfrom-1  ; don't use dims' dimensions
-                   if (.not.ismissing(dName(i)).and.dimf(i).eq.dimt(i)) then  
-                        var_to!i = var_from!i
-                        if(iscoord(var_from,var_from!i))
-                                var_to&$var_to!i$ = var_from&$var_from!i$
-                        end if
-                   end if
-                end  do
+    do i = 0,rfrom-1
+      if(any(i.eq.dims_to_copy)) then
+        ifrom = i
+        if (.not.ismissing(dName(ifrom)).and.dimf(ifrom).eq.dimt(ito)) then  
+          var_to!ito = var_from!ifrom
+          if(iscoord(var_from,var_from!ifrom))
+            var_to&$var_to!ito$ = var_from&$var_from!ifrom$
+          end if
+        end if
+        ito = ito + 1
+      else
+        if(rfrom.eq.rto) then
+          ito = ito + 1
+        end if
+      end if
+    end  do
+  end if
+end
+
+;************************************************************
+; M. Haley
+; Copy all but indicated coordinate variables from two arrays
+;    of the same size, or from a larger array to a smaller 
+;    array that is a subset in size. 
+;
+; Dec 30 2001:
+;    This function used to be two different functions: 
+;    "copy_VarCoords_n" and "copy_VarCoords_not_n". I
+;    decided to combine them into one function called 
+;    "copy_VarCoords_not_n".
+;
+; This function *used* to make the  assumption that the
+;    "dims_to_skip" dimensions were consecutive and 
+;    increasing. This is no longer necessary.  The 
+;    "dims_to_copy" must represent valid dimensions in 
+;    the "var_from" array.
+;
+; Note: in the special case where the rank of the two arrays are
+;  the same, then the assumption that the dimensions to skip are
+;  in the same dimension locations in both arrays. Otherwise,
+;  coordinates are copied to the "var_to" variable starting
+;  with the leftmost dimension and going to the next one, etc.
+;
+undef ("copy_VarCoords_not_n")
+procedure copy_VarCoords_not_n(var_from,var_to,dims_to_skip)
+local dimt, dimf, rfrom, rto, i, ifrom, ito, dName, ndims, dims
+begin                      
+  dimf  = dimsizes(var_from)            
+  dimt  = dimsizes(var_to)
+  rfrom = dimsizes(dimf)      ; rank of var_from
+  rto   = dimsizes(dimt)      ; rank of var_to
+  ndims = dimsizes(dims_to_skip)
+
+;---Error checking for "dims_to_skip"
+  if(any(dims_to_skip.lt.0.or.dims_to_skip.gt.dimsizes(dimf))) then
+    print("Error: copy_VarCoords_not_n: invalid dimensions to skip")
+    return
+  end if
+
+;---Error checking for rank
+  if((rfrom-ndims).gt.rto) then
+    print("Error: copy_VarCoords_not_n: you are not skipping enough dimensions.")
+    return
+  end if
+
+  dName = getvardims(var_from)
+
+  ito = 0     ; leftmost dimension of var_to array
+  if (.not.all(ismissing(dName))) then
+    do i = 0,rfrom-1
+      if(.not.any(i.eq.dims_to_skip)) then
+        ifrom = i
+        if (.not.ismissing(dName(ifrom)).and.dimf(ifrom).eq.dimt(ito)) then  
+          var_to!ito = var_from!ifrom
+          if(iscoord(var_from,var_from!ifrom))
+            var_to&$var_to!ito$ = var_from&$var_from!ifrom$
+          end if
+        end if
+        ito = ito + 1
+      else
+        if(rfrom.eq.rto) then
+          ito = ito + 1
+        end if
+      end if
+    end  do
   end if
 end
 ;==============================
@@ -2220,7 +2243,7 @@ begin
  copy_VarAtts (x, xave)     ; copy attributes
                             ; copy dim names and coord variables
 
- copy_VarCoords_n (x, xave, dims)
+ copy_VarCoords_not_n (x, xave, dims)
                                        ; add an extra attribute
  xave@average_op_ncl = dimWrapString("dim_avg_n",x,dims)
 
@@ -2270,7 +2293,7 @@ begin
  
  copy_VarAtts (x, xave)     ; copy attributes
                             ; copy dim  names and coord  variables
- copy_VarCoords_n (x, xave, dims)
+ copy_VarCoords_not_n (x, xave, dims)
                                        ; add an extra attribute
  xave@average_op_ncl = dimWrapString("dim_avg_wgt_n",x,dims)
 
@@ -2319,7 +2342,7 @@ begin
  
  copy_VarAtts (x, xvar)     ; copy attributes
                             ; copy dim  names and coord  variables
- copy_VarCoords_n (x, xvar, dims)
+ copy_VarCoords_not_n (x, xvar, dims)
                                        ; add an extra attribute
  xvar@variance_op_ncl = dimWrapString("dim_variance_n",x,dims)
 
@@ -2368,7 +2391,7 @@ begin
  
  copy_VarAtts (x, xstd)     ; copy attributes
                             ; copy dim  names and coord  variables
- copy_VarCoords_n (x, xstd, dims) 
+ copy_VarCoords_not_n (x, xstd, dims) 
                                   ; add an extra attribute
  xstd@stddev_op_ncl = dimWrapString("dim_stddev_n",x,dims)
  
@@ -2417,7 +2440,7 @@ begin
  
  copy_VarAtts (x, xsum)     ; copy attributes
                             ; copy dim names and coord variables
- copy_VarCoords_n (x, xsum, dims)
+ copy_VarCoords_not_n (x, xsum, dims)
                                        ; add an extra attribute
  xsum@sum_op_ncl = dimWrapString("dim_sum_n",x,dims)
 
@@ -2441,7 +2464,7 @@ begin
  
  copy_VarAtts (x, xmin)     ; copy attributes
                             ; copy dim names and coord variables
- copy_VarCoords_n (x, xmin, dims)
+ copy_VarCoords_not_n (x, xmin, dims)
                                        ; add an extra attribute
  xmin@min_op_ncl = dimWrapString("dim_min_n",x,dims)
 
@@ -2465,7 +2488,7 @@ begin
  
  copy_VarAtts (x, xmax)     ; copy attributes
                             ; copy dim names and coord variables
- copy_VarCoords_n (x, xmax, dims)
+ copy_VarCoords_not_n (x, xmax, dims)
                                        ; add an extra attribute
  xmax@max_op_ncl = dimWrapString("dim_max_n",x,dims)
 
@@ -2516,7 +2539,7 @@ begin
  
  copy_VarAtts (x, xsum)     ; copy attributes
                             ; copy dim  names and coord  variables
- copy_VarCoords_n (x, xsum, dims) 
+ copy_VarCoords_not_n (x, xsum, dims) 
                                        ; add an extra attribute
  xsum@sum_op_ncl = dimWrapString("dim_sum_wgt_n",x,dims)
  
@@ -2724,7 +2747,7 @@ begin
          xrmsd@long_name = "RMSD: "+getLongName(x)
      end if
                                 ; copy dim  names and coord  variables
-     copy_VarCoords_n (x, xrmsd, dims)
+     copy_VarCoords_not_n (x, xrmsd, dims)
                                            ; add an extra attribute
      xrmsd@rmsd_op_ncl = dimWrapString("dim_rmsd_n",x,dims)
 

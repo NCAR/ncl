@@ -82,5 +82,12 @@ extern NclObjClass nclNewListClass;
 
 extern NclNewListClassRec nclNewListClassRec;
 
+extern struct _NclObjRec *_NclNewListCreate(struct _NclObjRec      *inst,
+                                            struct _NclObjClassRec *theclass,
+                                            NclObjTypes             obj_type,
+                                            unsigned int            obj_type_mask,
+                                            ng_size_t               listsize,
+                                            int                     list_type);
+
 #endif /* NclNewList_h */
 
