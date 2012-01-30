@@ -1172,9 +1172,9 @@ begin
       lat = fspan(0.0,BoxDiag(0),nlat)
       lon = fspan(0.0,BoxDiag(1),nlon)
     else if(grid_type.eq."gaussian") then
-      gau_info = gaus(nlat)
+      gau_info = gaus(nlat/2)
       lat      = gau_info(:,0)  ; gaussian latitudes
-      lon      = (/lonGlobeFo(nlon,"","","")/)
+      lon      = todouble((/lonGlobeFo(nlon,"","","")/))
     end if
     end if
 
@@ -1192,8 +1192,10 @@ begin
     end if
 
 ;---Now that the rotation was successful translating it back.
-    grid_center_lat = grid_center_lat + LLCorner(0)
-    grid_center_lon = grid_center_lon + LLCorner(1)
+    if(grid_type.ne."gaussian") then
+      grid_center_lat = grid_center_lat + LLCorner(0)
+      grid_center_lon = grid_center_lon + LLCorner(1)
+    end if
 
     Opt@Title = FTitle
 
