@@ -732,10 +732,11 @@ NcgmWorkstationDeactivate
 #if DEBUG_NCGM
 	fprintf(stderr,"calling ngsrat for %s\n",np->meta_name);
 #endif
+        /****************RLB
 	c_ngsrat(2,np->gks_iat,np->gks_rat);
 	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
 		retcode = NhlWARNING;
-
+        *****************/
 	subret = (*NhlworkstationClassRec.work_class.deactivate_work)(l);
 	return MIN(subret,retcode);
 }
