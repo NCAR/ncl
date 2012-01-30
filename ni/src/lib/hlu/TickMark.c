@@ -2631,7 +2631,7 @@ NhlTickMarkLayer tlayer;
 			}
 			_NhlWorkstationLineTo(tlayer->base.wkptr,1.0,1.0,1);
 		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"DrawGrid: Either XBOn or XTOn must be set in order to draw an XAxis grid");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"DrawGrid: Either YLOn or YROn must be set in order to draw an YAxis grid");
 			ret1 = NhlWARNING;
 		}
 	}
@@ -2661,7 +2661,7 @@ NhlTickMarkLayer tlayer;
 			}
 			_NhlWorkstationLineTo(tlayer->base.wkptr,1.0,1.0,1);
 		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"DrawGrid: Either XBOn or XTOn must be set in order to draw an XAxis minor grid");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"DrawGrid: Either YLOn or YROn must be set in order to draw an YAxis minor grid");
 			ret1 = NhlWARNING;
 		}
 	}

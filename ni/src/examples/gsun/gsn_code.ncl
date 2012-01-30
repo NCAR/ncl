@@ -4497,6 +4497,229 @@ begin
   end if
 end
 
+;***********************************************************************;
+; Function : gsn_add_shapefile_polylines                                ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                 fname: Name of shapefile ("xxxx.shp")                 ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function attaches shapefile polylines to the plot "plotid".      ;
+;***********************************************************************;
+undef("gsn_add_shapefile_polylines")
+function gsn_add_shapefile_polylines(wks,plot,fname:string,lnres)
+local f, segments, geometry, segsDims, geomDims, geom_segIndex, \
+geom_numSegs, segs_xyzIndex, segs_numPnts, numFeatures, i, lat, lon, \
+startSegment, numSegments, seg, startPT, endPT, npoly, npl
+begin
+;---Open the shapefile
+  f = addfile(fname,"r")
+
+;---Error checking
+  if(ismissing(f)) then
+    print("Error: gsn_add_shapefile_polylines: Can't open shapefile '" + \
+           fname + "'")
+    print("       No shapefile information will be added.")
+    return(new(1,graphic))
+  end if
+
+;---We can't use this routine to plot point data
+  if(.not.any(f@geometry_type.eq.(/"polygon","polyline"/))) then
+    print("Error: gsn_add_shapefile_polylines: geometry_type attribute must be 'polygon' or 'polyline'")
+    print("       No shapefile information will be added.")
+    return(new(1,graphic))
+  end if
+
+;---Read data off the shapefile
+  segments = f->segments
+  geometry = f->geometry
+  segsDims = dimsizes(segments)
+  geomDims = dimsizes(geometry)
+
+;---Read global attributes  
+  geom_segIndex = f@geom_segIndex
+  geom_numSegs  = f@geom_numSegs
+  segs_xyzIndex = f@segs_xyzIndex
+  segs_numPnts  = f@segs_numPnts
+  numFeatures   = geomDims(0)
+
+;---Create array to hold all polylines
+  npoly = sum(geometry(:,geom_numSegs)) 
+  poly  = new(npoly,graphic)
+
+;---Section to attach polylines to plot.
+  lon = f->x
+  lat = f->y
+  npl = 0     ; polyline counter
+  do i=0, numFeatures-1  
+     startSegment = geometry(i, geom_segIndex)
+     numSegments  = geometry(i, geom_numSegs)
+     do seg=startSegment, startSegment+numSegments-1
+        startPT = segments(seg, segs_xyzIndex)
+        endPT   = startPT + segments(seg, segs_numPnts) - 1
+
+;---Attach the line segment
+        poly(npl) = gsn_add_polyline(wks, plot, lon(startPT:endPT),  \
+                                     lat(startPT:endPT), lnres)
+        npl = npl + 1
+     end do
+  end do
+  return(poly)
+end
+
+;***********************************************************************;
+; Function : gsn_add_shapefile_polygons                                 ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                 fname: Name of shapefile ("xxxx.shp")                 ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function attaches shapefile polygons to the plot "plotid".       ;
+;***********************************************************************;
+undef("gsn_add_shapefile_polygons")
+function gsn_add_shapefile_polygons(wks,plot,fname:string,gnres)
+local f, segments, geometry, segsDims, geomDims, geom_segIndex, \
+geom_numSegs, segs_xyzIndex, segs_numPnts, numFeatures, i, lat, lon, \
+startSegment, numSegments, seg, startPT, endPT, npoly, npl
+begin
+;---Open the shapefile
+  f = addfile(fname,"r")
+
+;---Error checking
+  if(ismissing(f)) then
+    print("Error: gsn_add_shapefile_polygons: Can't open shapefile '" + \
+           fname + "'")
+    print("       No shapefile information will be added.")
+    return(new(1,graphic))
+  end if
+
+;---We can't use this routine to plot point data
+  if(f@geometry_type.ne."polygon") then
+    print("Error: gsn_add_shapefile_polygon: geometry_type attribute must be 'polygon'")
+    print("       No shapefile information will be added.")
+    return(new(1,graphic))
+  end if
+
+;---Get the number of colors
+  if(.not.gnres.or..not.isatt(gnres,"gsFillColor")) then
+    set_fill_color = True
+    getvalues wks
+      "wkColorMapLen"  : cmap_len
+    end getvalues
+  else
+    set_fill_color = False
+  end if
+
+;---Read data off the shapefile
+  segments = f->segments
+  geometry = f->geometry
+  segsDims = dimsizes(segments)
+  geomDims = dimsizes(geometry)
+
+;---Read global attributes  
+  geom_segIndex = f@geom_segIndex
+  geom_numSegs  = f@geom_numSegs
+  segs_xyzIndex = f@segs_xyzIndex
+  segs_numPnts  = f@segs_numPnts
+  numFeatures   = geomDims(0)
+
+;---Create array to hold all polylines
+  npoly = sum(geometry(:,geom_numSegs)) 
+  poly  = new(npoly,graphic)
+
+;---Section to attach polygons to plot.
+  lon = f->x
+  lat = f->y
+  npl = 0     ; polyline counter
+  do i=0, numFeatures-1  
+     startSegment = geometry(i, geom_segIndex)
+     numSegments  = geometry(i, geom_numSegs)
+     do seg=startSegment, startSegment+numSegments-1
+        startPT = segments(seg, segs_xyzIndex)
+        endPT   = startPT + segments(seg, segs_numPnts) - 1
+
+;---Attach the line segment
+        if(set_fill_color) then
+;---Pick a random color 
+          gnres@gsFillColor = toint(random_uniform(2,cmap_len-2,1))
+        end if
+        poly(npl) = gsn_add_polygon(wks, plot, lon(startPT:endPT),  \
+                                    lat(startPT:endPT), gnres)
+        npl = npl + 1
+     end do
+  end do
+  return(poly)
+end
+
+;***********************************************************************;
+; Function : gsn_add_shapefile_polymarkers                              ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                 fname: Name of shapefile ("xxxx.shp")                 ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function attaches shapefile point data to the plot "plotid".     ;
+;***********************************************************************;
+undef("gsn_add_shapefile_polymarkers")
+function gsn_add_shapefile_polymarkers(wks,plot,fname:string,mkres)
+local f, segments, geometry, segsDims, geomDims, geom_segIndex, \
+geom_numSegs, segs_xyzIndex, segs_numPnts, numFeatures, i, lat, lon, \
+startSegment, numSegments, seg, startPT, endPT, npoly, npl
+begin
+;---Open the shapefile
+  f = addfile(fname,"r")
+
+;---Error checking
+  if(ismissing(f)) then
+    print("Error: gsn_add_shapefile_polymarkers: Can't open shapefile '" + \
+           fname + "'")
+    print("       No shapefile information will be added.")
+    return(new(1,graphic))
+  end if
+
+;---We can't use this routine to plot point data
+  if(f@geometry_type.ne."point") then
+    print("Error: gsn_add_shapefile_polymarkers: geometry_type attribute must be 'point'")
+    print("       No shapefile information will be added.")
+    return(new(1,graphic))
+  end if
+
+;---Read data off the shapefile
+  segments = f->segments
+  geometry = f->geometry
+  segsDims = dimsizes(segments)
+  geomDims = dimsizes(geometry)
+
+;---Read global attributes  
+  geom_segIndex = f@geom_segIndex
+  geom_numSegs  = f@geom_numSegs
+  segs_xyzIndex = f@segs_xyzIndex
+  segs_numPnts  = f@segs_numPnts
+  numFeatures   = geomDims(0)
+
+;---Create array to hold all polymarkers
+  npoly = sum(geometry(:,geom_numSegs)) 
+  poly  = new(npoly,graphic)
+
+;---Section to attach polymarkers to plot.
+  lon = f->x
+  lat = f->y
+  npl = 0     ; polyline counter
+  do i=0, numFeatures-1  
+     startSegment = geometry(i, geom_segIndex)
+     numSegments  = geometry(i, geom_numSegs)
+     do seg=startSegment, startSegment+numSegments-1
+        startPT = segments(seg, segs_xyzIndex)
+        endPT   = startPT + segments(seg, segs_numPnts) - 1
+
+;---Attach the line segment
+        poly(npl) = gsn_add_polymarker(wks, plot, lon(startPT:endPT),  \
+                                       lat(startPT:endPT), mkres)
+        npl = npl + 1
+     end do
+  end do
+  return(poly)
+end
 
 ;***********************************************************************;
 ; Procedure : gsn_polymarker_ndc                                        ;

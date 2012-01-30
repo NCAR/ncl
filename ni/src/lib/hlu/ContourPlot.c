@@ -803,7 +803,7 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL},
 	{NhlNcnFixFillBleed, NhlCcnFixFillBleed,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(fix_fill_bleed),NhlTImmediate,
-		 _NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL},
+		 _NhlUSET((NhlPointer) True),_NhlRES_PRIVATE,NULL},
 	{NhlNcnAreaMapCRange, NhlCcnAreaMapCRange,NhlTInteger,
 		 sizeof(int),Oset(amap_crange),NhlTImmediate,
 		 _NhlUSET((NhlPointer) 100000),_NhlRES_PRIVATE,NULL},

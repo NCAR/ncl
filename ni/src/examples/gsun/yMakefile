@@ -15,7 +15,10 @@ RESFILES = gsun08n.res gsun09n.res
 GSN_SCRIPTS = gsn_code.ncl gsn_csm.ncl
 
 OTHER_SCRIPTS = ccm_func.ncl contributed.ncl popRemap.ncl shea_util.ncl \
-	skewt_func.ncl wind_rose.ncl diagnostics_cam.ncl ESMFRegridingTools.ncl 
+	skewt_func.ncl wind_rose.ncl diagnostics_cam.ncl 
+
+ESMF_SCRIPTS = ESMFRegriddingTools.ncl 
+
 WRF_SCRIPTS = WRF_contributed.ncl WRFUserARW.ncl
 
 #if !defined(CRAY)
@@ -23,6 +26,7 @@ InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(GSN_SCRIPTS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(GSN_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/csm)
 InstallTarget($(OTHER_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/csm)
+InstallTarget($(ESMF_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/esmf)
 InstallTarget($(WRF_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/wrf)
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 #endif

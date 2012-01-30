@@ -164,7 +164,7 @@ C
          CALL VVINFA()
          CALL VVDRFL(XB,YB,XE,YE,VL,CDM,0,IDM,VVDUMB,0)
       ELSE
-         CALL VVINWB
+         CALL VVINWB(1)
          CALL VVDRWB(XB,YB,XE,YE,-DVMX,CDM,0,IDM,VVDUMB,0)
       END IF
       IVPO = ISP
@@ -342,7 +342,7 @@ C
          CALL VVINFA()
          CALL VVDRFL(XB,YB,XE,YE,VL,CDM,0,IDM,VVDUMB,0)
       ELSE
-         CALL VVINWB
+         CALL VVINWB(1)
          CALL VVDRWB(XB,YB,XE,YE,DVMX,CDM,0,IDM,VVDUMB,0)
       END IF
       IVPO = ISP

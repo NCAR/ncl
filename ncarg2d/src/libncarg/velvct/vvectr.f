@@ -286,7 +286,7 @@ C
       ELSE IF (IAST.GE.2) THEN
          CALL NGSETI('CT',1)
          CALL GSFACI(IOC)
-         CALL VVINWB
+         CALL VVINWB(1)
       END IF
 C
 C Set the scaling for the optional vector labels

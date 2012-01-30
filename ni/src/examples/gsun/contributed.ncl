@@ -572,6 +572,31 @@ begin
     end if                   ; if(.not.all(ismissing(att_names))) 
 end
 
+;======================================================================
+; This is the modified version of copy_VarAtts originaly developed by
+; Dennis Shea.
+;
+; Jan 12, 2012
+; This function was originally developed for use in the ESMF software,
+; and moved to contributed.ncl.
+;======================================================================
+undef("copy_VarAtts_except")
+procedure copy_VarAtts_except(var_from,var_to, Except [*]:string)    
+local att_names, i
+begin                                       
+    att_names = getvaratts(var_from);
+    if(.not.all(ismissing(att_names)))
+        do i = 0,dimsizes(att_names)-1
+            if (.not.any(att_names(i).eq.Except)) then
+                if (isatt(var_to,att_names(i))) then
+                    delete(var_to@$att_names(i)$)  ; var_from att may be diff size/type
+                end if
+                var_to@$att_names(i)$ = var_from@$att_names(i)$
+            end if
+        end do
+    end if
+end     ; of copy_VarAtts_except
+
 ;***********************************************
 ; D. Shea
 ; delete one or more attributes of a variable
@@ -855,8 +880,6 @@ begin
   end if
 end ; END extractAsciiRows
 
-
-
 ;***************************************************************
 ; D. Shea   
 ; There is no NCL built-in function to get the dimension names
@@ -1038,7 +1061,7 @@ end
 
 ; *****************************************************************
 ; D. Shea
-; Generate longitudes for a Fixed-OfGSUNset global grid
+; Generate longitudes for a Fixed-Offset global grid
 ; Example: lon = lonGlobeFo (72, "lon", "longitude", "degrees_east")
 ;          lon will run from -> 2.5 to 357.5 in the above example
 ;
@@ -1246,6 +1269,129 @@ begin
   end if
   
   return (x)
+end
+; *****************************************************************
+; Calculate meteorological wind direction
+; *****************************************************************
+undef ("wind_direction")
+function wind_direction(u:numeric, v:numeric, opt:integer)
+; meteorological wind direction. 
+; This is over-kill. Only need: wdir=atan2(u,v)*radi + 180
+local wdir, radi, con, wcrit, wmsg, zero, dimu
+begin
+  if (.not.(typeof(u).eq."double" .or. \
+            typeof(u).eq."float"  .or. \
+            typeof(u).eq."integer" )) then
+      print("wind_direction: illegal numeric type: "+typeof(u))
+      exit
+  end if
+
+  dimu = dimsizes(u)
+
+  if (typeof(u).eq."double") then
+      zero = 0.0d
+      wmsg = 1d20
+      con  = 180.0d
+      wcrit= 360d0-0.00002d0
+      radi = 1.0d0/0.0174532925199433d0
+      wdir = new (dimu, typeof(u), wmsg) 
+  else
+      zero = 0.0
+      wmsg = 1e20
+      con  = 180.0
+      wcrit= 360-0.00002
+      radi = 1.0/0.01745329
+      wdir = new (dimu, "float", wmsg) 
+  end if
+
+  wdir = (/ atan2(u,v)*radi + con  /)
+  wdir = where(wdir.ge.wcrit, zero, wdir)  ; force 360 "north winds" to 0
+                          
+  if (typeof(opt).eq."integer" .and. opt.eq.0) then 
+      cdir = zero                          ; calm 0.0->_FillValue
+      wdir = where (u.eq.zero .and. v.eq.zero, cdir, wdir)
+  end if
+                          
+  if (typeof(opt).eq."integer" .and. opt.eq.1) then 
+      cdir = wdir@_FillValue               ; calm 0.0->_FillValue
+      wdir = where (u.eq.zero .and. v.eq.zero, cdir, wdir)
+  end if
+
+  if (typeof(opt).eq."float" .or. typeof(opt).eq."double") then  
+                                           ; calm 0.0->user_value
+      wdir = where (u.eq.zero .and. v.eq.zero, opt, wdir)
+  end if
+  
+  wdir@long_name = "wind direction (meteorological)"
+  if (isatt(wdir,"units")) then
+      delete(wdir@units)
+  end if
+  return(wdir)
+end
+; *****************************************************************
+; Calculate meteorological wind components
+; *****************************************************************
+undef ("wind_component")
+function wind_component(wspd:numeric, wdir:numeric, opt:integer)
+local wdir, rad , ivmsg, uveps, uvzero, dimw, rankw, dimuv, uv
+begin
+  if (typeof(wspd).eq."double" .or. typeof(wspd).eq."double") then
+      rad   = 0.0174532925199433d0
+      uvmsg = 1d20
+      uveps = 1.0d-5
+      uvzero= 0.0d0
+  else
+      rad   = 0.01745329
+      uvmsg = 1e20
+      uveps = 1.0e-5
+      uvzero= 0.0
+  end if
+
+  dimw = dimsizes(wspd)
+  rankw= dimsizes(dimw)
+
+  dimuv= new ( rankw+1, "integer", "No_FillValue")
+  dimuv(0)  = 2
+  dimuv(1:) = dimw
+  uv        = new (dimuv, typeof(wspd), uvmsg) 
+
+  if (rankw.eq.1 .and. dimw(0).eq.1) then
+      uv(0) = -wspd*sin(wdir*rad)
+      uv(1) = -wspd*cos(wdir*rad)
+      copy_VarMeta(wspd, uv)
+  else if (rankw.eq.1) then
+      uv(0,:) = -wspd*sin(wdir*rad)
+      uv(1,:) = -wspd*cos(wdir*rad)
+      copy_VarMeta(wspd, uv(0,:))
+  else if (rankw.eq.2) then
+      uv(0,:,:) = -wspd*sin(wdir*rad)
+      uv(1,:,:) = -wspd*cos(wdir*rad)
+      copy_VarMeta(wspd, uv(0,:,:))
+  else if (rankw.eq.3) then
+      uv(0,:,:,:) = -wspd*sin(wdir*rad)
+      uv(1,:,:,:) = -wspd*cos(wdir*rad)
+      copy_VarMeta(wspd, uv(0,:,:,:))
+  else if (rankw.eq.4) then
+      uv(0,:,:,:,:) = -wspd*sin(wdir*rad)
+      uv(1,:,:,:,:) = -wspd*cos(wdir*rad)
+      copy_VarMeta(wspd, uv(0,:,:,:,:))
+  else if (rankw.eq.5) then
+      uv(0,:,:,:,:,:) = -wspd*sin(wdir*rad)
+      uv(1,:,:,:,:,:) = -wspd*cos(wdir*rad)
+      copy_VarMeta(wspd, uv(0,:,:,:,:,:))
+  end if           ; 5
+  end if           ; 4
+  end if           ; 3
+  end if           ; 2
+  end if           ; 1
+  end if           ; scalar
+
+  uv   = where(abs(uv).le.uveps, uvzero, uv) ; make near zero => 0
+
+  uv!0 = "uv"
+  uv@long_name = "zonal and meridional wind components"
+
+  return(uv)
 end
 
 ; *******************************************************************
@@ -1689,31 +1835,48 @@ begin
      return(xS)
  end if
 
- if (typeof(xS).ne."short") then
+ if (.not.(typeof(xS).eq."short" .or. typeof(xS).eq."ushort")) then
      if (isatt(xS,"long_name")) then
-         print("short2flt: input variable is not type short: "+xS@long_name)
+         print("short2flt: input variable is not type short or ushort: "+xS@long_name)
      else
-         print("short2flt: input variable is not type short")
+         print("short2flt: input variable is not type short or ushort")
      end if
      exit
  end if
 
 ;xF = new ( dimsizes(xS), float)
  xF = new ( dimsizes(xS), float, 1.e20)  ; 20 Nov 2002
- 
- copy_VarAtts   (xS, xF)
- copy_VarCoords (xS, xF)
                                      ; added 19 Dec 2002
                                      ; the type stuff added Sept 2003
  if (isatt(xS,"missing_value") .and. .not.isatt(xS,"_FillValue")) then
      type_missing_value = typeof(xS@missing_value)
-     if (type_missing_value.eq."short") then
-         xS@_FillValue = xS@missing_value
+     if (typeof(xS).eq."short") then
+         if (type_missing_value.eq."short") then
+             xS@_FillValue = xS@missing_value
+         end if
+         if (type_missing_value.eq."ushort") then
+             xS@_FillValue = toshort(xS@missing_value)
+         end if
+         if (type_missing_value.eq."integer") then
+             xS@_FillValue = toshort(xS@missing_value)
+         end if
      end if
-     if (type_missing_value.eq."integer") then
-         xS@_FillValue = integertoshort(xS@missing_value)
+
+     if (typeof(xS).eq."ushort") then
+         if (type_missing_value.eq."ushort") then
+             xS@_FillValue = xS@missing_value
+         end if
+         if (type_missing_value.eq."short") then
+             xS@_FillValue = toushort(xS@missing_value)
+         end if
+         if (type_missing_value.eq."integer") then
+             xS@_FillValue = toushort(xS@missing_value)
+         end if
      end if
- end if
+ end if   ; end of assigning _FillValue
+ 
+ copy_VarAtts   (xS, xF)
+ copy_VarCoords (xS, xF)
 
           ; should data be 'scaled' and/or 'offset' ?
 
@@ -1794,7 +1957,7 @@ end
 ; This follows these conventions.
 
 undef("byte2flt")
-function byte2flt (xB:byte)
+function byte2flt (xB)
 local xF, oNames, sNames, offset, scale, xAtts, nAtts, n
 begin
  xF = new ( dimsizes(xB), float)
@@ -1806,7 +1969,7 @@ begin
 
           ; names to check
  oNames = (/"add_offset", "offset", "OFFSET", "Offset", "_offset" \
-           ,"Intercept", "intercept"/)
+           ,"Intercept", "intercept", "add_off", "ADD_OFF"/)
  sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor" , "factor" \
            ,"Scale_factor", "Slope" , "slope", "ScaleFactor", "Scale_Factor" /)
 
@@ -1857,7 +2020,9 @@ begin
      xF = xB*scale + offset 
  end if
 
- if (isatt(xB,"valid_range") .and. typeof(xB@valid_range).eq."byte") then
+ if (isatt(xB,"valid_range") .and. \
+    (typeof(xB@valid_range).eq."byte" .or. \
+     typeof(xB@valid_range).eq."ubyte")    ) then
      vrB = xB@valid_range
      vrF = new ( dimsizes(vrB), float)
      vrF = vrB*scale + offset 

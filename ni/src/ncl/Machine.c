@@ -1671,6 +1671,7 @@ void _NclRemapIntrParameters
 	int coord_ids[NCL_MAX_DIMENSIONS];
 	NclAtt tmp_att = NULL;
 	NclVar tmp_coord_var = NULL;
+	NclMultiDValData tmp_md;
 
 /*
 * Some kind of check is need to assure top of stack and arguments are 
@@ -1971,6 +1972,10 @@ Not needed for Intrisic functions
 							check_ret_status = 0;
 					} else {
 						if(data.u.data_var->obj.status != PERMANENT) {
+							tmp_md = (NclMultiDValData)_NclGetObj(data.u.data_var->var.thevalue_id);
+							if(tmp_md->obj.is_constant==(tmp_md->obj.id +1)) {
+								tmp_md = _NclStripVarData(data.u.data_var);
+							}
 							_NclDestroyObj((NclObj)data.u.data_var);
 						}
 					}
@@ -2563,6 +2568,11 @@ if(the_list != NULL) {
 							}
 						}
 						if(tmp_var1->obj.ref_count == 0) {
+							tmp_md = (NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id);
+							if(tmp_md->obj.is_constant==(tmp_md->obj.id +1)) {
+								tmp_var1->obj.status = TEMPORARY;
+								tmp_md = _NclStripVarData(tmp_var1);
+							}
 							_NclDestroyObj((NclObj)tmp_var1);
 						} else {
 							tmp_var1->var.thesym = NULL;
@@ -2583,7 +2593,13 @@ if(the_list != NULL) {
 						}
 					}
 					if(data.u.data_var->obj.ref_count ==0 ){
+						tmp_md = (NclMultiDValData)_NclGetObj(data.u.data_var->var.thevalue_id);
+						if(tmp_md->obj.is_constant==(tmp_md->obj.id +1)) {
+							data.u.data_var->obj.status = TEMPORARY;
+							tmp_md = _NclStripVarData(data.u.data_var);
+						}
 						_NclDestroyObj((NclObj)data.u.data_var);
+
 					} else {	
 						data.u.data_var->var.thesym = NULL;
 						data.u.data_var->var.sel_rec= NULL;
@@ -2717,7 +2733,7 @@ if(the_list != NULL) {
 						_NclDestroyObj((NclObj)data.u.data_obj);
 					}
 				} else {
-					if(data.u.data_obj->obj.status != PERMANENT) {
+ 					if(data.u.data_obj->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)data.u.data_obj);
 					}
 				}

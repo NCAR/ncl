@@ -5556,10 +5556,14 @@ GribRecordInqRec *grib_rec;
 	int common_time_unit = 1;
 	int time_unit = 1;
 	double c_factor = 1.0;
+	int var_time_ind, rec_time_ind;
+        
+	var_time_ind = node->time_range_indicator == 10 ? 0 : node->time_range_indicator;
+	rec_time_ind = (int) grib_rec->pds[20] == 10 ? 0 : (int)grib_rec->pds[20];
 
-	if (!(node->time_range_indicator < 2 && (int)grib_rec->pds[20] < 2)) {
-		if (node->time_range_indicator != (int)grib_rec->pds[20]) {
-			return node->time_range_indicator - (int)grib_rec->pds[20];
+	if (var_time_ind < 2 && rec_time_ind < 2) {
+		if (var_time_ind != rec_time_ind) {
+			return var_time_ind - rec_time_ind;
 		}
 	}
 
@@ -6923,6 +6927,7 @@ int wr_status;
 					case 0:
 					case 1:
 					case 2:
+					case 10:
 						break;	
 					case 3:
 						grib_rec->time_period = (int)grib_rec->pds[19] - (int) grib_rec->pds[18];

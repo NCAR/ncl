@@ -799,7 +799,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			estatus = NhlFATAL;
 			goto fatal_err;
 		}
-		if (_NclFileIsVar(files[0],agg_dim_name) > -1) {
+		if (_NclFileVarIsCoord(files[0],agg_dim_name) > -1) {
 			long offset;
 			agg_coord_md = _NclFileReadVarValue(files[0],agg_dim_name,NULL);
 			if (!agg_coord_md) {
@@ -5506,7 +5506,7 @@ void CallFILE_VAR_OP(void) {
 					file = (NclFile)_NclGetObj((int)*(obj*)value->multidval.val);
 				else
 				{
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) obj_type_mask did notmask Ncl_MultiDValnclfileData",dfile->name);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) not reference to a valid file",dfile->name);
 					_NclCleanUpStack(nsubs);
 					estatus = NhlFATAL;
 					return;
