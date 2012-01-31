@@ -203,8 +203,14 @@ if ("$suffix" != "") then
         @ i++
     end
 endif
+#
+# check for http prefix and if so assume opendap
+#
+set ishttp = `echo $file | sed -e'/^http/s/http.*/http/'`
 
-if ($?no_suffix) then
+if ( "$ishttp" == "http") then
+    set ftype = "HTTP" 
+else if ($?no_suffix) then
     echo ""
     echo "  ${progname}: error: '$file' does not have a recognizable suffix."
     echo "  valid suffixes are: $valid_suffixes"
@@ -217,7 +223,7 @@ endif
 # so that NCL knows how to open it with addfile().  Check for the
 # existence of the file both with and without the suffix.
 # 
-if (! -e $file && ! -e $prefix) then
+if ("$ishttp" != "http" && ! -e $file && ! -e $prefix) then
     echo
     echo "  ${progname}: error: neither '$file' nor '$prefix' exists."
     echo

@@ -1014,6 +1014,18 @@ begin
         comment = ""                     ; comment option
     end if
 
+    iFileName = diri + fili
+
+;***************************************************
+; if the file starts with "http" check that it points to a valid URL
+;***************************************************
+
+    if (ftype .eq. "OPeNDAP") then
+        if (.not. isfilepresent(iFileName)) then
+	    print(iFileName + " is not accessible: exiting")
+	    exit()
+	end if
+    end if
 ;***************************************************
 ; Specify that COARDS style output desired
 ; NOTE: [not yet implemented]
@@ -1076,7 +1088,6 @@ begin
 ;***************************************************
 ; open file with appropriate extension
 ;***************************************************
-    iFileName = diri + fili
     f = addfile(iFileName, "r")     ; suffix ok 
 
 ;***************************************************
