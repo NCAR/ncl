@@ -3256,12 +3256,14 @@ function gsn_open_x11(name[1]:string)
 local window
 begin
     if(isatt(name,"wkColorMap"))
-      window = create name + "_x11" xWorkstationClass defaultapp
+      window = create name + "_x11" windowWorkstationClass defaultapp
+        "wkFormat": "x11"
         "wkPause" : True
         "wkColorMap" : name@wkColorMap
       end create
     else
-      window = create name + "_x11" xWorkstationClass defaultapp
+      window = create name + "_x11" windowWorkstationClass defaultapp
+        "wkFormat": "x11"
         "wkPause" : True
       end create
     end if
