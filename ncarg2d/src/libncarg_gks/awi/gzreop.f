@@ -145,7 +145,8 @@ C    IANDX is a pointer into the color table of the IDR array.
 C
       ICNDX = NCXS-1
       IANDX = 6
-      IF (IAFLG .NE. 0) IANDX = 12
+CRLB:      IF (IAFLG .NE. 0) IANDX = 12
+      IF (IAFLG .NE. 0) IANDX = 14
 C
       ICRM = MOD(NCLRS,4)
       ICDV = NCLRS/4
@@ -172,16 +173,33 @@ C
 C  If the attributes are available, read them in.
 C
       IF (IAFLG .NE. 0) THEN
-        READ(IDR( 6),503) (CIATT(LL),LL= 1,20)
-        READ(IDR( 7),504) (CIATT(LL),LL=21,31)
-        READ(IDR( 8),505) (CFATT(LL),LL= 1, 5)
-        READ(IDR( 9),505) (CFATT(LL),LL= 6,10)
-        READ(IDR(10),505) (CFATT(LL),LL=11,15)
-        READ(IDR(11),506) (CFATT(LL),LL=16,19)
+C        --------------------------------------------------
+C        Serializing these values was modified to support the presence of
+C        32bit ARGB values, which are always *much* larger in magnitude
+C        than the original I4 character fields.  Expanded to I10s; note
+C        that 2 extra 80-character records are now required, so that
+C        subsequent offsets into IDR have changed.     RLB 1/2012
+C
+C        READ(IDR( 6),503) (CIATT(LL),LL= 1,20)
+C        READ(IDR( 7),504) (CIATT(LL),LL=21,31)
+C        READ(IDR( 8),505) (CFATT(LL),LL= 1, 5)
+C        READ(IDR( 9),505) (CFATT(LL),LL= 6,10)
+C        READ(IDR(10),505) (CFATT(LL),LL=11,15)
+C        READ(IDR(11),506) (CFATT(LL),LL=16,19)
+C        --------------------------------------------------
+        READ(IDR( 6),508) (CIATT(LL),LL= 1, 8)
+        READ(IDR( 7),508) (CIATT(LL),LL= 9,16)
+        READ(IDR( 8),508) (CIATT(LL),LL=17,24)
+        READ(IDR( 9),508) (CIATT(LL),LL=25,31)
+        READ(IDR(10),505) (CFATT(LL),LL= 1, 5)
+        READ(IDR(11),505) (CFATT(LL),LL= 6,10)
+        READ(IDR(12),505) (CFATT(LL),LL=11,15)
+        READ(IDR(13),506) (CFATT(LL),LL=16,19)
   503   FORMAT(20I4)
   504   FORMAT(11I4)
   505   FORMAT(5E16.7)
   506   FORMAT(4E16.7)
+  508   FORMAT(8I10)
       ENDIF
 C
       CUFLAG = WKID
