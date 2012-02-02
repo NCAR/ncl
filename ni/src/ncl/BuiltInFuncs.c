@@ -14618,11 +14618,12 @@ NhlErrorTypes _Nclmin
 		while((i < tmp_md->multidval.totalelements)&&(_NclIsMissing(tmp_md,&(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]))))
 			i++;
 		if(i == tmp_md->multidval.totalelements) {
+		  /* The values are all missing */
 			return(NclReturnValue(
-				&tmp_md->multidval.type->type_class.default_mis,
+			        &tmp_md->multidval.missing_value.value,
 				1,
 				&dimsizes,
-				&tmp_md->multidval.type->type_class.default_mis,
+			        &tmp_md->multidval.missing_value.value,
 				tmp_md->multidval.data_type,
 				1
 			));
@@ -14701,11 +14702,12 @@ NhlErrorTypes _Nclmax
 		while((i < tmp_md->multidval.totalelements)&&(_NclIsMissing(tmp_md,&(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]))))
 			i++;
 		if(i == tmp_md->multidval.totalelements) {
+		  /* The values are all missing */
 			return(NclReturnValue(
-				&tmp_md->multidval.type->type_class.default_mis,
+			        &tmp_md->multidval.missing_value.value,
 				1,
 				&dimsizes,
-				&tmp_md->multidval.type->type_class.default_mis,
+			        &tmp_md->multidval.missing_value.value,
 				tmp_md->multidval.data_type,
 				1
 			));
