@@ -1,7 +1,11 @@
 ;******************************************************************************
-; ut_string.ncl
+; cd_string.ncl
 ;
-; If you make changes to this function, be sure to change cd_string in
+; This is based on ut_string.ncl. The only difference between these
+; two scripts is that ut_string uses ut_calendar, and cd_string uses 
+; cd_calendar.
+;
+; If you make changes to this function, be sure to change ut_string in
 ; the same fashion, if appropriate.
 ;
 ; Carl Schreck (carl@atmos.albany.edu)
@@ -17,9 +21,9 @@
 ;   Now handles missing values without error messages, and removed "ChangeCase"
 ;******************************************************************************
 
-undef("ut_string")
+undef("cd_string")
 
-function ut_string( time[*]:numeric, inFormat:string )
+function cd_string( time[*]:numeric, inFormat:string )
 ;******************************************************************************
 ; Purpose: Convert a time into a string
 ;
@@ -63,9 +67,9 @@ function ut_string( time[*]:numeric, inFormat:string )
 ;  a string represent the time(s) in the specified format
 ;
 ; Exmple 1:
-;  timeDouble = ut_inv_calendar( 1776, 07, 04, 18, 00, 00,  "hours since 1800-01-01 00:00", 0 )
-;  print( (/ ut_string( timeDouble, "" ) /) )
-;  print( (/ ut_string( timeDouble, "%Y-%N-%D %H:%M:%S" ) /) )
+;  timeDouble = cd_inv_calendar( 1776, 07, 04, 18, 00, 00,  "hours since 1800-01-01 00:00", 0 )
+;  print( (/ cd_string( timeDouble, "" ) /) )
+;  print( (/ cd_string( timeDouble, "%Y-%N-%D %H:%M:%S" ) /) )
 ;
 ;  The above will output:
 ; (0)     1800 UTC 4 Jul 1776
@@ -88,11 +92,11 @@ begin
 
   ; check input
   if (.not. isatt(time,"units")) then
-    print("ut_string: The variable containing time values must have a 'units' attribute.")
+    print("cd_string: The variable containing time values must have a 'units' attribute.")
     return
   end if
 
-  ymdhms0 = ut_calendar(time,0)
+  ymdhms0 = cd_calendar(time,0)
   nt = dimsizes(time)
 
   if (typeof(ymdhms0) .eq. "float") then
