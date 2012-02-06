@@ -111,7 +111,11 @@ FILES		= \
 		WhiteGreen.rgb \
 		cmp_b2r.rgb \
 		cmp_flux.rgb \
-		cmp_haxby.rgb
+		cmp_haxby.rgb \
+		matlab_hot.rgb \
+		matlab_hsv.rgb \
+		matlab_jet.rgb \
+		matlab_lines.rgb
 
 
 CMPATH	= $(LIBNCARGPATH)/colormaps
