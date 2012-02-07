@@ -44,7 +44,8 @@ extern "C" {
     {
         _NclAddSingleObj(NhltickMarkClass->base_class.class_name, NhltickMarkClass);
         _NclAddSingleObj(NhltitleClass->base_class.class_name, NhltitleClass);
-        _NclAddSingleObj(NhlxWorkstationClass->base_class.class_name, NhlxWorkstationClass);
+        /* Note that we are mapping the original X11 driver's name into the cairo windowWorkstation -- RLB 2/2012 */
+        _NclAddSingleObj(NhlxWorkstationClass->base_class.class_name, NhlcairoWindowWorkstationClass);
         _NclAddSingleObj(NhlimageWorkstationClass->base_class.class_name, NhlimageWorkstationClass);
         _NclAddSingleObj(NhlncgmWorkstationClass->base_class.class_name, NhlncgmWorkstationClass);
         _NclAddSingleObj(NhlcontourPlotClass->base_class.class_name, NhlcontourPlotClass);
