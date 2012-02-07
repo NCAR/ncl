@@ -337,6 +337,11 @@ endsw
 # Create a temporary file to hold NCL script.
 #
 set tmpdir = `ncargpath tmp`
+if (! -w $tmpdir) then
+    echo "Temporary directory $tmpdir does not exist or is not writable; cannot proceed (check environment variable TMPDIR)"
+    exit(1)
+endif
+
 set tmp_nclfile = "$tmpdir/tmp$$.ncl"
 /bin/rm $tmp_nclfile >& /dev/null
 

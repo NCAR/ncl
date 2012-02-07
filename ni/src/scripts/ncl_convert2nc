@@ -72,6 +72,10 @@ endif
 
 # Location to write temporary files
 set tmpdir = `ncargpath tmp`
+if (! -w $tmpdir) then
+    echo "Temporary directory $tmpdir does not exist or is not writable; cannot proceed (check environment variable TMPDIR)"
+    exit(1)
+endif 
 
 # Input and output directories default values
 set valid_file = 0
@@ -869,7 +873,7 @@ unset ifiles_t
 #
 set tmp_nclf = "$tmpdir/tmp$$.ncl"
 /bin/rm $tmp_nclf >& /dev/null
-echo $tmp_nclf
+#echo $tmp_nclf
 cat << 'EOF_NCL' >! $tmp_nclf
 
 ;***************************************************
