@@ -1117,13 +1117,13 @@ begin
      else
         fVarNames = vars                     ; user specified variables
      end if
+
      nfNames = dimsizes(fVarNames)
 
      if (debug) then
         print(nfNames)
         print(fVarNames)
     end if
-
 
 ;***************************************************
 ; open output netcdf file
@@ -1202,6 +1202,16 @@ begin
     end if
 
     fileattdef(fnc, fAtt)
+
+;************************************************
+; If the file contains no readable variables then
+; it is necessary to quit here
+;************************************************
+     if (all(ismissing(fVarNames))) then
+         print(iFileName + " contains no variables readable by NCL: converting global attributes only")
+	 delete(f)
+	 exit()
+     end if
 
 ;***********************************************
 ; predefine the file's dimension names, sizes
@@ -1672,9 +1682,9 @@ endif
 exit 0
 
 CLEANUP:
-/bin/rm -f $tmp_nclf
-/bin/rm -f $f_rdir
-exit 1
+  /bin/rm -f $tmp_nclf
+  /bin/rm -f $f_rdir
+  exit 1
 
 USAGE:
 echo "${progname} inputFile(s) OPTIONS"
