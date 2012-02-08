@@ -604,10 +604,24 @@ NhlErrorTypes _NclIGetFileVarNames
 
 	if(NULL != thefile)
 		var_names = _NclFileReadVarNames(thefile, &num_vars);
-		
+
+	if (NULL == var_names || num_vars == 0) {
+		string *tmp_str =(string*) NclMalloc(((NclTypeClass)nclTypestringClass)->type_class.size);
+		*tmp_str = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+		dimsize = (ng_size_t)1;
+		data.kind = NclStk_VAL;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"getfilevarnames: %s contains no variables readable by NCL",
+			  NrmQuarkToString(thefile->file.fname));
+		data.u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)tmp_str,
+						      &((NclTypeClass)nclTypestringClass)->type_class.default_mis,
+						      1,&dimsize,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
+		_NclPlaceReturn(data);
+		return(NhlWARNING);
+	}
 	dimsize = (ng_size_t)num_vars;
 	data.kind = NclStk_VAL;
-	data.u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)var_names,NULL,1,&dimsize,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
+	data.u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)var_names,NULL,1,&dimsize,
+					      TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
 	_NclPlaceReturn(data);
        	return(NhlNOERROR);
 }
@@ -16926,7 +16940,15 @@ NhlErrorTypes _NclIGetVarDims
 			}
 
 			ndims = data->u.file->n_dims;
-			ret = NclReturnValue((void*)names, 1, &ndims, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+			if (ndims == 0) {
+				names[0] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+				ndims = 1;
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"getvardims: file %s contains no dimensions readable by NCL",
+					  NrmQuarkToString(thefile->file.fname));
+			}
+			ret = NclReturnValue((void*)names, 1, &ndims, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, 
+					     ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+			ret = MIN(ret,NhlWARNING);
 		} else {
 			data = _NclGetVarInfo2(tmp_var);
 			for (i=0; i < data->u.var->n_dims;i++) {
@@ -16938,7 +16960,8 @@ NhlErrorTypes _NclIGetVarDims
 			}
 
 			ndims = data->u.var->n_dims;
-			ret = NclReturnValue((void*)names, 1, &ndims, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+			ret = NclReturnValue((void*)names, 1, &ndims, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, 
+					     ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
 		}
 	} else {
 		ret  = NhlFATAL;
@@ -20937,7 +20960,16 @@ NhlErrorTypes   _NclIGetFileDimsizes
  *      was > INT_MAX, but this was removed before 6.0.0.
  */
 	ndims = f->file.n_file_dims;
-        if (ndims != 0) {
+	if (ndims == 0) {
+		NhlPError(NhlWARNING, NhlEUNKNOWN, "getfiledimsizes: file contains no dimensions");
+		dimsizes = 1;
+		NclReturnValue(
+			(void*) &((NclTypeClass) nclTypeintClass)->type_class.default_mis, 1,
+			&dimsizes, &((NclTypeClass) nclTypeintClass)->type_class.default_mis,
+			((NclTypeClass) nclTypeintClass)->type_class.data_type, 1);
+		return NhlWARNING;
+	}
+	else {
 	  return_type = NCL_int;
 #if !defined(NG32BIT)
 	  i = 0;
