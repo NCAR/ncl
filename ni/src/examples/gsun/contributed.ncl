@@ -7733,7 +7733,7 @@ begin
   sec     = new( N ,"float")
   sec     = 0.0
 
-  time    = (/ ut_inv_calendar(year,month,day,hour,min,sec,tunits, 0) /)
+  time    = (/ cd_inv_calendar(year,month,day,hour,min,sec,tunits, 0) /)
 
   time&time       =  time        ; make coordinate variable
 
@@ -10687,6 +10687,32 @@ begin
 end
 
 ; **********************************************************************
+; This is identical to ut_convert, except it uses cd_calendar.
+;***********************************************************************
+undef("cd_convert")
+function cd_convert( dateFrom:numeric, unitsTo:string )
+local retVal, tempDate, utcDate
+begin
+ if(.not.isatt(dateFrom,"units")) then
+   print("cd_convert: 'dateFrom' contains no 'units' attribute.")
+   print("            Will return all missing values.")
+  
+   retVal = new(dimsizes(dateFrom),double)
+   return(retVal)
+ end if
+
+ tempDate       = dateFrom
+ tempDate@units = dateFrom@units
+
+ utcDate = cd_calendar( tempDate, -5 )
+
+ retVal = cd_inv_calendar( utcDate(:,0), utcDate(:,1), utcDate(:,2), \\
+                           utcDate(:,3), utcDate(:,4), utcDate(:,5), \\
+                           unitsTo, 0 )
+ return( retVal )
+end
+
+; **********************************************************************
 ; D. Shea
 ; wrapper for NCL function "triple2grid"  that copies attributes and coordinate
 ; vars.  It adds the longitude and latitude coordinates.
@@ -11986,7 +12012,7 @@ function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt
 
 ; calculate monthly values [avg, sum, min, max]
 ; x: numeric array of 5D or less [eg: time,lev,lat,lon]
-;    *must* have time coordinate recognized by ut_calendar
+;    *must* have time coordinate recognized by cd_calendar
 ;    if 5D [case,time,lev,lat,lon]
 ; arith: "avg" [also, "ave"], "sum","min","max"     others may be added later
 ; nDim : scalar integer that specifies the 'time' dimension [generally, 0]
@@ -12011,7 +12037,7 @@ begin
         exit
     end if
 
-    utc_date = ut_calendar(x&time, 0)
+    utc_date = cd_calendar(x&time, 0)
     year     = floattointeger(utc_date(:,0))   
     month    = floattointeger(utc_date(:,1))  
     day      = floattointeger(utc_date(:,2))
@@ -12450,9 +12476,9 @@ function time_to_newtime(time[*]:numeric, new_time_units[1]:string)
 ;  time = time_to_newtime(time, "hours since 1800-01-01 00:00") ; time(time) 
 begin
   ntim   = dimsizes(time)
-  date   = ut_calendar( time, 0)
+  date   = cd_calendar( time, 0)
  ;print(date(:,0)+"  "+date(:,1)+"  "+date(:,2)+"  "+date(:,3))
-  TIME   = ut_inv_calendar(toint(date(:,0)),toint(date(:,1)) \
+  TIME   = cd_inv_calendar(toint(date(:,0)),toint(date(:,1)) \
                           ,toint(date(:,2)),toint(date(:,3)) \
                           ,toint(date(:,4)),todouble(date(:,5)),new_time_units, 0)
   TIME@calendar = "gregorian"
