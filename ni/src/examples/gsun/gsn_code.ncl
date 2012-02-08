@@ -3370,8 +3370,8 @@ function is_cairo_ps(wtype)
 local lwtype, cpsenv
 begin
   lwtype = lower_case(wtype)
-  cpsenv = getenv("NCARG_CAIRO_PS")
-  if(lwtype.eq."newps".or.(lwtype.eq."ps".and..not.ismissing(cpsenv))) then
+  cpsenv = getenv("NCARG_OLD_PS")
+  if(lwtype.eq."newps".or.(lwtype.eq."ps".and.ismissing(cpsenv))) then
     return(True)
   else
     return(False)
@@ -3386,8 +3386,8 @@ function is_cairo_pdf(wtype)
 local lwtype, cpdfenv
 begin
   lwtype  = lower_case(wtype)
-  cpdfenv = getenv("NCARG_CAIRO_PDF")
-  if(lwtype.eq."newpdf".or.(lwtype.eq."pdf".and..not.ismissing(cpdfenv))) then
+  cpdfenv = getenv("NCARG_OLD_PDF")
+  if(lwtype.eq."newpdf".or.(lwtype.eq."pdf".and.ismissing(cpdfenv))) then
     return(True)
   else
     return(False)
@@ -3725,7 +3725,7 @@ end
 ;***********************************************************************;
 undef("gsn_open_wks")
 function gsn_open_wks(type[1]:string,name[1]:string)
-local i, wks, appusrdir, name_char, not_found, res_file, res_dir
+local i, wks, appusrdir, name_char, not_found, res_file, res_dir, type2, realtype, suffix
 begin
     type2   = type          ; Make copy of type and its resources
     type2  = lower_case(type)
@@ -3776,11 +3776,17 @@ begin
       valid_type = True
     end if
 
-    if (type2.eq."ps".or.type2.eq."eps".or. \
-        type2.eq."epsi") then
-      ps_file = get_res_value(type2,"wkPSFileName",res_file + "." + type2)
+    if (type2.eq."oldps".or.type2.eq."eps".or. \
+        type2.eq."epsi".or.(type2.eq."ps".and..not.ismissing(getenv("NCARG_OLD_PS")))) then
+      realtype = type2   ; copy value and attributes
+      suffix = type2
+      if (realtype.eq."oldps") then
+        realtype = "ps"
+        suffix = "ps"
+      end if
+      ps_file = get_res_value(realtype,"wkPSFileName",res_file + "." + suffix)
       ps_file@res_file = res_file
-      wks = gsn_open_ps(type2,res_dir+ps_file)
+      wks = gsn_open_ps(realtype,res_dir+ps_file)
       valid_type = True
     end if
 
@@ -3795,11 +3801,15 @@ begin
       valid_type = True
     end if
 
-    if (type2.eq."pdf") then
-      pdf_file = get_res_value(type2,"wkPDFFileName", \
-                               res_file + "." + type2)
+    if (type2.eq."oldpdf".or.(type2.eq."pdf".and..not.ismissing(getenv("NCARG_OLD_PDF")))) then
+      realtype = type2  ; copy value and attributes
+      if (realtype.eq."oldpdf") then
+          realtype = "pdf"
+      end if
+      pdf_file = get_res_value(realtype,"wkPDFFileName", \
+                               res_file + "." + "pdf")
       pdf_file@res_file = res_file
-      wks = gsn_open_pdf(type2, res_dir+pdf_file)
+      wks = gsn_open_pdf(realtype, res_dir+pdf_file)
       valid_type = True
     end if
 
