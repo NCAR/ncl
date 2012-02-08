@@ -19543,7 +19543,7 @@ NhlErrorTypes _NclINewList( void )
 	int i;
 	int list_type;
 	string *tmp_string;
-	char buffer[5];
+	char buffer[10];
 	
    	tmp_string = (string*)NclGetArgValue(
            0,
@@ -19564,10 +19564,9 @@ NhlErrorTypes _NclINewList( void )
 	buffer[3] = '\0';
 	for(i = 0; i < strlen(tmp); i++) {
 		buffer[i] = tolower(tmp[i]);
-		if(i == 3) 
+		if('\0' == tmp[i])
 			break;
 	}
-	
 
 	data.kind = NclStk_VAL;
 
@@ -19575,7 +19574,7 @@ NhlErrorTypes _NclINewList( void )
 	{
 		list_type = (int) (NCL_JOIN | NCL_FIFO);
 	}
-        else if(0 == strcmp("concat",buffer))
+        else if((0 == strcmp("cat",buffer)) || (0 == strcmp("concat",buffer)))
 	{
 		list_type = (int) (NCL_CONCAT | NCL_FIFO);
 	}
