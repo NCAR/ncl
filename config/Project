@@ -116,11 +116,7 @@
 #undef	BuildPNG
 #endif
 
-/* Cairo and GDAL support are not yet built by default. */
-#if !BuildCAIRO
-#undef BuildCAIRO
-#endif
-
+/* GDAL support is not yet built by default. */
 #if !BuildGDAL
 #undef BuildGDAL
 #endif
@@ -227,12 +223,8 @@
 #define	PNGlib	-lpng -lz
 #endif	/* PNGlib */
 
-#ifdef BuildCAIRO
 #ifndef CAIROlib
 #define CAIROlib  -lcairo -lXrender -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz
-#endif
-#else
-#define CAIROlib
 #endif
 
 #ifndef	HDFEOSlib
