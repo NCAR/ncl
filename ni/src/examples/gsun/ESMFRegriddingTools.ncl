@@ -1410,20 +1410,28 @@ end     ; of retrieve_ESMF_lon
 ;======================================================================
 ; This procedure copies attributes from the original variable to
 ; the regridded variable, and attaches coordinate information, if
-; available.
+; available. It will not copy lat1d/lon1d or lat2d/lon2d attributes.
 ;======================================================================
 procedure ESMF_copy_varmeta(sd,sd_regrid,opt)
-local var_dims, var_rank, dstlat, dstlon
+local var_dims, var_rank, dstlat, dstlon, atts_to_skip, natts
 begin
   var_dims = dimsizes(sd_regrid)
   var_rank = dimsizes(var_dims)
 
 ;---Copy variable attributes if requested (True by default)
   if(.not.isatt_logical_false(opt,"CopyVarAtts")) then
+    atts_to_skip = (/"lat1d","lon1d","lat2d","lon2d","coordinates"/)
     if(isatt(opt,"CopyVarAttsExcept")) then
-      copy_VarAtts_except(sd,sd_regrid,opt@CopyVarAttsExcept)
+      natts            = dimsizes(atts_to_skip)
+      new_atts_to_skip = new(natts+dimsizes(opt@CopyVarAttsExcept),string)
+      new_atts_to_skip(0:natts-1) = atts_to_skip      
+      new_atts_to_skip(natts:)    = opt@CopyVarAttsExcept
+      copy_VarAtts_except(sd,sd_regrid,new_atts_to_skip)
     else
-      copy_VarAtts(sd,sd_regrid)
+      copy_VarAtts_except(sd,sd_regrid,atts_to_skip)
+    end if
+    if(.not.any("_FillValue".eq.atts_to_skip).and.isatt(sd,"_FillValue").and..not.isatt(sd_regrid,"_FillValue")) then
+      sd_regrid@_FillValue = sd@_FillValue
     end if
   end if
 
@@ -2002,6 +2010,21 @@ begin
     lon_vals  = opt@$grid_lon_name$
     islatlon  = True
 
+;---Curvilinear grid?
+  else if(grid_string.eq."Src".and.isatt(srcData,"lat2d").and. \
+                                   isatt(srcData,"lon2d")) then
+    if(.not.any(grid_type.eq.(/"unknown","curvilinear"/))) then
+      print("write_grid_description: the lat/lon values provided don't match")
+      print("                        the grid type (" + grid_type + \
+                                      ") specified.")
+      exit
+    end if
+    
+    grid_type = "curvilinear"
+    lat_vals  = srcData@lat2d
+    lon_vals  = srcData@lon2d
+    islatlon  = True
+    
 ;---Rectilinear grid?
   else if(grid_string.eq."Src".and.var_rank.ge.2.and. \
           isdimnamed(srcData,var_rank-1).and. \
@@ -2019,21 +2042,6 @@ begin
     grid_type = "rectilinear"
     lat_vals  = srcData&$srcData!(var_rank-2)$
     lon_vals  = srcData&$srcData!(var_rank-1)$
-    islatlon  = True
-    
-;---Curvilinear grid?
-  else if(grid_string.eq."Src".and.isatt(srcData,"lat2d").and. \
-                                   isatt(srcData,"lon2d")) then
-    if(.not.any(grid_type.eq.(/"unknown","curvilinear"/))) then
-      print("write_grid_description: the lat/lon values provided don't match")
-      print("                        the grid type (" + grid_type + \
-                                      ") specified.")
-      exit
-    end if
-    
-    grid_type = "curvilinear"
-    lat_vals  = srcData@lat2d
-    lon_vals  = srcData@lon2d
     islatlon  = True
     
 ;---Unstructured grid?
@@ -2239,8 +2247,28 @@ begin
 ;---Generate the weights
   wgt_file_name = get_att_value(opt2,"WgtFileName","weights_file.nc")
   if(.not.isatt_logical_true(opt2,"SkipWeightGen")) then
-    src_grid_file = opt2@SrcGridFileName
-    dst_grid_file = opt2@DstGridFileName
+;
+; If skipped the source and/or destination grid generation phase, then
+; the user must supply the names of the grid files explicitly.
+;
+    if(isatt_logical_true(opt,"SkipSrcGrid").and.isatt(opt,"SrcGridFileName")) then
+      src_grid_file = opt@SrcGridFileName
+    else if(.not.isatt_logical_true(opt,"SkipSrcGrid").and.isatt(opt2,"SrcGridFileName")) then
+      src_grid_file = opt2@SrcGridFileName
+    else
+      print("ESMF_all: need the name of the source grid file (SrcGridFileName)")
+      exit
+    end if
+    end if
+    if(isatt_logical_true(opt,"SkipDstGrid").and.isatt(opt,"DstGridFileName")) then
+      dst_grid_file = opt@DstGridFileName
+    else if(.not.isatt_logical_true(opt,"SkipDstGrid").and.isatt(opt2,"DstGridFileName")) then
+      dst_grid_file = opt2@DstGridFileName
+    else
+      print("ESMF_all: need the name of the destination grid file (DstGridFileName)")
+      exit
+    end if
+    end if
     ESMF_gen_weights(src_grid_file, dst_grid_file, wgt_file_name, opt2)
   else
     print("ESMF_all: skipping generation of weights file.")
