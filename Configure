@@ -149,8 +149,6 @@ echo -n "..."
 # echo -n "..."
 set buildnc4support=`$makecmd NC4STUFF`
 echo -n "..."
-set buildcairo=`$makecmd CAIROSTUFF`
-echo -n "..."
 set buildgdal=`$makecmd GDALSTUFF`
 echo -n "..."
 set buildhdf4=`$makecmd HDF5STUFF`
@@ -475,36 +473,6 @@ endif
 # 	set newbuildpng
 #     set altered
 # endif
-
-#
-# Cairo.
-#
-if ($?verbose_option) then
-  cat <<"EOF"
-======================================================================
-
-	If you want access to the cairo workstations, which will
-	give you PNG and smaller PDF files, then you'll need to
-	download several packages along with cairo. This is
-	experimental for now, so unless you know what you're doing,
-	answer "n" to this question.
-
-======================================================================
-"EOF"
-endif
-
-echo ""
-echo "Build cairo support (optional) into GKS library? ($buildcairo)"
-echo "(Requires the cairo and other external libraries available from"
-echo "http://cairographics.org/) "
-echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
-set answer="$<"
-if ("$answer" == "q") goto cleanup
-if (("$answer" != "") && ("$answer" != "$buildcairo")) then
-	set buildcairo = $answer
-	set newbuildcairo
-    set altered
-endif
 
 #
 # HDF4 is now optional for NCL. Nevertheless because it is also an option 
@@ -1349,10 +1317,6 @@ endif
 
 if ($?newbuildnc4support  && "$buildnc4support" == "y") then
 	echo "#define UseNetCDF4Features 1" >> Site.local
-endif
-
-if ($?newbuildcairo  && "$buildcairo" == "y") then
-	echo "#define BuildCAIRO 1" >> Site.local
 endif
 
 if ($?newbuildnetcdf4) then

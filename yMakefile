@@ -228,14 +228,6 @@ NC4STUFF:
 	@echo "n"
 #endif
 
-#ifdef	BuildCAIRO
-CAIROSTUFF:
-	@echo "y"
-#else
-CAIROSTUFF:
-	@echo "n"
-#endif
-
 #ifdef	BuildGDAL
 GDALSTUFF:
 	@echo "y"
