@@ -498,14 +498,6 @@ static NhlErrorTypes
 CairoDocumentWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args) {
     char func[] = "CairoDocumentWorkstationInitialize";
 
-#ifndef BuildCAIRO
-
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-            "%s:CairoWorkstation support was not built into NCL", func);
-    return NhlFATAL;
-
-#else
-
     NhlCairoWorkstationLayer newCairo = (NhlCairoWorkstationLayer) new;
     NhlCairoWorkstationLayerPart *cairo = &newCairo->cairo;
     NhlErrorTypes ret1 = NhlNOERROR;
@@ -553,20 +545,11 @@ CairoDocumentWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, 
 
     /* NOTE THIS IMPLICITLY USES THE FACT THAT ERROR-RETURN-VALUES ARE MORE NEGATIVE WITH INCREASING SEVERITY */
     return ((ret1 < ret2) ? ret1 : ret2);
-#endif
 }
 
 static NhlErrorTypes
 CairoImageWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args) {
     char func[] = "CairoImageWorkstationInitialize";
-
-#ifndef BuildCAIRO
-
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-            "%s:CairoWorkstation support was not built into NCL", func);
-    return NhlFATAL;
-
-#else
 
     NhlCairoWorkstationLayer newCairo = (NhlCairoWorkstationLayer) new;
     NhlCairoWorkstationLayerPart *cairo = &newCairo->cairo;
@@ -605,20 +588,11 @@ CairoImageWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _Nh
 
     /* NOTE THIS IMPLICITLY USES THE FACT THAT ERROR-RETURN-VALUES ARE MORE NEGATIVE WITH INCREASING SEVERITY */
     return ((ret1 < ret2) ? ret1 : ret2);
-#endif
 }
 
 static NhlErrorTypes
 CairoWindowWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args) {
     char func[] = "CairoWindowWorkstationInitialize";
-
-#ifndef BuildCAIRO
-
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-            "%s:CairoWorkstation support was not built into NCL", func);
-    return NhlFATAL;
-
-#else
 
     NhlCairoWorkstationLayer newCairo = (NhlCairoWorkstationLayer) new;
     NhlCairoWorkstationLayerPart *cairoLayer = &newCairo->cairo;
@@ -685,7 +659,6 @@ CairoWindowWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _N
     strcpy(cairoLayer->xwinconfig.icon_title, tstr);
 
     return ret;
-#endif
 }
 
 

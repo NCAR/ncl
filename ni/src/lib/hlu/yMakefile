@@ -162,15 +162,12 @@ LIBHOBJS	= $(HLUCOBJS) $(FOBJS)
 BuildSharedLibTarget(libNGhlu,$(LIBHOBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
 LibraryTarget($(MYNAME),$(LIBHOBJS))
 
-#ifdef BuildCAIRO
 CAIROOBJS	= CairoWorkstation_cairo.o
 HLUCCOBJS	= $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ) $(CAIROOBJS)
 LIBHCOBJS	= $(HLUCCOBJS) $(FOBJS)
 
-CAIRO_DEFINES   =  -DBuildCAIRO
-
 CairoWorkstation_cairo.o: CairoWorkstation_cairo.c
-        $(CC) $(CCOPTIONS) $(ALLDEFINES) $(CAIRO_DEFINES) -c CairoWorkstation_cairo.c
+        $(CC) $(CCOPTIONS) $(ALLDEFINES) -c CairoWorkstation_cairo.c
 
 LibraryTarget($(MYNAME_CAIRO),$(LIBHCOBJS))
 
@@ -178,7 +175,6 @@ CairoWorkstation_cairo.c: CairoWorkstation.c
 	$(LN) CairoWorkstation.c CairoWorkstation_cairo.c
 
 CleanFilesTarget(CairoWorkstation_cairo.c CairoWorkstation_cairo.o)
-#endif
 
 BuildIncludes($(HDRS),ncarg/hlu,../..)
 InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
