@@ -8,6 +8,17 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       08 Feb 2012:
+;            Added retrieve_ESMF_lat and retrieve_ESMF_lon.
+;            Added ESMF_all (not fully tested).
+;            Added write_grid_description_file.
+;            Removed isbothvaratt_logical_true and made isatt_logical_true
+;               behave like it.
+;            Added isatt_logical_false.
+;            Set IgnoreMappedPoints to True by default.
+;            Set pole="none" if method="conserve" (and pole not 
+;              explicitly set by user).
+;
 ;       23 Jan 2012:
 ;            Removed BothRegional and BothESMF, since they might
 ;            confuse users. Use Src/DstRegional and Src/DstESMF.
@@ -32,7 +43,7 @@
 ;            Renamed cartesian_to_SCRIP to latlon_to_SCRIP
 ;               Renamed some of the attributes in this function.
 ;            Added PrintTimings to the xxxx_to_SCRIP, xxxx_to_ESMF,
-;            and ESMF_gen_weight functions.
+;            and ESMF_gen_weights functions.
 ;
 ;       01 Jan 2012:
 ;            Changed behavior of ForceOverWrite. No longer
@@ -171,12 +182,33 @@ begin
     return(OutPut)
 end
 
+;***********************************************************************;
+; Function : get_att_value(                                             ;
+;              opt[1]  : logical                                        ;
+;              attname : string                                         ;
+;              default_val                                              ;
+;                                                                       ;
+; This function checks to see if the given attribute has been set, and  ;
+; if so, it returns its value. Otherwise, it returns the default value  ;
+; which is the 3rd argument.                                            ;
+;***********************************************************************;
+undef("get_att_value")
+function get_att_value(opt,attname:string,default_val)
+local return_val
+begin
+  if(islogical(opt).and.opt.and..not.any(ismissing(getvaratts(opt))).and.\
+    isatt(opt,attname)) then
+    return_val = opt@$attname$
+  else
+    return_val = default_val
+  end if
+  return(return_val)
+end
+
+
 ;======================================================================
-; This function will check:
-; (1) if the Attname attribute is defined
-; (2) if the Attname attribute is a logical attribute
-; (3) if the Attname is True
-; It will return true only if all above conditions are satisfied.
+; This function will return True if Opt is True and the AttName 
+; attribute is a logical attribute that is set to True
 ;======================================================================
 undef("isatt_logical_true")
 function isatt_logical_true(Opt[1]:logical,AttName[1]:string)
@@ -188,22 +220,18 @@ begin
 end     ; of isatt_logical_true(...)
 
 ;======================================================================
-; This function will check:
-; (1) if Opt is a logical variable.
-; (2) if Opt is set to true
-; (3) if the Attname attribute of Opt is defined
-; (4) if the Attname attribute of Opt is a logical attribute
-; (5) if the Attname is True
-; It will return true only if all above conditions are satisfied.
+; This function will return True if Opt is True and the AttName 
+; attribute is a logical attribute that is set to False
 ;======================================================================
-undef("isbothvaratt_logical_true")
-function isbothvaratt_logical_true(Opt[1]:logical,AttName[1]:string)
+undef("isatt_logical_false")
+function isatt_logical_false(Opt[1]:logical,AttName[1]:string)
 begin
-    if (islogical(Opt).and.Opt) then
-        return(isatt_logical_true(Opt,AttName))
+    if (isatt(Opt,AttName).and.islogical(Opt@$AttName$).and. \
+        .not.Opt@$AttName$) then
+        return(True)
     end if
     return(False)
-end     ; of isbothvaratt_logical_true(...)
+end     ; of isatt_logical_false(...)
 
 ;======================================================================
 ; This procedure checks if a file already exists, and removes if 
@@ -219,11 +247,11 @@ undef("check_for_file")
 procedure check_for_file(fname,opt)
 local debug
 begin
-    debug = isbothvaratt_logical_true(opt,"Debug")
+    debug = isatt_logical_true(opt,"Debug")
     if (isfilepresent(fname)) then
-        if (isbothvaratt_logical_true(opt,"OverWrite")) then
+        if (isatt_logical_true(opt,"OverWrite")) then
             system("rm -rfi "+fname)
-        else if (isbothvaratt_logical_true(opt,"ForceOverWrite")) then
+        else if (isatt_logical_true(opt,"ForceOverWrite")) then
             system("rm -rf "+fname)
         else
             print("check_for_file: the file '" + fname + "' already exists.")
@@ -423,13 +451,13 @@ begin
       start_time = get_start_time()
     end if
 
-    debug = isbothvaratt_logical_true(Opt,"Debug")
+    debug = isatt_logical_true(Opt,"Debug")
 
 ;---Check if the file already exists
     check_for_file(FName,Opt)
 
 ;---Do we need to create a large file?
-    if (isbothvaratt_logical_true(Opt,"LargeFile")) then
+    if (isatt_logical_true(Opt,"LargeFile")) then
       setfileoption("nc","Format","LargeFile") 
     end if
 
@@ -599,7 +627,7 @@ end     ; of unstructured_to_ESMF(...)
 ;     for removing an existing file. If set to false the user permission
 ;     is required to remove an existing file. This is ineffective if
 ;     OverWrite is set to False.
-; (3) ForcedCorners [Logical] if set to true, insted of calculating the
+; (3) ForcedCorners [Logical] if True, instead of calculating the
 ;     the corner points for the cells, these values are read from
 ;     CornerLat and CornerLon attribute of Opt.
 ;======================================================================
@@ -620,7 +648,7 @@ begin
     check_for_file(FName,Opt)
 
 ;---Do we need to create a large file?
-    if (isbothvaratt_logical_true(Opt,"LargeFile")) then
+    if (isatt_logical_true(Opt,"LargeFile")) then
       setfileoption("nc","Format","LargeFile") 
     end if
 
@@ -718,7 +746,7 @@ begin
     end if
 	
 ;---Store the grid cell corners, but first compute them.
-    if (isbothvaratt_logical_true(Opt,"ForcedCorners")) then
+    if (isatt_logical_true(Opt,"ForcedCorners")) then
         CornerLat = Opt@CornerLat
         CornerLon = Opt@CornerLon
         grid_corner_lat = reshape( CornerLat,(/ grid_size, grid_corners /))
@@ -1046,160 +1074,181 @@ end     ; of auto_to_SCRIP
 undef("latlon_to_SCRIP")
 procedure latlon_to_SCRIP(FName[1]:string,GridType[1]:string,Opt[1]:logical)
 local BoxDiag, Rot, nlat, nlon, grid_type, dlat, dlon,\
-      lat, lon, gau_info, grid_center_lat, grid_center_lon, FTitle
+      lat, lon, gau_info, grid_center_lat, grid_center_lon, FTitle, \
+      PrintTimings, set_pt, orig_pt
 begin
+  PrintTimings = isatt_logical_true(Opt,"PrintTimings")
+  if(PrintTimings) then
+    start_time = get_start_time()
+  end if
+
 ;---Check for "1x1", "2x3", "0.25x0.25" format
-    if(isStrSubset(GridType,"x")) then
-      str = str_split(GridType,"x")
-      if(dimsizes(str).ne.2) then
-        print("latlon_to_SCRIP: invalid format for grid type")
-        exit
-      end if
-      dlat = tofloat(str(0))
-      dlon = tofloat(str(1))
-      if(ismissing(dlat).or.ismissing(dlon)) then
-        print("latlon_to_SCRIP: invalid format for grid type")
-        exit
-      end if
-      grid_type = "degree"
-      delete(str)
-    else if(isStrSubset(GridType,"deg")) then
-;---Check for "1deg", "0.25 deg" format
-      str = str_split(GridType,"deg")
-      if(dimsizes(str).ne.1) then
-        print("latlon_to_SCRIP: invalid format for grid type")
-        exit
-      end if
-      dlat = tofloat(str(0))
-      if(ismissing(dlat)) then
-        print("latlon_to_SCRIP: invalid format for grid type")
-        exit
-      end if
-      dlon = dlat
-      grid_type = "degree"
-      delete(str)
-    else if(isStrSubset(GridType,"G")) then
-;---Check for "G64", "G 128" format
-      str = str_split(GridType,"G")
-      if(dimsizes(str).ne.1) then
-        print("latlon_to_SCRIP: invalid format for grid type")
-        exit
-      end if
-      nlon = tointeger(str(0))
-      if(ismissing(nlon)) then
-        print("latlon_to_SCRIP: invalid value for gaussian grid")
-        exit
-      end if
-      if((nlon%2).ne.0) then
-        print("latlon_to_SCRIP: invalid value for gaussian grid")
-        exit
-      end if
-      nlat = nlon/2
-      grid_type = "gaussian"
-      delete(str)
-    else
+  if(isStrSubset(GridType,"x")) then
+    str = str_split(GridType,"x")
+    if(dimsizes(str).ne.2) then
       print("latlon_to_SCRIP: invalid format for grid type")
       exit
     end if
+    dlat = tofloat(str(0))
+    dlon = tofloat(str(1))
+    if(ismissing(dlat).or.ismissing(dlon)) then
+      print("latlon_to_SCRIP: invalid format for grid type")
+      exit
     end if
+    grid_type = "degree"
+    delete(str)
+  else if(isStrSubset(GridType,"deg")) then
+;---Check for "1deg", "0.25 deg" format
+    str = str_split(GridType,"deg")
+    if(dimsizes(str).ne.1) then
+      print("latlon_to_SCRIP: invalid format for grid type")
+      exit
     end if
+    dlat = tofloat(str(0))
+    if(ismissing(dlat)) then
+      print("latlon_to_SCRIP: invalid format for grid type")
+      exit
+    end if
+    dlon = dlat
+    grid_type = "degree"
+    delete(str)
+  else if(isStrSubset(GridType,"G")) then
+;---Check for "G64", "G 128" format
+    str = str_split(GridType,"G")
+    if(dimsizes(str).ne.1) then
+      print("latlon_to_SCRIP: invalid format for grid type")
+      exit
+    end if
+    nlon = tointeger(str(0))
+    if(ismissing(nlon)) then
+      print("latlon_to_SCRIP: invalid value for gaussian grid")
+      exit
+    end if
+    if((nlon%2).ne.0) then
+      print("latlon_to_SCRIP: invalid value for gaussian grid")
+      exit
+    end if
+    nlat = nlon/2
+    grid_type = "gaussian"
+    delete(str)
+  else
+    print("latlon_to_SCRIP: invalid format for grid type")
+    exit
+  end if
+  end if
+  end if
 
 ;---Check for Opt attributes
-    if(Opt.and.isatt(Opt,"Title")) then
-      FTitle = Opt@Title
-    else
-      FTitle = GridType + " grid"
-    end if
+  if(Opt.and.isatt(Opt,"Title")) then
+    FTitle = Opt@Title
+  else
+    FTitle = GridType + " grid"
+  end if
 
-    if (Opt.and.(isatt(Opt,"Rotation"))) then
-        Rot = Opt@Rotation
-    else
-        Rot = 0.0
-    end if
+  if (Opt.and.(isatt(Opt,"Rotation"))) then
+      Rot = Opt@Rotation
+  else
+      Rot = 0.0
+  end if
 
-    if(.not.isvar("LLCorner")) then
-        if(isatt(Opt,"LLCorner")) then
-            LLCorner = Opt@LLCorner
-        else
-            LLCorner = (/-90,-180/)
-        end if
-    end if
+  if(.not.isvar("LLCorner")) then
+      if(isatt(Opt,"LLCorner")) then
+          LLCorner = Opt@LLCorner
+      else
+          LLCorner = (/-90,-180/)
+      end if
+  end if
 
-    if(.not.isvar("URCorner")) then
-        if(isatt(Opt,"URCorner")) then
-            URCorner = Opt@URCorner
-        else
-            URCorner = (/90,180/)
-        end if
-    end if
+  if(.not.isvar("URCorner")) then
+      if(isatt(Opt,"URCorner")) then
+          URCorner = Opt@URCorner
+      else
+          URCorner = (/90,180/)
+      end if
+  end if
 
 ;---Check the LLCorner and URCorner variables.
-    if ( (abs(LLCorner(0)).gt.90).or.(abs(URCorner(0)).gt.90) ) then
-        print("latlon_to_SCRIP: lat corners must be within -90 to 90")
-        exit
-    end if
+  if ( (abs(LLCorner(0)).gt.90).or.(abs(URCorner(0)).gt.90) ) then
+      print("latlon_to_SCRIP: lat corners must be within -90 to 90")
+      exit
+  end if
 
-    BoxDiag = URCorner-LLCorner
-    if (Opt.and.(isatt(Opt,"Rotation"))) then
-        Rot = Opt@Rotation
-        if (Rot.ne.0.0) then
+  BoxDiag = URCorner-LLCorner
+  if (Opt.and.(isatt(Opt,"Rotation"))) then
+    Rot = Opt@Rotation
+    if (Rot.ne.0.0) then
 ;
 ; Align the box diagonal to make box sides parallel/perpendicular
 ; to equator.
 ;
-            rotate_latlon(BoxDiag(0),BoxDiag(1),-1.0*Rot)
-        end if
-    else
-        Rot = 0.0
+      rotate_latlon(BoxDiag(0),BoxDiag(1),-1.0*Rot)
     end if
+  else
+    Rot = 0.0
+  end if
         
-    if ( BoxDiag(0).le.0.0 ) then
-        print("latlon_to_SCRIP: The corner latitudes do not meet the criteria of a bounding box.")
-        exit
-    end if
-    if ( BoxDiag(1).le.0.0 ) then
-        print("latlon_to_SCRIP: The corner longitudes do not meet the criteria of a bounding box.")
-        exit
-    end if
+  if ( BoxDiag(0).le.0.0 ) then
+    print("latlon_to_SCRIP: The corner latitudes do not meet the criteria of a bounding box.")
+    exit
+  end if
+  if ( BoxDiag(1).le.0.0 ) then
+    print("latlon_to_SCRIP: The corner longitudes do not meet the criteria of a bounding box.")
+    exit
+  end if
         
-    if (Rot.ne.0.0) then
-        print("latlon_to_SCRIP: The box is rotated. Spacing may be different than what you meant.")
-    end if
-    if(grid_type.eq."degree") then
-      nlat = tointeger(BoxDiag(0)/dlat+1)
-      nlon = tointeger(BoxDiag(1)/dlon+1)
+  if (Rot.ne.0.0) then
+    print("latlon_to_SCRIP: The box is rotated. Spacing may be different than what you meant.")
+  end if
+  if(grid_type.eq."degree") then
+    nlat = tointeger(BoxDiag(0)/dlat+1)
+    nlon = tointeger(BoxDiag(1)/dlon+1)
 
-      lat = fspan(0.0,BoxDiag(0),nlat)
-      lon = fspan(0.0,BoxDiag(1),nlon)
-    else if(grid_type.eq."gaussian") then
-      gau_info = gaus(nlat/2)
-      lat      = gau_info(:,0)  ; gaussian latitudes
-      lon      = todouble((/lonGlobeFo(nlon,"","","")/))
-    end if
-    end if
+    lat = fspan(0.0,BoxDiag(0),nlat)
+    lon = fspan(0.0,BoxDiag(1),nlon)
+  else if(grid_type.eq."gaussian") then
+    gau_info = gaus(nlat/2)
+    lat      = gau_info(:,0)  ; gaussian latitudes
+    lon      = todouble((/lonGlobeFo(nlon,"","","")/))
+  end if
+  end if
 
 ;---Generate the cell center Lat/Lon
-    grid_center_lat = conform_dims((/nlat, nlon/),lat,0)
-    grid_center_lon = conform_dims((/nlat, nlon/),lon,1)
+  grid_center_lat = conform_dims((/nlat, nlon/),lat,0)
+  grid_center_lon = conform_dims((/nlat, nlon/),lon,1)
 	
-    if(.not.isatt(Opt,"Mask2D")) then
-      Opt@Mask2D = onedtond(1,(/nlat,nlon/))
-    end if
+  if(.not.isatt(Opt,"Mask2D")) then
+    Opt@Mask2D = onedtond(1,(/nlat,nlon/))
+  end if
 
 ;---Rotate back the box, if needed.
-    if (Rot.ne.(0.0)) then
-        rotate_latlon(grid_center_lat,grid_center_lon,Rot)
-    end if
+  if (Rot.ne.(0.0)) then
+      rotate_latlon(grid_center_lat,grid_center_lon,Rot)
+  end if
 
 ;---Now that the rotation was successful translating it back.
-    if(grid_type.ne."gaussian") then
-      grid_center_lat = grid_center_lat + LLCorner(0)
-      grid_center_lon = grid_center_lon + LLCorner(1)
-    end if
+  if(grid_type.ne."gaussian") then
+    grid_center_lat = grid_center_lat + LLCorner(0)
+    grid_center_lon = grid_center_lon + LLCorner(1)
+  end if
 
-    Opt@Title = FTitle
+  Opt@Title = FTitle
 
-    curvilinear_to_SCRIP(FName,grid_center_lat,grid_center_lon,Opt)
+;---Make sure curvilinear_to_SCRIP doesn't print timings.
+  set_pt = False
+  if(isatt(Opt,"PrintTimings")) then
+    set_pt = True
+    orig_pt = Opt@PrintTimings
+    Opt@PrintTimings = False
+  end if
+  curvilinear_to_SCRIP(FName,grid_center_lat,grid_center_lon,Opt)
+
+  if(set_pt) then
+    Opt@PrintTimings = orig_pt
+  end if
+
+  if(PrintTimings) then
+    print_elapsed_time(start_time,"latlon_to_SCRIP")
+  end if
 end     ; of latlon_to_SCRIP(...)
 
 ;======================================================================
@@ -1277,6 +1326,131 @@ begin
 end     ; of is_SCRIP(...)
 
 ;======================================================================
+; This function will retrieve the latitude coordinate of a grid
+; from a SCRIP formatted file.
+;======================================================================
+undef("retrieve_SCRIP_lat")
+function retrieve_SCRIP_lat(fileName[1]:string)
+local fid, grid_dims, grid_center_lat
+begin
+  if (.not.isfilepresent(fileName)) then
+    print("retrieve_SCRIP_lat: The requested file is not present.")
+    exit
+  end if
+    
+  fid             = addfile(fileName,"r")
+  grid_dims       = fid->grid_dims
+  grid_center_lat = reshape( fid->grid_center_lat , grid_dims(::-1))
+  grid_center_lat@units="degrees_north"
+
+  return(grid_center_lat)
+end     ; of retrieve_SCRIP_lat
+
+;======================================================================
+; This function will retrieve the longitude coordinate of a grid
+; from a SCRIP file.
+;======================================================================
+undef("retrieve_SCRIP_lon")
+function retrieve_SCRIP_lon(fileName[1]:string)
+local fid, grid_dims, grid_center_lon
+begin
+  if (.not.isfilepresent(fileName)) then
+    print("retrieve_SCRIP_lon: the requested file is not present")
+    exit
+  end if
+
+  fid             = addfile(fileName,"r")
+  grid_dims       = fid->grid_dims;
+  grid_center_lon = reshape( fid->grid_center_lon , grid_dims(::-1))
+  grid_center_lon@units="degrees_east"
+
+  return(grid_center_lon)
+end     ; of retrieve_SCRIP_lon
+
+;======================================================================
+; This function will retrieve the latitude values from an ESMF 
+; formatted file.
+;======================================================================
+undef("retrieve_ESMF_lat")
+function retrieve_ESMF_lat(fileName[1]:string)
+local fid, grid_center_lon
+begin
+  if (.not.isfilepresent(fileName)) then
+    print("retrieve_ESMF_lat: The requested file is not present")
+    exit
+  end if
+    
+  fid              = addfile(fileName,"r")
+  grid_center_lat  = fid->centerCoords(:,1)
+  grid_center_lat@units="degrees_north"
+
+  return(grid_center_lat)
+end     ; of retrieve_ESMF_lat
+
+;======================================================================
+; This function will retrieve the longitude values from an ESMF 
+; formatted file.
+;======================================================================
+undef("retrieve_ESMF_lon")
+function retrieve_ESMF_lon(fileName[1]:string)
+local fid, grid_center_lon
+begin
+  if (.not.isfilepresent(fileName)) then
+      print("retrieve_ESMF_lon: the requested file is not present")
+      exit
+  end if
+
+  fid             = addfile(fileName,"r")
+  grid_center_lon = fid->centerCoords(:,0)
+  grid_center_lon@units="degrees_east"
+
+  return(grid_center_lon)
+end     ; of retrieve_ESMF_lon
+
+;======================================================================
+; This procedure copies attributes from the original variable to
+; the regridded variable, and attaches coordinate information, if
+; available.
+;======================================================================
+procedure ESMF_copy_varmeta(sd,sd_regrid,opt)
+local var_dims, var_rank, dstlat, dstlon
+begin
+  var_dims = dimsizes(sd_regrid)
+  var_rank = dimsizes(var_dims)
+
+;---Copy variable attributes if requested (True by default)
+  if(.not.isatt_logical_false(opt,"CopyVarAtts")) then
+    if(isatt(opt,"CopyVarAttsExcept")) then
+      copy_VarAtts_except(sd,sd_regrid,opt@CopyVarAttsExcept)
+    else
+      copy_VarAtts(sd,sd_regrid)
+    end if
+  end if
+
+;---Create coordinates if requested (False by default)
+  if(isatt(opt,"CopyVarCoords")) then
+    if(any(opt@DstGridType.eq.(/"latlon","rectilinear","curvilinear"/))) then
+      dstlat = retrieve_SCRIP_lat(opt@DstGridFileName)
+      dstlon = retrieve_SCRIP_lon(opt@DstGridFileName)
+      if(any(opt@DstGridType.eq.(/"latlon","rectilinear"/))) then
+        dstlat@units           = "degrees_north"
+        dstlon@units           = "degrees_east"
+        sd_regrid!(var_rank-2) = "lat"
+        sd_regrid!(var_rank-1) = "lon"
+        sd_regrid&lat            = dstlat(:,0)
+        sd_regrid&lon            = dstlon(0,:)
+      else
+        sd_regrid@lat2d = dstlat
+        sd_regrid@lon2d = dstlon
+      end if
+    else
+      sd_regrid@lat1d = (/retrieve_ESMF_lat(opt@DstGridFileName)/)
+      sd_regrid@lon1d = (/retrieve_ESMF_lon(opt@DstGridFileName)/)
+    end if
+  end if
+end
+
+;======================================================================
 ; This procedure calls the UNIX command "ESMF_RegridGenWeight".
 ;
 ;  srcGridFile - the name of the NetCDF source grid file (ESMF or SCRIP)
@@ -1296,11 +1470,11 @@ end     ; of is_SCRIP(...)
 ;        DstRegional - whether only the dst grid file is regional
 ;           True or False (default=False)
 ;        IgnoreUnmappedPoints - whether to ignore unmapped points
-;           True or False (default=False, maybe change to True?)
+;           True or False (default=True)
 ;        method
 ;           "bilinear" (default), "patch" (slow), "conserve"
 ;        pole
-;           "all" (default?), "none"
+;           "all" (default, unless method=conserve), "none"
 ;
 ; The ESMFBINDIR environment variable can be set  prior to calling 
 ; this procedure, in order to indicate the location of this binary.
@@ -1312,29 +1486,31 @@ end     ; of is_SCRIP(...)
 undef("ESMF_gen_weights")
 procedure ESMF_gen_weights(srcGridFile[1]:string, dstGridFile[1]:string, \
                            wgtFile[1]:string, opt[1]:logical)
-local DEBUG, NumProc, Executer, ESMFCMD
+local DEBUG, NumProc, Executer, ESMFCMD, ESMF_exec
 begin
+ ESMF_exec = "ESMF_RegridWeightGen"
+
 ;---Check for options
   PrintTimings   = isatt_logical_true(opt,"PrintTimings")
   if(PrintTimings) then
     start_time = get_start_time()
   end if
 
-  DEBUG = isbothvaratt_logical_true(opt,"Debug")
+  DEBUG = isatt_logical_true(opt,"Debug")
 
   if(DEBUG) then
-    print("ESMF_gen_weights: Calling ESMF Regrid Weight Generation tool ...")
+    print("ESMF_gen_weights: Calling '" + ESMF_exec + "'...")
   end if
     
 ;---Check if the source grid file is a SCRIP file.
-  if (.not.(isbothvaratt_logical_true(opt,"SrcESMF")).and. \
+  if (.not.(isatt_logical_true(opt,"SrcESMF")).and. \
       .not.(is_SCRIP(srcGridFile))) then
     print("ESMF_gen_weights: source grid file is not a SCRIP file.")
     exit
   end if
 
 ;---Check if the destination grid file is a SCRIP file.
-  if (.not.(isbothvaratt_logical_true(opt,"DstESMF")).and. \
+  if (.not.(isatt_logical_true(opt,"DstESMF")).and. \
       .not.(is_SCRIP(dstGridFile))) then
     print("ESMF_gen_weights: destination grid file is not a SCRIP file.")
     exit
@@ -1363,12 +1539,12 @@ begin
 
 ;---Build the command (First Pass - non-optional features)
   if (ismissing(getenv("ESMFBINDIR"))) then
-    ESMFCMD = Executer + "ESMF_RegridWeightGen " \
+    ESMFCMD = Executer + ESMF_exec + " " \
               + "--source " + srcGridFile \
               + " --destination " + dstGridFile \
               + " --weight "+ wgtFile
   else 
-    ESMFCMD = Executer + "$ESMFBINDIR/ESMF_RegridWeightGen " \
+    ESMFCMD = Executer + "$ESMFBINDIR/" + ESMF_exec + " " \
               + "--source " + srcGridFile \
               + " --destination " + dstGridFile \
               + " --weight " + wgtFile
@@ -1387,6 +1563,14 @@ begin
 ; Check if the user has specified how to handle the poles
 ; Otherwise, the default will be used.
 ;
+    if(isatt(opt,"method").and.isatt(opt,"pole").and.\
+       str_lower(opt@method).eq."conserve".and.\
+       str_lower(opt@pole).eq."all") then
+      print("ESMF_gen_weights: warning: 'pole' cannot be set to 'all' when") 
+      print("                  using 'conserve' method. Defaulting to 'none'.")
+      opt@pole = "none"      
+    end if
+
     if (isatt(opt,"pole")) then
       ESMFCMD = ESMFCMD + " --pole " + str_lower(opt@pole)
     end if
@@ -1412,7 +1596,7 @@ begin
     end if
 
 ;---This flag is necessary for V5.2.0r1 and grids like WRF.
-    if (isatt_logical_true(opt,"IgnoreUnmappedPoints")) then
+    if (.not.isatt_logical_false(opt,"IgnoreUnmappedPoints")) then
         ESMFCMD = ESMFCMD + " -i"
     end if
 
@@ -1432,7 +1616,10 @@ begin
     RegridOut = systemfunc(ESMFCMD)
         
     if(DEBUG) then
-      print("ESMF_gen_weights: " + RegridOut)
+      print("ESMF_gen_weights: output from '" + ESMF_exec + "':")
+      print("--------------------------------------------------")
+      print("     " + RegridOut)
+      print("--------------------------------------------------")
     end if
 ;
 ; The binary tool performs more sophisticated tests.
@@ -1440,11 +1627,11 @@ begin
 ;
   if (.not.(any(str_squeeze(RegridOut).eq. \
             "Completed weight generation successfully."))) then
-    print("ESMF_gen_weights: ESMF_RegridWeightGen was not successful.")
+    print("ESMF_gen_weights: '" + ESMF_exec + "' was not successful.")
     exit
   end if
   if(DEBUG) then
-    print("ESMF_gen_weights: ESMF_RegridWeightGen was successful.")
+    print("ESMF_gen_weights: '" + ESMF_exec + "' was successful.")
   end if    
 
   if(PrintTimings) then
@@ -1509,7 +1696,7 @@ begin
   else
     fid = addfile(wgtFile,"r")
   end if
-	
+
 ;---Get the lat/lon of source and destination grids
   srclat = fid->yc_a
   srclon = fid->xc_a
@@ -1713,43 +1900,360 @@ begin
 end     ; of ESMF_regrid(...)
 
 ;======================================================================
-; This function will retrieve the latitude coordinate of a grid
-; from a SCRIP formatted file.
+; This procedure is a generic one that writes the description of a 
+; source or destination grid to a NetCDF file. It distinguishes 
+; between the source and data grids via the "which_grid" option,
+; and also via the "opt" attributes which can start with "Src" or
+; "Dst".
+;
+; Arguments:
+;    srcData    - variable to be regridded
+;    which_grid - must be "Src" or "Dst" (or "source", "destination")
+;    opt        - logical variable with attributes
 ;======================================================================
-undef("retrieve_SCRIP_lat")
-function retrieve_SCRIP_lat(fileName[1]:string)
+procedure write_grid_description_file(srcData,which_grid,opt)
+local opt2, var_dims, var_rank, grid_type, lat_dims, lon_dims, \
+      lat_rank, lon_rank, grid_file_name, grid_lat_name, debug, \
+      grid_string, grid_lon_name, grid_type_name, spc_atts, \
+      lat_vals, lon_vals, gen_atts, tmp_att, i
 begin
-    if (.not.isfilepresent(fileName)) then
-        print("The requested file is not present")
-        return(0.0)
+  opt2 = True
+  debug = isatt_logical_true(opt,"Debug")
+
+;---Test which_grid
+  valid_src_names = (/"src","source"/)
+  valid_dst_names = (/"dst","destination"/)
+  if(any(str_lower(which_grid).eq.valid_src_names)) then
+    grid_string      = "Src"
+    grid_long_string = "source"
+  else if(any(str_lower(which_grid).eq.valid_dst_names)) then
+    grid_string      = "Dst"
+    grid_long_string = "destination"
+  else
+    grid_string = ""
+  end if
+  end if
+  if(grid_string.eq."") then
+    print("write_grid_description: don't recognize value for second " + \
+          "argument: '" + which_grid + "'")
+    exit
+  end if  
+
+;---Get dimensions and rank of variable to be regridded.
+  var_dims  = dimsizes(srcData)
+  var_rank  = dimsizes(var_dims)
+  svar_dims = tostring(var_dims)
+
+;---List of some of the possible attributes attached to "Opt".
+  grid_file_name = grid_string + "GridFileName"
+  grid_type_name = grid_string + "GridType"
+  grid_lat_name  = grid_string + "GridLat"
+  grid_lon_name  = grid_string + "GridLon"
+
+;
+; Check for generic attributes to pass through; that is,
+; attributes like "Debug".
+;
+  gen_atts = (/"PrintTimings","OverWrite","ForceOverWrite","Debug"/)
+  do i=0,dimsizes(gen_atts)-1
+    if(isatt(opt,gen_atts(i))) then
+      opt2@$gen_atts(i)$ = opt@$gen_atts(i)$
+    end if
+  end do
+;
+; Check for specific attributes to pass through; that is,
+; attributes that start with "Src" or "Dst".
+;
+  spc_atts = (/"Mask2D","LargeFile","Title","LLCorner","URCorner", \
+               "Rotation","ForcedCorners","CornerLat","CornerLon",\
+               "InputFileName","OverWrite","ForceOverWrite"/)
+  do i=0,dimsizes(spc_atts)-1
+    tmp_att = grid_string + spc_atts(i)
+    if(isatt(opt,tmp_att)) then
+      opt2@$spc_atts(i)$ = opt@$tmp_att$
+    end if
+  end do
+
+;----------------------------------------------------------------------
+; This section checks if any lat/lon values have been provided.
+; This can be done via:
+;
+;   - SrcGridLat/SrcGridLon or DstGridLat/DstGridLon
+;
+;   - If a "source" grid, then via coordinate arrays 
+;       [rectilinear grid] 
+;
+;   - If a "source" grid, then lat2d/lon2d attributes.
+;       [curvilinear grid] 
+;
+;   - If a "source" grid, then lat1d/lon1d attributes
+;       [unstructured grid] 
+;
+;----------------------------------------------------------------------
+
+  grid_type = str_lower(get_att_value(opt,grid_type_name,"unknown"))
+
+;
+; Check if SrcGridLat/SrcGridLon or DstGridLat/DstGridLon
+; were specified.
+;
+  if(isatt(opt,grid_lat_name).and.isatt(opt,grid_lon_name)) then
+    lat_vals  = opt@$grid_lat_name$
+    lon_vals  = opt@$grid_lon_name$
+    islatlon  = True
+
+;---Rectilinear grid?
+  else if(grid_string.eq."Src".and.var_rank.ge.2.and. \
+          isdimnamed(srcData,var_rank-1).and. \
+          isdimnamed(srcData,var_rank-2).and. \
+          iscoord(srcData,srcData!(var_rank-1)).and. \
+          iscoord(srcData,srcData!(var_rank-2))) then
+
+    if(.not.any(grid_type.eq.(/"unknown","rectilinear"/))) then
+      print("write_grid_description: the lat/lon values provided don't match")
+      print("                        the grid type (" + grid_type + \
+                                      ") specified.")
+      exit
+    end if
+
+    grid_type = "rectilinear"
+    lat_vals  = srcData&$srcData!(var_rank-2)$
+    lon_vals  = srcData&$srcData!(var_rank-1)$
+    islatlon  = True
+    
+;---Curvilinear grid?
+  else if(grid_string.eq."Src".and.isatt(srcData,"lat2d").and. \
+                                   isatt(srcData,"lon2d")) then
+    if(.not.any(grid_type.eq.(/"unknown","curvilinear"/))) then
+      print("write_grid_description: the lat/lon values provided don't match")
+      print("                        the grid type (" + grid_type + \
+                                      ") specified.")
+      exit
     end if
     
-    fid=addfile(fileName,"r")
-    grid_dims=fid->grid_dims;
-    grid_center_lat= reshape( fid->grid_center_lat , grid_dims(::-1))
-    grid_center_lat@units="degrees_north"
-    return(grid_center_lat)
-end     ; of retrieve_SCRIP_lat
+    grid_type = "curvilinear"
+    lat_vals  = srcData@lat2d
+    lon_vals  = srcData@lon2d
+    islatlon  = True
+    
+;---Unstructured grid?
+  else if(grid_string.eq."Src".and.isatt(srcData,"lat1d").and. \
+                                   isatt(srcData,"lon1d")) then
+    if(.not.any(grid_type.eq.(/"unknown","unstructured"/))) then
+      print("write_grid_description: the lat/lon values provided don't match")
+      print("                        the grid type (" + grid_type + \
+                                      ") specified.")
+      exit
+    end if
+    
+    grid_type = "unstructured"
+    lat_vals  = srcData@lat1d
+    lon_vals  = srcData@lon1d
+    islatlon  = True
 
-;======================================================================
-; This function will retrieve the longitude coordinate of a grid
-; from a SCRIP file.
-;======================================================================
-undef("retrieve_SCRIP_lon")
-function retrieve_SCRIP_lon(fileName[1]:string)
-local fid, grid_dims
-begin
-    if (.not.isfilepresent(fileName)) then
-        print("retrieve_SCRIP_lon: the requested file is not present")
-        exit
+;---Better be a grid like "5deg" or "2x3"!
+  else
+    islatlon  = False      ; No lat/lon values specified
+  end if
+  end if
+  end if
+  end if
+
+  if(grid_type.eq."unknown".and..not.islatlon) then
+    print("write_grid_description: can't determine what type of " + \
+          grid_long_string + " grid you have.")
+    exit
+  end if
+
+;---rectilinear, curvilinear, and unstructured require lat/lon values.
+  if(any(grid_type.eq.(/"rectilinear","curvilinear","unstructured"/)).and.\
+     .not.islatlon) then
+    print("write_grid_description: no lat/lon values provided for type of grid specified (" + grid_type + ").")
+    print("                        Unable to generate grid description file.")
+    exit
+  end if
+
+  if(grid_type.eq."unknown".and..not.islatlon) then
+    print("write_grid_description: can't determine type of grid you have.")
+    exit
+  end if
+  if(islatlon) then
+    lat_dims  = dimsizes(lat_vals)
+    lon_dims  = dimsizes(lon_vals)
+    lat_rank  = dimsizes(lat_dims)
+    lon_rank  = dimsizes(lon_dims)
+    slat_dims = tostring(lat_dims)
+    slon_dims = tostring(lon_dims)
+
+    if(debug) then
+      print("write_grid_description: " + grid_long_string + \
+            " lat dims = (" + str_join(slat_dims,",") + ")")
+      print("write_grid_description: " + grid_long_string + \
+            " lon dims = (" + str_join(slon_dims,",") + ")")
     end if
 
-    fid             = addfile(fileName,"r")
-    grid_dims       = fid->grid_dims;
-    grid_center_lon = reshape( fid->grid_center_lon , grid_dims(::-1))
-    grid_center_lon@units="degrees_east"
-    return(grid_center_lon)
-end     ; of retrieve_SCRIP_lon
+    if(lat_rank.gt.2.or.lon_rank.gt.2.or.lat_rank.ne.lon_rank) then
+      print("write_grid_description: invalid " + grid_long_string + \
+            " lat/lon given.")
+      exit
+    end if
+
+;---If grid_type still unknown at this point, try to guess at it.
+    if(grid_type.eq."unknown") then
+;---Test for rectilinear
+      if(grid_string.eq."Src".and.lat_rank.eq.1.and.var_rank.gt.1.and.\
+         var_dims(var_rank-2).eq.lat_dims.and.\
+         var_dims(var_rank-1).eq.lon_dims) then
+        grid_type = "rectilinear"
+;---Another test for rectilinear
+      else if(grid_string.eq."Dst".and.lat_rank.eq.1.and.lon_rank.eq.1.and.\
+         lat_dims.ne.lon_dims) then
+        grid_type = "rectilinear"
+;---Test for curvilinear
+      else if(lat_rank.eq.2.and.lon_rank.eq.2.and.\
+              all(lat_dims.eq.lon_dims)) then
+        grid_type = "curvilinear"
+;
+; Test for unstructured (what a mess). The extra long test is to 
+; make sure this is not possibly a rectilinear grid.
+;
+      else if(grid_string.eq."Src".and.\
+              lat_rank.eq.1.and.lon_rank.eq.1.and.lat_dims.eq.lon_dims.and.\
+              ((var_rank.eq.1.and.var_dims.eq.lat_dims).or.\
+               (var_rank.gt.1.and.var_dims(var_rank-1).eq.lat_dims.and.\
+                var_dims(var_rank-2).ne.var_dims(var_rank-1)))) then
+        grid_type = "unstructured"
+      end if
+      end if
+      end if
+      end if
+    end if
+  end if
+
+;---If grid_type is still "unknown", then we can't continue.
+  if(grid_type.eq."unknown") then
+    print("write_grid_description: " + grid_type_name + " and/or " + \
+          grid_lat_name + "/" + grid_lon_name + " were not set.")
+    print("          Cannot determine the " + grid_long_string + \
+          " grid type.")
+    exit
+  end if
+
+  if(debug) then
+    print("write_grid_description: " + grid_long_string + \
+           " grid type is '" + grid_type + "'")
+  end if
+
+;---Check if user set a filename for the description file
+  grid_file = get_att_value(opt,grid_file_name,grid_long_string + \
+                                               "_description.nc")
+  if(grid_type.eq."rectilinear") then
+    rectilinear_to_SCRIP(grid_file,lat_vals,lon_vals,opt2)
+  else if(grid_type.eq."curvilinear") then
+    curvilinear_to_SCRIP(grid_file,lat_vals,lon_vals,opt2)
+  else if(grid_type.eq."unstructured") then
+    unstructured_to_ESMF(grid_file,lat_vals,lon_vals,opt2)
+
+;---Make sure SrcESMF or DstESMF is set (the default is to assume SCRIP)
+    tmp_att = grid_string + "ESMF"
+    opt@$tmp_att$ = True
+  else
+    latlon_to_SCRIP(grid_file,grid_type,opt2)
+    opt@$grid_type_name$ = "rectilinear"
+  end if
+  end if
+  end if
+
+;---Save the name of the description file and grid type
+  if(.not.isatt(opt,grid_file_name)) then
+    opt@$grid_file_name$ = grid_file
+  end if
+  if(.not.isatt(opt,grid_type_name)) then
+    opt@$grid_type_name$ = grid_type
+  end if
+end
+
+;======================================================================
+; This function combines all the regridding steps:
+;   1) Describing the source and destination grids
+;   2) Generating the weights
+;   3) Apply the weights to a given variable
+;
+; This function recognizes the following options
+;
+; Recognized attributes for "Opt":
+;   SrcLLCorner / SrcURCorner - defaults to (-90,-180) / ( 90, 180)
+;   DstLLCorner / DstURCorner - defaults to (-90,-180) / ( 90, 180)
+;   SrcRotation / DstRotation - rotation angle
+;
+; SrcForcedCorners / DstForcedCorners - if set to True, instead of
+;    calculating the corner points for the cells, these values are
+;    read from CornerLat and CornerLon attribute of Opt.
+;
+;  SrcGridFileName / DstGridFileName
+;  SrcGridType / SrcGridLat / SrcGridLon
+;  DstGridType / DstGridLat / DstGridLon
+;  SrcMask2D / DstMask2D
+;  SrcLargeFile / DstLargeFile
+;  WgtFileName
+;  Debug
+;  PrintTimings
+;  ForceOverwrite
+;  Overwrite
+;======================================================================
+undef("ESMF_all")
+function ESMF_all(srcData:numeric, opt[1]:logical)
+local opt, src_dims, src_rank, src_grid_type, src_grid_name, \
+      src_lat_dims, src_lon_dims, src_lat_rank, src_lon_rank, \
+      dst_dims, dst_rank, dst_grid_type, dst_grid_name, \
+      dst_lat_dims, dst_lon_dims, dst_lat_rank, dst_lon_rank, \
+      dstlat, dstlon, wgt_file_name
+begin
+;---Check for certain options that must be set.
+  if(.not.opt) then
+    print("ESMF_all: opt was set to False. Can't continue.")
+    exit
+  end if
+
+;---Make a copy so we don't modify original opt.
+  opt2 = opt
+
+;---Get dimensions and rank of variable to be regridded.
+  var_dims  = dimsizes(srcData)
+  var_rank  = dimsizes(var_dims)
+
+;---Write source grid description file
+  if(.not.isatt_logical_true(opt2,"SkipSrcGrid")) then
+    write_grid_description_file(srcData,"Src",opt2)
+  else
+    print("ESMF_all: skipping generation of source grid.")
+  end if
+
+;---Write destination grid description file
+  if(.not.isatt_logical_true(opt2,"SkipDstGrid")) then
+    write_grid_description_file(srcData,"Dst",opt2)
+  else
+    print("ESMF_all: skipping generation of destination grid.")
+  end if
+
+;---Generate the weights
+  wgt_file_name = get_att_value(opt2,"WgtFileName","weights_file.nc")
+  if(.not.isatt_logical_true(opt2,"SkipWeightGen")) then
+    src_grid_file = opt2@SrcGridFileName
+    dst_grid_file = opt2@DstGridFileName
+    ESMF_gen_weights(src_grid_file, dst_grid_file, wgt_file_name, opt2)
+  else
+    print("ESMF_all: skipping generation of weights file.")
+  end if
+
+;---Regrid the input variable
+  srcData_regrid = ESMF_regrid(srcData,wgt_file_name,opt2)
+
+;---Copy variable attributes and coordinate arrays if requested.
+  ESMF_copy_varmeta(srcData,srcData_regrid,opt2)
+
+  return(srcData_regrid)
+end
 
 ;======================================================================
 undef("retrieve_dstGrid_lat")
