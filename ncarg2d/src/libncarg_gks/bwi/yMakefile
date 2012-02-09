@@ -32,10 +32,7 @@ OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS)
 PartialLibraryTarget(libncarg_gks.a, $(OBJECTS))
 PartialLibraryTarget(libbasegks.a, $(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
-
-#ifdef BuildCAIRO
 PartialLibraryTarget(libncarg_gks_cairo.a, $(OBJECTS))
-#endif
 
 DependTarget(wks.c)
 
