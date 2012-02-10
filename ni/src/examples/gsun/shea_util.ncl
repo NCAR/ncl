@@ -4110,3 +4110,47 @@ begin
 ;-----------------------------------------------------------------
   sst   = sst > sstice
 end
+
+;***********************************************************
+; Mimic MATLAB fftshift:
+;    http://www.mathworks.com/help/techdoc/ref/fftshift.html 
+;***********************************************************
+; test code is at: /Users/shea/Data/CarlSchreck/tst_shiftarray.ncl
+;***********************************************************
+
+undef ("shift_array")
+procedure shift_array(x[*][*], kmode)
+local i, j, dimx, nrow, ncol, jwrap, iwrap
+begin
+  dimx = dimsizes(x)
+  nrow = dimx(0)
+  ncol = dimx(1)
+
+  tmp  = x
+      
+  if (kmode.eq.0) then                   ; quadrant shift
+      do j=0,ncol-1
+         jwrap = mod(j+ncol/2,ncol)
+        do i=0,nrow-1
+           iwrap = mod(i+nrow/2,nrow)
+           tmp(iwrap,jwrap) = x(i,j)
+        end do
+      end do
+  end if
+
+  if (kmode.lt.0) then                   ; column shift 
+      do j=0,ncol-1
+         jwrap = mod(j+ncol/2,ncol)
+         tmp(:,jwrap) = x(:,j)
+      end do
+  end if
+      
+  if (kmode.gt.0) then                   ; row shift
+      do i=0,nrow-1
+         iwrap = mod(i+nrow/2,nrow)
+         tmp(iwrap,:) = x(i,:)
+      end do
+  end if
+      
+  x = tmp                                ; return to original array
+end
