@@ -232,7 +232,8 @@ NhlErrorTypes triple2grid_W( void )
  */
   int method, loop;
   ng_size_t i, npts, ngx, ngy, ngx2, ngy2, ngxy2, ngxy;
-  int ier, index_z, index_grid, ret;
+  ng_size_t index_z, index_grid;
+  int ier, ret;
   double *distmx = NULL;
   double *domain = NULL;
   logical has_domain=False, has_distmx=False;

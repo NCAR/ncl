@@ -2883,7 +2883,8 @@ NhlErrorTypes wrf_smooth_2d_W( void )
  */
   double *db = NULL;
   float *fb = NULL;
-  int ny, nx, nynx,  i, index_a, size_leftmost;
+  ng_size_t i, index_a, size_leftmost;
+  int ny, nx, nynx;
   double d_missing;
   float  f_missing;
 

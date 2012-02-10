@@ -38,7 +38,8 @@ NhlErrorTypes g2gsh_W( void )
 /*
  * various
  */
-  int *twave, intl, i, index_Ta, index_Tb;
+  int *twave, intl;
+  ng_size_t i, index_Ta, index_Tb;
   ng_size_t total_size_leftmost, nlatanlona, nlatbnlonb;
   ng_size_t total_size_Ta, total_size_Tb;
   int inlona, inlata, inlonb, inlatb, ilwork, ildwork, ilsave; 
@@ -327,7 +328,8 @@ NhlErrorTypes f2gsh_W( void )
 /*
  * various
  */
-  int *twave, intl, i, index_Ta, index_Tb;
+  ng_size_t i, index_Ta, index_Tb;
+  int *twave, intl;
   ng_size_t total_size_leftmost, nlatanlona, nlatbnlonb;
   ng_size_t total_size_Ta, total_size_Tb;
   int inlona, inlata, inlonb, inlatb, ilwork, ildwork, ilsave;
@@ -614,7 +616,8 @@ NhlErrorTypes g2fsh_W( void )
 /*
  * various
  */
-  int intl, i, index_Ta, index_Tb;
+  int intl;
+  ng_size_t i, index_Ta, index_Tb;
   ng_size_t total_size_leftmost, nlatanlona, nlatbnlonb;
   ng_size_t total_size_Ta, total_size_Tb;
 /*
@@ -890,7 +893,8 @@ NhlErrorTypes f2fsh_W( void )
 /*
  * various
  */
-  int intl, i, index_Ta, index_Tb;
+  int intl;
+  ng_size_t i, index_Ta, index_Tb;
   ng_size_t total_size_leftmost, nlatanlona, nlatbnlonb;
   ng_size_t total_size_Ta, total_size_Tb;
 /*
@@ -1165,7 +1169,8 @@ NhlErrorTypes fo2fsh_W( void )
 /*
  * error code, various
  */
-  int i, index_goff, index_greg, ioff, ier = 0, kmiss = 0;
+  int ioff, ier = 0, kmiss = 0;
+  ng_size_t i, index_goff, index_greg;
   ng_size_t total_size_leftmost, jlatilon, jlat1ilon;
   ng_size_t total_size_goff, total_size_greg, ret;
   int iilon, ijlat, ijlat1, ilwork, ilsave; 
@@ -1392,7 +1397,8 @@ NhlErrorTypes f2fosh_W( void )
 /*
  * error code, various
  */
-  int i, index_greg, index_goff, ioff, ier = 0, kmiss = 0;
+  ng_size_t i, index_greg, index_goff;
+  int ioff, ier = 0, kmiss = 0;
   ng_size_t total_size_leftmost, jlat1ilon, jlatilon;
   ng_size_t total_size_greg, total_size_goff, ret;
 /*

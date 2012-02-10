@@ -136,7 +136,14 @@ NhlErrorTypes sparse_matrix_mult_W
     output_dsizes = get_dimensions(tmp_output_dsizes,dsizes_output_dsizes[0],
                                    type_output_dsizes,"sparse_matrix_mult");
 
-/* nrowy and ncoly for output array */
+/* 
+ * Get nrowy and ncoly for output array.
+ *
+ * This function handles the special case where the dimension 
+ * sizes for the output array can represent a 1D array. 
+ * If the output dims are for a 2D array, then x must be at
+ * least a 2D array.
+ */
     if(dsizes_output_dsizes[0] == 2) {
       if(ndims_x < 2) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: the input array must be at least 2-dimensional if the output dimensions represent a 2D array");

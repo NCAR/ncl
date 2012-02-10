@@ -58,9 +58,9 @@ NhlErrorTypes ttest_W( void )
  * Declare various variables for random purposes.
  */
   ng_size_t i, size_ave1, size_prob;
-  int index_s1, index_s2, ier;
+  ng_size_t index_s1, index_s2;
   int is_missing_ave1, is_missing_ave2, is_missing_var1, is_missing_var2;
-  int is_missing_s1, is_missing_s2, ncount1, ncount2;
+  int is_missing_s1, is_missing_s2, ncount1, ncount2, ier;
 /*
  * Retrieve parameters
  *
@@ -588,8 +588,8 @@ NhlErrorTypes ftest_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  ng_size_t i, size_prob;
-  int index_s1, index_s2, is_missing_var1, is_missing_var2, ier;
+  ng_size_t i, size_prob, index_s1, index_s2;
+  int is_missing_var1, is_missing_var2, ier;
 /*
  * Retrieve parameters
  *
@@ -1106,8 +1106,8 @@ NhlErrorTypes equiv_sample_size_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  ng_size_t nx, i, size_neqv;
-  int inx, index_x, is_missing;
+  ng_size_t nx, i, size_neqv, index_x;
+  int inx, is_missing;
 /*
  * Retrieve parameters
  *

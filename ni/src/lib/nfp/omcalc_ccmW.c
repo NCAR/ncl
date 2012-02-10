@@ -40,7 +40,7 @@ NhlErrorTypes omega_ccm_W( void )
  * Declare various variables for random purposes.
  */
   ng_size_t i, nt, nlat, nlon, nlev, ntim, nlatlon, nlevlatlon, size_omega;
-  int index_u, index_psfc;
+  ng_size_t index_u, index_psfc;
   int inlon, inlat, inlev;
 /*
  * Retrieve parameters

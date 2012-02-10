@@ -23,7 +23,7 @@ NhlErrorTypes rhomb_trunC_W( void )
  * various
  */
   ng_size_t i;
-  int index_nm;
+  ng_size_t index_nm; 
   ng_size_t start;
   int im, in;
 /*
@@ -163,7 +163,7 @@ NhlErrorTypes tri_trunC_W( void )
  * various
  */
   ng_size_t i;
-  int index_nm;
+  ng_size_t index_nm;
   ng_size_t start;
   int im, in;
 /*
@@ -308,7 +308,7 @@ NhlErrorTypes rhomb_trunc_W( void )
  * various
  */
   ng_size_t i;
-  int index_nm;
+  ng_size_t index_nm;
   int im, in;
 /*
  * Retrieve parameters
@@ -469,7 +469,7 @@ NhlErrorTypes tri_trunc_W( void )
  * various
  */
   ng_size_t i;
-  int index_nm;
+  ng_size_t index_nm;
   int im, in;
 /*
  * Retrieve parameters

@@ -1336,7 +1336,8 @@ NhlErrorTypes cdft_t_W( void )
 /*
  * Various
  */
-  int i, n, index_p;
+  int n;
+  ng_size_t i, index_p;
   ng_size_t size_leftmost, size_t;
   int ier;
  
@@ -1498,7 +1499,8 @@ NhlErrorTypes cdft_p_W( void )
 /*
  * Various
  */
-  int i, n, index_t;
+  int n;
+  ng_size_t i, index_t;
   ng_size_t size_leftmost, size_p;
   int ier;
  

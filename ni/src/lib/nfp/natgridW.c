@@ -32,7 +32,8 @@ NhlErrorTypes natgrids_W( void )
   int ndims_zo;
   ng_size_t *dsizes_zo;
   ng_size_t i, j, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
-  int inpts, inxo, inyo, index_in = 0, index_out = 0, ret;
+  int inpts, inxo, inyo, ret;
+  ng_size_t index_in = 0, index_out = 0;
 
 /*
  * Retrieve parameters
@@ -238,7 +239,8 @@ NhlErrorTypes natgridd_W( void )
   int ndims_zo;
   ng_size_t *dsizes_zo;
   ng_size_t i, j, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
-  int inpts, inxo, inyo, index_in = 0, index_out = 0, ret;
+  int inpts, inxo, inyo, ret;
+  ng_size_t index_in = 0, index_out = 0;
 
 /*
  * Retrieve parameters
@@ -463,7 +465,8 @@ NhlErrorTypes natgrid_W( void )
  */
   ng_size_t i, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
   int inpts, inxo, inyo;
-  int ier = 0, nmiss = 0, index_z = 0, index_zo = 0, ret;
+  int ier = 0, nmiss = 0, ret; 
+  ng_size_t index_z = 0, index_zo = 0;
 
 /*
  * Retrieve parameters

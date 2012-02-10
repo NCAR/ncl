@@ -171,8 +171,8 @@ NhlErrorTypes exp_tapersh_W( void )
 /*
  * various
  */
-  ng_size_t i, total_leftmost, total_size_ab;
-  int index_ab, nm, nb, mb, ier;
+  ng_size_t i, total_leftmost, total_size_ab, index_ab, nm;
+  int mb, nb, ier;
 /*
  * Retrieve parameters
  *

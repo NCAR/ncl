@@ -40,8 +40,9 @@ NhlErrorTypes escorc_W( void )
  * various
  */
   double *xx, *yy;
-  int i, j, index_x, index_y, index_corc, ier, ier_count;
   int nxy, mxy;
+  ng_size_t i, j, index_x, index_y, index_corc;
+  int ier, ier_count;
   ng_size_t dimsizes_same;
   ng_size_t total_size_leftmost_x, total_size_x;
   ng_size_t total_size_leftmost_y, total_size_y;
@@ -401,7 +402,8 @@ NhlErrorTypes escovc_W( void )
  * various
  */
   double *xx, *yy;
-  int index_x, index_y, index_covc, ier, ier_count;
+  ng_size_t index_x, index_y, index_covc;
+  int ier, ier_count;
   int nxy, mxy;
   ng_size_t i, j;
   ng_size_t dimsizes_same;

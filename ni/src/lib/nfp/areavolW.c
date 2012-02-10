@@ -69,7 +69,7 @@ NhlErrorTypes wgt_areaave_W( void )
   ng_size_t i;
   ng_size_t nxny, total_leftmost;
   int nx, ny;
-  int index_x;
+  ng_size_t index_x;
   int ret;
 
 /*
@@ -285,7 +285,7 @@ NhlErrorTypes wgt_areaave2_W( void )
  * Declare various variables for random purposes.
  */
   int ret;
-  int index_x;
+  ng_size_t index_x;
   int nx, ny;
   ng_size_t i;
   ng_size_t nxny, total_leftmost;
@@ -474,7 +474,7 @@ NhlErrorTypes wgt_areasum2_W( void )
  * Declare various variables for random purposes.
  */
   int ret;
-  int index_x;
+  ng_size_t index_x;
   int nx, ny;
   ng_size_t i;
   ng_size_t nxny, total_leftmost;
@@ -673,7 +673,7 @@ NhlErrorTypes wgt_arearmse_W( void )
  * Declare various variables for random purposes.
  */
   ng_size_t i;
-  int index_q;
+  ng_size_t index_q;
   int nlon, nlat;
   ng_size_t nlatnlon;
   ng_size_t total_leftmost;
@@ -935,9 +935,8 @@ NhlErrorTypes wgt_arearmse2_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int ret;
-  int index_q, nx, ny;
-  ng_size_t i;
+  int ret, nx, ny;
+  ng_size_t i, index_q;
   ng_size_t nxny, total_leftmost;
 
 /*
@@ -1175,8 +1174,8 @@ NhlErrorTypes wgt_volave_W( void )
  * Declare various variables for random purposes.
  */
   int ret;
-  int index_x, nx, ny, nz;
-  ng_size_t i;
+  ng_size_t i, index_x;
+  int nx, ny, nz;
   ng_size_t nxnynz, total_leftmost;
 
 /*
@@ -1413,8 +1412,8 @@ NhlErrorTypes wgt_volave_ccm_W( void )
  * Declare various variables for random purposes.
  */
   int ret;
-  int index_x, nx, ny, nz;
-  ng_size_t i;
+  int nx, ny, nz;
+  ng_size_t i, index_x;
   ng_size_t nxnynz, total_leftmost;
 
 /*
@@ -1677,9 +1676,9 @@ NhlErrorTypes wgt_volrmse_W( void )
  * Declare various variables for random purposes.
  */
   ng_size_t i;
-  ng_size_t klevnlatnlon, total_leftmost;
+  ng_size_t klevnlatnlon, total_leftmost, index_q;
   int ret;
-  int index_q, klev, nlon, nlat;
+  int  klev, nlon, nlat;
 
 /*
  * Retrieve arguments.
@@ -1968,8 +1967,8 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
  */
   ng_size_t i;
   ng_size_t klevnlatnlon, total_leftmost;
-  int ret;
-  int index_q, klev, nlon, nlat;
+  int ret, klev, nlon, nlat;
+  ng_size_t index_q;
 
 /*
  * Retrieve arguments.
