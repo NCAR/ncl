@@ -28,6 +28,11 @@
 25:25:Volumetric soil moisture:m3m-3:VSOILM
 26:26:Wilting point:kg m-3:WILT
 27:27:Volumetric wilting moisture:m3m-3:VWILTM
+28:28:Leaf Area Index:Numeric:
+29:29:Evergreen Forest:Numeric:
+30:30:Deciduous Forest:Numeric:
+31:31:Normalized Differential Vegetation Index (NDVI):Numeric:
+32:32:Root Depth of Vegetation:m:
 # 28-191:28-191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:

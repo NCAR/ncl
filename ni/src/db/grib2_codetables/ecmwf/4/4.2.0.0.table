@@ -18,7 +18,10 @@
 15:15:Virtual potential temperature:K:VPTMP
 16:16:Snow phase change heat flux:Wm-2:SNOHF
 17:17:Skin temperature:K:SKINT
-# 18-191:18-191:Reserved:-:
+18:18:Snow temperature (top of snow):K:
+19:19:Turbulent transfer coefficient for heat:Numeric:
+20:20:Turbulent diffusion coefficient for heat:m2s-1:
+# 21-191:21-191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:
 

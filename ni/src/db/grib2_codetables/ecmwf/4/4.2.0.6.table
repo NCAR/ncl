@@ -26,8 +26,13 @@
 23:23:Cloud ice mixing ratio:kg kg-1:CDCIMR
 24:24:Sunshine:Numeric:SUNS
 25:25:Horizontal extent of cumulonimbus (CB):%:CBHE
-# 26-32:26-32:Reserved:-:
-
+26:26:Height of convective cloud base:m:
+27:27:Height of convective cloud top:m:
+28:28:Number concentration of cloud droplets:kg-1:
+29:29:Number concentration of cloud ice:kg-1:
+30:30:Number density of cloud droplets:m-3:
+31:31:Number density of cloud ice:m-3:
+32:32:Fraction of cloud cover:Numeric:
 33:33:Sunshine duration:s:SUNSD
 # 34-191:34-191:Reserved:-:
 

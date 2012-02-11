@@ -25,7 +25,8 @@
 22:22:Slope of sub-grid scale orography:Numeric:SSGSO
 23:23:Gravity of sub-grid scale orography:W m-2:GSGSO
 24:24:Anisotropy of sub-grid scale orography:Numeric:ASGSO
-# 25-191:25-191:Reserved:-:
+25:25:Natural logarithm of pressure in Pa:Numeric:NLPRES
+# 26-191:26-191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:
 

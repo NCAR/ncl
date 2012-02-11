@@ -1,6 +1,8 @@
 # GRIBv2 - Table 4.2-0-191 Meteorological - Miscellaneous
 
 0:0:Seconds prior to initial reference time (defined in section 1):s:TSEC
+1:1:Geographical latitude:deg N:
+2:2:Geographical longitude:deg E:
 # 1-191:1-191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:
