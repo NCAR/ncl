@@ -1,0 +1,11 @@
+# GRIBv2 - Table 4.2-4.4 Space Weather Products, Energetic Particles
+0:0:Proton flux (differential):(m2 s sr eV)-1:DIFPFLUX
+1:1:Proton flux (integral):(m2 s sr)-1:INTPFLUX
+2:2:Electron flux (differential):(m2 s sr eV)-1:DIFEFLUX
+3:3:Electron flux (integral):(m2 s sr)-1:INTEFLUX
+4:4:Heavy ion flux (differential):(m2 s sr eV/nuc)-1:DIFIFLUX
+5:5:Heavy ion flux (integral):(m2 s sr)-1:INTIFLUX
+6:6:Cosmic ray neutron flux:h-1:NTRNFLUX
+# 7-191:7-191:Reserved:-:		
+# 192-254:192:254:Reserved for Local Use:-:
+255:255:Missing:-:

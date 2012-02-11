@@ -1,0 +1,12 @@
+# GRIBv2 - Table 4.2-4.6 Space Weather Products, Imagery
+0:0:X-ray radiance:W sr-1m-2:XRAYRAD
+1:1:EUV radiance:W sr-1m-2:EUVRAD
+2:2:H-alpha radiance:W sr-1m-2:HARAD
+3:3:White light radiance:W sr-1m-2:WHTRAD
+4:4:CaII-K radiance:W sr-1m-2:CAIIRAD
+5:5:White light coronagraph radiance:W sr-1m-2:WHTCOR
+6:6:Heliospheric radiance:W sr-1m-2:HELCOR
+7:7:Thematic mask:Numeric:MASK
+# 8-191:8-191:Reserved:-:		
+# 192-254:192:254:Reserved for Local Use:-:
+255:255:Missing:-:

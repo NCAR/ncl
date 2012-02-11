@@ -5,6 +5,14 @@
 3:3:Simulated brightness temperature for GOES 12, channel 5:K:SBT125
 4:4:Simulated brightness counts for GOES 12, channel 3:Byte:SBC123
 5:5:Simulated brightness counts for GOES 12, channel 4:Byte:SBC124
-# 6-191:6-191:Reserved:-:
+6:6:Simulated brightness temperature for GOES 11, channel 2:K:SBT112
+7:7:Simulated brightness temperature for GOES 11, channel 3:K:SBT113
+8:8:Simulated brightness temperature for GOES 11, channel 4:K:SBT114
+9:9:Simulated brightness temperature for GOES 11, channel 5:K:SBT115
+10:10:Simulated brightness temperature for AMSRE on Aqua, channel 9:K:AMSRE9
+11:11:Simulated brightness temperature for AMSRE on Aqua, channel 10:K:AMSRE10
+12:12:Simulated brightness temperature for AMSRE on Aqua, channel 11:K:AMSRE11
+13:13:Simulated brightness temperature for AMSRE on Aqua, channel 12:K:AMSRE12
+# 14-191:14-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 255:255:Missing:-:

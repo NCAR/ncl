@@ -1,0 +1,7 @@
+# GRIBv2 - Table 4.2-4.6 Space Weather Products, Ion-Neutral Coupling
+0:0:Pederson conductivity:S m-1:SIGPED
+1:1:Hall conductivity:S m-1:SIGHAL
+2:2:Parallel conductivity:S m-1:SIGPAR
+# 3-191:3-191:Reserved:-:		
+# 192-254:192:254:Reserved for Local Use:-:
+255:255:Missing:-:

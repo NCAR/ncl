@@ -30,7 +30,10 @@
 28:28:V-component storm motion:m s-1:VSTM
 29:29:Drag coefficient:Numeric:CD
 30:30:Frictional velocity:m s-1:FRICV
-# 31-191:31-191:Reserved:-:
+31:31:Turbulent diffusion coefficient for momentum:m2s-1:
+32:32:Eta coordinate vertical velocity:s-1:ETACVV
+33:33:Wind fetch:m:WINDF
+# 34-191:34-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Vertical speed sheer:s-1:VWSH
 193:193:Horizontal momentum flux:N m-2:MFLX
@@ -60,4 +63,9 @@
 217:217:Convective gravity wave drag meridional acceleration:m/s2:CNGWDV
 218:218:Velocity point model surface:-:LMV
 219:219:Potential vorticity (mass-weighted):1/s/m:PVMWW
+220:220:Hourly maximum of upward vertical velocity in the lowest 400hPa:m/s:MAXUVV
+221:221:Hourly maximum of downward vertical velocity in the lowest 400hPa:m/s:MAXDVV
+222:222:U component of hourly maximum 10m wind speed:m/s:MAXUW
+223:223:V component of hourly maximum 10m wind speed:m/s:MAXVW
+224:224:Ventilation rate:m2/s:VRATE
 255:255:Missing:-:

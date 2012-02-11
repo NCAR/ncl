@@ -1,0 +1,8 @@
+# GRIBv2 - Table 4.2-4.1 Space Weather Products, Momentum
+0:0:Velocity magnitude (speed):m s-1:SPEED
+1:1:First vector component of velocity (coordinate system dependent):m s-1:VEL1
+2:2:Second vector component of velocity (coordinate system dependent):m s-1:VEL2
+3:3:Third vector component of velocity (coordinate system dependent):m s-1:VEL3
+# 4-191:4-191:Reserved:-:		
+# 192-254:192:254:Reserved for Local Use:-:
+255:255:Missing:-:
