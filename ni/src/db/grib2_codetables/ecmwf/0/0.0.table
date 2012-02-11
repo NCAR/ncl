@@ -3,7 +3,8 @@
 1:1:Hydrological products
 2:2:Land surface products
 3:3:Space products
-# 4-9 Reserved
+4:4:Space weather products
+# 5-9 Reserved
 10:10:Oceanographic products
 # 11-191 Reserved
 # 192-254 Reserved for local use
