@@ -7,9 +7,9 @@ extern void NGCALLF(xy2pdf77,XY2PDF77)(int *, double *, double *, double *,
                                        int *, int *);
 
 
-extern void NGCALLF(xy1pdf77,XY1PDF77)(int *, double *, double *, int *,
-                                       double *, int *, double *, int *, 
-                                       int *);
+extern void NGCALLF(x1pdf77,X1PDF77)(int *, double *, double *, int *,
+                                     double *, int *, double *, int *, 
+                                     int *);
 
 NhlErrorTypes pdfxy_bin_W( void )
 {
@@ -583,9 +583,9 @@ NhlErrorTypes pdfx_bin_W( void )
 /*
  * Call the Fortran routine.
  */
-  NGCALLF(xy1pdf77,XY1PDF77)(&inx, tmp_x, &missing_dbl_x.doubleval,
-                             &imbx, tmp_pdf, &imbxp1, tmp_binxbnd, 
-                             &ipcnt, &ier);
+  NGCALLF(x1pdf77,X1PDF77)(&inx, tmp_x, &missing_dbl_x.doubleval,
+                           &imbx, tmp_pdf, &imbxp1, tmp_binxbnd, 
+                           &ipcnt, &ier);
 /*
  * Coerce output back to float if necessary.
  */
