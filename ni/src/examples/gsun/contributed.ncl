@@ -10828,6 +10828,8 @@ begin
 end
 ;***********************************************
 ; binning consistent with the "pdfxy" function
+; Feb 2012: replaced NCL loop with fortran loop
+; in pdfx_bin. This is much faster.
 ;
 undef("pdfx")
 function pdfx(x:numeric, nbin[1]:integer, opt:logical)
@@ -10894,13 +10896,19 @@ begin
 
   pdf         = new( nbins, "double", getFillValue(x))
   pdf         = 0.0d
+  
+;;---- the following replaces the ;; NCL loop below ---
+  popt          = True
+  popt@fraction = True ; True mean total count (**DO NOT CHANGE**)
+  pdfx_bin(x, binBound, popt) ; fortran
 
-  do nb=0,nbins-1      
-     pdf(nb) = num( x.ge.binBound(nb) .and. x.lt.binBound(nb+1) )
-     if (nb.eq.(nbins-1)) then                 ; last bin 
-         pdf(nb) = pdf(nb) + num( x.eq.binBound(nb+1) )   ; include last bound
-     end if
-  end do
+;;do nb=0,nbins-1      
+;;   pdf(nb) = num( x.ge.binBound(nb) .and. x.lt.binBound(nb+1) )
+;;   if (nb.eq.(nbins-1)) then                 ; last bin 
+;;       pdf(nb) = pdf(nb) + num( x.eq.binBound(nb+1) )   ; include last bound
+;;   end if
+;;end do
+;;----
 
   pdf!0    = "x"
   pdf&x    = binCenter
