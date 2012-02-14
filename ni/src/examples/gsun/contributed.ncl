@@ -10900,7 +10900,7 @@ begin
 ;;---- the following replaces the ;; NCL loop below ---
   popt          = True
   popt@fraction = True ; True mean total count (**DO NOT CHANGE**)
-  pdfx_bin(x, binBound, popt) ; fortran
+  pdf = pdfx_bin(x, binBound, popt) ; fortran
 
 ;;do nb=0,nbins-1      
 ;;   pdf(nb) = num( x.ge.binBound(nb) .and. x.lt.binBound(nb+1) )
