@@ -6889,10 +6889,7 @@ _NhlSetMarkerInfo
 	c_pcseti("CC",marker_color);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
-	/* NOTE we set both line and marker opacities, as many (all?) markers are implemented as lines */
-	_NhlSetLineOpacity(tinst, mkp->marker_opacity);
 	_NhlSetMarkerOpacity(tinst, mkp->marker_opacity);
-
 
 #if 0
 /*
@@ -6952,7 +6949,9 @@ WorkstationMarker
 	NhlErrorTypes		ret = NhlNOERROR;
         char			func_code[8];
 	int                     ce;
-
+        NhlWorkstationLayer	layer = (NhlWorkstationLayer)l;
+	NhlWorkstationLayerPart	*wkp = &layer->work;
+	_NhlMarkerStyleInfo	*mkp = wkp->mip;
 /*
  * Make the user space coincide with the NDC space for the
  * duration of the routine
@@ -6963,6 +6962,15 @@ WorkstationMarker
 	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
 	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
 		return NhlFATAL;
+
+        /* Because markers are implemented in terms of line/fill primitives, we save and set the opacity
+         * state here accordingly, and then restore before returning to keep from undermining line/fill opacities
+         * that may be in effect.
+         */
+        float lineOpacity = _NhlGetLineOpacity(layer);
+	_NhlSetLineOpacity(layer, mkp->marker_opacity);
+        float fillOpacity = _NhlGetFillOpacity(layer);
+        _NhlSetFillOpacity(layer, mkp->marker_opacity);
 
         c_pcgetc("FC",func_code,8);
         c_pcsetc("FC",":");
@@ -6981,6 +6989,9 @@ WorkstationMarker
 	}
 	c_pcseti("CE",ce);
         c_pcsetc("FC",func_code);
+
+        _NhlSetLineOpacity(layer, lineOpacity);
+        _NhlSetFillOpacity(layer, fillOpacity);
 
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
 	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
