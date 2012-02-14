@@ -9,7 +9,14 @@ Adding a new colormap to NCL.
 
     Add "xxxx.rgb" to the yMakefile in this directory.
 
-    How to create a color table from scratch:
+    Type:
+
+        svn add xxxx.rgb
+        svn ci
+
+    to check in the new color table.
+
+ 2. How to create a color table from scratch:
 
     At the the beginning of this file, *optionally* add the two lines:
 
@@ -44,7 +51,7 @@ ncolors=8
    Once you add the above color table to NCL, it will actually have 10
    colors, as the foreground and background colors will be added.
 
- 2. To quickly test this new color table, you can copy it
+ 3. To quickly test this new color table, you can copy it
     to $NCARG_ROOT/lib/ncarg/colormaps, and then run the
     short script, replacing "xxxx" with the name you used above:
 
@@ -61,7 +68,7 @@ end
      you like, and setenv NCARG_COLORMAP_PATH to this directory.
      Then, run the above script.
 
- 3. The colormaps directory at:
+ 4. The colormaps directory at:
 
      http://www.ncl.ucar.edu/Document/Graphics/color_table_gallery.shtml
 

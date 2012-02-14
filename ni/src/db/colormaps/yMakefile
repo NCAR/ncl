@@ -115,7 +115,8 @@ FILES		= \
 		matlab_hot.rgb \
 		matlab_hsv.rgb \
 		matlab_jet.rgb \
-		matlab_lines.rgb
+		matlab_lines.rgb \
+		seaice_1.rgb
 
 
 CMPATH	= $(LIBNCARGPATH)/colormaps
