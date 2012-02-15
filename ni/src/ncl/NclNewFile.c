@@ -2384,28 +2384,23 @@ static int _NclFileFillHLFS(NclNewFile file_out, int is_http,
 
 NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
                           unsigned int obj_type_mask, NclStatus status, NclQuark path,
-                          int rw_status)
+                          int rw_status, NclQuark file_ext_q, NclQuark fname_q,
+			  NhlBoolean is_http, char *end_of_name, int len_path)
 {
     char *the_path = NrmQuarkToString(path);
     NclQuark the_real_path = -1;
-    char *last_slash = NULL;
-    char *end_of_name = NULL;
     char *tmp_path = NULL;
-    int len_path = 0;
     char buffer[NCL_MAX_STRING];
-    NclQuark fname_q;
     int i,j;
     NclNewFile file_out = NULL;
     int file_out_free = 0;
     NhlErrorTypes ret= NhlNOERROR;
     NclObjClass class_ptr;
-    NclQuark file_ext_q;
     NclQuark *name_list;
     int n_names;
     NclQuark *name_list2;
     int n_names2;
     struct stat buf;
-    NhlBoolean is_http = False;
     NclFileClassPart *fcp = &(nclFileClassRec.file_class);
     int ret_error = 0;
 
@@ -2417,9 +2412,6 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
    *fprintf(stderr, "\tpath: <%s>\n", NrmQuarkToString(path));
    */
 
-    if (! strncmp(the_path,"http://",7))
-        is_http = True;
-
     ret = _NclInitClass(nclNewFileClass);
     if(ret < NhlWARNING) 
         return(NULL);
@@ -2428,72 +2420,6 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
         class_ptr = nclNewFileClass;
     else
         class_ptr = theclass;
-
-    last_slash = strrchr(the_path,'/');
-    if(last_slash == NULL)
-    {
-        last_slash = the_path;
-        len_path = 0;
-    }
-    else
-    {
-/*
-* skip over '/'
-*/
-        last_slash++;
-    }
-
-    end_of_name = strrchr(last_slash,'.');
-    if (is_http)
-    {
-        if (end_of_name == NULL)
-        {
-            end_of_name = &last_slash[strlen(last_slash)];
-        }
-        len_path = end_of_name - the_path;
-        i = 0;
-        while(last_slash != end_of_name)
-        {
-            buffer[i] = *last_slash;
-            i++;
-            last_slash++;
-        }
-
-        buffer[i] = '\0';
-        fname_q = NrmStringToQuark(buffer);
-        file_ext_q = NrmStringToQuark("nc");
-    }
-    else if(end_of_name == NULL)
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,
-            "NclNewFile:_NclNewFileCreate (%s) has no file extension",
-             NrmQuarkToString(path));
-        return(NULL);
-    }
-    else
-    {
-        len_path = end_of_name - the_path;
-        i = 0;
-        while(last_slash != end_of_name)
-        {
-            buffer[i] = *last_slash;
-            i++;
-            last_slash++;
-        }
-        buffer[i] = '\0';
-        fname_q = NrmStringToQuark(buffer);
-/*
-* skip over '.'
-*/
-        end_of_name++;
-        file_ext_q = NrmStringToQuark(end_of_name);
-    }
-
-  /*
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tfname_q: <%s>\n", buffer);
-   *fprintf(stderr, "\tfile_ext_q: <%s>\n", end_of_name);
-   */
 
   /*
    * If a GRIB file, check version.  First verify that the file exists

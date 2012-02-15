@@ -122,7 +122,12 @@ extern NclFile _NclNewFileCreate(NclObj       inst,
                                  unsigned int obj_type_mask,
                                  NclStatus    status,
                                  NclQuark     path,
-                                 int          rw_status);
+                                 int          rw_status,
+				 NclQuark     file_ext_q,
+				 NclQuark     fname_q,
+				 NhlBoolean   is_http, 
+				 char        *end_of_name,
+				 int          len_path);
 
 static NhlErrorTypes InitializeNewFileClass();
 

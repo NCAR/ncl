@@ -490,7 +490,10 @@ typedef struct _FileCallBackRec {
 
 NclFile _NclFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
                         unsigned int obj_type_mask, NclStatus status,
-                        NclQuark path, int rw_status);
+                        NclQuark path, int rw_status,
+			NclQuark file_ext_q,
+			NclQuark fname_q, NhlBoolean is_http, 
+			char *end_of_name, int len_path);
 extern void ReverseIt(void *val,void* swap_space,int ndims,int *compare_sel,
 			ng_size_t *dim_sizes,int el_size);
 void _NclReallocFilePart(NclFilePart *file,

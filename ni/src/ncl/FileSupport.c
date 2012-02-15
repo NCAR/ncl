@@ -2638,6 +2638,97 @@ NclQuark option;
 	return NhlNOERROR;
 }
 
+NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http, char **end_of_name, int *len_path)
+{
+	NclQuark file_ext_q = -1;
+
+	char *the_path = NrmQuarkToString(path);
+	char *last_slash = NULL;
+	char buffer[NCL_MAX_STRING];
+
+	int i;
+
+      /*
+       *fprintf(stderr, "\nEnter _NclFindFileExt, file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tpath: <%s>\n", the_path);
+       */
+
+	if(strncmp(the_path,"http://",7))
+		*is_http = False;
+	else
+		*is_http = True;
+
+	last_slash = strrchr(the_path,'/');
+	if(last_slash == NULL) {
+		last_slash = the_path;
+		*len_path = 0;
+	} else {
+		last_slash++;
+	}
+
+	*end_of_name = strrchr(last_slash,'.');
+	if (*is_http) {
+		if (*end_of_name == NULL) {
+			*end_of_name = &last_slash[strlen(last_slash)];
+		}
+		*len_path = *end_of_name - the_path;
+		i = 0;
+		while(last_slash != *end_of_name) {
+			buffer[i] = *last_slash;
+			i++;
+			last_slash++;
+		}
+		buffer[i] = '\0';
+		*fname_q = NrmStringToQuark(buffer);
+#ifdef BuildOPENDAP
+                if(strcmp("nc", *end_of_name+1) == 0)
+	        	file_ext_q = NrmStringToQuark("nc");
+	        else
+		{
+                        if(strcmp("he5", *end_of_name+1) == 0)
+			{
+				file_ext_q = NrmStringToQuark("opendap");
+				fprintf(stderr, "file: <%s>, line: %d\n", __FILE__, __LINE__);
+				fprintf(stderr, "\topendap file_ext_q = <%s>\n", NrmQuarkToString(file_ext_q));
+	        		file_ext_q = NrmStringToQuark("nc");
+			}
+	                else
+	        		file_ext_q = NrmStringToQuark("nc");
+		}
+#else
+		(*end_of_name)++;
+		file_ext_q = NrmStringToQuark(*end_of_name);
+#endif
+	}
+	else if(*end_of_name == NULL) {
+		file_ext_q = -1;
+	} else {
+		*len_path = *end_of_name - the_path;
+		i = 0;
+		while(last_slash != *end_of_name) {
+			buffer[i] = *last_slash;
+			i++;
+			last_slash++;
+		}
+		buffer[i] = '\0';
+		*fname_q = NrmStringToQuark(buffer);
+		(*end_of_name)++;
+		file_ext_q = NrmStringToQuark(*end_of_name);
+	}
+
+	/*
+	*if(*is_http)
+	*	fprintf(stderr, "\tis_http = True\n");
+	*else
+	*	fprintf(stderr, "\tis_http = False\n");
+	*fprintf(stderr, "\t*end_of_name: <%s>\n", *end_of_name);
+	*fprintf(stderr, "\tfname_q: <%s>\n", NrmQuarkToString(*fname_q));
+	*fprintf(stderr, "\tfile_ext_q: <%s>\n", NrmQuarkToString(file_ext_q));
+	*fprintf(stderr, "Leave _NclFindFileExt, file: %s, line: %d\n\n", __FILE__, __LINE__);
+	*/
+	return file_ext_q;
+}
+
 NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			unsigned int obj_type_mask, NclStatus status,
 			NclQuark path, int rw_status)
@@ -2645,7 +2736,46 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	NclFile file_out = NULL;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 
+	NclQuark file_ext_q = -1;
+	NclQuark fname_q;
+	NhlBoolean is_http;
+	char *end_of_name = NULL;
+	int len_path;
+
 	static int first = 1;
+
+      /*
+       */
+        fprintf(stderr, "\nEnter _NclCreateFile, file: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tNcl_USE_NEW_HLFS = %d\n", Ncl_USE_NEW_HLFS);
+        fprintf(stderr, "\tuse_new_hlfs = %d\n", use_new_hlfs);
+        fprintf(stderr, "\trw_status = %d\n", rw_status);
+
+	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path);
+
+      /*
+       *fprintf(stderr, "\tend_of_name: <%s>\n", end_of_name);
+       *if(is_http)
+       *	fprintf(stderr, "\tis_http = True\n");
+       *else
+       *	fprintf(stderr, "\tis_http = False\n");
+       *fprintf(stderr, "\tend_of_name: <%s>\n", end_of_name);
+       *fprintf(stderr, "\tfname_q: <%s>\n", NrmQuarkToString(fname_q));
+       *fprintf(stderr, "\tfile_ext_q: <%s>\n", NrmQuarkToString(file_ext_q));
+       */
+
+	if(0 > file_ext_q)
+	{
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"(%s) has no file extension, can't determine type of file to open",NrmQuarkToString(path)));
+		return(NULL);
+	}
+	else if (1 == rw_status)
+	{
+              /*
+               */
+                fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                fprintf(stderr, "\tuse_new_hlfs = %d\n", use_new_hlfs);
+	}
 
 	if(first)
 	{
@@ -2655,26 +2785,23 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			use_new_hlfs = *(int *)(fcp->options[Ncl_USE_NEW_HLFS].value->multidval.val);
 	}
 
-      /*
-       *fprintf(stderr, "\nEnter _NclCreateFile, file: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tNcl_USE_NEW_HLFS = %d\n", Ncl_USE_NEW_HLFS);
-       *fprintf(stderr, "\tuse_new_hlfs = %d\n", use_new_hlfs);
-       */
-
 #ifdef USE_NETCDF4_FEATURES
 	if(use_new_hlfs)
 	{
-		file_out = _NclNewFileCreate(inst, theclass, obj_type, obj_type_mask, status, path, rw_status);
+		file_out = _NclNewFileCreate(inst, theclass, obj_type, obj_type_mask, status,
+				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
 	}					
 	else
 #endif
 	{
-		file_out = _NclFileCreate(inst, theclass, obj_type, obj_type_mask, status, path, rw_status);
+		file_out = _NclFileCreate(inst, theclass, obj_type, obj_type_mask, status,
+				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
 	}					
 
 	/*
-	*fprintf(stderr, "Leave _NclCreateFile, file: %s, line: %d\n\n", __FILE__, __LINE__);
 	*/
+	fprintf(stderr, "Leave _NclCreateFile, file: %s, line: %d\n\n", __FILE__, __LINE__);
+
 	return file_out;
 }
 
