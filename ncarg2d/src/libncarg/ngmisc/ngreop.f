@@ -110,7 +110,7 @@ C                     necessarily have to agree with the color table
 C                     in effect when the original metafile was created.
 C
 C
-CRLB:      PARAMETER (LIDR=75)
+CRLB: PARAMETER (LIDR=75)
       PARAMETER (LIDR=77)
       INTEGER WKID, CONID, ITYPE, IOPT, IAT(*), NCOLRS, NSTART 
       INTEGER IATE(31)     
@@ -243,7 +243,7 @@ C  Color table.
 C
       
       IF (IAFLG .EQ. 1) THEN
-CRLB:        IANDX = 12
+C       IANDX = 12
         IANDX = 14
       ELSE
         IANDX = 6
