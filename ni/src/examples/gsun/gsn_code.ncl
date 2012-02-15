@@ -11907,7 +11907,7 @@ begin
 end
 
 ;***********************************************************************;
-; Function : read_colormap                                              ;
+; Function : read_colormap_file                                         ;
 ;               colorMapName : either the name of an NCL-standard       ;
 ;                              colormap, or the filename of a           ;
 ;                              user-supplied colormap.                  ;
@@ -11917,8 +11917,8 @@ end
 ; either RGB-tuples or RGBA-tuples (or a mixture); it always returns a  ;
 ; colormap comprised of RGBA-tuples.                                    ;
 ;***********************************************************************;
-undef("read_colormap")
-function read_colormap(colorMapName:string)
+undef("read_colormap_file")
+function read_colormap_file(colorMapName:string)
 local pathname, lines, tokens, cmap, tmpCmap, i, numColors, \
       red, green, blue, alpha, maxValue, MAXCOLORS
 begin
