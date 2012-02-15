@@ -443,7 +443,10 @@ int cro_Cellarray(GKSC *gksc) {
         for (l = 0; l < rows[j]; l++) {
             for (i = i_start; i != i_end; i = i + i_inc) {
                 for (k = 0; k < cols[i]; k++) {
-                    iar[kount] = (psa->ctable)[colia[j * nx + i]];
+                    unsigned int color = colia[j * nx + i];
+                    iar[kount] = ((color & ARGB_MASK) > 0)
+                               ? pack_argb(unpack_argb(NULL, color))  /* ARGB color... */
+                               : (psa->ctable)[color];
                     kount++;
                 }
             }
