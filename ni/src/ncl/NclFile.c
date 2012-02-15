@@ -4560,6 +4560,64 @@ void _NclReallocFilePart(NclFilePart *file,
 	}
 }
 
+NclQuark _NclFindNewFileExt(NclQuark fname_q, NclQuark the_real_path, int rw_status)
+{
+	NclQuark cur_ext_q;
+	NclQuark file_ext_q = -1;
+	NclFile file_out = NULL;
+
+	char *ext_list[] = {"hdf", "h5", "he", "he5", "nc", "nc4"};
+
+	int n = 0;
+	int sizeofextlist = sizeof(ext_list) / sizeof(ext_list[0]);
+
+	while(n < sizeofextlist)
+	{
+		cur_ext_q = NrmStringToQuark(ext_list[n]);
+
+		file_out = (NclFile)NclMalloc(sizeof(NclFileRec));
+
+		file_out->file.fname = fname_q;
+		file_out->file.file_format = 0;
+		file_out->file.file_ext_q = cur_ext_q;
+
+		_NclInitFilePart(&(file_out->file));
+
+		file_out->file.format_funcs = _NclGetFormatFuncs(cur_ext_q);
+		if(NULL != file_out->file.format_funcs)
+		{
+			file_out->file.private_rec = (*file_out->file.format_funcs->initialize_file_rec)(&file_out->file.file_format);
+			if(NULL != file_out->file.private_rec)
+			{
+				if(NULL != file_out->file.format_funcs->open_file)
+				{
+					file_out->file.fpath = the_real_path;
+					file_out->file.wr_status = rw_status;
+					file_out->file.private_rec = (*file_out->file.format_funcs->open_file)
+						(file_out->file.private_rec,
+			 			NrmStringToQuark(_NGResolvePath(NrmQuarkToString(the_real_path))),rw_status);	
+
+					if(NULL != file_out->file.private_rec)
+					{
+						if(NULL != file_out->file.format_funcs->free_file_rec)
+							(*file_out->file.format_funcs->free_file_rec)
+								(file_out->file.private_rec);
+						file_ext_q = cur_ext_q;
+						n += sizeofextlist;
+					}
+				}
+			}
+		}
+
+		NclFree((void*)file_out);
+
+		++n;
+	}
+
+	return file_ext_q;
+}
+
+
 NclFile _NclFileCreate
 #if	NhlNeedProto
 (NclObj  inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, NclStatus status, NclQuark path,int rw_status)
@@ -4595,6 +4653,7 @@ int rw_status;
 	int index;
 	struct stat buf;
 	NhlBoolean is_http = False;
+	int timesTried = 0;
 
 	if (! strncmp(the_path,"http://",7))
 		is_http = True;
@@ -4702,6 +4761,12 @@ int rw_status;
 	} else {
 		file_out = (NclFile)inst;
 	}
+
+/* Wei add re-try for some data format. 02/15/2012 */
+    while (2 > timesTried)
+    {
+	++timesTried;
+
 	file_out->file.fname = fname_q;
 	file_out->file.file_format = 0;
 	file_out->file.file_ext_q = file_ext_q;
@@ -4716,12 +4781,14 @@ int rw_status;
 		return(NULL);
 	}
 	file_out->file.private_rec = (*file_out->file.format_funcs->initialize_file_rec)(&file_out->file.file_format);
-	if(file_out->file.private_rec == NULL) {
+	if(file_out->file.private_rec == NULL)
+	{
 		NhlPError(NhlFATAL,ENOMEM,NULL);
 		if(file_out_free) 
 			NclFree((void*)file_out);
 		return(NULL);
 	}
+
 	if (file_out->file.format_funcs->set_option != NULL) {
 		NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 		for (i = 0; i < fcp->num_options; i++) {
@@ -4789,7 +4856,15 @@ int rw_status;
 				file_out->file.private_rec = (*file_out->file.format_funcs->open_file)
 					(file_out->file.private_rec,
 					 NrmStringToQuark(_NGResolvePath(NrmQuarkToString(the_real_path))),rw_status);	
-				if(! file_out->file.private_rec) {
+				if(NULL != file_out->file.private_rec)
+				{
+					break;
+				}
+
+				if(2 > timesTried)
+					file_ext_q = _NclFindNewFileExt(fname_q, the_real_path, rw_status);
+				else
+				{
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)",NrmQuarkToString(the_real_path));
 					if(file_out_free) 
 						NclFree((void*)file_out);
@@ -4798,11 +4873,12 @@ int rw_status;
 			}
 		} else  {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"An internal error in the extension code for the requested file format has occurred, could not open (%s)",NrmQuarkToString(the_real_path));
-		if(file_out_free) 
-			NclFree((void*)file_out);
+			if(file_out_free) 
+				NclFree((void*)file_out);
 			return(NULL);
 		}
 	}
+    }
 
 	if(file_out->file.format_funcs->get_grp_names != NULL)
 	{
