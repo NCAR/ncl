@@ -38,10 +38,7 @@
 #endif
 
 #ifdef BuildHDF4
-/*
 #include <hdf/mfhdf.h>
-*/
-#include <mfhdf.h>
 #endif
 
 #ifdef BuildHDFEOS5
