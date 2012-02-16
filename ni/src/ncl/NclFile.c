@@ -4560,63 +4560,6 @@ void _NclReallocFilePart(NclFilePart *file,
 	}
 }
 
-NclQuark _NclFindNewFileExt(NclQuark fname_q, NclQuark the_real_path, int rw_status)
-{
-	NclQuark cur_ext_q;
-	NclQuark file_ext_q = -1;
-	NclFile file_out = NULL;
-
-	char *ext_list[] = {"hdf", "h5", "he", "he5", "nc", "nc4"};
-
-	int n = 0;
-	int sizeofextlist = sizeof(ext_list) / sizeof(ext_list[0]);
-
-	while(n < sizeofextlist)
-	{
-		cur_ext_q = NrmStringToQuark(ext_list[n]);
-
-		file_out = (NclFile)NclMalloc(sizeof(NclFileRec));
-
-		file_out->file.fname = fname_q;
-		file_out->file.file_format = 0;
-		file_out->file.file_ext_q = cur_ext_q;
-
-		_NclInitFilePart(&(file_out->file));
-
-		file_out->file.format_funcs = _NclGetFormatFuncs(cur_ext_q);
-		if(NULL != file_out->file.format_funcs)
-		{
-			file_out->file.private_rec = (*file_out->file.format_funcs->initialize_file_rec)(&file_out->file.file_format);
-			if(NULL != file_out->file.private_rec)
-			{
-				if(NULL != file_out->file.format_funcs->open_file)
-				{
-					file_out->file.fpath = the_real_path;
-					file_out->file.wr_status = rw_status;
-					file_out->file.private_rec = (*file_out->file.format_funcs->open_file)
-						(file_out->file.private_rec,
-			 			NrmStringToQuark(_NGResolvePath(NrmQuarkToString(the_real_path))),rw_status);	
-
-					if(NULL != file_out->file.private_rec)
-					{
-						if(NULL != file_out->file.format_funcs->free_file_rec)
-							(*file_out->file.format_funcs->free_file_rec)
-								(file_out->file.private_rec);
-						file_ext_q = cur_ext_q;
-						n += sizeofextlist;
-					}
-				}
-			}
-		}
-
-		NclFree((void*)file_out);
-
-		++n;
-	}
-
-	return file_ext_q;
-}
-
 NclFile _NclFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			unsigned int obj_type_mask, NclStatus status,
 			NclQuark path, int rw_status, NclQuark file_ext_q,
@@ -4626,7 +4569,6 @@ NclFile _NclFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	char *the_path = NrmQuarkToString(path);
 	NclQuark the_real_path = -1;
 	char *tmp_path = NULL;
-	char buffer[NCL_MAX_STRING];
 	int i,j;
 	NclFile file_out = NULL;
 	int file_out_free = 0;
@@ -4638,7 +4580,6 @@ NclFile _NclFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	int n_names2;
 	int index;
 	struct stat buf;
-	int timesTried = 0;
 
 	ret = _NclInitClass(nclFileClass);
 	if(ret < NhlWARNING) 
@@ -4681,11 +4622,6 @@ NclFile _NclFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	} else {
 		file_out = (NclFile)inst;
 	}
-
-/* Wei add re-try for some data format. 02/15/2012 */
-    while (2 > timesTried)
-    {
-	++timesTried;
 
 	file_out->file.fname = fname_q;
 	file_out->file.file_format = 0;
@@ -4776,14 +4712,7 @@ NclFile _NclFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 				file_out->file.private_rec = (*file_out->file.format_funcs->open_file)
 					(file_out->file.private_rec,
 					 NrmStringToQuark(_NGResolvePath(NrmQuarkToString(the_real_path))),rw_status);	
-				if(NULL != file_out->file.private_rec)
-				{
-					break;
-				}
-
-				if(2 > timesTried)
-					file_ext_q = _NclFindNewFileExt(fname_q, the_real_path, rw_status);
-				else
+				if(NULL == file_out->file.private_rec)
 				{
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)",NrmQuarkToString(the_real_path));
 					if(file_out_free) 
@@ -4798,10 +4727,8 @@ NclFile _NclFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			return(NULL);
 		}
 	}
-    }
 
-	if(file_out->file.format_funcs->get_grp_names != NULL)
-	{
+	if(file_out->file.format_funcs->get_grp_names != NULL) {
 		name_list = (*file_out->file.format_funcs->get_grp_names)(file_out->file.private_rec,&n_names);
 
 		_NclReallocFilePart(&(file_out->file), n_names, -1, -1, -1);
