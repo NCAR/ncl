@@ -12,9 +12,15 @@
 #include "nctime.h"
 #include <math.h>
 
+#define CU_FATAL 1           /* Exit immediately on fatal error */
+extern int cuErrorOccurred;
+extern int cuErrOpts;
 
 extern int isleapyear(int);
 extern int day_of_year (int, int, int);
+
+extern void set_all_missing(void *dt, ng_size_t total_size, 
+                            NclScalar missing, int opt);
 
 NhlErrorTypes cd_calendar_W( void )
 {
@@ -274,30 +280,7 @@ NhlErrorTypes cd_calendar_W( void )
  * recoginized calendar. We return all missing values in this case.
  */
   if(return_missing) {
-        if(*option == 0) {
-          for(i = 0; i < total_size_date; i++ ) {
-                ((float*)date)[i] = missing_date.floatval;
-          }
-        }
-        else if(*option == -5) {
-/* identical to option=0, except returns ints */
-          for(i = 0; i < total_size_date; i++ ) {
-                ((int*)date)[i] = missing_date.intval;
-          }
-        }
-        else if(*option >= 1 && *option <= 4) {
-          for(i = 0; i < total_size_date; i++ ) {
-                ((double*)date)[i] = missing_date.doubleval;
-          }
-        }
-        else if(*option >= -3 && *option <= -1) {
-          for(i = 0; i < total_size_date; i++ ) {
-                ((int*)date)[i] = missing_date.intval;
-          }
-        }
-/*
- * Return all missing values.
- */
+    set_all_missing(date, total_size_date, missing_date, *option);
     ret = NclReturnValue(date,ndims_date,dsizes_date,
                           &missing_date,type_date,0);
     NclFree(dsizes_date);
@@ -318,6 +301,17 @@ NhlErrorTypes cd_calendar_W( void )
     if(!has_missing_x ||
        (has_missing_x && tmp_x[i] != missing_dx.doubleval)) {
       (void)cdRel2Iso_minsec(ctype,cspec,tmp_x[i],&comptime,&minute,&second);
+/*
+ * Return all missing values if we encounter a fatal error. 
+ * Only check this once.
+ */
+      if(i == 0 && (cuErrorOccurred && (cuErrOpts & CU_FATAL))) {
+        set_all_missing(date, total_size_date, missing_date, *option);
+        ret = NclReturnValue(date,ndims_date,dsizes_date,
+                             &missing_date,type_date,0);
+        NclFree(dsizes_date);
+        return(ret);
+      }
       year  = (int)comptime.year;
       month = (int)comptime.month;
       day   = (int)comptime.day;
@@ -634,6 +628,7 @@ NhlErrorTypes cd_inv_calendar_W( void )
 /*
  * various
  */
+  int ret;
   ng_size_t i, total_size_input;
   ng_size_t dsizes[1], return_missing;
   cdCalenType ctype;
@@ -889,12 +884,21 @@ NhlErrorTypes cd_inv_calendar_W( void )
       comptime.day   = (short)day[i];
       comptime.hour  = (double)hour[i] + fraction;
       (void)cdComp2Rel(ctype,comptime,cspec,&x[i]);
+/*
+ * Return all missing values if we encounter a fatal error.
+ */
+      if(i == 0 && (cuErrorOccurred && (cuErrOpts & CU_FATAL))) {
+        set_all_missing(x, total_size_input, missing_x, 1);
+        ret = NclReturnValue(x,ndims_year,dsizes_year,&missing_x,
+                             NCL_double,0);
+        if(type_second != NCL_double) NclFree(tmp_second);
+        return(ret);
+      }
     }
     else {
       x[i]  = missing_x.doubleval;
     }
   }
-
 
   if(type_second != NCL_double) NclFree(tmp_second);
 
@@ -1024,4 +1028,32 @@ NhlErrorTypes cd_inv_calendar_W( void )
   _NclPlaceReturn(return_data);
   return(NhlNOERROR);
 
+}
+
+void set_all_missing(void *dt, ng_size_t total_size, 
+                     NclScalar missing, int opt)
+{
+  ng_size_t i;
+
+  if(opt == 0) {
+    for(i = 0; i < total_size; i++ ) {
+      ((float*)dt)[i] = missing.floatval;
+    }
+  }
+  else if(opt == -5) {
+    /* identical to option=0, except returns ints */
+    for(i = 0; i < total_size; i++ ) {
+      ((int*)dt)[i] = missing.intval;
+    }
+  }
+  else if(opt >= 1 && opt <= 4) {
+    for(i = 0; i < total_size; i++ ) {
+      ((double*)dt)[i] = missing.doubleval;
+    }
+  }
+  else if(opt >= -3 && opt <= -1) {
+    for(i = 0; i < total_size; i++ ) {
+      ((int*)dt)[i] = missing.intval;
+    }
+  }
 }
