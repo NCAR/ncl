@@ -4154,3 +4154,120 @@ begin
       
   x = tmp                                ; return to original array
 end
+;-------------------------------
+undef("area_global_rectilinear_grid")
+function area_global_rectilinear_grid (lat[*]:numeric, lon[*], opt[1]:logical)
+; Area (approximate) of a global rectilinear grid cells.
+; This could be modified for non-global grids by adding
+;     the left and right and left dx.
+local rearth, nlat, mlon, pi, rad, rr, dlon, dx, dy
+    , area_lat, area_grid, area_total, area_sphere  
+begin
+  rearth = 6371.220d0            ; default; kilometers
+  if (opt .and. isatt(opt, "rearth")) then
+      rearth = opt@rearth 
+  end if
+
+  nlat   = dimsizes(lat)
+  mlon   = dimsizes(lon)
+
+  pi     = 4d0*atan(1.0d0)
+  rad    = pi/180d0
+  rr     = rearth*rad
+  dlon   = rr*(lon(2)-lon(1))
+
+  dx     = dlon*cos(lat*rad)   ; lon spacing at each latitude
+
+  if (lat(0).lt.-89.9999d0) then ; force exact 0.0, rounding issue
+      dx(0)  = 0.0d0
+  end if
+  if (lat(nlat-1).gt.89.9999d0) then
+      dx(nlat-1)  = 0.0d0
+  end if
+                               ; lat can have variable spacing
+  dy           = new (nlat, "double", "No_FillValue")
+  dy(0)        = (lat(1)-lat(0))*rr
+  dy(1:nlat-2) = (lat(2:)-lat(1:nlat-2))*rr
+  dy(nlat-1)   = (lat(nlat-1)-lat(nlat-2))*rr
+
+  area_lat      = dx*dy        ; [*]
+  area_grid     = conform_dims( (/nlat,mlon/), area_lat, 0)
+  area_total    = sum( area_grid )
+
+  area_sphere   = 4d0*pi*rearth^2
+
+  area_grid@long_name  = "area of each grid cell"
+  area_grid@units      = "km^2"
+  area_grid@area_total = area_total      ; scalar
+  area_grid@area_lat   = area_lat        ; [*]
+  area_grid@rearth     = rearth          ; scalar
+  area_grid@area_sphere= area_sphere     ; scalar
+  area_grid@area_ratio = area_total/area_sphere    ; scalar
+
+  area_grid!0   = "lat"
+  area_grid!1   = "lon"
+  area_grid&lat =  lat
+  area_grid&lon =  lon
+
+  return(area_grid)
+end
+;-------------------------------
+undef("area_polar_region")
+function area_polar_region (lat[*]:numeric, opt[1]:logical)
+; Area from pole to latitude. Special case of area_sphere_region
+local rearth, pi, rad, rr, twopi, parea
+begin
+  rearth = 6371.220d0            ; default; kilometers
+  if (opt .and. isatt(opt, "rearth")) then
+      rearth = opt@rearth
+  end if
+
+  pi     = 4d0*atan(1.0d0)
+  rad    = pi/180d0
+  twopi  = 2.0d0*pi
+  parea  = twopi*rearth*rearth*(1.0d0-sin(rad*lat))
+  parea@long_name = "Polar Area"
+  parea@units     = "km^2"
+
+  return(parea)
+end
+;-------------------------------
+undef("area_earth_region")
+function area_earth_region (lat1[*]:numeric, lat2[*]:numeric \
+                           ,lon1[*]:numeric, lon2[*]:numeric \
+                           ,opt[1]:logical)
+; sfc area of a region of the globe
+; area_g = area_area_earth_region( 90,-90,   0,360,False) ; globe
+; area_g = area_area_earth_region( 90,-90,-180,180,False) ; globe
+; area_p = area_area_earth_region( 90, 45,   0,360,False) ; pole  area
+; area_p = area_area_earth_region(-90,-60,   0,360,False) ; pole  area
+; area_r = area_area_earth_region( 30,-30, -45, 60,False) ; region area
+local rearth, pi, rad, twopi, lonRatio, con, area
+begin
+                           ; Radius of sphere with same volume as earth
+  rearth = 6371.220d0      ; default; kilometers; ECMWF uses this value
+  if (opt .and. isatt(opt, "rearth")) then
+      rearth = opt@rearth
+  end if
+
+  if (any( (lat2-lat1).gt.180) ) then
+      print("area_earth_region: latitude span is incorrect")
+      exit
+  end if
+
+  if (any( (lon2-lon1).gt.360) ) then
+      print("area_earth_region: longitude span is incorrect")
+      exit
+  end if
+
+  pi    = 4d0*atan(1.0d0)
+  rad   = pi/180d0
+  twopi = 2.0d0*pi
+  lonRatio = abs(lon2-lon1)/360d0
+  con   = (twopi*rearth^2)*lonRatio
+
+  area  = con*abs(sin(rad*lat1)-sin(rad*lat2))
+  area@long_name = "Area"
+  area@units     = "km^2"
+  return(area)
+end
