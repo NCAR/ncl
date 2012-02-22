@@ -1470,6 +1470,9 @@ void _NclFileUDTRealloc(NclFileUDTRecord *udt_rec)
 
 NclFileCoordVarRecord *_NclFileCoordVarRealloc(NclFileCoordVarRecord *coord_var_rec)
 {
+    NclFileCoordVarRecord *new_coord_var_rec;
+    int n;
+
     if(coord_var_rec->n_vars < coord_var_rec->max_vars)
     {
         return coord_var_rec;
@@ -1477,11 +1480,19 @@ NclFileCoordVarRecord *_NclFileCoordVarRealloc(NclFileCoordVarRecord *coord_var_
 
     coord_var_rec->max_vars *= 2;
 
-    coord_var_rec->var_node = (NclFileVarNode **)NclRealloc(coord_var_rec,
-                   coord_var_rec->max_vars * sizeof(NclFileVarNode *));
-    assert(coord_var_rec->var_node);
+    new_coord_var_rec = _NclFileCoordVarAlloc(coord_var_rec->max_vars);
+    new_coord_var_rec->n_vars = coord_var_rec->n_vars;
 
-        return coord_var_rec;
+    for(n = 0; n < new_coord_var_rec->n_vars; n++)
+        new_coord_var_rec->var_node[n] = coord_var_rec->var_node[n];
+
+    for(n = new_coord_var_rec->n_vars; n < coord_var_rec->max_vars; n++)
+        new_coord_var_rec->var_node[n] = NULL;
+    
+    free(coord_var_rec->var_node);
+    free(coord_var_rec);
+
+    return new_coord_var_rec;
 }
 
 NclFileCompoundRecord *_NclFileCompoundAlloc(int n_comps)
