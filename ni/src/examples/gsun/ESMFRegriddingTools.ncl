@@ -1506,10 +1506,6 @@ begin
 
   DEBUG = isatt_logical_true(opt,"Debug")
 
-  if(DEBUG) then
-    print("ESMF_gen_weights: Calling '" + ESMF_exec + "'...")
-  end if
-    
 ;---Check if the source grid file is a SCRIP file.
   if (.not.(isatt_logical_true(opt,"SrcESMF")).and. \
       .not.(is_SCRIP(srcGridFile))) then
@@ -1533,7 +1529,7 @@ begin
 ;
   if(ismissing(getenv("NumProc"))) then  
     NumProc  = 1
-    Executer = " "
+    Executer = ""
   else 
     NumProc = getenv("NumProc")
     Executer = "mpirun -n " +NumProc+" "
@@ -1614,21 +1610,23 @@ begin
     end if
 
 ;---Check if the user has requested to print out the full command to be run.
-    if (isatt_logical_true(opt,"ShowCmd")) then
-      print("ESMF_gen_weights: the following command is about to be executed on the system:")
-      print(""+ ESMFCMD)
-    end if
   end if  ; end of building the command (Second Pass - optional features)
 		
+  if (DEBUG)
+    print("--------------------------------------------------")
+    print("ESMF_gen_weights: the following command is about to be executed on the system:")
+    print("'"+ESMFCMD+"'")
+    print("--------------------------------------------------")
+  end if
+
 ;---Execute the regridding command
-    RegridOut = systemfunc(ESMFCMD)
+  RegridOut = systemfunc(ESMFCMD)
         
-    if(DEBUG) then
-      print("ESMF_gen_weights: output from '" + ESMF_exec + "':")
-      print("--------------------------------------------------")
-      print("     " + RegridOut)
-      print("--------------------------------------------------")
-    end if
+  if(DEBUG) then
+    print("ESMF_gen_weights: output from '" + ESMF_exec + "':")
+    print("     " + RegridOut)
+    print("--------------------------------------------------")
+  end if
 ;
 ; The binary tool performs more sophisticated tests.
 ; Here it is checked that everything went ok.
