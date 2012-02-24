@@ -376,11 +376,15 @@ cdParseRelunits(cdCalenType timetype, char* relunits, cdUnitTime* unit, cdCompTi
  * Mods for NCL: allow for upper or lower case (since/SINCE)
  * and for multiple "relative" words (since,after,ref,from)
  */
-	if(nconv == EOF ||
-	   (nconv >=3 && strcasecmp(relword,"since") && 
-    	                 strcasecmp(relword,"after") &&  
- 	                 strcasecmp(relword,"ref")  && 
-	                 strcasecmp(relword,"from"))) {
+	if(nconv==EOF || nconv==0){
+		cdError("Error on relative units conversion, string = %s\n",relunits);
+		return 1;
+	}
+
+	if(nconv >=3 && strcasecmp(relword,"since") && 
+	                strcasecmp(relword,"after") &&  
+	                strcasecmp(relword,"ref")  && 
+                        strcasecmp(relword,"from")) {
 	  cdError("Error on relative units conversion, string = %s\n",relunits);
 	  return 1;
 	}

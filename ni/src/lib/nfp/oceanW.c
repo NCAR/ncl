@@ -221,7 +221,7 @@ NhlErrorTypes potmp_insitu_ocn_W( void )
  * Return variable
  */
   void *pot;
-  double tmp_pot;
+  double *tmp_pot;
   NclBasicDataTypes type_pot;
   NclScalar missing_pot;
 
@@ -419,8 +419,13 @@ NhlErrorTypes potmp_insitu_ocn_W( void )
 /* 
  * Allocate space for output array.
  */
-  if(type_pot != NCL_double) pot = (void *)calloc(total_nts, sizeof(float));
-  else                       pot = (void *)calloc(total_nts, sizeof(double));
+  if(type_pot != NCL_double) {
+    pot = (void *)calloc(total_nts, sizeof(float));
+    tmp_pot = (double*)calloc(1,sizeof(double));
+  }
+  else {
+    pot = (void *)calloc(total_nts, sizeof(double));
+  }
   if(pot == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"potmp_insitu_ocn: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -430,23 +435,23 @@ NhlErrorTypes potmp_insitu_ocn_W( void )
  * Call the Fortran routine.
  */
   for(i = 0; i < total_nts; i++) {
-    if(type_pot == NCL_double) tmp_pot = ((double*)pot)[i];
+    if(type_pot == NCL_double) tmp_pot = &((double*)pot)[i];
 
-    ipres = (i - ((int)i/nrnpres)*nrnpres) / total_nr;
+    ipres = (ng_size_t)((i-((ng_size_t)(i/nrnpres)*nrnpres))/total_nr);
     if(has_missing_t && tmp_t[i] == missing_dbl_t.doubleval) {
-      tmp_pot = missing_dbl_t.doubleval;
+      *tmp_pot = missing_dbl_t.doubleval;
     }
     else if(has_missing_s && tmp_s[i] == missing_dbl_s.doubleval) {
-      tmp_pot = missing_dbl_s.doubleval;
+      *tmp_pot = missing_dbl_s.doubleval;
     }
     else {
       NGCALLF(dpotmp,DPOTMP)(&tmp_pres[ipres], &tmp_t[i], &tmp_s[i],
-                             tmp_pref, &tmp_pot);
+                             tmp_pref, tmp_pot);
     }
 /*
  * Coerce output back to float if necessary.
  */
-    if(type_pot == NCL_float) coerce_output_float_only(pot,&tmp_pot,1,i);
+    if(type_pot == NCL_float) coerce_output_float_only(pot,tmp_pot,1,i);
   }
 
 /*
@@ -454,8 +459,9 @@ NhlErrorTypes potmp_insitu_ocn_W( void )
  */
   if(type_t    != NCL_double) NclFree(tmp_t);
   if(type_s    != NCL_double) NclFree(tmp_s);
-  if(type_pres != NCL_double) NclFree(tmp_pref);
-  if(type_pref != NCL_double) NclFree(tmp_pres);
+  if(type_pres != NCL_double) NclFree(tmp_pres);
+  if(type_pref != NCL_double) NclFree(tmp_pref);
+  if(type_pot  != NCL_double) NclFree(tmp_pot);
 
 /*
  * Return value back to NCL script.
