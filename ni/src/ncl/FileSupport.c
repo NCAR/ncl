@@ -2663,6 +2663,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http, 
 	char *the_path = NrmQuarkToString(path);
 	char *last_slash = NULL;
 	char buffer[NCL_MAX_STRING];
+	struct stat buf;
 
 	int i;
 
@@ -2721,6 +2722,12 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http, 
 	else if(*end_of_name == NULL) {
 		file_ext_q = -1;
 	} else {
+		if(stat(_NGResolvePath(the_path),&buf) == -1) {
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"_NclFindFileExt: Requested file <%s> does not exist\n", the_path));
+                                return(-1);
+		}
+
 		*len_path = *end_of_name - the_path;
 		i = 0;
 		while(last_slash != *end_of_name) {
