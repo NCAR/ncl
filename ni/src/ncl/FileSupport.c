@@ -2656,7 +2656,8 @@ NclQuark option;
 	return NhlNOERROR;
 }
 
-NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http, char **end_of_name, int *len_path)
+NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
+			char **end_of_name, int *len_path, int rw_status)
 {
 	NclQuark file_ext_q = -1;
 
@@ -2722,10 +2723,12 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http, 
 	else if(*end_of_name == NULL) {
 		file_ext_q = -1;
 	} else {
-		if(stat(_NGResolvePath(the_path),&buf) == -1) {
-			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				"_NclFindFileExt: Requested file <%s> does not exist\n", the_path));
-                                return(-1);
+		if (1 == rw_status) {
+			if(stat(_NGResolvePath(the_path),&buf) == -1) {
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"_NclFindFileExt: Requested file <%s> does not exist\n", the_path));
+                                	return(-1);
+			}
 		}
 
 		*len_path = *end_of_name - the_path;
@@ -3001,7 +3004,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
        *fprintf(stderr, "\trw_status = %d\n", rw_status);
        */
 
-	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path);
+	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status);
 
       /*
        *fprintf(stderr, "\tend_of_name: <%s>\n", end_of_name);
