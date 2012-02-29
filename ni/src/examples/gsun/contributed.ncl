@@ -11741,16 +11741,19 @@ begin
   return(zGrid)
 end
 ;----------------------------------------------------------------------------
-; Calculate a 'bunch' of dispersion statistics (25)
+; Calculate a 'bunch' of dispersion statistics 
+; This can be slow for big 'x'
 ; 
 undef("stat_dispersion")
 function stat_dispersion (x:numeric, opt[1]:logical )
 ; Robust dispersion statistics
 ; 
-local nStat, nx, sFillV, nFill, one, statx, work, nwork, x1d, ivalid
+local nStat, nx, sFillV, nFill, one, statx, work, nwork, x1d, ivalid, allFill
 begin
-   nx = product( dimsizes(x) )
-   nFill = 0
+   nx      = product( dimsizes(x) )
+   nFill   = 0
+   nStat   = 30
+   allFill = False 
   
    if (isatt(x,"_FillValue")) then  
        sFillV = x@_FillValue
@@ -11758,7 +11761,12 @@ begin
        if (nFill.gt.0) then
            x1d    = ndtooned(x) 
            ivalid = ind(.not.ismissing(x1d))
-           work   = x1d(ivalid)
+           if (.not.ismissing(ivalid(0))) then
+               work   = x1d(ivalid)
+           else
+               allFill= True
+               work   = new ( 1, typeof(sFillV), sFillV)
+           end if
            delete(x1d)
        else
            work = ndtooned(x) 
@@ -11778,42 +11786,44 @@ begin
        one    = 1.0
    end if
 
-   nwork    = dimsizes(work)  
-
-   nStat    = 30
    statx    = new ( nStat, typeof(sFillV), sFillV) 
-   statx(0) = avg(x)                ; mean
-   statx(1) = stddev(x)             ; std. deviation
-   if (nwork.ge.10) then 
-       qsort( work )                    ; sort into ascending order
-       statx(2) = min ( work )
-                                        ; -1 ... NCL zero based 
-       statx(3) = work( nwork/10-1 )    ; lower dectile
-       statx(4) = work( nwork/8 -1 )    ; lower octtile
-       statx(5) = work( nwork/6 -1 )    ; lower sextile
-       statx(6) = work( nwork/4 -1 )    ; lower quartile
-       statx(7) = work( nwork/3 -1 )    ; lower 3tile
-       if (nwork%2 .eq.0) then          ; median even
-           statx(8) = (work(nwork/2-1)+work(nwork/2))*0.5  
-       else
-           statx(8) = work( nwork/2   ) ; median odd  
-       end if
-       statx(9) = work((nwork*2)/3 -1)  ; upper 3tile
-       statx(10)= work((nwork*3)/4 -1)  ; upper quartile
-       statx(11)= work((nwork*5)/6 -1)  ; upper sextile
-       statx(12)= work((nwork*7)/8 -1)  ; upper octtile
-       statx(13)= work((nwork*9)/10-1)  ; upper dectile
-       statx(14)= max ( work )      
-       statx(15)= statx(14)-statx(2)    ; range
-       if (statx(1).gt.0) then
-           statx(16)= statx(15)/statx(1); a measure of dispersion
-       end if
-       statx(17)= sqrt(sum((work-statx(0))^2)/nwork) ; root mean sq anomaly
-   end if
-       statx(18)= nx
-       statx(19)= nwork
-       statx(20)= nFill
-       statx(21)= 100*(one - (one*(nx-nFill))/nx)
+   if (.not.allFill) then
+       nwork    = dimsizes(work)  
+       statx(0) = avg(x)                ; mean
+       statx(1) = stddev(x)             ; std. deviation
+       if (nwork.ge.10) then 
+           qsort( work )                    ; sort into ascending order
+           statx(2) = min ( work )
+                                            ; -1 ... NCL zero based 
+           statx(3) = work( nwork/10-1 )    ; lower dectile
+           statx(4) = work( nwork/8 -1 )    ; lower octtile
+           statx(5) = work( nwork/6 -1 )    ; lower sextile
+           statx(6) = work( nwork/4 -1 )    ; lower quartile
+           statx(7) = work( nwork/3 -1 )    ; lower 3tile
+           if (nwork%2 .eq.0) then          ; median even
+               statx(8) = (work(nwork/2-1)+work(nwork/2))*0.5  
+           else
+               statx(8) = work( nwork/2   ) ; median odd  
+           end if
+           statx(9) = work((nwork*2)/3 -1)  ; upper 3tile
+           statx(10)= work((nwork*3)/4 -1)  ; upper quartile
+           statx(11)= work((nwork*5)/6 -1)  ; upper sextile
+           statx(12)= work((nwork*7)/8 -1)  ; upper octtile
+           statx(13)= work((nwork*9)/10-1)  ; upper dectile
+           statx(14)= max ( work )      
+           statx(15)= statx(14)-statx(2)    ; range
+           if (statx(1).gt.0) then
+               statx(16)= statx(15)/statx(1); a measure of dispersion
+           end if
+           statx(17)= sqrt(sum((work-statx(0))^2)/nwork) ; root mean sq anomaly
+       end if                               ; nwork.ge.10
+   else                             
+       nwork    = 0
+   end if                                   ; .not.allFill
+   statx(18)= nx
+   statx(19)= nwork
+   statx(20)= nFill
+   statx(21)= 100*(one - (one*(nx-nFill))/nx)
 
    statx@long_name = "Robust Dispersion Statistics"
    if (isatt(x,"long_name")) then
