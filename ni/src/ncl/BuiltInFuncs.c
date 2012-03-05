@@ -19978,10 +19978,8 @@ NhlErrorTypes _NclIListSetType(void)
 	string *option;
         NclStackEntry data;
 	char *tmp;	
-	char buffer[5];
-	int i;
-
-	
+	char buffer[16];
+	int i, buflen;
 
    	list_id = (obj*)NclGetArgValue(
            0,
@@ -20009,16 +20007,14 @@ NhlErrorTypes _NclIListSetType(void)
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"ListSetType: unknown list type. Only \"join\", \"cat\", \"fifo\", and \"lifo\" supported");
 		return(NhlFATAL);
 	}
-	buffer[3] = '\0';
-	buffer[4] = '\0';
-	for(i = 0; i < strlen(tmp); i++) {
+	buflen = strlen(tmp);
+	for(i = 0; i < buflen; i++) {
 		buffer[i] = tolower(tmp[i]);
-		if(i == 3) 
-			break;
 	}
+	buffer[buflen] = '\0';
 	if(strcmp(buffer,"join") ==0) {
 		_NclListSetType(thelist, NCL_JOIN);
-	} else if(strcmp(buffer,"cat") == 0) {
+	} else if((strcmp(buffer,"cat") == 0) || (strcmp(buffer,"concat") == 0)) {
 		_NclListSetType(thelist, NCL_CONCAT);
 	} else if(strcmp(buffer,"item") == 0) {
 		_NclListSetType(thelist, NCL_ITEM);
