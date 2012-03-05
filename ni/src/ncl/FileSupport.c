@@ -2723,11 +2723,22 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 	else if(*end_of_name == NULL) {
 		file_ext_q = -1;
 	} else {
-		if (1 == rw_status) {
-			if(stat(_NGResolvePath(the_path),&buf) == -1) {
-				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-					"_NclFindFileExt: Requested file <%s> does not exist\n", the_path));
-                                	return(-1);
+		if (1 == rw_status)
+		{
+			if(stat(_NGResolvePath(the_path),&buf) == -1)
+			{
+				char tmp_path[NCL_MAX_STRING];
+				char tmp_name[NCL_MAX_STRING];
+				strcpy(tmp_path, the_path);
+				strcpy(tmp_name, *end_of_name);
+				tmp_path[strlen(the_path) - strlen(tmp_name)] = '\0';
+
+				if(stat(_NGResolvePath(tmp_path),&buf) == -1)
+				{
+					NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+						"_NclFindFileExt: Requested file <%s> or <%s> does not exist\n", the_path, tmp_path));
+                                		return(-1);
+				}
 			}
 		}
 
