@@ -31,6 +31,8 @@ extern "C" {
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
 
+extern NhlErrorTypes _Nclstr_print(void);
+
 extern NhlErrorTypes _Nclstr_fields_count(
 #if NhlNeedProto
 void
@@ -402,6 +404,13 @@ void NclAddUserBuiltInFuncs
     args = NewArgs(1);
     SetArgTemplate(args, nargs, "integer", 0, NclANY); nargs++;
     NclRegisterFunc(_Nclstr_from_int, args, "str_from_int", nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "list",   1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    NclRegisterProc(_Nclstr_print, args, "str_print", nargs);
 
     return;
 }
