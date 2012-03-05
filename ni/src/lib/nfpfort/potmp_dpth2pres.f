@@ -91,7 +91,8 @@ C
         END
 c ------------
 C NCLFORTSTART
-        subroutine dpth2pres(nd,depth, pressure)
+        subroutine dpth2pres(nd, depth, has_msg_depth, depth_msg, 
+     +             pressure)
         implicit none
 c  DESCRIPTION:
 c  This function computes pressure in bars from depth in meters
@@ -115,8 +116,8 @@ c  INPUT PARAMETERS:
 c  nd     - size of 
 c  depth  - depth in meters. No units check is made
 
-      integer  nd
-      double precision depth(nd) 
+      integer  nd, has_msg_depth
+      double precision depth(nd), depth_msg
 
 c  OUTPUT PARAMETERS:
 c  pressure - pressure in bars 
@@ -132,10 +133,21 @@ c -----------------------------------------------------------------------
 c  convert depth in meters to pressure in bars
 c -----------------------------------------------------------------------
 
-      do n=1,nd
-         pressure(n) = 0.059808d0*(exp(-0.025d0*depth(n)) - c1) 
-     &               + 0.100766d0*depth(n) + 2.28405d-7*depth(n)**2
-      end do
+      if (has_msg_depth.eq.1) then
+         do n=1,nd
+            if(depth(n).eq.depth_msg) then
+               pressure(n) = depth_msg
+            else
+               pressure(n) = 0.059808d0*(exp(-0.025d0*depth(n)) - c1) +
+     &                       0.100766d0*depth(n)+2.28405d-7*depth(n)**2
+            end if
+         end do
+      else
+         do n=1,nd
+            pressure(n) = 0.059808d0*(exp(-0.025d0*depth(n)) - c1) +
+     &                    0.100766d0*depth(n)+2.28405d-7*depth(n)**2
+         end do
+      end if
 
       return
       end

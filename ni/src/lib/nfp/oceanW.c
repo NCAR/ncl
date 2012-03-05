@@ -3,8 +3,7 @@
 
 extern void NGCALLF(dpotmp,DPOTMP)(double *,double *,double *,double *,
                                    double *);
-extern void NGCALLF(dpth2pres,DPTH2PRES)(int *, double *, double *);
-
+extern void NGCALLF(dpth2pres,DPTH2PRES)(int *, double *, int *, double *, double *);
 
 
 NhlErrorTypes depth_to_pres_W( void )
@@ -42,6 +41,7 @@ NhlErrorTypes depth_to_pres_W( void )
  */
   ng_size_t i, nd;
   int ind, ret;
+  double zmsg;
 
 /*
  * Retrieve parameters.
@@ -102,6 +102,10 @@ NhlErrorTypes depth_to_pres_W( void )
   if(has_missing_z) {
     if(type_z == NCL_double) missing_pres = missing_dbl_z;
     else                     missing_pres = missing_flt_z;
+    zmsg = missing_dbl_z.doubleval;
+  }
+  else {
+    zmsg = 0.0;   /* Won't be used. */
   }
 
 /* 
@@ -136,7 +140,7 @@ NhlErrorTypes depth_to_pres_W( void )
 /*
  * Call the Fortran routine.
  */
-  NGCALLF(dpth2pres,DPTH2PRES)(&ind, tmp_z, tmp_pres);
+  NGCALLF(dpth2pres,DPTH2PRES)(&ind, tmp_z, &has_missing_z, &zmsg, tmp_pres);
 
 /*
  * Coerce output back to float if necessary.
