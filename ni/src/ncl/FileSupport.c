@@ -3033,41 +3033,37 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
        *fprintf(stderr, "\tfile_ext_q: <%s>\n", NrmQuarkToString(file_ext_q));
        */
 
-	if(0 > file_ext_q)
+	if(! is_http)
 	{
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"(%s) has no file extension, can't determine type of file to open",NrmQuarkToString(path)));
-		return(NULL);
-	}
-	else if (1 == rw_status)
-	{
-		NclQuark the_real_path = NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path)));
-		NclQuark old_file_ext_q = file_ext_q;
-
-		file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_new_hlfs);
-
-              /*
-               *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-               *fprintf(stderr, "\tuse_new_hlfs = %d\n", use_new_hlfs);
-	       *fprintf(stderr, "\tpath: <%s>\n", NrmQuarkToString(path));
-	       *fprintf(stderr, "\tthe_real_path: <%s>\n", NrmQuarkToString(the_real_path));
-               */
-
 		if(0 > file_ext_q)
 		{
-			fprintf(stderr, "\tfile_ext_q: <%s>\n", "Undefined");
-			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				"_NclCreateFile: Can not open file: <%s> properly.\n",
-				 NrmQuarkToString(the_real_path)));
-			return file_out;
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"(%s) has no file extension, can't determine type of file to open",NrmQuarkToString(path)));
+			return(NULL);
 		}
-	}
+		else if (1 == rw_status)
+		{
+			NclQuark the_real_path = NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path)));
+			NclQuark old_file_ext_q = file_ext_q;
 
-	if(first)
-	{
-		first = 0;
-		/* Check if new file-strucuture */
-		if(NULL != fcp->options[Ncl_USE_NEW_HLFS].value)
-			use_new_hlfs = *(int *)(fcp->options[Ncl_USE_NEW_HLFS].value->multidval.val);
+			file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_new_hlfs);
+
+			if(0 > file_ext_q)
+			{
+				fprintf(stderr, "\tfile_ext_q: <%s>\n", "Undefined");
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"_NclCreateFile: Can not open file: <%s> properly.\n",
+				 	NrmQuarkToString(the_real_path)));
+				return file_out;
+			}
+		}
+
+		if(first)
+		{
+			first = 0;
+			/* Check if new file-strucuture */
+			if(NULL != fcp->options[Ncl_USE_NEW_HLFS].value)
+				use_new_hlfs = *(int *)(fcp->options[Ncl_USE_NEW_HLFS].value->multidval.val);
+		}
 	}
 
 #ifdef USE_NETCDF4_FEATURES
