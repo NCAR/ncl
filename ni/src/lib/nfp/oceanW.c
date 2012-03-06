@@ -202,6 +202,7 @@ NhlErrorTypes potmp_insitu_ocn_W( void )
   int ndims_pres;
   ng_size_t dsizes_pres[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pres;
+  int is_scalar_pres;
 
 /*
  * Argument # 3
@@ -220,6 +221,14 @@ NhlErrorTypes potmp_insitu_ocn_W( void )
  * Argument # 5
  */
   logical *opt;
+  logical reverse = False;
+
+/*
+ * Variables for retrieving attributes from "opt".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
 
 /*
  * Return variable
@@ -304,6 +313,9 @@ NhlErrorTypes potmp_insitu_ocn_W( void )
     return(NhlFATAL);
   }
 
+/* Scalar pressure is a special case */
+  is_scalar_pres = is_scalar(ndims_pres,dsizes_pres);
+
 /*
  * Get argument # 3
  */
@@ -342,25 +354,29 @@ NhlErrorTypes potmp_insitu_ocn_W( void )
            NULL,
            NULL,
            DONT_CARE);
+
 /*
  * Some error checking. Make sure pressure dimensions are valid.
  */
-  if(dsizes_dims[0] != ndims_pres) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"potmp_insitu_ocn: invalid number of dimension indexes given for 'pres'");
-    return(NhlFATAL);
-  }
-  for(i = 0; i < dsizes_dims[0]; i++ ) {
-    if(dims[i] < 0 || dims[i] >= ndims_t) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"potmp_insitu_ocn: invalid dimension indexes given for 'pres'");
+
+  if(!is_scalar_pres) {
+    if(dsizes_dims[0] != ndims_pres) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"potmp_insitu_ocn: invalid number of dimension indexes given for 'pres'");
       return(NhlFATAL);
     }
-    if(i > 0 && dims[i] != (dims[i-1]+1)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"potmp_insitu_ocn: input dimension sizes must be monotonically increasing, can't continue");
-      return(NhlFATAL);
-    }
-    if(dsizes_pres[i] != dsizes_t[dims[i]]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"potmp_insitu_ocn: dimension indexes given for 'pres' don't match dimensions of t and s");
-      return(NhlFATAL);
+    for(i = 0; i < dsizes_dims[0]; i++ ) {
+      if(dims[i] < 0 || dims[i] >= ndims_t) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"potmp_insitu_ocn: invalid dimension indexes given for 'pres'");
+        return(NhlFATAL);
+      }
+      if(i > 0 && dims[i] != (dims[i-1]+1)) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"potmp_insitu_ocn: input dimension sizes must be monotonically increasing, can't continue");
+        return(NhlFATAL);
+      }
+      if(dsizes_pres[i] != dsizes_t[dims[i]]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"potmp_insitu_ocn: dimension indexes given for 'pres' don't match dimensions of t and s");
+        return(NhlFATAL);
+      }
     }
   }
 
@@ -377,14 +393,21 @@ NhlErrorTypes potmp_insitu_ocn_W( void )
  * Compute the total number of leftmost and rightmost elements
  * in t and s.
  */
-  total_npres = total_nl = total_nr = 1;
-  for(i = 0; i < dims[0]; i++) total_nl *= dsizes_t[i];
-  for(i = 0; i < ndims_pres; i++) total_npres *= dsizes_pres[i];
-  for(i = dims[dsizes_dims[0]-1]+1; i < ndims_t; i++) total_nr *= dsizes_t[i];
+  if(is_scalar_pres) {
+    total_nl = 1;
+    for(i = 0; i < ndims_t; i++) total_nl *= dsizes_t[i];
+    total_npres = nrnpres = total_nr = 1;
+    total_nts  = total_nl;
+  }
+  else {
+    total_npres = total_nl = total_nr = 1;
+    for(i = 0; i < dims[0]; i++) total_nl *= dsizes_t[i];
+    for(i = 0; i < ndims_pres; i++) total_npres *= dsizes_pres[i];
+    for(i = dims[dsizes_dims[0]-1]+1; i < ndims_t; i++) total_nr *= dsizes_t[i];
 
-  nrnpres    = total_nr * total_npres;
-  total_nts  = total_nl * nrnpres;
-
+    nrnpres    = total_nr * total_npres;
+    total_nts  = total_nl * nrnpres;
+  }
 /*
  * The output type defaults to float, unless t is double.
  */
@@ -435,13 +458,66 @@ NhlErrorTypes potmp_insitu_ocn_W( void )
     return(NhlFATAL);
   }
 
+/* 
+ * If "opt" is True, then check if any attributes have been set.
+ */
+  if(*opt) {
+    stack_entry = _NclGetArg(5, 6, DONT_CARE);
+    switch (stack_entry.kind) {
+    case NclStk_VAR:
+      if (stack_entry.u.data_var->var.att_id != -1) {
+        attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+        if (attr_obj == NULL) {
+          break;
+        }
+      }
+      else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+        break;
+      }
+/* 
+ * Get optional arguments.
+ */
+      if (attr_obj->att.n_atts > 0) {
+/*
+ * Get list of attributes.
+ */
+        attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them. The current ones recognized are:
+ *   "reverse"
+ */
+        while (attr_list != NULL) {
+/*
+ * Check for "return_eval".
+ */
+          if (!strcmp(attr_list->attname, "reverse")) {
+            if(attr_list->attvalue->multidval.data_type == NCL_logical) {
+              reverse = *(logical*) attr_list->attvalue->multidval.val;
+            }
+            else {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"potmp_insitu_ocn: The 'reverse' attribute must be a logical. Defaulting to False.");
+            }
+          }
+          attr_list = attr_list->next;
+        }
+      }
+    default:
+      break;
+    }
+  }
+
 /*
  * Call the Fortran routine.
  */
   for(i = 0; i < total_nts; i++) {
     if(type_pot == NCL_double) tmp_pot = &((double*)pot)[i];
 
+/* Calculate index into pressure array */
     ipres = (ng_size_t)((i-((ng_size_t)(i/nrnpres)*nrnpres))/total_nr);
+
     if(has_missing_t && tmp_t[i] == missing_dbl_t.doubleval) {
       *tmp_pot = missing_dbl_t.doubleval;
     }
@@ -449,8 +525,14 @@ NhlErrorTypes potmp_insitu_ocn_W( void )
       *tmp_pot = missing_dbl_s.doubleval;
     }
     else {
-      NGCALLF(dpotmp,DPOTMP)(&tmp_pres[ipres], &tmp_t[i], &tmp_s[i],
-                             tmp_pref, tmp_pot);
+      if(reverse) {
+        NGCALLF(dpotmp,DPOTMP)(tmp_pref, &tmp_t[i], &tmp_s[i],
+                               &tmp_pres[ipres], tmp_pot);
+      }
+      else {
+        NGCALLF(dpotmp,DPOTMP)(&tmp_pres[ipres], &tmp_t[i], &tmp_s[i],
+                               tmp_pref, tmp_pot);
+      }
     }
 /*
  * Coerce output back to float if necessary.
