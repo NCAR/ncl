@@ -2752,7 +2752,12 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		buffer[i] = '\0';
 		*fname_q = NrmStringToQuark(buffer);
 		(*end_of_name)++;
-		file_ext_q = NrmStringToQuark(*end_of_name);
+
+		strcpy(buffer, *end_of_name);
+                for(i = 0; i < strlen(buffer); ++i)
+			buffer[i] = tolower(buffer[i]);
+
+		file_ext_q = NrmStringToQuark(buffer);
 	}
 
 	/*
