@@ -2717,8 +2717,19 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		}
 #else
 		(*end_of_name)++;
-		file_ext_q = NrmStringToQuark(*end_of_name);
+
+                if((0 == strcmp("h5", *end_of_name)) ||
+                   (0 == strcmp("he5", *end_of_name)) ||
+                   (0 == strcmp("grb", *end_of_name)) ||
+                   (0 == strcmp("grb1", *end_of_name)) ||
+                   (0 == strcmp("grb2", *end_of_name)) ||
+                   (0 == strcmp("hdf", *end_of_name)) ||
+                   (0 == strcmp("he", *end_of_name)))
+	        	file_ext_q = NrmStringToQuark(*end_of_name);
+		else
+	        	file_ext_q = NrmStringToQuark("nc");
 #endif
+		return file_ext_q;
 	}
 	else if(*end_of_name == NULL) {
 		file_ext_q = -1;
