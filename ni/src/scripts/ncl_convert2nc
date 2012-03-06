@@ -871,9 +871,10 @@ unset ifiles_t
 #
 # Create temporary file to hold NCL script
 #
-set tmp_nclf = "$tmpdir/tmp$$.ncl"
-/bin/rm $tmp_nclf >& /dev/null
+set tmpfile = `mktemp tmp$$-XXXXXXXX`
+set tmp_nclf = "$tmpdir/$tmpfile.ncl"
 #echo $tmp_nclf
+/bin/rm $tmp_nclf >& /dev/null
 cat << 'EOF_NCL' >! $tmp_nclf
 
 ;***************************************************
