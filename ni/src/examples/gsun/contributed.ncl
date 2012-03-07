@@ -4105,13 +4105,21 @@ begin
 
    clmDay= new((/ndys,nlat,mlon/),typeof(x), getFillValue(x) ) ; daily climatology
 ;
-; Compute averages for each sequebtial day of the year. 
+; Compute averages for each sequential day of the year. 
 ; This uses dimension swapping.
 ;
    do ndy=0,ndys-2                                 ; ndy=0->364 ==> day of year 1->365       
-      indx = ind( days.eq.(ndy+1) )       
-     ;clmDay(ndy,:,:) = dim_avg(x(lat|:,lon|:,time|indx))
-      clmDay(ndy,:,:) = dim_avg_n(x(indx,:,:), 0)  ; 5 Nov 2009
+      indx = ind( days.eq.(ndy+1) )                ; indx:indx Mar 2012, handle 1 element
+      if (.not.ismissing(indx(0))) then
+          nindx = dimsizes(indx)
+        if (nindx.eq.1) then                       ; force 3rd dimension
+         ;clmDay(ndy,:,:) = dim_avg(x(lat|:,lon|:,time|indx:indx))
+          clmDay(ndy,:,:) = dim_avg_n(x(indx:indx,:,:), 0) ; 5 Nov 2009 => dim_avg_n
+        else
+         ;clmDay(ndy,:,:) = dim_avg(x(lat|:,lon|:,time|indx))
+          clmDay(ndy,:,:) = dim_avg_n(x(indx,:,:), 0)  ; 5 Nov 2009 => dim_avg_n
+        end if
+      end if
       delete(indx)                  
    end do
                                                    ; nominal day 366 
@@ -4192,12 +4200,19 @@ begin
 
    clmDay= new((/ndys,klev,nlat,mlon/),typeof(x), getFillValue(x) ) ; daily climatology
 ;
-; Compute averages for each sequebtial day of the year. 
+; Compute averages for each sequential day of the year. 
 ; This uses dimension swapping.
 ;
    do ndy=0,ndys-2                                 ; ndy=0->364 ==> day of year 1->365       
-      indx = ind( days.eq.(ndy+1) )       
-      clmDay(ndy,:,:,:) = dim_avg_n(x(indx,:,:,:), 0)
+      indx = ind( days.eq.(ndy+1) )                ; indx:indx Mar 2012, handle 1 element
+      if (.not.ismissing(indx(0))) then
+          nindx = dimsizes(indx)
+        if (nindx.eq.1) then                       ; force 3rd dimension
+            clmDay(ndy,:,:,:) = dim_avg_n(x(indx:indx,:,:,:), 0)
+        else
+            clmDay(ndy,:,:,:) = dim_avg_n(x(indx,:,:,:), 0)
+        end if
+      end if
       delete(indx)                  
    end do
                                                    ; nominal day 366 
@@ -12023,8 +12038,8 @@ begin
    end if
 end
 ;---------------------------------
-; undocumented
-;
+; undocumented and unsupported
+;---------------------------------
 undef ("calculate_monthly_values")
 function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt[1]:logical)
 
@@ -12041,6 +12056,9 @@ function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt
 ;        xMonthSum = calculate_monthly_values(x, "sum", 0, False)
 ;        xMonthMin = calculate_monthly_values(x, "min", 0, False)
 ;        xMonthMax = calculate_monthly_values(x, "max", 0, False)
+;
+; It is assumed that there will be multiple elements for the dim_avg_n
+; calculation. 
 ;
 local dimx, rankx, utc_date, year, month, day, hour, ntim \
     , yrStrt, yrLast, nyrs, NTIM, dAvg, xReturn, xMonth \
@@ -12096,7 +12114,16 @@ begin
          end if
          ii    = ind(yr.eq.year .and. (nmo+1).eq.month)
 
+
          if (.not.ismissing(ii(0))) then
+
+             dimii = dimsizes(ii)     ; should be > 1
+             if (dimii.eq.1) then
+                 print("calculate_monthly_values: there should be more than one element")
+                 print("This is unsupported code.                                      ")
+                 exit
+             end if
+
              xMonth(NT) = (/ x&time(ii(0)) /)
 
              if (rankx.eq.1) then
