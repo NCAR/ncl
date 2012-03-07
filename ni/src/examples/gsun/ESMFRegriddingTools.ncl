@@ -8,6 +8,11 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       06 March 2012:
+;            Renamed ESMF_gen_weights to ESMF_regrid_gen_weights
+;            Renamed ESMF_regrid      to ESMF_regrid_with_weights
+;            Renamed ESMF_all         to ESMF_regrid
+;
 ;       08 Feb 2012:
 ;            Added retrieve_ESMF_lat and retrieve_ESMF_lon.
 ;            Added ESMF_all (not fully tested).
@@ -1491,8 +1496,8 @@ end
 ; processors, if the ESMF software was built with MPI turned on.
 ;
 ;======================================================================
-undef("ESMF_gen_weights")
-procedure ESMF_gen_weights(srcGridFile[1]:string, dstGridFile[1]:string, \
+undef("ESMF_regrid_gen_weights")
+procedure ESMF_regrid_gen_weights(srcGridFile[1]:string, dstGridFile[1]:string, \
                            wgtFile[1]:string, opt[1]:logical)
 local DEBUG, NumProc, Executer, ESMFCMD, ESMF_exec
 begin
@@ -1509,14 +1514,14 @@ begin
 ;---Check if the source grid file is a SCRIP file.
   if (.not.(isatt_logical_true(opt,"SrcESMF")).and. \
       .not.(is_SCRIP(srcGridFile))) then
-    print("ESMF_gen_weights: source grid file is not a SCRIP file.")
+    print("ESMF_regrid_gen_weights: source grid file is not a SCRIP file.")
     exit
   end if
 
 ;---Check if the destination grid file is a SCRIP file.
   if (.not.(isatt_logical_true(opt,"DstESMF")).and. \
       .not.(is_SCRIP(dstGridFile))) then
-    print("ESMF_gen_weights: destination grid file is not a SCRIP file.")
+    print("ESMF_regrid_gen_weights: destination grid file is not a SCRIP file.")
     exit
   end if
 
@@ -1535,7 +1540,7 @@ begin
     Executer = "mpirun -n " +NumProc+" "
   end if
   if(DEBUG) then
-    print("ESMF_gen_weights: number of processors used: " + NumProc)
+    print("ESMF_regrid_gen_weights: number of processors used: " + NumProc)
   end if
 
 ;---Check if the file already exists
@@ -1570,7 +1575,7 @@ begin
     if(isatt(opt,"method").and.isatt(opt,"pole").and.\
        str_lower(opt@method).eq."conserve".and.\
        str_lower(opt@pole).eq."all") then
-      print("ESMF_gen_weights: warning: 'pole' cannot be set to 'all' when") 
+      print("ESMF_regrid_gen_weights: warning: 'pole' cannot be set to 'all' when") 
       print("                  using 'conserve' method. Defaulting to 'none'.")
       opt@pole = "none"      
     end if
@@ -1614,7 +1619,7 @@ begin
 		
   if (DEBUG)
     print("--------------------------------------------------")
-    print("ESMF_gen_weights: the following command is about to be executed on the system:")
+    print("ESMF_regrid_gen_weights: the following command is about to be executed on the system:")
     print("'"+ESMFCMD+"'")
     print("--------------------------------------------------")
   end if
@@ -1623,7 +1628,7 @@ begin
   RegridOut = systemfunc(ESMFCMD)
         
   if(DEBUG) then
-    print("ESMF_gen_weights: output from '" + ESMF_exec + "':")
+    print("ESMF_regrid_gen_weights: output from '" + ESMF_exec + "':")
     print("     " + RegridOut)
     print("--------------------------------------------------")
   end if
@@ -1633,25 +1638,25 @@ begin
 ;
   if (.not.(any(str_squeeze(RegridOut).eq. \
             "Completed weight generation successfully."))) then
-    print("ESMF_gen_weights: '" + ESMF_exec + "' was not successful.")
+    print("ESMF_regrid_gen_weights: '" + ESMF_exec + "' was not successful.")
     exit
   end if
   if(DEBUG) then
-    print("ESMF_gen_weights: '" + ESMF_exec + "' was successful.")
+    print("ESMF_regrid_gen_weights: '" + ESMF_exec + "' was successful.")
   end if    
 
   if(PrintTimings) then
-    print_elapsed_time(start_time,"ESMF_gen_weights")
+    print_elapsed_time(start_time,"ESMF_regrid_gen_weights")
   end if
 
-end     ; of ESMF_gen_weights(...)
+end     ; of ESMF_regrid_gen_weights(...)
 
 ;======================================================================
 ; Using the provided weight file, remaps the data 
 ; from source grid into destination grid
 ;======================================================================
-undef("ESMF_regrid")
-function ESMF_regrid(srcData:numeric,wgtFile[1]:string, opt[1]:logical)
+undef("ESMF_regrid_with_weights")
+function ESMF_regrid_with_weights(srcData:numeric,wgtFile[1]:string, opt[1]:logical)
 local DEBUG, fmsg, fid, srclat, srclon, dstlat, dstlon, src_grid_dims, \
       src_grid_rank, srcData_dims, srcData_rank, srcData_rgt_dims, \
       srcData_lft_dims, has_leftmost_dims, dst_grid_dims, dst_grid_rank, \
@@ -1679,25 +1684,25 @@ begin
     if(isatt(opt,"Indexes")) then
       Indexes = opt@Indexes
     else
-      print("ESMF_regrid: error: you set RemapIndexes=True, but didn't provide 'Indexes'.")
+      print("ESMF_regrid_with_weights: error: you set RemapIndexes=True, but didn't provide 'Indexes'.")
       exit
     end if
     if(isatt(opt,"IndexesDims")) then
       IndexesDims = opt@IndexesDims
     else
-      print("ESMF_regrid: error: you set RemapIndexes=True, but didn't provide the ")
-      print("             dimension sizes of the nD array (IndexesDims")
+      print("ESMF_regrid_with_weights: error: you set RemapIndexes=True, but didn't provide the ")
+      print("                          dimension sizes of the nD array (IndexesDims")
       exit
     end if
   end if
 
   if(DEBUG) then
-    print("ESMF_regrid: regridding using interpolation weights ...")
+    print("ESMF_regrid_with_weights: regridding using interpolation weights ...")
   end if
 
 ;---Make sure the weight file is accessible
   if (.not.(isfilepresent(wgtFile))) then
-    print("ESMF_regrid: weight file doesn't exist or isn't accessible")
+    print("ESMF_regrid_with_weights: weight file doesn't exist or isn't accessible")
     return(fmsg)
   else
     fid = addfile(wgtFile,"r")
@@ -1715,8 +1720,8 @@ begin
        (max(dstlat).le.max(srclat)).and.  \
        (min(dstlon).ge.min(srclon)).and.  \
        (max(dstlon).le.max(srclon))   ) ) then
-      print("ESMF_regrid: warning: destination grid is not completely")
-      print("             covered by the source grid.")
+      print("ESMF_regrid_with_weights: warning: destination grid is not completely")
+      print("                          covered by the source grid.")
   end if
 	
 ;---Get the dimensions and rank of the source grid and input grid.
@@ -1733,33 +1738,33 @@ begin
 
 ;---Check dimensions of srcData
   if(src_grid_rank.gt.srcData_rank) then
-    print("ESMF_regrid: error: the rank of the source dimensions on the")
-    print("             weight file is more than the rank of the data")
-    print("             to be regridded. Can't continue.")
+    print("ESMF_regrid_with_weights: error: the rank of the source dimensions on the")
+    print("                          weight file is more than the rank of the data")
+    print("                          to be regridded. Can't continue.")
     return(fmsg)
   end if
 
   if(DEBUG) then
 ;---Source grid info
-    print("ESMF_regrid: Source Grid:")
-    print("             rank:      " + src_grid_rank)
-    str = "             dimensions:"
+    print("ESMF_regrid_with_weights: Source Grid:")
+    print("                          rank:      " + src_grid_rank)
+    str = "                          dimensions:"
     do i=0,src_grid_rank-1
       str = str + " " + src_grid_dims(i)
     end do
     print("" + str)
-    print("             original source rank: " + srcData_rank)
-    print("             latitude min/max: " + min(srclat) + "/" + max(srclat))
-    print("             longitude min/max:" + min(srclon) + "/" + max(srclon))
+    print("                          original source rank: " + srcData_rank)
+    print("                          latitude min/max: " + min(srclat) + "/" + max(srclat))
+    print("                          longitude min/max:" + min(srclon) + "/" + max(srclon))
 ;---Destination grid info
-    print("ESMF_regrid: Destination Grid:")
-    str = "             dimensions:"
+    print("ESMF_regrid_with_weights: Destination Grid:")
+    str = "                          dimensions:"
     do i=0,dst_grid_rank-1
       str = str + " " + dst_grid_dims(i)
     end do
     print("" + str)
-    print("             latitude min/max: " + min(dstlat) + "/" + max(dstlat))
-    print("             longitude min/max:" + min(dstlon) + "/" + max(dstlon))
+    print("                          latitude min/max: " + min(dstlat) + "/" + max(dstlat))
+    print("                          longitude min/max:" + min(dstlon) + "/" + max(dstlon))
   end if
 
 ;---Check that the rightmost dimensions are the same.
@@ -1768,7 +1773,7 @@ begin
     srcData_rgt_dims  = srcData_dims(srcData_lft_ndims:)
     srcData_lft_dims  = srcData_dims(0:srcData_lft_ndims-1)
     if(.not.all(srcData_rgt_dims.eq.src_grid_dims)) then
-      print("ESMF_regrid: error: input or source data does not have proper rightmost dimensions.")
+      print("ESMF_regrid_with_weights: error: input or source data does not have proper rightmost dimensions.")
       return(fmsg)
     end if
   else
@@ -1781,7 +1786,7 @@ begin
 ; sparse matrix in a coordinate list format
 ;
   if(DEBUG) then
-    print("ESMF_regrid: retrieving interpolation weights ...")
+    print("ESMF_regrid_with_weights: retrieving interpolation weights ...")
   end if
 
   row = fid->row
@@ -1790,7 +1795,7 @@ begin
     
 ;---Check srcData dimensions
   if ( max(col).gt.product(srcData_rgt_dims) ) then
-    print("ESMF_regrid: error: source data does not have proper dimensions.")
+    print("ESMF_regrid_with_weights: error: source data does not have proper dimensions.")
     return(fmsg)
   end if
     
@@ -1813,12 +1818,12 @@ begin
 ;   Currently there is a problem with ESMF files.
 ;   once it is fixed by ESMF people This can be reinstated.
 ;  if( max(row).gt.product(dst_grid_dims) ) then  
-;    print("ESMF_regrid: error: weight file has internal mistmatched data or is corrupted.")
+;    print("ESMF_regrid_with_weights: error: weight file has internal mistmatched data or is corrupted.")
 ;    return(fmsg)
 ;  end if
       
   if(DEBUG)
-    print("ESMF_regrid: calling sparse_matrix_mult to apply weights...")
+    print("ESMF_regrid_with_weights: calling sparse_matrix_mult to apply weights...")
   end if
 
 ;
@@ -1858,17 +1863,17 @@ begin
   end if
 
   if(DEBUG) then
-    print("ESMF_regrid: dstData")
-    str = "             Dimensions:"
+    print("ESMF_regrid_with_weights: dstData")
+    str = "                          Dimensions:"
     nd = dimsizes(dstData)
     do i=0,dimsizes(nd)-1
       str = str + " " + nd(i)
     end do
     print("" + str)
-    print("             minSrcData: " + min(srcData))
-    print("             maxSrcData: " + max(srcData))
-    print("             minDstData: " + min(dstData))
-    print("             maxDstData: " + max(dstData))
+    print("                          minSrcData: " + min(srcData))
+    print("                          maxSrcData: " + max(srcData))
+    print("                          minDstData: " + min(dstData))
+    print("                          maxDstData: " + max(dstData))
   end if
 
 ;
@@ -1877,7 +1882,7 @@ begin
 ;
   if(RemapIndexes) then
     if(DEBUG)
-      print("ESMF_regrid: putting interpolated values back onto larger 2D grid...")
+      print("ESMF_regrid_with_weights: putting interpolated values back onto larger 2D grid...")
     end if
     dstData_tmp2d = reshape_ind(dstData,Indexes,IndexesDims)
     delete(dstData)
@@ -1899,11 +1904,11 @@ begin
   end if
 	
   if(PrintTimings) then
-    print_elapsed_time(start_time,"ESMF_regrid")
+    print_elapsed_time(start_time,"ESMF_regrid_with_weights")
   end if
 
   return(dstData)
-end     ; of ESMF_regrid(...)
+end     ; of ESMF_regrid_with_weights(...)
 
 ;======================================================================
 ; This procedure is a generic one that writes the description of a 
@@ -2207,8 +2212,8 @@ end
 ;  ForceOverwrite
 ;  Overwrite
 ;======================================================================
-undef("ESMF_all")
-function ESMF_all(srcData:numeric, opt[1]:logical)
+undef("ESMF_regrid")
+function ESMF_regrid(srcData:numeric, opt[1]:logical)
 local opt, src_dims, src_rank, src_grid_type, src_grid_name, \
       src_lat_dims, src_lon_dims, src_lat_rank, src_lon_rank, \
       dst_dims, dst_rank, dst_grid_type, dst_grid_name, \
@@ -2217,7 +2222,7 @@ local opt, src_dims, src_rank, src_grid_type, src_grid_name, \
 begin
 ;---Check for certain options that must be set.
   if(.not.opt) then
-    print("ESMF_all: opt was set to False. Can't continue.")
+    print("ESMF_regrid: opt was set to False. Can't continue.")
     exit
   end if
 
@@ -2232,14 +2237,14 @@ begin
   if(.not.isatt_logical_true(opt2,"SkipSrcGrid")) then
     write_grid_description_file(srcData,"Src",opt2)
   else
-    print("ESMF_all: skipping generation of source grid.")
+    print("ESMF_regrid: skipping generation of source grid.")
   end if
 
 ;---Write destination grid description file
   if(.not.isatt_logical_true(opt2,"SkipDstGrid")) then
     write_grid_description_file(srcData,"Dst",opt2)
   else
-    print("ESMF_all: skipping generation of destination grid.")
+    print("ESMF_regrid: skipping generation of destination grid.")
   end if
 
 ;---Generate the weights
@@ -2254,7 +2259,7 @@ begin
     else if(.not.isatt_logical_true(opt,"SkipSrcGrid").and.isatt(opt2,"SrcGridFileName")) then
       src_grid_file = opt2@SrcGridFileName
     else
-      print("ESMF_all: need the name of the source grid file (SrcGridFileName)")
+      print("ESMF_regrid: need the name of the source grid file (SrcGridFileName)")
       exit
     end if
     end if
@@ -2263,17 +2268,17 @@ begin
     else if(.not.isatt_logical_true(opt,"SkipDstGrid").and.isatt(opt2,"DstGridFileName")) then
       dst_grid_file = opt2@DstGridFileName
     else
-      print("ESMF_all: need the name of the destination grid file (DstGridFileName)")
+      print("ESMF_regrid: need the name of the destination grid file (DstGridFileName)")
       exit
     end if
     end if
-    ESMF_gen_weights(src_grid_file, dst_grid_file, wgt_file_name, opt2)
+    ESMF_regrid_gen_weights(src_grid_file, dst_grid_file, wgt_file_name, opt2)
   else
-    print("ESMF_all: skipping generation of weights file.")
+    print("ESMF_regrid: skipping generation of weights file.")
   end if
 
 ;---Regrid the input variable
-  srcData_regrid = ESMF_regrid(srcData,wgt_file_name,opt2)
+  srcData_regrid = ESMF_regrid_with_weights(srcData,wgt_file_name,opt2)
 
 ;---Copy variable attributes and coordinate arrays if requested.
   ESMF_copy_varmeta(srcData,srcData_regrid,opt2)
