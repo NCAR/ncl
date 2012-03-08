@@ -1121,8 +1121,22 @@ NhlErrorTypes _Nclsystemfunc
 			close(fildes[0]);
 		}
 		if(nelem < 1) {
+			NclQuark *mval = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark));
+			ng_size_t dim_sizes = 1;
+			*mval = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+			data.u.data_obj =_NclCreateMultiDVal(
+				NULL,
+				nclMultiDValDataClass,
+				Ncl_MultiDValData,
+				Ncl_MultiDValData,
+				(void*)mval,
+				&((NclTypeClass)nclTypestringClass)->type_class.default_mis,
+				1,
+				&dim_sizes,
+				TEMPORARY,
+				NULL,
+				(NclTypeClass)nclTypestringClass);
 			data.kind = NclStk_VAL;
-			data.u.data_obj = _NclCreateMissing();
 			NclFree(qbuffer);
 			_NclPlaceReturn(data);
 		} else {
