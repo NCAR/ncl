@@ -1417,6 +1417,7 @@ end     ; of retrieve_ESMF_lon
 ; the regridded variable, and attaches coordinate information, if
 ; available. It will not copy lat1d/lon1d or lat2d/lon2d attributes.
 ;======================================================================
+undef("ESMF_copy_varmeta")
 procedure ESMF_copy_varmeta(sd,sd_regrid,opt)
 local var_dims, var_rank, dstlat, dstlon, atts_to_skip, natts
 begin
@@ -1922,6 +1923,7 @@ end     ; of ESMF_regrid_with_weights(...)
 ;    which_grid - must be "Src" or "Dst" (or "source", "destination")
 ;    opt        - logical variable with attributes
 ;======================================================================
+undef("write_grid_description_file")
 procedure write_grid_description_file(srcData,which_grid,opt)
 local opt2, var_dims, var_rank, grid_type, lat_dims, lon_dims, \
       lat_rank, lon_rank, grid_file_name, grid_lat_name, debug, \
