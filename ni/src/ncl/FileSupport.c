@@ -2668,11 +2668,6 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 
 	int i;
 
-      /*
-       *fprintf(stderr, "\nEnter _NclFindFileExt, file: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tpath: <%s>\n", the_path);
-       */
-
 	if(strncmp(the_path,"http://",7))
 		*is_http = False;
 	else
@@ -2724,7 +2719,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
                    (0 == strcmp("grb1", *end_of_name)) ||
                    (0 == strcmp("grb2", *end_of_name)) ||
                    (0 == strcmp("hdf", *end_of_name)) ||
-                   (0 == strcmp("he", *end_of_name)))
+                   (0 == strcmp("he2", *end_of_name)))
 	        	file_ext_q = NrmStringToQuark(*end_of_name);
 		else
 	        	file_ext_q = NrmStringToQuark("nc");
@@ -2771,20 +2766,10 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		file_ext_q = NrmStringToQuark(buffer);
 	}
 
-	/*
-	*if(*is_http)
-	*	fprintf(stderr, "\tis_http = True\n");
-	*else
-	*	fprintf(stderr, "\tis_http = False\n");
-	*fprintf(stderr, "\t*end_of_name: <%s>\n", *end_of_name);
-	*fprintf(stderr, "\tfname_q: <%s>\n", NrmQuarkToString(*fname_q));
-	*fprintf(stderr, "\tfile_ext_q: <%s>\n", NrmQuarkToString(file_ext_q));
-	*fprintf(stderr, "Leave _NclFindFileExt, file: %s, line: %d\n\n", __FILE__, __LINE__);
-	*/
 	return file_ext_q;
 }
 
-NclQuark _NclVerifyFile(NclQuark the_real_path, NclQuark pre_file_ext_q, int *new_hlfs)
+NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlfs)
 {
 	NclQuark cur_ext_q;
 	NclQuark ori_file_ext_q = pre_file_ext_q;
@@ -2800,7 +2785,7 @@ NclQuark _NclVerifyFile(NclQuark the_real_path, NclQuark pre_file_ext_q, int *ne
 			   , "he5"
 #endif
 #ifdef BuildHDFEOS
-			   , "he"
+			   , "he2"
 #endif
 #ifdef BuildHDF4
 			   , "hdf"
@@ -2811,12 +2796,8 @@ NclQuark _NclVerifyFile(NclQuark the_real_path, NclQuark pre_file_ext_q, int *ne
 	int n = -1;
 	int sizeofextlist = sizeof(ext_list) / sizeof(ext_list[0]);
 
-      /*
-       *fprintf(stderr, "\nEnter _NclVerifyFile, file: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tthe_real_path: <%s>\n", NrmQuarkToString(the_real_path));
-       *fprintf(stderr, "\tpre_file_ext_q: <%s>\n", NrmQuarkToString(pre_file_ext_q));
-       *fprintf(stderr, "\tfext: <%s>\n", fext);
-       */
+	char filename[NCL_MAX_STRING];
+	struct stat buf;
 
 	if((0 == strncmp(fext, "gr", 2)) || (0 == strncmp(fext, "GR", 2)))
 		return file_ext_q;
@@ -2832,13 +2813,33 @@ NclQuark _NclVerifyFile(NclQuark the_real_path, NclQuark pre_file_ext_q, int *ne
 		ori_file_ext_q = NrmStringToQuark("h5");
 #endif
 #ifdef BuildHDFEOS
-	else if((0 == strcmp(fext, "hdfeos")) || (0 == strcmp(fext, "he2")) || (0 == strcmp(fext, "he4")))
-		ori_file_ext_q = NrmStringToQuark("he");
+	else if((0 == strcmp(fext, "hdfeos")) || (0 == strcmp(fext, "he")) || (0 == strcmp(fext, "he4")))
+		ori_file_ext_q = NrmStringToQuark("he2");
 #endif
 #ifdef BuildHDFEOS5
 	else if(0 == strcmp(fext, "hdfeos5"))
 		ori_file_ext_q = NrmStringToQuark("he5");
 #endif
+
+	strcpy(filename, NrmQuarkToString(the_path));
+
+	if(stat(_NGResolvePath(filename),&buf) == -1)
+	{
+		char tmp_path[NCL_MAX_STRING];
+		char tmp_name[NCL_MAX_STRING];
+		strcpy(tmp_path, filename);
+		strcpy(tmp_name, NrmQuarkToString(pre_file_ext_q));
+		tmp_path[strlen(filename) - strlen(tmp_name) - 1] = '\0';
+
+		if(stat(_NGResolvePath(tmp_path),&buf) == -1)
+		{
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"_NclVerifyFile: Requested file <%s> or <%s> does not exist\n", filename, tmp_path));
+			return(-1);
+		}
+		strcpy(filename, tmp_path);
+	}
+
 
 	for(n = -1; n < sizeofextlist; n++)
 	{
@@ -2857,7 +2858,7 @@ NclQuark _NclVerifyFile(NclQuark the_real_path, NclQuark pre_file_ext_q, int *ne
 			int format;
 			int nc_ret = NC_NOERR;
 			ng_usize_t ChunkSizeHint;
-			nc_ret = nc__open(NrmQuarkToString(the_real_path),NC_NOWRITE,&ChunkSizeHint,&cdfid);
+			nc_ret = nc__open(filename,NC_NOWRITE,&ChunkSizeHint,&cdfid);
 
 			if(NC_NOERR != nc_ret)
 			{
@@ -2905,7 +2906,7 @@ NclQuark _NclVerifyFile(NclQuark the_real_path, NclQuark pre_file_ext_q, int *ne
 
 			static char root_name[] = "/";
 
-			fid = H5Fopen(NrmQuarkToString(the_real_path), H5F_ACC_RDONLY, H5P_DEFAULT);
+			fid = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT);
 
 			if(0 > fid)
 			{
@@ -2936,10 +2937,10 @@ NclQuark _NclVerifyFile(NclQuark the_real_path, NclQuark pre_file_ext_q, int *ne
 			long npt = 0;
 			long nza = 0;
 
-			nsw = HE5_SWinqswath(NrmQuarkToString(the_real_path), NULL, &str_buf_size);
-			ngd = HE5_GDinqgrid (NrmQuarkToString(the_real_path), NULL, &str_buf_size);
-			npt = HE5_PTinqpoint(NrmQuarkToString(the_real_path), NULL, &str_buf_size);
-			nza = HE5_ZAinqza   (NrmQuarkToString(the_real_path), NULL, &str_buf_size);
+			nsw = HE5_SWinqswath(filename, NULL, &str_buf_size);
+			ngd = HE5_GDinqgrid (filename, NULL, &str_buf_size);
+			npt = HE5_PTinqpoint(filename, NULL, &str_buf_size);
+			nza = HE5_ZAinqza   (filename, NULL, &str_buf_size);
 
 			if((npt <= 0) && (nsw <= 0) && (ngd <= 0) && (nza <= 0))
 				found = 0;
@@ -2952,16 +2953,16 @@ NclQuark _NclVerifyFile(NclQuark the_real_path, NclQuark pre_file_ext_q, int *ne
 		}
 #endif
 #ifdef BuildHDFEOS
-		else if(NrmStringToQuark("he") == cur_ext_q)
+		else if(NrmStringToQuark("he2") == cur_ext_q)
 		{
 			int32 nsw = 0;
 			int32 ngd = 0;
 			int32 npt = 0;
 			int32 bsize;
 
-			nsw = SWinqswath(NrmQuarkToString(the_real_path), NULL, &bsize);
-			ngd = GDinqgrid (NrmQuarkToString(the_real_path), NULL, &bsize);
-			npt = PTinqpoint(NrmQuarkToString(the_real_path), NULL, &bsize);
+			nsw = SWinqswath(filename, NULL, &bsize);
+			ngd = GDinqgrid (filename, NULL, &bsize);
+			npt = PTinqpoint(filename, NULL, &bsize);
 
 			if((npt <= 0) && (nsw <= 0) && (ngd <=0))
 				found = 0;
@@ -2979,8 +2980,8 @@ NclQuark _NclVerifyFile(NclQuark the_real_path, NclQuark pre_file_ext_q, int *ne
 			int cdfid;
 			int32 sd_id;
 	
-			cdfid = sd_ncopen(NrmQuarkToString(the_real_path),NC_NOWRITE);
-			sd_id = SDstart (NrmQuarkToString(the_real_path), DFACC_READ); 
+			cdfid = sd_ncopen(filename,NC_NOWRITE);
+			sd_id = SDstart (filename, DFACC_READ); 
         		sd_ncclose(cdfid);
 
 			if(0 > cdfid)
@@ -2999,11 +3000,6 @@ NclQuark _NclVerifyFile(NclQuark the_real_path, NclQuark pre_file_ext_q, int *ne
         		fprintf(stderr, "\tDONOT know anything about <%s>.\n", ext_list[n]);
 		}
 	}
-
-       /*
-      	*fprintf(stderr, "\tfile_ext_q: <%s>\n", NrmQuarkToString(file_ext_q));
-        *fprintf(stderr, "Leave _NclVerifyFile, file: %s, line: %d\n\n", __FILE__, __LINE__);
-        */
 
 	return file_ext_q;
 }
@@ -3024,25 +3020,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 	static int first = 1;
 
-      /*
-       *fprintf(stderr, "\nEnter _NclCreateFile, file: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tNcl_USE_NEW_HLFS = %d\n", Ncl_USE_NEW_HLFS);
-       *fprintf(stderr, "\tuse_new_hlfs = %d\n", use_new_hlfs);
-       *fprintf(stderr, "\trw_status = %d\n", rw_status);
-       */
-
 	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status);
-
-      /*
-       *fprintf(stderr, "\tend_of_name: <%s>\n", end_of_name);
-       *if(is_http)
-       *	fprintf(stderr, "\tis_http = True\n");
-       *else
-       *	fprintf(stderr, "\tis_http = False\n");
-       *fprintf(stderr, "\tend_of_name: <%s>\n", end_of_name);
-       *fprintf(stderr, "\tfname_q: <%s>\n", NrmQuarkToString(fname_q));
-       *fprintf(stderr, "\tfile_ext_q: <%s>\n", NrmQuarkToString(file_ext_q));
-       */
 
 	if(! is_http)
 	{
@@ -3089,10 +3067,6 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		file_out = _NclFileCreate(inst, theclass, obj_type, obj_type_mask, status,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
 	}					
-
-	/*
-	*fprintf(stderr, "Leave _NclCreateFile, file: %s, line: %d\n\n", __FILE__, __LINE__);
-	*/
 
 	return file_out;
 }
