@@ -8,6 +8,9 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       08 March 2012:
+;            Renamed this script to ESMF_regridding.ncl
+;
 ;       06 March 2012:
 ;            Renamed ESMF_gen_weights to ESMF_regrid_gen_weights
 ;            Renamed ESMF_regrid      to ESMF_regrid_with_weights
@@ -421,6 +424,11 @@ begin
 ;
     tmp = Extlat2d(:,1:nlon+1)+Extlat2d(:,0:nlon)
     ExtGridCenter_lat       = ndtooned((tmp(1:nlat+1,:)+tmp(0:nlat,:))*0.25)
+
+;---Kludge to cap the latitudes at -90/90
+;;  ExtGridCenter_lat = where(ExtGridCenter_lat.lt.-90,-90,ExtGridCenter_lat)
+;;  ExtGridCenter_lat = where(ExtGridCenter_lat.gt. 90, 90,ExtGridCenter_lat)
+
     tmp = Extlon2d(:,1:nlon+1)+Extlon2d(:,0:nlon)
     ExtGridCenter_lon       = ndtooned((tmp(1:nlat+1,:)+tmp(0:nlat,:))*0.25)
     delete(tmp)
@@ -517,7 +525,7 @@ begin
     FileAtt               = True
     FileAtt@gridType      = "unstructured"
     FileAtt@Conventions   = "ESMF"
-    FileAtt@Createdby     = "ESMFRegriddingTools.ncl"
+    FileAtt@Createdby     = "ESMF_regridding.ncl"
     FileAtt@version       = "0.9"
     FileAtt@inputFile     = inputFName
     FileAtt@timeGenerated = systemfunc("date")
@@ -694,7 +702,7 @@ begin
     FileAtt              = True
     FileAtt@title        = FTitle
     FileAtt@Conventions  = "SCRIP"
-    FileAtt@Createdby    = "ESMFRegriddingTools.ncl"
+    FileAtt@Createdby    = "ESMF_regridding.ncl"
     FileAtt@date_created = systemfunc("date")
     fileattdef(fid,FileAtt)
     
