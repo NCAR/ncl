@@ -58,10 +58,10 @@ c Binning
             end do
       end if
 
-c special case for lat bin
+c special case for last bin
 
       do n=1,nx 
-         if (x(n).eq.binxbnd(nbx)) then
+         if (x(n).eq.binxbnd(nbx+1)) then
              pdf(nbx) = pdf(nbx) + 1
          end if
       end do
@@ -71,11 +71,10 @@ c change return units to % if flag set
       unit = 1
       if (ipcnt.eq.1) then
           unit = 100
+          do nb=1,nbx
+             pdf(nb) = unit*(pdf(nb)/kx)
+          end do
       end if
-
-      do nb=1,nbx
-         pdf(nb) = unit*(pdf(nb)/kx)
-      end do
 
       return
       end
