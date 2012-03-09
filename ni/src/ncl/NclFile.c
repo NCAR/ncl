@@ -5800,6 +5800,7 @@ struct _NclSelectionRecord *rhs_sel_ptr;
         void *tmp_coord;
         char *tmp_ptr;
 	NclMultiDValData tmp_md;
+	NclMultiDValData coord_md;
 	struct _NclVarRec* cvar;
 	ng_size_t dimsize = -1;
 
@@ -5902,47 +5903,24 @@ struct _NclSelectionRecord *rhs_sel_ptr;
  * Need to create a temporary missing value filled array and write it then make and assigment using 
  * sel_ptr
  */
-								dimsize = (int)thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[lhs_sel_ptr->selection[i].dim_num]]->dim_size;
 								cvar = (NclVar)_NclGetObj(tmp_var->var.coord_vars[j]);
 								tmp_md = (NclMultiDValData)_NclGetObj(cvar->var.thevalue_id);
-								tmp_coord = NclMalloc(dimsize*tmp_md->multidval.type->type_class.size);
-                                                                tmp_ptr = (char*)tmp_coord;
-                                                                for(m = 0; m < dimsize; m++) {
-                                                                        memcpy((void*)tmp_ptr,(void*)&(tmp_md->multidval.type->type_class.default_mis),tmp_md->multidval.type->type_class.size);
-                                                                        tmp_ptr = tmp_ptr + tmp_md->multidval.type->type_class.size;
-
-                                                                }
-
-								ret = _NclFileWriteCoord(
-									thefile,	
-									tmp_var->var.dim_info[j].dim_quark,
-									_NclCreateMultiDVal( 
-										NULL, 
-										NULL, 
-										Ncl_MultiDValData, 
-										0, 
-										tmp_coord, 
-										&tmp_md->multidval.type->type_class.default_mis, 
-										1, 
-										&dimsize, 
-										TEMPORARY, 
-										NULL,
-										tmp_md->multidval.type),
-									NULL);
-
-								tmp_sel.selection[0] = lhs_sel_ptr->selection[i];
-								tmp_sel.selection[0].dim_num = 0;
-								ret = _NclFileWriteCoord(thefile,tmp_var->var.dim_info[j].dim_quark,tmp_md,&tmp_sel);
-							}
-							if(ret < NhlWARNING) {
-								NhlPError(NhlWARNING,NhlEUNKNOWN,"FileWriteVarVar: Could not write coordinate variable (%s) to file (%s), continuing anyway",NrmQuarkToString(tmp_var->var.dim_info[i].dim_quark),NrmQuarkToString(thefile->file.fname));
-								ret = NhlWARNING;
-							} else {
+								cindex = FileIsVar(thefile,tmp_var->var.dim_info[j].dim_quark);
+								if (cindex < 0) {
+									NclQuark name = tmp_var->var.dim_info[j].dim_quark;
+									ret = FileAddVar(thefile,tmp_var->var.dim_info[j].dim_quark,
+											 NrmStringToQuark(_NclBasicDataTypeToName(tmp_md->multidval.type->type_class.data_type)),
+											 1,&name);
+									if(ret < NhlWARNING) {
+										return(ret);
+									}
+								}
+								dimsize = (int)thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[lhs_sel_ptr->selection[i].dim_num]]->dim_size;
 								if(cvar->var.att_id != -1) {
 									theatt = (NclAtt)_NclGetObj(cvar->var.att_id);
 									step = theatt->att.att_list;
 									while(step != NULL) {
-										ret = FileWriteVarAtt(thefile,tmp_var->var.dim_info[i].dim_quark,step->quark,step->attvalue,NULL);
+										ret = FileWriteVarAtt(thefile,tmp_var->var.dim_info[j].dim_quark,step->quark,step->attvalue,NULL);
 										if(ret < NhlWARNING){
 											NhlPError(NhlWARNING,NhlEUNKNOWN,
                                                 "FileWriteVarVar: Could not write attribute (%s) to variable (%s) in file (%s), continuing anyway",
@@ -5955,6 +5933,13 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 				
 									}
 								}
+								tmp_sel.selection[0] = lhs_sel_ptr->selection[i];
+								tmp_sel.selection[0].dim_num = 0;
+								ret = _NclFileWriteCoord(thefile,tmp_var->var.dim_info[j].dim_quark,tmp_md,&tmp_sel);
+							}
+							if(ret < NhlWARNING) {
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"FileWriteVarVar: Could not write coordinate variable (%s) to file (%s), continuing anyway",NrmQuarkToString(tmp_var->var.dim_info[i].dim_quark),NrmQuarkToString(thefile->file.fname));
+								ret = NhlWARNING;
 							}
 						}
 				
@@ -5996,30 +5981,40 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 							continue;
 						}
 						tmp_coord_var = (NclVar)_NclGetObj(tmp_var->var.coord_vars[j]);
-						ret = FileWriteCoord(thefile,tmp_var->var.dim_info[j].dim_quark,_NclVarValueRead(tmp_coord_var,NULL,NULL),NULL);
+						cindex = FileIsVar(thefile,tmp_var->var.dim_info[j].dim_quark);
+						coord_md = _NclVarValueRead(tmp_coord_var,NULL,NULL);
+						if (cindex < 0) {
+							NclQuark name = tmp_var->var.dim_info[j].dim_quark;
+							ret = FileAddVar(thefile,tmp_var->var.dim_info[j].dim_quark,
+									 NrmStringToQuark(_NclBasicDataTypeToName(coord_md->multidval.type->type_class.data_type)),
+									 1,&name);
+							if(ret < NhlWARNING) {
+								return(ret);
+							}
+						}
+						if(tmp_coord_var->var.att_id != -1) {
+							theatt = (NclAtt)_NclGetObj(tmp_coord_var->var.att_id);
+							step = theatt->att.att_list;
+							while(step != NULL) {
+								ret = FileWriteVarAtt(thefile,tmp_var->var.dim_info[j].dim_quark,step->quark,step->attvalue,NULL);
+								if(ret < NhlWARNING){
+									NhlPError(NhlWARNING,NhlEUNKNOWN,
+										  "FileWriteVarVar: Could not write attribute (%s) to variable (%s) in file (%s), continuing anyway",
+										  NrmQuarkToString(step->quark),
+										  NrmQuarkToString(tmp_var->var.dim_info[j].dim_quark),
+										  NrmQuarkToString(thefile->file.fname));
+									ret = NhlWARNING;
+								}
+								step = step->next;
+			
+							}
+						}
+						ret = FileWriteCoord(thefile,tmp_var->var.dim_info[j].dim_quark,coord_md,NULL);
 						if(ret < NhlWARNING) {
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"FileWriteVarVar: Could not write coordinate variable (%s) to file (%s), continuing anyway",
 								  NrmQuarkToString(tmp_var->var.dim_info[j].dim_quark),NrmQuarkToString(thefile->file.fname));
 							ret = NhlWARNING;
-						} else {
-							if(tmp_coord_var->var.att_id != -1) {
-								theatt = (NclAtt)_NclGetObj(tmp_coord_var->var.att_id);
-								step = theatt->att.att_list;
-								while(step != NULL) {
-									ret = FileWriteVarAtt(thefile,tmp_var->var.dim_info[j].dim_quark,step->quark,step->attvalue,NULL);
-									if(ret < NhlWARNING){
-										NhlPError(NhlWARNING,NhlEUNKNOWN,
-						   "FileWriteVarVar: Could not write attribute (%s) to variable (%s) in file (%s), continuing anyway",
-											  NrmQuarkToString(step->quark),
-											  NrmQuarkToString(tmp_var->var.dim_info[j].dim_quark),
-											  NrmQuarkToString(thefile->file.fname));
-										ret = NhlWARNING;
-									}
-									step = step->next;
-			
-								}
-							}
-						}
+						} 
 					} else if(thefile->file.coord_vars[file_dim_num] != NULL) {
 
 /*
