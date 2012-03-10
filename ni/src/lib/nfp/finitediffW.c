@@ -40,8 +40,8 @@ NhlErrorTypes center_finite_diff_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  ng_size_t i, npts, npts1, size_q, size_leftmost;
-  int inpts, inpts1, index_q, iend, ier;
+  ng_size_t i, npts, npts1, size_q, size_leftmost, index_q;
+  int inpts, inpts1, iend, ier;
   double *qq, *rr;
 /*
  * Retrieve parameters
@@ -310,7 +310,8 @@ NhlErrorTypes center_finite_diff_n_W( void )
  * Declare various variables for random purposes.
  */
   ng_size_t i, j, npts, npts1, size_q, size_leftmost, size_rightmost, size_rl;
-  int inpts, inpts1, index_nrnpts, index_q, iend, ier;
+  ng_size_t index_nrnpts, index_q;
+  int inpts, inpts1, iend, ier;
   double *qq, *rr;
 /*
  * Retrieve parameters
@@ -581,8 +582,8 @@ NhlErrorTypes uv2vr_cfd_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  ng_size_t i, nlon, nlat, nlatnlon, size_uv, size_leftmost;
-  int index_uv, ier, inlat, inlon;
+  ng_size_t i, nlon, nlat, nlatnlon, size_uv, size_leftmost, index_uv;
+  int ier, inlat, inlon;
 /*
  * Retrieve parameters
  *
@@ -825,8 +826,8 @@ NhlErrorTypes uv2dv_cfd_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  ng_size_t i, nlon, nlat, nlatnlon, size_uv, size_leftmost;
-  int inlat, inlon, index_uv, ier;
+  ng_size_t i, nlon, nlat, nlatnlon, size_uv, size_leftmost, index_uv;
+  int inlat, inlon, ier;
 /*
  * Retrieve parameters
  *

@@ -23,7 +23,10 @@
 21:21:In-cloud turbulence:%:CTP
 22:22:Clear air turbulence (CAT):%:CAT
 23:23:Supercooled large droplet (SLD) probability:%:SLDP
-# 24-191:24-191:Reserved:-:
+24:24:Convective turbulent kinetic energy:J kg-1:
+25:25:Weather interpretation ww (WMO):non-dim:
+26:26:Convective outlook:Code Table 4.224:CONVO
+# 27-191:27-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Maximum snow albedo:%:MXSALB
 193:193:Snow-free albedo:%:SNFALB
@@ -53,6 +56,11 @@
 217:217:Supercooled large droplet (SLD) icing:Code Table 4.207:SIPD
 218:218:Radiative emissivity:-:EPSR
 219:219:Turbulence potential forecast index:-:TPFI
+220:220:Categorical severe thunderstorm:Code table 4.222:SVRTS
+221:221:Probability of convection:%:PROCON
+222:222:Convection potential:Code table 4.222:CONVP
 # 220-231:220-231:Reserved:-:
 232:232:Volcanic ash forecast transport and dispersion:log10(kg/m3):VAFTD
+233:233:Icing probability:non-dim:ICPRB
+234:234:Icing severity:non-dim:ICSEV
 255:255:Missing:-:

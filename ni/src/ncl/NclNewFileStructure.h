@@ -170,20 +170,10 @@ typedef struct _NclFileVarNode
     NclBasicDataTypes type;
     nc_type           the_nc_type;
 
-/*
-    int               max_dims;
-    int               n_dims;
-    int              *dimid;
-*/
     NclFileDimRecord *dim_rec;
 
     int               is_chunked;
 
-/*
-    int               max_chunk_dims;
-    int               n_chunk_dims;
-    int              *chunk_dimid;
-*/
     NclFileDimRecord *chunk_dim_rec;
 
     int                    is_compound;

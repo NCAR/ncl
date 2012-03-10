@@ -14,7 +14,17 @@
 11:11:Reflectance in 1.6 micron channel:%:RFL16
 12:12:Reflectance in 3.9 micron channel:%:RFL39
 13:13:Atmospheric divergence:s-1:ATMDIV
-# 14-191:14-191:Reserved:-:
+14:14:Cloudy brightness temperature:K:CBTMP
+15:15:Clear sky brightness temperature:K:CSBTMP
+16:16:Cloudy radiance (with respect to wave number):W m-1sr-1:CLDRAD
+17:17:Clear sky radiance (with respect to wave number):W m-1sr-1:CSKYRAD
+#18    Reserved	   
+19:19Wind speed:m s-1:WINDS
+20:20:Aerosol optical thickness at 0.635 micrometer:non-dim:AOT06
+21:21:Aerosol optical thickness at 0.810 micrometer:non-dim:AOT08
+22:22:Aerosol optical thickness at 1.640 micrometer:non-dim:AOT16
+23:23:Angstrom coefficient:non-dim:ANGCOE
+# 24-191:24-191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:
 

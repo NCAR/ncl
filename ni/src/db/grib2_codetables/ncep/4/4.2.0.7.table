@@ -12,7 +12,10 @@
 10:10:Surface lifted index:K:LFTX
 11:11:Best (4 layer) lifted index:K:4LFTX
 12:12:Richardson number:Numeric:RI
-# 13-191:13-191:Reserved:-:
+13:13:Showalter index:K:
+#14:14:Reserved	
+15:15:Updraft helicity:m2s-2:UPHL
+# 16-191:16-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Surface lifted index:K:LFTX
 193:193:Best (4 layer) lifted index:K:4LFTX
@@ -21,4 +24,5 @@
 196:196:Ultra violet index:W m-2:UVI
 197:197:Updraft helicity:m2s-2:UPHL
 198:198:Leaf area index:-:LAI
+199:199:Hourly maximum of updraft helicity over layer 2km to 5 km AGL:m2/s2:MXUPHL
 255:255:Missing:-:

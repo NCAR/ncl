@@ -784,23 +784,32 @@ function skewT_PlotData_Original \
   fmsg = default_fillvalue("float")   ; get default missing for float
 
   if (localOpts@ThermoInfo) then
+      if (p(1).gt.p(2)) then
+          pp  = p
+          ttc = tc
+          ttdc= tdc
+      else
+          pp  = p(::-1)
+          ttc = tc(::-1)
+          ttdc= tdc(::-1)
+      end if
       nP   = localOpts@Parcel  ; default is the lowest level [0]
-      nlvls= dimsizes(p)
+      nlvls= dimsizes(pp)
       plcl = fmsg             ; p (hPa) Lifting Condensation Lvl (lcl)
       tlcl = fmsg             ; temperature (C) of lcl
-     ;THERMO::ptlcl(p(nP),tc(nP),tdc(nP),plcl,tlcl)
-      ptlcl_skewt(p(nP),tc(nP),tdc(nP),plcl,tlcl)
-     ;shox = THERMO::showal(p,tc,tdc,nlvls)   ; Showwalter Index
-      shox = showal_skewt(p,tc,tdc)           ; Showwalter Index
-     ;pwat = THERMO::precpw(tdc,p,nlvls)      ; precipitable water (cm)
-      pwat = pw_skewt(tdc,p)                  ; precipitable water (cm)
+     ;THERMO::ptlcl(pp(nP),ttc(nP),ttdc(nP),plcl,tlcl)
+      ptlcl_skewt(pp(nP),ttc(nP),ttdc(nP),plcl,tlcl)
+     ;shox = THERMO::showal(pp,ttc,ttdc,nlvls)   ; Showwalter Index
+      shox = showal_skewt(pp,ttc,ttdc)           ; Showwalter Index
+     ;pwat = THERMO::precpw(ttdc,pp,nlvls)       ; precipitable water (cm)
+      pwat = pw_skewt(ttdc,pp)                  ; precipitable water (cm)
       iprnt= 0                                ; debug only (>0)
       nlLcl= 0                                
       nlLfc= 0
       nlCross= 0
-     ;cape = THERMO::cape_ncl(p,tc,nlvls,plcl,iprnt,tpar,tmsg \
+     ;cape = THERMO::cape_ncl(pp,ttc,nlvls,plcl,iprnt,tpar,tmsg \
      ;                       ,nlLcl,nlLfc,nlCross)
-      cape = cape_thermo(p,tc,plcl,iprnt)
+      cape = cape_thermo(pp,ttc,plcl,iprnt)
       tpar = cape@tparcel
       nlLcl= cape@jlcl
       nlLfc= cape@jlfc
@@ -835,7 +844,7 @@ function skewT_PlotData_Original \
            end if
           gsOpts@gsLineThicknessF  = 2.0
 
-          yp   = skewty (p)                    
+          yp   = skewty (pp)                    
           xtp  = skewtx (tpar, yp)
           gsn_polyline  (wks,skewt_bkgd,xtp(nlLfc:nlCross)       \
                                        , yp(nlLfc:nlCross),gsOpts) 

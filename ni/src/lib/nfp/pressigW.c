@@ -28,7 +28,8 @@ NhlErrorTypes pres_sigma_W( void )
  * Various.
  */
   ng_size_t i, j, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
-  int index_psigma, index_ps, ret;
+  ng_size_t index_psigma, index_ps;
+  int ret;
   ng_size_t size_leftmost, size_psigma;
   int inlon, inlat, iklvl;
 /*

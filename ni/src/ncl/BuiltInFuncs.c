@@ -604,10 +604,24 @@ NhlErrorTypes _NclIGetFileVarNames
 
 	if(NULL != thefile)
 		var_names = _NclFileReadVarNames(thefile, &num_vars);
-		
+
+	if (NULL == var_names || num_vars == 0) {
+		string *tmp_str =(string*) NclMalloc(((NclTypeClass)nclTypestringClass)->type_class.size);
+		*tmp_str = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+		dimsize = (ng_size_t)1;
+		data.kind = NclStk_VAL;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"getfilevarnames: %s contains no variables readable by NCL",
+			  NrmQuarkToString(thefile->file.fname));
+		data.u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)tmp_str,
+						      &((NclTypeClass)nclTypestringClass)->type_class.default_mis,
+						      1,&dimsize,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
+		_NclPlaceReturn(data);
+		return(NhlWARNING);
+	}
 	dimsize = (ng_size_t)num_vars;
 	data.kind = NclStk_VAL;
-	data.u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)var_names,NULL,1,&dimsize,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
+	data.u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)var_names,NULL,1,&dimsize,
+					      TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
 	_NclPlaceReturn(data);
        	return(NhlNOERROR);
 }
@@ -1107,8 +1121,22 @@ NhlErrorTypes _Nclsystemfunc
 			close(fildes[0]);
 		}
 		if(nelem < 1) {
+			NclQuark *mval = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark));
+			ng_size_t dim_sizes = 1;
+			*mval = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+			data.u.data_obj =_NclCreateMultiDVal(
+				NULL,
+				nclMultiDValDataClass,
+				Ncl_MultiDValData,
+				Ncl_MultiDValData,
+				(void*)mval,
+				&((NclTypeClass)nclTypestringClass)->type_class.default_mis,
+				1,
+				&dim_sizes,
+				TEMPORARY,
+				NULL,
+				(NclTypeClass)nclTypestringClass);
 			data.kind = NclStk_VAL;
-			data.u.data_obj = _NclCreateMissing();
 			NclFree(qbuffer);
 			_NclPlaceReturn(data);
 		} else {
@@ -14618,11 +14646,12 @@ NhlErrorTypes _Nclmin
 		while((i < tmp_md->multidval.totalelements)&&(_NclIsMissing(tmp_md,&(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]))))
 			i++;
 		if(i == tmp_md->multidval.totalelements) {
+		  /* The values are all missing */
 			return(NclReturnValue(
-				&tmp_md->multidval.type->type_class.default_mis,
+			        &tmp_md->multidval.missing_value.value,
 				1,
 				&dimsizes,
-				&tmp_md->multidval.type->type_class.default_mis,
+			        &tmp_md->multidval.missing_value.value,
 				tmp_md->multidval.data_type,
 				1
 			));
@@ -14701,11 +14730,12 @@ NhlErrorTypes _Nclmax
 		while((i < tmp_md->multidval.totalelements)&&(_NclIsMissing(tmp_md,&(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]))))
 			i++;
 		if(i == tmp_md->multidval.totalelements) {
+		  /* The values are all missing */
 			return(NclReturnValue(
-				&tmp_md->multidval.type->type_class.default_mis,
+			        &tmp_md->multidval.missing_value.value,
 				1,
 				&dimsizes,
-				&tmp_md->multidval.type->type_class.default_mis,
+			        &tmp_md->multidval.missing_value.value,
 				tmp_md->multidval.data_type,
 				1
 			));
@@ -16924,7 +16954,15 @@ NhlErrorTypes _NclIGetVarDims
 			}
 
 			ndims = data->u.file->n_dims;
-			ret = NclReturnValue((void*)names, 1, &ndims, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+			if (ndims == 0) {
+				names[0] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+				ndims = 1;
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"getvardims: file %s contains no dimensions readable by NCL",
+					  NrmQuarkToString(thefile->file.fname));
+			}
+			ret = NclReturnValue((void*)names, 1, &ndims, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, 
+					     ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+			ret = MIN(ret,NhlWARNING);
 		} else {
 			data = _NclGetVarInfo2(tmp_var);
 			for (i=0; i < data->u.var->n_dims;i++) {
@@ -16936,7 +16974,8 @@ NhlErrorTypes _NclIGetVarDims
 			}
 
 			ndims = data->u.var->n_dims;
-			ret = NclReturnValue((void*)names, 1, &ndims, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+			ret = NclReturnValue((void*)names, 1, &ndims, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, 
+					     ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
 		}
 	} else {
 		ret  = NhlFATAL;
@@ -19518,7 +19557,7 @@ NhlErrorTypes _NclINewList( void )
 	int i;
 	int list_type;
 	string *tmp_string;
-	char buffer[5];
+	char buffer[10];
 	
    	tmp_string = (string*)NclGetArgValue(
            0,
@@ -19539,10 +19578,9 @@ NhlErrorTypes _NclINewList( void )
 	buffer[3] = '\0';
 	for(i = 0; i < strlen(tmp); i++) {
 		buffer[i] = tolower(tmp[i]);
-		if(i == 3) 
+		if('\0' == tmp[i])
 			break;
 	}
-	
 
 	data.kind = NclStk_VAL;
 
@@ -19550,7 +19588,7 @@ NhlErrorTypes _NclINewList( void )
 	{
 		list_type = (int) (NCL_JOIN | NCL_FIFO);
 	}
-        else if(0 == strcmp("concat",buffer))
+        else if((0 == strcmp("cat",buffer)) || (0 == strcmp("concat",buffer)))
 	{
 		list_type = (int) (NCL_CONCAT | NCL_FIFO);
 	}
@@ -19954,10 +19992,8 @@ NhlErrorTypes _NclIListSetType(void)
 	string *option;
         NclStackEntry data;
 	char *tmp;	
-	char buffer[5];
-	int i;
-
-	
+	char buffer[16];
+	int i, buflen;
 
    	list_id = (obj*)NclGetArgValue(
            0,
@@ -19985,16 +20021,14 @@ NhlErrorTypes _NclIListSetType(void)
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"ListSetType: unknown list type. Only \"join\", \"cat\", \"fifo\", and \"lifo\" supported");
 		return(NhlFATAL);
 	}
-	buffer[3] = '\0';
-	buffer[4] = '\0';
-	for(i = 0; i < strlen(tmp); i++) {
+	buflen = strlen(tmp);
+	for(i = 0; i < buflen; i++) {
 		buffer[i] = tolower(tmp[i]);
-		if(i == 3) 
-			break;
 	}
+	buffer[buflen] = '\0';
 	if(strcmp(buffer,"join") ==0) {
 		_NclListSetType(thelist, NCL_JOIN);
-	} else if(strcmp(buffer,"cat") == 0) {
+	} else if((strcmp(buffer,"cat") == 0) || (strcmp(buffer,"concat") == 0)) {
 		_NclListSetType(thelist, NCL_CONCAT);
 	} else if(strcmp(buffer,"item") == 0) {
 		_NclListSetType(thelist, NCL_ITEM);
@@ -20935,7 +20969,16 @@ NhlErrorTypes   _NclIGetFileDimsizes
  *      was > INT_MAX, but this was removed before 6.0.0.
  */
 	ndims = f->file.n_file_dims;
-        if (ndims != 0) {
+	if (ndims == 0) {
+		NhlPError(NhlWARNING, NhlEUNKNOWN, "getfiledimsizes: file contains no dimensions");
+		dimsizes = 1;
+		NclReturnValue(
+			(void*) &((NclTypeClass) nclTypeintClass)->type_class.default_mis, 1,
+			&dimsizes, &((NclTypeClass) nclTypeintClass)->type_class.default_mis,
+			((NclTypeClass) nclTypeintClass)->type_class.data_type, 1);
+		return NhlWARNING;
+	}
+	else {
 	  return_type = NCL_int;
 #if !defined(NG32BIT)
 	  i = 0;

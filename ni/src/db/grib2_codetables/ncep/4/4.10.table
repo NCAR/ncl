@@ -9,6 +9,7 @@
 7:7:Covariance (temporal variance)
 8:8:Difference ( value at the beginning of the time range minus value at the end)
 9:9:Ratio
+10:10:Standardized anomaly
 #10-191:Reserved
 #192-254:Reserved for Local Use
 192:192:Climatological Mean Value: multiple year averages of quantities which are themselves means over some period of time less than a year.

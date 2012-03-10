@@ -9,7 +9,13 @@
 6:6:Surface dry deposition mass flux:kg m-2s-1:SDDMFLX
 7:7:Surface wet deposition mass flux:kg m-2s-1:SWDMFLX
 8:8:Atmosphere re-emission mass flux:kg m-2s-1:AREMFLX
-# 9-49:9-49:Reserved:-:
+9:9:Wet deposition by large-scale precipitation mass flux:kg m-2s-1:WLSMFLX
+10:10:Wet deposition by convective precipitation mass flux:kg m-2s-1:WDCPMFLX
+11:11:Sedimentation mass flux:kg m-2s-1:SEDMFLX
+12:12:Dry deposition mass flux:kg m-2s-1:DDMFLX
+13:13:Transfer from hydrophobic to hydrophilic:kg kg-1s-1:TRANHH
+14:14:Transfer from SO2 (sulphur dioxide) to SO4 (sulphate):kg kg-1s-1:TRSDS
+# 15-49:15-49:Reserved:-:
 
 50:50:Amount in atmosphere:mol:AIA
 51:51:Concentration in air:mol m-3:CONAIR
@@ -20,11 +26,21 @@
 56:56:Changes of amount in atmosphere:mol s-1:COAIA
 57:57:Total yearly average burden of the atmosphere:mol:TYABA
 58:58:Total yearly average atmospheric loss:mol s-1:TYAAL
-# 59 - 99:59 - 99:Reserved:-:
+59:59:Aerosol number concentration:m-3:ANCON
+# 60 - 99:60 - 99:Reserved:-:
 
 100:100:Surface area density (aerosol):m-1:SADEN
 101:101:Atmosphere optical thickness:m:AOTK
-# 102 - 130:102 - 130:Reserved:-:
+102:102:Aerosol optical thickness:Numeric:AOTK
+103:103:Single scattering albedo:Numeric:SSALBK
+104:104:Asymmetry factor:Numeric:ASYSFK
+105:105:Aerosol extinction coefficient:m-1:AECOEF
+106:106:Aerosol absorption coefficient:m-1:AACOEF
+107:107:Aerosol lidar backscatter from satellite:m-1sr-1:ALBSAT
+108:108:Aerosol lidar backscatter from the ground:m-1sr-1:ALBGRD
+109:109:Aerosol lidar extinction from satellite:m-1:ALESAT
+110:110:Aerosol lidar extinction from the ground:m-1:ALEGRD
+# 111-130:111 - 130:Reserved:-:
 
 131:131:Nitrogen dioxide (NO2) tropospheric column:mol cm-2:NO2TROP
 132:132:Nitrogen dioxide (NO2) vertical column density:mol cm-2:NO2VCD
@@ -33,4 +49,5 @@
 # 135 - 191:135 - 191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:
+255:255:Missing:-:
 

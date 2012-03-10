@@ -72,6 +72,10 @@ endif
 
 # Location to write temporary files
 set tmpdir = `ncargpath tmp`
+if (! -w $tmpdir) then
+    echo "Temporary directory $tmpdir does not exist or is not writable; cannot proceed (check environment variable TMPDIR)"
+    exit(1)
+endif 
 
 # Input and output directories default values
 set valid_file = 0
@@ -867,9 +871,11 @@ unset ifiles_t
 #
 # Create temporary file to hold NCL script
 #
-set tmp_nclf = "$tmpdir/tmp$$.ncl"
+set tmpfile = `date "+%s"`
+set tmpfile = `printf "%x" $tmpfile`
+set tmp_nclf = "$tmpdir/tmp$$-$tmpfile.ncl"
+#echo $tmp_nclf
 /bin/rm $tmp_nclf >& /dev/null
-echo $tmp_nclf
 cat << 'EOF_NCL' >! $tmp_nclf
 
 ;***************************************************
@@ -1014,6 +1020,18 @@ begin
         comment = ""                     ; comment option
     end if
 
+    iFileName = diri + fili
+
+;***************************************************
+; if the file starts with "http" check that it points to a valid URL
+;***************************************************
+
+    if (ftype .eq. "OPeNDAP") then
+        if (.not. isfilepresent(iFileName)) then
+	    print(iFileName + " is not accessible: exiting")
+	    exit()
+	end if
+    end if
 ;***************************************************
 ; Specify that COARDS style output desired
 ; NOTE: [not yet implemented]
@@ -1076,7 +1094,6 @@ begin
 ;***************************************************
 ; open file with appropriate extension
 ;***************************************************
-    iFileName = diri + fili
     f = addfile(iFileName, "r")     ; suffix ok 
 
 ;***************************************************
@@ -1106,13 +1123,13 @@ begin
      else
         fVarNames = vars                     ; user specified variables
      end if
+
      nfNames = dimsizes(fVarNames)
 
      if (debug) then
         print(nfNames)
         print(fVarNames)
     end if
-
 
 ;***************************************************
 ; open output netcdf file
@@ -1191,6 +1208,16 @@ begin
     end if
 
     fileattdef(fnc, fAtt)
+
+;************************************************
+; If the file contains no readable variables then
+; it is necessary to quit here
+;************************************************
+     if (all(ismissing(fVarNames))) then
+         print(iFileName + " contains no variables readable by NCL: converting global attributes only")
+	 delete(f)
+	 exit()
+     end if
 
 ;***********************************************
 ; predefine the file's dimension names, sizes
@@ -1661,9 +1688,9 @@ endif
 exit 0
 
 CLEANUP:
-/bin/rm -f $tmp_nclf
-/bin/rm -f $f_rdir
-exit 1
+  /bin/rm -f $tmp_nclf
+  /bin/rm -f $f_rdir
+  exit 1
 
 USAGE:
 echo "${progname} inputFile(s) OPTIONS"

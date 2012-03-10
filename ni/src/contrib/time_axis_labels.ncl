@@ -127,6 +127,9 @@ procedure time_axis_labels(time:numeric,resplot:logical,restick:logical)
 
 ; Author: Arindam Chakraborty <arch at caos.iisc.ernet.in>
 
+; Feb 06, 2012: Mary changed "ut_calendar" and "ut_inv_calendar" to use
+;               "cd_calendar" and "cd_inv_calendar" instead.
+
 local plot, ymdhms0, taxisvalues, minorvalues, ymdhms1, ymdhms1i, format, months, fmonths, inside
 
 begin
@@ -160,7 +163,7 @@ begin
    resplot@tmYRMode = "Explicit"
   end if
 
-  ymdhms0 = ut_calendar(time,0)
+  ymdhms0 = cd_calendar(time,0)
   ymdhms0dim = dimsizes(ymdhms0)
   nt = ymdhms0dim(0)
 
@@ -181,7 +184,7 @@ begin
    ymdhms1i = ymdhms1
   end if
   delete(ymdhms1)
-  taxisvalues = ut_inv_calendar(ymdhms1i(:,0),ymdhms1i(:,1),ymdhms1i(:,2),ymdhms1i(:,3),ymdhms1i(:,4),ymdhms1i(:,5),time@units,0)
+  taxisvalues = cd_inv_calendar(ymdhms1i(:,0),ymdhms1i(:,1),ymdhms1i(:,2),ymdhms1i(:,3),ymdhms1i(:,4),ymdhms1i(:,5),time@units,0)
 
   dimsz = dimsizes(ymdhms1i)
   ntick = dimsz(0)

@@ -1440,9 +1440,7 @@ int wr_status;
 	NclFree(buffer);
 			
 	if((npt==0)&&(nsw == 0) && (ngd ==0)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclHDFEOS: No swath, grid or point data found. File is not HDFEOS-4");
-		NclFree(the_file);
-		return(NULL);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclHDFEOS: No swath, grid or point data found.");
 	}
 	return(the_file);
 }

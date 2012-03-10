@@ -1,5 +1,9 @@
 ;******************************************************************************
 ; ut_string.ncl
+;
+; If you make changes to this function, be sure to change cd_string in
+; the same fashion, if appropriate.
+;
 ; Carl Schreck (carl@atmos.albany.edu)
 ; Based on time_axis_labels (originally "tTick") by Arindam Chakraborty.
 ; Obtained from http://www.ncl.ucar.edu/Support/talk_archives/2007/0763.html

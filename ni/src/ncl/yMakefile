@@ -36,7 +36,7 @@ LEX		= 	flex
 #define NCLDEBUG
 
 #if defined(linux)
-EXTRA_CCOPTIONS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -I/usr/local/include
+EXTRA_CCOPTIONS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 #endif
 
 #ifdef BuildNetCDF4

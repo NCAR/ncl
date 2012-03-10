@@ -13,7 +13,8 @@
 10:10:Surface lifted index:K:LFTX
 11:11:Best (4 layer) lifted index:K:4LFTX
 12:12:Richardson number:Numeric:RI
-# 13-191:13-191:Reserved:-:
+13:13:Showalter index:K:
+# 14-191:14-191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:
 

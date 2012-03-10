@@ -530,8 +530,8 @@ NhlErrorTypes dsgrid2d_W( void )
   ng_size_t i, nzo, size_leftmost, size_z, size_zo;
   ng_size_t npts, nxo, nyo;
   int inpts, inxo, inyo, type_size_zo;
-  int index_z = 0, index_zo = 0, ret;
-
+  ng_size_t index_z = 0, index_zo = 0;
+  int ret;
 /*
  * Retrieve parameters
  *

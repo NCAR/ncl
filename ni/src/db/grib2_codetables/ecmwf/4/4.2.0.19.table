@@ -24,7 +24,10 @@
 21:21:In-cloud turbulence:%:CTP
 22:22:Clear air turbulence (CAT):%:CAT
 23:23:Supercooled large droplet (SLD) probability:%:SLDP
-# 24-191:24-191:Reserved:-:
+24:24:Convective turbulent kinetic energy:J kg-1:
+25:25:Weather interpretation ww (WMO):non-dim:
+
+# 26-191:26-191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:
 

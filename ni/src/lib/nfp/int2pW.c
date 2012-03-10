@@ -39,7 +39,7 @@ NhlErrorTypes int2p_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_in, index_out;
+  ng_size_t i, index_in, index_out;
   ng_size_t npin, npout;
   int ier = 0, ret, inpin, inpout;
   int nmiss = 0, nmono = 0;
@@ -411,7 +411,7 @@ NhlErrorTypes int2p_n_W( void )
  */
   ng_size_t i, j, npin, npout;
   int ier = 0, ret, inpin, inpout;
-  int nrni, nrno, index_nri, index_nro, index_in, index_out;
+  ng_size_t nrni, nrno, index_nri, index_nro, index_in, index_out;
   int nmiss = 0, nmono = 0;
 /*
  * Retrieve parameters

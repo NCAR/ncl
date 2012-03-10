@@ -43,8 +43,8 @@ NhlErrorTypes dtrend_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  ng_size_t i, npts, size_leftmost, size_y;
-  int index_y, ier, iopt = 1, inpts;
+  ng_size_t i, npts, size_leftmost, size_y, index_y;
+  int ier, iopt = 1, inpts;
   double c[3];
 /*
  * Retrieve arguments.
@@ -426,10 +426,10 @@ NhlErrorTypes dtrend_n_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int index_y, index_s;
+  ng_size_t index_y, index_s;
   ng_size_t i, j, npts, size_leftmost, size_rightmost, size_rl;
-  ng_size_t size_y;
-  int inpts, index_nr, index_nrnpts, ier, iopt = 1;
+  ng_size_t size_y, index_nr, index_nrnpts;
+  int inpts, ier, iopt = 1;
   double c[3];
 /*
  * Retrieve arguments.
@@ -828,8 +828,8 @@ NhlErrorTypes dtrend_quadratic_W( void )
  * Declare various variables for random purposes.
  * Setting iopt to 2 removes the quadratic trend.
  */
-  ng_size_t i, npts, size_leftmost, size_y;
-  int inpts, index_y, ier, iopt = 2;
+  ng_size_t i, npts, size_leftmost, size_y, index_y;
+  int inpts, ier, iopt = 2;
   double c[3];
 /*
  * Retrieve arguments.
@@ -998,8 +998,8 @@ NhlErrorTypes dtrend_msg_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  ng_size_t i, npts, size_leftmost, size_y;
-  int inpts, index_y, ier;
+  ng_size_t i, npts, size_leftmost, size_y, index_y;
+  int inpts, ier;
 /*
  * Retrieve arguments.
  */
@@ -1382,7 +1382,7 @@ NhlErrorTypes dtrend_msg_n_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int index_y, index_nr, index_nrnpts, index_s;
+  ng_size_t index_y, index_nr, index_nrnpts, index_s;
   ng_size_t i, j, npts, size_leftmost, size_rightmost, size_rl, size_y;
   int inpts, ier;
 /*
@@ -1771,7 +1771,7 @@ NhlErrorTypes dtrend_quadratic_msg_n_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int index_y, index_nr, index_nrnpts, index_s;
+  ng_size_t index_y, index_nr, index_nrnpts, index_s;
   ng_size_t i, j, npts, size_leftmost, size_rightmost, size_rl, size_y;
   int inpts, ier;
 /*

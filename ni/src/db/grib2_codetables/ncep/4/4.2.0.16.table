@@ -13,4 +13,5 @@
 195:195:Reflectivity:dB:REFD
 196:196:Composite reflectivity:dB:REFC
 197:197:Echo top :m:RETOP
+198:198:Hourly maximum of simulated reflectivity at 1 km AGL:dB:MAXREF
 255:255:Missing:-:

@@ -25,8 +25,8 @@ NhlErrorTypes linmsg_W( void )
 /*
  * Other variables
  */
-  int index_x, inpts, inptcrt;
-  ng_size_t i, total_size_x, total_size_x1, npts;
+  int inpts, inptcrt;
+  ng_size_t i, index_x, total_size_x, total_size_x1, npts;
 /*
  * Retrieve parameters
  *

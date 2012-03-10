@@ -6835,6 +6835,14 @@ begin
   plots = oldplots
   nplots= dimsizes(plots)
 
+  res1@gsnMaximize = get_res_value(res1,"gsnMaximize",True)
+
+;---Check for maximization
+  maxbb = get_bb_res(res1)
+  if(.not.maxbb) then
+    maxbb = get_bb_res(res2)
+  end if
+
   attach_y = .not.get_res_value(res1,"gsnAttachPlotsXAxis",False)
   attach_y = .not.get_res_value(res2,"gsnAttachPlotsXAxis",.not.attach_y)
   border_on = get_res_value(res1,"gsnAttachBorderOn",True)
@@ -7165,28 +7173,32 @@ begin
     end getvalues 
   end do
 
-  if(attach_y) then
-    total_height1 = top1 - bot1
-    total_heights = tops - bots
-    total_width1  = (vpx1+vpw1) - lft1
-    total_widths  = vpws
-    total_widths(nplots-1) = rgts(nplots-1) - vpxs(nplots-1)
-
-    scale_widths  = 1. / (1.01 * (scale1*total_width1 + sum(scales*total_widths)))
-    scale_height1 = 1. / (1.01 * scale1*total_height1)
-    scale_heights = 1. / (1.01 * scales*total_heights)
-    scale = min((/scale_height1,min(scale_heights),min(scale_widths)/))
+  if(maxbb) then
+    if(attach_y) then
+      total_height1 = top1 - bot1
+      total_heights = tops - bots
+      total_width1  = (vpx1+vpw1) - lft1
+      total_widths  = vpws
+      total_widths(nplots-1) = rgts(nplots-1) - vpxs(nplots-1)
+  
+      scale_widths  = 1. / (1.01 * (scale1*total_width1 + sum(scales*total_widths)))
+      scale_height1 = 1. / (1.01 * scale1*total_height1)
+      scale_heights = 1. / (1.01 * scales*total_heights)
+      scale = min((/scale_height1,min(scale_heights),min(scale_widths)/))
+    else
+      total_width1  = rgt1 - lft1
+      total_widths  = rgts - lfts
+      total_height1 = vph1 + (top1 - vpy1)
+      total_heights = vphs
+      total_heights(nplots-1) = vpys(nplots-1)-bots(nplots-1)
+  
+      scale_heights = 1. / (1.01 * (scale1*total_height1 + sum(scales*total_heights)))
+      scale_width1  = 1. / (1.01 * scale1*total_width1)
+      scale_widths  = 1. / (1.01 * scales*total_widths)
+      scale = min((/scale_width1,min(scale_heights),min(scale_widths)/))
+    end if
   else
-    total_width1  = rgt1 - lft1
-    total_widths  = rgts - lfts
-    total_height1 = vph1 + (top1 - vpy1)
-    total_heights = vphs
-    total_heights(nplots-1) = vpys(nplots-1)-bots(nplots-1)
-
-    scale_heights = 1. / (1.01 * (scale1*total_height1 + sum(scales*total_heights)))
-    scale_width1  = 1. / (1.01 * scale1*total_width1)
-    scale_widths  = 1. / (1.01 * scales*total_widths)
-    scale = min((/scale_width1,min(scale_heights),min(scale_widths)/))
+    scale = 1.0
   end if
 
 ;
@@ -7420,15 +7432,9 @@ begin
       "amOrthogonalPosF": orth
     end setvalues
   end do
-;
-; Check for maximization. The plot does not get drawn in this
-; function!
-;
+
+;---The plot does not get drawn in this function!
   wks   = NhlGetParentWorkstation(base)
-  maxbb = get_bb_res(res1)
-  if(.not.maxbb) then
-    maxbb = get_bb_res(res2)
-  end if
   draw_and_frame(wks,base,False,False,0,maxbb)
 
   return(annos)

@@ -26,9 +26,8 @@ NhlErrorTypes smth9_W( void )
  * Various
  */
   double *work;
-  ng_size_t total_size_x, ni, nj, ninj, lwork, i, nt;
-  int index_x, ini, inj;
-  int ier;
+  ng_size_t total_size_x, ni, nj, ninj, lwork, i, nt, index_x;
+  int ini, inj, ier;
 /*
  * Retrieve parameters
  *

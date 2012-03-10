@@ -1,9 +1,12 @@
 C NCLFORTSTART
-      SUBROUTINE DZREGR1(N,M,Y,YMSG,X,XMSG,C,RESID,CON,CNORM,WK)
+      SUBROUTINE DZREGR1(N,M,M2,Y,YMSG,X,XMSG,C,RESID,CON,CNORM,WK,YY,
+     +                   COV,XSD,XMEAN,A,AINV,S)
       IMPLICIT NONE
-      INTEGER  N,M
+      INTEGER  N,M,M2
       DOUBLE PRECISION Y(N),X(N,M),C(M),CNORM(M),RESID(N),XMSG,YMSG,CON 
-      DOUBLE PRECISION WK(N,2*N)
+      DOUBLE PRECISION WK(M,M2)
+      DOUBLE PRECISION YY(N),COV(M,M),XSD(M),XMEAN(M)
+      DOUBLE PRECISION A(M,M),AINV(M,M),S(M)
 C NCLEND
 
 C NCL:    C = reg_multlin (y[*], x[*][*], opt)
@@ -15,10 +18,11 @@ C
 C The WK array used to be allocated inside the DZREGR2 subroutine,
 C but this caused a problem for some compilers. The C wrapper for
 C this function is now allocating this array and passing it in.
+C Same issue for YY, COV, XSD, and XMEAN.
 C
-C ADJUSTABLE ARRAYS (LOCAL)
+C ADJUSTABLE ARRAYS (LOCAL)  (the adj arrays were moved to the driver routine)
       INTEGER I,J,IERROR,NPTUSED,IER
-      DOUBLE PRECISION YY(N),COV(M,M),VAR,XSD(M),YSD,XMEAN(M),YMEAN
+      DOUBLE PRECISION VAR,YSD,YMEAN
       DATA   IERROR /1/
 
 C IF ANY X HAS A MISSING VALUES THEN SET THE CORRESPONDING Y to YMSG
@@ -37,7 +41,7 @@ C .   THIS ELIMINATES ANY X/Y MISSING VALUES FROM THE COMPUTATIONS.
 
 C RESID ARE CALCULATED USING THE RAW PARTIAL REGRESSION COEF
 
-      CALL DZREGR2(IERROR,N,M,YY,YMSG,X,C,RESID,COV,WK)
+      CALL DZREGR2(IERROR,N,M,M2,YY,YMSG,X,C,RESID,COV,WK,A,AINV,S)
 
 C CALCULATE THE CONSTANT TERM
 C .   CON = YMEAN - c(1)*XMEAN_1 - c(2)*XMEAN_2 - ... -c(J)*XMEAN_J
@@ -54,11 +58,13 @@ C .   CON = YMEAN - c(1)*XMEAN_1 - c(2)*XMEAN_2 - ... -c(J)*XMEAN_J
       RETURN
       END
 C --------------------------------------------------------
-      SUBROUTINE DZREGR2(IERROR,N,M,T,TMSG,F,C,RESID,COV,WK)
+      SUBROUTINE DZREGR2(IERROR,N,M,M2,T,TMSG,F,C,RESID,COV,WK,
+     +                   A,AINV,S)
       IMPLICIT NONE
-      INTEGER  IERROR,N,M
+      INTEGER  IERROR,N,M,M2
       DOUBLE PRECISION T(N),F(N,M),C(M),RESID(N),COV(M,M),TMSG
-      DOUBLE PRECISION WK(N,2*N)
+      DOUBLE PRECISION WK(M,M2)
+      DOUBLE PRECISION A(M,M),AINV(M,M),S(M)
 
 C The modelled regession time series T(I) (I=1,2,...,N) is given by
 C (see vector notation on the RIGHT):
@@ -120,7 +126,7 @@ C              IERROR is not equal to 1)
 C EXAMPLE:
 C      PARAMETER(IERROR=1,TMIN=-1.1,TMAX=1.1)
 C      PARAMETER(N=20,M=7)
-C      REAL T(N),F(N,M),WK(N,2*N),A(M,M),AINV(M,M),S(M),C(M),
+C      REAL T(N),F(N,M),WK(M,2*M),A(M,M),AINV(M,M),S(M),C(M),
 C     & RESID(N),COV(M,M)
 C
 C      DO I=1,N
@@ -154,9 +160,8 @@ C Source is from:
 C   http://code916.gsfc.nasa.gov/Data_services/cloud_slice/regress.html
 
 
-C local ... some are adjustable arrays
+C local ... some are adjustable arrays (had to move these to the driver routine)
       INTEGER NGOOD,I,J,K,L,IPRINT,ICHECK
-      DOUBLE PRECISION A(M,M),AINV(M,M),S(M)
       DOUBLE PRECISION U,SSUM,SIGSQR
 
       NGOOD = 0

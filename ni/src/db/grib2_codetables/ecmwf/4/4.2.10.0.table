@@ -14,7 +14,9 @@
 11:11:Primary wave mean period:s:PERPW
 12:12:Secondary wave direction:Degree True:DIRSW
 13:13:Secondary wave mean period:s:PERSW
-# 14-191:14-191:Reserved:-:
+14:14:Direction of combined wind waves and swell:Degree True:WWSDIR
+15:15:Mean period of combined wind waves and swell:s:MWSPER
+# 16-191:16-191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:
 

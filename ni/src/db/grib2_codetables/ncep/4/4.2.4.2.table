@@ -1,0 +1,15 @@
+# GRIBv2 - Table 4.2-4.2 Space Weather Products, Charged Particle Mass and Number
+0:0:Particle number density:m-3:PLSMDEN
+1:1:Electron density:m-3:ELCDEN
+2:2:Proton density:m-3:PROTDEN
+3:3:Ion density:m-3:IONDEN
+4:4:Vertical electron content:m-2:VTEC
+5:5:HF absorption frequency:Hz:ABSFRQ
+6:6:HF absorption:dB:ABSRB
+7:7:Spread F:m:SPRDF
+8:8:h'F:m:HPRIMF
+9:9:Critical frequency:Hz:CRTFRQ
+10:10:Scintillation:Numeric:SCINT
+# 11-191:11-191:Reserved:-:		
+# 192-254:192:254:Reserved for Local Use:-:
+255:255:Missing:-:

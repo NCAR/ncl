@@ -64,13 +64,30 @@
 61:61:Snow density:kg m-3:SDEN
 62:62:Snow evaporation:kg m-2:SEVAP
 # 63:63:Reserved:-:
-
 64:64:Total column integrated water vapour:kg m-2:TCIWV
 65:65:Rain precipitation rate:kg m-2s-1:RPRATE
 66:66:Snow precipitation rate:kg m-2s-1:SPRATE
 67:67:Freezing rain precipitation rate:kg m-2s-1:FPRATE
 68:68:Ice pellets precipitation rate:kg m-2s-1:IPRATE
-# 69-191:69-191:Reserved:-:
+69:69:Total column integrated cloud water:kg m-2:TCOLW
+70:70:Total column integrated cloud ice:kg m-2:TCOLI
+71:71:Hail mixing ratio:kg kg-1:
+72:71:Total column integrated hail:kg m-2:TCOLH
+73:73:Hail prepitation rate:kg m-2 s-1:
+74:74:Total column integrated graupel:kg m-2:TCOLG
+75:75:Graupel (snow pellets) prepitation rate:kg m-2 s-1:
+76:76:Convective rain rate:kg m-2 s-1:
+77:77:Large scale rain rate:kg m-2 s-1:
+78:78:Total column integrated water (all components including precipitation):kg m-2:TCOLWA
+79:79:Evaporation rate:kg m-2s-1:
+80:80:Total condensate:kg kg-1:
+81:81:Total column integrated condensate:kg m-2:
+82:82:Cloud ice mixing ratio:kg kg-1:
+83:83:Specific cloud liquid water content:kg kg-1:SCLLWC
+84:84:Specific cloud ice water content:kg kg-1:SCLIWC
+85:85:Specific rain water content:kg kg-1:SRAINW
+86:86:Specific snow water content:kg kg-1:SSNOWW
+# 87-191:87-191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:
 

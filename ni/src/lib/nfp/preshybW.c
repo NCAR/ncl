@@ -49,8 +49,7 @@ NhlErrorTypes pres_hybrid_W( void )
 /*
  * Various.
  */
-  int index_phy;
-  ng_size_t i, klvl, size_leftmost, size_phy;
+  ng_size_t i, klvl, size_leftmost, size_phy, index_phy;
   int ret, iklvl;
 /*
  * Retrieve parameters
@@ -261,8 +260,7 @@ NhlErrorTypes dpres_hybrid_W( void )
 /*
  * Various.
  */
-  int index_phy;
-  ng_size_t i, klvl, klvl1, size_leftmost, size_phy;
+  ng_size_t i, klvl, klvl1, size_leftmost, size_phy, index_phy;
   int ret, iklvl;
 /*
  * Retrieve parameters
@@ -473,8 +471,7 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
  * Various.
  */
   ng_size_t i, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
-  int index_psfc, index_phy;
-  ng_size_t size_leftmost, size_phy;
+  ng_size_t size_leftmost, size_phy, index_psfc, index_phy;
   int ret, inlon, inlat, iklvl;
 /*
  * Retrieve parameters
@@ -714,8 +711,7 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
  * Various.
  */
   ng_size_t i, nlat, nlon, klvl, klvl1, nlatnlon, klvl1nlatnlon;
-  int index_psfc, index_phy;
-  ng_size_t size_leftmost, size_phy;
+  ng_size_t size_leftmost, size_phy, index_psfc, index_phy;
   int ret, iklvl, inlat, inlon;
 /*
  * Retrieve parameters
@@ -1504,7 +1500,7 @@ NhlErrorTypes pres2hybrid_W( void )
 /*
  * Various.
  */
-  int index_xi, index_xo, index_ps;
+  ng_size_t index_xi, index_xo, index_ps;
   ng_size_t i, size_leftmost, size_xo;
   ng_size_t nlat, nlon, nlevi, nlevo, nlat_nlon, nlat_nlon_nlevi, nlat_nlon_nlevo;
   int iflag, ret, ier, return_missing;

@@ -35,8 +35,7 @@ NhlErrorTypes fourier_info_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  ng_size_t i;
-  int index_x, index_amp, index_pha, index_pcv;
+  ng_size_t i, index_x, index_amp, index_pha, index_pcv;
   int ilwrk, inpts;
   ng_size_t npts, size_leftmost, size_output;
 

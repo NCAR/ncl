@@ -4105,13 +4105,21 @@ begin
 
    clmDay= new((/ndys,nlat,mlon/),typeof(x), getFillValue(x) ) ; daily climatology
 ;
-; Compute averages for each sequebtial day of the year. 
+; Compute averages for each sequential day of the year. 
 ; This uses dimension swapping.
 ;
    do ndy=0,ndys-2                                 ; ndy=0->364 ==> day of year 1->365       
-      indx = ind( days.eq.(ndy+1) )       
-     ;clmDay(ndy,:,:) = dim_avg(x(lat|:,lon|:,time|indx))
-      clmDay(ndy,:,:) = dim_avg_n(x(indx,:,:), 0)  ; 5 Nov 2009
+      indx = ind( days.eq.(ndy+1) )                ; indx:indx Mar 2012, handle 1 element
+      if (.not.ismissing(indx(0))) then
+          nindx = dimsizes(indx)
+        if (nindx.eq.1) then                       ; force 3rd dimension
+         ;clmDay(ndy,:,:) = dim_avg(x(lat|:,lon|:,time|indx:indx))
+          clmDay(ndy,:,:) = dim_avg_n(x(indx:indx,:,:), 0) ; 5 Nov 2009 => dim_avg_n
+        else
+         ;clmDay(ndy,:,:) = dim_avg(x(lat|:,lon|:,time|indx))
+          clmDay(ndy,:,:) = dim_avg_n(x(indx,:,:), 0)  ; 5 Nov 2009 => dim_avg_n
+        end if
+      end if
       delete(indx)                  
    end do
                                                    ; nominal day 366 
@@ -4192,12 +4200,19 @@ begin
 
    clmDay= new((/ndys,klev,nlat,mlon/),typeof(x), getFillValue(x) ) ; daily climatology
 ;
-; Compute averages for each sequebtial day of the year. 
+; Compute averages for each sequential day of the year. 
 ; This uses dimension swapping.
 ;
    do ndy=0,ndys-2                                 ; ndy=0->364 ==> day of year 1->365       
-      indx = ind( days.eq.(ndy+1) )       
-      clmDay(ndy,:,:,:) = dim_avg_n(x(indx,:,:,:), 0)
+      indx = ind( days.eq.(ndy+1) )                ; indx:indx Mar 2012, handle 1 element
+      if (.not.ismissing(indx(0))) then
+          nindx = dimsizes(indx)
+        if (nindx.eq.1) then                       ; force 3rd dimension
+            clmDay(ndy,:,:,:) = dim_avg_n(x(indx:indx,:,:,:), 0)
+        else
+            clmDay(ndy,:,:,:) = dim_avg_n(x(indx,:,:,:), 0)
+        end if
+      end if
       delete(indx)                  
    end do
                                                    ; nominal day 366 
@@ -7733,7 +7748,7 @@ begin
   sec     = new( N ,"float")
   sec     = 0.0
 
-  time    = (/ ut_inv_calendar(year,month,day,hour,min,sec,tunits, 0) /)
+  time    = (/ cd_inv_calendar(year,month,day,hour,min,sec,tunits, 0) /)
 
   time&time       =  time        ; make coordinate variable
 
@@ -10687,6 +10702,32 @@ begin
 end
 
 ; **********************************************************************
+; This is identical to ut_convert, except it uses cd_calendar.
+;***********************************************************************
+undef("cd_convert")
+function cd_convert( dateFrom:numeric, unitsTo:string )
+local retVal, tempDate, utcDate
+begin
+ if(.not.isatt(dateFrom,"units")) then
+   print("cd_convert: 'dateFrom' contains no 'units' attribute.")
+   print("            Will return all missing values.")
+  
+   retVal = new(dimsizes(dateFrom),double)
+   return(retVal)
+ end if
+
+ tempDate       = dateFrom
+ tempDate@units = dateFrom@units
+
+ utcDate = cd_calendar( tempDate, -5 )
+
+ retVal = cd_inv_calendar( utcDate(:,0), utcDate(:,1), utcDate(:,2), \\
+                           utcDate(:,3), utcDate(:,4), utcDate(:,5), \\
+                           unitsTo, 0 )
+ return( retVal )
+end
+
+; **********************************************************************
 ; D. Shea
 ; wrapper for NCL function "triple2grid"  that copies attributes and coordinate
 ; vars.  It adds the longitude and latitude coordinates.
@@ -10802,6 +10843,8 @@ begin
 end
 ;***********************************************
 ; binning consistent with the "pdfxy" function
+; Feb 2012: replaced NCL loop with fortran loop
+; in pdfx_bin. This is much faster.
 ;
 undef("pdfx")
 function pdfx(x:numeric, nbin[1]:integer, opt:logical)
@@ -10868,13 +10911,19 @@ begin
 
   pdf         = new( nbins, "double", getFillValue(x))
   pdf         = 0.0d
+  
+;;---- the following replaces the ;; NCL loop below ---
+  popt          = True
+  popt@fraction = True ; True mean total count (**DO NOT CHANGE**)
+  pdf = pdfx_bin(x, binBound, popt) ; fortran
 
-  do nb=0,nbins-1      
-     pdf(nb) = num( x.ge.binBound(nb) .and. x.lt.binBound(nb+1) )
-     if (nb.eq.(nbins-1)) then                 ; last bin 
-         pdf(nb) = pdf(nb) + num( x.eq.binBound(nb+1) )   ; include last bound
-     end if
-  end do
+;;do nb=0,nbins-1      
+;;   pdf(nb) = num( x.ge.binBound(nb) .and. x.lt.binBound(nb+1) )
+;;   if (nb.eq.(nbins-1)) then                 ; last bin 
+;;       pdf(nb) = pdf(nb) + num( x.eq.binBound(nb+1) )   ; include last bound
+;;   end if
+;;end do
+;;----
 
   pdf!0    = "x"
   pdf&x    = binCenter
@@ -11707,16 +11756,19 @@ begin
   return(zGrid)
 end
 ;----------------------------------------------------------------------------
-; Calculate a 'bunch' of dispersion statistics (25)
+; Calculate a 'bunch' of dispersion statistics 
+; This can be slow for big 'x'
 ; 
 undef("stat_dispersion")
 function stat_dispersion (x:numeric, opt[1]:logical )
 ; Robust dispersion statistics
 ; 
-local nStat, nx, sFillV, nFill, one, statx, work, nwork, x1d, ivalid
+local nStat, nx, sFillV, nFill, one, statx, work, nwork, x1d, ivalid, allFill
 begin
-   nx = product( dimsizes(x) )
-   nFill = 0
+   nx      = product( dimsizes(x) )
+   nFill   = 0
+   nStat   = 30
+   allFill = False 
   
    if (isatt(x,"_FillValue")) then  
        sFillV = x@_FillValue
@@ -11724,7 +11776,12 @@ begin
        if (nFill.gt.0) then
            x1d    = ndtooned(x) 
            ivalid = ind(.not.ismissing(x1d))
-           work   = x1d(ivalid)
+           if (.not.ismissing(ivalid(0))) then
+               work   = x1d(ivalid)
+           else
+               allFill= True
+               work   = new ( 1, typeof(sFillV), sFillV)
+           end if
            delete(x1d)
        else
            work = ndtooned(x) 
@@ -11744,42 +11801,44 @@ begin
        one    = 1.0
    end if
 
-   nwork    = dimsizes(work)  
-
-   nStat    = 30
    statx    = new ( nStat, typeof(sFillV), sFillV) 
-   statx(0) = avg(x)                ; mean
-   statx(1) = stddev(x)             ; std. deviation
-   if (nwork.ge.10) then 
-       qsort( work )                    ; sort into ascending order
-       statx(2) = min ( work )
-                                        ; -1 ... NCL zero based 
-       statx(3) = work( nwork/10-1 )    ; lower dectile
-       statx(4) = work( nwork/8 -1 )    ; lower octtile
-       statx(5) = work( nwork/6 -1 )    ; lower sextile
-       statx(6) = work( nwork/4 -1 )    ; lower quartile
-       statx(7) = work( nwork/3 -1 )    ; lower 3tile
-       if (nwork%2 .eq.0) then          ; median even
-           statx(8) = (work(nwork/2-1)+work(nwork/2))*0.5  
-       else
-           statx(8) = work( nwork/2   ) ; median odd  
-       end if
-       statx(9) = work((nwork*2)/3 -1)  ; upper 3tile
-       statx(10)= work((nwork*3)/4 -1)  ; upper quartile
-       statx(11)= work((nwork*5)/6 -1)  ; upper sextile
-       statx(12)= work((nwork*7)/8 -1)  ; upper octtile
-       statx(13)= work((nwork*9)/10-1)  ; upper dectile
-       statx(14)= max ( work )      
-       statx(15)= statx(14)-statx(2)    ; range
-       if (statx(1).gt.0) then
-           statx(16)= statx(15)/statx(1); a measure of dispersion
-       end if
-       statx(17)= sqrt(sum((work-statx(0))^2)/nwork) ; root mean sq anomaly
-   end if
-       statx(18)= nx
-       statx(19)= nwork
-       statx(20)= nFill
-       statx(21)= 100*(one - (one*(nx-nFill))/nx)
+   if (.not.allFill) then
+       nwork    = dimsizes(work)  
+       statx(0) = avg(x)                ; mean
+       statx(1) = stddev(x)             ; std. deviation
+       if (nwork.ge.10) then 
+           qsort( work )                    ; sort into ascending order
+           statx(2) = min ( work )
+                                            ; -1 ... NCL zero based 
+           statx(3) = work( nwork/10-1 )    ; lower dectile
+           statx(4) = work( nwork/8 -1 )    ; lower octtile
+           statx(5) = work( nwork/6 -1 )    ; lower sextile
+           statx(6) = work( nwork/4 -1 )    ; lower quartile
+           statx(7) = work( nwork/3 -1 )    ; lower 3tile
+           if (nwork%2 .eq.0) then          ; median even
+               statx(8) = (work(nwork/2-1)+work(nwork/2))*0.5  
+           else
+               statx(8) = work( nwork/2   ) ; median odd  
+           end if
+           statx(9) = work((nwork*2)/3 -1)  ; upper 3tile
+           statx(10)= work((nwork*3)/4 -1)  ; upper quartile
+           statx(11)= work((nwork*5)/6 -1)  ; upper sextile
+           statx(12)= work((nwork*7)/8 -1)  ; upper octtile
+           statx(13)= work((nwork*9)/10-1)  ; upper dectile
+           statx(14)= max ( work )      
+           statx(15)= statx(14)-statx(2)    ; range
+           if (statx(1).gt.0) then
+               statx(16)= statx(15)/statx(1); a measure of dispersion
+           end if
+           statx(17)= sqrt(sum((work-statx(0))^2)/nwork) ; root mean sq anomaly
+       end if                               ; nwork.ge.10
+   else                             
+       nwork    = 0
+   end if                                   ; .not.allFill
+   statx(18)= nx
+   statx(19)= nwork
+   statx(20)= nFill
+   statx(21)= 100*(one - (one*(nx-nFill))/nx)
 
    statx@long_name = "Robust Dispersion Statistics"
    if (isatt(x,"long_name")) then
@@ -11979,14 +12038,14 @@ begin
    end if
 end
 ;---------------------------------
-; undocumented
-;
+; undocumented and unsupported
+;---------------------------------
 undef ("calculate_monthly_values")
 function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt[1]:logical)
 
 ; calculate monthly values [avg, sum, min, max]
 ; x: numeric array of 5D or less [eg: time,lev,lat,lon]
-;    *must* have time coordinate recognized by ut_calendar
+;    *must* have time coordinate recognized by cd_calendar
 ;    if 5D [case,time,lev,lat,lon]
 ; arith: "avg" [also, "ave"], "sum","min","max"     others may be added later
 ; nDim : scalar integer that specifies the 'time' dimension [generally, 0]
@@ -11997,6 +12056,9 @@ function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt
 ;        xMonthSum = calculate_monthly_values(x, "sum", 0, False)
 ;        xMonthMin = calculate_monthly_values(x, "min", 0, False)
 ;        xMonthMax = calculate_monthly_values(x, "max", 0, False)
+;
+; It is assumed that there will be multiple elements for the dim_avg_n
+; calculation. 
 ;
 local dimx, rankx, utc_date, year, month, day, hour, ntim \
     , yrStrt, yrLast, nyrs, NTIM, dAvg, xReturn, xMonth \
@@ -12011,7 +12073,7 @@ begin
         exit
     end if
 
-    utc_date = ut_calendar(x&time, 0)
+    utc_date = cd_calendar(x&time, 0)
     year     = floattointeger(utc_date(:,0))   
     month    = floattointeger(utc_date(:,1))  
     day      = floattointeger(utc_date(:,2))
@@ -12052,7 +12114,16 @@ begin
          end if
          ii    = ind(yr.eq.year .and. (nmo+1).eq.month)
 
+
          if (.not.ismissing(ii(0))) then
+
+             dimii = dimsizes(ii)     ; should be > 1
+             if (dimii.eq.1) then
+                 print("calculate_monthly_values: there should be more than one element")
+                 print("This is unsupported code.                                      ")
+                 exit
+             end if
+
              xMonth(NT) = (/ x&time(ii(0)) /)
 
              if (rankx.eq.1) then
@@ -12450,9 +12521,9 @@ function time_to_newtime(time[*]:numeric, new_time_units[1]:string)
 ;  time = time_to_newtime(time, "hours since 1800-01-01 00:00") ; time(time) 
 begin
   ntim   = dimsizes(time)
-  date   = ut_calendar( time, 0)
+  date   = cd_calendar( time, 0)
  ;print(date(:,0)+"  "+date(:,1)+"  "+date(:,2)+"  "+date(:,3))
-  TIME   = ut_inv_calendar(toint(date(:,0)),toint(date(:,1)) \
+  TIME   = cd_inv_calendar(toint(date(:,0)),toint(date(:,1)) \
                           ,toint(date(:,2)),toint(date(:,3)) \
                           ,toint(date(:,4)),todouble(date(:,5)),new_time_units, 0)
   TIME@calendar = "gregorian"

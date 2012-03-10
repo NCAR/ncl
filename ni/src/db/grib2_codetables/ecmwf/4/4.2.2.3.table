@@ -18,7 +18,12 @@
 15:15:Soil porosity:m3m-3:SOILP
 16:16:Volumetric saturation of soil moisture:m3m-3:VSOSM
 17:17:Saturation of soil moisture:kgm-3:SATOSM
-# 18-191:18-191:Reserved:-:
+18:18:Soil temperature:K:
+19:19:Soil moisture:kg m-3:
+20:20:Column-integrated soil moisture:kg m-2:
+21:21:Soil ice:kg m-3:
+22:22:Column-integrated soil ice:kg m-2:
+# 23-191:23-191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:
 

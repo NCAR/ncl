@@ -2072,12 +2072,12 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
     NclFileDimNode    *dimnode;
     NclFileAttNode    *attnode;
 
-    int    rc = 0;
-    int    storage_in;
+    int    rc = -1;
+    int    storage_in = -1;
     size_t chunksizes[MAX_VAR_DIMS];
 
-    int *shufflep;
-    int *deflatep;
+    int  shufflep = -1;
+    int  deflatep = -1;
 
   /*
    *fprintf(stderr, "\nEnter _NC4_get_vars, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -2191,11 +2191,6 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
         dimrec->gid = gid;
         varnode->dim_rec = dimrec;
 
-      /*
-       *varnode->dimid = NclCalloc(n_dims, sizeof(int));
-       *assert(varnode->dimid);
-       */
-
         if(0 == nc_dims)
         {
             dimrec->dim_node[0].id = -5;
@@ -2213,9 +2208,6 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
             tmp_size = 0;
             ncdiminq(gid,nc_dim_id[j],buffer2,&tmp_size);
             dimrec->dim_node[j].id = nc_dim_id[j];
-          /*
-           *varnode->dimid[j] = nc_dim_id[j];
-           */
             dimrec->dim_node[j].is_unlimited = (unlimited_dim_idx == nc_dim_id[j])?1:0;
             dimrec->dim_node[j].name = NrmStringToQuark(buffer2);
             dimrec->dim_node[j].size = tmp_size;
@@ -2248,7 +2240,12 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
         varnode->is_chunked = 0;
         if(NC_CHUNKED == storage_in)
         {
-            rc = nc_inq_var_deflate(gid, i, shufflep, deflatep, &(varnode->compress_level));
+            rc = nc_inq_var_deflate(gid, i, &shufflep, &deflatep, &(varnode->compress_level));
+
+          /*
+           *fprintf(stderr, "\t\tstorage_in = %d, shufflep = %d, deflatep = %d, compress_level = %d\n",
+           *                     storage_in, shufflep, deflatep, varnode->compress_level);
+           */
 
             varnode->is_chunked = 1;
             dimrec = _NclFileDimAlloc(n_dims);
@@ -2258,9 +2255,6 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
             for(j = 0; j < nc_dims; j++)
             {
                 dimrec->dim_node[j].id = nc_dim_id[j];
-              /*
-               *varnode->dimid[j] = nc_dim_id[j];
-               */
                 dimrec->dim_node[j].is_unlimited = (unlimited_dim_idx == nc_dim_id[j])?1:0;
                 dimrec->dim_node[j].name = varnode->dim_rec->dim_node[j].name;
                 dimrec->dim_node[j].size = chunksizes[j];
@@ -3229,12 +3223,14 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
     NclFileVarNode *varnode;
+    NclFileDimNode *dimnode;
     void *out_data;
-    int n_elem = 1;
+    size_t n_elem = 1;
     int fid = -1;
     int ret = -1;
-    int i, k, n;
+    size_t i, k, n;
     int nc_ret = NC_NOERR;
+    int get_all = 1;
     int no_stride = 1;
     long count[MAX_NC_DIMS];
 
@@ -3258,6 +3254,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
 
         for(i = 0; i < varnode->dim_rec->n_dims; i++)
         {
+            dimnode = &(varnode->dim_rec->dim_node[i]);
           /*
            *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
            *fprintf(stderr, "\tstart[%d] = %d, finish[%d] = %d, stride[%d] = %d\n",
@@ -3268,6 +3265,10 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
             if(stride[i] != 1)
             {
                 no_stride = 0;
+            }
+            if(count[i] != (long) dimnode->size)
+            {
+                get_all = 0;
             }
         }
 
@@ -3618,25 +3619,23 @@ found_component:
             }
             else
             {
-                if(no_stride)
+#if 1
+                if(get_all)
                 {
-                    ret = ncvargetg(varnode->gid,
-                        varnode->id,
-                        start,
-                        count,
-                        NULL,
-                        NULL,
-                        out_data);
+                    ret = nc_get_var(varnode->gid, varnode->id, out_data);
+                }
+                else if(no_stride)
+#else
+                if(no_stride)
+#endif
+                {
+                    ret = nc_get_vara(varnode->gid, varnode->id,
+                                      start, count, out_data);
                 }
                 else
                 {
-                    ret = ncvargetg(varnode->gid,
-                        varnode->id,
-                        start,
-                        count,
-                        stride,
-                        NULL,
-                        out_data);
+                    ret = nc_get_vars(varnode->gid, varnode->id,
+                                      start, count, stride, out_data);
                 }
             }
         }

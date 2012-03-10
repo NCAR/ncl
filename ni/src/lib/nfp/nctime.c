@@ -8,6 +8,9 @@
  * The "nctime.c" file was extracted from the NetCDF-4.1.1 source code
  * and permission was granted for inclusion in NCL.
  *
+ * I changed CU_VERBOSE and CU_FATAL to 0 so error messages would get printed, and 
+ * then the program will exit.
+ *
  * This code was originally extracted with permission from the CDMS
  * time conversion and arithmetic routines developed by Bob Drach,
  * Program for Climate Model Diagnosis and Intercomparison (PCMDI) at
@@ -29,11 +32,11 @@
 #include <stdarg.h>
 #include "nctime.h"
 
-int cuErrOpts;			     /* Error options */
+int cuErrOpts = 1;			     /* Error options */
 int cuErrorOccurred;		     /* True iff cdError was called */
 
 #define CU_FATAL 1			     /* Exit immediately on fatal error */
-#define CU_VERBOSE 2			     /* Report errors */
+#define CU_VERBOSE 1			     /* Report errors */
 
 #define CD_DEFAULT_BASEYEAR "1979"	     /* Default base year for relative time (no 'since' clause) */
 #define VALCMP(a,b) ((a)<(b)?-1:(b)<(a)?1:0)
@@ -107,8 +110,10 @@ void cdError(char *fmt, ...){
 		fprintf(stderr, "\n");
 		va_end(args);
 	}
+	/*
 	if(cuErrOpts & CU_FATAL)
 		exit(1);
+	*/
 	return;
 }
 
@@ -350,20 +355,36 @@ cdParseRelunits(cdCalenType timetype, char* relunits, cdUnitTime* unit, cdCompTi
 	char basetime_1[CD_MAX_CHARTIME];
 	char basetime_2[CD_MAX_CHARTIME];
 	char basetime[CD_MAX_CHARTIME];
-	int nconv;
-					     /* Parse the relunits */
-
+	int nconv, nconv1, nconv2;
+	/* Allow ISO-8601 "T" date-time separator as well as blank separator */
+	nconv1 = sscanf(relunits,"%s %s %[^T]T%s",charunits,relword,basetime_1,basetime_2);
+	if(nconv1==EOF || nconv1==0){
+		cdError("Error on relative units conversion, string = %s\n",relunits);
+		return 1;
+	}
+	nconv2 = sscanf(relunits,"%s %s %s %s",charunits,relword,basetime_1,basetime_2);
+	if(nconv2==EOF || nconv2==0){
+		cdError("Error on relative units conversion, string = %s\n",relunits);
+		return 1;
+	}
+	if(nconv1 < nconv2) {
+	    nconv = nconv2;
+	} else {
+	  nconv = sscanf(relunits,"%s %s %[^T]T%s",charunits,relword,basetime_1,basetime_2);
+	}
 /*
  * Mods for NCL: allow for upper or lower case (since/SINCE)
  * and for multiple "relative" words (since,after,ref,from)
  */
-	nconv = sscanf(relunits,"%s %s %s %s",
-		       charunits,relword,basetime_1,basetime_2);
-	if(nconv == EOF ||
-	   (nconv >=3 && strcasecmp(relword,"since") && 
-    	                 strcasecmp(relword,"after") &&  
- 	                 strcasecmp(relword,"ref")  && 
-	                 strcasecmp(relword,"from"))) {
+	if(nconv==EOF || nconv==0){
+		cdError("Error on relative units conversion, string = %s\n",relunits);
+		return 1;
+	}
+
+	if(nconv >=3 && strcasecmp(relword,"since") && 
+	                strcasecmp(relword,"after") &&  
+	                strcasecmp(relword,"ref")  && 
+                        strcasecmp(relword,"from")) {
 	  cdError("Error on relative units conversion, string = %s\n",relunits);
 	  return 1;
 	}

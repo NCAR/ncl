@@ -72,7 +72,7 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cancorW.c cdf_dpW.c chiinvW.c 
 	covcormW.c kronprodW.c space_timeW.c spcorrW.c  bindataW.c tropwmoW.c pdfW.c    \
 	mocloopsW.c spanW.c vinth2pnodesW.c vinth2penodesW.c objanalW.c                 \
 	areaconremapW.c nctime.c cdtimeW.c dimnumrunW.c sparse_matrixW.c \
-	gammaW.c gamfitW.c spiW.c
+	gammaW.c gamfitW.c spiW.c oceanW.c
 
 COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o         \
         conformW.o csagridW.o cssgridW.o ctwrapW.o cz2ccmW.o datesW.o                   \
@@ -93,7 +93,7 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o 
 	covcormW.o kronprodW.o space_timeW.o spcorrW.o bindataW.o tropwmoW.o pdfW.o     \
 	mocloopsW.o spanW.o vinth2pnodesW.o vinth2penodesW.o objanalW.o                 \
 	areaconremapW.o	nctime.o cdtimeW.o dimnumrunW.o sparse_matrixW.o \
-	gammaW.o gamfitW.o spiW.o
+	gammaW.o gamfitW.o spiW.o oceanW.o
 
 OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS) $(ESMF_OBJS)
 SRCS = $(CSRCS) $(UDUNITS_SRCS) $(V5D_SRCS) $(ESMF_SRCS)

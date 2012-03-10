@@ -145,6 +145,15 @@ main(int argc, char **argv) {
     FILE    *tmpf = NULL;   /* file variables for creating arguments */
     char    *tmpd = NULL;
 
+    strcpy(buffer,(char *)GetNCARGPath("tmp"));
+    sr = access(buffer,W_OK|X_OK|F_OK);
+    if(sr != 0) {
+	    NhlPError(NhlWARNING,NhlEUNKNOWN,
+		      "\"%s\" tmp dir does not exist or is not writable: NCL functionality may be limited -- check TMPDIR environment variable",
+		      buffer);
+    }
+
+
 #ifdef YYDEBUG
     extern int yydebug;
     yydebug = 1;

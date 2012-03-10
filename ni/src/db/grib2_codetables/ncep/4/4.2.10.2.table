@@ -8,6 +8,7 @@
 6:6:Ice growth rate:m s-1:ICEG
 7:7:Ice divergence:s-1:ICED
 8:8:Ice temperature:K:ICET
-# 9-191:9-191:Reserved:-:
+9:9:Ice internal pressure:Pa m:ICEPRES
+# 10-191:10-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 255:255:Missing:-:

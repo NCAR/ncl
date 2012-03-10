@@ -1611,6 +1611,69 @@ begin
 
 
 
+  if( any( variable .eq. (/"sreh"/) ) ) then
+       getU = "U" 
+       getV = "V" 
+       if(.not. isfilevar(nc_file,"U")) then
+         if(isfilevar(nc_file,"UU")) then
+           getU = "UU"
+           getV = "VV"
+        end if
+       end if
+       if ( time .eq. -1 ) then
+          u_in  = nc_file->$getU$
+          v_in  = nc_file->$getV$
+          ua    = wrf_user_unstagger(u_in,u_in@stagger)
+          va    = wrf_user_unstagger(v_in,v_in@stagger)
+          PH    = nc_file->PH
+          geopt = nc_file->PHB 
+          ter   = nc_file->HGT
+       else
+          u_in  = nc_file->$getU$(time_in,:,:,:)
+          v_in  = nc_file->$getV$(time_in,:,:,:)
+          ua    = wrf_user_unstagger(u_in,u_in@stagger)
+          va    = wrf_user_unstagger(v_in,v_in@stagger)
+          PH    = nc_file->PH(time_in,:,:,:)
+          geopt = nc_file->PHB(time_in,:,:,:)
+          ter   = nc_file->HGT(time_in,:,:)
+       end if
+
+       geopt  = geopt + PH
+       za     = wrf_user_unstagger(geopt,geopt@stagger)
+       za     = za / 9.81  ; change to height
+
+       ua1    = ua(::-1,:,:)
+       va1    = va(::-1,:,:)
+       za1    = za(::-1,:,:)
+
+       top_ok = 0
+       top = 3000.
+
+       dim_vars = dimsizes(varin)
+       if(dim_vars .eq. 2) then
+        if( varin(1) .eq. "3000" ) then
+           top = 3000.
+           top_ok = 1
+        end if
+
+        if( varin(1) .eq. "1000" ) then
+           top = 1000.
+           top_ok = 1
+        end if
+
+        if(top_ok .eq. 0) then
+          print("Top values of 1000 or 3000 are accepted.")
+          top = 3000.
+        end if
+       end if
+
+       print("Calculations are done with a top of " + top)
+       sreh = wrf_helicity(ua1, va1, za1, ter, top)
+       return(sreh)
+  end if
+
+
+
   if( any( variable .eq. (/"ter","HGT","HGT_M"/) ) ) then
     variable = "HGT" 
     if(.not. isfilevar(nc_file,"HGT")) then

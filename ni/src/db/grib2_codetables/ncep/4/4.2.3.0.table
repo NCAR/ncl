@@ -6,9 +6,9 @@
 4:4:Scaled lifted index:numeric:SLFTI
 5:5:Scaled cloud top pressure:numeric:SCTPRES
 6:6:Scaled skin temperature:numeric:SSTMP
-7:7:Cloud mask:Code Table 4.217:CLOUDM
-8:8:Pixel scene type:Code Table 4.218:PIXST
-9:9:Fire detection indicator:Code Table 4.223:FIREDI
+7:7:Cloud mask:Code table 4.217:CLOUDM
+8:8:Pixel scene type:Code table 4.218:PIXST
+9:9:Fire detection indicator:Code table 4.223:FIREDI
 # 10-191:10-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 255:255:Missing:-:

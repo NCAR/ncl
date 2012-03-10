@@ -45,8 +45,8 @@ NhlErrorTypes hyi2hyo_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int index_ps, index_xi, index_xo, ret;
-  ng_size_t i;
+  ng_size_t i, index_ps, index_xi, index_xo;
+  int ret;
   ng_size_t nlat, mlon, klevi, klevo, nlatmlon, klevinlatmlon, klevonlatmlon;
   int return_missing;
 

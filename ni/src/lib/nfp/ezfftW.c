@@ -42,7 +42,7 @@ NhlErrorTypes ezfftf_W( void )
  * various
  */
   double *work;
-  int index_x, index_cf1, index_cf2;
+  ng_size_t index_x, index_cf1, index_cf2;
   ng_size_t i, npts, npts2, lnpts2, npts22;
   int found_missing, any_missing;
   ng_size_t size_leftmost, size_cf;
@@ -341,7 +341,7 @@ NhlErrorTypes ezfftb_W( void )
  * various
  */
   double *work;
-  int index_cf, index_x;
+  ng_size_t index_cf, index_x;
   ng_size_t i, *tmp_npts, npts, npts2, lnpts2, size_x, size_leftmost;
   int found_missing1, found_missing2, any_missing, scalar_xbar;
   int inpts;

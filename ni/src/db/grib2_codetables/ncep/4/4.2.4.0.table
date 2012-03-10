@@ -1,0 +1,10 @@
+# GRIBv2 - Table 4.2-4.0 Space Weather Products, Temperature
+0:0:Temperature:K:TMP
+1:1:Electron temperature:K:ELECTMP
+2:2:Proton temperature:K:PROTTMP
+3:3:Ion temperature:K:IONTMP
+4:4:Parallel temperature:K:PRATMP
+5:5:Perpendicular temperature:K:PRPTMP
+# 6-191:6-191:Reserved:-:		
+# 192-254:192:254:Reserved for Local Use:-:
+255:255:Missing:-:

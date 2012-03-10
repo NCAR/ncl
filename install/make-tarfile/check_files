@@ -63,7 +63,7 @@ if ($?NCLONLY && $?NCARGONLY) then
 endif
 
 
-set nclversion = "6.0.0"
+set nclversion = "6.1.0"
 set pwddir  = `pwd`
 
 if ($?NCARGNCL) then
@@ -94,6 +94,30 @@ bin/med
 bin/ncargpath
 bin/ncarlogo2ps
 bin/psplit
+include/ESMC_Arg.h
+include/ESMC_Array.h
+include/ESMC_ArraySpec.h
+include/ESMC_Calendar.h
+include/ESMC_Clock.h
+include/ESMC_Conf.h
+include/ESMC_Config.h
+include/ESMC_CplComp.h
+include/ESMC_DistGrid.h
+include/ESMC_Field.h
+include/ESMC_GridComp.h
+include/ESMC.h
+include/ESMC_Init.h
+include/ESMC_Interface.h
+include/ESMC_LogErr.h
+include/ESMC_Macros.h
+include/ESMC_Mesh.h
+include/ESMC_ReturnCodes.h
+include/ESMC_State.h
+include/ESMC_Test.h
+include/ESMC_Time.h
+include/ESMC_TimeInterval.h
+include/ESMC_Util.h
+include/ESMC_VM.h
 include/ncarg/c.h
 include/ncarg/gks.h
 include/ncarg/ncargC.h
@@ -217,6 +241,10 @@ lib/ncarg/xapp/Idt
 
 if ($?NCLONLY || $?NCARGNCL) then
 cat << 'EOF' >>! $this_file_list
+bin/ESMF_Info
+bin/ESMF_InfoC
+bin/ESMF_RegridWeightGen
+bin/ESMF_WebServController
 bin/MakeNcl
 bin/WRAPIT
 bin/ncl
@@ -523,6 +551,8 @@ lib/ncarg/colormaps/rainbow+white+gray.gp
 lib/ncarg/colormaps/rainbow+white.gp
 lib/ncarg/colormaps/rainbow.gp
 lib/ncarg/colormaps/rh_19lev.rgb
+lib/ncarg/colormaps/seaice_1.rgb
+lib/ncarg/colormaps/seaice_2.rgb
 lib/ncarg/colormaps/so4_21.gp
 lib/ncarg/colormaps/so4_23.gp
 lib/ncarg/colormaps/spread_15lev.rgb
@@ -550,6 +580,13 @@ lib/ncarg/colormaps/wgne15.rgb
 lib/ncarg/colormaps/wh-bl-gr-ye-re.gp
 lib/ncarg/colormaps/wind_17lev.rgb
 lib/ncarg/colormaps/wxpEnIR.rgb
+lib/ncarg/colormaps/cmp_b2r.rgb
+lib/ncarg/colormaps/cmp_flux.rgb
+lib/ncarg/colormaps/cmp_haxby.rgb
+lib/ncarg/colormaps/matlab_hot.rgb
+lib/ncarg/colormaps/matlab_hsv.rgb
+lib/ncarg/colormaps/matlab_jet.rgb
+lib/ncarg/colormaps/matlab_lines.rgb
 lib/ncarg/data/asc/climdivcorr.txt
 lib/ncarg/data/asc/cn03f.asc
 lib/ncarg/data/asc/cn04n.asc
@@ -1729,6 +1766,7 @@ lib/ncarg/nclscripts/csm/popRemap.ncl
 lib/ncarg/nclscripts/csm/shea_util.ncl
 lib/ncarg/nclscripts/csm/skewt_func.ncl
 lib/ncarg/nclscripts/csm/wind_rose.ncl
+lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl
 lib/ncarg/nclscripts/wrf/WRFUserARW.ncl
 lib/ncarg/nclscripts/wrf/WRF_contributed.ncl
 lib/ncarg/resfiles/app/ap01.res
@@ -1852,14 +1890,16 @@ include/ncarg/ctrans.h
 include/ncarg/gksP.h
 include/ncarg/ncarg_ras.h
 include/ncarg/ngmath.h
+lib/esmf.mk
 lib/libcgm.a
+lib/libesmf.a
+lib/libesmf.so
 lib/libncarg.a
 lib/libncarg_c.a
 lib/libncarg_gks.a
 lib/libncarg_gks_cairo.a
 lib/libncarg_ras.a
 lib/libngmath.a
-
 lib/ncarg/examples/agda13.dat
 lib/ncarg/examples/agdp01.f
 lib/ncarg/examples/agex01.f
@@ -2417,3 +2457,4 @@ echo "              -1 : check NCL files only"
 echo "              -2 : check NCARG files only"
 echo ""
 exit
+

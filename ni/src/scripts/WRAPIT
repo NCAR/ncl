@@ -1,6 +1,6 @@
 #!/bin/csh -f
 # set echo verbose timestamp
-set version = 110125    # YYMMDD
+set version = 120209    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
 if ($#argv == 0) then
@@ -13,11 +13,11 @@ echo written by Mark Stevens, formerly of NCAR/CGD/Climate Modeling Section
 echo "----------------------------------------------------------------------"
 echo "WRAPIT works on SunOS, IRIX64, IRIX (Sgi), AIX (IBM), OSF1 (alpha),"
 echo "MacOSX, HP-UX, Linux and FreeBSD operating systems. WRAPIT can handle "
-echo "both f77 and f90 files. The f77 files must have a suffix of .f, and the "
-echo "f90 files a suffix of .f90, on all of the operating systems. All .f90"
-echo "files MUST have a corresponding '"stub"' file which contains the declara-"
-echo "tions of the f90 subroutine in fortran 77 syntax, for example in the "
-echo "file '"file1.stub"' we might have the following:"
+echo "both f77 and f90 files. The f77 files must have a suffix of .f, .for, "
+echo "or .FOR, and the f90 files a suffix of .f90, on all of the operating  "
+echo "systems. All .f90 files MUST have a corresponding '"stub"' file which "
+echo "contains the declarations of the f90 subroutine in fortran 77 syntax, "
+echo "for example in the file '"file1.stub"' we might have the following:"
 echo "C NCLFORTSTART"
 echo "     subroutine DOIT (x, y, z)"
 echo "     real x, y"
@@ -495,7 +495,7 @@ echo > WRAPIT.stub     # create empty file
  
 while ($#argv)
   if (-e $argv[1]) then
-    if ($argv[1]:e == "f" || $argv[1]:e == "stub") then
+    if ($argv[1]:e == "f" || $argv[1]:e == "stub" || $argv[1]:e == "for" || $argv[1]:e == "FOR") then
       cat $argv[1] | sed -e \
 '/^[cC][ ]*[nN][cC][lL][fF][oO][rR][tT][sS][tT][aA][rR][tT]/,/^[cC][ ]*[nN][cC][lL][eE][nN][dD]/p' -e 'd' >> WRAPIT.stub
     endif
@@ -623,10 +623,10 @@ echo WRAPIT.o > objects
 
 foreach arg ($args) 
   if (-e $arg) then
-    if ($arg:e == "f" || $arg:e == "f90" || $arg:e == "F90") then 
+    if ($arg:e == "f" || $arg:e == "f90" || $arg:e == "F90" || $arg:e == "for" || $arg:e == "FOR") then 
       echo COMPILING $arg
       if ($OS == AIX) then                 # AIX
-        if ($arg:e == "f") then            # fixed format
+        if ($arg:e == "f" || $arg:e == "for" || $arg:e == "FOR") then   # fixed format
           set cmd = "xlf90 $fopts -qfixed $arg"
         else                               # free format
           set cmd = "xlf90 $fopts -qsuffix=f=f90 $arg"

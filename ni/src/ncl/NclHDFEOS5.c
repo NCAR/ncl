@@ -28,7 +28,6 @@
 #endif
 #include "defs.h"
 #define HAVE_NETCDF
-#include <hdf/mfhdf.h>
 #include "NclDataDefs.h"
 #include "NclData.h"
 #include "NclFileInterfaces.h"
@@ -1606,7 +1605,7 @@ NclQuark path;
     HDFEOS5ParseName(buffer,gd_hdf_names,gd_ncl_names,ngd);
     for(i = 0; i < ngd; i++)
     {
-        intn status;
+        int status;
         int has_xdim_var = 0, has_ydim_var = 0;
         NrmQuark xdim_name = NrmNULLQUARK, ydim_name = NrmNULLQUARK;
         NrmQuark qproj_name = NrmNULLQUARK;
@@ -3405,13 +3404,13 @@ static int HE5_GDreadCoordVar
 	int spherecode = -1;
 	int pixregcode = -1;
 	long xdimsize,ydimsize;
-	float64 upper_left[2],lower_right[2];
-	float64 projparm[15];
+	double upper_left[2],lower_right[2];
+	double projparm[15];
 	long *cols, *rows;
 	int i, j;
 	int total;
 	double *latitude, *longitude;
-	intn status;
+	int status;
 	int islon;
 
       /*

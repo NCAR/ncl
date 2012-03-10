@@ -30,6 +30,8 @@
 28:28:V-component storm motion:m s-1:VSTM
 29:29:Drag coefficient:Numeric:CD
 30:30:Frictional velocity:m s-1:FRICV
-# 31-191:31-191:Reserved:-:
+31:31:Turbulent diffusion coefficient for momentum:m2s-1:
+32:32:Eta coordinate vertical velocity:s-1:ETACVV
+# 33-191:33-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 255:255:Missing:-:
