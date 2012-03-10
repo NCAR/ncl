@@ -552,6 +552,7 @@ lib/ncarg/colormaps/rainbow+white.gp
 lib/ncarg/colormaps/rainbow.gp
 lib/ncarg/colormaps/rh_19lev.rgb
 lib/ncarg/colormaps/seaice_1.rgb
+lib/ncarg/colormaps/seaice_2.rgb
 lib/ncarg/colormaps/so4_21.gp
 lib/ncarg/colormaps/so4_23.gp
 lib/ncarg/colormaps/spread_15lev.rgb
