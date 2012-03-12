@@ -2799,8 +2799,17 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 	char filename[NCL_MAX_STRING];
 	struct stat buf;
 
-	if((0 == strncmp(fext, "gr", 2)) || (0 == strncmp(fext, "GR", 2)))
+	for(n = 0; n < strlen(fext); ++n)
+ 		fext[n] = tolower(fext[n]);
+
+	if(0 == strncmp(fext, "gr", 2))
 		return file_ext_q;
+#ifdef BuildGDAL
+	else if(0 == strncmp(fext, "shp", 3))
+	{
+       		return file_ext_q;
+	}
+#endif
 	else if((0 == strcmp(fext, "cdf")) || (0 == strcmp(fext, "nc3")) ||
            (0 == strcmp(fext, "nc4")) || (0 == strcmp(fext, "netcdf")))
 		ori_file_ext_q = NrmStringToQuark("nc");
