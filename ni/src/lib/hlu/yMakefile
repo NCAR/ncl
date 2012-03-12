@@ -19,7 +19,6 @@
 #
 #	Description:	yMakefile for ncarg/ni/src/lib/hlu
 MYNAME		= libhlu
-MYNAME_CAIRO	= libhlu_cairo
 
 #ifdef Build32BITS
 ALLDEFINES = $(ALLDEFINES) -DNCL32BITS
@@ -160,7 +159,6 @@ FOBJS		= DATACOMMF.o ERRORF.o HLUF.o PLOTMANAGERF.o RLGEN.o RLSET.o \
 LIBHOBJS	= $(HLUCOBJS) $(FOBJS)
 
 BuildSharedLibTarget(libNGhlu,$(LIBHOBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
-LibraryTarget($(MYNAME),$(LIBHOBJS))
 
 CAIROOBJS	= CairoWorkstation_cairo.o
 HLUCCOBJS	= $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ) $(CAIROOBJS)
@@ -169,7 +167,7 @@ LIBHCOBJS	= $(HLUCCOBJS) $(FOBJS)
 CairoWorkstation_cairo.o: CairoWorkstation_cairo.c
         $(CC) $(CCOPTIONS) $(ALLDEFINES) -c CairoWorkstation_cairo.c
 
-LibraryTarget($(MYNAME_CAIRO),$(LIBHCOBJS))
+LibraryTarget($(MYNAME),$(LIBHCOBJS))
 
 CairoWorkstation_cairo.c: CairoWorkstation.c
 	$(LN) CairoWorkstation.c CairoWorkstation_cairo.c
