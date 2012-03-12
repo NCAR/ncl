@@ -12,7 +12,6 @@ INCLUDES    = gks.h
 
 PartialLibraryRoot(libncarg_gks.a,$(SUBDIRS))
 PartialSourceLibraryRoot(srcncarg_gks.a,$(SUBDIRS))
-PartialLibraryRoot(libncarg_gks_cairo.a,$(SUBDIRS))
 
 BuildIncludes($(INCLUDES),ncarg,..)
 InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH))
