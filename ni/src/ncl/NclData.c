@@ -566,11 +566,11 @@ NclStatus status;
 	theinst->obj.obj_type = obj_type;
 	theinst->obj.obj_type_mask = (Ncl_Obj | obj_type_mask);
 	theinst->obj.status = status;
-	theinst->obj.id = _NclRegisterObj(theinst);
 	theinst->obj.is_constant = -1;
 	theinst->obj.parents = NULL;
 	theinst->obj.ref_count = 0;
 	theinst->obj.cblist =  NULL;
+	theinst->obj.id = _NclRegisterObj(theinst);
 	return(theinst);
 }
 
@@ -632,6 +632,8 @@ NclObj self;
 		printf("not unregistering constant object of type %d\n", (int) self->obj.obj_type);
 		/*return*/;
 	}
+#endif
+#if 0
 	if (debug_obj_table) 
 		printf("%d obj unregistered: obj_type %d status %d ref_count %d\n",self->obj.id,(int) self->obj.obj_type,(int)self->obj.status,self->obj.ref_count);
 #endif
