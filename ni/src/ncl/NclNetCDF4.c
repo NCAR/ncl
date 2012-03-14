@@ -6789,11 +6789,11 @@ NhlErrorTypes listOfComponentArray_NC4WriteCompound(void *rec, NclQuark compound
     size_t data_size = 1;
     void  *data_value = NULL;
 
-    fprintf(stderr, "\nEnter NC4WriteCompound, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tcompound_name: <%s>, var_name: <%s>, n_mems = %d, mem_name[0]: <%s>\n",
-                     NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
-                     n_mems, NrmQuarkToString(mem_name[0]));
   /*
+   *fprintf(stderr, "\nEnter NC4WriteCompound, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tcompound_name: <%s>, var_name: <%s>, n_mems = %d, mem_name[0]: <%s>\n",
+   *                 NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
+   *                 n_mems, NrmQuarkToString(mem_name[0]));
    */
 
     if(grpnode->open)
@@ -6820,10 +6820,12 @@ NhlErrorTypes listOfComponentArray_NC4WriteCompound(void *rec, NclQuark compound
 
     nc_ret = nc_inq_varid(grpnode->id, NrmQuarkToString(var_name), &var_id);
 
-    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tvar_name: <%s>, var_id = %d\n", NrmQuarkToString(var_name), var_id);
-    fprintf(stderr, "\tgrpnode->id = %d\n", grpnode->id);
-    fprintf(stderr, "\tNC_NOERR = %d, nc_ret = %d\n", NC_NOERR, nc_ret);
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tvar_name: <%s>, var_id = %d\n", NrmQuarkToString(var_name), var_id);
+   *fprintf(stderr, "\tgrpnode->id = %d\n", grpnode->id);
+   *fprintf(stderr, "\tNC_NOERR = %d, nc_ret = %d\n", NC_NOERR, nc_ret);
+   */
 
     if(NC_NOERR != nc_ret)
         check_err(nc_ret, __LINE__, __FILE__);
@@ -6869,8 +6871,10 @@ NhlErrorTypes listOfComponentArray_NC4WriteCompound(void *rec, NclQuark compound
                 }
             }
 
-            fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tdata_size*compound_size = %d\n", data_size*compound_size);
+          /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tdata_size*compound_size = %d\n", data_size*compound_size);
+           */
 
             data_value = (void *)NclCalloc((ng_usize_t)(data_size*compound_size), sizeof(void));
             assert(data_value);
@@ -6896,14 +6900,16 @@ NhlErrorTypes listOfComponentArray_NC4WriteCompound(void *rec, NclQuark compound
 
                         cur_mem_loc = compnode->offset;
 
-                        fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                        fprintf(stderr, "\tcurrent_component = %d\n", current_component);
-                        fprintf(stderr, "\tcompound_size = %d\n", compound_size);
-                        fprintf(stderr, "\tdata_size = %d\n", data_size);
-                        fprintf(stderr, "\tlocal_mem_len = %d, cur_mem_loc = %d\n",
-                                           local_mem_len, cur_mem_loc);
-                        fprintf(stderr, "\ttheval->multidval.totalsize = %d\n",
-                                           theval->multidval.totalsize);
+                      /*
+                       *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                       *fprintf(stderr, "\tcurrent_component = %d\n", current_component);
+                       *fprintf(stderr, "\tcompound_size = %d\n", compound_size);
+                       *fprintf(stderr, "\tdata_size = %d\n", data_size);
+                       *fprintf(stderr, "\tlocal_mem_len = %d, cur_mem_loc = %d\n",
+                       *                   local_mem_len, cur_mem_loc);
+                       *fprintf(stderr, "\ttheval->multidval.totalsize = %d\n",
+                       *                   theval->multidval.totalsize);
+                       */
 
                         for(n = 0; n < data_size; n++)
                         {
@@ -6951,7 +6957,9 @@ NhlErrorTypes listOfComponentArray_NC4WriteCompound(void *rec, NclQuark compound
         }
     }
 
-    fprintf(stderr, "Leave NC4WriteCompound, file: %s, line: %d\n\n", __FILE__, __LINE__);
+  /*
+   *fprintf(stderr, "Leave NC4WriteCompound, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   */
     return ret;
 }
 #endif
