@@ -2713,6 +2713,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 #else
 		(*end_of_name)++;
 
+#if 0
                 if((0 == strcmp("h5", *end_of_name)) ||
                    (0 == strcmp("he5", *end_of_name)) ||
                    (0 == strcmp("grb", *end_of_name)) ||
@@ -2722,6 +2723,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
                    (0 == strcmp("he2", *end_of_name)))
 	        	file_ext_q = NrmStringToQuark(*end_of_name);
 		else
+#endif
 	        	file_ext_q = NrmStringToQuark("nc");
 #endif
 		return file_ext_q;
