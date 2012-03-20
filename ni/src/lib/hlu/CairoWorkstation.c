@@ -443,7 +443,9 @@ CairoWorkstationClassInitialize(void) {
 
     if (!classInitialized) {
         _NhlEnumVals documentFormats[] = {
+            {NhlCPS, "PS"},
             {NhlCPS, "NEWPS"},
+            {NhlCPDF, "PDF"},
             {NhlCPDF, "NEWPDF"}
         };
 

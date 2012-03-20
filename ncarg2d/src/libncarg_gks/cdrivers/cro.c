@@ -725,16 +725,16 @@ int cro_FillArea(GKSC *gksc) {
         break;
     case SOLID_FILL:
         cairo_move_to(cairo_context[context_index(psa->wks_id)], pptr[0].x
-                * (float) psa->dspace.xspan, pptr[0].y
-                * (float) psa->dspace.yspan);
+                * (double) psa->dspace.xspan, pptr[0].y
+                * (double) psa->dspace.yspan);
         for (i = 1; i < npoints; i++) {
             cairo_line_to(cairo_context[context_index(psa->wks_id)], pptr[i].x
-                    * (float) psa->dspace.xspan, pptr[i].y
-                    * (float) psa->dspace.yspan);
+                    * (double) psa->dspace.xspan, pptr[i].y
+                    * (double) psa->dspace.yspan);
         }
         cairo_line_to(cairo_context[context_index(psa->wks_id)], pptr[0].x
-                * (float) psa->dspace.xspan, pptr[0].y
-                * (float) psa->dspace.yspan);
+                * (double) psa->dspace.xspan, pptr[0].y
+                * (double) psa->dspace.yspan);
         cairo_fill(cairo_context[context_index(psa->wks_id)]);
         break;
     case PATTERN_FILL: /* currently not implemented, issue polyline */

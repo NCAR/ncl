@@ -3623,9 +3623,9 @@ begin
         paperW = get_res_value(wkresnew,"wkPaperWidthF", -1.)
         paperH = get_res_value(wkresnew,"wkPaperHeightF", -1.)
         if(is_cairo_ps(type)) then
-          newtype = "newps"    ; Can't use "ps" for cairo PS yet
+          newtype = "ps"    ; may be either "ps" or "newps"
         else
-          newtype = "newpdf"   ; Can't use "pdf" for cairo PDF yet
+          newtype = "pdf"   ; may be either "pdf" or "newpdf"
         end if
 
         cairo = create res_file documentWorkstationClass defaultapp
