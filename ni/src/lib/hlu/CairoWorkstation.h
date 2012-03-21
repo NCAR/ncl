@@ -62,6 +62,6 @@ typedef enum _NhlCairoFormat {
 
 extern NhlClass NhlcairoDocumentWorkstationClass;
 extern NhlClass NhlcairoImageWorkstationClass;
-
+extern NhlClass NhlcairoWindowWorkstationClass;
 
 #endif /* _NCairoWorkstation_h */
