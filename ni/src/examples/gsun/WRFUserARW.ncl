@@ -348,8 +348,8 @@ begin
        
 ; set vertical cross section
      if (opts) then
-       xy = wrf_user_set_xy( z, loc_param(0)-1, loc_param(1)-1, \    ; the -1 is for NCL dimensions
-                                loc_param(2)-1, loc_param(3)-1, \
+       xy = wrf_user_set_xy( z, loc_param(0)-1, loc_param(2)-1, \    ; the -1 is for NCL dimensions
+                                loc_param(1)-1, loc_param(3)-1, \
                                 angle, opts )
      else
        xy = wrf_user_set_xy( z, loc_param(0), loc_param(1), \
@@ -466,8 +466,8 @@ begin
      end if
      if (opts) then
        xy = wrf_user_set_xy( var2dtmp, \
-                             loc_param(0)-1, loc_param(1)-1, \    ; the -1 is for NCL dimensions
-                             loc_param(2)-1, loc_param(3)-1, \
+                             loc_param(0)-1, loc_param(2)-1, \    ; the -1 is for NCL dimensions
+                             loc_param(1)-1, loc_param(3)-1, \
                              angle, opts )
      else
        xy = wrf_user_set_xy( var2dtmp, \
@@ -3481,7 +3481,23 @@ begin
 
   if ( mpres@max_dom .gt. 1 ) then
 
+    numLineColors = 0
+    if ( isatt(lnres,"domLineColors") ) then
+       numLineColors = dimsizes(lnres@domLineColors)
+    end if
+
     do idom = 1,mpres@max_dom-1
+
+      if ( numLineColors .gt. 0 ) then
+        if ( numLineColors .ge. idom ) then
+          lnres@gsLineColor = lnres@domLineColors(idom-1)
+          txres@txFontColor = lnres@domLineColors(idom-1)
+        else
+          lnres@gsLineColor = lnres@domLineColors(numLineColors-1)
+          txres@txFontColor = lnres@domLineColors(numLineColors-1)
+        end if
+      end if
+
 
       ; nest start and end points in large domain space
       if ( mpres@parent_id(idom) .eq. 1) then
