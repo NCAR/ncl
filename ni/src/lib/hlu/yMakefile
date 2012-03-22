@@ -109,11 +109,9 @@ CSRCS2          = MapPlot.c XyPlot.c ResList.c Workspace.c Fortran.c Futil.c \
 		cmpf.c nicevals.c \
 	        PDFWorkstation.c CnRenderer.c CnStdRenderer.c \
 		CnTriMeshRenderer.c TriMeshTransObj.c ImageWorkstation.c \
-		MeshScalarField.c pageutil.c color.c
+		MeshScalarField.c pageutil.c color.c CairoWorkstation.c
 
-DUMCAIROSRCS	 = CairoWorkstation.c
-
-CSRCS            = $(CSRCS1) $(CSRCS2) $(TRIANGLE_SRC) $(DUMCAIROSRCS)
+CSRCS            = $(CSRCS1) $(CSRCS2) $(TRIANGLE_SRC)
 
 COBJS1    	= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -136,11 +134,9 @@ COBJS2          = ScalarField.o AnnoManager.o Format.o App.o PSWorkstation.o \
 		cmpf.o nicevals.o \
 	        PDFWorkstation.o CnRenderer.o CnStdRenderer.o \
 		CnTriMeshRenderer.o TriMeshTransObj.o ImageWorkstation.o \
-		MeshScalarField.o pageutil.o color.o
+		MeshScalarField.o pageutil.o color.o CairoWorkstation.o
 
-DUMCAIROOBJS	= CairoWorkstation.o
-
-HLUCOBJS	= $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ) $(DUMCAIROOBJS)
+HLUCOBJS	= $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ)
 
 FSRCS		= DATACOMMF.f ERRORF.f HLUF.f PLOTMANAGERF.f RLGEN.f RLSET.f \
 		RLGET.f TRANSFORMF.f VIEWF.f WORKSPACEF.f WORKSTATIONF.f \
@@ -160,16 +156,10 @@ LIBHOBJS	= $(HLUCOBJS) $(FOBJS)
 
 BuildSharedLibTarget(libNGhlu,$(LIBHOBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
 
-CAIROOBJS	= CairoWorkstation.o
-HLUCCOBJS	= $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ) $(CAIROOBJS)
+HLUCCOBJS	= $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ)
 LIBHCOBJS	= $(HLUCCOBJS) $(FOBJS)
 
-CairoWorkstation.o: CairoWorkstation.c
-        $(CC) $(CCOPTIONS) $(ALLDEFINES) -c CairoWorkstation.c
-
 LibraryTarget($(MYNAME),$(LIBHCOBJS))
-
-CleanFilesTarget(CairoWorkstation.c CairoWorkstation.o)
 
 BuildIncludes($(HDRS),ncarg/hlu,../..)
 InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
