@@ -6845,7 +6845,7 @@ begin
 ; Here's the list of "regular" plot types:
 ;
   plot_types = (/"contourPlotClass","xyPlotClass","vectorPlotClass",\
-                 "streamlinePlotClass"/)
+                 "streamlinePlotClass","mapPlotClass"/)
 
 ;
 ; First check the base plot for "regular plotness".
@@ -6885,6 +6885,13 @@ begin
   if(.not.found_base) then
     print("Warning: gsn_attach_plots: the base plot is an unrecognized plot type; may get unexpected results.")
     new_base = base
+  end if
+  getvalues new_base
+    "trGridType" : grid_type
+  end getvalues
+  if(grid_type.ge.3) then
+    print("Warning: gsn_attach_plots: the base plot is either spherical or triangular, so can't fix the tickmarks")
+    found_base = False
   end if
 ;
 ; Now test the plots to be attached, and see if they are "regular" plots.
@@ -7196,27 +7203,33 @@ begin
   new_scale1 = scale * scale1
   new_scales = scale * scales
 
-  new_mj_length = (new_scale1*mj_length1 + sum(new_scales*mj_lengths))/(nplots+1)
-  new_mjo_length = (new_scale1*mjo_length1 + sum(new_scales*mjo_lengths))/(nplots+1)
-  new_mn_length = (new_scale1*mn_length1 + sum(new_scales*mn_lengths))/(nplots+1)
-  new_mno_length = (new_scale1*mno_length1 + sum(new_scales*mno_lengths))/(nplots+1)
-  new_font_height = (new_scale1*font_height1 + sum(new_scales*font_heights))/(nplots+1)
+  if(found_base) then
+    new_mj_length = (new_scale1*mj_length1 + sum(new_scales*mj_lengths))/(nplots+1)
+    new_mjo_length = (new_scale1*mjo_length1 + sum(new_scales*mjo_lengths))/(nplots+1)
+    new_mn_length = (new_scale1*mn_length1 + sum(new_scales*mn_lengths))/(nplots+1)
+    new_mno_length = (new_scale1*mno_length1 + sum(new_scales*mno_lengths))/(nplots+1)
+    new_font_height = (new_scale1*font_height1 + sum(new_scales*font_heights))/(nplots+1)
+  else
+    new_font_height = sum(new_scales*font_heights)/nplots
+  end if
   new_main_font_height = new_scale1*main_font_height1
 
-  if(attach_y) then
-    mj_length  =  get_res_value(res1,"tmXBMajorLengthF",new_mj_length)
-    mjo_length =  get_res_value(res1,"tmXBMajorOutwardLengthF",\
-                                new_mjo_length)
-    mn_length  =  get_res_value(res1,"tmXBMinorLengthF",new_mn_length)
-    mno_length =  get_res_value(res1,"tmXBMinorOutwardLengthF",\
+  if(found_base) then
+    if(attach_y) then
+      mj_length  =  get_res_value(res1,"tmXBMajorLengthF",new_mj_length)
+      mjo_length =  get_res_value(res1,"tmXBMajorOutwardLengthF",\
+                                  new_mjo_length)
+      mn_length  =  get_res_value(res1,"tmXBMinorLengthF",new_mn_length)
+      mno_length =  get_res_value(res1,"tmXBMinorOutwardLengthF",\
+                                  new_mno_length)
+    else
+      mj_length  =  get_res_value(res1,"tmYLMajorLengthF",new_mj_length)
+      mjo_length =  get_res_value(res1,"tmYLMajorOutwardLengthF",\
+                                  new_mjo_length)
+      mn_length  =  get_res_value(res1,"tmYLMinorLengthF",new_mn_length)
+      mno_length =  get_res_value(res1,"tmYLMinorOutwardLengthF",\
                                 new_mno_length)
-  else
-    mj_length  =  get_res_value(res1,"tmYLMajorLengthF",new_mj_length)
-    mjo_length =  get_res_value(res1,"tmYLMajorOutwardLengthF",\
-                                new_mjo_length)
-    mn_length  =  get_res_value(res1,"tmYLMinorLengthF",new_mn_length)
-    mno_length =  get_res_value(res1,"tmYLMinorOutwardLengthF",\
-                              new_mno_length)
+    end if
   end if
 
   font_heightxl = get_res_value(res1,"tmXBFontHeightF",new_font_height)
@@ -7262,20 +7275,22 @@ begin
     end setvalues
   end if
 
-  if(attach_y) then
-    mj_length  =  get_res_value(res2,"tmXBMajorLengthF",new_mj_length)
-    mjo_length =  get_res_value(res2,"tmXBMajorOutwardLengthF",\
-                                new_mjo_length)
-    mn_length  =  get_res_value(res2,"tmXBMinorLengthF",new_mn_length)
-    mno_length =  get_res_value(res2,"tmXBMinorOutwardLengthF",\
-                                new_mno_length)
-  else
-    mj_length  =  get_res_value(res2,"tmYLMajorLengthF",new_mj_length)
-    mjo_length =  get_res_value(res2,"tmYLMajorOutwardLengthF",\
-                                new_mjo_length)
-    mn_length  =  get_res_value(res2,"tmYLMinorLengthF",new_mn_length)
-    mno_length =  get_res_value(res2,"tmYLMinorOutwardLengthF",\
-                                new_mno_length)
+  if(found_base) then
+    if(attach_y) then
+      mj_length  =  get_res_value(res2,"tmXBMajorLengthF",new_mj_length)
+      mjo_length =  get_res_value(res2,"tmXBMajorOutwardLengthF",\
+                                  new_mjo_length)
+      mn_length  =  get_res_value(res2,"tmXBMinorLengthF",new_mn_length)
+      mno_length =  get_res_value(res2,"tmXBMinorOutwardLengthF",\
+                                  new_mno_length)
+    else
+      mj_length  =  get_res_value(res2,"tmYLMajorLengthF",new_mj_length)
+      mjo_length =  get_res_value(res2,"tmYLMajorOutwardLengthF",\
+                                  new_mjo_length)
+      mn_length  =  get_res_value(res2,"tmYLMinorLengthF",new_mn_length)
+      mno_length =  get_res_value(res2,"tmYLMinorOutwardLengthF",\
+                                  new_mno_length)
+    end if
   end if
 
   font_heightxl = get_res_value(res2,"tmXBFontHeightF",new_font_height)
@@ -7296,30 +7311,33 @@ begin
         "tiXAxisFontHeightF"      : font_heightx
         "tiYAxisFontHeightF"      : font_heighty
         "tiMainFontHeightF"       : main_font_height
-  
-        "tmYRMajorLengthF"        : mj_length
-        "tmYRMajorOutwardLengthF" : mjo_length
-        "tmYRMinorLengthF"        : mn_length
-        "tmYRMinorOutwardLengthF" : mno_length
-  
-        "tmYLMajorLengthF"        : mj_length
-        "tmYLMajorOutwardLengthF" : mjo_length
-        "tmYLMinorLengthF"        : mn_length
-        "tmYLMinorOutwardLengthF" : mno_length
-  
-        "tmXBMajorLengthF"        : mj_length
-        "tmXBMajorOutwardLengthF" : mjo_length
-        "tmXBMinorLengthF"        : mn_length
-        "tmXBMinorOutwardLengthF" : mno_length
-  
-        "tmXTMajorLengthF"        : mj_length
-        "tmXTMajorOutwardLengthF" : mjo_length
-        "tmXTMinorLengthF"        : mn_length
-        "tmXTMinorOutwardLengthF" : mno_length
-  
-        "tmXBLabelFontHeightF"    : font_heightxl
-        "tmYLLabelFontHeightF"    : font_heightyl
       end setvalues
+      if(found_base) then
+        setvalues new_plots(i)
+          "tmYRMajorLengthF"        : mj_length
+          "tmYRMajorOutwardLengthF" : mjo_length
+          "tmYRMinorLengthF"        : mn_length
+          "tmYRMinorOutwardLengthF" : mno_length
+  
+          "tmYLMajorLengthF"        : mj_length
+          "tmYLMajorOutwardLengthF" : mjo_length
+          "tmYLMinorLengthF"        : mn_length
+          "tmYLMinorOutwardLengthF" : mno_length
+  
+          "tmXBMajorLengthF"        : mj_length
+          "tmXBMajorOutwardLengthF" : mjo_length
+          "tmXBMinorLengthF"        : mn_length
+          "tmXBMinorOutwardLengthF" : mno_length
+  
+          "tmXTMajorLengthF"        : mj_length
+          "tmXTMajorOutwardLengthF" : mjo_length
+          "tmXTMinorLengthF"        : mn_length
+          "tmXTMinorOutwardLengthF" : mno_length
+  
+          "tmXBLabelFontHeightF"    : font_heightxl
+          "tmYLLabelFontHeightF"    : font_heightyl
+        end setvalues
+      end if
     end if
   end do
 ;
