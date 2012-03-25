@@ -493,6 +493,7 @@ lib/ncarg/colormaps/BlueWhiteOrangeRed.rgb
 lib/ncarg/colormaps/BlueYellowRed.rgb
 lib/ncarg/colormaps/BrownBlue12.rgb
 lib/ncarg/colormaps/Cat12.rgb
+lib/ncarg/colormaps/GHRSST_anomaly.rgb
 lib/ncarg/colormaps/GrayWhiteGray.rgb
 lib/ncarg/colormaps/GreenMagenta16.rgb
 lib/ncarg/colormaps/GreenYellow.rgb
