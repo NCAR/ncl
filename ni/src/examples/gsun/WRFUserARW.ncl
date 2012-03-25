@@ -348,8 +348,8 @@ begin
        
 ; set vertical cross section
      if (opts) then
-       xy = wrf_user_set_xy( z, loc_param(0)-1, loc_param(1)-1, \    ; the -1 is for NCL dimensions
-                                loc_param(2)-1, loc_param(3)-1, \
+       xy = wrf_user_set_xy( z, loc_param(0)-1, loc_param(2)-1, \    ; the -1 is for NCL dimensions
+                                loc_param(1)-1, loc_param(3)-1, \
                                 angle, opts )
      else
        xy = wrf_user_set_xy( z, loc_param(0), loc_param(1), \
@@ -466,8 +466,8 @@ begin
      end if
      if (opts) then
        xy = wrf_user_set_xy( var2dtmp, \
-                             loc_param(0)-1, loc_param(1)-1, \    ; the -1 is for NCL dimensions
-                             loc_param(2)-1, loc_param(3)-1, \
+                             loc_param(0)-1, loc_param(2)-1, \    ; the -1 is for NCL dimensions
+                             loc_param(1)-1, loc_param(3)-1, \
                              angle, opts )
      else
        xy = wrf_user_set_xy( var2dtmp, \
@@ -772,10 +772,10 @@ begin
          if( map_projection .eq. 1) then    ; Lambert Conformal mapping
            if( (fabs(true_lat1 - true_lat2) .gt. 0.1) .and.  \
                (fabs(true_lat2 - 90. )      .gt. 0.1)       ) then
-               cone = 10^(cos(true_lat1*radians_per_degree)) \
-                     -10^(cos(true_lat2*radians_per_degree))
-               cone = cone/(10^(tan(45. -fabs(true_lat1/2.)*radians_per_degree)) - \
-                            10^(tan(45. -fabs(true_lat2/2.)*radians_per_degree))   )
+               cone = log(cos(true_lat1*radians_per_degree)) \ 
+                     -log(cos(true_lat2*radians_per_degree)) 
+               cone = cone/( log(tan(( 45. -fabs(true_lat1/2.))*radians_per_degree)) - \ 
+                             log(tan((45. -fabs(true_lat2/2.))*radians_per_degree)) ) 
            else
                cone = sin(fabs(true_lat1)*radians_per_degree)
            end if
@@ -1064,6 +1064,50 @@ begin
        end if
        return(t)
   end if
+
+
+
+   if( variable .eq. "eth" ) then
+   ;Equivalent Potential Temperature in degrees K
+       if(isfilevar(nc_file,"T")) then
+         if ( time .eq. -1 ) then
+           if(ISFILE) then
+             T  = nc_file->T
+             P  = nc_file->P
+             PB = nc_file->PB
+             QV = nc_file->QVAPOR
+           else
+             T  = file_handle[:]->T
+             P  = file_handle[:]->P
+             PB = file_handle[:]->PB
+             QV = file_handle[:]->QVAPOR
+           end if
+         else
+           if(ISFILE) then
+             T  = nc_file->T(time_in,:,:,:)
+             P  = nc_file->P(time_in,:,:,:)
+             PB = nc_file->PB(time_in,:,:,:)
+             QV = nc_file->QVAPOR(time_in,:,:,:)
+           else
+             T  = file_handle[:]->T(time_in,:,:,:)
+             P  = file_handle[:]->P(time_in,:,:,:)
+             PB = file_handle[:]->PB(time_in,:,:,:)
+             QV = file_handle[:]->QVAPOR(time_in,:,:,:)
+           end if
+         end if  
+         T  = T + 300.        ; potential temperature in K.
+         P  = P + PB          ; full pressure in Pa.   
+         tk = wrf_tk( P , T ) ; temperature in K.
+         eth = wrf_eth ( QV, tk, P )
+         delete_VarAtts(T,(/"description"/))
+         copy_VarAtts(T,eth)
+         return(eth)
+       else
+         print("This diagnostic only for with WRF data file and not for WPS files")
+         exit
+       end if  
+
+   end if
 
 
 
@@ -1611,7 +1655,7 @@ begin
 
 
 
-  if( any( variable .eq. (/"sreh"/) ) ) then
+  if( any( variable .eq. (/"helicity"/) ) ) then
        getU = "U" 
        getV = "V" 
        if(.not. isfilevar(nc_file,"U")) then
@@ -1621,23 +1665,37 @@ begin
         end if
        end if
        if ( time .eq. -1 ) then
+        if(ISFILE) then
           u_in  = nc_file->$getU$
           v_in  = nc_file->$getV$
-          ua    = wrf_user_unstagger(u_in,u_in@stagger)
-          va    = wrf_user_unstagger(v_in,v_in@stagger)
           PH    = nc_file->PH
           geopt = nc_file->PHB 
           ter   = nc_file->HGT
+        else
+          u_in  = file_handle[:]->$getU$
+          v_in  = file_handle[:]->$getV$
+          PH    = file_handle[:]->PH
+          geopt = file_handle[:]->PHB 
+          ter   = file_handle[:]->HGT
+        end if
        else
+        if(ISFILE) then
           u_in  = nc_file->$getU$(time_in,:,:,:)
           v_in  = nc_file->$getV$(time_in,:,:,:)
-          ua    = wrf_user_unstagger(u_in,u_in@stagger)
-          va    = wrf_user_unstagger(v_in,v_in@stagger)
           PH    = nc_file->PH(time_in,:,:,:)
           geopt = nc_file->PHB(time_in,:,:,:)
           ter   = nc_file->HGT(time_in,:,:)
+        else
+          u_in  = file_handle[:]->$getU$(time_in,:,:,:)
+          v_in  = file_handle[:]->$getV$(time_in,:,:,:)
+          PH    = file_handle[:]->PH(time_in,:,:,:)
+          geopt = file_handle[:]->PHB(time_in,:,:,:)
+          ter   = file_handle[:]->HGT(time_in,:,:)
+        end if
        end if
 
+       ua    = wrf_user_unstagger(u_in,u_in@stagger)
+       va    = wrf_user_unstagger(v_in,v_in@stagger)
        geopt  = geopt + PH
        za     = wrf_user_unstagger(geopt,geopt@stagger)
        za     = za / 9.81  ; change to height
@@ -1671,6 +1729,87 @@ begin
        sreh = wrf_helicity(ua1, va1, za1, ter, top)
        return(sreh)
   end if
+
+
+
+  if( any(variable .eq. (/"updraft_helicity"/) ) )then
+       getU = "U"
+       getV = "V"
+       if(.not. isfilevar(nc_file,"U")) then
+         if(isfilevar(nc_file,"UU")) then
+           getU = "UU"
+           getV = "VV"
+         end if
+       end if
+       if ( time .eq. -1 ) then
+         if(ISFILE) then
+            u_in = nc_file->$getU$
+            v_in = nc_file->$getV$
+            w    = nc_file->W
+            ph   = nc_file->PH
+            phb  = nc_file->PHB
+         else
+            u_in = file_handle[:]->$getU$
+            v_in = file_handle[:]->$getV$
+            w    = file_handle[:]->W
+            ph   = file_handle[:]->PH
+            phb  = file_handle[:]->PHB
+         end if
+       else
+         if(ISFILE) then
+            u_in = nc_file->$getU$(time_in,:,:,:)
+            v_in = nc_file->$getV$(time_in,:,:,:)
+            w    = nc_file->W(time_in,:,:,:)
+            ph   = nc_file->PH(time_in,:,:,:)
+            phb  = nc_file->PHB(time_in,:,:,:)
+         else
+            u_in = file_handle[:]->$getU$(time_in,:,:,:)
+            v_in = file_handle[:]->$getV$(time_in,:,:,:)
+            w    = file_handle[:]->W(time_in,:,:,:)
+            ph   = file_handle[:]->PH(time_in,:,:,:)
+            phb  = file_handle[:]->PHB(time_in,:,:,:)
+         end if
+       end if
+       ua   = wrf_user_unstagger(u_in,u_in@stagger)
+       va   = wrf_user_unstagger(v_in,v_in@stagger)
+       mapfct = nc_file->MAPFAC_M(0,:,:)
+       zp = ph + phb
+       dx = nc_file@DX
+       dy = nc_file@DY
+
+       uh_opt = True
+       uh_opt@uhmnhgt = 2000.
+       uh_opt@uhmxhgt = 5000.
+       dim_vars = dimsizes(varin)
+
+       print("Calculating updraft helicity")
+       if(dim_vars .eq. 1) then
+         print("  Using defaults for the integration limits")
+       end if
+       
+       if(dim_vars .eq. 2) then
+         print("  Please enter both the minimum and maximum integration limits")
+         print("  Going to use defaults for the integration limits")
+       end if
+       
+       if(dim_vars .eq. 3) then
+         if ( stringtofloat(varin(1)) .lt. 1000. ) then
+           print("  Integration limits needs to be greater than 1000 meter")
+           print("  Going to use defaults for the integration limits")
+         else
+           uh_opt@uhmnhgt = stringtofloat(varin(1))
+           uh_opt@uhmxhgt = stringtofloat(varin(2))
+           print("  Setting custom integration limits")
+         end if
+       end if
+       
+       print("  min = "+uh_opt@uhmnhgt+" max = "+uh_opt@uhmxhgt)
+       uh = wrf_updraft_helicity(zp, mapfct, ua, va, w, dx, dy, uh_opt)
+       delete(uh_opt)
+       
+       return(uh)
+  end if
+
 
 
 
@@ -3481,7 +3620,23 @@ begin
 
   if ( mpres@max_dom .gt. 1 ) then
 
+    numLineColors = 0
+    if ( isatt(lnres,"domLineColors") ) then
+       numLineColors = dimsizes(lnres@domLineColors)
+    end if
+
     do idom = 1,mpres@max_dom-1
+
+      if ( numLineColors .gt. 0 ) then
+        if ( numLineColors .ge. idom ) then
+          lnres@gsLineColor = lnres@domLineColors(idom-1)
+          txres@txFontColor = lnres@domLineColors(idom-1)
+        else
+          lnres@gsLineColor = lnres@domLineColors(numLineColors-1)
+          txres@txFontColor = lnres@domLineColors(numLineColors-1)
+        end if
+      end if
+
 
       ; nest start and end points in large domain space
       if ( mpres@parent_id(idom) .eq. 1) then

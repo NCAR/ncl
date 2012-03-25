@@ -2325,7 +2325,7 @@ void CallPUSH_STRING_LIT_OP(void) {
 			}
 
 void CallJMP_SCALAR_TRUE_OP(void) {
-				NclStackEntry data;
+	                        NclStackEntry data,data1;;
 				NclMultiDValData val;
 				unsigned long offset;
 
@@ -2352,6 +2352,14 @@ void CallJMP_SCALAR_TRUE_OP(void) {
 							ptr = machine + offset - 1;
 							lptr = _NclGetCurrentLineRec() + offset - 1;
 							fptr = _NclGetCurrentFileNameRec() + offset - 1;
+							if (data.kind == NclStk_VAL) {
+								data1.u.data_obj = _NclCopyVal(val,NULL);
+								data1.kind = NclStk_VAL;
+								if(estatus != NhlFATAL) {
+									estatus =  _NclPush(data1);
+								}
+								return;
+							}
 						}
 					} 
 				} 
@@ -2361,7 +2369,7 @@ void CallJMP_SCALAR_TRUE_OP(void) {
 			}
 
 void CallJMP_SCALAR_FALSE_OP(void) {
-				NclStackEntry data;
+	                        NclStackEntry data,data1;
 				NclMultiDValData val;
 				unsigned long offset;
 
@@ -2388,6 +2396,14 @@ void CallJMP_SCALAR_FALSE_OP(void) {
 							ptr = machine + offset - 1;
 							lptr = _NclGetCurrentLineRec() + offset - 1;
 							fptr = _NclGetCurrentFileNameRec() + offset - 1;
+							if (data.kind == NclStk_VAL) {
+								data1.u.data_obj = _NclCopyVal(val,NULL);
+								data1.kind = NclStk_VAL;
+								if(estatus != NhlFATAL) {
+									estatus =  _NclPush(data1);
+								}
+								return;
+							}
 						}
 					} 
 				}  

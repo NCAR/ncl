@@ -61,6 +61,7 @@ extern "C" {
 #include "FileSupport.h"
 #include "NclAtt.h"
 #include "NclList.h"
+#include "NclNewList.h"
 #include "ListSupport.h"
 #include "NclFileInterfaces.h"
 #include <signal.h>
@@ -4301,6 +4302,7 @@ NhlErrorTypes _Nclstr_print(void)
     size_t i = 0;
     int nelems = 0;
     int maxelems = MAX_LIST_ELEMENT;
+    int truelems = 0;
     NclBasicDataTypes type[MAX_LIST_ELEMENT];
     char              format[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
     size_t            size[MAX_LIST_ELEMENT];
@@ -4513,6 +4515,10 @@ NhlErrorTypes _Nclstr_print(void)
         step = step->next;
         ++nelems;
     }
+
+    truelems = nelems;
+    if(maxelems > truelems)
+       maxelems = truelems;
 
   /*
    *fprintf(stderr, "\n\tmaxlen = %d\n", maxlen);
@@ -4784,6 +4790,7 @@ NhlErrorTypes _Nclstr_write(void)
     size_t i = 0;
     int nelems = 0;
     int maxelems = MAX_LIST_ELEMENT;
+    int truelems = 0;
     NclBasicDataTypes type[MAX_LIST_ELEMENT];
     char              format[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
     size_t            size[MAX_LIST_ELEMENT];
@@ -5052,6 +5059,25 @@ NhlErrorTypes _Nclstr_write(void)
         }
     }
 
+    theobj = (NclObj)_NclGetObj(*list_id);
+
+    if(0 == strcmp("NclNewListClass", theobj->obj.class_ptr->obj_class.class_name))
+    {
+        NclNewList thelist = (NclNewList) theobj;
+        truelems = (int)thelist->newlist.n_elem;
+    }
+    else if(0 == strcmp("NclListClass",theobj->obj.class_ptr->obj_class.class_name))
+    {
+        NclList thelist = (NclList) theobj;
+        truelems = (int)thelist->list.nelem;
+    }
+    else
+    {
+        truelems = 0;
+    }
+
+    if(maxelems > truelems)
+       maxelems = truelems;
   /*
    *fprintf(stderr, "\n\tmaxlen = %d\n", maxlen);
    */
