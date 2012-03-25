@@ -148,27 +148,27 @@ begin
 ;
 ; Create an X11 output workstation and use the above color map.
 ;
-    wid = create "basic08" xWorkstationClass defaultapp
+    wid = create "basic08" windowWorkstationClass defaultapp
       "wkPause" : "True"
     end create
   end if
-  if (str_lower(wks_type).eq."ps") then
+  if (str_lower(wks_type).eq."oldps") then
 ;
-; Create a PSWorkstation object.
+; Create an older-style PostScript workstation.
 ;
     wid = create "basic08" psWorkstationClass defaultapp
       "wkPSFileName"   : "basic08n.ps"
     end create
   end if
-  if (str_lower(wks_type).eq."pdf") then
+  if (str_lower(wks_type).eq."oldpdf") then
 ;
-; Create a PDFWorkstation object.
+; Create an older-style PDF workstation.
 ;
     wid = create "basic08" pdfWorkstationClass defaultapp
       "wkPDFFileName"   : "basic08n.pdf"
     end create
   end if
-  if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+  if (str_lower(wks_type).eq."pdf".or.str_lower(wks_type).eq."ps") then
 ;
 ; Create a cairo PS/PDF Workstation object.
 ;
@@ -177,7 +177,7 @@ begin
       "wkFormat"   : wks_type
     end create
   end if
-  if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+  if (str_lower(wks_type).eq."png") then
 ;
 ; Create a cairo PNG Workstation object.
 ;

@@ -4,8 +4,6 @@
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
-#include <ncarg/hlu/ImageWorkstation.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/TextItem.h>
 
 main()
@@ -60,40 +58,39 @@ main()
          */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&workid,"x",NhlxWorkstationClass,NhlDEFAULT_APP,
+        NhlCreate(&workid,"x",NhlcairoWindowWorkstationClass,NhlDEFAULT_APP,
 				  rlist);
         }
-    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
+    else if (!strcmp(wks_type,"oldps") || !strcmp(wks_type,"OLDPS")) {
         /*
-         * Create a PS workstation.
+         * Create an older-style PostScript workstation.
          */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./ap01c.ps");
         NhlCreate(&workid,"x",NhlpsWorkstationClass,NhlDEFAULT_APP,
 				  rlist);
     }
-    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
+    else if (!strcmp(wks_type,"oldpdf") || !strcmp(wks_type,"OLDPDF")) {
         /*
-         * Create a PDF workstation.
+         * Create an older-style PDF workstation.
          */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPDFFileName,"./ap01c.pdf");
         NhlCreate(&workid,"x",NhlpdfWorkstationClass,NhlDEFAULT_APP,
 				  rlist);
     }
-    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
- 	     !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF") ||
+ 	     !strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
         /*
          * Create a cairo PS or PDF workstation.
          */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkFileName,"./ap01c");
         NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
-        NhlCreate(&workid,"x",NhlcairoPSPDFWorkstationClass,NhlDEFAULT_APP,
+        NhlCreate(&workid,"x",NhlcairoDocumentWorkstationClass,NhlDEFAULT_APP,
 				  rlist);
     }
-    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
- 	     !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+    else if (!strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
         /*
          * Create a cairo PNG workstation.
          */

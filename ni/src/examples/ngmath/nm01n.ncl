@@ -54,29 +54,29 @@ begin
   end if
   if (str_lower(wks_type).eq."x11") then
 ;
-; Create an XWorkstation object.
+; Create an X11 workstation.
 ;
-    wid = create "natgrids" xWorkstationClass defaultapp
+    wid = create "natgrids" windowWorkstationClass defaultapp
       "wkPause" : "True"
     end create
   end if
-  if (str_lower(wks_type).eq."ps") then
+  if (str_lower(wks_type).eq."oldps") then
 ;
-; Create a PSWorkstation object.
+; Create an older-style PostScript workstation.
 ;
     wid = create "natgrids" psWorkstationClass defaultapp
       "wkPSFileName" : "nm01n.ps"
     end create
   end if
-  if (str_lower(wks_type).eq."pdf") then
+  if (str_lower(wks_type).eq."oldpdf") then
 ;
-; Create a PDFWorkstation object.
+; Create an older-style PDF workstation.
 ;
     wid = create "natgrids" pdfWorkstationClass defaultapp
       "wkPDFFileName" : "nm01n.pdf"
     end create
   end if
-  if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+  if (str_lower(wks_type).eq."pdf".or.str_lower(wks_type).eq."ps") then
 ;
 ; Create a cairo PS/PDF Workstation object.
 ;
@@ -85,7 +85,7 @@ begin
       "wkFormat" : wks_type
     end create
   end if
-  if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+  if (str_lower(wks_type).eq."png") then
 ;
 ; Create a cairo PNG Workstation object.
 ;

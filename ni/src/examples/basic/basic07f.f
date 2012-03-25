@@ -23,7 +23,7 @@ C
       external NhlFPDFWorkstationClass
       external NhlFCairoPSPDFWorkstationClass
       external NhlFCairoImageWorkstationClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFTextItemClass
 
@@ -56,7 +56,7 @@ C
       call NhlFCreate(widn,'basic07ncgm',NhlFNcgmWorkstationClass,0,
      1        srlist,ierr)
 C
-C Create a PostScript workstation.
+C Create an older-style PostScript workstation.
 C
       call NhlFRLClear(srlist)
       call NhlFRLSetString(srlist,'wkPSFileName','basic07f.ps',ierr)
@@ -65,7 +65,7 @@ C
       call NhlFCreate(widp,'basic07ps',NhlFPSWorkstationClass,0,
      1        srlist,ierr)
 C
-C Create a PDF workstation.
+C Create an older-style PDF workstation.
 C
       call NhlFRLClear(srlist)
       call NhlFRLSetString(srlist,'wkPDFFileName','basic07f.pdf',ierr)
@@ -78,7 +78,8 @@ C Create an X Workstation.
 C
       call NhlFRLClear(srlist)
       call NhlFRLSetString(srlist,'wkPause','True',ierr)
-      call NhlFCreate(widx,'basic07x11',NhlFXWorkstationClass,
+      call NhlFCreate(widx,'basic07x11',
+     +     NhlFCairoWindowWorkstationClass,
      $     0,srlist,ierr)
 C
 C Create three plots, one for each workstation type.

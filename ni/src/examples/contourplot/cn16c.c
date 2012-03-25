@@ -26,12 +26,10 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/App.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
-#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/ScalarField.h>
@@ -102,40 +100,39 @@ main()
   }
   else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
- * Create an XWorkstation object.
+ * Create an X11 workstation.
  */
     NhlRLClear(srlist);
     NhlRLSetString(srlist,"wkPause","True");
-    NhlCreate(&wid,"cn16Work",NhlxWorkstationClass,0,srlist);
+    NhlCreate(&wid,"cn16Work",NhlcairoWindowWorkstationClass,0,srlist);
   }
-  else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
+  else if (!strcmp(wks_type,"oldps") || !strcmp(wks_type,"OLDPS")) {
 /*
- * Create a PostScript workstation.
+ * Create an older-style PostScript workstation.
  */
     NhlRLClear(srlist);
     NhlRLSetString(srlist,"wkPSFileName","./cn16c.ps");
     NhlCreate(&wid,"cn16Work",NhlpsWorkstationClass,0,srlist);
   }
-  else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
+  else if (!strcmp(wks_type,"oldpdf") || !strcmp(wks_type,"OLDPDF")) {
 /*
- * Create a PDF workstation.
+ * Create an older-style PDF workstation.
  */
     NhlRLClear(srlist);
     NhlRLSetString(srlist,"wkPDFFileName","./cn16c.pdf");
     NhlCreate(&wid,"cn16Work",NhlpdfWorkstationClass,0,srlist);
   }
-  else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
-           !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+  else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF") ||
+           !strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a cairo PS/PDF workstation.
  */
     NhlRLClear(srlist);
     NhlRLSetString(srlist,"wkFileName","./cn16c");
     NhlRLSetString(srlist,"wkFormat",(char*)wks_type);
-    NhlCreate(&wid,"cn16Work",NhlcairoPSPDFWorkstationClass,0,srlist);
+    NhlCreate(&wid,"cn16Work",NhlcairoDocumentWorkstationClass,0,srlist);
   }
-  else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
-           !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+  else if (!strcmp(wks_type,"png")) {
 /*
  * Create a cairo PNG workstation.
  */

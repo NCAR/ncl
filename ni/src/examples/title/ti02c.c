@@ -22,12 +22,10 @@
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/Title.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
-#include <ncarg/hlu/ImageWorkstation.h>
 
 main()
 {
@@ -62,44 +60,43 @@ main()
     }
     else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
- * Create an XWorkstation object.
+ * Create an X11 workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&wid,"ti02Work",NhlxWorkstationClass,
+        NhlCreate(&wid,"ti02Work",NhlcairoWindowWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
+    else if (!strcmp(wks_type,"oldps") || !strcmp(wks_type,"OLDPS")) {
 /*
- * Create a PSWorkstation object.
+ * Create an older-style PostScript workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./ti02c.ps");
         NhlCreate(&wid,"ti02Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }       
-    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
+    else if (!strcmp(wks_type,"oldpdf") || !strcmp(wks_type,"OLDPDF")) {
 /*
- * Create a PDFWorkstation object.
+ * Create an older-style PDF workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPDFFileName,"./ti02c.pdf");
         NhlCreate(&wid,"ti02Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }       
-    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
-             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF") ||
+             !strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a cairo PS/PDF Workstation object.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkFileName,"./ti02c");
         NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
-        NhlCreate(&wid,"ti02Work",NhlcairoPSPDFWorkstationClass,
+        NhlCreate(&wid,"ti02Work",NhlcairoDocumentWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }       
-    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
-             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+    else if (!strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
 /*
  * Create a cairo PNG Workstation object.
  */

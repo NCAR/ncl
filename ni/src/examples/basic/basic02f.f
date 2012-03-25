@@ -35,7 +35,7 @@ C
       external NhlFPDFWorkstationClass
       external NhlFCairoPSPDFWorkstationClass
       external NhlFCairoImageWorkstationClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFContourPlotClass
 
       integer appid,wks,con1,rlist,ierr
@@ -77,20 +77,21 @@ C Create an X workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
-         call NhlFCreate(wks,"wks",NhlFXWorkstationClass,0,
+         call NhlFCreate(wks,"wks",
+     +        NhlFCairoWindowWorkstationClass,0,
      1        rlist,ierr)
-      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
+      else if (wks_type.eq."oldps".or.wks_type.eq."OLDPS") then
 C
-C Create a PS object.
+C Create an older-style PostScript workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPSFileName','./basic02f.ps',ierr)
          call NhlFCreate(wks,"wks",NhlFPSWorkstationClass,0,
      1        rlist,ierr)
 C
-C Create a PDF object.
+C Create an older-style PDF workstation.
 C
-      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
+      else if (wks_type.eq."oldpdf".or.wks_type.eq."OLDPDF") then
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPDFFileName','./basic02f.pdf',
      1        ierr)
@@ -99,8 +100,8 @@ C
 C
 C Create a cairo PS/PDF object.
 C
-      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
-     1         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF".or.
+     1         wks_type.eq."ps".or.wks_type.eq."PS") then
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkFileName','./basic02f',
      1        ierr)
@@ -111,8 +112,7 @@ C
 C
 C Create a cairo PNG object.
 C
-      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
-     1         wks_type.eq."png".or.wks_type.eq."PNG") then
+      else if (wks_type.eq."png".or.wks_type.eq."PNG") then
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkFileName','./basic02f',
      1        ierr)

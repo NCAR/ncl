@@ -31,7 +31,7 @@ C
       external NhlFPDFWorkstationClass
       external NhlFCairoPSPDFWorkstationClass
       external NhlFCairoImageWorkstationClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFVectorFieldClass
       external NhlFVectorPlotClass
       external NhlFScalarFieldClass
@@ -109,13 +109,14 @@ C
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkPause', 'True', ierr)
          call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
-         call NhlFCreate (wid, 'vc09Work', NhlFXWorkstationClass, 0,
+         call NhlFCreate (wid, 'vc09Work', 
+     +        NhlFCairoWindowWorkstationClass, 0,
      +        rlist, ierr)
 
 C
 C Create a PSWorkstation object.
 C
-      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
+      else if (wks_type.eq."oldps".or.wks_type.eq."OLDPS") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkPSFileName', 'vc09f.ps', ierr)
          call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
@@ -124,7 +125,7 @@ C
 C
 C Create a PDF Workstation object.
 C
-      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
+      else if (wks_type.eq."oldpdf".or.wks_type.eq."OLDPDF") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkPDFFileName', 'vc09f.pdf',
      +        ierr)
@@ -134,8 +135,8 @@ C
 C
 C Create a cairo PS/PDF Workstation object.
 C
-      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
-     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF".or.
+     +         wks_type.eq."ps".or.wks_type.eq."PS") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkFileName', 'vc09f',
      +        ierr)
@@ -147,8 +148,7 @@ C
 C
 C Create a cairo PNG Workstation object.
 C
-      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
-     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+      else if (wks_type.eq."png".or.wks_type.eq."PNG") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkFileName', 'vc09f',
      +        ierr)

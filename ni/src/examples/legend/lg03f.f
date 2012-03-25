@@ -18,7 +18,7 @@ C      Description:    Demonstrates a Legend of 5 markers.
 C
       external NhlFAppClass
       external NhlFLegendClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
@@ -80,26 +80,27 @@ C Create an X Workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetinteger(rlist,'wkPause','True',ierr)
-         call NhlFCreate(wid,'lg03Work',NhlFXWorkstationClass,0,
+         call NhlFCreate(wid,'lg03Work',
+     +        NhlFCairoWindowWorkstationClass,0,
      1        rlist,ierr)
-      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
+      else if (wks_type.eq."oldps".or.wks_type.eq."OLDPS") then
 C
-C Create a PS workstation.
+C Create an older-style PS workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPSFileName','./lg03f.ps',ierr)
          call NhlFCreate(wid,'lg03Work',
      1       NhlFPSWorkstationClass,0,rlist,ierr) 
-      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
+      else if (wks_type.eq."oldpdf".or.wks_type.eq."OLDPDF") then
 C
-C Create a PDF workstation.
+C Create an older-style PDF workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPDFFileName','./lg03f.pdf',ierr)
          call NhlFCreate(wid,'lg03Work',
      1       NhlFPDFWorkstationClass,0,rlist,ierr) 
-      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
-     1         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF".or.
+     1         wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a cairo PS/PDF workstation.
 C
@@ -108,8 +109,7 @@ C
          call NhlFRLSetstring(rlist,'wkFormat',wks_type,ierr)
          call NhlFCreate(wid,'lg03Work',
      1       NhlFCairoPSPDFWorkstationClass,0,rlist,ierr) 
-      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
-     1         wks_type.eq."png".or.wks_type.eq."PNG") then
+      else if (wks_type.eq."png".or.wks_type.eq."PNG") then
 C
 C Create a cairo PNG workstation.
 C

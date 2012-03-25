@@ -23,7 +23,7 @@ C                 without fills.
 C
       parameter(NMAP=10)
       external NhlFAppClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
@@ -66,26 +66,27 @@ C Create an X workstation
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetinteger(rlist,'wkPause',1,ierr)
-         call NhlFCreate(wid,'mp05Work',NhlFXWorkstationClass,0,
+         call NhlFCreate(wid,'mp05Work',
+     1     NhlFCairoWindowWorkstationClass,0,
      1     rlist,ierr)
-      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
+      else if (wks_type.eq."oldps".or.wks_type.eq."OLDPS") then
 C
-C Create a PS object.
+C Create an older-style PostScript workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPSFileName','./mp05f.ps',ierr)
          call NhlFCreate(wid,'mp05Work',NhlFPSWorkstationClass,0,
      1        rlist,ierr)
-      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
+      else if (wks_type.eq."oldpdf".or.wks_type.eq."OLDPDF") then
 C
-C Create a PDF object.
+C Create an older-style PDF workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPDFFileName','./mp05f.pdf',ierr)
          call NhlFCreate(wid,'mp05Work',NhlFPDFWorkstationClass,0,
      1        rlist,ierr)
-      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
-     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF".or.
+     +         wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a cairo PS/PDF object.
 C
@@ -94,8 +95,7 @@ C
          call NhlFRLSetstring(rlist,'wkFileName','./mp05f',ierr)
          call NhlFCreate(wid,'mp05Work',
      1        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr)
-      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
-     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+      else if (wks_type.eq."png".or.wks_type.eq."PNG") then
 C
 C Create a cairo PNG object.
 C

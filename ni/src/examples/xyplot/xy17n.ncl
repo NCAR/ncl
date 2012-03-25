@@ -87,11 +87,11 @@ if(str_lower(wks_type).eq."x11") then
 ;
 ; Create an X workstation.
 ;
-  wks = create "xy17Work" xWorkstationClass defaultapp
+  wks = create "xy17Work" windowWorkstationClass defaultapp
     "wkPause" : True
   end create
 end if
-if(str_lower(wks_type).eq."ps") then
+if(str_lower(wks_type).eq."oldps") then
 
 ;
 ; Open PS workstation.
@@ -100,7 +100,7 @@ if(str_lower(wks_type).eq."ps") then
     "wkPSFileName" : "xy17n.ps"
   end create
 end if
-if(str_lower(wks_type).eq."pdf") then
+if(str_lower(wks_type).eq."oldpdf") then
 ;
 ; Open PDF workstation.
 ;
@@ -108,7 +108,7 @@ if(str_lower(wks_type).eq."pdf") then
     "wkPDFFileName" : "xy17n.pdf"
   end create
 end if
-if(str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+if(str_lower(wks_type).eq."pdf".or.str_lower(wks_type).eq."ps") then
 ;
 ; Open cairo PS/PDF workstation.
 ;
@@ -117,7 +117,7 @@ if(str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
     "wkFormat" : wks_type
   end create
 end if
-if(str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+if(str_lower(wks_type).eq."png") then
 ;
 ; Open cairo PNG workstation.
 ;

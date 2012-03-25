@@ -17,7 +17,7 @@ begin
 
 ; Create an X workstation.
  
-wks = create "wks" xWorkstationClass defaultapp
+wks = create "wks" windowWorkstationClass defaultapp
 	"wkPause" : "True"
 end create
 
@@ -76,7 +76,7 @@ end create
 ; object, the resources that are set in the basic03.res resource
 ; file will apply to this object and its children.
 
-wks2 = create "wks2" xWorkstationClass appid
+wks2 = create "wks2" windowWorkstationClass appid
 end create
 
 ; Create another contour plot object and assign the data.

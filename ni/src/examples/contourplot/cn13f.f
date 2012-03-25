@@ -99,11 +99,12 @@ C
          call NhlFRLSetstring(srlist,'wkPause','True',ierr)
          call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
      +        ierr)
-         call NhlFCreate(workid,'cn13Work',NhlFXWorkstationClass,
+         call NhlFCreate(workid,'cn13Work',
+     +        NhlFCairoWindowWorkstationClass,
      +        0,srlist,ierr) 
-      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
+      else if (wks_type.eq."oldps".or.wks_type.eq."OLDPS") then
 C
-C Create a PS object.
+C Create an older-style PostScript workstation.
 C
          call NhlFRLClear(srlist)
          call NhlFRLSetstring(srlist,'wkPSFileName','./cn13f.ps',ierr)
@@ -111,9 +112,9 @@ C
      +        ierr)
          call NhlFCreate(workid,'cn13Work',NhlFPSWorkstationClass,
      +        0,srlist,ierr)
-      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
+      else if (wks_type.eq."oldpdf".or.wks_type.eq."OLDPDF") then
 C
-C Create a PDF object.
+C Create an older-style PDF workstation.
 C
          call NhlFRLClear(srlist)
          call NhlFRLSetstring(srlist,'wkPDFFileName','./cn13f.pdf',ierr)
@@ -121,8 +122,8 @@ C
      +        ierr)
          call NhlFCreate(workid,'cn13Work',NhlFPDFWorkstationClass,
      +        0,srlist,ierr)
-      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
-     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF".or.
+     +         wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a cairo PS/PDF object.
 C
@@ -133,8 +134,7 @@ C
      +        ierr)
          call NhlFCreate(workid,'cn13Work',
      +        NhlFCairoPSPDFWorkstationClass,0,srlist,ierr)
-      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
-     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+      else if (wks_type.eq."png".or.wks_type.eq."PNG") then
 C
 C Create a cairo PNG object.
 C

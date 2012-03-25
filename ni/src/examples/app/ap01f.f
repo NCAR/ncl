@@ -79,7 +79,7 @@ C
 
       elseif (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
-C Create an X workstation.
+C Create an X11 workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
@@ -88,7 +88,7 @@ C
 
       elseif (wks_type.eq."oldps".or.wks_type.eq."OLDPS") then
 C
-C Create a PS workstation.
+C Create an older-style PS workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPSFileName','./ap01f.ps',ierr)
@@ -96,7 +96,7 @@ C
      &        NhlFPSWorkstationClass,0,rlist,ierr)
       elseif (wks_type.eq."oldpdf".or.wks_type.eq."OLDPDF") then
 C
-C Create a PDF workstation.
+C Create an older-style PDF workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPDFFileName','./ap01f.pdf',ierr)

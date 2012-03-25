@@ -34,7 +34,7 @@ C
       external NhlFPDFWorkstationClass
       external NhlFCairoPSPDFWorkstationClass
       external NhlFCairoImageWorkstationClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFMapPlotClass
       external NhlFVectorFieldClass
       external NhlFLogLinPlotClass
@@ -128,30 +128,31 @@ C  Create an X workstation.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,'wkPause','true',ierr)
-      call NhlFCreate(wid,'pr01Work',NhlFxWorkstationClass,
+      call NhlFCreate(wid,'pr01Work',
+     1            NhlFCairoWindowWorkstationClass,
      1            appid,rlist,ierr)
     
 
-      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
+      else if (wks_type.eq."oldps".or.wks_type.eq."OLDPS") then
 C
-C  Create a PS workstation.
+C  Create an older-style PS workstation.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'wkPSFileName','./pr01f.ps',ierr)
       call NhlFCreate(wid,'pr01Work',NhlFpsWorkstationClass,
      1    appid,rlist,ierr)
 
-      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
+      else if (wks_type.eq."oldpdf".or.wks_type.eq."OLDPDF") then
 C
-C  Create a PDF workstation.
+C  Create an older-style PDF workstation.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'wkPDFFileName','./pr01f.pdf',ierr)
       call NhlFCreate(wid,'pr01Work',NhlFpdfWorkstationClass,
      1    appid,rlist,ierr)
 
-      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
-     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF".or.
+     +         wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C  Create a cairo PS/PDF workstation.
 C
@@ -161,8 +162,7 @@ C
       call NhlFCreate(wid,'pr01Work',
      1    NhlFCairoPSpdfWorkstationClass,appid,rlist,ierr)
 
-      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
-     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+      else if (wks_type.eq."png".or.wks_type.eq."PNG") then
 C
 C  Create a cairo PNG workstation.
 C

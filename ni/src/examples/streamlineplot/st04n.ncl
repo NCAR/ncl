@@ -76,32 +76,32 @@ TIMESTEPS = 20
   end if
   if (str_lower(wks_type).eq."x11") then
 ;
-; Create an XWorkstation object.
+; Create an X11 workstation.
 ;
-    wid = create "st04Work" xWorkstationClass defaultapp
+    wid = create "st04Work" windowWorkstationClass defaultapp
        "wkPause" : True
        "wkColorMap" : "temp1"
     end create
   end if
-  if (str_lower(wks_type).eq."ps") then
+  if (str_lower(wks_type).eq."oldps") then
 ;
-; Create a PSWorkstation object.
+; Create an older-style PostScript workstation.
 ;
     wid = create "st04Work" psWorkstationClass defaultapp
      "wkPSFileName" : "./st04n.ps"
      "wkColorMap"   : "temp1"
     end create
   end if
-  if (str_lower(wks_type).eq."pdf") then
+  if (str_lower(wks_type).eq."oldpdf") then
 ;
-; Create a PDFWorkstation object.
+; Create an older-style PDF workstation.
 ;
     wid = create "st04Work" pdfWorkstationClass defaultapp
      "wkPDFFileName" : "./st04n.pdf"
      "wkColorMap"    : "temp1"
     end create
   end if
-  if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+  if (str_lower(wks_type).eq."pdf".or.str_lower(wks_type).eq."ps") then
 ;
 ; Create a cairo PS/PDF Workstation object.
 ;
@@ -111,7 +111,7 @@ TIMESTEPS = 20
      "wkColorMap"    : "temp1"
     end create
   end if
-  if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+  if (str_lower(wks_type).eq."png") then
 ;
 ; Create a cairo PNG Workstation object.
 ;

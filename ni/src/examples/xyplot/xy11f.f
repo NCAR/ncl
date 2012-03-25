@@ -25,7 +25,7 @@ C
 C Extern declarations for Types of objects that will be used
 C
       external NhlFAppClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFXyPlotClass
       external NhlFCoordArraysClass
@@ -71,7 +71,8 @@ C   object - then create the X Workstation object.
 C
       call NhlFRLClear(list)
       call NhlFRLSetInteger(list,'wkPause',1,ierr)
-      call NhlFCreate(ixwork,'myxwork',NhlFXWorkstationClass,0,
+      call NhlFCreate(ixwork,'myxwork',
+     +        NhlFCairoWindowWorkstationClass,0,
      %  list,ierr)
 
 C

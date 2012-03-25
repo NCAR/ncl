@@ -36,8 +36,6 @@
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
-#include <ncarg/hlu/ImageWorkstation.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
@@ -124,9 +122,9 @@ void main ()
  */
       NhlRLClear (rlist);
       NhlRLSetInteger (rlist, NhlNwkPause, True);
-      NhlCreate (&wks, "xy17Work", NhlxWorkstationClass, 0, rlist);
+      NhlCreate (&wks, "xy17Work", NhlcairoWindowWorkstationClass, 0, rlist);
    }
-   else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
+   else if (!strcmp(wks_type,"oldps") || !strcmp(wks_type,"OLDPS")) {
 /*
  *  Open PS workstation. 
  */
@@ -135,7 +133,7 @@ void main ()
       NhlRLSetString (rlist, NhlNwkPSFileName, "xy17c.ps");
       NhlCreate (&wks, "xy17Work", NhlpsWorkstationClass, 0, rlist);
    }
-   else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
+   else if (!strcmp(wks_type,"oldpdf") || !strcmp(wks_type,"OLDPDF")) {
 /*
  *  Open PDF workstation. 
  */
@@ -143,18 +141,17 @@ void main ()
       NhlRLSetString (rlist, NhlNwkPDFFileName, "xy17c.pdf");
       NhlCreate (&wks, "xy17Work", NhlpdfWorkstationClass, 0, rlist);
    }
-   else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
-            !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+   else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF") ||
+            !strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  *  Open cairo PS/PDF workstation. 
  */
       NhlRLClear (rlist);
       NhlRLSetString (rlist, NhlNwkFileName, "xy17c");
       NhlRLSetString (rlist, NhlNwkFormat, (char*)wks_type);
-      NhlCreate (&wks, "xy17Work", NhlcairoPSPDFWorkstationClass, 0, rlist);
+      NhlCreate (&wks, "xy17Work", NhlcairoDocumentWorkstationClass, 0, rlist);
    }
-   else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
-            !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+   else if (!strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
 /*
  *  Open cairo PNG workstation. 
  */

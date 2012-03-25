@@ -24,7 +24,7 @@ C
       external NhlFPDFWorkstationClass
       external NhlFCairoPSPDFWorkstationClass
       external NhlFCairoImageWorkstationClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
         
       integer appid, wid, pid
       integer rlist, ierr
@@ -64,9 +64,10 @@ C Create an X Workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetinteger(rlist,'wkPause',1,ierr)
-         call NhlFCreate(wid,'lg01Work',NhlFXWorkstationClass,0,
+         call NhlFCreate(wid,'lg01Work',
+     +        NhlFCairoWindowWorkstationClass,0,
      1        rlist,ierr)
-      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
+      else if (wks_type.eq."oldps".or.wks_type.eq."OLDPS") then
 C
 C Create an PS workstation.
 C
@@ -74,7 +75,7 @@ C
          call NhlFRLSetstring(rlist,'wkPSFileName','./lg01f.ps',ierr)
          call NhlFCreate(wid,'lg01Work',
      1        NhlFPSWorkstationClass,0,rlist,ierr) 
-      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
+      else if (wks_type.eq."oldpdf".or.wks_type.eq."OLDPDF") then
 C
 C Create an PDF workstation.
 C
@@ -83,8 +84,8 @@ C
      1        ierr)
          call NhlFCreate(wid,'lg01Work',
      1        NhlFPDFWorkstationClass,0,rlist,ierr) 
-      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
-     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF".or.
+     +         wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a cairo PS/PDF workstation.
 C
@@ -94,8 +95,7 @@ C
          call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
          call NhlFCreate(wid,'lg01Work',
      1        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr) 
-      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
-     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+      else if (wks_type.eq."png".or.wks_type.eq."PNG") then
 C
 C Create a cairo PNG workstation.
 C

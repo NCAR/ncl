@@ -27,7 +27,7 @@
 
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/ResList.h>
-#include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/ScalarField.h>
 
@@ -64,7 +64,7 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNwkPause,True);
-    NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&wks,"wks",NhlcairoWindowWorkstationClass,NhlDEFAULT_APP,rlist);
 /*
  * Create a scalar field object that will be used as a data set for a 
  * contour object.  The sfDataArray resource is used to assign a data
@@ -111,7 +111,7 @@ main()
  * file will apply to this object and its children.
  */
     NhlRLClear(rlist);
-    NhlCreate(&wks2,"wks2",NhlxWorkstationClass,appid2,rlist);
+    NhlCreate(&wks2,"wks2",NhlcairoWindowWorkstationClass,appid2,rlist);
 /*
  * Create another contour plot object and assign the data.
  * Notice that the parent id is wks2, making the contour object

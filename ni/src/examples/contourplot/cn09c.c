@@ -28,12 +28,10 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/App.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
-#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <netcdf.h>
@@ -116,17 +114,17 @@ main()
     }
     else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
- * Create an XWorkstation object.
+ * Create an X11 workstation.
  */
         NhlRLClear(srlist);
 		NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,icount);
         NhlRLSetInteger(srlist,NhlNwkPause,True);
-        NhlCreate(&workid,"cn09Work",NhlxWorkstationClass,
+        NhlCreate(&workid,"cn09Work",NhlcairoWindowWorkstationClass,
               NhlDEFAULT_APP,srlist);
     }
-    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
+    else if (!strcmp(wks_type,"oldps") || !strcmp(wks_type,"OLDPS")) {
 /*
- * Create a PS workstation.
+ * Create an older-style PostScript workstation.
  */
         NhlRLClear(srlist);
 		NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,icount);
@@ -134,9 +132,9 @@ main()
         NhlCreate(&workid,"cn09Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,srlist);
     }
-    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
+    else if (!strcmp(wks_type,"oldpdf") || !strcmp(wks_type,"OLDPDF")) {
 /*
- * Create a PDF workstation.
+ * Create an older-style PDF workstation.
  */
         NhlRLClear(srlist);
 		NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,icount);
@@ -144,8 +142,8 @@ main()
         NhlCreate(&workid,"cn09Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,srlist);
     }
-    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
-             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF") ||
+             !strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a cairo PS/PDF workstation.
  */
@@ -153,11 +151,10 @@ main()
 		NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,icount);
         NhlRLSetString(srlist,NhlNwkFileName,"./cn09c");
         NhlRLSetString(srlist,NhlNwkFormat,(char*)wks_type);
-        NhlCreate(&workid,"cn09Work",NhlcairoPSPDFWorkstationClass,
+        NhlCreate(&workid,"cn09Work",NhlcairoDocumentWorkstationClass,
                   NhlDEFAULT_APP,srlist);
     }
-    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
-             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+    else if (!strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
 /*
  * Create a cairo PNG workstation.
  */

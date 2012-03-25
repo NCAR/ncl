@@ -27,7 +27,7 @@ C             This example also shows how to change entries in a colormap
 C             and create a completely new colormap.
 C
       external NhlFAppClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
@@ -84,12 +84,13 @@ C Set color mode to private so that there is no contention for colors
 C Set Colormap to default. Note, this assignment is redundant
         call NhlFRLSetString(rlist,'wkColorMap','default',ierr)
 
-        call NhlFCreate(wks,'wks',NhlFXWorkstationClass,0,
+        call NhlFCreate(wks,'wks',
+     +     NhlFCairoWindowWorkstationClass,0,
      1     rlist,ierr)
 
-      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
+      else if (wks_type.eq."oldps".or.wks_type.eq."OLDPS") then
 C
-C Create a PS object.
+C Create an older-style PostScript workstation.
 C
         call NhlFRLClear(rlist)
 
@@ -101,9 +102,9 @@ C Set Colormap to default. Note, this assignment is redundant
         call NhlFCreate(wks,'wks',
      1        NhlFPSWorkstationClass,0,rlist,ierr)
 
-      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
+      else if (wks_type.eq."oldpdf".or.wks_type.eq."OLDPDF") then
 C
-C Create a PDF object.
+C Create an older-style PDF workstation.
 C
         call NhlFRLClear(rlist)
 
@@ -115,8 +116,8 @@ C Set Colormap to default. Note, this assignment is redundant
 
         call NhlFCreate(wks,'wks',
      1        NhlFPDFWorkstationClass,0,rlist,ierr)
-      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
-     1         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF".or.
+     1         wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a cairo PS/PDF object.
 C
@@ -132,8 +133,7 @@ C Set Colormap to default. Note, this assignment is redundant
 
         call NhlFCreate(wks,'wks',
      1        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr)
-      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
-     1         wks_type.eq."png".or.wks_type.eq."PNG") then
+      else if (wks_type.eq."png".or.wks_type.eq."PNG") then
 C
 C Create a cairo PNG object.
 C

@@ -68,41 +68,32 @@ end if
 
 if (str_lower(wks_type).eq."x11") then
 ;
-; Create an XWorkstation object.
+; Create an X11 workstation.
 ;
-  xworkid = create "xy01Work" xWorkstationClass defaultapp
+  xworkid = create "xy01Work" windowWorkstationClass defaultapp
     "wkPause" : True
   end create
 end if
 
-if (str_lower(wks_type).eq."ps") then
+if (str_lower(wks_type).eq."oldps") then
 ;
-; Create a PSWorkstation object.
+; Create an older-style PostScript workstation.
 ;
   xworkid = create "xy01Work" psWorkstationClass defaultapp
     "wkPSFileName" : "xy01n.ps"
   end create
 end if
 
-if (str_lower(wks_type).eq."pdf") then
+if (str_lower(wks_type).eq."oldpdf") then
 ;
-; Create a PDFWorkstation object.
+; Create an older-style PDF workstation.
 ;
   xworkid = create "xy01Work" pdfWorkstationClass defaultapp
     "wkPDFFileName" : "xy01n.pdf"
   end create
 end if
-if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
-;
-; Create a cairo PS/PDF Workstation object.
-;
-  xworkid = create "xy01Work" documentWorkstationClass defaultapp
-    "wkFileName" : "xy01n"
-    "wkFormat" : wks_type
-  end create
-end if
 
-if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+if (str_lower(wks_type).eq."pdf".or.str_lower(wks_type).eq."ps") then
 ;
 ; Create a cairo PS or PDF DocumentWorkstation object.
 ;
@@ -112,7 +103,7 @@ if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
   end create
 end if
 
-if (str_lower(wks_type).eq."png".or.str_lower(wks_type).eq."newpng")
+if (str_lower(wks_type).eq."png")
 ;
 ; Create a cairo PNG imageWorkstation object.
 ;
