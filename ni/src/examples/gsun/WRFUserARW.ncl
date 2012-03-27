@@ -578,7 +578,7 @@ begin
   if( any( unstagDim .eq. (/"X","U","Y","V","Z"/) ) ) then
     return(varout) 
   else
-    print("Warning: Input field was not unstaggered")
+    print("NOTE: No unstaggering required, as the input field is already on mass points.")
     return(varin)
   end if
 
@@ -1651,6 +1651,85 @@ begin
        copy_VarAtts(T,cape)
 
        return(cape)
+  end if
+
+
+
+  if( any( variable .eq. (/"pw"/) ) ) then
+       ;Precipitable Water 
+        print("calculating precipitable water")
+        gas_const = 287.  ; J/K/kg
+        Cp        = 1004. ; J/K/kg     
+       if ( time .eq. -1 ) then
+        if(ISFILE) then
+          T   = nc_file->T
+          P   = nc_file->P
+          PB  = nc_file->PB
+          QV  = nc_file->QVAPOR
+          PH  = nc_file->PH
+          PHB = nc_file->PHB
+          QV  = nc_file->QVAPOR
+        else
+          T   = file_handle[:]->T
+          P   = file_handle[:]->P
+          PB  = file_handle[:]->PB
+          QV  = file_handle[:]->QVAPOR
+          PH  = file_handle[:]->PH
+          PHB = file_handle[:]->PHB
+          QV  = file_handle[:]->QVAPOR
+        end if
+       else
+        if(ISFILE) then
+          T   = nc_file->T(time_in,:,:,:)
+          P   = nc_file->P(time_in,:,:,:)
+          PB  = nc_file->PB(time_in,:,:,:)
+          QV  = nc_file->QVAPOR(time_in,:,:,:)
+          PH  = nc_file->PH(time_in,:,:,:)
+          PHB = nc_file->PHB(time_in,:,:,:)
+          QV  = nc_file->QVAPOR(time_in,:,:,:)
+        else
+          T   = file_handle[:]->T(time_in,:,:,:)
+          P   = file_handle[:]->P(time_in,:,:,:)
+          PB  = file_handle[:]->PB(time_in,:,:,:)
+          QV  = file_handle[:]->QVAPOR(time_in,:,:,:)
+          PH  = file_handle[:]->PH(time_in,:,:,:)
+          PHB = file_handle[:]->PHB(time_in,:,:,:)
+          QV  = file_handle[:]->QVAPOR(time_in,:,:,:)
+        end if
+       end if  
+       
+       pres   =  P + PB
+       height = (PH + PHB)/9.8           ; height at full levels 
+       theta  =  T + 300.
+       temp   = theta * (pres/100000) ^ (gas_const/Cp)
+       vtemp  = (1 + 0.61*QV) * temp  ; virtual temp
+
+       dims = dimsizes(T)
+       nd = dimsizes(dims)
+
+       if ( nd .eq. 4 ) then
+         zdiff  = height(:,0,:,:)
+         zdiff  = 0.
+         pw_sfc_ptop = height(:,0,:,:)
+         pw_sfc_ptop = 0.
+         do k = 0,dims(1)-1
+           zdiff(:,:,:) = (height(:,k+1,:,:) - height(:,k,:,:))
+           pw_sfc_ptop(:,:,:) =  pw_sfc_ptop(:,:,:) + ((pres(:,k,:,:)/(gas_const * vtemp(:,k,:,:))) * QV(:,k,:,:) * zdiff(:,:,:))
+         end do
+       end if
+       if ( nd .eq. 3 ) then
+         zdiff  = height(0,:,:)
+         zdiff  = 0.
+         pw_sfc_ptop = height(0,:,:)
+         pw_sfc_ptop = 0.
+         do k = 0,dims(0)-1
+           zdiff(:,:) = (height(k+1,:,:) - height(k,:,:))
+           pw_sfc_ptop(:,:) =  pw_sfc_ptop(:,:) + ((pres(k,:,:)/(gas_const * vtemp(k,:,:))) * QV(k,:,:) * zdiff(:,:))
+         end do
+       end if
+
+       pw_sfc_ptop@description = "Precipitable Water"
+       return(pw_sfc_ptop)
   end if
 
 
