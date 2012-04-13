@@ -3623,9 +3623,7 @@ begin
   do yr=0,ntim-1,nmos
      xAnom(yr:yr+nmos-1) = (/ x(yr:yr+nmos-1)- aveMonth /)
   end do
-  xAnom@long_name  = x@long_name + ": Anomalies"
-  xAnom@anomaly_op_ncl = "function rmAnnCyc1D "
-
+  xAnom@anomaly_op_ncl  = "Annual Cycle Removed: rmAnnCycle1D: contributed.ncl" 
   return (xAnom)
 end
 ; ******************************************************************
