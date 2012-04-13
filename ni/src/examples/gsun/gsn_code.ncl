@@ -984,6 +984,10 @@ end
 ;          max_index:logical                                            ;
 ;                res:logical                                            ;
 ;                                                                       ;
+;***********************************************************************;
+; In Version 6.1.0, the default for gsnSpreadColors is now True.        ;
+;***********************************************************************;
+;                                                                       ;
 ; By default, all of the plotting routines use the first n colors from  ;
 ; a color map, where "n" is the number of contour or vector levels.     ;
 ; If "gsnSpreadColors" is set to  True, then the colors are spanned     ;
@@ -1003,7 +1007,7 @@ undef("spread_colors")
 function spread_colors(wks:graphic,plot:graphic,min_index:integer,\
                         max_index:integer,res:logical)
 local ncols, lcount, fcols, icols, minix, maxix, nc, fmin, fmax, class,\
-levelcountres
+levelcountres, cmap
 begin
   class = NhlClassName(plot)
   if(.not.any(class.eq.(/"contourPlotClass","logLinPlotClass",\
@@ -1042,9 +1046,14 @@ begin
     end if
   end if
 
+;**********************************************************************
+; This code has to be replaced with the proper way to retrieve colors
+; once 6.1.0
+;**********************************************************************
   getvalues wks
-    "wkColorMapLen" : ncols
+    "wkColorMap" : cmap
   end getvalues
+  ncols = dimsizes(cmap(:,0))
 
   if (class.eq."contourPlotClass".or.class.eq."vectorPlotClass".or. \
       class.eq."streamlinePlotClass")
@@ -1103,7 +1112,11 @@ begin
     icols = tointeger(fcols(::-1) + 0.5)
   end if
 
-  return(icols)
+;
+; There may be some cases where you want to return the indexes
+; here, for compatibility with NCL Version 6.0.0 and earlier.
+;
+  return(cmap(icols,:))
 end
 
 ;***********************************************************************;
@@ -9130,7 +9143,7 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
@@ -9315,7 +9328,7 @@ begin
     maxbb     = get_bb_res(res2)
     scale     = get_res_value(res2,"gsnScale",False)
     shape     = get_res_value(res2,"gsnShape",scale)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
@@ -9982,7 +9995,7 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
@@ -10116,7 +10129,7 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
@@ -10297,7 +10310,7 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
@@ -10464,7 +10477,7 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
@@ -10623,7 +10636,7 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
@@ -10738,7 +10751,7 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
@@ -10879,7 +10892,7 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
@@ -11020,7 +11033,7 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
@@ -11139,7 +11152,7 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
