@@ -8,6 +8,10 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       13 April 2012:
+;            Removed ForcedCorners attribute. The user
+;            can just set CornerLat and CornerLon.
+;
 ;       08 March 2012:
 ;            Renamed this script to ESMF_regridding.ncl
 ;
@@ -640,9 +644,9 @@ end     ; of unstructured_to_ESMF(...)
 ;     for removing an existing file. If set to false the user permission
 ;     is required to remove an existing file. This is ineffective if
 ;     OverWrite is set to False.
-; (3) ForcedCorners [Logical] if True, instead of calculating the
-;     the corner points for the cells, these values are read from
-;     CornerLat and CornerLon attribute of Opt.
+; (3) If CornerLat and CornerLon are set, then these will be used
+;     instead of calcuation the corner points for the lat/lon cells.
+;     The corner points are needed for the "conserve" method.
 ;======================================================================
 undef("curvilinear_to_SCRIP")
 procedure curvilinear_to_SCRIP(FName[1]:string,lat2d[*][*]:numeric,\
@@ -758,14 +762,14 @@ begin
         fid->grid_imask=(/ tointeger(ndtooned(mask2d)) /)
     end if
 	
-;---Store the grid cell corners, but first compute them.
-    if (isatt_logical_true(Opt,"ForcedCorners")) then
+;---Get the grid lat/lon corners
+    if (isatt(Opt,"CornerLat").and.isatt(Opt,"CornerLon")) then
         CornerLat = Opt@CornerLat
         CornerLon = Opt@CornerLon
         grid_corner_lat = reshape( CornerLat,(/ grid_size, grid_corners /))
         grid_corner_lon = reshape( CornerLon,(/ grid_size, grid_corners /))
     else
-;---Extract the grid cell corners
+;---Estimate the grid cell corners; it's better if the user provides them.
         grid_corner_lat = new( (/ grid_size, grid_corners /), typeof(lat2d) )
         grid_corner_lon = new( (/ grid_size, grid_corners /), typeof(lon2d) )
         find_SCRIP_corners(lat2d,lon2d,grid_corner_lat,grid_corner_lon)
@@ -1986,7 +1990,7 @@ begin
 ; attributes that start with "Src" or "Dst".
 ;
   spc_atts = (/"Mask2D","LargeFile","Title","LLCorner","URCorner", \
-               "Rotation","ForcedCorners","CornerLat","CornerLon",\
+               "Rotation","CornerLat","CornerLon",\
                "InputFileName","OverWrite","ForceOverWrite"/)
   do i=0,dimsizes(spc_atts)-1
     tmp_att = grid_string + spc_atts(i)
@@ -2207,9 +2211,9 @@ end
 ;   DstLLCorner / DstURCorner - defaults to (-90,-180) / ( 90, 180)
 ;   SrcRotation / DstRotation - rotation angle
 ;
-; SrcForcedCorners / DstForcedCorners - if set to True, instead of
-;    calculating the corner points for the cells, these values are
-;    read from CornerLat and CornerLon attribute of Opt.
+; SrcCornerLat,SrcCornerLon / DstCornerLat,DstCornerLon - if set,
+;    then these values are used rather than calculating the 
+;    corner points for the cells 
 ;
 ;  SrcGridFileName / DstGridFileName
 ;  SrcGridType / SrcGridLat / SrcGridLon
