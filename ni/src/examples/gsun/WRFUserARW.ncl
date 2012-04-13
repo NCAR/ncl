@@ -4042,8 +4042,8 @@ function wrf_map_overlays(in_file[1]:file, \
 ;     FramePlot
 ;     PanelPlot
 ;     NoTitles                  (don't do any titles) 
-;     CommonTitle & PlotTile is used to overwrite field titles
-;        CommonTitle will super-seed NoTitles
+;     CommonTitle & PlotTitle is used to overwrite field titles
+;        CommonTitle will supercede NoTitles
 ;     LatLonOverlay
 ;
 ; If FramePlot False, then Draw the plot but do not Frame.
