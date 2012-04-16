@@ -8,6 +8,10 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       13 April 2012:
+;            Removed ForcedCorners attribute. The user
+;            can just set CornerLat and CornerLon.
+;
 ;       08 March 2012:
 ;            Renamed this script to ESMF_regridding.ncl
 ;
@@ -368,17 +372,26 @@ end     ; of mirrorP2P(...)
 
 ;======================================================================
 ;
-; This procedure is used within the curvilinear_to_SCRIP function. Given
-; a structured grid, it looks for the four corners surrounding each
-; node. It returns the center of the cells for the corners.
+; This procedure is used within the curvilinear_to_SCRIP function.
+; Given a structured grid, it looks for the four corners surrounding
+; each node. It returns the center of the cells for the corners.
 ;
+; You have to be careful with this routine. It doesn't check if you
+; are at or near the edge of the globe (i.e. lat=90, or lon=-180),
+; and hence it might give you corners that fall outside -90/90 for lat
+; and/or 0/360 for lon.
+;
+; Really, if the user has a special grid, he/she should input the
+; corners via the CornerLat and CornerLon resources.
 ;======================================================================
 undef("find_SCRIP_corners")
 procedure find_SCRIP_corners(lat2d[*][*],lon2d[*][*], \
-                             grid_corner_lat,grid_corner_lon)
+                             grid_corner_lat,grid_corner_lon,opt)
 local latlon_dims, nlat, nlon, Extlon2d, Extlat2d, ExtGridCenter_lat, \
-      ExtGridCenter_lon, tmp, ii, jj
+      ExtGridCenter_lon, tmp, ii, jj, debug
 begin
+    debug = isatt_logical_true(opt,"Debug")
+
     if ( any(dimsizes(lat2d).ne.dimsizes(lon2d) ) ) then
         print("find_SCRIP_corners: lat and lon must have the same dimensions.")
         exit
@@ -387,65 +400,119 @@ begin
     latlon_dims = dimsizes(lat2d)
     nlat        = latlon_dims(0)
     nlon        = latlon_dims(1)
-    
+    nlatp1      = nlat+1
+    nlonp1      = nlon+1
+    nlatp2      = nlat+2
+    nlonp2      = nlon+2
+    if(debug) then
+      print("find_SCRIP_corners")
+      print("     min/max original lat: " + min(lat2d) + "/" + max(lat2d))
+      print("     min/max original lon: " + min(lon2d) + "/" + max(lon2d))
+    end if
 ;
 ; Extend the lat/lon grid (needed to calculate the
 ; corners at the boundaries).
 ;
-    Extlat2d = new( (/nlat+2, nlon+2/),typeof(lat2d))
-    Extlon2d = new( (/nlat+2, nlon+2/),typeof(lon2d))
+    Extlat2d = new( (/nlatp2, nlonp2/),typeof(lat2d))
+    Extlon2d = new( (/nlatp2, nlonp2/),typeof(lon2d))
 
+;---The middle grid is exactly the original lat2d/lon2d arrays
     Extlat2d(1:nlat,1:nlon) = (/lat2d/)
     Extlon2d(1:nlat,1:nlon) = (/lon2d/)
     
+;---bottom row, minus corners
     Extlat2d(0,1:nlon)      = mirrorP2P(lat2d(1,:),lat2d(0,:))
-    Extlat2d(nlat+1,1:nlon) = mirrorP2P(lat2d(nlat-2,:),lat2d(nlat-1,:))
-    Extlat2d(1:nlat,0)      = mirrorP2P(lat2d(:,1),lat2d(:,0))
-    Extlat2d(1:nlat,nlon+1) = mirrorP2P(lat2d(:,nlon-2),lat2d(:,nlon-1)) 
-    Extlat2d(0,0)           = mirrorP2P(lat2d(1,1),lat2d(0,0))
-    Extlat2d(nlat+1,nlon+1) = mirrorP2P(lat2d(nlat-2,nlon-2), \
-                                        lat2d(nlat-1,nlon-1))
-    Extlat2d(0,nlon+1)      = mirrorP2P(lat2d(1,nlon-2),lat2d(0,nlon-1))
-    Extlat2d(nlat+1,0)      = mirrorP2P(lat2d(nlat-2,1),lat2d(nlat-1,0))
-
     Extlon2d(0,1:nlon)      = mirrorP2P(lon2d(1,:),lon2d(0,:))
-    Extlon2d(nlat+1,1:nlon) = mirrorP2P(lon2d(nlat-2,:),lon2d(nlat-1,:))
+
+;---top, minus corners
+    Extlat2d(nlatp1,1:nlon) = mirrorP2P(lat2d(nlat-2,:),lat2d(nlat-1,:))
+    Extlon2d(nlatp1,1:nlon) = mirrorP2P(lon2d(nlat-2,:),lon2d(nlat-1,:))
+
+;---left, minus corners
+    Extlat2d(1:nlat,0)      = mirrorP2P(lat2d(:,1),lat2d(:,0))
     Extlon2d(1:nlat,0)      = mirrorP2P(lon2d(:,1),lon2d(:,0))
-    Extlon2d(1:nlat,nlon+1) = mirrorP2P(lon2d(:,nlon-2),lon2d(:,nlon-1))
+
+;---right, minus corners
+    Extlat2d(1:nlat,nlonp1) = mirrorP2P(lat2d(:,nlon-2),lat2d(:,nlon-1)) 
+    Extlon2d(1:nlat,nlonp1) = mirrorP2P(lon2d(:,nlon-2),lon2d(:,nlon-1))
+
+;---lower left corner
+    Extlat2d(0,0)           = mirrorP2P(lat2d(1,1),lat2d(0,0))
     Extlon2d(0,0)           = mirrorP2P(lon2d(1,1),lon2d(0,0))
-    Extlon2d(nlat+1,nlon+1) = mirrorP2P(lon2d(nlat-2,nlon-2),\
+
+;---upper right corner
+    Extlat2d(nlatp1,nlonp1) = mirrorP2P(lat2d(nlat-2,nlon-2), \
+                                        lat2d(nlat-1,nlon-1))
+    Extlon2d(nlatp1,nlonp1) = mirrorP2P(lon2d(nlat-2,nlon-2),\
                                         lon2d(nlat-1,nlon-1))
-    Extlon2d(0,nlon+1)      = mirrorP2P(lon2d(1,nlon-2),lon2d(0,nlon-1))
-    Extlon2d(nlat+1,0)      = mirrorP2P(lon2d(nlat-2,1),lon2d(nlat-1,0))
+;---lower right corner
+    Extlat2d(0,nlonp1)      = mirrorP2P(lat2d(1,nlon-2),lat2d(0,nlon-1))
+    Extlon2d(0,nlonp1)      = mirrorP2P(lon2d(1,nlon-2),lon2d(0,nlon-1))
+
+;---upper left corner
+    Extlat2d(nlatp1,0)      = mirrorP2P(lat2d(nlat-2,1),lat2d(nlat-1,0))
+    Extlon2d(nlatp1,0)      = mirrorP2P(lon2d(nlat-2,1),lon2d(nlat-1,0))
     
+;
+; This kludge is commented out for now, because it's not a good one.
+; We need a better way to fix the boundary corners if they go over.
+;
+;;    if(debug) then
+;;      print("find_SCRIP_corners")
+;;      print("      Before kludge to fix lat/lon corners...")
+;;      print("      min/max Extlat2d: " + min(Extlat2d) + "/" + max(Extlat2d))
+;;      print("      min/max Extlon2d: " + min(Extlon2d) + "/" + max(Extlon2d))
+;;    end if
+;;
+;;;---Kludge to cap the latitudes at -90/90
+;;    Extlat2d = where(Extlat2d.lt. -90, -90,Extlat2d)
+;;    Extlat2d = where(Extlat2d.gt.  90,  90,Extlat2d)
+;;    Extlon2d = where(Extlon2d.lt.   0,   0,Extlon2d)
+;;    Extlon2d = where(Extlon2d.gt. 360, 360,Extlon2d)
+;;
+;;    if(debug) then
+;;      print("find_SCRIP_corners")
+;;      print("     After kludge to fix lat/lon corners...")
+;;      print("     min/max Extlat2d: " + min(Extlat2d) + "/" + max(Extlat2d))
+;;      print("     min/max Extlon2d: " + min(Extlon2d) + "/" + max(Extlon2d))
+;;    end if
+
+    if(debug) then
+      print("find_SCRIP_corners")
+      print("     min/max Extlat2d: " + min(Extlat2d) + "/" + max(Extlat2d))
+      print("     min/max Extlon2d: " + min(Extlon2d) + "/" + max(Extlon2d))
+    end if
 ;
 ; Calculate the cell center of the extended grid, which 
 ; would be the corner coordinates for the original grid.
 ;
-    tmp = Extlat2d(:,1:nlon+1)+Extlat2d(:,0:nlon)
-    ExtGridCenter_lat       = ndtooned((tmp(1:nlat+1,:)+tmp(0:nlat,:))*0.25)
+    tmp = Extlat2d(:,1:nlonp1)+Extlat2d(:,0:nlon)
+    ExtGridCenter_lat       = ndtooned((tmp(1:nlatp1,:)+tmp(0:nlat,:))*0.25)
 
-;---Kludge to cap the latitudes at -90/90
-;;  ExtGridCenter_lat = where(ExtGridCenter_lat.lt.-90,-90,ExtGridCenter_lat)
-;;  ExtGridCenter_lat = where(ExtGridCenter_lat.gt. 90, 90,ExtGridCenter_lat)
-
-    tmp = Extlon2d(:,1:nlon+1)+Extlon2d(:,0:nlon)
-    ExtGridCenter_lon       = ndtooned((tmp(1:nlat+1,:)+tmp(0:nlat,:))*0.25)
+    tmp = Extlon2d(:,1:nlonp1)+Extlon2d(:,0:nlon)
+    ExtGridCenter_lon       = ndtooned((tmp(1:nlatp1,:)+tmp(0:nlat,:))*0.25)
     delete(tmp)
 
+    if(debug) then
+      print("find_SCRIP_corners")
+      print("     min/max ExtGridCenter_lat: " + \
+                  min(ExtGridCenter_lat) + "/" + max(ExtGridCenter_lat))
+      print("     min/max ExtGridCenter_lon: " + \
+                  min(ExtGridCenter_lon) + "/" + max(ExtGridCenter_lon))
+    end if
 ;---Extract the grid cell corners
     ii = ndtooned(conform_dims((/nlat,nlon/),ispan(0,nlon-1,1),1))
     jj = ndtooned(conform_dims((/nlat,nlon/),ispan(0,nlat-1,1),0))
 
-    grid_corner_lat(:,0) = ExtGridCenter_lat(jj*(nlon+1)+ii)
-    grid_corner_lat(:,1) = ExtGridCenter_lat(jj*(nlon+1)+(ii+1))
-    grid_corner_lat(:,2) = ExtGridCenter_lat((jj+1)*(nlon+1)+(ii+1))
-    grid_corner_lat(:,3) = ExtGridCenter_lat((jj+1)*(nlon+1)+ii)
+    grid_corner_lat(:,0) = ExtGridCenter_lat(jj*(nlonp1)+ii)
+    grid_corner_lat(:,1) = ExtGridCenter_lat(jj*(nlonp1)+(ii+1))
+    grid_corner_lat(:,2) = ExtGridCenter_lat((jj+1)*(nlonp1)+(ii+1))
+    grid_corner_lat(:,3) = ExtGridCenter_lat((jj+1)*(nlonp1)+ii)
     
-    grid_corner_lon(:,0) = ExtGridCenter_lon(jj*(nlon+1)+ii)
-    grid_corner_lon(:,1) = ExtGridCenter_lon(jj*(nlon+1)+(ii+1))
-    grid_corner_lon(:,2) = ExtGridCenter_lon((jj+1)*(nlon+1)+(ii+1))
-    grid_corner_lon(:,3) = ExtGridCenter_lon((jj+1)*(nlon+1)+ii)
+    grid_corner_lon(:,0) = ExtGridCenter_lon(jj*(nlonp1)+ii)
+    grid_corner_lon(:,1) = ExtGridCenter_lon(jj*(nlonp1)+(ii+1))
+    grid_corner_lon(:,2) = ExtGridCenter_lon((jj+1)*(nlonp1)+(ii+1))
+    grid_corner_lon(:,3) = ExtGridCenter_lon((jj+1)*(nlonp1)+ii)
 
 end     ; of find_SCRIP_corners(...)
 
@@ -640,9 +707,9 @@ end     ; of unstructured_to_ESMF(...)
 ;     for removing an existing file. If set to false the user permission
 ;     is required to remove an existing file. This is ineffective if
 ;     OverWrite is set to False.
-; (3) ForcedCorners [Logical] if True, instead of calculating the
-;     the corner points for the cells, these values are read from
-;     CornerLat and CornerLon attribute of Opt.
+; (3) If CornerLat and CornerLon are set, then these will be used
+;     instead of calcuation the corner points for the lat/lon cells.
+;     The corner points are needed for the "conserve" method.
 ;======================================================================
 undef("curvilinear_to_SCRIP")
 procedure curvilinear_to_SCRIP(FName[1]:string,lat2d[*][*]:numeric,\
@@ -758,17 +825,17 @@ begin
         fid->grid_imask=(/ tointeger(ndtooned(mask2d)) /)
     end if
 	
-;---Store the grid cell corners, but first compute them.
-    if (isatt_logical_true(Opt,"ForcedCorners")) then
+;---Get the grid lat/lon corners
+    if (isatt(Opt,"CornerLat").and.isatt(Opt,"CornerLon")) then
         CornerLat = Opt@CornerLat
         CornerLon = Opt@CornerLon
         grid_corner_lat = reshape( CornerLat,(/ grid_size, grid_corners /))
         grid_corner_lon = reshape( CornerLon,(/ grid_size, grid_corners /))
     else
-;---Extract the grid cell corners
+;---Estimate the grid cell corners; it's better if the user provides them.
         grid_corner_lat = new( (/ grid_size, grid_corners /), typeof(lat2d) )
         grid_corner_lon = new( (/ grid_size, grid_corners /), typeof(lon2d) )
-        find_SCRIP_corners(lat2d,lon2d,grid_corner_lat,grid_corner_lon)
+        find_SCRIP_corners(lat2d,lon2d,grid_corner_lat,grid_corner_lon,Opt)
     end if
    
 ;---Store the cell corners
@@ -1986,7 +2053,7 @@ begin
 ; attributes that start with "Src" or "Dst".
 ;
   spc_atts = (/"Mask2D","LargeFile","Title","LLCorner","URCorner", \
-               "Rotation","ForcedCorners","CornerLat","CornerLon",\
+               "Rotation","CornerLat","CornerLon",\
                "InputFileName","OverWrite","ForceOverWrite"/)
   do i=0,dimsizes(spc_atts)-1
     tmp_att = grid_string + spc_atts(i)
@@ -2207,9 +2274,9 @@ end
 ;   DstLLCorner / DstURCorner - defaults to (-90,-180) / ( 90, 180)
 ;   SrcRotation / DstRotation - rotation angle
 ;
-; SrcForcedCorners / DstForcedCorners - if set to True, instead of
-;    calculating the corner points for the cells, these values are
-;    read from CornerLat and CornerLon attribute of Opt.
+; SrcCornerLat,SrcCornerLon / DstCornerLat,DstCornerLon - if set,
+;    then these values are used rather than calculating the 
+;    corner points for the cells 
 ;
 ;  SrcGridFileName / DstGridFileName
 ;  SrcGridType / SrcGridLat / SrcGridLon
