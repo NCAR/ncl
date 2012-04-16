@@ -9068,7 +9068,8 @@ function gsn_contour(wks:graphic, data:numeric, resources:logical )
 local i, data_object, plot_object, res, sf_res_index, \
 datares, cnres, llres, cn_res_index, ll_res_index, calldraw, callframe, \
 force_x_linear, force_y_linear, force_x_log, force_y_log, \
-trxmin, trxmax, trymin, trymax, res2, scale, shape, sprdcols
+trxmin, trxmax, trymin, trymax, res2, scale, shape, sprdcols, \
+is_lb_mode, lb_mode
 begin
 ;
 ; Make sure input data is 1D or 2D
@@ -9114,21 +9115,48 @@ begin
 ; Temporarily (I hope), I need to check if trGridType is being set.
 ; If so, it needs to be set during the create call, or otherwise it
 ; will cause the tickmarks to possibly not appear.
+; pmLabelBarDisplayMode is another resource that can only be set at
+; create time. Too bad it has to be so clunky.
 ;
-    if(res2.and.isatt(res2,"trGridType")) then
-      plot_object = create wksname + "_contour" contourPlotClass wks
+    is_lb_mode = isatt(res2,"pmLabelBarDisplayMode")
+    if(is_lb_mode) then
+      lb_mode = get_display_mode(res2,"pmLabelBarDisplayMode","NoCreate")
+      delete(res2@pmLabelBarDisplayMode)
+    end if
+    if (is_lb_mode) then
+      if(res2.and.isatt(res2,"trGridType")) then
+        plot_object = create wksname + "_contour" contourPlotClass wks
+        "cnScalarFieldData" : data_object
+        "pmLabelBarDisplayMode" : lb_mode
+        "trXTensionF"       : xtension
+        "trYTensionF"       : ytension
+        "trGridType"        : res2@trGridType
+        end create
+        delete(res2@trGridType)
+      else
+        plot_object = create wksname + "_contour" contourPlotClass wks
+        "cnScalarFieldData" : data_object
+        "pmLabelBarDisplayMode" : lb_mode
+        "trXTensionF"       : xtension
+        "trYTensionF"       : ytension
+        end create
+      end if
+    else
+      if(res2.and.isatt(res2,"trGridType")) then
+        plot_object = create wksname + "_contour" contourPlotClass wks
         "cnScalarFieldData" : data_object
         "trXTensionF"       : xtension
         "trYTensionF"       : ytension
         "trGridType"        : res2@trGridType
-      end create
-      delete(res2@trGridType)
-    else
-      plot_object = create wksname + "_contour" contourPlotClass wks
+        end create
+        delete(res2@trGridType)
+      else
+        plot_object = create wksname + "_contour" contourPlotClass wks
         "cnScalarFieldData" : data_object
         "trXTensionF"       : xtension
         "trYTensionF"       : ytension
-      end create
+        end create
+      end if
     end if
 
 ; Check for existence of data@long_name and use it in a title it
@@ -9188,10 +9216,45 @@ begin
 ; going to overlay this plot later, because you might get an error
 ; message about warning:PlotManagerSetValues: TickMark annotation 
 ; cannot be added after NhlCreate.
+; Also any tr[X/Y][Max/Min]F resources that go outside the data boundaries
+; must be temporarily removed because they are not permitted when using the
+; irregular transformation. However, do not remove them if they are inside
+; the boundaries or there will be an error later when the data boundaries 
+; are checked
 ;
     if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log) then
+      getvalues plot_object
+      "trXMinF"    : trxmin
+      "trXMaxF"    : trxmax
+      "trYMinF"    : trymin
+      "trYMaxF"    : trymax
+      end getvalues
       if(isatt(cnres,"pmTickMarkDisplayMode")) then
         delete(cnres@pmTickMarkDisplayMode)
+      end if
+      if (force_x_linear .or. force_x_log) then
+        if(isatt(cnres,"trXMinF")) then
+          if (cnres@trXMinF .lt. trxmin) then
+            delete(cnres@trXMinF)
+          end if
+        end if
+        if(isatt(cnres,"trXMaxF")) then
+          if (cnres@trXMaxF .gt. trxmax) then
+            delete(cnres@trXMaxF)
+          end if
+        end if
+      end if
+      if (force_y_linear .or. force_y_log) then
+        if(isatt(cnres,"trYMinF")) then
+          if (cnres@trYMinF .lt. trymin) then
+            delete(cnres@trYMinF)
+          end if
+        end if
+        if(isatt(cnres,"trYMaxF")) then
+          if (cnres@trYMaxF .gt. trymax) then
+            delete(cnres@trYMaxF)
+          end if
+        end if
       end if
       llres = get_res_eq(res2,(/"pm","tr","vp"/))
     end if
