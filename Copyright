@@ -1,20 +1,25 @@
 NCL - UNIX Version 6.1.0
-Copyright (C) 2012
-University Corporation for Atmospheric Research
-
-NCL Source Code License
-
 Copyright (c) 2012 University Corporation for Atmospheric Research
-(UCAR).  All rights reserved.  Developed by NCAR's Computational and
-Information Systems Laboratory, UCAR, www.cisl.ucar.edu, with the
-following contributions:
+The use of this software is governed by a License Agreement.
+See http://www.ncl.ucar.edu/ for more details.
+
+Developed by NCAR's Computational and Information Systems Laboratory,
+UCAR, www.cisl.ucar.edu, with the following contributions:
 
 dcdflib
 The University of Texas, M.D. Anderson Cancer Center
 http://www.netlib.org/random/
 
+ESMF
+Copyright (c) 2002-2012 University Corporation for Atmospheric Research,
+Massachusetts Institute of Technology, Geophysical Fluid Dynamics Laboratory,
+University of Michigan, National Centers for Environmental Prediction,
+Los Alamos National Laboratory, Argonne National Laboratory,
+NASA Goddard Space Flight Center.  All rights reserved.
+http://www.earthsystemmodeling.org/
+
 FFTPACK5
-Copyright 1995-2004
+Copyright 1995-2011
 UCAR
 http://www.cisl.ucar.edu/css/software/fftpack5/
 
@@ -43,7 +48,7 @@ UCAR
 http://www.cisl.ucar.edu/css/software/spherepack/
 
 UDUNITS-2 
-Copyright 2008, 2009
+Copyright 2011
 University Corporation for Atmospheric Research
 http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html
 
