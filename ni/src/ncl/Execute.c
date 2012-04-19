@@ -881,9 +881,18 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		filevar_sel_ptr->n_entries = 0;
 
 		if (newlist->list.list_type & NCL_JOIN) {
-			if (filevar_subs != var_ndims + 1) {
+			if (newlist->list.nelem == 1) {
+				if (filevar_subs < var_ndims || filevar_subs > var_ndims + 1) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                          "Number of subscripts on rhs do not match number of dimensions of aggregated join type variable, (%d) subscripts used, (%d or %d) subscripts expected",
+						  filevar_subs, var_ndims, var_ndims + 1);
+					estatus = NhlFATAL;
+					goto fatal_err;
+				}
+			}
+			else if (filevar_subs != var_ndims + 1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  "Number of subscripts on rhs do not match number of dimensions of aggregated join type variable, (%d) Subscripts used, (%d) Subscripts expected",
+					  "Number of subscripts on rhs do not match number of dimensions of aggregated join type variable, (%d) subscripts used, (%d) subscripts expected",
 					  filevar_subs, var_ndims + 1);
 				estatus = NhlFATAL;
 				goto fatal_err;
