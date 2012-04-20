@@ -999,9 +999,13 @@ end
 ; If after adjusting for negative index color(s), and                   ;
 ; max_index < min_index, then the colors are reversed.                  ;
 ;                                                                       ;
-; The "res" is just to check if cnFillColors or vcLevelColors are       ;
-; already being set, and to issue a warning message (spread_colors will ;
-; take precedence over cnFillColors.)                                   ;
+; In NCL versions 6.0.0 and earlier, if you had both xxYYYYColors set   ;
+; and gsnSpreadColors was set to True, then the xxYYYYColors resource   ;
+; would be ignored, and gsnSpreadColors took precedence.                ;
+;
+; In versions 6.1.0 and later, the opposite is True. gsnSpreadColors    ;
+; is now True by default, but if you set xxYYYYColors, then thils will  ;
+; take precedence, and no message will be printed.                      ;
 ;***********************************************************************;
 undef("spread_colors")
 function spread_colors(wks:graphic,plot:graphic,min_index:integer,\
@@ -1017,32 +1021,15 @@ begin
     return(ispan(2,255,1))
   end if
 
+
   if (class.eq."contourPlotClass".or.class.eq."logLinPlotClass".or.\
       class.eq."irregularPlotClass")
-    if(isatt(res,"cnFillColors")) then
-       print("spread_colors: warning: you are setting both cnFillColors and")
-       print("               gsnSpreadColors. Your cnFillColors resource will")
-       print("               be ignored. If this is not desired, delete the")
-       print("               setting of gsnSpreadColors or set it to False.")
-    end if
     levelcountres = "cnLevelCount"
   else
     if (class.eq."vectorPlotClass") then
       levelcountres = "vcLevelCount"
-      if(isatt(res,"vcLevelolors")) then
-         print("spread_colors: warning: you are setting both vcLevelColors and")
-         print("               gsnSpreadColors. Your vcLevelColors resource will")
-         print("               be ignored. If this is not desired, delete the")
-         print("               setting of gsnSpreadColors or set it to False.")
-      end if
     else
       levelcountres = "stLevelCount"
-      if(isatt(res,"stLevelColors")) then
-         print("spread_colors: warning: you are setting both stLevelColors and")
-         print("               gsnSpreadColors. Your stLevelColors resource will")
-         print("               be ignored. If this is not desired, delete the")
-         print("               setting of gsnSpreadColors or set it to False.")
-      end if
     end if
   end if
 
@@ -9275,7 +9262,7 @@ begin
       plot_object = set_pos_neg_line_pattern(plot_object,ppattern,npattern)
     end if
 
-    if(sprdcols)
+    if(sprdcols.and..not.isatt(res2,"cnFillColors")) then
       cnres2 = True
       set_attr(cnres2,"cnFillColors",\
                spread_colors(wks,plot_object,min_index,max_index,res2))
@@ -9400,7 +9387,7 @@ begin
 
     attsetvalues_check(map_object,mpres)
     attsetvalues_check(contour_object,cnres)
-    if(sprdcols)
+    if(sprdcols.and..not.isatt(res2,"cnFillColors")) then
       cnres2 = True
       set_attr(cnres2,"cnFillColors",\
                spread_colors(wks,contour_object,min_index,max_index,res2))
@@ -10074,7 +10061,7 @@ begin
 
     attsetvalues_check(data_object,vfres)
     attsetvalues_check(plot_object,vcres)
-    if(sprdcols)
+    if(sprdcols.and..not.isatt(res2,"vcLevelColors")) then
       vcres2 = True
       set_attr(vcres2,"vcLevelColors",\
                spread_colors(wks,plot_object,min_index,max_index,res2))
@@ -10253,16 +10240,18 @@ begin
     end if
 
     if(sprdcols)
-      cnres2 = True
-      vcres2 = True
-
-      set_attr(cnres2,"cnFillColors",\
-               spread_colors(wks,contour_object,min_index,max_index,res2))
-      set_attr(vcres2,"vcLevelColors",\
-               spread_colors(wks,vector_object,min_index,max_index,res2))
-
-      attsetvalues(contour_object,cnres2)
-      attsetvalues(vector_object,vcres2)
+      if(.not.isatt(res2,"cnFillColors")) then
+        cnres2 = True
+        set_attr(cnres2,"cnFillColors",\
+                 spread_colors(wks,contour_object,min_index,max_index,res2))
+        attsetvalues(contour_object,cnres2)
+      end if
+      if(.not.isatt(res2,"vcLevelColors")) then
+        vcres2 = True
+        set_attr(vcres2,"vcLevelColors",\
+                 spread_colors(wks,vector_object,min_index,max_index,res2))
+        attsetvalues(vector_object,vcres2)
+      end if
     end if
 
     overlay(vector_object,contour_object)
@@ -10432,7 +10421,7 @@ begin
                                                 ppattern,npattern)
     end if
 
-    if(sprdcols)
+     if(.not.isatt(res2,"cnFillColors")) then
       cnres2 = True
 
       set_attr(cnres2,"cnFillColors",\
@@ -10602,17 +10591,21 @@ begin
                                                 ppattern,npattern)
     end if
 
-    if(sprdcols)
-      cnres2 = True
-      vcres2 = True
+    if(sprdcols) then
+     if(.not.isatt(res2,"cnFillColors")) then
+        cnres2 = True
+        set_attr(cnres2,"cnFillColors",\
+                 spread_colors(wks,contour_object,min_index,max_index,res2))
+        attsetvalues(contour_object,cnres2)
+     end if
+     if(.not.isatt(res2,"vcLevelColors")) then
+        vcres2 = True
 
-      set_attr(cnres2,"cnFillColors",\
-               spread_colors(wks,contour_object,min_index,max_index,res2))
-      set_attr(vcres2,"vcLevelColors",\
-               spread_colors(wks,vector_object,min_index,max_index,res2))
+        set_attr(vcres2,"vcLevelColors",\
+                 spread_colors(wks,vector_object,min_index,max_index,res2))
 
-      attsetvalues(contour_object,cnres2)
-      attsetvalues(vector_object,vcres2)
+        attsetvalues(vector_object,vcres2)
+      end if
     end if
 
     overlay(map_object,vector_object)
@@ -10711,7 +10704,7 @@ begin
     attsetvalues_check(map_object,mpres)
     attsetvalues_check(vector_object,vcres)
 
-    if(sprdcols)
+    if(.not.isatt(res2,"vcLevelColors")) then
       vcres2 = True
       set_attr(vcres2,"vcLevelColors",\
                spread_colors(wks,vector_object,min_index,max_index,res2))
@@ -10833,7 +10826,7 @@ begin
     attsetvalues_check(vfdata_object,vfres)
     attsetvalues_check(sfdata_object,sfres)
     attsetvalues_check(plot_object,vcres)
-    if(sprdcols)
+    if(.not.isatt(res2,"vcLevelColors")) then
       vcres2 = True
       set_attr(vcres2,"vcLevelColors",\
                spread_colors(wks,plot_object,min_index,max_index,res2))
@@ -10974,7 +10967,7 @@ begin
     attsetvalues_check(vfdata_object,vfres)
     attsetvalues_check(sfdata_object,sfres)
     attsetvalues_check(plot_object,stres)
-    if(sprdcols)
+    if(sprdcols.and..not.isatt(res2,"stLevelColors")) then
       stres2 = True
       set_attr(stres2,"stLevelColors",\
                spread_colors(wks,plot_object,min_index,max_index,res2))
@@ -11110,7 +11103,7 @@ begin
     attsetvalues_check(map_object,mpres)
     attsetvalues_check(vector_object,vcres)
 
-    if(sprdcols)
+    if(sprdcols.and..not.isatt(res2,"vcLevelColors")) then
       vcres2 = True
       set_attr(vcres2,"vcLevelColors",\
                spread_colors(wks,vector_object,min_index,max_index,res2))
@@ -11229,7 +11222,7 @@ begin
     attsetvalues_check(map_object,mpres)
     attsetvalues_check(streamline_object,stres)
 
-    if(sprdcols)
+    if(sprdcols.and..not.isatt(res2,"stLevelColors")) then
       stres2 = True
       set_attr(stres2,"stLevelColors",\
                spread_colors(wks,streamline_object,min_index,max_index,res2))
