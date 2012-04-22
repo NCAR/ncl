@@ -8,6 +8,11 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       22 April 2012:
+;            Renamed "method" and "pole" attributes to "InterpMethod"
+;            and "Pole" for consistency with other attributes. "method"
+;            and "pole" will still work.
+;
 ;       13 April 2012:
 ;            Removed ForcedCorners attribute. The user
 ;            can just set CornerLat and CornerLon.
@@ -28,7 +33,7 @@
 ;               behave like it.
 ;            Added isatt_logical_false.
 ;            Set IgnoreMappedPoints to True by default.
-;            Set pole="none" if method="conserve" (and pole not 
+;            Set pole="none" if InterpMethod="conserve" (and pole not 
 ;              explicitly set by user).
 ;
 ;       23 Jan 2012:
@@ -1560,10 +1565,10 @@ end
 ;           True or False (default=False)
 ;        IgnoreUnmappedPoints - whether to ignore unmapped points
 ;           True or False (default=True)
-;        method
+;        InterpMethod ("method" will work too)
 ;           "bilinear" (default), "patch" (slow), "conserve"
-;        pole
-;           "all" (default, unless method=conserve), "none"
+;        Pole ("pole" will work too)
+;           "all" (default, unless InterpMethod=conserve), "none"
 ;
 ; The ESMFBINDIR environment variable can be set  prior to calling 
 ; this procedure, in order to indicate the location of this binary.
@@ -1575,7 +1580,7 @@ end
 undef("ESMF_regrid_gen_weights")
 procedure ESMF_regrid_gen_weights(srcGridFile[1]:string, dstGridFile[1]:string, \
                            wgtFile[1]:string, opt[1]:logical)
-local DEBUG, NumProc, Executer, ESMFCMD, ESMF_exec
+local DEBUG, NumProc, Executer, ESMFCMD, ESMF_exec, interp_method, pole
 begin
  ESMF_exec = "ESMF_RegridWeightGen"
 
@@ -1641,23 +1646,34 @@ begin
 ; Check if the user has requested a certain method.
 ; Otherwise, the default will be used.
 ;
+    if (isatt(opt,"InterpMethod")) then
+      interp_method = str_lower(opt@InterpMethod)
+    end if
     if (isatt(opt,"method")) then
-      ESMFCMD = ESMFCMD + " --method " + str_lower(opt@method)
+      interp_method = str_lower(opt@method)
+    end if
+    if (isvar("interp_method")) then
+      ESMFCMD = ESMFCMD + " --method " + interp_method
     end if
 ;
 ; Check if the user has specified how to handle the poles
 ; Otherwise, the default will be used.
 ;
-    if(isatt(opt,"method").and.isatt(opt,"pole").and.\
-       str_lower(opt@method).eq."conserve".and.\
-       str_lower(opt@pole).eq."all") then
-      print("ESMF_regrid_gen_weights: warning: 'pole' cannot be set to 'all' when") 
+    if (isatt(opt,"Pole")) then
+      pole = str_lower(opt@Pole)
+    end if
+    if (isatt(opt,"pole")) then
+      pole = str_lower(opt@pole)
+    end if
+    if(isvar("interp_method").and.isvar("pole").and.\
+       interp_method.eq."conserve".and.pole.eq."all") then
+      print("ESMF_regrid_gen_weights: warning: 'Pole' cannot be set to 'all' when") 
       print("                  using 'conserve' method. Defaulting to 'none'.")
-      opt@pole = "none"      
+      pole = "none"      
     end if
 
     if (isatt(opt,"pole")) then
-      ESMFCMD = ESMFCMD + " --pole " + str_lower(opt@pole)
+      ESMFCMD = ESMFCMD + " --pole " + pole
     end if
 
 ;---Check if the user specifies that source grid is regional
