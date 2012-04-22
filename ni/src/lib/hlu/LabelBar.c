@@ -146,7 +146,7 @@ static NhlResource resources[] = {
 	{ NhlNlbLabelAutoStride, NhlCLabelAutoStride, 
 	  NhlTBoolean, sizeof(NhlBoolean),
 	  NhlOffset(NhlLabelBarLayerRec,labelbar.label_auto_stride),
-	  NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
+	  NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNlbLabelsOn, NhlClbLabelsOn, NhlTBoolean, 
 	 sizeof(NhlBoolean), NhlOffset(NhlLabelBarLayerRec,labelbar.labels_on),
 	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
