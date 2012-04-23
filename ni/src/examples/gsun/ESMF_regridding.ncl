@@ -12,6 +12,8 @@
 ;            Renamed "method" and "pole" attributes to "InterpMethod"
 ;            and "Pole" for consistency with other attributes. "method"
 ;            and "pole" will still work.
+;            Added RemoveGridFiles, RemoveSrcGridFile, RemoveDstGridFile
+;            to ESMF_regrid_gen_weights.
 ;
 ;       13 April 2012:
 ;            Removed ForcedCorners attribute. The user
@@ -1569,6 +1571,18 @@ end
 ;           "bilinear" (default), "patch" (slow), "conserve"
 ;        Pole ("pole" will work too)
 ;           "all" (default, unless InterpMethod=conserve), "none"
+;        RemoveSrcGridFile
+;           True or False (default=False)
+;           Whether to remove srcGridFile after the
+;             weight generation is done.
+;        RemoveDstGridFile
+;           True or False (default=False)
+;           Whether to remove dstGridFile after the
+;             weight generation is done.
+;        RemoveGridFiles
+;           True or False (default=False)
+;           Whether to remove both src and dst grid files
+;             after the weight generation is done.
 ;
 ; The ESMFBINDIR environment variable can be set  prior to calling 
 ; this procedure, in order to indicate the location of this binary.
@@ -1736,6 +1750,17 @@ begin
   if(DEBUG) then
     print("ESMF_regrid_gen_weights: '" + ESMF_exec + "' was successful.")
   end if    
+
+;---Clean up, if desired
+  if (isatt_logical_true(opt,"RemoveGridFiles").or. \
+      isatt_logical_true(opt,"RemoveSrcGridFile")) then
+    system("rm -rf " + srcGridFile)
+  end if
+
+  if (isatt_logical_true(opt,"RemoveGridFiles").or. \
+      isatt_logical_true(opt,"RemoveDstGridFile")) then
+    system("rm -rf " + dstGridFile)
+  end if
 
   if(PrintTimings) then
     print_elapsed_time(start_time,"ESMF_regrid_gen_weights")
