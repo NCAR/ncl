@@ -378,6 +378,143 @@ begin
 end     ; of mirrorP2P(...)
 
 ;======================================================================
+; This procedure is meant as a replacement for find_SCRIP_corners.
+; It takes the same arguments, but uses a different algorithm.
+;======================================================================
+undef("calc_SCRIP_corners")
+procedure calc_SCRIP_corners(lat2d[*][*],lon2d[*][*], \
+                             grid_corner_lat, grid_corner_lon, opt)
+local debug, latlon_dims, grid_corner_lat2d,  grid_corner_lon2d, \
+      nlat, nlon, nlatp1, nlonp1
+begin
+    debug = isatt_logical_true(opt,"Debug")
+
+;---Check input dimension sizes.
+    if (any(dimsizes(lat2d).ne.dimsizes(lon2d))) then
+        print("calc_SCRIP_corners: lat and lon must have the same dimensions.")
+        exit
+    end if
+
+    if (any(dimsizes(grid_corner_lat).ne.dimsizes(grid_corner_lon))) then
+        print("calc_SCRIP_corners: lat and lon must have the same dimensions.")
+        exit
+    end if
+
+;---Get dimension sizes
+    latlon_dims     = dimsizes(lat2d)
+    cnr_latlon_dims = dimsizes(grid_corner_lat)
+    cnr_rank        = dimsizes(cnr_latlon_dims)
+    nlat            = latlon_dims(0)
+    nlon            = latlon_dims(1)
+    nlatp1          = nlat+1
+    nlonp1          = nlon+1
+
+    if(cnr_rank.ne.2.or.cnr_latlon_dims(0).ne.(nlat*nlon).or. \
+       cnr_latlon_dims(1).ne.4) then
+      print("calc_SCRIP_corners: grid_corner_lat/grid_corner_lon must be (nlat*nlon) x 4")
+      exit
+    end if
+
+    if(debug) then
+      print("calc_SCRIP_corners")
+      print("     min/max original lat: " + min(lat2d) + "/" + max(lat2d))
+      print("     min/max original lon: " + min(lon2d) + "/" + max(lon2d))
+    end if
+
+;---Create array to hold a 2D array of lat/lon corners
+    grid_corner_lat2d = new((/nlatp1,nlonp1/),typeof(lat2d))
+    grid_corner_lon2d = new((/nlatp1,nlonp1/),typeof(lon2d))
+
+;---Calculate interior locations of corner grid
+    do i=1,nlat-1
+      do j=1,nlon-1
+        grid_corner_lat2d(i,j) = avg((/lat2d(i-1,j-1),lat2d(i,j-1),\
+                                       lat2d(i-1,j),  lat2d(i,j)/))
+        grid_corner_lon2d(i,j) = avg((/lon2d(i-1,j-1),lon2d(i,j-1),\
+                                       lon2d(i-1,j),  lon2d(i,j)/))
+      end do
+    end do
+
+;---Calculate bottom locations of corner grid
+    do j=1,nlon-1
+      grid_corner_lat2d(0,j) = avg((/lat2d(0,j),lat2d(0,j-1)/))
+      grid_corner_lon2d(0,j) = avg((/lon2d(0,j),lon2d(0,j-1)/))
+    end do
+
+;---Calculate top locations of corner grid
+    do j=1,nlon-1
+      grid_corner_lat2d(nlat,j) = avg((/lat2d(nlat-1,j), \
+                                        lat2d(nlat-1,j-1)/))
+      grid_corner_lon2d(nlat,j) = avg((/lon2d(nlat-1,j), \
+                                        lon2d(nlat-1,j-1)/))
+    end do
+
+;---Calculate left locations of corner grid
+    do i=1,nlat-1
+      grid_corner_lat2d(i,0) = avg((/lat2d(i,0),lat2d(i-1,0)/))
+      grid_corner_lon2d(i,0) = avg((/lon2d(i,0),lon2d(i-1,0)/))
+    end do
+
+;---Calculate right locations of corner grid
+    do i=1,nlat-1
+      grid_corner_lat2d(i,nlon) = avg((/lat2d(i,nlon-1), \
+                                        lat2d(i-1,nlon-1)/))
+      grid_corner_lon2d(i,nlon) = avg((/lon2d(i,nlon-1), \
+                                        lon2d(i-1,nlon-1)/))
+    end do
+
+    if(debug) then
+      print("calc_SCRIP_corners")
+      print("     min/max grid_corner_lat2d: " + min(grid_corner_lat2d) + \
+                                           "/" + max(grid_corner_lat2d))
+      print("     min/max grid_corner_lon2d: " + min(grid_corner_lon2d) + \
+                                           "/" + max(grid_corner_lon2d))
+    end if
+
+;---Set four corners of corner grid
+    grid_corner_lat2d(0,0)       = lat2d(0,0)
+    grid_corner_lon2d(0,0)       = lon2d(0,0)
+    grid_corner_lat2d(0,nlon)    = lat2d(0,nlon-1)
+    grid_corner_lon2d(0,nlon)    = lon2d(0,nlon-1)
+    grid_corner_lat2d(nlat,nlon) = lat2d(nlat-1,nlon-1)
+    grid_corner_lon2d(nlat,nlon) = lon2d(nlat-1,nlon-1)
+    grid_corner_lat2d(nlat,0)    = lat2d(nlat-1,0)
+    grid_corner_lon2d(nlat,0)    = lon2d(nlat-1,0)
+
+    if(debug) then
+      print("calc_SCRIP_corners")
+      print("     min/max grid_corner_lat2d: " + \
+                  min(grid_corner_lat2d) + "/" + max(grid_corner_lat2d))
+      print("     min/max grid_corner_lon2d: " + \
+                  min(grid_corner_lon2d) + "/" + max(grid_corner_lon2d))
+    end if
+
+    n = 0
+    do i=0,nlat-1
+      do j=0,nlon-1
+        grid_corner_lat(n,0) = grid_corner_lat2d(i,  j)
+        grid_corner_lat(n,1) = grid_corner_lat2d(i,  j+1)
+        grid_corner_lat(n,2) = grid_corner_lat2d(i+1,j+1)
+        grid_corner_lat(n,3) = grid_corner_lat2d(i+1,j)
+        grid_corner_lon(n,0) = grid_corner_lon2d(i,  j)
+        grid_corner_lon(n,1) = grid_corner_lon2d(i,  j+1)
+        grid_corner_lon(n,2) = grid_corner_lon2d(i+1,j+1)
+        grid_corner_lon(n,3) = grid_corner_lon2d(i+1,j)
+        n=n+1
+      end do
+    end do
+
+    if(debug) then
+      print("calc_SCRIP_corners")
+      print("     min/max grid_corner_lat: " + min(grid_corner_lat) + \
+                                         "/" + max(grid_corner_lat))
+      print("     min/max grid_corner_lon: " + min(grid_corner_lon) + \
+                                         "/" + max(grid_corner_lon))
+    end if
+
+end     ; of calc_SCRIP_corners(...)
+
+;======================================================================
 ;
 ; This procedure is used within the curvilinear_to_SCRIP function.
 ; Given a structured grid, it looks for the four corners surrounding
@@ -842,7 +979,8 @@ begin
 ;---Estimate the grid cell corners; it's better if the user provides them.
         grid_corner_lat = new( (/ grid_size, grid_corners /), typeof(lat2d) )
         grid_corner_lon = new( (/ grid_size, grid_corners /), typeof(lon2d) )
-        find_SCRIP_corners(lat2d,lon2d,grid_corner_lat,grid_corner_lon,Opt)
+;;      find_SCRIP_corners(lat2d,lon2d,grid_corner_lat,grid_corner_lon,Opt)
+        calc_SCRIP_corners(lat2d,lon2d,grid_corner_lat,grid_corner_lon,Opt)
     end if
    
 ;---Store the cell corners
@@ -1667,6 +1805,10 @@ begin
       interp_method = str_lower(opt@method)
     end if
     if (isvar("interp_method")) then
+      if(.not.any(interp_method.eq.(/"bilinear","patch","conserve"/))) then
+        print("ESMF_regrid_gen_weights: the InterpMethod must be 'bilinear', 'patch', or 'conserve'")
+        exit
+      end if
       ESMFCMD = ESMFCMD + " --method " + interp_method
     end if
 ;
