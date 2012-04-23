@@ -1805,6 +1805,10 @@ begin
       interp_method = str_lower(opt@method)
     end if
     if (isvar("interp_method")) then
+      if(.not.any(interp_method.eq.(/"bilinear","patch","conserve"/))) then
+        print("ESMF_regrid_gen_weights: the InterpMethod must be 'bilinear', 'patch', or 'conserve'")
+        exit
+      end if
       ESMFCMD = ESMFCMD + " --method " + interp_method
     end if
 ;
