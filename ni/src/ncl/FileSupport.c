@@ -66,6 +66,8 @@
 #include "ApiRecords.h"
 #include "NclAtt.h"
 
+#include <sys/stat.h>
+
 int use_new_hlfs = 0;
 
 NhlErrorTypes _NclBuildFileCoordRSelection
@@ -2696,6 +2698,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		buffer[i] = '\0';
 		*fname_q = NrmStringToQuark(buffer);
 #ifdef BuildOPENDAP
+                use_new_hlfs = 1;
                 if(strcmp("nc", *end_of_name+1) == 0)
 	        	file_ext_q = NrmStringToQuark("nc");
 	        else
@@ -2703,9 +2706,8 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
                         if(strcmp("he5", *end_of_name+1) == 0)
 			{
 				file_ext_q = NrmStringToQuark("opendap");
-				fprintf(stderr, "file: <%s>, line: %d\n", __FILE__, __LINE__);
+				fprintf(stderr, "\tfile: <%s>, line: %d\n", __FILE__, __LINE__);
 				fprintf(stderr, "\topendap file_ext_q = <%s>\n", NrmQuarkToString(file_ext_q));
-	        		file_ext_q = NrmStringToQuark("nc");
 			}
 	                else
 	        		file_ext_q = NrmStringToQuark("nc");
@@ -3031,6 +3033,8 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 	static int first = 1;
 
+        struct stat file_stat;
+
 	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status);
 
 	if(! is_http)
@@ -3045,7 +3049,12 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			NclQuark the_real_path = NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path)));
 			NclQuark old_file_ext_q = file_ext_q;
 
-			file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_new_hlfs);
+			stat(NrmQuarkToString(path), &file_stat);
+
+			if(file_stat.st_size)
+			    file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_new_hlfs);
+			else
+			    file_ext_q = -1;
 
 			if(0 > file_ext_q)
 			{
