@@ -969,12 +969,13 @@ CvtStringToColorIndex
 		return _NhlReConvertData(intQ,to->typeQ,&val,to);
 	}
 
+/*
 	if (strcasecmp(s1, "transparent") == 0) {
 		tmp = NhlTRANSPARENT;
 		set = True;
 	}
+*/
 
-	/***** RLB
 	for(i=1;i<nargs;i++){
 		if(_NhlCmpString(args[i].data.strval,s1) == 0){
 			tmp = args[i].size;
@@ -983,6 +984,7 @@ CvtStringToColorIndex
 		}
 	}
 
+	/***** RLB
 	if(!set &&
 		_NhlLookupColor((NhlWorkstationClass)wl->base.layer_class,
 								s1,&rgb) &&
