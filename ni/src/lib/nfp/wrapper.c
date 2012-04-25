@@ -195,6 +195,8 @@ extern NhlErrorTypes exp_tapersh_wgts_W(void);
 extern NhlErrorTypes pop_remap_W(void);
 extern NhlErrorTypes depth_to_pres_W(void);
 extern NhlErrorTypes potmp_insitu_ocn_W(void);
+extern NhlErrorTypes wgt_area_smooth_W(void);
+extern NhlErrorTypes mixed_layer_depth_W(void);
 extern NhlErrorTypes smth9_W(void);
 extern NhlErrorTypes simpeq_W(void);
 extern NhlErrorTypes simpne_W(void);
@@ -3058,6 +3060,38 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
     NclRegisterFunc(potmp_insitu_ocn_W,args,"potmp_insitu_ocn",nargs);
+
+/*
+ * Register "mixed_layer_depth".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(5);
+
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"integer",2,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
+        NclRegisterFunc(mixed_layer_depth_W,args,"mixed_layer_depth",nargs);
+
+/*
+ * Register "wgt_area_smooth"
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    /*dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;*/
+
+    NclRegisterFunc(wgt_area_smooth_W,args,"wgt_area_smooth",nargs);
 
 /*
  * Register "smth9"
