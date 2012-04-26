@@ -2934,6 +2934,15 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 			long npt = 0;
 			long nza = 0;
 
+			/*HDFEOS5 file should be first a HDF5 file.*/
+			htri_t status = H5Fis_hdf5(filename);
+
+			if(! status)
+			{
+				break;
+				found = 0;
+			}
+
 			nsw = HE5_SWinqswath(filename, NULL, &str_buf_size);
 			ngd = HE5_GDinqgrid (filename, NULL, &str_buf_size);
 			npt = HE5_PTinqpoint(filename, NULL, &str_buf_size);
