@@ -518,9 +518,17 @@ NhlErrorTypes conform_dims_W( void )
  * y = reshape(x,(/10,10/))
  *
  * and y will be 10 x 20 x 10 x 10.
-
- * The restriction is that the product of the input dimensions must equal
- * the product of some subset of the rightmost dimensions of x.
+ *
+ * Yet another case: if x is 3 x 4, you can do:
+ *
+ * y = reshape(x,(/5,6,12/))
+ *
+ * and y will be 5 x 6 x 12.
+ *
+ * The restriction is that the product of the input dimensions
+ * must equal the product of some subset of the rightmost 
+ * dimensions of x OR the product of the x dimensions must equal
+ * the product of some subset of the rightmost input dimensions.
  */
 
 NhlErrorTypes reshape_W( void )
@@ -550,7 +558,7 @@ NhlErrorTypes reshape_W( void )
  * various
  */
   ng_size_t i, size_x, product_dimsizes, size_leftmost;
-  logical matched_sizes;
+  logical matched_x_sizes, matched_input_sizes;
   int leftmost_index=-1, ret;
 /*
  * Retrieve parameters
@@ -593,34 +601,67 @@ NhlErrorTypes reshape_W( void )
  * Test if product of input dimension sizes matches product of
  * rightmost dimensions of x.
  */
+  matched_x_sizes = matched_input_sizes = False;
   size_x = 1;
-  matched_sizes = False;
   for( i=(tmp_md->multidval.n_dims-1); i >= 0; i--) {
     size_x *= tmp_md->multidval.dim_sizes[i];
     if(size_x == product_dimsizes) {
-      matched_sizes = True;
+      matched_x_sizes = True;
       leftmost_index = i-1;
     }
   }
-  if(!matched_sizes) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"reshape: input dimension sizes do not conform to rightmost dimensions of input array");
+
+/*
+ * Test if product of x dimension sizes matches product of
+ * rightmost input dimensions.
+ */
+  if(!matched_x_sizes) {
+    product_dimsizes = 1;
+    for(i=(dsizes_reshape_dsizes[0]-1); i >= 0; i--) {
+      product_dimsizes *= dsizes_reshape[i];
+      if(size_x == product_dimsizes) {
+        matched_input_sizes = True;
+        leftmost_index = i-1;
+      }
+    }
+  }
+
+  if(!matched_x_sizes && !matched_input_sizes) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"reshape: input dimension sizes cannot conform to dimensions of input array");
     return(NhlFATAL);
   }
 /*
- * Calculate size of output array, which may contain some leftmost
- * dimensions that we have to account for.
+ * If matched_x_sizes is True, then the input dimension sizes are 
+ * a subset of the dimensions of the input x array. This means 
+ * we need to construct the new output dimension sizes.
  */
-  ndims_xreshape  = (leftmost_index+1) + dsizes_reshape_dsizes[0];
-  dsizes_xreshape = (ng_size_t*)calloc(ndims_xreshape,sizeof(ng_size_t));
   size_leftmost = 1;
-  for(i = 0; i <= leftmost_index; i++) {
-    size_leftmost *= tmp_md->multidval.dim_sizes[i];
-    dsizes_xreshape[i] = tmp_md->multidval.dim_sizes[i];
+  if(matched_x_sizes) {
+    ndims_xreshape  =  (leftmost_index+1) + dsizes_reshape_dsizes[0];
+    dsizes_xreshape = (ng_size_t*)calloc(ndims_xreshape,sizeof(ng_size_t));
+    for(i = 0; i <= leftmost_index; i++) {
+      dsizes_xreshape[i] = tmp_md->multidval.dim_sizes[i];
+    }
+    for(i = 0; i < dsizes_reshape_dsizes[0]; i++) {
+      dsizes_xreshape[leftmost_index+i+1] = dsizes_reshape[i];
+    }
   }
-  for(i = 0; i < dsizes_reshape_dsizes[0]; i++) {
-    dsizes_xreshape[leftmost_index+i+1] = dsizes_reshape[i];
+/*
+ * The x dimension sizes are a subset of the input dimension sizes.
+ * Even though we can use the input dimension sizes as the dimension
+ * sizes for the output array, go ahead and construct the output
+ * dimensions, to stay consistent with previous code.
+ */
+  else {
+    ndims_xreshape  = dsizes_reshape_dsizes[0];
+    dsizes_xreshape = (ng_size_t*)calloc(ndims_xreshape,sizeof(ng_size_t));
+    for(i = 0; i <= leftmost_index; i++) {
+      size_leftmost *= dsizes_reshape[i];
+    }
+    for(i = 0; i < ndims_xreshape; i++) {
+      dsizes_xreshape[i] = dsizes_reshape[i];
+    }
   }
-
 /*
  * Allocate space for output array. We want "size_leftmost" copies of
  * the original array.
@@ -633,9 +674,15 @@ NhlErrorTypes reshape_W( void )
 /*
  * Copy values to new array.
  */
-  for(i = 0; i < size_leftmost; i++) {
-    memcpy((void*)((char*)xreshape + i*tmp_md->multidval.totalsize),
+  if(matched_x_sizes) {
+    memcpy((void*)((char*)xreshape),
            (void*)((char*)tmp_md->multidval.val),tmp_md->multidval.totalsize);
+  }
+  else {
+    for(i = 0; i < size_leftmost; i++) {
+      memcpy((void*)((char*)xreshape + i*tmp_md->multidval.totalsize),
+             (void*)((char*)tmp_md->multidval.val),tmp_md->multidval.totalsize);
+    }
   }
 
 /*
