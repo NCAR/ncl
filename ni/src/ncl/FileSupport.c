@@ -2939,8 +2939,8 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 
 			if(! status)
 			{
-				break;
 				found = 0;
+				continue;
 			}
 
 			nsw = HE5_SWinqswath(filename, NULL, &str_buf_size);
@@ -2966,6 +2966,15 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 			int32 npt = 0;
 			int32 bsize;
 
+			/*A HDFEOS(2) file must be a hdf(4) file first*/
+			intn status = Hishdf(filename);
+
+			if(! status)
+			{
+        			found = 0;
+				continue;
+			}
+
 			nsw = SWinqswath(filename, NULL, &bsize);
 			ngd = GDinqgrid (filename, NULL, &bsize);
 			npt = PTinqpoint(filename, NULL, &bsize);
@@ -2983,21 +2992,16 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 #ifdef BuildHDF4
 		else if(NrmStringToQuark("hdf") == cur_ext_q)
 		{
-			int cdfid;
-			int32 sd_id;
-	
-			cdfid = sd_ncopen(filename,NC_NOWRITE);
-			sd_id = SDstart (filename, DFACC_READ); 
-        		sd_ncclose(cdfid);
+			intn status = Hishdf(filename);
 
-			if(0 > cdfid)
-				found = 0;
-			else
+			if(status)
 			{
         			file_ext_q = cur_ext_q;
         			found = 1;
 				break;
 			}
+			else
+				found = 0;
 		}
 #endif
 		else
