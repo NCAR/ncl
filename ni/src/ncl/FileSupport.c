@@ -2913,32 +2913,16 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 #ifdef BuildHDF5
 		else if(NrmStringToQuark("h5") == cur_ext_q)
 		{
-			H5O_info_t oi;              /* Information for object */
-			hid_t fid = -1;
-			herr_t status = -1;
+			htri_t status = H5Fis_hdf5(filename);
 
-			static char root_name[] = "/";
-
-			fid = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT);
-
-			if(0 > fid)
-			{
-				H5close();
-				found = 0;
-				continue;
-			}
-			
-			status = H5Oget_info_by_name(fid, root_name, &oi, H5P_DEFAULT);
-			H5close();
-
-			if(0 > status)
-				found = 0;
-			else
+			if(status)
 			{
         			file_ext_q = cur_ext_q;
 				found = 1;
 				break;
 			}
+			else
+				found = 0;
 		}
 #endif
 #ifdef BuildHDFEOS5
