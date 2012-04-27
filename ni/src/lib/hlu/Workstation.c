@@ -190,7 +190,7 @@ static NhlResource resources[] = {
 /* Begin-documented-resources */
 
 	{NhlNwkColorMap,NhlCwkColorMap,NhlTColorMap,sizeof(NhlGenArray),
-		Oset(color_map),NhlTString,_NhlUSET("rainbow2"),
+		Oset(color_map),NhlTString,_NhlUSET("ncl_default"),
 		_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNwkColorMapLen,NhlCwkColorMapLen,NhlTInteger,sizeof(int),
 		Oset(color_map_len),NhlTImmediate,
