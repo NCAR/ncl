@@ -869,13 +869,16 @@ procedure curvilinear_to_SCRIP(FName[1]:string,lat2d[*][*]:numeric,\
                                lon2d[*][*]:numeric,Opt[1]:logical)
 local latlon_dims, nlat, nlon, fid, FileAtt, grid_siz, grid_corners, \
 grid_rank, FDimNames, FDimSizes, FDimUnlim, DummyAtt1, DummyAtt2, \
-GridCornerLat, GridCornerLon, grid_corner_lat, grid_corner_lon, mask2d
+GridCornerLat, GridCornerLon, grid_corner_lat, grid_corner_lon, mask2d, \
+DEBUG
 begin
 ;---Check for options
     PrintTimings = isatt_logical_true(Opt,"PrintTimings")
     if(PrintTimings) then
       start_time = get_start_time()
     end if
+
+    DEBUG = isatt_logical_true(Opt,"Debug")
 
 ;---Check if the file already exists
     check_for_file(FName,Opt)
@@ -980,12 +983,18 @@ begin
 	
 ;---Get the grid lat/lon corners
     if (isatt(Opt,"GridCornerLat").and.isatt(Opt,"GridCornerLon")) then
-        GridCornerLat = Opt@GridCornerLat
-        GridCornerLon = Opt@GridCornerLon
+        if(DEBUG) then
+          print("curvilinear_to_SCRIP: using grid corners provided by user...")
+        end if
+        GridCornerLat   = Opt@GridCornerLat
+        GridCornerLon   = Opt@GridCornerLon
         grid_corner_lat = reshape( GridCornerLat,(/ grid_size, grid_corners /))
         grid_corner_lon = reshape( GridCornerLon,(/ grid_size, grid_corners /))
     else
 ;---Estimate the grid cell corners; it's better if the user provides them.
+        if(DEBUG) then
+          print("curvilinear_to_SCRIP: calculating grid corners...")
+        end if
         grid_corner_lat = new( (/ grid_size, grid_corners /), typeof(lat2d) )
         grid_corner_lon = new( (/ grid_size, grid_corners /), typeof(lon2d) )
 ;;      find_SCRIP_corners(lat2d,lon2d,grid_corner_lat,grid_corner_lon,Opt)
