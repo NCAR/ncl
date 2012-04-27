@@ -136,6 +136,30 @@ static	int	animate_on(wd)
 			return(-1);
 		}
 			
+		/*
+		 *int usleep(useconds_t usec);
+
+		 *DESCRIPTION The usleep() function suspends execution
+		 *of the calling process for (at least) usec microseconds.
+		 *The sleep may be lengthened slightly by any system
+		 *activity or by the time spent processing the call
+		 *or by the granularity of system timers.
+
+		 *The reason we put usleep(...) here is that:
+		 *On Mac OSX 10.7.x, the idt animate will abort with message like:
+		 *
+		 *X Error of failed request: BadMatch (invalid parameter attributes)
+		 *  Major opcode of failed request: 73 (X_GetImage)
+		 *  Serial number of failed request: 398
+		 *  Current serial number in output stream: 398 
+		 *
+		 * and usleep(...) fixed this issue. We also want to put a little bigger
+		 * number to be safer.
+		 *
+		 * Wei Huang, 04/24/2012, JIRA: 1344
+		 */
+
+		usleep(10000);
 
 		/*
 		 * snarf the image from the window

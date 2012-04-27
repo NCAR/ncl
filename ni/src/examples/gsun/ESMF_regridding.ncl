@@ -1,13 +1,25 @@
 ;----------------------------------------------------------------------
-; The following functions and procedures are written by:
+; Many of the following functions and procedures were written by:
 ;        Mohammad Abouali, maboualiedu@gmail.com
 ;              May 22nd, July 30th, 2011
 ;
 ;        http://sites.google.com/site/maboualihome/
 ;
+; Many functions were updated, fixed, or added by Mary Haley.
+; See notes below.
+;
+; A debt of gratitude is owed to the ESMF development team, and 
+; especially Robert Oehmke, for help in\ using the ESMF software.
+;
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       26 April 2012:
+;            For "conserve" method, be sure to divide results by
+;            "frac_b". This also meant I had to modify "reshape"
+;            so I could use it to reshape *and* conform the frac_b 
+;            array to the destination grid size.
+;
 ;       22 April 2012:
 ;            Renamed "method" and "pole" attributes to "InterpMethod"
 ;            and "Pole" for consistency with other attributes. "method"
@@ -379,7 +391,8 @@ end     ; of mirrorP2P(...)
 
 ;======================================================================
 ; This procedure is meant as a replacement for find_SCRIP_corners.
-; It takes the same arguments, but uses a different algorithm.
+; It takes the same arguments, but uses a different algorithm that
+; was suggested by Bob Oehmke.
 ;======================================================================
 undef("calc_SCRIP_corners")
 procedure calc_SCRIP_corners(lat2d[*][*],lon2d[*][*], \
@@ -462,14 +475,6 @@ begin
       grid_corner_lon2d(i,nlon) = avg((/lon2d(i,nlon-1), \
                                         lon2d(i-1,nlon-1)/))
     end do
-
-    if(debug) then
-      print("calc_SCRIP_corners")
-      print("     min/max grid_corner_lat2d: " + min(grid_corner_lat2d) + \
-                                           "/" + max(grid_corner_lat2d))
-      print("     min/max grid_corner_lon2d: " + min(grid_corner_lon2d) + \
-                                           "/" + max(grid_corner_lon2d))
-    end if
 
 ;---Set four corners of corner grid
     grid_corner_lat2d(0,0)       = lat2d(0,0)
@@ -2121,18 +2126,16 @@ begin
     dstData@_FillValue = default_fillvalue(typeof(dstData))
   end if
 
-  if(DEBUG) then
-    print("ESMF_regrid_with_weights: dstData")
-    str = "                          Dimensions:"
-    nd = dimsizes(dstData)
-    do i=0,dimsizes(nd)-1
-      str = str + " " + nd(i)
-    end do
-    print("" + str)
-    print("                          minSrcData: " + min(srcData))
-    print("                          maxSrcData: " + max(srcData))
-    print("                          minDstData: " + min(dstData))
-    print("                          maxDstData: " + max(dstData))
+;---Apply frac_b only for conservative interpolation.
+  if(isatt(fid,"map_method").and.\
+     fid@map_method.eq."Conservative remapping") then
+    if(DEBUG)
+      print("ESMF_regrid_with_weights: dividing results by frac_b...")
+      print("                          (for conserve interpolation only)")
+    end if
+    frac_b            = reshape(fid->frac_b,dimsizes(dstData))
+    frac_b@_FillValue = default_fillvalue(typeof(frac_b))
+    dstData = dstData/where(frac_b.eq.0,frac_b@_FillValue,frac_b)
   end if
 
 ;
@@ -2146,6 +2149,20 @@ begin
     dstData_tmp2d = reshape_ind(dstData,Indexes,IndexesDims)
     delete(dstData)
     dstData = dstData_tmp2d
+  end if
+
+  if(DEBUG) then
+    print("ESMF_regrid_with_weights: dstData")
+    str = "                          Dimensions:"
+    nd = dimsizes(dstData)
+    do i=0,dimsizes(nd)-1
+      str = str + " " + nd(i)
+    end do
+    print("" + str)
+    print("                          minSrcData: " + min(srcData))
+    print("                          maxSrcData: " + max(srcData))
+    print("                          minDstData: " + min(dstData))
+    print("                          maxDstData: " + max(dstData))
   end if
 
 ;

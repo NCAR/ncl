@@ -66,6 +66,8 @@
 #include "ApiRecords.h"
 #include "NclAtt.h"
 
+#include <sys/stat.h>
+
 int use_new_hlfs = 0;
 
 NhlErrorTypes _NclBuildFileCoordRSelection
@@ -2696,6 +2698,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		buffer[i] = '\0';
 		*fname_q = NrmStringToQuark(buffer);
 #ifdef BuildOPENDAP
+                use_new_hlfs = 1;
                 if(strcmp("nc", *end_of_name+1) == 0)
 	        	file_ext_q = NrmStringToQuark("nc");
 	        else
@@ -2703,9 +2706,8 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
                         if(strcmp("he5", *end_of_name+1) == 0)
 			{
 				file_ext_q = NrmStringToQuark("opendap");
-				fprintf(stderr, "file: <%s>, line: %d\n", __FILE__, __LINE__);
+				fprintf(stderr, "\tfile: <%s>, line: %d\n", __FILE__, __LINE__);
 				fprintf(stderr, "\topendap file_ext_q = <%s>\n", NrmQuarkToString(file_ext_q));
-	        		file_ext_q = NrmStringToQuark("nc");
 			}
 	                else
 	        		file_ext_q = NrmStringToQuark("nc");
@@ -2911,32 +2913,16 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 #ifdef BuildHDF5
 		else if(NrmStringToQuark("h5") == cur_ext_q)
 		{
-			H5O_info_t oi;              /* Information for object */
-			hid_t fid = -1;
-			herr_t status = -1;
+			htri_t status = H5Fis_hdf5(filename);
 
-			static char root_name[] = "/";
-
-			fid = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT);
-
-			if(0 > fid)
-			{
-				H5close();
-				found = 0;
-				continue;
-			}
-			
-			status = H5Oget_info_by_name(fid, root_name, &oi, H5P_DEFAULT);
-			H5close();
-
-			if(0 > status)
-				found = 0;
-			else
+			if(status)
 			{
         			file_ext_q = cur_ext_q;
 				found = 1;
 				break;
 			}
+			else
+				found = 0;
 		}
 #endif
 #ifdef BuildHDFEOS5
@@ -2947,6 +2933,15 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 			long ngd = 0;
 			long npt = 0;
 			long nza = 0;
+
+			/*HDFEOS5 file should be first a HDF5 file.*/
+			htri_t status = H5Fis_hdf5(filename);
+
+			if(! status)
+			{
+				found = 0;
+				continue;
+			}
 
 			nsw = HE5_SWinqswath(filename, NULL, &str_buf_size);
 			ngd = HE5_GDinqgrid (filename, NULL, &str_buf_size);
@@ -2971,6 +2966,15 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 			int32 npt = 0;
 			int32 bsize;
 
+			/*A HDFEOS(2) file must be a hdf(4) file first*/
+			intn status = Hishdf(filename);
+
+			if(! status)
+			{
+        			found = 0;
+				continue;
+			}
+
 			nsw = SWinqswath(filename, NULL, &bsize);
 			ngd = GDinqgrid (filename, NULL, &bsize);
 			npt = PTinqpoint(filename, NULL, &bsize);
@@ -2988,21 +2992,16 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 #ifdef BuildHDF4
 		else if(NrmStringToQuark("hdf") == cur_ext_q)
 		{
-			int cdfid;
-			int32 sd_id;
-	
-			cdfid = sd_ncopen(filename,NC_NOWRITE);
-			sd_id = SDstart (filename, DFACC_READ); 
-        		sd_ncclose(cdfid);
+			intn status = Hishdf(filename);
 
-			if(0 > cdfid)
-				found = 0;
-			else
+			if(status)
 			{
         			file_ext_q = cur_ext_q;
         			found = 1;
 				break;
 			}
+			else
+				found = 0;
 		}
 #endif
 		else
@@ -3031,6 +3030,8 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 	static int first = 1;
 
+        struct stat file_stat;
+
 	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status);
 
 	if(! is_http)
@@ -3045,7 +3046,12 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			NclQuark the_real_path = NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path)));
 			NclQuark old_file_ext_q = file_ext_q;
 
-			file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_new_hlfs);
+			stat(NrmQuarkToString(path), &file_stat);
+
+			if(file_stat.st_size)
+			    file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_new_hlfs);
+			else
+			    file_ext_q = -1;
 
 			if(0 > file_ext_q)
 			{
