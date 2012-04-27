@@ -28,6 +28,7 @@ FILES		= \
 		WhViBlGrYeOrReWh.gp \
 		WhViBlGrYeOrReWh.rgb \
 		amwg.rgb \
+		amwg256.rgb \
 		cosam.rgb \
 		cosam12.rgb \
 		default.rgb \

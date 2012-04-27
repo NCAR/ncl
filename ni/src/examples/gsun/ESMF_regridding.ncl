@@ -14,6 +14,10 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       27 April 2012:
+;            Renamed CornerLat and CornerLon to GridCornerLat and
+;            GridCornerLon to make it more clear what these are.
+;
 ;       26 April 2012:
 ;            For "conserve" method, be sure to divide results by
 ;            "frac_b". This also meant I had to modify "reshape"
@@ -531,7 +535,7 @@ end     ; of calc_SCRIP_corners(...)
 ; and/or 0/360 for lon.
 ;
 ; Really, if the user has a special grid, he/she should input the
-; corners via the CornerLat and CornerLon resources.
+; corners via the GridCornerLat and GridCornerLon resources.
 ;======================================================================
 undef("find_SCRIP_corners")
 procedure find_SCRIP_corners(lat2d[*][*],lon2d[*][*], \
@@ -856,7 +860,7 @@ end     ; of unstructured_to_ESMF(...)
 ;     for removing an existing file. If set to false the user permission
 ;     is required to remove an existing file. This is ineffective if
 ;     OverWrite is set to False.
-; (3) If CornerLat and CornerLon are set, then these will be used
+; (3) If GridCornerLat and GridCornerLon are set, then these will be used
 ;     instead of calcuation the corner points for the lat/lon cells.
 ;     The corner points are needed for the "conserve" method.
 ;======================================================================
@@ -865,13 +869,16 @@ procedure curvilinear_to_SCRIP(FName[1]:string,lat2d[*][*]:numeric,\
                                lon2d[*][*]:numeric,Opt[1]:logical)
 local latlon_dims, nlat, nlon, fid, FileAtt, grid_siz, grid_corners, \
 grid_rank, FDimNames, FDimSizes, FDimUnlim, DummyAtt1, DummyAtt2, \
-CornerLat, CornerLon, grid_corner_lat, grid_corner_lon, mask2d
+GridCornerLat, GridCornerLon, grid_corner_lat, grid_corner_lon, mask2d, \
+DEBUG
 begin
 ;---Check for options
     PrintTimings = isatt_logical_true(Opt,"PrintTimings")
     if(PrintTimings) then
       start_time = get_start_time()
     end if
+
+    DEBUG = isatt_logical_true(Opt,"Debug")
 
 ;---Check if the file already exists
     check_for_file(FName,Opt)
@@ -975,13 +982,19 @@ begin
     end if
 	
 ;---Get the grid lat/lon corners
-    if (isatt(Opt,"CornerLat").and.isatt(Opt,"CornerLon")) then
-        CornerLat = Opt@CornerLat
-        CornerLon = Opt@CornerLon
-        grid_corner_lat = reshape( CornerLat,(/ grid_size, grid_corners /))
-        grid_corner_lon = reshape( CornerLon,(/ grid_size, grid_corners /))
+    if (isatt(Opt,"GridCornerLat").and.isatt(Opt,"GridCornerLon")) then
+        if(DEBUG) then
+          print("curvilinear_to_SCRIP: using grid corners provided by user...")
+        end if
+        GridCornerLat   = Opt@GridCornerLat
+        GridCornerLon   = Opt@GridCornerLon
+        grid_corner_lat = reshape( GridCornerLat,(/ grid_size, grid_corners /))
+        grid_corner_lon = reshape( GridCornerLon,(/ grid_size, grid_corners /))
     else
 ;---Estimate the grid cell corners; it's better if the user provides them.
+        if(DEBUG) then
+          print("curvilinear_to_SCRIP: calculating grid corners...")
+        end if
         grid_corner_lat = new( (/ grid_size, grid_corners /), typeof(lat2d) )
         grid_corner_lon = new( (/ grid_size, grid_corners /), typeof(lon2d) )
 ;;      find_SCRIP_corners(lat2d,lon2d,grid_corner_lat,grid_corner_lon,Opt)
@@ -2253,7 +2266,7 @@ begin
 ; attributes that start with "Src" or "Dst".
 ;
   spc_atts = (/"Mask2D","LargeFile","Title","LLCorner","URCorner", \
-               "Rotation","CornerLat","CornerLon",\
+               "Rotation","GridCornerLat","GridCornerLon",\
                "InputFileName","OverWrite","ForceOverWrite"/)
   do i=0,dimsizes(spc_atts)-1
     tmp_att = grid_string + spc_atts(i)
@@ -2474,8 +2487,8 @@ end
 ;   DstLLCorner / DstURCorner - defaults to (-90,-180) / ( 90, 180)
 ;   SrcRotation / DstRotation - rotation angle
 ;
-; SrcCornerLat,SrcCornerLon / DstCornerLat,DstCornerLon - if set,
-;    then these values are used rather than calculating the 
+; SrcGridCornerLat,SrcGridCornerLon / DstGridCornerLat,DstGridCornerLon
+;  - if set, then these values are used rather than calculating the 
 ;    corner points for the cells 
 ;
 ;  SrcGridFileName / DstGridFileName
