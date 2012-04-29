@@ -11801,7 +11801,8 @@ begin
 
    statx    = new ( nStat, typeof(sFillV), sFillV) 
    if (.not.allFill) then
-       nwork    = dimsizes(work)  
+       nwork    = 0l                    ; force nwork as 'long' int
+       nwork    = dimsizes(work)        ; so (say) 3*nwork will work
        statx(0) = avg(x)                ; mean
        statx(1) = stddev(x)             ; std. deviation
        if (nwork.ge.10) then 
