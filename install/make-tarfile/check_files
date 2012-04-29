@@ -512,6 +512,7 @@ lib/ncarg/colormaps/WhiteBlue.rgb
 lib/ncarg/colormaps/WhiteBlueGreenYellowRed.rgb
 lib/ncarg/colormaps/WhiteGreen.rgb
 lib/ncarg/colormaps/WhiteYellowOrangeRed.rgb
+lib/ncarg/colormaps/amwg256.rgb
 lib/ncarg/colormaps/amwg.rgb
 lib/ncarg/colormaps/amwg_blueyellowred.rgb
 lib/ncarg/colormaps/cosam.rgb
