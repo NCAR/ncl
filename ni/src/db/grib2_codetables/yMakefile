@@ -21,7 +21,7 @@
 
 #if !defined(CRAY)
 #define	IHaveSubdirs
-SUBDIRS = ecmwf fsl ncar ncep tigge
+SUBDIRS = ecmwf ncep tigge
 #endif
 
 TABLES	 = centers.table
