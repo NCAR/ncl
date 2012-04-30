@@ -400,6 +400,7 @@ include/ncarg/hlu/XWorkstationP.h
 include/ncarg/hlu/XyPlot.h
 include/ncarg/hlu/XyPlotP.h
 include/ncarg/hlu/color.h
+include/ncarg/hlu/color.h
 include/ncarg/hlu/defs.h
 include/ncarg/hlu/hlu.h
 include/ncarg/hlu/hluP.h
