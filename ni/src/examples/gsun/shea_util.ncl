@@ -3690,7 +3690,11 @@ begin
   G   = 9.80665                    ; m/s2 ; gravity at 45 deg lat used by the WMO
   W   = 7.292e-5                   ; (1/s)     ; earth ang rotation
   rad = 4.*atan(1.)/180.
-  f   = 2.*W*sin(lat*rad)          ; (1/s)     ; coriolis parameter
+  if (typeof(lat).eq.typeof(vr)) then
+      f = 2.*W*sin(lat*rad)          ; (1/s)     ; coriolis parameter
+  else 
+      f = 2.*W*sin(tofloat(lat)*rad)
+  end if
 
   vr  = vr + conform(vr,f,nlt)     ; absolute vorticity   
                                    ; G used for commonly used units
@@ -3831,7 +3835,11 @@ begin
   R   = 287.04                     ; m2/(s2-K) ; gas constant dry air
   W   = 7.292e-5                   ; (1/s)     ; earth ang rotation
   rad = 4.*atan(1.)/180.
-  f   = 2.*W*sin(lat*rad)          ; (1/s)     ; coriolis parameter
+  if (typeof(lat).eq.typeof(vr)) then
+      f = 2.*W*sin(lat*rad)          ; (1/s)     ; coriolis parameter
+  else
+      f = 2.*W*sin(tofloat(lat)*rad)
+  end if
 
   vr  = vr + conform(vr,f,nlt)     ; absolute vorticity   
   con = R/(s*conform(t,p,npr))  
