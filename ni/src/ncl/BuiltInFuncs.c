@@ -73,6 +73,7 @@ extern "C" {
 #include "NclFileInterfaces.h"
 #include <signal.h>
 #include <netcdf.h>
+#include "NclProf.h"
 
 extern int cmd_line;
 extern short NCLnoSysPager;
@@ -30395,29 +30396,24 @@ NhlErrorTypes _Nclset_default_fillvalue
 
 NhlErrorTypes _Nclget_cpu_time(void)
 {
-	ng_size_t dimsize = 1;
+        ng_size_t dimsize = 1;
+		float time;
+		int retval;
 
-	struct rusage usage;
-	extern int errno;
+		retval = NclGetCPUTime(&time);
+		if(retval != NhlNOERROR){
+			NhlPError(NhlWARNING, NhlEUNKNOWN, "unable to get process cpu time");
+			return(NhlWARNING);
+		}
 
-	int status = getrusage(RUSAGE_SELF, &usage);
-	if (status) {
-        NhlPError(NhlWARNING, NhlEUNKNOWN,
-            "unable to get process cpu time: %d", status);
-		return(NhlWARNING);
-	}
-
-	float time = (usage.ru_stime.tv_sec + usage.ru_utime.tv_sec) +
-			(usage.ru_stime.tv_usec + usage.ru_utime.tv_usec) / 1000000.;
-
-	return(NclReturnValue(
-		&time,
-		1,
-		&dimsize,
-		NULL,
-		NCL_float,
-		1
-	));
+        return(NclReturnValue(
+                &time,
+                1,
+                &dimsize,
+                NULL,
+                NCL_float,
+                1
+        ));
 
 }
 #ifdef __cplusplus

@@ -7,6 +7,7 @@
 #include "NclData.h"
 #include "Symbol.h"
 #include "parser.h"
+#include "NclProf.h"
 #ifdef DEBUGER
 extern void printtoken(
 #ifdef NhlNeedProto
@@ -243,6 +244,7 @@ int status;
 	include_stack[loading++] = YY_CURRENT_BUFFER;
 	tmpfile = fopen( _NGResolvePath(tmp), "r" );
 	if(tmpfile != NULL) {
+		NCL_PROF_REGISTER_MDATA(0, tmp);
 		yyin = tmpfile;
 		yy_switch_to_buffer(yy_create_buffer( yyin, YY_BUF_SIZE ) );
 		cmd_line = isatty(fileno(yyin));
@@ -309,6 +311,7 @@ inttype [bBChHiIlLqQ]
 	*tmp = '\0';
 	tmp = (char*)&(yytext[0]) + 1;
 
+	NCL_PROF_REGISTER_MDATA(0, tmp);
     if (NCLecho)
         nclfprintf(stdout, "Loading file \"%s\"\n", tmp);
     if (load_stmt) {

@@ -44,6 +44,7 @@ extern "C" {
 #include "NclApi.h"
 #include "FileSupport.h"
 #include "NclTypeobj.h"
+#include "NclProf.h"
 extern void NclAddUserFileFormats(
 #if	NhlNeedProto
 void
@@ -2980,6 +2981,9 @@ void
 void _NclExit(int status) {
 	_NclFileCleanUp();
         NhlClose();
+
+	NCL_PROF_FINALIZE();
+
 	exit(status);
 }
 
