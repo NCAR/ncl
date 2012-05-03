@@ -290,8 +290,9 @@ begin
             system("rm -rf "+fname)
         else
             print("check_for_file: the file '" + fname + "' already exists.")
-            print("                Set opt@OverWrite      = True or")
-            print("                    opt@ForceOverWrite = True to override.")
+            print("                Set opt@OverWrite      = True")
+            print("                 or opt@ForceOverWrite = True")
+            print("                 to override.")
             exit
         end if
         end if
@@ -747,7 +748,7 @@ begin
     FileAtt@Conventions   = "ESMF"
     FileAtt@Createdby     = "ESMF_regridding.ncl"
     FileAtt@version       = "0.9"
-    FileAtt@inputFile     = inputFName
+    FileAtt@inputFile     = inputFName 
     FileAtt@timeGenerated = systemfunc("date")
     FileAtt@date_created  = FileAtt@timeGenerated
     fileattdef(fid,FileAtt)
@@ -854,9 +855,9 @@ end     ; of unstructured_to_ESMF(...)
 ; lat2d and lon2d must have (nlat,nlot) dimension.
 ; Opt controls the behavior of the function
 ; current attribute in Opt are:
-; (1) OverWrite [Logical] if true, and if the out file already exists
+; (1) OverWrite [Logical] if True, and if the out file already exists
 ;     it will erase the file.
-; (2) ForceOverWrite [Logical] If set to true, the user is not asked
+; (2) ForceOverWrite [Logical] If set to True, the user is not asked
 ;     for removing an existing file. If set to false the user permission
 ;     is required to remove an existing file. This is ineffective if
 ;     OverWrite is set to False.
@@ -1654,6 +1655,9 @@ end     ; of retrieve_ESMF_lon
 ; This procedure copies attributes from the original variable to
 ; the regridded variable, and attaches coordinate information, if
 ; available. It will not copy lat1d/lon1d or lat2d/lon2d attributes.
+;
+; I think this procedure needs to have added to it the ability to
+; have a "coordinates" attribute for the case of curvilinear grids.
 ;======================================================================
 undef("ESMF_copy_varmeta")
 procedure ESMF_copy_varmeta(sd,sd_regrid,opt)
@@ -1681,19 +1685,20 @@ begin
 
 ;---Create coordinates if requested (False by default)
   if(isatt(opt,"CopyVarCoords")) then
-    if(any(opt@DstGridType.eq.(/"latlon","rectilinear","curvilinear"/))) then
+    if(.not.(opt@DstGridType.eq."unstructured")) then
       dstlat = retrieve_SCRIP_lat(opt@DstGridFileName)
       dstlon = retrieve_SCRIP_lon(opt@DstGridFileName)
-      if(any(opt@DstGridType.eq.(/"latlon","rectilinear"/))) then
+      if(opt@DstGridType.eq."curvilinear") then
+        sd_regrid@lat2d = dstlat
+        sd_regrid@lon2d = dstlon
+      else
+; DstGridType is either "latlon" or something like "1x1", "0.25deg", etc.
         dstlat@units           = "degrees_north"
         dstlon@units           = "degrees_east"
         sd_regrid!(var_rank-2) = "lat"
         sd_regrid!(var_rank-1) = "lon"
         sd_regrid&lat            = dstlat(:,0)
         sd_regrid&lon            = dstlon(0,:)
-      else
-        sd_regrid@lat2d = dstlat
-        sd_regrid@lon2d = dstlon
       end if
     else
       sd_regrid@lat1d = (/retrieve_ESMF_lat(opt@DstGridFileName)/)
@@ -2497,6 +2502,7 @@ end
 ;  SrcMask2D / DstMask2D
 ;  SrcLargeFile / DstLargeFile
 ;  WgtFileName
+;  SkipSrcGrid / SkipDstGrid / SkipWeightGen
 ;  Debug
 ;  PrintTimings
 ;  ForceOverwrite
@@ -2508,13 +2514,15 @@ local opt, src_dims, src_rank, src_grid_type, src_grid_name, \
       src_lat_dims, src_lon_dims, src_lat_rank, src_lon_rank, \
       dst_dims, dst_rank, dst_grid_type, dst_grid_name, \
       dst_lat_dims, dst_lon_dims, dst_lat_rank, dst_lon_rank, \
-      dstlat, dstlon, wgt_file_name
+      dstlat, dstlon, wgt_file_name, debug
 begin
 ;---Check for certain options that must be set.
   if(.not.opt) then
     print("ESMF_regrid: opt was set to False. Can't continue.")
     exit
   end if
+
+  debug = isatt_logical_true(opt,"Debug")
 
 ;---Make a copy so we don't modify original opt.
   opt2 = opt
@@ -2527,14 +2535,18 @@ begin
   if(.not.isatt_logical_true(opt2,"SkipSrcGrid")) then
     write_grid_description_file(srcData,"Src",opt2)
   else
-    print("ESMF_regrid: skipping generation of source grid.")
+    if(debug) then
+      print("ESMF_regrid: skipping generation of source grid.")
+    end if
   end if
 
 ;---Write destination grid description file
   if(.not.isatt_logical_true(opt2,"SkipDstGrid")) then
     write_grid_description_file(srcData,"Dst",opt2)
   else
-    print("ESMF_regrid: skipping generation of destination grid.")
+    if(debug) then
+      print("ESMF_regrid: skipping generation of destination grid.")
+    end if
   end if
 
 ;---Generate the weights
@@ -2564,7 +2576,9 @@ begin
     end if
     ESMF_regrid_gen_weights(src_grid_file, dst_grid_file, wgt_file_name, opt2)
   else
-    print("ESMF_regrid: skipping generation of weights file.")
+    if(debug) then
+      print("ESMF_regrid: skipping generation of weights file.")
+    end if
   end if
 
 ;---Regrid the input variable
@@ -2640,4 +2654,3 @@ begin
     lon           = reshape( fid->xc_a , src_grid_dims(::-1))
     return(lon)
 end     ; of retrieve_srcGrid_lon
-
