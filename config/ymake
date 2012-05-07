@@ -415,6 +415,7 @@ case    Darwin:
             set vendor  = Apple
             breaksw
         case    i386:
+        case    x86_64:
             set model   = $mach
             set arch    = $mach
             set sysincs = Darwin_Intel
