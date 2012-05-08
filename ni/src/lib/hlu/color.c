@@ -87,3 +87,15 @@ float _NhlGetMarkerOpacity(void* layer) {
 	return _NhlGetOpacity(layer, NGC_MARKERALPHA);
 }
 
+int _NhlRGBAToColorIndex(float *rgba, int has_alpha)
+{
+	int r,g,b,a;
+	int tint;
+
+	r = (int)(*(rgba) * 255) << 16;
+	g = (int)(*(rgba+1) * 255) << 8;
+	b = (int)(*(rgba+2) * 255);
+	a = (has_alpha) ? (int)(*(rgba+3) * 63) << 24 | ALPHA_MASK : ALPHA_OPAQUE;
+	tint = a | r | g | b;
+	return (tint);
+}

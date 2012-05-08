@@ -175,10 +175,12 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlBoolean	mono_level_flag;
 	NhlcnLevelUseMode	level_flag;
 	NhlGenArray	level_flags;
+	NhlGenArray     fill_palette;
+	NhlBoolean      span_fill_palette;
 	NhlBoolean	mono_fill_color;
 	NhlColorIndex	fill_color;
 	NhlGenArray	fill_colors;
-	float       fill_opacity;
+	float           fill_opacity;
 	NhlBoolean	mono_fill_pattern;
 	NhlFillIndex	fill_pattern;
 	NhlGenArray	fill_patterns;

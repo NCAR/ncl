@@ -1194,6 +1194,20 @@ CvtStringToCmap
 		return NhlFATAL;
 	}
 	wc = *((NhlWorkstationClass*)args[0].data.ptrval);
+	if (wc->base_class.class_inited & _NhlViewClassFlag) {
+		wc = (NhlWorkstationClass)NhlworkstationClass; 
+		if ((! s1) || strlen(s1) == 0) {
+			_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),NULL);
+			return NhlNOERROR;
+		}
+	}
+	else if (! s1 || !(wc->base_class.class_inited & _NhlWorkstationClassFlag)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Unable to convert string \"%s\" to %s",func,s1,
+			NhlTColorMap);
+		return NhlFATAL;
+	}
+			
 	pl = (NhlPaletteLayer)_NhlGetLayer(wc->work_class.pal);
 	cmaps = pl->pal.cmaps;
 
@@ -1223,6 +1237,7 @@ CvtStringToCmap
 	}
 
 	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+	return NhlNOERROR;
 }
 
 /*
@@ -1327,6 +1342,15 @@ CvtStringGenArrayToCmap
 		return NhlFATAL;
 	}
 	wc = *((NhlWorkstationClass*)args[0].data.ptrval);
+	if (wc->base_class.class_inited & _NhlViewClassFlag) {
+		wc = (NhlWorkstationClass)NhlworkstationClass; 
+	}
+	else if (!(wc->base_class.class_inited & _NhlWorkstationClassFlag)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Unable to convert string array to %s",func,
+			NhlTColorMap);
+		return NhlFATAL;
+	}
 
 	if(!fgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fgen);
@@ -1393,6 +1417,7 @@ CvtStringGenArrayToCmap
 			*(fptr+(3*i)+2) = (float)rgb.blue / 65535.0;
 	}
 	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
+	return NhlNOERROR;
 }
 
 /*
@@ -1463,16 +1488,15 @@ PaletteInitialize
 		cmptr++;
 	}
 
-
-	(void)_NhlRegSymConv(pp->work_class,NhlTQuarkGenArray,NhlTColorMap,
+	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTColorMap,
 						NhlTQuarkGenArray,NhlTGenArray);
-	(void)NhlRegisterConverter(pp->work_class,NhlTString,NhlTColorMap,
+	(void)NhlRegisterConverter(NULL,NhlTString,NhlTColorMap,
 					CvtStringToCmap,&arg,1,False,NULL);
-	(void)_NhlRegSymConv(pp->work_class,NhlTQuark,NhlTColorMap,
+	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTColorMap,
 							NhlTQuark,NhlTScalar);
-	(void)NhlRegisterConverter(pp->work_class,NhlTGenArray,
+	(void)NhlRegisterConverter(NULL,NhlTGenArray,
 			NhlTColorMap,CvtGenArrayToCmap,NULL,0,False,NULL);
-	(void)NhlRegisterConverter(pp->work_class,NhlTStringGenArray,
+	(void)NhlRegisterConverter(NULL,NhlTStringGenArray,
 			NhlTColorMap,CvtStringGenArrayToCmap,&arg,1,False,NULL);
 
 	return NhlNOERROR;

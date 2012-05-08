@@ -34,6 +34,7 @@
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/CnStdRenderer.h>
 #include <ncarg/hlu/CnTriMeshRenderer.h>
+#include <ncarg/hlu/color.h>
 
 #define Oset(field)     NhlOffset(NhlContourPlotLayerRec,contourplot.field)
 static NhlResource resources[] = {
@@ -223,6 +224,13 @@ static NhlResource resources[] = {
 	{NhlNcnFillMode,NhlCcnFillMode,NhlTcnFillMode,sizeof(NhlcnFillMode),
 		 Oset(fill_mode),
  	 	NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+	{NhlNcnFillPalette, NhlCcnFillPalette, NhlTColorMap,
+		 sizeof(NhlPointer),Oset(fill_palette),
+		 NhlTString,_NhlUSET((NhlPointer) NULL),_NhlRES_DEFAULT,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNcnSpanFillPalette, NhlCcnSpanFillPalette, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(span_fill_palette),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNcnFillBackgroundColor,NhlCFillBackgroundColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(fill_background_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlTRANSPARENT),0,NULL},
@@ -923,7 +931,6 @@ static NhlErrorTypes ContourPlotSetValues(
 #endif
 );
 
-
 static NhlErrorTypes    ContourPlotGetValues(
 #if	NhlNeedProto
 	NhlLayer,       /* l */
@@ -1323,7 +1330,7 @@ static NhlErrorTypes	CheckColorArray(
 	int		init_count,
 	int		last_count,
 	int		**gks_colors,
-	NhlString	resource_name,
+	NrmQuark	resource_name,
 	NhlString	entry_name
 #endif
 );
@@ -1461,6 +1468,7 @@ static NrmQuark Qdashindex = NrmNULLQUARK;
 static NrmQuark Qstring = NrmNULLQUARK;
 static NrmQuark	Qlevels = NrmNULLQUARK; 
 static NrmQuark	Qlevel_flags = NrmNULLQUARK; 
+static NrmQuark	Qfill_palette = NrmNULLQUARK;
 static NrmQuark	Qfill_colors = NrmNULLQUARK;
 static NrmQuark	Qfill_patterns = NrmNULLQUARK;
 static NrmQuark	Qfill_scales = NrmNULLQUARK;
@@ -1708,6 +1716,7 @@ ContourPlotClassInitialize
 	Qdashindex = NrmStringToQuark(NhlTDashIndex);
 	Qlevels = NrmStringToQuark(NhlNcnLevels);
 	Qlevel_flags = NrmStringToQuark(NhlNcnLevelFlags);
+	Qfill_palette = NrmStringToQuark(NhlNcnFillPalette);
 	Qfill_colors = NrmStringToQuark(NhlNcnFillColors);
 	Qfill_patterns = NrmStringToQuark(NhlNcnFillPatterns);
 	Qfill_scales = NrmStringToQuark(NhlNcnFillScales);
@@ -2636,6 +2645,11 @@ static NhlErrorTypes    ContourPlotGetValues
                         count = cnp->level_count;
                         type = NhlNcnLevelFlags;
                 }
+                else if (args[i].quark == Qfill_palette) {
+                        ga = cnp->fill_palette;
+                        count = cnp->fill_palette->num_elements;
+                        type = NhlNcnFillPalette;
+                }
                 else if (args[i].quark == Qfill_colors) {
                         ga = cnp->fill_colors;
                         count = cnp->fill_count;
@@ -2911,6 +2925,8 @@ NhlLayer inst;
 	NhlFreeGenArray(cnp->line_thicknesses);
 	NhlFreeGenArray(cnp->llabel_strings);
 	NhlFreeGenArray(cnp->llabel_colors);
+        if (cnp->fill_palette)
+                NhlFree(cnp->fill_palette);
         if (cnp->gks_llabel_colors)
                 NhlFree(cnp->gks_llabel_colors);
         if (cnp->gks_line_colors)
@@ -7754,6 +7770,175 @@ static NhlErrorTypes    AdjustText
 	return ret;
 }
 /*
+ * Function:  SetFillColorsFromPalette
+ *
+ * Description: Sets cnFillColors using the colors in cnFillPalette 
+ *          (as opposed to using wkColorMap to set color indexes)
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+/*ARGSUSED*/
+static NhlErrorTypes SpanColors
+#if	NhlNeedProto
+(NhlGenArray	        palga,
+ int *                  ci,
+ int                    count)
+#else
+
+NhlGenArray             palga;
+int  *                  ci;
+int                     count;
+#endif
+
+/*
+ * Function:  SpanColors
+ *
+ * Description: Spans a color palette to generate an array of count color indexes
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+{
+	int min_ind,max_ind,i;
+	int *pal_col = (int *)palga->data;
+	double spacing;
+	int ix;
+	
+
+	i = 0;
+	while (pal_col[i] < 0) i++;
+	min_ind = i;
+	max_ind = palga->num_elements - 1;
+	spacing = (max_ind - min_ind) / (double) (count - 1);
+	for (i = 0; i < count; i++) {
+		ix = (int) min_ind + spacing * i + 0.5;
+		ci[i] = pal_col[ix];
+	}
+	return NhlNOERROR;
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes    SetFillColorsFromPalette
+#if	NhlNeedProto
+(NhlContourPlotLayer	cnl,
+ NhlGenArray *          ga,
+ char *                 entry_name)
+#else
+(cnl,ga)
+NhlContourPlotLayer	cnl;
+NhlGenArray             *ga;
+char *                  entry_name;
+#endif
+
+{
+
+	NhlErrorTypes subret = NhlNOERROR;
+        _NhlConvertContext	context = NULL;
+	NhlContourPlotLayerPart *cnp = &(cnl->contourplot);
+	char *e_text;
+	NrmValue from,to;
+	NhlGenArray intga,fltga;
+	int *ci;
+	ng_size_t i,io,count;
+
+	if (cnp->fill_palette == NULL) {
+		/* use the workstation colormap */
+		NhlVAGetValues(cnl->base.wkptr->base.id,
+			       NhlNwkColorMap,&fltga,NULL);
+		from.size = sizeof(NhlGenArray);
+		from.data.ptrval = fltga;
+		/* set the first 2 colors to negative numbers to inhibit their use */
+		for (i = 0; i < 6; i++) {
+			((float*)fltga->data)[i] = -1.0;
+		}
+	}
+	else {
+		from.size = sizeof(NhlGenArray);
+		from.data.ptrval = cnp->fill_palette;
+	}
+	to.size = sizeof(NhlGenArray);
+	to.data.ptrval = &intga;
+
+        context = _NhlCreateConvertContext(cnl->base.wkptr);
+
+	subret = _NhlConvertData(context,NrmStringToQuark(NhlTColorDefinitionGenArray),
+				 NrmStringToQuark(NhlTColorIndexGenArray),&from,&to);
+	if (subret < NhlWARNING) {
+		e_text = "%s: error converting color palette";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	count = cnp->fill_count;
+	ci = NhlMalloc(sizeof(int) * count);
+
+	if (cnp->span_fill_palette) {
+		subret = SpanColors(intga,ci,count);
+	}
+	else {
+		int *pal_col = (int*) intga->data;
+		for (i = 0,io = 0; io < count; i++) {
+			if (pal_col[i % intga->num_elements] < 0)
+				continue;
+			ci[io] = pal_col[i % intga->num_elements];
+			io++;
+		}
+	}
+	if ((*ga = NhlCreateGenArray((NhlPointer)ci,NhlTColorIndex,
+				     sizeof(int),1,&count)) == NULL) {
+		e_text = "%s: error creating GenArray";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	return NhlNOERROR;
+
+
+}
+/*ARGSUSED*/
+static NhlErrorTypes    SetFillColorsFromIndexAndPalette
+#if	NhlNeedProto
+(NhlContourPlotLayer	cnl,
+ char *                 entry_name)
+#else
+(cnl,ga)
+NhlContourPlotLayer	cnl;
+char *                  entry_name;
+#endif
+{
+
+	NhlContourPlotLayerPart *cnp = &(cnl->contourplot);
+	int *fill_cols;
+	float *fpal;
+	int i;
+	
+	fill_cols = (int*)cnp->fill_colors->data;
+
+	for (i = 0; i < cnp->fill_colors->num_elements; i++) {
+		if (fill_cols[i] < 256) {
+			if (i > cnp->fill_palette->len_dimensions[0] - 1) {
+				fill_cols[i] = NhlFOREGROUND;
+			}
+			fpal = ((float*)cnp->fill_palette->data) + fill_cols[i] * cnp->fill_palette->len_dimensions[1];
+			fill_cols[i] = _NhlRGBAToColorIndex(fpal,cnp->fill_palette->len_dimensions[1] == 4 ? 1 : 0);
+		}
+	}
+	return NhlNOERROR;
+}
+
+/*
  * Function:  ManageDynamicArrays
  *
  * Description: Creates and manages internal copies of each of the 
@@ -7807,6 +7992,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	float *levels = NULL;
 	NhlBoolean levels_modified = False, flags_modified = False;
 	NhlBoolean line_init;
+	NhlBoolean palette_set;
 
 	entry_name =  init ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
@@ -7960,17 +8146,48 @@ static NhlErrorTypes    ManageDynamicArrays
 	}
 
 /*=======================================================================*/
+
+/*
+ * Fill palette
+ */
+	count = cnp->fill_count;
+	palette_set = False;
+	if ((init && cnp->fill_palette) ||
+	    _NhlArgIsSet(args,num_args,NhlNcnFillPalette)) {
+		if (! init && ocnp->fill_palette != NULL)
+			NhlFreeGenArray(ocnp->fill_palette);
+		if (cnp->fill_palette != NULL) {
+			if ((ga =  _NhlCopyGenArray(cnp->fill_palette,True)) == NULL) {
+				e_text = "%s: error copying GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
+			}
+			cnp->fill_palette = ga;
+		}
+		palette_set = True;
+	}
+
+/*=======================================================================*/
 	
 /*
  * Fill colors
  */
-
-	ga = init ? NULL : ocnp->fill_colors;
 	count = cnp->fill_count;
+	if (palette_set) {
+		if ((cnp->fill_colors == NULL) || 
+		    (! _NhlArgIsSet(args,num_args,NhlNcnFillColors))) {
+			subret = SetFillColorsFromPalette(cnew,&ga,entry_name);
+			cnp->fill_colors = ga;
+		}
+	}
+	else if (cnp->fill_palette && cnp->fill_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnFillColors))) {
+		subret = SetFillColorsFromIndexAndPalette(cnew,entry_name);
+	}
+			
+	ga = init ? NULL : ocnp->fill_colors;
 	subret = ManageGenArray(&ga,count,cnp->fill_colors,Qcolorindex,NULL,
 				&old_count,&init_count,&need_check,&changed,
 				NhlNcnFillColors,entry_name);
-
         if (init || cnp->fill_count > ocnp->fill_count)
                 need_check = True;
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
@@ -7981,7 +8198,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	if (need_check) {
 		subret = CheckColorArray(cnew,ga,count,init_count,old_count,
 					 &cnp->gks_fill_colors,
-					 NhlNcnFillColors,entry_name);
+					 Qfill_colors,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 			return ret;
 	}
@@ -8080,7 +8297,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	if (need_check) {
 		subret = CheckColorArray(cnew,ga,count,init_count,old_count,
 					 &cnp->gks_line_colors,
-					 NhlNcnLineColors,entry_name);
+					 Qline_colors,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 			return ret;
 	}
@@ -8302,7 +8519,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	if (need_check) {
 		subret = CheckColorArray(cnew,ga,count,init_count,old_count,
 					 &cnp->gks_llabel_colors,
-					 NhlNcnLineLabelFontColors,entry_name);
+					 Qllabel_colors,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 			return ret;
 	}
@@ -8604,7 +8821,7 @@ static NhlErrorTypes	CheckColorArray
 	int		init_count,
 	int		last_count,
 	int		**gks_colors,
-	NhlString	resource_name,
+	NrmQuark        resource_name,
 	NhlString	entry_name)
 #else
 (cl,ga,count,init_count,last_count,gks_colors,resource_name,entry_name)
@@ -8614,7 +8831,7 @@ static NhlErrorTypes	CheckColorArray
 	int		init_count;
 	int		last_count;
 	int		**gks_colors;
-	NhlString	resource_name;
+	NrmQuark	resource_name;
 	NhlString	entry_name;
 #endif
 {
@@ -8639,11 +8856,13 @@ static NhlErrorTypes	CheckColorArray
 	}
 
 	for (i=0; i<count; i++) {
-                if (ip[i] == NhlTRANSPARENT)
+                if (ip[i] == NhlTRANSPARENT) {
                         (*gks_colors)[i] = NhlTRANSPARENT;
-                else
+		}
+	        else {
                         (*gks_colors)[i] =
                                 _NhlGetGksCi(cl->base.wkptr,ip[i]);
+		}
 	}
 	return ret;
 }
