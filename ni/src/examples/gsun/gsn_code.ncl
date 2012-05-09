@@ -985,7 +985,11 @@ end
 ;                res:logical                                            ;
 ;                                                                       ;
 ;***********************************************************************;
-; In Version 6.1.0, the default for gsnSpreadColors is now True.        ;
+; In Version 6.1.0, gsnSpreadColors is basically deprecated, and        ;
+; replaced with cnSpanFillPalette, vcSpanFillPalette, etc, which are    ;
+; True by default. If the user sets gsnSpreadColorStart and/or          ;
+; gsnSpreadColorEnd to something other than their default values (2 and ;
+; -1), then the spread_colors algorithm will kick in.                   ;
 ;***********************************************************************;
 ;                                                                       ;
 ; By default, all of the plotting routines use the first n colors from  ;
@@ -9045,7 +9049,9 @@ end
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
-;   gsnSpreadColors                                                     ;
+;   gsnSpreadColors - deprecated as of NCL V6.1.0. Only used if         ;
+;     gsnSpreadColorStart and/or gsnSpreadColorEnd are set to something ;
+;     other than 2 and -1.                                              ;
 ;   gsnSpreadColorStart                                                 ;
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
@@ -9158,9 +9164,13 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+    if(min_index.ne.2.or.max_index.ne.-1.) then
+      sprdcols = get_res_value(res2,"gsnSpreadColors",True)
+    else
+      sprdcols = get_res_value(res2,"gsnSpreadColors",False)
+    end if
 
     if(res2.and.isatt(res2,"gsnContourZeroLineThicknessF")) then
       zthickness = res2@gsnContourZeroLineThicknessF
@@ -9322,7 +9332,9 @@ end
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
-;   gsnSpreadColors                                                     ;
+;   gsnSpreadColors - deprecated as of NCL V6.1.0. Only used if         ;
+;     gsnSpreadColorStart and/or gsnSpreadColorEnd are set to something ;
+;     other than 2 and -1.                                              ;
 ;   gsnSpreadColorStart                                                 ;
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
@@ -9378,9 +9390,13 @@ begin
     maxbb     = get_bb_res(res2)
     scale     = get_res_value(res2,"gsnScale",False)
     shape     = get_res_value(res2,"gsnShape",scale)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+    if(min_index.ne.2.or.max_index.ne.-1.) then
+      sprdcols = get_res_value(res2,"gsnSpreadColors",True)
+    else
+      sprdcols = get_res_value(res2,"gsnSpreadColors",False)
+    end if
 
     mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT","tm"/))
     cnres = get_res_ne(res2,(/"mp","sf","vp"/))
@@ -10000,7 +10016,9 @@ end
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
-;   gsnSpreadColors                                                     ;
+;   gsnSpreadColors - deprecated as of NCL V6.1.0. Only used if         ;
+;     gsnSpreadColorStart and/or gsnSpreadColorEnd are set to something ;
+;     other than 2 and -1.                                              ;
 ;   gsnSpreadColorStart                                                 ;
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
@@ -10045,9 +10063,13 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+    if(min_index.ne.2.or.max_index.ne.-1.) then
+      sprdcols = get_res_value(res2,"gsnSpreadColors",True)
+    else
+      sprdcols = get_res_value(res2,"gsnSpreadColors",False)
+    end if
 
     check_for_irreg2loglin(res2,force_x_linear,force_y_linear,\
                                 force_x_log,force_y_log)
@@ -10125,7 +10147,9 @@ end
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
-;   gsnSpreadColors                                                     ;
+;   gsnSpreadColors - deprecated as of NCL V6.1.0. Only used if         ;
+;     gsnSpreadColorStart and/or gsnSpreadColorEnd are set to something ;
+;     other than 2 and -1.                                              ;
 ;   gsnSpreadColorStart                                                 ;
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
@@ -10179,10 +10203,13 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
-
+    if(min_index.ne.2.or.max_index.ne.-1.) then
+      sprdcols = get_res_value(res2,"gsnSpreadColors",True)
+    else
+      sprdcols = get_res_value(res2,"gsnSpreadColors",False)
+    end if
 
     if(res2.and.isatt(res2,"gsnContourZeroLineThicknessF")) then
       zthickness = res2@gsnContourZeroLineThicknessF
@@ -10303,7 +10330,9 @@ end
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
-;   gsnSpreadColors                                                     ;
+;   gsnSpreadColors - deprecated as of NCL V6.1.0. Only used if         ;
+;     gsnSpreadColorStart and/or gsnSpreadColorEnd are set to something ;
+;     other than 2 and -1.                                              ;
 ;   gsnSpreadColorStart                                                 ;
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
@@ -10362,9 +10391,13 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+    if(min_index.ne.2.or.max_index.ne.-1.) then
+      sprdcols = get_res_value(res2,"gsnSpreadColors",True)
+    else
+      sprdcols = get_res_value(res2,"gsnSpreadColors",False)
+    end if
 
     if(res2.and.isatt(res2,"gsnContourZeroLineThicknessF")) then
       zthickness = res2@gsnContourZeroLineThicknessF
@@ -10471,7 +10504,9 @@ end
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
-;   gsnSpreadColors                                                     ;
+;   gsnSpreadColors - deprecated as of NCL V6.1.0. Only used if         ;
+;     gsnSpreadColorStart and/or gsnSpreadColorEnd are set to something ;
+;     other than 2 and -1.                                              ;
 ;   gsnSpreadColorStart                                                 ;
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
@@ -10529,10 +10564,13 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
-
+    if(min_index.ne.2.or.max_index.ne.-1.) then
+      sprdcols = get_res_value(res2,"gsnSpreadColors",True)
+    else
+      sprdcols = get_res_value(res2,"gsnSpreadColors",False)
+    end if
 
     if(res2.and.isatt(res2,"gsnContourZeroLineThicknessF")) then
       zthickness = res2@gsnContourZeroLineThicknessF
@@ -10649,7 +10687,9 @@ end
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
-;   gsnSpreadColors                                                     ;
+;   gsnSpreadColors - deprecated as of NCL V6.1.0. Only used if         ;
+;     gsnSpreadColorStart and/or gsnSpreadColorEnd are set to something ;
+;     other than 2 and -1.                                              ;
 ;   gsnSpreadColorStart                                                 ;
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
@@ -10692,9 +10732,13 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+    if(min_index.ne.2.or.max_index.ne.-1.) then
+      sprdcols = get_res_value(res2,"gsnSpreadColors",True)
+    else
+      sprdcols = get_res_value(res2,"gsnSpreadColors",False)
+    end if
 
     vfres = get_res_eq(res2,"vf")
     mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT","tm"/))
@@ -10749,7 +10793,9 @@ end
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
-;   gsnSpreadColors                                                     ;
+;   gsnSpreadColors - deprecated as of NCL V6.1.0. Only used if         ;
+;     gsnSpreadColorStart and/or gsnSpreadColorEnd are set to something ;
+;     other than 2 and -1.                                              ;
 ;   gsnSpreadColorStart                                                 ;
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
@@ -10807,9 +10853,13 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+    if(min_index.ne.2.or.max_index.ne.-1.) then
+      sprdcols = get_res_value(res2,"gsnSpreadColors",True)
+    else
+      sprdcols = get_res_value(res2,"gsnSpreadColors",False)
+    end if
 
     check_for_irreg2loglin(res2,force_x_linear,force_y_linear,\
                                 force_x_log,force_y_log)
@@ -10890,7 +10940,9 @@ end
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
-;   gsnSpreadColors                                                     ;
+;   gsnSpreadColors - deprecated as of NCL V6.1.0. Only used if         ;
+;     gsnSpreadColorStart and/or gsnSpreadColorEnd are set to something ;
+;     other than 2 and -1.                                              ;
 ;   gsnSpreadColorStart                                                 ;
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
@@ -10948,9 +11000,13 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+    if(min_index.ne.2.or.max_index.ne.-1.) then
+      sprdcols = get_res_value(res2,"gsnSpreadColors",True)
+    else
+      sprdcols = get_res_value(res2,"gsnSpreadColors",False)
+    end if
 
     check_for_irreg2loglin(res2,force_x_linear,force_y_linear,\
                                 force_x_log,force_y_log)
@@ -11032,7 +11088,9 @@ end
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
-;   gsnSpreadColors                                                     ;
+;   gsnSpreadColors - deprecated as of NCL V6.1.0. Only used if         ;
+;     gsnSpreadColorStart and/or gsnSpreadColorEnd are set to something ;
+;     other than 2 and -1.                                              ;
 ;   gsnSpreadColorStart                                                 ;
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
@@ -11089,9 +11147,13 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+    if(min_index.ne.2.or.max_index.ne.-1.) then
+      sprdcols = get_res_value(res2,"gsnSpreadColors",True)
+    else
+      sprdcols = get_res_value(res2,"gsnSpreadColors",False)
+    end if
 
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
@@ -11151,7 +11213,9 @@ end
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
-;   gsnSpreadColors                                                     ;
+;   gsnSpreadColors - deprecated as of NCL V6.1.0. Only used if         ;
+;     gsnSpreadColorStart and/or gsnSpreadColorEnd are set to something ;
+;     other than 2 and -1.                                              ;
 ;   gsnSpreadColorStart                                                 ;
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
@@ -11208,9 +11272,13 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_res_value(res2,"gsnSpreadColors",True)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+    if(min_index.ne.2.or.max_index.ne.-1.) then
+      sprdcols = get_res_value(res2,"gsnSpreadColors",True)
+    else
+      sprdcols = get_res_value(res2,"gsnSpreadColors",False)
+    end if
 
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
