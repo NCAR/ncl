@@ -1351,6 +1351,9 @@ static NhlErrorTypes GetData(
 #endif
 );
 
+extern void NGCALLF(gfa,GFA)(int *,float *, float *);
+extern void NGCALLF(gpl,GPL)(int *, float *, float *);
+
 
 NhlContourPlotDataDepClassRec NhlcontourPlotDataDepClassRec = {
 	/* base_class */
@@ -3623,7 +3626,6 @@ static NhlErrorTypes ContourPlotPostDraw
 }
 
 
-
 /*
  * Function:	cnDraw
  *
@@ -3670,7 +3672,7 @@ static NhlErrorTypes cnDraw
         cnp->wk_active = True;
 
         if (cnl->view.use_segments && ! cnp->output_gridded_data) {
-                NhlTransDat **trans_dat_pp;
+                NhlTransDat **trans_dat_pp = NULL;
                 switch (order) {
                     case NhlPREDRAW:
                             trans_dat_pp = &cnp->predraw_dat;
