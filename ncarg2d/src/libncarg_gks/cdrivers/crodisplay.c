@@ -128,13 +128,14 @@ croCreateNativeDisplaySurface(CROddp* psa)
 }
 
 /*
-
+ *
  */
 void
 croFreeNativeSurface(cairo_surface_t* surface) {
     /* free all X11 resources...  */
     XCloseDisplay(cairo_xlib_surface_get_display(surface));
 }
+
 /*
  * createXworkWindow()
  *
@@ -226,8 +227,8 @@ createXWorkWindow(Display *dpy, CROddp* psa)
      */
     xswa.bit_gravity = CenterGravity;
     xswa.backing_store = WhenMapped;
-    xswa.background_pixel = BlackPixel(dpy, DefaultScreen(dpy));
-    xswa.border_pixel = BlackPixel(dpy, DefaultScreen(dpy));
+    xswa.background_pixel = WhitePixel(dpy, DefaultScreen(dpy));
+    xswa.border_pixel = WhitePixel(dpy, DefaultScreen(dpy)); 
 
     /*
      * Create the Window with the information in the XSizeHints, the
@@ -305,6 +306,8 @@ createXWorkWindow(Display *dpy, CROddp* psa)
     return win;
 }
 
+#include <stdio.h>
+
 /*
  * croX11Pause()
  *
@@ -319,16 +322,13 @@ void croX11Pause(cairo_surface_t* surface) {
     if (!display)
         return;
 
-    if (XCheckMaskEvent(display,ButtonPressMask|KeyPressMask,&event)) {
-
-        cairo_xlib_surface_set_size(surface, event.xresizerequest.width, event.xresizerequest.height);
-    }
     /*
      * discard all events that a impatient user
      * may have acquired while waiting for a plot to finnish
      */
-    while(XCheckMaskEvent(display,ButtonPressMask|KeyPressMask,&event));
-
+    cairo_surface_flush(surface);
+    while(XCheckMaskEvent(display,ButtonPressMask|KeyPressMask,&event)) { /* loop until false */ }
+    
     /*
      * wait for next buttonpress or keypress
      */
@@ -337,3 +337,65 @@ void croX11Pause(cairo_surface_t* surface) {
     return;
 }
 
+void 
+croActivateX11(CROddp *psa, cairo_surface_t* surface)
+{
+  static int initBack = 1;
+
+    /* code for this function was heavily barrowed from the original X11 driver --RLB */
+    XWindowAttributes       xwa;    /* Get window attributes        */
+    CoordSpace              square_screen;
+
+    Display *dpy = cairo_xlib_surface_get_display(surface);
+    Window   win = cairo_xlib_surface_get_drawable(surface);
+
+    if (initBack) {
+       /* We want to set the window's background/border to the 
+	* workstation's background color, but can't do it at window
+	* creation time because the workstation color map is not 
+	* available then. We do it once here, on the first activation.
+	*/
+        cairo_surface_flush(surface);
+        XSetWindowBackground(dpy, win, psa->ctable[0]);
+        XSetWindowBorder(dpy, win, psa->ctable[0]);
+        initBack = 0;
+    }
+
+    XSync(dpy, False);
+    
+    /*
+     *      Find out how big the window is; calculate the
+     *      coordinate translation macros.
+     */
+    if (XGetWindowAttributes(dpy, win, &xwa) == 0) {
+        ESprintf(ERR_WIN_ATTRIB, "XGetWindowAttributes(,,)");
+        return;
+    }
+
+    square_screen = ComputeLargestSquare(
+        (double) 0.0, (double) (xwa.height - 1),
+	(double) (xwa.width - 1), (double) 0.0
+    );
+
+    psa->image_width = xwa.width; /*square_screen.urx; */
+    psa->image_height = xwa.height; /*square_screen.lly;*/
+
+    psa->dspace.llx = square_screen.llx;
+    psa->dspace.urx = square_screen.urx;
+    psa->dspace.lly = square_screen.ury;   /* note flip of y-axis */
+    psa->dspace.ury = square_screen.lly;   /*         "           */
+
+    psa->dspace.xspan = ((psa->dspace.urx) - (psa->dspace.llx));
+    psa->dspace.yspan = ((psa->dspace.ury) - (psa->dspace.lly));
+
+    if (psa->cro_clip.null == FALSE) {
+      psa->cro_clip.llx = psa->dspace.llx;
+      psa->cro_clip.lly = psa->dspace.lly;
+      psa->cro_clip.urx = psa->dspace.urx;
+      psa->cro_clip.ury = psa->dspace.ury;
+    }
+
+    cairo_xlib_surface_set_size(surface, xwa.width, xwa.height);
+
+    return;
+}

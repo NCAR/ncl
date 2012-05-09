@@ -71,6 +71,7 @@ void cro_SoftFill(GKSC *gksc, float angle, float spl);
 extern cairo_surface_t* croCreateNativeDisplaySurface(CROddp* psa);
 extern void croX11Pause(cairo_surface_t* surface);
 extern void croFreeNativeSurface(cairo_surface_t* surface);
+extern void croActivateX11(CROddp* psa, cairo_surface_t* surface);
 
 /*
  *  Globals
@@ -279,8 +280,15 @@ CROClipRect GetCROClipping(CROddp *psa) {
 
 int cro_ActivateWorkstation(GKSC *gksc) {
 
+    CROddp *psa = (CROddp *) gksc->ddp;
+
     if (getenv("CRO_TRACE")) {
         printf("Got to cro_ActivateWorkstation\n");
+    }
+
+    if (psa->wks_type == CX11) {
+      croActivateX11(psa, cairo_surface[context_index(psa->wks_id)]);
+      setSurfaceTransform(psa);
     }
 
     return (0);
