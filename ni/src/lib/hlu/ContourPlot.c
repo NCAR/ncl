@@ -7850,25 +7850,12 @@ char *                  entry_name;
 	NhlContourPlotLayerPart *cnp = &(cnl->contourplot);
 	char *e_text;
 	NrmValue from,to;
-	NhlGenArray intga,fltga;
+	NhlGenArray intga;
 	int *ci;
 	ng_size_t i,io,count;
 
-	if (cnp->fill_palette == NULL) {
-		/* use the workstation colormap */
-		NhlVAGetValues(cnl->base.wkptr->base.id,
-			       NhlNwkColorMap,&fltga,NULL);
-		from.size = sizeof(NhlGenArray);
-		from.data.ptrval = fltga;
-		/* set the first 2 colors to negative numbers to inhibit their use */
-		for (i = 0; i < 6; i++) {
-			((float*)fltga->data)[i] = -1.0;
-		}
-	}
-	else {
-		from.size = sizeof(NhlGenArray);
-		from.data.ptrval = cnp->fill_palette;
-	}
+	from.size = sizeof(NhlGenArray);
+	from.data.ptrval = cnp->fill_palette;
 	to.size = sizeof(NhlGenArray);
 	to.data.ptrval = &intga;
 
@@ -8166,6 +8153,19 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		palette_set = True;
 	}
+	if (! cnp->fill_palette) {
+		/* if no palette has been specified use the workstation colormap */
+		NhlGenArray cmap_ga;
+		NhlVAGetValues(cnew->base.wkptr->base.id,
+			       NhlNwkColorMap, &cmap_ga, NULL);
+		cnp->fill_palette = cmap_ga;
+		/* set the first 2 colors to negative numbers to inhibit their use */
+		for (i = 0; i < 6; i++) {
+			((float*)cmap_ga->data)[i] = -1.0;
+		}
+		palette_set = True;
+	}
+
 
 /*=======================================================================*/
 	
