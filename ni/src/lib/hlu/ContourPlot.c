@@ -7771,161 +7771,6 @@ static NhlErrorTypes    AdjustText
 
 	return ret;
 }
-/*
- * Function:  SetFillColorsFromPalette
- *
- * Description: Sets cnFillColors using the colors in cnFillPalette 
- *          (as opposed to using wkColorMap to set color indexes)
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes SpanColors
-#if	NhlNeedProto
-(NhlGenArray	        palga,
- int *                  ci,
- int                    count)
-#else
-
-NhlGenArray             palga;
-int  *                  ci;
-int                     count;
-#endif
-
-/*
- * Function:  SpanColors
- *
- * Description: Spans a color palette to generate an array of count color indexes
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects: 
- */
-
-{
-	int min_ind,max_ind,i;
-	int *pal_col = (int *)palga->data;
-	double spacing;
-	int ix;
-	
-
-	i = 0;
-	while (pal_col[i] < 0) i++;
-	min_ind = i;
-	max_ind = palga->num_elements - 1;
-	spacing = (max_ind - min_ind) / (double) (count - 1);
-	for (i = 0; i < count; i++) {
-		ix = (int) min_ind + spacing * i + 0.5;
-		ci[i] = pal_col[ix];
-	}
-	return NhlNOERROR;
-}
-
-/*ARGSUSED*/
-static NhlErrorTypes    SetFillColorsFromPalette
-#if	NhlNeedProto
-(NhlContourPlotLayer	cnl,
- NhlGenArray *          ga,
- char *                 entry_name)
-#else
-(cnl,ga)
-NhlContourPlotLayer	cnl;
-NhlGenArray             *ga;
-char *                  entry_name;
-#endif
-
-{
-
-	NhlErrorTypes subret = NhlNOERROR;
-        _NhlConvertContext	context = NULL;
-	NhlContourPlotLayerPart *cnp = &(cnl->contourplot);
-	char *e_text;
-	NrmValue from,to;
-	NhlGenArray intga;
-	int *ci;
-	ng_size_t i,io,count;
-
-	from.size = sizeof(NhlGenArray);
-	from.data.ptrval = cnp->fill_palette;
-	to.size = sizeof(NhlGenArray);
-	to.data.ptrval = &intga;
-
-        context = _NhlCreateConvertContext(cnl->base.wkptr);
-
-	subret = _NhlConvertData(context,NrmStringToQuark(NhlTColorDefinitionGenArray),
-				 NrmStringToQuark(NhlTColorIndexGenArray),&from,&to);
-	if (subret < NhlWARNING) {
-		e_text = "%s: error converting color palette";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-	count = cnp->fill_count;
-	ci = NhlMalloc(sizeof(int) * count);
-
-	if (cnp->span_fill_palette) {
-		subret = SpanColors(intga,ci,count);
-	}
-	else {
-		int *pal_col = (int*) intga->data;
-		for (i = 0,io = 0; io < count; i++) {
-			if (pal_col[i % intga->num_elements] < 0)
-				continue;
-			ci[io] = pal_col[i % intga->num_elements];
-			io++;
-		}
-	}
-	if ((*ga = NhlCreateGenArray((NhlPointer)ci,NhlTColorIndex,
-				     sizeof(int),1,&count)) == NULL) {
-		e_text = "%s: error creating GenArray";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-
-	return NhlNOERROR;
-
-
-}
-/*ARGSUSED*/
-static NhlErrorTypes    SetFillColorsFromIndexAndPalette
-#if	NhlNeedProto
-(NhlContourPlotLayer	cnl,
- char *                 entry_name)
-#else
-(cnl,ga)
-NhlContourPlotLayer	cnl;
-char *                  entry_name;
-#endif
-{
-
-	NhlContourPlotLayerPart *cnp = &(cnl->contourplot);
-	int *fill_cols;
-	float *fpal;
-	int i;
-	
-	fill_cols = (int*)cnp->fill_colors->data;
-
-	for (i = 0; i < cnp->fill_colors->num_elements; i++) {
-		if (fill_cols[i] < 256) {
-			if (i > cnp->fill_palette->len_dimensions[0] - 1) {
-				fill_cols[i] = NhlFOREGROUND;
-			}
-			fpal = ((float*)cnp->fill_palette->data) + fill_cols[i] * cnp->fill_palette->len_dimensions[1];
-			fill_cols[i] = _NhlRGBAToColorIndex(fpal,cnp->fill_palette->len_dimensions[1] == 4 ? 1 : 0);
-		}
-	}
-	return NhlNOERROR;
-}
 
 /*
  * Function:  ManageDynamicArrays
@@ -8175,15 +8020,16 @@ static NhlErrorTypes    ManageDynamicArrays
  * Fill colors
  */
 	count = cnp->fill_count;
-	if (palette_set) {
+	if (cnp->fill_palette && cnp->fill_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnFillColors))) {
+                subret = _NhlSetColorsFromIndexAndPalette(cnp->fill_colors,cnp->fill_palette,entry_name);
+        }
+	else if (palette_set || (cnp->fill_palette && (cnp->fill_count != ocnp->fill_count))) {
 		if ((cnp->fill_colors == NULL) || 
 		    (! _NhlArgIsSet(args,num_args,NhlNcnFillColors))) {
-			subret = SetFillColorsFromPalette(cnew,&ga,entry_name);
+			subret = _NhlSetColorsFromPalette((NhlLayer)cnew,cnp->fill_palette,cnp->fill_count,
+						      cnp->span_fill_palette,&ga,entry_name);
 			cnp->fill_colors = ga;
 		}
-	}
-	else if (cnp->fill_palette && cnp->fill_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnFillColors))) {
-		subret = SetFillColorsFromIndexAndPalette(cnew,entry_name);
 	}
 			
 	ga = init ? NULL : ocnp->fill_colors;

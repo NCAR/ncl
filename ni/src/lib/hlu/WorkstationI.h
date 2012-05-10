@@ -337,6 +337,28 @@ extern int _NhlNewColor(
 #endif
 );
 
+
+extern NhlErrorTypes _NhlSpanColorPalette(
+	NhlGenArray palga, 
+	int count, 
+	int *colors
+);
+
+extern NhlErrorTypes _NhlSetColorsFromPalette(
+	NhlLayer vnl,
+	NhlGenArray palette_ga, 
+	int color_count, 
+	int span_palette, 
+	NhlGenArray *color_ga, 
+	char *entry_name
+);
+
+extern NhlErrorTypes   _NhlSetColorsFromIndexAndPalette(
+	NhlGenArray            index_ga,
+	NhlGenArray            palette_ga,
+	char *                 entry_name
+);
+
 extern NhlLayer _NhlDefaultPlot(
 #if	NhlNeedProto
         NhlLayer  l
