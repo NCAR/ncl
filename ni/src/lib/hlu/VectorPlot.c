@@ -7931,7 +7931,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		palette_set = True;
 	}
-	if (! init && vcp->span_fill_palette != ovcp->span_fill_palette) {
+	if (! init && vcp->span_level_palette != ovcp->span_level_palette) {
 		palette_set = True;
 	}
 

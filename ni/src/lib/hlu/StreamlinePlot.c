@@ -5782,7 +5782,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		palette_set = True;
 	}
-	if (! init && stp->span_fill_palette != ostp->span_fill_palette) {
+	if (! init && stp->span_level_palette != ostp->span_level_palette) {
 		palette_set = True;
 	}
 
