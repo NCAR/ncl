@@ -159,6 +159,8 @@ typedef enum _NhlcnFillMode {
 
 #define NhlNcnMonoLineColor		"cnMonoLineColor"
 #define NhlNcnLineColor			"cnLineColor"
+#define NhlNcnLinePalette               "cnLinePalette"
+#define NhlNcnSpanLinePalette           "cnSpanLinePalette"
 #define NhlNcnLineColors		"cnLineColors"
 #define NhlNcnMonoLineDashPattern	"cnMonoLineDashPattern"
 #define NhlNcnLineDashPattern		"cnLineDashPattern"
@@ -374,6 +376,8 @@ typedef enum _NhlcnFillMode {
 #define NhlCcnFillScales		"CnFillScales"
 
 #define NhlCcnMonoLineColor		"CnMonoLineColor"
+#define NhlCcnLinePalette               "CnLinePalette"
+#define NhlCcnSpanLinePalette           "CnSpanLinePalette"
 #define NhlCcnLineColors		"CnLineColors"
 #define NhlCcnMonoLineDashPattern	"CnMonoLineDashPattern"
 #define NhlCcnLineDashPatterns		"CnLineDashPatterns"

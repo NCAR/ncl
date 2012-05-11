@@ -155,6 +155,93 @@ static void   load_hluct_routines(
 );
 
 
+extern void (_NHLCALLF(trmrgr,TRMRGR))(
+	int *idim,
+	int *jdim,
+	float *rlon,
+	float *rlat,
+	float *rdat,
+	int *iscr,
+	float *missing_val,
+	float *rpnt,
+	int *mpnt,
+	int *npnt,
+	int *lopn,
+	int *iedg,
+	int *medg,
+	int *edg,
+	int *loen,
+	int *itri,
+	int *mtri,
+	int *ntri,
+	int *lotn
+); 
+
+extern void (_NHLCALLF(cttmtl,CTTMTL))(
+	int *kbuf,
+	float *tbuf,
+	int *mbuf,
+	int *nbuf,
+	int *ippp,
+	int *mnop,
+	int *nppp,
+	int *ippe,
+	int *mnoe,
+	int *nppe,
+	float *rpnt,
+	int *mpnt,
+	int *npnt,
+	int *lopn,
+	int *iedg,
+	int *medg,
+	int *nedg,
+	int *loen,
+	int *itri,
+	int *mtri,
+	int *ntri,
+	int *lotn
+);
+
+extern void (_NHLCALLF(ctscae,CTSCAE))(
+	int		*icra,
+	int		*ica1,
+	int		*icam,
+	int		*ican,
+	float		*xcpf,
+	float		*ycpf,
+	float		*xcqf,
+	float		*ycqf,
+	int		*ind1,
+	int		*ind2,
+	int		*icaf,
+	int		*iaid
+);
+
+extern void (_NHLCALLF(ctchcl,CTCHCL))(
+	int *iflg
+);
+
+extern void (_NHLCALLF(dprset,DPRSET))(
+	void
+);
+
+extern void (_NHLCALLF(ctchhl,CTCHHL))(
+	int *iflg
+);
+
+extern void (_NHLCALLF(ctchll,CTCHLL))(
+	int *iflg
+);
+
+extern void (_NHLCALLF(ctmxyz,CTMXYZ))(
+	int *imap,
+	float *xinp,
+	float *yinp,
+	float *zinp,
+	float *xotp,
+	float *yotp
+);
+
 static NhlErrorTypes CnTriMeshWriteCellData
 #if	NhlNeedProto
 (
@@ -601,7 +688,7 @@ static NhlErrorTypes BuildNativeMesh
 		int e0,e1,e2;
 		if (nbuf >= mbuf) 
 			_NHLCALLF(cttmtl,CTTMTL)
-				(&kbuf,tbuf,&mbuf,&nbuf,
+				(&kbuf,(float*)tbuf,&mbuf,&nbuf,
 				 ippp,&mnop,&nppp,
 				 ippe,&mnoe,&nppe,
 				 rpnt,&mpnt,&npnt,&Lopn,
@@ -664,7 +751,7 @@ static NhlErrorTypes BuildNativeMesh
 	}
 	if (nbuf > 0) {
 		_NHLCALLF(cttmtl,CTTMTL)
-			(&nbuf,tbuf,&mbuf,&nbuf,
+			(&nbuf,(float*)tbuf,&mbuf,&nbuf,
 			 ippp,&mnop,&nppp,
 			 ippe,&mnoe,&nppe,
 			 rpnt,&mpnt,&npnt,&Lopn,
@@ -963,7 +1050,7 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 		int e0,e1,e2;
 		if (nbuf >= mbuf) 
 			_NHLCALLF(cttmtl,CTTMTL)
-				(&kbuf,tbuf,&mbuf,&nbuf,
+				(&kbuf,(float*)tbuf,&mbuf,&nbuf,
 				 ippp,&mnop,&nppp,
 				 ippe,&mnoe,&nppe,
 				 rpnt,&mpnt,&npnt,&Lopn,
@@ -1026,7 +1113,7 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 	}
 	if (nbuf > 0) {
 		_NHLCALLF(cttmtl,CTTMTL)
-			(&nbuf,tbuf,&mbuf,&nbuf,
+			(&nbuf,(float*)tbuf,&mbuf,&nbuf,
 			 ippp,&mnop,&nppp,
 			 ippe,&mnoe,&nppe,
 			 rpnt,&mpnt,&npnt,&Lopn,
@@ -1180,7 +1267,7 @@ static NhlErrorTypes BuildDelaunayMesh
 		int e0,e1,e2;
 		if (nbuf >= mbuf) 
 			_NHLCALLF(cttmtl,CTTMTL)
-				(&kbuf,tbuf,&mbuf,&nbuf,
+				(&kbuf,(float*)tbuf,&mbuf,&nbuf,
 				 ippp,&mnop,&nppp,
 				 ippe,&mnoe,&nppe,
 				 rpnt,&mpnt,&npnt,&Lopn,
@@ -1222,7 +1309,7 @@ static NhlErrorTypes BuildDelaunayMesh
 	}
 	if (nbuf > 0) {
 		_NHLCALLF(cttmtl,CTTMTL)
-			(&nbuf,tbuf,&mbuf,&nbuf,
+			(&nbuf,(float*)tbuf,&mbuf,&nbuf,
 			 ippp,&mnop,&nppp,
 			 ippe,&mnoe,&nppe,
 			 rpnt,&mpnt,&npnt,&Lopn,

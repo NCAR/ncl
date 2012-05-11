@@ -179,6 +179,13 @@ static NhlResource resources[] = {
 	{NhlNcnLineColor, NhlCLineColor, NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(line_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNcnLinePalette, NhlCcnLinePalette, NhlTColorMap,
+		 sizeof(NhlPointer),Oset(line_palette),
+		 NhlTString,_NhlUSET((NhlPointer) NULL),_NhlRES_DEFAULT,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNcnSpanLinePalette, NhlCcnSpanLinePalette, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(span_line_palette),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNcnLineColors, NhlCcnLineColors, NhlTColorIndexGenArray,
 		 sizeof(NhlGenArray),Oset(line_colors),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -1475,6 +1482,7 @@ static NrmQuark	Qfill_palette = NrmNULLQUARK;
 static NrmQuark	Qfill_colors = NrmNULLQUARK;
 static NrmQuark	Qfill_patterns = NrmNULLQUARK;
 static NrmQuark	Qfill_scales = NrmNULLQUARK;
+static NrmQuark	Qline_palette = NrmNULLQUARK; 
 static NrmQuark	Qline_colors = NrmNULLQUARK; 
 static NrmQuark	Qline_dash_patterns = NrmNULLQUARK; 
 static NrmQuark	Qline_thicknesses = NrmNULLQUARK; 
@@ -1723,6 +1731,7 @@ ContourPlotClassInitialize
 	Qfill_colors = NrmStringToQuark(NhlNcnFillColors);
 	Qfill_patterns = NrmStringToQuark(NhlNcnFillPatterns);
 	Qfill_scales = NrmStringToQuark(NhlNcnFillScales);
+	Qline_palette = NrmStringToQuark(NhlNcnLinePalette);
 	Qline_colors = NrmStringToQuark(NhlNcnLineColors);
 	Qline_dash_patterns = NrmStringToQuark(NhlNcnLineDashPatterns);
 	Qline_thicknesses = NrmStringToQuark(NhlNcnLineThicknesses);
@@ -2668,6 +2677,11 @@ static NhlErrorTypes    ContourPlotGetValues
                         count = cnp->fill_count;
                         type = NhlNcnFillScales;
                 }
+                else if (args[i].quark == Qline_palette) {
+                        ga = cnp->line_palette;
+                        count = cnp->line_palette->num_elements;
+                        type = NhlNcnLinePalette;
+                }
                 else if (args[i].quark == Qline_colors) {
                         ga = cnp->line_colors;
                         count = cnp->level_count;
@@ -2928,8 +2942,8 @@ NhlLayer inst;
 	NhlFreeGenArray(cnp->line_thicknesses);
 	NhlFreeGenArray(cnp->llabel_strings);
 	NhlFreeGenArray(cnp->llabel_colors);
-        if (cnp->fill_palette)
-                NhlFree(cnp->fill_palette);
+	NhlFree(cnp->fill_palette);
+	NhlFree(cnp->line_palette);
         if (cnp->gks_llabel_colors)
                 NhlFree(cnp->gks_llabel_colors);
         if (cnp->gks_line_colors)
@@ -8012,7 +8026,9 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		palette_set = True;
 	}
-
+	if (! init && cnp->span_fill_palette != ocnp->span_fill_palette) {
+		palette_set = True;
+	}
 
 /*=======================================================================*/
 	
@@ -8125,10 +8141,62 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 	}
 /*=======================================================================*/
+
+
+/*
+ * Line palette
+ */
+	count = cnp->level_count;
+	palette_set = False;
+	if ((init && cnp->line_palette) ||
+	    _NhlArgIsSet(args,num_args,NhlNcnLinePalette)) {
+		if (! init && ocnp->line_palette != NULL)
+			NhlFreeGenArray(ocnp->line_palette);
+		if (cnp->line_palette != NULL) {
+			if ((ga =  _NhlCopyGenArray(cnp->line_palette,True)) == NULL) {
+				e_text = "%s: error copying GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
+			}
+			cnp->line_palette = ga;
+		}
+		palette_set = True;
+	}
+	if (! cnp->line_palette) {
+		/* if no palette has been specified use the workstation colormap */
+		NhlGenArray cmap_ga;
+		NhlVAGetValues(cnew->base.wkptr->base.id,
+			       NhlNwkColorMap, &cmap_ga, NULL);
+		cnp->line_palette = cmap_ga;
+		/* set the first 2 colors to negative numbers to inhibit their use */
+		for (i = 0; i < 6; i++) {
+			((float*)cmap_ga->data)[i] = -1.0;
+		}
+		palette_set = True;
+	}
+	if (! init && cnp->span_line_palette != ocnp->span_line_palette) {
+		palette_set = True;
+	}
+
+
+/*=======================================================================*/
 	
 /*
  * Line colors
  */
+	count = cnp->level_count;
+	if (cnp->line_palette && cnp->line_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnLineColors))) {
+                subret = _NhlSetColorsFromIndexAndPalette(cnp->line_colors,cnp->line_palette,entry_name);
+        }
+	else if (palette_set || (cnp->line_palette && (cnp->level_count != ocnp->level_count))) {
+		if ((cnp->line_colors == NULL) || 
+		    (! _NhlArgIsSet(args,num_args,NhlNcnLineColors))) {
+			subret = _NhlSetColorsFromPalette((NhlLayer)cnew,cnp->line_palette,cnp->level_count,
+						      cnp->span_line_palette,&ga,entry_name);
+			cnp->line_colors = ga;
+		}
+	}
+
 	ga = init ? NULL : ocnp->line_colors;
 	count = cnp->level_count;
 	subret = ManageGenArray(&ga,count,cnp->line_colors,Qcolorindex,NULL,
@@ -8351,8 +8419,19 @@ static NhlErrorTypes    ManageDynamicArrays
  * Line Label colors
  */
 
-	ga = init ? NULL : ocnp->llabel_colors;
 	count = cnp->level_count;
+	if (cnp->line_palette && cnp->llabel_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnLineLabelFontColors))) {
+                subret = _NhlSetColorsFromIndexAndPalette(cnp->llabel_colors,cnp->line_palette,entry_name);
+        }
+	else if (palette_set || (cnp->line_palette && (cnp->level_count != ocnp->level_count))) {
+		if ((cnp->llabel_colors == NULL) || 
+		    (! _NhlArgIsSet(args,num_args,NhlNcnLineLabelFontColors))) {
+			subret = _NhlSetColorsFromPalette((NhlLayer)cnew,cnp->line_palette,cnp->level_count,
+						      cnp->span_line_palette,&ga,entry_name);
+			cnp->llabel_colors = ga;
+		}
+	}
+	ga = init ? NULL : ocnp->llabel_colors;
 	subret = ManageGenArray(&ga,count,cnp->llabel_colors,Qcolorindex,NULL,
 				&old_count,&init_count,&need_check,&changed,
 				NhlNcnLineLabelFontColors,entry_name);
@@ -8999,7 +9078,7 @@ static NhlErrorTypes    SetupLevelsManual
 	if (! cnp->min_level_set) {
 		do_automatic = True;
 	}
-                
+
 	if (cnp->level_spacing <= 0.0) {
 	e_text = "%s: Invalid level spacing value: using AUTOMATICLEVELS mode";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);

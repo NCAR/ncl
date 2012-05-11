@@ -161,6 +161,8 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	float			min_level_val;
 	NhlBoolean		max_level_set;
 	float			max_level_val;
+	NhlGenArray	        level_palette;
+	NhlBoolean              span_level_palette;
 	NhlGenArray		level_colors;
 	NhlBoolean		use_scalar_array;
 	NhlColorIndex		scalar_mval_color;

@@ -190,6 +190,8 @@ typedef struct _NhlContourPlotLayerPart {
 	float           fill_dot_size;
 
 	NhlBoolean	mono_line_color;
+	NhlGenArray     line_palette;
+	NhlBoolean      span_line_palette;
 	NhlGenArray	line_colors;
 	NhlColorIndex	line_color;
 	NhlBoolean	mono_line_dash_pattern;

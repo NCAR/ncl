@@ -72,6 +72,8 @@ typedef enum _NhlVectorGlyphStyle {
 #define NhlNvcLevelSpacingF		"vcLevelSpacingF"
 #define NhlNvcMinLevelValF		"vcMinLevelValF"
 #define NhlNvcMaxLevelValF		"vcMaxLevelValF"
+#define NhlNvcLevelPalette              "vcLevelPalette"
+#define NhlNvcSpanLevelPalette          "vcSpanLevelPalette"
 #define NhlNvcLevelColors		"vcLevelColors"
 #define NhlNvcUseScalarArray		"vcUseScalarArray"
 #define NhlNvcScalarMissingValColor	"vcScalarMissingValColor"
@@ -245,6 +247,8 @@ typedef enum _NhlVectorGlyphStyle {
 #define NhlCvcMinFracLengthF		"VcMinFracLengthF"
 
 #define NhlCvcLevelCount		"VcLevelCount"		/* read-only */
+#define NhlCvcLevelPalette              "VcLevelPalette"
+#define NhlCvcSpanLevelPalette          "VcSpanLevelPalette"
 #define NhlCvcLevelColors		"VcLevelColors"
 #define NhlCvcUseScalarArray		"VcUseScalarArray"
 #define NhlCvcScalarMissingValColor	"VcScalarMissingValColor"

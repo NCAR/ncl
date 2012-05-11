@@ -71,6 +71,8 @@
 #define NhlNstLevelSpacingF		"stLevelSpacingF"
 #define NhlNstMinLevelValF		"stMinLevelValF"
 #define NhlNstMaxLevelValF		"stMaxLevelValF"
+#define NhlNstLevelPalette              "stLevelPalette"
+#define NhlNstSpanLevelPalette          "stSpanLevelPalette"
 #define NhlNstLevelColors		"stLevelColors"
 #define NhlNstUseScalarArray		"stUseScalarArray"
 #define NhlNstScalarMissingValColor	"stScalarMissingValColor"
@@ -135,6 +137,8 @@
 #define NhlCstMinMagnitudeF		"StMinMagnitudeF"       
 
 #define NhlCstLevelCount		"StLevelCount"	/* read-only */
+#define NhlCstLevelPalette              "StLevelPalette"
+#define NhlCstSpanLevelPalette          "StSpanLevelPalette"
 #define NhlCstLevelColors		"StLevelColors"
 #define NhlCstUseScalarArray		"StUseScalarArray"
 #define NhlCstScalarMissingValColor	"StScalarMissingValColor"

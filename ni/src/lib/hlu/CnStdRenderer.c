@@ -122,6 +122,44 @@ static void   load_hlucp_routines(
 #endif
 );
 
+extern void (_NHLCALLF(cpscae,CPSCAE))(
+	int		*icra,
+	int		*ica1,
+	int		*icam,
+	int		*ican,
+	float		*xcpf,
+	float		*ycpf,
+	float		*xcqf,
+	float		*ycqf,
+	int		*ind1,
+	int		*ind2,
+	int		*icaf,
+	int		*iaid
+);
+
+extern void (_NHLCALLF(cpchcl,CPCHCL))(
+	int *iflg
+);
+
+extern void (_NHLCALLF(dprset,DPRSET))(
+	void
+);
+
+extern void (_NHLCALLF(cpchhl,CPCHHL))(
+	int *iflg
+);
+
+extern void (_NHLCALLF(cpchll,CPCHLL))(
+	int *iflg
+);
+
+extern void (_NHLCALLF(cpmpxy,CPMPXY))(
+	int *imap,
+	float *xinp,
+	float *yinp,
+	float *xotp,
+	float *yotp
+);
 
 NhlCnStdRendererClassRec NhlcnStdRendererClassRec = {
 	{
