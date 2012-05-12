@@ -8015,15 +8015,8 @@ static NhlErrorTypes    ManageDynamicArrays
 		palette_set = True;
 	}
 	if (! cnp->fill_palette) {
-		/* if no palette has been specified use the workstation colormap */
-		NhlGenArray cmap_ga;
-		NhlVAGetValues(cnew->base.wkptr->base.id,
-			       NhlNwkColorMap, &cmap_ga, NULL);
-		cnp->fill_palette = cmap_ga;
-		/* set the first 2 colors to negative numbers to inhibit their use */
-		for (i = 0; i < 6; i++) {
-			((float*)cmap_ga->data)[i] = -1.0;
-		}
+		/* if no palette has been specified use the workstation palette */
+		cnp->fill_palette = _NhlGetWorkstationPalette((NhlLayer) cnew);
 		palette_set = True;
 	}
 	if (! init && cnp->span_fill_palette != ocnp->span_fill_palette) {
@@ -8036,6 +8029,7 @@ static NhlErrorTypes    ManageDynamicArrays
  * Fill colors
  */
 	count = cnp->fill_count;
+	need_check = False;
 	if (cnp->fill_palette && cnp->fill_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnFillColors))) {
                 subret = _NhlSetColorsFromIndexAndPalette(cnp->fill_colors,cnp->fill_palette,entry_name);
         }
@@ -8044,16 +8038,19 @@ static NhlErrorTypes    ManageDynamicArrays
 		    (! _NhlArgIsSet(args,num_args,NhlNcnFillColors))) {
 			subret = _NhlSetColorsFromPalette((NhlLayer)cnew,cnp->fill_palette,cnp->fill_count,
 						      cnp->span_fill_palette,&ga,entry_name);
+			if (ocnp->fill_colors) {
+				NhlFreeGenArray(ocnp->fill_colors);
+				ocnp->fill_colors = NULL;
+			}
 			cnp->fill_colors = ga;
 		}
 	}
-			
 	ga = init ? NULL : ocnp->fill_colors;
 	subret = ManageGenArray(&ga,count,cnp->fill_colors,Qcolorindex,NULL,
 				&old_count,&init_count,&need_check,&changed,
 				NhlNcnFillColors,entry_name);
-        if (init || cnp->fill_count > ocnp->fill_count)
-                need_check = True;
+	if (init || cnp->fill_count > ocnp->fill_count)
+		need_check = True;
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
 	ocnp->fill_colors = changed ? NULL : cnp->fill_colors;
@@ -8163,15 +8160,8 @@ static NhlErrorTypes    ManageDynamicArrays
 		palette_set = True;
 	}
 	if (! cnp->line_palette) {
-		/* if no palette has been specified use the workstation colormap */
-		NhlGenArray cmap_ga;
-		NhlVAGetValues(cnew->base.wkptr->base.id,
-			       NhlNwkColorMap, &cmap_ga, NULL);
-		cnp->line_palette = cmap_ga;
-		/* set the first 2 colors to negative numbers to inhibit their use */
-		for (i = 0; i < 6; i++) {
-			((float*)cmap_ga->data)[i] = -1.0;
-		}
+		/* if no palette has been specified use the workstation palette */
+		cnp->line_palette = _NhlGetWorkstationPalette((NhlLayer) cnew);
 		palette_set = True;
 	}
 	if (! init && cnp->span_line_palette != ocnp->span_line_palette) {

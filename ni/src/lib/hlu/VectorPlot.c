@@ -7920,15 +7920,8 @@ static NhlErrorTypes    ManageDynamicArrays
 		palette_set = True;
 	}
 	if (! vcp->level_palette) {
-		/* if no palette has been specified use the workstation colormap */
-		NhlGenArray cmap_ga;
-		NhlVAGetValues(vcnew->base.wkptr->base.id,
-			       NhlNwkColorMap, &cmap_ga, NULL);
-		vcp->level_palette = cmap_ga;
-		/* set the first 2 colors to negative numbers to inhibit their use */
-		for (i = 0; i < 6; i++) {
-			((float*)cmap_ga->data)[i] = -1.0;
-		}
+		/* if no palette has been specified use the workstation palette */
+		vcp->level_palette = _NhlGetWorkstationPalette((NhlLayer) vcnew);
 		palette_set = True;
 	}
 	if (! init && vcp->span_level_palette != ovcp->span_level_palette) {

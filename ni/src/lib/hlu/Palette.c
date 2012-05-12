@@ -1152,6 +1152,31 @@ PaletteClassInitialize
 }
 
 /*
+ * thinking of the terminology -- a Palette does not contain the background and foreground colors
+ * whereas a Colormap does.
+ */
+
+NhlGenArray GetPaletteFromCMap
+	(NhlGenArray cmap_ga)
+{
+	NhlGenArray pal_ga;
+	float *new_data;
+	ng_size_t new_dims[2];
+
+	/* manually reform the GenArray to eliminate background and foreground colors */
+	new_dims[0] = cmap_ga->len_dimensions[0] - 2;
+	new_dims[1] =  cmap_ga->len_dimensions[1];
+	new_data = (float*)NhlConvertMalloc(new_dims[0] * new_dims[1] * sizeof(float));
+	memcpy(new_data, cmap_ga->data + 2 * new_dims[1] * sizeof(float),
+	       new_dims[0] * new_dims[1] * sizeof(float));
+	pal_ga = _NhlConvertCreateGenArray((void *)new_data,NrmQuarkToString(cmap_ga->typeQ),sizeof(float),
+					   cmap_ga->num_dimensions,new_dims);
+	return pal_ga;
+}
+
+
+
+/*
  * Function:	CvtStringToCmap
  *
  * Description:	
@@ -1189,6 +1214,7 @@ CvtStringToCmap
 	NhlWorkstationClass	wc;
 	NhlPaletteLayer		pl;
 	NhlPalList		cmaps;
+	int 			is_view = 0;
 
 	if(nargs != 1 && args[0].addressmode != NhlLAYEROFFSET){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid args?",func);
@@ -1196,6 +1222,7 @@ CvtStringToCmap
 	}
 	wc = *((NhlWorkstationClass*)args[0].data.ptrval);
 	if (wc->base_class.class_inited & _NhlViewClassFlag) {
+		is_view = 1;
 		wc = (NhlWorkstationClass)NhlworkstationClass; 
 		if ((! s1) || strlen(s1) == 0) {
 			_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),NULL);
@@ -1235,6 +1262,9 @@ CvtStringToCmap
 			"%s:Unable to convert string \"%s\" to %s",func,s1,
 			NhlTColorMap);
 		return NhlFATAL;
+	}
+	if (is_view) {
+		gen = GetPaletteFromCMap(gen);
 	}
 
 	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
@@ -2126,6 +2156,7 @@ NhlErrorTypes    _NhlSetColorsFromPalette
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
+        _NhlFreeConvertContext(context);
 
 	return NhlNOERROR;
 }
@@ -2154,3 +2185,27 @@ NhlErrorTypes    _NhlSetColorsFromIndexAndPalette
 	return NhlNOERROR;
 }
 
+NhlGenArray _NhlGetWorkstationPalette
+(NhlLayer  l)
+{
+	NhlGenArray cmap_ga;
+	float *new_data;
+	ng_size_t new_len,csize;
+
+	NhlVAGetValues(l->base.wkptr->base.id,
+		       NhlNwkColorMap, &cmap_ga, NULL);
+	/* manually reform the GenArray to eliminate background and foreground colors */
+	new_len = cmap_ga->len_dimensions[0] - 2;
+	csize =  cmap_ga->len_dimensions[1];
+	new_data = (float*)NhlMalloc(new_len * csize * sizeof(float));
+	memcpy(new_data, cmap_ga->data + 2 * csize * sizeof(float),
+	       new_len * csize * sizeof(float));
+	if (cmap_ga->my_data)
+		NhlFree(cmap_ga->data);
+	cmap_ga->my_data = True;
+	cmap_ga->data = new_data;
+	cmap_ga->len_dimensions[0] = new_len;
+	cmap_ga->num_elements = new_len * csize;
+
+	return cmap_ga;
+}

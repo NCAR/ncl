@@ -359,6 +359,12 @@ extern NhlErrorTypes   _NhlSetColorsFromIndexAndPalette(
 	char *                 entry_name
 );
 
+extern NhlGenArray _NhlGetWorkstationPalette(
+#if	NhlNeedProto
+        NhlLayer  l
+#endif
+);
+
 extern NhlLayer _NhlDefaultPlot(
 #if	NhlNeedProto
         NhlLayer  l
