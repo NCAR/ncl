@@ -1760,17 +1760,42 @@ end
 ; This function is for gsn_panel, to help it determine which plot info  ;
 ; to use to construct a labelbar.                                       ;
 ;                                                                       ;
+; In NCL V6.1.0, we made the PlotManager the default labelbar, so we    ;
+; added some checks to this code for pmLabelBarDisplayMode being equal  ;
+; to 1 ("Always").                                                      ; 
 ;***********************************************************************;
 undef("get_plot_labelbar")
 function get_plot_labelbar(plot:graphic)
-local found, id_class, i, ids, nids
+local found, id_class, i, ids, nids, class_name
 begin
   new_plot = new(1,graphic)
 
+;
+; If new_plot contains a "labelbar" attribute, it likely came
+; from one of the vector_scalar functions, in which the
+; labelbar could either be from filled contours, or colored
+; vectors.
+;
   if(isatt(plot,"labelbar").and.isatt(plot,"labelbar_type")) then
     new_plot           = plot@labelbar
     new_plot@plot_type = plot@labelbar_type
     return(new_plot)
+  end if
+;
+; This part was added in NCL V6.1.0, to test for a PlotManager
+; labelbar. If it's there, then return this.
+;
+  class_name = NhlClassName(plot)
+  if(any(class_name.eq.(/"ContourPlot","VectorPlot","StreamlinePlot"/))) then
+    getvalues plot
+      "pmLabelBarDisplayMode" : lbar_mode
+    end getvalues
+;---lbar_mode.eq.1 --> "Always"
+    if(lbar_mode.eq.1) then
+      new_plot = plot
+      new_plot@PlotManagerLabelBar = True
+      return(new_plot)
+    end if
   end if
 ;
 ; This code was added after V5.1.1. It is better to use the
@@ -1792,9 +1817,10 @@ begin
     id_class = NhlClassName(ids(i))
     if(id_class.eq."contourPlotClass") then
       getvalues ids(i)
-        "cnFillOn" : cn_fillon
+        "cnFillOn"              : cn_fillon
+        "pmLabelBarDisplayMode" : lbar_mode
       end getvalues 
-      if(cn_fillon) then
+      if(lbar_mode.eq.1.or.cn_fillon) then
         found = True
         new_plot = ids(i)
         new_plot@plot_type = "contour"
@@ -1810,8 +1836,10 @@ begin
         "vcMonoFillArrowFillColor" : vc_monofillarrowfillcolor
         "vcMonoLineArrowColor"     : vc_monolinearrowcolor
         "vcMonoWindBarbColor"      : vc_monowindbarbcolor
+        "pmLabelBarDisplayMode"    : lbar_mode
       end getvalues
-      if( (vc_glyphstyle.eq.0.and..not.vc_monolinearrowcolor) .or.\
+      if( (lbar_mode.eq.1) .or.\
+          (vc_glyphstyle.eq.0.and..not.vc_monolinearrowcolor) .or.\
           (vc_glyphstyle.eq.1.and..not.vc_monofillarrowcolor) .or. \
           (vc_glyphstyle.eq.2.and..not.vc_monowindbarbcolor)  .or. \
           (vc_glyphstyle.eq.3.and..not.vc_monolinearrowcolor)) then
@@ -1822,9 +1850,10 @@ begin
     end if
     if(id_class.eq."streamlinePlotClass") then
       getvalues ids(i)
-        "stMonoLineColor"     : st_monolinecolor
+        "stMonoLineColor"       : st_monolinecolor
+        "pmLabelBarDisplayMode" : lbar_mode
       end getvalues
-      if(st_monolinecolor) then
+      if(lbar_mode.eq.1.or..not.st_monolinecolor) then
         found = True
         new_plot = ids(i)
         new_plot@plot_type = "streamline"
@@ -10243,9 +10272,17 @@ begin
 
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
-    cnres = get_res_eq(res2,(/"cn","tf"/))
-    vcres = get_res_ne(res2,(/"vf","sf","cn"/))
-
+;
+; Make sure that the labelbar resources get passed to the
+; correct object.
+;
+    if(res2.and.isatt(res2,"cnFillOn").and.res2@cnFillOn) then
+      cnres = get_res_eq(res2,(/"cn","tf","lb","pmLabel"/))
+      vcres = get_res_ne(res2,(/"vf","sf","cn","lb","pmLabel"/))
+    else
+      cnres = get_res_eq(res2,(/"cn","tf"/))
+      vcres = get_res_ne(res2,(/"vf","sf","cn"/))
+    end if
     attsetvalues_check(vfdata_object,vfres)
     attsetvalues_check(sfdata_object,sfres)
     attsetvalues_check(contour_object,cnres)
