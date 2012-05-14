@@ -2730,7 +2730,7 @@ static NhlErrorTypes    VectorPlotGetValues
                 }
                 else if (args[i].quark == Qlevel_palette) {
                         ga = vcp->level_palette;
-                        count = vcp->level_count + 1;
+                        count = vcp->level_palette->num_elements;
                         type = NhlNvcLevelPalette;
                 }
                 else if (args[i].quark == Qlevel_colors) {

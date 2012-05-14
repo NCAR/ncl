@@ -1986,7 +1986,7 @@ static NhlErrorTypes    StreamlinePlotGetValues
                 }
                 else if (args[i].quark == Qlevel_palette) {
                         ga = stp->level_palette;
-                        count = stp->level_count + 1;
+                        count = stp->level_palette->num_elements;
                         type = NhlNstLevelPalette;
                 }
                 else if (args[i].quark == Qlevel_colors) {
