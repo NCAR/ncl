@@ -2156,6 +2156,7 @@ NhlErrorTypes    _NhlSetColorsFromPalette
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
+	(*color_ga)->my_data = True;
         _NhlFreeConvertContext(context);
 
 	return NhlNOERROR;

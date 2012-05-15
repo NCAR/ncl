@@ -2942,8 +2942,8 @@ NhlLayer inst;
 	NhlFreeGenArray(cnp->line_thicknesses);
 	NhlFreeGenArray(cnp->llabel_strings);
 	NhlFreeGenArray(cnp->llabel_colors);
-	NhlFree(cnp->fill_palette);
-	NhlFree(cnp->line_palette);
+	NhlFreeGenArray(cnp->fill_palette);
+	NhlFreeGenArray(cnp->line_palette);
         if (cnp->gks_llabel_colors)
                 NhlFree(cnp->gks_llabel_colors);
         if (cnp->gks_line_colors)
@@ -8030,31 +8030,46 @@ static NhlErrorTypes    ManageDynamicArrays
  */
 	count = cnp->fill_count;
 	need_check = False;
+	ga = NULL;
 	if (cnp->fill_palette && cnp->fill_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnFillColors))) {
                 subret = _NhlSetColorsFromIndexAndPalette(cnp->fill_colors,cnp->fill_palette,entry_name);
+		if (! init && ocnp->fill_colors != NULL)
+			NhlFreeGenArray(ocnp->fill_colors);
+		if ((ga =  _NhlCopyGenArray(cnp->fill_colors,True)) == NULL) {
+			e_text = "%s: error copying GenArray";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(NhlFATAL);
+		}
+		cnp->fill_colors = ga;
+		need_check = True;
+		init_count = old_count = cnp->fill_count;
         }
 	else if (palette_set || (cnp->fill_palette && (cnp->fill_count != ocnp->fill_count))) {
 		if ((cnp->fill_colors == NULL) || 
 		    (! _NhlArgIsSet(args,num_args,NhlNcnFillColors))) {
 			subret = _NhlSetColorsFromPalette((NhlLayer)cnew,cnp->fill_palette,cnp->fill_count,
 						      cnp->span_fill_palette,&ga,entry_name);
-			if (ocnp->fill_colors) {
+			if (! init && ocnp->fill_colors) {
 				NhlFreeGenArray(ocnp->fill_colors);
 				ocnp->fill_colors = NULL;
 			}
 			cnp->fill_colors = ga;
+			need_check = True;
+			init_count = old_count = cnp->fill_count;
 		}
 	}
-	ga = init ? NULL : ocnp->fill_colors;
-	subret = ManageGenArray(&ga,count,cnp->fill_colors,Qcolorindex,NULL,
-				&old_count,&init_count,&need_check,&changed,
-				NhlNcnFillColors,entry_name);
-	if (init || cnp->fill_count > ocnp->fill_count)
-		need_check = True;
-	if ((ret = MIN(ret,subret)) < NhlWARNING)
-		return ret;
-	ocnp->fill_colors = changed ? NULL : cnp->fill_colors;
-	cnp->fill_colors = ga;
+	else {
+		ga = init ? NULL : ocnp->fill_colors;
+		subret = ManageGenArray(&ga,count,cnp->fill_colors,Qcolorindex,NULL,
+					&old_count,&init_count,&need_check,&changed,
+					NhlNcnFillColors,entry_name);
+		if (init || cnp->fill_count > ocnp->fill_count)
+			need_check = True;
+		if ((ret = MIN(ret,subret)) < NhlWARNING)
+			return ret;
+		ocnp->fill_colors = changed ? NULL : cnp->fill_colors;
+		cnp->fill_colors = ga;
+	}
 
 	if (need_check) {
 		subret = CheckColorArray(cnew,ga,count,init_count,old_count,
@@ -8175,31 +8190,48 @@ static NhlErrorTypes    ManageDynamicArrays
  * Line colors
  */
 	count = cnp->level_count;
+	need_check = False;
+	ga = NULL;
 	if (cnp->line_palette && cnp->line_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnLineColors))) {
                 subret = _NhlSetColorsFromIndexAndPalette(cnp->line_colors,cnp->line_palette,entry_name);
+		if (! init && ocnp->line_colors != NULL)
+			NhlFreeGenArray(ocnp->line_colors);
+		if ((ga =  _NhlCopyGenArray(cnp->line_colors,True)) == NULL) {
+			e_text = "%s: error copying GenArray";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(NhlFATAL);
+		}
+		cnp->line_colors = ga;
+		need_check = True;
+		init_count = old_count = cnp->level_count;
         }
 	else if (palette_set || (cnp->line_palette && (cnp->level_count != ocnp->level_count))) {
 		if ((cnp->line_colors == NULL) || 
 		    (! _NhlArgIsSet(args,num_args,NhlNcnLineColors))) {
 			subret = _NhlSetColorsFromPalette((NhlLayer)cnew,cnp->line_palette,cnp->level_count,
 						      cnp->span_line_palette,&ga,entry_name);
+			if (! init && ocnp->line_colors) {
+				NhlFreeGenArray(ocnp->line_colors);
+				ocnp->line_colors = NULL;
+			}
 			cnp->line_colors = ga;
+			need_check = True;
+			init_count = old_count = cnp->level_count;
 		}
 	}
+	else {
+		ga = init ? NULL : ocnp->line_colors;
+		subret = ManageGenArray(&ga,count,cnp->line_colors,Qcolorindex,NULL,
+					&old_count,&init_count,&need_check,&changed,
+					NhlNcnLineColors,entry_name);
+		if (init || cnp->level_count > ocnp->level_count)
+			need_check = True;
+		if ((ret = MIN(ret,subret)) < NhlWARNING)
+			return ret;
+		ocnp->line_colors = changed ? NULL : cnp->line_colors;
+		cnp->line_colors = ga;
+	}
 
-	ga = init ? NULL : ocnp->line_colors;
-	count = cnp->level_count;
-	subret = ManageGenArray(&ga,count,cnp->line_colors,Qcolorindex,NULL,
-				&old_count,&init_count,&need_check,&changed,
-				NhlNcnLineColors,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING)
-		return ret;
-        if (init || cnp->level_count > ocnp->level_count)
-                need_check = True;
-	ocnp->line_colors = changed ? NULL : cnp->line_colors;
-	cnp->line_colors = ga;
-
-		
 	if (need_check) {
 		subret = CheckColorArray(cnew,ga,count,init_count,old_count,
 					 &cnp->gks_line_colors,
@@ -8207,6 +8239,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 			return ret;
 	}
+
 /*=======================================================================*/
 
 /*
@@ -8408,30 +8441,48 @@ static NhlErrorTypes    ManageDynamicArrays
 /*
  * Line Label colors
  */
-
 	count = cnp->level_count;
+	need_check = False;
+	ga = NULL;
 	if (cnp->line_palette && cnp->llabel_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnLineLabelFontColors))) {
                 subret = _NhlSetColorsFromIndexAndPalette(cnp->llabel_colors,cnp->line_palette,entry_name);
+		if (! init && ocnp->llabel_colors != NULL)
+			NhlFreeGenArray(ocnp->llabel_colors);
+		if ((ga =  _NhlCopyGenArray(cnp->llabel_colors,True)) == NULL) {
+			e_text = "%s: error copying GenArray";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(NhlFATAL);
+		}
+		cnp->llabel_colors = ga;
+		need_check = True;
+		init_count = old_count = cnp->level_count;
         }
 	else if (palette_set || (cnp->line_palette && (cnp->level_count != ocnp->level_count))) {
 		if ((cnp->llabel_colors == NULL) || 
 		    (! _NhlArgIsSet(args,num_args,NhlNcnLineLabelFontColors))) {
 			subret = _NhlSetColorsFromPalette((NhlLayer)cnew,cnp->line_palette,cnp->level_count,
 						      cnp->span_line_palette,&ga,entry_name);
+			if (! init && ocnp->llabel_colors) {
+				NhlFreeGenArray(ocnp->llabel_colors);
+				ocnp->llabel_colors = NULL;
+			}
 			cnp->llabel_colors = ga;
+			need_check = True;
+			init_count = old_count = cnp->level_count;
 		}
 	}
-	ga = init ? NULL : ocnp->llabel_colors;
-	subret = ManageGenArray(&ga,count,cnp->llabel_colors,Qcolorindex,NULL,
-				&old_count,&init_count,&need_check,&changed,
-				NhlNcnLineLabelFontColors,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING)
-		return ret;
-        if (init || cnp->level_count > ocnp->level_count)
-                need_check = True;
-	ocnp->llabel_colors = changed ? NULL : cnp->llabel_colors;
-	cnp->llabel_colors = ga;
-
+	else {
+		ga = init ? NULL : ocnp->llabel_colors;
+		subret = ManageGenArray(&ga,count,cnp->llabel_colors,Qcolorindex,NULL,
+					&old_count,&init_count,&need_check,&changed,
+					NhlNcnLineLabelFontColors,entry_name);
+		if (init || cnp->level_count > ocnp->level_count)
+			need_check = True;
+		if ((ret = MIN(ret,subret)) < NhlWARNING)
+			return ret;
+		ocnp->llabel_colors = changed ? NULL : cnp->llabel_colors;
+		cnp->llabel_colors = ga;
+	}
 
 	if (need_check) {
 		subret = CheckColorArray(cnew,ga,count,init_count,old_count,
@@ -8440,14 +8491,6 @@ static NhlErrorTypes    ManageDynamicArrays
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 			return ret;
 	}
-
-	if (cnp->high_use_line_attrs && cnp->line_lbls.on) {
-		cnp->high_lbls.color = cnp->line_lbls.color; 
-	}
-	if (cnp->low_use_high_attrs && cnp->high_lbls.on) {
-		cnp->low_lbls.color = cnp->high_lbls.color;
-	}
-	
 
 /*=======================================================================*/
 

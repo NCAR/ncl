@@ -7938,27 +7938,44 @@ static NhlErrorTypes    ManageDynamicArrays
 	count = vcp->level_count + 1;
 	if (vcp->level_palette && vcp->level_colors && (init || _NhlArgIsSet(args,num_args,NhlNvcLevelColors))) {
                 subret = _NhlSetColorsFromIndexAndPalette(vcp->level_colors,vcp->level_palette,entry_name);
+		if (! init && ovcp->level_colors != NULL)
+			NhlFreeGenArray(ovcp->level_colors);
+		if ((ga =  _NhlCopyGenArray(vcp->level_colors,True)) == NULL) {
+			e_text = "%s: error copying GenArray";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(NhlFATAL);
+		}
+		vcp->level_colors = ga;
+		need_check = True;
+		init_count = old_count = vcp->level_count;
         }
 	else if (palette_set || (vcp->level_palette && (vcp->level_count != ovcp->level_count))) {
 		if ((vcp->level_colors == NULL) || 
 		    (! _NhlArgIsSet(args,num_args,NhlNvcLevelColors))) {
 			subret = _NhlSetColorsFromPalette((NhlLayer)vcnew,vcp->level_palette,count,
 						      vcp->span_level_palette,&ga,entry_name);
+			if (! init && ovcp->level_colors) {
+				NhlFreeGenArray(ovcp->level_colors);
+				ovcp->level_colors = NULL;
+			}
 			vcp->level_colors = ga;
+			need_check = True;
+			init_count = old_count = vcp->level_count;
 		}
 	}
-			
-	ga = init ? NULL : ovcp->level_colors;
-	count = vcp->level_count + 1;
-	subret = ManageGenArray(&ga,count,vcp->level_colors,Qcolorindex,NULL,
-				&old_count,&init_count,&need_check,&changed,
-				NhlNvcLevelColors,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING)
-		return ret;
-        if (init || vcp->level_count > ovcp->level_count)
-                need_check = True;
-	ovcp->level_colors = changed ? NULL : vcp->level_colors;
-	vcp->level_colors = ga;
+	else {
+		ga = init ? NULL : ovcp->level_colors;
+		count = vcp->level_count + 1;
+		subret = ManageGenArray(&ga,count,vcp->level_colors,Qcolorindex,NULL,
+					&old_count,&init_count,&need_check,&changed,
+					NhlNvcLevelColors,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING)
+			return ret;
+		if (init || vcp->level_count > ovcp->level_count)
+			need_check = True;
+		ovcp->level_colors = changed ? NULL : vcp->level_colors;
+		vcp->level_colors = ga;
+	}
 
 	ip = (int*)vcp->level_colors->data;
 	for (i=init_count; i < count; i++) {
