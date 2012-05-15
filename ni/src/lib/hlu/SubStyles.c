@@ -74,7 +74,7 @@ static NhlResource lineresources[] = {
 		NhlTString,_NhlUSET("0.0"),_NhlRES_DEFAULT,NULL},
 	{NhlNgsLineLabelFuncCode,NhlCTextFuncCode,NhlTCharacter,
 		sizeof(char),Oset(line_label_func_code),NhlTString,
-		_NhlUSET(":"),_NhlRES_DEFAULT,NULL},
+		_NhlUSET("~"),_NhlRES_DEFAULT,NULL},
 
 /* End-documented-resources */
 		
@@ -785,7 +785,7 @@ static NhlResource textresources[] = {
 	{NhlNgsTextFuncCode, NhlCTextFuncCode, NhlTCharacter, 
 		sizeof(char),
 		Oset(func_code),
-		NhlTString,_NhlUSET(":"),0,NULL},
+		NhlTString,_NhlUSET("~"),0,NULL},
 
 /* End-documented-resources */
 

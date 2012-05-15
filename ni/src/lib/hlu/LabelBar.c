@@ -196,7 +196,7 @@ static NhlResource resources[] = {
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNlbLabelFuncCode, NhlCTextFuncCode, NhlTCharacter, 
 	 sizeof(char), NhlOffset(NhlLabelBarLayerRec,labelbar.label_func_code),
-	 NhlTString,_NhlUSET(":"),0,NULL},
+	 NhlTString,_NhlUSET("~"),0,NULL},
 	{NhlNlbLabelStride, NhlClbLabelStride, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.label_stride),
 	 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
@@ -264,7 +264,7 @@ static NhlResource resources[] = {
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNlbTitleFuncCode, NhlCTextFuncCode, NhlTCharacter, 
 	 sizeof(char), NhlOffset(NhlLabelBarLayerRec,labelbar.title_func_code),
-	 NhlTString,_NhlUSET(":"),0,NULL},
+	 NhlTString,_NhlUSET("~"),0,NULL},
 	
 	{NhlNlbBoxLinesOn,NhlClbBoxLinesOn,NhlTBoolean, 
 	 sizeof(NhlBoolean),

@@ -220,7 +220,7 @@ static NhlResource data_resources[] = {
                  NhlTString,_NhlUSET("0.0"),0,NULL},
         {NhlNxyLineLabelFuncCode,NhlCTextFuncCode,NhlTCharacter,
                  sizeof(char),Oset(llabel_func_code),
-                 NhlTString, _NhlUSET(":"),0,NULL}
+                 NhlTString, _NhlUSET("~"),0,NULL}
 
 /* End-documented-resources */
 

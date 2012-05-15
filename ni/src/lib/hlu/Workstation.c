@@ -280,7 +280,7 @@ static NhlResource resources[] = {
          	_NhlRES_DEFAULT|_NhlRES_PRIVATE,NULL},
 	{NhlNwkLineLabelFuncCode,NhlCwkLineLabelFuncCode,NhlTCharacter,
 		sizeof(char),POset(line_label_func_code),NhlTString,
-		_NhlUSET(":"),_NhlRES_DEFAULT|_NhlRES_PRIVATE,NULL},
+		_NhlUSET("~"),_NhlRES_DEFAULT|_NhlRES_PRIVATE,NULL},
 #undef POset
 #define POset(field) Oset(public_markinfo.field)
 	{NhlNwkMarkerIndex,NhlCwkMarkerIndex,NhlTMarkerIndex,
@@ -366,7 +366,7 @@ static NhlResource resources[] = {
          	_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNwkLineLabelFuncCode,_NhlCwkLineLabelFuncCode,NhlTCharacter,
 		sizeof(char),POset(line_label_func_code),NhlTString,
-		_NhlUSET(":"),_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
+		_NhlUSET("~"),_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
 #undef POset
 
 #define POset(field) Oset(private_markinfo.field)

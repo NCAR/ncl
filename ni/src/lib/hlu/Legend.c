@@ -295,7 +295,7 @@ static NhlResource resources[] = {
 	 NhlTString, _NhlUSET("0.0"),0,NULL},
 {NhlNlgLabelFuncCode, NhlCTextFuncCode, NhlTCharacter, 
 	 sizeof(char), NhlOffset(NhlLegendLayerRec,legend.label_func_code),
-	 NhlTString, _NhlUSET(":"),0,NULL},
+	 NhlTString, _NhlUSET("~"),0,NULL},
 {NhlNlgLabelStride, NhlClgLabelStride, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.label_stride),
 	 NhlTImmediate, _NhlUSET((NhlPointer) 1),0,NULL},
@@ -355,7 +355,7 @@ static NhlResource resources[] = {
 	 NhlTString, _NhlUSET("0.0"),0,NULL},
 {NhlNlgTitleFuncCode, NhlCTextFuncCode, NhlTCharacter, 
 	 sizeof(char), NhlOffset(NhlLegendLayerRec,legend.title_func_code),
-	 NhlTString, _NhlUSET(":"),0,NULL},
+	 NhlTString, _NhlUSET("~"),0,NULL},
 	
 {NhlNlgBoxLinesOn, NhlClgBoxLinesOn, NhlTBoolean, 
 	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.box_line_on),
@@ -426,7 +426,7 @@ static NhlResource resources[] = {
 {NhlNlgLineLabelFuncCode,NhlCTextFuncCode,NhlTCharacter, 
 	 sizeof(char),
 	 NhlOffset(NhlLegendLayerRec,legend.ll_func_code),
-	 NhlTString, _NhlUSET(":"),0,NULL},
+	 NhlTString, _NhlUSET("~"),0,NULL},
 
 /* End-documented-resources */
 

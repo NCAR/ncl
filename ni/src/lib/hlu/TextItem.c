@@ -115,7 +115,7 @@ static NhlResource resources[] = {
 	{ NhlNtxFuncCode, NhlCTextFuncCode, NhlTCharacter, 
 		sizeof(char),
 		NhlOffset(NhlTextItemLayerRec, text.func_code),
-		NhlTString,_NhlUSET(":"),0,NULL},
+		NhlTString,_NhlUSET("~"),0,NULL},
 
 
 	{NhlNtxPerimOn, NhlCEdgesOn, NhlTBoolean,sizeof(NhlBoolean),

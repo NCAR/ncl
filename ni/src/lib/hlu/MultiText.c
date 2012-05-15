@@ -84,7 +84,7 @@ static NhlResource resources[] = {
 		sizeof(NhlTextDirection),Oset(direction),NhlTImmediate,
 	 {(NhlPointer)NhlACROSS},0,NULL},
 	{NhlNtxFuncCode, NhlCTextFuncCode, NhlTCharacter,
-		 sizeof(char),Oset(func_code),NhlTString,{":"},0,NULL}
+		 sizeof(char),Oset(func_code),NhlTString,{"~"},0,NULL}
 };
 #undef Oset
 

@@ -97,7 +97,7 @@ static NhlResource resources[] = {
 		 _NhlUSET("1.0"),0,NULL},
 	{NhlNtxFuncCode, NhlCTextFuncCode, NhlTCharacter,
 		sizeof(char),Oset(func_code[0]),NhlTString,
-		 _NhlUSET(":"),0,NULL},
+		 _NhlUSET("~"),0,NULL},
 	{NhlNtxConstantSpacingF, NhlCTextConstantSpacingF, NhlTFloat,
 		sizeof(float),Oset(constant_spacing),NhlTString,
 		 _NhlUSET("0.0"),0,NULL},
