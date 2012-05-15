@@ -12514,6 +12514,7 @@ begin
 
 ; Initialize.
     old_lbar_on   = False     ; Labelbar flag
+    new_lbar_on   = False
     main_zone     = 2         ; Zone for main title (may change later)
     res2          = get_resources(resources)
 ;
