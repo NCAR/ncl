@@ -76,7 +76,7 @@ static NhlResource resources[] = {
 		sizeof(float),Oset(angle),NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNtxFont, NhlCFont, NhlTInteger,
 		sizeof(int),Oset(font),NhlTImmediate,
-		 _NhlUSET((NhlPointer)0),0,NULL},
+		 _NhlUSET((NhlPointer)21),0,NULL},
 	{NhlNtxJust, NhlCTextJustification, NhlTInteger,
 		sizeof(int),Oset(just),NhlTImmediate,
 		 _NhlUSET((NhlPointer)4),0,NULL},

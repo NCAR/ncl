@@ -340,7 +340,7 @@ static NhlResource resources[] = {
 		_NhlRES_SGONLY|_NhlRES_PRIVATE,(NhlFreeFunc)NhlFree},
 	{_NhlNwkLineLabelFont,_NhlCwkLineLabelFont,NhlTFont,sizeof(NhlFont),
 		POset(line_label_font),NhlTImmediate,
-		 _NhlUSET((NhlPointer)0),_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
+		 _NhlUSET((NhlPointer)21),_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL},
 	{_NhlNwkLineLabelFontColor,_NhlCwkLineLabelFontColor,NhlTColorIndex,
 		sizeof(NhlColorIndex),POset(line_label_font_color),
 		NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),
