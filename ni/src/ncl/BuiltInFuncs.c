@@ -20539,6 +20539,11 @@ NhlErrorTypes _NclISetFileOption(void)
 	NhlErrorTypes ret;
 	int n_dims = 1;
 
+        NrmQuark format_lower;
+        NrmQuark option_lower;
+        NrmQuark nc_quark = NrmStringToQuark("nc");
+        NrmQuark fm_quark = NrmStringToQuark("format");
+
 	data = _NclGetArg(0,3,DONT_CARE);
 	switch(data.kind) {
 	case NclStk_VAR:
@@ -20593,10 +20598,35 @@ NhlErrorTypes _NclISetFileOption(void)
 		return(NhlFATAL);
 
 	_NclInitClass(nclFileClass);
+
+        format_lower = _NclGetLower(format);
+        option_lower = _NclGetLower(option);
+
+        if((format_lower == nc_quark) && (fm_quark == option_lower))
+        {
+                if(NCL_string == tmp_md1->multidval.data_type)
+                {
+                        NrmQuark *mode = (NrmQuark *) tmp_md1->multidval.val;
+                        NrmQuark netcdf4_quark = NrmStringToQuark("netcdf4");
+                        NrmQuark newfs_quark = NrmStringToQuark("usenewhlfs");
+                        NrmQuark mode_lower = _NclGetLower(*mode);
+
+                        if(netcdf4_quark == mode_lower)
+                        {
+				logical lval = True;
+				ng_size_t ndims = 1;
+				NclMultiDValData tmp_md2 = NULL;
+				tmp_md2 = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)(&lval),
+								NULL,1,&ndims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+                                ret = _NclFileSetOption(f, format_lower, newfs_quark, tmp_md2);
+				use_new_hlfs = 1;
+                        }
+                }
+        }
+
 	ret = _NclFileSetOption(f,format,option,tmp_md1);
 
 	return ret;
-	
 }	
 
 NhlErrorTypes   _NclIGetFileVarTypes
