@@ -63,7 +63,7 @@ static NhlResource resources[] = {
 		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL },
 	{ NhlNtxFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTextItemLayerRec, text.font),
-		NhlTImmediate,_NhlUSET(0),0,NULL },
+		NhlTImmediate,_NhlUSET(21),0,NULL },
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.just_set),
 		NhlTImmediate,_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},

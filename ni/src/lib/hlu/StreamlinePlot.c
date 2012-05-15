@@ -142,7 +142,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlACROSS),0,NULL},
 	{NhlNstZeroFLabelFont,NhlCFont,NhlTFont, 
 		 sizeof(int),Oset(zerof_lbl.font),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) 21),0,NULL},
 	{NhlNstZeroFLabelFontColor,NhlCFontColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(zerof_lbl.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
