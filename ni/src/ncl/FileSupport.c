@@ -3046,7 +3046,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			NclQuark the_real_path = NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path)));
 			NclQuark old_file_ext_q = file_ext_q;
 
-			stat(NrmQuarkToString(path), &file_stat);
+			stat(_NGResolvePath(NrmQuarkToString(path)), &file_stat);
 
 			if(file_stat.st_size)
 			    file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_new_hlfs);
