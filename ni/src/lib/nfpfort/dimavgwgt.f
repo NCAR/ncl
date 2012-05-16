@@ -26,17 +26,12 @@ C NCL:  xWgtAvg = dim_avg_wgt(x, wgt, opt)
       end do
 
       if (wsum.gt.0.d0) then
-          if (npts.eq.nx ) then
+          if ((iopt.eq.0 .and. npts.eq.nx) .or. iopt.eq.1 ) then
               xavg = xsum/wsum
               return
           end if
 
-          if (iopt.eq.1) then
-              xavg = xsum/wsum
-              return
-          end if
-
-          if (npts.ge.iopt .and. wsum.gt.0.d0) then
+          if (iopt.gt.1 .and. npts.ge.iopt) then
               xavg = xsum/wsum
               return
           end if
