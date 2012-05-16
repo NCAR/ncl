@@ -2004,6 +2004,11 @@ end     ; of ESMF_regrid_gen_weights(...)
 ;======================================================================
 ; Using the provided weight file, remaps the data 
 ; from source grid into destination grid
+;
+; I've been tempted to add options for removing the source, destination,
+; and weight files after this routine is done. But, ESMF_regrid can
+; do this, so it's easier to let this routine "do it all" than to
+; have the individual functions do it.
 ;======================================================================
 undef("ESMF_regrid_with_weights")
 function ESMF_regrid_with_weights(srcData:numeric,wgtFile[1]:string, opt[1]:logical)
