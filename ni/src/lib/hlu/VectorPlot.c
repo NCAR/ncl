@@ -7947,7 +7947,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		vcp->level_colors = ga;
 		need_check = True;
-		init_count = old_count = vcp->level_count;
+		init_count = old_count = count;
         }
 	else if (palette_set || (vcp->level_palette && (vcp->level_count != ovcp->level_count))) {
 		if ((vcp->level_colors == NULL) || 
@@ -7960,7 +7960,7 @@ static NhlErrorTypes    ManageDynamicArrays
 			}
 			vcp->level_colors = ga;
 			need_check = True;
-			init_count = old_count = vcp->level_count;
+			init_count = old_count = count;
 		}
 	}
 	else {

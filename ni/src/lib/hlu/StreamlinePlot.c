@@ -5797,7 +5797,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		stp->level_colors = ga;
 		need_check = True;
-		init_count = old_count = stp->level_count;
+		init_count = old_count = count;
         }
 	else if (palette_set || (stp->level_palette && (stp->level_count != ostp->level_count))) {
 		if ((stp->level_colors == NULL) || 
@@ -5810,7 +5810,7 @@ static NhlErrorTypes    ManageDynamicArrays
 			}
 			stp->level_colors = ga;
 			need_check = True;
-			init_count = old_count = stp->level_count;
+			init_count = old_count = count;
 		}
 	}
 	else {
