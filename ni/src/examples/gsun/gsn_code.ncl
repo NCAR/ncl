@@ -2243,9 +2243,9 @@ begin
   end if
   write_lines("", lines, nlines)
   write_lines(";", lines, nlines)
-  write_lines("; Open X11 file.", lines, nlines)
+  write_lines("; Open PNG file.", lines, nlines)
   write_lines(";", lines, nlines)
-  write_lines("  wks = gsn_open_wks(" + q + "x11" + q + ", " + q + debug_file + q + ")", lines, nlines)
+  write_lines("  wks = gsn_open_wks(" + q + "png" + q + ", " + q + debug_file + q + ")", lines, nlines)
 ;
 ; Set colormap, if one inputted by user.
 ;
