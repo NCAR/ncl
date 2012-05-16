@@ -3049,7 +3049,7 @@ CreateDefGraphicsStyle
 		NhlSetSArg(&sargs[nargs++],
 			   NhlNgsLineLabelString,lsp->line_label_string);
 	}
-	if (lsp->line_label_font != 0) {
+	if (lsp->line_label_font != 21) {
 		NhlSetSArg(&sargs[nargs++],
 			   NhlNgsLineLabelFont,lsp->line_label_font);
 	}
@@ -3084,7 +3084,7 @@ CreateDefGraphicsStyle
 			   NhlNgsLineLabelConstantSpacingF,
 			   lsp->line_label_const_spacing);
 	}
-	if (lsp->line_label_func_code != ':') {
+	if (lsp->line_label_func_code != '~') {
 		NhlSetSArg(&sargs[nargs++],
 			   NhlNgsLineLabelFuncCode,
 			   lsp->line_label_func_code);
