@@ -9998,6 +9998,10 @@ begin
       end if
     end if
 
+    if(isatt(res2,"lbLabelBarOn"))
+      delete(res2@lbLabelBarOn)
+    end if
+
     lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
                               "horizontal"))
     infolabel_on = get_res_value_keep(res2,"cnInfoLabelOn",False)
@@ -10297,6 +10301,10 @@ begin
           end if
         end if
       end if
+    end if
+
+    if(isatt(res2,"lbLabelBarOn"))
+      delete(res2@lbLabelBarOn)
     end if
 
     lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
