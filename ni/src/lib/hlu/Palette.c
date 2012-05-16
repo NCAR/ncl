@@ -2082,7 +2082,12 @@ NhlErrorTypes _NhlSpanColorPalette
 	while (pal_col[i] < 0) i++;
 	min_ind = i;
 	max_ind = palga->num_elements - 1;
-	spacing = (max_ind - min_ind) / (double) (count - 1);
+	if (count < 2) {
+		spacing = 1.0;
+	}
+	else {
+		spacing = (max_ind - min_ind) / (double) (count - 1);
+	}
 	for (i = 0; i < count; i++) {
 		ix = (int) min_ind + spacing * i + 0.5;
 		colors[i] = pal_col[ix];
