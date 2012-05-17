@@ -2870,7 +2870,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 			int cdfid;
 			int format;
 			int nc_ret = NC_NOERR;
-			ng_usize_t ChunkSizeHint;
+			ng_usize_t ChunkSizeHint = 64 * getpagesize();
 			nc_ret = nc__open(filename,NC_NOWRITE,&ChunkSizeHint,&cdfid);
 
 			if(NC_NOERR != nc_ret)
