@@ -4066,12 +4066,18 @@ static NhlErrorTypes vcDraw
 		for (i=0; i < vcp->level_count; i++) {
 			c_vvseti("PAI",i+1);
 			c_vvsetr("TVL",tvl[i]);
-			c_vvseti("CLR",_NhlGetGksCi(vcl->base.wkptr,clr[i]));
+			if (clr[i] == NhlTRANSPARENT) 
+				c_vvseti("CLR",NhlFOREGROUND);
+			else 
+				c_vvseti("CLR",_NhlGetGksCi(vcl->base.wkptr,clr[i]));
 		}
 		c_vvseti("PAI",vcp->level_count+1);
 		c_vvsetr("TVL",1E36);
-		c_vvseti("CLR",_NhlGetGksCi(vcl->base.wkptr,
-					    clr[vcp->level_count]));
+		if (clr[i] == NhlTRANSPARENT) 
+			c_vvseti("CLR",NhlFOREGROUND);
+		else 
+			c_vvseti("CLR",_NhlGetGksCi(vcl->base.wkptr,
+						    clr[vcp->level_count]));
 	}
 
 	c_vvsetr("VMD",vcp->min_distance / vcl->view.width);
@@ -7936,15 +7942,17 @@ static NhlErrorTypes    ManageDynamicArrays
  * Level colors
  */
 	count = vcp->level_count + 1;
+	need_check = False;
+	ga = NULL;
 	if (vcp->level_palette && vcp->level_colors && (init || _NhlArgIsSet(args,num_args,NhlNvcLevelColors))) {
-                subret = _NhlSetColorsFromIndexAndPalette(vcp->level_colors,vcp->level_palette,entry_name);
-		if (! init && ovcp->level_colors != NULL)
-			NhlFreeGenArray(ovcp->level_colors);
 		if ((ga =  _NhlCopyGenArray(vcp->level_colors,True)) == NULL) {
 			e_text = "%s: error copying GenArray";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return(NhlFATAL);
 		}
+                subret = _NhlSetColorsFromIndexAndPalette(ga,vcp->level_palette,entry_name);
+		if (! init && ovcp->level_colors != NULL)
+			NhlFreeGenArray(ovcp->level_colors);
 		vcp->level_colors = ga;
 		need_check = True;
 		init_count = old_count = count;

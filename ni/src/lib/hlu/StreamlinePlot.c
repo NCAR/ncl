@@ -2930,12 +2930,18 @@ static NhlErrorTypes stDraw
 		for (i=0; i < stp->level_count; i++) {
 			c_stseti("PAI",i+1);
 			c_stsetr("TVL",tvl[i]);
-			c_stseti("CLR",_NhlGetGksCi(stl->base.wkptr,clr[i]));
+			if (clr[i] == NhlTRANSPARENT) 
+				c_stseti("CLR",NhlFOREGROUND);
+			else 
+				c_stseti("CLR",_NhlGetGksCi(stl->base.wkptr,clr[i]));
 		}
 		c_stseti("PAI",stp->level_count+1);
 		c_stsetr("TVL",1E36);
-		c_stseti("CLR",_NhlGetGksCi(stl->base.wkptr,
-					    clr[stp->level_count]));
+		if (clr[stp->level_count] == NhlTRANSPARENT) 
+			c_stseti("CLR",NhlFOREGROUND);
+		else 
+			c_stseti("CLR",_NhlGetGksCi(stl->base.wkptr,
+						    clr[stp->level_count]));
 	}
 
 	/* set streamline opacity */
@@ -5786,15 +5792,17 @@ static NhlErrorTypes    ManageDynamicArrays
  * Level colors
  */
 	count = stp->level_count + 1;
+	need_check = False;
+	ga = NULL;
 	if (stp->level_palette && stp->level_colors && (init || _NhlArgIsSet(args,num_args,NhlNstLevelColors))) {
-                subret = _NhlSetColorsFromIndexAndPalette(stp->level_colors,stp->level_palette,entry_name);
-		if (! init && ostp->level_colors != NULL)
-			NhlFreeGenArray(ostp->level_colors);
 		if ((ga =  _NhlCopyGenArray(stp->level_colors,True)) == NULL) {
 			e_text = "%s: error copying GenArray";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return(NhlFATAL);
 		}
+                subret = _NhlSetColorsFromIndexAndPalette(ga,stp->level_palette,entry_name);
+		if (! init && ostp->level_colors != NULL)
+			NhlFreeGenArray(ostp->level_colors);
 		stp->level_colors = ga;
 		need_check = True;
 		init_count = old_count = count;

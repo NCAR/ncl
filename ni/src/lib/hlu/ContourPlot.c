@@ -8032,14 +8032,14 @@ static NhlErrorTypes    ManageDynamicArrays
 	need_check = False;
 	ga = NULL;
 	if (cnp->fill_palette && cnp->fill_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnFillColors))) {
-                subret = _NhlSetColorsFromIndexAndPalette(cnp->fill_colors,cnp->fill_palette,entry_name);
-		if (! init && ocnp->fill_colors != NULL)
-			NhlFreeGenArray(ocnp->fill_colors);
 		if ((ga =  _NhlCopyGenArray(cnp->fill_colors,True)) == NULL) {
 			e_text = "%s: error copying GenArray";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return(NhlFATAL);
 		}
+                subret = _NhlSetColorsFromIndexAndPalette(ga,cnp->fill_palette,entry_name);
+		if (! init && ocnp->fill_colors != NULL)
+			NhlFreeGenArray(ocnp->fill_colors);
 		cnp->fill_colors = ga;
 		need_check = True;
 		init_count = old_count = cnp->fill_count;

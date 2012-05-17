@@ -2180,7 +2180,7 @@ NhlErrorTypes    _NhlSetColorsFromIndexAndPalette
 	fill_cols = (int*)index_ga->data;
 
 	for (i = 0; i < index_ga->num_elements; i++) {
-		if (fill_cols[i] < 256) {
+		if (fill_cols[i] >= 0 && fill_cols[i] < 256) {
 			if (i > palette_ga->len_dimensions[0] - 1) {
 				fill_cols[i] = NhlFOREGROUND;
 			}
