@@ -2110,7 +2110,7 @@ NhlErrorTypes _NhlSpanColorPalette
  */
 
 NhlErrorTypes    _NhlSetColorsFromPalette
-(NhlLayer               vnl,
+(NhlLayer               vl,
  NhlGenArray            palette_ga,
  int                    color_count,
  int			span_palette,
@@ -2131,7 +2131,7 @@ NhlErrorTypes    _NhlSetColorsFromPalette
 	to.size = sizeof(NhlGenArray);
 	to.data.ptrval = &intga;
 
-        context = _NhlCreateConvertContext(vnl->base.wkptr);
+        context = _NhlCreateConvertContext(vl->base.wkptr);
 
 	subret = _NhlConvertData(context,NrmStringToQuark(NhlTColorDefinitionGenArray),
 				 NrmStringToQuark(NhlTColorIndexGenArray),&from,&to);
@@ -2168,21 +2168,25 @@ NhlErrorTypes    _NhlSetColorsFromPalette
 }
 
 NhlErrorTypes    _NhlSetColorsFromIndexAndPalette
-(NhlGenArray            index_ga,
+(NhlLayer               vl,
+ NhlGenArray            index_ga,
  NhlGenArray            palette_ga,
  char *                 entry_name)
 {
-
 	int *fill_cols;
 	float *fpal;
 	int i;
+	char *e_text;
 	
 	fill_cols = (int*)index_ga->data;
 
 	for (i = 0; i < index_ga->num_elements; i++) {
 		if (fill_cols[i] >= 0 && fill_cols[i] < 256) {
-			if (i > palette_ga->len_dimensions[0] - 1) {
+			if (fill_cols[i] > palette_ga->len_dimensions[0] - 1) {
+				e_text ="%s: color index (%d) exceeds size of palette, defaulting to foreground color for entry (%d)";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,fill_cols[i],i);
 				fill_cols[i] = NhlFOREGROUND;
+				continue;
 			}
 			fpal = ((float*)palette_ga->data) + fill_cols[i] * palette_ga->len_dimensions[1];
 			fill_cols[i] = _NhlRGBAToColorIndex(fpal,palette_ga->len_dimensions[1] == 4 ? 1 : 0);

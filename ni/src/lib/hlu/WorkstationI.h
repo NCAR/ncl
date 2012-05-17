@@ -345,7 +345,7 @@ extern NhlErrorTypes _NhlSpanColorPalette(
 );
 
 extern NhlErrorTypes _NhlSetColorsFromPalette(
-	NhlLayer vnl,
+	NhlLayer vl,
 	NhlGenArray palette_ga, 
 	int color_count, 
 	int span_palette, 
@@ -354,6 +354,7 @@ extern NhlErrorTypes _NhlSetColorsFromPalette(
 );
 
 extern NhlErrorTypes   _NhlSetColorsFromIndexAndPalette(
+	NhlLayer	       vl,
 	NhlGenArray            index_ga,
 	NhlGenArray            palette_ga,
 	char *                 entry_name

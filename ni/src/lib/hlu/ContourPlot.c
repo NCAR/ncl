@@ -8037,7 +8037,7 @@ static NhlErrorTypes    ManageDynamicArrays
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return(NhlFATAL);
 		}
-                subret = _NhlSetColorsFromIndexAndPalette(ga,cnp->fill_palette,entry_name);
+                subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)cnew,ga,cnp->fill_palette,entry_name);
 		if (! init && ocnp->fill_colors != NULL)
 			NhlFreeGenArray(ocnp->fill_colors);
 		cnp->fill_colors = ga;
@@ -8193,7 +8193,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	need_check = False;
 	ga = NULL;
 	if (cnp->line_palette && cnp->line_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnLineColors))) {
-                subret = _NhlSetColorsFromIndexAndPalette(cnp->line_colors,cnp->line_palette,entry_name);
+                subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)cnew,cnp->line_colors,cnp->line_palette,entry_name);
 		if (! init && ocnp->line_colors != NULL)
 			NhlFreeGenArray(ocnp->line_colors);
 		if ((ga =  _NhlCopyGenArray(cnp->line_colors,True)) == NULL) {
@@ -8445,7 +8445,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	need_check = False;
 	ga = NULL;
 	if (cnp->line_palette && cnp->llabel_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnLineLabelFontColors))) {
-                subret = _NhlSetColorsFromIndexAndPalette(cnp->llabel_colors,cnp->line_palette,entry_name);
+                subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)cnew,cnp->llabel_colors,cnp->line_palette,entry_name);
 		if (! init && ocnp->llabel_colors != NULL)
 			NhlFreeGenArray(ocnp->llabel_colors);
 		if ((ga =  _NhlCopyGenArray(cnp->llabel_colors,True)) == NULL) {

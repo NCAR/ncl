@@ -5800,7 +5800,7 @@ static NhlErrorTypes    ManageDynamicArrays
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return(NhlFATAL);
 		}
-                subret = _NhlSetColorsFromIndexAndPalette(ga,stp->level_palette,entry_name);
+                subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)stnew,ga,stp->level_palette,entry_name);
 		if (! init && ostp->level_colors != NULL)
 			NhlFreeGenArray(ostp->level_colors);
 		stp->level_colors = ga;
