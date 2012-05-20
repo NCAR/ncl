@@ -1746,7 +1746,7 @@ begin
   xy@Panel = True  ; flag
 
 ;---Restore color map, if necessary
-  if(.not.localOpts@UseMyColorap) then
+  if(.not.localOpts@UseMyColorMap) then
     gsn_define_colormap(wks,cmap_orig)
   end if
 
