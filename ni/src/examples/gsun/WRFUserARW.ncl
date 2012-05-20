@@ -2700,9 +2700,6 @@ begin
   end if
 
 
-  if(.not.isatt(opts,"cnFillColors")) then
-    opts@gsnSpreadColors = get_res_value_keep(opts, "gsnSpreadColors", True)
-  end if
   opts@cnInfoLabelOn   = get_res_value_keep(opts,"cnInfoLabelOn", False)
   opts@cnLinesOn       = get_res_value_keep(opts,"cnLinesOn", False)
   opts@cnLineLabelsOn  = get_res_value_keep(opts,"cnLineLabelsOn", False)
