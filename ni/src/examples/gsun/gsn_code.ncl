@@ -1006,9 +1006,9 @@ end
 ; In NCL versions 6.0.0 and earlier, if you had both xxYYYYColors set   ;
 ; and gsnSpreadColors was set to True, then the xxYYYYColors resource   ;
 ; would be ignored, and gsnSpreadColors took precedence.                ;
-;
+;                                                                       ;
 ; In versions 6.1.0 and later, the opposite is True. gsnSpreadColors    ;
-; is now True by default, but if you set xxYYYYColors, then thils will  ;
+; is now True by default, but if you set xxYYYYColors, then this will   ;
 ; take precedence, and no message will be printed.                      ;
 ;***********************************************************************;
 undef("spread_colors")
@@ -9198,6 +9198,10 @@ begin
     if(min_index.ne.2.or.max_index.ne.-1.) then
       sprdcols = get_res_value(res2,"gsnSpreadColors",True)
     else
+      if(check_attr(res2,"gsnSpreadColors",False,True).and..not.\
+        isatt(res2,"cnSpanFillPalette")) then
+        res2@cnSpanFillPalette = False
+      end if
       sprdcols = get_res_value(res2,"gsnSpreadColors",False)
     end if
 
@@ -9424,6 +9428,10 @@ begin
     if(min_index.ne.2.or.max_index.ne.-1.) then
       sprdcols = get_res_value(res2,"gsnSpreadColors",True)
     else
+      if(check_attr(res2,"gsnSpreadColors",False,True).and..not.\
+        isatt(res2,"cnSpanFillPalette")) then
+        res2@cnSpanFillPalette = False
+      end if
       sprdcols = get_res_value(res2,"gsnSpreadColors",False)
     end if
 
@@ -10097,6 +10105,10 @@ begin
     if(min_index.ne.2.or.max_index.ne.-1.) then
       sprdcols = get_res_value(res2,"gsnSpreadColors",True)
     else
+      if(check_attr(res2,"gsnSpreadColors",False,True).and..not.\
+        isatt(res2,"vcSpanLevelPalette")) then
+        res2@vcSpanLevelPalette = False
+      end if
       sprdcols = get_res_value(res2,"gsnSpreadColors",False)
     end if
 
@@ -10237,6 +10249,10 @@ begin
     if(min_index.ne.2.or.max_index.ne.-1.) then
       sprdcols = get_res_value(res2,"gsnSpreadColors",True)
     else
+      if(check_attr(res2,"gsnSpreadColors",False,True).and..not.\
+        isatt(res2,"cnSpanFillPalette")) then
+        res2@cnSpanFillPalette = False
+      end if
       sprdcols = get_res_value(res2,"gsnSpreadColors",False)
     end if
 
@@ -10433,6 +10449,10 @@ begin
     if(min_index.ne.2.or.max_index.ne.-1.) then
       sprdcols = get_res_value(res2,"gsnSpreadColors",True)
     else
+      if(check_attr(res2,"gsnSpreadColors",False,True).and..not.\
+        isatt(res2,"cnSpanFillPalette")) then
+        res2@cnSpanFillPalette = False
+      end if
       sprdcols = get_res_value(res2,"gsnSpreadColors",False)
     end if
 
@@ -10606,6 +10626,10 @@ begin
     if(min_index.ne.2.or.max_index.ne.-1.) then
       sprdcols = get_res_value(res2,"gsnSpreadColors",True)
     else
+      if(check_attr(res2,"gsnSpreadColors",False,True).and..not.\
+        isatt(res2,"cnSpanFillPalette")) then
+        res2@cnSpanFillPalette = False
+      end if
       sprdcols = get_res_value(res2,"gsnSpreadColors",False)
     end if
 
@@ -10774,6 +10798,10 @@ begin
     if(min_index.ne.2.or.max_index.ne.-1.) then
       sprdcols = get_res_value(res2,"gsnSpreadColors",True)
     else
+      if(check_attr(res2,"gsnSpreadColors",False,True).and..not.\
+        isatt(res2,"vcSpanLevelPalette")) then
+        res2@vcSpanLevelPalette = False
+      end if
       sprdcols = get_res_value(res2,"gsnSpreadColors",False)
     end if
 
@@ -10895,6 +10923,10 @@ begin
     if(min_index.ne.2.or.max_index.ne.-1.) then
       sprdcols = get_res_value(res2,"gsnSpreadColors",True)
     else
+      if(check_attr(res2,"gsnSpreadColors",False,True).and..not.\
+        isatt(res2,"vcSpanLevelPalette")) then
+        res2@vcSpanLevelPalette = False
+      end if
       sprdcols = get_res_value(res2,"gsnSpreadColors",False)
     end if
 
@@ -10913,7 +10945,7 @@ begin
     attsetvalues_check(vfdata_object,vfres)
     attsetvalues_check(sfdata_object,sfres)
     attsetvalues_check(plot_object,vcres)
-    if(.not.isatt(res2,"vcLevelColors")) then
+    if(sprdcols.and..not.isatt(res2,"vcLevelColors")) then
       vcres2 = True
       set_attr(vcres2,"vcLevelColors",\
                spread_colors(wks,plot_object,min_index,max_index,res2))
@@ -11042,6 +11074,10 @@ begin
     if(min_index.ne.2.or.max_index.ne.-1.) then
       sprdcols = get_res_value(res2,"gsnSpreadColors",True)
     else
+      if(check_attr(res2,"gsnSpreadColors",False,True).and..not.\
+        isatt(res2,"stSpanLevelPalette")) then
+        res2@stSpanLevelPalette = False
+      end if
       sprdcols = get_res_value(res2,"gsnSpreadColors",False)
     end if
 
@@ -11189,6 +11225,10 @@ begin
     if(min_index.ne.2.or.max_index.ne.-1.) then
       sprdcols = get_res_value(res2,"gsnSpreadColors",True)
     else
+      if(check_attr(res2,"gsnSpreadColors",False,True).and..not.\
+        isatt(res2,"vcSpanLevelPalette")) then
+        res2@vcSpanLevelPalette = False
+      end if
       sprdcols = get_res_value(res2,"gsnSpreadColors",False)
     end if
 
@@ -11314,6 +11354,10 @@ begin
     if(min_index.ne.2.or.max_index.ne.-1.) then
       sprdcols = get_res_value(res2,"gsnSpreadColors",True)
     else
+      if(check_attr(res2,"gsnSpreadColors",False,True).and..not.\
+        isatt(res2,"stSpanLevelPalette")) then
+        res2@stSpanLevelPalette = False
+      end if
       sprdcols = get_res_value(res2,"gsnSpreadColors",False)
     end if
 
