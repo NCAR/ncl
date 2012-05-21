@@ -9627,6 +9627,7 @@ begin
           if(new_lbar_on) then
             set_labelbar_res(res2,"contour")
           end if
+          set_attr(res2,"cnLineLabelsOn",False)
           set_attr(res2,"cnInfoLabelOn",False)
         end if
       end if
