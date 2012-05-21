@@ -854,7 +854,7 @@ C
         IF (CNP(1:2).EQ.'CH'.OR.CNP(1:2).EQ.'ch')
           LCH=IVP
         ELSE IF (CNP(1:2).EQ.'DC'.OR.CNP(1:2).EQ.'dc')
-          IDC=MAX(0,MIN(255,IVP))
+          IDC=MAX(0,IVP)
         ELSE IF (CNP(1:2).EQ.'DO'.OR.CNP(1:2).EQ.'do')
           LPA=IVP
         ELSE IF (CNP(1:2).EQ.'TY'.OR.CNP(1:2).EQ.'ty')
@@ -950,7 +950,7 @@ C
         ELSE IF (CNP(1:2).EQ.'CH'.OR.CNP(1:2).EQ.'ch')
           LCH=INT(RVP)
         ELSE IF (CNP(1:2).EQ.'DC'.OR.CNP(1:2).EQ.'dc')
-          IDC=MAX(0,MIN(255,INT(RVP)))
+          IDC=MAX(0,INT(RVP))
         ELSE IF (CNP(1:2).EQ.'DO'.OR.CNP(1:2).EQ.'do')
           LPA=INT(RVP)
         ELSE IF (CNP(1:2).EQ.'DS'.OR.CNP(1:2).EQ.'ds')
