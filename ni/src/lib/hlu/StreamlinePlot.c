@@ -1986,7 +1986,7 @@ static NhlErrorTypes    StreamlinePlotGetValues
                 }
                 else if (args[i].quark == Qlevel_palette) {
                         ga = stp->level_palette;
-                        count = stp->level_palette->num_elements;
+                        count = ga ? stp->level_palette->num_elements : 0;
                         type = NhlNstLevelPalette;
                 }
                 else if (args[i].quark == Qlevel_colors) {
@@ -5774,11 +5774,6 @@ static NhlErrorTypes    ManageDynamicArrays
 			}
 			stp->level_palette = ga;
 		}
-		palette_set = True;
-	}
-	if (! stp->level_palette) {
-		/* if no palette has been specified use the workstation palette */
-		stp->level_palette = _NhlGetWorkstationPalette((NhlLayer) stnew);
 		palette_set = True;
 	}
 	if (! init && stp->span_level_palette != ostp->span_level_palette) {

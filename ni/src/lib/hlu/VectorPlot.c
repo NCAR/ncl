@@ -2730,7 +2730,7 @@ static NhlErrorTypes    VectorPlotGetValues
                 }
                 else if (args[i].quark == Qlevel_palette) {
                         ga = vcp->level_palette;
-                        count = vcp->level_palette->num_elements;
+                        count = ga ? vcp->level_palette->num_elements : 0;
                         type = NhlNvcLevelPalette;
                 }
                 else if (args[i].quark == Qlevel_colors) {
@@ -7923,11 +7923,6 @@ static NhlErrorTypes    ManageDynamicArrays
 			}
 			vcp->level_palette = ga;
 		}
-		palette_set = True;
-	}
-	if (! vcp->level_palette) {
-		/* if no palette has been specified use the workstation palette */
-		vcp->level_palette = _NhlGetWorkstationPalette((NhlLayer) vcnew);
 		palette_set = True;
 	}
 	if (! init && vcp->span_level_palette != ovcp->span_level_palette) {

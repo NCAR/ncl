@@ -2659,7 +2659,7 @@ static NhlErrorTypes    ContourPlotGetValues
                 }
                 else if (args[i].quark == Qfill_palette) {
                         ga = cnp->fill_palette;
-                        count = cnp->fill_palette->num_elements;
+			count = (ga) ? cnp->fill_palette->num_elements : 0;
                         type = NhlNcnFillPalette;
                 }
                 else if (args[i].quark == Qfill_colors) {
@@ -2679,7 +2679,7 @@ static NhlErrorTypes    ContourPlotGetValues
                 }
                 else if (args[i].quark == Qline_palette) {
                         ga = cnp->line_palette;
-                        count = cnp->line_palette->num_elements;
+                        count = ga ? cnp->line_palette->num_elements : 0;
                         type = NhlNcnLinePalette;
                 }
                 else if (args[i].quark == Qline_colors) {
@@ -8014,11 +8014,6 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		palette_set = True;
 	}
-	if (! cnp->fill_palette) {
-		/* if no palette has been specified use the workstation palette */
-		cnp->fill_palette = _NhlGetWorkstationPalette((NhlLayer) cnew);
-		palette_set = True;
-	}
 	if (! init && cnp->span_fill_palette != ocnp->span_fill_palette) {
 		palette_set = True;
 	}
@@ -8172,11 +8167,6 @@ static NhlErrorTypes    ManageDynamicArrays
 			}
 			cnp->line_palette = ga;
 		}
-		palette_set = True;
-	}
-	if (! cnp->line_palette) {
-		/* if no palette has been specified use the workstation palette */
-		cnp->line_palette = _NhlGetWorkstationPalette((NhlLayer) cnew);
 		palette_set = True;
 	}
 	if (! init && cnp->span_line_palette != ocnp->span_line_palette) {
