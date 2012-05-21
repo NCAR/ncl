@@ -360,6 +360,13 @@ extern NhlErrorTypes   _NhlSetColorsFromIndexAndPalette(
 	char *                 entry_name
 );
 
+extern NhlErrorTypes   _NhlSetColorsFromWorkstationColorMap(
+	NhlLayer	       vl,
+	NhlGenArray            *index_ga,
+	ng_size_t              count,
+	char *                 entry_name
+);
+
 extern NhlGenArray _NhlGetWorkstationPalette(
 #if	NhlNeedProto
         NhlLayer  l

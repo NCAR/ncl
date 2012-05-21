@@ -7840,7 +7840,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	float *levels = NULL;
 	NhlBoolean levels_modified = False, flags_modified = False;
 	NhlBoolean line_init;
-	NhlBoolean palette_set;
+	NhlBoolean palette_set,span_palette_set;
 
 	entry_name =  init ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
@@ -8000,6 +8000,7 @@ static NhlErrorTypes    ManageDynamicArrays
  */
 	count = cnp->fill_count;
 	palette_set = False;
+	span_palette_set = False;
 	if ((init && cnp->fill_palette) ||
 	    _NhlArgIsSet(args,num_args,NhlNcnFillPalette)) {
 		if (! init && ocnp->fill_palette != NULL)
@@ -8014,8 +8015,8 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		palette_set = True;
 	}
-	if (! init && cnp->span_fill_palette != ocnp->span_fill_palette) {
-		palette_set = True;
+	if (init || cnp->span_fill_palette != ocnp->span_fill_palette) {
+		span_palette_set = True;
 	}
 
 /*=======================================================================*/
@@ -8026,7 +8027,15 @@ static NhlErrorTypes    ManageDynamicArrays
 	count = cnp->fill_count;
 	need_check = False;
 	ga = NULL;
-	if (cnp->fill_palette && cnp->fill_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnFillColors))) {
+	if (! cnp->fill_palette && span_palette_set && cnp->span_fill_palette) {
+                subret = _NhlSetColorsFromWorkstationColorMap((NhlLayer)cnew,&ga,count,entry_name);
+		if (! init && ocnp->fill_colors != NULL)
+			NhlFreeGenArray(ocnp->fill_colors);
+		cnp->fill_colors = ga;
+		need_check = True;
+		init_count = old_count = cnp->fill_count;
+	}
+	else if (cnp->fill_palette && cnp->fill_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnFillColors))) {
 		if ((ga =  _NhlCopyGenArray(cnp->fill_colors,True)) == NULL) {
 			e_text = "%s: error copying GenArray";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -8155,6 +8164,7 @@ static NhlErrorTypes    ManageDynamicArrays
  */
 	count = cnp->level_count;
 	palette_set = False;
+	span_palette_set = False;
 	if ((init && cnp->line_palette) ||
 	    _NhlArgIsSet(args,num_args,NhlNcnLinePalette)) {
 		if (! init && ocnp->line_palette != NULL)
@@ -8169,8 +8179,8 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		palette_set = True;
 	}
-	if (! init && cnp->span_line_palette != ocnp->span_line_palette) {
-		palette_set = True;
+	if (init || cnp->span_line_palette != ocnp->span_line_palette) {
+		span_palette_set = True;
 	}
 
 
@@ -8182,7 +8192,15 @@ static NhlErrorTypes    ManageDynamicArrays
 	count = cnp->level_count;
 	need_check = False;
 	ga = NULL;
-	if (cnp->line_palette && cnp->line_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnLineColors))) {
+	if (! cnp->line_palette && span_palette_set && cnp->span_line_palette) {
+                subret = _NhlSetColorsFromWorkstationColorMap((NhlLayer)cnew,&ga,count,entry_name);
+		if (! init && ocnp->line_colors != NULL)
+			NhlFreeGenArray(ocnp->line_colors);
+		cnp->line_colors = ga;
+		need_check = True;
+		init_count = old_count = count;
+	}
+	else if (cnp->line_palette && cnp->line_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnLineColors))) {
                 subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)cnew,cnp->line_colors,cnp->line_palette,entry_name);
 		if (! init && ocnp->line_colors != NULL)
 			NhlFreeGenArray(ocnp->line_colors);

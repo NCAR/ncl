@@ -2195,6 +2195,39 @@ NhlErrorTypes    _NhlSetColorsFromIndexAndPalette
 	return NhlNOERROR;
 }
 
+NhlErrorTypes    _NhlSetColorsFromWorkstationColorMap
+(NhlLayer               vl,
+ NhlGenArray            *index_ga,
+ ng_size_t		count,
+ char *                 entry_name)
+{
+	NhlGenArray cmap_ga;
+	int *ci;
+	int i,ix;
+	int min_ind,max_ind;
+	double spacing;
+
+	NhlVAGetValues(vl->base.wkptr->base.id,
+		       NhlNwkColorMap, &cmap_ga, NULL);
+	min_ind = 2;
+	max_ind = cmap_ga->len_dimensions[0] - 1;
+	ci = NhlMalloc(sizeof(int) * count);
+	if (count < 2) {
+		spacing = 1.0;
+	}
+	else {
+		spacing = (max_ind - min_ind) / (double) (count - 1);
+	}
+	for (i = 0; i < count; i++) {
+		ix = (int) min_ind + spacing * i + 0.5;
+		ci[i] = ix;
+	}
+	*index_ga = _NhlCreateGenArray(ci,NhlTColorIndex,4,1,&count,False);
+	NhlFreeGenArray(cmap_ga);
+
+	return NhlNOERROR;
+}
+
 NhlGenArray _NhlGetWorkstationPalette
 (NhlLayer  l)
 {

@@ -7828,7 +7828,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	NhlBoolean levels_modified = False;
 	NhlvcScaleInfo 		*sip,*osip;
 	NhlBoolean		scalar_labels, mag_labels;
-	int palette_set;
+	int palette_set,span_palette_set;
 
 	entry_name =  init ? InitName : SetValuesName;
 
@@ -7911,6 +7911,7 @@ static NhlErrorTypes    ManageDynamicArrays
  */
 	count = vcp->level_count + 1;
 	palette_set = False;
+	span_palette_set = False;
 	if ((init && vcp->level_palette) ||
 	    _NhlArgIsSet(args,num_args,NhlNvcLevelPalette)) {
 		if (! init && ovcp->level_palette != NULL)
@@ -7926,7 +7927,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		palette_set = True;
 	}
 	if (! init && vcp->span_level_palette != ovcp->span_level_palette) {
-		palette_set = True;
+		span_palette_set = True;
 	}
 
 
@@ -7939,7 +7940,15 @@ static NhlErrorTypes    ManageDynamicArrays
 	count = vcp->level_count + 1;
 	need_check = False;
 	ga = NULL;
-	if (vcp->level_palette && vcp->level_colors && (init || _NhlArgIsSet(args,num_args,NhlNvcLevelColors))) {
+	if (vcp->level_palette && span_palette_set && vcp->span_level_palette) {
+                subret = _NhlSetColorsFromWorkstationColorMap((NhlLayer)vcnew,&ga,count,entry_name);
+		if (! init && ovcp->level_colors != NULL)
+			NhlFreeGenArray(ovcp->level_colors);
+		vcp->level_colors = ga;
+		need_check = True;
+		init_count = old_count = count;
+	}
+	else if (vcp->level_palette && vcp->level_colors && (init || _NhlArgIsSet(args,num_args,NhlNvcLevelColors))) {
 		if ((ga =  _NhlCopyGenArray(vcp->level_colors,True)) == NULL) {
 			e_text = "%s: error copying GenArray";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
