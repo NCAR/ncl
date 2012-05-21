@@ -21169,9 +21169,38 @@ NhlErrorTypes   _NclIFileIsPresent
             else
                 file_exists[i] = 1;     /* true */
         }
-        else {
+        else
+	{
+            file_exists[i] = 0;
+
             fpath = _NGResolvePath(NrmQuarkToString(files[i]));
-            file_exists[i] = stat(fpath, &st) == -1 ? 0 : 1;
+            if(stat(fpath, &st))
+            {
+                char tmp_path[NCL_MAX_STRING];
+                char *ext_name;
+                strcpy(tmp_path, fpath);
+
+                ext_name = strrchr(tmp_path, '.');
+              /*Use while loop will allow user to append multiple extensions.
+               *But it will be not consistent addfile.
+               *So we comment out the while loop for NOW.
+               *Wei Huang, 05/20/2012
+               */
+              /*while(NULL != ext_name)*/
+                if(NULL != ext_name)
+        	{
+                    tmp_path[strlen(tmp_path) - strlen(ext_name)] = '\0'; 
+
+                    if(! stat(_NGResolvePath(tmp_path),&st))
+                    {
+                        file_exists[i] = 1;
+                        break;
+                    }
+                    ext_name = strrchr(tmp_path, '.');
+                }
+            }
+            else
+                file_exists[i] = 1;
         }
     }
 
