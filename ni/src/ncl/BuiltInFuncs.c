@@ -21194,7 +21194,7 @@ NhlErrorTypes   _NclIFileIsPresent
                     if(! stat(_NGResolvePath(tmp_path),&st))
                     {
                         file_exists[i] = 1;
-                        break;
+                        /*break;*/
                     }
                     ext_name = strrchr(tmp_path, '.');
                 }

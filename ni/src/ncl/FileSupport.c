@@ -3046,12 +3046,37 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			NclQuark the_real_path = NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path)));
 			NclQuark old_file_ext_q = file_ext_q;
 
-			stat(_NGResolvePath(NrmQuarkToString(path)), &file_stat);
+			file_ext_q = -1;
+
+			stat(NrmQuarkToString(the_real_path), &file_stat);
 
 			if(file_stat.st_size)
-			    file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_new_hlfs);
+				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_new_hlfs);
 			else
-			    file_ext_q = -1;
+			{
+				char tmp_path[NCL_MAX_STRING];
+				char *ext_name;
+				strcpy(tmp_path, NrmQuarkToString(the_real_path));
+
+				ext_name = strrchr(tmp_path, '.');
+				/*Use while loop will allow user to append multiple extensions.
+				*But it will be not consistent addfile.
+				*So we comment out the while loop for NOW.
+				*Wei Huang, 05/21/2012
+				*/
+				/*while(NULL != ext_name)*/
+				if(NULL != ext_name)
+				{
+					tmp_path[strlen(tmp_path) - strlen(ext_name)] = '\0'; 
+				
+					if(! stat(_NGResolvePath(tmp_path), &file_stat))
+					{
+						file_ext_q = _NclVerifyFile(NrmStringToQuark(tmp_path), old_file_ext_q, &use_new_hlfs);
+						/*break;*/
+					}
+					ext_name = strrchr(tmp_path, '.');
+				}
+			}
 
 			if(0 > file_ext_q)
 			{
