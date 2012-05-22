@@ -5709,7 +5709,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	float *levels = NULL;
 	NhlBoolean levels_modified = False;
 	NhlstScaleInfo 		*sip,*osip;
-	int palette_set,span_palette_set;
+	int palette_set,span_palette_set, colors_set;
 
 	entry_name =  init ? InitName : SetValuesName;
 
@@ -5790,40 +5790,39 @@ static NhlErrorTypes    ManageDynamicArrays
 	count = stp->level_count + 1;
 	need_check = False;
 	ga = NULL;
-	if (stp->level_palette && span_palette_set && stp->span_level_palette) {
-                subret = _NhlSetColorsFromWorkstationColorMap((NhlLayer)stnew,&ga,count,entry_name);
-		if (! init && ostp->level_colors != NULL)
-			NhlFreeGenArray(ostp->level_colors);
-		stp->level_colors = ga;
-		need_check = True;
-		init_count = old_count = count;
-	}
-	else if (stp->level_palette && stp->level_colors && (init || _NhlArgIsSet(args,num_args,NhlNstLevelColors))) {
-		if ((ga =  _NhlCopyGenArray(stp->level_colors,True)) == NULL) {
-			e_text = "%s: error copying GenArray";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return(NhlFATAL);
-		}
-                subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)stnew,ga,stp->level_palette,entry_name);
-		if (! init && ostp->level_colors != NULL)
-			NhlFreeGenArray(ostp->level_colors);
-		stp->level_colors = ga;
-		need_check = True;
-		init_count = old_count = count;
-        }
-	else if (palette_set || (stp->level_palette && (stp->level_count != ostp->level_count))) {
-		if ((stp->level_colors == NULL) || 
-		    (! _NhlArgIsSet(args,num_args,NhlNstLevelColors))) {
-			subret = _NhlSetColorsFromPalette((NhlLayer)stnew,stp->level_palette,count,
-						      stp->span_level_palette,&ga,entry_name);
-			if (! init && ostp->level_colors) {
-				NhlFreeGenArray(ostp->level_colors);
-				ostp->level_colors = NULL;
+	colors_set = stp->level_colors && (init || _NhlArgIsSet(args,num_args,NhlNstLevelColors));
+	if (stp->level_palette) {
+		if (colors_set) {
+			if ((ga =  _NhlCopyGenArray(stp->level_colors,True)) == NULL) {
+				e_text = "%s: error copying GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
 			}
+			subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)stnew,ga,stp->level_palette,entry_name);
+			if (! init && ostp->level_colors != NULL)
+				NhlFreeGenArray(ostp->level_colors);
 			stp->level_colors = ga;
 			need_check = True;
 			init_count = old_count = count;
 		}
+		else if (palette_set || (stp->level_count != ostp->level_count)) {
+			subret = _NhlSetColorsFromPalette((NhlLayer)stnew,stp->level_palette,count,
+						      stp->span_level_palette,&ga,entry_name);
+			if (! init && ostp->level_colors != NULL)
+				NhlFreeGenArray(ostp->level_colors);
+			stp->level_colors = ga;
+			need_check = True;
+			init_count = old_count = count;
+		}
+        }
+	else if ((! colors_set) && 
+		 (span_palette_set || (stp->level_count != ostp->level_count))) {
+                subret = _NhlSetColorsFromWorkstationColorMap((NhlLayer)stnew,&ga,count,stp->span_level_palette,entry_name);
+		if (! init && ostp->level_colors != NULL)
+			NhlFreeGenArray(ostp->level_colors);
+		stp->level_colors = ga;
+		need_check = True;
+		init_count = old_count = count;
 	}
 	else {
 		ga = init ? NULL : ostp->level_colors;

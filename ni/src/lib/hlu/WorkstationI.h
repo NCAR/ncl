@@ -364,6 +364,7 @@ extern NhlErrorTypes   _NhlSetColorsFromWorkstationColorMap(
 	NhlLayer	       vl,
 	NhlGenArray            *index_ga,
 	ng_size_t              count,
+	int		       span_palette, 
 	char *                 entry_name
 );
 

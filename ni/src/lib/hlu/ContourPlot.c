@@ -7840,7 +7840,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	float *levels = NULL;
 	NhlBoolean levels_modified = False, flags_modified = False;
 	NhlBoolean line_init;
-	NhlBoolean palette_set,span_palette_set;
+	NhlBoolean palette_set,span_palette_set,colors_set;
 
 	entry_name =  init ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
@@ -8027,42 +8027,41 @@ static NhlErrorTypes    ManageDynamicArrays
 	count = cnp->fill_count;
 	need_check = False;
 	ga = NULL;
-	if (! cnp->fill_palette && span_palette_set && cnp->span_fill_palette) {
-                subret = _NhlSetColorsFromWorkstationColorMap((NhlLayer)cnew,&ga,count,entry_name);
-		if (! init && ocnp->fill_colors != NULL)
-			NhlFreeGenArray(ocnp->fill_colors);
-		cnp->fill_colors = ga;
-		need_check = True;
-		init_count = old_count = cnp->fill_count;
-	}
-	else if (cnp->fill_palette && cnp->fill_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnFillColors))) {
-		if ((ga =  _NhlCopyGenArray(cnp->fill_colors,True)) == NULL) {
-			e_text = "%s: error copying GenArray";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return(NhlFATAL);
-		}
-                subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)cnew,ga,cnp->fill_palette,entry_name);
-		if (! init && ocnp->fill_colors != NULL)
-			NhlFreeGenArray(ocnp->fill_colors);
-		cnp->fill_colors = ga;
-		need_check = True;
-		init_count = old_count = cnp->fill_count;
-        }
-	else if (palette_set || (cnp->fill_palette && (cnp->fill_count != ocnp->fill_count))) {
-		if ((cnp->fill_colors == NULL) || 
-		    (! _NhlArgIsSet(args,num_args,NhlNcnFillColors))) {
-			subret = _NhlSetColorsFromPalette((NhlLayer)cnew,cnp->fill_palette,cnp->fill_count,
-						      cnp->span_fill_palette,&ga,entry_name);
-			if (! init && ocnp->fill_colors) {
-				NhlFreeGenArray(ocnp->fill_colors);
-				ocnp->fill_colors = NULL;
+	colors_set = cnp->fill_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnFillColors));
+	if (cnp->fill_palette) {
+		if (colors_set) {
+			if ((ga =  _NhlCopyGenArray(cnp->fill_colors,True)) == NULL) {
+				e_text = "%s: error copying GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
 			}
+			subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)cnew,ga,cnp->fill_palette,entry_name);
+			if (! init && ocnp->fill_colors != NULL)
+				NhlFreeGenArray(ocnp->fill_colors);
 			cnp->fill_colors = ga;
 			need_check = True;
-			init_count = old_count = cnp->fill_count;
+			init_count = old_count = count;
 		}
+		else if (palette_set || (cnp->fill_count != ocnp->fill_count)) {
+			subret = _NhlSetColorsFromPalette((NhlLayer)cnew,cnp->fill_palette,count,
+						      cnp->span_fill_palette,&ga,entry_name);
+			if (! init && ocnp->fill_colors != NULL)
+				NhlFreeGenArray(ocnp->fill_colors);
+			cnp->fill_colors = ga;
+			need_check = True;
+			init_count = old_count = count;
+		}
+        }
+	else if ( (! colors_set) && 
+		  (span_palette_set || (cnp->fill_count != ocnp->fill_count))) {
+                subret = _NhlSetColorsFromWorkstationColorMap((NhlLayer)cnew,&ga,count,cnp->span_fill_palette,entry_name);
+		if (! init && ocnp->fill_colors != NULL)
+			NhlFreeGenArray(ocnp->fill_colors);
+		cnp->fill_colors = ga;
+		need_check = True;
+		init_count = old_count = count;
 	}
-	else {
+	else {  /* if nothing has changed this will leave it along */
 		ga = init ? NULL : ocnp->fill_colors;
 		subret = ManageGenArray(&ga,count,cnp->fill_colors,Qcolorindex,NULL,
 					&old_count,&init_count,&need_check,&changed,
@@ -8192,40 +8191,39 @@ static NhlErrorTypes    ManageDynamicArrays
 	count = cnp->level_count;
 	need_check = False;
 	ga = NULL;
-	if (! cnp->line_palette && span_palette_set && cnp->span_line_palette) {
-                subret = _NhlSetColorsFromWorkstationColorMap((NhlLayer)cnew,&ga,count,entry_name);
+	colors_set = cnp->line_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnLineColors));
+	if (cnp->line_palette) {
+		if (colors_set) {
+			if ((ga =  _NhlCopyGenArray(cnp->line_colors,True)) == NULL) {
+				e_text = "%s: error copying GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
+			}
+			subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)cnew,ga,cnp->line_palette,entry_name);
+			if (! init && ocnp->line_colors != NULL)
+				NhlFreeGenArray(ocnp->line_colors);
+			cnp->line_colors = ga;
+			need_check = True;
+			init_count = old_count = count;
+		}
+		else if (palette_set || (cnp->level_count != ocnp->level_count)) {
+			subret = _NhlSetColorsFromPalette((NhlLayer)cnew,cnp->line_palette,count,
+						      cnp->span_line_palette,&ga,entry_name);
+			if (! init && ocnp->line_colors != NULL)
+				NhlFreeGenArray(ocnp->line_colors);
+			cnp->line_colors = ga;
+			need_check = True;
+			init_count = old_count = count;
+		}
+        }
+	else if ( (! colors_set) && 
+		  (span_palette_set || (cnp->level_count != ocnp->level_count))) {
+                subret = _NhlSetColorsFromWorkstationColorMap((NhlLayer)cnew,&ga,count,cnp->span_line_palette,entry_name);
 		if (! init && ocnp->line_colors != NULL)
 			NhlFreeGenArray(ocnp->line_colors);
 		cnp->line_colors = ga;
 		need_check = True;
 		init_count = old_count = count;
-	}
-	else if (cnp->line_palette && cnp->line_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnLineColors))) {
-                subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)cnew,cnp->line_colors,cnp->line_palette,entry_name);
-		if (! init && ocnp->line_colors != NULL)
-			NhlFreeGenArray(ocnp->line_colors);
-		if ((ga =  _NhlCopyGenArray(cnp->line_colors,True)) == NULL) {
-			e_text = "%s: error copying GenArray";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return(NhlFATAL);
-		}
-		cnp->line_colors = ga;
-		need_check = True;
-		init_count = old_count = cnp->level_count;
-        }
-	else if (palette_set || (cnp->line_palette && (cnp->level_count != ocnp->level_count))) {
-		if ((cnp->line_colors == NULL) || 
-		    (! _NhlArgIsSet(args,num_args,NhlNcnLineColors))) {
-			subret = _NhlSetColorsFromPalette((NhlLayer)cnew,cnp->line_palette,cnp->level_count,
-						      cnp->span_line_palette,&ga,entry_name);
-			if (! init && ocnp->line_colors) {
-				NhlFreeGenArray(ocnp->line_colors);
-				ocnp->line_colors = NULL;
-			}
-			cnp->line_colors = ga;
-			need_check = True;
-			init_count = old_count = cnp->level_count;
-		}
 	}
 	else {
 		ga = init ? NULL : ocnp->line_colors;

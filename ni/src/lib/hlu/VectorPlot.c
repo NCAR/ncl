@@ -7828,7 +7828,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	NhlBoolean levels_modified = False;
 	NhlvcScaleInfo 		*sip,*osip;
 	NhlBoolean		scalar_labels, mag_labels;
-	int palette_set,span_palette_set;
+	int palette_set,span_palette_set,colors_set;
 
 	entry_name =  init ? InitName : SetValuesName;
 
@@ -7940,40 +7940,39 @@ static NhlErrorTypes    ManageDynamicArrays
 	count = vcp->level_count + 1;
 	need_check = False;
 	ga = NULL;
-	if (vcp->level_palette && span_palette_set && vcp->span_level_palette) {
-                subret = _NhlSetColorsFromWorkstationColorMap((NhlLayer)vcnew,&ga,count,entry_name);
-		if (! init && ovcp->level_colors != NULL)
-			NhlFreeGenArray(ovcp->level_colors);
-		vcp->level_colors = ga;
-		need_check = True;
-		init_count = old_count = count;
-	}
-	else if (vcp->level_palette && vcp->level_colors && (init || _NhlArgIsSet(args,num_args,NhlNvcLevelColors))) {
-		if ((ga =  _NhlCopyGenArray(vcp->level_colors,True)) == NULL) {
-			e_text = "%s: error copying GenArray";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return(NhlFATAL);
-		}
-                subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)vcnew,ga,vcp->level_palette,entry_name);
-		if (! init && ovcp->level_colors != NULL)
-			NhlFreeGenArray(ovcp->level_colors);
-		vcp->level_colors = ga;
-		need_check = True;
-		init_count = old_count = count;
-        }
-	else if (palette_set || (vcp->level_palette && (vcp->level_count != ovcp->level_count))) {
-		if ((vcp->level_colors == NULL) || 
-		    (! _NhlArgIsSet(args,num_args,NhlNvcLevelColors))) {
-			subret = _NhlSetColorsFromPalette((NhlLayer)vcnew,vcp->level_palette,count,
-						      vcp->span_level_palette,&ga,entry_name);
-			if (! init && ovcp->level_colors) {
-				NhlFreeGenArray(ovcp->level_colors);
-				ovcp->level_colors = NULL;
+	colors_set = vcp->level_colors && (init || _NhlArgIsSet(args,num_args,NhlNvcLevelColors));
+	if (vcp->level_palette) {
+		if (colors_set) {
+			if ((ga =  _NhlCopyGenArray(vcp->level_colors,True)) == NULL) {
+				e_text = "%s: error copying GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
 			}
+			subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)vcnew,ga,vcp->level_palette,entry_name);
+			if (! init && ovcp->level_colors != NULL)
+				NhlFreeGenArray(ovcp->level_colors);
 			vcp->level_colors = ga;
 			need_check = True;
 			init_count = old_count = count;
 		}
+		else if (palette_set || (vcp->level_count != ovcp->level_count)) {
+			subret = _NhlSetColorsFromPalette((NhlLayer)vcnew,vcp->level_palette,count,
+						      vcp->span_level_palette,&ga,entry_name);
+			if (! init && ovcp->level_colors != NULL)
+				NhlFreeGenArray(ovcp->level_colors);
+			vcp->level_colors = ga;
+			need_check = True;
+			init_count = old_count = count;
+		}
+        }
+	else if ((! colors_set) && 
+		 (span_palette_set || (vcp->level_count != ovcp->level_count))) {
+                subret = _NhlSetColorsFromWorkstationColorMap((NhlLayer)vcnew,&ga,count,vcp->span_level_palette,entry_name);
+		if (! init && ovcp->level_colors != NULL)
+			NhlFreeGenArray(ovcp->level_colors);
+		vcp->level_colors = ga;
+		need_check = True;
+		init_count = old_count = count;
 	}
 	else {
 		ga = init ? NULL : ovcp->level_colors;
