@@ -1107,7 +1107,7 @@ begin
 ; There may be some cases where you want to return the indexes
 ; here, for compatibility with NCL Version 6.0.0 and earlier.
 ;
-  return(cmap(icols,:))
+  return(icols)
 end
 
 ;***********************************************************************;
