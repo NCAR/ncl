@@ -8040,7 +8040,6 @@ static NhlErrorTypes    ManageDynamicArrays
 				NhlFreeGenArray(ocnp->fill_colors);
 			cnp->fill_colors = ga;
 			need_check = True;
-			init_count = old_count = count;
 		}
 		else if (palette_set || (cnp->fill_count != ocnp->fill_count)) {
 			subret = _NhlSetColorsFromPalette((NhlLayer)cnew,cnp->fill_palette,count,
@@ -8049,8 +8048,8 @@ static NhlErrorTypes    ManageDynamicArrays
 				NhlFreeGenArray(ocnp->fill_colors);
 			cnp->fill_colors = ga;
 			need_check = True;
-			init_count = old_count = count;
 		}
+		init_count = old_count = count;
         }
 	else if ( (! colors_set) && 
 		  (span_palette_set || (cnp->fill_count != ocnp->fill_count))) {

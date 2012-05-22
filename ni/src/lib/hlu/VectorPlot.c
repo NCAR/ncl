@@ -7926,7 +7926,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		palette_set = True;
 	}
-	if (! init && vcp->span_level_palette != ovcp->span_level_palette) {
+	if (init || vcp->span_level_palette != ovcp->span_level_palette) {
 		span_palette_set = True;
 	}
 
@@ -7953,7 +7953,6 @@ static NhlErrorTypes    ManageDynamicArrays
 				NhlFreeGenArray(ovcp->level_colors);
 			vcp->level_colors = ga;
 			need_check = True;
-			init_count = old_count = count;
 		}
 		else if (palette_set || (vcp->level_count != ovcp->level_count)) {
 			subret = _NhlSetColorsFromPalette((NhlLayer)vcnew,vcp->level_palette,count,
@@ -7962,8 +7961,8 @@ static NhlErrorTypes    ManageDynamicArrays
 				NhlFreeGenArray(ovcp->level_colors);
 			vcp->level_colors = ga;
 			need_check = True;
-			init_count = old_count = count;
 		}
+		init_count = old_count = count;
         }
 	else if ((! colors_set) && 
 		 (span_palette_set || (vcp->level_count != ovcp->level_count))) {
