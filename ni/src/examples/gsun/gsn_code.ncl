@@ -1017,6 +1017,13 @@ function spread_colors(wks:graphic,plot:graphic,min_index:integer,\
 local ncols, lcount, fcols, icols, minix, maxix, nc, fmin, fmax, class,\
 levelcountres, cmap
 begin
+  if(.not.isvar("GSN_SPREAD_COLOR_DEBUG")) then
+    GSN_SPREAD_COLOR_DEBUG = False
+  end if
+  if(GSN_SPREAD_COLOR_DEBUG) then
+    print("spread_colors: at the top of this function")
+  end if
+
   class = NhlClassName(plot)
   if(.not.any(class.eq.(/"contourPlotClass","logLinPlotClass",\
                          "irregularPlotClass","vectorPlotClass", \
@@ -1045,6 +1052,10 @@ begin
     "wkColorMap" : cmap
   end getvalues
   ncols = dimsizes(cmap(:,0))
+
+  if(GSN_SPREAD_COLOR_DEBUG) then
+    print("spread_colors: size of current color map is " + ncols)
+  end if
 
   if (class.eq."contourPlotClass".or.class.eq."vectorPlotClass".or. \
       class.eq."streamlinePlotClass")
@@ -1091,6 +1102,10 @@ begin
     minix   = itmp
   end if
 
+  if(GSN_SPREAD_COLOR_DEBUG) then
+    print("spread_colors: minix/maxix = " + minix + "/" + maxix)
+  end if
+
   fmin = new(1,float)
   fmax = new(1,float)
 
@@ -1101,6 +1116,10 @@ begin
     icols = tointeger(fcols + 0.5)
   else
     icols = tointeger(fcols(::-1) + 0.5)
+  end if
+
+  if(GSN_SPREAD_COLOR_DEBUG) then
+    print("spread_colors: icols = " + icols)
   end if
 
 ;
