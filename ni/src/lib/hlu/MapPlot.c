@@ -943,7 +943,9 @@ static NrmQuark Qfill_scales = NrmNULLQUARK;
 
 static NhlMapPlotLayerPart *Mpp = NULL;
 
-static int Init_Colors[] ={16,10, 8,10,26,22,11,23,13,19,24,25,21,20,18};
+/*static int Init_Colors[] ={16,10, 8,10,26,22,11,23,13,19,24,25,21,20,18};*/
+static int Init_Colors[] ={2139029631,2130706559,2139029504,2130706559,2139062143,2139062016,2147483519,2130739071,
+			   2147450624,2130738944,2147450751,2130771839,2147418239,2139062271,2147450879};
 
 /*
  * Function:	nhlfmapplotclass
