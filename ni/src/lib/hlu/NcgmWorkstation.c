@@ -185,7 +185,7 @@ NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
 /* current_wks_count	*/	NhlInheritCurrentWksCount,                
 /* wks_hlu_ids		*/	NhlInheritGksWksRecs,
 /* hlu_wks_flag		*/	NhlInheritHluWksFlag,
-/* def_background	*/	{0.0,0.0,0.0},
+/* def_background	*/	{1.0,1.0,1.0},
 /* rgb_dbm		*/	NULL,
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	NcgmWorkstationOpen,
