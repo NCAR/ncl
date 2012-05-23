@@ -9748,6 +9748,8 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
+    min_index = get_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
     if(min_index.ne.2.or.max_index.ne.-1.) then
       sprdcols = get_res_value(res2,"gsnSpreadColors",True)
     else
