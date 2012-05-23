@@ -9581,7 +9581,7 @@ undef("gsn_streamline")
 function gsn_streamline(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
                         resources:logical)
 local i, data_object,plot_object,res,vf_res_index,st_res_index, \
-force_x_linear, force_y_linear, force_x_log, force_y_log, \
+force_x_linear, force_y_linear, force_x_log, force_y_log, stres2, \
 trxmin, trxmax, trymin, trymax, ll_res_index, llres, res2, scale, shape
 begin
     llres = False
@@ -9619,6 +9619,18 @@ begin
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
 
+    min_index = get_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+    if(min_index.ne.2.or.max_index.ne.-1.) then
+      sprdcols = get_res_value(res2,"gsnSpreadColors",True)
+    else
+      if(check_attr(res2,"gsnSpreadColors",False,True).and..not.\
+        isatt(res2,"stSpanLevelPalette")) then
+        res2@stSpanLevelPalette = False
+      end if
+      sprdcols = get_res_value(res2,"gsnSpreadColors",False)
+    end if
+
     check_for_irreg2loglin(res2,force_x_linear,force_y_linear,\
                                 force_x_log,force_y_log)
     check_for_tickmarks_off(res2)
@@ -9627,6 +9639,13 @@ begin
     stres = get_res_ne(res2,"vf")
     attsetvalues_check(data_object,vfres)
     attsetvalues_check(plot_object,stres)
+
+    if(sprdcols.and..not.isatt(res2,"stLevelColors")) then
+      stres2 = True
+      set_attr(stres2,"stLevelColors",\
+               spread_colors(wks,plot_object,min_index,max_index,res2))
+      attsetvalues(plot_object,stres2)
+    end if
 
     if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
         llres = get_res_eq(res2,(/"tr","vp"/))
@@ -9694,7 +9713,7 @@ undef("gsn_streamline_map")
 function gsn_streamline_map(wks:graphic,u[*][*]:numeric,\
                             v[*][*]:numeric,resources:logical)
 local i, data_object, contour_object, res, vf_res_index, \
-st_res_index, mp_res_index, map_object, res2
+st_res_index, mp_res_index, map_object, res2, stres2
 begin
     res2 = get_resources(resources)
 
@@ -9729,6 +9748,15 @@ begin
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
+    if(min_index.ne.2.or.max_index.ne.-1.) then
+      sprdcols = get_res_value(res2,"gsnSpreadColors",True)
+    else
+      if(check_attr(res2,"gsnSpreadColors",False,True).and..not.\
+        isatt(res2,"stSpanLevelPalette")) then
+        res2@stSpanLevelPalette = False
+      end if
+      sprdcols = get_res_value(res2,"gsnSpreadColors",False)
+    end if
 
     vfres = get_res_eq(res2,"vf")
     mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT","tm"/))
@@ -9737,6 +9765,13 @@ begin
     attsetvalues_check(data_object,vfres)
     attsetvalues_check(stream_object,stres)
     attsetvalues_check(map_object,mpres)
+
+    if(.not.isatt(res2,"stLevelColors")) then
+      stres2 = True
+      set_attr(stres2,"stLevelColors",\
+               spread_colors(wks,stream_object,min_index,max_index,res2))
+      attsetvalues(stream_object,stres2)
+    end if
 
     overlay(map_object,stream_object)
 
