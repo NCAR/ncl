@@ -224,7 +224,7 @@
 #endif	/* PNGlib */
 
 #ifndef CAIROlib
-#define CAIROlib  -lcairo -lXrender -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -liconv -lbz2
+#define CAIROlib  -lcairo -lXrender -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lbz2 -lpthread
 #endif
 
 #ifndef	HDFEOSlib
@@ -269,6 +269,7 @@
 
 #ifndef	NetCDFlib
 #define	NetCDFlib	-lnetcdf -lcurl
+/*#define	NetCDFlib	-lnetcdf -lcurl -lssl -lidn -lrt -lldap*/
 #endif	/* NetCDFlib */
 
 #ifndef	NetCDF4lib
