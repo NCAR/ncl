@@ -81,6 +81,7 @@ set sort_that_file_list = "tmp_sort_that_file_list$$"
 
 #/bin/rm $that_file_list $this_file_list $sort_that_file_list $sort_this_file_list >&! /dev/null
 
+cd $NCARG_ROOT
 find bin include lib -type f -print > ! $that_file_list
 
 #
