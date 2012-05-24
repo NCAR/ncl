@@ -38,7 +38,7 @@
 #              -1 :  tar up just NCL (not NCAR Graphics)
 #              -2 :  tar up just NCAR Graphics (not NCL)
 #              -g :  include rangs database
-#              -c :  scp to topaz.scd.ucar.edu
+#              -c :  scp to mirage1.ucar.edu
 #              -v :  version number
 #              -o :  include libraries for OPeNDAP
 #              -b :  bit (32 or 64, required for AIX and IRIX64)
@@ -91,7 +91,7 @@ set name        = `uname -n`
 set os          = `uname -s`
 set proc        = `uname -p`
 set exe_sfx     = ""
-set scpmach     = "topaz.scd.ucar.edu"
+set scpmach     = "mirage1.ucar.edu"
 set version     = `$rootdir/bin/ncl -V`
 
 if ("$os" == "AIX") then
@@ -111,14 +111,11 @@ else if ("$os" == "CYGWIN_NT-5.0") then
 else
   set system      = "{$os}_{$sys}"
 endif
-set tardir1     = "/fs/scd/home0/ncargd/dist/tarfiles"
-set tardir2     = "/fis/scd/home/ncargd"
+set tardir1     = "/glade/proj2/ncldev/src/tarfiles/dist/ncl/$version"
 set extra       = ""
 
 if (-e $tardir1) then
   set tardir = $tardir1
-else if (-e $tardir2) then 
-  set tardir = $tardir2
 else
   set tardir = `pwd`
 endif
@@ -225,7 +222,7 @@ while ($#argv > 0)
 end
 
 # Set directory to scp files to.
-set scpdir  = "/fs/scd/home0/ncargd/dist/tarfiles/ncl/$version"
+set scpdir  = "/glade/proj2/ncldev/src/tarfiles/dist/ncl/$version"
 
 #
 # If -1 and -2 were specified, which is the default, then unset
@@ -504,8 +501,8 @@ else
 endif
 
 if ($?SCP) then
-  echo "scp (via topaz) or mv file to $scpdir..."
-  if ("$name" == "topaz.scd.ucar.edu" || "$name" == "windom" || "$name" == "longs") then
+  echo "scp (via mirage1) or mv file to $scpdir..."
+  if ("$name" == "mirage1.ucar.edu" || "$name" == "windom" || "$name" == "longs") then
     /bin/mv $tardir/$tar_filename.gz $scpdir
   else
     scp $tardir/$tar_filename.gz $scpmach\:$scpdir
@@ -520,7 +517,7 @@ echo ""
 echo "   Options:   -r : root directory"
 echo "              -d : tar file directory"
 echo "              -s : system to tar up"
-echo "              -c : scp to topaz.scd.ucar.edu"
+echo "              -c : scp to mirage1.ucar.edu"
 echo "              -v : version number"
 echo "              -o : include libraries for OPeNDAP"
 echo "              -b : bit (32 or 64, required for AIX and IRIX64)"
