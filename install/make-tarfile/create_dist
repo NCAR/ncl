@@ -325,13 +325,13 @@ set common_lib_dirs  = "ncarg/database ncarg/fontcaps ncarg/graphcaps ncarg/ngww
 # Set files specific to NCL.
 #
 if ($?NCLONLY || $?NCARGNCL) then
-  set ncl_bin_files = "ng4ex nhlcc nhlf77 nhlf90  ncl$exe_sfx wrapit77$exe_sfx WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc scrip_check_input MakeNcl ESMF_Info ESMF_InfoC ESMF_RegridWeightGen ESMF_WebServController"
+  set ncl_bin_files = "ng4ex nhlcc nhlf77 nhlf90  ncl$exe_sfx wrapit77$exe_sfx WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc scrip_check_input MakeNcl ESMF_RegridWeightGen"
 
   set ncl_inc_files = ""
 
   set ncl_inc_dirs  = "ncarg/hlu ncarg/ncl ncarg/nio"
 
-  set ncl_lib_files = "libnclapi.a ncarg/sysresfile libhlu.a libncl.a libnio.a libnfp.a libnfpfort.a libblas_ncl.a libfftpack5_dp.a liblapack_ncl.a libsphere3.1_dp.a libesmf.so esmf.mk"
+  set ncl_lib_files = "libnclapi.a ncarg/sysresfile libhlu.a libncl.a libnio.a libnfp.a libnfpfort.a libblas_ncl.a libfftpack5_dp.a liblapack_ncl.a libsphere3.1_dp.a"
 
   set ncl_lib_dirs  = "ncarg/data ncarg/colormaps ncarg/grib2_codetables ncarg/grib2_codetables.previous ncarg/nclex ncarg/hluex ncarg/nclscripts ncarg/resfiles ncarg/udunits"
 endif
