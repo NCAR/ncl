@@ -1394,24 +1394,21 @@ void* storage;
 
 			rec->open = 1;
 			if(no_stride) {	
-				ret = ncvargetg(cdfid,
+				ret = nc_get_vara(cdfid,
 					stepvl->var_inq->varid,
 					start,
 					count,
-					NULL,
-					NULL,
 					out_data);
 #if NETCDF_DEBUG
 				fprintf(stderr,"ncvargetg(%d,%d,start,count,NULL,NULL,outdata);\n",cdfid,stepvl->var_inq->varid);
 #endif                
 
 			} else {
-				ret = ncvargetg(cdfid,
+				ret = nc_get_vars(cdfid,
 					stepvl->var_inq->varid,
 					start,
 					count,
 					stride,
-					NULL,
 					out_data);
 #if NETCDF_DEBUG
 				fprintf(stderr,"ncvargetg(%d,%d,start,count,stride,NULL,outdata);\n",cdfid,stepvl->var_inq->varid);

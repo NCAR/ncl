@@ -154,5 +154,10 @@ extern NclVar _NclCreateVlenVar(char *var_name, void *val,
                                 int ndims, NclQuark *dimnames,
                                 ng_size_t *dimsizes, NclBasicDataTypes type);
 extern NclQuark *_NclGetGrpNames(void *therec, int *num_grps);
+/*
+ * this is for 1-D variables only - basically for coordinate variables.
+ */
+extern void *_NclGetCachedValue(NclFileVarNode *varnode,
+             long start, long finish, long stride, void *storage);
 #endif /* NclNewFile_h */
 

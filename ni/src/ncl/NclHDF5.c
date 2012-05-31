@@ -2306,13 +2306,13 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
 {
     NclHDF5dataset_list_t *dataset_list;
     NclHDF5group_list_t   *group_list;
-    HDF5DimInqRecList *tmp_list = NULL;
+    HDF5DimInqRecList     *cur_list = NULL;
 
     int i, k, n;
-    int num_new_dim;
+    int num_old_dim;
     int found_new;
     NclQuark old_dim_name[4*MAX_HDF5_DIMS];
-    NclQuark new_dim_name[4*MAX_HDF5_DIMS];
+    NclQuark new_dim_name;
     NclQuark tmp_name;
     char *tmp_str;
 
@@ -2321,15 +2321,17 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
    *fprintf(stderr, "\tn_dims: %d\n", *n_dims);
    */
 
-    tmp_list = *dim_list;
+    cur_list = *dim_list;
     for(i = 0; i < *n_dims; i++)
     {
-      /*
-       *fprintf(stderr, "\tOld Dim %d: name <%s>\n", i, NrmQuarkToString(tmp_list->dim_inq->name));
-       */
-        old_dim_name[i] = tmp_list->dim_inq->name;
-        tmp_list = tmp_list->next;
+        if(NULL == cur_list)
+            break;
+
+        old_dim_name[i] = cur_list->dim_inq->name;
+        cur_list = cur_list->next;
     }
+
+    num_old_dim = *n_dims;
 
     dataset_list = HDF5group->dataset_list;
 
@@ -2337,134 +2339,116 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
     {
         NclHDF5dataset_node_t *dataset_node = dataset_list->dataset_node;
 
-        NclHDF5attr_list_t *attr_list;
+      /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tvar name: <%s>\n", dataset_node->name);
+       */
 
-        attr_list = dataset_node->attr_list;
-
-        while(attr_list)
+        for(n = 0; n < dataset_node->ndims; ++n)
         {
-            if(0 == strcmp(attr_list->attr_node->name, "HDF4_DIMENSION_LIST"))
+          /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tDim %d, name: <%s>, length: %d\n",
+           *                   n, dataset_node->dim_name[n], strlen(dataset_node->dim_name[n]));
+           */
+            if(strlen(dataset_node->dim_name[n]) < 1)
             {
-                char *ori_str;
-                char *result;
-                char delimiter[3];
-                int is_dataset = 0;
+                sprintf(dataset_node->dim_name[n], "dim_%4.4d", n);
+            }
 
-                num_new_dim = 0;
-                ori_str = strdup((char *)attr_list->attr_node->value);
-                strcpy(delimiter, ",");
-                result = strtok(ori_str, delimiter);
-                while(result != NULL)
+            found_new = 1;
+            new_dim_name = NrmStringToQuark(dataset_node->dim_name[n]);
+            for(i = 0; i < *n_dims; ++i)
+            {
+                if(old_dim_name[i] == new_dim_name)
                 {
-                    new_dim_name[num_new_dim] = NrmStringToQuark(result);
-                  /*
-                   *fprintf(stderr, "\tresult: %s\n", result);
-                   *fprintf(stderr, "\tnew_dim_name[%d]: %s\n", n, NrmQuarkToString(new_dim_name[n]));
-                   */
-                    result = strtok(NULL, delimiter);
-                    num_new_dim++;
-                }
-                free(ori_str);
-
-              /*
-               *fprintf(stderr, "\tnum_new_dim: %d\n", num_new_dim);
-               *fprintf(stderr, "\tn_dims: %d\n", *n_dims);
-               *fprintf(stderr, "\tattr_list->attr_node->ndims: %d\n", attr_list->attr_node->ndims);
-               */
-                for(i = 0; i < num_new_dim; i++)
-                {
-                    tmp_str = strrchr(NrmQuarkToString(new_dim_name[i]), '/');
-                    if(tmp_str)
-                    {
-                        tmp_name = NrmStringToQuark(tmp_str + 1);
-                        is_dataset = 1;
-                    }
-                    else
-                    {
-                        tmp_name = new_dim_name[i];
-                        is_dataset = 0;
-                    }
-
-                    found_new = 1;
-                  /*
-                   *fprintf(stderr, "\ttmp_name: %s\n", NrmQuarkToString(tmp_name));
-                   *fprintf(stderr, "\tn_dims: %d\n", *n_dims);
-                   */
-                    for(k = 0; k < *n_dims; k++)
-                    {
-                        if(0 == strcmp(NrmQuarkToString(old_dim_name[k]), NrmQuarkToString(tmp_name)))
-                        {
-                            found_new = 0;
-                            break;
-                        }
-                    }
-
-                    if(found_new)
-                    {
-                        HDF5DimInqRecList *cur_list = NULL;
-
-                        cur_list = NclCalloc(1, sizeof(HDF5DimInqRecList));
-                        if(!cur_list)
-                        {
-                            NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list, in file: %s, line: %d\n",
-                                    __FILE__, __LINE__);
-                            return;
-                        }
-
-                        cur_list->dim_inq = NclCalloc(1, sizeof(HDF5DimInqRec));
-                        if(!cur_list->dim_inq)
-                        {
-                            NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list->dim_inq, in file: %s, line: %d\n",
-                                    __FILE__, __LINE__);
-                            return;
-                        }
-
-                        cur_list->dim_inq->is_dataset = is_dataset;
-                        cur_list->dim_inq->is_unlimited = 0;
-                        cur_list->dim_inq->name = tmp_name;
-
-                        if(tmp_name != new_dim_name[i])
-                        {
-                            cur_list->dim_inq->dataset_name = new_dim_name[i];
-                        }
-
-                      /*
-                        if(0 == strcmp("LONGITUDE", NrmQuarkToString(tmp_name)))
-                        {
-                            cur_list->dim_inq->ncldim_id = 0;
-                            cur_list->dim_inq->size = (long) dataset_node->dims[1];
-                        }
-                        else if(0 == strcmp("LATITUDE", NrmQuarkToString(tmp_name)))
-                        {
-                            cur_list->dim_inq->ncldim_id = 1;
-                            cur_list->dim_inq->size = (long) dataset_node->dims[0];
-                        }
-                        else
-                        {
-                       */
-                            cur_list->dim_inq->ncldim_id = *n_dims;
-                            cur_list->dim_inq->size = (long) dataset_node->dims[i];
-                      /*
-                        }
-                       */
-                        old_dim_name[*n_dims] = tmp_name;
-
-                      /*
-                       *fprintf(stderr, "\n\n\nhit _HDF5Build_dim_list. file: %s, line: %d\n", __FILE__, __LINE__);
-                       *fprintf(stderr, "\tOld Dim %d: name <%s>\n", *n_dims, NrmQuarkToString(old_dim_name[*n_dims]));
-                       *fprintf(stderr, "\tcur_list->dim_inq->size: %ld\n", cur_list->dim_inq->size);
-                       *fprintf(stderr, "\tcur_list->dim_inq->ncldim_id: %d: name <%s>\n",
-                       *        cur_list->dim_inq->ncldim_id, NrmQuarkToString(tmp_name));
-                       */
-
-                        cur_list->next = *dim_list;
-                        *dim_list = cur_list;
-
-                        (*n_dims)++;
-                    }
+                    found_new = 0;
+                    break;
                 }
             }
-            attr_list = attr_list->next;
+
+            if(found_new)
+            {
+                cur_list = NclCalloc(1, sizeof(HDF5DimInqRecList));
+                if(!cur_list)
+                {
+                    NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list, in file: %s, line: %d\n",
+                            __FILE__, __LINE__);
+                    return;
+                }
+        
+                cur_list->dim_inq = NclCalloc(1, sizeof(HDF5DimInqRec));
+                if(!cur_list->dim_inq)
+                {
+                    NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list->dim_inq, in file: %s, line: %d\n",
+                            __FILE__, __LINE__);
+                    return;
+                }
+
+                cur_list->dim_inq->is_dataset = 0;
+                cur_list->dim_inq->is_unlimited = 0;
+                cur_list->dim_inq->name = new_dim_name;
+
+                cur_list->dim_inq->ncldim_id = *n_dims;
+                cur_list->dim_inq->size = dataset_node->dims[n];
+                cur_list->dim_inq->description = NrmStringToQuark("No Description");
+
+                old_dim_name[num_old_dim] = new_dim_name;
+
+                cur_list->next = *dim_list;
+                *dim_list = cur_list;
+
+                ++num_old_dim;
+                ++(*n_dims);
+            }
+
+          /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tDim %d, name: <%s>, length: %d\n",
+           *                   n, dataset_node->dim_name[n], strlen(dataset_node->dim_name[n]));
+
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tvar name: <%s>\n", dataset_node->name);
+           */
+    
+            tmp_str = strrchr(dataset_node->name, '/');
+
+            if(0 == strcmp(tmp_str + 1, "LATITUDE"))
+            {
+                cur_list = *dim_list;
+                for(i = 0; i < *n_dims; i++)
+                {
+                    if(NULL == cur_list)
+                        break;
+
+                    if(dataset_node->dims[0] == cur_list->dim_inq->size)
+                    {
+                        cur_list->dim_inq->is_dataset = 1;
+                        cur_list->dim_inq->name = NrmStringToQuark("LATITUDE");
+                        old_dim_name[i] = cur_list->dim_inq->name;
+                        break;
+                    }
+                    cur_list = cur_list->next;
+                }
+            }
+            else if(0 == strcmp(tmp_str + 1, "LONGITUDE"))
+            {
+                cur_list = *dim_list;
+                for(i = 0; i < *n_dims; i++)
+                {
+                    if(NULL == cur_list)
+                        break;
+
+                    if(dataset_node->dims[0] == cur_list->dim_inq->size)
+                    {
+                        cur_list->dim_inq->is_dataset = 1;
+                        cur_list->dim_inq->name = NrmStringToQuark("LONGITUDE");
+                        old_dim_name[i] = cur_list->dim_inq->name;
+                        break;
+                    }
+                    cur_list = cur_list->next;
+                }
+            }
         }
 
         dataset_list = dataset_list->next;
@@ -2477,6 +2461,11 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
 
         group_list = group_list->next;
     }
+
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tDim number: %d\n", *n_dims);
+   */
 }
 
 static void _HDF5Create_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5group_node_t *HDF5group)
@@ -2825,7 +2814,6 @@ int wr_status;
     HDF5GrpInqRec *grp_inq;
 
     hid_t fid = -1;
-    char *filename = NULL;
     int n_dims = 0;
 
     herr_t status;
@@ -2861,14 +2849,12 @@ int wr_status;
 
     the_file->h5_group = NULL;
 
-    filename = strdup(NrmQuarkToString(path));
-
-    status = _NclHDF5check_obj(filename, &h5_group);
-    free(filename);
+    status = _NclHDF5check_obj(NrmQuarkToString(path), &h5_group);
 
     if(status == FAILED)
     {
-        NhlPError(NhlFATAL,NhlEUNKNOWN, "NclHDF5: Unable to open file: <%s>, at line: %d\n", filename, __FILE__, __LINE__);
+        NhlPError(NhlFATAL,NhlEUNKNOWN, "NclHDF5: Unable to open file: <%s>, at line: %d\n",
+                  NrmQuarkToString(path), __FILE__, __LINE__);
         return(NULL);
     }
 
@@ -2896,11 +2882,6 @@ int wr_status;
             n_dims = _HDF5Build_dim_list_from_dim_group(&dim_list, dim_group);
         }
     }
-
-  /*
-   *fprintf(stderr, "\n\tin file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tn_dims = %d\n", n_dims);
-   */
 
     if(n_dims < 1)
     {
@@ -3708,7 +3689,7 @@ void* storage;
 
             H5close();
 
-            if(NclHDF5data)
+            if(NULL != NclHDF5data)
             {
               /*
                *fprintf(stderr, "\nfile: <%s>, line: %d\n", __FILE__, __LINE__);

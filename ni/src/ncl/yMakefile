@@ -48,8 +48,8 @@ NETCDF4_DEFS =
 
 #ifdef UseNetCDF4Features
 NC4_FEATURES_DEFS = -DUSE_NETCDF4_FEATURES
-NC4_FEATURES_SRCS = NclNewFile.c NclNewGroup.c NclNewList.c NclNetCDF4.c NclNewOGR.c
-NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNewList.o NclNetCDF4.o NclNewOGR.o
+NC4_FEATURES_SRCS = NclNewFile.c NclNewGroup.c NclNewList.c NclNetCDF4.c NclNewOGR.c NclNewHDF5.c NewFileSupport.c
+NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNewList.o NclNetCDF4.o NclNewOGR.o NclNewHDF5.o NewFileSupport.o
 #else
 #define NC4_FEATURES_DEFS
 #define NC4_FEATURES_SRCS

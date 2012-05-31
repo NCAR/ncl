@@ -76,6 +76,8 @@ extern NclFormatFunctionRecPtr NC4AddFileFormat(
 void
 #endif
 );
+
+extern NclFormatFunctionRecPtr H5AddFileFormat(void);
 #endif
 
 extern NclFormatFunctionRecPtr GribAddFileFormat(
@@ -192,12 +194,18 @@ void _NclAddFileFormats
 	_NclRegisterFormat(NC4AddFileFormat,"nc4");
 	_NclRegisterFormat(NC4AddFileFormat,"netcdf");
 
+	_NclRegisterFormat(H5AddFileFormat,"h5");
+	_NclRegisterFormat(H5AddFileFormat,"hdf5");
 #ifdef  BuildGDAL
         /* file types supported by OGR in new file structure */
         _NclRegisterFormat(NewOGRAddFileFormat, "shp");  /* shapefile */
         _NclRegisterFormat(NewOGRAddFileFormat, "mif");  /* mapinfo */
         _NclRegisterFormat(NewOGRAddFileFormat, "gmt");  /* GMT   */
 #endif
+#endif
+
+#ifdef BuildOPENDAP
+	_NclRegisterFormat(OpenDapAddFileFormat,"opendap");
 #endif
 
 	return;

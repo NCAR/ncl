@@ -414,10 +414,14 @@ FILE *fp;
 			for (i = 0; i < tmp->attvalue->multidval.totalelements; i++) {
 				char *val = (char*)tmp->attvalue->multidval.val + 
 					i * tmp->attvalue->multidval.type->type_class.size; 
-				ret1 = _Nclprint(tmp->attvalue->multidval.type,fp,val);
-				if(ret1 < NhlINFO) {
-					return(ret1);
+
+				if(NULL != val)
+				{
+					ret1 = _Nclprint(tmp->attvalue->multidval.type,fp,val);
+					if(ret1 < NhlINFO)
+						return(ret1);
 				}
+
 				if (i < tmp->attvalue->multidval.totalelements - 1) {
 					ret = nclfprintf(fp,", ");
 					if(ret < 0) {

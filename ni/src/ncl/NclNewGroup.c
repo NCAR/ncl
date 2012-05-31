@@ -300,12 +300,13 @@ NclGroup *_NclNewGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_
         return NULL;
     }
 
-    if(group_name == thefile->newfile.grpnode->name)
+    if((group_name == thefile->newfile.grpnode->name) ||
+       (group_name == thefile->newfile.grpnode->real_name))
     {
         return ((NclGroup *)thefile);
     }
 
-    grpnode = _getGrpNodeFromNclFileGrpNode(thefile->newfile.grpnode, group_name);
+    grpnode = _getGrpNodeFromGrpNode(thefile->newfile.grpnode, group_name);
 
     if(NULL == grpnode)
     {

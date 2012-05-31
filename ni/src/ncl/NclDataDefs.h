@@ -49,6 +49,7 @@ Ncl_File = 			02000000,
 Ncl_Group = 			03000000,
 Ncl_FileVar = 			04000000,
 Ncl_FileGroup = 		06000000,
+Ncl_Typereference =    		07000000,
 Ncl_HLUVar = 			010000000,
 Ncl_CoordVar = 			020000000,
 Ncl_Type = 			040000000,
@@ -112,7 +113,8 @@ NCL_list = 	040000,
 NCL_group = 	0100000,
 NCL_compound = 	0200000,
 NCL_opaque =	0400000,
-NCL_enum =	01000000
+NCL_enum =	01000000,
+NCL_reference =	02000000
 } NclBasicDataTypes;
 
 typedef NclQuark string; /* Makes this a quark type */
@@ -128,6 +130,7 @@ typedef int obj;
 typedef int list;
 typedef int group;
 typedef int nclcompound;
+typedef int objref;
 
 typedef union _NclScalar {
 	double             doubleval;
@@ -149,6 +152,7 @@ typedef union _NclScalar {
 	obj                objval;
 	group              groupval;
 	nclcompound        compoundval;
+	objref             objrefval;
 }NclScalar;
 
 typedef struct _NclRefList{

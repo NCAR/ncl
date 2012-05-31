@@ -279,8 +279,7 @@ void _NclFileAttRealloc(NclFileAttRecord **att_rec);
 void _NclFileDimRealloc(NclFileDimRecord *dim_rec);
 void _NclFileUDTRealloc(NclFileUDTRecord *udt_rec);
 
-NclFileGrpNode *_getGrpNodeFromNclFileGrpNode(NclFileGrpNode *grp_rec,
-                        NclQuark grp_name);
+NclFileGrpNode *_getGrpNodeFromGrpNode(NclFileGrpNode *grp_rec, NclQuark grp_name);
 NclFileVarNode *_getVarNodeFromNclFileVarRecord(NclFileVarRecord *var_rec,
                         NclQuark var_name);
 NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,

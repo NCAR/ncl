@@ -798,7 +798,7 @@ NclHDF5data_t *_NclHDF5get_data_with_name(hid_t fid, char *dataset_name, NclHDF5
         }
     }
 
-    return NclHDF5data;
+    return NULL;
 }
 
 

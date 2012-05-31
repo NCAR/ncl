@@ -89,8 +89,25 @@ static int myVarIsDimInGrpNode(NclFileGrpNode *grpnode, NclQuark var, NclQuark d
 static int NewFileVarIsDim(NclFile infile, NclQuark var, NclQuark dim_name);
 static int _getGroupIdFromGrpNode(NclFileGrpNode *grpnode, NclQuark group);
 static int NewFileIsGroup(NclFile infile, NclQuark group);
+NclQuark *splitString(NclQuark inq, int *num);
 
 NclGroup *NewFileReadGroup(NclFile infile, NclQuark group_name);
+
+/*
+ * this is for 1-D variables only - basically for coordinate variables.
+ */
+void *_NclGetCachedValue(NclFileVarNode *varnode,
+                         long start, long finish, long stride, void *storage)
+{
+    long i,j;
+    int tsize = varnode->the_nc_type < 1 ? 1 : nctypelen(varnode->the_nc_type);
+
+    for (j = 0, i = start; i <= finish; i += stride,j++)
+    {
+        memcpy(((char*)storage) + j * tsize,((char *)varnode->value) + i * tsize,tsize);
+    }
+    return storage;
+}
 
 NhlErrorTypes _addNclEnumNode(NclFileEnumRecord **enumrec,
                              NclQuark name, long long value)
@@ -480,6 +497,12 @@ void _justPrintTypeValAtPoint(FILE *fp, NclBasicDataTypes type, void *val, size_
             {
              char *v = (char *)val;
              nclfprintf(fp, "%c", v[np]);
+             break;
+            }
+        case NCL_reference:
+            {
+             size_t *v = (size_t *)val;
+             nclfprintf(fp, " (ObjRef)%ld", (long)v[np]);
              break;
             }
         default:
@@ -1302,16 +1325,35 @@ static void _NclInitNclFileVarRecord(NclFileVarRecord *var_rec, int start)
         for(i = start; i < var_rec->max_vars; i++)
         {
             varnode = &(var_rec->var_node[i]);
+
+            varnode->id = -1;
+            varnode->gid = -1;
+
             varnode->name = -1;
             varnode->real_name = -1;
+            varnode->short_name = -1;
+            varnode->full_name = -1;
+
+            varnode->index_dim = 0;
+            varnode->class_name = 0;
+
             varnode->type = NCL_none;
-          /*
-           *varnode->max_dims = 0;
-           *varnode->n_dims = 0;
-           *varnode->dimid = NULL;
-           */
+            varnode->the_nc_type = -1;
+
+            varnode->is_chunked = 0;
+            varnode->is_compound = 0;
+            varnode->compress_level = 0;
+
+            varnode->use_cache = 0;
+            varnode->cache_size = 16;
+            varnode->cache_nelems = 19;
+            varnode->cache_preemption = 0.5;
+
+            varnode->dim_rec = NULL;
+            varnode->chunk_dim_rec = NULL;
             varnode->comprec = NULL;
             varnode->att_rec = NULL;
+            varnode->value = NULL;
         }
     }
 }
@@ -1567,8 +1609,24 @@ NclFileAttRecord *_NclFileAttAlloc(int n_atts)
     return att_rec;
 }
 
+void _initializeAttNode(NclFileAttNode *attnode)
+{
+    attnode->name        = -1;
+    attnode->type        = NCL_none, 
+    attnode->n_elem      = 0;
+    attnode->value       = NULL;
+    attnode->the_nc_type = 0;
+    attnode->is_virtual  = 0;
+    attnode->is_compound = 0;
+    attnode->is_vlen     = 0;
+    attnode->is_opaque   = 0;
+    attnode->is_enum     = 0;
+}
+
 void _NclFileAttRealloc(NclFileAttRecord **att_rec)
 {
+    int n;
+
     /*
     *fprintf(stderr, "\nEnter _NclFileAttRealloc, file: %s, line: %d\n", __FILE__, __LINE__);
     *fprintf(stderr, "\tstart with att_rec->n_atts = %d\n", att_rec->n_atts);
@@ -1584,6 +1642,11 @@ void _NclFileAttRealloc(NclFileAttRecord **att_rec)
                     (*att_rec)->max_atts * sizeof(NclFileAttNode));
         assert(attnodeptr);
         (*att_rec)->att_node = attnodeptr;
+
+        for(n = (*att_rec)->n_atts; n < (*att_rec)->max_atts; ++n)
+        {
+            _initializeAttNode(&((*att_rec)->att_node[n]));
+        }
     }
 
     /*
@@ -1659,167 +1722,65 @@ NclFileAttNode *_getAttNodeFromNclFileGrpNode(NclFileGrpNode *grp_node,
     return NULL;
 }
 
-NclFileGrpNode *_getGrpNodeFromNclFileGrpNode(NclFileGrpNode *ingrpnode,
+NclFileGrpNode *_getGrpNodeFromGrpNode(NclFileGrpNode *ingrpnode,
                         NclQuark grpname)
 {
+    int lvls;
     int n;
     NclFileGrpNode *outgrpnode = NULL;
-    NclQuark new_grpname;
-    NclQuark newroot_grpname;
-
-    char *full_str;
-    char *root_str;
-    char *tmp_str;
-    char buffer[NCL_MAX_STRING];
-    char newroot[NCL_MAX_STRING];
-    int  gl;
-    int  only_this_level = 1;
+    NclQuark *out_grp_names;
 
     if(NULL == ingrpnode)
     {
         NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-            "_getGrpNodeFromNclFileGrpNode: input grpnode is NULL.\n"));
-        goto done_getGrpNodeFromNclFileGrpNode;
+            "_getGrpNodeFromGrpNode: input grpnode is NULL.\n"));
+        return outgrpnode;
     }
 
   /*
-   *fprintf(stderr, "\nEnter _getGrpNodeFromNclFileGrpNode, file: %s, line:%d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\nHit _getGrpNodeFromGrpNode, file: %s, line:%d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tingrpnode->name: <%s>\n", NrmQuarkToString(ingrpnode->name));
    *fprintf(stderr, "\tgrpname: <%s>\n", NrmQuarkToString(grpname));
    */
 
-    if(grpname == ingrpnode->name)
+    if((grpname == ingrpnode->name) ||
+       (grpname == ingrpnode->real_name))
     {
        outgrpnode =  ingrpnode;
-       goto done_getGrpNodeFromNclFileGrpNode;
+       return outgrpnode;
     }
 
-    full_str = NrmQuarkToString(grpname);
-    root_str = NrmQuarkToString(ingrpnode->name);
+    if(NULL == ingrpnode->grp_rec)
+        return outgrpnode;
 
-  /*
-   *fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tfull_str: <%s>, root_str: <%s>\n", full_str, root_str);
-   */
-
-    if('/' == full_str[0])
+    out_grp_names = splitString(grpname, &lvls);
+    if(1 < lvls)
     {
-        strcpy(buffer, full_str + 1);
-    }
-    else
-    {
-        strcpy(buffer, full_str);
-    }
-
-    strcpy(newroot, buffer);
-    full_str = strchr(buffer, '/');
-
-    if(NULL != full_str)
-    {
-      /*
-       *fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tnewroot: <%s>, full_str: <%s>\n", newroot, full_str);
-       */
-
-        gl = strlen(newroot) - strlen(full_str);
-        newroot[gl] = '\0';
-        full_str = full_str + 1;
-        only_this_level = 0;
-
-      /*
-       *fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tnewroot: <%s>, full_str: <%s>\n", newroot, full_str);
-       */
-
-        new_grpname = NrmStringToQuark(full_str);
-
-      /*
-       *fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tnew_grpname: <%s>\n", NrmQuarkToString(new_grpname));
-       */
-    }
-
-    newroot_grpname = NrmStringToQuark(newroot);
-
-  /*
-   *fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tnewroot_grpname: <%s>\n", NrmQuarkToString(newroot_grpname));
-   */
-
-    if(NULL != ingrpnode->grp_rec)
-    {
-        if(only_this_level)
+        NclFileGrpNode *topgrpnode = ingrpnode;
+        NclQuark gn;
+        for(n = 0; n < lvls; ++n)
         {
-            full_str = NrmQuarkToString(grpname);
-
-            if('/' == full_str[0])
-            {
-              /*
-               *fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-               *fprintf(stderr, "\tfull_str: <%s>, grpname: <%s>\n", full_str, NrmQuarkToString(grpname));
-               */
-
-                strcpy(buffer, full_str + 1);
-                
-                new_grpname = NrmStringToQuark(buffer);
-            }
-            else
-            {
-                new_grpname = grpname;
-            }
-
-          /*
-           *fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\tfull_str: <%s>, new_grpname: <%s>\n", full_str, NrmQuarkToString(new_grpname));
-           */
-
-            for(n = 0; n < ingrpnode->grp_rec->n_grps; n++)
-            {
-                outgrpnode = ingrpnode->grp_rec->grp_node[n];
-              /*
-               *fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-               *fprintf(stderr, "\tCheck group %d, name: <%s>, new_grpname: <%s>\n", n, 
-               *                 NrmQuarkToString(outgrpnode->name),
-               *                 NrmQuarkToString(new_grpname));
-               */
-                if(new_grpname == outgrpnode->name)
-		{
-                  /*
-                   *fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-                   *fprintf(stderr, "\tFound group %d, name: <%s>\n", n, 
-                   *             NrmQuarkToString(outgrpnode->name));
-                   */
-                    goto done_getGrpNodeFromNclFileGrpNode;
-		}
-            }
+            gn = out_grp_names[n];
+            outgrpnode = _getGrpNodeFromGrpNode(topgrpnode, gn);
+            topgrpnode = outgrpnode;
         }
-        else
+
+        if(NULL != outgrpnode)
         {
-            for(n = 0; n < ingrpnode->grp_rec->n_grps; n++)
-            {
-                outgrpnode = ingrpnode->grp_rec->grp_node[n];
-              /*
-               *fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-               *fprintf(stderr, "\tCheck group %d, name: <%s>, rootgrpname: <%s>\n", n, 
-               *                 NrmQuarkToString(outgrpnode->name),
-               *                 NrmQuarkToString(newroot_grpname));
-               */
-                if(newroot_grpname == outgrpnode->name)
-                {
-                    outgrpnode = _getGrpNodeFromNclFileGrpNode(ingrpnode->grp_rec->grp_node[n], new_grpname);
-                    if(NULL != outgrpnode)
-                        goto done_getGrpNodeFromNclFileGrpNode;
-                }
-            }
+            NclFree(out_grp_names);
+
+            return outgrpnode;
         }
     }
 
-    outgrpnode = NULL;
+    for(n = 0; n < ingrpnode->grp_rec->n_grps; ++n)
+    {
+        outgrpnode = _getGrpNodeFromGrpNode(ingrpnode->grp_rec->grp_node[n], grpname);
+        if(NULL != outgrpnode)
+            break;
+    }
 
-done_getGrpNodeFromNclFileGrpNode:
-  /*
-   *fprintf(stderr, "Leave _getGrpNodeFromNclFileGrpNode, file: %s, line:%d\n\n", __FILE__, __LINE__);
-   */
+    NclFree(out_grp_names);
 
     return outgrpnode;
 }
@@ -1852,13 +1813,115 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
     char *struct_name = NULL;
     char *component_name = NULL;
 
+    int nlvls = 0;
+    NclQuark *vnlist = NULL;
+
   /*
    *fprintf(stderr, "\nEnter _getVarNodeFromNclFileGrpNode, file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tgrpname: <%s>\n", NrmQuarkToString(grpnode->name));
    *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varname));
+   *fprintf(stderr, "\tvn: <%s>\n", NrmQuarkToString(vn));
    */
 
-    component_name =  _getComponentName(NrmQuarkToString(varname), &struct_name);
+    vnlist = splitString(vn, &nlvls);
+
+    if(1 < nlvls)
+    {
+        NclFileGrpNode *newgrpnode = grpnode;
+        NclFileGrpNode *subgrpnode = NULL;
+        NclQuark *gnlist = NULL;
+        int glvls = 0;
+        int m = 0;
+
+        gnlist = splitString(grpnode->real_name, &glvls);
+      /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tglvls = %d\n", glvls);
+       */
+
+        n = 0;
+        while(m < glvls)
+        {
+          /*
+           *fprintf(stderr, "\tg name[%d]: <%s>\n", m, NrmQuarkToString(gnlist[m]));
+           */
+            if(gnlist[m] == vnlist[n])
+            {
+              /*
+               *fprintf(stderr, "\tv name[%d]: <%s>\n", n, NrmQuarkToString(vnlist[n]));
+               */
+                ++n;
+            }
+            ++m;
+        }
+
+        NclFree(gnlist);
+        
+      /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tvn: <%s>\n", NrmQuarkToString(vn));
+       *fprintf(stderr, "\tn = %d, nlvls = %d\n", n, nlvls);
+       */
+        while(n < nlvls - 1)
+        {
+          /*
+           *fprintf(stderr, "\tv name[%d]: <%s>\n", n, NrmQuarkToString(vnlist[n]));
+           */
+
+            subgrpnode = _getGrpNodeFromGrpNode(newgrpnode, vnlist[n]);
+            ++n;
+            newgrpnode = subgrpnode;
+        }
+
+      /*
+       *fprintf(stderr, "\tv name[%d]: <%s>\n", n, NrmQuarkToString(vnlist[n]));
+       */
+
+        if(NULL != newgrpnode->var_rec)
+        {
+            gnlist = splitString(varname, &glvls);
+          /*
+           *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varname));
+           *n = 0;
+           *while(n < glvls - 1)
+           *{
+           *    fprintf(stderr, "\tg name[%d]: <%s>\n", n, NrmQuarkToString(gnlist[n]));
+           *    ++n;
+           *}
+           */
+
+            for(n = 0; n < newgrpnode->var_rec->n_vars; n++)
+            {
+                varnode = &(newgrpnode->var_rec->var_node[n]);
+              /*
+               *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr, "\tvar no %d, name: <%s>, real_name: <%s>\n", n,
+               *        NrmQuarkToString(varnode->name), NrmQuarkToString(varnode->real_name));
+               */
+                if((vn == varnode->name) ||
+                   (vn == varnode->real_name) ||
+                  ((gnlist[glvls - 1] == varnode->name) &&
+                   (vnlist[nlvls - 1] == varnode->name)))
+                {
+                  /*
+                   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                   *fprintf(stderr, "\tgnlist[%d]: <%s>, vnlist[%d]: <%s>\n",
+                   *                 glvls - 1, NrmQuarkToString(gnlist[glvls - 1]),
+                   *                 nlvls - 1, NrmQuarkToString(vnlist[nlvls - 1]));
+                   *fprintf(stderr, "\tfind var: <%s>, real_name: <%s>\n",
+                   *                 NrmQuarkToString(varnode->name),
+                   *                 NrmQuarkToString(varnode->real_name));
+                   */
+                    NclFree(gnlist);
+                    goto done_getVarNodeFromNclFileGrpNode;
+                }
+            }
+            if(gnlist);
+                NclFree(gnlist);
+        }
+    }
+
+    component_name = _getComponentName(NrmQuarkToString(varname), &struct_name);
     if(NULL != component_name)
     {
       /*
@@ -1883,22 +1946,17 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
            *        NrmQuarkToString(varnode->name), NrmQuarkToString(varnode->real_name));
            */
             if((vn == varnode->name) || (vn == varnode->real_name))
+            {
+              /*
+               *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr, "\t find var: <%s>, real_name: <%s>\n",
+               *                 NrmQuarkToString(varnode->name),
+               *                 NrmQuarkToString(varnode->real_name));
+               */
                 goto done_getVarNodeFromNclFileGrpNode;
+            }
         }
     }
-
-#if 0
-  /*Do we want to search all the groups below?*/
-    {
-        char *varstr;
-        varstr = NrmQuarkToString(vn);
-        if(NULL == strchr(varstr, "/"))
-        {
-            varnode = NULL;
-            goto done_getVarNodeFromNclFileGrpNode;
-        }
-    }
-#endif
 
     if(NULL != grpnode->grp_rec)
     {
@@ -1913,6 +1971,8 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
     varnode = NULL;
 
 done_getVarNodeFromNclFileGrpNode:
+
+    NclFree(vnlist);
 
   /*
    *fprintf(stderr, "Leave _getVarNodeFromNclFileGrpNode, file: %s, line: %d\n\n", __FILE__, __LINE__);
@@ -2481,6 +2541,7 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
    */
 
     file_out->newfile.fname = fname_q;
+    file_out->newfile.fpath = path;
     file_out->newfile.file_format = 0;
     file_out->newfile.file_ext_q = file_ext_q;
     file_out->use_new_hlfs = 1;
@@ -2540,7 +2601,8 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
     if(ret_error)
         return (NULL);
 
-    file_out->newfile.grpnode->path = fname_q;
+    file_out->newfile.grpnode->path = path;
+    file_out->newfile.grpnode->name = fname_q;
     file_out->newfile.grpnode->extension = file_ext_q;
 
     (void)_NclObjCreate((NclObj)file_out,class_ptr,obj_type,(obj_type_mask | Ncl_File),status);
@@ -2570,10 +2632,16 @@ static int NewFileIsVar(NclFile thefile, NclQuark var)
     varnode = _getVarNodeFromNclFileGrpNode(newfile->newfile.grpnode, var);
 
     if(NULL == varnode)
+    {
         ret = -1;
+        fprintf(stdout, "\tCANNOT FIND var: <%s>\n", NrmQuarkToString(var));
+    }
   /*
-   *fprintf(stdout, "\tCANNOT FIND var: <%s>\n", NrmQuarkToString(var));
-   *fprintf(stdout, "\tindex: %d\n", ret);
+   *else
+   *{
+   *    fprintf(stdout, "\tfind var: <%s>\n", NrmQuarkToString(var));
+   *}
+
    *fprintf(stdout, "End NewFileIsVar. file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
     return ret;
@@ -4649,6 +4717,9 @@ static struct _NclMultiDValDataRec *NewFileReadVarAtt(NclFile infile,
 
         tmp_md = _NclGetAtt(varnode->att_rec->id,NrmQuarkToString(attname),sel_ptr);
 
+        if (NULL == tmp_md)
+            return (tmp_md);
+
         if (attname != NrmStringToQuark("_FillValue")) 
             return (tmp_md);
         else if (tmp_md->multidval.val == NULL)
@@ -4820,6 +4891,7 @@ static NhlErrorTypes NewFileWriteAtt(NclFile infile, NclQuark attname,
            *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
            *fprintf(stderr, "\tatt_id: %d\n", att_id);
            */
+
             udata.ptrval = (void*)NclMalloc(sizeof(FileCallBackRec));
             ((FileCallBackRec*)udata.ptrval)->thefileid = thefile->obj.id;
             ((FileCallBackRec*)udata.ptrval)->theattid = att_id;
@@ -4857,10 +4929,11 @@ static NhlErrorTypes NewFileWriteAtt(NclFile infile, NclQuark attname,
        */
         if((exists)&&(thefile->newfile.format_funcs->write_att != NULL))
         {
-/*
- * Hereis the trick. It is easier to let the _NclAddAtt... functions deal
- * with the coercion than to figure out what it should be 
- */
+          /*
+           * Hereis the trick. It is easier to let the _NclAddAtt... functions deal
+           * with the coercion than to figure out what it should be 
+           */
+
           /*
            *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
            *fprintf(stderr, "\texists = %d\n", exists);
@@ -4891,7 +4964,8 @@ static NhlErrorTypes NewFileWriteAtt(NclFile infile, NclQuark attname,
            */
             attrec = thefile->newfile.grpnode->att_rec;
 
-            if(value->multidval.data_type == NCL_char)
+            if((value->multidval.data_type == NCL_char) || 
+               (value->multidval.data_type == NCL_string))
             {
                 tmp_md = _NclCharMdToStringMd(value);
                 ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
@@ -4923,40 +4997,33 @@ static NhlErrorTypes NewFileWriteAtt(NclFile infile, NclQuark attname,
             {
                 if((data_type = (*thefile->newfile.format_funcs->map_ncl_type_to_format)(value->multidval.data_type)) == NULL)
                 {
-                    if(value->multidval.data_type == NCL_string)
+                    from_type = value->multidval.data_type;
+                    to_type = _NclPromoteType(from_type);
+                    while((from_type != to_type )&&
+                         ((data_type = (*thefile->newfile.format_funcs->map_ncl_type_to_format)(to_type))==NULL))
                     {
+                        from_type = to_type;
+                        to_type = _NclPromoteType(from_type);
+                    }
+
+                    if(data_type != NULL)
+                    {
+                        NclFree(data_type);
+                    }
+
+                    if((data_type = (*thefile->newfile.format_funcs->map_ncl_type_to_format)(to_type))==NULL)
+                    {
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                            "The type (%s) is not representable as an attribute in the file (%s)",
+                            _NclBasicDataTypeToName(to_type),NrmQuarkToString(thefile->newfile.fpath));
+                        ret = NhlFATAL;
                         goto done_NewFileWriteAtt;
                     }
                     else
                     {
-                        from_type = value->multidval.data_type;
-                        to_type = _NclPromoteType(from_type);
-                        while((from_type != to_type )&&
-                             ((data_type = (*thefile->newfile.format_funcs->map_ncl_type_to_format)(to_type))==NULL))
-                        {
-                            from_type = to_type;
-                            to_type = _NclPromoteType(from_type);
-                        }
-
-                        if(data_type != NULL)
-                        {
-                            NclFree(data_type);
-                        }
-
-                        if((data_type = (*thefile->newfile.format_funcs->map_ncl_type_to_format)(to_type))==NULL)
-                        {
-                            NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                "The type (%s) is not representable as an attribute in the file (%s)",
-                                _NclBasicDataTypeToName(to_type),NrmQuarkToString(thefile->newfile.fpath));
-                            ret = NhlFATAL;
-                            goto done_NewFileWriteAtt;
-                        }
-                        else
-                        {
-                            NclFree(data_type);
-                            obj_type = _NclBasicDataTypeToObjType(to_type);
-                            tmp_md = _NclCoerceData(value,obj_type,NULL);
-                        }
+                        NclFree(data_type);
+                        obj_type = _NclBasicDataTypeToObjType(to_type);
+                        tmp_md = _NclCoerceData(value,obj_type,NULL);
                     }
                 }
                 else
@@ -4988,10 +5055,7 @@ static NhlErrorTypes NewFileWriteAtt(NclFile infile, NclQuark attname,
                     _NclDestroyObj((NclObj)tmp_md);
                 }
 
-                if(ret > NhlWARNING)
-                {
-                }
-                else
+                if(ret <= NhlWARNING)
                 {
                     _NclDeleteAtt(att_id,NrmQuarkToString(attname));
                 }
@@ -5605,9 +5669,9 @@ static NhlErrorTypes NewFileWriteVarAtt(NclFile infile, NclQuark var, NclQuark a
 
     if((exists)&&(thefile->newfile.format_funcs->write_att != NULL))
     {
-        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\texists = %d\n", exists);
       /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\texists = %d\n", exists);
        */
 
         /* get the last att val in case there's an error writing the att */

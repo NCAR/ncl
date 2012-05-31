@@ -43,11 +43,39 @@
 #include   <dirent.h>
 #include   <stdlib.h>
 
+#include <liboc-dap/oc.h>
+#include <assert.h>
 #include <netcdf.h>
 #include <math.h>
 #include <unistd.h>
 
+#include "NclNewFileStructure.h"
+
+#define MAX_NAME_LENGTH	1024
+
 static size_t ChunkSizeHint;
+
+enum OpenDap_Type
+{
+    dods_null_c,
+    dods_byte_c,
+    dods_int16_c,
+    dods_uint16_c,
+    dods_int32_c,
+    dods_uint32_c,
+    dods_float32_c,
+    dods_float64_c,
+    dods_str_c,
+    dods_url_c,
+    dods_array_c,
+    dods_structure_c,
+    dods_sequence_c,
+    dods_grid_c
+};
+
+NclFileDimRecord *_OpenDap_get_dims(int gid, int varid);
+NclFileAttRecord *_OpenDap_get_atts(int gid, int n_atts);
+NclFileVarRecord *_OpenDap_get_vars(int gid, int n_vars, int *has_scalar_dim);
 
 typedef struct _OpenDapFileRecord OpenDapFileRecord;
 typedef struct _OpenDapVarInqRec OpenDapVarInqRec;
@@ -159,13 +187,246 @@ float        cache_preemption;
 
 static NhlErrorTypes DapAddVarChunk(void* therec, NclQuark thevar, int n_chunk_dims, ng_size_t *chunk_dims);
 
-static NclBasicDataTypes DapMapToNcl 
-#if    NhlNeedProto
-(void* the_type)
-#else
-(the_type)
-    void *the_type;
+NclFileAttRecord *_OpenDap_get_atts(int gid, int n_atts)
+{
+    char buffer[NC_MAX_NAME + 2];
+    int i;
+    size_t alen;
+    NclFileAttRecord *attrec;
+    NclFileAttNode   *attnode;
+
+    if(n_atts < 1)
+        return NULL;
+
+  /*
+   */
+    fprintf(stderr, "\nEnter _OpenDap_get_atts, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tgid: %d, n_atts: %d\n", gid, n_atts);
+
+    attrec = _NclFileAttAlloc(n_atts);
+    assert(attrec);
+
+    attrec->id = -1;
+    attrec->gid = gid;
+    attrec->aid = 0;
+
+    for(i = 0; i < n_atts; i++)
+    {
+        attnode = &(attrec->att_node[i]);
+
+        oc_inq_att_name(gid, i, buffer);
+
+      /*
+       */
+        fprintf(stderr,"\tAtt No. %d, name: <%s>\n", i, buffer);
+
+        attnode->is_virtual = 0;
+        attnode->is_opaque = 0;
+        attnode->is_vlen = 0;
+        attnode->is_compound = 0;
+        attnode->name = NrmStringToQuark(buffer);
+
+      /*
+        nc_inq_attname(gid, aid, i, buffer);
+        nc_inq_att(gid, aid, buffer, &(attnode->the_nc_type), &alen);
+        attnode->n_elem = alen;
+       */
+
+      /*
+        OpenDapGetAttrVal(gid, aid, attnode);
+        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tattnode->name: <%s>, the_nc_type = %d, n_elem = %d\n",
+                           buffer, attnode->the_nc_type, attnode->n_elem);
+       */
+    }
+
+  /*
+   */
+    fprintf(stderr, "Leave _OpenDap_get_atts, file: %s, line: %d\n\n", __FILE__, __LINE__);
+
+    return attrec;
+}
+
+NclFileDimRecord *_OpenDap_get_dims(int gid, int varid)
+{
+    char buffer[MAX_NAME_LENGTH];
+    char buffer2[MAX_NAME_LENGTH];
+    int ndims_grp;
+    int dimid, i, j;
+    int status = 0;
+
+    NclFileDimRecord *dimrec = NULL;
+
+  /*
+   */
+    fprintf(stderr, "\nEnter _OpenDap_get_dims, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tgid = %d\n", gid);
+    fprintf(stderr, "\tvarid = %d\n", varid);
+
+  /*Find the number of dimids defined in this group.*/
+    ndims_grp = oc_inq_array_ndim(gid, varid);
+
+  /*
+   */
+    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tndims_grp = %d\n", ndims_grp);
+
+    if(ndims_grp < 1)
+        return dimrec;
+
+    dimrec = _NclFileDimAlloc(ndims_grp);
+    dimrec->gid = gid;
+
+    for(i = 0 ; i < ndims_grp; i++)
+    {
+        dimrec->dim_node[i].id = i;
+        dimrec->dim_node[i].is_unlimited = 0;
+
+        dimrec->dim_node[i].size = (ng_size_t) oc_inq_dim_size(gid, i);
+        status = oc_inq_dim_name(gid, i, buffer);
+        dimrec->dim_node[i].name = NrmStringToQuark(buffer);
+
+      /*
+       */
+        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\ti = %d, name: <%s>, size: %ld\n",
+                i, buffer, dimrec->dim_node[i].size);
+        fprintf(stderr,"\tId: %d, dim No. %d, name: <%s>, size: %ld\n",
+                gid, i, buffer, dimrec->dim_node[i].size);
+    }
+
+  /*
+   */
+    fprintf(stderr, "Leave _OpenDap_get_dims, file: %s, line: %d\n\n", __FILE__, __LINE__);
+
+    return dimrec;
+}
+
+NclFileVarRecord *_OpenDap_get_vars(int gid, int n_vars, int *has_scalar_dim)
+{
+    char buffer[MAX_NAME_LENGTH];
+    char *cptr;
+    int  i, j, n_atts, n_dims;
+    long tmp_size = 0;
+
+    NclFileVarRecord  *varrec;
+    NclFileDimRecord  *dimrec;
+    NclFileAttRecord  *attrec;
+
+    NclFileVarNode    *varnode;
+    NclFileDimNode    *dimnode;
+    NclFileAttNode    *attnode;
+
+    int    rc = -1;
+    int    storage_in = -1;
+    size_t chunksizes[MAX_VAR_DIMS];
+
+    int  shufflep = -1;
+    int  deflatep = -1;
+
+  /*
+   */
+    fprintf(stderr, "\nEnter _OpenDap_get_vars, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tgid = %d\n", gid);
+    fprintf(stderr, "\tn_vars = %d\n", n_vars);
+
+    if(n_vars < 1)
+        return NULL;
+
+    *has_scalar_dim = 0;
+
+    varrec = _NclFileVarAlloc(n_vars);
+    varrec->gid = gid;
+
+    for(i = 0; i < n_vars; i++)
+    {
+        varnode = &(varrec->var_node[i]);
+        varnode->id = i;
+        varnode->gid = gid;
+        varnode->value = NULL;
+        varnode->is_chunked = 0;
+        varnode->is_compound = 0;
+
+        oc_inq_var_name(gid, i, buffer);
+
+        fprintf(stderr, "\tVar No. %d, real_name: <%s>\n", i, buffer);
+
+        varnode->real_name = NrmStringToQuark(buffer);
+
+        cptr = strrchr(buffer, '/');
+
+        if(NULL == cptr)
+            varnode->name = NrmStringToQuark(buffer);
+        else
+            varnode->name = NrmStringToQuark(cptr + 1);
+
+        varnode->type = oc_inq_var_type(gid, i);
+
+      /*
+       */
+        fprintf(stderr, "\tVar No. %d, name: <%s>\n",
+                         i, NrmQuarkToString(varnode->name));
+        fprintf(stderr, "\t\tvarnode->type = %d, dods_array_c = %d\n",
+                         varnode->type, dods_array_c);
+
+#if 0
+        varnode->type = OpenDapMapToNcl(&(varnode->the_nc_type));
 #endif
+
+        if(dods_str_c == varnode->type)
+           n_dims = 0;
+        else
+           n_dims = oc_inq_array_ndim(gid, i);
+
+        if(0 == n_dims)
+        {
+            dimrec = _NclFileDimAlloc(1);
+            dimrec->dim_node[0].id = -5;
+            *has_scalar_dim = 1;
+        }
+        else
+        {
+            dimrec = _NclFileDimAlloc(n_dims);
+        }
+
+        dimrec->gid = gid;
+        varnode->dim_rec = dimrec;
+
+      /*
+       */
+        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tn_dims %d\n", n_dims);
+
+        varnode->is_chunked = 0;
+
+        for(j = 0; j < n_dims; j++)
+        {
+            dimrec->dim_node[j].id = j;
+            dimrec->dim_node[j].is_unlimited = 0;
+            dimrec->dim_node[j].size = oc_inq_dim_size(gid, j);
+            oc_inq_dim_name(gid, j, buffer);
+            dimrec->dim_node[j].name = NrmStringToQuark(buffer);
+
+          /*
+           */
+            fprintf(stderr, "\t\tDim No. %d, name: <%s>, size: %d\n",
+                            j, NrmQuarkToString(dimrec->dim_node[j].name),
+                            dimrec->dim_node[j].size);
+        }
+
+#if 0
+        varnode->att_rec = _OpenDap_get_atts(gid, i, n_atts);
+#endif
+    }
+
+  /*
+   */
+    fprintf(stderr, "Leave _OpenDap_get_vars, file: %s, line: %d\n\n", __FILE__, __LINE__);
+
+    return varrec;
+}
+
+static NclBasicDataTypes DapMapToNcl(void* the_type)
 {
     static int first = 1;
     static NclBasicDataTypes long_type;
@@ -349,23 +610,14 @@ OpenDapAttInqRec* frec
     return;
 }
 
-static void CloseOrNot
-#if    NhlNeedProto
-(OpenDapFileRecord *rec, int fid, int sync)
-#else
-(tmp,fid,sync)
-OpenDapFileRecord *rec;
-int fid;
-int sync;
-#endif
+static void CloseOrNot(NclFileGrpNode *grpnode, int fid, int sync)
 {
-
     if (sync)
     {
         nc_sync(fid);
     }
-    rec->open = 1;
-    rec->fid = fid;
+    grpnode->open = 1;
+    grpnode->fid = fid;
 }
 
 static void EndDefineModeIf
@@ -435,58 +687,47 @@ NclFileFormatType *format;
     return (void *) therec;
 }
 
-static void *DapOpenFile
-#if    NhlNeedProto
-(void *rec,NclQuark path,int wr_status)
-#else
-(rec,path,wr_status)
-void *rec;
-NclQuark path;
-int wr_status;
-#endif
+static void *DapOpenFile(void *rootgrp, NclQuark path, int wr_status)
 {
-    OpenDapFileRecord *tmp = (OpenDapFileRecord*) rec;
+    NclFileGrpNode *grpnode = (NclFileGrpNode *) rootgrp;
+    NclFileDimNode *dimnode;
+    NclFileDimNode *vardimnode;
+    NclFileVarNode *varnode;
+
     int fid;
     int ret = 0;
     int dummy = 0;
-    char buffer[MAX_NC_NAME];
-    char buffer2[MAX_NC_NAME];
-    int i,j,has_scalar_dim = 0,nvars = 0;
+    char buffer[MAX_NAME_LENGTH];
+    char buffer2[MAX_NAME_LENGTH];
+    int i,j,has_scalar_dim = 0;
     long tmp_size;
-    OpenDapAttInqRecList **stepalptr;
-    OpenDapVarInqRecList **stepvlptr;
-    OpenDapVarInqRecList *tmpvlptr;
-    OpenDapDimInqRecList **stepdlptr;
-    OpenDapDimInqRecList *tmpdlptr;
 
-    fprintf(stderr, "file: <%s>, line: %d\n", __FILE__, __LINE__);
+    int n_atts, n_dims, n_vars;
+
+    int has_swath;
+
+    fprintf(stderr, "\nenter DapOpenFile, file: <%s>, line: %d\n", __FILE__, __LINE__);
     fprintf(stderr, "\tpath: <%s>\n", NrmQuarkToString(path));
 
-    if(tmp == NULL)
+    if(NULL == grpnode)
     {
         return(NULL);
     }
-    tmp->file_path_q = path;
-    tmp->wr_status = wr_status;
-    tmp->n_vars = 0;
-    tmp->vars= NULL;
-    tmp->n_dims = 0;
-    tmp->dims = NULL;
-    tmp->n_file_atts = 0;
-    tmp->file_atts= NULL;
-    tmp->compress_level = 0;
-    tmp->n_chunk_dims = 0;
-    tmp->chunk_dims= NULL;
 
-    if (tmp->open)
+    grpnode->path = path;
+    grpnode->status = wr_status;
+    grpnode->compress_level = 0;
+
+    if(grpnode->open)
     {
-        fid = tmp->fid;
+        fid = grpnode->id;
     }
     else
     {
-        ret = od_open(NrmQuarkToString(path),&fid);
-        tmp->define_mode = 0;
-        tmp->fid = fid;
+        ret = oc_open(NrmQuarkToString(path), &fid);
+        grpnode->define_mode = 0;
+        grpnode->fid = fid;
+        grpnode->id  = fid;
 
         fprintf(stderr, "\tfile: <%s>, line: %d\n", __FILE__, __LINE__);
         fprintf(stderr, "\tret=%d, fid=%d\n", ret, fid);
@@ -498,218 +739,51 @@ int wr_status;
         NhlPError(NhlFATAL,NhlEUNKNOWN,
                  "OpenDap: The specified file (%s) cannot be opened; invalid file or system error",
                   NrmQuarkToString(path));
-        NclFree(tmp);
         return(NULL);
     }
 
-    tmp->open = 1;
-    oc_inq(fid, &(tmp->n_dims), &(tmp->n_vars), &(tmp->n_file_atts));
+    grpnode->open = 1;
+    oc_inq(fid, &n_dims, &n_vars, &n_atts);
 
     fprintf(stderr, "\n\tfile: <%s>, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\ttmp->n_dims=%d\n", tmp->n_dims);
-    fprintf(stderr, "\ttmp->n_file_atts=%d\n", tmp->n_file_atts);
+    fprintf(stderr, "\tn_vars=%d\n", n_vars);
+    fprintf(stderr, "\tn_dims=%d\n", n_dims);
+    fprintf(stderr, "\tn_atts=%d\n", n_atts);
 
-    stepdlptr = &(tmp->dims);
-    if(tmp->n_dims != 0)
-    {
-        for(i = 0 ; i < tmp->n_dims; i++)
-        {
-            *stepdlptr = (OpenDapDimInqRecList*)NclMalloc(
-                    (unsigned) sizeof(OpenDapDimInqRecList));
-            (*stepdlptr)->dim_inq = (OpenDapDimInqRec*)NclMalloc(
-                    (unsigned)sizeof(OpenDapDimInqRec));
-            (*stepdlptr)->dim_inq->is_unlimited = (i==dummy)?1:0;
-            (*stepdlptr)->next = NULL;
-            (*stepdlptr)->dim_inq->dimid = i;
-            (*stepdlptr)->dim_inq->size  = oc_inq_dim_size(fid, i);
-            ret = oc_inq_dim_name(fid,i,buffer);
-            (*stepdlptr)->dim_inq->name = NrmStringToQuark(buffer);
-            fprintf(stderr, "\t(*stepdlptr)->dim_inq->size: %ld\n",
-                            (*stepdlptr)->dim_inq->size);
-            fprintf(stderr, "\t(*stepdlptr)->dim_inq->name: <%s>\n", buffer);
-            stepdlptr = &((*stepdlptr)->next);
-        }
-    }
-    else
-    {
-        tmp->dims = NULL;
-    }
-    fprintf(stderr, "\n\tfile: <%s>, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\ttmp->n_vars=%d\n", tmp->n_vars);
-    stepvlptr = &(tmp->vars);
-    nvars = tmp->n_vars;
-    if(tmp->n_vars != 0 )
-    {
-        for(i = 0 ; i < nvars; i++)
-        {
-            *stepvlptr = (OpenDapVarInqRecList*)NclMalloc(
-                    (unsigned) sizeof(OpenDapVarInqRecList));
-            (*stepvlptr)->var_inq = (OpenDapVarInqRec*)NclMalloc(
-                    (unsigned)sizeof(OpenDapVarInqRec));
-            (*stepvlptr)->next = NULL;
-            (*stepvlptr)->var_inq->varid = i;
-            (*stepvlptr)->var_inq->value = NULL;
-            ncvarinq(fid,i,buffer,
-                &((*stepvlptr)->var_inq->data_type),
-                &((*stepvlptr)->var_inq->n_dims),
-                ((*stepvlptr)->var_inq->dim),
-                &((*stepvlptr)->var_inq->natts)
-                );
-            for(j = 0; j < ((*stepvlptr)->var_inq->n_dims); j++)
-            {
-                tmp_size = 0;
-                ncdiminq(fid,((*stepvlptr)->var_inq->dim)[j],buffer2,&tmp_size);
-            }
-            if(j != ((*stepvlptr)->var_inq->n_dims))
-            {
-                tmpvlptr = *stepvlptr;
-                *stepvlptr = NULL;
-                tmp->n_vars--;
-                NclFree(tmpvlptr->var_inq);
-                NclFree(tmpvlptr);
-                
-            }
-            else
-            {
-                if(((*stepvlptr)->var_inq->n_dims) == 0)
-                {
-                    ((*stepvlptr)->var_inq->dim)[0] = -5;
-                    ((*stepvlptr)->var_inq->n_dims) = 1;
-                    has_scalar_dim = 1;
-                }
-                (*stepvlptr)->var_inq->name = NrmStringToQuark(buffer);
-                stepalptr = &((*stepvlptr)->var_inq->att_list);
-                if(((*stepvlptr)->var_inq->natts) != 0)
-                {
-                    int has_fill = 0;
-                    OpenDapAttInqRec* missing_val_recp = NULL;
-                    
-                    for(j = 0; j < ((*stepvlptr)->var_inq->natts); j++)
-                    {
-                        ncattname(fid,i,j,buffer);
-                        (*stepalptr) = (OpenDapAttInqRecList*)NclMalloc(
-                            (unsigned)sizeof(OpenDapAttInqRecList));
-                        (*stepalptr)->att_inq = (OpenDapAttInqRec*)NclMalloc(
-                            (unsigned)sizeof(OpenDapAttInqRec));
-                        (*stepalptr)->next = NULL;
-                        (*stepalptr)->att_inq->att_num = j;
-                        (*stepalptr)->att_inq->virtual = 0;
-                        (*stepalptr)->att_inq->name = NrmStringToQuark(buffer);
-                        if ((*stepalptr)->att_inq->name == Qmissing_val)
-                        {
-                            missing_val_recp = (*stepalptr)->att_inq;
-                        }
-                        if ((*stepalptr)->att_inq->name == Qfill_val)
-                            has_fill = 1;
-                        (*stepalptr)->att_inq->varid = i;
-                        ncattinq(fid,i,buffer,
-                            &((*stepalptr)->att_inq->data_type),
-                            &((*stepalptr)->att_inq->len));
-                        DapGetAttrVal(fid,(*stepalptr)->att_inq);
-                        stepalptr = &((*stepalptr)->next);
-                    }
-                    
-                    if ( missing_val_recp  && ! has_fill)
-                    {
-                        if (missing_val_recp->data_type == (*stepvlptr)->var_inq->data_type)
-                    {
-                            (*stepalptr) = (OpenDapAttInqRecList*)NclMalloc(
-                                (unsigned)sizeof(OpenDapAttInqRecList));
-                            (*stepalptr)->att_inq = (OpenDapAttInqRec*)NclMalloc(
-                                (unsigned)sizeof(OpenDapAttInqRec));
-                            (*stepalptr)->next = NULL;
-                            (*stepalptr)->att_inq->att_num = (*stepvlptr)->var_inq->natts;
-                            (*stepvlptr)->var_inq->natts++;
-                            (*stepalptr)->att_inq->name = Qfill_val;
-                            (*stepalptr)->att_inq->varid = i;
-                            (*stepalptr)->att_inq->data_type =  missing_val_recp->data_type;
-                            (*stepalptr)->att_inq->len = missing_val_recp->len;
-                            (*stepalptr)->att_inq->value = 
-                                NclMalloc(nctypelen(missing_val_recp->data_type)* missing_val_recp->len);
-                            memcpy((*stepalptr)->att_inq->value, missing_val_recp->value,
-                                   nctypelen(missing_val_recp->data_type)* missing_val_recp->len);
-                            (*stepalptr)->att_inq->virtual = 1;
-                        }
-                        else
-                    {
-                            NhlPError(NhlWARNING,NhlEUNKNOWN,
-                                  "DapOpenFile: MissingToFillValue option set True, but missing_value attribute and data variable (%s) types differ: not adding virtual _FillValue attribute",NrmQuarkToString((*stepvlptr)->var_inq->name));
-                        }
-                    }
-                }
-                    else
-                    {
-                    ((*stepvlptr)->var_inq->att_list) = NULL;
-                }
-                stepvlptr = &((*stepvlptr)->next);
-            }
-        }
-        if(has_scalar_dim)
-        {
-            tmp->has_scalar_dim = 1;
-            tmpdlptr = tmp->dims;
-            tmp->dims = (OpenDapDimInqRecList*)NclMalloc(
-                    (unsigned) sizeof(OpenDapDimInqRecList));
-            tmp->dims->dim_inq = (OpenDapDimInqRec*)NclMalloc(
-                    (unsigned)sizeof(OpenDapDimInqRec));
-            tmp->dims->next = tmpdlptr;
-            tmp->dims->dim_inq->dimid = -5;
-            tmp->dims->dim_inq->size = 1;
-            tmp->dims->dim_inq->is_unlimited = 0;
-            tmp->dims->dim_inq->name = NrmStringToQuark("ncl_scalar");
-            tmp->n_dims++;
-        }
-        else
-        {
-            tmp->has_scalar_dim = 0;
-        }
-    }
-    else
-    {
-        tmp->vars = NULL;
-        tmp->has_scalar_dim = 0;
-    }
-    if(tmp->n_file_atts != 0 )
-    {
-        stepalptr = &(tmp->file_atts);
-        for(i = 0; i < tmp->n_file_atts; i++)
-    {
-            *stepalptr = (OpenDapAttInqRecList*)NclMalloc(
-                (unsigned)sizeof(OpenDapAttInqRecList));
-            (*stepalptr)->att_inq = (OpenDapAttInqRec*)NclMalloc(
-                (unsigned)sizeof(OpenDapAttInqRec));
-            (*stepalptr)->next = NULL;
-            ncattname(fid,NC_GLOBAL,i,buffer);
-            (*stepalptr)->att_inq->att_num = i;
-            (*stepalptr)->att_inq->virtual = 0;
-            (*stepalptr)->att_inq->name = NrmStringToQuark(buffer);
-            (*stepalptr)->att_inq->varid = NC_GLOBAL;
-            ncattinq(fid,NC_GLOBAL,buffer,
-                    &((*stepalptr)->att_inq->data_type),
-                                    &((*stepalptr)->att_inq->len));
-            DapGetAttrVal(fid,(*stepalptr)->att_inq);
-                       stepalptr = &((*stepalptr)->next);
-        }
-    }
-    else
-    {
-        tmp->file_atts = NULL;
-    }
+    has_swath = oc_he5_has_swath(fid);
+    fprintf(stderr, "\thas_swath=%d\n", has_swath);
 
+    grpnode->grp_rec = NULL;
+    grpnode->udt_rec = NULL;
+    grpnode->chunk_dim_rec = NULL;
+
+    if(n_atts)
+       grpnode->att_rec = _OpenDap_get_atts(fid, n_atts);
+    else
+       grpnode->att_rec = NULL;
+
+    if(n_dims)
+       grpnode->dim_rec = _OpenDap_get_dims(fid, 0);
+    else
+       grpnode->dim_rec = NULL;
+
+    if(n_vars)
+       grpnode->var_rec = _OpenDap_get_vars(fid, n_vars, &has_scalar_dim);
+    else
+       grpnode->var_rec = NULL;
+
+#if 0
     DapGetDimVals(fid,tmp);
+#endif
 
-    CloseOrNot(tmp,fid,0);
-    return((void*)tmp);
+    CloseOrNot(grpnode,fid,0);
+
+    fprintf(stderr, "leave DapOpenFile, file: <%s>, line: %d\n\n", __FILE__, __LINE__);
+
+    return (void *) grpnode;
 }
 
-static void *DapCreateFile
-#if    NhlNeedProto
-(void *rec,NclQuark path)
-#else
-(rec,path)
-void *rec;
-NclQuark path;
-#endif
+static void *DapCreateFile(void *rec,NclQuark path)
 {
     OpenDapFileRecord *tmp = (OpenDapFileRecord*)rec;
     int fid = 0;
@@ -723,11 +797,7 @@ NclQuark path;
         tmp->define_mode = 1;
         tmp->format = format;
         tmp->open = 1;
-        return(DapOpenFile(rec,path,-1));
-    }
-    else
-    {
-        return(NULL);
+        DapOpenFile(rec,path,-1);
     }
 }
 
@@ -1235,7 +1305,9 @@ void* storage;
                     NULL,
                     out_data);
             }
+/*
             CloseOrNot(rec,fid,0);
+*/
             if(ret == -1)
     {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,"OpenDap: An error occurred while attempting to read variable (%s) from file (%s)",NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
@@ -1437,7 +1509,9 @@ void* storage;
     {
                         ret = ncattget(fid,stepvl->var_inq->varid,NrmQuarkToString(theatt),storage);
                     }
+/*
                     CloseOrNot(rec,fid,0);
+*/
                     if(ret != -1)
                         return(storage);
                     else
@@ -1644,16 +1718,7 @@ NclQuark theatt;
     return(NhlFATAL);
 }
 
-static NhlErrorTypes DapAddDim
-#if    NhlNeedProto
-(void* therec, NclQuark thedim, int size,int is_unlimited)
-#else
-(therec, thedim, size,is_unlimited)
-void* therec;
-NclQuark thedim;
-int size;
-int is_unlimited;
-#endif
+static NhlErrorTypes DapAddDim(void* therec, NclQuark thedim, int size,int is_unlimited)
 {
     OpenDapFileRecord *rec = (OpenDapFileRecord*) therec;
     int fid;
@@ -2396,47 +2461,47 @@ static NhlErrorTypes DapAddVarAtt
 
 NclFormatFunctionRec OpenDapRec =
 {
-/* NclInitializeFileRecFunc initialize_file_rec */      DapInitializeFileRec,
-/* NclCreateFileFunc       create_file; */        DapCreateFile,
-/* NclOpenFileFunc         open_file; */        DapOpenFile,
-/* NclFreeFileRecFunc      free_file_rec; */        DapFreeFileRec,
-/* NclGetVarNamesFunc      get_var_names; */        DapGetVarNames,
+/* NclInitializeFileRecFunc initialize_file_rec */ DapInitializeFileRec,
+/* NclCreateFileFunc       create_file; */         DapCreateFile,
+/* NclOpenFileFunc         open_file; */           DapOpenFile,
+/* NclFreeFileRecFunc      free_file_rec; */       DapFreeFileRec,
+/* NclGetVarNamesFunc      get_var_names; */       DapGetVarNames,
 /* NclGetVarInfoFunc       get_var_info; */        DapGetVarInfo,
-/* NclGetDimNamesFunc      get_dim_names; */        DapGetDimNames,
+/* NclGetDimNamesFunc      get_dim_names; */       DapGetDimNames,
 /* NclGetDimInfoFunc       get_dim_info; */        DapGetDimInfo,
-/* NclGetAttNamesFunc      get_att_names; */        DapGetAttNames,
+/* NclGetAttNamesFunc      get_att_names; */       DapGetAttNames,
 /* NclGetAttInfoFunc       get_att_info; */        DapGetAttInfo,
-/* NclGetVarAttNamesFunc   get_var_att_names; */    DapGetVarAttNames,
-/* NclGetVarAttInfoFunc    get_var_att_info; */        DapGetVarAttInfo,
-/* NclGetCoordInfoFunc     get_coord_info; */        DapGetCoordInfo,
-/* NclReadCoordFunc        read_coord; */        DapReadCoord,
-/* NclReadCoordFunc        read_coord; */        NULL,
+/* NclGetVarAttNamesFunc   get_var_att_names; */   DapGetVarAttNames,
+/* NclGetVarAttInfoFunc    get_var_att_info; */    DapGetVarAttInfo,
+/* NclGetCoordInfoFunc     get_coord_info; */      DapGetCoordInfo,
+/* NclReadCoordFunc        read_coord; */          DapReadCoord,
+/* NclReadCoordFunc        read_coord; */          NULL,
 /* NclReadVarFunc          read_var; */            DapReadVar,
 /* NclReadVarFunc          read_var; */            NULL,
-/* NclReadAttFunc          read_att; */            DapReadAtt,
-/* NclReadVarAttFunc       read_var_att; */        DapReadVarAtt,
-/* NclWriteCoordFunc       write_coord; */        NULL,
-/* NclWriteCoordFunc       write_coord; */        NULL,
-/* NclWriteVarFunc         write_var; */        NULL,
-/* NclWriteVarFunc         write_var; */        NULL,
-/* NclWriteAttFunc         write_att; */        NULL,
-/* NclWriteVarAttFunc      write_var_att; */        NULL,
-/* NclAddDimFunc           add_dim; */            DapAddDim,
-/* NclAddChunkDimFunc      add_chunk_dim; */        NULL,
-/* NclRenameDimFunc        rename_dim; */        DapRenameDim,
-/* NclAddVarFunc           add_var; */            DapAddVar,
-/* NclAddVarChunkFunc      add_var_chunk; */        NULL,
-/* NclAddVarChunkCacheFunc add_var_chunk_cache; */    NULL,
+/* NclReadAttFunc          read_att; */            NULL, /*DapReadAtt,*/
+/* NclReadVarAttFunc       read_var_att; */        NULL, /*DapReadVarAtt,*/
+/* NclWriteCoordFunc       write_coord; */         NULL,
+/* NclWriteCoordFunc       write_coord; */         NULL,
+/* NclWriteVarFunc         write_var; */           NULL,
+/* NclWriteVarFunc         write_var; */           NULL,
+/* NclWriteAttFunc         write_att; */           NULL,
+/* NclWriteVarAttFunc      write_var_att; */       NULL,
+/* NclAddDimFunc           add_dim; */             DapAddDim,
+/* NclAddChunkDimFunc      add_chunk_dim; */       NULL,
+/* NclRenameDimFunc        rename_dim; */          DapRenameDim,
+/* NclAddVarFunc           add_var; */             DapAddVar,
+/* NclAddVarChunkFunc      add_var_chunk; */       NULL,
+/* NclAddVarChunkCacheFunc add_var_chunk_cache; */ NULL,
 /* NclSetVarCompressLevelFunc set_var_compress_level; */ NULL,
-/* NclAddVarFunc           add_coord_var; */        NULL,
-/* NclAddAttFunc           add_att; */            DapAddAtt,
-/* NclAddVarAttFunc        add_var_att; */        DapAddVarAtt,
+/* NclAddVarFunc           add_coord_var; */       NULL,
+/* NclAddAttFunc           add_att; */             DapAddAtt,
+/* NclAddVarAttFunc        add_var_att; */         DapAddVarAtt,
 /* NclMapFormatTypeToNcl   map_format_type_to_ncl; */    DapMapToNcl,
 /* NclMapNclTypeToFormat   map_ncl_type_to_format; */    DapMapFromNcl,
-/* NclDelAttFunc           del_att; */            DapDelAtt,
-/* NclDelVarAttFunc        del_var_att; */        DapDelVarAtt,
+/* NclDelAttFunc           del_att; */             DapDelAtt,
+/* NclDelVarAttFunc        del_var_att; */         DapDelVarAtt,
 #include "NclGrpFuncs.null"
-/* NclSetOptionFunc        set_option;  */              NULL
+/* NclSetOptionFunc        set_option;  */         NULL
 };
 NclFormatFunctionRecPtr OpenDapAddFileFormat 
 #if    NhlNeedProto
