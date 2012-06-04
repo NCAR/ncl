@@ -227,6 +227,39 @@ char *_getComponentName(const char *fullname, char **structname)
     return cname;
 }
 
+static void _updateCompoundNodeInfo(NclFileVarNode *varnode,
+                             NclFileCompoundNode *compnode)
+{
+    NclFileDimNode *dimnode = NULL;
+    int n;
+
+    if((0 < compnode->rank) && (0 < compnode->nvals))
+        return;
+
+  /*  
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
+   *fprintf(stderr, "\tcompnode->name: <%s>\n", NrmQuarkToString(compnode->name));
+   */
+
+    if(NULL != varnode->dim_rec)
+    {
+        compnode->rank = varnode->dim_rec->n_dims;
+        compnode->nvals = 1;
+        compnode->sides = (int *) NclMalloc(compnode->rank * sizeof(int));
+
+        for(n = 0; n < varnode->dim_rec->n_dims; ++n)
+        {
+            dimnode = &(varnode->dim_rec->dim_node[n]);
+            if(n)
+            {
+                compnode->nvals *= dimnode->size;
+            }
+            compnode->sides[n] = dimnode->size;
+        }
+    }
+}
+
 NclFileCompoundNode *_getComponentNodeFromVarNode(NclFileVarNode *varnode,
                                                   const char *component_name)
 {
@@ -251,6 +284,7 @@ NclFileCompoundNode *_getComponentNodeFromVarNode(NclFileVarNode *varnode,
            */
             if(qcn == compnode->name)
             {
+                _updateCompoundNodeInfo(varnode, compnode);
                 return (compnode);
             }
         }
@@ -1823,6 +1857,25 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
    *fprintf(stderr, "\tvn: <%s>\n", NrmQuarkToString(vn));
    */
 
+    component_name = _getComponentName(NrmQuarkToString(varname), &struct_name);
+    if(NULL != component_name)
+    {
+      /*
+       *fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varname));
+       *fprintf(stderr, "\tcomponent_name: <%s>, struct_name: <%s>\n",
+       *                   component_name, struct_name);
+       */
+        vn = NrmStringToQuark(struct_name);
+        free(component_name);
+        free(struct_name);
+    }
+
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tvn: <%s>\n", NrmQuarkToString(vn));
+   */
+
     vnlist = splitString(vn, &nlvls);
 
     if(1 < nlvls)
@@ -1862,6 +1915,7 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
        *fprintf(stderr, "\tvn: <%s>\n", NrmQuarkToString(vn));
        *fprintf(stderr, "\tn = %d, nlvls = %d\n", n, nlvls);
        */
+
         while(n < nlvls - 1)
         {
           /*
@@ -1874,6 +1928,7 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
         }
 
       /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
        *fprintf(stderr, "\tv name[%d]: <%s>\n", n, NrmQuarkToString(vnlist[n]));
        */
 
@@ -1921,20 +1976,6 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
         }
     }
 
-    component_name = _getComponentName(NrmQuarkToString(varname), &struct_name);
-    if(NULL != component_name)
-    {
-      /*
-       *fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varname));
-       *fprintf(stderr, "\tcomponent_name: <%s>, struct_name: <%s>\n",
-       *                   component_name, struct_name);
-       */
-        vn = NrmStringToQuark(struct_name);
-        free(component_name);
-        free(struct_name);
-    }
-
     if(NULL != grpnode->var_rec)
     {
         for(n = 0; n < grpnode->var_rec->n_vars; n++)
@@ -1945,6 +1986,7 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
            *fprintf(stderr, "\tvar no %d, name: <%s>, real_name: <%s>\n", n, 
            *        NrmQuarkToString(varnode->name), NrmQuarkToString(varnode->real_name));
            */
+
             if((vn == varnode->name) || (vn == varnode->real_name))
             {
               /*
@@ -3042,6 +3084,7 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
                        *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
                        *fprintf(stderr, "\tcompnode->name: <%s>\n", NrmQuarkToString(compnode->name));
                        *fprintf(stderr, "\tcompnode->nvals: %d\n", compnode->nvals);
+                       *fprintf(stderr, "\ttotal_elements: %d\n", total_elements);
                        */
 
                         val = (void*)NclMalloc(total_elements * compnode->nvals * _NclSizeOf(compnode->type));
