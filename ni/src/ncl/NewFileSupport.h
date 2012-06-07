@@ -92,5 +92,12 @@ NhlErrorTypes AddNewGrp(void *rec, NclQuark grpname, size_t id);
 
 NclQuark *splitString(NclQuark inq, int *num);
 
+int get_sizeof(int nv, int ts);
+
+void _Ncl_add_udt(NclFileUDTRecord **rootudtrec,
+                  int gid, int uid, NclQuark name,
+                  int ncl_class, int type,
+                  size_t size, size_t nfields,
+                  NclQuark *mem_name, NclBasicDataTypes *mem_type);
 #endif
 

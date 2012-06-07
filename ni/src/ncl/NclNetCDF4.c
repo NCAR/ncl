@@ -2308,7 +2308,7 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
     else
     {
         nc_ret = nc__open(NrmQuarkToString(path),NC_WRITE,&ChunkSizeHint,&fid);
-        grpnode->define_mode = 0;
+        grpnode->define_mode = 1;
         grpnode->fid = fid;
         grpnode->id = fid;
 
@@ -2600,17 +2600,8 @@ void NC4GetDimVals(int ncid, NclFileGrpNode *grpnode)
     }
 }
 
-void CloseOrSync
-#if    NhlNeedProto
-(NclFileGrpNode *rootgrp, int fid, int sync)
-#else
-(rootgrp,id,sync)
-NclFileGrpNode *rootgrp;
-int id;
-int sync;
-#endif
+void CloseOrSync(NclFileGrpNode *rootgrp, int fid, int sync)
 {
-
     if(0 == *(int *)(rootgrp->options[NC_SUPPRESS_CLOSE_OPT].values))
     {
         ncclose(fid);
@@ -3616,7 +3607,7 @@ static NhlErrorTypes NC4WriteAtt(void *therec, NclQuark theatt, void *data)
                 }
                 grpnode->fid = fid;
                 grpnode->id = fid;
-                grpnode->define_mode = 0;
+                grpnode->define_mode = 1;
                 grpnode->open = 1;
             }
 
@@ -3721,7 +3712,7 @@ static NhlErrorTypes NC4DelAtt(void *therec, NclQuark theatt)
                     }
                     grpnode->fid = fid;
                     grpnode->id = fid;
-                    grpnode->define_mode = 0;
+                    grpnode->define_mode = 1;
                     grpnode->open = 1;
                 }
 
@@ -3799,7 +3790,7 @@ static NhlErrorTypes NC4DelVarAtt(void *therec, NclQuark thevar, NclQuark theatt
                 }
                 grpnode->fid = fid;
                 grpnode->id = fid;
-                grpnode->define_mode = 0;
+                grpnode->define_mode = 1;
                 grpnode->open = 1;
             }
             if(! grpnode->define_mode) {
@@ -3895,7 +3886,7 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
             }
             grpnode->fid = fid;
             grpnode->id = fid;
-            grpnode->define_mode = 0;
+            grpnode->define_mode = 1;
             grpnode->open = 1;
         }
         if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {    
@@ -4000,7 +3991,7 @@ NhlErrorTypes NC4AddVarChunk(void* therec, NclQuark thevar,
         }
         grpnode->fid = fid;
         grpnode->id = fid;
-        grpnode->define_mode = 0;
+        grpnode->define_mode = 1;
         grpnode->open = 1;
     }
 
@@ -4081,7 +4072,7 @@ static NhlErrorTypes NC4AddVarChunkCache(void* therec, NclQuark thevar,
         }
         grpnode->fid = fid;
         grpnode->id = fid;
-        grpnode->define_mode = 0;
+        grpnode->define_mode = 1;
         grpnode->open = 1;
     }
 
@@ -4148,7 +4139,7 @@ static NhlErrorTypes NC4SetVarCompressLevel(void* therec, NclQuark thevar,
         }
         grpnode->fid = fid;
         grpnode->id = fid;
-        grpnode->define_mode = 0;
+        grpnode->define_mode = 1;
         grpnode->open = 1;
     }
 
@@ -4197,6 +4188,7 @@ static NhlErrorTypes NC4AddDim(void* therec, NclQuark thedim,
             if(grpnode->open)
             {
                 fid = grpnode->id;
+                grpnode->define_mode = 1;
             }
             else
             {
@@ -4211,7 +4203,7 @@ static NhlErrorTypes NC4AddDim(void* therec, NclQuark thedim,
                 }
                 grpnode->fid = fid;
                 grpnode->id = fid;
-                grpnode->define_mode = 0;
+                grpnode->define_mode = 1;
                 grpnode->open = 1;
             }
 
@@ -4335,7 +4327,7 @@ static NhlErrorTypes NC4AddChunkDim(void* therec, NclQuark thedim,
                 }
                 grpnode->fid = fid;
                 grpnode->id = fid;
-                grpnode->define_mode = 0;
+                grpnode->define_mode = 1;
                 grpnode->open = 1;
             }
 
@@ -4412,7 +4404,7 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
             }
             grpnode->fid = fid;
             grpnode->id = fid;
-            grpnode->define_mode = 0;
+            grpnode->define_mode = 1;
             grpnode->open = 1;
         }
 
@@ -4595,7 +4587,7 @@ static NhlErrorTypes NC4RenameDim(void* therec, NclQuark from, NclQuark to)
 
                 grpnode->fid = fid;
                 grpnode->id = fid;
-                grpnode->define_mode = 0;
+                grpnode->define_mode = 1;
                 grpnode->open = 1;
             }
 
@@ -4684,7 +4676,7 @@ static NhlErrorTypes NC4AddAtt(void *therec, NclQuark theatt,
 
                 grpnode->fid = fid;
                 grpnode->id = fid;
-                grpnode->define_mode = 0;
+                grpnode->define_mode = 1;
                 grpnode->open = 1;
             }
 
@@ -4784,7 +4776,7 @@ static NhlErrorTypes NC4AddVarAtt(void *therec, NclQuark thevar, NclQuark theatt
 
                 grpnode->fid = fid;
                 grpnode->id = fid;
-                grpnode->define_mode = 0;
+                grpnode->define_mode = 1;
                 grpnode->open = 1;
             }
 
@@ -5036,7 +5028,7 @@ static NhlErrorTypes NC4AddVlenVar(void* therec, NclQuark thevar,
             }
             grpnode->fid = fid;
             grpnode->id = fid;
-            grpnode->define_mode = 0;
+            grpnode->define_mode = 1;
             grpnode->open = 1;
         }
 
@@ -5259,7 +5251,7 @@ static NhlErrorTypes NC4AddEnumVar(void* therec, NclQuark thevar,
             }
             grpnode->fid = fid;
             grpnode->id = fid;
-            grpnode->define_mode = 0;
+            grpnode->define_mode = 1;
             grpnode->open = 1;
         }
 
@@ -5476,7 +5468,7 @@ static NhlErrorTypes NC4AddOpaqueVar(void* therec, NclQuark thevar,
             }
             grpnode->fid = fid;
             grpnode->id = fid;
-            grpnode->define_mode = 0;
+            grpnode->define_mode = 1;
             grpnode->open = 1;
         }
 
@@ -5637,17 +5629,6 @@ NhlErrorTypes NC4AddOpaque(void *rec, NclQuark opaque_name, NclQuark var_name,
     return ret;
 }
 
-static get_sizeof(int nv, int ts)
-{
-    int ns = nv * ts;
-    int os = 4 * (ns / 4);
-
-    while(os < ns)
-        os += 4;
-
-    return os;
-}
-
 static NclFileVarNode *defNC4CompoundVar(void* therec, NclQuark thevar,
                                         nc_type compound_type_id, int n_dims,
                                         NclQuark *dim_names, long *dim_sizes)
@@ -5687,7 +5668,7 @@ static NclFileVarNode *defNC4CompoundVar(void* therec, NclQuark thevar,
             }
             grpnode->fid = fid;
             grpnode->id = fid;
-            grpnode->define_mode = 0;
+            grpnode->define_mode = 1;
             grpnode->open = 1;
         }
 
@@ -6026,7 +6007,7 @@ NhlErrorTypes NC4WriteCompound(void *rec, NclQuark compound_name, NclQuark var_n
         }
         grpnode->fid = fid;
         grpnode->id = fid;
-        grpnode->define_mode = 0;
+        grpnode->define_mode = 1;
         grpnode->open = 1;
     }
 
@@ -6190,7 +6171,7 @@ NhlErrorTypes listOfComponentArray_NC4WriteCompound(void *rec, NclQuark compound
         }
         grpnode->fid = fid;
         grpnode->id = fid;
-        grpnode->define_mode = 0;
+        grpnode->define_mode = 1;
         grpnode->open = 1;
     }
 

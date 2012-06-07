@@ -454,7 +454,7 @@ NhlErrorTypes AddNewGrp(void *rec, NclQuark grpname, size_t id)
     if(NULL == grpnode)
     {
         NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-            "NC4AddGrp: can not find group (%s)",
+            "AddNewGrp: can not find group (%s)",
              NrmQuarkToString(grpname)));
         return (NhlFATAL);
     }
@@ -553,5 +553,73 @@ NclQuark *splitString(NclQuark inq, int *num)
    */
 
     return qs;
+}
+
+int get_sizeof(int nv, int ts)
+{
+    int ns = nv * ts;
+    int os = 4 * (ns / 4);
+
+    while(os < ns)
+        os += 4;
+
+    return os;
+}
+
+void _Ncl_add_udt(NclFileUDTRecord **rootudtrec,
+                  int gid, int uid, NclQuark name,
+                  int ncl_class, int type,
+                  size_t size, size_t nfields,
+                  NclQuark *mem_name, NclBasicDataTypes *mem_type)
+{
+    NclFileUDTRecord *udtrec = *rootudtrec;
+    NclFileUDTNode   *udtnode;
+    int n = 0;
+
+  /*
+   *fprintf(stderr, "\nEnter _Ncl_add_udt, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tgid: %d, uid: %d, name: <%s>\n", gid, uid, NrmQuarkToString(name));
+   */
+
+    if(NULL == udtrec)
+    {
+        udtrec = _NclFileUDTAlloc(1);
+        assert(udtrec);
+        *rootudtrec = udtrec;
+
+        udtrec->gid = gid;
+        udtrec->uid = uid;
+    }
+
+    if(udtrec->n_udts >= udtrec->max_udts)
+    {
+        _NclFileUDTRealloc(udtrec);
+    }
+
+    udtnode = &(udtrec->udt_node[udtrec->n_udts]);
+
+    udtnode->id = uid;
+    udtnode->name = name;
+    udtnode->type = type;
+    udtnode->size = size;
+    udtnode->ncl_class = ncl_class;
+    udtnode->max_fields = nfields;
+    udtnode->n_fields = nfields;
+
+    udtnode->mem_name = (NclQuark *)NclCalloc(nfields, sizeof(NclQuark));
+    assert(udtnode->mem_name);
+    udtnode->mem_type = (NclBasicDataTypes *)NclCalloc(nfields, sizeof(NclBasicDataTypes));
+    assert(udtnode->mem_type);
+
+    for(n = 0; n < nfields; n++)
+    {
+        udtnode->mem_name[n] = mem_name[n];
+        udtnode->mem_type[n] = mem_type[n];
+    }
+
+    udtrec->n_udts ++;
+  /*
+   *fprintf(stderr, "Leave _Ncl_add_udt, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   */
 }
 

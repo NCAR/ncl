@@ -1784,14 +1784,15 @@ NclFileGrpNode *_getGrpNodeFromGrpNode(NclFileGrpNode *ingrpnode,
        return outgrpnode;
     }
 
-    if(NULL == ingrpnode->grp_rec)
-        return outgrpnode;
-
     out_grp_names = splitString(grpname, &lvls);
     if(1 < lvls)
     {
         NclFileGrpNode *topgrpnode = ingrpnode;
         NclQuark gn;
+
+        if(NULL == ingrpnode->grp_rec)
+            return outgrpnode;
+
         for(n = 0; n < lvls; ++n)
         {
             gn = out_grp_names[n];
@@ -1806,6 +1807,18 @@ NclFileGrpNode *_getGrpNodeFromGrpNode(NclFileGrpNode *ingrpnode,
             return outgrpnode;
         }
     }
+    else
+    {
+        if((out_grp_names[0] == ingrpnode->name) ||
+           (out_grp_names[0] == ingrpnode->real_name))
+        {
+           outgrpnode = ingrpnode;
+           return outgrpnode;
+        }
+    }
+
+    if(NULL == ingrpnode->grp_rec)
+        return outgrpnode;
 
     for(n = 0; n < ingrpnode->grp_rec->n_grps; ++n)
     {

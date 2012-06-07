@@ -4373,6 +4373,334 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
     }
 }
 
+NhlErrorTypes H5AddCompound(void *rec, NclQuark compound_name, NclQuark var_name,
+                             ng_size_t n_dims, NclQuark *dim_name, ng_size_t n_mems,
+                             NclQuark *mem_name, NclQuark *mem_type, int *mem_size)
+{
+    NclFileGrpNode   *grpnode = (NclFileGrpNode *) rec;
+    NclFileDimNode   *dimnode = NULL;
+    NclFileGrpRecord *grprec = NULL;
+    NclFileVarNode   *varnode = NULL;
+    char buffer[NC_MAX_NAME];
+    int id;
+    int n = -1;
+    int nc_ret = 0;
+    NhlErrorTypes ret = NhlNOERROR;
+
+    nc_type nc_compound_type_id;
+
+    NclQuark *udt_mem_name = NULL;
+    NclBasicDataTypes *udt_mem_type = NULL;
+
+    int *dim_size = NULL;
+    long *long_dim_size = NULL;
+
+    size_t compound_length = 0;
+    size_t component_size  = 4;
+    size_t *mem_offset = NULL;
+
+  /*
+   *fprintf(stderr, "\nEnter H5AddCompound, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tcompound_name: <%s>, var_name: <%s>, n_dims = %d, dim_name[0]: <%s>\n",
+   *                 NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
+   *                 n_dims, NrmQuarkToString(dim_name[0]));
+   */
+
+    udt_mem_name = (NclQuark *)NclCalloc(n_mems, sizeof(NclQuark));
+    assert(udt_mem_name);
+    udt_mem_type = (NclBasicDataTypes *)NclCalloc(n_mems, sizeof(NclBasicDataTypes));
+    assert(udt_mem_type);
+
+    mem_offset = (size_t *)NclCalloc(n_mems, sizeof(size_t));
+    assert(mem_offset);
+
+    dim_size = (int *)NclCalloc(n_dims, sizeof(int));
+    assert(dim_size);
+
+    long_dim_size = (long *)NclCalloc(n_dims, sizeof(long));
+    assert(long_dim_size);
+
+    for(n = 0; n < n_mems; n++)
+    {
+        udt_mem_name[n] = mem_name[n];
+        udt_mem_type[n] = _nameToNclBasicDataType(mem_type[n]);
+
+        if(0 == n)
+           mem_offset[n] = 0;
+        else
+        {
+           mem_offset[n] = mem_offset[n-1] + component_size;
+        }
+
+        if(mem_size[n] < 1)
+            mem_size[n] = 1;
+
+        component_size = get_sizeof(mem_size[n], _NclSizeOf(udt_mem_type[n]));
+        compound_length += component_size;
+
+      /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tmem_size[%d] = %d\n", n, mem_size[n]);
+       *fprintf(stderr, "\tmem: %d, name: <%s>, type: <%s>, size: %ld, offset: %ld\n",
+       *                 n, NrmQuarkToString(mem_name[n]), NrmQuarkToString(mem_type[n]),
+       *                 (long)component_size, (long)mem_offset[n]);
+       */
+    }
+
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tcompound_length = %d\n", compound_length);
+
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tgrpnode->id = %d\n", grpnode->id);
+   *fprintf(stderr, "\tcompound_name: <%s>\n", NrmQuarkToString(compound_name));
+   */
+
+    _Ncl_add_udt(&(grpnode->udt_rec),
+                 grpnode->id, -1, compound_name,
+                 NCL_compound, NCL_compound,
+                 compound_length, n_mems, udt_mem_name, udt_mem_type);
+
+    for(n = 0; n < n_dims; n++)
+    {
+        dimnode = _getDimNodeFromNclFileGrpNode(grpnode, dim_name[n]);
+        dim_size[n] = dimnode->size;
+        long_dim_size[n] = (long) dimnode->size;
+
+      /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tdim %d, name: <%s>, size: %d\n",
+       *                 n, NrmQuarkToString(dim_name[n]), dim_size[n]);
+       */
+    }
+
+    _addNclVarNodeToGrpNode(grpnode, var_name, -1, NCL_compound,
+                                    n_dims, dim_name, dim_size);
+
+    varnode = _getVarNodeFromNclFileGrpNode(grpnode, var_name);
+
+    if(NULL != varnode)
+    {
+        NclFileCompoundRecord *comp_rec = _NclFileCompoundAlloc(n_mems);
+        NclFileCompoundNode   *compnode = NULL;
+
+        comp_rec->name = compound_name;
+        comp_rec->size = compound_length;
+        comp_rec->type = NCL_compound;
+        comp_rec->xtype = -1;
+
+        for(n = 0; n < n_mems; n++)
+        {
+            compnode = &(comp_rec->compnode[n]);
+
+            compnode->name = udt_mem_name[n];
+            compnode->type = udt_mem_type[n];
+            compnode->offset = mem_offset[n];
+            compnode->rank = 1;
+            compnode->nvals = mem_size[n];
+            compnode->sides = NULL;
+            compnode->value = NULL;
+        }
+
+        varnode->comprec = comp_rec;
+    }
+
+    NclFree(udt_mem_name);
+    NclFree(udt_mem_type);
+    NclFree(mem_offset);
+    NclFree(dim_size);
+    NclFree(long_dim_size);
+
+  /*
+   *fprintf(stderr, "Leave H5AddCompound, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   */
+    return ret;
+}
+
+NhlErrorTypes H5WriteCompound(void *rec, NclQuark compound_name, NclQuark var_name,
+                               ng_size_t n_mems, NclQuark *mem_name, NclList thelist)
+{
+    NclFileGrpNode   *grpnode = (NclFileGrpNode *) rec;
+    NclFileDimNode   *dimnode = NULL;
+    NclFileVarNode   *varnode = NULL;
+    NclFileGrpRecord *grprec = NULL;
+
+    NhlErrorTypes ret = NhlNOERROR;
+
+    char buffer[NC_MAX_NAME];
+
+    int  i, n = -1;
+    int  n_dims = 1;
+
+    hid_t  fid;
+    hid_t  did;
+    hid_t  tid;
+    hid_t  space;
+    herr_t status;
+
+    size_t  data_size = 1;
+    void    *data_value = NULL;
+    hsize_t *dim_size = NULL;
+
+  /*
+   *fprintf(stderr, "\nEnter H5WriteCompound, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tcompound_name: <%s>, var_name: <%s>, n_mems = %d, mem_name[0]: <%s>\n",
+   *                 NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
+   *                 n_mems, NrmQuarkToString(mem_name[0]));
+   */
+
+    fid = (hid_t)_getH5grpID(grpnode);
+
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tgrpnode->path: <%s>\n", NrmQuarkToString(grpnode->path));
+   */
+
+    fid = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_RDWR, H5P_DEFAULT);
+
+    varnode = _getVarNodeFromNclFileGrpNode(grpnode, var_name);
+
+    if((NULL != varnode) && (NULL != thelist))
+    {
+        NclObj tmp, ret_obj;
+        NclListObjList *list_list = thelist->list.first;
+        NclList  comp_list;
+        NclListObjList *tmp_list;
+
+        NclVar self = NULL;
+        NclMultiDValData theval = NULL;
+
+        NclFileCompoundRecord *comp_rec = varnode->comprec;
+        NclFileCompoundNode   *compnode = NULL;
+
+        n_dims = varnode->dim_rec->n_dims;
+
+      /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tfound node for var: <%s>, var_name: <%s>, n_dims = %d\n",
+       *                   NrmQuarkToString(varnode->name), NrmQuarkToString(var_name), n_dims);
+       */
+
+        dim_size = (void *)NclCalloc(n_dims, sizeof(hsize_t));
+        assert(dim_size);
+
+        data_size = 1;
+        for(n = 0; n < n_dims; n++)
+        {
+            dimnode = &(varnode->dim_rec->dim_node[n]);
+            data_size *= (size_t) dimnode->size;
+            dim_size[n] = (size_t) dimnode->size;
+        }
+
+        if(NULL != comp_rec)
+        {
+            size_t cur_mem_loc = 0;
+            size_t compound_size = 0;
+            int current_component = 0;
+
+            size_t *mem_len = (size_t *)NclCalloc(n_mems, sizeof(size_t));
+            if (! mem_len)
+            {
+                NHLPERROR((NhlFATAL,ENOMEM,NULL));
+                return NhlFATAL;
+            }
+
+            space = H5Screate_simple(n_dims, dim_size, NULL);
+
+            for(n = 0; n < n_mems; n++)
+            {
+                compnode = &(comp_rec->compnode[n]);
+
+                mem_len[n] = (size_t) _NclSizeOf(compnode->type)
+                           * (size_t) compnode->nvals;
+
+                compound_size += mem_len[n];
+            }
+
+            tid = H5Tcreate(H5T_COMPOUND, compound_size);
+
+            cur_mem_loc = 0;
+            for(n = 0; n < n_mems; n++)
+            {
+                compnode = &(comp_rec->compnode[n]);
+
+                H5Tinsert(tid, NrmQuarkToString(compnode->name), cur_mem_loc,
+                          Ncltype2HDF5type(compnode->type));
+
+              /*
+               *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr, "\tComponent %d name: <%s>, type: <%s>, leng = %d\n",
+               *                   n, NrmQuarkToString(compnode->name),
+               *                   _NclBasicDataTypeToName(compnode->type),
+               *                   mem_len[n]);
+               */
+
+                cur_mem_loc += mem_len[n];
+            }
+
+          /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tdata_size = %d, compound_size = %d\n",
+           *                   data_size, compound_size);
+           */
+
+            data_value = (void *)NclCalloc((ng_usize_t)(data_size*compound_size), sizeof(void));
+            assert(data_value);
+
+            cur_mem_loc = 0;
+            while(NULL != list_list)
+            {
+                current_component = 0;
+
+                self = (NclVar)_NclGetObj(list_list->obj_id);
+                if(self != NULL)
+                {
+                    theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
+                    comp_list = (NclList)_NclGetObj(*(int*)theval->multidval.val);
+                    tmp_list = comp_list->list.last;
+
+                    while(NULL != tmp_list)
+                    {
+                        self = (NclVar)_NclGetObj(tmp_list->obj_id);
+                        if(self != NULL)
+                        {
+                            theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
+
+                            memcpy(data_value + cur_mem_loc,
+                                   theval->multidval.val, mem_len[current_component]);
+
+                            cur_mem_loc += mem_len[current_component];
+                        }
+                        tmp_list = tmp_list->prev;
+                        current_component++;
+                    }
+                }
+
+                list_list = list_list->next;
+            }
+
+            did = H5Dcreate2(fid, NrmQuarkToString(varnode->name), tid, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+            varnode->gid = fid;
+            varnode->id  = did;
+
+            status = H5Dwrite(did, tid, H5S_ALL, H5S_ALL, H5P_DEFAULT, data_value);
+
+            H5Tclose(tid);
+            H5Sclose(space);
+            H5Dclose(did);
+
+            NclFree(data_value);
+        }
+        NclFree(dim_size);
+    }
+
+  /*
+   *fprintf(stderr, "Leave H5WriteCompound, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   */
+    return ret;
+}
+
 NclFormatFunctionRec H5Rec =
 {
     /* NclInitializeFileRecFunc initialize_file_rec */       H5InitializeFileRec,
@@ -4422,8 +4750,8 @@ NclFormatFunctionRec H5Rec =
     /* NclAddVlenFunc          add_vlen; */                  NULL, /* H5AddVlen, */
     /* NclAddEnumFunc          add_enum; */                  NULL, /* H5AddEnum, */
     /* NclAddOpaqueFunc        add_opaque; */                NULL, /* H5AddOpaque, */
-    /* NclAddCompoundFunc      add_compound; */              NULL, /* H5AddCompound, */
-    /* NclWriteCompoundFunc    write_compound; */            NULL, /* H5WriteCompound, */
+    /* NclAddCompoundFunc      add_compound; */              H5AddCompound,
+    /* NclWriteCompoundFunc    write_compound; */            H5WriteCompound,
     /* NclSetOptionFunc        set_option;  */               H5SetOption
 };
 
