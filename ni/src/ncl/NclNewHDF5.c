@@ -2105,93 +2105,6 @@ herr_t _searchH5link(char *name, H5O_info_t *oinfo, void *_h5grp)
 */
     fprintf(stderr, "\nEntering _searchH5link, name = <%s>, at file: %s, line: %d\n", name, __FILE__, __LINE__);
 
-#if 0
-    NclHDF5FileRec_t *NclHDF5FileRec = (NclHDF5FileRec_t*)_NclHDF5Rec;
-
-    switch(linfo->type)
-    {
-        case H5L_TYPE_SOFT:
-            if((buf = NclMalloc(linfo->u.val_size)) == NULL)
-                return SUCCEED;
-
-            if(H5Lget_val(NclHDF5FileRec->fid, name, buf, linfo->u.val_size, H5P_DEFAULT) < 0) {
-                free(buf);
-                return SUCCEED;
-            } /* end if */
-
-            fputs("Soft Link {", stderr);
-            fputs(buf, stderr);
-            free(buf);
-            fputs("}\n", stderr);
-            break;
-
-        case H5L_TYPE_EXTERNAL:
-            {
-            const char *filename;
-            const char *path;
-
-            if((buf = NclMalloc(linfo->u.val_size)) == NULL)
-                return SUCCEED;
-            if(H5Lget_val(NclHDF5FileRec->fid, name, buf, linfo->u.val_size, H5P_DEFAULT) < 0)
-            {
-                free(buf);
-                return SUCCEED;
-            }
-
-            if(H5Lunpack_elink_val(buf, linfo->u.val_size, NULL, &filename, &path) < 0)
-            {
-                free(buf);
-                return SUCCEED;
-            } /* end if */
-
-            fputs("External Link {", stderr);
-            fputs(filename, stderr);
-            fputc('/', stderr);
-            if(*path != '/')
-                fputc('/', stderr);
-            fputs(path, stderr);
-            fputc('}', stderr);
-
-            /* Recurse through the external link */
-            {
-                fputc(' ', stderr);
-            
-                /* Check if we have already seen this elink */
-                if(elink_trav_visited(NclHDF5FileRec->elink_list, filename, path))
-                {
-                    fputs("{Already Visited}\n", stderr);
-                    free(buf);
-                    return SUCCEED;
-                }
-
-                /* Add this link to the list of seen elinks */
-                if(elink_trav_add(NclHDF5FileRec->elink_list, filename, path) < 0) {
-                    free(buf);
-                    return SUCCEED;
-                }
-
-                /* Adjust user data to specify that we are operating on the
-                 * target of an external link */
-                NclHDF5FileRec->ext_link = TRUE;
-
-                /* Recurse through the external link */
-                if(_NclHDF5visit_obj(NclHDF5FileRec->fid, name, NclHDF5FileRec) < 0)
-                {
-                    free(buf);
-                    return SUCCEED;
-                }
-            }
-
-            free(buf);
-            }
-
-            break;
-
-        default:
-            fputs("UD Link {cannot follow UD links}\n", stderr);
-            break;
-    }
-#endif
 /*
 */
     fprintf(stderr, "Leaving _searchH5link, at file: %s, line: %d\n\n", __FILE__, __LINE__);
@@ -3068,13 +2981,11 @@ static void *H5ReadVar(void *therec, NclQuark thevar,
                  fprintf(stderr, "\tNeed to read opaque data.\n");
                  exit( -1 );
                  break;
-#if 0
             case NCL_string:
                  fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
                  fprintf(stderr, "\tNeed to read string data.\n");
                  exit( -1 );
                  break;
-#endif
             defualt:
                  _getH5data(fid, varnode, start, finish, stride, count, storage);
                  break;
@@ -4163,9 +4074,9 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
     hsize_t dims[NCL_MAX_DIMENSIONS];
     hsize_t chunk_dims[NCL_MAX_DIMENSIONS];
 
+    fprintf(stderr, "\nEnter H5WriteVar, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
   /*
-   *fprintf(stderr, "\nEnter H5WriteVar, file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
    */
 
     if(grpnode->status > 0)
@@ -4192,6 +4103,9 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         varnode->value = NULL;
     }
 
+    rank = varnode->dim_rec->n_dims;
+    dims[0] = 1;
+
     for(i = 0; i < varnode->dim_rec->n_dims; i++)
     {
         count[i] = (long)floor((finish[i] - start[i])/(double)stride[i]) + 1;
@@ -4206,6 +4120,8 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         {
             dimnode->size = MAX(finish[i] + 1, dimnode->size);
         }
+
+        dims[i] = (hsize_t) (varnode->dim_rec->dim_node[i].size);
     }
                     
   /*
@@ -4215,6 +4131,7 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
     fid = (hid_t)_getH5grpID(grpnode);
 
     fid = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_RDWR, H5P_DEFAULT);
+
 #if 0
     fid = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_TRUNC, H5P_DEFAULT);
     if(NCL_list == varnode->type)
@@ -4248,50 +4165,97 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         NclFree(vlendata);
     }
     else if(NCL_string == varnode->type)
+#endif
+    if(NCL_string == varnode->type)
     {
         char **tmpstr = (char **)NclCalloc(n_elem, sizeof(char *));
         NclQuark *qd = (NclQuark *)data;
+        size_t slen = 1;
+        size_t cloc = 0;
+        char *buffer = NULL;
+
+        rank = varnode->dim_rec->n_dims;
+      /*
+       */
+        fprintf(stderr, "\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
+        fprintf(stderr, "\trank = %d\n", rank);
 
         n = 0;
         for(i = 0; i < varnode->dim_rec->n_dims; i++)
         {
             dimnode = &(varnode->dim_rec->dim_node[i]);
+            dims[i] = dimnode->size;
+            fprintf(stderr, "\tdim[%d] = %d\n", i, dims[i]);
             for(j = 0; j < dimnode->size; j++)
             {
                 tmpstr[n] = NrmQuarkToString(qd[n]);
+
+                if(slen < strlen(tmpstr[n]))
+                    slen = 1 + strlen(tmpstr[n]);
                 n++;
             }
         }
-        
-        if(no_stride)
+
+        buffer = (char *)NclCalloc(n_elem * slen, sizeof(char));
+        memset(buffer, ' ', n_elem * slen);
+        for(i = 0; i < n; ++i)
         {
-            ret = nc_put_var_string(fid, varnode->id, (const char **)tmpstr);
+            memcpy(buffer + cloc, tmpstr[i], strlen(tmpstr[i]));
+            cloc += slen;
+        }
+        
+        space = H5Screate_simple(rank, dims, NULL);
+      /*
+       *type  = H5Tcopy(Ncltype2HDF5type(varnode->type));
+       */
+        type  = H5Tcopy(H5T_C_S1);
+
+        status = H5Tset_size(type, slen);
+
+      /*
+        if(varnode->chunk_dim_rec)
+        {
+            for(j = 0; j < varnode->chunk_dim_rec->n_dims; j++)
+            {
+                chunk_dims[j] = (hsize_t) (varnode->chunk_dim_rec->dim_node[j].size);
+            }
+            plist  = H5Pcreate(H5P_DATASET_CREATE);
+            status = H5Pset_chunk(plist, rank, chunk_dims);
+        }
+
+        h5order = H5Tget_order(Ncltype2HDF5type(varnode->type));
+        status = H5Tset_order(type, h5order);
+
+        if(varnode->compress_level > 0)
+            status = H5Pset_deflate(plist, varnode->compress_level);
+       *else
+       *    status = H5Pset_deflate(plist, varnode->compress_level);
+       */
+
+        did = H5Dcreate(fid, NrmQuarkToString(varnode->name),
+                        type, space, H5P_DEFAULT, plist, H5P_DEFAULT);
+
+        varnode->id = did;
+
+        if(did > 0)
+        {
+            status = H5Dwrite(did, type,
+                              H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer);
+
+            H5Sclose(space);
+            H5Tclose(type);
+            H5Dclose(did);
         }
         else
         {
-            ret = nc_put_vara_string(fid, varnode->id,
-                                     start, count, (const char **)tmpstr);
+            ret_code = FAILED;
         }
 
+        NclFree(buffer);
         NclFree(tmpstr);
     }
     else
-#endif
     {
-        if(varnode->dim_rec)
-        {
-            rank = varnode->dim_rec->n_dims;
-            for(j = 0; j < varnode->dim_rec->n_dims; j++)
-            {
-                dims[j] = (hsize_t) (varnode->dim_rec->dim_node[j].size);
-            }
-        }
-        else
-        {
-            rank = 1;
-            dims[0] = 1;
-        }
-
         space = H5Screate_simple(rank, dims, NULL);
         type  = H5Tcopy(Ncltype2HDF5type(varnode->type));
 
@@ -4328,30 +4292,6 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
             H5Sclose(space);
             H5Tclose(type);
             H5Dclose(did);
-
-            if(NULL != varnode->att_rec)
-            {
-                did = H5Dopen(fid, NrmQuarkToString(varnode->name), H5P_DEFAULT);
-                varnode->att_rec->gid = fid;
-                varnode->att_rec->id  = did;
-
-                for(i = 0; i < varnode->att_rec->n_atts; i++)
-                {
-                    attnode = &(varnode->att_rec->att_node[i]);
-                  /*
-                   *fprintf(stderr, "\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
-                   *fprintf(stderr, "\twrite att no %d: <%s>\n",
-                   *                   i, NrmQuarkToString(attnode->name));
-                   */
-                    ret_code = _writeH5variableAttribute(did, attnode);
-                    if(ret_code)
-                    {
-                        NHLPERROR((NhlFATAL,NhlEUNKNOWN,"H5WriteVar: Error writing variable attribute\n"));
-                        return(NhlFATAL);
-                    }
-                }
-                H5Dclose(did);
-            }
         }
         else
         {
@@ -4359,8 +4299,36 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         }
     }
 
+    if(NULL != varnode->att_rec)
+    {
+        did = H5Dopen(fid, NrmQuarkToString(varnode->name), H5P_DEFAULT);
+        varnode->att_rec->gid = fid;
+        varnode->att_rec->id  = did;
+
+        for(i = 0; i < varnode->att_rec->n_atts; i++)
+        {
+            attnode = &(varnode->att_rec->att_node[i]);
+          /*
+           */
+            fprintf(stderr, "\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
+            fprintf(stderr, "\twrite att no %d: <%s>\n",
+                               i, NrmQuarkToString(attnode->name));
+
+            ret_code = _writeH5variableAttribute(did, attnode);
+
+            if(ret_code)
+            {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"H5WriteVar: Error writing variable attribute\n"));
+                return(NhlFATAL);
+            }
+        }
+
+        H5Dclose(did);
+    }
+
+
+    fprintf(stderr, "Leave H5WriteVar, file: %s, line: %d\n\n", __FILE__, __LINE__);
   /*
-   *fprintf(stderr, "Leave H5WriteVar, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
     if(ret_code)
     {
