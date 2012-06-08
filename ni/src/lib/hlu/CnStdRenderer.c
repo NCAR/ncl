@@ -958,11 +958,11 @@ static NhlErrorTypes AddDataBoundToAreamap
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = 
 		(NhlContourPlotLayerPart *) &cl->contourplot;
-	int			i;
 	int			status;
 	NhlBoolean		ezmap = False;
 	int			xrev,yrev;
 	float			xa[5],ya[5];
+	float	   		xeps,yeps;
 
 #define _cnBBOXGID 3
 #if 0
@@ -989,7 +989,6 @@ static NhlErrorTypes AddDataBoundToAreamap
 		float txmin,txmax,tymin,tymax;
 		float gxmin,gxmax,gymin,gymax;
 		NhlBoolean lbox, rbox, bbox, tbox;
-		float	   xeps,yeps;
 
 		ret = NhlVAGetValues(cnp->trans_obj->base.id,
 				     NhlNtrXMinF,&txmin,
@@ -1183,33 +1182,44 @@ static NhlErrorTypes AddDataBoundToAreamap
 		}
 	}
 	else {
-		NhlBoolean	started = False;
-		float		xinc,yinc; 
-		int		j;
 		char		cval[4];
 
+#if 0
+		/* apparently none of this stuff is necessary as long as you set the vertical strips correctly*/
 		if (! cnp->fix_fill_bleed)
 			return NhlNOERROR;
-		xa[0] = xa[3] = xa[4] = cnp->xlb;
-		xa[1] = xa[2] = cnp->xub;
-		ya[0] = ya[1] = ya[4] = cnp->ylb;
-		ya[2] = ya[3] = cnp->yub;
 
-		for (i=0;  i < 4; i++) {
-			xinc = (xa[i+1] - xa[i]) / _cnMAPBOUNDINC;
-			yinc = (ya[i+1] - ya[i]) / _cnMAPBOUNDINC;
-			if (! started) {
-				_NhlMapita(cnp->aws,ya[i],xa[i],
-					   0,3,0,-1,entry_name);
-				started = True;
-			}
-			for (j = 0; j < _cnMAPBOUNDINC + 1; j++) {
-				_NhlMapita(cnp->aws,ya[i]+j*yinc,xa[i]+j*xinc,
-					   1,3,0,-1,entry_name);
-			}
-		}
-		_NhlMapiqa(cnp->aws,3,0,-1,entry_name);
+		ret = NhlVAGetValues(cnp->trans_obj->base.id,
+				     NhlNmpBottomWindowF,&wb,
+				     NhlNmpTopWindowF,&wt,
+				     NhlNmpLeftWindowF,&wl,
+				     NhlNmpRightWindowF,&wr,
+				     NULL);
+		/* draw thin rectangles */
+		xeps = 1e-5 * fabs(wt - wb);
+		yeps = 1e-5 * fabs(wr - wl);
+		xa[0] = xa[3] = xa[4] = wl;
+		xa[1] = xa[2] = wl + xeps;
+		ya[0] = ya[1] = ya[4] = wb;
+		ya[2] = ya[3] = wt;
+		_NhlAredam(cnp->aws,xa,ya,1,3,0,-1,entry_name);
+		xa[0] = xa[3] = xa[4] = wr;
+		xa[1] = xa[2] = wr - xeps;
+		ya[0] = ya[1] = ya[4] = wb;
+		ya[2] = ya[3] = wt;
+		_NhlAredam(cnp->aws,xa,ya,1,3,0,-1,entry_name);
+		xa[0] = xa[3] = xa[4] = wl + xeps;
+		xa[1] = xa[2] = wr - xeps;
+		ya[0] = ya[1] = ya[4] = wb;
+		ya[2] = ya[3] = wb + yeps;
+		_NhlAredam(cnp->aws,xa,ya,1,3,0,-1,entry_name);
+		xa[0] = xa[3] = xa[4] = wl + xeps;
+		xa[1] = xa[2] = wr - xeps;
+		ya[0] = ya[1] = ya[4] = wt - yeps;
+		ya[2] = ya[3] = wt;
+		_NhlAredam(cnp->aws,xa,ya,1,3,0,-1,entry_name);
 
+#endif
 		c_mpgetc("OU",cval,3);
 		c_mpsetc("OU","NO");
 		c_mpseti("G2",3);
