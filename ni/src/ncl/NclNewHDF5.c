@@ -2957,7 +2957,7 @@ void _readH5string(hid_t dset, hid_t d_type,
          numstr *= count[i];
     }
 
-    type = H5Dget_type(did);
+    type = H5Dget_type(dset);
     lenstr = H5Tget_size(type);
     fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
     fprintf(stderr, "\tlenstr = %d\n", lenstr);
@@ -3001,7 +3001,7 @@ void _readH5string(hid_t dset, hid_t d_type,
     }
 
     /* Read the data */
-    status = H5Dread(dset, d_type, m_space, d_space, H5P_DEFAULT, buffer);
+    status = H5Dread(dset, type, m_space, d_space, H5P_DEFAULT, buffer);
 
     for(i = 0; i < numstr; ++i)
     {
