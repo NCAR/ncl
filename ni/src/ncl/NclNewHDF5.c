@@ -2868,6 +2868,230 @@ static void _getH5CompoundData(hid_t fid, NclFileVarNode *varnode,
     fprintf(stderr, "Leave _getH5CompoundData, file: %s, line: %d\n\n", __FILE__, __LINE__);
 }
 
+/*
+ ***********************************************************************
+ * Function:	_readH5string
+ *
+ * Purpose:	read a string dataset
+ *
+ * Programmer:	Wei Huang
+ * Created:	April 30, 2012
+ *
+ ***********************************************************************
+ */
+
+void _readH5string(hid_t dset, hid_t d_type,
+                   ng_size_t *start, ng_size_t *finish,
+                   ng_size_t *stride, ng_size_t *count,
+                   void *value)
+{
+    hid_t               d_space;                  /* data space */
+    hid_t               m_space;                  /* memory space */
+    hid_t               type;
+    size_t              i;
+
+    /* Hyperslab info */
+    hsize_t            d_start[H5S_MAX_RANK];
+    hsize_t            d_stride[H5S_MAX_RANK];
+    hsize_t            d_count[H5S_MAX_RANK];
+    hsize_t            d_block[H5S_MAX_RANK];
+
+    hsize_t            m_start[H5S_MAX_RANK];
+    hsize_t            m_stride[H5S_MAX_RANK];
+    hsize_t            m_count[H5S_MAX_RANK];
+    hsize_t            m_block[H5S_MAX_RANK];
+
+    hsize_t            ndims;
+    int                read_slab = 0;
+
+    herr_t             status;
+
+    NclQuark          *strquark = (NclQuark *)value;
+
+    char              *buffer;
+    size_t             numstr = 0;
+    size_t             lenstr = 1;
+    size_t             cloc = 0;
+
+    fprintf(stderr, "\nEnter _readH5string, file: %s, line: %d\n", __FILE__, __LINE__);
+  /*
+   */
+
+    d_space = H5Dget_space(dset);
+    if (d_space == FAILED)
+        return;
+
+    ndims = H5Sget_simple_extent_ndims(d_space);
+
+    if (ndims > H5S_MAX_RANK)
+    {
+        NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                  "\nCannot have huge ndims: %d, file: %s, line: %d\n",
+                   ndims, __FILE__, __LINE__));
+        H5Sclose(d_space);
+        return;
+    }
+
+    if (ndims < 0)
+    {
+        NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                  "\nCannot have negative ndims: %d, file: %s, line: %d\n",
+                   ndims, __FILE__, __LINE__));
+        H5Sclose(d_space);
+        return;
+    }
+
+    status = H5Sget_simple_extent_dims(d_space, m_count, NULL);
+
+    numstr = 1;
+    for(i = 0; i < ndims; ++i)
+    {
+        if(count[i] != m_count[i])
+            ++ read_slab;
+      /*
+       */
+        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tcount[%d] = %d, m_count[%d] = %d\n",
+                         i, count[i], i, m_count[i]);
+         m_count[i] = count[i];
+         numstr *= count[i];
+    }
+
+    type = H5Dget_type(did);
+    lenstr = H5Tget_size(type);
+    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tlenstr = %d\n", lenstr);
+
+    buffer = (char *)NclCalloc(numstr * lenstr, sizeof(char));
+
+    m_space = H5Screate_simple(ndims, m_count, NULL);
+
+    /* Calculate the hyperslab size */
+    if(read_slab)
+    {
+        for (i = 0; i < ndims; i++)
+        {
+            d_start[i] = start[i];
+            d_stride[i] = stride[i];
+            d_count[i] = count[i];
+            d_block[i] = 1;
+
+            m_start[i] = 0;
+            m_stride[i] = 1;
+            m_block[i] = 1;
+        }
+
+        H5Sselect_hyperslab(d_space, H5S_SELECT_SET, d_start, d_stride,
+                            d_count, d_block);
+
+      /*
+       *fprintf(stderr, "\tselect slab in file: %s, line: %d\n", __FILE__, __LINE__);
+       */
+
+        H5Sselect_hyperslab(m_space, H5S_SELECT_SET, m_start, m_stride,
+                            m_count, m_block);
+    }
+    else
+    {
+      /*
+       *fprintf(stderr, "\tselect all in file: %s, line: %d\n", __FILE__, __LINE__);
+       */
+        H5Sselect_all(d_space);
+        H5Sselect_all(m_space);
+    }
+
+    /* Read the data */
+    status = H5Dread(dset, d_type, m_space, d_space, H5P_DEFAULT, buffer);
+
+    for(i = 0; i < numstr; ++i)
+    {
+        strquark[i] = NrmStringToQuark(buffer + cloc);
+        cloc += lenstr;
+    }
+
+    H5Sclose(m_space);
+    H5Sclose(d_space);
+
+    NclFree(buffer);
+  /*
+   */
+    fprintf(stderr, "Leave _readH5string, file: %s, line: %d\n\n", __FILE__, __LINE__);
+}
+
+/*
+ ***********************************************************************
+ * Function:	_getH5string
+ *
+ * Purpose:	get the string dataset
+ *
+ * Programmer:	Wei Huang
+ *		June 8, 2012
+ *
+ ***********************************************************************
+ */
+
+void _getH5string(hid_t fid, NclFileVarNode *varnode,
+                  ng_size_t *start, ng_size_t *finish,
+                  ng_size_t *stride, ng_size_t *count,
+                  void *storage)
+{
+    hid_t       did;
+    H5S_class_t space_type;
+    hid_t       d_space;
+    hid_t       d_type;
+    hid_t       p_type;
+    char	*type_name = _NclBasicDataTypeToName(varnode->type);
+
+    fprintf(stderr, "\nEnter _getH5string, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varnode->real_name));
+  /*
+   */
+
+    did = H5Dopen(fid, NrmQuarkToString(varnode->real_name), H5P_DEFAULT);
+
+  /*
+   * Get datatype and dataspace handles and then query
+   * dataset class, order, size, rank and dimensions.
+   */
+    d_type = H5Dget_type(did);
+
+  /*
+   *p_type = H5Tcopy(d_type);
+   *fprintf(stderr, "\tp_type = %d, H5T_NATIVE_SHORT = %d\n", (int)p_type, H5T_NATIVE_SHORT);
+   */
+    p_type = toH5type(type_name);
+  /*
+   *fprintf(stderr, "\tp_type = %d, H5T_NATIVE_SHORT = %d\n", (int)p_type, H5T_NATIVE_SHORT);
+   */
+
+    /* Check the data space */
+    d_space = H5Dget_space(did);
+
+    space_type = H5Sget_simple_extent_type(d_space);
+
+    switch(space_type)
+    {
+        case H5S_SCALAR:
+        case H5S_SIMPLE:
+             _readH5string(did, p_type, start, finish, stride, count, storage);
+             break;
+        default:
+             NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                       "\nUnknown space_type: %ld, file: %s, line: %d\n",
+                       (long)space_type, __FILE__, __LINE__));
+            break;
+    }
+
+  /*Close the dataspace*/
+    H5Sclose(d_space);
+    H5Tclose(d_type);
+    H5Dclose(did);
+
+  /*
+   */
+    fprintf(stderr, "Leave _getH5string, file: %s, line: %d\n\n", __FILE__, __LINE__);
+}
+
 static void *H5ReadVar(void *therec, NclQuark thevar,
                        ng_size_t *start, ng_size_t *finish,
                        ng_size_t *stride, void *storage)
@@ -2964,13 +3188,11 @@ static void *H5ReadVar(void *therec, NclQuark thevar,
                  fprintf(stderr, "\tNeed to read Compound data.\n");
                  _getH5CompoundData(fid, varnode, thevar, storage);
                  break;
-#if 0
-            case NCL_vlen:
+            case NCL_list:
                  fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
                  fprintf(stderr, "\tNeed to read vlen data.\n");
                  exit( -1 );
                  break;
-#endif
             case NCL_enum:
                  fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
                  fprintf(stderr, "\tNeed to read enum data.\n");
@@ -2984,7 +3206,7 @@ static void *H5ReadVar(void *therec, NclQuark thevar,
             case NCL_string:
                  fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
                  fprintf(stderr, "\tNeed to read string data.\n");
-                 exit( -1 );
+                 _getH5string(fid, varnode, start, finish, stride, count, storage);
                  break;
             defualt:
                  _getH5data(fid, varnode, start, finish, stride, count, storage);
@@ -4197,7 +4419,7 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         }
 
         buffer = (char *)NclCalloc(n_elem * slen, sizeof(char));
-        memset(buffer, ' ', n_elem * slen);
+        memset(buffer, 0, n_elem * slen);
         for(i = 0; i < n; ++i)
         {
             memcpy(buffer + cloc, tmpstr[i], strlen(tmpstr[i]));
