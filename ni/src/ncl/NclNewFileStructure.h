@@ -188,6 +188,8 @@ typedef struct _NclFileVarNode
     float             cache_preemption;
 
     void             *value;
+
+    void             *udt;
 } NclFileVarNode;
 
 typedef struct _NclFileVarRecord

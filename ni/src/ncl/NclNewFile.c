@@ -151,7 +151,7 @@ NclFileEnumRecord *_NclFileEnumAlloc(int n_enums)
     enum_rec = (NclFileEnumRecord *)NclCalloc(1, sizeof(NclFileEnumRecord));
     assert(enum_rec);
 
-    enum_rec->n_enums = n_enums;
+    enum_rec->n_enums = 0;
     enum_rec->max_enums = n_enums;
 
     enum_rec->enum_node = (NclFileEnumNode *)NclCalloc(enum_rec->max_enums,
@@ -1388,6 +1388,7 @@ static void _NclInitNclFileVarRecord(NclFileVarRecord *var_rec, int start)
             varnode->comprec = NULL;
             varnode->att_rec = NULL;
             varnode->value = NULL;
+            varnode->udt = NULL;
         }
     }
 }
@@ -1449,7 +1450,7 @@ NclFileUDTRecord *_NclFileUDTAlloc(int n_udts)
     udt_rec = (NclFileUDTRecord *)NclCalloc(1, sizeof(NclFileUDTRecord));
     assert(udt_rec);
 
-    udt_rec->n_udts = n_udts;
+    udt_rec->n_udts = 0;
     udt_rec->max_udts = n_udts;
 
     udt_rec->udt_node = (NclFileUDTNode *)NclCalloc(udt_rec->max_udts, sizeof(NclFileUDTNode));
@@ -6954,10 +6955,10 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
 /*
 * Need to add variable to file situation
 */
-            /*
-            */
-             fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-             fprintf(stderr, "\tCould not get varnode->name: <%s>\n", NrmQuarkToString(var));
+           /*
+           */
+            fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+            fprintf(stderr, "\tCould not get varnode->name: <%s>\n", NrmQuarkToString(var));
 
             if(type == FILE_COORD_VAR_ACCESS)
             {

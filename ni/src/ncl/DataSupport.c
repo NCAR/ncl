@@ -712,7 +712,10 @@ NclObjTypes _NclBasicDataTypeToObjType
 	case NCL_list:
 		return(Ncl_Typelist);
 	default:
-		return(Ncl_Obj);
+                if(dt ^ NCL_enum)
+                    return _NclBasicDataTypeToObjType(dt ^ NCL_enum);
+                else
+		    return (Ncl_Obj);
 	}
 }
 
