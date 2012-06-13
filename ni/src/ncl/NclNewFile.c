@@ -3121,14 +3121,15 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
                 else if(NCL_list == varnode->type)
                 {
                   /*
-                   *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                   *fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
                    */
+                    fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                    fprintf(stderr, "\tread list.\n");
+                    fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
 
                     val = (*thefile->newfile.format_funcs->read_var)
-                     (thefile->newfile.grpnode,
-                      varnode->name,
-                      start, finish, stride, val);
+                          (thefile->newfile.grpnode,
+                           varnode->name,
+                           start, finish, stride, val);
 
                     tmp_md = (NclMultiDValData) val;
                     return (tmp_md);
@@ -3136,14 +3137,15 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
                 else if(NCL_opaque == varnode->type)
                 {
                   /*
-                   *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                   *fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
                    */
+                    fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                    fprintf(stderr, "\tread opaque.\n");
+                    fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
 
                     val = (*thefile->newfile.format_funcs->read_var)
-                     (thefile->newfile.grpnode,
-                      varnode->name,
-                      start, finish, stride, val);
+                          (thefile->newfile.grpnode,
+                           varnode->name,
+                           start, finish, stride, val);
  
                     opaquerec = (NclFileOpaqueRecord *) val;
                 }
@@ -3151,13 +3153,14 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
                 {
                   /*
                    *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                   *fprintf(stderr, "\tread enum.\n");
                    *fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
                    */
 
                     val = (*thefile->newfile.format_funcs->read_var)
-                     (thefile->newfile.grpnode,
-                      varnode->name,
-                      start, finish, stride, val);
+                          (thefile->newfile.grpnode,
+                           varnode->name,
+                           start, finish, stride, val);
  
                     enumrec = (NclFileEnumRecord *) val;
                 }
@@ -4439,7 +4442,7 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
             else
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                    "NclNewFile: Could not get opaque data type."));
+                    "NclNewFile: Could not get enum data type."));
             }
 	}
 

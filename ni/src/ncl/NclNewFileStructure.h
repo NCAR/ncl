@@ -22,7 +22,7 @@ typedef struct _NclFileUserDefinedTypeNode
     int               max_fields;
     int               n_fields;
     NclQuark          name;
-    ng_size_t         type;
+    NclBasicDataTypes type;
     NclQuark          *mem_name;
     NclBasicDataTypes *mem_type;
 } NclFileUDTNode;
@@ -99,7 +99,7 @@ typedef struct _NclFileCompoundRecord
 {
     size_t            max_comps;
     size_t            n_comps;   /* aka nfields */
-    size_t            type;
+    NclBasicDataTypes type;
     size_t            size;
     NclQuark          name;
     nc_type           xtype;
@@ -119,7 +119,7 @@ typedef struct _NclFileEnumRecord
     size_t            max_enums;
     size_t            n_enums;   /* aka num_members */
     NclQuark          name;
-    size_t            type;
+    NclBasicDataTypes type;
     size_t            size;
     nc_type           xtype;
     nc_type           base_nc_type;
@@ -133,7 +133,7 @@ typedef struct _NclFileOpaqueRecord
     NclQuark name;
     size_t   max_opaques;
     size_t   n_opaques; 
-    size_t   type;
+    NclBasicDataTypes type;
     size_t   size;
     nc_type  xtype;
     nc_type  base_nc_type;
@@ -146,7 +146,7 @@ typedef struct _NclFileVlenRecord
     NclQuark name;
     size_t   max_vlens;
     size_t   n_vlens; 
-    size_t   type;
+    NclBasicDataTypes type;
     size_t   size;
     nc_type  xtype;
     nc_type  base_nc_type;

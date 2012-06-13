@@ -270,6 +270,10 @@ hid_t toH5type(const char *type)
     {
         h5type = H5T_COMPOUND;
     }
+    else if(strcmp("enum", type) == 0)
+    {
+        h5type = H5T_ENUM;
+    }
     else
     {
         fprintf(stderr, "\nUNKOWN TYPE: <%s>. file: %s, line: %d\n", type, __FILE__, __LINE__);
@@ -608,6 +612,7 @@ char *_getH5typeName(hid_t type, int ind)
             break;
         case H5T_ENUM:
             {
+#if 0
                 char        **name=NULL;    /* member names */
                 unsigned char *value=NULL;  /* value array */
                 unsigned char *copy = NULL; /* a pointer to value array */
@@ -617,16 +622,11 @@ char *_getH5typeName(hid_t type, int ind)
                 hsize_t     dst_size;       /* destination value type size */
                 unsigned    i;              /* miscellaneous counters */
                 hsize_t     j;
+#endif
 
-              /*
-               *{
-               *    char         *typename;
-               *    typename = _getH5typeName(super, ind+4);
-               *    free(typename);
-               *}
-               */
                 strcpy(attTypeName, "enum");
 
+#if 0
                 nmembs = H5Tget_nmembers(type);
                 assert(nmembs>0);
                 super = H5Tget_super(type);
@@ -713,6 +713,7 @@ char *_getH5typeName(hid_t type, int ind)
 
                 if (0==nmembs) fprintf(stderr, "\n%*s <empty>", ind+4, "");
                 fprintf(stderr, "\n%*s}\n\n", ind, "");
+#endif
             }
             return attTypeName;
             break;
@@ -1732,7 +1733,7 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
     NclFileVarNode *varnode = *node;
 
   /*
-   *fprintf(stderr, "\nEntering _readH5dataInfo, at file: %s, line: %d\n\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\nEntering _readH5dataInfo, at file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tid: %d, name: <%s>\n", dset, name);
    */
 
@@ -1789,13 +1790,14 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
 
   /*Data type name*/
     typename = _getH5typeName(type, 15);
-    varnode->type = string2NclType(typename);
-    free(typename);
 
   /*
    *fprintf(stderr, "\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
    *fprintf(stderr, "\ttype name: <%s>\n", typename);
    */
+
+    varnode->type = string2NclType(typename);
+    free(typename);
 
     if(NCL_compound == varnode->type)
     {
@@ -1854,6 +1856,134 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
 
         varnode->comprec = comprec;
         varnode->is_compound = 1;
+    }
+    else if(NCL_enum == varnode->type)
+    {
+        char         *membname=NULL;    /* member names */
+        unsigned char *membvalue=NULL;  /* value array */
+        void          *values = NULL;
+        unsigned    nmembs;         /* number of members */
+        unsigned    n;              /* miscellaneous counters */
+        size_t      size;
+        NclFileEnumRecord *enumrec;
+
+        nmembs = H5Tget_nmembers(type);
+        assert(nmembs>0);
+
+      /*Let add two more attributes to varnode here.
+       *1. an array of the enum names
+       *2. an array of the enum value
+       */
+
+        enumrec = _NclFileEnumAlloc(nmembs);
+        enumrec->n_enums = nmembs;
+        enumrec->name = NrmStringToQuark(name);
+        enumrec->size = nmembs;
+
+        size = H5Tget_size(type);
+
+        switch(size)
+        {
+            case 1:
+                 enumrec->type = NCL_ubyte;
+                 break;
+            case 2:
+                 enumrec->type = NCL_ushort;
+                 break;
+            case 4:
+                 enumrec->type = NCL_uint;
+                 break;
+            default:
+                 enumrec->type = NCL_uint64;
+                 break;
+        }
+
+        membname = NclCalloc(256, sizeof(char));
+        membvalue = NclCalloc(1, size);
+
+        size = sizeof(NclQuark);
+        values = (void *)NclCalloc(enumrec->size, size);
+        assert(values);
+
+        for(n=0; n<nmembs; ++n)
+        {
+            membname = H5Tget_member_name(type, n);
+            enumrec->enum_node[n].name = NrmStringToQuark(membname);
+
+            memcpy(values + n * size, &(enumrec->enum_node[n].name), size);
+            fprintf(stderr, "\tmember %d, name: <%s>\n", n, membname);
+        }
+
+        _addNclAttNode(&(varnode->att_rec), NrmStringToQuark("enum_name"),
+                       NCL_string, enumrec->size, values);
+
+        NclFree(values);
+
+        values = (void *)NclCalloc(enumrec->size, _NclSizeOf(enumrec->type));
+        assert(values);
+
+      /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tenumrec->name: <%s>, enumrec->type = %d, enumrec->size = %d\n",
+       *                 NrmQuarkToString(enumrec->name), enumrec->type, enumrec->size);
+       */
+
+        switch(_NclSizeOf(enumrec->type))
+        {
+            case NCL_ubyte:
+                 {
+                 unsigned char *iptr = (unsigned char *) membvalue;
+                 for(n = 0; n < enumrec->size; n++)
+                 {
+                     H5Tget_member_value(type, n, membvalue);
+                     enumrec->enum_node[n].value = iptr[0];
+                     memcpy(values + n, membvalue, 1);
+                 }
+                 }
+                 break;
+            case NCL_ushort:
+                 {
+                 unsigned short *iptr = (unsigned short *) membvalue;
+                 for(n = 0; n < enumrec->size; n++)
+                 {
+                     H5Tget_member_value(type, n, membvalue);
+                     enumrec->enum_node[n].value = iptr[0];
+                     memcpy(values + 2 * n, membvalue, 2);
+                 }
+                 }
+                 break;
+            case NCL_uint:
+                 {
+                 unsigned int *iptr = (unsigned int *) membvalue;
+                 for(n = 0; n < enumrec->size; n++)
+                 {
+                     H5Tget_member_value(type, n, membvalue);
+                     enumrec->enum_node[n].value = iptr[0];
+                     memcpy(values + 4 * n, membvalue, 4);
+                 }
+                 }
+                 break;
+            default:
+                 {
+                 uint64 *iptr = (uint64 *) membvalue;
+                 for(n = 0; n < enumrec->size; n++)
+                 {
+                     H5Tget_member_value(type, n, membvalue);
+                     enumrec->enum_node[n].value = iptr[0];
+                     memcpy(values + 8 * n, membvalue, 8);
+                 }
+                 }
+        }
+    
+        _addNclAttNode(&(varnode->att_rec), NrmStringToQuark("enum_value"),
+                       enumrec->type, enumrec->size, values);
+
+        free(membname);
+        free(membvalue);
+
+        NclFree(values);
+
+        varnode->udt = (void *) enumrec;
     }
 
   /*
@@ -3084,148 +3214,7 @@ void _getH5string(hid_t fid, NclFileVarNode *varnode,
 
 /*
  ***********************************************************************
- * Function:	_readH5enum
- *
- * Purpose:	read an enum dataset
- *
- * Programmer:	Wei Huang
- * Created:	June 12, 2012
- *
- ***********************************************************************
- */
-
-void _readH5enum(hid_t dset, hid_t d_type,
-                   ng_size_t *start, ng_size_t *finish,
-                   ng_size_t *stride, ng_size_t *count,
-                   void *value)
-{
-    hid_t               d_space;                  /* data space */
-    hid_t               m_space;                  /* memory space */
-    size_t              i;
-
-    /* Hyperslab info */
-    hsize_t            d_start[H5S_MAX_RANK];
-    hsize_t            d_stride[H5S_MAX_RANK];
-    hsize_t            d_count[H5S_MAX_RANK];
-    hsize_t            d_block[H5S_MAX_RANK];
-
-    hsize_t            m_start[H5S_MAX_RANK];
-    hsize_t            m_stride[H5S_MAX_RANK];
-    hsize_t            m_count[H5S_MAX_RANK];
-    hsize_t            m_block[H5S_MAX_RANK];
-
-    hsize_t            ndims;
-    int                read_slab = 0;
-
-    herr_t             status;
-
-    NclQuark          *strquark = (NclQuark *)value;
-
-    char              *buffer;
-    size_t             lenstr = 1;
-    size_t             cloc = 0;
-
-    fprintf(stderr, "\nEnter _readH5enum, file: %s, line: %d\n", __FILE__, __LINE__);
-  /*
-   */
-
-    d_space = H5Dget_space(dset);
-    if (d_space == FAILED)
-        return;
-
-    ndims = H5Sget_simple_extent_dims(d_space, m_count, NULL);
-    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tndims = %d\n", ndims);
-
-    if (ndims > H5S_MAX_RANK)
-    {
-        NHLPERROR((NhlFATAL, NhlEUNKNOWN,
-                  "\nCannot have huge ndims: %d, file: %s, line: %d\n",
-                   ndims, __FILE__, __LINE__));
-        H5Sclose(d_space);
-        return;
-    }
-
-    if (ndims < 0)
-    {
-        NHLPERROR((NhlFATAL, NhlEUNKNOWN,
-                  "\nCannot have negative ndims: %d, file: %s, line: %d\n",
-                   ndims, __FILE__, __LINE__));
-        H5Sclose(d_space);
-        return;
-    }
-
-#if 0
-    for(i = 0; i < ndims; ++i)
-    {
-        if(count[i] != m_count[i])
-            ++ read_slab;
-      /*
-       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tcount[%d] = %d, m_count[%d] = %d\n",
-       *                 i, count[i], i, m_count[i]);
-       */
-         m_count[i] = count[i];
-    }
-
-    lenstr = H5Tget_size(d_type);
-    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tlenstr = %d\n", lenstr);
-
-    buffer = (char *)NclCalloc(lenstr, sizeof(char));
-
-    m_space = H5Screate_simple(ndims, m_count, NULL);
-
-    /* Calculate the hyperslab size */
-    if(read_slab)
-    {
-        for (i = 0; i < ndims; i++)
-        {
-            d_start[i] = start[i];
-            d_stride[i] = stride[i];
-            d_count[i] = count[i];
-            d_block[i] = 1;
-
-            m_start[i] = 0;
-            m_stride[i] = 1;
-            m_block[i] = 1;
-        }
-
-        H5Sselect_hyperslab(d_space, H5S_SELECT_SET, d_start, d_stride,
-                            d_count, d_block);
-
-      /*
-       *fprintf(stderr, "\tselect slab in file: %s, line: %d\n", __FILE__, __LINE__);
-       */
-
-        H5Sselect_hyperslab(m_space, H5S_SELECT_SET, m_start, m_stride,
-                            m_count, m_block);
-    }
-    else
-    {
-      /*
-       *fprintf(stderr, "\tselect all in file: %s, line: %d\n", __FILE__, __LINE__);
-       */
-        H5Sselect_all(d_space);
-        H5Sselect_all(m_space);
-    }
-
-    /* Read the data */
-    status = H5Dread(dset, d_type, m_space, d_space, H5P_DEFAULT, buffer);
-    NclFree(buffer);
-
-    H5Sclose(m_space);
-#endif
-    H5Sclose(d_space);
-
-  /*
-   */
-    fprintf(stderr, "Leave _readH5enum, file: %s, line: %d\n\n", __FILE__, __LINE__);
-}
-
-/*
- ***********************************************************************
- * Function:	_getH5enum
+ * Function:	*_getH5enum
  *
  * Purpose:	get the Enum dataset
  *
@@ -3235,26 +3224,26 @@ void _readH5enum(hid_t dset, hid_t d_type,
  ***********************************************************************
  */
 
-void _getH5enum(hid_t fid, NclFileVarNode *varnode,
-                ng_size_t *start, ng_size_t *finish,
-                ng_size_t *stride, ng_size_t *count,
-                void *storage)
+void *_getH5enum(hid_t fid, NclFileVarNode *varnode)
 {
-    hid_t       did;
-    H5S_class_t space_type;
-    hid_t       d_space;
-    hid_t       d_type;
-    hid_t       p_type;
-    char       *type_name = _NclBasicDataTypeToName(varnode->type);
+    hid_t       did = -1;
+    H5S_class_t space_type = -1;
+    hid_t       d_space = -1;
+    hid_t       d_type = -1;
+    herr_t      status = -1;
+    hsize_t     size = 1;
+    hsize_t     ndims = 0;
+    hsize_t     dims[H5S_MAX_RANK];
 
-    int         n = 0;
+    NclFileEnumRecord *enumrec = (NclFileEnumRecord *) varnode->udt;
+    int   n = 0;
 
-    NclFileEnumRecord *enumrec;
-    void *values;
+    char  name[256];
+    char *typename = NULL;
 
-    fprintf(stderr, "\nEnter _getH5enum, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varnode->real_name));
   /*
+   *fprintf(stderr, "\nEnter _getH5enum, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varnode->real_name));
    */
 
     did = H5Dopen(fid, NrmQuarkToString(varnode->real_name), H5P_DEFAULT);
@@ -3265,17 +3254,23 @@ void _getH5enum(hid_t fid, NclFileVarNode *varnode,
    */
     d_type = H5Dget_type(did);
 
+  /*Check the data space*/
+    d_space = H5Dget_space(did);
+
+    ndims = H5Sget_simple_extent_dims(d_space, dims, NULL);
+
   /*
-   *p_type = H5Tcopy(d_type);
-   *fprintf(stderr, "\tp_type = %d, H5T_NATIVE_SHORT = %d\n", (int)p_type, H5T_NATIVE_SHORT);
-   */
-    p_type = toH5type(type_name);
-  /*
-   *fprintf(stderr, "\tp_type = %d, H5T_NATIVE_SHORT = %d\n", (int)p_type, H5T_NATIVE_SHORT);
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tndims = %d\n", ndims);
    */
 
-    /* Check the data space */
-    d_space = H5Dget_space(did);
+    for(n = 0; n < ndims; ++n)
+    {
+        size *= dims[n];
+    }
+
+    enumrec->size = size;
+    enumrec->values = NclCalloc(size, _NclSizeOf(enumrec->type));
 
     space_type = H5Sget_simple_extent_type(d_space);
 
@@ -3283,7 +3278,8 @@ void _getH5enum(hid_t fid, NclFileVarNode *varnode,
     {
         case H5S_SCALAR:
         case H5S_SIMPLE:
-             _readH5enum(did, p_type, start, finish, stride, count, storage);
+            /*Read the data*/
+             status = H5Dread(did, d_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, enumrec->values);
              break;
         default:
              NHLPERROR((NhlFATAL, NhlEUNKNOWN,
@@ -3297,96 +3293,53 @@ void _getH5enum(hid_t fid, NclFileVarNode *varnode,
     H5Tclose(d_type);
     H5Dclose(did);
 
-    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tvarnode->name: <%s>, varnode->type = %d\n",
-                     NrmQuarkToString(varnode->name), varnode->type);
   /*
-    storage = (void *)get_nc4_enum(varnode->gid, varnode->id, varnode->the_nc_type);
+   *switch(enumrec->type)
+   *{
+   *    case NCL_ubyte:
+   *         {
+   *              unsigned char *iptr = (unsigned int *) enumrec->values;
+   *              for(n = 0; n < enumrec->size; n++)
+   *              {
+   *                  fprintf(stderr, "No %d: %6d\n", n, iptr[n]);
+   *              }
+   *              break;
+   *         }
+   *    case NCL_ushort:
+   *         {
+   *              unsigned short *iptr = (unsigned int *) enumrec->values;
+   *              for(n = 0; n < enumrec->size; n++)
+   *              {
+   *                  fprintf(stderr, "No %d: %6d\n", n, iptr[n]);
+   *              }
+   *              break;
+   *         }
+   *    case NCL_uint:
+   *         {
+   *              unsigned int *iptr = (unsigned int *) enumrec->values;
+   *              for(n = 0; n < enumrec->size; n++)
+   *              {
+   *                  fprintf(stderr, "No %d: %6d\n", n, iptr[n]);
+   *              }
+   *              break;
+   *         }
+   *    default:
+   *         {
+   *              uint64 *iptr = (uint64 *) enumrec->values;
+   *              for(n = 0; n < enumrec->size; n++)
+   *              {
+   *                  fprintf(stderr, "No %d: %6lld\n", n, iptr[n]);
+   *              }
+   *         }
+   *}
+
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tvarnode->name: <%s>, varnode->type: <%s>\n",
+   *                 NrmQuarkToString(varnode->name), _NclBasicDataTypeToName(varnode->type));
+   *fprintf(stderr, "Leave _getH5enum, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
 
-  /*Let add two more attributes to varnode here.
-   *1. an array of the enum names
-   *2. an array of the enum value
-   */
-
-    enumrec = (NclFileEnumRecord *)storage;
-
-    values = (void *)NclCalloc(enumrec->size, sizeof(NclQuark));
-    assert(values);
-
-    for(n = 0; n < enumrec->size; n++)
-    {
-        memcpy(values + n * sizeof(NclQuark), &(enumrec->enum_node[n].name), sizeof(NclQuark));
-    }
-
-    _addNclAttNode(&(varnode->att_rec), NrmStringToQuark("enum_name"),
-                   NCL_string, enumrec->size, values);
-
-    NclFree(values);
-
-    values = (void *)NclCalloc(enumrec->size, _NclSizeOf(enumrec->type));
-    assert(values);
-
-  /*
-   */
-    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tenumrec->name: <%s>, enumrec->type = %d\n",
-                     NrmQuarkToString(enumrec->name), enumrec->type);
-
-    switch(_NclSizeOf(enumrec->type))
-    {
-        case 1:
-             {
-                  char tv;
-                  for(n = 0; n < enumrec->size; n++)
-                  {
-                      tv = (char) enumrec->enum_node[n].value;
-                      memcpy(values + n, &tv, 1);
-                    /*
-                     *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                     *fprintf(stderr, "\ttv[%d] = %d\n", n, tv);
-                     */
-                  }
-             }
-             break;
-        case 2:
-             {
-                  short tv;
-                  for(n = 0; n < enumrec->size; n++)
-                  {
-                      tv = (short) enumrec->enum_node[n].value;
-                      memcpy(values + 2 * n, &tv, 2);
-                  }
-             }
-             break;
-        case 4:
-             {
-                  int tv;
-                  for(n = 0; n < enumrec->size; n++)
-                  {
-                      tv = (int) enumrec->enum_node[n].value;
-                      memcpy(values + 4 * n, &tv, 4);
-                  }
-             }
-             break;
-        default:
-             {
-                  int64 tv;
-                  for(n = 0; n < enumrec->size; n++)
-                  {
-                      tv = (int64) enumrec->enum_node[n].value;
-                      memcpy(values + n * sizeof(int64), &tv, sizeof(int64));
-                  }
-             }
-    }
-
-    _addNclAttNode(&(varnode->att_rec), NrmStringToQuark("enum_value"),
-                   enumrec->type, enumrec->size, values);
-    NclFree(values);
-
-  /*
-   */
-    fprintf(stderr, "Leave _getH5enum, file: %s, line: %d\n\n", __FILE__, __LINE__);
+    return (void *) enumrec;
 }
 
 
@@ -3492,9 +3445,7 @@ static void *H5ReadVar(void *therec, NclQuark thevar,
                  exit( -1 );
                  break;
             case NCL_enum:
-                 fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                 fprintf(stderr, "\tNeed to read enum data.\n");
-                 _getH5enum(fid, varnode, start, finish, stride, count, storage);
+                 storage = _getH5enum(fid, varnode);
                  break;
             case NCL_opaque:
                  fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
