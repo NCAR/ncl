@@ -712,7 +712,9 @@ NclObjTypes _NclBasicDataTypeToObjType
 	case NCL_list:
 		return(Ncl_Typelist);
 	default:
-                if(dt ^ NCL_enum)
+                if(NCL_ubyte == (dt ^ NCL_opaque))
+                    return (Ncl_Typeubyte);
+                else if(dt ^ NCL_enum)
                     return _NclBasicDataTypeToObjType(dt ^ NCL_enum);
                 else
 		    return (Ncl_Obj);

@@ -3342,6 +3342,113 @@ void *_getH5enum(hid_t fid, NclFileVarNode *varnode)
     return (void *) enumrec;
 }
 
+/*
+ ***********************************************************************
+ * Function:	*_getH5opaque
+ *
+ * Purpose:	get the Opaque dataset
+ *
+ * Programmer:	Wei Huang
+ *		June 14, 2012
+ *
+ ***********************************************************************
+ */
+
+void *_getH5opaque(hid_t fid, NclFileVarNode *varnode)
+{
+    hid_t       did = -1;
+    H5S_class_t space_type = -1;
+    hid_t       d_space = -1;
+    hid_t       d_type = -1;
+    herr_t      status = -1;
+    hsize_t     size = 1;
+    hsize_t     ndims = 0;
+    hsize_t     dims[H5S_MAX_RANK];
+
+    int   n = 0;
+
+    char *tag = NULL;
+
+    NclFileOpaqueRecord *opaquerec = (NclFileOpaqueRecord *) NclMalloc(sizeof(NclFileOpaqueRecord));
+
+    fprintf(stderr, "\nEnter _getH5opaque, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varnode->real_name));
+  /*
+   */
+
+    did = H5Dopen(fid, NrmQuarkToString(varnode->real_name), H5P_DEFAULT);
+
+  /*
+   * Get datatype and dataspace handles and then query
+   * dataset class, order, size, rank and dimensions.
+   */
+    d_type = H5Dget_type(did);
+    size   = H5Tget_size(d_type);
+    tag    = H5Tget_tag(d_type);
+
+    opaquerec->name = NrmStringToQuark(tag);
+    opaquerec->max_opaques = 1;
+    opaquerec->n_opaques = 1;
+    opaquerec->type = NCL_ubyte;
+    opaquerec->size = size;
+
+  /*Check the data space*/
+    d_space = H5Dget_space(did);
+
+    ndims = H5Sget_simple_extent_dims(d_space, dims, NULL);
+
+  /*
+   */
+    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tndims = %d, tag: <%s>\n", ndims, tag);
+
+    for(n = 0; n < ndims; ++n)
+    {
+        size *= dims[n];
+    }
+
+    opaquerec->values = NclMalloc(size);
+
+    space_type = H5Sget_simple_extent_type(d_space);
+
+    switch(space_type)
+    {
+        case H5S_SCALAR:
+        case H5S_SIMPLE:
+            /*Read the data*/
+             status = H5Dread(did, d_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, opaquerec->values);
+             break;
+        default:
+             NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                       "\nUnknown space_type: %ld, file: %s, line: %d\n",
+                       (long)space_type, __FILE__, __LINE__));
+            break;
+    }
+
+  /*Close the dataspace*/
+    H5Sclose(d_space);
+    H5Tclose(d_type);
+    H5Dclose(did);
+
+    free(tag);
+
+  /*
+   *{
+   *     char *cptr = (unsigned char *) opaquerec->values;
+   *     for(n = 0; n < size; n++)
+   *     {
+   *         fprintf(stderr, "No %d: %6d\n", n, cptr[n]);
+   *     }
+   *}
+   */
+
+    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tvarnode->name: <%s>, varnode->type: <%s>\n",
+                     NrmQuarkToString(varnode->name), _NclBasicDataTypeToName(varnode->type));
+    fprintf(stderr, "Leave _getH5opaque, file: %s, line: %d\n\n", __FILE__, __LINE__);
+
+    return (void *) opaquerec;
+}
 
 static void *H5ReadVar(void *therec, NclQuark thevar,
                        ng_size_t *start, ng_size_t *finish,
@@ -3448,9 +3555,7 @@ static void *H5ReadVar(void *therec, NclQuark thevar,
                  storage = _getH5enum(fid, varnode);
                  break;
             case NCL_opaque:
-                 fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                 fprintf(stderr, "\tNeed to read opaque data.\n");
-                 exit( -1 );
+                 storage = _getH5opaque(fid, varnode);
                  break;
             case NCL_string:
                  fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -4732,6 +4837,68 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         H5Sclose(space);
         H5Tclose(type);
     }
+    else if(NCL_opaque & varnode->type)
+    {
+        herr_t status;
+        size_t size = 1;
+        unsigned int mv;
+
+      /*
+       */
+        fprintf(stderr, "\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tWrite opaque.\n");
+
+        NclFileUDTRecord *udtrec  = (NclFileUDTRecord *) varnode->udt;
+        NclFileUDTNode   *udtnode = NULL;
+
+      /*
+       */
+        fprintf(stderr, "\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tsize = %d\n", size);
+
+        size = udtrec->udt_node[0].size;
+
+        fprintf(stderr, "\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tsize = %d\n", size);
+
+        type   = H5Tcreate(H5T_OPAQUE, size);
+        status = H5Tset_tag(type, "Opaque: character array");
+
+        space = H5Screate_simple(rank, dims, NULL);
+
+        if(varnode->chunk_dim_rec)
+        {
+            for(j = 0; j < varnode->chunk_dim_rec->n_dims; j++)
+            {
+                chunk_dims[j] = (hsize_t) (varnode->chunk_dim_rec->dim_node[j].size);
+            }
+            plist  = H5Pcreate(H5P_DATASET_CREATE);
+            status = H5Pset_chunk(plist, rank, chunk_dims);
+        }
+
+        if(varnode->compress_level > 0)
+            status = H5Pset_deflate(plist, varnode->compress_level);
+
+        did = H5Dcreate(fid, NrmQuarkToString(varnode->name),
+                        type, space, H5P_DEFAULT, plist, H5P_DEFAULT);
+
+        varnode->id = did;
+
+        if(did > 0)
+        {
+            char *cptr = (char *)data;
+
+            status = H5Dwrite(did, type, H5S_ALL, H5S_ALL, H5P_DEFAULT, cptr);
+            H5Dclose(did);
+        }
+        else
+        {
+            ret_code = FAILED;
+        }
+
+        H5Sclose(space);
+        H5Tclose(type);
+    }
     else if(NCL_string == varnode->type)
     {
         char **tmpstr = (char **)NclCalloc(n_elem, sizeof(char *));
@@ -5384,12 +5551,12 @@ NhlErrorTypes H5AddEnum(void *rec, NclQuark enum_name, NclQuark var_name,
     char buffer[NC_MAX_NAME];
     int n = -1;
 
-    NclQuark          udt_mem_name[2];
-    NclBasicDataTypes udt_mem_type[2];
+    NclQuark          udt_mem_name[1];
+    NclBasicDataTypes udt_mem_type[1];
 
     int      n_dims = 1;
-    NclQuark dim_names[2];
-    long     dim_sizes[2];
+    NclQuark dim_names[1];
+    long     dim_sizes[1];
 
     NclFileEnumRecord *enumrec;
     NclFileEnumNode   *enumnode;
@@ -5441,6 +5608,109 @@ NhlErrorTypes H5AddEnum(void *rec, NclQuark enum_name, NclQuark var_name,
     return ret;
 }
 
+static NhlErrorTypes H5AddOpaqueVar(void* therec, NclQuark thevar,
+                                    int n_dims, NclQuark *dim_names, long *dim_sizes)
+{
+    NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
+    NclFileVarNode *varnode = NULL;
+    int i, j;
+
+    fprintf(stderr, "\nEnter H5AddOpaqueVar, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tthevar: <%s>, n_dims = %d\n",
+                       NrmQuarkToString(thevar), n_dims);
+  /*
+   */
+
+    if(0 < grpnode->status)
+    {    
+        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+            "H5AddOpaqueVar: File (%s) was opened as a read only file, %s\n",
+            "can not write to it",
+             NrmQuarkToString(grpnode->path)));
+
+        return(NhlFATAL);
+    }
+
+    _addNclVarNodeToGrpNode(grpnode, thevar, -1, NCL_ubyte,
+                            n_dims, dim_names, dim_sizes);
+
+    i = grpnode->var_rec->n_vars - 1;
+    varnode = &(grpnode->var_rec->var_node[i]);
+    varnode->gid = grpnode->id;
+    for(i = 0 ; i < n_dims; i++)
+    {
+        varnode->dim_rec->dim_node[i].id = -999;
+        for(j = 0; j < grpnode->dim_rec->n_dims; j++)
+        {
+            if(grpnode->dim_rec->dim_node[j].name == dim_names[i])
+            {
+                if(NrmStringToQuark("ncl_scalar") == dim_names[i])
+                {
+                    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                        "H5AddOpaqueVar: the reserved file dimension name \"ncl_scalar\" was used %s\n",
+                        "in a value with more than one dimension, can not add variable"));
+                    return(NhlFATAL);
+                }
+
+                varnode->dim_rec->dim_node[i].id = grpnode->dim_rec->dim_node[j].id;
+                break;
+            }
+        }
+    } 
+
+    varnode->udt = (void *) grpnode->udt_rec;
+    varnode->type = (varnode->type | NCL_opaque);
+
+  /*
+   */
+    fprintf(stderr, "Leave H5AddOpaqueVar, file: %s, line: %d\n\n", __FILE__, __LINE__);
+    return(NhlNOERROR);
+}
+
+NhlErrorTypes H5AddOpaque(void *rec, NclQuark opaque_name, NclQuark var_name,
+                           int var_size, NclQuark dim_name)
+{
+    NclFileGrpNode *rootgrpnode = (NclFileGrpNode *) rec;
+    NhlErrorTypes ret = NhlNOERROR;
+    NclFileDimNode   *dimnode;
+    NclFileGrpNode   *grpnode;
+    NclFileGrpRecord *grprec;
+    char buffer[NC_MAX_NAME];
+    int id;
+    int n = -1;
+    int n_dims = 1;
+
+    NclQuark          mem_name[1] = {opaque_name};
+    NclBasicDataTypes mem_type[1] = {NCL_ubyte};
+
+    NclQuark dim_names[1] = {dim_name};
+    long     dim_sizes[1] = {0};
+
+    fprintf(stderr, "\nEnter H5AddOpaque, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\topaque_name: <%s>, var_name: <%s>, var_size: %d, dim_name: <%s>\n",
+                     NrmQuarkToString(opaque_name), NrmQuarkToString(var_name),
+                     var_size, NrmQuarkToString(dim_name));
+  /*
+   */
+
+    mem_name[0] = opaque_name;
+    mem_type[0] = NCL_ubyte;
+
+    _H5_add_udt(&(rootgrpnode->udt_rec),
+                  rootgrpnode->id, -1, opaque_name,
+                  NC_OPAQUE, NC_UBYTE,
+                  var_size, 1, mem_name, mem_type);
+
+    dimnode = _getDimNodeFromNclFileGrpNode(rootgrpnode, dim_name);
+    dim_sizes[0] = (long) dimnode->size;
+    ret =  H5AddOpaqueVar(rec, var_name, n_dims, dim_names, dim_sizes);
+
+  /*
+   */
+    fprintf(stderr, "\tdim_sizes[0]= %d\n", dim_sizes[0]);
+    fprintf(stderr, "Leave H5AddOpaque, file: %s, line: %d\n\n", __FILE__, __LINE__);
+    return ret;
+}
 
 NclFormatFunctionRec H5Rec =
 {
@@ -5490,7 +5760,7 @@ NclFormatFunctionRec H5Rec =
     /* NclAddGrpFunc           add_grp; */                   NULL, /* H5AddGrp, */
     /* NclAddVlenFunc          add_vlen; */                  NULL, /* H5AddVlen, */
     /* NclAddEnumFunc          add_enum; */                  H5AddEnum,
-    /* NclAddOpaqueFunc        add_opaque; */                NULL, /* H5AddOpaque, */
+    /* NclAddOpaqueFunc        add_opaque; */                H5AddOpaque,
     /* NclAddCompoundFunc      add_compound; */              H5AddCompound,
     /* NclWriteCompoundFunc    write_compound; */            H5WriteCompound,
     /* NclSetOptionFunc        set_option;  */               H5SetOption
