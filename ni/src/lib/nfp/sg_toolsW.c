@@ -1,10 +1,10 @@
 #include "wrapper.h"
 
 extern double NGCALLF(gctarea,GCTAREA)(double*,double*,double*,
-                                       double*,double*,double*);
+                                       double*,double*,double*,int*);
 extern double NGCALLF(gcqarea,GCQAREA)(double*,double*,double*,
                                        double*,double*,double*,
-                                       double*,double*);
+                                       double*,double*,int*);
 extern double NGCALLF(gcaangle,GCAANGLE)(double*,double*,double*,
                                          double*,double*,double*,
                                          double*,double*);
@@ -204,10 +204,13 @@ NhlErrorTypes gc_qarea_W( void )
   double *tmp_qarea;
   ng_size_t size_qarea;
   NclBasicDataTypes type_qarea;
+  int ndims_qarea;
+  NclScalar missing_qarea;
 
 /*
  * Declare various variables for random purposes.
  */
+  int ier;
   ng_size_t i;
 
 /*
@@ -320,9 +323,9 @@ NhlErrorTypes gc_qarea_W( void )
  *  the output variable.
  */
     if (type_qarea == NCL_double) tmp_qarea = &(((double *)qarea)[i]);
-      *tmp_qarea = NGCALLF(gcqarea,GCQAREA)(dlat+4*i, dlon+4*i, 
-                             dlat+4*i+1, dlon+4*i+1, dlat+4*i+2, dlon+4*i+2,
-                             dlat+4*i+3, dlon+4*i+3);
+      *tmp_qarea = NGCALLF(gcqarea,GCQAREA)(dlat+4*i, dlon+4*i, dlat+4*i+1,
+                                            dlon+4*i+1, dlat+4*i+2, dlon+4*i+2,
+                                            dlat+4*i+3, dlon+4*i+3,&ier);
 
 /*
  *  If the type of the return variable is not double, then return floats
@@ -345,10 +348,27 @@ NhlErrorTypes gc_qarea_W( void )
  */
   if (ndims_lat == 1) {
     dsizes_lat[0] = 1;
-    return(NclReturnValue(qarea,1,dsizes_lat,NULL,type_qarea,0));
+    ndims_qarea = 1;
   }
   else {
-    return(NclReturnValue(qarea,ndims_lat-1, dsizes_lat,NULL,type_qarea,0));
+    ndims_qarea = ndims_lat-1;
+  }
+
+/*
+ * Check if we need to return a missing value. 
+ */
+  if(ier) {
+    if(type_qarea == NCL_float) {
+      missing_qarea.floatval = 1.e30;  /* This is what the Fortran routine returns. */
+                                       /* Don't change unless you change the Fortran too */
+    }
+    else {
+      missing_qarea.doubleval = 1.e30;  /* This is what the Fortran routine returns. */
+    }
+    return(NclReturnValue(qarea,ndims_qarea,dsizes_lat,&missing_qarea,type_qarea,0));
+  }
+  else {
+    return(NclReturnValue(qarea,ndims_qarea,dsizes_lat,NULL,type_qarea,0));
   }
 }
 
@@ -563,10 +583,12 @@ NhlErrorTypes gc_tarea_W( void )
   double *tmp_tarea;
   ng_size_t size_tarea;
   NclBasicDataTypes type_tarea;
-
+  int ndims_tarea;
+  NclScalar missing_tarea;
 /*
  * Declare various variables for random purposes.
  */
+  int ier;
   ng_size_t i;
 
 /*
@@ -679,8 +701,8 @@ NhlErrorTypes gc_tarea_W( void )
  */
     if (type_tarea == NCL_double) tmp_tarea = &(((double *)tarea)[i]);
       *tmp_tarea = NGCALLF(gctarea,GCTAREA)(dlat+3*i, dlon+3*i, 
-                             dlat+3*i+1, dlon+3*i+1, dlat+3*i+2, dlon+3*i+2);
-
+                                            dlat+3*i+1, dlon+3*i+1, 
+                                            dlat+3*i+2, dlon+3*i+2,&ier);
 /*
  *  If the type of the return variable is not double, then return floats
  *  in the output array.
@@ -697,15 +719,28 @@ NhlErrorTypes gc_tarea_W( void )
   if((void*)dlon != lon) NclFree(dlon);
   if(type_tarea != NCL_double) NclFree(tmp_tarea);
 
-/*
- * Return.
- */
   if (ndims_lat == 1) {
     dsizes_lat[0] = 1;
-    return(NclReturnValue(tarea,1,dsizes_lat,NULL,type_tarea,0));
+    ndims_tarea = 1;
   }
   else {
-    return(NclReturnValue(tarea,ndims_lat-1, dsizes_lat,NULL,type_tarea,0));
+    ndims_tarea = ndims_lat-1;
+  }
+/*
+ * Check if we need to return a missing value. 
+ */
+  if(ier) {
+    if(type_tarea == NCL_float) {
+      missing_tarea.floatval = 1.e30;  /* This is what the Fortran routine returns. */
+                                       /* Don't change unless you change the Fortran too */
+    }
+    else {
+      missing_tarea.doubleval = 1.e30;  /* This is what the Fortran routine returns. */
+    }
+    return(NclReturnValue(tarea,ndims_tarea,dsizes_lat,&missing_tarea,type_tarea,0));
+  }
+  else {
+    return(NclReturnValue(tarea,ndims_tarea,dsizes_lat,NULL,type_tarea,0));
   }
 }
 
