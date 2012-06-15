@@ -21391,7 +21391,7 @@ NhlErrorTypes _NclItoint
                         if (strcmp(end, str) == 0)
                         {
                             has_missing = 1;
-                            NhlPError(NhlFATAL,NhlEUNKNOWN,
+                            NhlPError(NhlWARNING,NhlEUNKNOWN,
                                 "toint: A bad value was passed (string); input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.intval;
                         }
@@ -26096,7 +26096,7 @@ NhlErrorTypes _NclItoushort
                             llval = _Nclstrtoll(str,&end);
                             if (strcmp(end, str) == 0)
                             {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,
                                     "toushort: A bad value was passed to toushort, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.ushortval;
                             }
@@ -26717,7 +26717,7 @@ NhlErrorTypes _NclItofloat
                                 dval = strtod(str,&end);
                                 if (strcmp(end, str) == 0)
                                 {
-                                    NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                    NhlPError(NhlWARNING,NhlEUNKNOWN,
                                         "tofloat: A bad value was passed to (string) tofloat, input strings must contain numeric digits, replacing with missing value");
                                     output[i] = ret_missing.floatval;
                                 }
@@ -26755,7 +26755,7 @@ NhlErrorTypes _NclItofloat
                             dval = strtod(str,&end);
                             if (strcmp(end, str) == 0)
                             {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,
                                     "tofloat: A bad value was passed to (string) tofloat, input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
                                 output[i] = ret_missing.floatval;
@@ -28332,7 +28332,7 @@ NhlErrorTypes _NclItobyte
                             llval = _Nclstrtoll(str,&end);
                             if (strcmp(end, str) == 0)
                             {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,
                                     "tobyte: A bad value was passed to tobyte, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.byteval;
                             }
