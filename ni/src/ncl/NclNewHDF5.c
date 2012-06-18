@@ -1,10 +1,11 @@
 /************************************************************************
-*                                    *
-*                 Copyright (C)  1994            *
-*         University Corporation for Atmospheric Research        *
-*                 All Rights Reserved            *
-*                                    *
-************************************************************************/
+*ID: $Id
+*                                                                       *
+*                 Copyright (C)  2012                                   *
+*         University Corporation for Atmospheric Research               *
+*                 All Rights Reserved                                   *
+*                                                                       *
+*************************************************************************/
 
 /*
  * $URL
@@ -311,7 +312,7 @@ static int _getH5grpID(NclFileGrpNode *grpnode)
 
     if(fid < 0)
     {
-        fid = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_TRUNC, H5P_DEFAULT);
+        fid = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_RDWR, H5P_DEFAULT);
         if(fid < 0)
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -1551,7 +1552,7 @@ NclFileGrpNode *_getGrpNodeByName(NclFileGrpNode *rootgrp, NclQuark gn)
     NclFileGrpNode *thegrpnode;
     int n;
 
-    if(gn == rootgrp->real_name)
+    if((gn == rootgrp->name) || (gn == rootgrp->real_name))
         return rootgrp;
 
     if(NULL ==  rootgrp->grp_rec)
@@ -1560,7 +1561,7 @@ NclFileGrpNode *_getGrpNodeByName(NclFileGrpNode *rootgrp, NclQuark gn)
     for(n = 0; n < rootgrp->grp_rec->n_grps; ++n)
     {
         curgrpnode = rootgrp->grp_rec->grp_node[n];
-        if(gn == curgrpnode->real_name)
+        if((gn == rootgrp->name) || (gn == rootgrp->real_name))
         {
             return curgrpnode;
         }
@@ -2121,7 +2122,10 @@ herr_t _searchH5obj(char *name, H5O_info_t *oinfo,
                 qdn = _string2quark(h5grplvl.short_name[0]);
                 qpn = NrmStringToQuark(h5grplvl.parent_name[0]);
 
-                curgrpnode = _getGrpNodeByName(grpnode, qpn);
+                if(h5grplvl.size)
+                    curgrpnode = _getGrpNodeByName(grpnode, qpn);
+                else
+                    curgrpnode = grpnode;
 
                 if(NULL == curgrpnode)
                 {
@@ -2269,7 +2273,7 @@ static herr_t _recursiveH5check(NclFileGrpNode **rootgrp,
 
   /*
    *fprintf(stderr, "\nEntering _recursiveH5check, in file: %s, at line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tgrp_name: <%s>, fid=%d\n", grp_name, fid);
+   *fprintf(stderr, "\tgrp_name: <%s>\n", grp_name);
    */
 
     /* Init searcher structure */
@@ -2650,9 +2654,9 @@ static int _buildH5dimlist(NclFileGrpNode **rootgrp)
     return ndims;
 }
 
-void *H5OpenFile(void *rootgrp, NclQuark path, int status)
+void *H5OpenFile(void *rec, NclQuark path, int status)
 {
-    NclFileGrpNode *grpnode = (NclFileGrpNode *) rootgrp;
+    NclFileGrpNode *grpnode = (NclFileGrpNode *) rec;
 
     hid_t fid;
     herr_t ret_code = FAILED;
@@ -2681,6 +2685,7 @@ void *H5OpenFile(void *rootgrp, NclQuark path, int status)
         grpnode->define_mode = 0;
         grpnode->fid = fid;
         grpnode->id = fid;
+        grpnode->parent = NULL;
     }
     else
     {
@@ -2688,6 +2693,7 @@ void *H5OpenFile(void *rootgrp, NclQuark path, int status)
         grpnode->define_mode = 0;
         grpnode->fid = fid;
         grpnode->id = fid;
+        grpnode->parent = NULL;
     }
 
     if(fid < 0)
@@ -3605,75 +3611,6 @@ static void *H5ReadAtt(void *therec, NclQuark theatt, void *storage)
    */
     fprintf(stderr, "\nEnter H5ReadAtt, file: %s, line: %d\n", __FILE__, __LINE__);
 
-#if 0
-    for(i = 0; i < grpnode->att_rec->n_atts; i++)
-    {
-        attnode = &(grpnode->att_rec->att_node[i]);
-        if(attnode->name == theatt)
-        {
-            if(attnode->value != NULL)
-            {
-                if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
-                {
-                    *(string*)storage = *(string*)(attnode->value);
-                }
-                else
-                {
-                    memcpy(storage, attnode->value,
-                           nctypelen(attnode->the_nc_type)*attnode->n_elem);
-                }
-                return(storage);
-            }
-            if (grpnode->open)
-            {
-                fid = grpnode->id;
-            }                
-            else
-            {
-                grpnode->open = 1;
-                grpnode->fid = fid;
-                grpnode->id = fid;
-                grpnode->define_mode = 0;
-            }
-            
-            if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
-            {
-                tmp = (char *)NclCalloc(attnode->n_elem+1, sizeof(char));
-                assert(tmp);
-                tmp[attnode->n_elem] = '\0';
-                ret = ncattget(fid,NC_GLOBAL,NrmQuarkToString(theatt),tmp);
-                *(string*)storage = NrmStringToQuark(tmp);
-                NclFree(tmp);
-            }
-            else
-            {
-                ret = ncattget(fid,NC_GLOBAL,NrmQuarkToString(theatt),storage);
-            }
-
-            if(0 == *(int *)(grpnode->options[NC_DEFINE_MODE_OPT].values))
-            {
-                CloseOrSync(grpnode,fid,0);
-            }
-
-            if (ret != -1) 
-            {
-              /*
-               */
-                fprintf(stderr, "Leave H5ReadAtt, file: %s, line: %d\n\n", __FILE__, __LINE__);
-
-                return(storage);
-            }
-            else
-            {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                    "NclNewHDF5: Error retrieving global attribute (%s) from (%s)",
-                    NrmQuarkToString(theatt),NrmQuarkToString(grpnode->path)));
-                return NULL;
-            }
-        }
-    }
-#endif
-
     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
         "NclNewHDF5: (%s) is not a global attribute of file (%s)",
         NrmQuarkToString(theatt),NrmQuarkToString(grpnode->path)));
@@ -3754,8 +3691,6 @@ static void *H5ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void *
                 ret = ncattget(fid,varnode->id,NrmQuarkToString(theatt),storage);
             }
 
-            CloseOrSync(grpnode,fid,0);
-
             if(ret != -1)
                 return(storage);
             else
@@ -3797,9 +3732,9 @@ static void H5FreeFileRec(void* therec)
     FileDestroyGrpNode(grpnode);
 }
 
-static void *H5CreateFile(void *rootgrp,NclQuark path)
+static void *H5CreateFile(void *rec, NclQuark path)
 {
-    NclFileGrpNode *grpnode = (NclFileGrpNode *)rootgrp;
+    NclFileGrpNode *grpnode = (NclFileGrpNode *) rec;
     int fid = 0;
     int ret, mode;
     int format = 5;
@@ -3816,11 +3751,12 @@ static void *H5CreateFile(void *rootgrp,NclQuark path)
     {
         grpnode->fid = fid;
         grpnode->id = fid;
+        grpnode->pid = fid;
         grpnode->define_mode = 1;
-        grpnode->format = 5;
         grpnode->open = 1;
+        grpnode->parent = NULL;
 
-        return(H5OpenFile(rootgrp, path, -1));
+        return ((void*)grpnode);
     }
     else
     {
@@ -4170,11 +4106,6 @@ NhlErrorTypes H5AddVarChunk(void* therec, NclQuark thevar,
            *varnode->chunk_dimid[i] = i;
            */
         }
-      /*
-       *varnode->n_chunk_dims = n_chunk_dims;
-       *varnode->max_chunk_dims = n_chunk_dims;
-        nc_ret = nc_def_var_chunking(fid, varnode->id, storage, (size_t *)chunk_dims);
-       */
         ret = NhlNOERROR;
     }
 
@@ -4303,7 +4234,7 @@ static NhlErrorTypes H5AddAtt(void *therec, NclQuark theatt,
     ret = _addNclAttNode(&(grpnode->att_rec), theatt,
                                  data_type, n_items, values);
 
-    fid = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_RDWR, H5P_DEFAULT);
+    fid = _getH5grpID(grpnode);
 
     if(fid > -1)
     {
@@ -4333,7 +4264,6 @@ static NhlErrorTypes H5AddAtt(void *therec, NclQuark theatt,
                 }
             }
         }
-        H5Fclose(fid);
     }
 
   /*
@@ -4468,10 +4398,6 @@ static NhlErrorTypes H5DelAtt(void *therec, NclQuark theatt)
             if(! attnode->is_virtual)
             {
                 fid = _getH5grpID(grpnode);
-
-/*
-                ret = ncattdel(fid,NC_GLOBAL,(const char*)NrmQuarkToString(theatt));
-*/
             }
 
             _delNclAttNode(&(grpnode->att_rec), theatt);
@@ -4518,10 +4444,6 @@ static NhlErrorTypes H5DelVarAtt(void *therec, NclQuark thevar, NclQuark theatt)
         if(! attnode->is_virtual)
         {
             fid = _getH5grpID(grpnode);
-
-          /*
-           *ret = ncattdel(fid,varnode->id,(const char*)NrmQuarkToString(theatt));
-           */
         }
 
         _delNclAttNode(&(varnode->att_rec), theatt);
@@ -4706,10 +4628,7 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
 
     fid = (hid_t)_getH5grpID(grpnode);
 
-    fid = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_RDWR, H5P_DEFAULT);
-
 #if 0
-    fid = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_TRUNC, H5P_DEFAULT);
     if(NCL_list == varnode->type)
     {
         NclListObjList  *tmp = NULL;
@@ -5082,7 +5001,7 @@ NhlErrorTypes H5AddCompound(void *rec, NclQuark compound_name, NclQuark var_name
     NclFileDimNode   *dimnode = NULL;
     NclFileGrpRecord *grprec = NULL;
     NclFileVarNode   *varnode = NULL;
-    char buffer[NC_MAX_NAME];
+    char buffer[NCL_MAX_STRING];
     int id;
     int n = -1;
     int nc_ret = 0;
@@ -5228,7 +5147,7 @@ NhlErrorTypes H5WriteCompound(void *rec, NclQuark compound_name, NclQuark var_na
 
     NhlErrorTypes ret = NhlNOERROR;
 
-    char buffer[NC_MAX_NAME];
+    char buffer[NCL_MAX_STRING];
 
     int  i, n = -1;
     int  n_dims = 1;
@@ -5251,13 +5170,6 @@ NhlErrorTypes H5WriteCompound(void *rec, NclQuark compound_name, NclQuark var_na
    */
 
     fid = (hid_t)_getH5grpID(grpnode);
-
-  /*
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tgrpnode->path: <%s>\n", NrmQuarkToString(grpnode->path));
-   */
-
-    fid = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_RDWR, H5P_DEFAULT);
 
     varnode = _getVarNodeFromNclFileGrpNode(grpnode, var_name);
 
@@ -5380,7 +5292,7 @@ NhlErrorTypes H5WriteCompound(void *rec, NclQuark compound_name, NclQuark var_na
                 list_list = list_list->next;
             }
 
-            did = H5Dcreate2(fid, NrmQuarkToString(varnode->name), tid, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            did = H5Dcreate(fid, NrmQuarkToString(varnode->name), tid, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
             varnode->gid = fid;
             varnode->id  = did;
@@ -5467,7 +5379,7 @@ NclFileVarNode *H5AddEnumVar(void* therec, NclQuark thevar,
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
     NclFileVarNode *varnode = NULL;
-    int fid,i,j;
+    int i,j;
     int nc_ret;
     int dim_ids[MAX_NC_DIMS];
 
@@ -5548,7 +5460,7 @@ NhlErrorTypes H5AddEnum(void *rec, NclQuark enum_name, NclQuark var_name,
     NclFileVarNode   *varnode;
     NclFileGrpNode   *grpnode;
     NclFileGrpRecord *grprec;
-    char buffer[NC_MAX_NAME];
+    char buffer[NCL_MAX_STRING];
     int n = -1;
 
     NclQuark          udt_mem_name[1];
@@ -5675,7 +5587,7 @@ NhlErrorTypes H5AddOpaque(void *rec, NclQuark opaque_name, NclQuark var_name,
     NclFileDimNode   *dimnode;
     NclFileGrpNode   *grpnode;
     NclFileGrpRecord *grprec;
-    char buffer[NC_MAX_NAME];
+    char buffer[NCL_MAX_STRING];
     int id;
     int n = -1;
     int n_dims = 1;
@@ -5709,6 +5621,197 @@ NhlErrorTypes H5AddOpaque(void *rec, NclQuark opaque_name, NclQuark var_name,
    */
     fprintf(stderr, "\tdim_sizes[0]= %d\n", dim_sizes[0]);
     fprintf(stderr, "Leave H5AddOpaque, file: %s, line: %d\n\n", __FILE__, __LINE__);
+    return ret;
+}
+
+static NhlErrorTypes H5AddVlenVar(void* therec, NclQuark thevar,
+                                  int n_dims, NclQuark *dim_names, long *dim_sizes)
+{
+    NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
+    NclFileVarNode *varnode = NULL;
+    int i,j,ret;
+
+    fprintf(stderr, "\nEnter H5AddVlenVar, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tthevar: <%s>, n_dims = %d\n",
+                       NrmQuarkToString(thevar), n_dims);
+  /*
+   */
+
+    if(0 < grpnode->status)
+    {    
+        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+            "H5AddVlenVar: File (%s) was opened as a read only file, can not write to it",
+             NrmQuarkToString(grpnode->path)));
+        return(NhlFATAL);
+    }
+
+    _addNclVarNodeToGrpNode(grpnode, thevar, -1, NCL_vlen,
+                            n_dims, dim_names, dim_sizes);
+
+    i = grpnode->var_rec->n_vars - 1;
+    varnode = &(grpnode->var_rec->var_node[i]);
+    varnode->gid = grpnode->id;
+    for(i = 0 ; i < n_dims; i++)
+    {
+        for(j = 0; j < grpnode->dim_rec->n_dims; j++)
+        {
+            if(grpnode->dim_rec->dim_node[j].name == dim_names[i])
+            {
+                if(NrmStringToQuark("ncl_scalar") == dim_names[i])
+                {
+                    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                        "H5AddVlenVar: the reserved file dimension name \"ncl_scalar\" was used %s\n",
+                        "in a value with more than one dimension, can not add variable"));
+                    return(NhlFATAL);
+                }
+                varnode->dim_rec->dim_node[i].id = grpnode->dim_rec->dim_node[j].id;
+                break;
+            }
+        }
+    }
+
+  /*
+   */
+    fprintf(stderr, "\tthevar: <%s>, id: var_id = %d\n", 
+                       NrmQuarkToString(thevar), varnode->id);
+    fprintf(stderr, "Leave H5AddVlenVar, file: %s, line: %d\n\n", __FILE__, __LINE__);
+
+    return(NhlNOERROR);
+}
+
+NhlErrorTypes H5AddVlen(void *rec, NclQuark vlen_name, NclQuark var_name,
+                         NclQuark type, NclQuark dim_name)
+{
+    NclFileGrpNode *rootgrpnode = (NclFileGrpNode *) rec;
+    NhlErrorTypes ret = NhlNOERROR;
+    NclFileDimNode   *dimnode;
+    NclFileGrpNode   *grpnode;
+    NclFileGrpRecord *grprec;
+    char buffer[NCL_MAX_STRING];
+    int id;
+    int n = -1;
+    int nc_ret = 0;
+
+    NclBasicDataTypes ncl_type;
+
+    NclQuark          mem_name[1];
+    NclBasicDataTypes mem_type[1];
+
+    int n_dims = 1;
+    NclQuark  dim_names[1];
+    long      dim_sizes[1];
+
+    fprintf(stderr, "\nEnter H5AddVlen, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tvlen_name: <%s>, var_name: <%s>, type: <%s>, dim_name: <%s>\n",
+                     NrmQuarkToString(vlen_name), NrmQuarkToString(var_name),
+                     NrmQuarkToString(type), NrmQuarkToString(dim_name));
+  /*
+   */
+
+    ncl_type = _nameToNclBasicDataType(type);
+
+    mem_name[0] = vlen_name;
+    mem_type[0] = ncl_type;
+
+    _H5_add_udt(&(rootgrpnode->udt_rec),
+                  rootgrpnode->id, -1, vlen_name,
+                  NCL_vlen, NCL_vlen,
+                  0, 1, mem_name, mem_type);
+
+    dimnode = _getDimNodeFromNclFileGrpNode(rootgrpnode, dim_name);
+    dim_names[0] = dim_name;
+    dim_sizes[0] = (long) dimnode->size;
+
+    ret = H5AddVlenVar(rec, var_name, n_dims, dim_names, dim_sizes);
+
+  /*
+   */
+    fprintf(stderr, "\tdim_sizes[0]= %d\n", dim_sizes[0]);
+    fprintf(stderr, "Leave H5AddVlen, file: %s, line: %d\n\n", __FILE__, __LINE__);
+    return ret;
+}
+
+void _makeGrpName(NclFileGrpNode *rootgrpnode, NclQuark grpname, char *h5grpname)
+{
+    char rootname[NCL_MAX_STRING];
+    char newname[NCL_MAX_STRING];
+    int slen;
+
+  /*
+   *fprintf(stderr, "\nEnter _makeGrpName, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tgrpname: <%s>\n", NrmQuarkToString(grpname));
+   */
+ 
+    strcpy(rootname, NrmQuarkToString(rootgrpnode->real_name));
+    strcpy(newname, NrmQuarkToString(grpname));
+
+  /*
+   *fprintf(stderr, "\trootname: <%s>\n", NrmQuarkToString(rootgrpnode->real_name));
+   *fprintf(stderr, "\tnewname: <%s>\n", newname);
+   */
+
+    slen = strlen(rootname) - 1;
+    if((! slen) || strncmp(newname, rootname, slen))
+    {
+        strcpy(h5grpname, rootname);
+
+        if(('/' != rootname[slen]) && ('/' != newname[0]))
+            strcat(h5grpname, "/");
+
+        strcat(h5grpname, newname);
+    }
+    else
+        strcpy(h5grpname, newname);
+
+  /*
+   *fprintf(stderr, "\th5grpname: <%s>\n", h5grpname);
+   *fprintf(stderr, "Leave _makeGrpName, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   */
+}
+
+NhlErrorTypes H5AddGrp(void *rec, NclQuark grpname)
+{
+    NclFileGrpNode *rootgrpnode = (NclFileGrpNode *) rec;
+    NclFileGrpNode *grpnode;
+
+    NhlErrorTypes ret = NhlNOERROR;
+    char h5grpfullname[NCL_MAX_STRING];
+    hid_t fid;
+    hid_t gid;
+    herr_t status;
+
+    fprintf(stderr, "\nEnter H5AddGrp, file: %s, line: %d\n\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tgrpname: <%s>\n", NrmQuarkToString(grpname));
+  /*
+   */
+
+    ret = AddNewGrp(rec, grpname, -1);
+
+    grpnode = _getGrpNodeFromGrpNode(rootgrpnode, grpname);
+
+    fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tNeed to Figure out how to create a group in group.\n\n");
+
+    fid = (hid_t)_getH5grpID(rootgrpnode);
+
+    _makeGrpName(rootgrpnode, grpname, h5grpfullname);
+
+    fprintf(stderr, "\tfid = %d, h5grpfullname: <%s>\n", fid, h5grpfullname);
+    gid = H5Gcreate(fid, h5grpfullname, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+    grpnode->fid = gid;
+    grpnode->id = gid;
+    grpnode->pid = fid;
+    grpnode->define_mode = 1;
+    grpnode->open = 1;
+    grpnode->parent = rootgrpnode;
+
+  /*
+    status = H5Gclose(gid);
+    status = H5Fclose(fid);
+   */
+    fprintf(stderr, "Leave H5AddGrp, file: %s, line: %d\n\n", __FILE__, __LINE__);
+
     return ret;
 }
 
@@ -5757,8 +5860,8 @@ NclFormatFunctionRec H5Rec =
     /* NclGetGrpInfoFunc       get_grp_info; */              NULL,
     /* NclGetGrpAttNamesFunc   get_grp_att_names; */         NULL,
     /* NclGetGrpAttInfoFunc    get_grp_att_info; */          NULL,
-    /* NclAddGrpFunc           add_grp; */                   NULL, /* H5AddGrp, */
-    /* NclAddVlenFunc          add_vlen; */                  NULL, /* H5AddVlen, */
+    /* NclAddGrpFunc           add_grp; */                   H5AddGrp,
+    /* NclAddVlenFunc          add_vlen; */                  H5AddVlen,
     /* NclAddEnumFunc          add_enum; */                  H5AddEnum,
     /* NclAddOpaqueFunc        add_opaque; */                H5AddOpaque,
     /* NclAddCompoundFunc      add_compound; */              H5AddCompound,

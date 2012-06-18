@@ -1,3 +1,7 @@
+/*
+ *ID: $Id
+ */
+
 #ifndef NclNewFileStructure_h
 #define NclNewFileStructure_h
 
@@ -284,6 +288,8 @@ void _NclFileUDTRealloc(NclFileUDTRecord *udt_rec);
 NclFileGrpNode *_getGrpNodeFromGrpNode(NclFileGrpNode *grp_rec, NclQuark grp_name);
 NclFileVarNode *_getVarNodeFromNclFileVarRecord(NclFileVarRecord *var_rec,
                         NclQuark var_name);
+NclFileVarNode *_getVarNodeFromThisGrpNode(NclFileGrpNode *grpnode,
+                        NclQuark varname);
 NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
                         NclQuark var_name);
 NclFileAttNode *_getAttNodeFromNclFileGrpRecord(NclFileGrpRecord *grp_rec,

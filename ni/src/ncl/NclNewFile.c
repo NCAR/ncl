@@ -1,6 +1,7 @@
 /************************************************************************
+*ID: $Id                                                                *
 *                                                                       *
-*                 Copyright (C)  1994                                   *
+*                 Copyright (C)  1994 - 2012                            *
 *         University Corporation for Atmospheric Research               *
 *                 All Rights Reserved                                   *
 *                                                                       *
@@ -1850,6 +1851,47 @@ NclFileVarNode *_getVarNodeFromNclFileVarRecord(NclFileVarRecord *var_rec,
     }
 
     return NULL;
+}
+
+NclFileVarNode *_getVarNodeFromThisGrpNode(NclFileGrpNode *grpnode,
+                        NclQuark varname)
+{
+    int n;
+    NclFileVarNode *varnode = NULL;
+
+    fprintf(stderr, "\nEnter _getVarNodeFromThisGrpNode, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tgrpname: <%s>\n", NrmQuarkToString(grpnode->name));
+    fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varname));
+  /*
+   */
+
+    if(NULL != grpnode->var_rec)
+    {
+        for(n = 0; n < grpnode->var_rec->n_vars; n++)
+        {
+            varnode = &(grpnode->var_rec->var_node[n]);
+          /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tvar no %d, name: <%s>, real_name: <%s>\n", n, 
+           *        NrmQuarkToString(varnode->name), NrmQuarkToString(varnode->real_name));
+           */
+
+            if((varname == varnode->name) || (varname == varnode->real_name))
+            {
+                goto done_getVarNodeFromThisGrpNode;
+            }
+        }
+    }
+
+    varnode = NULL;
+
+done_getVarNodeFromThisGrpNode:
+
+  /*
+   *fprintf(stderr, "Leave _getVarNodeFromThisGrpNode, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   */
+
+    return varnode;
 }
 
 NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
@@ -5571,6 +5613,7 @@ static NhlErrorTypes NewFileAddVar(NclFile infile, NclQuark varname,
     int add_scalar_dim = 0;
     NclFileVarNode *varnode;
     NclFileDimNode *dimnode;
+    char buffer[NCL_MAX_STRING];
     
   /*
    *fprintf(stderr, "\nEnter NewFileAddVar, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -5581,7 +5624,11 @@ static NhlErrorTypes NewFileAddVar(NclFile infile, NclQuark varname,
 
     if((thefile->newfile.wr_status <= 0)&&(thefile->newfile.format_funcs->add_var != NULL))
     {
-        varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, varname);
+        strcpy(buffer, NrmQuarkToString(varname));
+        if(NULL == strchr(buffer, '/'))
+            varnode = _getVarNodeFromThisGrpNode(thefile->newfile.grpnode, varname);
+        else
+            varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, varname);
 
         if(NULL == varnode)
         {
@@ -5681,6 +5728,7 @@ static NhlErrorTypes NewFileWriteVarAtt(NclFile infile, NclQuark var, NclQuark a
     NclBasicDataTypes from_type,to_type;
     NclObjTypes obj_type;
     void *data_type;
+    char buffer[NCL_MAX_STRING];
     
     NclFileVarNode *varnode;
 
@@ -5699,7 +5747,11 @@ static NhlErrorTypes NewFileWriteVarAtt(NclFile infile, NclQuark var, NclQuark a
         goto done_NewFileWriteVarAtt;
     }
 
-    varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, var);
+    strcpy(buffer, NrmQuarkToString(var));
+    if(NULL == strchr(buffer, '/'))
+        varnode = _getVarNodeFromThisGrpNode(thefile->newfile.grpnode, var);
+    else
+        varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, var);
 
     if(NULL == varnode)
     {
@@ -5970,10 +6022,15 @@ static NhlErrorTypes NewFileAddVarChunk(NclFile infile, NclQuark varname,
     NclNewFile thefile = (NclNewFile) infile;
     NhlErrorTypes ret = NhlNOERROR;
     NclFileVarNode *varnode;
+    char buffer[NCL_MAX_STRING];
     
     if(thefile->newfile.wr_status <= 0)
     {
-        varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, varname);
+        strcpy(buffer, NrmQuarkToString(varname));
+        if(NULL == strchr(buffer, '/'))
+            varnode = _getVarNodeFromThisGrpNode(thefile->newfile.grpnode, varname);
+        else
+            varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, varname);
         if(NULL != varnode)
         {
             varnode->is_chunked = 1;
@@ -6020,10 +6077,15 @@ static NhlErrorTypes NewFileAddVarChunkCache(NclFile infile, NclQuark varname,
     NclNewFile thefile = (NclNewFile) infile;
     NhlErrorTypes ret = NhlNOERROR;
     NclFileVarNode *varnode;
+    char buffer[NCL_MAX_STRING];
     
     if(thefile->newfile.wr_status <= 0)
     {
-        varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, varname);
+        strcpy(buffer, NrmQuarkToString(varname));
+        if(NULL == strchr(buffer, '/'))
+            varnode = _getVarNodeFromThisGrpNode(thefile->newfile.grpnode, varname);
+        else
+            varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, varname);
         if(NULL != varnode)
         {
             if(thefile->newfile.format_funcs->add_var_chunk_cache != NULL)
@@ -6068,10 +6130,15 @@ static NhlErrorTypes NewFileSetVarCompressLevel(NclFile infile, NclQuark varname
     NclNewFile thefile = (NclNewFile) infile;
     NhlErrorTypes ret = NhlNOERROR;
     NclFileVarNode *varnode;
+    char buffer[NCL_MAX_STRING];
     
     if(thefile->newfile.wr_status <= 0)
     {
-        varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, varname);
+        strcpy(buffer, NrmQuarkToString(varname));
+        if(NULL == strchr(buffer, '/'))
+            varnode = _getVarNodeFromThisGrpNode(thefile->newfile.grpnode, varname);
+        else
+            varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, varname);
         if(NULL != varnode)
         {
             if(thefile->newfile.format_funcs->set_var_compress_level != NULL)
@@ -6123,7 +6190,7 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
     ng_size_t     new_dim_sizes[NCL_MAX_DIMENSIONS];
     
     int has_missing = 0;
-    char buffer[8];
+    char buffer[NCL_MAX_STRING];
     void *val;
     NhlErrorTypes ret = NhlNOERROR;
     long start[NCL_MAX_DIMENSIONS];
@@ -6179,7 +6246,11 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
     if(thefile->newfile.wr_status <= 0)
     {
         dimrec = thefile->newfile.grpnode->dim_rec;
-        varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, var);
+        strcpy(buffer, NrmQuarkToString(var));
+        if(NULL == strchr(buffer, '/'))
+            varnode = _getVarNodeFromThisGrpNode(thefile->newfile.grpnode, var);
+        else
+            varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, var);
         if(NULL != varnode)
         {
             /*
@@ -7242,6 +7313,7 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
 
     NclFileVarNode *varnode;
     NclFileDimNode *dimnode;
+    char buffer[NCL_MAX_STRING];
 
   /*
    *fprintf(stderr, "\nHit NewFileWriteVarVar, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -7268,7 +7340,11 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
                 continue;
             if(dim_names[i] > 0)
             {
-                varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, dim_names[i]);
+                strcpy(buffer, NrmQuarkToString(dim_names[i]));
+                if(NULL == strchr(buffer, '/'))
+                    varnode = _getVarNodeFromThisGrpNode(thefile->newfile.grpnode, dim_names[i]);
+                else
+                    varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, dim_names[i]);
                 if(NULL == varnode)
                 {
                     ret = NewFileAddDim(infile,dim_names[i],tmp_var->var.dim_info[i].dim_size,False);
@@ -7283,7 +7359,11 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
             }
         }
 
-        varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, lhs_var);
+        strcpy(buffer, NrmQuarkToString(lhs_var));
+        if(NULL == strchr(buffer, '/'))
+            varnode = _getVarNodeFromThisGrpNode(thefile->newfile.grpnode, lhs_var);
+        else
+            varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, lhs_var);
         if(NULL == varnode)
         {
             ret = NewFileAddVar(infile, lhs_var,
@@ -7321,7 +7401,11 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
             return(ret);
         }
 
-        varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, lhs_var);
+        strcpy(buffer, NrmQuarkToString(lhs_var));
+        if(NULL == strchr(buffer, '/'))
+            varnode = _getVarNodeFromThisGrpNode(thefile->newfile.grpnode, lhs_var);
+        else
+            varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, lhs_var);
         if(NULL == varnode)
         {
             j = 0;
@@ -7635,6 +7719,7 @@ static NhlErrorTypes NewFileWriteCoord(NclFile infile, NclQuark coord_name,
     NhlErrorTypes ret = NhlNOERROR;
     NclFileVarNode *varnode;
     int dindex;
+    char buffer[NCL_MAX_STRING];
 
     if(thefile->newfile.wr_status <= 0)
     {
@@ -7642,7 +7727,11 @@ static NhlErrorTypes NewFileWriteCoord(NclFile infile, NclQuark coord_name,
         if(dindex > -1)
         {
             ret = MyNewFileWriteVar(infile, coord_name, value, sel_ptr, NULL, FILE_COORD_VAR_ACCESS);
-            varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, coord_name);
+            strcpy(buffer, NrmQuarkToString(coord_name));
+            if(NULL == strchr(buffer, '/'))
+                varnode = _getVarNodeFromThisGrpNode(thefile->newfile.grpnode, coord_name);
+            else
+                varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, coord_name);
             if(NULL != varnode)
             {
                 ret = _addNclCoordVarNode(&(thefile->newfile.grpnode->coord_var_rec), varnode);
@@ -8006,10 +8095,15 @@ static NhlErrorTypes NewFileVarWriteDim(NclFile infile, NclQuark var, NclQuark d
     NclFileDimNode   *dimnode;
     NclFileVarNode   *varnode;
     NclQuark old_name;
+    char buffer[NCL_MAX_STRING];
 
     if(thefile->newfile.wr_status <= 0)
     {
-        varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, var);
+        strcpy(buffer, NrmQuarkToString(var));
+        if(NULL == strchr(buffer, '/'))
+            varnode = _getVarNodeFromThisGrpNode(thefile->newfile.grpnode, var);
+        else
+            varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, var);
         if(NULL != varnode)
         {
             if((dim_num > -1)&&(dim_num < varnode->dim_rec->n_dims))
