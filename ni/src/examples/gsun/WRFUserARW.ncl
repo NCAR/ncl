@@ -250,10 +250,10 @@ begin
      end if
 
 
-     if ( z(0,0,0,0,0) .gt. 500.) then
+     if ( z(0,0,dimZ-1,0,0) .lt. z(0,0,dimZ-2,0,0) ) then
        ; We must be interpolating to pressure
        ; This routine needs input field and level in hPa - lets make sure of this
-       if ( z(0,0,0,0,0) .gt. 2000. ) then
+       if ( max(z) .gt. 2000. ) then
          ; looks like we have Pa as input - make this hPa
          z = z * 0.01
        end if
@@ -297,7 +297,7 @@ begin
          return( var2d(0,0,:,:,:) )
        end if
      else
-       if ( z(0,0,0,0,0) .gt. 500.) then
+       if ( z(0,0,dimZ-1,0,0) .lt. z(0,0,dimZ-2,0,0) ) then
           var2d@PlotLevelID = loc_param + " hPa"
        else
           var2d@PlotLevelID = .001*loc_param + " km"
@@ -324,17 +324,17 @@ begin
      dims = dimsizes(var3d)
 
      if ( dimsizes(dims) .eq. 4 ) then
-       if ( z_in(0,0,0,0) .gt. 500.) then
+       if ( z(0,dimZ-1,0,0) .lt. z(0,dimZ-2,0,0) ) then
          ; We must be interpolating to pressure
            ; This routine needs input field and level in hPa - lets make sure of this
-         if ( z_in(0,0,0,0) .gt. 2000. ) then
+         if ( max(z_in) .gt. 2000. ) then
            ; looks like we have Pa as input - make this hPa
            z_in = z_in * 0.01
          end if
        end if
        z = z_in(0,:,:,:)
      else
-       if ( z_in(0,0,0) .gt. 500.) then
+       if ( z(dimZ-1,0,0) .lt. z(dimZ-2,0,0) ) then
          ; We must be interpolating to pressure
            ; This routine needs input field and level in hPa - lets make sure of this
          if ( z_in(0,0,0) .gt. 2000. ) then
