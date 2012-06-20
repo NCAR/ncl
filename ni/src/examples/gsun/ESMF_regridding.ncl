@@ -14,6 +14,11 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       20 Jun 2012:
+;            Fix the section that calculates the corner grid cells
+;            so that the appropriate algorithm is used depending
+;            on whether the lat values go to -90/90.
+;            
 ;       6 May 2012:
 ;            Clean up error statements.
 ;            Renamed RemoveDstGridFile, RemoveSrcGridFile, and
@@ -429,13 +434,21 @@ begin
 end     ; of mirrorP2P(...)
 
 ;======================================================================
-; This procedure is meant as a replacement for find_SCRIP_corners.
-; It takes the same arguments, but uses a different algorithm that
-; was suggested by Bob Oehmke.
+; This procedure is meant as a replacement for 
+; "calc_SCRIP_corners_noboundaries" (previously called 
+; "find_SCRIP_corners"). It takes the same arguments, but uses a 
+; different algorithm that was suggested by Bob Oehmke.
+;
+; After 6.1.0-beta, I realized that this algorithm really should only
+; be used if any of the lat points are at the boundary. At this point,
+; I  decided to rename this function from "calc_SCRIP_corners" to 
+; "calc_SCRIP_corners_boundaries", and go back to using 
+; "calc_SCRIP_corners_noboundaries" as the regular algorithm.
 ;======================================================================
-undef("calc_SCRIP_corners")
-procedure calc_SCRIP_corners(lat2d[*][*],lon2d[*][*], \
-                             grid_corner_lat, grid_corner_lon, opt)
+undef("calc_SCRIP_corners_boundaries")
+procedure calc_SCRIP_corners_boundaries(lat2d[*][*],lon2d[*][*], \
+                                        grid_corner_lat, grid_corner_lon,\
+                                        opt)
 local DEBUG, latlon_dims, grid_corner_lat2d,  grid_corner_lon2d, \
       nlat, nlon, nlatp1, nlonp1
 begin
@@ -443,12 +456,12 @@ begin
 
 ;---Check input dimension sizes.
     if (any(dimsizes(lat2d).ne.dimsizes(lon2d))) then
-        print("calc_SCRIP_corners: lat and lon must have the same dimensions.")
+        print("calc_SCRIP_corners_boundaries: lat and lon must have the same dimensions.")
         exit
     end if
 
     if (any(dimsizes(grid_corner_lat).ne.dimsizes(grid_corner_lon))) then
-        print("calc_SCRIP_corners: lat and lon must have the same dimensions.")
+        print("calc_SCRIP_corners_boundaries: lat and lon must have the same dimensions.")
         exit
     end if
 
@@ -463,12 +476,12 @@ begin
 
     if(cnr_rank.ne.2.or.cnr_latlon_dims(0).ne.(nlat*nlon).or. \
        cnr_latlon_dims(1).ne.4) then
-      print("calc_SCRIP_corners: grid_corner_lat/grid_corner_lon must be (nlat*nlon) x 4")
+      print("calc_SCRIP_corners_boundaries: grid_corner_lat/grid_corner_lon must be (nlat*nlon) x 4")
       exit
     end if
 
     if(DEBUG) then
-      print("calc_SCRIP_corners")
+      print("calc_SCRIP_corners_boundaries")
       print("     min/max original lat: " + min(lat2d) + "/" + max(lat2d))
       print("     min/max original lon: " + min(lon2d) + "/" + max(lon2d))
     end if
@@ -526,7 +539,7 @@ begin
     grid_corner_lon2d(nlat,0)    = lon2d(nlat-1,0)
 
     if(DEBUG) then
-      print("calc_SCRIP_corners")
+      print("calc_SCRIP_corners_boundaries")
       print("     min/max grid_corner_lat2d: " + \
                   min(grid_corner_lat2d) + "/" + max(grid_corner_lat2d))
       print("     min/max grid_corner_lon2d: " + \
@@ -549,18 +562,19 @@ begin
     end do
 
     if(DEBUG) then
-      print("calc_SCRIP_corners")
+      print("calc_SCRIP_corners_boundaries")
       print("     min/max grid_corner_lat: " + min(grid_corner_lat) + \
                                          "/" + max(grid_corner_lat))
       print("     min/max grid_corner_lon: " + min(grid_corner_lon) + \
                                          "/" + max(grid_corner_lon))
     end if
 
-end     ; of calc_SCRIP_corners(...)
+end     ; of calc_SCRIP_corners_boundaries(...)
 
 ;======================================================================
-;
 ; This procedure is used within the curvilinear_to_SCRIP function.
+; It used to be called "find_SCRIP_corners".
+;
 ; Given a structured grid, it looks for the four corners surrounding
 ; each node. It returns the center of the cells for the corners.
 ;
@@ -572,8 +586,8 @@ end     ; of calc_SCRIP_corners(...)
 ; Really, if the user has a special grid, he/she should input the
 ; corners via the GridCornerLat and GridCornerLon resources.
 ;======================================================================
-undef("find_SCRIP_corners")
-procedure find_SCRIP_corners(lat2d[*][*],lon2d[*][*], \
+undef("calc_SCRIP_corners_noboundaries")
+procedure calc_SCRIP_corners_noboundaries(lat2d[*][*],lon2d[*][*], \
                              grid_corner_lat,grid_corner_lon,opt)
 local latlon_dims, nlat, nlon, Extlon2d, Extlat2d, ExtGridCenter_lat, \
       ExtGridCenter_lon, tmp, ii, jj, DEBUG
@@ -581,7 +595,7 @@ begin
     DEBUG = isatt_logical_true(opt,"Debug")
 
     if ( any(dimsizes(lat2d).ne.dimsizes(lon2d) ) ) then
-        print("find_SCRIP_corners: lat and lon must have the same dimensions.")
+        print("calc_SCRIP_corners_noboundaries: lat and lon must have the same dimensions.")
         exit
     end if
 
@@ -593,7 +607,7 @@ begin
     nlatp2      = nlat+2
     nlonp2      = nlon+2
     if(DEBUG) then
-      print("find_SCRIP_corners")
+      print("calc_SCRIP_corners_noboundaries")
       print("     min/max original lat: " + min(lat2d) + "/" + max(lat2d))
       print("     min/max original lon: " + min(lon2d) + "/" + max(lon2d))
     end if
@@ -646,7 +660,7 @@ begin
 ; We need a better way to fix the boundary corners if they go over.
 ;
 ;;    if(DEBUG) then
-;;      print("find_SCRIP_corners")
+;;      print("calc_SCRIP_corners_noboundaries")
 ;;      print("      Before kludge to fix lat/lon corners...")
 ;;      print("      min/max Extlat2d: " + min(Extlat2d) + "/" + max(Extlat2d))
 ;;      print("      min/max Extlon2d: " + min(Extlon2d) + "/" + max(Extlon2d))
@@ -659,14 +673,14 @@ begin
 ;;    Extlon2d = where(Extlon2d.gt. 360, 360,Extlon2d)
 ;;
 ;;    if(DEBUG) then
-;;      print("find_SCRIP_corners")
+;;      print("calc_SCRIP_corners_noboundaries")
 ;;      print("     After kludge to fix lat/lon corners...")
 ;;      print("     min/max Extlat2d: " + min(Extlat2d) + "/" + max(Extlat2d))
 ;;      print("     min/max Extlon2d: " + min(Extlon2d) + "/" + max(Extlon2d))
 ;;    end if
 
     if(DEBUG) then
-      print("find_SCRIP_corners")
+      print("calc_SCRIP_corners_noboundaries")
       print("     min/max Extlat2d: " + min(Extlat2d) + "/" + max(Extlat2d))
       print("     min/max Extlon2d: " + min(Extlon2d) + "/" + max(Extlon2d))
     end if
@@ -682,7 +696,7 @@ begin
     delete(tmp)
 
     if(DEBUG) then
-      print("find_SCRIP_corners")
+      print("calc_SCRIP_corners_noboundaries")
       print("     min/max ExtGridCenter_lat: " + \
                   min(ExtGridCenter_lat) + "/" + max(ExtGridCenter_lat))
       print("     min/max ExtGridCenter_lon: " + \
@@ -702,7 +716,7 @@ begin
     grid_corner_lon(:,2) = ExtGridCenter_lon((jj+1)*(nlonp1)+(ii+1))
     grid_corner_lon(:,3) = ExtGridCenter_lon((jj+1)*(nlonp1)+ii)
 
-end     ; of find_SCRIP_corners(...)
+end     ; of calc_SCRIP_corners_noboundaries(...)
 
 ;======================================================================
 ; This procedure generates an ESMF file for an unstructured grid.
@@ -1032,8 +1046,21 @@ begin
         end if
         grid_corner_lat = new( (/ grid_size, grid_corners /), typeof(lat2d) )
         grid_corner_lon = new( (/ grid_size, grid_corners /), typeof(lon2d) )
-;;      find_SCRIP_corners(lat2d,lon2d,grid_corner_lat,grid_corner_lon,Opt)
-        calc_SCRIP_corners(lat2d,lon2d,grid_corner_lat,grid_corner_lon,Opt)
+        if(any(fabs(lat2d).eq.90)) then
+          if(DEBUG) then
+            print("curvilinear_to_SCRIP: one or more lat values are at the")
+            print("       poles, so calculating grid corners using")
+            print("       calc_SCRIP_corners_boundaries...")
+          end if
+          calc_SCRIP_corners_boundaries(lat2d,lon2d,grid_corner_lat,grid_corner_lon,Opt)
+        else
+          if(DEBUG) then
+            print("curvilinear_to_SCRIP: no lat values are at the poles, so")
+            print("       calculating grid corners using")
+            print("       calc_SCRIP_corners_noboundaries...")
+          end if
+          calc_SCRIP_corners_noboundaries(lat2d,lon2d,grid_corner_lat,grid_corner_lon,Opt)
+        end if
     end if
    
 ;---Store the cell corners
