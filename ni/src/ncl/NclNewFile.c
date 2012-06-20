@@ -3160,7 +3160,7 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
                              NrmQuarkToString(varnode->name)));
                     }
                 }
-                else if(NCL_list == varnode->type)
+                else if((NCL_list == varnode->type) || (NCL_vlen == varnode->type))
                 {
                   /*
                    */
@@ -8394,10 +8394,6 @@ NclVar _NclCreateVlenVar(char *var_name, void *val,
              NULL,
              _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type))
              );
-
-  /*
-   *tmp_md = MyNewFileReadVarValue(infile,NrmStrinToQuark(var_name),NULL,dim_info,FILE_VAR_ACCESS);
-   */
 
     if(tmp_md == NULL)
         return(NULL);

@@ -710,12 +710,17 @@ NclObjTypes _NclBasicDataTypeToObjType
 	case NCL_compound:
 		return(Ncl_Typecompound);
 	case NCL_list:
+	case NCL_vlen:
 		return(Ncl_Typelist);
 	default:
                 if(NCL_ubyte == (dt ^ NCL_opaque))
                     return (Ncl_Typeubyte);
                 else if(dt ^ NCL_enum)
                     return _NclBasicDataTypeToObjType(dt ^ NCL_enum);
+                else if(dt ^ NCL_vlen)
+                    return(Ncl_Typelist);
+                else if(dt ^ NCL_list)
+                    return(Ncl_Typelist);
                 else
 		    return (Ncl_Obj);
 	}
@@ -2543,7 +2548,7 @@ NclBasicDataTypes dt;
 #endif
 {
 	static int first = 1;
-	static NclQuark quarks[24];
+	static NclQuark quarks[25];
 
 	if(first) {
 		first = 0;
@@ -2570,7 +2575,8 @@ NclBasicDataTypes dt;
                 quarks[20] = NrmStringToQuark("ubyte");
                 quarks[21] = NrmStringToQuark("opaque");
                 quarks[22] = NrmStringToQuark("enum");
-                quarks[23] = NrmStringToQuark("none");
+                quarks[23] = NrmStringToQuark("vlen");
+                quarks[24] = NrmStringToQuark("none");
 	}	
 
 	switch(dt) {
@@ -2616,9 +2622,11 @@ NclBasicDataTypes dt;
 		return(NrmQuarkToString(quarks[21]));
 	case NCL_enum:
 		return(NrmQuarkToString(quarks[22]));
+	case NCL_vlen:
+		return(NrmQuarkToString(quarks[23]));
 	case NCL_none:
         default:
-		return(NrmQuarkToString(quarks[23]));
+		return(NrmQuarkToString(quarks[24]));
 	}
 }
 
