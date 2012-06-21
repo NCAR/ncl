@@ -4163,6 +4163,51 @@ begin
   x = tmp                                ; return to original array
 end
 ;-------------------------------
+undef("maxrunlen")
+function maxrunlen( runs )                     
+; find max run length
+; Example:   p(ntim) or p(ntim,jlat,ilon)
+; runs   = dim_runnum_n(p.gt.5, 0, 0) ; runs(ntim) or runs(ntim,jlat,ilon)
+; maxrun = maxrunlen( runs )
+
+local dimr, rankr, maxrun, i, j, indrun
+begin
+  dimr   = dimsizes(runs)         
+  rankr  = dimsizes(dimr)
+
+  if (.not.(rankr.eq.1 .or. rankr.eq.3)) then
+      print("maxrunlen: rankr="+rankr+" not yet supported")
+      exit
+  end if
+
+  if (rankr.eq.1) then
+      maxrun = new( 1, "integer", -999)
+      indrun = ind( runs.ne.0 )   
+      if (.not.ismissing(indrun(0))) then
+          maxrun = indrun(dimsizes(indrun)-1) + 1
+      else
+          maxrun = 0
+      end if
+  end if
+
+  if (rankr.eq.3) then
+      maxrun = new ( dimr(1:rankr-1), "integer", -999)
+      do j=0,dimr(1)-1
+        do i=0,dimr(2)-1
+           indrun = ind( runs(:,j,i).ne.0 )   
+           if (.not.ismissing(indrun(0))) then
+               maxrun(j,i) = indrun(dimsizes(indrun)-1) + 1
+           end if
+           delete(indrun)       ; may change size next iteration
+        end do
+      end do
+      copy_VarCoords(runs(0,:,:), maxrun)
+  end if
+
+  maxrun@long_name = "max run length"
+  return(maxrun)
+end
+;-------------------------------
 undef("area_global_rectilinear_grid")
 function area_global_rectilinear_grid (lat[*]:numeric, lon[*], opt[1]:logical)
 ; Area (approximate) of a global rectilinear grid cells.
