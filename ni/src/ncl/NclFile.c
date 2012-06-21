@@ -2891,6 +2891,13 @@ int vtype;
 	if((vtype == FILE_VAR_ACCESS? thefile->file.format_funcs->read_var != NULL:thefile->file.format_funcs->read_coord != NULL)) {
 		if((!has_vectors)&&(!has_reverse)&&(!has_reorder)) {
 			val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
+			if (! val) {
+				NhlPError(NhlFATAL,ENOMEM,"Error allocating %lld bytes to read variable <%s> from file <%s>",
+					  total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type),
+					  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+					  NrmQuarkToString(thefile->file.fname));
+				return(NULL);
+			}
 			if(vtype == FILE_VAR_ACCESS) {
 				(*thefile->file.format_funcs->read_var)(
 					thefile->file.private_rec,
@@ -2934,6 +2941,13 @@ int vtype;
 * dimensions with the exception of dimension 0.
 */
 			val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
+			if (! val) {
+				NhlPError(NhlFATAL,ENOMEM,"Error allocating %lld bytes to read variable <%s> from file <%s>",
+					  total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type),
+					  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+					  NrmQuarkToString(thefile->file.fname));
+				return(NULL);
+			}
 			i = 0;
 			while((i<n_dims_input)&&(compare_sel[i] != NCLFILE_DEC)){
 				i++;
@@ -2943,6 +2957,13 @@ int vtype;
 				swap_size *= output_dim_sizes[j];
 			}
 			swap_space = (void*)NclMalloc(swap_size * _NclSizeOf(thefile->file.var_info[index]->data_type));
+			if (! swap_space) {
+				NhlPError(NhlFATAL,ENOMEM,"Error allocating %lld bytes to handle dimension reversal for variable <%s> from file <%s>",
+					  swap_size*_NclSizeOf(thefile->file.var_info[index]->data_type),
+					  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+					  NrmQuarkToString(thefile->file.fname));
+				return(NULL);
+			}
 			for(i = 0;i < n_dims_input; i++) {
 				switch(compare_sel[i]) {
 				case NCLFILE_INC:
@@ -3005,6 +3026,13 @@ int vtype;
 			NclFree(swap_space);
 		} else {
 			val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
+			if (! val) {
+				NhlPError(NhlFATAL,ENOMEM,"Error allocating %lld bytes to read variable <%s> from file <%s>",
+					  total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type),
+					  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+					  NrmQuarkToString(thefile->file.fname));
+				return(NULL);
+			}
 			to = 0;
 			block_read_limit = n_dims_input - 1 ;
 /*
@@ -3162,6 +3190,13 @@ int vtype;
 		if(!has_stride) {
 			if((!has_vectors)&&(!has_reverse)&&(!has_reorder)) {
 				val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
+				if (! val) {
+					NhlPError(NhlFATAL,ENOMEM,"Error allocating %lld bytes to read variable <%s> from file <%s>",
+						  total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type),
+						  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+						  NrmQuarkToString(thefile->file.fname));
+					return(NULL);
+				}
 				if(vtype == FILE_VAR_ACCESS) {
 					(*thefile->file.format_funcs->read_var_ns)(
 						thefile->file.private_rec,
@@ -3203,6 +3238,13 @@ int vtype;
 	* dimensions with the exception of dimension 0.
 	*/
 				val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
+				if (! val) {
+					NhlPError(NhlFATAL,ENOMEM,"Error allocating %lld bytes to read variable <%s> from file <%s>",
+						  total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type),
+						  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+						  NrmQuarkToString(thefile->file.fname));
+					return(NULL);
+				}
 				i = 0;
 				while((i<n_dims_input)&&(compare_sel[i] != NCLFILE_DEC)){
 					i++;
@@ -3212,6 +3254,13 @@ int vtype;
 					swap_size *= output_dim_sizes[j];
 				}
 				swap_space = (void*)NclMalloc(swap_size * _NclSizeOf(thefile->file.var_info[index]->data_type));
+				if (! swap_space) {
+					NhlPError(NhlFATAL,ENOMEM,"Error allocating %lld bytes to handle dimension reversal for variable <%s> from file <%s>",
+						  swap_size*_NclSizeOf(thefile->file.var_info[index]->data_type),
+						  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+						  NrmQuarkToString(thefile->file.fname));
+					return(NULL);
+				}
 				for(i = 0;i < n_dims_input; i++) {
 					switch(compare_sel[i]) {
 					case NCLFILE_INC:
@@ -3266,6 +3315,13 @@ int vtype;
 				NclFree(swap_space);
 			} else {
 				val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
+				if (! val) {
+					NhlPError(NhlFATAL,ENOMEM,"Error allocating %lld bytes to read variable <%s> from file <%s>",
+						  total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type),
+						  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+						  NrmQuarkToString(thefile->file.fname));
+					return(NULL);
+				}
 				to = 0;
 				block_read_limit = n_dims_input - 1 ;
 	/*
@@ -3434,6 +3490,13 @@ int vtype;
 					}
 				}
 				val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
+				if (! val) {
+					NhlPError(NhlFATAL,ENOMEM,"Error allocating %lld bytes to read variable <%s> from file <%s>",
+						  total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type),
+						  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+						  NrmQuarkToString(thefile->file.fname));
+					return(NULL);
+				}
 				to = 0;
 				while(!done) {
 					if(vtype == FILE_VAR_ACCESS) {
@@ -3529,7 +3592,21 @@ int vtype;
 					}
 				}
 				val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
+				if (! val) {
+					NhlPError(NhlFATAL,ENOMEM,"Error allocating %lld bytes to read variable <%s> from file <%s>",
+						  total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type),
+						  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+						  NrmQuarkToString(thefile->file.fname));
+					return(NULL);
+				}
 				swap_space = NclMalloc(n_elem_block * _NclSizeOf(thefile->file.var_info[index]->data_type));
+				if (! swap_space) {
+					NhlPError(NhlFATAL,ENOMEM,"Error allocating %lld bytes to handle dimension reversal for variable <%s> from file <%s>",
+						  n_elem_block * _NclSizeOf(thefile->file.var_info[index]->data_type),
+						  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+						  NrmQuarkToString(thefile->file.fname));
+					return(NULL);
+				}
 				to = 0;
 				while(!done) {
 					if(vtype == FILE_VAR_ACCESS) {
@@ -3615,6 +3692,13 @@ int vtype;
 * has vectors or reorder or both
 */
 				val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
+				if (! val) {
+					NhlPError(NhlFATAL,ENOMEM,"Error allocating %lld bytes to read variable <%s> from file <%s>",
+						  total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type),
+						  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+						  NrmQuarkToString(thefile->file.fname));
+					return(NULL);
+				}
 				to = 0;
 				block_read_limit = n_dims_input - 1 ;
 /*
@@ -3875,6 +3959,13 @@ int vtype;
 	if((vtype == FILE_VAR_ACCESS? thefile->file.format_funcs->read_var != NULL:thefile->file.format_funcs->read_coord != NULL)) {
 		if((!has_vectors)&&(!has_reverse)&&(!has_reorder)) {
 			val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
+			if (! val) {
+				NhlPError(NhlFATAL,ENOMEM,"Error allocating %lld bytes to read variable <%s> from file <%s>",
+					  total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type),
+					  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+					  NrmQuarkToString(thefile->file.fname));
+				return(NULL);
+			}
 			if(vtype == FILE_VAR_ACCESS) {
 				(*thefile->file.format_funcs->read_var)(
 					thefile->file.private_rec,
@@ -3894,6 +3985,13 @@ int vtype;
 			}
 		} else if((has_reverse)&&(!has_vectors)&&(!has_reorder)){
 			val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
+			if (! val) {
+				NhlPError(NhlFATAL,ENOMEM,"Error allocating %lld bytes to read variable <%s> from file <%s>",
+					  total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type),
+					  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+					  NrmQuarkToString(thefile->file.fname));
+				return(NULL);
+			}
 			if(vtype == FILE_VAR_ACCESS) {
 				(*thefile->file.format_funcs->read_var)(
 					thefile->file.private_rec,
@@ -3913,6 +4011,13 @@ int vtype;
 			}
 		} else {
 			val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
+			if (! val) {
+				NhlPError(NhlFATAL,ENOMEM,"Error allocating %lld bytes to read variable <%s> from file <%s>",
+					  total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type),
+					  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+					  NrmQuarkToString(thefile->file.fname));
+				return(NULL);
+			}
 			while(!done) {
 				if(vtype == FILE_VAR_ACCESS) {
 					(*thefile->file.format_funcs->read_var)(
