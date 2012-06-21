@@ -238,7 +238,6 @@ static NhlResource resources[] = {
 	{ NhlNstMinMagnitudeF,NhlCstMinMagnitudeF,
 		  NhlTFloat,sizeof(float),Oset(min_magnitude),NhlTString,
 		  _NhlUSET("0.0"),0,NULL},
-
 	{NhlNstLevels, NhlCLevels,  NhlTFloatGenArray,
 		 sizeof(NhlPointer),Oset(levels),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -5135,7 +5134,7 @@ static NhlErrorTypes    ManageVectorData
 	stp->zmax = stp->vfp->mag_max;
 
 
-	stp->zero_field = _NhlCmpFAny(stp->zmax,stp->zmin,8) <= 0.0 ?
+	stp->zero_field = _NhlCmpFAny2(stp->zmax,0.0,NhlstPRECISION,_NhlMIN_NONZERO) <= 0.0 ?
 		True : False;
 	if (stp->zero_field) {
 		e_text = 

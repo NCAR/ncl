@@ -3878,6 +3878,7 @@ static NhlErrorTypes vcDraw
 	}
 	c_vvsetc("MXT"," ");
 	c_vvsetc("MNT"," ");
+	c_vvsetc("ZFT"," ");
         c_vvseti("SET",0);
         c_vvseti("MAP",NhlvcMAPVAL);
 #if 0
