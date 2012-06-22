@@ -4759,7 +4759,7 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
     NclFileVarNode *varnode;
     NclFileDimNode *dimnode;
     NclFileAttNode *attnode;
-    long count[MAX_NC_DIMS];
+    long count[NCL_MAX_DIMENSIONS];
     ng_size_t n_elem = 1;
     int no_stride = 1;
     int i,j,k,n;
@@ -4829,44 +4829,109 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
     }
                     
   /*
-   *fprintf(stderr, "\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
    */
+    fprintf(stderr, "\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
 
     fid = (hid_t)_getH5grpID(grpnode);
 
-#if 0
-    if(NCL_list == varnode->type)
+    if((NCL_list == varnode->type) || (NCL_vlen == varnode->type))
     {
         NclListObjList  *tmp = NULL;
         NclObj           tmpobj;
         NclVar           tmpvar;
         NclMultiDValData tmp_md;
         NclNewList       vlist    = (NclNewList)_NclGetObj(*(int *)data);
-        nc_vlen_t       *vlendata = (nc_vlen_t *)NclCalloc(vlist->newlist.n_elem,
-                                                          sizeof(nc_vlen_t));
+
+        hid_t            fid;
+        hid_t            filetype;
+        hid_t            memtype;
+        hid_t            space;
+        hid_t            did;
+        int              *iptr;
+
+        hvl_t            *vlendata = (hvl_t *) NclCalloc(vlist->newlist.n_elem,
+                                                          sizeof(hvl_t));
         assert(vlendata);
+                    
+      /*
+       */
+        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tfid: %d\n", fid);
 
         for(n = 0; n < vlist->newlist.n_elem; n++)
-        {
+        { 
             tmp = vlist->newlist.item[n];
             tmpobj = (NclObj)_NclGetObj(tmp->obj_id);
             tmpvar = (NclVar)_NclGetObj(tmpobj->obj.id);
             tmp_md = (NclMultiDValData)_NclGetObj(tmpvar->var.thevalue_id);
 
-            vlendata[n].p = tmp_md->multidval.val;
             vlendata[n].len = 1;
-            for(i = 0; i < tmp_md->multidval.n_dims; i++)
+            for(i = 0; i < tmp_md->multidval.n_dims; ++i)
                 vlendata[n].len *= tmp_md->multidval.dim_sizes[i];
+
+            i = vlendata[n].len * _NclSizeOf(tmp_md->multidval.data_type);
+            vlendata[n].p = (void *)NclMalloc(i);
+            memcpy(vlendata[n].p, tmp_md->multidval.val, i);
+
+            fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+            fprintf(stderr, "\tVlen %d length: %d\n", n, vlendata[n].len);
+            iptr = (int *) vlendata[n].p;
+            for(i = 0; i < vlendata[n].len; ++i)
+                fprintf(stderr, "\t\tNo %d: %d\n", i, iptr[i]);
+                
+            fprintf(stderr, "\tVlen %d length: %d\n", n, vlendata[n].len);
         }
 
-        ret = nc_put_var(fid, varnode->id, vlendata);
-        if(NC_NOERR != ret)
-            check_err(ret, __LINE__, __FILE__);
+      /*
+       *Create variable-length datatype for file and memory.
+        filetype = H5Tvlen_create(H5T_STD_I32LE);
+        memtype  = H5Tvlen_create(H5T_NATIVE_INT);
+       */
+
+        fid = H5Fcreate("tst.h5", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+        filetype = H5Tvlen_create(H5T_STD_I32LE);
+        memtype  = H5Tvlen_create(Ncltype2HDF5type(tmp_md->multidval.data_type));
+
+        fprintf(stderr, "\tH5T_STD_I32LE = %d, H5T_NATIVE_INT  = %d\n", H5T_STD_I32LE, H5T_NATIVE_INT);
+        fprintf(stderr, "\tNcltype2HDF5type(tmp_md->multidval.data_type) = %d\n",
+                      (int)Ncltype2HDF5type(tmp_md->multidval.data_type));
+        fprintf(stderr, "\tfiletype = %d, memtype  = %d\n", filetype, memtype);
+      /*
+       *Create dataspace.  Setting maximum size to NULL sets the maximum
+       *size to be the current size.
+       */
+        space = H5Screate_simple (rank, dims, NULL);
+
+        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tspace: %d\n", space);
+
+      /*
+       *Create the dataset and write the variable-length data to it.
+       */
+        did = H5Dcreate(fid, NrmQuarkToString(varnode->name), filetype, space,
+                        H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tdid: %d\n", did);
+
+        status = H5Dwrite(did, memtype, H5S_ALL, H5S_ALL, H5P_DEFAULT, vlendata);
+
+      /*
+       *Close and release resources.  Note the use of H5Dvlen_reclaim
+       *removes the need to manually free() the previously malloc'ed
+       *data.
+       */
+
+        status = H5Dvlen_reclaim(memtype, space, H5P_DEFAULT, vlendata);
+        status = H5Dclose(did);
+        status = H5Sclose(space);
+        status = H5Tclose(filetype);
+        status = H5Tclose(memtype);
+        status = H5Fclose(fid);
 
         NclFree(vlendata);
     }
-#endif
-    if(NCL_enum & varnode->type)
+    else if(NCL_enum & varnode->type)
     {
         herr_t status;
         size_t size = 1;
@@ -5137,7 +5202,7 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
        *    status = H5Pset_deflate(plist, varnode->compress_level);
        */
 
-        did = H5Dcreate2(fid, NrmQuarkToString(varnode->name),
+        did = H5Dcreate(fid, NrmQuarkToString(varnode->name),
                          type, space, H5P_DEFAULT, plist, H5P_DEFAULT);
 
         varnode->id = did;

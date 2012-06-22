@@ -6757,7 +6757,7 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
                         }
                         else
                         {
-                            if(NCL_list == varnode->type)
+                            if((NCL_list == varnode->type) || (NCL_vlen == varnode->type))
                             {
                                 if(free_tmp_md)
                                 {
