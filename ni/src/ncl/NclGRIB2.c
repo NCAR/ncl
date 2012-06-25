@@ -3672,6 +3672,48 @@ Grib2FileRecord *therec;
 					      PERMANENT, NULL, nclTypestringClass);
 			step->theatts = att_list_ptr;
 			step->n_atts++;
+			if (step->ensemble_isatt) { /* proxy for probability_isatt since this dimension is "shared"  */
+				att_list_ptr = (Grib2AttInqRecList *) NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+				att_list_ptr->next = step->theatts;
+				att_list_ptr->att_inq = (Grib2AttInqRec *) NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+				att_list_ptr->att_inq->name = NrmStringToQuark("probability_limit_units");
+				tmp_dimsizes = 1;
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				*tmp_string = step->var_info.units_q;
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+					_NclCreateVal(NULL, NULL,
+						      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+						      PERMANENT, NULL, nclTypestringClass);
+				step->theatts = att_list_ptr;
+				step->n_atts++;
+				att_list_ptr = (Grib2AttInqRecList *) NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+				att_list_ptr->next = step->theatts;
+				att_list_ptr->att_inq = (Grib2AttInqRec *) NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+				if (step->probability) {
+					att_list_ptr->att_inq->name = NrmStringToQuark("probability_limit");
+					att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->probability;
+					/* Don't want two references */
+					step->probability = NULL;
+					step->theatts = att_list_ptr;
+					step->n_atts++;
+				}
+				else if (step->lower_probs && step->upper_probs) {
+					att_list_ptr->att_inq->name = NrmStringToQuark("upper_probability_limit");
+					att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->upper_probs;
+					step->upper_probs = NULL;
+					step->theatts = att_list_ptr;
+					step->n_atts++;
+					att_list_ptr = (Grib2AttInqRecList *) NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+					att_list_ptr->next = step->theatts;
+					att_list_ptr->att_inq = (Grib2AttInqRec *) NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+					att_list_ptr->att_inq->name = NrmStringToQuark("lower_probability_limit");
+					att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->lower_probs;
+					step->lower_probs = NULL;
+					step->theatts = att_list_ptr;
+					step->n_atts++;
+				}
+
+			}
 		}
 			
 
@@ -6143,7 +6185,7 @@ static void _g2SetFileDimsAndCoordVars
 			dstep = therec->probability_dims;
 			if (step->probability) { /* either a lower or an upper limit (but not both) */
 				for(i = 0; i < therec->n_probability_dims; i++) {
-					if(dstep->dim_inq->size == step->upper_probs->multidval.dim_sizes[0]) {
+					if(dstep->dim_inq->size == step->probability->multidval.dim_sizes[0]) {
 						tmp_md = _Grib2GetInternalVar(therec,dstep->dim_inq->dim_name,&test);
 						if(tmp_md != NULL) {
 							lhs_f = (float*)tmp_md->multidval.val;
@@ -6181,7 +6223,7 @@ static void _g2SetFileDimsAndCoordVars
 					tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
 					tmp->dim_number = therec->total_dims;
 					tmp->size = step->probability->multidval.dim_sizes[0];
-					sprintf(buffer,"%s_probability%d",NrmQuarkToString(step->var_info.param_q),therec->n_ensemble_dims);
+					sprintf(buffer,"%s_probability%d",NrmQuarkToString(step->var_info.param_q),therec->n_probability_dims);
 					tmp->dim_name = NrmStringToQuark(buffer);
 					ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
 					ptr->dim_inq = tmp;
@@ -6209,7 +6251,7 @@ static void _g2SetFileDimsAndCoordVars
 			}
 			else if (step->upper_probs && step->lower_probs) {
 				for(i = 0; i < therec->n_probability_dims; i++) {
-					if(dstep->dim_inq->size == step->probability->multidval.dim_sizes[0]) {
+					if(dstep->dim_inq->size == step->upper_probs->multidval.dim_sizes[0]) {
 						sprintf(name_buffer,"%s%s",NrmQuarkToString(dstep->dim_inq->dim_name),"_upper");
 						tmp_md = _Grib2GetInternalVar(therec,NrmStringToQuark(name_buffer),&test);
 						sprintf(name_buffer,"%s%s",NrmQuarkToString(dstep->dim_inq->dim_name),"_lower");
@@ -6217,9 +6259,9 @@ static void _g2SetFileDimsAndCoordVars
 						j = 0;
 						if((tmp_md != NULL )&&(tmp_md1 != NULL) ) {
 							lhs_f = (float*)tmp_md->multidval.val;
-							rhs_f = (float*)step->levels0->multidval.val;
+							rhs_f = (float*)step->upper_probs->multidval.val;
 							lhs_f1 = (float*)tmp_md1->multidval.val;
-							rhs_f1 = (float*)step->levels1->multidval.val;
+							rhs_f1 = (float*)step->lower_probs->multidval.val;
 							while(j<dstep->dim_inq->size) {
 								if((lhs_f[j] != rhs_f[j])||(lhs_f1[j] != rhs_f1[j])) {
 									break;
@@ -6251,8 +6293,8 @@ static void _g2SetFileDimsAndCoordVars
 					 */
 					tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
 					tmp->dim_number = therec->total_dims;
-					tmp->size = step->probability->multidval.dim_sizes[0];
-					sprintf(buffer,"%s_probability%d",NrmQuarkToString(step->var_info.param_q),therec->n_ensemble_dims);
+					tmp->size = step->upper_probs->multidval.dim_sizes[0];
+					sprintf(buffer,"%s_probability%d",NrmQuarkToString(step->var_info.param_q),therec->n_probability_dims);
 					tmp->dim_name = NrmStringToQuark(buffer);
 					ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
 					ptr->dim_inq = tmp;
@@ -6262,7 +6304,7 @@ static void _g2SetFileDimsAndCoordVars
 					step->var_info.file_dim_num[current_dim] = tmp->dim_number;
 
 					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-					*tmp_string = step->var_info.param_q;
+					*tmp_string = step->var_info.units_q;
 					Grib2PushAtt(&tmp_att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
 
 					sprintf(buffer,"%s lower limits",NrmQuarkToString(step->var_info.long_name_q));
@@ -6271,7 +6313,7 @@ static void _g2SetFileDimsAndCoordVars
 					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 					*tmp_string = NrmStringToQuark(buffer);
 					Grib2PushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
-					sprintf(name_buffer,"%s%s",buffer,"_lower");
+					sprintf(name_buffer,"%s%s",NrmQuarkToString(tmp->dim_name),"_lower");
 
 					_Grib2AddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,
 							    (NclMultiDValData)step->lower_probs,tmp_att_list_ptr,2);
@@ -6279,14 +6321,14 @@ static void _g2SetFileDimsAndCoordVars
 					step->lower_probs = NULL;
 
 					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-					*tmp_string = step->var_info.param_q;
+					*tmp_string = step->var_info.units_q;
 					Grib2PushAtt(&tmp_att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
 
 					sprintf(buffer,"%s upper limits",NrmQuarkToString(step->var_info.long_name_q));
 					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 					*tmp_string = NrmStringToQuark(buffer);
 					Grib2PushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
-					sprintf(name_buffer,"%s%s",buffer,"_upper");
+					sprintf(name_buffer,"%s%s",NrmQuarkToString(tmp->dim_name),"_upper");
 
 					_Grib2AddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,
 							    (NclMultiDValData)step->upper_probs,tmp_att_list_ptr,2);
@@ -8373,7 +8415,7 @@ Grib2ParamList  *g2plist;
 	g2plist->variable_time_unit = 0;
 
         i = 0;
-	while (time_periods[i] != -999) {
+	while (i < time_period_count && time_periods[i] != -999) {
 		/* keep the max period elements as the remaining elements for the original variable */
 		if (time_periods[i] == max_period) {
 			i++;
@@ -10838,7 +10880,7 @@ static void *Grib2OpenFile
                      * horizontal level or in a horizontal layer at a point
                      * in time.
                      */
-                    g2inqrec->is_ensemble = 1;
+			g2inqrec->is_ensemble = 0;
                     break;
 
                 case 3:
@@ -10847,7 +10889,7 @@ static void *Grib2OpenFile
                      * over a rectangular area at a horizontal level or in a
                      * horizontal layer at a point in time.
                      */
-                    g2inqrec->is_ensemble = 1;
+                    g2inqrec->is_ensemble = 0;
                     break;
 
                 case 4:
@@ -10856,11 +10898,13 @@ static void *Grib2OpenFile
                      * over a circular area at a horizontal level or i
                      *  a horizontal layer at a point in time.
                      */
-                    g2inqrec->is_ensemble = 1;
+                    g2inqrec->is_ensemble = 0;
                     break;
 	        case 5:
 	        case 9:
-		    /* probability forecasts share the ensemble dimension */
+		    /* probability forecasts share the ensemble dimension -- so far there are no templates
+		       with probabability and individual ensemble properties -- distinguish probability from
+		       ensemble using prob_type > -1 */
                     g2inqrec->is_ensemble = 1;
 		    g2inqrec->ens.prob_type = g2rec[i]->sec4[j]->prod_params->probability_type;
 		    g2inqrec->ens.lower_limit_scale = g2rec[i]->sec4[j]->prod_params->scale_factor_lower_limit;
@@ -10880,6 +10924,10 @@ static void *Grib2OpenFile
                      * horizontal level or in a horizontal layer, in a continuous
                      * or non-continuous time interval.
                      */
+	        case 41:
+	        case 43:
+	        case 45:
+	        case 47:
                     g2inqrec->is_ensemble = 1;
                     g2inqrec->ens.type = (g2rec[i]->sec4[j]->prod_params->typeof_ensemble_fx >= 0 &&
 			    g2rec[i]->sec4[j]->prod_params->typeof_ensemble_fx < 4) ?
@@ -10892,7 +10940,7 @@ static void *Grib2OpenFile
                      * Derived forecasts based on all ensemble members at a
                      * horizontal level or in a horizontal layer, in a continuous
                      * or non-continuous time interval.
-                    g2inqrec->is_ensemble = 1;
+                    g2inqrec->is_ensemble = 0;
                     break;
                      */
 
@@ -10902,7 +10950,7 @@ static void *Grib2OpenFile
                      * over a rectangular area at a horizontal level or in a
                      * horizontal layer, in a continuous or non-continuous time interval.
                      */
-                    g2inqrec->is_ensemble = 1;
+                    g2inqrec->is_ensemble = 0;
                     break;
 
                 case 14:
@@ -10911,7 +10959,7 @@ static void *Grib2OpenFile
                      * a circular area at a horizontal level or in a horizontal
                      * layer, in a continuous or non-continuous time interval.
                      */
-                    g2inqrec->is_ensemble = 1;
+                    g2inqrec->is_ensemble = 0;
                     break;
 
                 default:
