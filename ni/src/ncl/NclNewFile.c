@@ -1859,10 +1859,10 @@ NclFileVarNode *_getVarNodeFromThisGrpNode(NclFileGrpNode *grpnode,
     int n;
     NclFileVarNode *varnode = NULL;
 
-    fprintf(stderr, "\nEnter _getVarNodeFromThisGrpNode, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tgrpname: <%s>\n", NrmQuarkToString(grpnode->name));
-    fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varname));
   /*
+   *fprintf(stderr, "\nEnter _getVarNodeFromThisGrpNode, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tgrpname: <%s>\n", NrmQuarkToString(grpnode->name));
+   *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varname));
    */
 
     if(NULL != grpnode->var_rec)
@@ -7311,6 +7311,7 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
     tmp_sel.selected_from_sym = NULL;
     tmp_sel.selected_from_var = NULL;
 
+    NclFileGrpNode *grpnode = thefile->newfile.grpnode;
     NclFileVarNode *varnode;
     NclFileDimNode *dimnode;
     char buffer[NCL_MAX_STRING];
@@ -7342,20 +7343,40 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
             {
                 strcpy(buffer, NrmQuarkToString(dim_names[i]));
                 if(NULL == strchr(buffer, '/'))
-                    varnode = _getVarNodeFromThisGrpNode(thefile->newfile.grpnode, dim_names[i]);
+                    varnode = _getVarNodeFromThisGrpNode(grpnode, dim_names[i]);
                 else
-                    varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, dim_names[i]);
+                    varnode = _getVarNodeFromNclFileGrpNode(grpnode, dim_names[i]);
                 if(NULL == varnode)
                 {
-                    ret = NewFileAddDim(infile,dim_names[i],tmp_var->var.dim_info[i].dim_size,False);
+                    dimnode = _getDimNodeFromNclFileGrpNode(grpnode, dim_names[i]);
+                    if(NULL == dimnode)
+                        ret = NewFileAddDim(infile,dim_names[i],tmp_var->var.dim_info[i].dim_size,False);
                 }
             }
             else
             {
-                char buffer[32];
-                sprintf(buffer,"ncl%d",thefile->newfile.grpnode->dim_rec->n_dims);
-                ret = NewFileAddDim(infile,NrmStringToQuark(buffer),tmp_var->var.dim_info[i].dim_size,False);
-                dim_names[i] = NrmStringToQuark(buffer);
+                int found = 0;
+                if(NULL != grpnode->dim_rec)
+                {
+                    for(j = 0; j < grpnode->dim_rec->n_dims; ++j)
+                    {
+                        dimnode = &(grpnode->dim_rec->dim_node[j]);
+                        if(tmp_var->var.dim_info[i].dim_size == dimnode->size)
+                        {
+                            found = 1;
+                            dim_names[i] = dimnode->name;
+                            break;
+                        }
+                    }
+                }
+
+                if(! found)
+                {
+                    char buffer[32];
+                    sprintf(buffer,"ncl%d",thefile->newfile.grpnode->dim_rec->n_dims);
+                    ret = NewFileAddDim(infile,NrmStringToQuark(buffer),tmp_var->var.dim_info[i].dim_size,False);
+                    dim_names[i] = NrmStringToQuark(buffer);
+                }
             }
         }
 
