@@ -2932,6 +2932,16 @@ NhlErrorTypes _NclIfbindirread(void)
 	return(NhlFATAL);
 }
 
+int _MachineIsBigEndian()
+{
+    short int word = 0x0001;
+    char *byte = (char *) &word;
+
+    if(byte[0])
+       return 0;
+    else
+       return 1;
+}
 
 NhlErrorTypes _NclIisbigendian
 #if	NhlNeedProto
@@ -2944,11 +2954,8 @@ NhlErrorTypes _NclIisbigendian
 	ng_size_t dimsizes = 1;
 
 	out_val = (logical*)NclMalloc(sizeof(logical));
-#ifdef ByteSwapped
-	*out_val = 0;
-#else
-	*out_val = 1;
-#endif
+
+	*out_val = _MachineIsBigEndian();
 
 	return(NclReturnValue(
 		out_val,
