@@ -138,9 +138,123 @@ static int _buildH5dimlist(NclFileGrpNode **rootgrp);
 static NhlErrorTypes _addH5dim(NclFileDimRecord **grpdimrec, NclQuark dimname,
                                ng_size_t dimsize, int is_unlimited);
 NclFileGrpNode *_getGrpNodeByName(NclFileGrpNode *rootgrp, NclQuark gn);
+
+herr_t _writeH5variableAttribute(hid_t did, NclFileAttNode *attnode);
+
 hid_t toH5type(const char *type);
 hid_t Ncltype2HDF5type(NclBasicDataTypes type);
-herr_t _writeH5variableAttribute(hid_t did, NclFileAttNode *attnode);
+hid_t h5memtype2filetype(hid_t memtype);
+
+int _MachineIsBigEndian();
+
+int _MachineIsBigEndian()
+{
+#if 1
+    short int word = 0x0001;
+    char *byte = (char *) &word;
+
+    if(byte[0])
+       return 0;
+    else
+       return 1;
+#else
+    if(htonl(47) == 47)
+       return 1;
+    else
+       return 0;
+#endif
+}
+
+hid_t h5memtype2filetype(hid_t memtype)
+{
+    hid_t h5type = -1;
+
+    int is64bitMachine = (sizeof(int) == sizeof(long)) ? 0 : 1;
+
+    if(_MachineIsBigEndian())
+    {
+       if((H5T_NATIVE_CHAR == memtype) || (H5T_NATIVE_SCHAR == memtype))
+            h5type = H5T_STD_I8BE;
+       else if(H5T_NATIVE_UCHAR)
+            h5type = H5T_STD_U8BE;
+       else if(H5T_NATIVE_SHORT)
+            h5type = H5T_STD_I16BE;
+       else if(H5T_NATIVE_USHORT)
+            h5type = H5T_STD_U16BE;
+       else if(H5T_NATIVE_INT)
+            h5type = H5T_STD_I32BE;
+       else if(H5T_NATIVE_UINT)
+            h5type = H5T_STD_U32BE;
+       else if(H5T_NATIVE_LONG)
+       {
+            if(is64bitMachine)
+                h5type = H5T_STD_I64BE;
+            else
+                h5type = H5T_STD_I32BE;
+       }
+       else if(H5T_NATIVE_ULONG)
+       {
+            if(is64bitMachine)
+                h5type = H5T_STD_U64BE;
+            else
+                h5type = H5T_STD_U32BE;
+       }
+       else if(H5T_NATIVE_FLOAT)
+            h5type = H5T_IEEE_F32BE;
+       else if(H5T_NATIVE_LLONG)
+            h5type = H5T_STD_I64BE;
+       else if(H5T_NATIVE_ULLONG)
+            h5type = H5T_STD_U64BE;
+       else if(H5T_NATIVE_DOUBLE)
+            h5type = H5T_IEEE_F64BE;
+       else
+            fprintf(stderr, "\nUNKOWN TYPE: <%d>. file: %s, line: %d\n",
+                            memtype, __FILE__, __LINE__);
+    }
+    else
+    {
+        if((H5T_NATIVE_CHAR) || (H5T_NATIVE_SCHAR))
+            h5type = H5T_STD_I8LE;
+        else if(H5T_NATIVE_UCHAR)
+            h5type = H5T_STD_U8LE;
+        else if(H5T_NATIVE_SHORT)
+            h5type = H5T_STD_I16LE;
+        else if(H5T_NATIVE_USHORT)
+            h5type = H5T_STD_U16LE;
+        else if(H5T_NATIVE_INT)
+            h5type = H5T_STD_I32LE;
+        else if(H5T_NATIVE_UINT)
+            h5type = H5T_STD_U32LE;
+        else if(H5T_NATIVE_LONG)
+        {
+            if(is64bitMachine)
+                h5type = H5T_STD_I64LE;
+            else
+                h5type = H5T_STD_I32LE;
+        }
+        else if(H5T_NATIVE_ULONG)
+        {
+            if(is64bitMachine)
+                h5type = H5T_STD_U64LE;
+            else
+                h5type = H5T_STD_U32LE;
+        }
+        else if(H5T_NATIVE_FLOAT)
+            h5type = H5T_IEEE_F32LE;
+        else if(H5T_NATIVE_LLONG)
+            h5type = H5T_STD_I64LE;
+        else if(H5T_NATIVE_ULLONG)
+            h5type = H5T_STD_U64LE;
+        else if(H5T_NATIVE_DOUBLE)
+            h5type = H5T_IEEE_F64LE;
+        else
+            fprintf(stderr, "\nUNKOWN TYPE: <%d>. file: %s, line: %d\n",
+                               memtype, __FILE__, __LINE__);
+    }
+
+    return h5type;
+}
+
 
 hid_t Ncltype2HDF5type(NclBasicDataTypes type)
 {
@@ -314,20 +428,14 @@ static int _getH5grpID(NclFileGrpNode *grpnode)
     hid_t fid = -1;
 
   /*
-   *fprintf(stderr, "\nEntering _getH5grpID, int file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tname = <%s>, id: %d\n", NrmQuarkToString(grpnode->name), grpnode->fid);
    */
+    fprintf(stderr, "\nEntering _getH5grpID, int file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tname = <%s>, id: %d\n", NrmQuarkToString(grpnode->name), grpnode->fid);
 
-/*
-    if(grpnode->open)
-    {
-        fid = grpnode->fid;
-        H5Fclose(fid);
-    }
+    fid = grpnode->fid;
 
     if(fid < 0)
     {
-*/
         fid = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_RDWR, H5P_DEFAULT);
 
         if(strcmp(NrmQuarkToString(grpnode->real_name), "/"))
@@ -365,9 +473,7 @@ static int _getH5grpID(NclFileGrpNode *grpnode)
                   NrmQuarkToString(grpnode->path)));
             return(NhlFATAL);
         }
-/*
     }
-*/
 
     grpnode->fid = fid;
     grpnode->id = fid;
@@ -909,14 +1015,14 @@ char *_getH5typeName(hid_t type, int ind)
             {
                 hid_t       super;
 
-                fprintf(stderr, "file: %s, line: %d\n\n", __FILE__, __LINE__);
                 strcpy(attTypeName, "vlen");
 
                 super = H5Tget_super(type);
               /*
                *attTypeName = _getH5typeName(super, ind+4);
+               *fprintf(stderr, "file: %s, line: %d\n\n", __FILE__, __LINE__);
+               *fprintf(stderr, "variable length of %s\n", attTypeName);
                */
-                fprintf(stderr, "variable length of %s\n", attTypeName);
                 H5Tclose(super);
             }
             return attTypeName;
@@ -1788,9 +1894,9 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
     char *typename;
     NclFileVarNode *varnode = *node;
 
-    fprintf(stderr, "\nEntering _readH5dataInfo, at file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tid: %d, name: <%s>\n", dset, name);
   /*
+   *fprintf(stderr, "\nEntering _readH5dataInfo, at file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tid: %d, name: <%s>\n", dset, name);
    */
 
     space = H5Dget_space(dset);
@@ -2043,8 +2149,8 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
     }
 
   /*
+   *fprintf(stderr, "Leaving _readH5dataInfo, at file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "Leaving _readH5dataInfo, at file: %s, line: %d\n\n", __FILE__, __LINE__);
 
     return SUCCEED;
 }
@@ -2730,21 +2836,24 @@ void *H5OpenFile(void *rec, NclQuark path, int status)
    *fprintf(stderr,"\tpath: <%s>\n", (char *)NrmQuarkToString(path));
    */
 
-    if(grpnode->open)
+    fid = grpnode->id;
+
+    if(fid < 0)
     {
-        fid = grpnode->id;
-    }
-    else if(status > 0)
-    {
-        fid = H5Fopen(NrmQuarkToString(path), H5F_ACC_RDONLY, H5P_DEFAULT);
-        grpnode->define_mode = 0;
-        grpnode->fid = fid;
-        grpnode->id = fid;
-        grpnode->parent = NULL;
-    }
-    else
-    {
-        fid = H5Fcreate(NrmQuarkToString(path), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+        if(status > 0)
+        {
+          /*
+           *fprintf(stderr,"\nEnter H5OpenFile, file: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr,"\tpath: <%s>\n", (char *)NrmQuarkToString(path));
+           */
+            fid = H5Fopen(NrmQuarkToString(path), H5F_ACC_RDONLY, H5P_DEFAULT);
+        }
+        else
+        {
+            fid = H5Fcreate(NrmQuarkToString(path), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+        }
+
+        grpnode->open = 1;
         grpnode->define_mode = 0;
         grpnode->fid = fid;
         grpnode->id = fid;
@@ -2758,8 +2867,6 @@ void *H5OpenFile(void *rec, NclQuark path, int status)
         NclFree(grpnode);
         return(NULL);
     }
-
-    grpnode->open = 1;
 
     ret_code = _readH5info(&grpnode);
 
@@ -3755,11 +3862,16 @@ static void *H5ReadVar(void *therec, NclQuark thevar,
     fid = (hid_t)_getH5grpID(grpnode);
             
   /*
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tgrpnode->id: %d, varnode->id: %d\n", grpnode->id, varnode->id);
+   */
+    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tgrpnode->id: %d, varnode->id: %d\n", grpnode->id, varnode->id);
+    fprintf(stderr, "\tfid = %d\n", fid);
 
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tfid = %d\n", fid);
+  /*
+    fid = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_RDONLY, H5P_DEFAULT);
+
+    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tfid = %d\n", fid);
    */
 
     switch(varnode->type)
@@ -3771,8 +3883,10 @@ static void *H5ReadVar(void *therec, NclQuark thevar,
              break;
         case NCL_list:
         case NCL_vlen:
-             fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-             fprintf(stderr, "\tNeed to read vlen data.\n");
+           /*
+            *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+            *fprintf(stderr, "\tNeed to read vlen data.\n");
+            */
              storage = _getH5vlen(fid, varnode);
              break;
         case NCL_enum:
@@ -3843,6 +3957,8 @@ static void *H5ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void *
 
     varnode = _getVarNodeFromNclFileGrpNode(grpnode, thevar);
 
+    fid = (hid_t)_getH5grpID(grpnode);
+
 #if 0
     if(NULL != varnode)
     {
@@ -3872,18 +3988,6 @@ static void *H5ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void *
                 return NULL;
             }
 
-            if(grpnode->open)
-            {
-                fid = grpnode->id;
-            }
-            else
-            {
-                grpnode->fid = fid;
-                grpnode->id = fid;
-                grpnode->define_mode = 0;
-                grpnode->open = 1;
-            }
-            
             if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt  == Qmissing_val))
             {
                 tmp = (char*)NclMalloc(attnode->n_elem + 1);
@@ -3932,6 +4036,8 @@ static void H5FreeFileRec(void* therec)
 
     if(grpnode->open)
     {
+        fprintf(stderr, "H5FreeFileRec in file: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "H5FreeFileRec file id: <%d>\n", grpnode->fid);
         H5Fclose(grpnode->fid);
     }
 
@@ -3948,10 +4054,10 @@ static void *H5CreateFile(void *rec, NclQuark path)
     fid = H5Fcreate(NrmQuarkToString(path), H5F_ACC_TRUNC, mode, H5P_DEFAULT);
 
   /*
-   *fprintf(stderr, "H5CreateFile in file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "H5CreateFile create file: <%s>\n", NrmQuarkToString(path));
-   *fprintf(stderr, "H5CreateFile file id: <%d>\n", fid);
    */
+    fprintf(stderr, "H5CreateFile in file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "H5CreateFile create file: <%s>\n", NrmQuarkToString(path));
+    fprintf(stderr, "H5CreateFile file id: <%d>\n", fid);
 
     if(fid > 0)
     {
@@ -4884,13 +4990,10 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
 
       /*
        *Create variable-length datatype for file and memory.
-        filetype = H5Tvlen_create(H5T_STD_I32LE);
-        memtype  = H5Tvlen_create(H5T_NATIVE_INT);
        */
 
-        fid = H5Fcreate("tst.h5", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-        filetype = H5Tvlen_create(H5T_STD_I32LE);
         memtype  = H5Tvlen_create(Ncltype2HDF5type(tmp_md->multidval.data_type));
+        filetype = H5Tvlen_create(h5memtype2filetype(memtype));
 
         fprintf(stderr, "\tH5T_STD_I32LE = %d, H5T_NATIVE_INT  = %d\n", H5T_STD_I32LE, H5T_NATIVE_INT);
         fprintf(stderr, "\tNcltype2HDF5type(tmp_md->multidval.data_type) = %d\n",
@@ -4927,7 +5030,6 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         status = H5Sclose(space);
         status = H5Tclose(filetype);
         status = H5Tclose(memtype);
-        status = H5Fclose(fid);
 
         NclFree(vlendata);
     }
@@ -6077,10 +6179,6 @@ NhlErrorTypes H5AddGrp(void *rec, NclQuark grpname)
     grpnode->open = 1;
     grpnode->parent = rootgrpnode;
 
-  /*
-    status = H5Gclose(gid);
-    status = H5Fclose(fid);
-   */
     fprintf(stderr, "Leave H5AddGrp, file: %s, line: %d\n\n", __FILE__, __LINE__);
 
     return ret;
