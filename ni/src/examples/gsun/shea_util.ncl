@@ -4208,6 +4208,80 @@ begin
   return(maxrun)
 end
 ;-------------------------------
+undef("grad_rich_num_atm")
+function grad_rich_num_atm(th:numeric, u:numeric, v:numeric ,z:numeric, ndim[1]:integer)
+;
+; Calculate atmospheric Gradient Richardson Number
+;      A dimensionless ratio, Ri, related to the buoyant production or 
+;      consumption of turbulence divided by the shear production of turbulence.
+;      It is used to indicate dynamic stability and the formation of turbulence.
+;
+; AMS Glossary:  
+;    http://amsglossary.allenpress.com/glossary/search?id=gradient-richardson-number1
+;           Uses Tv and not THETAv in denominator. ?Erro?
+;
+; th   - virtual potential temperature (K)
+; u,v  - wind components (m/s) ; same dimensionality as 'th' and 't'
+; z    - height (m)
+; ndim - dimension of 'th' for which vertical gradient is to be calculated
+;        th(:), wspd(:), z(:) ..... ndim=0
+;        th(:,:,:)  , z(:) or z(:,:,:)   and the left is the vertical dim, ndim=0
+;        th(:,:,:,:), z(:) or z(:,:,:,:) and the left is the time dimension 
+;                                        and the next is height,  ndim=1 
+local dimth, dimu, dimv, dimz, rankth, ranku, rankv, rankz \
+    , g, dthdz, brunt, dudz, dvdz, Ri
+begin
+                                ; dimension checking
+  dimu    = dimsizes(u)
+  dimv    = dimsizes(v)
+  dimz    = dimsizes(z)
+  dimth   = dimsizes(th)
+
+  rankth  = dimsizes(dimth)
+  ranku   = dimsizes(dimu)   
+  rankv   = dimsizes(dimv)   
+  rankz   = dimsizes(dimz)   
+                                ; no need to check all of them!
+  if (rankth.ne.ranku .or. .not.all(dimth.eq.dimu)) then
+      print("rich_num_atm: th, u, v must have the same rank & dimensionality")
+      print(dimth)
+      print(dimu) 
+      exit
+  end if
+
+  dthdz  = center_finite_diff_n(th, z, False, 0, ndim) 
+  copy_VarCoords(t, dthdz)
+  dthdz@long_name = "Vertical Gradient of theta"
+  dthdz@units     = "degK/m"
+ ;print("rich_num_atm: dthdz: min="+min(dthdz)+"   max="+max(dthdz))
+
+  g      = 9.8
+  brunt  = dthdz*(g/th)     
+  copy_VarCoords(u, brunt)
+  brunt@long_name = "Brunt–Vaisala (bouyancy) frequency"
+  brunt@units     = "1/s"
+ ;print("rich_num_atm: brunt: min="+min(brunt)+"   max="+max(brunt))
+  
+  dudz   = center_finite_diff_n(u , z, False, 0, ndim) 
+  copy_VarCoords(u, dudz)
+  dudz@long_name  = "vertical gradient of the zonal wind"
+  dudz@units      = "1/s"
+ ;print("rich_num_atm: dudz: min="+min(dudz)+"   max="+max(dudz))
+
+  dvdz   = center_finite_diff_n(v , z, False, 0, ndim) 
+  copy_VarCoords(v, dvdz)
+  dvdz@long_name  = "vertical gradient of the meridional wind"
+  dvdz@units      = "1/s"
+ ;print("rich_num_atm: dvdz: min="+min(dvdz)+"   max="+max(dvdz))
+
+  Ri     = brunt/(dudz^2 + dvdz^2)
+  copy_VarCoords(u, Ri)
+  Ri@long_name   = "Gradient Richardson Number"
+  Ri@description = Ri@long_name
+  
+  return(Ri)
+end
+;-------------------------------
 undef("area_global_rectilinear_grid")
 function area_global_rectilinear_grid (lat[*]:numeric, lon[*], opt[1]:logical)
 ; Area (approximate) of a global rectilinear grid cells.
