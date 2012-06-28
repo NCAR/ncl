@@ -94,6 +94,9 @@ NclQuark *splitString(NclQuark inq, int *num);
 
 NclGroup *NewFileReadGroup(NclFile infile, NclQuark group_name);
 
+static void _justPrintEnumValAtPoint(FILE *fp, NclBasicDataTypes type, void *val, size_t np,
+                                     size_t nenums, NclFileEnumNode *enum_node);
+
 /*
  * this is for 1-D variables only - basically for coordinate variables.
  */
@@ -471,6 +474,61 @@ void _justPrintTypeVal(FILE *fp, NclBasicDataTypes type, void *val, int newline)
         nclfprintf(fp, "\n");
 }
 
+void _justPrintEnumValAtPoint(FILE *fp, NclBasicDataTypes type, void *val, size_t np,
+                              size_t nenums, NclFileEnumNode *enum_node)
+{
+    int n = 0;
+    long long nv;
+
+    switch(type)
+    {
+        case NCL_char:
+        case NCL_byte:
+        case NCL_ubyte:
+            {
+             char *v = (char *)val;
+             nv = v[np];
+             break;
+            }
+        case NCL_short:
+        case NCL_ushort:
+            {
+             short *v = (short *)val;
+             nv = v[np];
+             break;
+            }
+        case NCL_int:
+        case NCL_uint:
+            {
+             int *iv = (int *)val;
+             nv = iv[np];
+             break;
+            }
+        case NCL_long:
+        case NCL_ulong:
+            {
+             long *v = (long *)val;
+             nv = v[np];
+             break;
+            }
+        case NCL_int64:
+        case NCL_uint64:
+            {
+             long long *v = (long long *)val;
+             nv = v[np];
+             break;
+            }
+        default:
+            fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
+            fprintf(stderr, "\tUNKNOWN type: 0%o, val (in char): <%s>", type, (char *)val);
+            break;
+    }
+
+    n = (int) nv;
+    nclfprintf(fp, "%s", (char *)NrmQuarkToString(enum_node[n].name));
+}
+
+
 void _justPrintTypeValAtPoint(FILE *fp, NclBasicDataTypes type, void *val, size_t np, int newline)
 {
     switch(type)
@@ -538,6 +596,16 @@ void _justPrintTypeValAtPoint(FILE *fp, NclBasicDataTypes type, void *val, size_
             {
              size_t *v = (size_t *)val;
              nclfprintf(fp, " (ObjRef)%ld", (long)v[np]);
+             break;
+            }
+        case NCL_enum:
+            {
+           /*
+             size_t *v = (size_t *)val;
+             nclfprintf(fp, " (ObjRef)%ld", (long)v[np]);
+            */
+             fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
+             fprintf(stderr, "\tNeed to know how to print enum.\n");
              break;
             }
         default:
@@ -700,6 +768,35 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
             }
 
             _justPrintTypeVal(fp, NCL_char, "}}", 1);
+
+            continue;
+        }
+        else if(attnode->is_enum)
+        {
+            int k;
+            size_t n = 0;
+            NclFileEnumRecord *enumrec = (NclFileEnumRecord *) attnode->value;
+          /*
+           *fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tAtt No. %d: name: <%s>, n_enums: %d, type: 0%o, type-name: %s\n",
+           *                 i, NrmQuarkToString(attnode->name), enumrec->n_enums,
+           *                 enumrec->type, NrmQuarkToString(enumrec->name));
+           *fprintf(stderr, "\tenumrec->n_enums = %d, enumrec->size = %d\n",
+           *                   enumrec->n_enums, enumrec->size);
+           */
+
+            _justPrintTypeVal(fp, NCL_char, "\t", 0);
+            _justPrintTypeVal(fp, NCL_char, NrmQuarkToString(enumrec->name), 0);
+            _justPrintTypeVal(fp, NCL_char, " {", 0);
+
+            for(j = 0; j < enumrec->n_enums; ++j)
+            {
+                if(j) _justPrintTypeVal(fp, NCL_char, ", ", 0);
+                _justPrintEnumValAtPoint(fp, enumrec->type, enumrec->values,
+                                          j, enumrec->size, enumrec->enum_node);
+            }
+
+            _justPrintTypeVal(fp, NCL_char, "}", 1);
 
             continue;
         }

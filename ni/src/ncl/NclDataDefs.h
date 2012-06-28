@@ -115,7 +115,8 @@ NCL_compound = 	0200000,
 NCL_opaque =	0400000,
 NCL_enum =	01000000,
 NCL_vlen =	02000000,
-NCL_reference =	04000000
+NCL_reference =	04000000,
+NCL_virtual =	010000000
 } NclBasicDataTypes;
 
 typedef NclQuark string; /* Makes this a quark type */
