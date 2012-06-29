@@ -4745,15 +4745,8 @@ NhlErrorTypes _Nclstr_print(void)
                 {
                     ndvdl[nelems] = length + 1;
 
-                    if(nelems)
-                    {
-                        strcat(prntln, " ");
-                        strcat(prntln, buffer);
-                    }
-                    else
-                    {
-                        strcpy(prntln, buffer);
-                    }
+                    strcat(prntln, " ");
+                    strcat(prntln, buffer);
                     nstart += ndvdl[nelems];
                 }
             }
@@ -4773,6 +4766,503 @@ NhlErrorTypes _Nclstr_print(void)
 
   /*
    *fprintf(stderr, "Leave _Nclstr_print, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   */
+}
+
+NhlErrorTypes _Nclstr_print2(void)
+{
+    obj *list_id;
+    NclObj thelist = NULL;
+
+    string *qformat;
+
+    size_t i = 0;
+    int nelems = 0;
+    int maxelems = MAX_LIST_ELEMENT;
+    int truelems = 0;
+    NclBasicDataTypes type[MAX_LIST_ELEMENT];
+    char              format[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
+    size_t            size[MAX_LIST_ELEMENT];
+    size_t maxlen = 0;
+
+    char              name[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
+    char *tmp;
+    char *result = NULL;
+
+    NclList         tmp_list;
+    NclListObjList *step;
+    NclObj          theobj;
+    NclObj          cur_obj;
+    NhlErrorTypes ret = -1;
+
+    NclMultiDValData thevalue = NULL;
+    NclMultiDValData tmp_md = NULL;
+    NclVar           thevar;
+
+    char prntln[NCL_INITIAL_STRING_LENGTH];
+    char buffer[NCL_INITIAL_STRING_LENGTH];
+
+    int nstart, length, remain;
+    int ndvdl[MAX_LIST_ELEMENT];
+    int has_lead = 0;
+
+  /*
+   *fprintf(stderr, "\nEnter _Nclstr_print2, file: %s, line: %d\n", __FILE__, __LINE__);
+   */
+
+    list_id = (obj *)NclGetArgValue(
+               0,
+               2,
+               NULL,
+               NULL,
+               NULL,
+               NULL,
+               NULL,
+               DONT_CARE);
+
+    qformat = (string *)NclGetArgValue(
+              1,
+              2,
+              NULL,
+              NULL,
+              NULL,
+              NULL,
+              NULL,
+              DONT_CARE);
+
+    thelist = _NclGetObj(*list_id);
+    thevar = (NclVar)thelist;
+
+    tmp_list = (NclList) thelist;
+
+    tmp = NrmQuarkToString(*qformat);
+    if(tmp == NULL)
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: unknown format.\n");
+        return(NhlFATAL);
+    }
+
+    if('%' != tmp[0])
+        has_lead = 1;
+
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\ttmp str: <%s>\n", tmp);
+   */
+
+    nelems = 0;
+    result = strtok(tmp, "%");
+    while(result != NULL)
+    {
+        ndvdl[nelems] = MAX_PRINT_SPACES;
+        if(16 > nelems)
+        {
+            strcpy(format[nelems], "%");
+            strcat(format[nelems], result);
+          /*
+           *fprintf(stderr, "\tformat[%d] = <%s>\n", nelems, format[nelems]);
+           */
+        }
+        else
+        {
+            NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: str_print can only handle list less than 16 elements.\n");
+            return(NhlFATAL);
+        }
+
+        result = strtok(NULL, "%");
+        ++nelems;
+    }
+
+    maxelems = nelems;
+
+    if(has_lead)
+    {
+       tmp= &(format[0][0]);
+       strcpy(format[0], tmp + 1);
+       --maxelems;
+       strcat(format[0], format[1]);
+       for(i = 1; i < maxelems; ++i)
+          strcpy(format[i], format[i+1]);
+    }
+
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tmaxelems = %d\n", maxelems);
+   */
+
+    nelems = 0;
+    step = tmp_list->list.first;
+    while(step != NULL)
+    {
+        cur_obj = (NclObj)_NclGetObj(step->obj_id);
+
+      /*
+       *fprintf(stderr, "\n\tList Item %d:\n", nelems);
+       */
+
+        switch(cur_obj->obj.obj_type)
+        {
+            case Ncl_Var:
+            case Ncl_FileVar:
+                 theobj = _NclGetObj(cur_obj->obj.id);
+                 thevar = (NclVar)theobj;
+
+                 if(thevar->var.thesym != NULL)
+                     strcpy(name[nelems], thevar->var.thesym->name);
+                 else if(thevar->var.var_quark != -1)
+                     strcpy(name[nelems], NrmQuarkToString(thevar->var.var_quark));
+                 else
+                     strcpy(name[nelems], "unnamed");
+
+               /*
+                *fprintf(stderr,"\tVariable name: <%s>\n",name[nelems]);
+                */
+
+                 thevalue = (NclMultiDValData)_NclGetObj(thevar->var.thevalue_id);
+                 if(thevalue->obj.obj_type_mask & Ncl_MultiDValnclfileData)
+                 {
+                   /*
+                    *fprintf(stderr, "Type: file\n");
+                    *if (thevalue->multidval.missing_value.has_missing &&
+                    *    *(obj*)thevalue->multidval.val == thevalue->multidval.missing_value.value.objval) {
+                    *    nclfprintf(stderr, "(0) File Missing Value : %d\n",*(obj*)thevalue->multidval.val);
+                    *}
+                    *else {
+                    *    NclObj file = _NclGetObj(*(int*)thevalue->multidval.val);
+                    *    _NclPrintFileSummary(file,fp);
+                    *}
+                    */
+         
+                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: can not print file list yet.\n");
+                     return(NhlFATAL);
+                 }
+                 else if(thevalue->obj.obj_type_mask & Ncl_MultiDVallistData)
+                 {
+                   /*
+                    *ret = _PrintListVarSummary((NclObj)thevalue,fp);
+                    */
+         
+                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: can not print list in list yet.\n");
+                     return(NhlFATAL);
+                 }
+                 else
+                 {
+                     type[nelems] = NCL_none;
+                     size[nelems] = 0;
+                     if(thevalue != NULL)
+                     {
+                         type[nelems] = thevalue->multidval.data_type;
+                       /*
+                        *fprintf(stderr, "Type: %s\n",_NclBasicDataTypeToName(thevalue->multidval.data_type));
+                        *fprintf(stderr, "Total Size: %lld bytes\n",(long long)thevalue->multidval.totalsize);
+                        *fprintf(stderr, "            %lld values\n",(long long)thevalue->multidval.totalelements);
+                        */
+                         if(thevalue->multidval.totalelements > maxlen)
+                             maxlen = thevalue->multidval.totalelements;
+                         size[nelems] = thevalue->multidval.totalelements;
+         
+                       /*
+                        *fprintf(stderr, "\ttype[%d]: %s\n", nelems, _NclBasicDataTypeToName(type[nelems]));
+                        *fprintf(stderr, "\tsize[%d]: %d\n", nelems, size[nelems]);
+                        */
+                     }
+                   /*
+                    *fprintf(stderr, "Number of Dimensions: %d\n",thevar->var.n_dims);
+                    *fprintf(stderr, "Dimensions and sizes:\t");
+                    *for(i = 0; i< thevar->var.n_dims; i++) {
+                    *    fprintf(stderr, "[");
+                    *    if((thevar->var.dim_info[i].dim_quark != -1)) {
+                    *        fprintf(stderr, "%s | ",NrmQuarkToString(thevar->var.dim_info[i].dim_quark));
+                    *    }
+                    *    fprintf(stderr, "%lld]",(long long)thevar->var.dim_info[i].dim_size);
+                    *    if(i !=  thevar->var.n_dims - 1) {
+                    *        fprintf(stderr, " x ");
+                    *    }
+                    *}
+                    *fprintf(stderr, "\n");
+                    */
+                 }
+
+                 break;
+            default:
+                 fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
+                 fprintf(stderr, "\tUNRECOGANIZED cur_obj->obj.obj_type %d: %o\n", nelems, cur_obj->obj.obj_type);
+        }
+
+        step = step->next;
+        ++nelems;
+    }
+
+    truelems = nelems;
+    if(maxelems > truelems)
+       maxelems = truelems;
+
+  /*
+   *fprintf(stderr, "\n\tmaxlen = %d\n", maxlen);
+   */
+
+  /*Print total number of elements*/
+    fprintf(stdout, "\nList has %d elements:\n", maxelems);
+
+  /*Print name of elements*/
+    strcpy(prntln, "Element name: ");
+
+    nstart = strlen(prntln);
+    for(nelems = 0; nelems < maxelems; ++nelems)
+    {
+         length = strlen(name[nelems]);
+         remain = ndvdl[nelems] - length;
+         if(remain > 0)
+         {
+            memset(prntln + nstart, ' ', remain);
+            prntln[nstart + remain] = '\0';
+            strcat(prntln, name[nelems]);
+            nstart += ndvdl[nelems];
+         }
+         else
+         {
+            strcat(prntln, name[nelems]);
+            nstart += length;
+         }
+    }
+
+    fprintf(stdout, "%s\n", prntln);
+
+  /*Print type of elements*/
+    strcpy(prntln, "Element type: ");
+    nstart = strlen(prntln);
+    for(nelems = 0; nelems < maxelems; ++nelems)
+    {
+         strcpy(buffer, _NclBasicDataTypeToName(type[nelems]));
+
+         length = strlen(buffer);
+         remain = ndvdl[nelems] - length;
+         if(remain > 0)
+         {
+            memset(prntln + nstart, ' ', remain);
+            prntln[nstart + remain] = '\0';
+            strcat(prntln, buffer);
+            nstart += ndvdl[nelems];
+         }
+         else
+         {
+            strcat(prntln, buffer);
+            nstart += length;
+         }
+    }
+
+    fprintf(stdout, "%s\n", prntln);
+
+  /*Print size of elements*/
+    strcpy(prntln, "Element size: ");
+    nstart = strlen(prntln);
+    for(nelems = 0; nelems < maxelems; ++nelems)
+    {
+         sprintf(buffer, "%ld", (long) size[nelems]);
+         
+         length = strlen(buffer);
+         remain = ndvdl[nelems] - length;
+         if(remain > 0)
+         {
+            memset(prntln + nstart, ' ', remain);
+            prntln[nstart + remain] = '\0';
+            strcat(prntln, buffer);
+            nstart += ndvdl[nelems];
+         }
+         else
+         {
+            strcat(prntln, buffer);
+            nstart += length;
+         }
+    }
+
+    fprintf(stdout, "%s\n", prntln);
+
+  /*Print value of elements*/
+    fprintf(stdout, "Element Value:\n");
+
+    nelems = 0;
+    for(i = 0; i < maxlen; ++i)
+    {
+        strcpy(buffer, "Element size: ");
+        length = strlen(buffer);
+        memset(prntln, ' ', length);
+        prntln[length] = '\0';
+
+        sprintf(buffer, "%ld", (long) i);
+   
+        remain = length - strlen(buffer);
+        if(remain > 0)
+        {
+           memset(prntln, ' ', remain);
+           prntln[remain] = '\0';
+           strcat(prntln, buffer);
+           nstart = length;
+        }
+        else
+        {
+           strcat(prntln, buffer);
+           nstart = strlen(buffer);
+        }
+
+        step = tmp_list->list.first;
+        for(nelems = 0; nelems < maxelems; ++nelems)
+        {
+            if(i < size[nelems])
+            {
+                cur_obj = (NclObj)_NclGetObj(step->obj_id);
+
+                theobj = _NclGetObj(cur_obj->obj.id);
+                thevar = (NclVar)theobj;
+
+                thevalue = (NclMultiDValData)_NclGetObj(thevar->var.thevalue_id);
+
+                if(thevalue != NULL)
+                {
+                    switch (type[nelems])
+                    {
+                        case NCL_string:
+                             {
+                                 int ns = 0;
+                                 int n = 0;
+                                 string *sp = (string *) thevalue->multidval.val;
+                                 sprintf(buffer, format[nelems], NrmQuarkToString(*(sp + i)));
+                                 for(n = 0; n < strlen(buffer); ++n)
+                                 {
+                                     if(' ' != buffer[n])
+                                     {
+                                         ns = n;
+                                         break;
+                                     }
+                                 }
+
+                                 if(ns)
+                                 {
+                                     n = 0;
+                                     while(ns < strlen(buffer))
+                                     {
+                                         buffer[n++] = buffer[ns];
+                                         buffer[ns++] = ' ';
+                                     }
+                                 }
+                             }
+                             break;
+                        case NCL_float:
+                             {
+                                 float *fp = (float *) thevalue->multidval.val;
+                                 sprintf(buffer, format[nelems], *(fp + i));
+                             }
+                             break;
+                        case NCL_double:
+                             {
+                                 double *dp = (double *) thevalue->multidval.val;
+                                 sprintf(buffer, format[nelems], *(dp + i));
+                             }
+                             break;
+                        case NCL_int64:
+                             {
+                                 long long *llp = (long long *) thevalue->multidval.val;
+                                 sprintf(buffer, format[nelems], *(llp + i));
+                             }
+                             break;
+                        case NCL_uint64:
+                             {
+                                 unsigned long long *llp = (unsigned long long *) thevalue->multidval.val;
+                                 sprintf(buffer, format[nelems], *(llp + i));
+                             }
+                             break;
+                        case NCL_long:
+                             {
+                                 long *lp = (long *) thevalue->multidval.val;
+                                 sprintf(buffer, format[nelems], *(lp + i));
+                             }
+                             break;
+                        case NCL_ulong:
+                             {
+                                 unsigned long *lp = (unsigned long *) thevalue->multidval.val;
+                                 sprintf(buffer, format[nelems], *(lp + i));
+                             }
+                             break;
+                        case NCL_int:
+                             {
+                                 int *ip = (int *) thevalue->multidval.val;
+                                 sprintf(buffer, format[nelems], *(ip + i));
+                             }
+                             break;
+                        case NCL_uint:
+                             {
+                                 unsigned int *ip = (unsigned int *) thevalue->multidval.val;
+                                 sprintf(buffer, format[nelems], *(ip + i));
+                             }
+                             break;
+                        case NCL_short:
+                             {
+                                 short *sp = (short *) thevalue->multidval.val;
+                                 sprintf(buffer, format[nelems], *(sp + i));
+                             }
+                             break;
+                        case NCL_ushort:
+                             {
+                                 unsigned short *sp = (unsigned short *) thevalue->multidval.val;
+                                 sprintf(buffer, format[nelems], *(sp + i));
+                             }
+                             break;
+                        case NCL_byte:
+                             {
+                                 char *cp = (char *) thevalue->multidval.val;
+                                 sprintf(buffer, format[nelems], *(cp + i));
+                             }
+                             break;
+                        case NCL_char:
+                             {
+                                 unsigned char *cp = (unsigned char *) thevalue->multidval.val;
+                                 sprintf(buffer, format[nelems], *(cp + i));
+                             }
+                             break;
+                        default:
+                             memset(buffer, ' ', ndvdl[nelems]);
+                             buffer[ndvdl[nelems]] = '\0';
+
+                             fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
+                             fprintf(stderr, "\tUNRECOGANIZED thevalue->multidval.data_type 0x%o\n", thevalue->multidval.data_type);
+                    }
+                }
+
+                length = strlen(buffer);
+                remain = ndvdl[nelems] - length;
+
+                if(remain > 0)
+                {
+                   memset(prntln + nstart, ' ', remain);
+                   prntln[nstart + remain] = '\0';
+                   strcat(prntln, buffer);
+                   nstart += ndvdl[nelems];
+                }
+                else
+                {
+                    ndvdl[nelems] = length + 1;
+
+                    strcat(prntln, " ");
+                    strcat(prntln, buffer);
+                    nstart += ndvdl[nelems];
+                }
+            }
+            else
+            {
+                memset(buffer, ' ', ndvdl[nelems]);
+                buffer[ndvdl[nelems]] = '\0';
+                strcat(prntln, buffer);
+                nstart += ndvdl[nelems];
+            }
+
+            step = step->next;
+        }
+
+        fprintf(stdout, "%s\n", prntln);
+    }
+
+  /*
+   *fprintf(stderr, "Leave _Nclstr_print2, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
 }
 

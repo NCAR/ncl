@@ -32,6 +32,7 @@ extern "C" {
 #include "HLUFunctions.h"
 
 extern NhlErrorTypes _Nclstr_print(void);
+extern NhlErrorTypes _Nclstr_print2(void);
 extern NhlErrorTypes _Nclstr_write(void);
 
 extern NhlErrorTypes _Nclstr_fields_count(
@@ -412,6 +413,13 @@ void NclAddUserBuiltInFuncs
     SetArgTemplate(args, nargs, "list",   1, dimsizes); nargs++;
     SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
     NclRegisterProc(_Nclstr_print, args, "str_print", nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "list",   1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    NclRegisterProc(_Nclstr_print2, args, "str_print2", nargs);
 
     nargs = 0;
     args = NewArgs(4);
