@@ -177,37 +177,37 @@ hid_t h5memtype2filetype(hid_t memtype)
     {
        if((H5T_NATIVE_CHAR == memtype) || (H5T_NATIVE_SCHAR == memtype))
             h5type = H5T_STD_I8BE;
-       else if(H5T_NATIVE_UCHAR)
+       else if(H5T_NATIVE_UCHAR == memtype)
             h5type = H5T_STD_U8BE;
-       else if(H5T_NATIVE_SHORT)
+       else if(H5T_NATIVE_SHORT == memtype)
             h5type = H5T_STD_I16BE;
-       else if(H5T_NATIVE_USHORT)
+       else if(H5T_NATIVE_USHORT == memtype)
             h5type = H5T_STD_U16BE;
-       else if(H5T_NATIVE_INT)
+       else if(H5T_NATIVE_INT == memtype)
             h5type = H5T_STD_I32BE;
-       else if(H5T_NATIVE_UINT)
+       else if(H5T_NATIVE_UINT == memtype)
             h5type = H5T_STD_U32BE;
-       else if(H5T_NATIVE_LONG)
+       else if(H5T_NATIVE_LONG == memtype)
        {
             if(is64bitMachine)
                 h5type = H5T_STD_I64BE;
             else
                 h5type = H5T_STD_I32BE;
        }
-       else if(H5T_NATIVE_ULONG)
+       else if(H5T_NATIVE_ULONG == memtype)
        {
             if(is64bitMachine)
                 h5type = H5T_STD_U64BE;
             else
                 h5type = H5T_STD_U32BE;
        }
-       else if(H5T_NATIVE_FLOAT)
+       else if(H5T_NATIVE_FLOAT == memtype)
             h5type = H5T_IEEE_F32BE;
-       else if(H5T_NATIVE_LLONG)
+       else if(H5T_NATIVE_LLONG == memtype)
             h5type = H5T_STD_I64BE;
-       else if(H5T_NATIVE_ULLONG)
+       else if(H5T_NATIVE_ULLONG == memtype)
             h5type = H5T_STD_U64BE;
-       else if(H5T_NATIVE_DOUBLE)
+       else if(H5T_NATIVE_DOUBLE == memtype)
             h5type = H5T_IEEE_F64BE;
        else
             fprintf(stderr, "\nUNKOWN TYPE: <%d>. file: %s, line: %d\n",
@@ -215,39 +215,39 @@ hid_t h5memtype2filetype(hid_t memtype)
     }
     else
     {
-        if((H5T_NATIVE_CHAR) || (H5T_NATIVE_SCHAR))
+        if((H5T_NATIVE_CHAR == memtype) || (H5T_NATIVE_SCHAR == memtype))
             h5type = H5T_STD_I8LE;
-        else if(H5T_NATIVE_UCHAR)
+        else if(H5T_NATIVE_UCHAR == memtype)
             h5type = H5T_STD_U8LE;
-        else if(H5T_NATIVE_SHORT)
+        else if(H5T_NATIVE_SHORT == memtype)
             h5type = H5T_STD_I16LE;
-        else if(H5T_NATIVE_USHORT)
+        else if(H5T_NATIVE_USHORT == memtype)
             h5type = H5T_STD_U16LE;
-        else if(H5T_NATIVE_INT)
+        else if(H5T_NATIVE_INT == memtype)
             h5type = H5T_STD_I32LE;
-        else if(H5T_NATIVE_UINT)
+        else if(H5T_NATIVE_UINT == memtype)
             h5type = H5T_STD_U32LE;
-        else if(H5T_NATIVE_LONG)
+        else if(H5T_NATIVE_LONG == memtype)
         {
             if(is64bitMachine)
                 h5type = H5T_STD_I64LE;
             else
                 h5type = H5T_STD_I32LE;
         }
-        else if(H5T_NATIVE_ULONG)
+        else if(H5T_NATIVE_ULONG == memtype)
         {
             if(is64bitMachine)
                 h5type = H5T_STD_U64LE;
             else
                 h5type = H5T_STD_U32LE;
         }
-        else if(H5T_NATIVE_FLOAT)
+        else if(H5T_NATIVE_FLOAT == memtype)
             h5type = H5T_IEEE_F32LE;
-        else if(H5T_NATIVE_LLONG)
+        else if(H5T_NATIVE_LLONG == memtype)
             h5type = H5T_STD_I64LE;
-        else if(H5T_NATIVE_ULLONG)
+        else if(H5T_NATIVE_ULLONG == memtype)
             h5type = H5T_STD_U64LE;
-        else if(H5T_NATIVE_DOUBLE)
+        else if(H5T_NATIVE_DOUBLE == memtype)
             h5type = H5T_IEEE_F64LE;
         else
             fprintf(stderr, "\nUNKOWN TYPE: <%d>. file: %s, line: %d\n",
@@ -1001,10 +1001,12 @@ char *_getH5typeName(hid_t type, int ind)
             {
                 char *tag;
 
-                fprintf(stderr, "file: %s, line: %d\n\n", __FILE__, __LINE__);
                 strcpy(attTypeName, "opaque");
                 bit = (unsigned) (8*size);
-                fprintf(stderr, "%lu-byte opaque type\n", (unsigned long)size);
+
+              /*
+                fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                fprintf(stderr, "\t%lu-byte opaque type\n", (unsigned long)size);
                 if ((tag=H5Tget_tag(type)))
                 {
                     printf("\n%*s(tag = \"", ind, "");
@@ -1012,6 +1014,7 @@ char *_getH5typeName(hid_t type, int ind)
                     strcpy(format, tag);
                     free(tag);
                 }
+               */
             }
             return attTypeName;
             break;
@@ -1369,7 +1372,7 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
 
   /*
    */
-    fprintf(stderr, "\tn file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
     fprintf(stderr, "\ttype_name: <%s>\n", type_name);
 
     attnode->type = string2NclType(type_name);
@@ -1472,8 +1475,11 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
 
     if(p_type >= 0)
     {
+        char *tmpstr;
+
         hsize_t t_size = H5Tget_size(type);
         hsize_t p_size = H5Tget_size(p_type);
+
         if(p_size > t_size)
             temp_need = nelmts * p_size;
         else
@@ -1484,7 +1490,7 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
 
       /*
        */
-        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
         fprintf(stderr, "\tnelmts = %d, need = %d\n", nelmts, need);
 
         if(0 == strcmp(type_name, "string"))
@@ -1496,7 +1502,6 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
             H5T_cset_t  cset;
             hid_t       tmp_type;
             htri_t      is_vlstr=FALSE;
-            char       *tmpstr;
             NrmQuark   *qptr;
 
             tmp_type = H5Tcopy(type);
@@ -1547,6 +1552,7 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
                     qptr[i] = NrmStringToQuark(tmpstr);
                 }
             }
+            free(tmpstr);
         }
         else if(NCL_enum == attnode->type)
         {
@@ -1570,6 +1576,7 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
         }
         else if(NCL_opaque == attnode->type)
         {
+            NclFileOpaqueRecord *opaquerec = (NclFileOpaqueRecord *)NclMalloc(sizeof(NclFileOpaqueRecord));
           /*
            */
             fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -1577,6 +1584,22 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
                              NrmQuarkToString(attnode->name),
                              _NclBasicDataTypeToName(attnode->type));
             fprintf(stderr, "\tNeed to read opaque att.\n\n");
+
+            attnode->n_elem = nelmts;
+            opaquerec->n_opaques = nelmts;
+            opaquerec->size = need/nelmts;
+            opaquerec->type = NCL_opaque;
+            opaquerec->name = NrmStringToQuark("opaque");
+            opaquerec->values = (void *)NclMalloc(need);
+            assert(opaquerec->values);
+
+            n = H5Aread(attr_id, p_type, opaquerec->values);
+            attnode->value = (void *) opaquerec;
+            attnode->is_opaque = 1;
+
+            tmpstr = (char *)opaquerec->values;
+            fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+            fprintf(stderr, "\tatt value: <%s>\n", tmpstr);
         }
         else if(NCL_compound == attnode->type)
         {
@@ -4219,6 +4242,7 @@ static void H5FreeFileRec(void* therec)
         fprintf(stderr, "H5FreeFileRec in file: %s, line: %d\n", __FILE__, __LINE__);
         fprintf(stderr, "H5FreeFileRec file id: <%d>\n", grpnode->fid);
         H5Fclose(grpnode->fid);
+        H5close();
     }
 
     FileDestroyGrpNode(grpnode);
@@ -5171,14 +5195,17 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
       /*
        *Create variable-length datatype for file and memory.
        */
-
+        filetype = H5Tvlen_create(h5memtype2filetype(Ncltype2HDF5type(tmp_md->multidval.data_type)));
         memtype  = H5Tvlen_create(Ncltype2HDF5type(tmp_md->multidval.data_type));
-        filetype = H5Tvlen_create(h5memtype2filetype(memtype));
 
-        fprintf(stderr, "\tH5T_STD_I32LE = %d, H5T_NATIVE_INT  = %d\n", H5T_STD_I32LE, H5T_NATIVE_INT);
+        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
         fprintf(stderr, "\tNcltype2HDF5type(tmp_md->multidval.data_type) = %d\n",
-                      (int)Ncltype2HDF5type(tmp_md->multidval.data_type));
+                           Ncltype2HDF5type(tmp_md->multidval.data_type));
         fprintf(stderr, "\tfiletype = %d, memtype  = %d\n", filetype, memtype);
+        fprintf(stderr, "\tH5T_STD_I32LE = %d, h5memtype2filetype(memtype)  = %d\n",
+                           H5T_STD_I32LE, h5memtype2filetype(Ncltype2HDF5type(tmp_md->multidval.data_type)));
+        fprintf(stderr, "\tH5T_NATIVE_INT = %d, Ncltype2HDF5type(tmp_md->multidval.data_type) = %d\n",
+                           H5T_NATIVE_INT, Ncltype2HDF5type(tmp_md->multidval.data_type));
       /*
        *Create dataspace.  Setting maximum size to NULL sets the maximum
        *size to be the current size.
@@ -5186,8 +5213,10 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         space = H5Screate_simple (rank, dims, NULL);
 
         fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tspace: %d\n", space);
-
+        fprintf(stderr, "\tspace: %d, fid = %d\n", space, fid);
+        fid = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_RDWR, H5P_DEFAULT);
+        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tspace: %d, fid = %d\n", space, fid);
       /*
        *Create the dataset and write the variable-length data to it.
        */

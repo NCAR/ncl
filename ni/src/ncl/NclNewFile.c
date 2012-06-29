@@ -608,6 +608,12 @@ void _justPrintTypeValAtPoint(FILE *fp, NclBasicDataTypes type, void *val, size_
              fprintf(stderr, "\tNeed to know how to print enum.\n");
              break;
             }
+        case NCL_opaque:
+            {
+             fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
+             fprintf(stderr, "\tNeed to know how to print opaque.\n");
+             break;
+            }
         default:
             fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
             fprintf(stderr, "\tUNKNOWN type: 0%o, val (in char): <%s>", type, (char *)val);
@@ -739,6 +745,7 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
             int k;
             size_t n = 0;
             NclFileOpaqueRecord *opaquerec = (NclFileOpaqueRecord *) attnode->value;
+            char *tmpstr = (char *) NclCalloc(1 + opaquerec->size, 1);
           /*
            *fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
            *fprintf(stderr, "\tAtt No. %d: name: <%s>, n_opaques: %d, type: 0%o, type-name: %s\n",
@@ -759,15 +766,13 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
                     _justPrintTypeVal(fp, NCL_char, "}, {", 0);
                 }
 
-                for(k = 0; k < opaquerec->size; k++)
-                {
-                    if(k) _justPrintTypeVal(fp, NCL_char, ", ", 0);
-                    _justPrintTypeValAtPoint(fp, opaquerec->type, opaquerec->values, n, 0);
-                    n++;
-                }
+                memcpy(tmpstr, opaquerec->values + j * opaquerec->size, opaquerec->size);
+                _justPrintTypeVal(fp, NCL_char, tmpstr, 0);
             }
 
             _justPrintTypeVal(fp, NCL_char, "}}", 1);
+
+            NclFree(tmpstr);
 
             continue;
         }
