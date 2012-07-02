@@ -1302,7 +1302,7 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
 
   /*
    */
-    fprintf(stderr, "\tn file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
     fprintf(stderr, "\tattr_id   = %d\n", attr_id);
     fprintf(stderr, "\tattnode->type = %d\n", attnode->type);
     fprintf(stderr, "\tattnode->name = <%s>\n", NrmQuarkToString(attnode->name));
@@ -1485,12 +1485,13 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
         else
             temp_need = nelmts * t_size;
 
-        assert(temp_need == (hsize_t)((size_t)temp_need));
         need = (size_t)temp_need;
 
       /*
+        assert(temp_need == (hsize_t)((size_t)temp_need));
        */
         fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tt_size = %d, p_size = %d\n", t_size, p_size);
         fprintf(stderr, "\tnelmts = %d, need = %d\n", nelmts, need);
 
         if(0 == strcmp(type_name, "string"))
@@ -1578,12 +1579,12 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
         {
             NclFileOpaqueRecord *opaquerec = (NclFileOpaqueRecord *)NclMalloc(sizeof(NclFileOpaqueRecord));
           /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tatt name: <%s>, att type: <%s>\n",
+           *                 NrmQuarkToString(attnode->name),
+           *                 _NclBasicDataTypeToName(attnode->type));
+           *fprintf(stderr, "\tNeed to read opaque att.\n\n");
            */
-            fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tatt name: <%s>, att type: <%s>\n",
-                             NrmQuarkToString(attnode->name),
-                             _NclBasicDataTypeToName(attnode->type));
-            fprintf(stderr, "\tNeed to read opaque att.\n\n");
 
             attnode->n_elem = nelmts;
             opaquerec->n_opaques = nelmts;
@@ -1597,19 +1598,87 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
             attnode->value = (void *) opaquerec;
             attnode->is_opaque = 1;
 
-            tmpstr = (char *)opaquerec->values;
-            fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tatt value: <%s>\n", tmpstr);
+          /*
+           *tmpstr = (char *)opaquerec->values;
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tatt value: <%s>\n", tmpstr);
+           */
         }
         else if(NCL_compound == attnode->type)
         {
+            char    *mname = NULL;     /* member name */
+            char    *typename = NULL;
+            hid_t    subtype;        /* member data type */
+            unsigned nmembs;         /* number of members */
+            unsigned i;              /* miscellaneous counters */
+
+            NclFileCompoundRecord *comprec = NULL;
+            NclFileCompoundNode   *compnode = NULL;
+
+          /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tatt name: <%s>, att type: <%s>\n",
+           *                 NrmQuarkToString(attnode->name),
+           *                 _NclBasicDataTypeToName(attnode->type));
+           *fprintf(stderr, "\tNeed to read compound att.\n\n");
+           */
+
+            nmembs=H5Tget_nmembers(p_type);
+
           /*
            */
-            fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tatt name: <%s>, att type: <%s>\n",
-                             NrmQuarkToString(attnode->name),
-                             _NclBasicDataTypeToName(attnode->type));
-            fprintf(stderr, "\tNeed to read compound att.\n\n");
+            fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+            fprintf(stderr, "\tfound compound data, nmembs = %d\n", nmembs);
+
+            comprec = _NclFileCompoundAlloc((int) nmembs);
+
+            comprec->n_comps = nmembs;
+            comprec->type = type;
+            comprec->size = H5Tget_size(p_type);
+            comprec->name = NrmStringToQuark("Compound");
+
+            comprec->value = (void *) NclMalloc(nelmts * comprec->size);
+            assert(comprec->value);
+
+            n = H5Aread(attr_id, p_type, comprec->value);
+          /*
+           */
+            fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+            fprintf(stderr, "\tcompound data nelmts = %d, need = %d\n", nelmts, need);
+            fprintf(stderr, "\tcompound data size = %d\n", comprec->size);
+
+            for(i = 0; i < nmembs; ++i)
+            {
+                compnode = &(comprec->compnode[i]);
+              /*Name and offset*/
+                mname = H5Tget_member_name(p_type, i);
+                compnode->name = NrmStringToQuark(mname);
+                compnode->offset = (size_t) H5Tget_member_offset(p_type, i);
+    
+              /*Member's type*/
+                subtype = H5Tget_member_type(p_type, i);
+                typename = _getH5typeName(subtype, i+4);
+                compnode->type = string2NclType(typename);
+
+              /*
+               */
+                fprintf(stderr, "\tcomponent no %d name: <%s>, offset = %d, type: <%s>\n",
+                                   i, mname, compnode->offset, typename);
+
+                H5Tclose(subtype);
+                NclFree(typename);
+                NclFree(mname);
+            }
+
+            attnode->n_elem = nelmts;
+            attnode->value = (void *) comprec;
+            attnode->is_compound = 1;
+
+            H5Tclose(type);
+            H5Sclose(space);
+            H5Tclose(p_type);
+            H5Tclose(attr_id);
+            status = H5Dvlen_reclaim(type, space, H5P_DEFAULT, comprec->value);
         }
         else if(NCL_vlen == attnode->type)
         {

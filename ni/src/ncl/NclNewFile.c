@@ -440,7 +440,7 @@ void _justPrintTypeVal(FILE *fp, NclBasicDataTypes type, void *val, int newline)
         case NCL_double:
             {
              double *v = (double *)val;
-             nclfprintf(fp, "%d", v[0]);
+             nclfprintf(fp, "%f", v[0]);
              break;
             }
         case NCL_byte:
@@ -454,7 +454,7 @@ void _justPrintTypeVal(FILE *fp, NclBasicDataTypes type, void *val, int newline)
         case NCL_int64:
         case NCL_uint64:
             {
-             long long *v = (long long *)val;
+             int64 *v = (int64 *)val;
              nclfprintf(fp, "%lld", v[0]);
              break;
             }
@@ -628,7 +628,8 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
 {
     NclFileAttNode   *attnode;
     NclMultiDValData tmp_md;
-    int i, j;
+    size_t offset = 0;
+    int i, j, n;
     int max_print_att = 10;
     
     if(NULL == attrec)
@@ -654,44 +655,84 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
         {
             NclFileCompoundRecord *comprec = (NclFileCompoundRecord *) attnode->value;
             NclFileCompoundNode *compnode;
+            size_t *compsize = (size_t *) NclCalloc(comprec->n_comps, sizeof(size_t));
+            char *charcomp = NULL;
+
           /*
-           *fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\tAtt No. %d: name: <%s>, nelem: %d, type: 0%o, type-name: %s\n",
-           *                 i, NrmQuarkToString(attnode->name), attnode->n_elem,
-           *                 attnode->type, NrmQuarkToString(comprec->name));
            */
+            fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
+            fprintf(stderr, "\tAtt No. %d: name: <%s>, nelem: %d, type: 0%o, type-name: %s\n",
+                             i, NrmQuarkToString(attnode->name), attnode->n_elem,
+                             attnode->type, NrmQuarkToString(comprec->name));
+
+            fprintf(stderr, "\tcompound size %d\n", comprec->size);
+
+            n = comprec->n_comps;
+            offset = comprec->size;
+            while(n)
+            {
+                --n;
+                compnode = &(comprec->compnode[n]);
+                compsize[n] = offset - compnode->offset;
+                offset -= compsize[n];
+
+                fprintf(stderr, "\tcomponent no %d name: <%16s>, size = %d, type: <%s>\n",
+                                   n, NrmQuarkToString(compnode->name),
+                                   compsize[n], _NclBasicDataTypeToName(compnode->type));
+            }
 
             _justPrintTypeVal(fp, NCL_char, "\t", 0);
             _justPrintTypeVal(fp, NCL_char, NrmQuarkToString(comprec->name), 0);
-            _justPrintTypeVal(fp, NCL_char, " (\"", 0);
+            _justPrintTypeVal(fp, NCL_char, " {", 0);
 
-            for(j = 0; j < comprec->n_comps; j++)
+            offset = 0;
+            for(j = 0; j < attnode->n_elem; ++j)
             {
-                compnode = &(comprec->compnode[j]);
-                if(j)
+                _justPrintTypeVal(fp, NCL_char, " (<", 0);
+                fprintf(stderr, "\n");
+
+                for(n = 0; n < comprec->n_comps; ++n)
                 {
-                    _justPrintTypeVal(fp, NCL_char, "\", \"", 0);
+                    compnode = &(comprec->compnode[n]);
+
+                    if(n)
+                    {
+                        _justPrintTypeVal(fp, NCL_char, ">, <", 0);
+                    }
+
+                    if(NCL_string == compnode->type)
+                    {
+                        charcomp = (char *)NclCalloc(1 + compsize[n], sizeof(char));
+                        assert(charcomp);
+                        memcpy(charcomp, comprec->value + offset, compsize[n]);
+                        _justPrintTypeVal(fp, NCL_char, charcomp, 0);
+                        fprintf(stderr, "\tElem No %d component no %d value: <%s>\n", j, n, charcomp);
+                        NclFree(charcomp);
+                    }
+                    else
+                    {
+                        charcomp = (char *)NclMalloc(compsize[n] * sizeof(char));
+                        assert(charcomp);
+                        memcpy(charcomp, comprec->value + offset, compsize[n]);
+                        _justPrintTypeVal(fp, compnode->type, (void *)charcomp, 0);
+
+                        if(NCL_int64 == compnode->type)
+                            fprintf(stderr, "\tElem No %d component no %d value: %lld\n", j, n, *(int64 *)charcomp);
+                        if(NCL_double == compnode->type)
+                            fprintf(stderr, "\tElem No %d component no %d value: %f\n", j, n, *(double *)charcomp);
+                        NclFree(charcomp);
+                    }
+                    offset += compsize[n];
                 }
-                _justPrintTypeVal(fp, NCL_string, compnode->value, 0);
-              /*
-               *_justPrintTypeVal(fp, compnode->type, compnode->value, 0);
-               */
-
-              /*
-               *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-               *fprintf(stderr, "\tcompnode->value: <%s>\n", NrmQuarkToString((NclQuark)compnode->value));
-               *fprintf(stderr, "\tcompnode->the_nc_type: 0%o, compnode->type: 0%o, NCL_string: 0%o\n",
-               *                   compnode->the_nc_type, compnode->type, NCL_string);
-               */
+                fprintf(stderr, "\n");
+                _justPrintTypeVal(fp, NCL_char, ">)", 0);
             }
-
-            _justPrintTypeVal(fp, NCL_char, "\")", 1);
+            _justPrintTypeVal(fp, NCL_char, "}", 1);
 
             continue;
         }
         else if(attnode->is_vlen)
         {
-            size_t n;
             NclFileVlenRecord *vlenrec = (NclFileVlenRecord *) attnode->value;
           /*
            *fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
@@ -743,7 +784,6 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
         else if(attnode->is_opaque)
         {
             int k;
-            size_t n = 0;
             NclFileOpaqueRecord *opaquerec = (NclFileOpaqueRecord *) attnode->value;
             char *tmpstr = (char *) NclCalloc(1 + opaquerec->size, 1);
           /*
@@ -779,7 +819,6 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
         else if(attnode->is_enum)
         {
             int k;
-            size_t n = 0;
             NclFileEnumRecord *enumrec = (NclFileEnumRecord *) attnode->value;
           /*
            *fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
@@ -1693,6 +1732,7 @@ NclFileCompoundRecord *_NclFileCompoundAlloc(int n_comps)
     comp_rec->type = -1;
     comp_rec->xtype = -1;
     comp_rec->base_nc_type = -1;
+    comp_rec->value = NULL;
 
     comp_rec->compnode = (NclFileCompoundNode *)NclCalloc(comp_rec->max_comps,
                             sizeof(NclFileCompoundNode));

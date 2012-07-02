@@ -95,7 +95,6 @@ typedef struct _NclFileCompoundNode
     int                  rank;
     int                  nvals;
     int                 *sides;
-
     void                *value;
 } NclFileCompoundNode;
 
@@ -109,7 +108,8 @@ typedef struct _NclFileCompoundRecord
     nc_type           xtype;
     nc_type           base_nc_type;
 
-    NclFileCompoundNode    *compnode;
+    NclFileCompoundNode *compnode;
+    void                *value;
 } NclFileCompoundRecord;
 
 typedef struct _NclFileEnumNode
