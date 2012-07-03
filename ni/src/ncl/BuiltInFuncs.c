@@ -53,6 +53,7 @@ extern "C" {
 #include "NclDataDefs.h"
 #include "Machine.h"
 #include "NclFile.h"
+#include "NclNewFile.h"
 #include "NclVar.h"
 #include "NclCoordVar.h"
 #include "VarSupport.h"
@@ -20993,7 +20994,63 @@ NhlErrorTypes   _NclIGetFileDimsizes
                     0);
     f = (NclFile) _NclGetObj((int) *fid);
 
-    if (f != NULL) {
+    if (f != NULL)
+    {
+    if(use_new_hlfs)
+    {
+        NclNewFile   thenewfile = (NclNewFile) f;
+        NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+
+        if(NULL != grpnode->dim_rec)
+        {
+	    ndims = grpnode->dim_rec->n_dims;
+
+	    if (ndims == 0)
+            {
+		NhlPError(NhlWARNING, NhlEUNKNOWN, "getfiledimsizes: file contains no dimensions");
+		dimsizes = 1;
+		NclReturnValue(
+			(void*) &((NclTypeClass) nclTypeintClass)->type_class.default_mis, 1,
+			&dimsizes, &((NclTypeClass) nclTypeintClass)->type_class.default_mis,
+			((NclTypeClass) nclTypeintClass)->type_class.data_type, 1);
+		return NhlWARNING;
+	    }
+	    else
+            {
+	        return_type = NCL_int;
+#if !defined(NG32BIT)
+	        i = 0;
+	        while(i < ndims)
+                {
+	            if(grpnode->dim_rec->dim_node[i].size > INT_MAX)
+                    {
+	                return_type = NCL_long;
+                        break;
+	            }
+	            ++i;
+	        }
+#endif
+	        if(return_type == NCL_int)
+                {
+	            dim_sizes = (void *) NclMalloc(sizeof(int) * ndims);
+	            for(i = 0; i < ndims; ++i)
+	                ((int*)dim_sizes)[i] = (int) grpnode->dim_rec->dim_node[i].size;
+	        }
+	        else
+	        {
+	            dim_sizes = (void *) NclMalloc(sizeof(long) * ndims);
+	            for(i = 0; i < ndims; ++i)
+	                ((long*)dim_sizes)[i] = (long) grpnode->dim_rec->dim_node[i].size;
+	        }
+
+	        ret = NclReturnValue(dim_sizes, 1, &ndims, NULL, return_type, 1);
+	        free(dim_sizes);
+	        return ret;
+            }
+        }
+    }
+    else
+    {
 /*
  * First loop through dimension sizes to see if we need to return
  * ints or longs.
@@ -21042,6 +21099,7 @@ NhlErrorTypes   _NclIGetFileDimsizes
 	  free(dim_sizes);
 	  return ret;
         }
+    }
     }
     NhlPError(NhlWARNING, NhlEUNKNOWN, "getfiledimsizes: undefined file variable");
 
