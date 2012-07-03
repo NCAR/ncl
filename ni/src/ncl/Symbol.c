@@ -1830,12 +1830,31 @@ long    * stride;
 			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
 				theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
-				index = _NclFileIsVar(thefile,file_var_name);
-				if(thefile != NULL) {
-					for(k = 0; k < thefile->file.var_info[index]->num_dimensions; k++) {
-						dim_sizes[k] = thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[k]]->dim_size;
+				if(thefile != NULL)
+				{
+					if(use_new_hlfs)
+					{
+						NclNewFile thenewfile = (NclNewFile) thefile;
+						NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+						NclFileVarNode *varnode = _getVarNodeFromNclFileGrpNode(grpnode, file_var_name);
+
+						if(NULL != varnode->dim_rec)
+						{
+							for(k = 0; k < varnode->dim_rec->n_dims; ++k)
+								dim_sizes[k] = varnode->dim_rec->dim_node[k].size;
+
+							sel_ptr = BuildSel(varnode->dim_rec->n_dims,dim_sizes,start,finish,stride);
+						}
 					}
-					sel_ptr = BuildSel(thefile->file.var_info[index]->num_dimensions,dim_sizes,start,finish,stride);
+					else
+					{
+						index = _NclFileIsVar(thefile,file_var_name);
+						for(k = 0; k < thefile->file.var_info[index]->num_dimensions; k++) {
+							dim_sizes[k] = thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[k]]->dim_size;
+						}
+						sel_ptr = BuildSel(thefile->file.var_info[index]->num_dimensions,dim_sizes,start,finish,stride);
+					}
+
 					tmp_md = _NclFileReadVarValue(thefile,file_var_name,sel_ptr);
 					if(sel_ptr != NULL) {
 						NclFree(sel_ptr);
@@ -1900,12 +1919,29 @@ long* stride;
 			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
 				theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
-				index = _NclFileVarIsCoord(thefile,coordname);
-				if(thefile != NULL) {
-					for(k = 0; k < thefile->file.coord_vars[index]->num_dimensions; k++) {
-						dim_sizes[k] = thefile->file.file_dim_info[thefile->file.coord_vars[index]->file_dim_num[k]]->dim_size;
+				if(thefile != NULL)
+				{
+					if(use_new_hlfs)
+					{
+						NclNewFile thenewfile = (NclNewFile) thefile;
+						NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+						NclFileVarNode *varnode = _getVarNodeFromNclFileGrpNode(grpnode, coordname);
+
+						if(NULL != varnode->dim_rec)
+						{
+							for(k = 0; k < varnode->dim_rec->n_dims; ++k)
+								dim_sizes[k] = varnode->dim_rec->dim_node[k].size;
+
+							sel_ptr = BuildSel(varnode->dim_rec->n_dims,dim_sizes,start,finish,stride);
+						}
 					}
-					sel_ptr = BuildSel(thefile->file.coord_vars[index]->num_dimensions,dim_sizes,start,finish,stride);
+					else
+					{
+						index = _NclFileVarIsCoord(thefile,coordname);
+						for(k = 0; k < thefile->file.coord_vars[index]->num_dimensions; k++)
+							dim_sizes[k] = thefile->file.file_dim_info[thefile->file.coord_vars[index]->file_dim_num[k]]->dim_size;
+						sel_ptr = BuildSel(thefile->file.coord_vars[index]->num_dimensions,dim_sizes,start,finish,stride);
+					}
 					tmp_var = _NclFileReadCoord(thefile,coordname,sel_ptr);
 					if(sel_ptr != NULL) {
 						NclFree(sel_ptr);
@@ -2058,6 +2094,72 @@ NclQuark attname;
 	}
 	return(NULL);
 }
+
+static NclApiDataList *getNewFileInfo(NclFile thefile)
+{
+    NclApiDataList     *tmp = NULL;
+    NclNewFile   thenewfile = (NclNewFile) thefile;
+    NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+    NclFileVarNode *varnode = NULL;
+    int j;
+
+    tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+
+    tmp->next = NULL;
+    tmp->kind = FILE_LIST;
+    tmp->u.file = (NclApiFileInfoRec*)NclMalloc(sizeof(NclApiFileInfoRec));
+
+    tmp->u.file->name = grpnode->name;
+    tmp->u.file->path = grpnode->path;
+    tmp->u.file->wr_status = grpnode->status;
+    tmp->u.file->file_format = grpnode->file_format;
+
+    tmp->u.file->n_dims = 0;
+    tmp->u.file->dim_info = NULL;
+
+    if(NULL != grpnode->dim_rec)
+    {
+        tmp->u.file->n_dims = grpnode->dim_rec->n_dims;
+        tmp->u.file->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.file->n_dims);
+        for(j = 0; j < tmp->u.file->n_dims; ++j)
+        {
+            tmp->u.file->dim_info[j].dim_num   = j;
+            tmp->u.file->dim_info[j].dim_quark = grpnode->dim_rec->dim_node[j].name;
+            tmp->u.file->dim_info[j].dim_size  = grpnode->dim_rec->dim_node[j].size;
+        }
+    }
+
+    tmp->u.file->n_vars = 0;
+    tmp->u.file->var_names = NULL;
+
+    if(NULL != grpnode->var_rec)
+    {
+        if(0 < grpnode->var_rec->n_vars)
+        {
+            tmp->u.file->n_vars = grpnode->var_rec->n_vars;
+            tmp->u.file->var_names = (NclQuark*)NclMalloc(sizeof(NclQuark) * grpnode->var_rec->n_vars);
+            for(j = 0; j < grpnode->var_rec->n_vars; ++j)
+                tmp->u.file->var_names[j] = grpnode->var_rec->var_node[j].name;
+        }
+    }
+
+    tmp->u.file->n_atts = 0;
+    tmp->u.file->attnames = NULL;
+
+    if(NULL != grpnode->att_rec)
+    {
+        if(0 < grpnode->att_rec->n_atts)
+        {
+            tmp->u.file->n_atts = grpnode->var_rec->n_vars;
+            tmp->u.file->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark) * grpnode->att_rec->n_atts);
+            for(j = 0; j < grpnode->att_rec->n_atts; ++j)
+                tmp->u.file->attnames[j] = grpnode->att_rec->att_node[j].name;
+        }
+    }
+
+    return(tmp);
+}
+
 NclApiDataList *_NclGetFileInfo
 #if	NhlNeedProto
 (NclQuark file_sym_name)
@@ -2078,12 +2180,19 @@ NclQuark file_sym_name;
 		if(s->type == VAR) {
 			thevar = _NclRetrieveRec(s,DONT_CARE);
 			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
-				tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
-				tmp->kind = FILE_LIST;
-				tmp->u.file = (NclApiFileInfoRec*)NclMalloc(sizeof(NclApiFileInfoRec));
 				theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
-				if(thefile != NULL) {
+				if(thefile != NULL)
+				{
+				if(use_new_hlfs)
+				{
+					return (getNewFileInfo(thefile));
+				}
+				else
+				{
+					tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+					tmp->kind = FILE_LIST;
+					tmp->u.file = (NclApiFileInfoRec*)NclMalloc(sizeof(NclApiFileInfoRec));
 					tmp->u.file->name = thevar->u.data_var->var.var_quark;
 					tmp->u.file->path = thefile->file.fpath;
 					tmp->u.file->wr_status = thefile->file.wr_status;
@@ -2119,6 +2228,7 @@ NclQuark file_sym_name;
 					tmp->next = NULL;
 					return(tmp);
 				}
+				}
 			}
 		}
 	}
@@ -2132,7 +2242,7 @@ NclApiDataList *_NclGetDefinedFileInfo
 ()
 #endif
 {
-	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclApiDataList *tmp = NULL;
 	NclSymTableListNode *st;
 	NclSymbol *s;
 	int i,j;
@@ -2149,12 +2259,20 @@ NclApiDataList *_NclGetDefinedFileInfo
 					if(s->type == VAR) {
 						thevar = _NclRetrieveRec(s,DONT_CARE);
 						if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
-							tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
-							tmp->kind = FILE_LIST;
-							tmp->u.file = (NclApiFileInfoRec*)NclMalloc(sizeof(NclApiFileInfoRec));
 							theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 							thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
-							if(thefile != NULL) {
+							if(thefile != NULL)
+							{
+							if(use_new_hlfs)
+							{
+								tmp = getNewFileInfo(thefile);
+							}
+							else
+							{
+								tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+								tmp->next = NULL;
+								tmp->kind = FILE_LIST;
+								tmp->u.file = (NclApiFileInfoRec*)NclMalloc(sizeof(NclApiFileInfoRec));
 								tmp->u.file->name = thevar->u.data_var->var.var_quark;
 								tmp->u.file->path = thefile->file.fpath;
 								tmp->u.file->wr_status = thefile->file.wr_status;
@@ -2187,12 +2305,8 @@ NclApiDataList *_NclGetDefinedFileInfo
 									tmp->u.file->n_atts = 0;
 									tmp->u.file->attnames = NULL;
 								}
-								tmp->next = thelist;
-								thelist = tmp;
-							} else {
-								NclFree(tmp);
 							}
-							tmp = NULL;
+							}
 						}
 					}
 					s = s->symnext;
@@ -2201,9 +2315,7 @@ NclApiDataList *_NclGetDefinedFileInfo
                 }
                 st = st->previous;
         }
-        return(thelist);
-
-
+        return (tmp);
 }
 
 NclApiDataList *_NclGetDefinedProcFuncInfo
