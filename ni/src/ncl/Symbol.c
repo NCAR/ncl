@@ -1450,6 +1450,57 @@ NclQuark file_var_name;
 	return(NULL);
 }
 
+static NclApiDataList *getNewFileVarCoordInfo(NclFile thefile,
+                                  NclQuark coordname)
+{
+    int i,j,k;
+    NclApiDataList *tmp = NULL;
+    NclNewFile thenewfile = (NclNewFile) thefile;
+    NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+    NclFileVarNode *varnode = NULL;
+    NclFileDimNode *dimnode = NULL;
+
+    if(NULL != grpnode->dim_rec)
+    {
+        for(i = 0; i < grpnode->dim_rec->n_dims; ++i)
+        {
+            dimnode = &(grpnode->dim_rec->dim_node[i]);
+            if(coordname == dimnode->name)
+            {
+                tmp = (NclApiDataList*)NclCalloc(1, sizeof(NclApiDataList));
+                tmp->next = NULL;
+                tmp->kind = VARIABLE_LIST;
+                tmp->u.var->n_atts = 0;
+                tmp->u.var->attnames = NULL;
+                tmp->u.var = (NclApiVarInfoRec*)NclMalloc(sizeof(NclApiVarInfoRec));
+                tmp->u.var->name = coordname;
+                tmp->u.var->data_type = NCL_none;
+                tmp->u.var->type = COORD;
+                tmp->u.var->n_dims = 1;
+                tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec));
+                tmp->u.var->dim_info->dim_quark = coordname;
+                tmp->u.var->dim_info->dim_num = i;
+                tmp->u.var->dim_info->dim_size = dimnode->size;
+                tmp->u.var->coordnames[0] = -1;    
+
+                varnode = _getVarNodeFromNclFileGrpNode(grpnode, coordname);
+                if(NULL != varnode)
+                {
+                    if(NULL != varnode->att_rec)
+                    {
+                        tmp->u.var->n_atts = varnode->att_rec->n_atts;
+                        tmp->u.var->attnames = (NclQuark*)NclMalloc(tmp->u.var->n_atts * sizeof(NclQuark));
+                        for(k = 0; k < varnode->att_rec->n_atts; ++k)
+                            tmp->u.var->attnames[k]= varnode->att_rec->att_node[k].name;
+                    }
+                    tmp->u.var->data_type = varnode->type;
+                }
+                break;
+            }
+        }
+    }
+    return tmp;
+}
 
 NclApiDataList *_NclGetFileVarCoordInfo
 #if	NhlNeedProto
@@ -1469,8 +1520,6 @@ NclQuark coordname;
 	NclMultiDValData theid = NULL;
 	NclFileAttInfoList *step;
 
-
-
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
 	if((s != NULL)&&(s->type != UNDEF)) {
 		thevar = _NclRetrieveRec(s,DONT_CARE);
@@ -1478,7 +1527,14 @@ NclQuark coordname;
 			theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 			if(theid->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
-				if((thefile != NULL)&&(_NclFileVarIsCoord(thefile,coordname) != -1)) {
+				if(NULL != thefile)
+				{
+				if(use_new_hlfs)
+				{
+					return (getNewFileVarCoordInfo(thefile, coordname));
+				}
+				else if(_NclFileVarIsCoord(thefile,coordname) != -1)
+				{
 					for(i = 0; i < thefile->file.n_file_dims; i++) {
 						if((thefile->file.coord_vars[i] != NULL)&&(thefile->file.coord_vars[i]->var_name_quark == coordname)) {
 							tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
@@ -1525,6 +1581,7 @@ NclQuark coordname;
 							return(tmp);
 						}
 					}
+				}
 				}
 			}
 		}
