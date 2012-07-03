@@ -1174,6 +1174,71 @@ void _NclAddSingleObj
 	}
 	return;
 }
+
+static NclApiDataList *getNewFileVarInfoList(NclFile thefile)
+{
+    NclApiDataList *tmp = NULL;
+    NclApiDataList *thelist = NULL;
+    NclNewFile thenewfile = (NclNewFile) thefile;
+    NclFileVarNode *varnode = NULL;
+    int i, j;
+
+    if(NULL != thenewfile->newfile.grpnode->var_rec)
+    {
+        for(i = 0; i < thenewfile->newfile.grpnode->var_rec->n_vars; ++i)
+        {
+            varnode = &(thenewfile->newfile.grpnode->var_rec->var_node[i]);
+
+            tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+            tmp->kind = VARIABLE_LIST;
+            tmp->u.var = (NclApiVarInfoRec*)NclMalloc(sizeof(NclApiVarInfoRec));
+            tmp->u.var->name = varnode->name;
+            tmp->u.var->data_type = varnode->type;
+            tmp->u.var->type = FILEVAR;
+            if(NULL != varnode->dim_rec)
+            {
+                tmp->u.var->n_dims = varnode->dim_rec->n_dims;
+                if(tmp->u.var->n_dims)
+                    tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.var->n_dims);
+                else
+                    tmp->u.var->dim_info = NULL;
+
+                for(j = 0 ; j < tmp->u.var->n_dims ; ++j)
+                {
+                    tmp->u.var->dim_info[j].dim_quark = varnode->dim_rec->dim_node[j].name;
+                    tmp->u.var->dim_info[j].dim_num   = j;
+                    tmp->u.var->dim_info[j].dim_size  = varnode->dim_rec->dim_node[j].size;
+                    tmp->u.var->coordnames[j] = varnode->dim_rec->dim_node[j].name;
+                }
+            }
+            else
+            {
+                tmp->u.var->n_dims = 0;
+                tmp->u.var->dim_info = NULL;
+            }
+ 
+            if(NULL != varnode->att_rec)
+            {
+                tmp->u.var->n_atts = varnode->att_rec->n_atts;
+                tmp->u.var->attnames = (NclQuark*)NclMalloc(tmp->u.var->n_atts * sizeof(NclQuark));
+                for(j = 0; j < tmp->u.var->n_atts; ++j)
+                {
+                    tmp->u.var->attnames[j] = varnode->att_rec->att_node[j].name;
+                }
+            }
+            else
+            {
+                tmp->u.var->n_atts = 0;
+                tmp->u.var->attnames = NULL;
+            }
+            tmp->next = thelist;
+            thelist = tmp;
+            tmp = NULL;
+        }
+    }
+    return (thelist);
+}
+
 NclApiDataList *_NclGetFileVarInfoList
 #if	NhlNeedProto
 (NclQuark file_var)
@@ -1199,7 +1264,15 @@ NclApiDataList *_NclGetFileVarInfoList
 			theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 			if(theid->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
-				if(thefile != NULL) {
+				if(thefile != NULL)
+				{
+				if(use_new_hlfs)
+				{
+					fprintf(stderr, "\nHit _NclGetFileVarInfoList in file: %s, line: %d\n", __FILE__, __LINE__);
+					thelist = getNewFileVarInfoList(thefile);
+				}
+				else
+				{
 					for(i = 0; i < thefile->file.n_vars; i++) {
 						tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
 						tmp->kind = VARIABLE_LIST;
@@ -1248,6 +1321,7 @@ NclApiDataList *_NclGetFileVarInfoList
 						thelist = tmp;
 						tmp = NULL;
 					}
+				}
 				}
 			}
 		}
