@@ -1602,9 +1602,8 @@ int *num_names;
 	NclStackEntry *thevar = NULL;
 	NclFile thefile = NULL;
 	NclMultiDValData theid = NULL;
-	NclQuark *names_out;
-
-
+	NclQuark *names_out = NULL;
+	*num_names = 0;
 
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
 	if((s != NULL)&&(s->type != UNDEF)) {
@@ -1613,23 +1612,34 @@ int *num_names;
 			theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 			if(theid->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
-				if(thefile != NULL) {
+				if(thefile != NULL)
+				{
+				if(use_new_hlfs)
+				{
+					NclNewFile thenewfile = (NclNewFile) thefile;
+					NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+					if(NULL != grpnode->var_rec)
+					{
+						*num_names = grpnode->var_rec->n_vars;
+						names_out = (NclQuark*)NclMalloc(grpnode->var_rec->n_vars * sizeof(NclQuark));
+						for(i = 0; i < grpnode->var_rec->n_vars; ++i)
+							names_out[i] = grpnode->var_rec->var_node[i].name;
+					}
+				}
+				else
+				{
 					*num_names = thefile->file.n_vars;
 					if(thefile->file.n_vars > 0) {
 						names_out = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)*thefile->file.n_vars);
-						for(i = 0; i < thefile->file.n_vars; i++) {
+						for(i = 0; i < thefile->file.n_vars; i++)
 							names_out[i] = thefile->file.var_info[i]->var_name_quark;
-						}
-						return(names_out);
-					} else {
-						return(NULL);
 					}
+				}
 				}
 			}
 		}
 	}
-	*num_names = 0;
-	return(NULL);
+	return (names_out);
 }
 NclQuark *_NclGetFileSymNames
 #if	NhlNeedProto
