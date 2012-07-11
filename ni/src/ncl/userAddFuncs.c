@@ -2765,6 +2765,7 @@ NhlErrorTypes _Nclstr_capital
     string *arrayOfString;
     char *result;
     int max_length = 0;
+    int len;
     int capitalize = 1;
 
     str = (string *) NclGetArgValue(
@@ -2807,6 +2808,21 @@ NhlErrorTypes _Nclstr_capital
 
     for(i=0; i<str_size; i++)
     {
+	len = strlen((char *) NrmQuarkToString(str[i]));
+        if (max_length < len)
+	    max_length = len;
+    }
+    max_length ++;
+
+    result = (char *) NclMalloc(max_length);
+    if (! result)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    for(i=0; i<str_size; i++)
+    {
         if (has_missing_str && str[i] == missing_str.stringval)
         {
            arrayOfString[i] = str[i];
@@ -2814,11 +2830,11 @@ NhlErrorTypes _Nclstr_capital
            continue;
         }
 
-        result = (char *) NrmQuarkToString(str[i]);
+        strcpy(result,NrmQuarkToString(str[i]));
 
         capitalize = 1;
-        max_length = strlen(result);
-        for(n=0; n<max_length; n++)
+        len = strlen(result);
+        for(n=0; n<len; n++)
         {
             switch (result[n])
             {
@@ -2842,7 +2858,7 @@ NhlErrorTypes _Nclstr_capital
 
         arrayOfString[i] = NrmStringToQuark(result);
     }
-
+    NclFree(result);
     return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
 
 }
