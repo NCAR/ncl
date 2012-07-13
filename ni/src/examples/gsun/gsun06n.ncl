@@ -85,14 +85,14 @@ begin
   resources@vcMonoFillArrowFillColor = False ; using multiple colors.
   resources@vcFillArrowEdgeColor     = 1     ; Draw the edges in black.
 
-  resources@tiMainString      = ":F25:Wind velocity vectors"  ; Title
+  resources@tiMainString      = "~F25~Wind velocity vectors"  ; Title
   resources@tiMainFontHeightF = 0.03
 
   resources@pmLabelBarDisplayMode  = "Always"     ; Turn on a label bar.
   resources@pmLabelBarSide         = "Bottom"     ; Change orientation
   resources@lbOrientation          = "Horizontal" ; of label bar.
   resources@lbPerimOn              = False        ; Turn off perimeter.
-  resources@lbTitleString          = "TEMPERATURE (:S:o:N:F)" ; Title for
+  resources@lbTitleString          = "TEMPERATURE (~S~o~N~F)" ; Title for
   resources@lbTitleFont            = 25                       ; label bar.
 
   resources@mpOutlineBoundarySets = "GeophysicalAndUSStates"

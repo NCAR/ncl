@@ -75,7 +75,7 @@ begin
   delete(resources)   ; Start with a new list of resources.
 
   resources                     = True
-  resources@tiMainString        = ":F26:slices"   ; Define a title.
+  resources@tiMainString        = "~F26~slices"   ; Define a title.
 
   resources@xyLineColors        = (/2,8,10,14/)   ; Define line colors.
   resources@xyLineThicknessF    = 3.0             ; Define line thickness.
