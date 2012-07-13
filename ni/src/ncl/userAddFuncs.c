@@ -67,6 +67,7 @@ extern "C" {
 #include <signal.h>
 #include <netcdf.h>
 #include <regex.h>
+#include <ctype.h>
 
 #define MAX_PRINT_SPACES	16
 #define MAX_LIST_ELEMENT	16
@@ -113,7 +114,6 @@ NhlErrorTypes _Nclstr_fields_count
 
     if (strs == NULL)
     {
-        NclFree(fields);
         NhlPError(NhlFATAL,ENOMEM,"str_fields_count: input string is null.");
         return NhlFATAL;
     }
@@ -1203,7 +1203,7 @@ NhlErrorTypes _Nclstr_split_by_length
     NclScalar   missing_leng;
     NclScalar   missing_news;
   
-    ng_size_t i, m, n;
+    ng_size_t i, n;
 
     char *tmp_str;
     char *result;
@@ -4332,10 +4332,8 @@ NhlErrorTypes _Nclstr_print(void)
     NclListObjList *step;
     NclObj          theobj;
     NclObj          cur_obj;
-    NhlErrorTypes ret = -1;
 
     NclMultiDValData thevalue = NULL;
-    NclMultiDValData tmp_md = NULL;
     NclVar           thevar;
 
     char prntln[NCL_INITIAL_STRING_LENGTH];
@@ -4790,6 +4788,7 @@ NhlErrorTypes _Nclstr_print(void)
   /*
    *fprintf(stderr, "Leave _Nclstr_print, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
+    return(NhlNOERROR);
 }
 
 NhlErrorTypes _Nclstr_write(void)
@@ -4822,10 +4821,8 @@ NhlErrorTypes _Nclstr_write(void)
     NclListObjList *step;
     NclObj          theobj;
     NclObj          cur_obj;
-    NhlErrorTypes ret = -1;
 
     NclMultiDValData thevalue = NULL;
-    NclMultiDValData tmp_md = NULL;
     NclVar           thevar;
 
     char prntln[NCL_INITIAL_STRING_LENGTH];
@@ -5271,6 +5268,7 @@ NhlErrorTypes _Nclstr_write(void)
   /*
    *fprintf(stderr, "Leave _Nclstr_write, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
+    return(NhlNOERROR);
 }
 
 #ifdef __cplusplus
