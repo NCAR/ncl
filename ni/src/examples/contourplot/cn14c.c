@@ -53,7 +53,7 @@ char *yllabels[7] = {"90S","60S","30S","EQ","30N","60N","90N"};
  */
 int fillcolors[14] = {15,14,2,3,4,7,6,8,9,10,11,13,12,0};
 
-main()
+int main()
 {
   int i,j;
 /*
@@ -76,7 +76,7 @@ main()
   float lon[NPTS], lat[NPTS];
   long start[2], count[2], lonlen, latlen;
   ng_size_t icount[2];
-  char filename[256], recname[50];
+  char filename[256];
   const char *dir = _NGGetNCARGEnv("data");
 /*
  * Default is to display to an X11 window.
@@ -349,4 +349,5 @@ main()
 	NhlDraw(map);
 	NhlFrame(workid);
 	NhlClose();
+	return(0);
 }

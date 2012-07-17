@@ -43,7 +43,7 @@
 extern void drwsrfc (int WKID, int nx, int ny, float *x, float *y, float *z,
               float s1, float s2, float s3);
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     float  xo[NumXOut], yo[NumYOut], *out;
     float x[] = {0.00, 1.00, 0.00, 1.00, 0.40, 0.75};
@@ -51,10 +51,9 @@ main(int argc, char *argv[])
     float z[] = {0.00, 0.00, 0.00, 0.00, 1.25, 0.80};
 	float  xc, yc;
 	int    ier;
-    int    len_dims[2];
     int    appid,wid,gkswid;
     int    srlist, grlist;
-    int    i,j;
+    int    i;
     const char *wks_type = "ncgm";
 
 /*
@@ -186,7 +185,7 @@ void drwsrfc (int WKID, int nx, int ny, float *x, float *y, float *z,
 {
     Gcolr_rep colval;
     float xmn, xmx, ymn, ymx, zmn, zmx, eye[6];
-    int i, j, *iwk;
+    int *iwk;
 
 	iwk = (int *)malloc(2*nx*ny*sizeof(int));
 

@@ -76,7 +76,7 @@ char *cdffiles[6] = {"Ustorm.cdf","Vstorm.cdf","Pstorm.cdf","Tstorm.cdf","U500st
 
 main(int argc, char *argv[])
 {
-    int i, j, time, d, h;
+    int i, j, d, h;
     int appid, wid, cnid, vcid, stid, txid, amid, mpid, tmid, stdmid;
     long stid_len;
     int vfield, vfield2, sfield, sfield2;

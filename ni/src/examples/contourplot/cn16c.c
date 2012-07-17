@@ -51,7 +51,7 @@ char *yllabels[7] = {"90S","60S","30S","0","30N","60N","90N"};
  */
 int fillcolors[17] = {2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
 
-main()
+int main()
 {
 /*
  * Declare variables for the HLU routine calls.
@@ -71,7 +71,6 @@ main()
   long start[3], count[3], lonlen, latlen;
   ng_size_t icount[2];
   char filename[256];
-  char recname[50];
   const char *dir = _NGGetNCARGEnv("data");
 /*
  * Default is to create an X11 window.
@@ -218,7 +217,7 @@ main()
   NhlRLSetInteger(srlist,NhlNcnLineLabelInterval,2);
   NhlRLSetString(srlist,NhlNcnLineLabelPlacementMode,"computed");
   NhlRLSetString(srlist,NhlNtiMainOn,"True");
-  NhlRLSetString(srlist,NhlNtiMainString,"STR:: JANUARY SST CLIMATOLOGY");
+  NhlRLSetString(srlist,NhlNtiMainString,"JANUARY SST CLIMATOLOGY");
   NhlRLSetFloat(srlist,NhlNtiMainFontHeightF,.020);
   NhlRLSetInteger(srlist,NhlNtiMainFont,25);
   NhlRLSetString(srlist,NhlNtmXBMode,"EXPLICIT");
@@ -301,5 +300,6 @@ main()
   NhlFrame(wid);
   NhlDestroy(wid);
   NhlClose();
+  return(0);
 }
 

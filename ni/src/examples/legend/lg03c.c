@@ -31,14 +31,13 @@
 
         
 
-main()
+int main()
 {
     int appid, wid, pid;
     int rlist;
     char *labels[5] = {"Line_Type_0", "Line_Type_1", "Line_Type_2",
                        "Line_Type_3", "Line_Type_4"};
     int colors[5];
-    int types[5];
     int item_ind[5];
     float lnthik;
     char const *wks_type = "x11";

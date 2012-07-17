@@ -37,12 +37,12 @@
 #define NX     61
 #define NY     61
 
-main()
+int main()
 {
   int  appid,wid,gkswid;
   int  srlist, grlist;
   const char *wks_type = "ncgm";
-  int  i, j, k, ier;
+  int  i, j, ier;
   float xi[] = {0.00, 1.00, 0.00, 1.00, 0.40, 0.75};
   float yi[] = {0.00, 0.00, 1.00, 1.00, 0.20, 0.65};
   float zi[] = {0.00, 0.00, 0.00, 0.00, 1.25, 0.80};

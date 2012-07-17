@@ -56,7 +56,7 @@ char *yllabels[7] = {"90S","60S","30S","EQ","30N","60N","90N"};
 int linecolors[15] = {12,13,14,7,2,0,8,11,6,9,4,3,5,7,10};
 int fillcolors[16] = {0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2};
 
-main()
+int main()
 {
 /*
  * Declare variables for the HLU routine calls.
@@ -81,7 +81,6 @@ main()
     ng_size_t icount[2];
     long lonlen, latlen;
     char filename[256];
-    char recname[50];
     const char *dir = _NGGetNCARGEnv("data");
     FILE *fp;
 /*
@@ -573,7 +572,7 @@ main()
       NhlDestroy(pdf2);
       NhlDestroy(png1);
       NhlDestroy(appid);
-
+      return(0);
 }
 
 

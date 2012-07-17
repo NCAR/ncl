@@ -36,9 +36,9 @@
 #define NX    21
 #define NY    21
 
-main()
+int main()
 {
-  int  i, j, k, ier;
+  int  i, j, ier;
   float xi[NUM], yi[NUM], zi[NUM];
   float xo[NX], yo[NY], *output, output2[NX][NY], outr[NY][NX];
   float xminin = -0.2, yminin = -0.2, xmaxin = 1.2, ymaxin = 1.2;

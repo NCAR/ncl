@@ -57,10 +57,10 @@
 #include <ncarg/hlu/CairoWorkstation.h>
 #include <ncarg/hlu/MapPlot.h>
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int wks,appid,mapid;
-    int i, rlist;
+    int rlist;
     char const *wks_type = "x11";
 /*
  * Initialize the high level utility library

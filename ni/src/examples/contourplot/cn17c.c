@@ -109,7 +109,7 @@ Anno_List anno_list[] = {
   { "WI" , 44.5 ,  -89.5 },  { "WY" , 43.0 , -107.5 },
 };
 
-main()
+int main()
 {
 /*
  * Define variables for HLU objects and other stuff.
@@ -424,5 +424,6 @@ main()
  * Restores state.
  */
     NhlClose();
+    return(0);
 }
 

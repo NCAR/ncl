@@ -35,11 +35,11 @@
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/ScalarField.h>
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 
     int appid,wid,mapid,dataid,cnid;
-    int rlist,grlist;
+    int rlist;
 
     float Z[50*50];
     int M = 50, N = 50;

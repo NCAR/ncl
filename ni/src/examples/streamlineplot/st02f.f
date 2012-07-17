@@ -176,7 +176,7 @@ C Decrease the step size
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'tiMainString','Smaller Step Size',
-     1	   ierr)
+     1                     ierr)
       call NhlFRLSetFloat(rlist,'stStepSizeF',stepsize * 0.25,ierr)
       call NhlFSetValues(stid,rlist,ierr)
 

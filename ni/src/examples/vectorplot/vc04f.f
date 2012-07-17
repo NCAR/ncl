@@ -205,7 +205,7 @@ C
       call NhlFFrame(wid,ierr)
 
       call NhlFRLClear(rlist)
-      call NhlFRLSetString(rlist,'tiMainString','3a:: Reverse the Y-Axiss
+      call NhlFRLSetString(rlist,'tiMainString','3a:: Reverse the Y-Axis
      + for Clockwise Rotation',ierr)
       call NhlFRLSetString(rlist,'trYReverse', 'True',ierr)
 

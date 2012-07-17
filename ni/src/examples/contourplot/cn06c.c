@@ -45,14 +45,14 @@ char *yllabels[] = {"60N","50N","40N","30N","20N"};
 #define NLON  36
 #define NCOLORS 17
 
-main()
+int main()
 {
     extern void KtoF();
 /*
  * Declare variables for the HLU routine calls.
  */
     int     appid, workid, field1, con1;
-    int     srlist, i, j, k;
+    int     srlist, i;
     ng_size_t    icount[2];
     float cmap[NCOLORS][3];
 /*

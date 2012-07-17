@@ -40,12 +40,11 @@
 #include <ncarg/hlu/LogLinPlot.h>
 #include <ncarg/hlu/GraphicStyle.h>
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     char const *wks_type = "x11";
     int rlist,grlist;
-    int appid,wid,cid,gsid,id;
-    int i;
+    int appid,wid,cid,gsid;
 
 /*These are the polyline points*/ /*a square*/
     float X[] = { 0.3,0.3,0.5,0.5,0.3 };

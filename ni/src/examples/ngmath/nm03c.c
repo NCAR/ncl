@@ -47,7 +47,7 @@
 extern void drwsrfc (int nx, int ny, float *x, float *y, float *z,
               float s1, float s2, float s3);
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 
 /*
@@ -307,9 +307,8 @@ float armx(int, float *);
 void drwsrfc (int nx, int ny, float *x, float *y, float *z,
               float s1, float s2, float s3)
 {
-    Gcolr_rep colval;
     float xmn, xmx, ymn, ymx, zmn, zmx, eye[6];
-    int i, j, *iwk;
+    int *iwk;
 
 	iwk = (int *)malloc(2*nx*ny*sizeof(int));
 

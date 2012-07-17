@@ -60,10 +60,10 @@ char *florida_counties[69] = {
      "Florida . Union", "Florida . Volusia", "Florida . Wakulla", 
      "Florida . Walton", "Florida . Washington"}; 
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int wid,appid,mapid;
-    int i, rlist;
+    int rlist;
     char const *wks_type = "x11";
 /*
  * Initialize the high level utility library

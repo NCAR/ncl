@@ -37,7 +37,7 @@ C
 
 
       real  xo(NumXOut), yo(NumYOut), zo(NumXOut,NumYOut)
-      real rtmp(NumXOut,NumYOut),u(NumXOut,NumYOut),v(NumXOut,NumYOut)        
+      real rtmp(NumXOut,NumYOut),u(NumXOut,NumYOut),v(NumXOut,NumYOut)
       real x(NumIn),y(NumIn),z(NumIn)
 
       data x/
