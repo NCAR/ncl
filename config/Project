@@ -268,8 +268,8 @@
 #endif	/* GRIB2lib */
 
 #ifndef	NetCDFlib
-#define	NetCDFlib	-lnetcdf -lcurl
-/*#define	NetCDFlib	-lnetcdf -lcurl -lssl -lidn -lrt -lldap*/
+#define	NetCDFlib	-lnetcdf -lnetcdff -lcurl
+/*#define	NetCDFlib	-lnetcdf -lnetcdff -lcurl -lssl -lidn -lrt -lldap*/
 #endif	/* NetCDFlib */
 
 #ifndef	NetCDF4lib
