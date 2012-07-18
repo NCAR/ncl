@@ -4605,6 +4605,7 @@ NhlErrorTypes _NclIasciiread
 			else if(thetype->type_class.type==Ncl_Typestring) {
 				char *buffer;
 				char *step;
+				int c;
 				int cur_size = NCL_MAX_STRING;
 
 				buffer = NclMalloc(cur_size * sizeof(char));
@@ -4617,24 +4618,33 @@ NhlErrorTypes _NclIasciiread
 							step = &buffer[j];
 						}
 						if(!feof(fp)) {
-							*step = fgetc(fp);
-							if(! (*step == '\n' || *step == '\r')) {
+							c  = getc(fp);
+							*step = (char) c;
+							switch (c) {
+							default:
 								step++;
 								continue;
-							}
-							if (*step == '\r') {
-								char c;
+							case '\r':
 								/* throw away next character if it's a CRLF sequence */
 								c = getc(fp);
 								if (c != '\n') { 
 									ungetc(c,fp);
 								}
+								/* fall through */
+							case EOF:
+								/* no characters since last EOL + not fall through of '\r' */
+								if (j == 0 && *step != '\r') {
+									break;
+								}
+								/* fall through */
+							case '\n':
+								*step = '\0';
+								*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+								step = buffer;
+								tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+								total++;
+								break;
 							}
-							*step = '\0';
-							*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
-							step = buffer;
-							tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-							total++;
 							break;
 						} else {
 							break;
@@ -4748,17 +4758,26 @@ NhlErrorTypes _NclIasciiread
 		else if(thetype->type_class.type==Ncl_Typestring) {
 			char c;
 			totalsize = 0;
+			int has_chars = 0;
 			while(!feof(fp)) {
 				c = getc(fp);
 				if (c == '\r') {
 					totalsize++;
 					c = getc(fp); /* handle CRLF (\r\n) style EOL by ignoring LF after CR */
-					if (c == '\r') /* if another CR push it back so it will count as an (empty) line */
+					if (c != '\n') /* otherwise put it back */
 						ungetc(c,fp);
+					has_chars = 0;
 				}
 				else if(c == '\n' ) {
 					totalsize++;
+					has_chars = 0;
 				} 
+				else if (c != EOF) {
+					has_chars = 1;
+				}
+			}
+			if (has_chars) {  /* some characters at the end without a newline */
+				totalsize++;
 			}
 		}
 		NclFree(tmp_ptr);
@@ -4885,6 +4904,7 @@ NhlErrorTypes _NclIasciiread
 		else if(thetype->type_class.type==Ncl_Typestring) {
 			char *buffer;
 			char *step;
+			int c;
 			int cur_size = NCL_MAX_STRING;
 
 			buffer = NclMalloc(cur_size * sizeof(char));
@@ -4897,24 +4917,33 @@ NhlErrorTypes _NclIasciiread
 						step = &buffer[j];
 					}
 					if(!feof(fp)) {
-						*step = getc(fp);
-						if (! (*step == '\n' || *step == '\r')) {
+						c = getc(fp);
+						*step = (char) c;
+						switch (c) {
+						default:
 							step++;
 							continue;
-						}
-						if (*step == '\r') {
-							char c;
+						case '\r':
 							/* throw away next character if it's a CRLF sequence */
 							c = getc(fp);
 							if (c != '\n') { 
 								ungetc(c,fp);
 							}
+							/* fall through */
+						case EOF:
+							/* no characters since last EOL + not fall through of '\r' */
+							if (j == 0 && *step != '\r') {
+								break;
+							}
+							/* fall through */
+						case '\n':
+							*step = '\0';
+							*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+							step = buffer;
+							tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+							total++;
+							break;
 						}
-						*step = '\0';
-						*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
-						step = buffer;
-						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-						total++;
 						break;
 					} else {
 						break;
