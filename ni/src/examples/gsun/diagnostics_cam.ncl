@@ -1477,7 +1477,7 @@ end
 ;------------------------------------------------------- 
 ; L2 error norms
 ;------------------------------------------------------- 
- undef("l2_norm_a")        
+ undef("l2_norma")
  function l2_norma( x[*][*][*][*]:numeric, wy[*], wz )
  local dimx, dimwz, rankwz, ntim, l2a, nt, xzon, xzonc \
      , dif2, wyc, wywz, wywzs
@@ -1519,7 +1519,7 @@ end
 ;------------------------------------------------------- 
 ; L2 error norms
 ;------------------------------------------------------- 
- undef("l2_norm_b")         
+ undef("l2_normb")
  function l2_normb( x[*][*][*][*]:numeric, wy[*], wz )
  local dimx, dimwz, rankwz, ntim, l2b, nt, xzon0, xzonc \
      , dif2, wyc, wywz, wywz
