@@ -175,8 +175,6 @@ set buildesmf=`$makecmd ESMFSTUFF`
 echo -n "..."
 # set buildpyngl=`$makecmd PYNGLSTUFF`
 # echo -n "..."
-set builddods=`$makecmd DODSSTUFF`
-echo -n "..."
 set buildgridspec=`$makecmd GRIDSPECSTUFF`
 echo -n "..."
 set ncargversion=`$makecmd NGVERS`
@@ -961,7 +959,6 @@ else
   set buildgrib2 = "n"
   set buildv5d = "n"
   set buildesmf = "n"
-  set builddods = "n"
   set buildgridspec = "n"
   set netcdfwithdap = "n"
   set netcdflib = ""
@@ -974,7 +971,6 @@ else
   set newbuildgrib2
   set newbuildv5d
   set newbuildesmf
-  set newbuilddods
   set newbuildgridspec
   set altered
 endif
@@ -1404,14 +1400,6 @@ if ($?newbuildesmf) then
 	else
 		echo "#define BuildESMF 0" >> Site.local
 		echo "#define ESMFlib" >> Site.local
-	endif
-endif
-
-if ($?newbuilddods) then
-	if ("$builddods" == "y") then
-		echo "#define BuildDODS 1" >> Site.local
-	else
-		echo "#define BuildDODS 0" >> Site.local
 	endif
 endif
 

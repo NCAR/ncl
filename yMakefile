@@ -268,14 +268,6 @@ V5DSTUFF:
 	@echo "n"
 #endif
 
-#ifdef	BuildDODS
-DODSSTUFF:
-	@echo "y"
-#else
-DODSSTUFF:
-	@echo "n"
-#endif
-
 #ifdef	BuildPyNGL
 PYNGLSTUFF:
 	@echo "y"

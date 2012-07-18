@@ -137,7 +137,7 @@ GDAL_OBJS = NclOGR.o
 #define    V5DLIB
 #endif
 
-#if defined(BuildDODS) || defined(BuildGDAL)
+#if defined(BuildGDAL)
 #if defined(sun)
 CC_LD		= g\+\+ -R/opt/SUNWspro/lib -L/opt/SUNWspro/lib
 CCOPTIONS	= $(EXTRA_CCOPTIONS)
@@ -150,23 +150,6 @@ CC_LD		= g\+\+
 #else
 CC_LD		= g\+\+
 #endif
-#endif
-
-
-#if defined(BuildDODS)
-#if defined(sun)
-DODS_LIBS	= -lnc-dap -ldap -ldapclient -lcurl -lrx -lxml2 -lstdc\+\+ -lssl -lpthread -lnsl
-CTOFLIBS += -L/opt/SUNWspro/prod/lib -lompstubs 
-elif defined(AIX)
-DODS_LIBS	= -lnc-dap -ldap -ldapclient -lcurl -lrx -lxml2 -lpthread -lssl -liconv
-#elif defined(Darwin)
-DODS_LIBS	= -lnc-dap -ldap -ldapclient -lcurl -lxml2 -lpthread -lssl
-#elif defined(linux)
-DODS_LIBS	= -lnc-dap -ldap -ldapclient -lcurl -lrx -lxml2 -lpthread -lidn -ldl
-#else
-DODS_LIBS	= -lnc-dap -ldap -ldapclient -lcurl -lrx -lxml2 -lpthread -lssl
-#endif
-NCDFLIBS	= $(DODS_LIBS)
 #endif
 
 #ifdef  HPUX
