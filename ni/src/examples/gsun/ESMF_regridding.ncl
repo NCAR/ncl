@@ -326,6 +326,7 @@ end
 ; different values. If so, they will be set to the given value,
 ; and a warning printed.
 ;======================================================================
+undef("check_both_atts")
 procedure check_both_atts(opt,att1,att2,attval)
 begin
   if (isatt(opt,att1).and.isatt(opt,att2).and.\

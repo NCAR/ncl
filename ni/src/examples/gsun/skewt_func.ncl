@@ -2142,6 +2142,7 @@ function skewT_PlotData_Panel (wks:graphic, skewt_bkgd:graphic \
 
  end
 ; =========Interface to original and panel===================
+undef("skewT_BackGround")
 function skewT_BackGround (wks:graphic,  Opts:logical)
 begin
    if (Opts .and. isatt(Opts,"Panel") .and. Opts@Panel) then
