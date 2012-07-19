@@ -12657,7 +12657,7 @@ begin
           dp_plevel&$plevName$ = plev&$plevName$
       else
           dp_plevel!1   = "plev"
-          dp_plevel&lev =  plev
+          dp_plevel&plev=  plev
       end if
   end if
 
