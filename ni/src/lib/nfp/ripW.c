@@ -6,6 +6,7 @@ extern void NGCALLF(dcapecalc3d,DCAPECALC3D)(double *prs, double *tmk,
                                              double *qvp, double *ght,
                                              double *ter, double *sfp, 
                                              double *cape, double *cin, 
+                                             double *cmsg,
                                              int *miy, int *mjx, int *mkzh, 
                                              int *i3dflag, int *ter_follow,
                                              char *,int);
@@ -45,11 +46,12 @@ NhlErrorTypes rip_cape_3d_W( void )
  * Output array variables
  */
   void *cape;
-  double *tmp_cape = NULL;
+  double *tmp_cape = NULL, cmsg;
   double *tmp_cin = NULL;
   NclBasicDataTypes type_cape;
   int ndims_cape;
   ng_size_t *dsizes_cape;
+  NclScalar missing_cape;
 /*
  * File input variables.
  */
@@ -301,6 +303,8 @@ NhlErrorTypes rip_cape_3d_W( void )
      type_z == NCL_double) {
     type_cape = NCL_double;
     cape = (double *)calloc(size_output,sizeof(double));
+    missing_cape.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    cmsg = missing_cape.doubleval;
     if(cape == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: Unable to allocate memory for output array");
       return(NhlFATAL);
@@ -315,6 +319,8 @@ NhlErrorTypes rip_cape_3d_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: Unable to allocate memory for output arrays");
       return(NhlFATAL);
     }
+    missing_cape.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    cmsg = (double)missing_cape.floatval;
   }
 
 /*
@@ -449,8 +455,8 @@ NhlErrorTypes rip_cape_3d_W( void )
  * Call Fortran routine.
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-                                     tmp_psfc, tmp_cape, tmp_cin, &imiy,
-                                     &imjx, &imkzh, &i3dflag, &iter,
+                                     tmp_psfc, tmp_cape, tmp_cin, &cmsg, 
+                                     &imiy, &imjx, &imkzh, &i3dflag, &iter,
                                      psa_file,strlen(psa_file));
 
 /*
@@ -481,7 +487,7 @@ NhlErrorTypes rip_cape_3d_W( void )
 /*
  * Set up variable to return.
  */
-  ret = NclReturnValue(cape,ndims_cape,dsizes_cape,NULL,type_cape,0);
+  ret = NclReturnValue(cape,ndims_cape,dsizes_cape,&missing_cape,type_cape,0);
   NclFree(dsizes_cape);
   return(ret);
 }
@@ -521,10 +527,11 @@ NhlErrorTypes rip_cape_2d_W( void )
  * Output array variables
  */
   void *cape;
-  double *tmp_cape = NULL;
+  double *tmp_cape = NULL, cmsg;
   double *tmp_cin = NULL;
   NclBasicDataTypes type_cape;
   int ndims_cape = 0;
+  NclScalar missing_cape;
   ng_size_t *dsizes_cape;
 /*
  * File input variables.
@@ -777,15 +784,21 @@ NhlErrorTypes rip_cape_2d_W( void )
  * Allocate space for output and temporary arrays.  Even if the input
  * arrays are already double, go ahead and allocate some space for
  * them b/c we have to copy the values back to 4 different locations.
+ *
+ * The addition of missing values was added in V6.1.0.
  */
   if(type_p == NCL_double || type_t == NCL_double || type_q == NCL_double ||
      type_z == NCL_double) {
     type_cape = NCL_double;
     cape      = (double *)calloc(size_output,sizeof(double));
+    missing_cape.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    cmsg = missing_cape.doubleval;
   }
   else {
     type_cape = NCL_float;
     cape      = (float *)calloc(size_output,sizeof(float));
+    missing_cape.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    cmsg = (double)missing_cape.floatval;
   }
   tmp_cape = (double *)calloc(size_cape,sizeof(double));
   tmp_cin  = (double *)calloc(size_cape,sizeof(double));
@@ -920,8 +933,8 @@ NhlErrorTypes rip_cape_2d_W( void )
  * Call Fortran routine.
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-                                     tmp_psfc, tmp_cape, tmp_cin, &imiy,
-                                     &imjx, &imkzh, &i3dflag, &iter,
+                                     tmp_psfc, tmp_cape, tmp_cin, &cmsg, 
+                                     &imiy, &imjx, &imkzh, &i3dflag, &iter,
                                      psa_file,strlen(psa_file));
 
 /*
@@ -967,7 +980,7 @@ NhlErrorTypes rip_cape_2d_W( void )
 /*
  * Set up variable to return.
  */
-  ret = NclReturnValue(cape,ndims_cape,dsizes_cape,NULL,type_cape,0);
+  ret = NclReturnValue(cape,ndims_cape,dsizes_cape,&missing_cape,type_cape,0);
   NclFree(dsizes_cape);
   return(ret);
 }
