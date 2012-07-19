@@ -12624,6 +12624,45 @@ begin
 
   return(dp_sigma)
 end
+;---------------------------------------------------------------------------
+undef("dpres_plevel_Wrap")
+function dpres_plevel_Wrap(plev[*]:numeric, psfc:numeric, ptop[1]:numeric, opt:integer)
+; -------------------------------------------------
+; use the  dpres_plevel function to get layer thicknesses
+; -------------------------------------------------
+
+begin
+  dp_plevel    = dpres_plevel(plev, psfc, ptop, 0) 
+  dp_plevel@long_name = "pressure thickness"
+  if (isatt(psfc, "units")) then
+      dp_plevel@units = psfc@units
+  end if
+
+  rank_psfc  = dimsizes( dimsizes(psfc) )
+  if (rank_psfc.eq.3) then
+      psfcName = getvardims(psfc)      ; dimension names
+      dp_plevel!0   = psfc!0
+      dp_plevel!2   = psfc!1
+      dp_plevel!3   = psfc!2
+      do nd=0,2
+         if (.not.ismissing(psfcName(nd)) .and. \
+             iscoord(psfc,psfcName(nd))) then
+             dp_plevel&$psfcName(nd)$ = psfc&$psfcName(nd)$
+         end if
+      end do
+
+      plevName   = getvardims(plev)
+      if (.not.ismissing(plevName) .and. iscoord(plev,plevName)) then
+          dp_plevel!1          = plevName
+          dp_plevel&$plevName$ = plev&$plevName$
+      else
+          dp_plevel!1   = "plev"
+          dp_plevel&lev =  plev
+      end if
+  end if
+
+  return(dp_plevel)
+end
 ;---------------------------------------------------
 ; Rob Nicholas [U. Washington] & D. Shea
 undef("pattern_cor2")
@@ -12856,4 +12895,15 @@ begin
   copy_VarAtts(x,y)
 
   return(y)
+end
+;------
+; Thirteen pt (decadal)
+undef("smth13_n")
+function smth13_n (x:numeric, ndim)    ; smth13
+local wgts, smX
+begin
+        wgts     = (/ 1,6,19,42,71,96,106,96,71,42,19,6,1 /)*1.0
+        wgts     = wgts/sum(wgts)
+        smX      = wgt_runave_n_Wrap(x, wgts, 1, ndim)   ; reflective end pts
+        return(smX)
 end
