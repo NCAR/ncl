@@ -10143,14 +10143,20 @@ begin
 end
 ; ******************************************************************
 ; D. Shea
-; attaches/appends table data: ie (row,column) arrays
-; add additional rows
+; attaches/appends table data: ie (row,column) arrays ; add additional rows
+; will add the coordinate variable of the right dimension
+; but will not do so for the left dimension. The left dimension
+; will be named but no coordinates will be associated with the name.
+
 undef("table_attach_rows")
 function table_attach_rows (t1[*][*], t2[*][*], iopt:integer)
 
 local dim_t1, dim_t2, ncol1, ncol2, nrow1, nrow2    \
     , dimNames_t1, dimNames_t2, dimNames, n
 begin
+
+  printVarSummary(t1)
+  printVarSummary(t2)
                                    ; get array shape/sizes
   dim_t1  = dimsizes(t1)
   dim_t2  = dimsizes(t2)
@@ -10175,20 +10181,21 @@ begin
   nrow1       = dim_t1(0)
   nrow2       = dim_t2(0)
 
-  tNew = new ( (/nrow1+nrow2, ncol1/), typeof(t1), getFillValue(t1))
-  delete(tNew@_FillValue)
                                    ; chk _FillValue stuff
   if (isatt(t1,"_FillValue") ) then
-      tNew@_FillValue = t1@_FillValue
-  end if
-  if (isatt(t2,"_FillValue") ) then
-      tNew@_FillValue = t2@_FillValue
+      tNew = new ( (/nrow1+nrow2, ncol1/), typeof(t1), t1@_FillValue)
+  else if (isatt(t2,"_FillValue") ) then
+           tNew = new ( (/nrow1+nrow2, ncol1/), typeof(t2), t2@_FillValue)
+       else 
+           tNew = new ( (/nrow1+nrow2, ncol1/), typeof(t2), "No_FillValue")
+       end if
   end if
                                  ; insert values
   tNew(0:nrow1-1,:)   = (/ t1 /)
   tNew(nrow1:   ,:)   = (/ t2 /)
+  write_matrix(tNew, "10f7.2" , False)
                                  ; meta data
-  tNew!0 = "row"                 ; default dim names
+  tNew!0 = "row"                 ; *default* dim names
   tNew!1 = "col" 
 
   copy_VarAtts (t1, tNew)        ; copy attributes
@@ -10196,36 +10203,25 @@ begin
 
   dimNames_t1 = getvardims(t1)   ; dimension names
   dimNames_t2 = getvardims(t2) 
-  dimNames    = dimNames_t1      ; default
 
   do n=0,1                       ; override "row", "col"
      if (.not.ismissing(dimNames_t1(n))) then
          tNew!n = dimNames_t1(n) ; default ... use t1 dim names
-     else
-         if (.not.ismissing(dimNames_t2(n))) then
-             tNew!n = dimNames_t2(n)    ; use t2 dim names if t1 not present
-         end if
+     else if (.not.ismissing(dimNames_t2(n))) then
+              tNew!n = dimNames_t2(n)    ; use t2 dim names if t1 not present
+          end if
      end if
   end do
-                                 ; coordinate stuff [if present]
-  do n=0,1
-     if (n.eq.0) then 
-         if (iscoord(t1,dimNames_t1(n)) ) then 
-             tNew&$dimNames(n)$(0:n1-1) = t1&$dimNames_t1(n)$ ; t1 leftmost dimension
-         end if
-         if (iscoord(t2,dimNames_t2(n)) ) then 
-             tNew&$dimNames(n)$(n1:   ) = t2&$dimNames_t2(n)$ ; t2 leftmost dimension
-         end if
-     else
-         if (iscoord(t1,dimNames_t1(n)) ) then 
-             tNew&$dimNames(n)$ = t1&$dimNames(n)$   ; right dimensions
-         else
-             if (iscoord(t1,dimNames_t2(n)) ) then
-                 tNew&$dimNames(n)$ = t2&$dimNames(n)$
-             end if
-         end if
-     end if
-  end do
+                                 ; coord for the right dim (n=1) only
+                                 ; left dim (n=0) will be named but no coord
+                                 ; too many hassles when testing      
+  n = 1    
+  if (iscoord(t1,dimNames_t1(n)) ) then 
+      tNew&$dimNames_t1(n)$ = t1&$dimNames_t1(n)$   ; right dimensions
+  else if (iscoord(t2,dimNames_t2(n)) ) then
+           tNew&$dimNames_t2(n)$ = t2&$dimNames_t2(n)$
+       end if
+  end if
 
   return (tNew)
 end
