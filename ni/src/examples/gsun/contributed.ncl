@@ -12632,32 +12632,73 @@ function dpres_plevel_Wrap(plev[*]:numeric, psfc:numeric, ptop[1]:numeric, opt:i
 ; -------------------------------------------------
 
 begin
-  dp_plevel    = dpres_plevel(plev, psfc, ptop, 0) 
+  dp_plevel           = dpres_plevel(plev, psfc, ptop, 0) 
+
+; add meta data
+
   dp_plevel@long_name = "pressure thickness"
   if (isatt(psfc, "units")) then
       dp_plevel@units = psfc@units
   end if
 
+  plevName   = getvardims(plev)
+  psfcName   = getvardims(psfc)      ; dimension names
   rank_psfc  = dimsizes( dimsizes(psfc) )
-  if (rank_psfc.eq.3) then
-      psfcName = getvardims(psfc)      ; dimension names
-      dp_plevel!0   = psfc!0
-      dp_plevel!2   = psfc!1
-      dp_plevel!3   = psfc!2
-      do nd=0,2
-         if (.not.ismissing(psfcName(nd)) .and. \
-             iscoord(psfc,psfcName(nd))) then
-             dp_plevel&$psfcName(nd)$ = psfc&$psfcName(nd)$
+
+  if (rank_psfc.eq.1) then
+      if (.not.ismissing(plevName)) then
+          dp_plevel!0          = plevName
+          if (iscoord(plev,plevName)) then
+              dp_plevel&$plevName$ = plev&$plevName$
+          end if
+      else
+          dp_plevel!0   = "plev"
+          dp_plevel&plev=  plev
+      end if
+  end if
+
+  if (rank_psfc.eq.2) then                           ; (lat,lon) => (0,1)
+      do nd=0,1
+         if (.not.ismissing(psfcName(nd))) then
+             dp_plevel!(nd+1)   = psfcName(nd)       ; psfc!nd
+             if (iscoord(psfc,psfcName(nd))) then
+                 dp_plevel&$psfcName(nd)$ = psfc&$psfcName(nd)$
+             end if
          end if
       end do
 
-      plevName   = getvardims(plev)
-      if (.not.ismissing(plevName) .and. iscoord(plev,plevName)) then
-          dp_plevel!1          = plevName
-          dp_plevel&$plevName$ = plev&$plevName$
+      if (.not.ismissing(plevName)) then
+          dp_plevel!0          = plevName
+          if (iscoord(plev,plevName)) then
+              dp_plevel&$plevName$ = plev&$plevName$
+          end if
       else
-          dp_plevel!1   = "plev"
+          dp_plevel!0   = "plev"
           dp_plevel&plev=  plev
+      end if
+  end if
+
+  if (rank_psfc.eq.3) then                          ; (time,lat,lon) => (0,1,2)
+      if (.not.ismissing(psfcName(0))) then
+           dp_plevel!0   = psfcName(0)              ; psfc!0 
+           if (iscoord(psfc,psfcName(0))) then
+               dp_plevel&$psfcName(0)$ = psfc&$psfcName(0)$
+           end if
+
+           do nd=1,2
+              if (.not.ismissing(psfcName(0))) then
+                  dp_plevel!(nd+1)   = psfcName(nd)       ; psfc!nd
+                  dp_plevel&$psfcName(nd)$ = psfc&$psfcName(nd)$
+              end if
+           end do
+
+           if (.not.ismissing(plevName) .and. iscoord(plev,plevName)) then
+               dp_plevel!1          = plevName
+               dp_plevel&$plevName$ = plev&$plevName$
+           else
+               dp_plevel!1   = "plev"
+               dp_plevel&plev=  plev
+           end if
       end if
   end if
 
