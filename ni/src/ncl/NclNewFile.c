@@ -642,8 +642,8 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
     _increaseNclPrintIndentation();
 
   /*
-   *fprintf(stderr, "\n_printNclFileAttRecord, in file: %s, line: %d\n", __FILE__, __LINE__);
    */
+    fprintf(stderr, "\nEnter _printNclFileAttRecord, in file: %s, line: %d\n", __FILE__, __LINE__);
 
     for(i = 0; i < attrec->n_atts; i++)
     {
@@ -659,13 +659,13 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
             char **charcomp = NULL;
 
           /*
-           */
-            fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tAtt No. %d: name: <%s>, nelem: %d, type: 0%o, type-name: %s\n",
-                             i, NrmQuarkToString(attnode->name), attnode->n_elem,
-                             attnode->type, NrmQuarkToString(comprec->name));
+           *fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tAtt No. %d: name: <%s>, nelem: %d, type: 0%o, type-name: %s\n",
+           *                 i, NrmQuarkToString(attnode->name), attnode->n_elem,
+           *                 attnode->type, NrmQuarkToString(comprec->name));
 
-            fprintf(stderr, "\tcompound size %d\n", comprec->size);
+           *fprintf(stderr, "\tcompound size %d\n", comprec->size);
+           */
 
             n = comprec->n_comps;
             offset = comprec->size;
@@ -676,9 +676,11 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
                 compsize[n] = offset - compnode->offset;
                 offset -= compsize[n];
 
-                fprintf(stderr, "\tcomponent no %d name: <%16s>, size = %d, type: <%s>\n",
-                                   n, NrmQuarkToString(compnode->name),
-                                   compsize[n], _NclBasicDataTypeToName(compnode->type));
+              /*
+               *fprintf(stderr, "\tcomponent no %d name: <%16s>, size = %d, type: <%s>\n",
+               *                   n, NrmQuarkToString(compnode->name),
+               *                   compsize[n], _NclBasicDataTypeToName(compnode->type));
+               */
             }
 
             _justPrintTypeVal(fp, NCL_char, "\t", 0);
@@ -689,7 +691,9 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
             for(j = 0; j < attnode->n_elem; ++j)
             {
                 _justPrintTypeVal(fp, NCL_char, " (<", 0);
-                fprintf(stderr, "\n");
+              /*
+               *fprintf(stderr, "\n");
+               */
 
                 for(n = 0; n < comprec->n_comps; ++n)
                 {
@@ -705,8 +709,10 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
                         charcomp = (char **)NclCalloc(compsize[n], sizeof(char *));
                         assert(charcomp);
                         memcpy(charcomp, comprec->value + offset, compsize[n]);
-                        _justPrintTypeVal(fp, NCL_char, charcomp, 0);
-                        fprintf(stderr, "\tElem No %d component no %d value: <%s>\n", j, n, charcomp[0]);
+                        _justPrintTypeVal(fp, NCL_char, charcomp[0], 0);
+                      /*
+                       *fprintf(stderr, "\tElem No %d component no %d value: <%s>\n", j, n, charcomp[0]);
+                       */
                         NclFree(charcomp);
                     }
                     else
@@ -716,15 +722,16 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
                         memcpy(charcomp, comprec->value + offset, compsize[n]);
                         _justPrintTypeVal(fp, compnode->type, (void *)charcomp, 0);
 
-                        if(NCL_int64 == compnode->type)
-                            fprintf(stderr, "\tElem No %d component no %d value: %lld\n", j, n, *(int64 *)charcomp);
-                        if(NCL_double == compnode->type)
-                            fprintf(stderr, "\tElem No %d component no %d value: %f\n", j, n, *(double *)charcomp);
+                      /*
+                       *if(NCL_int64 == compnode->type)
+                       *    fprintf(stderr, "\tElem No %d component no %d value: %lld\n", j, n, *(int64 *)charcomp);
+                       *if(NCL_double == compnode->type)
+                       *    fprintf(stderr, "\tElem No %d component no %d value: %f\n", j, n, *(double *)charcomp);
+                      */
                         NclFree(charcomp);
                     }
                     offset += compsize[n];
                 }
-                fprintf(stderr, "\n");
                 _justPrintTypeVal(fp, NCL_char, ">)", 0);
             }
             _justPrintTypeVal(fp, NCL_char, "}", 1);
@@ -888,6 +895,10 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
     }
 
     _decreaseNclPrintIndentation();
+
+  /*
+   */
+    fprintf(stderr, "Leave _printNclFileAttRecord, in file: %s, line: %d\n\n", __FILE__, __LINE__);
 }
 
 void _printNclFileUDTRecord(FILE *fp, NclNewFile thefile, NclFileUDTRecord *udtrec)
