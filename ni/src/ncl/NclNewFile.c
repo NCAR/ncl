@@ -656,7 +656,7 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
             NclFileCompoundRecord *comprec = (NclFileCompoundRecord *) attnode->value;
             NclFileCompoundNode *compnode;
             size_t *compsize = (size_t *) NclCalloc(comprec->n_comps, sizeof(size_t));
-            char *charcomp = NULL;
+            char **charcomp = NULL;
 
           /*
            */
@@ -702,11 +702,11 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
 
                     if(NCL_string == compnode->type)
                     {
-                        charcomp = (char *)NclCalloc(1 + compsize[n], sizeof(char));
+                        charcomp = (char **)NclCalloc(compsize[n], sizeof(char *));
                         assert(charcomp);
                         memcpy(charcomp, comprec->value + offset, compsize[n]);
                         _justPrintTypeVal(fp, NCL_char, charcomp, 0);
-                        fprintf(stderr, "\tElem No %d component no %d value: <%s>\n", j, n, charcomp);
+                        fprintf(stderr, "\tElem No %d component no %d value: <%s>\n", j, n, charcomp[0]);
                         NclFree(charcomp);
                     }
                     else
