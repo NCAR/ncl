@@ -37,6 +37,7 @@ extern "C" {
 #include "ApiRecords.h"
 #include "Machine.h"
 #include "NclFile.h"
+#include "NclNewFile.h"
 #include "VarSupport.h"
 #include "NclFileInterfaces.h"
 #include "DataSupport.h"
@@ -1279,7 +1280,50 @@ NclQuark file_var_name;
 			theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 			if(theid->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
-				if(thefile != NULL) {
+				if(thefile != NULL)
+				{
+				if(use_new_hlfs)
+				{
+					NclNewFile thenewfile = (NclNewFile) thefile;
+					NclFileVarNode *varnode = _getVarNodeFromNclFileGrpNode(thenewfile->newfile.grpnode, file_var_name);
+
+					if(NULL != varnode)
+					{
+						tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+						tmp->kind = VARIABLE_LIST;
+						tmp->u.var = (NclApiVarInfoRec*)NclMalloc(sizeof(NclApiVarInfoRec));
+						tmp->u.var->name = varnode->name;
+						tmp->u.var->data_type= varnode->type;
+						tmp->u.var->type = FILEVAR;
+						tmp->u.var->n_dims = varnode->dim_rec->n_dims;
+						tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec) * tmp->u.var->n_dims);
+						for(j = 0 ; j < tmp->u.var->n_dims ; ++j)
+						{
+							tmp->u.var->dim_info[j].dim_quark = varnode->dim_rec->dim_node[j].name;
+							tmp->u.var->dim_info[j].dim_num   = j;
+							tmp->u.var->dim_info[j].dim_size  = varnode->dim_rec->dim_node[j].size;
+
+							tmp->u.var->coordnames[j] = varnode->dim_rec->dim_node[j].name;
+						}
+
+						if(NULL != varnode->att_rec)
+						{
+							tmp->u.var->n_atts = varnode->att_rec->n_atts;
+							tmp->u.var->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark)*j);
+							for(j = 0; j < varnode->att_rec->n_atts; ++j)
+							{
+								tmp->u.var->attnames[j] = varnode->att_rec->att_node[j].name;
+							}
+						} else {
+							tmp->u.var->n_atts = 0;
+							tmp->u.var->attnames = NULL;
+						}
+						tmp->next = NULL;
+						return(tmp);
+					}
+				}
+				else
+				{
 					for(i = 0; i < thefile->file.n_vars; i++) {
 						if(thefile->file.var_info[i]->var_name_quark == file_var_name) {
 							tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
@@ -1324,6 +1368,7 @@ NclQuark file_var_name;
 							return(tmp);
 						}
 					}
+				}
 				}
 			}
 		}
