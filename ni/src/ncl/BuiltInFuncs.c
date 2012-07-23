@@ -53,6 +53,7 @@ extern "C" {
 #include "NclDataDefs.h"
 #include "Machine.h"
 #include "NclFile.h"
+#include "NclNewFile.h"
 #include "NclVar.h"
 #include "NclCoordVar.h"
 #include "VarSupport.h"
@@ -2933,6 +2934,16 @@ NhlErrorTypes _NclIfbindirread(void)
 	return(NhlFATAL);
 }
 
+int _MachineIsBigEndian()
+{
+    short int word = 0x0001;
+    char *byte = (char *) &word;
+
+    if(byte[0])
+       return 0;
+    else
+       return 1;
+}
 
 NhlErrorTypes _NclIisbigendian
 #if	NhlNeedProto
@@ -2945,11 +2956,8 @@ NhlErrorTypes _NclIisbigendian
 	ng_size_t dimsizes = 1;
 
 	out_val = (logical*)NclMalloc(sizeof(logical));
-#ifdef ByteSwapped
-	*out_val = 0;
-#else
-	*out_val = 1;
-#endif
+
+	*out_val = _MachineIsBigEndian();
 
 	return(NclReturnValue(
 		out_val,
@@ -16978,17 +16986,35 @@ NhlErrorTypes _NclIGetVarDims
 		if(tmp_var->obj.obj_type == Ncl_FileVar) {
 			file_md= (NclMultiDValData)_NclVarValueRead(tmp_var,NULL,NULL);
 			thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
-			data = _NclGetFileInfo2(thefile);
-			for (i=0; i < data->u.file->n_dims;i++) {
-				names[i] = data->u.file->dim_info[i].dim_quark;
+
+			if(use_new_hlfs)
+			{
+				NclNewFile thenewfile = (NclNewFile) thefile;
+				NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+
+				if(NULL != grpnode->dim_rec)
+				{
+					ndims = grpnode->dim_rec->n_dims;
+
+					for(i = 0; i < ndims; ++i)
+						names[i] = grpnode->dim_rec->dim_node[i].name;
+				}
+			}
+			else
+			{
+				data = _NclGetFileInfo2(thefile);
+				for (i=0; i < data->u.file->n_dims;i++) {
+					names[i] = data->u.file->dim_info[i].dim_quark;
+				}
+
+				ndims = data->u.file->n_dims;
 			}
 
-			ndims = data->u.file->n_dims;
 			if (ndims == 0) {
 				names[0] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
 				ndims = 1;
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"getvardims: file %s contains no dimensions readable by NCL",
-					  NrmQuarkToString(thefile->file.fname));
+				  	NrmQuarkToString(thefile->file.fname));
 			}
 			ret = NclReturnValue((void*)names, 1, &ndims, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, 
 					     ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
@@ -21016,7 +21042,63 @@ NhlErrorTypes   _NclIGetFileDimsizes
                     0);
     f = (NclFile) _NclGetObj((int) *fid);
 
-    if (f != NULL) {
+    if (f != NULL)
+    {
+    if(use_new_hlfs)
+    {
+        NclNewFile   thenewfile = (NclNewFile) f;
+        NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+
+        if(NULL != grpnode->dim_rec)
+        {
+	    ndims = grpnode->dim_rec->n_dims;
+
+	    if (ndims == 0)
+            {
+		NhlPError(NhlWARNING, NhlEUNKNOWN, "getfiledimsizes: file contains no dimensions");
+		dimsizes = 1;
+		NclReturnValue(
+			(void*) &((NclTypeClass) nclTypeintClass)->type_class.default_mis, 1,
+			&dimsizes, &((NclTypeClass) nclTypeintClass)->type_class.default_mis,
+			((NclTypeClass) nclTypeintClass)->type_class.data_type, 1);
+		return NhlWARNING;
+	    }
+	    else
+            {
+	        return_type = NCL_int;
+#if !defined(NG32BIT)
+	        i = 0;
+	        while(i < ndims)
+                {
+	            if(grpnode->dim_rec->dim_node[i].size > INT_MAX)
+                    {
+	                return_type = NCL_long;
+                        break;
+	            }
+	            ++i;
+	        }
+#endif
+	        if(return_type == NCL_int)
+                {
+	            dim_sizes = (void *) NclMalloc(sizeof(int) * ndims);
+	            for(i = 0; i < ndims; ++i)
+	                ((int*)dim_sizes)[i] = (int) grpnode->dim_rec->dim_node[i].size;
+	        }
+	        else
+	        {
+	            dim_sizes = (void *) NclMalloc(sizeof(long) * ndims);
+	            for(i = 0; i < ndims; ++i)
+	                ((long*)dim_sizes)[i] = (long) grpnode->dim_rec->dim_node[i].size;
+	        }
+
+	        ret = NclReturnValue(dim_sizes, 1, &ndims, NULL, return_type, 1);
+	        free(dim_sizes);
+	        return ret;
+            }
+        }
+    }
+    else
+    {
 /*
  * First loop through dimension sizes to see if we need to return
  * ints or longs.
@@ -21065,6 +21147,7 @@ NhlErrorTypes   _NclIGetFileDimsizes
 	  free(dim_sizes);
 	  return ret;
         }
+    }
     }
     NhlPError(NhlWARNING, NhlEUNKNOWN, "getfiledimsizes: undefined file variable");
 
@@ -21450,7 +21533,7 @@ NhlErrorTypes _NclItoint
                         if (strcmp(end, str) == 0)
                         {
                             has_missing = 1;
-                            NhlPError(NhlFATAL,NhlEUNKNOWN,
+                            NhlPError(NhlWARNING,NhlEUNKNOWN,
                                 "toint: A bad value was passed (string); input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.intval;
                         }
@@ -26155,7 +26238,7 @@ NhlErrorTypes _NclItoushort
                             llval = _Nclstrtoll(str,&end);
                             if (strcmp(end, str) == 0)
                             {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,
                                     "toushort: A bad value was passed to toushort, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.ushortval;
                             }
@@ -26776,7 +26859,7 @@ NhlErrorTypes _NclItofloat
                                 dval = strtod(str,&end);
                                 if (strcmp(end, str) == 0)
                                 {
-                                    NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                    NhlPError(NhlWARNING,NhlEUNKNOWN,
                                         "tofloat: A bad value was passed to (string) tofloat, input strings must contain numeric digits, replacing with missing value");
                                     output[i] = ret_missing.floatval;
                                 }
@@ -26814,7 +26897,7 @@ NhlErrorTypes _NclItofloat
                             dval = strtod(str,&end);
                             if (strcmp(end, str) == 0)
                             {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,
                                     "tofloat: A bad value was passed to (string) tofloat, input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
                                 output[i] = ret_missing.floatval;
@@ -28391,7 +28474,7 @@ NhlErrorTypes _NclItobyte
                             llval = _Nclstrtoll(str,&end);
                             if (strcmp(end, str) == 0)
                             {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,
                                     "tobyte: A bad value was passed to tobyte, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.byteval;
                             }

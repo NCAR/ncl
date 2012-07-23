@@ -80,6 +80,8 @@ void
 # endif /* NhlNeedProto */
 );
 
+extern int _MachineIsBigEndian();
+
 extern NhlErrorTypes _NclIGetFileChunkSizes(void);
 extern NhlErrorTypes _NclIGetFileCompressionLevel(void);
 
