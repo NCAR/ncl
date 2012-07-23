@@ -28,7 +28,7 @@ C
       external NhlFPDFWorkstationClass
       external NhlFCairoPSPDFWorkstationClass
       external NhlFCairoImageWorkstationClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFXyPlotClass
       external NhlFCoordArraysClass
 
@@ -128,14 +128,15 @@ C
       if (wks_type.eq."x11".or.wks_type.eq."X11") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkPause', 'True', ierr)
-         call NhlFCreate (wks, 'xy17Work', NhlFXWorkstationClass,
+         call NhlFCreate (wks, 'xy17Work', 
+     +                    NhlFCairoWindowWorkstationClass,
      +                    0, rlist, ierr)
       endif
 
 C
 C  Open PS workstation. 
 C
-      if (wks_type.eq."ps".or.wks_type.eq."PS") then
+      if (wks_type.eq."oldps".or.wks_type.eq."OLDPS") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkPSFileName', 
      +                         'xy17f.ps', ierr)
@@ -145,7 +146,7 @@ C
 C
 C  Open PDF workstation. 
 C
-      if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
+      if (wks_type.eq."oldpdf".or.wks_type.eq."OLDPDF") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkPDFFileName', 
      +                         'xy17f.pdf', ierr)
@@ -155,8 +156,8 @@ C
 C
 C  Open cairo PS/PDF workstation. 
 C
-      if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
-     +    wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+      if (wks_type.eq."pdf".or.wks_type.eq."PDF".or.
+     +    wks_type.eq."ps".or.wks_type.eq."PS") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkFileName', 
      +                         'xy17f', ierr)
@@ -167,8 +168,7 @@ C
 C
 C  Open cairo PNG workstation. 
 C
-      if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
-     +    wks_type.eq."png".or.wks_type.eq."PNG") then
+      if (wks_type.eq."png".or.wks_type.eq."PNG") then
          call NhlFRLClear (rlist)
          call NhlFRLSetString (rlist, 'wkFileName', 
      +                         'xy17f', ierr)

@@ -228,14 +228,6 @@ NC4STUFF:
 	@echo "n"
 #endif
 
-#ifdef	BuildCAIRO
-CAIROSTUFF:
-	@echo "y"
-#else
-CAIROSTUFF:
-	@echo "n"
-#endif
-
 #ifdef	BuildGDAL
 GDALSTUFF:
 	@echo "y"
@@ -273,14 +265,6 @@ V5DSTUFF:
 	@echo "y"
 #else
 V5DSTUFF:
-	@echo "n"
-#endif
-
-#ifdef	BuildDODS
-DODSSTUFF:
-	@echo "y"
-#else
-DODSSTUFF:
 	@echo "n"
 #endif
 

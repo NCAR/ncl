@@ -167,7 +167,6 @@ BuildRasterBinary   YES
 BuildXlibDependentCode  YES
 BuildSunViewctrans  NO
 BuildPNG            NO
-BuildCAIRO          NO
 BuildGDAL           NO
 HDFlib          -lmfhdf -ldf -ljpeg -lz
 PNGlib          -lpng -lz

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.83 2010-03-16 02:00:10 haley Exp $
+#      $Id: yMakefile,v 1.83.2.1 2010-03-17 20:47:07 brownrig Exp $
 #
 #########################################################################
 #                                                                       #
@@ -19,7 +19,6 @@
 #
 #	Description:	yMakefile for ncarg/ni/src/lib/hlu
 MYNAME		= libhlu
-MYNAME_CAIRO	= libhlu_cairo
 
 #ifdef Build32BITS
 ALLDEFINES = $(ALLDEFINES) -DNCL32BITS
@@ -85,7 +84,7 @@ HDRS2           = FortranP.h ScalarField.h ScalarFieldP.h ScalarFieldFloatP.h \
 		ImageWorkstation.h ImageWorkstationP.h \
 		MeshScalarField.h MeshScalarFieldP.h \
 		CairoWorkstation.h CairoWorkstationP.h \
-		pageutil.h
+		pageutil.h color.h
 
 HDRS            = $(HDRS1) $(HDRS2) $(TRIANGLE_HDR) 
 
@@ -110,11 +109,9 @@ CSRCS2          = MapPlot.c XyPlot.c ResList.c Workspace.c Fortran.c Futil.c \
 		cmpf.c nicevals.c \
 	        PDFWorkstation.c CnRenderer.c CnStdRenderer.c \
 		CnTriMeshRenderer.c TriMeshTransObj.c ImageWorkstation.c \
-		MeshScalarField.c pageutil.c
+		MeshScalarField.c pageutil.c color.c CairoWorkstation.c
 
-DUMCAIROSRCS	 = CairoWorkstation.c
-
-CSRCS            = $(CSRCS1) $(CSRCS2) $(TRIANGLE_SRC) $(DUMCAIROSRCS)
+CSRCS            = $(CSRCS1) $(CSRCS2) $(TRIANGLE_SRC)
 
 COBJS1    	= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -137,11 +134,9 @@ COBJS2          = ScalarField.o AnnoManager.o Format.o App.o PSWorkstation.o \
 		cmpf.o nicevals.o \
 	        PDFWorkstation.o CnRenderer.o CnStdRenderer.o \
 		CnTriMeshRenderer.o TriMeshTransObj.o ImageWorkstation.o \
-		MeshScalarField.o pageutil.o
+		MeshScalarField.o pageutil.o color.o CairoWorkstation.o
 
-DUMCAIROOBJS	= CairoWorkstation.o
-
-HLUCOBJS	= $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ) $(DUMCAIROOBJS)
+HLUCOBJS	= $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ)
 
 FSRCS		= DATACOMMF.f ERRORF.f HLUF.f PLOTMANAGERF.f RLGEN.f RLSET.f \
 		RLGET.f TRANSFORMF.f VIEWF.f WORKSPACEF.f WORKSTATIONF.f \
@@ -160,25 +155,11 @@ FOBJS		= DATACOMMF.o ERRORF.o HLUF.o PLOTMANAGERF.o RLGEN.o RLSET.o \
 LIBHOBJS	= $(HLUCOBJS) $(FOBJS)
 
 BuildSharedLibTarget(libNGhlu,$(LIBHOBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
-LibraryTarget($(MYNAME),$(LIBHOBJS))
 
-#ifdef BuildCAIRO
-CAIROOBJS	= CairoWorkstation_cairo.o
-HLUCCOBJS	= $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ) $(CAIROOBJS)
+HLUCCOBJS	= $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ)
 LIBHCOBJS	= $(HLUCCOBJS) $(FOBJS)
 
-CAIRO_DEFINES   =  -DBuildCAIRO
-
-CairoWorkstation_cairo.o: CairoWorkstation_cairo.c
-        $(CC) $(CCOPTIONS) $(ALLDEFINES) $(CAIRO_DEFINES) -c CairoWorkstation_cairo.c
-
-LibraryTarget($(MYNAME_CAIRO),$(LIBHCOBJS))
-
-CairoWorkstation_cairo.c: CairoWorkstation.c
-	$(LN) CairoWorkstation.c CairoWorkstation_cairo.c
-
-CleanFilesTarget(CairoWorkstation_cairo.c CairoWorkstation_cairo.o)
-#endif
+LibraryTarget($(MYNAME),$(LIBHCOBJS))
 
 BuildIncludes($(HDRS),ncarg/hlu,../..)
 InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))

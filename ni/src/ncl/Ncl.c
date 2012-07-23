@@ -25,6 +25,7 @@ extern "C" {
 #include   "NclVar.h"
 #include   "NclType.h"
 #include   "TypeSupport.h"
+#include   "NclProf.h"
 #include   <ncarg/hlu/ConvertP.h>
 #include   <ncarg/hlu/Error.h>
 #include   <ncarg/hlu/App.h>
@@ -305,6 +306,13 @@ main(int argc, char **argv) {
             }
         }
     }
+
+	if(nclf){
+		NCL_PROF_INIT(nclf);
+	}
+	else{
+		NCL_PROF_INIT("cmdline");
+	}
 
     error_fp = stderr;
     stdout_fp = stdout;

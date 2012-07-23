@@ -28,8 +28,11 @@ C
       implicit none
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFLogLinPlotClass
       external NhlFContourPlotClass
       
@@ -72,13 +75,14 @@ C Create an X workstation.
 C      
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
-         call NhlFCreate(wid,'simple',NhlFXWorkstationClass,
+         call NhlFCreate(wid,'simple',
+     +        NhlFCairoWindowWorkstationClass,
      &        0,rlist,ierr)
       endif
 
-      if (wks_type.eq."ps".or.wks_type.eq."PS") then
+      if (wks_type.eq."oldps".or.wks_type.eq."oldPS") then
 C
-C Create a PS workstation.
+C Create an older-style PS workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPSFileName',
@@ -86,6 +90,37 @@ C
          call NhlFCreate(wid,'simple',NhlFPSWorkstationClass,
      &        0,rlist,ierr)
       endif
+      if (wks_type.eq."oldpdf".or.wks_type.eq."oldPDF") then
+C
+C Create an older-style PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPDFFileName',
+     &        './basic08f.pdf',ierr)
+         call NhlFCreate(wid,'simple_pdf',NhlFPDFWorkstationClass,
+     &        0,rlist,ierr)
+      endif
+      if (wks_type.eq."pdf".or.wks_type.eq."PDF".or.
+     &    wks_type.eq."ps".or.wks_type.eq."PS") then
+C
+C Create a cairo PS/PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName','./basic08c',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(wid,'simple_cairo',
+     +                   NhlFCairoPSPDFWorkstationClass,0,rlist,ierr)
+      end if
+      if (wks_type.eq."png".or.wks_type.eq."PNG") then
+C
+C Create a cairo PNG workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkFileName','./basic08c',ierr)
+         call NhlFRLSetString(rlist,'wkFormat',wks_type,ierr)
+         call NhlFCreate(wid,'simple_cairo',
+     +                   NhlFcairoImageWorkstationClass,0,rlist,ierr)
+      end if
 C
 C Create a LogLinPlot with a viewport that fills the viewspace. This will
 C be used for drawing immediate mode polylines indicating the intended

@@ -110,7 +110,8 @@ C                     necessarily have to agree with the color table
 C                     in effect when the original metafile was created.
 C
 C
-      PARAMETER (LIDR=75)
+CRLB: PARAMETER (LIDR=75)
+      PARAMETER (LIDR=77)
       INTEGER WKID, CONID, ITYPE, IOPT, IAT(*), NCOLRS, NSTART 
       INTEGER IATE(31)     
       REAL    CTAB(3,*),RAT(*),RATE(19)
@@ -209,23 +210,41 @@ C
         CALL GZW2NY(1,YB,YTMP)
         RATE(18) = XTMP-ZXTMP
         RATE(19) = YTMP-ZYTMP
-        WRITE(IDR( 6),503) (IATE(LL),LL= 1,20)
-        WRITE(IDR( 7),504) (IATE(LL),LL=21,31)
-        WRITE(IDR( 8),505) (RATE(LL),LL= 1, 5)
-        WRITE(IDR( 9),505) (RATE(LL),LL= 6,10)
-        WRITE(IDR(10),505) (RATE(LL),LL=11,15)
-        WRITE(IDR(11),506) (RATE(LL),LL=16,19)
+C --------------------------------------------------
+C  Serializing these values was modified to support the presence of
+C  32bit ARGB values, which are always *much* larger in magnitude
+C  than the original I4 character fields.  Expanded to I10s; note
+C  that 2 extra 80-character records are now required, so that
+C  subsequent offsets into IDR have changed.     RLB 1/2012
+C
+C        WRITE(IDR( 6),503) (IATE(LL),LL= 1,20)
+C        WRITE(IDR( 7),504) (IATE(LL),LL=21,31)
+C        WRITE(IDR( 8),505) (RATE(LL),LL= 1, 5)
+C        WRITE(IDR( 9),505) (RATE(LL),LL= 6,10)
+C        WRITE(IDR(10),505) (RATE(LL),LL=11,15)
+C        WRITE(IDR(11),506) (RATE(LL),LL=16,19)
+C --------------------------------------------------        
+        WRITE(IDR( 6),507) (IATE(LL),LL= 1, 8)
+        WRITE(IDR( 7),507) (IATE(LL),LL= 9,16)
+        WRITE(IDR( 8),507) (IATE(LL),LL=17,24)
+        WRITE(IDR( 9),507) (IATE(LL),LL=25,31),0
+        WRITE(IDR(10),505) (RATE(LL),LL= 1, 5)
+        WRITE(IDR(11),505) (RATE(LL),LL= 6,10)
+        WRITE(IDR(12),505) (RATE(LL),LL=11,15)
+        WRITE(IDR(13),506) (RATE(LL),LL=16,19)
   503   FORMAT(20I4)
   504   FORMAT(11I4)
   505   FORMAT(5E16.7)
   506   FORMAT(4E16.7)
+  507   FORMAT(8I10)
       ENDIF
 C
 C  Color table.
 C
       
       IF (IAFLG .EQ. 1) THEN
-        IANDX = 12
+C       IANDX = 12
+        IANDX = 14
       ELSE
         IANDX = 6
       ENDIF

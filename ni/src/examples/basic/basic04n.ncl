@@ -24,13 +24,13 @@ begin
 ; For each type of output you must create a workstation object using create.
 
 ; The first argument, '"wks"', to the create call sets the name of the 
-; object being created. The second argument, "xWorkstationClass", or 
+; object being created. The second argument, "windowWorkstationClass", or 
 ; "ncgmWorkstationClass" identifies the type or class of the object 
 ; to create. In this case an X workstation or an NCGM workstation.
 ; The third argument, "defaultapp", specifies the id of the objects parent.
 ; In this case, the object has no parent, so the constant "defaultapp" is used. 
 
-xwks = create "xwks" xWorkstationClass defaultapp 
+xwks = create "xwks" windowWorkstationClass defaultapp 
 end create
 
 ; The resource, wkMetaName, lets you specify the name of the output NCGM

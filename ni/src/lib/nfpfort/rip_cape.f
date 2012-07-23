@@ -22,13 +22,14 @@ c
 c !REVISION HISTORY:
 c     2005-May-15 - Mark T. Stoelinga - oringinal version from RIP4
 c     2005-Nov-28 - J. Schramm - modified to run outside of RIP4 with
+c     2012-Jul-18 - M. Haley - modified to change/add missing value.
 c                                NCL
 c
 c !INTERFACE:
 c ------------------------------------------------------------------
 C NCLFORTSTART
-      SUBROUTINE DCAPECALC3D(PRS,TMK,QVP,GHT,TER,SFP,CAPE,CIN,MIY,MJX,
-     +                       MKZH,I3DFLAG,TER_FOLLOW,PSAFILE)
+      SUBROUTINE DCAPECALC3D(PRS,TMK,QVP,GHT,TER,SFP,CAPE,CIN,CMSG,
+     +                       MIY,MJX,MKZH,I3DFLAG,TER_FOLLOW,PSAFILE)
 c
       IMPLICIT NONE
       INTEGER MIY,MJX,MKZH,I3DFLAG,TER_FOLLOW
@@ -40,17 +41,16 @@ c
       DOUBLE PRECISION SFP(MIY,MJX)
       DOUBLE PRECISION CAPE(MIY,MJX,MKZH)
       DOUBLE PRECISION CIN(MIY,MJX,MKZH)
+      DOUBLE PRECISION CMSG
       CHARACTER*(*) PSAFILE
 C NCLEND
 c Local variables
       INTEGER I,J,K,ILCL,IUP,KEL,KK,KLCL,KLEV,KLFC,KMAX,KPAR,KPAR1,KPAR2
-      INTEGER MM,NN
       DOUBLE PRECISION DAVG,ETHMAX,Q,T,P,E,ETH,TLCL,ZLCL
       DOUBLE PRECISION CP,EPS,GAMMA,GAMMAMD,RGAS,RGASMD,TLCLC1,TLCLC2,
      +                 TLCLC3,TLCLC4
       DOUBLE PRECISION CPMD,THTECON1,THTECON2,THTECON3
-      DOUBLE PRECISION CELKEL,EZERO,ESLCON1,ESLCON2,GRAV,THECON1,
-     +                 THECON2,THECON3
+      DOUBLE PRECISION CELKEL,EZERO,ESLCON1,ESLCON2,GRAV
       DOUBLE PRECISION PAVG,VIRTUAL,P1,P2,PP1,PP2,TH,TOTTHE,TOTQVP,
      +                 TOTPRS
       DOUBLE PRECISION CPM,DELTAP,ETHPARI,GAMMAM,GHTPARI,QVPPARI,
@@ -58,7 +58,7 @@ c Local variables
       DOUBLE PRECISION FACDEN,FAC1,FAC2,QVPLIFT,TMKLIFT,TVENV,TVLIFT,
      +                 GHTLIFT
       DOUBLE PRECISION ESLIFT,TMKENV,QVPENV,TONPSADIABAT
-      DOUBLE PRECISION BENAMIN,DZ,Z,PUP,PDN
+      DOUBLE PRECISION BENAMIN,DZ,PUP,PDN
       DOUBLE PRECISION BUOY(150),ZREL(150),BENACCUM(150),
      +                 PRSF(MIY,MJX,MKZH)
       DOUBLE PRECISION PSADITHTE(150),PSADIPRS(150),PSADITMK(150,150)
@@ -337,13 +337,21 @@ C  k of equilibrium level
 c
 c   If we got through that loop, then there is no non-negative
 c   buoyancy above the LCL in the sounding.  In these situations,
-c   both CAPE and CIN will be set to -0.1 J/kg.  Also, where CAPE is
+c   both CAPE and CIN will be set to -0.1 J/kg. (See below about
+c   missing values in V6.1.0). Also, where CAPE is
 c   non-zero, CAPE and CIN will be set to a minimum of +0.1 J/kg, so
 c   that the zero contour in either the CIN or CAPE fields will
 c   circumscribe regions of non-zero CAPE.
 c
-                  CAPE(I,J,KPAR) = -0.1D0
-                  CIN(I,J,KPAR) = -0.1D0
+c   In V6.1.0 of NCL, we added a _FillValue attribute to the return
+c   value of this function. At that time we decided to change -0.1 
+c   to a more appropriate missing value, which is passed into this 
+c   routine as CMSG.
+c
+c                 CAPE(I,J,KPAR) = -0.1D0
+c                 CIN(I,J,KPAR) = -0.1D0
+                  CAPE(I,J,KPAR) = CMSG
+                  CIN(I,J,KPAR)  = CMSG
                   KLFC = KMAX
 c
                   GO TO 102
@@ -376,9 +384,16 @@ c
                   CIN(I,J,KPAR) = MAX(-BENAMIN,0.1D0)
 c
 c   CIN is uninteresting when CAPE is small (< 100 J/kg), so set
-c   CIN to -.1 in that case.
+c   CIN to -0.1 (see note about missing values in V6.1.0) in 
+c   that case.
 c
-                  IF (CAPE(I,J,KPAR).LT.100.D0) CIN(I,J,KPAR) = -0.1D0
+c   In V6.1.0 of NCL, we added a _FillValue attribute to the return
+c   value of this function. At that time we decided to change -0.1 
+c   to a more appropriate missing value, which is passed into this 
+c   routine as CMSG.
+c
+C                 IF (CAPE(I,J,KPAR).LT.100.D0) CIN(I,J,KPAR) = -0.1D0
+                  IF (CAPE(I,J,KPAR).LT.100.D0) CIN(I,J,KPAR) = CMSG
   102             CONTINUE
 c
               END DO

@@ -4470,8 +4470,8 @@ NhlErrorTypes _NclINhlGetClassResources
 	int res_count;
     ng_size_t res_count_size_t;
 	static int first = 1;
-	static int hlu_class_count = 26;
-	static NhlClass NhlPublicClassList[26];
+	static int hlu_class_count = 29;
+	static NhlClass NhlPublicClassList[29];
 	NhlClass class = NULL;
 	int filter = 0;
 	regex_t expr;
@@ -4504,6 +4504,9 @@ NhlErrorTypes _NclINhlGetClassResources
 		NhlPublicClassList[23] =  NhlstreamlinePlotClass;
 		NhlPublicClassList[24] =  NhlgraphicStyleClass;
 		NhlPublicClassList[25] =  NhlprimitiveClass;
+		NhlPublicClassList[26] =  NhlcairoDocumentWorkstationClass;
+		NhlPublicClassList[27] =  NhlcairoImageWorkstationClass;
+		NhlPublicClassList[28] =  NhlcairoWindowWorkstationClass;
 	}
 
         arg0  = NclGetArgValue(

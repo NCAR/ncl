@@ -12,8 +12,6 @@ nhlf77: nhlf77.csh Makefile
 	-e 's+SED_FC+$(F77)+' \
 	-e 's+SED_LIBNCARG_GKS+ncarg_gks+' \
 	-e 's+SED_LIBHLU+hlu+' \
-	-e 's+SED_LIBNCARG_CGKS+ncarg_gks_cairo+' \
-	-e 's+SED_LIBCHLU+hlu_cairo+' \
 	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
 	-e 's+SED_INCSEARCH+$(INCSEARCH)+' \
 	-e 's+SED_LDFFLAGS+$(FC_LDOPTIONS)+' \
@@ -34,8 +32,6 @@ nhlf90: nhlf77.csh Makefile
 	-e 's+SED_FC+$(F77)+' \
 	-e 's+SED_LIBNCARG_GKS+ncarg_gks+' \
 	-e 's+SED_LIBHLU+hlu+' \
-	-e 's+SED_LIBNCARG_CGKS+ncarg_gks_cairo+' \
-	-e 's+SED_LIBCHLU+hlu_cairo+' \
 	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
 	-e 's+SED_INCSEARCH+$(INCSEARCH)+' \
 	-e 's+SED_LDFFLAGS+$(FC_LDOPTIONS)+' \
@@ -56,8 +52,6 @@ nhlcc: nhlcc.csh Makefile
 	-e 's+SED_CC+$(CC)+' \
 	-e 's+SED_LIBNCARG_GKS+ncarg_gks+' \
 	-e 's+SED_LIBHLU+hlu+' \
-	-e 's+SED_LIBNCARG_CGKS+ncarg_gks_cairo+' \
-	-e 's+SED_LIBCHLU+hlu_cairo+' \
 	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
 	-e 's+SED_INCSEARCH+$(INCSEARCH)+' \
 	-e 's+SED_STDDEF+$(STD_DEFINES)+' \

@@ -33,12 +33,10 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/App.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
-#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
@@ -88,44 +86,43 @@ main()
     }
     if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
- * Create an XWorkstation object.
+ * Create an X11 Workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&xworkid,"xy01Work",NhlxWorkstationClass,
+        NhlCreate(&xworkid,"xy01Work",NhlcairoWindowWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }       
-    if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
+    if (!strcmp(wks_type,"oldps") || !strcmp(wks_type,"OLDPS")) {
 /*
- * Create a PSWorkstation object.
+ * Create an older-style PostScript workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"xy01c.ps");
         NhlCreate(&xworkid,"xy01Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }       
-    if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
+    if (!strcmp(wks_type,"oldpdf") || !strcmp(wks_type,"OLDPDF")) {
 /*
- * Create a PDFWorkstation object.
+ * Create an older-style PDF workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPDFFileName,"xy01c.pdf");
         NhlCreate(&xworkid,"xy01Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }       
-    if (!strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS") ||
-        !strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF")) {
+    if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS") ||
+        !strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PS or PDF CairoWorkstation object.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkFileName,"xy01c");
         NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
-        NhlCreate(&xworkid,"xy01Work",NhlcairoPSPDFWorkstationClass,
+        NhlCreate(&xworkid,"xy01Work",NhlcairoDocumentWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }       
-    if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
-        !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+    if (!strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
 /*
  * Create a PNG cairoImageWorkstation object.
  */
@@ -147,7 +144,7 @@ main()
               rlist);
 /*
  * Create the XyPlot object which is created as a child of the
- * XWorkstation object.
+ * workstation object.
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);

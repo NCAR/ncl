@@ -74,6 +74,7 @@ extern "C" {
 #include "NclFileInterfaces.h"
 #include <signal.h>
 #include <netcdf.h>
+#include "NclProf.h"
 
 extern int cmd_line;
 extern short NCLnoSysPager;
@@ -2319,7 +2320,7 @@ NhlErrorTypes _NclIDelete
 		if (data.u.data_obj->obj.obj_type == Ncl_MultiDVallistData) {
 			NclObj list_obj = _NclGetObj(*(int*) data.u.data_obj->multidval.val);
 			while ((tmp = _NclListPop(list_obj))) {
-				if (tmp->obj.obj_type == Ncl_Var) {
+				if (tmp->obj.obj_type == Ncl_Var || tmp->obj.obj_type == Ncl_HLUVar) {
 					switch(((NclVar)tmp)->var.var_type) {
 					case VARSUBSEL:
 					case COORDSUBSEL:
@@ -4612,6 +4613,7 @@ NhlErrorTypes _NclIasciiread
 			else if(thetype->type_class.type==Ncl_Typestring) {
 				char *buffer;
 				char *step;
+				int c;
 				int cur_size = NCL_MAX_STRING;
 
 				buffer = NclMalloc(cur_size * sizeof(char));
@@ -4624,24 +4626,33 @@ NhlErrorTypes _NclIasciiread
 							step = &buffer[j];
 						}
 						if(!feof(fp)) {
-							*step = fgetc(fp);
-							if(! (*step == '\n' || *step == '\r')) {
+							c  = getc(fp);
+							*step = (char) c;
+							switch (c) {
+							default:
 								step++;
 								continue;
-							}
-							if (*step == '\r') {
-								char c;
+							case '\r':
 								/* throw away next character if it's a CRLF sequence */
 								c = getc(fp);
 								if (c != '\n') { 
 									ungetc(c,fp);
 								}
+								/* fall through */
+							case EOF:
+								/* no characters since last EOL + not fall through of '\r' */
+								if (j == 0 && *step != '\r') {
+									break;
+								}
+								/* fall through */
+							case '\n':
+								*step = '\0';
+								*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+								step = buffer;
+								tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+								total++;
+								break;
 							}
-							*step = '\0';
-							*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
-							step = buffer;
-							tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-							total++;
 							break;
 						} else {
 							break;
@@ -4755,17 +4766,26 @@ NhlErrorTypes _NclIasciiread
 		else if(thetype->type_class.type==Ncl_Typestring) {
 			char c;
 			totalsize = 0;
+			int has_chars = 0;
 			while(!feof(fp)) {
 				c = getc(fp);
 				if (c == '\r') {
 					totalsize++;
 					c = getc(fp); /* handle CRLF (\r\n) style EOL by ignoring LF after CR */
-					if (c == '\r') /* if another CR push it back so it will count as an (empty) line */
+					if (c != '\n') /* otherwise put it back */
 						ungetc(c,fp);
+					has_chars = 0;
 				}
 				else if(c == '\n' ) {
 					totalsize++;
+					has_chars = 0;
 				} 
+				else if (c != EOF) {
+					has_chars = 1;
+				}
+			}
+			if (has_chars) {  /* some characters at the end without a newline */
+				totalsize++;
 			}
 		}
 		NclFree(tmp_ptr);
@@ -4892,6 +4912,7 @@ NhlErrorTypes _NclIasciiread
 		else if(thetype->type_class.type==Ncl_Typestring) {
 			char *buffer;
 			char *step;
+			int c;
 			int cur_size = NCL_MAX_STRING;
 
 			buffer = NclMalloc(cur_size * sizeof(char));
@@ -4904,24 +4925,33 @@ NhlErrorTypes _NclIasciiread
 						step = &buffer[j];
 					}
 					if(!feof(fp)) {
-						*step = getc(fp);
-						if (! (*step == '\n' || *step == '\r')) {
+						c = getc(fp);
+						*step = (char) c;
+						switch (c) {
+						default:
 							step++;
 							continue;
-						}
-						if (*step == '\r') {
-							char c;
+						case '\r':
 							/* throw away next character if it's a CRLF sequence */
 							c = getc(fp);
 							if (c != '\n') { 
 								ungetc(c,fp);
 							}
+							/* fall through */
+						case EOF:
+							/* no characters since last EOL + not fall through of '\r' */
+							if (j == 0 && *step != '\r') {
+								break;
+							}
+							/* fall through */
+						case '\n':
+							*step = '\0';
+							*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+							step = buffer;
+							tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+							total++;
+							break;
 						}
-						*step = '\0';
-						*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
-						step = buffer;
-						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-						total++;
 						break;
 					} else {
 						break;
@@ -21251,9 +21281,38 @@ NhlErrorTypes   _NclIFileIsPresent
             else
                 file_exists[i] = 1;     /* true */
         }
-        else {
+        else
+	{
+            file_exists[i] = 0;
+
             fpath = _NGResolvePath(NrmQuarkToString(files[i]));
-            file_exists[i] = stat(fpath, &st) == -1 ? 0 : 1;
+            if(stat(fpath, &st))
+            {
+                char tmp_path[NCL_MAX_STRING];
+                char *ext_name;
+                strcpy(tmp_path, fpath);
+
+                ext_name = strrchr(tmp_path, '.');
+              /*Use while loop will allow user to append multiple extensions.
+               *But it will be not consistent addfile.
+               *So we comment out the while loop for NOW.
+               *Wei Huang, 05/20/2012
+               */
+              /*while(NULL != ext_name)*/
+                if(NULL != ext_name)
+        	{
+                    tmp_path[strlen(tmp_path) - strlen(ext_name)] = '\0'; 
+
+                    if(! stat(_NGResolvePath(tmp_path),&st))
+                    {
+                        file_exists[i] = 1;
+                        /*break;*/
+                    }
+                    ext_name = strrchr(tmp_path, '.');
+                }
+            }
+            else
+                file_exists[i] = 1;
         }
     }
 
@@ -30508,29 +30567,24 @@ NhlErrorTypes _Nclset_default_fillvalue
 
 NhlErrorTypes _Nclget_cpu_time(void)
 {
-	ng_size_t dimsize = 1;
+        ng_size_t dimsize = 1;
+		float time;
+		int retval;
 
-	struct rusage usage;
-	extern int errno;
+		retval = NclGetCPUTime(&time);
+		if(retval != NhlNOERROR){
+			NhlPError(NhlWARNING, NhlEUNKNOWN, "unable to get process cpu time");
+			return(NhlWARNING);
+		}
 
-	int status = getrusage(RUSAGE_SELF, &usage);
-	if (status) {
-        NhlPError(NhlWARNING, NhlEUNKNOWN,
-            "unable to get process cpu time: %d", status);
-		return(NhlWARNING);
-	}
-
-	float time = (usage.ru_stime.tv_sec + usage.ru_utime.tv_sec) +
-			(usage.ru_stime.tv_usec + usage.ru_utime.tv_usec) / 1000000.;
-
-	return(NclReturnValue(
-		&time,
-		1,
-		&dimsize,
-		NULL,
-		NCL_float,
-		1
-	));
+        return(NclReturnValue(
+                &time,
+                1,
+                &dimsize,
+                NULL,
+                NCL_float,
+                1
+        ));
 
 }
 #ifdef __cplusplus

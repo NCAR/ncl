@@ -331,6 +331,12 @@ C
       DO 30 I = 1,IPC,1
          IF (IC(I) .NE. ICI) THEN
             NPT = I - IS + 1
+            IF (NPT .EQ. 1) THEN
+               NPT = NPT + 1
+               IF (IS .EQ. IPC) THEN
+                  IS = IPC - 1
+               END IF
+            END IF
             CALL GSPLCI(ICI)
             IF (IMSK.LT.1) THEN
                CALL CURVE(X(IS),Y(IS),NPT)
@@ -344,6 +350,12 @@ C
  30   CONTINUE
 C
       NPT = IPC - IS + 1
+      IF (NPT .EQ. 1) THEN
+         NPT = NPT + 1
+         IF (IS .EQ. IPC) THEN
+            IS = IPC - 1
+         END IF
+      END IF
       CALL GSPLCI(ICI)
       IF (IMSK.LT.1) THEN
          CALL CURVE(X(IS),Y(IS),NPT)

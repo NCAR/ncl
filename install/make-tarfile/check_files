@@ -81,6 +81,7 @@ set sort_that_file_list = "tmp_sort_that_file_list$$"
 
 #/bin/rm $that_file_list $this_file_list $sort_that_file_list $sort_this_file_list >&! /dev/null
 
+cd $NCARG_ROOT
 find bin include lib -type f -print > ! $that_file_list
 
 #
@@ -94,30 +95,6 @@ bin/med
 bin/ncargpath
 bin/ncarlogo2ps
 bin/psplit
-include/ESMC_Arg.h
-include/ESMC_Array.h
-include/ESMC_ArraySpec.h
-include/ESMC_Calendar.h
-include/ESMC_Clock.h
-include/ESMC_Conf.h
-include/ESMC_Config.h
-include/ESMC_CplComp.h
-include/ESMC_DistGrid.h
-include/ESMC_Field.h
-include/ESMC_GridComp.h
-include/ESMC.h
-include/ESMC_Init.h
-include/ESMC_Interface.h
-include/ESMC_LogErr.h
-include/ESMC_Macros.h
-include/ESMC_Mesh.h
-include/ESMC_ReturnCodes.h
-include/ESMC_State.h
-include/ESMC_Test.h
-include/ESMC_Time.h
-include/ESMC_TimeInterval.h
-include/ESMC_Util.h
-include/ESMC_VM.h
 include/ncarg/c.h
 include/ncarg/gks.h
 include/ncarg/ncargC.h
@@ -241,10 +218,7 @@ lib/ncarg/xapp/Idt
 
 if ($?NCLONLY || $?NCARGNCL) then
 cat << 'EOF' >>! $this_file_list
-bin/ESMF_Info
-bin/ESMF_InfoC
 bin/ESMF_RegridWeightGen
-bin/ESMF_WebServController
 bin/MakeNcl
 bin/WRAPIT
 bin/ncl
@@ -399,12 +373,12 @@ include/ncarg/hlu/XWorkstation.h
 include/ncarg/hlu/XWorkstationP.h
 include/ncarg/hlu/XyPlot.h
 include/ncarg/hlu/XyPlotP.h
-include/ncarg/hlu/pageutil.h
 include/ncarg/hlu/color.h
 include/ncarg/hlu/defs.h
 include/ncarg/hlu/hlu.h
 include/ncarg/hlu/hluP.h
 include/ncarg/hlu/hluutil.h
+include/ncarg/hlu/pageutil.h
 include/ncarg/hlu/triangle.h
 include/ncarg/ncl/ApiRecords.h
 include/ncarg/ncl/HluClasses.h
@@ -464,7 +438,6 @@ include/ncarg/nio/niohluP.h
 lib/libblas_ncl.a
 lib/libfftpack5_dp.a
 lib/libhlu.a
-lib/libhlu_cairo.a
 lib/liblapack_ncl.a
 lib/libncl.a
 lib/libnclapi.a
@@ -1707,14 +1680,10 @@ include/ncarg/ctrans.h
 include/ncarg/gksP.h
 include/ncarg/ncarg_ras.h
 include/ncarg/ngmath.h
-lib/esmf.mk
 lib/libcgm.a
-lib/libesmf.a
-lib/libesmf.so
 lib/libncarg.a
 lib/libncarg_c.a
 lib/libncarg_gks.a
-lib/libncarg_gks_cairo.a
 lib/libncarg_ras.a
 lib/libngmath.a
 lib/ncarg/examples/agda13.dat

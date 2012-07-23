@@ -33,7 +33,8 @@ C
       DO 10 I=1,NOPWK
         IF (WKID .EQ. SOPWK(I)) THEN
           XID = LXWKID(I)
-          IF (XID .EQ. -1) IER = 25
+C**RLB          IF (XID .EQ. -1) IER = 25
+          IF (XID .EQ. -1 .and. SWKTP(I).NE.GCGM) IER = 25
           RETURN
         ENDIF
    10 CONTINUE

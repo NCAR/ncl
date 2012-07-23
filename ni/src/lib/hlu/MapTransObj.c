@@ -2888,7 +2888,7 @@ int n;
 		return(NhlFATAL);
 	}
 	c_arseti("RC",1);
-	c_mpseti("VS",0);
+	c_mpseti("VS",1);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	subret = _NhlArinam(aws,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) goto err_ret;

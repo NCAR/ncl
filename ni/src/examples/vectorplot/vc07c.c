@@ -31,8 +31,6 @@
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
-#include <ncarg/hlu/ImageWorkstation.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/VectorPlot.h>
 #include <ncarg/hlu/VectorField.h>
 #include <ncarg/hlu/ScalarField.h>
@@ -120,29 +118,29 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len_dims);
-        NhlCreate(&wid,"vc07Work",NhlxWorkstationClass,appid,rlist);
+        NhlCreate(&wid,"vc07Work",NhlcairoWindowWorkstationClass,appid,rlist);
     }
 
-    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
+    else if (!strcmp(wks_type,"oldps") || !strcmp(wks_type,"OLDPS")) {
 /*
- * Create a PS workstation.
+ * Create an older-style PostScript workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"vc07c.ps");
         NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len_dims);
         NhlCreate(&wid,"vc07Work",NhlpsWorkstationClass,appid,rlist);
     }
-    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
+    else if (!strcmp(wks_type,"oldpdf") || !strcmp(wks_type,"OLDPDF")) {
 /*
- * Create a PDF workstation.
+ * Create an older-style PDF workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPDFFileName,"vc07c.pdf");
         NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len_dims);
         NhlCreate(&wid,"vc07Work",NhlpdfWorkstationClass,appid,rlist);
     }
-    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
-             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF") ||
+             !strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a cairo PS/PDF workstation.
  */
@@ -150,10 +148,9 @@ main(int argc, char *argv[])
         NhlRLSetString(rlist,NhlNwkFileName,"vc07c");
         NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
         NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len_dims);
-        NhlCreate(&wid,"vc07Work",NhlcairoPSPDFWorkstationClass,appid,rlist);
+        NhlCreate(&wid,"vc07Work",NhlcairoDocumentWorkstationClass,appid,rlist);
     }
-    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
-             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+    else if (!strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
 /*
  * Create a cairo PNG workstation.
  */

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.h,v 1.9 2001-06-14 17:44:41 haley Exp $
+ *      $Id: VectorPlot.h,v 1.9.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -56,6 +56,7 @@ typedef enum _NhlVectorGlyphStyle {
 #define NhlNvcPositionMode		"vcPositionMode"
 #define NhlNvcVectorDrawOrder		"vcVectorDrawOrder"
 #define NhlNvcGlyphStyle		"vcGlyphStyle"
+#define NhlNvcGlyphOpacityF     "vcGlyphOpacityF"
 
 #define NhlNvcMinDistanceF		"vcMinDistanceF"
 #define NhlNvcMinMagnitudeF		"vcMinMagnitudeF"
@@ -71,6 +72,8 @@ typedef enum _NhlVectorGlyphStyle {
 #define NhlNvcLevelSpacingF		"vcLevelSpacingF"
 #define NhlNvcMinLevelValF		"vcMinLevelValF"
 #define NhlNvcMaxLevelValF		"vcMaxLevelValF"
+#define NhlNvcLevelPalette              "vcLevelPalette"
+#define NhlNvcSpanLevelPalette          "vcSpanLevelPalette"
 #define NhlNvcLevelColors		"vcLevelColors"
 #define NhlNvcUseScalarArray		"vcUseScalarArray"
 #define NhlNvcScalarMissingValColor	"vcScalarMissingValColor"
@@ -234,6 +237,7 @@ typedef enum _NhlVectorGlyphStyle {
 #define NhlCvcPositionMode		"VcPositionMode"
 #define NhlCvcVectorDrawOrder		"VcVectorDrawOrder"
 #define NhlCvcGlyphStyle		"VcGlyphStyle"
+#define NhlCvcGlyphOpacityF     "VcGlyphOpacityF"
 
 #define NhlCvcMinDistanceF		"VcMinDistanceF"
 #define NhlCvcMinMagnitudeF		"VcMinMagnitudeF"
@@ -243,6 +247,8 @@ typedef enum _NhlVectorGlyphStyle {
 #define NhlCvcMinFracLengthF		"VcMinFracLengthF"
 
 #define NhlCvcLevelCount		"VcLevelCount"		/* read-only */
+#define NhlCvcLevelPalette              "VcLevelPalette"
+#define NhlCvcSpanLevelPalette          "VcSpanLevelPalette"
 #define NhlCvcLevelColors		"VcLevelColors"
 #define NhlCvcUseScalarArray		"VcUseScalarArray"
 #define NhlCvcScalarMissingValColor	"VcScalarMissingValColor"

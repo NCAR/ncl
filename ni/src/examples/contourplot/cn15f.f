@@ -27,7 +27,7 @@ C
       external NhlFPDFWorkstationClass
       external NhlFCairoPSPDFWorkstationClass
       external NhlFCairoImageWorkstationClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFScalarFieldClass
       external NhlFTextItemClass
       external NhlFCoordArraysClass
@@ -162,10 +162,11 @@ C
       call NhlFRLSetString(srlist,'wkPause','True',ierr)
       call NhlFRLSetMDFloatArray(srlist,'wkColorMap',cmap,2,length,
      +     ierr)
-      call NhlFCreate(x1,'cn15Work',NhlFXWorkstationClass,
+      call NhlFCreate(x1,'cn15Work',
+     +     NhlFCairoWindowWorkstationClass,
      +     0,srlist,ierr)
 C
-C Create a PostScript workstation.
+C Create an older-style PostScript workstation.
 C
       call NhlFRLClear(srlist)
       call NhlFRLSetString(srlist,'wkPSFileName','./cn15f.ps',ierr)
@@ -184,7 +185,7 @@ C
       call NhlFCreate(ps1,'cn15Work',
      +     NhlFPSWorkstationClass,0,srlist,ierr)
 C
-C Create a PDF workstation.
+C Create an older-style PDF workstation.
 C
       call NhlFRLClear(srlist)
       call NhlFRLSetString(srlist,'wkPDFFileName','./cn15f.pdf',ierr)
@@ -207,7 +208,7 @@ C Create a cairo PostScript workstation.
 C
       call NhlFRLClear(srlist)
       call NhlFRLSetString(srlist,'wkFileName','./cn15f.cairo',ierr)
-      call NhlFRLSetString(srlist,'wkFormat','newps',ierr)
+      call NhlFRLSetString(srlist,'wkFormat','ps',ierr)
 C
 C Since the plots are beside each other, use landscape mode and the
 C PostScript resources for positioning the plot on the paper.
@@ -226,7 +227,7 @@ C Create a cairo PDF workstation.
 C
       call NhlFRLClear(srlist)
       call NhlFRLSetString(srlist,'wkFileName','./cn15f.cairo',ierr)
-      call NhlFRLSetString(srlist,'wkFormat','newpdf',ierr)
+      call NhlFRLSetString(srlist,'wkFormat','pdf',ierr)
 C
 C Since the plots are beside each other, use landscape mode and the
 C PostScript resources for positioning the plot on the paper.

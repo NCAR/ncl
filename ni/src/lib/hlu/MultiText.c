@@ -66,7 +66,7 @@ static NhlResource resources[] = {
 	{NhlNtxAngleF, NhlCTextAngleF, NhlTFloat,
 	 	sizeof(float),Oset(angle),NhlTString,{"0.0"},0,NULL},
 	{NhlNtxFont, NhlCFont, NhlTInteger,
-	 	sizeof(int),Oset(font),NhlTImmediate,{(NhlPointer)0},0,NULL},
+	 	sizeof(int),Oset(font),NhlTImmediate,{(NhlPointer)21},0,NULL},
 	{NhlNtxJust, NhlCTextJustification, NhlTInteger,
 		 sizeof(int),Oset(just),NhlTImmediate,{(NhlPointer)4},0,NULL},
 	{NhlNtxFontQuality, NhlCFontQuality, NhlTFontQuality,
@@ -84,7 +84,7 @@ static NhlResource resources[] = {
 		sizeof(NhlTextDirection),Oset(direction),NhlTImmediate,
 	 {(NhlPointer)NhlACROSS},0,NULL},
 	{NhlNtxFuncCode, NhlCTextFuncCode, NhlTCharacter,
-		 sizeof(char),Oset(func_code),NhlTString,{":"},0,NULL}
+		 sizeof(char),Oset(func_code),NhlTString,{"~"},0,NULL}
 };
 #undef Oset
 

@@ -28,8 +28,6 @@
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
-#include <ncarg/hlu/ImageWorkstation.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/TextItem.h>
 #include <ncarg/hlu/CoordArrays.h>
@@ -58,7 +56,7 @@ char *yllabels[7] = {"90S","60S","30S","EQ","30N","60N","90N"};
 int linecolors[15] = {12,13,14,7,2,0,8,11,6,9,4,3,5,7,10};
 int fillcolors[16] = {0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2};
 
-main()
+int main()
 {
 /*
  * Declare variables for the HLU routine calls.
@@ -83,7 +81,6 @@ main()
     ng_size_t icount[2];
     long lonlen, latlen;
     char filename[256];
-    char recname[50];
     const char *dir = _NGGetNCARGEnv("data");
     FILE *fp;
 /*
@@ -165,14 +162,14 @@ main()
     NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
     NhlCreate(&ncgm1,"cn15Work",NhlncgmWorkstationClass,0,srlist);
 /*
- * Create an XWorkstation object.
+ * Create an X11 workstation.
  */
       NhlRLClear(srlist);
       NhlRLSetString(srlist,NhlNwkPause,"True");
       NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
-      NhlCreate(&x1,"cn15Work",NhlxWorkstationClass,0,srlist);
+      NhlCreate(&x1,"cn15Work",NhlcairoWindowWorkstationClass,0,srlist);
 /*
- * Create a PostScript workstation.
+ * Create an older-style PostScript workstation.
  */
       NhlRLClear(srlist);
       NhlRLSetString(srlist,NhlNwkPSFileName,"./cn15c.ps");
@@ -189,7 +186,7 @@ main()
       NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
       NhlCreate(&ps1,"cn15Work",NhlpsWorkstationClass,0,srlist);
 /*
- * Create a PDF workstation.
+ * Create an older-style PDF workstation.
  */
       NhlRLClear(srlist);
       NhlRLSetString(srlist,NhlNwkPDFFileName,"./cn15c.pdf");
@@ -210,7 +207,7 @@ main()
  */
       NhlRLClear(srlist);
       NhlRLSetString(srlist,NhlNwkFileName,"./cn15c.cairo");
-      NhlRLSetString(srlist,NhlNwkFormat,"newps");
+      NhlRLSetString(srlist,NhlNwkFormat,"ps");
 /*
  * Since the plots are beside each other, use landscape mode and the
  * PostScript resources for positioning the plot on the paper.
@@ -221,13 +218,13 @@ main()
       NhlRLSetInteger(srlist,NhlNwkDeviceUpperX,600);
       NhlRLSetInteger(srlist,NhlNwkDeviceUpperY,700);
       NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
-      NhlCreate(&ps2,"cn15Work",NhlcairoPSPDFWorkstationClass,0,srlist);
+      NhlCreate(&ps2,"cn15Work",NhlcairoDocumentWorkstationClass,0,srlist);
 /*
  * Create a cairo PDF workstation.
  */
       NhlRLClear(srlist);
       NhlRLSetString(srlist,NhlNwkFileName,"./cn15c.cairo");
-      NhlRLSetString(srlist,NhlNwkFormat,"newpdf");
+      NhlRLSetString(srlist,NhlNwkFormat,"pdf");
 /*
  * Since the plots are beside each other, use landscape mode and the
  * PostScript resources for positioning the plot on the paper.
@@ -238,7 +235,7 @@ main()
       NhlRLSetInteger(srlist,NhlNwkDeviceUpperX,600);
       NhlRLSetInteger(srlist,NhlNwkDeviceUpperY,700);
       NhlRLSetMDFloatArray(srlist,NhlNwkColorMap,&cmap[0][0],2,length);
-      NhlCreate(&pdf2,"cn15Work",NhlcairoPSPDFWorkstationClass,0,srlist);
+      NhlCreate(&pdf2,"cn15Work",NhlcairoDocumentWorkstationClass,0,srlist);
 /*
  * Create a cairo PNG workstation.
  */
@@ -575,7 +572,7 @@ main()
       NhlDestroy(pdf2);
       NhlDestroy(png1);
       NhlDestroy(appid);
-
+      return(0);
 }
 
 

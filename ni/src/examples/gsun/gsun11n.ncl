@@ -43,8 +43,8 @@ begin
 
   resources = True
 
-  resources@tiMainString   = ":F26:Cocos Island"   ; Main title.
-  resources@tiYAxisString  = ":F25:Pressure (mb)"  ; Y axes label.
+  resources@tiMainString   = "~F26~Cocos Island"   ; Main title.
+  resources@tiYAxisString  = "~F25~Pressure (mb)"  ; Y axes label.
 
   resources@sfYCStartV = max(pressure)   ; Indicate start and end of left
   resources@sfYCEndV   = min(pressure)   ; Y axes values.
@@ -121,13 +121,13 @@ begin
 
   txres               = True    ; Annotate plot with some text.
   txres@txFontHeightF = 0.015
-  gsn_text_ndc(wks,":F25:U Component",  .270,.815,txres)
-  gsn_text_ndc(wks,":F25:(m-s:S:-1:N:)",.765,.815,txres)
+  gsn_text_ndc(wks,"~F25~U Component",  .270,.815,txres)
+  gsn_text_ndc(wks,"~F25~(m-s~S~-1~N~)",.765,.815,txres)
 
 
   txres@txFontHeightF = 0.025   ; Label right Y axis.
   txres@txAngleF      = 90.
-  gsn_text_ndc(wks,":F25:Height (km)",.89,.5,txres)
+  gsn_text_ndc(wks,"~F25~Height (km)",.89,.5,txres)
 
   frame(wks) ; Advance the frame.
 
@@ -136,9 +136,9 @@ begin
   delete(resources) ; Start with new list of resources.
 
   resources = True
-  resources@tiMainString  = ":F26:Cocos Island"
-  resources@tiXAxisString = ":F25:Month"
-  resources@tiYAxisString = ":F25:Amplitude (m/s)"
+  resources@tiMainString  = "~F26~Cocos Island"
+  resources@tiXAxisString = "~F25~Month"
+  resources@tiYAxisString = "~F25~Amplitude (m/s)"
 
   resources@tmXBMode      = "Explicit"   ; Define your own tick mark labels.
   resources@tmXBLabelFont = 25           ; Change font of labels.

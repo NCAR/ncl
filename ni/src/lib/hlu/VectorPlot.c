@@ -33,6 +33,7 @@
 #include <ncarg/hlu/SphericalTransObjP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
+#include <ncarg/hlu/color.h>
 
 #define	Oset(field)	NhlOffset(NhlVectorPlotDataDepLayerRec,vcdata.field)
 static NhlResource data_resources[] = {
@@ -75,6 +76,9 @@ static NhlResource resources[] = {
  	{NhlNvcGlyphStyle,NhlCvcGlyphStyle,NhlTVectorGlyphStyle,
          	sizeof(NhlVectorGlyphStyle),Oset(glyph_style),
          	NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+    {NhlNvcGlyphOpacityF,NhlCvcGlyphOpacityF,NhlTFloat,
+    	sizeof(float),Oset(glyph_opacity),
+    	NhlTString,_NhlUSET("1.0"),0,NULL},
 
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(min_distance_set),NhlTImmediate,
@@ -136,6 +140,13 @@ static NhlResource resources[] = {
 	{ NhlNvcMaxLevelValF,NhlCMaxLevelValF,NhlTFloat,sizeof(float),
 		  Oset(max_level_val),
 		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+	{NhlNvcLevelPalette, NhlCvcLevelPalette, NhlTColorMap,
+		 sizeof(NhlPointer),Oset(level_palette),
+		 NhlTString,_NhlUSET((NhlPointer) NULL),_NhlRES_DEFAULT,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNvcSpanLevelPalette, NhlCvcSpanLevelPalette, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(span_level_palette),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNvcLevelColors, NhlCvcLevelColors, NhlTColorIndexGenArray,
 		 sizeof(NhlGenArray),Oset(level_colors),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -324,7 +335,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlACROSS),0,NULL},
 	{NhlNvcRefAnnoFont,NhlCFont,NhlTFont, 
 		 sizeof(int),Oset(refvec_anno.font),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) 21),0,NULL},
 	{NhlNvcRefAnnoFontColor,NhlCFontColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(refvec_anno.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
@@ -346,7 +357,7 @@ static NhlResource resources[] = {
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNvcRefAnnoFuncCode,NhlCTextFuncCode,NhlTCharacter, 
 		 sizeof(char),Oset(refvec_anno.fcode[0]),
-		 NhlTString, _NhlUSET(":"),0,NULL},
+		 NhlTString, _NhlUSET("~"),0,NULL},
 	{NhlNvcRefAnnoBackgroundColor,NhlCFillBackgroundColor,
 		  NhlTColorIndex,sizeof(NhlColorIndex),
 		  Oset(refvec_anno.back_color),NhlTImmediate,
@@ -454,7 +465,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlACROSS),0,NULL},
 	{NhlNvcMinAnnoFont,NhlCFont,NhlTFont, 
 		 sizeof(int),Oset(minvec_anno.font),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) 21),0,NULL},
 	{NhlNvcMinAnnoFontColor,NhlCFontColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(minvec_anno.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
@@ -476,7 +487,7 @@ static NhlResource resources[] = {
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNvcMinAnnoFuncCode,NhlCTextFuncCode,NhlTCharacter, 
 		 sizeof(char),Oset(minvec_anno.fcode[0]),
-		 NhlTString, _NhlUSET(":"),0,NULL},
+		 NhlTString, _NhlUSET("~"),0,NULL},
 	{NhlNvcMinAnnoBackgroundColor,NhlCFillBackgroundColor,
 		  NhlTColorIndex,sizeof(NhlColorIndex),
 		  Oset(minvec_anno.back_color),NhlTImmediate,
@@ -547,7 +558,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlACROSS),0,NULL},
 	{NhlNvcZeroFLabelFont,NhlCFont,NhlTFont, 
 		 sizeof(int),Oset(zerof_lbl.font),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) 21),0,NULL},
 	{NhlNvcZeroFLabelFontColor,NhlCFontColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(zerof_lbl.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
@@ -569,7 +580,7 @@ static NhlResource resources[] = {
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNvcZeroFLabelFuncCode,NhlCTextFuncCode,NhlTCharacter, 
 		 sizeof(char),Oset(zerof_lbl.fcode[0]),
-		 NhlTString, _NhlUSET(":"),0,NULL},
+		 NhlTString, _NhlUSET("~"),0,NULL},
 	{NhlNvcZeroFLabelBackgroundColor,NhlCFillBackgroundColor,
 		 NhlTColorIndex,sizeof(NhlColorIndex),
 		 Oset(zerof_lbl.back_color),NhlTImmediate,
@@ -692,7 +703,7 @@ static NhlResource resources[] = {
 		 (NhlFreeFunc)NhlFreeGenArray},
 	{NhlNlbLabelFuncCode, NhlCTextFuncCode, NhlTCharacter,
 		 sizeof(char),Oset(lbar_func_code),
-		 NhlTString,_NhlUSET(":"),_NhlRES_INTERCEPTED,NULL },
+		 NhlTString,_NhlUSET("~"),_NhlRES_INTERCEPTED,NULL },
 	{NhlNlbLabelAlignment,NhlClbLabelAlignment,NhlTlbLabelAlignmentMode, 
 		 sizeof(NhllbLabelAlignmentMode), 
 		 Oset(lbar_alignment),NhlTImmediate,
@@ -1223,6 +1234,10 @@ extern void (_NHLCALLF(vvgetmapinfo,VVGETMAPINFO))(
 #endif
 );
 
+extern void (_NHLCALLF(vvinwb,VVINWB))(
+int *hemisphere
+);
+
 NhlVectorPlotDataDepClassRec NhlvectorPlotDataDepClassRec = {
 	/* base_class */
         {
@@ -1336,6 +1351,7 @@ static NrmQuark Qint = NrmNULLQUARK;
 static NrmQuark Qcolorindex = NrmNULLQUARK;
 static NrmQuark Qstring = NrmNULLQUARK;
 static NrmQuark	Qlevels = NrmNULLQUARK; 
+static NrmQuark	Qlevel_palette = NrmNULLQUARK; 
 static NrmQuark	Qlevel_colors = NrmNULLQUARK; 
 static NrmQuark	Qmax_magnitude_format = NrmNULLQUARK; 
 static NrmQuark	Qmax_svalue_format = NrmNULLQUARK; 
@@ -1544,6 +1560,7 @@ VectorPlotClassInitialize
 	Qfloat = NrmStringToQuark(NhlTFloat);
 	Qcolorindex = NrmStringToQuark(NhlTColorIndex);
 	Qlevels = NrmStringToQuark(NhlNvcLevels);
+	Qlevel_palette = NrmStringToQuark(NhlNvcLevelPalette);
 	Qlevel_colors = NrmStringToQuark(NhlNvcLevelColors);
 	Qmax_magnitude_format = NrmStringToQuark(NhlNvcMagnitudeFormat);
 	Qmax_svalue_format = NrmStringToQuark(NhlNvcScalarValueFormat);
@@ -1752,6 +1769,7 @@ CurlyVectorInitialize
 	NhlRLSetInteger(rlist,NhlNstLineStartStride,1);
 	NhlRLSetInteger(rlist,NhlNstStreamlineDrawOrder,vcp->vector_order);
 	NhlRLSetInteger(rlist,NhlNstLineColor,vcp->l_arrow_color);
+	NhlRLSetFloat(rlist,NhlNstLineOpacityF,vcp->glyph_opacity);
 	NhlRLSetInteger(rlist,NhlNstMonoLineColor,vcp->mono_l_arrow_color);
 	NhlRLSetInteger(rlist,
 			NhlNstLevelSelectionMode,vcp->level_selection_mode);
@@ -2710,6 +2728,11 @@ static NhlErrorTypes    VectorPlotGetValues
                         count = vcp->level_count;
                         type = NhlNvcLevels;
                 }
+                else if (args[i].quark == Qlevel_palette) {
+                        ga = vcp->level_palette;
+                        count = ga ? vcp->level_palette->num_elements : 0;
+                        type = NhlNvcLevelPalette;
+                }
                 else if (args[i].quark == Qlevel_colors) {
                         ga = vcp->level_colors;
                         count = vcp->level_count + 1;
@@ -2954,6 +2977,7 @@ NhlLayer inst;
 	}
 
 	NhlFreeGenArray(vcp->levels);
+	NhlFreeGenArray(vcp->level_palette);
 	NhlFreeGenArray(vcp->level_colors);
         if (vcp->gks_level_colors)
                 NhlFree(vcp->gks_level_colors);
@@ -3854,6 +3878,7 @@ static NhlErrorTypes vcDraw
 	}
 	c_vvsetc("MXT"," ");
 	c_vvsetc("MNT"," ");
+	c_vvsetc("ZFT"," ");
         c_vvseti("SET",0);
         c_vvseti("MAP",NhlvcMAPVAL);
 #if 0
@@ -4012,6 +4037,7 @@ static NhlErrorTypes vcDraw
                 }
                         
         }
+
 	if (all_mono) {
 		c_vvseti("CTV",0);
 	}
@@ -4041,15 +4067,25 @@ static NhlErrorTypes vcDraw
 		for (i=0; i < vcp->level_count; i++) {
 			c_vvseti("PAI",i+1);
 			c_vvsetr("TVL",tvl[i]);
-			c_vvseti("CLR",_NhlGetGksCi(vcl->base.wkptr,clr[i]));
+			if (clr[i] == NhlTRANSPARENT) 
+				c_vvseti("CLR",NhlFOREGROUND);
+			else 
+				c_vvseti("CLR",_NhlGetGksCi(vcl->base.wkptr,clr[i]));
 		}
 		c_vvseti("PAI",vcp->level_count+1);
 		c_vvsetr("TVL",1E36);
-		c_vvseti("CLR",_NhlGetGksCi(vcl->base.wkptr,
-					    clr[vcp->level_count]));
+		if (clr[i] == NhlTRANSPARENT) 
+			c_vvseti("CLR",NhlFOREGROUND);
+		else 
+			c_vvseti("CLR",_NhlGetGksCi(vcl->base.wkptr,
+						    clr[vcp->level_count]));
 	}
 
 	c_vvsetr("VMD",vcp->min_distance / vcl->view.width);
+
+	/* Set opacity... */
+	_NhlSetLineOpacity(vcl, vcp->glyph_opacity);
+	_NhlSetFillOpacity(vcl, vcp->glyph_opacity);
 
 	/* set up a workspace if required */
 
@@ -7793,6 +7829,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	NhlBoolean levels_modified = False;
 	NhlvcScaleInfo 		*sip,*osip;
 	NhlBoolean		scalar_labels, mag_labels;
+	int palette_set,span_palette_set,colors_set;
 
 	entry_name =  init ? InitName : SetValuesName;
 
@@ -7869,21 +7906,87 @@ static NhlErrorTypes    ManageDynamicArrays
 	}
 
 /*=======================================================================*/
+
+/*
+ * Level palette
+ */
+	count = vcp->level_count + 1;
+	palette_set = False;
+	span_palette_set = False;
+	if ((init && vcp->level_palette) ||
+	    _NhlArgIsSet(args,num_args,NhlNvcLevelPalette)) {
+		if (! init && ovcp->level_palette != NULL)
+			NhlFreeGenArray(ovcp->level_palette);
+		if (vcp->level_palette != NULL) {
+			if ((ga =  _NhlCopyGenArray(vcp->level_palette,True)) == NULL) {
+				e_text = "%s: error copying GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
+			}
+			vcp->level_palette = ga;
+		}
+		palette_set = True;
+	}
+	if (init || vcp->span_level_palette != ovcp->span_level_palette) {
+		span_palette_set = True;
+	}
+
+
+/*=======================================================================*/
+	
 	
 /*
  * Level colors
  */
-	ga = init ? NULL : ovcp->level_colors;
 	count = vcp->level_count + 1;
-	subret = ManageGenArray(&ga,count,vcp->level_colors,Qcolorindex,NULL,
-				&old_count,&init_count,&need_check,&changed,
-				NhlNvcLevelColors,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING)
-		return ret;
-        if (init || vcp->level_count > ovcp->level_count)
-                need_check = True;
-	ovcp->level_colors = changed ? NULL : vcp->level_colors;
-	vcp->level_colors = ga;
+	need_check = False;
+	ga = NULL;
+	colors_set = vcp->level_colors && (init || _NhlArgIsSet(args,num_args,NhlNvcLevelColors));
+	if (vcp->level_palette) {
+		if (colors_set) {
+			if ((ga =  _NhlCopyGenArray(vcp->level_colors,True)) == NULL) {
+				e_text = "%s: error copying GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
+			}
+			subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)vcnew,ga,vcp->level_palette,entry_name);
+			if (! init && ovcp->level_colors != NULL)
+				NhlFreeGenArray(ovcp->level_colors);
+			vcp->level_colors = ga;
+			need_check = True;
+		}
+		else if (palette_set || (vcp->level_count != ovcp->level_count)) {
+			subret = _NhlSetColorsFromPalette((NhlLayer)vcnew,vcp->level_palette,count,
+						      vcp->span_level_palette,&ga,entry_name);
+			if (! init && ovcp->level_colors != NULL)
+				NhlFreeGenArray(ovcp->level_colors);
+			vcp->level_colors = ga;
+			need_check = True;
+		}
+		init_count = old_count = count;
+        }
+	else if ((! colors_set) && 
+		 (span_palette_set || (vcp->level_count != ovcp->level_count))) {
+                subret = _NhlSetColorsFromWorkstationColorMap((NhlLayer)vcnew,&ga,count,vcp->span_level_palette,entry_name);
+		if (! init && ovcp->level_colors != NULL)
+			NhlFreeGenArray(ovcp->level_colors);
+		vcp->level_colors = ga;
+		need_check = True;
+		init_count = old_count = count;
+	}
+	else {
+		ga = init ? NULL : ovcp->level_colors;
+		count = vcp->level_count + 1;
+		subret = ManageGenArray(&ga,count,vcp->level_colors,Qcolorindex,NULL,
+					&old_count,&init_count,&need_check,&changed,
+					NhlNvcLevelColors,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING)
+			return ret;
+		if (init || vcp->level_count > ovcp->level_count)
+			need_check = True;
+		ovcp->level_colors = changed ? NULL : vcp->level_colors;
+		vcp->level_colors = ga;
+	}
 
 	ip = (int*)vcp->level_colors->data;
 	for (i=init_count; i < count; i++) {

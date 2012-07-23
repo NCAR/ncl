@@ -82,10 +82,6 @@ PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
 PartialLibraryTarget(libbasegks.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
 
-#ifdef BuildCAIRO
-PartialLibraryTarget(libncarg_gks_cairo.a,$(OBJECTS))
-#endif
-
 DependTarget($(ROBJ_SRC))
 InstallTarget($(ROBJ_OBJ),$(INSTALL_LIB),$(ROBJPATH))
 CleanFilesTarget($(ROBJ_OBJ))

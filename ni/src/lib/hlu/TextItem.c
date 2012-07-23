@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.51 2004-08-11 22:29:39 dbrown Exp $
+ *      $Id: TextItem.c,v 1.51.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,7 @@
 #include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/color.h>
 
 #define DEFSTRING "NOTHING"
 #define DEGTORAD 0.017453293
@@ -62,7 +63,7 @@ static NhlResource resources[] = {
 		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL },
 	{ NhlNtxFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTextItemLayerRec, text.font),
-		NhlTImmediate,_NhlUSET(0),0,NULL },
+		NhlTImmediate,_NhlUSET(21),0,NULL },
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.just_set),
 		NhlTImmediate,_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
@@ -76,6 +77,9 @@ static NhlResource resources[] = {
 	{NhlNtxFontColor,NhlCFontColor,NhlTColorIndex,sizeof(NhlColorIndex),
 		NhlOffset(NhlTextItemLayerRec, text.font_color),
 		NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+	{NhlNtxFontOpacityF,NhlCFontOpacityF,NhlTFloat,sizeof(float),
+		NhlOffset(NhlTextItemLayerRec, text.font_opacity),
+		 NhlTString,_NhlUSET("1.0"),0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.font_height_set),
 		NhlTImmediate,_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
@@ -111,7 +115,7 @@ static NhlResource resources[] = {
 	{ NhlNtxFuncCode, NhlCTextFuncCode, NhlTCharacter, 
 		sizeof(char),
 		NhlOffset(NhlTextItemLayerRec, text.func_code),
-		NhlTString,_NhlUSET(":"),0,NULL},
+		NhlTString,_NhlUSET("~"),0,NULL},
 
 
 	{NhlNtxPerimOn, NhlCEdgesOn, NhlTBoolean,sizeof(NhlBoolean),
@@ -936,6 +940,7 @@ static NhlErrorTypes    TextItemDraw
 			       tlayer->text.perim_dash_length,
 			       _NhlNwkEdgeColor,tlayer->text.perim_color,
 			       _NhlNwkFillColor,tlayer->text.bg_fill_color,
+			       _NhlNwkFillOpacityF, tlayer->text.font_opacity,
 			       _NhlNwkFillIndex,NhlSOLIDFILL,
 			       NULL);
 			
@@ -954,6 +959,9 @@ static NhlErrorTypes    TextItemDraw
 	gset_fill_style_ind(GSTYLE_SOLID);
 	gset_marker_colr_ind((Gint)_NhlGetGksCi
                              (tlayer->base.wkptr,tlayer->text.font_color));
+
+	_NhlSetFillOpacity(tlayer, tlayer->text.font_opacity);
+	_NhlSetLineOpacity(tlayer, tlayer->text.font_opacity);
 
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	c_plchhq(tlayer->text.real_x_pos,tlayer->text.real_y_pos,

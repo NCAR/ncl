@@ -41,7 +41,7 @@ C
       external NhlFPDFWorkstationClass
       external NhlFCairoPSPDFWorkstationClass
       external NhlFCairoImageWorkstationClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFContourPlotClass
 
       integer appid,wks,con1,rlist,ierr
@@ -90,7 +90,7 @@ C write your ouput into  a PostScript or PDF file.
 C
 C The first argument, wks, is a variable that identifies the object.
 C The second argument, '"wks"', sets the name of the object being
-C created. The third argument, "NhlFXWorkstationClass",
+C created. The third argument, "NhlFCairoWindowWorkstationClass",
 C identifies the type  or class of the object to create.  In this case
 C an X workstation. The fourth argument, "0", specifies the id of the
 C objects parent. In this case, specifying "0" indicates that the
@@ -115,27 +115,27 @@ C Create an X workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
-         call NhlFCreate(wks,"wks",NhlFXWorkstationClass,0,
+         call NhlFCreate(wks,"wks",NhlFCairoWindowWorkstationClass,0,
      1        rlist,ierr)
-      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
+      else if (wks_type.eq."oldps".or.wks_type.eq."OLDPS") then
 C
-C Create a PS object.
+C Create an older-style PostScript workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPSFileName','./basic01f.ps',ierr)
          call NhlFCreate(wks,"wks",NhlFPSWorkstationClass,0,
      1        rlist,ierr)
-      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
+      else if (wks_type.eq."oldpdf".or.wks_type.eq."OLDPDF") then
 C
-C Create a PDF object.
+C Create an older-style PDF workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPDFFileName','./basic01f.pdf',
      1        ierr)
          call NhlFCreate(wks,"wks",NhlFPDFWorkstationClass,0,
      1        rlist,ierr)
-      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
-     1         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF".or.
+     1         wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create cairo PS/PDF object.
 C
@@ -146,8 +146,7 @@ C
      1        ierr)
          call NhlFCreate(wks,"wks",NhlFcairoPSPDFWorkstationClass,0,
      1        rlist,ierr)
-      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
-     1         wks_type.eq."png".or.wks_type.eq."PNG") then
+      else if (wks_type.eq."png".or.wks_type.eq."PNG") then
 C
 C Create cairo PNG object.
 C

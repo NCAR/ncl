@@ -79,7 +79,7 @@ begin
   resources@cnFillDrawOrder      = "Predraw" ; areas before map gets
                                              ; drawn.
 
-  resources@tiMainString = ":F26:" + cdf_file2@title
+  resources@tiMainString = "~F26~" + cdf_file2@title
   
   resources@sfXCStartV = min(sst&lon)   ; Define where contour plot
   resources@sfXCEndV   = max(sst&lon)   ; should lie on the map plot.
@@ -93,8 +93,8 @@ begin
   delete(resources)  ; Start with a new list of resources.
   resources = True
 
-  resources@tiXAxisString = ":F25:longitude"
-  resources@tiYAxisString = ":F25:latitude"
+  resources@tiXAxisString = "~F25~longitude"
+  resources@tiYAxisString = "~F25~latitude"
 
   resources@cnFillOn              = True     ; Turn on contour fill.
   resources@cnLineLabelsOn        = False    ; Turn off line labels.
@@ -118,7 +118,7 @@ begin
   resources@mpMaxLatF   = max(pf&lat)
   resources@mpPerimOn   = True        ; Turn on map perimeter.
 
-  resources@tiMainString = ":F26:January 1996 storm" ; Set a title.
+  resources@tiMainString = "~F26~January 1996 storm" ; Set a title.
 
   resources@vpXF      = 0.1    ; Change the size and location of the 
   resources@vpYF      = 0.9    ; plot on the viewport.
@@ -133,7 +133,7 @@ begin
   txres               = True   ; Set some resources
   txres@txFontHeightF = 0.025  ; for a text string.
   txres@txFontColor   = 4
-  gsn_text_ndc(wks,":F25:Pressure (mb)",.45,.25,txres) ; Draw a text string.
+  gsn_text_ndc(wks,"~F25~Pressure (mb)",.45,.25,txres) ; Draw a text string.
                                                        ; on the viewport.
   frame(wks)   ; Advance the frame.
   
@@ -169,7 +169,7 @@ begin
   resources@cnLevelSelectionMode = "ExplicitLevels" ; Define own levels.
   resources@cnLevels             = fspan(985.,1045.,13)
 
-  resources@lbTitleString  = ":F25:pressure (mb)" ; Title for label bar.
+  resources@lbTitleString  = "~F25~pressure (mb)" ; Title for label bar.
   resources@cnLinesOn      = False         ; Turn off contour lines.
   resources@pmLabelBarSide = "Bottom"      ; Change orientation of
   resources@lbOrientation  = "Horizontal"  ; label bar.

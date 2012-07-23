@@ -67,6 +67,7 @@ extern "C" {
 #include <signal.h>
 #include <netcdf.h>
 #include <regex.h>
+#include <ctype.h>
 
 #define MAX_PRINT_SPACES	16
 #define MAX_LIST_ELEMENT	16
@@ -113,7 +114,6 @@ NhlErrorTypes _Nclstr_fields_count
 
     if (strs == NULL)
     {
-        NclFree(fields);
         NhlPError(NhlFATAL,ENOMEM,"str_fields_count: input string is null.");
         return NhlFATAL;
     }
@@ -1203,7 +1203,7 @@ NhlErrorTypes _Nclstr_split_by_length
     NclScalar   missing_leng;
     NclScalar   missing_news;
   
-    ng_size_t i, m, n;
+    ng_size_t i, n;
 
     char *tmp_str;
     char *result;
@@ -2765,6 +2765,7 @@ NhlErrorTypes _Nclstr_capital
     string *arrayOfString;
     char *result;
     int max_length = 0;
+    int len;
     int capitalize = 1;
 
     str = (string *) NclGetArgValue(
@@ -2807,6 +2808,21 @@ NhlErrorTypes _Nclstr_capital
 
     for(i=0; i<str_size; i++)
     {
+	len = strlen((char *) NrmQuarkToString(str[i]));
+        if (max_length < len)
+	    max_length = len;
+    }
+    max_length ++;
+
+    result = (char *) NclMalloc(max_length);
+    if (! result)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    for(i=0; i<str_size; i++)
+    {
         if (has_missing_str && str[i] == missing_str.stringval)
         {
            arrayOfString[i] = str[i];
@@ -2814,11 +2830,11 @@ NhlErrorTypes _Nclstr_capital
            continue;
         }
 
-        result = (char *) NrmQuarkToString(str[i]);
+        strcpy(result,NrmQuarkToString(str[i]));
 
         capitalize = 1;
-        max_length = strlen(result);
-        for(n=0; n<max_length; n++)
+        len = strlen(result);
+        for(n=0; n<len; n++)
         {
             switch (result[n])
             {
@@ -2842,7 +2858,7 @@ NhlErrorTypes _Nclstr_capital
 
         arrayOfString[i] = NrmStringToQuark(result);
     }
-
+    NclFree(result);
     return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
 
 }
@@ -4316,10 +4332,8 @@ NhlErrorTypes _Nclstr_print(void)
     NclListObjList *step;
     NclObj          theobj;
     NclObj          cur_obj;
-    NhlErrorTypes ret = -1;
 
     NclMultiDValData thevalue = NULL;
-    NclMultiDValData tmp_md = NULL;
     NclVar           thevar;
 
     char prntln[NCL_INITIAL_STRING_LENGTH];
@@ -4774,6 +4788,7 @@ NhlErrorTypes _Nclstr_print(void)
   /*
    *fprintf(stderr, "Leave _Nclstr_print, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
+    return(NhlNOERROR);
 }
 
 NhlErrorTypes _Nclstr_write(void)
@@ -4806,10 +4821,8 @@ NhlErrorTypes _Nclstr_write(void)
     NclListObjList *step;
     NclObj          theobj;
     NclObj          cur_obj;
-    NhlErrorTypes ret = -1;
 
     NclMultiDValData thevalue = NULL;
-    NclMultiDValData tmp_md = NULL;
     NclVar           thevar;
 
     char prntln[NCL_INITIAL_STRING_LENGTH];
@@ -5255,6 +5268,7 @@ NhlErrorTypes _Nclstr_write(void)
   /*
    *fprintf(stderr, "Leave _Nclstr_write, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
+    return(NhlNOERROR);
 }
 
 #ifdef __cplusplus

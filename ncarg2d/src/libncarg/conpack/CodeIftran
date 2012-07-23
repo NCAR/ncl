@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.11 2008-04-04 21:02:43 kennison Exp $
+I $Id: CodeIftran,v 1.11.8.1 2010-03-17 20:51:57 brownrig Exp $
 I
 I***********************************************************************
 I C O N P A C K   -   I N T R O D U C T I O N
@@ -5110,15 +5110,198 @@ C Declare all of the CONPACK common blocks.
 C
 .CALL CPCOMN,/$SAVE-COMMON$/1/
 C
+C RLB 3/2010: Previously the integer parameter was converted to a float
+C   and the work was delegated off to CPSETR. This provided a sort
+C   of "automatic type conversion", allowing the user to set a real
+C   parameter using either cpseti() or cpsetr(), as in:
+C        CALL CPSETI ('xxx',-9999)
+C     or
+C        CALL CPSETR ('xxx',-9999.0)
+C
+C   Color-indices are now either encoded RGBa values, or indices as
+C   before. RGBa values are typically large integer values, beyond the
+C   precision of floats, and thus this delegation scheme no longer
+C   works correctly. The code has been refactored such that the integer
+C   cases are now handled directly herein. If no action is found for
+C   the WHCH, then we delegate over to CPSETR.
+C -------------------------------------------------------
+C
 C Check for an uncleared prior error.
 C
-        IF (ICFELL('CPSETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+        IF (ICFELL('CPSETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN        
 C
-C Float the integer value and pass it on to CPSETR.
+C Check for a parameter name that is too short.
 C
+        IF (LEN(WHCH).LT.3)
+          CTMB(1:36)='CPSETI - PARAMETER NAME TOO SHORT - '
+          CTMB(37:36+LEN(WHCH))=WHCH
+          CALL SETER (CTMB(1:36+LEN(WHCH)),2,1)
+          RETURN
+        END IF
+C
+C Check for incorrect use of the index parameter.
+C
+        IF (WHCH(1:3).EQ.'AIA'.OR.WHCH(1:3).EQ.'aia'.OR.
+     +      WHCH(1:3).EQ.'CLC'.OR.WHCH(1:3).EQ.'clc'.OR.
+     +      WHCH(1:3).EQ.'CLD'.OR.WHCH(1:3).EQ.'cld'.OR.
+     +      WHCH(1:3).EQ.'CLU'.OR.WHCH(1:3).EQ.'clu')
+          IF (IPAI.GE.1.AND.IPAI.LE.NCLV)
+            JPAI=IPAI
+          ELSE IF (IPAI.LE.-1.AND.IPAI.GE.-3)
+            JPAI=$NCLV$+ABS(IPAI)
+          ELSE
+            INVOKE (PAI-INCORRECT,NR)
+          END IF
+        ELSE IF ((WHCH(1:3).EQ.'AIB'.OR.WHCH(1:3).EQ.'aib'.OR.
+     +            WHCH(1:3).EQ.'LLC'.OR.WHCH(1:3).EQ.'llc').AND.
+     +           (IPAI.LT.1.OR.IPAI.GT.NCLV))
+          INVOKE (PAI-INCORRECT,NR)
+        ELSE IF ((WHCH(1:3).EQ.'LIT'.OR.WHCH(1:3).EQ.'lit').AND.
+     +           (IPAI.LT.1.OR.IPAI.GT.10))
+          INVOKE (PAI-INCORRECT,NR)
+        END IF
+C
+        BLOCK (PAI-INCORRECT,NR)
+          CTMB(1:36)='CPSETI - SETTING XXX - PAI INCORRECT'
+          CTMB(18:20)=WHCH(1:3)
+          CALL SETER (CTMB(1:36),3,1)
+          RETURN
+        END BLOCK
+C
+C Set the appropriate parameter value.
+C
+        IF      (WHCH(1:3).EQ.'AIA'.OR.WHCH(1:3).EQ.'aia')
+          IAIA(JPAI)=IVAL
+        ELSE IF (WHCH(1:3).EQ.'AIB'.OR.WHCH(1:3).EQ.'aib')
+          IAIB(IPAI)=IVAL
+        ELSE IF (WHCH(1:3).EQ.'CAF'.OR.WHCH(1:3).EQ.'caf')
+          ICAF=IVAL
+        ELSE IF (WHCH(1:3).EQ.'CFB'.OR.WHCH(1:3).EQ.'cfb')
+          IBCF=MAX(0,MIN(3,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'CFC'.OR.WHCH(1:3).EQ.'cfc')
+          ICCF=MAX(-1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'CFP'.OR.WHCH(1:3).EQ.'cfp')
+          IPCF=MAX(-4,MIN(4,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'CLC'.OR.WHCH(1:3).EQ.'clc')
+          ICCL(JPAI)=MAX(-1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'CLD'.OR.WHCH(1:3).EQ.'cld')
+          CLDP(JPAI)=' '
+          ITMP=IVAL
+          DO (I=16,1,-1)
+            IF (IAND(ITMP,1).NE.0)
+              CLDP(JPAI)(I:I)='$'
+            ELSE
+              CLDP(JPAI)(I:I)=''''
+            END IF
+            ITMP=ISHIFT(ITMP,-1)
+          END DO
+        ELSE IF (WHCH(1:3).EQ.'CLS'.OR.WHCH(1:3).EQ.'cls')
+          ICLS=IVAL
+        ELSE IF (WHCH(1:3).EQ.'CLU'.OR.WHCH(1:3).EQ.'clu')
+          ICLU(JPAI)=MAX(0,MIN(3,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'DPU'.OR.WHCH(1:3).EQ.'dpu')
+          IDUF=IVAL
+        ELSE IF (WHCH(1:3).EQ.'GIC'.OR.WHCH(1:3).EQ.'gic')
+          IGCL=MAX(1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'GIL'.OR.WHCH(1:3).EQ.'gil')
+          IGLB=MAX(1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'GIS'.OR.WHCH(1:3).EQ.'gis')
+          IGVS=MAX(1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'HCF'.OR.WHCH(1:3).EQ.'hcf')
+          IHCF=MAX(-4,MIN(+4,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'HIC'.OR.WHCH(1:3).EQ.'hic')
+          ICHI=MAX(-1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'HLB'.OR.WHCH(1:3).EQ.'hlb')
+          IBHL=MAX(0,MIN(3,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'HLC'.OR.WHCH(1:3).EQ.'hlc')
+          ICHL=MAX(-1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'HLE'.OR.WHCH(1:3).EQ.'hle')
+          IHLE=MAX(0,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'HLO'.OR.WHCH(1:3).EQ.'hlo')
+          IOHL=MAX(0,MIN(15,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'HLX'.OR.WHCH(1:3).EQ.'hlx')
+          IHLX=IVAL
+        ELSE IF (WHCH(1:3).EQ.'HLY'.OR.WHCH(1:3).EQ.'hly')
+          IHLY=IVAL
+        ELSE IF (WHCH(1:3).EQ.'ILB'.OR.WHCH(1:3).EQ.'ilb')
+          IBIL=MAX(0,MIN(3,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'ILC'.OR.WHCH(1:3).EQ.'ilc')
+          ICIL=MAX(-1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'ILP'.OR.WHCH(1:3).EQ.'ilp')
+          IPIL=MAX(-4,MIN(4,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'IWM'.OR.WHCH(1:3).EQ.'iwm')
+          LIWM=MAX(1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'LBC'.OR.WHCH(1:3).EQ.'lbc')
+          ILBC=MAX(-1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'LIS'.OR.WHCH(1:3).EQ.'lis')
+          LINS=MAX(1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'LIT'.OR.WHCH(1:3).EQ.'lit')
+          LINT(IPAI)=MAX(1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'LLB'.OR.WHCH(1:3).EQ.'llb')
+          IBLL=MAX(0,MIN(3,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'LLC'.OR.WHCH(1:3).EQ.'llc')
+          ICLL(IPAI)=MAX(-1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'LLO'.OR.WHCH(1:3).EQ.'llo')
+          IOLL=MAX(0,MIN(1,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'LLP'.OR.WHCH(1:3).EQ.'llp')
+          IPLL=MAX(-3,MIN(3,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'LOC'.OR.WHCH(1:3).EQ.'loc')
+          ICLO=MAX(-1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'MAP'.OR.WHCH(1:3).EQ.'map')
+          IMPF=MAX(0,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'NCL'.OR.WHCH(1:3).EQ.'ncl')
+          NCLV=IVAL
+          IF (NCLV.LT.1.OR.NCLV.GT.$NCLV$)
+            CALL SETER ('CPSETI - NCL LESS THAN 1 OR GREATER THAN $NCLV$
+     +',4,1)
+          RETURN
+          END IF
+        ELSE IF (WHCH(1:3).EQ.'NEL'.OR.WHCH(1:3).EQ.'nel')
+          NEXL=IVAL
+        ELSE IF (WHCH(1:3).EQ.'NET'.OR.WHCH(1:3).EQ.'net')
+          NEXT=MAX(0,MIN(2,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'NEU'.OR.WHCH(1:3).EQ.'neu')
+          NEXU=IVAL
+        ELSE IF (WHCH(1:3).EQ.'NLS'.OR.WHCH(1:3).EQ.'nls')
+          NLSD=MAX(0,MIN(1,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'NLZ'.OR.WHCH(1:3).EQ.'nlz')
+          NLZF=MAX(0,MIN(1,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'NOF'.OR.WHCH(1:3).EQ.'nof')
+          NOMF=MAX(0,MIN(7,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'NSD'.OR.WHCH(1:3).EQ.'nsd')
+          NSDL=IVAL
+        ELSE IF (WHCH(1:3).EQ.'NVS'.OR.WHCH(1:3).EQ.'nvs')
+          NOVS=MAX(0,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'PAI'.OR.WHCH(1:3).EQ.'pai')
+          IPAI=IVAL
+        ELSE IF (WHCH(1:3).EQ.'PIC'.OR.WHCH(1:3).EQ.'pic')
+          IPIC=IVAL
+        ELSE IF (WHCH(1:3).EQ.'PIE'.OR.WHCH(1:3).EQ.'pie')
+          IPIE=IVAL
+        ELSE IF (WHCH(1:3).EQ.'RWC'.OR.WHCH(1:3).EQ.'rwc')
+          LRWC=MAX(5,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'RWG'.OR.WHCH(1:3).EQ.'rwg')
+          LRWG=MAX(1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'RWM'.OR.WHCH(1:3).EQ.'rwm')
+          LRWM=MAX(2,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'SET'.OR.WHCH(1:3).EQ.'set')
+          ISET=MAX(0,MIN(1,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'WSO'.OR.WHCH(1:3).EQ.'wso')
+          IWSO=MAX(0,MIN(3,IVAL))
+        ELSE IF (WHCH(1:3).EQ.'ZD1'.OR.WHCH(1:3).EQ.'zd1')
+          IZD1=MAX(1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'ZDM'.OR.WHCH(1:3).EQ.'zdm')
+          IZDM=MAX(1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'ZDN'.OR.WHCH(1:3).EQ.'zdn')
+          IZDN=MAX(1,IVAL)
+        ELSE IF (WHCH(1:3).EQ.'ZDS'.OR.WHCH(1:3).EQ.'zds')
+          IZDS=MAX(0,MIN(1,IVAL))
+        ELSE
+C         Float the integer value and pass it on to CPSETR.
           RVAL=REAL(IVAL)
           CALL CPSETR (WHCH,RVAL)
           IF (ICFELL('CPSETI',2).NE.0) RETURN
+        END IF
 C
 C Done.
 C

@@ -97,6 +97,8 @@ int _NGCescape
         NGCALLF(gzxid,GZXID)(&escape->work_id,&lid,&ierr);
         if(ierr != 0) return ierr;
 
+/* RLB -- hack for NCGM driver */
+if (lid == -1) return 0;
         /*
          * Get gksc ptr from local id.
          */

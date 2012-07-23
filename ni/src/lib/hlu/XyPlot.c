@@ -204,7 +204,7 @@ static NhlResource data_resources[] = {
 		_NhlUSET((NhlPointer)ResUnset),_NhlRES_DEFAULT,NULL},
 	{NhlNxyLineLabelFont,NhlCFont,NhlTFont,
 		sizeof(NhlFont),Oset(llabel_font),NhlTImmediate,
-		_NhlUSET((NhlPointer) 0),0,NULL},
+		_NhlUSET((NhlPointer) 21),0,NULL},
 	{NhlNxyLineLabelFontAspectF,NhlCFontAspectF,NhlTFloat,
 	 	sizeof(float),Oset(llabel_faspect),NhlTString,
 	 	_NhlUSET("1.3125"),0,NULL},
@@ -220,7 +220,7 @@ static NhlResource data_resources[] = {
                  NhlTString,_NhlUSET("0.0"),0,NULL},
         {NhlNxyLineLabelFuncCode,NhlCTextFuncCode,NhlTCharacter,
                  sizeof(char),Oset(llabel_func_code),
-                 NhlTString, _NhlUSET(":"),0,NULL}
+                 NhlTString, _NhlUSET("~"),0,NULL}
 
 /* End-documented-resources */
 

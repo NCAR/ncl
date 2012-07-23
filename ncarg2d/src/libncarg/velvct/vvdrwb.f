@@ -500,7 +500,13 @@ c$$$C     parameter WBD wind barb distance between ticks (fraction of bl)
 c$$$      WBDF = 0.1
 c$$$C     parameter WBC wind barb scale factor 
 c$$$      WBSC = 1.0
-C     
+C
+C Make sure this does nothing if the style is not wind barb.
+C
+      IF (IAST .LT. 2) THEN
+         RETURN
+      END IF
+         
       RAG = IHM * WBAD * D2RAD
 C
 C Use the first four elements of the fill arrow array to store the 

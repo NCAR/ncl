@@ -14,8 +14,12 @@ C
       include 'gksin.h'
       include 'g01ins.h'
       include 'g01adc.h'
+
+	include 'g01rqa.h'
+        include 'g01ast.h'
 C
         REAL   UP, BASE, DMAX, FACTOR
+        INTEGER ARGB2CI
 C
         GOTO (210, 220, 230, 240, 250, 260, 270, 280,
      +        290, 300, 310, 320, 330, 340, 350, 360,
@@ -42,7 +46,7 @@ C
 C  POLYLINE COLOR INDEX
 C
   240 CONTINUE
-      CALL GUPDVI (IC, IVPLCI, 1)
+      CALL GUPDVI(argb2ci(ic(1)), IVPLCI, 1)
       RETURN
 C
 C  POLYMARKER INDEX
@@ -66,7 +70,7 @@ C
 C  POLYMARKER COLOR INDEX
 C
   280 CONTINUE
-      CALL GUPDVI (IC, IVPMCI, 2)
+      CALL GUPDVI(argb2ci(ic(1)), IVPMCI, 2)
       RETURN
 C
 C  TEXT INDEX
@@ -105,7 +109,7 @@ C
 C  TEXT COLOR INDEX
 C
   330 CONTINUE
-      CALL GUPDVI (IC, IVTXCI, 3)
+      CALL GUPDVI(argb2ci(ic(1)), IVTXCI, 3)
       RETURN
 C
 C  CHARACTER ORIENTATION VECTORS
@@ -177,7 +181,7 @@ C
 C  FILL AREA COLOR INDEX
 C
   400 CONTINUE
-      CALL GUPDVI (IC, IVFACI, 4)
+      CALL GUPDVI (argb2ci(ic(1)), IVFACI, 4)
       RETURN
 C
 C  PATTERN SIZE

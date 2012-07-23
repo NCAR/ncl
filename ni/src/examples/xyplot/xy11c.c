@@ -24,8 +24,8 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/App.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
 #include <ncarg/hlu/CoordArrays.h>
 #include <ncarg/hlu/XyPlot.h>
 
@@ -113,8 +113,8 @@ main()
      * (Setting the color information.)
      */
     NhlRLClear(rlist);
-    NhlCreate(&xworkid,"xy11xWork",NhlxWorkstationClass,NhlDEFAULT_APP,
-                                    rlist);
+    NhlCreate(&xworkid,"xy11xWork",NhlcairoWindowWorkstationClass,
+                                   NhlDEFAULT_APP,rlist);
 
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNwkMetaName,"xy11c.ncgm");

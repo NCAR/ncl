@@ -215,14 +215,14 @@ C       RERR   -- RETURN VARIABLE FOR ERROR INDICATOR
 C       STR    -- CHARACTER VARIABLE FOR PASSING CHARACTERS
 C
 C-----------------------------------------------------------------------
-      DATA KSLEV,WK/0, 24/
+      DATA KSLEV,WK/0, 25/
 C**************************************************************************
 C******** Be sure and change the dimension of LSWK in gkscom.h when    ****
 C******** adding a new workstation type (as well as changing the value ****
 C******** of WK above to the same number).                              ****
 C**************************************************************************
       DATA LSWK/1,3,7,8,9,10,11,12,20,21,22,23,24,25,26,27,28,29,30,31,
-     +  40,41,42,43/
+     +  40,41,42,43,44/
 C**************************************************************************
       DATA MOPWK,MACWK,MNT
      +    /   15,   15,  1/

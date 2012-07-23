@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.39 2010-02-09 23:12:44 brownrig Exp $
+ *      $Id: Workstation.h,v 1.39.2.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -61,6 +61,8 @@
 #define NhlCwkLineDashSegLenF	"WkLineDashSegLenF"
 #define NhlNwkLineColor		"wkLineColor"
 #define NhlCwkLineColor		"WkLineColor"
+#define NhlNwkLineOpacityF	"wkLineOpacityF"
+#define NhlCwkLineOpacityF	"WkLineOpacityF"
 #define NhlNwkLineThicknessF	"wkLineThicknessF"
 #define NhlCwkLineThicknessF	"WkLineThicknessF"
 
@@ -87,6 +89,8 @@
 #define NhlCwkMarkerIndex	"WkMarkerIndex"
 #define NhlNwkMarkerColor       "wkMarkerColor"
 #define NhlCwkMarkerColor       "WkMarkerColor"
+#define NhlNwkMarkerOpacityF    "wkMarkerOpacityF"
+#define NhlCwkMarkerOpacityF    "WkMarkerOpacityF"
 #define NhlNwkMarkerSizeF	"wkMarkerSizeF"
 #define NhlCwkMarkerSizeF	"WkMarkerSizeF"
 #define NhlNwkMarkerThicknessF  "wkMarkerThicknessF"

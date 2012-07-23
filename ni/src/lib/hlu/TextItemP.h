@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItemP.h,v 1.11 2003-11-25 22:41:20 dbrown Exp $
+ *      $Id: TextItemP.h,v 1.11.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,7 @@ typedef struct _NhlTextItemLayerPart{
 	NhlTextDirection	direction;
 	NhlFont			font;
 	int			font_color;
+	float           font_opacity;
 	NhlBoolean		font_height_set;
 	float			font_height;
 	NhlBoolean		font_aspect_set;

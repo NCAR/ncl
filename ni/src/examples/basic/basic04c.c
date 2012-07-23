@@ -35,8 +35,8 @@
 
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/ResList.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/hlu.h>
@@ -73,7 +73,7 @@ main ()
  *
  * The first argument, "&xwks", is a variable that identifies the object.
  * The second argument, '"xwks"', to the create call sets the name of the 
- * object being created. The third argument, "NhlxWorkstationClass", or 
+ * object being created. The third argument, "NhlcairoWindowWorkstationClass", or 
  * "NhlncgmWorkstationClass" identifies the type or class of the object 
  * to create. In this case an X workstation or an NCGM workstation.
  * The fourth argument, "NhlDEFAULT_APP", specifies the id of the object's 
@@ -82,7 +82,7 @@ main ()
  * list modifiers to be used when creating the object.
  */
     NhlRLClear(rlist);
-    NhlCreate(&xwks,"xwks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+    NhlCreate(&xwks,"xwks",NhlcairoWindowWorkstationClass,NhlDEFAULT_APP,rlist);
 /*
  * The resource, wkMetaName, lets you specify the name of the output NCGM
  * file.  In this example, it is called basic04c.ncgm.  If omitted, the 

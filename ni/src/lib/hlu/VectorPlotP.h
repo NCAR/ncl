@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlotP.h,v 1.15 2003-09-10 21:30:03 dbrown Exp $
+ *      $Id: VectorPlotP.h,v 1.15.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -156,6 +156,7 @@ typedef struct _NhlVectorPlotLayerPart {
 	NhlDrawOrder		vector_order;
         NhlBoolean		glyph_style_set;
         NhlVectorGlyphStyle	glyph_style;
+    float           glyph_opacity;
         
 	NhlBoolean		min_distance_set;
 	float			min_distance;
@@ -176,6 +177,8 @@ typedef struct _NhlVectorPlotLayerPart {
 	float			min_level_val;
 	NhlBoolean		max_level_set;
 	float			max_level_val;
+	NhlGenArray	        level_palette;
+	NhlBoolean              span_level_palette;
 	NhlGenArray		level_colors;
 	NhlBoolean		use_scalar_array;
 	NhlColorIndex		scalar_mval_color;

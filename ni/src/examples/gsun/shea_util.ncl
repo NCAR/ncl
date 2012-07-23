@@ -1941,17 +1941,18 @@ procedure drawNDCGrid(wks:graphic)
 ;       
 local colors, nu, numb, cmap, x6res, gh
 begin
-        colors = gsn_retrieve_colormap(wks)	;Add gray color to color map
-        nu = dimsizes(colors)
-        numb = nu(0)
-        cmap = new ((/numb+1,3/),float)
-        cmap(:numb-1,:) = colors
-        cmap(numb,:) = (/.72,.72,.72/)
-        gsn_define_colormap(wks,cmap)
-	delete(numb)
-	delete(nu)
-	delete(cmap)
-	delete(colors)
+;; No longer need to add "gray" in V6.1.0 and later
+;;        colors = gsn_retrieve_colormap(wks)	;Add gray color to color map
+;;        nu = dimsizes(colors)
+;;        numb = nu(0)
+;;        cmap = new ((/numb+1,3/),float)
+;;        cmap(:numb-1,:) = colors
+;;        cmap(numb,:) = (/.72,.72,.72/)
+;;        gsn_define_colormap(wks,cmap)
+;;	delete(numb)
+;;	delete(nu)
+;;	delete(cmap)
+;;	delete(colors)
 
      	x6res = True                      ; polyline mods desired
         x6res@gsLineColor = "gray"        ; color of lines

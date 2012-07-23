@@ -48,5 +48,6 @@ extern NhlClass NhlvectorFieldClass;
 extern NhlClass NhlstreamlinePlotClass;
 extern NhlClass NhlgraphicStyleClass;
 extern NhlClass NhlprimitiveClass;
-extern NhlClass NhlcairoPSPDFWorkstationClass;
+extern NhlClass NhlcairoDocumentWorkstationClass;
 extern NhlClass NhlcairoImageWorkstationClass;
+extern NhlClass NhlcairoWindowWorkstationClass;

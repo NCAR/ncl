@@ -1,5 +1,5 @@
 /*
- *      $Id: SubStyles.c,v 1.7 2003-06-04 19:04:23 dbrown Exp $
+ *      $Id: SubStyles.c,v 1.7.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,9 @@ static NhlResource lineresources[] = {
 	{NhlNgsLineColor,NhlCLineColor,NhlTColorIndex,sizeof(NhlColorIndex),
 		Oset(line_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_DEFAULT,NULL},
+	{NhlNgsLineOpacityF,NhlCLineOpacityF,NhlTFloat,
+		sizeof(float),Oset(line_opacity),NhlTString,
+		_NhlUSET("1.0"),_NhlRES_DEFAULT,NULL},
 	{NhlNgsLineThicknessF,NhlCLineThicknessF,NhlTFloat,sizeof(float),
 		Oset(line_thickness),NhlTString,_NhlUSET("1.0"),
 		_NhlRES_DEFAULT,NULL},
@@ -48,7 +51,7 @@ static NhlResource lineresources[] = {
 		 _NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
 	{NhlNgsLineLabelFont,NhlCFont,NhlTFont,sizeof(NhlFont),
 		Oset(line_label_font),NhlTImmediate,
-		 _NhlUSET((NhlPointer)0),_NhlRES_DEFAULT,NULL},
+		 _NhlUSET((NhlPointer)21),_NhlRES_DEFAULT,NULL},
 	{NhlNgsLineLabelFontColor,NhlCFontColor,NhlTColorIndex,
 		sizeof(NhlColorIndex),Oset(line_label_font_color),
 		NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),
@@ -71,7 +74,7 @@ static NhlResource lineresources[] = {
 		NhlTString,_NhlUSET("0.0"),_NhlRES_DEFAULT,NULL},
 	{NhlNgsLineLabelFuncCode,NhlCTextFuncCode,NhlTCharacter,
 		sizeof(char),Oset(line_label_func_code),NhlTString,
-		_NhlUSET(":"),_NhlRES_DEFAULT,NULL},
+		_NhlUSET("~"),_NhlRES_DEFAULT,NULL},
 
 /* End-documented-resources */
 		
@@ -418,6 +421,9 @@ static NhlResource fillresources[] = {
 	{NhlNgsFillColor,NhlCFillColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(fill_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_DEFAULT,NULL},
+	{NhlNgsFillOpacityF,NhlCFillOpacityF,NhlTFloat,
+		 sizeof(float),Oset(fill_opacity),NhlTString,
+		 _NhlUSET("1.0"),_NhlRES_DEFAULT,NULL},
 	{NhlNgsFillBackgroundColor,NhlCFillBackgroundColor,NhlTColorIndex,
 		sizeof(NhlColorIndex),Oset(fill_background),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlTRANSPARENT),_NhlRES_DEFAULT,NULL},
@@ -592,6 +598,9 @@ static NhlResource markerresources[] = {
 	{NhlNgsMarkerColor,NhlCMarkerColor,NhlTColorIndex,
 		sizeof(NhlColorIndex),Oset(marker_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_DEFAULT,NULL},
+	{NhlNgsMarkerOpacityF,NhlCMarkerOpacityF,NhlTFloat,
+		sizeof(float),Oset(marker_opacity),NhlTString,
+		_NhlUSET("1.0"),_NhlRES_DEFAULT,NULL},
 	{NhlNgsMarkerSizeF,NhlCMarkerSizeF,NhlTFloat,sizeof(float),
 		Oset(marker_size),NhlTString,
 		 _NhlUSET("0.007"),_NhlRES_DEFAULT,NULL},
@@ -743,7 +752,7 @@ static NhlResource textresources[] = {
 		NhlTString,_NhlUSET("0.0"),0,NULL },
 	{NhlNgsFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		Oset(font),
-		NhlTImmediate,_NhlUSET(0),0,NULL },
+		NhlTImmediate,_NhlUSET(21),0,NULL },
 	{NhlNgsTextJustification, NhlCTextJustification,
 		 NhlTJustification, sizeof(int),Oset(just),
 		NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTERCENTER),0,NULL},
@@ -754,6 +763,9 @@ static NhlResource textresources[] = {
 	{NhlNgsFontColor,NhlCFontColor,NhlTColorIndex,sizeof(NhlColorIndex),
 		Oset(font_color),
 		NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+	{NhlNgsFontOpacityF,NhlCFontOpacityF,NhlTFloat,
+		sizeof(float),Oset(font_opacity),NhlTString,
+		_NhlUSET("1.0"),_NhlRES_DEFAULT,NULL},
 	{NhlNgsFontHeightF, NhlCFontHeightF, NhlTFloat, sizeof(float),
 		Oset(font_height),
 		NhlTString,_NhlUSET("0.015") ,0,NULL},
@@ -773,7 +785,7 @@ static NhlResource textresources[] = {
 	{NhlNgsTextFuncCode, NhlCTextFuncCode, NhlTCharacter, 
 		sizeof(char),
 		Oset(func_code),
-		NhlTString,_NhlUSET(":"),0,NULL},
+		NhlTString,_NhlUSET("~"),0,NULL},
 
 /* End-documented-resources */
 

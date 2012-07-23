@@ -272,7 +272,7 @@ static NhlResource resources[] = {
 	 NhlTImmediate, _NhlUSET((NhlPointer)NhlCENTERCENTER),0,NULL},
 {NhlNlgLabelFont, NhlCFont, NhlTFont, 
 	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.label_font),
-	 NhlTImmediate, _NhlUSET((NhlPointer) 0),0,NULL},
+	 NhlTImmediate, _NhlUSET((NhlPointer) 21),0,NULL},
 {NhlNlgLabelFontColor, NhlCFontColor, NhlTColorIndex, 
 	 sizeof(NhlColorIndex),NhlOffset(NhlLegendLayerRec,legend.label_color),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NhlLG_DEF_COLOR),0,NULL},
@@ -295,7 +295,7 @@ static NhlResource resources[] = {
 	 NhlTString, _NhlUSET("0.0"),0,NULL},
 {NhlNlgLabelFuncCode, NhlCTextFuncCode, NhlTCharacter, 
 	 sizeof(char), NhlOffset(NhlLegendLayerRec,legend.label_func_code),
-	 NhlTString, _NhlUSET(":"),0,NULL},
+	 NhlTString, _NhlUSET("~"),0,NULL},
 {NhlNlgLabelStride, NhlClgLabelStride, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.label_stride),
 	 NhlTImmediate, _NhlUSET((NhlPointer) 1),0,NULL},
@@ -327,7 +327,7 @@ static NhlResource resources[] = {
 	 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 {NhlNlgTitleFont, NhlCFont, NhlTFont, 
 	 sizeof(NhlFont), NhlOffset(NhlLegendLayerRec,legend.title_font),
-	 NhlTImmediate, _NhlUSET((NhlPointer) 0),0,NULL},
+	 NhlTImmediate, _NhlUSET((NhlPointer) 21),0,NULL},
 {NhlNlgTitleFontColor, NhlCFontColor, NhlTColorIndex, 
 	 sizeof(NhlColorIndex), 
 	 NhlOffset(NhlLegendLayerRec,legend.title_color),
@@ -355,7 +355,7 @@ static NhlResource resources[] = {
 	 NhlTString, _NhlUSET("0.0"),0,NULL},
 {NhlNlgTitleFuncCode, NhlCTextFuncCode, NhlTCharacter, 
 	 sizeof(char), NhlOffset(NhlLegendLayerRec,legend.title_func_code),
-	 NhlTString, _NhlUSET(":"),0,NULL},
+	 NhlTString, _NhlUSET("~"),0,NULL},
 	
 {NhlNlgBoxLinesOn, NhlClgBoxLinesOn, NhlTBoolean, 
 	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.box_line_on),
@@ -406,7 +406,7 @@ static NhlResource resources[] = {
 
 {NhlNlgLineLabelFont,NhlCFont,NhlTFont, 
 	 sizeof(int),NhlOffset(NhlLegendLayerRec,legend.ll_font),
-	 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer) 21),0,NULL},
 {NhlNlgLineLabelFontAspectF,NhlCFontAspectF,NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLegendLayerRec,legend.ll_aspect),
@@ -426,7 +426,7 @@ static NhlResource resources[] = {
 {NhlNlgLineLabelFuncCode,NhlCTextFuncCode,NhlTCharacter, 
 	 sizeof(char),
 	 NhlOffset(NhlLegendLayerRec,legend.ll_func_code),
-	 NhlTString, _NhlUSET(":"),0,NULL},
+	 NhlTString, _NhlUSET("~"),0,NULL},
 
 /* End-documented-resources */
 

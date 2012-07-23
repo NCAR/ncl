@@ -29,7 +29,7 @@ C
 
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFContourPlotClass
       external NhlFScalarFieldClass
 
@@ -69,7 +69,8 @@ C Create an X workstation.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'wkPause','True',ierr)
-      call NhlFCreate(wks,"wks",NhlFXWorkstationClass,0,rlist,ierr)
+      call NhlFCreate(wks,"wks",
+     +        NhlFCairoWindowWorkstationClass,0,rlist,ierr)
 C
 C Create a scalar field object that will be used as a data set for a 
 C contour object.  The sfDataArray resource is used to assign a data
@@ -119,7 +120,7 @@ C object, the resources that are set in the basic03.res resource
 C file will apply to this object and its children.
 C
       call NhlFRLClear(rlist)
-      call NhlFCreate(wks2,"wks2",NhlFXWorkstationClass,
+      call NhlFCreate(wks2,"wks2",NhlFCairoWindowWorkstationClass,
      1      appid2,rlist,ierr)
 C
 C Create another contour plot object and assign the data.

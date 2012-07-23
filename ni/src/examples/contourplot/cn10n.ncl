@@ -87,15 +87,15 @@ if (str_lower(wks_type).eq."ncgm") then
 end if
 if (str_lower(wks_type).eq."x11") then
 ;
-; Create an XWorkstation object.
+; Create an X11 workstation.
 ;
-  workstation_id = create "moundx"  xWorkstationClass defaultapp
+  workstation_id = create "moundx"  windowWorkstationClass defaultapp
     "wkPause"            : True
     "wkColorMap"         : cmap
     "wkBackgroundColor"  : (/ 1., 1., 1. /)
   end create
 end if
-if (str_lower(wks_type).eq."ps") then
+if (str_lower(wks_type).eq."oldps") then
 ;
 ; Create an PSWorkstation object.
 ;
@@ -105,7 +105,7 @@ if (str_lower(wks_type).eq."ps") then
     "wkBackgroundColor"  : (/ 1., 1., 1. /)
   end create
 end if
-if (str_lower(wks_type).eq."pdf") then
+if (str_lower(wks_type).eq."oldpdf") then
 ;
 ; Create an PDFWorkstation object.
 ;
@@ -115,7 +115,7 @@ if (str_lower(wks_type).eq."pdf") then
     "wkBackgroundColor"  : (/ 1., 1., 1. /)
   end create
 end if
-if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+if (str_lower(wks_type).eq."pdf".or.str_lower(wks_type).eq."ps") then
 ;
 ; Create a cairo PS/PDF Workstation object.
 ;
@@ -126,7 +126,7 @@ if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
     "wkBackgroundColor"  : (/ 1., 1., 1. /)
   end create
 end if
-if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+if (str_lower(wks_type).eq."png") then
 ;
 ; Create a cairo PNG Workstation object.
 ;

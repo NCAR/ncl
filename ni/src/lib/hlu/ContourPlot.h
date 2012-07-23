@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.21 2007-10-26 23:36:27 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.21.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -141,9 +141,12 @@ typedef enum _NhlcnFillMode {
 #define NhlNcnMonoLevelFlag		"cnMonoLevelFlag"
 #define NhlNcnLevelFlag			"cnLevelFlag"
 #define NhlNcnLevelFlags		"cnLevelFlags"
+#define NhlNcnFillPalette               "cnFillPalette"
+#define NhlNcnSpanFillPalette           "cnSpanFillPalette"
 #define NhlNcnMonoFillColor		"cnMonoFillColor"
 #define NhlNcnFillColor			"cnFillColor"
 #define NhlNcnFillColors		"cnFillColors"
+#define NhlNcnFillOpacityF		"cnFillOpacityF"
 #define NhlNcnMonoFillPattern		"cnMonoFillPattern"
 #define NhlNcnFillPattern		"cnFillPattern"
 #define NhlNcnFillPatterns		"cnFillPatterns"
@@ -156,6 +159,8 @@ typedef enum _NhlcnFillMode {
 
 #define NhlNcnMonoLineColor		"cnMonoLineColor"
 #define NhlNcnLineColor			"cnLineColor"
+#define NhlNcnLinePalette               "cnLinePalette"
+#define NhlNcnSpanLinePalette           "cnSpanLinePalette"
 #define NhlNcnLineColors		"cnLineColors"
 #define NhlNcnMonoLineDashPattern	"cnMonoLineDashPattern"
 #define NhlNcnLineDashPattern		"cnLineDashPattern"
@@ -360,14 +365,19 @@ typedef enum _NhlcnFillMode {
 #define NhlCcnMonoLevelFlag		"CnMonoLevelFlag"
 #define NhlCcnLevelFlag			"CnLevelFlag"
 #define NhlCcnLevelFlags		"CnLevelFlags"
+#define NhlCcnFillPalette               "CnFillPalette"
+#define NhlCcnSpanFillPalette           "CnSpanFillPalette"
 #define NhlCcnMonoFillColor		"CnMonoFillColor"
 #define NhlCcnFillColors		"CnFillColors"
+#define NhlCcnFillOpacityF              "CnFillOpacityF"
 #define NhlCcnMonoFillPattern		"CnMonoFillPattern"
 #define NhlCcnFillPatterns		"CnFillPatterns"
 #define NhlCcnMonoFillScale		"CnMonoFillScale"
 #define NhlCcnFillScales		"CnFillScales"
 
 #define NhlCcnMonoLineColor		"CnMonoLineColor"
+#define NhlCcnLinePalette               "CnLinePalette"
+#define NhlCcnSpanLinePalette           "CnSpanLinePalette"
 #define NhlCcnLineColors		"CnLineColors"
 #define NhlCcnMonoLineDashPattern	"CnMonoLineDashPattern"
 #define NhlCcnLineDashPatterns		"CnLineDashPatterns"

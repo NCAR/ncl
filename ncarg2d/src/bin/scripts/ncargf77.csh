@@ -58,7 +58,7 @@ set quick    = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
 set super    = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 
 set robjs
-unset CAIRO_LD
+set CAIRO_LD
 unset NGMATH_LD
 unset NGMATH_BLOCKD_LD
 
@@ -194,13 +194,9 @@ if ($?NGMATH_LD && $?NGMATH_BLOCKD_LD) then
   set robjs = "$robjs $ngmathbd"
 endif
 
-if ($?CAIRO_LD) then
-  set ncarg_libs  = "$libncarg $libcgks $libncarg_c $libmath"
-  set newargv = "$newargv $stub_file $libpath $ctrans_libs $robjs $ncarg_libs $xlib $cairolib $libextra"
-else
-  set ncarg_libs  = "$libncarg $libgks $libncarg_c $libmath"
-  set newargv = "$newargv $stub_file $libpath $ctrans_libs $robjs $ncarg_libs $xlib $libextra"
-endif
+set ncarg_libs  = "$libncarg $libgks $libncarg_c $libmath"
+set newargv = "$newargv $stub_file $libpath $ctrans_libs $robjs $ncarg_libs $xlib $cairolib $libextra"
+
 
 
 echo $newargv

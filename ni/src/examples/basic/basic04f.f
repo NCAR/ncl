@@ -36,7 +36,7 @@ C
       implicit none
 
       external NhlFAppClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFContourPlotClass
       external NhlFScalarFieldClass
@@ -74,8 +74,8 @@ C ##########
 C For each type of output you must create a workstation object using
 C create.  The first argument, xwks, is a variable that identifies the
 C object. The second argument, "xwks", to the create call sets the
-C name of the object being created. The third argument,
-C "NhlFXWorkstationClass", or "NhlFNcgmWorkstationClass"
+C name of the object being created. The third argument, 
+C "NhlFCairoWindowWorkstationClass" or "NhlFNcgmWorkstationClass"
 C identifies the type or class of the object to create. In this case
 C an X workstation or an NCGM workstation. The fourth argument, 0,
 C specifies the id of the objects parent.  In this  case, the object
@@ -84,7 +84,7 @@ C "rlist", is the resource list modifiers to be used  when creating
 C the object. The final argument, ierr, is used to return an error code.
 C
       call NhlFRLClear(rlist)
-      call NhlFCreate(xwks,'xwks',NhlFXWorkstationClass,0,
+      call NhlFCreate(xwks,'xwks',NhlFCairoWindowWorkstationClass,0,
      $     rlist,ierr)
 C
 C The resource, wkMetaName, lets you specify the name of the output NCGM

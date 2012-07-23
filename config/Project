@@ -116,11 +116,7 @@
 #undef	BuildPNG
 #endif
 
-/* Cairo and GDAL support are not yet built by default. */
-#if !BuildCAIRO
-#undef BuildCAIRO
-#endif
-
+/* GDAL support is not yet built by default. */
 #if !BuildGDAL
 #undef BuildGDAL
 #endif
@@ -227,12 +223,8 @@
 #define	PNGlib	-lpng -lz
 #endif	/* PNGlib */
 
-#ifdef BuildCAIRO
 #ifndef CAIROlib
-#define CAIROlib  -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz
-#endif
-#else
-#define CAIROlib
+#define CAIROlib  -lcairo -lXrender -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lbz2 -lpthread
 #endif
 
 #ifndef	HDFEOSlib
@@ -276,7 +268,8 @@
 #endif	/* GRIB2lib */
 
 #ifndef	NetCDFlib
-#define	NetCDFlib	-lnetcdf -lcurl
+#define	NetCDFlib	-lnetcdf -lnetcdff -lcurl
+/*#define	NetCDFlib	-lnetcdf -lnetcdff -lcurl -lssl -lidn -lrt -lldap*/
 #endif	/* NetCDFlib */
 
 #ifndef	NetCDF4lib
@@ -527,12 +520,10 @@ ICTRANS_LIB	= -lNGictrans
 DEPNCARGCLIB	=
 DEPNCARGLIB	=
 DEPNCARGGKSLIB	=
-DEPNCARGGKSCAIROLIB	=
 DEPNGMATHLIB	=
 DEPCGMLIB	=
 DEPNCARGRASLIB	=
 DEPHLULIB	=
-DEPHLUCAIROLIB	=
 DEPNGOLIB	=
 DEPNCLLIB	=
 DEPNCLAPILIB	=
@@ -551,12 +542,10 @@ DEPICTRANS_LIB	=
 NCARGCLIB	= _UseLib(-L$(NCARGCLIBSRC),-lncarg_c)
 NCARGLIB	= _UseLib(-L$(NCARGLIBSRC),-lncarg)
 NCARGGKSLIB	= _UseLib(-L$(NCARGGKSLIBSRC),-lncarg_gks)
-NCARGGKSCAIROLIB= _UseLib(-L$(NCARGGKSLIBSRC),-lncarg_gks_cairo)
 NGMATHLIB	= _UseLib(-L$(NGMATHLIBSRC),-lngmath)
 CGMLIB		= _UseLib(-L$(CGMLIBSRC),-lcgm)
 NCARGRASLIB	= _UseLib(-L$(NCARGRASLIBSRC),-lncarg_ras)
 HLULIB		= _UseLib(-L$(HLULIBSRC),-lhlu)
-HLUCAIROLIB	= _UseLib(-L$(HLULIBSRC),-lhlu_cairo)
 NGOLIB		= _UseLib(-L$(NGOLIBSRC),-lngo)
 NFPLIB		= _UseLib(-L$(NFPLIBSRC),-lnfp)
 NFPFORTLIB	= _UseLib(-L$(NFPFORTLIBSRC),-lnfpfort)
@@ -575,12 +564,10 @@ ICTRANS_LIB	= _DepLib($(ICTRANSLIBSRC),$(ROBJROOT),libictrans_.o)
 DEPNCARGCLIB	= _DepLib($(NCARGCLIBSRC),$(LIBROOT),libncarg_c.a)
 DEPNCARGLIB	= _DepLib($(NCARGLIBSRC),$(LIBROOT),libncarg.a)
 DEPNCARGGKSLIB	= _DepLib($(NCARGGKSLIBSRC),$(LIBROOT),libncarg_gks.a)
-DEPNCARGGKSCAIROLIB= _DepLib($(NCARGGKSLIBSRC),$(LIBROOT),libncarg_gks_cairo.a)
 DEPNGMATHLIB	= _DepLib($(NGMATHLIBSRC),$(LIBROOT),libngmath.a)
 DEPCGMLIB	= _DepLib($(CGMLIBSRC),$(LIBROOT),libcgm.a)
 DEPNCARGRASLIB	= _DepLib($(NCARGRASLIBSRC),$(LIBROOT),libncarg_ras.a)
 DEPHLULIB	= _DepLib($(HLULIBSRC),$(LIBROOT),libhlu.a)
-DEPHLUCAIROLIB	= _DepLib($(HLULIBSRC),$(LIBROOT),libhlu_cairo.a)
 DEPNGOLIB	= _DepLib($(NGOLIBSRC),$(LIBROOT),libngo.a)
 DEPNFPLIB	= _DepLib($(NFPLIBSRC),$(LIBROOT),libnfp.a)
 DEPNFPFORTLIB	= _DepLib($(NFPFORTLIBSRC),$(LIBROOT),libnfpfort.a)
@@ -596,21 +583,16 @@ ICTRANSLIB	= _DepLib($(ICTRANSLIBSRC),$(ROBJROOT),libictrans.o)
 DEPICTRANSLIB	= $(ICTRANSLIB)
 
 NCARGLIBS	= $(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB)
-NCARGCAIROLIBS	= $(NCARGLIB) $(NCARGGKSCAIROLIB) $(NCARGCLIB)
 NGMATHLIBS	= $(NGMATHLIB)
 HLULIBS		= $(HLULIB)
-HLUCAIROLIBS	= $(HLUCAIROLIB)
 NCLLIBS		= $(NCLAPILIB)
 NFPLIBS		= $(NFPLIB) $(NFPFORTLIB)
 NIOLIBS		= $(NIOLIB)
 EXTERNALLIBS    = $(SPHERELIB) $(FFTPACK5LIB) $(LAPACKLIB) $(BLASLIB)
 
 DEPNCARGLIBS	= $(DEPNCARGLIB) $(DEPNCARGGKSLIB) $(DEPNCARGCLIB)
-DEPNCARGCAIROLIBS= $(DEPNCARGLIB) $(DEPNCARGGKSCAIROLIB) $(DEPNCARGCLIB)
 DEPHLULIBS	= $(DEPHLULIB)
-DEPHLUCAIROLIBS	= $(DEPHLUCAIROLIB)
 DEPNCLLIBS	= $(DEPHLULIB) $(DEPNCLAPILIB)
-DEPNCLCAIROLIBS	= $(DEPHLUCAIROLIB) $(DEPNCLAPILIB)
 DEPNFPLIBS	= $(DEPNFPLIB) $(DEPNFPFORTLIB)
 DEPNIOLIBS	= $(DEPNIOLIB)
 

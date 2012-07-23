@@ -1,5 +1,5 @@
 /*
- *      $Id: Palette.c,v 1.10.4.1 2008-03-28 20:37:36 grubin Exp $
+ *      $Id: Palette.c,v 1.10.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,7 @@
 #include <ncarg/hlu/WorkstationP.h>
 #include <ncarg/hlu/ConvertP.h>
 #include <ncarg/hlu/ConvertersP.h>
+#include <ncarg/hlu/color.h>
 
 #define NDV_COLORMAP_PATH  	"NDV_COLORMAP_PATH"
 #define NCARG_COLORMAP_PATH  	"NCARG_COLORMAP_PATH"
@@ -1151,6 +1152,31 @@ PaletteClassInitialize
 }
 
 /*
+ * thinking of the terminology -- a Palette does not contain the background and foreground colors
+ * whereas a Colormap does.
+ */
+
+NhlGenArray GetPaletteFromCMap
+	(NhlGenArray cmap_ga)
+{
+	NhlGenArray pal_ga;
+	float *new_data;
+	ng_size_t new_dims[2];
+
+	/* manually reform the GenArray to eliminate background and foreground colors */
+	new_dims[0] = cmap_ga->len_dimensions[0] - 2;
+	new_dims[1] =  cmap_ga->len_dimensions[1];
+	new_data = (float*)NhlConvertMalloc(new_dims[0] * new_dims[1] * sizeof(float));
+	memcpy(new_data, cmap_ga->data + 2 * new_dims[1] * sizeof(float),
+	       new_dims[0] * new_dims[1] * sizeof(float));
+	pal_ga = _NhlConvertCreateGenArray((void *)new_data,NrmQuarkToString(cmap_ga->typeQ),sizeof(float),
+					   cmap_ga->num_dimensions,new_dims);
+	return pal_ga;
+}
+
+
+
+/*
  * Function:	CvtStringToCmap
  *
  * Description:	
@@ -1188,12 +1214,28 @@ CvtStringToCmap
 	NhlWorkstationClass	wc;
 	NhlPaletteLayer		pl;
 	NhlPalList		cmaps;
+	int 			is_view = 0;
 
 	if(nargs != 1 && args[0].addressmode != NhlLAYEROFFSET){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid args?",func);
 		return NhlFATAL;
 	}
 	wc = *((NhlWorkstationClass*)args[0].data.ptrval);
+	if (wc->base_class.class_inited & _NhlViewClassFlag) {
+		is_view = 1;
+		wc = (NhlWorkstationClass)NhlworkstationClass; 
+		if ((! s1) || strlen(s1) == 0) {
+			_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),NULL);
+			return NhlNOERROR;
+		}
+	}
+	else if (! s1 || !(wc->base_class.class_inited & _NhlWorkstationClassFlag)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Unable to convert string \"%s\" to %s",func,s1,
+			NhlTColorMap);
+		return NhlFATAL;
+	}
+			
 	pl = (NhlPaletteLayer)_NhlGetLayer(wc->work_class.pal);
 	cmaps = pl->pal.cmaps;
 
@@ -1221,8 +1263,12 @@ CvtStringToCmap
 			NhlTColorMap);
 		return NhlFATAL;
 	}
+	if (is_view) {
+		gen = GetPaletteFromCMap(gen);
+	}
 
 	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+	return NhlNOERROR;
 }
 
 /*
@@ -1263,7 +1309,8 @@ CvtGenArrayToCmap
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
 	}
 
-	if((gen->num_dimensions != 2) || (gen->len_dimensions[1] != 3)){
+	if((gen->num_dimensions != 2) ||
+			!(gen->len_dimensions[1] == 3 || gen->len_dimensions[1] ==4)) {
 		if((gen->num_elements == 1) &&
 			(gen->size <= sizeof(NhlArgVal)) && (gen->size > 0)){
 			NrmValue	val;
@@ -1326,6 +1373,15 @@ CvtStringGenArrayToCmap
 		return NhlFATAL;
 	}
 	wc = *((NhlWorkstationClass*)args[0].data.ptrval);
+	if (wc->base_class.class_inited & _NhlViewClassFlag) {
+		wc = (NhlWorkstationClass)NhlworkstationClass; 
+	}
+	else if (!(wc->base_class.class_inited & _NhlWorkstationClassFlag)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Unable to convert string array to %s",func,
+			NhlTColorMap);
+		return NhlFATAL;
+	}
 
 	if(!fgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fgen);
@@ -1392,6 +1448,7 @@ CvtStringGenArrayToCmap
 			*(fptr+(3*i)+2) = (float)rgb.blue / 65535.0;
 	}
 	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
+	return NhlNOERROR;
 }
 
 /*
@@ -1462,16 +1519,15 @@ PaletteInitialize
 		cmptr++;
 	}
 
-
-	(void)_NhlRegSymConv(pp->work_class,NhlTQuarkGenArray,NhlTColorMap,
+	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTColorMap,
 						NhlTQuarkGenArray,NhlTGenArray);
-	(void)NhlRegisterConverter(pp->work_class,NhlTString,NhlTColorMap,
+	(void)NhlRegisterConverter(NULL,NhlTString,NhlTColorMap,
 					CvtStringToCmap,&arg,1,False,NULL);
-	(void)_NhlRegSymConv(pp->work_class,NhlTQuark,NhlTColorMap,
+	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTColorMap,
 							NhlTQuark,NhlTScalar);
-	(void)NhlRegisterConverter(pp->work_class,NhlTGenArray,
+	(void)NhlRegisterConverter(NULL,NhlTGenArray,
 			NhlTColorMap,CvtGenArrayToCmap,NULL,0,False,NULL);
-	(void)NhlRegisterConverter(pp->work_class,NhlTStringGenArray,
+	(void)NhlRegisterConverter(NULL,NhlTStringGenArray,
 			NhlTColorMap,CvtStringGenArrayToCmap,&arg,1,False,NULL);
 
 	return NhlNOERROR;
@@ -1995,4 +2051,213 @@ NhlPalLoadColormapFiles
 	}
 
 	return ReadUserColormaps(lc,suppress_path_message,func);
+}
+/*
+ * Function:  _NhlSpanColorPalette
+ *
+ * Description: Spans a color palette to generate an array of count color indexes
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+NhlErrorTypes _NhlSpanColorPalette
+(NhlGenArray	        palga,
+ int                    count,
+ int *                  colors)
+
+{
+	int min_ind,max_ind,i;
+	int *pal_col = (int *)palga->data;
+	double spacing;
+	int ix;
+	
+
+	i = 0;
+	while (pal_col[i] < 0) i++;
+	min_ind = i;
+	max_ind = palga->num_elements - 1;
+	if (count < 2) {
+		spacing = 1.0;
+	}
+	else {
+		spacing = (max_ind - min_ind) / (double) (count - 1);
+	}
+	for (i = 0; i < count; i++) {
+		ix = (int) min_ind + spacing * i + 0.5;
+		colors[i] = pal_col[ix];
+	}
+	return NhlNOERROR;
+}
+
+/*
+ * Function:  _NhlSetFillColorsFromPalette
+ *
+ * Description: Sets a color gen array using the colors in a palette gen array
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+NhlErrorTypes    _NhlSetColorsFromPalette
+(NhlLayer               vl,
+ NhlGenArray            palette_ga,
+ int                    color_count,
+ int			span_palette,
+ NhlGenArray *          color_ga,
+ char *                 entry_name)
+{
+
+	NhlErrorTypes subret = NhlNOERROR;
+        _NhlConvertContext	context = NULL;
+	char *e_text;
+	NrmValue from,to;
+	NhlGenArray intga;
+	int *ci;
+	ng_size_t i,io, count;
+
+	from.size = sizeof(NhlGenArray);
+	from.data.ptrval = palette_ga;
+	to.size = sizeof(NhlGenArray);
+	to.data.ptrval = &intga;
+
+        context = _NhlCreateConvertContext(vl->base.wkptr);
+
+	subret = _NhlConvertData(context,NrmStringToQuark(NhlTColorDefinitionGenArray),
+				 NrmStringToQuark(NhlTColorIndexGenArray),&from,&to);
+	if (subret < NhlWARNING) {
+		e_text = "%s: error converting color palette";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	ci = NhlMalloc(sizeof(int) * color_count);
+
+	if (span_palette) {
+		subret = _NhlSpanColorPalette(intga,color_count,ci);
+	}
+	else {
+		int *pal_col = (int*) intga->data;
+		for (i = 0,io = 0; io < color_count; i++) {
+			if (pal_col[i % intga->num_elements] < 0)
+				continue;
+			ci[io] = pal_col[i % intga->num_elements];
+			io++;
+		}
+	}
+	count = (ng_size_t)color_count;
+	if ((*color_ga = NhlCreateGenArray((NhlPointer)ci,NhlTColorIndex,
+				     sizeof(int),1,&count)) == NULL) {
+		e_text = "%s: error creating GenArray";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	(*color_ga)->my_data = True;
+        _NhlFreeConvertContext(context);
+
+	return NhlNOERROR;
+}
+
+NhlErrorTypes    _NhlSetColorsFromIndexAndPalette
+(NhlLayer               vl,
+ NhlGenArray            index_ga,
+ NhlGenArray            palette_ga,
+ char *                 entry_name)
+{
+	int *fill_cols;
+	float *fpal;
+	int i;
+	char *e_text;
+	
+	fill_cols = (int*)index_ga->data;
+
+	for (i = 0; i < index_ga->num_elements; i++) {
+		if (fill_cols[i] >= 0 && fill_cols[i] < 256) {
+			if (fill_cols[i] > palette_ga->len_dimensions[0] - 1) {
+				e_text ="%s: color index (%d) exceeds size of palette, defaulting to foreground color for entry (%d)";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,fill_cols[i],i);
+				fill_cols[i] = NhlFOREGROUND;
+				continue;
+			}
+			fpal = ((float*)palette_ga->data) + fill_cols[i] * palette_ga->len_dimensions[1];
+			fill_cols[i] = _NhlRGBAToColorIndex(fpal,palette_ga->len_dimensions[1] == 4 ? 1 : 0);
+		}
+	}
+	return NhlNOERROR;
+}
+
+NhlErrorTypes    _NhlSetColorsFromWorkstationColorMap
+(NhlLayer               vl,
+ NhlGenArray            *index_ga,
+ ng_size_t		count,
+ int                    span_palette,
+ char *                 entry_name)
+{
+	NhlGenArray cmap_ga;
+	int *ci;
+	int i,ix;
+	int min_ind,max_ind;
+	double spacing;
+
+	NhlVAGetValues(vl->base.wkptr->base.id,
+		       NhlNwkColorMap, &cmap_ga, NULL);
+	ci = NhlMalloc(sizeof(int) * count);
+
+	min_ind = 2;
+	max_ind = cmap_ga->len_dimensions[0] - 1;
+	if (! span_palette) {
+		for (i = 0; i < count; i++) {
+			ci[i] = min_ind + i % (max_ind - min_ind + 1);
+		}
+	}
+	else {
+		if (count < 2) {
+			spacing = 1.0;
+		}
+		else {
+			spacing = (max_ind - min_ind) / (double) (count - 1);
+		}
+		for (i = 0; i < count; i++) {
+			ix = (int) min_ind + spacing * i + 0.5;
+			ci[i] = ix;
+		}
+	}
+	*index_ga = _NhlCreateGenArray(ci,NhlTColorIndex,4,1,&count,False);
+	NhlFreeGenArray(cmap_ga);
+
+	return NhlNOERROR;
+}
+
+NhlGenArray _NhlGetWorkstationPalette
+(NhlLayer  l)
+{
+	NhlGenArray cmap_ga;
+	float *new_data;
+	ng_size_t new_len,csize;
+
+	NhlVAGetValues(l->base.wkptr->base.id,
+		       NhlNwkColorMap, &cmap_ga, NULL);
+	/* manually reform the GenArray to eliminate background and foreground colors */
+	new_len = cmap_ga->len_dimensions[0] - 2;
+	csize =  cmap_ga->len_dimensions[1];
+	new_data = (float*)NhlMalloc(new_len * csize * sizeof(float));
+	memcpy(new_data, cmap_ga->data + 2 * csize * sizeof(float),
+	       new_len * csize * sizeof(float));
+	if (cmap_ga->my_data)
+		NhlFree(cmap_ga->data);
+	cmap_ga->my_data = True;
+	cmap_ga->data = new_data;
+	cmap_ga->len_dimensions[0] = new_len;
+	cmap_ga->num_elements = new_len * csize;
+
+	return cmap_ga;
 }

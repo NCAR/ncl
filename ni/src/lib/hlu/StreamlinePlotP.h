@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlotP.h,v 1.14 2003-09-10 21:29:59 dbrown Exp $
+ *      $Id: StreamlinePlotP.h,v 1.14.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -121,6 +121,7 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	float			line_thickness;
 	NhlBoolean		mono_line_color;
 	NhlColorIndex		line_color;
+	float			line_opacity;
 	NhlBoolean		arrow_length_set;
 	float			arrow_length;
 	NhlBoolean		step_size_set;
@@ -160,6 +161,8 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	float			min_level_val;
 	NhlBoolean		max_level_set;
 	float			max_level_val;
+	NhlGenArray	        level_palette;
+	NhlBoolean              span_level_palette;
 	NhlGenArray		level_colors;
 	NhlBoolean		use_scalar_array;
 	NhlColorIndex		scalar_mval_color;

@@ -27,7 +27,7 @@ begin
 
 ;----------- Begin third plot -----------------------------------------
 
-  resources@tiMainString  = ":F26:wind velocity vectors - January 1996"
+  resources@tiMainString  = "~F26~wind velocity vectors - January 1996"
   resources@tiXAxisString = "longitude"
   resources@tiYAxisString = "latitude"
 
@@ -66,7 +66,7 @@ begin
   resources@vcFillArrowEdgeColor     = 1     ; Draw the edges in black.
   resources@vcFillArrowWidthF        = 0.055 ; Make vectors thinner.
 
-  resources@tiMainString      = ":F26:wind velocity vectors colored by temperature " + temp@units
+  resources@tiMainString      = "~F26~wind velocity vectors colored by temperature " + temp@units
   resources@tiMainFontHeightF = 0.02  ; Make font slightly smaller.
   resources@lbLabelFont       = 21    ; Change font of label bar labels.
 
