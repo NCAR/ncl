@@ -1543,6 +1543,7 @@ lib/ncarg/nclex/xyplot/xy15n.ncl
 lib/ncarg/nclex/xyplot/xy16n.ncl
 lib/ncarg/nclex/xyplot/xy17n.ncl
 lib/ncarg/nclscripts/contrib/calendar_decode2.ncl
+lib/ncarg/nclscripts/contrib/cd_string.ncl
 lib/ncarg/nclscripts/contrib/kf_filter.ncl
 lib/ncarg/nclscripts/contrib/run_cor.ncl
 lib/ncarg/nclscripts/contrib/time_axis_labels.ncl
