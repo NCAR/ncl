@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include "wrapper.h"
 
-extern int day_of_year (int, int, int);
+extern int day_of_year (int, int, int, const char*);
 extern int days_in_month (int, int);
 extern int day_of_week (int, int, int);
 extern int monthday (int, int);
-extern int isleapyear(int);
-
+extern int isleapyear(int,const char*);
+extern const char *get_calendar_attribute(int,int);
 
 NhlErrorTypes day_of_year_W( void )
 {
@@ -126,13 +126,13 @@ NhlErrorTypes day_of_year_W( void )
         dayofyear[i] = missing_dayofyear.intval;
       }
       else {
-        dayofyear[i] = day_of_year(year[i],month[i],day[i]);
+        dayofyear[i] = day_of_year(year[i],month[i],day[i],"standard");
       }
     }
   }
   else {    
     for( i = 0; i < total; i++ ) {
-      dayofyear[i] = day_of_year(year[i],month[i],day[i]);
+      dayofyear[i] = day_of_year(year[i],month[i],day[i],"standard");
     }
   }
 /*
@@ -421,6 +421,7 @@ NhlErrorTypes isleapyear_W( void )
  */
   logical *isleap;
   NclScalar missing_isleap;
+  const char *calendar;
 /*
  * Retrieve parameters
  *
@@ -454,6 +455,17 @@ NhlErrorTypes isleapyear_W( void )
     return(NhlFATAL);
   }
 /*
+ * Check for a calendar attribute. If it comes back NULL, then 
+ * something is wrong and we need to return all missing values.
+ */
+  calendar = get_calendar_attribute(0,1);
+  if(calendar == NULL) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"isleapyear: Invalid calendar. Returning all missing values");
+    for( i = 0; i < total; i++ ) isleap[i] = missing_isleap.logicalval;
+    return(NclReturnValue((void*)isleap,ndims_year,dsizes_year,
+                          &missing_isleap,NCL_logical,0));
+  }
+/*
  * Call function.
  */
   if(has_missing_year) {
@@ -463,12 +475,12 @@ NhlErrorTypes isleapyear_W( void )
         isleap[i] = missing_isleap.logicalval;
       }
       else {
-        isleap[i] = (logical)isleapyear(year[i]);
+        isleap[i] = (logical)isleapyear(year[i],calendar);
       }
     }
   }
   else {
-    for( i = 0; i < total; i++ ) isleap[i] = (logical)isleapyear(year[i]);
+    for( i = 0; i < total; i++ ) isleap[i] = (logical)isleapyear(year[i],calendar);
   }
 /*
  * Return.
@@ -601,7 +613,7 @@ NhlErrorTypes monthday_W( void )
   }
 }
 
-int day_of_year (int year, int month, int day)
+int day_of_year (int year, int month, int day, const char *calendar)
 { 
   int dofy;
 /* 
@@ -620,14 +632,15 @@ int day_of_year (int year, int month, int day)
         fprintf(stderr,"day_of_year: illegal year, year = %d\n", year);
         dofy = -9999;
   }
-  else if (day < 1 || (isleapyear(year) && month == 2 && day > 29) ||
-       (!(isleapyear(year) && month == 2) && day > daysinmonth[month-1])) {
+  else if (day < 1 || (isleapyear(year,calendar) && month == 2 && day > 29) ||
+           (!(isleapyear(year,calendar) && month == 2) && 
+            day > daysinmonth[month-1])) {
         fprintf(stderr,"day_of_year: illegal arguments, year = %d, month = %d, day = %d\n", year, month, day);
         dofy = -9999;
   }
   else {
         dofy = yrday[month-1] + day - 1;
-        if (isleapyear(year) && month > 2) dofy++;
+        if (isleapyear(year,calendar) && month > 2) dofy++;
   }
   return(dofy);
 }
@@ -648,7 +661,7 @@ int days_in_month (int year, int month)
   }
   else {
         dinm = daysinmonth[month-1];
-        if (isleapyear(year) && (month == 2)) dinm = 29;
+        if (isleapyear(year,"standard") && (month == 2)) dinm = 29;
   }
   return(dinm);
 }
@@ -674,8 +687,9 @@ int day_of_week (int year, int month, int day)
         fprintf(stderr,"day_of_week: illegal year, year = %d\n", year);
         dow = -9999;
   }
-  else if (day < 1 || (isleapyear(year) && month == 2 && day > 29) ||
-       (!(isleapyear(year) && month == 2) && day > daysinmonth[month-1])) {
+  else if (day < 1 || (isleapyear(year,"standard") && month == 2 && day > 29) ||
+           (!(isleapyear(year,"standard") && month == 2) && 
+            day > daysinmonth[month-1])) {
         fprintf(stderr,"day_of_week: illegal arguments, year = %d, month = %d, day = %d\n", year, month, day);
         dow = -9999;
   }
@@ -702,8 +716,8 @@ int monthday (int year, int dayofyear)
   int mday = -9999;
   int yearday[13] = {1,32,60,91,121,152,182,213,244,274,305,335,367};
 
-  if (dayofyear < 1 || (isleapyear(year) && dayofyear > 366) ||
-          (!isleapyear(year) && dayofyear > 365) || year < 0) {
+  if (dayofyear < 1 || (isleapyear(year,"standard") && dayofyear > 366) ||
+      (!isleapyear(year,"standard") && dayofyear > 365) || year < 0) {
         fprintf (stderr,"monthday: illegal argument, year = %d, dayofyear = %d\n", year, dayofyear);
         mday = -9999;
   }
@@ -715,7 +729,7 @@ int monthday (int year, int dayofyear)
 /*
  * Add one day to normal yearr vector.
  */
-        if (isleapyear(year)) {
+        if (isleapyear(year,"standard")) {
           for( i=2; i < 12; i++ ) work[i] = yearday[i]+1;
         }
         for( i = 1; i <= 12; i++ ) {
@@ -727,7 +741,7 @@ int monthday (int year, int dayofyear)
   return(mday);
 }
 
-int isleapyear(int year)
+int isleapyear(int year,const char *calendar)
 {
 /*      
  * This function will return a value of 1 if year is a leap year.
@@ -741,12 +755,120 @@ int isleapyear(int year)
   int y4, y100, y400;
  
   if (year < 0) {
-        fprintf (stderr,"isleapyear: illegal argument, year = %d\n", year);
-        return(0);
+    fprintf (stderr,"isleapyear: illegal argument, year = %d\n", year);
+    return(0);
   }
-  y4 = (year % 4) == 0;
-  y100 = (year % 100) == 0;
-  y400 = (year % 400) == 0;
 
-  return((y4 && !y100) || y400);
+  if (calendar == NULL) {
+    fprintf (stderr,"isleapyear: calendar is NULL\n");
+    return(0);
+  }
+
+  if(!strcasecmp(calendar,"standard")  || 
+     !strcasecmp(calendar,"gregorian") ||
+     !strcasecmp(calendar,"none")) {
+    y4   = (year % 4) == 0;
+    y100 = (year % 100) == 0;
+    y400 = (year % 400) == 0;
+    return((y4 && !y100) || y400);
+  }
+  else if(!strcasecmp(calendar,"allleap")  ||
+          !strcasecmp(calendar,"all_leap") ||
+          !strcasecmp(calendar,"366_day")  ||
+          !strcasecmp(calendar,"366")) {
+    return(1);
+  }
+  else if(!strcasecmp(calendar,"noleap")  ||
+          !strcasecmp(calendar,"no_leap") ||
+          !strcasecmp(calendar,"365_day") ||
+          !strcasecmp(calendar,"365")     ||
+          !strcasecmp(calendar,"360_day") ||
+          !strcasecmp(calendar,"360")) {
+    return(0);
+  }
+  else if(!strcasecmp(calendar,"julian")) {
+    y4   = (year % 4) == 0;
+    return(y4);
+  }
+  else  {
+    fprintf (stderr,"isleapyear: illegal calendar = '%s'\n", calendar);
+    return(0);
+  }
+}
+
+
+const char *get_calendar_attribute(int arg_num, int total_args) {
+/* 
+ * This function checks the given input argument for
+ * a "calendar" attribute. If none is found, then NULL
+ * is returned.
+ */
+/*
+ * Variables for retrieving attributes from the first argument.
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
+  string *scal;
+  const char   *ccal = NULL;
+  const char *default_cal = "standard";
+
+  stack_entry = _NclGetArg(arg_num, total_args, DONT_CARE);
+  switch (stack_entry.kind) {
+  case NclStk_VAR:
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj == NULL) {
+        return default_cal;
+        break;
+      }
+    }
+    else {
+/*
+ * att_id == -1 ==> no attributes specified.
+ */
+      return default_cal;
+      break;
+    }
+/* 
+ * Check for attributes. If none are specified, then return the default.
+ */
+    if (attr_obj->att.n_atts == 0) {
+      return default_cal;
+      break;
+    }
+    else {
+/*
+ * Get list of attributes.
+ */
+      attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them.
+ */
+      while (attr_list != NULL) {
+        if ((strcmp(attr_list->attname, "calendar")) == 0) {
+          scal = (string *) attr_list->attvalue->multidval.val;
+          ccal = NrmQuarkToString(*scal);
+          if(strcasecmp(ccal,"standard") && strcasecmp(ccal,"gregorian") &&
+             strcasecmp(ccal,"proleptic_gregorian") &&
+             strcasecmp(ccal,"noleap")  && strcasecmp(ccal,"no_leap") &&
+             strcasecmp(ccal,"allleap") && strcasecmp(ccal,"all_leap") &&
+             strcasecmp(ccal,"365_day") && strcasecmp(ccal,"365") &&
+             strcasecmp(ccal,"366_day") && strcasecmp(ccal,"366") &&
+             strcasecmp(ccal,"360_day") && strcasecmp(ccal,"360") &&
+             strcasecmp(ccal,"julian")  && strcasecmp(ccal,"none")) {
+            NhlPError(NhlWARNING,NhlEUNKNOWN,"get_calendar_attribute: the 'calendar' attribute (%s) is not equal to a recognized calendar.",ccal);
+            return(NULL);
+          }
+          else {
+            return(ccal);
+          }
+        }
+        attr_list = attr_list->next;
+      }
+    }
+  default:
+    break;
+  }
+  return default_cal;
 }
