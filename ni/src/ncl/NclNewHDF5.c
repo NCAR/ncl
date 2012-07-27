@@ -1238,9 +1238,9 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
     char *type_name = NULL;
 
   /*
+   *fprintf(stderr, "\nEntering _checkH5attribute, at file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tattr_name = <%s>\n", attr_name);
    */
-    fprintf(stderr, "\nEntering _checkH5attribute, at file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tattr_name = <%s>\n", attr_name);
 
     attr_id = H5Aopen(obj_id, attr_name, H5P_DEFAULT);
 
@@ -1305,12 +1305,12 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
     ++attrec->n_atts;
 
   /*
+   *fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tattr_id   = %d\n", attr_id);
+   *fprintf(stderr, "\tattnode->type = %d\n", attnode->type);
+   *fprintf(stderr, "\tattnode->name = <%s>\n", NrmQuarkToString(attnode->name));
+   *fprintf(stderr, "\tattrec->n_atts = %d\n", attrec->n_atts);
    */
-    fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tattr_id   = %d\n", attr_id);
-    fprintf(stderr, "\tattnode->type = %d\n", attnode->type);
-    fprintf(stderr, "\tattnode->name = <%s>\n", NrmQuarkToString(attnode->name));
-    fprintf(stderr, "\tattrec->n_atts = %d\n", attrec->n_atts);
 
     /* Data space */
     ndims = H5Sget_simple_extent_ndims(space);
@@ -1375,9 +1375,9 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
     type_name = _getH5typeName(type, 15);
 
   /*
+   *fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\ttype_name: <%s>\n", type_name);
    */
-    fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\ttype_name: <%s>\n", type_name);
 
     attnode->type = string2NclType(type_name);
 
@@ -1421,16 +1421,18 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
                      dataset_id = H5Rdereference(attr_id, H5R_OBJECT, &rbuf[i]);
                      type_id = H5Dget_type(dataset_id);
 
-                     if(H5Tequal(H5T_NATIVE_FLOAT, type_id))
-                     {
-                         fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
-                         fprintf(stderr, "\tDatatype of the dataset is H5T_NATIVE_FLOAT.\n\n");
-                     }
-                     else if(H5Tequal(H5T_NATIVE_INT, type_id))
-                     {
-                         fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
-                         fprintf(stderr, "\tDatatype of the dataset is H5T_NATIVE_INT.\n\n");
-                     }
+                   /*
+                    *if(H5Tequal(H5T_NATIVE_FLOAT, type_id))
+                    *{
+                    *    fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
+                    *    fprintf(stderr, "\tDatatype of the dataset is H5T_NATIVE_FLOAT.\n\n");
+                    *}
+                    *else if(H5Tequal(H5T_NATIVE_INT, type_id))
+                    *{
+                    *    fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
+                    *    fprintf(stderr, "\tDatatype of the dataset is H5T_NATIVE_INT.\n\n");
+                    *}
+                    */
                      break;
                 default:
                      fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
@@ -1442,13 +1444,13 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
       /*
        *Get datatype of the dataset "B"
 
-        did_b = H5Rdereference(attr_id, H5R_OBJECT, &rbuf[1]);
-        tid_b = H5Dget_type(did_b);
-        if(H5Tequal(tid_b, H5T_NATIVE_FLOAT))
-            printf("Datatype of the dataset is H5T_NATIVE_FLOAT.\n");
-        printf("\n");
+       *did_b = H5Rdereference(attr_id, H5R_OBJECT, &rbuf[1]);
+       *tid_b = H5Dget_type(did_b);
+       *if(H5Tequal(tid_b, H5T_NATIVE_FLOAT))
+       *    printf("Datatype of the dataset is H5T_NATIVE_FLOAT.\n");
+       *printf("\n");
        
-        NclFree(rbuf);
+       *NclFree(rbuf);
        */
 
         attnode->value = (void *)rbuf;
@@ -1461,8 +1463,8 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
         H5Tclose(type);
 
       /*
+       *fprintf(stderr, "Leaving _checkH5attribute, at file: %s, line: %d\n\n", __FILE__, __LINE__);
        */
-        fprintf(stderr, "Leaving _checkH5attribute, at file: %s, line: %d\n\n", __FILE__, __LINE__);
 
         return SUCCEED;
     }
@@ -1493,9 +1495,11 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
       /*
         assert(temp_need == (hsize_t)((size_t)temp_need));
        */
-        fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tt_size = %d, p_size = %d\n", t_size, p_size);
-        fprintf(stderr, "\tnelmts = %d, need = %d\n", nelmts, need);
+      /*
+       *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tt_size = %d, p_size = %d\n", t_size, p_size);
+       *fprintf(stderr, "\tnelmts = %d, need = %d\n", nelmts, need);
+       */
 
         if(0 == strcmp(type_name, "string"))
         {
@@ -1521,11 +1525,11 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
             qptr = (NrmQuark *)attnode->value;
 
           /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\ttype_name=<%s>\n", type_name);
+           *fprintf(stderr, "\tstr_size=<%d>\n", str_size);
+           *fprintf(stderr, "\tis_vlstr=<%d>\n", is_vlstr);
            */
-            fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\ttype_name=<%s>\n", type_name);
-            fprintf(stderr, "\tstr_size=<%d>\n", str_size);
-            fprintf(stderr, "\tis_vlstr=<%d>\n", is_vlstr);
 
             if(is_vlstr)
             {
@@ -1537,7 +1541,6 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
                 for(i = 0; i < nelmts; ++i)
                 {
                     qptr[i] = NrmStringToQuark(vlstr[i]);
-                    fprintf(stderr, "\tStr No %d: <%s>\n", i, vlstr[i]);
                     NclFree(vlstr[i]);
                 }
 
@@ -1630,9 +1633,9 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
             nmembs=H5Tget_nmembers(p_type);
 
           /*
+           *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tfound compound data, nmembs = %d\n", nmembs);
            */
-            fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tfound compound data, nmembs = %d\n", nmembs);
 
             comprec = _NclFileCompoundAlloc((int) nmembs);
 
@@ -1646,10 +1649,10 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
 
             n = H5Aread(attr_id, p_type, comprec->value);
           /*
+           *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tcompound data nelmts = %d, need = %d\n", nelmts, need);
+           *fprintf(stderr, "\tcompound data size = %d\n", comprec->size);
            */
-            fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tcompound data nelmts = %d, need = %d\n", nelmts, need);
-            fprintf(stderr, "\tcompound data size = %d\n", comprec->size);
 
             for(i = 0; i < nmembs; ++i)
             {
@@ -1665,9 +1668,9 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
                 compnode->type = string2NclType(typename);
 
               /*
+               *fprintf(stderr, "\tcomponent no %d name: <%s>, offset = %d, type: <%s>\n",
+               *                   i, mname, compnode->offset, typename);
                */
-                fprintf(stderr, "\tcomponent no %d name: <%s>, offset = %d, type: <%s>\n",
-                                   i, mname, compnode->offset, typename);
 
                 H5Tclose(subtype);
                 NclFree(typename);
@@ -1678,11 +1681,14 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
             attnode->value = (void *) comprec;
             attnode->is_compound = 1;
 
-            H5Tclose(type);
-            H5Sclose(space);
-            H5Tclose(p_type);
-            H5Tclose(attr_id);
-            status = H5Dvlen_reclaim(type, space, H5P_DEFAULT, comprec->value);
+          /*
+           *H5Tclose(p_type);
+           *H5Tclose(type);
+           *H5Sclose(space);
+           *H5Dclose(attr_id);
+           *status = H5Dvlen_reclaim(type, space, H5P_DEFAULT, comprec->value);
+           *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           */
         }
         else if(NCL_vlen == attnode->type)
         {
@@ -1712,8 +1718,8 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
     H5Tclose(type);
 
   /*
+   *fprintf(stderr, "Leaving _checkH5attribute, at file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "Leaving _checkH5attribute, at file: %s, line: %d\n\n", __FILE__, __LINE__);
 
     return SUCCEED;
 }
@@ -3348,6 +3354,147 @@ void _getH5data(hid_t fid, NclFileVarNode *varnode,
 
 /*
  ***********************************************************************
+ * Function:	*_getH5compoundAsList
+ *
+ * Purpose:	get the compound data as list.
+ *
+ * Programmer:	Wei Huang
+ *		July 27, 2012
+ *
+ ***********************************************************************
+ */
+
+void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
+{
+    hid_t       did = -1;
+    herr_t      status = -1;
+    hsize_t     size  = 1;
+    hsize_t     ndims = 0;
+
+    char *component_name;
+
+    NclNewList complist;
+
+    void *values;
+
+    NclVar compvar;
+
+    ng_size_t one = 1;
+
+    ng_size_t dimsizes[H5S_MAX_RANK];
+    ng_size_t dimnames[H5S_MAX_RANK];
+    char      buffer[MAX_NCL_NAME_LENGTH];
+
+    NclMultiDValData comp_md;
+    int *id = (int *)NclMalloc(sizeof(int));
+    int   n = 0;
+
+    NclFileCompoundNode *compnode = NULL;
+
+    hid_t datatype_id = -1;
+    hid_t component_datasize = 1;
+    hid_t str_type = 0;
+
+    fprintf(stderr, "\nEnter _getH5compoundAsList, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varnode->name));
+  /*
+   */
+
+    if(NULL == varnode->comprec)
+        return NULL;
+
+    did = H5Dopen(fid, NrmQuarkToString(varnode->name), H5P_DEFAULT);
+
+    complist = (NclNewList)_NclNewListCreate(NULL, NULL, 0, 0, -1, (NCL_ITEM | NCL_FIFO));
+    assert(complist);
+    _NclListSetType((NclObj)complist, NCL_ITEM);
+    complist->newlist.name = varnode->name;
+    complist->newlist.type = NrmStringToQuark("item");
+    complist->obj.obj_type = Ncl_List;
+
+    *id = complist->obj.id;
+    comp_md = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,id,
+                                          NULL,1,&one,TEMPORARY,NULL);
+
+    ndims = 0;
+    size = 0;
+
+    if(NULL != varnode->dim_rec)
+    {
+        size = 1;
+        ndims = varnode->dim_rec->n_dims;
+        for(n = 0; n < varnode->dim_rec->n_dims; ++n)
+        {
+            dimnames[n] = varnode->dim_rec->dim_node[n].name;
+            dimsizes[n] = varnode->dim_rec->dim_node[n].size;
+            size       *= varnode->dim_rec->dim_node[n].size;
+        }
+    }
+
+    for(n = 0; n < varnode->comprec->n_comps; ++n)
+    {
+        compnode = &(varnode->comprec->compnode[n]);
+
+        component_name = NrmQuarkToString(compnode->name);
+        strcpy(buffer, _NclBasicDataTypeToName(compnode->type));
+
+        component_datasize = _NclSizeOf(compnode->type);
+        datatype_id = H5Tcreate( H5T_COMPOUND, component_datasize);
+        values = (void *)NclCalloc(size, component_datasize);
+        assert(values);
+
+        if(NCL_string == compnode->type)
+        {
+            str_type = H5Tcopy(H5T_C_S1);
+            status = H5Tset_size(str_type, component_datasize);
+            H5Tinsert(datatype_id, component_name, 0, str_type);
+        }
+        else
+        {
+            H5Tinsert(datatype_id, component_name, 0,
+                      Ncltype2HDF5type(compnode->type));
+        }
+
+        status = H5Dread(did, datatype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, values);
+
+        H5Tclose(datatype_id);
+
+        strcpy(buffer, NrmQuarkToString(compnode->name));
+
+        if(NCL_string == compnode->type)
+        {
+            H5Tclose(str_type);
+
+            compvar = _NclCreateVlenVar(buffer, values,
+                                        ndims, dimnames,
+                                        dimsizes, NCL_char);
+        }
+        else
+        {
+            compvar = _NclCreateVlenVar(buffer, values,
+                                        ndims, dimnames,
+                                        dimsizes, compnode->type);
+        }
+
+        _NclListAppend((NclObj)complist, (NclObj)compvar);
+    }
+
+  /*Close the dataspace*/
+    H5Dclose(did);
+
+  /*
+   */
+
+    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tvarnode->name: <%s>, varnode->type: <%s>\n",
+                     NrmQuarkToString(varnode->name), _NclBasicDataTypeToName(varnode->type));
+    fprintf(stderr, "Leave _getH5compoundAsList, file: %s, line: %d\n\n", __FILE__, __LINE__);
+
+    return (void *)comp_md;
+}
+
+/*
+ ***********************************************************************
  * Function:	_getH5Compounddata
  *
  * Purpose:	read compound data
@@ -3358,7 +3505,7 @@ void _getH5data(hid_t fid, NclFileVarNode *varnode,
  ***********************************************************************
  */
 
-static void _getH5CompoundData(hid_t fid, NclFileVarNode *varnode,
+static void *_getH5CompoundData(hid_t fid, NclFileVarNode *varnode,
                                NclQuark varname, void *storage)
 {
     char *component_name;
@@ -3383,7 +3530,8 @@ static void _getH5CompoundData(hid_t fid, NclFileVarNode *varnode,
     {
         fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
         fprintf(stderr, "\tCan not found component from varname: <%s>\n", NrmQuarkToString(varname));
-        return;
+        storage = (void *) _getH5compoundAsList(fid, varnode);
+        return storage;
     }
 
   /*
@@ -3434,6 +3582,8 @@ static void _getH5CompoundData(hid_t fid, NclFileVarNode *varnode,
   /*
    */
     fprintf(stderr, "Leave _getH5CompoundData, file: %s, line: %d\n\n", __FILE__, __LINE__);
+
+    return storage;
 }
 
 /*
@@ -4165,7 +4315,7 @@ static void *H5ReadVar(void *therec, NclQuark thevar,
         case NCL_compound:
              fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
              fprintf(stderr, "\tNeed to read Compound data.\n");
-             _getH5CompoundData(fid, varnode, thevar, storage);
+             storage = _getH5CompoundData(fid, varnode, thevar, storage);
              break;
         case NCL_list:
         case NCL_vlen:

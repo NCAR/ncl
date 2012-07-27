@@ -631,6 +631,8 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
     size_t offset = 0;
     int i, j, n;
     int max_print_att = 10;
+    char **charcomp = NULL;
+    char *charstr = NULL;
     
     if(NULL == attrec)
         return;
@@ -642,8 +644,8 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
     _increaseNclPrintIndentation();
 
   /*
+   *fprintf(stderr, "\nEnter _printNclFileAttRecord, in file: %s, line: %d\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "\nEnter _printNclFileAttRecord, in file: %s, line: %d\n", __FILE__, __LINE__);
 
     for(i = 0; i < attrec->n_atts; i++)
     {
@@ -656,7 +658,6 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
             NclFileCompoundRecord *comprec = (NclFileCompoundRecord *) attnode->value;
             NclFileCompoundNode *compnode;
             size_t *compsize = (size_t *) NclCalloc(comprec->n_comps, sizeof(size_t));
-            char **charcomp = NULL;
 
           /*
            *fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
@@ -717,10 +718,10 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
                     }
                     else
                     {
-                        charcomp = (char *)NclMalloc(compsize[n] * sizeof(char));
-                        assert(charcomp);
-                        memcpy(charcomp, comprec->value + offset, compsize[n]);
-                        _justPrintTypeVal(fp, compnode->type, (void *)charcomp, 0);
+                        charstr = (char *)NclMalloc(compsize[n] * sizeof(char));
+                        assert(charstr);
+                        memcpy(charstr, comprec->value + offset, compsize[n]);
+                        _justPrintTypeVal(fp, compnode->type, (void *)charstr, 0);
 
                       /*
                        *if(NCL_int64 == compnode->type)
@@ -728,7 +729,7 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
                        *if(NCL_double == compnode->type)
                        *    fprintf(stderr, "\tElem No %d component no %d value: %f\n", j, n, *(double *)charcomp);
                       */
-                        NclFree(charcomp);
+                        NclFree(charstr);
                     }
                     offset += compsize[n];
                 }
@@ -897,8 +898,8 @@ void _printNclFileAttRecord(FILE *fp, NclNewFile thefile, NclFileAttRecord *attr
     _decreaseNclPrintIndentation();
 
   /*
+   *fprintf(stderr, "Leave _printNclFileAttRecord, in file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "Leave _printNclFileAttRecord, in file: %s, line: %d\n\n", __FILE__, __LINE__);
 }
 
 void _printNclFileUDTRecord(FILE *fp, NclNewFile thefile, NclFileUDTRecord *udtrec)
@@ -3148,7 +3149,7 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
         sel = NULL;
     }
 
-    if (total_elements == 0)
+    if(0 == total_elements)
     {
      /* can't return any data because there is a 0-length dimension
       * but nevertheless return what is possible
@@ -3308,9 +3309,19 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
                     }
                     else
                     {
-                        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                            "MyNewFileReadVarValue: Invalid component in struct: <%s>",
-                             NrmQuarkToString(varnode->name)));
+                      /*
+                       */
+                        fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                        fprintf(stderr, "\tread whole compound.\n");
+                        fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
+
+                        val = (*thefile->newfile.format_funcs->read_var)
+                              (thefile->newfile.grpnode,
+                               varnode->name,
+                               start, finish, stride, val);
+
+                        tmp_md = (NclMultiDValData) val;
+                        return (tmp_md);
                     }
                 }
                 else if((NCL_list == varnode->type) || (NCL_vlen == varnode->type))
