@@ -12944,3 +12944,49 @@ begin
         smX      = wgt_runave_n_Wrap(x, wgts, 1, ndim)   ; reflective end pts
         return(smX)
 end
+
+;------
+; Names and abbreviations for months
+undef("month_name")
+function month_name (opt[1]:integer)
+;  monName = month_name(-1)    ; return with extra January 
+begin
+ if (opt.eq.0) then
+     return((/"Jan","Feb","Mar","Apr","May","Jun"\
+             ,"Jul","Aug","Sep","Oct","Nov","Dec"/))
+     else if (opt.eq.-1) then
+        return((/"Jan","Feb","Mar","Apr","May","Jun"      \
+                ,"Jul","Aug","Sep","Oct","Nov","Dec","Jan"/))   ; extra
+     else if (opt.eq.1) then
+        return((/"January","February","March","April" \
+                ,"May","June","July","August"         \
+                ,"September","October","November","December"/))
+     end if     ; opt= 1
+     end if     ; opt=-1
+  end if        ; opt= 0  
+end
+
+;------
+; Names and abbreviations for seasons
+undef("season_name")
+function season_name (opt[1]:integer)
+;  seaName = season_name(1)    ; 5-month season
+begin
+ if (opt.eq.0) then
+       return((/"DJF","JFM","FMA","MAM","AMJ","MJJ" \
+               ,"JJA","JAS","ASO","SON","OND","NDJ"/))
+    else if (opt.eq.1) then
+       return((/"NDJFM","DJFMA","JFMAM","FMAMJ","MAMJJ","AMJJA" \
+               ,"MJJAS","JJASO","JASON","ASOND","SONDJ","ONDJF" /))
+    else if (opt.eq.2) then
+       return((/"DJF","MAM","JJA","SON"/)) 
+    else if (opt.eq.3) then
+       return((/"Winter","Spring","Autumn","Summer"/))
+    else if (opt.eq.4) then
+       return((/"Summer","Autumn","Winter","Spring"/))
+    end if     ; opt= 4
+    end if     ; opt= 3
+    end if     ; opt= 2
+    end if     ; opt= 1
+  end if       ; opt= 0  
+end
