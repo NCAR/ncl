@@ -12953,14 +12953,14 @@ function month_name (opt[1]:integer)
 begin
  if (opt.eq.0) then
      return((/"Jan","Feb","Mar","Apr","May","Jun"\
-             ,"Jul","Aug","Sep","Oct","Nov","Dec"/))
+             ,"Jul","Aug","Sep","Oct","Nov","Dec"/))         ; len=12
      else if (opt.eq.-1) then
         return((/"Jan","Feb","Mar","Apr","May","Jun"      \
-                ,"Jul","Aug","Sep","Oct","Nov","Dec","Jan"/))   ; extra
+                ,"Jul","Aug","Sep","Oct","Nov","Dec","Jan"/)); len=13
      else if (opt.eq.1) then
         return((/"January","February","March","April" \
                 ,"May","June","July","August"         \
-                ,"September","October","November","December"/))
+                ,"September","October","November","December"/)) ; len=12
      end if     ; opt= 1
      end if     ; opt=-1
   end if        ; opt= 0  
@@ -12974,19 +12974,23 @@ function season_name (opt[1]:integer)
 begin
  if (opt.eq.0) then
        return((/"DJF","JFM","FMA","MAM","AMJ","MJJ" \
-               ,"JJA","JAS","ASO","SON","OND","NDJ"/))
+               ,"JJA","JAS","ASO","SON","OND","NDJ"/))       ; length 12
+    else if (opt.eq.-1) then
+       return((/"DJF","JFM","FMA","MAM","AMJ","MJJ" \
+               ,"JJA","JAS","ASO","SON","OND","NDJ","DJF"/)) ; length 13
     else if (opt.eq.1) then
        return((/"NDJFM","DJFMA","JFMAM","FMAMJ","MAMJJ","AMJJA" \
-               ,"MJJAS","JJASO","JASON","ASOND","SONDJ","ONDJF" /))
+               ,"MJJAS","JJASO","JASON","ASOND","SONDJ","ONDJF" /)) ; len 12
     else if (opt.eq.2) then
-       return((/"DJF","MAM","JJA","SON"/)) 
+       return((/"DJF","MAM","JJA","SON"/))                   ; len 4
     else if (opt.eq.3) then
-       return((/"Winter","Spring","Autumn","Summer"/))
+       return((/"Winter","Spring","Autumn","Summer"/))       ; len 4
     else if (opt.eq.4) then
-       return((/"Summer","Autumn","Winter","Spring"/))
+       return((/"Summer","Autumn","Winter","Spring"/))       ; len4
     end if     ; opt= 4
     end if     ; opt= 3
     end if     ; opt= 2
     end if     ; opt= 1
+    end if     ; opt=-1
   end if       ; opt= 0  
 end
