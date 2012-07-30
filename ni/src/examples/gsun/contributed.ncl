@@ -344,10 +344,10 @@ begin
   end if
 
 ;---Error checking for rank
-  if(rto.gt.rfrom) then
-    print("Error: copy_VarCoords_n: arrays must be same rank, or second array must be subset in size of first array.")
-    return
-  end if
+;;  if(rto.gt.rfrom) then
+;;    print("Error: copy_VarCoords_n: arrays must be same rank, or second array must be subset in size of first array.")
+;;    return
+;;  end if
 
   dName = getvardims(var_from)
 
@@ -358,8 +358,12 @@ begin
         ifrom = i
         if (.not.ismissing(dName(ifrom)).and.dimf(ifrom).eq.dimt(ito)) then  
           var_to!ito = var_from!ifrom
-          if(iscoord(var_from,var_from!ifrom))
-            var_to&$var_to!ito$ = var_from&$var_from!ifrom$
+          if(iscoord(var_from,var_from!ifrom)) then
+            if(dimf(ifrom).eq.dimt(ito)) then
+              var_to&$var_to!ito$ = var_from&$var_from!ifrom$
+            else
+              print("Error: copy_VarCoords_n: dimension being copied must be the same size")
+            end if
           end if
         end if
         ito = ito + 1
