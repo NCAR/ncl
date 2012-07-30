@@ -1778,9 +1778,9 @@ begin
 
 ;---Get size of source and destination grids from weight file
   fwgt          = addfile(wgt_file_name, "r")
-  src_grid_dims = fwgt->src_grid_dims
+  src_grid_dims = fwgt->src_grid_dims(::-1)    ; dimensions are Fortran based
+  dst_grid_dims = fwgt->dst_grid_dims(::-1)
   src_grid_rank = dimsizes(src_grid_dims)
-  dst_grid_dims = fwgt->dst_grid_dims
   dst_grid_rank = dimsizes(dst_grid_dims)
 
 ;---More error checking
