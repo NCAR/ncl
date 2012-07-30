@@ -1855,8 +1855,8 @@ begin
   end if
 
 ;---dst_grid_rank must be 2
-  mlon = dst_grid_dims(0)
-  nlat = dst_grid_dims(1)
+  nlat = dst_grid_dims(0)
+  mlon = dst_grid_dims(1)
 
   if(isatt(opt,"DstGridType").and.opt@DstGridType.eq."curvilinear") then
     sd_regrid@lat2d = reshape(fwgt->yc_b,(/nlat,mlon/))
