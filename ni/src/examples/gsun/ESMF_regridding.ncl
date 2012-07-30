@@ -1767,8 +1767,10 @@ procedure ESMF_copy_varcoords(sd:numeric,sd_regrid:numeric,\
                               wgt_file_name[1]:string,opt[1]:logical)
 local fwgt, src_dims, src_ranks, dst_dims, dst_rank, mlon, nlat, \
       dst_grid_dims, dst_grid_rank, lat, lon, valid_grid_types, \
-      i, nleftmost, nleftdims, ii
+      i, nleftmost, nleftdims, ii, DEBUG
 begin
+  DEBUG = isatt_logical_true(opt,"Debug")
+
 ;---Error checking
   if (.not.isfilepresent(wgt_file_name)) then
     print("Warning: ESMF_copy_varcoords: cannot open '" + wgt_file_name + "'.") 
@@ -1877,7 +1879,7 @@ begin
 ;---Test for "rectilinear-ness"
      if (all(lat.eq.fwgt->yc_b(nlat/2::mlon)).and. \
          all(lon.eq.fwgt->xc_b(mlon:2*mlon-1))) then
-       if(isatt(opt,"Debug").and.opt@Debug) then
+       if(DEBUG) then
          print("ESMF_copy_varcoords: detected a rectilinear grid.")
          dq = str_get_dq()
          print("      If you know your grid is rectilinear, then set")
