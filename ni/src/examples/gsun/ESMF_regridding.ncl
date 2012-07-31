@@ -14,6 +14,10 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Modifications:
+;       31 Jul 2012:
+;           Added a check_grid_type function to check for valid
+;              grid types ("rectilinear","5deg","G64", etc) and
+;              return necessary information.
 ;       29 Jul 2012:
 ;            Fixed the code for copying coordinates to use the
 ;            values on the weights file instead of the description
@@ -449,6 +453,99 @@ begin
     MirrorP = po-dVec
     return(MirrorP)
 end     ; of mirrorP2P(...)
+
+;======================================================================
+; This functions checks the given string for a valid grid type:
+;    - "rectilinear"
+;    - "curvilinear"
+;    - "unstructred"
+;    - "1x1", "0.25x0.25", etc. 
+;    - "1deg", "0.25deg", etc.
+;    - "G64", "G128", tec.
+;
+; If a valid type is found, then it will be returned as a string:
+;  - "rectilinear" - returns "rectilinear"
+;  - "curvilinear" - returns "curvilinear"
+;  - "unstructured" - returns "unstructured"
+;
+; These grid types will return additional attributes:
+;  - "1x1", "0.25x0.25", etc - returns "deg" and nlat,nlon as attributes
+;  - "1deg", "0.25deg", etc  - returns "deg" and nlat,nlon as attributes
+;  - "G64", "G128", etc      - returns "gaussian" and the nlon number
+;
+; If a valid type is not found, then "none" is returned. 
+;======================================================================
+undef("check_grid_type")
+function check_grid_type(grid_type[1]:string)
+local str, dlat, dlon, nlon, ret
+begin
+  ret     = grid_type     ; this may change
+  bad_ret = "none"
+  if(any(grid_type.eq.(/"rectilinear","curvilinear","unstructured"/))) then
+    return(ret)
+  end if
+
+;---Check for "1x1", "2x3", "0.25x0.25" format
+  if(isStrSubset(grid_type,"x")) then
+    str = str_split(grid_type,"x")
+    if(dimsizes(str).ne.2) then
+      print("check_grid_type: invalid format for NxM type of grid.")
+      return(bad_ret)
+    end if
+    dlat = tofloat(str(0))
+    dlon = tofloat(str(1))
+    if(ismissing(dlat).or.ismissing(dlon)) then
+      print("check_grid_type: invalid format for NxM type of grid.")
+      return(bad_ret)
+    end if
+    ret      = "degree"
+    ret@dlat = dlat
+    ret@dlon = dlon
+    return(ret)
+  end if
+
+;---Check for "1deg", "0.25 deg" format
+  if(isStrSubset(grid_type,"deg")) then
+    str = str_split(grid_type,"deg")
+    if(dimsizes(str).ne.1) then
+      print("check_grid_type: invalid format for Ndeg type of grid.")
+      return(bad_ret)
+    end if
+    dlat = tofloat(str(0))
+    if(ismissing(dlat)) then
+      print("check_grid_type: invalid format for Ndeg type of grid.")
+      return(bad_ret)
+    end if
+    ret      = "degree"
+    ret@dlat = dlat
+    ret@dlon = dlat    ; same value for both
+    return(ret)
+  end if
+
+;---Check for "G64", "G 128" format
+  if(isStrSubset(grid_type,"G")) then
+    str = str_split(grid_type,"G")
+    if(dimsizes(str).ne.1) then
+      print("check_grid_type: invalid format for gaussian grid.")
+      return(bad_ret)
+    end if
+    nlon = tointeger(str(0))
+    if(ismissing(nlon)) then
+      print("check_grid_type: invalid format for gaussian grid.")
+      return(bad_ret)
+    end if
+    if((nlon%2).ne.0) then
+      print("check_grid_type: invalid number for gaussian grid.")
+      return(bad_ret)
+    end if
+    ret = "gaussian"
+    ret@nlon = nlon
+    ret@nlat = nlon/2
+    return(ret)
+  end if
+  print("check_grid_type: invalid grid type")
+  return(bad_ret)
+end 
 
 ;======================================================================
 ; This procedure is meant as a replacement for 
@@ -1413,58 +1510,18 @@ begin
   end if
 
 ;---Check for "1x1", "2x3", "0.25x0.25" format
-  if(isStrSubset(GridType,"x")) then
-    str = str_split(GridType,"x")
-    if(dimsizes(str).ne.2) then
-      print("latlon_to_SCRIP: invalid format for grid type")
-      exit
-    end if
-    dlat = tofloat(str(0))
-    dlon = tofloat(str(1))
-    if(ismissing(dlat).or.ismissing(dlon)) then
-      print("latlon_to_SCRIP: invalid format for grid type")
-      exit
-    end if
-    grid_type = "degree"
-    delete(str)
-  else if(isStrSubset(GridType,"deg")) then
-;---Check for "1deg", "0.25 deg" format
-    str = str_split(GridType,"deg")
-    if(dimsizes(str).ne.1) then
-      print("latlon_to_SCRIP: invalid format for grid type")
-      exit
-    end if
-    dlat = tofloat(str(0))
-    if(ismissing(dlat)) then
-      print("latlon_to_SCRIP: invalid format for grid type")
-      exit
-    end if
-    dlon = dlat
-    grid_type = "degree"
-    delete(str)
-  else if(isStrSubset(GridType,"G")) then
-;---Check for "G64", "G 128" format
-    str = str_split(GridType,"G")
-    if(dimsizes(str).ne.1) then
-      print("latlon_to_SCRIP: invalid format for grid type")
-      exit
-    end if
-    nlon = tointeger(str(0))
-    if(ismissing(nlon)) then
-      print("latlon_to_SCRIP: invalid value for gaussian grid")
-      exit
-    end if
-    if((nlon%2).ne.0) then
-      print("latlon_to_SCRIP: invalid value for gaussian grid")
-      exit
-    end if
-    nlat = nlon/2
-    grid_type = "gaussian"
-    delete(str)
-  else
+  grid_type = check_grid_type(GridType)
+  if(grid_type.eq."none") then
     print("latlon_to_SCRIP: invalid format for grid type")
     exit
   end if
+
+  if(grid_type.eq."degree") then
+    dlat = grid_type@dlat
+    dlon = grid_type@dlon
+  else if(grid_type.eq."gaussian") then
+    nlat = grid_type@nlat
+    nlon = grid_type@nlon
   end if
   end if
 
@@ -1765,9 +1822,8 @@ end     ; of retrieve_ESMF_lon
 undef("ESMF_copy_varcoords")
 procedure ESMF_copy_varcoords(sd:numeric,sd_regrid:numeric,\
                               wgt_file_name[1]:string,opt[1]:logical)
-local fwgt, src_dims, src_ranks, dst_dims, dst_rank, mlon, nlat, \
-      dst_grid_dims, dst_grid_rank, lat, lon, valid_grid_types, \
-      i, nleftmost, nleftdims, ii, DEBUG
+local fwgt, src_dims, src_ranks, dst_dims, dst_rank, mlon, nlat, i, ii, \
+      dst_grid_dims, dst_grid_rank, lat, lon, nleftmost, nleftdims, DEBUG
 begin
   DEBUG = isatt_logical_true(opt,"Debug")
 
@@ -1793,9 +1849,8 @@ begin
     return
   end if
 
-  valid_grid_types = (/"rectilinear","curvilinear","unstructured"/)
   if(isatt(opt,"DstGridType")) then
-    if(.not.any(opt@DstGridType.eq.valid_grid_types))
+    if(check_grid_type(opt@DstGridType).eq."none") then
       print("Warning: ESMF_copy_varcoords: don't recognize the grid type")
       print("         specified: '" + opt@DstGridType + "'.")
       print("         No coordinate information will be added.")
