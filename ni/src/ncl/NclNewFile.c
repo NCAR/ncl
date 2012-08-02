@@ -36,7 +36,9 @@ static NhlErrorTypes NewFileAddVarChunkCache(NclFile thefile, NclQuark varname,
                                              float cache_preemption);
 static NhlErrorTypes NewFileSetVarCompressLevel(NclFile infile, NclQuark varname,
                                                 int compress_level);
+/*
 static NhlErrorTypes NewFileAddGrp(NclFile thefile, NclQuark grpname);
+*/
 static NhlErrorTypes NewFileAddVar(NclFile thefile, NclQuark varname,
                                    NclQuark type, int n_dims, NclQuark *dimnames);
 static NhlErrorTypes NewFileWriteVarAtt(NclFile thefile, NclQuark var, NclQuark attname,
@@ -3310,10 +3312,10 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
                     else
                     {
                       /*
+                       *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                       *fprintf(stderr, "\tread whole compound.\n");
+                       *fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
                        */
-                        fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                        fprintf(stderr, "\tread whole compound.\n");
-                        fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
 
                         val = (*thefile->newfile.format_funcs->read_var)
                               (thefile->newfile.grpnode,
@@ -3327,10 +3329,10 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
                 else if((NCL_list == varnode->type) || (NCL_vlen == varnode->type))
                 {
                   /*
+                   *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                   *fprintf(stderr, "\tread list.\n");
+                   *fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
                    */
-                    fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                    fprintf(stderr, "\tread list.\n");
-                    fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
 
                     val = (*thefile->newfile.format_funcs->read_var)
                           (thefile->newfile.grpnode,
@@ -3343,10 +3345,10 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
                 else if(NCL_opaque == varnode->type)
                 {
                   /*
+                   *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                   *fprintf(stderr, "\tread opaque.\n");
+                   *fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
                    */
-                    fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                    fprintf(stderr, "\tread opaque.\n");
-                    fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
 
                     val = (*thefile->newfile.format_funcs->read_var)
                           (thefile->newfile.grpnode,
@@ -7462,7 +7464,8 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
     NclQuark dim_names[NCL_MAX_DIMENSIONS];
     NclAtt theatt;
     NclAttList *step;
-    int index,cindex;
+    int index = 0;
+    int cindex = 0;
     ng_size_t lhs_n_elem;    
     NclSelectionRecord tmp_sel;
     void *tmp_coord;
