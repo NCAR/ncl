@@ -368,14 +368,10 @@ NclGroup *_NclNewGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_
 
     group_out->newfile.grpnode = grpnode;
 
-    group_out->newfile.grpnode->fid = thefile->newfile.grpnode->fid;
     group_out->newfile.grpnode->path = thefile->newfile.fpath;
     group_out->newfile.grpnode->extension = thefile->newfile.file_ext_q;
-
   /*
-   *fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tgrpnode->path: <%s>\n", NrmQuarkToString(group_out->newfile.grpnode->path));
-   *fprintf(stderr, "\tgrpnode->extension: <%s>\n", NrmQuarkToString(group_out->newfile.grpnode->extension));
+    group_out->newfile.grpnode->fid = thefile->newfile.grpnode->fid;
    */
 
     if(NULL == group_out->newfile.grpnode->options)
