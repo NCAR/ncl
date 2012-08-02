@@ -6377,11 +6377,6 @@ NhlErrorTypes H5AddOpaque(void *rec, NclQuark opaque_name, NclQuark var_name,
     NclFileGrpNode *rootgrpnode = (NclFileGrpNode *) rec;
     NhlErrorTypes ret = NhlNOERROR;
     NclFileDimNode   *dimnode;
-    NclFileGrpNode   *grpnode;
-    NclFileGrpRecord *grprec;
-    char buffer[NCL_MAX_STRING];
-    int id;
-    int n = -1;
     int n_dims = 1;
 
     NclQuark          mem_name[1] = {opaque_name};
@@ -6421,7 +6416,7 @@ static NhlErrorTypes H5AddVlenVar(void* therec, NclQuark thevar,
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
     NclFileVarNode *varnode = NULL;
-    int i,j,ret;
+    int i,j;
 
   /*
    *fprintf(stderr, "\nEnter H5AddVlenVar, file: %s, line: %d\n", __FILE__, __LINE__);
