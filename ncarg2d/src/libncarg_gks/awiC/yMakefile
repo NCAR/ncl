@@ -55,8 +55,4 @@ EXTRA_CDEFINES = $(OS_DEF) $(MAJOR_DEF)
 PartialLibraryTarget(libncarg_gks.a,$(OBJS))
 PartialLibraryTarget(libbasegks.a,$(OBJS))
 
-#ifdef BuildCAIRO
-PartialLibraryTarget(libncarg_gks_cairo.a,$(OBJS))
-#endif
-
 DependTarget($(SRCS))

@@ -27,12 +27,10 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/App.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
-#include <ncarg/hlu/ImageWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/ScalarField.h>
@@ -55,7 +53,7 @@ char *yllabels[7] = {"90S","60S","30S","EQ","30N","60N","90N"};
  */
 int fillcolors[14] = {15,14,2,3,4,7,6,8,9,10,11,13,12,0};
 
-main()
+int main()
 {
   int i,j;
 /*
@@ -78,7 +76,7 @@ main()
   float lon[NPTS], lat[NPTS];
   long start[2], count[2], lonlen, latlen;
   ng_size_t icount[2];
-  char filename[256], recname[50];
+  char filename[256];
   const char *dir = _NGGetNCARGEnv("data");
 /*
  * Default is to display to an X11 window.
@@ -157,40 +155,39 @@ main()
 	}
 	else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
- * Create an XWorkstation object.
+ * Create an X11 workstation.
  */
 	  NhlRLClear(srlist);
 	  NhlRLSetString(srlist,"wkPause","True");
-	  NhlCreate(&workid,"cn14Work",NhlxWorkstationClass,0,srlist);
+	  NhlCreate(&workid,"cn14Work",NhlcairoWindowWorkstationClass,0,srlist);
 	}
-	else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
+	else if (!strcmp(wks_type,"oldps") || !strcmp(wks_type,"OLDPS")) {
 /*
- * Create a PostScript workstation.
+ * Create an older-style PostScript workstation.
  */
 	  NhlRLClear(srlist);
 	  NhlRLSetString(srlist,"wkPSFileName","./cn14c.ps");
 	  NhlCreate(&workid,"cn14Work",NhlpsWorkstationClass,0,srlist);
 	}
-	else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
+	else if (!strcmp(wks_type,"oldpdf") || !strcmp(wks_type,"OLDPDF")) {
 /*
- * Create a PDF workstation.
+ * Create an older-style PDF workstation.
  */
 	  NhlRLClear(srlist);
 	  NhlRLSetString(srlist,"wkPDFFileName","./cn14c.pdf");
 	  NhlCreate(&workid,"cn14Work",NhlpdfWorkstationClass,0,srlist);
 	}
-        else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
-                 !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+        else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF") ||
+                 !strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a cairo PS/PDF workstation.
  */
 	  NhlRLClear(srlist);
 	  NhlRLSetString(srlist,"wkFileName","./cn14c");
 	  NhlRLSetString(srlist,"wkFormat",(char*)wks_type);
-	  NhlCreate(&workid,"cn14Work",NhlcairoPSPDFWorkstationClass,0,srlist);
+	  NhlCreate(&workid,"cn14Work",NhlcairoDocumentWorkstationClass,0,srlist);
 	}
-        else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
-                 !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+        else if (!strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
 /*
  * Create a cairo PNG workstation.
  */
@@ -352,4 +349,5 @@ main()
 	NhlDraw(map);
 	NhlFrame(workid);
 	NhlClose();
+	return(0);
 }

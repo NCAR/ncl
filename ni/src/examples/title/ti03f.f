@@ -19,7 +19,7 @@ C
 
       external NhlFAppClass
       external NhlFTitleClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
@@ -73,33 +73,34 @@ C
      $        rlist,ierr)
       else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
-C Create an xworkstation object.
+C Create an X11 workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
-         call NhlFCreate(wid,'ti03Work',NhlFXWorkstationClass,
+         call NhlFCreate(wid,'ti03Work',
+     +        NhlFCairoWindowWorkstationClass,
      $        0,rlist,ierr)
-      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
+      else if (wks_type.eq."oldps".or.wks_type.eq."OLDPS") then
 C
-C Create a PS object.
+C Create an older-style PostScript workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPSFileName','./ti03f.ps',ierr)
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(wid,'ti03Work',NhlFPSWorkstationClass,0,
      $        rlist,ierr)
-      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
+      else if (wks_type.eq."oldpdf".or.wks_type.eq."OLDPDF") then
 C
-C Create a PDF object.
+C Create an older-style PDF workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPDFFileName','./ti03f.pdf',ierr)
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(wid,'ti03Work',NhlFPDFWorkstationClass,0,
      $        rlist,ierr)
-      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
-     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF".or.
+     +         wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a cairo PS/PDF object.
 C
@@ -109,8 +110,7 @@ C
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(wid,'ti03Work',
      $        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr)
-      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
-     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+      else if (wks_type.eq."png".or.wks_type.eq."PNG") then
 C
 C Create a cairo PNG object.
 C

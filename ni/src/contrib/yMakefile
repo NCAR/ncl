@@ -1,7 +1,7 @@
 #
 #	$Id: yMakefile,v 1.5 2010-03-17 16:06:02 haley Exp $
 #
-CONTRIB_SCRIPTS = calendar_decode2.ncl time_axis_labels.ncl ut_string.ncl run_cor.ncl kf_filter.ncl
+CONTRIB_SCRIPTS = calendar_decode2.ncl time_axis_labels.ncl ut_string.ncl run_cor.ncl kf_filter.ncl cd_string.ncl
 
 InstallTarget($(CONTRIB_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/contrib)
 

@@ -73,21 +73,21 @@ endif
 # value.                                          #
 #                                                 #
 #*************************************************#
-set file_types     = (ncgm x11 text ps eps epsi pdf newps png newpdf)
+set file_types     = (ncgm x11 text oldps eps epsi oldpdf ps png pdf)
 set orient_types = (port land)
 set color_types  = (color mono)
 set ws_types = (                                                   \
                 "ncgm.port.color"                                  \
                 "" "" "" "" "" ""                                  \
                 "x11.port.color" "" "text.port.color"              \
-                "pdf.port.color" "pdf.land.color"                  \
+                "oldpdf.port.color" "oldpdf.land.color"            \
                 "" "" "" "" "" "" ""                               \
-                "ps.port.color" "eps.port.color" "epsi.port.color" \
-                "ps.port.mono"  "eps.port.mono"  "epsi.port.mono"  \
-                "ps.land.color" "eps.land.color" "epsi.land.color" \
-                "ps.land.mono"  "eps.land.mono"  "epsi.land.mono"  \
+                "oldps.port.color" "eps.port.color" "epsi.port.color" \
+                "oldps.port.mono"  "eps.port.mono"  "epsi.port.mono"  \
+                "oldps.land.color" "eps.land.color" "epsi.land.color" \
+                "oldps.land.mono"  "eps.land.mono"  "epsi.land.mono"  \
                 "" "" "" "" "" "" "" ""                            \
-                "newps.port.color" "png.port.color" "newpdf.port.color" \
+                "ps.port.color" "png.port.color" "pdf.port.color" \
                )
 set suffix_names = (                                               \
                 "ncgm"                                             \
@@ -106,19 +106,19 @@ set default_msgs = (                                                       \
   "Metafile file is named"                                                 \
   "" "" "" "" "" ""                                                        \
   "" "" "Text dump file is named"                                          \
-  "Color portrait PDF file is named"                                       \
-  "Color landscape PDF file is named"                                      \
+  "Older-style color portrait PDF file is named"                                       \
+  "Older-style Color landscape PDF file is named"                                      \
   "" "" "" "" "" "" ""                                                     \
-  "Color portrait PostScript file is named"                                \
+  "Older-style color portrait PostScript file is named"                                \
   "Color portrait encapsulated PostScript file is named"                   \
   "Color portrait interchange encapsulated PostScript file is named"       \
-  "Monochrome portrait PostScript file is named"                           \
+  "Older-style monochrome portrait PostScript file is named"                           \
   "Monochrome portrait encapsulated PostScript file is named"              \
   "Monochrome portrait interchange encapsulated PostScript file is named"  \
-  "Color landscape PostScript file is named"                               \
+  "Older-style color landscape PostScript file is named"                               \
   "Color landscape encapsulated PostScript file is named"                  \
   "Color landscape interchange encapsulated PostScript file is named"      \
-  "Monochrome landscape PostScript file is named"                          \
+  "Older-style monochrome landscape PostScript file is named"                          \
   "Monochrome landscape encapsulated PostScript file is named"             \
   "Monochrome landscape interchange encapsulated PostScript file is named" \
   "" "" "" "" "" "" "" ""                                                  \
@@ -778,7 +778,6 @@ set list_cps = (c_pgkex21)
 set X11_option
 set ncarbd_flag
 set ngmathbd_flag
-set cairo_flag
 
 #*******************************#
 #                               #
@@ -1232,11 +1231,6 @@ invalid:
       shift
       breaksw
 
-    case "-cairo":
-      shift
-      set cairo_flag = "-cairo"
-      breaksw
-
     case "-ncarbd":
       shift
       set ncarbd_flag = "-ncarbd"
@@ -1504,9 +1498,6 @@ else
   set ws_type = $orig_ws_type
 endif
 
-# Is this a cairo workstation?
-if ("$ws_type" >= 40 && "$ws_type" <= "42" ) set cairo_flag = "-cairo"
-
 #******************************************#
 #                                          #
 # Determine if it's a C or Fortran example #
@@ -1627,7 +1618,7 @@ if ($?Unique && -f $graphic_file) goto theend
 # Set initial compiler flags #
 #                            #
 #****************************#
-set comp_flags = ($cairo_flag $ncarbd_flag $ngmathbd_flag $xoption)
+set comp_flags = ($ncarbd_flag $ngmathbd_flag $xoption)
 
 #**********************************#
 #                                  #

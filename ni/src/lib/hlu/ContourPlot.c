@@ -34,6 +34,7 @@
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/CnStdRenderer.h>
 #include <ncarg/hlu/CnTriMeshRenderer.h>
+#include <ncarg/hlu/color.h>
 
 #define Oset(field)     NhlOffset(NhlContourPlotLayerRec,contourplot.field)
 static NhlResource resources[] = {
@@ -178,6 +179,13 @@ static NhlResource resources[] = {
 	{NhlNcnLineColor, NhlCLineColor, NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(line_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNcnLinePalette, NhlCcnLinePalette, NhlTColorMap,
+		 sizeof(NhlPointer),Oset(line_palette),
+		 NhlTString,_NhlUSET((NhlPointer) NULL),_NhlRES_DEFAULT,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNcnSpanLinePalette, NhlCcnSpanLinePalette, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(span_line_palette),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNcnLineColors, NhlCcnLineColors, NhlTColorIndexGenArray,
 		 sizeof(NhlGenArray),Oset(line_colors),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -223,6 +231,13 @@ static NhlResource resources[] = {
 	{NhlNcnFillMode,NhlCcnFillMode,NhlTcnFillMode,sizeof(NhlcnFillMode),
 		 Oset(fill_mode),
  	 	NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+	{NhlNcnFillPalette, NhlCcnFillPalette, NhlTColorMap,
+		 sizeof(NhlPointer),Oset(fill_palette),
+		 NhlTString,_NhlUSET((NhlPointer) NULL),_NhlRES_DEFAULT,
+		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNcnSpanFillPalette, NhlCcnSpanFillPalette, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(span_fill_palette),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNcnFillBackgroundColor,NhlCFillBackgroundColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(fill_background_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlTRANSPARENT),0,NULL},
@@ -239,6 +254,9 @@ static NhlResource resources[] = {
 		 sizeof(NhlPointer),Oset(fill_colors),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNcnFillOpacityF, NhlCcnFillOpacityF, NhlTFloat,
+		sizeof(float),Oset(fill_opacity),
+		NhlTString,_NhlUSET("1.0"),0,NULL},
 	{NhlNcnMonoFillPattern, NhlCcnMonoFillPattern, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(mono_fill_pattern),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
@@ -356,7 +374,7 @@ static NhlResource resources[] = {
 		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNcnLineLabelFont,NhlCFont,NhlTFont, 
 		 sizeof(int),Oset(line_lbls.font),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) 21),0,NULL},
 	{NhlNcnLineLabelFontAspectF,NhlCFontAspectF,NhlTFloat, 
 		 sizeof(float),Oset(line_lbls.aspect),
 		 NhlTString, _NhlUSET("1.3125"),0,NULL},
@@ -375,7 +393,7 @@ static NhlResource resources[] = {
 		 NhlTString,_NhlUSET("-1.0"),0,NULL},
 	{NhlNcnLineLabelFuncCode,NhlCTextFuncCode,NhlTCharacter, 
 		 sizeof(char),Oset(line_lbls.fcode[0]),
-		 NhlTString, _NhlUSET(":"),0,NULL},
+		 NhlTString, _NhlUSET("~"),0,NULL},
 	{NhlNcnLineLabelBackgroundColor,NhlCFillBackgroundColor,
 		 NhlTColorIndex,sizeof(NhlColorIndex),
 		 Oset(line_lbls.back_color),NhlTImmediate,
@@ -418,7 +436,7 @@ static NhlResource resources[] = {
 		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNcnHighLabelFont,NhlCFont,NhlTFont, 
 		 sizeof(int),Oset(high_lbls.font),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) 21),0,NULL},
 	{NhlNcnHighLabelFontColor,NhlCFontColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(high_lbls.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
@@ -440,7 +458,7 @@ static NhlResource resources[] = {
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNcnHighLabelFuncCode,NhlCTextFuncCode,NhlTCharacter, 
 		 sizeof(char),Oset(high_lbls.fcode[0]),
-		 NhlTString, _NhlUSET(":"),0,NULL},
+		 NhlTString, _NhlUSET("~"),0,NULL},
 	{NhlNcnHighLabelBackgroundColor,NhlCFillBackgroundColor,
 		  NhlTColorIndex,sizeof(NhlColorIndex),
 		  Oset(high_lbls.back_color),NhlTImmediate,
@@ -483,7 +501,7 @@ static NhlResource resources[] = {
 		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNcnLowLabelFont,NhlCFont,NhlTFont, 
 		 sizeof(int),Oset(low_lbls.font),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) 21),0,NULL},
 	{NhlNcnLowLabelFontColor,NhlCFontColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(low_lbls.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
@@ -504,7 +522,7 @@ static NhlResource resources[] = {
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNcnLowLabelFuncCode,NhlCTextFuncCode,NhlTCharacter, 
 		 sizeof(char),Oset(low_lbls.fcode[0]),
-		 NhlTString, _NhlUSET(":"),0,NULL},
+		 NhlTString, _NhlUSET("~"),0,NULL},
 	{NhlNcnLowLabelBackgroundColor,NhlCFillBackgroundColor,
 		  NhlTColorIndex,sizeof(NhlColorIndex),
 		  Oset(low_lbls.back_color),NhlTImmediate,
@@ -551,7 +569,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlACROSS),0,NULL},
 	{NhlNcnInfoLabelFont,NhlCFont,NhlTFont, 
 		 sizeof(int),Oset(info_lbl.font),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) 21),0,NULL},
 	{NhlNcnInfoLabelFontColor,NhlCFontColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(info_lbl.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
@@ -572,7 +590,7 @@ static NhlResource resources[] = {
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNcnInfoLabelFuncCode,NhlCTextFuncCode,NhlTCharacter, 
 		 sizeof(char),Oset(info_lbl.fcode[0]),
-		 NhlTString, _NhlUSET(":"),0,NULL},
+		 NhlTString, _NhlUSET("~"),0,NULL},
 	{NhlNcnInfoLabelBackgroundColor,NhlCFillBackgroundColor,
 		  NhlTColorIndex,sizeof(NhlColorIndex),
 		  Oset(info_lbl.back_color),NhlTImmediate,
@@ -639,7 +657,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlACROSS),0,NULL},
 	{NhlNcnConstFLabelFont,NhlCFont,NhlTFont, 
 		 sizeof(int),Oset(constf_lbl.font),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) 21),0,NULL},
 	{NhlNcnConstFLabelFontColor,NhlCFontColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(constf_lbl.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
@@ -661,7 +679,7 @@ static NhlResource resources[] = {
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNcnConstFLabelFuncCode,NhlCTextFuncCode,NhlTCharacter, 
 		 sizeof(char),Oset(constf_lbl.fcode[0]),
-		 NhlTString, _NhlUSET(":"),0,NULL},
+		 NhlTString, _NhlUSET("~"),0,NULL},
 	{NhlNcnConstFLabelBackgroundColor,NhlCFillBackgroundColor,
 		 NhlTColorIndex,sizeof(NhlColorIndex),
 		 Oset(constf_lbl.back_color),NhlTImmediate,
@@ -826,7 +844,7 @@ static NhlResource resources[] = {
 		 (NhlFreeFunc)NhlFreeGenArray},
 	{NhlNlbLabelFuncCode, NhlCTextFuncCode, NhlTCharacter,
 		 sizeof(char),Oset(lbar_func_code),
-		 NhlTString,_NhlUSET(":"),_NhlRES_INTERCEPTED,NULL },
+		 NhlTString,_NhlUSET("~"),_NhlRES_INTERCEPTED,NULL },
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(lbar_alignment_set),NhlTImmediate,
 		_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
@@ -846,7 +864,7 @@ static NhlResource resources[] = {
 		 (NhlFreeFunc)NhlFreeGenArray},
 	{NhlNlgLabelFuncCode, NhlCTextFuncCode, NhlTCharacter,
 		 sizeof(char),Oset(lgnd_func_code),
-		 NhlTString,_NhlUSET(":"),_NhlRES_INTERCEPTED,NULL },
+		 NhlTString,_NhlUSET("~"),_NhlRES_INTERCEPTED,NULL },
 	{NhlNlgLineLabelsOn,NhlClgLineLabelsOn,NhlTBoolean,
 		 sizeof(NhlBoolean), Oset(draw_lgnd_line_lbls),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
@@ -919,7 +937,6 @@ static NhlErrorTypes ContourPlotSetValues(
         int             /* num_args*/
 #endif
 );
-
 
 static NhlErrorTypes    ContourPlotGetValues(
 #if	NhlNeedProto
@@ -1320,7 +1337,7 @@ static NhlErrorTypes	CheckColorArray(
 	int		init_count,
 	int		last_count,
 	int		**gks_colors,
-	NhlString	resource_name,
+	NrmQuark	resource_name,
 	NhlString	entry_name
 #endif
 );
@@ -1340,6 +1357,9 @@ static NhlErrorTypes GetData(
 	int		*second_dim
 #endif
 );
+
+extern void NGCALLF(gfa,GFA)(int *,float *, float *);
+extern void NGCALLF(gpl,GPL)(int *, float *, float *);
 
 
 NhlContourPlotDataDepClassRec NhlcontourPlotDataDepClassRec = {
@@ -1458,9 +1478,11 @@ static NrmQuark Qdashindex = NrmNULLQUARK;
 static NrmQuark Qstring = NrmNULLQUARK;
 static NrmQuark	Qlevels = NrmNULLQUARK; 
 static NrmQuark	Qlevel_flags = NrmNULLQUARK; 
+static NrmQuark	Qfill_palette = NrmNULLQUARK;
 static NrmQuark	Qfill_colors = NrmNULLQUARK;
 static NrmQuark	Qfill_patterns = NrmNULLQUARK;
 static NrmQuark	Qfill_scales = NrmNULLQUARK;
+static NrmQuark	Qline_palette = NrmNULLQUARK; 
 static NrmQuark	Qline_colors = NrmNULLQUARK; 
 static NrmQuark	Qline_dash_patterns = NrmNULLQUARK; 
 static NrmQuark	Qline_thicknesses = NrmNULLQUARK; 
@@ -1705,9 +1727,11 @@ ContourPlotClassInitialize
 	Qdashindex = NrmStringToQuark(NhlTDashIndex);
 	Qlevels = NrmStringToQuark(NhlNcnLevels);
 	Qlevel_flags = NrmStringToQuark(NhlNcnLevelFlags);
+	Qfill_palette = NrmStringToQuark(NhlNcnFillPalette);
 	Qfill_colors = NrmStringToQuark(NhlNcnFillColors);
 	Qfill_patterns = NrmStringToQuark(NhlNcnFillPatterns);
 	Qfill_scales = NrmStringToQuark(NhlNcnFillScales);
+	Qline_palette = NrmStringToQuark(NhlNcnLinePalette);
 	Qline_colors = NrmStringToQuark(NhlNcnLineColors);
 	Qline_dash_patterns = NrmStringToQuark(NhlNcnLineDashPatterns);
 	Qline_thicknesses = NrmStringToQuark(NhlNcnLineThicknesses);
@@ -2633,6 +2657,11 @@ static NhlErrorTypes    ContourPlotGetValues
                         count = cnp->level_count;
                         type = NhlNcnLevelFlags;
                 }
+                else if (args[i].quark == Qfill_palette) {
+                        ga = cnp->fill_palette;
+			count = (ga) ? cnp->fill_palette->num_elements : 0;
+                        type = NhlNcnFillPalette;
+                }
                 else if (args[i].quark == Qfill_colors) {
                         ga = cnp->fill_colors;
                         count = cnp->fill_count;
@@ -2647,6 +2676,11 @@ static NhlErrorTypes    ContourPlotGetValues
                         ga = cnp->fill_scales;
                         count = cnp->fill_count;
                         type = NhlNcnFillScales;
+                }
+                else if (args[i].quark == Qline_palette) {
+                        ga = cnp->line_palette;
+                        count = ga ? cnp->line_palette->num_elements : 0;
+                        type = NhlNcnLinePalette;
                 }
                 else if (args[i].quark == Qline_colors) {
                         ga = cnp->line_colors;
@@ -2908,6 +2942,8 @@ NhlLayer inst;
 	NhlFreeGenArray(cnp->line_thicknesses);
 	NhlFreeGenArray(cnp->llabel_strings);
 	NhlFreeGenArray(cnp->llabel_colors);
+	NhlFreeGenArray(cnp->fill_palette);
+	NhlFreeGenArray(cnp->line_palette);
         if (cnp->gks_llabel_colors)
                 NhlFree(cnp->gks_llabel_colors);
         if (cnp->gks_line_colors)
@@ -3604,7 +3640,6 @@ static NhlErrorTypes ContourPlotPostDraw
 }
 
 
-
 /*
  * Function:	cnDraw
  *
@@ -3651,7 +3686,7 @@ static NhlErrorTypes cnDraw
         cnp->wk_active = True;
 
         if (cnl->view.use_segments && ! cnp->output_gridded_data) {
-                NhlTransDat **trans_dat_pp;
+                NhlTransDat **trans_dat_pp = NULL;
                 switch (order) {
                     case NhlPREDRAW:
                             trans_dat_pp = &cnp->predraw_dat;
@@ -7750,6 +7785,7 @@ static NhlErrorTypes    AdjustText
 
 	return ret;
 }
+
 /*
  * Function:  ManageDynamicArrays
  *
@@ -7804,6 +7840,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	float *levels = NULL;
 	NhlBoolean levels_modified = False, flags_modified = False;
 	NhlBoolean line_init;
+	NhlBoolean palette_set,span_palette_set,colors_set;
 
 	entry_name =  init ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
@@ -7957,28 +7994,89 @@ static NhlErrorTypes    ManageDynamicArrays
 	}
 
 /*=======================================================================*/
+
+/*
+ * Fill palette
+ */
+	count = cnp->fill_count;
+	palette_set = False;
+	span_palette_set = False;
+	if ((init && cnp->fill_palette) ||
+	    _NhlArgIsSet(args,num_args,NhlNcnFillPalette)) {
+		if (! init && ocnp->fill_palette != NULL)
+			NhlFreeGenArray(ocnp->fill_palette);
+		if (cnp->fill_palette != NULL) {
+			if ((ga =  _NhlCopyGenArray(cnp->fill_palette,True)) == NULL) {
+				e_text = "%s: error copying GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
+			}
+			cnp->fill_palette = ga;
+		}
+		palette_set = True;
+	}
+	if (init || cnp->span_fill_palette != ocnp->span_fill_palette) {
+		span_palette_set = True;
+	}
+
+/*=======================================================================*/
 	
 /*
  * Fill colors
  */
-
-	ga = init ? NULL : ocnp->fill_colors;
 	count = cnp->fill_count;
-	subret = ManageGenArray(&ga,count,cnp->fill_colors,Qcolorindex,NULL,
-				&old_count,&init_count,&need_check,&changed,
-				NhlNcnFillColors,entry_name);
-
-        if (init || cnp->fill_count > ocnp->fill_count)
-                need_check = True;
-	if ((ret = MIN(ret,subret)) < NhlWARNING)
-		return ret;
-	ocnp->fill_colors = changed ? NULL : cnp->fill_colors;
-	cnp->fill_colors = ga;
+	need_check = False;
+	ga = NULL;
+	colors_set = cnp->fill_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnFillColors));
+	if (cnp->fill_palette) {
+		if (colors_set) {
+			if ((ga =  _NhlCopyGenArray(cnp->fill_colors,True)) == NULL) {
+				e_text = "%s: error copying GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
+			}
+			subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)cnew,ga,cnp->fill_palette,entry_name);
+			if (! init && ocnp->fill_colors != NULL)
+				NhlFreeGenArray(ocnp->fill_colors);
+			cnp->fill_colors = ga;
+			need_check = True;
+		}
+		else if (palette_set || (cnp->fill_count != ocnp->fill_count)) {
+			subret = _NhlSetColorsFromPalette((NhlLayer)cnew,cnp->fill_palette,count,
+						      cnp->span_fill_palette,&ga,entry_name);
+			if (! init && ocnp->fill_colors != NULL)
+				NhlFreeGenArray(ocnp->fill_colors);
+			cnp->fill_colors = ga;
+			need_check = True;
+		}
+		init_count = old_count = count;
+        }
+	else if ( (! colors_set) && 
+		  (span_palette_set || (cnp->fill_count != ocnp->fill_count))) {
+                subret = _NhlSetColorsFromWorkstationColorMap((NhlLayer)cnew,&ga,count,cnp->span_fill_palette,entry_name);
+		if (! init && ocnp->fill_colors != NULL)
+			NhlFreeGenArray(ocnp->fill_colors);
+		cnp->fill_colors = ga;
+		need_check = True;
+		init_count = old_count = count;
+	}
+	else {  /* if nothing has changed this will leave it along */
+		ga = init ? NULL : ocnp->fill_colors;
+		subret = ManageGenArray(&ga,count,cnp->fill_colors,Qcolorindex,NULL,
+					&old_count,&init_count,&need_check,&changed,
+					NhlNcnFillColors,entry_name);
+		if (init || cnp->fill_count > ocnp->fill_count)
+			need_check = True;
+		if ((ret = MIN(ret,subret)) < NhlWARNING)
+			return ret;
+		ocnp->fill_colors = changed ? NULL : cnp->fill_colors;
+		cnp->fill_colors = ga;
+	}
 
 	if (need_check) {
 		subret = CheckColorArray(cnew,ga,count,init_count,old_count,
 					 &cnp->gks_fill_colors,
-					 NhlNcnFillColors,entry_name);
+					 Qfill_colors,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 			return ret;
 	}
@@ -8057,30 +8155,96 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 	}
 /*=======================================================================*/
+
+
+/*
+ * Line palette
+ */
+	count = cnp->level_count;
+	palette_set = False;
+	span_palette_set = False;
+	if ((init && cnp->line_palette) ||
+	    _NhlArgIsSet(args,num_args,NhlNcnLinePalette)) {
+		if (! init && ocnp->line_palette != NULL)
+			NhlFreeGenArray(ocnp->line_palette);
+		if (cnp->line_palette != NULL) {
+			if ((ga =  _NhlCopyGenArray(cnp->line_palette,True)) == NULL) {
+				e_text = "%s: error copying GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
+			}
+			cnp->line_palette = ga;
+		}
+		palette_set = True;
+	}
+	if (init || cnp->span_line_palette != ocnp->span_line_palette) {
+		span_palette_set = True;
+	}
+
+
+/*=======================================================================*/
 	
 /*
  * Line colors
  */
-	ga = init ? NULL : ocnp->line_colors;
 	count = cnp->level_count;
-	subret = ManageGenArray(&ga,count,cnp->line_colors,Qcolorindex,NULL,
-				&old_count,&init_count,&need_check,&changed,
-				NhlNcnLineColors,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING)
-		return ret;
-        if (init || cnp->level_count > ocnp->level_count)
-                need_check = True;
-	ocnp->line_colors = changed ? NULL : cnp->line_colors;
-	cnp->line_colors = ga;
+	need_check = False;
+	ga = NULL;
+	colors_set = cnp->line_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnLineColors));
+	if (cnp->line_palette) {
+		if (colors_set) {
+			if ((ga =  _NhlCopyGenArray(cnp->line_colors,True)) == NULL) {
+				e_text = "%s: error copying GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
+			}
+			subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)cnew,ga,cnp->line_palette,entry_name);
+			if (! init && ocnp->line_colors != NULL)
+				NhlFreeGenArray(ocnp->line_colors);
+			cnp->line_colors = ga;
+			need_check = True;
+			init_count = old_count = count;
+		}
+		else if (palette_set || (cnp->level_count != ocnp->level_count)) {
+			subret = _NhlSetColorsFromPalette((NhlLayer)cnew,cnp->line_palette,count,
+						      cnp->span_line_palette,&ga,entry_name);
+			if (! init && ocnp->line_colors != NULL)
+				NhlFreeGenArray(ocnp->line_colors);
+			cnp->line_colors = ga;
+			need_check = True;
+			init_count = old_count = count;
+		}
+        }
+	else if ( (! colors_set) && 
+		  (span_palette_set || (cnp->level_count != ocnp->level_count))) {
+                subret = _NhlSetColorsFromWorkstationColorMap((NhlLayer)cnew,&ga,count,cnp->span_line_palette,entry_name);
+		if (! init && ocnp->line_colors != NULL)
+			NhlFreeGenArray(ocnp->line_colors);
+		cnp->line_colors = ga;
+		need_check = True;
+		init_count = old_count = count;
+	}
+	else {
+		ga = init ? NULL : ocnp->line_colors;
+		subret = ManageGenArray(&ga,count,cnp->line_colors,Qcolorindex,NULL,
+					&old_count,&init_count,&need_check,&changed,
+					NhlNcnLineColors,entry_name);
+		if (init || cnp->level_count > ocnp->level_count)
+			need_check = True;
+		if ((ret = MIN(ret,subret)) < NhlWARNING)
+			return ret;
+		ocnp->line_colors = changed ? NULL : cnp->line_colors;
+		cnp->line_colors = ga;
+	}
 
-		
 	if (need_check) {
 		subret = CheckColorArray(cnew,ga,count,init_count,old_count,
 					 &cnp->gks_line_colors,
-					 NhlNcnLineColors,entry_name);
+					 Qline_colors,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 			return ret;
 	}
+
 /*=======================================================================*/
 
 /*
@@ -8282,35 +8446,56 @@ static NhlErrorTypes    ManageDynamicArrays
 /*
  * Line Label colors
  */
-
-	ga = init ? NULL : ocnp->llabel_colors;
 	count = cnp->level_count;
-	subret = ManageGenArray(&ga,count,cnp->llabel_colors,Qcolorindex,NULL,
-				&old_count,&init_count,&need_check,&changed,
-				NhlNcnLineLabelFontColors,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING)
-		return ret;
-        if (init || cnp->level_count > ocnp->level_count)
-                need_check = True;
-	ocnp->llabel_colors = changed ? NULL : cnp->llabel_colors;
-	cnp->llabel_colors = ga;
-
+	need_check = False;
+	ga = NULL;
+	if (cnp->line_palette && cnp->llabel_colors && (init || _NhlArgIsSet(args,num_args,NhlNcnLineLabelFontColors))) {
+                subret = _NhlSetColorsFromIndexAndPalette((NhlLayer)cnew,cnp->llabel_colors,cnp->line_palette,entry_name);
+		if (! init && ocnp->llabel_colors != NULL)
+			NhlFreeGenArray(ocnp->llabel_colors);
+		if ((ga =  _NhlCopyGenArray(cnp->llabel_colors,True)) == NULL) {
+			e_text = "%s: error copying GenArray";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(NhlFATAL);
+		}
+		cnp->llabel_colors = ga;
+		need_check = True;
+		init_count = old_count = cnp->level_count;
+        }
+	else if (palette_set || (cnp->line_palette && (cnp->level_count != ocnp->level_count))) {
+		if ((cnp->llabel_colors == NULL) || 
+		    (! _NhlArgIsSet(args,num_args,NhlNcnLineLabelFontColors))) {
+			subret = _NhlSetColorsFromPalette((NhlLayer)cnew,cnp->line_palette,cnp->level_count,
+						      cnp->span_line_palette,&ga,entry_name);
+			if (! init && ocnp->llabel_colors) {
+				NhlFreeGenArray(ocnp->llabel_colors);
+				ocnp->llabel_colors = NULL;
+			}
+			cnp->llabel_colors = ga;
+			need_check = True;
+			init_count = old_count = cnp->level_count;
+		}
+	}
+	else {
+		ga = init ? NULL : ocnp->llabel_colors;
+		subret = ManageGenArray(&ga,count,cnp->llabel_colors,Qcolorindex,NULL,
+					&old_count,&init_count,&need_check,&changed,
+					NhlNcnLineLabelFontColors,entry_name);
+		if (init || cnp->level_count > ocnp->level_count)
+			need_check = True;
+		if ((ret = MIN(ret,subret)) < NhlWARNING)
+			return ret;
+		ocnp->llabel_colors = changed ? NULL : cnp->llabel_colors;
+		cnp->llabel_colors = ga;
+	}
 
 	if (need_check) {
 		subret = CheckColorArray(cnew,ga,count,init_count,old_count,
 					 &cnp->gks_llabel_colors,
-					 NhlNcnLineLabelFontColors,entry_name);
+					 Qllabel_colors,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 			return ret;
 	}
-
-	if (cnp->high_use_line_attrs && cnp->line_lbls.on) {
-		cnp->high_lbls.color = cnp->line_lbls.color; 
-	}
-	if (cnp->low_use_high_attrs && cnp->high_lbls.on) {
-		cnp->low_lbls.color = cnp->high_lbls.color;
-	}
-	
 
 /*=======================================================================*/
 
@@ -8601,7 +8786,7 @@ static NhlErrorTypes	CheckColorArray
 	int		init_count,
 	int		last_count,
 	int		**gks_colors,
-	NhlString	resource_name,
+	NrmQuark        resource_name,
 	NhlString	entry_name)
 #else
 (cl,ga,count,init_count,last_count,gks_colors,resource_name,entry_name)
@@ -8611,7 +8796,7 @@ static NhlErrorTypes	CheckColorArray
 	int		init_count;
 	int		last_count;
 	int		**gks_colors;
-	NhlString	resource_name;
+	NrmQuark	resource_name;
 	NhlString	entry_name;
 #endif
 {
@@ -8636,11 +8821,13 @@ static NhlErrorTypes	CheckColorArray
 	}
 
 	for (i=0; i<count; i++) {
-                if (ip[i] == NhlTRANSPARENT)
+                if (ip[i] == NhlTRANSPARENT) {
                         (*gks_colors)[i] = NhlTRANSPARENT;
-                else
+		}
+	        else {
                         (*gks_colors)[i] =
                                 _NhlGetGksCi(cl->base.wkptr,ip[i]);
+		}
 	}
 	return ret;
 }
@@ -8929,7 +9116,7 @@ static NhlErrorTypes    SetupLevelsManual
 	if (! cnp->min_level_set) {
 		do_automatic = True;
 	}
-                
+
 	if (cnp->level_spacing <= 0.0) {
 	e_text = "%s: Invalid level spacing value: using AUTOMATICLEVELS mode";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);

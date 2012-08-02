@@ -10,7 +10,7 @@ g01dmp.f  g01esc.f  g01fa.f   g01flb.f  g01iac.f  g01iws.f  g01mio.f  g01msg.f \
 g01pat.f  g01pbl.f  g01pl.f   g01pm.f   g01sas.f  g01seg.f  g01siq.f  g01snp.f \
 g01tx.f   g01wdr.f  g01wkt.f  gflcnv.f  giargs.f  ginlod.f  gkasci.f \
 gmflod.f  gmpart.f  gopnic.f  gputmd.f  gputni.f  gputpr.f  gputps.f  gtnlen.f \
-gupasf.f  gupdva.f  gupdvi.f  gupdvr.f 
+gupasf.f  gupdva.f  gupdvi.f  gupdvr.f  argb2ci.f
 
 GENERIC_OBJS = \
 g01bkd.o  g01ca.o   g01clp.o  g01clw.o  g01ctb.o  g01d2r.o  g01d2s.o  g01diq.o \
@@ -18,7 +18,7 @@ g01dmp.o  g01esc.o  g01fa.o   g01flb.o  g01iac.o  g01iws.o  g01mio.o  g01msg.o \
 g01pat.o  g01pbl.o  g01pl.o   g01pm.o   g01sas.o  g01seg.o  g01siq.o  g01snp.o \
 g01tx.o   g01wdr.o  g01wkt.o  gflcnv.o  giargs.o  ginlod.o  gkasci.o \
 gmflod.o  gmpart.o  gopnic.o  gputmd.o  gputni.o  gputpr.o  gputps.o  gtnlen.o \
-gupasf.o  gupdva.o  gupdvi.o  gupdvr.o 
+gupasf.o  gupdva.o  gupdvi.o  gupdvr.o  argb2ci.o
 
 EXTRA_CDEFINES   = -DNGTMPDIR='"$(NGTMPDIR)"' -DDEFAULT_GKS_BUFSIZE='$(GKS_BUFFER_SIZE)'
 
@@ -32,10 +32,6 @@ OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS)
 PartialLibraryTarget(libncarg_gks.a, $(OBJECTS))
 PartialLibraryTarget(libbasegks.a, $(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
-
-#ifdef BuildCAIRO
-PartialLibraryTarget(libncarg_gks_cairo.a, $(OBJECTS))
-#endif
 
 DependTarget(wks.c)
 
@@ -315,3 +311,7 @@ gupdvr.o : gupdvr.f \
    g01rqa.h \
    g01ast.h \
    g01adc.h 
+
+argb2ci.o : argb2ci.f \
+   g01wsl.h
+

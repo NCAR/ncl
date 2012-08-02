@@ -52,6 +52,7 @@ extern "C" {
 #include "TypeSupport.h"
 #include "HLUSupport.h"
 #include "ListSupport.h"
+#include "NclProf.h"
 #include <errno.h>
 
 extern int cmd_line;
@@ -2289,7 +2290,9 @@ void CallFUNC_CALL_OP(void) {
 			* Doesn't leave anything on the stack if an error has occurred
 			*/	
 				_NclPushExecute();
+				NCL_PROF_PFENTER(func->name);
 				estatus = _NclFuncCallOp(func,caller_level);
+				NCL_PROF_PFEXIT(func->name);
 				_NclPopExecute();
 			}
 
@@ -2509,7 +2512,9 @@ void CallPROC_CALL_OP(void) {
 			
 				caller_level = _NclFinishFrame();	
 				_NclPushExecute();
+				NCL_PROF_PFENTER(proc->name);
 				estatus = _NclProcCallOp(proc,caller_level);
+				NCL_PROF_PFEXIT(proc->name);
 				_NclPopExecute();
 			}
 
@@ -2527,7 +2532,10 @@ void CallINTRINSIC_FUNC_CALL(void) {
 */
 				caller_level = _NclFinishFrame();	
 				if(((NclSymbol*)*ptr)->u.bfunc != NULL) {
+					NclSymbol *func = (NclSymbol *)(*ptr);
+					NCL_PROF_PFENTER(func->name);
 					ret = (*((NclSymbol*)*ptr)->u.bfunc->thefunc)();
+					NCL_PROF_PFEXIT(func->name);
 /*
 * should actually map values back
 */
@@ -2581,7 +2589,10 @@ void CallINTRINSIC_PROC_CALL(void) {
 */
 				caller_level = _NclFinishFrame();	
 				if(((NclSymbol*)*ptr)->u.bproc != NULL) {
+					NclSymbol *proc = (NclSymbol *)(*ptr);
+					NCL_PROF_PFENTER(proc->name);
 					ret = (*((NclSymbol*)*ptr)->u.bproc->theproc)();
+					NCL_PROF_PFEXIT(proc->name);
 					if(ret < NhlWARNING) {
 						estatus = ret;
 					}
@@ -5189,7 +5200,7 @@ void CallASSIGN_FILE_VAR_OP(void) {
 							int ndims = 0;
 
 #ifdef USE_NETCDF4_FEATURES
-							if(use_new_hlfs)
+							if(_isNewFileStructure(file))
 							{
 								NclNewFile newfile = (NclNewFile) file;
 								NclFileVarNode *varnode;
@@ -5547,8 +5558,7 @@ void CallFILE_VAR_OP(void) {
 					return;
 				}
 
-#ifdef USE_NETCDF4_FEATURES
-				if(use_new_hlfs)
+				if(_isNewFileStructure(file))
 				{
 					NclNewFile newfile = (NclNewFile)file;
 					NclFileVarNode *varnode = NULL;
@@ -5588,7 +5598,6 @@ void CallFILE_VAR_OP(void) {
 
 				}
 				else
-#endif
 				{
 					index = _NclFileIsVar(file,var);
 
@@ -7108,6 +7117,9 @@ NclExecuteReturnStatus _NclExecute
 	unsigned long start_offset;
 #endif
 {
+	int cline;
+	char *cfile = NULL;
+	NclQuark cfileq = -1, nxt_fileq;
 
 	estatus = NhlNOERROR;
 	machine = _NclGetCurrentMachine();
@@ -7116,6 +7128,14 @@ NclExecuteReturnStatus _NclExecute
 	fptr = _NclGetCurrentFileNameRec() + start_offset;
 	level++;
 
+	cline = *lptr;
+	if(fptr){
+		/* FIXME: We currently don't profile cmd lines */
+		cfile = *fptr;
+		cfileq = NrmStringToQuark(cfile);
+		NCL_PROF_LENTER(cfile, cline);	
+	}
+	
 	while(1) {
 		switch(*ptr) {
 /****************************
@@ -7126,6 +7146,9 @@ NclExecuteReturnStatus _NclExecute
 			}
 			break;
 			case STOPSEQ:
+				if(cfile){
+					NCL_PROF_LEXIT(cfile, cline);	
+				}
 				level--;
 				return(Ncl_STOPS);
 			case ENDSTMNT_OP:
@@ -7150,6 +7173,9 @@ NclExecuteReturnStatus _NclExecute
 			break;
 			case CRETURN_OP : 
 			{
+				if(cfile){
+					NCL_PROF_LEXIT(cfile, cline);	
+				}
 				level--;
 				return(Ncl_STOPS);
 			}
@@ -7163,6 +7189,9 @@ NclExecuteReturnStatus _NclExecute
 				if(ret< NhlWARNING) {
 					estatus = NhlFATAL;
 				} else {
+					if(cfile){
+						NCL_PROF_LEXIT(cfile, cline);	
+					}
 					level--;
 					return(Ncl_STOPS);
 				}
@@ -7542,6 +7571,17 @@ NclExecuteReturnStatus _NclExecute
 		}	
 		estatus = NhlNOERROR;	
 		ptr++;lptr++;fptr++;
+
+		nxt_fileq = (*fptr) ? (NrmStringToQuark(*fptr)) : -1;
+		if(cfile && ((cline != *lptr) || (cfileq != nxt_fileq))){
+			NCL_PROF_LEXIT(cfile, cline);	
+			cline = *lptr;
+			cfile = *fptr;
+			if(cfile){
+				cfileq = NrmStringToQuark(cfile);
+				NCL_PROF_LENTER(cfile, cline);	
+			}
+		}
 	}
 }
 

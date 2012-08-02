@@ -186,7 +186,7 @@ XWDRead(ras)
 	static unsigned		buffer_size;	/* size of image	*/
 	unsigned char		*cptr1, *cptr2;
 	int			status, i;
-	XColor			xcolors[256];	/* color palette in X dump */
+	XWDColor		xcolors[256];	/* color palette in X dump */
 	int			win_name_size;	/* not used */
 	unsigned		image_size();
 	static unsigned long 	swaptest = 1;
@@ -303,8 +303,8 @@ XWDRead(ras)
 	/* Read in the color palette */
 
 	status  = fread((char *) xcolors, 1, 
-		(int) (ras->ncolor * sizeof(XColor)), ras->fp);
-	if (status != ras->ncolor * sizeof(XColor)) {
+		(int) (ras->ncolor * sizeof(XWDColor)), ras->fp);
+	if (status != ras->ncolor * sizeof(XWDColor)) {
 		(void) ESprintf(RAS_E_NOT_IN_CORRECT_FORMAT,
 			"XWDRead(\"%s\")", ras->name);
 	}
@@ -313,7 +313,7 @@ XWDRead(ras)
 
 	if (*(char *) &swaptest) {
 		for (i = 0; i < ras->ncolor; i++) {
-			_swaplong((char *) &xcolors[i].pixel, sizeof(long));
+			_swaplong((char *) &xcolors[i].pixel, sizeof(xcolors[i].pixel));
 			_swapshort((char *) &xcolors[i].red, 3 * sizeof(short));
 		}
         }
@@ -469,7 +469,7 @@ int
 XWDWrite(ras)
 	Raster	*ras;
 {
-	XColor		xcolors[256];		/* color palette in X dump */
+	XWDColor	xcolors[256];		/* color palette in X dump */
 	int		nb;
 	int		i;
 	unsigned long	swaptest = 1;
@@ -519,7 +519,7 @@ XWDWrite(ras)
 
 	if (*(char *) &swaptest) {
 		for (i = 0; i < ras->ncolor; i++) {
-			_swaplong((char *) &xcolors[i].pixel, sizeof(long));
+			_swaplong((char *) &xcolors[i].pixel, sizeof(xcolors[i].pixel));
 			_swapshort((char *) &xcolors[i].red, 3 * sizeof(short));
 		}
         }
@@ -562,4 +562,6 @@ XWDSetFunctions(ras)
 	ras->Close       = XWDClose;
 	ras->PrintInfo   = XWDPrintInfo;
 	ras->ImageCount  = ImageCount_;
+
+	return 0;
 }

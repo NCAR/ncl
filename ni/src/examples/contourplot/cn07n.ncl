@@ -64,12 +64,12 @@ if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an X workstation.
 ;
-  wks = create "cn07Work" xWorkstationClass defaultapp
+  wks = create "cn07Work" windowWorkstationClass defaultapp
     "wkPause" : True
     "wkColorMap" : cmap
   end create
 end if
-if (str_lower(wks_type).eq."ps") then
+if (str_lower(wks_type).eq."oldps") then
 ;
 ; Open PS workstation. 
 ;
@@ -78,7 +78,7 @@ if (str_lower(wks_type).eq."ps") then
     "wkColorMap" : cmap
   end create
 end if
-if (str_lower(wks_type).eq."pdf") then
+if (str_lower(wks_type).eq."oldpdf") then
 ;
 ; Open PDF workstation. 
 ;
@@ -87,7 +87,7 @@ if (str_lower(wks_type).eq."pdf") then
     "wkColorMap" : cmap
   end create
 end if
-if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+if (str_lower(wks_type).eq."pdf".or.str_lower(wks_type).eq."ps") then
 ;
 ; Open cairo PS/PDF workstation. 
 ;
@@ -97,7 +97,7 @@ if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
     "wkColorMap" : cmap
   end create
 end if
-if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+if (str_lower(wks_type).eq."png") then
 ;
 ; Open cairo PNG workstation. 
 ;

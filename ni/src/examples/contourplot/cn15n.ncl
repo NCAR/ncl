@@ -70,13 +70,13 @@ begin
     "wkColorMap" : cmap                ; assign the new color map
   end create
 ;
-; Create an XWorkstation object.
+; Create an X11 workstation.
 ;
-   x = create "cn15Work" xWorkstationClass defaultapp
+   x = create "cn15Work" windowWorkstationClass defaultapp
     "wkColorMap" : cmap                     ; assign the new color map
    end create
 ;
-; Create a PSWorkstation object.
+; Create an older-style PostScript workstation.
 ;
    ps1 = create "cn15Work" psWorkstationClass defaultapp
     "wkVisualType" : "color"
@@ -93,7 +93,7 @@ begin
     "wkDeviceUpperY" : 700
   end create
 ;
-; Create a PDFWorkstation object.
+; Create an older-style PDF workstation.
 ;
    pdf1 = create "cn15Work" pdfWorkstationClass defaultapp
     "wkVisualType"  : "color"
@@ -114,7 +114,7 @@ begin
 ;
    ps2 = create "cn15Work" documentWorkstationClass defaultapp
     "wkFileName"   : "./cn15n.cairo"   ; name the PostScript file
-    "wkFormat"     : "newps"
+    "wkFormat"     : "ps"
     "wkColorMap"   : cmap              ; assign the new color map
 ;
 ; Since the plots are beside each other, use landscape mode and the
@@ -131,7 +131,7 @@ begin
 ;
    pdf2 = create "cn15Work" documentWorkstationClass defaultapp
     "wkFileName"   : "./cn15n.cairo"   ; name the PDF file
-    "wkFormat"     : "newpdf"
+    "wkFormat"     : "pdf"
     "wkColorMap"   : cmap              ; assign the new color map
 ;
 ; Since the plots are beside each other, use landscape mode and the

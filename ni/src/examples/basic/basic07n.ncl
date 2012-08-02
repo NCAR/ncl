@@ -46,7 +46,7 @@ begin
          end create	
 
 ;
-; Create a PostScript workstation.
+; Create an older-style PostScript workstation.
 ;
 	 widp = create "basic07ps" psWorkstationClass defaultapp
 		 "wkPSFileName": "basic07n.ps"
@@ -54,7 +54,7 @@ begin
 		 "wkPSFormat": "ps"
          end create	
 ;
-; Create a PDF workstation.
+; Create an older-style PDF workstation.
 ;
 	 widpdf = create "basic07pdf" pdfWorkstationClass defaultapp
 		 "wkPDFFileName": "basic07n.pdf"
@@ -64,7 +64,7 @@ begin
 ;
 ; Create an X Workstation.
 ;
-	 widx = create "basic07x11" xWorkstationClass defaultapp
+	 widx = create "basic07x11" windowWorkstationClass defaultapp
 		 "wkPause": "True"
          end create	
 

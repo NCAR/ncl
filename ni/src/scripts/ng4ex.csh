@@ -429,9 +429,9 @@ unset NCGM
 unset X11
 unset PS
 unset PDF
-unset NEWPS
+unset OLDPS
 unset PNG
-unset NEWPDF
+unset OLDPDF
 
 set cairo_flag
 set ncarbd_flag
@@ -501,24 +501,20 @@ while ($#argv > 0)
       else if ("$ws_type" == "X11" || "$ws_type" == "x11") then
         set X11
         @ num_set += 1
-      else if ("$ws_type" == "PS" || "$ws_type" == "ps") then
+      else if ("$ws_type" == "OLDPS" || "$ws_type" == "oldps") then
+        set OLDPS
+        @ num_set += 1
+      else if ("$ws_type" == "oldpdf" || "$ws_type" == "OLDPDF") then
+        set OLDPDF
+        @ num_set += 1
+      else if ("$ws_type" == "ps" || "$ws_type" == "PS") then
         set PS
+        @ num_set += 1
+      else if ("$ws_type" == "png"    || "$ws_type" == "PNG") then
+        set PNG
         @ num_set += 1
       else if ("$ws_type" == "pdf" || "$ws_type" == "PDF") then
         set PDF
-        @ num_set += 1
-      else if ("$ws_type" == "newps" || "$ws_type" == "NEWPS") then
-        set NEWPS
-	set cairo_flag = "-cairo"
-        @ num_set += 1
-      else if ("$ws_type" == "png"    || "$ws_type" == "PNG" || \
-               "$ws_type" == "newpng" || "$ws_type" == "NEWPNG") then
-        set PNG
-	set cairo_flag = "-cairo"
-        @ num_set += 1
-      else if ("$ws_type" == "newpdf" || "$ws_type" == "NEWPDF") then
-        set NEWPDF
-	set cairo_flag = "-cairo"
         @ num_set += 1
       else
         echo ""
@@ -728,10 +724,10 @@ foreach name ($names)
 # it again.                                        #
 #**************************************************#
 if ($?NCGM && $?Unique && -f $name.ncgm) goto theend
+if ($?OLDPS && $?Unique && -f $name.ps) goto theend
+if ($?OLDPDF && $?Unique && -f $name.pdf) goto theend
 if ($?PS && $?Unique && -f $name.ps) goto theend
 if ($?PDF && $?Unique && -f $name.pdf) goto theend
-if ($?NEWPS && $?Unique && -f $name.ps) goto theend
-if ($?NEWPDF && $?Unique && -f $name.pdf) goto theend
 if ($?PNG && $?Unique && -f $name.000001.png) goto theend
 
 #*********************************************#
@@ -1166,36 +1162,36 @@ if (! $?NoRunOption) then
       echo "    Metafile is named $name.ncgm."
       echo ""
     endif
-    if( -e $name.ps  && ("$ws_type" == "ps" || "$ws_type" == "PS")) then
+    if( -e $name.ps  && ("$ws_type" == "oldps" || "$ws_type" == "OLDPS")) then
       echo ""
-      echo "    Example $name produced a PostScript file."
+      echo "    Example $name produced an older version PostScript file."
       echo "    PS file is named $name.ps."
       echo ""
     endif
-    if( -e $name.ps  && ("$ws_type" == "newps" || "$ws_type" == "NEWPS")) then
+    if( -e $name.ps  && ("$ws_type" == "ps" || "$ws_type" == "PS")) then
       echo ""
       echo "    Example $name produced a cairo PostScript file."
       echo "    PS file is named $name.ps."
       echo ""
     endif
-    if( -e $name.pdf  && ("$ws_type" == "pdf" || "$ws_type" == "PDF")) then
+    if( -e $name.pdf  && ("$ws_type" == "oldpdf" || "$ws_type" == "OLDPDF")) then
       echo ""
-      echo "    Example $name produced a PDF file."
+      echo "    Example $name produced an older version PDF file."
       echo "    PDF file is named $name.pdf."
       echo ""
     endif
-    if( -e $name.pdf  && ("$ws_type" == "newpdf" || "$ws_type" == "NEWPDF")) then
+    if( -e $name.pdf  && ("$ws_type" == "pdf" || "$ws_type" == "PDF")) then
       echo ""
       echo "    Example $name produced a cairo PDF file."
       echo "    PDF file is named $name.pdf."
       echo ""
     endif
 
-    if( -e $name.000001.png  && ("$ws_type" == "newpng" || "$ws_type" == "NEWPNG" || \
-                          "$ws_type" == "png" || "$ws_type" == "PNG")) then
+    if( -e $name.000001.png  && ("$ws_type" == "png" || "$ws_type" == "PNG")) then
       echo ""
       echo "    Example $name produced one or more cairo PNG files."
-      echo "    First PNG file is named $name.000001.png, and so on."
+      echo "    If single PNG file, it is named $name.png"
+      echo "    If multiple PNG files, first PNG file is named $name.000001.png, and so on."
       echo ""
     endif
 endif

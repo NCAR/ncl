@@ -250,10 +250,10 @@ begin
      end if
 
 
-     if ( z(0,0,0,0,0) .gt. 500.) then
+     if ( z(0,0,dimZ-1,0,0) .lt. z(0,0,dimZ-2,0,0) ) then
        ; We must be interpolating to pressure
        ; This routine needs input field and level in hPa - lets make sure of this
-       if ( z(0,0,0,0,0) .gt. 2000. ) then
+       if ( max(z) .gt. 2000. ) then
          ; looks like we have Pa as input - make this hPa
          z = z * 0.01
        end if
@@ -297,7 +297,7 @@ begin
          return( var2d(0,0,:,:,:) )
        end if
      else
-       if ( z(0,0,0,0,0) .gt. 500.) then
+       if ( z(0,0,dimZ-1,0,0) .lt. z(0,0,dimZ-2,0,0) ) then
           var2d@PlotLevelID = loc_param + " hPa"
        else
           var2d@PlotLevelID = .001*loc_param + " km"
@@ -324,17 +324,17 @@ begin
      dims = dimsizes(var3d)
 
      if ( dimsizes(dims) .eq. 4 ) then
-       if ( z_in(0,0,0,0) .gt. 500.) then
+       if ( z(0,dimZ-1,0,0) .lt. z(0,dimZ-2,0,0) ) then
          ; We must be interpolating to pressure
            ; This routine needs input field and level in hPa - lets make sure of this
-         if ( z_in(0,0,0,0) .gt. 2000. ) then
+         if ( max(z_in) .gt. 2000. ) then
            ; looks like we have Pa as input - make this hPa
            z_in = z_in * 0.01
          end if
        end if
        z = z_in(0,:,:,:)
      else
-       if ( z_in(0,0,0) .gt. 500.) then
+       if ( z(dimZ-1,0,0) .lt. z(dimZ-2,0,0) ) then
          ; We must be interpolating to pressure
            ; This routine needs input field and level in hPa - lets make sure of this
          if ( z_in(0,0,0) .gt. 2000. ) then
@@ -3624,6 +3624,22 @@ function wrf_wps_dom(wks[1]:graphic,opt_args[1]:logical,lnres[1]:logical,txres[1
 begin
 
   mpres = opt_args
+  ;BPR BEGIN
+  ;grid_to_plot = 0 => plot using the corner mass grid points
+  ;grid_to_plot = 1 => plot using the edges of the corner grid cells
+  ;  This uses the locations of the corner mass grid points +/- 0.5 grid cells
+  ;  to get from the mass grid point to the edge of the grid cell
+  grid_to_plot = 1
+  ;grid_to_plot = mpres@grid_to_plot
+  if(grid_to_plot.eq.0) then
+  ; print("Plotting using corner mass grid points")
+  else if(grid_to_plot.eq.1) then
+  ; print("Plotting using edges of the corner grid cells")
+  else
+   print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
+  end if
+  end if
+  ;BPR END
 
   res = True
   res@DX = mpres@dx
@@ -3676,13 +3692,35 @@ begin
     res@POLE_LON = 0.0
   end if
 
-  xx = 1.0
-  yy = 1.0
+  ;BPR BEGIN
+  ;Determine adjustment needed to convert from mass grid to chosen grid
+  if(grid_to_plot.eq.0) then
+   adjust_grid = 0.0 
+  else if(grid_to_plot.eq.1) then
+   adjust_grid = 0.5 
+  else 
+   print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
+   adjust_grid = 0.0 
+  end if
+  end if
+
+  xx = 1.0 - adjust_grid
+  yy = 1.0 - adjust_grid
+  ;xx = 1.0
+  ;yy = 1.0
+  ;BPR END
   loc = wrf_ij_to_ll (xx,yy,res)
   start_lon = loc(0)
   start_lat = loc(1)
-  xx = int2flt(mpres@e_we(0))
-  yy = int2flt(mpres@e_sn(0))
+  ;BPR BEGIN
+  ;e_we is the largest U grid point and e_sn the largest V gridpoint
+  ;xx = int2flt(mpres@e_we(0))
+  ;yy = int2flt(mpres@e_sn(0))
+  ;Change it so it is in terms of mass grid points since wrf_ij_to_ll is
+  ;in terms of mass grid points 
+  xx = int2flt(mpres@e_we(0)-1) + adjust_grid
+  yy = int2flt(mpres@e_sn(0)-1) + adjust_grid
+  ;BPR END
   loc = wrf_ij_to_ll (xx,yy,res)
   end_lon = loc(0)
   end_lat = loc(1)
@@ -3720,56 +3758,126 @@ begin
       ; nest start and end points in large domain space
       if ( mpres@parent_id(idom) .eq. 1) then
         ; corner value
-        i_start = mpres@i_parent_start(idom)
-        j_start = mpres@j_parent_start(idom)
+        ;BPR BEGIN
+        ;Due to the alignment of nests we need goffset in order to
+        ;find the location of (1,1) in the fine domain in coarse domain
+        ;coordinates
+        ;i_start = mpres@i_parent_start(idom)
+        ;j_start = mpres@j_parent_start(idom)
+        goffset = 0.5*(1-(1.0/mpres@parent_grid_ratio(idom)))
+        i_start = mpres@i_parent_start(idom)-goffset
+        j_start = mpres@j_parent_start(idom)-goffset
         ; end point
-        i_end = (mpres@e_we(idom)-1)/mpres@parent_grid_ratio(idom) + i_start
-        j_end = (mpres@e_sn(idom)-1)/mpres@parent_grid_ratio(idom) + j_start
+        ;Change to mass point
+        ;i_end = (mpres@e_we(idom)-1)/mpres@parent_grid_ratio(idom) + i_start
+        ;j_end = (mpres@e_sn(idom)-1)/mpres@parent_grid_ratio(idom) + j_start
+        i_end = (mpres@e_we(idom)-2)/(1.0*mpres@parent_grid_ratio(idom)) + i_start
+        j_end = (mpres@e_sn(idom)-2)/(1.0*mpres@parent_grid_ratio(idom)) + j_start
+        
+        if(grid_to_plot.eq.0) then
+         adjust_grid = 0.0 
+        else if(grid_to_plot.eq.1) then
+         adjust_grid = 0.5/(1.0*mpres@parent_grid_ratio(idom))
+        else 
+         print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
+         adjust_grid = 0.0 
+        end if
+        end if
+        
+        ;BPR END
       end if
       if ( mpres@parent_id(idom) .ge. 2) then
         ; corner value
         nd = mpres@parent_id(idom)
-        i_points = ((mpres@e_we(idom)-1)/mpres@parent_grid_ratio(idom))
-        j_points = ((mpres@e_sn(idom)-1)/mpres@parent_grid_ratio(idom))
-        ai_start = mpres@i_parent_start(idom)*1.0
-        aj_start = mpres@j_parent_start(idom)*1.0
+        ;BPR BEGIN
+        ;i_points = ((mpres@e_we(idom)-1)/mpres@parent_grid_ratio(idom))
+        ;j_points = ((mpres@e_sn(idom)-1)/mpres@parent_grid_ratio(idom))
+        i_points = ((mpres@e_we(idom)-2)/(1.0*mpres@parent_grid_ratio(idom)))
+        j_points = ((mpres@e_sn(idom)-2)/(1.0*mpres@parent_grid_ratio(idom)))
+        goffset = 0.5*(1-(1.0/(1.0*mpres@parent_grid_ratio(idom))))
+        ai_start = mpres@i_parent_start(idom)*1.0-goffset
+        aj_start = mpres@j_parent_start(idom)*1.0-goffset
+        ;ai_start = mpres@i_parent_start(idom)*1.0
+        ;aj_start = mpres@j_parent_start(idom)*1.0
+
+        if(grid_to_plot.eq.0) then
+         adjust_grid = 0.0 
+        else if(grid_to_plot.eq.1) then
+         adjust_grid = 0.5/(1.0*mpres@parent_grid_ratio(idom)) 
+        else 
+         print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
+         adjust_grid = 0.0 
+        end if
+        end if
+
         do while ( nd .gt. 1)
-          ai_start = ai_start/mpres@parent_grid_ratio(nd-1) + mpres@i_parent_start(nd-1)
-          aj_start = aj_start/mpres@parent_grid_ratio(nd-1) + mpres@j_parent_start(nd-1)
-          i_points = (i_points/mpres@parent_grid_ratio(nd-1))
-          j_points = (j_points/mpres@parent_grid_ratio(nd-1))
+          ;Note that nd-1 is used in the following because the WPS namelist is
+          ;one-based but arrays in NCL are zero-based
+          goffset = 0.5*(1-(1.0/(1.0*mpres@parent_grid_ratio(nd-1))))
+          ;ai_start = ai_start/mpres@parent_grid_ratio(nd-1) + mpres@i_parent_start(nd-1)
+          ;aj_start = aj_start/mpres@parent_grid_ratio(nd-1) + mpres@j_parent_start(nd-1)
+          ai_start = (ai_start-1)/(1.0*mpres@parent_grid_ratio(nd-1)) + mpres@i_parent_start(nd-1)-goffset
+          aj_start = (aj_start-1)/(1.0*mpres@parent_grid_ratio(nd-1)) + mpres@j_parent_start(nd-1)-goffset
+          ;i_points = (i_points/mpres@parent_grid_ratio(nd-1))
+          ;j_points = (j_points/mpres@parent_grid_ratio(nd-1))
+          i_points = (i_points/(1.0*mpres@parent_grid_ratio(nd-1)))
+          j_points = (j_points/(1.0*mpres@parent_grid_ratio(nd-1)))
+          if(grid_to_plot.eq.0) then
+           adjust_grid = 0.0 
+          else if(grid_to_plot.eq.1) then
+           adjust_grid = adjust_grid/(1.0*mpres@parent_grid_ratio(nd-1))
+          else 
+           print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
+           adjust_grid = 0.0 
+          end if
+          end if
+
           ;nd = nd - 1
           nd = mpres@parent_id(nd-1)
         end do
-        i_start = tointeger(ai_start + .5 )
-        j_start = tointeger(aj_start + .5 )
+        ;i_start = tointeger(ai_start + .5 )
+        ;j_start = tointeger(aj_start + .5 )
+        i_start = ai_start
+        j_start = aj_start
         ; end point
-        i_end = i_points + i_start + 1
-        j_end = j_points + j_start + 1
+        ;i_end = i_points + i_start + 1
+        ;j_end = j_points + j_start + 1
+        i_end = i_points + i_start
+        j_end = j_points + j_start
+        ;BPR END
       end if
 
       ; get the four corners
 
-      xx = int2flt(i_start)
-      yy = int2flt(j_start)
+      xx = i_start - adjust_grid
+      yy = j_start - adjust_grid
+      ;xx = int2flt(i_start)
+      ;yy = int2flt(j_start)
       loc = wrf_ij_to_ll (xx,yy,res)
       lon_SW = loc(0)
       lat_SW = loc(1)
 
-      xx = int2flt(i_end)
-      yy = int2flt(j_start)
+      xx = i_end + adjust_grid
+      yy = j_start - adjust_grid
+      ;xx = int2flt(i_end)
+      ;yy = int2flt(j_start)
       loc = wrf_ij_to_ll (xx,yy,res)
       lon_SE = loc(0)
       lat_SE = loc(1)
 
-      xx = int2flt(i_start)
-      yy = int2flt(j_end)
+      xx = i_start - adjust_grid
+      yy = j_end + adjust_grid
+      ;xx = int2flt(i_start)
+      ;yy = int2flt(j_end)
       loc = wrf_ij_to_ll (xx,yy,res)
       lon_NW = loc(0)
       lat_NW = loc(1)
 
-      xx = int2flt(i_end)
-      yy = int2flt(j_end)
+      ;xx = int2flt(i_end)
+      ;yy = int2flt(j_end)
+      xx = i_end + adjust_grid
+      yy = j_end + adjust_grid
+      ;BPR END
       loc = wrf_ij_to_ll (xx,yy,res)
       lon_NE = loc(0)
       lat_NE = loc(1)
@@ -4831,4 +4939,3 @@ begin
 end
 
 ;--------------------------------------------------------------------------------
-

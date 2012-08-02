@@ -44,7 +44,7 @@ C  Check that the input polygon is closed.
 C
       IF (QLAT(NPTS).NE.QLAT(1) .OR. QLON(NPTS).NE.QLON(1)) THEN
         WRITE(6,500) 
-  500   FORMAT('GCINOUT: The input spherical polygon must be closed.')       
+  500   FORMAT('GCINOUT: The input spherical polygon must be closed.')
 
         GCINOUT = -1
         RETURN
@@ -90,7 +90,7 @@ C
 C  Computes the shortest (undirected) angular distance between the points
 C  on the globe (LAT1,LON1) and (LAT2,LON2).
 C
-      DOUBLE PRECISION AT(4), BT(4), CT(4), D2R, XADGCDP
+      DOUBLE PRECISION AT(4), BT(4), D2R, XADGCDP
       DOUBLE PRECISION LAT1,LON1,LAT2,LON2
       DATA D2R/0.017453292519943D0/
 C
@@ -181,7 +181,7 @@ C  (LAT2,LON2) and returns them in the OLAT and OLON arrays.  The
 C  beginning and ending points are included in the result, so, for
 C  example, if NPTS=2, then only the end points are returned.  
 C 
-      DOUBLE PRECISION LAT1, LON1, LAT2, LON2, OLAT(NPTS), OLON(NPTS)       
+      DOUBLE PRECISION LAT1, LON1, LAT2, LON2, OLAT(NPTS), OLON(NPTS)
       DOUBLE PRECISION NLAT1, NLON1, NLAT2, NLON2, NORMANG
       DOUBLE PRECISION D2R,R2D
       DATA D2R,R2D/0.017453292519943D0,57.2957795130823D0/
@@ -202,21 +202,31 @@ C
       RETURN
       END
       DOUBLE PRECISION FUNCTION GCQAREA(LAT1, LON1, LAT2, LON2,
-     +                                   LAT3, LON3, LAT4, LON4)
+     +                                  LAT3, LON3, LAT4, LON4,
+     +                                  IER)
 C
 C  Finds the area of a convex quadrilateral patch on a sphere whose 
 C  vertices are given in degrees as lat/lon pairs.
 C
       DOUBLE PRECISION GCTAREA
       DOUBLE PRECISION LAT1, LON1, LAT2, LON2, LAT3, LON3, LAT4, LON4
+      DOUBLE PRECISION GC1, GC2
+      INTEGER IER, IER1, IER2
 C
-      GCQAREA = ABS(GCTAREA(LAT1, LON1, LAT2, LON2, LAT3, LON3))  +
-     +          ABS(GCTAREA(LAT1, LON1, LAT3, LON3, LAT4, LON4))
-C
+      GC1 = ABS(GCTAREA(LAT1, LON1, LAT2, LON2, LAT3, LON3, IER1))
+      GC2 = ABS(GCTAREA(LAT1, LON1, LAT3, LON3, LAT4, LON4, IER2))
+      IF(IER1.EQ.0.and.IER2.EQ.0) THEN
+        GCQAREA = GC1 + GC2
+        IER = 0
+      ELSE
+        GCQAREA = 1.D30
+        IER = 1
+      END IF
+C     
       RETURN
       END      
       DOUBLE PRECISION FUNCTION GCTAREA(LAT1, LON1, LAT2, LON2,
-     +                                   LAT3, LON3)
+     +                                  LAT3, LON3, IER)
 C
 C  Finds the area of a spherical triangle by finding the three
 C  spherical angles and subtracting off PI.
@@ -224,6 +234,7 @@ C
       DOUBLE PRECISION LAT1, LON1, LAT2, LON2, LAT3, LON3
       DOUBLE PRECISION GCDANGLE,ALPHA,BETA,GAMMA,PI
       DOUBLE PRECISION D2R
+      INTEGER IER
       DATA D2R/0.017453292519943D0/
 C
       PI = 2.D0*DASIN(1.D0)
@@ -235,10 +246,12 @@ C
         BETA   = ABS(D2R*GCDANGLE(LAT2, LON2, LAT3, LON3, LAT1, LON1))
         GAMMA  = ABS(D2R*GCDANGLE(LAT3, LON3, LAT1, LON1, LAT2, LON2))
         GCTAREA = ALPHA+BETA+GAMMA - PI
+        IER = 0
       ELSE
         WRITE(6,500) 
-  500   FORMAT('GCTAREA: The three input points must be distinct.')        
+  500   FORMAT('GCTAREA: The three input points must be distinct.')   
         GCTAREA = 1.D30
+        IER = 1
       ENDIF
 C
       RETURN
@@ -401,8 +414,8 @@ C  Adjusts the input ANGLE (in radians) by adding or subtracting
 C  enough multiples of 2*PI so that the result lies in the range
 C  [-PI,PI)
 C
-      DOUBLE PRECISION ANGLE, PI, PIH, RVAL
-      INTEGER I,IOP
+      DOUBLE PRECISION ANGLE, PI, RVAL
+      INTEGER I
 C
       PI = 2.D0*DASIN(1.D0)
 C
@@ -516,7 +529,7 @@ C
       DO 10 I=1,3
         DOTP = DOTP + CF1(I)*CF2(I)
    10 CONTINUE
-      PNORM = (DSQRT(CF1(1)*CF1(1) + CF1(2)*CF1(2) + CF1(3)*CF1(3))) *        
+      PNORM = (DSQRT(CF1(1)*CF1(1) + CF1(2)*CF1(2) + CF1(3)*CF1(3))) *
      +        (DSQRT(CF2(1)*CF2(1) + CF2(2)*CF2(2) + CF2(3)*CF2(3)))
       IF (PNORM .EQ. 0.D0) THEN
         WRITE(6,500)
@@ -777,7 +790,7 @@ C  Check that the input polygon is closed.
 C
       IF (RLAT(NPTS).NE.RLAT(1) .OR. RLON(NPTS).NE.RLON(1)) THEN
         WRITE(6,500) 
-  500   FORMAT('GCINOUT: The input spherical polygon must be closed.')       
+  500   FORMAT('GCINOUT: The input spherical polygon must be closed.')
         GCCWISE = -1
         RETURN
       ENDIF

@@ -80,6 +80,8 @@ void
 # endif /* NhlNeedProto */
 );
 
+extern int _MachineIsBigEndian();
+
 extern NhlErrorTypes _NclIGetFileChunkSizes(void);
 extern NhlErrorTypes _NclIGetFileCompressionLevel(void);
 
@@ -1060,6 +1062,8 @@ NhlErrorTypes _Nclget_cpu_time(
 void
 #endif
 );
+
+NhlErrorTypes _NclIisNewFileStructure(void);
 
 void _NclAddBuiltIns
 #if     NhlNeedProto
@@ -2609,6 +2613,12 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
     SetArgTemplate(args,nargs,NclANY,1,dimsizes); nargs++;
     NclRegisterProc(_Nclset_default_fillvalue,args,"set_default_fillvalue",nargs);
+
+    nargs = 0;
+    args = NewArgs(1);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
+    NclRegisterFunc(_NclIisNewFileStructure, args, "isNewFileStructure", nargs);
 
 	NclRegisterFunc(_Nclget_cpu_time,NULL,"get_cpu_time",0);
 /*

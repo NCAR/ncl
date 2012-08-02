@@ -1,5 +1,5 @@
 /*
- *      $Id: GraphicStyle.h,v 1.6 2003-06-04 19:04:11 dbrown Exp $
+ *      $Id: GraphicStyle.h,v 1.6.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 #define NhlNgsLineDashPattern		"gsLineDashPattern"
 #define NhlNgsLineDashSegLenF		"gsLineDashSegLenF"
 #define NhlNgsLineColor			"gsLineColor"
+#define NhlNgsLineOpacityF			"gsLineOpacityF"
 #define NhlNgsLineThicknessF		"gsLineThicknessF"
 
 #define NhlNgsLineLabelString		"gsLineLabelString"
@@ -45,6 +46,7 @@
 
 #define NhlNgsFillIndex			"gsFillIndex"
 #define NhlNgsFillColor         	"gsFillColor"
+#define NhlNgsFillOpacityF      "gsFillOpacityF"
 #define NhlNgsFillBackgroundColor    	"gsFillBackgroundColor"
 #define NhlNgsFillScaleF		"gsFillScaleF"
 #define NhlNgsFillLineThicknessF 	"gsFillLineThicknessF"
@@ -62,6 +64,7 @@
 
 #define NhlNgsMarkerIndex		"gsMarkerIndex"
 #define NhlNgsMarkerColor       	"gsMarkerColor"
+#define NhlNgsMarkerOpacityF       	"gsMarkerOpacityF"
 #define NhlNgsMarkerSizeF		"gsMarkerSizeF"
 #define NhlNgsMarkerThicknessF  	"gsMarkerThicknessF"
 
@@ -72,6 +75,7 @@
 #define NhlNgsTextDirection		"gsTextDirection"
 #define NhlNgsFont			"gsFont"
 #define NhlNgsFontColor			"gsFontColor"
+#define NhlNgsFontOpacityF		"gsFontOpacityF"
 #define NhlNgsFontHeightF		"gsFontHeightF"
 #define NhlNgsFontAspectF		"gsFontAspectF"
 #define NhlNgsFontThicknessF		"gsFontThicknessF"

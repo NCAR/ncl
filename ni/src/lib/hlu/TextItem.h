@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.h,v 1.9 1999-03-27 00:44:56 dbrown Exp $
+ *      $Id: TextItem.h,v 1.9.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,7 @@
 #define NhlNtxDirection	"txDirection"
 #define NhlNtxFont	"txFont"
 #define NhlNtxFontColor	"txFontColor"
+#define NhlNtxFontOpacityF	"txFontOpacityF"
 #define NhlNtxFontHeightF	"txFontHeightF"
 #define NhlNtxFontAspectF	"txFontAspectF"
 /*

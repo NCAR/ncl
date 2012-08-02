@@ -53,6 +53,7 @@ extern "C" {
 #include "NclDataDefs.h"
 #include "Machine.h"
 #include "NclFile.h"
+#include "NclNewFile.h"
 #include "NclVar.h"
 #include "NclCoordVar.h"
 #include "VarSupport.h"
@@ -73,6 +74,7 @@ extern "C" {
 #include "NclFileInterfaces.h"
 #include <signal.h>
 #include <netcdf.h>
+#include "NclProf.h"
 
 extern int cmd_line;
 extern short NCLnoSysPager;
@@ -2318,7 +2320,7 @@ NhlErrorTypes _NclIDelete
 		if (data.u.data_obj->obj.obj_type == Ncl_MultiDVallistData) {
 			NclObj list_obj = _NclGetObj(*(int*) data.u.data_obj->multidval.val);
 			while ((tmp = _NclListPop(list_obj))) {
-				if (tmp->obj.obj_type == Ncl_Var) {
+				if (tmp->obj.obj_type == Ncl_Var || tmp->obj.obj_type == Ncl_HLUVar) {
 					switch(((NclVar)tmp)->var.var_type) {
 					case VARSUBSEL:
 					case COORDSUBSEL:
@@ -2932,6 +2934,23 @@ NhlErrorTypes _NclIfbindirread(void)
 	return(NhlFATAL);
 }
 
+int _MachineIsBigEndian()
+{
+#if 1
+    short int word = 0x0001;
+    char *byte = (char *) &word;
+
+    if(byte[0])
+       return 0;
+    else
+       return 1;
+#else
+    if(htonl(47) == 47)
+       return 1;
+    else
+       return 0;
+#endif
+}
 
 NhlErrorTypes _NclIisbigendian
 #if	NhlNeedProto
@@ -2944,11 +2963,8 @@ NhlErrorTypes _NclIisbigendian
 	ng_size_t dimsizes = 1;
 
 	out_val = (logical*)NclMalloc(sizeof(logical));
-#ifdef ByteSwapped
-	*out_val = 0;
-#else
-	*out_val = 1;
-#endif
+
+	*out_val = _MachineIsBigEndian();
 
 	return(NclReturnValue(
 		out_val,
@@ -4604,6 +4620,7 @@ NhlErrorTypes _NclIasciiread
 			else if(thetype->type_class.type==Ncl_Typestring) {
 				char *buffer;
 				char *step;
+				int c;
 				int cur_size = NCL_MAX_STRING;
 
 				buffer = NclMalloc(cur_size * sizeof(char));
@@ -4616,24 +4633,33 @@ NhlErrorTypes _NclIasciiread
 							step = &buffer[j];
 						}
 						if(!feof(fp)) {
-							*step = fgetc(fp);
-							if(! (*step == '\n' || *step == '\r')) {
+							c  = getc(fp);
+							*step = (char) c;
+							switch (c) {
+							default:
 								step++;
 								continue;
-							}
-							if (*step == '\r') {
-								char c;
+							case '\r':
 								/* throw away next character if it's a CRLF sequence */
 								c = getc(fp);
 								if (c != '\n') { 
 									ungetc(c,fp);
 								}
+								/* fall through */
+							case EOF:
+								/* no characters since last EOL + not fall through of '\r' */
+								if (j == 0 && *step != '\r') {
+									break;
+								}
+								/* fall through */
+							case '\n':
+								*step = '\0';
+								*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+								step = buffer;
+								tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+								total++;
+								break;
 							}
-							*step = '\0';
-							*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
-							step = buffer;
-							tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-							total++;
 							break;
 						} else {
 							break;
@@ -4747,17 +4773,26 @@ NhlErrorTypes _NclIasciiread
 		else if(thetype->type_class.type==Ncl_Typestring) {
 			char c;
 			totalsize = 0;
+			int has_chars = 0;
 			while(!feof(fp)) {
 				c = getc(fp);
 				if (c == '\r') {
 					totalsize++;
 					c = getc(fp); /* handle CRLF (\r\n) style EOL by ignoring LF after CR */
-					if (c == '\r') /* if another CR push it back so it will count as an (empty) line */
+					if (c != '\n') /* otherwise put it back */
 						ungetc(c,fp);
+					has_chars = 0;
 				}
 				else if(c == '\n' ) {
 					totalsize++;
+					has_chars = 0;
 				} 
+				else if (c != EOF) {
+					has_chars = 1;
+				}
+			}
+			if (has_chars) {  /* some characters at the end without a newline */
+				totalsize++;
 			}
 		}
 		NclFree(tmp_ptr);
@@ -4884,6 +4919,7 @@ NhlErrorTypes _NclIasciiread
 		else if(thetype->type_class.type==Ncl_Typestring) {
 			char *buffer;
 			char *step;
+			int c;
 			int cur_size = NCL_MAX_STRING;
 
 			buffer = NclMalloc(cur_size * sizeof(char));
@@ -4896,24 +4932,33 @@ NhlErrorTypes _NclIasciiread
 						step = &buffer[j];
 					}
 					if(!feof(fp)) {
-						*step = getc(fp);
-						if (! (*step == '\n' || *step == '\r')) {
+						c = getc(fp);
+						*step = (char) c;
+						switch (c) {
+						default:
 							step++;
 							continue;
-						}
-						if (*step == '\r') {
-							char c;
+						case '\r':
 							/* throw away next character if it's a CRLF sequence */
 							c = getc(fp);
 							if (c != '\n') { 
 								ungetc(c,fp);
 							}
+							/* fall through */
+						case EOF:
+							/* no characters since last EOL + not fall through of '\r' */
+							if (j == 0 && *step != '\r') {
+								break;
+							}
+							/* fall through */
+						case '\n':
+							*step = '\0';
+							*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+							step = buffer;
+							tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+							total++;
+							break;
 						}
-						*step = '\0';
-						*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
-						step = buffer;
-						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-						total++;
 						break;
 					} else {
 						break;
@@ -16948,17 +16993,35 @@ NhlErrorTypes _NclIGetVarDims
 		if(tmp_var->obj.obj_type == Ncl_FileVar) {
 			file_md= (NclMultiDValData)_NclVarValueRead(tmp_var,NULL,NULL);
 			thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
-			data = _NclGetFileInfo2(thefile);
-			for (i=0; i < data->u.file->n_dims;i++) {
-				names[i] = data->u.file->dim_info[i].dim_quark;
+
+			if(_isNewFileStructure(thefile))
+			{
+				NclNewFile thenewfile = (NclNewFile) thefile;
+				NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+
+				if(NULL != grpnode->dim_rec)
+				{
+					ndims = grpnode->dim_rec->n_dims;
+
+					for(i = 0; i < ndims; ++i)
+						names[i] = grpnode->dim_rec->dim_node[i].name;
+				}
+			}
+			else
+			{
+				data = _NclGetFileInfo2(thefile);
+				for (i=0; i < data->u.file->n_dims;i++) {
+					names[i] = data->u.file->dim_info[i].dim_quark;
+				}
+
+				ndims = data->u.file->n_dims;
 			}
 
-			ndims = data->u.file->n_dims;
 			if (ndims == 0) {
 				names[0] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
 				ndims = 1;
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"getvardims: file %s contains no dimensions readable by NCL",
-					  NrmQuarkToString(thefile->file.fname));
+				  	NrmQuarkToString(thefile->file.fname));
 			}
 			ret = NclReturnValue((void*)names, 1, &ndims, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, 
 					     ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
@@ -20538,6 +20601,11 @@ NhlErrorTypes _NclISetFileOption(void)
 	NhlErrorTypes ret;
 	int n_dims = 1;
 
+        NrmQuark format_lower;
+        NrmQuark option_lower;
+        NrmQuark nc_quark = NrmStringToQuark("nc");
+        NrmQuark fm_quark = NrmStringToQuark("format");
+
 	data = _NclGetArg(0,3,DONT_CARE);
 	switch(data.kind) {
 	case NclStk_VAR:
@@ -20592,10 +20660,35 @@ NhlErrorTypes _NclISetFileOption(void)
 		return(NhlFATAL);
 
 	_NclInitClass(nclFileClass);
+
+        format_lower = _NclGetLower(format);
+        option_lower = _NclGetLower(option);
+
+        if((format_lower == nc_quark) && (fm_quark == option_lower))
+        {
+                if(NCL_string == tmp_md1->multidval.data_type)
+                {
+                        NrmQuark *mode = (NrmQuark *) tmp_md1->multidval.val;
+                        NrmQuark netcdf4_quark = NrmStringToQuark("netcdf4");
+                        NrmQuark newfs_quark = NrmStringToQuark("usenewhlfs");
+                        NrmQuark mode_lower = _NclGetLower(*mode);
+
+                        if(netcdf4_quark == mode_lower)
+                        {
+				logical lval = True;
+				ng_size_t ndims = 1;
+				NclMultiDValData tmp_md2 = NULL;
+				tmp_md2 = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)(&lval),
+								NULL,1,&ndims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+                                ret = _NclFileSetOption(f, format_lower, newfs_quark, tmp_md2);
+				use_new_hlfs = 1;
+                        }
+                }
+        }
+
 	ret = _NclFileSetOption(f,format,option,tmp_md1);
 
 	return ret;
-	
 }	
 
 NhlErrorTypes   _NclIGetFileVarTypes
@@ -20956,7 +21049,63 @@ NhlErrorTypes   _NclIGetFileDimsizes
                     0);
     f = (NclFile) _NclGetObj((int) *fid);
 
-    if (f != NULL) {
+    if (f != NULL)
+    {
+    if(_isNewFileStructure(f))
+    {
+        NclNewFile   thenewfile = (NclNewFile) f;
+        NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+
+        if(NULL != grpnode->dim_rec)
+        {
+	    ndims = grpnode->dim_rec->n_dims;
+
+	    if (ndims == 0)
+            {
+		NhlPError(NhlWARNING, NhlEUNKNOWN, "getfiledimsizes: file contains no dimensions");
+		dimsizes = 1;
+		NclReturnValue(
+			(void*) &((NclTypeClass) nclTypeintClass)->type_class.default_mis, 1,
+			&dimsizes, &((NclTypeClass) nclTypeintClass)->type_class.default_mis,
+			((NclTypeClass) nclTypeintClass)->type_class.data_type, 1);
+		return NhlWARNING;
+	    }
+	    else
+            {
+	        return_type = NCL_int;
+#if !defined(NG32BIT)
+	        i = 0;
+	        while(i < ndims)
+                {
+	            if(grpnode->dim_rec->dim_node[i].size > INT_MAX)
+                    {
+	                return_type = NCL_long;
+                        break;
+	            }
+	            ++i;
+	        }
+#endif
+	        if(return_type == NCL_int)
+                {
+	            dim_sizes = (void *) NclMalloc(sizeof(int) * ndims);
+	            for(i = 0; i < ndims; ++i)
+	                ((int*)dim_sizes)[i] = (int) grpnode->dim_rec->dim_node[i].size;
+	        }
+	        else
+	        {
+	            dim_sizes = (void *) NclMalloc(sizeof(long) * ndims);
+	            for(i = 0; i < ndims; ++i)
+	                ((long*)dim_sizes)[i] = (long) grpnode->dim_rec->dim_node[i].size;
+	        }
+
+	        ret = NclReturnValue(dim_sizes, 1, &ndims, NULL, return_type, 1);
+	        free(dim_sizes);
+	        return ret;
+            }
+        }
+    }
+    else
+    {
 /*
  * First loop through dimension sizes to see if we need to return
  * ints or longs.
@@ -21005,6 +21154,7 @@ NhlErrorTypes   _NclIGetFileDimsizes
 	  free(dim_sizes);
 	  return ret;
         }
+    }
     }
     NhlPError(NhlWARNING, NhlEUNKNOWN, "getfiledimsizes: undefined file variable");
 
@@ -21138,9 +21288,38 @@ NhlErrorTypes   _NclIFileIsPresent
             else
                 file_exists[i] = 1;     /* true */
         }
-        else {
+        else
+	{
+            file_exists[i] = 0;
+
             fpath = _NGResolvePath(NrmQuarkToString(files[i]));
-            file_exists[i] = stat(fpath, &st) == -1 ? 0 : 1;
+            if(stat(fpath, &st))
+            {
+                char tmp_path[NCL_MAX_STRING];
+                char *ext_name;
+                strcpy(tmp_path, fpath);
+
+                ext_name = strrchr(tmp_path, '.');
+              /*Use while loop will allow user to append multiple extensions.
+               *But it will be not consistent addfile.
+               *So we comment out the while loop for NOW.
+               *Wei Huang, 05/20/2012
+               */
+              /*while(NULL != ext_name)*/
+                if(NULL != ext_name)
+        	{
+                    tmp_path[strlen(tmp_path) - strlen(ext_name)] = '\0'; 
+
+                    if(! stat(_NGResolvePath(tmp_path),&st))
+                    {
+                        file_exists[i] = 1;
+                        /*break;*/
+                    }
+                    ext_name = strrchr(tmp_path, '.');
+                }
+            }
+            else
+                file_exists[i] = 1;
         }
     }
 
@@ -21361,7 +21540,7 @@ NhlErrorTypes _NclItoint
                         if (strcmp(end, str) == 0)
                         {
                             has_missing = 1;
-                            NhlPError(NhlFATAL,NhlEUNKNOWN,
+                            NhlPError(NhlWARNING,NhlEUNKNOWN,
                                 "toint: A bad value was passed (string); input strings must contain numeric digits, replacing with missing value");
                             output[i] = ret_missing.intval;
                         }
@@ -26066,7 +26245,7 @@ NhlErrorTypes _NclItoushort
                             llval = _Nclstrtoll(str,&end);
                             if (strcmp(end, str) == 0)
                             {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,
                                     "toushort: A bad value was passed to toushort, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.ushortval;
                             }
@@ -26687,7 +26866,7 @@ NhlErrorTypes _NclItofloat
                                 dval = strtod(str,&end);
                                 if (strcmp(end, str) == 0)
                                 {
-                                    NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                    NhlPError(NhlWARNING,NhlEUNKNOWN,
                                         "tofloat: A bad value was passed to (string) tofloat, input strings must contain numeric digits, replacing with missing value");
                                     output[i] = ret_missing.floatval;
                                 }
@@ -26725,7 +26904,7 @@ NhlErrorTypes _NclItofloat
                             dval = strtod(str,&end);
                             if (strcmp(end, str) == 0)
                             {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,
                                     "tofloat: A bad value was passed to (string) tofloat, input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
                                 output[i] = ret_missing.floatval;
@@ -28302,7 +28481,7 @@ NhlErrorTypes _NclItobyte
                             llval = _Nclstrtoll(str,&end);
                             if (strcmp(end, str) == 0)
                             {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,
                                     "tobyte: A bad value was passed to tobyte, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.byteval;
                             }
@@ -30395,30 +30574,63 @@ NhlErrorTypes _Nclset_default_fillvalue
 
 NhlErrorTypes _Nclget_cpu_time(void)
 {
-	ng_size_t dimsize = 1;
+        ng_size_t dimsize = 1;
+		float time;
+		int retval;
 
-	struct rusage usage;
-	extern int errno;
+		retval = NclGetCPUTime(&time);
+		if(retval != NhlNOERROR){
+			NhlPError(NhlWARNING, NhlEUNKNOWN, "unable to get process cpu time");
+			return(NhlWARNING);
+		}
 
-	int status = getrusage(RUSAGE_SELF, &usage);
-	if (status) {
-        NhlPError(NhlWARNING, NhlEUNKNOWN,
-            "unable to get process cpu time: %d", status);
-		return(NhlWARNING);
-	}
+        return(NclReturnValue(
+                &time,
+                1,
+                &dimsize,
+                NULL,
+                NCL_float,
+                1
+        ));
 
-	float time = (usage.ru_stime.tv_sec + usage.ru_utime.tv_sec) +
-			(usage.ru_stime.tv_usec + usage.ru_utime.tv_usec) / 1000000.;
+}
 
-	return(NclReturnValue(
-		&time,
-		1,
-		&dimsize,
-		NULL,
-		NCL_float,
-		1
-	));
+NhlErrorTypes _NclIisNewFileStructure(void)
+{
+    /* file variables */
+    NclFile f;
+    int *fid;
 
+    NhlErrorTypes   ret;
+
+    ng_size_t dimsize = 1;
+    int retval = 0;
+
+    /* get file information */
+    fid = (int *) NclGetArgValue(
+                    0,
+                    1,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    0);
+    f = (NclFile) _NclGetObj((int) *fid);
+
+    if (f != NULL)
+    {
+        retval = _isNewFileStructure(f);
+    }
+
+    return(NclReturnValue(
+                &retval,
+                1,
+                &dimsize,
+                NULL,
+                NCL_int,
+                1
+    ));
 }
 #ifdef __cplusplus
 }

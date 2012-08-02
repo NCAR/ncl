@@ -1,5 +1,5 @@
 /*
- *      $Id: Palette.c,v 1.10.4.1 2008-03-28 20:37:36 grubin Exp $
+ *      $Id: Palette.c,v 1.10.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,7 @@
 #include <ncarg/hlu/WorkstationP.h>
 #include <ncarg/hlu/ConvertP.h>
 #include <ncarg/hlu/ConvertersP.h>
+#include <ncarg/hlu/color.h>
 
 #define NDV_COLORMAP_PATH  	"NDV_COLORMAP_PATH"
 #define NCARG_COLORMAP_PATH  	"NCARG_COLORMAP_PATH"
@@ -777,6 +778,266 @@ static NhlColor example[] = {
 	{0.000000,0.000000,0.031373}
 };
 
+static NhlColor	ncl_default[] = {
+        {-1.000000,0.000000,0.000000},
+        {-1.000000,0.000000,0.000000},
+        {0.505882, 0.121569, 0.941176}, 
+        {0.486275, 0.117647, 0.941176}, 
+        {0.466667, 0.113725, 0.945098}, 
+        {0.447059, 0.105882, 0.949020}, 
+        {0.423529, 0.101961, 0.949020}, 
+        {0.403922, 0.094118, 0.952941}, 
+        {0.380392, 0.090196, 0.956863}, 
+        {0.356863, 0.082353, 0.960784}, 
+        {0.337255, 0.078431, 0.960784}, 
+        {0.313726, 0.070588, 0.964706}, 
+        {0.286275, 0.066667, 0.968627}, 
+        {0.262745, 0.058824, 0.968627}, 
+        {0.239216, 0.054902, 0.972549}, 
+        {0.215686, 0.047059, 0.976471}, 
+        {0.188235, 0.043137, 0.980392}, 
+        {0.164706, 0.035294, 0.980392}, 
+        {0.137255, 0.027451, 0.984314}, 
+        {0.109804, 0.023529, 0.988235}, 
+        {0.082353, 0.015686, 0.988235}, 
+        {0.054902, 0.011765, 0.992157}, 
+        {0.027451, 0.003922, 0.996078}, 
+        {0.000000, 0.000000, 1.000000}, 
+        {0.011765, 0.023529, 0.992157}, 
+        {0.023529, 0.047059, 0.988235}, 
+        {0.039216, 0.070588, 0.980392}, 
+        {0.050980, 0.094118, 0.976471}, 
+        {0.066667, 0.117647, 0.968627}, 
+        {0.078431, 0.141176, 0.964706}, 
+        {0.090196, 0.164706, 0.960784}, 
+        {0.101961, 0.184314, 0.952941}, 
+        {0.113725, 0.203922, 0.949020}, 
+        {0.129412, 0.223529, 0.941176}, 
+        {0.141176, 0.243137, 0.937255}, 
+        {0.152941, 0.262745, 0.929412}, 
+        {0.164706, 0.282353, 0.925490}, 
+        {0.176471, 0.298039, 0.921569}, 
+        {0.188235, 0.317647, 0.913725}, 
+        {0.200000, 0.333333, 0.909804}, 
+        {0.207843, 0.349020, 0.901961}, 
+        {0.219608, 0.364706, 0.898039}, 
+        {0.231373, 0.380392, 0.890196}, 
+        {0.243137, 0.396078, 0.886275}, 
+        {0.254902, 0.411765, 0.882353}, 
+        {0.247059, 0.415686, 0.886275}, 
+        {0.243137, 0.419608, 0.890196}, 
+        {0.235294, 0.423529, 0.898039}, 
+        {0.231373, 0.431373, 0.901961}, 
+        {0.223529, 0.435294, 0.909804}, 
+        {0.219608, 0.443137, 0.913725}, 
+        {0.211765, 0.450980, 0.921569}, 
+        {0.203922, 0.454902, 0.925490}, 
+        {0.200000, 0.462745, 0.929412}, 
+        {0.192157, 0.470588, 0.937255}, 
+        {0.184314, 0.478431, 0.941176}, 
+        {0.180392, 0.482353, 0.949020}, 
+        {0.172549, 0.490196, 0.952941}, 
+        {0.164706, 0.498039, 0.960784}, 
+        {0.160784, 0.509804, 0.964706}, 
+        {0.152941, 0.517647, 0.968627}, 
+        {0.145098, 0.525490, 0.976471}, 
+        {0.137255, 0.533333, 0.980392}, 
+        {0.129412, 0.545098, 0.988235}, 
+        {0.121569, 0.552941, 0.992157}, 
+        {0.113725, 0.564706, 1.000000}, 
+        {0.109804, 0.568627, 1.000000}, 
+        {0.105882, 0.576471, 1.000000}, 
+        {0.098039, 0.584314, 1.000000}, 
+        {0.094118, 0.592157, 1.000000}, 
+        {0.086275, 0.600000, 1.000000}, 
+        {0.082353, 0.607843, 1.000000}, 
+        {0.074510, 0.619608, 1.000000}, 
+        {0.070588, 0.627451, 1.000000}, 
+        {0.066667, 0.635294, 1.000000}, 
+        {0.058824, 0.643137, 1.000000}, 
+        {0.054902, 0.650980, 1.000000}, 
+        {0.047059, 0.662745, 1.000000}, 
+        {0.043137, 0.670588, 1.000000}, 
+        {0.035294, 0.678431, 1.000000}, 
+        {0.031373, 0.690196, 1.000000}, 
+        {0.027451, 0.698039, 1.000000}, 
+        {0.019608, 0.705882, 1.000000}, 
+        {0.015686, 0.717647, 1.000000}, 
+        {0.007843, 0.725490, 1.000000}, 
+        {0.003922, 0.737255, 1.000000}, 
+        {0.000000, 0.749020, 1.000000}, 
+        {0.027451, 0.749020, 0.996078}, 
+        {0.054902, 0.749020, 0.992157}, 
+        {0.082353, 0.749020, 0.988235}, 
+        {0.109804, 0.749020, 0.984314}, 
+        {0.137255, 0.752941, 0.984314}, 
+        {0.160784, 0.752941, 0.980392}, 
+        {0.188235, 0.756863, 0.976471}, 
+        {0.215686, 0.756863, 0.972549}, 
+        {0.243137, 0.760784, 0.972549}, 
+        {0.270588, 0.760784, 0.968627}, 
+        {0.294118, 0.764706, 0.964706}, 
+        {0.321569, 0.768627, 0.960784}, 
+        {0.345098, 0.768627, 0.960784}, 
+        {0.372549, 0.772549, 0.956863}, 
+        {0.396078, 0.776471, 0.952941}, 
+        {0.423529, 0.780392, 0.949020}, 
+        {0.447059, 0.784314, 0.949020}, 
+        {0.474510, 0.788235, 0.945098}, 
+        {0.498039, 0.792157, 0.941176}, 
+        {0.521569, 0.796078, 0.937255}, 
+        {0.549020, 0.803922, 0.937255}, 
+        {0.560784, 0.807843, 0.937255}, 
+        {0.572549, 0.815686, 0.937255}, 
+        {0.584314, 0.819608, 0.941176}, 
+        {0.596078, 0.827451, 0.941176}, 
+        {0.607843, 0.831373, 0.945098}, 
+        {0.619608, 0.839216, 0.945098}, 
+        {0.631373, 0.843137, 0.949020}, 
+        {0.643137, 0.850980, 0.949020}, 
+        {0.658824, 0.854902, 0.952941}, 
+        {0.670588, 0.862745, 0.952941}, 
+        {0.682353, 0.866667, 0.956863}, 
+        {0.694118, 0.870588, 0.956863}, 
+        {0.705882, 0.878431, 0.960784}, 
+        {0.721569, 0.882353, 0.960784}, 
+        {0.733333, 0.890196, 0.964706}, 
+        {0.745098, 0.894118, 0.964706}, 
+        {0.756863, 0.901961, 0.968627}, 
+        {0.772549, 0.905882, 0.968627}, 
+        {0.784314, 0.913725, 0.972549}, 
+        {0.796078, 0.917647, 0.972549}, 
+        {0.811765, 0.925490, 0.976471}, 
+        {1.000000, 1.000000, 0.784314}, 
+        {1.000000, 0.996078, 0.752941}, 
+        {1.000000, 0.996078, 0.725490}, 
+        {1.000000, 0.992157, 0.698039}, 
+        {1.000000, 0.988235, 0.670588}, 
+        {1.000000, 0.984314, 0.643137}, 
+        {1.000000, 0.980392, 0.615686}, 
+        {1.000000, 0.976471, 0.584314}, 
+        {1.000000, 0.972549, 0.556863}, 
+        {1.000000, 0.968627, 0.529412}, 
+        {1.000000, 0.964706, 0.501961}, 
+        {1.000000, 0.956863, 0.474510}, 
+        {1.000000, 0.952941, 0.447059}, 
+        {1.000000, 0.945098, 0.419608}, 
+        {1.000000, 0.937255, 0.388235}, 
+        {1.000000, 0.933333, 0.360784}, 
+        {1.000000, 0.925490, 0.333333}, 
+        {1.000000, 0.917647, 0.305882}, 
+        {1.000000, 0.905882, 0.278431}, 
+        {1.000000, 0.898039, 0.250980}, 
+        {1.000000, 0.890196, 0.223529}, 
+        {1.000000, 0.882353, 0.192157}, 
+        {1.000000, 0.870588, 0.184314}, 
+        {1.000000, 0.862745, 0.176471}, 
+        {1.000000, 0.854902, 0.164706}, 
+        {1.000000, 0.843137, 0.156863}, 
+        {1.000000, 0.835294, 0.149020}, 
+        {1.000000, 0.827451, 0.137255}, 
+        {1.000000, 0.815686, 0.129412}, 
+        {1.000000, 0.807843, 0.117647}, 
+        {1.000000, 0.796078, 0.109804}, 
+        {1.000000, 0.788235, 0.101961}, 
+        {1.000000, 0.776471, 0.090196}, 
+        {1.000000, 0.764706, 0.082353}, 
+        {1.000000, 0.756863, 0.074510}, 
+        {1.000000, 0.745098, 0.062745}, 
+        {1.000000, 0.733333, 0.054902}, 
+        {1.000000, 0.721569, 0.043137}, 
+        {1.000000, 0.709804, 0.035294}, 
+        {1.000000, 0.701961, 0.027451}, 
+        {1.000000, 0.690196, 0.015686}, 
+        {1.000000, 0.678431, 0.007843}, 
+        {1.000000, 0.666667, 0.000000}, 
+        {1.000000, 0.654902, 0.000000}, 
+        {1.000000, 0.643137, 0.000000}, 
+        {1.000000, 0.631373, 0.000000}, 
+        {1.000000, 0.619608, 0.000000}, 
+        {1.000000, 0.607843, 0.000000}, 
+        {1.000000, 0.596078, 0.000000}, 
+        {1.000000, 0.584314, 0.000000}, 
+        {1.000000, 0.576471, 0.000000}, 
+        {1.000000, 0.564706, 0.000000}, 
+        {1.000000, 0.552941, 0.000000}, 
+        {1.000000, 0.541176, 0.000000}, 
+        {1.000000, 0.529412, 0.000000}, 
+        {1.000000, 0.517647, 0.000000}, 
+        {1.000000, 0.505882, 0.000000}, 
+        {1.000000, 0.498039, 0.000000}, 
+        {1.000000, 0.486275, 0.000000}, 
+        {1.000000, 0.474510, 0.000000}, 
+        {1.000000, 0.462745, 0.000000}, 
+        {1.000000, 0.450980, 0.000000}, 
+        {1.000000, 0.439216, 0.000000}, 
+        {1.000000, 0.431373, 0.000000}, 
+        {1.000000, 0.407843, 0.000000}, 
+        {1.000000, 0.388235, 0.000000}, 
+        {1.000000, 0.368627, 0.000000}, 
+        {1.000000, 0.349020, 0.000000}, 
+        {1.000000, 0.325490, 0.000000}, 
+        {1.000000, 0.305882, 0.000000}, 
+        {1.000000, 0.286275, 0.000000}, 
+        {1.000000, 0.266667, 0.000000}, 
+        {1.000000, 0.243137, 0.000000}, 
+        {1.000000, 0.223529, 0.000000}, 
+        {1.000000, 0.203922, 0.000000}, 
+        {1.000000, 0.184314, 0.000000}, 
+        {1.000000, 0.160784, 0.000000}, 
+        {1.000000, 0.141176, 0.000000}, 
+        {1.000000, 0.121569, 0.000000}, 
+        {1.000000, 0.101961, 0.000000}, 
+        {1.000000, 0.078431, 0.000000}, 
+        {1.000000, 0.058824, 0.000000}, 
+        {1.000000, 0.039216, 0.000000}, 
+        {1.000000, 0.019608, 0.000000}, 
+        {1.000000, 0.000000, 0.000000}, 
+        {0.988235, 0.000000, 0.000000}, 
+        {0.976471, 0.000000, 0.000000}, 
+        {0.968627, 0.000000, 0.000000}, 
+        {0.956863, 0.000000, 0.000000}, 
+        {0.945098, 0.000000, 0.000000}, 
+        {0.937255, 0.000000, 0.000000}, 
+        {0.925490, 0.000000, 0.000000}, 
+        {0.917647, 0.000000, 0.000000}, 
+        {0.905882, 0.000000, 0.000000}, 
+        {0.894118, 0.000000, 0.000000}, 
+        {0.886275, 0.000000, 0.000000}, 
+        {0.874510, 0.000000, 0.000000}, 
+        {0.862745, 0.000000, 0.000000}, 
+        {0.854902, 0.000000, 0.000000}, 
+        {0.843137, 0.000000, 0.000000}, 
+        {0.835294, 0.000000, 0.000000}, 
+        {0.823529, 0.000000, 0.000000}, 
+        {0.811765, 0.000000, 0.000000}, 
+        {0.803922, 0.000000, 0.000000}, 
+        {0.792157, 0.000000, 0.000000}, 
+        {0.784314, 0.000000, 0.000000}, 
+        {0.792157, 0.023529, 0.023529}, 
+        {0.803922, 0.050980, 0.050980}, 
+        {0.811765, 0.078431, 0.078431}, 
+        {0.823529, 0.105882, 0.105882}, 
+        {0.835294, 0.137255, 0.137255}, 
+        {0.843137, 0.168627, 0.168627}, 
+        {0.854902, 0.196078, 0.196078}, 
+        {0.862745, 0.227451, 0.227451}, 
+        {0.874510, 0.258824, 0.258824}, 
+        {0.886275, 0.294118, 0.294118}, 
+        {0.894118, 0.325490, 0.325490}, 
+        {0.905882, 0.360784, 0.360784}, 
+        {0.917647, 0.396078, 0.396078}, 
+        {0.925490, 0.431373, 0.431373}, 
+        {0.937255, 0.466667, 0.466667}, 
+        {0.945098, 0.501961, 0.501961}, 
+        {0.956863, 0.541176, 0.541176}, 
+        {0.968627, 0.576471, 0.576471}, 
+        {0.976471, 0.615686, 0.615686}, 
+        {0.988235, 0.654902, 0.654902}, 
+        {1.000000, 0.698039, 0.698039}
+};
+
+
 /*
  * List of all pre-defined colormaps.  Eventually, I would like to add
  * a dynamic list, so the user can add thier own cmap's.
@@ -791,6 +1052,7 @@ static _NhlPalCmap cmaps[] = {
 	{"temp1",	temp1,		NhlNumber(temp1)},
 	{"psgcap",	psgcap,		NhlNumber(psgcap)},
 	{"example",	example,	NhlNumber(example)},
+	{"ncl_default",	ncl_default,	NhlNumber(ncl_default)},
 	{NULL,		NULL,		0}
 };
 
@@ -890,6 +1152,31 @@ PaletteClassInitialize
 }
 
 /*
+ * thinking of the terminology -- a Palette does not contain the background and foreground colors
+ * whereas a Colormap does.
+ */
+
+NhlGenArray GetPaletteFromCMap
+	(NhlGenArray cmap_ga)
+{
+	NhlGenArray pal_ga;
+	float *new_data;
+	ng_size_t new_dims[2];
+
+	/* manually reform the GenArray to eliminate background and foreground colors */
+	new_dims[0] = cmap_ga->len_dimensions[0] - 2;
+	new_dims[1] =  cmap_ga->len_dimensions[1];
+	new_data = (float*)NhlConvertMalloc(new_dims[0] * new_dims[1] * sizeof(float));
+	memcpy(new_data, cmap_ga->data + 2 * new_dims[1] * sizeof(float),
+	       new_dims[0] * new_dims[1] * sizeof(float));
+	pal_ga = _NhlConvertCreateGenArray((void *)new_data,NrmQuarkToString(cmap_ga->typeQ),sizeof(float),
+					   cmap_ga->num_dimensions,new_dims);
+	return pal_ga;
+}
+
+
+
+/*
  * Function:	CvtStringToCmap
  *
  * Description:	
@@ -927,12 +1214,28 @@ CvtStringToCmap
 	NhlWorkstationClass	wc;
 	NhlPaletteLayer		pl;
 	NhlPalList		cmaps;
+	int 			is_view = 0;
 
 	if(nargs != 1 && args[0].addressmode != NhlLAYEROFFSET){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid args?",func);
 		return NhlFATAL;
 	}
 	wc = *((NhlWorkstationClass*)args[0].data.ptrval);
+	if (wc->base_class.class_inited & _NhlViewClassFlag) {
+		is_view = 1;
+		wc = (NhlWorkstationClass)NhlworkstationClass; 
+		if ((! s1) || strlen(s1) == 0) {
+			_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),NULL);
+			return NhlNOERROR;
+		}
+	}
+	else if (! s1 || !(wc->base_class.class_inited & _NhlWorkstationClassFlag)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Unable to convert string \"%s\" to %s",func,s1,
+			NhlTColorMap);
+		return NhlFATAL;
+	}
+			
 	pl = (NhlPaletteLayer)_NhlGetLayer(wc->work_class.pal);
 	cmaps = pl->pal.cmaps;
 
@@ -960,8 +1263,12 @@ CvtStringToCmap
 			NhlTColorMap);
 		return NhlFATAL;
 	}
+	if (is_view) {
+		gen = GetPaletteFromCMap(gen);
+	}
 
 	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+	return NhlNOERROR;
 }
 
 /*
@@ -1002,7 +1309,8 @@ CvtGenArrayToCmap
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
 	}
 
-	if((gen->num_dimensions != 2) || (gen->len_dimensions[1] != 3)){
+	if((gen->num_dimensions != 2) ||
+			!(gen->len_dimensions[1] == 3 || gen->len_dimensions[1] ==4)) {
 		if((gen->num_elements == 1) &&
 			(gen->size <= sizeof(NhlArgVal)) && (gen->size > 0)){
 			NrmValue	val;
@@ -1065,6 +1373,15 @@ CvtStringGenArrayToCmap
 		return NhlFATAL;
 	}
 	wc = *((NhlWorkstationClass*)args[0].data.ptrval);
+	if (wc->base_class.class_inited & _NhlViewClassFlag) {
+		wc = (NhlWorkstationClass)NhlworkstationClass; 
+	}
+	else if (!(wc->base_class.class_inited & _NhlWorkstationClassFlag)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Unable to convert string array to %s",func,
+			NhlTColorMap);
+		return NhlFATAL;
+	}
 
 	if(!fgen){
 		_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),fgen);
@@ -1131,6 +1448,7 @@ CvtStringGenArrayToCmap
 			*(fptr+(3*i)+2) = (float)rgb.blue / 65535.0;
 	}
 	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
+	return NhlNOERROR;
 }
 
 /*
@@ -1201,16 +1519,15 @@ PaletteInitialize
 		cmptr++;
 	}
 
-
-	(void)_NhlRegSymConv(pp->work_class,NhlTQuarkGenArray,NhlTColorMap,
+	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTColorMap,
 						NhlTQuarkGenArray,NhlTGenArray);
-	(void)NhlRegisterConverter(pp->work_class,NhlTString,NhlTColorMap,
+	(void)NhlRegisterConverter(NULL,NhlTString,NhlTColorMap,
 					CvtStringToCmap,&arg,1,False,NULL);
-	(void)_NhlRegSymConv(pp->work_class,NhlTQuark,NhlTColorMap,
+	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTColorMap,
 							NhlTQuark,NhlTScalar);
-	(void)NhlRegisterConverter(pp->work_class,NhlTGenArray,
+	(void)NhlRegisterConverter(NULL,NhlTGenArray,
 			NhlTColorMap,CvtGenArrayToCmap,NULL,0,False,NULL);
-	(void)NhlRegisterConverter(pp->work_class,NhlTStringGenArray,
+	(void)NhlRegisterConverter(NULL,NhlTStringGenArray,
 			NhlTColorMap,CvtStringGenArrayToCmap,&arg,1,False,NULL);
 
 	return NhlNOERROR;
@@ -1734,4 +2051,213 @@ NhlPalLoadColormapFiles
 	}
 
 	return ReadUserColormaps(lc,suppress_path_message,func);
+}
+/*
+ * Function:  _NhlSpanColorPalette
+ *
+ * Description: Spans a color palette to generate an array of count color indexes
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+NhlErrorTypes _NhlSpanColorPalette
+(NhlGenArray	        palga,
+ int                    count,
+ int *                  colors)
+
+{
+	int min_ind,max_ind,i;
+	int *pal_col = (int *)palga->data;
+	double spacing;
+	int ix;
+	
+
+	i = 0;
+	while (pal_col[i] < 0) i++;
+	min_ind = i;
+	max_ind = palga->num_elements - 1;
+	if (count < 2) {
+		spacing = 1.0;
+	}
+	else {
+		spacing = (max_ind - min_ind) / (double) (count - 1);
+	}
+	for (i = 0; i < count; i++) {
+		ix = (int) min_ind + spacing * i + 0.5;
+		colors[i] = pal_col[ix];
+	}
+	return NhlNOERROR;
+}
+
+/*
+ * Function:  _NhlSetFillColorsFromPalette
+ *
+ * Description: Sets a color gen array using the colors in a palette gen array
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+NhlErrorTypes    _NhlSetColorsFromPalette
+(NhlLayer               vl,
+ NhlGenArray            palette_ga,
+ int                    color_count,
+ int			span_palette,
+ NhlGenArray *          color_ga,
+ char *                 entry_name)
+{
+
+	NhlErrorTypes subret = NhlNOERROR;
+        _NhlConvertContext	context = NULL;
+	char *e_text;
+	NrmValue from,to;
+	NhlGenArray intga;
+	int *ci;
+	ng_size_t i,io, count;
+
+	from.size = sizeof(NhlGenArray);
+	from.data.ptrval = palette_ga;
+	to.size = sizeof(NhlGenArray);
+	to.data.ptrval = &intga;
+
+        context = _NhlCreateConvertContext(vl->base.wkptr);
+
+	subret = _NhlConvertData(context,NrmStringToQuark(NhlTColorDefinitionGenArray),
+				 NrmStringToQuark(NhlTColorIndexGenArray),&from,&to);
+	if (subret < NhlWARNING) {
+		e_text = "%s: error converting color palette";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	ci = NhlMalloc(sizeof(int) * color_count);
+
+	if (span_palette) {
+		subret = _NhlSpanColorPalette(intga,color_count,ci);
+	}
+	else {
+		int *pal_col = (int*) intga->data;
+		for (i = 0,io = 0; io < color_count; i++) {
+			if (pal_col[i % intga->num_elements] < 0)
+				continue;
+			ci[io] = pal_col[i % intga->num_elements];
+			io++;
+		}
+	}
+	count = (ng_size_t)color_count;
+	if ((*color_ga = NhlCreateGenArray((NhlPointer)ci,NhlTColorIndex,
+				     sizeof(int),1,&count)) == NULL) {
+		e_text = "%s: error creating GenArray";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	(*color_ga)->my_data = True;
+        _NhlFreeConvertContext(context);
+
+	return NhlNOERROR;
+}
+
+NhlErrorTypes    _NhlSetColorsFromIndexAndPalette
+(NhlLayer               vl,
+ NhlGenArray            index_ga,
+ NhlGenArray            palette_ga,
+ char *                 entry_name)
+{
+	int *fill_cols;
+	float *fpal;
+	int i;
+	char *e_text;
+	
+	fill_cols = (int*)index_ga->data;
+
+	for (i = 0; i < index_ga->num_elements; i++) {
+		if (fill_cols[i] >= 0 && fill_cols[i] < 256) {
+			if (fill_cols[i] > palette_ga->len_dimensions[0] - 1) {
+				e_text ="%s: color index (%d) exceeds size of palette, defaulting to foreground color for entry (%d)";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,fill_cols[i],i);
+				fill_cols[i] = NhlFOREGROUND;
+				continue;
+			}
+			fpal = ((float*)palette_ga->data) + fill_cols[i] * palette_ga->len_dimensions[1];
+			fill_cols[i] = _NhlRGBAToColorIndex(fpal,palette_ga->len_dimensions[1] == 4 ? 1 : 0);
+		}
+	}
+	return NhlNOERROR;
+}
+
+NhlErrorTypes    _NhlSetColorsFromWorkstationColorMap
+(NhlLayer               vl,
+ NhlGenArray            *index_ga,
+ ng_size_t		count,
+ int                    span_palette,
+ char *                 entry_name)
+{
+	NhlGenArray cmap_ga;
+	int *ci;
+	int i,ix;
+	int min_ind,max_ind;
+	double spacing;
+
+	NhlVAGetValues(vl->base.wkptr->base.id,
+		       NhlNwkColorMap, &cmap_ga, NULL);
+	ci = NhlMalloc(sizeof(int) * count);
+
+	min_ind = 2;
+	max_ind = cmap_ga->len_dimensions[0] - 1;
+	if (! span_palette) {
+		for (i = 0; i < count; i++) {
+			ci[i] = min_ind + i % (max_ind - min_ind + 1);
+		}
+	}
+	else {
+		if (count < 2) {
+			spacing = 1.0;
+		}
+		else {
+			spacing = (max_ind - min_ind) / (double) (count - 1);
+		}
+		for (i = 0; i < count; i++) {
+			ix = (int) min_ind + spacing * i + 0.5;
+			ci[i] = ix;
+		}
+	}
+	*index_ga = _NhlCreateGenArray(ci,NhlTColorIndex,4,1,&count,False);
+	NhlFreeGenArray(cmap_ga);
+
+	return NhlNOERROR;
+}
+
+NhlGenArray _NhlGetWorkstationPalette
+(NhlLayer  l)
+{
+	NhlGenArray cmap_ga;
+	float *new_data;
+	ng_size_t new_len,csize;
+
+	NhlVAGetValues(l->base.wkptr->base.id,
+		       NhlNwkColorMap, &cmap_ga, NULL);
+	/* manually reform the GenArray to eliminate background and foreground colors */
+	new_len = cmap_ga->len_dimensions[0] - 2;
+	csize =  cmap_ga->len_dimensions[1];
+	new_data = (float*)NhlMalloc(new_len * csize * sizeof(float));
+	memcpy(new_data, cmap_ga->data + 2 * csize * sizeof(float),
+	       new_len * csize * sizeof(float));
+	if (cmap_ga->my_data)
+		NhlFree(cmap_ga->data);
+	cmap_ga->my_data = True;
+	cmap_ga->data = new_data;
+	cmap_ga->len_dimensions[0] = new_len;
+	cmap_ga->num_elements = new_len * csize;
+
+	return cmap_ga;
 }

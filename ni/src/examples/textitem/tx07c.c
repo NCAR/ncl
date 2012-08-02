@@ -26,12 +26,10 @@
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/TextItem.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
-#include <ncarg/hlu/ImageWorkstation.h>
 
 main()
 {
@@ -60,17 +58,17 @@ main()
     }
     else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
- * Create an XWorkstation object.
+ * Create an X11 workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
         NhlCreate(&wid,"tx07Work",
-                  NhlxWorkstationClass,NhlDEFAULT_APP, rlist);
+                  NhlcairoWindowWorkstationClass,NhlDEFAULT_APP, rlist);
     }
-    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
+    else if (!strcmp(wks_type,"oldps") || !strcmp(wks_type,"OLDPS")) {
 /*
- * Create a PS workstation.
+ * Create an older-style PostScript workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./tx07c.ps");
@@ -78,9 +76,9 @@ main()
         NhlCreate(&wid,"tx07Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
+    else if (!strcmp(wks_type,"oldpdf") || !strcmp(wks_type,"OLDPDF")) {
 /*
- * Create a PDF workstation.
+ * Create an older-style PDF workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPDFFileName,"./tx07c.pdf");
@@ -88,8 +86,8 @@ main()
         NhlCreate(&wid,"tx07Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
-             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF") ||
+             !strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a cairo PS/PDF workstation.
  */
@@ -97,11 +95,10 @@ main()
         NhlRLSetString(rlist,NhlNwkFileName,"./tx07c");
         NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
         NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
-        NhlCreate(&wid,"tx07Work",NhlcairoPSPDFWorkstationClass,
+        NhlCreate(&wid,"tx07Work",NhlcairoDocumentWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
-             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+    else if (!strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
 /*
  * Create a cairo PNG workstation.
  */

@@ -72,31 +72,31 @@ wks_type = "x11"
   end if
   if (str_lower(wks_type).eq."x11") then
 ;
-; Create an XWorkstation object.
+; Create an X11 workstation.
 ;
-    wks = create "cn14Work" xWorkstationClass defaultapp
+    wks = create "cn14Work" windowWorkstationClass defaultapp
       "wkColorMap" : cmap                     ; assign the new color map
     end create
   end if
-  if (str_lower(wks_type).eq."ps") then
+  if (str_lower(wks_type).eq."oldps") then
 ;
-; Create a PSWorkstation object.
+; Create an older-style PostScript workstation.
 ;
     wks = create "cn14Work" psWorkstationClass defaultapp
       "wkPSFileName" : "./cn14n.ps"      ; name the PostScript file
       "wkColorMap" : cmap              ; assign the new color map
     end create
   end if
-  if (str_lower(wks_type).eq."pdf") then
+  if (str_lower(wks_type).eq."oldpdf") then
 ;
-; Create a PDFWorkstation object.
+; Create an older-style PDF workstation.
 ;
     wks = create "cn14Work" pdfWorkstationClass defaultapp
       "wkPDFFileName" : "./cn14n.pdf"      ; name the PDF file
       "wkColorMap" : cmap              ; assign the new color map
     end create
   end if
-  if (str_lower(wks_type).eq."newpdf".or.str_lower(wks_type).eq."newps") then
+  if (str_lower(wks_type).eq."pdf".or.str_lower(wks_type).eq."ps") then
 ;
 ; Create a cairo PS/PDF Workstation object.
 ;
@@ -106,7 +106,7 @@ wks_type = "x11"
       "wkColorMap" : cmap              ; assign the new color map
     end create
   end if
-  if (str_lower(wks_type).eq."newpng".or.str_lower(wks_type).eq."png") then
+  if (str_lower(wks_type).eq."png") then
 ;
 ; Create a cairo PNG Workstation object.
 ;

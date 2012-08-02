@@ -147,26 +147,6 @@ hid_t toH5type(const char *type);
 hid_t Ncltype2HDF5type(NclBasicDataTypes type);
 hid_t h5memtype2filetype(hid_t memtype);
 
-int _MachineIsBigEndian();
-
-int _MachineIsBigEndian()
-{
-#if 1
-    short int word = 0x0001;
-    char *byte = (char *) &word;
-
-    if(byte[0])
-       return 0;
-    else
-       return 1;
-#else
-    if(htonl(47) == 47)
-       return 1;
-    else
-       return 0;
-#endif
-}
-
 hid_t h5memtype2filetype(hid_t memtype)
 {
     hid_t h5type = -1;

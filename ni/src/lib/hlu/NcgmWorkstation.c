@@ -185,7 +185,7 @@ NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
 /* current_wks_count	*/	NhlInheritCurrentWksCount,                
 /* wks_hlu_ids		*/	NhlInheritGksWksRecs,
 /* hlu_wks_flag		*/	NhlInheritHluWksFlag,
-/* def_background	*/	{0.0,0.0,0.0},
+/* def_background	*/	{1.0,1.0,1.0},
 /* rgb_dbm		*/	NULL,
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	NcgmWorkstationOpen,
@@ -732,10 +732,10 @@ NcgmWorkstationDeactivate
 #if DEBUG_NCGM
 	fprintf(stderr,"calling ngsrat for %s\n",np->meta_name);
 #endif
-	c_ngsrat(2,np->gks_iat,np->gks_rat);
+
+        c_ngsrat(2,np->gks_iat,np->gks_rat);
 	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
 		retcode = NhlWARNING;
-
 	subret = (*NhlworkstationClassRec.work_class.deactivate_work)(l);
 	return MIN(subret,retcode);
 }

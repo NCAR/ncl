@@ -344,10 +344,10 @@ begin
   end if
 
 ;---Error checking for rank
-  if(rto.gt.rfrom) then
-    print("Error: copy_VarCoords_n: arrays must be same rank, or second array must be subset in size of first array.")
-    return
-  end if
+;;  if(rto.gt.rfrom) then
+;;    print("Error: copy_VarCoords_n: arrays must be same rank, or second array must be subset in size of first array.")
+;;    return
+;;  end if
 
   dName = getvardims(var_from)
 
@@ -358,8 +358,12 @@ begin
         ifrom = i
         if (.not.ismissing(dName(ifrom)).and.dimf(ifrom).eq.dimt(ito)) then  
           var_to!ito = var_from!ifrom
-          if(iscoord(var_from,var_from!ifrom))
-            var_to&$var_to!ito$ = var_from&$var_from!ifrom$
+          if(iscoord(var_from,var_from!ifrom)) then
+            if(dimf(ifrom).eq.dimt(ito)) then
+              var_to&$var_to!ito$ = var_from&$var_from!ifrom$
+            else
+              print("Error: copy_VarCoords_n: dimension being copied must be the same size")
+            end if
           end if
         end if
         ito = ito + 1
@@ -10143,14 +10147,20 @@ begin
 end
 ; ******************************************************************
 ; D. Shea
-; attaches/appends table data: ie (row,column) arrays
-; add additional rows
+; attaches/appends table data: ie (row,column) arrays ; add additional rows
+; will add the coordinate variable of the right dimension
+; but will not do so for the left dimension. The left dimension
+; will be named but no coordinates will be associated with the name.
+
 undef("table_attach_rows")
 function table_attach_rows (t1[*][*], t2[*][*], iopt:integer)
 
 local dim_t1, dim_t2, ncol1, ncol2, nrow1, nrow2    \
     , dimNames_t1, dimNames_t2, dimNames, n
 begin
+
+  printVarSummary(t1)
+  printVarSummary(t2)
                                    ; get array shape/sizes
   dim_t1  = dimsizes(t1)
   dim_t2  = dimsizes(t2)
@@ -10175,20 +10185,21 @@ begin
   nrow1       = dim_t1(0)
   nrow2       = dim_t2(0)
 
-  tNew = new ( (/nrow1+nrow2, ncol1/), typeof(t1), getFillValue(t1))
-  delete(tNew@_FillValue)
                                    ; chk _FillValue stuff
   if (isatt(t1,"_FillValue") ) then
-      tNew@_FillValue = t1@_FillValue
-  end if
-  if (isatt(t2,"_FillValue") ) then
-      tNew@_FillValue = t2@_FillValue
+      tNew = new ( (/nrow1+nrow2, ncol1/), typeof(t1), t1@_FillValue)
+  else if (isatt(t2,"_FillValue") ) then
+           tNew = new ( (/nrow1+nrow2, ncol1/), typeof(t2), t2@_FillValue)
+       else 
+           tNew = new ( (/nrow1+nrow2, ncol1/), typeof(t2), "No_FillValue")
+       end if
   end if
                                  ; insert values
   tNew(0:nrow1-1,:)   = (/ t1 /)
   tNew(nrow1:   ,:)   = (/ t2 /)
+  write_matrix(tNew, "10f7.2" , False)
                                  ; meta data
-  tNew!0 = "row"                 ; default dim names
+  tNew!0 = "row"                 ; *default* dim names
   tNew!1 = "col" 
 
   copy_VarAtts (t1, tNew)        ; copy attributes
@@ -10196,36 +10207,25 @@ begin
 
   dimNames_t1 = getvardims(t1)   ; dimension names
   dimNames_t2 = getvardims(t2) 
-  dimNames    = dimNames_t1      ; default
 
   do n=0,1                       ; override "row", "col"
      if (.not.ismissing(dimNames_t1(n))) then
          tNew!n = dimNames_t1(n) ; default ... use t1 dim names
-     else
-         if (.not.ismissing(dimNames_t2(n))) then
-             tNew!n = dimNames_t2(n)    ; use t2 dim names if t1 not present
-         end if
+     else if (.not.ismissing(dimNames_t2(n))) then
+              tNew!n = dimNames_t2(n)    ; use t2 dim names if t1 not present
+          end if
      end if
   end do
-                                 ; coordinate stuff [if present]
-  do n=0,1
-     if (n.eq.0) then 
-         if (iscoord(t1,dimNames_t1(n)) ) then 
-             tNew&$dimNames(n)$(0:n1-1) = t1&$dimNames_t1(n)$ ; t1 leftmost dimension
-         end if
-         if (iscoord(t2,dimNames_t2(n)) ) then 
-             tNew&$dimNames(n)$(n1:   ) = t2&$dimNames_t2(n)$ ; t2 leftmost dimension
-         end if
-     else
-         if (iscoord(t1,dimNames_t1(n)) ) then 
-             tNew&$dimNames(n)$ = t1&$dimNames(n)$   ; right dimensions
-         else
-             if (iscoord(t1,dimNames_t2(n)) ) then
-                 tNew&$dimNames(n)$ = t2&$dimNames(n)$
-             end if
-         end if
-     end if
-  end do
+                                 ; coord for the right dim (n=1) only
+                                 ; left dim (n=0) will be named but no coord
+                                 ; too many hassles when testing      
+  n = 1    
+  if (iscoord(t1,dimNames_t1(n)) ) then 
+      tNew&$dimNames_t1(n)$ = t1&$dimNames_t1(n)$   ; right dimensions
+  else if (iscoord(t2,dimNames_t2(n)) ) then
+           tNew&$dimNames_t2(n)$ = t2&$dimNames_t2(n)$
+       end if
+  end if
 
   return (tNew)
 end
@@ -11801,7 +11801,8 @@ begin
 
    statx    = new ( nStat, typeof(sFillV), sFillV) 
    if (.not.allFill) then
-       nwork    = dimsizes(work)  
+       nwork    = 0l                    ; force nwork as 'long' int
+       nwork    = dimsizes(work)        ; so (say) 3*nwork will work
        statx(0) = avg(x)                ; mean
        statx(1) = stddev(x)             ; std. deviation
        if (nwork.ge.10) then 
@@ -12623,6 +12624,86 @@ begin
 
   return(dp_sigma)
 end
+;---------------------------------------------------------------------------
+undef("dpres_plevel_Wrap")
+function dpres_plevel_Wrap(plev[*]:numeric, psfc:numeric, ptop[1]:numeric, opt:integer)
+; -------------------------------------------------
+; use the  dpres_plevel function to get layer thicknesses
+; -------------------------------------------------
+
+begin
+  dp_plevel           = dpres_plevel(plev, psfc, ptop, 0) 
+
+; add meta data
+
+  dp_plevel@long_name = "pressure thickness"
+  if (isatt(psfc, "units")) then
+      dp_plevel@units = psfc@units
+  end if
+
+  plevName   = getvardims(plev)
+  psfcName   = getvardims(psfc)      ; dimension names
+  rank_psfc  = dimsizes( dimsizes(psfc) )
+
+  if (rank_psfc.eq.1) then
+      if (.not.ismissing(plevName)) then
+          dp_plevel!0          = plevName
+          if (iscoord(plev,plevName)) then
+              dp_plevel&$plevName$ = plev&$plevName$
+          end if
+      else
+          dp_plevel!0   = "plev"
+          dp_plevel&plev=  plev
+      end if
+  end if
+
+  if (rank_psfc.eq.2) then                           ; (lat,lon) => (0,1)
+      do nd=0,1
+         if (.not.ismissing(psfcName(nd))) then
+             dp_plevel!(nd+1)   = psfcName(nd)       ; psfc!nd
+             if (iscoord(psfc,psfcName(nd))) then
+                 dp_plevel&$psfcName(nd)$ = psfc&$psfcName(nd)$
+             end if
+         end if
+      end do
+
+      if (.not.ismissing(plevName)) then
+          dp_plevel!0          = plevName
+          if (iscoord(plev,plevName)) then
+              dp_plevel&$plevName$ = plev&$plevName$
+          end if
+      else
+          dp_plevel!0   = "plev"
+          dp_plevel&plev=  plev
+      end if
+  end if
+
+  if (rank_psfc.eq.3) then                          ; (time,lat,lon) => (0,1,2)
+      if (.not.ismissing(psfcName(0))) then
+           dp_plevel!0   = psfcName(0)              ; psfc!0 
+           if (iscoord(psfc,psfcName(0))) then
+               dp_plevel&$psfcName(0)$ = psfc&$psfcName(0)$
+           end if
+
+           do nd=1,2
+              if (.not.ismissing(psfcName(0))) then
+                  dp_plevel!(nd+1)   = psfcName(nd)       ; psfc!nd
+                  dp_plevel&$psfcName(nd)$ = psfc&$psfcName(nd)$
+              end if
+           end do
+
+           if (.not.ismissing(plevName) .and. iscoord(plev,plevName)) then
+               dp_plevel!1          = plevName
+               dp_plevel&$plevName$ = plev&$plevName$
+           else
+               dp_plevel!1   = "plev"
+               dp_plevel&plev=  plev
+           end if
+      end if
+  end if
+
+  return(dp_plevel)
+end
 ;---------------------------------------------------
 ; Rob Nicholas [U. Washington] & D. Shea
 undef("pattern_cor2")
@@ -12855,4 +12936,65 @@ begin
   copy_VarAtts(x,y)
 
   return(y)
+end
+;------
+; Thirteen pt (decadal)
+undef("smth13_n")
+function smth13_n (x:numeric, ndim)    ; smth13
+local wgts, smX
+begin
+        wgts     = (/ 1,6,19,42,71,96,106,96,71,42,19,6,1 /)*1.0
+        wgts     = wgts/sum(wgts)
+        smX      = wgt_runave_n_Wrap(x, wgts, 1, ndim)   ; reflective end pts
+        return(smX)
+end
+
+;------
+; Names and abbreviations for months
+undef("month_name")
+function month_name (opt[1]:integer)
+;  monName = month_name(-1)    ; return with extra January 
+begin
+ if (opt.eq.0) then
+     return((/"Jan","Feb","Mar","Apr","May","Jun"\
+             ,"Jul","Aug","Sep","Oct","Nov","Dec"/))         ; len=12
+     else if (opt.eq.-1) then
+        return((/"Jan","Feb","Mar","Apr","May","Jun"      \
+                ,"Jul","Aug","Sep","Oct","Nov","Dec","Jan"/)); len=13
+     else if (opt.eq.1) then
+        return((/"January","February","March","April" \
+                ,"May","June","July","August"         \
+                ,"September","October","November","December"/)) ; len=12
+     end if     ; opt= 1
+     end if     ; opt=-1
+  end if        ; opt= 0  
+end
+
+;------
+; Names and abbreviations for seasons
+undef("season_name")
+function season_name (opt[1]:integer)
+;  seaName = season_name(1)    ; 5-month season
+begin
+ if (opt.eq.0) then
+       return((/"DJF","JFM","FMA","MAM","AMJ","MJJ" \
+               ,"JJA","JAS","ASO","SON","OND","NDJ"/))       ; length 12
+    else if (opt.eq.-1) then
+       return((/"DJF","JFM","FMA","MAM","AMJ","MJJ" \
+               ,"JJA","JAS","ASO","SON","OND","NDJ","DJF"/)) ; length 13
+    else if (opt.eq.1) then
+       return((/"NDJFM","DJFMA","JFMAM","FMAMJ","MAMJJ","AMJJA" \
+               ,"MJJAS","JJASO","JASON","ASOND","SONDJ","ONDJF" /)) ; len 12
+    else if (opt.eq.2) then
+       return((/"DJF","MAM","JJA","SON"/))                   ; len 4
+    else if (opt.eq.3) then
+       return((/"Winter","Spring","Autumn","Summer"/))       ; len 4
+    else if (opt.eq.4) then
+       return((/"Summer","Autumn","Winter","Spring"/))       ; len4
+    end if     ; opt= 4
+    end if     ; opt= 3
+    end if     ; opt= 2
+    end if     ; opt= 1
+    end if     ; opt=-1
+  end if       ; opt= 0  
 end

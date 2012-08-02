@@ -61,9 +61,9 @@ ncgmid = create "xy11Work" ncgmWorkstationClass defaultapp
     "wkMetaName" : "xy11n.ncgm"
 end create
 ;
-; Create an XWorkstation object.
+; Create an X11 workstation.
 ;
-xworkid = create "xy11Work" xWorkstationClass defaultapp
+xworkid = create "xy11Work" windowWorkstationClass defaultapp
       "wkPause"   : True
 end create
 

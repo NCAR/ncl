@@ -1,5 +1,5 @@
 /*
- *      $Id: ps.c,v 1.41 2010-02-17 02:35:07 fred Exp $
+ *      $Id: ps.c,v 1.41.2.1 2010-03-17 20:53:30 brownrig Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -39,6 +39,7 @@
 #include "ps_device.h"
 #include "psddi.h"
 #include "ps.h"
+#include "argb.h"
 
 char    *PSFontNames[] = {
                             "/Times-Roman", "/Times-Bold", "/Times-Italic",
@@ -52,6 +53,8 @@ char    *PSFontNames[] = {
 extern int      orig_wks_id;
 extern void     gerr_hand (Gint, Gint, const char *);
 int             c_model;
+
+void writePSColor(FILE*, int);
 
 void PSprint_points(PSddp *psa, PSPoint *points, unsigned num, 
                         terminator_type terminator)
@@ -902,8 +905,11 @@ void PSpreamble (PSddp *psa, preamble_type type)
                         (void) fprintf(fp, "1 O\n");
                 }
                 else {
+                    /*****RLB
                         (void) fprintf(fp,"%d O\n", 
                                 psa->attributes.ps_colr_ind);
+                     *****/
+                    writePSColor(fp, psa->attributes.ps_colr_ind);
                 }
         }
 }
@@ -2229,7 +2235,8 @@ int ps_Polyline(gksc)
            requested_color = psa->attributes.line_colr_ind;
            current_color = psa->attributes.ps_colr_ind;
            if (requested_color != current_color) {
-                   (void) fprintf(psa->file_pointer, "%d O\n", requested_color);
+                   /***RLB (void) fprintf(psa->file_pointer, "%d O\n", requested_color);*/
+                   writePSColor(psa->file_pointer, requested_color);
                    psa->attributes.ps_colr_ind = requested_color;
            }
         }
@@ -2290,7 +2297,8 @@ int ps_Polymarker(gksc)
            requested_color = psa->attributes.marker_colr_ind;
            current_color = psa->attributes.ps_colr_ind;
            if (requested_color != current_color) {
-                   (void) fprintf(psa->file_pointer, "%d O\n", requested_color);
+                   /****RLB (void) fprintf(psa->file_pointer, "%d O\n", requested_color);*/
+                   writePSColor(psa->file_pointer, requested_color);
                    psa->attributes.ps_colr_ind = requested_color;
            }
         }
@@ -2377,7 +2385,8 @@ int ps_Text(gksc)
            requested_color = psa->attributes.text_colr_ind;
            current_color = psa->attributes.ps_colr_ind;
            if (requested_color != current_color) {
-                   (void) fprintf(psa->file_pointer, "%d O\n", requested_color);
+                   /****RLB (void) fprintf(psa->file_pointer, "%d O\n", requested_color);*/
+                   writePSColor(psa->file_pointer, requested_color);
                    psa->attributes.ps_colr_ind = requested_color;
            }
         }
@@ -2750,7 +2759,8 @@ int ps_FillArea(gksc)
            requested_color = psa->attributes.fill_colr_ind;
            current_color = psa->attributes.ps_colr_ind;
            if (requested_color != current_color) {
-                   (void) fprintf(psa->file_pointer, "%d O\n", requested_color);
+                   /****RLB (void) fprintf(psa->file_pointer, "%d O\n", requested_color);*/
+                   writePSColor(psa->file_pointer, requested_color);
                    psa->attributes.ps_colr_ind = requested_color;
            }
         }
@@ -3169,6 +3179,9 @@ int ps_SetColorRepresentation(gksc)
 
         unsigned        index   = (unsigned) xptr[0];
 
+        if (index & ALPHA_MASK)  /* argb color? */
+            return 1;
+
         float           r =  rgbptr[0].r;
         float           g =  rgbptr[0].g;
         float           b =  rgbptr[0].b;
@@ -3335,10 +3348,12 @@ int ps_GetColorRepresentation(gksc)
         PSColor *rgbptr = (PSColor *) gksc->rgb.list;
 
         int     index   = xptr[0];
-
+        /****
         rgbptr[0].r = psa->color_map[3*index];
         rgbptr[0].g = psa->color_map[3*index+1];
         rgbptr[0].b = psa->color_map[3*index+2];
+        *****/
+        index2rgb(psa->color_map, index, &rgbptr[0].r, &rgbptr[0].g, &rgbptr[0].b);
 
         return(0);
 }
@@ -8501,6 +8516,8 @@ int ps_Esc(gksc)
 
 
         switch (escape_id) {
+        case -1450:    /* C-escapes are not implemented here */
+				break;
         case -1510:    /* Save color setting before segment copy */
                 if (psa->pict_empty) {
                         PSpreamble(psa, FOR_PICTURE);
@@ -8791,4 +8808,15 @@ int ps_SetWindow(gksc)
                         OutputClipping (psa, PS_CLIPPING_RECT);
         }
         return(0);
+}
+
+void writePSColor(FILE *fp, int colorIndex) {
+    if (colorIndex & ALPHA_MASK) {
+        float r = ((RED_MASK   & colorIndex) >> 16) / 255.;
+        float g = ((GREEN_MASK & colorIndex) >> 8) / 255.;
+        float b = ((BLUE_MASK  & colorIndex)) / 255.;
+        (void) fprintf(fp, "%f %f %f R\n", r, g, b);
+    } else {
+        (void) fprintf(fp, "%d O\n", colorIndex);
+    }
 }

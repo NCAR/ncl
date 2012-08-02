@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.28 2010-01-15 05:15:48 fred Exp $
+ *      $Id: pdf.c,v 1.28.2.1 2010-03-17 20:53:30 brownrig Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -39,6 +39,7 @@
 #include "pdf_device.h"
 #include "pdfddi.h"
 #include "pdf.h"
+#include "argb.h"
 
 extern void gerr_hand(Gint, Gint, const char *);
 
@@ -325,11 +326,14 @@ void PDFOutputClipping (PDFddp *psa, int type)
  *  Current color.
  */
   current_color = psa->attributes.pdf_colr_ind;
+  /**RGB
   red   = psa->color_map[3*current_color  ];
   green = psa->color_map[3*current_color+1];
   blue  = psa->color_map[3*current_color+2];
+  *****/
+  index2rgb(psa->color_map, current_color, &red, &green, &blue);
 
-  if (co_model != 0) { 
+  if (co_model != 0) {
     bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
             red,green,blue);
@@ -495,9 +499,12 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
  *  Set the current color.
  */
     current_color = psa->attributes.pdf_colr_ind;
+    /**RLB
     red   = psa->color_map[3*current_color  ];
     green = psa->color_map[3*current_color+1];
     blue  = psa->color_map[3*current_color+2];
+    *****/
+    index2rgb(psa->color_map, current_color, &red, &green, &blue);
     if (co_model != 0) {
       bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
@@ -1901,9 +1908,12 @@ int PDFPolyline(GKSC *gksc)
   requested_color = psa->attributes.line_colr_ind;
   current_color = psa->attributes.pdf_colr_ind;
   if (requested_color != current_color) {
+    /**RLB*
     red   = psa->color_map[3*requested_color  ];
     green = psa->color_map[3*requested_color+1];
     blue  = psa->color_map[3*requested_color+2];
+    ******/
+    index2rgb(psa->color_map, requested_color, &red, &green, &blue);
     if (co_model != 0) {
       bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
@@ -1970,9 +1980,12 @@ int PDFPolymarker(GKSC *gksc)
   requested_color = psa->attributes.marker_colr_ind;
   current_color = psa->attributes.pdf_colr_ind;
   if (requested_color != current_color) {
+    /**RLB*
     red   = psa->color_map[3*requested_color  ];
     green = psa->color_map[3*requested_color+1];
     blue  = psa->color_map[3*requested_color+2];
+    ******/
+    index2rgb(psa->color_map, requested_color, &red, &green, &blue);
 
     if (co_model != 0) {
       bump_page_lines();
@@ -2098,9 +2111,12 @@ int PDFText(GKSC *gksc)
   requested_color = psa->attributes.text_colr_ind;
   current_color = psa->attributes.pdf_colr_ind;
   if (requested_color != current_color) {
+    /**RLB*
     red   = psa->color_map[3*requested_color  ];
     green = psa->color_map[3*requested_color+1];
     blue  = psa->color_map[3*requested_color+2];
+    ******/
+    index2rgb(psa->color_map, requested_color, &red, &green, &blue);
     if (co_model != 0) {
       bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
@@ -2547,9 +2563,12 @@ int PDFFillArea(GKSC *gksc)
   requested_color = psa->attributes.fill_colr_ind;
   current_color = psa->attributes.pdf_colr_ind;
   if (requested_color != current_color) {
+    /**RLB*
     red   = psa->color_map[3*requested_color  ];
     green = psa->color_map[3*requested_color+1];
     blue  = psa->color_map[3*requested_color+2];
+    ******/
+    index2rgb(psa->color_map, requested_color, &red, &green, &blue);
 
     if (co_model != 0) {
       bump_page_lines();
@@ -2781,18 +2800,26 @@ int PDFCellarray(GKSC *gksc)
         line_offset = 0;
       }
       color_index = xptr[index];
+      index2rgb(psa->color_map, color_index, &tred, &tgreen, &tblue);
       if (co_model != 0) {
         sprintf(page_lines[num_page_lines]+line_offset,"%02X%02X%02X",
+          /**RLB*
           (int)(255. * (psa->color_map[3*color_index  ])),
           (int)(255. * (psa->color_map[3*color_index+1])),
           (int)(255. * (psa->color_map[3*color_index+2])));
+          ******/
+          (int)(255. * tred),
+          (int)(255. * tgreen),
+          (int)(255. * tblue));
         stream_size += 6;
         line_offset += 6;
       }
       else {
+        /**RLB*
         tred   = psa->color_map[3*color_index  ]; 
         tgreen = psa->color_map[3*color_index+1]; 
-        tblue  = psa->color_map[3*color_index+2]; 
+        tblue  = psa->color_map[3*color_index+2];
+        ******/
         rgb2cmyk(tred,tgreen,tblue,&cyan,&magenta,&yellow,&black);
         sprintf(page_lines[num_page_lines]+line_offset,"%02X%02X%02X%02X",
           (int)(255. * cyan),
@@ -3033,6 +3060,9 @@ int PDFSetColorRepresentation(GKSC *gksc)
 
   unsigned  index   = (unsigned) xptr[0];
 
+  if (index & ARGB_MASK)  /* ARGB value vs. index?  */
+      return 1;
+
   float     r =  rgbptr[0].r;
   float     g =  rgbptr[0].g;
   float     b =  rgbptr[0].b;
@@ -3182,9 +3212,12 @@ int PDFGetColorRepresentation(gksc)
 
         int     index   = xptr[0];
 
+        /**RLB
         rgbptr[0].r = psa->color_map[3*index];
         rgbptr[0].g = psa->color_map[3*index+1];
         rgbptr[0].b = psa->color_map[3*index+2];
+        *****/
+        index2rgb(psa->color_map, index, &rgbptr[0].r, &rgbptr[0].g, &rgbptr[0].b);
 
         return(0);
 }
@@ -3238,15 +3271,20 @@ int PDFEsc(GKSC *gksc)
   static  float   sred,sgreen,sblue;
 
   switch (escape_id) {
+  case -1450:    /* no C-escapes implemented */
+	break;
   case -1510:    /* Save color setting before segment copy */
     if (psa->pict_empty) {
       PDFpreamble(psa, FOR_PICTURE);
       psa->pict_empty = FALSE;
     }
     saved_color_index = psa->attributes.pdf_colr_ind;
+    /**RLB*
     sred   = psa->color_map[3*saved_color_index  ];
     sgreen = psa->color_map[3*saved_color_index+1];
     sblue  = psa->color_map[3*saved_color_index+2];
+    ******/
+    index2rgb(psa->color_map, saved_color_index, &sred, &sgreen, &sblue);
     break;
   case -1511:  /* Restore color setting after segment copy */
     psa->attributes.pdf_colr_ind = saved_color_index;
@@ -3864,9 +3902,12 @@ void PDFPlotBackground(PDFddp *psa, int xll, int yll, int xur, int yur) {
   sprintf(page_lines[num_page_lines],"f*\n");
   stream_size += 3;
 
+  /**RLB*
   r = psa->color_map[3*current_color  ];
   g = psa->color_map[3*current_color+1];
   b = psa->color_map[3*current_color+2];
+  ******/
+  index2rgb(psa->color_map, current_color, &r, &g, &b);
 
   if (co_model != 0) {
     bump_page_lines();

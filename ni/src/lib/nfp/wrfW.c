@@ -15,7 +15,7 @@ extern void NGCALLF(dcomputeseaprs,DCOMPUTESEAPRS)(int *,int *,int *,
 
 extern void NGCALLF(dinterp3dz,DINTERP3DZ)(double *,double *,double *,
                                            double *,int *,int *, int*,
-					   double *);
+                                           double *);
 
 extern void NGCALLF(dinterp2dxy,DINTERP2DXY)(double *,double *,double *,
                                              int *,int *,int *, int*);
@@ -86,6 +86,7 @@ extern void NGCALLF(dcapecalc3d,DCAPECALC3D)(double *prs, double *tmk,
                                              double *qvp, double *ght,
                                              double *ter, double *sfp, 
                                              double *cape, double *cin, 
+                                             double *cmsg,
                                              int *miy, int *mjx, int *mkzh, 
                                              int *i3dflag, int *ter_follow,
                                              char *,int);
@@ -3305,7 +3306,7 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
                                            tmp_lat_loc, tmp_lon_loc,
                                            &ret[index_ret+1], 
                                            &ret[index_ret], &inx, &iny,
-					   &missing_ret.intval);
+                                           &missing_ret.intval);
       index_ret+=2;
     }
     index_array += nynx;
@@ -8779,11 +8780,12 @@ NhlErrorTypes wrf_cape_3d_W( void )
  * Output array variables
  */
   void *cape;
-  double *tmp_cape_orig, *tmp_cin_orig;
+  double *tmp_cape_orig, *tmp_cin_orig, cmsg;
   double *tmp_cape, *tmp_cin;
   NclBasicDataTypes type_cape;
   NclObjClass type_obj_cape;
   int ndims_cape;
+  NclScalar missing_cape;
   ng_size_t *dsizes_cape;
 /*
  * File input variables.
@@ -9066,21 +9068,23 @@ NhlErrorTypes wrf_cape_3d_W( void )
  * Allocate space for output arrays. We are allocating space for 
  * tmp_cape_orig and tmp_cin_orig even if the output will be double,
  * because we may also need to flip the values before we're done.
+ *
+ * The addition of missing values was added in V6.1.0.
  */
   if(type_p == NCL_double || type_t == NCL_double || type_q == NCL_double ||
      type_z == NCL_double) {
     type_cape     = NCL_double;
     type_obj_cape = nclTypedoubleClass;
     cape = (double *)calloc(size_output,sizeof(double));
-    if(cape == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
+    missing_cape.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    cmsg = missing_cape.doubleval;
   }
   else {
     type_cape     = NCL_float;
     type_obj_cape = nclTypefloatClass;
     cape          = (float *)calloc(size_output,sizeof(float));
+    missing_cape.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    cmsg = (double)missing_cape.floatval;
   }
   tmp_cape_orig = (double *)calloc(size_cape,sizeof(double));
   tmp_cin_orig  = (double *)calloc(size_cape,sizeof(double));
@@ -9268,8 +9272,8 @@ NhlErrorTypes wrf_cape_3d_W( void )
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
                                      tmp_psfc, tmp_cape_orig, tmp_cin_orig,
-                                     &imiy, &imjx, &imkzh, &i3dflag, &iter,
-                                     psa_file,strlen(psa_file));
+                                     &cmsg,&imiy, &imjx, &imkzh, &i3dflag,
+                                     &iter,psa_file,strlen(psa_file));
 
 /*
  * If we flipped arrays before going into the Fortran routine, we need
@@ -9345,7 +9349,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
                             Ncl_MultiDValData,
                             0,
                             (void*)cape,
-                            NULL,
+                            &missing_cape,
                             ndims_cape,
                             dsizes_cape,
                             TEMPORARY,
@@ -9427,10 +9431,11 @@ NhlErrorTypes wrf_cape_2d_W( void )
  * Output array variables
  */
   void *cape;
-  double *tmp_cape, *tmp_cin;
+  double *tmp_cape, *tmp_cin, cmsg;
   NclBasicDataTypes type_cape;
   NclObjClass type_obj_cape;
   int ndims_cape = 0;
+  NclScalar missing_cape;
   ng_size_t *dsizes_cape;
 /*
  * File input variables.
@@ -9735,17 +9740,23 @@ NhlErrorTypes wrf_cape_2d_W( void )
  * Allocate space for output and temporary arrays.  Even if the input
  * arrays are already double, go ahead and allocate some space for
  * them b/c we have to copy the values back to 4 different locations.
+ *
+ * The addition of missing values was added in V6.1.0.
  */
   if(type_p == NCL_double || type_t == NCL_double || type_q == NCL_double ||
      type_z == NCL_double) {
     type_cape     = NCL_double;
     type_obj_cape = nclTypedoubleClass;
     cape          = (double *)calloc(size_output,sizeof(double));
+    missing_cape.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    cmsg = missing_cape.doubleval;
   }
   else {
     type_cape     = NCL_float;
     type_obj_cape = nclTypefloatClass;
     cape          = (float *)calloc(size_output,sizeof(float));
+    missing_cape.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    cmsg = (double)missing_cape.floatval;
   }
   tmp_cape = (double *)calloc(size_cape,sizeof(double));
   tmp_cin  = (double *)calloc(size_cape,sizeof(double));
@@ -9930,7 +9941,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
  * Call Fortran routine.
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-                                     tmp_psfc, tmp_cape, tmp_cin,
+                                     tmp_psfc, tmp_cape, tmp_cin, &cmsg,
                                      &imiy, &imjx, &imkzh, &i3dflag, &iter,
                                      psa_file,strlen(psa_file));
 /*
@@ -10017,7 +10028,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
                             Ncl_MultiDValData,
                             0,
                             (void*)cape,
-                            NULL,
+                            &missing_cape,
                             ndims_cape,
                             dsizes_cape,
                             TEMPORARY,

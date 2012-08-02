@@ -449,6 +449,12 @@ C
 C
 C  Save/restore attributes.
 C
+C  RLB, 1/2012:
+C  This escape was modified in conjunction with ngmisc/ngsrat.f to change the width
+C  of formatted integer fields from 5 to 10 characters.  The wider fields are needed to
+C  properly encode 32bit ARGB values, which are generally large magnitude integers.
+C  Note also that now state is encoded across 4 80-character records (IBUF/UBUF),
+C  instead of 3.
         READ (IDR(1),501) IOPT
         IF (IOPT.EQ.0 .OR. IOPT.EQ.1) THEN
           CALL GZUSAT(IOPT,IBUF,UBUF)
@@ -468,16 +474,22 @@ C
           IBUF(13) = IBUF(31)
           IBUF(14) = IBUF(32)
           IBUF(15) = IBUF(33)
-          WRITE(ODR(1),560) (IBUF(LL),LL=2,15)
+CRLB:     WRITE(ODR(1),560) (IBUF(LL),LL=2,15)
+          WRITE(ODR(1),561) (IBUF(LL),LL=2,8)
+          WRITE(ODR(2),561) (IBUF(LL),LL=9,15)
   560     FORMAT(14I5)
-          WRITE(ODR(2),540) (UBUF(LL),LL=1,5)
-          WRITE(ODR(3),550) (UBUF(LL),LL=6,7)
+  561     FORMAT(7I10)
+          WRITE(ODR(3),540) (UBUF(LL),LL=1,5)
+          WRITE(ODR(4),550) (UBUF(LL),LL=6,7)
         ELSE IF (IOPT .EQ. 3) THEN
-          READ (IDR(1),530) (IBUF(LL),LL=1,15)
+CRLB:     READ (IDR(1),530) (IBUF(LL),LL=1,15)
+          READ (IDR(1),531) (IBUF(LL),LL=1,8)
+          READ (IDR(2),561) (IBUF(LL),LL=9,15)
   530     FORMAT(15I5)
-          READ (IDR(2),540) (UBUF(LL),LL=1,5)
+  531     FORMAT(I5,7I10)
+          READ (IDR(3),540) (UBUF(LL),LL=1,5)
   540     FORMAT(5E16.7)
-          READ (IDR(3),550) (UBUF(LL),LL=6,7)
+          READ (IDR(4),550) (UBUF(LL),LL=6,7)
   550     FORMAT(2E16.7)
           IBUF(16) = IBUF(2)
           IBUF(17) = 1

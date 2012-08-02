@@ -19,7 +19,7 @@ C
 C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
       external NhlFCairoPSPDFWorkstationClass
@@ -88,13 +88,14 @@ C Create an X workstation.
 C      
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
-         call NhlFCreate(wid,'wks',NhlFXWorkstationClass,
+         call NhlFCreate(wid,'wks',
+     +        NhlFCairoWindowWorkstationClass,
      &        0,rlist,ierr)
       endif
 
-      if (wks_type.eq."ps".or.wks_type.eq."PS") then
+      if (wks_type.eq."oldps".or.wks_type.eq."OLDPS") then
 C
-C Create a PS workstation.
+C Create an older-style PS workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPSFileName',
@@ -102,9 +103,9 @@ C
          call NhlFCreate(wid,'wks',NhlFPSWorkstationClass,
      &        0,rlist,ierr)
       endif
-      if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
+      if (wks_type.eq."oldpdf".or.wks_type.eq."OLDPDF") then
 C
-C Create a PDF workstation.
+C Create an older-style PDF workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPDFFileName',
@@ -112,8 +113,8 @@ C
          call NhlFCreate(wid,'wks',NhlFPDFWorkstationClass,
      &        0,rlist,ierr)
       endif
-      if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
-     &    wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+      if (wks_type.eq."pdf".or.wks_type.eq."PDF".or.
+     &    wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a cairo PS/PDF workstation.
 C
@@ -124,8 +125,7 @@ C
          call NhlFCreate(wid,'wks',NhlFCairoPSPDFWorkstationClass,
      &        0,rlist,ierr)
       endif
-      if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
-     &    wks_type.eq."png".or.wks_type.eq."PNG") then
+      if (wks_type.eq."png".or.wks_type.eq."PNG") then
 C
 C Create a cairo PNG workstation.
 C

@@ -16,8 +16,8 @@
 extern int cuErrorOccurred;
 extern int cuErrOpts;
 
-extern int isleapyear(int);
-extern int day_of_year (int, int, int);
+extern int isleapyear(int, const char*);
+extern int day_of_year (int, int, int, const char*);
 
 extern void set_all_missing(void *dt, ng_size_t total_size, 
                             NclScalar missing, int opt);
@@ -51,7 +51,7 @@ NhlErrorTypes cd_calendar_W( void )
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
   string *scal;
-  char   *ccal = NULL;
+  const char   *ccal = NULL;
   cdCalenType ctype;
 /*
  * Output variables.
@@ -387,8 +387,14 @@ NhlErrorTypes cd_calendar_W( void )
  */
       case 4:
         nsid             = 86400;      /* num seconds in a day */
-        total_seconds_in_year  = isleapyear(year) ? 366*nsid : 365*nsid;
-        doy                    = day_of_year(year,month,day);
+	if(ccal == NULL) {
+	  total_seconds_in_year  = isleapyear(year,"standard") ? 366*nsid : 365*nsid;
+	  doy                    = day_of_year(year,month,day,"standard");
+	}
+	else {
+	  total_seconds_in_year  = isleapyear(year,ccal) ? 366*nsid : 365*nsid;
+	  doy                    = day_of_year(year,month,day,ccal);
+	}
         if(doy > 1) {
           seconds_in_doy = (doy-1) * nsid;
         }

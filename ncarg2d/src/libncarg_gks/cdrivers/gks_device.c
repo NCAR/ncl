@@ -68,10 +68,8 @@ GKSdev  *GKS_GetDevByName(name)
                 return GKS_GetPDFdev();
         else if(!strcmp(name,"PIX"))
                 return GKS_GetPIXdev();
-#ifdef BuildCAIRO
         else if(!strcmp(name,"cro"))
                 return GKS_GetCROdev();
-#endif
 
         /*
          * device not found

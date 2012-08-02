@@ -25,15 +25,15 @@
  *                       whatever directory contains "libgfortran.so".
  */
 #define HdfDefines  -DDARWIN
-#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped -D__UNIXOS2__
+#define StdDefines  -DSYSV -D_XOPEN_SOURCE -DByteSwapped -D__UNIXOS2__
 #define ByteSwapped
 #define Cstatic 
 #define Cdynamic 
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc
 #define FCompiler   gfortran
-#define CcOptions      -ansi -fPIC
-#define FcOptions      -fPIC -fno-range-check 
+#define CcOptions      -ansi -fPIC -m64 -Wall
+#define FcOptions      -fPIC -fno-range-check  -m64 -Wall
 #define CtoFLibraries  -lgfortran
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO

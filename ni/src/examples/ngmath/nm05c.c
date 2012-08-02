@@ -27,24 +27,22 @@
 #include <ncarg/ngmath.h>
 #include <math.h>
 #include <ncarg/hlu/App.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
-#include <ncarg/hlu/ImageWorkstation.h>
 
 
 #define NUM     6
 #define NX     61
 #define NY     61
 
-main()
+int main()
 {
   int  appid,wid,gkswid;
   int  srlist, grlist;
   const char *wks_type = "ncgm";
-  int  i, j, k, ier;
+  int  i, j, ier;
   float xi[] = {0.00, 1.00, 0.00, 1.00, 0.40, 0.75};
   float yi[] = {0.00, 0.00, 1.00, 1.00, 0.20, 0.65};
   float zi[] = {0.00, 0.00, 0.00, 0.00, 1.25, 0.80};
@@ -103,36 +101,35 @@ main()
  */
         NhlRLClear(srlist);
         NhlRLSetInteger(srlist,NhlNwkPause,True);
-        NhlCreate(&wid,"nm05Work",NhlxWorkstationClass,NhlDEFAULT_APP,srlist);
+        NhlCreate(&wid,"nm05Work",NhlcairoWindowWorkstationClass,NhlDEFAULT_APP,srlist);
     }
-    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
+    else if (!strcmp(wks_type,"oldps") || !strcmp(wks_type,"OLDPS")) {
 /*
- * Create a PS workstation.
+ * Create an older-style PostScript workstation.
  */
         NhlRLClear(srlist);
         NhlRLSetString(srlist,NhlNwkPSFileName,"./nm05c.ps");
         NhlCreate(&wid,"nm05Work",NhlpsWorkstationClass,NhlDEFAULT_APP,srlist);
     }
-    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
+    else if (!strcmp(wks_type,"oldpdf") || !strcmp(wks_type,"OLDPDF")) {
 /*
- * Create a PDF workstation.
+ * Create an older-style PDF workstation.
  */
         NhlRLClear(srlist);
         NhlRLSetString(srlist,NhlNwkPDFFileName,"./nm05c.pdf");
         NhlCreate(&wid,"nm05Work",NhlpdfWorkstationClass,NhlDEFAULT_APP,srlist);
     }
-    else if (!strcmp(wks_type,"newpdf") || !strcmp(wks_type,"NEWPDF") ||
-             !strcmp(wks_type,"newps") || !strcmp(wks_type,"NEWPS")) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF") ||
+             !strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a cairo PS/PDF workstation.
  */
         NhlRLClear(srlist);
         NhlRLSetString(srlist,NhlNwkFileName,"./nm05c");
         NhlRLSetString(srlist,NhlNwkFormat,(char*)wks_type);
-        NhlCreate(&wid,"nm05Work",NhlcairoPSPDFWorkstationClass,NhlDEFAULT_APP,srlist);
+        NhlCreate(&wid,"nm05Work",NhlcairoDocumentWorkstationClass,NhlDEFAULT_APP,srlist);
     }
-    else if (!strcmp(wks_type,"newpng") || !strcmp(wks_type,"NEWPNG") ||
-             !strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
+    else if (!strcmp(wks_type,"png") || !strcmp(wks_type,"PNG")) {
 /*
  * Create a cairo PNG workstation.
  */

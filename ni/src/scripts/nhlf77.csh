@@ -34,17 +34,15 @@ set incpath = "-I$incdir $sysincdir"
 #
 set libncarg    = "-lncarg"
 set libgks      = "-lSED_LIBNCARG_GKS"
-set libcgks     = "-lSED_LIBNCARG_CGKS"
 set libmath     = ""
 set libncarg_c  = "-lncarg_c"
 set libhlu      = "-lSED_LIBHLU"
-set libchlu    = "-lSED_LIBCHLU"
 set ncarbd      = "$ro/libncarbd.o"
 set ngmathbd    = "$ro/libngmathbd.o"
 set extra_libs
 
 set robjs
-unset CAIRO_LD
+set CAIRO_LD
 unset NGMATH_LD
 unset NGMATH_BLOCKD_LD
 
@@ -92,13 +90,8 @@ if ($?NGMATH_LD && $?NGMATH_BLOCKD_LD) then
   set robjs = "$robjs $ngmathbd"
 endif
 
-if ($?CAIRO_LD) then
-  set ncarg_libs = "$libchlu $libncarg $libcgks $libncarg_c $libmath"
-  set newargv = "$newargv $libpath $incpath $extra_libs $robjs $ncarg_libs $xlibs $cairolib $f77libs"
-else
-  set ncarg_libs = "$libhlu $libncarg $libgks $libncarg_c $libmath"
-  set newargv = "$newargv $libpath $incpath $extra_libs $robjs $ncarg_libs $xlibs $f77libs"
-endif
+set ncarg_libs = "$libhlu $libncarg $libgks $libncarg_c $libmath"
+set newargv = "$newargv $libpath $incpath $extra_libs $robjs $ncarg_libs $xlibs $cairolib $f77libs"
 
 
 echo $newargv

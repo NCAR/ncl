@@ -4,8 +4,4 @@
 
 #define IHaveSubdirs
 
-#ifdef BuildCAIRO
 SUBDIRS = ezmap plotchar pwritxnt ranfdata ftfonts
-#else
-SUBDIRS = ezmap plotchar pwritxnt ranfdata
-#endif

@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationI.h,v 1.15 2005-08-24 21:12:13 dbrown Exp $
+ *      $Id: WorkstationI.h,v 1.15.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -87,6 +87,8 @@ struct _NhlworkColorChangeDataRec{
 #define _NhlCwkLineDashSegLenF	".WkLineDashSegLenF"
 #define _NhlNwkLineColor	".wkLineColor"
 #define _NhlCwkLineColor	".WkLineColor"
+#define _NhlNwkLineOpacityF	".wkLineOpacityF"
+#define _NhlCwkLineOpacityF	".WkLineOpacityF"
 #define _NhlNwkLineThicknessF	".wkLineThicknessF"
 #define _NhlCwkLineThicknessF	".WkLineThicknessF"
 
@@ -113,6 +115,8 @@ struct _NhlworkColorChangeDataRec{
 #define _NhlCwkMarkerIndex	".WkMarkerIndex"
 #define _NhlNwkMarkerColor      ".wkMarkerColor"
 #define _NhlCwkMarkerColor      ".WkMarkerColor"
+#define _NhlNwkMarkerOpacityF   ".wkMarkerOpacityF"
+#define _NhlCwkMarkerOpacityF   ".WkMarkerOpacityF"
 #define _NhlNwkMarkerSizeF	".wkMarkerSizeF"
 #define _NhlCwkMarkerSizeF	".WkMarkerSizeF"
 #define _NhlNwkMarkerXOffsetF   ".wkMarkerXOffset"
@@ -130,6 +134,9 @@ struct _NhlworkColorChangeDataRec{
 
 #define _NhlNwkFillColor         ".wkFillColor"
 #define _NhlCwkFillColor         ".WkFillColor"
+
+#define _NhlNwkFillOpacityF      ".wkFillOpacityF"
+#define _NhlCwkFillOpacityF      ".WkFillOpacityF"
 
 #define _NhlNwkFillBackground    ".wkFillBackground"
 #define _NhlCwkFillBackground    ".WkFillBackground"
@@ -327,6 +334,43 @@ extern int _NhlNewColor(
         float   /* red */,
         float   /* green */,
         float   /* blue */
+#endif
+);
+
+
+extern NhlErrorTypes _NhlSpanColorPalette(
+	NhlGenArray palga, 
+	int count, 
+	int *colors
+);
+
+extern NhlErrorTypes _NhlSetColorsFromPalette(
+	NhlLayer vl,
+	NhlGenArray palette_ga, 
+	int color_count, 
+	int span_palette, 
+	NhlGenArray *color_ga, 
+	char *entry_name
+);
+
+extern NhlErrorTypes   _NhlSetColorsFromIndexAndPalette(
+	NhlLayer	       vl,
+	NhlGenArray            index_ga,
+	NhlGenArray            palette_ga,
+	char *                 entry_name
+);
+
+extern NhlErrorTypes   _NhlSetColorsFromWorkstationColorMap(
+	NhlLayer	       vl,
+	NhlGenArray            *index_ga,
+	ng_size_t              count,
+	int		       span_palette, 
+	char *                 entry_name
+);
+
+extern NhlGenArray _NhlGetWorkstationPalette(
+#if	NhlNeedProto
+        NhlLayer  l
 #endif
 );
 

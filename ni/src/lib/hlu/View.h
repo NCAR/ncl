@@ -1,5 +1,5 @@
 /*
- *      $Id: View.h,v 1.18 2006-07-14 17:24:32 dbrown Exp $
+ *      $Id: View.h,v 1.18.12.1 2010-03-17 20:47:07 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -90,10 +90,12 @@ extern NhlBoolean NhlIsView(
 #define NhlCLineDashPattern		"LineDashPattern"
 #define NhlCLineDashSegLenF		"LineDashSegLenF"
 #define NhlCLineColor			"LineColor"
+#define NhlCLineOpacityF		"LineOpacityF"
 #define NhlCLineThicknessF		"LineThicknessF"
 #define NhlCLineLabelString		"LineLabelString"
 #define NhlCFillPattern			"FillPattern"
 #define NhlCFillColor			"FillColor"
+#define NhlCFillOpacityF			"FillOpacityF"
 #define NhlCFillBackgroundColor		"FillBackgroundColor"
 #define NhlCFillScaleF			"FillScaleF"
 #define NhlCFillLineThicknessF		"FillLineThicknessF"
@@ -106,6 +108,7 @@ extern NhlBoolean NhlIsView(
 #define NhlCEdgeBorderWidthF		"EdgeBorderWidthF"
 #define NhlCMarkerIndex			"MarkerIndex"
 #define NhlCMarkerColor			"MarkerColor"
+#define NhlCMarkerOpacityF		"MarkerOpacityF"
 #define NhlCMarkerSizeF			"MarkerSizeF"
 #define NhlCMarkerThicknessF		"MarkerThicknessF"
 
@@ -114,6 +117,7 @@ extern NhlBoolean NhlIsView(
 #define NhlCTextDirection		"TextDirection"
 #define NhlCFont			"Font"
 #define NhlCFontColor			"FontColor"
+#define NhlCFontOpacityF		"FontOpacityF"
 #define NhlCFontHeightF			"FontHeightF"
 #define NhlCFontAspectF			"FontAspectF"
 #define NhlCFontThicknessF		"FontThicknessF"

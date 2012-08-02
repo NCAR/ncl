@@ -33,10 +33,20 @@ MYLIB_API	=	libnclapi
 YACC		=	$(NYACC)
 LEX		= 	flex
 
-#define NCLDEBUG
-
 #if defined(linux)
 EXTRA_CCOPTIONS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+#endif
+
+#ifdef EnableProfiling
+PROFILE_DEFS = -DENABLE_PROFILING
+#else
+#define PROFILE_DEFS
+#endif
+
+#ifdef EnableMPI
+MPI_DEFS = -DUSE_MPI
+#else
+#define MPI_DEFS
 #endif
 
 #ifdef BuildNetCDF4
@@ -127,7 +137,7 @@ GDAL_OBJS = NclOGR.o
 #define    V5DLIB
 #endif
 
-#if defined(BuildDODS) || defined(BuildGDAL)
+#if defined(BuildGDAL)
 #if defined(sun)
 CC_LD		= g\+\+ -R/opt/SUNWspro/lib -L/opt/SUNWspro/lib
 CCOPTIONS	= $(EXTRA_CCOPTIONS)
@@ -142,23 +152,6 @@ CC_LD		= g\+\+
 #endif
 #endif
 
-
-#if defined(BuildDODS)
-#if defined(sun)
-DODS_LIBS	= -lnc-dap -ldap -ldapclient -lcurl -lrx -lxml2 -lstdc\+\+ -lssl -lpthread -lnsl
-CTOFLIBS += -L/opt/SUNWspro/prod/lib -lompstubs 
-elif defined(AIX)
-DODS_LIBS	= -lnc-dap -ldap -ldapclient -lcurl -lrx -lxml2 -lpthread -lssl -liconv
-#elif defined(Darwin)
-DODS_LIBS	= -lnc-dap -ldap -ldapclient -lcurl -lxml2 -lpthread -lssl
-#elif defined(linux)
-DODS_LIBS	= -lnc-dap -ldap -ldapclient -lcurl -lrx -lxml2 -lpthread -lidn -ldl
-#else
-DODS_LIBS	= -lnc-dap -ldap -ldapclient -lcurl -lrx -lxml2 -lpthread -lssl
-#endif
-NCDFLIBS	= $(DODS_LIBS)
-#endif
-
 #ifdef  HPUX
 ARCH_LIBS	=	-lPW
 HACKOBJS	=	hphack.o
@@ -169,6 +162,7 @@ DYNAMIC_LIBS	=	-ldl
 #endif
 
 EXTRA_CDEFINES	=	$(OS1_DEF) $(MAJOR_DEF) \
+			$(PROFILE_DEFS) $(MPI_DEFS) \
 			$(NETCDF4_DEFS) \
 			$(NC4_FEATURES_DEFS) \
 			$(HDFEOS_DEFS) $(HDF4_DEFS) \
@@ -178,14 +172,8 @@ EXTRA_CDEFINES	=	$(OS1_DEF) $(MAJOR_DEF) \
 
 API_DEFS	=	-DMAKEAPI
 
-
-#ifdef BuildCAIRO
-PROG_LIBS	=	$(NFPLIBS) $(HLUCAIROLIBS) $(NCARGCAIROLIBS) $(NGMATHLIB)
-DEPLIBS		=	$(DEPNFPLIBS) $(DEPHLUCAIROLIBS) $(DEPNCARGCAIROLIBS) $(DEPNGMATHLIB)
-#else
 PROG_LIBS	=	$(NFPLIBS) $(HLULIBS) $(NCARGLIBS) $(NGMATHLIB)
 DEPLIBS		=	$(DEPNFPLIBS) $(DEPHLULIBS) $(DEPNCARGLIBS) $(DEPNGMATHLIB)
-#endif
 
 #if defined(CYGWIN)
 EXTRA_CLDFLAGS = $(DEV_LIB_SEARCH) $(EXTRA_EXPORT_FLAGS) -Wl,-stack,0x400000
@@ -231,6 +219,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclCallBacksI.h date.h NclCCM.h NclGRIB.h NclGRIB2.h date.h tables.h \
 			ccmhdr.h editline.h editline_unix.h ListSupport.h NclList.h NclNewList.h \
 			NclMultiDVallistData.h NclTypelist.h \
+			NclProf.h \
 			cptec_254_gtb.h dwd_002_gtb.h dwd_201_gtb.h dwd_202_gtb.h \
 			dwd_203_gtb.h dwd_204_gtb.h dwd_205_gtb.h dwd_206_gtb.h dwd_207_gtb.h \
 			ecmwf_128_gtb.h ecmwf_129_gtb.h ecmwf_130_gtb.h ecmwf_131_gtb.h \
@@ -375,7 +364,8 @@ STATIC_SRCS	=	AddBuiltIns.c AddHLUObjs.c \
 			BuiltInSupport.c BuiltInFuncs.c \
 			HLUFunctions.c yywrap.c craybin.c \
 			complete.c editline.c sysunix.c ListSupport.c \
-			NclList.c NclMultiDVallistData.c 
+			NclList.c NclMultiDVallistData.c \
+			NclProf.c NclTime.c
 
 
 
@@ -419,7 +409,8 @@ STATIC_OBJS	=	AddBuiltIns.o AddHLUObjs.o \
 			userAddProto.o userAddFuncs.o \
 			HLUFunctions.o yywrap.o craybin.o \
 			complete.o editline.o sysunix.o ListSupport.o \
-			NclList.o NclMultiDVallistData.o 
+			NclList.o NclMultiDVallistData.o \
+			NclProf.o NclTime.o
 
 
 FOBJS		=	qu2reg3.o rowina3.o scm0.o ncepcode.o
@@ -605,6 +596,9 @@ HLUFunctions.o: HLUFunctions.c
 
 Memory.o: Memory.c
         $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c Memory.c
+
+Machine.o: Machine.c
+        $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c Machine.c
 #endif
 
 #

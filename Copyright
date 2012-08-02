@@ -6,6 +6,11 @@ See http://www.ncl.ucar.edu/ for more details.
 Developed by NCAR's Computational and Information Systems Laboratory,
 UCAR, www.cisl.ucar.edu, with the following contributions:
 
+NCL Profiler
+Copyright (c) 2011
+UChicago Argonne, LLC
+http://www.apache.org/licenses/LICENSE-2.0
+
 dcdflib
 The University of Texas, M.D. Anderson Cancer Center
 http://www.netlib.org/random/

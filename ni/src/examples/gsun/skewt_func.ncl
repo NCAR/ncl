@@ -38,9 +38,48 @@ function getSkewTColorIndex (wks:graphic, color:string)
   end 
 
 ;======================Original===============================
+; Add needed named colors for skew T plots if output is going 
+; to an NCGM. This is necessary with V6.1.0 and NCGM, because
+; the new default color map in use and it doesn't have any 
+; pale green in it. With PDF/PS/PNG, named colors don't need
+; to be explicitly added.
+;=============================================================
+undef("fix_skewt_colormap_for_ncgm")
+function fix_skewt_colormap_for_ncgm(wks,use_my_cmap[1]:logical)
+local cmap, colors, ncmap, ncolors, rgb, ii, newcolors
+begin
+  cmap = gsn_retrieve_colormap(wks)
+;
+; Colors needed by skew T plots. We shouldn't need to add
+; white/black as the color map should already have these.
+;
+  if(NhlClassName(wks).ne."ncgmWorkstationClass") then
+    use_my_cmap = True
+    return(cmap)
+  end if
+
+  colors  = (/"Tan","PaleGreen","RoyalBlue","Red","Sienna","Brown"/)
+  ncmap   = dimsizes(cmap(:,0))
+  ncolors = dimsizes(colors)
+  if((ncmap+ncolors).le.255) then
+    rgb = namedcolor2rgb(colors)
+    ii = NhlNewColor(wks,rgb(:,0),rgb(:,1),rgb(:,2))
+  else
+    newcolors      = new(ncolors+2,string)
+    newcolors(0:1) = (/"white","black"/)
+    newcolors(2:)  = colors
+    gsn_define_colormap(wks,newcolors)
+  end if
+  use_my_cmap = False
+  
+  return(cmap)
+end
+
+;======================Original===============================
 undef("skewT_BackGround_Original")
 function skewT_BackGround_Original (wks:graphic,  Opts:logical)
-  begin
+local copt
+begin
 ; statement of purpose.
 ; ---------------------
 ; this program generates a skew-t, log p thermodynamic diagram.  this
@@ -71,6 +110,7 @@ function skewT_BackGround_Original (wks:graphic,  Opts:logical)
   localOpts@DrawHeightScale   = False
   localOpts@DrawHeightScaleFt = True  ;default is feet [otherwise km] 
   localOpts@DrawStandardAtmThk= 2.0
+  localOpts@UseMyColorMap     = False
   localOpts@Font              = "helvetica"
                               ; NCL resource names
   localOpts@tiMainString      = "   "
@@ -91,6 +131,10 @@ function skewT_BackGround_Original (wks:graphic,  Opts:logical)
 
   if (isatt(localOpts,"PrintOpts").and.localOpts@PrintOpts) then
      print(localOpts)
+  end if
+
+  if(.not.localOpts@UseMyColorMap) then
+    cmap_orig = fix_skewt_colormap_for_ncgm(wks,localOpts@UseMyColorMap)
   end if
 
 ; --- declare isotherm [C] values and pressures [hPa] where isotherms 
@@ -648,6 +692,10 @@ function skewT_BackGround_Original (wks:graphic,  Opts:logical)
       delete (gsOpts)
   end if    ; DrawWind
 
+;---Restore color map, if necessary
+  if(.not.localOpts@UseMyColorMap) then
+    gsn_define_colormap(wks,cmap_orig)
+  end if
 
   return (xy)      ; return object
 
@@ -999,7 +1047,9 @@ function skewT_PlotData_Original \
 ;
 undef("skewT_BackGround_Panel")
 function skewT_BackGround_Panel (wks:graphic,  Opts:logical)
-  begin
+local copt
+begin
+
 ; statement of purpose.
 ; ---------------------
 ; this program generates a skew-t, log p thermodynamic diagram.  this
@@ -1021,7 +1071,7 @@ function skewT_BackGround_Panel (wks:graphic,  Opts:logical)
   localOpts@DrawIsobar        = True
   localOpts@DrawMixRatio      = True
   localOpts@DrawDryAdiabat    = True
-  localOpts@DrawMoistAdiabat  = True  ; aka: saturation or pseudo adibat
+  localOpts@DrawMoistAdiabat  = True  ; aka: saturation or pseudo adiabat
   localOpts@DrawWind          = False ; wmbarb can *not* be paneled
   localOpts@DrawStandardAtm   = True
   localOpts@DrawColLine       = True 
@@ -1030,6 +1080,7 @@ function skewT_BackGround_Panel (wks:graphic,  Opts:logical)
   localOpts@DrawHeightScale   = False
   localOpts@DrawHeightScaleFt = True  ;default is feet [otherwise km] 
   localOpts@DrawStandardAtmThk= 2.0
+  localOpts@UseMyColorMap     = False
   localOpts@Font              = "helvetica"
                               ; NCL resource names
   localOpts@tiMainString      = "   "
@@ -1046,6 +1097,10 @@ function skewT_BackGround_Panel (wks:graphic,  Opts:logical)
       do i=0,nOpts-1                  ; loop and add/override attributes
          localOpts@$OptsAtts(i)$ = Opts@$OptsAtts(i)$  ; new att
       end do
+  end if
+
+  if(.not.localOpts@UseMyColorMap) then
+    cmap_orig = fix_skewt_colormap_for_ncgm(wks,localOpts@UseMyColorMap)
   end if
                                       ; FORCE this option
   localOpts@DrawWind          = False ; wmbarb can *not* be paneled
@@ -1689,6 +1744,12 @@ function skewT_BackGround_Panel (wks:graphic,  Opts:logical)
   xy@$dumname$ = fooOutline
 
   xy@Panel = True  ; flag
+
+;---Restore color map, if necessary
+  if(.not.localOpts@UseMyColorMap) then
+    gsn_define_colormap(wks,cmap_orig)
+  end if
+
   return (xy)      ; return object
 
   end
@@ -2081,6 +2142,7 @@ function skewT_PlotData_Panel (wks:graphic, skewt_bkgd:graphic \
 
  end
 ; =========Interface to original and panel===================
+undef("skewT_BackGround")
 function skewT_BackGround (wks:graphic,  Opts:logical)
 begin
    if (Opts .and. isatt(Opts,"Panel") .and. Opts@Panel) then

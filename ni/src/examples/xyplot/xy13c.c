@@ -26,7 +26,6 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/CoordArrTable.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -680,7 +679,7 @@ main
      */
     NhlRLClear(srlist);
     NhlRLSetInteger(srlist,NhlNwkWindowId,graphicsWin);
-    NhlCreate(&xworkid,"xy13Work",NhlxWorkstationClass,appid,srlist);
+    NhlCreate(&xworkid,"xy13Work",NhlcairoWindowWorkstationClass,appid,srlist);
 
     NhlRLClear(srlist);
 

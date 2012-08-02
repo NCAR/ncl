@@ -1941,17 +1941,18 @@ procedure drawNDCGrid(wks:graphic)
 ;       
 local colors, nu, numb, cmap, x6res, gh
 begin
-        colors = gsn_retrieve_colormap(wks)	;Add gray color to color map
-        nu = dimsizes(colors)
-        numb = nu(0)
-        cmap = new ((/numb+1,3/),float)
-        cmap(:numb-1,:) = colors
-        cmap(numb,:) = (/.72,.72,.72/)
-        gsn_define_colormap(wks,cmap)
-	delete(numb)
-	delete(nu)
-	delete(cmap)
-	delete(colors)
+;; No longer need to add "gray" in V6.1.0 and later
+;;        colors = gsn_retrieve_colormap(wks)	;Add gray color to color map
+;;        nu = dimsizes(colors)
+;;        numb = nu(0)
+;;        cmap = new ((/numb+1,3/),float)
+;;        cmap(:numb-1,:) = colors
+;;        cmap(numb,:) = (/.72,.72,.72/)
+;;        gsn_define_colormap(wks,cmap)
+;;	delete(numb)
+;;	delete(nu)
+;;	delete(cmap)
+;;	delete(colors)
 
      	x6res = True                      ; polyline mods desired
         x6res@gsLineColor = "gray"        ; color of lines
@@ -3690,7 +3691,11 @@ begin
   G   = 9.80665                    ; m/s2 ; gravity at 45 deg lat used by the WMO
   W   = 7.292e-5                   ; (1/s)     ; earth ang rotation
   rad = 4.*atan(1.)/180.
-  f   = 2.*W*sin(lat*rad)          ; (1/s)     ; coriolis parameter
+  if (typeof(lat).eq.typeof(vr)) then
+      f = 2.*W*sin(lat*rad)          ; (1/s)     ; coriolis parameter
+  else 
+      f = 2.*W*sin(tofloat(lat)*rad)
+  end if
 
   vr  = vr + conform(vr,f,nlt)     ; absolute vorticity   
                                    ; G used for commonly used units
@@ -3831,7 +3836,11 @@ begin
   R   = 287.04                     ; m2/(s2-K) ; gas constant dry air
   W   = 7.292e-5                   ; (1/s)     ; earth ang rotation
   rad = 4.*atan(1.)/180.
-  f   = 2.*W*sin(lat*rad)          ; (1/s)     ; coriolis parameter
+  if (typeof(lat).eq.typeof(vr)) then
+      f = 2.*W*sin(lat*rad)          ; (1/s)     ; coriolis parameter
+  else
+      f = 2.*W*sin(tofloat(lat)*rad)
+  end if
 
   vr  = vr + conform(vr,f,nlt)     ; absolute vorticity   
   con = R/(s*conform(t,p,npr))  
@@ -4153,6 +4162,125 @@ begin
   end if
       
   x = tmp                                ; return to original array
+end
+;-------------------------------
+undef("maxrunlen")
+function maxrunlen( runs )                     
+; find max run length
+; Example:   p(ntim) or p(ntim,jlat,ilon)
+; runs   = dim_runnum_n(p.gt.5, 0, 0) ; runs(ntim) or runs(ntim,jlat,ilon)
+; maxrun = maxrunlen( runs )
+
+local dimr, rankr, maxrun, i, j, indrun
+begin
+  dimr   = dimsizes(runs)         
+  rankr  = dimsizes(dimr)
+
+  if (.not.(rankr.eq.1 .or. rankr.eq.3)) then
+      print("maxrunlen: rankr="+rankr+" not yet supported")
+      exit
+  end if
+
+  if (rankr.eq.1) then
+      maxrun = new( 1, "integer", -999)
+      indrun = ind( runs.ne.0 )   
+      if (.not.ismissing(indrun(0))) then
+          maxrun = indrun(dimsizes(indrun)-1) + 1
+      else
+          maxrun = 0
+      end if
+  end if
+
+  if (rankr.eq.3) then
+      maxrun = new ( dimr(1:rankr-1), "integer", -999)
+      do j=0,dimr(1)-1
+        do i=0,dimr(2)-1
+           indrun = ind( runs(:,j,i).ne.0 )   
+           if (.not.ismissing(indrun(0))) then
+               maxrun(j,i) = indrun(dimsizes(indrun)-1) + 1
+           end if
+           delete(indrun)       ; may change size next iteration
+        end do
+      end do
+      copy_VarCoords(runs(0,:,:), maxrun)
+  end if
+
+  maxrun@long_name = "max run length"
+  return(maxrun)
+end
+;-------------------------------
+undef("grad_rich_num_atm")
+function grad_rich_num_atm(th:numeric, u:numeric, v:numeric ,z:numeric, ndim[1]:integer)
+;
+; Calculate atmospheric Gradient Richardson Number
+;      A dimensionless ratio, Ri, related to the buoyant production or 
+;      consumption of turbulence divided by the shear production of turbulence.
+;      It is used to indicate dynamic stability and the formation of turbulence.
+;
+; AMS Glossary:  
+;    http://amsglossary.allenpress.com/glossary/search?id=gradient-richardson-number1
+;           Uses Tv and not THETAv in denominator. ?Erro?
+;
+; th   - virtual potential temperature (K)
+; u,v  - wind components (m/s) ; same dimensionality as 'th' and 't'
+; z    - height (m)
+; ndim - dimension of 'th' for which vertical gradient is to be calculated
+;        th(:), wspd(:), z(:) ..... ndim=0
+;        th(:,:,:)  , z(:) or z(:,:,:)   and the left is the vertical dim, ndim=0
+;        th(:,:,:,:), z(:) or z(:,:,:,:) and the left is the time dimension 
+;                                        and the next is height,  ndim=1 
+local dimth, dimu, dimv, dimz, rankth, ranku, rankv, rankz \
+    , g, dthdz, brunt, dudz, dvdz, Ri
+begin
+                                ; dimension checking
+  dimu    = dimsizes(u)
+  dimv    = dimsizes(v)
+  dimz    = dimsizes(z)
+  dimth   = dimsizes(th)
+
+  rankth  = dimsizes(dimth)
+  ranku   = dimsizes(dimu)   
+  rankv   = dimsizes(dimv)   
+  rankz   = dimsizes(dimz)   
+                                ; no need to check all of them!
+  if (rankth.ne.ranku .or. .not.all(dimth.eq.dimu)) then
+      print("rich_num_atm: th, u, v must have the same rank & dimensionality")
+      print(dimth)
+      print(dimu) 
+      exit
+  end if
+
+  dthdz  = center_finite_diff_n(th, z, False, 0, ndim) 
+  copy_VarCoords(t, dthdz)
+  dthdz@long_name = "Vertical Gradient of theta"
+  dthdz@units     = "degK/m"
+ ;print("rich_num_atm: dthdz: min="+min(dthdz)+"   max="+max(dthdz))
+
+  g      = 9.8
+  brunt  = dthdz*(g/th)     
+  copy_VarCoords(u, brunt)
+  brunt@long_name = "Brunt–Vaisala (bouyancy) frequency"
+  brunt@units     = "1/s"
+ ;print("rich_num_atm: brunt: min="+min(brunt)+"   max="+max(brunt))
+  
+  dudz   = center_finite_diff_n(u , z, False, 0, ndim) 
+  copy_VarCoords(u, dudz)
+  dudz@long_name  = "vertical gradient of the zonal wind"
+  dudz@units      = "1/s"
+ ;print("rich_num_atm: dudz: min="+min(dudz)+"   max="+max(dudz))
+
+  dvdz   = center_finite_diff_n(v , z, False, 0, ndim) 
+  copy_VarCoords(v, dvdz)
+  dvdz@long_name  = "vertical gradient of the meridional wind"
+  dvdz@units      = "1/s"
+ ;print("rich_num_atm: dvdz: min="+min(dvdz)+"   max="+max(dvdz))
+
+  Ri     = brunt/(dudz^2 + dvdz^2)
+  copy_VarCoords(u, Ri)
+  Ri@long_name   = "Gradient Richardson Number"
+  Ri@description = Ri@long_name
+  
+  return(Ri)
 end
 ;-------------------------------
 undef("area_global_rectilinear_grid")

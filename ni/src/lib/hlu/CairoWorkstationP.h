@@ -18,6 +18,7 @@
 # define    CPNG        (41)
 # define    CPDF        (42)
 # define    CTIFF       (43)
+# define    CX11        (44)
 
 /* We are creating distinct workstation objects for PS/PDF versus image-based cairo output formats.
  * However, we'll use common methods and structs. In the struct below, some fields are applicable
@@ -40,6 +41,13 @@ typedef struct _NhlCairoWorkstationLayerPart {
 
     /* fields for image-based workstations */
     _NGCPixConfig      pixconfig;
+
+    /* fields for window-based workstations */
+    NhlBoolean         window_id_set;
+    int                window_id;
+    NhlBoolean         pause_set;
+    NhlBoolean         pause;
+    _NGCXWinConfig     xwinconfig;
 
     /* Private internal fields */
     NhlBoolean  dev_bounds_updated;
@@ -65,7 +73,8 @@ typedef struct _NhlCairoWorkstationLayerRec   *NhlCairoWorkstationLayer;
 typedef struct _NhlCairoWorkstationClassRec   *NhlCairoWorkstationClass;
 
 
-extern NhlCairoWorkstationClassRec    NhlcairoPSPDFWorkstationClassRec;
+extern NhlCairoWorkstationClassRec    NhlcairoDocumentWorkstationClassRec;
 extern NhlCairoWorkstationClassRec    NhlcairoImageWorkstationClassRec;
+extern NhlCairoWorkstationClassRec    NhlcairoWindowWorkstationClassRec;
 
 # endif /* _NCairoWorkstationP_h */

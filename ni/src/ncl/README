@@ -82,7 +82,8 @@ optimization turned off makes it work.
 
 Later, in version 6.0.0 of NCL, and on k7.rap.ucar.edu, I had to
 compile just Execute.c and Machine.c with -g instead of -O. It's never
-consistent!  Grrr
+consistent!  Grrr. With V6.1.0-beta, I saw the problem again. It
+appears that just compiling Machine.c with -g made it work.
 
 2. For same system as above, I also had to turn off optimization for
 "lib/hlu/Format.c" because it would cause the "tm04n.ncl" example to

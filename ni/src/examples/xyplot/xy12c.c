@@ -27,7 +27,6 @@
 #include <errno.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/App.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrTable.h>
@@ -761,7 +760,7 @@ main
     /*
      * Create the Workstation Class objects
      */
-    NhlVACreate(&xworkid,"xy12xWork",NhlxWorkstationClass,NhlDEFAULT_APP,
+    NhlVACreate(&xworkid,"xy12xWork",NhlcairoWindowWorkstationClass,NhlDEFAULT_APP,
         NhlNwkWindowId,     graphicsWin,
         NhlNwkPause,        False,
         NULL);

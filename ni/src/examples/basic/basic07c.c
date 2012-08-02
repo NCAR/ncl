@@ -22,8 +22,8 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
-#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
 #include <ncarg/hlu/TextItem.h>
 
 main()
@@ -55,7 +55,7 @@ main()
       NhlCreate(&widn,"basic07ncgm",NhlncgmWorkstationClass,NhlDEFAULT_APP,
                 srlist);
 /*
- * Create a PostScript workstation.
+ * Create an older-style PostScript workstation.
  */
       NhlRLClear(srlist);
       NhlRLSetString(srlist,NhlNwkPSFileName,"basic07c.ps");
@@ -64,7 +64,7 @@ main()
       NhlCreate(&widp,"basic07ps",NhlpsWorkstationClass,NhlDEFAULT_APP,
                 srlist);
 /*
- * Create a PDF workstation.
+ * Create an older-style PDF workstation.
  */
       NhlRLClear(srlist);
       NhlRLSetString(srlist,NhlNwkPDFFileName,"basic07c.pdf");
@@ -77,7 +77,7 @@ main()
  */
       NhlRLClear(srlist);
       NhlRLSetString(srlist,NhlNwkPause,"True");
-      NhlCreate(&widx,"basic07x11",NhlxWorkstationClass,NhlDEFAULT_APP,
+      NhlCreate(&widx,"basic07x11",NhlcairoWindowWorkstationClass,NhlDEFAULT_APP,
                 srlist);
 /*
  * Create four plots, one for each workstation type.

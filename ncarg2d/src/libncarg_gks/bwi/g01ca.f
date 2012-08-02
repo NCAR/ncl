@@ -22,6 +22,8 @@ C
       INTEGER  DX, DY, KALL, NBYPCW, ROWLEN, ROWPAD, NBYTES
       INTEGER  NBYTE1, NBYTE2, GPAD, GDFCP, GNORUN
       INTEGER  ROWPOS, IDPOS, NCLOUT, NBPROW, IX
+C     for mapping 32-bit color onto closest indexed color
+      integer  argb2ci, argb2ix(128)
 C
       SAVE
 C
@@ -113,7 +115,11 @@ C  Number of cells to put out, to end of current row or
 C  all cells remaining, whichever is less.
 C
         NCLOUT = MIN (DX-ROWPOS+1, IC2-IDPOS+1)
-        CALL GPUTPR (IC(IDPOS), MCIXFW, NCLOUT, RERR)
+C       fixup to handle a 32bit color
+        do 26 ix=idpos, idpos+nclout-1
+            argb2ix(ix-idpos+1) = argb2ci(ic(ix))
+ 26     continue
+        CALL GPUTPR (argb2ix, MCIXFW, NCLOUT, RERR)
         IF (RERR .NE. 0)  RETURN
 C
 C  Update row position, pad to CGM word boundary if
@@ -154,7 +160,11 @@ C  Number of cells to put out, to end of current row or
 C  all cells remaining, whichever is less.
 C
         NCLOUT = MIN (DX-ROWPOS+1, IC2-IDPOS+1)
-        CALL GPUTPR (IC(IDPOS), MCIXFW, NCLOUT, RERR)
+C       fixup to handle a 32bit color
+        do 29 ix=idpos, idpos+nclout-1
+            argb2ix(ix-idpos+1) = argb2ci(ic(ix))
+ 29     continue
+        CALL GPUTPR (argb2ix, MCIXFW, NCLOUT, RERR)
         IF (RERR .NE. 0)  RETURN
 C
 C  Update row position, pad to CGM word boundary if

@@ -847,7 +847,7 @@ end
 ;        THIS IS ***NOT*** A GENERAL FUNCTION!!!!
 ;           DEVELOPED TO FACILITATE EXAMPLES
 
-undef("wr_GenBogusData ")
+undef("wr_GenBogusData")
 function wr_GenBogusData (nMax:integer) 
 begin
 

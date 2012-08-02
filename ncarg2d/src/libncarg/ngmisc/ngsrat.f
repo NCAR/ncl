@@ -66,26 +66,41 @@ C
 C  RAT   A real array that has meaning only if IOPT equals 2 or 3
 C        as indicated above in the description of IOPT.
 C
+C ---------------------------------------------------------------------------
+C  Modified 1/2012 in support of 32bit argb color -- RLB
+C
+C  Argb colors are generally very large integer values, much bigger
+C  than the 5-character field originally allotted for conversion to/from
+C  integers.  For simplicity, changed all integer character-fields to
+C  10 characters; note that this change necessitated writing across
+C  4 80-character records (i.e, IDR), rather than 3.
+C ---------------------------------------------------------------------------
+
       DIMENSION IAT(14),RAT(7)
-      CHARACTER*80 IDR(3),ODR(3)
+      CHARACTER*80 IDR(4),ODR(4)
 C
       WRITE(IDR(1)(1:5),500) IOPT
   500 FORMAT(I5)
       IF (IOPT.EQ.0 .OR. IOPT.EQ.1) THEN
-        CALL GESC(-1388,1,IDR,3,3,ODR)
+        CALL GESC(-1388,1,IDR,4,4,ODR)
       ELSE IF (IOPT .EQ. 2) THEN
-        CALL GESC(-1388,1,IDR,3,3,ODR)
-        READ (ODR(1),510) (IAT(LL),LL=1,14)
+        CALL GESC(-1388,1,IDR,4,4,ODR)
+CRLB:   READ (ODR(1),510) (IAT(LL),LL=1,14)
+        READ (ODR(1), 511) (IAT(LL),LL=1,7)
+        READ (ODR(2), 511) (IAT(LL),LL=8,14)
   510   FORMAT(14I5)
-        READ (ODR(2),520) (RAT(LL),LL=1,5)
+  511   FORMAT(7I10)
+        READ (ODR(3),520) (RAT(LL),LL=1,5)
   520   FORMAT(5E16.7)
-        READ (ODR(3),530) (RAT(LL),LL=6,7)
+        READ (ODR(4),530) (RAT(LL),LL=6,7)
   530   FORMAT(2E16.7)
       ELSE IF (IOPT.EQ.3) THEN
-        WRITE(IDR(1)(6:75),510) (IAT(LL),LL=1,14)
-        WRITE(IDR(2),520) (RAT(LL),LL=1,5)
-        WRITE(IDR(3),530) (RAT(LL),LL=6,7)
-        CALL GESC(-1388,1,IDR,3,3,ODR)
+CRLB:   WRITE(IDR(1)(6:75),510) (IAT(LL),LL=1,14)
+        WRITE(IDR(1)(6:75),511) (IAT(LL),LL=1,7)
+        WRITE(IDR(2),511) (IAT(LL),LL=8,14)
+        WRITE(IDR(3),520) (RAT(LL),LL=1,5)
+        WRITE(IDR(4),530) (RAT(LL),LL=6,7)
+        CALL GESC(-1388,1,IDR,4,4,ODR)
       ENDIF
 C
       RETURN

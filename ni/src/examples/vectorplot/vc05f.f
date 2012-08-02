@@ -39,7 +39,7 @@ C ;;********* see resource file vc05.res ******
       external NhlFPDFWorkstationClass
       external NhlFCairoPSPDFWorkstationClass
       external NhlFCairoImageWorkstationClass
-      external NhlFXWorkstationClass
+      external NhlFCairoWindowWorkstationClass
       external NhlFMapPlotClass
       external NhlFVectorFieldClass
       external NhlFVectorPlotClass
@@ -107,28 +107,29 @@ C Create an X workstation.
 C ;;********* see resource file vc05.res ******
 C       call NhlFRLSetstring(srlist,'wkColorMap', 'temp1',ierr)
 C 
-         call NhlFCreate(wid,'vc05Work',NhlFxWorkstationClass,
+         call NhlFCreate(wid,'vc05Work',
+     +        NhlFCairoWindowWorkstationClass,
      1        0,srlist,ierr)
     
-      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
+      else if (wks_type.eq."oldps".or.wks_type.eq."OLDPS") then
          
-C Create a PS  workstation.
+C Create an older-style PS workstation.
 
          call NhlFRLClear(srlist)
          call NhlFRLSetstring(srlist,'wkPSFileName','./vc05f.ps',ierr)
          call NhlFCreate(wid,'vc05Work',NhlFPSWorkstationClass,
      1        0,srlist,ierr)
 
-      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
+      else if (wks_type.eq."oldpdf".or.wks_type.eq."OLDPDF") then
 
-C Create a PDF  workstation.
+C Create an older-style PDF workstation.
 
          call NhlFRLClear(srlist)
          call NhlFRLSetstring(srlist,'wkPDFFileName','./vc05f.pdf',ierr)
          call NhlFCreate(wid,'vc05Work',NhlFPDFWorkstationClass,
      1        0,srlist,ierr)
-      else if (wks_type.eq."newpdf".or.wks_type.eq."NEWPDF".or.
-     +         wks_type.eq."newps".or.wks_type.eq."NEWPS") then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF".or.
+     +         wks_type.eq."ps".or.wks_type.eq."PS") then
 
 C Create a cairo PS/PDF  workstation.
 
@@ -137,8 +138,7 @@ C Create a cairo PS/PDF  workstation.
          call NhlFRLSetstring(srlist,'wkFileName','./vc05f',ierr)
          call NhlFCreate(wid,'vc05Work',
      1        NhlFCairoPSPDFWorkstationClass,0,srlist,ierr)
-      else if (wks_type.eq."newpng".or.wks_type.eq."NEWPNG".or.
-     +         wks_type.eq."png".or.wks_type.eq."PNG") then
+      else if (wks_type.eq."png".or.wks_type.eq."PNG") then
 
 C Create a cairo PNG  workstation.
 

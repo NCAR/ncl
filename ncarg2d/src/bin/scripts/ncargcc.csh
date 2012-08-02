@@ -57,7 +57,7 @@ set libmath     = ""
 set libncarg_c  = "-lncarg_c"
 
 set robjs
-unset CAIRO_LD
+set CAIRO_LD
 unset NGMATH_LD
 unset NGMATH_BLOCKD_LD
 
@@ -186,13 +186,8 @@ if ($?NGMATH_LD && $?NGMATH_BLOCKD_LD) then
   set robjs = "$robjs $ngmathbd"
 endif
 
-if ($?CAIRO_LD) then
-  set ncarg_libs  = "$libncarg $libcgks $libncarg_c $libmath"
-  set newargv = "$newargv $stub_file $libpath $incpath $ctrans_libs $robjs $ncarg_libs $f77libs $xlib $cairolib $libextra"
-else
-  set ncarg_libs  = "$libncarg $libgks $libncarg_c $libmath"
-  set newargv = "$newargv $stub_file $libpath $incpath $ctrans_libs $robjs $ncarg_libs $f77libs $xlib $libextra"
-endif
+set ncarg_libs  = "$libncarg $libgks $libncarg_c $libmath"
+set newargv = "$newargv $stub_file $libpath $incpath $ctrans_libs $robjs $ncarg_libs $f77libs $xlib $cairolib $libextra"
 
 
 echo $newargv

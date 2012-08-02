@@ -126,10 +126,8 @@ extern GKSdev	*GKS_GetPDFdev(
 #endif
 );
 
-#ifdef BuildCAIRO
 extern GKSdev	*GKS_GetCROdev(
 #ifdef	NeedFuncProto
 	void
 #endif
 );
-#endif
