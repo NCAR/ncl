@@ -2617,7 +2617,7 @@ void _NclAddBuiltIns
     nargs = 0;
     args = NewArgs(1);
     dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
+    SetArgTemplate(args,0,"file",1,dimsizes);nargs++;
     NclRegisterFunc(_NclIisNewFileStructure, args, "isNewFileStructure", nargs);
 
 	NclRegisterFunc(_Nclget_cpu_time,NULL,"get_cpu_time",0);
