@@ -30,6 +30,7 @@
 
 #include <math.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -146,6 +147,8 @@ herr_t _writeH5variableAttribute(hid_t did, NclFileAttNode *attnode);
 hid_t toH5type(const char *type);
 hid_t Ncltype2HDF5type(NclBasicDataTypes type);
 hid_t h5memtype2filetype(hid_t memtype);
+
+extern int _MachineIsBigEndian();
 
 hid_t h5memtype2filetype(hid_t memtype)
 {
@@ -492,7 +495,7 @@ char *_getH5typeName(hid_t type, int ind)
     char format[128];
     H5T_class_t type_class;
     hsize_t     size;
-    int bit, usign, ndims;
+    int         bit, usign;
 
     attTypeName = (char *)NclMalloc(MAX_NCL_NAME_LENGTH);
     strcpy(attTypeName, "Bad Data Type");
@@ -680,7 +683,7 @@ char *_getH5typeName(hid_t type, int ind)
                 else
                 {
                     fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
-                    fprintf(stderr, "size: <%ld>\n", size);
+                    fprintf(stderr, "size: <%ld>\n", (long)size);
                     strcpy(var_name, "unknown integer");
                 }
                 strcpy(attTypeName, var_name);
@@ -979,22 +982,22 @@ char *_getH5typeName(hid_t type, int ind)
             break;
         case H5T_OPAQUE:
             {
-                char *tag;
+              /*
+               *char *tag;
+
+               *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr, "\t%lu-byte opaque type\n", (unsigned long)size);
+               *if ((tag=H5Tget_tag(type)))
+               *{
+               *    printf("\n%*s(tag = \"", ind, "");
+               *    printf("%s\")", tag);
+               *    strcpy(format, tag);
+               *    free(tag);
+               *}
+               */
 
                 strcpy(attTypeName, "opaque");
                 bit = (unsigned) (8*size);
-
-              /*
-                fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                fprintf(stderr, "\t%lu-byte opaque type\n", (unsigned long)size);
-                if ((tag=H5Tget_tag(type)))
-                {
-                    printf("\n%*s(tag = \"", ind, "");
-                    printf("%s\")", tag);
-                    strcpy(format, tag);
-                    free(tag);
-                }
-               */
             }
             return attTypeName;
             break;
@@ -1031,7 +1034,7 @@ char *_getH5typeName(hid_t type, int ind)
                     /* Print dimensions */
                     for (i=0; i<ndims; i++)
                     {
-                        fprintf(stderr, "%s%ld" , i?",":"[", dims[i]);
+                        fprintf(stderr, "%s%ld" , i?",":"[", (long)dims[i]);
                     }
                     putchar(']');
 
@@ -2347,10 +2350,10 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
         assert(values);
 
       /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tenumrec->name: <%s>, enumrec->type = %d, enumrec->size = %ld\n",
+       *                 NrmQuarkToString(enumrec->name), enumrec->type, enumrec->size);
        */
-        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tenumrec->name: <%s>, enumrec->type = %d, enumrec->size = %d\n",
-                         NrmQuarkToString(enumrec->name), enumrec->type, enumrec->size);
 
         switch(enumrec->type)
         {
@@ -2529,12 +2532,9 @@ herr_t _searchH5obj(char *name, H5O_info_t *oinfo,
         case H5O_TYPE_DATASET:
             {
                 NclFileVarNode *curvarnode = NULL;
-                char parent_group_name[MAX_NCL_NAME_LENGTH];
-                char data_name[MAX_NCL_NAME_LENGTH];
 
                 NclQuark qdn, qpn;
                 int nvar = 0;
-                int n;
 
                 h5_group_name_struct_t h5grplvl = _get_parent_group_name(name);
             
@@ -2744,7 +2744,7 @@ static herr_t _recursiveH5check(NclFileGrpNode **rootgrp,
             fprintf(stderr, "**************************************************************\n");
             fprintf(stderr, "FAILED in file: %s, line: %d\n", __FILE__, __LINE__);
             fprintf(stderr, "\tgrp_name: <%s>\n", grp_name);
-            fprintf(stderr, "\tfid: %d\n", (*rootgrp)->fid);
+            fprintf(stderr, "\tfid: %ld\n", (*rootgrp)->fid);
             fprintf(stderr, "FAILED in file: %s, line: %d\n", __FILE__, __LINE__);
             fprintf(stderr, "**************************************************************\n");
             fprintf(stderr, "\n\n\n");
@@ -2813,7 +2813,6 @@ static void *H5InitializeFileRec(NclFileFormat *format)
 {
     static int first = True;
     NclFileGrpNode *grpnode = NULL;
-    ng_size_t blksize = getpagesize();
 
     if (first)
     {
@@ -2880,7 +2879,7 @@ static herr_t _readH5info(NclFileGrpNode **rootgrp)
 
     if(status == FAILED)
     {
-        fprintf(stderr, "Failed to get info for fid: %d, root_name: <%s>, in file: %s, at line: %d\n",
+        fprintf(stderr, "Failed to get info for fid: %ld, root_name: <%s>, in file: %s, at line: %d\n",
             (*rootgrp)->fid, root_name, __FILE__, __LINE__);
         return FAILED;
     }
@@ -2983,15 +2982,10 @@ static int _buildH5dimlist(NclFileGrpNode **rootgrp)
     NclFileDimRecord *vardimrec = NULL;
 
     NclFileVarNode   *varnode = NULL;
-    NclFileDimNode   *grpdimnode = NULL;
     NclFileDimNode   *vardimnode = NULL;
 
     int i, j, n;
-    int found_new;
-    NclQuark old_dim_name;
-    NclQuark new_dim_name;
     char tmp_name[MAX_NCL_NAME_LENGTH];
-    char *tmp_str;
 
   /*
    *fprintf(stderr, "\nEnter _buildH5dimlist. file: %s, line: %d\n", __FILE__, __LINE__);
@@ -3610,8 +3604,8 @@ void _readH5string(hid_t dset, hid_t d_type,
     size_t             numstr = 0;
     size_t             lenstr = 1;
 
-    fprintf(stderr, "\nEnter _readH5string, file: %s, line: %d\n", __FILE__, __LINE__);
   /*
+   *fprintf(stderr, "\nEnter _readH5string, file: %s, line: %d\n", __FILE__, __LINE__);
    */
 
     d_space = H5Dget_space(dset);
@@ -3646,18 +3640,21 @@ void _readH5string(hid_t dset, hid_t d_type,
         if(count[i] != m_count[i])
             ++ read_slab;
       /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tcount[%d] = %ld, m_count[%d] = %ld\n",
+       *                 i, count[i], i, m_count[i]);
        */
-        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tcount[%d] = %d, m_count[%d] = %d\n",
-                         i, count[i], i, m_count[i]);
 
          m_count[i] = count[i];
          numstr *= count[i];
     }
 
     lenstr = H5Tget_size(d_type);
-    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tlenstr = %d\n", lenstr);
+
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tlenstr = %d\n", lenstr);
+   */
 
     strdata = (char **)NclCalloc(numstr, sizeof(char *));
 
@@ -3682,8 +3679,8 @@ void _readH5string(hid_t dset, hid_t d_type,
                             d_count, d_block);
 
       /*
+       *fprintf(stderr, "\tselect slab in file: %s, line: %d\n", __FILE__, __LINE__);
        */
-        fprintf(stderr, "\tselect slab in file: %s, line: %d\n", __FILE__, __LINE__);
 
         H5Sselect_hyperslab(m_space, H5S_SELECT_SET, m_start, m_stride,
                             m_count, m_block);
@@ -3691,8 +3688,8 @@ void _readH5string(hid_t dset, hid_t d_type,
     else
     {
       /*
+       *fprintf(stderr, "\tselect all in file: %s, line: %d\n", __FILE__, __LINE__);
        */
-        fprintf(stderr, "\tselect all in file: %s, line: %d\n", __FILE__, __LINE__);
         H5Sselect_all(d_space);
         H5Sselect_all(m_space);
     }
@@ -3700,13 +3697,11 @@ void _readH5string(hid_t dset, hid_t d_type,
     /* Read the data */
     status = H5Dread(dset, d_type, m_space, d_space, H5P_DEFAULT, strdata);
 
-    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
     for(i = 0; i < numstr; ++i)
     {
         if(NULL != strdata[i])
         {
             strquark[i] = NrmStringToQuark(strdata[i]);
-            fprintf(stderr, "\t\tStr No %d: <%s>\n", i, strdata[i]);
             free(strdata[i]);
         }
         else
@@ -3720,8 +3715,8 @@ void _readH5string(hid_t dset, hid_t d_type,
 
     NclFree(strdata);
   /*
+   *fprintf(stderr, "Leave _readH5string, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "Leave _readH5string, file: %s, line: %d\n\n", __FILE__, __LINE__);
 }
 
 /*
@@ -3745,7 +3740,6 @@ void _getH5string(hid_t fid, NclFileVarNode *varnode,
     H5S_class_t space_type;
     hid_t       d_space;
     hid_t       d_type;
-    char	*type_name = _NclBasicDataTypeToName(varnode->type);
 
   /*
    */
@@ -3807,7 +3801,6 @@ void *_getH5vlen(hid_t fid, NclFileVarNode *varnode)
     hid_t       d_space = -1;
     hid_t       d_type = -1;
     hid_t       super = -1;
-    hid_t       type = -1;
     herr_t      status = -1;
     hsize_t     size  = 1;
     hsize_t     vlnum = 1;
@@ -3834,9 +3827,6 @@ void *_getH5vlen(hid_t fid, NclFileVarNode *varnode)
 
     NclMultiDValData vlen_md;
     int *id = (int *)NclMalloc(sizeof(int));
-
-    int *iptr = NULL;
-    int i;
 
   /*
    *fprintf(stderr, "\nEnter _getH5vlen, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -3892,7 +3882,7 @@ void *_getH5vlen(hid_t fid, NclFileVarNode *varnode)
     vlenlist = (NclNewList)_NclNewListCreate(NULL, NULL, 0, 0, -1, (NCL_ITEM | NCL_FIFO));
     assert(vlenlist);
     _NclListSetType((NclObj)vlenlist, NCL_ITEM);
-    vlenlist->newlist.name = typename;
+    vlenlist->newlist.name = NrmStringToQuark(typename);
     vlenlist->newlist.type = NrmStringToQuark("item");
     vlenlist->obj.obj_type = Ncl_List;
 
@@ -3934,20 +3924,6 @@ void *_getH5vlen(hid_t fid, NclFileVarNode *varnode)
         vlenvar = _NclCreateVlenVar(buffer, vlenvalues,
                                     ndims, dimnames,
                                     dimsizes, vlentype);
-
-      /*
-       *{
-       *    NclMultiDValData thevalue = NULL;
-       *    thevalue = (NclMultiDValData)_NclGetObj(vlenvar->var.thevalue_id);
-
-       *    fprintf(stderr, "\n");
-       *    iptr = (int *) (thevalue->multidval.val);
-       *    for(i = 0; i < h5vl[n].len; ++i)
-       *        fprintf(stderr, "\t\tNo %d, value: %d\n", i, iptr[i]);
-       *}
-       *NclFree(vlenvalues);
-       */
-
         _NclListAppend((NclObj)vlenlist, (NclObj)vlenvar);
     }
 
@@ -3994,9 +3970,6 @@ void *_getH5enum(hid_t fid, NclFileVarNode *varnode)
 
     NclFileEnumRecord *enumrec = (NclFileEnumRecord *) varnode->udt;
     int   n = 0;
-
-    char  name[256];
-    char *typename = NULL;
 
   /*
    *fprintf(stderr, "\nEnter _getH5enum, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -4154,11 +4127,6 @@ void *_getH5opaque(hid_t fid, NclFileVarNode *varnode)
 
     ndims = H5Sget_simple_extent_dims(d_space, dims, NULL);
 
-  /*
-   */
-    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tndims = %d, tag: <%s>\n", ndims, tag);
-
     for(n = 0; n < ndims; ++n)
     {
         size *= dims[n];
@@ -4215,10 +4183,8 @@ static void *H5ReadVar(void *therec, NclQuark thevar,
     NclFileVarNode *varnode;
     NclFileDimNode *dimnode;
     ng_size_t n_elem = 1;
-    ng_size_t nsptr = 0;
     int fid = -1;
-    int ret = -1;
-    int i, k, n;
+    int i;
     int no_stride = 1;
     ng_size_t count[MAX_NC_DIMS];
 
@@ -4329,12 +4295,12 @@ static void *H5ReadCoord(void* therec, NclQuark thevar,
 static void *H5ReadAtt(void *therec, NclQuark theatt, void *storage)
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
+  /*
     NclFileAttNode *attnode;
     int i,fid,ret ;
     char *tmp;
-
-  /*
    */
+
     fprintf(stderr, "\nEnter H5ReadAtt, file: %s, line: %d\n", __FILE__, __LINE__);
 
     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -4352,10 +4318,8 @@ static void *H5ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void *
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
     NclFileVarNode *varnode;
-    NclFileAttNode *attnode;
-    int n, i, fid;
-    int ret;
-    char *tmp;
+
+    int   fid;
 
   /*
    */
@@ -4443,7 +4407,7 @@ static void H5FreeFileRec(void* therec)
     if(grpnode->open)
     {
         fprintf(stderr, "H5FreeFileRec in file: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "H5FreeFileRec file id: <%d>\n", grpnode->fid);
+        fprintf(stderr, "H5FreeFileRec file id: %ld\n", grpnode->fid);
         H5Fclose(grpnode->fid);
         H5close();
     }
@@ -4455,9 +4419,7 @@ static void *H5CreateFile(void *rec, NclQuark path)
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *) rec;
     int fid = 0;
-    int ret;
     int mode = H5P_DEFAULT;
-    int format = 5;
 
     fid = H5Fcreate(NrmQuarkToString(path), H5F_ACC_TRUNC, mode, H5P_DEFAULT);
 
@@ -4555,7 +4517,7 @@ static NhlErrorTypes H5AddDim(void* therec, NclQuark thedim,
                               ng_size_t size, int is_unlimited)
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
-    int n, fid = 0;
+    int fid = 0;
     int add_scalar = 0;
     int dimidp = 0;
 
@@ -4678,7 +4640,7 @@ static NhlErrorTypes H5AddVar(void* therec, NclQuark thevar,
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
     NclFileVarNode *varnode = NULL;
-    int fid,i,j,ret;
+    int fid,i,j;
     int dim_ids[MAX_VAR_DIMS];
     int add_scalar_dim = 0;
 
@@ -4777,8 +4739,6 @@ NhlErrorTypes H5AddVarChunk(void* therec, NclQuark thevar,
     int i,ret = NhlNOERROR;
     int fid;
 
-    int storage = NC_CHUNKED;
-
   /*
    *fprintf(stderr, "\nEnter H5AddVarChunk, file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tthevar: <%s>, n_chunk_dims: %d\n", NrmQuarkToString(thevar), n_chunk_dims);
@@ -4838,12 +4798,12 @@ static NhlErrorTypes H5AddVarChunkCache(void* therec, NclQuark thevar,
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
     NclFileVarNode *varnode;
     int ret = NhlNOERROR;
-    int i, fid;
+    int fid;
 
   /*
    */
     fprintf(stderr, "\nEnter H5AddVarChunkCache, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tthevar: <%s>, cache_size: %d\n", NrmQuarkToString(thevar), cache_size);
+    fprintf(stderr, "\tthevar: <%s>, cache_size: %ld\n", NrmQuarkToString(thevar), cache_size);
 
     if(grpnode->status > 0)
     {    
@@ -4890,11 +4850,10 @@ static NhlErrorTypes H5SetVarCompressLevel(void* therec, NclQuark thevar,
     NclFileVarNode *varnode;
     int ret = NhlNOERROR;
     int fid;
-    int shuffle = 0;
     int deflate = 0;
-    int deflate_level = compress_level;
-
   /*
+    int shuffle = 0;
+
    */
     fprintf(stderr, "\nEnter H5SetVarCompressLevel, file: %s, line: %d\n", __FILE__, __LINE__);
     fprintf(stderr, "\tthevar: <%s>, compress_level: %d\n", NrmQuarkToString(thevar), compress_level);
@@ -4997,8 +4956,6 @@ static NhlErrorTypes H5WriteVarAtt(void *therec, NclQuark thevar,
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
     NclFileAttNode *attnode;
     NclFileVarNode *varnode;
-    int i, j;
-    int ret;
 
   /*
    *fprintf(stderr, "\nEnter H5WriteVarAtt, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -5039,20 +4996,8 @@ static NhlErrorTypes H5AddVarAtt(void *therec, NclQuark thevar, NclQuark theatt,
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
     NclFileVarNode *varnode = NULL;
-    NclFileAttNode *attnode = NULL;
     NhlErrorTypes ret = NhlNOERROR;
-    int i;
     hid_t  fid;
-    hid_t  did;
-    hid_t  aid;                /* Attribute dataspace identifiers */
-    hid_t  atype;              /* Attribute type */
-    hid_t  attr;
-    herr_t h5_ret;
-    hsize_t ndims = 1;
-    hsize_t dims[1];
-    hsize_t nbytes = 1;
-    NclQuark  *qv = NULL;
-    char     **tmpstr = NULL;
     
   /*
    *fprintf(stderr, "\nEnter H5AddVarAtt, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -5142,7 +5087,7 @@ static NhlErrorTypes H5DelVarAtt(void *therec, NclQuark thevar, NclQuark theatt)
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
     NclFileVarNode *varnode;
     NclFileAttNode *attnode = NULL;
-    int i,j,fid;
+    int fid;
     int ret = NhlNOERROR;
 
     fprintf(stderr, "\nEnter H5DelVarAtt, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -5205,6 +5150,8 @@ herr_t _writeH5variableAttribute(hid_t did, NclFileAttNode *attnode)
     hid_t   attr;
     herr_t  ret;                /* Return value */
     char    buff[MAX_NCL_BUFFER_LENGTH];
+
+    hsize_t anelem = attnode->n_elem;
     
     if(NCL_string == attnode->type)
     {
@@ -5225,9 +5172,9 @@ herr_t _writeH5variableAttribute(hid_t did, NclFileAttNode *attnode)
         aid    = H5Screate(H5S_SIMPLE);
         atype  = H5Tcopy(Ncltype2HDF5type(attnode->type));
         if(attnode->n_elem > 1)
-            ret = H5Sset_extent_simple(aid, 1, &(attnode->n_elem), NULL);
+            ret = H5Sset_extent_simple(aid, 1, &anelem, NULL);
         else
-            ret = H5Sset_extent_simple(aid, 0, &(attnode->n_elem), NULL);
+            ret = H5Sset_extent_simple(aid, 0, &anelem, NULL);
     }
 
   /*
@@ -5274,8 +5221,7 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
     long count[NCL_MAX_DIMENSIONS];
     ng_size_t n_elem = 1;
     int no_stride = 1;
-    int i,j,k,n;
-    int ret;
+    int i,j,n;
     int ret_code = 0;
 
     H5T_order_t h5order;
@@ -5360,7 +5306,6 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         hid_t            memtype;
         hid_t            space;
         hid_t            did;
-        int              *iptr;
 
         hvl_t            *vlendata = (hvl_t *) NclCalloc(vlist->newlist.n_elem,
                                                           sizeof(hvl_t));
@@ -5380,16 +5325,6 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
             i = vlendata[n].len * _NclSizeOf(tmp_md->multidval.data_type);
             vlendata[n].p = (void *)NclMalloc(i);
             memcpy(vlendata[n].p, tmp_md->multidval.val, i);
-
-          /*
-           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\tVlen %d length: %d\n", n, vlendata[n].len);
-           *iptr = (int *) vlendata[n].p;
-           *for(i = 0; i < vlendata[n].len; ++i)
-           *    fprintf(stderr, "\t\tNo %d: %d\n", i, iptr[i]);
-           *    
-           *fprintf(stderr, "\tVlen %d length: %d\n", n, vlendata[n].len);
-           */
         }
 
       /*
@@ -5544,7 +5479,6 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
     {
         herr_t status;
         size_t size = 1;
-        unsigned int mv;
 
       /*
        *fprintf(stderr, "\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
@@ -5552,7 +5486,6 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
        */
 
         NclFileUDTRecord *udtrec  = (NclFileUDTRecord *) varnode->udt;
-        NclFileUDTNode   *udtnode = NULL;
 
       /*
        *fprintf(stderr, "\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
@@ -5623,7 +5556,7 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         {
             dimnode = &(varnode->dim_rec->dim_node[i]);
             dims[i] = dimnode->size;
-            fprintf(stderr, "\tdim[%d] = %d\n", i, dims[i]);
+
             for(j = 0; j < dimnode->size; j++)
             {
                 tmpstr[n] = NrmQuarkToString(qd[n]);
@@ -5793,19 +5726,14 @@ NhlErrorTypes H5AddCompound(void *rec, NclQuark compound_name, NclQuark var_name
 {
     NclFileGrpNode   *grpnode = (NclFileGrpNode *) rec;
     NclFileDimNode   *dimnode = NULL;
-    NclFileGrpRecord *grprec = NULL;
     NclFileVarNode   *varnode = NULL;
-    char buffer[NCL_MAX_STRING];
-    int id;
     int n = -1;
     NhlErrorTypes ret = NhlNOERROR;
-
-    nc_type nc_compound_type_id;
 
     NclQuark *udt_mem_name = NULL;
     NclBasicDataTypes *udt_mem_type = NULL;
 
-    int *dim_size = NULL;
+    ng_size_t *dim_size = NULL;
     long *long_dim_size = NULL;
 
     size_t compound_length = 0;
@@ -5827,7 +5755,7 @@ NhlErrorTypes H5AddCompound(void *rec, NclQuark compound_name, NclQuark var_name
     mem_offset = (size_t *)NclCalloc(n_mems, sizeof(size_t));
     assert(mem_offset);
 
-    dim_size = (int *)NclCalloc(n_dims, sizeof(int));
+    dim_size = (ng_size_t *)NclCalloc(n_dims, sizeof(ng_size_t));
     assert(dim_size);
 
     long_dim_size = (long *)NclCalloc(n_dims, sizeof(long));
@@ -5838,12 +5766,10 @@ NhlErrorTypes H5AddCompound(void *rec, NclQuark compound_name, NclQuark var_name
         udt_mem_name[n] = mem_name[n];
         udt_mem_type[n] = _nameToNclBasicDataType(mem_type[n]);
 
-        if(0 == n)
-           mem_offset[n] = 0;
-        else
-        {
+        if(n)
            mem_offset[n] = mem_offset[n-1] + component_size;
-        }
+        else
+           mem_offset[n] = 0;
 
         if(mem_size[n] < 1)
             mem_size[n] = 1;
@@ -5936,13 +5862,10 @@ NhlErrorTypes H5WriteCompound(void *rec, NclQuark compound_name, NclQuark var_na
     NclFileGrpNode   *grpnode = (NclFileGrpNode *) rec;
     NclFileDimNode   *dimnode = NULL;
     NclFileVarNode   *varnode = NULL;
-    NclFileGrpRecord *grprec = NULL;
 
     NhlErrorTypes ret = NhlNOERROR;
 
-    char buffer[NCL_MAX_STRING];
-
-    int  i, n = -1;
+    int  n = -1;
     int  n_dims = 1;
 
     hid_t  fid;
@@ -5968,7 +5891,6 @@ NhlErrorTypes H5WriteCompound(void *rec, NclQuark compound_name, NclQuark var_na
 
     if((NULL != varnode) && (NULL != thelist))
     {
-        NclObj tmp, ret_obj;
         NclListObjList *list_list = thelist->list.first;
         NclList  comp_list;
         NclListObjList *tmp_list;
@@ -6161,8 +6083,8 @@ void _H5_add_udt(NclFileUDTRecord **rootudtrec,
     udtrec->n_udts ++;
   /*
    *fprintf(stderr, "\tudtrec->n_udts = %d\n", udtrec->n_udts);
+   *fprintf(stderr, "Leave _H5_add_udt, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "Leave _H5_add_udt, file: %s, line: %d\n\n", __FILE__, __LINE__);
 }
 
 NclFileVarNode *H5AddEnumVar(void* therec, NclQuark thevar,
@@ -6175,11 +6097,11 @@ NclFileVarNode *H5AddEnumVar(void* therec, NclQuark thevar,
     int i,j;
     int dim_ids[MAX_NC_DIMS];
 
-    fprintf(stderr, "\nEnter H5AddEnumVar, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tthevar: <%s>, enum_type_id: %d, n_dims = %d\n",
-                       NrmQuarkToString(thevar),
-                       enum_type_id, n_dims);
   /*
+   *fprintf(stderr, "\nEnter H5AddEnumVar, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tthevar: <%s>, enum_type_id: %d, n_dims = %d\n",
+   *                   NrmQuarkToString(thevar),
+   *                   enum_type_id, n_dims);
    */
     if(0 < grpnode->status)
     {    
@@ -6204,7 +6126,7 @@ NclFileVarNode *H5AddEnumVar(void* therec, NclQuark thevar,
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
                         "H5AddEnumVar: the reserved file dimension name \"ncl_scalar\" was used\n%s\n",
                                   "\t\tin a value with more than one dimension, can not add variable"));
-                    return(NhlFATAL);
+                    return (NULL);
                 }
                 dim_ids[i] = grpnode->dim_rec->dim_node[j].id;
                 break;
@@ -6235,9 +6157,9 @@ NclFileVarNode *H5AddEnumVar(void* therec, NclQuark thevar,
     }
 
   /*
+   *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
+   *fprintf(stderr, "Leave H5AddEnumVar, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
-    fprintf(stderr, "Leave H5AddEnumVar, file: %s, line: %d\n\n", __FILE__, __LINE__);
 
     return varnode;
 }
@@ -6250,28 +6172,24 @@ NhlErrorTypes H5AddEnum(void *rec, NclQuark enum_name, NclQuark var_name,
     NhlErrorTypes ret = NhlNOERROR;
     NclFileDimNode   *dimnode;
     NclFileVarNode   *varnode;
-    NclFileGrpNode   *grpnode;
-    NclFileGrpRecord *grprec;
-    char buffer[NCL_MAX_STRING];
-    int n = -1;
 
     NclQuark          udt_mem_name[1];
     NclBasicDataTypes udt_mem_type[1];
 
+    int      n = 0;
     int      n_dims = 1;
     NclQuark dim_names[1];
     long     dim_sizes[1];
 
     NclFileEnumRecord *enumrec;
-    NclFileEnumNode   *enumnode;
 
     unsigned char *mv = (unsigned char *) mem_value;
 
-    fprintf(stderr, "\nEnter H5AddEnum, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tenum_name: <%s>, var_name: <%s>, dim_name: <%s>\n",
-                     NrmQuarkToString(enum_name), NrmQuarkToString(var_name),
-                     NrmQuarkToString(dim_name));
   /*
+   *fprintf(stderr, "\nEnter H5AddEnum, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tenum_name: <%s>, var_name: <%s>, dim_name: <%s>\n",
+   *                 NrmQuarkToString(enum_name), NrmQuarkToString(var_name),
+   *                 NrmQuarkToString(dim_name));
    */
 
     udt_mem_name[0] = enum_name;
@@ -6306,9 +6224,9 @@ NhlErrorTypes H5AddEnum(void *rec, NclQuark enum_name, NclQuark var_name,
     varnode->udt = (void *)enumrec;
 
   /*
+   *fprintf(stderr, "\tdim_sizes[0] = %ld\n", dim_sizes[0]);
+   *fprintf(stderr, "Leave H5AddEnum, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "\tdim_sizes[0]= %d\n", dim_sizes[0]);
-    fprintf(stderr, "Leave H5AddEnum, file: %s, line: %d\n\n", __FILE__, __LINE__);
     return ret;
 }
 
@@ -6385,11 +6303,11 @@ NhlErrorTypes H5AddOpaque(void *rec, NclQuark opaque_name, NclQuark var_name,
     NclQuark dim_names[1] = {dim_name};
     long     dim_sizes[1] = {0};
 
-    fprintf(stderr, "\nEnter H5AddOpaque, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\topaque_name: <%s>, var_name: <%s>, var_size: %d, dim_name: <%s>\n",
-                     NrmQuarkToString(opaque_name), NrmQuarkToString(var_name),
-                     var_size, NrmQuarkToString(dim_name));
   /*
+   *fprintf(stderr, "\nEnter H5AddOpaque, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\topaque_name: <%s>, var_name: <%s>, var_size: %d, dim_name: <%s>\n",
+   *                 NrmQuarkToString(opaque_name), NrmQuarkToString(var_name),
+   *                 var_size, NrmQuarkToString(dim_name));
    */
 
     mem_name[0] = opaque_name;
@@ -6405,9 +6323,9 @@ NhlErrorTypes H5AddOpaque(void *rec, NclQuark opaque_name, NclQuark var_name,
     ret =  H5AddOpaqueVar(rec, var_name, n_dims, dim_names, dim_sizes);
 
   /*
+   *fprintf(stderr, "\tdim_sizes[0]= %ld\n", dim_sizes[0]);
+   *fprintf(stderr, "Leave H5AddOpaque, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "\tdim_sizes[0]= %d\n", dim_sizes[0]);
-    fprintf(stderr, "Leave H5AddOpaque, file: %s, line: %d\n\n", __FILE__, __LINE__);
     return ret;
 }
 
