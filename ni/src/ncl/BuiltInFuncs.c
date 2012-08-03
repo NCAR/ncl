@@ -48,7 +48,6 @@ extern "C" {
 #include <float.h>
 #include "defs.h"
 #include <errno.h>
-#include <string.h>
 #include "Symbol.h"
 #include "NclDataDefs.h"
 #include "Machine.h"
@@ -2311,7 +2310,6 @@ NhlErrorTypes _NclIDelete
 	int sub_sel = 0;
 	NclObj tmp,pobj;
 	NclRefList *rlist = NULL;
-	int obj_id;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 
@@ -20118,7 +20116,6 @@ NhlErrorTypes _NclIListCount(void)
 	ng_size_t dimsize = 1;
 	int *ret_val;
 	NclObj theobj;
-	NclObjClass oc;
 
    	list_id = (obj*)NclGetArgValue(
            0,
@@ -29019,7 +29016,7 @@ NhlErrorTypes _NclItochar
 
         ret_missing.charval = (unsigned char) ((NclTypeClass) nclTypecharClass)->type_class.default_mis.charval;
 
-        output = (unsigned char *)NclMalloc(sizeof(unsigned char)*total_elements);
+        output = (char *)NclMalloc(sizeof(char) * total_elements);
 	if (output == NULL)
 	{
         	NHLPERROR((NhlFATAL, errno, "tochar: memory allocation error."));
@@ -30600,8 +30597,6 @@ NhlErrorTypes _NclIisNewFileStructure(void)
     /* file variables */
     NclFile f;
     int *fid;
-
-    NhlErrorTypes   ret;
 
     ng_size_t dimsize = 1;
     int retval = 0;
