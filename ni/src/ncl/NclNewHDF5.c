@@ -5265,6 +5265,12 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         varnode->value = NULL;
     }
 
+    if(grpnode->compress_level > 0)
+    {
+        if(varnode->compress_level < 1)
+            varnode->compress_level = grpnode->compress_level;
+    }
+
     rank = varnode->dim_rec->n_dims;
     dims[0] = 1;
 
@@ -5419,10 +5425,6 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
 
         if(varnode->compress_level > 0)
             status = H5Pset_deflate(plist, varnode->compress_level);
-      /*
-       *else
-       *    status = H5Pset_deflate(plist, varnode->compress_level);
-       */
 
         for(j = 0; j < enumrec->n_enums; ++j)
         {
