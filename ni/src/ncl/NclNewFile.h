@@ -109,8 +109,6 @@ struct _NclNewFileRec
     NclObjPart      obj;
     NclFilePart     file;
     NclNewFilePart  newfile;
-
-    int use_new_hlfs;
 };
 
 extern NclObjClass nclNewFileClass;
@@ -130,8 +128,9 @@ extern NclFile _NclNewFileCreate(NclObj       inst,
 				 char        *end_of_name,
 				 int          len_path);
 
+/*
 static NhlErrorTypes InitializeNewFileClass();
-
+*/
 void _clearNclPrintIndentation();
 void _increaseNclPrintIndentation();
 void _decreaseNclPrintIndentation();

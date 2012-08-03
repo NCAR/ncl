@@ -2766,7 +2766,6 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
     file_out->newfile.fpath = path;
     file_out->newfile.file_format = 0;
     file_out->newfile.file_ext_q = file_ext_q;
-    file_out->use_new_hlfs = 1;
 
     topForFunRecPtr = _NclGetFormatFuncsWithNewHLFS(file_ext_q);
     file_out->newfile.format_funcs = topForFunRecPtr;

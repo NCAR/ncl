@@ -349,7 +349,6 @@ NclGroup *_NclNewGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_
     group_out->newfile.file_format = thefile->newfile.file_format;
 
     group_out->newfile.format_funcs = _NclGetFormatFuncsWithNewHLFS(thefile->newfile.file_ext_q);
-    group_out->use_new_hlfs = 1;
 
 #if 0
     group_out->newfile.grpnode = (NclFileGrpNode *)
