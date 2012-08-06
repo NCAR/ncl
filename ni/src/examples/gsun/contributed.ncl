@@ -7987,7 +7987,7 @@ begin
      end do
 
      time@long_name = "time"
-     time@units     = "yyyymm"
+     time@units     = "YYYYMM"
 
      if (isatt(time,"_FillValue")) then
          delete(time@_FillValue)
@@ -8049,6 +8049,120 @@ begin
   time!0    = "time"
   time&time =  time
   return (time)
+end
+;*************************************************************************
+
+undef ("yyyymmddhh_time")
+function yyyymmddhh_time (yrStrt[1]:integer, yrLast[1]:integer, hrStep[1]:integer, TYPE:string)
+local n, nmos, nyrs, ntim, year, nmo, ndy, tdum, nhr, nhrs
+begin
+  nmos = 12
+  nyrs = yrLast-yrStrt+1
+  nhrd = 24/hrStep               ; # of hours per day
+  ntim = nyrs*nmos*nhrd*31       ; make long enough array
+  tdum = new ( ntim, TYPE, "No_FillValue" )
+
+  n = -1 ; initialize counter index
+  do year=yrStrt,yrLast
+    do nmo=1,nmos
+       YRM  = year*1000000 + nmo*10000
+       nday = days_in_month(year, nmo)
+       if (nmo.eq.2 .and. isatt(yrStrt,"noLeapYear") .and. yrStrt@noLeapYear) then
+           nday = 28
+       end if
+      do ndy=1,nday
+        do nhr=0,23,hrStep
+           n = n+1
+           tdum(n) = YRM + ndy*100 + nhr
+        end do
+      end do
+    end do
+  end do
+
+  time      = tdum(0:n) ; cut out only filled in times
+  time@long_name = "time"
+  time@units     = "YYYYMMDDHH"
+
+  if (isatt(yrStrt,"noLeapYear")) then
+      time@calendar  = "noLeap"
+  end if
+
+  time!0    = "time"
+  time&time =  time
+  return (time)
+end
+;************************************************************************* 
+; D. Shea 
+; Parse (Partition) YYYYMM, YYYYMMDD, YYYYMMDDHH into a (:,6) array
+
+undef("date_expand")
+function date_expand(date[*]:numeric, opt:integer)
+local ndate, DATE, utest, yyyy, mm, dd, hh, mn, sc
+begin
+  ndate = dimsizes(date)
+  DATE  = new( (/ndate,6/), "integer", "No_FillValue")
+
+  if (.not.isatt(date,"units")) then
+      print(" ")
+      print("date_expand: no units attribute: no expansion")
+      print(" ")
+      return(DATE)
+  end if
+
+  utest = str_lower(date@units)
+  if (.not.any(utest.eq.(/"yyyymm","yyyymmdd","yyyymmddhh"/))) then
+      print(" ")
+      print("date_expand: units not recognized: units="+date@units)
+      print("recognized units: yyyymm,yyyymmdd,yyyymmddhh or YYYYMM,YYYYMMDD,YYYYMMDDHH")
+      print(" ")
+      return(DATE)
+  end if
+
+  mn   = conform(date, 0, -1)
+  sc   = conform(date, 0, -1)
+
+  if (utest.eq."yyyymm") then
+      yyyy = date/100
+      mm   = date-(yyyy*100)
+      dd   = conform(date, 0, -1)
+      hh   = conform(date, 0, -1)
+  end if
+
+  if (utest.eq."yyyymmdd") then
+      yyyy = date/10000
+      mmdd = date-(yyyy*10000)
+      mm   = mmdd/100
+      dd   = mmdd-(mm*100)           
+      hh   = conform(date, 0, -1)
+  end if
+
+  if (utest.eq."yyyymmddhh") then
+      yyyy   = date/1000000
+      mmddhh = date-(yyyy*1000000)
+      mm     = mmddhh/10000
+      mmdd   = mmddhh/100
+      dd     = mmdd-(mm*100)           
+      hh     = date-(yyyy*1000000+mm*10000+dd*100)
+  end if
+
+  DATE(:,0) = yyyy
+  DATE(:,1) =   mm
+  DATE(:,2) =   dd
+  DATE(:,3) =   hh
+  DATE(:,4) =   mn
+  DATE(:,5) =   sc
+  DATE@long_name = "time elements"
+  DATE@units     = "yyyy,mm,dd,hh,m,sc"
+
+  dName     = getvardims(date)
+  if (.not.ismissing(dName)) then
+      DATE!0 = dName
+    if (iscoord(date,dName)) then
+        DATE&$dName$ = date&$dName$
+    end if
+  end if
+
+  return(DATE)
 end
 
 ;************************************************************************* 
