@@ -853,7 +853,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 								}
 								else
 								{
-									for (i = 0; i < var_ndims; ++i)
+									for(i = 1; i < var_ndims; ++i)
 									{
 										if(((ng_size_t)varnode->dim_rec->dim_node[i].size) != var_dim_sizes[i])
 										{
