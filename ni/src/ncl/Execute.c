@@ -682,41 +682,111 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
 				if (thefile && var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
 					int bad = 0;
-					struct _NclFVarRec *var_info = thefile->file.var_info[index];
-					if (first) { /* save the dimension sizes */
-						var_ndims = var_info->num_dimensions;
-						for (i = 0; i < var_info->num_dimensions; i++) {
-							var_dim_sizes[i] = thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size;
+					if(use_new_hlfs)
+					{
+						NclNewFile newfile = (NclNewFile)thefile;
+						NclFileVarNode *varnode = NULL;
+						varnode = _getVarNodeFromNclFileGrpNode(newfile->newfile.grpnode, var);
+						if(NULL == varnode)
+						{
+							NHLPERROR((NhlFATAL,NhlEUNKNOWN,"variable (%s) is not in file (%s)",
+								NrmQuarkToString(var),
+								NrmQuarkToString(newfile->newfile.grpnode->path)));
 						}
-						first = 0;
+
+						if(first && (NULL != varnode->dim_rec))
+						{
+							var_ndims = varnode->dim_rec->n_dims;
+							for (i = 0; i < var_ndims; ++i)
+							{
+								var_dim_sizes[i] = varnode->dim_rec->dim_node[i].size;
+							}
+							first = 0;
+						}
+						else
+						{
+							if(NULL != varnode->dim_rec)
+							{
+								if(varnode->dim_rec->n_dims != var_ndims)
+								{
+									NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+										"File %s dimension count for variable does not conform to others in list; skipping file",
+								  		NrmQuarkToString(newfile->newfile.fpath)));
+									bad = 1;
+								}
+								else
+								{
+									for (i = 0; i < i < var_ndims; ++i)
+									{
+										if(varnode->dim_rec->dim_node[i].size != var_dim_sizes[i])
+										{
+											NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+												"File %s dimension sizes do not conform to others in list; skipping file",
+										  		NrmQuarkToString(newfile->newfile.fpath)));
+											bad = 1;
+											break;
+										}
+									}
+								}
+							}
+							else
+							{
+								bad = 1;
+							}
+						}
+
+						if (bad)
+						{
+							files[list_index] = NULL;
+							agg_dim_count[list_index] = 0;
+							total_agg_dim_size--;
+							list_index--;
+						}
+						else
+						{
+							files[list_index] = thefile;
+							good_file_count++;
+							list_index--;
+						}
 					}
-					else {
-						if (var_info->num_dimensions != var_ndims) {
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension count for variable  does not conform to others in list; skipping file",
-								  NrmQuarkToString(thefile->file.fpath));
-							bad = 1;
+					else
+					{
+						struct _NclFVarRec *var_info = thefile->file.var_info[index];
+						if (first) { /* save the dimension sizes */
+							var_ndims = var_info->num_dimensions;
+							for (i = 0; i < var_info->num_dimensions; i++) {
+								var_dim_sizes[i] = thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size;
+							}
+							first = 0;
 						}
 						else {
-							for (i = 0; i < var_info->num_dimensions; i++) {
-								if (thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size != var_dim_sizes[i]) {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension sizes do not conform to others in list; skipping file",
-										  NrmQuarkToString(thefile->file.fpath));
-									bad = 1;
-									break;
+							if (var_info->num_dimensions != var_ndims) {
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension count for variable  does not conform to others in list; skipping file",
+								  	NrmQuarkToString(thefile->file.fpath));
+								bad = 1;
+							}
+							else {
+								for (i = 0; i < var_info->num_dimensions; i++) {
+									if (thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size != var_dim_sizes[i]) {
+										NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension sizes do not conform to others in list; skipping file",
+										  	NrmQuarkToString(thefile->file.fpath));
+										bad = 1;
+										break;
+									}
 								}
 							}
 						}
-					}
-					if (bad) {
-						files[list_index] = NULL;
-						agg_dim_count[list_index] = 0;
-						total_agg_dim_size--;
-						list_index--;
-					}
-					else {
-						files[list_index] = thefile;
-						good_file_count++;
-						list_index--;
+						if (bad) {
+							files[list_index] = NULL;
+							agg_dim_count[list_index] = 0;
+							total_agg_dim_size--;
+							list_index--;
+						}
+						else {
+							files[list_index] = thefile;
+							good_file_count++;
+							list_index--;
+						}
 					}
 				}
 				else {
