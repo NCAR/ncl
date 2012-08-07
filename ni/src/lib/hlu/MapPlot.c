@@ -344,6 +344,42 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(us_state.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 
+	{NhlNmpProvincialLineColor,NhlCLineColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(us_state.color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNmpProvincialLineDashPattern,NhlCLineDashPattern,
+		 NhlTDashIndex,sizeof(NhlDashIndex),Oset(us_state.dash_pat),
+		 NhlTImmediate,_NhlUSET(0),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(us_state.dash_seglen_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
+	{NhlNmpProvincialLineDashSegLenF,NhlCLineDashSegLenF,
+		 NhlTFloat,sizeof(float),Oset(us_state.dash_seglen),
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+	{NhlNmpProvincialLineThicknessF,NhlCLineThicknessF,
+		 NhlTFloat,sizeof(float),Oset(us_state.thickness),
+		 NhlTString, _NhlUSET("1.0"),0,NULL},
+
+/* County line resources */
+
+	{NhlNmpCountyLineColor,NhlCLineColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(county.color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNmpCountyLineDashPattern,NhlCLineDashPattern,
+		 NhlTDashIndex,sizeof(NhlDashIndex),Oset(county.dash_pat),
+		 NhlTImmediate,_NhlUSET(0),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(county.dash_seglen_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
+	{NhlNmpCountyLineDashSegLenF,NhlCLineDashSegLenF,
+		 NhlTFloat,sizeof(float),Oset(county.dash_seglen),
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+	{NhlNmpCountyLineThicknessF,NhlCLineThicknessF,
+		 NhlTFloat,sizeof(float),Oset(county.thickness),
+		 NhlTString, _NhlUSET("1.0"),0,NULL},
+
 /* National line resources */
 
 	{NhlNmpNationalLineColor,NhlCLineColor,NhlTColorIndex,
@@ -1575,8 +1611,11 @@ static NhlErrorTypes MapPlotSetValues
 		mpp->inland_water.scale_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpGeophysicalLineDashSegLenF))
 		mpp->geophysical.dash_seglen_set = True;
-	if (_NhlArgIsSet(args,num_args,NhlNmpUSStateLineDashSegLenF))
+	if (_NhlArgIsSet(args,num_args,NhlNmpUSStateLineDashSegLenF) || 
+	    _NhlArgIsSet(args,num_args,NhlNmpProvincialLineDashSegLenF))
 		mpp->us_state.dash_seglen_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNmpCountyLineDashSegLenF))
+		mpp->county.dash_seglen_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpNationalLineDashSegLenF))
 		mpp->national.dash_seglen_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpGridLineDashSegLenF))
@@ -2654,6 +2693,9 @@ static NhlErrorTypes    mpManageViewDepResources
 	if (! mpp->us_state.dash_seglen_set)
 		mpAdjustDashSegLen(&mpp->us_state.dash_seglen,init,
 				 mpnew->view.width,mpold->view.width);
+	if (! mpp->county.dash_seglen_set)
+		mpAdjustDashSegLen(&mpp->county.dash_seglen,init,
+				 mpnew->view.width,mpold->view.width);
 	if (! mpp->national.dash_seglen_set)
 		mpAdjustDashSegLen(&mpp->national.dash_seglen,init,
 				 mpnew->view.width,mpold->view.width);
@@ -2672,6 +2714,7 @@ static NhlErrorTypes    mpManageViewDepResources
 
 	mpp->geophysical.dash_seglen_set = False;
 	mpp->us_state.dash_seglen_set = False;
+	mpp->county.dash_seglen_set = False;
 	mpp->national.dash_seglen_set = False;
 	mpp->grid.dash_seglen_set = False;
 	mpp->limb.dash_seglen_set = False;
@@ -2793,6 +2836,11 @@ static NhlErrorTypes    SetLineAttrs
 	subret = CheckColor(mpnew,mpp->us_state.color,
 			    NhlNmpUSStateLineColor,
 			    &mpp->us_state.gks_color,entry_name);
+	ret = MIN(subret,ret);
+
+	subret = CheckColor(mpnew,mpp->county.color,
+			    NhlNmpCountyLineColor,
+			    &mpp->county.gks_color,entry_name);
 	ret = MIN(subret,ret);
 
 	subret = CheckColor(mpnew,mpp->perim.color,
@@ -5381,6 +5429,12 @@ void   (_NHLCALLF(hlumapusr,HLUMAPUSR))
 		dpat = Mpp->national.dash_pat;
 		dseglen = Mpp->national.dash_seglen;
 		gks_color = Mpp->national.gks_color;
+		break;
+	case 8:		/* counties */
+		thickness = Mpp->county.thickness;
+		dpat = Mpp->county.dash_pat;
+		dseglen = Mpp->county.dash_seglen;
+		gks_color = Mpp->county.gks_color;
 		break;
 	default:
 		return;
