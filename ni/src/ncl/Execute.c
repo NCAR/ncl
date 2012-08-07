@@ -227,7 +227,6 @@ void CallLIST_READ_OP(void) {
 	NclSymbol *temporary;
 	NclStackEntry *list_ptr;
 	NclStackEntry *temporary_list_ptr;
-	NclStackEntry result;
 	NclStackEntry data;
 	NclList list;
 	NclList newlist;
@@ -716,9 +715,9 @@ void CallLIST_READ_FILEVAR_OP(void) {
 								}
 								else
 								{
-									for (i = 0; i < i < var_ndims; ++i)
+									for (i = 0; i < var_ndims; ++i)
 									{
-										if(varnode->dim_rec->dim_node[i].size != var_dim_sizes[i])
+										if(((ng_size_t)varnode->dim_rec->dim_node[i].size) != var_dim_sizes[i])
 										{
 											NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 												"File %s dimension sizes do not conform to others in list; skipping file",
@@ -818,6 +817,76 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
 				if (thefile && var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
 					int bad = 0;
+					if(use_new_hlfs)
+					{
+						NclNewFile newfile = (NclNewFile)thefile;
+						NclFileVarNode *varnode = NULL;
+						varnode = _getVarNodeFromNclFileGrpNode(newfile->newfile.grpnode, var);
+						if(NULL == varnode)
+						{
+							NHLPERROR((NhlFATAL,NhlEUNKNOWN,"variable (%s) is not in file (%s)",
+								NrmQuarkToString(var),
+								NrmQuarkToString(newfile->newfile.grpnode->path)));
+						}
+
+						if(first && (NULL != varnode->dim_rec))
+						{
+							bad = 0;
+							var_ndims = varnode->dim_rec->n_dims;
+							for (i = 0; i < var_ndims; ++i)
+							{
+								var_dim_sizes[i] = varnode->dim_rec->dim_node[i].size;
+							}
+							first = 0;
+						}
+						else
+						{
+							if(NULL != varnode->dim_rec)
+							{
+								bad = 0;
+								if(varnode->dim_rec->n_dims != var_ndims)
+								{
+									NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+										"File %s dimension count for variable does not conform to others in list; skipping file",
+								  		NrmQuarkToString(newfile->newfile.fpath)));
+									bad = 1;
+								}
+								else
+								{
+									for (i = 0; i < var_ndims; ++i)
+									{
+										if(((ng_size_t)varnode->dim_rec->dim_node[i].size) != var_dim_sizes[i])
+										{
+											NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+												"File %s dimension sizes do not conform to others in list; skipping file",
+										  		NrmQuarkToString(newfile->newfile.fpath)));
+											bad = 1;
+											break;
+										}
+									}
+								}
+							}
+						}
+
+						if(bad)
+						{
+							files[list_index] = NULL;
+							agg_dim_count[list_index] = 0;
+							list_index--;
+						}
+						else
+						{
+							agg_dim = 0;
+							agg_dim_name = varnode->dim_rec->dim_node[0].name;
+							total_agg_dim_size += varnode->dim_rec->dim_node[0].size;
+							agg_dim_count[list_index] = varnode->dim_rec->dim_node[0].size;
+							files[list_index] = thefile;
+							good_file_count++;
+							list_index--;
+						}
+					}
+					else
+					{
 					struct _NclFVarRec *var_info = thefile->file.var_info[index];
 					if (first) { /* save the dimension sizes */
 						var_ndims = var_info->num_dimensions;
@@ -856,6 +925,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 						files[list_index] = thefile;
 						good_file_count++;
 						list_index--;
+					}
 					}
 				}
 				else {
@@ -2602,7 +2672,6 @@ void CallINTRINSIC_FUNC_CALL(void) {
 */
 				caller_level = _NclFinishFrame();	
 				if(((NclSymbol*)*ptr)->u.bfunc != NULL) {
-					NclSymbol *func = (NclSymbol *)(*ptr);
 					NCL_PROF_PFENTER(func->name);
 					ret = (*((NclSymbol*)*ptr)->u.bfunc->thefunc)();
 					NCL_PROF_PFEXIT(func->name);
@@ -2659,7 +2728,6 @@ void CallINTRINSIC_PROC_CALL(void) {
 */
 				caller_level = _NclFinishFrame();	
 				if(((NclSymbol*)*ptr)->u.bproc != NULL) {
-					NclSymbol *proc = (NclSymbol *)(*ptr);
 					NCL_PROF_PFENTER(proc->name);
 					ret = (*((NclSymbol*)*ptr)->u.bproc->theproc)();
 					NCL_PROF_PFEXIT(proc->name);
@@ -2871,7 +2939,6 @@ void CallLOOP_INC_OP(void) {
 					NclStackEntry *tmp_ptr;
 					NclStackEntry *data_ptr;
 					NclMultiDValData tmp_md;
-					NclMultiDValData tmp2_md;
 					NclSymbol *l_inc;
 					NclSymbol *l_dir;
 					NclMultiDValData end_md = NULL;;
