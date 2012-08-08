@@ -1906,8 +1906,8 @@ begin
 ; Test for what kind of coordinate information to add.
 ; 
   if (dst_grid_rank.eq.1) then
-    sd@lat1d = fwgt->yc_b      ; I don't like this, but how else to 
-    sd@lon1d = fwgt->xc_b      ; attach?
+    sd_regrid@lat1d = fwgt->yc_b      ; I don't like this, but how else to 
+    sd_regrid@lon1d = fwgt->xc_b      ; attach?
     return
   end if
 
