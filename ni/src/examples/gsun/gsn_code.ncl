@@ -4569,6 +4569,12 @@ end
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function attaches shapefile polylines to the plot "plotid".      ;
+;                                                                       ;
+; In version 6.1.0, some code was added to add checks if the lat/lon    ;
+; segments are within the range of the map. This works best for a C.E.  ;
+; map. You have to set the special min/max/lat/lon attributes for this  ;
+; to work.  I won't advertise this yet, because the interface could     ;
+; probably be made better.                                              ;
 ;***********************************************************************;
 undef("gsn_add_shapefile_polylines")
 function gsn_add_shapefile_polylines(wks,plot,fname:string,lnres)
@@ -4615,20 +4621,47 @@ begin
   lon = f->x
   lat = f->y
   npl = 0     ; polyline counter
-  do i=0, numFeatures-1  
-     startSegment = geometry(i, geom_segIndex)
-     numSegments  = geometry(i, geom_numSegs)
-     do seg=startSegment, startSegment+numSegments-1
-        startPT = segments(seg, segs_xyzIndex)
-        endPT   = startPT + segments(seg, segs_numPnts) - 1
-
-;---Attach the line segment
-        poly(npl) = gsn_add_polyline(wks, plot, lon(startPT:endPT),  \
-                                     lat(startPT:endPT), lnres)
-        npl = npl + 1
-     end do
-  end do
-  return(poly)
+;
+; Special check for minlat/maxlat/minlon/maxlon attributes.
+;
+; If set, then each lat/lon segment will be checked if it's
+; in the range.  This can speed up plotting, but I need to
+; verify this!
+; 
+  if(isatt(lnres,"minlon").and.isatt(lnres,"maxlon").and.\
+     isatt(lnres,"minlat").and.isatt(lnres,"maxlat")) then
+    do i=0, numFeatures-1  
+       startSegment = geometry(i, geom_segIndex)
+       numSegments  = geometry(i, geom_numSegs)
+       do seg=startSegment, startSegment+numSegments-1
+          startPT = segments(seg, segs_xyzIndex)
+          endPT   = startPT + segments(seg, segs_numPnts) - 1
+          lat_sub = lat(startPT:endPT)
+          lon_sub = lon(startPT:endPT) 
+          if(.not.(all(lon_sub.lt.lnres@minlon).or. \
+                   all(lon_sub.gt.lnres@maxlon).or. \
+                   all(lat_sub.lt.lnres@minlat).or. \
+                   all(lat_sub.gt.lnres@maxlat))) then
+            poly(npl) = gsn_add_polyline(wks, plot, lon_sub, lat_sub, lnres)
+            npl = npl + 1
+          end if
+          delete([/lat_sub,lon_sub/])
+       end do
+    end do
+  else       ; Don't do any range checking. 
+    do i=0, numFeatures-1  
+       startSegment = geometry(i, geom_segIndex)
+       numSegments  = geometry(i, geom_numSegs)
+       do seg=startSegment, startSegment+numSegments-1
+          startPT = segments(seg, segs_xyzIndex)
+          endPT   = startPT + segments(seg, segs_numPnts) - 1
+          poly(npl) = gsn_add_polyline(wks, plot, lon(startPT:endPT),  \
+                                       lat(startPT:endPT), lnres)
+          npl = npl + 1
+       end do
+    end do
+  end if
+  return(poly(0:npl-1))
 end
 
 ;***********************************************************************;
