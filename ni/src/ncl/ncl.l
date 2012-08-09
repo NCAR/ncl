@@ -883,4 +883,9 @@ inttype [bBChHiIlLqQ]
 	printtoken(yytext[0],(char*)NULL);
 	return(yytext[0]);
 }
+":=" {
+	printtoken(REASSIGN,(char*)NULL);
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	return REASSIGN;
+}
 

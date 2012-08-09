@@ -205,6 +205,9 @@ static void SetUpOpsStrings() {
 	ops_strings[ASSIGN_FILE_GROUP_OP] = "ASSIGN_FILE_GROUP_OP";
 	ops_strings[PARAM_FILE_GROUP_OP] = "PARAM_FILE_GROUP_OP";
 	ops_strings[LISTVAR_LIT_OP] = "LISTVAR_LIT_OP";
+
+	ops_strings[REASSIGN_VAR_OP] = "REASSIGN_VAR_OP";
+	ops_strings[REASSIGN_VAR_VAR_OP]= "REASSIGN_VAR_VAR_OP";
 }
 
 static NhlErrorTypes IncreaseStackSize
@@ -1438,6 +1441,7 @@ void _NclPrintMachine
 			case VARVAL_READ_OP :
 			case VAR_READ_OP :
 			case ASSIGN_VAR_OP :
+			case REASSIGN_VAR_OP :
 			case PARAM_VAR_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
@@ -1447,6 +1451,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t%ld\n",(long)*ptr);
 				break;
 			case ASSIGN_VAR_VAR_OP :
+			case REASSIGN_VAR_VAR_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");

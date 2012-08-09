@@ -29158,7 +29158,7 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            cur_str_len = strlen(str) + 1;
+                            cur_str_len = strlen(str);
                             if(max_str_len < cur_str_len)
                                max_str_len = cur_str_len;
                         }
@@ -29197,7 +29197,6 @@ NhlErrorTypes _NclItochar
                                 output[n++] = str[j];
                             }
                         }
-                        output[n++] = '\0';
                     }
 
                     return(NclReturnValue((void*)output,

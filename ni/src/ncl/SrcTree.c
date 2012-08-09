@@ -127,6 +127,7 @@ char *src_tree_names[] = {"Ncl_BLOCK",
 			"Ncl_FILEGROUPCOORDATT",
 			"Ncl_FILEGROUPLIST",
 			"Ncl_LISTVAR",
+			"Ncl_REASSIGN",
 			"Ncl_WILLNOTBEUSED"
 			};
 /*
@@ -1367,10 +1368,47 @@ void *expr;
 		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
+	
 	tmp->kind = Ncl_ASSIGN;
 	tmp->name = src_tree_names[Ncl_ASSIGN];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
+	tmp->left_side = name_ref;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->right_side = expr;
+
+	_NclRegisterNode((NclGenericNode*)tmp);
+	return((void*)tmp);
+}
+
+/*
+ * Function:	_NclMakeReassignment
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void *_NclMakeReassignment(void *name_ref, void *expr)
+{
+	NclAssign *tmp = (NclAssign*)NclMalloc((unsigned)sizeof(NclAssign));
+
+	if(NULL == tmp)
+	{
+		NHLPERROR((NhlFATAL,errno,"Not enough memory for source tree construction"));
+		return(NULL);
+	}
+
+	tmp->kind = Ncl_REASSIGN;
+	tmp->name = src_tree_names[Ncl_REASSIGN];
+	tmp->line = cur_line_number;
+	tmp->file = cur_load_file;
+	tmp->new_left = 1;
 	tmp->left_side = name_ref;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
 	tmp->right_side = expr;
@@ -3259,6 +3297,20 @@ if(groot != NULL) {
 				_NclPrintTree(new->missing_expr,fp);
 			}
 			i--;	
+		}
+		break;
+		case Ncl_REASSIGN:
+		{
+                        fprintf(stderr, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);
+                        fprintf(stderr, "\tNcl_REASSIGN, groot->kind: %d\n", groot->kind);
+
+			NclAssign *assign = (NclAssign*)root;
+			putspace(i,fp);
+			fprintf(fp,"%s\n",assign->name);
+			i++;
+			_NclPrintTree(assign->left_side,fp);
+			_NclPrintTree(assign->right_side,fp);
+			i--;
 		}
 		break;
 		case Ncl_FILEGROUP:

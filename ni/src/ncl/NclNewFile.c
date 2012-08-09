@@ -11,6 +11,8 @@
 
 #include "NclNewFile.h"
 
+NhlErrorTypes InitializeFileOptions();
+
 static struct _NclMultiDValDataRec *NewFileReadVarAtt(NclFile infile,
                                                       NclQuark var,
                                                       NclQuark attname,
@@ -35,7 +37,7 @@ static NhlErrorTypes NewFileAddVarChunkCache(NclFile thefile, NclQuark varname,
                                              float cache_preemption);
 static NhlErrorTypes NewFileSetVarCompressLevel(NclFile infile, NclQuark varname,
                                                 int compress_level);
-static NhlErrorTypes NewFileAddGrp(NclFile thefile, NclQuark grpname);
+/*static NhlErrorTypes NewFileAddGrp(NclFile thefile, NclQuark grpname);*/
 static NhlErrorTypes NewFileAddVar(NclFile thefile, NclQuark varname,
                                    NclQuark type, int n_dims, NclQuark *dimnames);
 static NhlErrorTypes NewFileWriteVarAtt(NclFile thefile, NclQuark var, NclQuark attname,
@@ -246,11 +248,7 @@ NclFileCompoundNode *_getComponentNodeFromVarNode(NclFileVarNode *varnode,
 NhlErrorTypes _NclNewFilePrintSummary(NclObj self, FILE *fp)
 {
     NclNewFile thefile = (NclNewFile)self;
-    int i,j;
-    NclFileAttInfoList* step;
     int ret = 0;
-    NclMultiDValData tmp_md;
-    NhlErrorTypes ret1 = NhlNOERROR;
 
     ret = nclfprintf(fp,"File path\t:\t%s\n\n",NrmQuarkToString(thefile->newfile.fpath));
     if(ret < 0)
@@ -824,7 +822,7 @@ void _printNclFileVarDimRecord(FILE *fp, NclFileDimRecord *dim_rec)
 {
     NclFileDimNode   *dimnode;
     long long llv;
-    int i, n;
+    int i;
    
     _justPrintTypeVal(fp, NCL_char, "\t[ ", 0);
 
@@ -852,7 +850,6 @@ void _printNclFileVarRecord(FILE *fp, NclNewFile thefile, NclFileVarRecord *varr
 {
     NclFileVarNode *varnode;
     char type_str[32];
-    long long llv;
     int i;
     
     if(NULL == varrec)
@@ -910,8 +907,6 @@ void _printNclFileVarRecord(FILE *fp, NclNewFile thefile, NclFileVarRecord *varr
 void _printNclFileGrpRecord(FILE *fp, NclNewFile thefile, NclFileGrpRecord *grprec)
 {
     NclFileGrpNode *grpnode;
-    char type_str[32];
-    long long llv;
     int i;
 
     if(NULL == grprec)
@@ -992,8 +987,6 @@ NhlErrorTypes _delNclAttNode(NclFileAttRecord **theattrec, NclQuark name)
     NhlErrorTypes ret = NhlNOERROR;
     int i, size;
     int idx = -1;
-    int old_n_atts = attrec->n_atts;
-    int new_n_atts = attrec->n_atts - 1;
 
     for(i = 0; i < attrec->n_atts; i++)
     {
@@ -1664,12 +1657,11 @@ NclFileGrpNode *_getGrpNodeFromNclFileGrpNode(NclFileGrpNode *ingrpnode,
 {
     int n;
     NclFileGrpNode *outgrpnode = NULL;
-    NclQuark new_grpname;
-    NclQuark newroot_grpname;
+    NclQuark new_grpname = -1;
+    NclQuark newroot_grpname = -1;
 
     char *full_str;
     char *root_str;
-    char *tmp_str;
     char buffer[NCL_MAX_STRING];
     char newroot[NCL_MAX_STRING];
     int  gl;
@@ -1843,6 +1835,47 @@ NclFileVarNode *_getVarNodeFromNclFileVarRecord(NclFileVarRecord *var_rec,
     return NULL;
 }
 
+NclFileVarNode *_getVarNodeFromThisGrpNode(NclFileGrpNode *grpnode,
+                        NclQuark varname)
+{
+    int n;
+    NclFileVarNode *varnode = NULL;
+
+  /*
+   *fprintf(stderr, "\nEnter _getVarNodeFromThisGrpNode, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tgrpname: <%s>\n", NrmQuarkToString(grpnode->name));
+   *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varname));
+   */
+
+    if(NULL != grpnode->var_rec)
+    {
+        for(n = 0; n < grpnode->var_rec->n_vars; n++)
+        {
+            varnode = &(grpnode->var_rec->var_node[n]);
+          /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tvar no %d, name: <%s>, real_name: <%s>\n", n,
+           *        NrmQuarkToString(varnode->name), NrmQuarkToString(varnode->real_name));
+           */
+
+            if((varname == varnode->name) || (varname == varnode->real_name))
+            {
+                goto done_getVarNodeFromThisGrpNode;
+            }
+        }
+    }
+
+    varnode = NULL;
+
+done_getVarNodeFromThisGrpNode:
+
+  /*
+   *fprintf(stderr, "Leave _getVarNodeFromThisGrpNode, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   */
+
+    return varnode;
+}
+
 NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
                         NclQuark varname)
 {
@@ -1927,8 +1960,6 @@ NclFileVarNode *_getCoordVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
     int n;
     NclFileVarNode *varnode = NULL;
     NclQuark vn = varname;
-    char *struct_name = NULL;
-    char *component_name = NULL;
 
   /*
    *fprintf(stderr, "\nEnter _getCoordVarNodeFromNclFileGrpNode, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -2262,22 +2293,8 @@ static int _NclFileFillHLFS(NclNewFile file_out, int is_http,
                             NclQuark path, int need_free_file,
                             int rw_status, int len_path)
 {
-    NclQuark *name_list;
-    NclQuark *att_name_list;
     NclQuark the_real_path = -1;
-    int i,j;
-    int n_names;
-    int n_atts;
     struct stat buf;
-
-    NclFileVarNode *var_node;
-    NclFVarRec     *var_info;
-
-    NclFileAttNode *att_node;
-    NclFAttRec     *att_info;
-
-    NclFileDimNode *dim_node;
-    NclFDimRec     *dim_info;
 
   /*
    *fprintf(stderr, "\nEnter _NclFileFillHLFS file: %s, line: %d\n", __FILE__, __LINE__);
@@ -2401,16 +2418,11 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
     char *the_path = NrmQuarkToString(path);
     NclQuark the_real_path = -1;
     char *tmp_path = NULL;
-    char buffer[NCL_MAX_STRING];
-    int i,j;
+    int i;
     NclNewFile file_out = NULL;
     int file_out_free = 0;
     NhlErrorTypes ret= NhlNOERROR;
     NclObjClass class_ptr;
-    NclQuark *name_list;
-    int n_names;
-    NclQuark *name_list2;
-    int n_names2;
     struct stat buf;
     NclFileClassPart *fcp = &(nclFileClassRec.file_class);
     int ret_error = 0;
@@ -2589,7 +2601,6 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
     NclScalar missing_value;
     int has_missing = 0;
     void *val = NULL;
-    int index;
     long start[NCL_MAX_DIMENSIONS];
     long finish[NCL_MAX_DIMENSIONS];
     long stride[NCL_MAX_DIMENSIONS];
@@ -2614,7 +2625,7 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
     int keeper[NCL_MAX_DIMENSIONS];
     NclSelection *sel;
     float tmpf;
-    long tmpi;
+    long tmpi = 0;
     int swap_size;
     void *swap_space = NULL;
 
@@ -4796,7 +4807,7 @@ static NhlErrorTypes NewFileWriteAtt(NclFile infile, NclQuark attname,
                                      struct _NclSelectionRecord *sel_ptr)
 {
     NclNewFile thefile = (NclNewFile) infile;
-    int i,exists;
+    int exists = 0;
     NclMultiDValData tmp_att_md,tmp_md;
     int att_id;
     NhlErrorTypes ret = NhlNOERROR;
@@ -5336,7 +5347,6 @@ static NhlErrorTypes NewFileAddDim(NclFile infile, NclQuark dimname,
     NclNewFile thefile = (NclNewFile) infile;
     NhlErrorTypes ret = NhlNOERROR;
     NclFileDimNode   *dimnode = NULL;
-    NclFileDimRecord *dimrec = thefile->newfile.grpnode->dim_rec;
     ng_size_t ds = dimsize;
 
   /*
@@ -5422,8 +5432,6 @@ static NhlErrorTypes NewUpdateCoordInfo(NclNewFile thefile, NrmQuark varname)
 
 static void NewAdjustForScalarDim(NclNewFile thefile)
 {
-    ng_size_t ds = 1;
-    int i, j;
     NclQuark nsn = NrmStringToQuark("ncl_scalar");
 
  /* since the scalar dim is always first,
@@ -5999,7 +6007,7 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
     ng_size_t     new_dim_sizes[NCL_MAX_DIMENSIONS];
     
     int has_missing = 0;
-    char buffer[8];
+    char buffer[NCL_MAX_STRING];
     void *val;
     NhlErrorTypes ret = NhlNOERROR;
     long start[NCL_MAX_DIMENSIONS];
@@ -6015,7 +6023,6 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
     int has_reverse = 0;
     int has_reorder = 0;
     int from = 0,block_write_limit,n_elem_block;
-    NclFDimRec *tmpfdim = NULL;
     
     int multiplier_target[NCL_MAX_DIMENSIONS];
     int compare_sel[NCL_MAX_DIMENSIONS];
@@ -6029,7 +6036,7 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
     NclScalar *tmp_mis;
     NclScalar tmp_scalar;
     ng_size_t tmp_size = 1;
-    long tmpi;
+    long tmpi = 0;
     void *data_type;
     NclBasicDataTypes from_type,to_type;
     NclObjTypes obj_type;
@@ -6040,7 +6047,6 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
     NclFileDimRecord *dimrec;
     NclFileDimNode   *dimnode;
     NclFileAttNode   *attnode;
-    int n = -1;
 
   /*
    *fprintf(stderr, "\nEnter MyNewFileWriteVar, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -6055,7 +6061,11 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
     if(thefile->newfile.wr_status <= 0)
     {
         dimrec = thefile->newfile.grpnode->dim_rec;
-        varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, var);
+        strcpy(buffer, NrmQuarkToString(var));
+        if(NULL == strchr(buffer, '/'))
+            varnode = _getVarNodeFromThisGrpNode(thefile->newfile.grpnode, var);
+        else
+            varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, var);
         if(NULL != varnode)
         {
             /*
@@ -6076,8 +6086,8 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
                 for(i = 0; i < n_dims_target; i++)
                 {
                     fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                    fprintf(stderr, "\tsel->dim_num = %d\n", sel->dim_num);
-                    fprintf(stderr, "\tdimnode[%d].name = %s, size=%d\n",
+                    fprintf(stderr, "\tsel->dim_num = %ld\n", sel->dim_num);
+                    fprintf(stderr, "\tdimnode[%ld].name = %s, size=%ld\n",
                         sel->dim_num, NrmQuarkToString(dimnode[sel->dim_num].name),
                         dimnode[sel->dim_num].size);
                     switch(sel->sel_type)
@@ -6834,10 +6844,10 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
 /*
 * Need to add variable to file situation
 */
-            /*
-            */
-             fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-             fprintf(stderr, "\tCould not get varnode->name: <%s>\n", NrmQuarkToString(var));
+           /*
+           */
+            fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+            fprintf(stderr, "\tCould not get varnode->name: <%s>\n", NrmQuarkToString(var));
 
             if(type == FILE_COORD_VAR_ACCESS)
             {
@@ -7103,7 +7113,8 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
     NclQuark dim_names[NCL_MAX_DIMENSIONS];
     NclAtt theatt;
     NclAttList *step;
-    int index,cindex;
+    int index = -1;
+    int cindex = -1;
     ng_size_t lhs_n_elem;    
     NclSelectionRecord tmp_sel;
     void *tmp_coord;
@@ -7677,7 +7688,7 @@ static struct _NclMultiDValDataRec *NewFileReadAtt(NclFile infile, NclQuark attn
 static NhlErrorTypes NewFileDelAtt(NclFile infile, NclQuark attname)
 {
     NclNewFile thefile = (NclNewFile) infile;
-    NhlErrorTypes ret = NhlNOERROR;
+    NhlErrorTypes ret = NhlFATAL;
     NclFileAttRecord *attrec;
     NclFileAttNode   *attnode;
 
@@ -7696,13 +7707,11 @@ static NhlErrorTypes NewFileDelAtt(NclFile infile, NclQuark attname)
             else
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Attribute deletion not supported by format"));
-                ret = NhlFATAL;
             }
         }
         else
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Attempt to delete undefined attribute from file"));
-            ret = NhlFATAL;
         }
     }
     else
@@ -7710,9 +7719,8 @@ static NhlErrorTypes NewFileDelAtt(NclFile infile, NclQuark attname)
         NHLPERROR((NhlFATAL,NhlEUNKNOWN,
            "NewFileDelAtt: file (%s) is read only, can not delete attribute",
             NrmQuarkToString(thefile->newfile.fname)));
-        ret = NhlFATAL;
     }
-    ret = NhlFATAL;
+    return (ret);
 }
 
 static NhlErrorTypes NewFileDelVarAtt(NclFile infile, NclQuark var, NclQuark attname)
@@ -7809,7 +7817,6 @@ static struct _NclMultiDValDataRec *NewFileVarReadDim(NclFile infile, NclQuark v
                                                       NclQuark dim_name, long dim_num)
 {
     NclNewFile thefile = (NclNewFile) infile;
-    NhlErrorTypes ret = NhlNOERROR;
     NclFileDimNode   *dimnode;
     NclFileVarNode   *varnode;
 
@@ -7930,7 +7937,6 @@ static struct _NclMultiDValDataRec* NewFileReadDim(NclFile infile,
                                                    long dim_num)
 {
     NclNewFile thefile = (NclNewFile) infile;
-    int i = 0;
     NclQuark *tmps;
     int *tmpl;
     ng_size_t output_dim_sizes = 1;
@@ -8379,14 +8385,14 @@ NclQuark *_NclGetGrpNames(void *therec, int *num_grps)
         }
     }
 
-#if 0
+#if 1
     if(NULL != grpnode->grp_rec)
     {
         if(grpnode->grp_rec->n_grps)
         {
             for(n = 0; n < grpnode->grp_rec->n_grps; n++)
             {
-                tmp_quarks = NC4GetGrpNames((void *)grpnode->grp_rec->grp_node[i], &ng);
+                tmp_quarks = _NclGetGrpNames((void *)grpnode->grp_rec->grp_node[i], &ng);
 
                 if(ng)
                 {
