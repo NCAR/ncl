@@ -1906,77 +1906,74 @@ NclFileAttNode *_getAttNodeFromNclFileGrpNode(NclFileGrpNode *grp_node,
 NclFileGrpNode *_getGrpNodeFromGrpNode(NclFileGrpNode *ingrpnode,
                         NclQuark grpname)
 {
-    int lvls;
     int n;
     NclFileGrpNode *outgrpnode = NULL;
-    NclQuark *out_grp_names;
+    char buffer[NCL_MAX_STRING];
+    NclQuark name;
 
     if(NULL == ingrpnode)
     {
         NHLPERROR((NhlWARNING,NhlEUNKNOWN,
             "_getGrpNodeFromGrpNode: input grpnode is NULL.\n"));
-        return outgrpnode;
+        return NULL;
     }
+
+    strcpy(buffer, NrmQuarkToString(grpname));
+
+    if('/' == buffer[0])
+    {
+        strcat(buffer, "/");
+        name = NrmStringToQuark(buffer);
+    }
+    else
+        name = grpname;
 
   /*
    *fprintf(stderr, "\nHit _getGrpNodeFromGrpNode, file: %s, line:%d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tingrpnode->name: <%s>\n", NrmQuarkToString(ingrpnode->name));
-   *fprintf(stderr, "\tgrpname: <%s>\n", NrmQuarkToString(grpname));
+   *fprintf(stderr, "\tingrpnode->real_name: <%s>\n", NrmQuarkToString(ingrpnode->real_name));
+   *fprintf(stderr, "\t     ingrpnode->name: <%s>\n", NrmQuarkToString(ingrpnode->name));
+   *fprintf(stderr, "\t             grpname: <%s>\n", NrmQuarkToString(grpname));
+   *fprintf(stderr, "\t                name: <%s>\n", NrmQuarkToString(name));
    */
 
-    if((grpname == ingrpnode->name) ||
-       (grpname == ingrpnode->real_name))
+    if((name == ingrpnode->name) ||
+       (name == ingrpnode->real_name))
     {
-       outgrpnode =  ingrpnode;
+       outgrpnode = ingrpnode;
+       outgrpnode->pid = ingrpnode->id;
+       outgrpnode->parent = NULL;
        return outgrpnode;
     }
 
-    out_grp_names = splitString(grpname, &lvls);
-    if(1 < lvls)
+    if(NULL == ingrpnode->grp_rec)
     {
-        NclFileGrpNode *topgrpnode = ingrpnode;
-        NclQuark gn;
-
-        if(NULL == ingrpnode->grp_rec)
-            return outgrpnode;
-
-        for(n = 0; n < lvls; ++n)
-        {
-            gn = out_grp_names[n];
-            outgrpnode = _getGrpNodeFromGrpNode(topgrpnode, gn);
-            topgrpnode = outgrpnode;
-        }
-
-        if(NULL != outgrpnode)
-        {
-            NclFree(out_grp_names);
-
-            return outgrpnode;
-        }
+        return NULL;
     }
-    else
+
+    for(n = 0; n < ingrpnode->grp_rec->n_grps; ++n)
     {
-        if((out_grp_names[0] == ingrpnode->name) ||
-           (out_grp_names[0] == ingrpnode->real_name))
+        outgrpnode = ingrpnode->grp_rec->grp_node[n];
+
+        if((name == outgrpnode->name) ||
+           (name == outgrpnode->real_name))
         {
-           outgrpnode = ingrpnode;
+           outgrpnode->pid = ingrpnode->id;
+           outgrpnode->parent = ingrpnode;
            return outgrpnode;
         }
     }
 
-    if(NULL == ingrpnode->grp_rec)
-        return outgrpnode;
-
     for(n = 0; n < ingrpnode->grp_rec->n_grps; ++n)
     {
-        outgrpnode = _getGrpNodeFromGrpNode(ingrpnode->grp_rec->grp_node[n], grpname);
+        outgrpnode = _getGrpNodeFromGrpNode(ingrpnode->grp_rec->grp_node[n], name);
+
         if(NULL != outgrpnode)
-            break;
+        {
+            return outgrpnode;
+        }
     }
 
-    NclFree(out_grp_names);
-
-    return outgrpnode;
+    return NULL;
 }
 
 NclFileVarNode *_getVarNodeFromNclFileVarRecord(NclFileVarRecord *var_rec,

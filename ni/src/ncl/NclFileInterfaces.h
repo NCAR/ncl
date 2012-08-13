@@ -80,8 +80,7 @@ typedef enum _NclFileFormat {
 #endif
         _NclOGR,
         _NclNewOGR,
-	_NclNETCDF4,
-	_NclH5
+	_NclNETCDF4
 } NclFileFormat;
 
 typedef void * (*NclInitializeFileRecFunc)(

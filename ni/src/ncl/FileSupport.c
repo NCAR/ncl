@@ -2976,6 +2976,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 #ifdef BuildHDF5
 	else if(0 == strcmp(fext, "hdf5"))
 	{
+		*new_hlfs = 1;
 		ori_file_ext_q = NrmStringToQuark("h5");
 	}
 #endif

@@ -469,27 +469,30 @@ NclQuark _string2quark(char *nm)
     return qn;
 }
 
+static void _setpid(NclFileGrpNode *grpnode)
+{
+    if(grpnode->pid < 0)
+        _setpid(grpnode->parent);
+    grpnode->id = H5Gopen(grpnode->pid, NrmQuarkToString(grpnode->name), H5P_DEFAULT);
+}
+
 static int _getH5grpID(NclFileGrpNode *grpnode)
 {
-    hid_t fid = -1;
+    hid_t id = -1;
 
   /*
    *fprintf(stderr, "\nEntering _getH5grpID, int file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tname = <%s>, id: %d\n", NrmQuarkToString(grpnode->name), grpnode->fid);
+   *fprintf(stderr, "\tname = <%s>, id: %ld\n",
+   *                   NrmQuarkToString(grpnode->name), grpnode->id);
    */
 
-    fid = grpnode->fid;
+    id = grpnode->id;
 
-    if(fid < 0)
+    if(id <= 0)
     {
-        fid = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_RDWR, H5P_DEFAULT);
 
         if(strcmp(NrmQuarkToString(grpnode->real_name), "/"))
         {
-            int n, nlvls = 0;
-            NclQuark *vnlist = NULL;
-            hid_t gid;
-
           /*
            *fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
            *fprintf(stderr, "\tNeed to figure out how to open group, name: <%s>, real_name: <%s>.\n",
@@ -497,42 +500,38 @@ static int _getH5grpID(NclFileGrpNode *grpnode)
            *                   NrmQuarkToString(grpnode->real_name));
            */
 
-            vnlist = splitString(grpnode->real_name, &nlvls);
-
-            for(n = 0; n < nlvls; ++n)
+            if(grpnode->pid > 0)
             {
-                gid = H5Gopen(fid, NrmQuarkToString(vnlist[n]), H5P_DEFAULT);
-
-              /*
-               *fprintf(stderr, "\tg name[%d]: <%s>\n", n, NrmQuarkToString(vnlist[n]));
-               *fprintf(stderr, "\t\tfid = %d, gid = %d\n", fid, gid);
-               */
-
-                fid = gid;
+                id = H5Gopen(grpnode->pid, NrmQuarkToString(grpnode->name), H5P_DEFAULT);
             }
-
-            NclFree(vnlist);
+            else
+            {
+                _setpid(grpnode);
+                id = grpnode->id;
+            }
         }
+        else
+            id = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_RDWR, H5P_DEFAULT);
 
-        if(fid < 0)
+        if(id < 0)
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
                   "NclNewHDF5 _getH5grpID: Could not reopen the file (%s) for writing",
                   NrmQuarkToString(grpnode->path)));
             return(NhlFATAL);
         }
-    }
 
-    grpnode->fid = fid;
-    grpnode->id = fid;
+        grpnode->id = id;
+    }
     grpnode->define_mode = 0;
     grpnode->open = 1;
 
   /*
+   *fprintf(stderr, "\tid: %d\n", id);
    *fprintf(stderr, "Leaving _getH5grpID, at file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
 
-    return (int)fid;
+    return (int)id;
 }
 
 /*
@@ -2772,7 +2771,7 @@ static herr_t _recursiveH5check(NclFileGrpNode **rootgrp,
     searcher.udata         = (void *)rootgrp;
 
     /* Get info for starting object */
-    if(H5Oget_info_by_name((*rootgrp)->fid, grp_name, &oinfo, H5P_DEFAULT) < 0)
+    if(H5Oget_info_by_name((*rootgrp)->id, grp_name, &oinfo, H5P_DEFAULT) < 0)
         return FAILED;
 
     /* Searching the object */
@@ -2802,13 +2801,13 @@ static herr_t _recursiveH5check(NclFileGrpNode **rootgrp,
         tudata.base_grp_name = grp_name;
 
         /* Visit all links in group, recursively */
-        if(H5Lvisit_by_name((*rootgrp)->fid, grp_name, H5_INDEX_NAME, H5_ITER_INC, _searchH5byName, &tudata, H5P_DEFAULT) < 0)
+        if(H5Lvisit_by_name((*rootgrp)->id, grp_name, H5_INDEX_NAME, H5_ITER_INC, _searchH5byName, &tudata, H5P_DEFAULT) < 0)
         {
             fprintf(stderr, "\n\n\n");
             fprintf(stderr, "**************************************************************\n");
             fprintf(stderr, "FAILED in file: %s, line: %d\n", __FILE__, __LINE__);
             fprintf(stderr, "\tgrp_name: <%s>\n", grp_name);
-            fprintf(stderr, "\tfid: %ld\n", (*rootgrp)->fid);
+            fprintf(stderr, "\tfid: %ld\n", (*rootgrp)->id);
             fprintf(stderr, "FAILED in file: %s, line: %d\n", __FILE__, __LINE__);
             fprintf(stderr, "**************************************************************\n");
             fprintf(stderr, "\n\n\n");
@@ -2891,7 +2890,6 @@ static void *H5InitializeFileRec(NclFileFormat *format)
     grpnode = (NclFileGrpNode *)NclCalloc(1, sizeof(NclFileGrpNode));
     assert(grpnode);
 
-    grpnode->fid = -1;
     grpnode->id = -1;
     grpnode->pid = -1;
     grpnode->name = NrmStringToQuark("/");
@@ -2910,7 +2908,7 @@ static void *H5InitializeFileRec(NclFileFormat *format)
         NclFree(grpnode);
         return NULL;
     }
-    *format = _NclH5;
+    *format = _NclHDF5;
     setvbuf(stderr,NULL,_IONBF,0);
     return (void *) grpnode;
 }
@@ -2937,14 +2935,14 @@ static herr_t _readH5info(NclFileGrpNode **rootgrp)
     static char root_name[] = "/";
 
     /* Retrieve info for object */
-    status = H5Oget_info_by_name((*rootgrp)->fid, root_name, &oi, H5P_DEFAULT);
+    status = H5Oget_info_by_name((*rootgrp)->id, root_name, &oi, H5P_DEFAULT);
 
     (*rootgrp)->name = NrmStringToQuark(root_name);
 
     if(status == FAILED)
     {
         fprintf(stderr, "Failed to get info for fid: %ld, root_name: <%s>, in file: %s, at line: %d\n",
-            (*rootgrp)->fid, root_name, __FILE__, __LINE__);
+            (*rootgrp)->id, root_name, __FILE__, __LINE__);
         return FAILED;
     }
 
@@ -2959,13 +2957,21 @@ static herr_t _readH5info(NclFileGrpNode **rootgrp)
        */
 
         /* Get ID for group */
-        gid = H5Gopen((*rootgrp)->fid, root_name, H5P_DEFAULT);
+        gid = H5Gopen((*rootgrp)->id, root_name, H5P_DEFAULT);
         if(gid < 0)
         {
             fprintf(stderr, "Unable to open '%s' as group\n", root_name);
             return FAILED;
         }
-        (*rootgrp)->id = gid;
+
+      /*
+       *fprintf(stderr, "\nin file: %s, at line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\t(*rootgrp)->id = %ld, (*rootgrp)->real_name: <%s>\n",
+       *                   (*rootgrp)->id, NrmQuarkToString((*rootgrp)->real_name));
+       */
+
+        if(NrmStringToQuark("/") != (*rootgrp)->real_name)
+            (*rootgrp)->id = gid;
 
       /*Specified name is a group. Search the complete contents of the group. */
         _recursiveH5check(rootgrp, _searchH5obj, _searchH5link);
@@ -3175,7 +3181,6 @@ void *H5OpenFile(void *rec, NclQuark path, int status)
 
         grpnode->open = 1;
         grpnode->define_mode = 0;
-        grpnode->fid = fid;
         grpnode->id = fid;
         grpnode->parent = NULL;
     }
@@ -3350,7 +3355,7 @@ void _getH5data(hid_t fid, NclFileVarNode *varnode,
 
   /*
    *fprintf(stderr, "\nEnter _getH5data, file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varnode->name));
+   *fprintf(stderr, "\tfid = %ld, varname: <%s>\n", fid, NrmQuarkToString(varnode->name));
    */
 
     did = H5Dopen(fid, NrmQuarkToString(varnode->name), H5P_DEFAULT);
@@ -4259,9 +4264,9 @@ static void *H5ReadVar(void *therec, NclQuark thevar,
     ng_size_t count[MAX_NC_DIMS];
 
   /*
-   *fprintf(stderr, "\tgrpnode->id = %d\n", grpnode->id);
    *fprintf(stderr, "\nEnter H5ReadVar, file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
+   *fprintf(stderr, "\tgrpnode->id = %d\n", grpnode->id);
    */
 
     varnode = _getVarNodeFromNclFileGrpNode(grpnode, thevar);
@@ -4312,13 +4317,6 @@ static void *H5ReadVar(void *therec, NclQuark thevar,
   /*
    *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tgrpnode->id: %d, varnode->id: %d\n", grpnode->id, varnode->id);
-   *fprintf(stderr, "\tfid = %d\n", fid);
-   */
-
-  /*
-   *fid = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_RDONLY, H5P_DEFAULT);
-
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tfid = %d\n", fid);
    */
 
@@ -4475,8 +4473,7 @@ static void H5FreeFileRec(void* therec)
     if(grpnode->open)
     {
         fprintf(stderr, "H5FreeFileRec in file: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "H5FreeFileRec file id: %ld\n", grpnode->fid);
-        H5Fclose(grpnode->fid);
+        H5Fclose(grpnode->id);
         H5close();
     }
 
@@ -4499,9 +4496,7 @@ static void *H5CreateFile(void *rec, NclQuark path)
 
     if(fid > 0)
     {
-        grpnode->fid = fid;
         grpnode->id = fid;
-        grpnode->pid = fid;
         grpnode->define_mode = 1;
         grpnode->open = 1;
         grpnode->parent = NULL;
@@ -6549,7 +6544,6 @@ NhlErrorTypes H5AddGrp(void *rec, NclQuark grpname)
    *fprintf(stderr, "\tgid = %d, h5grpfullname: <%s>\n", gid, h5grpfullname);
    */
 
-    grpnode->fid = gid;
     grpnode->id = gid;
     grpnode->pid = fid;
     grpnode->define_mode = 1;
