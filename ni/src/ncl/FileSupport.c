@@ -2747,11 +2747,9 @@ NclQuark option;
 	NclFileClass fc = NULL;
 	int i = 5;
 
-#ifdef USE_NETCDF4_FEATURES
 	if(use_new_hlfs)
 		fc = (NclFileClass) &nclNewFileClassRec;
 	else
-#endif
 		fc = &nclFileClassRec;
 
         while((! fc) && i)
@@ -2977,7 +2975,9 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 #endif
 #ifdef BuildHDF5
 	else if(0 == strcmp(fext, "hdf5"))
+	{
 		ori_file_ext_q = NrmStringToQuark("h5");
+	}
 #endif
 #ifdef BuildHDFEOS
 	else if((0 == strcmp(fext, "hdfeos")) || (0 == strcmp(fext, "he")) || (0 == strcmp(fext, "he4")))
@@ -3073,6 +3073,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 			{
         			file_ext_q = cur_ext_q;
 				found = 1;
+       				*new_hlfs = 1;
 				break;
 			}
 			else
@@ -3251,14 +3252,12 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		}
 	}
 
-#ifdef USE_NETCDF4_FEATURES
 	if(use_new_hlfs)
 	{
 		file_out = _NclNewFileCreate(inst, theclass, obj_type, obj_type_mask, status,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
 	}					
 	else
-#endif
 	{
 		file_out = _NclFileCreate(inst, theclass, obj_type, obj_type_mask, status,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
@@ -3269,13 +3268,11 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 NhlErrorTypes _NclPrintFileSummary(NclObj self, FILE *fp)
 {
-#ifdef USE_NETCDF4_FEATURES
 	if(use_new_hlfs)
 	{
 		return (_NclNewFilePrintSummary(self, fp));
 	}
 	else
-#endif
 	{
 		return (_NclFilePrintSummary(self, fp));
 	}

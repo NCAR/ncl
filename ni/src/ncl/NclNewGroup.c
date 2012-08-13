@@ -258,7 +258,7 @@ NclFile thefile;
 }
 #endif
 
-static void UpdateNewGroupDims(NclNewFile group_out, NclFileGrpNode *grpnode)
+void UpdateNewGroupDims(NclNewFile group_out, NclFileGrpNode *grpnode)
 {
   /*
    */

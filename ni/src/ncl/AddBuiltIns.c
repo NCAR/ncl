@@ -131,15 +131,12 @@ void
 #endif
 );
 
-#ifdef USE_NETCDF4_FEATURES
 extern NhlErrorTypes _NclIFileVlenDef(void);
 extern NhlErrorTypes _NclIFileEnumDef(void);
 extern NhlErrorTypes _NclIFileCompoundDef(void);
 extern NhlErrorTypes _NclIFileWriteCompound(void);
 extern NhlErrorTypes _NclIFileOpaqueDef(void);
-
 extern NhlErrorTypes _NclIFileGrpDef(void);
-#endif
 
 extern NhlErrorTypes _NclIFileVarDef(
 #if NhlNeedProto
@@ -2316,7 +2313,6 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,3,"logical",1,NclANY);nargs++;
 	NclRegisterProc(_NclIFileDimDef,args,"filedimdef",nargs);
 
-#ifdef USE_NETCDF4_FEATURES
 	nargs = 0;
 	args = NewArgs(2);
 	dimsizes[0] = 1;
@@ -2371,7 +2367,6 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,3,"snumeric",1,NclANY);nargs++;
 	SetArgTemplate(args,4,"string",1,NclANY);nargs++;
 	NclRegisterProc(_NclIFileOpaqueDef,args,"fileopaquedef",nargs);
-#endif
 
 	nargs = 0;
 	args = NewArgs(4);

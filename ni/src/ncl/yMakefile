@@ -51,17 +51,11 @@ MPI_DEFS = -DUSE_MPI
 
 #ifdef BuildNetCDF4
 NETCDF4_DEFS = -DUSE_NETCDF4
+NC4_FEATURES_SRCS = NclNewFile.c NclNewGroup.c NclNewList.c NclNetCDF4.c NclNewOGR.c NewFileSupport.c
+NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNewList.o NclNetCDF4.o NclNewOGR.o NewFileSupport.o
 #else
 NETCDF4_DEFS =
 #define NETCDF4LIB
-#endif
-
-#ifdef UseNetCDF4Features
-NC4_FEATURES_DEFS = -DUSE_NETCDF4_FEATURES
-NC4_FEATURES_SRCS = NclNewFile.c NclNewGroup.c NclNewList.c NclNetCDF4.c NclNewOGR.c NclNewHDF5.c NewFileSupport.c
-NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNewList.o NclNetCDF4.o NclNewOGR.o NclNewHDF5.o NewFileSupport.o
-#else
-#define NC4_FEATURES_DEFS
 #define NC4_FEATURES_SRCS
 #define NC4_FEATURES_OBJS
 #endif
@@ -98,8 +92,8 @@ HDFEOS5_OBJS = NclHDFEOS5.o
 
 #ifdef BuildHDF5
 HDF5_DEFS = -DBuildHDF5
-HDF5_SRCS = NclHDF5.c h5reader.c h5writer.c
-HDF5_OBJS = NclHDF5.o h5reader.o h5writer.o
+HDF5_SRCS = NclNewHDF5.c
+HDF5_OBJS = NclNewHDF5.o
 #else
 #define HDF5_SRCS
 #define HDF5_OBJS
@@ -164,7 +158,6 @@ DYNAMIC_LIBS	=	-ldl
 EXTRA_CDEFINES	=	$(OS1_DEF) $(MAJOR_DEF) \
 			$(PROFILE_DEFS) $(MPI_DEFS) \
 			$(NETCDF4_DEFS) \
-			$(NC4_FEATURES_DEFS) \
 			$(HDFEOS_DEFS) $(HDF4_DEFS) \
 			$(HDFEOS5_DEFS) $(HDF5_DEFS) \
 			$(GRIB2_DEFS) $(GDAL_DEFS) \
@@ -268,7 +261,7 @@ NIO_NCL_HDR_FILES = ApiRecords.h AttSupport.h DataSupport.h		\
 		jma_3_gtb.h ncep_128_gtb.h ncep_129_gtb.h		\
 		ncep_130_gtb.h ncep_131_gtb.h ncep_133_gtb.h		\
 		ncep_140_gtb.h ncep_141_gtb.h ncep_opn_gtb.h		\
-		ncep_reanal_gtb.h tables.h h5data_struct.h
+		ncep_reanal_gtb.h tables.h
 
 NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		FileSupport.c Formats.c GetGrids.c InitData.c		\
@@ -276,7 +269,7 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		NclCCM.c NclCoordVar.c NclData.c NclGroup.c NclFile.c	\
 		NclNewFile.c NclNewGroup.c NclNewList.c  \
 		NclFileVar.c NclGRIB.c NclGRIB2.c NclHDF.c \
-		NclHDFEOS.c NclHDFEOS5.c NclHDF5.c h5reader.c h5writer.c \
+		NclHDFEOS.c NclHDFEOS5.c NclNewHDF5.c \
 		NclMultiDValData.c.sed NclMultiDValnclfileData.c	\
 		NclNetCdf.c NclOneDValCoordData.c NclType.c NclOGR.c	\
 		NclType.c.sed NclTypebyte.c.specific			\
@@ -623,16 +616,8 @@ NclHDFEOS5.o: NclHDFEOS5.c
 	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclHDFEOS5.c
 	@echo 
 
-NclHDF5.o: NclHDF5.c
-	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclHDF5.c
-	@echo 
-
-h5reader.o: h5reader.c
-	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) h5reader.c
-	@echo 
-
-h5writer.o: h5writer.c
-	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) h5writer.c
+NclNewHDF5.o: NclNewHDF5.c
+	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclNewHDF5.c
 	@echo 
 
 #

@@ -20858,7 +20858,6 @@ NhlErrorTypes  _NclIGetFileChunkSizes(void)
 
     void *retvalue = NULL;
     
-#ifdef USE_NETCDF4_FEATURES
     /* get file information */
     fid = (int *) NclGetArgValue(
                     0,
@@ -20920,7 +20919,7 @@ NhlErrorTypes  _NclIGetFileChunkSizes(void)
 
     NHLPERROR((NhlWARNING, NhlEUNKNOWN,
               "getfilechunksizes: undefined file variable or file has no chunking"));
-#endif
+
     i = 1;
     NclReturnValue(
             (void*) &((NclTypeClass) nclTypeintClass)->type_class.default_mis, 1,
@@ -20943,7 +20942,6 @@ NhlErrorTypes _NclIGetFileCompressionLevel(void)
 
     NhlErrorTypes ret;
     
-#ifdef USE_NETCDF4_FEATURES
     /* get file information */
     fid = (int *) NclGetArgValue(
                     0,
@@ -20968,7 +20966,7 @@ NhlErrorTypes _NclIGetFileCompressionLevel(void)
         NHLPERROR((NhlWARNING, NhlEUNKNOWN,
               "getfilecompressionlevel: undefined file variable or file has no compression"));
     }
-#endif
+
     NclReturnValue((void *)(&compressionlevel), 1, &ns, NULL, return_type, 1);
 	
     return NhlWARNING;

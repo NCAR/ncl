@@ -240,6 +240,67 @@ hid_t h5memtype2filetype(hid_t memtype)
     return h5type;
 }
 
+void *_Ncl2HDF5type(NclBasicDataTypes type)
+{ 
+    char *HDF5type;
+
+    switch(type)
+    {
+        case NCL_float:
+            HDF5type = strdup("float");
+            break;
+        case NCL_double:
+            HDF5type = strdup("double");
+            break;
+        case NCL_string:
+          /*Need to return NULL, as NclFile.c which check for NCL_string again.
+           *Wei, 3/31/2010
+           *HDF5type = strdup("string");
+           */
+            return(NULL);
+            break;
+        case NCL_int64:
+            HDF5type = strdup("int64");
+            break;
+        case NCL_uint64:
+            HDF5type = strdup("uint64");
+            break;
+        case NCL_long:
+            HDF5type = strdup("long");
+            break;
+        case NCL_ulong:
+            HDF5type = strdup("ulong");
+            break;
+        case NCL_int:
+            HDF5type = strdup("int");
+            break;
+        case NCL_uint:
+            HDF5type = strdup("uint");
+            break;
+        case NCL_short:
+            HDF5type = strdup("short");
+            break;
+        case NCL_ushort:
+            HDF5type = strdup("ushort");
+            break;
+        case NCL_char:
+            HDF5type = strdup("char");
+            break;
+        case NCL_byte:
+            HDF5type = strdup("byte");
+            break;
+        case NCL_ubyte:
+            HDF5type = strdup("ubyte");
+            break;
+        case NCL_compound:
+            HDF5type = strdup("compound");
+            break;
+        default:
+            return(NULL);
+    }
+    
+    return (void *)HDF5type;
+}
 
 hid_t Ncltype2HDF5type(NclBasicDataTypes type)
 {
@@ -2236,7 +2297,7 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
         {
             fprintf(stderr, "nmembs[%d] > MAX_COMPOUND_COMPONENTS[%d], in file: %s, line: %d\n",
                     nmembs, MAX_COMPOUND_COMPONENTS, __FILE__, __LINE__);
-            fprintf(stderr, "INCREASE MAX_COMPOUND_COMPONENTS in file: <h5data_struct.h>\n");
+            fprintf(stderr, "INCREASE MAX_COMPOUND_COMPONENTS.\n");
             return FAILED;
         }
 
@@ -2292,10 +2353,10 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
         assert(nmembs>0);
 
       /*
+       *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tid: %d, name: <%s>\n", dset, name);
+       *fprintf(stderr, "\tfound enum data, nmembs = %d\n", nmembs);
        */
-        fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tid: %d, name: <%s>\n", dset, name);
-        fprintf(stderr, "\tfound enum data, nmembs = %d\n", nmembs);
 
       /*Let add two more attributes to varnode here.
        *1. an array of the enum names
@@ -2338,7 +2399,10 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
             enumrec->enum_node[n].name = NrmStringToQuark(membname);
 
             memcpy(values + n * size, &(enumrec->enum_node[n].name), size);
-            fprintf(stderr, "\tmember %d, name: <%s>\n", n, membname);
+
+          /*
+           *fprintf(stderr, "\tmember %d, name: <%s>\n", n, membname);
+           */
         }
 
         _addNclAttNode(&(varnode->att_rec), NrmStringToQuark("enum_name"),
@@ -3369,9 +3433,9 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
     hid_t component_datasize = 1;
     hid_t str_type = 0;
 
-    fprintf(stderr, "\nEnter _getH5compoundAsList, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varnode->name));
   /*
+   *fprintf(stderr, "\nEnter _getH5compoundAsList, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varnode->name));
    */
 
     if(NULL == varnode->comprec)
@@ -3457,12 +3521,11 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
     H5Dclose(did);
 
   /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tvarnode->name: <%s>, varnode->type: <%s>\n",
+   *                 NrmQuarkToString(varnode->name), _NclBasicDataTypeToName(varnode->type));
+   *fprintf(stderr, "Leave _getH5compoundAsList, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-
-    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tvarnode->name: <%s>, varnode->type: <%s>\n",
-                     NrmQuarkToString(varnode->name), _NclBasicDataTypeToName(varnode->type));
-    fprintf(stderr, "Leave _getH5compoundAsList, file: %s, line: %d\n\n", __FILE__, __LINE__);
 
     return (void *)comp_md;
 }
@@ -3494,9 +3557,9 @@ static void *_getH5CompoundData(hid_t fid, NclFileVarNode *varnode,
 
     NclFileCompoundNode *compnode = NULL;
 
-    fprintf(stderr, "\nEnter _getH5CompoundData, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varname));
   /*
+   *fprintf(stderr, "\nEnter _getH5CompoundData, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varname));
    */
 
     component_name = _getComponentName(NrmQuarkToString(varname), &struct_name);
@@ -3509,11 +3572,11 @@ static void *_getH5CompoundData(hid_t fid, NclFileVarNode *varnode,
     }
 
   /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varname));
+   *fprintf(stderr, "\tcomponent_name: <%s>, struct_name: <%s>\n",
+   *                   component_name, struct_name);
    */
-    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varname));
-    fprintf(stderr, "\tcomponent_name: <%s>, struct_name: <%s>\n",
-                       component_name, struct_name);
 
     compnode = _getComponentNodeFromVarNode(varnode, component_name);
 
@@ -3554,8 +3617,8 @@ static void *_getH5CompoundData(hid_t fid, NclFileVarNode *varnode,
     free(struct_name);
 
   /*
+   *fprintf(stderr, "Leave _getH5CompoundData, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "Leave _getH5CompoundData, file: %s, line: %d\n\n", __FILE__, __LINE__);
 
     return storage;
 }
@@ -3652,9 +3715,9 @@ void _readH5string(hid_t dset, hid_t d_type,
     lenstr = H5Tget_size(d_type);
 
   /*
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tlenstr = %d\n", lenstr);
    */
+    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tlenstr = %ld\n", lenstr);
 
     strdata = (char **)NclCalloc(numstr, sizeof(char *));
 
@@ -3695,14 +3758,29 @@ void _readH5string(hid_t dset, hid_t d_type,
     }
 
     /* Read the data */
+  /*
+    for(i = 0; i < numstr; ++i)
+    {
+        strdata[i] = (char *)NclCalloc(lenstr, sizeof(char));
+    }
+   */
+    
+  /*
+    m_space = H5Screate(H5S_SCALAR);
+    d_type = H5Tcopy(H5T_C_S1);
+    d_space = H5Screate(H5S_SCALAR);
+   */
     status = H5Dread(dset, d_type, m_space, d_space, H5P_DEFAULT, strdata);
 
     for(i = 0; i < numstr; ++i)
     {
         if(NULL != strdata[i])
         {
+          /*
+           */
+            fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
+            fprintf(stderr, "\tstrdata[%ld]: <%s>\n", i, strdata[i]);
             strquark[i] = NrmStringToQuark(strdata[i]);
-            free(strdata[i]);
         }
         else
         {
@@ -4101,9 +4179,9 @@ void *_getH5opaque(hid_t fid, NclFileVarNode *varnode)
 
     NclFileOpaqueRecord *opaquerec = (NclFileOpaqueRecord *) NclMalloc(sizeof(NclFileOpaqueRecord));
 
-    fprintf(stderr, "\nEnter _getH5opaque, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varnode->name));
   /*
+   *fprintf(stderr, "\nEnter _getH5opaque, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varnode->name));
    */
 
     did = H5Dopen(fid, NrmQuarkToString(varnode->name), H5P_DEFAULT);
@@ -4158,19 +4236,11 @@ void *_getH5opaque(hid_t fid, NclFileVarNode *varnode)
     free(tag);
 
   /*
-   *{
-   *     char *cptr = (unsigned char *) opaquerec->values;
-   *     for(n = 0; n < size; n++)
-   *     {
-   *         fprintf(stderr, "No %d: %6d\n", n, cptr[n]);
-   *     }
-   *}
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tvarnode->name: <%s>, varnode->type: <%s>\n",
+   *                 NrmQuarkToString(varnode->name), _NclBasicDataTypeToName(varnode->type));
+   *fprintf(stderr, "Leave _getH5opaque, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-
-    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tvarnode->name: <%s>, varnode->type: <%s>\n",
-                     NrmQuarkToString(varnode->name), _NclBasicDataTypeToName(varnode->type));
-    fprintf(stderr, "Leave _getH5opaque, file: %s, line: %d\n\n", __FILE__, __LINE__);
 
     return (void *) opaquerec;
 }
@@ -4255,8 +4325,6 @@ static void *H5ReadVar(void *therec, NclQuark thevar,
     switch(varnode->type)
     {
         case NCL_compound:
-             fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-             fprintf(stderr, "\tNeed to read Compound data.\n");
              storage = _getH5CompoundData(fid, varnode, thevar, storage);
              break;
         case NCL_list:
@@ -5543,9 +5611,6 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
     {
         char **tmpstr = (char **)NclCalloc(n_elem, sizeof(char *));
         NclQuark *qd = (NclQuark *)data;
-        size_t slen = 1;
-        size_t cloc = 0;
-        char *buffer = NULL;
 
         rank = varnode->dim_rec->n_dims;
       /*
@@ -5554,53 +5619,37 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
        */
 
         n = 0;
-        for(i = 0; i < varnode->dim_rec->n_dims; i++)
+        for(i = 0; i < varnode->dim_rec->n_dims; ++i)
         {
             dimnode = &(varnode->dim_rec->dim_node[i]);
             dims[i] = dimnode->size;
 
-            for(j = 0; j < dimnode->size; j++)
+            for(j = 0; j < dimnode->size; ++j)
             {
                 tmpstr[n] = NrmQuarkToString(qd[n]);
 
-                if(slen < strlen(tmpstr[n]))
-                    slen = 1 + strlen(tmpstr[n]);
-                n++;
+                ++n;
             }
         }
 
-        buffer = (char *)NclCalloc(n_elem * slen, sizeof(char));
-        memset(buffer, 0, n_elem * slen);
-        for(i = 0; i < n; ++i)
-        {
-            memcpy(buffer + cloc, tmpstr[i], strlen(tmpstr[i]));
-            cloc += slen;
-        }
-        
         space = H5Screate_simple(rank, dims, NULL);
-      /*
-       *type  = H5Tcopy(Ncltype2HDF5type(varnode->type));
-       */
+
         type  = H5Tcopy(H5T_C_S1);
-
-        status = H5Tset_size(type, slen);
+        status = H5Tset_size(type, H5T_VARIABLE);
 
       /*
-        if(varnode->chunk_dim_rec)
-        {
-            for(j = 0; j < varnode->chunk_dim_rec->n_dims; j++)
-            {
-                chunk_dims[j] = (hsize_t) (varnode->chunk_dim_rec->dim_node[j].size);
-            }
-            plist  = H5Pcreate(H5P_DATASET_CREATE);
-            status = H5Pset_chunk(plist, rank, chunk_dims);
-        }
+       *if(varnode->chunk_dim_rec)
+       *{
+       *    for(j = 0; j < varnode->chunk_dim_rec->n_dims; j++)
+       *    {
+       *        chunk_dims[j] = (hsize_t) (varnode->chunk_dim_rec->dim_node[j].size);
+       *    }
+       *    plist  = H5Pcreate(H5P_DATASET_CREATE);
+       *    status = H5Pset_chunk(plist, rank, chunk_dims);
+       *}
 
-        h5order = H5Tget_order(Ncltype2HDF5type(varnode->type));
-        status = H5Tset_order(type, h5order);
-
-        if(varnode->compress_level > 0)
-            status = H5Pset_deflate(plist, varnode->compress_level);
+       *if(varnode->compress_level > 0)
+       *    status = H5Pset_deflate(plist, varnode->compress_level);
        *else
        *    status = H5Pset_deflate(plist, varnode->compress_level);
        */
@@ -5612,8 +5661,7 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
 
         if(did > 0)
         {
-            status = H5Dwrite(did, type,
-                              H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer);
+            status = H5Dwrite(did, type, H5S_ALL, H5S_ALL, H5P_DEFAULT, tmpstr);
 
             H5Sclose(space);
             H5Tclose(type);
@@ -5624,7 +5672,6 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
             ret_code = FAILED;
         }
 
-        NclFree(buffer);
         NclFree(tmpstr);
     }
     else
@@ -6218,8 +6265,10 @@ NhlErrorTypes H5AddEnum(void *rec, NclQuark enum_name, NclQuark var_name,
 
     for(n = 0; n < n_mems; ++n)
     {
-        fprintf(stderr, "\tadd mem %d. name: <%s>, value = %d\n",
-                           n, NrmQuarkToString(mem_name[n]), mv[n]);
+      /*
+       *fprintf(stderr, "\tadd mem %d. name: <%s>, value = %d\n",
+       *                   n, NrmQuarkToString(mem_name[n]), mv[n]);
+       */
         _addNclEnumNode(&enumrec, mem_name[n], (long long)mv[n]);
     }
 
@@ -6239,10 +6288,10 @@ static NhlErrorTypes H5AddOpaqueVar(void* therec, NclQuark thevar,
     NclFileVarNode *varnode = NULL;
     int i, j;
 
-    fprintf(stderr, "\nEnter H5AddOpaqueVar, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tthevar: <%s>, n_dims = %d\n",
-                       NrmQuarkToString(thevar), n_dims);
   /*
+   *fprintf(stderr, "\nEnter H5AddOpaqueVar, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tthevar: <%s>, n_dims = %d\n",
+   *                   NrmQuarkToString(thevar), n_dims);
    */
 
     if(0 < grpnode->status)
@@ -6286,8 +6335,8 @@ static NhlErrorTypes H5AddOpaqueVar(void* therec, NclQuark thevar,
     varnode->type = (varnode->type | NCL_opaque);
 
   /*
+   *fprintf(stderr, "Leave H5AddOpaqueVar, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "Leave H5AddOpaqueVar, file: %s, line: %d\n\n", __FILE__, __LINE__);
     return(NhlNOERROR);
 }
 
@@ -6569,7 +6618,7 @@ NclFormatFunctionRec H5Rec =
     /* NclSetOptionFunc        set_option;  */               H5SetOption
 };
 
-NclFormatFunctionRecPtr H5AddFileFormat(void)
+NclFormatFunctionRecPtr HDF5AddFileFormat(void)
 {
     return(&H5Rec);
 }

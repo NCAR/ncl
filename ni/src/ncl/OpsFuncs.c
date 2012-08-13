@@ -942,7 +942,6 @@ NhlErrorTypes _NclBuildListArray(ng_size_t ngdims, ng_size_t *dim_sizes,
 
 NhlErrorTypes _NclBuildNewListVar(int n_items,NclStackEntry *result)
 {
-#ifdef USE_NETCDF4_FEATURES
 	NclStackEntry data;
 	NclNewList thelist = NULL;
 	NclObj oneobj;
@@ -978,7 +977,6 @@ NhlErrorTypes _NclBuildNewListVar(int n_items,NclStackEntry *result)
 	if(result->u.data_obj != NULL) 
 		return(NhlNOERROR);
 	else 
-#endif
 		return(NhlFATAL);
 }
 

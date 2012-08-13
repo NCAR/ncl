@@ -70,15 +70,13 @@ void
 #endif
 );
 
-#ifdef USE_NETCDF4_FEATURES
 extern NclFormatFunctionRecPtr NC4AddFileFormat(
 #if	NhlNeedProto
 void
 #endif
 );
 
-extern NclFormatFunctionRecPtr H5AddFileFormat(void);
-#endif
+extern NclFormatFunctionRecPtr HDF5AddFileFormat(void);
 
 extern NclFormatFunctionRecPtr GribAddFileFormat(
 #if	NhlNeedProto
@@ -187,21 +185,19 @@ void _NclAddFileFormats
 	 *where this file will be scanned to find the second match.
 	 *The new file-structure is used when found the second match.
 	 */
-#ifdef USE_NETCDF4_FEATURES
 	_NclRegisterFormat(NC4AddFileFormat,"cdf");
 	_NclRegisterFormat(NC4AddFileFormat,"nc");
 	_NclRegisterFormat(NC4AddFileFormat,"nc3");
 	_NclRegisterFormat(NC4AddFileFormat,"nc4");
 	_NclRegisterFormat(NC4AddFileFormat,"netcdf");
 
-	_NclRegisterFormat(H5AddFileFormat,"h5");
-	_NclRegisterFormat(H5AddFileFormat,"hdf5");
+	_NclRegisterFormat(HDF5AddFileFormat,"h5");
+	_NclRegisterFormat(HDF5AddFileFormat,"hdf5");
 #ifdef  BuildGDAL
         /* file types supported by OGR in new file structure */
         _NclRegisterFormat(NewOGRAddFileFormat, "shp");  /* shapefile */
         _NclRegisterFormat(NewOGRAddFileFormat, "mif");  /* mapinfo */
         _NclRegisterFormat(NewOGRAddFileFormat, "gmt");  /* GMT   */
-#endif
 #endif
 
 #ifdef BuildOPENDAP

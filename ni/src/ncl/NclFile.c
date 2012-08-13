@@ -843,12 +843,7 @@ NclQuark var;
 NhlErrorTypes _NclFilePrintSummary(NclObj self, FILE *fp)
 {
 	NclFile thefile = (NclFile)self;
-	int i,j;
-	NclFileAttInfoList* step;
 	int ret = 0;
-	NclMultiDValData tmp_md;
-	NhlErrorTypes ret1 = NhlNOERROR;
-	char *tmp_str;
 
 	ret = nclfprintf(fp,"File path:\t%s\n",NrmQuarkToString(thefile->file.fpath));
 	if(ret < 0) {	
@@ -1721,13 +1716,11 @@ NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* Binary file write byte order */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, UpdateDims },   /* GRIB initial time coordinate type */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* NetCDF missing to fill value option */
-#ifdef USE_NETCDF4
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },         /* NetCDF 4 compression option level */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },         /* NetCDF 4 cache switch */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 3200000, NULL },   /* NetCDF 4 cache size */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 1009, NULL },      /* NetCDF 4 cache nelems */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0.50, NULL },      /* NetCDF 4 cache preemption */
-#endif
 #ifdef BuildHDF5
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },         /* HDF5 compression option level */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },         /* HDF5 cache switch */
@@ -1925,20 +1918,13 @@ NhlErrorTypes InitializeFileOptions
 	*sval = NrmStringToQuark("classic");
 	fcp->options[Ncl_FORMAT].def_value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-#ifdef USE_NETCDF4
 	len_dims = 5;
-#else
-	len_dims = 3;
-#endif
 	sval = (string*) NclMalloc(len_dims * sizeof(string));
 	sval[0] = NrmStringToQuark("classic");
 	sval[1] = NrmStringToQuark("64bitoffset");
 	sval[2] = NrmStringToQuark("largefile");
-
-#ifdef USE_NETCDF4
 	sval[3] = NrmStringToQuark("netcdf4classic");
 	sval[4] = NrmStringToQuark("netcdf4");
-#endif
 
 	fcp->options[Ncl_FORMAT].valid_values = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
@@ -2028,7 +2014,6 @@ NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_MISSING_TO_FILL_VALUE].valid_values = NULL;
 
 
-#ifdef USE_NETCDF4
 	/* NetCDF 4 option compression level */
 	fcp->options[Ncl_COMPRESSION_LEVEL].format = NrmStringToQuark("nc");
 	fcp->options[Ncl_COMPRESSION_LEVEL].name = NrmStringToQuark("compressionlevel");
@@ -2108,7 +2093,6 @@ NhlErrorTypes InitializeFileOptions
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0.50,(void *)fval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
 	fcp->options[Ncl_CACHE_PREEMPTION].valid_values = NULL;
-#endif
 
 #ifdef BuildHDF5
 	/* HDF5 option compression level */
@@ -4051,22 +4035,6 @@ int vtype;
 	return(tmp_md);
 }
 
-static struct _NclMultiDValDataRec* FileReadGroupValue
-#if	NhlNeedProto
-(NclFile thefile, NclQuark group_name)
-#else 
-(thefile, group_name)
-NclFile thefile;
-NclQuark group_name;
-#endif
-{
-	fprintf(stdout, "\n\nFileReadGroupValue, file: %s, line:%d\n", __FILE__, __LINE__);
-	fprintf(stdout, "\tgroup_name: <%s>\n", NrmQuarkToString(group_name));
-
-	return(MyFileReadGroupValue(thefile, group_name, FILE_VAR_ACCESS));
-}
-
-
 static struct _NclVarRec *FileReadVar
 #if	NhlNeedProto
 (NclFile thefile, NclQuark var_name, struct _NclSelectionRecord* sel_ptr)
@@ -4406,46 +4374,6 @@ NclQuark coord_name;
 		} 
 	}
 	return(-1);
-}
-
-static void _NclNullifyFilePart(NclFilePart *file)
-{
-	int i;
-
-	file->max_grps = 0;
-	file->max_vars = 0;
-	file->max_file_dims = 0;
-	file->max_file_atts = 0;
-
-	file->n_grps = 0;
-	file->n_vars = 0;
-	file->n_file_dims = 0;
-	file->n_file_atts = 0;
-
-	file->file_atts_id = -1;
-
-	file->file_att_cb = NULL;
-	file->file_att_udata = NULL;
-	file->format_funcs = NULL;
-	file->private_rec = NULL;
-
-	file->grp_info = NULL;
-	file->grp_att_info = NULL;
-	file->grp_att_udata = NULL;
-	file->grp_att_cb = NULL;
-	file->grp_att_ids = NULL;
-
-	file->var_info = NULL;
-	file->var_att_info = NULL;
-	file->var_att_udata = NULL;
-	file->var_att_cb = NULL;
-	file->var_att_ids = NULL;
-
-	file->file_atts = NULL;
-
-	file->file_dim_info = NULL;
-
-	file->coord_vars = NULL;
 }
 
 void _NclInitFilePart(NclFilePart *file)
@@ -5895,15 +5823,13 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 	NhlErrorTypes ret = NhlNOERROR;
 	struct _NclVarRec* tmp_var;
 	struct _NclVarRec* tmp_coord_var;
-	int i,j,m;
+	int i,j;
 	NclQuark dim_names[NCL_MAX_DIMENSIONS];
 	NclAtt theatt;
 	NclAttList *step;
 	int index,cindex;
 	ng_size_t lhs_n_elem;	
 	NclSelectionRecord tmp_sel;
-        void *tmp_coord;
-        char *tmp_ptr;
 	NclMultiDValData tmp_md;
 	NclMultiDValData coord_md;
 	struct _NclVarRec* cvar;
@@ -6854,9 +6780,7 @@ NclQuark group_name;
 	if(index < 0)
 		return (NULL);
 
-#ifdef USE_NETCDF4_FEATURES
 	group_out = _NclCreateGroup(NULL,NULL,Ncl_File,0,TEMPORARY,thefile,group_name);
-#endif
 
 #if 0
 	if(group_out != NULL) {
