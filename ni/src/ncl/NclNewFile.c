@@ -1937,7 +1937,9 @@ NclFileGrpNode *_getGrpNodeFromGrpNode(NclFileGrpNode *ingrpnode,
    */
 
     if((name == ingrpnode->name) ||
-       (name == ingrpnode->real_name))
+       (name == ingrpnode->real_name) ||
+       (grpname == ingrpnode->name) ||
+       (grpname == ingrpnode->real_name))
     {
        outgrpnode = ingrpnode;
        outgrpnode->pid = ingrpnode->id;
@@ -1955,7 +1957,9 @@ NclFileGrpNode *_getGrpNodeFromGrpNode(NclFileGrpNode *ingrpnode,
         outgrpnode = ingrpnode->grp_rec->grp_node[n];
 
         if((name == outgrpnode->name) ||
-           (name == outgrpnode->real_name))
+           (name == outgrpnode->real_name) ||
+           (grpname == outgrpnode->name) ||
+           (grpname == outgrpnode->real_name))
         {
            outgrpnode->pid = ingrpnode->id;
            outgrpnode->parent = ingrpnode;

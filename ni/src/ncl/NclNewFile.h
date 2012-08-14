@@ -159,5 +159,7 @@ extern NclQuark *_NclGetGrpNames(void *therec, int *num_grps);
  */
 extern void *_NclGetCachedValue(NclFileVarNode *varnode,
              long start, long finish, long stride, void *storage);
-#endif /* NclNewFile_h */
+
+extern NhlErrorTypes InitializeFileOptions();
+#endif
 

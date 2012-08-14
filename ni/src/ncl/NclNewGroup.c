@@ -290,6 +290,8 @@ NclGroup *_NclNewGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_
    *fprintf(stderr, "\tgroup_name: <%s>\n", NrmQuarkToString(group_name));
    *fprintf(stderr, "\tthefile->newfile.grpnode->name: <%s>\n",
    *                   NrmQuarkToString(thefile->newfile.grpnode->name));
+   *fprintf(stderr, "\tthefile->newfile.grpnode->real_name: <%s>\n",
+   *                   NrmQuarkToString(thefile->newfile.grpnode->real_name));
    */
 
     if(NULL == thefile)
@@ -369,9 +371,6 @@ NclGroup *_NclNewGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_
 
     group_out->newfile.grpnode->path = thefile->newfile.fpath;
     group_out->newfile.grpnode->extension = thefile->newfile.file_ext_q;
-  /*
-    group_out->newfile.grpnode->fid = thefile->newfile.grpnode->fid;
-   */
 
     if(NULL == group_out->newfile.grpnode->options)
     {
