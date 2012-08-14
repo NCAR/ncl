@@ -20,6 +20,7 @@
  *	Description:	
  */
 
+#include <string.h>
 #include "NewFileSupport.h"
 
 NclQuark *GetGrpVarNames(void *therec, int *num_vars)
@@ -276,7 +277,7 @@ NclFDimRec *GetDimInfo(void* therec, NclQuark dim_name)
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
     NclFileDimNode *dimnode;
     NclFDimRec *tmp = NULL;
-    int n,j;
+    int n;
 
     if(NULL != grpnode->dim_rec)
     {
@@ -314,7 +315,7 @@ NclFileAttNode *GetAttInfoFromGrpNode(NclFileGrpNode *grpnode, NclQuark att_name
 {
     NclFileAttNode *attnode;
     NclFileAttNode *tmp = NULL;
-    int n,j;
+    int n;
 
     if(NULL != grpnode->att_rec)
     {
@@ -361,7 +362,7 @@ NclFileAttNode *GetVarAttInfoFromGrpNode(NclFileGrpNode *grpnode,
 {
     NclFileVarNode *varnode;
     NclFileAttNode *tmp = NULL;
-    int n, j;
+    int n;
 
     if(NULL != grpnode->var_rec)
     {
@@ -460,7 +461,6 @@ NhlErrorTypes AddNewGrp(void *rec, NclQuark grpname, size_t id)
     }
 
     grpnode->id = id;
-    grpnode->fid = rootgrpnode->fid;
     grpnode->pid = rootgrpnode->id;
     grpnode->pname = rootgrpnode->name;
     grpnode->path = rootgrpnode->path;

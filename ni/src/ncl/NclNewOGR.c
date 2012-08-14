@@ -96,11 +96,10 @@ static int _is3DGeometry(OGRwkbGeometryType geom)
         return (wkbFlatten(geom) != geom);
 }
 
+#if 0
 static NclNewList _CreateVlist4OGR(NclQuark name)
 {
     NclNewList vlist = NULL;
-    ng_size_t one = 1;
-    int *id = (int *)NclMalloc(sizeof(int));
 
     vlist = (NclNewList)_NclNewListCreate(NULL, NULL, 0, 0, -1, (NCL_ITEM | NCL_FIFO));
     assert(vlist);
@@ -111,6 +110,7 @@ static NclNewList _CreateVlist4OGR(NclQuark name)
 
     return vlist;
 }
+#endif
 
 /*
  * _mapOGRType2NCL()
@@ -275,9 +275,8 @@ static void _setGroupVars(NclFileGrpNode *grpnode,
                           int numSegments,
                           int numPoints)
 {
-    OGRwkbGeometryType geomType;
     OGRFieldDefnH fldDef;
-    int numVars, is3DGeometry;
+    int numVars;
     int i = 0;
     int j = 0;
 
@@ -431,7 +430,6 @@ static void _loadFeatureGeometry(OGRRecord *rec, OGRGeometryH geom,
     int i;
     char buffer[16];
     void *val = NULL;
-    int nsegs = 0;
     int ndims = 2;
     NclVar var;
     NclQuark  dimnames[2];
@@ -453,7 +451,7 @@ static void _loadFeatureGeometry(OGRRecord *rec, OGRGeometryH geom,
     {
         if(rec->xform)
         {
-            OGRErr err = OGR_G_Transform(geom, rec->xform);
+            OGR_G_Transform(geom, rec->xform);
         }
 
         sprintf(buffer, "xyz_%6.6d", *numSegments);
@@ -517,7 +515,6 @@ static int _loadGeometry(NclFileGrpNode *grpnode, NclNewList vlist)
     OGRRecord *rec = (OGRRecord *) grpnode->other_src;
     OGRFeatureH feature;
     OGRGeometryH geom;
-    int featureNum = 0;
     int segmentNum = 0;
     int pointNum   = 0;
 
@@ -683,20 +680,9 @@ static void *_getGeometryVariable(NclFileGrpNode *grpnode, NclQuark thevar,
                                   long *start, long *finish,
                                   long *stride, void *storage)
 {
-    OGRRecord *rec = (OGRRecord *) grpnode->other_src;
-    int i, j;
-
-    /* On first innvocation, we'll load and cache all of the geometry variables,
-     * under the premise that its quite likely a request for any of them is part of
-     * a broader request for the geometry as a whole.
-     */
-
-  /*
-   *fprintf(stderr, "\nEnter _getGeometryVariable, file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
-   *fprintf(stderr, "\t start[0] = %ld\n",  start[0]);
-   *fprintf(stderr, "\tfinish[0] = %ld\n", finish[0]);
-   *fprintf(stderr, "\tstride[0] = %ld\n", stride[0]);
+  /* On first innvocation, we'll load and cache all of the geometry variables,
+   * under the premise that its quite likely a request for any of them is part of
+   * a broader request for the geometry as a whole.
    */
 
     if(NrmStringToQuark("segments") == thevar)
@@ -717,10 +703,6 @@ static void *_getGeometryVariable(NclFileGrpNode *grpnode, NclQuark thevar,
                                            NULL,1,&one,TEMPORARY,NULL);
 
         _loadGeometry(grpnode, vlist);
-
-      /*
-       *fprintf(stderr, "Leave _getGeometryVariable, file: %s, line: %d\n\n", __FILE__, __LINE__);
-       */
 
         return (void *)v_md;
     }
@@ -748,7 +730,6 @@ static void *NewOGRInitializeFileRec(NclFileFormat *format)
     grpnode = (NclFileGrpNode *)NclCalloc(1, sizeof(NclFileGrpNode));
     assert(grpnode);
 
-    grpnode->fid = -1;
     grpnode->id = -1;
     grpnode->pid = -1;
     grpnode->name = NrmStringToQuark("/");
@@ -828,8 +809,7 @@ static void *NewOGROpenFile(void *therec, NclQuark path, int wr_status)
 
     grpnode->path = path;
     grpnode->status = wr_status;
-    grpnode->fid = -1;
-    grpnode->id  = 0;
+    grpnode->id  = -1;
     grpnode->pid = -1;
 
     rec->dataSource = OGROpen(NrmQuarkToString(path), !wr_status, NULL);
@@ -936,9 +916,6 @@ static void *NewOGRReadVar(void* therec, NclQuark thevar,
     NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
     NclFileVarNode *varnode;
 
-    OGRRecord *rec = (OGRRecord *) grpnode->other_src;
-    int i;
-
   /*
    *fprintf(stderr, "\nHit NewOGRReadVar, file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
@@ -971,12 +948,12 @@ static void *NewOGRReadCoord(void *therec, NclQuark thevar,
     return(NewOGRReadVar(therec,thevar,start,finish,stride,storage));
 }
 
+#if 0
 static NclQuark *OGRGetGrpNames(void *therec, int *num_grps)
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
     NclQuark *out_quarks = NULL;
-    NclQuark *tmp_quarks = NULL;
-    int i, n, ng;
+    int i;
 
     *num_grps = 0;
     if(NULL != grpnode->grp_rec)
@@ -1025,6 +1002,7 @@ static NclQuark *OGRGetGrpNames(void *therec, int *num_grps)
 #endif
     return(out_quarks);
 }
+#endif
 
 NclFormatFunctionRec NewOGRRec = {
 /* NclInitializeFileRecFunc initialize_file_rec */      NewOGRInitializeFileRec,
