@@ -5988,7 +5988,7 @@ static NhlErrorTypes NewFileSetVarCompressLevel(NclFile infile, NclQuark varname
 
 static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
                                        struct _NclMultiDValDataRec *value,
-                                       struct _NclSelectionRecord * sel_ptr,
+                                       struct _NclSelectionRecord *sel_ptr,
                                        NclQuark *dim_names, int type)
 {
     NclNewFile thefile = (NclNewFile) infile;
@@ -7109,6 +7109,7 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
     void *tmp_coord;
     char *tmp_ptr;
     NclMultiDValData tmp_md;
+    NclMultiDValData c_md;
     struct _NclVarRec* cvar;
     ng_size_t dimsize = -1;
 
@@ -7148,6 +7149,12 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
                 if(NULL == varnode)
                 {
                     ret = NewFileAddDim(infile,dim_names[i],tmp_var->var.dim_info[i].dim_size,False);
+
+                    cvar = (NclVar)_NclGetObj(tmp_var->var.coord_vars[i]);
+                    c_md = (NclMultiDValData)_NclGetObj(cvar->var.thevalue_id);
+                    ret = NewFileAddVar(infile, dim_names[i],
+                                        NrmStringToQuark(_NclBasicDataTypeToName(c_md->multidval.data_type)),
+                                        1, &(dim_names[i]));
                 }
             }
             else
@@ -7510,19 +7517,29 @@ static NhlErrorTypes NewFileWriteCoord(NclFile infile, NclQuark coord_name,
     NclNewFile thefile = (NclNewFile) infile;
     NhlErrorTypes ret = NhlNOERROR;
     NclFileVarNode *varnode;
-    int dindex;
+    NclQuark dim_names[NCL_MAX_DIMENSIONS];
+    int dindex, n;
 
     if(thefile->newfile.wr_status <= 0)
     {
         dindex = NewFileIsDim(infile, coord_name);
         if(dindex > -1)
         {
-            ret = MyNewFileWriteVar(infile, coord_name, value, sel_ptr, NULL, FILE_COORD_VAR_ACCESS);
             varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, coord_name);
-            if(NULL != varnode)
+            if((NULL == varnode) && (NULL != value))
             {
+                for(n = 0; n < NCL_MAX_DIMENSIONS; ++n)
+                    dim_names[n] = -1;
+
+                dim_names[0] = coord_name;
+                ret = _addNclVarNodeToGrpNode(thefile->newfile.grpnode, coord_name,
+                                              thefile->newfile.grpnode->var_rec->n_vars, value->multidval.data_type,
+                                              value->multidval.n_dims, dim_names, value->multidval.dim_sizes);
+                varnode = _getVarNodeFromNclFileGrpNode(thefile->newfile.grpnode, coord_name);
+            }
+            if(NULL != varnode)
                 ret = _addNclCoordVarNode(&(thefile->newfile.grpnode->coord_var_rec), varnode);
-            }    
+            ret = MyNewFileWriteVar(infile, coord_name, value, sel_ptr, NULL, FILE_COORD_VAR_ACCESS);
         }
         else
         {
