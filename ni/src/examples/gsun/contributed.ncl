@@ -12175,8 +12175,7 @@ function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt
 ;
 local dimx, rankx, utc_date, year, month, day, hour, ntim \
     , yrStrt, yrLast, nyrs, NTIM, dAvg, xReturn, xMonth \
-    , NT, nmo, ii 
-
+    , NT, nmo, ii, NMOS, MON1, MON2 
 begin
     dimx   = dimsizes( x )
     rankx  = dimsizes( dimx )
@@ -12204,9 +12203,16 @@ begin
     yrLast = year(ntim-1)
     nyrs   = yrLast-yrStrt+1
 
-   ;NTIM   = 12*nyrs              ; total number of months
-                                  ; "Sebi" generalization
-    NTIM   = 12*(nyrs-2)+(12-(month(0)-1))+month(ntim-1)
+    NMOS   = 12
+   ;NTIM   = NMOS*nyrs                                     ; total number of months
+    if (yrStrt.eq.yrLast) then
+        NTIM = month(ntim-1) - month(0) + 1
+    else    
+        MON1 = NMOS-month(0)+1                               ; "Sebi" generalization
+        MON2 = month(ntim-1)
+        NTIM = NMOS*(nyrs-2)+MON1+MON2
+      ;;NTIM = NMOS*(nyrs-2)+(12-(month(0)-1))+month(ntim-1) ; "Sebi" generalization
+    end if
     dAvg   = dimx
     if (rankx.le.4) then
         dAvg(0)= NTIM
@@ -12216,17 +12222,26 @@ begin
 
     xReturn= new ( dAvg , typeof(x), getFillValue(x))
     xMonth = new ( NTIM , typeof(x&time), "No_FillValue")
+    printVarSummary(xMonth)
 
     NT   = -1
     do yr=yrStrt,yrLast
-      do nmo=0,11
 
+       nmoStrt = 0                           ; index to start
+       nmoLast = NMOS-1                      ; index to end
+       if (yr.eq.yrStrt) then
+           nmoStrt = month(0)-1              ; possible partial year
+       end if
+       if (yr.eq.yrLast) then
+           nmoLast = month(ntim-1)-1         ; possible partial year
+       end if
+
+      do nmo=nmoStrt,nmoLast
          NT    = NT+1
          if (isvar("ii")) then    ; keep this here!!
              delete(ii)
          end if
          ii    = ind(yr.eq.year .and. (nmo+1).eq.month)
-
 
          if (.not.ismissing(ii(0))) then
 
@@ -12344,7 +12359,6 @@ begin
     end if
     if (rankx.eq.4) then
         copy_VarCoords(x(0,:,:,:), xReturn(0,:,:,:))
-
     end if
     if (rankx.eq.5) then
         copy_VarCoords(x(:,0,:,:,:), xReturn(:,0,:,:,:))
