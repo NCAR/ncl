@@ -933,6 +933,8 @@ int cro_OpenWorkstation(GKSC *gksc) {
 
     else if (psa->wks_type == CX11) {
         cairo_surface[context_num] = croCreateNativeDisplaySurface(psa);
+        if (cairo_surface[context_num] == NULL)
+            return (ERR_NO_DISPLAY);
         cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
         add_context_index(context_num, orig_wks_id);
         psa->image_width = cairo_xlib_surface_get_width(cairo_surface[context_num]);
