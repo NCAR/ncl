@@ -1,4 +1,4 @@
-subroutine plotgrids_var(fname,plotvar)
+subroutine plotgrids_var(fname,plotvar,pmsg)
 
    implicit none
 
@@ -9,6 +9,7 @@ subroutine plotgrids_var(fname,plotvar)
    ! Variables
    integer :: i, j, funit, io_form_geogrid
    integer :: interval_seconds
+   real :: pmsg
 
    real, dimension(MAX_DOMAINS) :: parent_grid_ratio, parent_id, ixdim, jydim
    real, dimension(MAX_DOMAINS) :: i_parent_start, j_parent_start, &
@@ -48,7 +49,7 @@ subroutine plotgrids_var(fname,plotvar)
 
    do i=1,NVAR
     do j=1,MAX_DOMAINS
-      plotvar(i,j) = -999.0
+      plotvar(i,j) = pmsg
     end do
    end do
 
