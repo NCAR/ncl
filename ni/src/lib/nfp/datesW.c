@@ -2,9 +2,9 @@
 #include "wrapper.h"
 
 extern int day_of_year (int, int, int, const char*);
-extern int days_in_month (int, int);
+extern int days_in_month (int, int, const char*);
 extern int day_of_week (int, int, int);
-extern int monthday (int, int);
+extern int monthday (int, int, const char*);
 extern int isleapyear(int,const char*);
 extern const char *get_calendar_attribute(int,int);
 
@@ -28,6 +28,7 @@ NhlErrorTypes day_of_year_W( void )
  */
   int *dayofyear, has_missing_dayofyear;
   NclScalar missing_dayofyear;
+  const char *calendar;
 /*
  * Retrieve parameters
  *
@@ -116,6 +117,18 @@ NhlErrorTypes day_of_year_W( void )
   }
     
 /*
+ * Check for a calendar attribute. If it comes back NULL, then 
+ * something is wrong and we need to return all missing values.
+ */
+  calendar = get_calendar_attribute(0,3);
+  if(calendar == NULL) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"day_of_year: Invalid calendar. Returning all missing values");
+    for( i = 0; i < total; i++ ) dayofyear[i] = missing_dayofyear.intval;
+    return(NclReturnValue((void*)dayofyear,ndims_year,dsizes_year,
+                          &missing_dayofyear,NCL_int,0));
+  }
+
+/*
  * Call function.
  */
   if(has_missing_year || has_missing_month || has_missing_day) {
@@ -126,13 +139,13 @@ NhlErrorTypes day_of_year_W( void )
         dayofyear[i] = missing_dayofyear.intval;
       }
       else {
-        dayofyear[i] = day_of_year(year[i],month[i],day[i],"standard");
+        dayofyear[i] = day_of_year(year[i],month[i],day[i],calendar);
       }
     }
   }
   else {    
     for( i = 0; i < total; i++ ) {
-      dayofyear[i] = day_of_year(year[i],month[i],day[i],"standard");
+      dayofyear[i] = day_of_year(year[i],month[i],day[i],calendar);
     }
   }
 /*
@@ -167,6 +180,7 @@ NhlErrorTypes days_in_month_W( void )
  */
   int *daysinmonth, has_missing_daysinmonth;
   NclScalar missing_daysinmonth;
+  const char *calendar;
 /*
  * Retrieve parameters
  *
@@ -239,6 +253,18 @@ NhlErrorTypes days_in_month_W( void )
   }
 
 /*
+ * Check for a calendar attribute. If it comes back NULL, then 
+ * something is wrong and we need to return all missing values.
+ */
+  calendar = get_calendar_attribute(0,2);
+  if(calendar == NULL) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"days_in_month: Invalid calendar. Returning all missing values");
+    for( i = 0; i < total; i++ ) daysinmonth[i] = missing_daysinmonth.intval;
+    return(NclReturnValue((void*)daysinmonth,ndims_year,dsizes_year,
+                          &missing_daysinmonth,NCL_int,0));
+  }
+
+/*
  * Call function.
  */
   if(has_missing_year || has_missing_month) {
@@ -248,13 +274,13 @@ NhlErrorTypes days_in_month_W( void )
         daysinmonth[i] = missing_daysinmonth.intval;
       }
       else {
-        daysinmonth[i] = days_in_month(year[i],month[i]);
+        daysinmonth[i] = days_in_month(year[i],month[i],calendar);
       }
     }
   }
   else {
     for( i = 0; i < total; i++ ) {
-      daysinmonth[i] = days_in_month(year[i],month[i]);
+      daysinmonth[i] = days_in_month(year[i],month[i],calendar);
     }
   }
 /*
@@ -513,6 +539,7 @@ NhlErrorTypes monthday_W( void )
  */
   int *mnthdy, has_missing_mnthdy;
   NclScalar missing_mnthdy;
+  const char *calendar;
 /*
  * Retrieve parameters
  *
@@ -584,6 +611,18 @@ NhlErrorTypes monthday_W( void )
   }
 
 /*
+ * Check for a calendar attribute. If it comes back NULL, then 
+ * something is wrong and we need to return all missing values.
+ */
+  calendar = get_calendar_attribute(0,2);
+  if(calendar == NULL) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"monthday: Invalid calendar. Returning all missing values");
+    for( i = 0; i < total; i++ ) mnthdy[i] = missing_mnthdy.intval;
+    return(NclReturnValue((void*)mnthdy,ndims_year,dsizes_year,
+                          &missing_mnthdy,NCL_int,0));
+  }
+
+/*
  * Call function.
  */
   if(has_missing_year || has_missing_day) {
@@ -593,12 +632,12 @@ NhlErrorTypes monthday_W( void )
         mnthdy[i] = missing_mnthdy.intval;
       }
       else {
-        mnthdy[i] = monthday(year[i],day[i]);
+        mnthdy[i] = monthday(year[i],day[i],calendar);
       }
     }
   }
   else {
-    for( i = 0; i < total; i++ ) mnthdy[i] = monthday(year[i],day[i]);
+    for( i = 0; i < total; i++ ) mnthdy[i] = monthday(year[i],day[i],calendar);
   }
 /*
  * Return.
@@ -620,48 +659,129 @@ int day_of_year (int year, int month, int day, const char *calendar)
  * This function will return the day of the year.
  *
  * An error will result in day_of_year being set to -9999
+ * 
+ * In NCL V6.1.0, this function was updated to recognize the
+ * "calendar" attribute.
  */ 
-  int yrday[12] = {1,32,60,91,121,152,182,213,244,274,305,335};
-  int daysinmonth[12] = {31,28,31,30,31,30,31,31,30,31,30,31};
+  int yrday[12]       = { 1,32,60,91,121,152,182,213,244,274,305,335};
+  int daysinmonth[12] = {31,28,31,30, 31, 30, 31, 31, 30, 31, 30, 31};
+  int yrday360[12]       = { 1,31,61,91,121,151,181,211,241,271,301,331};
+  int daysinmonth360[12] = {30,30,30,30, 30, 30, 30, 30, 30, 30, 30, 30};
+  int msg = -9999;
+
+  if (calendar == NULL) {
+        fprintf (stderr,"day_of_year: calendar is NULL\n");
+        return(msg);
+  }
 
   if (month < 1 || month > 12) {
         fprintf(stderr,"day_of_year: illegal month, %d\n", month);
-        dofy = -9999;
+        return(msg);
   }
-  else if (year < 0) {
+  if (year < 0) {
         fprintf(stderr,"day_of_year: illegal year, year = %d\n", year);
-        dofy = -9999;
+        return(msg);
   }
-  else if (day < 1 || (isleapyear(year,calendar) && month == 2 && day > 29) ||
-           (!(isleapyear(year,calendar) && month == 2) && 
-            day > daysinmonth[month-1])) {
-        fprintf(stderr,"day_of_year: illegal arguments, year = %d, month = %d, day = %d\n", year, month, day);
-        dofy = -9999;
+  if (day < 1) {
+        fprintf(stderr,"day_of_year: illegal day, day = %d\n", day);
+        return(msg);
   }
-  else {
-        dofy = yrday[month-1] + day - 1;
-        if (isleapyear(year,calendar) && month > 2) dofy++;
+  if(!strcasecmp(calendar,"standard")  || 
+     !strcasecmp(calendar,"gregorian") ||
+     !strcasecmp(calendar,"julian") ||
+     !strcasecmp(calendar,"none")) {
+    if (  (isleapyear(year,calendar) && month == 2 && day > 29) ||
+          (!(isleapyear(year,calendar) && month == 2) && 
+           day > daysinmonth[month-1])) {
+      fprintf(stderr,"day_of_year: illegal arguments, year = %d, month = %d, day = %d\n", year, month, day);
+      return(msg);
+    }
+    else {
+      dofy = yrday[month-1] + day - 1;
+      if (isleapyear(year,calendar) && month > 2) dofy++;
+    }
   }
+  else if(!strcasecmp(calendar,"allleap")  ||
+          !strcasecmp(calendar,"all_leap") ||
+          !strcasecmp(calendar,"366_day")  ||
+          !strcasecmp(calendar,"366")) {
+    dofy = yrday[month-1] + day - 1;
+    if(month > 2) dofy++;
+  }
+  else if(!strcasecmp(calendar,"noleap")  ||
+          !strcasecmp(calendar,"no_leap") ||
+          !strcasecmp(calendar,"365_day") ||
+          !strcasecmp(calendar,"365")) {
+    dofy = yrday[month-1] + day - 1;
+  }
+  else if(!strcasecmp(calendar,"360_day") ||
+          !strcasecmp(calendar,"360")) {
+    if(day > daysinmonth360[month-1]) {
+      fprintf(stderr,"day_of_year: illegal arguments for 360 calendar, year = %d, month = %d, day = %d\n", year, month, day);
+      return(msg);
+    }
+    else {
+      dofy = yrday360[month-1] + day - 1;
+    }
+  }
+  else  {
+    fprintf (stderr,"day_of_year: illegal calendar = '%s'\n", calendar);
+    return(msg);
+  }
+  
   return(dofy);
 }
 
-int days_in_month (int year, int month)
+int days_in_month (int year, int month, const char *calendar)
 { 
   int dinm;
 /* 
  * This function will return the number of days in a particular month.
  *
  * An error will result in days_in_month being set to -9999
+ * 
+ * In NCL V6.1.0, this function was updated to recognize the
+ * "calendar" attribute.
  */ 
   int daysinmonth[12] = {31,28,31,30,31,30,31,31,30,31,30,31};
-  
+  int msg = -9999;  
+
+  if (calendar == NULL) {
+    fprintf (stderr,"days_in_month: calendar is NULL\n");
+    return(msg);
+  }
+
   if (month < 1 || month > 12 || year < 0) {
     fprintf(stderr,"days_in_month: illegal argument, year = %d, month = %d\n", year, month);
-        dinm = -9999;
+    return(msg);
   }
-  else {
-        dinm = daysinmonth[month-1];
-        if (isleapyear(year,"standard") && (month == 2)) dinm = 29;
+  if(!strcasecmp(calendar,"standard")  || 
+     !strcasecmp(calendar,"gregorian") ||
+     !strcasecmp(calendar,"julian") ||
+     !strcasecmp(calendar,"none")) {
+    dinm = daysinmonth[month-1];
+    if (isleapyear(year,calendar) && (month == 2)) dinm = 29;
+  }
+  else if(!strcasecmp(calendar,"allleap")  ||
+          !strcasecmp(calendar,"all_leap") ||
+          !strcasecmp(calendar,"366_day")  ||
+          !strcasecmp(calendar,"366")) {
+    dinm = daysinmonth[month-1];
+    if(month == 2) dinm = 29;
+  }
+  else if(!strcasecmp(calendar,"noleap")  ||
+          !strcasecmp(calendar,"no_leap") ||
+          !strcasecmp(calendar,"365_day") ||
+          !strcasecmp(calendar,"365")) {
+    dinm = daysinmonth[month-1];
+  }
+  else if(!strcasecmp(calendar,"360_day") ||
+          !strcasecmp(calendar,"360")) {
+    dinm = 30;
+  }
+  else  {
+    fprintf (stderr,"days_in_month: illegal calendar = '%s'\n", calendar);
+    return(msg);
   }
   return(dinm);
 }
@@ -670,28 +790,29 @@ int day_of_week (int year, int month, int day)
 { 
   int dow;
   int daysinmonth[12] = {31,28,31,30,31,30,31,31,30,31,30,31};
+  int msg=-9999;
 /* 
  * This function will return the day of the week (0-6) given year, month,
  * and day of month.
  *
- * An error will result in day_of_week being set to -9999
+ * An error will result in day_of_week being set to msg
  *
  *    Day_Of_Week: (0=Sunday,1=Monday...6=Saturday)
  *    cf J.D.Robertson, CACM 15(10):918
  */
   if (month < 1 || month > 12) {
         fprintf(stderr,"day_of_week: illegal month, %d\n", month);
-        dow = -9999;
+        dow = msg;
   }
   else if (year < 0) {
         fprintf(stderr,"day_of_week: illegal year, year = %d\n", year);
-        dow = -9999;
+        dow = msg;
   }
   else if (day < 1 || (isleapyear(year,"standard") && month == 2 && day > 29) ||
            (!(isleapyear(year,"standard") && month == 2) && 
             day > daysinmonth[month-1])) {
         fprintf(stderr,"day_of_week: illegal arguments, year = %d, month = %d, day = %d\n", year, month, day);
-        dow = -9999;
+        dow = msg;
   }
   else {
     dow = ((13*(month+10-(month+10)/13*12)-1)/5+day+77           
@@ -701,7 +822,7 @@ int day_of_week (int year, int month, int day)
   return(dow);
 }
 
-int monthday (int year, int dayofyear)
+int monthday (int year, int dayofyear, const char *calendar)
 { 
 /*
  * Given the year and day of year this function will return
@@ -711,34 +832,92 @@ int monthday (int year, int dayofyear)
  * then monthday= 902 for September 2.
  *
  * An error will result in monthday being set to -9999
+ * 
+ * In NCL V6.1.0, this function was updated to recognize the
+ * "calendar" attribute.
  */ 
   int i, work[13];
-  int mday = -9999;
-  int yearday[13] = {1,32,60,91,121,152,182,213,244,274,305,335,367};
+  int mday, msg=-9999;
+  int yearday[13]    = {1,32,60,91,121,152,182,213,244,274,305,335,367};
+  int yearday360[13] = {1,31,61,91,121,151,181,211,241,271,301,331,361};
 
-  if (dayofyear < 1 || (isleapyear(year,"standard") && dayofyear > 366) ||
-      (!isleapyear(year,"standard") && dayofyear > 365) || year < 0) {
-        fprintf (stderr,"monthday: illegal argument, year = %d, dayofyear = %d\n", year, dayofyear);
-        mday = -9999;
+  mday = msg;
+
+  if (calendar == NULL) {
+    fprintf (stderr,"monthday: calendar is NULL\n");
+    return(msg);
   }
-  else {
+
+  if (dayofyear < 1 || (isleapyear(year,calendar) && dayofyear > 366) ||
+      (!isleapyear(year,calendar) && dayofyear > 365) || year < 0) {
+        fprintf (stderr,"monthday: illegal argument, year = %d, dayofyear = %d\n", year, dayofyear);
+        return(msg);
+  }
+
+  if(!strcasecmp(calendar,"standard")  || 
+     !strcasecmp(calendar,"gregorian") ||
+     !strcasecmp(calendar,"julian") ||
+     !strcasecmp(calendar,"none")) {
 /*
  * Easy way around leapyr problem.
  */
-        for( i = 0; i < 13; i++ ) work[i] = yearday[i];
+    for( i = 0; i < 13; i++ ) work[i] = yearday[i];
 /*
- * Add one day to normal yearr vector.
+ * Add one day to normal year vector.
  */
-        if (isleapyear(year,"standard")) {
-          for( i=2; i < 12; i++ ) work[i] = yearday[i]+1;
-        }
-        for( i = 1; i <= 12; i++ ) {
+    if (isleapyear(year,calendar)) {
+      for( i=2; i < 12; i++ ) work[i] = yearday[i]+1;
+    }
+    for( i = 1; i <= 12; i++ ) {
       if (dayofyear >= work[i-1] && dayofyear < work[i]) {
-                mday = i*100 + (dayofyear - work[i-1]+1);
-          }
-        }
+        mday = i*100 + (dayofyear - work[i-1]+1);
+      }
+    }
+    return(mday);
   }
-  return(mday);
+  else if(!strcasecmp(calendar,"allleap")  ||
+          !strcasecmp(calendar,"all_leap") ||
+          !strcasecmp(calendar,"366_day")  ||
+          !strcasecmp(calendar,"366")) {
+
+    for( i = 0; i < 13; i++ ) work[i] = yearday[i];
+/*
+ * Add one day to normal year vector.
+ */
+    for( i=2; i < 12; i++ ) work[i] = yearday[i]+1;
+    for( i = 1; i <= 12; i++ ) {
+      if (dayofyear >= work[i-1] && dayofyear < work[i]) {
+        mday = i*100 + (dayofyear - work[i-1]+1);
+      }
+    }
+    return(mday);
+  }
+  else if(!strcasecmp(calendar,"noleap")  ||
+          !strcasecmp(calendar,"no_leap") ||
+          !strcasecmp(calendar,"365_day") ||
+          !strcasecmp(calendar,"365")) {
+    for( i = 0; i < 13; i++ ) work[i] = yearday[i];
+    for( i = 1; i <= 12; i++ ) {
+      if (dayofyear >= work[i-1] && dayofyear < work[i]) {
+        mday = i*100 + (dayofyear - work[i-1]+1);
+      }
+    }
+    return(mday);
+  }
+  else if(!strcasecmp(calendar,"360_day") ||
+          !strcasecmp(calendar,"360")) {
+    for( i = 0; i < 13; i++ ) work[i] = yearday360[i];
+    for( i = 1; i <= 12; i++ ) {
+      if (dayofyear >= work[i-1] && dayofyear < work[i]) {
+        mday = i*100 + (dayofyear - work[i-1]+1);
+      }
+    }
+    return(mday);
+  }
+  else  {
+    fprintf (stderr,"monthday: illegal calendar = '%s'\n", calendar);
+    return(msg);
+  }
 }
 
 int isleapyear(int year,const char *calendar)
@@ -751,6 +930,8 @@ int isleapyear(int year,const char *calendar)
  * year (e.g. 1800, 1900, 2000, etc.) in which case it must be divisable
  * by 400.
  * 
+ * In NCL V6.1.0, this function was updated to recognize the
+ * "calendar" attribute.
  */
   int y4, y100, y400;
  
@@ -796,6 +977,20 @@ int isleapyear(int year,const char *calendar)
   }
 }
 
+
+/*
+ * These are the calendars that are currently recognized by most of
+ * the date routines:
+ *      "standard", "gregorian"
+ *      "noleap",  "no_leap"
+ *      "allleap", "all_leap"
+ *      "365_day", "365"
+ *      "366_day", "366"
+ *      "360_day", "360"
+ *      "proleptic_gregorian"
+ *      "julian"
+ *      "none"
+ */
 
 const char *get_calendar_attribute(int arg_num, int total_args) {
 /* 

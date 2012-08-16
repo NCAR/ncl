@@ -11,8 +11,8 @@
  * Function for initializing Udunits-2 package.
  */
 
-extern int isleapyear(int);
-extern int day_of_year (int, int, int);
+extern int isleapyear(int, const char*);
+extern int day_of_year (int, int, int, const char*);
 
 ut_system *utopen_ncl()
 {
@@ -554,8 +554,8 @@ NhlErrorTypes ut_calendar_W( void )
  */
       case 4:
         nsid             = 86400;      /* num seconds in a day */
-        total_seconds_in_year  = isleapyear(year) ? 366*nsid : 365*nsid;
-        doy                    = day_of_year(year,month,day);
+        total_seconds_in_year  = isleapyear(year,"standard") ? 366*nsid : 365*nsid;
+        doy                    = day_of_year(year,month,day,"standard");
         if(doy > 1) {
           seconds_in_doy = (doy-1) * nsid;
         }
