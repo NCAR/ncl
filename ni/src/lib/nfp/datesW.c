@@ -670,7 +670,7 @@ int day_of_year (int year, int month, int day, const char *calendar)
   int msg = -9999;
 
   if (calendar == NULL) {
-        fprintf (stderr,"day_of_year: calendar is NULL\n");
+    fprintf (stderr,"day_of_year: calendar is NULL\n");
         return(msg);
   }
 
@@ -918,6 +918,45 @@ int monthday (int year, int dayofyear, const char *calendar)
     fprintf (stderr,"monthday: illegal calendar = '%s'\n", calendar);
     return(msg);
   }
+}
+
+int seconds_in_year (int year, const char *calendar)
+{
+/*      
+ * This function will return the number of seconds in a year,
+ * given a calendar. This is meant as an internal function for
+ * option 4 of cd_calendar/ut_calendar.
+ */
+  int nsid, tsiy, msg=-9999;
+
+  nsid = 86400;      /* num seconds in a day */
+  if(!strcasecmp(calendar,"standard")  || 
+          !strcasecmp(calendar,"gregorian") ||
+          !strcasecmp(calendar,"julian") ||
+          !strcasecmp(calendar,"none")) {
+    tsiy = isleapyear(year,calendar) ? 366*nsid : 365*nsid;
+  }
+  else if(!strcasecmp(calendar,"noleap")  ||
+          !strcasecmp(calendar,"no_leap") ||
+          !strcasecmp(calendar,"365_day") ||
+          !strcasecmp(calendar,"365")) {
+    tsiy = 365*nsid;
+  }
+  else if(!strcasecmp(calendar,"allleap")  ||
+          !strcasecmp(calendar,"all_leap") ||
+          !strcasecmp(calendar,"366_day")  ||
+          !strcasecmp(calendar,"366")) {
+    tsiy = 366*nsid;
+  }
+  else if(!strcasecmp(calendar,"360_day") ||
+          !strcasecmp(calendar,"360")) {
+    tsiy = 360*nsid;
+  }
+  else {
+    fprintf(stderr,"seconds_in_year: illegal calendar\n");
+    tsiy = msg;
+  }
+  return(tsiy);
 }
 
 int isleapyear(int year,const char *calendar)
