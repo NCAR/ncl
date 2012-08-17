@@ -848,18 +848,24 @@ int monthday (int year, int dayofyear, const char *calendar)
     return(msg);
   }
 
-  if (dayofyear < 1 || (isleapyear(year,calendar) && dayofyear > 366) ||
-      (!isleapyear(year,calendar) && dayofyear > 365) || year < 0) {
-        fprintf (stderr,"monthday: illegal argument, year = %d, dayofyear = %d\n", year, dayofyear);
-        return(msg);
+  if (dayofyear < 1 || year < 0) {
+    fprintf (stderr,"monthday: illegal argument, year = %d, dayofyear = %d\n", year, dayofyear);
+    return(msg);
   }
 
   if(!strcasecmp(calendar,"standard")  || 
      !strcasecmp(calendar,"gregorian") ||
      !strcasecmp(calendar,"julian") ||
      !strcasecmp(calendar,"none")) {
+/* 
+ * Error check
+ */
+    if ((isleapyear(year,calendar) && dayofyear > 366) || (!isleapyear(year,calendar) && dayofyear > 365)) {
+      fprintf (stderr,"monthday: illegal argument, year = %d, dayofyear = %d\n", year, dayofyear);
+      return(msg);
+    }
 /*
- * Easy way around leapyr problem.
+ * Easy way around leap year problem.
  */
     for( i = 0; i < 13; i++ ) work[i] = yearday[i];
 /*
@@ -879,6 +885,13 @@ int monthday (int year, int dayofyear, const char *calendar)
           !strcasecmp(calendar,"all_leap") ||
           !strcasecmp(calendar,"366_day")  ||
           !strcasecmp(calendar,"366")) {
+/* 
+ * Error check
+ */
+    if (dayofyear > 366) {
+      fprintf (stderr,"monthday: illegal argument for all leap calendar: dayofyear = %d\n", dayofyear);
+      return(msg);
+    }
 
     for( i = 0; i < 13; i++ ) work[i] = yearday[i];
 /*
@@ -896,6 +909,13 @@ int monthday (int year, int dayofyear, const char *calendar)
           !strcasecmp(calendar,"no_leap") ||
           !strcasecmp(calendar,"365_day") ||
           !strcasecmp(calendar,"365")) {
+/* 
+ * Error check
+ */
+    if (dayofyear > 365) {
+      fprintf (stderr,"monthday: illegal argument for no leap calendar: dayofyear = %d\n", dayofyear);
+      return(msg);
+    }
     for( i = 0; i < 13; i++ ) work[i] = yearday[i];
     for( i = 1; i <= 12; i++ ) {
       if (dayofyear >= work[i-1] && dayofyear < work[i]) {
@@ -906,6 +926,14 @@ int monthday (int year, int dayofyear, const char *calendar)
   }
   else if(!strcasecmp(calendar,"360_day") ||
           !strcasecmp(calendar,"360")) {
+/* 
+ * Error check
+ */
+    if (dayofyear > 360) {
+      fprintf (stderr,"monthday: illegal argument for 360-day calendar: dayofyear = %d\n", dayofyear);
+      return(msg);
+    }
+
     for( i = 0; i < 13; i++ ) work[i] = yearday360[i];
     for( i = 1; i <= 12; i++ ) {
       if (dayofyear >= work[i-1] && dayofyear < work[i]) {
