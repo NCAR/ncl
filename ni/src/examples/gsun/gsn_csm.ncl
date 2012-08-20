@@ -5650,18 +5650,6 @@ begin
        check_attr(res2,"pmTickMarkDisplayMode",3,False)) then
       main_zone = main_zone + 1
     end if
-
-
-;
-; If automatic tick marks are turned on, then turn off gsn_csm generated
-; tickmarks.
-; 
-    display_mode = get_display_mode(res2,"pmTickMarkDisplayMode","nocreate")
-    if(display_mode.eq.1.or.display_mode.eq.2) then
-      ticks_on = get_res_value(res2,"gsnTickMarksOn",False)
-    else
-      ticks_on = get_res_value(res2,"gsnTickMarksOn",True)
-    end if
     lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",0.)
     lat_spacing  = get_res_value(res2,"tmYLTickSpacingF",lat_spacing)
     lon_spacing  = get_res_value(res2,"gsnMajorLonSpacing",0.)
@@ -5683,6 +5671,17 @@ begin
      print("gsn_csm_map_ce: Warning: you cannot use mpLimitMode=" + limit_mode + " with the gsm_csm_map routines.")
      return 
    end if
+;
+; If automatic tick marks are turned on, or if mpCenterLatF != 0
+; (rotated map), then turn off gsn_csm generated tickmarks.
+; 
+    display_mode = get_display_mode(res2,"pmTickMarkDisplayMode","nocreate")
+    if(display_mode.eq.1.or.display_mode.eq.2.or.center_lat.ne.0) then
+      ticks_on = get_res_value(res2,"gsnTickMarksOn",False)
+    else
+      ticks_on = get_res_value(res2,"gsnTickMarksOn",True)
+    end if
+
 ;
 ; If mpCenterLonF is set, but mpMinLonF/mpLeftCornerLonF and/or 
 ; mpMaxLonF/mpRightCornerLonF are not, then we need to set them.
