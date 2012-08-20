@@ -13159,12 +13159,6 @@ begin
       exit
   end if
 
-;;if (.not.(ndim.eq.0 .or. (ndim.eq.1 .and. rankx.eq.5))) then
-  if (ndim.ne.0) then
-      print("mon_fullyear_n: currently this function only works on the left [0] dimimension")
-      exit
-  end if
-
   dnamx = getvardims( x )      ; dimension names
 
   ntimx = dimx(0)              ; # input time steps
