@@ -13128,7 +13128,7 @@ begin
 end
 ;---------------------------------------------------
 undef("mon_fullyear")
-function mon_fullyear_n(x:numeric, ndim[1]:integer, opt)
+function mon_fullyear(x:numeric, opt)
 ;
 ; Expand a variable containing monthly data to full (12 month) years
 ; The added months will be set to _FillValue.
@@ -13148,7 +13148,7 @@ function mon_fullyear_n(x:numeric, ndim[1]:integer, opt)
 ; If the input is already full years, the variable is returned unaltered.
 ;
 ; f = addfile(...)  
-; x = mon_fullyear_n( f->X, 0,0)
+; x = mon_fullyear( f->X, 0)
 
 begin
   dimx  = dimsizes(x)          ; dimsizes x
