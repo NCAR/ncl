@@ -13146,7 +13146,7 @@ function mon_fullyear_n(x:numeric, ndim[1]:integer, opt)
 ; x(time), x(time,J), x(time,N,M), x(time,K,N,M)
 ;
 ; If the input is already full years, the variable is returned unaltered.
-
+;
 ; f = addfile(...)  
 ; x = mon_fullyear_n( f->X, 0,0)
 
