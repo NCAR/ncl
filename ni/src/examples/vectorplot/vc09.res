@@ -1,3 +1,5 @@
+*wkBackgroundColor : black
+
 *mpFillOn : True
 *mpFillDrawOrder : predraw
 *mpOutlineDrawOrder : draw
