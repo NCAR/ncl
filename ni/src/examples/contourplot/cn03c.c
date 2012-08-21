@@ -67,7 +67,7 @@ float labellocs[] = { -90.0, -60.0, -30.0, 0.0, 30.0, 60.0, 90.0 };
 
 int M=73, N=10;
         
-main()
+int main()
 {
     int appid,wid,cnid,dataid,llid;
     int rlist, grlist;

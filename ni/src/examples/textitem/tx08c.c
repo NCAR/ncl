@@ -31,7 +31,7 @@
 #include <ncarg/hlu/CairoWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 
-main()
+int main()
 {
     int ixwk, list, ixyplot, itx, ianno;
     char const *wks_type = "x11";

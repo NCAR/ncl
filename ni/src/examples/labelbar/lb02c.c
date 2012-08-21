@@ -28,7 +28,7 @@
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
         
-main()
+int main()
 {
     int appid, wid, pid, rlist;
     int i, colors[16];

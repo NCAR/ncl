@@ -49,7 +49,7 @@
 #define b 37
 #define c 37
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     char const *wks_type = "x11";
     int appid,wid,vcid,vfid;

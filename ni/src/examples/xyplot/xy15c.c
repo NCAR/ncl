@@ -53,7 +53,7 @@ float ydra2[NPTS];
 float ydra3[NPTS];
 float ydra4[NPTS];
 
-main()
+int main()
 {
     int     appid,xworkid;
     int     dataid1,dataid2,dataid3,dataid4;

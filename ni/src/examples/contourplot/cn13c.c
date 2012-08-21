@@ -45,7 +45,7 @@
 
 float x[NCLS*NCLS], y[NCLS*NCLS],rlat[NCLS*NCLS], rlon[NCLS*NCLS];
 
-main()
+int main()
 {
     float dval, oor,  icra[NCLS][NCLS], miss_val = 1.e12;
     int appid, workid, dataid, cnid, mpid;

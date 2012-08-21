@@ -53,7 +53,7 @@
 float *y[NCURVE];
 int length[NCURVE];
 
-main()
+int main()
 {
     int     appid,xworkid,plotid,dataid;
     int     rlist, i, j;

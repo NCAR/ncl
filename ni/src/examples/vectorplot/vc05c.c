@@ -55,7 +55,7 @@
 
 static const int M=25, N=25;
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     float       U[25][25];
     float       V[25][25];

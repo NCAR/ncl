@@ -41,7 +41,7 @@
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/hlu.h>
 
-main ()
+int main ()
 {
     int appid,nwks,xwks,xcon,field1,rlist;
 

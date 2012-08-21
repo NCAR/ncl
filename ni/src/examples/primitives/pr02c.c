@@ -39,7 +39,7 @@
 #include <ncarg/hlu/CairoWorkstation.h>
 #include <ncarg/hlu/LogLinPlot.h>
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     char const *wks_type = "x11";
     int rlist,grlist;

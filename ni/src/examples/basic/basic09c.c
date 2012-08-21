@@ -68,7 +68,7 @@ char *fonts[31][2] = {{"1","default"},
         {"36","weather1"},
         {"37","weather2"}};
 
-main()
+int main()
 {
 
     int appid,wid,txid1,txid2,txid3,txid4,rlist;
@@ -224,4 +224,5 @@ main()
  */
     NhlDestroy(wid);
     NhlClose();
+    exit(0);
 }

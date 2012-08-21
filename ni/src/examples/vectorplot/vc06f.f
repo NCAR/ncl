@@ -306,7 +306,7 @@ C
          if (mindistval .lt. 10) then
             write(mindist,100)mindistval
  100        format(I1)
-            smindist = smindist0//mindist
+            smindist = smindist0/mindist
          else
             if (mindistval .lt. 100) then
                write(mindist,101)mindistval

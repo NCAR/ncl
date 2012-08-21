@@ -43,7 +43,7 @@ int ylvalues[] = {60,50,40,30,20};
 char *xblabels[] = {"60W","75W","90W","105W","120W","135W"};
 char *yllabels[] = {"60N","50N","40N","30N","20N"};
 
-main()
+int main()
 {
 /*
  * Declare variables for the HLU routine calls.

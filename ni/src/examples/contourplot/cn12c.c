@@ -66,7 +66,7 @@ char *mask_specs[] = {
   "swaziland","tanzania","togo","tunisia","uganda","upper-volta",
   "western-sahara","zaire","zambia","zimbabwe"};
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int appid,wid,dataid,cnid,mpid;
     int rlist;

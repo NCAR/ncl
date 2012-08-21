@@ -39,7 +39,7 @@
 #include <ncarg/hlu/hlu.h>
 
 
-main()
+int main()
 {
     int i;
     int appid,wks,lbar,rlist,glist,text;

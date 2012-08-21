@@ -50,7 +50,7 @@ int len[NCURVE] = {12,37,61};
  */
 float explicit_values[14];
 
-main()
+int main()
 {
     int     appid,xworkid,plotid,dataid;
     int     rlist, i, j;

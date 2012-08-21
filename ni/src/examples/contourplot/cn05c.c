@@ -49,7 +49,7 @@
  */
 #define NCOLORS    64
 
-main()
+int main()
 {
 /*
  * Declare variables for the HLU routine calls.

@@ -43,7 +43,7 @@
 #define M 33
 #define N 33
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int appid,wid,dataid,cnid,txid;
     int rlist,grlist;

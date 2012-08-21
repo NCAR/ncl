@@ -30,9 +30,9 @@
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
 
-main()
+int main()
 {
-    int   appid, wid, pid, rlist;
+    int   wid, pid, rlist;
     char *labels[] = {"Top Left"  ,"Center Left" , "Bottom Left"  ,
                       "Top Center" ,"Center Center", "Bottom Center", 
                       "Top Right"  ,"Center Right" , "Bottom Right"  };

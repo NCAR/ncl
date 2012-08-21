@@ -74,7 +74,7 @@
 char *cdffiles[6] = {"Ustorm.cdf","Vstorm.cdf","Pstorm.cdf","Tstorm.cdf","U500storm.cdf","V500storm.cdf"};
 
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i, j, d, h;
     int appid, wid, cnid, vcid, stid, txid, amid, mpid, tmid, stdmid;

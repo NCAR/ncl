@@ -72,7 +72,7 @@ float ylvals[5] =  {-90.,-80.,-70.,-60.,-50.};
 float yrvals1[6] = {0.,10.,20.,30.,40.,50.};
 float yrvals2[5] = {-20.,-10.,0.,10.,20.};
 
-main()
+int main()
 {
     FILE *fp;
     int i;
@@ -368,4 +368,5 @@ main()
       NhlFrame(xworkid);
       NhlDestroy(appid);
       NhlClose();
+      exit(0);
 }

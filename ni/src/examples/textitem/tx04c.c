@@ -28,7 +28,7 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-main()
+int main()
 {
     int app_id;
     int text_item_id;
@@ -875,4 +875,5 @@ main()
     NhlDestroy(workstation_id);
     NhlDestroy(app_id);
     NhlClose();
+    exit(0);
 }

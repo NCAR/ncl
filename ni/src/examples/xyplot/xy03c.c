@@ -46,7 +46,7 @@
 #define NPTS  500
 #define PI100 .031415926535898
 
-main()
+int main()
 {
     int     appid,xworkid,plotid,dataid;
     int     i, rlist;

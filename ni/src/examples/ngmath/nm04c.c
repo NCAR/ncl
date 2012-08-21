@@ -36,7 +36,7 @@
 #define NY     21
 #define NZ     21
 
-main()
+int main()
 {
   int  appid,wid,gkswid;
   int  srlist, grlist;
