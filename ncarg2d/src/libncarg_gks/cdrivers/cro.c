@@ -2454,21 +2454,25 @@ void setSurfaceTransform(CROddp *psa) {
      */
 
     double angle, tx, ty;
-    /* Landscape is only supported for PS/PDF, not for image-based formats. */
-    if ((psa->wks_type == CPS || psa->wks_type == CPDF) && psa->orientation == LANDSCAPE) {
-        angle = PI / 2.0;
-
-        tx = psa->dspace.llx;
-        ty = psa->paper_height - psa->dspace.ury;
-    } else {
-        angle = 0.;
-        tx = psa->dspace.llx;
-        ty = psa->paper_height - psa->dspace.lly;
-    }
-
     double scale = 1.0;
-
     cairo_t* ctx = cairo_context[context_index(psa->wks_id)];
+
+    /* Landscape is only supported for PS/PDF, not for image-based formats. */
+    if (psa->wks_type == CPS || psa->wks_type == CPDF) {
+	    if (psa->orientation == LANDSCAPE) {
+		    angle = PI / 2.0;
+		    tx = psa->dspace.llx;
+		    ty = psa->paper_height - psa->dspace.ury;
+	    } else {
+		    angle = 0.;
+		    tx = psa->dspace.llx;
+		    ty = psa->paper_height - psa->dspace.lly;
+	    }
+    }
+    else {
+	    tx = psa->dspace.llx;
+	    ty = psa->dspace.ury;
+    }
     cairo_identity_matrix(ctx);
     cairo_translate(ctx, tx, ty);
     cairo_rotate(ctx, angle);
