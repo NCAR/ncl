@@ -4308,7 +4308,7 @@ NhlErrorTypes _Nclstr_sort
 
 }
 
-NhlErrorTypes _Nclstr_print(void)
+NhlErrorTypes _Nclprint_table(void)
 {
     obj *list_id;
     NclObj thelist = NULL;
@@ -4344,7 +4344,7 @@ NhlErrorTypes _Nclstr_print(void)
     int has_lead = 0;
 
   /*
-   *fprintf(stderr, "\nEnter _Nclstr_print, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\nEnter _Nclprint_table, file: %s, line: %d\n", __FILE__, __LINE__);
    */
 
     list_id = (obj *)NclGetArgValue(
@@ -4375,7 +4375,7 @@ NhlErrorTypes _Nclstr_print(void)
     tmp = NrmQuarkToString(*qformat);
     if(tmp == NULL)
     {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: unknown format.\n");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclprint_table: unknown format.\n");
         return(NhlFATAL);
     }
 
@@ -4402,7 +4402,7 @@ NhlErrorTypes _Nclstr_print(void)
         }
         else
         {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: str_print can only handle list less than 16 elements.\n");
+            NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclprint_table: print_table can only handle list less than 16 elements.\n");
             return(NhlFATAL);
         }
 
@@ -4470,7 +4470,7 @@ NhlErrorTypes _Nclstr_print(void)
                     *}
                     */
          
-                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: can not print file list yet.\n");
+                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclprint_table: can not print file list yet.\n");
                      return(NhlFATAL);
                  }
                  else if(thevalue->obj.obj_type_mask & Ncl_MultiDVallistData)
@@ -4479,7 +4479,7 @@ NhlErrorTypes _Nclstr_print(void)
                     *ret = _PrintListVarSummary((NclObj)thevalue,fp);
                     */
          
-                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: can not print list in list yet.\n");
+                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclprint_table: can not print list in list yet.\n");
                      return(NhlFATAL);
                  }
                  else
@@ -4786,12 +4786,12 @@ NhlErrorTypes _Nclstr_print(void)
     }
 
   /*
-   *fprintf(stderr, "Leave _Nclstr_print, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   *fprintf(stderr, "Leave _Nclprint_table, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
     return(NhlNOERROR);
 }
 
-NhlErrorTypes _Nclstr_write(void)
+NhlErrorTypes _Nclwrite_table(void)
 {
     obj *list_id;
     NclObj thelist = NULL;
@@ -4835,7 +4835,7 @@ NhlErrorTypes _Nclstr_write(void)
     int has_lead = 0;
 
   /*
-   *fprintf(stderr, "\nEnter _Nclstr_write, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\nEnter _Nclwrite_table, file: %s, line: %d\n", __FILE__, __LINE__);
    */
 
     qfilename = (string *)NclGetArgValue(
@@ -4851,7 +4851,7 @@ NhlErrorTypes _Nclstr_write(void)
     filename = NrmQuarkToString(*qfilename);
     if(filename == NULL)
     {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_write: unknown filename.\n");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: unknown filename.\n");
         return(NhlFATAL);
     }
 
@@ -4873,7 +4873,7 @@ NhlErrorTypes _Nclstr_write(void)
     option = NrmQuarkToString(*qoption);
     if(option == NULL)
     {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_write: unknown write option.\n");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: unknown write option.\n");
         return(NhlFATAL);
     }
 
@@ -4895,7 +4895,7 @@ NhlErrorTypes _Nclstr_write(void)
     thelist = _NclGetObj(*list_id);
     if(NULL == thelist)
     {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_write: NULL list.\n");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: NULL list.\n");
         return(NhlFATAL);
     }
 
@@ -4915,7 +4915,7 @@ NhlErrorTypes _Nclstr_write(void)
     tmp = NrmQuarkToString(*qformat);
     if(tmp == NULL)
     {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_write: unknown format.\n");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: unknown format.\n");
         return(NhlFATAL);
     }
 
@@ -4944,7 +4944,7 @@ NhlErrorTypes _Nclstr_write(void)
         }
         else
         {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_write: str_write can only handle list less than 16 elements.\n");
+            NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: write_table can only handle list less than 16 elements.\n");
             return(NhlFATAL);
         }
 
@@ -5008,7 +5008,7 @@ NhlErrorTypes _Nclstr_write(void)
                     *}
                     */
          
-                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_write: can not print file list yet.\n");
+                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: can not print file list yet.\n");
                      return(NhlFATAL);
                  }
                  else if(thevalue->obj.obj_type_mask & Ncl_MultiDVallistData)
@@ -5017,7 +5017,7 @@ NhlErrorTypes _Nclstr_write(void)
                     *ret = _PrintListVarSummary((NclObj)thevalue,fp);
                     */
          
-                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_write: can not print list in list yet.\n");
+                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: can not print list in list yet.\n");
                      return(NhlFATAL);
                  }
                  else
@@ -5266,7 +5266,7 @@ NhlErrorTypes _Nclstr_write(void)
 
     fclose(fp);
   /*
-   *fprintf(stderr, "Leave _Nclstr_write, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   *fprintf(stderr, "Leave _Nclwrite_table, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
     return(NhlNOERROR);
 }
