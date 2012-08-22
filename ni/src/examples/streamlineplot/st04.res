@@ -24,6 +24,7 @@
 *mpMaxLonF : -58.
 *mpCenterLonF : -100.0
 *mpCenterLatF : 40.0
+!*mpFillColors : (/16,10, 8,10,26,22,11,23,13,19,24,25,21,20,18/)
 
 ! ContourPlot resources
 

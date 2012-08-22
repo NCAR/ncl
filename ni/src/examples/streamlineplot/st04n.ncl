@@ -63,7 +63,7 @@ TIMESTEPS = 20
 ;
 ; Default is to display output to an X workstation
 ;
-  wks_type = "ncgm"
+  wks_type = "x11"
 
   if (str_lower(wks_type).eq."ncgm") then
 ;
@@ -233,7 +233,7 @@ amid = NhlAddAnnotation(stid,txid)
 ;
 
 mapid = create "mapplot" mapPlotClass wid 
-        "vpUseSegments" : True
+;        "vpUseSegments" : True
 end create
 
 ;

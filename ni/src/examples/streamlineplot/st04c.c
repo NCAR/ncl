@@ -325,7 +325,7 @@ int main(int argc, char *argv[])
  * Create a map object
  */
     NhlRLClear(rlist);
-    NhlRLSetString(rlist,NhlNvpUseSegments,"true");
+/*    NhlRLSetString(rlist,NhlNvpUseSegments,"true"); */
     NhlCreate(&mpid,"mapplot",NhlmapPlotClass,wid,rlist);
 /*
  * Overlay everything on the MapPlot. The last object overlaid will

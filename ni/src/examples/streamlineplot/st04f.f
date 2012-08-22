@@ -347,7 +347,7 @@ C
 C Create a map object
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetString(rlist,'vpUseSegments','true',ierr)
+C      call NhlFRLSetString(rlist,'vpUseSegments','true',ierr)
       call NhlFCreate(mpid,'mapplot',NhlFmapPlotClass,wid,rlist,ierr)
 C
 C Overlay everything on the MapPlot. The last object overlaid will
