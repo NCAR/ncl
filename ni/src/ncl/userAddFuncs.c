@@ -4320,6 +4320,7 @@ NhlErrorTypes _Nclprint_table(void)
     int maxelems = MAX_LIST_ELEMENT;
     int truelems = 0;
     NclBasicDataTypes type[MAX_LIST_ELEMENT];
+    char              prefix[256];
     char              format[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
     size_t            size[MAX_LIST_ELEMENT];
     size_t maxlen = 0;
@@ -4341,7 +4342,6 @@ NhlErrorTypes _Nclprint_table(void)
 
     int nstart, length, remain;
     int ndvdl[MAX_LIST_ELEMENT];
-    int has_lead = 0;
 
   /*
    *fprintf(stderr, "\nEnter _Nclprint_table, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -4379,13 +4379,20 @@ NhlErrorTypes _Nclprint_table(void)
         return(NhlFATAL);
     }
 
-    if('%' != tmp[0])
-        has_lead = 1;
-
   /*
    *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\ttmp str: <%s>\n", tmp);
    */
+
+    if('%' != tmp[0])
+    {
+        strcpy(prefix, tmp);
+        tmp = strchr(NrmQuarkToString(*qformat), '%');
+        i = strlen(prefix) - strlen(tmp);
+        prefix[i] = '\0';
+    }
+    else
+        prefix[0] = '\0';
 
     nelems = 0;
     result = strtok(tmp, "%");
@@ -4411,16 +4418,6 @@ NhlErrorTypes _Nclprint_table(void)
     }
 
     maxelems = nelems;
-
-    if(has_lead)
-    {
-       tmp= &(format[0][0]);
-       strcpy(format[0], tmp + 1);
-       --maxelems;
-       strcat(format[0], format[1]);
-       for(i = 1; i < maxelems; ++i)
-          strcpy(format[i], format[i+1]);
-    }
 
   /*
    *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -4500,7 +4497,7 @@ NhlErrorTypes _Nclprint_table(void)
          
                        /*
                         *fprintf(stderr, "\ttype[%d]: %s\n", nelems, _NclBasicDataTypeToName(type[nelems]));
-                        *fprintf(stderr, "\tsize[%d]: %d\n", nelems, size[nelems]);
+                        *fprintf(stderr, "\tsize[%d]: %ld\n", nelems, size[nelems]);
                         */
                      }
                    /*
@@ -4535,13 +4532,16 @@ NhlErrorTypes _Nclprint_table(void)
        maxelems = truelems;
 
   /*
-   *fprintf(stderr, "\n\tmaxlen = %d\n", maxlen);
+   *fprintf(stderr, "\n\tmaxlen = %ld\n", maxlen);
    */
 
   /*Print total number of elements*/
+  /*
     fprintf(stdout, "\nList has %d elements:\n", maxelems);
+   */
 
   /*Print name of elements*/
+  /*
     strcpy(prntln, "Element name: ");
 
     nstart = strlen(prntln);
@@ -4564,8 +4564,10 @@ NhlErrorTypes _Nclprint_table(void)
     }
 
     fprintf(stdout, "%s\n", prntln);
+   */
 
   /*Print type of elements*/
+  /*
     strcpy(prntln, "Element type: ");
     nstart = strlen(prntln);
     for(nelems = 0; nelems < maxelems; ++nelems)
@@ -4589,8 +4591,10 @@ NhlErrorTypes _Nclprint_table(void)
     }
 
     fprintf(stdout, "%s\n", prntln);
+   */
 
   /*Print size of elements*/
+  /*
     strcpy(prntln, "Element size: ");
     nstart = strlen(prntln);
     for(nelems = 0; nelems < maxelems; ++nelems)
@@ -4614,33 +4618,22 @@ NhlErrorTypes _Nclprint_table(void)
     }
 
     fprintf(stdout, "%s\n", prntln);
+   */
 
   /*Print value of elements*/
-    fprintf(stdout, "Element Value:\n");
+  /*
+   *fprintf(stdout, "Element Value:\n");
+   */
 
     nelems = 0;
     for(i = 0; i < maxlen; ++i)
     {
-        strcpy(buffer, "Element size: ");
-        length = strlen(buffer);
-        memset(prntln, ' ', length);
-        prntln[length] = '\0';
-
-        sprintf(buffer, "%ld", (long) i);
-   
-        remain = length - strlen(buffer);
-        if(remain > 0)
-        {
-           memset(prntln, ' ', remain);
-           prntln[remain] = '\0';
-           strcat(prntln, buffer);
-           nstart = length;
-        }
-        else
-        {
-           strcat(prntln, buffer);
-           nstart = strlen(buffer);
-        }
+      /*
+       *sprintf(buffer, "%ld %s", (long) i, prefix);
+       */
+        sprintf(buffer, "%s", prefix);
+        strcpy(prntln, buffer);
+        nstart = strlen(buffer);
 
         step = tmp_list->list.first;
         for(nelems = 0; nelems < maxelems; ++nelems)
@@ -4748,28 +4741,10 @@ NhlErrorTypes _Nclprint_table(void)
                 length = strlen(buffer);
                 remain = ndvdl[nelems] - length;
 
-                if(remain > 0)
-                {
-                   memset(prntln + nstart, ' ', remain);
-                   prntln[nstart + remain] = '\0';
-                   strcat(prntln, buffer);
-                   nstart += ndvdl[nelems];
-                }
-                else
-                {
-                    ndvdl[nelems] = length + 1;
+                ndvdl[nelems] = length + 1;
 
-                    if(nelems)
-                    {
-                        strcat(prntln, " ");
-                        strcat(prntln, buffer);
-                    }
-                    else
-                    {
-                        strcpy(prntln, buffer);
-                    }
-                    nstart += ndvdl[nelems];
-                }
+                strcat(prntln, buffer);
+                nstart += ndvdl[nelems];
             }
             else
             {
