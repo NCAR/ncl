@@ -2470,6 +2470,7 @@ void setSurfaceTransform(CROddp *psa) {
 	    }
     }
     else {
+            angle = 0.;
 	    tx = psa->dspace.llx;
 	    ty = psa->dspace.ury;
     }
