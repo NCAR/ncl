@@ -4741,7 +4741,7 @@ NhlErrorTypes _Nclprint_table(void)
                 length = strlen(buffer);
                 remain = ndvdl[nelems] - length;
 
-                ndvdl[nelems] = length + 1;
+                ndvdl[nelems] = length + 2;
 
                 strcat(prntln, buffer);
                 nstart += ndvdl[nelems];
@@ -4782,6 +4782,7 @@ NhlErrorTypes _Nclwrite_table(void)
     int maxelems = MAX_LIST_ELEMENT;
     int truelems = 0;
     NclBasicDataTypes type[MAX_LIST_ELEMENT];
+    char              prefix[256];
     char              format[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
     size_t            size[MAX_LIST_ELEMENT];
     size_t maxlen = 0;
@@ -4807,7 +4808,6 @@ NhlErrorTypes _Nclwrite_table(void)
     int ndvdl[MAX_LIST_ELEMENT];
     int has_seperator[MAX_LIST_ELEMENT];
     char seperator[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
-    int has_lead = 0;
 
   /*
    *fprintf(stderr, "\nEnter _Nclwrite_table, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -4902,7 +4902,14 @@ NhlErrorTypes _Nclwrite_table(void)
     fp = fopen(filename, option);
 
     if('%' != tmp[0])
-        has_lead = 1;
+    {
+        strcpy(prefix, tmp);
+        tmp = strchr(NrmQuarkToString(*qformat), '%');
+        i = strlen(prefix) - strlen(tmp);
+        prefix[i] = '\0';
+    }
+    else
+        prefix[0] = '\0';
 
     nelems = 0;
     result = strtok(tmp, "%");
@@ -4928,16 +4935,6 @@ NhlErrorTypes _Nclwrite_table(void)
     }
 
     maxelems = nelems;
-
-    if(has_lead)
-    {
-       tmp= &(format[0][0]);
-       strcpy(format[0], tmp + 1);
-       --maxelems;
-       strcat(format[0], format[1]);
-       for(i = 1; i < maxelems; ++i)
-          strcpy(format[i], format[i+1]);
-    }
 
   /*
    *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -5074,8 +5071,9 @@ NhlErrorTypes _Nclwrite_table(void)
     nelems = 0;
     for(i = 0; i < maxlen; ++i)
     {
-        nstart = 0;
-        prntln[0] = '\0';
+        sprintf(buffer, "%s", prefix);
+        strcpy(prntln, buffer);
+        nstart = strlen(buffer);
 
         step = tmp_list->list.first;
         for(nelems = 0; nelems < maxelems; ++nelems)
