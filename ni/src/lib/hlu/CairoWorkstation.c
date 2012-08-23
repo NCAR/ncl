@@ -94,10 +94,10 @@ static NhlResource resourcesImageWS[] = {
         _NhlRES_NOACCESS | _NhlRES_PRIVATE, NULL},
     {NhlNwkWidth, NhlCwkWidth, NhlTInteger, sizeof (int),
         Oset(pixconfig.width), NhlTImmediate,
-        _NhlUSET((NhlPointer) 1024), _NhlRES_DEFAULT, NULL},
+        _NhlUSET((NhlPointer) 1024), _NhlRES_NOSACCESS, NULL},
     {NhlNwkHeight, NhlCwkHeight, NhlTInteger, sizeof (int),
         Oset(pixconfig.height), NhlTImmediate,
-        _NhlUSET((NhlPointer) 1024), _NhlRES_DEFAULT, NULL},
+        _NhlUSET((NhlPointer) 1024), _NhlRES_NOSACCESS, NULL},
 };
 
 static NhlResource resourcesWindowWS[] = {
