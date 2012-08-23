@@ -69,9 +69,9 @@ extern "C" {
 #include <regex.h>
 #include <ctype.h>
 
-#define MAX_PRINT_SPACES	16
-#define MAX_LIST_ELEMENT	16
-#define MAX_PRINT_NAME_LENGTH	16
+#define MAX_PRINT_SPACES	32
+#define MAX_LIST_ELEMENT	32
+#define MAX_PRINT_NAME_LENGTH	512
 
 #define NCL_INITIAL_STRING_LENGTH	2048
 
@@ -4934,7 +4934,13 @@ NhlErrorTypes _Nclwrite_table(void)
     else
         prefix[0] = '\0';
 
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tprefix = <%s>\n", prefix);
+   */
+
     nelems = 0;
+    memset(format, 0, MAX_LIST_ELEMENT * MAX_PRINT_NAME_LENGTH);
     result = strtok(tmp, "%");
     while(result != NULL)
     {
@@ -5096,6 +5102,7 @@ NhlErrorTypes _Nclwrite_table(void)
 
     for(i = 0; i < maxlen; ++i)
     {
+        memset(prntln, 0, NCL_INITIAL_STRING_LENGTH);
         if('\0' == prefix[0])
         {
             prntln[0] = '\0';
@@ -5110,7 +5117,7 @@ NhlErrorTypes _Nclwrite_table(void)
         step = tmp_list->list.first;
         for(nelems = 0; nelems < maxelems; ++nelems)
         {
-            buffer[0] = '\0';
+            memset(buffer, 0, NCL_INITIAL_STRING_LENGTH);
             if(i < size[nelems])
             {
                 cur_obj = (NclObj)_NclGetObj(step->obj_id);
@@ -5241,7 +5248,7 @@ NhlErrorTypes _Nclwrite_table(void)
                        }
                        else
                        {
-                           strcpy(prntln, buffer);
+                           strcat(prntln, buffer);
                        }
                        nstart += ndvdl[nelems];
                     }
