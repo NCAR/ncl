@@ -28,6 +28,7 @@
 #include <ncarg/hlu/IrregularTransObjP.h>
 #include <ncarg/hlu/CnStdRendererP.h>
 #include <ncarg/hlu/WorkstationI.h>
+#include <ncarg/hlu/color.h>
 
 static NhlErrorTypes CnStdRendererInitialize(
 #if	NhlNeedProto
@@ -2173,6 +2174,7 @@ void   (_NHLCALLF(hlucpchcl,HLUCPCHCL))
 			}
 			c_pcseti("OC",llcol);
 			c_pcseti("CC",llcol);
+                        _NhlSetFillOpacity(Cnl, 1.0);  /* NCL-1509 */
 		}
 		c_pcsetr("PH",(float)Cnp->line_lbls.pheight);
 		c_pcsetr("PW",(float)Cnp->line_lbls.pwidth);
@@ -2311,6 +2313,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		if ( Cnp->high_lbls.gks_color > NhlTRANSPARENT) {
 			c_pcseti("CC", Cnp->high_lbls.gks_color);
 			c_pcseti("OC", Cnp->high_lbls.gks_color);
+                        _NhlSetFillOpacity(Cnl, 1.0);  /* NCL-1509 */
 		}
 		c_pcsetr("PH",(float)Cnp->high_lbls.pheight);
 		c_pcsetr("PW",(float)Cnp->high_lbls.pwidth);
@@ -2347,6 +2350,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		if ( Cnp->high_lbls.gks_color > NhlTRANSPARENT) {
 			c_pcseti("CC", Cnp->high_lbls.gks_color);
 			c_pcseti("OC", Cnp->high_lbls.gks_color);
+                        _NhlSetFillOpacity(Cnl, 1.0);  /* NCL-1509 */
 		}
 		else {
 			c_cpsetc("CTM"," ");
@@ -2388,6 +2392,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		if (Cnp->low_lbls.gks_color > NhlTRANSPARENT) {
 			c_pcseti("CC", Cnp->low_lbls.gks_color);
 			c_pcseti("OC", Cnp->low_lbls.gks_color);
+                        _NhlSetFillOpacity(Cnl, 1.0);  /* NCL-1509 */
 		}
 		c_pcsetr("PH",(float)Cnp->low_lbls.pheight * LowLabelFactor);
 		c_pcsetr("PW",(float)Cnp->low_lbls.pwidth * LowLabelFactor);
@@ -2423,6 +2428,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		if (Cnp->low_lbls.gks_color > NhlTRANSPARENT) {
 			c_pcseti("CC", Cnp->low_lbls.gks_color);
 			c_pcseti("OC", Cnp->low_lbls.gks_color);
+                        _NhlSetFillOpacity(Cnl, 1.0);  /* NCL-1509 */
 		}
 		else {
 			c_cpsetc("CTM"," ");
@@ -2524,6 +2530,7 @@ void   (_NHLCALLF(hlucpchll,HLUCPCHLL))
 			if (llcol > NhlTRANSPARENT) {
 				c_pcseti("CC",llcol);
 				c_pcseti("OC",llcol);
+                                _NhlSetFillOpacity(Cnl, 1.0);  /* NCL-1509 */
 			}
 			else {
 				c_cpsetc("CTM"," ");
