@@ -226,7 +226,7 @@ begin
     wallClockElapseTime(stime, title, 0)
   else
     diff_time = get_cpu_time() - stime
-    print("=====> CPU Elapsed Time: " + title + ": " + diff_time + " <=====")
+    print("=====> CPU Elapsed Time: " + title + ": " + diff_time + " seconds <=====")
   end if
 end
 
