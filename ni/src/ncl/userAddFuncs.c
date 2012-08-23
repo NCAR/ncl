@@ -4625,16 +4625,27 @@ NhlErrorTypes _Nclprint_table(void)
    *fprintf(stdout, "Element Value:\n");
    */
 
+    for(nelems = 0; nelems < maxelems; ++nelems)
+        ndvdl[nelems] = 0;
+
     nelems = 0;
     for(i = 0; i < maxlen; ++i)
     {
       /*
        *sprintf(buffer, "%ld %s", (long) i, prefix);
        */
-        sprintf(buffer, "%s", prefix);
-        strcpy(prntln, buffer);
-        nstart = strlen(buffer);
+        strcpy(prntln, prefix);
 
+        if(prefix[0])
+            nstart = strlen(prefix);
+        else
+        {
+            nstart = 1;
+            strcpy(prntln, " ");
+        }
+
+        buffer[0] = '\0';
+        length = 0;
         step = tmp_list->list.first;
         for(nelems = 0; nelems < maxelems; ++nelems)
         {
@@ -4739,12 +4750,24 @@ NhlErrorTypes _Nclprint_table(void)
                 }
 
                 length = strlen(buffer);
+
+                if(length > ndvdl[nelems])
+                    ndvdl[nelems] = length;
+
                 remain = ndvdl[nelems] - length;
 
-                ndvdl[nelems] = length + 2;
-
-                strcat(prntln, buffer);
-                nstart += ndvdl[nelems];
+                if(remain > 0)
+                {
+                   memset(prntln + nstart, ' ', remain);
+                   prntln[nstart + remain] = '\0';
+                   strcat(prntln, buffer);
+                   nstart += ndvdl[nelems];
+                }
+                else
+                {
+                   strcat(prntln, buffer);
+                   nstart += length;
+                }
             }
             else
             {
@@ -4803,11 +4826,11 @@ NhlErrorTypes _Nclwrite_table(void)
 
     char prntln[NCL_INITIAL_STRING_LENGTH];
     char buffer[NCL_INITIAL_STRING_LENGTH];
+    char seperator[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
 
     int nstart, length, remain;
     int ndvdl[MAX_LIST_ELEMENT];
     int has_seperator[MAX_LIST_ELEMENT];
-    char seperator[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
 
   /*
    *fprintf(stderr, "\nEnter _Nclwrite_table, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -5068,16 +5091,26 @@ NhlErrorTypes _Nclwrite_table(void)
    */
 
   /*Print value of elements*/
-    nelems = 0;
+    for(nelems = 0; nelems < maxelems; ++nelems)
+        ndvdl[nelems] = 0;
+
     for(i = 0; i < maxlen; ++i)
     {
-        sprintf(buffer, "%s", prefix);
-        strcpy(prntln, buffer);
-        nstart = strlen(buffer);
+        if('\0' == prefix[0])
+        {
+            prntln[0] = '\0';
+            nstart = 0;
+        }
+        else
+        {
+            strcpy(prntln, prefix);
+            nstart = strlen(prefix);
+        }
 
         step = tmp_list->list.first;
         for(nelems = 0; nelems < maxelems; ++nelems)
         {
+            buffer[0] = '\0';
             if(i < size[nelems])
             {
                 cur_obj = (NclObj)_NclGetObj(step->obj_id);
@@ -5180,6 +5213,9 @@ NhlErrorTypes _Nclwrite_table(void)
 
                 length = strlen(buffer);
 
+                if(length > ndvdl[nelems])
+                    ndvdl[nelems] = length;
+
                 if(has_seperator[nelems])
                 {
                     strcat(prntln, buffer);
@@ -5189,7 +5225,7 @@ NhlErrorTypes _Nclwrite_table(void)
                 {
                     remain = ndvdl[nelems] - length;
 
-                    if(remain > 0)
+                    if(remain)
                     {
                        memset(prntln + nstart, ' ', remain);
                        prntln[nstart + remain] = '\0';
@@ -5198,8 +5234,6 @@ NhlErrorTypes _Nclwrite_table(void)
                     }
                     else
                     {
-                       ndvdl[nelems] = length + 1;
-
                        if(nelems)
                        {
                            strcat(prntln, " ");
@@ -5215,20 +5249,19 @@ NhlErrorTypes _Nclwrite_table(void)
             }
             else
             {
+                memset(buffer, ' ', ndvdl[nelems] + 1);
+                buffer[ndvdl[nelems]] = '\0';
+
                 if(has_seperator[nelems])
                 {
-                    strcat(prntln, seperator[nelems]);
-
-                    nstart += strlen(seperator[nelems]);
+                    buffer[ndvdl[nelems] - strlen(seperator[nelems])] = '\0';
+                    strcat(buffer, seperator[nelems]);
                 }
                 else
-                {
-                    memset(buffer, ' ', ndvdl[nelems]);
-                    buffer[ndvdl[nelems]] = '\0';
-                    strcat(prntln, buffer);
-
-                    nstart += ndvdl[nelems];
-                }
+                    if(nelems)
+                        strcat(buffer, " ");
+                strcat(prntln, buffer);
+                nstart += ndvdl[nelems];
             }
 
             step = step->next;
