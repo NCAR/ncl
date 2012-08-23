@@ -3304,21 +3304,44 @@ end
 ; id.                                                                   ;
 ;***********************************************************************;
 undef("gsn_open_x11")
-function gsn_open_x11(name[1]:string)
+function gsn_open_x11(name[1]:string,res[1]:string)
 local window
 begin
-    if(isatt(name,"wkColorMap"))
-      window = create name + "_x11" windowWorkstationClass defaultapp
-        "wkFormat": "x11"
-        "wkPause" : True
-        "wkColorMap" : name@wkColorMap
-      end create
+    ; apply width/height resources if present; must be applied at creation time.
+    imageWidth = get_res_value(res,"wkWidth",-1)
+    imageHeight = get_res_value(res,"wkHeight",-1)
+    if (imageWidth.gt.0 .and. imageHeight.gt.0) then
+        if(isatt(res,"wkColorMap"))
+            window = create name + "_x11" windowWorkstationClass defaultapp
+                "wkFormat"   : "x11"
+                "wkPause"    : True
+                "wkColorMap" : res@wkColorMap
+                "wkWidth"    : imageWidth
+                "wkHeight"   : imageHeight
+            end create
+        else
+            window = create name + "_x11" windowWorkstationClass defaultapp
+                "wkFormat" : "x11"
+                "wkPause"  : True
+                "wkWidth"  : imageWidth
+                "wkHeight" : imageHeight
+            end create
+        end if
     else
-      window = create name + "_x11" windowWorkstationClass defaultapp
-        "wkFormat": "x11"
-        "wkPause" : True
-      end create
-    end if
+        if(isatt(res,"wkColorMap"))
+            window = create name + "_x11" windowWorkstationClass defaultapp
+                "wkFormat": "x11"
+                "wkPause" : True
+                "wkColorMap" : res@wkColorMap
+            end create
+        else
+            window = create name + "_x11" windowWorkstationClass defaultapp
+                "wkFormat": "x11"
+                "wkPause" : True
+            end create
+        end if
+    end if 
+
     return(window)
 end
 
@@ -3703,15 +3726,24 @@ begin
         end getvalues
     else
         ; image-based formats
-        imageWidth = get_res_value(wkresnew,"wkWidth",1000)
-        imageHeight = get_res_value(wkresnew,"wkHeight",800)
 
-        cairo = create res_file imageWorkstationClass defaultapp
-          "wkFileName"        : name
-          "wkFormat"          : type
-          "wkWidth"           : imageWidth
-          "wkHeight"          : imageHeight
-        end create
+	; apply width/height resources if present; must be applied at creation time.
+        imageWidth = get_res_value(wkresnew,"wkWidth",-1)
+        imageHeight = get_res_value(wkresnew,"wkHeight",-1)
+	if (imageWidth.gt.0 .and. imageHeight.gt.0) then
+            cairo = create res_file imageWorkstationClass defaultapp
+              "wkFileName"        : name
+              "wkFormat"          : type
+              "wkWidth"           : imageWidth
+              "wkHeight"          : imageHeight
+            end create
+	else
+            cairo = create res_file imageWorkstationClass defaultapp
+              "wkFileName"        : name
+              "wkFormat"          : type
+            end create
+        end if
+
     end if
 
 ;
@@ -3820,11 +3852,7 @@ begin
     wks = new(1,graphic,"No_FillValue")
 
     if (type2.eq."x11") then
-      x_file = res_file
-      if (isatt(type2,"wkColorMap"))
-        x_file@wkColorMap = type2@wkColorMap
-      end if
-      wks = gsn_open_x11(x_file)
+      wks = gsn_open_x11(res_file, type2)
       valid_type = True
     end if
 
