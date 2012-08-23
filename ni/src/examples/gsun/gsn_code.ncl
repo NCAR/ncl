@@ -7187,7 +7187,7 @@ begin
 ; Here's the list of "regular" plot types:
 ;
   plot_types = (/"contourPlotClass","xyPlotClass","vectorPlotClass",\
-                 "streamlinePlotClass","mapPlotClass"/)
+                 "streamlinePlotClass","mapPlotClass","logLinPlotClass"/)
 
 ;
 ; First check the base plot for "regular plotness".
