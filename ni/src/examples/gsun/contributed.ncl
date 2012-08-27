@@ -5750,7 +5750,9 @@ begin
 	   print("SqrtCosWeight accepts an array with 5 dimensions or less, array has "+numdims+" dimensions, exiting")
 	   exit
 	end if
-        x@long_name = x@long_name + " (sqrt cosine weighted)"
+	if (isatt(x,"long_name")) then
+           x@long_name = x@long_name + " (sqrt cosine weighted)"
+        end if
 return(x)
 end
 ;; -------------------------------------------------------
@@ -5810,7 +5812,9 @@ begin
 	   print("NewCosWeight accepts an array with 5 dimensions or less, array has "+numdims+" dimensions, exiting")
 	   exit
 	end if
-        x@long_name = x@long_name + " (cosine weighted)"
+        if (isatt(x,"long_name")) then
+           x@long_name = x@long_name + " (cosine weighted)"
+        end if
 return(x)
 end
 ;*************************************************************************
