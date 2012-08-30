@@ -3006,8 +3006,10 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 #endif
 		else
 		{
-        		fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        		fprintf(stderr, "\tDONOT know anything about <%s>.\n", ext_list[n]);
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+					"NCL does not know anything about file suffix <%s>. \n%s\n",
+				 	NrmQuarkToString(cur_ext_q),
+					"But NCL will try its best to figure out the file format."));
 		}
 	}
 
