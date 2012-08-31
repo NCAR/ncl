@@ -7,7 +7,8 @@ extern void NGCALLF(dpth2pres,DPTH2PRES)(int *, double *, int *, double *, doubl
 
 extern void NGCALLF(mixed_layer_depth,MIXED_LAYER_DEPTH)(double *, int *, double *, double *, double *, int *, int *, int *, double *, double *);
 
-extern void NGCALLF(wgt_area_smooth,WGT_AREA_SMOOTH)(double *, double *, double *, int *, int *, int *, double *);
+extern void NGCALLF(wgt_area_smooth,WGT_AREA_SMOOTH)(double *, double *, double *, int *, int *, int *, double *, int *);
+
 NhlErrorTypes depth_to_pres_W( void )
 {
 
@@ -588,7 +589,21 @@ NhlErrorTypes wgt_area_smooth_W (void)
 	ng_size_t dsizes_area[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type_area;
 	int has_missing_area;
-	NclScalar missing_area, missing_flt_area, missing_dbl_area;
+	NclScalar missing_area;
+
+/*
+ * Argument # 2
+ */
+
+  logical *opt;
+  int cyclic = 1;
+
+/*
+ * Variables for retrieving attributes from "opt".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
 
 
 /*
@@ -598,13 +613,11 @@ NhlErrorTypes wgt_area_smooth_W (void)
 	double *tmp_smooth;
 	NclBasicDataTypes type_smooth;
 	NclScalar missing_smooth;
-	ng_size_t missing_count;
 
 /*
  * Various
  */
 	ng_size_t i, size_other,total_size,area_size;
-	ng_size_t ipres;
 	int dims[3];
 	int ret;
 
@@ -620,7 +633,7 @@ NhlErrorTypes wgt_area_smooth_W (void)
  */
 	field = (void*)NclGetArgValue(
 		0,
-		2,
+		3,
 		&ndims_field,
 		dsizes_field,
 		&missing_field,
@@ -634,13 +647,78 @@ NhlErrorTypes wgt_area_smooth_W (void)
  */
 	area = (void*)NclGetArgValue(
 		1,
-		2,
+		3,
 		&ndims_area,
 		dsizes_area,
 		&missing_area,
 		&has_missing_area,
 		&type_area,
 		DONT_CARE);
+
+/*
+ * Get argument # 2
+ */
+	opt = (logical*)NclGetArgValue(
+		2,
+		3,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		DONT_CARE);
+
+/* 
+ * If "opt" is True, then check if any attributes have been set.
+ */
+	if(*opt) {
+		stack_entry = _NclGetArg(5, 6, DONT_CARE);
+		switch (stack_entry.kind) {
+		case NclStk_VAR:
+			if (stack_entry.u.data_var->var.att_id != -1) {
+				attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+				if (attr_obj == NULL) {
+					break;
+				}
+			}
+			else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+				break;
+			}
+/* 
+ * Get optional arguments.
+ */
+			if (attr_obj->att.n_atts > 0) {
+/*
+ * Get list of attributes.
+ */
+				attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them. The current ones recognized are:
+ *   "cyclic"
+ */
+				while (attr_list != NULL) {
+/*
+ * Check for "cyclic".
+ */
+					if (!strcmp(attr_list->attname, "cyclic")) {
+						if(attr_list->attvalue->multidval.data_type == NCL_logical) {
+							cyclic = *(logical*) attr_list->attvalue->multidval.val == False ? 0 : 1;
+						}
+						else {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,
+						  "wgt_area_smooth: The 'cyclic' attribute must be a logical. Defaulting to True.");
+						}
+					}
+					attr_list = attr_list->next;
+				}
+			}
+		default:
+			break;
+		}
+	}
 
 /*
  * Check dimension sizes.
@@ -654,7 +732,7 @@ NhlErrorTypes wgt_area_smooth_W (void)
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_area_smooth: the last two dimensions of field must be the same size as area");
 		return(NhlFATAL);
 	}
-/*
+/* 
  * compute total elements in remaining dimensions of field
  */
 	size_other = 1;
@@ -713,7 +791,7 @@ NhlErrorTypes wgt_area_smooth_W (void)
 	}
 
 	NGCALLF(wgt_area_smooth,WGT_AREA_SMOOTH)(tmp_field,tmp_area,tmp_smooth,
-						 &(dims[0]),&(dims[1]),&(dims[2]),&(missing_dbl_field.doubleval));
+						 &(dims[0]),&(dims[1]),&(dims[2]),&(missing_dbl_field.doubleval),&cyclic);
 	if (type_smooth == NCL_float) {
 		smooth_ret = (void *) coerce_output_float(tmp_smooth,NULL,total_size,0);
 	}
@@ -789,7 +867,6 @@ NhlErrorTypes mixed_layer_depth_W( void )
   int ndims_mld; 
   ng_size_t *dsizes_mld;
   ng_size_t index_mld;
-  int has_missing_mld;
   NclScalar missing_mld, missing_flt_mld, missing_dbl_mld;
   NclBasicDataTypes type_mld;
 
