@@ -1,20 +1,36 @@
 C NCLFORTSTART
       subroutine wgt_area_smooth (field,area,field_ret,
-     &                              nx,ny,no,fill_value)
+     &                              nx,ny,no,fill_value,icyclic)
       double precision field(nx,ny,no), area(nx,ny)
       double precision field_ret(nx,ny,no), fill_value
+      integer icyclic
 C NCLEND
 C
 C      write(*,*) nx,ny,no,fill_value
-C
+C     
       do i = 1,nx
          do n = 1, no
             field_ret(i,1,n) = fill_value
             field_ret(i,ny,n) = fill_value
          end do
       end do   
+C
+      if (icyclic .eq. 1) then
+         ibeg = 1
+         iend = nx
+      else
+         ibeg = 2
+         iend = nx - 1
+         do j = 2, ny - 1
+            do n = 1, no
+               field_ret(1,j,n) = fill_value
+               field_ret(nx,j,n) = fill_value
+            end do
+         end do
+      end if
+C
       do j = 2, ny-1
-          do i = 1, nx
+          do i = ibeg, iend
               im1 = i-1
               ip1 = i+1
               if ( i .eq. 1    ) then  
