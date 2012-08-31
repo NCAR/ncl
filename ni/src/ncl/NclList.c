@@ -209,6 +209,9 @@ NhlArgVal udata;
 		step = list->list.first->next;
 		list->list.nelem--;
 		list->list.first = list->list.first->next;
+		if (tmp == list->list.last) {
+			list->list.last = list->list.last->prev;
+		}
 		NclFree(tmp);
 		if(list->list.first != NULL) {
 			list->list.first->prev = NULL;
@@ -229,6 +232,9 @@ NhlArgVal udata;
 				step->next->next->prev = step;
 			} 
 			step->next = step->next->next;
+			if (tmp == list->list.last) {
+				list->list.last = list->list.last->prev;
+			}
 			NhlFree(tmp);
 		} else {
 			step = step->next;
@@ -239,6 +245,27 @@ NhlArgVal udata;
 	
 
 	
+}
+
+static void ListAttDestroyNotify
+#if     NhlNeedProto
+(NhlArgVal cbdata, NhlArgVal udata)
+#else
+(cbdata, udata)
+NhlArgVal cbdata;
+NhlArgVal udata;
+#endif
+{
+	NclVar listatt;
+
+	listatt = (NclVar)_NclGetObj(udata.intval);
+	if(listatt == NULL) {
+		return;
+	}
+	listatt->var.thevalue_id = -1;
+	_NclDestroyObj((NclObj)listatt);
+
+	return;
 }
 
 NhlErrorTypes ListPush
@@ -256,16 +283,40 @@ NclObj theobj;
 	NclObj tmp_obj;
 	if((thelist!=NULL)&&(theobj != NULL)) {
 		tmp->orig_type = theobj->obj.obj_type_mask;
-		if(!(theobj->obj.obj_type_mask & Ncl_Var)) {
-			if(theobj->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
-				tmp_obj= (NclObj)_NclFileVarCreate(NULL,NULL,Ncl_FileVar,0,NULL,(NclMultiDValData)theobj,NULL,-1,NULL,NORMAL,NULL,PERMANENT);
-			} else if(theobj->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
-				tmp_obj= (NclObj)_NclHLUVarCreate(NULL,NULL,Ncl_HLUVar,0,NULL,(NclMultiDValData)theobj,NULL,-1,NULL,NORMAL,NULL,PERMANENT);
-			} else {
-				tmp_obj= (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,(NclMultiDValData)theobj, NULL,-1,NULL,NORMAL,NULL,PERMANENT);
-			}
-		} else {
+		if(theobj->obj.obj_type_mask & Ncl_Var)
+		{
 			tmp_obj = theobj;
+		}
+		else if(theobj->obj.obj_type_mask & Ncl_MultiDValnclfileData)
+		{
+			tmp_obj= (NclObj)_NclFileVarCreate(NULL,NULL,Ncl_FileVar,0,NULL,
+							   (NclMultiDValData)theobj,NULL,-1,NULL,NORMAL,NULL,PERMANENT);
+		}
+		else if (theobj->obj.obj_type_mask & Ncl_MultiDValHLUObjData)
+		{
+			tmp_obj= (NclObj)_NclHLUVarCreate(NULL,NULL,Ncl_HLUVar,0,NULL,
+							  (NclMultiDValData)theobj,NULL,-1,NULL,NORMAL,NULL,PERMANENT);
+		}
+		else
+		{
+			NclObj tmp_parent_obj;
+			NclRefList *p;
+			if (theobj->obj.parents) {  
+				for (p = theobj->obj.parents; p; p = p->next) {
+					tmp_parent_obj = _NclGetObj(p->pid);
+					if (tmp_parent_obj->obj.obj_type_mask & Ncl_Att) {
+						tmp_obj= (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,(NclMultiDValData)theobj, 
+									       NULL,-1,NULL,ATTVALLINK,NULL,PERMANENT);
+						((NclVar)tmp_obj)->var.att_cb = _NclAddCallback((NclObj)theobj,(NclObj)tmp_obj,
+												ListAttDestroyNotify,DESTROYED,NULL);
+						break;
+					}
+				}
+			}
+			else {
+				tmp_obj= (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,
+							       (NclMultiDValData)theobj, NULL,-1,NULL,NORMAL,NULL,PERMANENT);
+			}
 		}
 		/*
 		 * These lines cause problems when individual files from a list are accessed:
@@ -376,6 +427,7 @@ NclObj list;
 	}
 }
 
+
 NhlErrorTypes Append2List(NclObj list,NclObj theobj)
 {
 	NclList thelist = (NclList)list;
@@ -385,24 +437,40 @@ NhlErrorTypes Append2List(NclObj list,NclObj theobj)
 	if((thelist!=NULL)&&(theobj != NULL))
 	{
 		tmp->orig_type = theobj->obj.obj_type_mask;
-		if(!(theobj->obj.obj_type_mask & Ncl_Var))
+		if(theobj->obj.obj_type_mask & Ncl_Var)
 		{
-			if(theobj->obj.obj_type_mask & Ncl_MultiDValnclfileData)
-			{
-				tmp_obj= (NclObj)_NclFileVarCreate(NULL,NULL,Ncl_FileVar,0,NULL,(NclMultiDValData)theobj,NULL,-1,NULL,NORMAL,NULL,PERMANENT);
-			}
-			else if(theobj->obj.obj_type_mask & Ncl_MultiDValHLUObjData)
-			{
-				tmp_obj= (NclObj)_NclHLUVarCreate(NULL,NULL,Ncl_HLUVar,0,NULL,(NclMultiDValData)theobj,NULL,-1,NULL,NORMAL,NULL,PERMANENT);
-			}
-			else
-			{
-				tmp_obj= (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,(NclMultiDValData)theobj, NULL,-1,NULL,NORMAL,NULL,PERMANENT);
-			}
+			tmp_obj = theobj;
+		}
+		else if(theobj->obj.obj_type_mask & Ncl_MultiDValnclfileData)
+		{
+			tmp_obj= (NclObj)_NclFileVarCreate(NULL,NULL,Ncl_FileVar,0,NULL,
+							   (NclMultiDValData)theobj,NULL,-1,NULL,NORMAL,NULL,PERMANENT);
+		}
+		else if (theobj->obj.obj_type_mask & Ncl_MultiDValHLUObjData)
+		{
+			tmp_obj= (NclObj)_NclHLUVarCreate(NULL,NULL,Ncl_HLUVar,0,NULL,
+							  (NclMultiDValData)theobj,NULL,-1,NULL,NORMAL,NULL,PERMANENT);
 		}
 		else
 		{
-			tmp_obj = theobj;
+			NclObj tmp_parent_obj;
+			NclRefList *p;
+			if (theobj->obj.parents) {  
+				for (p = theobj->obj.parents; p; p = p->next) {
+					tmp_parent_obj = _NclGetObj(p->pid);
+					if (tmp_parent_obj->obj.obj_type_mask & Ncl_Att) {
+						tmp_obj= (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,(NclMultiDValData)theobj, 
+									       NULL,-1,NULL,ATTVALLINK,NULL,PERMANENT);
+						((NclVar)tmp_obj)->var.att_cb = _NclAddCallback((NclObj)theobj,(NclObj)tmp_obj,
+												ListAttDestroyNotify,DESTROYED,NULL);
+						break;
+					}
+				}
+			}
+			else {
+				tmp_obj= (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,
+							       (NclMultiDValData)theobj, NULL,-1,NULL,NORMAL,NULL,PERMANENT);
+			}
 		}
 			
 		ret = _NclAddParent(tmp_obj,list);

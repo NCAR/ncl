@@ -2356,6 +2356,9 @@ NhlErrorTypes _NclIDelete
 						}
 					}
 				}
+				else if (tmp->obj.obj_type == Ncl_MultiDValData) {
+					_NclDestroyObj((NclObj)tmp);
+				}
 			}
 		}
 		_NclDestroyObj((NclObj)data.u.data_obj);
@@ -2422,10 +2425,10 @@ NhlErrorTypes _NclIDelete
 					break;
 				default:
 					rlist = data.u.data_obj->obj.parents;
-					while(rlist != NULL) {
+					while(rlist != NULL && _NclGetObj(id) != NULL) {
 						pobj = _NclGetObj(rlist->pid);
-						_NclDelParent((NclObj)data.u.data_obj,(NclObj)pobj);
 						rlist = rlist->next;
+						_NclDelParent((NclObj)data.u.data_obj,(NclObj)pobj);
 					}
 					break;
 				}

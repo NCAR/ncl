@@ -136,29 +136,39 @@ NhlErrorTypes ListAppend(NclObj list,NclObj theobj)
 
     tmp->orig_type = theobj->obj.obj_type_mask;
 
-    if(!(theobj->obj.obj_type_mask & Ncl_Var))
+    if(theobj->obj.obj_type_mask & Ncl_Var)
     {
-        if(theobj->obj.obj_type_mask & Ncl_MultiDValnclfileData)
-        {
-            tmp_obj = (NclObj)_NclFileVarCreate(NULL,NULL,Ncl_FileVar,0,NULL,
-                      (NclMultiDValData)theobj,NULL,-1,NULL,NORMAL,NULL,PERMANENT);
-        }
-        else if(theobj->obj.obj_type_mask & Ncl_MultiDValHLUObjData)
-        {
-            tmp_obj = (NclObj)_NclHLUVarCreate(NULL,NULL,Ncl_HLUVar,0,NULL,
-                      (NclMultiDValData)theobj,NULL,-1,NULL,NORMAL,NULL,PERMANENT);
-        }
-        else
-        {
-            tmp_obj = (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,
-                      (NclMultiDValData)theobj, NULL,-1,NULL,NORMAL,NULL,PERMANENT);
-        }
+	    tmp_obj = theobj;
+    }
+    else if(theobj->obj.obj_type_mask & Ncl_MultiDValnclfileData)
+    {
+	    tmp_obj= (NclObj)_NclFileVarCreate(NULL,NULL,Ncl_FileVar,0,NULL,
+					       (NclMultiDValData)theobj,NULL,-1,NULL,NORMAL,NULL,PERMANENT);
+    }
+    else if (theobj->obj.obj_type_mask & Ncl_MultiDValHLUObjData)
+    {
+	    tmp_obj= (NclObj)_NclHLUVarCreate(NULL,NULL,Ncl_HLUVar,0,NULL,
+					      (NclMultiDValData)theobj,NULL,-1,NULL,NORMAL,NULL,PERMANENT);
     }
     else
     {
-        tmp_obj = theobj;
+	    NclObj tmp_parent_obj;
+	    NclRefList *p;
+	    if (theobj->obj.parents) {  
+		    for (p = theobj->obj.parents; p; p = p->next) {
+			    tmp_parent_obj = _NclGetObj(p->pid);
+			    if (tmp_parent_obj->obj.obj_type_mask & Ncl_Att) {
+				    tmp_obj= (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,(NclMultiDValData)theobj, 
+								   NULL,-1,NULL,ATTVALLINK,NULL,PERMANENT);
+				    break;
+			    }
+		    }
+	    }
+	    else {
+		    tmp_obj= (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,
+						   (NclMultiDValData)theobj, NULL,-1,NULL,NORMAL,NULL,PERMANENT);
+	    }
     }
-        
     ret = _NclAddParent(tmp_obj,list);
     tmp->cb = _NclAddCallback(tmp_obj, list, ListItemDestroyNotify,DESTROYED,NULL);
 
