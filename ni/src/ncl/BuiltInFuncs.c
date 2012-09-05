@@ -19559,10 +19559,32 @@ NhlErrorTypes _NclIPush(void)
 	thelist = _NclGetObj(*list_id);
 
 	return(_NclListPush(thelist,theobj));
-
-
-	
 }
+
+NhlErrorTypes _NclIAppend(void)
+{
+        obj *list_id;
+        NclObj thelist = NULL;
+        NclObj theobj = NULL;
+        NclStackEntry data;
+
+        list_id = (obj*)NclGetArgValue(
+           0,
+           2,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+        data= _NclGetArg(1,2,DONT_CARE);
+        theobj = (NclObj)data.u.data_obj;
+
+        thelist = _NclGetObj(*list_id);
+
+        return(_NclListAppend(thelist,theobj));
+}
+	
 NhlErrorTypes _NclIPop(void)
 {
 	obj *list_id;

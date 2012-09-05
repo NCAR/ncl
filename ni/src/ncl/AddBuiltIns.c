@@ -1001,6 +1001,7 @@ extern NhlErrorTypes _NclIPush(
 void
 #endif
 );
+extern NhlErrorTypes _NclIAppend(void);
 extern NhlErrorTypes _NclINewList(
 #if     NhlNeedProto
 void
@@ -2472,6 +2473,12 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"list",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
     NclRegisterProc(_NclIPush,args,"ListPush",nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"list",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+    NclRegisterProc(_NclIAppend,args,"ListAppend",nargs);
 
     nargs = 0;
     args = NewArgs(1);
