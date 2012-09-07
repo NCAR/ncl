@@ -1064,6 +1064,12 @@ void
 #endif
 );
 
+NhlErrorTypes _NclCreateGraphic(
+#if NhlNeedProto
+void
+#endif
+);
+
 void _NclAddBuiltIns
 #if     NhlNeedProto
 (void)
@@ -2236,6 +2242,15 @@ void _NclAddBuiltIns
         dimsizes[0] = 1;
 	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
 	NclRegisterFunc(_NclINhlGetClassResources,args,"NhlGetClassResources",nargs);
+
+	nargs = 0;
+	args = NewArgs(4);
+	SetArgTemplate(args,0,"string",0,NclANY);nargs++;
+        dimsizes[0] = 1;
+	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
+	SetArgTemplate(args,2,NclANY,1,dimsizes);nargs++;
+	SetArgTemplate(args,3,"logical",1,dimsizes);nargs++;
+	NclRegisterFunc(_NclCreateGraphic,args,"create_graphic",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
