@@ -4687,7 +4687,7 @@ NhlErrorTypes _NclCreateGraphic( void )
 	int i;
 	NclHLUObj tmp_ho = NULL;
 	int *ncl_hlu_ids;
-	NclMultiDValData tmp2_md;
+	NclMultiDValData tmp_md,tmp2_md;
 	ng_size_t dim_size;
 	int appd_id;
 	int rl_list;
@@ -4808,6 +4808,10 @@ NhlErrorTypes _NclCreateGraphic( void )
 	gen_array = NULL;
 	switch(data.kind) {
 	case NclStk_VAR:
+		tmp_md = (NclMultiDValData)_NclGetObj(data.u.data_var->var.thevalue_id);
+		if (! tmp_md || *((logical *)tmp_md->multidval.val) == False) {
+			break;
+		}
 		if(data.u.data_var->var.att_id != -1) {
 			tmp_attobj =  (NclAtt)_NclGetObj(data.u.data_var->var.att_id);
 			if(tmp_attobj == NULL || tmp_attobj->att.n_atts == 0) {
