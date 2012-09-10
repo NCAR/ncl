@@ -413,11 +413,11 @@ begin
      ed_x = tointeger(xy(xp(0)-1,0)) + 1
      ed_y = tointeger(xy(xp(0)-1,1)) + 1
      if (opts) then
-       var2d@Orientation = "Cross-Sesion: (" + \
+       var2d@Orientation = "Cross-Section: (" + \
                             st_x + "," + st_y + ") to (" + \
                             ed_x + "," + ed_y + ")"
      else
-       var2d@Orientation = "Cross-Sesion: (" + \
+       var2d@Orientation = "Cross-Section: (" + \
                             st_x + "," + st_y + ") to (" + \
                             ed_x + "," + ed_y + ") ; center=(" + \
                             loc_param(0) + "," + loc_param(1) + \
