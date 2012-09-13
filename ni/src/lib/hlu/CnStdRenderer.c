@@ -399,8 +399,14 @@ static void SetRegionAttrs
 	else
 		c_cpseti("CLU",1);
 
-	if (cpix == -1)
+	/* Only set the grid bound identifier (99) if the GridBoundFill resources are set to allow the grid bound area to be visible;
+	   this is because the grid boundary needs to be calculated with more precision, potentially impacting performance */
+	if (cpix == -1 && reg_attrs->fill_color > NhlTRANSPARENT && reg_attrs->fill_pat > NhlHOLLOWFILL) {
 		c_cpseti("AIA",99);
+		c_cpsetr("PIT",0.001); /* forced to the minimum recommended value, regardless of max_point_distance */
+	}
+	else if (cpix == -1)
+                c_cpseti("AIA",0);
 	else if (cpix == -2)
 		c_cpseti("AIA",98);
 	else if (cpix == -3)
