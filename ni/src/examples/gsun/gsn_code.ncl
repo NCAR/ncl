@@ -3663,95 +3663,58 @@ end
 ;***********************************************************************;
 undef("gsn_open_cairo")
 function gsn_open_cairo(type:string, name[1]:string)
-local cairo, res_file, wkres, wkresnew, names, i
+local cairo, res_file, wkres, tmpres, names, i
 begin
 ;
 ; If there are resources, copy them over to a logical variable,
 ; and only grab the ones that start with "wk".
 ;
     if(.not.any(ismissing(getvaratts(type))))
-      wkres = True
+      tmpres = True
       names = getvaratts(type)
       do i=0,dimsizes(names)-1
         if(names(i).ne."_FillValue") then
-          wkres@$names(i)$ = type@$names(i)$    
+          tmpres@$names(i)$ = type@$names(i)$    
         end if
       end do
 ;
 ; Grab only the ones that start with "wk".
 ;
-      wkresnew = get_res_eq(wkres,"wk")
-      delete(wkres)
+      wkres = get_res_eq(tmpres,"wk")
+      delete(tmpres)
       delete(names)
-    else
-      wkresnew = False
     end if
 
+    wkres = True  ; force True, even if no resources present; get_res_eq() can return False.
+
     res_file = get_res_value_keep(name,"res_file","gsnapp")
+
+;
+; Add these resources if not already present.
+;
+    if (.not.isatt(wkres, "wkFileName")) then
+        wkres@wkFileName = name
+    end if
+    if (.not.isatt(wkres, "wkFormat")) then
+        wkres@wkFormat = type
+        if (is_cairo_ps(type)) then
+	    wkres@wkFormat = "ps"     ; user may specify  "ps" or "newps"
+	end if
+	if (is_cairo_pdf(type)) then  
+	    wkres@wkFormat = "pdf"  ; user may specify "pdf" or "newpdf"
+	end if
+    end if
 
 ;
 ; We need to distinguish between PS/PDF versus image-based output formats
 ;
     if (is_cairo_ps(type).or.is_cairo_pdf(type)) then
-        resltn   = get_res_value(wkresnew,"wkPDFResolution",1800)
-        paperSize   = get_res_value(wkresnew,"wkPaperSize","")
-        paperW = get_res_value(wkresnew,"wkPaperWidthF", -1.)
-        paperH = get_res_value(wkresnew,"wkPaperHeightF", -1.)
-        if(is_cairo_ps(type)) then
-          newtype = "ps"    ; may be either "ps" or "newps"
-        else
-          newtype = "pdf"   ; may be either "pdf" or "newpdf"
-        end if
-
-        cairo = create res_file documentWorkstationClass defaultapp
-          "wkFileName"        : name
-          "wkFormat"          : newtype
-          "wkPDFResolution"   : resltn
-          "wkPaperSize"       : paperSize
-          "wkPaperWidthF"      : paperW
-          "wkPaperHeightF"     : paperH
-        end create
-
-       ; Retrieve the device coordinates and the orientation so we can
-       ; reset them later if necessary.
-
-        getvalues cairo
-          "wkOrientation"  : cairo@wkOrientation
-          "wkDeviceLowerX" : cairo@wkDeviceLowerX
-          "wkDeviceLowerY" : cairo@wkDeviceLowerY
-          "wkDeviceUpperX" : cairo@wkDeviceUpperX
-          "wkDeviceUpperY" : cairo@wkDeviceUpperY
-          "wkPaperWidthF"  : cairo@wkPaperWidthF
-          "wkPaperHeightF" : cairo@wkPaperHeightF
-        end getvalues
+        cairo = create_graphic(res_file, "documentWorkstationClass", "defaultapp", wkres)
     else
-        ; image-based formats
-
-	; apply width/height resources if present; must be applied at creation time.
-        imageWidth = get_res_value(wkresnew,"wkWidth",-1)
-        imageHeight = get_res_value(wkresnew,"wkHeight",-1)
-	if (imageWidth.gt.0 .and. imageHeight.gt.0) then
-            cairo = create res_file imageWorkstationClass defaultapp
-              "wkFileName"        : name
-              "wkFormat"          : type
-              "wkWidth"           : imageWidth
-              "wkHeight"          : imageHeight
-            end create
-	else
-            cairo = create res_file imageWorkstationClass defaultapp
-              "wkFileName"        : name
-              "wkFormat"          : type
-            end create
-        end if
-
+	cairo = create_graphic(res_file, "imageWorkstationClass", "defaultapp", wkres)
     end if
 
-;
-; Set resources, if any.
-;
-    attsetvalues_check(cairo,wkresnew)
-    delete(wkresnew)
-
+    delete(wkres)
     return(cairo)
 end
 
