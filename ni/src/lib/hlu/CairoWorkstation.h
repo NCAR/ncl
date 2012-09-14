@@ -57,7 +57,8 @@ typedef enum _NhlCairoFormat {
     NhlCPNG = 1,
     NhlCPDF = 2,
     NhlCTIFF = 3,
-    NhlCX11 = 4
+    NhlCX11 = 4,
+    NhlCEPS = 5        
 } NhlCairoFormat;
 
 extern NhlClass NhlcairoDocumentWorkstationClass;

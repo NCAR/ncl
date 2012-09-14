@@ -135,6 +135,7 @@
 #define CPDF                42  /* cairo PDF         */
 #define CTIFF               43  /* cairo (geo)TIFF   */
 #define CX11                44  /* cairo x11 surface */
+#define CEPS                45  /* cairo EPS */
 
 typedef enum {MONO, COLOR} cro_color;
 

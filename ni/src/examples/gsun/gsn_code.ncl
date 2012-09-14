@@ -3485,6 +3485,36 @@ begin
 end
 
 ;***********************************************************************;
+; Function to determine if a cairo EPS is being requested.              ;
+;***********************************************************************;
+undef("is_cairo_eps")
+function is_cairo_eps(wtype)
+local lwtype, cpsenv
+begin
+  lwtype = lower_case(wtype)
+  cpsenv = getenv("NCARG_OLD_EPS")
+  if (lwtype.eq."eps".and.ismissing(cpsenv)) then
+    return(True)
+  else
+    return(False)
+  end if
+end
+
+;***********************************************************************;
+; Function to determine if a cairo workstation is being requested.      ;
+;***********************************************************************;
+undef("is_cairo_wks")
+function is_cairo_wks(wtype)
+begin
+  if (is_cairo_ps(wtype).or.is_cairo_pdf(wtype).or.is_cairo_png(wtype).or. \
+       is_cairo_eps(wtype)) then
+    return(True)
+  else
+    return(False)
+  end if
+end
+
+;***********************************************************************;
 ; Function : gsn_open_ps                                                ;
 ;               name : name of PostScript file                          ;
 ;                                                                       ;
@@ -3698,17 +3728,17 @@ begin
     if (.not.isatt(wkres, "wkFormat")) then
         wkres@wkFormat = type
         if (is_cairo_ps(type)) then
-	    wkres@wkFormat = "ps"     ; user may specify  "ps" or "newps"
+	    wkres@wkFormat = "ps"     ; user can specify "ps" or "newps"
 	end if
 	if (is_cairo_pdf(type)) then  
-	    wkres@wkFormat = "pdf"  ; user may specify "pdf" or "newpdf"
+	    wkres@wkFormat = "pdf"    ; user can specify "pdf" or "newpdf"
 	end if
     end if
 
 ;
 ; We need to distinguish between PS/PDF versus image-based output formats
 ;
-    if (is_cairo_ps(type).or.is_cairo_pdf(type)) then
+    if (is_cairo_ps(type).or.is_cairo_pdf(type).or.is_cairo_eps(type)) then
         cairo = create_graphic(res_file, "documentWorkstationClass", "defaultapp", wkres)
     else
 	cairo = create_graphic(res_file, "imageWorkstationClass", "defaultapp", wkres)
@@ -3819,13 +3849,18 @@ begin
       valid_type = True
     end if
 
-    if (type2.eq."oldps".or.type2.eq."eps".or. \
-        type2.eq."epsi".or.(type2.eq."ps".and..not.ismissing(getenv("NCARG_OLD_PS")))) then
+    if (type2.eq."oldps".or.type2.eq."oldeps".or. \
+        type2.eq."epsi".or.(type2.eq."ps".and..not.ismissing(getenv("NCARG_OLD_PS"))).or. \
+        (type2.eq."eps".and..not.ismissing(getenv("NCARG_OLD_EPS")))) then
       realtype = type2   ; copy value and attributes
       suffix = type2
       if (realtype.eq."oldps") then
         realtype = "ps"
         suffix = "ps"
+      end if
+      if (realtype.eq."oldeps") then
+        realtype = "eps"
+        suffix = "eps"
       end if
       ps_file = get_res_value(realtype,"wkPSFileName",res_file + "." + suffix)
       ps_file@res_file = res_file
@@ -3856,7 +3891,7 @@ begin
       valid_type = True
     end if
 
-    if (is_cairo_ps(type2).or.is_cairo_pdf(type2).or.is_cairo_png(type2)) then
+    if (is_cairo_wks(type2)) then
       cairo_file = get_res_value(type2,"wkFileName", res_file)
       if (is_cairo_png(type2)) then
         cairo_file = get_res_value(type2,"wkImageFileName", cairo_file)

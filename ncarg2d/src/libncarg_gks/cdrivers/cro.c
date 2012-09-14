@@ -140,7 +140,7 @@ void CROpict_init(GKSC *gksc) {
      * the code that does the Right Thing for PS/PDF does not result in a complete fill for image-based formats,
      * so we proceed differently  --RLB
      */
-    if (psa->wks_type == CPS || psa->wks_type == CPDF) {
+    if (psa->wks_type == CPS || psa->wks_type == CPDF || psa->wks_type == CEPS) {
         double xl, yt, xr, yb;
 
         /*
@@ -500,7 +500,7 @@ int cro_ClearWorkstation(GKSC *gksc) {
     cairo_stroke(cairo_context[context_index(psa->wks_id)]);
     cairo_show_page(cairo_context[context_index(psa->wks_id)]);
 
-    if (psa->wks_type == CPS || psa->wks_type == CPDF) {
+    if (psa->wks_type == CPS || psa->wks_type == CPDF || psa->wks_type == CEPS) {
         cairo_surface_flush(cairo_surface[context_index(psa->wks_id)]);
 
     }
@@ -882,13 +882,16 @@ int cro_OpenWorkstation(GKSC *gksc) {
 
     CROinit(psa, pint + 2); /* Initialize local data. */
 
-    if (psa->wks_type == CPS) {
+    if (psa->wks_type == CPS || psa->wks_type == CEPS) {
         /*
          *  Create a Postscript workstation.
          */
-        psa->output_file = getRegularOutputFilename(psa->wks_id, sptr, "NCARG_GKS_CPSOUTPUT", ".ps");
+        psa->output_file = getRegularOutputFilename(psa->wks_id, sptr, "NCARG_GKS_CPSOUTPUT", 
+                (psa->wks_type == CPS) ? ".ps" : ".eps");
         cairo_surface[context_num] = cairo_ps_surface_create(psa->output_file,
                 psa->paper_width, psa->paper_height);
+        if (psa->wks_type == CEPS)
+            cairo_ps_surface_set_eps(cairo_surface[context_num], TRUE);
         cairo_ps_surface_set_size(cairo_surface[context_num], psa->paper_width, psa->paper_height);
         cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
         add_context_index(context_num, orig_wks_id);
@@ -2458,7 +2461,7 @@ void setSurfaceTransform(CROddp *psa) {
     cairo_t* ctx = cairo_context[context_index(psa->wks_id)];
 
     /* Landscape is only supported for PS/PDF, not for image-based formats. */
-    if (psa->wks_type == CPS || psa->wks_type == CPDF) {
+    if (psa->wks_type == CPS || psa->wks_type == CPDF || psa->wks_type == CEPS) {
 	    if (psa->orientation == LANDSCAPE) {
 		    angle = PI / 2.0;
 		    tx = psa->dspace.llx;
