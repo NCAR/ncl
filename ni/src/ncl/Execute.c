@@ -2672,8 +2672,9 @@ void CallINTRINSIC_FUNC_CALL(void) {
 */
 				caller_level = _NclFinishFrame();	
 				if(((NclSymbol*)*ptr)->u.bfunc != NULL) {
+					NclSymbol *func = (NclSymbol *)(*ptr);
 					NCL_PROF_PFENTER(func->name);
-					ret = (*((NclSymbol*)*ptr)->u.bfunc->thefunc)();
+					ret = (func->u.bfunc->thefunc)();
 					NCL_PROF_PFEXIT(func->name);
 /*
 * should actually map values back
@@ -2728,8 +2729,9 @@ void CallINTRINSIC_PROC_CALL(void) {
 */
 				caller_level = _NclFinishFrame();	
 				if(((NclSymbol*)*ptr)->u.bproc != NULL) {
+					NclSymbol *proc = (NclSymbol *)(*ptr);
 					NCL_PROF_PFENTER(proc->name);
-					ret = (*((NclSymbol*)*ptr)->u.bproc->theproc)();
+					ret = (proc->u.bproc->theproc)();
 					NCL_PROF_PFEXIT(proc->name);
 					if(ret < NhlWARNING) {
 						estatus = ret;
