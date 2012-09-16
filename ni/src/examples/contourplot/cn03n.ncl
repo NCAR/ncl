@@ -160,8 +160,8 @@ T = (/\
   -52.412979/)/)
 
 level = (/1000, 850, 700, 500, 400, 300, 250, 200, 150, 100/)
-labels = (/"90:S:o:N:S", "60:S:o:N:S", "30:S:o:N:S", "EQ", \
-            "30:S:o:N:N", "60:S:o:N:N", "90:S:o:N:N"/)
+labels = (/"90~S~o~N~S", "60~S~o~N~S", "30~S~o~N~S", "EQ", \
+            "30~S~o~N~N", "60~S~o~N~N", "90~S~o~N~N"/)
 
 labellocs = (/ -90.0, -60.0, -30.0, 0.0, 30.0, 60.0, 90.0/)
 
@@ -250,7 +250,7 @@ end create
 ; object.
 ;
 cnid = create "ContourPlot1" contourPlotClass wid
-    "tiMainString"      : "Profile @ 105:S:o:N:W - Frame 1"
+    "tiMainString"      : "Profile @ 105~S~o~N~W - Frame 1"
     "cnScalarFieldData" : dataid
     "vpXF"              : 0.125
     "vpYF"              : 0.85
@@ -275,7 +275,7 @@ frame(wid)
 ; prefix 'pm' rather than 'cn'. 
 ;
 setvalues cnid
-    "tiMainString"         : "Profile @ 105:S:o:N:W - Frame 2"
+    "tiMainString"         : "Profile @ 105~S~o~N~W - Frame 2"
     "cnMonoLineColor"      : False
     "cnMonoLineDashPattern": False
     "pmLegendDisplayMode"  : "always"
@@ -289,7 +289,7 @@ frame(wid)
 ; Turn off line and high/low labels.
 ;
 setvalues cnid
-    "tiMainString"         : "Profile @ 105:S:o:N:W - Frame 3"
+    "tiMainString"         : "Profile @ 105~S~o~N~W - Frame 3"
     "cnLinesOn"            : False
     "cnFillOn"             : True
     "pmLegendDisplayMode"  : "never"
@@ -309,7 +309,7 @@ frame(wid)
 ; Note the LogLinPlot needs to be told the data boundaries. 
 ;
 setvalues cnid
-    "tiMainString":          "Profile @ 105:S:o:N:W - Frame 4"
+    "tiMainString":          "Profile @ 105~S~o~N~W - Frame 4"
 end setvalues
 
 getvalues cnid

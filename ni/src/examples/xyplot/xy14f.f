@@ -54,7 +54,7 @@ C
       real yvalues(5)
       data yvalues/2.,1.,0.,-1.,-2./
       character*9 ylabels(5)
-      data ylabels/'2:F33:s',':F33:s',':F22:MEAN','-:F33:s','-2:F33:s'/
+      data ylabels/'2~F33~s','~F33~s','~F22~MEAN','-~F33~s','-2~F33~s'/
 
       parameter(NHOURS=25)
       integer srlist

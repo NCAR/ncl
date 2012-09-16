@@ -121,7 +121,7 @@ int main()
  */
     NhlRLClear(srlist);
     NhlCreate(&pid,"TextItems",NhltextItemClass,wid,srlist);
-    for( i = 1; i <= num_colors; i++ ) {
+    for( i = 1; i <= num_colors; i+=10 ) {
         NhlRLClear(srlist);
         NhlRLSetInteger(srlist,NhlNtxBackgroundFillColor,i);
         NhlSetValues(pid,srlist);

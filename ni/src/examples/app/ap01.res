@@ -19,8 +19,8 @@
 !
 !	Description:	
 !
-
 ap01.?.wkForegroundColor:	(/1.0,1.0,0.282353/)
+ap01.?.wkBackgroundColor:	(/0.0,0.0,0.0/)
 
 *tx1.txPosXF:			.5
 *tx1.txPosYF:			.5

@@ -1,7 +1,6 @@
 
 !*********** example pr02 resource file (pr02.res) *************
-
-
+*wkColorMap : default
 
 pr02.pr02Work.pr02polyline.gsLineColor : 4
 pr02.pr02Work.pr02polyline.gsLineThicknessF : 3

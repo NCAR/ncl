@@ -150,7 +150,7 @@
 ! |  9    | stroked       | complex_script                |
 ! |-------------------------------------------------------|
 ! | 10    | stroked       | complex_italic                |
-! |-------------------------------------------------------|
+`! |-------------------------------------------------------|
 ! | 11    | stroked       | complex_cyrillic              |
 ! |-------------------------------------------------------|
 ! | 12    | stroked       | duplex_roman                  |
@@ -373,3 +373,5 @@
 !
 !       An array of label strings
 ! *lb01Work.LabelBar.lbLabelStrings            : Label_
+
+*wkColorMap : default

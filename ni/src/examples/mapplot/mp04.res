@@ -1,6 +1,8 @@
 ! 
 ! mp04 resource file
 !
+*wkColorMap : default
+
 mp04.mp04Work.Map0.vpXF : .15
 mp04.mp04Work.Map0.vpYF : .85
 mp04.mp04Work.Map0.vpWidthF : .7

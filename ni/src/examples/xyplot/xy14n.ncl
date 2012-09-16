@@ -253,7 +253,7 @@ plotid = create "xyPlot" xyPlotClass xworkid
 ; Y-axis resources.  
     "tmYLMode": "EXPLICIT"
     "tmYLValues": (/2.,1.,0.,-1.,-2./)
-    "tmYLLabels": (/"2:F33:s",":F33:s",":F22:MEAN","-:F33:s","-2:F33:s"/)
+    "tmYLLabels": (/"2~F33~s","~F33~s","~F22~MEAN","-~F33~s","-2~F33~s"/)
     "tmYLTickSpacingF": 1.
     "tmYLLabelFont": 22
     "tmYLLabelFontHeightF": 0.024

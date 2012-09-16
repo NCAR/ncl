@@ -137,7 +137,7 @@ begin
 ;------------- Main title ------------------------------------------
 
   txres@txFontHeightF = 0.04         ; Change the font height.
-  gsn_text_ndc(wks,":F21:Data sparse areas",.5,.95,txres) 
+  gsn_text_ndc(wks,"~F21~Data sparse areas",.5,.95,txres) 
 
 ;------------- Plot and clean up  -----------------------------------
   frame(wks) 

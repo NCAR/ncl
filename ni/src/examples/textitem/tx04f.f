@@ -200,56 +200,56 @@ C
       do 10 i=0,11
          if (i .eq. 0) then
             call NhlFRLClear(rlist)
-            call NhlFRLSetstring(rlist,'txString',':L:A',ierr)
+            call NhlFRLSetstring(rlist,'txString','~L~A',ierr)
             call NhlFSetValues(text_item_id,rlist,ierr)
          else if (i .eq. 1) then
             call NhlFRLClear(rlist)
-            call NhlFRLSetstring(rlist,'txString',':IGL:A',ierr)
+            call NhlFRLSetstring(rlist,'txString','~IGL~A',ierr)
             call NhlFSetValues(text_item_id,rlist,ierr)
          else if (i .eq. 2) then
             call NhlFRLClear(rlist)
             call NhlFRLSetstring(rlist,'txString',
-     1           'A:S:2:N:+B:S:2:N:',ierr)
+     1           'A~S~2~N~+B~S~2~N~',ierr)
             call NhlFSetValues(text_item_id,rlist,ierr)
          else if (i .eq. 3) then
             call NhlFRLClear(rlist)
-            call NhlFRLSetstring(rlist,'txString','A:S:B',ierr)
+            call NhlFRLSetstring(rlist,'txString','A~S~B',ierr)
             call NhlFSetValues(text_item_id,rlist,ierr)
          else if (i .eq. 4) then
             call NhlFRLClear(rlist)
-            call NhlFRLSetstring(rlist,'txString','A:SPU:B',ierr)
+            call NhlFRLSetstring(rlist,'txString','A~SPU~B',ierr)
             call NhlFSetValues(text_item_id,rlist,ierr)
          else if (i .eq. 5) then
             call NhlFRLClear(rlist)
-            call NhlFRLSetstring(rlist,'txString',':GIU:+',ierr)
+            call NhlFRLSetstring(rlist,'txString','~GIU~+',ierr)
             call NhlFSetValues(text_item_id,rlist,ierr)
          else if (i .eq. 6) then
             call NhlFRLClear(rlist)
-            call NhlFRLSetstring(rlist,'txString',':1045:',ierr)
+            call NhlFRLSetstring(rlist,'txString','~1045~',ierr)
             call NhlFSetValues(text_item_id,rlist,ierr)
          else if (i .eq. 7) then
             call NhlFRLClear(rlist)
-            call NhlFRLSetstring(rlist,'txString','10:S:10:S:100',ierr)
+            call NhlFRLSetstring(rlist,'txString','10~S~10~S~100',ierr)
             call NhlFSetValues(text_item_id,rlist,ierr)
          else if (i .eq. 8) then
             call NhlFRLClear(rlist)
             call NhlFRLSetstring(rlist,'txString',
-     1           'X:B1:2:S1:3',ierr)
+     1           'X~B1~2~S1~3',ierr)
             call NhlFSetValues(text_item_id,rlist,ierr)
          else if (i .eq. 9) then
             call NhlFRLClear(rlist)
             call NhlFRLSetstring(rlist,'txString',
-     1           'X:B1:2:S:3:N:Y:S:2',ierr)
+     1           'X~B1~2~S~3~N~Y~S~2',ierr)
             call NhlFSetValues(text_item_id,rlist,ierr)
          else if (i .eq. 10) then
             call NhlFRLClear(rlist)
             call NhlFRLSetstring(rlist,'txString',
-     1           'X:S:A:B:1:NN:ABC',ierr)
+     1           'X~S~A~B~1~NN~ABC',ierr)
             call NhlFSetValues(text_item_id,rlist,ierr)
          else if (i .eq. 11) then
             call NhlFRLClear(rlist)
             call NhlFRLSetstring(rlist,'txString',
-     1           '1.3648:L1:410:S:-13',ierr)
+     1           '1.3648~L1~410~S~-13',ierr)
             call NhlFSetValues(text_item_id,rlist,ierr)
          end if
 C  
@@ -267,7 +267,7 @@ C
 C  Change function code back so result string will be drawn.
 C  
          call NhlFRLClear(rlist)
-         call NhlFRLSetstring(rlist,'txFuncCode',':',ierr)
+         call NhlFRLSetstring(rlist,'txFuncCode','~',ierr)
          call NhlFRLSetfloat(rlist,'txPosXF',.82,ierr)
          call NhlFSetValues(text_item_id,rlist,ierr)
          
@@ -288,7 +288,7 @@ C
 C  Change function code back to get result string to draw.
 C  
          call NhlFRLClear(rlist)
-         call NhlFRLSetstring(rlist,'txFuncCode',':',ierr)
+         call NhlFRLSetstring(rlist,'txFuncCode','~',ierr)
          call NhlFRLSetfloat(rlist,'txPosXF',.82,ierr)
          call NhlFSetValues(text_item_id,rlist,ierr)
          

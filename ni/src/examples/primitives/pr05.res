@@ -1,5 +1,9 @@
 ! pr05.res
 
+*wkColorMap : default
+*wkBackgroundColor : (/0.,0.,0./)
+*wkForegroundColor : (/1.,1.,1./)
+
 *mpCenterLatF : 30.
 *mpCenterLonF : 160.
 *mpCenterRotF : 60.
