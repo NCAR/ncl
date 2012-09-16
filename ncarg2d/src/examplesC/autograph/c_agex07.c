@@ -3,6 +3,7 @@
  */
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 /*
  * Include function prototypes
@@ -14,7 +15,7 @@
 #define IWTYPE 1
 #define WKID   1
 
-main()
+int main()
 {
 
 /*
