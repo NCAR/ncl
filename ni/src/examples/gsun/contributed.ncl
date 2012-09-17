@@ -11957,6 +11957,17 @@ begin
    statx(20)= nFill
    statx(21)= 100*(one - (one*(nx-nFill))/nx)
 
+        ;JBuzan BEGIN
+   statx(22) = work( nwork/20-1 )           ; lower 95%   
+   statx(23) = work( nwork/100-1 )          ; lower 99.%  
+   statx(24) = work( nwork/1000-1 )         ; lower 99.9% 
+
+   statx(25) = work((nwork*19)/20-1)        ; upper 95%
+   statx(26) = work((nwork*99)/100-1)       ; upper 99.%
+   statx(27) = work((nwork*999)/1000-1)     ; upper 99.9%
+        ;JBuzan END
+
+
    statx@long_name = "Robust Dispersion Statistics"
    if (isatt(x,"long_name")) then
        statx@long_name = statx@long_name +": "+ x@long_name
