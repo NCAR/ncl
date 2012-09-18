@@ -11921,8 +11921,12 @@ begin
    if (.not.allFill) then
        nwork    = 0l                    ; force nwork as 'long' int
        nwork    = dimsizes(work)        ; so (say) 3*nwork will work
-       statx(0) = avg(x)                ; mean
-       statx(1) = stddev(x)             ; std. deviation
+      ;statx(0) = avg(x)                ; mean
+      ;statx(1) = stddev(x)             ; std. deviation
+       moment   = dim_stat4( work ) 
+       statx(0) = moment(0)             ; mean
+       statx(1) = moment(1)             ; std. deviation
+       
        if (nwork.ge.10) then 
            qsort( work )                    ; sort into ascending order
            statx(2) = min ( work )
@@ -11966,6 +11970,11 @@ begin
    statx(26) = work((nwork*99)/100-1)       ; upper 99.%
    statx(27) = work((nwork*999)/1000-1)     ; upper 99.9%
         ;JBuzan END
+
+        ;Arne Melsom
+   statx(28)  = moment(2)                   ; skewness
+   statx(29)  = moment(3)                   ; kurtosis
+        ;Arne Melsom
 
 
    statx@long_name = "Robust Dispersion Statistics"
@@ -12019,6 +12028,8 @@ begin
        print(" [25]     Upper 5.0%="+statx(25) ) 
        print(" [26]     Upper 1.0%="+statx(26) ) 
        print(" [27]     Upper 0.0%="+statx(27) ) 
+       print(" [28]       Skewness="+statx(28) ) 
+       print(" [29]       Kurtosis="+statx(29) ) 
        print(" ")
    end if
 
