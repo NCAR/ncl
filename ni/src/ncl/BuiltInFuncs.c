@@ -90,6 +90,8 @@ extern ng_size_t *get_dimensions(void *tmp_dimensions, int n_dimensions,
 			   NclBasicDataTypes type_dimensions,
 			   const char *);
 
+NclStackEntry _NclCreateAList(const char *buffer);
+
 /* 
  * Function to get dimension indexes via integers or dimension names. 
  * Located in ../lib/nfp/wrapper.[ch].
@@ -19582,7 +19584,7 @@ NhlErrorTypes _NclIAppend(void)
 
         thelist = _NclGetObj(*list_id);
 
-        return(_NclListAppend(thelist,theobj));
+        return(Append2List(thelist,theobj));
 }
 	
 NhlErrorTypes _NclIPop(void)
@@ -19632,11 +19634,7 @@ NhlErrorTypes _NclINewList( void )
 {
 	NclStackEntry data;
 	char *tmp;
-	NclList tmp_list;
-	obj *id;
-	ng_size_t one = 1;
 	int i;
-	int list_type;
 	string *tmp_string;
 	char buffer[10];
 	
@@ -19655,6 +19653,7 @@ NhlErrorTypes _NclINewList( void )
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"NewList: unknow list type.");
 		return(NhlFATAL);
 	}
+
 	buffer[4] = '\0';
 	buffer[3] = '\0';
 	for(i = 0; i < strlen(tmp); i++) {
@@ -19663,50 +19662,11 @@ NhlErrorTypes _NclINewList( void )
 			break;
 	}
 
-	data.kind = NclStk_VAL;
-
-        if(0 == strcmp("join",buffer))
-	{
-		list_type = (int) (NCL_JOIN | NCL_FIFO);
-	}
-        else if((0 == strcmp("cat",buffer)) || (0 == strcmp("concat",buffer)))
-	{
-		list_type = (int) (NCL_CONCAT | NCL_FIFO);
-	}
-        else if(0 == strcmp("fifo",buffer))
-	{
-		list_type = (int) (NCL_FIFO);
-	}
-        else if(0 == strcmp("lifo",buffer))
-	{
-		list_type = (int) (NCL_LIFO);
-	}
-        else if(0 == strcmp("vlen",buffer))
-	{
-		list_type = (int) (NCL_VLEN);
-	}
-        else if(0 == strcmp("item",buffer))
-	{
-		list_type = (int) (NCL_ITEM);
-	}
-        else if(0 == strcmp("struct",buffer))
-	{
-		list_type = (int) (NCL_STRUCT);
-	}
-        else
-	{
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"NewList: unknow list type");
-		return(NhlFATAL);
-	}
-	tmp_list =(NclList)_NclListCreate(NULL,NULL,0,0,list_type);
-	id = (obj*)NclMalloc(sizeof(obj));
-	*id = tmp_list->obj.id;
-	data.u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,id,NULL,1,&one,TEMPORARY,NULL);
-	_NclListSetType((NclObj)tmp_list,list_type);
+	data = _NclCreateAList(buffer);
 	_NclPlaceReturn(data);
 	return(NhlNOERROR);
-	
 }
+	
 NhlErrorTypes _NclIprintVarSummary( void )
 {
 	NclStackEntry data;

@@ -903,27 +903,19 @@ NclStackEntry _NclCreateAList(const char *buffer)
 	return(data);
 }
 
-NhlErrorTypes _NclBuildListArray(ng_size_t ngdims, ng_size_t *dim_sizes,
-				 NclStackEntry *result)
+NclStackEntry _NclBuildListArray(ng_size_t ngdims, ng_size_t *dim_sizes)
 {
-	NclStackEntry *data_ptr;
+	NclStackEntry result;
 	NclStackEntry data;
 	ng_size_t i;
 	int ndims = (int) ngdims;
 	ng_size_t n_items = 1;
 
 	NclList thelist;
-	obj *id;
 
-	thelist =(NclList)_NclListCreate(NULL,NULL,0,0,(NCL_CONCAT|NCL_FIFO));
-	id = (obj*)NclMalloc(sizeof(obj));
-	*id = thelist->obj.id;
-	_NclListSetType((NclObj)thelist,NCL_FIFO);
-
-	result->kind = NclStk_VAL;
-	result->u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,
-				(Ncl_List | Ncl_MultiDVallistData | Ncl_ListVar | Ncl_Typelist),id,NULL,
-				ndims,dim_sizes,TEMPORARY,NULL);
+	result = _NclCreateAList("fifo");
+ 
+	thelist = (NclList)_NclGetObj(*(int *)result.u.data_obj->multidval.val);
 
 	for(i = 0; i < ngdims; i++)
 		n_items *= dim_sizes[i];
@@ -934,10 +926,7 @@ NhlErrorTypes _NclBuildListArray(ng_size_t ngdims, ng_size_t *dim_sizes,
 		ListPush((NclObj)thelist, (NclObj)(data.u.data_obj)); 
 	}
 
-	if(result->u.data_obj != NULL) 
-		return(NhlNOERROR);
-	else 
-		return(NhlFATAL);
+	return(result);
 }
 
 NhlErrorTypes _NclBuildNewListVar(int n_items,NclStackEntry *result)
@@ -2323,7 +2312,7 @@ NclStackEntry missing_expr;
 
 		if((Ncl_Typelist == the_obj_type) && (NCL_list == the_type))
 		{
-			_NclBuildListArray(ndims, dim_sizes, &data);
+			data = _NclBuildListArray(ndims, dim_sizes);
 			return(_NclPush(data));
 		}
 		/*Wei, 11/9/2011.
