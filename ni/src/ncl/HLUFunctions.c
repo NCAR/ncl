@@ -4770,13 +4770,13 @@ NhlErrorTypes _NclCreateGraphic( void )
 			if (*(NrmQuark*)ncl_parent_id == valid_qnames[i]) {
 				if((defaultapp_hluobj_id != -1)&&(class != NhlappClass)) {
 					parent = (NclHLUObj)_NclGetObj(defaultapp_hluobj_id);
-					if((parent != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)) {
+					if((parent != NULL)&&(parent->obj.obj_type_mask & Ncl_HLUObj)) {
 						*ncl_parent_id = parent->obj.id;
 						hlu_parent_id = parent->hlu.hlu_id;
 					}
 				}
+				break;
 			}
-			break;
 		}
 		if (parent == NULL) {
 			*ncl_parent_id = -1;
