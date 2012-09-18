@@ -11958,9 +11958,9 @@ begin
    statx(21)= 100*(one - (one*(nx-nFill))/nx)
 
         ;JBuzan BEGIN
-   statx(22) = work( nwork/20-1 )           ; lower 95%   
+   statx(22) = work( nwork/1000-1 )         ; lower 99.9% 
    statx(23) = work( nwork/100-1 )          ; lower 99.%  
-   statx(24) = work( nwork/1000-1 )         ; lower 99.9% 
+   statx(24) = work( nwork/20-1 )           ; lower 95%   
 
    statx(25) = work((nwork*19)/20-1)        ; upper 95%
    statx(26) = work((nwork*99)/100-1)       ; upper 99.%
@@ -12013,6 +12013,12 @@ begin
        print(" [19]      #    Used="+statx(19) ) 
        print(" [20]      # Missing="+statx(20) ) 
        print(" [21]      % Missing="+statx(21) ) 
+       print(" [22]     Lower 0.1%="+statx(22) ) 
+       print(" [23]     Lower 1.0%="+statx(23) ) 
+       print(" [24]     Lower 5.0%="+statx(24) ) 
+       print(" [25]     Upper 5.0%="+statx(25) ) 
+       print(" [26]     Upper 1.0%="+statx(26) ) 
+       print(" [27]     Upper 0.0%="+statx(27) ) 
        print(" ")
    end if
 
