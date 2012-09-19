@@ -1703,7 +1703,8 @@ ContourPlotClassInitialize
         _NhlEnumVals   fillmodelist[] = {
         {NhlAREAFILL, 		"AreaFill"},
         {NhlRASTERFILL, 	"RasterFill"},
-        {NhlCELLFILL,      	"CellFill"}
+        {NhlCELLFILL,      	"CellFill"},
+        {NhlMESHFILL,      	"MeshFill"}
         };
 
 
@@ -10130,10 +10131,12 @@ NhlErrorTypes AddToGoodList
 	return ret;
 }
 
+#if 0
 #define NO_BOUNDS   0
 #define X_BOUNDS    1 << 0
 #define Y_BOUNDS    1 << 1
 #define X_Y_BOUNDS  X_BOUNDS | Y_BOUNDS
+#endif 
 
 NhlBoolean GetXYIn2D
 (	
