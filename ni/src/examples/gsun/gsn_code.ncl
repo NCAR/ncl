@@ -1779,9 +1779,9 @@ end
 ; This function is for gsn_panel, to help it determine which plot info  ;
 ; to use to construct a labelbar.                                       ;
 ;                                                                       ;
-; In NCL V6.1.0, we made the PlotManager the default labelbar, so we    ;
-; added some checks to this code for pmLabelBarDisplayMode being equal  ;
-; to 1 ("Always").                                                      ; 
+; In a future release of NCL (> 6.1.0), we hope to make the PlotManager ;
+; the default labelbar, so we added some checks to this code for        ; 
+; pmLabelBarDisplayMode being equal to 1 ("Always").                    ;
 ;***********************************************************************;
 undef("get_plot_labelbar")
 function get_plot_labelbar(plot:graphic)
