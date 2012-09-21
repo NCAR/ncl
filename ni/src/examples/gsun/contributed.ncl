@@ -11871,7 +11871,7 @@ begin
  
   return(zGrid)
 end
-;----------------------------------------------------------------------------
+;****************************************************************************
 ; Calculate a 'bunch' of dispersion statistics 
 ; This can be slow for big 'x'
 ; 
@@ -11885,9 +11885,14 @@ begin
    nFill   = 0
    nStat   = 30
    allFill = False 
+
+   if (typeof(x).eq."double") then
+       sFillV = 1d20
+   else
+       sFillV = 1e20
+   end if
   
    if (isatt(x,"_FillValue")) then  
-       sFillV = x@_FillValue
        nFill  = num(ismissing(x))
        if (nFill.gt.0) then
            x1d    = ndtooned(x) 
@@ -11904,11 +11909,6 @@ begin
        end if
    else
        work  = ndtooned(x) 
-       if (typeof(x).eq."double") then
-           sFillV = 1d20
-       else
-           sFillV = 1e20
-       end if
    end if
 
    if (typeof(x).eq."double") then
