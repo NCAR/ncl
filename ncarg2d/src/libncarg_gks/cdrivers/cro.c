@@ -520,6 +520,12 @@ int cro_ClearWorkstation(GKSC *gksc) {
     }
 #endif
 
+#ifdef __APPLE__   /* Jira NCL-1530 */
+    else if (psa->wks_type == CX11) {
+        cairo_push_group(cairo_context[context_index(psa->wks_id)]);
+    }
+#endif
+
     else if (psa->wks_type == CTIFF) {
         outputFile = getIndexedOutputFilename(psa->wks_id, psa->output_file, psa->frame_count,
             "NCARG_GKS_CTIFFOUTPUT", ".tif");
@@ -638,7 +644,11 @@ int cro_Esc(GKSC *gksc) {
 
     case ESCAPE_PAUSE:
         if (psa->wks_type == CX11) {
-            croX11Pause(cairo_surface[context_index(psa->wks_id)]);
+#ifdef __APPLE__   /* Jira NCL-1530  */
+          cairo_pop_group_to_source(cairo_context[context_index(psa->wks_id)]);
+          cairo_paint(cairo_context[context_index(psa->wks_id)]);
+#endif
+          croX11Pause(cairo_surface[context_index(psa->wks_id)]);
         }
         break;
         
@@ -943,6 +953,12 @@ int cro_OpenWorkstation(GKSC *gksc) {
         psa->image_width = cairo_xlib_surface_get_width(cairo_surface[context_num]);
         psa->image_height = cairo_xlib_surface_get_height(
                 cairo_surface[context_num]);
+#ifdef __APPLE__   
+        /* Jira NCL-1530:  this is a work-around between a buggy interaction with XQuartz 2.7.x
+         * and cairo     9/20/2012  RLB
+         */
+        cairo_push_group(cairo_context[context_num]);
+#endif
     }
 
     /*
@@ -2218,7 +2234,7 @@ char* getRegularOutputFilename(int wks_id, const char* file_name, const char* en
 /*
  * getIndexedOutputFilename()
  *
- * A utility function to create filenames for formats that do no support multiple
+ * A utility function to create filenames for formats that do not support multiple
  * images/pages. If more than one such file is to be written, then an index-number
  * is appended to the filename root. The index is omitted on the first such file,
  * and later added if there is indeed more than one file to be written.
