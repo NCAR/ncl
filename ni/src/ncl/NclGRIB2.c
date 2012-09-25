@@ -1932,9 +1932,6 @@ int* nrotatts;
 		C = 2 * PI * (earth_radius / 1000.0) * cos(RadPerDeg * latin1);
 		d_per_km = 360.0/C;
 		dlon = dx * d_per_km;
-/*
-* latin1 is always closest to pole
-*/
 		tlon = lov + dlon;
 		NGCALLF(mdptrn,MDPTRN)(&latin1,&lov,&nx0,&ny0);
 		NGCALLF(mdptrn,MDPTRN)(&latin1,&tlon,&nx1,&ny1);
@@ -1943,8 +1940,8 @@ int* nrotatts;
 		NGCALLF(mdptrn,MDPTRN)(&la1,&lo1,&nx0,&ny0);
 		for(i = 0; i < ny; i++) {
 			for(j = 0; j < nx; j++) {
-				double tmpx =  nx0 + j * ndcdx;
-				double tmpy =  ny0 + i * ndcdy;
+				double tmpx =  nx0 + j * ndcdx * idir;
+				double tmpy =  ny0 + i * ndcdy * jdir;
 				double tmplat,tmplon;
 				NGCALLF(mdptri,MDPTRI)
 					(&tmpx,&tmpy,&tmplat,&tmplon);
@@ -1968,9 +1965,6 @@ int* nrotatts;
 		C = 2 * PI * (earth_radius / 1000.0) * cos(RadPerDeg * latin1);
 		d_per_km = 360.0/C;
 		dlon = dx * d_per_km;
-/*
-* latin1 is always closest to pole
-*/
 		tlon = lov + dlon;
 		NGCALLF(mdptrn,MDPTRN)(&latin1,&lov,&nx0,&ny0);
 		NGCALLF(mdptrn,MDPTRN)(&latin1,&tlon,&nx1,&ny1);
@@ -1979,8 +1973,8 @@ int* nrotatts;
 		NGCALLF(mdptrn,MDPTRN)(&la1,&lo1,&nx0,&ny0);
 		for(i = 0; i < ny; i++) {
 			for(j = 0; j < nx; j++) {
-				double tmpx =  nx0 + j * ndcdx;
-				double tmpy =  ny0 + i * ndcdy;
+				double tmpx =  nx0 + j * ndcdx * idir;
+				double tmpy =  ny0 + i * ndcdy * jdir;
 				double tmplat,tmplon;
 				NGCALLF(mdptri,MDPTRI)
 					(&tmpx,&tmpy,&tmplat,&tmplon);
