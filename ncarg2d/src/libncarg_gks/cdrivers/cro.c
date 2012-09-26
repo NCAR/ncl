@@ -642,8 +642,8 @@ int cro_Esc(GKSC *gksc) {
     case ESCAPE_PAUSE:
         if (psa->wks_type == CX11) {
 #ifdef __APPLE__   /* Jira NCL-1530  */
-          cairo_pop_group_to_source(context);
-          cairo_paint(context);
+          cairo_pop_group_to_source(getContext(psa->wks_id));
+          cairo_paint(getContext(psa->wks_id));
 #endif
           croX11Pause(getSurface(psa->wks_id));
         }
