@@ -953,12 +953,6 @@ int cro_OpenWorkstation(GKSC *gksc) {
         psa->image_width = cairo_xlib_surface_get_width(cairo_surface[context_num]);
         psa->image_height = cairo_xlib_surface_get_height(
                 cairo_surface[context_num]);
-#ifdef __APPLE__   
-        /* Jira NCL-1530:  this is a work-around between a buggy interaction with XQuartz 2.7.x
-         * and cairo     9/20/2012  RLB
-         */
-        cairo_push_group(cairo_context[context_num]);
-#endif
     }
 
     /*
@@ -1013,6 +1007,15 @@ int cro_OpenWorkstation(GKSC *gksc) {
      */
     cairo_set_source_rgba(cairo_context[context_num], 0., 0., 0., 1.);
 
+#ifdef __APPLE__   
+        /* Jira NCL-1530:  this is a work-around between a buggy interaction with XQuartz 2.7.x
+         * and cairo. We do this here to preserve the graphics-state set in the  previous
+         * lines.    9/20/2012  RLB
+         */
+    if (psa->wks_type == CX11) {
+        cairo_push_group(cairo_context[context_num]);
+    }
+#endif
     context_num++;
 
     return (0);
