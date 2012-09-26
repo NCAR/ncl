@@ -519,7 +519,7 @@ int cro_ClearWorkstation(GKSC *gksc) {
 
 #ifdef __APPLE__   /* Jira NCL-1530 */
     else if (psa->wks_type == CX11) {
-        cairo_push_group(cairo_context[context_index(psa->wks_id)]);
+        cairo_push_group(context);
     }
 #endif
 
@@ -642,8 +642,8 @@ int cro_Esc(GKSC *gksc) {
     case ESCAPE_PAUSE:
         if (psa->wks_type == CX11) {
 #ifdef __APPLE__   /* Jira NCL-1530  */
-          cairo_pop_group_to_source(cairo_context[context_index(psa->wks_id)]);
-          cairo_paint(cairo_context[context_index(psa->wks_id)]);
+          cairo_pop_group_to_source(context);
+          cairo_paint(context);
 #endif
           croX11Pause(getSurface(psa->wks_id));
         }
