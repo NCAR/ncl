@@ -621,7 +621,7 @@ static NhlErrorTypes BuildTriangularMesh
 
 }
 
-#define DEGTORAD 0.017453292519943d
+#define DEGTORAD 0.017453292519943
 
 static NhlErrorTypes BuildNativeMesh 
 #if	NhlNeedProto
