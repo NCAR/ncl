@@ -5909,26 +5909,26 @@ begin
   end if
 
 ;---Does "data" contain 1D coordinate arrays?
-  if(ndims.ge.2) then
+  if(ndims.ge.2) then 
     xdim = ndims-1
     ydim = ndims-2
-    if(type_xcoord.eq."".and.(isdimnamed(data,xdim).and. \
-                            iscoord(data,data!xdim))) then
+;---They both need to be 1D coordinate arrays, or this won't work.
+    if((type_xcoord.eq."".and.(isdimnamed(data,xdim).and. \
+                               iscoord(data,data!xdim))).and.\
+       (type_ycoord.eq."".and.(isdimnamed(data,ydim).and. \
+                               iscoord(data,data!ydim)))) then
       type_xcoord = "data_coord"
-      if(draw_lines) then
-        xcoord_2d = conform(data,data&$data!xdim$,xdim)
-      else
-        xcoord_1d = ndtooned(conform(data,data&$data!xdim$,xdim))
-      end if
-    end if
-    if(type_ycoord.eq."".and.(isdimnamed(data,ydim).and. \
-                            iscoord(data,data!ydim))) then
       type_ycoord = "data_coord"
+      dd          = (/dims(ydim),dims(xdim)/)
       if(draw_lines) then
-        ycoord_2d = conform(data,data&$data!ydim$,ydim)
+        xcoord_2d = conform_dims(dd,data&$data!xdim$,1)
+        ycoord_2d = conform_dims(dd,data&$data!ydim$,0)
       else
-        ycoord_1d = ndtooned(conform(data,data&$data!ydim$,ydim))
+        xcoord_1d = ndtooned(conform_dims(dd,data&$data!xdim$,1))
+        ycoord_1d = ndtooned(conform_dims(dd,data&$data!ydim$,0))
       end if
+    else
+      is_xcoord_2d = False
       is_ycoord_2d = False
     end if
   end if
