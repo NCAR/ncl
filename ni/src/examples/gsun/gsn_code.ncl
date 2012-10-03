@@ -5791,18 +5791,35 @@ end
 
 ;***********************************************************************;
 ; This procedure draws or attaches markers or lines on the given plot
-; at locations associated with the input data array. For the markers,
+; at coordinates associated with the input data array. For the markers,
 ; you can have the markers colored according to where the data values
-; are missing.
+; are missing.  The arguments are:
 ; 
-; By default, the plot is drawn, the markers or lines are drawn on the
-; plot, and the frame is advanced. Nothing is attached to the plot.
+;    wks[1]:graphic 
+;    plot[1]:graphic
+;    data:numeric
+;    res[1]:logical
 ;
-; If, however, gsnDrawCoordsAttach is set to True, then the markers or
-; lines are attached, and the plot is not drawn and the frame is not
-; advanced, unless gsnDraw and/or gsnFrame are set to True.
+; This procedure examines "data" to see if it has 1D coordinate 
+; arrays, or the special "lat2d"/"lon2d" attributes. If it has
+; neither, then the special "gsnCoordsX" and "gsnCoordsY" attributes
+; must be attached to "res", indicating the coordinates. 
+; If you are drawing lines, then these two attributes must be 2D
+; and the same size as each other. If you are drawing markers,
+; then these arrays don't have to be 2D, but they must be the
+; same size. They will get converted to 1D arrays.
 ;
-; If res@xcoord and res@ycoord are set, these will be used for the X
+; By default, this procedure draws the plot, and the markers or 
+; lines are drawn on the plot with gsn_polymarker[line], and
+; the frame is advanced. Nothing is attached to the plot. This
+; method is faster.
+;
+; If gsnCoordsAttach is set to True, then the markers or lines
+; are attached using gsn_add_polymarker[line], and the plot is 
+; not drawn and the frame is not advanced, unless gsnDraw[Frame]
+; are set to True.
+;
+; If res@gsnCoordsX and res@gsnCoordsY are set, these will be used for the X
 ; and Y coordinate points.  Otherwise, this function will try to get
 ; the 1D coordinate information from the input data variable, or look
 ; for the special "lat2d", "lon2d" attributes.
@@ -5813,22 +5830,22 @@ end
 ;
 ; Special coordinates recognized by this routine:
 ;
-;    "xcoord" and "ycoord" - The X and Y coordinates to plot.
+;    "gsnCoordsX" and "gsnCoordsY" - The X and Y coordinates to plot.
 ;       You only need to set these if the input data array 
 ;       doesn't have 1D coordinate arrays attached, or doesn't
 ;       have the special "lat2d", "lon2d" attributes.
 ;
-;    "gsnDrawCoordsAttach" - if True, then the markers will be
+;    "gsnCoordsAttach" - if True, then the markers will be
 ;       attached via gsn_add_polymarker, instead of just 
 ;       drawn with gsn_polymarker. Note that gsnDraw and Frame will
 ;       both be set to False in this case.
 ;
-;    "gsnDrawCoordsAsLines" - [not implemented yet] if True, 
+;    "gsnCoordsAsLines" - [not implemented yet] if True, 
 ;      coordinates will be drawn as lines rather than markers.
 ;      This only works for 2D coordinate arrays.
 ;
-;    "gsnDrawCoordsMissingColor"
-;    "gsnDrawCoordsNonMissingColor" - If either one of these are set,
+;    "gsnCoordsMissingColor"
+;    "gsnCoordsNonMissingColor" - If either one of these are set,
 ;       then at locations where the data is or isn't missing, they
 ;       will be drawn in the given color
 ;
@@ -5836,23 +5853,23 @@ end
 undef("gsn_draw_coordinates")
 procedure gsn_draw_coordinates(wks[1]:graphic,plot[1]:graphic, \
                                data:numeric,res[1]:logical)
-local type_xcoord, type_ycoord, pres, res2, pres, dims, ndims, \
+local type_xcoord, type_ycoord, pres, res2, pres, dims, rank, \
   dims_xcoord, dims_ycoord, xcoord_1d, ycoord_1d, xcoord_2d, ycoord_2d, \
   xdim, ydim, calldraw, callframe, maxbb, defclr, nonmsgclr, msgclr, \
   draw_lines, draw_non_msg, attach_coords, is_msgclr_trans, 
   is_nonmsgclr_trans, is_defclr_trans, tmpstr, i, imsg
 begin
-  res2 = res     ; Make copy so we can modify it
+  res2 = res                     ; Make copy so we can modify it
   imsg = new(1,integer)
 
 ;---Check for special resources
   maxbb         = get_bb_res(res2)
   defclr        = get_res_value(res2,"gsMarkerColor",1)
   defmrk        = get_res_value(res2,"gsMarkerIndex",16)
-  msgclr        = get_res_value(res2,"gsnDrawCoordsMissingColor",imsg)
-  nonmsgclr     = get_res_value(res2,"gsnDrawCoordsNonMissingColor",imsg)
-  attach_coords = get_res_value(res2,"gsnDrawCoordsAttach",False)
-  draw_lines    = get_res_value(res2,"gsnDrawCoordsAsLines",False)
+  msgclr        = get_res_value(res2,"gsnCoordsMissingColor",imsg)
+  nonmsgclr     = get_res_value(res2,"gsnCoordsNonMissingColor",imsg)
+  attach_coords = get_res_value(res2,"gsnCoordsAttach",False)
+  draw_lines    = get_res_value(res2,"gsnCoordsAsLines",False)
 
 ;---Check if color is transparent.
   is_defclr_trans    = ((typeof(defclr).eq."string".and. \
@@ -5875,65 +5892,52 @@ begin
 ;
 ; Figure out what kind of X and Y coordinates we have.
 ; Valid kinds include:
-;    xcoord or ycoord attributes attached to res ("res_coord").
+;    gsnCoordsX or gsnCoordsY attributes attached to res ("res_coord").
 ;    1D coord array attached to data ("data_coord").
 ;    2D lat2d/lon2d attributes attached to data ("data_att")
 ; 
   type_xcoord = ""
   type_ycoord = ""
   dims        = dimsizes(data)
-  ndims       = dimsizes(dims)
+  rank       = dimsizes(dims)
 
 ;----------------------------------------------------------------------
 ; This section gets the X,Y coordinate arrays and converts them
 ; to 1D for markers, and 2D for lines.
 ;----------------------------------------------------------------------
 
-;---Get the X,Y coords from "res2" attribute?
-  if(res2.and.isatt(res2,"xcoord")) then
+  if(res2.and.isatt(res2,"gsnCoordsX").and.isatt(res2,"gsnCoordsY")) then
     type_xcoord = "res_coord"
-    if(draw_lines) then
-      xcoord_2d = res2@xcoord
-    else
-      xcoord_1d = ndtooned(res2@xcoord)
-    end if
-  end if
-  if(res2.and.isatt(res2,"ycoord")) then
     type_ycoord = "res_coord"
     if(draw_lines) then
-      ycoord_2d = res2@ycoord
+      xcoord_2d = res2@gsnCoordsX
+      ycoord_2d = res2@gsnCoordsY
     else
-      ycoord_1d = ndtooned(res2@ycoord)
-    end if
-    is_ycoord_2d = dimsizes(dimsizes(res2@ycoord)).eq.2
-  end if
-
-;---Does "data" contain 1D coordinate arrays?
-  if(ndims.ge.2) then 
-    xdim = ndims-1
-    ydim = ndims-2
-;---They both need to be 1D coordinate arrays, or this won't work.
-    if((type_xcoord.eq."".and.(isdimnamed(data,xdim).and. \
-                               iscoord(data,data!xdim))).and.\
-       (type_ycoord.eq."".and.(isdimnamed(data,ydim).and. \
-                               iscoord(data,data!ydim)))) then
-      type_xcoord = "data_coord"
-      type_ycoord = "data_coord"
-      dd          = (/dims(ydim),dims(xdim)/)
-      if(draw_lines) then
-        xcoord_2d = conform_dims(dd,data&$data!xdim$,1)
-        ycoord_2d = conform_dims(dd,data&$data!ydim$,0)
-      else
-        xcoord_1d = ndtooned(conform_dims(dd,data&$data!xdim$,1))
-        ycoord_1d = ndtooned(conform_dims(dd,data&$data!ydim$,0))
-      end if
-    else
-      is_xcoord_2d = False
-      is_ycoord_2d = False
+      xcoord_1d = ndtooned(res2@gsnCoordsX)
+      ycoord_1d = ndtooned(res2@gsnCoordsY)
     end if
   end if
 
-;---Does "data" contain "lat2d", "lon2d" attributes?
+;---Check if "data" contains 1D coordinate arrays.
+  xdim = rank-1
+  ydim = rank-2
+  if((type_xcoord.eq."".and.(isdimnamed(data,xdim).and. \
+                             iscoord(data,data!xdim))).and.\
+     (type_ycoord.eq."".and.(isdimnamed(data,ydim).and. \
+                             iscoord(data,data!ydim)))) then
+    type_xcoord = "data_coord"
+    type_ycoord = "data_coord"
+    dd          = (/dims(ydim),dims(xdim)/)
+    if(draw_lines) then
+      xcoord_2d = conform_dims(dd,data&$data!xdim$,1)
+      ycoord_2d = conform_dims(dd,data&$data!ydim$,0)
+    else
+      xcoord_1d = ndtooned(conform_dims(dd,data&$data!xdim$,1))
+      ycoord_1d = ndtooned(conform_dims(dd,data&$data!ydim$,0))
+    end if
+  end if
+
+;---Check if "data" contains "lat2d", "lon2d" attributes
   if(type_xcoord.eq."".and.isatt(data,"lon2d")) then
     type_xcoord = "data_att"
     if(draw_lines) then
