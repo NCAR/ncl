@@ -5916,6 +5916,8 @@ begin
       xcoord_1d = ndtooned(res2@gsnCoordsX)
       ycoord_1d = ndtooned(res2@gsnCoordsY)
     end if
+    delete(res2@gsnCoordsX)
+    delete(res2@gsnCoordsY)
   end if
 
 ;---Check if "data" contains 1D coordinate arrays.
