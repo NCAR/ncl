@@ -5850,8 +5850,8 @@ end
 ;       will be drawn in the given color
 ;
 ;***********************************************************************;
-undef("gsn_draw_coordinates")
-procedure gsn_draw_coordinates(wks[1]:graphic,plot[1]:graphic, \
+undef("gsn_coordinates")
+procedure gsn_coordinates(wks[1]:graphic,plot[1]:graphic, \
                                data:numeric,res[1]:logical)
 local type_xcoord, type_ycoord, pres, res2, pres, dims, rank, \
   dims_xcoord, dims_ycoord, xcoord_1d, ycoord_1d, xcoord_2d, ycoord_2d, \
@@ -5957,11 +5957,11 @@ begin
 
 ;---Error checking
   if(type_xcoord.eq."".or.type_ycoord.eq."") then
-    print("gsn_draw_coordinates: no valid X and/or Y coordinate values provided.")
+    print("gsn_coordinates: no valid X and/or Y coordinate values provided.")
     return
   end if
   if(type_xcoord.ne.type_ycoord) then
-    print("gsn_draw_coordinates: conflicting X/Y coordinate values provided.")
+    print("gsn_coordinates: conflicting X/Y coordinate values provided.")
     return
   end if
 
@@ -5971,14 +5971,14 @@ begin
     rank_xcoord = dimsizes(dims_xcoord)
     rank_ycoord = dimsizes(dims_ycoord)
     if(rank_xcoord.ne.2.or.rank_xcoord.ne.rank_ycoord) then
-      print("gsn_draw_coordinates: can't draw coordinates as lines if they")
+      print("gsn_coordinates: can't draw coordinates as lines if they")
       print("                      are not 2D arrays of the same size.")
       return
     end if
     ny = dims_xcoord(0)
     nx = dims_xcoord(1)
     if(dims_ycoord(0).ne.ny.and.dims_ycoord(1).ne.nx) then
-      print("gsn_draw_coordinates: coordinates must have the same")
+      print("gsn_coordinates: coordinates must have the same")
       print("                      dimensionality")
       return
     end if
@@ -5986,7 +5986,7 @@ begin
     dims_xcoord = dimsizes(xcoord_1d)
     dims_ycoord = dimsizes(ycoord_1d)
     if(dims_xcoord.ne.dims_ycoord) then
-      print("gsn_draw_coordinates: coordinates must have the same")
+      print("gsn_coordinates: coordinates must have the same")
       print("                      dimensionality")
       return
     end if
