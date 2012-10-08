@@ -2068,12 +2068,14 @@ static NhlErrorTypes InitializeHLUObjDataClass
 		Ncl_MultiDValHLUObjData,
 		(NclObjClass)&nclMultiDValHLUObjDataClassRec
 	);
+#if 0
 	nclMultiDValHLUObjDataClassRec.multid_obj_class.ref_table =(HLURefTableNode*) NclMalloc(sizeof(HLURefTableNode)*NCL_SYM_TAB_SIZE);
 	for(i = 0; i < NCL_SYM_TAB_SIZE;i++) {
 		nclMultiDValHLUObjDataClassRec.multid_obj_class.ref_table[i].id = -1;
 		nclMultiDValHLUObjDataClassRec.multid_obj_class.ref_table[i].thelist = NULL;
 		nclMultiDValHLUObjDataClassRec.multid_obj_class.ref_table[i].next = NULL;
 	}
+#endif
 	return(NhlNOERROR);
 }
 

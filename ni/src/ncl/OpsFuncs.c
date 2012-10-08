@@ -62,8 +62,14 @@ NhlArgVal udata;
 	 * This hlu_obj is not the HLU Default Parent, but is currently
 	 * saved in the defaultapp_hluobj_id - so reset defaultapp_hluobj_id.
 	 */
-	else if(nclhluobj_id == defaultapp_hluobj_id)
+	else if(nclhluobj_id == defaultapp_hluobj_id) {
 		defaultapp_hluobj_id = -1;
+#if 0
+		if(hlu_obj->obj.status != PERMANENT) 
+			hlu_obj->obj.status = TEMPORARY;
+#endif
+
+	}
 
 	return;
 }
@@ -1810,6 +1816,8 @@ NclStackEntry _NclCreateHLUObjOp
 		appd_id = NhlAppGetDefaultParentId();
 		if(tmp_ho->hlu.hlu_id == appd_id) {	
 			defaultapp_hluobj_id = tmp_ho->obj.id;
+			/* since it is the default app we cannot allow it to be deleted */
+			tmp_ho->obj.status = STATIC;
 		}
 		NhlINITVAR(sel);
 		NhlINITVAR(udata);

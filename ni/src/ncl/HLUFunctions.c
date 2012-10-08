@@ -1319,9 +1319,9 @@ NhlErrorTypes _NclIAddData
 	ng_size_t dimsizes2[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
 	NclBasicDataTypes type2;
-    ng_size_t total=1;
-    ng_size_t total2=1;
-    ng_size_t i,j=0,k=0,l;
+	ng_size_t total=1;
+	ng_size_t total2=1;
+	ng_size_t i,j=0,k=0,l;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj *tmp_data_ptr;
 	NclScalar missing;
@@ -4903,6 +4903,8 @@ NhlErrorTypes _NclCreateGraphic( void )
 					appd_id = NhlAppGetDefaultParentId();
 					if(tmp_ho->hlu.hlu_id == appd_id) {	
 						defaultapp_hluobj_id = tmp_ho->obj.id;
+						/* since it is the default app we cannot allow it to be deleted */
+						tmp_ho->obj.status = STATIC;
 					}
 					NhlINITVAR(sel);
 					NhlINITVAR(udata);
@@ -4925,6 +4927,8 @@ NhlErrorTypes _NclCreateGraphic( void )
 				appd_id = NhlAppGetDefaultParentId();
 				if(tmp_ho->hlu.hlu_id == appd_id) {	
 					defaultapp_hluobj_id = tmp_ho->obj.id;
+					/* since it is the default app we cannot allow it to be deleted */
+					tmp_ho->obj.status = STATIC;
 				}
 				NhlINITVAR(sel);
 				NhlINITVAR(udata);

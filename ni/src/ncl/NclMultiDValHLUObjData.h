@@ -35,6 +35,7 @@ typedef struct _HLUMDCalRec {
         int index;
 }HLUMDCalRec;
 
+#if 0
 typedef struct _HLURefNameListNode {
 	NclQuark vname;
 	NclQuark aname;
@@ -42,12 +43,13 @@ typedef struct _HLURefNameListNode {
 	struct _HLURefNameListNode *next;
 }HLURefNameListNode;
 
+
 typedef struct _HLURefTableNode {
 	int id;
 	struct _HLURefNameListNode *thelist;
 	struct _HLURefTableNode *next;
 }HLURefTableNode;
-
+#endif
 typedef struct _NclMultiDValHLUObjDataPart {
 	_NhlCB *cbs;
 	HLUMDCalRec **crecs;
@@ -61,7 +63,10 @@ typedef struct _NclMultiDValHLUObjDataRec {
 }NclMultiDValHLUObjDataRec;
 
 typedef struct _NclMultiDValHLUObjDataClassPart {
+#if 0
 	HLURefTableNode *ref_table;
+#endif
+	int foo;
 }NclMultiDValHLUObjDataClassPart;
 
 typedef struct _NclMultiDValHLUObjDataClassRec {

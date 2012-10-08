@@ -3557,6 +3557,7 @@ void CallASSIGN_VAR_OP(void) {
 				NclSymbol *sym = NULL;
 				NhlErrorTypes ret = NhlNOERROR;
 				NhlArgVal udata;
+				NclAtt att_obj;
 			
 
 			ptr++;lptr++;fptr++;
@@ -3681,6 +3682,30 @@ void CallASSIGN_VAR_OP(void) {
 									}
 								}
 							}
+							/* HLU Refs also need to be added for any attributes that reference HLU objects */
+							att_obj = (NclAtt)_NclGetObj( lhs_var->u.data_var->var.att_id);
+							if (att_obj) {
+								NclAttList *attrec = att_obj->att.att_list;;
+								NclHLUObj hobj;
+									
+								while (attrec) {
+									tmp_md = (NclMultiDValData) attrec->attvalue;
+									if (! tmp_md || ! (tmp_md->obj.obj_type == Ncl_MultiDValHLUObjData)) {
+										attrec = attrec->next;
+										continue;
+									}
+									for (i = 0; i < tmp_md->multidval.totalelements; i++) {
+										hobj = (NclHLUObj) _NclGetObj(((int*)tmp_md->multidval.val)[i]);
+										if(lhs_var->u.data_var->var.thesym != NULL) {
+											_NclAddHLURef(((int*)tmp_md->multidval.val)[i],lhs_var->u.data_var->var.var_quark,attrec->quark,i,lhs_var->u.data_var->var.thesym->level);
+										} else {
+											_NclAddHLURef(((int*)tmp_md->multidval.val)[i],lhs_var->u.data_var->var.var_quark,attrec->quark,i,-1);
+										}
+									}
+									attrec = attrec->next;
+								}
+							}
+
 						} else if(rhs.kind == NclStk_LIST) {
 							int n;
 							NclDimRec dim_info[NCL_MAX_DIMENSIONS];
@@ -6997,8 +7022,7 @@ void CallASSIGN_VAR_VAR_OP(void) {
 				struct _NclVarRec *tmp_var;
 				NclMultiDValData tmp_md;
 				NhlArgVal udata;
-
-
+				NclAtt att_obj;
 	
 				ptr++;lptr++;fptr++;
 				rhs_sym = (NclSymbol*)*ptr;
@@ -7110,6 +7134,30 @@ void CallASSIGN_VAR_VAR_OP(void) {
 										}
 									}
 								}
+								/* HLU Refs also need to be added for any attributes that reference HLU objects */
+								att_obj = (NclAtt)_NclGetObj( lhs_var->u.data_var->var.att_id);
+								if (att_obj) {
+									NclAttList *attrec = att_obj->att.att_list;;
+									NclHLUObj hobj;
+									
+									while (attrec) {
+										tmp_md = (NclMultiDValData) attrec->attvalue;
+										if (! tmp_md || ! (tmp_md->obj.obj_type == Ncl_MultiDValHLUObjData)) {
+											attrec = attrec->next;
+											continue;
+										}
+										for (i = 0; i < tmp_md->multidval.totalelements; i++) {
+											hobj = (NclHLUObj) _NclGetObj(((int*)tmp_md->multidval.val)[i]);
+											if(lhs_var->u.data_var->var.thesym != NULL) {
+												_NclAddHLURef(((int*)tmp_md->multidval.val)[i],lhs_var->u.data_var->var.var_quark,attrec->quark,i,lhs_var->u.data_var->var.thesym->level);
+											} else {
+												_NclAddHLURef(((int*)tmp_md->multidval.val)[i],lhs_var->u.data_var->var.var_quark,attrec->quark,i,-1);
+											}
+										}
+										attrec = attrec->next;
+									}
+								}
+
 							}
 						}
 						if(rhs_sel_ptr != NULL) {
