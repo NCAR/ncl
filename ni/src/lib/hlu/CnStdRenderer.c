@@ -3313,7 +3313,7 @@ NhlErrorTypes _NhlMeshFill
 	  memset(dcell_loc,0,sizeof(DataCellLoc) * icam * ican);*/
 #if 0
 	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
-#if 1
+#if 0
 	printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
 	       flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
 #endif
@@ -3348,8 +3348,10 @@ NhlErrorTypes _NhlMeshFill
 	mode |= Cnp->sfp->xc_is_bounds ? X_BOUNDS : 0;
 	mode |= Cnp->sfp->yc_is_bounds ? Y_BOUNDS : 0;
 	avg_cells_per_grid_box = (icam * ican) / ((float)xcount * ycount);
+#if 0
 	printf("avg_cells_per_grid_box = %f\n",avg_cells_per_grid_box);
 	printf("icam %d ican %d\n",icam,ican);
+#endif
 
 	mflx = xcpf - (xcqf - xcpf) * .1;
 	mfrx = xcqf + (xcqf - xcpf) * .1;
@@ -3553,7 +3555,7 @@ NhlErrorTypes _NhlMeshFill
 			}
 		}
 	}
-#endif
 	printf("max coverage %f, min/max x %f %f, min/max y %f %f\n",max_coverage,min_minx,max_maxx,min_miny,max_maxy);
+#endif
 	return ret;
 }
