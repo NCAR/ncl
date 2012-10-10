@@ -2804,13 +2804,16 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
 
         for(i = 0; i< n_dims_input; i++)
         {
-          /*
-           *fprintf(stdout, "\ti = %d\n", i);
-           */
-
             dimnode = &(varnode->dim_rec->dim_node[i]);
             start[i] = 0;
             finish[i] = dimnode->size - 1;
+
+            if(0 > finish[i])
+            {
+                finish[i] = 0;
+                dimnode->size = 1;
+            }
+
             stride[i] = 1;
             total_elements *= (finish[i] + 1);
             output_dim_sizes[i] = finish[i] + 1;
