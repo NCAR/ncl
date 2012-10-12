@@ -322,9 +322,14 @@ begin
   if(plot_type .eq. "v" ) then   ;  vertical cross section needed
 
      dims = dimsizes(var3d)
+     nd = dimsizes(dims)
 
-     if ( dimsizes(dims) .eq. 4 ) then
-       if ( z(0,dimZ-1,0,0) .lt. z(0,dimZ-2,0,0) ) then
+     dimX = dims(nd-1)
+     dimY = dims(nd-2)
+     dimZ = dims(nd-3)
+
+     if ( nd .eq. 4 ) then
+       if ( z_in(0,dimZ-1,0,0) .lt. z_in(0,dimZ-2,0,0) ) then
          ; We must be interpolating to pressure
            ; This routine needs input field and level in hPa - lets make sure of this
          if ( max(z_in) .gt. 2000. ) then
@@ -334,7 +339,7 @@ begin
        end if
        z = z_in(0,:,:,:)
      else
-       if ( z(dimZ-1,0,0) .lt. z(dimZ-2,0,0) ) then
+       if ( z_in(dimZ-1,0,0) .lt. z_in(dimZ-2,0,0) ) then
          ; We must be interpolating to pressure
            ; This routine needs input field and level in hPa - lets make sure of this
          if ( z_in(0,0,0) .gt. 2000. ) then
@@ -2291,7 +2296,7 @@ begin
 
   if ( returnI  ) then
     loci = new(dimsizes(loc),integer)
-    loci@_FillValue = default_fillvalue("integer")   ; was -999
+    ;loci@_FillValue = default_fillvalue("integer")   ; was -999
     loci = tointeger(loc + .5)
     loci!0 = loc!0
     return(loci)
