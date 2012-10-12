@@ -3685,6 +3685,15 @@ float 		min_nonzero;
 			}
 			
 		}
+		if (k == 0) {
+			NhlPError(NhlINFO,NhlEUNKNOWN,"ExplicitComputeMajorTickMarks: no explicit values are within the data coordinate range; tickmarks will not appear");
+			ret = NhlINFO;
+			*nmajor = k;
+			*tstart = min;
+			*tend = max;
+			break;
+		}
+
 		*nmajor = k;
 		*tstart = MIN(array[0],array[k-1]);
 		*tend = MAX(array[0],array[k-1]);
@@ -7284,7 +7293,7 @@ static NhlErrorTypes TransformLocations
 	int		c_or_s;
 #endif
 {
-	int i,tmpi=0,status;
+	int i,tmpi=0,status = 0;
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes subret = NhlNOERROR;
 	char *error_lead;
