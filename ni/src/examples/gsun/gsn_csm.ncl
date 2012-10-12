@@ -3185,7 +3185,7 @@ begin
 
   lon_index = ind(lon_values.gt.180.and.lon_values.lt.360)
   if(.not.all(ismissing(lon_index)))
-    lon_labels(lon_index) = 360-lon_values(lon_index) + "W"  ; west
+    lon_labels(lon_index) = (360-lon_values(lon_index)) + "W"  ; west
   end if
   delete(lon_index)
 
@@ -3193,7 +3193,7 @@ begin
 
   lon_index = ind(lon_values.gt.360.and.lon_values.lt.540)
   if(.not.all(ismissing(lon_index)))
-    lon_labels(lon_index) = lon_values(lon_index)-360 + "E" ; east
+    lon_labels(lon_index) = (lon_values(lon_index)-360)+ "E" ; east
   end if
   delete(lon_index)
 
@@ -3201,7 +3201,7 @@ begin
 
   lon_index = ind(lon_values.gt.540.and.lon_values.lt.720)
   if(.not.all(ismissing(lon_index)))
-    lon_labels(lon_index) = 540-lon_values(lon_index) + "W"  ; west
+    lon_labels(lon_index) = (540-lon_values(lon_index)) + "W"  ; west
   end if
   delete(lon_index)
 
@@ -5625,6 +5625,14 @@ begin
       end if
     end if                
 
+;---Fix special case where map goes from 0 to 360, and not -180 to 180
+    if(isatt(res2,"mpMinLonF").and.isatt(res2,"mpMaxLonF").and.\
+       .not.isatt(res2,"mpCenterLonF").and.res2@mpMaxLonF.gt.180) then
+       res2@mpCenterLonF = (res2@mpMaxLonF+res2@mpMinLonF)/2.
+       print("gsn_csm_map_ce: Warning: you set mpMaxLonF to a value > 180, but")
+       print("                didn't set mpCenterLonF. Setting mpCenterLonF to " + res2@mpCenterLonF)
+    end if
+
 ; This section tests for more special resources: those that start
 ; with "gsn."
 
@@ -5670,7 +5678,7 @@ begin
                                              "corners"))
      print("gsn_csm_map_ce: Warning: you cannot use mpLimitMode=" + limit_mode + " with the gsm_csm_map routines.")
      return 
-   end if
+    end if
 ;
 ; If automatic tick marks are turned on, or if mpCenterLatF != 0
 ; (rotated map), then turn off gsn_csm generated tickmarks.
