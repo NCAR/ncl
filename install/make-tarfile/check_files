@@ -996,6 +996,7 @@ lib/ncarg/grib2_codetables/ecmwf/4/4.2.10.4.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.2.0.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.2.192.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.2.3.table
+lib/ncarg/grib2_codetables/ecmwf/4/4.2.2.4.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.3.0.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.3.1.table
 lib/ncarg/grib2_codetables/ecmwf/4/4.2.3.192.table
