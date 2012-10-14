@@ -3843,7 +3843,7 @@ NhlErrorTypes _NclINewDashPattern
 	NclHLUObj tmp_wks;
 	obj *wks_obj_ids;
 	string *dash_patterns;
-	NhlErrorTypes subret,ret = NhlNOERROR;
+	NhlErrorTypes subret=NhlNOERROR,ret = NhlNOERROR;
 	int *indexes = NULL;
 	int wks_is_missing = 0;
 
@@ -4265,9 +4265,11 @@ NhlErrorTypes _NclINewMarker
 	double *m_size_adj;
 	double *m_angle;
 	NclScalar m_x_off_missing, m_y_off_missing, m_aspect_adj_missing, m_size_adj_missing, m_angle_missing;
-	NhlErrorTypes subret,ret = NhlNOERROR;
+	NhlErrorTypes subret=NhlNOERROR,ret = NhlNOERROR;
 	int *indexes = NULL;
 	int wks_is_missing = 0;
+	double x_off,y_off,aspect_adj,size_adj,angle;
+	int font;
 
 	wks_obj_ids = (obj*)NclGetArgValue(
 			0,
@@ -4389,9 +4391,6 @@ NhlErrorTypes _NclINewMarker
 				indexes[ii] = NhlNewMarker(tmp_wks->hlu.hlu_id,"",0,0.0,0.0,0.0,0.0,0.0);
 			}
 			else {
-				double x_off,y_off,aspect_adj,size_adj,angle;
-				int font;
-
 				/* 
 				 * Parameters that are scalar apply to all markers, otherwise if not available
 				 * default values are used.
@@ -4449,6 +4448,7 @@ NhlErrorTypes _NclINewMarker
 				indexes[ii] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 			}
 			ret = MIN(ret,subret);
+
 			if (ret < NhlWARNING) {
 				goto RETURN;
 			}
