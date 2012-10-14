@@ -584,23 +584,6 @@ NclTypeRule(ulong,$(NUM_OP_TMPL))
 NclTypeRule(uint64,$(NUM_OP_TMPL))
 NclTypeRule(ubyte,$(NUM_OP_TMPL))
 
-
-#if defined(CRAY)
-BuiltInFuncs.o:  BuiltInFuncs.c
-	$(CC) -g $(CFLAGS) -c BuiltInFuncs.c
-#endif
-
-#if defined(linux)
-HLUFunctions.o: HLUFunctions.c
-        $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c HLUFunctions.c
-
-Memory.o: Memory.c
-        $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c Memory.c
-
-Machine.o: Machine.c
-        $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c Machine.c
-#endif
-
 #
 # Data Format Dependencies
 #
