@@ -65,6 +65,8 @@ on 7.4.0)
 n 1.0.0)
 
 
+----------------------------------------------------------------------
+Marker and dashline problem - See NCL-1473, NCL-1431, NCL-1164
 
 
 1. There are weird problems with the 2-line script:
@@ -80,12 +82,24 @@ fatal:Execute: Error occurred at or near line 2 in file test.ncl
 On wedge.rap.ucar.edu, compiling HLUFunctions.c *and* Memory.c with
 optimization turned off makes it work.
 
+---
 Later, in version 6.0.0 of NCL, and on k7.rap.ucar.edu, I had to
 compile just Execute.c and Machine.c with -g instead of -O. It's never
 consistent!  Grrr. With V6.1.0-beta, I saw the problem again. It
 appears that just compiling Machine.c with -g made it work.
 
+This didn't work for harmon.cgd, however, even with all three
+of these files compiled with -g. I even tried compiling all
+of the HLU and NCL source code with -g and it didn't work.
+I finally decided to revisit HLUFunctions.c to see if I
+could rewrite it in a way that might change the behavior.
+I did see a weird thing going on with the *index variable,
+so I got rid of this and just indexed "indexes" directly.
+---
+
 2. For same system as above, I also had to turn off optimization for
 "lib/hlu/Format.c" because it would cause the "tm04n.ncl" example to
 not generate the correct graphic.
+
+----------------------------------------------------------------------
 

@@ -3839,12 +3839,13 @@ NhlErrorTypes _NclINewDashPattern
 	NclScalar missing0;
 	NclScalar missing1;
 	int nwks;
-    ng_size_t i,j=0;
+	ng_size_t i,j=0,ii=0;
 	NclHLUObj tmp_wks;
 	obj *wks_obj_ids;
 	string *dash_patterns;
 	NhlErrorTypes subret,ret = NhlNOERROR;
 	int *indexes = NULL;
+	int wks_is_missing = 0;
 
 	wks_obj_ids = (obj*)NclGetArgValue(
 			0,
@@ -3872,7 +3873,6 @@ NhlErrorTypes _NclINewDashPattern
 
 	nwks = 0;
 	for (i = 0; i < size0; i++) {
-		int wks_is_missing = 0;
 		if (has_missing0 && wks_obj_ids[i] == missing0.objval) {
 			wks_is_missing = 1;
 		}
@@ -3886,20 +3886,20 @@ NhlErrorTypes _NclINewDashPattern
 			}
 		}
 		for( j = 0; j < size1; j++) {
-			int *index = indexes + i * size1 + j;
+		  ii = i * size1 + j;;
 			if (wks_is_missing) {
-				*index = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			  indexes[ii] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 				continue;
 			}
 			if (has_missing1 && (dash_patterns[j] == missing1.stringval)) {
-				*index = NhlNewDashPattern(tmp_wks->hlu.hlu_id,"");
+				indexes[ii] = NhlNewDashPattern(tmp_wks->hlu.hlu_id,"");
 			}
 			else {
-				*index = NhlNewDashPattern(tmp_wks->hlu.hlu_id,NrmQuarkToString(dash_patterns[j]));
+				indexes[ii] = NhlNewDashPattern(tmp_wks->hlu.hlu_id,NrmQuarkToString(dash_patterns[j]));
 			}
-			if (*index < 0) {
-				subret = (NhlErrorTypes) *index;
-				*index = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			if (indexes[ii] < 0) {
+				subret = (NhlErrorTypes) indexes[ii];
+				indexes[ii] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 			}
 			ret = MIN(ret,subret);
 			if (ret < NhlWARNING) {
@@ -3942,7 +3942,7 @@ NhlErrorTypes _NclINewDashPattern
 double *coerce_to_double(
 	void              *in,
 	NclBasicDataTypes type_in,
-	int               size_in,
+	ng_size_t         size_in,
 	int               has_missing_in,
 	NclScalar         *missing_in,
 	NclScalar         *missing_out)
@@ -4254,7 +4254,7 @@ NhlErrorTypes _NclINewMarker
 	void *val3,*val4,*val5,*val6,*val7;
 	ng_size_t size0,size1,size2,size3,size4,size5,size6,size7;
 	int nwks;
-	ng_size_t i,j=0;
+	ng_size_t i,j=0,ii;
 	NclHLUObj tmp_wks;
 	obj *wks_obj_ids;
 	string *marker_strings;
@@ -4267,6 +4267,7 @@ NhlErrorTypes _NclINewMarker
 	NclScalar m_x_off_missing, m_y_off_missing, m_aspect_adj_missing, m_size_adj_missing, m_angle_missing;
 	NhlErrorTypes subret,ret = NhlNOERROR;
 	int *indexes = NULL;
+	int wks_is_missing = 0;
 
 	wks_obj_ids = (obj*)NclGetArgValue(
 			0,
@@ -4366,7 +4367,6 @@ NhlErrorTypes _NclINewMarker
 
 	nwks = 0;
 	for (i = 0; i < size0; i++) {
-		int wks_is_missing = 0;
 		if (has_missing0 && wks_obj_ids[i] == missing0.objval) {
 			wks_is_missing = 1;
 		}
@@ -4380,13 +4380,13 @@ NhlErrorTypes _NclINewMarker
 			}
 		}
 		for( j = 0; j < size1; j++) {
-			int *index = indexes + i * size1 + j;
+		  ii = i * size1 + j;
 			if (wks_is_missing) {
-				*index = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+				indexes[ii] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 				continue;
 			}
 			if (has_missing1 && (marker_strings[j] == missing1.stringval)) {
-				*index = NhlNewMarker(tmp_wks->hlu.hlu_id,"",0,0.0,0.0,0.0,0.0,0.0);
+				indexes[ii] = NhlNewMarker(tmp_wks->hlu.hlu_id,"",0,0.0,0.0,0.0,0.0,0.0);
 			}
 			else {
 				double x_off,y_off,aspect_adj,size_adj,angle;
@@ -4441,12 +4441,12 @@ NhlErrorTypes _NclINewMarker
 					angle = (j >= size7 || (has_missing7 && (m_angle[j] == m_angle_missing.doubleval))) ?
 						0.0 : m_angle[j];
 				}
-				*index = NhlNewMarker(tmp_wks->hlu.hlu_id,NrmQuarkToString(marker_strings[j]),font,
+				indexes[ii] = NhlNewMarker(tmp_wks->hlu.hlu_id,NrmQuarkToString(marker_strings[j]),font,
 						      (float)x_off,(float)y_off,(float)aspect_adj,(float)size_adj,(float)angle);
 			}
-			if (*index < 0) {
-				subret = (NhlErrorTypes) *index;
-				*index = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			if (indexes[ii] < 0) {
+				subret = (NhlErrorTypes) indexes[ii];
+				indexes[ii] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 			}
 			ret = MIN(ret,subret);
 			if (ret < NhlWARNING) {
