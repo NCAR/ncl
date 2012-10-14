@@ -244,14 +244,6 @@ GRIDSPECSTUFF:
 	@echo "n"
 #endif
 
-#ifdef	BuildESMF
-ESMFSTUFF:
-	@echo "y"
-#else
-ESMFSTUFF:
-	@echo "n"
-#endif
-
 #ifdef BuildGRIB2
 GRIB2STUFF:
 	@echo "y"
