@@ -24,7 +24,6 @@ set incdir   = `ncargpath SED_INCDIR`
 set syslibdir = "SED_LIBSEARCH"
 set sysincdir = "SED_INCSEARCH"
 set ro       = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
-set f77libs  = "SED_CTOFLIBS"
 set newargv = "$f77 $loadflags"
 set libpath = "-L$libdir $syslibdir"
 set incpath = "-I$incdir $sysincdir"
@@ -91,7 +90,7 @@ if ($?NGMATH_LD && $?NGMATH_BLOCKD_LD) then
 endif
 
 set ncarg_libs = "$libhlu $libncarg $libgks $libncarg_c $libmath"
-set newargv = "$newargv $libpath $incpath $extra_libs $robjs $ncarg_libs $xlibs $cairolib $f77libs"
+set newargv = "$newargv $libpath $incpath $extra_libs $robjs $ncarg_libs $xlibs $cairolib"
 
 
 echo $newargv
