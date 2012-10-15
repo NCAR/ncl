@@ -47,7 +47,6 @@ set stub_file   = ""
 #
 set libncarg  =  "-lncarg"
 set libgks     = "-lSED_LIBNCARG_GKS"
-set libcgks    = "-lSED_LIBNCARG_CGKS"
 set libncarg_c = "-lncarg_c"
 set libmath  = ""
 
