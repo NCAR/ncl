@@ -220,7 +220,7 @@
 #endif	/* PNGlib */
 
 #ifndef CAIROlib
-#define CAIROlib  -lcairo -lXrender -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lbz2 -lpthread
+#define CAIROlib -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lpthread -lbz2 -lXrender
 #endif
 
 #ifndef	HDFEOSlib
