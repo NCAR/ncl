@@ -8,7 +8,7 @@
 <h1>How to build NCL and NCAR Graphics version 6.1.0 from source code</h1>
 <p>
 
-<i>May 28, 2012</i><p>
+<i>October 15, 2012</i><p>
  
 This is an all-encompassing document on:
 
@@ -142,8 +142,6 @@ non-optional external software</A><br>
 external software</A><br>
 
 <UL>
-<LI><A HREF="#ESMF">ESMF</A>
-
 <LI><A HREF="#GRIB2">GRIB2</A>
 <UL>
 <LI><A HREF="#Jasper">Jasper</a>
@@ -263,19 +261,21 @@ Here's what's new about the source code instructions since version
 <ol>
 
 <li>The graphical display model has been upgraded, and hence
-building <a href="#CAIRO">cairo</a> and some supplemental
+building <a href="#cairo">cairo</a> and some supplemental
 software is no longer optional.
 <p>
 
-<li>If you want to use the
+<li>The
 new <a href="http://www.ncl.ucar.edu/Applications/ESMF.shtml">ESMF
-regridding software</a>, then you will need to build an application
-called
+regridding software</a> in NCL uses an application called
 "<a href="http://www.earthsystemmodeling.org/esmf_releases/last_built/ESMF_refdoc/node3.html#SECTION03020000000000000000">ESMF_RegridWeightGen</a>",
 which is part of
 the <a href="http://www.earthsystemmodeling.org/">Earth System
-Modeling Framework</a>. See the <a href="#ESMF">ESMF section
-below</a>.
+Modeling Framework</a>. A serial version of this application is
+included when you download a precompiled NCL binary.  If you want to
+build a parallelized version of this application, then see the
+<a href="http://www.earthsystemmodeling.org/esmf_releases/public/last/ESMF_usrdoc/">Quick
+Start</a> section of the ESMF User Guide.
 <p>
 
 <li>Some external software packages have newer versions. For example,
@@ -290,10 +290,6 @@ version <a href="http://www.unidata.ucar.edu/downloads/netcdf/netcdf-4_1_3/index
 4.1.3</a> will work too.
 <p>
 
-If you want to use the ESMF regridding features, then you will also
-need to build the Fortran 90 and C++ interfaces. 
-<p>
-
 </ol>
 <p>
 
@@ -306,11 +302,10 @@ need to build the Fortran 90 and C++ interfaces.
 <b>Compilers needed to build NCL</b><p>
 
 To build NCL, you need a Fortran compiler that can compile both
-Fortran 77 and 90 and an ANSI C compiler. To build the ESMF software,
-you additionally need a C++ compiler. If your system has native
-Fortran and C compilers (for example "xlf" on IBM/AIX systems), we
-recommend using these. In addition to native compilers, NCL has been
-successfully built with a wide-range of compilers
+Fortran 77 and 90 and an ANSI C compiler. To build the ESMF software
+(only required if you want a parallel version of
+ESMF_RegridWeightGen), you additionally need a C++ compiler.  NCL has
+been successfully built with a wide-range of compilers
 including <a href="http://gcc.gnu.org/">gcc</a>, <a href="http://gcc.gnu.org/wiki/GFortran">gfortran</a>, <a href="http://g95.org/">g95</a>, <a href="http://software.intel.com/en-us/articles/intel-compilers/">Intel
 Fortran/C</a>, and <a href="http://www.pgroup.com/">Portland
 Group</a>. <i>You cannot use g77 as a Fortran compiler</i>.
@@ -467,6 +462,12 @@ the "root" password, then you may want to use a directory other than
 /usr/local, like a directory under your home directory.
 <p>
 
+You may not need to install all of this software from source code!  If
+you are on a Linux system, you might be able to use "yum" or "apt-get"
+to download the desired software. On Macs, you might be able to
+use <a href="http://www.macports.org/">MacPorts</a>. Under Cygwin, the
+"setup.exe" program can be used.
+<p>
 
 <ul>
 
@@ -525,7 +526,8 @@ model introduced in NCL and NCAR Graphics V6.1.0.
 <p>
 
 Cairo and its supplemental packages may already be on your system
-(Macs and Cygwin), so check this before you start building them.<p>
+(Linux, MacOSX, and Cygwin), so check this before you start building
+them. <p>
 
 <ul>
 <A NAME="PNG"></A>
@@ -965,72 +967,6 @@ install all of the external software needed to the same parent
 directory.  We will use <i>/usr/local</i> in all of our examples below
 for installing external software.
 <p>
-
-<A NAME="ESMF"></A>
-<b>ESMF software</b> - not needed if you are only doing an NCAR
-Graphics build or don't need to use ESMF regridding in NCL.<p>
-
-If you need to use
-the <a href="http://www.ncl.ucar.edu/Applications/ESMF.shtml">ESMF
-regridding functions</a>, then you will need to build
-"<a href="http://www.earthsystemmodeling.org/esmf_releases/last_built/ESMF_refdoc/node3.html">ESMF_RegridWeightGen</a>",
-which is part of
-the <a href="http://www.earthsystemmodeling.org/">Earth System
-Modeling Framework</a>.
-<p>
-
-<b>Note:</b>: This software does not need to be built before you build
-NCL!  It is only required if you start running NCL scripts that call
-any of the new ESMF functions.
-<p>
-
-To build ESMF_RegridWeightGen, download ESMF version 5.2.0rp2 or
-later,
-using <a href="http://www.earthsystemmodeling.org/esmf_releases/public/last/reg/ESMF_Framework_Reg.html">this
-short form</a>.
-<p>
-
-Building this application requires:
-<p>
-
-<ul>
-<li>Building <a href="#NetCDF">NetCDF</a>, including the NetCDF C++
-interface.  
-
-<li>Having lapack/blas installed on your system (you can use
-the "liblapack_ncl.a" and "libblas_ncl.a" libraries that
-are built as part of NCL.
-
-<li>Using gcc/gfortran version 4.2.x or higher.
-
-<li>Using "gmake" (although "make" has worked for us on occasion).
-
-<li>Setting several environment variables to include where to install
-ESMF, what the location of your NetCDF libraries and include files
-are, what the location of your lapack/blas libraries are, what
-compilers to use, etc.<p>
-
-Here are some samples, which you will likely need to modify to have
-the correct paths:
-<p>
-
-<ul>
-<li><a href="http://www.ncl.ucar.edu/Download/files/ESMF_MacLinux_32bit.txt">MacOSX/LINUX 32-bit</a>
-<li><a href="http://www.ncl.ucar.edu/Download/files/ESMF_MacLinux_64bit.txt">MacOSX/LINUX 64-bit</a>
-</ul>
-</ul>
-<p>
-
-Once you have the above, then install the ESMF software with:<p>
-
-<pre>
-  gmake all install     # or make all install
-</pre>
-<p>
-
-If you have trouble building the ESMF software, email the ESMF
-developers
-at <a href="mailto:esmf_support@list.woc.noaa.gov">esmf_support@list.woc.noaa.gov</a>.<p>
 
 <A NAME="GRIB2"></A>
 <b>GRIB2 software</b> - not needed if you are only doing an NCAR
