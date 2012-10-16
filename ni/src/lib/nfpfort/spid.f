@@ -7,26 +7,32 @@ C NCLEND
 c compute SPI: Standardized Precipitation Index using gamma distribution
 
 c local/dynamic
-      integer maxyrs, j, i, im, n
+      integer maxyrs, j, i, im, n, kmsg, kntp
       double precision tmparr(ntim/12+1)
       double precision alpha(12), beta(12), gamm(12), pzero(12)
       double precision anvnrmd, gamcdfd
 
       maxyrs = ntim/12
 c
-c	The first nrun-1 index values will be missing.
+c	Initialize index and check for all missing values
 c
-      do j=1,nrun-1
+      kmsg = 0
+      do j=1,ntim    
          index(j) = pmsg
+         if (pp(j).eq.pmsg) then
+             kmsg = kmsg+1
+         end if
       end do
+      if (kmsg.eq.ntim) return
 c
 c	Sum nrun precip. values;
 c	store them in the appropriate index location.
+c	The first nrun-1 index values will be missing.
 c
 c	If any value is missing; set the sum to missing.
 c
       do j=nrun,ntim
-         index(j) = 0.0
+         index(j) = 0.0d0
         do i=0,nrun-1
            if (pp(j-i) .ne. pmsg) then
                index(j) = index(j) + pp(j-i)
@@ -54,7 +60,10 @@ c
 c
 c	Here's where we do the fitting.
 c
-        call gamfitd(tmparr,n, alpha(im), beta(im), gamm(im), pzero(im))
+        if (n.gt.0) then
+            call gamfitd(tmparr,n
+     +                  ,alpha(im), beta(im), gamm(im), pzero(im))
+        end if
 
       end do
 c
@@ -88,22 +97,22 @@ ccc
       data c0, c1, c2 /2.515517, 0.802853, 0.010328/
       data d1, d2, d3 /1.432788, 0.189269, 0.001308/
 
-      if (prob .gt. 0.5) then
-          sign = 1.0
-          prob = 1.0 - prob
+      if (prob .gt. 0.5d0) then
+          sign = 1.0d0
+          prob = 1.0d0 - prob
       else
-          sign = -1.0
+          sign = -1.0d0
       endif
       if (prob .lt. 0.0) then
           write(*, *) 'Error in anvnrmd(). Prob. not in [0,1.0]'
-          anvnrmd = 0.0
+          anvnrmd = 0.0d0
           return
       endif
-      if (prob .eq. 0.0) then
-          anvnrmd = 1.0e37 * sign
+      if (prob .eq. 0.0d0) then
+          anvnrmd = 1.0d37 * sign
           return
       endif
-      t       = sqrt(log (1.0 / (prob * prob)))
+      t       = sqrt(log (1.0d0 / (prob * prob)))
       anvnrmd = (sign * (t - ((((c2 * t) + c1) * t) + c0) /
      1          ((((((d3*t)+d2)*t)+d1)*t)+1.0)))
       return
@@ -133,14 +142,14 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           write(*, *) 'Error in gamfitd - empty data array'
           stop
       endif
-      sum    = 0.0
-      sumlog = 0.0
-      pzero  = 0.0
+      sum    = 0.0d0
+      sumlog = 0.0d0
+      pzero  = 0.0d0
       nact   = 0
 
 c	compute sums
       do 10 i = 1, n
-      if (datarr(i) .gt. 0.0) then
+      if (datarr(i) .gt. 0.0d0) then
           sum = sum + datarr(i)
           sumlog = sumlog + log(datarr(i))
           nact = nact + 1
@@ -149,20 +158,20 @@ c	compute sums
       endif
    10 continue
       pzero = pzero / n
-      if (nact .ne. 0.0) av = sum / nact
+      if (nact .ne. 0) av = sum / nact
 
 c	Bogus data array but do something reasonable
       if(nact .eq. 1) then
-         alpha = 0.0
-         gamm  = 1.0
+         alpha = 0.0d0
+         gamm  = 1.0d0
          beta  = av
          return
       endif
 
 c	They were all zeroes.
-      if(pzero .eq. 1.0) then
-         alpha = 0.0
-         gamm  = 1.0
+      if(pzero .eq. 1.0d0) then
+         alpha = 0.0d0
+         gamm  = 1.0d0
          beta  = av
          return
       endif
@@ -173,7 +182,7 @@ c       Thom (1958): Monthly Weather Review, pp 117-122.
 c       eqn 22 for gamma; just above eqn 21 "A" => alpha
 
       alpha = log(av) - sumlog / nact
-      gamm  = (1.0 + sqrt (1.0 + 4.0 * alpha / 3.0)) / (4.0 * alpha)
+      gamm  = (1.0d0 + sqrt(1.0d0 + 4.0d0*alpha/ 3.0d0)) /(4.0d0*alpha)
       beta  = av / gamm
       
       return
@@ -196,10 +205,10 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       double precision beta, gamm, pzero, x
       double precision gammapd
 
-      if(x .le. 0.0) then
+      if(x .le. 0.0d0) then
          gamcdfd = pzero
       else
-         gamcdfd = pzero + (1.0 - pzero) * gammapd (gamm, x / beta)
+         gamcdfd = pzero + (1.0d0 - pzero) * gammapd (gamm, x / beta)
       endif
 
       return
@@ -296,7 +305,7 @@ c
       double precision gammlnd
 
 c     Maximum number of iterations, and bound on error.
-      parameter (maxitr=100, eps=3.0e-7)
+      parameter (maxitr=100, eps=3.0d-7)
       data iwarn /0/
 
       gln = gammlnd (a)
