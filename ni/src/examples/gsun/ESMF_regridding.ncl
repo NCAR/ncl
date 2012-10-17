@@ -2482,7 +2482,7 @@ begin
   v   = fid->S
 
 ;---Check that the column indexes will map into src_grid_dims
-  if ( max(col).gt.product(src_grid_dims) ) then
+  if ( max(col).gt.product(srcData_rgt_dims) ) then
     print("ESMF_regrid_with_weights: error: source data on the description")
     print("     file does not have proper dimensions.")
     return(fmsg)
@@ -2501,7 +2501,6 @@ begin
   else
     x = reshape(srcData,product(srcData_dims))
   end if
-
 ;
 ; Note from Mohammad:
 ;   Currently there is a problem with ESMF files.
