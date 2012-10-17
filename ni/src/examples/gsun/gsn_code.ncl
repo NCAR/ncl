@@ -5906,7 +5906,22 @@ begin
 ; to 1D for markers, and 2D for lines.
 ;----------------------------------------------------------------------
 
-  if(res2.and.isatt(res2,"gsnCoordsX").and.isatt(res2,"gsnCoordsY")) then
+  if(res2.and.isatt(res2,"gsnCoordsLat").and.isatt(res2,"gsnCoordsLon")) then
+    type_xcoord = "res_coord"
+    type_ycoord = "res_coord"
+    if(draw_lines) then
+      xcoord_2d = res2@gsnCoordsLon
+      ycoord_2d = res2@gsnCoordsLat
+    else
+      xcoord_1d = ndtooned(res2@gsnCoordsLon)
+      ycoord_1d = ndtooned(res2@gsnCoordsLat)
+    end if
+    delete(res2@gsnCoordsLat)
+    delete(res2@gsnCoordsLon)
+  end if
+
+  if(res2.and.type_xcoord.eq."".and.type_ycoord.eq."".and.\
+     isatt(res2,"gsnCoordsX").and.isatt(res2,"gsnCoordsY")) then
     type_xcoord = "res_coord"
     type_ycoord = "res_coord"
     if(draw_lines) then
