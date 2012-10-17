@@ -13,7 +13,14 @@
 ;
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
-;    Modifications:
+;    Important modifications:
+;       16 Oct 2012:
+;           ESMF_regrid and ESMF_regrid_with_weights will now
+;              return float if a float is input. Double is 
+;              returned otherwise. If you still want a double 
+;              returned, set ReturnDouble to True.
+;              This was changed AFTER 6.1.0-beta.
+;
 ;       31 Jul 2012:
 ;           Added a check_grid_type function to check for valid
 ;              grid types ("rectilinear","5deg","G64", etc) and
@@ -546,6 +553,28 @@ begin
   print("check_grid_type: invalid grid type")
   return(bad_ret)
 end 
+
+;======================================================================
+; This procedure is just for writing data to a netcdf file. I
+; wrote it for debug purposes.
+;======================================================================
+undef("debug_write_file")
+procedure debug_write_file(opt,attname,var)
+local fout
+begin
+  if(isatt(opt,attname)) then
+    if(isfilepresent(opt@$attname$))
+      system("/bin/rm " + opt@$attname$)
+    end if
+    fout = addfile(opt@$attname$,"c")
+    print("----------------------------------------------------------------------")
+    print("...Writing data to '" +opt@$attname$+"' for")
+    print("...debug purposes.")
+    print("----------------------------------------------------------------------")
+    fout->var = var
+    delete(fout)   ; close data file
+  end if
+end
 
 ;======================================================================
 ; This procedure is meant as a replacement for 
@@ -2297,6 +2326,16 @@ begin
 ;---Check for options
   PrintTimings = isatt_logical_true(opt,"PrintTimings")
   DEBUG        = isatt_logical_true(opt,"Debug")
+;
+; If the input type is float, and the user hasn't explicitly set
+; ReturnDouble to True, then floats will be returned.
+;
+  if(typeof(srcData).ne."double".and.\
+     .not.isatt_logical_true(opt,"ReturnDouble")) then
+    ReturnFloat = True
+  else
+    ReturnFloat = False
+  end if
 
   if(PrintTimings) then
     start_time = get_start_time()
@@ -2336,6 +2375,22 @@ begin
     return(fmsg)
   else
     fid = addfile(wgtFile,"r")
+  end if
+
+;
+; Apply frac_b only for conservative interpolation. We may
+; change this later to let the user decide when to apply.
+; The ESMF folks said that it was only needed for the
+; "conserve" case, but I need to check on this.
+;
+  if(isatt(fid,"map_method").and.\
+     fid@map_method.eq."Conservative remapping") then
+    ApplyFrac_B = True
+    frac_b = fid->frac_b
+    frac_b@_FillValue = default_fillvalue(typeof(frac_b))
+    frac_b = where(frac_b.eq.0,frac_b@_FillValue,frac_b)
+  else
+    ApplyFrac_B = False
   end if
 
 ;---Get the lat/lon of source and destination grids
@@ -2397,15 +2452,18 @@ begin
     print("                          longitude min/max:" + min(dstlon) + "/" + max(dstlon))
   end if
 
-;---Check that the rightmost dimensions are the same.
+;
+; The source dimensions on the description file will not 
+; necessarily be the same as the original source dimensions
+; of the grid you want to regrid from. You have to take
+; that into account in this whole procedure, and make sure
+; you use the correct dimensions depending on what you're
+; doing.
+;
   if(.not.is_src_grid_scalar.and.srcData_rank.gt.src_grid_rank) then
     srcData_lft_ndims = srcData_rank - src_grid_rank
     srcData_rgt_dims  = srcData_dims(srcData_lft_ndims:)
     srcData_lft_dims  = srcData_dims(0:srcData_lft_ndims-1)
-    if(.not.all(srcData_rgt_dims.eq.src_grid_dims)) then
-      print("ESMF_regrid_with_weights: error: input or source data does not have proper rightmost dimensions.")
-      return(fmsg)
-    end if
   else
     srcData_rgt_dims  = srcData_dims
     srcData_lft_ndims = 0
@@ -2422,10 +2480,11 @@ begin
   row = fid->row
   col = fid->col
   v   = fid->S
-    
-;---Check srcData dimensions
-  if ( max(col).gt.product(srcData_rgt_dims) ) then
-    print("ESMF_regrid_with_weights: error: source data does not have proper dimensions.")
+
+;---Check that the column indexes will map into src_grid_dims
+  if ( max(col).gt.product(src_grid_dims) ) then
+    print("ESMF_regrid_with_weights: error: source data on the description")
+    print("     file does not have proper dimensions.")
     return(fmsg)
   end if
     
@@ -2473,35 +2532,89 @@ begin
 ; We will need to reshape the return (M) x N grid from
 ; sparse_matrix_mult if the output dimensions are not 1D.
 ;
+; We also need to divide by frac_b if using the "conserve"
+; method. We are trying to avoid making a separate copy
+; of the array, if float return is desired. So, we have
+; 8 special "if" tests to avoid this as much as possible:
+;
+; Return array has to be reshaped and converted to float
+;   Case 1: Apply frac_b
+;   Case 2: Don't apply frac_b
+; Return array has to be reshaped, but leave as double
+;   Case 3: Apply frac_b
+;   Case 4: Don't apply frac_b
+; Return array has to be converted to float (no reshaping)
+;   Case 5: Apply frac_b
+;   Case 6: Don't apply frac_b
+; Return array left as double (no reshaping)
+;   Case 7: Apply frac_b, convert to float
+;   Case 8: Convert to float
+;
+  if(ApplyFrac_B.and.DEBUG) then 
+    print("ESMF_regrid_with_weights: dividing results by frac_b...")
+    print("            (currently for conserve interpolation only)")
+  end if
+
   if(dst_grid_rank.gt.1) then
     dst_grid_dims_out = new(srcData_lft_ndims+dst_grid_rank,long)
     if(.not.is_src_grid_scalar.and.srcData_rank.gt.src_grid_rank) then
       dst_grid_dims_out(0:srcData_lft_ndims-1) = srcData_lft_dims
     end if
     dst_grid_dims_out(srcData_lft_ndims:) = dst_grid_dims
-    dstData = reshape(sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims_in),\
-                      dst_grid_dims_out)
+    if(ReturnFloat) then
+;---Case 1: Apply frac_b, reshape, convert to float
+      if(ApplyFrac_B) then
+        dstData = tofloat(reshape(sparse_matrix_mult(row-1,col-1,v,x,\
+                  dst_grid_dims_in),dst_grid_dims_out) / \
+                  reshape(frac_b,dst_grid_dims_out))
+      else
+;---Case 2: Reshape, convert to float
+        dstData = tofloat(reshape(sparse_matrix_mult(row-1,col-1,v,x,\
+                  dst_grid_dims_in),dst_grid_dims_out))
+      end if
+    else
+;---Case 3: Apply frac_b, reshape, leave as double
+      if(ApplyFrac_B) then
+        dstData = reshape(sparse_matrix_mult(row-1,col-1,v,x,\
+                  dst_grid_dims_in),dst_grid_dims_out) / \
+                  reshape(frac_b,dst_grid_dims_out)
+      else
+;---Case 4: Reshape, leave as double
+        dstData = reshape(sparse_matrix_mult(row-1,col-1,v,x,\
+                  dst_grid_dims_in),dst_grid_dims_out)
+      end if
+    end if
   else
-    dstData = sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims_in)
+    if(ReturnFloat) then
+;---Case 5: Apply frac_b, convert to float (no reshape)
+      if(ApplyFrac_B) then
+        dstData = tofloat(sparse_matrix_mult(row-1,col-1,v,x,\
+                  dst_grid_dims_in)/frac_b)
+      else
+;---Case 6: Convert to float (no reshape)
+        dstData = tofloat(sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims_in))
+      end if
+    else
+;---Case 7: Apply frac_b, leave as double (no reshape)
+      if(ApplyFrac_B) then
+        dstData = sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims_in)/frac_b
+      else
+;---Case 8: Leave as double (no reshape)
+        dstData = sparse_matrix_mult(row-1,col-1,v,x,dst_grid_dims_in)
+      end if
+    end if
+  end if
+
+;---Clean up to save memory
+  if(ApplyFrac_B) then
+    delete(frac_b)
   end if
 
 ;---Make sure dstData has a missing value
   if(isatt(srcData,"_FillValue")) then
-    dstData@_FillValue = srcData@_FillValue
+    dstData@_FillValue = totypeof(srcData@_FillValue,typeof(dstData))
   else
     dstData@_FillValue = default_fillvalue(typeof(dstData))
-  end if
-
-;---Apply frac_b only for conservative interpolation.
-  if(isatt(fid,"map_method").and.\
-     fid@map_method.eq."Conservative remapping") then
-    if(DEBUG)
-      print("ESMF_regrid_with_weights: dividing results by frac_b...")
-      print("                          (for conserve interpolation only)")
-    end if
-    frac_b            = reshape(fid->frac_b,dimsizes(dstData))
-    frac_b@_FillValue = default_fillvalue(typeof(frac_b))
-    dstData = dstData/where(frac_b.eq.0,frac_b@_FillValue,frac_b)
   end if
 
 ;---Check if we need to remap the values onto a larger 2D grid.
@@ -2538,6 +2651,9 @@ begin
   if(PrintTimings) then
     print_elapsed_time(start_time,"ESMF_regrid_with_weights")
   end if
+
+;;;;;DEBUG CODE ONLY
+  debug_write_file(opt,"ESMFDebugFilename",dstData)
 
   return(dstData)
 end     ; of ESMF_regrid_with_weights(...)
