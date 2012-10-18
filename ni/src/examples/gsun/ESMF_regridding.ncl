@@ -2369,12 +2369,16 @@ begin
   end if
 
 ;---Make sure the weight file is accessible
+  map_method = "unknown"
   if (.not.(isfilepresent(wgtFile))) then
     print("ESMF_regrid_with_weights: cannot open weight file '" + \
           wgtFile + "'.")
     return(fmsg)
   else
     fid = addfile(wgtFile,"r")
+    if(isatt(fid,"map_method")) then
+      map_method = fid@map_method
+    end if
   end if
 
 ;
@@ -2383,8 +2387,7 @@ begin
 ; The ESMF folks said that it was only needed for the
 ; "conserve" case, but I need to check on this.
 ;
-  if(isatt(fid,"map_method").and.\
-     fid@map_method.eq."Conservative remapping") then
+  if(map_method.eq."Conservative remapping") then
     ApplyFrac_B = True
     frac_b = fid->frac_b
     frac_b@_FillValue = default_fillvalue(typeof(frac_b))
@@ -2643,16 +2646,37 @@ begin
 ;---Copy variable attributes and coordinate arrays if requested.
   delete(fid)    ; close weight file before it gets opened again
   ESMF_copy_varmeta(srcData,dstData,wgtFile,opt)
-  if (isatt(srcData,"long_name")) then
-    dstData@long_name = "remapped " + srcData@long_name
+
+;--------------------------------------------------
+; Clean up, add, and remove attributes.
+;--------------------------------------------------
+  if (.not.isatt(dstData,"remap")) then
+    dstData@remap = "remapped via ESMF_regrid_with_weights: "+map_method
   end if
 
-  if(PrintTimings) then
-    print_elapsed_time(start_time,"ESMF_regrid_with_weights")
+  if(.not.isatt(dstData,"missing_value")) then
+    dstData@missing_value = dstData@_FillValue
+  else
+    if(typeof(dstData@missing_value).ne.typeof(dstData)) then
+      tmp_msg = totypeof(dstData@missing_value,typeof(dstData))
+      delete(dstData@missing_value)
+      dstData@missing_value = tmp_msg
+    end if
+  end if
+
+  if(isatt(dstData,"_FillValue_original")) then
+    delete(dstData@_FillValue_original)
+  end if
+  if(isatt(dstData,"missing_value_original")) then
+    delete(dstData@missing_value_original)
   end if
 
 ;;;;;DEBUG CODE ONLY
   debug_write_file(opt,"ESMFDebugFilename",dstData)
+
+  if(PrintTimings) then
+    print_elapsed_time(start_time,"ESMF_regrid_with_weights")
+  end if
 
   return(dstData)
 end     ; of ESMF_regrid_with_weights(...)
@@ -3086,9 +3110,6 @@ begin
 
 ;---Regrid the input variable
   srcData_regrid = ESMF_regrid_with_weights(srcData,wgt_file_name,opt2)
-
-;---Copy variable attributes and coordinate arrays if requested.
-  ESMF_copy_varmeta(srcData,srcData_regrid,wgt_file_name,opt2)
 
 ;---Clean up, if desired
   if (remove_src_file) then
