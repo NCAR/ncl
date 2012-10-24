@@ -1961,8 +1961,8 @@ begin
   lon = fwgt->xc_b(0:mlon-1)
   if(.not.is_rectilinear) then
 ;---Test for "rectilinear-ness"
-     if (all(lat.eq.fwgt->yc_b(nlat/2::mlon)).and. \
-         all(lon.eq.fwgt->xc_b(mlon:2*mlon-1))) then
+    if (all(lat.eq.fwgt->yc_b((mlon/2)::mlon)).and. \
+        all(lon.eq.fwgt->xc_b(mlon:2*mlon-1))) then
        if(DEBUG) then
          print("ESMF_copy_varcoords: detected a rectilinear grid.")
          dq = str_get_dq()
