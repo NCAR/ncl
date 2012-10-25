@@ -3416,8 +3416,12 @@ begin
       pltTypeLocal = pltType
   end if
   wks  = gsn_open_wks(pltTypeLocal, pltPath)  
-  if (opt .and. isatt(opt,"colorTable")) then
-     gsn_define_colormap(wks,opt@colorTable) 
+  if (opt .and. isatt(opt,"colorTable") .or. isatt(opt,"pltColorTable")) then
+      if (isatt(opt,"colorTable")) then
+          gsn_define_colormap(wks,opt@colorTable) 
+      else
+          gsn_define_colormap(wks,opt@pltColorTable) 
+      end if
   else
      gsn_define_colormap(wks,"amwg") 
   end if
