@@ -9,11 +9,19 @@
 ; See notes below.
 ;
 ; A debt of gratitude is owed to the ESMF development team, and 
-; especially Robert Oehmke, for help in\ using the ESMF software.
+; especially Robert Oehmke, for help in using the ESMF software.
 ;
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       25 Oct 2012:
+;           The LargeFile option is now True by default.
+;
+;       17 Oct 2012:
+;           Attributes attached to regridded variable were
+;           cleaned up. A new "remap" attribute will be attached
+;           to the regridded variable.
+;
 ;       16 Oct 2012:
 ;           ESMF_regrid and ESMF_regrid_with_weights will now
 ;              return float if a float is input. Double is 
@@ -882,7 +890,7 @@ begin
     check_for_file(FName,Opt)
 
 ;---Do we need to create a large file?
-    if (isatt_logical_true(Opt,"LargeFile")) then
+    if (.not.isatt_logical_false(Opt,"LargeFile")) then
       setfileoption("nc","Format","LargeFile") 
     end if
 
@@ -1076,7 +1084,7 @@ begin
     check_for_file(FName,Opt)
 
 ;---Do we need to create a large file?
-    if (isatt_logical_true(Opt,"LargeFile")) then
+    if (.not.isatt_logical_false(Opt,"LargeFile")) then
       setfileoption("nc","Format","LargeFile") 
     end if
 
@@ -2249,7 +2257,7 @@ begin
     end if
 
 ;---This flag is necessary for writing vars > 2 GB
-    if (isatt_logical_true(opt2,"LargeFile")) then
+    if (.not.isatt_logical_false(opt2,"LargeFile")) then
         ESMFCMD = ESMFCMD + " --64bit_offset"
     end if
 
