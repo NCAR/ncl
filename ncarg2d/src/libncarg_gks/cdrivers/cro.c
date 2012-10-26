@@ -517,7 +517,7 @@ int cro_ClearWorkstation(GKSC *gksc) {
         free(outputFile);
     }
 
-#ifdef __APPLE__   /* Jira NCL-1530 */
+#ifdef __JIRA1530__ 
     else if (psa->wks_type == CX11) {
         cairo_push_group(context);
     }
@@ -641,7 +641,7 @@ int cro_Esc(GKSC *gksc) {
 
     case ESCAPE_PAUSE:
         if (psa->wks_type == CX11) {
-#ifdef __APPLE__   /* Jira NCL-1530  */
+#ifdef __JIRA1530__ 
           cairo_pop_group_to_source(getContext(psa->wks_id));
           cairo_paint(getContext(psa->wks_id));
 #endif
@@ -998,7 +998,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
      */
     cairo_set_source_rgba(context, 0., 0., 0., 1.);
 
-#ifdef __APPLE__   
+#ifdef __JIRA1530__   
         /* Jira NCL-1530:  this is a work-around between a buggy interaction with XQuartz 2.7.x
          * and cairo. We do this last to preserve the graphics-state set in the previous
          * lines.    9/20/2012  RLB
