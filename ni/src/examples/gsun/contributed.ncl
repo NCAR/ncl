@@ -12029,7 +12029,7 @@ begin
        print(" [24]     Lower 5.0%="+statx(24) ) 
        print(" [25]     Upper 5.0%="+statx(25) ) 
        print(" [26]     Upper 1.0%="+statx(26) ) 
-       print(" [27]     Upper 0.0%="+statx(27) ) 
+       print(" [27]     Upper 0.1%="+statx(27) ) 
        print(" [28]       Skewness="+statx(28) ) 
        print(" [29]       Kurtosis="+statx(29) ) 
        print(" ")
