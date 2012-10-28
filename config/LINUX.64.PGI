@@ -17,7 +17,10 @@
 #define CcOptions -tp k8-64 -O -Msignextend -Mreentrant -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 #define FcOptions  -tp k8-64 -O -Msignextend -Mreentrant -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 /*
+ * You can try one of these, if you are using "gcc" as a compiler,
+ * instead of pgcc:
 #define CtoFLibraries -lpgc -lpgf90  -lpgf90_rpm1  -lpgf902 -lpgftnrtl -lpghpf
+#define CtoFLibraries -L/usr/pgi/linux86-64/12.9/lib  -lpgmp -lnuma -lpthread -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgf90rtl -lpgftnrtl -lnspgc -lpgc -lrt -lpthread -lm
  */
 #define CtoFLibraries -pgf90libs
 #define XToolLibrary -lXt -lSM -lICE

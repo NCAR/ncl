@@ -9,11 +9,19 @@
 ; See notes below.
 ;
 ; A debt of gratitude is owed to the ESMF development team, and 
-; especially Robert Oehmke, for help in\ using the ESMF software.
+; especially Robert Oehmke, for help in using the ESMF software.
 ;
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       25 Oct 2012:
+;           The LargeFile option is now True by default.
+;
+;       17 Oct 2012:
+;           Attributes attached to regridded variable were
+;           cleaned up. A new "remap" attribute will be attached
+;           to the regridded variable.
+;
 ;       16 Oct 2012:
 ;           ESMF_regrid and ESMF_regrid_with_weights will now
 ;              return float if a float is input. Double is 
@@ -882,7 +890,7 @@ begin
     check_for_file(FName,Opt)
 
 ;---Do we need to create a large file?
-    if (isatt_logical_true(Opt,"LargeFile")) then
+    if (.not.isatt_logical_false(Opt,"LargeFile")) then
       setfileoption("nc","Format","LargeFile") 
     end if
 
@@ -1076,7 +1084,7 @@ begin
     check_for_file(FName,Opt)
 
 ;---Do we need to create a large file?
-    if (isatt_logical_true(Opt,"LargeFile")) then
+    if (.not.isatt_logical_false(Opt,"LargeFile")) then
       setfileoption("nc","Format","LargeFile") 
     end if
 
@@ -1959,10 +1967,21 @@ begin
 
   lat = fwgt->yc_b(0::mlon)
   lon = fwgt->xc_b(0:mlon-1)
+
+;---Test for "rectilinear-ness". Do two cases just to be safe.
   if(.not.is_rectilinear) then
-;---Test for "rectilinear-ness"
-     if (all(lat.eq.fwgt->yc_b(nlat/2::mlon)).and. \
-         all(lon.eq.fwgt->xc_b(mlon:2*mlon-1))) then
+    iln2 = mlon/2
+    ilt2 = nlat/2
+    iln3 = mlon/3
+    ilt3 = nlat/3
+    if (any(lat.ne.fwgt->yc_b(iln2::mlon)).or. \
+        any(lat.ne.fwgt->yc_b(iln3::mlon)).or. \
+        any(lon.ne.fwgt->xc_b(ilt2*mlon:(ilt2+1)*mlon-1)).or.\
+        any(lon.ne.fwgt->xc_b(ilt3*mlon:(ilt3+1)*mlon-1))) then
+       sd_regrid@lat2d = reshape(fwgt->yc_b,(/nlat,mlon/))
+       sd_regrid@lon2d = reshape(fwgt->xc_b,(/nlat,mlon/))
+       return
+    else
        if(DEBUG) then
          print("ESMF_copy_varcoords: detected a rectilinear grid.")
          dq = str_get_dq()
@@ -1971,10 +1990,6 @@ begin
          print("      prevent this potentially slow test.")
        end if
        is_rectilinear = True
-     else
-       sd_regrid@lat2d = reshape(fwgt->yc_b,(/nlat,mlon/))
-       sd_regrid@lon2d = reshape(fwgt->xc_b,(/nlat,mlon/))
-       return
      end if
   end if
 
@@ -2242,7 +2257,7 @@ begin
     end if
 
 ;---This flag is necessary for writing vars > 2 GB
-    if (isatt_logical_true(opt2,"LargeFile")) then
+    if (.not.isatt_logical_false(opt2,"LargeFile")) then
         ESMFCMD = ESMFCMD + " --64bit_offset"
     end if
 
@@ -2385,7 +2400,7 @@ begin
 ; Apply frac_b only for conservative interpolation. We may
 ; change this later to let the user decide when to apply.
 ; The ESMF folks said that it was only needed for the
-; "conserve" case, but I need to check on this.
+; "conserve" case, and they reconfirmed this Oct 2012.
 ;
   if(map_method.eq."Conservative remapping") then
     ApplyFrac_B = True
@@ -2647,11 +2662,25 @@ begin
   delete(fid)    ; close weight file before it gets opened again
   ESMF_copy_varmeta(srcData,dstData,wgtFile,opt)
 
-;--------------------------------------------------
+;----------------------------------------------------------------------
 ; Clean up, add, and remove attributes.
-;--------------------------------------------------
+;
+; Note that due to standards for the weights file, the map_method
+; attribute will say "Bilinear remapping" for both bilinear and patch
+; methods. If this routine is called by ESMF_regrid, then that routine
+; will set FixMapMethodForPatch to True so this routine knows to fix
+; the "remap" attribute. Otherwise if ESMF_regrid_with_weights is
+; called directly, there's no way to tell if patch or bilinear was
+; used.
+;----------------------------------------------------------------------
   if (.not.isatt(dstData,"remap")) then
-    dstData@remap = "remapped via ESMF_regrid_with_weights: "+map_method
+    if(isatt_logical_true(opt,"FixMapMethodForPatch")) then
+      dstData@remap = "remapped via ESMF_regrid_with_weights: " + \
+                       str_sub_str(map_method,"Bilinear","Patch")
+    else
+      dstData@remap = "remapped via ESMF_regrid_with_weights: " + \
+                      map_method
+    end if
   end if
 
   if(.not.isatt(dstData,"missing_value")) then
@@ -3106,6 +3135,16 @@ begin
     if(DEBUG) then
       print("ESMF_regrid: skipping generation of weights file.")
     end if
+  end if
+
+;
+; If patch method used, "sneak" this knowledge into the weights gen
+; routine so that we can get the correct "map_method" for the
+; "remap" attribute.
+;
+  if(opt2.and.isatt(opt2,"InterpMethod").and. \
+     str_lower(opt2@InterpMethod).eq."patch") then
+   opt2@FixMapMethodForPatch = True
   end if
 
 ;---Regrid the input variable
