@@ -74,9 +74,8 @@ system. On Linux and Mac systems, you can use a command called
 <p>
 
 NCL/NCAR Graphics has been successfully built on 32 and 64 bit Linux
-systems (with a variety of compilers), Macs (PPC or Intel, 32 or 64
-bit) running MacOSX, IBMs running AIX, and Windows running Cygwin (to
-name a few).
+systems, Macs (32 or 64 bit) running MacOSX, and Windows running
+Cygwin (to name a few).
 <p>
 
 
@@ -198,8 +197,6 @@ to change default values</A> (may not be necessary)
 <LI><A HREF="#Linux">Special note for Linux systems</A>
 <LI><A HREF="#MacOSX">Special note for MacOSX systems</A>
 <LI><A HREF="#Cygwin">Special note for Cygwin systems</A>
-<LI><A HREF="#AIX">Special note for AIX systems</A>
-<LI><A HREF="#IRIX">Special note for IRIX systems</A>
 </UL>
 
 <LI><A HREF="#StartBuildAndInstall">Start the build and install process</A>
@@ -879,39 +876,6 @@ error message above suggests some of them for you, or you can go to
 the "<a
 href="http://www.unidata.ucar.edu/software/netcdf/docs/other-builds.html">Other
 Builds of the NetCDF Package</a>" page for some tips.
-<p>
-
-For example, if you are on an IBM/AIX system, you might need
-the "-DIBMR2Fortran" flag, and you can set it with:
-<p>
-
-[if CPPFLAGS is already set]:
-<p>
-
-<pre>
-setenv CPPFLAGS  '$CPPFLAGS -DIBMR2Fortran'
-</pre>
-
-or 
-<p>
-
-<pre>
-export CPPFLAGS='$CPPFLAGS -DIBMR2Fortran'
-</pre>
-
-[if CPPFLAGS is not already set]:
-<p>
-
-<pre>
-setenv CPPFLAGS  -DIBMR2Fortran
-</pre>
-
-or 
-<p>
-
-<pre>
-export CPPFLAGS=-DIBMR2Fortran
-</pre>
 <p>
 
 <A NAME="HDF4"></A>
@@ -1751,35 +1715,6 @@ you need to install a number of software packages via the "setup.exe"
 X/Cygwin program. See the "<a href="cygwin.shtml">Installing NCL under
 Windows/Cygwin/X</a>" page for a full description of what you need 
 and how to download it.
-<p>
-
-<A NAME="AIX"></A>
-<B>Special note for AIX systems</B><P>
-
-The configuration file for AIX is called "AIX_RS6000".  If you are
-building on an AIX system in 32-bit addressing mode, then you need to
-edit this file and change the appropriate options. See "AIX_RS6000.32"
-for a sample.
-<p>
-
-You can also setenv the OBJECT_MODE environment variable to 64 or 32,
-and this will compile everything in that mode without having to set
-any compiler options. It is important that you use the same mode for
-building all the external software packages as well, because
-you can't mix and match 32 and 64-bit objects.
-<p>
-
-There is a "32_64" mode available, but we haven't tried this with
-building NCL, and it appears to be not recommended that you do this.
-<P>
-
-<A NAME="IRIX"></A>
-<B>Special note for IRIX systems</B><P>
-
-The configuration file for SGI/IRIX is called "SGI_IRIX".  If you are
-building on an IRIX system in 32-bit mode, then you need to edit this
-file and change the appropriate options.  See "SGI_IRIX.n32" for a
-sample.
 <p>
 
 
