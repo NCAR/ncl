@@ -119,7 +119,10 @@ FILES		= \
 		matlab_lines.rgb \
 		seaice_1.rgb \
 		seaice_2.rgb \
-		GHRSST_anomaly.rgb
+		GHRSST_anomaly.rgb \
+		cb_9step.rgb \
+		cb_rainbow.rgb \
+		cb_rainbow_inv.rgb
 
 
 CMPATH	= $(LIBNCARGPATH)/colormaps
