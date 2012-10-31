@@ -415,7 +415,6 @@ static void *NC4CreateFile(void *rootgrp,NclQuark path)
     int nc_ret, mode;
     int format;
 
-#if 0
     if ((NrmQuark)(grpnode->options[NC_FORMAT_OPT].values) == 
               NrmStringToQuark("classic"))
     {
@@ -439,11 +438,10 @@ static void *NC4CreateFile(void *rootgrp,NclQuark path)
     else if ((NrmQuark)(grpnode->options[NC_FORMAT_OPT].values) == 
               NrmStringToQuark("netcdf4"))
     {
-        mode = (NC_NOCLOBBER|NC_NETCDF4);
+        mode = (NC_NETCDF4);
         format = 4;
     }
     else
-#endif
     {
         mode = NC_NETCDF4;
         format = 4;
