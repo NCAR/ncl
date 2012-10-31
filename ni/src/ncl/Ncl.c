@@ -505,6 +505,20 @@ main(int argc, char **argv) {
         cmd_line = 1;       /* reset to default: interactive */
     }
 
+    /* Load utility script */
+    strcpy(buffer, _NGResolvePath("$NCARG_ROOT/lib/ncarg/nclscripts/utililties.ncl"));
+    sr = stat(buffer, &sbuf);
+
+    if(0 == sr)
+    {
+        cmd_line = 0;
+        if(_NclPreLoadScript(buffer, 1) == NhlFATAL)
+            NhlPError(NhlINFO, NhlEUNKNOWN, "Error loading NCL utility script.");
+        else
+            yyparse(reset);
+        cmd_line = 1;       /* reset to default: interactive */
+    }
+
     /* Load any provided script */
     if (nclf != (char *) NULL) {
         (void) strcpy(buffer, _NGResolvePath(nclf));
@@ -529,6 +543,8 @@ main(int argc, char **argv) {
     NclFree(myName);
 
     _NclExit(0);
+
+    return 0;
 }
 
 #ifdef __cplusplus
