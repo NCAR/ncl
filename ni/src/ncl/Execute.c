@@ -47,7 +47,6 @@ extern "C" {
 #include "parser.h"
 #include "NclAtt.h"
 #include "NclList.h"
-#include "NclNewList.h"
 #include "NclHLUObj.h"
 #include "TypeSupport.h"
 #include "HLUSupport.h"
@@ -163,59 +162,28 @@ void CallTERM_LIST_OP(void) {
 	temporary_list_ptr = _NclRetrieveRec(temporary,DONT_CARE);
 
 	if(temporary_list_ptr != NULL) {
-		char *class_name = temporary_list_ptr->u.data_list->obj.class_ptr->obj_class.class_name;
+		n_elements = temporary_list_ptr->u.data_list->list.nelem;
 
-		if(0 == strcmp("NclNewListClass", class_name))
+		if(n_elements != 0)
 		{
-			NclNewList newlist = (NclNewList) temporary_list_ptr->u.data_list;
-			n_elements = newlist->newlist.n_elem;
-			if(1 != n_elements)
+			if(temporary_list_ptr->u.data_list->list.list_type & NCL_JOIN)
 			{
-				estatus = _NclBuildNewListVar(n_elements, &output);
-                		if(estatus != NhlFATAL)
-				{
-                     			estatus = _NclPush(output);
-				}
+				estatus = _NclBuildArray(n_elements,&output);
 			}
-		}
-		else
-		{
-			n_elements = temporary_list_ptr->u.data_list->list.nelem;
-
-			if(n_elements != 1)
+			else if(temporary_list_ptr->u.data_list->list.list_type & NCL_CONCAT)
 			{
-				if(temporary_list_ptr->u.data_list->list.list_type & NCL_ITEM)
-				{
-					estatus = _NclBuildListVar(n_elements,&output);
-				}
-				else if(temporary_list_ptr->u.data_list->list.list_type & NCL_VLEN)
-				{
-					estatus = _NclBuildListVar(n_elements,&output);
-				}
-				else if(temporary_list_ptr->u.data_list->list.list_type & NCL_STRUCT)
-				{
-					estatus = _NclBuildListVar(n_elements,&output);
-				}
-				else if(temporary_list_ptr->u.data_list->list.list_type & NCL_JOIN)
-				{
-					estatus = _NclBuildArray(n_elements,&output);
-				}
-/*
-				else if(temporary_list_ptr->u.data_list->list.list_type & NCL_CONCAT)
-				{
-					estatus = _NclBuildConcatArray(n_elements,&output);
-				}
-*/
-				else
-				{
-					/*This code will make the output a new list.*/
-					estatus = _NclBuildListVar(n_elements,&output);
-				}
-
-               			if(estatus != NhlFATAL)
-               				estatus = _NclPush(output);
+				estatus = _NclBuildConcatArray(n_elements,&output);
 			}
+			else
+			{
+				/*This code will make the output a new list.*/
+				estatus = _NclBuildListVar(n_elements,&output);
+			}
+
+       			if(estatus != NhlFATAL)
+       				estatus = _NclPush(output);
 		}
+
 		_NclDestroyObj((NclObj)temporary_list_ptr->u.data_list);
 	}
 
@@ -244,6 +212,8 @@ void CallLIST_READ_OP(void) {
 	temporary = (NclSymbol*)(*ptr);
 	ptr++;lptr++;fptr++;
 	subs = *(int*)ptr;
+
+	int number_of_item = 0;
 
 	list_ptr = _NclRetrieveRec(listsym,DONT_CARE);
 	temporary_list_ptr = _NclRetrieveRec(temporary,DONT_CARE);
@@ -378,32 +348,44 @@ void CallLIST_READ_OP(void) {
 			default:
 				break;
 		}
+
+		number_of_item = 1 + sel.u.sub.finish - sel.u.sub.start;
+
 		sel_ptr = &sel;
 		_NclFreeSubRec(&data.u.sub_rec);
 	} else {
 		sel_ptr = NULL;
 	}
 
-	newlist =_NclListSelect(list,sel_ptr);
-	if(newlist != NULL) {
-/*
-		ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
-		int ndims = 1;
-		obj *id;
-		id = (obj*)NclMalloc(sizeof(obj));
-		*id = newlist->obj.id;
-		_NclListSetType((NclObj)newlist,NCL_FIFO);
+	if(number_of_item)
+	{
+		newlist =_NclListSelect(list,sel_ptr);
+		if(newlist != NULL)
+		{
+			if(1 < number_of_item)
+			{
+				temporary_list_ptr->kind = NclStk_LIST;
+				temporary_list_ptr->u.data_list = newlist;
+			}
+			else
+			{
+				/*
+				NclStackEntry result;
+				result.kind = NclStk_VAL;
+				result.u.data_obj = _NclListPop((NclObj)newlist);
+				_NclPush(result);
+				*/
 
-		dim_sizes[0] = 1;
-		result.kind = NclStk_VAL;
-		result.u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,
-						0,id,NULL,
-						ndims,dim_sizes,TEMPORARY,NULL);
-		_NclPush(result);
-
-*/
-		temporary_list_ptr->kind = NclStk_LIST;
-		temporary_list_ptr->u.data_list = newlist;
+				temporary_list_ptr->kind = NclStk_VAL;
+				temporary_list_ptr->u.data_obj = _NclListPop((NclObj)newlist);
+			}
+		}
+		else
+		{
+			temporary_list_ptr->kind = NclStk_NOVAL;
+			temporary_list_ptr->u.data_list = NULL;
+			estatus = NhlFATAL;
+		}
 	} else {
 		temporary_list_ptr->kind = NclStk_NOVAL;
 		temporary_list_ptr->u.data_list = NULL;
@@ -1636,19 +1618,11 @@ void CallSET_NEXT_OP(void)
 */
 			return;
 		} else {
-			if(0 == strcmp("NclNewListClass", list->obj.class_ptr->obj_class.class_name))
-			{
-				(void)_NclChangeSymbolType(temporary, LIST);
-				tmp_ptr->kind = NclStk_LIST;
-				tmp_ptr->u.data_list = list;
-
-				return;
-			}
-
 			switch(the_obj->obj.obj_type) {
 			case Ncl_Var:
 			case Ncl_HLUVar:
 			case Ncl_CoordVar:
+			case Ncl_MultiDVallistData:
 				(void)_NclChangeSymbolType(temporary,VAR);
 				tmp_ptr->kind = NclStk_VAR;
 				tmp_ptr->u.data_var = (NclVar)the_obj;
@@ -3606,9 +3580,9 @@ static void performASSIGN_VAR(NclSymbol *sym, int nsubs, NclStackEntry *lhs_var)
 					int n;
 					NclDimRec dim_info[NCL_MAX_DIMENSIONS];
 					NclVar tmpvar;
-					NclNewList tmplist = (NclNewList)rhs.u.data_list;
+					NclList tmplist = (NclList)rhs.u.data_list;
 
-					tmpvar = (NclVar)_NclGetObj(tmplist->newlist.item[0]->obj_id);
+					tmpvar = (NclVar)_NclGetObj(tmplist->list.first->obj_id);
 
 					rhs_md = _NclVarValueRead(tmpvar,NULL,NULL);
 					if(rhs_md != NULL)

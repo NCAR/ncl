@@ -60,8 +60,9 @@
 #include "NclFileInterfaces.h"
 #include "NclData.h"
 #include "NclVar.h"
-#include "NclNewList.h"
 #include "NclNewFile.h"
+#include "ListSupport.h"
+
 #include <ogr_api.h>
 #include <ogr_srs_api.h>
 #include <math.h>
@@ -94,22 +95,6 @@ static int NewOGRInitialized = 0;
 static int _is3DGeometry(OGRwkbGeometryType geom)
 {
         return (wkbFlatten(geom) != geom);
-}
-
-static NclNewList _CreateVlist4OGR(NclQuark name)
-{
-    NclNewList vlist = NULL;
-    ng_size_t one = 1;
-    int *id = (int *)NclMalloc(sizeof(int));
-
-    vlist = (NclNewList)_NclNewListCreate(NULL, NULL, 0, 0, -1, (NCL_ITEM | NCL_FIFO));
-    assert(vlist);
-    _NclListSetType((NclObj)vlist, NCL_ITEM);
-    vlist->newlist.name = name;
-    vlist->newlist.type = NrmStringToQuark("item");
-    vlist->obj.obj_type = Ncl_List;
-
-    return vlist;
 }
 
 /*
@@ -275,9 +260,8 @@ static void _setGroupVars(NclFileGrpNode *grpnode,
                           int numSegments,
                           int numPoints)
 {
-    OGRwkbGeometryType geomType;
     OGRFieldDefnH fldDef;
-    int numVars, is3DGeometry;
+    int numVars;
     int i = 0;
     int j = 0;
 
@@ -426,12 +410,11 @@ static void _countGeometry(NclFileGrpNode *grpnode,
  *
  */
 static void _loadFeatureGeometry(OGRRecord *rec, OGRGeometryH geom,
-                                 NclNewList vlist, int *numSegments, int *numPoints)
+                                 NclList vlist, int *numSegments, int *numPoints)
 {
     int i;
     char buffer[16];
     void *val = NULL;
-    int nsegs = 0;
     int ndims = 2;
     NclVar var;
     NclQuark  dimnames[2];
@@ -452,9 +435,7 @@ static void _loadFeatureGeometry(OGRRecord *rec, OGRGeometryH geom,
     if(geomCount == 0)
     {
         if(rec->xform)
-        {
-            OGRErr err = OGR_G_Transform(geom, rec->xform);
-        }
+            OGR_G_Transform(geom, rec->xform);
 
         sprintf(buffer, "xyz_%6.6d", *numSegments);
         if(rec->is3DGeometry)
@@ -512,21 +493,18 @@ static void _loadFeatureGeometry(OGRRecord *rec, OGRGeometryH geom,
  * any one of them is asked for.
  *
  */
-static int _loadGeometry(NclFileGrpNode *grpnode, NclNewList vlist)
+static int _loadGeometry(NclFileGrpNode *grpnode, NclList vlist)
 {
     OGRRecord *rec = (OGRRecord *) grpnode->other_src;
-    OGRFeatureH feature;
-    OGRGeometryH geom;
-    int featureNum = 0;
     int segmentNum = 0;
     int pointNum   = 0;
 
   /*
+    OGRFeatureH feature;
     fprintf(stderr, "\nEnter _loadGeometry, file: %s, line: %d\n", __FILE__, __LINE__);
+    feature = rec->feature;
    */
 
-    feature = rec->feature;
-    geom = OGR_F_GetGeometryRef(feature);
     _loadFeatureGeometry(rec, rec->geom, vlist, &segmentNum, &pointNum);
   
   /*
@@ -683,9 +661,6 @@ static void *_getGeometryVariable(NclFileGrpNode *grpnode, NclQuark thevar,
                                   long *start, long *finish,
                                   long *stride, void *storage)
 {
-    OGRRecord *rec = (OGRRecord *) grpnode->other_src;
-    int i, j;
-
     /* On first innvocation, we'll load and cache all of the geometry variables,
      * under the premise that its quite likely a request for any of them is part of
      * a broader request for the geometry as a whole.
@@ -701,16 +676,14 @@ static void *_getGeometryVariable(NclFileGrpNode *grpnode, NclQuark thevar,
 
     if(NrmStringToQuark("segments") == thevar)
     {
-        NclNewList vlist = NULL;
+        NclList vlist = NULL;
         NclMultiDValData v_md;
         ng_size_t one = 1;
         int *id = (int *)NclMalloc(sizeof(int));
 
-        vlist = (NclNewList)_NclNewListCreate(NULL, NULL, 0, 0, 0, (NCL_ITEM | NCL_FIFO));
+        vlist = (NclList)_NclListCreate(NULL, NULL, 0, 0, (NCL_CONCAT | NCL_FIFO));
         assert(vlist);
-        _NclListSetType((NclObj)vlist,NCL_ITEM);
-        vlist->newlist.name = NrmStringToQuark("segments_list");
-        vlist->newlist.type = NrmStringToQuark("item");
+        _NclListSetType((NclObj)vlist,NCL_FIFO);
         vlist->obj.obj_type = Ncl_List;
         *id = vlist->obj.id;
         v_md = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,id,
@@ -936,9 +909,6 @@ static void *NewOGRReadVar(void* therec, NclQuark thevar,
     NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
     NclFileVarNode *varnode;
 
-    OGRRecord *rec = (OGRRecord *) grpnode->other_src;
-    int i;
-
   /*
    *fprintf(stderr, "\nHit NewOGRReadVar, file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
@@ -969,61 +939,6 @@ static void *NewOGRReadCoord(void *therec, NclQuark thevar,
     fprintf(stderr, "\nHit NewOGRReadCoord, file: %s, line: %d\n", __FILE__, __LINE__);
     fprintf(stderr, "\tNewOGRReadCoord...UNIMPLEMENTED\n");
     return(NewOGRReadVar(therec,thevar,start,finish,stride,storage));
-}
-
-static NclQuark *OGRGetGrpNames(void *therec, int *num_grps)
-{
-    NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
-    NclQuark *out_quarks = NULL;
-    NclQuark *tmp_quarks = NULL;
-    int i, n, ng;
-
-    *num_grps = 0;
-    if(NULL != grpnode->grp_rec)
-    {
-        if(grpnode->grp_rec->n_grps)
-        {
-            out_quarks = (NclQuark*)NclCalloc(grpnode->grp_rec->n_grps,
-                                           sizeof(NclQuark));
-            assert(out_quarks);
-
-            for(i = 0; i < grpnode->grp_rec->n_grps; i++)
-            {
-                out_quarks[i] = grpnode->grp_rec->grp_node[i]->name;
-            }
-
-            *num_grps = grpnode->grp_rec->n_grps;
-        }
-    }
-
-#if 0
-    if(NULL != grpnode->grp_rec)
-    {
-        if(grpnode->grp_rec->n_grps)
-        {
-            for(n = 0; n < grpnode->grp_rec->n_grps; n++)
-            {
-                tmp_quarks = NC4GetGrpNames((void *)grpnode->grp_rec->grp_node[i], &ng);
-
-                if(ng)
-                {
-                    out_quarks = (NclQuark*)realloc(out_quarks,
-                                                (*num_grps + ng) * sizeof(NclQuark));
-                    assert(out_quarks);
-
-                    for(i = 0; i < ng; i++)
-                    {
-                        out_quarks[*num_grps + i] = tmp_quarks[i];
-                    }
-                    NclFree(tmp_quarks);
-                }
- 
-                *num_grps += ng;
-            }
-        }
-    }
-#endif
-    return(out_quarks);
 }
 
 NclFormatFunctionRec NewOGRRec = {

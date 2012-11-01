@@ -38,6 +38,7 @@ extern struct _NclObjRec *_NclListCreate(
 #endif
 );
 
+typedef NhlErrorTypes (*NclListAppendFunction)(NclObj listobj, NclObj obj);
 
 typedef NhlErrorTypes (*NclListPushFunction)(
 #if     NhlNeedProto
@@ -81,6 +82,7 @@ NclObj /*thelistobj*/
 typedef struct _NclListClassPart {
 	NclListSetTypeFunction	set_type;
 	NclListGetTypeFunction	get_type;
+	NclListAppendFunction	append;
 	NclListPushFunction	push;
 	NclListPopFunction	pop;
 	NclListSelectFunction	select;
@@ -91,9 +93,7 @@ typedef struct _NclListClassPart {
 #define NCL_LIFO 02
 #define NCL_CONCAT 04
 #define NCL_JOIN 010
-#define NCL_VLEN 020
-#define NCL_ITEM 040
-#define NCL_STRUCT 0100
+#define NCL_STRUCT 020
 #define NCL_COMPOUND NCL_STRUCT
 
 #define NCL_LIST_IDLE 1
@@ -129,6 +129,7 @@ typedef struct _NclListRec {
 	NclListPart	list;
 }NclListRec;
 
+NhlErrorTypes ListAppend(NclObj list,NclObj theobj);
 NhlErrorTypes ListPush(NclObj list,NclObj theobj);
 
 extern NclObjClass nclListClass;

@@ -69,7 +69,6 @@ extern "C" {
 #include "FileSupport.h"
 #include "NclAtt.h"
 #include "NclList.h"
-#include "NclNewList.h"
 #include "ListSupport.h"
 #include "NclFileInterfaces.h"
 #include <signal.h>
@@ -19584,7 +19583,7 @@ NhlErrorTypes _NclIAppend(void)
 
         thelist = _NclGetObj(*list_id);
 
-        return(Append2List(thelist,theobj));
+        return(ListAppend(thelist,theobj));
 }
 	
 NhlErrorTypes _NclIPop(void)
@@ -20002,10 +20001,6 @@ NhlErrorTypes _NclIListGetType(void)
 		ret_val[i++] = NrmStringToQuark("fifo");
 	} else if(list_type & NCL_LIFO) {
 		ret_val[i++] = NrmStringToQuark("lifo");
-	} else if(list_type & NCL_VLEN) {
-		ret_val[i++] = NrmStringToQuark("vlen");
-	} else if(list_type & NCL_ITEM) {
-		ret_val[i++] = NrmStringToQuark("item");
 	} else if(list_type & NCL_STRUCT) {
 		ret_val[i++] = NrmStringToQuark("struct");
 	}
@@ -20072,10 +20067,6 @@ NhlErrorTypes _NclIListSetType(void)
 	} else if((strcmp(buffer,"cat") == 0) || (strcmp(buffer,"concat") == 0)) {
 		_NclListSetType(thelist, NCL_CONCAT);
 	} else if(strcmp(buffer,"item") == 0) {
-		_NclListSetType(thelist, NCL_ITEM);
-	} else if(strcmp(buffer,"vlen") == 0) {
-		_NclListSetType(thelist, NCL_VLEN);
-	} else if(strcmp(buffer,"struct") == 0) {
 		_NclListSetType(thelist, NCL_STRUCT);
 	} else if(strcmp(buffer,"compound") == 0) {
 		_NclListSetType(thelist, NCL_COMPOUND);
@@ -20125,22 +20116,8 @@ NhlErrorTypes _NclIListCount(void)
 	}
 	else
 	{
-		if(0 == strcmp("NclNewListClass", theobj->obj.class_ptr->obj_class.class_name))
-		{
-			NclNewList thelist = (NclNewList) theobj;
-			ret_val[0] = (int)thelist->newlist.n_elem;
-		}
-		else if(0 == strcmp("NclListClass",theobj->obj.class_ptr->obj_class.class_name))
-		{
-			NclList thelist = (NclList) theobj;
-			ret_val[0] = (int)thelist->list.nelem;
-		}
-		else
-		{
-			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				"_NclIListCount: Cannot figure out list class."));
-			return(NhlFATAL);
-		}
+		NclList thelist = (NclList) theobj;
+		ret_val[0] = (int)thelist->list.nelem;
 	}
 
 	return(NclReturnValue(
