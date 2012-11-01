@@ -4793,14 +4793,14 @@ end
 ; vars.  
 
 undef ("rgrid2rcm_Wrap")
-function rgrid2rcm_Wrap (xi[*]:numeric,yi[*]:numeric, fi:numeric \
-                        ,xo[*][*]:numeric,yo[*][*]:numeric, Opt)
+function rgrid2rcm_Wrap (yi[*]:numeric,xi[*]:numeric, fi:numeric \
+                        ,yo[*][*]:numeric,xo[*][*]:numeric, Opt)
 
 ; wrapper for NCL function "rgrid2rcm"  that copies attributes and coordinate vars
 
 local fo, dimfi, nDim, nD
 begin
-  fo   = rgrid2rcm (xi,yi,fi, xo,yo, Opt)  ; perform interpolation 
+  fo   = rgrid2rcm (yi,xi,fi, yo,xo, Opt)  ; perform interpolation 
                        
   dimfi= dimsizes(fi)
   nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
@@ -4810,16 +4810,17 @@ begin
       copy_VarCoords_2 (fi, fo)                 ; copy coord variables  
   end if                                        ; except for 2 rightmost
 
-  fo!(nDim-2) = "XLAT"                          ; default named dimensions
-  fo!(nDim-1) = "XLONG"
+  fo!(nDim-2) = "Y"                             ; default named dimensions
+  fo!(nDim-1) = "X"   
                                                 ; override if possible
   if (isdimnamed(xo,0) ) then
       fo!(nDim-2) = xo!0                        ; if present, use xo name
   end if
   if (isdimnamed(xo,1) ) then
-      fo!(nDim-2) = xo!1                        ; if present, use xo name
+      fo!(nDim-1) = xo!1                        ; if present, use xo name
   end if
   fo@ncl = "rgrid2rcm used for interpolation"
+ ;fo@coordinates = fo!(nDim-2) +" "+fo!(nDim-1)
 
   return (fo)
 end
