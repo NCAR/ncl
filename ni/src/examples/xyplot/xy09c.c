@@ -48,7 +48,7 @@
  */
 float ydra[NPTS],xdra[NPTS];
 
-main()
+int main()
 {
     int     appid,xworkid,plotid,dataid;
     int     rlist, i;

@@ -160,6 +160,7 @@ C
       end if
 
       call gngpat (dir, 'data', ierr)
+      flen = 0
       do 10 i=1,256
           if( dir(i:i).eq.char(0) ) then
               dir(i:i+4) = '/cdf/'

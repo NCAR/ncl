@@ -5224,7 +5224,8 @@ int type;
 						TEMPORARY,
 						NULL,
 						_NclTypeEnumToTypeClass(lhs_type));
-					FileWriteVarAtt(thefile,var,NrmStringToQuark(NCL_MISSING_VALUE_ATT),mis_md,NULL);
+					if(strcmp("h5", NrmQuarkToString(thefile->file.file_ext_q)))
+						FileWriteVarAtt(thefile,var,NrmStringToQuark(NCL_MISSING_VALUE_ATT),mis_md,NULL);
 					tmp_md = value;
 				} else {
 					tmp_md = value;

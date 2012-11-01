@@ -52,7 +52,6 @@ set super    = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 #
 set libncarg    = "-lncarg"
 set libgks     = "-lSED_LIBNCARG_GKS"
-set libcgks    = "-lSED_LIBNCARG_CGKS"
 set libmath     = ""
 set libncarg_c  = "-lncarg_c"
 

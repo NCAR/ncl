@@ -28,7 +28,7 @@
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
 
-main()
+int main()
 {
     int appid, wid, pid;
     int srlist, grlist;
@@ -121,7 +121,7 @@ main()
  */
     NhlRLClear(srlist);
     NhlCreate(&pid,"TextItems",NhltextItemClass,wid,srlist);
-    for( i = 1; i <= num_colors; i++ ) {
+    for( i = 1; i <= num_colors; i+=10 ) {
         NhlRLClear(srlist);
         NhlRLSetInteger(srlist,NhlNtxBackgroundFillColor,i);
         NhlSetValues(pid,srlist);

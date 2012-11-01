@@ -50,39 +50,39 @@ NhlArgVal udata;
 	int	thevalue_id;
         NclAttList *thelist;
 	NhlArgVal selector;
-    NclAttList *tmp = NULL;
-    NclMultiDValData attval_md;
+	NclAttList *tmp = NULL;
+	NclMultiDValData attval_md;
 
 	theattobj = (NclAtt)_NclGetObj(udata.intval);
 	if(theattobj == NULL) {
-        return;
-    }
+		return;
+	}
 
 	thevalue_id = cbdata.intval;
 	thelist = theattobj->att.att_list;
 	if(thelist == NULL) {
-        return;
-    }
+		return;
+	}
 	if(thelist->attvalue->obj.id == thevalue_id) {
 		tmp = thelist;
-        attval_md = thelist->attvalue;
+		attval_md = thelist->attvalue;
 		theattobj->att.att_list= thelist->next;
 		theattobj->att.n_atts--;
 	} else {
 		while(thelist->next != NULL) {
 			if(thelist->next->attvalue->obj.id != thevalue_id) {
-                thelist = thelist->next;
-                continue;
-            }
+				thelist = thelist->next;
+				continue;
+			}
 			tmp = thelist->next;
-            attval_md = thelist->next->attvalue;
+			attval_md = thelist->next->attvalue;
 			theattobj->att.n_atts--;
 			thelist->next = thelist->next->next;
-            break;
-        }
-    }
-    if (tmp) {
-        NclRefList *plist, *tmp_plist;
+			break;
+		}
+	}
+	if (tmp) {
+		NclRefList *plist, *tmp_plist;
 		_NhlCBDelete(tmp->cb);
 		if(theattobj->obj.cblist != NULL) {
 			if(NrmStringToQuark(NCL_MISSING_VALUE_ATT)==tmp->quark) {

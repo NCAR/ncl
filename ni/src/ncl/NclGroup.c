@@ -286,6 +286,56 @@ NclFile thefile;
     }
 }
 
+NclQuark *_split_string2quark(NclQuark qn, int *ns)
+{
+    char name[NCL_MAX_STRING];
+    char *tmp_str = NULL;
+    char *result = NULL;
+    char *delim  = "/";
+    NclQuark *sq = NULL;
+    int i = 1;
+    int n = 1;
+
+    strcpy(name, NrmQuarkToString(qn));
+
+  /*
+   *fprintf(stdout, "\n\nEnter _split_string2quark, file: %s, line:%d\n", __FILE__, __LINE__);
+
+   *fprintf(stdout, "\tin name: <%s>\n", name);
+   */
+   
+    while(name[i])
+    {
+        if('/' == name[i])
+           ++n;
+        ++i;
+    }
+
+    sq = (NclQuark *)NclMalloc(n * sizeof(NclQuark));
+
+    *ns = n;
+
+    tmp_str = name;
+
+    result = strtok(tmp_str, delim);
+
+    n = 0;
+    while(result != NULL)
+    {
+        sq[n] = NrmStringToQuark(result);
+        fprintf(stdout, "\tsub str %d: <%s>\n", n, result);
+        ++n;
+        result = strtok(NULL, delim);
+    }
+
+  /*
+   *fprintf(stdout, "\tname: <%s>\n", name);
+   *fprintf(stdout, "Leave _split_string2quark, file: %s, line:%d\n\n", __FILE__, __LINE__);
+   */
+
+    return sq;
+}
+
 NclGroup *_NclGroupCreate
 #if    NhlNeedProto
 (NclObj  inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, NclStatus status, NclFile file_in, NclQuark group_name)
@@ -305,17 +355,20 @@ NclQuark group_name;
     NhlErrorTypes ret= NhlNOERROR;
     NclObjClass class_ptr;
 
-    char grp_str[NCL_MAX_STRING];
-    char tmp_str[NCL_MAX_STRING];
-    char buffer[NCL_MAX_STRING];
     NclQuark *selected_group;
     int nsg = 0;
     int new_group = 0;
     int i, j, n;
-    int gl = 0;
     int n_grps = 0;
     int n_vars = 0;
 
+    NclQuark *inqname;
+    int       inqnumb;
+
+    NclQuark *tmpqname;
+    int       tmpqnumb;
+
+    int       found = 0;
 
     ret = _NclInitClass(nclFileClass);
     if(ret < NhlWARNING) 
@@ -339,12 +392,11 @@ NclQuark group_name;
         group_out = (NclFile)inst;
     }
 
-    strcpy(grp_str, NrmQuarkToString(group_name));
-    gl = strlen(grp_str);
+    inqname = _split_string2quark(group_name, &inqnumb);
 
   /*
-    fprintf(stdout, "\n\nhit _NclGroupCreate, file: %s, line:%d\n", __FILE__, __LINE__);
-    fprintf(stdout, "\tgroup_name: <%s>\n", NrmQuarkToString(group_name));
+   *fprintf(stdout, "\n\nhit _NclGroupCreate, file: %s, line:%d\n", __FILE__, __LINE__);
+   *fprintf(stdout, "\tgroup_name: <%s>\n", NrmQuarkToString(group_name));
    */
 
     initializeGroup(group_out);
@@ -372,11 +424,11 @@ NclQuark group_name;
 
     group_out->file.n_file_dims = file_in->file.n_file_dims;
   /*
-    for(i = 0; i < group_out->file.n_file_dims; i++)
-    {
-        group_out->file.file_dim_info[i] = file_in->file.file_dim_info[i];
-        group_out->file.coord_vars[i] = file_in->file.coord_vars[i];
-    }
+   *for(i = 0; i < group_out->file.n_file_dims; i++)
+   *{
+   *    group_out->file.file_dim_info[i] = file_in->file.file_dim_info[i];
+   *    group_out->file.coord_vars[i] = file_in->file.coord_vars[i];
+   *}
    */
 
     UpdateDims(group_out);
@@ -398,36 +450,52 @@ NclQuark group_name;
     nsg = 0;
     for(i = 0; i < file_in->file.n_grps; i++)
     {
-        strcpy(tmp_str, NrmQuarkToString(file_in->file.grp_info[i]->grp_full_name_quark));
-        if(gl > strlen(tmp_str))
-            continue;
+        tmpqname = _split_string2quark(file_in->file.grp_info[i]->grp_full_name_quark, &tmpqnumb);
+
+        found = 0;
+        for(n = 0; n < tmpqnumb; ++n)
+        {
+          /*
+           *fprintf(stderr, "\ttmpqname[%d]: <%s>\n", n, NrmQuarkToString(tmpqname[n]));
+           */
+
+            if(tmpqname[n] == inqname[0])
+            {
+                found = 1;
+                for(j = 0; j < inqnumb; ++j)
+                {
+                  /*
+                   *fprintf(stderr, "\tinqname[%d]: <%s>\n", j, NrmQuarkToString(inqname[j]));
+                   */
+                    if(tmpqname[n+j] != inqname[j])
+                    {
+                        found = 0;
+                        break;
+                    }
+                }
+            }
+            if(found)
+                break;
+        }
+
+        NclFree(tmpqname);
 
       /*
-        if(0 == strcmp(tmp_str, grp_str))
-        {
-            att_list = file_in->file.grp_att_info[i];
-            j = group_out->file.n_file_atts;
-            while(att_list)
-            {
-                group_out->file.file_atts[j] = (struct _NclFAttRec *)NclMalloc(sizeof(struct _NclFAttRec));
-                group_out->file.file_atts[j]->att_name_quark = att_list->the_att->att_name_quark;
-                group_out->file.file_atts[j]->data_type      = att_list->the_att->data_type;
-                group_out->file.file_atts[j]->num_elements   = att_list->the_att->num_elements;
-                j++;
-                att_list = att_list->next;
-            }
-            group_out->file.n_file_atts = j;
-
-            continue;
-        }
+       *att_list = file_in->file.grp_att_info[i];
+       *j = group_out->file.n_file_atts;
+       *while(att_list)
+       *{
+       *    group_out->file.file_atts[j] = (struct _NclFAttRec *)NclMalloc(sizeof(struct _NclFAttRec));
+       *    group_out->file.file_atts[j]->att_name_quark = att_list->the_att->att_name_quark;
+       *    group_out->file.file_atts[j]->data_type      = att_list->the_att->data_type;
+       *    group_out->file.file_atts[j]->num_elements   = att_list->the_att->num_elements;
+       *    j++;
+       *    att_list = att_list->next;
+       *}
+       *group_out->file.n_file_atts = j;
        */
 
-        strcpy(buffer, tmp_str + gl);
-        tmp_str[gl] = '\0';
-        if(0 != strcmp(tmp_str, grp_str))
-            continue;
-
-        if('/' != buffer[0])
+        if(! found)
             continue;
 
         new_group = 1;
@@ -444,31 +512,60 @@ NclQuark group_name;
             selected_group[nsg] = file_in->file.grp_info[i]->grp_full_name_quark;
             nsg++;
         }
+
       /*
-        copyAttributes(&(group_out->file.grp_att_info[n_grps]),
-                       file_in->file.grp_att_info[i]);
-        group_out->file.grp_att_ids[n_grps] = -1;
-        LoadVarAtts(file_in, file_in->file.grp_info[i]->grp_name_quark);
-      */
-        group_out->file.grp_info[n_grps] = getGrpRec(file_in->file.grp_info[i]);
-        n_grps++;
+       *copyAttributes(&(group_out->file.grp_att_info[n_grps]),
+       *               file_in->file.grp_att_info[i]);
+       *group_out->file.grp_att_ids[n_grps] = -1;
+       *LoadVarAtts(file_in, file_in->file.grp_info[i]->grp_name_quark);
+       */
+
+        if(inqnumb != tmpqnumb)
+        {
+            group_out->file.grp_info[n_grps] = getGrpRec(file_in->file.grp_info[i]);
+            n_grps++;
+        }
     }
 
     group_out->file.n_grps = n_grps;
     setGroupAttributes(group_out);
 
+    fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tn_grps = %d\n", n_grps);
+
     for(i = 0; i < file_in->file.n_vars; i++)
     {
-        strcpy(tmp_str, NrmQuarkToString(file_in->file.var_info[i]->var_full_name_quark));
-        if(gl > strlen(tmp_str))
-            continue;
+        tmpqname = _split_string2quark(file_in->file.var_info[i]->var_full_name_quark, &tmpqnumb);
 
-        strcpy(buffer, tmp_str + gl);
-        tmp_str[gl] = '\0';
-        if(0 != strcmp(tmp_str, grp_str))
-            continue;
+        found = 0;
+        for(n = 0; n < tmpqnumb - 1; ++n)
+        {
+          /*
+           *fprintf(stderr, "\ttmpqname[%d]: <%s>\n", n, NrmQuarkToString(tmpqname[n]));
+           */
 
-        if('/' != buffer[0])
+            if(tmpqname[n] == inqname[0])
+            {
+                found = 1;
+                for(j = 0; j < inqnumb; ++j)
+                {
+                  /*
+                   *fprintf(stderr, "\tinqname[%d]: <%s>\n", j, NrmQuarkToString(inqname[j]));
+                   */
+                    if(tmpqname[n+j] != inqname[j])
+                    {
+                        found = 0;
+                        break;
+                    }
+                }
+            }
+            if(found)
+                break;
+        }
+
+        NclFree(tmpqname);
+
+        if(!found)
             continue;
 
         group_out->file.var_info[n_vars] = getVarRec(file_in->file.var_info[i]);
@@ -492,9 +589,9 @@ NclQuark group_name;
     NclFree(selected_group);
 
   /*
+   */
     fprintf(stdout, "\tgroup_out->file.n_vars = %d\n", group_out->file.n_vars);
     fprintf(stdout, "\n\nend _NclGroupCreate, file: %s, line:%d\n", __FILE__, __LINE__);
-   */
     return(group_out);
 }
 

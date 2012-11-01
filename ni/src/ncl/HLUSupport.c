@@ -367,7 +367,8 @@ NhlErrorTypes _NclRemoveAllRefs
 			tmp = tmp->next;
 		}
 	}
-	return(NhlFATAL);
+	/*printf("%d  hlu id %d  ncl id no refs found %s %s \n", id, ncl_id,NhlClassName(id),NhlName(id));*/
+	return(NhlNOERROR);
 }
 
 NhlErrorTypes _NclAddHLUToExpList
@@ -458,14 +459,22 @@ void _NclPrintHLURefs
 (void)
 #endif
 {
-	int i;
+	int i,j;
         NclHLULookUpTable *tmp = NULL;
 
 	for (i = 0; i < NCL_SYM_TAB_SIZE; i++) {
 		tmp = &hlu_tab[i];
 		while (tmp) {
-			if (tmp->hlu_id > -1) 
+			if (tmp->hlu_id > 0)  {
 				printf("hlu_id %d, ncl_hlu_id %d, %s %s\n", tmp->hlu_id,tmp->ncl_hlu_id,NhlClassName(tmp->hlu_id),NhlName(tmp->hlu_id));
+				for (j = 0; j < tmp->n_entries; j++) {
+					printf("\tvname %s", NrmQuarkToString(tmp->ref_list[j].vq));
+					if (tmp->ref_list[j].aq > -1)
+						printf("   attname %s  level %d\n", NrmQuarkToString(tmp->ref_list[j].aq),tmp->ref_list[j].level);
+					else
+						printf("  level %d\n",tmp->ref_list[j].level);
+				}
+			}
 			tmp = tmp->next;
 		}
 	}

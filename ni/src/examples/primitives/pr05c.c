@@ -39,7 +39,7 @@
 #include <ncarg/hlu/CairoWorkstation.h>
 #include <ncarg/hlu/MapPlot.h>
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 
 {
     char const *wks_type = "x11";

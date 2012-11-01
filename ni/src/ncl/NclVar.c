@@ -724,7 +724,10 @@ NclStatus status)
 	}
 	
 	if((value != NULL)&&(value->obj.obj_type_mask & Ncl_MultiDValData)) {
-		if((_NclSetStatus((NclObj)value,PERMANENT))||((var_type == PARAM)&&(value->obj.status != STATIC))||(var_type == RETURNVAR)) {
+		if((_NclSetStatus((NclObj)value,PERMANENT))||
+		   ((var_type == PARAM)&&(value->obj.status != STATIC))
+		   ||(var_type == RETURNVAR) 
+		   ||(var_type == ATTVALLINK)) {
 			var_out->var.thevalue_id = value->obj.id;
 		} else {
 			tmp = _NclCopyVal(value,NULL);

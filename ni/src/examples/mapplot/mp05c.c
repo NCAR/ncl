@@ -34,7 +34,7 @@
 
 #define NMAPS  10
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int appid,wid,txid,mapid[NMAPS];
     int i, rlist;

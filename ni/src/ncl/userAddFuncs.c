@@ -69,9 +69,9 @@ extern "C" {
 #include <regex.h>
 #include <ctype.h>
 
-#define MAX_PRINT_SPACES	16
-#define MAX_LIST_ELEMENT	16
-#define MAX_PRINT_NAME_LENGTH	16
+#define MAX_PRINT_SPACES	32
+#define MAX_LIST_ELEMENT	32
+#define MAX_PRINT_NAME_LENGTH	512
 
 #define NCL_INITIAL_STRING_LENGTH	2048
 
@@ -4308,1122 +4308,62 @@ NhlErrorTypes _Nclstr_sort
 
 }
 
-NhlErrorTypes _Nclstr_print(void)
+NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int output)
 {
-    obj *list_id;
-    NclObj thelist = NULL;
-
-    string *qformat;
-
-    size_t i = 0;
-    int nelems = 0;
-    int maxelems = MAX_LIST_ELEMENT;
-    int truelems = 0;
-    NclBasicDataTypes type[MAX_LIST_ELEMENT];
-    char              format[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
-    size_t            size[MAX_LIST_ELEMENT];
-    size_t maxlen = 0;
-
-    char              name[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
-    char *tmp;
-    char *result = NULL;
-
-    NclList         tmp_list;
-    NclListObjList *step;
-    NclObj          theobj;
-    NclObj          cur_obj;
-
+    NclObj  thelist = NULL;
+    NclVar  thevar;
+    NclList tmp_list;
     NclMultiDValData thevalue = NULL;
-    NclVar           thevar;
-
-    char prntln[NCL_INITIAL_STRING_LENGTH];
-    char buffer[NCL_INITIAL_STRING_LENGTH];
-
-    int nstart, length, remain;
-    int ndvdl[MAX_LIST_ELEMENT];
-    int has_lead = 0;
-
-  /*
-   *fprintf(stderr, "\nEnter _Nclstr_print, file: %s, line: %d\n", __FILE__, __LINE__);
-   */
-
-    list_id = (obj *)NclGetArgValue(
-               0,
-               2,
-               NULL,
-               NULL,
-               NULL,
-               NULL,
-               NULL,
-               DONT_CARE);
-
-    qformat = (string *)NclGetArgValue(
-              1,
-              2,
-              NULL,
-              NULL,
-              NULL,
-              NULL,
-              NULL,
-              DONT_CARE);
-
-    thelist = _NclGetObj(*list_id);
-    thevar = (NclVar)thelist;
-
-    tmp_list = (NclList) thelist;
-
-    tmp = NrmQuarkToString(*qformat);
-    if(tmp == NULL)
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: unknown format.\n");
-        return(NhlFATAL);
-    }
-
-    if('%' != tmp[0])
-        has_lead = 1;
-
-  /*
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\ttmp str: <%s>\n", tmp);
-   */
-
-    nelems = 0;
-    result = strtok(tmp, "%");
-    while(result != NULL)
-    {
-        ndvdl[nelems] = MAX_PRINT_SPACES;
-        if(16 > nelems)
-        {
-            strcpy(format[nelems], "%");
-            strcat(format[nelems], result);
-          /*
-           *fprintf(stderr, "\tformat[%d] = <%s>\n", nelems, format[nelems]);
-           */
-        }
-        else
-        {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: str_print can only handle list less than 16 elements.\n");
-            return(NhlFATAL);
-        }
-
-        result = strtok(NULL, "%");
-        ++nelems;
-    }
-
-    maxelems = nelems;
-
-    if(has_lead)
-    {
-       tmp= &(format[0][0]);
-       strcpy(format[0], tmp + 1);
-       --maxelems;
-       strcat(format[0], format[1]);
-       for(i = 1; i < maxelems; ++i)
-          strcpy(format[i], format[i+1]);
-    }
-
-  /*
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tmaxelems = %d\n", maxelems);
-   */
-
-    nelems = 0;
-    step = tmp_list->list.first;
-    while(step != NULL)
-    {
-        cur_obj = (NclObj)_NclGetObj(step->obj_id);
-
-      /*
-       *fprintf(stderr, "\n\tList Item %d:\n", nelems);
-       */
-
-        switch(cur_obj->obj.obj_type)
-        {
-            case Ncl_Var:
-            case Ncl_FileVar:
-                 theobj = _NclGetObj(cur_obj->obj.id);
-                 thevar = (NclVar)theobj;
-
-                 if(thevar->var.thesym != NULL)
-                     strcpy(name[nelems], thevar->var.thesym->name);
-                 else if(thevar->var.var_quark != -1)
-                     strcpy(name[nelems], NrmQuarkToString(thevar->var.var_quark));
-                 else
-                     strcpy(name[nelems], "unnamed");
-
-               /*
-                *fprintf(stderr,"\tVariable name: <%s>\n",name[nelems]);
-                */
-
-                 thevalue = (NclMultiDValData)_NclGetObj(thevar->var.thevalue_id);
-                 if(thevalue->obj.obj_type_mask & Ncl_MultiDValnclfileData)
-                 {
-                   /*
-                    *fprintf(stderr, "Type: file\n");
-                    *if (thevalue->multidval.missing_value.has_missing &&
-                    *    *(obj*)thevalue->multidval.val == thevalue->multidval.missing_value.value.objval) {
-                    *    nclfprintf(stderr, "(0) File Missing Value : %d\n",*(obj*)thevalue->multidval.val);
-                    *}
-                    *else {
-                    *    NclObj file = _NclGetObj(*(int*)thevalue->multidval.val);
-                    *    _NclPrintFileSummary(file,fp);
-                    *}
-                    */
-         
-                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: can not print file list yet.\n");
-                     return(NhlFATAL);
-                 }
-                 else if(thevalue->obj.obj_type_mask & Ncl_MultiDVallistData)
-                 {
-                   /*
-                    *ret = _PrintListVarSummary((NclObj)thevalue,fp);
-                    */
-         
-                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: can not print list in list yet.\n");
-                     return(NhlFATAL);
-                 }
-                 else
-                 {
-                     type[nelems] = NCL_none;
-                     size[nelems] = 0;
-                     if(thevalue != NULL)
-                     {
-                         type[nelems] = thevalue->multidval.data_type;
-                       /*
-                        *fprintf(stderr, "Type: %s\n",_NclBasicDataTypeToName(thevalue->multidval.data_type));
-                        *fprintf(stderr, "Total Size: %lld bytes\n",(long long)thevalue->multidval.totalsize);
-                        *fprintf(stderr, "            %lld values\n",(long long)thevalue->multidval.totalelements);
-                        */
-                         if(thevalue->multidval.totalelements > maxlen)
-                             maxlen = thevalue->multidval.totalelements;
-                         size[nelems] = thevalue->multidval.totalelements;
-         
-                       /*
-                        *fprintf(stderr, "\ttype[%d]: %s\n", nelems, _NclBasicDataTypeToName(type[nelems]));
-                        *fprintf(stderr, "\tsize[%d]: %d\n", nelems, size[nelems]);
-                        */
-                     }
-                   /*
-                    *fprintf(stderr, "Number of Dimensions: %d\n",thevar->var.n_dims);
-                    *fprintf(stderr, "Dimensions and sizes:\t");
-                    *for(i = 0; i< thevar->var.n_dims; i++) {
-                    *    fprintf(stderr, "[");
-                    *    if((thevar->var.dim_info[i].dim_quark != -1)) {
-                    *        fprintf(stderr, "%s | ",NrmQuarkToString(thevar->var.dim_info[i].dim_quark));
-                    *    }
-                    *    fprintf(stderr, "%lld]",(long long)thevar->var.dim_info[i].dim_size);
-                    *    if(i !=  thevar->var.n_dims - 1) {
-                    *        fprintf(stderr, " x ");
-                    *    }
-                    *}
-                    *fprintf(stderr, "\n");
-                    */
-                 }
-
-                 break;
-            default:
-                 fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
-                 fprintf(stderr, "\tUNRECOGANIZED cur_obj->obj.obj_type %d: %o\n", nelems, cur_obj->obj.obj_type);
-        }
-
-        step = step->next;
-        ++nelems;
-    }
-
-    truelems = nelems;
-    if(maxelems > truelems)
-       maxelems = truelems;
-
-  /*
-   *fprintf(stderr, "\n\tmaxlen = %d\n", maxlen);
-   */
-
-  /*Print total number of elements*/
-    fprintf(stdout, "\nList has %d elements:\n", maxelems);
-
-  /*Print name of elements*/
-    strcpy(prntln, "Element name: ");
-
-    nstart = strlen(prntln);
-    for(nelems = 0; nelems < maxelems; ++nelems)
-    {
-         length = strlen(name[nelems]);
-         remain = ndvdl[nelems] - length;
-         if(remain > 0)
-         {
-            memset(prntln + nstart, ' ', remain);
-            prntln[nstart + remain] = '\0';
-            strcat(prntln, name[nelems]);
-            nstart += ndvdl[nelems];
-         }
-         else
-         {
-            strcat(prntln, name[nelems]);
-            nstart += length;
-         }
-    }
-
-    fprintf(stdout, "%s\n", prntln);
-
-  /*Print type of elements*/
-    strcpy(prntln, "Element type: ");
-    nstart = strlen(prntln);
-    for(nelems = 0; nelems < maxelems; ++nelems)
-    {
-         strcpy(buffer, _NclBasicDataTypeToName(type[nelems]));
-
-         length = strlen(buffer);
-         remain = ndvdl[nelems] - length;
-         if(remain > 0)
-         {
-            memset(prntln + nstart, ' ', remain);
-            prntln[nstart + remain] = '\0';
-            strcat(prntln, buffer);
-            nstart += ndvdl[nelems];
-         }
-         else
-         {
-            strcat(prntln, buffer);
-            nstart += length;
-         }
-    }
-
-    fprintf(stdout, "%s\n", prntln);
-
-  /*Print size of elements*/
-    strcpy(prntln, "Element size: ");
-    nstart = strlen(prntln);
-    for(nelems = 0; nelems < maxelems; ++nelems)
-    {
-         sprintf(buffer, "%ld", (long) size[nelems]);
-         
-         length = strlen(buffer);
-         remain = ndvdl[nelems] - length;
-         if(remain > 0)
-         {
-            memset(prntln + nstart, ' ', remain);
-            prntln[nstart + remain] = '\0';
-            strcat(prntln, buffer);
-            nstart += ndvdl[nelems];
-         }
-         else
-         {
-            strcat(prntln, buffer);
-            nstart += length;
-         }
-    }
-
-    fprintf(stdout, "%s\n", prntln);
-
-  /*Print value of elements*/
-    fprintf(stdout, "Element Value:\n");
-
-    nelems = 0;
-    for(i = 0; i < maxlen; ++i)
-    {
-        strcpy(buffer, "Element size: ");
-        length = strlen(buffer);
-        memset(prntln, ' ', length);
-        prntln[length] = '\0';
-
-        sprintf(buffer, "%ld", (long) i);
-   
-        remain = length - strlen(buffer);
-        if(remain > 0)
-        {
-           memset(prntln, ' ', remain);
-           prntln[remain] = '\0';
-           strcat(prntln, buffer);
-           nstart = length;
-        }
-        else
-        {
-           strcat(prntln, buffer);
-           nstart = strlen(buffer);
-        }
-
-        step = tmp_list->list.first;
-        for(nelems = 0; nelems < maxelems; ++nelems)
-        {
-            if(i < size[nelems])
-            {
-                cur_obj = (NclObj)_NclGetObj(step->obj_id);
-
-                theobj = _NclGetObj(cur_obj->obj.id);
-                thevar = (NclVar)theobj;
-
-                thevalue = (NclMultiDValData)_NclGetObj(thevar->var.thevalue_id);
-
-                if(thevalue != NULL)
-                {
-                    switch (type[nelems])
-                    {
-                        case NCL_string:
-                             {
-                                 string *sp = (string *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], NrmQuarkToString(*(sp + i)));
-                             }
-                             break;
-                        case NCL_float:
-                             {
-                                 float *fp = (float *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(fp + i));
-                             }
-                             break;
-                        case NCL_double:
-                             {
-                                 double *dp = (double *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(dp + i));
-                             }
-                             break;
-                        case NCL_int64:
-                             {
-                                 long long *llp = (long long *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(llp + i));
-                             }
-                             break;
-                        case NCL_uint64:
-                             {
-                                 unsigned long long *llp = (unsigned long long *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(llp + i));
-                             }
-                             break;
-                        case NCL_long:
-                             {
-                                 long *lp = (long *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(lp + i));
-                             }
-                             break;
-                        case NCL_ulong:
-                             {
-                                 unsigned long *lp = (unsigned long *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(lp + i));
-                             }
-                             break;
-                        case NCL_int:
-                             {
-                                 int *ip = (int *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(ip + i));
-                             }
-                             break;
-                        case NCL_uint:
-                             {
-                                 unsigned int *ip = (unsigned int *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(ip + i));
-                             }
-                             break;
-                        case NCL_short:
-                             {
-                                 short *sp = (short *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(sp + i));
-                             }
-                             break;
-                        case NCL_ushort:
-                             {
-                                 unsigned short *sp = (unsigned short *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(sp + i));
-                             }
-                             break;
-                        case NCL_byte:
-                             {
-                                 char *cp = (char *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(cp + i));
-                             }
-                             break;
-                        case NCL_char:
-                             {
-                                 unsigned char *cp = (unsigned char *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(cp + i));
-                             }
-                             break;
-                        default:
-                             memset(buffer, ' ', ndvdl[nelems]);
-                             buffer[ndvdl[nelems]] = '\0';
-
-                             fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
-                             fprintf(stderr, "\tUNRECOGANIZED thevalue->multidval.data_type 0x%o\n", thevalue->multidval.data_type);
-                    }
-                }
-
-                length = strlen(buffer);
-                remain = ndvdl[nelems] - length;
-
-                if(remain > 0)
-                {
-                   memset(prntln + nstart, ' ', remain);
-                   prntln[nstart + remain] = '\0';
-                   strcat(prntln, buffer);
-                   nstart += ndvdl[nelems];
-                }
-                else
-                {
-                    ndvdl[nelems] = length + 1;
-
-                    strcat(prntln, " ");
-                    strcat(prntln, buffer);
-                    nstart += ndvdl[nelems];
-                }
-            }
-            else
-            {
-                memset(buffer, ' ', ndvdl[nelems]);
-                buffer[ndvdl[nelems]] = '\0';
-                strcat(prntln, buffer);
-                nstart += ndvdl[nelems];
-            }
-
-            step = step->next;
-        }
-
-        fprintf(stdout, "%s\n", prntln);
-    }
-
-  /*
-   *fprintf(stderr, "Leave _Nclstr_print, file: %s, line: %d\n\n", __FILE__, __LINE__);
-   */
-}
-
-NhlErrorTypes _Nclstr_print2(void)
-{
-    obj *list_id;
-    NclObj thelist = NULL;
-
-    string *qformat;
 
     size_t i = 0;
     int nelems = 0;
     int maxelems = MAX_LIST_ELEMENT;
     int truelems = 0;
     NclBasicDataTypes type[MAX_LIST_ELEMENT];
-    char              format[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
-    size_t            size[MAX_LIST_ELEMENT];
-    size_t maxlen = 0;
-
-    char              name[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
-    char *tmp;
-    char *result = NULL;
-
-    NclList         tmp_list;
-    NclListObjList *step;
-    NclObj          theobj;
-    NclObj          cur_obj;
-    NhlErrorTypes ret = -1;
-
-    NclMultiDValData thevalue = NULL;
-    NclMultiDValData tmp_md = NULL;
-    NclVar           thevar;
-
-    char prntln[NCL_INITIAL_STRING_LENGTH];
-    char buffer[NCL_INITIAL_STRING_LENGTH];
-
-    int nstart, length, remain;
-    int ndvdl[MAX_LIST_ELEMENT];
-    int has_lead = 0;
-
-  /*
-   *fprintf(stderr, "\nEnter _Nclstr_print2, file: %s, line: %d\n", __FILE__, __LINE__);
-   */
-
-    list_id = (obj *)NclGetArgValue(
-               0,
-               2,
-               NULL,
-               NULL,
-               NULL,
-               NULL,
-               NULL,
-               DONT_CARE);
-
-    qformat = (string *)NclGetArgValue(
-              1,
-              2,
-              NULL,
-              NULL,
-              NULL,
-              NULL,
-              NULL,
-              DONT_CARE);
-
-    thelist = _NclGetObj(*list_id);
-    thevar = (NclVar)thelist;
-
-    tmp_list = (NclList) thelist;
-
-    tmp = NrmQuarkToString(*qformat);
-    if(tmp == NULL)
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: unknown format.\n");
-        return(NhlFATAL);
-    }
-
-    if('%' != tmp[0])
-        has_lead = 1;
-
-  /*
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\ttmp str: <%s>\n", tmp);
-   */
-
-    nelems = 0;
-    result = strtok(tmp, "%");
-    while(result != NULL)
-    {
-        ndvdl[nelems] = MAX_PRINT_SPACES;
-        if(16 > nelems)
-        {
-            strcpy(format[nelems], "%");
-            strcat(format[nelems], result);
-          /*
-           *fprintf(stderr, "\tformat[%d] = <%s>\n", nelems, format[nelems]);
-           */
-        }
-        else
-        {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: str_print can only handle list less than 16 elements.\n");
-            return(NhlFATAL);
-        }
-
-        result = strtok(NULL, "%");
-        ++nelems;
-    }
-
-    maxelems = nelems;
-
-    if(has_lead)
-    {
-       tmp= &(format[0][0]);
-       strcpy(format[0], tmp + 1);
-       --maxelems;
-       strcat(format[0], format[1]);
-       for(i = 1; i < maxelems; ++i)
-          strcpy(format[i], format[i+1]);
-    }
-
-  /*
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tmaxelems = %d\n", maxelems);
-   */
-
-    nelems = 0;
-    step = tmp_list->list.first;
-    while(step != NULL)
-    {
-        cur_obj = (NclObj)_NclGetObj(step->obj_id);
-
-      /*
-       *fprintf(stderr, "\n\tList Item %d:\n", nelems);
-       */
-
-        switch(cur_obj->obj.obj_type)
-        {
-            case Ncl_Var:
-            case Ncl_FileVar:
-                 theobj = _NclGetObj(cur_obj->obj.id);
-                 thevar = (NclVar)theobj;
-
-                 if(thevar->var.thesym != NULL)
-                     strcpy(name[nelems], thevar->var.thesym->name);
-                 else if(thevar->var.var_quark != -1)
-                     strcpy(name[nelems], NrmQuarkToString(thevar->var.var_quark));
-                 else
-                     strcpy(name[nelems], "unnamed");
-
-               /*
-                *fprintf(stderr,"\tVariable name: <%s>\n",name[nelems]);
-                */
-
-                 thevalue = (NclMultiDValData)_NclGetObj(thevar->var.thevalue_id);
-                 if(thevalue->obj.obj_type_mask & Ncl_MultiDValnclfileData)
-                 {
-                   /*
-                    *fprintf(stderr, "Type: file\n");
-                    *if (thevalue->multidval.missing_value.has_missing &&
-                    *    *(obj*)thevalue->multidval.val == thevalue->multidval.missing_value.value.objval) {
-                    *    nclfprintf(stderr, "(0) File Missing Value : %d\n",*(obj*)thevalue->multidval.val);
-                    *}
-                    *else {
-                    *    NclObj file = _NclGetObj(*(int*)thevalue->multidval.val);
-                    *    _NclPrintFileSummary(file,fp);
-                    *}
-                    */
-         
-                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: can not print file list yet.\n");
-                     return(NhlFATAL);
-                 }
-                 else if(thevalue->obj.obj_type_mask & Ncl_MultiDVallistData)
-                 {
-                   /*
-                    *ret = _PrintListVarSummary((NclObj)thevalue,fp);
-                    */
-         
-                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_print: can not print list in list yet.\n");
-                     return(NhlFATAL);
-                 }
-                 else
-                 {
-                     type[nelems] = NCL_none;
-                     size[nelems] = 0;
-                     if(thevalue != NULL)
-                     {
-                         type[nelems] = thevalue->multidval.data_type;
-                       /*
-                        *fprintf(stderr, "Type: %s\n",_NclBasicDataTypeToName(thevalue->multidval.data_type));
-                        *fprintf(stderr, "Total Size: %lld bytes\n",(long long)thevalue->multidval.totalsize);
-                        *fprintf(stderr, "            %lld values\n",(long long)thevalue->multidval.totalelements);
-                        */
-                         if(thevalue->multidval.totalelements > maxlen)
-                             maxlen = thevalue->multidval.totalelements;
-                         size[nelems] = thevalue->multidval.totalelements;
-         
-                       /*
-                        *fprintf(stderr, "\ttype[%d]: %s\n", nelems, _NclBasicDataTypeToName(type[nelems]));
-                        *fprintf(stderr, "\tsize[%d]: %d\n", nelems, size[nelems]);
-                        */
-                     }
-                   /*
-                    *fprintf(stderr, "Number of Dimensions: %d\n",thevar->var.n_dims);
-                    *fprintf(stderr, "Dimensions and sizes:\t");
-                    *for(i = 0; i< thevar->var.n_dims; i++) {
-                    *    fprintf(stderr, "[");
-                    *    if((thevar->var.dim_info[i].dim_quark != -1)) {
-                    *        fprintf(stderr, "%s | ",NrmQuarkToString(thevar->var.dim_info[i].dim_quark));
-                    *    }
-                    *    fprintf(stderr, "%lld]",(long long)thevar->var.dim_info[i].dim_size);
-                    *    if(i !=  thevar->var.n_dims - 1) {
-                    *        fprintf(stderr, " x ");
-                    *    }
-                    *}
-                    *fprintf(stderr, "\n");
-                    */
-                 }
-
-                 break;
-            default:
-                 fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
-                 fprintf(stderr, "\tUNRECOGANIZED cur_obj->obj.obj_type %d: %o\n", nelems, cur_obj->obj.obj_type);
-        }
-
-        step = step->next;
-        ++nelems;
-    }
-
-    truelems = nelems;
-    if(maxelems > truelems)
-       maxelems = truelems;
-
-  /*
-   *fprintf(stderr, "\n\tmaxlen = %d\n", maxlen);
-   */
-
-  /*Print total number of elements*/
-    fprintf(stdout, "\nList has %d elements:\n", maxelems);
-
-  /*Print name of elements*/
-    strcpy(prntln, "Element name: ");
-
-    nstart = strlen(prntln);
-    for(nelems = 0; nelems < maxelems; ++nelems)
-    {
-         length = strlen(name[nelems]);
-         remain = ndvdl[nelems] - length;
-         if(remain > 0)
-         {
-            memset(prntln + nstart, ' ', remain);
-            prntln[nstart + remain] = '\0';
-            strcat(prntln, name[nelems]);
-            nstart += ndvdl[nelems];
-         }
-         else
-         {
-            strcat(prntln, name[nelems]);
-            nstart += length;
-         }
-    }
-
-    fprintf(stdout, "%s\n", prntln);
-
-  /*Print type of elements*/
-    strcpy(prntln, "Element type: ");
-    nstart = strlen(prntln);
-    for(nelems = 0; nelems < maxelems; ++nelems)
-    {
-         strcpy(buffer, _NclBasicDataTypeToName(type[nelems]));
-
-         length = strlen(buffer);
-         remain = ndvdl[nelems] - length;
-         if(remain > 0)
-         {
-            memset(prntln + nstart, ' ', remain);
-            prntln[nstart + remain] = '\0';
-            strcat(prntln, buffer);
-            nstart += ndvdl[nelems];
-         }
-         else
-         {
-            strcat(prntln, buffer);
-            nstart += length;
-         }
-    }
-
-    fprintf(stdout, "%s\n", prntln);
-
-  /*Print size of elements*/
-    strcpy(prntln, "Element size: ");
-    nstart = strlen(prntln);
-    for(nelems = 0; nelems < maxelems; ++nelems)
-    {
-         sprintf(buffer, "%ld", (long) size[nelems]);
-         
-         length = strlen(buffer);
-         remain = ndvdl[nelems] - length;
-         if(remain > 0)
-         {
-            memset(prntln + nstart, ' ', remain);
-            prntln[nstart + remain] = '\0';
-            strcat(prntln, buffer);
-            nstart += ndvdl[nelems];
-         }
-         else
-         {
-            strcat(prntln, buffer);
-            nstart += length;
-         }
-    }
-
-    fprintf(stdout, "%s\n", prntln);
-
-  /*Print value of elements*/
-    fprintf(stdout, "Element Value:\n");
-
-    nelems = 0;
-    for(i = 0; i < maxlen; ++i)
-    {
-        strcpy(buffer, "Element size: ");
-        length = strlen(buffer);
-        memset(prntln, ' ', length);
-        prntln[length] = '\0';
-
-        sprintf(buffer, "%ld", (long) i);
-   
-        remain = length - strlen(buffer);
-        if(remain > 0)
-        {
-           memset(prntln, ' ', remain);
-           prntln[remain] = '\0';
-           strcat(prntln, buffer);
-           nstart = length;
-        }
-        else
-        {
-           strcat(prntln, buffer);
-           nstart = strlen(buffer);
-        }
-
-        step = tmp_list->list.first;
-        for(nelems = 0; nelems < maxelems; ++nelems)
-        {
-            if(i < size[nelems])
-            {
-                cur_obj = (NclObj)_NclGetObj(step->obj_id);
-
-                theobj = _NclGetObj(cur_obj->obj.id);
-                thevar = (NclVar)theobj;
-
-                thevalue = (NclMultiDValData)_NclGetObj(thevar->var.thevalue_id);
-
-                if(thevalue != NULL)
-                {
-                    switch (type[nelems])
-                    {
-                        case NCL_string:
-                             {
-                                 int ns = 0;
-                                 int n = 0;
-                                 string *sp = (string *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], NrmQuarkToString(*(sp + i)));
-                                 for(n = 0; n < strlen(buffer); ++n)
-                                 {
-                                     if(' ' != buffer[n])
-                                     {
-                                         ns = n;
-                                         break;
-                                     }
-                                 }
-
-                                 if(ns)
-                                 {
-                                     n = 0;
-                                     while(ns < strlen(buffer))
-                                     {
-                                         buffer[n++] = buffer[ns];
-                                         buffer[ns++] = ' ';
-                                     }
-                                 }
-                             }
-                             break;
-                        case NCL_float:
-                             {
-                                 float *fp = (float *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(fp + i));
-                             }
-                             break;
-                        case NCL_double:
-                             {
-                                 double *dp = (double *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(dp + i));
-                             }
-                             break;
-                        case NCL_int64:
-                             {
-                                 long long *llp = (long long *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(llp + i));
-                             }
-                             break;
-                        case NCL_uint64:
-                             {
-                                 unsigned long long *llp = (unsigned long long *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(llp + i));
-                             }
-                             break;
-                        case NCL_long:
-                             {
-                                 long *lp = (long *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(lp + i));
-                             }
-                             break;
-                        case NCL_ulong:
-                             {
-                                 unsigned long *lp = (unsigned long *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(lp + i));
-                             }
-                             break;
-                        case NCL_int:
-                             {
-                                 int *ip = (int *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(ip + i));
-                             }
-                             break;
-                        case NCL_uint:
-                             {
-                                 unsigned int *ip = (unsigned int *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(ip + i));
-                             }
-                             break;
-                        case NCL_short:
-                             {
-                                 short *sp = (short *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(sp + i));
-                             }
-                             break;
-                        case NCL_ushort:
-                             {
-                                 unsigned short *sp = (unsigned short *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(sp + i));
-                             }
-                             break;
-                        case NCL_byte:
-                             {
-                                 char *cp = (char *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(cp + i));
-                             }
-                             break;
-                        case NCL_char:
-                             {
-                                 unsigned char *cp = (unsigned char *) thevalue->multidval.val;
-                                 sprintf(buffer, format[nelems], *(cp + i));
-                             }
-                             break;
-                        default:
-                             memset(buffer, ' ', ndvdl[nelems]);
-                             buffer[ndvdl[nelems]] = '\0';
-
-                             fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
-                             fprintf(stderr, "\tUNRECOGANIZED thevalue->multidval.data_type 0x%o\n", thevalue->multidval.data_type);
-                    }
-                }
-
-                length = strlen(buffer);
-                remain = ndvdl[nelems] - length;
-
-                if(remain > 0)
-                {
-                   memset(prntln + nstart, ' ', remain);
-                   prntln[nstart + remain] = '\0';
-                   strcat(prntln, buffer);
-                   nstart += ndvdl[nelems];
-                }
-                else
-                {
-                    ndvdl[nelems] = length + 1;
-
-                    strcat(prntln, " ");
-                    strcat(prntln, buffer);
-                    nstart += ndvdl[nelems];
-                }
-            }
-            else
-            {
-                memset(buffer, ' ', ndvdl[nelems]);
-                buffer[ndvdl[nelems]] = '\0';
-                strcat(prntln, buffer);
-                nstart += ndvdl[nelems];
-            }
-
-            step = step->next;
-        }
-
-        fprintf(stdout, "%s\n", prntln);
-    }
-
-  /*
-   *fprintf(stderr, "Leave _Nclstr_print2, file: %s, line: %d\n\n", __FILE__, __LINE__);
-   */
-    return(NhlNOERROR);
-}
-
-NhlErrorTypes _Nclstr_write(void)
-{
-    obj *list_id;
-    NclObj thelist = NULL;
-
-    FILE *fp = NULL;
-
-    string *qformat;
-    string *qfilename;
-    string *qoption;
-
-    size_t i = 0;
-    int nelems = 0;
-    int maxelems = MAX_LIST_ELEMENT;
-    int truelems = 0;
-    NclBasicDataTypes type[MAX_LIST_ELEMENT];
+    char              prefix[256];
     char              format[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
     size_t            size[MAX_LIST_ELEMENT];
     size_t maxlen = 0;
 
     char  name[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
-    char *filename;
-    char *option;
-    char *tmp;
+    char *tmp = strdup(fmtstr);
     char *result = NULL;
 
-    NclList         tmp_list;
     NclListObjList *step;
     NclObj          theobj;
     NclObj          cur_obj;
 
-    NclMultiDValData thevalue = NULL;
-    NclVar           thevar;
-
     char prntln[NCL_INITIAL_STRING_LENGTH];
     char buffer[NCL_INITIAL_STRING_LENGTH];
+    char seperator[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
 
     int nstart, length, remain;
-    int ndvdl[MAX_LIST_ELEMENT];
     int has_seperator[MAX_LIST_ELEMENT];
-    char seperator[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
-    int has_lead = 0;
 
-  /*
-   *fprintf(stderr, "\nEnter _Nclstr_write, file: %s, line: %d\n", __FILE__, __LINE__);
-   */
-
-    qfilename = (string *)NclGetArgValue(
-              0,
-              4,
-              NULL,
-              NULL,
-              NULL,
-              NULL,
-              NULL,
-              DONT_CARE);
-
-    filename = NrmQuarkToString(*qfilename);
-    if(filename == NULL)
+    if('%' != fmtstr[0])
     {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_write: unknown filename.\n");
-        return(NhlFATAL);
+        strcpy(prefix, tmp);
+        tmp = strchr(tmp, '%');
+        i = strlen(prefix) - strlen(tmp);
+        prefix[i] = '\0';
     }
-
-  /*
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tfilename = <%s>\n", filename);
-   */
-
-    qoption = (string *)NclGetArgValue(
-              1,
-              4,
-              NULL,
-              NULL,
-              NULL,
-              NULL,
-              NULL,
-              DONT_CARE);
-
-    option = NrmQuarkToString(*qoption);
-    if(option == NULL)
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_write: unknown write option.\n");
-        return(NhlFATAL);
-    }
-
-  /*
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\toption = <%s>\n", option);
-   */
-
-    list_id = (obj *)NclGetArgValue(
-               2,
-               4,
-               NULL,
-               NULL,
-               NULL,
-               NULL,
-               NULL,
-               DONT_CARE);
+    else
+        prefix[0] = '\0';
 
     thelist = _NclGetObj(*list_id);
-    if(NULL == thelist)
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_write: NULL list.\n");
-        return(NhlFATAL);
-    }
-
     thevar = (NclVar)thelist;
     tmp_list = (NclList) thelist;
 
-    qformat = (string *)NclGetArgValue(
-              3,
-              4,
-              NULL,
-              NULL,
-              NULL,
-              NULL,
-              NULL,
-              DONT_CARE);
-
-    tmp = NrmQuarkToString(*qformat);
-    if(tmp == NULL)
-    {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_write: unknown format.\n");
-        return(NhlFATAL);
-    }
-
   /*
    *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tformat = <%s>\n", tmp);
+   *fprintf(stderr, "\tprefix = <%s>\n", prefix);
    */
 
-    fp = fopen(filename, option);
-
-    if('%' != tmp[0])
-        has_lead = 1;
-
     nelems = 0;
+    memset(format, 0, MAX_LIST_ELEMENT * MAX_PRINT_NAME_LENGTH);
     result = strtok(tmp, "%");
     while(result != NULL)
     {
-        ndvdl[nelems] = MAX_PRINT_SPACES;
         if(16 > nelems)
         {
             strcpy(format[nelems], "%");
@@ -5434,7 +4374,7 @@ NhlErrorTypes _Nclstr_write(void)
         }
         else
         {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_write: str_write can only handle list less than 16 elements.\n");
+            NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: write_table can only handle list less than 16 elements.\n");
             return(NhlFATAL);
         }
 
@@ -5443,21 +4383,6 @@ NhlErrorTypes _Nclstr_write(void)
     }
 
     maxelems = nelems;
-
-    if(has_lead)
-    {
-       tmp= &(format[0][0]);
-       strcpy(format[0], tmp + 1);
-       --maxelems;
-       strcat(format[0], format[1]);
-       for(i = 1; i < maxelems; ++i)
-          strcpy(format[i], format[i+1]);
-    }
-
-  /*
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tmaxelems = %d\n", maxelems);
-   */
 
     nelems = 0;
     step = tmp_list->list.first;
@@ -5498,7 +4423,7 @@ NhlErrorTypes _Nclstr_write(void)
                     *}
                     */
          
-                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_write: can not print file list yet.\n");
+                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: can not print file list yet.\n");
                      return(NhlFATAL);
                  }
                  else if(thevalue->obj.obj_type_mask & Ncl_MultiDVallistData)
@@ -5507,7 +4432,7 @@ NhlErrorTypes _Nclstr_write(void)
                     *ret = _PrintListVarSummary((NclObj)thevalue,fp);
                     */
          
-                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclstr_write: can not print list in list yet.\n");
+                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: can not print list in list yet.\n");
                      return(NhlFATAL);
                  }
                  else
@@ -5586,15 +4511,30 @@ NhlErrorTypes _Nclstr_write(void)
    */
 
   /*Print value of elements*/
-    nelems = 0;
+    if(! output)
+    {
+        for(nelems = 0; nelems < maxelems; ++nelems)
+            ndvdl[nelems] = 0;
+    }
+
     for(i = 0; i < maxlen; ++i)
     {
-        nstart = 0;
-        prntln[0] = '\0';
+        memset(prntln, 0, NCL_INITIAL_STRING_LENGTH);
+        if('\0' == prefix[0])
+        {
+            prntln[0] = '\0';
+            nstart = 0;
+        }
+        else
+        {
+            strcpy(prntln, prefix);
+            nstart = strlen(prefix);
+        }
 
         step = tmp_list->list.first;
         for(nelems = 0; nelems < maxelems; ++nelems)
         {
+            memset(buffer, 0, NCL_INITIAL_STRING_LENGTH);
             if(i < size[nelems])
             {
                 cur_obj = (NclObj)_NclGetObj(step->obj_id);
@@ -5697,6 +4637,9 @@ NhlErrorTypes _Nclstr_write(void)
 
                 length = strlen(buffer);
 
+                if(length > ndvdl[nelems])
+                    ndvdl[nelems] = length;
+
                 if(has_seperator[nelems])
                 {
                     strcat(prntln, buffer);
@@ -5706,17 +4649,31 @@ NhlErrorTypes _Nclstr_write(void)
                 {
                     remain = ndvdl[nelems] - length;
 
-                    if(remain > 0)
+                    if(remain)
                     {
+#if 0
                        memset(prntln + nstart, ' ', remain);
                        prntln[nstart + remain] = '\0';
                        strcat(prntln, buffer);
+#else
+                       if(nelems)
+                       {
+                           strcat(prntln, " ");
+                           strcat(prntln, buffer);
+                           memset(prntln + length + 2 + nstart, ' ', remain + 1);
+                           prntln[nstart + length + 2 + remain] = '\0';
+                       }
+                       else
+                       {
+                           strcat(prntln, buffer);
+                           memset(prntln + length + 1 + nstart, ' ', remain + 1);
+                           prntln[nstart + length + 1 + remain] = '\0';
+                       }
+#endif
                        nstart += ndvdl[nelems];
                     }
                     else
                     {
-                       ndvdl[nelems] = length + 1;
-
                        if(nelems)
                        {
                            strcat(prntln, " ");
@@ -5724,7 +4681,7 @@ NhlErrorTypes _Nclstr_write(void)
                        }
                        else
                        {
-                           strcpy(prntln, buffer);
+                           strcat(prntln, buffer);
                        }
                        nstart += ndvdl[nelems];
                     }
@@ -5732,31 +4689,187 @@ NhlErrorTypes _Nclstr_write(void)
             }
             else
             {
+                memset(buffer, ' ', ndvdl[nelems] + 1);
+                buffer[ndvdl[nelems]] = '\0';
+
                 if(has_seperator[nelems])
                 {
-                    strcat(prntln, seperator[nelems]);
-
-                    nstart += strlen(seperator[nelems]);
+                    buffer[ndvdl[nelems] - strlen(seperator[nelems])] = '\0';
+                    strcat(buffer, seperator[nelems]);
                 }
                 else
-                {
-                    memset(buffer, ' ', ndvdl[nelems]);
-                    buffer[ndvdl[nelems]] = '\0';
-                    strcat(prntln, buffer);
-
-                    nstart += ndvdl[nelems];
-                }
+                    if(nelems)
+                        strcat(buffer, " ");
+                strcat(prntln, buffer);
+                nstart += ndvdl[nelems];
             }
 
             step = step->next;
         }
 
-        fprintf(fp, "%s\n", prntln);
+        if(output)
+            fprintf(fp, "%s\n", prntln);
     }
+
+    return(NhlNOERROR);
+}
+
+NhlErrorTypes _Nclprint_table(void)
+{
+    obj *list_id;
+
+    string *qformat;
+    char   *format;
+
+    int ndvdl[MAX_LIST_ELEMENT];
+
+    FILE *fp = _NclGetOutputStream();
+
+  /*
+   *fprintf(stderr, "\nEnter _Nclprint_table, file: %s, line: %d\n", __FILE__, __LINE__);
+   */
+
+    list_id = (obj *)NclGetArgValue(
+               0,
+               2,
+               NULL,
+               NULL,
+               NULL,
+               NULL,
+               NULL,
+               DONT_CARE);
+
+    qformat = (string *)NclGetArgValue(
+              1,
+              2,
+              NULL,
+              NULL,
+              NULL,
+              NULL,
+              NULL,
+              DONT_CARE);
+
+    format = NrmQuarkToString(*qformat);
+    if(NULL == format)
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclprint_table: unknown format.\n");
+        return(NhlFATAL);
+    }
+
+    process_list(fp, list_id, format, ndvdl, 0);
+    process_list(fp, list_id, format, ndvdl, 1);
+
+  /*
+   *fprintf(stderr, "Leave _Nclprint_table, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   */
+    return(NhlNOERROR);
+}
+
+NhlErrorTypes _Nclwrite_table(void)
+{
+    obj *list_id;
+
+    string *qformat;
+    string *qfilename;
+    string *qoption;
+
+    char *format;
+    char *filename;
+    char *option;
+
+    FILE *fp = NULL;
+
+    int ndvdl[MAX_LIST_ELEMENT];
+
+  /*
+   *fprintf(stderr, "\nEnter _Nclwrite_table, file: %s, line: %d\n", __FILE__, __LINE__);
+   */
+
+    qfilename = (string *)NclGetArgValue(
+              0,
+              4,
+              NULL,
+              NULL,
+              NULL,
+              NULL,
+              NULL,
+              DONT_CARE);
+
+    filename = NrmQuarkToString(*qfilename);
+    if(NULL == filename)
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: unknown filename.\n");
+        return(NhlFATAL);
+    }
+
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tfilename = <%s>\n", filename);
+   */
+
+    qoption = (string *)NclGetArgValue(
+              1,
+              4,
+              NULL,
+              NULL,
+              NULL,
+              NULL,
+              NULL,
+              DONT_CARE);
+
+    option = NrmQuarkToString(*qoption);
+    if(NULL == option)
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: unknown write option.\n");
+        return(NhlFATAL);
+    }
+
+    list_id = (obj *)NclGetArgValue(
+               2,
+               4,
+               NULL,
+               NULL,
+               NULL,
+               NULL,
+               NULL,
+               DONT_CARE);
+
+    if(NULL == list_id)
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: NULL list.\n");
+        return(NhlFATAL);
+    }
+
+    qformat = (string *)NclGetArgValue(
+              3,
+              4,
+              NULL,
+              NULL,
+              NULL,
+              NULL,
+              NULL,
+              DONT_CARE);
+
+    format = NrmQuarkToString(*qformat);
+    if(NULL == format)
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: unknown format.\n");
+        return(NhlFATAL);
+    }
+
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tformat = <%s>\n", format);
+   */
+
+    fp = fopen(filename, option);
+
+    process_list(fp, list_id, format, ndvdl, 0);
+    process_list(fp, list_id, format, ndvdl, 1);
 
     fclose(fp);
   /*
-   *fprintf(stderr, "Leave _Nclstr_write, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   *fprintf(stderr, "Leave _Nclwrite_table, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
     return(NhlNOERROR);
 }

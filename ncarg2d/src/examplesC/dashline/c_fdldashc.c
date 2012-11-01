@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>

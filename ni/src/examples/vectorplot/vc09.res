@@ -1,3 +1,5 @@
+*wkBackgroundColor : black
+
 *mpFillOn : True
 *mpFillDrawOrder : predraw
 *mpOutlineDrawOrder : draw
@@ -7,6 +9,7 @@
 *mpProjection : LambertEqualArea
 *mpLimitMode : latlon
 *mpOceanFillColor: 9
+*mpInlandWaterFillColor: 9
 *mpLandFillColor: 2
 
 *vcRefLengthF : 0.045

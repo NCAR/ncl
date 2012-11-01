@@ -1001,6 +1001,7 @@ extern NhlErrorTypes _NclIPush(
 void
 #endif
 );
+extern NhlErrorTypes _NclIAppend(void);
 extern NhlErrorTypes _NclINewList(
 #if     NhlNeedProto
 void
@@ -1058,6 +1059,12 @@ void
 );
 
 NhlErrorTypes _Nclget_cpu_time(
+#if NhlNeedProto
+void
+#endif
+);
+
+NhlErrorTypes _NclCreateGraphic(
 #if NhlNeedProto
 void
 #endif
@@ -2237,6 +2244,15 @@ void _NclAddBuiltIns
 	NclRegisterFunc(_NclINhlGetClassResources,args,"NhlGetClassResources",nargs);
 
 	nargs = 0;
+	args = NewArgs(4);
+	SetArgTemplate(args,0,"string",0,NclANY);nargs++;
+        dimsizes[0] = 1;
+	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
+	SetArgTemplate(args,2,NclANY,1,dimsizes);nargs++;
+	SetArgTemplate(args,3,"logical",1,dimsizes);nargs++;
+	NclRegisterFunc(_NclCreateGraphic,args,"create_graphic",nargs);
+
+	nargs = 0;
 	args = NewArgs(1);
 	dimsizes[0] = 1;
 	SetArgTemplate(args,0,NclANY,0,NclANY);nargs++;
@@ -2472,6 +2488,12 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"list",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
     NclRegisterProc(_NclIPush,args,"ListPush",nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"list",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+    NclRegisterProc(_NclIAppend,args,"ListAppend",nargs);
 
     nargs = 0;
     args = NewArgs(1);

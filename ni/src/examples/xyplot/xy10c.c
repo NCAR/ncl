@@ -41,7 +41,7 @@
  */
 char *file = "95031800_sao.cdf";
 
-main()
+int main()
 {
 /*
  * Declare variables for the HLU routine calls.

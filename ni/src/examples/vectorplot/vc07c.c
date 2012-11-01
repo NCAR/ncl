@@ -44,7 +44,7 @@
 
 int ithin[NROWS] = {90,15,5,5,4,4,3,3,2,2,2};
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     char const *wks_type = "x11";
     int i, j;

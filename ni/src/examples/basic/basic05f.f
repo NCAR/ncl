@@ -40,7 +40,7 @@ C
       integer num_dims,len_dims(2)
       integer appid,wks,lbar,rlist,glist,text
       character*7  wks_type
-      character*3 colorindices(232)
+      character*3 colorindices(255)
 
       real cmap(3,8)
       real newcmap(3,100)
@@ -66,9 +66,6 @@ C
 
         call NhlFRLSetstring(rlist,'wkMetaName','./basic05f.ncgm',ierr)
 
-C Set Colormap to default. Note, this assignment is redundant
-        call NhlFRLSetString(rlist,'wkColorMap','default',ierr)
-
         call NhlFCreate(wks,'wks',
      1        NhlFNcgmWorkstationClass,0,rlist,ierr)
       else if (wks_type.eq."x11".or.wks_type.eq."X11") then
@@ -79,10 +76,7 @@ C Create an XWorkstation object that uses the default colormap.
         call NhlFRLSetString(rlist,'wkPause','True',ierr)
 
 C Set color mode to private so that there is no contention for colors
-        call NhlFRLSetString(rlist,'wkXColorMode','private',ierr)
-
-C Set Colormap to default. Note, this assignment is redundant
-        call NhlFRLSetString(rlist,'wkColorMap','default',ierr)
+C        call NhlFRLSetString(rlist,'wkXColorMode','private',ierr)
 
         call NhlFCreate(wks,'wks',
      +     NhlFCairoWindowWorkstationClass,0,
@@ -96,9 +90,6 @@ C
 
         call NhlFRLSetstring(rlist,'wkPSFileName','./basic05f.ps',ierr)
 
-C Set Colormap to default. Note, this assignment is redundant
-        call NhlFRLSetString(rlist,'wkColorMap','default',ierr)
-
         call NhlFCreate(wks,'wks',
      1        NhlFPSWorkstationClass,0,rlist,ierr)
 
@@ -110,9 +101,6 @@ C
 
         call NhlFRLSetstring(rlist,'wkPDFFileName','./basic05f.pdf',
      1        ierr)
-
-C Set Colormap to default. Note, this assignment is redundant
-        call NhlFRLSetString(rlist,'wkColorMap','default',ierr)
 
         call NhlFCreate(wks,'wks',
      1        NhlFPDFWorkstationClass,0,rlist,ierr)
@@ -128,9 +116,6 @@ C
         call NhlFRLSetstring(rlist,'wkFormat',wks_type,
      1        ierr)
 
-C Set Colormap to default. Note, this assignment is redundant
-        call NhlFRLSetString(rlist,'wkColorMap','default',ierr)
-
         call NhlFCreate(wks,'wks',
      1        NhlFCairoPSPDFWorkstationClass,0,rlist,ierr)
       else if (wks_type.eq."png".or.wks_type.eq."PNG") then
@@ -144,16 +129,13 @@ C
         call NhlFRLSetstring(rlist,'wkFormat',wks_type,
      1        ierr)
 
-C Set Colormap to default. Note, this assignment is redundant
-        call NhlFRLSetString(rlist,'wkColorMap','default',ierr)
-
         call NhlFCreate(wks,'wks',
      1        NhlFCairoImageWorkstationClass,0,rlist,ierr)
       endif
 
 C Initialize labels for the colormap entries
 
-      do 100 i=1,232
+      do 100 i=1,255
            write (colorindices(i),111) i
  111       format (I3)
  100  continue
@@ -178,15 +160,15 @@ C Set fill pattern to solid
 C No lines between colors
       call NhlFRLSetString(rlist,'lbBoxLinesOn','False',ierr)
 
-C Display 31 entries
-      call NhlFRLSetInteger(rlist,'lbBoxCount',31,ierr)
+C Display 255 entries
+      call NhlFRLSetInteger(rlist,'lbBoxCount',255,ierr)
 
 C Turn off labelbar perimeter
       call NhlFRLSetString(rlist,'lbPerimOn','False',ierr)
 
 C Plot title
       call NhlFRLSetString(rlist,'lbTitleString',
-     1      'Default Colormap',ierr)
+     1      '(New) Default Colormap',ierr)
 
 C Title font
       call NhlFRLSetString(rlist,'lbTitleFont','Helvetica-bold',ierr)
@@ -226,6 +208,22 @@ C Set the text value
       call NhlFCreate(text,'text',NhlFtextItemClass,wks,
      1      rlist,ierr)
 
+
+C Draw and frame the labelbar
+      call NhlFDraw(lbar,ierr)
+      call NhlFDraw(text,ierr)
+      call NhlFFrame(wks,ierr)
+
+C Change the colormap to the old default colormap
+      call NhlFRLClear(rlist)
+      call NhlFRLSetString(rlist,'wkColorMap','default',ierr)
+      call NhlFSetValues(wks,rlist,ierr)
+
+      call NhlFRLClear(rlist)
+      call NhlFRLSetInteger(rlist,'lbBoxCount',31,ierr)
+      call NhlFRLSetString(rlist,'lbTitleString',
+     1      '(Old) Default Colormap',ierr)
+      call NhlFSetValues(lbar,rlist,ierr)
 
 C Draw and frame the labelbar
       call NhlFDraw(lbar,ierr)

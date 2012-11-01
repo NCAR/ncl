@@ -179,18 +179,6 @@ cmpf.o: cmpf.c
 	$(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c cmpf.c
 #endif
 
-#if defined(linux) && defined(x86_64)
-Quarks.o: Quarks.c
-        $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c Quarks.c
-
-#endif
-
-#if defined(linux)
-Format.o: Format.c
-        $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c Format.c
-
-#endif
-
 #if defined(AIX)
 SetValues.o: SetValues.c
         $(CC) $(CCOPTIONS) $(ALLDEFINES) -O2 -qstrict -g -c SetValues.c

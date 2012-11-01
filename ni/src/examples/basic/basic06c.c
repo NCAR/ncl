@@ -45,7 +45,7 @@ void draw_text();
 /*
  * Main program.
  */
-main()
+int main()
 {
 
     int appid,rlist;

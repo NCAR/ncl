@@ -74,7 +74,7 @@
 char *cdffiles[6] = {"Ustorm.cdf","Vstorm.cdf","Pstorm.cdf","Tstorm.cdf","U500storm.cdf","V500storm.cdf"};
 
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i, j, d, h;
     int appid, wid, cnid, vcid, stid, txid, amid, mpid, tmid, stdmid;
@@ -325,7 +325,7 @@ main(int argc, char *argv[])
  * Create a map object
  */
     NhlRLClear(rlist);
-    NhlRLSetString(rlist,NhlNvpUseSegments,"true");
+/*    NhlRLSetString(rlist,NhlNvpUseSegments,"true"); */
     NhlCreate(&mpid,"mapplot",NhlmapPlotClass,wid,rlist);
 /*
  * Overlay everything on the MapPlot. The last object overlaid will

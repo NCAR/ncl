@@ -12,7 +12,7 @@
  *                                                                       *
  ************************************************************************/
 
-#include <string.h>
+#include <strings.h>
 #include <ncarg/hlu/hlu.h>
 #include "pageutil.h"
 
@@ -93,7 +93,9 @@ const int nhlGetPaperSize(NhlPageInfo* pageInfo)
     const char* func = "nhlGetPaperSize";
     int ret = 0;
 
-    if (pageInfo->paperSize != NULL && strlen(pageInfo->paperSize) > 0) {
+    if (pageInfo->paperSize != NULL && strlen(pageInfo->paperSize) > 0 && 
+            strcasecmp(pageInfo->paperSize, PAGEUTIL_DEFAULT_PAPERSIZE)) 
+    {
         /* page specified by a standard paper size */
         const NhlPageDefinition *pageDef = nhlGetPageDefinition(pageInfo->paperSize);
         if (pageDef == NULL) {

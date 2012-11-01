@@ -1,5 +1,9 @@
 ! pr04 res file
 
+*wkColorMap : default
+*wkBackgroundColor : (/0.,0.,0./)
+*wkForegroundColor : (/1.,1.,1./)
+
 *trXMinF : 4
 *trYMinF : 4
 *trXMaxF : 170

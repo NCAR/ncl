@@ -770,6 +770,7 @@ struct  _NclSelectionRecord * sel_ptr;
 #endif
 {
 	NclVarClass vc;
+	NhlErrorTypes subret, ret;
 
 	if(self == NULL) {
 		return(NhlFATAL);
@@ -778,7 +779,15 @@ struct  _NclSelectionRecord * sel_ptr;
 	}
 	while((NclObjClass)vc != nclObjClass) {
 		if(vc->var_class.write_att_func != NULL) {
-			return((*vc->var_class.write_att_func)(self,attname,value,sel_ptr));
+			ret = (*vc->var_class.write_att_func)(self,attname,value,sel_ptr);
+			if (ret > NhlFATAL && self->var.n_dims == 1 && self->var.coord_vars[0] != -1) {
+				NclVar cv = (NclVar)_NclGetObj(self->var.coord_vars[0]);
+				if (self->var.var_quark == cv->var.var_quark) {
+					subret = _NclWriteAtt(cv,attname,value,sel_ptr);
+					return (MIN(ret,subret));
+				}
+			}
+			return ret;
 		} else {
 			vc = (NclVarClass)vc->obj_class.super_class;
 		}
@@ -1524,7 +1533,6 @@ NclObj self;
 FILE *fp;
 #endif
 {
-	NhlErrorTypes ret;
 	NclObjClass oc;
 
 	if(self == NULL)

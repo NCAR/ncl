@@ -94,7 +94,7 @@ float Pressure[] =  {   835.000000,
             };
 
 
-main()
+int main()
 {
     int     appid,xworkid,ncgmwid,plotid,dataid;
     int     rlist;

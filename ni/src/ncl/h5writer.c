@@ -55,11 +55,11 @@ int _writeH5dataset(hid_t fid, hsize_t rank, hsize_t *dims, void *data,
     h5order = H5Tget_order(Ncl2HDF5type(typename));
     status = H5Tset_order(dataset_node->type, h5order);
 
-    dataset_node->id = H5Dcreate2(fid,
-                                  dataset_node->name,
-                                  dataset_node->type,
-                                  dataset_node->space,
-                                  H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);;
+    dataset_node->id = H5Dcreate(fid,
+                                 dataset_node->name,
+                                 dataset_node->type,
+                                 dataset_node->space,
+                                 H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);;
 
   /*Write the data to the dataset using default transfer properties.*/
     status = H5Dwrite(dataset_node->id, Ncl2HDF5type(typename), H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
@@ -455,7 +455,8 @@ int _add_attr2dataset(hid_t fid, hsize_t rank, hsize_t *dims, void *attrdata,
     curAttrNode->value = (void *) NclMalloc(curAttrNode->nbytes);
     memcpy(curAttrNode->value, attrdata, curAttrNode->nbytes);
 
-    did = H5Dopen2(group_node->id, datasetname, H5P_DEFAULT);
+    group_node->id = H5Fopen(group_node->file, H5F_ACC_RDWR, H5P_DEFAULT);
+    did = H5Dopen(group_node->id, datasetname, H5P_DEFAULT);
     _write_dataset_attribute(did, curAttrNode);
     H5Dclose(did);
 
@@ -528,7 +529,7 @@ int sample_to_write_compound_data(void)
     /*
      * Create the dataset.
      */
-    dataset = H5Dcreate2(file, DATASETNAME, s1_tid, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    dataset = H5Dcreate(file, DATASETNAME, s1_tid, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     /*
      * Wtite data to the dataset;
@@ -1357,9 +1358,9 @@ int _write_chunkedH5dataset(hid_t fid, hsize_t rank,
 
     if(fid > 0)
     {
-        did = H5Dcreate2(fid, dataset_node->name,
-                         dataset_node->type, dataset_node->space,
-                         H5P_DEFAULT, plist, H5P_DEFAULT);
+        did = H5Dcreate(fid, dataset_node->name,
+                        dataset_node->type, dataset_node->space,
+                        H5P_DEFAULT, plist, H5P_DEFAULT);
     }
     else
     {

@@ -6727,7 +6727,7 @@ NhlErrorTypes NC4WriteCompound(void *rec, NclQuark compound_name, NclQuark var_n
                 {
                     theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
                     comp_list = (NclList)_NclGetObj(*(int*)theval->multidval.val);
-                    tmp_list = comp_list->list.last;
+                    tmp_list = comp_list->list.first;
 
                     while(NULL != tmp_list)
                     {
@@ -6741,7 +6741,7 @@ NhlErrorTypes NC4WriteCompound(void *rec, NclQuark compound_name, NclQuark var_n
 
                             cur_mem_loc += mem_len[current_component];
                         }
-                        tmp_list = tmp_list->prev;
+                        tmp_list = tmp_list->next;
                         current_component++;
                     }
                 }

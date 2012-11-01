@@ -216,6 +216,7 @@ extern NhlErrorTypes _NhlCpcica(
 	float		ycqf,
 	float		min_cell_size,
 	NhlBoolean	smooth,
+	NhlBoolean      use_mesh_fill,
 	char		*entry_name
 #endif
 );
@@ -291,6 +292,7 @@ NhlErrorTypes _NhlCtcica(
 	float		ycqf,
 	float		min_cell_size,
 	NhlBoolean	smooth,
+	NhlBoolean      use_mesh_fill,
 	char		*entry_name
 #endif
 );

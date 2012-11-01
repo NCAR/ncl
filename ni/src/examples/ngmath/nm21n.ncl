@@ -500,7 +500,7 @@ begin
   txres@txFontHeightF = 0.035
   txres@txFontColor = 1
   txres@txJust = "CenterCenter"
-  gsn_text_ndc(wks, ":F26:Triangulation", 0.5, 0.95, txres)
+  gsn_text_ndc(wks, "~F26~Triangulation", 0.5, 0.95, txres)
 
   frame(wks)
 
@@ -576,7 +576,7 @@ begin
   txres@txFontHeightF = 0.035
   txres@txFontColor = 1
   txres@txJust = "CenterCenter"
-  gsn_text_ndc(wks, ":F26:Contour Plot of Gridded Data", 0.5, 0.95, txres)
+  gsn_text_ndc(wks, "~F26~Contour Plot of Gridded Data", 0.5, 0.95, txres)
 
   frame(wks)
 

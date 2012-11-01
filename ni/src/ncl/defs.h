@@ -55,7 +55,8 @@ typedef enum {	NORMAL = 0,
 		RETURNVAR = 7,
 		HLUOBJ = 8,
 		FILEGROUP = 9,
-		RETURNGROUP = 10
+		RETURNGROUP = 10,
+		ATTVALLINK = 11         /* this serves as a wrapper for an attribute put into a list */
 } NclVarTypes;
 
 typedef struct _NclDimRec {

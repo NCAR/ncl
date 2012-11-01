@@ -1,3 +1,7 @@
+*wkColorMap : default
+*wkBackgroundColor : (/0.,0.,0./)
+*wkForegroundColor : (/1.,1.,1./)
+
 *trXMinF : 10
 *trXMaxF : 100
 *trYMinF : 10

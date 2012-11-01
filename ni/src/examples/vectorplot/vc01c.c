@@ -36,7 +36,7 @@
 #define M 30
 #define PI  3.14159    
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 
     char const *wks_type = "x11";

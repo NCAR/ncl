@@ -40,7 +40,7 @@ void draw_bounded_plot();
 /*
  * Main program.
  */
-main()
+int main()
 {
 
     int appid,rlist,grlist;

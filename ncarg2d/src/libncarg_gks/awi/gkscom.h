@@ -15,7 +15,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               RWKSP(IWDIM)  , GKSCLP
       INTEGER        NOPWK , NACWK , WCONID, NUMSEG, SEGS  , CURSEG,
      +               SEGLEN, MXSREC, SEGDEL, GKSCLP
-      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(25)      ,
+      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(26)      ,
      +               MOPWK , MACWK , MNT
       INTEGER        OPS   , WK
       COMMON/GKSTAT/ SOPWK(MXNWK)  , SACWK(MXNWK)  , CPLI  , CLN   ,

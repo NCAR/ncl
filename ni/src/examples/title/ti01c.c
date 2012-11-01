@@ -29,7 +29,7 @@
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
         
-main()
+int main()
 {
     int appid, wid, pid;
     int rlist;

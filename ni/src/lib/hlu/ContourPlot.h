@@ -86,7 +86,8 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 typedef enum _NhlcnFillMode {
 	NhlAREAFILL, 
 	NhlRASTERFILL,
-	NhlCELLFILL
+	NhlCELLFILL,
+	NhlMESHFILL
 } NhlcnFillMode;
 
 #define NhlTcnFillMode	"cnFillMode"

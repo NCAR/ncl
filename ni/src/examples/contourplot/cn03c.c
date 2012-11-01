@@ -56,8 +56,8 @@ float level[] = { 1000, 850, 700, 500, 400, 300, 250, 200, 150, 100} ;
 /*
  * Explicit labels and label locations for the X Axis tickmarks
  */
-char *labels[] = { "90:S:o:N:S", "60:S:o:N:S", "30:S:o:N:S", "EQ", 
-            "30:S:o:N:N", "60:S:o:N:N", "90:S:o:N:N" };
+char *labels[] = { "90~S~o~N~S", "60~S~o~N~S", "30~S~o~N~S", "EQ", 
+            "30~S~o~N~N", "60~S~o~N~N", "90~S~o~N~N" };
 
 float labellocs[] = { -90.0, -60.0, -30.0, 0.0, 30.0, 60.0, 90.0 };
 
@@ -67,7 +67,7 @@ float labellocs[] = { -90.0, -60.0, -30.0, 0.0, 30.0, 60.0, 90.0 };
 
 int M=73, N=10;
         
-main()
+int main()
 {
     int appid,wid,cnid,dataid,llid;
     int rlist, grlist;
@@ -169,7 +169,7 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNtiMainString,
-                   "Profile @ 105:S:o:N:W - Frame 1");
+                   "Profile @ 105~S~o~N~W - Frame 1");
     NhlRLSetInteger(rlist,NhlNcnScalarFieldData,dataid);
     NhlRLSetFloat(rlist,NhlNvpXF,0.125);
     NhlRLSetFloat(rlist,NhlNvpYF,0.85);
@@ -198,7 +198,7 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNtiMainString,
-                   "Profile @ 105:S:o:N:W - Frame 2");
+                   "Profile @ 105~S~o~N~W - Frame 2");
     NhlRLSetInteger(rlist,NhlNcnMonoLineColor,False);
     NhlRLSetInteger(rlist,NhlNcnMonoLineDashPattern,False);
     NhlRLSetString(rlist,NhlNpmLegendDisplayMode,"always");
@@ -213,7 +213,7 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNtiMainString,
-                   "Profile @ 105:S:o:N:W - Frame 3");
+                   "Profile @ 105~S~o~N~W - Frame 3");
     NhlRLSetString(rlist,NhlNcnLinesOn,"false");
     NhlRLSetString(rlist,NhlNcnFillOn,"true");
     NhlRLSetString(rlist,NhlNpmLegendDisplayMode,"never");
@@ -235,7 +235,7 @@ main()
 
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNtiMainString,
-                   "Profile @ 105:S:o:N:W - Frame 4");
+                   "Profile @ 105~S~o~N~W - Frame 4");
     NhlSetValues(cnid,rlist);
 
     grlist = NhlRLCreate(NhlGETRL);

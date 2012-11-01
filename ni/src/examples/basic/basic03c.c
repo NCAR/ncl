@@ -31,7 +31,7 @@
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/ScalarField.h>
 
-main()
+int main()
 {
     int appid1,appid2,wks,wks2,con1,con2,con3,field1,rlist;
 

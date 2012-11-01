@@ -119,9 +119,9 @@ typedef enum {	Ncl_BLOCK		= 0,
 
 typedef enum {	Ncl_READIT = 0,
 		Ncl_WRITEIT = 1,
-		Ncl_REWRITEIT = 2,
-		Ncl_PARAMIT = 3,
-		Ncl_VALONLY = 4
+		Ncl_PARAMIT = 2,
+		Ncl_VALONLY = 3,
+		Ncl_REWRITEIT = 4
 } NclReferenceTypes;
 
 typedef struct ncl_genericnode NclGenericNode, NclBreak, NclContinue,NclWildCardIndex;

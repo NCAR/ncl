@@ -41,7 +41,7 @@
 #include "DataSupport.h"
 #include "AttSupport.h"
 #include "VarSupport.h"
-#include "NclCallBacksI.h"
+#include "NclNewFile.h"
 
 static int FileVarIsACoord(
 #if NhlNeedProto
@@ -394,7 +394,17 @@ struct _NclObjRec*	self;
 
 	_NclUnRegisterObj((NclObj)self_var);
 	if(thefile != NULL)
+	{
 		_NclDelParent((NclObj)thefile,self);
+
+		if(use_new_hlfs)
+		{
+			NclNewFile thenewfile = (NclNewFile) thefile;
+			if(NULL != thenewfile->newfile.format_funcs->free_file_rec)
+				(*thenewfile->newfile.format_funcs->free_file_rec)((void *)thenewfile->newfile.grpnode);
+		}
+	}
+
 	for(i = 0; i< self_var->var.n_dims; i++ ) {
 		if(self_var->var.coord_vars[i] != -1) {
 			_NclDelParent(_NclGetObj(self_var->var.coord_vars[i]),self);

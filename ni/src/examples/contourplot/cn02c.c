@@ -40,7 +40,7 @@
 
 static const int M=25, N=25;
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     float   T[25 * 25];
     ng_size_t len_dims[2];

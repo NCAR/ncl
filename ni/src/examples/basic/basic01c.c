@@ -42,7 +42,7 @@
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/hlu.h>
 
-main()
+int main()
 {
     int appid,wks,con1,rlist;
 

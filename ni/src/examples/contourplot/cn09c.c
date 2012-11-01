@@ -38,7 +38,7 @@
 
 #define NCOLORS 23
 
-main()
+int main()
 {
 /*
  * Declare variables for the HLU routine calls.

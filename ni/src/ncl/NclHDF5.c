@@ -3205,7 +3205,10 @@ int *num_vars;
         grplist = grplist->next;
     }
 
-    names = (NclQuark *) NclRealloc(names, sizeof(NclQuark) * nv);
+    if(nv)
+    {
+        names = (NclQuark *) NclRealloc(names, sizeof(NclQuark) * nv);
+    }
     *num_vars = nv;
     return(names);
 }
@@ -3270,7 +3273,10 @@ int *num_vars;
         grplist = grplist->next;
     }
 
-    names = (NclQuark *) NclRealloc(names, sizeof(NclQuark) * nv);
+  /*We do not need to reallocate memory here, as the memory used will be release after the function call.
+   *Wei, 09/07/2012.
+   *names = (NclQuark *) NclRealloc(names, sizeof(NclQuark) * nv);
+   */
     *num_vars = nv;
     return(names);
 }

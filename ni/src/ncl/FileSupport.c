@@ -70,6 +70,8 @@
 
 int use_new_hlfs = 0;
 
+NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlfs);
+
 NhlErrorTypes _NclBuildFileCoordRSelection
 #if	NhlNeedProto
 (struct _NclFileRec *file,NclQuark var,struct _NclRangeRec * range, struct _NclSelection* sel,int  dim_num, char * dim_name)
@@ -2731,7 +2733,14 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		return file_ext_q;
 	}
 	else if(*end_of_name == NULL) {
-		file_ext_q = -1;
+		NclQuark the_real_path = NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path)));
+		NclQuark old_file_ext_q = NrmStringToQuark("nc");
+		struct stat file_stat;
+
+		stat(NrmQuarkToString(the_real_path), &file_stat);
+
+		if(file_stat.st_size)
+			file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_new_hlfs);
 	} else {
 		if (1 == rw_status)
 		{
@@ -3006,8 +3015,10 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 #endif
 		else
 		{
-        		fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        		fprintf(stderr, "\tDONOT know anything about <%s>.\n", ext_list[n]);
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+					"NCL does not know anything about file suffix <%s>. \n%s\n",
+				 	NrmQuarkToString(cur_ext_q),
+					"But NCL will try its best to figure out the file format."));
 		}
 	}
 
