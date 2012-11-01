@@ -214,6 +214,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \
 			NclType.h \
+			NclExitCode.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
 			NclOneDValCoordData.h HLUFunctions.h \
 			NclCallBacksI.h date.h NclCCM.h NclGRIB.h NclGRIB2.h date.h tables.h \
@@ -250,6 +251,7 @@ NIO_NCL_HDR_FILES = ApiRecords.h AttSupport.h DataSupport.h		\
 		NclMultiDValHLUObjData.h NclMultiDVallistData.h		\
 		NclMultiDValnclfileData.h NclOneDValCoordData.h		\
 		NclType.h NclType.h.sed NclTypelist.h NclVar.h		\
+		NclExitCode.h \
 		OpsList.h Symbol.h TypeSupport.h.sed NclGrpFuncs.null	\
 		TypeSupportMatTemplate.h.sed				\
 		TypeSupportMonoOpTemplate.h.sed				\

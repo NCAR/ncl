@@ -113,13 +113,15 @@ typedef enum {	Ncl_BLOCK		= 0,
 		Ncl_FILEGROUPCOORDATT	= 82,
 		Ncl_FILEGROUPLIST	= 83,
 		Ncl_LISTVAR		= 84,
-		Ncl_WILLNOTBEUSED	= 85
+		Ncl_REASSIGN		= 85,
+		Ncl_WILLNOTBEUSED	= 86
 } NclSrcTreeTypes;
 
 typedef enum {	Ncl_READIT = 0,
 		Ncl_WRITEIT = 1,
 		Ncl_PARAMIT = 2,
-		Ncl_VALONLY = 3
+		Ncl_VALONLY = 3,
+		Ncl_REWRITEIT = 4
 } NclReferenceTypes;
 
 typedef struct ncl_genericnode NclGenericNode, NclBreak, NclContinue,NclWildCardIndex;
@@ -894,6 +896,8 @@ void * /*name_ref */,
 void * /*expr */
 #endif
 );
+
+extern void *_NclMakeReassignment(void *name_ref, void *expr);
 
 extern void* _NclMakeIdnRef(
 #if	NhlNeedProto
