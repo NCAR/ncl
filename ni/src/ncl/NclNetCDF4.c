@@ -1204,7 +1204,7 @@ NclMultiDValData get_nc4_vlenlist(int ncid, int varid, nc_type xtype)
     char buffer[NC_MAX_NAME];
     int natts, ndims;
     nc_type var_type;
-    int i, n;
+    int i;
 
     size_t wlen = 1;
     size_t vlen = 1;
@@ -1305,7 +1305,7 @@ NclMultiDValData get_nc4_vlenlist(int ncid, int varid, nc_type xtype)
         assert(vlenvalues);
         memcpy(vlenvalues, values[i].p, vlen);
 
-        sprintf(buffer, "%s_%3.3d", var_name, n);
+        sprintf(buffer, "%s_%3.3d", var_name, i);
         vlenvar = _NclCreateVlenVar(buffer, vlenvalues,
                                     ndims, dimnames,
                                     dimsizes, vlentype);
@@ -3952,6 +3952,86 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
 
                 NclFree(tmpstr);
             }
+            else if(NCL_compound == varnode->type)
+            {
+                size_t n_dims = 0;
+                size_t data_size = 1;
+                void *data_value = NULL;
+                obj  *obj_id = (obj *)data;
+
+                NclMultiDValData theval = NULL;
+                NclList        comp_list;
+
+                NclFileCompoundRecord *comp_rec = varnode->comprec;
+                NclFileCompoundNode   *compnode = NULL;
+
+                n_dims = varnode->dim_rec->n_dims;
+
+                data_size = 1;
+                for(n = 0; n < n_dims; n++)
+                {
+                    dimnode = &(varnode->dim_rec->dim_node[n]);
+                    data_size *= (size_t) dimnode->size;
+                }
+
+                if(NULL != comp_rec)
+                {
+                    size_t cur_mem_loc = 0;
+                    size_t compound_size = 0;
+                    NclObj tmpobj = NULL;
+
+                    size_t *mem_len = (size_t *)NclCalloc(comp_rec->n_comps, sizeof(size_t));
+                    if (! mem_len)
+                    {
+                        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+                        return NhlFATAL;
+                    }
+
+                    if(comp_rec->n_comps)
+                    {
+                        for(n = 0; n < comp_rec->n_comps; n++)
+                        {
+                            compnode = &(comp_rec->compnode[n]);
+        
+                            mem_len[n] = ((size_t) _NclSizeOf(compnode->type)
+                                         *(size_t) compnode->nvals);
+                            compound_size += mem_len[n];
+                        }
+                    }
+        
+                    data_value = (void *)NclCalloc((ng_usize_t)(data_size*compound_size), sizeof(void));
+                    assert(data_value);
+        
+                    cur_mem_loc = 0;
+
+                    for(i = 0; i < data_size; ++i)
+                    {
+                        comp_list = (NclList)_NclGetObj(obj_id[i]);
+                        for(n = 0; n < comp_rec->n_comps; ++n)
+                        {
+                            tmpobj = (NclObj)_NclListPop((NclObj)comp_list);
+                            if(Ncl_MultiDValData == tmpobj->obj.obj_type)
+                            {
+                                theval = (NclMultiDValData)_NclGetObj(tmpobj->obj.id);
+                                memcpy(data_value + cur_mem_loc,
+                                           theval->multidval.val, mem_len[n]);
+        
+                                cur_mem_loc += mem_len[n];
+                            }
+                            else
+                            {
+                                fprintf(stderr, "\tfile: %s, function: %s, line: %d\n",
+                                                  __FILE__, __PRETTY_FUNCTION__, __LINE__);
+                                fprintf(stderr, "\tUnknown theval->obj.obj_type: 0%x\n", theval->obj.obj_type);
+                            }
+                        }
+                    }
+        
+                    ret = nc_put_var(fid, varnode->id, data_value);
+        
+                    NclFree(data_value);
+                }
+            }
             else
             {
                 if(no_stride)
@@ -5052,6 +5132,7 @@ static NhlErrorTypes NC4RenameDim(void* therec, NclQuark from, NclQuark to)
     return(NhlFATAL);
 }
 
+/*
 static void NC4CacheAttValue(NclFileAttNode *attnode, void *value)
 {
     if(attnode->the_nc_type < 1 || value == NULL)
@@ -5075,6 +5156,7 @@ static void NC4CacheAttValue(NclFileAttNode *attnode, void *value)
         memcpy(attnode->value,value,nctypelen(attnode->the_nc_type) * attnode->n_elem);
     }
 }
+*/
 
 static NhlErrorTypes NC4AddAtt(void *therec, NclQuark theatt,
                                NclBasicDataTypes data_type, int n_items, void * values)

@@ -6437,7 +6437,7 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
             else
                 has_missing = 1;
 
-            if(lhs_type != rhs_type)
+            if((lhs_type != rhs_type) && ((Ncl_Typecompound != lhs_type) && (Ncl_Typelist != rhs_type)))
             {
               /*
                *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
