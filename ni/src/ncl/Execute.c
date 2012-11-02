@@ -164,7 +164,7 @@ void CallTERM_LIST_OP(void) {
 	if(temporary_list_ptr != NULL) {
 		n_elements = temporary_list_ptr->u.data_list->list.nelem;
 
-		if(n_elements != 0)
+		if(1 != n_elements)
 		{
 			if(temporary_list_ptr->u.data_list->list.list_type & NCL_JOIN)
 			{
@@ -359,26 +359,11 @@ void CallLIST_READ_OP(void) {
 
 	if(number_of_item)
 	{
-		newlist =_NclListSelect(list,sel_ptr);
-		if(newlist != NULL)
+		newlist = _NclListSelect(list,sel_ptr);
+		if(NULL != newlist)
 		{
-			if(1 < number_of_item)
-			{
-				temporary_list_ptr->kind = NclStk_LIST;
-				temporary_list_ptr->u.data_list = newlist;
-			}
-			else
-			{
-				/*
-				NclStackEntry result;
-				result.kind = NclStk_VAL;
-				result.u.data_obj = _NclListPop((NclObj)newlist);
-				_NclPush(result);
-				*/
-
-				temporary_list_ptr->kind = NclStk_VAL;
-				temporary_list_ptr->u.data_obj = _NclListPop((NclObj)newlist);
-			}
+			temporary_list_ptr->kind = NclStk_LIST;
+			temporary_list_ptr->u.data_list = newlist;
 		}
 		else
 		{

@@ -902,30 +902,23 @@ NclStackEntry _NclCreateAList(const char *buffer)
 	return(data);
 }
 
-NclStackEntry _NclBuildListArray(ng_size_t ngdims, ng_size_t *dim_sizes)
+void _NclBuildArrayOfList(void *tmp_val, int ndims, ng_size_t *dim_sizes)
 {
-	NclStackEntry result;
-	NclStackEntry data;
+	obj *id = (obj *)tmp_val;
+	NclList tmp_list;
 	ng_size_t i;
-	int ndims = (int) ngdims;
 	ng_size_t n_items = 1;
-
-	NclList thelist;
-
-	result = _NclCreateAList("fifo");
- 
-	thelist = (NclList)_NclGetObj(*(int *)result.u.data_obj->multidval.val);
+	int list_type = (int) (NCL_FIFO);
 
 	for(i = 0; i < ndims; i++)
 		n_items *= dim_sizes[i];
 
 	for(i = 0; i < n_items; i++)
 	{
-		data = _NclCreateAList("fifo");
-		ListPush((NclObj)thelist, (NclObj)(data.u.data_obj)); 
+		tmp_list =(NclList)_NclListCreate(NULL,NULL,0,0,list_type);
+		_NclListSetType((NclObj)tmp_list,list_type);
+		id[i] = tmp_list->obj.id;
 	}
-
-	return(result);
 }
 
 NhlErrorTypes _NclBuildConcatArray
@@ -2262,42 +2255,13 @@ NclStackEntry missing_expr;
 		if (fill) {
 			if(NCL_list == the_type)
 			{
-				ng_size_t n;
-				int list_type = (int) (NCL_FIFO);
-				NclList tmp_list = NULL;
-				NclObj top_obj = NULL;
-				NclObj list_obj = NULL;
-				ng_size_t one = 1;
-				obj *id = NULL;
+				_NclBuildArrayOfList(tmp_val, j, dim_sizes);
 
-				NclFree(tmp_val);
-
-				data = _NclCreateAList("fifo");
-				data.kind = NclStk_VAL;
-
-				top_obj = _NclGetObj(*(int *)data.u.data_obj->multidval.val);
-				top_obj->obj.obj_type = Ncl_MultiDVallistData;
-				top_obj->obj.obj_type_mask = (top_obj->obj.obj_type_mask | Ncl_MultiDVallistData);
-
-				for(n = 0; n < total; ++n)
-				{
-					tmp_list = (NclList)_NclListCreate(NULL,NULL,0,0,list_type);
-					id = (obj*)NclMalloc(sizeof(obj));
-					*id = tmp_list->obj.id;
-					_NclListSetType((NclObj)tmp_list,list_type);
-
-					tmp_md = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,
-				 		(Ncl_List | Ncl_MultiDVallistData | Ncl_ListVar | Ncl_Typelist),id,NULL,
-						1,&one,PERMANENT,NULL);
-
-					list_obj = _NclGetObj(*(int *)tmp_md->multidval.val);
-					list_obj->obj.obj_type = Ncl_MultiDVallistData;
-					list_obj->obj.obj_type_mask = (list_obj->obj.obj_type_mask | Ncl_MultiDVallistData);
-
-					ListAppend(top_obj, list_obj);
-				}
-
-				return(_NclPush(data));
+				tmp_md = _NclCreateVal(NULL,NULL,((the_obj_type & NCL_VAL_TYPE_MASK) ?
+						Ncl_MultiDValData:the_obj_type),0,tmp_val,
+						NULL,j,dim_sizes,TEMPORARY,NULL,
+						(NclObjClass)((the_obj_type & NCL_VAL_TYPE_MASK) ?
+						_NclTypeEnumToTypeClass(the_obj_type):NULL));
 			}
 			else
 			{
@@ -2314,10 +2278,10 @@ NclStackEntry missing_expr;
 				}
 
 				tmp_md = _NclCreateVal(NULL,NULL,((the_obj_type & NCL_VAL_TYPE_MASK) ?
-							  Ncl_MultiDValData:the_obj_type),0,tmp_val,
-					       &missing_val,j,dim_sizes,TEMPORARY,NULL,
-					       (NclObjClass)((the_obj_type & NCL_VAL_TYPE_MASK) ?
-							     _NclTypeEnumToTypeClass(the_obj_type):NULL));
+						Ncl_MultiDValData:the_obj_type),0,tmp_val,
+						&missing_val,j,dim_sizes,TEMPORARY,NULL,
+						(NclObjClass)((the_obj_type & NCL_VAL_TYPE_MASK) ?
+						_NclTypeEnumToTypeClass(the_obj_type):NULL));
 			}
 		}
 		else if (the_obj_type == Ncl_MultiDValHLUObjData) {
