@@ -20,7 +20,7 @@ OTHER_SCRIPTS = ccm_func.ncl contributed.ncl popRemap.ncl shea_util.ncl \
 ESMF_SCRIPTS = ESMF_regridding.ncl 
 
 WRF_SCRIPTS = WRF_contributed.ncl WRFUserARW.ncl
-UTIL_SCRIPTS = utililties.ncl
+UTIL_SCRIPTS = utilities.ncl
 
 #if !defined(CRAY)
 InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
