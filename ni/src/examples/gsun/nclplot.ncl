@@ -24,6 +24,7 @@
 
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"
 
 ;----------------------------------------------------------------------
 ; Return list of allowed names for a level dimemsion.
@@ -181,8 +182,10 @@ end
 ;----------------------------------------------------------------------
 undef("is_lat_var")
 function is_lat_var(f1,vname)
+local vatts
 begin
-  if(any(getfilevaratts(f1,vname).eq."units").and.\
+  vatts = getfilevaratts(f1,vname)
+  if(.not.any(ismissing(vatts)).and.any(vatts.eq."units").and.\
      any(f1->$vname$@units.eq.get_allowed_lat_units)) then
     return(True)
   else
@@ -196,8 +199,10 @@ end
 ;----------------------------------------------------------------------
 undef("is_lon_var")
 function is_lon_var(f1,vname)
+local vatts
 begin
-  if(any(getfilevaratts(f1,vname).eq."units").and.\
+  vatts = getfilevaratts(f1,vname)
+  if(.not.any(ismissing(vatts)).and.any(vatts.eq."units").and.\
      any(f1->$vname$@units.eq.get_allowed_lon_units)) then
     return(True)
   else
@@ -223,14 +228,16 @@ end
 ;----------------------------------------------------------------------
 undef("contour_plot")
 procedure contour_plot(f:file,wks:graphic,data:numeric,cnres:logical)
-local res, plot
+local res, plot, vardims
 begin
-  res = cnres 
-  res@gsnMaximize         = True
-  res@cnFillOn            = True
-  res@cnLinesOn           = False
-  res@cnLineLabelsOn      = False
+  vardims            = getvardims(data)
+  res                = cnres     ; Make a copy
+  res@gsnMaximize    = True
+  res@cnFillOn       = True
+  res@cnLinesOn      = False
+  res@cnLineLabelsOn = False
 
+;---1D coordinate arrays
   if(is_valid_latlon_coord(data,"x","lon",False).and.\
      is_valid_latlon_coord(data,"y","lat",False)) then
     res@mpMinLatF = min(data&$data!0$)
@@ -238,14 +245,23 @@ begin
     res@mpMinLonF = min(data&$data!1$)
     res@mpMaxLonF = max(data&$data!1$)
     plot = gsn_csm_contour_map(wks,data,res)
+;---Special lat2d/lon2d attributes
   else if (is_valid_latlon2d_attr(data,"lat2d").and. \
            is_valid_latlon2d_attr(data,"lon2d")) then
     res@mpMinLatF = min(data@lat2d)
     res@mpMaxLatF = max(data@lat2d)
     res@mpMinLonF = min(data@lon2d)
     res@mpMaxLonF = max(data@lon2d)
+;---Check for a WRF file.
+  else if(.not.any(ismissing(vardims)).and.\
+          any(vardims(0).eq.(/"south_north","south_north_stag"/)).and.\
+          any(vardims(1).eq.(/"west_east","west_east_stag"/))) then
+    res = wrf_map_resources(f,res) 
+    res@tfDoNDCOverlay = get_res_value(res,"tfDoNDCOverlay",True)
+    delete([/res@start_lat,res@start_lon,res@end_lat,res@end_lon,res@mpNestTime/])
+    plot = gsn_csm_contour_map(wks,data,res)
+;---"data" contains "coordinates" attribute
   else if(isatt(data,"coordinates")) then
-    print("we have coordinates!!")
     coord_names = str_split(data@coordinates," ")
     print(coord_names)
     do i=0,dimsizes(coord_names)-1
@@ -253,45 +269,35 @@ begin
          if(is_lat_var(f,coord_names(i))) then
            dims = dimsizes(f->$coord_names(i)$)
            if(dimsizes(dims).eq.2) then
-             res@gsnAddCyclic      = False
-             res@mpLimitMode       = "Corners"
              res@sfYArray          = f->$coord_names(i)$
-             res@mpLeftCornerLatF  = f->$coord_names(i)$(0,0)
-             res@mpRightCornerLatF = f->$coord_names(i)$(dims(0)-1,dims(1)-1)
            else if(dimsizes(dims).eq.3) then
-             res@gsnAddCyclic      = False
-             res@mpLimitMode       = "Corners"
              res@sfYArray          = f->$coord_names(i)$(0,:,:)
-             res@mpLeftCornerLatF  = f->$coord_names(i)$(0,0,0)
-             res@mpRightCornerLatF = f->$coord_names(i)$(0,dims(1)-1,dims(2)-1)
            end if
            end if
+           res@gsnAddCyclic = False
+           res@mpMinLatF    = min(res@sfYArray)
+           res@mpMaxLatF    = max(res@sfYArray)
            delete(dims)
          end if
          if(is_lon_var(f,coord_names(i))) then
            dims = dimsizes(f->$coord_names(i)$)
            if(dimsizes(dims).eq.2) then
-             res@gsnAddCyclic      = False
-             res@mpLimitMode       = "Corners"
              res@sfXArray          = f->$coord_names(i)$
-             res@mpLeftCornerLonF  = f->$coord_names(i)$(0,0)
-             res@mpRightCornerLonF = f->$coord_names(i)$(dims(0)-1,dims(1)-1)
            else if(dimsizes(dims).eq.3) then
-             res@gsnAddCyclic      = False
-             res@mpLimitMode       = "Corners"
              res@sfXArray          = f->$coord_names(i)$(0,:,:)
-             res@mpLeftCornerLonF  = f->$coord_names(i)$(0,0,0)
-             res@mpRightCornerLonF = f->$coord_names(i)$(0,dims(1)-1,dims(2)-1)
            end if
            end if
+           res@gsnAddCyclic = False
+           res@mpMinLonF    = min(res@sfXArray)
+           res@mpMaxLonF    = max(res@sfXArray)
            delete(dims)
          end if
       end if
     end do
-    print(res)
     plot = gsn_csm_contour_map(wks,data,res)
   else
     plot = gsn_csm_contour(wks,data,res)
+  end if
   end if
   end if
   end if
