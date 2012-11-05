@@ -509,7 +509,7 @@ main(int argc, char **argv) {
     }
 
     /* Load utility script */
-    strcpy(buffer, _NGResolvePath("$NCARG_ROOT/lib/ncarg/nclscripts/utililties.ncl"));
+    strcpy(buffer, _NGResolvePath("$NCARG_ROOT/lib/ncarg/nclscripts/utilities.ncl"));
     sr = stat(buffer, &sbuf);
 
     if(0 == sr)
