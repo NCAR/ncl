@@ -514,7 +514,6 @@ main(int argc, char **argv) {
 
     if(0 == sr)
     {
-        cmd_line = 0;
         if(_NclPreLoadScript(buffer, 1) == NhlFATAL)
 	{
 	    NclReturnStatus = NclFileNotFound;
@@ -522,7 +521,6 @@ main(int argc, char **argv) {
 	}
         else
             yyparse(reset);
-        cmd_line = 1;       /* reset to default: interactive */
     }
 
     /* Load any provided script */
