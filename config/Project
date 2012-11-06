@@ -24,8 +24,8 @@
  *			etc are in the Template file.
  */
 
-#define NcargVersion 6.1.0
-#define NclVersion 6.1.0
+#define NcargVersion 6.2.0-alpha
+#define NclVersion 6.2.0-alpha
 
 #ifndef	BuildNCL
 #define	BuildNCL
@@ -125,10 +125,6 @@
 #undef BuildGRIDSPEC
 #endif
 
-#if !BuildESMF
-#undef BuildESMF
-#endif
-
 #ifndef	BuildRasterHDF
 #define	BuildRasterHDF
 #else
@@ -224,7 +220,7 @@
 #endif	/* PNGlib */
 
 #ifndef CAIROlib
-#define CAIROlib  -lcairo -lXrender -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lbz2 -lpthread
+#define CAIROlib -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lpthread -lbz2 -lXrender
 #endif
 
 #ifndef	HDFEOSlib
@@ -255,21 +251,13 @@
 #define GRIDSPEClib
 #endif
 
-#ifdef BuildESMF
-#ifndef	ESMFlib
-#define	ESMFlib   -lxxxxx
-#endif
-#else
-#define ESMFlib
-#endif
-
 #ifndef	GRIB2lib
 #define       GRIB2lib   -lgrib2c -ljasper -lpng -lz
 #endif	/* GRIB2lib */
 
 #ifndef	NetCDFlib
-#define	NetCDFlib	-lnetcdf -lnetcdff -lcurl
-/*#define	NetCDFlib	-lnetcdf -lnetcdff -lcurl -lssl -lidn -lrt -lldap*/
+#define	NetCDFlib	-lnetcdf -lcurl
+/*#define	NetCDFlib	-lnetcdf -lcurl -lssl -lidn -lrt -lldap*/
 #endif	/* NetCDFlib */
 
 #ifndef	NetCDF4lib
@@ -624,7 +612,6 @@ GRIB2LIB	= GRIB2lib
 UDUNITSLIB	= UdUnitslib
 V5DLIB      	= V5Dlib
 GRIDSPECLIB     = GRIDSPEClib
-ESMFLIB         = ESMFlib
 XDRLIB		= XdrLibrary
 HDFDEFINES	= HdfDefines
 VDEFINE		= -DNGVERSION='"$(NGVERSION)"'  -DNCLVERSION='"$(NCLVERSION)"'

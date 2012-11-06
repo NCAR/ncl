@@ -42,7 +42,7 @@ typedef struct _Anno_List {
 } Anno_List;
 
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int appid,wid,mapid;
     int rlist,grlist;

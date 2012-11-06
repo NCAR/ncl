@@ -20,6 +20,7 @@ OTHER_SCRIPTS = ccm_func.ncl contributed.ncl popRemap.ncl shea_util.ncl \
 ESMF_SCRIPTS = ESMF_regridding.ncl 
 
 WRF_SCRIPTS = WRF_contributed.ncl WRFUserARW.ncl
+UTIL_SCRIPTS = utilities.ncl
 
 #if !defined(CRAY)
 InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
@@ -28,6 +29,7 @@ InstallTarget($(GSN_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/csm)
 InstallTarget($(OTHER_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/csm)
 InstallTarget($(ESMF_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/esmf)
 InstallTarget($(WRF_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/wrf)
+InstallTarget($(UTIL_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts)
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 #endif
 

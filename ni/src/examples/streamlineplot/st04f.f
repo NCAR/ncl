@@ -174,6 +174,7 @@ C
 C Open the netCDF files.
 C
       call gngpat(dir,'data',ierr)
+      flen = 0
       do 10 i=1,256
           if( dir(i:i).eq.char(0) ) then
               dir(i:i+4) = '/cdf/'
@@ -346,7 +347,7 @@ C
 C Create a map object
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetString(rlist,'vpUseSegments','true',ierr)
+C      call NhlFRLSetString(rlist,'vpUseSegments','true',ierr)
       call NhlFCreate(mpid,'mapplot',NhlFmapPlotClass,wid,rlist,ierr)
 C
 C Overlay everything on the MapPlot. The last object overlaid will

@@ -13,7 +13,6 @@ extern "C" {
 #include <errno.h>
 #include "Symbol.h"
 #include "NclList.h"
-#include "NclNewList.h"
 #include "NclDataDefs.h"
 #include "Machine.h"
 #include "NclFile.h"
@@ -62,8 +61,14 @@ NhlArgVal udata;
 	 * This hlu_obj is not the HLU Default Parent, but is currently
 	 * saved in the defaultapp_hluobj_id - so reset defaultapp_hluobj_id.
 	 */
-	else if(nclhluobj_id == defaultapp_hluobj_id)
+	else if(nclhluobj_id == defaultapp_hluobj_id) {
 		defaultapp_hluobj_id = -1;
+#if 0
+		if(hlu_obj->obj.status != PERMANENT) 
+			hlu_obj->obj.status = TEMPORARY;
+#endif
+
+	}
 
 	return;
 }
@@ -815,7 +820,6 @@ NhlErrorTypes _NclBuildListVar
 	NclStackEntry *result;
 #endif
 {
-	NclStackEntry *data_ptr;
 	NclStackEntry data;
 	int i;
 	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
@@ -824,7 +828,7 @@ NhlErrorTypes _NclBuildListVar
 	NclList thelist;
 	obj *id;
 
-	thelist =(NclList)_NclListCreate(NULL,NULL,0,0,(NCL_CONCAT|NCL_FIFO));
+	thelist =(NclList)_NclListCreate(NULL,NULL,0,0,NCL_FIFO);
 	id = (obj*)NclMalloc(sizeof(obj));
 	*id = thelist->obj.id;
 	_NclListSetType((NclObj)thelist,NCL_FIFO);
@@ -837,12 +841,8 @@ NhlErrorTypes _NclBuildListVar
 
 	for(i = 0; i < n_items; i++)
 	{
-              /*
-	       *data_ptr = _NclPeek(i);
-	       *ListPush((NclObj)thelist, (NclObj)(data_ptr->u.data_obj));
-              */
 		data = _NclPop();
-		Append2List((NclObj)thelist, (NclObj)(data.u.data_obj)); 
+		ListAppend((NclObj)thelist, (NclObj)(data.u.data_obj)); 
 	}
 
 	_NclPlaceReturn(*result);
@@ -880,17 +880,14 @@ NclStackEntry _NclCreateAList(const char *buffer)
 	{
 		list_type = (int) (NCL_LIFO);
 	}
-        else if(0 == strcmp("vlen",buffer))
+        else
 	{
-		list_type = (int) (NCL_VLEN);
-	}
-        else if(0 == strcmp("item",buffer))
-	{
-		list_type = (int) (NCL_ITEM);
-	}
-        else if(0 == strcmp("struct",buffer))
-	{
-		list_type = (int) (NCL_STRUCT);
+		fprintf(stderr, "\nin file: %s, at line: %d, in function: <%s>\n",
+                                   __FILE__, __LINE__, __PRETTY_FUNCTION__);
+		fprintf(stderr, "Unable to create list type: <%s>\n", buffer);
+                fprintf(stderr, "Use FIFO as the default list type.\n");
+
+		list_type = (int) (NCL_FIFO);
 	}
 
 	tmp_list =(NclList)_NclListCreate(NULL,NULL,0,0,list_type);
@@ -898,86 +895,30 @@ NclStackEntry _NclCreateAList(const char *buffer)
 	*id = tmp_list->obj.id;
 	_NclListSetType((NclObj)tmp_list,list_type);
 
-	data.u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,id,NULL,1,&one,TEMPORARY,NULL);
+	data.u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,
+				(Ncl_List | Ncl_MultiDVallistData | Ncl_ListVar | Ncl_Typelist),id,NULL,
+				1,&one,TEMPORARY,NULL);
 	
 	return(data);
 }
 
-NhlErrorTypes _NclBuildListArray(ng_size_t ngdims, ng_size_t *dim_sizes,
-				 NclStackEntry *result)
+void _NclBuildArrayOfList(void *tmp_val, int ndims, ng_size_t *dim_sizes)
 {
-	NclStackEntry *data_ptr;
-	NclStackEntry data;
+	obj *id = (obj *)tmp_val;
+	NclList tmp_list;
 	ng_size_t i;
-	int ndims = (int) ngdims;
 	ng_size_t n_items = 1;
+	int list_type = (int) (NCL_FIFO);
 
-	NclList thelist;
-	obj *id;
-
-	thelist =(NclList)_NclListCreate(NULL,NULL,0,0,(NCL_CONCAT|NCL_FIFO));
-	id = (obj*)NclMalloc(sizeof(obj));
-	*id = thelist->obj.id;
-	_NclListSetType((NclObj)thelist,NCL_FIFO);
-
-	result->kind = NclStk_VAL;
-	result->u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,
-				(Ncl_List | Ncl_MultiDVallistData | Ncl_ListVar | Ncl_Typelist),id,NULL,
-				ndims,dim_sizes,TEMPORARY,NULL);
-
-	for(i = 0; i < ngdims; i++)
+	for(i = 0; i < ndims; i++)
 		n_items *= dim_sizes[i];
 
 	for(i = 0; i < n_items; i++)
 	{
-		data = _NclCreateAList("fifo");
-		ListPush((NclObj)thelist, (NclObj)(data.u.data_obj)); 
+		tmp_list =(NclList)_NclListCreate(NULL,NULL,0,0,list_type);
+		_NclListSetType((NclObj)tmp_list,list_type);
+		id[i] = tmp_list->obj.id;
 	}
-
-	if(result->u.data_obj != NULL) 
-		return(NhlNOERROR);
-	else 
-		return(NhlFATAL);
-}
-
-NhlErrorTypes _NclBuildNewListVar(int n_items,NclStackEntry *result)
-{
-	NclStackEntry data;
-	NclNewList thelist = NULL;
-	NclObj oneobj;
-	int i;
-	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
-	int ndims = 1;
-
-	NclNewList tmplist;
-	obj *id;
-
-	thelist =(NclNewList)_NclNewListCreate(NULL,NULL,Ncl_List,0,n_items,NCL_ITEM);
-	id = (obj*)NclMalloc(sizeof(obj));
-	*id = thelist->obj.id;
-	thelist->newlist.type = NrmStringToQuark("item");
-
-        dim_sizes[0] = 1;
-	result->kind = NclStk_VAL;
-	result->u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,
-				(Ncl_List | Ncl_MultiDVallistData | Ncl_ListVar | Ncl_Typelist),id,NULL,
-				ndims,dim_sizes,TEMPORARY,NULL);
-	data = _NclPop();
-
-	tmplist = (NclNewList)data.u.data_list;
-
-	for(i = 0; i < n_items; i++)
-	{
-		oneobj = (NclObj)_NclGetObj(tmplist->newlist.item[i]->obj_id);
-		_NclListAppend((NclObj)thelist, oneobj);
-	}
-
-	_NclPlaceReturn(*result);
-
-	if(result->u.data_obj != NULL) 
-		return(NhlNOERROR);
-	else 
-		return(NhlFATAL);
 }
 
 NhlErrorTypes _NclBuildConcatArray
@@ -1819,6 +1760,8 @@ NclStackEntry _NclCreateHLUObjOp
 		appd_id = NhlAppGetDefaultParentId();
 		if(tmp_ho->hlu.hlu_id == appd_id) {	
 			defaultapp_hluobj_id = tmp_ho->obj.id;
+			/* since it is the default app we cannot allow it to be deleted */
+			tmp_ho->obj.status = STATIC;
 		}
 		NhlINITVAR(sel);
 		NhlINITVAR(udata);
@@ -2163,9 +2106,6 @@ NclStackEntry missing_expr;
 	NclObjTypes the_obj_type;
 	NclStackEntry data;
 	NclBasicDataTypes the_type;
-/*
-	unsigned int allowed_types = (NCL_SNUMERIC_TYPE_MASK | NCL_CHARSTR_TYPE_MASK | NCL_HLU_MASK);
-*/
 	NclScalar missing_val;
 	NclMultiDValData missing_md,tmp_md,size_md,tmp1_md;
 	void *tmp_val;
@@ -2181,14 +2121,7 @@ NclStackEntry missing_expr;
 	NrmQuark qnofill = NrmStringToQuark("No_FillValue");
 	int fill = 1;
 	
-
 	the_type = _NclKeywordToDataType(data_type);
-/*Wei commented out this block to allow of using "new function" for list. 11/9/2011.
-	if (the_type == NCL_list) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: currently unable to create list type variable; use NewList or [/ ... /] list syntax");
-		return(NhlFATAL);
-	}		
-*/
 	the_obj_type = _NclKeywordToObjType(data_type);
 	typec = (NclTypeClass)_NclTypeEnumToTypeClass(the_obj_type);
 	if(the_obj_type == NCL_NUMERIC_TYPE_MASK) {
@@ -2314,43 +2247,42 @@ NclStackEntry missing_expr;
 #endif
 			return(NhlFATAL);
 		}
-
-		/*Wei, 11/9/2011.
-		* Add code here to generate an array of list.
-		*/
-
-		if((Ncl_Typelist == the_obj_type) && (NCL_list == the_type))
-		{
-			_NclBuildListArray(ndims, dim_sizes, &data);
-			return(_NclPush(data));
-		}
-		/*Wei, 11/9/2011.
-		* End code of generating array of list.
-		*/
-
 		tmp_val = (void*)NclMalloc((ng_usize_t)ll_total);
 		if (! tmp_val) {
 			NhlPError(NhlFATAL,ENOMEM,"New: could not create new array");
 			return(NhlFATAL);
 		}
 		if (fill) {
-			tp = (char *) tmp_val;
-			i = 1;
-			tsize = _NclSizeOf(the_type);
-			memcpy((void*)tp,(void*)&missing_val,tsize);
-			while (i <= total / 2) {
-				memcpy(tp+i*tsize,tp,tsize * i);
-				i *= 2;
-			}
-			if (total - i > 0) {
-				memcpy(tp+i*tsize,tp,tsize * (total - i));
-			}
+			if(NCL_list == the_type)
+			{
+				_NclBuildArrayOfList(tmp_val, j, dim_sizes);
 
-			tmp_md = _NclCreateVal(NULL,NULL,((the_obj_type & NCL_VAL_TYPE_MASK) ?
-							  Ncl_MultiDValData:the_obj_type),0,tmp_val,
-					       &missing_val,j,dim_sizes,TEMPORARY,NULL,
-					       (NclObjClass)((the_obj_type & NCL_VAL_TYPE_MASK) ?
-							     _NclTypeEnumToTypeClass(the_obj_type):NULL));
+				tmp_md = _NclCreateVal(NULL,NULL,((the_obj_type & NCL_VAL_TYPE_MASK) ?
+						Ncl_MultiDValData:the_obj_type),0,tmp_val,
+						NULL,j,dim_sizes,TEMPORARY,NULL,
+						(NclObjClass)((the_obj_type & NCL_VAL_TYPE_MASK) ?
+						_NclTypeEnumToTypeClass(the_obj_type):NULL));
+			}
+			else
+			{
+				tp = (char *) tmp_val;
+				i = 1;
+				tsize = _NclSizeOf(the_type);
+				memcpy((void*)tp,(void*)&missing_val,tsize);
+				while (i <= total / 2) {
+					memcpy(tp+i*tsize,tp,tsize * i);
+					i *= 2;
+				}
+				if (total - i > 0) {
+					memcpy(tp+i*tsize,tp,tsize * (total - i));
+				}
+
+				tmp_md = _NclCreateVal(NULL,NULL,((the_obj_type & NCL_VAL_TYPE_MASK) ?
+						Ncl_MultiDValData:the_obj_type),0,tmp_val,
+						&missing_val,j,dim_sizes,TEMPORARY,NULL,
+						(NclObjClass)((the_obj_type & NCL_VAL_TYPE_MASK) ?
+						_NclTypeEnumToTypeClass(the_obj_type):NULL));
+			}
 		}
 		else if (the_obj_type == Ncl_MultiDValHLUObjData) {
 			/* this type must have a defined value: if no missing value is supplied then set them to -1, which is out of the range of NCL object ids. */

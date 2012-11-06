@@ -15,8 +15,8 @@
 ;      Date:           Fri Jan 13 18:31:18 MDT 1995
 ;
 ;      Description:    Demonstrates the LabelBar Object
-;                      Creates color bars with every 6th index of the
-;                      32 different colors in the default colormap.
+;                      Creates color bars with every 5th index of the
+;                      255 different colors in the default colormap.
 ;
 
 ;
@@ -27,16 +27,9 @@ begin
 ;
 ; Initialize data values
 ;
-colors = (/ 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31/)
+colors = ispan(1,255,5)
 
-line_labels = (/"Color Index 1 ","Color Index 3 ", \
-     "Color Index 5  ","Color Index 7  ", \
-     "Color Index 9  ","Color Index 11 ", \
-     "Color Index 13 ","Color Index 15 ", \
-     "Color Index 17 ","Color Index 19 ", \
-     "Color Index 21 ","Color Index 23 ", \
-     "Color Index 25 ","Color Index 27 ", \
-     "Color Index 29 ","Color Index 31 "/)
+line_labels = "Color Index " + colors
 
 ;
 ; Create an application context. Set the app dir to the current directory
@@ -105,10 +98,11 @@ if (str_lower(wks_type).eq."png") then
 end if
 
 ;
-; Create a plot with 16 color indices (Every other one of the default
+; Create a plot with 51 color indices (Every fifth of the default
 ; workstation colormap.
 ;
 pid = create "LabelBar" labelBarClass wid
+    "lbBoxCount"     : dimsizes(colors)
     "lbFillColors" : colors
     "lbLabelStrings" : line_labels
     "vpXF" : 0.

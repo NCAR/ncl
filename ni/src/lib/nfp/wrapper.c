@@ -84,6 +84,8 @@ extern NhlErrorTypes wrf_helicity_W(void);
 extern NhlErrorTypes wrf_updraft_helicity_W(void);
 extern NhlErrorTypes wrf_ll_to_ij_W(void);
 extern NhlErrorTypes wrf_ij_to_ll_W(void);
+extern NhlErrorTypes wrf_wps_read_nml_W(void);
+
 extern NhlErrorTypes cape_thermo_W(void);
 extern NhlErrorTypes gaus_lobat_W(void);
 extern NhlErrorTypes gaus_lobat_wgt_W(void);
@@ -1689,6 +1691,19 @@ void NclAddUserFuncs(void)
         NclRegisterFunc(wrf_ij_to_ll_W,args,"wrf_ij_to_ll",nargs);
 
 /*
+ * Register "wrf_wps_read_nml".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(1);
+
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+
+        NclRegisterFunc(wrf_wps_read_nml_W,args,"wrf_wps_read_nml",nargs);
+
+/*
  * Register "cape_thermo".
  *
  * Create private argument array.
@@ -3084,12 +3099,12 @@ void NclAddUserFuncs(void)
  * Create private argument array.
  */
     nargs = 0;
-    args = NewArgs(2);
+    args = NewArgs(3);
 
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
-    /*dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;*/
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
     NclRegisterFunc(wgt_area_smooth_W,args,"wgt_area_smooth",nargs);
 

@@ -7,6 +7,7 @@
 #include <ncarg/hlu/DataComm.h>
 #include <ncarg/hlu/Callbacks.h>
 #include <ncarg/hlu/App.h>
+#include <ncarg/hlu/AppI.h>
 #include <ncarg/hlu/DataItem.h>
 #include <ncarg/hlu/Workspace.h>
 #include <ncarg/hlu/ResourcesP.h>
@@ -22,7 +23,85 @@
 #include "Machine.h"
 #include "HLUSupport.h"
 #include "HluClasses.h"
+#include "NclAtt.h"
+#include "NclVar.h"
 
+extern int defaultapp_hluobj_id;
+
+static int Hlu_Class_Count = 29;
+static NhlClass NhlPublicClassList[29];
+
+static void InitializeClassList(void)
+{
+	static int first = 1;
+	if (first)  {
+		NhlPublicClassList[0] =  NhltickMarkClass;
+		NhlPublicClassList[1] =  NhltitleClass;
+		NhlPublicClassList[2] =  NhlxWorkstationClass; 
+		NhlPublicClassList[3] =  NhlimageWorkstationClass;
+		NhlPublicClassList[4] =  NhlncgmWorkstationClass;
+		NhlPublicClassList[5] =  NhlcontourPlotClass; 
+		NhlPublicClassList[6] =  NhltextItemClass; 
+		NhlPublicClassList[7] =  NhlxyPlotClass;
+		NhlPublicClassList[8] =  NhllabelBarClass; 
+		NhlPublicClassList[9] =  NhllegendClass;
+		NhlPublicClassList[10] =  NhlcoordArraysClass; 
+		NhlPublicClassList[11] =  NhlscalarFieldClass;
+		NhlPublicClassList[12] =  NhlmeshScalarFieldClass;
+		NhlPublicClassList[13] =  NhlmapPlotClass;
+		NhlPublicClassList[14] =  NhllogLinPlotClass;
+		NhlPublicClassList[15] =  NhlirregularPlotClass;
+		NhlPublicClassList[16] =  NhlmapPlotClass;
+		NhlPublicClassList[17] =  NhlappClass;
+		NhlPublicClassList[18] =  NhlannoManagerClass;
+		NhlPublicClassList[19] =  NhlpsWorkstationClass;
+		NhlPublicClassList[20] =  NhlpdfWorkstationClass;
+		NhlPublicClassList[21] =  NhlvectorPlotClass;
+		NhlPublicClassList[22] =  NhlvectorFieldClass;
+		NhlPublicClassList[23] =  NhlstreamlinePlotClass;
+		NhlPublicClassList[24] =  NhlgraphicStyleClass;
+		NhlPublicClassList[25] =  NhlprimitiveClass;
+		NhlPublicClassList[26] =  NhlcairoDocumentWorkstationClass;
+		NhlPublicClassList[27] =  NhlcairoImageWorkstationClass;
+		NhlPublicClassList[28] =  NhlcairoWindowWorkstationClass;
+		first = False;
+	}
+	return;
+}
+
+static void DefaultAppChangeCB
+#if     NhlNeedProto
+(NhlArgVal cbdata, NhlArgVal udata)
+#else
+(cbdata,udata)
+NhlArgVal cbdata;
+NhlArgVal udata;
+#endif
+{
+	int hlu_def_parent_id = (int)cbdata.lngval;
+	int nclhluobj_id = (int)udata.lngval;
+	NclHLUObj hlu_obj;
+
+	hlu_obj = (NclHLUObj)_NclGetObj(nclhluobj_id);
+
+	if(hlu_obj == NULL)
+		return;
+
+	/*
+	 * if this hlu_obj is the HLU Default Parent, then save the
+	 * ncl id of this hlu_obj in defaultapp_hluobj_id.
+	 */
+	if(hlu_obj->hlu.hlu_id == hlu_def_parent_id)
+		defaultapp_hluobj_id = nclhluobj_id;
+	/*
+	 * This hlu_obj is not the HLU Default Parent, but is currently
+	 * saved in the defaultapp_hluobj_id - so reset defaultapp_hluobj_id.
+	 */
+	else if(nclhluobj_id == defaultapp_hluobj_id)
+		defaultapp_hluobj_id = -1;
+
+	return;
+}
 
 NhlErrorTypes _NclINhlIsApp
 #if	NhlNeedProto
@@ -1240,9 +1319,9 @@ NhlErrorTypes _NclIAddData
 	ng_size_t dimsizes2[NCL_MAX_DIMENSIONS];
 	NclBasicDataTypes type;
 	NclBasicDataTypes type2;
-    ng_size_t total=1;
-    ng_size_t total2=1;
-    ng_size_t i,j=0,k=0,l;
+	ng_size_t total=1;
+	ng_size_t total2=1;
+	ng_size_t i,j=0,k=0,l;
 	NclHLUObj *tmp_hlu_ptr;
 	NclHLUObj *tmp_data_ptr;
 	NclScalar missing;
@@ -3760,12 +3839,13 @@ NhlErrorTypes _NclINewDashPattern
 	NclScalar missing0;
 	NclScalar missing1;
 	int nwks;
-    ng_size_t i,j=0;
+	ng_size_t i,j=0,ii=0;
 	NclHLUObj tmp_wks;
 	obj *wks_obj_ids;
 	string *dash_patterns;
-	NhlErrorTypes subret,ret = NhlNOERROR;
+	NhlErrorTypes subret=NhlNOERROR,ret = NhlNOERROR;
 	int *indexes = NULL;
+	int wks_is_missing = 0;
 
 	wks_obj_ids = (obj*)NclGetArgValue(
 			0,
@@ -3793,7 +3873,6 @@ NhlErrorTypes _NclINewDashPattern
 
 	nwks = 0;
 	for (i = 0; i < size0; i++) {
-		int wks_is_missing = 0;
 		if (has_missing0 && wks_obj_ids[i] == missing0.objval) {
 			wks_is_missing = 1;
 		}
@@ -3807,20 +3886,20 @@ NhlErrorTypes _NclINewDashPattern
 			}
 		}
 		for( j = 0; j < size1; j++) {
-			int *index = indexes + i * size1 + j;
+		  ii = i * size1 + j;;
 			if (wks_is_missing) {
-				*index = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			  indexes[ii] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 				continue;
 			}
 			if (has_missing1 && (dash_patterns[j] == missing1.stringval)) {
-				*index = NhlNewDashPattern(tmp_wks->hlu.hlu_id,"");
+				indexes[ii] = NhlNewDashPattern(tmp_wks->hlu.hlu_id,"");
 			}
 			else {
-				*index = NhlNewDashPattern(tmp_wks->hlu.hlu_id,NrmQuarkToString(dash_patterns[j]));
+				indexes[ii] = NhlNewDashPattern(tmp_wks->hlu.hlu_id,NrmQuarkToString(dash_patterns[j]));
 			}
-			if (*index < 0) {
-				subret = (NhlErrorTypes) *index;
-				*index = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			if (indexes[ii] < 0) {
+				subret = (NhlErrorTypes) indexes[ii];
+				indexes[ii] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 			}
 			ret = MIN(ret,subret);
 			if (ret < NhlWARNING) {
@@ -3863,7 +3942,7 @@ NhlErrorTypes _NclINewDashPattern
 double *coerce_to_double(
 	void              *in,
 	NclBasicDataTypes type_in,
-	int               size_in,
+	ng_size_t         size_in,
 	int               has_missing_in,
 	NclScalar         *missing_in,
 	NclScalar         *missing_out)
@@ -4175,7 +4254,7 @@ NhlErrorTypes _NclINewMarker
 	void *val3,*val4,*val5,*val6,*val7;
 	ng_size_t size0,size1,size2,size3,size4,size5,size6,size7;
 	int nwks;
-	ng_size_t i,j=0;
+	ng_size_t i,j=0,ii;
 	NclHLUObj tmp_wks;
 	obj *wks_obj_ids;
 	string *marker_strings;
@@ -4186,8 +4265,11 @@ NhlErrorTypes _NclINewMarker
 	double *m_size_adj;
 	double *m_angle;
 	NclScalar m_x_off_missing, m_y_off_missing, m_aspect_adj_missing, m_size_adj_missing, m_angle_missing;
-	NhlErrorTypes subret,ret = NhlNOERROR;
+	NhlErrorTypes subret=NhlNOERROR,ret = NhlNOERROR;
 	int *indexes = NULL;
+	int wks_is_missing = 0;
+	double x_off,y_off,aspect_adj,size_adj,angle;
+	int font;
 
 	wks_obj_ids = (obj*)NclGetArgValue(
 			0,
@@ -4287,7 +4369,6 @@ NhlErrorTypes _NclINewMarker
 
 	nwks = 0;
 	for (i = 0; i < size0; i++) {
-		int wks_is_missing = 0;
 		if (has_missing0 && wks_obj_ids[i] == missing0.objval) {
 			wks_is_missing = 1;
 		}
@@ -4301,18 +4382,15 @@ NhlErrorTypes _NclINewMarker
 			}
 		}
 		for( j = 0; j < size1; j++) {
-			int *index = indexes + i * size1 + j;
+		  ii = i * size1 + j;
 			if (wks_is_missing) {
-				*index = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+				indexes[ii] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 				continue;
 			}
 			if (has_missing1 && (marker_strings[j] == missing1.stringval)) {
-				*index = NhlNewMarker(tmp_wks->hlu.hlu_id,"",0,0.0,0.0,0.0,0.0,0.0);
+				indexes[ii] = NhlNewMarker(tmp_wks->hlu.hlu_id,"",0,0.0,0.0,0.0,0.0,0.0);
 			}
 			else {
-				double x_off,y_off,aspect_adj,size_adj,angle;
-				int font;
-
 				/* 
 				 * Parameters that are scalar apply to all markers, otherwise if not available
 				 * default values are used.
@@ -4362,14 +4440,15 @@ NhlErrorTypes _NclINewMarker
 					angle = (j >= size7 || (has_missing7 && (m_angle[j] == m_angle_missing.doubleval))) ?
 						0.0 : m_angle[j];
 				}
-				*index = NhlNewMarker(tmp_wks->hlu.hlu_id,NrmQuarkToString(marker_strings[j]),font,
+				indexes[ii] = NhlNewMarker(tmp_wks->hlu.hlu_id,NrmQuarkToString(marker_strings[j]),font,
 						      (float)x_off,(float)y_off,(float)aspect_adj,(float)size_adj,(float)angle);
 			}
-			if (*index < 0) {
-				subret = (NhlErrorTypes) *index;
-				*index = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			if (indexes[ii] < 0) {
+				subret = (NhlErrorTypes) indexes[ii];
+				indexes[ii] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 			}
 			ret = MIN(ret,subret);
+
 			if (ret < NhlWARNING) {
 				goto RETURN;
 			}
@@ -4458,57 +4537,23 @@ NhlErrorTypes _NclINhlGetClassResources
 ()
 #endif
 {
-    int nargs = 2;
-    int has_missing,n_dims;
+	int nargs = 2;
+	int has_missing,n_dims;
 	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
-    NclBasicDataTypes type;
-    int i,j=0;
-    NclScalar missing;
-    void *arg0,*arg1;
+	NclBasicDataTypes type;
+	int i,j=0;
+	NclScalar missing;
+	void *arg0,*arg1;
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	NrmNameList resources;
 	int res_count;
-    ng_size_t res_count_size_t;
-	static int first = 1;
-	static int hlu_class_count = 29;
-	static NhlClass NhlPublicClassList[29];
+	ng_size_t res_count_size_t;
 	NhlClass class = NULL;
 	int filter = 0;
 	regex_t expr;
 	regmatch_t rm;
 
-	if (first)  {
-		NhlPublicClassList[0] =  NhltickMarkClass;
-		NhlPublicClassList[1] =  NhltitleClass;
-		NhlPublicClassList[2] =  NhlxWorkstationClass; 
-		NhlPublicClassList[3] =  NhlimageWorkstationClass;
-		NhlPublicClassList[4] =  NhlncgmWorkstationClass;
-		NhlPublicClassList[5] =  NhlcontourPlotClass; 
-		NhlPublicClassList[6] =  NhltextItemClass; 
-		NhlPublicClassList[7] =  NhlxyPlotClass;
-		NhlPublicClassList[8] =  NhllabelBarClass; 
-		NhlPublicClassList[9] =  NhllegendClass;
-		NhlPublicClassList[10] =  NhlcoordArraysClass; 
-		NhlPublicClassList[11] =  NhlscalarFieldClass;
-		NhlPublicClassList[12] =  NhlmeshScalarFieldClass;
-		NhlPublicClassList[13] =  NhlmapPlotClass;
-		NhlPublicClassList[14] =  NhllogLinPlotClass;
-		NhlPublicClassList[15] =  NhlirregularPlotClass;
-		NhlPublicClassList[16] =  NhlmapPlotClass;
-		NhlPublicClassList[17] =  NhlappClass;
-		NhlPublicClassList[18] =  NhlannoManagerClass;
-		NhlPublicClassList[19] =  NhlpsWorkstationClass;
-		NhlPublicClassList[20] =  NhlpdfWorkstationClass;
-		NhlPublicClassList[21] =  NhlvectorPlotClass;
-		NhlPublicClassList[22] =  NhlvectorFieldClass;
-		NhlPublicClassList[23] =  NhlstreamlinePlotClass;
-		NhlPublicClassList[24] =  NhlgraphicStyleClass;
-		NhlPublicClassList[25] =  NhlprimitiveClass;
-		NhlPublicClassList[26] =  NhlcairoDocumentWorkstationClass;
-		NhlPublicClassList[27] =  NhlcairoImageWorkstationClass;
-		NhlPublicClassList[28] =  NhlcairoWindowWorkstationClass;
-	}
-
+	InitializeClassList();
         arg0  = NclGetArgValue(
                         0,
                         nargs,
@@ -4521,7 +4566,7 @@ NhlErrorTypes _NclINhlGetClassResources
 
 	if (type == NCL_string) {
 		char *name = NrmQuarkToString(*(NrmQuark*)arg0);
-		for (i = 0; i < hlu_class_count; i++) {
+		for (i = 0; i < Hlu_Class_Count; i++) {
 			size_t len = MIN(strlen(name),strlen(NhlPublicClassList[i]->base_class.class_name));
 			if (strncmp(name,NhlPublicClassList[i]->base_class.class_name,len))
 				continue;
@@ -4625,4 +4670,331 @@ NhlErrorTypes _NclINhlGetClassResources
         );
 	return(ret);
 }
+
+NhlErrorTypes _NclCreateGraphic( void )
+{
+	NrmQuark *objnames;
+	NrmQuark *arg1;
+	int ndims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	NclScalar missing;
+	int has_missing;
+	ng_size_t total = 1;
+        NclStackEntry data;
+	NclAtt tmp_attobj;
+	NclAttList *att_list;
+	NhlGenArray *gen_array;
+	int i;
+	NclHLUObj tmp_ho = NULL;
+	int *ncl_hlu_ids;
+	NclMultiDValData tmp_md,tmp2_md;
+	ng_size_t dim_size;
+	int appd_id;
+	int rl_list;
+	int nargs = 4;
+	obj *ncl_parent_id;
+	int hlu_parent_id;
+	int tmp_ho_id;
+	NclHLUObj parent;
+	NclBasicDataTypes type;
+	NhlClass class;
+	NhlErrorTypes ret;
+	NclStackEntry data_out;
+	NhlArgVal udata, sel;
+
+	InitializeClassList();
+
+  	objnames  = (NrmQuark*)NclGetArgValue(   
+           0,
+           nargs,
+           &ndims, 
+           dimsizes,
+	   &missing,
+	   &has_missing,
+           NULL,
+           DONT_CARE);
+
+        for(i = 0; i < ndims; i++) {
+                total *= dimsizes[i];   /* this is how many objects to create ; they must all be the same class and same parent */
+        }
+
+        arg1  = NclGetArgValue(
+                        1,
+                        nargs,
+                        NULL,
+                        NULL,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+
+	class = NULL;
+	if (type == NCL_string) {
+		char *name = NrmQuarkToString(*(NrmQuark*)arg1);
+		for (i = 0; i < Hlu_Class_Count; i++) {
+			size_t len = MIN(strlen(name),strlen(NhlPublicClassList[i]->base_class.class_name));
+			if (strncmp(name,NhlPublicClassList[i]->base_class.class_name,len))
+				continue;
+			class = NhlPublicClassList[i];
+			break;
+		}
+	}
+	if (! class) {
+		ng_size_t count = 1;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"create_graphic: Invalid class name");
+		ret = NclReturnValue(
+			(void*)&(((NclTypeClass)nclTypeobjClass)->type_class.default_mis),
+			1,
+			&count,
+			(void*) &(((NclTypeClass)nclTypeobjClass)->type_class.default_mis),
+			NCL_string,
+			1
+			);
+		return(MIN(ret,NhlWARNING));
+	}	
+
+	ncl_parent_id = (void*)NclGetArgValue(
+		2,
+		nargs,
+		NULL,
+		NULL,
+		&missing,
+		&has_missing,
+		&type,
+		0);
+	parent = NULL;
+	hlu_parent_id = -1;
+	if (type == NCL_string) {
+		NrmQuark valid_qnames[3] = { NrmStringToQuark("noparent"), NrmStringToQuark("defaultapp"), NrmStringToQuark("null") };
+		for (i = 0; i < 3; i++) {
+			if (*(NrmQuark*)ncl_parent_id == valid_qnames[i]) {
+				if((defaultapp_hluobj_id != -1)&&(class != NhlappClass)) {
+					parent = (NclHLUObj)_NclGetObj(defaultapp_hluobj_id);
+					if((parent != NULL)&&(parent->obj.obj_type_mask & Ncl_HLUObj)) {
+						*ncl_parent_id = parent->obj.id;
+						hlu_parent_id = parent->hlu.hlu_id;
+					}
+				}
+				break;
+			}
+		}
+		if (parent == NULL) {
+			*ncl_parent_id = -1;
+		}
+	}
+	else if (type == NCL_obj) {
+		parent = (NclHLUObj) _NclGetObj(*ncl_parent_id);
+		if (parent) {
+			hlu_parent_id = parent->hlu.hlu_id;
+		}
+	}
+	else {
+		ng_size_t count = 1;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"create_graphic: Invalid parent");
+		ret = NclReturnValue(
+			(void*)&(((NclTypeClass)nclTypeobjClass)->type_class.default_mis),
+			1,
+			&count,
+			(void*) &(((NclTypeClass)nclTypeobjClass)->type_class.default_mis),
+			NCL_string,
+			1
+			);
+		return(MIN(ret,NhlWARNING));
+	}
+
+	data = _NclGetArg(3,nargs,DONT_CARE);
+	rl_list = NhlRLCreate(NhlSETRL);
+	tmp_attobj = NULL;
+	gen_array = NULL;
+	switch(data.kind) {
+	case NclStk_VAR:
+		tmp_md = (NclMultiDValData)_NclGetObj(data.u.data_var->var.thevalue_id);
+		if (! tmp_md || *((logical *)tmp_md->multidval.val) == False) {
+			break;
+		}
+		if(data.u.data_var->var.att_id != -1) {
+			tmp_attobj =  (NclAtt)_NclGetObj(data.u.data_var->var.att_id);
+			if(tmp_attobj == NULL || tmp_attobj->att.n_atts == 0) {
+				break;
+			}
+			att_list = tmp_attobj->att.att_list;
+			gen_array = NclMalloc((unsigned)sizeof(NhlGenArray)*tmp_attobj->att.n_atts);
+
+			i = 0;
+			while(att_list != NULL) {
+				if(att_list->quark!=NrmStringToQuark("_FillValue")) {
+					if(att_list->attvalue->multidval.hlu_type_rep[0] != NULL) {
+						gen_array[i] = _NhlCreateGenArray(
+							(NhlPointer)att_list->attvalue->multidval.val,
+							att_list->attvalue->multidval.hlu_type_rep[0],
+							att_list->attvalue->multidval.type->type_class.size,
+							att_list->attvalue->multidval.n_dims,
+							att_list->attvalue->multidval.dim_sizes,
+							0);
+						NhlRLSet(rl_list,NrmQuarkToString(att_list->quark),NhlTGenArray,gen_array[i]);
+					} 
+					else {
+						int *ids;
+						ng_size_t m, j;
+						ids = (int*)NclMalloc((unsigned)sizeof(int)*att_list->attvalue->multidval.totalelements);
+						m = 0;
+						for(j = 0; j < att_list->attvalue->multidval.totalelements;j++) {
+							if(att_list->attvalue->multidval.missing_value.has_missing) {
+								if(((int*)att_list->attvalue->multidval.val)[j] 
+								   != att_list->attvalue->multidval.missing_value.value.objval) {
+									tmp_ho = (NclHLUObj)_NclGetObj(((int*)att_list->attvalue->multidval.val)[j]);
+								} else {
+									tmp_ho = NULL;
+								}
+							} else {
+								tmp_ho = (NclHLUObj)_NclGetObj(((int*)att_list->attvalue->multidval.val)[j]);
+							}
+							if(tmp_ho != NULL) {
+								ids[m++] = tmp_ho->hlu.hlu_id;
+							} else {
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"create_graphic: Bad HLU id passed to create, ignoring it");
+			
+							}
+						}
+						if(att_list->attvalue->obj.obj_type_mask & NCL_HLU_MASK){
+							gen_array[i] = _NhlCreateGenArray(
+								(NhlPointer)ids,
+								NhlTInteger,
+								sizeof(int),
+								1,
+								&m,
+								1);
+							NhlRLSet(rl_list,NrmQuarkToString(att_list->quark),
+								 NhlTGenArray,
+								 gen_array[i]);
+						} else {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,
+								  "create_graphic: a value associated with (%s) does not have an HLU representation",
+								  NrmQuarkToString((att_list->quark)));
+							gen_array[i] = NULL;
+						}
+						NclFree(ids);
+                                        }
+				}
+				i++;
+				att_list = att_list->next;
+			}
+		}
+		break;
+	default:
+		break;
+	}
+
+
+	ncl_hlu_ids = (int*)NclMalloc((unsigned)sizeof(int) * total);
+	dim_size = total;
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if(objnames[i] != missing.stringval) {
+				NhlCreate(&tmp_ho_id,NrmQuarkToString(objnames[i]),class,hlu_parent_id == -1 ? NhlDEFAULT_APP : hlu_parent_id,rl_list);
+				tmp_ho = _NclHLUObjCreate(NULL,nclHLUObjClass,Ncl_HLUObj,0,TEMPORARY,tmp_ho_id,*ncl_parent_id,class); 
+				if (tmp_ho) {
+					ncl_hlu_ids[i] = tmp_ho->obj.id;
+				}
+				else {
+					ncl_hlu_ids[i] = -1;
+				}
+				if(NhlIsApp(tmp_ho->hlu.hlu_id)) {
+					appd_id = NhlAppGetDefaultParentId();
+					if(tmp_ho->hlu.hlu_id == appd_id) {	
+						defaultapp_hluobj_id = tmp_ho->obj.id;
+						/* since it is the default app we cannot allow it to be deleted */
+						tmp_ho->obj.status = STATIC;
+					}
+					NhlINITVAR(sel);
+					NhlINITVAR(udata);
+					udata.lngval = tmp_ho->obj.id;
+					tmp_ho->hlu.apcb = _NhlAddClassCallback(NhlappClass,_NhlCBappDefParentChange,sel,DefaultAppChangeCB,udata);
+				}
+			} 
+		}
+	} else {
+                for( i = 0; i < total; i++) {
+			NhlCreate(&tmp_ho_id,NrmQuarkToString(objnames[i]),class,hlu_parent_id == -1 ? NhlDEFAULT_APP : hlu_parent_id,rl_list);
+			tmp_ho = _NclHLUObjCreate(NULL,nclHLUObjClass,Ncl_HLUObj,0,TEMPORARY,tmp_ho_id,*ncl_parent_id,class); 
+			if (tmp_ho) {
+				ncl_hlu_ids[i] = tmp_ho->obj.id;
+			}
+			else {
+				ncl_hlu_ids[i] = -1;
+			}
+			if(NhlIsApp(tmp_ho->hlu.hlu_id)) {
+				appd_id = NhlAppGetDefaultParentId();
+				if(tmp_ho->hlu.hlu_id == appd_id) {	
+					defaultapp_hluobj_id = tmp_ho->obj.id;
+					/* since it is the default app we cannot allow it to be deleted */
+					tmp_ho->obj.status = STATIC;
+				}
+				NhlINITVAR(sel);
+				NhlINITVAR(udata);
+				udata.lngval = tmp_ho->obj.id;
+				tmp_ho->hlu.apcb = _NhlAddClassCallback(NhlappClass,_NhlCBappDefParentChange,sel,DefaultAppChangeCB,udata);
+			}
+                }
+	}
+	tmp2_md = _NclMultiDValHLUObjDataCreate(
+		NULL,
+		NULL,
+		Ncl_MultiDValHLUObjData,
+		0,
+		ncl_hlu_ids,
+		NULL,
+		ndims, 
+		dimsizes,
+		TEMPORARY,
+		NULL
+		); 
+
+        if (tmp_attobj) {
+		att_list = tmp_attobj->att.att_list;
+		i = 0;
+		ng_size_t m,j;
+		while(att_list != NULL) {
+			if(att_list->attvalue->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
+				for(j = 0; j < att_list->attvalue->multidval.totalelements;j++) {
+					if (att_list->attvalue->multidval.missing_value.has_missing) {
+						if(((int*)att_list->attvalue->multidval.val)[j] != att_list->attvalue->multidval.missing_value.value.objval) {
+							tmp_ho = (NclHLUObj)_NclGetObj(((int*)att_list->attvalue->multidval.val)[j]);
+						} else {
+							tmp_ho = NULL;
+						}
+					} else {
+						tmp_ho = (NclHLUObj)_NclGetObj(((int*)att_list->attvalue->multidval.val)[j]);
+					}
+					if(tmp_ho != NULL) {
+						for (m = 0; m < total; m++) {
+							NclHLUObj hobj = (NclHLUObj)_NclGetObj(ncl_hlu_ids[m]);
+							if (hobj) 
+								_NclAddHLUToExpList(hobj,tmp_ho->obj.id);
+						}
+					}
+				}
+			}
+			att_list = att_list->next;
+		}
+	}
+	if (gen_array) {
+		for(i = 0; i < tmp_attobj->att.n_atts; i++) {
+			if(gen_array[i])
+				NhlFreeGenArray(gen_array[i]);
+		}
+		NhlFree(gen_array);
+	}
+	NhlRLDestroy(rl_list);
+	if(tmp2_md != NULL) {
+		data_out.u.data_obj = tmp2_md;
+		data_out.kind = NclStk_VAL;
+	} else {
+		data_out.u.data_obj = NULL;
+		data_out.kind = NclStk_NOVAL;
+	}
+	_NclPlaceReturn(data_out);
+	return(NhlNOERROR);
+}
+
 

@@ -1779,9 +1779,9 @@ end
 ; This function is for gsn_panel, to help it determine which plot info  ;
 ; to use to construct a labelbar.                                       ;
 ;                                                                       ;
-; In NCL V6.1.0, we made the PlotManager the default labelbar, so we    ;
-; added some checks to this code for pmLabelBarDisplayMode being equal  ;
-; to 1 ("Always").                                                      ; 
+; In a future release of NCL (> 6.1.0), we hope to make the PlotManager ;
+; the default labelbar, so we added some checks to this code for        ; 
+; pmLabelBarDisplayMode being equal to 1 ("Always").                    ;
 ;***********************************************************************;
 undef("get_plot_labelbar")
 function get_plot_labelbar(plot:graphic)
@@ -3304,21 +3304,44 @@ end
 ; id.                                                                   ;
 ;***********************************************************************;
 undef("gsn_open_x11")
-function gsn_open_x11(name[1]:string)
+function gsn_open_x11(name[1]:string,res[1]:string)
 local window
 begin
-    if(isatt(name,"wkColorMap"))
-      window = create name + "_x11" windowWorkstationClass defaultapp
-        "wkFormat": "x11"
-        "wkPause" : True
-        "wkColorMap" : name@wkColorMap
-      end create
+    ; apply width/height resources if present; must be applied at creation time.
+    imageWidth = get_res_value(res,"wkWidth",-1)
+    imageHeight = get_res_value(res,"wkHeight",-1)
+    if (imageWidth.gt.0 .and. imageHeight.gt.0) then
+        if(isatt(res,"wkColorMap"))
+            window = create name + "_x11" windowWorkstationClass defaultapp
+                "wkFormat"   : "x11"
+                "wkPause"    : True
+                "wkColorMap" : res@wkColorMap
+                "wkWidth"    : imageWidth
+                "wkHeight"   : imageHeight
+            end create
+        else
+            window = create name + "_x11" windowWorkstationClass defaultapp
+                "wkFormat" : "x11"
+                "wkPause"  : True
+                "wkWidth"  : imageWidth
+                "wkHeight" : imageHeight
+            end create
+        end if
     else
-      window = create name + "_x11" windowWorkstationClass defaultapp
-        "wkFormat": "x11"
-        "wkPause" : True
-      end create
-    end if
+        if(isatt(res,"wkColorMap"))
+            window = create name + "_x11" windowWorkstationClass defaultapp
+                "wkFormat": "x11"
+                "wkPause" : True
+                "wkColorMap" : res@wkColorMap
+            end create
+        else
+            window = create name + "_x11" windowWorkstationClass defaultapp
+                "wkFormat": "x11"
+                "wkPause" : True
+            end create
+        end if
+    end if 
+
     return(window)
 end
 
@@ -3455,6 +3478,36 @@ local lwtype
 begin
   lwtype = lower_case(wtype)
   if(lwtype.eq."newpng".or.lwtype.eq."png") then
+    return(True)
+  else
+    return(False)
+  end if
+end
+
+;***********************************************************************;
+; Function to determine if a cairo EPS is being requested.              ;
+;***********************************************************************;
+undef("is_cairo_eps")
+function is_cairo_eps(wtype)
+local lwtype, cpsenv
+begin
+  lwtype = lower_case(wtype)
+  cpsenv = getenv("NCARG_OLD_EPS")
+  if (lwtype.eq."eps".and.ismissing(cpsenv)) then
+    return(True)
+  else
+    return(False)
+  end if
+end
+
+;***********************************************************************;
+; Function to determine if a cairo workstation is being requested.      ;
+;***********************************************************************;
+undef("is_cairo_wks")
+function is_cairo_wks(wtype)
+begin
+  if (is_cairo_ps(wtype).or.is_cairo_pdf(wtype).or.is_cairo_png(wtype).or. \
+       is_cairo_eps(wtype)) then
     return(True)
   else
     return(False)
@@ -3640,86 +3693,58 @@ end
 ;***********************************************************************;
 undef("gsn_open_cairo")
 function gsn_open_cairo(type:string, name[1]:string)
-local cairo, res_file, wkres, wkresnew, names, i
+local cairo, res_file, wkres, tmpres, names, i
 begin
 ;
 ; If there are resources, copy them over to a logical variable,
 ; and only grab the ones that start with "wk".
 ;
     if(.not.any(ismissing(getvaratts(type))))
-      wkres = True
+      tmpres = True
       names = getvaratts(type)
       do i=0,dimsizes(names)-1
         if(names(i).ne."_FillValue") then
-          wkres@$names(i)$ = type@$names(i)$    
+          tmpres@$names(i)$ = type@$names(i)$    
         end if
       end do
 ;
 ; Grab only the ones that start with "wk".
 ;
-      wkresnew = get_res_eq(wkres,"wk")
-      delete(wkres)
+      wkres = get_res_eq(tmpres,"wk")
+      delete(tmpres)
       delete(names)
-    else
-      wkresnew = False
     end if
+
+    wkres = True  ; force True, even if no resources present; get_res_eq() can return False.
 
     res_file = get_res_value_keep(name,"res_file","gsnapp")
 
 ;
-; We need to distinguish between PS/PDF versus image-based output formats
+; Add these resources if not already present.
 ;
-    if (is_cairo_ps(type).or.is_cairo_pdf(type)) then
-        resltn   = get_res_value(wkresnew,"wkPDFResolution",1800)
-        paperSize   = get_res_value(wkresnew,"wkPaperSize","")
-        paperW = get_res_value(wkresnew,"wkPaperWidthF", -1.)
-        paperH = get_res_value(wkresnew,"wkPaperHeightF", -1.)
-        if(is_cairo_ps(type)) then
-          newtype = "ps"    ; may be either "ps" or "newps"
-        else
-          newtype = "pdf"   ; may be either "pdf" or "newpdf"
-        end if
-
-        cairo = create res_file documentWorkstationClass defaultapp
-          "wkFileName"        : name
-          "wkFormat"          : newtype
-          "wkPDFResolution"   : resltn
-          "wkPaperSize"       : paperSize
-          "wkPaperWidthF"      : paperW
-          "wkPaperHeightF"     : paperH
-        end create
-
-       ; Retrieve the device coordinates and the orientation so we can
-       ; reset them later if necessary.
-
-        getvalues cairo
-          "wkOrientation"  : cairo@wkOrientation
-          "wkDeviceLowerX" : cairo@wkDeviceLowerX
-          "wkDeviceLowerY" : cairo@wkDeviceLowerY
-          "wkDeviceUpperX" : cairo@wkDeviceUpperX
-          "wkDeviceUpperY" : cairo@wkDeviceUpperY
-          "wkPaperWidthF"  : cairo@wkPaperWidthF
-          "wkPaperHeightF" : cairo@wkPaperHeightF
-        end getvalues
-    else
-        ; image-based formats
-        imageWidth = get_res_value(wkresnew,"wkWidth",1000)
-        imageHeight = get_res_value(wkresnew,"wkHeight",800)
-
-        cairo = create res_file imageWorkstationClass defaultapp
-          "wkFileName"        : name
-          "wkFormat"          : type
-          "wkWidth"           : imageWidth
-          "wkHeight"          : imageHeight
-        end create
+    if (.not.isatt(wkres, "wkFileName")) then
+        wkres@wkFileName = name
+    end if
+    if (.not.isatt(wkres, "wkFormat")) then
+        wkres@wkFormat = type
+        if (is_cairo_ps(type)) then
+	    wkres@wkFormat = "ps"     ; user can specify "ps" or "newps"
+	end if
+	if (is_cairo_pdf(type)) then  
+	    wkres@wkFormat = "pdf"    ; user can specify "pdf" or "newpdf"
+	end if
     end if
 
 ;
-; Set resources, if any.
+; We need to distinguish between PS/PDF versus image-based output formats
 ;
-    attsetvalues_check(cairo,wkresnew)
-    delete(wkresnew)
+    if (is_cairo_ps(type).or.is_cairo_pdf(type).or.is_cairo_eps(type)) then
+        cairo = create_graphic(res_file, "documentWorkstationClass", "defaultapp", wkres)
+    else
+	cairo = create_graphic(res_file, "imageWorkstationClass", "defaultapp", wkres)
+    end if
 
+    delete(wkres)
     return(cairo)
 end
 
@@ -3820,21 +3845,22 @@ begin
     wks = new(1,graphic,"No_FillValue")
 
     if (type2.eq."x11") then
-      x_file = res_file
-      if (isatt(type2,"wkColorMap"))
-        x_file@wkColorMap = type2@wkColorMap
-      end if
-      wks = gsn_open_x11(x_file)
+      wks = gsn_open_x11(res_file, type2)
       valid_type = True
     end if
 
-    if (type2.eq."oldps".or.type2.eq."eps".or. \
-        type2.eq."epsi".or.(type2.eq."ps".and..not.ismissing(getenv("NCARG_OLD_PS")))) then
+    if (type2.eq."oldps".or.type2.eq."oldeps".or. \
+        type2.eq."epsi".or.(type2.eq."ps".and..not.ismissing(getenv("NCARG_OLD_PS"))).or. \
+        (type2.eq."eps".and..not.ismissing(getenv("NCARG_OLD_EPS")))) then
       realtype = type2   ; copy value and attributes
       suffix = type2
       if (realtype.eq."oldps") then
         realtype = "ps"
         suffix = "ps"
+      end if
+      if (realtype.eq."oldeps") then
+        realtype = "eps"
+        suffix = "eps"
       end if
       ps_file = get_res_value(realtype,"wkPSFileName",res_file + "." + suffix)
       ps_file@res_file = res_file
@@ -3865,7 +3891,7 @@ begin
       valid_type = True
     end if
 
-    if (is_cairo_ps(type2).or.is_cairo_pdf(type2).or.is_cairo_png(type2)) then
+    if (is_cairo_wks(type2)) then
       cairo_file = get_res_value(type2,"wkFileName", res_file)
       if (is_cairo_png(type2)) then
         cairo_file = get_res_value(type2,"wkImageFileName", cairo_file)
@@ -4569,6 +4595,12 @@ end
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function attaches shapefile polylines to the plot "plotid".      ;
+;                                                                       ;
+; In version 6.1.0, some code was added to add checks if the lat/lon    ;
+; segments are within the range of the map. This works best for a C.E.  ;
+; map. You have to set the special min/max/lat/lon attributes for this  ;
+; to work.  I won't advertise this yet, because the interface could     ;
+; probably be made better.                                              ;
 ;***********************************************************************;
 undef("gsn_add_shapefile_polylines")
 function gsn_add_shapefile_polylines(wks,plot,fname:string,lnres)
@@ -4615,20 +4647,47 @@ begin
   lon = f->x
   lat = f->y
   npl = 0     ; polyline counter
-  do i=0, numFeatures-1  
-     startSegment = geometry(i, geom_segIndex)
-     numSegments  = geometry(i, geom_numSegs)
-     do seg=startSegment, startSegment+numSegments-1
-        startPT = segments(seg, segs_xyzIndex)
-        endPT   = startPT + segments(seg, segs_numPnts) - 1
-
-;---Attach the line segment
-        poly(npl) = gsn_add_polyline(wks, plot, lon(startPT:endPT),  \
-                                     lat(startPT:endPT), lnres)
-        npl = npl + 1
-     end do
-  end do
-  return(poly)
+;
+; Special check for minlat/maxlat/minlon/maxlon attributes.
+;
+; If set, then each lat/lon segment will be checked if it's
+; in the range.  This can speed up plotting, but I need to
+; verify this!
+; 
+  if(isatt(lnres,"minlon").and.isatt(lnres,"maxlon").and.\
+     isatt(lnres,"minlat").and.isatt(lnres,"maxlat")) then
+    do i=0, numFeatures-1  
+       startSegment = geometry(i, geom_segIndex)
+       numSegments  = geometry(i, geom_numSegs)
+       do seg=startSegment, startSegment+numSegments-1
+          startPT = segments(seg, segs_xyzIndex)
+          endPT   = startPT + segments(seg, segs_numPnts) - 1
+          lat_sub = lat(startPT:endPT)
+          lon_sub = lon(startPT:endPT) 
+          if(.not.(all(lon_sub.lt.lnres@minlon).or. \
+                   all(lon_sub.gt.lnres@maxlon).or. \
+                   all(lat_sub.lt.lnres@minlat).or. \
+                   all(lat_sub.gt.lnres@maxlat))) then
+            poly(npl) = gsn_add_polyline(wks, plot, lon_sub, lat_sub, lnres)
+            npl = npl + 1
+          end if
+          delete([/lat_sub,lon_sub/])
+       end do
+    end do
+  else       ; Don't do any range checking. 
+    do i=0, numFeatures-1  
+       startSegment = geometry(i, geom_segIndex)
+       numSegments  = geometry(i, geom_numSegs)
+       do seg=startSegment, startSegment+numSegments-1
+          startPT = segments(seg, segs_xyzIndex)
+          endPT   = startPT + segments(seg, segs_numPnts) - 1
+          poly(npl) = gsn_add_polyline(wks, plot, lon(startPT:endPT),  \
+                                       lat(startPT:endPT), lnres)
+          npl = npl + 1
+       end do
+    end do
+  end if
+  return(poly(0:npl-1))
 end
 
 ;***********************************************************************;
@@ -4639,6 +4698,12 @@ end
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function attaches shapefile polygons to the plot "plotid".       ;
+;                                                                       ;
+; In version 6.1.0, some code was added to add checks if the lat/lon    ;
+; segments are within the range of the map. This works best for a C.E.  ;
+; map. You have to set the special min/max/lat/lon attributes for this  ;
+; to work.  I won't advertise this yet, because the interface could     ;
+; probably be made better.                                              ;
 ;***********************************************************************;
 undef("gsn_add_shapefile_polygons")
 function gsn_add_shapefile_polygons(wks,plot,fname:string,gnres)
@@ -4695,23 +4760,56 @@ begin
   lon = f->x
   lat = f->y
   npl = 0     ; polyline counter
-  do i=0, numFeatures-1  
-     startSegment = geometry(i, geom_segIndex)
-     numSegments  = geometry(i, geom_numSegs)
-     do seg=startSegment, startSegment+numSegments-1
-        startPT = segments(seg, segs_xyzIndex)
-        endPT   = startPT + segments(seg, segs_numPnts) - 1
-
-;---Attach the line segment
-        if(set_fill_color) then
+;
+; Special check for minlat/maxlat/minlon/maxlon attributes.
+;
+; If set, then each lat/lon segment will be checked if it's
+; in the range.  This can speed up plotting, but I need to
+; verify this!
+; 
+  if(isatt(gnres,"minlon").and.isatt(gnres,"maxlon").and.\
+     isatt(gnres,"minlat").and.isatt(gnres,"maxlat")) then
+    do i=0, numFeatures-1  
+       startSegment = geometry(i, geom_segIndex)
+       numSegments  = geometry(i, geom_numSegs)
+       do seg=startSegment, startSegment+numSegments-1
+          startPT = segments(seg, segs_xyzIndex)
+          endPT   = startPT + segments(seg, segs_numPnts) - 1
+          lat_sub = lat(startPT:endPT)
+          lon_sub = lon(startPT:endPT) 
+          if(set_fill_color) then
 ;---Pick a random color 
-          gnres@gsFillColor = toint(random_uniform(2,cmap_len-2,1))
-        end if
-        poly(npl) = gsn_add_polygon(wks, plot, lon(startPT:endPT),  \
-                                    lat(startPT:endPT), gnres)
-        npl = npl + 1
-     end do
-  end do
+            gnres@gsFillColor = toint(random_uniform(2,cmap_len-2,1))
+          end if
+          if(.not.(all(lon_sub.lt.gnres@minlon).or. \
+                   all(lon_sub.gt.gnres@maxlon).or. \
+                   all(lat_sub.lt.gnres@minlat).or. \
+                   all(lat_sub.gt.gnres@maxlat))) then
+;---Attach the line segment
+            poly(npl) = gsn_add_polygon(wks, plot, lon_sub, lat_sub, gnres)
+            npl = npl + 1
+          end if
+          delete([/lat_sub,lon_sub/])
+       end do
+    end do
+  else
+    do i=0, numFeatures-1  
+       startSegment = geometry(i, geom_segIndex)
+       numSegments  = geometry(i, geom_numSegs)
+       do seg=startSegment, startSegment+numSegments-1
+          startPT = segments(seg, segs_xyzIndex)
+          endPT   = startPT + segments(seg, segs_numPnts) - 1
+          if(set_fill_color) then
+;---Pick a random color 
+            gnres@gsFillColor = toint(random_uniform(2,cmap_len-2,1))
+          end if
+;---Attach the line segment
+          poly(npl) = gsn_add_polygon(wks, plot, lon(startPT:endPT),  \
+                                      lat(startPT:endPT), gnres)
+          npl = npl + 1
+       end do
+    end do
+  end if
   return(poly)
 end
 
@@ -4723,6 +4821,12 @@ end
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function attaches shapefile point data to the plot "plotid".     ;
+;                                                                       ;
+; In version 6.1.0, some code was added to add checks if the lat/lon    ;
+; segments are within the range of the map. This works best for a C.E.  ;
+; map. You have to set the special min/max/lat/lon attributes for this  ;
+; to work.  I won't advertise this yet, because the interface could     ;
+; probably be made better.                                              ;
 ;***********************************************************************;
 undef("gsn_add_shapefile_polymarkers")
 function gsn_add_shapefile_polymarkers(wks,plot,fname:string,mkres)
@@ -4769,21 +4873,193 @@ begin
   lon = f->x
   lat = f->y
   npl = 0     ; polyline counter
-  do i=0, numFeatures-1  
-     startSegment = geometry(i, geom_segIndex)
-     numSegments  = geometry(i, geom_numSegs)
-     do seg=startSegment, startSegment+numSegments-1
-        startPT = segments(seg, segs_xyzIndex)
-        endPT   = startPT + segments(seg, segs_numPnts) - 1
-
-;---Attach the line segment
-        poly(npl) = gsn_add_polymarker(wks, plot, lon(startPT:endPT),  \
-                                       lat(startPT:endPT), mkres)
-        npl = npl + 1
-     end do
-  end do
-  return(poly)
+;
+; Special check for minlat/maxlat/minlon/maxlon attributes.
+;
+; If set, then each lat/lon segment will be checked if it's
+; in the range.  This can speed up plotting, but I need to
+; verify this!
+; 
+  if(isatt(mkres,"minlon").and.isatt(mkres,"maxlon").and.\
+     isatt(mkres,"minlat").and.isatt(mkres,"maxlat")) then
+    do i=0, numFeatures-1  
+       startSegment = geometry(i, geom_segIndex)
+       numSegments  = geometry(i, geom_numSegs)
+       do seg=startSegment, startSegment+numSegments-1
+          startPT = segments(seg, segs_xyzIndex)
+          endPT   = startPT + segments(seg, segs_numPnts) - 1
+          lat_sub = lat(startPT:endPT)
+          lon_sub = lon(startPT:endPT) 
+          if(.not.(all(lon_sub.lt.mkres@minlon).or. \
+                   all(lon_sub.gt.mkres@maxlon).or. \
+                   all(lat_sub.lt.mkres@minlat).or. \
+                   all(lat_sub.gt.mkres@maxlat))) then
+;---Attach the markers
+            poly(npl) = gsn_add_polymarker(wks, plot, lon_sub, lat_sub, mkres)
+            npl = npl + 1
+           end if
+           delete([/lat_sub,lon_sub/])
+         end do
+    end do
+  else       ; Don't do any range checking. 
+    do i=0, numFeatures-1  
+       startSegment = geometry(i, geom_segIndex)
+       numSegments  = geometry(i, geom_numSegs)
+       do seg=startSegment, startSegment+numSegments-1
+          startPT = segments(seg, segs_xyzIndex)
+          endPT   = startPT + segments(seg, segs_numPnts) - 1
+;---Attach the markers
+          poly(npl) = gsn_add_polymarker(wks, plot, lon(startPT:endPT),  \
+                                         lat(startPT:endPT), mkres)
+          npl = npl + 1
+       end do
+    end do
+  end if
+  return(poly(0:npl-1))
 end
+
+;***********************************************************************;
+; Function : gsn_add_shapefile_text                                     ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                 fname: Name of shapefile ("xxxx.shp")                 ;
+;                 vname: Name of string variable containing text strings;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function attaches shapefile text strings to the plot "plotid".   ;
+; The assumption is that there are "num_features" text strings, and this;
+; routine gets the approximate mid lat/lon area for each text string.   ;
+;***********************************************************************;
+undef("gsn_add_shapefile_text")
+function gsn_add_shapefile_text(wks,plot,fname[1]:string,vname[1]:string,txres)
+local f, segments, geometry, segsDims, geomDims, geom_segIndex, \
+geom_numSegs, segs_xyzIndex, segs_numPnts, numFeatures, i, lat, lon, \
+startSegment, numSegments, seg, startPT, endPT, ntxt, \
+minlat, maxlat, minlon, maxlon
+begin
+;---Open the shapefile
+  f = addfile(fname,"r")
+  if(.not.isfilevar(f,vname))
+    print("Error: gsn_add_shapefile_text: '" + vname + "' is not a variable")
+    print("       in file '" + fname + "'.")
+    return(new(1,graphic))
+  end if
+;---Error checking
+  if(ismissing(f)) then
+    print("Error: gsn_add_shapefile_text: Can't open shapefile '" + \
+           fname + "'")
+    print("       No shapefile information will be added.")
+    return(new(1,graphic))
+  end if
+
+;---Read data off the shapefile
+  segments = f->segments
+  geometry = f->geometry
+  segsDims = dimsizes(segments)
+  geomDims = dimsizes(geometry)
+
+;---Read global attributes  
+  geom_segIndex = f@geom_segIndex
+  geom_numSegs  = f@geom_numSegs
+  segs_xyzIndex = f@segs_xyzIndex
+  segs_numPnts  = f@segs_numPnts
+  numFeatures   = geomDims(0)
+
+;---Create array to hold all text
+  text  = new(numFeatures,graphic)
+
+;---Section to attach text to plot.
+  lon = f->x
+  lat = f->y
+  ntxt = 0     ; text counter
+;
+; Special check for minlat/maxlat/minlon/maxlon attributes.
+;
+; If set, then each lat/lon segment will be checked if it's
+; in the range.  This can speed up plotting, but I need to
+; verify this!
+;
+  if(isatt(txres,"minlon").and.isatt(txres,"maxlon").and.\
+     isatt(txres,"minlat").and.isatt(txres,"maxlat")) then
+    do i=0, numFeatures-1
+       startSegment = geometry(i, geom_segIndex)
+       numSegments  = geometry(i, geom_numSegs)
+       minlat = new(1,typeof(lat))
+       maxlat = new(1,typeof(lat))
+       minlon = new(1,typeof(lon))
+       maxlon = new(1,typeof(lon))
+       do seg=startSegment, startSegment+numSegments-1
+          startPT = segments(seg, segs_xyzIndex)
+          endPT   = startPT + segments(seg, segs_numPnts) - 1
+          lat_sub = lat(startPT:endPT)
+          lon_sub = lon(startPT:endPT)
+          if(.not.(all(lon_sub.lt.txres@minlon).or. \
+                   all(lon_sub.gt.txres@maxlon).or. \
+                   all(lat_sub.lt.txres@minlat).or. \
+                   all(lat_sub.gt.txres@maxlat))) then
+            if(any((/ismissing(minlat),ismissing(maxlat), \
+                     ismissing(minlon),ismissing(maxlon)/))) then
+              minlat = min(lat_sub)
+              maxlat = max(lat_sub)
+              minlon = min(lon_sub)
+              maxlon = max(lon_sub)
+            else
+              minlat = min((/minlat,min(lat_sub)/))
+              maxlat = max((/maxlat,max(lat_sub)/))
+              minlon = min((/minlon,min(lon_sub)/))
+              maxlon = max((/maxlon,max(lon_sub)/))
+            end if
+          end if
+          delete([/lat_sub,lon_sub/])
+       end do
+;---Attach the text string
+       if(.not.any((/ismissing(minlat),ismissing(maxlat), \
+                     ismissing(minlon),ismissing(maxlon)/))) then
+         avglat = (minlat+maxlat)/2.
+         avglon = (minlon+maxlon)/2.
+         print("Text = '" + f->$vname$(i) + "'")
+         print("Location = " + avglat + "/" + avglon)
+         text(ntxt) = gsn_add_text(wks, plot,f->$vname$(i),avglon,avglat,txres)
+         ntxt = ntxt + 1
+       end if
+    end do
+  else
+    do i=0, numFeatures-1  
+       startSegment = geometry(i, geom_segIndex)
+       numSegments  = geometry(i, geom_numSegs)
+       minlat = new(1,typeof(lat))
+       maxlat = new(1,typeof(lat))
+       minlon = new(1,typeof(lon))
+       maxlon = new(1,typeof(lon))
+       do seg=startSegment, startSegment+numSegments-1
+          startPT = segments(seg, segs_xyzIndex)
+          endPT   = startPT + segments(seg, segs_numPnts) - 1
+          if(any((/ismissing(minlat),ismissing(maxlat), \
+                   ismissing(minlon),ismissing(maxlon)/))) then
+            minlat = min(lat(startPT:endPT))
+            maxlat = max(lat(startPT:endPT))
+            minlon = min(lon(startPT:endPT))
+            maxlon = max(lon(startPT:endPT))
+          else
+            minlat = min((/minlat,min(lat(startPT:endPT))/))
+            maxlat = max((/maxlat,max(lat(startPT:endPT))/))
+            minlon = min((/minlon,min(lon(startPT:endPT))/))
+            maxlon = max((/maxlon,max(lon(startPT:endPT))/))
+          end if
+       end do
+;---Attach the text string
+       if(.not.any((/ismissing(minlat),ismissing(maxlat), \
+                     ismissing(minlon),ismissing(maxlon)/))) then
+         avglat = (minlat+maxlat)/2.
+         avglon = (minlon+maxlon)/2.
+         text(ntxt) = gsn_add_text(wks,plot,f->$vname$(i),avglon,avglat,txres)
+         ntxt = ntxt + 1
+       end if
+    end do
+  end if
+  return(text)
+end
+
 
 ;***********************************************************************;
 ; Procedure : gsn_polymarker_ndc                                        ;
@@ -5515,18 +5791,35 @@ end
 
 ;***********************************************************************;
 ; This procedure draws or attaches markers or lines on the given plot
-; at locations associated with the input data array. For the markers,
+; at coordinates associated with the input data array. For the markers,
 ; you can have the markers colored according to where the data values
-; are missing.
+; are missing.  The arguments are:
 ; 
-; By default, the plot is drawn, the markers or lines are drawn on the
-; plot, and the frame is advanced. Nothing is attached to the plot.
+;    wks[1]:graphic 
+;    plot[1]:graphic
+;    data:numeric
+;    res[1]:logical
 ;
-; If, however, gsnDrawCoordsAttach is set to True, then the markers or
-; lines are attached, and the plot is not drawn and the frame is not
-; advanced, unless gsnDraw and/or gsnFrame are set to True.
+; This procedure examines "data" to see if it has 1D coordinate 
+; arrays, or the special "lat2d"/"lon2d" attributes. If it has
+; neither, then the special "gsnCoordsX" and "gsnCoordsY" attributes
+; must be attached to "res", indicating the coordinates. 
+; If you are drawing lines, then these two attributes must be 2D
+; and the same size as each other. If you are drawing markers,
+; then these arrays don't have to be 2D, but they must be the
+; same size. They will get converted to 1D arrays.
 ;
-; If res@xcoord and res@ycoord are set, these will be used for the X
+; By default, this procedure draws the plot, and the markers or 
+; lines are drawn on the plot with gsn_polymarker[line], and
+; the frame is advanced. Nothing is attached to the plot. This
+; method is faster.
+;
+; If gsnCoordsAttach is set to True, then the markers or lines
+; are attached using gsn_add_polymarker[line], and the plot is 
+; not drawn and the frame is not advanced, unless gsnDraw[Frame]
+; are set to True.
+;
+; If res@gsnCoordsX and res@gsnCoordsY are set, these will be used for the X
 ; and Y coordinate points.  Otherwise, this function will try to get
 ; the 1D coordinate information from the input data variable, or look
 ; for the special "lat2d", "lon2d" attributes.
@@ -5537,46 +5830,46 @@ end
 ;
 ; Special coordinates recognized by this routine:
 ;
-;    "xcoord" and "ycoord" - The X and Y coordinates to plot.
+;    "gsnCoordsX" and "gsnCoordsY" - The X and Y coordinates to plot.
 ;       You only need to set these if the input data array 
 ;       doesn't have 1D coordinate arrays attached, or doesn't
 ;       have the special "lat2d", "lon2d" attributes.
 ;
-;    "gsnDrawCoordsAttach" - if True, then the markers will be
+;    "gsnCoordsAttach" - if True, then the markers will be
 ;       attached via gsn_add_polymarker, instead of just 
 ;       drawn with gsn_polymarker. Note that gsnDraw and Frame will
 ;       both be set to False in this case.
 ;
-;    "gsnDrawCoordsAsLines" - [not implemented yet] if True, 
+;    "gsnCoordsAsLines" - [not implemented yet] if True, 
 ;      coordinates will be drawn as lines rather than markers.
 ;      This only works for 2D coordinate arrays.
 ;
-;    "gsnDrawCoordsMissingColor"
-;    "gsnDrawCoordsNonMissingColor" - If either one of these are set,
+;    "gsnCoordsMissingColor"
+;    "gsnCoordsNonMissingColor" - If either one of these are set,
 ;       then at locations where the data is or isn't missing, they
 ;       will be drawn in the given color
 ;
 ;***********************************************************************;
-undef("gsn_draw_coordinates")
-procedure gsn_draw_coordinates(wks[1]:graphic,plot[1]:graphic, \
+undef("gsn_coordinates")
+procedure gsn_coordinates(wks[1]:graphic,plot[1]:graphic, \
                                data:numeric,res[1]:logical)
-local type_xcoord, type_ycoord, pres, res2, pres, dims, ndims, \
+local type_xcoord, type_ycoord, pres, res2, pres, dims, rank, \
   dims_xcoord, dims_ycoord, xcoord_1d, ycoord_1d, xcoord_2d, ycoord_2d, \
   xdim, ydim, calldraw, callframe, maxbb, defclr, nonmsgclr, msgclr, \
   draw_lines, draw_non_msg, attach_coords, is_msgclr_trans, 
   is_nonmsgclr_trans, is_defclr_trans, tmpstr, i, imsg
 begin
-  res2 = res     ; Make copy so we can modify it
+  res2 = res                     ; Make copy so we can modify it
   imsg = new(1,integer)
 
 ;---Check for special resources
   maxbb         = get_bb_res(res2)
   defclr        = get_res_value(res2,"gsMarkerColor",1)
   defmrk        = get_res_value(res2,"gsMarkerIndex",16)
-  msgclr        = get_res_value(res2,"gsnDrawCoordsMissingColor",imsg)
-  nonmsgclr     = get_res_value(res2,"gsnDrawCoordsNonMissingColor",imsg)
-  attach_coords = get_res_value(res2,"gsnDrawCoordsAttach",False)
-  draw_lines    = get_res_value(res2,"gsnDrawCoordsAsLines",False)
+  msgclr        = get_res_value(res2,"gsnCoordsMissingColor",imsg)
+  nonmsgclr     = get_res_value(res2,"gsnCoordsNonMissingColor",imsg)
+  attach_coords = get_res_value(res2,"gsnCoordsAttach",False)
+  draw_lines    = get_res_value(res2,"gsnCoordsAsLines",False)
 
 ;---Check if color is transparent.
   is_defclr_trans    = ((typeof(defclr).eq."string".and. \
@@ -5599,65 +5892,69 @@ begin
 ;
 ; Figure out what kind of X and Y coordinates we have.
 ; Valid kinds include:
-;    xcoord or ycoord attributes attached to res ("res_coord").
+;    gsnCoordsX or gsnCoordsY attributes attached to res ("res_coord").
 ;    1D coord array attached to data ("data_coord").
 ;    2D lat2d/lon2d attributes attached to data ("data_att")
 ; 
   type_xcoord = ""
   type_ycoord = ""
   dims        = dimsizes(data)
-  ndims       = dimsizes(dims)
+  rank       = dimsizes(dims)
 
 ;----------------------------------------------------------------------
 ; This section gets the X,Y coordinate arrays and converts them
 ; to 1D for markers, and 2D for lines.
 ;----------------------------------------------------------------------
 
-;---Get the X,Y coords from "res2" attribute?
-  if(res2.and.isatt(res2,"xcoord")) then
+  if(res2.and.isatt(res2,"gsnCoordsLat").and.isatt(res2,"gsnCoordsLon")) then
     type_xcoord = "res_coord"
-    if(draw_lines) then
-      xcoord_2d = res2@xcoord
-    else
-      xcoord_1d = ndtooned(res2@xcoord)
-    end if
-  end if
-  if(res2.and.isatt(res2,"ycoord")) then
     type_ycoord = "res_coord"
     if(draw_lines) then
-      ycoord_2d = res2@ycoord
+      xcoord_2d = res2@gsnCoordsLon
+      ycoord_2d = res2@gsnCoordsLat
     else
-      ycoord_1d = ndtooned(res2@ycoord)
+      xcoord_1d = ndtooned(res2@gsnCoordsLon)
+      ycoord_1d = ndtooned(res2@gsnCoordsLat)
     end if
-    is_ycoord_2d = dimsizes(dimsizes(res2@ycoord)).eq.2
+    delete(res2@gsnCoordsLat)
+    delete(res2@gsnCoordsLon)
   end if
 
-;---Does "data" contain 1D coordinate arrays?
-  if(ndims.ge.2) then
-    xdim = ndims-1
-    ydim = ndims-2
-    if(type_xcoord.eq."".and.(isdimnamed(data,xdim).and. \
-                            iscoord(data,data!xdim))) then
-      type_xcoord = "data_coord"
-      if(draw_lines) then
-        xcoord_2d = conform(data,data&$data!xdim$,xdim)
-      else
-        xcoord_1d = ndtooned(conform(data,data&$data!xdim$,xdim))
-      end if
+  if(res2.and.type_xcoord.eq."".and.type_ycoord.eq."".and.\
+     isatt(res2,"gsnCoordsX").and.isatt(res2,"gsnCoordsY")) then
+    type_xcoord = "res_coord"
+    type_ycoord = "res_coord"
+    if(draw_lines) then
+      xcoord_2d = res2@gsnCoordsX
+      ycoord_2d = res2@gsnCoordsY
+    else
+      xcoord_1d = ndtooned(res2@gsnCoordsX)
+      ycoord_1d = ndtooned(res2@gsnCoordsY)
     end if
-    if(type_ycoord.eq."".and.(isdimnamed(data,ydim).and. \
-                            iscoord(data,data!ydim))) then
-      type_ycoord = "data_coord"
-      if(draw_lines) then
-        ycoord_2d = conform(data,data&$data!ydim$,ydim)
-      else
-        ycoord_1d = ndtooned(conform(data,data&$data!ydim$,ydim))
-      end if
-      is_ycoord_2d = False
+    delete(res2@gsnCoordsX)
+    delete(res2@gsnCoordsY)
+  end if
+
+;---Check if "data" contains 1D coordinate arrays.
+  xdim = rank-1
+  ydim = rank-2
+  if((type_xcoord.eq."".and.(isdimnamed(data,xdim).and. \
+                             iscoord(data,data!xdim))).and.\
+     (type_ycoord.eq."".and.(isdimnamed(data,ydim).and. \
+                             iscoord(data,data!ydim)))) then
+    type_xcoord = "data_coord"
+    type_ycoord = "data_coord"
+    dd          = (/dims(ydim),dims(xdim)/)
+    if(draw_lines) then
+      xcoord_2d = conform_dims(dd,data&$data!xdim$,1)
+      ycoord_2d = conform_dims(dd,data&$data!ydim$,0)
+    else
+      xcoord_1d = ndtooned(conform_dims(dd,data&$data!xdim$,1))
+      ycoord_1d = ndtooned(conform_dims(dd,data&$data!ydim$,0))
     end if
   end if
 
-;---Does "data" contain "lat2d", "lon2d" attributes?
+;---Check if "data" contains "lat2d", "lon2d" attributes
   if(type_xcoord.eq."".and.isatt(data,"lon2d")) then
     type_xcoord = "data_att"
     if(draw_lines) then
@@ -5677,11 +5974,11 @@ begin
 
 ;---Error checking
   if(type_xcoord.eq."".or.type_ycoord.eq."") then
-    print("gsn_draw_coordinates: no valid X and/or Y coordinate values provided.")
+    print("gsn_coordinates: no valid X and/or Y coordinate values provided.")
     return
   end if
   if(type_xcoord.ne.type_ycoord) then
-    print("gsn_draw_coordinates: conflicting X/Y coordinate values provided.")
+    print("gsn_coordinates: conflicting X/Y coordinate values provided.")
     return
   end if
 
@@ -5691,14 +5988,14 @@ begin
     rank_xcoord = dimsizes(dims_xcoord)
     rank_ycoord = dimsizes(dims_ycoord)
     if(rank_xcoord.ne.2.or.rank_xcoord.ne.rank_ycoord) then
-      print("gsn_draw_coordinates: can't draw coordinates as lines if they")
+      print("gsn_coordinates: can't draw coordinates as lines if they")
       print("                      are not 2D arrays of the same size.")
       return
     end if
     ny = dims_xcoord(0)
     nx = dims_xcoord(1)
     if(dims_ycoord(0).ne.ny.and.dims_ycoord(1).ne.nx) then
-      print("gsn_draw_coordinates: coordinates must have the same")
+      print("gsn_coordinates: coordinates must have the same")
       print("                      dimensionality")
       return
     end if
@@ -5706,7 +6003,7 @@ begin
     dims_xcoord = dimsizes(xcoord_1d)
     dims_ycoord = dimsizes(ycoord_1d)
     if(dims_xcoord.ne.dims_ycoord) then
-      print("gsn_draw_coordinates: coordinates must have the same")
+      print("gsn_coordinates: coordinates must have the same")
       print("                      dimensionality")
       return
     end if
@@ -6909,7 +7206,7 @@ begin
 ; Here's the list of "regular" plot types:
 ;
   plot_types = (/"contourPlotClass","xyPlotClass","vectorPlotClass",\
-                 "streamlinePlotClass","mapPlotClass"/)
+                 "streamlinePlotClass","mapPlotClass","logLinPlotClass"/)
 
 ;
 ; First check the base plot for "regular plotness".

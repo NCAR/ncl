@@ -109,7 +109,7 @@ end getvalues
 
 pid = create "TextItems" textItemClass wid
 end create
-do i=1,num_colors
+do i=1,num_colors,10
     setvalues pid
         "txBackgroundFillColor" : i
     end setvalues

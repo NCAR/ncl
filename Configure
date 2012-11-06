@@ -171,8 +171,6 @@ set buildgrib2=`$makecmd GRIB2STUFF`
 echo -n "..."
 set buildv5d=`$makecmd V5DSTUFF`
 echo -n "..."
-set buildesmf=`$makecmd ESMFSTUFF`
-echo -n "..."
 # set buildpyngl=`$makecmd PYNGLSTUFF`
 # echo -n "..."
 set buildgridspec=`$makecmd GRIDSPECSTUFF`
@@ -435,6 +433,7 @@ if ("$answer" == "q") goto cleanup
 if (("$answer" != "") && ("$answer" != "$buildnc4support")) then
 	set buildnc4support = $answer
 	set newbuildnc4support
+    echo "Setting support for NetCDF 4..."
     set altered
 endif
 
@@ -798,31 +797,6 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
   endif
 
 #
-# Vis5d+
-#
-  if ($?verbose_option) then
-    cat <<"EOF"
-======================================================================
-
-	Put ESMF remapping tools text here.
-	THIS LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
-
-======================================================================
-"EOF"
-  endif
-
-  echo ""
-  echo "Build ESMF remapping support (optional) into NCL ($buildesmf)"
-  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
-  set answer="$<"
-  if ("$answer" == "q") goto cleanup
-  if (("$answer" != "") && ("$answer" != "$buildesmf")) then
-	set buildesmf = $answer
-	set newbuildesmf
-        set altered
-  endif
-
-#
 # HDF-EOS2
 #
   if ($?verbose_option) then
@@ -957,8 +931,8 @@ else
   set buildtriangle = "n"
   set buildudunits = "n"
   set buildgrib2 = "n"
+  set buildnc4support = "n"
   set buildv5d = "n"
-  set buildesmf = "n"
   set buildgridspec = "n"
   set netcdfwithdap = "n"
   set netcdflib = ""
@@ -969,8 +943,8 @@ else
   set newbuildtriangle
   set newbuildudunits
   set newbuildgrib2
+  set newbuildnc4support
   set newbuildv5d
-  set newbuildesmf
   set newbuildgridspec
   set altered
 endif
@@ -1311,8 +1285,13 @@ endif
 # 	endif
 # endif
 
-if ($?newbuildnc4support  && "$buildnc4support" == "y") then
-	echo "#define UseNetCDF4Features 1" >> Site.local
+
+if ($?newbuildnc4support) then
+	if ("$buildnc4support" == "y") then
+	    echo "#define UseNetCDF4Features 1" >> Site.local
+	else
+	    echo "#define UseNetCDF4Features 0" >> Site.local
+	endif
 endif
 
 if ($?newbuildnetcdf4) then
@@ -1391,15 +1370,6 @@ if ($?newbuildv5d) then
 	else
 		echo "#define BuildV5D 0" >> Site.local
 		echo "#define V5Dlib" >> Site.local
-	endif
-endif
-
-if ($?newbuildesmf) then
-	if ("$buildesmf" == "y") then
-		echo "#define BuildESMF 1" >> Site.local
-	else
-		echo "#define BuildESMF 0" >> Site.local
-		echo "#define ESMFlib" >> Site.local
 	endif
 endif
 

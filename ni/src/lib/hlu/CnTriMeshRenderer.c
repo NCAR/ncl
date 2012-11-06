@@ -29,6 +29,9 @@
 #include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/IrregularTransObjP.h>
 #include <ncarg/hlu/TriMeshTransObj.h>
+#include <ncarg/hlu/WorkspaceI.h>
+#include <ncarg/hlu/color.h>
+
 #ifdef BuildTRIANGLE
 #define REAL double
 #include <ncarg/hlu/triangle.h>
@@ -385,7 +388,9 @@ static int (_NHLCALLF(rtmi,RTMI))
 	*jino = *jini;
 	*iino = *iini;
 
+	
 #if 0
+
 	*iino = *iini;
 	if (*jini == *jdim) {
 		if (*iini > *idim / 2 && *iini < *idim - 1) {
@@ -681,8 +686,6 @@ static NhlErrorTypes BuildNativeMesh
 	rdat = (float*)cnp->sfp->d_arr->data;
 	el = (int*) cnp->sfp->element_nodes->data;
 
-	    
-
 	for (i = 0; i < mnot; i++) {
 		int *ep;
 		int e0,e1,e2;
@@ -706,23 +709,23 @@ static NhlErrorTypes BuildNativeMesh
 		e1 = *(ep+1) - ix_offset;
 		e2 = *(ep+2) - ix_offset;
 		if (tmp->ezmap) {
-			tbuf[nbuf][0] = cos(DEGTORAD * rlat[e0]) *
-				cos(DEGTORAD * rlon[e0]);
-			tbuf[nbuf][1] = cos(DEGTORAD * rlat[e0]) *
-				sin(DEGTORAD * rlon[e0]);
-			tbuf[nbuf][2] = sin(DEGTORAD * rlat[e0]);
+			tbuf[nbuf][0] = cos(DEGTORAD * (double)rlat[e0]) *
+				cos(DEGTORAD * (double)rlon[e0]);
+			tbuf[nbuf][1] = cos(DEGTORAD * (double)rlat[e0]) *
+				sin(DEGTORAD * (double)rlon[e0]);
+			tbuf[nbuf][2] = sin(DEGTORAD * (double)rlat[e0]);
 			tbuf[nbuf][3] = rdat[e0];
-			tbuf[nbuf][4] = cos(DEGTORAD * rlat[e1]) *
-				cos(DEGTORAD * rlon[e1]);
-			tbuf[nbuf][5] = cos(DEGTORAD * rlat[e1]) *
-				sin(DEGTORAD * rlon[e1]);
-			tbuf[nbuf][6] = sin(DEGTORAD * rlat[e1]);
+			tbuf[nbuf][4] = cos(DEGTORAD * (double)rlat[e1]) *
+				cos(DEGTORAD * (double)rlon[e1]);
+			tbuf[nbuf][5] = cos(DEGTORAD * (double)rlat[e1]) *
+				sin(DEGTORAD * (double)rlon[e1]);
+			tbuf[nbuf][6] = sin(DEGTORAD * (double)rlat[e1]);
 			tbuf[nbuf][7] = rdat[e1];
-			tbuf[nbuf][8] = cos(DEGTORAD * rlat[e2]) *
-				cos(DEGTORAD * rlon[e2]);
-			tbuf[nbuf][9] = cos(DEGTORAD * rlat[e2]) *
-				sin(DEGTORAD * rlon[e2]);
-			tbuf[nbuf][10] = sin(DEGTORAD * rlat[e2]);
+			tbuf[nbuf][8] = cos(DEGTORAD * (double)rlat[e2]) *
+				cos(DEGTORAD * (double)rlon[e2]);
+			tbuf[nbuf][9] = cos(DEGTORAD * (double)rlat[e2]) *
+				sin(DEGTORAD * (double)rlon[e2]);
+			tbuf[nbuf][10] = sin(DEGTORAD * (double)rlat[e2]);
 			tbuf[nbuf][11] = rdat[e2];
 		}
 		else {
@@ -2404,7 +2407,7 @@ static NhlErrorTypes cnInitAreamap
 	if (cnp->aws_id < 1) {
 		cnp->aws_id = 
 			_NhlNewWorkspace(NhlwsAREAMAP,
-					 NhlwsNONE,200000*sizeof(int));
+					 NhlwsNONE,800000*sizeof(int));
 		if (cnp->aws_id < 1) 
 			return MIN(ret,(NhlErrorTypes)cnp->aws_id);
 	}
@@ -2936,6 +2939,40 @@ static NhlErrorTypes CnTriMeshRender
 		else if (cnp->fill_mode == NhlCELLFILL) {
 			_NhlCellFill((NhlLayer)cnl,entry_name);
 		}
+		else if (cnp->fill_mode == NhlMESHFILL) { /* NhlMESHFILL */
+			int msize,nsize;
+			float min_cell_size;
+			NhlBoundingBox bbox;
+
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  "%s: the MeshFill method does not yet produce correct results for unstructured grids\n",entry_name);
+
+			subret = cnInitCellArray(cnl,&msize,&nsize,&bbox,
+						 &min_cell_size,entry_name);
+ 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+			subret = _NhlCtcica(NULL,NULL,NULL,NULL,NULL,
+					    cnp->cws,
+					    msize,msize,nsize,
+					    bbox.l,bbox.b,bbox.r,bbox.t,
+					    min_cell_size,
+					    cnp->raster_smoothing_on,
+					    True,
+					    entry_name);
+ 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+			if (cnp->cws != NULL) {
+				subret = _NhlIdleWorkspace(cnp->cws);
+				ret = MIN(subret,ret);
+				cnp->cws = NULL;
+			}
+		}
 		else { /* NhlRASTERFILL */
 			int msize,nsize;
 			float min_cell_size;
@@ -2963,6 +3000,7 @@ static NhlErrorTypes CnTriMeshRender
 					    bbox.l,bbox.b,bbox.r,bbox.t,
 					    min_cell_size,
 					    cnp->raster_smoothing_on,
+					    False,
 					    entry_name);
  			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				gset_clip_ind(clip_ind_rect.clip_ind);
@@ -3101,8 +3139,266 @@ static NhlErrorTypes CnTriMeshRender
 	return MIN(subret,ret);
 }
 
+typedef struct {
+	float vx,vy,c;
+} PlaneSet;
+
+/*
+ * Function:  _NhlUnstructuredMeshFill
+ *
+ * Description: performs a mesh raster fill - 
+ * replaces Conpack routine CPCICA - Conpack must be initialized, etc.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+NhlErrorTypes _NhlUnstructuredMeshFill
+#if	NhlNeedProto
+(
+	int             *cell,
+	int		ica1,
+	int		icam,
+	int		ican,
+	float		xcpf,
+	float		ycpf,
+	float		xcqf,
+	float		ycqf,
+	float           min_cell_size,
+	NhlBoolean      smooth,
+	char		*entry_name
+)
+#else
+(cell,ica1,icam,ican,
+ xcpf,ycpf,xcqf,ycqf,min_cell_size,smooth,entry_name)
+	int		*cell;
+	int		ica1;
+	int		icam;
+	int		ican;
+	float		xcpf;
+	float		ycpf;
+	float		xcqf;
+	float		ycqf;
+	float           min_cell_size;
+	NhlBoolean      smooth;
+	char		*entry_name;
+#endif
+{
+	NhlContourPlotLayer cnl = Cnl;
+	NhlContourPlotLayerPart *cnp = Cnp;
+	NhlTransformLayerPart 		  *tfp = &cnl->trans;
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlBoolean ezmap = False;
+	float *xv, *yv,*zdat;
+	float *levels;
+	int nv;
+	float cxstep,cystep;
+	float           tol1,tol2;
+	float           xsoff,xeoff,ysoff,yeoff;
+	int i,j;
+	int             grid_fill_ix;
+	int cell_count;
+	float avg_cells_per_grid_box;
+	float mflx,mfby,mfrx,mfuy;
+	float min_minx, max_maxx, min_miny, max_maxy;
+	float max_coverage = 0;
+	int twice;
+	int icaf, map;
+	float orv;
+
+        if (cnp == NULL) {
+		e_text = "%s: invalid call to _NhlRasterFill";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
+        }
+	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
+	    NhlmapTransObjClass->base_class.class_name) {
+		ezmap = True;
+	}
+        levels = (float*) cnp->levels->data;
+
+	c_ctgetr("ORV",&orv);
+	c_ctgeti("CAF",&icaf);
+	c_ctgeti("MAP",&map);
 
 
+	nv = cnp->sfp->x_cell_bounds->len_dimensions[1];
+	cell_count = cnp->sfp->x_cell_bounds->len_dimensions[0];
+	xv = (float*)cnp->sfp->x_cell_bounds->data;
+	yv = (float*)cnp->sfp->y_cell_bounds->data;
+	zdat = (float*)cnp->sfp->d_arr->data;
+	
+	cxstep = (xcqf-xcpf)/(float)icam;
+	cystep = (ycqf-ycpf)/(float)ican;
+
+	xsoff = Xsoff + .5 * (1.0 - Xsoff);
+	xeoff = Xeoff + .5 * (1.0 - Xeoff);
+	ysoff = Ysoff + .5 * (1.0 - Ysoff);
+	yeoff = Yeoff + .5 * (1.0 - Yeoff);
+
+	tol1 = 0.00001 * MIN(Cnl->view.width,Cnl->view.height);
+	tol2 = 0.5 * MIN(Cnl->view.width,Cnl->view.height);
+	
+/*
+ *      initialize cell array with the missing value.
+ */      
+	grid_fill_ix = Cnp->grid_bound.gks_fcolor;
+	grid_fill_ix = grid_fill_ix < 0 ? NhlBACKGROUND : grid_fill_ix;
+	for (j = 0; j < ican; j++) {
+		for (i = 0; i < icam; i++) {
+			*(cell + j * ica1 + i) = grid_fill_ix;
+		}
+	
+	}
+	avg_cells_per_grid_box = (icam * ican) / ((float)cell_count);
+
+	printf("in unstructured mesh fill\n");
+	printf("avg_cells_per_grid_box = %f\n",avg_cells_per_grid_box);
+	printf("icam %d ican %d\n",icam,ican);
+
+	mflx = xcpf - (xcqf - xcpf) * .1;
+	mfrx = xcqf + (xcqf - xcpf) * .1;
+	mfby = ycpf - (ycqf - ycpf) * .1;
+	mfuy = ycqf + (ycqf - ycpf) * .1;
+	min_minx = min_miny = 1e30;
+	max_maxx = max_maxy = 0;
+	twice = 0;
+	for (i = 0; i < cell_count; i++) {
+		float xi[10], yi[10],xo[10],yo[10],xp[10],yp[10];
+		float minx,miny,maxx,maxy;
+		int flip_edge;
+		int status;
+		PlaneSet *pps, ps[10];
+		int p,p1,p2,p0;
+		int jcv,icv;
+		int t;
+		int iplus,jplus;
+		int ix, iaid,k;
+		float fvali,spv;
+
+		memcpy(xi,xv + i * nv,nv * sizeof(float));
+		memcpy(yi,yv + i * nv,nv * sizeof(float));
+		minx = miny = 1e30;
+		maxx = maxy = 0;
+		_NhlDataToWin(Cnp->trans_obj,xi,yi,
+			      nv,xo,yo,&status,
+			      NULL,NULL);
+			
+		if (status) {
+			continue;
+		}
+
+		for (p = 0; p < nv; p++) {
+			float tx,ty;
+
+			tx = c_cufx(xo[p]);
+			ty = c_cufy(yo[p]);
+#if 1
+			if (tx < mflx || tx > mfrx || ty < mfby || ty > mfuy) {
+				status = 1;
+				break;
+			}
+#endif
+			xp[p] = (tx - xcpf) / cxstep; 
+			yp[p] = (ty - ycpf) / cxstep; 
+			if (xp[p] < minx)
+				minx = xp[p];
+			if (xp[p] > maxx)
+				maxx = xp[p];
+			if (yp[p] < miny)
+				miny = yp[p];
+			if (yp[p] > maxy)
+				maxy = yp[p];
+		}
+#if 1
+		if (maxx - minx > icam / 2.0) {
+			float new_maxx = -1e30,new_minx = 1e30;
+			twice = 2;
+			for (p = 0; p < nv; p++) {
+				if (xp[p] < icam / 2) {
+					xp[p] += (float) icam;
+				}
+				if (xp[p] < new_minx)
+					new_minx = xp[p];
+				if (xp[p] > new_maxx)
+					new_maxx = xp[p];
+			}
+			maxx = new_maxx;
+			minx = new_minx;
+		}
+#endif
+		pps = &ps[0];
+		flip_edge = (xp[0] - xp[1]) * (yp[1] - yp[2]) >
+			(yp[0] - yp[1]) * (xp[1] - xp[2]);
+		for (p1 = 0, p2 = 1; p2 < nv; p1 = p2, p2++,pps++) {
+			pps->vx = yp[p1] - yp[p2];
+			pps->vy = xp[p2] - xp[p1];
+			pps->c = pps->vx * xp[p1] + pps->vy * yp[p1];
+
+			/* check sense and reverse plane edge if need be */
+			if ( flip_edge ) {
+				pps->vx = -pps->vx ;
+				pps->vy = -pps->vy ;
+				pps->c  = -pps->c ;
+			}
+		}
+		/*printf("coverage : %f\n", ((maxy + 1) - miny) * ((maxx +1) - minx));*/
+		if (((maxy + 1) - miny) * ((maxx +1) - minx) > max_coverage)
+			max_coverage = ((maxy + 1) - miny) * ((maxx +1) - minx);
+		if (((maxy + 1) - miny) * ((maxx +1) - minx) > 400 * avg_cells_per_grid_box)
+			continue;
+		if (minx < min_minx) min_minx = minx; 
+		if (miny < min_miny) min_miny = miny; 
+		if (maxx > max_maxx) max_maxx = maxx; 
+		if (maxy > max_maxy) max_maxy = maxy; 
+		for (jcv = MAX(0,(int) miny); jcv < MIN(ican,(int) (maxy + 1)); jcv++) {
+			float ty = jcv + .5;
+			for (icv = MAX(0,(int) minx); icv < MAX(icam,(int) (maxx + 1)); icv++) {
+				float tx = icv +.5;
+				for (p0 = nv-1, pps = ps; --p0; pps++) {
+					if (pps->vx * tx + pps->vy * ty > pps->c) {
+						break;
+					}
+				}
+				if (p0 > 0)
+					continue;
+				/*iplus = icv % icam;*/
+				iplus = MIN(icv, icam);
+				jplus = jcv;
+				fvali = zdat[i]; 
+				iaid = -1;
+				if (spv != 0.0 &&
+				    fvali == spv)
+					iaid = 98;
+				else {
+					for (k=0; k < Cnp->level_count; k++) {
+						if (fvali < levels[k]) {
+							iaid = NhlcnAREAID_OFFSET+k;
+							break;
+						}
+					}
+				}
+				if (iaid == -1)
+					iaid = NhlcnAREAID_OFFSET +
+						Cnp->level_count;     
+
+				(_NHLCALLF(hluctscae,HLUCTSCAE))
+					(cell,&ica1,&icam,&ican,
+					 &xcpf,&ycpf,&xcqf,&ycqf,
+					 &iplus,&jplus,&icaf,&iaid);
+			}
+		}
+	}
+
+
+
+}
 #define HERO(A,B,C) \
 	sqrt(MAX(0.,((A)+(B)+(C))*((B)+(C)-(A))*((A)+(C)-(B))*((A)+(B)-(C))))
 /*
@@ -4173,6 +4469,7 @@ void   (_NHLCALLF(hluctchcl,HLUCTCHCL))
 			}
 			c_pcseti("OC",llcol);
 			c_pcseti("CC",llcol);
+                        _NhlSetFillOpacity(Cnl, 1.0);  /* NCL-1509 */
 		}
 		c_pcsetr("PH",(float)Cnp->line_lbls.pheight);
 		c_pcsetr("PW",(float)Cnp->line_lbls.pwidth);
@@ -4311,6 +4608,7 @@ void   (_NHLCALLF(hluctchhl,HLUCTCHHL))
 		if ( Cnp->high_lbls.gks_color > NhlTRANSPARENT) {
 			c_pcseti("CC", Cnp->high_lbls.gks_color);
 			c_pcseti("OC", Cnp->high_lbls.gks_color);
+                        _NhlSetFillOpacity(Cnl, 1.0);  /* NCL-1509 */
 		}
 		c_pcsetr("PH",(float)Cnp->high_lbls.pheight);
 		c_pcsetr("PW",(float)Cnp->high_lbls.pwidth);
@@ -4347,6 +4645,7 @@ void   (_NHLCALLF(hluctchhl,HLUCTCHHL))
 		if ( Cnp->high_lbls.gks_color > NhlTRANSPARENT) {
 			c_pcseti("CC", Cnp->high_lbls.gks_color);
 			c_pcseti("OC", Cnp->high_lbls.gks_color);
+                        _NhlSetFillOpacity(Cnl, 1.0);  /* NCL-1509 */
 		}
 		else {
 			c_ctsetc("CTM"," ");
@@ -4388,6 +4687,7 @@ void   (_NHLCALLF(hluctchhl,HLUCTCHHL))
 		if (Cnp->low_lbls.gks_color > NhlTRANSPARENT) {
 			c_pcseti("CC", Cnp->low_lbls.gks_color);
 			c_pcseti("OC", Cnp->low_lbls.gks_color);
+                        _NhlSetFillOpacity(Cnl, 1.0);  /* NCL-1509 */
 		}
 		c_pcsetr("PH",(float)Cnp->low_lbls.pheight * LowLabelFactor);
 		c_pcsetr("PW",(float)Cnp->low_lbls.pwidth * LowLabelFactor);
@@ -4423,6 +4723,7 @@ void   (_NHLCALLF(hluctchhl,HLUCTCHHL))
 		if (Cnp->low_lbls.gks_color > NhlTRANSPARENT) {
 			c_pcseti("CC", Cnp->low_lbls.gks_color);
 			c_pcseti("OC", Cnp->low_lbls.gks_color);
+                        _NhlSetFillOpacity(Cnl, 1.0);  /* NCL-1509 */
 		}
 		else {
 			c_ctsetc("CTM"," ");
@@ -4523,6 +4824,7 @@ void   (_NHLCALLF(hluctchll,HLUCTCHLL))
 			if (llcol > NhlTRANSPARENT) {
 				c_pcseti("CC",llcol);
 				c_pcseti("OC",llcol);
+                                _NhlSetFillOpacity(Cnl, 1.0);  /* NCL-1509 */
 			}
 			else {
 				c_ctsetc("CTM"," ");

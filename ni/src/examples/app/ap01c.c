@@ -6,7 +6,7 @@
 #include <ncarg/hlu/CairoWorkstation.h>
 #include <ncarg/hlu/TextItem.h>
 
-main()
+int main()
 {
     int appid, workid, textid;
     int rlist;

@@ -2232,6 +2232,7 @@ NhlErrorTypes    _NhlSetColorsFromWorkstationColorMap
 		}
 	}
 	*index_ga = _NhlCreateGenArray(ci,NhlTColorIndex,4,1,&count,False);
+	(*index_ga)->my_data = True;
 	NhlFreeGenArray(cmap_ga);
 
 	return NhlNOERROR;

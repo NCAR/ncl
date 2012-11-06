@@ -3416,7 +3416,7 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
 
     char *component_name;
 
-    NclNewList complist;
+    NclList complist;
 
     void *values;
 
@@ -3446,13 +3446,11 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
     if(NULL == varnode->comprec)
         return NULL;
 
-    did = H5Dopen(fid, NrmQuarkToString(varnode->name), H5P_DEFAULT);
+    did = H5Dopen(fid, NrmQuarkToString(varnode->real_name), H5P_DEFAULT);
 
-    complist = (NclNewList)_NclNewListCreate(NULL, NULL, 0, 0, -1, (NCL_ITEM | NCL_FIFO));
+    complist = (NclList)_NclListCreate(NULL, NULL, Ncl_List, 0, NCL_FIFO);
     assert(complist);
-    _NclListSetType((NclObj)complist, NCL_ITEM);
-    complist->newlist.name = varnode->name;
-    complist->newlist.type = NrmStringToQuark("item");
+    _NclListSetType((NclObj)complist, NCL_FIFO);
     complist->obj.obj_type = Ncl_List;
 
     *id = complist->obj.id;
@@ -3585,7 +3583,7 @@ static void *_getH5CompoundData(hid_t fid, NclFileVarNode *varnode,
 
     compnode = _getComponentNodeFromVarNode(varnode, component_name);
 
-    did = H5Dopen(fid, NrmQuarkToString(varnode->name), H5P_DEFAULT);
+    did = H5Dopen(fid, NrmQuarkToString(varnode->real_name), H5P_DEFAULT);
 
     strcpy(buffer, _NclBasicDataTypeToName(compnode->type));
 
@@ -3895,7 +3893,7 @@ void *_getH5vlen(hid_t fid, NclFileVarNode *varnode)
 
     char *typename = NULL;
 
-    NclNewList vlenlist;
+    NclList vlenlist;
 
     void *vlenvalues;
 
@@ -3962,11 +3960,9 @@ void *_getH5vlen(hid_t fid, NclFileVarNode *varnode)
     typename = _getH5typeName(super, 15);
 
     vlentype = string2NclType(typename);
-    vlenlist = (NclNewList)_NclNewListCreate(NULL, NULL, 0, 0, -1, (NCL_ITEM | NCL_FIFO));
+    vlenlist = (NclList)_NclListCreate(NULL, NULL, Ncl_List, 0, NCL_FIFO);
     assert(vlenlist);
-    _NclListSetType((NclObj)vlenlist, NCL_ITEM);
-    vlenlist->newlist.name = NrmStringToQuark(typename);
-    vlenlist->newlist.type = NrmStringToQuark("item");
+    _NclListSetType((NclObj)vlenlist, NCL_FIFO);
     vlenlist->obj.obj_type = Ncl_List;
 
     *id = vlenlist->obj.id;
@@ -4861,12 +4857,11 @@ static NhlErrorTypes H5AddVarChunkCache(void* therec, NclQuark thevar,
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
     NclFileVarNode *varnode;
     int ret = NhlNOERROR;
-    int fid;
 
   /*
+   *fprintf(stderr, "\nEnter H5AddVarChunkCache, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tthevar: <%s>, cache_size: %ld\n", NrmQuarkToString(thevar), cache_size);
    */
-    fprintf(stderr, "\nEnter H5AddVarChunkCache, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tthevar: <%s>, cache_size: %ld\n", NrmQuarkToString(thevar), cache_size);
 
     if(grpnode->status > 0)
     {    
@@ -4875,8 +4870,6 @@ static NhlErrorTypes H5AddVarChunkCache(void* therec, NclQuark thevar,
                   NrmQuarkToString(grpnode->path)));
         return (NhlFATAL);
     }
-
-    fid = _getH5grpID(grpnode);
 
     varnode = _getVarNodeFromNclFileGrpNode(grpnode, thevar);
     if(NULL != varnode)
@@ -4891,15 +4884,6 @@ static NhlErrorTypes H5AddVarChunkCache(void* therec, NclQuark thevar,
             varnode->cache_preemption = 1.0;
         else
             varnode->cache_preemption = cache_preemption;
-
-        if(varnode->use_cache)
-        {
-          /*
-           *nc_ret = nc_set_var_chunk_cache(fid, varnode->id,
-           *                                cache_size, cache_nelems,
-           *                                varnode->cache_preemption);
-           */
-        }
         ret = NhlNOERROR;
     }
 
@@ -4912,14 +4896,10 @@ static NhlErrorTypes H5SetVarCompressLevel(void* therec, NclQuark thevar,
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
     NclFileVarNode *varnode;
     int ret = NhlNOERROR;
-    int fid;
-    int deflate = 0;
   /*
-    int shuffle = 0;
-
+   *fprintf(stderr, "\nEnter H5SetVarCompressLevel, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tthevar: <%s>, compress_level: %d\n", NrmQuarkToString(thevar), compress_level);
    */
-    fprintf(stderr, "\nEnter H5SetVarCompressLevel, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tthevar: <%s>, compress_level: %d\n", NrmQuarkToString(thevar), compress_level);
 
     if(grpnode->status > 0)
     {    
@@ -4929,18 +4909,10 @@ static NhlErrorTypes H5SetVarCompressLevel(void* therec, NclQuark thevar,
         return (NhlFATAL);
     }
 
-    fid = _getH5grpID(grpnode);
-
     varnode = _getVarNodeFromNclFileGrpNode(grpnode, thevar);
     if(NULL != varnode)
     {
         varnode->compress_level = compress_level;
-        if(compress_level > 0)
-            deflate = compress_level;
-      /*
-       *nc_ret = nc_def_var_deflate(fid, varnode->id, shuffle,
-       *                            deflate, deflate_level);
-       */
     }
 
     return(ret);
@@ -5299,9 +5271,9 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
     hsize_t dims[NCL_MAX_DIMENSIONS];
     hsize_t chunk_dims[NCL_MAX_DIMENSIONS];
 
+    fprintf(stderr, "\nEnter H5WriteVar, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
   /*
-   *fprintf(stderr, "\nEnter H5WriteVar, file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
    */
 
     if(grpnode->status > 0)
@@ -5368,7 +5340,7 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         NclObj           tmpobj;
         NclVar           tmpvar;
         NclMultiDValData tmp_md;
-        NclNewList       vlist    = (NclNewList)_NclGetObj(*(int *)data);
+        NclList          vlist    = (NclList)_NclGetObj(*(int *)data);
 
         hid_t            fid;
         hid_t            filetype;
@@ -5376,13 +5348,13 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         hid_t            space;
         hid_t            did;
 
-        hvl_t            *vlendata = (hvl_t *) NclCalloc(vlist->newlist.n_elem,
+        hvl_t            *vlendata = (hvl_t *) NclCalloc(vlist->list.nelem,
                                                           sizeof(hvl_t));
         assert(vlendata);
                     
-        for(n = 0; n < vlist->newlist.n_elem; n++)
+        tmp = vlist->list.first;
+        for(n = 0; n < vlist->list.nelem; n++)
         { 
-            tmp = vlist->newlist.item[n];
             tmpobj = (NclObj)_NclGetObj(tmp->obj_id);
             tmpvar = (NclVar)_NclGetObj(tmpobj->obj.id);
             tmp_md = (NclMultiDValData)_NclGetObj(tmpvar->var.thevalue_id);
@@ -5394,6 +5366,7 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
             i = vlendata[n].len * _NclSizeOf(tmp_md->multidval.data_type);
             vlendata[n].p = (void *)NclMalloc(i);
             memcpy(vlendata[n].p, tmp_md->multidval.val, i);
+            tmp = tmp->next;
         }
 
       /*
@@ -5749,10 +5722,10 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         H5Dclose(did);
     }
 
-
+    fprintf(stderr, "Leave H5WriteVar, file: %s, line: %d\n\n", __FILE__, __LINE__);
   /*
-   *fprintf(stderr, "Leave H5WriteVar, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
+
     if(ret_code)
     {
         NHLPERROR((NhlFATAL,NhlEUNKNOWN,"H5WriteVar: Error ocurred while writing can't continue"));

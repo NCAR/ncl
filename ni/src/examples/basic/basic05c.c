@@ -39,11 +39,11 @@
 #include <ncarg/hlu/hlu.h>
 
 
-main()
+int main()
 {
     int i;
     int appid,wks,lbar,rlist,glist,text;
-    char *colorindices[232];
+    char *colorindices[255];
     int num_dims;
     ng_size_t *len_dims;
     float *cmap;
@@ -54,7 +54,7 @@ main()
  *
  * Initialize labels for the color map entries
  */
-    for(i=1; i<=232; i++) {
+    for(i=1; i<=255; i++) {
         colorindices[i-1] = (char*)malloc(4*sizeof(char));
         sprintf(colorindices[i-1],"%d",i);
     }
@@ -75,7 +75,6 @@ main()
 /*
  * Set Colormap to default. Note, this assignment is redundant
  */
-        NhlRLSetString(rlist,"wkColorMap","default");
         NhlRLSetString(rlist,NhlNwkMetaName,"./basic05c.ncgm");
         NhlCreate(&wks,"wks",NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
@@ -86,13 +85,9 @@ main()
         NhlRLClear(rlist);
         NhlRLSetString(rlist,"wkPause","True");
 /*
- * Set Colormap to default. Note, this assignment is redundant
- */
-        NhlRLSetString(rlist,"wkColorMap","default");
-/*
  * Set the colormode to private so there is no color contention
  */
-        NhlRLSetString(rlist,"wkXColorMode","private");
+/*      NhlRLSetString(rlist,"wkXColorMode","private"); */
         NhlCreate(&wks,"wks",NhlcairoWindowWorkstationClass,NhlDEFAULT_APP,rlist);
     }
     else if (!strcmp(wks_type,"oldps") || !strcmp(wks_type,"OLDPS")) {
@@ -100,10 +95,6 @@ main()
  * Create an older-style PostScript workstation.
  */
         NhlRLClear(rlist);
-/*
- * Set Colormap to default. Note, this assignment is redundant
- */
-        NhlRLSetString(rlist,"wkColorMap","default");
         NhlRLSetString(rlist,NhlNwkPSFileName,"./basic05c.ps");
         NhlCreate(&wks,"wks",NhlpsWorkstationClass,NhlDEFAULT_APP,rlist);
     }
@@ -112,10 +103,6 @@ main()
  * Create an older-style PDF workstation.
  */
         NhlRLClear(rlist);
-/*
- * Set Colormap to default. Note, this assignment is redundant
- */
-        NhlRLSetString(rlist,"wkColorMap","default");
         NhlRLSetString(rlist,NhlNwkPDFFileName,"./basic05c.pdf");
         NhlCreate(&wks,"wks",NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist);
     }
@@ -125,10 +112,6 @@ main()
  * Create a cairo PS/PDF workstation.
  */
         NhlRLClear(rlist);
-/*
- * Set Colormap to default. Note, this assignment is redundant
- */
-        NhlRLSetString(rlist,"wkColorMap","default");
         NhlRLSetString(rlist,NhlNwkFileName,"./basic05c");
         NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
         NhlCreate(&wks,"wks",NhlcairoDocumentWorkstationClass,NhlDEFAULT_APP,rlist);
@@ -138,10 +121,6 @@ main()
  * Create a cairo PNG workstation.
  */
         NhlRLClear(rlist);
-/*
- * Set Colormap to default. Note, this assignment is redundant
- */
-        NhlRLSetString(rlist,"wkColorMap","default");
         NhlRLSetString(rlist,NhlNwkFileName,"./basic05c");
         NhlRLSetString(rlist,NhlNwkFormat,(char*)wks_type);
         NhlCreate(&wks,"wks",NhlcairoImageWorkstationClass,NhlDEFAULT_APP,rlist);
@@ -154,7 +133,7 @@ main()
 /*
  * Assign the labels
  */
-    NhlRLSetStringArray(rlist,"lbLabelStrings",colorindices,232);
+    NhlRLSetStringArray(rlist,"lbLabelStrings",colorindices,255);
 /*
  * Label every 5th entry
  */
@@ -172,9 +151,9 @@ main()
  */
         NhlRLSetString(rlist,"lbBoxLinesOn","False");
 /*
- * Display 31 entries
+ * Display 255 entries
  */
-        NhlRLSetInteger(rlist,"lbBoxCount",31);
+        NhlRLSetInteger(rlist,"lbBoxCount",255);
 /*
  * Turn off labelbar perimeter
  */
@@ -182,7 +161,7 @@ main()
 /*
  * Plot title
  */
-        NhlRLSetString(rlist,"lbTitleString","Default Colormap");
+        NhlRLSetString(rlist,"lbTitleString","(New) Default Colormap");
 /*
  * Title font
  */
@@ -232,6 +211,24 @@ main()
     NhlDraw(lbar);
     NhlDraw(text);
     NhlFrame(wks);
+/*
+ *  Change the colormap to the old (pre V6.1.0) default color map
+ */
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,"wkColorMap","default");
+    NhlSetValues(wks,rlist);
+
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,"lbTitleString","(Old) Default Colormap");
+    NhlRLSetInteger(rlist,"lbBoxCount",31);
+    NhlSetValues(lbar,rlist);
+/*
+ * Draw the labelbar displaying the default colormap and textual annotation
+ */
+    NhlDraw(lbar);
+    NhlDraw(text);
+    NhlFrame(wks);
+
 /*
  *  Change the colormap to one of the predefined colormaps
  */

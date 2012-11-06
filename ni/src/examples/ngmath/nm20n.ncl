@@ -222,11 +222,11 @@ begin
   txres@txFontColor = 1
   txres@txJust = "CenterLeft"
   draw_box(wks, 0.02, 0.945, 0.12, 0.955, 2, gsres)
-  gsn_text_ndc(wks, ":F22:Delaunay triangles", 0.14, 0.95, txres)
+  gsn_text_ndc(wks, "~F22~Delaunay triangles", 0.14, 0.95, txres)
   draw_box(wks, 0.02, 0.895, 0.12, 0.905, 3, gsres)
-  gsn_text_ndc(wks, ":F22:Voronoi polygons", 0.14, 0.90, txres)
+  gsn_text_ndc(wks, "~F22~Voronoi polygons", 0.14, 0.90, txres)
   draw_box(wks, 0.02, 0.845, 0.12, 0.855, 4, gsres)
-  gsn_text_ndc(wks, ":F22:Circumcircles", 0.14, 0.85, txres)
+  gsn_text_ndc(wks, "~F22~Circumcircles", 0.14, 0.85, txres)
 
   frame(wks)
 

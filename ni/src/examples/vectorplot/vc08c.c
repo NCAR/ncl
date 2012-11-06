@@ -42,7 +42,7 @@
       
 int vccolors[14] = {26,28,30,33,36,39,42,45,48,51,54,56,58,60};
 
-main()
+int main()
 {
     char const *wks_type = "x11";
     int appid,wid,vcid,vfield,mapid,txid1,txid2;
@@ -52,11 +52,11 @@ main()
  * Declare variables for getting information from netCDF file.
  */
     int vf, u_id, v_id, lon_id, lat_id;
-    int  i, flen;
+    int  i;
     long lonlen, latlen, start[4], count[4];
     ng_size_t icount[2];
     float lon[NLON], lat[NLAT];
-    char filename[256], recname[50];
+    char filename[256];
     const char *dir = _NGGetNCARGEnv("data");
     char title[256], subtitle[256], txtstring[256];
 
@@ -264,5 +264,6 @@ main()
     NhlDestroy(wid);
     NhlDestroy(appid);
     NhlClose();
+    exit(0);
 }
 

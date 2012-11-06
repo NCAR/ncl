@@ -42,7 +42,7 @@
 #define ncurve 3
 #define npts 129
 
-void main ()
+int main ()
 {
    char const *wks_type = "x11";
    int i=0, rlist, wks, appid, field1, field2, field3, xy1, xy2, xy3;
@@ -55,7 +55,6 @@ void main ()
  */
 
    FILE *x1_y3;
-   int length [ncurve], colors [3];
    float y [ncurve][npts], lon [npts], u [npts], v [npts], t [npts];
    float y1val [5] = {-90.0 , -80.0, -70.0, -60.0, -50.0};
    float y2val [6] = {10.0, 20.0, 30.0, 40.0, 50.0, 60.0};
@@ -82,8 +81,6 @@ void main ()
       fscanf (x1_y3, "%f %f %f %f", &lon[i], &u[i], &v[i], &t[i]);
       i++;
    }
-
-   close (x1_y3);
 
    for (i=0; i < npts; i++)
    {
@@ -342,4 +339,5 @@ void main ()
 
    NhlDestroy (wks);
    NhlClose();
+   exit(0);
 }

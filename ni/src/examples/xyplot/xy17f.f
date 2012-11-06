@@ -65,7 +65,7 @@ C
 C
 C  Read ASCII file xy.asc
 C
- 15   open(unit=10,file='xy.asc',status='old',form='formatted',err=105)
+      open(unit=10,file='xy.asc',status='old',form='formatted',err=105)
 
 C
 C   xy.asc has 4 vars of length 129 longitudes, lon, u, v, t
@@ -162,7 +162,8 @@ C
          call NhlFRLSetString (rlist, 'wkFileName', 
      +                         'xy17f', ierr)
          call NhlFRLSetString (rlist, 'wkFormat',wks_type,ierr) 
-         call NhlFCreate (wks,'xy17Work',NhlFCairoPSPDFWorkstationClass, 
+         call NhlFCreate (wks,'xy17Work',
+     +                    NhlFCairoPSPDFWorkstationClass, 
      +                    0, rlist, ierr)
       endif
 C
@@ -173,7 +174,8 @@ C
          call NhlFRLSetString (rlist, 'wkFileName', 
      +                         'xy17f', ierr)
          call NhlFRLSetString (rlist, 'wkFormat',wks_type,ierr) 
-         call NhlFCreate (wks,'xy17Work',NhlFCairoImageWorkstationClass, 
+         call NhlFCreate (wks,'xy17Work',
+     +                    NhlFCairoImageWorkstationClass, 
      +                    0, rlist, ierr)
       endif
 

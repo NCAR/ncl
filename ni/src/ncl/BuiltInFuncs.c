@@ -68,7 +68,6 @@ extern "C" {
 #include "FileSupport.h"
 #include "NclAtt.h"
 #include "NclList.h"
-#include "NclNewList.h"
 #include "ListSupport.h"
 #include "NclFileInterfaces.h"
 #include <signal.h>
@@ -88,6 +87,8 @@ long long local_strtoll(const char *nptr, char **endptr, int base);
 extern ng_size_t *get_dimensions(void *tmp_dimensions, int n_dimensions,
 			   NclBasicDataTypes type_dimensions,
 			   const char *);
+
+NclStackEntry _NclCreateAList(const char *buffer);
 
 /* 
  * Function to get dimension indexes via integers or dimension names. 
@@ -2354,6 +2355,9 @@ NhlErrorTypes _NclIDelete
 						}
 					}
 				}
+				else if (tmp->obj.obj_type == Ncl_MultiDValData) {
+					_NclDestroyObj((NclObj)tmp);
+				}
 			}
 		}
 		_NclDestroyObj((NclObj)data.u.data_obj);
@@ -2420,10 +2424,10 @@ NhlErrorTypes _NclIDelete
 					break;
 				default:
 					rlist = data.u.data_obj->obj.parents;
-					while(rlist != NULL) {
+					while(rlist != NULL && _NclGetObj(id) != NULL) {
 						pobj = _NclGetObj(rlist->pid);
-						_NclDelParent((NclObj)data.u.data_obj,(NclObj)pobj);
 						rlist = rlist->next;
+						_NclDelParent((NclObj)data.u.data_obj,(NclObj)pobj);
 					}
 					break;
 				}
@@ -19561,10 +19565,32 @@ NhlErrorTypes _NclIPush(void)
 	thelist = _NclGetObj(*list_id);
 
 	return(_NclListPush(thelist,theobj));
-
-
-	
 }
+
+NhlErrorTypes _NclIAppend(void)
+{
+        obj *list_id;
+        NclObj thelist = NULL;
+        NclObj theobj = NULL;
+        NclStackEntry data;
+
+        list_id = (obj*)NclGetArgValue(
+           0,
+           2,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+        data= _NclGetArg(1,2,DONT_CARE);
+        theobj = (NclObj)data.u.data_obj;
+
+        thelist = _NclGetObj(*list_id);
+
+        return(ListAppend(thelist,theobj));
+}
+	
 NhlErrorTypes _NclIPop(void)
 {
 	obj *list_id;
@@ -19612,11 +19638,7 @@ NhlErrorTypes _NclINewList( void )
 {
 	NclStackEntry data;
 	char *tmp;
-	NclList tmp_list;
-	obj *id;
-	ng_size_t one = 1;
 	int i;
-	int list_type;
 	string *tmp_string;
 	char buffer[10];
 	
@@ -19635,6 +19657,7 @@ NhlErrorTypes _NclINewList( void )
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"NewList: unknow list type.");
 		return(NhlFATAL);
 	}
+
 	buffer[4] = '\0';
 	buffer[3] = '\0';
 	for(i = 0; i < strlen(tmp); i++) {
@@ -19643,50 +19666,11 @@ NhlErrorTypes _NclINewList( void )
 			break;
 	}
 
-	data.kind = NclStk_VAL;
-
-        if(0 == strcmp("join",buffer))
-	{
-		list_type = (int) (NCL_JOIN | NCL_FIFO);
-	}
-        else if((0 == strcmp("cat",buffer)) || (0 == strcmp("concat",buffer)))
-	{
-		list_type = (int) (NCL_CONCAT | NCL_FIFO);
-	}
-        else if(0 == strcmp("fifo",buffer))
-	{
-		list_type = (int) (NCL_FIFO);
-	}
-        else if(0 == strcmp("lifo",buffer))
-	{
-		list_type = (int) (NCL_LIFO);
-	}
-        else if(0 == strcmp("vlen",buffer))
-	{
-		list_type = (int) (NCL_VLEN);
-	}
-        else if(0 == strcmp("item",buffer))
-	{
-		list_type = (int) (NCL_ITEM);
-	}
-        else if(0 == strcmp("struct",buffer))
-	{
-		list_type = (int) (NCL_STRUCT);
-	}
-        else
-	{
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"NewList: unknow list type");
-		return(NhlFATAL);
-	}
-	tmp_list =(NclList)_NclListCreate(NULL,NULL,0,0,list_type);
-	id = (obj*)NclMalloc(sizeof(obj));
-	*id = tmp_list->obj.id;
-	data.u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,id,NULL,1,&one,TEMPORARY,NULL);
-	_NclListSetType((NclObj)tmp_list,list_type);
+	data = _NclCreateAList(buffer);
 	_NclPlaceReturn(data);
 	return(NhlNOERROR);
-	
 }
+	
 NhlErrorTypes _NclIprintVarSummary( void )
 {
 	NclStackEntry data;
@@ -20022,10 +20006,6 @@ NhlErrorTypes _NclIListGetType(void)
 		ret_val[i++] = NrmStringToQuark("fifo");
 	} else if(list_type & NCL_LIFO) {
 		ret_val[i++] = NrmStringToQuark("lifo");
-	} else if(list_type & NCL_VLEN) {
-		ret_val[i++] = NrmStringToQuark("vlen");
-	} else if(list_type & NCL_ITEM) {
-		ret_val[i++] = NrmStringToQuark("item");
 	} else if(list_type & NCL_STRUCT) {
 		ret_val[i++] = NrmStringToQuark("struct");
 	}
@@ -20092,10 +20072,6 @@ NhlErrorTypes _NclIListSetType(void)
 	} else if((strcmp(buffer,"cat") == 0) || (strcmp(buffer,"concat") == 0)) {
 		_NclListSetType(thelist, NCL_CONCAT);
 	} else if(strcmp(buffer,"item") == 0) {
-		_NclListSetType(thelist, NCL_ITEM);
-	} else if(strcmp(buffer,"vlen") == 0) {
-		_NclListSetType(thelist, NCL_VLEN);
-	} else if(strcmp(buffer,"struct") == 0) {
 		_NclListSetType(thelist, NCL_STRUCT);
 	} else if(strcmp(buffer,"compound") == 0) {
 		_NclListSetType(thelist, NCL_COMPOUND);
@@ -20144,22 +20120,8 @@ NhlErrorTypes _NclIListCount(void)
 	}
 	else
 	{
-		if(0 == strcmp("NclNewListClass", theobj->obj.class_ptr->obj_class.class_name))
-		{
-			NclNewList thelist = (NclNewList) theobj;
-			ret_val[0] = (int)thelist->newlist.n_elem;
-		}
-		else if(0 == strcmp("NclListClass",theobj->obj.class_ptr->obj_class.class_name))
-		{
-			NclList thelist = (NclList) theobj;
-			ret_val[0] = (int)thelist->list.nelem;
-		}
-		else
-		{
-			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				"_NclIListCount: Cannot figure out list class."));
-			return(NhlFATAL);
-		}
+		NclList thelist = (NclList) theobj;
+		ret_val[0] = (int)thelist->list.nelem;
 	}
 
 	return(NclReturnValue(
@@ -29160,7 +29122,7 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            cur_str_len = strlen(str) + 1;
+                            cur_str_len = strlen(str);
                             if(max_str_len < cur_str_len)
                                max_str_len = cur_str_len;
                         }
@@ -29172,6 +29134,7 @@ NhlErrorTypes _NclItochar
                         NHLPERROR((NhlFATAL, errno, "tochar: memory allocation error."));
                         return NhlFATAL;
                     }
+		    memset(output, 0, total_elements*max_str_len);
 
                     if(total_elements > 1)
                     {
@@ -29199,7 +29162,6 @@ NhlErrorTypes _NclItochar
                                 output[n++] = str[j];
                             }
                         }
-                        output[n++] = '\0';
                     }
 
                     return(NclReturnValue((void*)output,

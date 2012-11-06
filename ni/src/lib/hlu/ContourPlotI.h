@@ -37,6 +37,21 @@ extern NhlErrorTypes _NhlRasterFill(
 #endif        
         );
 
+extern NhlErrorTypes _NhlMeshFill(
+#if	NhlNeedProto
+	float 		*zdat,
+	int		*cell,
+	int		ica1,
+	int		icam,
+	int		ican,
+	float		xcpf,
+	float		ycpf,
+	float		xcqf,
+	float		ycqf,
+	char		*entry_name
+#endif        
+        );
+
 extern NhlErrorTypes _NhlTriMeshRasterFill(
 #if	NhlNeedProto
 	float		*rpnt,
@@ -53,6 +68,44 @@ extern NhlErrorTypes _NhlTriMeshRasterFill(
 	char		*entry_name
 #endif        
         );
+
+extern NhlErrorTypes _NhlUnstructuredMeshFill(
+#if	NhlNeedProto
+	int             *cell,
+	int		ica1,
+	int		icam,
+	int		ican,
+	float		xcpf,
+	float		ycpf,
+	float		xcqf,
+	float		ycqf,
+	float           min_cell_size,
+	NhlBoolean      smooth,
+	char		*entry_name
+#endif
+	);
+
+
+#define NO_BOUNDS   0
+#define X_BOUNDS    1 << 0
+#define Y_BOUNDS    1 << 1
+#define X_Y_BOUNDS  X_BOUNDS | Y_BOUNDS
+
+extern NhlBoolean GetXYIn2D
+(	
+	float *xa,
+	float *ya,
+	int jc,
+	int jcm1,
+	int jcp1,
+	int i,
+	int icount,
+	int mode,
+	NhlBoolean ezmap,
+	float *xi,
+	float *yi
+	);
+
 
 
 extern NhlErrorTypes _NhlCellFill(

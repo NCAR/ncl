@@ -106,6 +106,8 @@ void
 #endif
 );
 
+extern void NclAddOpenCLBuiltInFuncs(void);
+
 void _NclFreeProcFuncInfo
 #if	NhlNeedProto
 (NclSymbol *sym)
@@ -370,6 +372,7 @@ int _NclInitSymbol
 	_NclAddBuiltIns();
 	NclAddUserBuiltInFuncs();
 	NclAddJavaBuiltInFuncs();
+	NclAddOpenCLBuiltInFuncs();
 	NclAddUserFuncs();
 	_NclAddHLUObjs();
 	NclAddUserHLUObjs();

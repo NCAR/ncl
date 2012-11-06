@@ -75,7 +75,7 @@ NhlString *station_abrev = station_arr;
  */
 char *date = "950318";
 
-main()
+int main()
 {
 /*
  * Declare variables for the HLU routine calls.

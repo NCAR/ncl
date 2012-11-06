@@ -54,7 +54,7 @@
 float ydra[NCURVE][NPTS];
 char   *cmap[NCOLORS] = {"black","white","red","green","blue","yellow"};
 
-main()
+int main()
 {
     int     appid,xworkid,plotid,dataid;
     int     rlist, i, j; 

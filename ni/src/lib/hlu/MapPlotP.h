@@ -120,6 +120,7 @@ typedef struct NhlMapPlotLayerPart {
 	NhlmpLineAttrs	geophysical;
 	NhlmpLineAttrs	us_state;
 	NhlmpLineAttrs	national;
+	NhlmpLineAttrs	county;
 
 	NhlBoolean	area_masking_on_set;
 	NhlBoolean	area_masking_on;

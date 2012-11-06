@@ -424,6 +424,7 @@ int main ()
 
     NhlDestroy (wid);
     NhlClose ();
+    exit(0);
 }
 
 /*
@@ -446,5 +447,4 @@ void get_2d_array(
     start[1] = start[2] = 0;
     count[0] = 1; count[1] = latlen; count[2] = lonlen;
     ncvarget(fid,aid,(long const *)start,(long const *)count,array);
-    return;
 }

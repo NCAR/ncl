@@ -31,9 +31,7 @@
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
 
-#define MAX(A,B)       (((A) > (B)) ? (A) : (B))
-
-main()
+int main()
 {
     int   wid, pid, rlist;
     float height, angle, dtr=0.017453292519943;

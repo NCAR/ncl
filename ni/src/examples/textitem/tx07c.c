@@ -31,7 +31,7 @@
 #include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/CairoWorkstation.h>
 
-main()
+int main()
 {
     int   i, wid, exid, labid, rlist;
     float ypos, aspect;

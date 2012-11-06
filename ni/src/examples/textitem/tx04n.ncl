@@ -188,62 +188,62 @@ draw(text_item_id)
 do i=0,11
     if (i .eq. 0)
         setvalues text_item_id
-            "txString" : ":L:A"
+            "txString" : "~L~A"
         end setvalues
     end if
     if (i .eq. 1)
         setvalues text_item_id
-            "txString" : ":IGL:A"
+            "txString" : "~IGL~A"
         end setvalues
     end if
     if (i .eq. 2)
         setvalues text_item_id
-            "txString" : "A:S:2:N:+B:S:2:N:"
+            "txString" : "A~S~2~N~+B~S~2~N~"
         end setvalues
     end if
     if (i .eq. 3)
         setvalues text_item_id
-            "txString" : "A:S:B"
+            "txString" : "A~S~B"
         end setvalues
     end if
     if (i .eq. 4)
         setvalues text_item_id
-            "txString" : "A:SPU:B"
+            "txString" : "A~SPU~B"
         end setvalues
     end if
     if (i .eq. 5)
         setvalues text_item_id
-            "txString" : ":GIU:+"
+            "txString" : "~GIU~+"
         end setvalues
     end if
     if (i .eq. 6)
         setvalues text_item_id
-            "txString" : ":1045:"
+            "txString" : "~1045~"
         end setvalues
     end if
     if (i .eq. 7)
         setvalues text_item_id
-            "txString" : "10:S:10:S:100"
+            "txString" : "10~S~10~S~100"
         end setvalues
     end if
     if (i .eq. 8)
         setvalues text_item_id
-            "txString" : "X:B1:2:S1:3"
+            "txString" : "X~B1~2~S1~3"
         end setvalues
     end if
     if (i .eq. 9)
         setvalues text_item_id
-            "txString" : "X:B1:2:S:3:N:Y:S:2"
+            "txString" : "X~B1~2~S~3~N~Y~S~2"
         end setvalues
     end if
     if (i .eq. 10)
         setvalues text_item_id
-            "txString" : "X:S:A:B:1:NN:ABC"
+            "txString" : "X~S~A~B~1~NN~ABC"
         end setvalues
     end if
     if (i .eq. 11)
         setvalues text_item_id
-            "txString" : "1.3648:L1:410:S:-13"
+            "txString" : "1.3648~L1~410~S~-13"
         end setvalues
     end if
 
@@ -263,7 +263,7 @@ do i=0,11
 ; Change function code back so result string will be drawn
 ;
     setvalues text_item_id
-        "txFuncCode" : ":"
+        "txFuncCode" : "~"
         "txPosXF" : .82
     end setvalues
 
@@ -284,7 +284,7 @@ do i=0,11
 ; Change function code back to get result string to draw
 ;
     setvalues text_item_id
-        "txFuncCode" : ":"
+        "txFuncCode" : "~"
         "txPosXF" : .82
     end setvalues
 

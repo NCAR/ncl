@@ -99,6 +99,7 @@ char *ncl_cur_func = NULL;
 %token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL NCLEXTERNAL RETURN VSBLKGET NEW
 %token <sym> OBJVAR OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP NCLTRUE NCLFALSE NCLMISSING DLIB
 %token '='
+%token REASSIGN
 %token OR
 %token XOR
 %token AND
@@ -120,6 +121,7 @@ char *ncl_cur_func = NULL;
 %token UNOP 
 %token NOT
 %right '='
+%right REASSIGN
 %left OR XOR
 %left AND
 %left GT GE LT LE EQ NE
@@ -130,7 +132,7 @@ char *ncl_cur_func = NULL;
 %left UNOP NOT
 %type <array> expr_list
 %type <listvar> list_expr_list
-%type <src_node> statement assignment 
+%type <src_node> statement assignment reassignment
 %type <src_node> procedure function_def procedure_def fp_block block do conditional
 %type <src_node> visblk statement_list
 %type <src_node> declaration identifier expr v_parent 
@@ -618,6 +620,9 @@ eoln : EOLN 						{ yyerrok; }
 
 statement :     					{ $$ = NULL; }
 	| 	assignment 				{
+								$$ = $1; 
+							}
+	| 	reassignment 				{
 								$$ = $1; 
 							}
 	|	procedure 				{
@@ -1576,12 +1581,18 @@ assignment :  identifier '=' expr		{
 						$$ = NULL;
 					}
        
-/*
-	| identifier '=' vcreate	{
+reassignment :  identifier REASSIGN expr	{
+						if($1 != NULL) {
+							((NclGenericRefNode*)$1)->ref_type = Ncl_REWRITEIT;
+							$$ = _NclMakeReassignment($1,$3);
+						} else {
+							$$ = NULL;
+						}
+						  
+					}
+	| identifier REASSIGN  error	{
 						$$ = NULL;
 					}
-*/
-;
 
 filevarselector : FVAR {
 			$$ = _NclMakeIdnExpr(_NclMakeStringExpr($1));

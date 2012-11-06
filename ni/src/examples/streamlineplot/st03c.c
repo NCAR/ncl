@@ -44,7 +44,7 @@
 #include <ncarg/hlu/MapPlot.h>
 #include <netcdf.h>
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     char const *wks_type = "x11";
     int appid, wid, dataid, stid, mpid;

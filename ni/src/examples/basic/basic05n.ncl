@@ -27,10 +27,6 @@
 
 begin
 
-; Initialize numeric labels for the labelbar annotation.
-
-colorindices = ispan(1,232,1)
-
 ;
 ; Set the display. Default is to display output to an X workstation
 ;
@@ -42,8 +38,6 @@ if (str_lower(wks_type).eq."ncgm") then
 ;
   wks = create "wks" ncgmWorkstationClass defaultapp
     "wkMetaName" : "basic05n.ncgm"
-    "wkColorMap" : "default"        ; Set Colormap to default. Note,
-                                    ; this assignment is redundant.
   end create
 end if
 if (str_lower(wks_type).eq."x11") then
@@ -52,10 +46,8 @@ if (str_lower(wks_type).eq."x11") then
 ;
   wks = create "wks" windowWorkstationClass defaultapp
     "wkPause" : "True"
-    "wkXColorMode" : "private"      ; Set color mode to private to avoid
-                                    ; contention for colors from other apps.
-    "wkColorMap" : "default"        ; Set Colormap to default. Note,
-                                    ; this assignment is redundant.
+;    "wkXColorMode" : "private"      ; Set color mode to private to avoid
+                                     ; contention for colors from other apps.
   end create
 end if
 if (str_lower(wks_type).eq."oldps") then
@@ -64,8 +56,6 @@ if (str_lower(wks_type).eq."oldps") then
 ;
   wks = create "wks" psWorkstationClass defaultapp
     "wkPSFileName" : "basic05n.ps"
-    "wkColorMap" : "default"       ; Set Colormap to default. Note,
-                                   ; this assignment is redundant.
   end create
 end if
 if (str_lower(wks_type).eq."oldpdf") then
@@ -74,8 +64,6 @@ if (str_lower(wks_type).eq."oldpdf") then
 ;
   wks = create "wks" pdfWorkstationClass defaultapp
     "wkPDFFileName" : "basic05n.pdf"
-    "wkColorMap" : "default"       ; Set Colormap to default. Note,
-                                   ; this assignment is redundant.
   end create
 end if
 if (str_lower(wks_type).eq."pdf".or.str_lower(wks_type).eq."ps") then
@@ -85,7 +73,6 @@ if (str_lower(wks_type).eq."pdf".or.str_lower(wks_type).eq."ps") then
   wks = create "wks" documentWorkstationClass defaultapp
     "wkFileName" : "basic05n"
     "wkFormat"   : wks_type
-    "wkColorMap" : "default"
   end create
 end if
 if (str_lower(wks_type).eq."png") then
@@ -95,21 +82,23 @@ if (str_lower(wks_type).eq."png") then
   wks = create "wks" imageWorkstationClass defaultapp
     "wkFileName" : "basic05n"
     "wkFormat"   : wks_type
-    "wkColorMap" : "default"
   end create
 end if
 
-; Create a labelbar object. 
 
+; Initialize numeric labels for the labelbar annotation.
+colorindices = ispan(1,255,1)
+
+; Create a labelbar object. 
 lbar = create "LabelBar" labelBarClass wks
     "lbLabelStrings" : colorindices       ; Assign the labels
     "lbLabelStride" :  5                  ; Label every 5th entry
     "lbMonoFillPattern" : True          ; Single pattern used for fill
     "lbFillPattern" : "SolidFill"         ; Set fill pattern to solid
     "lbBoxLinesOn" : False              ; Turn off lines between colors
-    "lbBoxCount" : 31                     ; Display 31 entries
+    "lbBoxCount" : 255                  ; Display 255 entries
     "lbPerimOn" : False                 ; Turn off labelbar perimeter
-    "lbTitleString" : "Default Colormap"  ; Plot title
+    "lbTitleString" : "(New) Default Colormap"  ; Plot title
     "lbTitleFont" : "Helvetica-bold"      ; Title font
     "lbLabelFont" : "Helvetica"           ; Label font
     "vpXF" : 0.                           ; Set the viewport to max size
@@ -117,6 +106,10 @@ lbar = create "LabelBar" labelBarClass wks
     "vpWidthF" : 1.
     "vpHeightF" : 1.
 end create
+delete(colorindices)
+
+; Initialize numeric labels for the labelbar annotation.
+colorindices = ispan(1,232,1)
 
 ; Create a text label
 text = create "textitem" textItemClass lbar
@@ -131,6 +124,20 @@ text = create "textitem" textItemClass lbar
 end create
 
 ; Draw the labelbar displaying the default colormap and textual annotation
+draw(lbar)
+draw(text)
+frame(wks)
+
+; Change the colormap to the old default color map
+setvalues wks
+    "wkColorMap" : "default"
+end setvalues
+setvalues lbar
+    "lbBoxCount" : 31                  ; Display 31 entries
+    "lbTitleString" : "(Old) Default Colormap"  ; Plot title
+end setvalues
+
+; Draw the labelbar displaying the old default colormap and textual annotation
 draw(lbar)
 draw(text)
 frame(wks)

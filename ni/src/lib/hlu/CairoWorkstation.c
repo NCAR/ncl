@@ -94,10 +94,10 @@ static NhlResource resourcesImageWS[] = {
         _NhlRES_NOACCESS | _NhlRES_PRIVATE, NULL},
     {NhlNwkWidth, NhlCwkWidth, NhlTInteger, sizeof (int),
         Oset(pixconfig.width), NhlTImmediate,
-        _NhlUSET((NhlPointer) 1024), _NhlRES_DEFAULT, NULL},
+        _NhlUSET((NhlPointer) 1024), _NhlRES_NOSACCESS, NULL},
     {NhlNwkHeight, NhlCwkHeight, NhlTInteger, sizeof (int),
         Oset(pixconfig.height), NhlTImmediate,
-        _NhlUSET((NhlPointer) 1024), _NhlRES_DEFAULT, NULL},
+        _NhlUSET((NhlPointer) 1024), _NhlRES_NOSACCESS, NULL},
 };
 
 static NhlResource resourcesWindowWS[] = {
@@ -446,7 +446,8 @@ CairoWorkstationClassInitialize(void) {
             {NhlCPS, "PS"},
             {NhlCPS, "NEWPS"},
             {NhlCPDF, "PDF"},
-            {NhlCPDF, "NEWPDF"}
+            {NhlCPDF, "NEWPDF"},
+            {NhlCEPS, "EPS"}
         };
 
         _NhlEnumVals imageFormats[] = {
@@ -521,6 +522,11 @@ CairoDocumentWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, 
         case NhlCPDF:
             newCairo->work.gkswkstype = CPDF;
             suffix = "pdf";
+            break;
+
+        case NhlCEPS:
+            newCairo->work.gkswkstype = CEPS;
+            suffix = "eps";
             break;
 
         default:
@@ -787,7 +793,7 @@ CairoWorkstationDestroy(NhlLayer l) {
             NhlFree(cairo->filename);
     }
 
-    if (cairo->format == NhlCPS || cairo->format  == NhlCPDF)
+    if (cairo->format == NhlCPS || cairo->format  == NhlCPDF || cairo->format == NhlCEPS)
         NhlFree(cairo->paper_size);
 
     return NhlNOERROR;

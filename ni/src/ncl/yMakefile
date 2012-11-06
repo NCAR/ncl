@@ -56,6 +56,14 @@ NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNewList.o NclNetCDF4.o NclNewO
 #else
 NETCDF4_DEFS =
 #define NETCDF4LIB
+#endif
+
+#ifdef UseNetCDF4Features
+NC4_FEATURES_DEFS = -DUSE_NETCDF4_FEATURES
+NC4_FEATURES_SRCS = NclNewFile.c NclNewGroup.c NclNetCDF4.c NclNewOGR.c
+NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNetCDF4.o NclNewOGR.o
+#else
+#define NC4_FEATURES_DEFS
 #define NC4_FEATURES_SRCS
 #define NC4_FEATURES_OBJS
 #endif
@@ -207,10 +215,11 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \
 			NclType.h \
+			NclExitCode.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
 			NclOneDValCoordData.h HLUFunctions.h \
 			NclCallBacksI.h date.h NclCCM.h NclGRIB.h NclGRIB2.h date.h tables.h \
-			ccmhdr.h editline.h editline_unix.h ListSupport.h NclList.h NclNewList.h \
+			ccmhdr.h editline.h editline_unix.h ListSupport.h NclList.h \
 			NclMultiDVallistData.h NclTypelist.h \
 			NclProf.h \
 			cptec_254_gtb.h dwd_002_gtb.h dwd_201_gtb.h dwd_202_gtb.h \
@@ -238,11 +247,12 @@ NIO_NCL_HDR_FILES = ApiRecords.h AttSupport.h DataSupport.h		\
 		NclCallBacksI.h NclCoordVar.h NclData.h NclDataDefs.h	\
 		NclGroup.h NclFile.h NclFileInterfaces.h NclFileVar.h NclGRIB.h	\
 		NclNewGroup.h NclNewFile.h NclNewFileStructure.h NclOptions.h \
-		NclGRIB2.h NclHLUObj.h NclHLUVar.h NclList.h NclNewList.h 	\
+		NclGRIB2.h NclHLUObj.h NclHLUVar.h NclList.h \
 		NclMdInc.h NclMultiDValData.h NclMultiDValData.h.sed	\
 		NclMultiDValHLUObjData.h NclMultiDVallistData.h		\
 		NclMultiDValnclfileData.h NclOneDValCoordData.h		\
 		NclType.h NclType.h.sed NclTypelist.h NclVar.h		\
+		NclExitCode.h \
 		OpsList.h Symbol.h TypeSupport.h.sed NclGrpFuncs.null	\
 		TypeSupportMatTemplate.h.sed				\
 		TypeSupportMonoOpTemplate.h.sed				\
@@ -267,7 +277,7 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		FileSupport.c Formats.c GetGrids.c InitData.c		\
 		MatMulDValOp.c.sed Memory.c MultiDValOp.c.sed NclAtt.c	\
 		NclCCM.c NclCoordVar.c NclData.c NclGroup.c NclFile.c	\
-		NclNewFile.c NclNewGroup.c NclNewList.c  \
+		NclNewFile.c NclNewGroup.c \
 		NclFileVar.c NclGRIB.c NclGRIB2.c NclHDF.c \
 		NclHDFEOS.c NclHDFEOS5.c NclNewHDF5.c \
 		NclMultiDValData.c.sed NclMultiDValnclfileData.c	\
@@ -400,6 +410,7 @@ STATIC_OBJS	=	AddBuiltIns.o AddHLUObjs.o \
 			BuiltInSupport.o BuiltInFuncs.o \
 			javaAddProto.o javaAddFuncs.o \
 			userAddProto.o userAddFuncs.o \
+			openclAddProto.o openclAddFuncs.o \
 			HLUFunctions.o yywrap.o craybin.o \
 			complete.o editline.o sysunix.o ListSupport.o \
 			NclList.o NclMultiDVallistData.o \
@@ -576,23 +587,6 @@ NclTypeRule(uint,$(NUM_OP_TMPL))
 NclTypeRule(ulong,$(NUM_OP_TMPL))
 NclTypeRule(uint64,$(NUM_OP_TMPL))
 NclTypeRule(ubyte,$(NUM_OP_TMPL))
-
-
-#if defined(CRAY)
-BuiltInFuncs.o:  BuiltInFuncs.c
-	$(CC) -g $(CFLAGS) -c BuiltInFuncs.c
-#endif
-
-#if defined(linux)
-HLUFunctions.o: HLUFunctions.c
-        $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c HLUFunctions.c
-
-Memory.o: Memory.c
-        $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c Memory.c
-
-Machine.o: Machine.c
-        $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c Machine.c
-#endif
 
 #
 # Data Format Dependencies

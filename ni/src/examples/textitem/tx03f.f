@@ -120,7 +120,7 @@ C
       call NhlFRLClear(srlist)
       call NhlFCreate(pid,'TextItems',NhlFTextItemClass,
      $        wid,srlist,ierr)
-      do 10, i=1,num_colors
+      do 10 i=1,num_colors,10
          call NhlFRLClear(srlist)
          call NhlFRLSetinteger(srlist,'txBackgroundFillColor',
      $        i,ierr)

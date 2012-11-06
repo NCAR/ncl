@@ -47,8 +47,8 @@ C
 C Explicit labels and label locations for the X Axis tickmarks
 C
       character*10 labels(7)
-      data labels/'90:S:o:N:S', '60:S:o:N:S', '30:S:o:N:S', 'EQ', 
-     1      '30:S:o:N:N', '60:S:o:N:N', '90:S:o:N:N'/
+      data labels/'90~S~o~N~S', '60~S~o~N~S', '30~S~o~N~S', 'EQ', 
+     1      '30~S~o~N~N', '60~S~o~N~N', '90~S~o~N~N'/
 
       real labellocs(7)
       data labellocs /-90.0, -60.0, -30.0, 0.0, 30.0, 60.0, 90.0/
@@ -170,7 +170,7 @@ C in the ContourPlot object.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'tiMainString',
-     1      'Profile @ 105:S:o:N:W - Frame 1',ierr)
+     1      'Profile @ 105~S~o~N~W - Frame 1',ierr)
       call NhlFRLSetinteger(rlist,'cnScalarFieldData',dataid,ierr)
       call NhlFRLSetfloat(rlist,'vpXF',0.125,ierr)
       call NhlFRLSetfloat(rlist,'vpYF',0.85,ierr)
@@ -196,7 +196,7 @@ C  the prefix 'pm' rather than 'cn'.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'tiMainString',
-     1      'Profile @ 105:S:o:N:W - Frame 2',ierr)
+     1      'Profile @ 105~S~o~N~W - Frame 2',ierr)
       call NhlFRLSetstring(rlist,'cnMonoLineColor','FALSE',ierr)
       call NhlFRLSetstring(rlist,'cnMonoLineDashPattern','FALSE',ierr)
       call NhlFRLSetstring(rlist,'pmLegendDisplayMode','always',ierr)
@@ -211,7 +211,7 @@ C Turn off line and high/low labels.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'tiMainString',
-     1      'Profile @ 105:S:o:N:W - Frame 3',ierr)
+     1      'Profile @ 105~S~o~N~W - Frame 3',ierr)
       call NhlFRLSetstring(rlist,'cnLinesOn','FALSE',ierr)
       call NhlFRLSetstring(rlist,'cnFillOn','TRUE',ierr)
       call NhlFRLSetstring(rlist,'pmLegendDisplayMode','never',ierr)
@@ -231,7 +231,7 @@ C Note the LogLinPlot needs to be told the data boundaries.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'tiMainString',
-     1      'Profile @ 105:S:o:N:W - Frame 4',ierr)
+     1      'Profile @ 105~S~o~N~W - Frame 4',ierr)
       call NhlFSetValues(cnid,rlist,ierr)
 
       call NhlFRLCreate(grlist,'GETRL')

@@ -3213,7 +3213,7 @@ static NhlErrorTypes mpOutline
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	c_mpseti("C7",mpp->national.gks_color < 0 ? 0 : mpp->national.gks_color);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-	c_mpseti("C8",mpp->national.gks_color < 0 ? 0 : mpp->national.gks_color);
+	c_mpseti("C8",mpp->county.gks_color < 0 ? 0 : mpp->county.gks_color);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
         Color = -2;
@@ -3476,7 +3476,7 @@ static void SetLineAttrs
         int color, dash_pattern;
         float thickness,dash_seglen;
         char *entry_name = "MapV41DHDrawMapList";
-
+	
         switch (type) {
             case 1:
             case 2:
@@ -3487,7 +3487,6 @@ static void SetLineAttrs
                     thickness = Mpp->geophysical.thickness;
                     break;
             case 3:
-	    case 5:
                     color = Mpp->national.gks_color;
                     dash_pattern = Mpp->national.dash_pat;
                     dash_seglen = Mpp->national.dash_seglen;
@@ -3498,6 +3497,12 @@ static void SetLineAttrs
                     dash_pattern = Mpp->us_state.dash_pat;
                     dash_seglen = Mpp->us_state.dash_seglen;
                     thickness = Mpp->us_state.thickness;
+                    break;
+	    case 5:
+                    color = Mpp->county.gks_color;
+                    dash_pattern = Mpp->county.dash_pat;
+                    dash_seglen = Mpp->county.dash_seglen;
+                    thickness = Mpp->county.thickness;
                     break;
         }
 	if (color == -1) {

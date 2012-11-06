@@ -55,7 +55,6 @@
 #include "NclFile.h"
 #include "NclNewFile.h"
 #include "NclList.h"
-#include "NclNewList.h"
 #include "NclGroup.h"
 #include "NclNewGroup.h"
 #include "NclFileInterfaces.h"

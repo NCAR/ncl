@@ -1257,8 +1257,8 @@ begin
    yBot                = 0.001
    xLeft               = 0.001
    xRight              = 0.999
-                                        ; Sylvia Murphy mods
-   if (NhlClassName(wks).eq."psWorkstationClass") then
+                                        ; psWorkStationClass for NCL v6.0.0 and earlier, documentWorkstationClass for v6.1.0 and newer
+   if (NhlClassName(wks).eq."psWorkstationClass".or.NhlClassName(wks).eq."documentWorkstationClass") then 
       getvalues wks
          "wkDeviceLowerX"   : ps_xLeft
          "wkDeviceLowerY"   : ps_yLeft
@@ -2243,8 +2243,8 @@ begin
    yBot                = 0.001
    xLeft               = 0.001
    xRight              = 0.999
-                                        ; Sylvia Murphy mods
-   if (NhlClassName(wks).eq."psWorkstationClass") then
+                                        ; psWorkStationClass for NCL v6.0.0 and earlier, documentWorkstationClass for v6.1.0 and newer
+   if (NhlClassName(wks).eq."psWorkstationClass".or.NhlClassName(wks).eq."documentWorkstationClass") then 
       getvalues wks
          "wkDeviceLowerX"   : ps_xLeft
          "wkDeviceLowerY"   : ps_yLeft

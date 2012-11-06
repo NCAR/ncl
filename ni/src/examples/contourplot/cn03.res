@@ -17,12 +17,12 @@
 *cn03Work.ContourPlot1*cnInfoLabelFont : 25
 *cn03Work.ContourPlot1*cnInfoLabelFontHeightF : .020
 *cn03Work.ContourPlot1*cnInfoLabelFontAspectF : 1.3125
-*cn03Work.ContourPlot1*cnInfoLabelString : Contour (:S:o:N:C) from $CMN$:S:o:N: to $CMX$:S:o:N: by $CIU$:S:o:N:
+*cn03Work.ContourPlot1*cnInfoLabelString : Contour (~S~o~N~C) from $CMN$~S~o~N~ to $CMX$~S~o~N~ by $CIU$~S~o~N~
 *cn03Work.ContourPlot1*cnInfoLabelPerimSpaceF : 0.5
 !
 ! LabelBar resources
 !
-*cn03Work.ContourPlot1*lbTitleString : :S:o:N:C
+*cn03Work.ContourPlot1*lbTitleString : ~S~o~N~C
 *cn03Work.ContourPlot1*lbTitleFont : 25
 *cn03Work.ContourPlot1*lbTitleFontHeightF : 0.022
 *cn03Work.ContourPlot1*lbLabelFontHeightF : 0.0135

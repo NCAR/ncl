@@ -101,6 +101,9 @@ extern void NGCALLF(dcalcuh,DCALCUH)(int *, int *, int *, int *, double *,
                                      double *, double *, double *, double *,
                                      double *, double *, double *);
 
+extern void NGCALLF(plotgrids_var,PLOTGRIDS_VAR)(char *fname, float *plotvar,
+                                                 float *pmsg, int);
+
 extern NclDimRec *get_wrf_dim_info(int,int,int,ng_size_t*);
 
 extern void var_zero(double *, ng_size_t);
@@ -10525,6 +10528,72 @@ NhlErrorTypes wrf_eth_W( void )
  * to resuscitate them.
  */
 
+
+NhlErrorTypes wrf_wps_read_nml_W( void )
+{
+
+/*
+ * Argument # 0
+ */
+  string *namelist;
+  char *cnamelist;
+/*
+ * Return variable
+ */
+  float *plotgrids_var;
+  int size_output, ndims_output;
+  ng_size_t dsizes_output[2];
+  NclScalar missing_output;
+
+/*
+ * Various
+ */
+  int NVAR=17, MAX_DOMAINS=21;
+  int ret;
+/*
+ * Get argument # 0
+ */
+  namelist = (string*)NclGetArgValue(
+           0,
+           1,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+/*
+ * Convert to character string.
+ */
+  cnamelist = NrmQuarkToString(*namelist);
+
+/* 
+ * Allocate space for output array.
+ */
+  ndims_output     = 2;
+  dsizes_output[0] = MAX_DOMAINS; 
+  dsizes_output[1] = NVAR;
+  size_output      = NVAR*MAX_DOMAINS;
+  plotgrids_var = (float*)calloc(size_output, sizeof(float));
+  if(plotgrids_var == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_read_nml: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+  missing_output.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+
+/*
+ * Call the Fortran routine.
+ */
+  NGCALLF(plotgrids_var,PLOTGRIDS_VAR)(cnamelist, plotgrids_var, 
+                                       &missing_output.floatval, 
+                                       strlen(cnamelist));
+/*
+ * Return value back to NCL script.
+ */
+  ret = NclReturnValue(plotgrids_var,ndims_output,dsizes_output,
+                       &missing_output,NCL_float,0);
+  return(ret);
+}
 
 NhlErrorTypes wrf_bint_W( void )
 {

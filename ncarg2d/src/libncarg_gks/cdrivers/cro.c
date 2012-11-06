@@ -45,7 +45,6 @@
 
 #define PI 3.1415926
 #define RINT(A) ((A) > 0 ? (int) ((A) + 0.5) : -(int) (0.5 - (A)))
-#define NUM_CONTEXT 20  /* number of allowable contexts */
 
 static const char *getFileNameRoot(int, const char*, const char*);
 static char *getRegularOutputFilename(int, const char*, const char*, const char*);
@@ -74,42 +73,49 @@ extern void croFreeNativeSurface(cairo_surface_t* surface);
 extern void croActivateX11(CROddp* psa, cairo_surface_t* surface);
 
 /*
- *  Globals
+ *  Functions and globals for mapping workstation IDs into indices for the
+ *  cairo context and surface arrays.
  */
+#define NUM_CONTEXT 20  /* number of allowable contexts */
+static int contextNum = 0;
+static cairo_surface_t *cairoSurfaces[NUM_CONTEXT];
+static cairo_t         *cairoContexts[NUM_CONTEXT];
+static int             cairoEnvIndices[NUM_CONTEXT];
 
-/*
- *  Functions for mapping workstation IDs into indices for the
- *  cario_context array.
- */
-int context_num = 0;
-cairo_surface_t *cairo_surface[NUM_CONTEXT];
-cairo_t         *cairo_context[NUM_CONTEXT];
-int             context_indices[NUM_CONTEXT];
-
-static int context_index(int wkid) {
+static int getCairoEnvIndex(int wksId) {
     int i;
     for (i = 0; i < NUM_CONTEXT; i++) {
-        if (context_indices[i] == wkid) {
+        if (cairoEnvIndices[i] == wksId) {
             return i;
         }
     }
 }
 
-static void add_context_index(int cindex, int wkid) {
-    context_indices[cindex] = wkid;
-    cindex++;
+static cairo_t* getContext(int wksId) {
+    return cairoContexts[getCairoEnvIndex(wksId)];
 }
 
-static void remove_context(int wkid) {
+static cairo_surface_t* getSurface(int wksId) {
+    return cairoSurfaces[getCairoEnvIndex(wksId)];    
+}
+
+static void saveCairoEnv(int wksId, cairo_t* context, cairo_surface_t* surface) {
+    cairoEnvIndices[contextNum] = wksId;
+    cairoContexts[contextNum] = context;
+    cairoSurfaces[contextNum] = surface;
+    ++contextNum;
+}
+
+static void removeCairoEnv(int wkid) {
     int i;
-    int index = context_index(wkid);
-    for (i=index+1; i<context_num; i++) {
-        cairo_surface[i-1] = cairo_surface[i];
-        cairo_context[i-1] = cairo_context[i];
-        context_indices[i-1] = context_indices[i];
+    int index = getCairoEnvIndex(wkid);
+    for (i=index+1; i<contextNum; i++) {
+        cairoSurfaces[i-1] = cairoSurfaces[i];
+        cairoContexts[i-1] = cairoContexts[i];
+        cairoEnvIndices[i-1] = cairoEnvIndices[i];
     }
 
-    --context_num;
+    --contextNum;
 }
 
 /*
@@ -128,76 +134,69 @@ void CROpict_init(GKSC *gksc) {
     if (getenv("CRO_TRACE")) {
         printf("Got to CROpict_init\n");
     }
+    
+    cairo_t* context = getContext(psa->wks_id);
 
     /*
      *  Get the background color and set the source to the background color.
      */
     cval = unpack_argb(psa->ctable, 0);
-    cairo_set_source_rgba(cairo_context[context_index(psa->wks_id)], cval.red,
-            cval.green, cval.blue, cval.alpha);
+    cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, cval.alpha);
 
     /* NOTE: This is likely not quite right, but I don't understand the use of the clipping rectangle below. In any case,
      * the code that does the Right Thing for PS/PDF does not result in a complete fill for image-based formats,
      * so we proceed differently  --RLB
      */
-    if (psa->wks_type == CPS || psa->wks_type == CPDF) {
+    if (psa->wks_type == CPS || psa->wks_type == CPDF || psa->wks_type == CEPS) {
         double xl, yt, xr, yb;
 
         /*
          *  Save the current clip extents and reset the clipping rectangle to max.
          */
-        cairo_clip_extents(cairo_context[context_index(psa->wks_id)], &xl, &yt,
-                &xr, &yb);
-        cairo_reset_clip(cairo_context[context_index(psa->wks_id)]);
+        cairo_clip_extents(context, &xl, &yt, &xr, &yb);
+        cairo_reset_clip(context);
 
         /*
          *  Set the clipping rectangle to the surface area.
          */
-        cairo_move_to(cairo_context[context_index(psa->wks_id)], 0., 0.);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)],
-                psa->dspace.urx - psa->dspace.llx, 0.);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)],
-                psa->dspace.urx - psa->dspace.llx, psa->dspace.ury
-                        - psa->dspace.lly);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], 0.,
+        cairo_move_to(context, 0., 0.);
+        cairo_line_to(context, psa->dspace.urx - psa->dspace.llx, 0.);
+        cairo_line_to(context, psa->dspace.urx - psa->dspace.llx, 
                 psa->dspace.ury - psa->dspace.lly);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], 0., 0.);
-        cairo_clip(cairo_context[context_index(psa->wks_id)]);
+        cairo_line_to(context, 0., psa->dspace.ury - psa->dspace.lly);
+        cairo_line_to(context, 0., 0.);
+        cairo_clip(context);
 
         /*
          *  Fill the surface clip region with the background color.
          */
-        cairo_move_to(cairo_context[context_index(psa->wks_id)], 0., 0.);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)],
-                psa->dspace.urx - psa->dspace.llx, 0.);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)],
-                psa->dspace.urx - psa->dspace.llx, psa->dspace.ury
-                        - psa->dspace.lly);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], 0.,
+        cairo_move_to(context, 0., 0.);
+        cairo_line_to(context, psa->dspace.urx - psa->dspace.llx, 0.);
+        cairo_line_to(context, psa->dspace.urx - psa->dspace.llx, 
                 psa->dspace.ury - psa->dspace.lly);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], 0., 0.);
+        cairo_line_to(context, 0., psa->dspace.ury - psa->dspace.lly);
+        cairo_line_to(context, 0., 0.);
 
-        cairo_fill(cairo_context[context_index(psa->wks_id)]);
+        cairo_fill(context);
 
         /*
          *  Restore the clipping rectangle to what it was on entry.
          *  cairo_clip clears the path.
          */
-        cairo_move_to(cairo_context[context_index(psa->wks_id)], xl, yt);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], xr, yt);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], xr, yb);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], xl, yb);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], xl, yt);
-        cairo_clip(cairo_context[context_index(psa->wks_id)]);
+        cairo_move_to(context, xl, yt);
+        cairo_line_to(context, xr, yt);
+        cairo_line_to(context, xr, yb);
+        cairo_line_to(context, xl, yb);
+        cairo_line_to(context, xl, yt);
+        cairo_clip(context);
     } else {
         /* code for image-based formats */
-        cairo_save(cairo_context[context_index(psa->wks_id)]);
-        cairo_reset_clip(cairo_context[context_index(psa->wks_id)]);
-        cairo_identity_matrix(cairo_context[context_index(psa->wks_id)]);
-        cairo_rectangle(cairo_context[context_index(psa->wks_id)], 0, 0,
-                psa->image_width, psa->image_height);
-        cairo_fill(cairo_context[context_index(psa->wks_id)]);
-        cairo_restore(cairo_context[context_index(psa->wks_id)]);
+        cairo_save(context);
+        cairo_reset_clip(context);
+        cairo_identity_matrix(context);
+        cairo_rectangle(context, 0, 0, psa->image_width, psa->image_height);
+        cairo_fill(context);
+        cairo_restore(context);
     }
 
     psa->pict_empty = FALSE;
@@ -216,24 +215,26 @@ void CROset_dashpattern(CROddp *psa) {
     if (getenv("CRO_TRACE")) {
         printf("Got to CRset_dashpattern\n");
     }
+    
+    cairo_t* context = getContext(psa->wks_id);
 
     dash_size = 6. * nominal_dash_size;
     dot_size = 1. * nominal_dash_size;
     gap_size = 4. * nominal_dash_size;
     switch (psa->attributes.linetype) {
     case SOLID_LINE:
-        cairo_set_dash(cairo_context[context_index(psa->wks_id)], dashes, 0, 0.);
+        cairo_set_dash(context, dashes, 0, 0.);
         break;
     case DASHED_LINE:
         dashes = (double *) calloc(2, sizeof(double));
         *dashes = (double) dash_size;
         *(dashes + 1) = (double) gap_size;
-        cairo_set_dash(cairo_context[context_index(psa->wks_id)], dashes, 2, 0.);
+        cairo_set_dash(context, dashes, 2, 0.);
         break;
     case DOTTED_LINE:
         dashes = (double *) calloc(1, sizeof(double));
         *dashes = (double) dot_size;
-        cairo_set_dash(cairo_context[context_index(psa->wks_id)], dashes, 1, 0.);
+        cairo_set_dash(context, dashes, 1, 0.);
         break;
     case DASH_DOT_LINE:
         dashes = (double *) calloc(4, sizeof(double));
@@ -241,7 +242,7 @@ void CROset_dashpattern(CROddp *psa) {
         *(dashes + 1) = (double) gap_size;
         *(dashes + 2) = (double) dot_size;
         *(dashes + 3) = (double) gap_size;
-        cairo_set_dash(cairo_context[context_index(psa->wks_id)], dashes, 4, 0.);
+        cairo_set_dash(context, dashes, 4, 0.);
         break;
     case DASH_DOT_DOT_LINE:
         dashes = (double *) calloc(3, sizeof(double));
@@ -251,10 +252,10 @@ void CROset_dashpattern(CROddp *psa) {
         *(dashes + 3) = (double) gap_size;
         *(dashes + 4) = (double) dot_size;
         *(dashes + 5) = (double) gap_size;
-        cairo_set_dash(cairo_context[context_index(psa->wks_id)], dashes, 6, 0.);
+        cairo_set_dash(context, dashes, 6, 0.);
         break;
     default:
-        cairo_set_dash(cairo_context[context_index(psa->wks_id)], dashes, 0, 0.);
+        cairo_set_dash(context, dashes, 0, 0.);
         break;
     }
     free(dashes);
@@ -268,7 +269,7 @@ CROClipRect GetCROClipping(CROddp *psa) {
     static CROClipRect rect;
 
     double x1, y1, x2, y2;
-    cairo_clip_extents(cairo_context[context_index(psa->wks_id)], &x1, &y1,
+    cairo_clip_extents(getContext(psa->wks_id), &x1, &y1,
             &x2, &y2);
     rect.llx = x1;
     rect.urx = x2;
@@ -287,7 +288,7 @@ int cro_ActivateWorkstation(GKSC *gksc) {
     }
 
     if (psa->wks_type == CX11) {
-      croActivateX11(psa, cairo_surface[context_index(psa->wks_id)]);
+      croActivateX11(psa, getSurface(psa->wks_id));
       setSurfaceTransform(psa);
     }
 
@@ -414,11 +415,13 @@ int cro_Cellarray(GKSC *gksc) {
     if (getenv("CRO_TRACE")) {
         printf("Got to cro_Cellarray\n");
     }
+    
+    cairo_t* context = getContext(psa->wks_id);
 
     /*
      *  Save current color.
      */
-    pattern = cairo_get_source(cairo_context[context_index(psa->wks_id)]);
+    pattern = cairo_get_source(context);
     if (cairo_pattern_get_rgba(pattern, &tred, &tgreen, &tblue, &talpha)
             != CAIRO_STATUS_SUCCESS) {
         printf("cro_Text: can only retrieve current color for solid patterns\n");
@@ -466,9 +469,8 @@ int cro_Cellarray(GKSC *gksc) {
             image_width, image_height, 4* image_width );
     stat = cairo_surface_status(cell_image);
 
-    cairo_set_source_surface(cairo_context[context_index(psa->wks_id)],
-            cell_image, x_offset, y_offset);
-    cairo_paint(cairo_context[context_index(psa->wks_id)]);
+    cairo_set_source_surface(context, cell_image, x_offset, y_offset);
+    cairo_paint(context);
 
     /* free up resources need to create the cairo_surface... */
     cairo_surface_finish(cell_image);
@@ -480,8 +482,7 @@ int cro_Cellarray(GKSC *gksc) {
     /*
      *  Restore color.
      */
-    cairo_set_source_rgba(cairo_context[context_index(psa->wks_id)], cval.red,
-            cval.green, cval.blue, cval.alpha);
+    cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, cval.alpha);
     return (0);
 }
 
@@ -497,33 +498,35 @@ int cro_ClearWorkstation(GKSC *gksc) {
     CROddp *psa;
     psa = (CROddp *) gksc->ddp;
 
-    cairo_stroke(cairo_context[context_index(psa->wks_id)]);
-    cairo_show_page(cairo_context[context_index(psa->wks_id)]);
+    cairo_t* context = getContext(psa->wks_id);
+    
+    cairo_stroke(context);
+    cairo_show_page(context);
 
-    if (psa->wks_type == CPS || psa->wks_type == CPDF) {
-        cairo_surface_flush(cairo_surface[context_index(psa->wks_id)]);
+    if (psa->wks_type == CPS || psa->wks_type == CPDF || psa->wks_type == CEPS) {
+        cairo_surface_flush(getSurface(psa->wks_id));
 
     }
     else if (psa->wks_type == CPNG) {
         outputFile = getIndexedOutputFilename(psa->wks_id, psa->output_file, psa->frame_count,
             "NCARG_GKS_CPNGOUTPUT", ".png");
-        ret = cairo_surface_write_to_png(cairo_surface[context_index(psa->wks_id)],
-                outputFile);
+        ret = cairo_surface_write_to_png(getSurface(psa->wks_id), outputFile);
         if (ret != 0)
             ret = ERR_CRO_OPN;
         psa->frame_count++;
         free(outputFile);
     }
-#if 0
-    else if (psa->wks_type == CDPY) {
-    	croX11Pause(cairo_surface[context_index(psa->wks_id)]);
+
+#ifdef __JIRA1530__ 
+    else if (psa->wks_type == CX11) {
+        cairo_push_group(context);
     }
 #endif
 
     else if (psa->wks_type == CTIFF) {
         outputFile = getIndexedOutputFilename(psa->wks_id, psa->output_file, psa->frame_count,
             "NCARG_GKS_CTIFFOUTPUT", ".tif");
-        ret = crotiff_writeImage(outputFile, cairo_surface[context_index(psa->wks_id)]);
+        ret = crotiff_writeImage(outputFile, getSurface(psa->wks_id));
         psa->frame_count++;
         free(outputFile);
     }
@@ -549,10 +552,10 @@ int cro_CloseWorkstation(GKSC *gksc) {
         free(psa->ctable);
 
     if (psa->wks_type == CX11)
-        croFreeNativeSurface(cairo_surface[context_index(psa->wks_id)]);
+        croFreeNativeSurface(getSurface(psa->wks_id));
 
-    cairo_destroy(cairo_context[context_index(psa->wks_id)]);
-    remove_context(psa->wks_id);
+    cairo_destroy(getContext(psa->wks_id));
+    removeCairoEnv(psa->wks_id);
     free(psa);
 
     return (0);
@@ -638,7 +641,11 @@ int cro_Esc(GKSC *gksc) {
 
     case ESCAPE_PAUSE:
         if (psa->wks_type == CX11) {
-            croX11Pause(cairo_surface[context_index(psa->wks_id)]);
+#ifdef __JIRA1530__ 
+          cairo_pop_group_to_source(getContext(psa->wks_id));
+          cairo_paint(getContext(psa->wks_id));
+#endif
+          croX11Pause(getSurface(psa->wks_id));
         }
         break;
         
@@ -702,120 +709,120 @@ int cro_FillArea(GKSC *gksc) {
         printf("Got to cro_FillArea\n");
     }
 
-    clwidth = (float) cairo_get_line_width(cairo_context[context_index(
-            psa->wks_id)]);
+    cairo_t* context = getContext(psa->wks_id);
+    
+    clwidth = (float) cairo_get_line_width(context);
 
     if (psa->pict_empty) {
         CROpict_init(gksc);
     }
 
-    cairo_set_line_width(cairo_context[context_index(psa->wks_id)], 1.1
-            * (psa->dspace.yspan) * (psa->sfill_spacing));
+    cairo_set_line_width(context, 1.1 * (psa->dspace.yspan) * (psa->sfill_spacing));
 
     cval = unpack_argb(psa->ctable, psa->attributes.fill_colr_ind);
-    cairo_set_source_rgba(cairo_context[context_index(psa->wks_id)], cval.red,
-            cval.green, cval.blue, ALPHA_BLEND(cval.alpha, psa->attributes.fill_alpha));
+    cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, 
+            ALPHA_BLEND(cval.alpha, psa->attributes.fill_alpha));
 
     switch (psa->attributes.fill_int_style) {
     case HOLLOW_FILL: /* Put out polyline */
-        cairo_move_to(cairo_context[context_index(psa->wks_id)], pptr[0].x
-                * (float) psa->dspace.xspan, pptr[0].y
-                * (float) psa->dspace.yspan);
+        cairo_move_to(context, 
+                pptr[0].x * (float) psa->dspace.xspan, 
+                pptr[0].y * (float) psa->dspace.yspan);
         for (i = 1; i < npoints; i++) {
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], pptr[i].x
-                    * (float) psa->dspace.xspan, pptr[i].y
-                    * (float) psa->dspace.yspan);
+            cairo_line_to(context, 
+                    pptr[i].x * (float) psa->dspace.xspan, 
+                    pptr[i].y * (float) psa->dspace.yspan);
         }
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], pptr[0].x
-                * (float) psa->dspace.xspan, pptr[0].y
-                * (float) psa->dspace.yspan);
-        cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+        cairo_line_to(context, 
+                pptr[0].x * (float) psa->dspace.xspan, 
+                pptr[0].y * (float) psa->dspace.yspan);
+        cairo_stroke(context);
         break;
     case SOLID_FILL:
-        cairo_move_to(cairo_context[context_index(psa->wks_id)], pptr[0].x
-                * (double) psa->dspace.xspan, pptr[0].y
-                * (double) psa->dspace.yspan);
+        cairo_move_to(context, 
+                pptr[0].x * (double) psa->dspace.xspan, 
+                pptr[0].y * (double) psa->dspace.yspan);
         for (i = 1; i < npoints; i++) {
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], pptr[i].x
-                    * (double) psa->dspace.xspan, pptr[i].y
-                    * (double) psa->dspace.yspan);
+            cairo_line_to(context, 
+                    pptr[i].x * (double) psa->dspace.xspan, 
+                    pptr[i].y * (double) psa->dspace.yspan);
         }
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], pptr[0].x
-                * (double) psa->dspace.xspan, pptr[0].y
-                * (double) psa->dspace.yspan);
-        cairo_fill(cairo_context[context_index(psa->wks_id)]);
+        cairo_line_to(context, 
+                pptr[0].x * (double) psa->dspace.xspan, 
+                pptr[0].y * (double) psa->dspace.yspan);
+        cairo_fill(context);
         break;
     case PATTERN_FILL: /* currently not implemented, issue polyline */
-        cairo_move_to(cairo_context[context_index(psa->wks_id)], pptr[0].x
-                * (float) psa->dspace.xspan, pptr[0].y
-                * (float) psa->dspace.yspan);
+        cairo_move_to(context, 
+                pptr[0].x * (float) psa->dspace.xspan, 
+                pptr[0].y * (float) psa->dspace.yspan);
         for (i = 1; i < npoints; i++) {
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], pptr[i].x
-                    * (float) psa->dspace.xspan, pptr[i].y
-                    * (float) psa->dspace.yspan);
+            cairo_line_to(context, 
+                    pptr[i].x * (float) psa->dspace.xspan, 
+                    pptr[i].y * (float) psa->dspace.yspan);
         }
-        cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+        cairo_stroke(context);
         break;
     case HATCH_FILL:
         switch (psa->attributes.fill_style_ind) {
         case HORIZONTAL_HATCH:
             cro_SoftFill(gksc, 0., psa->hatch_spacing);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_stroke(context);
             break;
         case VERTICAL_HATCH:
             cro_SoftFill(gksc, 90., psa->hatch_spacing);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_stroke(context);
             break;
         case POSITIVE_HATCH:
             cro_SoftFill(gksc, 45., psa->hatch_spacing);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_stroke(context);
             break;
         case NEGATIVE_HATCH:
             cro_SoftFill(gksc, 135., psa->hatch_spacing);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_stroke(context);
             break;
         case HORIZ_VERT_HATCH:
             cro_SoftFill(gksc, 0., psa->hatch_spacing);
             cro_SoftFill(gksc, 90., psa->hatch_spacing);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_stroke(context);
             break;
         case POS_NEG_HATCH:
             cro_SoftFill(gksc, 45., psa->hatch_spacing);
             cro_SoftFill(gksc, 135., psa->hatch_spacing);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_stroke(context);
             break;
         default:
-            cairo_move_to(cairo_context[context_index(psa->wks_id)], pptr[0].x
-                    * (float) psa->dspace.xspan, pptr[0].y
-                    * (float) psa->dspace.yspan);
+            cairo_move_to(context, 
+                    pptr[0].x * (float) psa->dspace.xspan, 
+                    pptr[0].y * (float) psa->dspace.yspan);
             for (i = 1; i < npoints; i++) {
-                cairo_line_to(cairo_context[context_index(psa->wks_id)],
-                        pptr[i].x * (float) psa->dspace.xspan, pptr[i].y
-                                * (float) psa->dspace.yspan);
+                cairo_line_to(context,
+                        pptr[i].x * (float) psa->dspace.xspan, 
+                        pptr[i].y * (float) psa->dspace.yspan);
             }
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], pptr[0].x
-                    * (float) psa->dspace.xspan, pptr[0].y
-                    * (float) psa->dspace.yspan);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_line_to(context, 
+                    pptr[0].x * (float) psa->dspace.xspan, 
+                    pptr[0].y * (float) psa->dspace.yspan);
+            cairo_stroke(context);
             break;
         }
         break;
     default:
-        cairo_move_to(cairo_context[context_index(psa->wks_id)], pptr[0].x
-                * (float) psa->dspace.xspan, pptr[0].y
-                * (float) psa->dspace.yspan);
+        cairo_move_to(context, 
+                pptr[0].x * (float) psa->dspace.xspan, 
+                pptr[0].y * (float) psa->dspace.yspan);
         for (i = 1; i < npoints; i++) {
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], pptr[i].x
-                    * (float) psa->dspace.xspan, pptr[i].y
-                    * (float) psa->dspace.yspan);
+            cairo_line_to(context, 
+                    pptr[i].x * (float) psa->dspace.xspan, 
+                    pptr[i].y * (float) psa->dspace.yspan);
         }
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], pptr[0].x
-                * (float) psa->dspace.xspan, pptr[0].y
-                * (float) psa->dspace.yspan);
-        cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+        cairo_line_to(context, 
+                pptr[0].x * (float) psa->dspace.xspan, 
+                pptr[0].y * (float) psa->dspace.yspan);
+        cairo_stroke(context);
         break;
     }
-    cairo_set_line_width(cairo_context[context_index(psa->wks_id)], clwidth);
+    cairo_set_line_width(context, clwidth);
     return (0);
 }
 
@@ -882,16 +889,20 @@ int cro_OpenWorkstation(GKSC *gksc) {
 
     CROinit(psa, pint + 2); /* Initialize local data. */
 
-    if (psa->wks_type == CPS) {
+    cairo_t*         context;
+    cairo_surface_t* surface;
+    if (psa->wks_type == CPS || psa->wks_type == CEPS) {
         /*
          *  Create a Postscript workstation.
          */
-        psa->output_file = getRegularOutputFilename(psa->wks_id, sptr, "NCARG_GKS_CPSOUTPUT", ".ps");
-        cairo_surface[context_num] = cairo_ps_surface_create(psa->output_file,
-                psa->paper_width, psa->paper_height);
-        cairo_ps_surface_set_size(cairo_surface[context_num], psa->paper_width, psa->paper_height);
-        cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
-        add_context_index(context_num, orig_wks_id);
+        psa->output_file = getRegularOutputFilename(psa->wks_id, sptr, "NCARG_GKS_CPSOUTPUT", 
+                (psa->wks_type == CPS) ? ".ps" : ".eps");
+        surface = cairo_ps_surface_create(psa->output_file,psa->paper_width, psa->paper_height);
+        if (psa->wks_type == CEPS)
+            cairo_ps_surface_set_eps(surface, TRUE);
+        cairo_ps_surface_set_size(surface, psa->paper_width, psa->paper_height);
+        context = cairo_create(surface);
+        saveCairoEnv(orig_wks_id, context, surface);
         psa->orientation = PORTRAIT;
     }
 
@@ -900,10 +911,9 @@ int cro_OpenWorkstation(GKSC *gksc) {
          *  Create a PDF workstation.
          */
         psa->output_file = getRegularOutputFilename(psa->wks_id, sptr, "NCARG_GKS_CPDFOUTPUT", ".pdf");
-        cairo_surface[context_num] = cairo_pdf_surface_create(psa->output_file,
-                psa->paper_width, psa->paper_height);
-        cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
-        add_context_index(context_num, orig_wks_id);
+        surface = cairo_pdf_surface_create(psa->output_file, psa->paper_width, psa->paper_height);
+        context = cairo_create(surface);
+        saveCairoEnv(orig_wks_id, context, surface);
         psa->orientation = PORTRAIT;
     }
 
@@ -911,10 +921,9 @@ int cro_OpenWorkstation(GKSC *gksc) {
         /*
          *  Create a PNG workstation.
          */
-        cairo_surface[context_num] = cairo_image_surface_create(
-                CAIRO_FORMAT_ARGB32, psa->image_width, psa->image_height);
-        cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
-        add_context_index(context_num, orig_wks_id);
+        surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, psa->image_width, psa->image_height);
+        context = cairo_create(surface);
+        saveCairoEnv(orig_wks_id, context, surface);
         psa->output_file = (char*) malloc(strlen(sptr) + 1);
         strcpy(psa->output_file, sptr);
     }
@@ -923,53 +932,50 @@ int cro_OpenWorkstation(GKSC *gksc) {
         /*
          *  Create a (geo)Tiff workstation.
          */
-        cairo_surface[context_num] = cairo_image_surface_create(
-                CAIRO_FORMAT_ARGB32, psa->image_width, psa->image_height);
-        cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
-        add_context_index(context_num, orig_wks_id);
+        surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, psa->image_width, psa->image_height);
+        context = cairo_create(surface);
+        saveCairoEnv(orig_wks_id, context, surface);
         psa->output_file = (char*) malloc(strlen(sptr) + 1);
         strcpy(psa->output_file, sptr);
     }
 
     else if (psa->wks_type == CX11) {
-        cairo_surface[context_num] = croCreateNativeDisplaySurface(psa);
-        cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
-        add_context_index(context_num, orig_wks_id);
-        psa->image_width = cairo_xlib_surface_get_width(cairo_surface[context_num]);
-        psa->image_height = cairo_xlib_surface_get_height(
-                cairo_surface[context_num]);
+        surface= croCreateNativeDisplaySurface(psa);
+        if (surface == NULL)
+            return (ERR_NO_DISPLAY);
+        context = cairo_create(surface);
+        saveCairoEnv(orig_wks_id, context, surface);
+        psa->image_width = cairo_xlib_surface_get_width(surface);
+        psa->image_height = cairo_xlib_surface_get_height(surface);
     }
 
     /*
      *  Set fill rule to even/odd.
      */
-    cairo_set_fill_rule(cairo_context[context_num], CAIRO_FILL_RULE_EVEN_ODD);
+    cairo_set_fill_rule(context, CAIRO_FILL_RULE_EVEN_ODD);
 
     /*
      *  Set default line cap and line join to round.
      */
-    cairo_set_line_cap(cairo_context[context_num], CAIRO_LINE_CAP_ROUND);
-    cairo_set_line_join(cairo_context[context_num], CAIRO_LINE_JOIN_ROUND);
-    cairo_surface_destroy(cairo_surface[context_num]);
+    cairo_set_line_cap(context, CAIRO_LINE_CAP_ROUND);
+    cairo_set_line_join(context, CAIRO_LINE_JOIN_ROUND);
+    cairo_surface_destroy(surface);
 
     /*
      *  Set the default linewidth.
      */
-    cairo_set_line_width(cairo_context[context_num], psa->attributes.linewidth);
+    cairo_set_line_width(context, psa->attributes.linewidth);
 
     /*
      *  Set clipping rectangle to max.
      */
-    cairo_new_path(cairo_context[context_num]);
-    cairo_move_to(cairo_context[context_num], psa->dspace.llx, psa->dspace.lly);
-    cairo_line_to(cairo_context[context_num], psa->dspace.llx
-            + psa->dspace.xspan, psa->dspace.lly);
-    cairo_line_to(cairo_context[context_num], psa->dspace.llx
-            + psa->dspace.xspan, psa->dspace.lly + psa->dspace.yspan);
-    cairo_line_to(cairo_context[context_num], psa->dspace.llx, psa->dspace.lly
-            + psa->dspace.yspan);
-    cairo_line_to(cairo_context[context_num], psa->dspace.llx, psa->dspace.lly);
-    cairo_clip(cairo_context[context_num]);
+    cairo_new_path(context);
+    cairo_move_to(context, psa->dspace.llx, psa->dspace.lly);
+    cairo_line_to(context, psa->dspace.llx + psa->dspace.xspan, psa->dspace.lly);
+    cairo_line_to(context, psa->dspace.llx + psa->dspace.xspan, psa->dspace.lly + psa->dspace.yspan);
+    cairo_line_to(context, psa->dspace.llx, psa->dspace.lly + psa->dspace.yspan);
+    cairo_line_to(context, psa->dspace.llx, psa->dspace.lly);
+    cairo_clip(context);
 
     rect = GetCROClipping(psa);
 
@@ -990,9 +996,17 @@ int cro_OpenWorkstation(GKSC *gksc) {
     /*
      *  Select the foreground color.
      */
-    cairo_set_source_rgba(cairo_context[context_num], 0., 0., 0., 1.);
+    cairo_set_source_rgba(context, 0., 0., 0., 1.);
 
-    context_num++;
+#ifdef __JIRA1530__   
+        /* Jira NCL-1530:  this is a work-around between a buggy interaction with XQuartz 2.7.x
+         * and cairo. We do this last to preserve the graphics-state set in the previous
+         * lines.    9/20/2012  RLB
+         */
+    if (psa->wks_type == CX11) {
+        cairo_push_group(context);
+    }
+#endif
 
     return (0);
 }
@@ -1013,44 +1027,40 @@ int cro_Polyline(GKSC *gksc) {
         CROpict_init(gksc);
     }
 
+    cairo_t* context = getContext(psa->wks_id);
     /*
      *  Set the dash pattern based on the line type.
      */
     cval = unpack_argb(psa->ctable, psa->attributes.line_colr_ind);
-    cairo_set_source_rgba(cairo_context[context_index(psa->wks_id)], cval.red,
-            cval.green, cval.blue, ALPHA_BLEND(cval.alpha, psa->attributes.line_alpha));
+    cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, 
+            ALPHA_BLEND(cval.alpha, psa->attributes.line_alpha));
 
-    cairo_set_line_width(cairo_context[context_index(psa->wks_id)],
-            (psa->nominal_width_scale) * (psa->attributes.linewidth));
-    cairo_new_sub_path(cairo_context[context_index(psa->wks_id)]);
+    cairo_set_line_width(context, (psa->nominal_width_scale) * (psa->attributes.linewidth));
+    cairo_new_sub_path(context);
 
     /*
      *  Use butt ends if not solid line.
      */
     ginq_linetype(&ier, &ltype);
     if (ltype != 1) {
-        cairo_set_line_cap(cairo_context[context_index(psa->wks_id)],
-                CAIRO_LINE_CAP_BUTT);
+        cairo_set_line_cap(context, CAIRO_LINE_CAP_BUTT);
     } else {
-        cairo_set_line_cap(cairo_context[context_index(psa->wks_id)],
-                CAIRO_LINE_CAP_ROUND);
+        cairo_set_line_cap(context, CAIRO_LINE_CAP_ROUND);
     }
     CROset_dashpattern(psa);
 
-    cairo_move_to(cairo_context[context_index(psa->wks_id)], pptr[0].x
-            * (float) psa->dspace.xspan, pptr[0].y * (float) psa->dspace.yspan);
+    cairo_move_to(context, pptr[0].x * (float) psa->dspace.xspan, pptr[0].y * (float) psa->dspace.yspan);
     for (i = 1; i < npoints; i++) {
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], pptr[i].x
-                * (float) psa->dspace.xspan, pptr[i].y
-                * (float) psa->dspace.yspan);
+        cairo_line_to(context, 
+                pptr[i].x * (float) psa->dspace.xspan, 
+                pptr[i].y * (float) psa->dspace.yspan);
     }
-    cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+    cairo_stroke(context);
 
     /*
      *  Set line cap back to round in case it was changed.
      */
-    cairo_set_line_cap(cairo_context[context_index(psa->wks_id)],
-            CAIRO_LINE_CAP_ROUND);
+    cairo_set_line_cap(context, CAIRO_LINE_CAP_ROUND);
 
     return (0);
 }
@@ -1074,6 +1084,8 @@ int cro_Polymarker(GKSC *gksc) {
     if (psa->pict_empty) {
         CROpict_init(gksc);
     }
+    
+    cairo_t* context = getContext(psa->wks_id);
 
     marker_type = psa->attributes.marker_type;
     marker_size = ((psa->transform.y_scale) * (psa->attributes.marker_size));
@@ -1085,21 +1097,18 @@ int cro_Polymarker(GKSC *gksc) {
      */
     current_line_color = psa->attributes.line_colr_ind;
     cval = unpack_argb(psa->ctable, psa->attributes.marker_colr_ind);
-    cairo_set_source_rgba(cairo_context[context_index(psa->wks_id)], cval.red,
-            cval.green, cval.blue, ALPHA_BLEND(cval.alpha, psa->attributes.marker_alpha));
+    cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, 
+            ALPHA_BLEND(cval.alpha, psa->attributes.marker_alpha));
 
     /*
      *  Get the current setting for line cap and set it to round so that
      *  a dot will be drawn in the degenerate case.  Do the same for
      *  linewidth.
      */
-    orig_cap_type = cairo_get_line_cap(
-            cairo_context[context_index(psa->wks_id)]);
-    cairo_set_line_cap(cairo_context[context_index(psa->wks_id)],
-            CAIRO_LINE_CAP_ROUND);
-    orig_line_width = cairo_get_line_width(cairo_context[context_index(
-            psa->wks_id)]);
-    cairo_set_line_width(cairo_context[context_index(psa->wks_id)], 1.0);
+    orig_cap_type = cairo_get_line_cap(context);
+    cairo_set_line_cap(context, CAIRO_LINE_CAP_ROUND);
+    orig_line_width = cairo_get_line_width(context);
+    cairo_set_line_width(context, 1.0);
 
     switch (marker_type) {
     case DOT_MARKER:
@@ -1107,43 +1116,37 @@ int cro_Polymarker(GKSC *gksc) {
         /*
          *  Dot markers cannot be scaled.
          */
-        cairo_set_line_cap(cairo_context[context_index(psa->wks_id)],
-                CAIRO_LINE_CAP_ROUND);
-        cairo_set_line_width(cairo_context[context_index(psa->wks_id)], 0.5);
+        cairo_set_line_cap(context, CAIRO_LINE_CAP_ROUND);
+        cairo_set_line_width(context, 0.5);
         for (i = 0; i < npoints; i++) {
 #ifndef JIRA_494
-            cairo_move_to(cairo_context[context_index(psa->wks_id)], pptr[i].x
-                    * (float) psa->dspace.xspan, pptr[i].y
-                    * (float) psa->dspace.yspan);
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], pptr[i].x
-                    * (float) psa->dspace.xspan, pptr[i].y
-                    * (float) psa->dspace.yspan);
+            cairo_move_to(context, 
+                    pptr[i].x * (float) psa->dspace.xspan, 
+                    pptr[i].y * (float) psa->dspace.yspan);
+            cairo_line_to(context, 
+                    pptr[i].x * (float) psa->dspace.xspan, 
+                    pptr[i].y * (float) psa->dspace.yspan);
 #else
-            cairo_arc(cairo_context[context_index(psa->wks_id)], pptr[i].x
-                    * (float) psa->dspace.xspan, pptr[i].y
-                    * (float) psa->dspace.yspan, 0.25, 0., 6.2831853);
+            cairo_arc(context, 
+                    pptr[i].x * (float) psa->dspace.xspan, 
+                    pptr[i].y * (float) psa->dspace.yspan, 0.25, 0., 6.2831853);
 #endif
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_stroke(context);
         }
-        cairo_set_line_width(cairo_context[context_index(psa->wks_id)],
-                orig_line_width);
+        cairo_set_line_width(context, orig_line_width);
         break;
     case PLUS_MARKER:
         for (i = 0; i < npoints; i++) {
             xc = pptr[i].x * (float) psa->dspace.xspan;
             yc = pptr[i].y * (float) psa->dspace.yspan;
             mscale = 2.75;
-            cairo_move_to(cairo_context[context_index(psa->wks_id)], xc, yc
-                    - mscale * marker_size);
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], xc, yc
-                    + mscale * marker_size);
+            cairo_move_to(context, xc, yc - mscale * marker_size);
+            cairo_line_to(context, xc, yc + mscale * marker_size);
 
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
-            cairo_move_to(cairo_context[context_index(psa->wks_id)], xc
-                    - mscale * marker_size, yc);
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], xc
-                    + mscale * marker_size, yc);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_stroke(context);
+            cairo_move_to(context, xc - mscale * marker_size, yc);
+            cairo_line_to(context, xc + mscale * marker_size, yc);
+            cairo_stroke(context);
         }
         break;
     case STAR_MARKER:
@@ -1152,23 +1155,17 @@ int cro_Polymarker(GKSC *gksc) {
             yc = pptr[i].y * (float) psa->dspace.yspan;
             mscale = 2.75 * marker_size;
 
-            cairo_move_to(cairo_context[context_index(psa->wks_id)], xc, yc
-                    - mscale);
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], xc, yc
-                    + mscale);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_move_to(context, xc, yc - mscale);
+            cairo_line_to(context, xc, yc + mscale);
+            cairo_stroke(context);
 
-            cairo_move_to(cairo_context[context_index(psa->wks_id)], xc - 0.866
-                    * mscale, yc - 0.5 * mscale);
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], xc + 0.866
-                    * mscale, yc + 0.5 * mscale);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_move_to(context, xc - 0.866 * mscale, yc - 0.5 * mscale);
+            cairo_line_to(context, xc + 0.866 * mscale, yc + 0.5 * mscale);
+            cairo_stroke(context);
 
-            cairo_move_to(cairo_context[context_index(psa->wks_id)], xc - 0.866
-                    * mscale, yc + 0.5 * mscale);
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], xc + 0.866
-                    * mscale, yc - 0.5 * mscale);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_move_to(context, xc - 0.866 * mscale, yc + 0.5 * mscale);
+            cairo_line_to(context, xc + 0.866 * mscale, yc - 0.5 * mscale);
+            cairo_stroke(context);
 
         }
         break;
@@ -1177,11 +1174,10 @@ int cro_Polymarker(GKSC *gksc) {
             xc = pptr[i].x * (float) psa->dspace.xspan;
             yc = pptr[i].y * (float) psa->dspace.yspan;
             mscale = 2.75;
-            cairo_move_to(cairo_context[context_index(psa->wks_id)], xc, yc);
-            cairo_new_sub_path(cairo_context[context_index(psa->wks_id)]);
-            cairo_arc(cairo_context[context_index(psa->wks_id)], xc, yc, mscale
-                    * marker_size, 0., 2. * M_PI);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_move_to(context, xc, yc);
+            cairo_new_sub_path(context);
+            cairo_arc(context, xc, yc, mscale * marker_size, 0., 2. * M_PI);
+            cairo_stroke(context);
         }
         break;
     case X_MARKER:
@@ -1190,17 +1186,13 @@ int cro_Polymarker(GKSC *gksc) {
             yc = pptr[i].y * (float) psa->dspace.yspan;
             mscale = 3. * marker_size;
 
-            cairo_move_to(cairo_context[context_index(psa->wks_id)], xc - 0.707
-                    * mscale, yc - 0.707 * mscale);
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], xc + 0.707
-                    * mscale, yc + 0.707 * mscale);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_move_to(context, xc - 0.707 * mscale, yc - 0.707 * mscale);
+            cairo_line_to(context, xc + 0.707 * mscale, yc + 0.707 * mscale);
+            cairo_stroke(context);
 
-            cairo_move_to(cairo_context[context_index(psa->wks_id)], xc - 0.707
-                    * mscale, yc + 0.707 * mscale);
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], xc + 0.707
-                    * mscale, yc - 0.707 * mscale);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_move_to(context, xc - 0.707 * mscale, yc + 0.707 * mscale);
+            cairo_line_to(context, xc + 0.707 * mscale, yc - 0.707 * mscale);
+            cairo_stroke(context);
 
         }
         break;
@@ -1210,23 +1202,17 @@ int cro_Polymarker(GKSC *gksc) {
             yc = pptr[i].y * (float) psa->dspace.yspan;
             mscale = 2.75 * marker_size;
 
-            cairo_move_to(cairo_context[context_index(psa->wks_id)], xc, yc
-                    - mscale);
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], xc, yc
-                    + mscale);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_move_to(context, xc, yc - mscale);
+            cairo_line_to(context, xc, yc + mscale);
+            cairo_stroke(context);
 
-            cairo_move_to(cairo_context[context_index(psa->wks_id)], xc - 0.866
-                    * mscale, yc - 0.5 * mscale);
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], xc + 0.866
-                    * mscale, yc + 0.5 * mscale);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_move_to(context, xc - 0.866 * mscale, yc - 0.5 * mscale);
+            cairo_line_to(context, xc + 0.866 * mscale, yc + 0.5 * mscale);
+            cairo_stroke(context);
 
-            cairo_move_to(cairo_context[context_index(psa->wks_id)], xc - 0.866
-                    * mscale, yc + 0.5 * mscale);
-            cairo_line_to(cairo_context[context_index(psa->wks_id)], xc + 0.866
-                    * mscale, yc - 0.5 * mscale);
-            cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+            cairo_move_to(context, xc - 0.866 * mscale, yc + 0.5 * mscale);
+            cairo_line_to(context, xc + 0.866 * mscale, yc - 0.5 * mscale);
+            cairo_stroke(context);
 
         }
         break;
@@ -1235,9 +1221,8 @@ int cro_Polymarker(GKSC *gksc) {
     /*
      *  Restore line cap type and line width.
      */
-    cairo_set_line_cap(cairo_context[context_index(psa->wks_id)], orig_cap_type);
-    cairo_set_line_width(cairo_context[context_index(psa->wks_id)],
-            orig_line_width);
+    cairo_set_line_cap(context, orig_cap_type);
+    cairo_set_line_width(context, orig_line_width);
     return (0);
 }
 
@@ -1316,6 +1301,8 @@ int cro_SetClipIndicator(GKSC *gksc) {
     if (getenv("CRO_TRACE")) {
         printf("Got to cro_SetClipIndicator\n");
     }
+    
+    cairo_t* context = getContext(psa->wks_id);
 
     clip_flag = iptr[0];
 
@@ -1330,37 +1317,29 @@ int cro_SetClipIndicator(GKSC *gksc) {
         /*
          *  Turn clipping on.
          */
-        cairo_new_path(cairo_context[context_index(psa->wks_id)]);
+        cairo_new_path(context);
         /*
          *  Set the clip rectangle.
          */
-        cairo_reset_clip(cairo_context[context_index(psa->wks_id)]);
-        cairo_move_to(cairo_context[context_index(psa->wks_id)], pllx
-                * psa->dspace.xspan, plly * psa->dspace.yspan);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], purx
-                * psa->dspace.xspan, plly * psa->dspace.yspan);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], purx
-                * psa->dspace.xspan, pury * psa->dspace.yspan);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], pllx
-                * psa->dspace.xspan, pury * psa->dspace.yspan);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], pllx
-                * psa->dspace.xspan, plly * psa->dspace.yspan);
-        cairo_clip(cairo_context[context_index(psa->wks_id)]);
+        cairo_reset_clip(context);
+        cairo_move_to(context, pllx * psa->dspace.xspan, plly * psa->dspace.yspan);
+        cairo_line_to(context, purx * psa->dspace.xspan, plly * psa->dspace.yspan);
+        cairo_line_to(context, purx * psa->dspace.xspan, pury * psa->dspace.yspan);
+        cairo_line_to(context, pllx * psa->dspace.xspan, pury * psa->dspace.yspan);
+        cairo_line_to(context, pllx * psa->dspace.xspan, plly * psa->dspace.yspan);
+        cairo_clip(context);
 
         psa->attributes.clip_ind = 1;
     } else {
         psa->attributes.clip_ind = 0;
-        cairo_reset_clip(cairo_context[context_index(psa->wks_id)]);
-        cairo_new_path(cairo_context[context_index(psa->wks_id)]);
-        cairo_move_to(cairo_context[context_index(psa->wks_id)], 0, 0);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)],
-                psa->dspace.xspan, 0);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)],
-                psa->dspace.xspan, psa->dspace.yspan);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], 0,
-                psa->dspace.yspan);
-        cairo_line_to(cairo_context[context_index(psa->wks_id)], 0, 0);
-        cairo_clip(cairo_context[context_index(psa->wks_id)]);
+        cairo_reset_clip(context);
+        cairo_new_path(context);
+        cairo_move_to(context, 0, 0);
+        cairo_line_to(context, psa->dspace.xspan, 0);
+        cairo_line_to(context, psa->dspace.xspan, psa->dspace.yspan);
+        cairo_line_to(context, 0, psa->dspace.yspan);
+        cairo_line_to(context, 0, 0);
+        cairo_clip(context);
     }
     return (0);
 }
@@ -1683,15 +1662,16 @@ int cro_Text(GKSC *gksc) {
     cairo_matrix_t fmatrix, scl_matrix;
     cairo_text_extents_t textents, next_extents;
     cairo_font_extents_t fextents;
+    
+    cairo_t* context = getContext(psa->wks_id);
 
-    cairo_text_extents(cairo_context[context_index(psa->wks_id)], sptr,
-            &textents);
+    cairo_text_extents(context, sptr, &textents);
 
-    cairo_get_font_matrix(cairo_context[context_index(psa->wks_id)], &fmatrix);
+    cairo_get_font_matrix(context, &fmatrix);
 
     cairo_matrix_scale(&fmatrix, 1., -1.);
-    cairo_set_font_matrix(cairo_context[context_index(psa->wks_id)], &fmatrix);
-    cairo_get_font_matrix(cairo_context[context_index(psa->wks_id)], &fmatrix);
+    cairo_set_font_matrix(context, &fmatrix);
+    cairo_get_font_matrix(context, &fmatrix);
     if (getenv("CRO_TRACE")) {
         printf("Got to cro_Text\n");
     }
@@ -1747,29 +1727,26 @@ int cro_Text(GKSC *gksc) {
 
     font_face = cairo_ft_font_face_create_for_ft_face(face, 0);
 
-    cairo_set_font_face(cairo_context[context_index(psa->wks_id)], font_face);
-    cairo_font_extents(cairo_context[context_index(psa->wks_id)], &fextents);
+    cairo_set_font_face(context, font_face);
+    cairo_font_extents(context, &fextents);
 
     /*
      *  Character height.
      */
-    cairo_set_font_size(cairo_context[context_index(psa->wks_id)],
-            (psa->attributes.char_ht * psa->dspace.yspan / .728));
-    cairo_get_font_matrix(cairo_context[context_index(psa->wks_id)], &fmatrix);
+    cairo_set_font_size(context, (psa->attributes.char_ht * psa->dspace.yspan / .728));
+    cairo_get_font_matrix(context, &fmatrix);
 
     /*
      *  Get height of capital X.
      */
     single_char[0] = 'X';
     single_char[1] = 0;
-    cairo_text_extents(cairo_context[context_index(psa->wks_id)], single_char,
-            &textents);
+    cairo_text_extents(context, single_char, &textents);
 
     X_height = textents.height;
     cairo_matrix_scale(&fmatrix, 1., -1.);
-    cairo_set_font_matrix(cairo_context[context_index(psa->wks_id)], &fmatrix);
-    cairo_text_extents(cairo_context[context_index(psa->wks_id)], sptr,
-            &textents);
+    cairo_set_font_matrix(context, &fmatrix);
+    cairo_text_extents(context, sptr, &textents);
 
     slen = (int) strlen(sptr);
 
@@ -1777,8 +1754,8 @@ int cro_Text(GKSC *gksc) {
      *  Character color.
      */
     cval = unpack_argb(psa->ctable, psa->attributes.text_colr_ind);
-    cairo_set_source_rgba(cairo_context[context_index(psa->wks_id)], cval.red,
-            cval.green, cval.blue, ALPHA_BLEND(cval.alpha, psa->attributes.text_alpha));
+    cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, 
+            ALPHA_BLEND(cval.alpha, psa->attributes.text_alpha));
 
     /*
      *  Set the horizontal alignment for the "NORMAL" settings.
@@ -1822,8 +1799,7 @@ int cro_Text(GKSC *gksc) {
         }
     }
 
-    cairo_text_extents(cairo_context[context_index(psa->wks_id)], sptr,
-            &textents);
+    cairo_text_extents(context, sptr, &textents);
     horiz_len = textents.width;
     /*
      *  The text extents returned from the above include white space
@@ -1833,13 +1809,11 @@ int cro_Text(GKSC *gksc) {
      */
     single_char[0] = *sptr;
     single_char[1] = 0;
-    cairo_text_extents(cairo_context[context_index(psa->wks_id)], single_char,
-            &textents);
+    cairo_text_extents(context, single_char, &textents);
     left_space = textents.x_bearing;
     single_char[0] = *(sptr + strlen(sptr) - 1);
     single_char[1] = 0;
-    cairo_text_extents(cairo_context[context_index(psa->wks_id)], single_char,
-            &textents);
+    cairo_text_extents(context, single_char, &textents);
     right_space = textents.x_advance - textents.width - textents.x_bearing;
 
     xpos = xc * psa->dspace.xspan;
@@ -1873,9 +1847,9 @@ int cro_Text(GKSC *gksc) {
         cang = -cang;
     ypos = yc * psa->dspace.yspan;
 
-    cairo_save(cairo_context[context_index(psa->wks_id)]);
-    cairo_move_to(cairo_context[context_index(psa->wks_id)], xpos, ypos);
-    cairo_rotate(cairo_context[context_index(psa->wks_id)], -cang);
+    cairo_save(context);
+    cairo_move_to(context, xpos, ypos);
+    cairo_rotate(context, -cang);
 
     /*
      *  Vertical alignments (NORMAL has been converted appropriately above).
@@ -1906,9 +1880,8 @@ int cro_Text(GKSC *gksc) {
     if (psa->attributes.char_space == CHAR_SPACE_DEFAULT
             && psa->attributes.char_expan == CHAR_EXPAN_DEFAULT
             && psa->attributes.text_path == TEXT_PATH_DEFAULT) {
-        cairo_rel_move_to(cairo_context[context_index(psa->wks_id)], x_del,
-                y_del);
-        cairo_show_text(cairo_context[context_index(psa->wks_id)], sptr);
+        cairo_rel_move_to(context, x_del, y_del);
+        cairo_show_text(context, sptr);
     } else {
         /*
          *  Intercharacter spacing.
@@ -1918,12 +1891,10 @@ int cro_Text(GKSC *gksc) {
          *  Effect the expansion factor.
          */
         if (psa->attributes.char_expan != CHAR_EXPAN_DEFAULT) {
-            cairo_get_font_matrix(cairo_context[context_index(psa->wks_id)],
-                    &fmatrix);
+            cairo_get_font_matrix(context, &fmatrix);
             scl_matrix = fmatrix;
             cairo_matrix_scale(&scl_matrix, psa->attributes.char_expan, 1.);
-            cairo_set_font_matrix(cairo_context[context_index(psa->wks_id)],
-                    &scl_matrix);
+            cairo_set_font_matrix(context, &scl_matrix);
         }
         /*
          *  Deal with the non-standard text paths.
@@ -1936,8 +1907,7 @@ int cro_Text(GKSC *gksc) {
              *  Only need to handle the character spacings and expansion factors
              *  that make this case different from the default RIGHT_TEXT_PATH.
              */
-            cairo_text_extents(cairo_context[context_index(psa->wks_id)], sptr,
-                    &textents);
+            cairo_text_extents(context, sptr, &textents);
             if (psa->attributes.text_align_horiz == CENTER_ALIGNMENT_HORIZ) {
                 x_del = x_del * psa->attributes.char_expan; /* Scale current pos. */
                 x_del = x_del - 0.5 * (slen - 1) * cspace;
@@ -1946,17 +1916,13 @@ int cro_Text(GKSC *gksc) {
                 x_del = x_del * psa->attributes.char_expan;
                 x_del = x_del - (slen - 1) * cspace;
             }
-            cairo_rel_move_to(cairo_context[context_index(psa->wks_id)], x_del,
-                    y_del);
+            cairo_rel_move_to(context, x_del, y_del);
             for (i = 0; i < strlen(sptr); i++) {
                 single_char[0] = *(sptr + i);
                 single_char[1] = 0;
-                cairo_text_extents(cairo_context[context_index(psa->wks_id)],
-                        single_char, &textents);
-                cairo_show_text(cairo_context[context_index(psa->wks_id)],
-                        single_char);
-                cairo_rel_move_to(cairo_context[context_index(psa->wks_id)],
-                        cspace, 0.);
+                cairo_text_extents(context, single_char, &textents);
+                cairo_show_text(context, single_char);
+                cairo_rel_move_to(context, cspace, 0.);
             }
             break;
         case UP_TEXT_PATH:
@@ -1965,15 +1931,14 @@ int cro_Text(GKSC *gksc) {
             /*
              *  Get the text extents for the first character to use for centering.
              */
-            cairo_save(cairo_context[context_index(psa->wks_id)]);
+            cairo_save(context);
             single_char[0] = *(sptr);
             single_char[1] = 0;
-            cairo_text_extents(cairo_context[context_index(psa->wks_id)],
-                    single_char, &textents);
+            cairo_text_extents(context, single_char, &textents);
             /*
              *  Rotate the string.
              */
-            cairo_rotate(cairo_context[context_index(psa->wks_id)], cang);
+            cairo_rotate(context, cang);
             switch (psa->attributes.text_align_vert) {
             /*
              *  Calculate the vertical adjustment (NORMAL has been converted to the
@@ -2005,8 +1970,7 @@ int cro_Text(GKSC *gksc) {
             for (i = 0; i < strlen(sptr); i++) {
                 single_char[0] = *(sptr + i);
                 single_char[1] = 0;
-                cairo_text_extents(cairo_context[context_index(psa->wks_id)],
-                        single_char, &textents);
+                cairo_text_extents(context, single_char, &textents);
                 if (textents.width > maximum_width) {
                     maximum_width = MAX(maximum_width,textents.width);
                     char_num_mx = i;
@@ -2014,23 +1978,20 @@ int cro_Text(GKSC *gksc) {
             }
             single_char[0] = *(sptr + char_num_mx);
             single_char[1] = 0;
-            cairo_text_extents(cairo_context[context_index(psa->wks_id)],
-                    single_char, &textents);
+            cairo_text_extents(context, single_char, &textents);
 
             /*
              *  Translate to the string start point.
              */
-            cairo_translate(cairo_context[context_index(psa->wks_id)], (xc
-                    * psa->dspace.xspan), (yc * psa->dspace.yspan));
-            cairo_rotate(cairo_context[context_index(psa->wks_id)], -cang);
+            cairo_translate(context, (xc* psa->dspace.xspan), (yc * psa->dspace.yspan));
+            cairo_rotate(context, -cang);
             /*
              *  Draw characters one at a time.
              */
             for (i = 0; i < strlen(sptr); i++) {
                 single_char[0] = *(sptr + i);
                 single_char[1] = 0;
-                cairo_text_extents(cairo_context[context_index(psa->wks_id)],
-                        single_char, &textents);
+                cairo_text_extents(context, single_char, &textents);
 
                 /*
                  *  Quantities for the horizontal adjustments. ("NORMAL" horizontal
@@ -2053,8 +2014,7 @@ int cro_Text(GKSC *gksc) {
                  */
                 single_char[0] = *(sptr + i);
                 single_char[1] = 0;
-                cairo_text_extents(cairo_context[context_index(psa->wks_id)],
-                        single_char, &textents);
+                cairo_text_extents(context, single_char, &textents);
                 /*
                  *  The quantity:
                  *
@@ -2065,40 +2025,32 @@ int cro_Text(GKSC *gksc) {
                  *  of maximum width.
                  */
                 if (i == 0) {
-                    cairo_rel_move_to(
-                            cairo_context[context_index(psa->wks_id)],
+                    cairo_rel_move_to(context,
                             x_del - textents.x_bearing - 0.5 * textents.width,
                             y_del);
-                    cairo_show_text(cairo_context[context_index(psa->wks_id)],
-                            single_char);
+                    cairo_show_text(context, single_char);
                     /*
                      *  Move back to the base horizontal position.
                      */
-                    cairo_rel_move_to(
-                            cairo_context[context_index(psa->wks_id)], (0.5
-                                    * textents.width + textents.x_bearing
-                                    - x_del) - textents.x_advance, 0.);
+                    cairo_rel_move_to(context, 
+                            (0.5 * textents.width + textents.x_bearing - x_del) 
+                            - textents.x_advance, 0.);
                 } else {
-                    cairo_text_extents(
-                            cairo_context[context_index(psa->wks_id)],
-                            single_char, &textents);
-                    cairo_rel_move_to(
-                            cairo_context[context_index(psa->wks_id)],
+                    cairo_text_extents(context, single_char, &textents);
+                    cairo_rel_move_to(context,
                             x_del - textents.x_bearing - 0.5 * textents.width,
                             -1.5 * X_height - cspace);
-                    cairo_show_text(cairo_context[context_index(psa->wks_id)],
-                            single_char);
-                    cairo_rel_move_to(
-                            cairo_context[context_index(psa->wks_id)], (0.5
-                                    * textents.width + textents.x_bearing
-                                    - x_del) - textents.x_advance, 0.);
+                    cairo_show_text(context, single_char);
+                    cairo_rel_move_to(context, 
+                            (0.5 * textents.width + textents.x_bearing - x_del) 
+                            - textents.x_advance, 0.);
                 }
             }
-            cairo_restore(cairo_context[context_index(psa->wks_id)]);
+            cairo_restore(context);
             break;
         }
     }
-    cairo_restore(cairo_context[context_index(psa->wks_id)]);
+    cairo_restore(context);
 
     return (0);
 }
@@ -2111,7 +2063,7 @@ int cro_UpdateWorkstation(GKSC *gksc) {
     if (getenv("CRO_TRACE")) {
         printf("Got to cro_UpdateWorkstation\n");
     }
-    cairo_surface_flush(cairo_surface[context_index(psa->wks_id)]);
+    cairo_surface_flush(getSurface(psa->wks_id));
     return (0);
 }
 
@@ -2213,7 +2165,7 @@ char* getRegularOutputFilename(int wks_id, const char* file_name, const char* en
 /*
  * getIndexedOutputFilename()
  *
- * A utility function to create filenames for formats that do no support multiple
+ * A utility function to create filenames for formats that do not support multiple
  * images/pages. If more than one such file is to be written, then an index-number
  * is appended to the filename root. The index is omitted on the first such file,
  * and later added if there is indeed more than one file to be written.
@@ -2452,24 +2404,30 @@ void setSurfaceTransform(CROddp *psa) {
      */
 
     double angle, tx, ty;
-    /* Landscape is only supported for PS/PDF, not for image-based formats. */
-    if ((psa->wks_type == CPS || psa->wks_type == CPDF) && psa->orientation == LANDSCAPE) {
-        angle = PI / 2.0;
-        tx = psa->dspace.lly;
-        ty = -psa->dspace.llx;
-    } else {
-        angle = 0.;
-        tx = psa->dspace.llx;
-        ty = psa->dspace.ury;
-    }
-
     double scale = 1.0;
+    cairo_t* context = getContext(psa->wks_id);
 
-    cairo_t* ctx = cairo_context[context_index(psa->wks_id)];
-    cairo_identity_matrix(ctx);
-    cairo_rotate(ctx, angle);
-    cairo_translate(ctx, tx, ty);
-    cairo_scale(ctx, scale, -scale);
+    /* Landscape is only supported for PS/PDF, not for image-based formats. */
+    if (psa->wks_type == CPS || psa->wks_type == CPDF || psa->wks_type == CEPS) {
+	    if (psa->orientation == LANDSCAPE) {
+		    angle = PI / 2.0;
+		    tx = psa->dspace.llx;
+		    ty = psa->paper_height - psa->dspace.ury;
+	    } else {
+		    angle = 0.;
+		    tx = psa->dspace.llx;
+		    ty = psa->paper_height - psa->dspace.lly;
+	    }
+    }
+    else {
+            angle = 0.;
+	    tx = psa->dspace.llx;
+	    ty = psa->dspace.ury;
+    }
+    cairo_identity_matrix(context);
+    cairo_translate(context, tx, ty);
+    cairo_rotate(context, angle);
+    cairo_scale(context, scale, -scale);
 }
 
 
@@ -2691,6 +2649,7 @@ void cro_SoftFill(GKSC *gksc, float angle, float spl) {
             /*
              *  Draw the line segments specified by the list.
              */
+            cairo_t* context = getContext(psa->wks_id);
             in1 = nra;
             if (fabs (xco) > fabs (yco))
             {
@@ -2714,13 +2673,13 @@ void cro_SoftFill(GKSC *gksc, float angle, float spl) {
                         opoint.y = rst[jn1];
                         tmpx = opoint.x * (float) psa->dspace.xspan;
                         tmpy = opoint.y * (float) psa->dspace.yspan;
-                        cairo_move_to(cairo_context[context_index(psa->wks_id)],tmpx,tmpy);
+                        cairo_move_to(context,tmpx,tmpy);
                         opoint.x = (spi - yco * rst[jn2]) / xco;
                         opoint.y = rst[jn2];
                         tmpx = opoint.x * (float) psa->dspace.xspan;
                         tmpy = opoint.y * (float) psa->dspace.yspan;
-                        cairo_line_to(cairo_context[context_index(psa->wks_id)],tmpx,tmpy);
-                        cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+                        cairo_line_to(context,tmpx,tmpy);
+                        cairo_stroke(context);
                     }
                     in1 = in2 + 1;
                 }
@@ -2747,13 +2706,13 @@ void cro_SoftFill(GKSC *gksc, float angle, float spl) {
                         opoint.y = (spi - xco * rst[jn1]) / yco;
                         tmpx = opoint.x * (float) psa->dspace.xspan;
                         tmpy = opoint.y * (float) psa->dspace.yspan;
-                        cairo_move_to(cairo_context[context_index(psa->wks_id)],tmpx,tmpy);
+                        cairo_move_to(context,tmpx,tmpy);
                         opoint.x = rst[jn2];
                         opoint.y = (spi - xco * rst[jn2]) / yco;
                         tmpx = opoint.x * (float) psa->dspace.xspan;
                         tmpy = opoint.y * (float) psa->dspace.yspan;
-                        cairo_line_to(cairo_context[context_index(psa->wks_id)],tmpx,tmpy);
-                        cairo_stroke(cairo_context[context_index(psa->wks_id)]);
+                        cairo_line_to(context,tmpx,tmpy);
+                        cairo_stroke(context);
                     }
                     in1 = in2 + 1;
                 }

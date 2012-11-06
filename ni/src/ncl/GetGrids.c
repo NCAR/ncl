@@ -842,7 +842,9 @@ void GenLambert
 	double start_lat, 
 	double start_lon,
 	int nx,
-	int ny)
+	int ny,
+	int idir,
+	int jdir)
 #else  
 (thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
  lat0, lat1, lon0, dx, dy, start_lat, start_lon, nx, ny)
@@ -913,8 +915,8 @@ void GenLambert
 		NGCALLF(mdptrn,MDPTRN)(&start_lat,&start_lon,&nx0,&ny0);
 		for(i = 0; i < ny; i++) {
 			for(j = 0; j < nx; j++) {
-				double tmpx =  nx0 + j * udx;
-				double tmpy =  ny0 + i * udy;
+				double tmpx =  nx0 + j * udx * idir;
+				double tmpy =  ny0 + i * udy * jdir;
 				double tmplat,tmplon;
 				NGCALLF(mdptri,MDPTRI)
 					(&tmpx,&tmpy,&tmplat,&tmplon);
@@ -949,8 +951,8 @@ void GenLambert
 		NGCALLF(mdptrn,MDPTRN)(&start_lat,&start_lon,&nx0,&ny0);
 		for(i = 0; i < ny; i++) {
 			for(j = 0; j < nx; j++) {
-				double tmpx =  nx0 + j * udx;
-				double tmpy =  ny0 + i * udy;
+				double tmpx =  nx0 + j * udx * idir;
+				double tmpy =  ny0 + i * udy * jdir;
 				double tmplat,tmplon;
 				NGCALLF(mdptri,MDPTRI)
 					(&tmpx,&tmpy,&tmplat,&tmplon);
@@ -1390,7 +1392,7 @@ int* nrotatts;
 	lo1 = kgds[4] / 1000.0;
 
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
-		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny,1,1);
 
 	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
@@ -1600,7 +1602,7 @@ int* nrotatts;
 	lo1 = kgds[4] / 1000.0;
 
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
-		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny,1,1);
 
 	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
@@ -1751,7 +1753,7 @@ int* nrotatts;
 	lo1 = kgds[4] / 1000.0;
 
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
-		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny,1,1);
 
 	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
@@ -1833,7 +1835,7 @@ int* nrotatts;
 	lo1 = kgds[4] / 1000.0;
 
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
-		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny,1,1);
 
 	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
@@ -1915,7 +1917,7 @@ int* nrotatts;
 	lo1 = kgds[4] / 1000.0;
 
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
-		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny,1,1);
 
 	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
@@ -1996,7 +1998,7 @@ int* nrotatts;
 	lo1 = kgds[4] / 1000.0;
 
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
-		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny,1,1);
 
 
 	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
@@ -2079,7 +2081,7 @@ int* nrotatts;
 	lo1 = kgds[4] / 1000.0;
 
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
-		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny,1,1);
 
 	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
@@ -2228,7 +2230,7 @@ int* nrotatts;
 	lo1 = kgds[4] / 1000.0;
 
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
-		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny,1,1);
 
 	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
@@ -2310,7 +2312,7 @@ int* nrotatts;
 	lo1 = kgds[4] / 1000.0;
 
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
-		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny,1,1);
 
 	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
@@ -2393,7 +2395,7 @@ int* nrotatts;
 	lo1 = kgds[4] / 1000.0;
 
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
-		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny,1,1);
 
 	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
@@ -2475,7 +2477,7 @@ int* nrotatts;
 	lo1 = kgds[4] / 1000.0;
 
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
-		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny,1,1);
 
 	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
@@ -2818,7 +2820,7 @@ int* nrotatts;
 	lo1 = kgds[4] / 1000.0;
 
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
-		   latin1, latin2, lov,dx,dy,la1,lo1,nx,ny);
+		   latin1, latin2, lov,dx,dy,la1,lo1,nx,ny,1,1);
 
 	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
@@ -8290,6 +8292,7 @@ int* nrotatts;
 	double dy;
 	double latin1;
 	double latin2;
+	int idir,jdir;
 	unsigned char tmpc[4];
 	unsigned char *gds = (unsigned char*)thevarrec->thelist->rec_inq->gds;
 	float *tmp_float;
@@ -8331,9 +8334,11 @@ int* nrotatts;
 	tmpc[2] = gds[33];
 	latin2 = (double)UnsignedCnvtToDecimal(3,tmpc)/1000.0;
 	latin2 = ((gds[28] & (unsigned char) 0200)? -latin2:latin2);
+	idir = ((unsigned char)0200 & (unsigned char)gds[27])?-1:1;
+	jdir = ((unsigned char)0100 & (unsigned char)gds[27])?1:-1;
 
 	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
-		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny,idir,jdir);
 
 	if(lon_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));

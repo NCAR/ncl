@@ -724,7 +724,10 @@ NclStatus status)
 	}
 	
 	if((value != NULL)&&(value->obj.obj_type_mask & Ncl_MultiDValData)) {
-		if((_NclSetStatus((NclObj)value,PERMANENT))||((var_type == PARAM)&&(value->obj.status != STATIC))||(var_type == RETURNVAR)) {
+		if((_NclSetStatus((NclObj)value,PERMANENT))||
+		   ((var_type == PARAM)&&(value->obj.status != STATIC))
+		   ||(var_type == RETURNVAR) 
+		   ||(var_type == ATTVALLINK)) {
 			var_out->var.thevalue_id = value->obj.id;
 		} else {
 			tmp = _NclCopyVal(value,NULL);
@@ -1341,9 +1344,12 @@ NclSelectionRecord *sel_ptr;
 			NclList rhslist = (NclList) rhsobj;
 			NclListObjList *step;
 
-			while(0 < thelist->list.nelem)
+			if(NULL != thelist)
 			{
-				tmp = (NclObj)_NclListPop((NclObj)thelist);
+				while(0 < thelist->list.nelem)
+				{
+					tmp = (NclObj)_NclListPop((NclObj)thelist);
+				}
 			}
 
 		      /*Comment out this paragraph (as this removed items from rhslist),

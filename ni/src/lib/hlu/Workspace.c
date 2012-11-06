@@ -2949,6 +2949,7 @@ NhlErrorTypes _NhlCpcica
 	float		ycqf,
 	float		min_cell_size,
 	NhlBoolean	smooth,
+	NhlBoolean      use_mesh_fill,
 	char		*entry_name
 )
 #else
@@ -2967,6 +2968,7 @@ NhlErrorTypes _NhlCpcica
 	float		ycqf;
 	float		min_cell_size;
 	NhlBoolean	smooth;
+	NhlBoolean      use_mesh_fill,
 	char		*entry_name;
 #endif
 {
@@ -3011,7 +3013,13 @@ NhlErrorTypes _NhlCpcica
 	lxcqf = smooth ? MIN(1.0,xcqf) : xcqf;
 	lycqf = smooth ? MIN(1.0,ycqf) : ycqf;
 
-	if (! smooth) {
+	if (use_mesh_fill) {
+		ret = _NhlMeshFill(zdat,cwsrp->ws_ptr,ica1,icam,ican,
+				     lxcpf,lycpf,lxcqf,lycqf,entry_name);
+		if (ret < NhlWARNING) 
+			return NhlFATAL;
+	}
+	else if (! smooth) {
 		ret = _NhlRasterFill(zdat,cwsrp->ws_ptr,ica1,icam,ican,
 				     lxcpf,lycpf,lxcqf,lycqf,entry_name);
 		if (ret < NhlWARNING) 
@@ -3656,11 +3664,12 @@ NhlErrorTypes _NhlCtcica
 	float		ycqf,
 	float		min_cell_size,
 	NhlBoolean	smooth,
+	NhlBoolean      use_mesh_fill,
 	char		*entry_name
 )
 #else
 (rpnt,iedg,itri,flt_ws,int_ws,cell_ws,ica1,icam,ican,
- xcpf,ycpf,xcqf,ycqf,min_cell_size,smooth,entry_name)
+ xcpf,ycpf,xcqf,ycqf,min_cell_size,smooth,use_mesh_fill,entry_name)
 	float		*rpnt;
 	int             *iedg;
 	int             *itri;
@@ -3676,6 +3685,7 @@ NhlErrorTypes _NhlCtcica
 	float		ycqf;
 	float		min_cell_size;
 	NhlBoolean	smooth;
+	NhlBoolean      use_mesh_fill;
 	char		*entry_name;
 #endif
 {
@@ -3701,11 +3711,20 @@ NhlErrorTypes _NhlCtcica
 	int		xedge_ix,yedge_ix;
 	int		count;
 
-	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr &&
-		cwsrp && cwsrp->ws_ptr)) { 
-		e_text = "%s: invalid workspace";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
-		return NhlFATAL;
+	if (use_mesh_fill) {
+		if (! (cwsrp && cwsrp->ws_ptr)) {
+			e_text = "%s: invalid workspace";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+	else {
+		if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr &&
+		       cwsrp && cwsrp->ws_ptr)) { 
+			e_text = "%s: invalid workspace";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
 	}
 	c_entsr(&save_mode,1);
 
@@ -3720,7 +3739,17 @@ NhlErrorTypes _NhlCtcica
 	lxcqf = smooth ? MIN(1.0,xcqf) : xcqf;
 	lycqf = smooth ? MIN(1.0,ycqf) : ycqf;
 
-	if (! smooth) {
+	if (use_mesh_fill) {
+		ret = _NhlUnstructuredMeshFill(cwsrp->ws_ptr,
+					       ica1,icam,ican,
+					       lxcpf,lycpf,lxcqf,lycqf,
+					       min_cell_size,
+					       smooth,
+					       entry_name);
+		if (ret < NhlWARNING) 
+			return NhlFATAL;
+	}
+	else if (! smooth) {
 		ret = _NhlTriMeshRasterFill
 			(rpnt,iedg,itri,cwsrp->ws_ptr,
 			 ica1,icam,ican,lxcpf,lycpf,lxcqf,lycqf,entry_name);

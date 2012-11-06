@@ -62,7 +62,7 @@
 #include <netcdf.h>
 
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     char const *wks_type = "x11";
     int appid,wid,vcid,vfid, sfid, mpid;
@@ -77,7 +77,7 @@ main(int argc, char *argv[])
 /*
  * Declare variables for getting information from netCDF file.
  */
-    int   uv, p, u_id, v_id, p_id, ncid, lon_id, lat_id, FRAME_COUNT;
+    int   uv, p, u_id, v_id, p_id, lon_id, lat_id, FRAME_COUNT;
     int  i, mindistval, longitudeval;
     ng_size_t icount[3];
     float val;

@@ -18,6 +18,7 @@ extern "C" {
 #include   <ncarg/hlu/NresDB.h>
 #include   <ncarg/hlu/Workstation.h>
 #include   "defs.h"
+#include   "NclExitCode.h"
 #include   "Symbol.h"
 #include   "NclData.h"
 #include   "Machine.h"
@@ -36,6 +37,8 @@ extern "C" {
 #else
 #include   <dlfcn.h>
 #endif /*HPUX */
+
+int NclReturnStatus = NclNoError;
 
 extern NhlClass NhlworkstationClass;
 
@@ -233,6 +236,8 @@ main(int argc, char **argv) {
 
             case 'f':
                 NCLnewfs = 1;
+	      /*
+               */
                 use_new_hlfs = 1;
                 break;
 
@@ -505,11 +510,29 @@ main(int argc, char **argv) {
         cmd_line = 1;       /* reset to default: interactive */
     }
 
+    /* Load utility script */
+    strcpy(buffer, _NGResolvePath("$NCARG_ROOT/lib/ncarg/nclscripts/utilities.ncl"));
+    sr = stat(buffer, &sbuf);
+
+    if(0 == sr)
+    {
+        if(_NclPreLoadScript(buffer, 1) == NhlFATAL)
+	{
+	    NclReturnStatus = NclFileNotFound;
+            NhlPError(NhlINFO, NhlEUNKNOWN, "Error loading NCL utility script.");
+	}
+        else
+            yyparse(reset);
+    }
+
     /* Load any provided script */
     if (nclf != (char *) NULL) {
         (void) strcpy(buffer, _NGResolvePath(nclf));
         if (_NclPreLoadScript(buffer, 0) == NhlFATAL)
+	{
+	    NclReturnStatus = NclFileNotFound;
             NhlPError(NhlFATAL, NhlEUNKNOWN, "Error loading provided NCL script.");
+	}
         else
             yyparse(reset);
     } else {
@@ -528,7 +551,11 @@ main(int argc, char **argv) {
 
     NclFree(myName);
 
-    _NclExit(0);
+    _NclExit(NclReturnStatus);
+
+    return NclReturnStatus;
+
+    return 0;
 }
 
 #ifdef __cplusplus

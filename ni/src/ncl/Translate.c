@@ -627,7 +627,7 @@ if(groot != NULL) {
 			NclAssign *assign = (NclAssign*)root;
 			NclIdnExpr *idnexpr = NULL;
 			int nsubs = 0,nsubs_lhs = 0;
-		
+
 /*
 * OK why is all this need? Assigment from one variable to another is
 * different than any other identifier references. When one variable
@@ -736,6 +736,129 @@ if(groot != NULL) {
 					break;
 				}
 			} else {
+				off1 = _NclTranslate(assign->right_side,fp);
+				_NclTranslate(assign->left_side,fp);
+			}
+			break;
+		}
+		case Ncl_REASSIGN:
+		{
+			NclAssign *assign = (NclAssign*)root;
+			NclIdnExpr *idnexpr = NULL;
+			int nsubs = 0,nsubs_lhs = 0;
+		
+			/*
+			* Ressigment from one variable to another is
+			* different than any other identifier references. When one variable
+			* is being assigned to another variable all of the attributes, 
+			* coordinate vars, and dimension names need to be assigned in 
+			* addition to the value. Either major mods were need to the
+			* parser or the following type of code needed to be added.
+			* All other references just get the value of the variable and
+			* not the rest of the info.
+			*/
+
+			if(((NclGenericNode*)assign->right_side)->kind == Ncl_IDNEXPR)
+			{
+				off1 = -1;
+				off2 = -1;
+				off3 = -1;
+				idnexpr = (NclIdnExpr*)assign->right_side;
+				switch(((NclGenericNode*)idnexpr->idn_ref_node)->kind)
+				{
+				case Ncl_VAR:
+				{
+					if(((NclGenericNode*)assign->left_side)->kind == Ncl_VAR)
+					{
+						NclVar *var = (NclVar*)(idnexpr->idn_ref_node);
+						NclVar *lhs_var = (NclVar*)(assign->left_side);
+					
+						if(lhs_var->subscript_list != NULL)
+						{
+							off1 = _NclPutInstr(ISDEFINED_OP,lhs_var->line,lhs_var->file);
+							_NclPutInstr((NclValue)lhs_var->sym,lhs_var->line,lhs_var->file);
+							step = lhs_var->subscript_list;
+							nsubs_lhs = 0;
+							while(step != NULL)
+							{
+								(void)_NclTranslate(step->node,fp);
+								step = step->next;
+								nsubs_lhs++;
+							}
+						}
+
+						if(var->subscript_list != NULL)
+						{
+							off2 = _NclPutInstr(ISDEFINED_OP,var->line,var->file);
+							_NclPutInstr((NclValue)var->sym,var->line,var->file);
+							step = var->subscript_list;
+							nsubs = 0;
+							while(step != NULL)
+							{
+								(void)_NclTranslate(step->node,fp);
+								step = step->next;
+								nsubs++;
+							}
+						}
+
+						off3 = _NclPutInstr((NclValue)REASSIGN_VAR_VAR_OP,var->line,var->file);
+						_NclPutInstr((NclValue)var->sym,var->line,var->file);
+						_NclPutIntInstr(nsubs,var->line,var->file);
+						_NclPutInstr((NclValue)lhs_var->sym,lhs_var->line,lhs_var->file);
+						_NclPutIntInstr(nsubs_lhs,var->line,var->file);
+
+						if(off1 == -1)
+						{
+							if(off2 == -1)
+								off1 = off3;
+							else
+								off1 = off2;
+						} 
+					}
+					else
+					{
+						off1 = _NclTranslate(assign->right_side,fp);
+						_NclTranslate(assign->left_side,fp);
+					}
+				}
+				break;
+				case Ncl_VARCOORD:
+				{
+					NclCoord *coord = (NclCoord*)(idnexpr->idn_ref_node);
+					if(coord->subscript_list != NULL)
+					{
+						step = coord->subscript_list; off1 = _NclTranslate(step->node,fp);
+						step = step->next;
+						nsubs = 1;
+						while(step != NULL)
+						{
+							(void)_NclTranslate(step->node,fp);
+							nsubs++;
+							step = step->next;
+						}
+						_NclTranslate(coord->coordnamenode,fp);
+						_NclPutInstr(VAR_COORD_OP,coord->line,coord->file);
+					}
+					else
+					{
+						off1 = _NclTranslate(coord->coordnamenode,fp);
+						_NclPutInstr(VAR_COORD_OP,coord->line,coord->file);
+					}
+					_NclPutInstr((NclValue)coord->sym,coord->line,coord->file);
+					_NclPutIntInstr(nsubs,coord->line,coord->file);
+					_NclTranslate(assign->left_side,fp);
+				}
+				break;
+				case Ncl_FILEVARCOORD: 
+				case Ncl_FILEVAR: 
+				default:
+					off1 = _NclTranslate(assign->right_side,fp);
+					_NclTranslate(assign->left_side,fp);
+					break;
+				}
+			}
+			else
+			{
 				off1 = _NclTranslate(assign->right_side,fp);
 				_NclTranslate(assign->left_side,fp);
 			}
@@ -1509,6 +1632,30 @@ Unneeded translations
 				_NclPutInstr((NclValue)var->sym,var->line,var->file);
 				_NclPutIntInstr(nsubs,var->line,var->file);
 				break;
+			case Ncl_REWRITEIT:
+				if(var->subscript_list != NULL)
+				{
+					off1 = _NclPutInstr(ISDEFINED_OP,var->line,var->file);
+					_NclPutInstr((NclValue)var->sym,var->line,var->file);
+					step = var->subscript_list;
+					_NclTranslate(step->node,fp);
+					step = step->next;
+					nsubs = 1;
+					while(step != NULL)
+					{
+						(void)_NclTranslate(step->node,fp);
+						step = step->next;
+						nsubs++;
+					}
+					_NclPutInstr(REASSIGN_VAR_OP,var->line,var->file);
+				}
+				else
+				{
+					off1= _NclPutInstr(REASSIGN_VAR_OP,var->line,var->file);
+				}
+				_NclPutInstr((NclValue)var->sym,var->line,var->file);
+				_NclPutIntInstr(nsubs,var->line,var->file);
+				break;
 			case Ncl_PARAMIT:	
 				if(var->subscript_list != NULL) {
 					off1 = _NclPutInstr(ISDEFINED_OP,var->line,var->file);
@@ -1529,6 +1676,9 @@ Unneeded translations
 				_NclPutInstr((NclValue)var->sym,var->line,var->file);
 				_NclPutIntInstr(nsubs,var->line,var->file);
 				break;
+			default:
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Unkown var->ref_type %d\n", var->ref_type));
+				return (NhlFATAL);
 			}
 			break;
 		}

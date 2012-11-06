@@ -28,7 +28,7 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-main()
+int main()
 {
     int app_id;
     int text_item_id;
@@ -210,66 +210,66 @@ main()
         switch(i) {
         case 0:
             NhlRLClear(rlist);
-            NhlRLSetString(rlist,NhlNtxString,":L:A");
+            NhlRLSetString(rlist,NhlNtxString,"~L~A");
             NhlSetValues(text_item_id,rlist);
             break;
         case 1:
             NhlRLClear(rlist);
-            NhlRLSetString(rlist,NhlNtxString,":IGL:A");
+            NhlRLSetString(rlist,NhlNtxString,"~IGL~A");
             NhlSetValues(text_item_id,rlist);
             break;
         case 2:
             NhlRLClear(rlist);
             NhlRLSetString(rlist,NhlNtxString,
-                       "A:S:2:N:+B:S:2:N:");
+                       "A~S~2~N~+B~S~2~N~");
             NhlSetValues(text_item_id,rlist);
             break;
         case 3:
             NhlRLClear(rlist);
-            NhlRLSetString(rlist,NhlNtxString,"A:S:B");
+            NhlRLSetString(rlist,NhlNtxString,"A~S~B");
             NhlSetValues(text_item_id,rlist);
             break;
         case 4:
             NhlRLClear(rlist);
-            NhlRLSetString(rlist,NhlNtxString,"A:SPU:B");
+            NhlRLSetString(rlist,NhlNtxString,"A~SPU~B");
             NhlSetValues(text_item_id,rlist);
             break;
         case 5:
             NhlRLClear(rlist);
-            NhlRLSetString(rlist,NhlNtxString,":GIU:+");
+            NhlRLSetString(rlist,NhlNtxString,"~GIU~+");
             NhlSetValues(text_item_id,rlist);
             break;
         case 6:
             NhlRLClear(rlist);
-            NhlRLSetString(rlist,NhlNtxString,":1045:");
+            NhlRLSetString(rlist,NhlNtxString,"~1045~");
             NhlSetValues(text_item_id,rlist);
             break;
         case 7:
             NhlRLClear(rlist);
-            NhlRLSetString(rlist,NhlNtxString,"10:S:10:S:100");
+            NhlRLSetString(rlist,NhlNtxString,"10~S~10~S~100");
             NhlSetValues(text_item_id,rlist);
             break;
         case 8:
             NhlRLClear(rlist);
-            NhlRLSetString(rlist,NhlNtxString,"X:B1:2:S1:3");
+            NhlRLSetString(rlist,NhlNtxString,"X~B1~2~S1~3");
             NhlSetValues(text_item_id,rlist);
             break;
         case 9:
             NhlRLClear(rlist);
             NhlRLSetString(rlist,NhlNtxString,
-                       "X:B1:2:S:3:N:Y:S:2");
+                       "X~B1~2~S~3~N~Y~S~2");
             NhlSetValues(text_item_id,rlist);
             break;
         case 10:
             NhlRLClear(rlist);
             NhlRLSetString(rlist,NhlNtxString,
-                       "X:S:A:B:1:NN:ABC");
+                       "X~S~A~B~1~NN~ABC");
             NhlSetValues(text_item_id,rlist);
             break;
         case 11:
             NhlRLClear(rlist);
             NhlRLSetString(rlist,NhlNtxString,
-                       "1.3648:L1:410:S:-13");
+                       "1.3648~L1~410~S~-13");
             NhlSetValues(text_item_id,rlist);
             break;
         }
@@ -288,7 +288,7 @@ main()
  * Change function code back so result string will be drawn
  */
         NhlRLClear(rlist);
-        NhlRLSetInteger(rlist,NhlNtxFuncCode,':');
+        NhlRLSetInteger(rlist,NhlNtxFuncCode,'~');
         NhlRLSetFloat(rlist,NhlNtxPosXF,.82);
         NhlSetValues(text_item_id,rlist);
 
@@ -309,7 +309,7 @@ main()
  * Change function code back to get result string to draw
  */
         NhlRLClear(rlist);
-        NhlRLSetInteger(rlist,NhlNtxFuncCode,':');
+        NhlRLSetInteger(rlist,NhlNtxFuncCode,'~');
         NhlRLSetFloat(rlist,NhlNtxPosXF,.82);
         NhlSetValues(text_item_id,rlist);
 
@@ -875,4 +875,5 @@ main()
     NhlDestroy(workstation_id);
     NhlDestroy(app_id);
     NhlClose();
+    exit(0);
 }

@@ -29,7 +29,6 @@
 #include "NclVar.h"
 #include "NclFileVar.h"
 #include "NclList.h"
-#include "NclNewList.h"
 #include "NclMultiDVallistData.h"
 #include "DataSupport.h"
 #include <math.h>

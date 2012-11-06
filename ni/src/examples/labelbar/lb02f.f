@@ -15,8 +15,8 @@ C
 C      Date:           Fri Jan 13 18:31:18 mdt 1995
 C
 C      Description:    Demonstrates the LabelBar Object
-C                      Creates color bars with every other index of the
-C                      32 different colors in the default colormap.
+C                      Creates color bars with every fifth index of the
+C                      255 different colors in the default colormap.
 C
       external NhlFLabelBarClass
       external NhlFAppClass
@@ -29,19 +29,61 @@ C
         
       integer appid, wid, pid
       integer rlist, ierr
-      integer colors(16)
-      character*15 line_labels(16)
+      integer colors(51)
+      character*16 line_labels(51)
 
-      data colors / 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31/
+      data line_labels / 'Color Index 1 ',
+     $                   'Color Index 6',
+     $                   'Color Index 11',
+     $                   'Color Index 16',
+     $                   'Color Index 21',
+     $                   'Color Index 26',
+     $                   'Color Index 31',
+     $                   'Color Index 36',
+     $                   'Color Index 41',
+     $                   'Color Index 46',
+     $                   'Color Index 51',
+     $                   'Color Index 56',
+     $                   'Color Index 61',
+     $                   'Color Index 66',
+     $                   'Color Index 71',
+     $                   'Color Index 76',
+     $                   'Color Index 81',
+     $                   'Color Index 86',
+     $                   'Color Index 91',
+     $                   'Color Index 96',
+     $                   'Color Index 101',
+     $                   'Color Index 106',
+     $                   'Color Index 111',
+     $                   'Color Index 116',
+     $                   'Color Index 121',
+     $                   'Color Index 126',
+     $                   'Color Index 131',
+     $                   'Color Index 136',
+     $                   'Color Index 141',
+     $                   'Color Index 146',
+     $                   'Color Index 151',
+     $                   'Color Index 156',
+     $                   'Color Index 161',
+     $                   'Color Index 166',
+     $                   'Color Index 171',
+     $                   'Color Index 176',
+     $                   'Color Index 181',
+     $                   'Color Index 186',
+     $                   'Color Index 191',
+     $                   'Color Index 196',
+     $                   'Color Index 201',
+     $                   'Color Index 206',
+     $                   'Color Index 211',
+     $                   'Color Index 216',
+     $                   'Color Index 221',
+     $                   'Color Index 226',
+     $                   'Color Index 231',
+     $                   'Color Index 236',
+     $                   'Color Index 241',
+     $                   'Color Index 246',
+     $                   'Color Index 251'/
 
-      data line_labels / 'Color Index 1 ','Color Index 3 ',
-     $     'Color Index 5  ','Color Index 7  ',
-     $     'Color Index 9  ','Color Index 11 ',
-     $     'Color Index 13 ','Color Index 15 ',
-     $     'Color Index 17 ','Color Index 19 ',
-     $     'Color Index 21 ','Color Index 23 ',
-     $     'Color Index 25 ','Color Index 27 ',
-     $     'Color Index 29 ','Color Index 31 '/
 
       character*7  wks_type
 C
@@ -118,14 +160,23 @@ C
      $        NhlFCairoImageWorkstationClass,0,rlist,ierr) 
       endif
 C
-C Create a plot with 16 color indices (Every other one of the default
+C Initialize data values
+C
+      do i=1,51,1
+         ii = (i-1)*5
+         colors(i) = ii
+      end do
+
+C
+C Create a plot with 51 color indices (Every other one of the default
 C workstation colormap.
 C
       call NhlFRLClear(rlist)
+      call NhlFRLSetinteger(rlist,'lbBoxCount',51,ierr)
       call NhlFRLSetintegerarray(rlist,'lbFillColors',
-     $     colors,16,ierr)
+     $     colors,51,ierr)
       call NhlFRLSetstringarray(rlist,'lbLabelStrings',
-     $     line_labels,16,ierr)
+     $     line_labels,51,ierr)
       call NhlFRLSetfloat(rlist,'vpXF',0.,ierr)
       call NhlFRLSetfloat(rlist,'vpYF',1.,ierr)
       call NhlFRLSetfloat(rlist,'vpWidthF',1.,ierr)

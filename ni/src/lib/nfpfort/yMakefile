@@ -33,13 +33,16 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	vinth2p_ecmwf_nodes_dp.o vinth2p_nodes_dp.o obsp1_mult_time_dp.o \
 	area_conremap.o varimax_JiangLing_dp.o wrf_relhl.o calc_uh.o runknt.o \
 	gamma_interface.o dtrend_lsq_msg_dp.o gamfitd3.o spid.o \
-	xy1pdf77.o potmp_dpth2pres.o ocean.o
+	xy1pdf77.o potmp_dpth2pres.o ocean.o plotgrids_var.o
 
 LibraryTarget($(MYNAME),$(FOBJS))
 
 calc_uh.o: calc_uh.f90
         $(F77) $(FFLAGS) -c calc_uh.f90
 
+
+plotgrids_var.o: plotgrids_var.f90
+        $(F77) $(FFLAGS) -c plotgrids_var.f90
 
 #if defined(AIX)
 EXTRA_FCOPTIONS = -qextname=flush 

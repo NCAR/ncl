@@ -43,7 +43,7 @@ char *labels[] = { "90:S:o:N:S", "60:S:o:N:S", "30:S:o:N:S", "EQ",
 */
 float labellocs[] = { -90.0, -60.0, -30.0, 0.0, 30.0, 60.0, 90.0 };
         
-main()
+int main()
 {
     int appid, wid, pid, pid1, gkswid;
     float rwrk[5000];
