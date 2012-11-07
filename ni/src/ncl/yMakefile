@@ -51,21 +51,12 @@ MPI_DEFS = -DUSE_MPI
 
 #ifdef BuildNetCDF4
 NETCDF4_DEFS = -DUSE_NETCDF4
-NC4_FEATURES_SRCS = NclNewFile.c NclNewGroup.c NclNewList.c NclNetCDF4.c NclNewOGR.c NewFileSupport.c
-NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNewList.o NclNetCDF4.o NclNewOGR.o NewFileSupport.o
+NC4_FEATURES_SRCS = NclNewFile.c NclNewGroup.c NclNetCDF4.c NclNewOGR.c NewFileSupport.c
+NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNetCDF4.o NclNewOGR.o NewFileSupport.o
 #else
-NETCDF4_DEFS =
-#define NETCDF4LIB
-#endif
-
-#ifdef UseNetCDF4Features
-NC4_FEATURES_DEFS = -DUSE_NETCDF4_FEATURES
-NC4_FEATURES_SRCS = NclNewFile.c NclNewGroup.c NclNetCDF4.c NclNewOGR.c
-NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNetCDF4.o NclNewOGR.o
-#else
-#define NC4_FEATURES_DEFS
 #define NC4_FEATURES_SRCS
 #define NC4_FEATURES_OBJS
+#define NETCDF4LIB
 #endif
 
 #ifdef BuildHDF4
