@@ -3718,9 +3718,9 @@ void _readH5string(hid_t dset, hid_t d_type,
     lenstr = H5Tget_size(d_type);
 
   /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tlenstr = %ld\n", lenstr);
    */
-    fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tlenstr = %ld\n", lenstr);
 
     strdata = (char **)NclCalloc(numstr, sizeof(char *));
 
@@ -3780,9 +3780,9 @@ void _readH5string(hid_t dset, hid_t d_type,
         if(NULL != strdata[i])
         {
           /*
+           *fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tstrdata[%ld]: <%s>\n", i, strdata[i]);
            */
-            fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tstrdata[%ld]: <%s>\n", i, strdata[i]);
             strquark[i] = NrmStringToQuark(strdata[i]);
         }
         else
@@ -3823,9 +3823,9 @@ void _getH5string(hid_t fid, NclFileVarNode *varnode,
     hid_t       d_type;
 
   /*
+   *fprintf(stderr, "\nEnter _getH5string, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varnode->name));
    */
-    fprintf(stderr, "\nEnter _getH5string, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varnode->name));
 
     did = H5Dopen(fid, NrmQuarkToString(varnode->name), H5P_DEFAULT);
 
@@ -3858,8 +3858,8 @@ void _getH5string(hid_t fid, NclFileVarNode *varnode,
     H5Tclose(d_type);
     H5Dclose(did);
 
-    fprintf(stderr, "Leave _getH5string, file: %s, line: %d\n\n", __FILE__, __LINE__);
   /*
+   *fprintf(stderr, "Leave _getH5string, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
 }
 

@@ -1929,48 +1929,53 @@ NclFileAttNode *_getAttNodeFromNclFileGrpNode(NclFileGrpNode *grp_node,
     return NULL;
 }
 
-NclFileGrpNode *_getGrpNodeFromGrpNode(NclFileGrpNode *ingrpnode,
-                        NclQuark grpname)
+static void _get_rootNsubgroupName(const char *full_name,
+                                   NclQuark *root_grpname,
+                                   NclQuark *sub_grpname)
+{
+    char buffer[NCL_MAX_STRING];
+    char *name_str;
+    int n = 0;
+
+    if('/' == full_name[0])
+    {
+        strcpy(buffer, full_name +1);
+    }
+    else
+    {
+        strcpy(buffer, full_name);
+    }
+
+    name_str = strchr(buffer, '/');
+
+    if(NULL == name_str)
+    {
+        *sub_grpname = -1;
+        *root_grpname = NrmStringToQuark(buffer);
+    }
+    else
+    {
+        *sub_grpname = NrmStringToQuark(name_str + 1);
+        n = strlen(buffer) - strlen(name_str);
+        buffer[n] = '\0';
+        *root_grpname = NrmStringToQuark(buffer);
+    }
+}
+
+NclFileGrpNode *_getGrpNodeFromGrpNode_with_simple_name(NclFileGrpNode *ingrpnode,
+                                                        NclQuark grpname)
 {
     int n;
     NclFileGrpNode *outgrpnode = NULL;
-    NclQuark new_grpname = -1;
-    NclQuark newroot_grpname = -1;
-
-    char *full_str;
-    char *root_str;
-    char buffer[NCL_MAX_STRING];
-    NclQuark name;
 
     if(NULL == ingrpnode)
     {
         NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-            "_getGrpNodeFromGrpNode: input grpnode is NULL.\n"));
+            "_getGrpNodeFromGrpNode_with_simple_name: input grpnode is NULL.\n"));
         return NULL;
     }
 
-    strcpy(buffer, NrmQuarkToString(grpname));
-
-    if('/' == buffer[0])
-    {
-        strcat(buffer, "/");
-        name = NrmStringToQuark(buffer);
-    }
-    else
-        name = grpname;
-
-  /*
-   *fprintf(stderr, "\nHit _getGrpNodeFromGrpNode, file: %s, line:%d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tingrpnode->real_name: <%s>\n", NrmQuarkToString(ingrpnode->real_name));
-   *fprintf(stderr, "\t     ingrpnode->name: <%s>\n", NrmQuarkToString(ingrpnode->name));
-   *fprintf(stderr, "\t             grpname: <%s>\n", NrmQuarkToString(grpname));
-   *fprintf(stderr, "\t                name: <%s>\n", NrmQuarkToString(name));
-   */
-
-    if((name == ingrpnode->name) ||
-       (name == ingrpnode->real_name) ||
-       (grpname == ingrpnode->name) ||
-       (grpname == ingrpnode->real_name))
+    if(grpname == ingrpnode->name)
     {
        outgrpnode = ingrpnode;
        outgrpnode->pid = ingrpnode->id;
@@ -1987,10 +1992,7 @@ NclFileGrpNode *_getGrpNodeFromGrpNode(NclFileGrpNode *ingrpnode,
     {
         outgrpnode = ingrpnode->grp_rec->grp_node[n];
 
-        if((name == outgrpnode->name) ||
-           (name == outgrpnode->real_name) ||
-           (grpname == outgrpnode->name) ||
-           (grpname == outgrpnode->real_name))
+        if(grpname == outgrpnode->name)
         {
            outgrpnode->pid = ingrpnode->id;
            outgrpnode->parent = ingrpnode;
@@ -2000,15 +2002,52 @@ NclFileGrpNode *_getGrpNodeFromGrpNode(NclFileGrpNode *ingrpnode,
 
     for(n = 0; n < ingrpnode->grp_rec->n_grps; ++n)
     {
-        outgrpnode = _getGrpNodeFromGrpNode(ingrpnode->grp_rec->grp_node[n], name);
+        outgrpnode = _getGrpNodeFromGrpNode(ingrpnode->grp_rec->grp_node[n], grpname);
 
         if(NULL != outgrpnode)
         {
-            return outgrpnode;
+           return outgrpnode;
         }
     }
 
     return NULL;
+}
+
+NclFileGrpNode *_getGrpNodeFromGrpNode(NclFileGrpNode *ingrpnode,
+                                       NclQuark ingrpname)
+{
+    NclFileGrpNode *outgrpnode = NULL;
+    NclFileGrpNode *tmpgrpnode = NULL;
+    NclQuark grpname = -1;
+    NclQuark sub_grpname = -1;
+
+    if(NULL == ingrpnode)
+    {
+        NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+            "_getGrpNodeFromGrpNode: input grpnode is NULL.\n"));
+        return NULL;
+    }
+
+    _get_rootNsubgroupName(NrmQuarkToString(ingrpname), &grpname, &sub_grpname);
+
+  /*
+   *fprintf(stderr, "\nHit _getGrpNodeFromGrpNode, file: %s, line:%d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tingrpnode->real_name: <%s>\n", NrmQuarkToString(ingrpnode->real_name));
+   *fprintf(stderr, "\t     ingrpnode->name: <%s>\n", NrmQuarkToString(ingrpnode->name));
+   *fprintf(stderr, "\t           ingrpname: <%s>\n", NrmQuarkToString(ingrpname));
+   *fprintf(stderr, "\t             grpname: <%s>\n", NrmQuarkToString(grpname));
+   *fprintf(stderr, "\t         sub_grpname: <%s>\n", NrmQuarkToString(sub_grpname));
+   */
+
+    tmpgrpnode = _getGrpNodeFromGrpNode_with_simple_name(ingrpnode, grpname);
+
+    if(0 > sub_grpname)
+    {
+        return tmpgrpnode;
+    }
+
+    outgrpnode = _getGrpNodeFromGrpNode(tmpgrpnode, sub_grpname);
+    return outgrpnode;
 }
 
 NclFileVarNode *_getVarNodeFromNclFileVarRecord(NclFileVarRecord *var_rec,
