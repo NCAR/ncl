@@ -3902,10 +3902,13 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 size_t n_dims = 0;
                 size_t data_size = 1;
                 void *data_value = NULL;
-                obj  *obj_id = (obj *)data;
+                int  *obj_id = (int *)data;
 
                 NclMultiDValData theval = NULL;
                 NclList        comp_list;
+                NclListObjList *step = NULL;
+                NclVar cur_var = NULL;
+                NclObj obj = NULL;
 
                 NclFileCompoundRecord *comp_rec = varnode->comprec;
                 NclFileCompoundNode   *compnode = NULL;
@@ -3952,12 +3955,13 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                     for(i = 0; i < data_size; ++i)
                     {
                         comp_list = (NclList)_NclGetObj(obj_id[i]);
+                        step = comp_list->list.last;
                         for(n = 0; n < comp_rec->n_comps; ++n)
                         {
-                            tmpobj = (NclObj)_NclListPop((NclObj)comp_list);
-                            if(Ncl_MultiDValData == tmpobj->obj.obj_type)
+                            cur_var = (NclVar)_NclGetObj(step->obj_id);
+                            if(Ncl_Var == cur_var->obj.obj_type)
                             {
-                                theval = (NclMultiDValData)_NclGetObj(tmpobj->obj.id);
+                                theval = (NclMultiDValData)_NclGetObj(cur_var->var.thevalue_id);
                                 memcpy(data_value + cur_mem_loc,
                                            theval->multidval.val, mem_len[n]);
         
@@ -3967,8 +3971,10 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                             {
                                 fprintf(stderr, "\tfile: %s, function: %s, line: %d\n",
                                                   __FILE__, __PRETTY_FUNCTION__, __LINE__);
-                                fprintf(stderr, "\tUnknown theval->obj.obj_type: 0%x\n", theval->obj.obj_type);
+                                fprintf(stderr, "\tUnknown cur_var->obj.obj_type: 0%x\n", cur_var->obj.obj_type);
                             }
+
+                            step = step->prev;
                         }
                     }
         

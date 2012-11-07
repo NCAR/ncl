@@ -5239,9 +5239,9 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
     hsize_t dims[NCL_MAX_DIMENSIONS];
     hsize_t chunk_dims[NCL_MAX_DIMENSIONS];
 
-    fprintf(stderr, "\nEnter H5WriteVar, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
   /*
+   *fprintf(stderr, "\nEnter H5WriteVar, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
    */
 
     if(grpnode->status > 0)
@@ -5616,14 +5616,17 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         NclMultiDValData theval = NULL;
 
         NclList comp_list;
+        NclListObjList *step = NULL;
+        NclVar cur_var = NULL;
+        NclObj obj = NULL;
 
         NclFileCompoundRecord *comp_rec = varnode->comprec;
         NclFileCompoundNode   *compnode = NULL;
 
-        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tfound node for var: <%s>, thevar: <%s>, rank = %d\n",
-                           NrmQuarkToString(varnode->name), NrmQuarkToString(thevar), rank);
       /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tfound node for var: <%s>, thevar: <%s>, rank = %d\n",
+       *                   NrmQuarkToString(varnode->name), NrmQuarkToString(thevar), rank);
        */
 
         data_size = 1;
@@ -5637,8 +5640,6 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         {
             size_t cur_mem_loc = 0;
             size_t compound_size = 0;
-            NclObj tmpobj = NULL;
-
             size_t *mem_len = (size_t *)NclCalloc(comp_rec->n_comps, sizeof(size_t));
             if (! mem_len)
             {
@@ -5692,12 +5693,13 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
             for(i = 0; i < data_size; ++i)
             {
                 comp_list = (NclList)_NclGetObj(obj_id[i]);
+                step = comp_list->list.last;
                 for(n = 0; n < comp_rec->n_comps; ++n)
                 {
-                    tmpobj = (NclObj)_NclListPop((NclObj)comp_list);
-                    if(Ncl_MultiDValData == tmpobj->obj.obj_type)
+                    cur_var = (NclVar)_NclGetObj(step->obj_id);
+                    if(Ncl_Var == cur_var->obj.obj_type)
                     {
-                        theval = (NclMultiDValData)_NclGetObj(tmpobj->obj.id);
+                        theval = (NclMultiDValData)_NclGetObj(cur_var->var.thevalue_id);
                         memcpy(data_value + cur_mem_loc,
                                    theval->multidval.val, mem_len[n]);
 
@@ -5707,16 +5709,12 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
                     {
                         fprintf(stderr, "\tfile: %s, function: %s, line: %d\n",
                                           __FILE__, __PRETTY_FUNCTION__, __LINE__);
-                        fprintf(stderr, "\tUnknown theval->obj.obj_type: 0%x\n", theval->obj.obj_type);
+                        fprintf(stderr, "\tUnknown cur_var->obj.obj_type: 0%x\n", cur_var->obj.obj_type);
                     }
+
+                    step = step->prev;
                 }
             }
-
-          /*
-           */
-            fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tdata_size = %ld, compound_size = %ld\n",
-                               data_size, compound_size);
 
             did = H5Dcreate(fid, NrmQuarkToString(varnode->name), tid, space, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
@@ -5812,8 +5810,8 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         H5Dclose(did);
     }
 
-    fprintf(stderr, "Leave H5WriteVar, file: %s, line: %d\n\n", __FILE__, __LINE__);
   /*
+   *fprintf(stderr, "Leave H5WriteVar, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
 
     if(ret_code)
@@ -5986,7 +5984,7 @@ NhlErrorTypes H5WriteCompound(void *rec, NclQuark compound_name, NclQuark var_na
     hsize_t *dim_size = NULL;
 
     fprintf(stderr, "\nEnter H5WriteCompound, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tcompound_name: <%s>, var_name: <%s>, n_mems = %d, mem_name[0]: <%s>\n",
+    fprintf(stderr, "\tcompound_name: <%s>, var_name: <%s>, n_mems = %ld, mem_name[0]: <%s>\n",
                      NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
                      n_mems, NrmQuarkToString(mem_name[0]));
   /*
