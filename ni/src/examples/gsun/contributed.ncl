@@ -4326,6 +4326,147 @@ begin
   return(clmDaySmth)
 end
 
+; =====================================
+undef("clmDayHr")
+;
+; Calculate daily  temporal means.
+; This is a more general form of clmDayTLL
+; It works on any dimension array and allows for multiple 
+; samples per day.
+;
+; It has not been extensively tested and it is not documented.
+; Consider this unsupported at this time.
+;
+function clmDayHr(z, yyyymmddhh[*]:integer)
+begin
+  yyyy = yyyymmddhh/1000000
+  mdh  = yyyymmddhh%1000000
+  mm   = mdh/10000
+  dh   = mdh%10000
+  dd   = dh/100
+  hh   = dh-dd*100
+
+  NTIM   = dimsizes(yyyymmddhh)     ; all time steps
+
+  dddhh  = day_of_year(yyyy, mm, dd)*100 + hh
+  yyyydddhh = yyyy*100000 +  dddhh
+
+  dhh    = hh(1)-hh(0)              ; assume constant 
+  nsmp   = 24/dhh                   ; # samples/day                          
+
+  nday   = 365                      ; no leap
+  ntim   = nsmp*nday                ; # non-leap year times
+
+  ndayx  = 366                      ; including leap year
+  ntimx  = nsmp*ndayx
+
+  dimz   = dimsizes(z)
+  rankz  = dimsizes(dimz)
+
+;---------------------------------------------------------------
+; Create array to hold climatology and counts.
+;---------------------------------------------------------------
+
+  if (rankz.eq.4) then
+      klev   = dimz(1)
+      nlat   = dimz(2)
+      mlon   = dimz(3)
+      zClm   = new ( (/ntimx,klev,nlat,mlon/), "float", 1e20)
+  end if
+  if (rankz.eq.3) then
+      nlat   = dimz(1)
+      mlon   = dimz(2)
+      zClm   = new ( (/ntimx,nlat,mlon/), "float", 1e20)
+  end if
+  if (rankz.eq.2) then
+      npts   = dimz(1)
+      zClm   = new ( (/ntimx,npts/), "float", 1e20)
+  end if
+  if (rankz.eq.1) then
+      zClm   = new ( (/ntimx/), "float", 1e20)
+  end if
+
+  yrStrt = yyyy(0)
+  yrLast = yyyy(NTIM-1)
+  nyrs   = yrLast-yrStrt+1 
+;---------------------------------------------------------------
+; Climatologies: Loop over each climate day and hour
+;---------------------------------------------------------------
+  nt = -1
+  do ndy=1,nday
+    do nhr=hh(0),hh(nsmp-1),dhh
+       nt    = nt+1
+       indx = ind(dddhh.eq.(ndy*100+nhr))  
+
+       if (rankz.eq.4) then
+           zClm(nt:nt,:,:,:) = dim_avg_n(z(indx,:,:,:), 0)
+       end if
+       if (rankz.eq.3) then
+           zClm(nt:nt,:,:)   = dim_avg_n(z(indx,:,:), 0)
+       end if
+       if (rankz.eq.2) then
+           zClm(nt:nt,:)     = dim_avg_n(z(indx,:), 0)
+       end if
+       if (rankz.eq.1) then
+           zClm(nt:nt)       = dim_avg_n(z(indx), 0)
+       end if
+
+       delete(indx)
+    end do
+  end do
+
+;---------------------------------------------------------------
+; Fill in climatological day 366 with the average
+; of Jan 1 (day 1) and 31 Dec (day 365)
+;---------------------------------------------------------------
+  do ns=0,nsmp-1
+
+     if (rankz.eq.4) then
+         zClm(ntim+ns,:,:,:) = 0.5*(zClm(ns,:,:,:)+zClm(ntim-(nsmp-ns),:,:,:))
+     end if
+     if (rankz.eq.3) then
+         zClm(ntim+ns,:,:)   = 0.5*(zClm(ns,:,:)+zClm(ntim-(nsmp-ns),:,:))
+     end if
+     if (rankz.eq.2) then
+         zClm(ntim+ns,:)     = 0.5*(zClm(ns,:)+zClm(ntim-(nsmp-ns),:))
+     end if
+     if (rankz.eq.1) then
+         zClm(ntim+ns)       = 0.5*(zClm(ns)+zClm(ntim-(nsmp-ns)))
+     end if
+
+  end do
+
+;---------------------------------------------------------------
+; Meta data
+;---------------------------------------------------------------
+  dt        = 1.0/nsmp
+  day       = fspan(1.00, ndayx+1-dt, ntimx)
+  day@long_name = "day and fraction of day"
+  day!0     = "day"
+  day&day   =  day
+
+  zClm!0    = "day"
+  zClm&day  =  day 
+
+  if (rankz.eq.4) then
+      copy_VarCoords(z(0,:,:,:), zClm(0,:,:,:))
+  end if
+  if (rankz.eq.3) then
+      copy_VarCoords(z(0,:,:), zClm(0,:,:))
+  end if
+  if (rankz.eq.2) then
+      copy_VarCoords(z(0,:), zClm(0,:))
+  end if
+
+  if (isatt(z,"long_name")) then
+      zClm@long_name = z@long_name
+  end if
+  if (isatt(z,"units")) then
+      zClm@units     = z@units
+  end if
+
+  return(zClm)
+end
 
 
 ; =====================================
