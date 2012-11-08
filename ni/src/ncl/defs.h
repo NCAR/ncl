@@ -54,7 +54,7 @@ extern "C" {
 
 struct _NclMemoryStruct
 {
-    unsigned char status;
+    short inuse;
     size_t size;
     size_t memloc;
     size_t linenumb;

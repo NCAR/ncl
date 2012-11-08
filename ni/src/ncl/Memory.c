@@ -48,6 +48,72 @@ extern "C" {
 unsigned long total = 0;
 
 #ifdef NCLDEBUG
+void _addNclMemoryRecord(int linenumb, const char *filename, const char *funcname,
+                         ng_usize_t size, void *ptr)
+{
+    size_t memloc = ptr;
+
+    if(ncl_memory_record.num_allocated >= ncl_memory_record.max_allocated)
+    {
+        fprintf(stderr, "\t\tThe old max_allocated = %ld, ", ncl_memory_record.max_allocated);
+        ncl_memory_record.max_allocated *= 2;
+        fprintf(stderr, "The new max_allocated = %ld\n", ncl_memory_record.max_allocated);
+        ncl_memory_record.record = (NclMemoryStruct *)realloc(ncl_memory_record.record,
+                                    (ncl_memory_record.max_allocated * sizeof(NclMemoryStruct)));
+    }
+
+    fprintf(stderr, "\tMem loc %ld: NCL allocate <%ld> bytes of memory in function <%s> at line <%d> of file <%s>\n",
+                     ncl_memory_record.num_allocated, size, funcname, linenumb, filename);
+    fprintf(stderr, "\t\tThe memory address is: <0x%x>\n", (unsigned int) memloc);
+                     
+    ncl_memory_record.totalMemoryAllocated += size;
+    ncl_memory_record.record[ncl_memory_record.num_allocated].inuse = 1;
+    ncl_memory_record.record[ncl_memory_record.num_allocated].size = size;
+    ncl_memory_record.record[ncl_memory_record.num_allocated].memloc = memloc;
+    ncl_memory_record.record[ncl_memory_record.num_allocated].linenumb = linenumb;
+
+    if(NCL_MAX_NAME_LENGTH <= strlen(filename))
+        strncpy(ncl_memory_record.record[ncl_memory_record.num_allocated].filename, filename, NCL_MAX_NAME_LENGTH);
+    else
+        strcpy(ncl_memory_record.record[ncl_memory_record.num_allocated].filename, filename);
+
+    if(NCL_MAX_NAME_LENGTH <= strlen(funcname))
+        strncpy(ncl_memory_record.record[ncl_memory_record.num_allocated].funcname, funcname, NCL_MAX_NAME_LENGTH);
+    else
+        strcpy(ncl_memory_record.record[ncl_memory_record.num_allocated].funcname, funcname);
+
+    ++ncl_memory_record.num_allocated;
+}
+
+void _removeNclMemoryRecord(int linenumb, const char *filename, const char *funcname, void *ptr)
+{
+    size_t n;
+    size_t memloc = ptr;
+
+    for(n = 0; n < ncl_memory_record.num_allocated; ++n)
+    {
+        if(memloc == ncl_memory_record.record[n].memloc)
+        {
+            if(ncl_memory_record.record[n].inuse)
+            {
+                fprintf(stderr, "\tMem loc %ld: NCL freed <%ld> bytes of memory in function <%s> at line <%d> of file <%s>\n",
+                                   n,  ncl_memory_record.record[n].size, funcname, linenumb, filename);
+                fprintf(stderr, "\t\tThe memory address is: <0x%x>\n", (unsigned int)memloc);
+                fprintf(stderr, "\t\tThis memory is allocated in function <%s> at line <%d> of file <%s>\n",
+                                 funcname, linenumb, filename);
+
+                ++ncl_memory_record.num_freed;
+                ncl_memory_record.totalMemoryFreed += ncl_memory_record.record[n].size;
+                ncl_memory_record.record[n].inuse = 0;
+                return;
+            }
+        }
+    }
+
+    fprintf(stderr, "\tTry to free un-allocated memory in function <%s> at line <%d> of file <%s>\n",
+                     funcname, linenumb, filename);
+}
+
 void _initializeNclMemoryRecord()
 {
     ncl_memory_record.totalMemoryAllocated = 0;
@@ -59,10 +125,31 @@ void _initializeNclMemoryRecord()
     ncl_memory_record.num_freed = 0;
 
     ncl_memory_record.record = (NclMemoryStruct *)calloc(NCL_MAX_MEMORY_RECORD, sizeof(NclMemoryStruct));
+    if(NULL == ncl_memory_record.record)
+    {
+        fprintf(stderr, "\nFailed to malloc <%ld> bytes of memory in function <%s> at line <%d> of file <%s>\n",
+                         NCL_MAX_MEMORY_RECORD * sizeof(NclMemoryStruct),
+                         __FILE__, __LINE__, __PRETTY_FUNCTION__);
+        NhlPError(NhlFATAL,errno,"NclMalloc Failed");
+    }
+
+    if(NCLdebug_on)
+        _addNclMemoryRecord(__LINE__, __FILE__, __PRETTY_FUNCTION__,
+                            NCL_MAX_MEMORY_RECORD * sizeof(NclMemoryStruct),
+                            (void *)ncl_memory_record.record);
 }
 
 void _finalizeNclMemoryRecord()
 {
+    size_t n;
+
+    if(NCLdebug_on)
+    {
+        ++ncl_memory_record.num_freed;
+        ncl_memory_record.totalMemoryFreed += ncl_memory_record.record[0].size;
+        ncl_memory_record.record[0].inuse = 0;
+    }
+
     fprintf(stderr, "\nNCL allocated <%ld> pieces of memory in total of <%ld> bytes.\n",
                        ncl_memory_record.num_allocated, ncl_memory_record.totalMemoryAllocated);
     fprintf(stderr, "NCL freed <%ld> pieces of memory in total of <%ld> bytes.\n",
@@ -77,61 +164,23 @@ void _finalizeNclMemoryRecord()
         fprintf(stderr, "\nNCL has left <%ld> pieces in total of <%ld> bytes unfreed memory.\n",
                          ncl_memory_record.num_allocated - ncl_memory_record.num_freed,
                          ncl_memory_record.totalMemoryAllocated - ncl_memory_record.totalMemoryFreed);
+
+        for(n = 0; n < ncl_memory_record.num_allocated; ++n)
+        {
+            if(ncl_memory_record.record[n].inuse)
+            {
+                fprintf(stderr, "\tMem loc %ld: <%ld> bytes of memory at location <0x%x> in function <%s> at line <%d> of file <%s> unfreed.\n",
+                                 n,  ncl_memory_record.record[n].size,
+                                 (unsigned int) ncl_memory_record.record[n].memloc,
+                                 ncl_memory_record.record[n].funcname,
+                                 ncl_memory_record.record[n].linenumb,
+                                 ncl_memory_record.record[n].filename);
+            }
+        }
     }
 
     free(ncl_memory_record.record);
-}
-
-void _addNclMemoryRecord(int linenumb, const char *filename, const char *funcname,
-                         ng_usize_t size, size_t memloc)
-{
-    if(ncl_memory_record.num_allocated >= ncl_memory_record.max_allocated)
-    {
-        ncl_memory_record.max_allocated *= 2;
-        ncl_memory_record.record = (NclMemoryStruct *)realloc(ncl_memory_record.record,
-                                    (ncl_memory_record.max_allocated * sizeof(NclMemoryStruct)));
-    }
-
-    fprintf(stderr, "\tMem loc %ld: NCL allocate <%ld> bytes of memory in function <%s> at line <%d> of file <%s>\n",
-                     ncl_memory_record.num_allocated, size, funcname, linenumb, filename);
-                     
-    ncl_memory_record.totalMemoryAllocated += size;
-    ncl_memory_record.record[ncl_memory_record.num_allocated].status = 1;
-    ncl_memory_record.record[ncl_memory_record.num_allocated].size = size;
-    ncl_memory_record.record[ncl_memory_record.num_allocated].memloc = memloc;
-    ncl_memory_record.record[ncl_memory_record.num_allocated].linenumb = linenumb;
-    if(NCL_MAX_NAME_LENGTH <= strlen(filename))
-        strncpy(ncl_memory_record.record[ncl_memory_record.num_allocated].filename, filename, NCL_MAX_NAME_LENGTH);
-    else
-        strcpy(ncl_memory_record.record[ncl_memory_record.num_allocated].filename, filename);
-
-    if(NCL_MAX_NAME_LENGTH <= strlen(funcname))
-        strncpy(ncl_memory_record.record[ncl_memory_record.num_allocated].funcname, funcname, NCL_MAX_NAME_LENGTH);
-    else
-        strcpy(ncl_memory_record.record[ncl_memory_record.num_allocated].funcname, funcname);
-
-    ++ncl_memory_record.num_allocated;
-}
-
-void _removeNclMemoryRecord(int linenumb, const char *filename, const char *funcname, size_t memloc)
-{
-    size_t n;
-
-    for(n = 0; n < ncl_memory_record.num_allocated; ++n)
-    {
-        if(memloc == ncl_memory_record.record[n].memloc)
-        {
-            fprintf(stderr, "\tMem loc %ld: NCL freed <%ld> bytes of memory in function <%s> at line <%d> of file <%s>\n",
-                               n,  ncl_memory_record.record[n].size, funcname, linenumb, filename);
-
-            ncl_memory_record.totalMemoryFreed += ncl_memory_record.record[n].size;
-            ncl_memory_record.record[n].status = 0;
-
-            fprintf(stderr, "\t\tThis memory is allocated in function <%s> at line <%d> of file <%s>\n",
-                             funcname, linenumb, filename);
-            break;
-        }
-    }
+    ncl_memory_record.record = NULL;
 }
 
 void *_underNclMalloc(int linenumb, const char *filename, const char *funcname,
@@ -152,7 +201,7 @@ void *_underNclMalloc(int linenumb, const char *filename, const char *funcname,
 	}
 
 	if(NCLdebug_on)
-		_addNclMemoryRecord(linenumb, filename, funcname, size, (size_t) ptr);
+		_addNclMemoryRecord(linenumb, filename, funcname, size, ptr);
 
         return(ptr);
 }
@@ -163,8 +212,9 @@ void _underNclFree(int linenumb, const char *filename, const char *funcname,
         if(NULL != ptr)
 	{
 		if(NCLdebug_on)
-			_removeNclMemoryRecord(linenumb, filename, funcname, (size_t) ptr);
-                free(ptr);
+			_removeNclMemoryRecord(linenumb, filename, funcname, ptr);
+
+               	free(ptr);
                 ptr = NULL;
         }
 }
@@ -206,7 +256,7 @@ void *_underNclCalloc(int linenumb, const char *filename, const char *funcname,
 	}
 
 	if(NCLdebug_on)
-		_addNclMemoryRecord(linenumb, filename, funcname, num * size, (size_t) ptr);
+		_addNclMemoryRecord(linenumb, filename, funcname, num * size, ptr);
 
 	return(ptr);
 }
@@ -238,7 +288,7 @@ void *_underNclRealloc(int linenumb, const char *filename, const char *funcname,
 	else
 	{
 		if(NCLdebug_on)
-			_removeNclMemoryRecord(linenumb, filename, funcname, (size_t) ptr);
+			_removeNclMemoryRecord(linenumb, filename, funcname, ptr);
 
 		ptr = (void *)realloc(ptr,size);
 
@@ -252,7 +302,7 @@ void *_underNclRealloc(int linenumb, const char *filename, const char *funcname,
 	}
 
 	if(NCLdebug_on)
-		_addNclMemoryRecord(linenumb, filename, funcname, size, (size_t) ptr);
+		_addNclMemoryRecord(linenumb, filename, funcname, size, ptr);
 
 	return(ptr);
 }
@@ -302,9 +352,11 @@ NclFree
         else{
 #ifdef  __sgi 
                 free(ptr);
+		ptr = NULL;
                 return NhlNOERROR;
 #else
                 free(ptr);
+		ptr = NULL;
                 return NhlNOERROR;
 #endif
         }

@@ -188,8 +188,6 @@ main(int argc, char **argv) {
     NCL_ARGC = argc;
 
 #ifdef NCLDEBUG
-    fprintf(stderr, "\nfile: %s, line: %d, function: %s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
-    fprintf(stderr, "\tNCLdebug_on = %d\n", NCLdebug_on);
     for (i = 0; i < NCL_ARGC; i++, *NCL_ARGV++)
         (void) printf("NCL_ARGV[%d] = %s\n", i, *NCL_ARGV);
 #endif /* NCLDEBUG */
@@ -288,8 +286,6 @@ main(int argc, char **argv) {
     }
 
 #ifdef NCLDEBUG
-    fprintf(stderr, "\nfile: %s, line: %d, function: %s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
-    fprintf(stderr, "\tNCLdebug_on = %d\n", NCLdebug_on);
     if(NCLdebug_on)
         _initializeNclMemoryRecord();
 #endif
@@ -579,15 +575,11 @@ main(int argc, char **argv) {
 #endif /* NCLDEBUG */
 
     NclFree(myName);
+    NclFree(cur_line_text);
+
+    _NclFinalizeMachine();
 
     _NclExit(NclReturnStatus);
-
-#ifdef NCLDEBUG
-    if(NCLdebug_on)
-        _finalizeNclMemoryRecord();
-#endif
-
-    return NclReturnStatus;
 }
 
 #ifdef __cplusplus
