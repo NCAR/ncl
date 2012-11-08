@@ -4457,7 +4457,6 @@ static void H5FreeFileRec(void* therec)
 
     if(grpnode->open)
     {
-        fprintf(stderr, "H5FreeFileRec in file: %s, line: %d\n", __FILE__, __LINE__);
         H5Fclose(grpnode->id);
         H5close();
     }
