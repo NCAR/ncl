@@ -620,9 +620,9 @@ static void *_getFieldVariable(NclFileGrpNode *grpnode, NclQuark thevar,
     long i, offset;
 
   /*
-   *fprintf(stderr, "\nHit NewOGRReadVar, file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
    */
+    fprintf(stderr, "\nHit _getFieldVariable, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
 
     varnode = _getVarNodeFromNclFileGrpNode(grpnode, thevar);
 

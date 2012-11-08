@@ -102,6 +102,11 @@ short   NCLoldBehavior = 0;     /* retain former behavior for certain backwards-
 	                        /* behaviors could be revised after an adoption period */
 short   NCLnewfs = 0;           /* Use new file structure */
 
+#ifdef NCLDEBUG
+short	NCLdebug_on = 0;
+NclMemoryRecord ncl_memory_record;
+#endif
+
 char    *nclf = NULL;           /* script of NCL commands, may or may not be provided */
 
 int quark_comp(const void *q1, const void *q2)
@@ -149,6 +154,11 @@ main(int argc, char **argv) {
     FILE    *tmpf = NULL;   /* file variables for creating arguments */
     char    *tmpd = NULL;
 
+#ifdef YYDEBUG
+    extern int yydebug;
+    yydebug = 1;
+#endif /* YYDEBUG */
+
     strcpy(buffer,(char *)GetNCARGPath("tmp"));
     sr = access(buffer,W_OK|X_OK|F_OK);
     if(sr != 0) {
@@ -156,12 +166,6 @@ main(int argc, char **argv) {
 		      "\"%s\" tmp dir does not exist or is not writable: NCL functionality may be limited -- check TMPDIR environment variable",
 		      buffer);
     }
-
-
-#ifdef YYDEBUG
-    extern int yydebug;
-    yydebug = 1;
-#endif /* YYDEBUG */
 
     error_fp = stderr;
     stdout_fp = stdout;
@@ -184,6 +188,8 @@ main(int argc, char **argv) {
     NCL_ARGC = argc;
 
 #ifdef NCLDEBUG
+    fprintf(stderr, "\nfile: %s, line: %d, function: %s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
+    fprintf(stderr, "\tNCLdebug_on = %d\n", NCLdebug_on);
     for (i = 0; i < NCL_ARGC; i++, *NCL_ARGV++)
         (void) printf("NCL_ARGV[%d] = %s\n", i, *NCL_ARGV);
 #endif /* NCLDEBUG */
@@ -194,6 +200,7 @@ main(int argc, char **argv) {
      *  -n      element print: don't enumerate elements in print()
      *  -x      echo: turns on command echo
      *  -V      version: output NCARG/NCL version, exit
+     *  -m      turns on memory debug
      *  -o      old behavior: retain former behavior for backwards incompatible changes
      *  -h      help: output options and exit
      *
@@ -201,7 +208,7 @@ main(int argc, char **argv) {
      *  -Q      override: don't echo copyright notice (unannounced option)
      */
     opterr = 0;     /* turn off getopt() msgs */
-    while ((c = getopt (argc, argv, "fhnoxVXQp")) != -1) {
+    while ((c = getopt (argc, argv, "fhnodgmxVXQp")) != -1) {
         switch (c) {
             case 'p':
                 NCLnoSysPager = 1;
@@ -217,6 +224,18 @@ main(int argc, char **argv) {
 
             case 'x':
                 NCLecho = 1;
+                break;
+
+            case 'm':
+                NCLdebug_on = 1;
+                break;
+
+            case 'd':
+                NCLdebug_on = 2;
+                break;
+
+            case 'g':
+                NCLdebug_on = 2;
                 break;
 
             /* NOT ADVERTISED!  Will override "no echo" and print EVERYTHING! */
@@ -245,6 +264,9 @@ main(int argc, char **argv) {
                 (void) fprintf(stdout, "Usage: ncl -fhnpxV <args> <file.ncl>\n");
                 (void) fprintf(stdout, "\t -f: Use New File Structure, and NetCDF4 features\n");
                 (void) fprintf(stdout, "\t -n: don't enumerate values in print()\n");
+                (void) fprintf(stdout, "\t -m: turns on memory debug.\n");
+                (void) fprintf(stdout, "\t -d: turns on detailed memory debug.\n");
+                (void) fprintf(stdout, "\t -g: turns on deep detailed memory debug.\n");
                 (void) fprintf(stdout, "\t -p: don't page output from the system() command\n");
                 (void) fprintf(stdout, "\t -o: retain former behavior for certain backwards-incompatible changes\n");
                 (void) fprintf(stdout, "\t -x: echo NCL commands\n");
@@ -264,6 +286,13 @@ main(int argc, char **argv) {
                 break;
         }
     }
+
+#ifdef NCLDEBUG
+    fprintf(stderr, "\nfile: %s, line: %d, function: %s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
+    fprintf(stderr, "\tNCLdebug_on = %d\n", NCLdebug_on);
+    if(NCLdebug_on)
+        _initializeNclMemoryRecord();
+#endif
 
     /*
      * Announce NCL copyright notice, etc.
@@ -553,9 +582,12 @@ main(int argc, char **argv) {
 
     _NclExit(NclReturnStatus);
 
-    return NclReturnStatus;
+#ifdef NCLDEBUG
+    if(NCLdebug_on)
+        _finalizeNclMemoryRecord();
+#endif
 
-    return 0;
+    return NclReturnStatus;
 }
 
 #ifdef __cplusplus

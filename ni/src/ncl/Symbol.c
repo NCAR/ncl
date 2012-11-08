@@ -3286,6 +3286,11 @@ void _NclExit(int status) {
 
 	NCL_PROF_FINALIZE();
 
+#ifdef NCLDEBUG
+	if(NCLdebug_on)
+		_finalizeNclMemoryRecord();
+#endif
+
 	exit(status);
 }
 
