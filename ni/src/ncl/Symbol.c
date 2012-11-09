@@ -386,6 +386,11 @@ int _NclInitSymbol
 	return(_NclNewScope());
 }
 
+int _NclFinalizeSymbol()
+{
+	_NclDeleteNewSymStack();
+	return 0;
+}
 
 void _NclRegisterFunc
 #if	NhlNeedProto

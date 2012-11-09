@@ -577,7 +577,15 @@ main(int argc, char **argv) {
     NclFree(myName);
     NclFree(cur_line_text);
 
+    _NclFinalizeSymbol();      
+
     _NclFinalizeMachine();
+
+    for(i = 0; i < argc; ++i)
+    {
+        NclFree(NCL_ARGV[i]);
+    }
+    NclFree(NCL_ARGV);
 
     _NclExit(NclReturnStatus);
 }

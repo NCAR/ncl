@@ -54,7 +54,6 @@ extern "C" {
 
 struct _NclMemoryStruct
 {
-    short inuse;
     size_t size;
     size_t memloc;
     size_t linenumb;
@@ -71,6 +70,7 @@ struct _NclMemoryRecord
     size_t num_allocated;
     size_t max_allocated;
     size_t num_freed;
+    size_t used;
     NclMemoryStruct *record;
 };
 
