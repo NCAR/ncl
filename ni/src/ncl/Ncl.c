@@ -285,11 +285,6 @@ main(int argc, char **argv) {
         }
     }
 
-#ifdef NCLDEBUG
-    if(NCLdebug_on)
-        _initializeNclMemoryRecord();
-#endif
-
     /*
      * Announce NCL copyright notice, etc.
      */
@@ -550,6 +545,11 @@ main(int argc, char **argv) {
             yyparse(reset);
     }
 
+#ifdef NCLDEBUG
+    if(NCLdebug_on)
+        _initializeNclMemoryRecord();
+#endif
+
     /* Load any provided script */
     if (nclf != (char *) NULL) {
         (void) strcpy(buffer, _NGResolvePath(nclf));
@@ -563,6 +563,11 @@ main(int argc, char **argv) {
     } else {
         yyparse(reset);
     }
+
+#ifdef NCLDEBUG
+        if(NCLdebug_on)
+                _finalizeNclMemoryRecord();
+#endif
 
 #ifdef NCLDEBUG
     (void) fclose(thefptr);
@@ -580,12 +585,6 @@ main(int argc, char **argv) {
     _NclFinalizeSymbol();      
 
     _NclFinalizeMachine();
-
-    for(i = 0; i < argc; ++i)
-    {
-        NclFree(NCL_ARGV[i]);
-    }
-    NclFree(NCL_ARGV);
 
     _NclExit(NclReturnStatus);
 }

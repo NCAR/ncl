@@ -493,6 +493,7 @@ NhlErrorTypes _NclInitMachine
 
 NhlErrorTypes _NclFinalizeMachine()
 {
+	_NclMachineRec* machrec;
 #if 0
 	int i;
 
@@ -501,9 +502,9 @@ NhlErrorTypes _NclFinalizeMachine()
 		if(NULL != level_1_vars[i])
 			NclFree(level_1_vars[i]);
 	}
+#endif
 
 	NclFree(level_1_vars);
-#endif
 
 	NclFree(mstk->the_rec->themachine);
 	NclFree(mstk->the_rec->thefiles);

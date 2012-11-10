@@ -190,7 +190,7 @@ statement_list :  statement eoln			{
 #ifdef NCLDEBUG
 									_NclPrintMachine(strt,-1,theoptr);
 #endif
-#ifdef PRINTTREEONLY
+#ifndef PRINTTREEONLY
 									_NclExecute(strt);
 #endif
 									_NclResetNewSymStack();
