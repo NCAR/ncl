@@ -99,22 +99,6 @@ static int _is3DGeometry(OGRwkbGeometryType geom)
         return (wkbFlatten(geom) != geom);
 }
 
-#if 0
-static NclNewList _CreateVlist4OGR(NclQuark name)
-{
-    NclNewList vlist = NULL;
-
-    vlist = (NclNewList)_NclNewListCreate(NULL, NULL, 0, 0, -1, (NCL_ITEM | NCL_FIFO));
-    assert(vlist);
-    _NclListSetType((NclObj)vlist, NCL_ITEM);
-    vlist->newlist.name = name;
-    vlist->newlist.type = NrmStringToQuark("item");
-    vlist->obj.obj_type = Ncl_List;
-
-    return vlist;
-}
-#endif
-
 /*
  * _mapOGRType2NCL()
  *
@@ -322,6 +306,7 @@ static void _setGroupVars(NclFileGrpNode *grpnode,
         _addNclVarNodeToGrpNode(grpnode, NrmStringToQuark(OGR_Fld_GetNameRef(fldDef)),
                                 j+1, _mapOGRType2Ncl(OGR_Fld_GetType(fldDef)),
                                 1, dim_names, dim_sizes);
+       grpnode->var_rec->var_node[j].id = j;
     }
 
     dim_names[0] = dimnode[0].name;
@@ -604,13 +589,18 @@ static void *_loadFeatureGeometry(OGRRecord *rec, NclFileVarNode *varnode,
     geo_obj_id = (int *)geo_tmp_md->multidval.val;
     n = 0;
 
+    OGR_L_ResetReading(rec->layer);
+
     for(idx = local_start; idx <= local_finish; idx += local_stride)
     {
+        geo_list = (NclList)_NclGetObj(geo_obj_id[n]);
+        ++n;
+
         feature = OGR_L_GetNextFeature(rec->layer);
         if(NULL == feature)
+        {
             continue;
-
-        geo_list = (NclList)_NclGetObj(geo_obj_id[n]);
+        }
 
         geom = OGR_F_GetGeometryRef(feature);
 
@@ -618,8 +608,11 @@ static void *_loadFeatureGeometry(OGRRecord *rec, NclFileVarNode *varnode,
 
         if(0 == geomCount)
         {
-            fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tGeometry %d: geomCount = %d\n", n, geomCount);
+          /*
+           *fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tGeometry %d: geomCount = %d\n", n, geomCount);
+           */
+            _loadSubGeometry(rec, geom, geo_list, n);
             continue;
         }
 
@@ -633,8 +626,6 @@ static void *_loadFeatureGeometry(OGRRecord *rec, NclFileVarNode *varnode,
             subGeom = OGR_G_GetGeometryRef(geom, i);
             _loopSubGeometry(rec, subGeom, geo_list, i);
         }
-
-        ++n;
     }
 
   /*
@@ -731,6 +722,7 @@ static void *_getFieldVariable(NclFileGrpNode *grpnode, NclFileVarNode *varnode,
 
     FieldExtractor helper;
     long i, offset;
+    int fieldNum = varnode->id;
 
   /*
    *fprintf(stderr, "\nHit _getFieldVariable, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -767,7 +759,7 @@ static void *_getFieldVariable(NclFileGrpNode *grpnode, NclFileVarNode *varnode,
         OGRFeatureH feature = OGR_L_GetFeature(rec->layer, i);
         
         /* get the field corresponding to varNum. */
-        (*helper)(feature, varnode->id, storage, offset++);
+        (*helper)(feature, fieldNum, storage, offset++);
           
         OGR_F_Destroy(feature);
     }
@@ -848,9 +840,9 @@ static void *NewOGROpenFile(void *therec, NclQuark path, int wr_status)
     int numPoints = 0;
 
   /*
+   *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tNewOGROpenFile...\n");
    */
-    fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tNewOGROpenFile...\n");
 
     rec = (OGRRecord*)NclCalloc(1, sizeof(OGRRecord));
     if(rec == NULL) {
@@ -941,6 +933,8 @@ static void *NewOGROpenFile(void *therec, NclQuark path, int wr_status)
        *                 numGeometry, numSegments, numPoints);
        */
     }
+
+    OGR_L_ResetReading(layer);
 
     grpnode->other_src = (void *)rec;
 
