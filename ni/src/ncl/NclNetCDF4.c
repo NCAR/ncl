@@ -2415,7 +2415,6 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
 
 static void NC4FreeFileRec(void* therec)
 {
-
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
 
     if(grpnode->open)
@@ -2682,65 +2681,6 @@ void EndNC4DefineMode(NclFileGrpNode *rootgrp, int id)
     return;
 }
 
-#if 0
-static NclQuark *NC4GetVarNames(void *therec, int *num_vars)
-{
-    NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
-    NclQuark *out_quarks = NULL;
-    int i;
-
-    *num_vars = 0;
-    if(NULL != grpnode->var_rec)
-    {
-        if(grpnode->var_rec->n_vars)
-        {
-            out_quarks = (NclQuark*)NclCalloc(grpnode->var_rec->n_vars,
-                                           sizeof(NclQuark));
-            assert(out_quarks);
-
-            for(i = 0; i < grpnode->var_rec->n_vars; i++)
-            {
-                out_quarks[i] = grpnode->var_rec->var_node[i].name;
-            }
-
-            *num_vars = grpnode->var_rec->n_vars;
-        }
-    }
-
-#if 0
-    if(NULL != grpnode->grp_rec)
-    {
-        int n, nv;
-        NclQuark *tmp_quarks = NULL;
-
-        if(grpnode->grp_rec->n_grps)
-        {
-            for(n = 0; n < grpnode->grp_rec->n_grps; n++)
-            {
-                tmp_quarks = NC4GetVarNames((void *)grpnode->grp_rec->grp_node[i], &nv);
-
-                if(nv)
-                {
-                    out_quarks = (NclQuark*)realloc(out_quarks,
-                                                (*num_vars + nv) * sizeof(NclQuark));
-                    assert(out_quarks);
-
-                    for(i = 0; i < nv; i++)
-                    {
-                        out_quarks[*num_vars + i] = tmp_quarks[i];
-                    }
-                    NclFree(tmp_quarks);
-                }
- 
-                *num_vars += nv;
-            }
-        }
-    }
-#endif
-    return(out_quarks);
-}
-#endif
-
 static NclFileVarNode *NC4GetVarInfoFromGrpNode(void *therec,
                                                 NclQuark var_name)
 {
@@ -2830,67 +2770,6 @@ static NclFileVarNode *NC4GetVarInfoFromGrpNode(void *therec,
     return(tmp);
 }
 
-#if 0
-static NclFVarRec *NC4GetVarInfo(void *therec, NclQuark var_name)
-{
-    NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
-    return ((NclFVarRec *)NC4GetVarInfoFromGrpNode(grpnode, var_name));
-}
-
-static NclQuark *NC4GetDimNames(void *therec, int *num_dims)
-{
-    NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
-    NclQuark *out_quarks = NULL;
-    NclQuark *tmp_quarks = NULL;
-    int i, n, nv;
-
-    *num_dims = 0;
-    if(NULL != grpnode->dim_rec)
-    {
-        if(grpnode->dim_rec->n_dims)
-        {
-            out_quarks = (NclQuark*)NclCalloc(grpnode->dim_rec->n_dims,
-                                           sizeof(NclQuark));
-            assert(out_quarks);
-
-            for(i = 0; i < grpnode->dim_rec->n_dims; i++)
-            {
-                out_quarks[i] = grpnode->dim_rec->dim_node[i].name;
-            }
-
-            *num_dims = grpnode->dim_rec->n_dims;
-        }
-    }
-
-    if(NULL != grpnode->grp_rec)
-    {
-        if(grpnode->grp_rec->n_grps)
-        {
-            for(n = 0; n < grpnode->grp_rec->n_grps; n++)
-            {
-                tmp_quarks = NC4GetDimNames((void *)grpnode->grp_rec->grp_node[i], &nv);
-
-                if(nv)
-                {
-                    out_quarks = (NclQuark*)realloc(out_quarks,
-                                                (*num_dims + nv) * sizeof(NclQuark));
-                    assert(out_quarks);
-
-                    for(i = 0; i < nv; i++)
-                    {
-                        out_quarks[*num_dims + i] = tmp_quarks[i];
-                    }
-                    NclFree(tmp_quarks);
-                }
- 
-                *num_dims += nv;
-            }
-        }
-    }
-    return(out_quarks);
-}
-#endif
-
 static NclFDimRec *NC4GetDimInfoFromGrpNode(NclFileGrpNode *grpnode,
                                                 NclQuark dim_name)
 {
@@ -2935,31 +2814,6 @@ static NclFDimRec *NC4GetDimInfo(void* therec, NclQuark dim_name_q)
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
     return (NC4GetDimInfoFromGrpNode(grpnode, dim_name_q));
 }
-
-#if 0
-static NclQuark *NC4GetAttNames(void* therec, int *num_atts)
-{    
-    NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
-    NclQuark *out_list = NULL;
-    int i;
-
-    *num_atts = 0;
-
-    if(grpnode->att_rec)
-    {
-        if(grpnode->att_rec->n_atts)
-        {
-            out_list = (NclQuark*)NclCalloc(grpnode->att_rec->n_atts, sizeof(NclQuark));
-            for(i = 0; i < grpnode->att_rec->n_atts; i++)
-            {
-                out_list[i] = grpnode->att_rec->att_node[i].name;
-            }
-            *num_atts = grpnode->att_rec->n_atts;
-        }
-    }
-    return(out_list);
-}
-#endif
 
 static NclFileAttNode *NC4GetAttInfoFromGrpNode(NclFileGrpNode *grpnode,
                                                 NclQuark att_name)

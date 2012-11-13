@@ -245,6 +245,7 @@ typedef struct _ext_stack {
         struct _ext_stack * next;
 } ExtStack;
 
+#ifdef NCLDEBUG
 void *_underNclMalloc(int linenum, const char *filename, const char *funcname,
                       ng_usize_t size);
 void _underNclFree(int linenum, const char *filename, const char *funcname,
@@ -254,96 +255,40 @@ void *_underNclCalloc(int linenum, const char *filename, const char *funcname,
 void *_underNclRealloc(int linenum, const char *filename, const char *funcname,
                        void *ptr, ng_usize_t size);
 
-/*
- * Macro:	NclMalloc
- *
- * Description:	This macro adds __LINE__, __FILE__, and __PRETTY_FUNCTION__
- *              information when memory being allocated.
- *              It replace the previous NclMalloc, but its argument did not
- *		change.
- *
- * In Args:
- *		size	ng_usize_t	the size of memory to be allocated.
- *
- * Scope:	Global Public
- *
- * Returns:	pointer of void (of size).
- *
- * Side Effect:	
- *
- */
-
 #define NclMalloc(size)	_underNclMalloc(__LINE__, __FILE__, __PRETTY_FUNCTION__,\
 			                (ng_usize_t) size)
-
-/*
- * Macro:	NclCalloc
- *
- * Description:	This macro adds __LINE__, __FILE__, and __PRETTY_FUNCTION__
- *              information when memory being freed.
- *              It replace the previous NclCalloc, but its argument did not
- *		change.
- *
- * In Args:
- *		num	ng_usize_t	number of elements to allocated.
- *		size	ng_usize_t	the size of per element to be allocated.
- *
- * Scope:	Global Public
- *
- * Returns:	pointer of void (of num * size, with memory set to 0).
- *
- * Side Effect:	Force memory reset to 0.
- *
- */
-
 #define NclCalloc(num, size)	_underNclCalloc(__LINE__, __FILE__, __PRETTY_FUNCTION__,\
 				                (ng_usize_t) num, (ng_usize_t) size)
-
-/*
- * Macro:	NclRealloc
- *
- * Description:	This macro adds __LINE__, __FILE__, and __PRETTY_FUNCTION__
- *              information when memory being freed.
- *              It replace the previous NclRealloc, but its argument did not
- *		change.
- *
- * In Args:
- *		void	*ptr		the previous pointer.
- *		size	ng_usize_t	the size of memory to be reallocated.
- *
- * Scope:	Global Public
- *
- * Returns:	pointer of void (of size).
- *
- * Side Effect:
- *
- */
-
 #define NclRealloc(ptr, size)	_underNclRealloc(__LINE__, __FILE__, __PRETTY_FUNCTION__,\
 				                 ptr, (ng_usize_t) size)
+#define NclFree(ptr)	_underNclFree(__LINE__, __FILE__, __PRETTY_FUNCTION__, ptr)
+#else
+extern void *NclMalloc(
+#if     NhlNeedProto
+ng_usize_t      /* size */
+#endif
+);
 
-/*
- * Macro:	NclFree
- *
- * Description:	This macro adds __LINE__, __FILE__, and __PRETTY_FUNCTION__
- *              information when memory being freed.
- *              It replace the previous NclFree, but its argument did not
- *		change.
- *
- * In Args:
- *		size	ng_usize_t	the size of memory to be allocated.
- *
- * Scope:	Global Public
- *
- * Returns:	none
- *
- * Side Effect:	Force freed memory pointer to NULL.
- *
- */
+extern void *NclCalloc(
+#if     NhlNeedProto
+ng_usize_t      /* num */,
+ng_usize_t      /* size */
+#endif
+);
 
-#define NclFree(ptr)	_underNclFree(__LINE__, __FILE__, __PRETTY_FUNCTION__,\
-				      ptr)
+extern void *NclRealloc(
+#if     NhlNeedProto
+void    *       /* ptr */       ,
+ng_usize_t      /* size */
+#endif
+);
 
+extern NhlErrorTypes NclFree(
+#if     NhlNeedProto
+void * /* size */
+#endif
+);
+#endif
 
 #endif /*_NCdefs.h*/
 #ifdef __cplusplus

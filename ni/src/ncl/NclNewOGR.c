@@ -88,6 +88,8 @@ struct _OGRRecord
 
 static int NewOGRInitialized = 0;
 
+extern void _NclBuildArrayOfList(void *tmp_val, int ndims, ng_size_t *dim_sizes);
+
 /*
  * _is3DGeometry()
  *
@@ -174,16 +176,6 @@ static char* _mapOGRGeom2Ncl(OGRwkbGeometryType type)
 }
 
 /*
- * _setSubGroupDims()
- *
- */
-static void _setSubGroupDims(NclFileGrpNode *sub_grpnode)
-{
-    _addNclDimNode(&(sub_grpnode->dim_rec), NrmStringToQuark("segment"),
-                   0, 1, 0);
-}
-
-/*
  * _setGroupDims()
  *
  * Creates dimension records for our fixed set of dimensions.
@@ -218,48 +210,76 @@ static void _setGroupAtts(NclFileGrpNode *grpnode, OGRFeatureDefnH layerDefn,
                           int numSegments,
                           int numPoints)
 {
-    int ret=0;
-    int iv = 0;
     NclQuark qname = -1;
 
-    /* the layer name */
-    qname =  NrmStringToQuark(OGR_FD_GetName(layerDefn));
-    ret = _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("layer_name"),
-                         NCL_string, 1, (void *)&qname);
+  /*the layer name*/
+    qname = NrmStringToQuark(OGR_FD_GetName(layerDefn));
+    _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("layer_name"),
+                   NCL_string, 1, (void *)&qname);
 
     /* the geometry-type of the layer */
     qname = NrmStringToQuark(_mapOGRGeom2Ncl(OGR_FD_GetGeomType(layerDefn)));
-    ret = _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("geometry_type"),
-                         NCL_string, 1, (void *)&qname);
+    _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("geometry_type"),
+                   NCL_string, 1, (void *)&qname);
 
-    /* The remaining global-atts are "convenience constants" intended to be used 
-     * in scripting code to index into the geometry and segments variables.
-     */
+  /*
+   *The remaining global-atts are "convenience constants" intended to be used 
+   *in scripting code to index into the geometry and segments variables.
+   */
 
-    iv = numGeometry;
-    ret = _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("numGeom"),
-                         NCL_int, 1, (void *) &iv);
+  /*
+   *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tGeometry %d: segs: %d, points: %d\n",
+   *                 numGeometry, numSegments, numPoints);
+   */
+    
+    _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("numGeom"),
+                   NCL_int, 1, (void *)&numGeometry);
 
-    iv = numSegments;
-    ret = _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("numSegs"),
-                         NCL_int, 1, (void *) &iv);
+    _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("numSegs"),
+                   NCL_int, 1, (void *)&numSegments);
 
-    iv = numPoints;
-    ret = _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("numPnts"),
-                         NCL_int, 1, (void *) &iv);
+    _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("numPnts"),
+                   NCL_int, 1, (void *)&numPoints);
 }
 
-
-static void _setSubGroupVars(NclFileGrpNode *grpnode)
+/*
+ * _buildArrayOfListVar()
+ *
+ * Defines a variable as an array of list.
+ *
+ */
+static NclMultiDValData _buildArrayOfListVar(int numGeometry)
 {
-    NclQuark dim_names[NCL_MAX_DIMENSIONS];
-    long dim_sizes[NCL_MAX_DIMENSIONS];
+    NclObjTypes the_obj_type;
+    NclBasicDataTypes the_type;
+    NclMultiDValData tmp_md;
+    void *tmp_val;
+    ng_size_t ndims = 1;
+    ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
+    ng_usize_t totalsize = 1;
+    
+    the_type = NCL_list;
+    the_obj_type = Ncl_Typelist;
 
-    /* the "segments" encodes the segments (x, y[, z]) */
-    dim_names[0] = NrmStringToQuark("segment");
-    dim_sizes[0] = 1;
-    _addNclVarNodeToGrpNode(grpnode, NrmStringToQuark("segments"),
-                            0, NCL_list, 1, dim_names, dim_sizes);
+    dim_sizes[0] = numGeometry;
+
+    totalsize = numGeometry * _NclSizeOf(the_type);
+
+    tmp_val = (void*)NclMalloc(totalsize);
+    if(! tmp_val)
+    {
+        NhlPError(NhlFATAL,ENOMEM,"New: could not create new array");
+        return NULL;
+    }
+
+    _NclBuildArrayOfList(tmp_val, ndims, dim_sizes);
+
+    tmp_md = _NclCreateVal(NULL, NULL, Ncl_MultiDValData, 0, tmp_val,
+                           NULL, ndims, dim_sizes, TEMPORARY, NULL,
+                           _NclTypeEnumToTypeClass(the_obj_type));
+
+    return tmp_md;
 }
 
 /*
@@ -278,8 +298,8 @@ static void _setGroupVars(NclFileGrpNode *grpnode,
 {
     OGRFieldDefnH fldDef;
     int numVars;
-    int i = 0;
     int j = 0;
+    int ndims = 1;
 
     NclQuark dim_names[NCL_MAX_DIMENSIONS];
     long dim_sizes[NCL_MAX_DIMENSIONS];
@@ -300,17 +320,16 @@ static void _setGroupVars(NclFileGrpNode *grpnode,
         dim_names[0] = dimnode[0].name;
         dim_sizes[0] = dimnode[0].size;
         _addNclVarNodeToGrpNode(grpnode, NrmStringToQuark(OGR_Fld_GetNameRef(fldDef)),
-                                j, _mapOGRType2Ncl(OGR_Fld_GetType(fldDef)),
+                                j+1, _mapOGRType2Ncl(OGR_Fld_GetType(fldDef)),
                                 1, dim_names, dim_sizes);
-        ++i;
     }
 
-    /* the "segments" encodes the segments (x, y[, z]) */
-    dim_names[0] = NrmStringToQuark("segment");
-    dim_sizes[0] = 1;
-    _addNclVarNodeToGrpNode(grpnode, NrmStringToQuark("segments"),
-                            i, NCL_list, 1, dim_names, dim_sizes);
-    ++i;
+    dim_names[0] = dimnode[0].name;
+    dim_sizes[0] = numGeometry;
+
+    _addNclVarNodeToGrpNode(grpnode, NrmStringToQuark("Geometry"),
+                            numVars, NCL_list,
+                            ndims, dim_names, dim_sizes);
 }
 
 /*
@@ -378,19 +397,18 @@ static void _countSubGeometry(OGRGeometryH geom,
  * of the total number of line-segments and numbers of XY(Z) tuples.
  *
  */
-static void _countGeometry(NclFileGrpNode *grpnode,
+static void _countGeometry(OGRGeometryH geom,
                            int *numSegments,
                            int *numPoints)
 {
-    OGRRecord *rec = (OGRRecord *) grpnode->other_src;
     int i, numPts;
 
-    int geomCount = OGR_G_GetGeometryCount(rec->geom);
+    int geomCount = OGR_G_GetGeometryCount(geom);
 
     if (geomCount == 0)
     {
         /* presumed to be Point or LineString */
-        numPts = OGR_G_GetPointCount(rec->geom);
+        numPts = OGR_G_GetPointCount(geom);
         *numPoints += numPts;
 
         (*numSegments)++;
@@ -400,7 +418,7 @@ static void _countGeometry(NclFileGrpNode *grpnode,
         OGRGeometryH subGeom;
         for(i = 0; i < geomCount; i++)
         {
-            subGeom = OGR_G_GetGeometryRef(rec->geom, i);
+            subGeom = OGR_G_GetGeometryRef(geom, i);
             numPts = OGR_G_GetPointCount(subGeom);
             if(numPts == 0)
             {
@@ -420,17 +438,18 @@ static void _countGeometry(NclFileGrpNode *grpnode,
 }
 
 /*
- * _loadFeatureGeometry()
+ * _loadSubGeometry()
  *
  * Utility function used to recursively load OGRGeometry.
  *
  */
-static void _loadFeatureGeometry(OGRRecord *rec, OGRGeometryH geom,
-                                 NclList vlist, int *numSegments, int *numPoints)
+static void _loadSubGeometry(OGRRecord *rec, OGRGeometryH geom,
+                            NclList sublist, int numSegments)
 {
-    int i;
     char buffer[16];
     void *val = NULL;
+
+    int i;
     int ndims = 2;
     NclVar var;
     NclQuark  dimnames[2];
@@ -440,95 +459,191 @@ static void _loadFeatureGeometry(OGRRecord *rec, OGRGeometryH geom,
     double *y;
     double *z = NULL;
 
-    int geomCount = OGR_G_GetGeometryCount(geom);
     int numSegPts = OGR_G_GetPointCount(geom);
 
   /*
-   *fprintf(stderr, "\nEnter _loadFeatureGeometry, file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tgeomCount = %d, numSegPts = %d\n", geomCount, numSegPts);
+   *fprintf(stderr, "\tEnter %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+
+   *fprintf(stderr, "\t\tfunction %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+   *fprintf(stderr, "\t\t\tnumSegPts = %d\n", numSegPts);
    */
 
-    if(geomCount == 0)
+    if(rec->xform)
+        OGR_G_Transform(geom, rec->xform);
+
+    sprintf(buffer, "xyz_%6.6d", numSegments);
+    if(rec->is3DGeometry)
+        dimsizes[0] = 3;
+    else
+        dimsizes[0] = 2;
+    dimnames[0] = NrmStringToQuark(buffer);
+
+    sprintf(buffer, "pts_%6.6d", numSegments);
+    dimsizes[1] = numSegPts;
+    dimnames[1] = NrmStringToQuark(buffer);
+
+    val = (void *)NclCalloc(dimsizes[0] * dimsizes[1], sizeof(double));
+
+    x = (double *) val;
+    y = (double *) (val + numSegPts * sizeof(double));
+    if(rec->is3DGeometry)
+        z = (double *) (val + 2 * numSegPts * sizeof(double));
+
+    for(i = 0; i < numSegPts; i++)
     {
-        if(rec->xform)
-            OGR_G_Transform(geom, rec->xform);
-
-        sprintf(buffer, "xyz_%6.6d", *numSegments);
+        x[i] = OGR_G_GetX(geom, i);
+        y[i] = OGR_G_GetY(geom, i);
         if(rec->is3DGeometry)
-            dimsizes[0] = 3;
-        else
-            dimsizes[0] = 2;
-        dimnames[0] = NrmStringToQuark(buffer);
+            z[i] = OGR_G_GetZ(geom, i);
+    }
 
-        sprintf(buffer, "pts_%6.6d", *numSegments);
-        dimsizes[1] = numSegPts;
-        dimnames[1] = NrmStringToQuark(buffer);
+    sprintf(buffer, "seg_%6.6d", numSegments);
+    var = _NclCreateVlenVar(buffer, val, ndims, dimnames, dimsizes, NCL_double);
+    _NclListPush((NclObj)sublist, (NclObj)var);
 
-        val = (void *)NclCalloc(dimsizes[0] * dimsizes[1], sizeof(double));
+  /*
+    _NclListAppend((NclObj)sublist, (NclObj)var);
+   *fprintf(stderr, "\tLeave %s, file: %s, line: %d\n\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+   */
+}
 
-        x = (double *) val;
-        y = (double *) (val + numSegPts * sizeof(double));
-        if(rec->is3DGeometry)
-            z = (double *) (val + 2 * numSegPts * sizeof(double));
+/*
+ * _loopSubGeometry()
+ *
+ * Utility function used to recursively load OGRGeometry.
+ *
+ */
+static void _loopSubGeometry(OGRRecord *rec, OGRGeometryH geom,
+                            NclList sublist, int numSegments)
+{
+    int i;
+    int geomCount = OGR_G_GetGeometryCount(geom);
 
-        for(i = 0; i < numSegPts; i++)
-        {
-            x[i] = OGR_G_GetX(geom, i);
-            y[i] = OGR_G_GetY(geom, i);
-            if(rec->is3DGeometry)
-                z[i] = OGR_G_GetZ(geom, i);
-            (*numPoints)++;
-        }
+  /*
+   *fprintf(stderr, "\tEnter %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+   */
 
-        sprintf(buffer, "seg_%6.6d", *numSegments);
-        var = _NclCreateVlenVar(buffer, val, ndims, dimnames, dimsizes, NCL_double);
-        _NclListAppend((NclObj)vlist, (NclObj)var);
-
-        (*numSegments)++;
+    if(0 == geomCount)
+    {
+        _loadSubGeometry(rec, geom, sublist, numSegments);
     }
     else
     {
-        /* compound geometry */
+      /*compound geometry*/
         OGRGeometryH subGeom;
+
+      /*
+       *fprintf(stderr, "\tfunction %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+       *fprintf(stderr, "\t\tgeomCount = %d\n", geomCount);
+       */
+
         for(i = 0; i < geomCount; i++)
         {
             subGeom = OGR_G_GetGeometryRef(geom, i);
-            _loadFeatureGeometry(rec, subGeom, vlist, numSegments, numPoints);
+            _loopSubGeometry(rec, subGeom, sublist, numSegments + i);
         }
+    }
+
+  /*
+   *fprintf(stderr, "\tLeave %s, file: %s, line: %d\n\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+   */
+}
+
+/*
+ * _loadFeatureGeometry()
+ *
+ * Utility function used to recursively load OGRGeometry.
+ *
+ */
+static void *_loadFeatureGeometry(OGRRecord *rec, NclFileVarNode *varnode,
+                                long *start, long *finish, long *stride)
+{
+    OGRFeatureH feature;
+    OGRGeometryH geom;
+    OGRGeometryH subGeom;
+
+    int numGeometrys = 0;
+    int i, n;
+    int geomCount = 0;
+    long idx;
+
+    long local_start, local_finish, local_stride;
+
+    NclMultiDValData geo_tmp_md = NULL;
+    int *geo_obj_id = NULL;
+    NclList geo_list;
+
+  /*
+   *fprintf(stderr, "\nEnter _loadFeatureGeometry, file: %s, line: %d\n", __FILE__, __LINE__);
+   */
+
+    if(NULL != varnode->dim_rec)
+        numGeometrys = (int) varnode->dim_rec->dim_node[0].size;
+    else
+        return NULL;
+
+    numGeometrys = (finish[0] - start[0] + 1) / stride[0];
+    if(0 > numGeometrys)
+    {
+        numGeometrys *= (-1);
+        local_start = finish[0];
+        local_finish = start[0];
+        local_stride = -stride[0];
+    }
+    else
+    {
+        local_start  = start[0];
+        local_finish = finish[0];
+        local_stride = stride[0];
+    }
+
+    if(0 == numGeometrys)
+        return NULL;
+
+    geo_tmp_md = _buildArrayOfListVar(numGeometrys);
+    geo_obj_id = (int *)geo_tmp_md->multidval.val;
+    n = 0;
+
+    for(idx = local_start; idx <= local_finish; idx += local_stride)
+    {
+        feature = OGR_L_GetNextFeature(rec->layer);
+        if(NULL == feature)
+            continue;
+
+        geo_list = (NclList)_NclGetObj(geo_obj_id[n]);
+
+        geom = OGR_F_GetGeometryRef(feature);
+
+        geomCount = OGR_G_GetGeometryCount(geom);
+
+        if(0 == geomCount)
+        {
+            fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
+            fprintf(stderr, "\tGeometry %d: geomCount = %d\n", n, geomCount);
+            continue;
+        }
+
+      /*
+       *fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tGeometry %d: geomCount = %d\n", n, geomCount);
+       */
+
+        for(i = 0; i < geomCount; ++i)
+        {
+            subGeom = OGR_G_GetGeometryRef(geom, i);
+            _loopSubGeometry(rec, subGeom, geo_list, i);
+        }
+
+        ++n;
     }
 
   /*
    *fprintf(stderr, "Leave _loadFeatureGeometry, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
+
+    return (void *)geo_tmp_md;
 }
-
-/*
- * _loadGeometry()
- *
- * Intended to be called once to load and cache all of the geometry variables, whenever
- * any one of them is asked for.
- *
- */
-static int _loadGeometry(NclFileGrpNode *grpnode, NclList vlist)
-{
-    OGRRecord *rec = (OGRRecord *) grpnode->other_src;
-    int segmentNum = 0;
-    int pointNum   = 0;
-
-  /*
-    OGRFeatureH feature;
-    fprintf(stderr, "\nEnter _loadGeometry, file: %s, line: %d\n", __FILE__, __LINE__);
-    feature = rec->feature;
-   */
-
-    _loadFeatureGeometry(rec, rec->geom, vlist, &segmentNum, &pointNum);
   
-  /*
-    fprintf(stderr, "Leave _loadGeometry, file: %s, line: %d\n\n", __FILE__, __LINE__);
-   */
-
-    return 1;
-}
 
 /*
  * When it comes to extracting field variables, we set a pointer to a function of
@@ -539,7 +654,6 @@ typedef void (*FieldExtractor)(
 OGRFeatureH feature, int fieldNum, void* storage, long offset
 #endif
 );
-
 
 /*
  * _getFieldAsInteger()
@@ -609,62 +723,56 @@ long        offset;
  * Returns the contents of the requested (non-spatial) field.
  *
  */
-static void *_getFieldVariable(NclFileGrpNode *grpnode, NclQuark thevar,
+static void *_getFieldVariable(NclFileGrpNode *grpnode, NclFileVarNode *varnode,
                                long *start, long *finish,
                                long *stride, void *storage)
 {
     OGRRecord *rec = (OGRRecord *) grpnode->other_src;
-    NclFileVarNode *varnode;
 
     FieldExtractor helper;
     long i, offset;
 
   /*
+   *fprintf(stderr, "\nHit _getFieldVariable, file: %s, line: %d\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "\nHit _getFieldVariable, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
 
-    varnode = _getVarNodeFromNclFileGrpNode(grpnode, thevar);
+    if(NULL == varnode)
+        return NULL;
 
-    if(NULL != varnode)
+    /* Based upon the type of the variable we're after, we'll invoke a different 
+     * helper function in the loop below.  Note that the caller has already 
+     * verified varNum as a valid index.
+     */
+    switch(varnode->type)
     {
-        /* Based upon the type of the variable we're after, we'll invoke a different 
-         * helper function in the loop below.  Note that the caller has already 
-         * verified varNum as a valid index.
-         */
-        switch(varnode->type)
-        {
-            case NCL_int:
-                 helper = &_getFieldAsInteger;
-                 break;
-            case NCL_double:
-                 helper = &_getFieldAsDouble;
-                 break;
-            case NCL_string:
-                 helper = &_getFieldAsString;
-                 break;
-            default:
-                 return NULL;
-        }
+        case NCL_int:
+             helper = &_getFieldAsInteger;
+             break;
+        case NCL_double:
+             helper = &_getFieldAsDouble;
+             break;
+        case NCL_string:
+             helper = &_getFieldAsString;
+             break;
+        default:
+             return NULL;
+    }
         
-        offset = 0;
-        OGR_L_ResetReading(rec->layer);
+    offset = 0;
+    OGR_L_ResetReading(rec->layer);
 
-        /* NOTE that OGR fields are always 1-dimensional */
-        for(i=start[0]; i<= finish[0]; i+=stride[0])
-        {
-            OGRFeatureH feature = OGR_L_GetFeature(rec->layer, i);
-                
-            /* get the field corresponding to varNum. */
-            (*helper)(feature, varnode->id, storage, offset++);
-              
-            OGR_F_Destroy(feature);
-        }
-
-        return storage;
+    /* NOTE that OGR fields are always 1-dimensional */
+    for(i=start[0]; i<= finish[0]; i+=stride[0])
+    {
+        OGRFeatureH feature = OGR_L_GetFeature(rec->layer, i);
+        
+        /* get the field corresponding to varNum. */
+        (*helper)(feature, varnode->id, storage, offset++);
+          
+        OGR_F_Destroy(feature);
     }
 
-    return NULL;
+    return storage;
 }
 
 /*
@@ -673,36 +781,13 @@ static void *_getFieldVariable(NclFileGrpNode *grpnode, NclQuark thevar,
  * Utility to return the contents of one of the geometry variables.
  *
  */
-static void *_getGeometryVariable(NclFileGrpNode *grpnode, NclQuark thevar,
+static void *_getGeometryVariable(NclFileGrpNode *grpnode,
+                                  NclFileVarNode *varnode,
                                   long *start, long *finish,
                                   long *stride, void *storage)
 {
-  /* On first innvocation, we'll load and cache all of the geometry variables,
-   * under the premise that its quite likely a request for any of them is part of
-   * a broader request for the geometry as a whole.
-   */
-
-    if(NrmStringToQuark("segments") == thevar)
-    {
-        NclList vlist = NULL;
-        NclMultiDValData v_md;
-        ng_size_t one = 1;
-        int *id = (int *)NclMalloc(sizeof(int));
-
-        vlist = (NclList)_NclListCreate(NULL, NULL, 0, 0, (NCL_CONCAT | NCL_FIFO));
-        assert(vlist);
-        _NclListSetType((NclObj)vlist,NCL_FIFO);
-        vlist->obj.obj_type = Ncl_List;
-        *id = vlist->obj.id;
-        v_md = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,id,
-                                           NULL,1,&one,TEMPORARY,NULL);
-
-        _loadGeometry(grpnode, vlist);
-
-        return (void *)v_md;
-    }
-    else
-        return NULL;
+    OGRRecord *rec = (OGRRecord *) grpnode->other_src;
+    storage = _loadFeatureGeometry(rec, varnode, start, finish, stride);
 
     return storage;
 }
@@ -751,7 +836,6 @@ static void *NewOGROpenFile(void *therec, NclQuark path, int wr_status)
     NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
 
     OGRRecord *rec = NULL;
-    OGRRecord *subgrp_rec = NULL;
     OGRLayerH layer;
     OGRFeatureH feature;
     OGRGeometryH geom;
@@ -763,14 +847,10 @@ static void *NewOGROpenFile(void *therec, NclQuark path, int wr_status)
     int numSegments = 0;
     int numPoints = 0;
 
-    NclQuark grpname;
-    char tmpstr[128];
-    NclFileGrpNode *subgrpnode = NULL;
-
   /*
-   *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tNewOGROpenFile...\n");
    */
+    fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tNewOGROpenFile...\n");
 
     rec = (OGRRecord*)NclCalloc(1, sizeof(OGRRecord));
     if(rec == NULL) {
@@ -851,42 +931,28 @@ static void *NewOGROpenFile(void *therec, NclQuark path, int wr_status)
     {
         geom = OGR_F_GetGeometryRef(feature);
 
-        sprintf(tmpstr, "grp_%3.3d", numGeometry);
-        grpname = NrmStringToQuark(tmpstr);
+        _countGeometry(geom, &numSegments, &numPoints);
 
-        _addNclGrpNodeToGrpNode(grpnode, grpname);
-        subgrpnode = grpnode->grp_rec->grp_node[numGeometry];
-
-        memset(subgrpnode, 0, sizeof(NclFileGrpNode));
-        subgrpnode->pid = grpnode->id;
-        subgrpnode->id  = 1000 + numGeometry + subgrpnode->pid;
-        subgrpnode->name = grpname;
-        subgrpnode->path = path;
-        subgrpnode->status = wr_status;
-        _setSubGroupDims(subgrpnode);
-        _setSubGroupVars(subgrpnode);
-
-        subgrp_rec = (OGRRecord*)NclCalloc(1, sizeof(OGRRecord));
-        assert(subgrp_rec);
-
-        subgrp_rec->layer        = rec->layer;
-        subgrp_rec->layerDefn    = rec->layerDefn;
-        subgrp_rec->xform        = rec->xform;
-        subgrp_rec->is3DGeometry = rec->is3DGeometry;
-        subgrp_rec->feature      = feature;
-        subgrp_rec->geom         = geom;
-        subgrpnode->other_src = (void *)subgrp_rec;
-
-        _countGeometry(subgrpnode, &numSegments, &numPoints);
+        ++numGeometry;
       /*
        *OGR_F_Destroy(feature);
+
+       *fprintf(stderr, "\tGeometry %d: segs: %d, points: %d\n",
+       *                 numGeometry, numSegments, numPoints);
        */
-        ++numGeometry;
     }
 
-    _setGroupDims(grpnode, numGeometry, numSegments, numPoints);
+    grpnode->other_src = (void *)rec;
+
     _setGroupAtts(grpnode, layerDefn, numGeometry, numSegments, numPoints);
+    _setGroupDims(grpnode, numGeometry, numSegments, numPoints);
     _setGroupVars(grpnode, layerDefn, numGeometry, numSegments, numPoints);
+
+  /*
+   *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tGeometry %d: segs: %d, points: %d\n",
+   *                 numGeometry, numSegments, numPoints);
+   */
 
     return((void*)grpnode);
 }
@@ -921,10 +987,10 @@ static void *NewOGRReadVar(void* therec, NclQuark thevar,
     if(NULL != varnode)
     {
         /* found the requested variable... */
-        if(NrmStringToQuark("segments") == thevar)
-            return _getGeometryVariable(grpnode, thevar, start, finish, stride, storage);
+        if(NrmStringToQuark("Geometry") == thevar)
+            return _getGeometryVariable(grpnode, varnode, start, finish, stride, storage);
         else
-            return _getFieldVariable(grpnode, thevar, start, finish, stride, storage);
+            return _getFieldVariable(grpnode, varnode, start, finish, stride, storage);
     }
 
     return NULL;

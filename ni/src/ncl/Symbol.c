@@ -1463,7 +1463,7 @@ NclQuark file_var_name;
 static NclApiDataList *getNewFileVarCoordInfo(NclFile thefile,
                                   NclQuark coordname)
 {
-    int i,j,k;
+    int i,k;
     NclApiDataList *tmp = NULL;
     NclNewFile thenewfile = (NclNewFile) thefile;
     NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
@@ -2110,7 +2110,6 @@ static NclApiDataList *getNewFileInfo(NclFile thefile)
     NclApiDataList     *tmp = NULL;
     NclNewFile   thenewfile = (NclNewFile) thefile;
     NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
-    NclFileVarNode *varnode = NULL;
     int j;
 
     tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
@@ -3291,11 +3290,9 @@ void _NclExit(int status) {
 
 	NCL_PROF_FINALIZE();
 
-#if 0
 #ifdef NCLDEBUG
 	if(NCLdebug_on)
 		_finalizeNclMemoryRecord();
-#endif
 #endif
 
 	exit(status);

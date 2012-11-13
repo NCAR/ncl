@@ -168,6 +168,8 @@ void _finalizeNclMemoryRecord()
         ++ncl_memory_record.num_freed;
         ncl_memory_record.totalMemoryFreed += ncl_memory_record.record[0].size;
     }
+    else
+        return;
 
     fprintf(stderr, "\nNCL allocated <%ld> pieces of memory in total of <%ld> bytes.\n",
                        ncl_memory_record.num_allocated, ncl_memory_record.totalMemoryAllocated);
@@ -219,6 +221,7 @@ void _finalizeNclMemoryRecord()
 
     free(ncl_memory_record.record);
     ncl_memory_record.record = NULL;
+    NCLdebug_on = 0;
 }
 
 void *_underNclMalloc(int linenumb, const char *filename, const char *funcname,
@@ -345,16 +348,8 @@ void *_underNclRealloc(int linenumb, const char *filename, const char *funcname,
 	return(ptr);
 }
 #else
-void
-*NclMalloc
-#if	NhlNeedProto
-(
-        ng_usize_t    size    /* size of memory requested     */
+void *NclMalloc ( ng_usize_t    size    /* size of memory requested     */
 )
-#else
-(size)
-        ng_usize_t    size;   /* size of memory requested     */
-#endif
 {
         void *ptr;
 
@@ -369,34 +364,17 @@ void
         return(ptr);
 }
 
-NhlErrorTypes
-NclFree
-#if	NhlNeedProto
-(
+NhlErrorTypes NclFree (
         void            *ptr    /* pointer to memory to free    */
 )
-#else
-(ptr)
-        void            *ptr;   /* pointer to memory to free    */
-#endif
 {
-/*
-        register int ret;
-*/
-
         if(ptr == NULL)
                 return(NhlNOERROR);
 
         else{
-#ifdef  __sgi 
                 free(ptr);
 		ptr = NULL;
                 return NhlNOERROR;
-#else
-                free(ptr);
-		ptr = NULL;
-                return NhlNOERROR;
-#endif
         }
 }
 
@@ -418,18 +396,9 @@ NclFree
  * Returns:	pointer to memory of the size requested
  * Side Effect:	
  */
-void
-*NclCalloc
-#if	NhlNeedProto
-(
-	ng_usize_t	num,	/* number of elements		*/
-	ng_usize_t	size	/* size of each element		*/
+void *NclCalloc(ng_usize_t	num,	/* number of elements		*/
+		ng_usize_t	size	/* size of each element		*/
 )
-#else
-(num,size)
-	ng_usize_t	num;	/* number of elements		*/
-	ng_usize_t	size;	/* size of each element		*/
-#endif
 {
 	void *ptr;
 
@@ -461,18 +430,9 @@ void
  * Returns:	pointer to memory of the size requested
  * Side Effect:	
  */
-void
-*NclRealloc
-#if	NhlNeedProto
-(
-	void		*ptr,	/* pointer to old memory	*/
-	ng_usize_t	size	/* size of memory requested	*/
+void *NclRealloc(void	*ptr,	/* pointer to old memory	*/
+		ng_usize_t	size	/* size of memory requested	*/
 )
-#else
-(ptr,size)
-	void		*ptr;	/* pointer to old memory	*/
-	ng_usize_t	size;	/* size of memory requested	*/
-#endif
 {
 	void *tptr;
 
