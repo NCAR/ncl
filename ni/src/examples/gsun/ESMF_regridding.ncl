@@ -2060,7 +2060,7 @@ begin
 end
 
 ;======================================================================
-; This procedure calls the UNIX command "ESMF_RegridGenWeight".
+; This procedure calls the UNIX command "ESMF_RegridWeightGen".
 ;
 ;  srcGridFile - the name of the NetCDF source grid file (ESMF or SCRIP)
 ;  dstGridFile - the name of the NetCDF destination grid file (ESMF or SCRIP)
