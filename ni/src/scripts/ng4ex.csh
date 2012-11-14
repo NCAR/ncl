@@ -433,7 +433,6 @@ unset OLDPS
 unset PNG
 unset OLDPDF
 
-set cairo_flag
 set ncarbd_flag
 set ngmathbd_flag
 set num_set = 0
@@ -531,11 +530,6 @@ while ($#argv > 0)
       shift
       breaksw
         
-    case "-cairo":
-      shift
-      set cairo_flag = "-cairo"
-      breaksw
-
     case "-ncarbd":
       shift
       set ncarbd_flag = "-ncarbd"
@@ -823,7 +817,7 @@ set inc_file
 set ascdata_file
 set bindata_file
 set ncl_file
-set comp_flags = ($cairo_flag $ncarbd_flag $ngmathbd_flag)
+set comp_flags = ($ncarbd_flag $ngmathbd_flag)
 set generic_name = `expr $name : '\(.*[0-9][0-9]\).*'`
 set prog_type = `expr $name : '.*[0-9][0-9]\(.\)'`
 set resfile_dir = "$res_dir/$obj_dir"
