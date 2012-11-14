@@ -45,10 +45,9 @@
 #define MAX_ZA  4
 #define MAX_DIM 32
 #define MAX_ATT 32
-#define MAX_FLD 32
-#define MAX_LVL 32
+#define MAX_FLD 256
+#define MAX_LVL 128
 #define MAX_VAR 256
-#define MAX_FIELDS      1024
 
 typedef enum {SWATH, POINT, GRID, ZA} HE5Type;
 
@@ -318,6 +317,44 @@ static char *_make_proper_string_end(const char *input_name)
     return output_name;
 }
 
+static void _synchHE5GrpVarDims(NclFileGrpNode *grpnode, NclFileVarNode *varnode)
+{
+    NclFileDimNode *gdimnode;
+    NclFileDimNode *vdimnode;
+    long dg = 0;
+    long dv = 0;
+    int i, m, n;
+    int not_in_group = 1;
+
+    if(NULL != grpnode->dim_rec)
+    {
+        m = grpnode->dim_rec->n_dims;
+        if(NULL != varnode->dim_rec)
+        {
+            for(i = 0; i < varnode->dim_rec->n_dims; ++i)
+            {
+                vdimnode = &(varnode->dim_rec->dim_node[n]);
+                for(n = 0; n < grpnode->dim_rec->n_dims; ++n)
+                {
+                    gdimnode = &(grpnode->dim_rec->dim_node[n]);
+                    if(gdimnode->name == vdimnode->name);
+                    {
+                       not_in_group = 0;
+                       break;
+                    }
+                }
+
+                if(not_in_group)
+                {
+                    _addNclDimNode(&(grpnode->dim_rec), vdimnode->name, m,
+			           vdimnode->size, 0);
+                    ++m;
+                }
+            }
+        }
+    }
+}
+
 static void HE5ParseName
 #if NhlNeedProto
 (char names_in[], NclQuark *hdf_names, NclQuark *ncl_names, long n_names)
@@ -365,9 +402,11 @@ static void _addHE5Att(NclFileAttNode *attnode, NclQuark att_ncl_name,
 
     if(NCL_string == type)
     {
-        fprintf(stderr,"\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr,"\tAtt name: <%s>, value: <%s>\n",
-                          NrmQuarkToString(att_ncl_name), value);
+      /*
+       *fprintf(stderr,"\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr,"\tAtt name: <%s>, value: <%s>\n",
+       *                  NrmQuarkToString(att_ncl_name), value);
+       */
 
         attnode->value = (NclQuark*)NclCalloc(1, sizeof(NclQuark));
         *(NrmQuark *)attnode->value = NrmStringToQuark((char *)value);
@@ -540,8 +579,8 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
     hid_t HE5_SWfid = FAIL;
     hid_t HE5_SWid = FAIL;
 
-    long natts = FAIL;
-    long nlocatts = FAIL;
+    long natts = 0;
+    long nlocatts = 0;
 
     herr_t status = FAIL;
 
@@ -561,6 +600,7 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
     NclQuark *var_hdf_names;
     NclQuark *var_ncl_names;
+    int      *var_ranks = NULL;
     int max_var = MAX_VAR;
 
     NclQuark *dim_hdf_names;
@@ -584,7 +624,6 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
     int *is_unsigned;
     char *buffer;
     int cur_buf_size = HE5_BUF_SIZE;
-    int field_ranks[MAX_FIELDS];
 
     int i,j,k;
     boolean no_fill_value = TRUE;
@@ -617,9 +656,11 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
     var_hdf_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_var);
     var_ncl_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_var);
+    var_ranks     = (int *)NclCalloc(max_var, sizeof(int));
 
     dim_hdf_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_dim);
     dim_ncl_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_dim);
+    dimsizes = (hsize_t *)NclMalloc(sizeof(hsize_t)*max_dim*2);
 
     att_hdf_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_att);
     att_ncl_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_att);
@@ -675,9 +716,9 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
         buffer[str_buf_size] = '\0';
 
       /*
+       *fprintf(stderr, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tngrp_atts = %ld, attnames: <%s>\n", ngrp_atts, buffer);
        */
-        fprintf(stderr, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tngrp_atts = %ld, attnames: <%s>\n", ngrp_atts, buffer);
 
         HE5ParseName(buffer, att_hdf_names, att_ncl_names, ngrp_atts);
 
@@ -691,10 +732,11 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
             attnode->name = att_hdf_names[k];
 
           /*
+           *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr,"\tAtt No. %d, name: <%s>, ncl_name: <%s>\n",
+           *                k, NrmQuarkToString(att_hdf_names[k]),
+           *                NrmQuarkToString(att_ncl_names[k]));
            */
-            fprintf(stderr,"\nAtt No. %d, name: <%s>, ncl_name: <%s>\n",
-                            k, NrmQuarkToString(att_hdf_names[k]),
-                            NrmQuarkToString(att_ncl_names[k]));
 
             if(HE5_EHglbattrinfo(HE5_SWfid,NrmQuarkToString(att_hdf_names[k]),&att_type,&att_size)==0)
             {
@@ -719,9 +761,9 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
         sprintf(grpname, "SWATH_%2.2d", i+1);
 
       /*
+       *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\ti = %d, HE5_SWid = %d, grpname: <%s>\n", i, HE5_SWid, grpname);
        */
-        fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\ti = %d, HE5_SWid = %d, grpname: <%s>\n", i, HE5_SWid, grpname);
 
         grpnode = (NclFileGrpNode *)NclCalloc(1, sizeof(NclFileGrpNode));
         grprec->grp_node[i] = grpnode;
@@ -761,9 +803,9 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
             buffer[str_buf_size] = '\0';
 
           /*
+           *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tnatts = %ld, attnames: <%s>\n", natts, buffer);
            */
-            fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tnatts = %ld, attnames: <%s>\n", natts, buffer);
 
             HE5ParseName(buffer, att_hdf_names, att_ncl_names, natts);
 
@@ -777,8 +819,9 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
                 attnode->name = att_hdf_names[k];
 
               /*
+               *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr,"\tAtt No. %d, name: <%s>\n", k, NrmQuarkToString(att_hdf_names[k]));
                */
-                fprintf(stderr,"\n\tAtt No. %d, name: <%s>\n", k, NrmQuarkToString(att_hdf_names[k]));
 
                 if(HE5_SWattrinfo(HE5_SWid,NrmQuarkToString(att_hdf_names[k]),&att_type,&att_size)==0)
                 {
@@ -818,21 +861,25 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
         buffer[str_buf_size] = '\0';
         HE5ParseName(buffer,dim_hdf_names,dim_ncl_names,ndims);
 
-        fprintf(stderr, "\tat line: %d, file: %s, function: %s\n",
-                           __LINE__, __FILE__, __PRETTY_FUNCTION__);
-        fprintf(stderr, "\tndims = %ld\n", ndims);
+      /*
+       *fprintf(stderr, "\tat line: %d, file: %s, function: %s\n",
+       *                   __LINE__, __FILE__, __PRETTY_FUNCTION__);
+       *fprintf(stderr, "\tndims = %ld\n", ndims);
+       */
 
         dimrec = _NclFileDimAlloc(ndims);
         dimrec->gid = HE5_SWid;
 
         for(j = 0; j < ndims; ++j)
         {
-            fprintf(stderr, "\tat line: %d, file: %s, function: %s\n",
-                           __LINE__, __FILE__, __PRETTY_FUNCTION__);
-            fprintf(stderr, "\tDim No. %d: size = %ld, name: <%s> ncl-name: <%s>\n",
-                             j, (long)dimsizes[j],
-                             NrmQuarkToString(dim_hdf_names[j]),
-                             NrmQuarkToString(dim_ncl_names[j]));
+          /*
+           *fprintf(stderr, "\tat line: %d, file: %s, function: %s\n",
+           *               __LINE__, __FILE__, __PRETTY_FUNCTION__);
+           *fprintf(stderr, "\tDim No. %d: size = %ld, name: <%s> ncl-name: <%s>\n",
+           *                 j, (long)dimsizes[j],
+           *                 NrmQuarkToString(dim_hdf_names[j]),
+           *                 NrmQuarkToString(dim_ncl_names[j]));
+           */
 
             dimnode = &(dimrec->dim_node[j]);
 
@@ -886,6 +933,7 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
         {
             j = (ngeofields > ndata)?ngeofields:ndata;
             _reallocnames(j, &max_var, var_hdf_names, var_ncl_names);
+            var_ranks  = (int *)NclRealloc(var_ranks, max_var * sizeof(int));
         }
 
         varrec = _NclFileVarAlloc(ndata + ngeofields);
@@ -901,7 +949,7 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
                 buffer = NclRealloc(buffer, cur_buf_size);
             }
 
-            ngeofields = HE5_SWinqgeofields(HE5_SWid,buffer,field_ranks,NULL);
+            ngeofields = HE5_SWinqgeofields(HE5_SWid,buffer,var_ranks,NULL);
             buffer[str_buf_size] = '\0';
             HE5ParseName(buffer,var_hdf_names,var_ncl_names,ngeofields);
 
@@ -968,8 +1016,10 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
                     attnode->name = att_hdf_names[k];
 
                   /*
+                   *fprintf(stderr, "file %s, line: %d, function: %s\n",
+                   *                 __FILE__, __LINE__, __PRETTY_FUNCTION__);
+                   *fprintf(stderr,"\tVar %d, Att No. %d, name: <%s>\n", j, k, NrmQuarkToString(att_hdf_names[k]));
                    */
-                    fprintf(stderr,"\tVar %d, Att No. %d, name: <%s>\n", j, k, NrmQuarkToString(att_hdf_names[k]));
 
                     if (strcmp("_FillValue", NrmQuarkToString(att_hdf_names[k])) == 0)
                         no_fill_value = FALSE;
@@ -1005,19 +1055,23 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
                     dimrec->gid = HE5_SWid;
                     varnode->dim_rec = dimrec;
     
-                    fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
-                                     __LINE__, __FILE__, __PRETTY_FUNCTION__);
-                    fprintf(stderr, "\nndims = %d\n", ndims);
+                  /*
+                   *fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
+                   *                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
+                   *fprintf(stderr, "\tndims = %d\n", ndims);
+                   */
  
                     HE5ParseName(buffer,dim_hdf_names,dim_ncl_names,ndims);
                     for(k = 0; k < ndims; ++k)
                     {
-                        fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
-                                         __LINE__, __FILE__, __PRETTY_FUNCTION__);
-                        fprintf(stderr, "\nVar %d, dim %d: size = %d, name: <%s>, ncl_name: <%s>\n",
-                                         (int)j, (int)k, (int)dimsizes[k],
-                                         NrmQuarkToString(dim_hdf_names[k]),
-                                         NrmQuarkToString(dim_ncl_names[k]));
+                      /*
+                       *fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
+                       *                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
+                       *fprintf(stderr, "\tVar %d, dim %d: size = %d, name: <%s>, ncl_name: <%s>\n",
+                       *                 (int)j, (int)k, (int)dimsizes[k],
+                       *                 NrmQuarkToString(dim_hdf_names[k]),
+                       *                 NrmQuarkToString(dim_ncl_names[k]));
+                       */
 
                         dimnode = &(dimrec->dim_node[k]);
 
@@ -1029,16 +1083,17 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
                     varnode->type = HE5MapTypeNumber(tmp_type);
                     varnode->name = var_hdf_names[j];
 
-                    fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
-                                     __LINE__, __FILE__, __PRETTY_FUNCTION__);
-                    fprintf(stderr, "\tvar %d name: <%s>\n", j, NrmQuarkToString(varnode->name));
+                  /*
+                   *fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
+                   *                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
+                   *fprintf(stderr, "\tvar %d name: <%s>\n", j, NrmQuarkToString(varnode->name));
+                   */
 
                     if(HE5unsigned(tmp_type))
                     {
                         is_unsigned = (int*)NclMalloc(sizeof(int));
                         *is_unsigned = 1;
                         _addNclAttNode(&attrec, NrmStringToQuark("unsigned"), NCL_logical, 1, (void*)is_unsigned);
-                        attnode = &(attrec->att_node[nlocatts]);
                         ++nlocatts;
                     }
                 }
@@ -1046,6 +1101,12 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
         }
 
         ndata = HE5_SWnentries(HE5_SWid, HE5_HDFE_NENTDFLD, &str_buf_size);
+
+        if(max_var < ndata)
+        {
+            _reallocnames(ndata, &max_var, var_hdf_names, var_ncl_names);
+        }
+
         if (str_buf_size >= cur_buf_size)
         {
             while(str_buf_size >= cur_buf_size)
@@ -1053,22 +1114,8 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
             buffer = NclRealloc(buffer, cur_buf_size);
         }
 
-        ndata = HE5_SWinqdatafields(HE5_SWid,buffer,field_ranks,NULL);
+        ndata = HE5_SWinqdatafields(HE5_SWid,buffer,var_ranks,NULL);
         buffer[str_buf_size] = '\0';
-
-        if(MAX_FIELDS < ndata)
-        {
-            NHLPERROR((NhlFATAL,NhlEUNKNOWN, "%s: number of fields <%d> is more than MAX_FIELDS <%d>\n",
-                       __PRETTY_FUNCTION__, ndata, MAX_FIELDS));
-            ndata = MAX_FIELDS;
-        }
-
-        if(MAX_VAR < ndata)
-        {
-            NHLPERROR((NhlFATAL,NhlEUNKNOWN, "%s: number of fields <%d> is more than MAX_VAR <%d>\n",
-                       __PRETTY_FUNCTION__, ndata, MAX_VAR));
-            ndata = MAX_VAR;
-        }
 
         HE5ParseName(buffer,var_hdf_names,var_ncl_names,ndata);
 
@@ -1112,11 +1159,9 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
             varnode->att_rec = attrec;
 
-            if(max_dim < field_ranks[j])
+            if(max_dim < var_ranks[j])
             {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN, "NclHDFEOS5: dim rank <%d> is more than max_dim <%d>\n",
-                          field_ranks[j], max_dim));
-                return;
+                _reallocnames(var_ranks[j], &max_dim, dim_hdf_names, dim_ncl_names);
             }
 
             if(HE5_SWfieldinfo(HE5_SWid,NrmQuarkToString(var_hdf_names[j]),
@@ -1126,20 +1171,24 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
                 dimrec->gid = HE5_SWid;
                 varnode->dim_rec = dimrec;
 
-                fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
-                                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
-                fprintf(stderr, "\nndims = %d\n", ndims);
+              /*
+               *fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
+               *                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
+               *fprintf(stderr, "\tndims = %d\n", ndims);
+               */
 
                 buffer[str_buf_size] = '\0';
                 HE5ParseName(buffer,dim_hdf_names,dim_ncl_names,ndims);
                 for(k = 0; k < ndims; ++k)
                 {
-                    fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
-                                     __LINE__, __FILE__, __PRETTY_FUNCTION__);
-                    fprintf(stderr, "\nVar %d, dim %d: size = %d, name: <%s>, ncl_name: <%s>\n",
-                                     (int)j, (int)k, (int)dimsizes[k],
-                                     NrmQuarkToString(dim_hdf_names[k]),
-                                     NrmQuarkToString(dim_ncl_names[k]));
+                  /*
+                   *fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
+                   *                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
+                   *fprintf(stderr, "\tVar %d, dim %d: size = %d, name: <%s>, ncl_name: <%s>\n",
+                   *                 (int)j, (int)k, (int)dimsizes[k],
+                   *                 NrmQuarkToString(dim_hdf_names[k]),
+                   *                 NrmQuarkToString(dim_ncl_names[k]));
+                   */
 
                     dimnode = &(dimrec->dim_node[k]);
 
@@ -1151,9 +1200,11 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
                 varnode->type = HE5MapTypeNumber(tmp_type);
                 varnode->name = var_hdf_names[j];
 
-                fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
-                                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
-                fprintf(stderr, "\tvar %d name: <%s>\n", j, NrmQuarkToString(varnode->name));
+              /*
+               *fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
+               *                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
+               *fprintf(stderr, "\tvar %d name: <%s>\n", j, NrmQuarkToString(varnode->name));
+               */
 
                 if(HE5unsigned(tmp_type))
                 {
@@ -1163,6 +1214,8 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
                     attnode = &(attrec->att_node[nlocatts]);
                     ++nlocatts;
                 }
+
+                _synchHE5GrpVarDims(grpnode, varnode);
             }
 
             for(k = 0; k < nlocatts; k++)
@@ -1233,6 +1286,7 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
     NclFree(var_hdf_names);
     NclFree(var_ncl_names);
+    NclFree(var_ranks);
 
     NclFree(att_ncl_names);
     NclFree(att_hdf_names);
@@ -1274,6 +1328,7 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
     NclQuark *var_hdf_names;
     NclQuark *var_ncl_names;
+    int      *var_ranks = NULL;
     int max_var = MAX_VAR;
 
     NclQuark *att_ncl_names;
@@ -1294,7 +1349,6 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
     long ydimsize;
     char *buffer;
     int cur_buf_size = HE5_BUF_SIZE;
-    int field_ranks[MAX_FIELDS];
 
     boolean no_fill_value = TRUE;
     int i,j,k;
@@ -1332,6 +1386,7 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
     dim_hdf_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_dim);
     dim_ncl_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_dim);
+    dimsizes = (hsize_t *)NclMalloc(sizeof(hsize_t)*max_dim);
 
     att_hdf_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_att);
     att_ncl_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_att);
@@ -1364,8 +1419,8 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
     ngrp_atts = HE5_EHinqglbattrs(HE5_GDfid,NULL,&str_buf_size);
 
   /*
+   *fprintf(stderr, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);
 
     if(ngrp_atts > 0 )
     {
@@ -1394,9 +1449,9 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
         }
 
       /*
+       *fprintf(stderr, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tngrp_atts = %ld, attnames: <%s>\n", ngrp_atts, buffer);
        */
-        fprintf(stderr, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tngrp_atts = %ld, attnames: <%s>\n", ngrp_atts, buffer);
 
         buffer[str_buf_size] = '\0';
         HE5ParseName(buffer, att_hdf_names, att_ncl_names, ngrp_atts);
@@ -1450,10 +1505,10 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
                     if(HE5_EHreadglbattr(HE5_GDfid,NrmQuarkToString(att_hdf_names[k]),tmp_value)==0 )
                     {
                       /*
+                       *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+                       *fprintf(stderr, "Att No. %d, name: <%s>, size = %d\n",
+                       *                 k, NrmQuarkToString(att_hdf_names[k]), att_size);
                        */
-                        fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-                        fprintf(stderr, "Att No. %d, name: <%s>, size = %d\n",
-                                         k, NrmQuarkToString(att_hdf_names[k]), att_size);
 
                         _addHE5Att(attnode, att_ncl_names[k], tmp_value,
                                    (int) att_size, HE5MapTypeNumber(att_type));
@@ -1479,9 +1534,9 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
         sprintf(grpname, "GRID_%2.2d", i+1);
 
       /*
+       *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\ti = %d, HE5_GDid = %d, grpname: <%s>\n", i, HE5_GDid, grpname);
        */
-        fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\ti = %d, HE5_GDid = %d, grpname: <%s>\n", i, HE5_GDid, grpname);
 
         grpnode = (NclFileGrpNode *)NclCalloc(1, sizeof(NclFileGrpNode));
         grprec->grp_node[i] = grpnode;
@@ -1553,9 +1608,9 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
             }
 
           /*
+           *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tprojcode = %d, qproj_name: <%s>\n", projcode, NrmQuarkToString(qproj_name));
            */
-            fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tprojcode = %d, qproj_name: <%s>\n", projcode, NrmQuarkToString(qproj_name));
         }            
 
         natts = HE5_GDinqattrs(HE5_GDid,NULL,&str_buf_size);
@@ -1599,8 +1654,9 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
                 attnode->name = att_hdf_names[k];
 
               /*
+               *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr,"\tAtt No. %d, name: <%s>\n", k, NrmQuarkToString(att_hdf_names[k]));
                */
-                fprintf(stderr,"\nAtt No. %d, name: <%s>\n", k, NrmQuarkToString(att_hdf_names[k]));
 
 
                 if(HE5_GDattrinfo(HE5_GDid,NrmQuarkToString(att_hdf_names[k]),&att_type,&att_size)==0)
@@ -1619,9 +1675,11 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
         ndims = HE5_GDnentries(HE5_GDid,HE5_HDFE_NENTDIM,&str_buf_size);
         if(ndims > 0 )
         {
-            fprintf(stderr, "\tat line: %d, file: %s, function: %s\n",
-                               __LINE__, __FILE__, __PRETTY_FUNCTION__);
-            fprintf(stderr, "\tndims = %ld\n", ndims);
+          /*
+           *fprintf(stderr, "\tat line: %d, file: %s, function: %s\n",
+           *                   __LINE__, __FILE__, __PRETTY_FUNCTION__);
+           *fprintf(stderr, "\tndims = %ld\n", ndims);
+           */
 
             if (str_buf_size >= cur_buf_size)
             {
@@ -1643,12 +1701,14 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
             for(j = 0; j < ndims; ++j)
             {
-                fprintf(stderr, "\tat line: %d, file: %s, function: %s\n",
-                               __LINE__, __FILE__, __PRETTY_FUNCTION__);
-                fprintf(stderr, "\tDim No. %d: size = %ld, name: <%s> ncl-name: <%s>\n",
-                                 j, (long)dimsizes[j],
-                                 NrmQuarkToString(dim_hdf_names[j]),
-                                 NrmQuarkToString(dim_ncl_names[j]));
+              /*
+               *fprintf(stderr, "\tat line: %d, file: %s, function: %s\n",
+               *               __LINE__, __FILE__, __PRETTY_FUNCTION__);
+               *fprintf(stderr, "\tDim No. %d: size = %ld, name: <%s> ncl-name: <%s>\n",
+               *                 j, (long)dimsizes[j],
+               *                 NrmQuarkToString(dim_hdf_names[j]),
+               *                 NrmQuarkToString(dim_ncl_names[j]));
+               */
 
                 dimnode = &(dimrec->dim_node[j]);
 
@@ -1661,9 +1721,11 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
        
         ndata = HE5_GDnentries(HE5_GDid, HE5_HDFE_NENTDFLD, &str_buf_size);
 
-        fprintf(stderr, "\tat line: %d, file: %s, function: %s\n",
-                         __LINE__, __FILE__, __PRETTY_FUNCTION__);
-        fprintf(stderr, "\nndata = %ld\n", ndata);
+      /*
+       *fprintf(stderr, "\tat line: %d, file: %s, function: %s\n",
+       *                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
+       *fprintf(stderr, "\nndata = %ld\n", ndata);
+       */
 
         if(ndata > max_var)
         {
@@ -1676,7 +1738,7 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
                 cur_buf_size *= 2;
             buffer = NclRealloc(buffer, cur_buf_size);
         }
-        ndata = HE5_GDinqfields(HE5_GDid,buffer,field_ranks,NULL);
+        ndata = HE5_GDinqfields(HE5_GDid,buffer,var_ranks,NULL);
         buffer[str_buf_size] = '\0';
         HE5ParseName(buffer,var_hdf_names,var_ncl_names,ndata);
 
@@ -1738,8 +1800,9 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
                 attnode->name = att_hdf_names[k];
 
               /*
+               *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr,"\tVar %d, Att No. %d, name: <%s>\n", j, k, NrmQuarkToString(att_hdf_names[k]));
                */
-                fprintf(stderr,"\nVar %d, Att No. %d, name: <%s>\n", j, k, NrmQuarkToString(att_hdf_names[k]));
 
                 tmp_value = (void *) NclCalloc(att_size, _NclSizeOf(HE5MapTypeNumber(att_type)));
                 status = HE5_GDreadlocattr(HE5_GDid,NrmQuarkToString(var_hdf_names[j]),NrmQuarkToString(att_hdf_names[k]),tmp_value);
@@ -1771,9 +1834,9 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
                 }
             }
 
-            if(max_dim < field_ranks[j])
+            if(max_dim < var_ranks[j])
             {
-                _reallocnames(field_ranks[j], &max_dim, dim_hdf_names, dim_ncl_names);
+                _reallocnames(var_ranks[j], &max_dim, dim_hdf_names, dim_ncl_names);
             }
 
             if(HE5_GDfieldinfo(HE5_GDid,NrmQuarkToString(var_hdf_names[j]),&ndims,dimsizes,&tmp_type,buffer,maxdimlist) == 0)
@@ -1785,18 +1848,22 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
                 dimrec->gid = HE5_GDid;
                 varnode->dim_rec = dimrec;
 
-                fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
-                                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
-                fprintf(stderr, "\nndims = %d\n", ndims);
+              /*
+               *fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
+               *                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
+               *fprintf(stderr, "\nndims = %d\n", ndims);
+               */
 
                 for(k = 0; k < ndims; ++k)
                 {
-                    fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
-                                     __LINE__, __FILE__, __PRETTY_FUNCTION__);
-                    fprintf(stderr, "\nVar %d, dim %d: size = %d, name: <%s>, ncl_name: <%s>\n",
-                                     (int)j, (int)k, (int)dimsizes[k],
-                                     NrmQuarkToString(dim_hdf_names[k]),
-                                     NrmQuarkToString(dim_ncl_names[k]));
+                  /*
+                   *fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
+                   *                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
+                   *fprintf(stderr, "Var %d, dim %d: size = %d, name: <%s>, ncl_name: <%s>\n",
+                   *                 (int)j, (int)k, (int)dimsizes[k],
+                   *                 NrmQuarkToString(dim_hdf_names[k]),
+                   *                 NrmQuarkToString(dim_ncl_names[k]));
+                   */
 
                     dimnode = &(dimrec->dim_node[k]);
 
@@ -1808,9 +1875,11 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
                 varnode->type = HE5MapTypeNumber(tmp_type);
                 varnode->name = var_hdf_names[j];
 
-                fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
-                                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
-                fprintf(stderr, "\tvar %d name: <%s>\n", j, NrmQuarkToString(varnode->name));
+              /*
+               *fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
+               *                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
+               *fprintf(stderr, "\tvar %d name: <%s>\n", j, NrmQuarkToString(varnode->name));
+               */
 
                 if(HE5unsigned(tmp_type))
                 {
@@ -1820,27 +1889,23 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
                     attnode = &(attrec->att_node[nlocatts]);
                     ++nlocatts;
                 }
+
+                _synchHE5GrpVarDims(grpnode, varnode);
             }
 
             if(projcode > -1)
             {
-                tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-                *(NclQuark*)tmp_value = qproj_name;
-                _addNclAttNode(&attrec, NrmStringToQuark("projection"), NCL_logical, 1, (void*)tmp_value);
-                attnode = &(attrec->att_node[nlocatts]);
-                attnode->type = NCL_string;
-                ++nlocatts;
+                NrmQuark *tmp_quark = (NclQuark *)NclCalloc(1, sizeof(NclQuark));
+                *tmp_quark = qproj_name;
+                _addNclAttNode(&attrec, NrmStringToQuark("projection"), NCL_string, 1, (void*)tmp_quark);
             }
 
-            tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-            *(NclQuark*)tmp_value = var_hdf_names[j];
             if((var_hdf_names[j] != NrmStringToQuark("Longitude")) &&
                (var_hdf_names[j] != NrmStringToQuark("Latitude")))
             {
-                _addNclAttNode(&attrec, NrmStringToQuark("long_name"), NCL_logical, 1, (void*)tmp_value);
-                attnode = &(attrec->att_node[nlocatts]);
-                attnode->type = NCL_string;
-                ++nlocatts;
+                NrmQuark *tmp_quark = (NclQuark *)NclCalloc(1, sizeof(NclQuark));
+                *tmp_quark = var_hdf_names[j];
+                _addNclAttNode(&attrec, NrmStringToQuark("long_name"), NCL_string, 1, (void*)tmp_quark);
             }
 
           /*
@@ -2246,6 +2311,8 @@ typedef struct
             }
             varnode->dim_rec = dimrec;
 
+            _synchHE5GrpVarDims(grpnode, varnode);
+
             /* Fake tmp_type here. */
             tmp_type = H5T_NATIVE_DOUBLE;
             varnode->type = NCL_double;
@@ -2429,9 +2496,9 @@ static void *HE5OpenFile(void *rec,NclQuark path,int wr_status)
     grpnode->compress_level = 0;
 
   /*
+   *fprintf(stderr,"\nEnter HE5OpenFile, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr,"\tpath: <%s>\n", (char *)NrmQuarkToString(path));
    */
-    fprintf(stderr,"\nEnter HE5OpenFile, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr,"\tpath: <%s>\n", (char *)NrmQuarkToString(path));
 
     nsw = HE5_SWinqswath(NrmQuarkToString(path),NULL,&str_buf_size);
     if(nsw)
@@ -2506,9 +2573,9 @@ void getHE5ZonalAverageData(NclFileGrpNode *parentgrpnode, NclQuark path)
     int *is_unsigned;
     char *buffer;
     int cur_buf_size = HE5_BUF_SIZE;
-    int *field_ranks;
-    int *field_types;
-    int max_fields = MAX_FIELDS;
+    int *var_ranks;
+    int *var_types;
+    int max_fields = MAX_VAR;
 
     int za,att,dim,nv,loc;
     boolean no_fill_value = TRUE;
@@ -2539,8 +2606,8 @@ void getHE5ZonalAverageData(NclFileGrpNode *parentgrpnode, NclQuark path)
     }
 
     buffer = NclMalloc(cur_buf_size);
-    field_ranks = NclMalloc(max_fields * sizeof(long));
-    field_types = NclMalloc(max_fields * sizeof(long));
+    var_ranks = NclMalloc(max_var * sizeof(int));
+    var_types = NclMalloc(max_var * sizeof(int));
     dimsizes = NclMalloc(max_dim * sizeof(hsize_t));
 
     while(nza > max_za)
@@ -2674,21 +2741,25 @@ void getHE5ZonalAverageData(NclFileGrpNode *parentgrpnode, NclQuark path)
         buffer[str_buf_size] = '\0';
         HE5ParseName(buffer,dim_hdf_names,dim_ncl_names,ndims);
 
-        fprintf(stderr, "\tat line: %d, file: %s, function: %s\n",
-                           __LINE__, __FILE__, __PRETTY_FUNCTION__);
-        fprintf(stderr, "\tndims = %ld\n", ndims);
+      /*
+       *fprintf(stderr, "\tat line: %d, file: %s, function: %s\n",
+       *                   __LINE__, __FILE__, __PRETTY_FUNCTION__);
+       *fprintf(stderr, "\tndims = %ld\n", ndims);
+       */
 
         dimrec = _NclFileDimAlloc(ndims);
         dimrec->gid = HE5_ZAid;
 
         for(dim = 0; dim < ndims; dim++)
         {
-            fprintf(stderr, "\tat line: %d, file: %s, function: %s\n",
-                           __LINE__, __FILE__, __PRETTY_FUNCTION__);
-            fprintf(stderr, "\tDim No. %d: size = %ld, name: <%s> ncl-name: <%s>\n",
-                             dim, (long)dimsizes[dim],
-                             NrmQuarkToString(dim_hdf_names[dim]),
-                             NrmQuarkToString(dim_ncl_names[dim]));
+          /*
+           *fprintf(stderr, "\tat line: %d, file: %s, function: %s\n",
+           *               __LINE__, __FILE__, __PRETTY_FUNCTION__);
+           *fprintf(stderr, "\tDim No. %d: size = %ld, name: <%s> ncl-name: <%s>\n",
+           *                 dim, (long)dimsizes[dim],
+           *                 NrmQuarkToString(dim_hdf_names[dim]),
+           *                 NrmQuarkToString(dim_ncl_names[dim]));
+           */
 
             dimnode = &(dimrec->dim_node[dim]);
 
@@ -2710,17 +2781,14 @@ void getHE5ZonalAverageData(NclFileGrpNode *parentgrpnode, NclQuark path)
         {
             while(ndata > max_fields)
                 max_fields *= 2;
-            field_ranks = NclRealloc(field_ranks,max_fields * sizeof(long));
-            field_types = NclRealloc(field_types,max_fields * sizeof(long));
+            var_ranks = NclRealloc(var_ranks, max_var * sizeof(int));
+            var_types = NclRealloc(var_types, max_var * sizeof(int));
         }
 
-        ndata = HE5_ZAinquire(HE5_ZAid,buffer,field_ranks,field_types);
-        if (ndata > max_var)
+        ndata = HE5_ZAinquire(HE5_ZAid,buffer,var_ranks,var_types);
+        if(ndata > max_var)
         {
-            while(ndata > max_var)
-                max_var *= 2;
-            var_hdf_names = (NclQuark *)NclRealloc(var_hdf_names, sizeof(NclQuark)*max_var);
-            var_ncl_names = (NclQuark *)NclRealloc(var_ncl_names, sizeof(NclQuark)*max_var);
+            _reallocnames(ndata, &max_var, var_hdf_names, var_ncl_names);
         }
 
         buffer[str_buf_size] = '\0';
@@ -2768,9 +2836,9 @@ void getHE5ZonalAverageData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
             varnode->att_rec = attrec;
 
-            if (field_ranks[nv] > max_dim)
+            if (var_ranks[nv] > max_dim)
             {
-                _reallocnames(field_ranks[nv], &max_dim, dim_hdf_names, dim_ncl_names);
+                _reallocnames(var_ranks[nv], &max_dim, dim_hdf_names, dim_ncl_names);
                 dimsizes = NclRealloc(dimsizes, max_dim * sizeof(hsize_t));
             }
 
@@ -2784,9 +2852,13 @@ void getHE5ZonalAverageData(NclFileGrpNode *parentgrpnode, NclQuark path)
                 dimrec->gid = HE5_ZAid;
                 varnode->dim_rec = dimrec;
 
-                fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
-                                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
-                fprintf(stderr, "\nndims = %d\n", ndims);
+                _synchHE5GrpVarDims(grpnode, varnode);
+
+              /*
+               *fprintf(stderr, "\nat line: %d, file: %s, function: %s\n",
+               *                 __LINE__, __FILE__, __PRETTY_FUNCTION__);
+               *fprintf(stderr, "\tndims = %d\n", ndims);
+               */
 
                 for(dim = 0; dim < ndims; dim++)
                 {
@@ -2848,7 +2920,8 @@ void getHE5ZonalAverageData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
               /*
                */
-                fprintf(stderr,"\nVar %d, Att No. %d, name: <%s>\n", nv, loc, NrmQuarkToString(att_hdf_names[loc]));
+                fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+                fprintf(stderr,"\tVar %d, Att No. %d, name: <%s>\n", nv, loc, NrmQuarkToString(att_hdf_names[loc]));
 
                 _addHE5Att(attnode, att_ncl_names[loc], tmp_value, att_size, HE5MapTypeNumber(att_type));
             }
@@ -2885,8 +2958,8 @@ void getHE5ZonalAverageData(NclFileGrpNode *parentgrpnode, NclQuark path)
     NclFree(att_ncl_names);
 
     NclFree(dimsizes);
-    NclFree(field_ranks);
-    NclFree(field_types);
+    NclFree(var_ranks);
+    NclFree(var_types);
     NclFree(buffer);
 }
 
@@ -3084,9 +3157,11 @@ static void *_readHE5GridVar(NclFileGrpNode *grpnode, NclQuark thevar,
     char *tmp_hdf_name;
     hsize_t total_size = 1;
 
-    fprintf(stderr, "\nEnter %s, file: %s, line: %d\n",
-                     __PRETTY_FUNCTION__, __FILE__, __LINE__);
-    fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
+  /*
+   *fprintf(stderr, "\nEnter %s, file: %s, line: %d\n",
+   *                 __PRETTY_FUNCTION__, __FILE__, __LINE__);
+   *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
+   */
 
     varnode = _getVarNodeFromNclFileGrpNode(grpnode, thevar);
 
@@ -3104,10 +3179,12 @@ static void *_readHE5GridVar(NclFileGrpNode *grpnode, NclQuark thevar,
     tmp_hdf_name = _make_proper_string_end(NrmQuarkToString(varnode->real_name));
     did = HE5_GDattach(fid,tmp_hdf_name);
 
-    fprintf(stderr, "\n%s, file: %s, line: %d\n",
-                     __PRETTY_FUNCTION__, __FILE__, __LINE__);
-    fprintf(stderr, "\tfid = %ld, did = %d, tmp_hdf_name: <%s>\n",
-                     (long)fid, (long)did, tmp_hdf_name);
+  /*
+   *fprintf(stderr, "\n%s, file: %s, line: %d\n",
+   *                 __PRETTY_FUNCTION__, __FILE__, __LINE__);
+   *fprintf(stderr, "\tfid = %ld, did = %d, tmp_hdf_name: <%s>\n",
+   *                 (long)fid, (long)did, tmp_hdf_name);
+   */
 
     free(tmp_hdf_name);
 
