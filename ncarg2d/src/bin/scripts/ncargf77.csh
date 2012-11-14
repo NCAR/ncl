@@ -57,17 +57,12 @@ set quick    = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
 set super    = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 
 set robjs
-set CAIRO_LD
 unset NGMATH_LD
 unset NGMATH_BLOCKD_LD
 
 foreach arg ($argv)
 
     switch ($arg)
-
-    case "-cairo":
-      set CAIRO_LD
-      breaksw
 
     case "-ngmath":
       set libmath     = "-lngmath"
