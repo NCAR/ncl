@@ -2480,6 +2480,8 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
 
     if(_NclFormatEqual(NrmStringToQuark("grb"),NrmStringToQuark(end_of_name)))
     {
+      if(! is_http)
+      {
         the_real_path = path;
         if(stat(_NGResolvePath(NrmQuarkToString(path)),&buf) == -1)
         {
@@ -2500,8 +2502,9 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
                 NclFree(tmp_path);
             }
         }
-            grib_version = _NclGribVersion(NrmStringToQuark(_NGResolvePath(NrmQuarkToString(the_real_path))));
-        }
+        grib_version = _NclGribVersion(NrmStringToQuark(_NGResolvePath(NrmQuarkToString(the_real_path))));
+      }
+    }
 
     if(inst == NULL)
     {
