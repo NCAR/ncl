@@ -21256,11 +21256,7 @@ NhlErrorTypes   _NclIFileIsPresent
     for (i = 0; i < sz; i++) {
         fpath = (char *) NrmQuarkToString(files[i]);
         if (!strncmp(fpath, "http", 4)) {
-#ifdef BuildOPENDAP
-	    oc_open(fpath, &fid);
-#else
             fid = ncopen(fpath, NC_NOWRITE);
-#endif
             if (fid < 1)
                 file_exists[i] = 0;     /* false */
             else

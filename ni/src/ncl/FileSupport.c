@@ -2699,37 +2699,9 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		}
 		buffer[i] = '\0';
 		*fname_q = NrmStringToQuark(buffer);
-#ifdef BuildOPENDAP
-                use_new_hlfs = 1;
-                if(strcmp("nc", *end_of_name+1) == 0)
-	        	file_ext_q = NrmStringToQuark("nc");
-	        else
-		{
-                        if(strcmp("he5", *end_of_name+1) == 0)
-			{
-				file_ext_q = NrmStringToQuark("opendap");
-				fprintf(stderr, "\tfile: <%s>, line: %d\n", __FILE__, __LINE__);
-				fprintf(stderr, "\topendap file_ext_q = <%s>\n", NrmQuarkToString(file_ext_q));
-			}
-	                else
-	        		file_ext_q = NrmStringToQuark("nc");
-		}
-#else
 		(*end_of_name)++;
 
-#if 0
-                if((0 == strcmp("h5", *end_of_name)) ||
-                   (0 == strcmp("he5", *end_of_name)) ||
-                   (0 == strcmp("grb", *end_of_name)) ||
-                   (0 == strcmp("grb1", *end_of_name)) ||
-                   (0 == strcmp("grb2", *end_of_name)) ||
-                   (0 == strcmp("hdf", *end_of_name)) ||
-                   (0 == strcmp("he2", *end_of_name)))
-	        	file_ext_q = NrmStringToQuark(*end_of_name);
-		else
-#endif
-	        	file_ext_q = NrmStringToQuark("nc");
-#endif
+	        file_ext_q = NrmStringToQuark("nc");
 		return file_ext_q;
 	}
 	else if(*end_of_name == NULL) {
