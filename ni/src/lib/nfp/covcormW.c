@@ -9,6 +9,9 @@ extern void NGCALLF(dcovcormssm,DCOVCORMSSM)(int *, int *, double *, double *,
 extern void NGCALLF(dcovcorm,DCOVCORM)(int *, int *, double *, double *, 
                                        int *, double*, int *, double *, int *);
 
+extern void NGCALLF(dcovarxy,DCOVARXY)(double *,double *,double *,double *,
+                                       double *,int *,int *,int *,int *,int *);
+
 NhlErrorTypes covcorm_W( void )
 {
 /*
@@ -142,11 +145,11 @@ NhlErrorTypes covcorm_W( void )
  */
   if(!iopt[0]) {
     NGCALLF(dcovcormssm,DCOVCORMSSM)(&intim,&invar,dx,&missing_dx.doubleval,
-				     &iopt[1],dvcm,&ilvcm,dtrace,&ier);
+                                     &iopt[1],dvcm,&ilvcm,dtrace,&ier);
   }
   else {
     NGCALLF(dcovcorm,DCOVCORM)(&intim,&invar,dx,&missing_dx.doubleval,
-			       &iopt[1],dvcm,&ilvcm,dtrace,&ier);
+                               &iopt[1],dvcm,&ilvcm,dtrace,&ier);
   }
 
   if(type_vcm == NCL_float) {
@@ -157,7 +160,7 @@ NhlErrorTypes covcorm_W( void )
     coerce_output_float_only(trace,dtrace,1,0);
 
     NclFree(dx);
-    NclFree(dvcm);
+    if(type_x != NCL_double) NclFree(dvcm);
     NclFree(dtrace);
   }
 
@@ -229,3 +232,146 @@ NhlErrorTypes covcorm_W( void )
   return(NhlNOERROR);
 
 }
+
+NhlErrorTypes covcorm_xy_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x, *y;
+  int *iopt;
+  double *dx, *dy;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS],  dsizes_y[NCL_MAX_DIMENSIONS];
+  int ndims_x, has_missing_x, ndims_y, has_missing_y;
+  NclScalar missing_x, missing_dx, missing_y, missing_dy;
+  ng_size_t size_x, nvar, ntim;
+  int invar, intim;
+  NclBasicDataTypes type_x, type_y;
+
+/*
+ * Output array variable
+ */
+  void  *vcm;
+  double *dvcm;
+  ng_size_t *dsizes_vcm;
+  int ndims_vcm, ret;
+  ng_size_t size_vcm;
+  NclBasicDataTypes type_vcm;
+  NclScalar missing_vcm;
+
+/*
+ * Retrieve x.
+ */
+  x = (void*)NclGetArgValue(
+          0,
+          3,
+          &ndims_x,
+          dsizes_x,
+          &missing_x,
+          &has_missing_x,
+          &type_x,
+          DONT_CARE);
+
+  y = (void*)NclGetArgValue(
+          1,
+          3,
+          &ndims_y,
+          dsizes_y,
+          &missing_y,
+          &has_missing_y,
+          &type_y,
+          DONT_CARE);
+
+  iopt = (int*)NclGetArgValue(
+          2,
+          3,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          DONT_CARE);
+
+  nvar = dsizes_x[0];
+  ntim = dsizes_x[1];
+
+  if(dsizes_y[0] != nvar || dsizes_y[1] != ntim) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"covcorm_xy: x and y must be the same size");
+    return(NhlFATAL);
+  }
+
+  size_x = nvar * ntim;
+
+/*
+ * Test dimension sizes to make sure they are <= INT_MAX.
+ */
+  if((ntim > INT_MAX) || (nvar > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"covcorm_xy: one or more dimension sizes are greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  intim = (int) ntim;
+  invar = (int) nvar;
+
+/*
+ * Coerce missing values, if any.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
+
+/*
+ * Allocate space for input/output arrays.
+ */
+  size_vcm      = nvar*nvar;
+  ndims_vcm     = 2;
+  dsizes_vcm    = (ng_size_t*)malloc(2*sizeof(ng_size_t));
+  dsizes_vcm[0] = nvar;
+  dsizes_vcm[1] = nvar;
+
+  dx = coerce_input_double(x,type_x,size_x,0,NULL,NULL);
+  dy = coerce_input_double(y,type_y,size_x,0,NULL,NULL);
+
+  if(type_x == NCL_double || type_y == NCL_double) {
+    type_vcm = NCL_double;
+    vcm      = (void*)malloc(size_vcm*sizeof(double));
+    if(vcm == NULL) { 
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"covcorm_xy: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    dvcm                  = &((double*)vcm)[0];
+    missing_vcm.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+  }
+  else {
+    type_vcm = NCL_float;
+    vcm      = (void*)malloc(size_vcm*sizeof(float));
+    dvcm     = (double*)malloc(size_vcm*sizeof(double));
+    if(vcm == NULL  || dvcm == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"covcorm_xy: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    missing_vcm.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+  }
+
+/*
+ * Call the fortran routine.
+ *     iopt(0) --> iopt
+ *     iopt(1) --> lag
+ *     iopt(2) --> ncrit
+ */
+  NGCALLF(dcovarxy,DCOVARXY)(dx,dy,&missing_dx.doubleval,
+                             &missing_dy.doubleval,dvcm,&intim,&invar,
+                             &iopt[1],&iopt[2],&iopt[0]);
+
+/* Coerce to float if necessary */
+  if(type_vcm == NCL_float) coerce_output_float_only(vcm,dvcm,size_vcm,0);
+
+/* Free memory */
+  if(type_x   != NCL_double) NclFree(dx);
+  if(type_y   != NCL_double) NclFree(dy);
+  if(type_vcm != NCL_double) NclFree(dvcm);
+
+/* Return */
+  ret = NclReturnValue(vcm,ndims_vcm,dsizes_vcm,&missing_vcm,type_vcm,0);
+  NclFree(dsizes_vcm);
+  return(ret);
+}
+
