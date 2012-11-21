@@ -2816,7 +2816,7 @@ begin
 ;
 ;----------------------------------------------------------------------
 
-  grid_type = get_att_value(opt2,grid_type_name,"unknown")
+  grid_type = str_lower(get_att_value(opt2,grid_type_name,"unknown"))
 
 ;
 ; Check if SrcGridLat/SrcGridLon or DstGridLat/DstGridLon
