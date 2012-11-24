@@ -1,5 +1,7 @@
 C NCLFORTSTART
-      SUBROUTINE dgeevxint(BALANC,JOBVL,JOBVR,SENSE,N,A,EVLR,WR,WI,OPT)
+      SUBROUTINE dgeevxint(BALANC,JOBVL,JOBVR,SENSE,N,A,EVLR,WR,WI,
+     +                     OPT,WORK,IWORK,SCALEM,RCONDE,RCONDV,VL,VR,
+     +                     LWORK,LIWORK)
       IMPLICIT NONE
 c                                                      input
       INTEGER           N, OPT
@@ -8,20 +10,24 @@ ccccc CHARACTER*1       BALANC, JOBVL, JOBVR, SENSE
 c                                                      input and output
       DOUBLE PRECISION  A(N,N)
 c                                                      output
-c                                                      (:,:,real/imag,left/right)     
+c                                                      (:,:,real/imag,
+c                                                           left/right)     
       DOUBLE PRECISION  WR(N), WI(N), EVLR(N,N,2,2)
+c
+c     These are work arrays originally created by Fortran routine.
+c     LWORK should be N*(N+6)
+c     LIWORK should be 2*N-1
+c
+      DOUBLE PRECISION SCALEM(N), RCONDE(N), RCONDV(N)
+      DOUBLE PRECISION VL(N,N), VR(N,N)
+      DOUBLE PRECISION WORK(LWORK)
+      INTEGER          IWORK(LIWORK)
 C NCLEND
 C --------------------------------------------------------------------------------
 C                                                      local dynamically allocated
       INTEGER LDA, ILO, IHI, INFO, I, J
      +      , LDVR, LDVL, LWORK, LIWORK, K , KP1
-      DOUBLE PRECISION SCALEM(N), RCONDE(N), RCONDV(N)
-      DOUBLE PRECISION ABNRM,  WORK(N*(N+6))
-      INTEGER          IWORK(2*N-1)
-
-c local: these will returned within the EVLR(N,N,2,2) array
-
-      DOUBLE PRECISION VL(N,N), VR(N,N)
+      DOUBLE PRECISION ABNRM
 
 C just for consistency with LAPACK description   (make large)
       LDA     = N
