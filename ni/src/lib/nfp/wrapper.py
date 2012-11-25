@@ -808,7 +808,8 @@ for i in range(len(args)):
 #
 #---------------------------------------------------------------------
   if args[i].ndims == 0:
-    w1file.write("  int " + args[i].ndims_name + ", " + args[i].dsizes_name + \
+    w1file.write("  int       " + args[i].ndims_name + ";\n")
+    w1file.write("  ng_size_t " + args[i].dsizes_name + \
                 "[NCL_MAX_DIMENSIONS];\n")
   else:
 #
@@ -816,7 +817,7 @@ for i in range(len(args)):
 # is unknown (represented by being set to '0').
 #
     if 0 in args[i].dsizes:
-      w1file.write("  int " + args[i].dsizes_name + "[" + str(args[i].ndims) + "];\n")
+      w1file.write("  ng_size_t " + args[i].dsizes_name + "[" + str(args[i].ndims) + "];\n")
 
 #---------------------------------------------------------------------
 #
@@ -866,8 +867,8 @@ if isfunc:
 # Write out dimension information.
 #
 #---------------------------------------------------------------------
-  w1file.write("  int " + ret_arg.ndims_name + ", *" + ret_arg.dsizes_name + \
-               ";\n")
+  w1file.write("  int       " + ret_arg.ndims_name  + ";\n")
+  w1file.write("  ng_size_t " + ret_arg.dsizes_name + ";\n")
 
 #---------------------------------------------------------------------
 #
@@ -1371,8 +1372,8 @@ if isfunc:
   else:
     w1file.write("  " + ret_arg.ndims_name + " = ndims_leftmost + " + \
                 str(ret_arg.min_ndims) + ";\n")
-  w1file.write("  " + ret_arg.dsizes_name + " = (int*)calloc(" + \
-              ret_arg.ndims_name + ",sizeof(int));  \n")
+  w1file.write("  " + ret_arg.dsizes_name + " = (ng_size_t*)calloc(" + \
+              ret_arg.ndims_name + ",sizeof(ng_size_t));  \n")
   w1file.write("  if( " + ret_arg.dsizes_name + " == NULL ) {\n")
   w1file.write(fatal_str + \
                'Unable to allocate memory for holding dimension sizes");\n')
