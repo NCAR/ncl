@@ -60,7 +60,7 @@ NhlErrorTypes dgeevx_lapack_W( void )
  * implies you don't care about its value.
  */
 /*
- * Get argument # 0
+ * Get argument # Q. Note that this 
  */
   Q = (void*)NclGetArgValue(
            0,
@@ -192,7 +192,7 @@ NhlErrorTypes dgeevx_lapack_W( void )
   }
 
 /* 
- * Allocate space for output array.
+ * Allocate space for output arrays.
  */
   if(type_evlr != NCL_double) {
     evlr     = (void *)calloc(Nsqr4, sizeof(float));
@@ -258,9 +258,10 @@ NhlErrorTypes dgeevx_lapack_W( void )
                                tmp_Q, tmp_evlr, tmp_wr, tmp_wi, opt, work, 
                                iwork, scalem, rconde, rcondv, 
                                vl, vr, &ilwork, &iliwork,strlen(sbalanc),
-			       strlen(sjobvl), strlen(sjobvr), strlen(ssense));
-  if(type_Q == NCL_float) {
-    coerce_output_float_only(Q, tmp_Q,Nsqr,0);
+                               strlen(sjobvl), strlen(sjobvr), strlen(ssense));
+  if(type_Q != NCL_double) {
+    coerce_output_float_only(evlr,tmp_evlr,Nsqr4,0);
+    coerce_output_float_only(Q,tmp_Q,Nsqr,0);
     coerce_output_float_only(wr,tmp_wr,N,0);
     coerce_output_float_only(wi,tmp_wi,N,0);
   }
@@ -295,8 +296,10 @@ NhlErrorTypes dgeevx_lapack_W( void )
                             dsizes_evlr,
                             TEMPORARY,
                             NULL,
-			    type_obj_evlr
+                            type_obj_evlr
                             );
+
+  free(dsizes_evlr);
 /*
  * Set up attributes to return.
  */
