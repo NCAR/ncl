@@ -923,7 +923,7 @@ begin
 
 ;---Triangulate and get the element connectivity
     if(DEBUG) then
-      print("unstructured_to_ESMF: triangulating the data ...")
+      print("unstructured_to_ESMF: triangulating the data ... this can be slow")
     end if
     ElementVertices = csstri(lat,lon)
     if(DEBUG) then
