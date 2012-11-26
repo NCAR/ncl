@@ -81,8 +81,8 @@ HDFEOS_OBJS = NclHDFEOS.o
 
 #ifdef BuildHDFEOS5
 HDFEOS5_DEFS = -DBuildHDFEOS5 $(HDF4_NETCDF)
-HDFEOS5_SRCS = NclHDFEOS5.c
-HDFEOS5_OBJS = NclHDFEOS5.o
+HDFEOS5_SRCS = NclHDFEOS5.c NclNewHDFEOS5.c
+HDFEOS5_OBJS = NclHDFEOS5.o NclNewHDFEOS5.o
 #else
 #define HDFEOS5_SRCS
 #define HDFEOS5_OBJS
@@ -270,7 +270,7 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		NclCCM.c NclCoordVar.c NclData.c NclGroup.c NclFile.c	\
 		NclNewFile.c NclNewGroup.c \
 		NclFileVar.c NclGRIB.c NclGRIB2.c NclHDF.c \
-		NclHDFEOS.c NclHDFEOS5.c NclNewHDF5.c \
+		NclHDFEOS.c NclHDFEOS5.c NclNewHDFEOS5.c NclNewHDF5.c	\
 		NclMultiDValData.c.sed NclMultiDValnclfileData.c	\
 		NclNetCdf.c NclOneDValCoordData.c NclType.c NclOGR.c	\
 		NclType.c.sed NclTypebyte.c.specific			\
@@ -597,14 +597,18 @@ NclHDFEOS.o: NclHDFEOS.c
       $(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclHDFEOS.c
 	  @echo 
 
-NclHDFEOS5.o: NclHDFEOS5.c
-	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclHDFEOS5.c
-	@echo 
-
-NclNewHDF5.o: NclNewHDF5.c
-	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclNewHDF5.c
-	@echo 
-
+#NclHDFEOS5.o: NclHDFEOS5.c
+#	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclHDFEOS5.c
+#	@echo 
+#
+#NclNewHDFEOS5.o: NclNewHDFEOS5.c
+#	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclNewHDFEOS5.c
+#	@echo 
+#
+#NclNewHDF5.o: NclNewHDF5.c
+#	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclNewHDF5.c
+#	@echo 
+#
 #
 # NIO dependencies
 #
