@@ -1034,21 +1034,24 @@ void _printNclFileVarDimRecord(FILE *fp, NclFileDimRecord *dim_rec)
    
     _justPrintTypeVal(fp, NCL_char, "\t[ ", 0);
 
-    for(i = 0; i < dim_rec->n_dims; i++)
+    if(NULL != dim_rec->n_dims)
     {
-        dimnode = &(dim_rec->dim_node[i]);
+        for(i = 0; i < dim_rec->n_dims; i++)
+        {
+            dimnode = &(dim_rec->dim_node[i]);
 
-        if(i)
-            _justPrintTypeVal(fp, NCL_char, ", ", 0);
+            if(i)
+                _justPrintTypeVal(fp, NCL_char, ", ", 0);
 
-        llv = dimnode->size;
-        _justPrintTypeVal(fp, NCL_int64, &llv, 0);
-        _justPrintTypeVal(fp, NCL_char, " <", 0);
-        _justPrintTypeVal(fp, NCL_string, &(dimnode->name), 0);
-        if(dimnode->is_unlimited)
-            _justPrintTypeVal(fp, NCL_char, " | unlimited", 0);
+            llv = dimnode->size;
+            _justPrintTypeVal(fp, NCL_int64, &llv, 0);
+            _justPrintTypeVal(fp, NCL_char, " <", 0);
+            _justPrintTypeVal(fp, NCL_string, &(dimnode->name), 0);
+            if(dimnode->is_unlimited)
+                _justPrintTypeVal(fp, NCL_char, " | unlimited", 0);
 
-        _justPrintTypeVal(fp, NCL_char, ">", 0);
+            _justPrintTypeVal(fp, NCL_char, ">", 0);
+        }
     }
 
     _justPrintTypeVal(fp, NCL_char, " ]", 1);
@@ -2804,6 +2807,8 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
 
     if(_NclFormatEqual(NrmStringToQuark("grb"),NrmStringToQuark(end_of_name)))
     {
+      if(! is_http)
+      {
         the_real_path = path;
         if(stat(_NGResolvePath(NrmQuarkToString(path)),&buf) == -1)
         {
@@ -2824,8 +2829,9 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
                 NclFree(tmp_path);
             }
         }
-            grib_version = _NclGribVersion(NrmStringToQuark(_NGResolvePath(NrmQuarkToString(the_real_path))));
-        }
+        grib_version = _NclGribVersion(NrmStringToQuark(_NGResolvePath(NrmQuarkToString(the_real_path))));
+      }
+    }
 
     if(inst == NULL)
     {
