@@ -5662,9 +5662,9 @@ static NhlErrorTypes NewFileWriteVarAtt(NclFile infile, NclQuark var, NclQuark a
 
     if((exists)&&(thefile->newfile.format_funcs->write_att != NULL))
     {
-        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\texists = %d\n", exists);
       /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\texists = %d\n", exists);
        */
 
         /* get the last att val in case there's an error writing the att */
