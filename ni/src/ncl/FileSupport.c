@@ -3239,8 +3239,11 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 	if(NrmStringToQuark("h5") == file_ext_q)
 		use_new_hlfs = 1;
+
+/*We still want to keep old HE5 there.
 	else if(NrmStringToQuark("he5") == file_ext_q)
 		use_new_hlfs = 1;
+ */
 
 	if(use_new_hlfs)
 	{

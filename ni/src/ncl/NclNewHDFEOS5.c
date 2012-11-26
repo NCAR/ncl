@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS5.c,v 1.6.6.1 2010/05/02 18:26:58 haley Exp $
+ *      $Id$
  */
 /************************************************************************
 *                                    *
@@ -262,7 +262,7 @@ static NclBasicDataTypes HE5MapTypeNumber(long typenumber){
             case HE5T_CHARSTRING:
                  return(NCL_string);
             default:
-                 NhlPError(NhlFATAL,NhlEUNKNOWN,"NclHDFEOS5: Unsupported type encountered");
+                 NhlPError(NhlFATAL,NhlEUNKNOWN,"NclNewHDFEOS5: Unsupported type encountered");
          return(NCL_none);
     
     }
@@ -568,7 +568,7 @@ NclFileFormatType *format;
     grpnode->other_src = NULL;
     grpnode->parent = NULL;
 
-    *format = _NclHDFEOS5;
+    *format = _NclNewHE5;
     setvbuf(stderr,NULL,_IONBF,0);
     return (void *) grpnode;
 }
@@ -860,7 +860,7 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
         if(1 > ndims)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, 
-                  "NclHDFEOS5: An internal HDF error occurred while reading (%s) can't continue",
+                  "NclNewHDFEOS5: An internal HDF error occurred while reading (%s) can't continue",
                   NrmQuarkToString(path));
             return;
         }
@@ -1568,7 +1568,7 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
         free(tmp_hdf_name);
         if(0 >= HE5_GDid)
         {
-            NHLPERROR((NhlFATAL,NhlEUNKNOWN, "NclHDFEOS5: An internal HDF error occurred while reading (%s) can't continue",
+            NHLPERROR((NhlFATAL,NhlEUNKNOWN, "NclNewHDFEOS5: An internal HDF error occurred while reading (%s) can't continue",
                   NrmQuarkToString(path)));
             return;
         }
@@ -1643,7 +1643,7 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
             default:
                 printf("Unsupported projection: projcode: %d, zonecode: %d, spherecode: %d, projparm: %f\n",
                         projcode, zonecode, spherecode, projparm[1]);
-                NhlPError(NhlFATAL,NhlEUNKNOWN, "NclHDFEOS5: Unsupported projection found, parameter as above.");
+                NhlPError(NhlFATAL,NhlEUNKNOWN, "NclNewHDFEOS5: Unsupported projection found, parameter as above.");
                 return;
             }
 
@@ -1985,7 +1985,7 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
             if (status == FAIL)
             {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN, 
-                      "NclHDFEOS5: Invalid projection information for GRID (%s); no coordinates will be provided",
+                      "NclNewHDFEOS5: Invalid projection information for GRID (%s); no coordinates will be provided",
                       NrmQuarkToString(gd_hdf_names[i])));
             }
     
@@ -2703,7 +2703,7 @@ void getHE5ZonalAverageData(NclFileGrpNode *parentgrpnode, NclQuark path)
         if (ndims < 1)
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN, 
-                  "NclHDFEOS5: An internal HDF error occurred while reading (%s) can't continue",
+                  "NclNewHDFEOS5: An internal HDF error occurred while reading (%s) can't continue",
                   NrmQuarkToString(path));
             return;
         }
@@ -2966,7 +2966,7 @@ static void *HE5OpenFile(void *rec,NclQuark path,int wr_status)
 
     if(wr_status <= 0)
     {
-        NHLPERROR((NhlFATAL,NhlEUNKNOWN,"NclHDFEOS5: HDF-EOS5 are currently read only in NCL"));
+        NHLPERROR((NhlFATAL,NhlEUNKNOWN,"NclNewHDFEOS5: HDF-EOS5 are currently read only in NCL"));
         return(NULL);
     }
 
@@ -3002,7 +3002,7 @@ static void *HE5OpenFile(void *rec,NclQuark path,int wr_status)
 
     if((npt == 0) && (nsw == 0) && (ngd == 0) && (nza == 0))
     {
-        NHLPERROR((NhlFATAL,NhlEUNKNOWN,"NclHDFEOS5: No swath, grid or point data found. File is not HE5"));
+        NHLPERROR((NhlFATAL,NhlEUNKNOWN,"NclNewHDFEOS5: No swath, grid or point data found. File is not HE5"));
         return(NULL);
     }
 
@@ -3082,7 +3082,7 @@ static int HE5_GDreadCoordVar
         if (status == FAIL)
         {
             NHLPERROR((NhlWARNING,NhlEUNKNOWN, 
-                  "NclHDFEOS5: Invalid projection information.\n"));
+                  "NclNewHDFEOS5: Invalid projection information.\n"));
         }
 
     if (varnode->name == NrmStringToQuark("lon"))
@@ -3243,7 +3243,7 @@ static void *_readHE5GridVar(NclFileGrpNode *grpnode, NclQuark thevar,
     }
     else
     {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"NclHDFEOS5: Error ocurred while reading can't continue");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"NclNewHDFEOS5: Error ocurred while reading can't continue");
         return(NULL);
     }
 }
@@ -3340,7 +3340,7 @@ static void *_readHE5SwathVar(NclFileGrpNode *grpnode, NclQuark thevar,
     }
     else
     {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"NclHDFEOS5: Error ocurred while reading can't continue");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"NclNewHDFEOS5: Error ocurred while reading can't continue");
         return(NULL);
     }
 }
@@ -3362,13 +3362,15 @@ static void *HE5ReadVar(void *therec, NclQuark thevar,
              out_data = _readHE5SwathVar(grpnode, thevar, start, finish, stride, storage);
              break;
         case POINT:
-             NHLPERROR((NhlFATAL,NhlEUNKNOWN,"NclHDFEOS5 can not hanlde POINT data yet."));
+             NHLPERROR((NhlFATAL,NhlEUNKNOWN,"NclNewHDFEOS5 can not hanlde POINT data yet."));
              break;
-#if 0
         case ZA:
+#if 1
+             NHLPERROR((NhlFATAL,NhlEUNKNOWN,"NclNewHDFEOS5 can not hanlde ZA data yet."));
+#else
              out_data = _readHE5ZAVar(grpnode, thevar, start, finish, stride, storage);
-             break;
 #endif
+             break;
         default:
              fprintf(stderr, "\nEnter %s, file: %s, line: %d\n",
                               __PRETTY_FUNCTION__, __FILE__, __LINE__);
@@ -3454,7 +3456,7 @@ static void *HE5ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void 
     return(NULL);
 }
 
-NclFormatFunctionRec HE5Rec = {
+NclFormatFunctionRec NewHE5Rec = {
 /* NclInitializeFileRecFunc initialize_file_rec */      HE5InitializeFileRec,
 /* NclCreateFileFunc        create_file; */             NULL,
 /* NclOpenFileFunc          open_file; */               HE5OpenFile,
@@ -3504,8 +3506,8 @@ NclFormatFunctionRec HE5Rec = {
 /* NclSetOptionFunc         set_option;  */             NULL
 };
 
-NclFormatFunctionRecPtr HDFEOS5AddFileFormat(void)
+NclFormatFunctionRecPtr NewHE5AddFileFormat(void)
 {
-    return(&HE5Rec);
+    return(&NewHE5Rec);
 }
 

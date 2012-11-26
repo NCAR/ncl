@@ -75,11 +75,9 @@ typedef enum _NclFileFormat {
 	_NclHDFEOS5,
 	_NclGRIB,
 	_NclGRIB2,
-#ifdef BuildOPENDAP
-	_NclOPENDAP,
-#endif
         _NclOGR,
         _NclNewOGR,
+	_NclNewHE5,
 	_NclNETCDF4
 } NclFileFormat;
 

@@ -41,27 +41,12 @@ void
 #endif
 
 #ifdef BuildHDFEOS5
-extern NclFormatFunctionRecPtr HDFEOS5AddFileFormat(
-#if     NhlNeedProto
-void
-#endif
-);
+extern NclFormatFunctionRecPtr HDFEOS5AddFileFormat(void);
+extern NclFormatFunctionRecPtr NewHE5AddFileFormat(void);
 #endif
 
 #ifdef BuildHDF5
-extern NclFormatFunctionRecPtr HDF5AddFileFormat(
-#if     NhlNeedProto
-void
-#endif
-);
-#endif
-
-#ifdef BuildOPENDAP
-extern NclFormatFunctionRecPtr OpenDapAddFileFormat(
-#if     NhlNeedProto
-void
-#endif
-);
+extern NclFormatFunctionRecPtr HDF5AddFileFormat(void);
 #endif
 
 extern NclFormatFunctionRecPtr NetCdfAddFileFormat(
@@ -70,13 +55,8 @@ void
 #endif
 );
 
-extern NclFormatFunctionRecPtr NC4AddFileFormat(
-#if	NhlNeedProto
-void
-#endif
-);
+extern NclFormatFunctionRecPtr NC4AddFileFormat(void);
 
-extern NclFormatFunctionRecPtr HDF5AddFileFormat(void);
 
 extern NclFormatFunctionRecPtr GribAddFileFormat(
 #if	NhlNeedProto
@@ -127,6 +107,7 @@ void _NclAddFileFormats
 #endif
 #ifdef BuildHDF5
         _NclRegisterFormat(HDF5AddFileFormat,"h5");
+        _NclRegisterFormat(HDF5AddFileFormat,"hdf5");
 #endif
 	_NclRegisterFormat(GribAddFileFormat,"gr");
 	_NclRegisterFormat(GribAddFileFormat,"gr1");
@@ -140,10 +121,6 @@ void _NclAddFileFormats
 	_NclRegisterFormat(GribAddFileFormat,"grb2");
 #endif  /* BuildGRIB2 */
 	_NclRegisterFormat(CcmAddFileFormat,"ccm");
-
-#ifdef BuildOPENDAP
-	_NclRegisterFormat(OpenDapAddFileFormat,"opendap");
-#endif
 
 #ifdef  BuildGDAL
         /* file types supported by OGR... */
@@ -181,7 +158,7 @@ void _NclAddFileFormats
         /* TIGER: see http://www.census.gov/geo/www/tiger/tiger2006se/tgr2006se.html */
 #endif
 
-	/*These is for NetCDF4.
+	/*
 	 *where this file will be scanned to find the second match.
 	 *The new file-structure is used when found the second match.
 	 */
@@ -194,17 +171,13 @@ void _NclAddFileFormats
 	_NclRegisterFormat(HDF5AddFileFormat,"h5");
 	_NclRegisterFormat(HDF5AddFileFormat,"hdf5");
 
-	_NclRegisterFormat(HDFEOS5AddFileFormat,"he5");
-	_NclRegisterFormat(HDFEOS5AddFileFormat,"hdfeos5");
+	_NclRegisterFormat(NewHE5AddFileFormat,"he5");
+	_NclRegisterFormat(NewHE5AddFileFormat,"hdfeos5");
 #ifdef  BuildGDAL
         /* file types supported by OGR in new file structure */
         _NclRegisterFormat(NewOGRAddFileFormat, "shp");  /* shapefile */
         _NclRegisterFormat(NewOGRAddFileFormat, "mif");  /* mapinfo */
         _NclRegisterFormat(NewOGRAddFileFormat, "gmt");  /* GMT   */
-#endif
-
-#ifdef BuildOPENDAP
-	_NclRegisterFormat(OpenDapAddFileFormat,"opendap");
 #endif
 
 	return;
