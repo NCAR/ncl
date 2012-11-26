@@ -159,6 +159,33 @@ NhlErrorTypes dgeevx_lapack_W( void )
   ssense  = NrmQuarkToString(*sense);
 
 /*
+ * Check the strings to make sure they're valid.
+ */
+  if(strcmp(sbalanc,"N") && strcmp(sbalanc,"P") && 
+     strcmp(sbalanc,"S") && strcmp(sbalanc,"B")) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dgeevx_lapack: 'balanc' must be set to 'N', 'P', 'S', or 'B'");
+    return(NhlFATAL);
+  }
+
+  if(strcmp(sjobvl,"N") && strcmp(sjobvl,"V") && 
+     strcmp(sjobvr,"N") && strcmp(sjobvr,"V")) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dgeevx_lapack: 'jobvl' and 'jobvr' must be set to 'N' or 'V'");
+    return(NhlFATAL);
+  }
+  if(strcmp(ssense,"N") && strcmp(ssense,"E") && 
+     strcmp(ssense,"V") && strcmp(ssense,"B")) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dgeevx_lapack: 'sense' must be set to 'N', 'E', 'V', or 'B'");
+    return(NhlFATAL);
+  }
+
+  if((!strcmp(ssense,"E") || !strcmp(ssense,"B")) && 
+     (strcmp(sjobvl,"V") || strcmp(sjobvr,"V"))) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dgeevx_lapack: if 'sense' is 'E' or 'B', then jobvl/jobvr must be set to 'V'");
+    return(NhlFATAL);
+
+  }
+
+/*
  * Get (currently unsed) argument # 5
  */
   opt = (logical*)NclGetArgValue(
