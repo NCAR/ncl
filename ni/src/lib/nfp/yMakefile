@@ -93,7 +93,7 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o 
 	covcormW.o kronprodW.o space_timeW.o spcorrW.o bindataW.o tropwmoW.o pdfW.o     \
 	mocloopsW.o spanW.o vinth2pnodesW.o vinth2penodesW.o objanalW.o                 \
 	areaconremapW.o	nctime.o cdtimeW.o dimnumrunW.o sparse_matrixW.o \
-	gammaW.o gamfitW.o spiW.o oceanW.o
+	gammaW.o gamfitW.o spiW.o oceanW.o dgeevxW.o
 
 OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS) $(ESMF_OBJS)
 SRCS = $(CSRCS) $(UDUNITS_SRCS) $(V5D_SRCS) $(ESMF_SRCS)

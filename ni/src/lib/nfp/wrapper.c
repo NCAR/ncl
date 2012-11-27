@@ -50,6 +50,7 @@ extern NhlErrorTypes svdcov_W(void);
 extern NhlErrorTypes svdstd_W(void);
 extern NhlErrorTypes svdcov_sv_W(void);
 extern NhlErrorTypes svdstd_sv_W(void);
+extern NhlErrorTypes dgeevx_lapack_W(void);
 extern NhlErrorTypes svd_lapack_W(void);
 extern NhlErrorTypes svdpar_W(void);
 extern NhlErrorTypes sindex_yrmo_W(void);
@@ -409,6 +410,7 @@ extern NhlErrorTypes fourier_info_W(void);
 extern NhlErrorTypes stdatmus_z2tdp_W(void);
 extern NhlErrorTypes stdatmus_p2tdz_W(void);
 extern NhlErrorTypes covcorm_W(void);
+extern NhlErrorTypes covcorm_xy_W(void);
 
 extern NhlErrorTypes rdsstoi_W(void);
 extern NhlErrorTypes vibeta_W(void);
@@ -1217,6 +1219,23 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
     NclRegisterFunc(svd_lapack_W,args,"svd_lapack",nargs);
+/*
+ * Register "dgeevx_lapack".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(6);
+
+        SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+        NclRegisterFunc(dgeevx_lapack_W,args,"dgeevx_lapack",nargs);
 /*
  * Register "svdpar".
  *
@@ -5978,6 +5997,20 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(covcorm_W,args,"covcorm",nargs);
+
+/*
+ * Register "covcorm_xy".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    dimsizes[0] = 3;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(covcorm_xy_W,args,"covcorm_xy",nargs);
 
 /*
  * Register "vibeta".

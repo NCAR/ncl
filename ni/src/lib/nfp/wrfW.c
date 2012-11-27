@@ -3558,6 +3558,7 @@ NhlErrorTypes wrf_uvmet_W( void )
       for(i = 0; i < ndims_u-2; i++) {
         if(dsizes_lat[i] != dsizes_u[i]) {
           NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_uvmet: if u and lat have the same number of dimensions, then all but the rightmost 2 dimensions must be the same");
+          return(NhlFATAL);
         }
       }
     }
@@ -3565,6 +3566,7 @@ NhlErrorTypes wrf_uvmet_W( void )
       for(i = 0; i < ndims_u-3; i++) {
         if(dsizes_lat[i] != dsizes_u[i]) {
           NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_uvmet: if lat has one fewer dimensions than u, then all but the rightmost 3 dimensions must be the same");
+          return(NhlFATAL);
         }
       }
     }
@@ -3595,6 +3597,7 @@ NhlErrorTypes wrf_uvmet_W( void )
   for(i = 0; i < ndims_lat; i++) {
     if(dsizes_lat[i] != dsizes_lon[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_uvmet: The lat,lon arrays must have the same dimension sizes");
+      return(NhlFATAL);
     }
   }
 
@@ -4861,6 +4864,7 @@ NhlErrorTypes wrf_pvo_W( void )
   for(i = 0; i < ndims_u-3; i++) {
     if(dsizes_u[i] != dsizes_v[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The leftmost dimensions of u and v must be the same");
+      return(NhlFATAL);
     }
   }
 
@@ -4900,6 +4904,7 @@ NhlErrorTypes wrf_pvo_W( void )
   for(i = 0; i < ndims_u-3; i++) {
     if(dsizes_th[i] != dsizes_u[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The leftmost dimensions of th and u must be the same");
+      return(NhlFATAL);
     }
   }
 
@@ -4930,6 +4935,7 @@ NhlErrorTypes wrf_pvo_W( void )
   for(i = 0; i < ndims_th; i++) {
     if(dsizes_p[i] != dsizes_th[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of p and th must be the same");
+      return(NhlFATAL);
     }
   }
 
@@ -4971,6 +4977,7 @@ NhlErrorTypes wrf_pvo_W( void )
     for(i = 0; i < ndims_u-3; i++) {
       if(dsizes_msfu[i] != dsizes_u[i]) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: If msfu is not 2-dimensional, then the leftmost dimensions of msfu and u must be the same");
+        return(NhlFATAL);
       }
     }
   }
@@ -5006,6 +5013,7 @@ NhlErrorTypes wrf_pvo_W( void )
   for(i = 0; i < ndims_msfu-2; i++) {
     if(dsizes_msfv[i] != dsizes_msfu[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The leftmost dimensions of msfv and msfu must be the same");
+      return(NhlFATAL);
     }
   }
 
@@ -5040,6 +5048,7 @@ NhlErrorTypes wrf_pvo_W( void )
   for(i = 0; i < ndims_msfu-2; i++) {
     if(dsizes_msft[i] != dsizes_msfu[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The leftmost dimensions of msft and msfu must be the same");
+      return(NhlFATAL);
     }
   }
 
@@ -5070,6 +5079,7 @@ NhlErrorTypes wrf_pvo_W( void )
   for(i = 0; i < ndims_msft; i++) {
     if(dsizes_cor[i] != dsizes_msft[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of cor and msft must be the same");
+      return(NhlFATAL);
     }
   }
 
@@ -5683,6 +5693,7 @@ NhlErrorTypes wrf_avo_W( void )
   for(i = 0; i < ndims_u-3; i++) {
     if(dsizes_u[i] != dsizes_v[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: The leftmost dimensions of u and v must be the same");
+      return(NhlFATAL);
     }
   }
 
@@ -5727,6 +5738,7 @@ NhlErrorTypes wrf_avo_W( void )
     for(i = 0; i < ndims_u-3; i++) {
       if(dsizes_msfu[i] != dsizes_u[i]) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: If msfu is not 2-dimensional, then the leftmost dimensions of msfu and u must be the same");
+        return(NhlFATAL);
       }
     }
   }
@@ -5762,6 +5774,7 @@ NhlErrorTypes wrf_avo_W( void )
   for(i = 0; i < ndims_msfu-2; i++) {
     if(dsizes_msfv[i] != dsizes_msfu[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: The leftmost dimensions of msfv and msfu must be the same");
+      return(NhlFATAL);
     }
   }
 
@@ -5796,6 +5809,7 @@ NhlErrorTypes wrf_avo_W( void )
   for(i = 0; i < ndims_msfu-2; i++) {
     if(dsizes_msft[i] != dsizes_msfu[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: The leftmost dimensions of msft and msfu must be the same");
+      return(NhlFATAL);
     }
   }
 
@@ -5826,6 +5840,7 @@ NhlErrorTypes wrf_avo_W( void )
   for(i = 0; i < ndims_msft; i++) {
     if(dsizes_cor[i] != dsizes_msft[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: The dimensions of cor and msft must be the same");
+      return(NhlFATAL);
     }
   }
 
@@ -6430,6 +6445,7 @@ NhlErrorTypes wrf_helicity_W( void )
   for(i = 0; i < ndims_ter-2; i++) {
     if(dsizes_ter[i] != dsizes_u[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: The leftmost dimensions of ter and u, v, z must be the same");
+      return(NhlFATAL);
     }
   }
 
@@ -6452,7 +6468,7 @@ NhlErrorTypes wrf_helicity_W( void )
 
   if((miy > INT_MAX) || (mjx > INT_MAX) || (mkzh > INT_MAX)) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_helicity: one or more dimension sizes is greater than INT_MAX");
-      return(NhlFATAL);
+    return(NhlFATAL);
   }
   imiy = (int) miy;
   imjx = (int) mjx;
@@ -6975,6 +6991,7 @@ NhlErrorTypes wrf_updraft_helicity_W( void )
   if(dsizes_vs[ndims_vs-3] != nz || dsizes_vs[ndims_vs-2] != ny || 
      dsizes_vs[ndims_vs-1] != nx) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_updraft_helicity: The rightmost dimensions of vs must be nz x ny x ny");
+    return(NhlFATAL);
   }
 /*
  * Get argument # 4
