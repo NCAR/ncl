@@ -4630,7 +4630,8 @@ NclFile _NclFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	 * Note we also need to check here for extensions added to the real path.
      	 */
 	if (_NclFormatEqual(NrmStringToQuark("grb"),NrmStringToQuark(end_of_name))) {
-	    if(! is_http) {
+	    if (! is_http)
+	    {
 		the_real_path = path;
 		if(stat(_NGResolvePath(NrmQuarkToString(path)),&buf) == -1) {
 			tmp_path = NclMalloc(len_path+1);

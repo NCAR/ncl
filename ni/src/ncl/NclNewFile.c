@@ -7268,10 +7268,10 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
 /*
 * Need to add variable to file situation
 */
-           /*
+          /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tCould not get varnode->name: <%s>\n", NrmQuarkToString(var));
            */
-            fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tCould not get varnode->name: <%s>\n", NrmQuarkToString(var));
 
             if(type == FILE_COORD_VAR_ACCESS)
             {
@@ -7316,7 +7316,7 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
                 {
                     for(i = 0; i < value->multidval.n_dims; i++)
                     {
-                        sprintf(buffer,"ncl%d",thefile->newfile.grpnode->dim_rec->n_dims);
+                        sprintf(buffer,"ncl%d",i);
                         new_dim_quarks[i] = NrmStringToQuark(buffer);
                         new_dim_sizes[i] = (long)value->multidval.dim_sizes[i];
                         start[i] = 0;

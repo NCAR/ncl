@@ -1,24 +1,22 @@
-/*
- *      $Id$
- */
 /************************************************************************
-*                                    *
-*                 Copyright (C)  1994            *
-*         University Corporation for Atmospheric Research        *
-*                 All Rights Reserved            *
-*                                    *
+*                                                                       *
+*                 Copyright (C)  1994                                   *
+*         University Corporation for Atmospheric Research               *
+*                 All Rights Reserved                                   *
+*                                                                       *
 ************************************************************************/
 /*
- *    File:        
+ * $Id:		NclNewHDFEOS5.c 13961 2012-11-26 17:42:46Z huangwei $
  *
- *    Author:        Wei Huang
- *            National Center for Atmospheric Research
- *            PO 3000, Boulder, Colorado
+ * Author:	Wei Huang
+ *		National Center for Atmospheric Research
+ *		PO 3000, Boulder, Colorado
  *
- *    Date:        April 9, 2009
+ * Date:	November 16, 2012
  *
- *    Description:    
+ * Description:    
  */
+
 #ifdef NIO_LIB_ONLY
 #include "niohlu.h"
 #include "nioNresDB.h"
