@@ -41,16 +41,11 @@ set ngmathbd    = "$ro/libngmathbd.o"
 set extra_libs
 
 set robjs
-set CAIRO_LD
 unset NGMATH_LD
 unset NGMATH_BLOCKD_LD
 
 foreach arg ($argv)
   switch ($arg)
-
-  case "-cairo":
-    set CAIRO_LD
-    breaksw
 
   case "-ngmath":
     set libmath     = "-lngmath"

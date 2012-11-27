@@ -43,7 +43,6 @@ set ngmathbd    = "$ro/libngmathbd.o"
 set extra_libs
 
 set robjs
-set CAIRO_LD
 unset NGMATH_LD
 unset NGMATH_BLOCKD_LD
 
@@ -53,10 +52,6 @@ foreach arg ($argv)
   case "-XmXt":
   case "-xmxt":
     set extra_libs = "$extra_libs SED_XMOTIFLIB SED_XTOOLLIB"
-    breaksw
-
-  case "-cairo":
-    set CAIRO_LD
     breaksw
 
   case "-ngmath":
