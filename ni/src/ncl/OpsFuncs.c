@@ -1679,7 +1679,7 @@ NclStackEntry _NclCreateHLUObjOp
 		}
 		if(tmp_md == NULL) {
 			NhlRLSet(rl_list,NrmQuarkToString(
-				*(string*)(tmp2_md->multidval.val)),
+				*(NclQuark *)(tmp2_md->multidval.val)),
 				NrmNULLQUARK,
 				NULL);
 			gen_array[i] = NULL;
@@ -1692,7 +1692,7 @@ NclStackEntry _NclCreateHLUObjOp
 					tmp_md->multidval.dim_sizes,
 					1);
 			NhlRLSet(rl_list,NrmQuarkToString(
-				*(string*)(tmp2_md->multidval.val)),
+				*(NclQuark *)(tmp2_md->multidval.val)),
 				NhlTGenArray,
 				gen_array[i]);
 		} else {
@@ -1724,12 +1724,12 @@ NclStackEntry _NclCreateHLUObjOp
 					&m,
 					1);
 				NhlRLSet(rl_list,NrmQuarkToString(
-					*(string*)(tmp2_md->multidval.val)),
+					*(NclQuark *)(tmp2_md->multidval.val)),
 					NhlTGenArray,
 					gen_array[i]);
 			} else {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"The value associated with (%s) does not have an HLU representation",
-						NrmQuarkToString(*(string*)(tmp2_md->multidval.val)));
+						NrmQuarkToString(*(NclQuark *)(tmp2_md->multidval.val)));
 				gen_array[i] = NULL;
 			}
 			NclFree(ids);
@@ -2003,7 +2003,7 @@ int nres;
 		}
 		if(tmp_md == NULL) {
 			NhlRLSet(rl_list,NrmQuarkToString(
-				*(string*)(tmp2_md->multidval.val)),
+				*(NclQuark *)(tmp2_md->multidval.val)),
 				NrmNULLQUARK,
 				NULL);
 			gen_array[i] = NULL;
@@ -2016,7 +2016,7 @@ int nres;
 					tmp_md->multidval.dim_sizes,
 					0);
 			NhlRLSet(rl_list,NrmQuarkToString(
-				*(string*)(tmp2_md->multidval.val)),
+				*(NclQuark *)(tmp2_md->multidval.val)),
 				NhlTGenArray,
 				gen_array[i]);
 		} else {
@@ -2052,14 +2052,14 @@ int nres;
                                         &m,
                                         1);
                                 NhlRLSet(rl_list,NrmQuarkToString(
-                                        *(string*)(tmp2_md->multidval.val)),
+                                        *(NclQuark *)(tmp2_md->multidval.val)),
                                         NhlTGenArray,
                                         gen_array[i]);
 				NclFree(ids);
                         } else {
 				NclFree(ids);
                                 NhlPError(NhlWARNING,NhlEUNKNOWN,"The value associated with (%s) does not have an HLU representation",
-                                                NrmQuarkToString(*(string*)(tmp2_md->multidval.val)));
+                                                NrmQuarkToString(*(NclQuark *)(tmp2_md->multidval.val)));
                                 gen_array[i] = NULL;
                         }
 

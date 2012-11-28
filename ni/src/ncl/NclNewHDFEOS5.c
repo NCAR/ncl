@@ -3400,7 +3400,7 @@ static void *HE5ReadAtt(void *therec,NclQuark theatt,void* storage)
             {
                 if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
                 {
-                    *(string*)storage = *(string*)(attnode->value);
+                    *(NclQuark *)storage = *(NclQuark *)(attnode->value);
                 }
                 else
                 {
@@ -3433,7 +3433,7 @@ static void *HE5ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void 
             {
                 if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
                 {
-                    *(string*)storage = *(string*)(attnode->value);
+                    *(NclQuark *)storage = *(NclQuark *)(attnode->value);
                 }
                 else
                 {

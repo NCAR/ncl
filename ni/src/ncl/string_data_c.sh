@@ -26,8 +26,15 @@ then
 	exit $?
 fi
 
+cp NclTypestring.c .tmp.$$
+sed \
+-e 's/(string)/(NclQuark)/g' \
+-e 's/string\*/NclQuark \*/g' \
+-e 's/string \*/NclQuark \*/g' \
+.tmp.$$ > NclTypestring.c
+
 rm .tmp.$$
 
-echo "created NclTypestringData.c"
+echo "created NclTypestring.c"
 
 exit 0

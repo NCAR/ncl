@@ -683,7 +683,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 								}
 								else
 								{
-									for (i = 0; i < i < var_ndims; ++i)
+									for (i = 0; i < var_ndims; ++i)
 									{
 										if(varnode->dim_rec->dim_node[i].size != var_dim_sizes[i])
 										{
@@ -3112,7 +3112,7 @@ void CallASSIGN_VAR_DIM_OP(void) {
 							NCL_long);
 							
 					} else {
-						dim_name = NrmQuarkToString(*(string*)dim_expr_md->multidval.val);
+						dim_name = NrmQuarkToString(*(NclQuark *)dim_expr_md->multidval.val);
 					}
 					if((dim_ref_md->multidval.data_type != NCL_long)) {
 						_NclScalarCoerce(
@@ -3200,7 +3200,7 @@ void CallNEW_OP(void) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"new: data type must either be a keyword or string");
 						estatus = NhlFATAL;
 					} else {
-						data_type = _NclLookUp(NrmQuarkToString(*(string*)tmp_md->multidval.val));
+						data_type = _NclLookUp(NrmQuarkToString(*(NclQuark *)tmp_md->multidval.val));
 					}	
 				} else {
 					data_type = (NclSymbol*)*ptr;
@@ -4606,7 +4606,7 @@ void CallCREATE_OBJ_OP(void) {
 						}
 					}
 				}
-				objname = NrmQuarkToString(*(string*)obj_name_md->multidval.val);
+				objname = NrmQuarkToString(*(NclQuark *)obj_name_md->multidval.val);
 				if(obj_name_md->obj.status != PERMANENT) {
 					_NclDestroyObj((NclObj)obj_name_md);
 				}

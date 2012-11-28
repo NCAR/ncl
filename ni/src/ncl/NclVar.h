@@ -22,7 +22,7 @@
  */
 #ifndef NclVar_h
 #define NclVar_h
-#include "NclData.h"
+#include <ncarg/ncl/NclData.h>
 
 typedef NhlErrorTypes (*NclAssignFunction)(
 #if	NhlNeedProto

@@ -1251,7 +1251,7 @@ _NhlGetResInfo
 	while(chld){
 
 		if(NrmQinQList(chld->resources,res))
-			return _NhlGetResInfo(chld->class,res);
+			return _NhlGetResInfo(chld->theclass,res);
 
 		chld = chld->next;
 	}
@@ -1305,11 +1305,11 @@ void _NhlGetNativeResInfo
         _NhlChildResList chld = class->base_class.child_resources;
 
         while (chld) {
-                NrmResource *chld_res = _NhlGetResInfo(chld->class,res);
+                NrmResource *chld_res = _NhlGetResInfo(chld->theclass,res);
                 if (chld_res) {
                         if (chld_res->res_info & _NhlRES_INTERCEPTED) {
                                 _NhlGetNativeResInfo
-                                        (chld->class,res,count,native_res);
+                                        (chld->theclass,res,count,native_res);
                         }
                         else {
                                 native_res[*count] = chld_res;
@@ -1499,7 +1499,7 @@ _NhlSortChildArgs
 
 	while(reslist != NULL){
 
-		arglist->class = reslist->class;
+		arglist->theclass = reslist->theclass;
 		arglist->autosetval = reslist->autosetval;
 		arglist->next = NULL;
 		arglist->nargs = 0;
@@ -1574,7 +1574,7 @@ _NhlSortChildArgs
 							l->base.children;
 
 						while(chld_node != NULL){
-				if(chld_node->class == reslist->class)
+				if(chld_node->theclass == reslist->theclass)
 								break;
 							chld_node =
 								chld_node->next;
@@ -1598,7 +1598,7 @@ _NhlSortChildArgs
 					 */
 					if(getvalues){
 						*args_in[i].chld_class =
-								reslist->class;
+								reslist->theclass;
 						break;
 					}
 				}

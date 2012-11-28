@@ -115,7 +115,7 @@ NhlErrorTypes _NclBuildFileCoordRSelection
 			name_md = _NclFileVarReadDim(file,var,-1,(long)dim_num);
 			if(name_md != NULL) {
 				if(name_md->multidval.type->type_class.type & Ncl_Typestring) {
-					cname = *(string*)name_md->multidval.val;
+					cname = *(NclQuark *)name_md->multidval.val;
 					_NclDestroyObj((NclObj)name_md);
 				} else {
 					return(NhlFATAL);
@@ -363,7 +363,7 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 			name_md = _NclFileVarReadDim(file,var,-1,(long)dim_num);
 			if(name_md != NULL) {
 				if(name_md->multidval.type->type_class.type & Ncl_Typestring) {
-					cname = *(string*)name_md->multidval.val;
+					cname = *(NclQuark *)name_md->multidval.val;
 					_NclDestroyObj((NclObj)name_md);
 				} else {
 					return(NhlFATAL);

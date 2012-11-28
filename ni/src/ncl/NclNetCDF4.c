@@ -2449,7 +2449,7 @@ void NC4GetAttrVal(int ncid, int aid, NclFileAttNode *attnode)
         tmp[attnode->n_elem] = '\0';
         attnode->value = NclMalloc(sizeof(NclQuark));
         assert(attnode->value);
-        *(string *)attnode->value = NrmStringToQuark(tmp);
+        *(NclQuark *)attnode->value = NrmStringToQuark(tmp);
         NclFree(tmp);
         attnode->type = NCL_string;
         attnode->n_elem = 1;
@@ -3447,7 +3447,7 @@ static void *NC4ReadAtt(void *therec, NclQuark theatt, void *storage)
             {
                 if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
                 {
-                    *(string*)storage = *(string*)(attnode->value);
+                    *(NclQuark *)storage = *(NclQuark *)(attnode->value);
                 }
                 else
                 {
@@ -3481,7 +3481,7 @@ static void *NC4ReadAtt(void *therec, NclQuark theatt, void *storage)
                 assert(tmp);
                 tmp[attnode->n_elem] = '\0';
                 ret = ncattget(fid,NC_GLOBAL,NrmQuarkToString(theatt),tmp);
-                *(string*)storage = NrmStringToQuark(tmp);
+                *(NclQuark *)storage = NrmStringToQuark(tmp);
                 NclFree(tmp);
             }
             else
@@ -3538,7 +3538,7 @@ static void *NC4ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void 
             {
                 if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
                 {
-                    *(string*)storage = *(string*)(attnode->value);
+                    *(NclQuark *)storage = *(NclQuark *)(attnode->value);
                 }
                 else
                 {
@@ -3580,7 +3580,7 @@ static void *NC4ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void 
                 tmp = (char*)NclMalloc(attnode->n_elem + 1);
                 tmp[attnode->n_elem] = '\0';
                 ret = ncattget(fid, varnode->att_rec->id,NrmQuarkToString(theatt),tmp);
-                *(string*)storage = NrmStringToQuark(tmp);
+                *(NclQuark *)storage = NrmStringToQuark(tmp);
                 NclFree(tmp);
             }
             else
@@ -4943,7 +4943,7 @@ static void NC4CacheAttValue(NclFileAttNode *attnode, void *value)
         strncpy(tmp,value,attnode->n_elem);
         tmp[attnode->n_elem] = '\0';
         attnode->value = (void *)NclCalloc(1, sizeof(NclQuark));
-        *(string*)attnode->value = NrmStringToQuark(tmp);
+        *(NclQuark *)attnode->value = NrmStringToQuark(tmp);
         NclFree(tmp);
     }
     else

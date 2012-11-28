@@ -32,7 +32,7 @@ FILE *fp;
 void *val;
 #endif
 {
-        string *sp = (string*)val;
+        NclQuark *sp = (NclQuark*)val;
 	int ret;
 
         ret = nclfprintf(fp,"%s",NrmQuarkToString(*sp));
@@ -66,7 +66,7 @@ NclTypeClass fc;
 #endif
 {
 	ng_size_t i;
-	string *res = (string*)result;
+	NclQuark *res = (NclQuark*)result;
 	int tmp;
 	NclTypeOp eq;
 	char buffer[NCL_MAX_STRING];
@@ -88,9 +88,9 @@ NclTypeClass fc;
 
 	switch(fc->type_class.type) {
 	case Ncl_Typelogical: {
-		string true = NrmStringToQuark("True");
-		string false = NrmStringToQuark("False");
-		string missing = NrmStringToQuark("Missing");
+		NclQuark true = NrmStringToQuark("True");
+		NclQuark false = NrmStringToQuark("False");
+		NclQuark missing = NrmStringToQuark("Missing");
 		logical *fl = (logical*)from;
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
@@ -110,7 +110,7 @@ NclTypeClass fc;
 		return(NhlNOERROR);
 	}
 	case Ncl_Typestring: {
-		string *fl = (string*)from;
+		NclQuark *fl = (NclQuark*)from;
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				*res = *fl;
@@ -143,7 +143,7 @@ NclTypeClass fc;
 					*res = tmp_mis.stringval;
 				} else {
 					sprintf(buffer,"%g",*fl);
-					*res = (string)NrmStringToQuark(buffer);
+					*res = (NclQuark)NrmStringToQuark(buffer);
 				}
 			}
 		}
@@ -164,7 +164,7 @@ NclTypeClass fc;
 					*res = tmp_mis.stringval;
 				} else {
 					sprintf(buffer,"%g",*fl);
-					*res = (string)NrmStringToQuark(buffer);
+					*res = (NclQuark)NrmStringToQuark(buffer);
 				}
 			}
 		}
@@ -175,7 +175,7 @@ NclTypeClass fc;
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				sprintf(buffer,"%ld",*fl);
-				*res = (string)NrmStringToQuark(buffer);
+				*res = (NclQuark)NrmStringToQuark(buffer);
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
@@ -185,7 +185,7 @@ NclTypeClass fc;
 					*res = tmp_mis.stringval;
 				} else {
 					sprintf(buffer,"%ld",*fl);
-					*res = (string)NrmStringToQuark(buffer);
+					*res = (NclQuark)NrmStringToQuark(buffer);
 				}
 			}
 		}
@@ -196,7 +196,7 @@ NclTypeClass fc;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {
                                 sprintf(buffer,"%lu",*fl);
-                                *res = (string)NrmStringToQuark(buffer);
+                                *res = (NclQuark)NrmStringToQuark(buffer);
                         }
                 } else {
                         for(i = 0; i < n;i++,res++,fl++)  {
@@ -206,7 +206,7 @@ NclTypeClass fc;
                                         *res = tmp_mis.stringval;
                                 } else {
                                         sprintf(buffer,"%lu",*fl);
-                                        *res = (string)NrmStringToQuark(buffer);
+                                        *res = (NclQuark)NrmStringToQuark(buffer);
                                 }
                         }
                 }
@@ -217,7 +217,7 @@ NclTypeClass fc;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {
                                 sprintf(buffer,"%lld",*fl);
-                                *res = (string)NrmStringToQuark(buffer);
+                                *res = (NclQuark)NrmStringToQuark(buffer);
                         }
                 } else {
                         for(i = 0; i < n;i++,res++,fl++)  {
@@ -227,7 +227,7 @@ NclTypeClass fc;
                                         *res = tmp_mis.stringval;
                                 } else {
                                         sprintf(buffer,"%lld",*fl);
-                                        *res = (string)NrmStringToQuark(buffer);
+                                        *res = (NclQuark)NrmStringToQuark(buffer);
                                 }
                         }
                 }
@@ -238,7 +238,7 @@ NclTypeClass fc;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {
                                 sprintf(buffer,"%llu",*fl);
-                                *res = (string)NrmStringToQuark(buffer);
+                                *res = (NclQuark)NrmStringToQuark(buffer);
                         }
                 } else {
                         for(i = 0; i < n;i++,res++,fl++)  {
@@ -248,7 +248,7 @@ NclTypeClass fc;
                                         *res = tmp_mis.stringval;
                                 } else {
                                         sprintf(buffer,"%llu",*fl);
-                                        *res = (string)NrmStringToQuark(buffer);
+                                        *res = (NclQuark)NrmStringToQuark(buffer);
                                 }
                         }
                 }
@@ -259,7 +259,7 @@ NclTypeClass fc;
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				sprintf(buffer,"%d",*fl);
-				*res = (string)NrmStringToQuark(buffer);
+				*res = (NclQuark)NrmStringToQuark(buffer);
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
@@ -269,7 +269,7 @@ NclTypeClass fc;
 					*res = tmp_mis.stringval;
 				} else {
 					sprintf(buffer,"%d",*fl);
-					*res = (string)NrmStringToQuark(buffer);
+					*res = (NclQuark)NrmStringToQuark(buffer);
 				}
 			}
 		}
@@ -280,7 +280,7 @@ NclTypeClass fc;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {
                                 sprintf(buffer,"%u",*fl);
-                                *res = (string)NrmStringToQuark(buffer);
+                                *res = (NclQuark)NrmStringToQuark(buffer);
                         }
                 } else {
                         for(i = 0; i < n;i++,res++,fl++)  {
@@ -290,7 +290,7 @@ NclTypeClass fc;
                                         *res = tmp_mis.stringval;
                                 } else {
                                         sprintf(buffer,"%u",*fl);
-                                        *res = (string)NrmStringToQuark(buffer);
+                                        *res = (NclQuark)NrmStringToQuark(buffer);
                                 }
                         }
                 }
@@ -301,7 +301,7 @@ NclTypeClass fc;
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				sprintf(buffer,"%d",*fl);
-				*res = (string)NrmStringToQuark(buffer);
+				*res = (NclQuark)NrmStringToQuark(buffer);
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
@@ -311,7 +311,7 @@ NclTypeClass fc;
 					*res = tmp_mis.stringval;
 				} else {
 					sprintf(buffer,"%d",*fl);
-					*res = (string)NrmStringToQuark(buffer);
+					*res = (NclQuark)NrmStringToQuark(buffer);
 				}
 			}
 		}
@@ -322,7 +322,7 @@ NclTypeClass fc;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {
                                 sprintf(buffer,"%u",*fl);
-                                *res = (string)NrmStringToQuark(buffer);
+                                *res = (NclQuark)NrmStringToQuark(buffer);
                         }
                 } else {
                         for(i = 0; i < n;i++,res++,fl++)  {
@@ -332,7 +332,7 @@ NclTypeClass fc;
                                         *res = tmp_mis.stringval;
                                 } else {
                                         sprintf(buffer,"%u",*fl);
-                                        *res = (string)NrmStringToQuark(buffer);
+                                        *res = (NclQuark)NrmStringToQuark(buffer);
                                 }
                         }
                 }
@@ -343,7 +343,7 @@ NclTypeClass fc;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {
                                 sprintf(buffer,"%u",*fl);
-                                *res = (string)NrmStringToQuark(buffer);
+                                *res = (NclQuark)NrmStringToQuark(buffer);
                         }
                 } else {
                         for(i = 0; i < n;i++,res++,fl++)  {
@@ -353,7 +353,7 @@ NclTypeClass fc;
                                         *res = tmp_mis.stringval;
                                 } else {
                                         sprintf(buffer,"%u",*fl);
-                                        *res = (string)NrmStringToQuark(buffer);
+                                        *res = (NclQuark)NrmStringToQuark(buffer);
                                 }
                         }
                 }
@@ -364,7 +364,7 @@ NclTypeClass fc;
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				sprintf(buffer,"0x%02x",*fl);
-				*res = (string)NrmStringToQuark(buffer);
+				*res = (NclQuark)NrmStringToQuark(buffer);
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
@@ -374,7 +374,7 @@ NclTypeClass fc;
 					*res = tmp_mis.stringval;
 				} else {
 					sprintf(buffer,"0x%02x",*fl);
-					*res = (string)NrmStringToQuark(buffer);
+					*res = (NclQuark)NrmStringToQuark(buffer);
 				}
 			}
 		}
@@ -401,7 +401,7 @@ NclTypeClass fc;
 				lbuf[i] = *fl;
 			}
 			lbuf[n] = '\0';
-			*res = (string)NrmStringToQuark(lbuf);
+			*res = (NclQuark)NrmStringToQuark(lbuf);
 		} else {
 			for(i = 0; i < n;i++,fl++)  {
 				tmp = 0;

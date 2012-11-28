@@ -120,7 +120,6 @@ NCL_virtual =	010000000,
 NCL_listarray =	020000000
 } NclBasicDataTypes;
 
-typedef NclQuark string; /* Makes this a quark type */
 typedef char byte;
 typedef unsigned char ubyte;
 typedef unsigned short ushort;
@@ -148,7 +147,7 @@ typedef union _NclScalar {
 	long               longval;
 	short              shortval;
 	unsigned char  	   charval;
-	string             stringval;
+	NclQuark           stringval;
 	char               byteval;
 	unsigned char      ubyteval;
 	logical            logicalval;

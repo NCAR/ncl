@@ -1277,7 +1277,7 @@ _NhlRegisterChildClass
 		return(NhlFATAL);
 	}
 
-	chld_node->class = child;
+	chld_node->theclass = child;
 
 	chld_node->autosetval = autosetval;
 
@@ -1334,16 +1334,16 @@ CreateChild
 (
 	int		*pid,		/* pid return		*/
 	Const char	*name,		/* name of child	*/
-	NhlClass	class,		/* class to create	*/
+	NhlClass	theclass,	/* class to create	*/
 	NhlLayer	parent,		/* parent of child	*/
 	_NhlArgList	sargs,		/* resources to set	*/
 	int		num_sargs	/* number of res to set	*/
 )
 #else
-(pid,name,class,parent,sargs,num_sargs)
+(pid,name,theclass,parent,sargs,num_sargs)
 	int		*pid;		/* pid return		*/
 	Const char	*name;		/* name of child	*/
-	NhlClass	class;		/* class to create	*/
+	NhlClass	theclass;	/* class to create	*/
 	NhlLayer	parent;		/* parent of child	*/
 	_NhlArgList	sargs;		/* resources to set	*/
 	int		num_sargs;	/* number of res to set	*/
@@ -1391,14 +1391,14 @@ CreateChild
 	 * are forwarded threw multiple objects can be found.
 	 */
 	tplc = plc;
-	tclc = class;
+	tclc = theclass;
 	tpl = parent;
 	child = NULL;
 	for(i=0;i < _NhlMAXTREEDEPTH;i++){
 		tresnode = tplc->base_class.child_resources;
 
 		while(tresnode != NULL){
-			if(tresnode->class == tclc){
+			if(tresnode->theclass == tclc){
 				child = tresnode->resources;
 				break;
 			}
@@ -1424,7 +1424,7 @@ CreateChild
 	if(child_lists[0] == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"%s NhlClass is not a registered child class of %s",
-				_NhlClassName(class),_NhlClassName(plc));
+				_NhlClassName(theclass),_NhlClassName(plc));
 		return NhlFATAL;
 	}
 
@@ -1434,7 +1434,7 @@ CreateChild
 	targnode = parent->base.child_args;
 
 	while(targnode != NULL){
-		if(targnode->class == class){
+		if(targnode->theclass == theclass){
 			pargs = targnode->args;
 			num_pargs = targnode->nargs;
 			/*
@@ -1466,7 +1466,7 @@ CreateChild
 	/*
 	 * Create the child
 	 */
-	ret = _NhlCreate(pid,name,class,parent->base.id,args,num_args,
+	ret = _NhlCreate(pid,name,theclass,parent->base.id,args,num_args,
 								child_lists);
 
 	/*
@@ -1475,7 +1475,7 @@ CreateChild
 	 */
 	tchldnode->pid = *pid;
 	tchldnode->svalscalled = False;
-	tchldnode->class = class;
+	tchldnode->theclass = theclass;
 	tchldnode->resources = child;
 	tchldnode->next = parent->base.children;
 	parent->base.children = tchldnode;
@@ -1497,7 +1497,7 @@ CreateChild
  * In Args:	
  *		int		*pid,	pid return
  *		Const NhlString	name,	name of child
- *		NhlClass	class,	class to create
+ *		NhlClass	theclass,	class to create
  *		NhlLayer		parent,	parent of child
  *		...			args to set in child
  *
@@ -1515,15 +1515,15 @@ _NhlVACreateChild
 (
 	int		*pid,	/* pid return		*/
 	Const char	*name,	/* name of child	*/
-	NhlClass	class,	/* class to create	*/
+	NhlClass	theclass,	/* class to create	*/
 	NhlLayer	parent,	/* parent of child	*/
 	...			/* args to set in child	*/
 )
 #else
-(pid,name,class,parent,va_alist)
+(pid,name,theclass,parent,va_alist)
 	int		*pid;	/* pid return		*/
 	Const char	*name;	/* name of child	*/
-	NhlClass	class;	/* class to create	*/
+	NhlClass	theclass;	/* class to create	*/
 	NhlLayer	parent;	/* parent of child	*/
 	va_dcl
 #endif
@@ -1543,7 +1543,7 @@ _NhlVACreateChild
 	/*
 	 * Create the child
 	 */
-	ret = CreateChild(pid,name,class,parent,vargs,num_vargs);
+	ret = CreateChild(pid,name,theclass,parent,vargs,num_vargs);
 
 
 	return ret;
@@ -1563,7 +1563,7 @@ _NhlVACreateChild
  * In Args:	
  *		int		*pid,		pid return
  *		Const NhlString	name,		name of child
- *		NhlClass	class,		class to create
+ *		NhlClass	theclass,		class to create
  *		NhlLayer	parent,		parent of child
  *		NhlSArgList	args_in,	args in
  *		int		nargs		number args
@@ -1581,16 +1581,16 @@ _NhlALCreateChild
 (
 	int		*pid,		/* pid return		*/
 	Const char	*name,		/* name of child	*/
-	NhlClass	class,		/* class to create	*/
+	NhlClass	theclass,		/* class to create	*/
 	NhlLayer	parent,		/* parent of child	*/
 	NhlSArgList	args_in,	/* args in		*/
 	int		nargs		/* number args		*/
 )
 #else
-(pid,name,class,parent,args_in,nargs)
+(pid,name,theclass,parent,args_in,nargs)
 	int		*pid;		/* pid return		*/
 	Const char	*name;		/* name of child	*/
-	NhlClass	class;		/* class to create	*/
+	NhlClass	theclass;		/* class to create	*/
 	NhlLayer	parent;		/* parent of child	*/
 	NhlSArgList	args_in;	/* args in		*/
 	int		nargs;		/* number args		*/
@@ -1604,7 +1604,7 @@ _NhlALCreateChild
 	/*
 	 * Create the child
 	 */
-	ret = CreateChild(pid,name,class,parent,args,nargs);
+	ret = CreateChild(pid,name,theclass,parent,args,nargs);
 
 	return ret;
 }

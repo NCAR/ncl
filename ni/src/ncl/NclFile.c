@@ -1482,7 +1482,7 @@ NclMultiDValData value;
 					for (k = 0; k < tmp_md->multidval.totalelements; k++) {
 						lvalue[k] = _NclGetLower(*(NclQuark*)(((char *)tmp_md->multidval.val)+ k * sizeof(NclQuark)));
 						for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++) {
-							NclQuark valid_val = ((string *)fcp->options[i].valid_values->multidval.val)[j];
+							NclQuark valid_val = ((NclQuark *)fcp->options[i].valid_values->multidval.val)[j];
 							if (lvalue[k] != valid_val)
 								continue;
 							ok = 1;
@@ -1597,7 +1597,7 @@ NclMultiDValData value;
 					for (k = 0; k < tmp_md->multidval.totalelements; k++) {
 						lvalue[k] = _NclGetLower(*(NclQuark*)(((char *)tmp_md->multidval.val)+ k * sizeof(NclQuark)));
 						for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++) {
-							NclQuark valid_val = ((string *)fcp->options[i].valid_values->multidval.val)[j];
+							NclQuark valid_val = ((NclQuark *)fcp->options[i].valid_values->multidval.val)[j];
 							if (lvalue[k] != valid_val)
 								continue;
 							ok = 1;
@@ -1806,7 +1806,7 @@ NhlErrorTypes InitializeFileOptions
 {
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	logical *lval;
-	string *sval;
+	NclQuark *sval;
 	float *fval;
 	int *ival;
 	ng_size_t len_dims;
@@ -1854,17 +1854,17 @@ NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_THINNED_GRID_INTERPOLATION].format = NrmStringToQuark("grb");
 	fcp->options[Ncl_THINNED_GRID_INTERPOLATION].name = NrmStringToQuark("thinnedgridinterpolation");
 	len_dims = 1;
-	sval = (string*) NclMalloc(sizeof(string));
+	sval = (NclQuark *) NclMalloc(sizeof(NclQuark));
 	*sval = NrmStringToQuark("cubic");
 	fcp->options[Ncl_THINNED_GRID_INTERPOLATION].value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-	sval = (string*) NclMalloc(sizeof(string));
+	sval = (NclQuark *) NclMalloc(sizeof(NclQuark));
 	*sval = NrmStringToQuark("cubic");
 	fcp->options[Ncl_THINNED_GRID_INTERPOLATION].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-	sval = (string*) NclMalloc(2 * sizeof(string));
+	sval = (NclQuark*) NclMalloc(2 * sizeof(NclQuark));
 	sval[0] = NrmStringToQuark("linear");
 	sval[1] = NrmStringToQuark("cubic");
 	len_dims = 2;
@@ -1910,16 +1910,16 @@ NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_FORMAT].format = NrmStringToQuark("nc");
 	fcp->options[Ncl_FORMAT].name = NrmStringToQuark("format");
 	len_dims = 1;
-	sval = (string*) NclMalloc(sizeof(string));
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
 	*sval = NrmStringToQuark("classic");
 	fcp->options[Ncl_FORMAT].value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-	sval = (string*) NclMalloc(sizeof(string));
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
 	*sval = NrmStringToQuark("classic");
 	fcp->options[Ncl_FORMAT].def_value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 	len_dims = 5;
-	sval = (string*) NclMalloc(len_dims * sizeof(string));
+	sval = (NclQuark*) NclMalloc(len_dims * sizeof(NclQuark));
 	sval[0] = NrmStringToQuark("classic");
 	sval[1] = NrmStringToQuark("64bitoffset");
 	sval[2] = NrmStringToQuark("largefile");
@@ -1935,15 +1935,15 @@ NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_READ_BYTE_ORDER].format = NrmStringToQuark("bin");
 	fcp->options[Ncl_READ_BYTE_ORDER].name = NrmStringToQuark("readbyteorder");
 	len_dims = 1;
-	sval = (string*) NclMalloc(sizeof(string));
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
 	*sval = NrmStringToQuark("native");
 	fcp->options[Ncl_READ_BYTE_ORDER].value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-	sval = (string*) NclMalloc(sizeof(string));
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
 	*sval = NrmStringToQuark("native");
 	fcp->options[Ncl_READ_BYTE_ORDER].def_value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-	sval = (string*) NclMalloc(3 * sizeof(string));
+	sval = (NclQuark*) NclMalloc(3 * sizeof(NclQuark));
 	sval[0] = NrmStringToQuark("native");
 	sval[1] = NrmStringToQuark("bigendian");
 	sval[2] = NrmStringToQuark("littleendian");
@@ -1957,15 +1957,15 @@ NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_WRITE_BYTE_ORDER].format = NrmStringToQuark("bin");
 	fcp->options[Ncl_WRITE_BYTE_ORDER].name = NrmStringToQuark("writebyteorder");
 	len_dims = 1;
-	sval = (string*) NclMalloc(sizeof(string));
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
 	*sval = NrmStringToQuark("native");
 	fcp->options[Ncl_WRITE_BYTE_ORDER].value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-	sval = (string*) NclMalloc(sizeof(string));
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
 	*sval = NrmStringToQuark("native");
 	fcp->options[Ncl_WRITE_BYTE_ORDER].def_value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-	sval = (string*) NclMalloc(3 * sizeof(string));
+	sval = (NclQuark*) NclMalloc(3 * sizeof(NclQuark));
 	sval[0] = NrmStringToQuark("native");
 	sval[1] = NrmStringToQuark("bigendian");
 	sval[2] = NrmStringToQuark("littleendian");
@@ -1979,17 +1979,17 @@ NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].format = NrmStringToQuark("grb");
 	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].name = NrmStringToQuark("initialtimecoordinatetype");
 	len_dims = 1;
-	sval = (string*) NclMalloc(sizeof(string));
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
 	*sval = NrmStringToQuark("numeric");
 	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-	sval = (string*) NclMalloc(sizeof(string));
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
 	*sval = NrmStringToQuark("numeric");
 	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-	sval = (string*) NclMalloc(2 * sizeof(string));
+	sval = (NclQuark*) NclMalloc(2 * sizeof(NclQuark));
 	sval[0] = NrmStringToQuark("string");
 	sval[1] = NrmStringToQuark("numeric");
 	len_dims = 2;
@@ -2180,17 +2180,17 @@ NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_DEFAULT_NCEP_PTABLE].format = NrmStringToQuark("grb");
 	fcp->options[Ncl_DEFAULT_NCEP_PTABLE].name = NrmStringToQuark("defaultncepptable");
 	len_dims = 1;
-	sval = (string*) NclMalloc(sizeof(string));
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
 	*sval = NrmStringToQuark("operational");
 	fcp->options[Ncl_DEFAULT_NCEP_PTABLE].value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-	sval = (string*) NclMalloc(sizeof(string));
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
 	*sval = NrmStringToQuark("operational");
 	fcp->options[Ncl_DEFAULT_NCEP_PTABLE].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-	sval = (string*) NclMalloc(2 * sizeof(string));
+	sval = (NclQuark*) NclMalloc(2 * sizeof(NclQuark));
 	sval[0] = NrmStringToQuark("operational");
 	sval[1] = NrmStringToQuark("reanalysis");
 	len_dims = 2;
@@ -2219,17 +2219,17 @@ NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_SINGLE_ELEMENT_DIMENSIONS].format = NrmStringToQuark("grb");
 	fcp->options[Ncl_SINGLE_ELEMENT_DIMENSIONS].name = NrmStringToQuark("singleelementdimensions");
 	len_dims = 1;
-	sval = (string*) NclMalloc(sizeof(string));
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
 	*sval = NrmStringToQuark("none");
 	fcp->options[Ncl_SINGLE_ELEMENT_DIMENSIONS].value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-	sval = (string*) NclMalloc(sizeof(string));
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
 	*sval = NrmStringToQuark("none");
 	fcp->options[Ncl_SINGLE_ELEMENT_DIMENSIONS].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-	sval = (string*) NclMalloc(7 * sizeof(string));
+	sval = (NclQuark*) NclMalloc(7 * sizeof(NclQuark));
 	sval[0] = NrmStringToQuark("none");
 	sval[1] = NrmStringToQuark("all");
 	sval[2] = NrmStringToQuark("ensemble");

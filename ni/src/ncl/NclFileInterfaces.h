@@ -1,7 +1,7 @@
 #ifndef NclFileInterfaces_h
 #define NclFileInterfaces_h
 
-#include "NclList.h"
+#include <ncarg/ncl/NclList.h>
 
 typedef struct _NclFormatFunctionRecord *NclFormatFunctionRecPtr;
 typedef struct _NclFormatFunctionRecord NclFormatFunctionRec;

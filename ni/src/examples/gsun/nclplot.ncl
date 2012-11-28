@@ -369,15 +369,19 @@ begin
   end if
 
   if(.not.isvar("debug")) then
-    debug = False
+    DEBUG = False
+  end if
+
+  if(.not.isvar("raster")) then
+    RASTER = False
   end if
 
 ;---Print some debug info
-  if(debug) then
+  if(DEBUG) then
     print("Filename: '" + filename + "'")
     print("time:      " + time)
     print("level:     " + level)
-    print("debug:     " + debug)
+    print("debug:     " + DEBUG)
     print("Potential # of variables to plot: " + nvars)
     print("varnames:  " + varnames)
   end if
@@ -390,12 +394,18 @@ begin
 ; certain qualifications.
 ;
   cnres = True
+  if(RASTER) then
+    cnres@cnFillMode = "RasterFill"
+  end if
   vtypes = getfilevartypes(f,varnames)
   do i=0,nvars-1
     if(is_valid_var_to_contour(f,varnames(i),vtypes(i))) then
       print("Plotting variable '" + varnames(i) + "'")
       x2d = get_2d_var(f,varnames(i),time,level)
       if(dimsizes(dimsizes(x2d)).eq.2) then
+        if(DEBUG) then
+          print(str_join("" + dimsizes(x2d),","))
+        end if
         cnres@tiMainString = varnames(i)
         contour_plot(f,wks,x2d,cnres)
       else

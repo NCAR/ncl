@@ -90,7 +90,7 @@ NclHLUStruct *ptr;
 		ptr->offset = -1;
 		ptr->n_offsets = 0;
 		ptr->n_refs = 0;
-		ptr->private = NULL;
+		ptr->myprivate = NULL;
 		return(NhlFATAL);
 	} else {
 		ptr->hlu_id = tmp->hlu_id;
@@ -100,14 +100,14 @@ NclHLUStruct *ptr;
 			ptr->n_refs = tmp->n_entries;
 			ptr->n_offsets = tmp->ref_list[0].n_refs;
 			ptr->offset = tmp->ref_list[0].refs[0];
-			ptr->private = (void*)tmp;
+			ptr->myprivate = (void*)tmp;
 		} else {
 			ptr->var_quark = -1;
 			ptr->offset = -1;
 			ptr->n_offsets = 0;
 			ptr->n_refs = 0;
 			ptr->offset = -1;
-			ptr->private = NULL;
+			ptr->myprivate = NULL;
 			return(NhlWARNING);
 		}
 	}

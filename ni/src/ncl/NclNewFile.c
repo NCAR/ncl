@@ -5501,7 +5501,7 @@ static NhlErrorTypes NewFileSetFileOption(NclFile  infile,
                         lvalue[k] = _NclGetLower(*(NclQuark*)(((char *)tmp_md->multidval.val)+ k * sizeof(NclQuark)));
                         for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++)
                         {
-                            NclQuark valid_val = ((string *)fcp->options[i].valid_values->multidval.val)[j];
+                            NclQuark valid_val = ((NclQuark *)fcp->options[i].valid_values->multidval.val)[j];
                             if (lvalue[k] != valid_val)
                                 continue;
                             ok = 1;
@@ -5642,7 +5642,7 @@ static NhlErrorTypes NewFileSetFileOption(NclFile  infile,
                         lvalue[k] = _NclGetLower(*(NclQuark*)(((char *)tmp_md->multidval.val)+ k * sizeof(NclQuark)));
                         for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++)
                         {
-                            NclQuark valid_val = ((string *)fcp->options[i].valid_values->multidval.val)[j];
+                            NclQuark valid_val = ((NclQuark *)fcp->options[i].valid_values->multidval.val)[j];
                             if(lvalue[k] != valid_val)
                                 continue;
                             ok = 1;

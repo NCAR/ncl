@@ -1328,7 +1328,7 @@ NhlErrorTypes _NclIAddData
 	NclScalar missing1;
 	NclScalar missing2;
 	obj *ncl_hlu_obj_ids;
-	string *resname;
+	NclQuark *resname;
 	obj *ncl_data_obj_ids;
 	int n_dims_ =1;
 	ng_size_t  len_dims[2];
@@ -1348,7 +1348,7 @@ NhlErrorTypes _NclIAddData
 			&has_missing,
 			&type,
 			0);
-	resname = (string*)NclGetArgValue(
+	resname = (NclQuark*)NclGetArgValue(
 			1,
 			nargs,
 			NULL,
@@ -1484,7 +1484,7 @@ NhlErrorTypes _NclIRemoveData
 	NclScalar missing1;
 	NclScalar missing2;
 	obj *ncl_hlu_obj_ids;
-	string *resname;
+	NclQuark *resname;
 	obj *ncl_data_obj_ids;
 	NhlErrorTypes ret = NhlNOERROR;
 	
@@ -1497,7 +1497,7 @@ NhlErrorTypes _NclIRemoveData
 			&has_missing,
 			&type,
 			0);
-	resname = (string*)NclGetArgValue(
+	resname = (NclQuark*)NclGetArgValue(
 			1,
 			nargs,
 			NULL,
@@ -3307,7 +3307,7 @@ NhlErrorTypes _NclIClassName
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	obj *ncl_hlu_obj_ids;
-	string *outpt;
+	NclQuark *outpt;
 	
 	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
 			0,
@@ -3336,7 +3336,7 @@ NhlErrorTypes _NclIClassName
 			tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
 		}
 	}
-	outpt = (string*)NclMalloc(sizeof(string)*total);
+	outpt = (NclQuark*)NclMalloc(sizeof(NclQuark)*total);
 	for( i = 0; i < total; i++) {
 		if(tmp_hlu_ptr[i] != NULL ) {
 			outpt[i] = NrmStringToQuark(NhlClassName(tmp_hlu_ptr[i]->hlu.hlu_id));
@@ -3371,7 +3371,7 @@ NhlErrorTypes _NclIName
 	NclHLUObj *tmp_hlu_ptr;
 	NclScalar missing;
 	obj *ncl_hlu_obj_ids;
-	string *outpt;
+	NclQuark *outpt;
 	
 	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
 			0,
@@ -3400,7 +3400,7 @@ NhlErrorTypes _NclIName
 			tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
 		}
 	}
-	outpt = (string*)NclMalloc(sizeof(string)*total);
+	outpt = (NclQuark*)NclMalloc(sizeof(NclQuark)*total);
 	for( i = 0; i < total; i++) {
 		if(tmp_hlu_ptr[i] != NULL ) {
 			outpt[i] = NrmStringToQuark(NhlName(tmp_hlu_ptr[i]->hlu.hlu_id));
@@ -3756,7 +3756,7 @@ NhlErrorTypes _NclISetDashPattern
 	NclHLUObj tmp_wks;
 	obj *wks_obj_ids;
 	int *dash_indexes;
-	string *dash_patterns;
+	NclQuark *dash_patterns;
 	NhlErrorTypes subret,ret = NhlNOERROR;
 	
 
@@ -3782,7 +3782,7 @@ NhlErrorTypes _NclISetDashPattern
 			0);
 	size1 = dimsizes[0];
 
-	dash_patterns = (string*)NclGetArgValue(
+	dash_patterns = (NclQuark*)NclGetArgValue(
 			2,
 			nargs,
 			&n_dims,
@@ -3842,7 +3842,7 @@ NhlErrorTypes _NclINewDashPattern
 	ng_size_t i,j=0,ii=0;
 	NclHLUObj tmp_wks;
 	obj *wks_obj_ids;
-	string *dash_patterns;
+	NclQuark *dash_patterns;
 	NhlErrorTypes subret=NhlNOERROR,ret = NhlNOERROR;
 	int *indexes = NULL;
 	int wks_is_missing = 0;
@@ -3858,7 +3858,7 @@ NhlErrorTypes _NclINewDashPattern
 			0);
 	size0 = dimsizes[0];
 
-	dash_patterns = (string*)NclGetArgValue(
+	dash_patterns = (NclQuark*)NclGetArgValue(
 			1,
 			nargs,
 			&n_dims,
@@ -4010,7 +4010,7 @@ NhlErrorTypes _NclISetMarker
 	NclHLUObj tmp_wks;
 	obj *wks_obj_ids;
 	int *marker_indexes;
-	string *marker_strings;
+	NclQuark *marker_strings;
 	int   *m_font;
 	double *m_x_off;
 	double *m_y_off;
@@ -4042,7 +4042,7 @@ NhlErrorTypes _NclISetMarker
 			0);
 	size1 = dimsizes[0];
 
-	marker_strings = (string*)NclGetArgValue(
+	marker_strings = (NclQuark*)NclGetArgValue(
 			2,
 			nargs,
 			&n_dims,
@@ -4136,7 +4136,7 @@ NhlErrorTypes _NclISetMarker
 		for( j = 0; j < size1; j++) {
 			double x_off,y_off,aspect_adj,size_adj,angle;
 			int font;
-			string marker_string;
+			NclQuark marker_string;
 
 			if (has_missing1 && (marker_indexes[j] == missing1.intval))
 				continue;
@@ -4257,7 +4257,7 @@ NhlErrorTypes _NclINewMarker
 	ng_size_t i,j=0,ii;
 	NclHLUObj tmp_wks;
 	obj *wks_obj_ids;
-	string *marker_strings;
+	NclQuark *marker_strings;
 	int *m_font;
 	double *m_x_off;
 	double *m_y_off;
@@ -4282,7 +4282,7 @@ NhlErrorTypes _NclINewMarker
 			0);
 	size0 = dimsizes[0];
 
-	marker_strings = (string*)NclGetArgValue(
+	marker_strings = (NclQuark*)NclGetArgValue(
 			1,
 			nargs,
 			&n_dims,

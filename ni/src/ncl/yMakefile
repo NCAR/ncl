@@ -228,7 +228,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 
 INSTALL_HDRS	= defs.h HluClasses.h NclApi.h ApiRecords.h NclVar.h \
 			NclBuiltIns.h NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h \
-			NclFileInterfaces.h 
+			NclFile.h NclList.h NclData.h NclFileInterfaces.h 
 
 NIO_HDRS        =       nio.h 
 NIO_EXTRA_HDRS  =       nio_path.h
@@ -392,9 +392,10 @@ STATIC_IO_OBJS  =       AddFileFormats.o AttSupport.o DataSupport.o \
 			NclTypelist.o NclVar.o VarSupport.o \
 			ctoiee.o date.o 
 
+#Printtoken.o
 STATIC_OBJS	=	AddBuiltIns.o AddHLUObjs.o \
 			AddIntrinsics.o Execute.o \
-			Machine.o OpsFuncs.o Printtoken.o SrcTree.o \
+			Machine.o OpsFuncs.o SrcTree.o \
 			Symbol.o Translate.o  \
 			NclHLUVar.o HLUSupport.o \
 			NclMultiDValHLUObjData.o \

@@ -1124,7 +1124,7 @@ long dim_num;
 {
 	int index;
 	ng_size_t dim_size = 1;
-	string* nameptr;
+	NclQuark* nameptr;
 	int *numptr;
 	char *v_name= NULL;
 	if(self->var.var_quark != -1) {
@@ -1158,7 +1158,7 @@ long dim_num;
 * When dim_num provided the output is dim_name
 */
 		if(self->var.dim_info[dim_num].dim_quark != -1) {
-			nameptr = (string*)NclMalloc(sizeof(string));
+			nameptr = (NclQuark*)NclMalloc(sizeof(NclQuark));
 
 			*nameptr = self->var.dim_info[dim_num].dim_quark;
 	
