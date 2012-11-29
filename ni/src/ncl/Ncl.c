@@ -144,9 +144,11 @@ main(int argc, char **argv) {
     /*
      * Variables for command line options/arguments
      */
-    char    *myName;        /* argv[0]: program name (should be 'ncl') */
+
+#ifdef NCLDEBUG
     char    **NCL_ARGV;
     int NCL_ARGC;           /* local argv/argc -- future use for NCL scripts? */
+#endif
 
     int c;
 
@@ -179,9 +181,8 @@ main(int argc, char **argv) {
     ncopts = NC_VERBOSE;
 
     cmd_line =isatty(fileno(stdin));
-    myName = NclMalloc(strlen(argv[0]) + 1);
-    (void) strcpy(myName, argv[0]);
 
+#ifdef NCLDEBUG
     /*
      * Save NCL argv, for command line processing later use
      */
@@ -192,7 +193,6 @@ main(int argc, char **argv) {
     }
     NCL_ARGC = argc;
 
-#ifdef NCLDEBUG
     for (i = 0; i < NCL_ARGC; i++, *NCL_ARGV++)
         (void) printf("NCL_ARGV[%d] = %s\n", i, *NCL_ARGV);
 #endif /* NCLDEBUG */
@@ -595,7 +595,6 @@ main(int argc, char **argv) {
     (void) fclose(theoptr);
 #endif /* NCLDEBUG */
 
-    NclFree(myName);
     NclFree(cur_line_text);
 
     _NclFinalizeSymbol();      
@@ -603,6 +602,8 @@ main(int argc, char **argv) {
     _NclFinalizeMachine();
 
     _NclExit(NclReturnStatus);
+
+    return NclReturnStatus;
 }
 
 #ifdef __cplusplus

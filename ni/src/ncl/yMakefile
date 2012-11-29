@@ -402,6 +402,7 @@ STATIC_OBJS	=	AddBuiltIns.o AddHLUObjs.o \
 			BuiltInSupport.o BuiltInFuncs.o \
 			javaAddProto.o javaAddFuncs.o \
 			userAddProto.o userAddFuncs.o \
+			guiFuncs.o \
 			openclAddProto.o openclAddFuncs.o \
 			HLUFunctions.o yywrap.o craybin.o \
 			complete.o editline.o sysunix.o ListSupport.o \
@@ -420,15 +421,14 @@ COMMON_OBJS	=	$(GEN_TYPE_OBJS) $(STATIC_IO_OBJS) $(FOBJS) \
 			$(GRIB2_OBJS) $(GDAL_OBJS)
 
 API_OBJS	=	NclApi.o ioapi.o NclHLUObjapi.o $(GEN_API_OBJS) $(GEN_MATH_OBJS) $(COMMON_OBJS) $(STATIC_OBJS) $(FIO_OBJS)
-EXE_OBJS	=	Ncl.o io.o NclHLUObj.o $(GEN_EXE_OBJS) $(GEN_MATH_OBJS) $(COMMON_OBJS) $(STATIC_OBJS) $(FIO_OBJS)
+ARCH_OBJS	=	io.o NclHLUObj.o $(GEN_EXE_OBJS) $(GEN_MATH_OBJS) $(COMMON_OBJS) $(STATIC_OBJS) $(FIO_OBJS)
 IO_OBJS         =       $(IO_EXTRA_OBJS) $(COMMON_OBJS) $(FMAP_OBJS)
 
-ALLOBJS		=	$(EXE_OBJS) 
 APIOBJS		=	$(API_OBJS) 
-EXEOBJS		=	$(EXE_OBJS) $(HACKOBJS)
+EXEOBJS		=	Ncl.o $(ARCH_OBJS) $(HACKOBJS)
 IOOBJS          =       $(IO_OBJS)
 
-LibraryTarget($(MYLIB),$(ALLOBJS))
+LibraryTarget($(MYLIB),$(ARCH_OBJS))
 LibraryTarget($(MYLIB_API),$(APIOBJS))
 BuildSharedLibTarget(libNGncl,$(APIOBJS),1,0,$(NCDFLIBS) $(NETCD4LIBS) $(HDFEOSLIB)  $(HDFEOS5LIB) $(HDFLIB) $(HDF5LIB) $(GRIB2LIB) $(GDALLIB) $(GRIDSPECLIB) $(PNGLIB) $(CAIROLIB) $(UDUNITSLIB) $(V5DLIB) $(CTOFLIBS) -lm -lc)
 CProgram($(MYBIN),$(EXEOBJS),$(DEPLIBS))
