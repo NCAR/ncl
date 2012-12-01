@@ -288,7 +288,8 @@ NhlCnTriMeshRendererClassRec NhlcnTriMeshRendererClassRec = {
 /* layer_destroy 	*/    	CnTriMeshRendererDestroy,
 	},
 	{
-/* render */		        CnTriMeshRender
+/* render */		        CnTriMeshRender,
+/* get_isolines */              NULL
 	},
 	{
 /* foo */		        0
@@ -777,6 +778,7 @@ static NhlErrorTypes BuildNativeMesh
 	tmp->update_mode = TRIMESH_NOUPDATE;
 	NhlFree(ippp);
 	NhlFree(ippe);
+	/*printf("total number of edges %d\n",nedg);*/
 
 	return NhlNOERROR;
 
@@ -1140,6 +1142,7 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 	NhlFree(ippp);
 	NhlFree(ippe);
 	NhlFree(el);
+	/*printf("total number of edges %d\n",nedg); */
 
 	return NhlNOERROR;
 
@@ -1209,9 +1212,9 @@ static NhlErrorTypes BuildDelaunayMesh
 	if (dyp->ezmap) { /* transform points into projection space
 			   throwing away points outside the map limits */ 
 		for (i = 0; i < mnop; i++) {
-			float xt,yt;
+			double xt,yt;
 			j = pcount * 2;
-			c_maptra(rlat[i],rlon[i],&xt,&yt);
+			c_mdptra((double)rlat[i],(double)rlon[i],&xt,&yt);
 			if (xt > 1e10 || yt > 1e10)
 				continue;
 			points[j] = (double)xt;
@@ -1338,6 +1341,7 @@ static NhlErrorTypes BuildDelaunayMesh
 	NhlFree(points);
 	NhlFree(dat);
 	NhlFree(el);
+	/*printf("total number of edges %d\n",nedg);*/
 
 	return NhlNOERROR;
 
@@ -3138,7 +3142,391 @@ static NhlErrorTypes CnTriMeshRender
 
 	return MIN(subret,ret);
 }
+#if 0
+static NhlErrorTypes CnTriMeshGetIsoLines
+#if	NhlNeedProto
+(
+	NhlLayer		instance,
+        NhlContourPlotLayer     cnl,
+        int			n_levels,
+        float			*levels,
+	NhlString		entry_name
+        )
+#else
+(instance,cnl,order,entry_name)
+	NhlLayer		instance;
+        NhlContourPlotLayer     cnl;
+        int			n_levels;
+        float			*levels;
+	NhlString		entry_name;
+#endif
+{
+        NhlCnTriMeshRendererLayer tml = (NhlCnTriMeshRendererLayer) instance;
+	NhlCnTriMeshRendererLayerPart	  *tmp = &tml->cntrimeshrenderer;
+	NhlContourPlotLayerPart 	  *cnp = &cnl->contourplot;
+	NhlString e_text;
+        NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+	int mesh_inited = 0;
+        Gint            err_ind;
+        Gclip           clip_ind_rect;
 
+	Cnl = cnl;
+	Cnp = cnp;
+	Tmp = tmp;
+
+
+	ginq_clip(&err_ind,&clip_ind_rect);
+        gset_clip_ind(GIND_CLIP);
+	
+	c_ctrset();
+
+	SetCtParams(cnl,entry_name);
+/*
+ * Only set the ORV parameter if overlaying on EZMAP. It can cause
+ * problems otherwise. (Not sure yet whether it is needed in some cases
+ * though, and perhaps not needed in certain Ezmap cases.
+ */
+	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
+	    NhlmapTransObjClass->base_class.class_name) {
+		NhlVAGetValues(cnp->trans_obj->base.id, 
+			       NhlNtrOutOfRangeF, &cnp->out_of_range_val,
+			       NULL);
+		tmp->ezmap = 1;
+		c_ctsetr("ORV",cnp->out_of_range_val);
+		if (cnp->sfp->d_arr->num_dimensions == 1 &&
+		    ! (cnp->sfp->element_nodes ||
+		       (cnp->sfp->x_cell_bounds && cnp->sfp->y_cell_bounds))) {
+			c_ctseti("MAP",Nhlcn1DMESHMAPVAL);
+			tmp->update_mode = TRIMESH_NEWMESH;
+		}
+		else {
+			c_ctseti("MAP",NhlcnMAPVAL);
+		}
+	}
+	else {
+		tmp->ezmap = 0;
+		c_ctseti("MAP",NhlcnTRIMESHMAPVAL);
+	}
+
+	c_ctseti("WSO", 3);		/* error recovery on */
+	c_ctseti("NVS",0);		/* no vertical strips */
+	c_ctseti("HLE",1);              /* search for equal high/lows */
+        c_ctseti("SET",0);
+        c_ctseti("RWC",500);
+        c_ctseti("RWG",1500);
+
+	c_ctsetr("PIT",MAX(0.0,cnp->max_point_distance));
+	
+        if (cnp->smoothing_on) {
+                c_ctsetr("T2D",cnp->smoothing_tension);
+                c_ctsetr("SSL",cnp->smoothing_distance);
+        }
+        else {
+                c_ctsetr("T2D",(float)0.0);
+        }
+	gset_fill_colr_ind((Gint)_NhlGetGksCi(cnl->base.wkptr,0));
+
+	subret = UpdateLineAndLabelParams(cnl,&cnp->do_lines,&cnp->do_labels);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		ContourAbortDraw(cnl);
+		gset_clip_ind(clip_ind_rect.clip_ind);
+		return ret;
+	}
+
+	subret = UpdateFillInfo(cnl, &cnp->do_fill);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		ContourAbortDraw(cnl);
+		gset_clip_ind(clip_ind_rect.clip_ind);
+		return ret;
+	}
+
+
+/* Retrieve workspace pointers */
+
+	if ((cnp->fws = _NhlUseWorkspace(cnp->fws_id)) == NULL) {
+		e_text = "%s: error reserving float workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		ContourAbortDraw(cnl);
+		gset_clip_ind(clip_ind_rect.clip_ind);
+		return(ret);
+	}
+	if ((cnp->iws = _NhlUseWorkspace(cnp->iws_id)) == NULL) {
+		e_text = "%s: error reserving integer workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		ContourAbortDraw(cnl);
+		gset_clip_ind(clip_ind_rect.clip_ind);
+		return(ret);
+	}
+
+		 
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		ContourAbortDraw(cnl);
+		gset_clip_ind(clip_ind_rect.clip_ind);
+		return ret;
+	}
+
+	else if (cnp->do_fill && cnp->fill_order == order) {
+
+		if (cnp->fill_mode == NhlAREAFILL) {
+			if (! mesh_inited) {
+				subret = InitMesh(cnl,tmp,entry_name);
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
+					ContourAbortDraw(cnl);
+					gset_clip_ind(clip_ind_rect.clip_ind);
+					return ret;
+				}
+				mesh_inited = 1;
+			}
+			if (cnp->aws == NULL) {
+				subret = cnInitAreamap(cnl,entry_name);
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
+					gset_clip_ind(clip_ind_rect.clip_ind);
+					ContourAbortDraw(cnl);
+					return ret;
+				}
+			}
+			if (! cnp->aws) {
+				e_text = "%s: Error reserving workspace";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return NhlFATAL;
+			}
+			subret = AddDataBoundToAreamap(cnl,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+
+			subret = _NhlCtclam(tmp->rpnt,tmp->iedg,tmp->itri,
+					    cnp->fws,cnp->iws,
+					    cnp->aws,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+
+			if (cnp->dump_area_map)
+				_NhlDumpAreaMap(cnp->aws,entry_name);
+
+			subret = _NhlArscam(cnp->aws,
+					    (_NHLCALLF(hluctfill,HLUCTFILL)),
+					    entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+			subret = _NhlIdleWorkspace(cnp->aws);
+			ret = MIN(subret,ret);
+			cnp->aws = NULL;
+		}
+		else if (cnp->fill_mode == NhlCELLFILL) {
+			_NhlCellFill((NhlLayer)cnl,entry_name);
+		}
+		else if (cnp->fill_mode == NhlMESHFILL) { /* NhlMESHFILL */
+			int msize,nsize;
+			float min_cell_size;
+			NhlBoundingBox bbox;
+
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  "%s: the MeshFill method does not yet produce correct results for unstructured grids\n",entry_name);
+
+			subret = cnInitCellArray(cnl,&msize,&nsize,&bbox,
+						 &min_cell_size,entry_name);
+ 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+			subret = _NhlCtcica(NULL,NULL,NULL,NULL,NULL,
+					    cnp->cws,
+					    msize,msize,nsize,
+					    bbox.l,bbox.b,bbox.r,bbox.t,
+					    min_cell_size,
+					    cnp->raster_smoothing_on,
+					    True,
+					    entry_name);
+ 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+			if (cnp->cws != NULL) {
+				subret = _NhlIdleWorkspace(cnp->cws);
+				ret = MIN(subret,ret);
+				cnp->cws = NULL;
+			}
+		}
+		else { /* NhlRASTERFILL */
+			int msize,nsize;
+			float min_cell_size;
+			NhlBoundingBox bbox;
+
+			if (! mesh_inited) {
+				subret = InitMesh(cnl,tmp,entry_name);
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
+					gset_clip_ind(clip_ind_rect.clip_ind);
+					ContourAbortDraw(cnl);
+					return ret;
+				}
+				mesh_inited = 1;
+			}
+			subret = cnInitCellArray(cnl,&msize,&nsize,&bbox,
+						 &min_cell_size,entry_name);
+ 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+			subret = _NhlCtcica(tmp->rpnt,tmp->iedg,tmp->itri,
+					    cnp->fws,cnp->iws,cnp->cws,
+					    msize,msize,nsize,
+					    bbox.l,bbox.b,bbox.r,bbox.t,
+					    min_cell_size,
+					    cnp->raster_smoothing_on,
+					    False,
+					    entry_name);
+ 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+			if (cnp->cws != NULL) {
+				subret = _NhlIdleWorkspace(cnp->cws);
+				ret = MIN(subret,ret);
+				cnp->cws = NULL;
+			}
+		}
+	}
+
+	if (! cnp->output_gridded_data &&
+	    cnp->line_order == order &&
+	    (cnp->do_lines || cnp->missing_val.perim_on ||
+	     cnp->grid_bound.perim_on || cnp->out_of_range.perim_on)) {
+		if (cnp->do_labels && cnp->label_masking) {
+			if (! mesh_inited) {
+				subret = InitMesh(cnl,tmp,entry_name);
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
+					gset_clip_ind(clip_ind_rect.clip_ind);
+					ContourAbortDraw(cnl);
+					return ret;
+				}
+				mesh_inited = 1;
+			}
+			c_ctseti("GIL",5);
+			if (cnp->aws == NULL) {
+				subret = cnInitAreamap(cnl,entry_name);
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
+					gset_clip_ind(clip_ind_rect.clip_ind);
+					ContourAbortDraw(cnl);
+					return ret;
+				}
+			}
+			if (! cnp->aws) {
+				e_text = "%s: Error reserving workspace";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return NhlFATAL;
+			}
+			c_pcsetr("PH",(float)cnp->line_lbls.pheight);
+			c_pcsetr("PW",(float)cnp->line_lbls.pwidth);
+			c_pcsetr("CS",(float)cnp->line_lbls.cspacing);
+			c_pcseti("FN",cnp->line_lbls.font);
+			c_pcseti("QU",cnp->line_lbls.quality);
+			c_pcsetc("FC",cnp->line_lbls.fcode);
+			subret = _NhlCtlbam(tmp->rpnt,tmp->iedg,tmp->itri,
+					    cnp->fws,cnp->iws,
+					    cnp->aws,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+			subret = _NhlCtcldm(tmp->rpnt,tmp->iedg,tmp->itri,
+					    cnp->fws,cnp->iws,cnp->aws,
+					    (_NHLCALLF(ctdrpl,CTDRPL)),
+					    entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+			subret = _NhlIdleWorkspace(cnp->aws);
+			ret = MIN(subret,ret);
+			cnp->aws = NULL;
+		}
+		else {
+			if (! mesh_inited) {
+				subret = InitMesh(cnl,tmp,entry_name);
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
+					ContourAbortDraw(cnl);
+					return ret;
+				}
+				mesh_inited = 1;
+			}
+			subret = _NhlCtcldr(tmp->rpnt,tmp->iedg,tmp->itri,
+					    cnp->fws,cnp->iws,entry_name);
+
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+		}
+	}
+	
+	if (! cnp->output_gridded_data &&
+	    cnp->do_labels && cnp->label_order == order) {
+		if (! mesh_inited) {
+			subret = InitMesh(cnl,tmp,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+			mesh_inited = 1;
+		}
+		cnp->line_lbls.count = 0;
+		cnp->high_lbls.count = 0;
+		cnp->low_lbls.count = 0;
+		gset_fill_int_style(GSTYLE_SOLID);
+
+		c_pcsetr("PH",(float)cnp->line_lbls.pheight);
+		c_pcsetr("PW",(float)cnp->line_lbls.pwidth);
+		c_pcsetr("CS",(float)cnp->line_lbls.cspacing);
+		c_pcseti("FN",cnp->line_lbls.font);
+		c_pcseti("QU",cnp->line_lbls.quality);
+		c_pcsetc("FC",cnp->line_lbls.fcode);
+		_NhlCtlbdr(tmp->rpnt,tmp->iedg,tmp->itri,
+			 cnp->fws,cnp->iws,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			gset_clip_ind(clip_ind_rect.clip_ind);
+			ContourAbortDraw(cnl);
+			return ret;
+		}
+	}
+
+	if (cnp->fws != NULL) {
+		subret = _NhlIdleWorkspace(cnp->fws);
+		ret = MIN(subret,ret);
+		cnp->fws = NULL;
+	}
+	if (cnp->iws != NULL) {
+		subret = _NhlIdleWorkspace(cnp->iws);
+		cnp->iws = NULL;
+		ret = MIN(subret,ret);
+	}
+	gset_clip_ind(clip_ind_rect.clip_ind);
+
+	return MIN(subret,ret);
+}
+#endif
 typedef struct {
 	float vx,vy,c;
 } PlaneSet;
@@ -3191,7 +3579,6 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 {
 	NhlContourPlotLayer cnl = Cnl;
 	NhlContourPlotLayerPart *cnp = Cnp;
-	NhlTransformLayerPart 		  *tfp = &cnl->trans;
 	NhlErrorTypes	ret = NhlNOERROR;
 	char		*e_text;
 	NhlBoolean ezmap = False;
@@ -3210,7 +3597,7 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 	float max_coverage = 0;
 	int twice;
 	int icaf, map;
-	float orv;
+	float orv,spv;
 
         if (cnp == NULL) {
 		e_text = "%s: invalid call to _NhlRasterFill";
@@ -3226,7 +3613,7 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 	c_ctgetr("ORV",&orv);
 	c_ctgeti("CAF",&icaf);
 	c_ctgeti("MAP",&map);
-
+	c_cpgetr("SPV",&spv);
 
 	nv = cnp->sfp->x_cell_bounds->len_dimensions[1];
 	cell_count = cnp->sfp->x_cell_bounds->len_dimensions[0];
@@ -3277,10 +3664,9 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 		PlaneSet *pps, ps[10];
 		int p,p1,p2,p0;
 		int jcv,icv;
-		int t;
 		int iplus,jplus;
-		int ix, iaid,k;
-		float fvali,spv;
+		int iaid,k;
+		float fvali;
 
 		memcpy(xi,xv + i * nv,nv * sizeof(float));
 		memcpy(yi,yv + i * nv,nv * sizeof(float));
@@ -3396,7 +3782,7 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 		}
 	}
 
-
+	return ret;
 
 }
 #define HERO(A,B,C) \

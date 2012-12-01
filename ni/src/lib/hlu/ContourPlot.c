@@ -993,6 +993,13 @@ static NhlErrorTypes cnInitDraw(
 #endif
 );
 
+static NhlErrorTypes cnUpdateTrans(
+#if	NhlNeedProto
+	NhlContourPlotLayer	cnl,
+        NhlBoolean		seg_draw,
+	NhlString		entry_name
+#endif
+);
 
 
 static NhlErrorTypes ContourPlotUpdateData(
@@ -1561,6 +1568,121 @@ _NHLCALLF(nhlfcontourplotdatadepclass,NHLFCONTOURPLOTDATADEPCLASS)
 #endif
 {
 	return NhlcontourPlotDataDepClass;
+}
+
+NhlErrorTypes NhlFreeIsoLines
+(
+	NhlIsoLine *isolines, 
+	int n_levels
+)
+{
+	int i;
+
+	if (! isolines) {
+		return NhlNOERROR;
+	}
+	for (i = 0; i < n_levels; i++) {
+		if (isolines[i].x)
+			NhlFree(isolines[i].x);
+		if (isolines[i].y)
+			NhlFree(isolines[i].y);
+		if (isolines[i].n_points)
+			NhlFree(isolines[i].n_points);
+		if (isolines[i].start_point)
+			NhlFree(isolines[i].start_point);
+	}
+	NhlFree(isolines);
+	return NhlNOERROR;
+}
+
+NhlIsoLine *NhlGetIsoLines 
+(
+	int contourplot_id,
+	int n_levels,
+	float *levels
+)
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	char			*entry_name = "NhlGetIsoLines";
+	NhlContourPlotLayer	cnl;
+	NhlContourPlotLayerPart	*cnp;
+
+	NhlLayer  plot = _NhlGetLayer(contourplot_id);
+
+	if (plot == NULL || ! NhlIsClass(contourplot_id,NhlcontourPlotClass)) {
+		e_text = "%s: invalid contourplot id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NULL;
+	}
+	cnl = (NhlContourPlotLayer) plot;
+ 	cnp = &(cnl->contourplot);
+	Cnp = cnp;
+	Cnl = cnl;
+
+	subret = cnInitDraw(cnl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		Cnp = NULL;
+		return NULL;
+	}
+	subret = cnUpdateTrans(cnl,0,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		Cnp = NULL;
+		return NULL;
+	}
+
+	if (! cnp->render_obj) {
+		int 	tmp_id;
+		char	buffer[_NhlMAXRESNAMLEN];
+		NhlwsType intwstype;
+		NhlwsType floatwstype;
+
+		sprintf(buffer,"%s",cnl->base.name);
+		strcat(buffer,".Renderer");
+		if (cnp->grid_type == NhltrTRIANGULARMESH) {
+			NhlClass class;
+			class = NhlcnTriMeshRendererClass;
+
+			ret = NhlALCreate(&tmp_id,buffer,
+					     class,
+					     cnl->base.id,NULL,0);
+			intwstype = NhlwsCTINT;
+			floatwstype = NhlwsCTFLOAT;
+			
+		}
+		else {
+			ret = NhlALCreate(&tmp_id,buffer,
+					     NhlcnStdRendererClass,
+					     cnl->base.id,NULL,0);
+			intwstype = NhlwsCNINT;
+			floatwstype = NhlwsCNFLOAT;
+		}
+
+		cnp->render_obj = _NhlGetLayer(tmp_id);
+
+		if(cnp->render_obj == NULL){
+			e_text = "%s: Error creating renderer object";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NULL;
+		}
+		/* Initialize ContourPlot float and integer workspaces */
+
+		if ((cnp->iws_id =_NhlNewWorkspace(intwstype,NhlwsNONE,
+						   4000*sizeof(int))) < 0) {
+			e_text = "%s: integer workspace allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NULL;
+		}
+		if ((cnp->fws_id = _NhlNewWorkspace(floatwstype,NhlwsNONE,
+						    5000*sizeof(float))) < 0) {
+			e_text = "%s: float workspace allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NULL;
+		}
+
+	}
+	return(_NhlGetIsoLines(cnp->render_obj,cnl,n_levels,levels,"NhlGetIsoLines"));
+
 }
 
 /*

@@ -65,8 +65,19 @@ typedef NhlErrorTypes (*NhlContourRender)(
 #endif
 );
 
+typedef NhlIsoLine  *(*CnGetIsoLines)(
+#if     NhlNeedProto
+        NhlLayer                instance,
+        NhlContourPlotLayer     cnl,
+        int			n_levels,
+        float 			*levels,
+	NhlString		entry_name
+#endif
+);
+
 typedef struct NhlCnRendererClassPart{
 	NhlContourRender	render;
+	CnGetIsoLines           get_isolines;
 } NhlCnRendererClassPart;
 
 

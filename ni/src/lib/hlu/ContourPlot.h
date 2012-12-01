@@ -92,6 +92,26 @@ typedef enum _NhlcnFillMode {
 
 #define NhlTcnFillMode	"cnFillMode"
 
+typedef struct _NhlIsoLine {
+	float level;
+	int   n_segments;
+        int   point_count;
+	int   *start_point;
+	int   *n_points;
+	float *x;
+	float *y;
+} NhlIsoLine;
+
+NhlIsoLine  *NhlGetIsoLines(
+	int contourplot_id,
+	int n_levels,
+	float *levels
+	);
+
+NhlErrorTypes NhlFreeIsoLines(
+	NhlIsoLine *isolines, 
+	int n_levels
+	);
 
 /*
  * ContourPlot instance resources

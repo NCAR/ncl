@@ -182,6 +182,20 @@ extern NhlErrorTypes _NhlCpcldr(
 #endif
 );
 
+extern NhlErrorTypes _NhlCpcltr(
+#if	NhlNeedProto
+	float		*zdat,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	float           clevel,
+	int             *flag,
+	float           **xloc,
+	float           **yloc,
+	int             *npoints,
+	char		*entry_name
+#endif
+);
+
 extern NhlErrorTypes _NhlCplbam(
 #if	NhlNeedProto
 	float		*zdat,
