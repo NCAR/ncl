@@ -78,6 +78,8 @@ static cairo_t         *cairoContexts[NUM_CONTEXT];
 static int             cairoEnvIndices[NUM_CONTEXT];
 
 cairo_surface_t *qt_surface = NULL;
+int qt_painter_width  = 1200;
+int qt_painter_height = 900;
 
 static int getCairoEnvIndex(int wksId) {
     int i;
@@ -88,7 +90,7 @@ static int getCairoEnvIndex(int wksId) {
     }
 }
 
-static cairo_t* getContext(int wksId) {
+cairo_t* getContext(int wksId) {
     return cairoContexts[getCairoEnvIndex(wksId)];
 }
 
@@ -289,8 +291,12 @@ int cro_ActivateWorkstation(GKSC *gksc) {
       setSurfaceTransform(psa);
     }
     else if (psa->wks_type == CQT) {
-      fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
-                       __FILE__, __LINE__, __PRETTY_FUNCTION__);
+    /*
+     *fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
+     *                 __FILE__, __LINE__, __PRETTY_FUNCTION__);
+     */
+      croActivateQt(psa);
+      setSurfaceTransform(psa);
     }
 
     return (0);
@@ -538,13 +544,16 @@ int cro_ClearWorkstation(GKSC *gksc) {
                          __FILE__, __LINE__, __PRETTY_FUNCTION__);
         fprintf(stderr, "\tWrite image to qt-painter.\n\n");
 
+        psa->image_width  = qt_painter_width;
+        psa->image_height = qt_painter_height;
+
         ret = cairo_qt_surface_get_image(getSurface(psa->wks_id));
         if (ret != 0)
             ret = ERR_CRO_OPN;
 
       /*
-       *psa->frame_count++;
        */
+        psa->frame_count++;
     }
 
     psa->pict_empty = TRUE;
@@ -570,6 +579,9 @@ int cro_CloseWorkstation(GKSC *gksc) {
     if (psa->wks_type == CX11)
     {
         croFreeNativeSurface(getSurface(psa->wks_id));
+        cairo_destroy(getContext(psa->wks_id));
+        removeCairoEnv(psa->wks_id);
+        free(psa);
     }
     else if (psa->wks_type == CQT)
     {
@@ -577,12 +589,10 @@ int cro_CloseWorkstation(GKSC *gksc) {
                          __FILE__, __LINE__, __PRETTY_FUNCTION__);
         fprintf(stderr, "\tWrite image to qt-painter.\n\n");
 
-        croFreeNativeSurface(getSurface(psa->wks_id));
+      /*
+       *croFreeNativeSurface(getSurface(psa->wks_id));
+       */
     }
-
-    cairo_destroy(getContext(psa->wks_id));
-    removeCairoEnv(psa->wks_id);
-    free(psa);
 
     return (0);
 }
@@ -881,6 +891,12 @@ void setCairoQtSurface(cairo_surface_t *surface)
     qt_surface = surface;
 }
 
+void setCairoQtWinSize(int width, int height)
+{
+    qt_painter_width = width;
+    qt_painter_height = height;
+}
+
 
 int cro_OpenWorkstation(GKSC *gksc) {
 
@@ -986,6 +1002,9 @@ int cro_OpenWorkstation(GKSC *gksc) {
 
     else if (psa->wks_type == CQT)
     {
+        double width  = (double) qt_painter_width;
+        double height = (double) qt_painter_height;
+
         /*
          *  Create a QT (painter) workstation.
          *  QPainter *painter;
@@ -1005,10 +1024,11 @@ int cro_OpenWorkstation(GKSC *gksc) {
             surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, psa->image_width, psa->image_height);
 
         context = cairo_create(surface);
-
-        cairo_scale(context, psa->image_width, psa->image_height);
-
+        cairo_scale(context, width, height);
         saveCairoEnv(orig_wks_id, context, surface);
+
+        psa->image_height = qt_painter_height;
+        psa->image_width  = qt_painter_width;
     }
 
     /*
@@ -1021,7 +1041,9 @@ int cro_OpenWorkstation(GKSC *gksc) {
      */
     cairo_set_line_cap(context, CAIRO_LINE_CAP_ROUND);
     cairo_set_line_join(context, CAIRO_LINE_JOIN_ROUND);
-    cairo_surface_destroy(surface);
+
+    if(CQT != psa->wks_type)
+        cairo_surface_destroy(surface);
 
     /*
      *  Set the default linewidth.
