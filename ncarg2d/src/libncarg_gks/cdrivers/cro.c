@@ -21,11 +21,6 @@
 #include <math.h>
 #include <time.h>
 
-#include <cairo/cairo.h>
-#include <cairo/cairo-ps.h>
-#include <cairo/cairo-pdf.h>
-#include <cairo/cairo-ft.h>
-
 #include <math.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -81,6 +76,8 @@ static int contextNum = 0;
 static cairo_surface_t *cairoSurfaces[NUM_CONTEXT];
 static cairo_t         *cairoContexts[NUM_CONTEXT];
 static int             cairoEnvIndices[NUM_CONTEXT];
+
+cairo_surface_t *qt_surface = NULL;
 
 static int getCairoEnvIndex(int wksId) {
     int i;
@@ -290,6 +287,10 @@ int cro_ActivateWorkstation(GKSC *gksc) {
     if (psa->wks_type == CX11) {
       croActivateX11(psa, getSurface(psa->wks_id));
       setSurfaceTransform(psa);
+    }
+    else if (psa->wks_type == CQT) {
+      fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
+                       __FILE__, __LINE__, __PRETTY_FUNCTION__);
     }
 
     return (0);
@@ -531,6 +532,21 @@ int cro_ClearWorkstation(GKSC *gksc) {
         free(outputFile);
     }
 
+    else if (psa->wks_type == CQT)
+    {
+        fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
+                         __FILE__, __LINE__, __PRETTY_FUNCTION__);
+        fprintf(stderr, "\tWrite image to qt-painter.\n\n");
+
+        ret = cairo_qt_surface_get_image(getSurface(psa->wks_id));
+        if (ret != 0)
+            ret = ERR_CRO_OPN;
+
+      /*
+       *psa->frame_count++;
+       */
+    }
+
     psa->pict_empty = TRUE;
 
     return ret;
@@ -552,7 +568,17 @@ int cro_CloseWorkstation(GKSC *gksc) {
         free(psa->ctable);
 
     if (psa->wks_type == CX11)
+    {
         croFreeNativeSurface(getSurface(psa->wks_id));
+    }
+    else if (psa->wks_type == CQT)
+    {
+        fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
+                         __FILE__, __LINE__, __PRETTY_FUNCTION__);
+        fprintf(stderr, "\tWrite image to qt-painter.\n\n");
+
+        croFreeNativeSurface(getSurface(psa->wks_id));
+    }
 
     cairo_destroy(getContext(psa->wks_id));
     removeCairoEnv(psa->wks_id);
@@ -850,6 +876,12 @@ int cro_GetColorRepresentation(GKSC *gksc) {
 }
 
 
+void setCairoQtSurface(cairo_surface_t *surface)
+{
+    qt_surface = surface;
+}
+
+
 int cro_OpenWorkstation(GKSC *gksc) {
 
     char *sptr = (char *) gksc->s.list;
@@ -858,6 +890,9 @@ int cro_OpenWorkstation(GKSC *gksc) {
     int *pint;
     extern int orig_wks_id;
     static CROClipRect rect;
+
+    fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
+                     __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     if (getenv("CRO_TRACE")) {
         printf("Got to cro_OpenWorkstation\n");
@@ -947,6 +982,33 @@ int cro_OpenWorkstation(GKSC *gksc) {
         saveCairoEnv(orig_wks_id, context, surface);
         psa->image_width = cairo_xlib_surface_get_width(surface);
         psa->image_height = cairo_xlib_surface_get_height(surface);
+    }
+
+    else if (psa->wks_type == CQT)
+    {
+        /*
+         *  Create a QT (painter) workstation.
+         *  QPainter *painter;
+         *  surface = cairo_qt_surface_create(painter, psa->image_width, psa->image_height);
+         */
+
+        fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
+                         __FILE__, __LINE__, __PRETTY_FUNCTION__);
+        fprintf(stderr, "\tpsa->image_width = %d, psa->image_height = %d\n",
+                         (int) psa->image_width, (int) psa->image_height);
+        fprintf(stderr, "\tWe should create surface with QPainter.\n");
+        fprintf(stderr, "\tBut as link to Qt could be pain, we just use other function to create a surface.\n\n");
+
+        if(NULL != qt_surface)
+            surface = qt_surface;
+        else
+            surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, psa->image_width, psa->image_height);
+
+        context = cairo_create(surface);
+
+        cairo_scale(context, psa->image_width, psa->image_height);
+
+        saveCairoEnv(orig_wks_id, context, surface);
     }
 
     /*

@@ -136,6 +136,12 @@
 #define CTIFF               43  /* cairo (geo)TIFF   */
 #define CX11                44  /* cairo x11 surface */
 #define CEPS                45  /* cairo EPS */
+#define CQT                 46  /* cairo Qt */
+
+#include <cairo/cairo.h>
+#include <cairo/cairo-ps.h>
+#include <cairo/cairo-pdf.h>
+#include <cairo/cairo-ft.h>
 
 typedef enum {MONO, COLOR} cro_color;
 
@@ -243,7 +249,9 @@ typedef enum {MITER,ROUND, BEVEL} linejoin_type;
 
 #endif  /* NGCALLF */
 
+extern cairo_surface_t *qt_surface;
 
 void reverse_chars(char *);
+void setCairoQtSurface(cairo_surface_t *surface);
 
 #endif  /* _cro_driver_ */
