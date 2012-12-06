@@ -58,8 +58,8 @@ NETCDF4_DEFS =
 
 #ifdef UseNetCDF4Features
 NC4_FEATURES_DEFS = -DUSE_NETCDF4_FEATURES
-NC4_FEATURES_SRCS = NclNewFile.c NclNewGroup.c NclNewList.c NclNetCDF4.c NclNewOGR.c
-NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNewList.o NclNetCDF4.o NclNewOGR.o
+NC4_FEATURES_SRCS = NclNewFile.c NclNewGroup.c NclNewList.c NclNetCDF4.c 
+NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNewList.o NclNetCDF4.o
 #else
 #define NC4_FEATURES_DEFS
 #define NC4_FEATURES_SRCS
@@ -122,8 +122,13 @@ GRIB2_OBJS = NclGRIB2.o
 
 #ifdef BuildGDAL
 GDAL_DEFS = -DBuildGDAL
+#ifdef UseNetCDF4Features
+GDAL_SRCS = NclOGR.c NclNewOGR.c
+GDAL_OBJS = NclOGR.o NclNewOGR.o
+#else
 GDAL_SRCS = NclOGR.c
-GDAL_OBJS = NclOGR.o
+GDAL_OBJS = NclOGR.o 
+#endif
 #else
 #define GDAL_SRCS
 #define GDAL_OBJS
