@@ -385,17 +385,37 @@ void _justPrintTypeVal(FILE *fp, NclBasicDataTypes type, void *val, int newline)
         case NCL_double:
             {
              double *v = (double *)val;
-             nclfprintf(fp, "%d", v[0]);
+             nclfprintf(fp, "%f", v[0]);
              break;
             }
         case NCL_byte:
         case NCL_ubyte:
+            {
+             char *v = (char *)val;
+             nclfprintf(fp, "%d", v[0]);
+             break;
+            }
         case NCL_short:
         case NCL_ushort:
+            {
+             short *v = (short *)val;
+             nclfprintf(fp, "%h", v[0]);
+             break;
+            }
         case NCL_int:
         case NCL_uint:
+            {
+             int *v = (int *)val;
+             nclfprintf(fp, "%d", v[0]);
+             break;
+            }
         case NCL_long:
         case NCL_ulong:
+            {
+             long *v = (long *)val;
+             nclfprintf(fp, "%ld", v[0]);
+             break;
+            }
         case NCL_int64:
         case NCL_uint64:
             {

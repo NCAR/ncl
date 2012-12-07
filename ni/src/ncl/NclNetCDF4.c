@@ -4892,6 +4892,8 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
 * All dimensions are correct dimensions for the file
 */
         dim_ids[0] = -999;
+        if(NULL != grpnode->dim_rec)
+        {
         for(i = 0; i < n_dims; i++)
         {
             for(j = 0; j < grpnode->dim_rec->n_dims; j++)
@@ -4913,6 +4915,7 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
                     break;
                 }
             }
+        } 
         } 
 
         if (dim_ids[0] == -999)
