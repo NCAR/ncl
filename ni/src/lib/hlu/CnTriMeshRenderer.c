@@ -261,6 +261,16 @@ static NhlErrorTypes CnTriMeshWriteCellData
 #endif
 	);
 
+static NhlIsoLine *CnTriMeshGetIsoLines(
+#if     NhlNeedProto
+        NhlLayer                instance,
+        NhlContourPlotLayer     cnl,
+        int			n_levels,
+        float			*levels,
+	NhlString		entry_name
+#endif
+	);
+
 NhlCnTriMeshRendererClassRec NhlcnTriMeshRendererClassRec = {
 	{
 /* class_name 		*/      "cnTriMeshRendererClass",
@@ -289,7 +299,7 @@ NhlCnTriMeshRendererClassRec NhlcnTriMeshRendererClassRec = {
 	},
 	{
 /* render */		        CnTriMeshRender,
-/* get_isolines */              NULL
+/* get_isolines */              CnTriMeshGetIsoLines
 	},
 	{
 /* foo */		        0
@@ -3142,8 +3152,8 @@ static NhlErrorTypes CnTriMeshRender
 
 	return MIN(subret,ret);
 }
-#if 0
-static NhlErrorTypes CnTriMeshGetIsoLines
+
+static NhlIsoLine *CnTriMeshGetIsoLines
 #if	NhlNeedProto
 (
 	NhlLayer		instance,
@@ -3164,11 +3174,15 @@ static NhlErrorTypes CnTriMeshGetIsoLines
         NhlCnTriMeshRendererLayer tml = (NhlCnTriMeshRendererLayer) instance;
 	NhlCnTriMeshRendererLayerPart	  *tmp = &tml->cntrimeshrenderer;
 	NhlContourPlotLayerPart 	  *cnp = &cnl->contourplot;
-	NhlString e_text;
         NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlString e_text;
 	int mesh_inited = 0;
         Gint            err_ind;
         Gclip           clip_ind_rect;
+	float           *clvp;
+	int             count;
+	int             i;
+	NhlIsoLine      *isolines, *ilp;
 
 	Cnl = cnl;
 	Cnp = cnp;
@@ -3179,7 +3193,6 @@ static NhlErrorTypes CnTriMeshGetIsoLines
         gset_clip_ind(GIND_CLIP);
 	
 	c_ctrset();
-
 	SetCtParams(cnl,entry_name);
 /*
  * Only set the ORV parameter if overlaying on EZMAP. It can cause
@@ -3230,14 +3243,14 @@ static NhlErrorTypes CnTriMeshGetIsoLines
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		ContourAbortDraw(cnl);
 		gset_clip_ind(clip_ind_rect.clip_ind);
-		return ret;
+		return NULL;
 	}
 
 	subret = UpdateFillInfo(cnl, &cnp->do_fill);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		ContourAbortDraw(cnl);
 		gset_clip_ind(clip_ind_rect.clip_ind);
-		return ret;
+		return NULL;
 	}
 
 
@@ -3248,268 +3261,145 @@ static NhlErrorTypes CnTriMeshGetIsoLines
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		ContourAbortDraw(cnl);
 		gset_clip_ind(clip_ind_rect.clip_ind);
-		return(ret);
+		return(NULL);
 	}
 	if ((cnp->iws = _NhlUseWorkspace(cnp->iws_id)) == NULL) {
 		e_text = "%s: error reserving integer workspace";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		ContourAbortDraw(cnl);
 		gset_clip_ind(clip_ind_rect.clip_ind);
-		return(ret);
+		return(NULL);
 	}
 
 		 
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		ContourAbortDraw(cnl);
 		gset_clip_ind(clip_ind_rect.clip_ind);
-		return ret;
+		return NULL;
 	}
 
-	else if (cnp->do_fill && cnp->fill_order == order) {
 
-		if (cnp->fill_mode == NhlAREAFILL) {
-			if (! mesh_inited) {
-				subret = InitMesh(cnl,tmp,entry_name);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					ContourAbortDraw(cnl);
-					gset_clip_ind(clip_ind_rect.clip_ind);
-					return ret;
-				}
-				mesh_inited = 1;
-			}
-			if (cnp->aws == NULL) {
-				subret = cnInitAreamap(cnl,entry_name);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					gset_clip_ind(clip_ind_rect.clip_ind);
-					ContourAbortDraw(cnl);
-					return ret;
-				}
-			}
-			if (! cnp->aws) {
-				e_text = "%s: Error reserving workspace";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				gset_clip_ind(clip_ind_rect.clip_ind);
-				ContourAbortDraw(cnl);
-				return NhlFATAL;
-			}
-			subret = AddDataBoundToAreamap(cnl,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				gset_clip_ind(clip_ind_rect.clip_ind);
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-
-			subret = _NhlCtclam(tmp->rpnt,tmp->iedg,tmp->itri,
-					    cnp->fws,cnp->iws,
-					    cnp->aws,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				gset_clip_ind(clip_ind_rect.clip_ind);
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-
-			if (cnp->dump_area_map)
-				_NhlDumpAreaMap(cnp->aws,entry_name);
-
-			subret = _NhlArscam(cnp->aws,
-					    (_NHLCALLF(hluctfill,HLUCTFILL)),
-					    entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				gset_clip_ind(clip_ind_rect.clip_ind);
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-			subret = _NhlIdleWorkspace(cnp->aws);
-			ret = MIN(subret,ret);
-			cnp->aws = NULL;
-		}
-		else if (cnp->fill_mode == NhlCELLFILL) {
-			_NhlCellFill((NhlLayer)cnl,entry_name);
-		}
-		else if (cnp->fill_mode == NhlMESHFILL) { /* NhlMESHFILL */
-			int msize,nsize;
-			float min_cell_size;
-			NhlBoundingBox bbox;
-
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
-				  "%s: the MeshFill method does not yet produce correct results for unstructured grids\n",entry_name);
-
-			subret = cnInitCellArray(cnl,&msize,&nsize,&bbox,
-						 &min_cell_size,entry_name);
- 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				gset_clip_ind(clip_ind_rect.clip_ind);
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-			subret = _NhlCtcica(NULL,NULL,NULL,NULL,NULL,
-					    cnp->cws,
-					    msize,msize,nsize,
-					    bbox.l,bbox.b,bbox.r,bbox.t,
-					    min_cell_size,
-					    cnp->raster_smoothing_on,
-					    True,
-					    entry_name);
- 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				gset_clip_ind(clip_ind_rect.clip_ind);
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-			if (cnp->cws != NULL) {
-				subret = _NhlIdleWorkspace(cnp->cws);
-				ret = MIN(subret,ret);
-				cnp->cws = NULL;
-			}
-		}
-		else { /* NhlRASTERFILL */
-			int msize,nsize;
-			float min_cell_size;
-			NhlBoundingBox bbox;
-
-			if (! mesh_inited) {
-				subret = InitMesh(cnl,tmp,entry_name);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					gset_clip_ind(clip_ind_rect.clip_ind);
-					ContourAbortDraw(cnl);
-					return ret;
-				}
-				mesh_inited = 1;
-			}
-			subret = cnInitCellArray(cnl,&msize,&nsize,&bbox,
-						 &min_cell_size,entry_name);
- 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				gset_clip_ind(clip_ind_rect.clip_ind);
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-			subret = _NhlCtcica(tmp->rpnt,tmp->iedg,tmp->itri,
-					    cnp->fws,cnp->iws,cnp->cws,
-					    msize,msize,nsize,
-					    bbox.l,bbox.b,bbox.r,bbox.t,
-					    min_cell_size,
-					    cnp->raster_smoothing_on,
-					    False,
-					    entry_name);
- 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				gset_clip_ind(clip_ind_rect.clip_ind);
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-			if (cnp->cws != NULL) {
-				subret = _NhlIdleWorkspace(cnp->cws);
-				ret = MIN(subret,ret);
-				cnp->cws = NULL;
-			}
-		}
+	if (n_levels <= 0) {
+		clvp = (float *) cnp->levels->data;
+		count = cnp->level_count;
+	}
+	else {
+		count = n_levels;
+		clvp = levels;
 	}
 
-	if (! cnp->output_gridded_data &&
-	    cnp->line_order == order &&
-	    (cnp->do_lines || cnp->missing_val.perim_on ||
-	     cnp->grid_bound.perim_on || cnp->out_of_range.perim_on)) {
-		if (cnp->do_labels && cnp->label_masking) {
-			if (! mesh_inited) {
-				subret = InitMesh(cnl,tmp,entry_name);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					gset_clip_ind(clip_ind_rect.clip_ind);
-					ContourAbortDraw(cnl);
-					return ret;
-				}
-				mesh_inited = 1;
-			}
-			c_ctseti("GIL",5);
-			if (cnp->aws == NULL) {
-				subret = cnInitAreamap(cnl,entry_name);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					gset_clip_ind(clip_ind_rect.clip_ind);
-					ContourAbortDraw(cnl);
-					return ret;
-				}
-			}
-			if (! cnp->aws) {
-				e_text = "%s: Error reserving workspace";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				gset_clip_ind(clip_ind_rect.clip_ind);
-				ContourAbortDraw(cnl);
-				return NhlFATAL;
-			}
-			c_pcsetr("PH",(float)cnp->line_lbls.pheight);
-			c_pcsetr("PW",(float)cnp->line_lbls.pwidth);
-			c_pcsetr("CS",(float)cnp->line_lbls.cspacing);
-			c_pcseti("FN",cnp->line_lbls.font);
-			c_pcseti("QU",cnp->line_lbls.quality);
-			c_pcsetc("FC",cnp->line_lbls.fcode);
-			subret = _NhlCtlbam(tmp->rpnt,tmp->iedg,tmp->itri,
-					    cnp->fws,cnp->iws,
-					    cnp->aws,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				gset_clip_ind(clip_ind_rect.clip_ind);
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-			subret = _NhlCtcldm(tmp->rpnt,tmp->iedg,tmp->itri,
-					    cnp->fws,cnp->iws,cnp->aws,
-					    (_NHLCALLF(ctdrpl,CTDRPL)),
-					    entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				gset_clip_ind(clip_ind_rect.clip_ind);
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-			subret = _NhlIdleWorkspace(cnp->aws);
-			ret = MIN(subret,ret);
-			cnp->aws = NULL;
-		}
-		else {
-			if (! mesh_inited) {
-				subret = InitMesh(cnl,tmp,entry_name);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					ContourAbortDraw(cnl);
-					return ret;
-				}
-				mesh_inited = 1;
-			}
-			subret = _NhlCtcldr(tmp->rpnt,tmp->iedg,tmp->itri,
-					    cnp->fws,cnp->iws,entry_name);
-
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				gset_clip_ind(clip_ind_rect.clip_ind);
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-		}
-	}
-	
-	if (! cnp->output_gridded_data &&
-	    cnp->do_labels && cnp->label_order == order) {
-		if (! mesh_inited) {
-			subret = InitMesh(cnl,tmp,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				gset_clip_ind(clip_ind_rect.clip_ind);
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-			mesh_inited = 1;
-		}
-		cnp->line_lbls.count = 0;
-		cnp->high_lbls.count = 0;
-		cnp->low_lbls.count = 0;
-		gset_fill_int_style(GSTYLE_SOLID);
-
-		c_pcsetr("PH",(float)cnp->line_lbls.pheight);
-		c_pcsetr("PW",(float)cnp->line_lbls.pwidth);
-		c_pcsetr("CS",(float)cnp->line_lbls.cspacing);
-		c_pcseti("FN",cnp->line_lbls.font);
-		c_pcseti("QU",cnp->line_lbls.quality);
-		c_pcsetc("FC",cnp->line_lbls.fcode);
-		_NhlCtlbdr(tmp->rpnt,tmp->iedg,tmp->itri,
-			 cnp->fws,cnp->iws,entry_name);
+	isolines = (NhlIsoLine *) NhlMalloc(sizeof(NhlIsoLine) * count);
+	if (! mesh_inited) {
+		subret = InitMesh(cnl,tmp,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
 			gset_clip_ind(clip_ind_rect.clip_ind);
 			ContourAbortDraw(cnl);
-			return ret;
+			return NULL;
 		}
+		mesh_inited = 1;
+	}
+	for (i = 0, ilp = isolines; i < count; i++, ilp++) {
+		int flag,npoints;
+		NhlBoolean done = False;
+		float *xloc = NULL, *yloc = NULL;
+		int current_seg_alloc = 10;
+		int current_point_count = 0;
+		int current_seg = 0;
+		int j;
+
+		flag = 0;
+/*
+		printf("Points for level %f:\n", clvp[i]);
+*/
+		ilp->level = clvp[i];
+		ilp->x = ilp->y = NULL;
+		ilp->start_point = ilp->n_points = NULL;
+		while (! done) {
+			subret = _NhlCtcltr(tmp->rpnt,tmp->iedg,tmp->itri,cnp->fws,cnp->iws,clvp[i],
+					    &flag,&xloc,&yloc,&npoints,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				return NULL;
+			}
+
+			if (flag == 0)
+				break;
+			if (current_seg == 0) {
+				ilp->x = NhlMalloc(sizeof(float) * npoints);
+				ilp->y = NhlMalloc(sizeof(float) * npoints);
+			}
+			else {
+				ilp->x = NhlRealloc(ilp->x, sizeof(float) * (current_point_count + npoints));
+				ilp->y = NhlRealloc(ilp->y, sizeof(float) * (current_point_count + npoints));
+			}
+			memcpy((char*)(ilp->x + current_point_count),xloc, npoints * sizeof(float)); 
+			memcpy((char*)(ilp->y + current_point_count),yloc, npoints * sizeof(float)); 
+			if (tmp->ezmap) { /* points need to be transformed back into map coordinates */
+				double xlon, ylat,last_xlon;
+				int mod_360 = 0;
+				int k = current_point_count;
+				int first = 1;
+				for (j = current_point_count; j < current_point_count + npoints; j++) {
+					c_mdptri((double)ilp->x[j],(double)ilp->y[j],&ylat,&xlon);
+					if (xlon > 1e10) 
+						continue;
+					if (first) {
+						last_xlon = xlon;
+						first = 0;
+					}
+					switch (mod_360) {
+					case 0:
+					default:
+						if (last_xlon - xlon < -180) {
+							mod_360 = -1;
+						}
+						else if (last_xlon - xlon > 180) {
+							mod_360 = 1;
+						}
+						break;
+					case 1:
+						if (xlon - last_xlon > 180) {
+							mod_360 = 0;
+						}
+						break;
+					case -1:
+						if (xlon - last_xlon < -180) {
+							mod_360 = 0;
+						}
+						break;
+					}
+					ilp->x[k] = (float)xlon + mod_360 * 360;
+					ilp->y[k] = (float)ylat;
+					last_xlon = xlon;
+					k++;
+				}
+				npoints = k - current_point_count;
+			}
+
+			if (current_seg == 0) {
+				ilp->n_points = NhlMalloc(sizeof(int) * current_seg_alloc);
+				ilp->start_point = NhlMalloc(sizeof(int) * current_seg_alloc);
+			}
+			else if (current_seg == current_seg_alloc) {
+				ilp->n_points = NhlRealloc(ilp->n_points,sizeof(int) * current_seg_alloc * 2);
+				ilp->start_point = NhlRealloc(ilp->start_point,sizeof(int) * current_seg_alloc * 2);
+				current_seg_alloc *= 2;
+			}
+			ilp->n_points[current_seg] = npoints; 	
+			ilp->start_point[current_seg] = current_point_count; 	
+			current_point_count += npoints;
+			current_seg++;
+/*				
+			printf("\t%d points: ",npoints);
+			for (j = 0; j < npoints; j++) {
+				printf("(%f %f)", *(xloc + j), *(yloc + j));
+			}
+			printf("\n");
+*/
+		}
+		ilp->point_count = current_point_count;
+		ilp->n_segments = current_seg;
 	}
 
 	if (cnp->fws != NULL) {
@@ -3522,11 +3412,12 @@ static NhlErrorTypes CnTriMeshGetIsoLines
 		cnp->iws = NULL;
 		ret = MIN(subret,ret);
 	}
-	gset_clip_ind(clip_ind_rect.clip_ind);
+	if (ret < NhlWARNING)
+		return NULL;
 
-	return MIN(subret,ret);
+	return isolines;
 }
-#endif
+
 typedef struct {
 	float vx,vy,c;
 } PlaneSet;
@@ -3577,7 +3468,6 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 	char		*entry_name;
 #endif
 {
-	NhlContourPlotLayer cnl = Cnl;
 	NhlContourPlotLayerPart *cnp = Cnp;
 	NhlErrorTypes	ret = NhlNOERROR;
 	char		*e_text;

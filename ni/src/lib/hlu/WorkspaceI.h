@@ -277,6 +277,22 @@ NhlErrorTypes _NhlCtcldr(
 #endif
 );
 
+extern NhlErrorTypes _NhlCtcltr(
+#if	NhlNeedProto
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	float           clevel,
+	int             *flag,
+	float           **xloc,
+	float           **yloc,
+	int             *npoints,
+	char		*entry_name
+#endif
+);
+
 NhlErrorTypes _NhlCtlbdr(
 #if	NhlNeedProto
 

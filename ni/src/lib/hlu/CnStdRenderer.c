@@ -1871,8 +1871,8 @@ static NhlIsoLine *CnStdGetIsoLines
 (instance,cnl,order,entry_name)
 	NhlLayer		instance;
         NhlContourPlotLayer     cnl;
-        int			n_levels,
-        float			*levels,
+        int			n_levels;
+        float			*levels;
 	NhlString		entry_name;
 #endif
 {
@@ -1964,7 +1964,7 @@ static NhlIsoLine *CnStdGetIsoLines
 		return NULL;
 	}
 
-/* Retrieve workspace pointers */
+	/* Retrieve workspace pointers */
 
 	if ((cnp->fws = _NhlUseWorkspace(cnp->fws_id)) == NULL) {
 		e_text = "%s: error reserving float workspace";
@@ -2001,7 +2001,7 @@ static NhlIsoLine *CnStdGetIsoLines
 
 	isolines = (NhlIsoLine *) NhlMalloc(sizeof(NhlIsoLine) * count);
 	for (i = 0, ilp = isolines; i < count; i++, ilp++) {
-		int flag,npoints,j;
+		int flag,npoints;
 		NhlBoolean done = False;
 		float *xloc = NULL, *yloc = NULL;
 		int current_seg_alloc = 10;
@@ -3284,11 +3284,8 @@ NhlBoolean GetEdgeAdjustedPolygon(
 	)
 {
 	*nout = nin;
-	float xs,ys,xe,ye;
 	int fgp = -1,lgp;
-	int done = False;
 	int i, ix;
-	int status;
 
 	/* find first and last good point */
 	if (xo[0] < 1e10) {
@@ -3398,44 +3395,25 @@ NhlErrorTypes _NhlMeshFill
 	NhlErrorTypes	ret = NhlNOERROR;
 	char		*e_text;
 
-	float		zval,orv,spv;
+	float		orv,spv;
 	float		xc1,xcm,yc1,ycn;
 	float		xmn,xmx,ymn,ymx;
-	int		i,j,k,izd1,izdm,izdn,indx,indy,icaf,map,iaid;
-	float		xccf,xccu,xccd,xcci,yccf,yccu,yccd,ycci;
+	int		i,j,k,izd1,izdm,izdn,icaf,map,iaid;
         float		*levels;
-	float		cxstep,cystep,dxstep,dystep;
+	float		cxstep,cystep;
 	float           xsoff,xeoff,ysoff,yeoff;
 	NhlBoolean      x_isbound,y_isbound;
-
 	float           tol1,tol2;
-	int             ipp1,ipp2,ipp3;
-	float           xcu1,xcu2,xcu3,ycu1,ycu2,ycu3;
-	float           xcf1,xcf2,xcf3,ycf1,ycf2,ycf3;
-	float           xd12,xd23,xd31,yd12,yd23,yd31;
-	float           fva1,fva2,fva3;
-	float           dn12,dn23,dn31;
-	int             bound1,bound2;
-	int             ibeg,iend,jbeg,jend;
 	int             grid_fill_ix;
-		
-	typedef struct {
-		int count;
-		int *dcell;
-	} DataCellLoc;
-	DataCellLoc *dcell_loc;
+
 	float *xarr, *yarr;
 	NhlBoolean ezmap = False;
 	float xcount,ycount;
         int lxsize,xc_count,yc_count,mode;
 	int jc,jcm1,jcp1;
 	float avg_cells_per_grid_box;
-	int status, pcount;
+	int status;
 	float mflx,mfby,mfrx,mfuy;
-	float flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
-	char climit[4];
-	float r1[2],r2[2],r3[2],r4[2];
-	float sr[4][2];
 	float min_minx, max_maxx, min_miny, max_maxy;
 	float max_coverage = 0;
 	int twice;
@@ -3618,7 +3596,6 @@ NhlErrorTypes _NhlMeshFill
 			PlaneSet *pps, ps[6];
 			int p,p1,p2,p0;
 			int jcv,icv;
-			int t;
 
 			twice = 1;
 
