@@ -5,6 +5,7 @@
 #include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/PlotManager.h>
 #include <ncarg/hlu/DataComm.h>
+#include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/Callbacks.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/AppI.h>
@@ -14,6 +15,7 @@
 #include "defs.h"
 #include "Symbol.h"
 #include <regex.h>
+#include <ctype.h>
 
 #include "NclDataDefs.h"
 #include "NclMdInc.h"
@@ -25,6 +27,9 @@
 #include "HluClasses.h"
 #include "NclAtt.h"
 #include "NclVar.h"
+#include "NclList.h"
+#include "ListSupport.h"
+#include "AttSupport.h"
 
 extern int defaultapp_hluobj_id;
 
@@ -3606,8 +3611,8 @@ NhlErrorTypes _NclINhlGetParentId
 {
     int nargs = 1;
     int has_missing;
-	int n_dims;
-	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
     NclBasicDataTypes type;
     ng_size_t total=1;
     ng_size_t i;
@@ -3615,10 +3620,10 @@ NhlErrorTypes _NclINhlGetParentId
     NclScalar missing;
     obj *ncl_hlu_obj_ids;
     obj *outpt;
-	int tmp_id;
-	NclHLULookUpTable* tmp_lo;
-	NhlErrorTypes ret = NhlNOERROR;
-	NclHLUObj tmp_hlu;
+    int tmp_id;
+    NclHLULookUpTable* tmp_lo;
+    NhlErrorTypes ret = NhlNOERROR;
+    NclHLUObj tmp_hlu;
 
 
         ncl_hlu_obj_ids = (obj*)NclGetArgValue(
@@ -4998,3 +5003,312 @@ NhlErrorTypes _NclCreateGraphic( void )
 }
 
 
+
+NhlErrorTypes _NclINhlGetIsoLines
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    int nargs = 2;
+    int has_missing;
+    int n_dims;
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+    NclBasicDataTypes type;
+    ng_size_t total=1;
+    ng_size_t i;
+    NclHLUObj tmp_hlu_ptr;
+    NclScalar missing;
+    obj *ncl_hlu_obj_id;
+    int lev_has_missing;
+    NclScalar lev_missing;
+    NclBasicDataTypes lev_type;
+    void *level_ptr;
+    float *levels;
+    ng_size_t level_count;
+    int levels_malloced = 0;
+    NhlIsoLine *isolines = NULL;
+    NclTypeClass type_class;
+    NclList list_obj;
+    NclMultiDValData list_obj_md;
+    ng_size_t scalar_dimsize = 1;
+    NclStackEntry data_out;
+    NclDimRec dim_rec[2];
+    int *obj_id;
+
+    ncl_hlu_obj_id = (obj*)NclGetArgValue(
+                        0,
+                        nargs,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+ 
+    for(i = 0; i < n_dims; i++) {
+	    total *= dimsizes[i];
+    }
+
+    if (total > 1) {
+	    NhlPError(NhlWARNING,NhlEUNKNOWN,
+		      "NhlGetIsolines: currenty can only handle one plot object at a time");
+    }
+
+    level_ptr = (void*)NclGetArgValue(
+	    1,
+	    nargs,
+	    &n_dims,
+	    dimsizes,
+	    &lev_missing,
+	    &lev_has_missing,
+	    &lev_type,
+	    0);
+
+    if (n_dims != 1) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,
+		      "NhlGetIsolines: only one dimension of level values permittede");
+	    return NhlFATAL;
+    }
+    level_count = dimsizes[0];
+    type_class =  _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(lev_type));
+
+    tmp_hlu_ptr = (NclHLUObj) _NclGetObj(*ncl_hlu_obj_id);
+
+    if (lev_type == NCL_string && level_count == 1 && *(NrmQuark *)level_ptr == NrmStringToQuark("plot")) {
+	    int grlist = NhlRLCreate(NhlGETRL);
+	    NhlRLClear(grlist);
+	    NhlRLGetFloatArray(grlist,NhlNcnLevels,&levels,&level_count);
+	    NhlGetValues(tmp_hlu_ptr->hlu.hlu_id,grlist);
+	    if (levels) {
+		    levels_malloced = True;
+	    }
+    }
+    else if (lev_type == NCL_float) {
+	    levels = (float *) level_ptr;
+    }
+    else if (type_class->type_class.type & NCL_SNUMERIC_TYPE_MASK) {
+	    levels = NclMalloc(level_count * sizeof(float));
+	    for (i = 0; i < level_count; i++) {
+		    _NclScalarForcedCoerce(level_ptr + i * type_class->type_class.size, lev_type,&(levels[i]),NCL_float);
+	    }
+	    levels_malloced = 1;
+    }
+    else {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,
+		      "NhlGetIsolines: invalid input for levels");
+    }
+    isolines = NhlGetIsoLines(tmp_hlu_ptr->hlu.hlu_id,level_count,levels);
+    type_class = _NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(NCL_float)));
+
+    if (! isolines) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,
+		      "NhlGetIsolines: error retrieving isolines");
+	    return (NhlFATAL);
+    }
+
+    if (level_count > 1) {
+	    obj_id = NclMalloc(sizeof(int));
+	    list_obj = (NclList)_NclListCreate(NULL, NULL, 0, 0, (NCL_FIFO));
+	    *obj_id = list_obj->obj.id;
+	    list_obj_md = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,obj_id,
+						      NULL,1,&scalar_dimsize,TEMPORARY,NULL);
+    }
+    for (i = level_count - 1; i >= 0; i--) {
+	    NclMultiDValData tmp_point_md, tmp_md;
+	    NclVar tmp_var;
+	    int j,att_id;
+	    float *level;
+	    int *segment_count;
+	    char buffer[512];
+	    int point_count = isolines[i].point_count;
+	    ng_size_t size[2];
+	    ng_size_t seg_count;
+	    int *seg_start;
+	    int *count;
+	    float *isoline;
+	    if (point_count > 0) {
+		    isoline = NclMalloc(2 * point_count * sizeof(float));
+		    size[0] = 2;
+		    size[1] = point_count;
+		    memcpy((void*)isoline, (void *) isolines[i].y,point_count * sizeof(float));
+		    memcpy((void*)(isoline + point_count), (void *)isolines[i].x, point_count * sizeof(float));
+		    tmp_point_md = _NclCreateMultiDVal(
+			    NULL,
+			    NULL,
+			    Ncl_MultiDValData,
+			    0,
+			    isoline,
+			    &(type_class->type_class.default_mis),
+			    2,
+			    size,
+			    TEMPORARY,
+			    NULL,
+			    type_class);
+		    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+		    seg_count = isolines[i].n_segments;
+
+		    count = NclMalloc(seg_count * sizeof(int));
+		    memcpy(count,isolines[i].n_points,seg_count * sizeof(int));
+		    tmp_md = _NclCreateMultiDVal(
+			    NULL,
+			    NULL,
+			    Ncl_MultiDValData,
+			    0,
+			    count,
+			    NULL,
+			    1,
+			    &seg_count,
+			    TEMPORARY,
+			    NULL,
+			    _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(NCL_int)));
+		    _NclAddAtt(att_id,"n_points",tmp_md,NULL);
+
+		    seg_start = NclMalloc(seg_count * sizeof(int));
+		    memcpy(seg_start,isolines[i].start_point,seg_count * sizeof(int));
+		    tmp_md = _NclCreateMultiDVal(
+			    NULL,
+			    NULL,
+			    Ncl_MultiDValData,
+			    0,
+			    seg_start,
+			    NULL,
+			    1,
+			    &seg_count,
+			    TEMPORARY,
+			    NULL,
+			    _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(NCL_int)));
+		    _NclAddAtt(att_id,"start_point",tmp_md,NULL);
+		    dim_rec[0].dim_quark = NrmStringToQuark("yx");
+		    dim_rec[0].dim_num = 0;
+		    dim_rec[0].dim_size = 2;
+		    dim_rec[1].dim_quark = NrmStringToQuark("points");
+		    dim_rec[1].dim_num = 1;
+		    dim_rec[1].dim_size = point_count;
+	    }
+	    else {
+		    isoline = NclMalloc(2 * sizeof(float));
+		    ((float *) isoline)[0] = ((float *) isoline)[1] = type_class->type_class.default_mis.floatval;
+		    size[0] = 2;
+		    size[1] = 1;
+		    tmp_point_md = _NclCreateMultiDVal(
+			    NULL,
+			    NULL,
+			    Ncl_MultiDValData,
+			    0,
+			    isoline,
+			    &(type_class->type_class.default_mis),
+			    2,
+			    size,
+			    TEMPORARY,
+			    NULL,
+			    type_class);
+		    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+		    seg_count = 1;
+
+		    count = NclMalloc(sizeof(int));
+		    *(int*) count = 0;
+		    tmp_md = _NclCreateMultiDVal(
+			    NULL,
+			    NULL,
+			    Ncl_MultiDValData,
+			    0,
+			    count,
+			    NULL,
+			    1,
+			    &seg_count,
+			    TEMPORARY,
+			    NULL,
+			    _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(NCL_int)));
+		    _NclAddAtt(att_id,"n_points",tmp_md,NULL);
+
+		    seg_start = NclMalloc(sizeof(int));
+		    *(int*) seg_start = 0;
+		    tmp_md = _NclCreateMultiDVal(
+			    NULL,
+			    NULL,
+			    Ncl_MultiDValData,
+			    0,
+			    seg_start,
+			    NULL,
+			    1,
+			    &seg_count,
+			    TEMPORARY,
+			    NULL,
+			    _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(NCL_int)));
+		    _NclAddAtt(att_id,"start_point",tmp_md,NULL);
+		    dim_rec[0].dim_quark = NrmStringToQuark("yx");
+		    dim_rec[0].dim_num = 0;
+		    dim_rec[0].dim_size = 2;
+		    dim_rec[1].dim_quark = NrmStringToQuark("points");
+		    dim_rec[1].dim_num = 1;
+		    dim_rec[1].dim_size = 1;
+	    }
+
+	    segment_count = NclMalloc(sizeof(int));
+	    *segment_count  = isolines[i].n_segments;
+	    tmp_md = _NclCreateMultiDVal(
+			NULL,
+			NULL,
+			Ncl_MultiDValData,
+			0,
+			segment_count,
+			NULL,
+			1,
+			&scalar_dimsize,
+			TEMPORARY,
+			NULL,
+			_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(NCL_int)));
+	    _NclAddAtt(att_id,"segment_count",tmp_md,NULL);
+
+	    level = NclMalloc(sizeof(float));
+	    *level = isolines[i].level;
+	    tmp_md = _NclCreateMultiDVal(
+			NULL,
+			NULL,
+			Ncl_MultiDValData,
+			0,
+			level,
+			NULL,
+			1,
+			&scalar_dimsize,
+			TEMPORARY,
+			NULL,
+			type_class);
+	    _NclAddAtt(att_id,"level",tmp_md,NULL);
+	    sprintf(buffer,"L%g",isolines[i].level);
+	    for (j = 1; j < strlen(buffer); j++) {
+		    if (buffer[j] == '-') buffer[j] = 'n';
+		    if (! isalnum(buffer[j])) buffer[j] = '_';
+	    }
+	    
+	    tmp_var = _NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,tmp_point_md,dim_rec,att_id,NULL,
+					 NORMAL,buffer,TEMPORARY);
+
+	    if (level_count > 1) 
+		    _NclListPush((NclObj)list_obj,(NclObj)tmp_var);
+	    else {
+		    data_out.kind = NclStk_VAR;
+		    data_out.u.data_var = tmp_var;
+	    }
+    }
+    if (level_count > 1) {
+	    data_out.kind = NclStk_VAL;
+	    data_out.u.data_obj = list_obj_md;
+    }
+
+
+    _NclPlaceReturn(data_out);
+
+    if (levels_malloced) {
+	    NhlFree(levels);
+    }
+    if (isolines) {
+	    NhlFreeIsoLines(isolines,level_count);
+    }
+    
+    return NhlNOERROR;
+}
