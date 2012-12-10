@@ -5406,13 +5406,15 @@ static NhlErrorTypes NewFileAddDim(NclFile infile, NclQuark dimname,
 
     if(thefile->newfile.wr_status <= 0)
     {
-        if (dimname == NrmStringToQuark("ncl_scalar"))
-        {
-            NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                "NewFileAddDim: <ncl_scalar> is a reserved file dimension name in NCL\n\t\t%s\n",
-                "it cannot be defined by the user"));
-            return (NhlWARNING);
-        }
+      /*
+       *if (dimname == NrmStringToQuark("ncl_scalar"))
+       *{
+       *    NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+       *        "NewFileAddDim: <ncl_scalar> is a reserved file dimension name in NCL\n\t\t%s\n",
+       *        "it cannot be defined by the user"));
+       *    return (NhlWARNING);
+       *}
+       */
 
         dimnode = _getDimNodeFromNclFileGrpNode(thefile->newfile.grpnode, dimname);
 
@@ -5484,12 +5486,12 @@ static void NewAdjustForScalarDim(NclNewFile thefile)
 {
     NclQuark nsn = NrmStringToQuark("ncl_scalar");
 
- /* since the scalar dim is always first,
-  * all the other dims and coord vars need to shift down one element
-  */
+  /*
+   *since the scalar dim is always first,
+   *all the other dims and coord vars need to shift down one element
 
-    fprintf(stderr, "\nHit NewAdjustForScalarDim, file: %s, line: %d\n\n", __FILE__, __LINE__);
-    fprintf(stderr, "\nHit NewAdjustForScalarDim, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\nHit NewAdjustForScalarDim, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   */
 
     NewFileAddDim((NclFile) thefile, nsn, 1, 1);
 }
