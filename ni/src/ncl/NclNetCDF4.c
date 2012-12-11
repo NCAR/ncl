@@ -2240,8 +2240,8 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
             rc = nc_inq_var_deflate(gid, i, &shufflep, &deflatep, &(varnode->compress_level));
 
           /*
-           *fprintf(stderr, "\t\tstorage_in = %d, shufflep = %d, deflatep = %d, compress_level = %d\n",
-           *                     storage_in, shufflep, deflatep, varnode->compress_level);
+           *fprintf(stderr, "\t\tshufflep = %d, deflatep = %d, compress_level = %d\n",
+           *                     shufflep, deflatep, varnode->compress_level);
            */
 
             varnode->is_chunked = 1;
@@ -2266,8 +2266,8 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
     }
 
   /*
-   *fprintf(stderr, "Leave _NC4_get_vars, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
+    fprintf(stderr, "Leave _NC4_get_vars, file: %s, line: %d\n\n", __FILE__, __LINE__);
 
     return varrec;
 }
@@ -2653,9 +2653,9 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
     NclFileDimNode *chunkdimnode;
 
     ng_size_t *dims;
-    ng_size_t *chunk_dims;
+    size_t *chunk_dims;
 
-    int shuffle = 0;
+    int shuffle = 1;
     int deflate = 1;
     int deflate_level = 1;
     int nc_ret;
@@ -2686,7 +2686,7 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
 
             dims[i] = dimnode->size;
 
-            chunk_dims[i] = chunkdimnode->size;
+            chunk_dims[i] = (size_t)chunkdimnode->size;
         }
 
         if(NULL == grpnode->var_rec)
@@ -2708,13 +2708,21 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
                                    varnode->dim_rec->dim_node[i].is_unlimited);
                 }
 
-                nc_ret = nc_def_var_chunking(id, varnode->id, storage, (size_t *)chunk_dims);
-
-                if((grpnode->compress_level > 0) && (varnode->compress_level < 1))
+                nc_ret = nc_def_var_chunking(id, varnode->id, storage, chunk_dims);
+                if(nc_ret != NC_NOERR)
                 {
-                    varnode->compress_level = grpnode->compress_level;
-                    deflate = varnode->compress_level;
-                    deflate_level = deflate;
+                    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                          "%s: Error in nc_def_var_chunking in file (%s) in <%s> for writing, at line: %d\n",
+                                  __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                    return(NhlFATAL);
+                    check_err(nc_ret, __LINE__, __FILE__);
+                }
+
+                if((grpnode->compress_level > 0) || (varnode->compress_level > 0))
+                {
+                    if(grpnode->compress_level > varnode->compress_level)
+                        varnode->compress_level = grpnode->compress_level;
+                    deflate_level = varnode->compress_level;
                     nc_ret = nc_def_var_deflate(id, varnode->id, shuffle,
                                 deflate, deflate_level);
                 }
@@ -4097,7 +4105,7 @@ static NhlErrorTypes NC4WriteAtt(void *therec, NclQuark theatt, void *data)
                         if(nc_ret != NC_NOERR)
                         {
                             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                                  "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
+                                  "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                                   __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
                             return(NhlFATAL);
                         }
@@ -4122,7 +4130,7 @@ static NhlErrorTypes NC4WriteAtt(void *therec, NclQuark theatt, void *data)
                         if(nc_ret != NC_NOERR)
                         {
                             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                                  "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
+                                  "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                                   __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
                             return(NhlFATAL);
                         }
@@ -4212,7 +4220,7 @@ static NhlErrorTypes NC4DelAtt(void *therec, NclQuark theatt)
                    *if(nc_ret != NC_NOERR)
                    *{
                    *    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                   *          "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
+                   *          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                    *          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
                    *    return(NhlFATAL);
                    *}
@@ -4299,7 +4307,7 @@ static NhlErrorTypes NC4DelVarAtt(void *therec, NclQuark thevar, NclQuark theatt
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
+                          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                           __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
                     return(NhlFATAL);
                 }
@@ -4407,7 +4415,7 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
                     if(nc_ret != NC_NOERR)
                     {
                         NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                              "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
+                              "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                               __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
                         return(NhlFATAL);
                     }
@@ -4430,7 +4438,7 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
                     if(nc_ret != NC_NOERR)
                     {
                         NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                              "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
+                              "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                               __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
                         return(NhlFATAL);
                     }
@@ -4481,12 +4489,19 @@ NhlErrorTypes NC4AddVarChunk(void* therec, NclQuark thevar,
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
     NclFileVarNode *varnode;
+    NclFileDimRecord *dimrec = NULL;
     NclFileDimNode *dimnode;
+    NclFileDimRecord *chunkdimrec = NULL;
+    NclFileDimNode *chunkdimnode;
+    size_t chunksizes[NCL_MAX_DIMENSIONS];
     int i,ret = NhlNOERROR;
     int fid;
     int nc_ret;
 
     int storage = NC_CHUNKED;
+
+    fprintf(stderr, "\nEnter %s, file: %s, line: %d\n",
+                     __PRETTY_FUNCTION__, __FILE__, __LINE__);
 
     if(grpnode->status > 0)
     {    
@@ -4532,27 +4547,51 @@ NhlErrorTypes NC4AddVarChunk(void* therec, NclQuark thevar,
             }
         }
 
-      /*
-       *varnode->chunk_dimid = (int *)NclCalloc(n_chunk_dims, sizeof(int));
-       *assert(varnode->chunk_dimid);
-       */
+       fprintf(stderr, "function %s, file: %s, line: %d\n",
+                        __PRETTY_FUNCTION__, __FILE__, __LINE__);
+       fprintf(stderr, "\tn_chunk_dims = %d\n", n_chunk_dims);
+
+       chunkdimrec = _NclFileDimAlloc(n_chunk_dims);
+       chunkdimrec->gid = grpnode->id;
+       varnode->chunk_dim_rec = chunkdimrec;
+       varnode->is_chunked = 1;
+       dimrec = varnode->dim_rec;
 
         for(i = 0 ; i < n_chunk_dims; i++)
         {
-            dimnode = &(varnode->dim_rec->dim_node[i]);
-            _addNclDimNode(&(varnode->chunk_dim_rec), dimnode->name, dimnode->id,
-                           (ng_size_t)chunk_dims[i], dimnode->is_unlimited);
-            dimnode = &(varnode->chunk_dim_rec->dim_node[i]);
-            dimnode->id = i;
+            dimnode = &(dimrec->dim_node[i]);
+            chunkdimnode = &(chunkdimrec->dim_node[i]);
+            chunkdimnode->id = i;
+            chunkdimnode->name = dimnode->name;
+            chunkdimnode->size = (ng_size_t)chunk_dims[i];
+            chunksizes[i] = (size_t)chunk_dims[i];
           /*
-           *varnode->chunk_dimid[i] = i;
            */
+            fprintf(stderr, "\tcheck dim %d size %d\n", i, varnode->chunk_dim_rec->dim_node[i].size);
         }
-      /*
-       *varnode->n_chunk_dims = n_chunk_dims;
-       *varnode->max_chunk_dims = n_chunk_dims;
-       */
-        nc_ret = nc_def_var_chunking(fid, varnode->id, storage, (size_t *)chunk_dims);
+
+        if(! grpnode->define_mode)
+        {
+            nc_ret = ncredef(fid);
+            if(nc_ret != NC_NOERR)
+            {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                      "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
+                      __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+                return(NhlFATAL);
+            }
+            grpnode->define_mode = 1;
+        }
+
+        nc_ret = nc_def_var_chunking(fid, varnode->id, storage, chunksizes);
+        if(nc_ret != NC_NOERR)
+        {
+            NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                          "%s: Error in nc_def_var_chunking in file (%s) in <%s> for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+            return(NhlFATAL);
+            check_err(nc_ret, __LINE__, __FILE__);
+        }
         ret = NhlNOERROR;
     }
 
@@ -4730,14 +4769,16 @@ static NhlErrorTypes NC4AddDim(void* therec, NclQuark thedim,
 
             if(! grpnode->define_mode)
             {
-                nc_ret = ncredef(fid);
-                if(nc_ret != NC_NOERR)
-                {
-                    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
-                          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
-                    return(NhlFATAL);
-                }
+              /*
+               *nc_ret = ncredef(fid);
+               *if(nc_ret != NC_NOERR)
+               *{
+               *    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+               *          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
+               *          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+               *    return(NhlFATAL);
+               *}
+               */
                 grpnode->define_mode = 1;
             }
 
@@ -4865,7 +4906,7 @@ static NhlErrorTypes NC4AddChunkDim(void* therec, NclQuark thedim,
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
+                          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                           __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
                     return(NhlFATAL);
                 }
@@ -5004,7 +5045,7 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
                *if(nc_ret != NC_NOERR)
                *{
                *    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-               *          "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
+               *          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                *          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
                *    return(NhlFATAL);
                *}
@@ -5144,7 +5185,7 @@ static NhlErrorTypes NC4RenameDim(void* therec, NclQuark from, NclQuark to)
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
+                          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                           __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
                     return(NhlFATAL);
                 }
@@ -5241,7 +5282,7 @@ static NhlErrorTypes NC4AddAtt(void *therec, NclQuark theatt,
                *if(nc_ret != NC_NOERR)
                *{
                *    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-               *          "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
+               *          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                *          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
                *    return(NhlFATAL);
                *}
@@ -5352,7 +5393,7 @@ static NhlErrorTypes NC4AddVarAtt(void *therec, NclQuark thevar, NclQuark theatt
                     if(nc_ret != NC_NOERR)
                     {
                         NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                              "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
+                              "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                               __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
                         return(NhlFATAL);
                     }
@@ -5792,7 +5833,7 @@ static NhlErrorTypes NC4AddVlenVar(void* therec, NclQuark thevar,
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
+                          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                           __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
                     return(NhlFATAL);
                 }
@@ -6022,7 +6063,7 @@ static NhlErrorTypes NC4AddEnumVar(void* therec, NclQuark thevar,
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
+                          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                           __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
                     return(NhlFATAL);
                 }
@@ -6246,7 +6287,7 @@ static NhlErrorTypes NC4AddOpaqueVar(void* therec, NclQuark thevar,
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
+                          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                           __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
                     return(NhlFATAL);
                 }
@@ -6464,7 +6505,7 @@ static NclFileVarNode *defNC4CompoundVar(void* therec, NclQuark thevar,
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not dedef the file id (%d) in <%s> for writing, at line: %d\n",
+                          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                           __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
                     return(NhlFATAL);
                 }
