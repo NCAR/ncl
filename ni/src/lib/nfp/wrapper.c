@@ -7215,7 +7215,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, 0, 0, NclANY);  nargs++;
     SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
     NclRegisterFunc(reshape_W, args, "reshape", nargs);
 
