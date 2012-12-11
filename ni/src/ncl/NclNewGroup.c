@@ -258,7 +258,7 @@ NclFile thefile;
 }
 #endif
 
-static void UpdateNewGroupDims(NclNewFile group_out, NclFileGrpNode *grpnode)
+void UpdateNewGroupDims(NclNewFile group_out, NclFileGrpNode *grpnode)
 {
   /*
    */
@@ -290,6 +290,8 @@ NclGroup *_NclNewGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_
    *fprintf(stderr, "\tgroup_name: <%s>\n", NrmQuarkToString(group_name));
    *fprintf(stderr, "\tthefile->newfile.grpnode->name: <%s>\n",
    *                   NrmQuarkToString(thefile->newfile.grpnode->name));
+   *fprintf(stderr, "\tthefile->newfile.grpnode->real_name: <%s>\n",
+   *                   NrmQuarkToString(thefile->newfile.grpnode->real_name));
    */
 
     if(NULL == thefile)
@@ -300,12 +302,13 @@ NclGroup *_NclNewGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_
         return NULL;
     }
 
-    if(group_name == thefile->newfile.grpnode->name)
+    if((group_name == thefile->newfile.grpnode->name) ||
+       (group_name == thefile->newfile.grpnode->real_name))
     {
         return ((NclGroup *)thefile);
     }
 
-    grpnode = _getGrpNodeFromNclFileGrpNode(thefile->newfile.grpnode, group_name);
+    grpnode = _getGrpNodeFromGrpNode(thefile->newfile.grpnode, group_name);
 
     if(NULL == grpnode)
     {
@@ -348,7 +351,6 @@ NclGroup *_NclNewGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_
     group_out->newfile.file_format = thefile->newfile.file_format;
 
     group_out->newfile.format_funcs = _NclGetFormatFuncsWithNewHLFS(thefile->newfile.file_ext_q);
-    group_out->use_new_hlfs = 1;
 
 #if 0
     group_out->newfile.grpnode = (NclFileGrpNode *)
@@ -367,15 +369,8 @@ NclGroup *_NclNewGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_
 
     group_out->newfile.grpnode = grpnode;
 
-    group_out->newfile.grpnode->fid = thefile->newfile.grpnode->fid;
     group_out->newfile.grpnode->path = thefile->newfile.fpath;
     group_out->newfile.grpnode->extension = thefile->newfile.file_ext_q;
-
-  /*
-   *fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tgrpnode->path: <%s>\n", NrmQuarkToString(group_out->newfile.grpnode->path));
-   *fprintf(stderr, "\tgrpnode->extension: <%s>\n", NrmQuarkToString(group_out->newfile.grpnode->extension));
-   */
 
     if(NULL == group_out->newfile.grpnode->options)
     {

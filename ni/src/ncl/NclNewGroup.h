@@ -33,7 +33,7 @@ extern NclGroup *_NclNewGroupCreate(NclObj       inst,
                                     NclFile      file_in,
                                     NclQuark     group_name);
 
-static void UpdateNewGroupDims(NclNewFile group_out, NclFileGrpNode *grpnode);
+void UpdateNewGroupDims(NclNewFile group_out, NclFileGrpNode *grpnode);
 
 #endif /* NclNewGroup_h */
 

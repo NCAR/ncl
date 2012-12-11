@@ -1,5 +1,7 @@
 #!/bin/sh
 
+rm -f NclTypestring.c
+
 sh op_funcs.sh string NhlTString NhlTStringGenArray -1 > .tmp.$$
 
 if [ ! $? ]
@@ -27,7 +29,8 @@ then
 fi
 
 rm .tmp.$$
+rm -f NclTypestring.c.tmp
 
-echo "created NclTypestringData.c"
+echo "created NclTypestring.c"
 
 exit 0

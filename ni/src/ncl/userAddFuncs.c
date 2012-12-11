@@ -61,7 +61,6 @@ extern "C" {
 #include "FileSupport.h"
 #include "NclAtt.h"
 #include "NclList.h"
-#include "NclNewList.h"
 #include "ListSupport.h"
 #include "NclFileInterfaces.h"
 #include <signal.h>
@@ -4310,9 +4309,8 @@ NhlErrorTypes _Nclstr_sort
 
 NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int output)
 {
-    NclObj  thelist = NULL;
     NclVar  thevar;
-    NclList tmp_list;
+    NclList thelist = NULL;
     NclMultiDValData thevalue = NULL;
 
     size_t i = 0;
@@ -4350,9 +4348,9 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
     else
         prefix[0] = '\0';
 
-    thelist = _NclGetObj(*list_id);
-    thevar = (NclVar)thelist;
-    tmp_list = (NclList) thelist;
+    theobj = _NclGetObj(*list_id);
+    thevar = (NclVar)theobj;
+    thelist = (NclList) theobj;
 
   /*
    *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -4385,7 +4383,7 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
     maxelems = nelems;
 
     nelems = 0;
-    step = tmp_list->list.first;
+    step = thelist->list.first;
     while(step != NULL)
     {
         cur_obj = (NclObj)_NclGetObj(step->obj_id);
@@ -4488,21 +4486,8 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
     }
 
     theobj = (NclObj)_NclGetObj(*list_id);
-
-    if(0 == strcmp("NclNewListClass", theobj->obj.class_ptr->obj_class.class_name))
-    {
-        NclNewList thelist = (NclNewList) theobj;
-        truelems = (int)thelist->newlist.n_elem;
-    }
-    else if(0 == strcmp("NclListClass",theobj->obj.class_ptr->obj_class.class_name))
-    {
-        NclList thelist = (NclList) theobj;
-        truelems = (int)thelist->list.nelem;
-    }
-    else
-    {
-        truelems = 0;
-    }
+    thelist = (NclList) theobj;
+    truelems = (int)thelist->list.nelem;
 
     if(maxelems > truelems)
        maxelems = truelems;
@@ -4531,7 +4516,7 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
             nstart = strlen(prefix);
         }
 
-        step = tmp_list->list.first;
+        step = thelist->list.first;
         for(nelems = 0; nelems < maxelems; ++nelems)
         {
             memset(buffer, 0, NCL_INITIAL_STRING_LENGTH);

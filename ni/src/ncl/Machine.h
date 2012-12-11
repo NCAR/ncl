@@ -122,6 +122,9 @@ extern NhlErrorTypes _NclInitMachine(
 void
 #endif
 );
+
+extern NhlErrorTypes _NclFinalizeMachine();
+
 extern int _NclPutIntInstr(
 #if	NhlNeedProto
 int /* val */,

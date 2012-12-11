@@ -1415,7 +1415,7 @@ extern NhlErrorTypes _NclFileAddVlen(NclFile infile, NclQuark vlen_name, NclQuar
 		return(NhlFATAL);
 	}
 
-	if(! thefile->use_new_hlfs)
+	if(! _isNewFileStructure(thefile))
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddVlen: Old File Structure DO NOT Support vlen.\n"));
@@ -1460,7 +1460,7 @@ extern NhlErrorTypes _NclFileAddEnum(NclFile infile, NclQuark enum_name, NclQuar
 		return(NhlFATAL);
 	}
 
-	if(! thefile->use_new_hlfs)
+	if(! _isNewFileStructure(thefile))
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddEnum: Old File Structure DO NOT Support enum.\n"));
@@ -1506,7 +1506,7 @@ extern NhlErrorTypes _NclFileAddCompound(NclFile infile, NclQuark compound_name,
 		return(NhlFATAL);
 	}
 
-	if(! thefile->use_new_hlfs)
+	if(! _isNewFileStructure(thefile))
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddCompound: Old File Structure DO NOT Support compound.\n"));
@@ -1553,7 +1553,7 @@ extern NhlErrorTypes _NclFileWriteCompound(NclFile infile, NclQuark compound_nam
 		return(NhlFATAL);
 	}
 
-	if(! thefile->use_new_hlfs)
+	if(! _isNewFileStructure(thefile))
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileWriteCompound: Old File Structure DO NOT Support compound.\n"));
@@ -1598,7 +1598,7 @@ extern NhlErrorTypes _NclFileAddOpaque(NclFile infile, NclQuark opaque_name, Ncl
 		return(NhlFATAL);
 	}
 
-	if(! thefile->use_new_hlfs)
+	if(! _isNewFileStructure(thefile))
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddOpaque: Old File Structure DO NOT Support opaque.\n"));
@@ -1634,7 +1634,7 @@ extern NhlErrorTypes _NclFileAddGrp(NclFile infile, NclQuark grpname)
 		return(NhlFATAL);
 	}
 
-	if(! use_new_hlfs)
+	if(! _isNewFileStructure(thefile))
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddGrp: Old File Structure DO NOT Support Group.\n"));
@@ -2065,16 +2065,7 @@ int *n_lvls;
 	return (splited_group_names);
 }
 
-NclQuark *_NclGetFileGroupsList
-#if NhlNeedProto
-(NclFile thefile, NclQuark base_group_name, int depth, int *n_grps)
-#else
-(thefile, base_group_name, depth, n_grps)
-NclFile thefile; 
-NclQuark base_group_name; 
-int depth; 
-int *n_grps; 
-#endif
+NclQuark *_getFileGroupsList(NclFile thefile, NclQuark base_group_name, int depth, int *n_grps)
 {
 	int i, j;
 	NclQuark *selected_group_names = NULL;
@@ -2088,15 +2079,15 @@ int *n_grps;
 	int dif_depth = 0;
 
       /*
-       *fprintf(stdout, "\n\n\nhit _NclGetFileGroupsList. file: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stdout, "\tbase_group_name: <%s>\n", NrmQuarkToString(base_group_name));
-       *fprintf(stdout, "\tdepth: %d\n", depth);
-       *fprintf(stdout, "\tthefile->file.n_grps: %d\n", thefile->file.n_grps);
+       *fprintf(stderr, "\n\n\nhit _getFileGroupsList. file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tbase_group_name: <%s>\n", NrmQuarkToString(base_group_name));
+       *fprintf(stderr, "\tdepth: %d\n", depth);
+       *fprintf(stderr, "\tthefile->file.n_grps: %d\n", thefile->file.n_grps);
        */
 
 	if(thefile->file.n_grps < 1)
 	{
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"in _NclGetFileGroupsList"));
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"in _getFileGroupsList"));
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"getfilegroups: no groups under (%s)",
 			NrmQuarkToString(base_group_name));
 		*n_grps = 0;
@@ -2109,17 +2100,17 @@ int *n_grps;
 		max_depth = depth;
 
       /*
-       *fprintf(stdout, "\tmax_depth = %d\n", max_depth);
-       *fprintf(stdout, "\tbas_depth = %d\n", bas_depth);
+       *fprintf(stderr, "\tmax_depth = %d\n", max_depth);
+       *fprintf(stderr, "\tbas_depth = %d\n", bas_depth);
        */
 
 	selected_group_names = (NclQuark *) NclMalloc(sizeof(NclQuark) * thefile->file.n_grps);
 
       /*
-       *fprintf(stdout, "\n\n\nhit _NclGetFileGroupsList. file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\n\n\nhit _getFileGroupsList. file: %s, line: %d\n", __FILE__, __LINE__);
        *for(i = 0; i < thefile->file.n_grps; i++)
        *{
-       *	fprintf(stdout, "\tthefile->file.grp_info[%d]->grp_name_quark = <%s>\n",
+       *	fprintf(stderr, "\tthefile->file.grp_info[%d]->grp_name_quark = <%s>\n",
        *		i, NrmQuarkToString(thefile->file.grp_info[i]->grp_name_quark));
        *}
        */
@@ -2129,17 +2120,17 @@ int *n_grps;
 		need_save = 1;
 
 	      /*
-	       *fprintf(stdout, "\tthefile->file.grp_info[%d]->grp_name_quark = <%s>\n",
+	       *fprintf(stderr, "\tthefile->file.grp_info[%d]->grp_name_quark = <%s>\n",
 	       *	i, NrmQuarkToString(thefile->file.grp_info[i]->grp_name_quark));
 	       */
 
 		splited_name = _NclSplitGroupPath(thefile->file.grp_info[i]->grp_name_quark, &cur_depth);
 		dif_depth = cur_depth - bas_depth;
 	      /*
-	       *fprintf(stdout, "\tbas_depth = %d\n", bas_depth);
-	       *fprintf(stdout, "\tcur_depth = %d\n", cur_depth);
-	       *fprintf(stdout, "\tdif_depth = %d\n", dif_depth);
-	       *fprintf(stdout, "\tmax_depth = %d\n", max_depth);
+	       *fprintf(stderr, "\tbas_depth = %d\n", bas_depth);
+	       *fprintf(stderr, "\tcur_depth = %d\n", cur_depth);
+	       *fprintf(stderr, "\tdif_depth = %d\n", dif_depth);
+	       *fprintf(stderr, "\tmax_depth = %d\n", max_depth);
 	       */
 
 		if(dif_depth < 1)
@@ -2150,8 +2141,8 @@ int *n_grps;
 		for(j = 0; j < bas_depth; j++)
 		{
 	              /*
-		       *fprintf(stdout, "\tsplited_base[%d] = <%s>\n", j, NrmQuarkToString(splited_base[j]));
-		       *fprintf(stdout, "\tsplited_name[%d] = <%s>\n", j, NrmQuarkToString(splited_name[j]));
+		       *fprintf(stderr, "\tsplited_base[%d] = <%s>\n", j, NrmQuarkToString(splited_base[j]));
+		       *fprintf(stderr, "\tsplited_name[%d] = <%s>\n", j, NrmQuarkToString(splited_name[j]));
 	               */
 			if(splited_base[j] != splited_name[j])
 			{
@@ -2164,7 +2155,7 @@ int *n_grps;
 		{
 			selected_group_names[num_grps] = thefile->file.grp_info[i]->grp_name_quark;
 	              /*
-		       *fprintf(stdout, "\tselected_group_names[%d]: <%s>\n",
+		       *fprintf(stderr, "\tselected_group_names[%d]: <%s>\n",
 		       *	num_grps, NrmQuarkToString(selected_group_names[num_grps]));
 	               */
 		    num_grps++;
@@ -2173,7 +2164,7 @@ int *n_grps;
 
 	if(num_grps < 1)
 	{
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"in _NclGetFileGroupsList"));
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"in _getFileGroupsList"));
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"getfilegroups: can not find any group under (%s)",
 			NrmQuarkToString(base_group_name));
 		NclFree(selected_group_names);
@@ -2185,22 +2176,103 @@ int *n_grps;
 		selected_group_names = (NclQuark *) NclRealloc(selected_group_names, sizeof(NclQuark) * num_grps);
 	}
       /*
-       *fprintf(stdout, "\tnum_grps = %d\n", num_grps);
+       *fprintf(stderr, "\tnum_grps = %d\n", num_grps);
        */
 	*n_grps = num_grps;
 	return (selected_group_names);	
 }
 
-NclQuark *_NclGetGroupVarsList
-#if NhlNeedProto
-(NclFile thefile, NclQuark base_group_name, int depth, int *n_vars)
-#else
-(thefile, base_group_name, depth, n_vars)
-NclFile thefile; 
-NclQuark base_group_name; 
-int depth; 
-int *n_vars; 
-#endif
+NclQuark *_getNewFileGroupsListFromGroup(NclFileGrpNode *grpnode, NclQuark base_group_name, int depth, int *n_grps)
+{
+	int i;
+	NclQuark *selected_group_names = NULL;
+	*n_grps = 0;
+
+	if((base_group_name == grpnode->name) ||
+	   (base_group_name == grpnode->real_name))
+        {
+		if(NULL == grpnode->grp_rec)
+		{
+			return (NULL);
+		}
+
+		*n_grps = grpnode->grp_rec->n_grps;
+
+		selected_group_names = (NclQuark *) NclMalloc(sizeof(NclQuark) * (*n_grps));
+
+		for(i = 0; i < (*n_grps); ++i)
+		{
+			selected_group_names[i] = grpnode->grp_rec->grp_node[i]->name;
+		}
+		return (selected_group_names);	
+	}
+	else if(NULL != grpnode->grp_rec)
+	{
+                for(i = 0; i < grpnode->grp_rec->n_grps; ++i)
+                {
+                        selected_group_names = _getNewFileGroupsListFromGroup(grpnode->grp_rec->grp_node[i],
+										base_group_name, depth, n_grps);
+			if(NULL != selected_group_names)
+				return (selected_group_names);
+                }
+	}
+	return (selected_group_names);
+}
+
+NclQuark *_getNewFileGroupsList(NclNewFile thefile, NclQuark base_group_name, int depth, int *n_grps)
+{
+	int i;
+	NclQuark *selected_group_names = NULL;
+	*n_grps = 0;
+
+      /*
+       *fprintf(stderr, "\n\n\nhit _getNewFileGroupsList. file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tbase_group_name: <%s>\n", NrmQuarkToString(base_group_name));
+       *fprintf(stderr, "\tdepth: %d\n", depth);
+       */
+
+	if((base_group_name == thefile->newfile.grpnode->name) ||
+	   (base_group_name == thefile->newfile.grpnode->real_name))
+        {
+		if(NULL == thefile->newfile.grpnode->grp_rec)
+		{
+			return (NULL);
+		}
+
+		*n_grps = thefile->newfile.grpnode->grp_rec->n_grps;
+
+		selected_group_names = (NclQuark *) NclMalloc(sizeof(NclQuark) * (*n_grps));
+
+		for(i = 0; i < (*n_grps); ++i)
+		{
+			selected_group_names[i] = thefile->newfile.grpnode->grp_rec->grp_node[i]->name;
+		}
+	}
+	else if(NULL != thefile->newfile.grpnode->grp_rec)
+	{
+                for(i = 0; i < thefile->newfile.grpnode->grp_rec->n_grps; ++i)
+                {
+                        selected_group_names = _getNewFileGroupsListFromGroup(thefile->newfile.grpnode->grp_rec->grp_node[i],
+										base_group_name, depth, n_grps);
+			if(NULL != selected_group_names)
+				return (selected_group_names);
+                }
+	}
+
+	return (selected_group_names);	
+}
+
+NclQuark *_NclGetFileGroupsList(NclFile thefile, NclQuark base_group_name, int depth, int *n_grps)
+{
+        NclNewFile newfile = (NclNewFile) thefile;
+
+        if(_isNewFileStructure(thefile))
+                return _getNewFileGroupsList(newfile, base_group_name, depth, n_grps);
+        else
+                return _getFileGroupsList(thefile, base_group_name, depth, n_grps);
+}
+
+NclQuark *_getFileVarsList(NclFile thefile, NclQuark base_group_name, int depth, int *n_vars)
 {
 	int i, j;
 	NclQuark *selected_var_names = NULL;
@@ -2330,6 +2402,90 @@ int *n_vars;
        */
 	*n_vars = num_vars;
 	return (selected_var_names);	
+}
+
+NclQuark *_getVarListFromGroup(NclFileGrpNode *grpnode, NclQuark base_group_name, int depth, int *n_vars)
+{
+	int i;
+	NclQuark *selected_var_names = NULL;
+	*n_vars = 0;
+
+	if((base_group_name == grpnode->name) ||
+	   (base_group_name == grpnode->real_name))
+        {
+		if(NULL == grpnode->var_rec)
+		{
+			return (NULL);
+		}
+
+		*n_vars = grpnode->var_rec->n_vars;
+
+		selected_var_names = (NclQuark *) NclMalloc(sizeof(NclQuark) * (*n_vars));
+
+		for(i = 0; i < (*n_vars); ++i)
+		{
+			selected_var_names[i] = grpnode->var_rec->var_node[i].name;
+		}
+	}
+	else if(NULL != grpnode->grp_rec)
+	{
+                for(i = 0; i < grpnode->grp_rec->n_grps; ++i)
+                {
+                        selected_var_names = _getVarListFromGroup(grpnode->grp_rec->grp_node[i],
+								base_group_name, depth, n_vars);
+			if(NULL != selected_var_names)
+				return (selected_var_names);
+                }
+	}
+
+	return (selected_var_names);
+}
+
+NclQuark *_getVarListFromFile(NclNewFile thefile, NclQuark base_group_name, int depth, int *n_vars)
+{
+	int i;
+	NclQuark *selected_var_names = NULL;
+	*n_vars = 0;
+
+	if((base_group_name == thefile->newfile.grpnode->name) ||
+	   (base_group_name == thefile->newfile.grpnode->real_name))
+        {
+		if(NULL == thefile->newfile.grpnode->var_rec)
+		{
+			return (NULL);
+		}
+
+		*n_vars = thefile->newfile.grpnode->var_rec->n_vars;
+
+		selected_var_names = (NclQuark *) NclMalloc(sizeof(NclQuark) * (*n_vars));
+
+		for(i = 0; i < (*n_vars); ++i)
+		{
+			selected_var_names[i] = thefile->newfile.grpnode->var_rec->var_node[i].name;
+		}
+	}
+	else if(NULL != thefile->newfile.grpnode->grp_rec)
+	{
+                for(i = 0; i < thefile->newfile.grpnode->grp_rec->n_grps; ++i)
+                {
+                        selected_var_names = _getVarListFromGroup(thefile->newfile.grpnode->grp_rec->grp_node[i],
+									base_group_name, depth, n_vars);
+			if(NULL != selected_var_names)
+				return (selected_var_names);
+                }
+	}
+
+	return (selected_var_names);	
+}
+
+NclQuark *_NclGetGroupVarsList(NclFile thefile, NclQuark base_group_name, int depth, int *n_vars)
+{
+        NclNewFile newfile = (NclNewFile) thefile;
+
+        if(_isNewFileStructure(thefile))
+                return _getVarListFromFile(newfile, base_group_name, depth, n_vars);
+        else
+                return _getFileVarsList(thefile, base_group_name, depth, n_vars);
 }
 
 NclApiDataList *_NclGetFileVarInfoList2
@@ -2529,11 +2685,9 @@ struct _NclMultiDValDataRec *value;
 {
 	NclFileClass fc = NULL;
 
-#ifdef USE_NETCDF4_FEATURES
-	if(use_new_hlfs)
+	if(_isNewFileStructure(thefile))
 		fc = (NclFileClass) &nclNewFileClassRec;
 	else
-#endif
 		fc = &nclFileClassRec;
 
 	while(fc)
@@ -2595,11 +2749,9 @@ NclQuark option;
 	NclFileClass fc = NULL;
 	int i = 5;
 
-#ifdef USE_NETCDF4_FEATURES
 	if(use_new_hlfs)
 		fc = (NclFileClass) &nclNewFileClassRec;
 	else
-#endif
 		fc = &nclFileClassRec;
 
         while((! fc) && i)
@@ -2701,7 +2853,8 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		*fname_q = NrmStringToQuark(buffer);
 		(*end_of_name)++;
 
-	        file_ext_q = NrmStringToQuark("nc");
+        	file_ext_q = NrmStringToQuark("nc");
+
 		return file_ext_q;
 	}
 	else if(*end_of_name == NULL) {
@@ -2804,7 +2957,10 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 #endif
 #ifdef BuildHDF5
 	else if(0 == strcmp(fext, "hdf5"))
+	{
+		*new_hlfs = 1;
 		ori_file_ext_q = NrmStringToQuark("h5");
+	}
 #endif
 #ifdef BuildHDFEOS
 	else if((0 == strcmp(fext, "hdfeos")) || (0 == strcmp(fext, "he")) || (0 == strcmp(fext, "he4")))
@@ -2900,6 +3056,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 			{
         			file_ext_q = cur_ext_q;
 				found = 1;
+       				*new_hlfs = 1;
 				break;
 			}
 			else
@@ -3080,14 +3237,20 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		}
 	}
 
-#ifdef USE_NETCDF4_FEATURES
+	if(NrmStringToQuark("h5") == file_ext_q)
+		use_new_hlfs = 1;
+
+/*We still want to keep old HE5 there.
+	else if(NrmStringToQuark("he5") == file_ext_q)
+		use_new_hlfs = 1;
+ */
+
 	if(use_new_hlfs)
 	{
 		file_out = _NclNewFileCreate(inst, theclass, obj_type, obj_type_mask, status,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
 	}					
 	else
-#endif
 	{
 		file_out = _NclFileCreate(inst, theclass, obj_type, obj_type_mask, status,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
@@ -3098,13 +3261,11 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 NhlErrorTypes _NclPrintFileSummary(NclObj self, FILE *fp)
 {
-#ifdef USE_NETCDF4_FEATURES
 	if(use_new_hlfs)
 	{
 		return (_NclNewFilePrintSummary(self, fp));
 	}
 	else
-#endif
 	{
 		return (_NclFilePrintSummary(self, fp));
 	}
@@ -3118,17 +3279,14 @@ NclGroup *_NclCreateGroup(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
 
   /*
    *fprintf(stderr, "\nEnter _NclCreateGroup, file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tuse_new_hlfs = %d\n", use_new_hlfs);
    */
 
-#ifdef USE_NETCDF4_FEATURES
-    if(use_new_hlfs)
+    if(_isNewFileStructure(file_in))
     {
         group_out = _NclNewGroupCreate(inst, theclass, obj_type, obj_type_mask,
                                        status, file_in, group_name);
     }                    
     else
-#endif
     {
         group_out = _NclGroupCreate(inst, theclass, obj_type, obj_type_mask,
                                     status, file_in, group_name);
@@ -3248,5 +3406,28 @@ NclQuark _NclFileReadVersion(NclFile thefile)
 	}
 
 	return version;
+}
+
+int _isNewFileStructure(NclFile thefile)
+{
+    char *class_name;
+
+    if(NULL == thefile)
+    {
+        return 0;
+    }
+
+    class_name = thefile->obj.class_ptr->obj_class.class_name;
+
+    if(0 == strcmp("NclFileClass", class_name))
+        return 0;
+    else if(0 == strcmp("NclNewFileClass", class_name))
+        return 1;
+    else
+    {
+        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+            "_isNewFileStructure: Unknown Class <%s>\n", class_name));
+        return 0;
+    }
 }
 

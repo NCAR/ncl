@@ -48,7 +48,6 @@ extern "C" {
 #include <float.h>
 #include "defs.h"
 #include <errno.h>
-#include <string.h>
 #include "Symbol.h"
 #include "NclDataDefs.h"
 #include "Machine.h"
@@ -69,7 +68,6 @@ extern "C" {
 #include "FileSupport.h"
 #include "NclAtt.h"
 #include "NclList.h"
-#include "NclNewList.h"
 #include "ListSupport.h"
 #include "NclFileInterfaces.h"
 #include <signal.h>
@@ -2313,7 +2311,6 @@ NhlErrorTypes _NclIDelete
 	int sub_sel = 0;
 	NclObj tmp,pobj;
 	NclRefList *rlist = NULL;
-	int obj_id;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 
@@ -2943,7 +2940,6 @@ int _MachineIsBigEndian()
 {
     short int word = 0x0001;
     char *byte = (char *) &word;
-
     if(byte[0])
        return 0;
     else
@@ -16992,7 +16988,7 @@ NhlErrorTypes _NclIGetVarDims
 			file_md= (NclMultiDValData)_NclVarValueRead(tmp_var,NULL,NULL);
 			thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
 
-			if(use_new_hlfs)
+			if(_isNewFileStructure(thefile))
 			{
 				NclNewFile thenewfile = (NclNewFile) thefile;
 				NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
@@ -19584,7 +19580,7 @@ NhlErrorTypes _NclIAppend(void)
 
         thelist = _NclGetObj(*list_id);
 
-        return(Append2List(thelist,theobj));
+        return(ListAppend(thelist,theobj));
 }
 	
 NhlErrorTypes _NclIPop(void)
@@ -20002,10 +19998,6 @@ NhlErrorTypes _NclIListGetType(void)
 		ret_val[i++] = NrmStringToQuark("fifo");
 	} else if(list_type & NCL_LIFO) {
 		ret_val[i++] = NrmStringToQuark("lifo");
-	} else if(list_type & NCL_VLEN) {
-		ret_val[i++] = NrmStringToQuark("vlen");
-	} else if(list_type & NCL_ITEM) {
-		ret_val[i++] = NrmStringToQuark("item");
 	} else if(list_type & NCL_STRUCT) {
 		ret_val[i++] = NrmStringToQuark("struct");
 	}
@@ -20072,10 +20064,6 @@ NhlErrorTypes _NclIListSetType(void)
 	} else if((strcmp(buffer,"cat") == 0) || (strcmp(buffer,"concat") == 0)) {
 		_NclListSetType(thelist, NCL_CONCAT);
 	} else if(strcmp(buffer,"item") == 0) {
-		_NclListSetType(thelist, NCL_ITEM);
-	} else if(strcmp(buffer,"vlen") == 0) {
-		_NclListSetType(thelist, NCL_VLEN);
-	} else if(strcmp(buffer,"struct") == 0) {
 		_NclListSetType(thelist, NCL_STRUCT);
 	} else if(strcmp(buffer,"compound") == 0) {
 		_NclListSetType(thelist, NCL_COMPOUND);
@@ -20096,7 +20084,6 @@ NhlErrorTypes _NclIListCount(void)
 	ng_size_t dimsize = 1;
 	int *ret_val;
 	NclObj theobj;
-	NclObjClass oc;
 
    	list_id = (obj*)NclGetArgValue(
            0,
@@ -20125,22 +20112,8 @@ NhlErrorTypes _NclIListCount(void)
 	}
 	else
 	{
-		if(0 == strcmp("NclNewListClass", theobj->obj.class_ptr->obj_class.class_name))
-		{
-			NclNewList thelist = (NclNewList) theobj;
-			ret_val[0] = (int)thelist->newlist.n_elem;
-		}
-		else if(0 == strcmp("NclListClass",theobj->obj.class_ptr->obj_class.class_name))
-		{
-			NclList thelist = (NclList) theobj;
-			ret_val[0] = (int)thelist->list.nelem;
-		}
-		else
-		{
-			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-				"_NclIListCount: Cannot figure out list class."));
-			return(NhlFATAL);
-		}
+		NclList thelist = (NclList) theobj;
+		ret_val[0] = (int)thelist->list.nelem;
 	}
 
 	return(NclReturnValue(
@@ -20839,7 +20812,6 @@ NhlErrorTypes  _NclIGetFileChunkSizes(void)
 
     void *retvalue = NULL;
     
-#ifdef USE_NETCDF4_FEATURES
     /* get file information */
     fid = (int *) NclGetArgValue(
                     0,
@@ -20901,7 +20873,7 @@ NhlErrorTypes  _NclIGetFileChunkSizes(void)
 
     NHLPERROR((NhlWARNING, NhlEUNKNOWN,
               "getfilechunksizes: undefined file variable or file has no chunking"));
-#endif
+
     i = 1;
     NclReturnValue(
             (void*) &((NclTypeClass) nclTypeintClass)->type_class.default_mis, 1,
@@ -20924,7 +20896,6 @@ NhlErrorTypes _NclIGetFileCompressionLevel(void)
 
     NhlErrorTypes ret;
     
-#ifdef USE_NETCDF4_FEATURES
     /* get file information */
     fid = (int *) NclGetArgValue(
                     0,
@@ -20949,7 +20920,7 @@ NhlErrorTypes _NclIGetFileCompressionLevel(void)
         NHLPERROR((NhlWARNING, NhlEUNKNOWN,
               "getfilecompressionlevel: undefined file variable or file has no compression"));
     }
-#endif
+
     NclReturnValue((void *)(&compressionlevel), 1, &ns, NULL, return_type, 1);
 	
     return NhlWARNING;
@@ -21029,7 +21000,7 @@ NhlErrorTypes   _NclIGetFileDimsizes
 
     if (f != NULL)
     {
-    if(use_new_hlfs)
+    if(_isNewFileStructure(f))
     {
         NclNewFile   thenewfile = (NclNewFile) f;
         NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
@@ -28993,7 +28964,7 @@ NhlErrorTypes _NclItochar
 
         ret_missing.charval = (unsigned char) ((NclTypeClass) nclTypecharClass)->type_class.default_mis.charval;
 
-        output = (unsigned char *)NclMalloc(sizeof(unsigned char)*total_elements);
+        output = (char *)NclMalloc(sizeof(char) * total_elements);
 	if (output == NULL)
 	{
         	NHLPERROR((NhlFATAL, errno, "tochar: memory allocation error."));
@@ -30567,6 +30538,42 @@ NhlErrorTypes _Nclget_cpu_time(void)
                 1
         ));
 
+}
+
+NhlErrorTypes _NclIisNewFileStructure(void)
+{
+    /* file variables */
+    NclFile f;
+    int *fid;
+
+    ng_size_t dimsize = 1;
+    int retval = 0;
+
+    /* get file information */
+    fid = (int *) NclGetArgValue(
+                    0,
+                    1,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    0);
+    f = (NclFile) _NclGetObj((int) *fid);
+
+    if (f != NULL)
+    {
+        retval = _isNewFileStructure(f);
+    }
+
+    return(NclReturnValue(
+                &retval,
+                1,
+                &dimsize,
+                NULL,
+                NCL_int,
+                1
+    ));
 }
 #ifdef __cplusplus
 }

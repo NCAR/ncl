@@ -1344,9 +1344,12 @@ NclSelectionRecord *sel_ptr;
 			NclList rhslist = (NclList) rhsobj;
 			NclListObjList *step;
 
-			while(0 < thelist->list.nelem)
+			if(NULL != thelist)
 			{
-				tmp = (NclObj)_NclListPop((NclObj)thelist);
+				while(0 < thelist->list.nelem)
+				{
+					tmp = (NclObj)_NclListPop((NclObj)thelist);
+				}
 			}
 
 		      /*Comment out this paragraph (as this removed items from rhslist),

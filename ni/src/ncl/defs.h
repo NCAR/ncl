@@ -43,6 +43,71 @@ extern "C" {
 #define NclANY NULL
 #define NhlTNclData "nclData"
 
+#ifndef NCL_MAX_NAME_LENGTH
+#define NCL_MAX_NAME_LENGTH    256
+#endif
+
+#ifdef NCLDEBUG
+#ifndef NCL_MAX_MEMORY_RECORD
+#define NCL_MAX_MEMORY_RECORD   1024
+#endif
+
+struct _NclMemoryStruct
+{
+    size_t size;
+    size_t memloc;
+    size_t linenumb;
+    char   filename[NCL_MAX_NAME_LENGTH];
+    char   funcname[NCL_MAX_NAME_LENGTH];
+};
+
+typedef struct _NclMemoryStruct NclMemoryStruct;
+
+struct _NclMemoryRecord
+{
+    unsigned long totalMemoryAllocated;
+    unsigned long totalMemoryFreed;
+    size_t num_allocated;
+    size_t max_allocated;
+    size_t num_freed;
+    size_t used;
+    NclMemoryStruct *record;
+};
+
+typedef struct _NclMemoryRecord NclMemoryRecord;
+
+extern NclMemoryRecord ncl_memory_record;
+extern void _initializeNclMemoryRecord();
+extern void _finalizeNclMemoryRecord();
+extern short NCLdebug_on;
+#else
+extern void *NclMalloc(
+#if    NhlNeedProto
+ng_usize_t     /* size */
+#endif
+);
+
+extern void *NclCalloc(
+#if    NhlNeedProto
+ng_usize_t     /* num */,
+ng_usize_t     /* size */
+#endif
+);
+
+extern void *NclRealloc(
+#if    NhlNeedProto
+void   *       /* ptr */       ,
+ng_usize_t     /* size */
+#endif
+);
+
+extern NhlErrorTypes NclFree(
+#if    NhlNeedProto
+void * /* size */
+#endif
+);
+#endif
+
 extern int use_new_hlfs;
 
 typedef enum {	NORMAL = 0,
@@ -96,32 +161,6 @@ typedef struct _NclGenericVal {
 	size_t  kind;
 	char *name;
 } NclGenericVal;
-
-extern void *NclMalloc(
-#if	NhlNeedProto
-ng_usize_t	/* size */
-#endif
-);
-
-extern void *NclCalloc(
-#if	NhlNeedProto
-ng_usize_t	/* num */,
-ng_usize_t	/* size */
-#endif
-);
-
-extern void *NclRealloc(
-#if	NhlNeedProto
-void 	*	/* ptr */	,
-ng_usize_t	/* size */
-#endif
-);
-
-extern NhlErrorTypes NclFree(
-#if	NhlNeedProto
-void * /* size */
-#endif
-);
 
 extern FILE* _NclGetOutputStream(
 #if	NhlNeedProto
@@ -205,6 +244,51 @@ typedef struct _ext_stack {
         struct _NclSymbol*tmp_sym;
         struct _ext_stack * next;
 } ExtStack;
+
+#ifdef NCLDEBUG
+void *_underNclMalloc(int linenum, const char *filename, const char *funcname,
+                      ng_usize_t size);
+void _underNclFree(int linenum, const char *filename, const char *funcname,
+                   void *ptr);
+void *_underNclCalloc(int linenum, const char *filename, const char *funcname,
+                      ng_usize_t num, ng_usize_t size);
+void *_underNclRealloc(int linenum, const char *filename, const char *funcname,
+                       void *ptr, ng_usize_t size);
+
+#define NclMalloc(size)	_underNclMalloc(__LINE__, __FILE__, __PRETTY_FUNCTION__,\
+			                (ng_usize_t) size)
+#define NclCalloc(num, size)	_underNclCalloc(__LINE__, __FILE__, __PRETTY_FUNCTION__,\
+				                (ng_usize_t) num, (ng_usize_t) size)
+#define NclRealloc(ptr, size)	_underNclRealloc(__LINE__, __FILE__, __PRETTY_FUNCTION__,\
+				                 ptr, (ng_usize_t) size)
+#define NclFree(ptr)	_underNclFree(__LINE__, __FILE__, __PRETTY_FUNCTION__, ptr)
+#else
+extern void *NclMalloc(
+#if     NhlNeedProto
+ng_usize_t      /* size */
+#endif
+);
+
+extern void *NclCalloc(
+#if     NhlNeedProto
+ng_usize_t      /* num */,
+ng_usize_t      /* size */
+#endif
+);
+
+extern void *NclRealloc(
+#if     NhlNeedProto
+void    *       /* ptr */       ,
+ng_usize_t      /* size */
+#endif
+);
+
+extern NhlErrorTypes NclFree(
+#if     NhlNeedProto
+void * /* size */
+#endif
+);
+#endif
 
 #endif /*_NCdefs.h*/
 #ifdef __cplusplus

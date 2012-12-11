@@ -1,3 +1,7 @@
+/*
+ *ID: $Id
+ */
+
 #ifndef NclNewFileStructure_h
 #define NclNewFileStructure_h
 
@@ -22,7 +26,7 @@ typedef struct _NclFileUserDefinedTypeNode
     int               max_fields;
     int               n_fields;
     NclQuark          name;
-    ng_size_t         type;
+    NclBasicDataTypes type;
     NclQuark          *mem_name;
     NclBasicDataTypes *mem_type;
 } NclFileUDTNode;
@@ -91,7 +95,6 @@ typedef struct _NclFileCompoundNode
     int                  rank;
     int                  nvals;
     int                 *sides;
-
     void                *value;
 } NclFileCompoundNode;
 
@@ -99,13 +102,14 @@ typedef struct _NclFileCompoundRecord
 {
     size_t            max_comps;
     size_t            n_comps;   /* aka nfields */
-    size_t            type;
+    NclBasicDataTypes type;
     size_t            size;
     NclQuark          name;
     nc_type           xtype;
     nc_type           base_nc_type;
 
-    NclFileCompoundNode    *compnode;
+    NclFileCompoundNode *compnode;
+    void                *value;
 } NclFileCompoundRecord;
 
 typedef struct _NclFileEnumNode
@@ -119,7 +123,7 @@ typedef struct _NclFileEnumRecord
     size_t            max_enums;
     size_t            n_enums;   /* aka num_members */
     NclQuark          name;
-    size_t            type;
+    NclBasicDataTypes type;
     size_t            size;
     nc_type           xtype;
     nc_type           base_nc_type;
@@ -133,7 +137,7 @@ typedef struct _NclFileOpaqueRecord
     NclQuark name;
     size_t   max_opaques;
     size_t   n_opaques; 
-    size_t   type;
+    NclBasicDataTypes type;
     size_t   size;
     nc_type  xtype;
     nc_type  base_nc_type;
@@ -146,7 +150,7 @@ typedef struct _NclFileVlenRecord
     NclQuark name;
     size_t   max_vlens;
     size_t   n_vlens; 
-    size_t   type;
+    NclBasicDataTypes type;
     size_t   size;
     nc_type  xtype;
     nc_type  base_nc_type;
@@ -188,6 +192,8 @@ typedef struct _NclFileVarNode
     float             cache_preemption;
 
     void             *value;
+
+    void             *udt;
 } NclFileVarNode;
 
 typedef struct _NclFileVarRecord
@@ -210,7 +216,6 @@ typedef struct _NclFileGrpNode      NclFileGrpNode;
 
 struct _NclFileGrpNode
 {
-    ng_size_t            fid;
     ng_size_t            id;
     ng_size_t            pid;
     
@@ -279,10 +284,11 @@ void _NclFileAttRealloc(NclFileAttRecord **att_rec);
 void _NclFileDimRealloc(NclFileDimRecord *dim_rec);
 void _NclFileUDTRealloc(NclFileUDTRecord *udt_rec);
 
-NclFileGrpNode *_getGrpNodeFromNclFileGrpNode(NclFileGrpNode *grp_rec,
-                        NclQuark grp_name);
+NclFileGrpNode *_getGrpNodeFromGrpNode(NclFileGrpNode *grp_rec, NclQuark grp_name);
 NclFileVarNode *_getVarNodeFromNclFileVarRecord(NclFileVarRecord *var_rec,
                         NclQuark var_name);
+NclFileVarNode *_getVarNodeFromThisGrpNode(NclFileGrpNode *grpnode,
+                        NclQuark varname);
 NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
                         NclQuark var_name);
 NclFileAttNode *_getAttNodeFromNclFileGrpRecord(NclFileGrpRecord *grp_rec,

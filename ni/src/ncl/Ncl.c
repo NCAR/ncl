@@ -101,6 +101,11 @@ short   NCLnoSysPager = 0;      /* don't pipe commands to system() to PAGER */
 short   NCLoldBehavior = 0;     /* retain former behavior for certain backwards-incompatible changes */
 	                        /* behaviors could be revised after an adoption period */
 short   NCLnewfs = 0;           /* Use new file structure */
+short	NCLdebug_on = 0;	/* Use for debug when NCLDEBUG is defined */
+
+#ifdef NCLDEBUG
+NclMemoryRecord ncl_memory_record;
+#endif
 
 char    *nclf = NULL;           /* script of NCL commands, may or may not be provided */
 
@@ -108,6 +113,11 @@ int quark_comp(const void *q1, const void *q2)
 {
 	return(strcmp((const char*)NrmQuarkToString(*(NrmQuark *)q1),(const char*)NrmQuarkToString(*(NrmQuark *) q2)));
 }
+
+char *preload_scripts[4] = {"$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl",
+                            "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl",
+                            "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl",
+                            "$NCARG_ROOT/lib/ncarg/nclscripts/utilities.ncl"};
 
 int
 main(int argc, char **argv) {
@@ -149,6 +159,11 @@ main(int argc, char **argv) {
     FILE    *tmpf = NULL;   /* file variables for creating arguments */
     char    *tmpd = NULL;
 
+#ifdef YYDEBUG
+    extern int yydebug;
+    yydebug = 1;
+#endif /* YYDEBUG */
+
     strcpy(buffer,(char *)GetNCARGPath("tmp"));
     sr = access(buffer,W_OK|X_OK|F_OK);
     if(sr != 0) {
@@ -156,12 +171,6 @@ main(int argc, char **argv) {
 		      "\"%s\" tmp dir does not exist or is not writable: NCL functionality may be limited -- check TMPDIR environment variable",
 		      buffer);
     }
-
-
-#ifdef YYDEBUG
-    extern int yydebug;
-    yydebug = 1;
-#endif /* YYDEBUG */
 
     error_fp = stderr;
     stdout_fp = stdout;
@@ -194,6 +203,7 @@ main(int argc, char **argv) {
      *  -n      element print: don't enumerate elements in print()
      *  -x      echo: turns on command echo
      *  -V      version: output NCARG/NCL version, exit
+     *  -m      turns on memory debug
      *  -o      old behavior: retain former behavior for backwards incompatible changes
      *  -h      help: output options and exit
      *
@@ -201,7 +211,7 @@ main(int argc, char **argv) {
      *  -Q      override: don't echo copyright notice (unannounced option)
      */
     opterr = 0;     /* turn off getopt() msgs */
-    while ((c = getopt (argc, argv, "fhnoxVXQp")) != -1) {
+    while ((c = getopt (argc, argv, "fhnodgmxVXQp")) != -1) {
         switch (c) {
             case 'p':
                 NCLnoSysPager = 1;
@@ -217,6 +227,18 @@ main(int argc, char **argv) {
 
             case 'x':
                 NCLecho = 1;
+                break;
+
+            case 'm':
+                NCLdebug_on = 1;
+                break;
+
+            case 'd':
+                NCLdebug_on = 2;
+                break;
+
+            case 'g':
+                NCLdebug_on = 2;
                 break;
 
             /* NOT ADVERTISED!  Will override "no echo" and print EVERYTHING! */
@@ -236,6 +258,8 @@ main(int argc, char **argv) {
 
             case 'f':
                 NCLnewfs = 1;
+	      /*
+               */
                 use_new_hlfs = 1;
                 break;
 
@@ -243,6 +267,9 @@ main(int argc, char **argv) {
                 (void) fprintf(stdout, "Usage: ncl -fhnpxV <args> <file.ncl>\n");
                 (void) fprintf(stdout, "\t -f: Use New File Structure, and NetCDF4 features\n");
                 (void) fprintf(stdout, "\t -n: don't enumerate values in print()\n");
+                (void) fprintf(stdout, "\t -m: turns on memory debug.\n");
+                (void) fprintf(stdout, "\t -d: turns on detailed memory debug.\n");
+                (void) fprintf(stdout, "\t -g: turns on deep detailed memory debug.\n");
                 (void) fprintf(stdout, "\t -p: don't page output from the system() command\n");
                 (void) fprintf(stdout, "\t -o: retain former behavior for certain backwards-incompatible changes\n");
                 (void) fprintf(stdout, "\t -x: echo NCL commands\n");
@@ -508,20 +535,34 @@ main(int argc, char **argv) {
         cmd_line = 1;       /* reset to default: interactive */
     }
 
-    /* Load utility script */
-    strcpy(buffer, _NGResolvePath("$NCARG_ROOT/lib/ncarg/nclscripts/utilities.ncl"));
-    sr = stat(buffer, &sbuf);
+    /* Pre-Load script */
 
-    if(0 == sr)
+    for(i = 0; i < 4; ++i)
     {
-        if(_NclPreLoadScript(buffer, 1) == NhlFATAL)
-	{
-	    NclReturnStatus = NclFileNotFound;
-            NhlPError(NhlINFO, NhlEUNKNOWN, "Error loading NCL utility script.");
-	}
-        else
-            yyparse(reset);
+        strcpy(buffer, _NGResolvePath(preload_scripts[i]));
+#ifdef NCLDEBUG
+        fprintf(stderr, "\tLoad predefined script %d: <%s>\n", i, preload_scripts[i]);
+#endif
+
+        sr = stat(buffer, &sbuf);
+        if(0 == sr)
+        {
+            if(_NclPreLoadScript(buffer, 1) == NhlFATAL)
+	    {
+	        NclReturnStatus = NclFileNotFound;
+                NhlPError(NhlINFO, NhlEUNKNOWN, "Error loading NCL utility script.");
+	    }
+            else
+                yyparse(reset);
+        }
     }
+
+#if 0
+#ifdef NCLDEBUG
+    if(NCLdebug_on)
+        _initializeNclMemoryRecord();
+#endif
+#endif
 
     /* Load any provided script */
     if (nclf != (char *) NULL) {
@@ -537,6 +578,13 @@ main(int argc, char **argv) {
         yyparse(reset);
     }
 
+#if 0
+#ifdef NCLDEBUG
+        if(NCLdebug_on)
+                _finalizeNclMemoryRecord();
+#endif
+#endif
+
 #ifdef NCLDEBUG
     (void) fclose(thefptr);
     (void) fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());
@@ -548,10 +596,13 @@ main(int argc, char **argv) {
 #endif /* NCLDEBUG */
 
     NclFree(myName);
+    NclFree(cur_line_text);
+
+    _NclFinalizeSymbol();      
+
+    _NclFinalizeMachine();
 
     _NclExit(NclReturnStatus);
-
-    return NclReturnStatus;
 }
 
 #ifdef __cplusplus

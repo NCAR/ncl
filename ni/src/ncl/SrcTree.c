@@ -2459,6 +2459,7 @@ void _NclPrintSymbol
 		fprintf(fp,"%s\t","LIST");
 		break;
 	default:
+		return;
 		break;
 	}
 	fprintf(fp,"S: %s\tL: %d\tOf: %d\n",sym->name,sym->level,sym->offset);

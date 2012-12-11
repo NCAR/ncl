@@ -1,4 +1,5 @@
 /************************************************************************
+ *ID: $Id
 *                                                                       *
 *                 Copyright (C)  1994                                   *
 *         University Corporation for Atmospheric Research               *
@@ -108,8 +109,6 @@ struct _NclNewFileRec
     NclObjPart      obj;
     NclFilePart     file;
     NclNewFilePart  newfile;
-
-    int use_new_hlfs;
 };
 
 extern NclObjClass nclNewFileClass;
@@ -152,5 +151,12 @@ extern NclVar _NclCreateVlenVar(char *var_name, void *val,
                                 int ndims, NclQuark *dimnames,
                                 ng_size_t *dimsizes, NclBasicDataTypes type);
 extern NclQuark *_NclGetGrpNames(void *therec, int *num_grps);
-#endif /* NclNewFile_h */
+/*
+ * this is for 1-D variables only - basically for coordinate variables.
+ */
+extern void *_NclGetCachedValue(NclFileVarNode *varnode,
+             long start, long finish, long stride, void *storage);
+
+extern NhlErrorTypes InitializeFileOptions();
+#endif
 

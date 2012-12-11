@@ -77,6 +77,7 @@ typedef enum _NclFileFormat {
 	_NclGRIB2,
         _NclOGR,
         _NclNewOGR,
+	_NclNewHE5,
 	_NclNETCDF4
 } NclFileFormat;
 
