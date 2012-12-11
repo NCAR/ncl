@@ -2471,13 +2471,15 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
     NhlErrorTypes ret= NhlNOERROR;
     NclObjClass class_ptr;
     struct stat buf;
-    NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+    NclFileClass fc = NULL;
+    NclFileClassPart *fcp = NULL;
     int ret_error = 0;
 
     NclFormatFunctionRecPtr topForFunRecPtr = NULL;
     NclFormatFunctionRecPtr locForFunRecPtr = NULL;
 
   /*
+    NclFileClassPart *fcp = &(nclFileClassRec.file_class);
    *fprintf(stderr, "\nEnter _NclNewFileCreate, file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tpath: <%s>\n", NrmQuarkToString(path));
    */
@@ -2490,6 +2492,17 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
         class_ptr = nclNewFileClass;
     else
         class_ptr = theclass;
+
+#ifdef USE_NETCDF4_FEATURES
+    if(use_new_hlfs)
+    {
+        fc = (NclFileClass) &nclNewFileClassRec;
+    }
+    else
+#endif
+        fc = &nclFileClassRec;
+
+    fcp = &(fc->file_class);
 
   /*
    * If a GRIB file, check version.  First verify that the file exists
