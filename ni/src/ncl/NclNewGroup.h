@@ -32,8 +32,9 @@ extern NclGroup *_NclNewGroupCreate(NclObj       inst,
                                     NclStatus    status,
                                     NclFile      file_in,
                                     NclQuark     group_name);
-
+/*
 static void UpdateNewGroupDims(NclNewFile group_out, NclFileGrpNode *grpnode);
+*/
 
 #endif /* NclNewGroup_h */
 

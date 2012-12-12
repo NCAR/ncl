@@ -16992,7 +16992,7 @@ NhlErrorTypes _NclIGetVarDims
 			file_md= (NclMultiDValData)_NclVarValueRead(tmp_var,NULL,NULL);
 			thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
 
-			if(use_new_hlfs)
+			if(thefile->file.use_new_hlfs)
 			{
 				NclNewFile thenewfile = (NclNewFile) thefile;
 				NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
@@ -20638,7 +20638,7 @@ NhlErrorTypes _NclISetFileOption(void)
 		return(NhlFATAL);
 
 	_NclInitClass(nclFileClass);
-
+#if 0
         format_lower = _NclGetLower(format);
         option_lower = _NclGetLower(option);
 
@@ -20663,6 +20663,7 @@ NhlErrorTypes _NclISetFileOption(void)
                         }
                 }
         }
+#endif
 
 	ret = _NclFileSetOption(f,format,option,tmp_md1);
 
@@ -21029,7 +21030,7 @@ NhlErrorTypes   _NclIGetFileDimsizes
 
     if (f != NULL)
     {
-    if(use_new_hlfs)
+    if(f->file.use_new_hlfs)
     {
         NclNewFile   thenewfile = (NclNewFile) f;
         NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;

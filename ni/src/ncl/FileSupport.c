@@ -68,8 +68,6 @@
 
 #include <sys/stat.h>
 
-int use_new_hlfs = 0;
-
 NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlfs);
 
 NhlErrorTypes _NclBuildFileCoordRSelection
@@ -860,6 +858,7 @@ NclQuark *_NclFileReadVarNames(NclFile thefile, int *num_vars)
 			"_NclFileReadVarNames: Unknown Class <%s>\n", class_name));
 		return (NULL);
 	}
+	return (NULL);
 }
 
 NclQuark *_NclFileReadGrpNames(NclFile thefile, int *num_grps)
@@ -1415,7 +1414,7 @@ extern NhlErrorTypes _NclFileAddVlen(NclFile infile, NclQuark vlen_name, NclQuar
 		return(NhlFATAL);
 	}
 
-	if(! thefile->use_new_hlfs)
+	if(! thefile->file.use_new_hlfs)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddVlen: Old File Structure DO NOT Support vlen.\n"));
@@ -1460,7 +1459,7 @@ extern NhlErrorTypes _NclFileAddEnum(NclFile infile, NclQuark enum_name, NclQuar
 		return(NhlFATAL);
 	}
 
-	if(! thefile->use_new_hlfs)
+	if(! thefile->file.use_new_hlfs)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddEnum: Old File Structure DO NOT Support enum.\n"));
@@ -1506,7 +1505,7 @@ extern NhlErrorTypes _NclFileAddCompound(NclFile infile, NclQuark compound_name,
 		return(NhlFATAL);
 	}
 
-	if(! thefile->use_new_hlfs)
+	if(! thefile->file.use_new_hlfs)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddCompound: Old File Structure DO NOT Support compound.\n"));
@@ -1553,7 +1552,7 @@ extern NhlErrorTypes _NclFileWriteCompound(NclFile infile, NclQuark compound_nam
 		return(NhlFATAL);
 	}
 
-	if(! thefile->use_new_hlfs)
+	if(! thefile->file.use_new_hlfs)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileWriteCompound: Old File Structure DO NOT Support compound.\n"));
@@ -1598,7 +1597,7 @@ extern NhlErrorTypes _NclFileAddOpaque(NclFile infile, NclQuark opaque_name, Ncl
 		return(NhlFATAL);
 	}
 
-	if(! thefile->use_new_hlfs)
+	if(! thefile->file.use_new_hlfs)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddOpaque: Old File Structure DO NOT Support opaque.\n"));
@@ -1634,7 +1633,7 @@ extern NhlErrorTypes _NclFileAddGrp(NclFile infile, NclQuark grpname)
 		return(NhlFATAL);
 	}
 
-	if(! use_new_hlfs)
+	if(! thefile->file.use_new_hlfs)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddGrp: Old File Structure DO NOT Support Group.\n"));
@@ -2529,12 +2528,16 @@ struct _NclMultiDValDataRec *value;
 {
 	NclFileClass fc = NULL;
 
+#if 1
+	fc = (NclFileClass) &nclNewFileClassRec;
+#else
 #ifdef USE_NETCDF4_FEATURES
 	if(use_new_hlfs)
 		fc = (NclFileClass) &nclNewFileClassRec;
 	else
 #endif
 		fc = &nclFileClassRec;
+#endif
 
 	while(fc)
 	{
@@ -2595,12 +2598,16 @@ NclQuark option;
 	NclFileClass fc = NULL;
 	int i = 5;
 
+#if 1
+	fc = (NclFileClass) &nclNewFileClassRec;
+#else
 #ifdef USE_NETCDF4_FEATURES
 	if(use_new_hlfs)
 		fc = (NclFileClass) &nclNewFileClassRec;
 	else
 #endif
 		fc = &nclFileClassRec;
+#endif
 
         while((! fc) && i)
 	{
@@ -2671,6 +2678,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 	struct stat buf;
 
 	int i;
+	int use_new_hlfs = 0;
 
 	if(strncmp(the_path,"http://",7))
 		*is_http = False;
@@ -3011,6 +3019,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	char *end_of_name = NULL;
 	int len_path;
 
+        int use_new_hlfs = 0;
 	static int first = 1;
 
         struct stat file_stat;
@@ -3098,8 +3107,9 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 NhlErrorTypes _NclPrintFileSummary(NclObj self, FILE *fp)
 {
+	NclFile file = (NclFile) self;
 #ifdef USE_NETCDF4_FEATURES
-	if(use_new_hlfs)
+	if(file->file.use_new_hlfs)
 	{
 		return (_NclNewFilePrintSummary(self, fp));
 	}
@@ -3122,7 +3132,7 @@ NclGroup *_NclCreateGroup(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
    */
 
 #ifdef USE_NETCDF4_FEATURES
-    if(use_new_hlfs)
+    if(file_in->file.use_new_hlfs)
     {
         group_out = _NclNewGroupCreate(inst, theclass, obj_type, obj_type_mask,
                                        status, file_in, group_name);
@@ -3153,8 +3163,7 @@ ng_size_t *_NclFileReadChunkSizes(NclFile thefile, int *nchunks)
 
 	class_name = thefile->obj.class_ptr->obj_class.class_name;
 
-	if((0 == strcmp("NclFileClass", class_name)) ||
-	   (0 == strcmp("NclNewFileClass", class_name)))
+	if (thefile->file.use_new_hlfs) 
 	{
 		NclNewFile newfile = (NclNewFile) thefile;
 		NclFileDimRecord *chunkdimrec = newfile->newfile.grpnode->chunk_dim_rec;
@@ -3199,7 +3208,7 @@ int _NclFileReadCompressionLevel(NclFile thefile)
 
 	class_name = thefile->obj.class_ptr->obj_class.class_name;
 
-	if(0 == strcmp("NclNewFileClass", class_name))
+	if (thefile->file.use_new_hlfs)
 	{
 		NclNewFile newfile = (NclNewFile) thefile;
 		cl = newfile->newfile.grpnode->compress_level;
