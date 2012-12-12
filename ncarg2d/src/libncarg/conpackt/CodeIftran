@@ -15204,7 +15204,15 @@ C
 
       FUNCTION ICAEDG (IPP1,IPP2,IEDG,LOEN,IPPE,MPPE,NPPE,RPNT)
 C
-        DIMENSION IEDG(LOEN,MPPE),IPPE(2,MPPE),RPNT(*)
+      DIMENSION IEDG(LOEN,MPPE),IPPE(2,MPPE),RPNT(*)
+      INTEGER *8 IKEY1,IKEY2
+c
+c      integer totaldepth
+c      save maxdepth,itdepth
+C
+C modified by dbrown to use mangled integer keys. This fixes a problem
+C of the edges centers occasionally giving false equalities with 
+C different edges. Also improves performances. 11/30/2012
 C
 C This function, given the base indices, in the point list, of the two
 C points defining an edge, searches the edge list for an edge matching
@@ -15215,7 +15223,10 @@ C array IPPE.
 C
 C If there are any edges in the edge list at all, ...
 C
-        IF (NPPE.NE.0)
+c      if (nppe .eq. 0) then
+c         itdepth = 0
+c      end if
+      IF (NPPE.NE.0) THEN
 C
 C search it.  First, order the pointers to the points in a consistent
 C manner and then find the X, Y, and Z coordinates of the edge's
@@ -15223,108 +15234,128 @@ C midpoint, which we use to determine the order of the edges in the
 C list.  (Using the values of ITM1 and ITM2 results in very bad
 C behavior by the tree-sort.)
 C
-          ITM1=MIN(IPP1,IPP2)
-          ITM2=MAX(IPP1,IPP2)
+        ITM1=MIN(IPP1,IPP2)
+        ITM2=MAX(IPP1,IPP2)
 C
-          XNEW=(RPNT(ITM1+1)+RPNT(ITM2+1))/2.
-          YNEW=(RPNT(ITM1+2)+RPNT(ITM2+2))/2.
-          ZNEW=(RPNT(ITM1+3)+RPNT(ITM2+3))/2.
+C
+C Instead of finding the edge center and using floating point numbers 
+C for comparision, bit-mangle the two point ids into a single int*8
+C value that will be unique but distribute in the tree in a semi-
+C random manner. The 2 ids always mangle to the same value.
+C This eliminates the possible error due to float imprecision
+C MANGLE is a C routine in libncarg_c
+C
+        CALL MANGLE(ITM1,ITM2,IKEY1)
 C
 C Initialize a search index to point to the first element in the sort
 C list.
 C
-          ITMP=1
+        ITMP=1
 C
 C Loop.  If the search index now points at the edge we want, return
 C its index.
 C
-  101     IF (ITM1.EQ.IEDG(1,ITMP).AND.ITM2.EQ.IEDG(2,ITMP))
+c        idepth = 0
+  101   IF (ITM1.EQ.IEDG(1,ITMP).AND.ITM2.EQ.IEDG(2,ITMP)) THEN
 C
-            ICAEDG=ITMP
+          ICAEDG=ITMP
 C
-            RETURN
+          RETURN
 C
-          END IF
+        END IF
 C
 C Find the X, Y, and Z coordinates of this edge's midpoint for
 C comparison with the one we seek.
 C
-          XTMP=(RPNT(IEDG(1,ITMP)+1)+RPNT(IEDG(2,ITMP)+1))/2.
-          YTMP=(RPNT(IEDG(1,ITMP)+2)+RPNT(IEDG(2,ITMP)+2))/2.
-          ZTMP=(RPNT(IEDG(1,ITMP)+3)+RPNT(IEDG(2,ITMP)+3))/2.
+c        idepth = idepth + 1
+        CALL MANGLE(IEDG(1,ITMP),IEDG(2,ITMP),IKEY2)
 C
 C If the edge we want would precede the one pointed at by the search
 C index, reset the search index to look at lesser elements (if any),
 C and loop back to continue the search.  If the pointer is null, reset
 C it to point to a new element that we will create.
+c
+c  this commented out code can be used if integer*8 is not portable
+c        if ((ikey1(1) .lt. ikey2(1)) .or. 
+c     +      (ikey1(1) .eq. ikey2(1) .and. ikey1(2) .lt. ikey2(2))) then
+c
+        IF (IKEY1 .LT. IKEY2) THEN
 C
-          IF (XNEW.LT.XTMP.OR.
-     +       (XNEW.EQ.XTMP.AND.YNEW.LT.YTMP).OR.
-     +       (XNEW.EQ.XTMP.AND.YNEW.EQ.YTMP.AND.ZNEW.LT.ZTMP))
+          IF (IPPE(1,ITMP).NE.0) THEN
+            ITMP=IPPE(1,ITMP)
+            GO TO 101
+          END IF
 C
-            IF (IPPE(1,ITMP).NE.0)
-              ITMP=IPPE(1,ITMP)
-              GO TO 101
-            END IF
-C
-            IPPE(1,ITMP)=NPPE+1
+          IPPE(1,ITMP)=NPPE+1
 C
 C If the edge we want would follow the one pointed at by the search
 C index, reset the search index to look at greater elements (if any),
 C and loop back to continue the search.  If the pointer is null, reset
 C it to point to a new element that we will create.
 C
-          ELSE IF (XNEW.GT.XTMP.OR.
-     +            (XNEW.EQ.XTMP.AND.YNEW.GT.YTMP).OR.
-     +            (XNEW.EQ.XTMP.AND.YNEW.EQ.YTMP.AND.ZNEW.GT.ZTMP))
+c        else if ((ikey1(1) .gt. ikey2(1)) .or. 
+c     +       (ikey1(1) .eq. ikey2(1) .and. ikey1(2) .gt. ikey2(2))) then
+c
+        ELSE IF (IKEY1 .GT. IKEY2) THEN
 C
-            IF (IPPE(2,ITMP).NE.0)
-              ITMP=IPPE(2,ITMP)
-              GO TO 101
-            END IF
-C
-            IPPE(2,ITMP)=NPPE+1
-C
-          ELSE
-C
-            CALL SETER ('ICAEDG - LOGIC ERROR',1,1)
-            ICAEDG=-1
-            RETURN
-C
+          IF (IPPE(2,ITMP).NE.0) THEN
+            ITMP=IPPE(2,ITMP)
+            GO TO 101
           END IF
 C
+          IPPE(2,ITMP)=NPPE+1
+C
+        ELSE
+C
+               CALL SETER ('ICAEDG - LOGIC ERROR',1,1)
+               ICAEDG=-1
+               RETURN
+C
         END IF
+C
+      END IF
+c
+c      output for monitoring performance of the key method
+c
+c      itdepth = itdepth + idepth
+c      if (idepth .gt. maxdepth) then
+c         maxdepth = idepth
+c         write(*,*) 'current maxdepth:', maxdepth, 
+c     +              ' avg depth: ', itdepth / (nppe + 1),
+c     +              'edge count is: ', (nppe + 1) 
+c      else if (mod((nppe+1),100) .eq. 0) then
+c         write(*,*) ' avg depth: ', itdepth, itdepth / (nppe + 1)
+c      end if
 C
 C Create a new edge in the edge list (if there's room, of course), and
 C return its index to the caller.
 C
-        IF (NPPE.GE.MPPE)
+      IF (NPPE.GE.MPPE) THEN
 C
-          CALL SETER ('ICAEDG - EDGE ARRAY IS TOO SMALL',1,1)
-          ICAEDG=-1
-          RETURN
-C
-        ELSE
-C
-          NPPE=NPPE+1
-C
-          IPPE(1,NPPE)=0
-          IPPE(2,NPPE)=0
-C
-          IEDG(1,NPPE)=MIN(IPP1,IPP2)
-          IEDG(2,NPPE)=MAX(IPP1,IPP2)
-          IEDG(3,NPPE)=-1
-          IEDG(4,NPPE)=-1
-          IEDG(5,NPPE)=0
-C
-          ICAEDG=NPPE
-C
-        END IF
-C
+        CALL SETER ('ICAEDG - EDGE ARRAY IS TOO SMALL',1,1)
+        ICAEDG=-1
         RETURN
 C
+      ELSE
+C
+        NPPE=NPPE+1
+C
+        IPPE(1,NPPE)=0
+        IPPE(2,NPPE)=0
+C
+        IEDG(1,NPPE)=MIN(IPP1,IPP2)
+        IEDG(2,NPPE)=MAX(IPP1,IPP2)
+        IEDG(3,NPPE)=-1
+        IEDG(4,NPPE)=-1
+        IEDG(5,NPPE)=0
+C
+        ICAEDG=NPPE
+C
+      END IF
+C
+      RETURN
+C
       END
-
 
       FUNCTION CTFRAN ()
 C

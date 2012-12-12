@@ -294,9 +294,34 @@ void guiNhlRLSetInteger(int id, char *resname, int value)
     NhlRLSetInteger(id, (NhlString)resname, value);
 }
 
+void guiNhlRLSetFloat(int id, char *resname, float value)
+{
+     NhlRLSetFloat(id, (NhlString) resname, value);
+}
+
 void guiNhlRLSetMDFloatArray(int id, char *resname, float *data, int num_dimensions, ng_size_t *len_dimensions)
 {
     NhlRLSetMDFloatArray(id, (NhlString)resname, data, num_dimensions, len_dimensions);
+}
+
+void guiNhlRLSetFloatArray(int id, char *resname, float *data, ng_size_t num_elements)
+{
+    NhlRLSetFloatArray(id, (NhlString) resname, data, num_elements);
+}
+
+void guiNhlSetValues(int plotid, int rlid)
+{
+    NhlSetValues(plotid, rlid);
+}
+
+void guiNhlRLGetFloatArray(int id, char *resname, float **data, ng_size_t *num_elements)
+{
+    NhlRLGetFloatArray(id, (NhlString) resname, data, num_elements);
+}
+
+void guiNhlGetValues(int plotid, int rlid)
+{
+    NhlGetValues(plotid, rlid);
 }
 
 void guiNhlDraw(int id)
@@ -355,14 +380,6 @@ extern NhlErrorTypes NhlRLSetLong(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	long		value		/* value to set resname to	*/
-#endif
-);
-
-extern NhlErrorTypes NhlRLSetFloat(
-#if	NhlNeedProto
-	int		id,		/* RL list			*/
-	NhlString	resname,	/* resource to set		*/
-	float		value		/* value to set resname to	*/
 #endif
 );
 
@@ -603,15 +620,6 @@ extern NhlErrorTypes NhlRLGetLongArray(
 #endif
 );
 
-extern NhlErrorTypes NhlRLGetFloatArray(
-#if	NhlNeedProto
-	int		id,		/* RL list			*/
-	NhlString	resname,	/* resource to set		*/
-	float		**data,		/* array			*/
-	ng_size_t	*num_elements	/* number elements in array	*/
-#endif
-);
-
 extern NhlErrorTypes NhlRLGetDoubleArray(
 #if	NhlNeedProto
 	int		id,		/* RL list			*/
@@ -629,141 +637,5 @@ extern NhlErrorTypes NhlRLGetStringArray(
 	ng_size_t	*num_elements	/* number elements in array	*/
 #endif
 );
-
-NclMultiDValData createNclGraphic(const char *flnm)
-{
-    char *iwcname = "imageWorkstationClass";
-    NrmQuark ncl_parent_id = -1;
-
-    NrmQuark qname = NrmStringToQuark(flnm);
-
-    int i;
-
-    NhlGenArray *gen_array;
-    NclHLUObj tmp_ho = NULL;
-    int *ncl_hlu_ids;
-    NclMultiDValData tmp2_md;
-    int appd_id;
-    int rl_list;
-    int hlu_parent_id;
-    int tmp_ho_id;
-    NclHLUObj parent;
-    NhlClass class;
-    NhlArgVal udata, sel;
-    NhlClass cur_class;
-
-    int *ids;
-
-    int att_id;
-    NclMultiDValData tmp_md = NULL;
-    NrmQuark *tmpq;
-    ng_size_t tmp_dim_size =1;
-
-    InitializeClassList();
-
-    class = NhlcairoImageWorkstationClass;
-
-    parent = NULL;
-    hlu_parent_id = -1;
-
-    if((defaultapp_hluobj_id != -1)&&(class != NhlappClass))
-    {
-        parent = (NclHLUObj)_NclGetObj(defaultapp_hluobj_id);
-        if((parent != NULL)&&(parent->obj.obj_type_mask & Ncl_HLUObj))
-        {
-            ncl_parent_id = parent->obj.id;
-            hlu_parent_id = parent->hlu.hlu_id;
-        }
-    }
-
-    rl_list = NhlRLCreate(NhlSETRL);
-    gen_array = NclMalloc(2 * (unsigned)sizeof(NhlGenArray));
-
-    ids = (int*)NclMalloc((unsigned)sizeof(int));
-    for(i = 0; i < 2; ++i)
-    {
-        att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
-        tmpq = (NrmQuark *)NclMalloc(sizeof(NrmQuark));
-        if(i)
-            *tmpq = NrmStringToQuark("png");
-        else
-            *tmpq = qname;
-
-        tmp_md = _NclCreateMultiDVal(NULL,
-                                     NULL,
-                                     Ncl_MultiDValData,
-                                     0,
-                                     (void*)tmpq,
-                                     NULL,
-                                     1,
-                                     &tmp_dim_size,
-                                     TEMPORARY,
-                                     NULL,
-                                     (NclTypeClass)nclTypestringClass);
-        if(i)
-            _NclAddAtt(att_id,"wkFormat",tmp_md,NULL);
-        else
-            _NclAddAtt(att_id,"wkFileName",tmp_md,NULL);
-
-        *ids = tmp_md->obj.id;
-
-        gen_array[i] = _NhlCreateGenArray((NhlPointer)ids,
-                                           NhlTInteger,
-                                           sizeof(int),
-                                           1, &tmp_dim_size, 1);
-        NhlRLSet(rl_list, NrmQuarkToString(*tmpq), NhlTGenArray, gen_array[i]);
-    }
-    NclFree(ids);
-
-    ncl_hlu_ids = (int*)NclMalloc((unsigned)sizeof(int));
-    NhlCreate(&tmp_ho_id,"gsnapp",class,hlu_parent_id == -1 ? NhlDEFAULT_APP : hlu_parent_id,rl_list);
-    tmp_ho = _NclHLUObjCreate(NULL,nclHLUObjClass,Ncl_HLUObj,0,TEMPORARY,tmp_ho_id,ncl_parent_id,class); 
-    if(tmp_ho)
-        ncl_hlu_ids[0] = tmp_ho->obj.id;
-    else
-        ncl_hlu_ids[0] = -1;
-
-    if(NhlIsApp(tmp_ho->hlu.hlu_id))
-    {
-        appd_id = NhlAppGetDefaultParentId();
-        if(tmp_ho->hlu.hlu_id == appd_id)
-        {
-            defaultapp_hluobj_id = tmp_ho->obj.id;
-            /* since it is the default app we cannot allow it to be deleted */
-            tmp_ho->obj.status = STATIC;
-        }
-
-        NhlINITVAR(sel);
-        NhlINITVAR(udata);
-        udata.lngval = tmp_ho->obj.id;
-        tmp_ho->hlu.apcb = _NhlAddClassCallback(NhlappClass,_NhlCBappDefParentChange,sel,DefaultAppChangeCB,udata);
-    }
-
-    tmp2_md = _NclMultiDValHLUObjDataCreate(
-               NULL,
-               NULL,
-               Ncl_MultiDValHLUObjData,
-               0,
-               ncl_hlu_ids,
-               NULL,
-               1, 
-               &tmp_dim_size,
-               TEMPORARY,
-               NULL
-               ); 
-
-    if (gen_array)
-    {
-        for(i = 0; i < 2; i++)
-        {
-            if(gen_array[i])
-                NhlFreeGenArray(gen_array[i]);
-        }
-        NhlFree(gen_array);
-    }
-    NhlRLDestroy(rl_list);
-
-    return tmp2_md;
-}
 #endif
 

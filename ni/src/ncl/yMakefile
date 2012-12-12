@@ -49,11 +49,12 @@ MPI_DEFS = -DUSE_MPI
 #define MPI_DEFS
 #endif
 
-#ifdef BuildNetCDF4
-NETCDF4_DEFS = -DUSE_NETCDF4
-NC4_FEATURES_SRCS = NclNewFile.c NclNewGroup.c NclNetCDF4.c NclNewOGR.c NewFileSupport.c
-NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNetCDF4.o NclNewOGR.o NewFileSupport.o
+#ifdef UseNetCDF4Features
+NC4_FEATURES_DEFS = -DUSE_NETCDF4_FEATURES
+NC4_FEATURES_SRCS = NclNewFile.c NclNewGroup.c NclNewList.c NclNetCDF4.c 
+NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNewList.o NclNetCDF4.o
 #else
+#define NC4_FEATURES_DEFS
 #define NC4_FEATURES_SRCS
 #define NC4_FEATURES_OBJS
 #define NETCDF4LIB
@@ -115,8 +116,13 @@ GRIB2_OBJS = NclGRIB2.o
 
 #ifdef BuildGDAL
 GDAL_DEFS = -DBuildGDAL
+#ifdef UseNetCDF4Features
+GDAL_SRCS = NclOGR.c NclNewOGR.c
+GDAL_OBJS = NclOGR.o NclNewOGR.o
+#else
 GDAL_SRCS = NclOGR.c
-GDAL_OBJS = NclOGR.o
+GDAL_OBJS = NclOGR.o 
+#endif
 #else
 #define GDAL_SRCS
 #define GDAL_OBJS
@@ -156,7 +162,7 @@ DYNAMIC_LIBS	=	-ldl
 
 EXTRA_CDEFINES	=	$(OS1_DEF) $(MAJOR_DEF) \
 			$(PROFILE_DEFS) $(MPI_DEFS) \
-			$(NETCDF4_DEFS) \
+			$(NC4_FEATURES_DEFS) \
 			$(HDFEOS_DEFS) $(HDF4_DEFS) \
 			$(HDFEOS5_DEFS) $(HDF5_DEFS) \
 			$(GRIB2_DEFS) $(GDAL_DEFS) \

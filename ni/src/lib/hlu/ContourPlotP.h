@@ -392,6 +392,16 @@ extern NhlErrorTypes _NhlContourRender(
 #endif
         );
 
+extern  NhlIsoLine  *_NhlGetIsoLines(
+#if     NhlNeedProto
+        NhlLayer                instance,
+        NhlContourPlotLayer     cnl,
+        int			n_levels,
+        float 			*levels,
+	NhlString		entry_name
+#endif
+	);
+
 extern NhlClass			NhlcontourPlotDataDepClass;
 extern NhlContourPlotDataDepClassRec NhlcontourPlotDataDepClassRec;
 extern NhlContourPlotClassRec	NhlcontourPlotClassRec;

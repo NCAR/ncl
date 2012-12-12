@@ -74,12 +74,12 @@ FCPP_OBJS = argget.o
 HDRS	= c.h 
 CSRCS	= $(EXCSRCS) options.c misc.c ncarg_path.c version.c \
 	error.c atoargv.c usleep.c env.c trnspprt.c \
-	rwchinfl.c sdbm.c
+	rwchinfl.c sdbm.c mangle.c
 FSRCS	= $(EXFSRCS) $(FCPP_SRCS) lblank.f iargct.f i1mach.f r1mach.f \
 	d1mach.f
 OBJS	= $(EXOBJS) $(FCPP_OBJS) options.o misc.o ncarg_path.o \
 	version.o error.o atoargv.o usleep.o env.o trnspprt.o lblank.o \
-	iargct.o rwchinfl.o sdbm.o i1mach.o r1mach.o d1mach.o
+	iargct.o rwchinfl.o sdbm.o i1mach.o r1mach.o d1mach.o mangle.o
 
 #if (defined(IRIX) && (MAJOR == 5)) || (defined(IRIX64) || (MAJOR == 6))
 MY_DEFINES = -D_BSD_TYPES

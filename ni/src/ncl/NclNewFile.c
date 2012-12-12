@@ -442,12 +442,32 @@ void _justPrintTypeVal(FILE *fp, NclBasicDataTypes type, void *val, int newline)
             }
         case NCL_byte:
         case NCL_ubyte:
+            {
+             char *v = (char *)val;
+             nclfprintf(fp, "%d", v[0]);
+             break;
+            }
         case NCL_short:
         case NCL_ushort:
+            {
+             short *v = (short *)val;
+             nclfprintf(fp, "%h", v[0]);
+             break;
+            }
         case NCL_int:
         case NCL_uint:
+            {
+             int *v = (int *)val;
+             nclfprintf(fp, "%d", v[0]);
+             break;
+            }
         case NCL_long:
         case NCL_ulong:
+            {
+             long *v = (long *)val;
+             nclfprintf(fp, "%ld", v[0]);
+             break;
+            }
         case NCL_int64:
         case NCL_uint64:
             {
@@ -2778,13 +2798,15 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
     NhlErrorTypes ret= NhlNOERROR;
     NclObjClass class_ptr;
     struct stat buf;
-    NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+    NclFileClass fc = NULL;
+    NclFileClassPart *fcp = NULL;
     int ret_error = 0;
 
     NclFormatFunctionRecPtr topForFunRecPtr = NULL;
     NclFormatFunctionRecPtr locForFunRecPtr = NULL;
 
   /*
+    NclFileClassPart *fcp = &(nclFileClassRec.file_class);
    *fprintf(stderr, "\nEnter _NclNewFileCreate, file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tpath: <%s>\n", NrmQuarkToString(path));
    */
@@ -2797,6 +2819,17 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
         class_ptr = nclNewFileClass;
     else
         class_ptr = theclass;
+
+#ifdef USE_NETCDF4_FEATURES
+    if(use_new_hlfs)
+    {
+        fc = (NclFileClass) &nclNewFileClassRec;
+    }
+    else
+#endif
+        fc = &nclFileClassRec;
+
+    fcp = &(fc->file_class);
 
   /*
    * If a GRIB file, check version.  First verify that the file exists
@@ -5356,15 +5389,17 @@ static NhlErrorTypes NewFileWriteAtt(NclFile infile, NclQuark attname,
                     tmp_md= value;
                 }
 
-                ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
-                if(ret < NhlWARNING)
-                {
-                    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                        "Could not write attribute (%s) to attribute list",
-                        NrmQuarkToString(attname)));
-                    ret = NhlFATAL;
-                    goto done_NewFileWriteAtt;
-                }
+              /*
+               *ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
+               *if(ret < NhlWARNING)
+               *{
+               *    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+               *        "Could not write attribute (%s) to attribute list",
+               *        NrmQuarkToString(attname)));
+               *    ret = NhlFATAL;
+               *    goto done_NewFileWriteAtt;
+               *}
+               */
 
                 ret = (*thefile->newfile.format_funcs->add_att)(
                     thefile->newfile.grpnode,
@@ -5733,13 +5768,15 @@ static NhlErrorTypes NewFileAddDim(NclFile infile, NclQuark dimname,
 
     if(thefile->newfile.wr_status <= 0)
     {
-        if (dimname == NrmStringToQuark("ncl_scalar"))
-        {
-            NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                "NewFileAddDim: <ncl_scalar> is a reserved file dimension name in NCL\n\t\t%s\n",
-                "it cannot be defined by the user"));
-            return (NhlWARNING);
-        }
+      /*
+       *if (dimname == NrmStringToQuark("ncl_scalar"))
+       *{
+       *    NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+       *        "NewFileAddDim: <ncl_scalar> is a reserved file dimension name in NCL\n\t\t%s\n",
+       *        "it cannot be defined by the user"));
+       *    return (NhlWARNING);
+       *}
+       */
 
         dimnode = _getDimNodeFromNclFileGrpNode(thefile->newfile.grpnode, dimname);
 
@@ -5811,12 +5848,12 @@ static void NewAdjustForScalarDim(NclNewFile thefile)
 {
     NclQuark nsn = NrmStringToQuark("ncl_scalar");
 
- /* since the scalar dim is always first,
-  * all the other dims and coord vars need to shift down one element
-  */
+  /*
+   *since the scalar dim is always first,
+   *all the other dims and coord vars need to shift down one element
 
-    fprintf(stderr, "\nHit NewAdjustForScalarDim, file: %s, line: %d\n\n", __FILE__, __LINE__);
-    fprintf(stderr, "\nHit NewAdjustForScalarDim, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\nHit NewAdjustForScalarDim, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   */
 
     NewFileAddDim((NclFile) thefile, nsn, 1, 1);
 }

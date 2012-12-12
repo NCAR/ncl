@@ -2718,6 +2718,206 @@ NhlErrorTypes _NhlCpcldr
 	return NhlNOERROR;
 }
 
+/*
+ * Function:	_NhlCpcltr
+ *
+ * Description: Conpack routine CPCLTR
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlCpcltr
+(
+	float		*zdat,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	float           clevel,
+	int             *flag,
+	float           **xloc,
+	float           **yloc,
+	int             *npoints,
+	char		*entry_name
+)
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	NhlWorkspaceRec *iwsrp = (NhlWorkspaceRec *) int_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
+	char		*cmp_msg2 = "INTEGER WORKSPACE OVERFLOW";
+	int		err_num;
+	int             irw1, irw2;
+
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
+	c_entsr(&save_mode,1);
+
+	do {
+		/* 
+		 *  actually use cptrcl instead of cpcltr: cpcltr calls set everytime which can be
+		 * a huge unnecessary performance hit. It then just calls cptrcl, which unfortunately 
+		 * does not have a c interface function.
+		 */
+		_NHLCALLF(cptrcl,CPTRCL)(zdat,fwsrp->ws_ptr,iwsrp->ws_ptr,&clevel,flag,&irw1,&irw2,npoints);
+
+		/*
+		c_cpcltr(zdat,fwsrp->ws_ptr,iwsrp->ws_ptr,clevel,flag,&irw1,&irw2,npoints);
+		*/
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg1)) {
+#if DEBUG_WS
+				printf("resizing flt_ws old %d",
+				       fwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(fwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", fwsrp->cur_size);
+#endif
+			}
+			else if (strstr(e_msg,cmp_msg2)) {
+#if DEBUG_WS
+				printf("resizing int_ws old %d",
+				       iwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(iwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", iwsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+	*xloc = &(((float*)fwsrp->ws_ptr)[irw1]);
+	*yloc = &(((float*)fwsrp->ws_ptr)[irw2]);
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	_NhlCtcltr
+ *
+ * Description: Conpack routine CTCLTR
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlCtcltr
+(
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	float           clevel,
+	int             *flag,
+	float           **xloc,
+	float           **yloc,
+	int             *npoints,
+	char		*entry_name
+)
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	NhlWorkspaceRec *iwsrp = (NhlWorkspaceRec *) int_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
+	char		*cmp_msg2 = "INTEGER WORKSPACE OVERFLOW";
+	int		err_num;
+	int             irw1, irw2;
+
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
+	c_entsr(&save_mode,1);
+
+	do {
+		/* 
+		 * actually use cttrcl instead of ctcltr: cpcltr calls set everytime which can be
+		 * a huge unnecessary performance hit. It then just calls cttrcl, which unfortunately 
+		 * does not have a c interface function.
+		 */
+		_NHLCALLF(cttrcl,CTTRCL)(rpnt,iedg,itri,fwsrp->ws_ptr,iwsrp->ws_ptr,&clevel,flag,&irw1,&irw2,npoints);
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg1)) {
+#if DEBUG_WS
+				printf("resizing flt_ws old %d",
+				       fwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(fwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", fwsrp->cur_size);
+#endif
+			}
+			else if (strstr(e_msg,cmp_msg2)) {
+#if DEBUG_WS
+				printf("resizing int_ws old %d",
+				       iwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(iwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", iwsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+	*xloc = &(((float*)fwsrp->ws_ptr)[irw1]);
+	*yloc = &(((float*)fwsrp->ws_ptr)[irw2]);
+
+	return NhlNOERROR;
+}
+
 
 /*
  * Function:	_NhlCplbam

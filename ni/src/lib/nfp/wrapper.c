@@ -7215,7 +7215,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, 0, 0, NclANY);  nargs++;
     SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
     NclRegisterFunc(reshape_W, args, "reshape", nargs);
 
@@ -7224,7 +7224,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, 0, 0, NclANY);  nargs++;
     SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
     SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
     NclRegisterFunc(reshape_ind_W, args, "reshape_ind", nargs);
@@ -9004,7 +9004,7 @@ int *get_dims_for_n_funcs(int arg_num,  int num_args, NclStackEntry tmpdata,
   void *dims_ptr;
   int i, *dims; 
   ng_size_t num_dims[1];
-  string *dim_names;
+  NclQuark *dim_names;
   NclVar tmpvar;
 
   switch(tmpdata.kind) {
@@ -9038,7 +9038,7 @@ int *get_dims_for_n_funcs(int arg_num,  int num_args, NclStackEntry tmpdata,
   }
   else {
     if(tmpvar != NULL) {
-      dim_names = (string *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,0);
+      dim_names = (NclQuark *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,0);
     }
     else {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Can't determine dimension names from input array",name);

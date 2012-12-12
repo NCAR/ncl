@@ -261,6 +261,16 @@ static NhlErrorTypes CnTriMeshWriteCellData
 #endif
 	);
 
+static NhlIsoLine *CnTriMeshGetIsoLines(
+#if     NhlNeedProto
+        NhlLayer                instance,
+        NhlContourPlotLayer     cnl,
+        int			n_levels,
+        float			*levels,
+	NhlString		entry_name
+#endif
+	);
+
 NhlCnTriMeshRendererClassRec NhlcnTriMeshRendererClassRec = {
 	{
 /* class_name 		*/      "cnTriMeshRendererClass",
@@ -288,7 +298,8 @@ NhlCnTriMeshRendererClassRec NhlcnTriMeshRendererClassRec = {
 /* layer_destroy 	*/    	CnTriMeshRendererDestroy,
 	},
 	{
-/* render */		        CnTriMeshRender
+/* render */		        CnTriMeshRender,
+/* get_isolines */              CnTriMeshGetIsoLines
 	},
 	{
 /* foo */		        0
@@ -777,6 +788,7 @@ static NhlErrorTypes BuildNativeMesh
 	tmp->update_mode = TRIMESH_NOUPDATE;
 	NhlFree(ippp);
 	NhlFree(ippe);
+	/*printf("total number of edges %d\n",nedg);*/
 
 	return NhlNOERROR;
 
@@ -1140,6 +1152,7 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 	NhlFree(ippp);
 	NhlFree(ippe);
 	NhlFree(el);
+	/*printf("total number of edges %d\n",nedg); */
 
 	return NhlNOERROR;
 
@@ -1209,9 +1222,9 @@ static NhlErrorTypes BuildDelaunayMesh
 	if (dyp->ezmap) { /* transform points into projection space
 			   throwing away points outside the map limits */ 
 		for (i = 0; i < mnop; i++) {
-			float xt,yt;
+			double xt,yt;
 			j = pcount * 2;
-			c_maptra(rlat[i],rlon[i],&xt,&yt);
+			c_mdptra((double)rlat[i],(double)rlon[i],&xt,&yt);
 			if (xt > 1e10 || yt > 1e10)
 				continue;
 			points[j] = (double)xt;
@@ -1338,6 +1351,7 @@ static NhlErrorTypes BuildDelaunayMesh
 	NhlFree(points);
 	NhlFree(dat);
 	NhlFree(el);
+	/*printf("total number of edges %d\n",nedg);*/
 
 	return NhlNOERROR;
 
@@ -3139,6 +3153,271 @@ static NhlErrorTypes CnTriMeshRender
 	return MIN(subret,ret);
 }
 
+static NhlIsoLine *CnTriMeshGetIsoLines
+#if	NhlNeedProto
+(
+	NhlLayer		instance,
+        NhlContourPlotLayer     cnl,
+        int			n_levels,
+        float			*levels,
+	NhlString		entry_name
+        )
+#else
+(instance,cnl,order,entry_name)
+	NhlLayer		instance;
+        NhlContourPlotLayer     cnl;
+        int			n_levels;
+        float			*levels;
+	NhlString		entry_name;
+#endif
+{
+        NhlCnTriMeshRendererLayer tml = (NhlCnTriMeshRendererLayer) instance;
+	NhlCnTriMeshRendererLayerPart	  *tmp = &tml->cntrimeshrenderer;
+	NhlContourPlotLayerPart 	  *cnp = &cnl->contourplot;
+        NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlString e_text;
+	int mesh_inited = 0;
+        Gint            err_ind;
+        Gclip           clip_ind_rect;
+	float           *clvp;
+	int             count;
+	int             i;
+	NhlIsoLine      *isolines, *ilp;
+
+	Cnl = cnl;
+	Cnp = cnp;
+	Tmp = tmp;
+
+
+	ginq_clip(&err_ind,&clip_ind_rect);
+        gset_clip_ind(GIND_CLIP);
+	
+	c_ctrset();
+	SetCtParams(cnl,entry_name);
+/*
+ * Only set the ORV parameter if overlaying on EZMAP. It can cause
+ * problems otherwise. (Not sure yet whether it is needed in some cases
+ * though, and perhaps not needed in certain Ezmap cases.
+ */
+	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
+	    NhlmapTransObjClass->base_class.class_name) {
+		NhlVAGetValues(cnp->trans_obj->base.id, 
+			       NhlNtrOutOfRangeF, &cnp->out_of_range_val,
+			       NULL);
+		tmp->ezmap = 1;
+		c_ctsetr("ORV",cnp->out_of_range_val);
+		if (cnp->sfp->d_arr->num_dimensions == 1 &&
+		    ! (cnp->sfp->element_nodes ||
+		       (cnp->sfp->x_cell_bounds && cnp->sfp->y_cell_bounds))) {
+			c_ctseti("MAP",Nhlcn1DMESHMAPVAL);
+			tmp->update_mode = TRIMESH_NEWMESH;
+		}
+		else {
+			c_ctseti("MAP",NhlcnMAPVAL);
+		}
+	}
+	else {
+		tmp->ezmap = 0;
+		c_ctseti("MAP",NhlcnTRIMESHMAPVAL);
+	}
+
+	c_ctseti("WSO", 3);		/* error recovery on */
+	c_ctseti("NVS",0);		/* no vertical strips */
+	c_ctseti("HLE",1);              /* search for equal high/lows */
+        c_ctseti("SET",0);
+        c_ctseti("RWC",500);
+        c_ctseti("RWG",1500);
+
+	c_ctsetr("PIT",MAX(0.0,cnp->max_point_distance));
+	
+        if (cnp->smoothing_on) {
+                c_ctsetr("T2D",cnp->smoothing_tension);
+                c_ctsetr("SSL",cnp->smoothing_distance);
+        }
+        else {
+                c_ctsetr("T2D",(float)0.0);
+        }
+	gset_fill_colr_ind((Gint)_NhlGetGksCi(cnl->base.wkptr,0));
+
+	subret = UpdateLineAndLabelParams(cnl,&cnp->do_lines,&cnp->do_labels);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		ContourAbortDraw(cnl);
+		gset_clip_ind(clip_ind_rect.clip_ind);
+		return NULL;
+	}
+
+	subret = UpdateFillInfo(cnl, &cnp->do_fill);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		ContourAbortDraw(cnl);
+		gset_clip_ind(clip_ind_rect.clip_ind);
+		return NULL;
+	}
+
+
+/* Retrieve workspace pointers */
+
+	if ((cnp->fws = _NhlUseWorkspace(cnp->fws_id)) == NULL) {
+		e_text = "%s: error reserving float workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		ContourAbortDraw(cnl);
+		gset_clip_ind(clip_ind_rect.clip_ind);
+		return(NULL);
+	}
+	if ((cnp->iws = _NhlUseWorkspace(cnp->iws_id)) == NULL) {
+		e_text = "%s: error reserving integer workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		ContourAbortDraw(cnl);
+		gset_clip_ind(clip_ind_rect.clip_ind);
+		return(NULL);
+	}
+
+		 
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		ContourAbortDraw(cnl);
+		gset_clip_ind(clip_ind_rect.clip_ind);
+		return NULL;
+	}
+
+
+	if (n_levels <= 0) {
+		clvp = (float *) cnp->levels->data;
+		count = cnp->level_count;
+	}
+	else {
+		count = n_levels;
+		clvp = levels;
+	}
+
+	isolines = (NhlIsoLine *) NhlMalloc(sizeof(NhlIsoLine) * count);
+	if (! mesh_inited) {
+		subret = InitMesh(cnl,tmp,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			gset_clip_ind(clip_ind_rect.clip_ind);
+			ContourAbortDraw(cnl);
+			return NULL;
+		}
+		mesh_inited = 1;
+	}
+	for (i = 0, ilp = isolines; i < count; i++, ilp++) {
+		int flag,npoints;
+		NhlBoolean done = False;
+		float *xloc = NULL, *yloc = NULL;
+		int current_seg_alloc = 10;
+		int current_point_count = 0;
+		int current_seg = 0;
+		int j;
+
+		flag = 0;
+/*
+		printf("Points for level %f:\n", clvp[i]);
+*/
+		ilp->level = clvp[i];
+		ilp->x = ilp->y = NULL;
+		ilp->start_point = ilp->n_points = NULL;
+		while (! done) {
+			subret = _NhlCtcltr(tmp->rpnt,tmp->iedg,tmp->itri,cnp->fws,cnp->iws,clvp[i],
+					    &flag,&xloc,&yloc,&npoints,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				return NULL;
+			}
+
+			if (flag == 0)
+				break;
+			if (current_seg == 0) {
+				ilp->x = NhlMalloc(sizeof(float) * npoints);
+				ilp->y = NhlMalloc(sizeof(float) * npoints);
+			}
+			else {
+				ilp->x = NhlRealloc(ilp->x, sizeof(float) * (current_point_count + npoints));
+				ilp->y = NhlRealloc(ilp->y, sizeof(float) * (current_point_count + npoints));
+			}
+			memcpy((char*)(ilp->x + current_point_count),xloc, npoints * sizeof(float)); 
+			memcpy((char*)(ilp->y + current_point_count),yloc, npoints * sizeof(float)); 
+			if (tmp->ezmap) { /* points need to be transformed back into map coordinates */
+				double xlon, ylat,last_xlon;
+				int mod_360 = 0;
+				int k = current_point_count;
+				int first = 1;
+				for (j = current_point_count; j < current_point_count + npoints; j++) {
+					c_mdptri((double)ilp->x[j],(double)ilp->y[j],&ylat,&xlon);
+					if (xlon > 1e10) 
+						continue;
+					if (first) {
+						last_xlon = xlon;
+						first = 0;
+					}
+					switch (mod_360) {
+					case 0:
+					default:
+						if (last_xlon - xlon < -180) {
+							mod_360 = -1;
+						}
+						else if (last_xlon - xlon > 180) {
+							mod_360 = 1;
+						}
+						break;
+					case 1:
+						if (xlon - last_xlon > 180) {
+							mod_360 = 0;
+						}
+						break;
+					case -1:
+						if (xlon - last_xlon < -180) {
+							mod_360 = 0;
+						}
+						break;
+					}
+					ilp->x[k] = (float)xlon + mod_360 * 360;
+					ilp->y[k] = (float)ylat;
+					last_xlon = xlon;
+					k++;
+				}
+				npoints = k - current_point_count;
+			}
+
+			if (current_seg == 0) {
+				ilp->n_points = NhlMalloc(sizeof(int) * current_seg_alloc);
+				ilp->start_point = NhlMalloc(sizeof(int) * current_seg_alloc);
+			}
+			else if (current_seg == current_seg_alloc) {
+				ilp->n_points = NhlRealloc(ilp->n_points,sizeof(int) * current_seg_alloc * 2);
+				ilp->start_point = NhlRealloc(ilp->start_point,sizeof(int) * current_seg_alloc * 2);
+				current_seg_alloc *= 2;
+			}
+			ilp->n_points[current_seg] = npoints; 	
+			ilp->start_point[current_seg] = current_point_count; 	
+			current_point_count += npoints;
+			current_seg++;
+/*				
+			printf("\t%d points: ",npoints);
+			for (j = 0; j < npoints; j++) {
+				printf("(%f %f)", *(xloc + j), *(yloc + j));
+			}
+			printf("\n");
+*/
+		}
+		ilp->point_count = current_point_count;
+		ilp->n_segments = current_seg;
+	}
+
+	if (cnp->fws != NULL) {
+		subret = _NhlIdleWorkspace(cnp->fws);
+		ret = MIN(subret,ret);
+		cnp->fws = NULL;
+	}
+	if (cnp->iws != NULL) {
+		subret = _NhlIdleWorkspace(cnp->iws);
+		cnp->iws = NULL;
+		ret = MIN(subret,ret);
+	}
+	if (ret < NhlWARNING)
+		return NULL;
+
+	return isolines;
+}
+
 typedef struct {
 	float vx,vy,c;
 } PlaneSet;
@@ -3189,9 +3468,7 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 	char		*entry_name;
 #endif
 {
-	NhlContourPlotLayer cnl = Cnl;
 	NhlContourPlotLayerPart *cnp = Cnp;
-	NhlTransformLayerPart 		  *tfp = &cnl->trans;
 	NhlErrorTypes	ret = NhlNOERROR;
 	char		*e_text;
 	NhlBoolean ezmap = False;
@@ -3210,7 +3487,7 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 	float max_coverage = 0;
 	int twice;
 	int icaf, map;
-	float orv;
+	float orv,spv;
 
         if (cnp == NULL) {
 		e_text = "%s: invalid call to _NhlRasterFill";
@@ -3226,7 +3503,7 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 	c_ctgetr("ORV",&orv);
 	c_ctgeti("CAF",&icaf);
 	c_ctgeti("MAP",&map);
-
+	c_cpgetr("SPV",&spv);
 
 	nv = cnp->sfp->x_cell_bounds->len_dimensions[1];
 	cell_count = cnp->sfp->x_cell_bounds->len_dimensions[0];
@@ -3277,10 +3554,9 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 		PlaneSet *pps, ps[10];
 		int p,p1,p2,p0;
 		int jcv,icv;
-		int t;
 		int iplus,jplus;
-		int ix, iaid,k;
-		float fvali,spv;
+		int iaid,k;
+		float fvali;
 
 		memcpy(xi,xv + i * nv,nv * sizeof(float));
 		memcpy(yi,yv + i * nv,nv * sizeof(float));
@@ -3396,7 +3672,7 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 		}
 	}
 
-
+	return ret;
 
 }
 #define HERO(A,B,C) \

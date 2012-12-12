@@ -67,7 +67,8 @@ NhlCnRendererClassRec NhlcnRendererClassRec = {
 /* layer_destroy 	*/    	NULL,
 	},
 	{
-/* render */		        NULL
+/* render */		        NULL,
+/* get_isolines */              NULL
 	}
 };
 
@@ -138,6 +139,31 @@ NhlErrorTypes _NhlContourRender
                 instance->base.layer_class)->cnrenderer_class;
       
       return (*cnrcp->render)(instance,cnl,order,entry_name);
+}
+
+NhlIsoLine * _NhlGetIsoLines
+#if	NhlNeedProto
+(
+	NhlLayer		instance,
+        NhlContourPlotLayer     cnl,
+        int			n_levels,
+        float 			*levels,
+	NhlString		entry_name
+        )
+#else
+(instance,cnl,order,entry_name)
+	NhlLayer		instance;
+        NhlContourPlotLayer     cnl;
+        int			n_levels;
+        float 			*levels;
+	NhlString		entry_name;
+#endif
+{
+      NhlCnRendererClassPart *cnrcp =
+              &((NhlCnRendererClass)
+                instance->base.layer_class)->cnrenderer_class;
+      
+      return (*cnrcp->get_isolines)(instance,cnl,n_levels,levels,entry_name);
 }
 
 
