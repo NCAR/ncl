@@ -5042,15 +5042,17 @@ static NhlErrorTypes NewFileWriteAtt(NclFile infile, NclQuark attname,
                     tmp_md= value;
                 }
 
-                ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
-                if(ret < NhlWARNING)
-                {
-                    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                        "Could not write attribute (%s) to attribute list",
-                        NrmQuarkToString(attname)));
-                    ret = NhlFATAL;
-                    goto done_NewFileWriteAtt;
-                }
+              /*
+               *ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
+               *if(ret < NhlWARNING)
+               *{
+               *    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+               *        "Could not write attribute (%s) to attribute list",
+               *        NrmQuarkToString(attname)));
+               *    ret = NhlFATAL;
+               *    goto done_NewFileWriteAtt;
+               *}
+               */
 
                 ret = (*thefile->newfile.format_funcs->add_att)(
                     thefile->newfile.grpnode,
