@@ -2266,8 +2266,8 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
     }
 
   /*
+   *fprintf(stderr, "Leave _NC4_get_vars, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "Leave _NC4_get_vars, file: %s, line: %d\n\n", __FILE__, __LINE__);
 
     return varrec;
 }
@@ -3881,9 +3881,9 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
     int fill_mode;
 
   /*
+   *fprintf(stderr, "\nEnter %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+   *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
    */
-    fprintf(stderr, "\nEnter %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
-    fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
 
     if(grpnode->status <= 0)
     {
@@ -5458,9 +5458,9 @@ static NhlErrorTypes NC4SetOption(void *rootgrp, NclQuark option,
     NclFileGrpNode *grpnode = (NclFileGrpNode *)rootgrp;
 
   /*
+   *fprintf(stderr, "\nEnter NC4SetOption, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\toption: <%s>\n", NrmQuarkToString(option));
    */
-    fprintf(stderr, "\nEnter NC4SetOption, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\toption: <%s>\n", NrmQuarkToString(option));
 
     if (option ==  NrmStringToQuark("prefill"))
     {
