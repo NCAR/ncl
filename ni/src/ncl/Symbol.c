@@ -2152,7 +2152,7 @@ static NclApiDataList *getNewFileInfo(NclFile thefile)
     {
         if(0 < grpnode->att_rec->n_atts)
         {
-            tmp->u.file->n_atts = grpnode->var_rec->n_vars;
+            tmp->u.file->n_atts = grpnode->att_rec->n_atts;
             tmp->u.file->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark) * grpnode->att_rec->n_atts);
             for(j = 0; j < grpnode->att_rec->n_atts; ++j)
                 tmp->u.file->attnames[j] = grpnode->att_rec->att_node[j].name;
