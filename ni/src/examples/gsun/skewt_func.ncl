@@ -744,7 +744,7 @@ function skewT_PlotData_Original \
   localOpts@ThermoInfo= True     ; print thermodynamic info
   localOpts@Cape      = True     ; plot CAPE parcel profile if cape>0
   localOpts@Parcel    = 0        ; subscript corresponding to initial parcel
-
+  localOpts@hemisphere="NH"      ; hemisphere wind barbs
                                  ; Override the default localOpts
                                  ; with input dataOpts
   if (dataOpts .and. .not.any(ismissing(getvaratts(dataOpts)))) then
@@ -941,6 +941,10 @@ function skewT_PlotData_Original \
           pw  = P(idw)   
 
           wmsetp ("wdf", 1)                 ; meteorological dir (Sep 2001)
+          if (localOpts@hemisphere.eq."SH") then      ; hemisphere
+               wmsetp("wba",-62.0)                    ; NH (default) is 62.0
+          end if
+print(localOpts)
 
           if (localOpts@WspdWdir) then      ; wind spd,dir (?)
               dirw = 0.017453*WDIR(idw)
