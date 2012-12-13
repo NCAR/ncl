@@ -2304,12 +2304,12 @@ NclStackEntry missing_expr;
 		ll_total *= _NclSizeOf(the_type);
 #ifdef NG32BIT
 		if (ll_total > INT_MAX) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"New: requested size of variable (%lld bytes) exceeds the current maximum %d allowed on this system",INT_MAX,ll_total);
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"New: requested size of variable (%lld bytes) exceeds the current maximum %d allowed on this system\n",ll_total,INT_MAX));
 #else
 		if (ll_total > LONG_MAX) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"New: requested size of variable (%lld bytes) exceeds the current maximum %d allowed on this system",LONG_MAX,ll_total);
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"New: requested size of variable (%lld bytes) exceeds the current maximum %d allowed on this system\n",ll_total,LONG_MAX));
 #endif
 			return(NhlFATAL);
 		}
