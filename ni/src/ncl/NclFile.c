@@ -843,12 +843,7 @@ NclQuark var;
 NhlErrorTypes _NclFilePrintSummary(NclObj self, FILE *fp)
 {
 	NclFile thefile = (NclFile)self;
-	int i,j;
-	NclFileAttInfoList* step;
 	int ret = 0;
-	NclMultiDValData tmp_md;
-	NhlErrorTypes ret1 = NhlNOERROR;
-	char *tmp_str;
 
 	ret = nclfprintf(fp,"File path:\t%s\n",NrmQuarkToString(thefile->file.fpath));
 	if(ret < 0) {	
@@ -1739,7 +1734,8 @@ NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB print record info */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB single element dimensions */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB time period suffix */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }   /* new file-structure */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },   /* new file-structure */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 4, NULL }  /* Fortran binary file record marker size */
 };
 
 NclFileClassRec nclFileClassRec = {
@@ -2291,6 +2287,27 @@ NhlErrorTypes InitializeFileOptions
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
 	fcp->options[Ncl_USE_NEW_HLFS].valid_values = NULL;
+
+	/* Binary option RecordMarkerSize */
+
+	fcp->options[Ncl_RECORD_MARKER_SIZE].format = NrmStringToQuark("bin");
+	fcp->options[Ncl_RECORD_MARKER_SIZE].name = NrmStringToQuark("recordmarkersize");
+	len_dims = 1;
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 4;
+	fcp->options[Ncl_RECORD_MARKER_SIZE].value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 4;
+	fcp->options[Ncl_RECORD_MARKER_SIZE].def_value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(2 * sizeof(int));
+	ival[0] = 4;
+	ival[1] = 8;
+	len_dims = 2;
+	fcp->options[Ncl_RECORD_MARKER_SIZE].valid_values = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
 
 	/* End of options */
 
@@ -4410,7 +4427,6 @@ NclQuark coord_name;
 
 static void _NclNullifyFilePart(NclFilePart *file)
 {
-	int i;
 
 	file->max_grps = 0;
 	file->max_vars = 0;
@@ -5899,15 +5915,13 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 	NhlErrorTypes ret = NhlNOERROR;
 	struct _NclVarRec* tmp_var;
 	struct _NclVarRec* tmp_coord_var;
-	int i,j,m;
+	int i,j;
 	NclQuark dim_names[NCL_MAX_DIMENSIONS];
 	NclAtt theatt;
 	NclAttList *step;
 	int index,cindex;
 	ng_size_t lhs_n_elem;	
 	NclSelectionRecord tmp_sel;
-        void *tmp_coord;
-        char *tmp_ptr;
 	NclMultiDValData tmp_md;
 	NclMultiDValData coord_md;
 	struct _NclVarRec* cvar;
