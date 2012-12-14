@@ -181,6 +181,7 @@ typedef struct _NclFileVarNode
 
     NclFileAttRecord *att_rec;
 
+    int               shuffle;
     int               compress_level;
     int               use_cache;
     ng_size_t         cache_size;
@@ -230,11 +231,10 @@ struct _NclFileGrpNode
     int                  has_scalar_dim;
     int                  header_reserve_space;
 
-    int                  compress_level;
     void                *other_src;
 
-    ng_size_t            deflate_pass;
-
+    int                  shuffle;
+    int                  compress_level;
     int                  use_cache;
     ng_size_t            cache_size;
     ng_size_t            cache_nelems;
