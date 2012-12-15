@@ -14,13 +14,13 @@
 ; ------------------------------------------------
 
 undef("skewty")
-function skewty(pres[*]:float)            ; y-coord given pressure (mb)
+function skewty(pres[*]:numeric)            ; y-coord given pressure (mb)
   begin                             
    return (132.182-44.061*log10(pres))
   end
 
 undef("skewtx")
-function skewtx(temp[*]:float,y[*]:float) ; x-coord given temperature (c)
+function skewtx(temp[*]:numeric,y[*]:numeric) ; x-coord given temperature (c)
   begin                                     ; y=skewty(p)
    return (0.54*temp+0.90692*y)
   end
