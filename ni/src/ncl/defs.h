@@ -43,7 +43,7 @@ extern "C" {
 #define NclANY NULL
 #define NhlTNclData "nclData"
 
-extern int use_new_hlfs;
+extern short NCLnewfs;
 
 typedef enum {	NORMAL = 0,
 		VARSUBSEL = 1,

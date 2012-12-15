@@ -1701,7 +1701,6 @@ NclFileGrpNode *_getGrpNodeFromNclFileGrpNode(NclFileGrpNode *ingrpnode,
     NclQuark newroot_grpname = -1;
 
     char *full_str;
-    char *root_str;
     char buffer[NCL_MAX_STRING];
     char newroot[NCL_MAX_STRING];
     int  gl;
@@ -1727,11 +1726,9 @@ NclFileGrpNode *_getGrpNodeFromNclFileGrpNode(NclFileGrpNode *ingrpnode,
     }
 
     full_str = NrmQuarkToString(grpname);
-    root_str = NrmQuarkToString(ingrpnode->name);
 
   /*
    *fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tfull_str: <%s>, root_str: <%s>\n", full_str, root_str);
    */
 
     if('/' == full_str[0])
@@ -2494,14 +2491,14 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
         class_ptr = theclass;
 
 #ifdef USE_NETCDF4_FEATURES
-    if(use_new_hlfs)
+    if(NCLnewfs)
     {
         fc = (NclFileClass) &nclNewFileClassRec;
     }
     else
 #endif
         fc = &nclFileClassRec;
-
+ 
     fcp = &(fc->file_class);
 
   /*
@@ -2558,7 +2555,7 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
     file_out->newfile.fname = fname_q;
     file_out->newfile.file_format = 0;
     file_out->newfile.file_ext_q = file_ext_q;
-    file_out->use_new_hlfs = 1;
+    file_out->file.use_new_hlfs = 1;
 
     topForFunRecPtr = _NclGetFormatFuncsWithNewHLFS(file_ext_q);
     file_out->newfile.format_funcs = topForFunRecPtr;
@@ -2687,7 +2684,6 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
     ng_size_t output_dim_sizes[NCL_MAX_DIMENSIONS];
     int keeper[NCL_MAX_DIMENSIONS];
     NclSelection *sel;
-    float tmpf;
     long tmpi = 0;
     int swap_size;
     void *swap_space = NULL;
@@ -2794,7 +2790,6 @@ static struct _NclMultiDValDataRec* MyNewFileReadVarValue(NclFile infile, NclQua
                     NHLPERROR((NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer"));
 
                     stride[sel->dim_num] = 1;
-                    tmpf = 1;
                 }
 
                 n_elem = labs((finish[sel->dim_num] - start[sel->dim_num]) /tmpi) + 1;
@@ -4441,7 +4436,6 @@ static struct _NclVarRec *NewFileReadVar(NclFile infile, NclQuark var_name,
     NclFileVarNode *coordnode;
     NclFileAttNode *attnode;
     NclFileDimNode *dimnode;
-    int n;
 
 /*
 * By the the time it gets here the file suport routines in that build the selection
@@ -4539,7 +4533,6 @@ static struct _NclVarRec *NewFileReadVar(NclFile infile, NclQuark var_name,
             j = 0;
             for(i = 0 ; i < varnode->dim_rec->n_dims; i++)
             {
-                n = sel[i].dim_num;
                 dimnode = &(varnode->dim_rec->dim_node[i]);
                 index = _NclFileVarIsCoord((NclFile)thefile, dimnode->name);
 
@@ -4605,7 +4598,7 @@ static struct _NclVarRec *NewFileReadVar(NclFile infile, NclQuark var_name,
 
                         attnode = _getAttNodeFromNclFileVarNode(varnode, NrmStringToQuark(NCL_MISSING_VALUE_ATT));
 
-                        _NclAddAtt(att_id,NrmQuarkToString(dimnode->name),
+                        _NclAddAtt(att_id,NrmQuarkToString(attnode->name),
 					_NclVarValueRead(tmp_var,NULL,NULL),&tmp_sel);
                         coords[j] = -1;
                         if(tmp_var->obj.status != PERMANENT) {
@@ -6118,7 +6111,6 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
     int index_map[NCL_MAX_DIMENSIONS];
     ng_size_t selection_dim_sizes[NCL_MAX_DIMENSIONS];
     NclSelection *sel;
-    float tmpf;
     NclScalar *tmp_mis;
     NclScalar tmp_scalar;
     ng_size_t tmp_size = 1;
@@ -6130,7 +6122,6 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
     int free_tmp_md = 0;
 
     NclFileVarNode   *varnode;
-    NclFileDimRecord *dimrec;
     NclFileDimNode   *dimnode;
     NclFileAttNode   *attnode;
 
@@ -6146,7 +6137,6 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
 
     if(thefile->newfile.wr_status <= 0)
     {
-        dimrec = thefile->newfile.grpnode->dim_rec;
         strcpy(buffer, NrmQuarkToString(var));
         if(NULL == strchr(buffer, '/'))
             varnode = _getVarNodeFromThisGrpNode(thefile->newfile.grpnode, var);
@@ -6259,7 +6249,6 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
                                 "MyNewFileWriteVar:Invalid stride: %s\n",
                                 "stride must be positive non-zero integer"));
                             stride[sel->dim_num] = 1;
-                            tmpf = 1;
                         }
                         n_elem = labs((finish[sel->dim_num] -start[sel->dim_num]) / tmpi) + 1;
 
@@ -6981,7 +6970,7 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
                 {
                     for(i = 0; i < value->multidval.n_dims; i++)
                     {
-                        sprintf(buffer,"ncl%d",i);
+                        sprintf(buffer,"ncl_%3.3d",i);
                         new_dim_quarks[i] = NrmStringToQuark(buffer);
                         new_dim_sizes[i] = (long)value->multidval.dim_sizes[i];
                         start[i] = 0;
@@ -7204,7 +7193,6 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
     NclAttList *step;
     int index = -1;
     int cindex = -1;
-    ng_size_t lhs_n_elem;    
     NclSelectionRecord tmp_sel;
     void *tmp_coord;
     char *tmp_ptr;
@@ -7317,6 +7305,8 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
 
                 if(!lhs_sel_ptr->selection[i].u.sub.is_single )
                 {
+#if 0
+		    ng_size_t lhs_n_elem;    
                     switch(lhs_sel_ptr->selection[i].sel_type)
                     {
                     case Ncl_VECSUBSCR:
@@ -7328,6 +7318,7 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
                                                     / lhs_sel_ptr->selection[i].u.sub.stride) + 1;
                         break;
                     }
+#endif
 
                     if(tmp_var->var.dim_info[j].dim_quark > 0)
                     {

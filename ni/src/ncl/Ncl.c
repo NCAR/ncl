@@ -236,7 +236,6 @@ main(int argc, char **argv) {
 
             case 'f':
                 NCLnewfs = 1;
-                use_new_hlfs = 1;
                 break;
 
             case 'h':

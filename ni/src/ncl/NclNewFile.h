@@ -109,7 +109,6 @@ struct _NclNewFileRec
     NclFilePart     file;
     NclNewFilePart  newfile;
 
-    int use_new_hlfs;
 };
 
 extern NclObjClass nclNewFileClass;

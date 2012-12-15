@@ -320,20 +320,12 @@ typedef enum {
 	Ncl_WRITE_BYTE_ORDER,
 	Ncl_INITIAL_TIME_COORDINATE_TYPE,
 	Ncl_MISSING_TO_FILL_VALUE,
-#ifdef USE_NETCDF4
+	Ncl_SHUFFLE,
 	Ncl_COMPRESSION_LEVEL,
 	Ncl_USE_CACHE,
 	Ncl_CACHE_SIZE,
 	Ncl_CACHE_NELEMS,
 	Ncl_CACHE_PREEMPTION,
-#endif
-#ifdef BuildHDF5
-        Ncl_H5_COMPRESSION_LEVEL,
-        Ncl_H5_USE_CACHE,
-        Ncl_H5_CACHE_SIZE,
-        Ncl_H5_CACHE_NELEMS,
-        Ncl_H5_CACHE_PREEMPTION,
-#endif
 	Ncl_DEFAULT_NCEP_PTABLE,
 	Ncl_PRINT_RECORD_INFO,
 	Ncl_SINGLE_ELEMENT_DIMENSIONS,
@@ -393,6 +385,7 @@ typedef struct _NclFilePart {
 	NclQuark	file_ext_q;
 	int		wr_status;
 	NclFileFormat	file_format;
+	int             use_new_hlfs;
 
 	int		         max_grps;
 	int		         n_grps;

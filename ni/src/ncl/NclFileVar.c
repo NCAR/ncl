@@ -397,7 +397,7 @@ struct _NclObjRec*	self;
 	{
 		_NclDelParent((NclObj)thefile,self);
 
-		if(use_new_hlfs)
+		if(thefile->file.use_new_hlfs)
 		{
 			NclNewFile thenewfile = (NclNewFile) thefile;
 			if(NULL != thenewfile->newfile.format_funcs->free_file_rec)

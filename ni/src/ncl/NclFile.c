@@ -31,6 +31,7 @@
 #include "NclCallBacksI.h"
 
 extern int grib_version;
+extern short NCLnewfs;
 
 #define NCLFILE_INC -1
 #define NCLFILE_DEC -2
@@ -2023,25 +2024,39 @@ NhlErrorTypes InitializeFileOptions
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
 	fcp->options[Ncl_MISSING_TO_FILL_VALUE].valid_values = NULL;
 
+	/*suffle*/
+	fcp->options[Ncl_SHUFFLE].format = NrmStringToQuark("nc");
+	fcp->options[Ncl_SHUFFLE].name = NrmStringToQuark("compressionlevel");
+	len_dims = 1;
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 1;
+	fcp->options[Ncl_SHUFFLE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 0;
+	fcp->options[Ncl_SHUFFLE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	fcp->options[Ncl_SHUFFLE].valid_values = NULL;
 
-#ifdef USE_NETCDF4
-	/* NetCDF 4 option compression level */
+	/*compression level */
 	fcp->options[Ncl_COMPRESSION_LEVEL].format = NrmStringToQuark("nc");
 	fcp->options[Ncl_COMPRESSION_LEVEL].name = NrmStringToQuark("compressionlevel");
 	len_dims = 1;
 	ival = (int*) NclMalloc(sizeof(int));
-	*ival = -1;
+	*ival = 0;
 	fcp->options[Ncl_COMPRESSION_LEVEL].value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
 	ival = (int*) NclMalloc(sizeof(int));
-	*ival = -1;
+	*ival = 0;
 	fcp->options[Ncl_COMPRESSION_LEVEL].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
 	fcp->options[Ncl_COMPRESSION_LEVEL].valid_values = NULL;
 
-	/* NetCDF 4 option use cache */
+	/*use cache */
 	fcp->options[Ncl_USE_CACHE].format = NrmStringToQuark("nc");
 	fcp->options[Ncl_USE_CACHE].name = NrmStringToQuark("cachepreemption");
 	len_dims = 1;
@@ -2057,7 +2072,7 @@ NhlErrorTypes InitializeFileOptions
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
 	fcp->options[Ncl_USE_CACHE].valid_values = NULL;
 
-	/* NetCDF 4 option cache size */
+	/*cache size */
 	fcp->options[Ncl_CACHE_SIZE].format = NrmStringToQuark("nc");
 	fcp->options[Ncl_CACHE_SIZE].name = NrmStringToQuark("cachesize");
 	len_dims = 1;
@@ -2073,7 +2088,7 @@ NhlErrorTypes InitializeFileOptions
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
 	fcp->options[Ncl_CACHE_SIZE].valid_values = NULL;
 
-	/* NetCDF 4 option cache nelems */
+	/*cache nelems */
 	fcp->options[Ncl_CACHE_NELEMS].format = NrmStringToQuark("nc");
 	fcp->options[Ncl_CACHE_NELEMS].name = NrmStringToQuark("cachenelems");
 	len_dims = 1;
@@ -2089,7 +2104,7 @@ NhlErrorTypes InitializeFileOptions
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
 	fcp->options[Ncl_CACHE_NELEMS].valid_values = NULL;
 
-	/* NetCDF 4 option cache preemption */
+	/*cache preemption */
 	fcp->options[Ncl_CACHE_PREEMPTION].format = NrmStringToQuark("nc");
 	fcp->options[Ncl_CACHE_PREEMPTION].name = NrmStringToQuark("cachepreemption");
 	len_dims = 1;
@@ -2104,89 +2119,6 @@ NhlErrorTypes InitializeFileOptions
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0.50,(void *)fval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
 	fcp->options[Ncl_CACHE_PREEMPTION].valid_values = NULL;
-#endif
-
-#ifdef BuildHDF5
-	/* HDF5 option compression level */
-	fcp->options[Ncl_H5_COMPRESSION_LEVEL].format = NrmStringToQuark("h5");
-	fcp->options[Ncl_H5_COMPRESSION_LEVEL].name = NrmStringToQuark("compressionlevel");
-	len_dims = 1;
-	ival = (int*) NclMalloc(sizeof(int));
-	*ival = -1;
-	fcp->options[Ncl_H5_COMPRESSION_LEVEL].value = 
-		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
-				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
-	ival = (int*) NclMalloc(sizeof(int));
-	*ival = -1;
-	fcp->options[Ncl_H5_COMPRESSION_LEVEL].def_value = 
-		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
-				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
-	fcp->options[Ncl_H5_COMPRESSION_LEVEL].valid_values = NULL;
-
-	/* HDF5 option use cache */
-	fcp->options[Ncl_H5_USE_CACHE].format = NrmStringToQuark("h5");
-	fcp->options[Ncl_H5_USE_CACHE].name = NrmStringToQuark("cachepreemption");
-	len_dims = 1;
-	fval = (float *) NclMalloc(sizeof(float));
-	*fval = 0.50;
-	fcp->options[Ncl_H5_USE_CACHE].value = 
-		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0.50,(void *)fval,
-				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
-	ival = (int*) NclMalloc(sizeof(int));
-	*ival = 0;
-	fcp->options[Ncl_H5_USE_CACHE].def_value = 
-		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
-				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
-	fcp->options[Ncl_H5_USE_CACHE].valid_values = NULL;
-
-	/* HDF5 option cache size */
-	fcp->options[Ncl_H5_CACHE_SIZE].format = NrmStringToQuark("h5");
-	fcp->options[Ncl_H5_CACHE_SIZE].name = NrmStringToQuark("cachesize");
-	len_dims = 1;
-	ival = (int*) NclMalloc(sizeof(int));
-	*ival = 3*1024*1025;
-	fcp->options[Ncl_H5_CACHE_SIZE].value = 
-		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
-				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
-	ival = (int*) NclMalloc(sizeof(int));
-	*ival = 3*1024*1025;
-	fcp->options[Ncl_H5_CACHE_SIZE].def_value = 
-		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
-				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
-	fcp->options[Ncl_H5_CACHE_SIZE].valid_values = NULL;
-
-	/* HDF5 option cache nelems */
-	fcp->options[Ncl_H5_CACHE_NELEMS].format = NrmStringToQuark("h5");
-	fcp->options[Ncl_H5_CACHE_NELEMS].name = NrmStringToQuark("cachenelems");
-	len_dims = 1;
-	ival = (int*) NclMalloc(sizeof(int));
-	*ival = 1009;
-	fcp->options[Ncl_H5_CACHE_NELEMS].value = 
-		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
-				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
-	ival = (int*) NclMalloc(sizeof(int));
-	*ival = 1009;
-	fcp->options[Ncl_H5_CACHE_NELEMS].def_value = 
-		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
-				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
-	fcp->options[Ncl_H5_CACHE_NELEMS].valid_values = NULL;
-
-	/* HDF5 option cache preemption */
-	fcp->options[Ncl_H5_CACHE_PREEMPTION].format = NrmStringToQuark("h5");
-	fcp->options[Ncl_H5_CACHE_PREEMPTION].name = NrmStringToQuark("cachepreemption");
-	len_dims = 1;
-	fval = (float *) NclMalloc(sizeof(float));
-	*fval = 0.50;
-	fcp->options[Ncl_H5_CACHE_PREEMPTION].value = 
-		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0.50,(void *)fval,
-				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
-	fval = (float*) NclMalloc(sizeof(float));
-	*fval = 0.50;
-	fcp->options[Ncl_H5_CACHE_PREEMPTION].def_value = 
-		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0.50,(void *)fval,
-				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
-	fcp->options[Ncl_H5_CACHE_PREEMPTION].valid_values = NULL;
-#endif
 
 	/* Grib option Default_NCEP_Ptable */
 	fcp->options[Ncl_DEFAULT_NCEP_PTABLE].format = NrmStringToQuark("grb");
@@ -2277,12 +2209,18 @@ NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_USE_NEW_HLFS].name = NrmStringToQuark("usenewhlfs");
 	len_dims = 1;
 	lval = (logical*) NclMalloc(sizeof(logical));
-	*lval = False;
+	if(NCLnewfs)
+		*lval = True;
+	else
+		*lval = False;
 	fcp->options[Ncl_USE_NEW_HLFS].value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
 	lval = (logical*) NclMalloc(sizeof(logical));
-	*lval = False;
+	if(NCLnewfs)
+		*lval = True;
+	else
+		*lval = False;
 	fcp->options[Ncl_USE_NEW_HLFS].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
@@ -4750,6 +4688,7 @@ NclFile _NclFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	file_out->file.fname = fname_q;
 	file_out->file.file_format = 0;
 	file_out->file.file_ext_q = file_ext_q;
+	file_out->file.use_new_hlfs = 0;
 
 	_NclInitFilePart(&(file_out->file));
 

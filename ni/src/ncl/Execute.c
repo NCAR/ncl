@@ -682,7 +682,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
 				if (thefile && var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
 					int bad = 0;
-					if(use_new_hlfs)
+					if(thefile->file.use_new_hlfs)
 					{
 						NclNewFile newfile = (NclNewFile)thefile;
 						NclFileVarNode *varnode = NULL;
@@ -5487,7 +5487,7 @@ void CallASSIGN_FILE_VAR_OP(void) {
 							int ndims = 0;
 
 #ifdef USE_NETCDF4_FEATURES
-							if(use_new_hlfs)
+							if(file->file.use_new_hlfs)
 							{
 								NclNewFile newfile = (NclNewFile) file;
 								NclFileVarNode *varnode;
@@ -5846,7 +5846,7 @@ void CallFILE_VAR_OP(void) {
 				}
 
 #ifdef USE_NETCDF4_FEATURES
-				if(use_new_hlfs)
+				if(file->file.use_new_hlfs)
 				{
 					NclNewFile newfile = (NclNewFile)file;
 					NclFileVarNode *varnode = NULL;
