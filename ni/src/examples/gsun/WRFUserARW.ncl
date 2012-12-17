@@ -3518,9 +3518,9 @@ begin
     write_wrf_debug_info(wks,data_u,data_v,wrf_debug_file,opts2,"wrf_vector")
   end if
 
-  opts2@gsnDraw     = get_res_value_keep(opts,"gsnDraw",     False)
-  opts2@gsnFrame    = get_res_value_keep(opts,"gsnFrame",    False)
-  opts2@gsnMaximize = get_res_value_keep(opts,"gsnMaximize", True)
+  opts2@gsnDraw     = get_res_value_keep(opts2,"gsnDraw",     False)
+  opts2@gsnFrame    = get_res_value_keep(opts2,"gsnFrame",    False)
+  opts2@gsnMaximize = get_res_value_keep(opts2,"gsnMaximize", True)
   draw_and_frame(wks,vct,opts2@gsnDraw,opts2@gsnFrame,False, \
                  opts2@gsnMaximize)
 
