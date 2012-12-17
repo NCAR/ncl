@@ -472,7 +472,6 @@ NhlErrorTypes AddNewGrp(void *rec, NclQuark grpname, size_t id)
     grpnode->define_mode = rootgrpnode->define_mode;
     grpnode->compress_level = rootgrpnode->compress_level;
     grpnode->is_chunked = rootgrpnode->is_chunked;
-    grpnode->deflate_pass = rootgrpnode->deflate_pass;
     grpnode->use_cache = rootgrpnode->use_cache;
     grpnode->cache_size = rootgrpnode->cache_size;
     grpnode->cache_nelems = rootgrpnode->cache_nelems;

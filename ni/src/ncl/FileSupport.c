@@ -68,9 +68,7 @@
 
 #include <sys/stat.h>
 
-int use_new_hlfs = 0;
-
-NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlfs);
+NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q);
 
 NhlErrorTypes _NclBuildFileCoordRSelection
 #if	NhlNeedProto
@@ -860,6 +858,7 @@ NclQuark *_NclFileReadVarNames(NclFile thefile, int *num_vars)
 			"_NclFileReadVarNames: Unknown Class <%s>\n", class_name));
 		return (NULL);
 	}
+	return (NULL);
 }
 
 NclQuark *_NclFileReadGrpNames(NclFile thefile, int *num_grps)
@@ -1415,7 +1414,7 @@ extern NhlErrorTypes _NclFileAddVlen(NclFile infile, NclQuark vlen_name, NclQuar
 		return(NhlFATAL);
 	}
 
-	if(! _isNewFileStructure(thefile))
+	if(! thefile->file.use_new_hlfs)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddVlen: Old File Structure DO NOT Support vlen.\n"));
@@ -1460,7 +1459,7 @@ extern NhlErrorTypes _NclFileAddEnum(NclFile infile, NclQuark enum_name, NclQuar
 		return(NhlFATAL);
 	}
 
-	if(! _isNewFileStructure(thefile))
+	if(! thefile->file.use_new_hlfs)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddEnum: Old File Structure DO NOT Support enum.\n"));
@@ -1506,7 +1505,7 @@ extern NhlErrorTypes _NclFileAddCompound(NclFile infile, NclQuark compound_name,
 		return(NhlFATAL);
 	}
 
-	if(! _isNewFileStructure(thefile))
+	if(! thefile->file.use_new_hlfs)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddCompound: Old File Structure DO NOT Support compound.\n"));
@@ -1553,7 +1552,7 @@ extern NhlErrorTypes _NclFileWriteCompound(NclFile infile, NclQuark compound_nam
 		return(NhlFATAL);
 	}
 
-	if(! _isNewFileStructure(thefile))
+	if(! thefile->file.use_new_hlfs)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileWriteCompound: Old File Structure DO NOT Support compound.\n"));
@@ -1598,7 +1597,7 @@ extern NhlErrorTypes _NclFileAddOpaque(NclFile infile, NclQuark opaque_name, Ncl
 		return(NhlFATAL);
 	}
 
-	if(! _isNewFileStructure(thefile))
+	if(! thefile->file.use_new_hlfs)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddOpaque: Old File Structure DO NOT Support opaque.\n"));
@@ -1634,7 +1633,7 @@ extern NhlErrorTypes _NclFileAddGrp(NclFile infile, NclQuark grpname)
 		return(NhlFATAL);
 	}
 
-	if(! _isNewFileStructure(thefile))
+	if(! thefile->file.use_new_hlfs)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddGrp: Old File Structure DO NOT Support Group.\n"));
@@ -2685,9 +2684,11 @@ struct _NclMultiDValDataRec *value;
 {
 	NclFileClass fc = NULL;
 
-	if(_isNewFileStructure(thefile))
+#ifdef USE_NETCDF4_FEATURES
+	if(NCLnewfs)
 		fc = (NclFileClass) &nclNewFileClassRec;
 	else
+#endif
 		fc = &nclFileClassRec;
 
 	while(fc)
@@ -2749,7 +2750,7 @@ NclQuark option;
 	NclFileClass fc = NULL;
 	int i = 5;
 
-	if(use_new_hlfs)
+	if(NCLnewfs)
 		fc = (NclFileClass) &nclNewFileClassRec;
 	else
 		fc = &nclFileClassRec;
@@ -2865,7 +2866,8 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		stat(NrmQuarkToString(the_real_path), &file_stat);
 
 		if(file_stat.st_size)
-			file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_new_hlfs);
+			file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q);
+
 	} else {
 		if (1 == rw_status)
 		{
@@ -2907,7 +2909,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 	return file_ext_q;
 }
 
-NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlfs)
+NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q)
 {
 	NclQuark cur_ext_q;
 	NclQuark ori_file_ext_q = pre_file_ext_q;
@@ -2958,7 +2960,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 #ifdef BuildHDF5
 	else if(0 == strcmp(fext, "hdf5"))
 	{
-		*new_hlfs = 1;
+		NCLnewfs = 1;
 		ori_file_ext_q = NrmStringToQuark("h5");
 	}
 #endif
@@ -3029,7 +3031,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
               			case NC_FORMAT_NETCDF4:
 					file_ext_q = cur_ext_q;
 					found = 1;
-                   			*new_hlfs = 1;
+                   			NCLnewfs = 1;
                    			break;
               			case NC_FORMAT_NETCDF4_CLASSIC:
               			case NC_FORMAT_64BIT:
@@ -3056,7 +3058,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, int *new_hlf
 			{
         			file_ext_q = cur_ext_q;
 				found = 1;
-       				*new_hlfs = 1;
+       				NCLnewfs = 1;
 				break;
 			}
 			else
@@ -3191,7 +3193,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			stat(NrmQuarkToString(the_real_path), &file_stat);
 
 			if(file_stat.st_size)
-				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_new_hlfs);
+				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q);
 			else
 			{
 				char tmp_path[NCL_MAX_STRING];
@@ -3211,7 +3213,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 				
 					if(! stat(_NGResolvePath(tmp_path), &file_stat))
 					{
-						file_ext_q = _NclVerifyFile(NrmStringToQuark(tmp_path), old_file_ext_q, &use_new_hlfs);
+						file_ext_q = _NclVerifyFile(NrmStringToQuark(tmp_path), old_file_ext_q);
 						/*break;*/
 					}
 					ext_name = strrchr(tmp_path, '.');
@@ -3233,19 +3235,26 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			first = 0;
 			/* Check if new file-strucuture */
 			if(NULL != fcp->options[Ncl_USE_NEW_HLFS].value)
-				use_new_hlfs = *(int *)(fcp->options[Ncl_USE_NEW_HLFS].value->multidval.val);
+			{
+				int newfs = 0;
+				newfs = *(int *)(fcp->options[Ncl_USE_NEW_HLFS].value->multidval.val);
+				if(newfs)
+					NCLnewfs = 1;
+				else
+					NCLnewfs = 0;
+			}
 		}
 	}
 
 	if(NrmStringToQuark("h5") == file_ext_q)
-		use_new_hlfs = 1;
+		NCLnewfs = 1;
 
 /*We still want to keep old HE5 there.
 	else if(NrmStringToQuark("he5") == file_ext_q)
-		use_new_hlfs = 1;
+		NCLnewfs = 1;
  */
 
-	if(use_new_hlfs)
+	if(NCLnewfs)
 	{
 		file_out = _NclNewFileCreate(inst, theclass, obj_type, obj_type_mask, status,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
@@ -3261,14 +3270,13 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 NhlErrorTypes _NclPrintFileSummary(NclObj self, FILE *fp)
 {
-	if(use_new_hlfs)
-	{
+	NclFile file = (NclFile) self;
+#ifdef USE_NETCDF4_FEATURES
+	if(file->file.use_new_hlfs)
 		return (_NclNewFilePrintSummary(self, fp));
-	}
 	else
-	{
+#endif
 		return (_NclFilePrintSummary(self, fp));
-	}
 }
 
 NclGroup *_NclCreateGroup(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
@@ -3281,16 +3289,14 @@ NclGroup *_NclCreateGroup(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
    *fprintf(stderr, "\nEnter _NclCreateGroup, file: %s, line: %d\n", __FILE__, __LINE__);
    */
 
-    if(_isNewFileStructure(file_in))
-    {
+#ifdef USE_NETCDF4_FEATURES
+    if(file_in->file.use_new_hlfs)
         group_out = _NclNewGroupCreate(inst, theclass, obj_type, obj_type_mask,
                                        status, file_in, group_name);
-    }                    
     else
-    {
+#endif
         group_out = _NclGroupCreate(inst, theclass, obj_type, obj_type_mask,
                                     status, file_in, group_name);
-    }                    
 
   /*
    *fprintf(stderr, "Leave _NclCreateGroup, file: %s, line: %d\n\n", __FILE__, __LINE__);
@@ -3311,8 +3317,7 @@ ng_size_t *_NclFileReadChunkSizes(NclFile thefile, int *nchunks)
 
 	class_name = thefile->obj.class_ptr->obj_class.class_name;
 
-	if((0 == strcmp("NclFileClass", class_name)) ||
-	   (0 == strcmp("NclNewFileClass", class_name)))
+	if (thefile->file.use_new_hlfs) 
 	{
 		NclNewFile newfile = (NclNewFile) thefile;
 		NclFileDimRecord *chunkdimrec = newfile->newfile.grpnode->chunk_dim_rec;
@@ -3357,7 +3362,7 @@ int _NclFileReadCompressionLevel(NclFile thefile)
 
 	class_name = thefile->obj.class_ptr->obj_class.class_name;
 
-	if(0 == strcmp("NclNewFileClass", class_name))
+	if (thefile->file.use_new_hlfs)
 	{
 		NclNewFile newfile = (NclNewFile) thefile;
 		cl = newfile->newfile.grpnode->compress_level;

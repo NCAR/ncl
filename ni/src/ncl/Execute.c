@@ -649,7 +649,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
 				if (thefile && var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
 					int bad = 0;
-					if(use_new_hlfs)
+					if(thefile->file.use_new_hlfs)
 					{
 						NclNewFile newfile = (NclNewFile)thefile;
 						NclFileVarNode *varnode = NULL;
@@ -5445,7 +5445,8 @@ void CallASSIGN_FILE_VAR_OP(void) {
 						if((file != NULL)&&((index = _NclFileIsVar(file,var)) != -1)) {
 							int ndims = 0;
 
-							if(_isNewFileStructure(file))
+#ifdef USE_NETCDF4_FEATURES
+							if(file->file.use_new_hlfs)
 							{
 								NclNewFile newfile = (NclNewFile) file;
 								NclFileVarNode *varnode;
@@ -5453,20 +5454,21 @@ void CallASSIGN_FILE_VAR_OP(void) {
 								ndims = varnode->dim_rec->n_dims;
 							}
 							else
+#endif
 								ndims = file->file.var_info[index]->num_dimensions;
 
 							if((nsubs != ndims) && (nsubs != 0)){
 									NhlPError(NhlFATAL,NhlEUNKNOWN,
 										"Number of subscripts (%d) and number of dimensions (%d) do not match for variable (%s->%s)",
 										nsubs,
-										file->file.var_info[index]->num_dimensions,
+										ndims,
 										file_sym->name,
 										NrmQuarkToString(var));
 										estatus = NhlFATAL;
 										_NclCleanUpStack(nsubs +1);
 							} 
 							if(estatus != NhlFATAL)  {
-								if((nsubs != 0)&&(nsubs == file->file.var_info[index]->num_dimensions))  {
+								if((nsubs != 0)&&(nsubs == ndims))  {
 									sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
 									sel_ptr->n_entries = nsubs;
 									for(i = 0 ; i < nsubs; i++) {
@@ -5802,7 +5804,8 @@ void CallFILE_VAR_OP(void) {
 					return;
 				}
 
-				if(_isNewFileStructure(file))
+#ifdef USE_NETCDF4_FEATURES
+				if(file->file.use_new_hlfs)
 				{
 					NclNewFile newfile = (NclNewFile)file;
 					NclFileVarNode *varnode = NULL;
@@ -5842,6 +5845,7 @@ void CallFILE_VAR_OP(void) {
 
 				}
 				else
+#endif
 				{
 					index = _NclFileIsVar(file,var);
 

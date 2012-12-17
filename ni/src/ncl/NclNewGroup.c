@@ -256,7 +256,6 @@ NclFile thefile;
         thefile->newfile.var_att_ids[index] = att_id;
     }
 }
-#endif
 
 void UpdateNewGroupDims(NclNewFile group_out, NclFileGrpNode *grpnode)
 {
@@ -273,6 +272,7 @@ void UpdateNewGroupDims(NclNewFile group_out, NclFileGrpNode *grpnode)
    */
     fprintf(stderr, "Leave UpdateNewGroupDims, file: %s, line:%d\n\n", __FILE__, __LINE__);
 }
+#endif
 
 NclGroup *_NclNewGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
                              unsigned int obj_type_mask, NclStatus status,
@@ -280,7 +280,6 @@ NclGroup *_NclNewGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_
 {
     NclNewFile thefile = (NclNewFile) file_in;
     NclNewFile group_out = NULL;
-    int group_out_free = 0;
     NhlErrorTypes ret= NhlNOERROR;
     NclObjClass class_ptr;
     NclFileGrpNode *grpnode = NULL;
@@ -309,7 +308,6 @@ NclGroup *_NclNewGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_
     }
 
     grpnode = _getGrpNodeFromGrpNode(thefile->newfile.grpnode, group_name);
-
     if(NULL == grpnode)
     {
         NHLPERROR((NhlWARNING,NhlEUNKNOWN,
@@ -337,7 +335,6 @@ NclGroup *_NclNewGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_
     {
         group_out = (NclNewFile)NclCalloc(1, sizeof(NclNewFileRec));
         assert(group_out);
-        group_out_free = 1;
     }
     else
     {
@@ -351,21 +348,7 @@ NclGroup *_NclNewGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_
     group_out->newfile.file_format = thefile->newfile.file_format;
 
     group_out->newfile.format_funcs = _NclGetFormatFuncsWithNewHLFS(thefile->newfile.file_ext_q);
-
-#if 0
-    group_out->newfile.grpnode = (NclFileGrpNode *)
-                                 (*group_out->newfile.format_funcs->initialize_file_rec)
-                                 (&group_out->newfile.file_format);
-    if(NULL == group_out->newfile.grpnode)
-    {
-        NhlPError(NhlFATAL,ENOMEM,NULL);
-        if(group_out_free)
-            NclFree((void*)group_out);
-        return(NULL);
-    }
-
-    memcpy(group_out->newfile.grpnode, grpnode, sizeof(NclFileGrpNode));
-#endif
+    group_out->file.use_new_hlfs = 1;
 
     group_out->newfile.grpnode = grpnode;
 
