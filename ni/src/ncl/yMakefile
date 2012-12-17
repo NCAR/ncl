@@ -51,8 +51,8 @@ MPI_DEFS = -DUSE_MPI
 
 #ifdef UseNetCDF4Features
 NC4_FEATURES_DEFS = -DUSE_NETCDF4_FEATURES
-NC4_FEATURES_SRCS = NclNewFile.c NclNewGroup.c NclNewList.c NclNetCDF4.c 
-NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNewList.o NclNetCDF4.o
+NC4_FEATURES_SRCS = NclNewFile.c NclNewGroup.c NclNetCDF4.c 
+NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNetCDF4.o
 #else
 #define NC4_FEATURES_DEFS
 #define NC4_FEATURES_SRCS
@@ -212,7 +212,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \
 			NclType.h \
-			NclExitCode.h \
+			NclDriver.h NclExitCode.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
 			NclOneDValCoordData.h HLUFunctions.h \
 			NclCallBacksI.h date.h NclCCM.h NclGRIB.h NclGRIB2.h date.h tables.h \
@@ -234,7 +234,8 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 
 INSTALL_HDRS	= defs.h HluClasses.h NclApi.h ApiRecords.h NclVar.h \
 			NclBuiltIns.h NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h \
-			NclFile.h NclList.h NclData.h NclFileInterfaces.h 
+			NclFile.h NclList.h NclData.h NclFileInterfaces.h \
+			NclDriver.h
 
 NIO_HDRS        =       nio.h 
 NIO_EXTRA_HDRS  =       nio_path.h
@@ -365,8 +366,8 @@ STATIC_SRCS	=	AddBuiltIns.c AddHLUObjs.c \
 			HLUFunctions.c yywrap.c craybin.c \
 			complete.c editline.c sysunix.c ListSupport.c \
 			NclList.c NclMultiDVallistData.c \
-			NclProf.c NclTime.c
-
+			NclProf.c NclTime.c \
+			NclDriver.c
 
 
 FSRCS		=	qu2reg3.f rowina3.f scm0.f ncepcode.f

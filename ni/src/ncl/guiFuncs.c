@@ -53,6 +53,7 @@
 #include "NclProf.h"
 
 #include "HLUFunctions.h"
+#include "NclGlobalVars.h"
 
 NclFile NclCreateFile(const char *path)
 {
@@ -299,14 +300,22 @@ void guiNhlRLSetFloat(int id, char *resname, float value)
      NhlRLSetFloat(id, (NhlString) resname, value);
 }
 
-void guiNhlRLSetMDFloatArray(int id, char *resname, float *data, int num_dimensions, ng_size_t *len_dimensions)
+void guiNhlRLSetMDFloatArray(int id, char *resname, float *data, int num_dimensions, int *len_dimensions)
 {
-    NhlRLSetMDFloatArray(id, (NhlString)resname, data, num_dimensions, len_dimensions);
+    int n;
+    ng_size_t *dimsizes = (ng_size_t *)NclCalloc(num_dimensions, sizeof(ng_size_t));
+    for(n = 0; n < num_dimensions; ++n)
+        dimsizes[n] = (ng_size_t)len_dimensions[n];
+
+    NhlRLSetMDFloatArray(id, (NhlString)resname, data, num_dimensions, dimsizes);
+
+    NclFree(dimsizes);
 }
 
-void guiNhlRLSetFloatArray(int id, char *resname, float *data, ng_size_t num_elements)
+void guiNhlRLSetFloatArray(int id, char *resname, float *data, int num_elements)
 {
-    NhlRLSetFloatArray(id, (NhlString) resname, data, num_elements);
+    ng_size_t ndims = (ng_size_t) num_elements;
+    NhlRLSetFloatArray(id, (NhlString) resname, data, ndims);
 }
 
 void guiNhlSetValues(int plotid, int rlid)
@@ -314,9 +323,11 @@ void guiNhlSetValues(int plotid, int rlid)
     NhlSetValues(plotid, rlid);
 }
 
-void guiNhlRLGetFloatArray(int id, char *resname, float **data, ng_size_t *num_elements)
+void guiNhlRLGetFloatArray(int id, char *resname, float **data, int *num_elements)
 {
-    NhlRLGetFloatArray(id, (NhlString) resname, data, num_elements);
+    ng_size_t ndims;
+    NhlRLGetFloatArray(id, (NhlString) resname, data, &ndims);
+    *num_elements = (int) ndims;
 }
 
 void guiNhlGetValues(int plotid, int rlid)
