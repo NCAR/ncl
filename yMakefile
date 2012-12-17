@@ -220,6 +220,14 @@ HDF5STUFF:
 	@echo "n"
 #endif
 
+#ifdef	BuildOpenCL
+OpenCLSTUFF:
+	@echo "y"
+#else
+OpenCLSTUFF:
+	@echo "n"
+#endif
+
 #ifdef	UseNetCDF4Features
 NC4STUFF:
 	@echo "y"
