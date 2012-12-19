@@ -356,12 +356,10 @@ char *var_name,NclStatus status)
 #endif
 {
 	NclFileVar fvar = NULL;
-	NclFile thefile;
 	NclObjClass	cptr = (theclass ? theclass : nclFileVarClass);
 
 	_NclInitClass(cptr);
 
-	thefile = (NclFile)_NclGetObj(*(int*)value->multidval.val);
 	if(inst != NULL) {
 		fvar = (NclFileVar) inst;
 	} else {
@@ -397,12 +395,14 @@ struct _NclObjRec*	self;
 	{
 		_NclDelParent((NclObj)thefile,self);
 
-		if(thefile->file.use_new_hlfs)
-		{
-			NclNewFile thenewfile = (NclNewFile) thefile;
-			if(NULL != thenewfile->newfile.format_funcs->free_file_rec)
-				(*thenewfile->newfile.format_funcs->free_file_rec)((void *)thenewfile->newfile.grpnode);
-		}
+	      /*
+	       *if(thefile->file.use_new_hlfs)
+	       *{
+	       *	NclNewFile thenewfile = (NclNewFile) thefile;
+	       *	if(NULL != thenewfile->newfile.format_funcs->free_file_rec)
+	       *		(*thenewfile->newfile.format_funcs->free_file_rec)((void *)thenewfile->newfile.grpnode);
+	       *}
+	       */
 	}
 
 	for(i = 0; i< self_var->var.n_dims; i++ ) {

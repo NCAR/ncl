@@ -2500,10 +2500,8 @@ static void NC4FreeFileRec(void* therec)
         grpnode->open = 0;
     }
 
-  /*
-   *FileDestroyGrpNode(grpnode);
-   *therec = NULL;
-   */
+    FileDestroyGrpNode(grpnode);
+    therec = NULL;
 }
 
 void NC4GetAttrVal(int ncid, int aid, NclFileAttNode *attnode)
