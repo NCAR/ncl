@@ -2708,10 +2708,11 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		NclQuark old_file_ext_q = NrmStringToQuark("nc");
 		struct stat file_stat;
 
-		stat(NrmQuarkToString(the_real_path), &file_stat);
-
-		if(file_stat.st_size)
-			file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q);
+		if(0 == stat(NrmQuarkToString(the_real_path), &file_stat))
+		{
+			if(file_stat.st_size)
+				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q);
+		}
 
 	} else {
 		if (1 == rw_status)
@@ -3031,9 +3032,8 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 			file_ext_q = -1;
 
-			stat(NrmQuarkToString(the_real_path), &file_stat);
-
-			if(file_stat.st_size)
+			if((0 == stat(NrmQuarkToString(the_real_path), &file_stat)) &&
+					(file_stat.st_size))
 				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q);
 			else
 			{
@@ -3043,7 +3043,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 				ext_name = strrchr(tmp_path, '.');
 				/*Use while loop will allow user to append multiple extensions.
-				*But it will be not consistent addfile.
+				*But it will be not consistent to addfile.
 				*So we comment out the while loop for NOW.
 				*Wei Huang, 05/21/2012
 				*/
