@@ -37,7 +37,9 @@ extern "C" {
 #include "ApiRecords.h"
 #include "Machine.h"
 #include "NclFile.h"
+#ifdef USE_NETCDF4_FEATURES
 #include "NclNewFile.h"
+#endif
 #include "VarSupport.h"
 #include "NclFileInterfaces.h"
 #include "DataSupport.h"
@@ -1176,6 +1178,7 @@ void _NclAddSingleObj
 	return;
 }
 
+#ifdef USE_NETCDF4_FEATURES
 static NclApiDataList *getNewFileVarInfoList(NclFile thefile)
 {
     NclApiDataList *tmp = NULL;
@@ -1239,6 +1242,7 @@ static NclApiDataList *getNewFileVarInfoList(NclFile thefile)
     }
     return (thelist);
 }
+#endif
 
 NclApiDataList *_NclGetFileVarInfoList
 #if	NhlNeedProto
@@ -1267,12 +1271,14 @@ NclApiDataList *_NclGetFileVarInfoList
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
 				if(thefile != NULL)
 				{
+#ifdef USE_NETCDF4_FEATURES
 				if(thefile->file.use_new_hlfs)
 				{
 					fprintf(stderr, "\nHit _NclGetFileVarInfoList in file: %s, line: %d\n", __FILE__, __LINE__);
 					thelist = getNewFileVarInfoList(thefile);
 				}
 				else
+#endif
 				{
 					for(i = 0; i < thefile->file.n_vars; i++) {
 						tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
@@ -1357,6 +1363,7 @@ NclQuark file_var_name;
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
 				if(thefile != NULL)
 				{
+#ifdef USE_NETCDF4_FEATURES
 				if(thefile->file.use_new_hlfs)
 				{
 					NclNewFile thenewfile = (NclNewFile) thefile;
@@ -1398,6 +1405,7 @@ NclQuark file_var_name;
 					}
 				}
 				else
+#endif
 				{
 					for(i = 0; i < thefile->file.n_vars; i++) {
 						if(thefile->file.var_info[i]->var_name_quark == file_var_name) {
@@ -1451,6 +1459,7 @@ NclQuark file_var_name;
 	return(NULL);
 }
 
+#ifdef USE_NETCDF4_FEATURES
 static NclApiDataList *getNewFileVarCoordInfo(NclFile thefile,
                                   NclQuark coordname)
 {
@@ -1502,6 +1511,7 @@ static NclApiDataList *getNewFileVarCoordInfo(NclFile thefile,
     }
     return tmp;
 }
+#endif
 
 NclApiDataList *_NclGetFileVarCoordInfo
 #if	NhlNeedProto
@@ -1530,11 +1540,13 @@ NclQuark coordname;
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
 				if(NULL != thefile)
 				{
+#ifdef USE_NETCDF4_FEATURES
 				if(thefile->file.use_new_hlfs)
 				{
 					return (getNewFileVarCoordInfo(thefile, coordname));
 				}
-				else if(_NclFileVarIsCoord(thefile,coordname) != -1)
+#endif
+				if(_NclFileVarIsCoord(thefile,coordname) != -1)
 				{
 					for(i = 0; i < thefile->file.n_file_dims; i++) {
 						if((thefile->file.coord_vars[i] != NULL)&&(thefile->file.coord_vars[i]->var_name_quark == coordname)) {
@@ -1615,6 +1627,7 @@ int *num_names;
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
 				if(thefile != NULL)
 				{
+#ifdef USE_NETCDF4_FEATURES
 				if(thefile->file.use_new_hlfs)
 				{
 					NclNewFile thenewfile = (NclNewFile) thefile;
@@ -1628,6 +1641,7 @@ int *num_names;
 					}
 				}
 				else
+#endif
 				{
 					*num_names = thefile->file.n_vars;
 					if(thefile->file.n_vars > 0) {
@@ -1833,6 +1847,7 @@ long    * stride;
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
 				if(thefile != NULL)
 				{
+#ifdef USE_NETCDF4_FEATURES
 					if(thefile->file.use_new_hlfs)
 					{
 						NclNewFile thenewfile = (NclNewFile) thefile;
@@ -1848,6 +1863,7 @@ long    * stride;
 						}
 					}
 					else
+#endif
 					{
 						index = _NclFileIsVar(thefile,file_var_name);
 						for(k = 0; k < thefile->file.var_info[index]->num_dimensions; k++) {
@@ -1922,6 +1938,7 @@ long* stride;
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
 				if(thefile != NULL)
 				{
+#ifdef USE_NETCDF4_FEATURES
 					if(thefile->file.use_new_hlfs)
 					{
 						NclNewFile thenewfile = (NclNewFile) thefile;
@@ -1937,6 +1954,7 @@ long* stride;
 						}
 					}
 					else
+#endif
 					{
 						index = _NclFileVarIsCoord(thefile,coordname);
 						for(k = 0; k < thefile->file.coord_vars[index]->num_dimensions; k++)
@@ -2096,6 +2114,7 @@ NclQuark attname;
 	return(NULL);
 }
 
+#ifdef USE_NETCDF4_FEATURES
 static NclApiDataList *getNewFileInfo(NclFile thefile)
 {
     NclApiDataList     *tmp = NULL;
@@ -2159,6 +2178,7 @@ static NclApiDataList *getNewFileInfo(NclFile thefile)
 
     return(tmp);
 }
+#endif
 
 NclApiDataList *_NclGetFileInfo
 #if	NhlNeedProto
@@ -2184,11 +2204,13 @@ NclQuark file_sym_name;
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
 				if(thefile != NULL)
 				{
+#ifdef USE_NETCDF4_FEATURES
 				if(thefile->file.use_new_hlfs)
 				{
 					return (getNewFileInfo(thefile));
 				}
 				else
+#endif
 				{
 					tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
 					tmp->kind = FILE_LIST;
@@ -2263,11 +2285,13 @@ NclApiDataList *_NclGetDefinedFileInfo
 							thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
 							if(thefile != NULL)
 							{
+#ifdef USE_NETCDF4_FEATURES
 							if(thefile->file.use_new_hlfs)
 							{
 								tmp = getNewFileInfo(thefile);
 							}
 							else
+#endif
 							{
 								tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
 								tmp->next = NULL;
