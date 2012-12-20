@@ -2871,11 +2871,13 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q)
          		*/
 			switch(format)
 			{
+#ifdef USE_NETCDF4_FEATURES
               			case NC_FORMAT_NETCDF4:
 					file_ext_q = cur_ext_q;
 					found = 1;
                    			NCLnewfs = 1;
                    			break;
+#endif
               			case NC_FORMAT_NETCDF4_CLASSIC:
               			case NC_FORMAT_64BIT:
               			case NC_FORMAT_CLASSIC:
