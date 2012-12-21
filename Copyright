@@ -1,5 +1,5 @@
-NCL - UNIX Version 6.1.0
-Copyright (c) 2012 University Corporation for Atmospheric Research
+NCL - UNIX Version 6.1.1
+Copyright (C) 2013 University Corporation for Atmospheric Research
 The use of this software is governed by a License Agreement.
 See http://www.ncl.ucar.edu/ for more details.
 
@@ -7,7 +7,7 @@ Developed by NCAR's Computational and Information Systems Laboratory,
 UCAR, www.cisl.ucar.edu, with the following contributions:
 
 NCL Profiler
-Copyright (c) 2011
+Copyright (C) 2011
 UChicago Argonne, LLC
 http://www.apache.org/licenses/LICENSE-2.0
 
@@ -16,7 +16,7 @@ The University of Texas, M.D. Anderson Cancer Center
 http://www.netlib.org/random/
 
 ESMF
-Copyright (c) 2002-2012 University Corporation for Atmospheric Research,
+Copyright (C) 2002-2012 University Corporation for Atmospheric Research,
 Massachusetts Institute of Technology, Geophysical Fluid Dynamics Laboratory,
 University of Michigan, National Centers for Environmental Prediction,
 Los Alamos National Laboratory, Argonne National Laboratory,
@@ -29,12 +29,12 @@ UCAR
 http://www.cisl.ucar.edu/css/software/fftpack5/
 
 GRIBEX
-Copyright (c) 1981-2010
+Copyright (C) 1981-2010
 European Centre for Medium-Range Weather Forecast
 http://www.ecmwf.int/products/data/software/grib.html
 
 LAPACK
-Copyright (c) 1999
+Copyright (C) 1999
 Society for Industrial and Applied Mathematics
 http://www.netlib.org/lapack/lug/lapack_lug.html
 
@@ -48,7 +48,7 @@ Baltic Sea Research Institute Warnemunde
 http://www.io-warnemuende.de/homepages/rfeistel/
 
 Spherepack (V3.1)
-Copyright (c) 1998
+Copyright (C) 1998
 UCAR
 http://www.cisl.ucar.edu/css/software/spherepack/
 
