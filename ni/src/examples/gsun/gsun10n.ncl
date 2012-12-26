@@ -1,4 +1,4 @@
-load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsn_code.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 
 function wigley(time:integer)
 local i, j, k
