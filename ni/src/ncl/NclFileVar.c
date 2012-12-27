@@ -393,7 +393,13 @@ struct _NclObjRec*	self;
 	_NclUnRegisterObj((NclObj)self_var);
 	if(thefile != NULL)
 	{
-		_NclDelParent((NclObj)thefile,self);
+		if (thefile->file.use_new_hlfs) {
+			NclNewFile thenewfile = (NclNewFile) thefile;
+			_NclDelParent((NclObj)thefile,(NclObj)value);
+		}
+		else {
+			_NclDelParent((NclObj)thefile,(NclObj)value);
+		}
 
 	      /*
 	       *if(thefile->file.use_new_hlfs)

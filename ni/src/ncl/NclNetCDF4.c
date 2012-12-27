@@ -1627,6 +1627,10 @@ NclFileAttRecord *_NC4_get_atts(int gid, int aid, int n_atts)
     NclFileAttRecord *attrec;
     NclFileAttNode   *attnode;
 
+    short has_missing = 0;
+    short need_add_fillvalue = 1;
+    int   missing_idx = -1;
+
     if(n_atts < 1)
     {
         return NULL;
@@ -1673,6 +1677,7 @@ NclFileAttRecord *_NC4_get_atts(int gid, int aid, int n_atts)
         nc_inq_attname(gid, aid, i, buffer);
         nc_inq_att(gid, aid, buffer, &(attnode->the_nc_type), &alen);
         attnode->n_elem = alen;
+        attnode->type = NC4MapToNcl(&(attnode->the_nc_type));
 
       /*
        *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -1681,6 +1686,25 @@ NclFileAttRecord *_NC4_get_atts(int gid, int aid, int n_atts)
        */
 
         NC4GetAttrVal(gid, aid, attnode);
+
+      /*Check if we need to add "_FillValue".*/
+        if(Qmissing_val == attnode->name)
+        {
+            has_missing = 1;
+            missing_idx = i;
+        }
+        if(Qfill_val == attnode->name)
+            need_add_fillvalue = 0;
+    }
+
+  /*If we need_add_fillvalue and has_missing, then add an extra attribute to att_rec.*/
+    if(need_add_fillvalue)
+    {
+        if(has_missing && (-1 < missing_idx))
+        {
+            attnode = &(attrec->att_node[missing_idx]);
+            _addNclAttNode(&attrec, Qfill_val, attnode->type, attnode->n_elem, attnode->value);
+        }
     }
 
   /*
@@ -2312,14 +2336,6 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
         grpnode->define_mode = 0;
         grpnode->fid = fid;
         grpnode->id = fid;
-
-      /*
-       *This part used Unidata's ncdump code to check the attribute info.
-       */
-      /*
-        init_types(fid);
-        init_prim_types(fid);
-       */
     }
     else
     {
@@ -2327,14 +2343,6 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
         grpnode->define_mode = 0;
         grpnode->fid = fid;
         grpnode->id = fid;
-
-      /*
-       *This part used Unidata's ncdump code to check the attribute info.
-       */
-      /*
-        init_types(fid);
-        init_prim_types(fid);
-       */
     }
 
     if(nc_ret != NC_NOERR)
@@ -2500,8 +2508,6 @@ static void NC4FreeFileRec(void* therec)
         grpnode->open = 0;
     }
 
-    FileDestroyGrpNode(grpnode);
-    therec = NULL;
 }
 
 void NC4GetAttrVal(int ncid, int aid, NclFileAttNode *attnode)
@@ -2518,7 +2524,7 @@ void NC4GetAttrVal(int ncid, int aid, NclFileAttNode *attnode)
         attnode->value = NULL;
         attnode->type = NCL_none;
     }
-    else if(attnode->the_nc_type == NC_CHAR && !(attnode->name == Qfill_val || attnode->name == Qmissing_val))
+    else if(attnode->the_nc_type == NC_CHAR)
     {
         tmp = (char*)NclMalloc(attnode->n_elem+1);
         assert(tmp);
@@ -3708,7 +3714,7 @@ static void *NC4ReadAtt(void *therec, NclQuark theatt, void *storage)
         {
             if(attnode->value != NULL)
             {
-                if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
+                if(attnode->the_nc_type == NC_CHAR)
                 {
                     *(string*)storage = *(string*)(attnode->value);
                 }
@@ -3739,7 +3745,7 @@ static void *NC4ReadAtt(void *therec, NclQuark theatt, void *storage)
                 grpnode->define_mode = 0;
             }
             
-            if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
+            if(attnode->the_nc_type == NC_CHAR)
             {
                 tmp = (char *)NclCalloc(attnode->n_elem+1, sizeof(char));
                 assert(tmp);
@@ -3802,7 +3808,7 @@ static void *NC4ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void 
         {
             if(NULL != attnode->value)
             {
-                if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
+                if(attnode->the_nc_type == NC_CHAR)
                 {
                     *(string*)storage = *(string*)(attnode->value);
                 }
@@ -3842,7 +3848,7 @@ static void *NC4ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void 
                 grpnode->open = 1;
             }
             
-            if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt  == Qmissing_val))
+            if(attnode->the_nc_type == NC_CHAR)
             {
                 tmp = (char*)NclMalloc(attnode->n_elem + 1);
                 tmp[attnode->n_elem] = '\0';
@@ -4108,8 +4114,7 @@ static NhlErrorTypes NC4WriteAtt(void *therec, NclQuark theatt, void *data)
                 grpnode->open = 1;
             }
 
-            if(attnode->the_nc_type == NC_CHAR &&
-                !(theatt == Qfill_val || theatt == Qmissing_val))
+            if(attnode->the_nc_type == NC_CHAR)
             {
                 buffer = NrmQuarkToString(*(NclQuark*)data);
                 if((strlen(buffer)+1 > attnode->n_elem) || attnode->is_virtual)
@@ -4394,7 +4399,7 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
         if (! attnode->is_virtual)
         {
             /* if the value is the same as before don't bother writing it */
-            if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
+            if(attnode->the_nc_type == NC_CHAR)
             {    
                 if (*(NrmQuark*)attnode->value == *(NrmQuark*)data)
                 {
@@ -4430,7 +4435,7 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
             grpnode->open = 1;
         }
 
-        if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
+        if(attnode->the_nc_type == NC_CHAR)
         {
             buffer = NrmQuarkToString(*(NclQuark*)data);
             if(strlen(buffer)+1 > attnode->n_elem || attnode->is_virtual)

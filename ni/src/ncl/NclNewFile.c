@@ -2157,15 +2157,23 @@ void FileDestroyAttRecord(NclFileAttRecord *att_rec)
 {
     int n;
     NclFileAttNode *attnode;
+    int has_att_obj = 0;
 
     if(NULL != att_rec)
     {
+        if (att_rec->id > -1) {
+	    NclObj att = _NclGetObj(att_rec->id);
+	    if (att) {
+		has_att_obj = 1;
+		_NclDestroyObj(att);
+	    }
+	}
         if(NULL != att_rec->att_node)
         {
             for(n = 0; n < att_rec->n_atts; n++)
             {
                 attnode = &(att_rec->att_node[n]);
-                if(NULL != attnode->value)
+                if((! has_att_obj) && NULL != attnode->value)
                 {
                     NclFree(attnode->value);
                     attnode->value = NULL;
@@ -2174,10 +2182,7 @@ void FileDestroyAttRecord(NclFileAttRecord *att_rec)
             NclFree(att_rec->att_node);
             att_rec->att_node = NULL;
         }
-        if(NULL != att_rec->udata);
-            NclFree(att_rec->udata);
-        att_rec->udata = NULL;
-        if(NULL != att_rec->cb);
+        if((! has_att_obj) && NULL != att_rec->cb)
         {
             /*
             *_NhlCB tmpcb = att_rec->cb;
@@ -2188,8 +2193,11 @@ void FileDestroyAttRecord(NclFileAttRecord *att_rec)
             *    _NhlCBDestroy(tmpcb->cblist);
             *    NclFree(tmpcb);
             *    tmpcb = att_rec->cb;
-            *}
-            */
+            *}            */
+
+	    if(NULL != att_rec->udata)
+		NclFree(att_rec->udata);
+	    att_rec->udata = NULL;
             NclFree(att_rec->cb);
             att_rec->cb = NULL;
         }
@@ -2318,11 +2326,16 @@ void FileDestroyGrpNode(NclFileGrpNode *grpnode)
     grpnode = NULL;
 }
 
-void FileDestroyNewHLFS(NclObj self)
+void NewFileDestroy(NclObj self)
 {
     NclNewFile thefile = (NclNewFile) self;
     NclRefList *p, *pt;
 
+    _NclUnRegisterObj((NclObj)self);
+    if(thefile->newfile.format_funcs->free_file_rec != NULL) {
+	    if(thefile->newfile.grpnode != NULL)
+		    (*thefile->newfile.format_funcs->free_file_rec)(thefile->newfile.grpnode);
+    }
     FileDestroyGrpNode(thefile->newfile.grpnode);
 
     thefile->newfile.grpnode = NULL;
@@ -4465,7 +4478,6 @@ static struct _NclVarRec *NewFileReadVar(NclFile infile, NclQuark var_name,
 
     NclFileVarNode *varnode;
     NclFileVarNode *coordnode;
-    NclFileAttNode *attnode;
     NclFileDimNode *dimnode;
 
 /*
@@ -4622,19 +4634,18 @@ static struct _NclVarRec *NewFileReadVar(NclFile infile, NclQuark var_name,
                 {
                     if(coords[j] != -1)
                     {
-                        if(att_id == -1)
-                        {
-                            att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
-                        } 
+			    NclMultiDValData coord_md = _NclVarValueRead(tmp_var,NULL,NULL);
+			    if(att_id == -1)
+			    {
+				    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+			    } 
+			    _NclAddAtt(att_id,NrmQuarkToString(tmp_var->var.var_quark),coord_md,&tmp_sel);
 
-                        attnode = _getAttNodeFromNclFileVarNode(varnode, NrmStringToQuark(NCL_MISSING_VALUE_ATT));
+			    coords[j] = -1;
+			    if(tmp_var->obj.status != PERMANENT) {
+				    _NclDestroyObj((NclObj)tmp_var);
+			    }
 
-                        _NclAddAtt(att_id,NrmQuarkToString(attnode->name),
-					_NclVarValueRead(tmp_var,NULL,NULL),&tmp_sel);
-                        coords[j] = -1;
-                        if(tmp_var->obj.status != PERMANENT) {
-                            _NclDestroyObj((NclObj)tmp_var);
-                        }
                     }
                     single = 0;
                 } else {
@@ -5657,6 +5668,7 @@ static NhlErrorTypes NewFileWriteVarAtt(NclFile infile, NclQuark var, NclQuark a
     NclObjTypes obj_type;
     void *data_type;
     NhlArgVal udata;
+    int i;
     
     NclFileVarNode *varnode;
 
@@ -5747,6 +5759,12 @@ static NhlErrorTypes NewFileWriteVarAtt(NclFile infile, NclQuark var, NclQuark a
                 attname,
                 tmp_att_md->multidval.val
                 );
+	/* the value is stored in the att_rec as well (not a copy - it's a pointer to the value */
+	for (i = 0; i < varnode->att_rec->n_atts; i++) {
+		if (varnode->att_rec->att_node[i].name == attname) {
+			varnode->att_rec->att_node[i].value = tmp_att_md->multidval.val;
+		}
+	}
 
         if (ret < NhlNOERROR)
         {
@@ -8553,9 +8571,9 @@ NclNewFileClassRec nclNewFileClassRec =
     {        
         "NclNewFileClass",
         sizeof(NclNewFileRec),
-        (NclObjClass)&nclObjClassRec,
+        (NclObjClass)&nclFileClassRec,
         0,
-        (NclGenericFunction)    NULL,
+        (NclGenericFunction)    NewFileDestroy,
         (NclSetStatusFunction)  NULL,
         (NclInitPartFunction)   NULL,
         (NclInitClassFunction)  InitializeNewFileClass,

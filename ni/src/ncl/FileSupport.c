@@ -3018,6 +3018,9 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
         struct stat file_stat;
 
+      /*Save the previous NCLnewfs.*/
+	short preNCLnewfs = NCLnewfs;
+
 	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status);
 
 	if(! is_http)
@@ -3027,7 +3030,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"(%s) has no file extension, can't determine type of file to open",NrmQuarkToString(path)));
 			return(NULL);
 		}
-		else if (1 == rw_status)
+		else if (rw_status > -1)
 		{
 			NclQuark the_real_path = NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path)));
 			NclQuark old_file_ext_q = file_ext_q;
@@ -3101,6 +3104,9 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		file_out = _NclFileCreate(inst, theclass, obj_type, obj_type_mask, status,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
 	}					
+
+      /*Set back to previous NCLnewfs.*/
+	NCLnewfs = preNCLnewfs;
 
 	return file_out;
 }

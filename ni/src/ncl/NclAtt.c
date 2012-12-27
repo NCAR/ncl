@@ -259,7 +259,8 @@ NclSelectionRecord * sel_ptr;
 		if(lhs_type != rhs_type) {
 			tmp_md = _NclCoerceData(value,targetdat->multidval.type->type_class.type ,(targetdat->multidval.missing_value.has_missing?&targetdat->multidval.missing_value.value:NULL));
 			if(tmp_md == NULL) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"Attribute assignment type mismatch");
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s: Attribute assignment type mismatch\n",
+								__PRETTY_FUNCTION__));
 				return(NhlFATAL);
 			} else {
 				if (att_quark == NrmStringToQuark(NCL_MISSING_VALUE_ATT) && targetdat->multidval.type->type_class.data_type == NCL_logical) {
