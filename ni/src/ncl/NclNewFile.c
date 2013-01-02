@@ -4491,13 +4491,15 @@ static struct _NclVarRec *NewFileReadVar(NclFile infile, NclQuark var_name,
 
     if(NULL != varnode)
     {
-        for(i = 0 ; i < NCL_MAX_DIMENSIONS; i++)
-        {
-            coords[i] = -1;
-            dim_info[i].dim_quark = -1;
-            dim_info[i].dim_num = -1;
-            dim_info[i].dim_size = 0;
-        }
+      /*
+       *for(i = 0 ; i < NCL_MAX_DIMENSIONS; i++)
+       *{
+       *    coords[i] = -1;
+       *    dim_info[i].dim_quark = -1;
+       *    dim_info[i].dim_num = -1;
+       *    dim_info[i].dim_size = 0;
+       *}
+       */
 
         tmp_md = MyNewFileReadVarValue(infile,var_name,sel_ptr,dim_info,FILE_VAR_ACCESS);
         if(tmp_md == NULL)
@@ -4646,6 +4648,18 @@ static struct _NclVarRec *NewFileReadVar(NclFile infile, NclQuark var_name,
 				    _NclDestroyObj((NclObj)tmp_var);
 			    }
 
+/*Wei's change
+			if(NULL != attnode)
+			{
+				NclMultiDValData coord_md = _NclVarValueRead(tmp_var,NULL,NULL);
+                        	_NclAddAtt(att_id,NrmQuarkToString(attnode->name),coord_md,&tmp_sel);
+			}
+
+                        coords[j] = -1;
+                        if(tmp_var->obj.status != PERMANENT) {
+                            _NclDestroyObj((NclObj)tmp_var);
+                        }
+*/
                     }
                     single = 0;
                 } else {
