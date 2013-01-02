@@ -278,7 +278,7 @@ static int InitializeOptions(NclFileGrpNode *grpnode)
     options[Ncl_MISSING_TO_FILL_VALUE].values = (void *) NclCalloc(1, _NclSizeOf(NCL_int));
     *(int *)options[Ncl_MISSING_TO_FILL_VALUE].values = 1;
 
-    options[Ncl_SHUFFLE].name = NrmStringToQuark("compressionlevel");
+    options[Ncl_SHUFFLE].name = NrmStringToQuark("shuffle");
     options[Ncl_SHUFFLE].type = NCL_int;
     options[Ncl_SHUFFLE].size = 1;
     options[Ncl_SHUFFLE].values = (void *) NclCalloc(1, _NclSizeOf(NCL_int));
@@ -288,6 +288,7 @@ static int InitializeOptions(NclFileGrpNode *grpnode)
     options[Ncl_COMPRESSION_LEVEL].type = NCL_int;
     options[Ncl_COMPRESSION_LEVEL].size = 1;
     options[Ncl_COMPRESSION_LEVEL].values = (void *) NclCalloc(1, _NclSizeOf(NCL_int));
+    *(int *)options[Ncl_COMPRESSION_LEVEL].values = 0;
 
     options[Ncl_USE_CACHE].name = NrmStringToQuark("usecache");
     options[Ncl_USE_CACHE].type = NCL_int;
@@ -5548,6 +5549,10 @@ static NhlErrorTypes NC4SetOption(void *rootgrp, NclQuark option,
     else if (option == NrmStringToQuark("missingtofillvalue"))
     {
         grpnode->options[Ncl_MISSING_TO_FILL_VALUE].values = values;
+    }
+    else if (option == NrmStringToQuark("shuffle"))
+    {
+        grpnode->options[Ncl_SHUFFLE].values = values;
     }
     else if (option == NrmStringToQuark("compressionlevel"))
     {

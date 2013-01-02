@@ -1468,10 +1468,10 @@ NclMultiDValData value;
 			}
 			tmp_md = _NclCoerceData(value,fcp->options[i].value->multidval.type->type_class.type,NULL);
 			if (tmp_md == NULL) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
+				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 				    "FileSetFileOption: invalid type for %s option value; value must be coercible to %s",
 					  NrmQuarkToString(option), 
-					  NrmQuarkToString(_NclObjTypeToName(fcp->options[i].value->multidval.type->type_class.type)));
+					  NrmQuarkToString(_NclObjTypeToName(fcp->options[i].value->multidval.type->type_class.type))));
 				return(NhlWARNING);
 			}
 			if (fcp->options[i].valid_values) {
@@ -1583,10 +1583,10 @@ NclMultiDValData value;
 			}
 			tmp_md = _NclCoerceData(value,fcp->options[i].value->multidval.type->type_class.type,NULL);
 			if (tmp_md == NULL) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
+				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 				    "FileSetFileOption: invalid type for %s option value; value must be coercible to %s",
 					  NrmQuarkToString(option), 
-					  NrmQuarkToString(_NclObjTypeToName(fcp->options[i].value->multidval.type->type_class.type)));
+					  NrmQuarkToString(_NclObjTypeToName(fcp->options[i].value->multidval.type->type_class.type))));
 				return(NhlWARNING);
 			}
 			if (fcp->options[i].valid_values) {
@@ -2026,7 +2026,7 @@ NhlErrorTypes InitializeFileOptions
 
 	/*suffle*/
 	fcp->options[Ncl_SHUFFLE].format = NrmStringToQuark("nc");
-	fcp->options[Ncl_SHUFFLE].name = NrmStringToQuark("compressionlevel");
+	fcp->options[Ncl_SHUFFLE].name = NrmStringToQuark("shuffle");
 	len_dims = 1;
 	ival = (int*) NclMalloc(sizeof(int));
 	*ival = 1;
