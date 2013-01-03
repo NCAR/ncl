@@ -1717,20 +1717,12 @@ NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* Binary file write byte order */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, UpdateDims },   /* GRIB initial time coordinate type */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* NetCDF missing to fill value option */
-#ifdef USE_NETCDF4
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },         /* NetCDF 4 shuffle */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },         /* NetCDF 4 compression option level */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },         /* NetCDF 4 cache switch */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 3200000, NULL },   /* NetCDF 4 cache size */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 1009, NULL },      /* NetCDF 4 cache nelems */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0.50, NULL },      /* NetCDF 4 cache preemption */
-#endif
-#ifdef BuildHDF5
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },         /* HDF5 compression option level */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },         /* HDF5 cache switch */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 3200000, NULL },   /* HDF5 cache size */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 1009, NULL },      /* HDF5 cache nelems */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0.50, NULL },      /* HDF5 cache preemption */
-#endif
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB default NCEP parameter table */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB print record info */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB single element dimensions */
@@ -2034,7 +2026,7 @@ NhlErrorTypes InitializeFileOptions
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
 	ival = (int*) NclMalloc(sizeof(int));
-	*ival = 0;
+	*ival = 1;
 	fcp->options[Ncl_SHUFFLE].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);

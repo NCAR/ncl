@@ -7995,8 +7995,11 @@ NclExecuteReturnStatus _NclExecute
 				exit ( -1 );
 				break;
 			default:
-				fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-				fprintf(stderr, "\tUNKNOW Operator *ptr: %ld\n", (long)*ptr);
+			      /*
+			       *fprintf(stderr, "function %s, file: %s, line: %d\n",
+			       *                 __PRETTY_FUNCTION__, __FILE__, __LINE__)
+			       *fprintf(stderr, "\tUNKNOWN Operator *ptr: %ld\n", (long)*ptr);
+			       */
 				break;
 		}
 		if(estatus < NhlINFO) {

@@ -247,6 +247,7 @@ static int InitializeOptions(NclFileGrpNode *grpnode)
         NhlPError(NhlFATAL,ENOMEM,NULL);
         return 1;
     }
+
     options[Ncl_PREFILL].name = NrmStringToQuark("prefill");
     options[Ncl_PREFILL].type = NCL_logical;
     options[Ncl_PREFILL].size = 1;
@@ -294,7 +295,7 @@ static int InitializeOptions(NclFileGrpNode *grpnode)
     options[Ncl_USE_CACHE].type = NCL_int;
     options[Ncl_USE_CACHE].size = 1;
     options[Ncl_USE_CACHE].values = (void *) NclCalloc(1, _NclSizeOf(NCL_int));
-    *(int *)options[Ncl_USE_CACHE].values = 0;
+    *(int *)options[Ncl_USE_CACHE].values = 1;
 
     options[Ncl_CACHE_SIZE].name = NrmStringToQuark("cachesize");
     options[Ncl_CACHE_SIZE].type = NCL_int;
@@ -312,7 +313,7 @@ static int InitializeOptions(NclFileGrpNode *grpnode)
     options[Ncl_CACHE_PREEMPTION].type = NCL_float;
     options[Ncl_CACHE_PREEMPTION].size = 1;
     options[Ncl_CACHE_PREEMPTION].values = (void *) NclCalloc(1, _NclSizeOf(NCL_float));
-    *(float *)options[Ncl_CACHE_PREEMPTION].values = 0.0;
+    *(float *)options[Ncl_CACHE_PREEMPTION].values = 0.25;
 
     grpnode->options = options;
     return 0;
@@ -2263,6 +2264,7 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
             nc_inq_var_deflate(gid, i, &(varnode->shuffle), &deflatep, &(varnode->compress_level));
 
           /*
+           *fprintf(stderr, "\nfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
            *fprintf(stderr, "\t\tvarnode->shuffle = %d, deflatep = %d, compress_level = %d\n",
            *                     varnode->shuffle, deflatep, varnode->compress_level);
            */
@@ -2496,14 +2498,22 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
 
 static void NC4FreeFileRec(void* therec)
 {
+    int ret;
 
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
 
     if(grpnode->open)
     {
-        if(0 <= grpnode->fid)
+        if((0 <= grpnode->fid) && (0 > grpnode->pid))
         {
-            ncclose(grpnode->fid);
+            ret = ncclose(grpnode->fid);
+            if(NC_NOERR != ret)
+            {
+              /*
+               */
+                fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,(char*)nc_strerror(ret)));
+            }
             grpnode->fid = -1;
         }
         grpnode->open = 0;
@@ -2639,12 +2649,20 @@ int id;
 int sync;
 #endif
 {
+    int ret;
 
     if(0 == *(int *)(rootgrp->options[Ncl_SUPPRESS_CLOSE].values))
     {
-        ncclose(fid);
         rootgrp->open = 0;
         rootgrp->fid = -1;
+        ret = ncclose(fid);
+        if(NC_NOERR != ret)
+        {
+          /*
+           */
+            fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+            NHLPERROR((NhlWARNING,NhlEUNKNOWN,(char*)nc_strerror(ret)));
+        }
     }
     else
     {
@@ -2733,7 +2751,15 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
                 {
                     if(grpnode->compress_level > varnode->compress_level)
                         varnode->compress_level = grpnode->compress_level;
+                    varnode->shuffle = *(int *)(grpnode->options[Ncl_SHUFFLE].values);
                     deflate_level = varnode->compress_level;
+
+                  /*
+                   */
+                    fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                    fprintf(stderr, "\t\tvarnode->shuffle = %d, compress_level = %d\n",
+                                         varnode->shuffle, varnode->compress_level);
+
                     nc_ret = nc_def_var_deflate(id, varnode->id, varnode->shuffle,
                                 deflate, deflate_level);
                 }
@@ -3278,7 +3304,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
            *                 i, start[i], i, finish[i], i, stride[i]);
            */
             count[i] = (int)floor((finish[i] - start[i])/(double)stride[i]) + 1;
-            locstart[i] = start[i];
+            locstart[i] = locstart[i];
             n_elem *= count[i];
             if(stride[i] != 1)
             {
@@ -4534,8 +4560,10 @@ NhlErrorTypes NC4AddVarChunk(void* therec, NclQuark thevar,
 
     int storage = NC_CHUNKED;
 
-    fprintf(stderr, "\nEnter %s, file: %s, line: %d\n",
-                     __PRETTY_FUNCTION__, __FILE__, __LINE__);
+  /*
+   *fprintf(stderr, "\nEnter %s, file: %s, line: %d\n",
+   *                 __PRETTY_FUNCTION__, __FILE__, __LINE__);
+   */
 
     if(grpnode->status > 0)
     {    
@@ -4581,9 +4609,11 @@ NhlErrorTypes NC4AddVarChunk(void* therec, NclQuark thevar,
             }
         }
 
-       fprintf(stderr, "function %s, file: %s, line: %d\n",
-                        __PRETTY_FUNCTION__, __FILE__, __LINE__);
-       fprintf(stderr, "\tn_chunk_dims = %d\n", n_chunk_dims);
+     /*
+      *fprintf(stderr, "function %s, file: %s, line: %d\n",
+      *                 __PRETTY_FUNCTION__, __FILE__, __LINE__);
+      *fprintf(stderr, "\tn_chunk_dims = %d\n", n_chunk_dims);
+      */
 
        chunkdimrec = _NclFileDimAlloc(n_chunk_dims);
        chunkdimrec->gid = grpnode->id;
@@ -4743,8 +4773,16 @@ static NhlErrorTypes NC4SetVarCompressLevel(void* therec, NclQuark thevar,
         varnode->compress_level = compress_level;
         if(compress_level > 0)
             deflate = 1;
+        varnode->shuffle = *(int *)(grpnode->options[Ncl_SHUFFLE].values);
+
+      /*
+       *fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+       *fprintf(stderr, "\t\tvarnode->shuffle = %d, compress_level = %d\n",
+       *                     varnode->shuffle, varnode->compress_level);
+       */
+
         nc_ret = nc_def_var_deflate(fid, varnode->id, varnode->shuffle,
-                                    deflate, deflate_level);
+                                    deflate, varnode->compress_level);
     }
 
     return(ret);
@@ -5103,6 +5141,11 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
 
                 if((ret == NC_NOERR) && (grpnode->format > 2) && (deflate_level > -1))
                 {
+                  /*
+                   *fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                   *fprintf(stderr, "\t\tshuffle = %d, compress_level = %d\n",
+                   *                    shuffle, deflate_level);
+                   */
                     ret  = nc_def_var_deflate(fid,var_id,shuffle,deflate,deflate_level);
                 }
             }
@@ -5553,6 +5596,11 @@ static NhlErrorTypes NC4SetOption(void *rootgrp, NclQuark option,
     else if (option == NrmStringToQuark("shuffle"))
     {
         grpnode->options[Ncl_SHUFFLE].values = values;
+
+      /*
+       *fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+       *fprintf(stderr, "\t\tset shuffle = %d\n", *(int *)values);
+       */
     }
     else if (option == NrmStringToQuark("compressionlevel"))
     {
@@ -5563,10 +5611,6 @@ static NhlErrorTypes NC4SetOption(void *rootgrp, NclQuark option,
             return(NhlWARNING);
         }
         grpnode->options[Ncl_COMPRESSION_LEVEL].values = values;
-    }
-    else if (option == NrmStringToQuark("shuffle"))
-    {
-        grpnode->options[Ncl_SHUFFLE].values = values;
     }
     else if (option == NrmStringToQuark("usecache"))
     {
