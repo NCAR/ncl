@@ -2415,12 +2415,7 @@ if(the_list != NULL) {
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
 				} else {
-					/*Orginal
 					if(data.u.data_var->obj.ref_count == 0) {
-					*/
-					/*Suppose we can only delete TEMPORARY vaiables, Wei 01/03/2013*/
-					if((data.u.data_var->obj.ref_count == 0) && 
-					   (data.u.data_var->obj.status != PERMANENT)) {
 						_NclDestroyObj((NclObj)data.u.data_var);
 					} else {
 						data.u.data_var->var.thesym = NULL;

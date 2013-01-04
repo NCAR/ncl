@@ -1162,6 +1162,9 @@ NclObj self;
 	if(NULL != thefile->file.file_dim_info)
 		NclFree(thefile->file.file_dim_info);
 
+	if(NULL != thefile->file.coord_vars)
+		NclFree(thefile->file.coord_vars);
+
 	if(thefile->file.file_atts_id != -1) {
 		NclFree(thefile->file.file_att_udata);
 		_NhlCBDelete(thefile->file.file_att_cb);

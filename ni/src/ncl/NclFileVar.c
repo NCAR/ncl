@@ -391,25 +391,6 @@ struct _NclObjRec*	self;
 	} 
 
 	_NclUnRegisterObj((NclObj)self_var);
-	if(thefile != NULL)
-	{
-		if (thefile->file.use_new_hlfs) {
-			NclNewFile thenewfile = (NclNewFile) thefile;
-			_NclDelParent((NclObj)thefile,(NclObj)value);
-		}
-		else {
-			_NclDelParent((NclObj)thefile,(NclObj)value);
-		}
-
-	      /*
-	       *if(thefile->file.use_new_hlfs)
-	       *{
-	       *	NclNewFile thenewfile = (NclNewFile) thefile;
-	       *	if(NULL != thenewfile->newfile.format_funcs->free_file_rec)
-	       *		(*thenewfile->newfile.format_funcs->free_file_rec)((void *)thenewfile->newfile.grpnode);
-	       *}
-	       */
-	}
 
 	for(i = 0; i< self_var->var.n_dims; i++ ) {
 		if(self_var->var.coord_vars[i] != -1) {
@@ -420,7 +401,6 @@ struct _NclObjRec*	self;
         if(self_var->var.att_id != -1)
         _NclDelParent(_NclGetObj(self_var->var.att_id),(NclObj)self_var);
 
-	
 	if((value != NULL)&&(value->obj.class_ptr->obj_class.destroy != NULL)) {
 		_NclDelParent((NclObj)value,self);
 	}
