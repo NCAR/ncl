@@ -3304,7 +3304,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
            *                 i, start[i], i, finish[i], i, stride[i]);
            */
             count[i] = (int)floor((finish[i] - start[i])/(double)stride[i]) + 1;
-            locstart[i] = locstart[i];
+            locstart[i] = start[i];
             n_elem *= count[i];
             if(stride[i] != 1)
             {
