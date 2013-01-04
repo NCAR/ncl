@@ -5874,6 +5874,7 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 		if (! tmp_md) {
 			return NhlFATAL;
 		}
+		index = FileIsVar(thefile,lhs_var);
 		for ( i = 0; i < tmp_var->var.n_dims; i++) {
 			dim_names[i] = tmp_var->var.dim_info[i].dim_quark;
 			if (dim_names[i] == NrmStringToQuark("ncl_scalar"))
@@ -5883,6 +5884,11 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 					ret = FileAddDim(thefile,dim_names[i],tmp_var->var.dim_info[i].dim_size,False);
 				}
 			}
+			else if (index >= 0 && thefile->file.var_info[index]->num_dimensions == 1 &&
+				 FileGetDimName(thefile,thefile->file.var_info[index]->file_dim_num[0]) == 
+				 NrmStringToQuark("ncl_scalar")) {
+				continue;
+			}
 			else {
 				char buffer[32];
 				sprintf(buffer,"ncl%d",thefile->file.n_file_dims);
@@ -5890,7 +5896,6 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 				dim_names[i] = NrmStringToQuark(buffer);
 			}
 		}
-		index = FileIsVar(thefile,lhs_var);
 		if (index < 0) {
 			ret = FileAddVar(thefile,lhs_var,
 					 NrmStringToQuark(_NclBasicDataTypeToName(tmp_md->multidval.type->type_class.data_type)),
