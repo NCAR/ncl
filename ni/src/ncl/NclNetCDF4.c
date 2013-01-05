@@ -5094,7 +5094,8 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
 
         if (dim_ids[0] == -999)
         {
-            if (n_dims == 1 && dim_sizes[0] == 1 && dim_names[0] == NrmStringToQuark("ncl_scalar"))
+            if (n_dims == 1 && dim_names[0] == NrmStringToQuark("ncl_scalar") &&
+               (1 == dim_sizes[0] || (-5 == dim_sizes[0])))
             {
                 dim_ids[0] = -5;
                 add_scalar_dim = 1;

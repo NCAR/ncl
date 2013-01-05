@@ -7314,6 +7314,13 @@ static NhlErrorTypes NewFileWriteVarVar(NclFile infile, NclQuark lhs_var,
             else
             {
                 char buffer[32];
+
+                if(1 == tmp_var->var.dim_info[i].dim_size)
+                {
+                    if(NrmStringToQuark("ncl_scalar") == thefile->newfile.grpnode->dim_rec->dim_node[0].name)
+                        continue;
+                }
+
                 sprintf(buffer,"ncl%d",thefile->newfile.grpnode->dim_rec->n_dims);
                 ret = NewFileAddDim(infile,NrmStringToQuark(buffer),tmp_var->var.dim_info[i].dim_size,False);
                 dim_names[i] = NrmStringToQuark(buffer);
