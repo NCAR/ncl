@@ -552,6 +552,74 @@ NhlErrorTypes _NclIListFuncs
         return(NhlNOERROR);
 }
 
+NclQuark *_NclGetNewFileVarNames(void *therec, int *num_vars)
+{
+    NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
+    NclFileGrpNode *tmpgrpnode = NULL;
+    NclQuark *out_quarks = NULL;
+    NclQuark *tmp_quarks = NULL;
+    int n, nv;
+    int i;
+
+    *num_vars = 0;
+
+    if(NULL != grpnode->var_rec)
+    {
+        if(grpnode->var_rec->n_vars)
+        {
+            *num_vars = grpnode->var_rec->n_vars;
+
+            out_quarks = (NclQuark *)NclCalloc(*num_vars, sizeof(NclQuark));
+            assert(out_quarks);
+
+            for(i = 0; i < grpnode->var_rec->n_vars; ++i)
+            {
+                out_quarks[i] = grpnode->var_rec->var_node[i].real_name;
+            }
+        }
+    }
+
+    if(NULL != grpnode->grp_rec)
+    {
+        if(grpnode->grp_rec->n_grps)
+        {
+            for(n = 0; n < grpnode->grp_rec->n_grps; ++n)
+            {
+                tmpgrpnode = grpnode->grp_rec->grp_node[n];
+
+                tmp_quarks = _NclGetNewFileVarNames((void *)tmpgrpnode, &nv);
+
+                if(nv)
+                {
+                    out_quarks = (NclQuark *)NclRealloc(out_quarks,
+                                                (*num_vars + nv) * sizeof(NclQuark));
+                    assert(out_quarks);
+
+                    for(i = 0; i < nv; ++i)
+                    {
+                        out_quarks[*num_vars + i] = tmp_quarks[i];
+                    }
+                    NclFree(tmp_quarks);
+
+                    *num_vars += nv;
+                }
+            }
+        }
+    }
+
+    return(out_quarks);
+}
+
+NclQuark *_NclNewFileReadVarNames(NclFile thefile, int *num_vars)
+{
+    NclNewFile newfile = (NclNewFile) thefile;
+    NclQuark *out_quarks = NULL;
+
+    out_quarks = _NclGetNewFileVarNames((void *)newfile->newfile.grpnode, num_vars);
+
+    return(out_quarks);
+}
+
 NhlErrorTypes _NclIGetFileVarNames
 #if	NhlNeedProto
 (void)
@@ -607,7 +675,12 @@ NhlErrorTypes _NclIGetFileVarNames
 	}
 
 	if(NULL != thefile)
-		var_names = _NclFileReadVarNames(thefile, &num_vars);
+	{
+		if(thefile->file.use_new_hlfs)
+			var_names = _NclNewFileReadVarNames(thefile, &num_vars);
+		else
+			var_names = _NclFileReadVarNames(thefile, &num_vars);
+	}
 
 	if (NULL == var_names || num_vars == 0) {
 		string *tmp_str =(string*) NclMalloc(((NclTypeClass)nclTypestringClass)->type_class.size);

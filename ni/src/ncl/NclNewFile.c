@@ -8533,7 +8533,10 @@ NhlErrorTypes NewFileWriteCompound(NclFile infile, NclQuark compound_name, NclQu
 NclQuark *_NclGetGrpNames(void *therec, int *num_grps)
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
+    NclFileGrpNode *tmpgrpnode = NULL;
     NclQuark *out_quarks = NULL;
+    NclQuark *tmp_quarks = NULL;
+    int n, ng;
     int i;
 
     *num_grps = 0;
@@ -8541,49 +8544,40 @@ NclQuark *_NclGetGrpNames(void *therec, int *num_grps)
     {
         if(grpnode->grp_rec->n_grps)
         {
-            out_quarks = (NclQuark*)NclCalloc(grpnode->grp_rec->n_grps,
-                                           sizeof(NclQuark));
+            *num_grps = grpnode->grp_rec->n_grps;
+
+            out_quarks = (NclQuark *)NclCalloc(*num_grps, sizeof(NclQuark));
             assert(out_quarks);
 
-            for(i = 0; i < grpnode->grp_rec->n_grps; i++)
+            for(i = 0; i < grpnode->grp_rec->n_grps; ++i)
             {
                 out_quarks[i] = grpnode->grp_rec->grp_node[i]->name;
             }
 
-            *num_grps = grpnode->grp_rec->n_grps;
-        }
-    }
-
-#if 1
-    if(NULL != grpnode->grp_rec)
-    {
-        NclQuark *tmp_quarks = NULL;
-        int n, ng;
-
-        if(grpnode->grp_rec->n_grps)
-        {
-            for(n = 0; n < grpnode->grp_rec->n_grps; n++)
+            for(n = 0; n < grpnode->grp_rec->n_grps; ++n)
             {
-                tmp_quarks = _NclGetGrpNames((void *)grpnode->grp_rec->grp_node[i], &ng);
+                tmpgrpnode = grpnode->grp_rec->grp_node[n];
+
+                tmp_quarks = _NclGetGrpNames((void *)tmpgrpnode, &ng);
 
                 if(ng)
                 {
-                    out_quarks = (NclQuark*)realloc(out_quarks,
+                    out_quarks = (NclQuark *)NclRealloc(out_quarks,
                                                 (*num_grps + ng) * sizeof(NclQuark));
                     assert(out_quarks);
 
-                    for(i = 0; i < ng; i++)
+                    for(i = 0; i < ng; ++i)
                     {
                         out_quarks[*num_grps + i] = tmp_quarks[i];
                     }
                     NclFree(tmp_quarks);
+
+                    *num_grps += ng;
                 }
- 
-                *num_grps += ng;
             }
         }
     }
-#endif
+
     return(out_quarks);
 }
 
