@@ -78,8 +78,8 @@ static cairo_t         *cairoContexts[NUM_CONTEXT];
 static int             cairoEnvIndices[NUM_CONTEXT];
 
 cairo_surface_t *qt_surface = NULL;
-int qt_painter_width  = 1200;
-int qt_painter_height = 900;
+int qt_painter_width  = 1000;
+int qt_painter_height = 1000;
 
 static int getCairoEnvIndex(int wksId) {
     int i;
@@ -140,7 +140,13 @@ void CROpict_init(GKSC *gksc) {
      *  Get the background color and set the source to the background color.
      */
     cval = unpack_argb(psa->ctable, 0);
-    cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, cval.alpha);
+  /*Qt Change.
+   *cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, cval.alpha);
+   */
+    if(CQT == psa->wks_type)
+        cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, 0.0);
+    else
+        cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, cval.alpha);
 
     /* NOTE: This is likely not quite right, but I don't understand the use of the clipping rectangle below. In any case,
      * the code that does the Right Thing for PS/PDF does not result in a complete fill for image-based formats,
@@ -540,9 +546,11 @@ int cro_ClearWorkstation(GKSC *gksc) {
 
     else if (psa->wks_type == CQT)
     {
-        fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
-                         __FILE__, __LINE__, __PRETTY_FUNCTION__);
-        fprintf(stderr, "\tWrite image to qt-painter.\n\n");
+      /*
+       *fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
+       *                 __FILE__, __LINE__, __PRETTY_FUNCTION__);
+       *fprintf(stderr, "\tWrite image.\n\n");
+       */
 
         psa->image_width  = qt_painter_width;
         psa->image_height = qt_painter_height;
@@ -585,13 +593,17 @@ int cro_CloseWorkstation(GKSC *gksc) {
     }
     else if (psa->wks_type == CQT)
     {
-        fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
-                         __FILE__, __LINE__, __PRETTY_FUNCTION__);
-        fprintf(stderr, "\tWrite image to qt-painter.\n\n");
-
       /*
+       *fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
+       *                 __FILE__, __LINE__, __PRETTY_FUNCTION__);
+       *fprintf(stderr, "\tWrite image to qt-painter.\n\n");
+       */
+        cairo_destroy(getContext(psa->wks_id));
+      /*Do not free surface, as this surface is not allocated (defined) in NCL.
        *croFreeNativeSurface(getSurface(psa->wks_id));
        */
+        removeCairoEnv(psa->wks_id);
+        free(psa);
     }
 
     return (0);
@@ -907,8 +919,10 @@ int cro_OpenWorkstation(GKSC *gksc) {
     extern int orig_wks_id;
     static CROClipRect rect;
 
-    fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
-                     __FILE__, __LINE__, __PRETTY_FUNCTION__);
+  /*
+   *fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
+   *                 __FILE__, __LINE__, __PRETTY_FUNCTION__);
+   */
 
     if (getenv("CRO_TRACE")) {
         printf("Got to cro_OpenWorkstation\n");
@@ -1005,18 +1019,14 @@ int cro_OpenWorkstation(GKSC *gksc) {
         double width  = (double) qt_painter_width;
         double height = (double) qt_painter_height;
 
-        /*
-         *  Create a QT (painter) workstation.
-         *  QPainter *painter;
-         *  surface = cairo_qt_surface_create(painter, psa->image_width, psa->image_height);
-         */
-
-        fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
-                         __FILE__, __LINE__, __PRETTY_FUNCTION__);
-        fprintf(stderr, "\tpsa->image_width = %d, psa->image_height = %d\n",
-                         (int) psa->image_width, (int) psa->image_height);
-        fprintf(stderr, "\tWe should create surface with QPainter.\n");
-        fprintf(stderr, "\tBut as link to Qt could be pain, we just use other function to create a surface.\n\n");
+      /*
+       *fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
+       *                 __FILE__, __LINE__, __PRETTY_FUNCTION__);
+       *fprintf(stderr, "\tpsa->image_width = %d, psa->image_height = %d\n",
+       *                 (int) psa->image_width, (int) psa->image_height);
+       *fprintf(stderr, "\tWe should create surface with QPainter.\n");
+       *fprintf(stderr, "\tBut as link to Qt could be pain, we just use other function to create a surface.\n\n");
+       */
 
         if(NULL != qt_surface)
             surface = qt_surface;
@@ -1075,7 +1085,11 @@ int cro_OpenWorkstation(GKSC *gksc) {
      *  Define the default foreground (black) and background (white)
      *  colors and draw the background.
      */
-    (psa->ctable)[0] = 0xFFFFFFFF;
+  /*Qt & OpenGL
+    if(CQT == psa->wks_type)
+        (psa->ctable)[0] = 0xFFFFFF00;
+    else
+        (psa->ctable)[0] = 0xFFFFFFFF;
     (psa->ctable)[1] = 0xFF000000;
     /*
      *  Select the foreground color.
