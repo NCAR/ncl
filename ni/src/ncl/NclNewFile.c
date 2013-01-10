@@ -93,6 +93,7 @@ static int myVarIsDimInGrpNode(NclFileGrpNode *grpnode, NclQuark var, NclQuark d
 static int NewFileVarIsDim(NclFile infile, NclQuark var, NclQuark dim_name);
 static int _getGroupIdFromGrpNode(NclFileGrpNode *grpnode, NclQuark group);
 static int NewFileIsGroup(NclFile infile, NclQuark group);
+static int isUnlimitedDimension(NclFileGrpNode *grpnode, NclQuark dimname);
 
 NclGroup *NewFileReadGroup(NclFile infile, NclQuark group_name);
 
@@ -6136,6 +6137,24 @@ static NhlErrorTypes NewFileSetVarCompressLevel(NclFile infile, NclQuark varname
     return(NhlFATAL);
 }
 
+static int isUnlimitedDimension(NclFileGrpNode *grpnode, NclQuark dimname)
+{
+    int k;
+
+    if(NULL == grpnode->dim_rec)
+        return 0;
+
+    for(k = 0; k < grpnode->dim_rec->n_dims; ++k)
+    {
+        if(dimname == grpnode->dim_rec->dim_node[k].name)
+        {
+            return grpnode->dim_rec->dim_node[k].is_unlimited;
+        }
+    }
+
+    return 0;
+}
+
 static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
                                        struct _NclMultiDValDataRec *value,
                                        struct _NclSelectionRecord *sel_ptr,
@@ -6319,10 +6338,16 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
                         {
                             if(!( dimnode[sel->dim_num].is_unlimited)||(sel->u.sub.start < 0))
                             {
-                                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                                    "MyNewFileWriteVar: Subscript out of range in subscript #%d",i));
-                                ret = NhlFATAL;
-                                goto done_MyNewFileWriteVar;
+                                dimnode[sel->dim_num].is_unlimited = isUnlimitedDimension(thefile->newfile.grpnode,
+                                                                                          dimnode[sel->dim_num].name);
+
+                                if(! dimnode[sel->dim_num].is_unlimited)
+                                {
+                                    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                                        "MyNewFileWriteVar: Subscript out of range in subscript #%d",i));
+                                    ret = NhlFATAL;
+                                    goto done_MyNewFileWriteVar;
+                                }
                             }
                             else if(sel->u.sub.start >= dimnode[sel->dim_num].size)
                             {
@@ -6334,10 +6359,16 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
                         {
                             if(!( dimnode[sel->dim_num].is_unlimited)||(sel->u.sub.finish < 0))
                             {
-                                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                                    "MyNewFileWriteVar: Subscript out of range, in subscript #%d",i));
-                                ret = NhlFATAL;
-                                goto done_MyNewFileWriteVar;
+                                dimnode[sel->dim_num].is_unlimited = isUnlimitedDimension(thefile->newfile.grpnode,
+                                                                                          dimnode[sel->dim_num].name);
+
+                                if(! dimnode[sel->dim_num].is_unlimited)
+                                {
+                                    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                                        "MyNewFileWriteVar: Subscript out of range, in subscript #%d",i));
+                                    ret = NhlFATAL;
+                                    goto done_MyNewFileWriteVar;
+                                }
                             }
                             else if(sel->u.sub.finish >= dimnode[sel->dim_num].size)
                             {
@@ -6356,10 +6387,16 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
                         {
                             if(!( dimnode[sel->dim_num].is_unlimited)||(sel->u.vec.min < 0))
                             {
-                                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                                    "MyNewFileWriteVar: Vector subscript out of range in subscript #%d",i));
-                                ret = NhlFATAL;
-                                goto done_MyNewFileWriteVar;
+                                dimnode[sel->dim_num].is_unlimited = isUnlimitedDimension(thefile->newfile.grpnode,
+                                                                                          dimnode[sel->dim_num].name);
+
+                                if(! dimnode[sel->dim_num].is_unlimited)
+                                {
+                                    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                                        "MyNewFileWriteVar: Vector subscript out of range in subscript #%d",i));
+                                    ret = NhlFATAL;
+                                    goto done_MyNewFileWriteVar;
+                                }
                             }
                             else if(sel->u.vec.min >= dimnode[sel->dim_num].size)
                             {
@@ -6370,10 +6407,16 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
                         {
                             if(!( dimnode[sel->dim_num].is_unlimited)||(sel->u.vec.max < 0))
                             {
-                                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                                    "MyNewFileWriteVar: Vector subscript out of range in subscript #%d",i));
-                                ret = NhlFATAL;
-                                goto done_MyNewFileWriteVar;
+                                dimnode[sel->dim_num].is_unlimited = isUnlimitedDimension(thefile->newfile.grpnode,
+                                                                                          dimnode[sel->dim_num].name);
+
+                                if(! dimnode[sel->dim_num].is_unlimited)
+                                {
+                                    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                                        "MyNewFileWriteVar: Vector subscript out of range in subscript #%d",i));
+                                    ret = NhlFATAL;
+                                    goto done_MyNewFileWriteVar;
+                                }
                             }
                             else if(sel->u.vec.max >= dimnode[sel->dim_num].size)
                             {
@@ -6489,12 +6532,16 @@ static NhlErrorTypes MyNewFileWriteVar(NclFile infile, NclQuark var,
                         while (value->multidval.dim_sizes[j] == 1) 
                             j++;
                     }
-                    if(selection_dim_sizes[i] != value->multidval.dim_sizes[j])
-                    {
-                        NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Dimension sizes of left hand side do not match right hand side"));
-                                           ret = NhlFATAL;
-                                           goto done_MyNewFileWriteVar;
-                    }
+
+                  /*Comment out this paragraph to allow extend unlimited dimension record.
+                   *Wei, 01/10/2013
+                   *if(selection_dim_sizes[i] != value->multidval.dim_sizes[j])
+                   *{
+                   *    NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Dimension sizes of left hand side do not match right hand side"));
+                   *                       ret = NhlFATAL;
+                   *                       goto done_MyNewFileWriteVar;
+                   *}
+                   */
                     j++;
                 }
             } 
