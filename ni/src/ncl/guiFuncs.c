@@ -323,6 +323,11 @@ void guiNhlSetValues(int plotid, int rlid)
     NhlSetValues(plotid, rlid);
 }
 
+void guiNhlRLGetFloat(int id,  char *resname, float *value)
+{
+    NhlRLGetFloat(id, (NhlString) resname, value);
+}
+
 void guiNhlRLGetFloatArray(int id, char *resname, float **data, int *num_elements)
 {
     ng_size_t ndims;
@@ -355,13 +360,115 @@ void guiNhlCreate(int *plotid, const char *name, NhlClass class, int pid, int rl
     NhlCreate(plotid, name, class, pid, rlid);
 }
 
-#if 0
-extern void NhlRLDestroy(
-#if	NhlNeedProto
-	int	id	/* RL list to destroy	*/
-#endif
-);
+NclObj guiGetObj(int id)
+{
+    return (NclObj) _NclGetObj(id);
+}
 
+void guiRLDestroy(int id)
+{
+    NhlRLDestroy(id);
+}
+
+float *guiGetValue(NclVar _nclvar)
+{
+    int i = 0;
+    size_t n = 0;
+    float *value;
+    double *dp = NULL;
+    size_t nelm = 1;
+    NclMultiDValData tmp_md;
+    int _varndims;
+    int _vardimsizes[NCL_MAX_DIMENSIONS];
+
+    _varndims = (int) (_nclvar->var.n_dims);
+    for(i = 0; i < _varndims; ++i)
+    {
+        _vardimsizes[i] = (int)_nclvar->var.dim_info[i].dim_size;
+        nelm *= _vardimsizes[i] ;
+    }
+
+    value = (float *)NclCalloc(nelm, sizeof(float));
+
+    tmp_md = (NclMultiDValData) _NclGetObj(_nclvar->var.thevalue_id);
+
+    switch(tmp_md->multidval.data_type)
+    {
+        case NCL_float:
+             memcpy(value, tmp_md->multidval.val, nelm * sizeof(float));
+             return value;
+        case NCL_double:
+             dp = tmp_md->multidval.val;
+             for(n = 0; n < nelm; ++n)
+                 value[n] = (float) dp[n];
+             return value;
+        default:
+             break;
+    }
+
+    return NULL;
+}
+
+void guiNhlRLGetIntegerArray(int id, const char *name, int **data, int *ne)
+{
+    NhlString resname = (NhlString) name;
+    ng_size_t *num_elements;
+    NhlRLGetIntegerArray(id, resname, data, num_elements);
+    *ne = (int) *num_elements;
+}
+
+int guiGetBoundary(int pid, float *left, float *rite, float *bot, float *top)
+{
+    NhlBoundingBox *thebox;
+    NhlLayer instance;
+
+    int *views;
+    int i;
+    ng_size_t count;
+    int grlist;
+
+    int set = 0;
+
+    *left = 0.0;
+    *rite = 1.0;
+    *bot = 0.0;
+    *top = 1.0;
+
+    if(NhlIsWorkstation(pid))
+    {
+        grlist = NhlRLCreate(NhlGETRL);
+        NhlRLClear(grlist);
+        NhlRLGetIntegerArray(grlist,NhlNwkTopLevelViews,&views,&count);
+        NhlGetValues(pid,grlist);
+        for(i = 0; i < count; i++)
+        {
+            instance = _NhlGetLayer(views[i]);
+
+            if(NULL != instance)
+            {
+                _NhlGetBB(instance,thebox);
+
+                *left = thebox->l;
+                *rite = thebox->r;
+                *bot = thebox->b;
+                *top = thebox->t;
+                 set = thebox->set;
+            }
+        }
+
+        NhlFree(views);
+        NhlRLDestroy(grlist);
+    }
+
+    return set;
+}
+
+void guiNhlSetColor(int pid, int ci, float red, float green, float blue)
+{
+    NhlSetColor(pid, ci, red, green, blue);
+}
+
+#if 0
 extern void NhlRLUnSet(
 #if	NhlNeedProto
 	int		id,	/* RL list 		*/
@@ -523,14 +630,6 @@ extern NhlErrorTypes NhlRLGetLong(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	long		*value		/* addr to put value in		*/
-#endif
-);
-
-extern NhlErrorTypes NhlRLGetFloat(
-#if	NhlNeedProto
-	int		id,		/* RL list			*/
-	NhlString	resname,	/* resource to set		*/
-	float		*value		/* addr to put value in		*/
 #endif
 );
 

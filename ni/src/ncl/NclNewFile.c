@@ -2536,10 +2536,12 @@ void FileDestroyDimRecord(NclFileDimRecord *dim_rec)
         {
             if(NULL != dim_rec->dim_node)
                 NclFree(dim_rec->dim_node);
-
-            NclFree(dim_rec);
         }
+
+        dim_rec->dim_node = NULL;
+        NclFree(dim_rec);
     }
+    dim_rec = NULL;
 }
 
 void FileDestroyCompoundRecord(NclFileCompoundRecord *comprec)
@@ -2548,8 +2550,10 @@ void FileDestroyCompoundRecord(NclFileCompoundRecord *comprec)
     {
         if(NULL != comprec->compnode)
             NclFree(comprec->compnode);
+        comprec->compnode = NULL;
         NclFree(comprec);
     }
+    comprec = NULL;
 }
 
 void FileDestroyCoordVarRecord(NclFileCoordVarRecord *coord_rec)
@@ -2558,8 +2562,10 @@ void FileDestroyCoordVarRecord(NclFileCoordVarRecord *coord_rec)
     {
         if(NULL != coord_rec->var_node)
             NclFree(coord_rec->var_node);
+        coord_rec->var_node = NULL;
         NclFree(coord_rec);
     }
+    coord_rec = NULL;
 }
 
 void FileDestroyVarRecord(NclFileVarRecord *var_rec)
@@ -2578,15 +2584,27 @@ void FileDestroyVarRecord(NclFileVarRecord *var_rec)
                 if(NULL != varnode->value)
                     NclFree(varnode->value);
 
+                if(NULL != varnode->udt)
+                    NclFree(varnode->udt);
+
                 FileDestroyAttRecord(varnode->att_rec);
                 FileDestroyDimRecord(varnode->chunk_dim_rec);
                 FileDestroyCompoundRecord(varnode->comprec);
                 FileDestroyDimRecord(varnode->dim_rec);
+
+                varnode->udt = NULL;
+                varnode->value = NULL;
+                varnode->comprec = NULL;
+                varnode->att_rec = NULL;
+                varnode->dim_rec = NULL;
+                varnode->chunk_dim_rec = NULL;
             }
             NclFree(var_rec->var_node);
         }
+        var_rec->var_node = NULL;
         NclFree(var_rec);
     }
+    var_rec = NULL;
 }
 
 void FileDestroyGrpNode(NclFileGrpNode *grpnode)
@@ -2598,12 +2616,17 @@ void FileDestroyGrpNode(NclFileGrpNode *grpnode)
         if(NULL != grpnode->grp_rec)
         {
             for(n = 0; n < grpnode->grp_rec->n_grps; n++)
+            {
                 FileDestroyGrpNode(grpnode->grp_rec->grp_node[n]);
+                grpnode->grp_rec->grp_node[n] = NULL;
+            }
     
             NclFree(grpnode->grp_rec->grp_node);
+            grpnode->grp_rec->grp_node = NULL;
 
             NclFree(grpnode->grp_rec);
         }
+        grpnode->grp_rec = NULL;
 
         if(NULL != grpnode->options)
             NclFree(grpnode->options);
@@ -2614,10 +2637,15 @@ void FileDestroyGrpNode(NclFileGrpNode *grpnode)
         FileDestroyDimRecord(grpnode->dim_rec);
         FileDestroyDimRecord(grpnode->chunk_dim_rec);
         FileDestroyDimRecord(grpnode->unlimit_dim_rec);
-      /*
-       *FileDestroyCoordVarRecord(grpnode->coord_var_rec);
-       */
+        FileDestroyCoordVarRecord(grpnode->coord_var_rec);
         FileDestroyVarRecord(grpnode->var_rec);
+
+        grpnode->att_rec = NULL;
+        grpnode->dim_rec = NULL;
+        grpnode->chunk_dim_rec = NULL;
+        grpnode->unlimit_dim_rec = NULL;
+        grpnode->coord_var_rec = NULL;
+        grpnode->var_rec = NULL;
 
         NclFree(grpnode);
     }
@@ -2630,9 +2658,11 @@ void FileDestroyNewHLFS(NclObj self)
     NclRefList *p, *pt;
 
     FileDestroyGrpNode(thefile->newfile.grpnode);
+    thefile->newfile.grpnode = NULL;
 
     if(thefile->obj.cblist != NULL)
         _NhlCBDestroy(thefile->obj.cblist);
+    thefile->obj.cblist = NULL;
 
     p = thefile->obj.parents;
     while (p)
@@ -2643,6 +2673,7 @@ void FileDestroyNewHLFS(NclObj self)
     }
         
     NclFree(thefile);
+    thefile = NULL;
 }
 
 static NhlErrorTypes InitializeNewFileClass
