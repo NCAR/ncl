@@ -5513,7 +5513,7 @@ void CallASSIGN_FILE_VAR_OP(void) {
 										_NclCleanUpStack(nsubs +1);
 							} 
 							if(estatus != NhlFATAL)  {
-								if((nsubs != 0)&&(nsubs == file->file.var_info[index]->num_dimensions))  {
+								if((nsubs != 0)&&(nsubs == ndims))  {
 									sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
 									sel_ptr->n_entries = nsubs;
 									for(i = 0 ; i < nsubs; i++) {
