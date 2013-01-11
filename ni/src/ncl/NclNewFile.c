@@ -2607,9 +2607,9 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
 
     if (! topForFunRecPtr)
     {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,
+        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
             "Requested file format is not supported, could not open (%s)",
-            NrmQuarkToString(path));
+            NrmQuarkToString(path)));
         if(file_out_free) 
             NclFree((void*)file_out);
         return(NULL);

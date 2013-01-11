@@ -3085,7 +3085,17 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 				int newfs = 0;
 				newfs = *(int *)(fcp->options[Ncl_USE_NEW_HLFS].value->multidval.val);
 				if(newfs)
-					NCLnewfs = 1;
+				{
+				      /*Only certain data format can use new file-structure. Wei 01/11/2013*/
+					if((NrmStringToQuark("nc") == file_ext_q) ||
+					   (NrmStringToQuark("nc4") == file_ext_q) ||
+					   (NrmStringToQuark("nc3") == file_ext_q) ||
+					   (NrmStringToQuark("cdf") == file_ext_q) ||
+					   (NrmStringToQuark("netcdf") == file_ext_q))
+						NCLnewfs = 1;
+					else
+						NCLnewfs = 0;
+				}
 				else
 					NCLnewfs = 0;
 			}
