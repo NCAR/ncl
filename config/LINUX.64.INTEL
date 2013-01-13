@@ -14,7 +14,7 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   icc
 #define FCompiler   ifort
-#define CtoFLibraries   -lm -lifcore
+#define CtoFLibraries   -lm -lifcore -lsvml -lifport -lirc
 #define CcOptions    -ansi
 #define COptimizeFlag    -O2
 #define FOptimizeFlag    -O2
