@@ -2863,10 +2863,11 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		NclQuark old_file_ext_q = NrmStringToQuark("nc");
 		struct stat file_stat;
 
-		stat(NrmQuarkToString(the_real_path), &file_stat);
-
-		if(file_stat.st_size)
-			file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q);
+		if(0 == stat(NrmQuarkToString(the_real_path), &file_stat))
+		{
+			if(file_stat.st_size)
+				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q);
+		}
 
 	} else {
 		if (1 == rw_status)
@@ -3028,11 +3029,13 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q)
          		*/
 			switch(format)
 			{
+#ifdef USE_NETCDF4_FEATURES
               			case NC_FORMAT_NETCDF4:
 					file_ext_q = cur_ext_q;
 					found = 1;
                    			NCLnewfs = 1;
                    			break;
+#endif
               			case NC_FORMAT_NETCDF4_CLASSIC:
               			case NC_FORMAT_64BIT:
               			case NC_FORMAT_CLASSIC:
@@ -3174,6 +3177,9 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
         struct stat file_stat;
 
+      /*Save the previous NCLnewfs.*/
+	short preNCLnewfs = NCLnewfs;
+
 	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status);
 
 	if(! is_http)
@@ -3183,16 +3189,15 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"(%s) has no file extension, can't determine type of file to open",NrmQuarkToString(path)));
 			return(NULL);
 		}
-		else if (1 == rw_status)
+		else if (rw_status > -1)
 		{
 			NclQuark the_real_path = NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path)));
 			NclQuark old_file_ext_q = file_ext_q;
 
 			file_ext_q = -1;
 
-			stat(NrmQuarkToString(the_real_path), &file_stat);
-
-			if(file_stat.st_size)
+			if((0 == stat(NrmQuarkToString(the_real_path), &file_stat)) &&
+					(file_stat.st_size))
 				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q);
 			else
 			{
@@ -3202,7 +3207,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 				ext_name = strrchr(tmp_path, '.');
 				/*Use while loop will allow user to append multiple extensions.
-				*But it will be not consistent addfile.
+				*But it will be not consistent to addfile.
 				*So we comment out the while loop for NOW.
 				*Wei Huang, 05/21/2012
 				*/
@@ -3264,6 +3269,9 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		file_out = _NclFileCreate(inst, theclass, obj_type, obj_type_mask, status,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
 	}					
+
+      /*Set back to previous NCLnewfs.*/
+	NCLnewfs = preNCLnewfs;
 
 	return file_out;
 }

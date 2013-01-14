@@ -15,7 +15,7 @@
  *                       You'll need to change "/usr/local/lib" to
  *                       whatever directory contains "libgfortran.so".
  */
-#define HdfDefines  -DDARWIN
+#define HdfDefines  -DDARWIN -framework OpenCL
 
 /*
  * The -D_DARWIN_C_SOURCE is to fix a bug with signal.h that affects the
@@ -30,7 +30,7 @@
 #define CCompiler   gcc
 #define FCompiler   gfortran
 #define CcOptions      -ansi -fPIC -m64
-#define FcOptions      -fPIC  -fno-range-check  -m64
+#define FcOptions      -fPIC  -fno-range-check  -m64 -framework OpenCL
 /*
 #define CtoFLibraries  -L/sw/lib/gcc4.4/lib/x86_64 -lgfortran
 */

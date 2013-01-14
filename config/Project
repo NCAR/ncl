@@ -24,8 +24,8 @@
  *			etc are in the Template file.
  */
 
-#define NcargVersion 6.2.0-alpha
-#define NclVersion 6.2.0-alpha
+#define NcargVersion 6.1.1
+#define NclVersion 6.1.1
 
 #ifndef	BuildNCL
 #define	BuildNCL
@@ -110,6 +110,14 @@
 #ifndef    BuildV5D
 #undef BuildV5D
 #endif /* BuildV5D */
+
+#ifndef BuildOpenCL
+#define BuildOpenCL
+#else
+#if     !BuildOpenCL
+#undef  BuildOpenCL
+#endif
+#endif  /* BuildOpenCL */
 
 /* No longer build the old PNG driver since we have the new cairo one. */
 #if !BuildPNG
@@ -271,6 +279,10 @@
 #ifndef    V5Dlib
 #define    V5Dlib  -lv5d
 #endif /* V5Dlib */
+
+#ifndef	OpenCLlib
+#define	OpenCLlib -framework OpenCL
+#endif	/* OpenCLlib */
 
 #ifndef	XdrLibrary
 #define	XdrLibrary	/**/
@@ -611,6 +623,7 @@ GDALLIB		= GDALlib
 GRIB2LIB	= GRIB2lib
 UDUNITSLIB	= UdUnitslib
 V5DLIB      	= V5Dlib
+OpenCLLIB	= OpenCLlib
 GRIDSPECLIB     = GRIDSPEClib
 XDRLIB		= XdrLibrary
 HDFDEFINES	= HdfDefines

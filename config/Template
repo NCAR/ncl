@@ -32,7 +32,7 @@ NGCOMM########################################################################
 SYSTEM_INCLUDE		= SystemIncludesName
 DATE                    = $(shell date +%d%b%Y_%H%M)
 
-OS1_DEF		=	_OpSysDef
+OS1_DEF		=	_OpSysDef -framework OpenCL
 OS2_DEF		=	_OpSys2Def
 OS_DEF		=	$(OS1_DEF) $(OS2_DEF)
 ARCH_DEF	=	_ArchDef
@@ -381,7 +381,7 @@ NGCOMM########################################################################
 #endif	/* Cstatic */
 
 #ifndef COptimizeFlag
-#define COptimizeFlag	-O
+#define COptimizeFlag	-g
 #endif	/* COptimizeFlag */
 
 #ifndef	CDebugFlag
@@ -413,7 +413,7 @@ NGCOMM########################################################################
 #endif	/* FLoader */
 
 #ifndef FOptimizeFlag
-#define FOptimizeFlag	-O
+#define FOptimizeFlag	-g
 #endif	/* FOptimizeFlag */
 
 #ifndef	FDebugFlag
@@ -674,7 +674,7 @@ CC		= CCompiler
 CC_LD		= CLoader
 CDYNAMIC	= Cdynamic
 CSTATIC		= Cstatic
-CCOPTIONS	= CcOptions $(EXTRA_CCOPTIONS)
+CCOPTIONS	= CcOptions $(EXTRA_CCOPTIONS) -framework OpenCL
 
 BUILDINCDIR	= $(TOP)/include
 /*

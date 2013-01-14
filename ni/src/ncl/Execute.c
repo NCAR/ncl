@@ -34,7 +34,9 @@ extern "C" {
 #include "Machine.h"
 #include "NclFileInterfaces.h"
 #include "NclFile.h"
+#ifdef USE_NETCDF4_FEATURES
 #include "NclNewFile.h"
+#endif
 #include "NclGroup.h"
 #include "NclFileVar.h"
 #include "NclHLUVar.h"
@@ -649,6 +651,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
 				if (thefile && var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
 					int bad = 0;
+#ifdef USE_NETCDF4_FEATURES
 					if(thefile->file.use_new_hlfs)
 					{
 						NclNewFile newfile = (NclNewFile)thefile;
@@ -717,6 +720,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 						}
 					}
 					else
+#endif
 					{
 						struct _NclFVarRec *var_info = thefile->file.var_info[index];
 						if (first) { /* save the dimension sizes */
@@ -7948,8 +7952,11 @@ NclExecuteReturnStatus _NclExecute
 				exit ( -1 );
 				break;
 			default:
-				fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-				fprintf(stderr, "\tUNKNOW Operator *ptr: %ld\n", (long)*ptr);
+			      /*
+			       *fprintf(stderr, "function %s, file: %s, line: %d\n",
+			       *                 __PRETTY_FUNCTION__, __FILE__, __LINE__)
+			       *fprintf(stderr, "\tUNKNOWN Operator *ptr: %ld\n", (long)*ptr);
+			       */
 				break;
 		}
 		if(estatus < NhlINFO) {

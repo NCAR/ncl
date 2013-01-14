@@ -1162,6 +1162,9 @@ NclObj self;
 	if(NULL != thefile->file.file_dim_info)
 		NclFree(thefile->file.file_dim_info);
 
+	if(NULL != thefile->file.coord_vars)
+		NclFree(thefile->file.coord_vars);
+
 	if(thefile->file.file_atts_id != -1) {
 		NclFree(thefile->file.file_att_udata);
 		_NhlCBDelete(thefile->file.file_att_cb);
@@ -1468,10 +1471,10 @@ NclMultiDValData value;
 			}
 			tmp_md = _NclCoerceData(value,fcp->options[i].value->multidval.type->type_class.type,NULL);
 			if (tmp_md == NULL) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
+				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 				    "FileSetFileOption: invalid type for %s option value; value must be coercible to %s",
 					  NrmQuarkToString(option), 
-					  NrmQuarkToString(_NclObjTypeToName(fcp->options[i].value->multidval.type->type_class.type)));
+					  NrmQuarkToString(_NclObjTypeToName(fcp->options[i].value->multidval.type->type_class.type))));
 				return(NhlWARNING);
 			}
 			if (fcp->options[i].valid_values) {
@@ -1583,10 +1586,10 @@ NclMultiDValData value;
 			}
 			tmp_md = _NclCoerceData(value,fcp->options[i].value->multidval.type->type_class.type,NULL);
 			if (tmp_md == NULL) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
+				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 				    "FileSetFileOption: invalid type for %s option value; value must be coercible to %s",
 					  NrmQuarkToString(option), 
-					  NrmQuarkToString(_NclObjTypeToName(fcp->options[i].value->multidval.type->type_class.type)));
+					  NrmQuarkToString(_NclObjTypeToName(fcp->options[i].value->multidval.type->type_class.type))));
 				return(NhlWARNING);
 			}
 			if (fcp->options[i].valid_values) {
@@ -1717,18 +1720,12 @@ NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* Binary file write byte order */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, UpdateDims },   /* GRIB initial time coordinate type */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* NetCDF missing to fill value option */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },         /* NetCDF 4 shuffle */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },         /* NetCDF 4 compression option level */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },         /* NetCDF 4 cache switch */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 3200000, NULL },   /* NetCDF 4 cache size */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 1009, NULL },      /* NetCDF 4 cache nelems */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0.50, NULL },      /* NetCDF 4 cache preemption */
-#ifdef BuildHDF5
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },         /* HDF5 compression option level */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },         /* HDF5 cache switch */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 3200000, NULL },   /* HDF5 cache size */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 1009, NULL },      /* HDF5 cache nelems */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0.50, NULL },      /* HDF5 cache preemption */
-#endif
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB default NCEP parameter table */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB print record info */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB single element dimensions */
@@ -2017,7 +2014,7 @@ NhlErrorTypes InitializeFileOptions
 
 	/*suffle*/
 	fcp->options[Ncl_SHUFFLE].format = NrmStringToQuark("nc");
-	fcp->options[Ncl_SHUFFLE].name = NrmStringToQuark("compressionlevel");
+	fcp->options[Ncl_SHUFFLE].name = NrmStringToQuark("shuffle");
 	len_dims = 1;
 	ival = (int*) NclMalloc(sizeof(int));
 	*ival = 1;
@@ -2025,7 +2022,7 @@ NhlErrorTypes InitializeFileOptions
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
 	ival = (int*) NclMalloc(sizeof(int));
-	*ival = 0;
+	*ival = 1;
 	fcp->options[Ncl_SHUFFLE].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
@@ -5854,6 +5851,7 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 		if (! tmp_md) {
 			return NhlFATAL;
 		}
+		index = FileIsVar(thefile,lhs_var);
 		for ( i = 0; i < tmp_var->var.n_dims; i++) {
 			dim_names[i] = tmp_var->var.dim_info[i].dim_quark;
 			if (dim_names[i] == NrmStringToQuark("ncl_scalar"))
@@ -5863,6 +5861,11 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 					ret = FileAddDim(thefile,dim_names[i],tmp_var->var.dim_info[i].dim_size,False);
 				}
 			}
+			else if (index >= 0 && thefile->file.var_info[index]->num_dimensions == 1 &&
+				 FileGetDimName(thefile,thefile->file.var_info[index]->file_dim_num[0]) == 
+				 NrmStringToQuark("ncl_scalar")) {
+				continue;
+			}
 			else {
 				char buffer[32];
 				sprintf(buffer,"ncl%d",thefile->file.n_file_dims);
@@ -5870,7 +5873,6 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 				dim_names[i] = NrmStringToQuark(buffer);
 			}
 		}
-		index = FileIsVar(thefile,lhs_var);
 		if (index < 0) {
 			ret = FileAddVar(thefile,lhs_var,
 					 NrmStringToQuark(_NclBasicDataTypeToName(tmp_md->multidval.type->type_class.data_type)),
