@@ -8774,6 +8774,8 @@ begin
 ; needed.
 ;
 ; Initialize.
+    old_lbar_on   = False     ; Labelbar flag
+    new_lbar_on   = False
     res2  = get_resources(resources)
 ;
 ; Write data and plot resource information to a file so we can 

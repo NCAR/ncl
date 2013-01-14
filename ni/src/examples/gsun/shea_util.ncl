@@ -4399,3 +4399,182 @@ begin
   area@units     = "km^2"
   return(area)
 end
+;---------------------------------------------------------------------
+undef("circle_ll")
+;
+; Author: Arindam Chakraborty <arch at caos.iisc.ernet.in>
+;
+procedure circle_ll(wks:graphic,plt:graphic,x0:numeric,y0:numeric,r:numeric,res:logical)
+; Draws a circle (or ellipse) or radius (or x-axis length) r centered at (x0,y0). Optionally it can draw an ellipse and axes can be rotated as desired.
+; Input Parameters:
+; wks: graphics workstation
+; plt: the plot graphics
+; (x0,y0): center of the circle in terms of plot coordinate
+; r: radius (or x-direction length) of the circle in terms of plot coordinate
+; res: resources. If true can take any line graphic parameter valid to gsn_add_polyline. In addition, there are two special resources for this procedure:
+;      Scale: The scale by which the y-axis length should be modified to the x-axis length. This can be used to plot an ellipse. (default=1).
+;      Rotation: The rotation angle (in degrees) by which the axes are rotated (positive anticlockwhise). (default=0).
+;
+; Example:
+;...
+; arr=random_uniform(1,10,(/15,20/))
+; wks = gsn_open_wks("x11","circle");
+; res = True
+; res@vpHeightF=0.5
+; res@vpWidthF=0.8
+; res@gsnDraw = False
+; res@gsnFrame = False
+; plt=gsn_csm_contour(wks,arr,res)
+
+; resc=True
+; resc@gsLineColor="red"
+; resc@gsLineThicknessF=2
+; resc@Scale=1.5
+; resc@Rotation=-45
+; circle_ll(wks,plt,10,7,3,resc)
+; draw(plt)
+; frame(wks)
+;...
+
+begin
+ rot = 0.0
+ scale = 1.0
+ th = ispan(0,360,1)
+ pi = acos(-1.0)
+
+ res1 = res
+ if(res)then
+  if(isatt(res,"Scale"))then
+   scale = res@Scale
+   delete(res1@Scale)
+  end if
+  if(isatt(res,"Rotation"))then
+   rot = res@Rotation
+   delete(res1@Rotation)
+  end if
+ end if
+
+ getvalues plt
+  "trXMinF":xmin
+  "trXMaxF":xmax
+  "trYMinF":ymin
+  "trYMaxF":ymax
+  "vpXF":vpx0
+  "vpYF":vpy1
+  "vpWidthF":vpw
+  "vpHeightF":vph
+ end getvalues
+
+ rx = r/(xmax-xmin)
+ ry = rx*vpw/vph
+
+ xpts1 = cos(th*pi/180)
+ ypts1 = sin(th*pi/180)*scale
+
+ xpts2 = xpts1*cos(rot*pi/180) - ypts1*sin(rot*pi/180)
+ ypts2 = xpts1*sin(rot*pi/180) + ypts1*cos(rot*pi/180)
+
+ xpts = rx*xpts2*(xmax-xmin) + x0
+ ypts = ry*ypts2*(ymax-ymin) + y0
+ str = unique_string("circle_ll")
+ plt@$str$ = gsn_add_polyline(wks,plt,xpts,ypts,res1)
+ delete(str)
+ delete(xpts1)
+ delete(ypts1)
+ delete(xpts2)
+ delete(ypts2)
+ delete(th)
+ delete(res1)
+
+end
+;-------------------------------------
+undef("calc_day_stat")
+function calc_day_values(x, arith[1]:string, nDim[1]:integer, opt[1]:logical)  
+;;function calculate_daily_values (x:numeric, arith:string, nDim[1]:integer, opt[1]:logical)
+local tstep, tspan, tunits, tbase, TIME, tuchar, tbchar, ntu, ntb, newunits \
+     ,utc_date, year, month, day, hour, minute, second       \
+     ,dimx, rankx, ntim, nstep, n   
+begin
+    tstep = opt@tstep
+    tspan = opt@tspan
+
+    tunits  = x&time@units
+    tbase   = str_get_field(tunits, 1, " ")      ; seconds, hours, days
+    if (tbase.eq."hours") then
+        TIME = x&time
+    else
+        tuchar = tochar(tunits)
+        tbchar = tochar(tbase)
+        ntu    = dimsizes(tuchar)
+        ntb    = dimsizes(tbchar)
+        newunits = "hours "+ tostring(tuchar(ntb:ntu-2))
+
+        utc_date = cd_calendar(x&time, 0)
+        year     = floattointeger(utc_date(:,0))
+        month    = floattointeger(utc_date(:,1))
+        day      = floattointeger(utc_date(:,2))
+        hour     = floattointeger(utc_date(:,3))
+        minute   = floattointeger(utc_date(:,4))
+        second   = utc_date(:,5)
+
+        TIME   = cd_inv_calendar(year,month,day,hour,minute,second,newunits, 0)
+    end if
+
+    dimx  = dimsizes(x)
+    rankx = dimsizes(dimx)
+    ntim  = dimx(0)
+
+    nstep = toint(tspan/tstep)
+    NTIM  = ntim/nstep
+
+    if (rankx.eq.2) then
+        xStat  = new ( (/NTIM,dimx(1)/), typeof(x), getFillValue(x))
+        if (arith.eq."avg" .or. arith.eq."ave") then
+            do n=0,ntim-1,nstep
+               xStat(n/nstep,:) = dim_avg_n( x(n:n+nstep-1,:), nDim)
+            end do
+        end if
+        copy_VarMeta(x(0,:), xStat(0,:))
+    end if
+
+    if (rankx.eq.3) then
+        xStat  = new ( (/NTIM,dimx(1),dimx(2)/), typeof(x), getFillValue(x))
+        if (arith.eq."avg" .or. arith.eq."ave") then
+            do n=0,ntim-1,nstep
+               xStat(n/nstep,:,:) = dim_avg_n( x(n:n+nstep-1,:,:), nDim)
+            end do
+        end if
+        if (arith.eq."sum") then
+            do n=0,ntim-1,nstep
+               xStat(n/nstep,:,:) = dim_sum_n( x(n:n+nstep-1,:,:), nDim)
+            end do
+        end if
+        if (arith.eq."min") then
+            do n=0,ntim-1,nstep
+               xStat(n/nstep,:,:) = dim_min_n( x(n:n+nstep-1,:,:), nDim)
+            end do
+        end if
+        if (arith.eq."max") then
+            do n=0,ntim-1,nstep
+               xStat(n/nstep,:,:) = dim_max_n( x(n:n+nstep-1,:,:), nDim)
+            end do
+        end if
+        copy_VarMeta(x(0,:,:), xStat(0,:,:))
+    end if
+
+    if (rankx.eq.4) then
+        xStat  = new ( (/NTIM,dimx(1),dimx(2),dimx(3)/), typeof(x), getFillValue(x))
+        if (arith.eq."avg" .or. arith.eq."ave") then
+            do n=0,ntim-1,nstep
+               xStat(n/nstep,:,:,:) = dim_avg_n( x(n:n+nstep-1,:,:,:), nDim)
+            end do
+        end if
+        copy_VarMeta(x(0,:,:,:), xStat(0,:,:,:))
+    end if
+
+    xStat!0 = "time"
+    xStat&time = TIME
+
+    return(xStat)
+end
+

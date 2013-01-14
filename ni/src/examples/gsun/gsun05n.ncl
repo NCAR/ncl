@@ -1,4 +1,4 @@
-load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsn_code.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 
 begin
   data_dir  = ncargpath("data")   ; Get ready to open three netCDF files.

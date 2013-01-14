@@ -248,6 +248,7 @@ static int InitializeOptions(NclFileGrpNode *grpnode)
         NhlPError(NhlFATAL,ENOMEM,NULL);
         return 1;
     }
+
     options[Ncl_PREFILL].name = NrmStringToQuark("prefill");
     options[Ncl_PREFILL].type = NCL_logical;
     options[Ncl_PREFILL].size = 1;
@@ -279,17 +280,23 @@ static int InitializeOptions(NclFileGrpNode *grpnode)
     options[Ncl_MISSING_TO_FILL_VALUE].values = (void *) NclCalloc(1, _NclSizeOf(NCL_int));
     *(int *)options[Ncl_MISSING_TO_FILL_VALUE].values = 1;
 
+    options[Ncl_SHUFFLE].name = NrmStringToQuark("shuffle");
+    options[Ncl_SHUFFLE].type = NCL_int;
+    options[Ncl_SHUFFLE].size = 1;
+    options[Ncl_SHUFFLE].values = (void *) NclCalloc(1, _NclSizeOf(NCL_int));
+    *(int *)options[Ncl_SHUFFLE].values = 1;
+
     options[Ncl_COMPRESSION_LEVEL].name = NrmStringToQuark("compressionlevel");
     options[Ncl_COMPRESSION_LEVEL].type = NCL_int;
     options[Ncl_COMPRESSION_LEVEL].size = 1;
     options[Ncl_COMPRESSION_LEVEL].values = (void *) NclCalloc(1, _NclSizeOf(NCL_int));
-    *(int *)options[Ncl_COMPRESSION_LEVEL].values = -1;
+    *(int *)options[Ncl_COMPRESSION_LEVEL].values = 0;
 
     options[Ncl_USE_CACHE].name = NrmStringToQuark("usecache");
     options[Ncl_USE_CACHE].type = NCL_int;
     options[Ncl_USE_CACHE].size = 1;
     options[Ncl_USE_CACHE].values = (void *) NclCalloc(1, _NclSizeOf(NCL_int));
-    *(int *)options[Ncl_USE_CACHE].values = 0;
+    *(int *)options[Ncl_USE_CACHE].values = 1;
 
     options[Ncl_CACHE_SIZE].name = NrmStringToQuark("cachesize");
     options[Ncl_CACHE_SIZE].type = NCL_int;
@@ -307,7 +314,7 @@ static int InitializeOptions(NclFileGrpNode *grpnode)
     options[Ncl_CACHE_PREEMPTION].type = NCL_float;
     options[Ncl_CACHE_PREEMPTION].size = 1;
     options[Ncl_CACHE_PREEMPTION].values = (void *) NclCalloc(1, _NclSizeOf(NCL_float));
-    *(float *)options[Ncl_CACHE_PREEMPTION].values = 0.0;
+    *(float *)options[Ncl_CACHE_PREEMPTION].values = 0.25;
 
     grpnode->options = options;
     return 0;
@@ -472,7 +479,9 @@ static void *NC4CreateFile(void *rootgrp,NclQuark path)
         grpnode->format = format;
         grpnode->open = 1;
         EndNC4DefineMode(grpnode, fid);
-        CloseOrSync(grpnode, fid, 0);
+      /*
+       *CloseOrSync(grpnode, fid, 0);
+       */
         return((void*)grpnode);
     }
 
@@ -1579,6 +1588,10 @@ NclFileAttRecord *_NC4_get_atts(int gid, int aid, int n_atts)
     NclFileAttRecord *attrec;
     NclFileAttNode   *attnode;
 
+    short has_missing = 0;
+    short need_add_fillvalue = 1;
+    int   missing_idx = -1;
+
     if(n_atts < 1)
     {
         return NULL;
@@ -1625,6 +1638,7 @@ NclFileAttRecord *_NC4_get_atts(int gid, int aid, int n_atts)
         nc_inq_attname(gid, aid, i, buffer);
         nc_inq_att(gid, aid, buffer, &(attnode->the_nc_type), &alen);
         attnode->n_elem = alen;
+        attnode->type = NC4MapToNcl(&(attnode->the_nc_type));
 
       /*
        *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -1633,6 +1647,25 @@ NclFileAttRecord *_NC4_get_atts(int gid, int aid, int n_atts)
        */
 
         NC4GetAttrVal(gid, aid, attnode);
+
+      /*Check if we need to add "_FillValue".*/
+        if(Qmissing_val == attnode->name)
+        {
+            has_missing = 1;
+            missing_idx = i;
+        }
+        if(Qfill_val == attnode->name)
+            need_add_fillvalue = 0;
+    }
+
+  /*If we need_add_fillvalue and has_missing, then add an extra attribute to att_rec.*/
+    if(need_add_fillvalue)
+    {
+        if(has_missing && (-1 < missing_idx))
+        {
+            attnode = &(attrec->att_node[missing_idx]);
+            _addNclAttNode(&attrec, Qfill_val, attnode->type, attnode->n_elem, attnode->value);
+        }
     }
 
   /*
@@ -1921,13 +1954,12 @@ NclFileGrpNode *_NC4_get_grpnode(int pid, int gid, NclQuark pn, NclFileGrpNode *
 NclFileDimRecord *_NC4_get_dims(int gid, int n_dims, int unlimited_dim_idx)
 {
     char buffer[MAX_NC_NAME];
-    size_t tmp_size = 0;
+    long tmp_size = 0;
     int ndims_grp;
     int *dimids_grp;
     int nunlim;
     int *unlimids;
     int dimid, i, j;
-    int status = 0;
 
     NclFileDimRecord *dimrec = NULL;
 
@@ -1985,7 +2017,7 @@ NclFileDimRecord *_NC4_get_dims(int gid, int n_dims, int unlimited_dim_idx)
             }
         }
 
-        status = nc_inq_dim(gid, dimid, buffer, &tmp_size);
+        nc_inq_dim(gid, dimid, buffer, &tmp_size);
         dimrec->dim_node[i].size = (ng_size_t) tmp_size;
 
       /*
@@ -2023,11 +2055,9 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
 
     NclFileVarNode    *varnode;
 
-    int    rc = -1;
     int    storage_in = -1;
     size_t chunksizes[MAX_VAR_DIMS];
 
-    int  shufflep = -1;
     int  deflatep = -1;
 
   /*
@@ -2172,15 +2202,16 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
        *     A pointer to an array list of chunk sizes.
        *     The array must have one chunksize for each dimension in the variable. 
        */
-        rc = nc_inq_var_chunking(gid, i, &storage_in, chunksizes);
+        nc_inq_var_chunking(gid, i, &storage_in, chunksizes);
         varnode->is_chunked = 0;
         if(NC_CHUNKED == storage_in)
         {
-            rc = nc_inq_var_deflate(gid, i, &shufflep, &deflatep, &(varnode->compress_level));
+            nc_inq_var_deflate(gid, i, &(varnode->shuffle), &deflatep, &(varnode->compress_level));
 
           /*
-           *fprintf(stderr, "\t\tshufflep = %d, deflatep = %d, compress_level = %d\n",
-           *                     shufflep, deflatep, varnode->compress_level);
+           *fprintf(stderr, "\nfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+           *fprintf(stderr, "\t\tvarnode->shuffle = %d, deflatep = %d, compress_level = %d\n",
+           *                     varnode->shuffle, deflatep, varnode->compress_level);
            */
 
             varnode->is_chunked = 1;
@@ -2236,6 +2267,7 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
     grpnode->path = path;
     grpnode->status = status;
     grpnode->compress_level = 0;
+    grpnode->shuffle = 1;
 
   /*
    *fprintf(stderr,"\nNC4OpenFile, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -2251,28 +2283,12 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
         nc_ret = nc__open(NrmQuarkToString(path),NC_NOWRITE,&ChunkSizeHint,&fid);
         grpnode->define_mode = 0;
         grpnode->id = fid;
-
-      /*
-       *This part used Unidata's ncdump code to check the attribute info.
-       */
-      /*
-        init_types(fid);
-        init_prim_types(fid);
-       */
     }
     else
     {
         nc_ret = nc__open(NrmQuarkToString(path),NC_WRITE,&ChunkSizeHint,&fid);
         grpnode->define_mode = 1;
         grpnode->id = fid;
-
-      /*
-       *This part used Unidata's ncdump code to check the attribute info.
-       */
-      /*
-        init_types(fid);
-        init_prim_types(fid);
-       */
     }
 
     if(nc_ret != NC_NOERR)
@@ -2315,6 +2331,7 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
     /*check chunking info*/
     if((NULL != grpnode->dim_rec) && (NULL != grpnode->var_rec) && (! grpnode->is_chunked))
     {
+        grpnode->shuffle = 1;
         grpnode->compress_level = 0;
         i = 0;
         dimnode = &(grpnode->dim_rec->dim_node[i]);
@@ -2329,13 +2346,13 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
             if(varnode->dim_rec->n_dims < 2)
                 continue;
 
-            if(varnode->is_chunked)
+            if(varnode->is_chunked && (NULL != varnode->chunk_dim_rec))
             {
                 grpnode->is_chunked = varnode->is_chunked;
                 for(k = 0; k < varnode->chunk_dim_rec->n_dims; ++k)
                 {
                     vardimnode = &(varnode->chunk_dim_rec->dim_node[k]);
-                    if(vardimnode->name == dimnode->name)
+                    if((NULL != vardimnode) && (vardimnode->name == dimnode->name))
                     {
                         _addNclDimNode(&(grpnode->chunk_dim_rec), dimnode->name, vardimnode->id,
                                        vardimnode->size, vardimnode->is_unlimited);
@@ -2375,6 +2392,11 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
     nc_inq_typeids(fid, &ntypes, NULL);
     if(ntypes)
     {
+      /*
+       *fprintf(stderr,"\tfile: %s, line: %d", __FILE__, __LINE__);
+       *fprintf(stderr,"\tntypes: %d\n", ntypes);
+       */
+
         grpnode->udt_rec = _NC4_get_udts(fid, NC_GLOBAL, ntypes);
     }
 
@@ -2411,17 +2433,33 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
     if(n_dims)
         NC4GetDimVals(fid, grpnode);
 
-    CloseOrSync(grpnode,fid,0);
+  /*
+   *CloseOrSync(grpnode, fid, 0);
+   */
     return((void*)grpnode);
 }
 
 static void NC4FreeFileRec(void* therec)
 {
+    int ret;
+
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
 
     if(grpnode->open)
     {
-        ncclose(grpnode->id);
+        if((0 <= grpnode->id) && (0 > grpnode->pid))
+        {
+            ret = ncclose(grpnode->id);
+            if(NC_NOERR != ret)
+            {
+              /*
+               */
+                fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,(char*)nc_strerror(ret)));
+            }
+            grpnode->id = -1;
+        }
+        grpnode->open = 0;
     }
 
     if(NULL != grpnode)
@@ -2431,7 +2469,6 @@ static void NC4FreeFileRec(void* therec)
 void NC4GetAttrVal(int ncid, int aid, NclFileAttNode *attnode)
 {
     char *tmp;
-    int ret;
 
   /*
    *fprintf(stderr, "\nEnter NC4GetAttrVal, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -2443,11 +2480,11 @@ void NC4GetAttrVal(int ncid, int aid, NclFileAttNode *attnode)
         attnode->value = NULL;
         attnode->type = NCL_none;
     }
-    else if(attnode->the_nc_type == NC_CHAR && !(attnode->name == Qfill_val || attnode->name == Qmissing_val))
+    else if(attnode->the_nc_type == NC_CHAR)
     {
         tmp = (char*)NclMalloc(attnode->n_elem+1);
         assert(tmp);
-        ret = ncattget(ncid,aid,NrmQuarkToString(attnode->name),tmp);
+        ncattget(ncid,aid,NrmQuarkToString(attnode->name),tmp);
         tmp[attnode->n_elem] = '\0';
         attnode->value = NclMalloc(sizeof(NclQuark));
         assert(attnode->value);
@@ -2479,7 +2516,7 @@ void NC4GetAttrVal(int ncid, int aid, NclFileAttNode *attnode)
             attnode->value = NclMalloc(attnode->n_elem * sizeof(NclQuark));
             assert(attnode->value);
             pq = attnode->value;
-            ret = ncattget(ncid,aid,NrmQuarkToString(attnode->name), ppc);
+            ncattget(ncid,aid,NrmQuarkToString(attnode->name), ppc);
             for(n = 0; n < attnode->n_elem; n++)
             {
                 pq[n] = NrmStringToQuark(ppc[n]);
@@ -2491,7 +2528,7 @@ void NC4GetAttrVal(int ncid, int aid, NclFileAttNode *attnode)
         {
             attnode->value = NclMalloc(nctypelen(attnode->the_nc_type)*attnode->n_elem);
             assert(attnode->value);
-            ret = ncattget(ncid,aid,NrmQuarkToString(attnode->name),attnode->value);
+            ncattget(ncid,aid,NrmQuarkToString(attnode->name),attnode->value);
         }
     }
 
@@ -2510,7 +2547,7 @@ void NC4GetDimVals(int ncid, NclFileGrpNode *grpnode)
     NclFileDimNode *dimnode;
     NclFileVarNode *varnode;
     long start = 0;
-    int i, ret;
+    int i;
 
     if(NULL == grpnode->dim_rec)
         return;
@@ -2540,7 +2577,7 @@ void NC4GetDimVals(int ncid, NclFileGrpNode *grpnode)
         if(NULL == varnode->value)
         {
             varnode->value = NclCalloc(nctypelen(varnode->the_nc_type) * dimnode->size, 1);
-            ret = ncvarget(ncid, varnode->id, &start, &(dimnode->size), varnode->value);
+            ncvarget(ncid, varnode->id, &start, &(dimnode->size), varnode->value);
         }
 
         _addNclCoordVarNode(&(grpnode->coord_var_rec), varnode);
@@ -2549,11 +2586,20 @@ void NC4GetDimVals(int ncid, NclFileGrpNode *grpnode)
 
 void CloseOrSync(NclFileGrpNode *rootgrp, int fid, int sync)
 {
+    int ret;
+
     if(0 == *(int *)(rootgrp->options[Ncl_SUPPRESS_CLOSE].values))
     {
-        ncclose(fid);
         rootgrp->open = 0;
         rootgrp->id = -1;
+        ret = ncclose(fid);
+        if(NC_NOERR != ret)
+        {
+          /*
+           */
+            fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+            NHLPERROR((NhlWARNING,NhlEUNKNOWN,(char*)nc_strerror(ret)));
+        }
     }
     else
     {
@@ -2576,7 +2622,6 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
     ng_size_t *dims;
     size_t *chunk_dims;
 
-    int shuffle = 1;
     int deflate = 1;
     int deflate_level = 1;
     int nc_ret;
@@ -2588,7 +2633,7 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
     {
         dims = (ng_size_t *) NclCalloc(grpnode->dim_rec->n_dims, sizeof(ng_size_t));
         assert(dims);
-        chunk_dims = (ng_size_t *) NclCalloc(grpnode->dim_rec->n_dims, sizeof(ng_size_t));
+        chunk_dims = (size_t *) NclCalloc(grpnode->dim_rec->n_dims, sizeof(size_t));
         assert(chunk_dims);
 
         for(i = 0; i < grpnode->dim_rec->n_dims; i++)
@@ -2635,16 +2680,24 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
                           "%s: Error in nc_def_var_chunking in file (%s) in <%s> for writing, at line: %d\n",
                                   __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
-                    return(NhlFATAL);
                     check_err(nc_ret, __LINE__, __FILE__);
+                    return;
                 }
 
                 if((grpnode->compress_level > 0) || (varnode->compress_level > 0))
                 {
                     if(grpnode->compress_level > varnode->compress_level)
                         varnode->compress_level = grpnode->compress_level;
+                    varnode->shuffle = *(int *)(grpnode->options[Ncl_SHUFFLE].values);
                     deflate_level = varnode->compress_level;
-                    nc_ret = nc_def_var_deflate(id, varnode->id, shuffle,
+
+                  /*
+                   */
+                    fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                    fprintf(stderr, "\t\tvarnode->shuffle = %d, compress_level = %d\n",
+                                         varnode->shuffle, varnode->compress_level);
+
+                    nc_ret = nc_def_var_deflate(id, varnode->id, varnode->shuffle,
                                 deflate, deflate_level);
                 }
 
@@ -2995,6 +3048,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
     int get_all = 1;
     int no_stride = 1;
     size_t count[MAX_NC_DIMS];
+    size_t locstart[MAX_NC_DIMS];
 
   /*
    *fprintf(stderr, "\nEnter NC4ReadVar, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -3022,8 +3076,9 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
            *fprintf(stderr, "\tstart[%d] = %d, finish[%d] = %d, stride[%d] = %d\n",
            *                 i, start[i], i, finish[i], i, stride[i]);
            */
-            count[i] = (size_t)floor((finish[i] - start[i])/(double)stride[i]) + 1;
-            n_elem *= (ng_size_t)count[i];
+            count[i] = (int)floor((finish[i] - start[i])/(double)stride[i]) + 1;
+            locstart[i] = start[i];
+            n_elem *= count[i];
             if(stride[i] != 1)
             {
                 no_stride = 0;
@@ -3352,7 +3407,7 @@ found_component:
                         (long *)count,
                         NULL,
                         NULL,
-                        tmp_strs);
+                        (char *)tmp_strs);
                 }
                 else
                 {
@@ -3362,7 +3417,7 @@ found_component:
                         (long *)count,
                         stride,
                         NULL,
-                        tmp_strs);
+                        (char *)tmp_strs);
                 }
 
                 for(n = 0; n < n_elem; n++)
@@ -3389,16 +3444,18 @@ found_component:
 #endif
                 {
                     ret = nc_get_vara(varnode->gid, varnode->id,
-                                      (unsigned long *)start, (unsigned long *)count, out_data);
+                                      locstart, count, out_data);
                 }
                 else
                 {
                     ret = nc_get_vars(varnode->gid, varnode->id,
-                                      (unsigned long *)start, (unsigned long *)count, stride, out_data);
+                                      locstart, count, stride, out_data);
                 }
             }
         }
-        CloseOrSync(grpnode,fid,0);
+      /*
+       *CloseOrSync(grpnode, fid, 0);
+       */
         if(ret == -1)
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -3455,7 +3512,7 @@ static void *NC4ReadAtt(void *therec, NclQuark theatt, void *storage)
         {
             if(attnode->value != NULL)
             {
-                if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
+                if(attnode->the_nc_type == NC_CHAR)
                 {
                     *(NclQuark *)storage = *(NclQuark *)(attnode->value);
                 }
@@ -3485,7 +3542,7 @@ static void *NC4ReadAtt(void *therec, NclQuark theatt, void *storage)
                 grpnode->define_mode = 0;
             }
             
-            if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
+            if(attnode->the_nc_type == NC_CHAR)
             {
                 tmp = (char *)NclCalloc(attnode->n_elem+1, sizeof(char));
                 assert(tmp);
@@ -3505,7 +3562,9 @@ static void *NC4ReadAtt(void *therec, NclQuark theatt, void *storage)
                 {
                     EndNC4DefineMode(grpnode, fid);
                 }
-                CloseOrSync(grpnode,fid,0);
+              /*
+               *CloseOrSync(grpnode, fid, 0);
+               */
             }
 
             if (ret != -1) 
@@ -3546,7 +3605,7 @@ static void *NC4ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void 
         {
             if(NULL != attnode->value)
             {
-                if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
+                if(attnode->the_nc_type == NC_CHAR)
                 {
                     *(NclQuark *)storage = *(NclQuark *)(attnode->value);
                 }
@@ -3585,7 +3644,7 @@ static void *NC4ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void 
                 grpnode->open = 1;
             }
             
-            if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt  == Qmissing_val))
+            if(attnode->the_nc_type == NC_CHAR)
             {
                 tmp = (char*)NclMalloc(attnode->n_elem + 1);
                 tmp[attnode->n_elem] = '\0';
@@ -3598,7 +3657,9 @@ static void *NC4ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void 
                 ret = ncattget(fid,varnode->id,NrmQuarkToString(theatt),storage);
             }
 
-            CloseOrSync(grpnode,fid,0);
+          /*
+           *CloseOrSync(grpnode, fid, 0);
+           */
 
             if(ret != -1)
                 return(storage);
@@ -3626,6 +3687,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
     NclFileVarNode *varnode;
     NclFileDimNode *dimnode;
     size_t count[MAX_NC_DIMS];
+    size_t locstart[MAX_NC_DIMS];
     ng_size_t n_elem = 1;
     int no_stride = 1;
     int i,j,n;
@@ -3654,7 +3716,8 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
 
             for(i = 0; i < varnode->dim_rec->n_dims; i++)
             {
-                count[i] = (long)floor((finish[i] - start[i])/(double)stride[i]) + 1;
+                count[i] = (size_t)floor((finish[i] - start[i])/(double)stride[i]) + 1;
+                locstart[i] = (size_t)start[i];
                 n_elem *= (ng_size_t)count[i];
                 if(stride[i] != 1)
                 {
@@ -3756,7 +3819,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 else
                 {
                     ret = nc_put_vara_string(fid, varnode->id,
-                                             (unsigned long *) start, (unsigned long *) count, (const char **)tmpstr);
+                                             locstart, count, (const char **)tmpstr);
                 }
 
                 NclFree(tmpstr);
@@ -3772,7 +3835,6 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 NclList        comp_list;
                 NclListObjList *step = NULL;
                 NclVar cur_var = NULL;
-                NclObj obj = NULL;
 
                 NclFileCompoundRecord *comp_rec = varnode->comprec;
                 NclFileCompoundNode   *compnode = NULL;
@@ -3790,7 +3852,6 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 {
                     size_t cur_mem_loc = 0;
                     size_t compound_size = 0;
-                    NclObj tmpobj = NULL;
 
                     size_t *mem_len = (size_t *)NclCalloc(comp_rec->n_comps, sizeof(size_t));
                     if (! mem_len)
@@ -3871,7 +3932,9 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 }
             }
     
-            CloseOrSync(grpnode,fid,1);
+          /*
+           *CloseOrSync(grpnode,fid,1);
+           */
 
             if(ret == -1)
             {
@@ -3935,8 +3998,7 @@ static NhlErrorTypes NC4WriteAtt(void *therec, NclQuark theatt, void *data)
                 grpnode->open = 1;
             }
 
-            if(attnode->the_nc_type == NC_CHAR &&
-                !(theatt == Qfill_val || theatt == Qmissing_val))
+            if(attnode->the_nc_type == NC_CHAR)
             {
                 buffer = NrmQuarkToString(*(NclQuark*)data);
                 if((strlen(buffer)+1 > attnode->n_elem) || attnode->is_virtual)
@@ -3992,7 +4054,9 @@ static NhlErrorTypes NC4WriteAtt(void *therec, NclQuark theatt, void *data)
             if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
                 EndNC4DefineMode(grpnode, fid);
-                CloseOrSync(grpnode,fid,0);
+              /*
+               *CloseOrSync(grpnode,fid,0);
+               */
             }
                     
             if(ret == -1)
@@ -4074,7 +4138,9 @@ static NhlErrorTypes NC4DelAtt(void *therec, NclQuark theatt)
                 if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
                 {
                     EndNC4DefineMode(grpnode, fid);
-                    CloseOrSync(grpnode, fid, 0);
+                  /*
+                   *CloseOrSync(grpnode, fid, 0);
+                   */
                 }
             }
 
@@ -4158,7 +4224,9 @@ static NhlErrorTypes NC4DelVarAtt(void *therec, NclQuark thevar, NclQuark theatt
             if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
                 EndNC4DefineMode(grpnode, fid);
-                CloseOrSync(grpnode, fid, 0);
+              /*
+               *CloseOrSync(grpnode, fid, 0);
+               */
             }
         }
 
@@ -4192,7 +4260,7 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
     int fid;
     int nc_ret;
     int ret;
-    char * buffer = NULL;
+    char *buffer = NULL;
 
     if(grpnode->status > 0)
     {
@@ -4213,8 +4281,8 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
         if (! attnode->is_virtual)
         {
             /* if the value is the same as before don't bother writing it */
-            if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
-            {
+            if(attnode->the_nc_type == NC_CHAR)
+            {    
                 if (*(NrmQuark*)attnode->value == *(NrmQuark*)data)
                     return NhlNOERROR;
             }
@@ -4246,7 +4314,7 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
             grpnode->open = 1;
         }
 
-        if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
+        if(attnode->the_nc_type == NC_CHAR)
         {
             buffer = NrmQuarkToString(*(NclQuark*)data);
             if(strlen(buffer)+1 > attnode->n_elem || attnode->is_virtual)
@@ -4301,7 +4369,9 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
         if(0 == *(int * )(grpnode->options[Ncl_DEFINE_MODE].values))
         {
             EndNC4DefineMode(grpnode, fid);
-            CloseOrSync(grpnode, fid, 0);
+          /*
+           *CloseOrSync(grpnode, fid, 0);
+           */
         }
 
         if(ret == -1)
@@ -4343,8 +4413,10 @@ NhlErrorTypes NC4AddVarChunk(void* therec, NclQuark thevar,
 
     int storage = NC_CHUNKED;
 
-    fprintf(stderr, "\nEnter %s, file: %s, line: %d\n",
-                     __PRETTY_FUNCTION__, __FILE__, __LINE__);
+  /*
+   *fprintf(stderr, "\nEnter %s, file: %s, line: %d\n",
+   *                 __PRETTY_FUNCTION__, __FILE__, __LINE__);
+   */
 
     if(grpnode->status > 0)
     {    
@@ -4389,9 +4461,11 @@ NhlErrorTypes NC4AddVarChunk(void* therec, NclQuark thevar,
             }
         }
 
-       fprintf(stderr, "function %s, file: %s, line: %d\n",
-                        __PRETTY_FUNCTION__, __FILE__, __LINE__);
-       fprintf(stderr, "\tn_chunk_dims = %d\n", n_chunk_dims);
+     /*
+      *fprintf(stderr, "function %s, file: %s, line: %d\n",
+      *                 __PRETTY_FUNCTION__, __FILE__, __LINE__);
+      *fprintf(stderr, "\tn_chunk_dims = %d\n", n_chunk_dims);
+      */
 
        chunkdimrec = _NclFileDimAlloc(n_chunk_dims);
        chunkdimrec->gid = grpnode->id;
@@ -4408,8 +4482,8 @@ NhlErrorTypes NC4AddVarChunk(void* therec, NclQuark thevar,
             chunkdimnode->size = (ng_size_t)chunk_dims[i];
             chunksizes[i] = (size_t)chunk_dims[i];
           /*
+           *fprintf(stderr, "\tcheck dim %d size %ld\n", i, (long)varnode->chunk_dim_rec->dim_node[i].size);
            */
-            fprintf(stderr, "\tcheck dim %d size %d\n", i, varnode->chunk_dim_rec->dim_node[i].size);
         }
 
         if(! grpnode->define_mode)
@@ -4511,9 +4585,7 @@ static NhlErrorTypes NC4SetVarCompressLevel(void* therec, NclQuark thevar,
     NclFileVarNode *varnode;
     NhlErrorTypes ret = NhlNOERROR;
     int fid;
-    int shuffle = 0;
     int deflate = 0;
-    int deflate_level = compress_level;
     int nc_ret;
 
     if(grpnode->status > 0)
@@ -4549,9 +4621,17 @@ static NhlErrorTypes NC4SetVarCompressLevel(void* therec, NclQuark thevar,
     {
         varnode->compress_level = compress_level;
         if(compress_level > 0)
-            deflate = compress_level;
-        nc_ret = nc_def_var_deflate(fid, varnode->id, shuffle,
-                                    deflate, deflate_level);
+            deflate = 1;
+        varnode->shuffle = *(int *)(grpnode->options[Ncl_SHUFFLE].values);
+
+      /*
+       *fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+       *fprintf(stderr, "\t\tvarnode->shuffle = %d, compress_level = %d\n",
+       *                     varnode->shuffle, varnode->compress_level);
+       */
+
+        nc_ret = nc_def_var_deflate(fid, varnode->id, varnode->shuffle,
+                                    deflate, varnode->compress_level);
     }
 
     return(ret);
@@ -4647,7 +4727,9 @@ static NhlErrorTypes NC4AddDim(void* therec, NclQuark thedim,
             if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
                 EndNC4DefineMode(grpnode, fid);
-                CloseOrSync(grpnode, fid, 0);
+              /*
+               *CloseOrSync(grpnode, fid, 0);
+               */
             }
 
             if(nc_ret != NC_NOERR)
@@ -4861,7 +4943,8 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
 
         if (dim_ids[0] == -999)
         {
-            if (n_dims == 1 && dim_sizes[0] == 1 && dim_names[0] == NrmStringToQuark("ncl_scalar"))
+            if (n_dims == 1 && dim_names[0] == NrmStringToQuark("ncl_scalar") &&
+               (1 == dim_sizes[0] || (-5 == dim_sizes[0])))
             {
                 dim_ids[0] = -5;
                 add_scalar_dim = 1;
@@ -4899,7 +4982,7 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
             }
             else
             {
-                int shuffle = 1;
+                int shuffle = *(int *)(grpnode->options[Ncl_SHUFFLE].values);
                 int deflate = 1;
                 int deflate_level = *(int *)(grpnode->options[Ncl_COMPRESSION_LEVEL].values);
 
@@ -4908,6 +4991,11 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
 
                 if((ret == NC_NOERR) && (grpnode->format > 2) && (deflate_level > -1))
                 {
+                  /*
+                   *fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                   *fprintf(stderr, "\t\tshuffle = %d, compress_level = %d\n",
+                   *                    shuffle, deflate_level);
+                   */
                     ret  = nc_def_var_deflate(fid,var_id,shuffle,deflate,deflate_level);
                 }
             }
@@ -4922,7 +5010,9 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
             if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
                 EndNC4DefineMode(grpnode, fid);
-                CloseOrSync(grpnode, fid, 0);
+              /*
+               *CloseOrSync(grpnode, fid, 0);
+               */
             }
     
             _addNclVarNodeToGrpNode(grpnode, thevar, var_id, data_type,
@@ -4931,6 +5021,7 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
             i = grpnode->var_rec->n_vars - 1;
             varnode = &(grpnode->var_rec->var_node[i]);
             varnode->gid = grpnode->id;
+            varnode->shuffle = *(int *)(grpnode->options[Ncl_SHUFFLE].values);
             for(i = 0 ; i< n_dims; i++)
             {
                 varnode->dim_rec->dim_node[i].id = dim_ids[i];
@@ -4960,7 +5051,9 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
             if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
                 EndNC4DefineMode(grpnode, fid);
-                CloseOrSync(grpnode, fid, 0);
+              /*
+               *CloseOrSync(grpnode, fid, 0);
+               */
             }
         }
     }
@@ -5035,7 +5128,9 @@ static NhlErrorTypes NC4RenameDim(void* therec, NclQuark from, NclQuark to)
             if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
                 EndNC4DefineMode(grpnode, fid);
-                CloseOrSync(grpnode, fid, 0);
+              /*
+               *CloseOrSync(grpnode, fid, 0);
+               */
             }
 
             if(ret == -1)
@@ -5051,32 +5146,6 @@ static NhlErrorTypes NC4RenameDim(void* therec, NclQuark from, NclQuark to)
     }
     return(NhlFATAL);
 }
-
-/*
-static void NC4CacheAttValue(NclFileAttNode *attnode, void *value)
-{
-    if(attnode->the_nc_type < 1 || value == NULL)
-    {
-        attnode->value = NULL;
-    }
-    else if ((attnode->the_nc_type == NC_CHAR) &&
-            !(attnode->name == Qfill_val || attnode->name == Qmissing_val))
-    {
-        char *tmp = (char *)NclCalloc(attnode->n_elem + 1, sizeof(char));
-        assert(tmp);
-        strncpy(tmp,value,attnode->n_elem);
-        tmp[attnode->n_elem] = '\0';
-        attnode->value = (void *)NclCalloc(1, sizeof(NclQuark));
-        *(NclQuark *)attnode->value = NrmStringToQuark(tmp);
-        NclFree(tmp);
-    }
-    else
-    {
-        attnode->value = (void *)NclCalloc(attnode->n_elem, nctypelen(attnode->the_nc_type));
-        memcpy(attnode->value,value,nctypelen(attnode->the_nc_type) * attnode->n_elem);
-    }
-}
-*/
 
 static NhlErrorTypes NC4AddAtt(void *therec, NclQuark theatt,
                                NclBasicDataTypes data_type, int n_items, void * values)
@@ -5166,7 +5235,9 @@ static NhlErrorTypes NC4AddAtt(void *therec, NclQuark theatt,
             if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
                 EndNC4DefineMode(grpnode, fid);
-                CloseOrSync(grpnode,fid,0);
+              /*
+               *CloseOrSync(grpnode,fid,0);
+               */
             }
         } 
     }
@@ -5278,7 +5349,9 @@ static NhlErrorTypes NC4AddVarAtt(void *therec, NclQuark thevar, NclQuark theatt
                 if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
                 {
                     EndNC4DefineMode(grpnode, fid);
-                    CloseOrSync(grpnode, fid, 0);
+                  /*
+                   *CloseOrSync(grpnode, fid, 0);
+                   */
                 }
             } 
         } 
@@ -5311,7 +5384,9 @@ static NhlErrorTypes NC4SetOption(void *rootgrp, NclQuark option,
            (1 == grpnode->define_mode))
         {
             EndNC4DefineMode(grpnode, grpnode->id);
-            CloseOrSync(grpnode,grpnode->id,0);
+          /*
+           *CloseOrSync(grpnode,grpnode->id,0);
+           */
         }
     }
     else if (option == NrmStringToQuark("headerreservespace"))
@@ -5364,6 +5439,15 @@ static NhlErrorTypes NC4SetOption(void *rootgrp, NclQuark option,
     else if (option == NrmStringToQuark("missingtofillvalue"))
     {
         grpnode->options[Ncl_MISSING_TO_FILL_VALUE].values = values;
+    }
+    else if (option == NrmStringToQuark("shuffle"))
+    {
+        grpnode->options[Ncl_SHUFFLE].values = values;
+
+      /*
+       *fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+       *fprintf(stderr, "\t\tset shuffle = %d\n", *(int *)values);
+       */
     }
     else if (option == NrmStringToQuark("compressionlevel"))
     {
@@ -5533,7 +5617,9 @@ static NhlErrorTypes NC4AddVlenVar(void* therec, NclQuark thevar,
             if(0== *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
                 EndNC4DefineMode(grpnode, fid);
-                CloseOrSync(grpnode, fid, 0);
+              /*
+               *CloseOrSync(grpnode, fid, 0);
+               */
             }
     
             _addNclVarNodeToGrpNode(grpnode, thevar, var_id, NCL_list,
@@ -5757,7 +5843,9 @@ static NhlErrorTypes NC4AddEnumVar(void* therec, NclQuark thevar,
             if(0 == *(int*)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
                 EndNC4DefineMode(grpnode, fid);
-                CloseOrSync(grpnode, fid, 0);
+              /*
+               *CloseOrSync(grpnode, fid, 0);
+               */
             }
     
             _addNclVarNodeToGrpNode(grpnode, thevar, var_id, ncl_type,
@@ -5976,7 +6064,9 @@ static NhlErrorTypes NC4AddOpaqueVar(void* therec, NclQuark thevar,
             if(0== *(int*)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
                 EndNC4DefineMode(grpnode, fid);
-                CloseOrSync(grpnode, fid, 0);
+              /*
+               *CloseOrSync(grpnode, fid, 0);
+               */
             }
     
             _addNclVarNodeToGrpNode(grpnode, thevar, var_id, NCL_ubyte,
@@ -6158,7 +6248,7 @@ static NclFileVarNode *defNC4CompoundVar(void* therec, NclQuark thevar,
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
                           "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
                           __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
-                    return(NhlFATAL);
+                    return(NULL);
                 }
                 grpnode->define_mode = 1;
             }
@@ -6176,7 +6266,9 @@ static NclFileVarNode *defNC4CompoundVar(void* therec, NclQuark thevar,
             if(0 == *(int*)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
                 EndNC4DefineMode(grpnode, fid);
-                CloseOrSync(grpnode, fid, 0);
+              /*
+               *CloseOrSync(grpnode, fid, 0);
+               */
             }
     
             _addNclVarNodeToGrpNode(grpnode, thevar, var_id, NCL_ubyte,
@@ -6477,9 +6569,7 @@ NhlErrorTypes NC4WriteCompound(void *rec, NclQuark compound_name, NclQuark var_n
 
     if((NULL != varnode) && (NULL != thelist))
     {
-        NclList comp_list = NULL;
         NclListObjList *list_list = thelist->list.first;
-        NclListObjList *tmp_list = NULL;
 
         NclVar self = NULL;
         NclMultiDValData theval = NULL;
@@ -6545,39 +6635,19 @@ NhlErrorTypes NC4WriteCompound(void *rec, NclQuark compound_name, NclQuark var_n
                             cur_mem_loc += compound_size;
                         }
                     }
-                    else
-                    {
-                        comp_list = (NclList)_NclGetObj(*(int*)theval->multidval.val);
-                        tmp_list = comp_list->list.first;
-
-                        while(NULL != tmp_list)
-                        {
-                            self = (NclVar)_NclGetObj(tmp_list->obj_id);
-                            if(self != NULL)
-                            {
-                                theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
-
-                                memcpy(data_value + cur_mem_loc,
-                                       theval->multidval.val, mem_len[current_component]);
-
-                                cur_mem_loc += mem_len[current_component];
-                            }
-                            tmp_list = tmp_list->next;
-                            ++current_component;
-                        }
-                    }
                 }
 
                 list_list = list_list->next;
-                ++current_component;
             }
 
             ret = nc_put_var(fid, varnode->id, data_value);
             if(NC_NOERR != ret)
                 check_err(ret, __LINE__, __FILE__);
 
-            ret = nc_close(fid);
-            grpnode->open = 0;
+          /*
+           *ret = nc_close(fid);
+           *grpnode->open = 0;
+           */
 
             NclFree(data_value);
         }

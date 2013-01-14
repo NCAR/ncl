@@ -32,8 +32,8 @@ NhlErrorTypes dgeevx_lapack_W( void )
 /*
  * Return variable
  */
-  void *evlr, *wr, *wi;
-  double *tmp_evlr, *tmp_wr, *tmp_wi;
+  void *evlr, *wr, *wi, *vl, *vr;
+  double *tmp_evlr, *tmp_wr, *tmp_wi, *tmp_vl, *tmp_vr;
   int ndims_evlr;
   ng_size_t *dsizes_evlr;
   NclBasicDataTypes type_evlr;
@@ -42,7 +42,7 @@ NhlErrorTypes dgeevx_lapack_W( void )
  * Attribute and return variables
  */
   int att_id;
-  ng_size_t dsizes[1];
+  ng_size_t dsizes[1], dsizes2[2];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -50,7 +50,7 @@ NhlErrorTypes dgeevx_lapack_W( void )
  * Various
  */
   ng_size_t N, Nsqr, Nsqr4, lwork, liwork; 
-  double *work, *scalem, *rconde, *rcondv, *vl, *vr;
+  double *work, *scalem, *rconde, *rcondv;
   int *iwork, iN, ilwork, iliwork;
 
 /*
@@ -225,11 +225,16 @@ NhlErrorTypes dgeevx_lapack_W( void )
     evlr     = (void *)calloc(Nsqr4, sizeof(float));
     wr       = (void *)calloc(N, sizeof(float));
     wi       = (void *)calloc(N, sizeof(float));
+    vl       = (void *)calloc(Nsqr, sizeof(float));
+    vr       = (void *)calloc(Nsqr, sizeof(float));
     tmp_evlr = (double *)calloc(Nsqr4,sizeof(double));
     tmp_wr   = (double *)calloc(Nsqr4,sizeof(double));
     tmp_wi   = (double *)calloc(Nsqr4,sizeof(double));
-    if(evlr == NULL || tmp_evlr == NULL || wr   == NULL || tmp_wr   == NULL ||
-       wi   == NULL || tmp_wi   == NULL) {
+    tmp_vl   = (double *)calloc(Nsqr, sizeof(double));
+    tmp_vr   = (double *)calloc(Nsqr, sizeof(double));
+    if(evlr == NULL || tmp_evlr == NULL || wr   == NULL || tmp_wr == NULL ||
+       wi   == NULL || tmp_wi   == NULL || vl   == NULL || tmp_vl == NULL ||
+       vr   == NULL || tmp_vr   == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dgeevx_lapack: Unable to allocate memory for output arrays");
       return(NhlFATAL);
     }
@@ -238,13 +243,17 @@ NhlErrorTypes dgeevx_lapack_W( void )
     evlr = (void *)calloc(Nsqr4,sizeof(double));
     wr   = (void *)calloc(N, sizeof(double));
     wi   = (void *)calloc(N, sizeof(double));
-    if(evlr == NULL || wr == NULL || wi == NULL) {
+    vl   = (void *)calloc(Nsqr, sizeof(double));
+    vr   = (void *)calloc(Nsqr, sizeof(double));
+    if(evlr == NULL || wr == NULL || wi == NULL || vl == NULL || vr == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dgeevx_lapack: Unable to allocate memory for output arrays");
       return(NhlFATAL);
     }
     tmp_evlr = &((double*)evlr)[0];
     tmp_wr   = &((double*)wr)[0];
     tmp_wi   = &((double*)wi)[0];
+    tmp_vl   = &((double*)vl)[0];
+    tmp_vr   = &((double*)vr)[0];
   }
 
 /* 
@@ -253,13 +262,11 @@ NhlErrorTypes dgeevx_lapack_W( void )
   scalem = (double *)calloc(N, sizeof(double));
   rconde = (double *)calloc(N, sizeof(double));
   rcondv = (double *)calloc(N, sizeof(double));
-  vl     = (double *)calloc(Nsqr, sizeof(double));
-  vr     = (double *)calloc(Nsqr, sizeof(double));
   work   = (double *)calloc(ilwork, sizeof(double));
   iwork  = (int *)calloc(iliwork, sizeof(int));
 
   if(scalem == NULL || rconde == NULL || rcondv == NULL || 
-     vl == NULL || vr == NULL || work == NULL || iwork == NULL) {
+     work == NULL || iwork == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dgeevx_lapack: Unable to allocate memory for work arrays");
       return(NhlFATAL);
   }
@@ -284,13 +291,16 @@ NhlErrorTypes dgeevx_lapack_W( void )
   NGCALLF(dgeevxint,DGEEVXINT)(sbalanc, sjobvl, sjobvr, ssense, &iN, 
                                tmp_Q, tmp_evlr, tmp_wr, tmp_wi, opt, work, 
                                iwork, scalem, rconde, rcondv, 
-                               vl, vr, &ilwork, &iliwork,strlen(sbalanc),
-                               strlen(sjobvl), strlen(sjobvr), strlen(ssense));
+                               tmp_vl, tmp_vr, &ilwork, &iliwork,
+                               strlen(sbalanc),strlen(sjobvl), 
+                               strlen(sjobvr), strlen(ssense));
   if(type_Q != NCL_double) {
     coerce_output_float_only(evlr,tmp_evlr,Nsqr4,0);
     coerce_output_float_only(Q,tmp_Q,Nsqr,0);
     coerce_output_float_only(wr,tmp_wr,N,0);
     coerce_output_float_only(wi,tmp_wi,N,0);
+    coerce_output_float_only(vl,tmp_vl,Nsqr,0);
+    coerce_output_float_only(vr,tmp_vr,Nsqr,0);
   }
 /*
  * Free unneeded memory.
@@ -299,13 +309,13 @@ NhlErrorTypes dgeevx_lapack_W( void )
     NclFree(tmp_Q);
     NclFree(tmp_wr);
     NclFree(tmp_wi);
+    NclFree(tmp_vl);
+    NclFree(tmp_vr);
     NclFree(tmp_evlr);
   }
   NclFree(scalem);
   NclFree(rconde);
   NclFree(rcondv);
-  NclFree(vl);
-  NclFree(vr);
   NclFree(work);
   NclFree(iwork);
 
@@ -355,6 +365,7 @@ NhlErrorTypes dgeevx_lapack_W( void )
              att_md,
              NULL
              );
+
   att_md = _NclCreateVal(
                          NULL,
                          NULL,
@@ -371,6 +382,47 @@ NhlErrorTypes dgeevx_lapack_W( void )
   _NclAddAtt(
              att_id,
              "eigi",
+             att_md,
+             NULL
+             );
+
+  dsizes2[0] = dsizes2[1] = N;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         vl,
+                         NULL,
+                         2,
+                         dsizes2,
+                         TEMPORARY,
+                         NULL,
+                         type_obj_evlr
+                         );
+  _NclAddAtt(
+             att_id,
+             "eigleft",
+             att_md,
+             NULL
+             );
+
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         vr,
+                         NULL,
+                         2,
+                         dsizes2,
+                         TEMPORARY,
+                         NULL,
+                         type_obj_evlr
+                         );
+  _NclAddAtt(
+             att_id,
+             "eigright",
              att_md,
              NULL
              );

@@ -12103,17 +12103,17 @@ begin
    statx(20)= nFill
    statx(21)= 100*(one - (one*(nx-nFill))/nx)
 
-   if (nwork.gt.1000) then
+;;;if (nwork.gt.1000) then
         ;JBuzan BEGIN
-       statx(22) = work( nwork/1000-1 )     ; lower 99.9% 
-       statx(23) = work( nwork/100-1 )      ; lower 99.%  
-       statx(24) = work( nwork/20-1 )       ; lower 95%   
+       statx(22) = work( max((/ 0, nwork/1000-1 /)) ) ; lower 99.9% 
+       statx(23) = work( max((/ 0, nwork/100-1  /)) ) ; lower 99.%  
+       statx(24) = work( max((/ 0, nwork/20-1   /)) ) ; lower 95%   
     
-       statx(25) = work((nwork*19)/20-1)    ; upper 95%
-       statx(26) = work((nwork*99)/100-1)   ; upper 99.%
-       statx(27) = work((nwork*999)/1000-1) ; upper 99.9%
+       statx(25) = work( min((/nwork-1, (nwork*19)/20-1    /)) ) ; upper 95%
+       statx(26) = work( min((/nwork-1, (nwork*99)/100-1   /)) ) ; upper 99.%
+       statx(27) = work( min((/nwork-1, (nwork*999)/1000-1 /)) ) ; upper 99.9%
         ;JBuzan END
-   end if
+;;;end if
 
         ;Arne Melsom
    statx(28)  = moment(2)                   ; skewness

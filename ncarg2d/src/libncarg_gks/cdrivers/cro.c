@@ -78,6 +78,7 @@ static cairo_t         *cairoContexts[NUM_CONTEXT];
 static int             cairoEnvIndices[NUM_CONTEXT];
 
 cairo_surface_t *qt_surface = NULL;
+cairo_t         *qt_context = NULL;
 int qt_painter_width  = 1000;
 int qt_painter_height = 1000;
 
@@ -140,9 +141,6 @@ void CROpict_init(GKSC *gksc) {
      *  Get the background color and set the source to the background color.
      */
     cval = unpack_argb(psa->ctable, 0);
-  /*Qt Change.
-   *cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, cval.alpha);
-   */
     if(CQT == psa->wks_type)
         cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, 0.0);
     else
@@ -495,7 +493,10 @@ int cro_Cellarray(GKSC *gksc) {
     /*
      *  Restore color.
      */
-    cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, cval.alpha);
+    if(CQT == psa->wks_type)
+        cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, 0.0);
+    else
+        cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, cval.alpha);
     return (0);
 }
 
@@ -903,6 +904,11 @@ void setCairoQtSurface(cairo_surface_t *surface)
     qt_surface = surface;
 }
 
+cairo_t *getCairoQtContext()
+{
+    return qt_context;
+}
+
 void setCairoQtWinSize(int width, int height)
 {
     qt_painter_width = width;
@@ -1037,6 +1043,8 @@ int cro_OpenWorkstation(GKSC *gksc) {
         cairo_scale(context, width, height);
         saveCairoEnv(orig_wks_id, context, surface);
 
+        qt_context = context;
+
         psa->image_height = qt_painter_height;
         psa->image_width  = qt_painter_width;
     }
@@ -1084,17 +1092,22 @@ int cro_OpenWorkstation(GKSC *gksc) {
     /*
      *  Define the default foreground (black) and background (white)
      *  colors and draw the background.
+     *& Select the foreground color.
      */
-  /*Qt & OpenGL
     if(CQT == psa->wks_type)
+    {
+       /*Qt & OpenGL*/
         (psa->ctable)[0] = 0xFFFFFF00;
+        (psa->ctable)[1] = 0xFF000000;
+        cairo_set_source_rgba(context, 1., 1., 1., 0.);
+    }
     else
+    {
+       /*Others*/
         (psa->ctable)[0] = 0xFFFFFFFF;
-    (psa->ctable)[1] = 0xFF000000;
-    /*
-     *  Select the foreground color.
-     */
-    cairo_set_source_rgba(context, 0., 0., 0., 1.);
+        (psa->ctable)[1] = 0xFF000000;
+        cairo_set_source_rgba(context, 0., 0., 0., 1.);
+    }
 
 #ifdef __JIRA1530__   
         /* Jira NCL-1530:  this is a work-around between a buggy interaction with XQuartz 2.7.x

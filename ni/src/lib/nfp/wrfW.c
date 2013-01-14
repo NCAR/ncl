@@ -10557,7 +10557,7 @@ NhlErrorTypes wrf_wps_read_nml_W( void )
 /*
  * Return variable
  */
-  float *plotgrids_var;
+  float *pgrids_var;
   int size_output, ndims_output;
   ng_size_t dsizes_output[2];
   NclScalar missing_output;
@@ -10591,8 +10591,8 @@ NhlErrorTypes wrf_wps_read_nml_W( void )
   dsizes_output[0] = MAX_DOMAINS; 
   dsizes_output[1] = NVAR;
   size_output      = NVAR*MAX_DOMAINS;
-  plotgrids_var = (float*)calloc(size_output, sizeof(float));
-  if(plotgrids_var == NULL) {
+  pgrids_var       = (float*)calloc(size_output, sizeof(float));
+  if(pgrids_var == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_read_nml: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
@@ -10601,13 +10601,13 @@ NhlErrorTypes wrf_wps_read_nml_W( void )
 /*
  * Call the Fortran routine.
  */
-  NGCALLF(plotgrids_var,PLOTGRIDS_VAR)(cnamelist, plotgrids_var, 
+  NGCALLF(plotgrids_var,PLOTGRIDS_VAR)(cnamelist, pgrids_var, 
                                        &missing_output.floatval, 
                                        strlen(cnamelist));
 /*
  * Return value back to NCL script.
  */
-  ret = NclReturnValue(plotgrids_var,ndims_output,dsizes_output,
+  ret = NclReturnValue(pgrids_var,ndims_output,dsizes_output,
                        &missing_output,NCL_float,0);
   return(ret);
 }

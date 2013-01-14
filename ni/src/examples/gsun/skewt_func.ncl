@@ -14,13 +14,13 @@
 ; ------------------------------------------------
 
 undef("skewty")
-function skewty(pres[*]:float)            ; y-coord given pressure (mb)
+function skewty(pres[*]:numeric)            ; y-coord given pressure (mb)
   begin                             
    return (132.182-44.061*log10(pres))
   end
 
 undef("skewtx")
-function skewtx(temp[*]:float,y[*]:float) ; x-coord given temperature (c)
+function skewtx(temp[*]:numeric,y[*]:numeric) ; x-coord given temperature (c)
   begin                                     ; y=skewty(p)
    return (0.54*temp+0.90692*y)
   end
@@ -467,12 +467,12 @@ begin
          xx(1) = skewtx(temp(i),yy(1))
          yy(0) = skewty(lendt(i))
          xx(0) = skewtx(temp(i),yy(0))
-        ;gsOpts@gsLineLabelString  = floattointeger(temp(i))
+        ;gsOpts@gsLineLabelString  = toint(temp(i))   ; floattointeger(temp(i))
          gsn_polyline (wks,xy,xx,yy,gsOpts) 
 
          xlab  = xx(1)+0.625     
          ylab  = yy(1)+0.55     
-         label = floattointeger(temp(i))
+         label = toint(temp(i))     ;  floattointeger(temp(i))
          gsn_text(wks,xy,label,xlab,ylab,txOpts)
 
       end do 
@@ -539,7 +539,7 @@ begin
 
          xlab  = xx(0)-0.25
          ylab  = yy(0)-0.45
-         label = floattointeger(mixrat(i))
+         label = toint(mixrat(i))             ; floattointeger(mixrat(i))
          gsn_text(wks,xy,label,xlab,ylab,txOpts)
       end do    ; end "i=0,nmix-1"
       delete (gsOpts)
@@ -588,7 +588,7 @@ begin
             ;t     = THERMO::tda(theta(i),lendth(i)+5.)
              t     = tda_skewt(theta(i),lendth(i)+5.)
              xlab  = skewtx(t,ylab)
-             label = floattointeger(theta(i))
+             label = toint(theta(i))                        ; floattointeger(theta(i))
              gsn_text(wks,xy,label,xlab,ylab,txOpts)
          else                                               ; no laabel
              gsn_polyline (wks,xy,sx(:j-1),sy(:j-1),gsOpts) ; whole line
@@ -636,7 +636,8 @@ begin
         ;t     = THERMO::satlft(pseudo(i),p+0.75*pinc)
          t     = satlft_skewt(pseudo(i),p+0.75*pinc)
          xlab  = skewtx(t,ylab)
-         label = floattointeger(pseudo(i))        ; 9 Feb 99 fix 
+        ;label = floattointeger(pseudo(i))        ; 9 Feb 99 fix 
+         label = toint(pseudo(i))                 ; Jan 2013     
          gsn_text(wks,xy,label,xlab,ylab,txOpts)
   
       end do               ; end "i-0,dimsizes(pseudo)-1"
@@ -744,7 +745,8 @@ function skewT_PlotData_Original \
   localOpts@ThermoInfo= True     ; print thermodynamic info
   localOpts@Cape      = True     ; plot CAPE parcel profile if cape>0
   localOpts@Parcel    = 0        ; subscript corresponding to initial parcel
-
+  localOpts@hemisphere="NH"      ; hemisphere wind barbs
+  localOpts@Wthin     = 1        ; plot every wind barb          
                                  ; Override the default localOpts
                                  ; with input dataOpts
   if (dataOpts .and. .not.any(ismissing(getvaratts(dataOpts)))) then
@@ -829,7 +831,8 @@ function skewT_PlotData_Original \
 
   delete (gsOpts)
 
-  fmsg = default_fillvalue("float")   ; get default missing for float
+ ;fmsg = default_fillvalue("float")   ; get default missing for float
+  fmsg = default_fillvalue(typeof(tc))   ; get default missing 
 
   if (localOpts@ThermoInfo) then
       if (p(1).gt.p(2)) then
@@ -863,11 +866,11 @@ function skewT_PlotData_Original \
       nlLfc= cape@jlfc
       nlCross= cape@jcross
                                               ; 0.5 is for rounding
-      info = " Plcl="    +floattointeger(plcl+0.5) \ 
-           + " Tlcl[C]=" +floattointeger(tlcl+0.5) \
-           + " Shox="    +floattointeger(shox+0.5) \
-           + " Pwat[cm]="+floattointeger(pwat+0.5) \
-           + " Cape[J]= "+floattointeger(cape)
+      info = " Plcl="    +toint(plcl+0.5) \ 
+           + " Tlcl[C]=" +toint(tlcl+0.5) \
+           + " Shox="    +toint(shox+0.5) \
+           + " Pwat[cm]="+toint(pwat+0.5) \
+           + " Cape[J]= "+toint(cape)
 
       txOpts                   = True
       txOpts@txAngleF          = 0.
@@ -916,7 +919,7 @@ function skewT_PlotData_Original \
          if (.not.ismissing(P(nl)) .and. .not.ismissing(Z(nl)) .and. \
              any(Pprint.eq.P(nl))) then
              yz  = skewty (P(nl)) 
-             gsn_text (wks,skewt_bkgd,floattointeger(Z(nl)) \
+             gsn_text (wks,skewt_bkgd,toint(Z(nl)) \
                           ,xz,yz,txOpts) 
          end if
       end do          ; nl
@@ -941,6 +944,10 @@ function skewT_PlotData_Original \
           pw  = P(idw)   
 
           wmsetp ("wdf", 1)                 ; meteorological dir (Sep 2001)
+          if (localOpts@hemisphere.eq."SH") then      ; hemisphere
+               wmsetp("wba",-62.0)                    ; NH (default) is 62.0
+          end if
+print(localOpts)
 
           if (localOpts@WspdWdir) then      ; wind spd,dir (?)
               dirw = 0.017453*WDIR(idw)
@@ -961,8 +968,13 @@ function skewT_PlotData_Original \
           else
               xpWind = skewtx (45. , skewty(1013.) ) ; location of wind barb
           end if
+                                            ; wmbarb is prototyped as float
+          if (typeof(up).ne."float") then
+              wmbarb(wks, xpWind, ypWind, tofloat(up), tofloat(vp) )
+          else
+              wmbarb(wks, xpWind, ypWind, up, vp )
+          end if
 
-          wmbarb(wks, xpWind, ypWind, up, vp )
           wmsetp("col",wbcol)               ; reset to initial color value 
                                             ; chk for soundings where Z/wind
                                             ; were merged but no pressure
@@ -988,7 +1000,12 @@ function skewT_PlotData_Original \
               yzWind = skewty (pz) 
               xzWind = new (dimsizes(pz), float)
               xzWind = skewtx (45. , skewty(1013.) ) ; location of wind barb
-              wmbarb(wks, xzWind, yzWind, uz, vz )
+                                               ; wmbarb is prototyped as float
+              if (typeof(uz).ne."float") then
+                  wmbarb(wks, xzWind, yzWind, tofloat(uz), tofloat(vz) )
+              else
+                  wmbarb(wks, xzWind, yzWind, uz, vz )
+              end if
               wmsetp("col",wbcol)               ; reset to initial color value 
 
           end if   ; end ".not.ismissing(idz)"
@@ -1023,7 +1040,14 @@ function skewT_PlotData_Original \
               yhWind = skewty (ph) 
               xhWind = new (dimsizes(ph), float)
               xhWind = skewtx (45. , skewty(1013.) ) ; location of wind barb
-              wmbarb(wks, xhWind, yhWind, uh, vh )
+
+                                            ; wmbarb is prototyped as float
+              if (typeof(uh).ne."float") then
+                  wmbarb(wks, xhWind, yhWind, tofloat(uh), tofloat(vh) )
+              else
+                  wmbarb(wks, xhWind, yhWind, uh, vh )
+              end if
+
               wmsetp("col",wbcol)               ; reset to initial color value 
           end if
       else
@@ -1459,12 +1483,12 @@ begin
          xx(1) = skewtx(temp(i),yy(1))
          yy(0) = skewty(lendt(i))
          xx(0) = skewtx(temp(i),yy(0))
-        ;gsOpts@gsLineLabelString  = floattointeger(temp(i))
+        ;gsOpts@gsLineLabelString  = toint(temp(i))
          fooLineIsoTherm(i) = gsn_add_polyline (wks,xy,xx,yy,gsOpts) 
 
          xlab  = xx(1)+0.625     
          ylab  = yy(1)+0.55     
-         label = floattointeger(temp(i))
+         label = toint(temp(i))
          fooTextIsoTherm(i) = gsn_add_text(wks,xy,label,xlab,ylab,txOpts)
       end do 
 
@@ -1544,7 +1568,7 @@ begin
 
          xlab  = xx(0)-0.25
          ylab  = yy(0)-0.45
-         label = floattointeger(mixrat(i))
+         label = toint(mixrat(i))
          fooTextMix(i) = gsn_add_text(wks,xy,label,xlab,ylab,txOpts)
       end do    ; end "i=0,nmix-1"
 
@@ -1602,7 +1626,7 @@ begin
             ;t     = THERMO::tda(theta(i),lendth(i)+5.)
              t     = tda_skewt(theta(i),lendth(i)+5.)
              xlab  = skewtx(t,ylab)
-             label = floattointeger(theta(i))
+             label = toint(theta(i))
              fooTextDry(i) = gsn_add_text(wks,xy,label,xlab,ylab,txOpts)
          else                                               ; no laabel
              fooLineDry(i) = gsn_add_polyline (wks,xy,sx(:j-1),sy(:j-1),gsOpts) ; whole line
@@ -1659,7 +1683,7 @@ begin
         ;t     = THERMO::satlft(pseudo(i),p+0.75*pinc)
          t     = satlft_skewt(pseudo(i),p+0.75*pinc)
          xlab  = skewtx(t,ylab)
-         label = floattointeger(pseudo(i))        ; 9 Feb 99 fix 
+         label = toint(pseudo(i))        ; 9 Feb 99 fix 
          fooTextPseudo(i) = gsn_add_text(wks,xy,label,xlab,ylab,txOpts)
   
       end do               ; end "i-0,dimsizes(pseudo)-1"
@@ -1796,6 +1820,7 @@ function skewT_PlotData_Panel (wks:graphic, skewt_bkgd:graphic \
   localOpts@WspdWdir  = False    ; wind speed and dir [else: u,v]
   localOpts@PlotWindH = False    ; plot wind barbs at h lvls [pibal; special]
   localOpts@HspdHdir  = False    ; wind speed and dir [else: u,v]
+  localOpts@Wthin     = 1        ; plot every wind barb          
 
   localOpts@ThermoInfo= True     ; print thermodynamic info
   localOpts@Cape      = True     ; plot CAPE parcel profile if cape>0
@@ -1896,7 +1921,7 @@ function skewT_PlotData_Panel (wks:graphic, skewt_bkgd:graphic \
 
   delete (gsOpts)
 
-  fmsg = default_fillvalue("float")   ; get default missing for float
+  fmsg = default_fillvalue(typeof(tc))   ; get default missing
 
   if (localOpts@ThermoInfo) then
       nP   = localOpts@Parcel  ; default is the lowest level [0]
@@ -1921,11 +1946,11 @@ function skewT_PlotData_Panel (wks:graphic, skewt_bkgd:graphic \
       nlLfc= cape@jlfc
       nlCross= cape@jcross
                                               ; 0.5 is for rounding
-      info = " Plcl="    +floattointeger(plcl+0.5) \ 
-           + " Tlcl[C]=" +floattointeger(tlcl+0.5) \
-           + " Shox="    +floattointeger(shox+0.5) \
-           + " Pwat[cm]="+floattointeger(pwat+0.5) \
-           + " Cape[J]= "+floattointeger(cape)
+      info = " Plcl="    +toint(plcl+0.5) \ 
+           + " Tlcl[C]=" +toint(tlcl+0.5) \
+           + " Shox="    +toint(shox+0.5) \
+           + " Pwat[cm]="+toint(pwat+0.5) \
+           + " Cape[J]= "+toint(cape)
 
     ;;txOpts                   = True
     ;;txOpts@txAngleF          = 0.
@@ -2012,7 +2037,7 @@ function skewT_PlotData_Panel (wks:graphic, skewt_bkgd:graphic \
              any(Pprint.eq.P(nl))) then
              yz  = skewty (P(nl)) 
              fooTextPrintZ(nl) = gsn_add_text \
-                          (wks,skewt_bkgd,floattointeger(Z(nl)),xz,yz,txOpts) 
+                          (wks,skewt_bkgd,toint(Z(nl)),xz,yz,txOpts) 
          end if
       end do          ; nl
 

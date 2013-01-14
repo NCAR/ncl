@@ -235,7 +235,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 INSTALL_HDRS	= defs.h HluClasses.h NclApi.h ApiRecords.h NclVar.h \
 			NclBuiltIns.h NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h \
 			NclFile.h NclList.h NclData.h NclFileInterfaces.h \
-			NclDriver.h
+			NclDriver.h NclNewFileStructure.h
 
 NIO_HDRS        =       nio.h 
 NIO_EXTRA_HDRS  =       nio_path.h
@@ -315,7 +315,7 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 PYNIO_SRC_DIR   =	$(TOP)/pynio
 NIO_SRC_DIR 	=	$(TOP)/ni/src/lib/nio
 
-API_SRCS=	NclApi.c scanapi.c parseapi.c 
+API_SRCS=	NclApi.c scanapi.c parseapi.c guiFuncs.c NclDriver.c
 EXE_SRCS=	Ncl.c scanner.c parser.c io.c
 
 APISRCS		=	$(API_SRCS) $(SRCS)
@@ -427,7 +427,8 @@ COMMON_OBJS	=	$(GEN_TYPE_OBJS) $(STATIC_IO_OBJS) $(FOBJS) \
 			$(NC4_FEATURES_OBJS) \
 			$(GRIB2_OBJS) $(GDAL_OBJS)
 
-API_OBJS	=	NclApi.o ioapi.o NclHLUObjapi.o $(GEN_API_OBJS) $(GEN_MATH_OBJS) $(COMMON_OBJS) $(STATIC_OBJS) $(FIO_OBJS)
+API_OBJS	=	NclApi.o ioapi.o NclHLUObjapi.o guiFuncs.o NclDriver.o \
+			$(GEN_API_OBJS) $(GEN_MATH_OBJS) $(COMMON_OBJS) $(STATIC_OBJS) $(FIO_OBJS)
 ARCH_OBJS	=	io.o NclHLUObj.o $(GEN_EXE_OBJS) $(GEN_MATH_OBJS) $(COMMON_OBJS) $(STATIC_OBJS) $(FIO_OBJS)
 IO_OBJS         =       $(IO_EXTRA_OBJS) $(COMMON_OBJS) $(FMAP_OBJS)
 

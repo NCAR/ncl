@@ -108,7 +108,7 @@ void * /* size */
 );
 #endif
 
-extern int use_new_hlfs;
+extern short NCLnewfs;
 
 typedef enum {	NORMAL = 0,
 		VARSUBSEL = 1,

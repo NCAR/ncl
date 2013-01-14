@@ -69,12 +69,12 @@ char **GetNclFileVarNames(NclFile thefile, int *num_vars)
     char **varnames = NULL;
 
     if(NULL == thefile)
-        return 0;
+        return NULL;
 
     qvars = _NclFileReadVarNames(thefile, num_vars);
 
     if(1 > *num_vars)
-        return 0;
+        return NULL;
 
     if(NULL == varnames)
         varnames = (char **)NclCalloc(*num_vars, sizeof(char *));
@@ -103,7 +103,70 @@ char **GetNclFileVarNames(NclFile thefile, int *num_vars)
        */
     }
 
+    if(NULL != qvars)
+        NclFree(qvars);
+
     return varnames;
+}
+
+char **guiGetNclFileAttNames(NclFile thefile, int *num_atts)
+{
+    int n = 0;
+    char *str = NULL;
+    char **attnames = NULL;
+    NclNewFile newfile = NULL;
+    NclFileGrpNode *grpnode = NULL;
+
+    if(NULL == thefile)
+        return NULL;
+
+    if(thefile->file.use_new_hlfs)
+    {
+        newfile = (NclNewFile) thefile;
+        grpnode = newfile->newfile.grpnode;
+        if(NULL == grpnode->att_rec)
+            *num_atts = 0;
+        else
+            *num_atts = grpnode->att_rec->n_atts;
+    }
+    else
+        *num_atts = thefile->file.n_file_atts;
+
+    if(1 > *num_atts)
+        return NULL;
+
+    attnames = (char **)NclCalloc(*num_atts, sizeof(char *));
+
+    if(thefile->file.use_new_hlfs)
+    {
+        for(n = 0; n < *num_atts; ++n)
+        {
+            str = NrmQuarkToString(grpnode->att_rec->att_node[n].name);
+            attnames[n] = (char *)NclCalloc(strlen(str) + 1, sizeof(char));
+            strcpy(attnames[n], str);
+          /*
+           *fprintf(stderr, "\tfile %s, line: %d, function: %s\n",
+           *        __FILE__, __LINE__, __PRETTY_FUNCTION__);
+           *fprintf(stderr, "\tatt %d: <%s>\n", n, str);
+           */
+        }
+    }
+    else
+    {
+        for(n = 0; n < thefile->file.n_file_atts; ++n)
+        {
+            str = NrmQuarkToString(thefile->file.file_atts[n]->att_name_quark);
+            attnames[n] = (char *)NclCalloc(strlen(str) + 1, sizeof(char));
+            strcpy(attnames[n], str);
+          /*
+           *fprintf(stderr, "\tfile %s, line: %d, function: %s\n",
+           *        __FILE__, __LINE__, __PRETTY_FUNCTION__);
+           *fprintf(stderr, "\tatt %d: <%s>\n", n, str);
+           */
+        }
+    }
+
+    return attnames;
 }
 
 void getNclFileVarInfo(NclFile thefile, int *ndims, int **dimsizes, char ***dimnames, long *type)
@@ -111,9 +174,9 @@ void getNclFileVarInfo(NclFile thefile, int *ndims, int **dimsizes, char ***dimn
     int i,j;
 
     if(NULL == thefile)
-    return;
+        return;
 
-    if(_isNewFileStructure(thefile))
+    if(thefile->file.use_new_hlfs)
     {
         NclNewFile thenewfile = (NclNewFile) thefile;
         NclFileVarNode *varnode = NULL;
@@ -468,6 +531,29 @@ void guiNhlSetColor(int pid, int ci, float red, float green, float blue)
     NhlSetColor(pid, ci, red, green, blue);
 }
 
+void guiNhlRLSetStringArray(int id, char *resname, char **data, int nelem)
+{
+    ng_size_t num_elements = (ng_size_t) nelem;
+
+    NhlRLSetStringArray(id, resname, data, num_elements);
+}
+
+struct _NclMultiDValDataRec *guiGetFileAtt(NclFile thefile, char *attname)
+{
+    NclQuark qn = NrmStringToQuark(attname);
+    return (_NclFileReadAtt(thefile, qn, NULL));
+}
+
+void guiDestroyObj(NclObj obj)
+{
+    _NclDestroyObj(obj);
+}
+
+char *guiQuarkToString(NclQuark qn)
+{
+    return (NrmQuarkToString(qn));
+}
+
 #if 0
 extern void NhlRLUnSet(
 #if	NhlNeedProto
@@ -594,15 +680,6 @@ extern NhlErrorTypes NhlRLSetDoubleArray(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	double		*data,		/* array			*/
-	ng_size_t	num_elements	/* number elements in array	*/
-#endif
-);
-
-extern NhlErrorTypes NhlRLSetStringArray(
-#if	NhlNeedProto
-	int		id,		/* RL list			*/
-	NhlString	resname,	/* resource to set		*/
-	NhlString	*data,		/* array			*/
 	ng_size_t	num_elements	/* number elements in array	*/
 #endif
 );

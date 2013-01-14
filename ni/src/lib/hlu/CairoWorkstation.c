@@ -726,9 +726,6 @@ CairoWindowWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _N
     NhlErrorTypes ret = NhlNOERROR;
     char* tstr;
 
-    fprintf(stderr, "file %s, line: %d, function: %s\n",
-                     __FILE__, __LINE__, __PRETTY_FUNCTION__);
-
     newCairo->work.gkswksconid = 0;
     cairoLayer->dev_bounds_updated = False;
 
@@ -799,9 +796,6 @@ CairoQtWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _NhlAr
     NhlCairoWorkstationLayerPart *cairoLayer = &newCairo->cairo;
     NhlErrorTypes ret = NhlNOERROR;
     char* tstr;
-
-    fprintf(stderr, "file %s, line: %d, function: %s\n",
-                     __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     newCairo->work.gkswksconid = 0;
     cairoLayer->dev_bounds_updated = False;
@@ -982,10 +976,13 @@ CairoWorkstationDestroy(NhlLayer l) {
         if (cairo->xwinconfig.icon_title)
             NhlFree(cairo->xwinconfig.icon_title);
     }
-    else if (cairo->format == NhlCQT) {
-        fprintf(stderr, "file %s, line: %d, function: %s\n",
-                        __FILE__, __LINE__, __PRETTY_FUNCTION__);
-    } else {
+  /*
+   *else if (cairo->format == NhlCQT) {
+   *    fprintf(stderr, "file %s, line: %d, function: %s\n",
+   *                    __FILE__, __LINE__, __PRETTY_FUNCTION__);
+   *}
+   */
+    else {
         if (cairo->filename)
             NhlFree(cairo->filename);
     }
