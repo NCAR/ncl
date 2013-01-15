@@ -35,7 +35,7 @@ extern "C" {
 #include "NclFileInterfaces.h"
 #include "NclFile.h"
 #ifdef USE_NETCDF4_FEATURES
-#include "NclNewFile.h"
+#include "NclAdvancedFile.h"
 #endif
 #include "NclGroup.h"
 #include "NclFileVar.h"
@@ -49,7 +49,7 @@ extern "C" {
 #include "parser.h"
 #include "NclAtt.h"
 #include "NclList.h"
-#include "NclNewList.h"
+#include "NclAdvancedList.h"
 #include "NclHLUObj.h"
 #include "TypeSupport.h"
 #include "HLUSupport.h"
@@ -167,10 +167,10 @@ void CallTERM_LIST_OP(void) {
 	if(temporary_list_ptr != NULL) {
 		char *class_name = temporary_list_ptr->u.data_list->obj.class_ptr->obj_class.class_name;
 
-		if(0 == strcmp("NclNewListClass", class_name))
+		if(0 == strcmp("NclAdvancedListClass", class_name))
 		{
-			NclNewList newlist = (NclNewList) temporary_list_ptr->u.data_list;
-			n_elements = newlist->newlist.n_elem;
+			NclAdvancedList advancedlist = (NclAdvancedList) temporary_list_ptr->u.data_list;
+			n_elements = advancedlist->advancedlist.n_elem;
 			if(1 != n_elements)
 			{
 				estatus = _NclBuildNewListVar(n_elements, &output);
@@ -685,16 +685,16 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				if (thefile && var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
 					int bad = 0;
 #ifdef USE_NETCDF4_FEATURES
-					if(thefile->file.use_new_hlfs)
+					if(thefile->file.advanced_file_structure)
 					{
-						NclNewFile newfile = (NclNewFile)thefile;
+						NclAdvancedFile advancedfile = (NclAdvancedFile)thefile;
 						NclFileVarNode *varnode = NULL;
-						varnode = _getVarNodeFromNclFileGrpNode(newfile->newfile.grpnode, var);
+						varnode = _getVarNodeFromNclFileGrpNode(advancedfile->advancedfile.grpnode, var);
 						if(NULL == varnode)
 						{
 							NHLPERROR((NhlFATAL,NhlEUNKNOWN,"variable (%s) is not in file (%s)",
 								NrmQuarkToString(var),
-								NrmQuarkToString(newfile->newfile.grpnode->path)));
+								NrmQuarkToString(advancedfile->advancedfile.grpnode->path)));
 						}
 
 						if(first && (NULL != varnode->dim_rec))
@@ -714,18 +714,18 @@ void CallLIST_READ_FILEVAR_OP(void) {
 								{
 									NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 										"File %s dimension count for variable does not conform to others in list; skipping file",
-								  		NrmQuarkToString(newfile->newfile.fpath)));
+								  		NrmQuarkToString(advancedfile->advancedfile.fpath)));
 									bad = 1;
 								}
 								else
 								{
-									for (i = 0; i < i < var_ndims; ++i)
+									for (i = 0; i < var_ndims; ++i)
 									{
 										if(varnode->dim_rec->dim_node[i].size != var_dim_sizes[i])
 										{
 											NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 												"File %s dimension sizes do not conform to others in list; skipping file",
-										  		NrmQuarkToString(newfile->newfile.fpath)));
+										  		NrmQuarkToString(advancedfile->advancedfile.fpath)));
 											bad = 1;
 											break;
 										}
@@ -1640,7 +1640,7 @@ void CallSET_NEXT_OP(void)
 */
 			return;
 		} else {
-			if(0 == strcmp("NclNewListClass", list->obj.class_ptr->obj_class.class_name))
+			if(0 == strcmp("NclAdvancedListClass", list->obj.class_ptr->obj_class.class_name))
 			{
 				(void)_NclChangeSymbolType(temporary, LIST);
 				tmp_ptr->kind = NclStk_LIST;
@@ -3610,9 +3610,9 @@ static void performASSIGN_VAR(NclSymbol *sym, int nsubs, NclStackEntry *lhs_var)
 					int n;
 					NclDimRec dim_info[NCL_MAX_DIMENSIONS];
 					NclVar tmpvar;
-					NclNewList tmplist = (NclNewList)rhs.u.data_list;
+					NclAdvancedList tmplist = (NclAdvancedList)rhs.u.data_list;
 
-					tmpvar = (NclVar)_NclGetObj(tmplist->newlist.item[0]->obj_id);
+					tmpvar = (NclVar)_NclGetObj(tmplist->advancedlist.item[0]->obj_id);
 
 					rhs_md = _NclVarValueRead(tmpvar,NULL,NULL);
 					if(rhs_md != NULL)
@@ -5491,11 +5491,11 @@ void CallASSIGN_FILE_VAR_OP(void) {
 							int ndims = 0;
 
 #ifdef USE_NETCDF4_FEATURES
-							if(file->file.use_new_hlfs)
+							if(file->file.advanced_file_structure)
 							{
-								NclNewFile newfile = (NclNewFile) file;
+								NclAdvancedFile advancedfile = (NclAdvancedFile) file;
 								NclFileVarNode *varnode;
-								varnode = _getVarNodeFromNclFileGrpNode(newfile->newfile.grpnode, var);
+								varnode = _getVarNodeFromNclFileGrpNode(advancedfile->advancedfile.grpnode, var);
 								ndims = varnode->dim_rec->n_dims;
 							}
 							else
@@ -5850,11 +5850,11 @@ void CallFILE_VAR_OP(void) {
 				}
 
 #ifdef USE_NETCDF4_FEATURES
-				if(file->file.use_new_hlfs)
+				if(file->file.advanced_file_structure)
 				{
-					NclNewFile newfile = (NclNewFile)file;
+					NclAdvancedFile advancedfile = (NclAdvancedFile)file;
 					NclFileVarNode *varnode = NULL;
-					varnode = _getVarNodeFromNclFileGrpNode(newfile->newfile.grpnode, var);
+					varnode = _getVarNodeFromNclFileGrpNode(advancedfile->advancedfile.grpnode, var);
 					if(NULL == varnode)
 					{
 						NHLPERROR((NhlFATAL,NhlEUNKNOWN,"variable (%s) is not in file (%s)",

@@ -76,8 +76,9 @@ typedef enum _NclFileFormat {
 	_NclGRIB,
 	_NclGRIB2,
         _NclOGR,
-        _NclNewOGR,
-	_NclNETCDF4
+        _NclAdvancedOGR,
+	_NclNETCDF4,
+        _NclNumberOfFileFormats
 } NclFileFormat;
 
 typedef void * (*NclInitializeFileRecFunc)(
@@ -596,7 +597,7 @@ int _NclGribVersion(
 #endif
 );
 
-extern NclFormatFunctionRecPtr _NclGetFormatFuncsWithNewHLFS
+extern NclFormatFunctionRecPtr _NclGetFormatFuncsWithAdvancedFileStructure
                                (NclQuark file_extension);
 
 #endif

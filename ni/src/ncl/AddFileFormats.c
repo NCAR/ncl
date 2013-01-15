@@ -88,7 +88,7 @@ void
 #endif
 );
 
-extern NclFormatFunctionRecPtr NewOGRAddFileFormat(void);
+extern NclFormatFunctionRecPtr AdvancedOGRAddFileFormat(void);
 #endif
 
 void _NclAddFileFormats
@@ -171,7 +171,7 @@ void _NclAddFileFormats
 
 	/*These is for NetCDF4.
 	 *where this file will be scanned to find the second match.
-	 *The new file-structure is used when found the second match.
+	 *The advanced file-structure is used when found the second match.
 	 */
 #ifdef USE_NETCDF4_FEATURES
 	_NclRegisterFormat(NC4AddFileFormat,"cdf");
@@ -181,10 +181,10 @@ void _NclAddFileFormats
 	_NclRegisterFormat(NC4AddFileFormat,"netcdf");
 
 #ifdef  BuildGDAL
-        /* file types supported by OGR in new file structure */
-        _NclRegisterFormat(NewOGRAddFileFormat, "shp");  /* shapefile */
-        _NclRegisterFormat(NewOGRAddFileFormat, "mif");  /* mapinfo */
-        _NclRegisterFormat(NewOGRAddFileFormat, "gmt");  /* GMT   */
+        /* file types supported by OGR in advanced file structure */
+        _NclRegisterFormat(AdvancedOGRAddFileFormat, "shp");  /* shapefile */
+        _NclRegisterFormat(AdvancedOGRAddFileFormat, "mif");  /* mapinfo */
+        _NclRegisterFormat(AdvancedOGRAddFileFormat, "gmt");  /* GMT   */
 #endif
 #endif
 

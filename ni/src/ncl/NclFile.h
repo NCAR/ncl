@@ -29,6 +29,9 @@
 #define FILE_COORD_VAR_ACCESS 0
 #define FILE_VAR_ACCESS 1
 
+extern int grib_version;
+extern short NCLadvancedFileStructure[_NclNumberOfFileFormats];
+
 typedef struct _NclFileRec NclFileRec;
 typedef struct _NclFileClassRec NclFileClassRec;
 typedef NclFileRec *NclFile;
@@ -330,7 +333,7 @@ typedef enum {
 	Ncl_PRINT_RECORD_INFO,
 	Ncl_SINGLE_ELEMENT_DIMENSIONS,
 	Ncl_TIME_PERIOD_SUFFIX,
-	Ncl_USE_NEW_HLFS,
+	Ncl_ADVANCED_FILE_STRUCTURE,
 	Ncl_RECORD_MARKER_SIZE
 } NclFileOptionValues;
 
@@ -385,7 +388,7 @@ typedef struct _NclFilePart {
 	NclQuark	file_ext_q;
 	int		wr_status;
 	NclFileFormat	file_format;
-	int             use_new_hlfs;
+	int             advanced_file_structure;
 
 	int		         max_grps;
 	int		         n_grps;

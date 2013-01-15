@@ -30,9 +30,9 @@
 #include "NclFileInterfaces.h"
 #include "NclVar.h"
 #include "NclFile.h"
-#include "NclNewFile.h"
+#include "NclAdvancedFile.h"
 #include "NclList.h"
-#include "NclNewList.h"
+#include "NclAdvancedList.h"
 #include "VarSupport.h"
 #include "NclData.h"
 
@@ -57,14 +57,14 @@
 #define MAX_NCL_NAME_LENGTH    256
 #endif
 
-#include "NclNewFileStructure.h"
+#include "NclAdvancedFileStructure.h"
 
 static ng_usize_t ChunkSizeHint;
 
 static NrmQuark Qmissing_val;
 static NrmQuark Qfill_val;
 
-#define NC_NUM_OPTIONS  (1 + Ncl_USE_NEW_HLFS)
+#define NC_NUM_OPTIONS  (1 + Ncl_RECORD_MARKER_SIZE)
 
 static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
                                NclBasicDataTypes data_type, int n_dims,
@@ -284,6 +284,12 @@ static int InitializeOptions(NclFileGrpNode *grpnode)
     options[Ncl_SHUFFLE].size = 1;
     options[Ncl_SHUFFLE].values = (void *) NclCalloc(1, _NclSizeOf(NCL_int));
     *(int *)options[Ncl_SHUFFLE].values = 1;
+
+    options[Ncl_ADVANCED_FILE_STRUCTURE].name = NrmStringToQuark("filestructure");
+    options[Ncl_ADVANCED_FILE_STRUCTURE].type = NCL_string;
+    options[Ncl_ADVANCED_FILE_STRUCTURE].size = 1;
+    options[Ncl_ADVANCED_FILE_STRUCTURE].values = (void *) NclCalloc(1, _NclSizeOf(NCL_string));
+    *(NrmQuark *)options[Ncl_ADVANCED_FILE_STRUCTURE].values = NrmStringToQuark("advanced");
 
     options[Ncl_COMPRESSION_LEVEL].name = NrmStringToQuark("compressionlevel");
     options[Ncl_COMPRESSION_LEVEL].type = NCL_int;
@@ -3290,6 +3296,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
         if(NCL_compound != varnode->type)
         {
             if(varnode->value != NULL && varnode->dim_rec->n_dims == 1)
+            if((1 == varnode->dim_rec->n_dims) && (NULL != varnode->value))
             {
                 return NC4GetCachedValue(varnode,start[0],finish[0],stride[0],storage);
             }
@@ -3998,14 +4005,14 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 NclObj           tmpobj;
                 NclVar           tmpvar;
                 NclMultiDValData tmp_md;
-                NclNewList       vlist    = (NclNewList)_NclGetObj(*(int *)data);
-                nc_vlen_t       *vlendata = (nc_vlen_t *)NclCalloc(vlist->newlist.n_elem,
+                NclList    vlist    = (NclList)_NclGetObj(*(int *)data);
+                nc_vlen_t *vlendata = (nc_vlen_t *)NclCalloc(vlist->list.nelem,
                                                                   sizeof(nc_vlen_t));
                 assert(vlendata);
 
-                for(n = 0; n < vlist->newlist.n_elem; n++)
+                tmp = vlist->list.first;
+                for(n = 0; n < vlist->list.nelem; n++)
                 {
-                    tmp = vlist->newlist.item[n];
                     tmpobj = (NclObj)_NclGetObj(tmp->obj_id);
                     tmpvar = (NclVar)_NclGetObj(tmpobj->obj.id);
                     tmp_md = (NclMultiDValData)_NclGetObj(tmpvar->var.thevalue_id);
@@ -4014,6 +4021,8 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                     vlendata[n].len = 1;
                     for(i = 0; i < tmp_md->multidval.n_dims; i++)
                         vlendata[n].len *= tmp_md->multidval.dim_sizes[i];
+
+                    tmp = tmp->next;
                 }
 
                 ret = nc_put_var(fid, varnode->id, vlendata);
@@ -6886,16 +6895,14 @@ NhlErrorTypes NC4WriteCompound(void *rec, NclQuark compound_name, NclQuark var_n
             cur_mem_loc = 0;
             while(NULL != list_list)
             {
-                current_component = 0;
-
                 self = (NclVar)_NclGetObj(list_list->obj_id);
                 if(self != NULL)
                 {
                     theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
                     comp_list = (NclList)_NclGetObj(*(int*)theval->multidval.val);
-                    tmp_list = comp_list->list.first;
+                    tmp_list = comp_list->list.last;
 
-                    while(NULL != tmp_list)
+                    for(current_component = 0; current_component < n_mems; ++current_component)
                     {
                         self = (NclVar)_NclGetObj(tmp_list->obj_id);
                         if(self != NULL)
@@ -6907,8 +6914,7 @@ NhlErrorTypes NC4WriteCompound(void *rec, NclQuark compound_name, NclQuark var_n
 
                             cur_mem_loc += mem_len[current_component];
                         }
-                        tmp_list = tmp_list->next;
-                        current_component++;
+                        tmp_list = tmp_list->prev;
                     }
                 }
 

@@ -13,7 +13,7 @@ extern "C" {
 #include <errno.h>
 #include "Symbol.h"
 #include "NclList.h"
-#include "NclNewList.h"
+#include "NclAdvancedList.h"
 #include "NclDataDefs.h"
 #include "Machine.h"
 #include "NclFile.h"
@@ -939,19 +939,19 @@ NhlErrorTypes _NclBuildNewListVar(int n_items,NclStackEntry *result)
 {
 #ifdef USE_NETCDF4_FEATURES
 	NclStackEntry data;
-	NclNewList thelist = NULL;
+	NclAdvancedList thelist = NULL;
 	NclObj oneobj;
 	int i;
 	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	int ndims = 1;
 
-	NclNewList tmplist;
+	NclAdvancedList tmplist;
 	obj *id;
 
-	thelist =(NclNewList)_NclNewListCreate(NULL,NULL,Ncl_List,0,n_items,NCL_ITEM);
+	thelist =(NclAdvancedList)_NclAdvancedListCreate(NULL,NULL,Ncl_List,0,n_items,NCL_ITEM);
 	id = (obj*)NclMalloc(sizeof(obj));
 	*id = thelist->obj.id;
-	thelist->newlist.type = NrmStringToQuark("item");
+	thelist->advancedlist.type = NrmStringToQuark("item");
 
         dim_sizes[0] = 1;
 	result->kind = NclStk_VAL;
@@ -960,11 +960,11 @@ NhlErrorTypes _NclBuildNewListVar(int n_items,NclStackEntry *result)
 				ndims,dim_sizes,TEMPORARY,NULL);
 	data = _NclPop();
 
-	tmplist = (NclNewList)data.u.data_list;
+	tmplist = (NclAdvancedList)data.u.data_list;
 
 	for(i = 0; i < n_items; i++)
 	{
-		oneobj = (NclObj)_NclGetObj(tmplist->newlist.item[i]->obj_id);
+		oneobj = (NclObj)_NclGetObj(tmplist->advancedlist.item[i]->obj_id);
 		_NclListAppend((NclObj)thelist, oneobj);
 	}
 
@@ -2184,7 +2184,7 @@ NclStackEntry missing_expr;
 	the_type = _NclKeywordToDataType(data_type);
 /*Wei commented out this block to allow of using "new function" for list. 11/9/2011.
 	if (the_type == NCL_list) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: currently unable to create list type variable; use NewList or [/ ... /] list syntax");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: currently unable to create list type variable; use AdvancedList or [/ ... /] list syntax");
 		return(NhlFATAL);
 	}		
 */

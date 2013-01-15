@@ -30,8 +30,10 @@
 #include "NclCoordVar.h"
 #include "NclCallBacksI.h"
 
+/*Move to NclFile.h, Wei 01/14/2013
 extern int grib_version;
-extern short NCLnewfs;
+extern short NCLadvancedFileStructure[_NclNumberOfFileFormats];
+*/
 
 #define NCLFILE_INC -1
 #define NCLFILE_DEC -2
@@ -1730,7 +1732,7 @@ NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB print record info */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB single element dimensions */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB time period suffix */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },   /* new file-structure */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },   /* advanced file-structure */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 4, NULL }  /* Fortran binary file record marker size */
 };
 
@@ -2198,28 +2200,28 @@ NhlErrorTypes InitializeFileOptions
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
 	fcp->options[Ncl_TIME_PERIOD_SUFFIX].valid_values = NULL;
 
-	/* new file-structure */
+	/* advanced file-structure */
 
-	fcp->options[Ncl_USE_NEW_HLFS].format = NrmStringToQuark("nc");
-	fcp->options[Ncl_USE_NEW_HLFS].name = NrmStringToQuark("usenewhlfs");
-	len_dims = 1;
-	lval = (logical*) NclMalloc(sizeof(logical));
-	if(NCLnewfs)
-		*lval = True;
+	fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].format = NrmStringToQuark("all");
+	fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].name = NrmStringToQuark("filestructure");
+        len_dims = 1;
+        sval = (string*) NclMalloc(sizeof(string));
+	if(NCLadvancedFileStructure[0])
+        	*sval = NrmStringToQuark("advanced");
 	else
-		*lval = False;
-	fcp->options[Ncl_USE_NEW_HLFS].value = 
-		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
-				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
-	lval = (logical*) NclMalloc(sizeof(logical));
-	if(NCLnewfs)
-		*lval = True;
+        	*sval = NrmStringToQuark("standard");
+	fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+        sval = (string*) NclMalloc(sizeof(string));
+	if(NCLadvancedFileStructure[0])
+        	*sval = NrmStringToQuark("advanced");
 	else
-		*lval = False;
-	fcp->options[Ncl_USE_NEW_HLFS].def_value = 
-		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
-				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
-	fcp->options[Ncl_USE_NEW_HLFS].valid_values = NULL;
+        	*sval = NrmStringToQuark("standard");
+	fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].valid_values = NULL;
 
 	/* Binary option RecordMarkerSize */
 
@@ -4683,7 +4685,7 @@ NclFile _NclFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	file_out->file.fname = fname_q;
 	file_out->file.file_format = 0;
 	file_out->file.file_ext_q = file_ext_q;
-	file_out->file.use_new_hlfs = 0;
+	file_out->file.advanced_file_structure = 0;
 
 	_NclInitFilePart(&(file_out->file));
 

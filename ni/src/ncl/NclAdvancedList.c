@@ -2,7 +2,7 @@
  * $ID$
  */
 
-#include "NclNewList.h"
+#include "NclAdvancedList.h"
 #include <assert.h>
 
 #include <ncarg/hlu/hlu.h>
@@ -11,33 +11,33 @@
 #include "defs.h"
 #include "NclDataDefs.h"
 
-struct _NclObjRec *_NclNewListCreate(struct _NclObjRec      *inst,
+struct _NclObjRec *_NclAdvancedListCreate(struct _NclObjRec      *inst,
                                      struct _NclObjClassRec *theclass,
                                      NclObjTypes             obj_type,
                                      unsigned int            obj_type_mask,
                                      ng_size_t               listsize,
                                      int                     list_type)
 {
-    NclNewList my_inst;
+    NclAdvancedList my_inst;
     NclObjClass class_ptr;
     NhlErrorTypes ret;
 
-    ret = _NclInitClass(nclNewListClass);
+    ret = _NclInitClass(nclAdvancedListClass);
     if(ret < NhlWARNING)
        return(NULL);
 
     if(inst == NULL)
     {
-        my_inst = (NclNewList)NclCalloc(1, (unsigned)sizeof(NclNewListRec));
+        my_inst = (NclAdvancedList)NclCalloc(1, (unsigned)sizeof(NclAdvancedListRec));
     }
     else
     {
-        my_inst = (NclNewList)inst;
+        my_inst = (NclAdvancedList)inst;
     }
 
     if(theclass == NULL)
     {
-        class_ptr = nclNewListClass;
+        class_ptr = nclAdvancedListClass;
     }
     else
     {
@@ -52,25 +52,25 @@ struct _NclObjRec *_NclNewListCreate(struct _NclObjRec      *inst,
     (void)_NclObjCreate((NclObj)my_inst,class_ptr,obj_type,
                         (obj_type_mask | Ncl_List),PERMANENT);
 
-    my_inst->newlist.type = list_type;
-    my_inst->newlist.name = 0;
-    my_inst->newlist.thesym = NULL;
+    my_inst->advancedlist.type = list_type;
+    my_inst->advancedlist.name = 0;
+    my_inst->advancedlist.thesym = NULL;
 
     if(listsize < 1)
-        my_inst->newlist.max_elem = NCL_MIN_LIST_ITEMS;
+        my_inst->advancedlist.max_elem = NCL_MIN_LIST_ITEMS;
     else
-        my_inst->newlist.max_elem = listsize;
-    my_inst->newlist.n_elem = 0;
-    my_inst->newlist.state = NCL_LIST_IDLE;
+        my_inst->advancedlist.max_elem = listsize;
+    my_inst->advancedlist.n_elem = 0;
+    my_inst->advancedlist.state = NCL_LIST_IDLE;
 
-    my_inst->newlist.item = (NclListObjList **)NclCalloc(my_inst->newlist.max_elem,
+    my_inst->advancedlist.item = (NclListObjList **)NclCalloc(my_inst->advancedlist.max_elem,
                                                         sizeof(NclListObjList *));
-    assert(my_inst->newlist.item);
+    assert(my_inst->advancedlist.item);
 
     return((NclObj)my_inst);
 }
 
-static NhlErrorTypes InitializeNewListClass
+static NhlErrorTypes InitializeAdvancedListClass
 #if NhlNeedProto
 (void)
 #else
@@ -79,42 +79,42 @@ static NhlErrorTypes InitializeNewListClass
 {
         _NclRegisterClassPointer(
                 Ncl_List,
-                (NclObjClass)&nclNewListClassRec
+                (NclObjClass)&nclAdvancedListClassRec
         );
         return(NhlNOERROR);
 }
 
-static NhlErrorTypes NewListPrintSummary(NclObj theobj, FILE *fp)
+static NhlErrorTypes AdvancedListPrintSummary(NclObj theobj, FILE *fp)
 {
-    NclNewList new_list = NULL;
+    NclAdvancedList new_list = NULL;
     NhlErrorTypes ret;
 
-    new_list = (NclNewList) theobj;
+    new_list = (NclAdvancedList) theobj;
 
     ret = nclfprintf(fp,"Type: %s <list>\n",
-                         NrmQuarkToString(new_list->newlist.type));
+                         NrmQuarkToString(new_list->advancedlist.type));
     ret = nclfprintf(fp,"Total items: %ld\n",
-                         (long)new_list->newlist.n_elem);
+                         (long)new_list->advancedlist.n_elem);
 
     return(NhlNOERROR);
 }
 
-static NhlErrorTypes NewListPrint(NclObj theobj, FILE *fp)
+static NhlErrorTypes AdvancedListPrint(NclObj theobj, FILE *fp)
 {
-    NclNewList new_list = (NclNewList) theobj;
+    NclAdvancedList new_list = (NclAdvancedList) theobj;
     NhlErrorTypes ret;
 
     ret = nclfprintf(fp,"Type: %s <list>\n",
-                         NrmQuarkToString(new_list->newlist.type));
+                         NrmQuarkToString(new_list->advancedlist.type));
     ret = nclfprintf(fp,"Total items: %ld\n",
-                         (long)new_list->newlist.n_elem);
+                         (long)new_list->advancedlist.n_elem);
 
     return(NhlNOERROR);
 }
 
 NhlErrorTypes ListAppend(NclObj list,NclObj theobj)
 {
-    NclNewList thelist = (NclNewList)list;
+    NclAdvancedList thelist = (NclAdvancedList)list;
     NclListObjList *tmp = (NclListObjList*)NclCalloc(1, sizeof(NclListObjList));
     NhlErrorTypes  ret = NhlNOERROR;
     NclObj tmp_obj;
@@ -187,47 +187,47 @@ NhlErrorTypes ListAppend(NclObj list,NclObj theobj)
     tmp->prev = NULL;
     tmp->next = NULL;
 
-    n = thelist->newlist.n_elem;
+    n = thelist->advancedlist.n_elem;
 
-    if(n >= thelist->newlist.max_elem)
+    if(n >= thelist->advancedlist.max_elem)
     {
-        while(thelist->newlist.max_elem <= n)
-            thelist->newlist.max_elem *= 2;
+        while(thelist->advancedlist.max_elem <= n)
+            thelist->advancedlist.max_elem *= 2;
 
-        thelist->newlist.item = (NclListObjList **)NclRealloc(thelist->newlist.item,
-                                thelist->newlist.max_elem * sizeof(NclListObjList *));
-        assert(thelist->newlist.item);
+        thelist->advancedlist.item = (NclListObjList **)NclRealloc(thelist->advancedlist.item,
+                                thelist->advancedlist.max_elem * sizeof(NclListObjList *));
+        assert(thelist->advancedlist.item);
     }
 
-    thelist->newlist.item[n] = tmp;
+    thelist->advancedlist.item[n] = tmp;
 
-    thelist->newlist.n_elem++;
+    thelist->advancedlist.n_elem++;
     return(NhlNOERROR);
 }
 
-static NclList NewListSelect(NclObj list, NclSelection *sel_ptr)
+static NclList AdvancedListSelect(NclObj list, NclSelection *sel_ptr)
 {
-    NclNewList thelist = (NclNewList)list;
+    NclAdvancedList thelist = (NclAdvancedList)list;
     NclListObjList *ori;
     NclObj tmp_obj;
     int tmp_stride;
     int i,j,n;
-    NclNewList outlist;
+    NclAdvancedList outlist;
     long *ind;
 
     if(sel_ptr == NULL)
     {
-        outlist = (NclNewList)_NclNewListCreate(NULL,NULL,Ncl_List,0,
-                                                thelist->newlist.n_elem,
-                                                thelist->newlist.type);
+        outlist = (NclAdvancedList)_NclAdvancedListCreate(NULL,NULL,Ncl_List,0,
+                                                thelist->advancedlist.n_elem,
+                                                thelist->advancedlist.type);
         assert(outlist);
-        outlist->newlist.name = thelist->newlist.name;
-        outlist->newlist.type = thelist->newlist.type;
+        outlist->advancedlist.name = thelist->advancedlist.name;
+        outlist->advancedlist.type = thelist->advancedlist.type;
         outlist->obj.obj_type = Ncl_List;
 
-        for(n = 0; n < thelist->newlist.n_elem; n++)
+        for(n = 0; n < thelist->advancedlist.n_elem; n++)
         {
-            ori = thelist->newlist.item[n];
+            ori = thelist->advancedlist.item[n];
             tmp_obj = _NclGetObj(ori->obj_id);
             ListAppend((NclObj)outlist, tmp_obj);
         }
@@ -235,27 +235,27 @@ static NclList NewListSelect(NclObj list, NclSelection *sel_ptr)
     }
     else if(sel_ptr->sel_type == Ncl_VECSUBSCR)
     {
-        outlist = (NclNewList)_NclNewListCreate(NULL,NULL,Ncl_List,0,
+        outlist = (NclAdvancedList)_NclAdvancedListCreate(NULL,NULL,Ncl_List,0,
                                                 0,
-                                                thelist->newlist.type);
+                                                thelist->advancedlist.type);
         assert(outlist);
-        outlist->newlist.name = thelist->newlist.name;
-        outlist->newlist.type = thelist->newlist.type;
+        outlist->advancedlist.name = thelist->advancedlist.name;
+        outlist->advancedlist.type = thelist->advancedlist.type;
         outlist->obj.obj_type = Ncl_List;
 
         n = 0;
         ind = sel_ptr->u.vec.ind;
         for(i = sel_ptr->u.vec.n_ind-1; i >= 0 ; i--)
         {
-            if(ind[i] < 0 || ind[i] >= thelist->newlist.n_elem)
+            if(ind[i] < 0 || ind[i] >= thelist->advancedlist.n_elem)
             {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"NewListSelect: Index out of range");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"AdvancedListSelect: Index out of range");
                 _NclDestroyObj((NclObj)outlist);
                 return(NULL);
             }
 
             n += ind[i];
-            ori = thelist->newlist.item[n];
+            ori = thelist->advancedlist.item[n];
             tmp_obj = _NclGetObj(ori->obj_id);
             ListAppend((NclObj)outlist, tmp_obj);
         }
@@ -267,10 +267,10 @@ static NclList NewListSelect(NclObj list, NclSelection *sel_ptr)
         {
         case Ncl_SUB_ALL:
             sel_ptr->u.sub.start = 0;
-            sel_ptr->u.sub.finish = thelist->newlist.n_elem-1;
+            sel_ptr->u.sub.finish = thelist->advancedlist.n_elem-1;
             break;
         case Ncl_SUB_VAL_DEF:
-            sel_ptr->u.sub.finish = thelist->newlist.n_elem-1;
+            sel_ptr->u.sub.finish = thelist->advancedlist.n_elem-1;
             break;
         case Ncl_SUB_DEF_VAL:
             sel_ptr->u.sub.start = 0;
@@ -292,25 +292,25 @@ static NclList NewListSelect(NclObj list, NclSelection *sel_ptr)
            *fprintf(stderr, "\ttmp_stride = %d\n", tmp_stride);
            */
 
-            if(sel_ptr->u.sub.start < 0 || sel_ptr->u.sub.finish >= thelist->newlist.n_elem)
+            if(sel_ptr->u.sub.start < 0 || sel_ptr->u.sub.finish >= thelist->advancedlist.n_elem)
             {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"NewListSelect: Index out of range");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"AdvancedListSelect: Index out of range");
                 _NclDestroyObj((NclObj)outlist);
                 return(NULL);
             }
 
             n = (sel_ptr->u.sub.finish - sel_ptr->u.sub.start + 1) / tmp_stride;
 
-            outlist = (NclNewList)_NclNewListCreate(NULL,NULL,Ncl_List,0,
-                                                    n, thelist->newlist.type);
+            outlist = (NclAdvancedList)_NclAdvancedListCreate(NULL,NULL,Ncl_List,0,
+                                                    n, thelist->advancedlist.type);
             assert(outlist);
-            outlist->newlist.name = thelist->newlist.name;
-            outlist->newlist.type = thelist->newlist.type;
+            outlist->advancedlist.name = thelist->advancedlist.name;
+            outlist->advancedlist.type = thelist->advancedlist.type;
             outlist->obj.obj_type = Ncl_List;
 
             for(i = sel_ptr->u.sub.start; i <= sel_ptr->u.sub.finish; i += tmp_stride)
             {
-                ori = thelist->newlist.item[i];
+                ori = thelist->advancedlist.item[i];
                 tmp_obj = _NclGetObj(ori->obj_id);
                 ListAppend((NclObj)outlist, tmp_obj);
             }
@@ -322,25 +322,25 @@ static NclList NewListSelect(NclObj list, NclSelection *sel_ptr)
             fprintf(stderr, "\tsel_ptr->u.sub.finish = %d\n", sel_ptr->u.sub.finish);
             fprintf(stderr, "\ttmp_stride = %d\n", tmp_stride);
 
-            if(sel_ptr->u.sub.finish < 0 || sel_ptr->u.sub.start >= thelist->newlist.n_elem)
+            if(sel_ptr->u.sub.finish < 0 || sel_ptr->u.sub.start >= thelist->advancedlist.n_elem)
             {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"NewListSelect: Index out of range");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"AdvancedListSelect: Index out of range");
                 _NclDestroyObj((NclObj)outlist);
                 return(NULL);
             }
 
             n = (sel_ptr->u.sub.start - sel_ptr->u.sub.finish + 1) / tmp_stride;
 
-            outlist = (NclNewList)_NclNewListCreate(NULL,NULL,Ncl_List,0,
-                                                    n, thelist->newlist.type);
+            outlist = (NclAdvancedList)_NclAdvancedListCreate(NULL,NULL,Ncl_List,0,
+                                                    n, thelist->advancedlist.type);
             assert(outlist);
-            outlist->newlist.name = thelist->newlist.name;
-            outlist->newlist.type = thelist->newlist.type;
+            outlist->advancedlist.name = thelist->advancedlist.name;
+            outlist->advancedlist.type = thelist->advancedlist.type;
             outlist->obj.obj_type = Ncl_List;
 
             for(i = sel_ptr->u.sub.start; i >= sel_ptr->u.sub.finish; i -= tmp_stride)
             {
-                ori = thelist->newlist.item[i];
+                ori = thelist->advancedlist.item[i];
                 tmp_obj = _NclGetObj(ori->obj_id);
                 ListAppend((NclObj)outlist, tmp_obj);
             }
@@ -351,19 +351,19 @@ static NclList NewListSelect(NclObj list, NclSelection *sel_ptr)
 }
 
 /* This always returns the first item's id */
-static int NewListGetNext(NclObj list)
+static int AdvancedListGetNext(NclObj list)
 {
-    NclNewList thelist = (NclNewList)list;
+    NclAdvancedList thelist = (NclAdvancedList)list;
     int tmp_id = -1;
 
     if(NULL != thelist)
     {
-        if(NCL_LIST_IDLE == thelist->newlist.state)
+        if(NCL_LIST_IDLE == thelist->advancedlist.state)
         {
-            thelist->newlist.state = NCL_LIST_SEQUENCING;
-            if(NULL != thelist->newlist.item[0])
+            thelist->advancedlist.state = NCL_LIST_SEQUENCING;
+            if(NULL != thelist->advancedlist.item[0])
             {
-                tmp_id = thelist->newlist.item[0]->obj_id;
+                tmp_id = thelist->advancedlist.item[0]->obj_id;
             }
         } 
         else
@@ -376,21 +376,21 @@ static int NewListGetNext(NclObj list)
     return (tmp_id);
 }
 
-NclNewListClassRec nclNewListClassRec =
+NclAdvancedListClassRec nclAdvancedListClassRec =
 {
     {
-        "NclNewListClass",
-        sizeof(NclNewListRec),
+        "NclAdvancedListClass",
+        sizeof(NclAdvancedListRec),
         (NclObjClass)&nclObjClassRec,
         0,
         (NclGenericFunction)   NULL,
         (NclSetStatusFunction) NULL,
         (NclInitPartFunction)  NULL,
-        (NclInitClassFunction) InitializeNewListClass,
+        (NclInitClassFunction) InitializeAdvancedListClass,
         /* NclAddParentFunction add_parent */   NULL,
         /* NclDelParentFunction del_parent */   NULL,
-        /* NclPrintSummaryFunction print_summary */ NewListPrintSummary,
-        /* NclPrintFunction print */            NewListPrint,
+        /* NclPrintSummaryFunction print_summary */ AdvancedListPrintSummary,
+        /* NclPrintFunction print */            AdvancedListPrint,
         /* NclCallBackList* create_callback */  NULL,
         /* NclCallBackList* delete_callback */  NULL,
         /* NclCallBackList* modify_callback */  NULL,
@@ -402,8 +402,8 @@ NclNewListClassRec nclNewListClassRec =
         /* NclListGetTypeFunction  get_type */ NULL,
         /* NclListPushFunction     push */     NULL,
         /* NclListPopFunction      pop */      NULL,
-        /* NclListSelectFunction   select */   NewListSelect,
-        /* NclListGetNextFunction  get_next */ NewListGetNext
+        /* NclListSelectFunction   select */   AdvancedListSelect,
+        /* NclListGetNextFunction  get_next */ AdvancedListGetNext
     },
 
     {
@@ -411,5 +411,5 @@ NclNewListClassRec nclNewListClassRec =
     }
 };
 
-NclObjClass nclNewListClass = (NclObjClass)&nclNewListClassRec;
+NclObjClass nclAdvancedListClass = (NclObjClass)&nclAdvancedListClassRec;
 

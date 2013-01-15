@@ -60,8 +60,8 @@
 #include "NclFileInterfaces.h"
 #include "NclData.h"
 #include "NclVar.h"
-#include "NclNewList.h"
-#include "NclNewFile.h"
+#include "NclAdvancedList.h"
+#include "NclAdvancedFile.h"
 #include <ogr_api.h>
 #include <ogr_srs_api.h>
 #include <math.h>
@@ -85,7 +85,7 @@ struct _OGRRecord
     int              is3DGeometry;
 };
 
-static int NewOGRInitialized = 0;
+static int AdvancedOGRInitialized = 0;
 
 /*
  * _is3DGeometry()
@@ -96,17 +96,17 @@ static int _is3DGeometry(OGRwkbGeometryType geom)
         return (wkbFlatten(geom) != geom);
 }
 
-static NclNewList _CreateVlist4OGR(NclQuark name)
+static NclAdvancedList _CreateVlist4OGR(NclQuark name)
 {
-    NclNewList vlist = NULL;
+    NclAdvancedList vlist = NULL;
     ng_size_t one = 1;
     int *id = (int *)NclMalloc(sizeof(int));
 
-    vlist = (NclNewList)_NclNewListCreate(NULL, NULL, 0, 0, -1, (NCL_ITEM | NCL_FIFO));
+    vlist = (NclAdvancedList)_NclAdvancedListCreate(NULL, NULL, 0, 0, -1, (NCL_ITEM | NCL_FIFO));
     assert(vlist);
     _NclListSetType((NclObj)vlist, NCL_ITEM);
-    vlist->newlist.name = name;
-    vlist->newlist.type = NrmStringToQuark("item");
+    vlist->advancedlist.name = name;
+    vlist->advancedlist.type = NrmStringToQuark("item");
     vlist->obj.obj_type = Ncl_List;
 
     return vlist;
@@ -426,7 +426,7 @@ static void _countGeometry(NclFileGrpNode *grpnode,
  *
  */
 static void _loadFeatureGeometry(OGRRecord *rec, OGRGeometryH geom,
-                                 NclNewList vlist, int *numSegments, int *numPoints)
+                                 NclAdvancedList vlist, int *numSegments, int *numPoints)
 {
     int i;
     char buffer[16];
@@ -512,7 +512,7 @@ static void _loadFeatureGeometry(OGRRecord *rec, OGRGeometryH geom,
  * any one of them is asked for.
  *
  */
-static int _loadGeometry(NclFileGrpNode *grpnode, NclNewList vlist)
+static int _loadGeometry(NclFileGrpNode *grpnode, NclAdvancedList vlist)
 {
     OGRRecord *rec = (OGRRecord *) grpnode->other_src;
     OGRFeatureH feature;
@@ -626,7 +626,7 @@ static void *_getFieldVariable(NclFileGrpNode *grpnode, NclQuark thevar,
     long i, offset;
 
   /*
-   *fprintf(stderr, "\nHit NewOGRReadVar, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\nHit AdvancedOGRReadVar, file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
    */
 
@@ -701,16 +701,16 @@ static void *_getGeometryVariable(NclFileGrpNode *grpnode, NclQuark thevar,
 
     if(NrmStringToQuark("segments") == thevar)
     {
-        NclNewList vlist = NULL;
+        NclAdvancedList vlist = NULL;
         NclMultiDValData v_md;
         ng_size_t one = 1;
         int *id = (int *)NclMalloc(sizeof(int));
 
-        vlist = (NclNewList)_NclNewListCreate(NULL, NULL, 0, 0, 0, (NCL_ITEM | NCL_FIFO));
+        vlist = (NclAdvancedList)_NclAdvancedListCreate(NULL, NULL, 0, 0, 0, (NCL_ITEM | NCL_FIFO));
         assert(vlist);
         _NclListSetType((NclObj)vlist,NCL_ITEM);
-        vlist->newlist.name = NrmStringToQuark("segments_list");
-        vlist->newlist.type = NrmStringToQuark("item");
+        vlist->advancedlist.name = NrmStringToQuark("segments_list");
+        vlist->advancedlist.type = NrmStringToQuark("item");
         vlist->obj.obj_type = Ncl_List;
         *id = vlist->obj.id;
         v_md = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,id,
@@ -731,19 +731,19 @@ static void *_getGeometryVariable(NclFileGrpNode *grpnode, NclQuark thevar,
 }
 
 /*
- * NewOGRInitializeFileRec()
+ * AdvancedOGRInitializeFileRec()
  *
  */
-static void *NewOGRInitializeFileRec(NclFileFormat *format)
+static void *AdvancedOGRInitializeFileRec(NclFileFormat *format)
 {
     NclFileGrpNode *grpnode = NULL;
 
   /*
    *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tNewOGRInitializeFileRec...\n");
+   *fprintf(stderr, "\tAdvancedOGRInitializeFileRec...\n");
    */
 
-    *format = _NclNewOGR;
+    *format = _NclAdvancedOGR;
 
     grpnode = (NclFileGrpNode *)NclCalloc(1, sizeof(NclFileGrpNode));
     assert(grpnode);
@@ -767,10 +767,10 @@ static void *NewOGRInitializeFileRec(NclFileFormat *format)
 }
 
 /*
- * NewOGROpenFile()
+ * AdvancedOGROpenFile()
  *
  */
-static void *NewOGROpenFile(void *therec, NclQuark path, int wr_status)
+static void *AdvancedOGROpenFile(void *therec, NclQuark path, int wr_status)
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
 
@@ -793,7 +793,7 @@ static void *NewOGROpenFile(void *therec, NclQuark path, int wr_status)
 
   /*
    *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tNewOGROpenFile...\n");
+   *fprintf(stderr, "\tAdvancedOGROpenFile...\n");
    */
 
     rec = (OGRRecord*)NclCalloc(1, sizeof(OGRRecord));
@@ -811,11 +811,11 @@ static void *NewOGROpenFile(void *therec, NclQuark path, int wr_status)
 
     rec->is3DGeometry = 0;
 
-    if(!NewOGRInitialized)
+    if(!AdvancedOGRInitialized)
     {
       /* Initialize the OGR drivers, and make sure OGR is one of them... */
         OGRRegisterAll();
-        NewOGRInitialized = 1;
+        AdvancedOGRInitialized = 1;
     }
 
   /*NOTE: for now we only support read-only access */
@@ -917,19 +917,19 @@ static void *NewOGROpenFile(void *therec, NclQuark path, int wr_status)
 }
 
 /*
- * NewOGRCreateFile()
+ * AdvancedOGRCreateFile()
  *
  */
-static void *NewOGRCreateFile(void *rec, NclQuark path)
+static void *AdvancedOGRCreateFile(void *rec, NclQuark path)
 {
-    return(NewOGROpenFile(rec,path,-1));
+    return(AdvancedOGROpenFile(rec,path,-1));
 }
 
 /*
- * NewOGRReadVar()
+ * AdvancedOGRReadVar()
  *
  */
-static void *NewOGRReadVar(void* therec, NclQuark thevar,
+static void *AdvancedOGRReadVar(void* therec, NclQuark thevar,
                            long* start, long* finish, 
                            long* stride, void* storage)
 {
@@ -940,7 +940,7 @@ static void *NewOGRReadVar(void* therec, NclQuark thevar,
     int i;
 
   /*
-   *fprintf(stderr, "\nHit NewOGRReadVar, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\nHit AdvancedOGRReadVar, file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
    */
 
@@ -959,16 +959,16 @@ static void *NewOGRReadVar(void* therec, NclQuark thevar,
 }
 
 /*
- * NewOGRReadCoord()
+ * AdvancedOGRReadCoord()
  *
  */
-static void *NewOGRReadCoord(void *therec, NclQuark thevar,
+static void *AdvancedOGRReadCoord(void *therec, NclQuark thevar,
                              long *start, long *finish,
                              long *stride, void *storage)
 {
-    fprintf(stderr, "\nHit NewOGRReadCoord, file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tNewOGRReadCoord...UNIMPLEMENTED\n");
-    return(NewOGRReadVar(therec,thevar,start,finish,stride,storage));
+    fprintf(stderr, "\nHit AdvancedOGRReadCoord, file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tAdvancedOGRReadCoord...UNIMPLEMENTED\n");
+    return(AdvancedOGRReadVar(therec,thevar,start,finish,stride,storage));
 }
 
 static NclQuark *OGRGetGrpNames(void *therec, int *num_grps)
@@ -1026,10 +1026,10 @@ static NclQuark *OGRGetGrpNames(void *therec, int *num_grps)
     return(out_quarks);
 }
 
-NclFormatFunctionRec NewOGRRec = {
-/* NclInitializeFileRecFunc initialize_file_rec */      NewOGRInitializeFileRec,
-/* NclCreateFileFunc       create_file; */		NewOGRCreateFile,
-/* NclOpenFileFunc         open_file; */		NewOGROpenFile,
+NclFormatFunctionRec AdvancedOGRRec = {
+/* NclInitializeFileRecFunc initialize_file_rec */      AdvancedOGRInitializeFileRec,
+/* NclCreateFileFunc       create_file; */		AdvancedOGRCreateFile,
+/* NclOpenFileFunc         open_file; */		AdvancedOGROpenFile,
 /* NclFreeFileRecFunc      free_file_rec; */    	NULL,
 /* NclGetVarNamesFunc      get_var_names; */    	NULL,
 /* NclGetVarInfoFunc       get_var_info; */		NULL,
@@ -1040,9 +1040,9 @@ NclFormatFunctionRec NewOGRRec = {
 /* NclGetVarAttNamesFunc   get_var_att_names; */	NULL,
 /* NclGetVarAttInfoFunc    get_var_att_info; */    	NULL,
 /* NclGetCoordInfoFunc     get_coord_info; */    	NULL,
-/* NclReadCoordFunc        read_coord; */		NewOGRReadCoord,
+/* NclReadCoordFunc        read_coord; */		AdvancedOGRReadCoord,
 /* NclReadCoordFunc        read_coord; */		NULL,
-/* NclReadVarFunc          read_var; */    		NewOGRReadVar,
+/* NclReadVarFunc          read_var; */    		AdvancedOGRReadVar,
 /* NclReadVarFunc          read_var; */    		NULL,
 /* NclReadAttFunc          read_att; */    		NULL,
 /* NclReadVarAttFunc       read_var_att; */		NULL,
@@ -1084,8 +1084,8 @@ NclFormatFunctionRec NewOGRRec = {
  * OGRAddFileFormat()
  *
  */
-NclFormatFunctionRecPtr NewOGRAddFileFormat(void)
+NclFormatFunctionRecPtr AdvancedOGRAddFileFormat(void)
 {    
-    return(&NewOGRRec);
+    return(&AdvancedOGRRec);
 }
 

@@ -23,7 +23,7 @@
 #include "defs.h"
 #include "Symbol.h"
 #include "NclList.h"
-#include "NclNewList.h"
+#include "NclAdvancedList.h"
 #include "ListSupport.h"
 
 
@@ -153,17 +153,17 @@ void  _NclListDestroy(NclObj thelist)
 
 NhlErrorTypes _NclListAppend(NclObj thelist, NclObj theobj) 
 {
-	NclNewListClass lc;
+	NclAdvancedListClass lc;
 	if(thelist == NULL) {
 		return(NhlFATAL);
 	} else {
-		lc = (NclNewListClass)thelist->obj.class_ptr;
+		lc = (NclAdvancedListClass)thelist->obj.class_ptr;
 	}
 	while((NclObjClass)lc != nclObjClass) {
-		if(NULL != lc->newlist_class.append) {
-			return((*lc->newlist_class.append)(thelist,theobj));
+		if(NULL != lc->advancedlist_class.append) {
+			return((*lc->advancedlist_class.append)(thelist,theobj));
 		} else {
-			lc = (NclNewListClass)lc->obj_class.super_class;
+			lc = (NclAdvancedListClass)lc->obj_class.super_class;
 		}
 	}
 	return(NhlFATAL);

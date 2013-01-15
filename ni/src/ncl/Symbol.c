@@ -38,7 +38,7 @@ extern "C" {
 #include "Machine.h"
 #include "NclFile.h"
 #ifdef USE_NETCDF4_FEATURES
-#include "NclNewFile.h"
+#include "NclAdvancedFile.h"
 #endif
 #include "VarSupport.h"
 #include "NclFileInterfaces.h"
@@ -1179,19 +1179,19 @@ void _NclAddSingleObj
 }
 
 #ifdef USE_NETCDF4_FEATURES
-static NclApiDataList *getNewFileVarInfoList(NclFile thefile)
+static NclApiDataList *getAdvancedFileVarInfoList(NclFile thefile)
 {
     NclApiDataList *tmp = NULL;
     NclApiDataList *thelist = NULL;
-    NclNewFile thenewfile = (NclNewFile) thefile;
+    NclAdvancedFile theadvancedfile = (NclAdvancedFile) thefile;
     NclFileVarNode *varnode = NULL;
     int i, j;
 
-    if(NULL != thenewfile->newfile.grpnode->var_rec)
+    if(NULL != theadvancedfile->advancedfile.grpnode->var_rec)
     {
-        for(i = 0; i < thenewfile->newfile.grpnode->var_rec->n_vars; ++i)
+        for(i = 0; i < theadvancedfile->advancedfile.grpnode->var_rec->n_vars; ++i)
         {
-            varnode = &(thenewfile->newfile.grpnode->var_rec->var_node[i]);
+            varnode = &(theadvancedfile->advancedfile.grpnode->var_rec->var_node[i]);
 
             tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
             tmp->kind = VARIABLE_LIST;
@@ -1272,10 +1272,10 @@ NclApiDataList *_NclGetFileVarInfoList
 				if(thefile != NULL)
 				{
 #ifdef USE_NETCDF4_FEATURES
-				if(thefile->file.use_new_hlfs)
+				if(thefile->file.advanced_file_structure)
 				{
 					fprintf(stderr, "\nHit _NclGetFileVarInfoList in file: %s, line: %d\n", __FILE__, __LINE__);
-					thelist = getNewFileVarInfoList(thefile);
+					thelist = getAdvancedFileVarInfoList(thefile);
 				}
 				else
 #endif
@@ -1364,10 +1364,10 @@ NclQuark file_var_name;
 				if(thefile != NULL)
 				{
 #ifdef USE_NETCDF4_FEATURES
-				if(thefile->file.use_new_hlfs)
+				if(thefile->file.advanced_file_structure)
 				{
-					NclNewFile thenewfile = (NclNewFile) thefile;
-					NclFileVarNode *varnode = _getVarNodeFromNclFileGrpNode(thenewfile->newfile.grpnode, file_var_name);
+					NclAdvancedFile theadvancedfile = (NclAdvancedFile) thefile;
+					NclFileVarNode *varnode = _getVarNodeFromNclFileGrpNode(theadvancedfile->advancedfile.grpnode, file_var_name);
 
 					if(NULL != varnode)
 					{
@@ -1460,13 +1460,13 @@ NclQuark file_var_name;
 }
 
 #ifdef USE_NETCDF4_FEATURES
-static NclApiDataList *getNewFileVarCoordInfo(NclFile thefile,
+static NclApiDataList *getAdvancedFileVarCoordInfo(NclFile thefile,
                                   NclQuark coordname)
 {
     int i,k;
     NclApiDataList *tmp = NULL;
-    NclNewFile thenewfile = (NclNewFile) thefile;
-    NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+    NclAdvancedFile theadvancedfile = (NclAdvancedFile) thefile;
+    NclFileGrpNode *grpnode = theadvancedfile->advancedfile.grpnode;
     NclFileVarNode *varnode = NULL;
     NclFileDimNode *dimnode = NULL;
 
@@ -1541,9 +1541,9 @@ NclQuark coordname;
 				if(NULL != thefile)
 				{
 #ifdef USE_NETCDF4_FEATURES
-				if(thefile->file.use_new_hlfs)
+				if(thefile->file.advanced_file_structure)
 				{
-					return (getNewFileVarCoordInfo(thefile, coordname));
+					return (getAdvancedFileVarCoordInfo(thefile, coordname));
 				}
 #endif
 				if(_NclFileVarIsCoord(thefile,coordname) != -1)
@@ -1628,10 +1628,10 @@ int *num_names;
 				if(thefile != NULL)
 				{
 #ifdef USE_NETCDF4_FEATURES
-				if(thefile->file.use_new_hlfs)
+				if(thefile->file.advanced_file_structure)
 				{
-					NclNewFile thenewfile = (NclNewFile) thefile;
-					NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+					NclAdvancedFile theadvancedfile = (NclAdvancedFile) thefile;
+					NclFileGrpNode *grpnode = theadvancedfile->advancedfile.grpnode;
 					if(NULL != grpnode->var_rec)
 					{
 						*num_names = grpnode->var_rec->n_vars;
@@ -1848,10 +1848,10 @@ long    * stride;
 				if(thefile != NULL)
 				{
 #ifdef USE_NETCDF4_FEATURES
-					if(thefile->file.use_new_hlfs)
+					if(thefile->file.advanced_file_structure)
 					{
-						NclNewFile thenewfile = (NclNewFile) thefile;
-						NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+						NclAdvancedFile theadvancedfile = (NclAdvancedFile) thefile;
+						NclFileGrpNode *grpnode = theadvancedfile->advancedfile.grpnode;
 						NclFileVarNode *varnode = _getVarNodeFromNclFileGrpNode(grpnode, file_var_name);
 
 						if(NULL != varnode->dim_rec)
@@ -1939,10 +1939,10 @@ long* stride;
 				if(thefile != NULL)
 				{
 #ifdef USE_NETCDF4_FEATURES
-					if(thefile->file.use_new_hlfs)
+					if(thefile->file.advanced_file_structure)
 					{
-						NclNewFile thenewfile = (NclNewFile) thefile;
-						NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+						NclAdvancedFile theadvancedfile = (NclAdvancedFile) thefile;
+						NclFileGrpNode *grpnode = theadvancedfile->advancedfile.grpnode;
 						NclFileVarNode *varnode = _getVarNodeFromNclFileGrpNode(grpnode, coordname);
 
 						if(NULL != varnode->dim_rec)
@@ -2115,11 +2115,11 @@ NclQuark attname;
 }
 
 #ifdef USE_NETCDF4_FEATURES
-static NclApiDataList *getNewFileInfo(NclFile thefile)
+static NclApiDataList *getAdvancedFileInfo(NclFile thefile)
 {
     NclApiDataList     *tmp = NULL;
-    NclNewFile   thenewfile = (NclNewFile) thefile;
-    NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+    NclAdvancedFile   theadvancedfile = (NclAdvancedFile) thefile;
+    NclFileGrpNode *grpnode = theadvancedfile->advancedfile.grpnode;
     int j;
 
     tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
@@ -2205,9 +2205,9 @@ NclQuark file_sym_name;
 				if(thefile != NULL)
 				{
 #ifdef USE_NETCDF4_FEATURES
-				if(thefile->file.use_new_hlfs)
+				if(thefile->file.advanced_file_structure)
 				{
-					return (getNewFileInfo(thefile));
+					return (getAdvancedFileInfo(thefile));
 				}
 				else
 #endif
@@ -2286,9 +2286,9 @@ NclApiDataList *_NclGetDefinedFileInfo
 							if(thefile != NULL)
 							{
 #ifdef USE_NETCDF4_FEATURES
-							if(thefile->file.use_new_hlfs)
+							if(thefile->file.advanced_file_structure)
 							{
-								tmp = getNewFileInfo(thefile);
+								tmp = getAdvancedFileInfo(thefile);
 							}
 							else
 #endif

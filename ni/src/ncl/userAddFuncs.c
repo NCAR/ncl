@@ -61,7 +61,7 @@ extern "C" {
 #include "FileSupport.h"
 #include "NclAtt.h"
 #include "NclList.h"
-#include "NclNewList.h"
+#include "NclAdvancedList.h"
 #include "ListSupport.h"
 #include "NclFileInterfaces.h"
 #include <signal.h>
@@ -4489,10 +4489,10 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
 
     theobj = (NclObj)_NclGetObj(*list_id);
 
-    if(0 == strcmp("NclNewListClass", theobj->obj.class_ptr->obj_class.class_name))
+    if(0 == strcmp("NclAdvancedListClass", theobj->obj.class_ptr->obj_class.class_name))
     {
-        NclNewList thelist = (NclNewList) theobj;
-        truelems = (int)thelist->newlist.n_elem;
+        NclAdvancedList thelist = (NclAdvancedList) theobj;
+        truelems = (int)thelist->advancedlist.n_elem;
     }
     else if(0 == strcmp("NclListClass",theobj->obj.class_ptr->obj_class.class_name))
     {

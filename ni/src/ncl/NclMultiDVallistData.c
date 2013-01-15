@@ -29,7 +29,6 @@
 #include "NclVar.h"
 #include "NclFileVar.h"
 #include "NclList.h"
-#include "NclNewList.h"
 #include "NclMultiDVallistData.h"
 #include "DataSupport.h"
 #include <math.h>
@@ -303,12 +302,13 @@ static struct _NclDataRec *MultiDVal_list_ReadSection
                                 }
 			}
 			if((sel_ptr->u.sub.start > self_md->multidval.dim_sizes[sel_ptr->dim_num] - 1)||(sel_ptr->u.sub.start < 0)) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s: Subscript out of range, error in subscript #%d",
+						__PRETTY_FUNCTION__, i));
 				return(NULL);
 			}
 
 			if((sel_ptr->u.sub.finish > self_md->multidval.dim_sizes[sel_ptr->dim_num] - 1)||(sel_ptr->u.sub.finish < 0)) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i));
 				return(NULL);
 			}
 			break;
@@ -318,11 +318,13 @@ static struct _NclDataRec *MultiDVal_list_ReadSection
 * a dim_size > 1
 */
 			if((sel_ptr->u.vec.min < 0)|| (sel_ptr->u.vec.min > self_md->multidval.dim_sizes[sel_ptr->dim_num]-1)) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s: Subscript out of range, error in subscript #%d",
+						__PRETTY_FUNCTION__, i));
 				return(NULL);
 			}
 			if((sel_ptr->u.vec.max < 0)|| (sel_ptr->u.vec.max > self_md->multidval.dim_sizes[sel_ptr->dim_num]-1)) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s: Subscript out of range, error in subscript #%d",
+						__PRETTY_FUNCTION__, i));
 				return(NULL);
 			}
 			n_elem = sel_ptr->u.vec.n_ind;

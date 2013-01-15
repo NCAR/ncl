@@ -58,8 +58,8 @@ NETCDF4_DEFS =
 
 #ifdef UseNetCDF4Features
 NC4_FEATURES_DEFS = -DUSE_NETCDF4_FEATURES
-NC4_FEATURES_SRCS = NclNewFile.c NclNewGroup.c NclNewList.c NclNetCDF4.c 
-NC4_FEATURES_OBJS = NclNewFile.o NclNewGroup.o NclNewList.o NclNetCDF4.o
+NC4_FEATURES_SRCS = NclAdvancedFile.c NclAdvancedGroup.c NclAdvancedList.c NclNetCDF4.c 
+NC4_FEATURES_OBJS = NclAdvancedFile.o NclAdvancedGroup.o NclAdvancedList.o NclNetCDF4.o
 #else
 #define NC4_FEATURES_DEFS
 #define NC4_FEATURES_SRCS
@@ -123,8 +123,8 @@ GRIB2_OBJS = NclGRIB2.o
 #ifdef BuildGDAL
 GDAL_DEFS = -DBuildGDAL
 #ifdef UseNetCDF4Features
-GDAL_SRCS = NclOGR.c NclNewOGR.c
-GDAL_OBJS = NclOGR.o NclNewOGR.o
+GDAL_SRCS = NclOGR.c NclAdvancedOGR.c
+GDAL_OBJS = NclOGR.o NclAdvancedOGR.o
 #else
 GDAL_SRCS = NclOGR.c
 GDAL_OBJS = NclOGR.o 
@@ -214,7 +214,7 @@ GEN_HDRS	=	NclTypeobj.h NclTypelogical.h \
 STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			Machine.h NclAtt.h NclData.h \
 			NclGroup.h NclFile.h NclFileInterfaces.h NclHLUObj.h NclMdInc.h \
-			NclNewFile.h NclNewGroup.h NclNewFileStructure.h \
+			NclAdvancedFile.h NclAdvancedGroup.h NclAdvancedFileStructure.h \
 			NclMultiDValData.h NclMultiDValHLUObjData.h \
 			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \
@@ -223,7 +223,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
 			NclOneDValCoordData.h HLUFunctions.h \
 			NclCallBacksI.h date.h NclCCM.h NclGRIB.h NclGRIB2.h date.h tables.h \
-			ccmhdr.h editline.h editline_unix.h ListSupport.h NclList.h NclNewList.h \
+			ccmhdr.h editline.h editline_unix.h ListSupport.h NclList.h NclAdvancedList.h \
 			NclMultiDVallistData.h NclTypelist.h \
 			NclProf.h \
 			cptec_254_gtb.h dwd_002_gtb.h dwd_201_gtb.h dwd_202_gtb.h \
@@ -250,8 +250,8 @@ NIO_NCL_HDR_FILES = ApiRecords.h AttSupport.h DataSupport.h		\
 		FileSupport.h HLUSupport.h ListSupport.h NclAtt.h NclCCM.h		\
 		NclCallBacksI.h NclCoordVar.h NclData.h NclDataDefs.h	\
 		NclGroup.h NclFile.h NclFileInterfaces.h NclFileVar.h NclGRIB.h	\
-		NclNewGroup.h NclNewFile.h NclNewFileStructure.h NclOptions.h \
-		NclGRIB2.h NclHLUObj.h NclHLUVar.h NclList.h NclNewList.h 	\
+		NclAdvancedGroup.h NclAdvancedFile.h NclAdvancedFileStructure.h NclOptions.h \
+		NclGRIB2.h NclHLUObj.h NclHLUVar.h NclList.h NclAdvancedList.h 	\
 		NclMdInc.h NclMultiDValData.h NclMultiDValData.h.sed	\
 		NclMultiDValHLUObjData.h NclMultiDVallistData.h		\
 		NclMultiDValnclfileData.h NclOneDValCoordData.h		\
@@ -281,7 +281,7 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		FileSupport.c Formats.c GetGrids.c InitData.c		\
 		MatMulDValOp.c.sed Memory.c MultiDValOp.c.sed NclAtt.c	\
 		NclCCM.c NclCoordVar.c NclData.c NclGroup.c NclFile.c	\
-		NclNewFile.c NclNewGroup.c NclNewList.c  \
+		NclAdvancedFile.c NclAdvancedGroup.c NclAdvancedList.c  \
 		NclFileVar.c NclGRIB.c NclGRIB2.c NclHDF.c \
 		NclHDFEOS.c NclHDFEOS5.c NclHDF5.c h5reader.c h5writer.c \
 		NclMultiDValData.c.sed NclMultiDValnclfileData.c	\

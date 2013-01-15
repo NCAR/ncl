@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		NclNewList.h
+ *	File:		NclAdvancedList.h
  *
  *	Author:		Wei Huang
  *			National Center for Atmospheric Research
@@ -19,8 +19,8 @@
  *
  *	Description:	
  */
-#ifndef NclNewList_h
-#define NclNewList_h
+#ifndef NclAdvancedList_h
+#define NclAdvancedList_h
 #include <assert.h>
 
 #include <ncarg/hlu/hlu.h>
@@ -41,17 +41,17 @@
 
 #define NCL_MIN_LIST_ITEMS	8
 
-typedef struct _NclNewListRec *NclNewList;
-typedef struct _NclNewListClassRec *NclNewListClass;
+typedef struct _NclAdvancedListRec *NclAdvancedList;
+typedef struct _NclAdvancedListClassRec *NclAdvancedListClass;
 
 typedef NhlErrorTypes (*NclListAppendFunction)(NclObj thelistobj, NclObj theobj);
 
-typedef struct _NclNewListClassPart
+typedef struct _NclAdvancedListClassPart
 {
     NclListAppendFunction append;
-} NclNewListClassPart;
+} NclAdvancedListClassPart;
 
-typedef struct _NclNewListPart
+typedef struct _NclAdvancedListPart
 {
     NclQuark           name;
     NclBasicDataTypes  type;
@@ -62,32 +62,32 @@ typedef struct _NclNewListPart
     int state;
 
     NclListObjList **item;
-} NclNewListPart;
+} NclAdvancedListPart;
 
-typedef struct _NclNewListClassRec
+typedef struct _NclAdvancedListClassRec
 {
     NclObjClassPart     obj_class;
     NclListClassPart    list_class;
-    NclNewListClassPart newlist_class;
-} NclNewListClassRec;
+    NclAdvancedListClassPart advancedlist_class;
+} NclAdvancedListClassRec;
 
-typedef struct _NclNewListRec
+typedef struct _NclAdvancedListRec
 {
     NclObjPart     obj;
     NclListPart    list;
-    NclNewListPart newlist;
-} NclNewListRec;
+    NclAdvancedListPart advancedlist;
+} NclAdvancedListRec;
 
-extern NclObjClass nclNewListClass;
+extern NclObjClass nclAdvancedListClass;
 
-extern NclNewListClassRec nclNewListClassRec;
+extern NclAdvancedListClassRec nclAdvancedListClassRec;
 
-extern struct _NclObjRec *_NclNewListCreate(struct _NclObjRec      *inst,
+extern struct _NclObjRec *_NclAdvancedListCreate(struct _NclObjRec      *inst,
                                             struct _NclObjClassRec *theclass,
                                             NclObjTypes             obj_type,
                                             unsigned int            obj_type_mask,
                                             ng_size_t               listsize,
                                             int                     list_type);
 
-#endif /* NclNewList_h */
+#endif /* NclAdvancedList_h */
 

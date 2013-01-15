@@ -100,7 +100,7 @@ short   NCLnoPrintElem = 0;     /* don't enumerate values in print() */
 short   NCLnoSysPager = 0;      /* don't pipe commands to system() to PAGER */
 short   NCLoldBehavior = 0;     /* retain former behavior for certain backwards-incompatible changes */
 	                        /* behaviors could be revised after an adoption period */
-short   NCLnewfs = 0;           /* Use new file structure */
+short	NCLadvancedFileStructure[_NclNumberOfFileFormats];
 
 char    *nclf = NULL;           /* script of NCL commands, may or may not be provided */
 
@@ -183,6 +183,9 @@ main(int argc, char **argv) {
     }
     NCL_ARGC = argc;
 
+    for(i = 0; i < _NclNumberOfFileFormats; ++i)
+        NCLadvancedFileStructure[i] = 0;
+
 #ifdef NCLDEBUG
     for (i = 0; i < NCL_ARGC; i++, *NCL_ARGV++)
         (void) printf("NCL_ARGV[%d] = %s\n", i, *NCL_ARGV);
@@ -235,7 +238,8 @@ main(int argc, char **argv) {
                 break;
 
             case 'f':
-                NCLnewfs = 1;
+                for(i = 0; i < _NclNumberOfFileFormats; ++i)
+                    NCLadvancedFileStructure[i] = 1;
                 break;
 
             case 'h':
