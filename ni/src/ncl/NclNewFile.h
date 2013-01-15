@@ -50,9 +50,6 @@
 #define NCLFILE_DEC -2
 #define NCLFILE_VEC 0
 
-char blank_space[MAX_BLANK_SPACE_LENGTH];
-int indentation_level;
-int indentation_length;
 extern int grib_version;
 
 typedef struct _NclNewFileRec NclNewFileRec;
