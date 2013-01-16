@@ -2210,20 +2210,27 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
        */
 
         if(0 == nc_dims)
+        {
             n_dims = 1;
-        else
-            n_dims = nc_dims;
+            dimrec = _NclFileDimAlloc(n_dims);
+            dimrec->dim_node[0].id = -5;
+            dimrec->dim_node[0].size = 1;
+            dimrec->dim_node[0].name = NrmStringToQuark("ncl_scalar");
+            dimrec->dim_node[0].description = NrmStringToQuark("NC4 Scalar Dimension");
+            *has_scalar_dim = 1;
 
-        dimrec = _NclFileDimAlloc(n_dims);
+          /*
+           *continue;
+           */
+        }
+        else
+        {
+            n_dims = nc_dims;
+            dimrec = _NclFileDimAlloc(n_dims);
+        }
+
         dimrec->gid = gid;
         varnode->dim_rec = dimrec;
-
-        if(0 == nc_dims)
-        {
-            dimrec->dim_node[0].id = -5;
-            *has_scalar_dim = 1;
-            continue;
-        }
 
       /*
        *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
