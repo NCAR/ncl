@@ -2478,8 +2478,11 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
 
     if(has_scalar_dim)
     {
-        grpnode->dim_rec->dim_node = (NclFileDimNode *)realloc(grpnode->dim_rec->dim_node,
-                                                               (1 + n_dims) * sizeof(NclFileDimNode));
+        if(NULL == grpnode->dim_rec)
+            grpnode->dim_rec = _NclFileDimAlloc(1 + n_dims);
+        else
+            grpnode->dim_rec->dim_node = (NclFileDimNode *)NclRealloc(grpnode->dim_rec->dim_node,
+                                                                      (1 + n_dims) * sizeof(NclFileDimNode));
         assert(grpnode->dim_rec->dim_node);
         grpnode->has_scalar_dim = 1;
 
