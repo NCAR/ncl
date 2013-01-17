@@ -129,7 +129,7 @@ GEN_HDRS	=	NclTypeobj.h NclTypelogical.h \
 STATIC_HDRS	=	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h  \
 			NclAtt.h NclCallBacksI.h NclData.h \
 			NclFile.h NclFileInterfaces.h NclMdInc.h NclHLUObj.h\
-			NclNewFile.h NclNewGroup.h NclNewList.h NclNewFileStructure.h \
+			NclAdvancedFile.h NclAdvancedGroup.h NclAdvancedList.h NclAdvancedFileStructure.h \
 			NclMultiDValData.h NclMultiDValHLUObjData.h \
 			OpsList.h Symbol.h VarSupport.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \
@@ -181,7 +181,7 @@ STATIC_SRCS	=	AddFileFormats.c AttSupport.c DataSupport.c \
 			FileSupport.c Formats.c GetGrids.c \
 			InitData.c Memory.c NclAtt.c NclCCM.c \
 			NclCoordVar.c NclData.c NclFile.c NclFileVar.c \
-			NclNewFile.c NclNewGroup.c NclNewList.c \
+			NclAdvancedFile.c NclAdvancedGroup.c  \
 			NclGRIB.c NclMultiDValnclfileData.c \
 			NclNetCdf.c NclOneDValCoordData.c NclType.c \
 			NclTypelist.c NclGroup.c NclVar.c VarSupport.c \
@@ -219,7 +219,7 @@ STATIC_OBJS	=	AddFileFormats.o AttSupport.o DataSupport.o \
 			FileSupport.o Formats.o GetGrids.o \
 			InitData.o Memory.o NclAtt.o NclCCM.o \
 			NclCoordVar.o NclData.o NclFile.o NclFileVar.o \
-			NclNewFile.o NclNewGroup.o NclNewList.o \
+			NclAdvancedFile.o NclAdvancedGroup.o \
 			NclGRIB.o NclHDF.o NclMultiDValnclfileData.o \
 			NclNetCdf.o NclOneDValCoordData.o NclType.o \
 			NclTypelist.o NclGroup.o NclVar.o VarSupport.o \
