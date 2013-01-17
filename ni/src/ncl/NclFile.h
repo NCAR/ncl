@@ -30,7 +30,11 @@
 #define FILE_VAR_ACCESS 1
 
 extern int grib_version;
+#ifdef NIO_LIB_ONLY
+short NCLadvancedFileStructure[_NclNumberOfFileFormats];
+#else
 extern short NCLadvancedFileStructure[_NclNumberOfFileFormats];
+#endif
 
 typedef struct _NclFileRec NclFileRec;
 typedef struct _NclFileClassRec NclFileClassRec;
