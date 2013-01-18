@@ -2825,7 +2825,8 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                 }
                 else
                 {
-                    NHLPERROR((NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer"));
+                    NHLPERROR((NhlWARNING,NhlEUNKNOWN,"Invalid stride: %ld. %s",
+                              stride[sel->dim_num], "Stride must be positive non-zero integer"));
 
                     stride[sel->dim_num] = 1;
                 }
@@ -4874,7 +4875,6 @@ static struct _NclVarRec* AdvancedFileReadCoord(NclFile infile, NclQuark coord_n
     return(NULL);
 }
 
-#if 1
 static int AdvancedFileIsCoord(NclFile infile, NclQuark coord_name)
 {
     NclAdvancedFile thefile = (NclAdvancedFile) infile;
@@ -4882,32 +4882,24 @@ static int AdvancedFileIsCoord(NclFile infile, NclQuark coord_name)
 
     varnode = _getVarNodeFromNclFileGrpNode(thefile->advancedfile.grpnode, coord_name);
     if(NULL != varnode)
-        return (1);
-    else
-        return (-1);
-}
-#else
-static int AdvancedFileIsCoord(NclFile infile, NclQuark coord_name)
-{
-    NclAdvancedFile thefile = (NclAdvancedFile) infile;
-    NclFileDimNode *dimnode;
-    int n;
-
-  /*
-   *fprintf(stderr, "\nHit AdvancedFileIsCoord, file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tcoord_name: <%s>\n", NrmQuarkToString(coord_name));
-   */
-
-    for(n = 0; n < thefile->advancedfile.grpnode->dim_rec->n_dims; n++)
     {
-        dimnode = &(thefile->advancedfile.grpnode->dim_rec->dim_node[n]);
-        if(coord_name == dimnode->name)
-            return (n);
+        int n;
+        NclFileCoordVarRecord *coord_var_rec = thefile->advancedfile.grpnode->coord_var_rec;
+        NclFileVarNode *tmpnode;
+        if(NULL != coord_var_rec)
+        {
+            for(n = 0; n < coord_var_rec->n_vars; ++n)
+            {
+                if(coord_name == coord_var_rec->var_node[n]->name)
+                    return n;
+                if(coord_name == coord_var_rec->var_node[n]->real_name)
+                    return n;
+            }
+        }
     }
 
-    return(-1);
+    return (-1);
 }
-#endif
 
 static NhlErrorTypes AdvancedFileWriteAtt(NclFile infile, NclQuark attname,
                                      struct _NclMultiDValDataRec* value,

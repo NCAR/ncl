@@ -3019,6 +3019,12 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
         struct stat file_stat;
 
+	/*Create an array to save previous file format preference. Wei 01/17/2013*/
+	short preNCLadvancedFileStructure[_NclNumberOfFileFormats];
+	static int need_restore = 1;
+
+	memcpy(preNCLadvancedFileStructure, NCLadvancedFileStructure, _NclNumberOfFileFormats * sizeof(short));
+
 	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status);
 
 	if(! is_http)
@@ -3077,6 +3083,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		if(first)
 		{
 			first = 0;
+			need_restore = 1;
 			/* Check if advanced file-strucuture */
 			if(NULL != fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value)
 			{
@@ -3097,6 +3104,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 						NCLadvancedFileStructure[_NclNETCDF4] = 1;
 					}
 				}
+				need_restore = 0;
 			}
 		}
 	}
@@ -3113,6 +3121,10 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		file_out = _NclFileCreate(inst, theclass, obj_type, obj_type_mask, status,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
 	}					
+
+	/*Restore previous saved file format preference. Wei 01/17/2013*/
+	if(need_restore)
+		memcpy(NCLadvancedFileStructure, preNCLadvancedFileStructure, _NclNumberOfFileFormats * sizeof(short));
 
 	return file_out;
 }
