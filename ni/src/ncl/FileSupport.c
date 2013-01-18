@@ -68,7 +68,7 @@
 
 #include <sys/stat.h>
 
-NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q);
+NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_advanced_file_structure);
 
 NhlErrorTypes _NclBuildFileCoordRSelection
 #if	NhlNeedProto
@@ -2660,7 +2660,7 @@ NclQuark option;
 }
 
 NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
-			char **end_of_name, int *len_path, int rw_status)
+			char **end_of_name, int *len_path, int rw_status, short *use_advanced_file_structure)
 {
 	NclQuark file_ext_q = -1;
 
@@ -2711,7 +2711,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		if(0 == stat(NrmQuarkToString(the_real_path), &file_stat))
 		{
 			if(file_stat.st_size)
-				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q);
+				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, use_advanced_file_structure);
 		}
 
 	} else {
@@ -2755,7 +2755,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 	return file_ext_q;
 }
 
-NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q)
+NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_advanced_file_structure)
 {
 	NclQuark cur_ext_q;
 	NclQuark ori_file_ext_q = pre_file_ext_q;
@@ -2875,8 +2875,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q)
               			case NC_FORMAT_NETCDF4:
 					file_ext_q = cur_ext_q;
 					found = 1;
-					NCLadvancedFileStructure[_NclNETCDF] = 1;
-					NCLadvancedFileStructure[_NclNETCDF4] = 1;
+					*use_advanced_file_structure = 1;
                    			break;
 #endif
               			case NC_FORMAT_NETCDF4_CLASSIC:
@@ -3015,20 +3014,35 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	char *end_of_name = NULL;
 	int len_path;
 
-	static int first = 1;
-
         struct stat file_stat;
+	short use_advanced_file_structure = 0;
 
-	/*Create an array to save previous file format preference. Wei 01/17/2013*/
-	short preNCLadvancedFileStructure[_NclNumberOfFileFormats];
-	static int need_restore = 1;
-
-	memcpy(preNCLadvancedFileStructure, NCLadvancedFileStructure, _NclNumberOfFileFormats * sizeof(short));
-
-	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status);
+	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status, &use_advanced_file_structure);
 
 	if(! is_http)
 	{
+		/* Check if want advanced file-strucuture */
+		if(NULL != fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value)
+		{
+			NrmQuark afs = NrmStringToQuark("advanced");
+			NrmQuark sfs = _NclGetLower(*(NrmQuark *)(fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value->multidval.val));
+			NCLadvancedFileStructure[_NclNETCDF] = 0;
+			NCLadvancedFileStructure[_NclNETCDF4] = 0;
+			if(afs == sfs)
+			{
+			      /*Only certain data format can use advanced file-structure. Wei 01/11/2013*/
+				if((NrmStringToQuark("nc") == file_ext_q) ||
+				   (NrmStringToQuark("nc4") == file_ext_q) ||
+				   (NrmStringToQuark("nc3") == file_ext_q) ||
+				   (NrmStringToQuark("cdf") == file_ext_q) ||
+				   (NrmStringToQuark("netcdf") == file_ext_q))
+				{
+					NCLadvancedFileStructure[_NclNETCDF] = 1;
+					NCLadvancedFileStructure[_NclNETCDF4] = 1;
+				}
+			}
+		}
+
 		if(0 > file_ext_q)
 		{
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"(%s) has no file extension, can't determine type of file to open",NrmQuarkToString(path)));
@@ -3043,7 +3057,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 			if((0 == stat(NrmQuarkToString(the_real_path), &file_stat)) &&
 					(file_stat.st_size))
-				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q);
+				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_advanced_file_structure);
 			else
 			{
 				char tmp_path[NCL_MAX_STRING];
@@ -3063,7 +3077,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 				
 					if(! stat(_NGResolvePath(tmp_path), &file_stat))
 					{
-						file_ext_q = _NclVerifyFile(NrmStringToQuark(tmp_path), old_file_ext_q);
+						file_ext_q = _NclVerifyFile(NrmStringToQuark(tmp_path), old_file_ext_q, &use_advanced_file_structure);
 						/*break;*/
 					}
 					ext_name = strrchr(tmp_path, '.');
@@ -3079,38 +3093,22 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 				return file_out;
 			}
 		}
-
-		if(first)
-		{
-			first = 0;
-			need_restore = 1;
-			/* Check if advanced file-strucuture */
-			if(NULL != fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value)
-			{
-				int afs = 0;
-				afs = *(int *)(fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value->multidval.val);
-				NCLadvancedFileStructure[_NclNETCDF] = 0;
-				NCLadvancedFileStructure[_NclNETCDF4] = 0;
-				if(afs)
-				{
-				      /*Only certain data format can use advanced file-structure. Wei 01/11/2013*/
-					if((NrmStringToQuark("nc") == file_ext_q) ||
-					   (NrmStringToQuark("nc4") == file_ext_q) ||
-					   (NrmStringToQuark("nc3") == file_ext_q) ||
-					   (NrmStringToQuark("cdf") == file_ext_q) ||
-					   (NrmStringToQuark("netcdf") == file_ext_q))
-					{
-						NCLadvancedFileStructure[_NclNETCDF] = 1;
-						NCLadvancedFileStructure[_NclNETCDF4] = 1;
-					}
-				}
-				need_restore = 0;
-			}
-		}
 	}
 
 #ifdef USE_NETCDF4_FEATURES
-	if(NCLadvancedFileStructure[0] || NCLadvancedFileStructure[_NclNETCDF] || NCLadvancedFileStructure[_NclNETCDF4])
+	/*Use Advanced File Strucuture, when:
+	*1. The local use_advanced_file_structure is true.
+	*2. If run with "ncl -f flnm", or setfileoption("nc", "FileStructure", "Advanced"),
+	*   and file extension are NetCDF.
+	*Wei 01/17/2013
+	*/
+	if(use_advanced_file_structure ||
+		((NCLadvancedFileStructure[0] || NCLadvancedFileStructure[_NclNETCDF] || NCLadvancedFileStructure[_NclNETCDF4]) &&
+		((NrmStringToQuark("nc") == file_ext_q) ||
+		 (NrmStringToQuark("nc4") == file_ext_q) ||
+		 (NrmStringToQuark("nc3") == file_ext_q) ||
+		 (NrmStringToQuark("cdf") == file_ext_q) ||
+		 (NrmStringToQuark("netcdf") == file_ext_q))))
 	{
 		file_out = _NclAdvancedFileCreate(inst, theclass, obj_type, obj_type_mask, status,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
@@ -3121,10 +3119,6 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		file_out = _NclFileCreate(inst, theclass, obj_type, obj_type_mask, status,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
 	}					
-
-	/*Restore previous saved file format preference. Wei 01/17/2013*/
-	if(need_restore)
-		memcpy(NCLadvancedFileStructure, preNCLadvancedFileStructure, _NclNumberOfFileFormats * sizeof(short));
 
 	return file_out;
 }
