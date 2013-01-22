@@ -2582,18 +2582,29 @@ void NC4GetAttrVal(int ncid, int aid, NclFileAttNode *attnode)
             int n;
             char **ppc;
             NclQuark *pq;
-            ppc = (char **)NclCalloc(attnode->n_elem, sizeof(char *));
-            assert(ppc);
-            attnode->value = NclMalloc(attnode->n_elem * sizeof(NclQuark));
-            assert(attnode->value);
-            pq = attnode->value;
-            ncattget(ncid,aid,NrmQuarkToString(attnode->name), ppc);
-            for(n = 0; n < attnode->n_elem; n++)
+            if(attnode->n_elem)
             {
-                pq[n] = NrmStringToQuark(ppc[n]);
-                free(ppc[n]);
+                ppc = (char **)NclCalloc(attnode->n_elem, sizeof(char *));
+                assert(ppc);
+                attnode->value = NclMalloc(attnode->n_elem * sizeof(NclQuark));
+                assert(attnode->value);
+                pq = attnode->value;
+                ncattget(ncid,aid,NrmQuarkToString(attnode->name), ppc);
+                for(n = 0; n < attnode->n_elem; n++)
+                {
+                    pq[n] = NrmStringToQuark(ppc[n]);
+                    free(ppc[n]);
+                }
+                free(ppc);
             }
-            free(ppc);
+            else
+            {
+                attnode->n_elem = 1;
+                attnode->value = NclMalloc(attnode->n_elem * sizeof(NclQuark));
+                assert(attnode->value);
+                pq = attnode->value;
+                pq[0] = NrmStringToQuark("");
+            }
         }
         else
         {

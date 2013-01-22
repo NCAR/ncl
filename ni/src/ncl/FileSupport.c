@@ -3043,6 +3043,28 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			}
 		}
 
+		/* Check if want NetCDF4 */
+		if(NULL != fcp->options[Ncl_FORMAT].value)
+		{
+			NrmQuark nc4 = NrmStringToQuark("netcdf4");
+			NrmQuark req = _NclGetLower(*(NrmQuark *)(fcp->options[Ncl_FORMAT].value->multidval.val));
+			NCLadvancedFileStructure[_NclNETCDF] = 0;
+			NCLadvancedFileStructure[_NclNETCDF4] = 0;
+			if(nc4 == req)
+			{
+			      /*if format is NetCDF4,  use advanced file-structure. Wei 01/21/2013*/
+				if((NrmStringToQuark("nc") == file_ext_q) ||
+				   (NrmStringToQuark("nc4") == file_ext_q) ||
+				   (NrmStringToQuark("nc3") == file_ext_q) ||
+				   (NrmStringToQuark("cdf") == file_ext_q) ||
+				   (NrmStringToQuark("netcdf") == file_ext_q))
+				{
+					NCLadvancedFileStructure[_NclNETCDF] = 0;
+					NCLadvancedFileStructure[_NclNETCDF4] = 1;
+				}
+			}
+		}
+
 		if(0 > file_ext_q)
 		{
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"(%s) has no file extension, can't determine type of file to open",NrmQuarkToString(path)));
