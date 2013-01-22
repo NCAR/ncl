@@ -34,7 +34,7 @@ NhlErrorTypes utm2latlon_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
-  string *grid_zone = NULL;
+  NrmQuark *grid_zone = NULL;
   ng_size_t total_size_grid_zone = 0;
 /*
  * Output variables.
@@ -165,7 +165,7 @@ NhlErrorTypes utm2latlon_W( void )
  * If we find grid_zone, we have to make sure it is a scalar, or 
  * the same size as xy.
  */
-          grid_zone = (string *) attr_list->attvalue->multidval.val;
+          grid_zone = (NrmQuark *) attr_list->attvalue->multidval.val;
           total_size_grid_zone = 1;
           for( i = 0; i < attr_list->attvalue->multidval.n_dims; i++ ) 
             total_size_grid_zone *= attr_list->attvalue->multidval.dim_sizes[i];

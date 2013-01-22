@@ -11,7 +11,7 @@ NhlErrorTypes NhlGetNamedColorIndex_W( void )
 {
   int i, j, ii, *ci, *wks, nid, total_cname_elements, total_wks_elements;
   NclHLUObj tmp_hlu_obj;
-  string *cname;
+  NrmQuark *cname;
   int ndims_cname;
   ng_size_t dsizes_cname[NCL_MAX_DIMENSIONS];
   int ndims_wks;
@@ -35,7 +35,7 @@ NhlErrorTypes NhlGetNamedColorIndex_W( void )
 /*
  * Retrieve argument #2
  */
-  cname = (string *) NclGetArgValue(1,2,&ndims_cname,dsizes_cname,NULL,NULL,
+  cname = (NrmQuark *) NclGetArgValue(1,2,&ndims_cname,dsizes_cname,NULL,NULL,
 						NULL,DONT_CARE);
 /*
  * Compute total number of elements in wks array.

@@ -28,6 +28,13 @@ then
 	exit $?
 fi
 
+cp NclTypestring.c .tmp.$$
+sed \
+-e 's/(string)/(NclQuark)/g' \
+-e 's/string\*/NclQuark \*/g' \
+-e 's/string \*/NclQuark \*/g' \
+.tmp.$$ > NclTypestring.c
+
 rm .tmp.$$
 rm -f NclTypestring.c.tmp
 

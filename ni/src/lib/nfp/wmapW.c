@@ -67,7 +67,7 @@ NhlErrorTypes wmsetp_W(void)
 /*
  * Input array variables
  */
-  string *pname;
+  NrmQuark *pname;
   int ndims_pname;
   ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
@@ -78,7 +78,7 @@ NhlErrorTypes wmsetp_W(void)
 /*
  * Retrieve argument #1
  */
-  pname = (string *) NclGetArgValue(
+  pname = (NrmQuark *) NclGetArgValue(
           0,
           2,
           &ndims_pname,
@@ -183,7 +183,7 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
  */
     for (i = 0; i < numpc; i++) {
       if (!strncmp(arg1, params_c[i], strlen(params_c[i]))) {
-        cval = NrmQuarkToString( *((string *) pvalue));
+        cval = NrmQuarkToString( *((NrmQuark *) pvalue));
         c_wmsetc(arg1, cval);
         return(NhlNOERROR);
       }
@@ -207,7 +207,7 @@ NhlErrorTypes wmgetp_W(void)
 
   char  *arg1, *cval;
   int   numpi, numpf, numpc, i;
-  string *qvalue;
+  NrmQuark *qvalue;
 
 /*
  *  List the integer and float parameter names.  To add new ones,
@@ -254,7 +254,7 @@ NhlErrorTypes wmgetp_W(void)
 /*
  * Input array variable
  */
-  string *pname;
+  NrmQuark *pname;
   int ndims_pname;
   ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname;
@@ -265,7 +265,7 @@ NhlErrorTypes wmgetp_W(void)
 /*
  * Retrieve argument #1
  */
-  pname = (string *) NclGetArgValue(
+  pname = (NrmQuark *) NclGetArgValue(
           0,
           1,
           &ndims_pname,
@@ -343,7 +343,7 @@ OK_NAME:  for (i = 0; i < numpi; i++) {
         return(NhlFATAL);
       }
       c_wmgetc(arg1, cval, 99);
-      qvalue = (string *) calloc(1,sizeof(string));
+      qvalue = (NrmQuark *) calloc(1,sizeof(NrmQuark));
       *qvalue = NrmStringToQuark(cval);
       return(NclReturnValue((void *) qvalue, 1, &ret_size, NULL,NCL_string, 1));
     }
@@ -1275,7 +1275,7 @@ NhlErrorTypes wmlabs_W( void )
   float *y;
   int ndims_y;
   ng_size_t dsizes_y[1];
-  string *symtyp;
+  NrmQuark *symtyp;
   int ndims_symtyp;
   ng_size_t dsizes_symtyp[NCL_MAX_DIMENSIONS];
   
@@ -1313,7 +1313,7 @@ NhlErrorTypes wmlabs_W( void )
 /*
  * Retrieve the symbol type.
  */
-  symtyp = (string *) NclGetArgValue(
+  symtyp = (NrmQuark *) NclGetArgValue(
           3,
           4,
           &ndims_symtyp,
@@ -1403,7 +1403,7 @@ NhlErrorTypes wmstnm_W( void )
   int ndims_y;
   ng_size_t dsizes_y[1];
   int has_missing_y;
-  string *symtyp;
+  NrmQuark *symtyp;
   int ndims_symtyp;
   ng_size_t dsizes_symtyp[NCL_MAX_DIMENSIONS];
 
@@ -1449,7 +1449,7 @@ NhlErrorTypes wmstnm_W( void )
 /*
  * Retrieve the station model data.
  */
-  symtyp = (string *) NclGetArgValue(
+  symtyp = (NrmQuark *) NclGetArgValue(
           3,
           4,
           &ndims_symtyp,

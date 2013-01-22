@@ -14,7 +14,7 @@ NhlErrorTypes output_gif_W( void )
   obj *ncl_objs;
   int ndims_ncl_objs;
   ng_size_t dsizes_ncl_objs[NCL_MAX_DIMENSIONS], total_ncl_objs;
-  string *giffile;
+  NrmQuark *giffile;
   int *resltn, *MaximizeBB;
 /*
  * Other variables.
@@ -41,7 +41,7 @@ NhlErrorTypes output_gif_W( void )
            NULL,
            DONT_CARE);
 
-  giffile = (string *)NclGetArgValue(
+  giffile = (NrmQuark *)NclGetArgValue(
            1,
            4,
            NULL,

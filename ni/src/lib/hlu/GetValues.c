@@ -282,7 +282,7 @@ _NhlGetLayerValues
 				targnode = chld_args;
 
 				while((targnode != NULL) &&
-					(tchldnode->class != targnode->class))
+					(tchldnode->theclass != targnode->theclass))
 					targnode = targnode->next;
 
 				if(targnode == NULL){

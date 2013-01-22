@@ -1683,7 +1683,7 @@ NhlErrorTypes svd_lapack_W( void )
  * Input array variables
  */
   void *a, *u, *v;
-  string *jobu, *jobv;
+  NrmQuark *jobu, *jobv;
   int *optv;
   double *tmp_a, *tmp_u, *tmp_vt;
   int ndims_a;
@@ -1742,7 +1742,7 @@ NhlErrorTypes svd_lapack_W( void )
     return(NhlFATAL);
   }
 
-  jobu = (string*)NclGetArgValue(
+  jobu = (NrmQuark *)NclGetArgValue(
            1,
            6,
            NULL,
@@ -1752,7 +1752,7 @@ NhlErrorTypes svd_lapack_W( void )
            NULL,
            DONT_CARE);
 
-  jobv = (string*)NclGetArgValue(
+  jobv = (NrmQuark *)NclGetArgValue(
            2,
            6,
            NULL,
@@ -2064,7 +2064,7 @@ NhlErrorTypes svdpar_W( void )
   double *dx;
   ng_size_t dsizes_x[2];
   NclBasicDataTypes type_x;
-  string *label;
+  NrmQuark *label;
   char *label2;
 /*
  * Get data to print.
@@ -2086,7 +2086,7 @@ NhlErrorTypes svdpar_W( void )
 /*
  * Get label.
  */
-  label = (string *)NclGetArgValue(
+  label = (NrmQuark *)NclGetArgValue(
             1,
             2,
             NULL,

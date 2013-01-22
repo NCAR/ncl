@@ -35,9 +35,11 @@
  * Declaration for Converter Context - used to make a list of mallocs
  * done in the called converter.
  */
-typedef struct _NhlConvertContext _NhlConvertContextRec, *_NhlConvertContext;
 
-struct _NhlConvertContext {
+typedef struct NhlConvertContext _NhlConvertContextRec;
+typedef struct NhlConvertContext *_NhlConvertContext;
+
+struct NhlConvertContext {
 	NhlLayer		ref;
 	NhlClass		ref_class;
 	int			num_alloced;
@@ -45,9 +47,10 @@ struct _NhlConvertContext {
 	_NhlConvertContext	next;
 };
 
-typedef struct _NhlCtxtStack _NhlCtxtStackRec, *_NhlCtxtStack;
+typedef struct NhlCtxtStack _NhlCtxtStackRec;
+typedef struct NhlCtxtStack *_NhlCtxtStack;
 
-struct _NhlCtxtStack{
+struct NhlCtxtStack{
 	_NhlConvertContext	context;
 	_NhlCtxtStack		next;
 };

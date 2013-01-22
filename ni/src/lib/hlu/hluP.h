@@ -184,7 +184,7 @@ typedef struct _NhlArgRec{
 typedef struct _NhlChildArgRec _NhlChildArgNode, *_NhlChildArgList; 
   
 struct _NhlChildArgRec{ 
-	NhlClass		class; 
+	NhlClass		theclass; 
 	NhlBoolean		autosetval;
 	_NhlArgList		args; 
 	int			nargs; 
@@ -290,7 +290,7 @@ extern NhlErrorTypes _NhlVACreateChild(
 #if	NhlNeedVarArgProto
 	int		*pid,	/* pid return		*/
 	Const char	*name,	/* name of child	*/
-	NhlClass	class,	/* class to create	*/
+	NhlClass	theclass,	/* class to create	*/
 	NhlLayer	parent,	/* parent of child	*/
 	...			/* args to set in child	*/
 #endif
@@ -300,7 +300,7 @@ extern NhlErrorTypes _NhlALCreateChild(
 #if	NhlNeedProto
 	int		*pid,		/* pid return		*/
 	Const char	*name,		/* name of child	*/
-	NhlClass	class,		/* class to create	*/
+	NhlClass	theclass,		/* class to create	*/
 	NhlLayer	parent,		/* parent of child	*/
 	NhlSArgList	args_in,	/* args in		*/
 	int		nargs		/* number args		*/
@@ -319,7 +319,7 @@ extern NhlErrorTypes _NhlVASetValuesChild(
 extern NhlErrorTypes _NhlALSetValuesChild(
 #if	NhlNeedProto
 	int		pid,		/* pid return		*/
-	NhlLayer		parent,		/* parent of child	*/
+	NhlLayer	parent,		/* parent of child	*/
 	NhlSArgList	args_in,	/* args in		*/
 	int		nargs		/* number args in	*/
 #endif

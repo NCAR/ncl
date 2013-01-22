@@ -143,7 +143,7 @@ typedef union _NclApiScalar {
         long    longval;
         short   shortval;
         char    charval;
-        string  stringval;
+        NclQuark stringval;
         byte    byteval;
         logical logicalval;
         obj     objval;
@@ -370,7 +370,7 @@ typedef struct _NclHLUStruct {
 	NclQuark att_quark;
 	int	offset;
 	int	n_offsets;
-	void    *private;
+	void    *myprivate;
 }NclHLUStruct;
 
 extern NhlErrorTypes NclHLUStringRef(

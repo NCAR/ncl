@@ -151,14 +151,14 @@ NhlErrorTypes ngsetp_W(void)
 /*
  * Input array variables
  */
-  string *pname;
+  NrmQuark *pname;
   void *pvalue;
   NclBasicDataTypes type_pvalue;
 
 /*
  * Retrieve argument #1
  */
-  pname = (string *) NclGetArgValue(
+  pname = (NrmQuark *) NclGetArgValue(
           0,
           2,
           NULL,
@@ -249,7 +249,7 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
  */
     for (i = 0; i < numpc; i++) {
       if (!strncmp(arg1, params_c[i], strlen(params_c[i]))) {
-        cval = NrmQuarkToString( *((string *) pvalue));
+        cval = NrmQuarkToString( *((NrmQuark *) pvalue));
         c_ngsetc(arg1, cval);
         return(NhlNOERROR);
       }
@@ -274,7 +274,7 @@ NhlErrorTypes nggetp_W(void)
 
   char  *arg1, *cval;
   int   numpi, numpf, numpc, i;
-  string *qvalue;
+  NrmQuark *qvalue;
 
 /*
  *  List the integer and float parameter names.  To add new ones,
@@ -303,7 +303,7 @@ NhlErrorTypes nggetp_W(void)
 /*
  * Input array variable
  */
-  string *pname;
+  NrmQuark *pname;
   float *fval;
   int *ival;
   ng_size_t ret_size = 1; 
@@ -311,7 +311,7 @@ NhlErrorTypes nggetp_W(void)
 /*
  * Retrieve argument #1
  */
-  pname = (string *) NclGetArgValue(
+  pname = (NrmQuark *) NclGetArgValue(
           0,
           1,
           NULL,
@@ -381,7 +381,7 @@ OK_NAME:  for (i = 0; i < numpi; i++) {
         return(NhlFATAL);
       }
       c_nggetc(arg1, cval, 99);
-      qvalue = (string *) calloc(1,sizeof(string));
+      qvalue = (NrmQuark *) calloc(1,sizeof(NrmQuark));
       *qvalue = NrmStringToQuark(cval);
       return(NclReturnValue((void *) qvalue, 1, &ret_size, NULL,NCL_string, 1));
     }

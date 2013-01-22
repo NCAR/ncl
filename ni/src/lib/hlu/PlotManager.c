@@ -4207,7 +4207,7 @@ ManageTickMarks
 
 		if ((ret = MIN(subret,ret)) < NhlNOERROR) {
 			e_text = "%s: Error setting TickMark values";
-			NhlPError(ret,NhlEUNKNOWN,e_text, entry_name);
+			NHLPERROR((ret,NhlEUNKNOWN,e_text, entry_name));
 			if (ret < NhlWARNING) {
 				anno_rec->status = 
 					ovp->display_tickmarks = init ? 

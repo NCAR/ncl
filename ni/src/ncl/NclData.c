@@ -339,11 +339,11 @@ static NhlErrorTypes NclDataInitializePart
 * NOT
 */
 
-		if(me->data_class.not[0] == NULL) {
-			me->data_class.not[0] = par->data_class.not[0];
+		if(me->data_class.ncl_not[0] == NULL) {
+			me->data_class.ncl_not[0] = par->data_class.ncl_not[0];
 		}
-		if(me->data_class.not[1] == NULL) {
-			me->data_class.not[1] = par->data_class.not[1];
+		if(me->data_class.ncl_not[1] == NULL) {
+			me->data_class.ncl_not[1] = par->data_class.ncl_not[1];
 		}
 /*
 * Neg
@@ -451,47 +451,47 @@ static NhlErrorTypes NclDataInitializePart
 /*
 * And
 */
-		if(me->data_class.and[0] == NULL) {
-			me->data_class.and[0] = par->data_class.and[0];
+		if(me->data_class.ncl_and[0] == NULL) {
+			me->data_class.ncl_and[0] = par->data_class.ncl_and[0];
 		}
-		if(me->data_class.and[1] == NULL) {
-			me->data_class.and[1] = par->data_class.and[1];
+		if(me->data_class.ncl_and[1] == NULL) {
+			me->data_class.ncl_and[1] = par->data_class.ncl_and[1];
 		}
-		if(me->data_class.and[2] == NULL) {
-			me->data_class.and[2] = par->data_class.and[2];
+		if(me->data_class.ncl_and[2] == NULL) {
+			me->data_class.ncl_and[2] = par->data_class.ncl_and[2];
 		}
-		if(me->data_class.and[3] == NULL) {
-			me->data_class.and[3] = par->data_class.and[3];
+		if(me->data_class.ncl_and[3] == NULL) {
+			me->data_class.ncl_and[3] = par->data_class.ncl_and[3];
 		}
 /*
 * Or
 */
-		if(me->data_class.or[0] == NULL) {
-			me->data_class.or[0] = par->data_class.or[0];
+		if(me->data_class.ncl_or[0] == NULL) {
+			me->data_class.ncl_or[0] = par->data_class.ncl_or[0];
 		}
-		if(me->data_class.or[1] == NULL) {
-			me->data_class.or[1] = par->data_class.or[1];
+		if(me->data_class.ncl_or[1] == NULL) {
+			me->data_class.ncl_or[1] = par->data_class.ncl_or[1];
 		}
-		if(me->data_class.or[2] == NULL) {
-			me->data_class.or[2] = par->data_class.or[2];
+		if(me->data_class.ncl_or[2] == NULL) {
+			me->data_class.ncl_or[2] = par->data_class.ncl_or[2];
 		}
-		if(me->data_class.or[3] == NULL) {
-			me->data_class.or[3] = par->data_class.or[3];
+		if(me->data_class.ncl_or[3] == NULL) {
+			me->data_class.ncl_or[3] = par->data_class.ncl_or[3];
 		}
 /*
 * XOR
 */
-		if(me->data_class.xor[0] == NULL) {
-			me->data_class.xor[0] = par->data_class.xor[0];
+		if(me->data_class.ncl_xor[0] == NULL) {
+			me->data_class.ncl_xor[0] = par->data_class.ncl_xor[0];
 		}
-		if(me->data_class.xor[1] == NULL) {
-			me->data_class.xor[1] = par->data_class.xor[1];
+		if(me->data_class.ncl_xor[1] == NULL) {
+			me->data_class.ncl_xor[1] = par->data_class.ncl_xor[1];
 		}
-		if(me->data_class.xor[2] == NULL) {
-			me->data_class.xor[2] = par->data_class.xor[2];
+		if(me->data_class.ncl_xor[2] == NULL) {
+			me->data_class.ncl_xor[2] = par->data_class.ncl_xor[2];
 		}
-		if(me->data_class.xor[3] == NULL) {
-			me->data_class.xor[3] = par->data_class.xor[3];
+		if(me->data_class.ncl_xor[3] == NULL) {
+			me->data_class.ncl_xor[3] = par->data_class.ncl_xor[3];
 		}
 
 	}

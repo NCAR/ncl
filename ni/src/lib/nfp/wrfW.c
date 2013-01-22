@@ -1592,7 +1592,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
-  string *description, *units;
+  NrmQuark *description, *units;
   char *cdesc = NULL;
   char *cunits = NULL;
   logical found_desc = False, found_units = False;
@@ -1717,12 +1717,12 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  */
       while (attr_list != NULL) {
         if ((strcmp(attr_list->attname, "description")) == 0) {
-          description = (string *) attr_list->attvalue->multidval.val;
+          description = (NrmQuark *) attr_list->attvalue->multidval.val;
           cdesc       = NrmQuarkToString(*description);
           found_desc  = True;
         }
         if ((strcmp(attr_list->attname, "units")) == 0) {
-          units  = (string *) attr_list->attvalue->multidval.val;
+          units  = (NrmQuark *) attr_list->attvalue->multidval.val;
           cunits = NrmQuarkToString(*units);
           found_units  = True;
         }
@@ -2039,7 +2039,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
-  string *description, *units;
+  NrmQuark *description, *units;
   char *cdesc = NULL;
   char *cunits = NULL;
   logical found_desc = False, found_units = False;
@@ -2191,12 +2191,12 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  */
       while (attr_list != NULL) {
         if ((strcmp(attr_list->attname, "description")) == 0) {
-          description = (string *) attr_list->attvalue->multidval.val;
+          description = (NrmQuark *) attr_list->attvalue->multidval.val;
           cdesc       = NrmQuarkToString(*description);
           found_desc  = True;
         }
         if ((strcmp(attr_list->attname, "units")) == 0) {
-          units  = (string *) attr_list->attvalue->multidval.val;
+          units  = (NrmQuark *) attr_list->attvalue->multidval.val;
           cunits = NrmQuarkToString(*units);
           found_units  = True;
         }
@@ -2450,7 +2450,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
-  string *description, *units;
+  NrmQuark *description, *units;
   char *cdesc = NULL;
   char *cunits = NULL;
   logical found_desc = False, found_units = False;
@@ -2584,12 +2584,12 @@ NhlErrorTypes wrf_interp_1d_W( void )
  */
       while (attr_list != NULL) {
         if ((strcmp(attr_list->attname, "description")) == 0) {
-          description = (string *) attr_list->attvalue->multidval.val;
+          description = (NrmQuark *) attr_list->attvalue->multidval.val;
           cdesc       = NrmQuarkToString(*description);
           found_desc  = True;
         }
         if ((strcmp(attr_list->attname, "units")) == 0) {
-          units  = (string *) attr_list->attvalue->multidval.val;
+          units  = (NrmQuark *) attr_list->attvalue->multidval.val;
           cunits = NrmQuarkToString(*units);
           found_units  = True;
         }
@@ -10552,12 +10552,12 @@ NhlErrorTypes wrf_wps_read_nml_W( void )
 /*
  * Argument # 0
  */
-  string *namelist;
+  NrmQuark *namelist;
   char *cnamelist;
 /*
  * Return variable
  */
-  float *pgrids_var;
+  float *plotgrids_var;
   int size_output, ndims_output;
   ng_size_t dsizes_output[2];
   NclScalar missing_output;
@@ -10570,7 +10570,7 @@ NhlErrorTypes wrf_wps_read_nml_W( void )
 /*
  * Get argument # 0
  */
-  namelist = (string*)NclGetArgValue(
+  namelist = (NrmQuark *)NclGetArgValue(
            0,
            1,
            NULL,
@@ -10591,8 +10591,8 @@ NhlErrorTypes wrf_wps_read_nml_W( void )
   dsizes_output[0] = MAX_DOMAINS; 
   dsizes_output[1] = NVAR;
   size_output      = NVAR*MAX_DOMAINS;
-  pgrids_var       = (float*)calloc(size_output, sizeof(float));
-  if(pgrids_var == NULL) {
+  plotgrids_var = (float*)calloc(size_output, sizeof(float));
+  if(plotgrids_var == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_read_nml: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
@@ -10601,13 +10601,13 @@ NhlErrorTypes wrf_wps_read_nml_W( void )
 /*
  * Call the Fortran routine.
  */
-  NGCALLF(plotgrids_var,PLOTGRIDS_VAR)(cnamelist, pgrids_var, 
+  NGCALLF(plotgrids_var,PLOTGRIDS_VAR)(cnamelist, plotgrids_var, 
                                        &missing_output.floatval, 
                                        strlen(cnamelist));
 /*
  * Return value back to NCL script.
  */
-  ret = NclReturnValue(pgrids_var,ndims_output,dsizes_output,
+  ret = NclReturnValue(plotgrids_var,ndims_output,dsizes_output,
                        &missing_output,NCL_float,0);
   return(ret);
 }

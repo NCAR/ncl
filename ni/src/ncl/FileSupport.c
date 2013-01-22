@@ -113,7 +113,7 @@ NhlErrorTypes _NclBuildFileCoordRSelection
 			name_md = _NclFileVarReadDim(file,var,-1,(long)dim_num);
 			if(name_md != NULL) {
 				if(name_md->multidval.type->type_class.type & Ncl_Typestring) {
-					cname = *(string*)name_md->multidval.val;
+					cname = *(NclQuark *)name_md->multidval.val;
 					_NclDestroyObj((NclObj)name_md);
 				} else {
 					return(NhlFATAL);
@@ -361,7 +361,7 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 			name_md = _NclFileVarReadDim(file,var,-1,(long)dim_num);
 			if(name_md != NULL) {
 				if(name_md->multidval.type->type_class.type & Ncl_Typestring) {
-					cname = *(string*)name_md->multidval.val;
+					cname = *(NclQuark *)name_md->multidval.val;
 					_NclDestroyObj((NclObj)name_md);
 				} else {
 					return(NhlFATAL);
@@ -2265,7 +2265,7 @@ NclQuark *_NclGetFileGroupsList(NclFile thefile, NclQuark base_group_name, int d
 {
         NclNewFile newfile = (NclNewFile) thefile;
 
-        if(_isNewFileStructure(thefile))
+	if(thefile->file.use_new_hlfs)
                 return _getNewFileGroupsList(newfile, base_group_name, depth, n_grps);
         else
                 return _getFileGroupsList(thefile, base_group_name, depth, n_grps);
@@ -2277,7 +2277,6 @@ NclQuark *_getFileVarsList(NclFile thefile, NclQuark base_group_name, int depth,
 	NclQuark *selected_var_names = NULL;
 	NclQuark *splited_base = NULL;
 	NclQuark *splited_name = NULL;
-	NclQuark *final_names = NULL;
 	int need_save = 0;
 	int num_vars = 0;
 	int max_depth = INT_MAX;
@@ -2312,7 +2311,6 @@ NclQuark *_getFileVarsList(NclFile thefile, NclQuark base_group_name, int depth,
        */
 
 	selected_var_names = (NclQuark *) NclMalloc(sizeof(NclQuark) * thefile->file.n_vars);
-	final_names = (NclQuark *) NclMalloc(sizeof(NclQuark) * thefile->file.n_vars);
 
       /*
        *fprintf(stdout, "\n\n\nhit _NclGetGroupVarsList. file: %s, line: %d\n", __FILE__, __LINE__);
@@ -2479,10 +2477,11 @@ NclQuark *_getVarListFromFile(NclNewFile thefile, NclQuark base_group_name, int 
 
 NclQuark *_NclGetGroupVarsList(NclFile thefile, NclQuark base_group_name, int depth, int *n_vars)
 {
-        NclNewFile newfile = (NclNewFile) thefile;
-
-        if(_isNewFileStructure(thefile))
+	if(thefile->file.use_new_hlfs)
+        {
+        	NclNewFile newfile = (NclNewFile) thefile;
                 return _getVarListFromFile(newfile, base_group_name, depth, n_vars);
+	}
         else
                 return _getFileVarsList(thefile, base_group_name, depth, n_vars);
 }
@@ -2684,11 +2683,9 @@ struct _NclMultiDValDataRec *value;
 {
 	NclFileClass fc = NULL;
 
-#ifdef USE_NETCDF4_FEATURES
-	if(NCLnewfs)
+	if(thefile->file.use_new_hlfs)
 		fc = (NclFileClass) &nclNewFileClassRec;
 	else
-#endif
 		fc = &nclFileClassRec;
 
 	while(fc)
@@ -3244,7 +3241,17 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 				int newfs = 0;
 				newfs = *(int *)(fcp->options[Ncl_USE_NEW_HLFS].value->multidval.val);
 				if(newfs)
-					NCLnewfs = 1;
+				{
+				      /*Only certain data format can use new file-structure. Wei 01/11/2013*/
+					if((NrmStringToQuark("nc") == file_ext_q) ||
+					   (NrmStringToQuark("nc4") == file_ext_q) ||
+					   (NrmStringToQuark("nc3") == file_ext_q) ||
+					   (NrmStringToQuark("cdf") == file_ext_q) ||
+					   (NrmStringToQuark("netcdf") == file_ext_q))
+						NCLnewfs = 1;
+					else
+						NCLnewfs = 0;
+				}
 				else
 					NCLnewfs = 0;
 			}
@@ -3255,6 +3262,8 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		NCLnewfs = 1;
 
 /*We still want to keep old HE5 there.
+	if(NrmStringToQuark("h5") == file_ext_q)
+		NCLnewfs = 1;
 	else if(NrmStringToQuark("he5") == file_ext_q)
 		NCLnewfs = 1;
  */
@@ -3279,11 +3288,10 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 NhlErrorTypes _NclPrintFileSummary(NclObj self, FILE *fp)
 {
 	NclFile file = (NclFile) self;
-#ifdef USE_NETCDF4_FEATURES
+
 	if(file->file.use_new_hlfs)
 		return (_NclNewFilePrintSummary(self, fp));
 	else
-#endif
 		return (_NclFilePrintSummary(self, fp));
 }
 
@@ -3297,12 +3305,10 @@ NclGroup *_NclCreateGroup(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
    *fprintf(stderr, "\nEnter _NclCreateGroup, file: %s, line: %d\n", __FILE__, __LINE__);
    */
 
-#ifdef USE_NETCDF4_FEATURES
     if(file_in->file.use_new_hlfs)
         group_out = _NclNewGroupCreate(inst, theclass, obj_type, obj_type_mask,
                                        status, file_in, group_name);
     else
-#endif
         group_out = _NclGroupCreate(inst, theclass, obj_type, obj_type_mask,
                                     status, file_in, group_name);
 
@@ -3394,7 +3400,7 @@ NclQuark _NclFileReadVersion(NclFile thefile)
 
 	class_name = thefile->obj.class_ptr->obj_class.class_name;
 
-	if(0 == strcmp("NclNewFileClass", class_name))
+	if (thefile->file.use_new_hlfs) 
 	{
 		NclNewFile newfile = (NclNewFile) thefile;
 		version = newfile->newfile.grpnode->kind;
@@ -3419,28 +3425,5 @@ NclQuark _NclFileReadVersion(NclFile thefile)
 	}
 
 	return version;
-}
-
-int _isNewFileStructure(NclFile thefile)
-{
-    char *class_name;
-
-    if(NULL == thefile)
-    {
-        return 0;
-    }
-
-    class_name = thefile->obj.class_ptr->obj_class.class_name;
-
-    if(0 == strcmp("NclFileClass", class_name))
-        return 0;
-    else if(0 == strcmp("NclNewFileClass", class_name))
-        return 1;
-    else
-    {
-        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-            "_isNewFileStructure: Unknown Class <%s>\n", class_name));
-        return 0;
-    }
 }
 

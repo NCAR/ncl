@@ -4390,7 +4390,7 @@ static void *H5ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void *
             {
                 if(attnode->the_nc_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val))
                 {
-                    *(string*)storage = *(string*)(attnode->value);
+                    *(NclQuark *)storage = *(NclQuark *)(attnode->value);
                 }
                 else
                 {
@@ -4414,7 +4414,7 @@ static void *H5ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void *
                 tmp = (char*)NclMalloc(attnode->n_elem + 1);
                 tmp[attnode->n_elem] = '\0';
                 ret = ncattget(fid, varnode->att_rec->id,NrmQuarkToString(theatt),tmp);
-                *(string*)storage = NrmStringToQuark(tmp);
+                *(NclQuark *)storage = NrmStringToQuark(tmp);
                 NclFree(tmp);
             }
             else

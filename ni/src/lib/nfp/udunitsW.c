@@ -159,7 +159,7 @@ NhlErrorTypes ut_calendar_W( void )
  */
   void *x;
   double *tmp_x;
-  string *sspec = NULL;
+  NrmQuark *sspec = NULL;
   char *cspec, *cspec_orig;
   int *option;
   int ndims_x;
@@ -180,7 +180,7 @@ NhlErrorTypes ut_calendar_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
-  string *scal;
+  NrmQuark *scal;
   char   *ccal = NULL;
 /*
  * Variables for Udunits package.
@@ -295,7 +295,7 @@ NhlErrorTypes ut_calendar_W( void )
  */
       while (attr_list != NULL) {
         if ((strcmp(attr_list->attname, "calendar")) == 0) {
-          scal = (string *) attr_list->attvalue->multidval.val;
+          scal = (NrmQuark *) attr_list->attvalue->multidval.val;
           ccal = NrmQuarkToString(*scal);
           if(strcasecmp(ccal,"standard") && strcasecmp(ccal,"gregorian") &&
              strcasecmp(ccal,"noleap") && strcasecmp(ccal,"365_day") &&
@@ -306,7 +306,7 @@ NhlErrorTypes ut_calendar_W( void )
           }
         }
         if ((strcmp(attr_list->attname, "units")) == 0) {
-          sspec = (string *) attr_list->attvalue->multidval.val;
+          sspec = (NrmQuark *) attr_list->attvalue->multidval.val;
         }
         attr_list = attr_list->next;
       }
@@ -757,7 +757,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
   int *year, *month, *day, *hour, *minute;
   void *second;
   double *tmp_second = NULL;
-  string *sspec;
+  NrmQuark *sspec;
   int *option;
   char *cspec, *cspec_orig;
   int ndims_year;
@@ -796,7 +796,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry stack_entry;
-  string *scal;
+  NrmQuark *scal;
   char   *ccal = NULL;
 /*
  * Output variables.
@@ -923,7 +923,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
 /*
  * Get spec string.
  */
-  sspec = (string*)NclGetArgValue(
+  sspec = (NrmQuark *)NclGetArgValue(
            6,
            8,
            NULL,
@@ -979,7 +979,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
  */
       while (attr_list != NULL) {
         if ((strcmp(attr_list->attname, "calendar")) == 0) {
-          scal = (string *) attr_list->attvalue->multidval.val;
+          scal = (NrmQuark *) attr_list->attvalue->multidval.val;
           ccal = NrmQuarkToString(*scal);
           if(strcasecmp(ccal,"standard") && strcasecmp(ccal,"gregorian") &&
              strcasecmp(ccal,"noleap") && strcasecmp(ccal,"365_day") &&

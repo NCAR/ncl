@@ -1071,7 +1071,7 @@ const char *get_calendar_attribute(int arg_num, int total_args) {
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
-  string *scal;
+  NrmQuark *scal;
   const char   *ccal = NULL;
   const char *default_cal = "standard";
 
@@ -1109,7 +1109,7 @@ const char *get_calendar_attribute(int arg_num, int total_args) {
  */
       while (attr_list != NULL) {
         if ((strcmp(attr_list->attname, "calendar")) == 0) {
-          scal = (string *) attr_list->attvalue->multidval.val;
+          scal = (NrmQuark *) attr_list->attvalue->multidval.val;
           ccal = NrmQuarkToString(*scal);
           if(strcasecmp(ccal,"standard") && strcasecmp(ccal,"gregorian") &&
              strcasecmp(ccal,"proleptic_gregorian") &&

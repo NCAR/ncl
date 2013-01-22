@@ -12,6 +12,10 @@
 
 #include "NclNewFile.h"
 
+int indentation_level;
+int indentation_length;
+char blank_space[MAX_BLANK_SPACE_LENGTH];
+
 NhlErrorTypes InitializeFileOptions();
 
 static struct _NclMultiDValDataRec *NewFileReadVarAtt(NclFile infile,
@@ -2556,6 +2560,7 @@ void FileDestroyDimRecord(NclFileDimRecord *dim_rec)
             dim_rec = NULL;
         }
     }
+    dim_rec = NULL;
 }
 
 void FileDestroyCompoundRecord(NclFileCompoundRecord *comprec)
@@ -2570,6 +2575,7 @@ void FileDestroyCompoundRecord(NclFileCompoundRecord *comprec)
         NclFree(comprec);
         comprec = NULL;
     }
+    comprec = NULL;
 }
 
 void FileDestroyCoordVarRecord(NclFileCoordVarRecord *coord_rec)
@@ -2584,6 +2590,7 @@ void FileDestroyCoordVarRecord(NclFileCoordVarRecord *coord_rec)
         NclFree(coord_rec);
         coord_rec = NULL;
     }
+    coord_rec = NULL;
 }
 
 void FileDestroyVarRecord(NclFileVarRecord *var_rec)
@@ -2605,17 +2612,29 @@ void FileDestroyVarRecord(NclFileVarRecord *var_rec)
                     varnode->value = NULL;
                 }
 
+                if(NULL != varnode->udt)
+                    NclFree(varnode->udt);
+
                 FileDestroyAttRecord(varnode->att_rec);
                 FileDestroyDimRecord(varnode->chunk_dim_rec);
                 FileDestroyCompoundRecord(varnode->comprec);
                 FileDestroyDimRecord(varnode->dim_rec);
+
+                varnode->udt = NULL;
+                varnode->value = NULL;
+                varnode->comprec = NULL;
+                varnode->att_rec = NULL;
+                varnode->dim_rec = NULL;
+                varnode->chunk_dim_rec = NULL;
             }
             NclFree(var_rec->var_node);
             var_rec->var_node = NULL;
         }
+        var_rec->var_node = NULL;
         NclFree(var_rec);
         var_rec = NULL;
     }
+    var_rec = NULL;
 }
 
 void FileDestroyGrpNode(NclFileGrpNode *grpnode)
@@ -2627,7 +2646,10 @@ void FileDestroyGrpNode(NclFileGrpNode *grpnode)
         if(NULL != grpnode->grp_rec)
         {
             for(n = 0; n < grpnode->grp_rec->n_grps; n++)
+            {
                 FileDestroyGrpNode(grpnode->grp_rec->grp_node[n]);
+                grpnode->grp_rec->grp_node[n] = NULL;
+            }
     
             NclFree(grpnode->grp_rec->grp_node);
             NclFree(grpnode->grp_rec);
@@ -2671,6 +2693,7 @@ void NewFileDestroy(NclObj self)
 		    (*thefile->newfile.format_funcs->free_file_rec)(thefile->newfile.grpnode);
     }
     FileDestroyGrpNode(thefile->newfile.grpnode);
+    thefile->newfile.grpnode = NULL;
 
     thefile->newfile.grpnode = NULL;
 
@@ -2932,14 +2955,16 @@ NclFile _NclNewFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
     file_out->newfile.file_ext_q = file_ext_q;
     file_out->file.use_new_hlfs = 1;
 
+    file_out->file.use_new_hlfs = 1;
+
     topForFunRecPtr = _NclGetFormatFuncsWithNewHLFS(file_ext_q);
     file_out->newfile.format_funcs = topForFunRecPtr;
 
     if (! topForFunRecPtr)
     {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,
+        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
             "Requested file format is not supported, could not open (%s)",
-            NrmQuarkToString(path));
+            NrmQuarkToString(path)));
         if(file_out_free) 
             NclFree((void*)file_out);
         return(NULL);
@@ -5589,7 +5614,7 @@ static NhlErrorTypes NewFileSetFileOption(NclFile  infile,
                         lvalue[k] = _NclGetLower(*(NclQuark*)(((char *)tmp_md->multidval.val)+ k * sizeof(NclQuark)));
                         for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++)
                         {
-                            NclQuark valid_val = ((string *)fcp->options[i].valid_values->multidval.val)[j];
+                            NclQuark valid_val = ((NclQuark *)fcp->options[i].valid_values->multidval.val)[j];
                             if (lvalue[k] != valid_val)
                                 continue;
                             ok = 1;
@@ -5730,7 +5755,7 @@ static NhlErrorTypes NewFileSetFileOption(NclFile  infile,
                         lvalue[k] = _NclGetLower(*(NclQuark*)(((char *)tmp_md->multidval.val)+ k * sizeof(NclQuark)));
                         for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++)
                         {
-                            NclQuark valid_val = ((string *)fcp->options[i].valid_values->multidval.val)[j];
+                            NclQuark valid_val = ((NclQuark *)fcp->options[i].valid_values->multidval.val)[j];
                             if(lvalue[k] != valid_val)
                                 continue;
                             ok = 1;

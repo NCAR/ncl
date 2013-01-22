@@ -9004,7 +9004,7 @@ int *get_dims_for_n_funcs(int arg_num,  int num_args, NclStackEntry tmpdata,
   void *dims_ptr;
   int i, *dims; 
   ng_size_t num_dims[1];
-  string *dim_names;
+  NrmQuark *dim_names;
   NclVar tmpvar;
 
   switch(tmpdata.kind) {
@@ -9038,7 +9038,7 @@ int *get_dims_for_n_funcs(int arg_num,  int num_args, NclStackEntry tmpdata,
   }
   else {
     if(tmpvar != NULL) {
-      dim_names = (string *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,0);
+      dim_names = (NrmQuark *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,0);
     }
     else {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Can't determine dimension names from input array",name);

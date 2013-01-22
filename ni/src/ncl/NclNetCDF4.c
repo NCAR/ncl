@@ -1954,7 +1954,7 @@ NclFileGrpNode *_NC4_get_grpnode(int pid, int gid, NclQuark pn, NclFileGrpNode *
 NclFileDimRecord *_NC4_get_dims(int gid, int n_dims, int unlimited_dim_idx)
 {
     char buffer[MAX_NC_NAME];
-    size_t tmp_size = 0;
+    long tmp_size = 0;
     int ndims_grp;
     int *dimids_grp;
     int nunlim;
@@ -2392,6 +2392,11 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
     nc_inq_typeids(fid, &ntypes, NULL);
     if(ntypes)
     {
+      /*
+       *fprintf(stderr,"\tfile: %s, line: %d", __FILE__, __LINE__);
+       *fprintf(stderr,"\tntypes: %d\n", ntypes);
+       */
+
         grpnode->udt_rec = _NC4_get_udts(fid, NC_GLOBAL, ntypes);
     }
 

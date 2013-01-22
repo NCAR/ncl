@@ -47,7 +47,7 @@ NhlErrorTypes ctwrap_W( void )
  */
   logical idbg = False, igrd = False, imsh = False;
   logical icon = True, icol = False, icap = False;
-  string *MapProjection, *fnam;
+  NrmQuark *MapProjection, *fnam;
   char *cMapProjection, *cnam = NULL;
   int imap = 2, ilev = -1, itim = -1;
   NclAttList  *attr_list;
@@ -261,7 +261,7 @@ NhlErrorTypes ctwrap_W( void )
               NhlPError(NhlWARNING,NhlEUNKNOWN,"ctwrap: The 'FieldName' attribute must be a string, ignoring...");
             }
             else {
-              fnam = (string*) attr_list->attvalue->multidval.val;
+              fnam = (NrmQuark *) attr_list->attvalue->multidval.val;
               cnam = NrmQuarkToString(*fnam);
             }
           }
@@ -309,7 +309,7 @@ NhlErrorTypes ctwrap_W( void )
               NhlPError(NhlWARNING,NhlEUNKNOWN,"ctwrap: The 'MapProjection' attribute must be a string, defaulting to 'CylindricalEquidistant.'");
             }
             else {
-              MapProjection  = (string*) attr_list->attvalue->multidval.val;
+              MapProjection  = (NrmQuark *) attr_list->attvalue->multidval.val;
               cMapProjection = NrmQuarkToString(*MapProjection);
               if(!strcmp(cMapProjection,"Orthographic")) {
                 imap = 1;

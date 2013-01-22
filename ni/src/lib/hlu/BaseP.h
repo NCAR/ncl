@@ -45,7 +45,7 @@ typedef struct _NhlChildRec _NhlChildNode, *_NhlChildList;
 struct _NhlChildRec {
 	int			pid;
 	NhlBoolean		svalscalled;
-	NhlClass		class;
+	NhlClass		theclass;
 	NrmNameList		resources;
 	_NhlChildList		next;
 };
@@ -124,7 +124,7 @@ typedef struct _NhlLayerRec {
 typedef struct _NhlChildResRec _NhlChildResNode, *_NhlChildResList;
 
 struct _NhlChildResRec {
-	NhlClass		class;
+	NhlClass		theclass;
 	NhlBoolean		autosetval;
 	NrmNameList		resources;
 	_NhlChildResList	next;

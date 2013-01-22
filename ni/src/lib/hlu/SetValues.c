@@ -368,13 +368,13 @@ _NhlSetLayerValues
 				targnode = l->base.child_args;
 
 				while((targnode != NULL) &&
-					(tchldnode->class != targnode->class))
+					(tchldnode->theclass != targnode->theclass))
 					targnode = targnode->next;
 			
 				if(targnode == NULL){
 					NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			"SetValues can't find args to set child's resources %s",
-					_NhlClassName(tchldnode->class)));
+					_NhlClassName(tchldnode->theclass)));
 					tchldnode = tchldnode->next;
 					continue;
 				}
@@ -779,7 +779,7 @@ SetValuesChild
 	targnode = parent->base.child_args;
 
 	while(targnode != NULL){
-		if(targnode->class == tchldnode->class){
+		if(targnode->theclass == tchldnode->theclass){
 			pargs = targnode->args;
 			num_pargs = targnode->nargs;
 			/*
@@ -795,7 +795,7 @@ SetValuesChild
 	if(targnode == NULL){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			"can't find forwarded args to set resources for %s",
-					_NhlClassName(tchldnode->class)));
+					_NhlClassName(tchldnode->theclass)));
 		return NhlFATAL;
 	}
 
@@ -973,7 +973,7 @@ GetResLayer
 	child_reslist = lc->base_class.child_resources;
 	while (child_reslist) {
 		if (NrmQinQList(child_reslist->resources,resq)) {
-			child_class = child_reslist->class;
+			child_class = child_reslist->theclass;
 			break;
 		}
 		child_reslist = child_reslist->next;
@@ -983,7 +983,7 @@ GetResLayer
 
 	childlist = l->base.children;
 	while (childlist) {
-		if (child_class == childlist->class) {
+		if (child_class == childlist->theclass) {
 			break;
 		}
 		childlist = childlist->next;

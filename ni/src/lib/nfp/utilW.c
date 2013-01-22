@@ -258,7 +258,7 @@ NhlErrorTypes isnan_ieee_W( void )
 NhlErrorTypes get_ncl_version_W(void)
 {
   char *version;
-  string *sversion;
+  NrmQuark *sversion;
   int len;
   ng_size_t ret_size = 1;
 
@@ -269,7 +269,7 @@ NhlErrorTypes get_ncl_version_W(void)
   len     = strlen(GetNCLVersion());
   version = (char *)calloc(len+1,sizeof(char));
   strcpy(version,GetNCLVersion());
-  sversion  = (string *)calloc(1,sizeof(string));
+  sversion  = (NrmQuark *)calloc(1,sizeof(NrmQuark));
   *sversion = NrmStringToQuark(version);
   free(version);
   return(NclReturnValue((void *)sversion, 1, &ret_size, NULL, NCL_string, 0));

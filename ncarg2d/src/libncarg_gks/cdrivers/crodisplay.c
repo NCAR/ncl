@@ -12,6 +12,7 @@
 #include <cairo/cairo-xlib.h>
 #include <ncarg/gksP.h>
 #include "gksc.h"
+#include "cro.h"
 #include "croddi.h"
 #include "x.h"
 
@@ -399,3 +400,67 @@ croActivateX11(CROddp *psa, cairo_surface_t* surface)
 
     return;
 }
+
+/* This function is modified from croActivateX11 above. Wei Huang */
+void croActivateQt(CROddp *psa)
+{
+    cairo_t* context = getContext(psa->wks_id);
+
+    CoordSpace square_screen;
+
+    double width  = (double) qt_painter_width;
+    double height = (double) qt_painter_height;
+
+#if 0
+    static int qtInitBack = 1;
+
+    if(qtInitBack)
+    {
+        cairo_surface_flush(qt_surface);
+        qtInitBack = 0;
+    }
+#endif
+
+  /*
+   *fprintf(stderr, "\nin funtion: <%s>, line: %d, file: <%s>\n",
+   *                 __PRETTY_FUNCTION__, __LINE__, __FILE__);
+   */
+
+    cairo_scale(context, width, height);
+
+    psa->image_width  = qt_painter_width;
+    psa->image_height = qt_painter_height;
+
+    psa->dspace.llx = (double) 0.0;
+    psa->dspace.lly = (double) 0.0;
+    psa->dspace.urx = width - 1.0;
+    psa->dspace.ury = height - 1.0;
+  /*
+   *square_screen = ComputeLargestSquare
+   *               (psa->dspace.llx, psa->dspace.lly,
+   *                psa->dspace.urx, psa->dspace.ury);
+   */
+    square_screen = ComputeLargestSquare((double)0.0, height, width, (double)0.0);
+
+    psa->dspace.llx = square_screen.llx;
+    psa->dspace.urx = square_screen.urx;
+    psa->dspace.lly = square_screen.ury;   /* note flip of y-axis */
+    psa->dspace.ury = square_screen.lly;   /*         "           */
+
+    psa->dspace.xspan = ((psa->dspace.urx) - (psa->dspace.llx));
+    psa->dspace.yspan = ((psa->dspace.ury) - (psa->dspace.lly));
+
+    if (psa->cro_clip.null == FALSE)
+    {
+      psa->cro_clip.llx = psa->dspace.llx;
+      psa->cro_clip.lly = psa->dspace.lly;
+      psa->cro_clip.urx = psa->dspace.urx;
+      psa->cro_clip.ury = psa->dspace.ury;
+    }
+
+  /*
+   *fprintf(stderr, "out funtion: <%s>, line: %d, file: <%s>\n",
+   *                 __PRETTY_FUNCTION__, __LINE__, __FILE__);
+   */
+}
+

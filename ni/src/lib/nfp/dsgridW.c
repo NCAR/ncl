@@ -1515,7 +1515,7 @@ NhlErrorTypes dssetp_W(void)
 /*
  * Input array variables
  */
-  string *pname;
+  NrmQuark *pname;
   int ndims_pname;
   ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
@@ -1526,7 +1526,7 @@ NhlErrorTypes dssetp_W(void)
 /*
  * Retrieve argument #1
  */
-  pname = (string *) NclGetArgValue(
+  pname = (NrmQuark *) NclGetArgValue(
           0,
           2,
           &ndims_pname,
@@ -1625,7 +1625,7 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
  */
     for (i = 0; i < numpc; i++) {
       if (!strncmp(arg1, params_c[i], strlen(params_c[i]))) {
-        cval = NrmQuarkToString( *((string *) pvalue));
+        cval = NrmQuarkToString( *((NrmQuark *) pvalue));
         c_dssetc(arg1, cval);
         return(NhlNOERROR);
       }
@@ -1645,7 +1645,7 @@ NhlErrorTypes dsgetp_W(void)
 
   char  *arg1, *cval;
   int   numpi, numpf, numpc, i;
-  string *qvalue;
+  NrmQuark *qvalue;
 
 /*
  *  List the integer and float parameter names.  To add new ones,
@@ -1658,7 +1658,7 @@ NhlErrorTypes dsgetp_W(void)
 /*
  * Input array variable
  */
-  string *pname;
+  NrmQuark *pname;
   int ndims_pname;
   ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname;
@@ -1669,7 +1669,7 @@ NhlErrorTypes dsgetp_W(void)
 /*
  * Retrieve argument #1
  */
-  pname = (string *) NclGetArgValue(
+  pname = (NrmQuark *) NclGetArgValue(
           0,
           1,
           &ndims_pname,
@@ -1747,7 +1747,7 @@ OK_NAME:  for (i = 0; i < numpi; i++) {
         return(NhlFATAL);
       }
       c_dsgetc(arg1, cval);
-      qvalue = (string *) calloc(1,sizeof(string));
+      qvalue = (NrmQuark *) calloc(1,sizeof(NrmQuark));
       *qvalue = NrmStringToQuark(cval);
       return(NclReturnValue((void *) qvalue, 1, &ret_size, NULL,NCL_string, 1));
     }

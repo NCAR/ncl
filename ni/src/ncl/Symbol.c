@@ -1189,6 +1189,7 @@ void _NclAddSingleObj
 	return;
 }
 
+#ifdef USE_NETCDF4_FEATURES
 static NclApiDataList *getNewFileVarInfoList(NclFile thefile)
 {
     NclApiDataList *tmp = NULL;
@@ -1252,6 +1253,7 @@ static NclApiDataList *getNewFileVarInfoList(NclFile thefile)
     }
     return (thelist);
 }
+#endif
 
 NclApiDataList *_NclGetFileVarInfoList
 #if	NhlNeedProto
@@ -1465,6 +1467,7 @@ NclQuark file_var_name;
 	return(NULL);
 }
 
+#ifdef USE_NETCDF4_FEATURES
 static NclApiDataList *getNewFileVarCoordInfo(NclFile thefile,
                                   NclQuark coordname)
 {
@@ -1516,6 +1519,7 @@ static NclApiDataList *getNewFileVarCoordInfo(NclFile thefile,
     }
     return tmp;
 }
+#endif
 
 NclApiDataList *_NclGetFileVarCoordInfo
 #if	NhlNeedProto
@@ -1549,7 +1553,7 @@ NclQuark coordname;
 				{
 					return (getNewFileVarCoordInfo(thefile, coordname));
 				}
-				else if(_NclFileVarIsCoord(thefile,coordname) != -1)
+				if(_NclFileVarIsCoord(thefile,coordname) != -1)
 				{
 					for(i = 0; i < thefile->file.n_file_dims; i++) {
 						if((thefile->file.coord_vars[i] != NULL)&&(thefile->file.coord_vars[i]->var_name_quark == coordname)) {
@@ -2114,6 +2118,7 @@ NclQuark attname;
 	return(NULL);
 }
 
+#ifdef USE_NETCDF4_FEATURES
 static NclApiDataList *getNewFileInfo(NclFile thefile)
 {
     NclApiDataList     *tmp = NULL;
@@ -2177,6 +2182,7 @@ static NclApiDataList *getNewFileInfo(NclFile thefile)
 
     return(tmp);
 }
+#endif
 
 NclApiDataList *_NclGetFileInfo
 #if	NhlNeedProto
