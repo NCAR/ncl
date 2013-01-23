@@ -88,19 +88,19 @@ sed \
 TypeSupportOpTemplate.h.sed >> .tmp.$$
 
 sed \
--e 's/TFUNC/and/g' \
+-e 's/TFUNC/ncl_and/g' \
 TypeSupportOpTemplate.h.sed >> .tmp.$$
 
 sed \
--e 's/TFUNC/or/g' \
+-e 's/TFUNC/ncl_or/g' \
 TypeSupportOpTemplate.h.sed >> .tmp.$$
 
 sed \
--e 's/TFUNC/xor/g' \
+-e 's/TFUNC/ncl_xor/g' \
 TypeSupportOpTemplate.h.sed >> .tmp.$$
 
 sed \
--e 's/TFUNC/not/g' \
+-e 's/TFUNC/ncl_not/g' \
 TypeSupportMonoOpTemplate.h.sed >> .tmp.$$
 
 sed \

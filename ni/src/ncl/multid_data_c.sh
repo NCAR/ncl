@@ -102,17 +102,17 @@ MultiDValOp.c.sed >> .tmp.$$
 
 sed \
 -e 's/FUNCNAME/And/g' \
--e 's/TFUNC/and/g' \
+-e 's/TFUNC/ncl_and/g' \
 MultiDValOp.c.sed >> .tmp.$$
 
 sed \
 -e 's/FUNCNAME/Or/g' \
--e 's/TFUNC/or/g' \
+-e 's/TFUNC/ncl_or/g' \
 MultiDValOp.c.sed >> .tmp.$$
 
 sed \
 -e 's/FUNCNAME/Xor/g' \
--e 's/TFUNC/xor/g' \
+-e 's/TFUNC/ncl_xor/g' \
 MultiDValOp.c.sed >> .tmp.$$
 
 sed \

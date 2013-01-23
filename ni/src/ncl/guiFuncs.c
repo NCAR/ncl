@@ -55,6 +55,20 @@
 #include "HLUFunctions.h"
 #include "NclGlobalVars.h"
 
+float guiNhlNtfBaseXF = 0.2;
+float guiNhlNtfBaseYF = 0.8;
+float guiNhlNtfBaseWidthF = 0.6;
+float guiNhlNtfBaseHeightF = 0.6;
+
+void guiGetBaseVP(float *BaseXF, float *BaseYF,
+                  float *BaseWidthF, float *BaseHeightF)
+{
+    *BaseXF = guiNhlNtfBaseXF;
+    *BaseYF = guiNhlNtfBaseYF;
+    *BaseWidthF  = guiNhlNtfBaseWidthF;
+    *BaseHeightF = guiNhlNtfBaseHeightF;
+}
+
 NclFile NclCreateFile(const char *path)
 {
     NclQuark qpath = NrmStringToQuark(path);
@@ -558,6 +572,29 @@ void guiDestroyObj(NclObj obj)
 char *guiQuarkToString(NclQuark qn)
 {
     return (NrmQuarkToString(qn));
+}
+
+void guiNhlAddOverlay(int base_id, int transform_id, int after_id)
+{
+    NhlAddOverlay(base_id, transform_id, after_id);
+}
+
+void guiGetEndpointsAndStepSize(float min_in, float max_in,
+                                int max_steps, int outside, 
+                                float *min_out, float *max_out,
+                                float *step_size)
+{
+    double in_min = (double) min_in;
+    double in_max = (double) max_in;
+    double out_min;
+    double out_max;
+    double space;
+
+    _NhlGetEndpointsAndStepSize(in_min, in_max, max_steps, outside,
+                                &out_min, &out_max, &space);
+    *min_out = (float) out_min;
+    *max_out = (float) out_max;
+    *step_size = (float) space;
 }
 
 #if 0
