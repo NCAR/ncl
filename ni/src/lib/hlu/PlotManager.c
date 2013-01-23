@@ -5480,6 +5480,12 @@ NhlErrorTypes NhlAddOverlay
 		NhlSetSArg(&sargs[nargs++],NhlNtfBaseWidthF,ovl->view.width);
 		NhlSetSArg(&sargs[nargs++],NhlNtfBaseHeightF,ovl->view.height);
 
+		/*Expose the base VP, Wei 01/23/2013*/
+		guiNhlNtfBaseXF = ovl->view.x;
+		guiNhlNtfBaseYF = ovl->view.y;
+		guiNhlNtfBaseWidthF  = ovl->view.width;
+		guiNhlNtfBaseHeightF = ovl->view.height;
+
 		subret = NhlALSetValues(sub_recs[i]->plot->base.id,
 					sargs,nargs); 
 		if ((ret = MIN(subret,ret)) < NhlWARNING)
