@@ -1798,14 +1798,8 @@ NclFileClassRec nclFileClassRec = {
 NclObjClass nclFileClass = (NclObjClass)&nclFileClassRec;
 
 
-NhlErrorTypes InitializeFileOptions
-#if NhlNeedProto
-(void)
-#else
-()
-#endif
+NhlErrorTypes InitializeFileOptions(NclFileClassPart *fcp)
 {
-	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	logical *lval;
 	string *sval;
 	float *fval;
@@ -2256,8 +2250,9 @@ static NhlErrorTypes InitializeFileClass
 ()
 #endif
 {
+	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 
-	InitializeFileOptions();
+	InitializeFileOptions(fcp);
 
 	_NclRegisterClassPointer(
 		Ncl_File,

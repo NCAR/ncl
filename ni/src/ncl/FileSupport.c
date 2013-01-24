@@ -3021,13 +3021,16 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 	if(! is_http)
 	{
+#if 0
 		/* Check if want advanced file-strucuture */
 		if(NULL != fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value)
 		{
 			NrmQuark afs = NrmStringToQuark("advanced");
 			NrmQuark sfs = _NclGetLower(*(NrmQuark *)(fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value->multidval.val));
+			/*
 			NCLadvancedFileStructure[_NclNETCDF] = 0;
 			NCLadvancedFileStructure[_NclNETCDF4] = 0;
+			*/
 			if(afs == sfs)
 			{
 			      /*Only certain data format can use advanced file-structure. Wei 01/11/2013*/
@@ -3048,8 +3051,10 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		{
 			NrmQuark nc4 = NrmStringToQuark("netcdf4");
 			NrmQuark req = _NclGetLower(*(NrmQuark *)(fcp->options[Ncl_FORMAT].value->multidval.val));
+			/*
 			NCLadvancedFileStructure[_NclNETCDF] = 0;
 			NCLadvancedFileStructure[_NclNETCDF4] = 0;
+			*/
 			if(nc4 == req)
 			{
 			      /*if format is NetCDF4,  use advanced file-structure. Wei 01/21/2013*/
@@ -3064,6 +3069,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 				}
 			}
 		}
+#endif
 
 		if(0 > file_ext_q)
 		{

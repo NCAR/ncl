@@ -434,27 +434,27 @@ static void *NC4CreateFile(void *rootgrp,NclQuark path)
 
     InitializeOptions(grpnode);
 
-    if ((NrmQuark)(grpnode->options[Ncl_FORMAT].values) == 
+    if (*(NrmQuark *)(grpnode->options[Ncl_FORMAT].values) == 
               NrmStringToQuark("classic"))
     {
         mode = (NC_NOCLOBBER);
         format = 1;
     }
-    else if (((NrmQuark)(grpnode->options[Ncl_FORMAT].values) == 
+    else if ((*(NrmQuark *)(grpnode->options[Ncl_FORMAT].values) == 
          NrmStringToQuark("largefile")) ||
-        ((NrmQuark)(grpnode->options[Ncl_FORMAT].values) == 
+        (*(NrmQuark*)(grpnode->options[Ncl_FORMAT].values) == 
          NrmStringToQuark("64bitoffset")))
     {
         mode = (NC_NOCLOBBER|NC_64BIT_OFFSET);
         format = 2;
     }
-    else if ((NrmQuark)(grpnode->options[Ncl_FORMAT].values) == 
+    else if (*(NrmQuark *)(grpnode->options[Ncl_FORMAT].values) == 
               NrmStringToQuark("netcdf4classic"))
     {
         mode = (NC_NOCLOBBER|NC_CLASSIC_MODEL);
         format = 3;
     }
-    else if ((NrmQuark)(grpnode->options[Ncl_FORMAT].values) == 
+    else if (*(NrmQuark *)(grpnode->options[Ncl_FORMAT].values) == 
               NrmStringToQuark("netcdf4"))
     {
         mode = (NC_NETCDF4);
@@ -483,13 +483,16 @@ static void *NC4CreateFile(void *rootgrp,NclQuark path)
         grpnode->fid = fid;
         grpnode->id = fid;
         grpnode->define_mode = *(int *)(grpnode->options[Ncl_DEFINE_MODE].values);
+        grpnode->file_format = format;
         grpnode->format = format;
-        grpnode->open = 1;
-        EndNC4DefineMode(grpnode, fid);
-      /*
-       *CloseOrSync(grpnode, fid, 0);
-       */
-        return((void*)grpnode);
+
+	if(grpnode->define_mode)
+        {
+            EndNC4DefineMode(grpnode, fid);
+            CloseOrSync(grpnode, fid, 0);
+        }
+
+        return (NC4OpenFile(rootgrp, path, -1));
     }
 
     return(NULL);
@@ -2356,9 +2359,11 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
     else
     {
         nc_ret = nc__open(NrmQuarkToString(path),NC_WRITE,&ChunkSizeHint,&fid);
-        grpnode->define_mode = 0;
+        grpnode->define_mode = 1;
+        grpnode->open = 1;
         grpnode->fid = fid;
         grpnode->id = fid;
+        nc_redef(fid);
     }
 
     if(nc_ret != NC_NOERR)
@@ -2379,6 +2384,9 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
     }
 
     grpnode->open = 1;
+
+    if(status < 0)
+        return((void*)grpnode);
 
     ncinquire(fid, &n_dims, &n_vars, &n_atts, &unlimited_dim_idx);
 
@@ -2678,27 +2686,22 @@ int sync;
 {
     int ret;
 
-    if(0 == *(int *)(rootgrp->options[Ncl_SUPPRESS_CLOSE].values))
+    if(sync)
+    {
+        ret = nc_sync(fid);
+        rootgrp->open = 1;
+        rootgrp->fid = fid;
+    }
+    else
     {
         rootgrp->open = 0;
         rootgrp->fid = -1;
         ret = ncclose(fid);
-        if(NC_NOERR != ret)
-        {
-          /*
-           */
-            fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
-            NHLPERROR((NhlWARNING,NhlEUNKNOWN,(char*)nc_strerror(ret)));
-        }
     }
-    else
+
+    if(NC_NOERR != ret)
     {
-        if (sync)
-        {
-            nc_sync(fid);
-        }
-        rootgrp->open = 1;
-        rootgrp->fid = fid;
+        NHLPERROR((NhlWARNING,NhlEUNKNOWN,(char*)nc_strerror(ret)));
     }
 }
 
@@ -4885,6 +4888,8 @@ static NhlErrorTypes NC4AddDim(void* therec, NclQuark thedim,
 
           /*
            *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tfid = %d, grpnode->define_mode = %d\n", fid, grpnode->define_mode);
+           *fprintf(stderr, "\tis_unlimited = %d\n", is_unlimited);
            *fprintf(stderr, "\tfid = %d, thedim: <%s>, size = %ld\n",
            *                   fid, NrmQuarkToString(thedim), (long)size);
            */
@@ -5600,10 +5605,10 @@ static NhlErrorTypes NC4SetOption(void *rootgrp, NclQuark option,
         grpnode->options[Ncl_FORMAT].values = values;
 
       /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tgrpnode->options[Ncl_FORMAT].values: <%s>\n",
+       *                  NrmQuarkToString(*(NrmQuark *)values));
        */
-        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tgrpnode->options[Ncl_FORMAT].values: <%s>\n",
-                          NrmQuarkToString(*(NrmQuark *)values));
 
         if((grpnode->path > -1) && (grpnode->path != NrmNULLQUARK))
         {

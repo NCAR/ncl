@@ -20729,6 +20729,7 @@ NhlErrorTypes _NclISetFileOption(void)
 	string filetype = NrmNULLQUARK;
 	string option;
 	NhlErrorTypes ret;
+	int n = 1;
 	int n_dims = 1;
 
         NrmQuark filetype_lower;
@@ -20868,6 +20869,15 @@ NhlErrorTypes _NclISetFileOption(void)
 		       */
                 }
         }
+
+	for(n = 0; n < _NclNumberOfFileFormats; ++n)
+	{
+		if(NCLadvancedFileStructure[n])
+		{
+			_NclInitClass(nclAdvancedFileClass);
+			break;
+		}
+	}
 
 	ret = _NclFileSetOption(f,filetype,option,tmp_md1);
 
