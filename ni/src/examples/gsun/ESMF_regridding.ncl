@@ -2394,6 +2394,15 @@ begin
     if(isatt(fid,"map_method")) then
       map_method = fid@map_method
     end if
+;---Error checking
+    ns = getfilevardimsizes(fid,"S")
+    if(all(ismissing(ns)).or.all(ns.eq.0)) then
+      print("ESMF_regrid_with_weights: error: there are no weights on this file.")
+      print("    This likely means there was a problem with the mapping")
+      print("    from the source grid to the destination grid.")
+      print("    Check that both grids are valid.")
+      return(fmsg)
+    end if
   end if
 
 ;
@@ -2423,8 +2432,10 @@ begin
        (max(dstlat).le.max(srclat)).and.  \
        (min(dstlon).ge.min(srclon)).and.  \
        (max(dstlon).le.max(srclon))   ) ) then
-      print("ESMF_regrid_with_weights: warning: destination grid is not completely")
-      print("                          covered by the source grid.")
+      print("ESMF_regrid_with_weights: warning: destination grid is not")
+      print("    completely covered by the source grid. This is not an error.")
+      print("    It just means your destination grid covers a larger area")
+      print("    than your source grid.")
   end if
 	
 ;---Get the dimensions and rank of the source grid and input grid.
