@@ -5930,7 +5930,7 @@ calldraw, callframe, left_string, center_string, right_string, yoffset, \
 min_lat, max_lat, center_lat, main_offset, \
 side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
 vpxf, vpyf, vphf, vpwf, plon, plat, xndc, yndc, polar_type, center_lon, \
-center_lat, rel_c_lon, rel_c_lat
+center_lat, rel_c_lon, rel_c_lat, set_text_font
 begin
 
 ; Initialize.
@@ -6187,20 +6187,36 @@ begin
       text_font_height = get_res_value(res2,"gsnPolarLabelFontHeightF", \
                          get_res_value_keep(res2,"txFontHeightF",\
                          font_height))
-      text_font        = get_res_value(res2,"gsnPolarLabelFont", \
-                         get_res_value_keep(res2,"txFont","helvetica"))
+      if(isatt(res2,"gsnPolarLabelFont")) then
+        set_text_font = True
+        text_font     = get_res_value(res2,"gsnPolarLabelFont",1)
+      else if(isatt(res2,"txFont")) then
+        set_text_font = True
+        text_font     = get_res_value_keep(res2,"txFont",1)
+      else
+        set_text_font = False
+      end if
+      end if
 
 ; Create an array of TextItem objects that we'll use to label the
 ; lat/lon grid.  
 
-      do i=0,num_labels-1
-        text_ids(i) = create "lon_"+labels(i) textItemClass wks
-          "txString"      : labels(i)
-          "txFont"        : text_font
-          "txFontHeightF" : text_font_height
-        end create
-      end do
-
+      if(set_text_font) then
+        do i=0,num_labels-1
+          text_ids(i) = create "lon_"+labels(i) textItemClass wks
+            "txString"      : labels(i)
+            "txFont"        : text_font
+            "txFontHeightF" : text_font_height
+          end create
+        end do
+      else
+        do i=0,num_labels-1
+          text_ids(i) = create "lon_"+labels(i) textItemClass wks
+            "txString"      : labels(i)
+            "txFontHeightF" : text_font_height
+          end create
+        end do
+      end if
       setvalues map_object
         "pmAnnoViews" : text_ids  ; Add text items as annotations of map.
       end setvalues
@@ -6302,7 +6318,7 @@ begin
     subres = get_res_eq(res2,"tx")  ; Get textitem resources
     subres                  = True
     set_attr(subres,"txFontHeightF",1.2*font_height)
-    set_attr(subres,"txFont","helvetica")
+;    set_attr(subres,"txFont","helvetica")
     subres@amOrthogonalPosF = 0.06 
     add_subtitles(wks,map_object,left_string,center_string,right_string, \
                   subres)
@@ -11068,7 +11084,7 @@ begin
     subres = True
     subres = get_res_eq(locRes1,"tx")  ; Get textitem resources
     set_attr(subres,"txFontHeightF",font_height)
-    set_attr(subres,"txFont","helvetica")
+;    set_attr(subres,"txFont","helvetica")
     set_attr(subres,"amZone",amzone)
     subres@amOrthogonalPosF = 0.06 
 
