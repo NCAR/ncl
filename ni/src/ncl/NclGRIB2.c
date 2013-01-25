@@ -897,6 +897,63 @@ static void rot2ll
 
 	return;
 }
+static void ll2rot
+(
+	double latpole,
+	double lonpole,
+	double latin,
+	double lonin,
+	double *latout,
+	double *lonout
+)
+{
+	double dtr = atan(1) / 45.0;
+	double x,y,z;
+	double rotang,sinrot,cosrot;
+	double rx,ry,rz;
+	double tlat,tlon;
+	    
+	tlon = lonin - lonpole;
+
+	/* convert to xyz coordinates */
+
+	x = cos(latin * dtr) * cos(tlon * dtr);
+	y = cos(latin * dtr) * sin(tlon * dtr);
+	z = sin(latin * dtr);
+
+	/*  rotate around y axis */
+	rotang = (latpole + 90) * dtr;
+	sinrot = sin(rotang);
+	cosrot = cos(rotang);
+	ry = y;
+	rx = x * cosrot + z * sinrot;
+	rz = -x * sinrot + z * cosrot;
+    
+	/* convert back to lat/lon */
+
+	tlat = asin(rz) / dtr;
+	if (fabs(rx) > 0.0001) {
+		tlon = atan2(ry,rx) / dtr;
+	}
+	else if (ry > 0) {
+		tlon = 90.0;
+	}
+        else {
+		tlon = -90.0;
+	}
+
+	if (tlon < -180) {
+		tlon = tlon + 360.0;
+	}
+	if (tlon >= 180) {
+		tlon = tlon - 360.0;
+	}
+
+	*latout = tlat;
+	*lonout = tlon;
+
+	return;
+}
 
 void g2GDSRLLGrid
 # if NhlNeedProto
@@ -1229,6 +1286,343 @@ void g2GDSRLLGrid
 	    tmp_float= (float*)NclMalloc(sizeof(float));
 	    *tmp_float = lo1;
 	    Grib2PushAtt(lat_att_list,"Lo1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = la2;
+	    Grib2PushAtt(lat_att_list,"La2",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = lo2;
+	    Grib2PushAtt(lat_att_list,"Lo2",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = di;
+	    Grib2PushAtt(lat_att_list,"Di",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = dj;
+	    Grib2PushAtt(lat_att_list,"Dj",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	    tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	    *tmp_string = NrmStringToQuark("degrees_north");
+	    Grib2PushAtt(lat_att_list,"units",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+	    tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	    *tmp_string = grid_name;
+	    Grib2PushAtt(lat_att_list,"grid_type",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+	    tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	    *tmp_string = NrmStringToQuark("latitude");
+	    Grib2PushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+    }
+    if (do_rot && rot_att_list != NULL) {
+	    g2Do_Rotation_Atts(grid_name,rot_att_list,nrotatts,grid_oriented);
+    }
+
+    return;
+}
+
+void g2GDSArakawaRLLGrid
+# if NhlNeedProto
+(
+	Grib2ParamList *thevarrec, 
+	float **lat, 
+	int *n_dims_lat, 
+	ng_size_t **dimsizes_lat,
+	float **lon, 
+	int *n_dims_lon, 
+	ng_size_t **dimsizes_lon, 
+	float **rot, 
+	int *n_dims_rot,
+	ng_size_t **dimsizes_rot, 
+	Grib2AttInqRecList **lat_att_list, 
+	int *nlatatts, 
+	Grib2AttInqRecList **lon_att_list, 
+	int *nlonatts, 
+	Grib2AttInqRecList **rot_att_list,
+	int *nrotatts
+)
+# else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,
+ rot, n_dims_rot, dimsizes_rot, lat_att_list, nlatatts, lon_att_list, nlonatts,
+ rot_att_list, nrotatts)
+    Grib2ParamList *thevarrec; 
+    float **lat; 
+    int *n_dims_lat;
+    ng_size_t **dimsizes_lat;
+    float **lon;
+    int *n_dims_lon;
+    ng_size_t **dimsizes_lon;
+    float **rot;
+    int *n_dims_rot;
+    ng_size_t **dimsizes_rot;
+    Grib2AttInqRecList **lat_att_list; 
+    int *nlatatts; 
+    Grib2AttInqRecList **lon_att_list; 
+    int *nlonatts;
+    Grib2AttInqRecList **rot_att_list;
+    int *nrotatts;
+# endif
+{
+    G2_GDS *gds;
+    double la1,la2,lo1,lo2;
+    double di = 1;
+    double dj = 1;
+    int idir;
+    int jdir;
+    int is_thinned_lat;
+    int is_thinned_lon;
+    int i,j;
+    float *tmp_float;
+    NclQuark* tmp_string;
+    int ni, nj;
+    g2ArakawaRLLTemplate *rll;
+    int grid_oriented,do_rot;
+    int do_180 = 0;
+    NrmQuark grid_name;
+    double scale_factor;
+    double lasp;
+    double losp;
+    double rotang;
+    double clat,clon,llat,llon,rlat,rlon;
+	
+    *lat = NULL;
+    *n_dims_lat = 0;
+    *dimsizes_lat = NULL;
+    *lon = NULL;
+    *n_dims_lon= 0;
+    *dimsizes_lon= NULL;
+    if ((thevarrec->thelist == NULL)  ||  (thevarrec->thelist->rec_inq == NULL)) 
+        return;
+
+    gds = (G2_GDS *) thevarrec->thelist->rec_inq->gds;
+    if (gds == NULL) {
+        return;
+    }
+    rll = (g2ArakawaRLLTemplate *) gds->grid_template;
+
+    ni = rll->npts_along_parallel;
+    nj = rll->npts_along_meridian;
+
+    /* all bits set indicates missing: missing means thinned */
+    is_thinned_lon = (ni == -1); 
+    is_thinned_lat = (nj == -1);
+    if ((ni <= 1 && !is_thinned_lon) || (nj <= 1 && !is_thinned_lat)) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+            "GdsRLLGrid: Invalid grid detected");
+        *lat = NULL;
+        *n_dims_lat = 0;
+        *dimsizes_lat = NULL;
+        *lon = NULL;
+        *n_dims_lon = 0;
+        *dimsizes_lon = NULL;
+        return;
+    }
+
+    idir = g2getbits(rll->scan_mode_flags, 7, 1) == 0 ? 1 : -1;
+    jdir = g2getbits(rll->scan_mode_flags, 6, 1) == 0 ? -1 : 1;
+    /* save the scan mode flags -- needed for decoding the data */
+    thevarrec->gds->scan_mode_offset = (int*)&(rll->scan_mode_flags) - (int*)rll;
+
+    if (rll->subdiv_basic_angle != 0 && rll->angl_init_prod_domain != 0)
+	    scale_factor = (double) rll->angl_init_prod_domain / 
+		    (double) rll->subdiv_basic_angle;
+    else 
+	    scale_factor = 1.0 / (double) G2_SCALE_FACTOR;
+
+    la1 = rll->lat_first_gridpt * scale_factor;
+    lo1 = rll->lon_first_gridpt * scale_factor;
+    clon = rll->center_lon * scale_factor;
+    clat = rll->center_lat * scale_factor;
+
+
+    grid_oriented = g2getbits(rll->res_comp_flags, 3, 1) == 0 ? 0 : 1;
+    do_rot = grid_oriented ? 1 : 0;
+
+
+    lasp = clat - 90;
+    losp = clon;
+    ll2rot(lasp,losp,la1,lo1,&llat,&llon);
+
+    /* since we don't have valid la2, lo2 values (in the rapid update files anyway) try to use just the center lat/lon 
+       and la1, lo1 values to calculate the la2, lo2 values, using the fact that the center lat/lon is actually centered in
+       the grid according to the template. */
+    rot2ll(lasp,losp,-llat,-llon,&la2,&lo2);
+    rlat = -llat;
+    rlon = -llon;
+
+    if (is_thinned_lon) {
+        g2GetThinnedLonParams(gds, nj, llon, rlon, idir, &ni, &di);
+	thevarrec->gds->is_thinned_grid = 1;
+    } else {
+	    if (ni == 1) {
+		    di = 0;
+	    }
+	    else if (idir == 1) {
+		    float ti = rlon;
+		    while (ti < llon) {
+			    ti += 360.0;
+		    }
+		    di = (ti - llon) / (double) (ni - 1);
+	    }
+	    else {
+		    float ti = llon;
+		    while (ti < rlon) {
+			    ti += 360.0;
+		    }
+		    di = (ti - rlon) / (double) (ni - 1);
+	    }
+    }
+
+
+    if (is_thinned_lat) {
+	    thevarrec->gds->is_thinned_grid = 1;
+	    g2GetThinnedLatParams(gds, ni, llat, rlat, jdir, &nj, &dj);
+    } else {
+        /* Not specified: must be calculated from the endpoints and number of steps */
+
+	    if (nj == 1) {
+		    dj = 0;
+	    }
+	    else {
+		    dj = (rlat - llat) / (double) (nj - 1);
+		    if (dj < 0)
+			    dj = -dj;
+	    }
+    }
+
+#if 0
+    di = rll->idir_incr * scale_factor;
+    dj = rll->jdir_incr * scale_factor;
+#endif
+
+    *dimsizes_lat = (ng_size_t*)NclMalloc(2 * sizeof(ng_size_t));
+    *dimsizes_lon = (ng_size_t*)NclMalloc(2 * sizeof(ng_size_t));
+    (*dimsizes_lon)[0] = nj;
+    (*dimsizes_lon)[1] = ni;
+    (*dimsizes_lat)[0] = nj;
+    (*dimsizes_lat)[1] = ni;
+    *n_dims_lat = 2;
+    *n_dims_lon = 2;
+    *lat = (float*)NclMalloc((unsigned)sizeof(float)* nj * ni);
+    *lon = (float*)NclMalloc((unsigned)sizeof(float)* nj * ni);
+
+
+    if (idir == 1) {
+	    if (llon > rlon) {
+		    llon -= 360;
+	    }
+	    if (llon < 0 && rlon > 0) {
+		    do_180 = 1;
+	    }
+    }
+    else {
+	    if (rlon > llon) {
+		    rlon -= 360;
+	    }
+	    if (rlon < 0 && llon > 0) {
+		    do_180 = 1;
+	    }
+    }
+			
+
+    if (do_rot) {
+	    double dtr = atan(1) / 45.0;
+	    *rot = (float*)NclMalloc((unsigned)sizeof(float)* nj * ni);
+
+	    for(j = 0;j < nj; j++) {
+		    for (i = 0; i < ni; i++) {
+			    double tlon,tlat;
+			    double cgridlat, slon,srot,crot;
+			    rot2ll(lasp,losp,llat + j * jdir * dj,llon + i * idir * di,&tlat,&tlon);
+			    if (do_180) {
+				    tlon = tlon > 180 ? tlon - 360 : tlon;
+			    }
+			    (*lat)[j * ni + i] = (float)tlat;
+			    (*lon)[j * ni + i] = (float)tlon;
+			    slon = sin((tlon - losp)*dtr);
+			    cgridlat = cos((llat + j * jdir * dj) * dtr);
+			    if (cgridlat <= 0.0)
+				    (*rot)[j * ni + i] = 0.0;
+			    else {
+				    crot = (cos(clat * dtr) * cos(tlat * dtr) + sin(clat * dtr) * sin(tlat * dtr) * cos(tlon * dtr)) / cgridlat;
+				    srot = - sin(clat * dtr) * slon / cgridlat;
+				    (*rot)[j * ni + i] = (float) atan2(srot,crot);
+#if 0
+
+				    /* diagnostics */
+				    crot1 = sqrt(1 - srot * srot);
+				    eps = fabs(crot)-fabs(crot1);
+			    }
+			    if ((i%10 == 0 && j%10 == 0) ) {
+				    printf("j/i %d %d lat/lon %f %f rot %f slon cgridlat srot crot %f %f %f %f crot1 eps %f %f\n",
+					   j,i,tlat,tlon,(*rot)[j * ni + i],
+					   slon,cgridlat,srot,crot,crot1,eps);
+#endif
+			    }
+		    }
+	    }
+    }
+    else {
+	    for(j = 0;j < nj; j++) {
+		    for (i = 0; i < ni; i++) {
+			    double tlon,tlat;
+			    rot2ll(lasp,losp,llat + j * jdir * dj,llon + i * idir * di,&tlat,&tlon);
+			    if (do_180) {
+				    tlon = tlon > 180 ? tlon - 360 : tlon;
+			    }
+			    (*lat)[j * ni + i] = (float)tlat;
+			    (*lon)[j * ni + i] = (float)tlon;
+		    }
+	    }
+    }
+    lo2 = (*lon)[ni * nj - 1];
+    la2 = (*lat)[ni * nj - 1];
+	
+    grid_name = (is_thinned_lat || is_thinned_lon) ?
+	    NrmStringToQuark("Arakawa Non-E Staggered rotated Latitude/Longitude Grid (Quasi-Regular)") :
+	    NrmStringToQuark("Arakawa Non-E Staggered rotated Latitude/Longitude Grid");
+    if(lon_att_list != NULL) {
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = la1;
+	    Grib2PushAtt(lon_att_list,"La1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = lo1;
+	    Grib2PushAtt(lon_att_list,"Lo1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = clat;
+	    GribPushAtt(lon_att_list,"CenterLat",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = clon;
+	    GribPushAtt(lon_att_list,"CenterLon",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = la2;
+	    Grib2PushAtt(lon_att_list,"La2",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = lo2;
+	    Grib2PushAtt(lon_att_list,"Lo2",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = di;
+	    Grib2PushAtt(lon_att_list,"Di",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = dj;
+	    Grib2PushAtt(lon_att_list,"Dj",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	    tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	    *tmp_string = NrmStringToQuark("degrees_east");
+	    Grib2PushAtt(lon_att_list,"units",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+	    tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	    *tmp_string = grid_name;
+	    Grib2PushAtt(lon_att_list,"grid_type",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+	    tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	    *tmp_string = NrmStringToQuark("longitude");
+	    Grib2PushAtt(lon_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+    }
+    if(lat_att_list != NULL) {
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = la1;
+	    Grib2PushAtt(lat_att_list,"La1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = lo1;
+	    Grib2PushAtt(lat_att_list,"Lo1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = clat;
+	    GribPushAtt(lat_att_list,"CenterLat",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	    tmp_float= (float*)NclMalloc(sizeof(float));
+	    *tmp_float = clon;
+	    GribPushAtt(lat_att_list,"CenterLon",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 	    tmp_float= (float*)NclMalloc(sizeof(float));
 	    *tmp_float = la2;
 	    Grib2PushAtt(lat_att_list,"La2",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
@@ -6889,8 +7283,13 @@ static void _g2SetFileDimsAndCoordVars
 				    &rot_att_list_ptr, &nrotatts);
 			name_suffix = "RLL";
 			break;
-
-
+		case 32769:
+			g2GDSArakawaRLLGrid(step, &tmp_lat, &n_dims_lat, &dimsizes_lat, &tmp_lon,
+					    &n_dims_lon,&dimsizes_lon, &tmp_rot, &n_dims_rot, &dimsizes_rot,
+					    &lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
+					    &rot_att_list_ptr, &nrotatts);
+			name_suffix = "RLL";
+			break;
 		case 10:
 			/* Mercator (Template 3.10) */
 			g2GDSMEGrid(step, &tmp_lat, &n_dims_lat, &dimsizes_lat, &tmp_lon,
