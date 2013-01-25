@@ -2286,10 +2286,10 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
             nc_inq_var_deflate(gid, i, &(varnode->shuffle), &deflatep, &(varnode->compress_level));
 
           /*
+           *fprintf(stderr, "\nfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+           *fprintf(stderr, "\t\tvarnode->shuffle = %d, deflatep = %d, compress_level = %d\n",
+           *                     varnode->shuffle, deflatep, varnode->compress_level);
            */
-            fprintf(stderr, "\nfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
-            fprintf(stderr, "\t\tvarnode->shuffle = %d, deflatep = %d, compress_level = %d\n",
-                                 varnode->shuffle, deflatep, varnode->compress_level);
 
             varnode->is_chunked = 1;
             dimrec = _NclFileDimAlloc(n_dims);
