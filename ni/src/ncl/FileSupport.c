@@ -69,6 +69,7 @@
 #include <sys/stat.h>
 
 NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_advanced_file_structure);
+void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *varnode);
 
 NhlErrorTypes _NclBuildFileCoordRSelection
 #if	NhlNeedProto
@@ -1816,6 +1817,26 @@ int is_unlimited;
 	return(NhlFATAL);
 }
 
+NhlErrorTypes _NclPrintAdvancedFileVarSummary(NclFile thefile, NclQuark varname)
+{
+	FILE *fp = _NclGetOutputStream();
+	NclFileVarNode *varnode = NULL;
+	NclAdvancedFile advfile = (NclAdvancedFile) thefile;
+
+	varnode = _getVarNodeFromNclFileGrpNode(advfile->advancedfile.grpnode, varname);
+
+	if(NULL == varnode)
+	{
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,"%s: (%s) is not a variable in the file (%s)",
+			__PRETTY_FUNCTION__, NrmQuarkToString(varname),
+			NrmQuarkToString(advfile->advancedfile.fname)));
+		return(NhlWARNING);	
+	}
+
+	_printNclFileVarRecord(fp, advfile, varnode);
+	return(NhlNOERROR);	
+}
+
 NhlErrorTypes _NclPrintFileVarSummary
 #if NhlNeedProto
 (NclFile  thefile , NclQuark  varname )
@@ -1833,6 +1854,12 @@ NclQuark  varname;
 	NclMultiDValData tmp_md;
 	NclVar tmp_var;
 	int vindex = -1;
+
+	if(thefile->file.advanced_file_structure)
+	{
+		_NclPrintAdvancedFileVarSummary(thefile, varname);
+		return(NhlNOERROR);
+	}
 
 	vindex = _NclFileIsVar(thefile,varname);
 	if(vindex > -1) {

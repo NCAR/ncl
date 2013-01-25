@@ -894,6 +894,53 @@ void _printNclFileVarDimRecord(FILE *fp, NclFileDimRecord *dim_rec)
     _justPrintTypeVal(fp, NCL_char, " ]", 1);
 }
 
+void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *varnode)
+{
+    char type_str[32];
+    int i;
+    
+    if(NULL == varnode)
+        return;
+
+    strcpy(type_str, _NclBasicDataTypeToName(varnode->type));
+
+    if(0 == strcmp("compound", type_str))
+    {
+        NclFileCompoundRecord *comprec = (NclFileCompoundRecord *)varnode->comprec;
+
+        strcpy(type_str, NrmQuarkToString(comprec->name));
+      /*
+       *fprintf(stderr, "\nin _printNclFileVarRecord, file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tNEED TO HANDLE _printNCLVarRecord of compound.\n\n");
+       */
+    }
+
+    _printNclTypeVal(fp, NCL_string, &(varnode->name), 0);
+    _justPrintTypeVal(fp, NCL_char, ": <", 0);
+    _justPrintTypeVal(fp, NCL_char, type_str, 0);
+    
+    _justPrintTypeVal(fp, NCL_char, ">", 0);
+
+    _printNclFileVarDimRecord(fp, varnode->dim_rec);
+
+    if(varnode->is_chunked)
+    {
+        _printNclTypeVal(fp, NCL_char, "    Chunking Info:", 0);
+        _printNclFileVarDimRecord(fp, varnode->chunk_dim_rec);
+    }
+
+    _increaseNclPrintIndentation();
+    if(NULL != varnode->att_rec)
+    {
+        if(NULL == varnode->att_rec->att_node[0].value)
+            AdvancedLoadVarAtts(thefile,varnode->name);
+    }
+    _printNclFileAttRecord(fp, thefile, varnode->att_rec);
+    _decreaseNclPrintIndentation();
+
+    nclfprintf(fp, "\n");
+}
+
 void _printNclFileVarRecord(FILE *fp, NclAdvancedFile thefile, NclFileVarRecord *varrec)
 {
     NclFileVarNode *varnode;
@@ -910,43 +957,8 @@ void _printNclFileVarRecord(FILE *fp, NclAdvancedFile thefile, NclFileVarRecord 
     for(i = 0; i < varrec->n_vars; i++)
     {
         varnode = &(varrec->var_node[i]);
-        strcpy(type_str, _NclBasicDataTypeToName(varnode->type));
 
-        if(0 == strcmp("compound", type_str))
-        {
-            NclFileCompoundRecord *comprec = (NclFileCompoundRecord *)varnode->comprec;
-
-            strcpy(type_str, NrmQuarkToString(comprec->name));
-          /*
-           *fprintf(stderr, "\nin _printNclFileVarRecord, file: %s, line: %d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\tNEED TO HANDLE _printNCLVarRecord of compound.\n\n");
-           */
-        }
-
-        _printNclTypeVal(fp, NCL_string, &(varnode->name), 0);
-        _justPrintTypeVal(fp, NCL_char, ": <", 0);
-        _justPrintTypeVal(fp, NCL_char, type_str, 0);
-    
-        _justPrintTypeVal(fp, NCL_char, ">", 0);
-
-        _printNclFileVarDimRecord(fp, varnode->dim_rec);
-
-        if(varnode->is_chunked)
-        {
-            _printNclTypeVal(fp, NCL_char, "    Chunking Info:", 0);
-            _printNclFileVarDimRecord(fp, varnode->chunk_dim_rec);
-        }
-
-        _increaseNclPrintIndentation();
-        if(NULL != varnode->att_rec)
-        {
-            if(NULL == varnode->att_rec->att_node[0].value)
-                AdvancedLoadVarAtts(thefile,varnode->name);
-        }
-        _printNclFileAttRecord(fp, thefile, varnode->att_rec);
-        _decreaseNclPrintIndentation();
-
-        nclfprintf(fp, "\n");
+        _printNclFileVarNode(fp, thefile, varnode);
     }
 
     _decreaseNclPrintIndentation();

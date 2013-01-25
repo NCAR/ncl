@@ -398,7 +398,7 @@ static void *NC4InitializeFileRec(NclFileFormat *format)
     /*nc_set_log_level(3);*/
     nc_set_log_level(3);
 
-    ChunkSizeHint = 64 * blksize;
+    ChunkSizeHint = 2 * blksize;
 
     grpnode = (NclFileGrpNode *)NclCalloc(1, sizeof(NclFileGrpNode));
     assert(grpnode);
@@ -476,7 +476,7 @@ static void *NC4CreateFile(void *rootgrp,NclQuark path)
    *fprintf(stderr, "\tNC4CreateFile format = %d\n", format);
    */
 
-    nc_ret = nc__create(NrmQuarkToString(path),mode,1024,&ChunkSizeHint,&fid);
+    nc_ret = nc__create(NrmQuarkToString(path),mode,2048,&ChunkSizeHint,&fid);
 
     if(nc_ret == NC_NOERR)
     {
@@ -485,7 +485,12 @@ static void *NC4CreateFile(void *rootgrp,NclQuark path)
         grpnode->define_mode = *(int *)(grpnode->options[Ncl_DEFINE_MODE].values);
         grpnode->file_format = format;
         grpnode->format = format;
+        grpnode->open = 1;
+        grpnode->define_mode = 1;
 
+#if 1
+        return ((void *)grpnode);
+#else
 	if(grpnode->define_mode)
         {
             EndNC4DefineMode(grpnode, fid);
@@ -493,6 +498,7 @@ static void *NC4CreateFile(void *rootgrp,NclQuark path)
         }
 
         return (NC4OpenFile(rootgrp, path, -1));
+#endif
     }
 
     return(NULL);
@@ -2280,10 +2286,10 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
             nc_inq_var_deflate(gid, i, &(varnode->shuffle), &deflatep, &(varnode->compress_level));
 
           /*
-           *fprintf(stderr, "\nfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
-           *fprintf(stderr, "\t\tvarnode->shuffle = %d, deflatep = %d, compress_level = %d\n",
-           *                     varnode->shuffle, deflatep, varnode->compress_level);
            */
+            fprintf(stderr, "\nfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+            fprintf(stderr, "\t\tvarnode->shuffle = %d, deflatep = %d, compress_level = %d\n",
+                                 varnode->shuffle, deflatep, varnode->compress_level);
 
             varnode->is_chunked = 1;
             dimrec = _NclFileDimAlloc(n_dims);
@@ -3990,6 +3996,12 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 {
                     dimnode->size = MAX(finish[i] + 1, dimnode->size);
                 }
+
+              /*
+               *fprintf(stderr, "\t%s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+               *fprintf(stderr, "\tDim %d: count[%d] = %ld, locstart[%d] = %ld, n_elem = %ld, no_stride = %d, dimnode->is_unlimited = %d, dimnode->size = %d, finish[%d] = %ld, stride[%d] = %ld\n",
+               *                  i, i, count[i], i, locstart[i], n_elem, no_stride, dimnode->is_unlimited, dimnode->size, i, finish[i], i, stride[i]);
+               */
             }
                     
             if(grpnode->open)
@@ -4013,14 +4025,16 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 return(NhlFATAL);
             }
 
-          /*
-           *fprintf(stderr, "\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
-           */
             grpnode->define_mode = 0;
             grpnode->open = 1;
             if(0 == *(int *)(grpnode->options[Ncl_PREFILL].values))
             {
                 nc_set_fill(fid,NC_NOFILL,&fill_mode);
+
+              /*
+               *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr, "\tfill_mode = %d\n", fill_mode);
+               */
             }
 
             if(NCL_list == varnode->type)
@@ -5094,6 +5108,11 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
         if(0 == *(int *)(grpnode->options[Ncl_PREFILL].values))
         {
             nc_set_fill(fid,NC_NOFILL,&fill_mode);
+
+          /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tfill_mode = %d\n", fill_mode);
+           */
         }
 
         the_data_type = NC4MapFromNcl(data_type);
@@ -5175,7 +5194,7 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
                 ret = nc_def_var(fid,NrmQuarkToString(thevar),
                          *the_data_type, n_dims, dim_ids, &var_id);
 
-                if((ret == NC_NOERR) && (grpnode->format > 2) && (deflate_level > -1))
+                if((ret == NC_NOERR) && (grpnode->format > 2) && (deflate_level > 0))
                 {
                   /*
                    *fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
