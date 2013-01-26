@@ -2980,6 +2980,27 @@ begin
            " grid type is '" + grid_type + "'")
   end if
 
+
+;
+; Error checking added in V6.1.1 to make sure user doesn't 
+; accidentally specify SrcFileName or DstFileName to be
+; the original input file names.
+;
+  if(isatt(opt2,grid_file_name).and.isfilepresent(opt2@$grid_file_name$).and.\
+     .not.is_SCRIP(opt2@$grid_file_name$)) then
+     print("ESMF_regrid: error: the file name given for the output " + grid_long_string)
+     print("    grid file (via the special option '" + grid_string + "FileName') already exists")
+     print("    ('" + opt2@$grid_file_name$ + "'), but doesn't appear to be a SCRIP")
+     print("    file. Make sure you are not overwriting any original data files!")
+     print("")
+     print("    Remember: '" + grid_string + "FileName' should be set to the name of the")
+     print("    *output* " + grid_long_string + " grid description file that will be")
+     print("    created, and not the name of the original input file that")
+     print("    contains your data or destination grid. Use '" + grid_string + "InputFileName'")
+     print("    for that purpose.")
+     exit
+  end if
+
 ;---Check if user set a filename for the description file
   grid_file = get_att_value(opt2,grid_file_name,grid_long_string + \
                                                "_grid_file.nc")
