@@ -31,13 +31,13 @@
      end if
 
     ;Convert to integer
-     if(type .eq. "integer") then
+     if(type .eq. "int" .or. type .eq. "integer") then
          varout = toint(varin)
          return(varout)
      end if
 
      ;Convert to char
-     if(type .eq. "char") then
+     if(type .eq. "char" .or. type .eq. "character") then
          varout = tochar(varin)
          return(varout)
      end if
