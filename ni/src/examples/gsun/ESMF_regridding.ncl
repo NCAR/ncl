@@ -744,6 +744,7 @@ local latlon_dims, nlat, nlon, Extlon2d, Extlat2d, ExtGridCenter_lat, \
       ExtGridCenter_lon, tmp, ii, jj, DEBUG
 begin
     DEBUG = isatt_logical_true(opt,"Debug")
+    delta = get_att_value(opt,"GridCornerDelta",0.25)
 
     if ( any(dimsizes(lat2d).ne.dimsizes(lon2d) ) ) then
         print("calc_SCRIP_corners_noboundaries: lat and lon must have the same dimensions.")
@@ -840,10 +841,10 @@ begin
 ; would be the corner coordinates for the original grid.
 ;
     tmp = Extlat2d(:,1:nlonp1)+Extlat2d(:,0:nlon)
-    ExtGridCenter_lat       = ndtooned((tmp(1:nlatp1,:)+tmp(0:nlat,:))*0.25)
+    ExtGridCenter_lat       = ndtooned((tmp(1:nlatp1,:)+tmp(0:nlat,:))*delta)
 
     tmp = Extlon2d(:,1:nlonp1)+Extlon2d(:,0:nlon)
-    ExtGridCenter_lon       = ndtooned((tmp(1:nlatp1,:)+tmp(0:nlat,:))*0.25)
+    ExtGridCenter_lon       = ndtooned((tmp(1:nlatp1,:)+tmp(0:nlat,:))*delta)
     delete(tmp)
 
     if(DEBUG) then
@@ -2427,7 +2428,7 @@ begin
   dstlon = fid->xc_b
 	
 ;---Check that the source grid "covers" the destination grid 
-  if ( .not.( \
+  if ( DEBUG.and..not.( \
        (min(dstlat).ge.min(srclat)).and.  \
        (max(dstlat).le.max(srclat)).and.  \
        (min(dstlon).ge.min(srclon)).and.  \
@@ -2786,7 +2787,7 @@ begin
 ; Check for generic attributes to pass through; that is,
 ; attributes like "Debug".
 ;
-  gen_atts = (/"PrintTimings","Overwrite","ForceOverwrite","Debug"/)
+  gen_atts = (/"GridCornerDelta","PrintTimings","Overwrite","ForceOverwrite","Debug"/)
   do i=0,dimsizes(gen_atts)-1
     if(isatt(opt2,gen_atts(i))) then
       opt_new@$gen_atts(i)$ = opt2@$gen_atts(i)$
