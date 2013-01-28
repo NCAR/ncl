@@ -2540,9 +2540,10 @@ static void NC4FreeFileRec(void* therec)
             if(NC_NOERR != ret)
             {
               /*
+               *fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+               *NHLPERROR((NhlWARNING,NhlEUNKNOWN,(char*)nc_strerror(ret)));
                */
-                fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,(char*)nc_strerror(ret)));
+                NHLPERROR((NhlINFO,NhlEUNKNOWN,(char*)nc_strerror(ret)));
             }
             grpnode->fid = -1;
         }
