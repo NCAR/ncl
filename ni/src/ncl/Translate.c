@@ -2311,6 +2311,9 @@ Unneeded translations
 */
 				_NclPutIntInstr(nsubs,coord->line,coord->file);
 				break;
+			case Ncl_REWRITEIT:
+				fprintf(stderr, "\tcoord->ref_type: %d\n", coord->ref_type);
+				fprintf(stderr, "\treassign variable coordinate is not supported yet.\n");
                         default:
                                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
                                 return (NhlFATAL);
