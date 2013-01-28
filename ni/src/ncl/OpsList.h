@@ -107,5 +107,6 @@
 #define LISTVAR_LIT_OP				107
 #define REASSIGN_VAR_OP				108
 #define REASSIGN_VAR_VAR_OP			109
-#define NUM_OPERATORS				110
+#define REASSIGN_VARATT_OP			110
+#define NUM_OPERATORS				111
 

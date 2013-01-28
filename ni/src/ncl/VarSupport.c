@@ -44,6 +44,8 @@
 
 #include <math.h>
 
+NhlErrorTypes _NclPrintFileSummary(NclObj self, FILE *fp);
+
 NclSelectionRecord* _NclGetVarSelRec
 #if	NhlNeedProto
 ( struct _NclVarRec * inst)
@@ -777,6 +779,74 @@ struct  _NclSelectionRecord * sel_ptr;
 	} else {
 		vc = (NclVarClass) self->obj.class_ptr;
 	}
+	while((NclObjClass)vc != nclObjClass) {
+		if(vc->var_class.write_att_func != NULL) {
+			ret = (*vc->var_class.write_att_func)(self,attname,value,sel_ptr);
+			if (ret > NhlFATAL && self->var.n_dims == 1 && self->var.coord_vars[0] != -1) {
+				NclVar cv = (NclVar)_NclGetObj(self->var.coord_vars[0]);
+				if (self->var.var_quark == cv->var.var_quark) {
+					subret = _NclWriteAtt(cv,attname,value,sel_ptr);
+					return (MIN(ret,subret));
+				}
+			}
+			return ret;
+		} else {
+			vc = (NclVarClass)vc->obj_class.super_class;
+		}
+	}
+	return(NhlFATAL);
+}
+
+NhlErrorTypes _NclReplaceAtt(struct _NclVarRec *self, char* attname,
+			     struct _NclMultiDValDataRec *value,
+			     struct _NclSelectionRecord *sel_ptr)
+{
+	NclVarClass vc;
+	NhlErrorTypes subret, ret;
+
+	int n = 0;
+	short found_att = 0;
+	NclAttList *att_list = NULL;
+	NclAtt theattobj;
+	NclAttClass ac = NULL;
+
+	if(self == NULL) {
+		return(NhlFATAL);
+	} else {
+		vc = (NclVarClass) self->obj.class_ptr;
+	}
+
+	theattobj = (NclAtt)_NclGetObj(self->var.att_id);
+	if(NULL != theattobj)
+	{
+		att_list = theattobj->att.att_list;
+
+		/*Check attname in att_list*/
+		for(n = 0; n < theattobj->att.n_atts; ++n)
+		{
+			if(0 == strcmp(attname, att_list->attname))
+			{
+				found_att = 1;
+				break;
+			}
+			att_list = att_list->next;
+		}
+
+		if(found_att)
+		{
+			ac = (NclAttClass)theattobj->obj.class_ptr;
+
+			while(ac != NULL) {
+				if(ac->att_class.del_att!= NULL) {
+					(*ac->att_class.del_att)(theattobj,attname);
+					break;
+				} else {
+					ac = (NclAttClass)ac->obj_class.super_class;
+				}
+			}
+		}
+	}
+
 	while((NclObjClass)vc != nclObjClass) {
 		if(vc->var_class.write_att_func != NULL) {
 			ret = (*vc->var_class.write_att_func)(self,attname,value,sel_ptr);

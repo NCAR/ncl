@@ -3775,7 +3775,7 @@ void CallASSIGN_VAR_OP(void)
 	performASSIGN_VAR(sym, nsubs, lhs_var);
 }
 
-NhlErrorTypes ClearDataBeforReassign(NclStackEntry *data)
+NhlErrorTypes ClearDataBeforeReassign(NclStackEntry *data)
 {
     NclStackEntry* var;
     NclSymbol *thesym;
@@ -3971,7 +3971,7 @@ void CallREASSIGN_VAR_OP(void)
 
     lhs_var = _NclRetrieveRec(sym,WRITE_IT);
 
-    ClearDataBeforReassign(lhs_var);
+    ClearDataBeforeReassign(lhs_var);
 
     performASSIGN_VAR(sym, nsubs, lhs_var);
 }
@@ -6192,6 +6192,121 @@ void CallASSIGN_VARATT_OP(void) {
 				}
 			}
 
+void CallREASSIGN_VARATT_OP(void) {
+				NclSymbol *thesym = NULL;
+				char *attname = NULL;
+				int nsubs;
+				NhlErrorTypes ret = NhlNOERROR;
+				NclStackEntry *var = NULL,avar;
+				NclStackEntry value;
+				NclMultiDValData value_md = NULL,thevalue = NULL;
+				NclSelectionRecord *sel_ptr = NULL;
+				NclStackEntry data1;
+				
+				avar = _NclPop();
+				switch(avar.kind) {
+				case NclStk_VAL: 
+					thevalue = avar.u.data_obj;
+					break;
+				case NclStk_VAR:
+					thevalue = _NclVarValueRead(avar.u.data_var,NULL,NULL);
+					break;
+				default:
+					thevalue = NULL;
+					estatus = NhlFATAL;
+					break;
+				}
+
+				if((thevalue == NULL) || ((thevalue->multidval.kind != SCALAR) &&
+							  (thevalue->multidval.type != (NclTypeClass)nclTypestringClass))) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable Attribute names must be scalar string values can't continue");
+					estatus = NhlFATAL;
+				} else {
+					attname = NrmQuarkToString(*(NclQuark*)thevalue->multidval.val);
+					if(PERMANENT != avar.u.data_obj->obj.status) {
+						_NclDestroyObj((NclObj)avar.u.data_obj);
+					}
+				}
+
+				ptr++;lptr++;fptr++;
+				thesym = (NclSymbol*)(*ptr);
+
+				ptr++;lptr++;fptr++;
+				nsubs = (*(int*)ptr);
+	
+				var = _NclRetrieveRec(thesym,WRITE_IT);
+				if(var->u.data_var != NULL) {
+					if(nsubs == 1) {
+						sel_ptr = _NclGetVarSelRec(var->u.data_var);
+						sel_ptr->n_entries = 1;
+						data1 =_NclPop();
+						if(data1.u.sub_rec.name != NULL) {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
+							estatus = NhlWARNING;
+						}
+						switch(data1.u.sub_rec.sub_type) {
+						case INT_VECT:
+/*
+* Need to free some stuff here
+*/						
+							ret =_NclBuildVSelection(NULL,&data1.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
+							break;
+						case INT_SINGLE:
+						case INT_RANGE:
+/*
+* Need to free some stuff here
+*/								
+							ret =_NclBuildRSelection(NULL,&data1.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
+							break;
+						case COORD_VECT:
+						case COORD_SINGLE:
+						case COORD_RANGE:
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
+							estatus = NhlFATAL;
+							break;
+						}
+						 _NclFreeSubRec(&data1.u.sub_rec);
+						if(ret < NhlWARNING) 
+							estatus = NhlFATAL;
+					} else if(nsubs != 0){
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to subscript attribute with more than one dimension");
+						estatus = NhlFATAL;
+					}
+					if(!(estatus < NhlINFO)) {
+						int id;
+						value = _NclPop();
+						if(value.kind == NclStk_VAR) {
+							value_md = _NclVarValueRead(value.u.data_var,NULL,NULL);
+							if(value_md == NULL) {
+								estatus = NhlFATAL;
+							}
+						} else if(value.kind == NclStk_VAL){
+							value_md = value.u.data_obj;
+						} else {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to assign illegal type or value to variable attribute");
+							estatus = NhlFATAL;
+						}
+						id = value_md->obj.id;
+
+						ret = _NclReplaceAtt(var->u.data_var,attname,value_md,sel_ptr);
+
+						if((value.kind == NclStk_VAR)&&(value.u.data_var->obj.status != PERMANENT)) {
+							 _NclDestroyObj((NclObj)value.u.data_var);
+						} else if((value.kind == NclStk_VAL)&& _NclGetObj(id) && (value.u.data_obj->obj.status != PERMANENT)){
+							 _NclDestroyObj((NclObj)value.u.data_obj);
+						} 
+						if( ret < NhlINFO) {
+							estatus = ret;
+						}
+					} else {
+						_NclCleanUpStack(1);
+					}
+				} else {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is undefined, can not assign attribute (%s)",thesym->name,attname);
+					estatus = NhlFATAL;
+				}
+			}
+
 void CallASSIGN_FILEVAR_COORD_ATT_OP(void) {
 				NclFile file;
 				NclStackEntry *file_ptr,value,data1,fvar,avar,cvar;
@@ -7539,7 +7654,7 @@ void CallREASSIGN_VAR_VAR_OP(void)
     ptr++;lptr++;fptr++;
     lhs_nsubs = *(int*)ptr;
 
-    ClearDataBeforReassign(lhs_var);
+    ClearDataBeforeReassign(lhs_var);
 
     performASSIGN_VAR_VAR_OP(lhs_var, rhs_var, lhs_nsubs, rhs_nsubs,
                              lhs_sym, rhs_sym);
@@ -7927,6 +8042,10 @@ NclExecuteReturnStatus _NclExecute
 			break;
 			case ASSIGN_VARATT_OP : {
 				CallASSIGN_VARATT_OP();
+			}
+			break;
+			case REASSIGN_VARATT_OP : {
+				CallREASSIGN_VARATT_OP();
 			}
 			break;
 /*****************************
