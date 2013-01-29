@@ -216,7 +216,7 @@ char *_getComponentName(const char *fullname, char **structname)
         sname[ns] = '\0';
 
         memcpy(cname, dot_ptr + 1, nc - 1);
-        cname[nc] = '\0';
+        cname[nc-1] = '\0';
 
       /*
        *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
