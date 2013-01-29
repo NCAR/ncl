@@ -20,6 +20,9 @@ SOURCES = $(GENERIC_SRCS)
 OBJECTS = $(GENERIC_OBJS)
 
 PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
+#ifdef JIRA1530
+PartialLibraryTarget(libncarg_gks_xq_fix.a,$(OBJECTS))
+#endif
 PartialLibraryTarget(libbasegks.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
 

@@ -53,6 +53,9 @@ OBJS = \
 EXTRA_CDEFINES = $(OS_DEF) $(MAJOR_DEF)
 
 PartialLibraryTarget(libncarg_gks.a,$(OBJS))
+#ifdef JIRA1530
+PartialLibraryTarget(libncarg_gks_xq_fix.a,$(OBJS))
+#endif
 PartialLibraryTarget(libbasegks.a,$(OBJS))
 
 DependTarget($(SRCS))
