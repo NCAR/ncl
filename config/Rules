@@ -365,6 +365,25 @@ InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
 #endif	/* CProgram */
 
 /*
+ * Macro:	CProgramXQF
+ *
+ * Description:	This rule is basically the same as CProgram, except
+ *              it handles a special "ncl" build that requires a
+ *              fix for a cairo/xquartz issue. See NCL-1530.
+ */
+#ifndef	CProgramXQF
+#define	CProgramXQF(program,objects,deplibs)\
+]\
+all::]\
+]\
+all-local:: program]\
+]\
+_CLinkProgramXQF(program,objects,deplibs)\
+]\
+InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
+#endif	/* CProgram */
+
+/*
  * Macro:	CTarget
  *
  * Description:	This rule is build's and installs a C program - if
@@ -419,6 +438,11 @@ CleanFilesTarget(program program.obj.o objects)
 #define	_CLinkProgram(program,objects,deplib)\
 program: objects deplib]\
 	$(CC_LD) $(CC_LDOPTIONS) -o program objects $(PROG_LIBS) $(LDLIBS) $(EXTRA_LDLIBS)]\
+]\
+CleanFilesTarget(program objects)
+#define	_CLinkProgramXQF(program,objects,deplib)\
+program: objects deplib]\
+	$(CC_LD) $(CC_LDOPTIONS) -o program objects $(PROG_XQFLIBS) $(LDLIBS) $(EXTRA_LDLIBS)]\
 ]\
 CleanFilesTarget(program objects)
 #endif	/* BuildShared */
