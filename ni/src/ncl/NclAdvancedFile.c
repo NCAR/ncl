@@ -191,9 +191,10 @@ void _NclFileEnumRealloc(NclFileEnumRecord **enum_rec)
 
 char *_getComponentName(const char *fullname, char **structname)
 {
-    int ncs = strlen(fullname);
+    size_t nf = strlen(fullname);
+    size_t ns = 1;
+    size_t nc = 1;
     char *dot_ptr;
-    char the_name[1024];
     char *cname = NULL;
     char *sname = NULL;
     int i = 0;
@@ -203,26 +204,19 @@ char *_getComponentName(const char *fullname, char **structname)
    *fprintf(stderr, "\tfullname: <%s>\n", fullname);
    */
 
-    strcpy(the_name, fullname);
-    dot_ptr = strchr(the_name, '.');
+    dot_ptr = strchr(fullname, '.');
     if(dot_ptr)
     {
-        sname = (char *) NclCalloc(ncs, sizeof(char));
-        assert(sname);
-        cname = (char *) NclCalloc(ncs, sizeof(char));
-        assert(cname);
+        ns = dot_ptr - fullname;
+        nc = strlen(dot_ptr);
+        sname = (char *) NclCalloc(ns + 1, sizeof(char));
+        cname = (char *) NclCalloc(nc, sizeof(char));
 
-        strcpy(cname, dot_ptr+1);
+        memcpy(sname, fullname, ns);
+        sname[ns] = '\0';
 
-        strcpy(sname, fullname);
-        for(i = 0; i < ncs; i++)
-        {
-            if('.' == sname[i])
-            {
-                sname[i] = '\0';
-                break;
-            }
-        }
+        memcpy(cname, dot_ptr + 1, nc - 1);
+        cname[nc] = '\0';
 
       /*
        *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
