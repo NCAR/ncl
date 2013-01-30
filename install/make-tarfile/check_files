@@ -222,6 +222,7 @@ bin/ESMF_RegridWeightGen
 bin/MakeNcl
 bin/WRAPIT
 bin/ncl
+bin/ncl.xq.fix
 bin/ncl_convert2nc
 bin/ncl_filedump
 bin/ncl_grib2nc
