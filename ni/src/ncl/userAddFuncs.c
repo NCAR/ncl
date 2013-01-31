@@ -1264,14 +1264,14 @@ NhlErrorTypes _Nclstr_split_by_length
             max_length = strlen(tmp_str);
     }
 
-    result = (char *) NclMalloc(max_length*sizeof(char));
+    result = (char *) NclCalloc(max_length, sizeof(char));
     if (!result)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
         return NhlFATAL;
     }
     
-    news_length = (int *) NclMalloc(max_length*sizeof(int));
+    news_length = (int *) NclCalloc(max_length, sizeof(int));
     if (! news_length)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -1385,6 +1385,7 @@ NhlErrorTypes _Nclstr_split_by_length
             else
             {
                 strncpy(result, tmp_str + ip, news_length[n-ns]);
+                result[news_length[n-ns]] = '\0';
                 ip += news_length[n-ns];
                 new_strs[n] = NrmStringToQuark(result);
               /*
