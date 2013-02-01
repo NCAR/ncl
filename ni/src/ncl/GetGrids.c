@@ -4178,6 +4178,11 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double polex = 375.636;
+	double poley = 481.792;
+	double dist = 11.25;
+	double deg = 60.0;
+	double ore = -135;
 	double dx,dy;
 
 	kgds[0] = 5;
@@ -4195,10 +4200,15 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
 				  1, rot_att_list, nrotatts,kgds,dx,dy);
@@ -4318,7 +4328,13 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double polex = 33.0;
+	double poley = 33.0;
+	double dist = 381.0;
+	double deg = -60.0;
+	double ore = -105.0;
 	double dx,dy;
+
 		
 	kgds[0] = 5;
 	kgds[1] = 65;
@@ -4335,10 +4351,15 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+#if 0
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+#endif
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
@@ -4383,7 +4404,13 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double polex = 65.0;
+	double poley = 65.0;
+	double dist = 190.5;
+	double deg = 60.0;
+	double ore = -105.0;
 	double dx,dy;
+
 		
 	kgds[0] = 5;
 	kgds[1] = 129;
@@ -4400,10 +4427,15 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
@@ -4448,6 +4480,11 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double polex = 151.0;
+	double poley = 181.0;
+	double dist = 25.4;
+	double deg = -60.0;
+	double ore = 100.0;
 	double dx,dy;
 		
 	kgds[0] = 5;
@@ -4455,7 +4492,7 @@ int* nrotatts;
 	kgds[2] = 355;
 	kgds[3] = -36889;
 	kgds[4] = 139806;
-	kgds[5] = 0110;  /* 0000 1000 */
+	kgds[5] = 000;  /* 0000 0000 */
 	kgds[6] = 100000; /* 280 -180 -- required by the NCEP code */
 	kgds[7] = 25400;
 	kgds[8] = 25400;
@@ -4465,10 +4502,15 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
@@ -4515,6 +4557,11 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double polex = 191.00;
+	double poley = 231.0;
+	double dist = 25.4;
+	double deg = 60.0;
+	double ore = -80.0;
 	double dx,dy;
 		
 	kgds[0] = 5;
@@ -4522,7 +4569,7 @@ int* nrotatts;
 	kgds[2] = 465;
 	kgds[3] = 25008;
 	kgds[4] = 240441;
-	kgds[5] = 0110;  /* 0000 1000 */
+	kgds[5] = 000;  /* 0000 0000 */
 	kgds[6] = 280000;
 	kgds[7] = 25400;
 	kgds[8] = 25400;
@@ -4533,9 +4580,14 @@ int* nrotatts;
 		return;
 	}
 
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
@@ -4582,6 +4634,11 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double polex = 188.818;
+	double poley = 241.397;
+	double dist = 22.5;
+	double deg = 60.0;
+	double ore = -135.0;
 	double dx,dy;
 		
 	kgds[0] = 5;
@@ -4599,10 +4656,14 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
@@ -4649,6 +4710,11 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double polex = 94.909;
+	double poley = 121.198;
+	double dist = 45.0;
+	double deg = 60.0;
+	double ore = -135.0;
 	double dx,dy;
 		
 	kgds[0] = 5;
@@ -4666,10 +4732,14 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
@@ -4715,13 +4785,12 @@ GribAttInqRecList** rot_att_list;
 int* nrotatts;
 #endif
 {
-#if 0
+
         float polex = 49;
         float poley = 101;
         float dist = 47.625;
         float deg = 60.0;
         float ore = -150.0;
-#endif
 	int kgds[32];
 	double dx,dy;
 		
@@ -4740,10 +4809,14 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
@@ -4791,6 +4864,11 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double polex = 65.0;
+	double poley = 89.0;
+	double dist = 95.250;
+	double deg = 60.0;
+	double ore = -105.0;
 	double dx,dy;
 		
 	kgds[0] = 5;
@@ -4808,22 +4886,18 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
-	
-#if 0
-        float polex = 65;
-        float poley = 89;
-        float dist = 95.250;
-        float deg = 60.0;
-        float ore = -105.0;
-#endif
 
 
 }
@@ -4866,6 +4940,11 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+        double polex = 25;
+        double poley = 51;
+        double dist = 95.250;
+        double deg = 60.0;
+        double ore = -150.0;
 	double dx,dy;
 		
 	kgds[0] = 5;
@@ -4883,22 +4962,19 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
-
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
+	
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 
-#if 0
-        float polex = 25;
-        float poley = 51;
-        float dist = 95.250;
-        float deg = 60.0;
-        float ore = -150.0;
-#endif
 }
 
 void GetGrid_205
@@ -4940,6 +5016,11 @@ int* nrotatts;
 {
 
 	int kgds[32];
+        double polex = 27;
+        double poley = 57;
+        double dist = 190.5;
+        double deg = 60.0;
+        double ore = -60.0;
 	double dx,dy;
 		
 	kgds[0] = 5;
@@ -4957,22 +5038,19 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 
-#if 0
-        float polex = 27;
-        float poley = 167;
-        float dist = 57;
-        float deg = 60.0;
-        float ore = -60.0;
-#endif
 }
 
 void GetGrid_203
@@ -5013,6 +5091,11 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+        double polex = 27.0;
+        double poley = 37.0;
+        double dist = 190.5;
+        double deg = 60.0;
+        double ore = -150.0;
 	double dx,dy;
 		
 	kgds[0] = 5;
@@ -5030,22 +5113,20 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 
-#if 0
-        float polex = 27;
-        float poley = 37;
-        float dist = 190.5;
-        float deg = 60.0;
-        float ore = -150.0;
-#endif
 }
 
 void GetGrid_202
@@ -5087,6 +5168,11 @@ int* nrotatts;
 {
 
 	int kgds[32];
+        double polex = 33;
+        double poley = 45;
+        double dist = 190.5;
+        double deg = 60.0;
+        double ore = -105.0;
 	double dx,dy;
 		
 	kgds[0] = 5;
@@ -5104,22 +5190,19 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 
-#if 0
-        float polex = 33;
-        float poley = 45;
-        float dist = 190.5;
-        float deg = 60.0;
-        float ore = -105.0;
-#endif
 }
 
 void GetGrid_201
@@ -5161,6 +5244,11 @@ int* nrotatts;
 {
 
 	int kgds[32];
+        double polex = 33;
+        double poley = 33;
+        double dist = 381.0;
+        double deg = 60.0;
+        double ore = -105.0;
 	double dx,dy;
 		
 	kgds[0] = 5;
@@ -5178,22 +5266,19 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 
-#if 0
-        float polex = 33;
-        float poley = 33;
-        float dist =381.0;
-        float deg = 60.0;
-        float ore = -105.0;
-#endif
 }
 
 void GetGrid_186
@@ -5303,6 +5388,11 @@ int* nrotatts;
 
 	int kgds[32];
 	double dx,dy;
+	double polex = 302.0;
+	double poley = 362.0;
+	double dist = 12.7;
+	double deg = -60.0;
+	double ore = -80.0;
 		
 	kgds[0] = 5;
 	kgds[1] = 690;
@@ -5319,10 +5409,15 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
 				  1, rot_att_list, nrotatts,kgds,dx,dy);
@@ -5370,6 +5465,11 @@ int* nrotatts;
 
 	int kgds[32];
 	double dx,dy;
+	double polex = 384.0;
+	double poley = 462.0;
+	double dist = 12.7;
+	double deg = 60.0;
+	double ore = -80.0;
 		
 	kgds[0] = 5;
 	kgds[1] = 770;
@@ -5386,10 +5486,14 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
 				  1, rot_att_list, nrotatts,kgds,dx,dy);
@@ -6231,6 +6335,11 @@ int* nrotatts;
 
 	int kgds[32];
 	double dx,dy;
+        double polex = 44;
+        double poley = 38;
+        double dist = 254;
+        double deg = 60.0;
+        double ore = -105.0;
 		
 	kgds[0] = 5;
 	kgds[1] = 87;
@@ -6247,23 +6356,20 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
 				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 
-#if 0
-        float polex = 44;
-        float poley = 38;
-        float dist = 254;
-        float deg = 60.0;
-        float ore = -105.0;
-#endif
 }
 
 void GetGrid_28
@@ -6306,6 +6412,12 @@ int* nrotatts;
 
 	int kgds[32];
 	double dx,dy;
+        double polex = 33;
+        double poley = 33;
+        double dist = 381; 
+        double deg = -60.0;
+        double ore = -80.0;
+
 		
 	kgds[0] = 5;
 	kgds[1] = 65;
@@ -6322,22 +6434,19 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
 				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
-#if 0
-        float polex = 33;
-        float poley = 33;
-        float dist = 381; 
-        float deg = -60.0;
-        float ore = 280.0;
-#endif
 
 }
 
@@ -6380,6 +6489,11 @@ int* nrotatts;
 {
 	int kgds[32];
 	double dx,dy;
+        double polex = 33;
+        double poley = 33;
+        double dist = 381; 
+        double deg = 60.0;
+        double ore = -80.0;
 		
 	kgds[0] = 5;
 	kgds[1] = 65;
@@ -6396,22 +6510,19 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
 				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
-#if 0
-        float polex = 33;
-        float poley = 33;
-        float dist = 381; 
-        float deg = 60.0;
-        float ore = 280.0;
-#endif
 }
 
 void GetGrid_6
@@ -6526,6 +6637,11 @@ int* nrotatts;
 {
 	int kgds[32];
 	double dx,dy;
+	double polex = 27.00;
+	double poley = 49.0;
+	double dist = 190.5;
+	double deg = 60.0;
+	double ore = -105.0;
 		
 	kgds[0] = 5;
 	kgds[1] = 53;
@@ -6542,10 +6658,14 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
-
+/*
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 	dx = kgds[7] / 1000.0;
 	dy = kgds[8] / 1000.0;
+*/
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
 	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
 				  1, rot_att_list, nrotatts,kgds,dx,dy);
