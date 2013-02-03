@@ -1817,6 +1817,7 @@ int is_unlimited;
 	return(NhlFATAL);
 }
 
+#ifdef USE_NETCDF4_FEATURES
 NhlErrorTypes _NclPrintAdvancedFileVarSummary(NclFile thefile, NclQuark varname)
 {
 	FILE *fp = _NclGetOutputStream();
@@ -1836,6 +1837,7 @@ NhlErrorTypes _NclPrintAdvancedFileVarSummary(NclFile thefile, NclQuark varname)
 	_printNclFileVarRecord(fp, advfile, varnode);
 	return(NhlNOERROR);	
 }
+#endif
 
 NhlErrorTypes _NclPrintFileVarSummary
 #if NhlNeedProto
@@ -1855,11 +1857,13 @@ NclQuark  varname;
 	NclVar tmp_var;
 	int vindex = -1;
 
+#ifdef USE_NETCDF4_FEATURES
 	if(thefile->file.advanced_file_structure)
 	{
 		_NclPrintAdvancedFileVarSummary(thefile, varname);
 		return(NhlNOERROR);
 	}
+#endif
 
 	vindex = _NclFileIsVar(thefile,varname);
 	if(vindex > -1) {

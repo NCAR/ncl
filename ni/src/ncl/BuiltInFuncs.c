@@ -20870,6 +20870,7 @@ NhlErrorTypes _NclISetFileOption(void)
                 }
         }
 
+#ifdef USE_NETCDF4_FEATURES
 	for(n = 0; n < _NclNumberOfFileFormats; ++n)
 	{
 		if(NCLadvancedFileStructure[n])
@@ -20878,7 +20879,7 @@ NhlErrorTypes _NclISetFileOption(void)
 			break;
 		}
 	}
-
+#endif
 	ret = _NclFileSetOption(f,filetype,option,tmp_md1);
 
 	return ret;
