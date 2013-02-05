@@ -33,7 +33,7 @@
 #include <string.h>
 #include <HE5_HdfEosDef.h>
 
-#include "NewFileSupport.h"
+#include "AdvancedFileSupport.h"
 
 #define HE5_BUF_SIZE 4096
 #define MAX_SW  4

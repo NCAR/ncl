@@ -827,6 +827,8 @@ NhlErrorTypes dtrend_quadratic_W( void )
 /*
  * Declare various variables for random purposes.
  * Setting iopt to 2 removes the quadratic trend.
+ * Currently (V6.1.1 and later) iopt is advertised
+ * as having no effect.
  */
   ng_size_t i, npts, size_leftmost, size_y, index_y;
   int inpts, ier, iopt = 2;

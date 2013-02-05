@@ -52,7 +52,7 @@ extern "C" {
 #include "NclDataDefs.h"
 #include "Machine.h"
 #include "NclFile.h"
-#include "NclNewFile.h"
+#include "NclAdvancedFile.h"
 #include "NclVar.h"
 #include "NclCoordVar.h"
 #include "VarSupport.h"
@@ -550,7 +550,7 @@ NhlErrorTypes _NclIListFuncs
         return(NhlNOERROR);
 }
 
-NclQuark *_NclGetNewFileVarNames(void *therec, int *num_vars)
+NclQuark *_NclGetAdvancedFileVarNames(void *therec, int *num_vars)
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
     NclFileGrpNode *tmpgrpnode = NULL;
@@ -585,7 +585,7 @@ NclQuark *_NclGetNewFileVarNames(void *therec, int *num_vars)
             {
                 tmpgrpnode = grpnode->grp_rec->grp_node[n];
 
-                tmp_quarks = _NclGetNewFileVarNames((void *)tmpgrpnode, &nv);
+                tmp_quarks = _NclGetAdvancedFileVarNames((void *)tmpgrpnode, &nv);
 
                 if(nv)
                 {
@@ -608,12 +608,12 @@ NclQuark *_NclGetNewFileVarNames(void *therec, int *num_vars)
     return(out_quarks);
 }
 
-NclQuark *_NclNewFileReadVarNames(NclFile thefile, int *num_vars)
+NclQuark *_NclAdvancedFileReadVarNames(NclFile thefile, int *num_vars)
 {
-    NclNewFile newfile = (NclNewFile) thefile;
+    NclAdvancedFile advancedfile = (NclAdvancedFile) thefile;
     NclQuark *out_quarks = NULL;
 
-    out_quarks = _NclGetNewFileVarNames((void *)newfile->newfile.grpnode, num_vars);
+    out_quarks = _NclGetAdvancedFileVarNames((void *)advancedfile->advancedfile.grpnode, num_vars);
 
     return(out_quarks);
 }
@@ -674,8 +674,8 @@ NhlErrorTypes _NclIGetFileVarNames
 
 	if(NULL != thefile)
 	{
-		if(thefile->file.use_new_hlfs)
-			var_names = _NclNewFileReadVarNames(thefile, &num_vars);
+		if(thefile->file.advanced_file_structure)
+			var_names = _NclAdvancedFileReadVarNames(thefile, &num_vars);
 		else
 			var_names = _NclFileReadVarNames(thefile, &num_vars);
 	}
@@ -17140,10 +17140,10 @@ NhlErrorTypes _NclIGetVarDims
 			file_md= (NclMultiDValData)_NclVarValueRead(tmp_var,NULL,NULL);
 			thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
 
-			if(thefile->file.use_new_hlfs)
+			if(thefile->file.advanced_file_structure)
 			{
-				NclNewFile thenewfile = (NclNewFile) thefile;
-				NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+				NclAdvancedFile theadvancedfile = (NclAdvancedFile) thefile;
+				NclFileGrpNode *grpnode = theadvancedfile->advancedfile.grpnode;
 
 				if(NULL != grpnode->dim_rec)
 				{
@@ -20706,7 +20706,8 @@ NhlErrorTypes _NclISetFileOption(void)
 
         NrmQuark filetype_lower;
         NrmQuark option_lower;
-	NrmQuark newfs_quark = NrmStringToQuark("usenewhlfs");
+	NrmQuark fs_quark = NrmStringToQuark("filestructure");
+	NrmQuark ad_lower_quark = NrmStringToQuark("advanced");
 
 	data = _NclGetArg(0,3,DONT_CARE);
 	switch(data.kind) {
@@ -20779,24 +20780,65 @@ NhlErrorTypes _NclISetFileOption(void)
 				NclMultiDValData tmp_md2 = NULL;
 				tmp_md2 = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)(&lval),
 								NULL,1,&ndims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
-                                ret = _NclFileSetOption(f, filetype_lower, newfs_quark, tmp_md2);
-				NCLnewfs = 1;
+                                ret = _NclFileSetOption(f, filetype_lower, fs_quark, tmp_md2);
+				NCLadvancedFileStructure[_NclNETCDF4] = 1;
+				/*Actually, _NclNETCDF4 should be alway 1, so we set NC3 to use new-fs.*/
+				NCLadvancedFileStructure[_NclNETCDF] = 1;
                         }
 			else
                         {
-				NCLnewfs = 0;
+				NCLadvancedFileStructure[_NclNETCDF4] = 0;
+				/*Actually, _NclNETCDF4 should be alway 1, so we set NC3 to use new-fs.*/
+				NCLadvancedFileStructure[_NclNETCDF] = 0;
                         }
                 }
         }
-	else if(newfs_quark == option_lower)
+	else if(fs_quark == option_lower)
         {
-                if(NCL_logical == tmp_md1->multidval.data_type)
+                if(NCL_string == tmp_md1->multidval.data_type)
                 {
-			int newfs = *(int*)tmp_md1->multidval.val;
-			if(newfs)
-				NCLnewfs = 1;
-			else
-				NCLnewfs = 0;
+			NrmQuark fso = _NclGetLower(*(NrmQuark *)tmp_md1->multidval.val);
+
+			if(NrmStringToQuark("all") == filetype_lower)
+			{
+				if(ad_lower_quark == fso)
+					NCLadvancedFileStructure[0] = 1;
+				else
+					NCLadvancedFileStructure[0] = 0;
+			}
+			else if(NrmStringToQuark("nc") == filetype_lower)
+			{
+				if(ad_lower_quark == fso)
+				{
+					NCLadvancedFileStructure[_NclNETCDF] = 1;
+					NCLadvancedFileStructure[_NclNETCDF4] = 1;
+				}
+				else
+				{
+					NCLadvancedFileStructure[_NclNETCDF] = 0;
+					NCLadvancedFileStructure[_NclNETCDF4] = 0;
+				}
+			}
+		      /*The following 6 lines are for 6.2.0. Wei 01/14/2013
+			else if(NrmStringToQuark("h5") == filetype_lower)
+			{
+				NCLadvancedFileStructure[_NclHDF5] = 1;
+			}
+			else if(NrmStringToQuark("he5") == filetype_lower)
+			{
+				if(ad_lower_quark == fso)
+					NCLadvancedFileStructure[_NclHDFEOS5] = 1;
+				else
+					NCLadvancedFileStructure[_NclHDFEOS5] = 0;
+			}
+			else if(NrmStringToQuark("shp") == filetype_lower)
+			{
+				if(ad_lower_quark == fso)
+					NCLadvancedFileStructure[_NclAdvancedOGR] = 1;
+				else
+					NCLadvancedFileStructure[_NclAdvancedOGR] = 0;
+			}
+		       */
                 }
         }
 
@@ -21163,10 +21205,10 @@ NhlErrorTypes   _NclIGetFileDimsizes
 
     if (f != NULL)
     {
-    if(f->file.use_new_hlfs)
+    if(f->file.advanced_file_structure)
     {
-        NclNewFile   thenewfile = (NclNewFile) f;
-        NclFileGrpNode *grpnode = thenewfile->newfile.grpnode;
+        NclAdvancedFile   theadvancedfile = (NclAdvancedFile) f;
+        NclFileGrpNode *grpnode = theadvancedfile->advancedfile.grpnode;
 
         if(NULL != grpnode->dim_rec)
         {

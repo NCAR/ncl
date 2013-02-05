@@ -41,7 +41,7 @@
 #include "DataSupport.h"
 #include "AttSupport.h"
 #include "VarSupport.h"
-#include "NclNewFile.h"
+#include "NclAdvancedFile.h"
 
 static int FileVarIsACoord(
 #if NhlNeedProto

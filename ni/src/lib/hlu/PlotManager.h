@@ -130,9 +130,4 @@ typedef enum _NhlAnnotationDisplayMode {
 
 extern NhlClass NhlplotManagerClass;
 
-extern float guiNhlNtfBaseXF;
-extern float guiNhlNtfBaseYF;
-extern float guiNhlNtfBaseWidthF;
-extern float guiNhlNtfBaseHeightF;
-
 #endif /*_NPLOTMANAGER_h */

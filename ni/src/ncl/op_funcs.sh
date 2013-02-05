@@ -48,7 +48,7 @@ sed \
 -e "s/LEFTMISSING/lhs_m->logicalval/g" \
 -e "s/RIGHTMISSING/rhs_m->logicalval/g" \
 -e "s/THEOP/\&\&/g" \
--e "s/OPER/\.and\./g" \
+-e "s/OPER/\.ncl_and\./g" \
 -e "s/FUNCNAME/and/g" \
 TypeAndOpTemplate.c.sed
 
@@ -59,7 +59,7 @@ sed \
 -e "s/LOCALOUTTYPE/logical/g" \
 -e "s/OUTMISSING/lhs_m->logicalval/g" \
 -e "s/THEOP/\!/g" \
--e "s/OPER/\.not\./g" \
+-e "s/OPER/\.ncl_not\./g" \
 -e "s/FUNCNAME/not/g" \
 TypeMonoOpTemplate.c.sed
 
@@ -71,7 +71,7 @@ sed \
 -e "s/LEFTMISSING/lhs_m->logicalval/g" \
 -e "s/RIGHTMISSING/rhs_m->logicalval/g" \
 -e "s/THEOP/||/g" \
--e "s/OPER/\.or\./g" \
+-e "s/OPER/\.ncl_or\./g" \
 -e "s/FUNCNAME/or/g" \
 TypeOrOpTemplate.c.sed
 
@@ -82,7 +82,7 @@ sed \
 -e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/lhs_m->logicalval/g" \
 -e "s/RIGHTMISSING/rhs_m->logicalval/g" \
--e "s/OPER/\.xor\./g" \
+-e "s/OPER/\.ncl_xor\./g" \
 -e "s/FUNCNAME/xor/g" \
 TypeXorOpTemplate.c.sed
 
@@ -448,7 +448,7 @@ sed \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/\&\&/' \
--e 's/OPER/\.and\./' \
+-e 's/OPER/\.ncl_and\./' \
 -e 's/FUNCNAME/and/' \
 TypeAndOpTemplate.c.sed
 
@@ -460,7 +460,7 @@ sed \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/||/' \
--e 's/OPER/\.or\./' \
+-e 's/OPER/\.ncl_or\./' \
 -e 's/FUNCNAME/or/' \
 TypeOrOpTemplate.c.sed
 
@@ -524,7 +524,7 @@ sed \
 -e "s/LOCALOUTTYPE/logical/g" \
 -e "s/OUTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/\!/' \
--e 's/OPER/\.not\./' \
+-e 's/OPER/\.ncl_not\./' \
 -e 's/FUNCNAME/not/' \
 TypeMonoOpTemplate.c.sed
 
@@ -566,7 +566,7 @@ sed \
 -e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
--e 's/OPER/\.xor\./' \
+-e 's/OPER/\.ncl_xor\./' \
 -e 's/FUNCNAME/xor/' \
 TypeXorOpTemplate.c.sed
 

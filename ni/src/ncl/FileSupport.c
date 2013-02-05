@@ -53,9 +53,9 @@
 #include "NclMultiDValData.h"
 #include "NclFile.h"
 #include "NclList.h"
-#include "NclNewFile.h"
+#include "NclAdvancedFile.h"
 #include "NclGroup.h"
-#include "NclNewGroup.h"
+#include "NclAdvancedGroup.h"
 #include "NclFileInterfaces.h"
 #include "DataSupport.h"
 #include "TypeSupport.h"
@@ -68,7 +68,7 @@
 
 #include <sys/stat.h>
 
-NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q);
+NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_advanced_file_structure);
 
 NhlErrorTypes _NclBuildFileCoordRSelection
 #if	NhlNeedProto
@@ -845,12 +845,12 @@ NclQuark *_NclFileReadVarNames(NclFile thefile, int *num_vars)
 			return((*thefile->file.format_funcs->get_var_names)
 				((void *)thefile->file.private_rec, num_vars));
 	}
-	else if(0 == strcmp("NclNewFileClass", class_name))
+	else if(0 == strcmp("NclAdvancedFileClass", class_name))
 	{
-		NclNewFile newfile = (NclNewFile) thefile;
-		if(newfile->newfile.format_funcs->get_var_names != NULL)
-			return((*newfile->newfile.format_funcs->get_var_names)
-				(newfile->newfile.grpnode, num_vars));
+		NclAdvancedFile advancedfile = (NclAdvancedFile) thefile;
+		if(advancedfile->advancedfile.format_funcs->get_var_names != NULL)
+			return((*advancedfile->advancedfile.format_funcs->get_var_names)
+				(advancedfile->advancedfile.grpnode, num_vars));
 	}
 	else
 	{
@@ -882,12 +882,12 @@ NclQuark *_NclFileReadGrpNames(NclFile thefile, int *num_grps)
 			return((*thefile->file.format_funcs->get_grp_names)
 				((void *)thefile->file.private_rec, num_grps));
 	}
-	else if(0 == strcmp("NclNewFileClass", class_name))
+	else if(0 == strcmp("NclAdvancedFileClass", class_name))
 	{
-		NclNewFile newfile = (NclNewFile) thefile;
-		if(newfile->newfile.format_funcs->get_grp_names != NULL)
-			return((*newfile->newfile.format_funcs->get_grp_names)
-				(newfile->newfile.grpnode, num_grps));
+		NclAdvancedFile advancedfile = (NclAdvancedFile) thefile;
+		if(advancedfile->advancedfile.format_funcs->get_grp_names != NULL)
+			return((*advancedfile->advancedfile.format_funcs->get_grp_names)
+				(advancedfile->advancedfile.grpnode, num_grps));
 	}
 	else
 	{
@@ -1397,8 +1397,8 @@ struct _NclSelectionRecord* sel_ptr;
 extern NhlErrorTypes _NclFileAddVlen(NclFile infile, NclQuark vlen_name, NclQuark var_name,
                                      NclQuark type, NclQuark dim_name)
 {
-	NclNewFile thefile = (NclNewFile) infile;
-	NclNewFileClass fc = NULL;
+	NclAdvancedFile thefile = (NclAdvancedFile) infile;
+	NclAdvancedFileClass fc = NULL;
 
       /*
        *fprintf(stderr, "\nHit _NclFileAddVlen, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -1414,24 +1414,24 @@ extern NhlErrorTypes _NclFileAddVlen(NclFile infile, NclQuark vlen_name, NclQuar
 		return(NhlFATAL);
 	}
 
-	if(! thefile->file.use_new_hlfs)
+	if(! thefile->file.advanced_file_structure)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddVlen: Old File Structure DO NOT Support vlen.\n"));
 		return(NhlFATAL);
 	}
 
-	fc = (NclNewFileClass)thefile->obj.class_ptr;
+	fc = (NclAdvancedFileClass)thefile->obj.class_ptr;
 	while((NclObjClass)fc != nclObjClass)
 	{
-		if(fc->newfile_class.create_vlen_type != NULL)
+		if(fc->advancedfile_class.create_vlen_type != NULL)
 		{
-			return((*fc->newfile_class.create_vlen_type)
+			return((*fc->advancedfile_class.create_vlen_type)
                                (infile, vlen_name, var_name, type, dim_name));
 		}
 		else
 		{
-			fc = (NclNewFileClass)fc->obj_class.super_class;
+			fc = (NclAdvancedFileClass)fc->obj_class.super_class;
 		}
 	}
 
@@ -1442,8 +1442,8 @@ extern NhlErrorTypes _NclFileAddEnum(NclFile infile, NclQuark enum_name, NclQuar
                                      NclQuark dim_name, NclQuark *mem_name, void *mem_value,
                                      ng_size_t n_mems, NclBasicDataTypes val_type)
 {
-	NclNewFile thefile = (NclNewFile) infile;
-	NclNewFileClass fc = NULL;
+	NclAdvancedFile thefile = (NclAdvancedFile) infile;
+	NclAdvancedFileClass fc = NULL;
 
       /*
        *fprintf(stderr, "\nHit _NclFileAddEnum, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -1459,25 +1459,25 @@ extern NhlErrorTypes _NclFileAddEnum(NclFile infile, NclQuark enum_name, NclQuar
 		return(NhlFATAL);
 	}
 
-	if(! thefile->file.use_new_hlfs)
+	if(! thefile->file.advanced_file_structure)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddEnum: Old File Structure DO NOT Support enum.\n"));
 		return(NhlFATAL);
 	}
 
-	fc = (NclNewFileClass)thefile->obj.class_ptr;
+	fc = (NclAdvancedFileClass)thefile->obj.class_ptr;
 	while((NclObjClass)fc != nclObjClass)
 	{
-		if(fc->newfile_class.create_enum_type != NULL)
+		if(fc->advancedfile_class.create_enum_type != NULL)
 		{
-			return((*fc->newfile_class.create_enum_type)
+			return((*fc->advancedfile_class.create_enum_type)
                                (infile, enum_name, var_name, dim_name,
                                 mem_name, mem_value, n_mems, val_type));
 		}
 		else
 		{
-			fc = (NclNewFileClass)fc->obj_class.super_class;
+			fc = (NclAdvancedFileClass)fc->obj_class.super_class;
 		}
 	}
 
@@ -1488,8 +1488,8 @@ extern NhlErrorTypes _NclFileAddCompound(NclFile infile, NclQuark compound_name,
                                          ng_size_t n_dims, NclQuark *dim_name, ng_size_t n_mems,
                                          NclQuark *mem_name, NclQuark *mem_type, int *mem_size)
 {
-	NclNewFile thefile = (NclNewFile) infile;
-	NclNewFileClass fc = NULL;
+	NclAdvancedFile thefile = (NclAdvancedFile) infile;
+	NclAdvancedFileClass fc = NULL;
 
       /*
        *fprintf(stderr, "\nHit _NclFileAddCompound, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -1505,26 +1505,26 @@ extern NhlErrorTypes _NclFileAddCompound(NclFile infile, NclQuark compound_name,
 		return(NhlFATAL);
 	}
 
-	if(! thefile->file.use_new_hlfs)
+	if(! thefile->file.advanced_file_structure)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddCompound: Old File Structure DO NOT Support compound.\n"));
 		return(NhlFATAL);
 	}
 
-	fc = (NclNewFileClass)thefile->obj.class_ptr;
+	fc = (NclAdvancedFileClass)thefile->obj.class_ptr;
 	while((NclObjClass)fc != nclObjClass)
 	{
-		if(fc->newfile_class.create_compound_type != NULL)
+		if(fc->advancedfile_class.create_compound_type != NULL)
 		{
-			return((*fc->newfile_class.create_compound_type)
+			return((*fc->advancedfile_class.create_compound_type)
                                (infile, compound_name, var_name,
                                 n_dims, dim_name,
                                 n_mems, mem_name, mem_type, mem_size));
 		}
 		else
 		{
-			fc = (NclNewFileClass)fc->obj_class.super_class;
+			fc = (NclAdvancedFileClass)fc->obj_class.super_class;
 		}
 	}
 
@@ -1534,9 +1534,9 @@ extern NhlErrorTypes _NclFileAddCompound(NclFile infile, NclQuark compound_name,
 extern NhlErrorTypes _NclFileWriteCompound(NclFile infile, NclQuark compound_name, NclQuark var_name,
                                            ng_size_t n_mems, NclQuark *mem_name, NclObj listobj)
 {
-	NclNewFile thefile = (NclNewFile) infile;
+	NclAdvancedFile thefile = (NclAdvancedFile) infile;
 	NclList thelist = (NclList) listobj;
-	NclNewFileClass fc = NULL;
+	NclAdvancedFileClass fc = NULL;
 
       /*
        *fprintf(stderr, "\nHit _NclFileWriteCompound, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -1552,25 +1552,25 @@ extern NhlErrorTypes _NclFileWriteCompound(NclFile infile, NclQuark compound_nam
 		return(NhlFATAL);
 	}
 
-	if(! thefile->file.use_new_hlfs)
+	if(! thefile->file.advanced_file_structure)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileWriteCompound: Old File Structure DO NOT Support compound.\n"));
 		return(NhlFATAL);
 	}
 
-	fc = (NclNewFileClass)thefile->obj.class_ptr;
+	fc = (NclAdvancedFileClass)thefile->obj.class_ptr;
 	while((NclObjClass)fc != nclObjClass)
 	{
-		if(fc->newfile_class.create_compound_type != NULL)
+		if(fc->advancedfile_class.create_compound_type != NULL)
 		{
-			return((*fc->newfile_class.write_compound)
+			return((*fc->advancedfile_class.write_compound)
                                (infile, compound_name, var_name,
                                 n_mems, mem_name, thelist));
 		}
 		else
 		{
-			fc = (NclNewFileClass)fc->obj_class.super_class;
+			fc = (NclAdvancedFileClass)fc->obj_class.super_class;
 		}
 	}
 
@@ -1580,8 +1580,8 @@ extern NhlErrorTypes _NclFileWriteCompound(NclFile infile, NclQuark compound_nam
 extern NhlErrorTypes _NclFileAddOpaque(NclFile infile, NclQuark opaque_name, NclQuark var_name,
                                        int var_size, NclQuark dim_name)
 {
-	NclNewFile thefile = (NclNewFile) infile;
-	NclNewFileClass fc = NULL;
+	NclAdvancedFile thefile = (NclAdvancedFile) infile;
+	NclAdvancedFileClass fc = NULL;
 
       /*
        *fprintf(stderr, "\nHit _NclFileAddOpaque, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -1597,24 +1597,24 @@ extern NhlErrorTypes _NclFileAddOpaque(NclFile infile, NclQuark opaque_name, Ncl
 		return(NhlFATAL);
 	}
 
-	if(! thefile->file.use_new_hlfs)
+	if(! thefile->file.advanced_file_structure)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddOpaque: Old File Structure DO NOT Support opaque.\n"));
 		return(NhlFATAL);
 	}
 
-	fc = (NclNewFileClass)thefile->obj.class_ptr;
+	fc = (NclAdvancedFileClass)thefile->obj.class_ptr;
 	while((NclObjClass)fc != nclObjClass)
 	{
-		if(fc->newfile_class.create_opaque_type != NULL)
+		if(fc->advancedfile_class.create_opaque_type != NULL)
 		{
-			return((*fc->newfile_class.create_opaque_type)
+			return((*fc->advancedfile_class.create_opaque_type)
                                (infile, opaque_name, var_name, var_size, dim_name));
 		}
 		else
 		{
-			fc = (NclNewFileClass)fc->obj_class.super_class;
+			fc = (NclAdvancedFileClass)fc->obj_class.super_class;
 		}
 	}
 
@@ -1623,8 +1623,8 @@ extern NhlErrorTypes _NclFileAddOpaque(NclFile infile, NclQuark opaque_name, Ncl
 
 extern NhlErrorTypes _NclFileAddGrp(NclFile infile, NclQuark grpname)
 {
-	NclNewFile thefile = (NclNewFile) infile;
-	NclNewFileClass fc = NULL;
+	NclAdvancedFile thefile = (NclAdvancedFile) infile;
+	NclAdvancedFileClass fc = NULL;
 
 	if(infile == NULL)
 	{
@@ -1633,23 +1633,23 @@ extern NhlErrorTypes _NclFileAddGrp(NclFile infile, NclQuark grpname)
 		return(NhlFATAL);
 	}
 
-	if(! thefile->file.use_new_hlfs)
+	if(! thefile->file.advanced_file_structure)
 	{
 		NHLPERROR((NhlFATAL, NhlEUNKNOWN,
 			"_NclFileAddGrp: Old File Structure DO NOT Support Group.\n"));
 		return(NhlFATAL);
 	}
 
-	fc = (NclNewFileClass)thefile->obj.class_ptr;
+	fc = (NclAdvancedFileClass)thefile->obj.class_ptr;
 	while((NclObjClass)fc != nclObjClass)
 	{
-		if(fc->newfile_class.write_grp != NULL)
+		if(fc->advancedfile_class.write_grp != NULL)
 		{
-			return((*fc->newfile_class.write_grp)(infile, grpname));
+			return((*fc->advancedfile_class.write_grp)(infile, grpname));
 		}
 		else
 		{
-			fc = (NclNewFileClass)fc->obj_class.super_class;
+			fc = (NclAdvancedFileClass)fc->obj_class.super_class;
 		}
 	}
 
@@ -2218,7 +2218,7 @@ NclQuark *_getNewFileGroupsListFromGroup(NclFileGrpNode *grpnode, NclQuark base_
 	return (selected_group_names);
 }
 
-NclQuark *_getNewFileGroupsList(NclNewFile thefile, NclQuark base_group_name, int depth, int *n_grps)
+NclQuark *_getNewFileGroupsList(NclAdvancedFile thefile, NclQuark base_group_name, int depth, int *n_grps)
 {
 	int i;
 	NclQuark *selected_group_names = NULL;
@@ -2230,28 +2230,28 @@ NclQuark *_getNewFileGroupsList(NclNewFile thefile, NclQuark base_group_name, in
        *fprintf(stderr, "\tdepth: %d\n", depth);
        */
 
-	if((base_group_name == thefile->newfile.grpnode->name) ||
-	   (base_group_name == thefile->newfile.grpnode->real_name))
+	if((base_group_name == thefile->advancedfile.grpnode->name) ||
+	   (base_group_name == thefile->advancedfile.grpnode->real_name))
         {
-		if(NULL == thefile->newfile.grpnode->grp_rec)
+		if(NULL == thefile->advancedfile.grpnode->grp_rec)
 		{
 			return (NULL);
 		}
 
-		*n_grps = thefile->newfile.grpnode->grp_rec->n_grps;
+		*n_grps = thefile->advancedfile.grpnode->grp_rec->n_grps;
 
 		selected_group_names = (NclQuark *) NclMalloc(sizeof(NclQuark) * (*n_grps));
 
 		for(i = 0; i < (*n_grps); ++i)
 		{
-			selected_group_names[i] = thefile->newfile.grpnode->grp_rec->grp_node[i]->name;
+			selected_group_names[i] = thefile->advancedfile.grpnode->grp_rec->grp_node[i]->name;
 		}
 	}
-	else if(NULL != thefile->newfile.grpnode->grp_rec)
+	else if(NULL != thefile->advancedfile.grpnode->grp_rec)
 	{
-                for(i = 0; i < thefile->newfile.grpnode->grp_rec->n_grps; ++i)
+                for(i = 0; i < thefile->advancedfile.grpnode->grp_rec->n_grps; ++i)
                 {
-                        selected_group_names = _getNewFileGroupsListFromGroup(thefile->newfile.grpnode->grp_rec->grp_node[i],
+                        selected_group_names = _getNewFileGroupsListFromGroup(thefile->advancedfile.grpnode->grp_rec->grp_node[i],
 										base_group_name, depth, n_grps);
 			if(NULL != selected_group_names)
 				return (selected_group_names);
@@ -2263,10 +2263,10 @@ NclQuark *_getNewFileGroupsList(NclNewFile thefile, NclQuark base_group_name, in
 
 NclQuark *_NclGetFileGroupsList(NclFile thefile, NclQuark base_group_name, int depth, int *n_grps)
 {
-        NclNewFile newfile = (NclNewFile) thefile;
+        NclAdvancedFile advancedfile = (NclAdvancedFile) thefile;
 
-	if(thefile->file.use_new_hlfs)
-                return _getNewFileGroupsList(newfile, base_group_name, depth, n_grps);
+	if(thefile->file.advanced_file_structure)
+                return _getNewFileGroupsList(advancedfile, base_group_name, depth, n_grps);
         else
                 return _getFileGroupsList(thefile, base_group_name, depth, n_grps);
 }
@@ -2438,34 +2438,34 @@ NclQuark *_getVarListFromGroup(NclFileGrpNode *grpnode, NclQuark base_group_name
 	return (selected_var_names);
 }
 
-NclQuark *_getVarListFromFile(NclNewFile thefile, NclQuark base_group_name, int depth, int *n_vars)
+NclQuark *_getVarListFromFile(NclAdvancedFile thefile, NclQuark base_group_name, int depth, int *n_vars)
 {
 	int i;
 	NclQuark *selected_var_names = NULL;
 	*n_vars = 0;
 
-	if((base_group_name == thefile->newfile.grpnode->name) ||
-	   (base_group_name == thefile->newfile.grpnode->real_name))
+	if((base_group_name == thefile->advancedfile.grpnode->name) ||
+	   (base_group_name == thefile->advancedfile.grpnode->real_name))
         {
-		if(NULL == thefile->newfile.grpnode->var_rec)
+		if(NULL == thefile->advancedfile.grpnode->var_rec)
 		{
 			return (NULL);
 		}
 
-		*n_vars = thefile->newfile.grpnode->var_rec->n_vars;
+		*n_vars = thefile->advancedfile.grpnode->var_rec->n_vars;
 
 		selected_var_names = (NclQuark *) NclMalloc(sizeof(NclQuark) * (*n_vars));
 
 		for(i = 0; i < (*n_vars); ++i)
 		{
-			selected_var_names[i] = thefile->newfile.grpnode->var_rec->var_node[i].name;
+			selected_var_names[i] = thefile->advancedfile.grpnode->var_rec->var_node[i].name;
 		}
 	}
-	else if(NULL != thefile->newfile.grpnode->grp_rec)
+	else if(NULL != thefile->advancedfile.grpnode->grp_rec)
 	{
-                for(i = 0; i < thefile->newfile.grpnode->grp_rec->n_grps; ++i)
+                for(i = 0; i < thefile->advancedfile.grpnode->grp_rec->n_grps; ++i)
                 {
-                        selected_var_names = _getVarListFromGroup(thefile->newfile.grpnode->grp_rec->grp_node[i],
+                        selected_var_names = _getVarListFromGroup(thefile->advancedfile.grpnode->grp_rec->grp_node[i],
 									base_group_name, depth, n_vars);
 			if(NULL != selected_var_names)
 				return (selected_var_names);
@@ -2477,10 +2477,10 @@ NclQuark *_getVarListFromFile(NclNewFile thefile, NclQuark base_group_name, int 
 
 NclQuark *_NclGetGroupVarsList(NclFile thefile, NclQuark base_group_name, int depth, int *n_vars)
 {
-	if(thefile->file.use_new_hlfs)
+	if(thefile->file.advanced_file_structure)
         {
-        	NclNewFile newfile = (NclNewFile) thefile;
-                return _getVarListFromFile(newfile, base_group_name, depth, n_vars);
+        	NclAdvancedFile advancedfile = (NclAdvancedFile) thefile;
+                return _getVarListFromFile(advancedfile, base_group_name, depth, n_vars);
 	}
         else
                 return _getFileVarsList(thefile, base_group_name, depth, n_vars);
@@ -2683,8 +2683,8 @@ struct _NclMultiDValDataRec *value;
 {
 	NclFileClass fc = NULL;
 
-	if(thefile->file.use_new_hlfs)
-		fc = (NclFileClass) &nclNewFileClassRec;
+	if(NCLadvancedFileStructure[0] || NCLadvancedFileStructure[_NclNETCDF] || NCLadvancedFileStructure[_NclNETCDF4])
+		fc = (NclFileClass) &nclAdvancedFileClassRec;
 	else
 		fc = &nclFileClassRec;
 
@@ -2747,8 +2747,8 @@ NclQuark option;
 	NclFileClass fc = NULL;
 	int i = 5;
 
-	if(NCLnewfs)
-		fc = (NclFileClass) &nclNewFileClassRec;
+	if(NCLadvancedFileStructure[0] || NCLadvancedFileStructure[_NclNETCDF] || NCLadvancedFileStructure[_NclNETCDF4])
+		fc = (NclFileClass) &nclAdvancedFileClassRec;
 	else
 		fc = &nclFileClassRec;
 
@@ -2811,7 +2811,7 @@ NclQuark option;
 }
 
 NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
-			char **end_of_name, int *len_path, int rw_status)
+			char **end_of_name, int *len_path, int rw_status, short *use_advanced_file_structure)
 {
 	NclQuark file_ext_q = -1;
 
@@ -2863,7 +2863,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		if(0 == stat(NrmQuarkToString(the_real_path), &file_stat))
 		{
 			if(file_stat.st_size)
-				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q);
+				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, use_advanced_file_structure);
 		}
 
 	} else {
@@ -2907,7 +2907,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 	return file_ext_q;
 }
 
-NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q)
+NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_advanced_file_structure)
 {
 	NclQuark cur_ext_q;
 	NclQuark ori_file_ext_q = pre_file_ext_q;
@@ -2958,7 +2958,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q)
 #ifdef BuildHDF5
 	else if(0 == strcmp(fext, "hdf5"))
 	{
-		NCLnewfs = 1;
+		*use_advanced_file_structure = 1;
 		ori_file_ext_q = NrmStringToQuark("h5");
 	}
 #endif
@@ -3026,13 +3026,11 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q)
          		*/
 			switch(format)
 			{
-#ifdef USE_NETCDF4_FEATURES
               			case NC_FORMAT_NETCDF4:
 					file_ext_q = cur_ext_q;
 					found = 1;
-                   			NCLnewfs = 1;
+					*use_advanced_file_structure = 1;
                    			break;
-#endif
               			case NC_FORMAT_NETCDF4_CLASSIC:
               			case NC_FORMAT_64BIT:
               			case NC_FORMAT_CLASSIC:
@@ -3058,7 +3056,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q)
 			{
         			file_ext_q = cur_ext_q;
 				found = 1;
-       				NCLnewfs = 1;
+       				*use_advanced_file_structure = 1;
 				break;
 			}
 			else
@@ -3170,17 +3168,57 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	char *end_of_name = NULL;
 	int len_path;
 
-	static int first = 1;
-
         struct stat file_stat;
+	short use_advanced_file_structure = 0;
 
-      /*Save the previous NCLnewfs.*/
-	short preNCLnewfs = NCLnewfs;
-
-	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status);
+	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status, &use_advanced_file_structure);
 
 	if(! is_http)
 	{
+		/* Check if want advanced file-strucuture */
+		if(NULL != fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value)
+		{
+			NrmQuark afs = NrmStringToQuark("advanced");
+			NrmQuark sfs = _NclGetLower(*(NrmQuark *)(fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value->multidval.val));
+			NCLadvancedFileStructure[_NclNETCDF] = 0;
+			NCLadvancedFileStructure[_NclNETCDF4] = 0;
+			if(afs == sfs)
+			{
+			      /*Only certain data format can use advanced file-structure. Wei 01/11/2013*/
+				if((NrmStringToQuark("nc") == file_ext_q) ||
+				   (NrmStringToQuark("nc4") == file_ext_q) ||
+				   (NrmStringToQuark("nc3") == file_ext_q) ||
+				   (NrmStringToQuark("cdf") == file_ext_q) ||
+				   (NrmStringToQuark("netcdf") == file_ext_q))
+				{
+					NCLadvancedFileStructure[_NclNETCDF] = 1;
+					NCLadvancedFileStructure[_NclNETCDF4] = 1;
+				}
+			}
+		}
+
+		/* Check if want NetCDF4 */
+		if(NULL != fcp->options[Ncl_FORMAT].value)
+		{
+			NrmQuark nc4 = NrmStringToQuark("netcdf4");
+			NrmQuark req = _NclGetLower(*(NrmQuark *)(fcp->options[Ncl_FORMAT].value->multidval.val));
+			NCLadvancedFileStructure[_NclNETCDF] = 0;
+			NCLadvancedFileStructure[_NclNETCDF4] = 0;
+			if(nc4 == req)
+			{
+			      /*if format is NetCDF4,  use advanced file-structure. Wei 01/21/2013*/
+				if((NrmStringToQuark("nc") == file_ext_q) ||
+				   (NrmStringToQuark("nc4") == file_ext_q) ||
+				   (NrmStringToQuark("nc3") == file_ext_q) ||
+				   (NrmStringToQuark("cdf") == file_ext_q) ||
+				   (NrmStringToQuark("netcdf") == file_ext_q))
+				{
+					NCLadvancedFileStructure[_NclNETCDF] = 0;
+					NCLadvancedFileStructure[_NclNETCDF4] = 1;
+				}
+			}
+		}
+
 		if(0 > file_ext_q)
 		{
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"(%s) has no file extension, can't determine type of file to open",NrmQuarkToString(path)));
@@ -3195,7 +3233,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 			if((0 == stat(NrmQuarkToString(the_real_path), &file_stat)) &&
 					(file_stat.st_size))
-				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q);
+				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_advanced_file_structure);
 			else
 			{
 				char tmp_path[NCL_MAX_STRING];
@@ -3215,7 +3253,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 				
 					if(! stat(_NGResolvePath(tmp_path), &file_stat))
 					{
-						file_ext_q = _NclVerifyFile(NrmStringToQuark(tmp_path), old_file_ext_q);
+						file_ext_q = _NclVerifyFile(NrmStringToQuark(tmp_path), old_file_ext_q, &use_advanced_file_structure);
 						/*break;*/
 					}
 					ext_name = strrchr(tmp_path, '.');
@@ -3231,46 +3269,37 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 				return file_out;
 			}
 		}
-
-		if(first)
-		{
-			first = 0;
-			/* Check if new file-strucuture */
-			if(NULL != fcp->options[Ncl_USE_NEW_HLFS].value)
-			{
-				int newfs = 0;
-				newfs = *(int *)(fcp->options[Ncl_USE_NEW_HLFS].value->multidval.val);
-				if(newfs)
-				{
-				      /*Only certain data format can use new file-structure. Wei 01/11/2013*/
-					if((NrmStringToQuark("nc") == file_ext_q) ||
-					   (NrmStringToQuark("nc4") == file_ext_q) ||
-					   (NrmStringToQuark("nc3") == file_ext_q) ||
-					   (NrmStringToQuark("cdf") == file_ext_q) ||
-					   (NrmStringToQuark("netcdf") == file_ext_q))
-						NCLnewfs = 1;
-					else
-						NCLnewfs = 0;
-				}
-				else
-					NCLnewfs = 0;
-			}
-		}
 	}
 
 	if(NrmStringToQuark("h5") == file_ext_q)
-		NCLnewfs = 1;
+		use_advanced_file_structure = 1;
 
 /*We still want to keep old HE5 there.
-	if(NrmStringToQuark("h5") == file_ext_q)
-		NCLnewfs = 1;
-	else if(NrmStringToQuark("he5") == file_ext_q)
-		NCLnewfs = 1;
+	if(NrmStringToQuark("he5") == file_ext_q)
+		use_advanced_file_structure = 1;
  */
 
-	if(NCLnewfs)
+	/*Use Advanced File Strucuture, when:
+	*1. The local use_advanced_file_structure is true.
+	*2. If run with "ncl -f flnm", or setfileoption("nc", "FileStructure", "Advanced"),
+	*   and file extension are NetCDF.
+	*Wei 01/17/2013
+	*/
+	if(use_advanced_file_structure ||
+		((NCLadvancedFileStructure[0] ||
+		  NCLadvancedFileStructure[_NclNETCDF] ||
+		  NCLadvancedFileStructure[_NclHDFEOS5] ||
+		  NCLadvancedFileStructure[_NclNewHE5] ||
+		  NCLadvancedFileStructure[_NclNETCDF4]) &&
+		((NrmStringToQuark("nc") == file_ext_q) ||
+		 (NrmStringToQuark("nc4") == file_ext_q) ||
+		 (NrmStringToQuark("nc3") == file_ext_q) ||
+		 (NrmStringToQuark("cdf") == file_ext_q) ||
+		 (NrmStringToQuark("he5") == file_ext_q) ||
+		 (NrmStringToQuark("hdfeos5") == file_ext_q) ||
+		 (NrmStringToQuark("netcdf") == file_ext_q))))
 	{
-		file_out = _NclNewFileCreate(inst, theclass, obj_type, obj_type_mask, status,
+		file_out = _NclAdvancedFileCreate(inst, theclass, obj_type, obj_type_mask, status,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
 	}					
 	else
@@ -3279,9 +3308,6 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
 	}					
 
-      /*Set back to previous NCLnewfs.*/
-	NCLnewfs = preNCLnewfs;
-
 	return file_out;
 }
 
@@ -3289,8 +3315,8 @@ NhlErrorTypes _NclPrintFileSummary(NclObj self, FILE *fp)
 {
 	NclFile file = (NclFile) self;
 
-	if(file->file.use_new_hlfs)
-		return (_NclNewFilePrintSummary(self, fp));
+	if(file->file.advanced_file_structure)
+		return (_NclAdvancedFilePrintSummary(self, fp));
 	else
 		return (_NclFilePrintSummary(self, fp));
 }
@@ -3305,9 +3331,9 @@ NclGroup *_NclCreateGroup(NclObj inst, NclObjClass theclass, NclObjTypes obj_typ
    *fprintf(stderr, "\nEnter _NclCreateGroup, file: %s, line: %d\n", __FILE__, __LINE__);
    */
 
-    if(file_in->file.use_new_hlfs)
-        group_out = _NclNewGroupCreate(inst, theclass, obj_type, obj_type_mask,
-                                       status, file_in, group_name);
+    if(file_in->file.advanced_file_structure)
+        group_out = _NclAdvancedGroupCreate(inst, theclass, obj_type, obj_type_mask,
+                                            status, file_in, group_name);
     else
         group_out = _NclGroupCreate(inst, theclass, obj_type, obj_type_mask,
                                     status, file_in, group_name);
@@ -3331,10 +3357,10 @@ ng_size_t *_NclFileReadChunkSizes(NclFile thefile, int *nchunks)
 
 	class_name = thefile->obj.class_ptr->obj_class.class_name;
 
-	if (thefile->file.use_new_hlfs) 
+	if (thefile->file.advanced_file_structure) 
 	{
-		NclNewFile newfile = (NclNewFile) thefile;
-		NclFileDimRecord *chunkdimrec = newfile->newfile.grpnode->chunk_dim_rec;
+		NclAdvancedFile advancedfile = (NclAdvancedFile) thefile;
+		NclFileDimRecord *chunkdimrec = advancedfile->advancedfile.grpnode->chunk_dim_rec;
 		int n;
 		if(NULL != chunkdimrec)
 		{
@@ -3376,10 +3402,10 @@ int _NclFileReadCompressionLevel(NclFile thefile)
 
 	class_name = thefile->obj.class_ptr->obj_class.class_name;
 
-	if (thefile->file.use_new_hlfs)
+	if (thefile->file.advanced_file_structure)
 	{
-		NclNewFile newfile = (NclNewFile) thefile;
-		cl = newfile->newfile.grpnode->compress_level;
+		NclAdvancedFile advancedfile = (NclAdvancedFile) thefile;
+		cl = advancedfile->advancedfile.grpnode->compress_level;
 		return cl;
 	}
 
@@ -3400,10 +3426,10 @@ NclQuark _NclFileReadVersion(NclFile thefile)
 
 	class_name = thefile->obj.class_ptr->obj_class.class_name;
 
-	if (thefile->file.use_new_hlfs) 
+	if(0 == strcmp("NclAdvancedFileClass", class_name))
 	{
-		NclNewFile newfile = (NclNewFile) thefile;
-		version = newfile->newfile.grpnode->kind;
+		NclAdvancedFile advancedfile = (NclAdvancedFile) thefile;
+		version = advancedfile->advancedfile.grpnode->kind;
 	}
 	else
 	{
@@ -3411,7 +3437,7 @@ NclQuark _NclFileReadVersion(NclFile thefile)
 		{
 			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 				"_NclFileReadVersion: \n%s%s%s%s%s\n",
-				"\t\t\t add line: <setfileoption(\"nc\", \"usenewhlfs\", True)>\n",
+				"\t\t\t add line: <setfileoption(\"nc\", \"filestructure\", \"advanced\")>\n",
 				"\t\t\t before open a NetCDF file(in your script)\n",
 				"\t\t\t or add '-f' option to run ncl\n",
 				"\t\t\t to use the new-file-structure\n",

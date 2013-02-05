@@ -39,12 +39,12 @@
 #include "NclFileInterfaces.h"
 #include "NclVar.h"
 #include "NclFile.h"
-#include "NclNewFile.h"
+#include "NclAdvancedFile.h"
 #include "NclList.h"
 #include "VarSupport.h"
 #include "ListSupport.h"
 #include "NclData.h"
-#include "NewFileSupport.h"
+#include "AdvancedFileSupport.h"
 
 #include <math.h>
 #include <unistd.h>
@@ -60,12 +60,14 @@
 #define MAX_NCL_NAME_LENGTH    256
 #endif
 
+#include "NclAdvancedFileStructure.h"
+
 static ng_usize_t ChunkSizeHint;
 
 static NrmQuark Qmissing_val;
 static NrmQuark Qfill_val;
 
-#define NC_NUM_OPTIONS  (1 + Ncl_USE_NEW_HLFS)
+#define NC_NUM_OPTIONS  (1 + Ncl_RECORD_MARKER_SIZE)
 
 static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
                                NclBasicDataTypes data_type, int n_dims,
@@ -285,6 +287,12 @@ static int InitializeOptions(NclFileGrpNode *grpnode)
     options[Ncl_SHUFFLE].size = 1;
     options[Ncl_SHUFFLE].values = (void *) NclCalloc(1, _NclSizeOf(NCL_int));
     *(int *)options[Ncl_SHUFFLE].values = 1;
+
+    options[Ncl_ADVANCED_FILE_STRUCTURE].name = NrmStringToQuark("filestructure");
+    options[Ncl_ADVANCED_FILE_STRUCTURE].type = NCL_string;
+    options[Ncl_ADVANCED_FILE_STRUCTURE].size = 1;
+    options[Ncl_ADVANCED_FILE_STRUCTURE].values = (void *) NclCalloc(1, _NclSizeOf(NCL_string));
+    *(NrmQuark *)options[Ncl_ADVANCED_FILE_STRUCTURE].values = NrmStringToQuark("advanced");
 
     options[Ncl_COMPRESSION_LEVEL].name = NrmStringToQuark("compressionlevel");
     options[Ncl_COMPRESSION_LEVEL].type = NCL_int;
@@ -2149,20 +2157,27 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
        */
 
         if(0 == nc_dims)
+        {
             n_dims = 1;
-        else
-            n_dims = nc_dims;
+            dimrec = _NclFileDimAlloc(n_dims);
+            dimrec->dim_node[0].id = -5;
+            dimrec->dim_node[0].size = 1;
+            dimrec->dim_node[0].name = NrmStringToQuark("ncl_scalar");
+            dimrec->dim_node[0].description = NrmStringToQuark("NC4 Scalar Dimension");
+            *has_scalar_dim = 1;
 
-        dimrec = _NclFileDimAlloc(n_dims);
+          /*
+           *continue;
+           */
+        }
+        else
+        {
+            n_dims = nc_dims;
+            dimrec = _NclFileDimAlloc(n_dims);
+        }
+
         dimrec->gid = gid;
         varnode->dim_rec = dimrec;
-
-        if(0 == nc_dims)
-        {
-            dimrec->dim_node[0].id = -5;
-            *has_scalar_dim = 1;
-            continue;
-        }
 
       /*
        *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -2415,8 +2430,11 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
 
     if(has_scalar_dim)
     {
-        grpnode->dim_rec->dim_node = (NclFileDimNode *)realloc(grpnode->dim_rec->dim_node,
-                                                               (1 + n_dims) * sizeof(NclFileDimNode));
+        if(NULL == grpnode->dim_rec)
+            grpnode->dim_rec = _NclFileDimAlloc(1 + n_dims);
+        else
+            grpnode->dim_rec->dim_node = (NclFileDimNode *)NclRealloc(grpnode->dim_rec->dim_node,
+                                                                      (1 + n_dims) * sizeof(NclFileDimNode));
         assert(grpnode->dim_rec->dim_node);
         grpnode->has_scalar_dim = 1;
 
@@ -2510,18 +2528,29 @@ void NC4GetAttrVal(int ncid, int aid, NclFileAttNode *attnode)
             int n;
             char **ppc;
             NclQuark *pq;
-            ppc = (char **)NclCalloc(attnode->n_elem, sizeof(char *));
-            assert(ppc);
-            attnode->value = NclMalloc(attnode->n_elem * sizeof(NclQuark));
-            assert(attnode->value);
-            pq = attnode->value;
-            ncattget(ncid,aid,NrmQuarkToString(attnode->name), ppc);
-            for(n = 0; n < attnode->n_elem; n++)
+            if(attnode->n_elem)
             {
-                pq[n] = NrmStringToQuark(ppc[n]);
-                free(ppc[n]);
+                ppc = (char **)NclCalloc(attnode->n_elem, sizeof(char *));
+                assert(ppc);
+                attnode->value = NclMalloc(attnode->n_elem * sizeof(NclQuark));
+                assert(attnode->value);
+                pq = attnode->value;
+                ncattget(ncid,aid,NrmQuarkToString(attnode->name), ppc);
+                for(n = 0; n < attnode->n_elem; n++)
+                {
+                    pq[n] = NrmStringToQuark(ppc[n]);
+                    free(ppc[n]);
+                }
+                free(ppc);
             }
-            free(ppc);
+            else
+            {
+                attnode->n_elem = 1;
+                attnode->value = NclMalloc(attnode->n_elem * sizeof(NclQuark));
+                assert(attnode->value);
+                pq = attnode->value;
+                pq[0] = NrmStringToQuark("");
+            }
         }
         else
         {
@@ -2781,8 +2810,9 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
         if(NCL_compound != varnode->type)
         {
             if(varnode->value != NULL && varnode->dim_rec->n_dims == 1)
+            if((1 == varnode->dim_rec->n_dims) && (NULL != varnode->value))
             {
-                return _NclGetCachedValue(varnode,start[0],finish[0],stride[0],storage);
+                return GetCachedValue(varnode,start[0],finish[0],stride[0],storage);
             }
         }
 

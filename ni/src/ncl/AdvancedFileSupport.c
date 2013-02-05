@@ -1,5 +1,5 @@
 /*
- *      $Id: NewFileSupport.c 13395 2012-04-26 15:40:49Z huangwei $
+ *      $Id: AdvancedFileSupport.c 13395 2012-04-26 15:40:49Z huangwei $
  */
 /************************************************************************
 *									*
@@ -21,7 +21,7 @@
  */
 
 #include <string.h>
-#include "NewFileSupport.h"
+#include "AdvancedFileSupport.h"
 
 NclQuark *GetGrpVarNames(void *therec, int *num_vars)
 {
@@ -620,5 +620,18 @@ void _Ncl_add_udt(NclFileUDTRecord **rootudtrec,
   /*
    *fprintf(stderr, "Leave _Ncl_add_udt, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
+}
+
+void *GetCachedValue(NclFileVarNode *varnode,
+                     long start, long finish, long stride, void *storage)
+{
+    long i,j;
+    int tsize = varnode->the_nc_type < 1 ? 1 : nctypelen(varnode->the_nc_type);
+
+    for (j = 0, i = start; i <= finish; i += stride,j++)
+    {
+        memcpy(((char*)storage) + j * tsize,((char *)varnode->value) + i * tsize,tsize);
+    }
+    return storage;
 }
 

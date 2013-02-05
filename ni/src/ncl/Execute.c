@@ -34,9 +34,7 @@ extern "C" {
 #include "Machine.h"
 #include "NclFileInterfaces.h"
 #include "NclFile.h"
-#ifdef USE_NETCDF4_FEATURES
-#include "NclNewFile.h"
-#endif
+#include "NclAdvancedFile.h"
 #include "NclGroup.h"
 #include "NclFileVar.h"
 #include "NclHLUVar.h"
@@ -651,17 +649,16 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
 				if (thefile && var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
 					int bad = 0;
-#ifdef USE_NETCDF4_FEATURES
-					if(thefile->file.use_new_hlfs)
+					if(thefile->file.advanced_file_structure)
 					{
-						NclNewFile newfile = (NclNewFile)thefile;
+						NclAdvancedFile advancedfile = (NclAdvancedFile)thefile;
 						NclFileVarNode *varnode = NULL;
-						varnode = _getVarNodeFromNclFileGrpNode(newfile->newfile.grpnode, var);
+						varnode = _getVarNodeFromNclFileGrpNode(advancedfile->advancedfile.grpnode, var);
 						if(NULL == varnode)
 						{
 							NHLPERROR((NhlFATAL,NhlEUNKNOWN,"variable (%s) is not in file (%s)",
 								NrmQuarkToString(var),
-								NrmQuarkToString(newfile->newfile.grpnode->path)));
+								NrmQuarkToString(advancedfile->advancedfile.grpnode->path)));
 						}
 
 						if(first && (NULL != varnode->dim_rec))
@@ -681,7 +678,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 								{
 									NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 										"File %s dimension count for variable does not conform to others in list; skipping file",
-								  		NrmQuarkToString(newfile->newfile.fpath)));
+								  		NrmQuarkToString(advancedfile->advancedfile.fpath)));
 									bad = 1;
 								}
 								else
@@ -692,7 +689,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 										{
 											NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 												"File %s dimension sizes do not conform to others in list; skipping file",
-										  		NrmQuarkToString(newfile->newfile.fpath)));
+										  		NrmQuarkToString(advancedfile->advancedfile.fpath)));
 											bad = 1;
 											break;
 										}
@@ -720,7 +717,6 @@ void CallLIST_READ_FILEVAR_OP(void) {
 						}
 					}
 					else
-#endif
 					{
 						struct _NclFVarRec *var_info = thefile->file.var_info[index];
 						if (first) { /* save the dimension sizes */
@@ -5449,16 +5445,14 @@ void CallASSIGN_FILE_VAR_OP(void) {
 						if((file != NULL)&&((index = _NclFileIsVar(file,var)) != -1)) {
 							int ndims = 0;
 
-#ifdef USE_NETCDF4_FEATURES
-							if(file->file.use_new_hlfs)
+							if(file->file.advanced_file_structure)
 							{
-								NclNewFile newfile = (NclNewFile) file;
+								NclAdvancedFile advancedfile = (NclAdvancedFile) file;
 								NclFileVarNode *varnode;
-								varnode = _getVarNodeFromNclFileGrpNode(newfile->newfile.grpnode, var);
+								varnode = _getVarNodeFromNclFileGrpNode(advancedfile->advancedfile.grpnode, var);
 								ndims = varnode->dim_rec->n_dims;
 							}
 							else
-#endif
 								ndims = file->file.var_info[index]->num_dimensions;
 
 							if((nsubs != ndims) && (nsubs != 0)){
@@ -5808,12 +5802,11 @@ void CallFILE_VAR_OP(void) {
 					return;
 				}
 
-#ifdef USE_NETCDF4_FEATURES
-				if(file->file.use_new_hlfs)
+				if(file->file.advanced_file_structure)
 				{
-					NclNewFile newfile = (NclNewFile)file;
+					NclAdvancedFile advancedfile = (NclAdvancedFile)file;
 					NclFileVarNode *varnode = NULL;
-					varnode = _getVarNodeFromNclFileGrpNode(newfile->newfile.grpnode, var);
+					varnode = _getVarNodeFromNclFileGrpNode(advancedfile->advancedfile.grpnode, var);
 					if(NULL == varnode)
 					{
 						NHLPERROR((NhlFATAL,NhlEUNKNOWN,"variable (%s) is not in file (%s)",
@@ -5849,7 +5842,6 @@ void CallFILE_VAR_OP(void) {
 
 				}
 				else
-#endif
 				{
 					index = _NclFileIsVar(file,var);
 

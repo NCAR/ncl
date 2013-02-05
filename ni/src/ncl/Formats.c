@@ -85,7 +85,7 @@ NclFormatFunctionRecPtr _NclGetFormatFuncs
 	return(NULL);
 }
 
-NclFormatFunctionRecPtr _NclGetFormatFuncsWithNewHLFS(NclQuark file_extension)
+NclFormatFunctionRecPtr _NclGetFormatFuncsWithAdvancedFileStructure(NclQuark file_extension)
 {
 	int i, n=1; 
 	NclQuark lfile_ext;

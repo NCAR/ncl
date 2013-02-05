@@ -61,7 +61,7 @@
 #define MAX_COMPOUND_COMPONENTS    64
 #endif
 
-#include "NewFileSupport.h"
+#include "AdvancedFileSupport.h"
 #include "NclData.h"
 
 static NrmQuark Qmissing_val;
@@ -4281,7 +4281,7 @@ static void *H5ReadVar(void *therec, NclQuark thevar,
     {
         if(varnode->value != NULL && varnode->dim_rec->n_dims == 1)
         {
-            return _NclGetCachedValue(varnode,start[0],finish[0],stride[0],storage);
+            return GetCachedValue(varnode,start[0],finish[0],stride[0],storage);
         }
     }
 
@@ -6591,7 +6591,7 @@ NhlErrorTypes H5AddGrp(void *rec, NclQuark grpname)
 
     ret = AddNewGrp(rec, grpname, -1);
 
-    grpnode = _getGrpNodeFromGrpNode(rootgrpnode, grpname);
+    grpnode = _getGrpNodeFromNclFileGrpNode(rootgrpnode, grpname);
 
     fid = (hid_t)_getH5grpID(rootgrpnode);
 

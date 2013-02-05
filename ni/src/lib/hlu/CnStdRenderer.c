@@ -508,8 +508,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
                         _NhlGetGksCi(cl->base.wkptr,
                                      cnp->high_lbls.back_color);
         if (cnp->high_lbls.perim_lcolor == NhlTRANSPARENT)
-                cnp->high_lbls.gks_plcolor = 
-                        _NhlGetGksCi(cl->base.wkptr,NhlFOREGROUND);
+                cnp->high_lbls.gks_plcolor = NhlTRANSPARENT;
         else
                 cnp->high_lbls.gks_plcolor =
                         _NhlGetGksCi(cl->base.wkptr,
@@ -522,22 +521,15 @@ static NhlErrorTypes UpdateLineAndLabelParams
                 cnp->low_lbls.gks_color =
                          _NhlGetGksCi(cl->base.wkptr,
                                              cnp->low_lbls.color);
-/* 
- * the low label background can be transparent iff (and only if) the high
- * label background is transparent, but otherwise the color can be 
- * different. If the low label background is set transparent when
- * the high label is not transparent, default to the background color.
- */
+
         if (cnp->low_lbls.back_color == NhlTRANSPARENT)
-                cnp->low_lbls.gks_bcolor =  
-			_NhlGetGksCi(cl->base.wkptr,NhlBACKGROUND);
+                cnp->low_lbls.gks_bcolor =  NhlTRANSPARENT;
         else
                 cnp->low_lbls.gks_bcolor =
                         _NhlGetGksCi(cl->base.wkptr,
                                      cnp->low_lbls.back_color);
         if (cnp->low_lbls.perim_lcolor == NhlTRANSPARENT)
-                cnp->low_lbls.gks_plcolor = 
-                        _NhlGetGksCi(cl->base.wkptr,NhlFOREGROUND);
+                cnp->low_lbls.gks_plcolor = NhlTRANSPARENT;
         else
                 cnp->low_lbls.gks_plcolor =
                         _NhlGetGksCi(cl->base.wkptr,
@@ -779,6 +771,9 @@ static NhlErrorTypes UpdateLineAndLabelParams
  * of the corresponding HighLabel resource if that resource is not set to 
  * transparent. However, if the low label resource is set to transparent in
  * this case, it will be coerced to transparent.
+ * Update 2013/01/14: using the new transparency features, individual control
+ * of cnLowLabelPerimOn is now possible. And cnLowLabelBackgroundColor and
+ * cnLowLabelPerimColor can be transparent independent of the cnHighLabel values.
  * 
  * It could be possible to set the low label font height independently of
  * the high label font height, but it will require a more sophisticated
@@ -796,20 +791,28 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		c_cpsetr("HLW",(float)(cnp->high_lbls.perim_space  * height));
 		c_cpsetr("HLA",(float)cnp->high_lbls.angle);
 		c_cpseti("HLO", (int) cnp->high_low_overlap);
+		cnp->hlb_val = 0;
 
-		if (cnp->high_lbls.back_color == NhlTRANSPARENT) {
-			if (cnp->high_lbls.perim_lcolor == NhlTRANSPARENT ||
-			    ! cnp->high_lbls.perim_on) 
+		if ((!cnp->high_lbls.on || cnp->high_lbls.back_color == NhlTRANSPARENT) &&
+		    (!cnp->low_lbls.on || cnp->low_lbls.back_color == NhlTRANSPARENT)) {
+			if ((!cnp->high_lbls.perim_on || cnp->high_lbls.perim_lcolor == NhlTRANSPARENT) &&
+			    (! cnp->low_lbls.perim_on || cnp->low_lbls.perim_lcolor == NhlTRANSPARENT))
 				c_cpseti("HLB",0); 
-			else
+			else {
 				c_cpseti("HLB",1);
+				cnp->hlb_val = 1;		
+			}
 		}
 		else {
-			if (cnp->high_lbls.perim_lcolor == NhlTRANSPARENT ||
-			    ! cnp->high_lbls.perim_on)
+			if ((!cnp->high_lbls.perim_on || cnp->high_lbls.perim_lcolor == NhlTRANSPARENT) &&
+			    (! cnp->low_lbls.perim_on || cnp->low_lbls.perim_lcolor == NhlTRANSPARENT)) {
 				c_cpseti("HLB",2);
-			else
+				cnp->hlb_val = 2;		
+			}
+			else {
 				c_cpseti("HLB",3);
+				cnp->hlb_val = 3;		
+			}
 		}
 	}
 
@@ -2596,7 +2599,17 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		break;
 	case 2:
 		if (! Cnp->high_lbls.on) return;
-		gset_fill_colr_ind(Cnp->high_lbls.gks_bcolor);
+		if (Cnp->hlb_val > 1) {
+			if (Cnp->high_lbls.gks_bcolor == NhlTRANSPARENT) 
+				_NhlSetFillOpacity(Cnl, 0.0); 
+			else 
+				gset_fill_colr_ind(Cnp->high_lbls.gks_bcolor);
+		}
+		break;
+	case -2:
+		if (! Cnp->high_lbls.on) return;
+		if (Cnp->hlb_val > 1 && Cnp->high_lbls.gks_bcolor == NhlTRANSPARENT)
+			_NhlSetFillOpacity(Cnl, 1.0); 
 		break;
 	case 3:
 		if (! Cnp->high_lbls.on) {
@@ -2637,8 +2650,18 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		c_cpsetc("CTM",buf);
 		break;
 	case 4:
-		gset_line_colr_ind(Cnp->high_lbls.gks_plcolor);
-		gset_linewidth(Cnp->high_lbls.perim_lthick);
+		if (( Cnp->hlb_val % 2 == 1) &&
+		    (Cnp->high_lbls.perim_on == False || Cnp->high_lbls.perim_lcolor == NhlTRANSPARENT)) 
+			_NhlSetLineOpacity(Cnl, 0.0); 
+		else {
+			gset_line_colr_ind(Cnp->high_lbls.gks_plcolor);
+			gset_linewidth(Cnp->high_lbls.perim_lthick);
+		}
+		break;
+	case -4:
+		if (( Cnp->hlb_val % 2 == 1) && 
+		    (Cnp->high_lbls.perim_on == False || Cnp->high_lbls.perim_lcolor == NhlTRANSPARENT))
+			_NhlSetLineOpacity(Cnl, 1.0); 
 		break;
 	case 5:
 		if (! Cnp->low_lbls.on) {
@@ -2674,7 +2697,17 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		break;
 	case 6:
 		if (! Cnp->low_lbls.on) return;
-		gset_fill_colr_ind(Cnp->low_lbls.gks_bcolor);
+		if (Cnp->hlb_val > 1) {
+			if (Cnp->low_lbls.gks_bcolor == NhlTRANSPARENT) 
+				_NhlSetFillOpacity(Cnl, 0.0); 
+			else 
+				gset_fill_colr_ind(Cnp->low_lbls.gks_bcolor);
+		}
+		break;
+	case -6:
+		if (! Cnp->low_lbls.on) return;
+		if (Cnp->hlb_val > 1 && Cnp->low_lbls.gks_bcolor == NhlTRANSPARENT)
+			_NhlSetFillOpacity(Cnl, 1.0); 
 		break;
 	case 7:
 		if (! Cnp->low_lbls.on) {
@@ -2715,8 +2748,18 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		c_cpsetc("CTM",buf);
 		break;
 	case 8:
-		gset_line_colr_ind(Cnp->low_lbls.gks_plcolor);
-		gset_linewidth(Cnp->low_lbls.perim_lthick);
+		if (( Cnp->hlb_val % 2 == 1) &&
+		    (Cnp->low_lbls.perim_on == False || Cnp->low_lbls.perim_lcolor == NhlTRANSPARENT))
+			_NhlSetLineOpacity(Cnl, 0.0); 
+		else {
+			gset_line_colr_ind(Cnp->low_lbls.gks_plcolor);
+			gset_linewidth(Cnp->low_lbls.perim_lthick);
+		}
+		break;
+	case -8:
+		if (( Cnp->hlb_val % 2 == 1) &&
+		    (Cnp->low_lbls.perim_on == False || Cnp->low_lbls.perim_lcolor == NhlTRANSPARENT))
+			_NhlSetLineOpacity(Cnl, 1.0); 
 		break;
 	default:
 		break;

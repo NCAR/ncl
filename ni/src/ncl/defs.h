@@ -108,8 +108,6 @@ void * /* size */
 );
 #endif
 
-extern short NCLnewfs;
-
 typedef enum {	NORMAL = 0,
 		VARSUBSEL = 1,
 		COORD = 2,

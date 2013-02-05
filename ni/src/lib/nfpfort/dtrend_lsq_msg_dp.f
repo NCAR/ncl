@@ -90,13 +90,18 @@ C
          END IF
       END DO
 
-      IF (IOPT.NE.0) THEN 
+C JAN 14, 2013: IOPT=1 [True] matches 'dtrend_msg'
+C IOPT=1 means True in NCL
+      IF (IOPT.EQ.1) RETURN
+
+C Add the mean back in
+C C C IF (IOPT.NE.0) THEN 
           DO I = 1,NPTS
              IF (Y(I).NE.YMSG) THEN
                  Y(I)   = Y(I) + YAVE
              END IF
           END DO
-      END IF
+C C C END IF
 c     
       RETURN
       END

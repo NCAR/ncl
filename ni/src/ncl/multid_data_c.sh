@@ -127,6 +127,7 @@ fi
 sed \
 -e "/INSERTHERE/r .tmp.$$" \
 -e '/INSERTHERE/d' \
+-e 's/type_class\.not/type_class\.ncl_not/g' \
 NclMultiDValData.c.sed > NclMultiDValData.c
 
 rm .tmp.$$

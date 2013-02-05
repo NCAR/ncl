@@ -314,6 +314,7 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlBoolean	low_level_log_on;
 	NhlLayer        render_obj;
 	int             render_update_mode;
+	int             hlb_val; /* value of Conpack Param HLB */
 
 	/* labelbar and legend stuff */
 

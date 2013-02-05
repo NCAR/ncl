@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		NewFileSupport.h
+ *	File:		AdvancedFileSupport.h
  *
  *	Author:		Wei Huang
  *			National Center for Atmospheric Research
@@ -19,8 +19,8 @@
  *
  *	Description:	
  */
-#ifndef _NewFileSupport_h
-#define _NewFileSupport_h
+#ifndef _AdvancedFileSupport_h
+#define _AdvancedFileSupport_h
 
 #ifdef NIO_LIB_ONLY
 #include "niohlu.h"
@@ -55,7 +55,7 @@
 #include "defs.h"
 #include "NclMultiDValData.h"
 #include "NclFile.h"
-#include "NclNewFile.h"
+#include "NclAdvancedFile.h"
 #include "NclList.h"
 #include "NclGroup.h"
 #include "NclNewGroup.h"
@@ -68,7 +68,7 @@
 #include "VarSupport.h"
 #include "ApiRecords.h"
 #include "NclAtt.h"
-#include "NclNewFileStructure.h"
+#include "NclAdvancedFileStructure.h"
 
 #include <sys/stat.h>
 
@@ -100,5 +100,8 @@ void _Ncl_add_udt(NclFileUDTRecord **rootudtrec,
                   int ncl_class, int type,
                   size_t size, size_t nfields,
                   NclQuark *mem_name, NclBasicDataTypes *mem_type);
+
+void *GetCachedValue(NclFileVarNode *varnode,
+                     long start, long finish, long stride, void *storage);
 #endif
 

@@ -30,7 +30,6 @@
 #	Options:
 #!/bin/sh
 
-
 sed \
 -e 's/TFUNC/multiply/g' \
 TypeSupportOpTemplate.c.sed > .tmp.$$
@@ -88,20 +87,38 @@ sed \
 TypeSupportOpTemplate.c.sed >> .tmp.$$
 
 sed \
--e 's/TFUNC/and/g' \
-TypeSupportOpTemplate.c.sed >> .tmp.$$
+-e 's/TFUNC/ncl_and/g' \
+TypeSupportOpTemplate.c.sed > .medtmp.$$
 
 sed \
--e 's/TFUNC/or/g' \
-TypeSupportOpTemplate.c.sed >> .tmp.$$
+-e 's/ncl_and_type/and_type/g' \
+.medtmp.$$ >> .tmp.$$
 
 sed \
--e 's/TFUNC/xor/g' \
-TypeSupportOpTemplate.c.sed >> .tmp.$$
+-e 's/TFUNC/ncl_or/g' \
+TypeSupportOpTemplate.c.sed > .medtmp.$$
 
 sed \
--e 's/TFUNC/not/g' \
-TypeSupportMonoOpTemplate.c.sed >> .tmp.$$
+-e 's/ncl_or_type/or_type/g' \
+.medtmp.$$ >> .tmp.$$
+
+sed \
+-e 's/TFUNC/ncl_xor/g' \
+TypeSupportOpTemplate.c.sed > .medtmp.$$
+
+sed \
+-e 's/ncl_xor_type/xor_type/g' \
+.medtmp.$$ >> .tmp.$$
+
+sed \
+-e 's/TFUNC/ncl_not/g' \
+TypeSupportMonoOpTemplate.c.sed > .medtmp.$$
+
+sed \
+-e 's/ncl_not_type/not_type/g' \
+.medtmp.$$ >> .tmp.$$
+
+rm -f .medtmp.$$
 
 sed \
 -e 's/TFUNC/neg/g' \

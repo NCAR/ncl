@@ -29,7 +29,7 @@
 #include "NclDataDefs.h"
 #include "Machine.h"
 #include "NclFile.h"
-#include "NclNewFile.h"
+#include "NclAdvancedFile.h"
 #include "NclVar.h"
 #include "NclCoordVar.h"
 #include "VarSupport.h"
@@ -54,20 +54,6 @@
 
 #include "HLUFunctions.h"
 #include "NclGlobalVars.h"
-
-float guiNhlNtfBaseXF = 0.2;
-float guiNhlNtfBaseYF = 0.8;
-float guiNhlNtfBaseWidthF = 0.6;
-float guiNhlNtfBaseHeightF = 0.6;
-
-void guiGetBaseVP(float *BaseXF, float *BaseYF,
-                  float *BaseWidthF, float *BaseHeightF)
-{
-    *BaseXF = guiNhlNtfBaseXF;
-    *BaseYF = guiNhlNtfBaseYF;
-    *BaseWidthF  = guiNhlNtfBaseWidthF;
-    *BaseHeightF = guiNhlNtfBaseHeightF;
-}
 
 NclFile NclCreateFile(const char *path)
 {
@@ -128,16 +114,16 @@ char **guiGetNclFileAttNames(NclFile thefile, int *num_atts)
     int n = 0;
     char *str = NULL;
     char **attnames = NULL;
-    NclNewFile newfile = NULL;
+    NclAdvancedFile newfile = NULL;
     NclFileGrpNode *grpnode = NULL;
 
     if(NULL == thefile)
         return NULL;
 
-    if(thefile->file.use_new_hlfs)
+    if(thefile->file.advanced_file_structure)
     {
-        newfile = (NclNewFile) thefile;
-        grpnode = newfile->newfile.grpnode;
+        newfile = (NclAdvancedFile) thefile;
+        grpnode = newfile->advancedfile.grpnode;
         if(NULL == grpnode->att_rec)
             *num_atts = 0;
         else
@@ -151,7 +137,7 @@ char **guiGetNclFileAttNames(NclFile thefile, int *num_atts)
 
     attnames = (char **)NclCalloc(*num_atts, sizeof(char *));
 
-    if(thefile->file.use_new_hlfs)
+    if(thefile->file.advanced_file_structure)
     {
         for(n = 0; n < *num_atts; ++n)
         {
@@ -190,16 +176,16 @@ void getNclFileVarInfo(NclFile thefile, int *ndims, int **dimsizes, char ***dimn
     if(NULL == thefile)
         return;
 
-    if(thefile->file.use_new_hlfs)
+    if(thefile->file.advanced_file_structure)
     {
-        NclNewFile thenewfile = (NclNewFile) thefile;
+        NclAdvancedFile thenewfile = (NclAdvancedFile) thefile;
         NclFileVarNode *varnode = NULL;
 
-        if(NULL != thenewfile->newfile.grpnode->var_rec)
+        if(NULL != thenewfile->advancedfile.grpnode->var_rec)
         {
-            for(i = 0; i < thenewfile->newfile.grpnode->var_rec->n_vars; ++i)
+            for(i = 0; i < thenewfile->advancedfile.grpnode->var_rec->n_vars; ++i)
             {
-                varnode = &(thenewfile->newfile.grpnode->var_rec->var_node[i]);
+                varnode = &(thenewfile->advancedfile.grpnode->var_rec->var_node[i]);
 
                 ndims[i] = 0;
                 type[i] = (long) varnode->type;
