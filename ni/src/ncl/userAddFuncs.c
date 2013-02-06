@@ -1263,15 +1263,8 @@ NhlErrorTypes _Nclstr_split_by_length
         if (max_length < strlen(tmp_str))
             max_length = strlen(tmp_str);
     }
-
-    result = (char *) NclCalloc(max_length, sizeof(char));
-    if (!result)
-    {
-        NHLPERROR((NhlFATAL,ENOMEM,NULL));
-        return NhlFATAL;
-    }
     
-    news_length = (int *) NclCalloc(max_length, sizeof(int));
+    news_length = (int *) NclCalloc(max_length + 1, sizeof(int));
     if (! news_length)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -1298,6 +1291,9 @@ NhlErrorTypes _Nclstr_split_by_length
                 number_splitted ++;
         }
 
+        if(max_length < leng[0])
+            max_length = leng[0];
+
         for(i=0; i<number_splitted; i++)
         {
             news_length[i] = leng[0];
@@ -1322,6 +1318,13 @@ NhlErrorTypes _Nclstr_split_by_length
   /*
    *fprintf(stderr, "\tnumber_splitted = %d\n", number_splitted);
    */
+
+    result = (char *) NclCalloc(max_length + 1, sizeof(char));
+    if (!result)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
 
     if((1 == dimsz_strs[0]) && (1 == ndim_strs))
     {
@@ -1386,26 +1389,27 @@ NhlErrorTypes _Nclstr_split_by_length
             {
                 strncpy(result, tmp_str + ip, news_length[n-ns]);
                 result[news_length[n-ns]] = '\0';
+              /*
+               *fprintf(stderr, "\tnew_strs[%d]: <%s>, leng: %d\n",
+               *                   n, result, news_length[n-ns]);
+               *fprintf(stderr, "\tstrlen(tmp_str + ip) = %d, news_length[n-ns] = %d\n",
+               *                   strlen(tmp_str + ip), news_length[n-ns]);
+               */
+
                 ip += news_length[n-ns];
                 new_strs[n] = NrmStringToQuark(result);
-              /*
-               *fprintf(stderr, "\tnew_strs[%d]: <%s>, leng: %d, from original string: <%s>\n",
-               *                   n, result, news_length[n-ns], tmp_str + ip);
-               */
                 memset(result, 0, max_length);
             }
         }
     }
 
     NclFree(result);
+    NclFree(news_length);
 
     return NclReturnValue(new_strs, ndim_news, dimsz_news,
                          (has_missing_news ? &missing_news : NULL),
                           NCL_string, 0);
-
 }
-
-
 
 NhlErrorTypes _Nclstr_sub_str
 #if     NhlNeedProto

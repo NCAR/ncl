@@ -890,12 +890,10 @@ NclQuark *_NclFileReadGrpNames(NclFile thefile, int *num_grps)
 			return((*advancedfile->advancedfile.format_funcs->get_grp_names)
 				(advancedfile->advancedfile.grpnode, num_grps));
 	}
-	else
-	{
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-			"_NclFileReadGrpNames: Unknown Class <%s>\n", class_name));
-		return (NULL);
-	}
+
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+		"_NclFileReadGrpNames: Unknown Class <%s>\n", class_name));
+	return (NULL);
 }
 
 struct _NclFileRec *_NclFileReadGroup
@@ -1834,7 +1832,8 @@ NhlErrorTypes _NclPrintAdvancedFileVarSummary(NclFile thefile, NclQuark varname)
 		return(NhlWARNING);	
 	}
 
-	_printNclFileVarRecord(fp, advfile, varnode);
+        _printNclFileVarNode(fp, advfile, varnode);
+
 	return(NhlNOERROR);	
 }
 #endif
