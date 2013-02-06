@@ -2422,7 +2422,7 @@ static NhlErrorTypes cnInitAreamap
 	if (cnp->aws_id < 1) {
 		cnp->aws_id = 
 			_NhlNewWorkspace(NhlwsAREAMAP,
-					 NhlwsNONE,800000*sizeof(int));
+					 NhlwsNONE,1000000*sizeof(int));
 		if (cnp->aws_id < 1) 
 			return MIN(ret,(NhlErrorTypes)cnp->aws_id);
 	}
