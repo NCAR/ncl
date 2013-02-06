@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include "wrapper.h"
 
-extern void NGCALLF(gammacomplete,GAMMACOMPLETE)(int*, double*, double*);
+extern void NGCALLF(gammacomplete,GAMMACOMPLETE)(int*, double*, double*, int*,
+                                                 double *);
 
 NhlErrorTypes gamma_W( void )
 {
@@ -12,6 +13,8 @@ NhlErrorTypes gamma_W( void )
   double *tmp_x;
   ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int ndims_x;
+  int has_missing_x;
+  NclScalar missing_x, missing_flt_x, missing_dbl_x;
   NclBasicDataTypes type_x;
 /*
  * Output array variables
@@ -19,6 +22,7 @@ NhlErrorTypes gamma_W( void )
   void *xout = NULL;
   double *tmp_xout;
   NclBasicDataTypes type_xout;
+  NclScalar missing_xout;
 /*
  * Declare various variables for random purposes.
  */
@@ -32,8 +36,8 @@ NhlErrorTypes gamma_W( void )
           1,
           &ndims_x,
           dsizes_x,
-          NULL,
-          NULL,
+          &missing_x,
+          &has_missing_x,
           &type_x,
           DONT_CARE);
 
@@ -43,6 +47,13 @@ NhlErrorTypes gamma_W( void )
     return(NhlFATAL);
   }
   inx = (int) nx;
+
+
+/*
+ * Coerce missing value to double if necessary.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,
+                 &missing_dbl_x,&missing_flt_x);
 
 /*
  * Compute the total size of the input array.
@@ -60,6 +71,7 @@ NhlErrorTypes gamma_W( void )
     tmp_x     = (double *)calloc(nx,sizeof(double));
     tmp_xout  = (double *)calloc(nx,sizeof(double));
     xout      = (void*)calloc(size_x,sizeof(float));
+    missing_xout.floatval = missing_flt_x.floatval;
     if(tmp_x == NULL || tmp_xout == NULL || xout == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"gamma: Unable to allocate memory for arrays");
       return(NhlFATAL);
@@ -68,6 +80,7 @@ NhlErrorTypes gamma_W( void )
   else {
     type_xout = NCL_double;
     xout = (void*)calloc(size_x,sizeof(double));
+    missing_xout.doubleval = missing_dbl_x.doubleval;
     if(xout == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"gamma: Unable to allocate memory for output array");
       return(NhlFATAL);
@@ -87,7 +100,9 @@ NhlErrorTypes gamma_W( void )
     }
 
 /* Call the Fortran version of this routine. */
-    NGCALLF(gammacomplete,GAMMACOMPLETE)(&inx,tmp_x,tmp_xout);
+    NGCALLF(gammacomplete,GAMMACOMPLETE)(&inx,tmp_x,tmp_xout,
+                                         &has_missing_x,
+                                         &missing_dbl_x.doubleval);
 
 /* Coerce back to float. */
     if(type_x != NCL_double) {
@@ -105,6 +120,12 @@ NhlErrorTypes gamma_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(xout,ndims_x,dsizes_x,NULL,type_xout,0));
+  if(has_missing_x) {
+    return(NclReturnValue(xout,ndims_x,dsizes_x,&missing_xout,
+                          type_xout,0));
+  }
+  else {
+    return(NclReturnValue(xout,ndims_x,dsizes_x,NULL,type_xout,0));
+  }
 }
 
