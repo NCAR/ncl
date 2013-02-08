@@ -4605,10 +4605,12 @@ begin
 ;
 ; These resources allow you to control the look of the fill patterns
 ; in the bars. You can change the fill line thickness, the density of
-; the fill pattern, or the thickness of the stippled dots.
+; the fill pattern, the thickness of the stippled dots, or the opacity
+; of the bar colors.
 ;
       bar_outline_thickness = get_res_value(res2,"gsnXYBarChartOutlineThicknessF",1.0)
       bar_fill_line_thickness = get_res_value(res2,"gsnXYBarChartFillLineThicknessF",1.0)
+      bar_fill_opacity = get_res_value(res2,"gsnXYBarChartFillOpacityF",1.0)
       bar_fill_scale = get_res_value(res2,"gsnXYBarChartFillScaleF",1.0)
       bar_fill_dot_size = get_res_value(res2,"gsnXYBarChartFillDotSizeF",0.0)
     end if                  ; Done checking special resources.
@@ -5072,6 +5074,10 @@ begin
         gsres@gsEdgesOn        = True
         gsres@gsEdgeThicknessF = bar_outline_thickness
       end if
+      gsres@gsFillLineThicknessF = bar_fill_line_thickness
+      gsres@gsFillOpacityF       = bar_fill_opacity
+      gsres@gsFillScaleF         = bar_fill_scale
+      gsres@gsFillDotSizeF       = bar_fill_dot_size
       do i=0,ncurves-1 
         var_string = unique_string("polygons"+i)
 ;
