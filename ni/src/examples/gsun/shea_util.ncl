@@ -4488,7 +4488,7 @@ begin
 
 end
 ;-------------------------------------
-undef("calc_day_stat")
+undef("calc_day_values")
 function calc_day_values(x, arith[1]:string, nDim[1]:integer, opt[1]:logical)  
 ;;function calculate_daily_values (x:numeric, arith:string, nDim[1]:integer, opt[1]:logical)
 local tstep, tspan, tunits, tbase, TIME, tuchar, tbchar, ntu, ntb, newunits \
