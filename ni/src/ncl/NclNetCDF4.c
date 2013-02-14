@@ -1990,6 +1990,9 @@ NclFileGrpNode *_NC4_get_grpnode(int pid, int gid, NclQuark pn, NclFileGrpNode *
     grpnode->var_rec = _NC4_get_vars(gid, n_vars, &has_scalar_dim,
                                      unlimited_dim_idx, NrmQuarkToString(grpnode->real_name));
 
+    if(n_dims)
+        NC4GetDimVals(gid, grpnode);
+
     nc_ret = nc_inq_grps(gid, &numgrps, NULL);
 
   /*

@@ -3127,19 +3127,19 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                     {
                         NHLPERROR((NhlFATAL,NhlEUNKNOWN,
                             "MyAdvancedFileReadVarValue: Invalid component in struct: <%s>",
-                             NrmQuarkToString(varnode->name)));
+                             NrmQuarkToString(var_name)));
                     }
                 }
                 else if(NCL_list == varnode->type)
                 {
                   /*
                    *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                   *fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
+                   *fprintf(stderr, "\tvar_name: <%s>\n", NrmQuarkToString(var_name));
                    */
 
                     val = (*thefile->advancedfile.format_funcs->read_var)
                      (thefile->advancedfile.grpnode,
-                      varnode->name,
+                      var_name,
                       start, finish, stride, val);
 
                     tmp_md = (NclMultiDValData) val;
@@ -3149,12 +3149,12 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                 {
                   /*
                    *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                   *fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
+                   *fprintf(stderr, "\tvar_name: <%s>\n", NrmQuarkToString(var_name));
                    */
 
                     val = (*thefile->advancedfile.format_funcs->read_var)
                      (thefile->advancedfile.grpnode,
-                      varnode->name,
+                      var_name,
                       start, finish, stride, val);
  
                     opaquerec = (NclFileOpaqueRecord *) val;
@@ -3163,12 +3163,12 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                 {
                   /*
                    *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                   *fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
+                   *fprintf(stderr, "\tvar_name: <%s>\n", NrmQuarkToString(var_name));
                    */
 
                     val = (*thefile->advancedfile.format_funcs->read_var)
                      (thefile->advancedfile.grpnode,
-                      varnode->name,
+                      var_name,
                       start, finish, stride, val);
  
                     enumrec = (NclFileEnumRecord *) val;
@@ -3178,7 +3178,7 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                     val = (void*)NclMalloc(total_elements*_NclSizeOf(varnode->type));
                     (*thefile->advancedfile.format_funcs->read_var)
                      (thefile->advancedfile.grpnode,
-                      varnode->name,
+                      var_name,
                       start, finish, stride, val);
                 }
             }
@@ -3187,7 +3187,7 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                 val = (void*)NclMalloc(total_elements*_NclSizeOf(varnode->type));
                 (*thefile->advancedfile.format_funcs->read_coord)
                  (thefile->advancedfile.grpnode,
-                  varnode->name,
+                  var_name,
                   start, finish, stride, val);
             }
         
@@ -3273,14 +3273,14 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
             {
                 (*thefile->advancedfile.format_funcs->read_var)
                  (thefile->advancedfile.grpnode,
-                  varnode->name,
+                  var_name,
                   current_index, current_finish, real_stride, (void*)val);
             }
             else
             {
                 (*thefile->advancedfile.format_funcs->read_coord)
                  (thefile->advancedfile.grpnode,
-                  varnode->name,
+                  var_name,
                   current_index, current_finish, real_stride, (void*)val);
             }
 
@@ -3369,14 +3369,14 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                 if(vtype == FILE_VAR_ACCESS)
                 {
                     (*thefile->advancedfile.format_funcs->read_var)
-                     (thefile->advancedfile.grpnode, varnode->name,
+                     (thefile->advancedfile.grpnode, var_name,
                       current_index, current_finish, real_stride,
                       (void*)&(((char*)val)[to]));
                 }
                 else
                 {
                     (*thefile->advancedfile.format_funcs->read_coord)
-                     (thefile->advancedfile.grpnode, varnode->name,
+                     (thefile->advancedfile.grpnode, var_name,
                       current_index, current_finish, real_stride,
                       (void*)&(((char*)val)[to]));
                 }
@@ -3525,13 +3525,13 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                 if(vtype == FILE_VAR_ACCESS)
                 {
                     (*thefile->advancedfile.format_funcs->read_var_ns)
-                     (thefile->advancedfile.grpnode, varnode->name,
+                     (thefile->advancedfile.grpnode, var_name,
                       start, finish, val);
                 }
                 else
                 {
                     (*thefile->file.format_funcs->read_coord_ns)
-                     (thefile->advancedfile.grpnode, varnode->name,
+                     (thefile->advancedfile.grpnode, var_name,
                       start, finish, val);
                 }
             
@@ -3607,13 +3607,13 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                 if(vtype == FILE_VAR_ACCESS)
                 {
                     (*thefile->advancedfile.format_funcs->read_var_ns)
-                     (thefile->advancedfile.grpnode, varnode->name,
+                     (thefile->advancedfile.grpnode, var_name,
                       current_index, current_finish, (void*)val);
                 }
                 else
                 {
                     (*thefile->advancedfile.format_funcs->read_coord_ns)
-                     (thefile->advancedfile.grpnode, varnode->name,
+                     (thefile->advancedfile.grpnode, var_name,
                       current_index, current_finish, (void*)val);
                 }
 
@@ -3697,14 +3697,14 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                     if(vtype == FILE_VAR_ACCESS)
                     {
                         (*thefile->advancedfile.format_funcs->read_var_ns)
-                         (thefile->advancedfile.grpnode, varnode->name,
+                         (thefile->advancedfile.grpnode, var_name,
                           current_index, current_finish,
                           (void*)&(((char*)val)[to]));
                     }
                     else
                     {
                         (*thefile->advancedfile.format_funcs->read_coord_ns)
-                         (thefile->advancedfile.grpnode, varnode->name,
+                         (thefile->advancedfile.grpnode, var_name,
                           current_index, current_finish,
                           (void*)&(((char*)val)[to]));
                     }
@@ -3878,14 +3878,14 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                     if(vtype == FILE_VAR_ACCESS)
                     {
                         (*thefile->advancedfile.format_funcs->read_var_ns)
-                         (thefile->advancedfile.grpnode, varnode->name,
+                         (thefile->advancedfile.grpnode, var_name,
                           current_index, current_finish,
                           (void*)&(((char*)val)[to]));
                     }
                     else
                     {
                         (*thefile->advancedfile.format_funcs->read_coord_ns)
-                         (thefile->advancedfile.grpnode, varnode->name,
+                         (thefile->advancedfile.grpnode, var_name,
                           current_index, current_finish, val);
                     }
 
@@ -4002,14 +4002,14 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                     if(vtype == FILE_VAR_ACCESS)
                     {
                         (*thefile->advancedfile.format_funcs->read_var_ns)
-                         (thefile->advancedfile.grpnode, varnode->name,
+                         (thefile->advancedfile.grpnode, var_name,
                           current_index, current_finish,
                           (void*)&(((char*)val)[to]));
                     }
                     else
                     {
                         (*thefile->advancedfile.format_funcs->read_coord_ns)
-                         (thefile->advancedfile.grpnode, varnode->name,
+                         (thefile->advancedfile.grpnode, var_name,
                           current_index, current_finish, val);
                     }
 
@@ -4167,14 +4167,14 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                     if(vtype == FILE_VAR_ACCESS)
                     {
                         (*thefile->advancedfile.format_funcs->read_var_ns)
-                         (thefile->advancedfile.grpnode, varnode->name,
+                         (thefile->advancedfile.grpnode, var_name,
                           current_index, current_finish,
                           (void*)&(((char*)val)[to]));
                     }
                     else
                     {
                         (*thefile->advancedfile.format_funcs->read_coord_ns)
-                         (thefile->advancedfile.grpnode, varnode->name,
+                         (thefile->advancedfile.grpnode, var_name,
                           current_index, current_finish,
                           (void*)&(((char*)val)[to]));
                     }
@@ -4565,16 +4565,39 @@ static struct _NclVarRec *AdvancedFileReadVar(NclFile infile, NclQuark var_name,
         {
         if(sel_ptr == NULL)
         {
-/*
-* Because some file may allow dimensions of size 1 special care must be taken here
-*/
+            NclQuark coordvarname;
+            char cvnhead[1024];
+            char cvn[1024];
+            char *varstr = NrmQuarkToString(var_name);
+            char *cptr = strrchr(varstr, '/');
+
+            if(NULL != cptr)
+            {
+                i = 1 + strlen(varstr) - strlen(cptr);
+                strncpy(cvnhead, varstr, i);
+                cvnhead[i] = '\0';
+
+              /*
+               *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr, "\ncvnhead: <%s>, varstr: <%s>, cptr: <%s>\n", cvnhead, varstr, cptr);
+               */
+            }
+
             for(i = 0 ; i < tmp_md->multidval.n_dims; i++)
             {
-                coordnode = _getCoordVarNodeFromNclFileGrpNode(thefile->advancedfile.grpnode,
-                                                               dim_info[i].dim_quark);
+                if(NULL == cptr)
+                    coordvarname = dim_info[i].dim_quark;
+                else
+                {
+                    strcpy(cvn, cvnhead);
+                    strcat(cvn, NrmQuarkToString(dim_info[i].dim_quark));
+                    coordvarname = NrmStringToQuark(cvn);
+                }
+
+                coordnode = _getCoordVarNodeFromNclFileGrpNode(thefile->advancedfile.grpnode, coordvarname);
                 if(NULL != coordnode)
                 {
-                    tmp_var = _NclFileReadCoord((NclFile)thefile,dim_info[i].dim_quark,NULL);
+                    tmp_var = _NclFileReadCoord((NclFile)thefile,coordvarname,NULL);
                     if(tmp_var != NULL)
                         coords[i] = tmp_var->obj.id;
                     else
@@ -6242,7 +6265,7 @@ static NhlErrorTypes MyAdvancedFileWriteVar(NclFile infile, NclQuark var,
         {
             /*
             *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-            *fprintf(stderr, "\tget varnode->name: <%s>\n", NrmQuarkToString(varnode->name));
+            *fprintf(stderr, "\tget var: <%s>\n", NrmQuarkToString(var));
             */
             if(NCL_none == varnode->type)
             {
@@ -7056,7 +7079,7 @@ static NhlErrorTypes MyAdvancedFileWriteVar(NclFile infile, NclQuark var,
 */
           /*
            *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\tCould not get varnode->name: <%s>\n", NrmQuarkToString(var));
+           *fprintf(stderr, "\tCould not get var: <%s>\n", NrmQuarkToString(var));
            */
 
             if(type == FILE_COORD_VAR_ACCESS)
