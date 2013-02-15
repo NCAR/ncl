@@ -1680,14 +1680,16 @@ end     ; of latlon_to_SCRIP(...)
 ; Checks if the required dimensions in the SCRIP file are present
 ;======================================================================
 undef("check_SCRIP_dims")
-function check_SCRIP_dims(fid[1]:file)
+function check_SCRIP_dims(fid[1]:file,verbose[1]:logical)
 local i, file_dims, scrip_dim_names
 begin
   file_dims       = getvardims(fid) 
   scrip_dim_names = (/"grid_rank","grid_size","grid_corners"/)
   do i=0,dimsizes(scrip_dim_names)-1
     if (.not.(any(file_dims.eq.scrip_dim_names(i))))
-      print("check_SCRIP_dims: " + scrip_dim_names(i) + " not defined.")
+      if(verbose) then
+        print("check_SCRIP_dims: " + scrip_dim_names(i) + " not defined.")
+      end if
       return(False)
     end if
   end do
@@ -1698,14 +1700,16 @@ end     ; of check_SCRIP_dims(...)
 ; Checks if the required variables in SCRIP file are present
 ;======================================================================
 undef("check_SCRIP_vars")
-function check_SCRIP_vars(fid[1]:file)
+function check_SCRIP_vars(fid[1]:file,verbose[1]:logical)
 local i, scrip_vars
 begin
   scrip_vars = (/"grid_dims",  "grid_center_lat", "grid_center_lon",\
                  "grid_imask", "grid_corner_lat", "grid_corner_lon"/)
   do i=0,dimsizes(scrip_vars)-1
     if(.not.(isfilevar(fid,scrip_vars(i))))
-      print("check_SCRIP_vars: " + scrip_vars(i) + " not defined.")
+      if(verbose) then
+        print("check_SCRIP_vars: " + scrip_vars(i) + " not defined.")
+      end if
       return(False)
     end if
   end do
@@ -1716,15 +1720,17 @@ end     ; check_SCRIP_vars(...)
 ; Checks if the input filename is following SCRIP standard
 ;======================================================================
 undef("is_SCRIP")
-function is_SCRIP(FileName[1]:string)
+function is_SCRIP(FileName[1]:string,verbose[1]:logical)
 local fid
 begin
     if (.not.isfilepresent(FileName)) then
-      print("is_SCRIP: '" + FileName + "' doesn't exist.")
+      if(verbose) then
+        print("is_SCRIP: '" + FileName + "' doesn't exist.")
+      end if
       return(False)
     end if
     fid = addfile(FileName,"r")
-    return check_SCRIP_dims(fid).and.check_SCRIP_vars(fid)
+    return check_SCRIP_dims(fid,verbose).and.check_SCRIP_vars(fid,verbose)
 
 end     ; of is_SCRIP(...)
 
@@ -1732,7 +1738,7 @@ end     ; of is_SCRIP(...)
 ; Checks if the required dimensions in the ESMF file are present
 ;======================================================================
 undef("check_ESMF_dims")
-function check_ESMF_dims(fid[1]:file)
+function check_ESMF_dims(fid[1]:file,verbose[1]:logical)
 local i, esmf_dim_names, file_dims
 begin
   file_dims      = getvardims(fid) 
@@ -1741,7 +1747,9 @@ begin
    
   do i=0,dimsizes(esmf_dim_names)-1
     if (.not.(any(file_dims.eq.esmf_dim_names(i))))
+      if(verbose) then
         print("check_ESMF_dims: " + esmf_dim_names(i) + " not defined.")
+      end if
       return(False)
     end if
   end do
@@ -1752,7 +1760,7 @@ end     ; of check_ESMF_dims(...)
 ; Checks if the required variables in ESMF file are present
 ;======================================================================
 undef("check_ESMF_vars")
-function check_ESMF_vars(fid[1]:file)
+function check_ESMF_vars(fid[1]:file,verbose[1]:logical)
 local i, esmf_vars
 begin
   esmf_vars = (/"nodeCoords","elementConn","numElementConn",\
@@ -1760,7 +1768,9 @@ begin
 
   do i=0,dimsizes(esmf_vars)-1
     if(.not.(isfilevar(fid,esmf_vars(i))))
-      print("check_ESMF_vars: " + esmf_vars(i) + " not defined.")
+      if(verbose) then
+        print("check_ESMF_vars: " + esmf_vars(i) + " not defined.")
+      end if
       return(False)
     end if
   end do
@@ -1771,15 +1781,17 @@ end     ; check_ESMF_vars(...)
 ; Checks if the input filename is following ESMF standard
 ;======================================================================
 undef("is_ESMF")
-function is_ESMF(FileName[1]:string)
+function is_ESMF(FileName[1]:string,verbose[1]:logical)
 local fid
 begin
     if (.not.isfilepresent(FileName)) then
-      print("is_ESMF: '" + FileName + "' doesn't exist.")
+      if(verbose) then
+        print("is_ESMF: '" + FileName + "' doesn't exist.")
+      end if
       return(False)
     end if
     fid = addfile(FileName,"r")
-    return check_ESMF_dims(fid).and.check_ESMF_vars(fid)
+    return check_ESMF_dims(fid,verbose).and.check_ESMF_vars(fid,verbose)
 
 end     ; of is_ESMF(...)
 
@@ -2179,15 +2191,29 @@ begin
 
 ;---Check if the source grid file is a SCRIP file.
   if (.not.(isatt_logical_true(opt2,"SrcESMF")).and. \
-      .not.(is_SCRIP(srcGridFile))) then
-    print("ESMF_regrid_gen_weights: invalid or missing source grid file.")
+      .not.(is_SCRIP(srcGridFile,True))) then
+    print("ESMF_regrid_gen_weights: invalid or missing SCRIP source grid file.")
+    exit
+  end if
+
+;---Check if the source grid file is an ESMF file.
+  if (isatt_logical_true(opt2,"SrcESMF").and. \
+      .not.(is_ESMF(srcGridFile,True))) then
+    print("ESMF_regrid_gen_weights: invalid or missing ESMF source grid file.")
     exit
   end if
 
 ;---Check if the destination grid file is a SCRIP file.
   if (.not.(isatt_logical_true(opt2,"DstESMF")).and. \
-      .not.(is_SCRIP(dstGridFile))) then
-    print("ESMF_regrid_gen_weights: invalid or missing destination grid file.")
+      .not.(is_SCRIP(dstGridFile,True))) then
+    print("ESMF_regrid_gen_weights: invalid or missing SCRIP destination grid file.")
+    exit
+  end if
+
+;---Check if the destination grid file is a ESMF file.
+  if (isatt_logical_true(opt2,"DstESMF").and. \
+      .not.(is_ESMF(dstGridFile,True))) then
+    print("ESMF_regrid_gen_weights: invalid or missing ESMF destination grid file.")
     exit
   end if
 
@@ -3021,8 +3047,8 @@ begin
 ; the original input file names.
 ;
   if(isatt(opt2,grid_file_name).and.isfilepresent(opt2@$grid_file_name$).and.\
-     .not.is_SCRIP(opt2@$grid_file_name$).and.\
-     .not.is_ESMF(opt2@$grid_file_name$)) then
+     .not.is_SCRIP(opt2@$grid_file_name$,False).and.\
+     .not.is_ESMF(opt2@$grid_file_name$,False)) then
      print("ESMF_regrid: error: the file name given for the output " + grid_long_string)
      print("    grid file (via the special option '" + grid_string + "FileName') already exists")
      print("    ('" + opt2@$grid_file_name$ + "'), but doesn't appear to be a SCRIP")
