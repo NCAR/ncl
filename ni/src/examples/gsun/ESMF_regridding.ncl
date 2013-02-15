@@ -1681,23 +1681,17 @@ end     ; of latlon_to_SCRIP(...)
 ;======================================================================
 undef("check_SCRIP_dims")
 function check_SCRIP_dims(fid[1]:file)
+local i, file_dims, scrip_dim_names
 begin
-    FileDims=getvardims(fid) 
-    
-    if ( .not.(any(FileDims.eq."grid_rank") ) ) then
-        print("check_SCRIP_dims: grid_rank not defined.")
-        return(False)
-    else if ( .not.(any(FileDims.eq."grid_size") ) ) then
-        print("check_SCRIP_dims: grid_size not defined.")
-        return(False)
-    else if ( .not.(any(FileDims.eq."grid_corners") ) ) then
-        print("check_SCRIP_dims: grid_corners not defined.")
-        return(False)
-    else
-        return(True)
+  file_dims       = getvardims(fid) 
+  scrip_dim_names = (/"grid_rank","grid_size","grid_corners"/)
+  do i=0,dimsizes(scrip_dim_names)-1
+    if (.not.(any(file_dims.eq.scrip_dim_names(i))))
+      print("check_SCRIP_dims: " + scrip_dim_names(i) + " not defined.")
+      return(False)
     end if
-    end if
-    end if
+  end do
+  return(True)
 end     ; of check_SCRIP_dims(...)
 
 ;======================================================================
@@ -1705,33 +1699,17 @@ end     ; of check_SCRIP_dims(...)
 ;======================================================================
 undef("check_SCRIP_vars")
 function check_SCRIP_vars(fid[1]:file)
+local i, scrip_vars
 begin
-    if ( .not.(isfilevar(fid,"grid_dims")) ) then
-        print("check_SCRIP_vars: grid_dims not defined.")
-        return(False)
-    else if ( .not.(isfilevar(fid,"grid_center_lat")) ) then
-        print("check_SCRIP_vars: grid_center_lat not defined.")
-        return(False)
-    else if ( .not.(isfilevar(fid,"grid_center_lon")) ) then
-        print("check_SCRIP_vars: grid_center_lon not defined.")
-        return(False)
-    else if ( .not.(isfilevar(fid,"grid_imask")) ) then
-        print("check_SCRIP_vars: grid_imask not defined.")
-        return(False)
-    else if ( .not.(isfilevar(fid,"grid_corner_lat")) ) then
-        print("check_SCRIP_vars: grid_corner_lat not defined.")
-        return(False)
-    else if ( .not.(isfilevar(fid,"grid_corner_lon")) ) then
-        print("check_SCRIP_vars: grid_corner_lon not defined.")
-        return(False)
-    else
-        return(True)
+  scrip_vars = (/"grid_dims",  "grid_center_lat", "grid_center_lon",\
+                 "grid_imask", "grid_corner_lat", "grid_corner_lon"/)
+  do i=0,dimsizes(scrip_vars)-1
+    if(.not.(isfilevar(fid,scrip_vars(i))))
+      print("check_SCRIP_vars: " + scrip_vars(i) + " not defined.")
+      return(False)
     end if
-    end if
-    end if  
-    end if
-    end if
-    end if
+  end do
+  return(True)
 end     ; check_SCRIP_vars(...)
 
 ;======================================================================
@@ -1749,6 +1727,61 @@ begin
     return check_SCRIP_dims(fid).and.check_SCRIP_vars(fid)
 
 end     ; of is_SCRIP(...)
+
+;======================================================================
+; Checks if the required dimensions in the ESMF file are present
+;======================================================================
+undef("check_ESMF_dims")
+function check_ESMF_dims(fid[1]:file)
+local i, esmf_dim_names, file_dims
+begin
+  file_dims      = getvardims(fid) 
+  esmf_dim_names = (/"nodeCount", "elementCount", \
+                     "maxNodePElement","coordDim"/)
+   
+  do i=0,dimsizes(esmf_dim_names)-1
+    if (.not.(any(file_dims.eq.esmf_dim_names(i))))
+        print("check_ESMF_dims: " + esmf_dim_names(i) + " not defined.")
+      return(False)
+    end if
+  end do
+  return(True)
+end     ; of check_ESMF_dims(...)
+
+;======================================================================
+; Checks if the required variables in ESMF file are present
+;======================================================================
+undef("check_ESMF_vars")
+function check_ESMF_vars(fid[1]:file)
+local i, esmf_vars
+begin
+  esmf_vars = (/"nodeCoords","elementConn","numElementConn",\
+                "centerCoords","elementArea","elementMask"/)
+
+  do i=0,dimsizes(esmf_vars)-1
+    if(.not.(isfilevar(fid,esmf_vars(i))))
+      print("check_ESMF_vars: " + esmf_vars(i) + " not defined.")
+      return(False)
+    end if
+  end do
+  return(True)
+end     ; check_ESMF_vars(...)
+
+;======================================================================
+; Checks if the input filename is following ESMF standard
+;======================================================================
+undef("is_ESMF")
+function is_ESMF(FileName[1]:string)
+local fid
+begin
+    if (.not.isfilepresent(FileName)) then
+      print("is_ESMF: '" + FileName + "' doesn't exist.")
+      return(False)
+    end if
+    fid = addfile(FileName,"r")
+    return check_ESMF_dims(fid).and.check_ESMF_vars(fid)
+
+end     ; of is_ESMF(...)
 
 ;======================================================================
 ; This function will retrieve the latitude coordinate of a grid
@@ -2988,7 +3021,8 @@ begin
 ; the original input file names.
 ;
   if(isatt(opt2,grid_file_name).and.isfilepresent(opt2@$grid_file_name$).and.\
-     .not.is_SCRIP(opt2@$grid_file_name$)) then
+     .not.is_SCRIP(opt2@$grid_file_name$).and.\
+     .not.is_ESMF(opt2@$grid_file_name$)) then
      print("ESMF_regrid: error: the file name given for the output " + grid_long_string)
      print("    grid file (via the special option '" + grid_string + "FileName') already exists")
      print("    ('" + opt2@$grid_file_name$ + "'), but doesn't appear to be a SCRIP")
