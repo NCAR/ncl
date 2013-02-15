@@ -433,7 +433,7 @@ void guiRLDestroy(int id)
     NhlRLDestroy(id);
 }
 
-float *guiGetValue(NclVar _nclvar)
+float* guiGetValue(NclVar _nclvar)
 {
     int i = 0;
     size_t n = 0;
@@ -470,6 +470,72 @@ float *guiGetValue(NclVar _nclvar)
              ip = tmp_md->multidval.val;
              for(n = 0; n < nelm; ++n)
                  value[n] = (float) ip[n];
+             return value;
+        default:
+             break;
+    }
+
+    return NULL;
+}
+
+int* guiGetIntArray(NclVar _nclvar)
+{
+    int i = 0;
+    size_t n = 0;
+    int *value;
+    size_t nelm = 1;
+    NclMultiDValData tmp_md;
+    int _varndims;
+    int _vardimsizes[NCL_MAX_DIMENSIONS];
+
+    _varndims = (int) (_nclvar->var.n_dims);
+    for(i = 0; i < _varndims; ++i)
+    {
+        _vardimsizes[i] = (int)_nclvar->var.dim_info[i].dim_size;
+        nelm *= _vardimsizes[i] ;
+    }
+
+    value = (int *)NclCalloc(nelm, sizeof(int));
+
+    tmp_md = (NclMultiDValData) _NclGetObj(_nclvar->var.thevalue_id);
+
+    switch(tmp_md->multidval.data_type)
+    {
+        case NCL_int:
+             memcpy(value, tmp_md->multidval.val, nelm * sizeof(int));
+             return value;
+        default:
+             break;
+    }
+
+    return NULL;
+}
+
+double* guiGetDoubleArray(NclVar _nclvar)
+{
+    int i = 0;
+    size_t n = 0;
+    double* value = NULL;
+    size_t nelm = 1;
+    NclMultiDValData tmp_md;
+    int _varndims;
+    int _vardimsizes[NCL_MAX_DIMENSIONS];
+
+    _varndims = (int) (_nclvar->var.n_dims);
+    for(i = 0; i < _varndims; ++i)
+    {
+        _vardimsizes[i] = (int)_nclvar->var.dim_info[i].dim_size;
+        nelm *= _vardimsizes[i] ;
+    }
+
+    value = (double*)NclCalloc(nelm, sizeof(double));
+
+    tmp_md = (NclMultiDValData) _NclGetObj(_nclvar->var.thevalue_id);
+
+    switch(tmp_md->multidval.data_type)
+    {
+        case NCL_double:
+             memcpy(value, tmp_md->multidval.val, nelm * sizeof(double));
              return value;
         default:
              break;

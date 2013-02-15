@@ -121,9 +121,16 @@ fi
 sed \
 -e "/INSERTHERE/r .tmp.$$" \
 -e '/INSERTHERE/d' \
-TypeSupport.h.sed > TypeSupport.h
+TypeSupport.h.sed > .tmp2.$$
 
-rm .tmp.$$
+sed \
+-e 's/ncl_and_type/and_type/g' \
+-e 's/ncl_not_type/not_type/g' \
+-e 's/ncl_xor_type/xor_type/g' \
+-e 's/ncl_or_type/or_type/g' \
+.tmp2.$$ > TypeSupport.h
+
+rm .tmp.$$ .tmp2.$$
 
 echo "created TypeSupport.h"
 

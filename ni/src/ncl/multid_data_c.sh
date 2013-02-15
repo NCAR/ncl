@@ -127,10 +127,16 @@ fi
 sed \
 -e "/INSERTHERE/r .tmp.$$" \
 -e '/INSERTHERE/d' \
--e 's/type_class\.not/type_class\.ncl_not/g' \
-NclMultiDValData.c.sed > NclMultiDValData.c
+NclMultiDValData.c.sed > .tmp2.$$
 
-rm .tmp.$$
+sed \
+-e 's/ncl_and_type/and_type/g' \
+-e 's/ncl_not_type/not_type/g' \
+-e 's/ncl_xor_type/xor_type/g' \
+-e 's/ncl_or_type/or_type/g' \
+.tmp2.$$ > NclMultiDValData.c
+
+rm .tmp.$$ .tmp2.$$
 
 echo "created NclMultiDValData.c"
 
