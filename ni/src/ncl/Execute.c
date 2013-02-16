@@ -26,6 +26,7 @@ extern "C" {
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Callbacks.h>
+#include <ncarg/nfp/nctime.h>
 
 #include "defs.h"
 #include "Symbol.h"
@@ -229,7 +230,6 @@ void CallLIST_READ_OP(void) {
 	NclSymbol *temporary;
 	NclStackEntry *list_ptr;
 	NclStackEntry *temporary_list_ptr;
-	NclStackEntry result;
 	NclStackEntry data;
 	NclList list;
 	NclList newlist;
@@ -415,6 +415,93 @@ void CallLIST_READ_OP(void) {
 	return;
 }
 
+
+NhlErrorTypes FixAggCoord(NclOneDValCoordData agg_coord_md, long *agg_dim_count, NrmQuark *units, NrmQuark *calendar, int nfiles)
+{
+	int i;
+	int first = 1;
+	cdCalenType ctype, base_ctype;
+	cdUnitTime base_cdunit, cdunit;
+	cdCompTime base_cdcomptime, cdcomptime;
+	ng_size_t agg_ix = 0;
+	NrmQuark qbase_unit;
+	NclBasicDataTypes coord_type;
+	int increasing;
+	void *val;
+	double dx,dx_out,dx_diff;
+	ng_size_t tsize;
+	void *diff;
+
+	if (nfiles <= 0) 
+		return NhlNOERROR;
+
+	val = agg_coord_md->multidval.val;
+	tsize = agg_coord_md->multidval.type->type_class.size;
+	coord_type = agg_coord_md->multidval.data_type;
+	diff = NclMalloc(tsize);
+	switch (agg_coord_md->onedval.mono_type) {
+	case NclINCREASING:
+		increasing = 1;
+		break;
+	case NclDECREASING:
+		increasing = 0;
+		break;
+	default:
+		NhlPError(NhlWARNING, NhlEUNKNOWN,"non-monotonic coordinate in first aggregated file -- cannot be repaired automatically");
+		return NhlWARNING;
+	}
+		
+	for (i = 0; i < nfiles; i++) {
+		if (agg_dim_count[i] == 0) /* indicates a bad files */
+			continue;
+		if (calendar[i] == NrmNULLQUARK)
+			ctype = cdStandard;
+		else
+			ctype = calendar_type(NrmQuarkToString(_NclGetLower(calendar[i])));
+		if (first) {
+			first = 0;
+			base_ctype = ctype;
+			if ((units[i] == NrmNULLQUARK) || cdParseRelunits(ctype,NrmQuarkToString(units[i]),&base_cdunit,&base_cdcomptime)) {
+				NhlPError(NhlWARNING, NhlEUNKNOWN,"non-monotonic aggregation variable -- not enough information to fix");
+				return NhlWARNING;
+			}
+			qbase_unit = units[i];
+			agg_ix = agg_dim_count[i];
+			continue;
+		}
+		if (units[i] == qbase_unit) /* nothing to do */
+			continue;
+		if ((units[i] == NrmNULLQUARK) || cdParseRelunits(ctype,NrmQuarkToString(units[i]),&cdunit,&cdcomptime)) {
+			NhlPError(NhlWARNING, NhlEUNKNOWN,"non-monotonic aggregation variable -- not enough information to fix");
+			return NhlWARNING;
+		}
+		
+		_Nclcoerce((NclTypeClass)nclTypedoubleClass,
+			   (void*)(&dx),
+			   (char *)val + agg_ix * tsize,
+			   1,
+			   NULL,
+			   NULL,
+			   agg_coord_md->multidval.type);
+
+		cdRel2Comp(ctype,NrmQuarkToString(units[i]),dx,&cdcomptime);
+		cdComp2Rel(base_ctype,cdcomptime,NrmQuarkToString(qbase_unit),&dx_out);
+		dx_diff = dx_out - dx;
+		_NclScalarForcedCoerce((void*)&dx_diff,NCL_double,diff, agg_coord_md->multidval.data_type);
+		_Nclplus(agg_coord_md->multidval.type,(char *)val + agg_ix * tsize,(char *)val + agg_ix * tsize,diff,NULL,NULL,agg_dim_count[i],1);
+
+		agg_ix += agg_dim_count[i];
+	}
+	NclFree(diff);
+	/* check that array is now monotonic */
+	if (! _Nclis_mono(agg_coord_md->multidval.type, agg_coord_md->multidval.val, NULL, agg_coord_md->multidval.totalelements)) {
+		NhlPError(NhlWARNING, NhlEUNKNOWN,"error attempting to fix non-monotonic aggregation variable");
+		return NhlWARNING;
+	}
+
+	return NhlNOERROR;
+}
+	
 void CallLIST_READ_FILEVAR_OP(void) {
 	NclSymbol *listsym;
 	NclStackEntry *list_ptr;
@@ -432,6 +519,8 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	int the_obj_id;
 	NclObj the_obj;
 	long *agg_dim_count = NULL;
+ 	NrmQuark *units = NULL;
+ 	NrmQuark *calendar = NULL;
 	int list_index;
 	long total_agg_dim_size, agg_start_index;
 	long agg_end_index;
@@ -439,8 +528,8 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	long agg_stride_index;
 	NrmQuark agg_dim_name = NrmNULLQUARK;
 	NclFile *files = NULL;
-	NclVar var1 = NULL, tvar, agg_coord_var;
-	NclMultiDValData agg_coord_md = NULL;
+	NclVar var1 = NULL, agg_coord_var;
+	NclOneDValCoordData agg_coord_md = NULL;
 	NclMultiDValData var_md;
 	NclDimRec dim_info;
 	int first;
@@ -648,8 +737,10 @@ void CallLIST_READ_FILEVAR_OP(void) {
          */
 	agg_coord_var = NULL; /* use to test for presence of coordinate variable */
 	agg_dim_count = NclMalloc(sizeof(long) * newlist->list.nelem);
+	units = NclMalloc(sizeof(NrmQuark) * newlist->list.nelem);
+	calendar = NclMalloc(sizeof(NrmQuark) * newlist->list.nelem);
 	files = NclMalloc (sizeof(NclFile) * newlist->list.nelem);
-	if (! (agg_dim_count && files)) {
+	if (! (agg_dim_count && files && units && calendar)) {
 		NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
 		estatus = NhlFATAL;
 	}
@@ -666,6 +757,8 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		agg_dim_name = NrmStringToQuark("ncl_join");
 		for (i = 0; i < total_agg_dim_size; i++) {
 			agg_dim_count[i] = 1;
+			units[i] = NrmNULLQUARK;
+			calendar[i] = NrmNULLQUARK;
 		}
 		list_index = newlist->list.nelem - 1;
 		while ((the_obj_id = _NclListGetNext((NclObj)newlist)) != -1) {
@@ -850,16 +943,28 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					if (bad) {
 						files[list_index] = NULL;
 						agg_dim_count[list_index] = 0;
+						units[list_index] = NrmNULLQUARK;
+						calendar[list_index] = NrmNULLQUARK;
 						list_index--;
 					}
 					else {
+						NclMultiDValData tmd;
 						agg_dim = thefile->file.var_info[index]->file_dim_num[0];
 						agg_dim_name = thefile->file.file_dim_info[agg_dim]->dim_name_quark;
 						total_agg_dim_size += thefile->file.file_dim_info[agg_dim]->dim_size;
 						agg_dim_count[list_index] = thefile->file.file_dim_info[agg_dim]->dim_size;
+						if (_NclFileVarIsAtt(thefile,agg_dim_name,NrmStringToQuark("units")) != -1) {
+							tmd = _NclFileReadVarAtt(thefile,agg_dim_name,NrmStringToQuark("units"),NULL);
+							units[list_index] = *(NrmQuark *) tmd->multidval.val;
+						}
+						if (_NclFileVarIsAtt(thefile,agg_dim_name,NrmStringToQuark("calendar")) != -1) {
+							tmd = _NclFileReadVarAtt(thefile,agg_dim_name,NrmStringToQuark("calendar"),NULL);
+							calendar[list_index] = *(NrmQuark *) tmd->multidval.val;
+						}
 						files[list_index] = thefile;
 						good_file_count++;
 						list_index--;
+
 					}
 				}
 				else {
@@ -876,7 +981,9 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		}
 		if (_NclFileVarIsCoord(files[0],agg_dim_name) > -1) {
 			long offset;
-			agg_coord_md = _NclFileReadVarValue(files[0],agg_dim_name,NULL);
+			NclCoordVar cvar;
+			cvar = (NclCoordVar)_NclFileReadCoord(files[0],agg_dim_name,NULL);
+			agg_coord_md = (NclOneDValCoordData) _NclGetObj(cvar->var.thevalue_id);
 			if (!agg_coord_md) {
 				NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
 				estatus = NhlFATAL;
@@ -919,9 +1026,9 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				dim_info.dim_num = 0;
 				dim_info.dim_size = total_agg_dim_size;
 				agg_coord_md->obj.status = PERMANENT;
-				tvar = _NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,agg_coord_md,&dim_info,-1,NULL,COORD,NrmQuarkToString(agg_dim_name),TEMPORARY);
+				/*tvar = _NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,agg_coord_md,&dim_info,-1,NULL,COORD,NrmQuarkToString(agg_dim_name),TEMPORARY);*/
 				agg_coord_md->obj.status = TEMPORARY;
-				agg_coord_var = _NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,agg_coord_md,&dim_info,-1,&tvar->obj.id,VAR,NrmQuarkToString(agg_dim_name),TEMPORARY);
+				agg_coord_var = _NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,(NclMultiDValData)agg_coord_md,&dim_info,-1,&cvar->obj.id,VAR,NrmQuarkToString(agg_dim_name),TEMPORARY);
 			}
 		}	
 	}	
@@ -1566,6 +1673,19 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			NclFree(vec);
 	}
 
+	if (agg_coord_var && agg_coord_var_md &&
+	    (! _Nclis_mono(agg_coord_var_md->multidval.type, agg_coord_var_md->multidval.val, NULL, agg_coord_var_md->multidval.totalelements))) {
+		FixAggCoord((NclOneDValCoordData)agg_coord_var_md,agg_dim_count,units,calendar,newlist->list.nelem);
+		if (agg_coord_var->var.var_quark == var1->var.var_quark && var1->var.n_dims == 1) {  
+			NclMultiDValData tmd = (NclMultiDValData)_NclGetObj(var1->var.thevalue_id);
+			if (!tmd || tmd->multidval.data_type != agg_coord_var_md->multidval.data_type || tmd->multidval.totalsize != agg_coord_var_md->multidval.totalsize) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"Error attempting to conform coordinate variable data to initial file's time units");
+			}
+			else {
+				memcpy(tmd->multidval.val,agg_coord_var_md->multidval.val,agg_coord_var_md->multidval.totalsize);
+			}
+		}
+	}
 
 	if (var1) {
 		data.kind = NclStk_VAR;
@@ -1597,6 +1717,10 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		NclFree(files);
 	if (agg_dim_count)
 		NclFree(agg_dim_count);
+	if (units)
+		NclFree(units);
+	if (calendar)
+		NclFree(calendar);
 	if (newlist)
 		_NclDestroyObj((NclObj)newlist);
 	
