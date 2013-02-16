@@ -24,7 +24,7 @@ MYNAME          =       libnfp
 EXTRA_INCLUDES  = -I../../ncl
 EXTRA_CDEFINES  = $(UDUNITS_DEFS) $(V5D_DEFS) $(GRIDSPEC_DEFS) $(ESMF_DEFS)
 
-HDRS = wrapper.h
+HDRS = wrapper.h nctime.h
 
 #ifdef BuildUdunits
 UDUNITS_DEFS = -DBuildUdunits
