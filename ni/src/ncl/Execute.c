@@ -415,7 +415,7 @@ void CallLIST_READ_OP(void) {
 	return;
 }
 
-
+extern int cuErrorOccurred;
 NhlErrorTypes FixAggCoord(NclOneDValCoordData agg_coord_md, long *agg_dim_count, NrmQuark *units, NrmQuark *calendar, int nfiles)
 {
 	int i;
@@ -432,6 +432,7 @@ NhlErrorTypes FixAggCoord(NclOneDValCoordData agg_coord_md, long *agg_dim_count,
 	ng_size_t tsize;
 	void *diff;
 
+	cuErrorOccurred = 0;
 	if (nfiles <= 0) 
 		return NhlNOERROR;
 
