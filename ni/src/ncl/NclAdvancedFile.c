@@ -11,6 +11,10 @@
 
 #include "NclAdvancedFile.h"
 
+static char blank_space[MAX_BLANK_SPACE_LENGTH];
+static int indentation_level;
+static int indentation_length;
+
 NhlErrorTypes InitializeFileOptions();
 
 static struct _NclMultiDValDataRec *AdvancedFileReadVarAtt(NclFile infile,
