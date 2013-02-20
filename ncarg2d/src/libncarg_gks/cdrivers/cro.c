@@ -422,12 +422,7 @@ int cro_Cellarray(GKSC *gksc) {
      *  Save current color.
      */
     pattern = cairo_get_source(context);
-    if (cairo_pattern_get_rgba(pattern, &tred, &tgreen, &tblue, &talpha)
-            != CAIRO_STATUS_SUCCESS) {
-        printf("cro_Text: can only retrieve current color for solid patterns\n");
-        return (1);
-    }
-    cval = unpack_argb(psa->ctable, psa->attributes.text_colr_ind);
+    cairo_pattern_reference(pattern);
 
     if (psa->pict_empty) {
         CROpict_init(gksc);
@@ -482,7 +477,9 @@ int cro_Cellarray(GKSC *gksc) {
     /*
      *  Restore color.
      */
-    cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, cval.alpha);
+    cairo_set_source(context, pattern);
+    cairo_pattern_destroy(pattern);
+
     return (0);
 }
 
