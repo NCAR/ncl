@@ -69,11 +69,11 @@ extern "C" {
 #include <regex.h>
 #include <ctype.h>
 
-#define MAX_PRINT_SPACES	32
-#define MAX_LIST_ELEMENT	32
-#define MAX_PRINT_NAME_LENGTH	512
+#define MAX_PRINT_SPACES	128
+#define MAX_LIST_ELEMENT	128
+#define MAX_PRINT_NAME_LENGTH	1024
 
-#define NCL_INITIAL_STRING_LENGTH	2048
+#define NCL_INITIAL_STRING_LENGTH	8192
 
 NhlErrorTypes _Nclstr_fields_count
 #if     NhlNeedProto
@@ -4369,7 +4369,7 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
     result = strtok(tmp, "%");
     while(result != NULL)
     {
-        if(16 > nelems)
+        if(MAX_LIST_ELEMENT > nelems)
         {
             strcpy(format[nelems], "%");
             strcat(format[nelems], result);
@@ -4379,7 +4379,8 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
         }
         else
         {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: write_table can only handle list less than 16 elements.\n");
+            NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: can only handle list less than %d elements.\n",
+                                            __PRETTY_FUNCTION__, MAX_LIST_ELEMENT);
             return(NhlFATAL);
         }
 
@@ -4428,7 +4429,7 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
                     *}
                     */
          
-                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: can not print file list yet.\n");
+                     NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: can not print file list yet.\n", __PRETTY_FUNCTION__);
                      return(NhlFATAL);
                  }
                  else if(thevalue->obj.obj_type_mask & Ncl_MultiDVallistData)
@@ -4437,7 +4438,7 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
                     *ret = _PrintListVarSummary((NclObj)thevalue,fp);
                     */
          
-                     NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: can not print list in list yet.\n");
+                     NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: can not print list in list yet.\n", __PRETTY_FUNCTION__);
                      return(NhlFATAL);
                  }
                  else
