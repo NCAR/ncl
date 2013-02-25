@@ -46,6 +46,7 @@
 #define PI 3.1415926
 #define RINT(A) ((A) > 0 ? (int) ((A) + 0.5) : -(int) (0.5 - (A)))
 
+/* forward declarations... */
 static const char *getFileNameRoot(int, const char*, const char*);
 static char *getRegularOutputFilename(int, const char*, const char*, const char*);
 static char *getIndexedOutputFilename(int, const char*, int, const char*, const char*);
@@ -118,6 +119,26 @@ static void removeCairoEnv(int wkid) {
     --contextNum;
 }
 
+/* Tracing/Debugging functions.
+ * We used to trace by calling getenv("CRO_TRACE") at the top of every function that follows, printing 
+ * a message if the environment variable was set.  I've refactored all that logic into a "trace()" function.
+ * "trace" is actually a function pointer, initially pointing to an initialization function that performs 
+ * the getenv() test just once. "trace" is then modified to point to a function that does the per-invocation 
+ * testing/printing.
+ */
+static int isTracingOn;
+static void (*trace)(const char*);
+static void traceTest(const char* message) {
+    if (isTracingOn)
+        printf("%s\n", message);
+}
+static void traceInit(const char* message) {
+    isTracingOn = (getenv("CRO_TRACE")) ? 1 : 0;
+    trace = traceTest;
+    trace(message);
+}
+static void (*trace)(const char*) = &traceInit;
+
 /*
  *  Picture initialization.  Called once by the first drawing routine (polyline, polymarker, fill, cell, text)
  *  that gets invoked.
@@ -131,9 +152,7 @@ void CROpict_init(GKSC *gksc) {
 
     struct color_value cval;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to CROpict_init\n");
-    }
+    trace("Got to CROpict_init");
     
     cairo_t* context = getContext(psa->wks_id);
 
@@ -212,9 +231,7 @@ void CROset_dashpattern(CROddp *psa) {
     float nominal_dash_size = 1., dash_size, dot_size, gap_size;
     double *dashes = (double *) NULL;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to CRset_dashpattern\n");
-    }
+    trace("Got to CRset_dashpattern");
     
     cairo_t* context = getContext(psa->wks_id);
 
@@ -283,9 +300,7 @@ int cro_ActivateWorkstation(GKSC *gksc) {
 
     CROddp *psa = (CROddp *) gksc->ddp;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_ActivateWorkstation\n");
-    }
+    trace("Got to cro_ActivateWorkstation");
 
     if (psa->wks_type == CX11) {
       croActivateX11(psa, getSurface(psa->wks_id));
@@ -412,9 +427,7 @@ int cro_Cellarray(GKSC *gksc) {
     struct color_value cval;
     cairo_pattern_t *pattern;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_Cellarray\n");
-    }
+    trace("Got to cro_Cellarray");
     
     cairo_t* context = getContext(psa->wks_id);
 
@@ -488,9 +501,7 @@ int cro_ClearWorkstation(GKSC *gksc) {
     int ret = 0;
     char* outputFile;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_ClearWorkstation\n");
-    }
+    trace("Got to cro_ClearWorkstation");
 
     CROddp *psa;
     psa = (CROddp *) gksc->ddp;
@@ -537,9 +548,7 @@ int cro_ClearWorkstation(GKSC *gksc) {
 int cro_CloseWorkstation(GKSC *gksc) {
     CROddp *psa = (CROddp *) gksc->ddp;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_CloseWorkstation\n");
-    }
+    trace("Got to cro_CloseWorkstation");
 
     psa->pict_empty = TRUE;
     if (psa->output_file)
@@ -561,9 +570,7 @@ int cro_CloseWorkstation(GKSC *gksc) {
 
 int cro_DeactivateWorkstation(GKSC *gksc) {
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_DeactivateWorkstation\n");
-    }
+    trace("Got to cro_DeactivateWorkstation");
 
     return (0);
 }
@@ -583,9 +590,7 @@ int cro_Esc(GKSC *gksc) {
     float rscale, logox, logoy, logos;
     static int saved_color_index;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_Esc\n");
-    }
+    trace("Got to cro_Esc");
 
     switch (escape_id) {
     case -1521: /* Corner points for positioning plot on the page */
@@ -702,9 +707,7 @@ int cro_FillArea(GKSC *gksc) {
     float clwidth;
     struct color_value cval;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_FillArea\n");
-    }
+    trace("Got to cro_FillArea");
 
     cairo_t* context = getContext(psa->wks_id);
     
@@ -833,9 +836,7 @@ int cro_GetColorRepresentation(GKSC *gksc) {
 
     int index = xptr[0];
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_GetColorRepresentation\n");
-    }
+    trace("Got to cro_GetColorRepresentation");
 
     cval = unpack_argb(psa->ctable, index);
 
@@ -856,9 +857,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
     extern int orig_wks_id;
     static CROClipRect rect;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_OpenWorkstation\n");
-    }
+    trace("Got to cro_OpenWorkstation");
     
     /*
      *  Provide the gksc with the device dependent data.
@@ -1016,9 +1015,7 @@ int cro_Polyline(GKSC *gksc) {
     int npoints = gksc->p.num, i, ier, ltype;
     struct color_value cval;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_Polyline\n");
-    }
+    trace("Got to cro_Polyline");
 
     if (psa->pict_empty) {
         CROpict_init(gksc);
@@ -1074,9 +1071,7 @@ int cro_Polymarker(GKSC *gksc) {
     struct color_value cval;
     cairo_line_cap_t orig_cap_type;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_Polymarker\n");
-    }
+    trace("Got to cro_Polymarker");
 
     if (psa->pict_empty) {
         CROpict_init(gksc);
@@ -1229,9 +1224,7 @@ int cro_SetCharacterExpansionFactor(GKSC *gksc) {
     CROddp *psa = (CROddp *) gksc->ddp;
     float *fptr = (float *) gksc->f.list;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetCharacterExpansionFactor\n");
-    }
+    trace("Got to cro_SetCharacterExpansionFactor");
 
     psa->attributes.char_expan = fptr[0];
     return (0);
@@ -1249,9 +1242,7 @@ int cro_SetCharacterHeightAndUpVector(GKSC *gksc) {
     double base_x = (double) fptr[1];
     double base_y = (double) fptr[3];
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetCharacterHeightAndUpVector\n");
-    }
+    trace("Got to cro_SetCharacterHeightAndUpVector");
 
     /*
      *  Transform to workstation viewport space.
@@ -1275,9 +1266,7 @@ int cro_SetCharacterSpacing(GKSC *gksc) {
     CROddp *psa = (CROddp *) gksc->ddp;
     float *fptr = (float *) gksc->f.list;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetCharacterSpacing\n");
-    }
+    trace("Got to cro_SetCharacterSpacing");
 
     psa->attributes.char_space = fptr[0];
     return (0);
@@ -1295,9 +1284,7 @@ int cro_SetClipIndicator(GKSC *gksc) {
     float pllx, purx, plly, pury;
     float tllx, turx, tlly, tury;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetClipIndicator\n");
-    }
+    trace("Got to cro_SetClipIndicator");
     
     cairo_t* context = getContext(psa->wks_id);
 
@@ -1353,9 +1340,7 @@ int cro_SetColorRepresentation(GKSC *gksc) {
 
     struct color_value cval;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetColorRepresentation\n");
-    }
+    trace("Got to cro_SetColorRepresentation");
 
     if ((index & ARGB_MASK) > 0)
     	return;   /* value is a 32-bit color, not an index */
@@ -1389,9 +1374,8 @@ int cro_SetFillAreaColorIndex(GKSC *gksc) {
 
     int *xptr = (int *) gksc->x.list;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetFillAreaColorIndex: %d\n", (unsigned int) xptr[0]);
-    }
+    trace("Got to cro_SetFillAreaColorIndex");
+    
     psa->attributes.fill_colr_ind = (unsigned int) xptr[0];
     return (0);
 }
@@ -1401,9 +1385,7 @@ int cro_SetFillAreaInteriorStyle(GKSC *gksc) {
     CROddp *psa = (CROddp *) gksc->ddp;
     int *iptr = (int *) gksc->i.list;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetFillAreaInteriorStyle\n");
-    }
+    trace("Got to cro_SetFillAreaInteriorStyle");
 
     psa->attributes.fill_int_style = iptr[0];
 
@@ -1416,9 +1398,7 @@ int cro_SetFillAreaStyleIndex(GKSC *gksc) {
 
     int *iptr = (int *) gksc->i.list;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetFillAreaStyleIndex\n");
-    }
+    trace("Got to cro_SetFillAreaStyleIndex");
 
     psa->attributes.fill_style_ind = iptr[0];
     return (0);
@@ -1430,9 +1410,7 @@ int cro_SetLineWidthScaleFactor(GKSC *gksc) {
     CROddp *psa = (CROddp *) gksc->ddp;
     float *fptr = (float *) gksc->f.list;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetLineWidthScaleFactor\n");
-    }
+    trace("Got to cro_SetLineWidthScaleFactor");
 
     if (fptr[0] <= 0.2) {
         psa->attributes.linewidth = 0.2;
@@ -1449,9 +1427,7 @@ int cro_SetLinetype(GKSC *gksc) {
 
     int *iptr = (int *) gksc->i.list;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetLinetype\n");
-    }
+    trace("Got to cro_SetLinetype");
 
     psa->attributes.linetype = iptr[0];
     return (0);
@@ -1463,9 +1439,7 @@ int cro_SetMarkerSizeScaleFactor(GKSC *gksc) {
     CROddp *psa = (CROddp *) gksc->ddp;
     float *fptr = (float *) gksc->f.list;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_setMarkerSizeScaleFactor\n");
-    }
+    trace("Got to cro_setMarkerSizeScaleFactor");
 
     psa->attributes.marker_size = fptr[0];
     return (0);
@@ -1478,9 +1452,7 @@ int cro_SetMarkerType(GKSC *gksc) {
 
     int *iptr = (int *) gksc->i.list;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetMarkerType\n");
-    }
+    trace("Got to cro_SetMarkerType");
 
     psa->attributes.marker_type = iptr[0];
     return (0);
@@ -1491,9 +1463,8 @@ int cro_SetPolylineColorIndex(GKSC *gksc) {
     CROddp *psa = (CROddp *) gksc->ddp;
     int *xptr = (int *) gksc->x.list;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetPolylineColorIndex\n");
-    }
+    trace("Got to cro_SetPolylineColorIndex");
+
     psa->attributes.line_colr_ind = (unsigned int) xptr[0];
     return (0);
 }
@@ -1504,9 +1475,7 @@ int cro_SetPolymarkerColorIndex(GKSC *gksc) {
     CROddp *psa = (CROddp *) gksc->ddp;
     int *xptr = (int *) gksc->x.list;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetPolymarkerColorIndex\n");
-    }
+    trace("Got to cro_SetPolymarkerColorIndex");
 
     psa->attributes.marker_colr_ind = (unsigned int) xptr[0];
     return (0);
@@ -1517,9 +1486,7 @@ int cro_SetTextAlignment(GKSC *gksc) {
     CROddp *psa = (CROddp *) gksc->ddp;
     int *xptr = (int *) gksc->i.list;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetTextAlignment\n");
-    }
+    trace("Got to cro_SetTextAlignment");
 
     psa->attributes.text_align_horiz = (unsigned int) xptr[0];
     psa->attributes.text_align_vert = (unsigned int) xptr[1];
@@ -1532,9 +1499,7 @@ int cro_SetTextColorIndex(GKSC *gksc) {
     CROddp *psa = (CROddp *) gksc->ddp;
     int *xptr = (int *) gksc->x.list;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetTextColorIndex\n");
-    }
+    trace("Got to cro_SetTextColorIndex");
 
     psa->attributes.text_colr_ind = (unsigned int) xptr[0];
     return (0);
@@ -1552,9 +1517,7 @@ int cro_SetTextFontAndPrecision(GKSC *gksc) {
      */
     int *iptr = (int *) gksc->i.list;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetTextFontAndPrecision\n");
-    }
+    trace("Got to cro_SetTextFontAndPrecision");
 
     if (ifst == 0) {
         psa->attributes.text_font = 0;
@@ -1572,9 +1535,7 @@ int cro_SetTextPath(GKSC *gksc) {
     CROddp *psa = (CROddp *) gksc->ddp;
     int *iptr = (int *) gksc->i.list;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetTextPath\n");
-    }
+    trace("Got to cro_SetTextPath");
 
     psa->attributes.text_path = iptr[0];
     return (0);
@@ -1589,9 +1550,7 @@ int cro_SetViewport(GKSC *gksc) {
     CROClipRect *Crect;
     int rec_chg = 0;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetViewport\n");
-    }
+    trace("Got to cro_SetViewport");
 
     /*
      *  If the workstation viewport has changed, update the
@@ -1615,9 +1574,7 @@ int cro_SetWindow(GKSC *gksc) {
     CROClipRect *Crect;
     int rec_chg = 0;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SetWindow\n");
-    }
+    trace("Got to cro_SetWindow");
 
     if ((fptr[0] >= fptr[1]) || (fptr[2] >= fptr[3])) {
         return (ERR_INV_RECT);
@@ -1662,6 +1619,8 @@ int cro_Text(GKSC *gksc) {
     
     cairo_t* context = getContext(psa->wks_id);
 
+    trace("Got to cro_Text");
+
     cairo_text_extents(context, sptr, &textents);
 
     cairo_get_font_matrix(context, &fmatrix);
@@ -1669,9 +1628,6 @@ int cro_Text(GKSC *gksc) {
     cairo_matrix_scale(&fmatrix, 1., -1.);
     cairo_set_font_matrix(context, &fmatrix);
     cairo_get_font_matrix(context, &fmatrix);
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_Text\n");
-    }
 
     if (psa->pict_empty) {
         CROpict_init(gksc);
@@ -2057,9 +2013,8 @@ int cro_UpdateWorkstation(GKSC *gksc) {
 
     CROddp *psa = (CROddp *) gksc->ddp;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_UpdateWorkstation\n");
-    }
+    trace("Got to cro_UpdateWorkstation");
+    
     cairo_surface_flush(getSurface(psa->wks_id));
     return (0);
 }
@@ -2232,9 +2187,7 @@ char* getIndexedOutputFilename(int wks_id, const char* file_name, int frameNumbe
 static void CROinit(CROddp *psa, int *coords) {
     float rscale;
 
-    if (getenv("CRO_TRACE")) {
-        printf("Got to CROinit\n");
-    }
+    trace("Got to CROinit");
 
     psa->output_file = NULL;
     psa->window_title = NULL;
@@ -2451,9 +2404,8 @@ void cro_SoftFill(GKSC *gksc, float angle, float spl) {
     CROPoint *points, opoint;
 
     CROddp *psa;
-    if (getenv("CRO_TRACE")) {
-        printf("Got to cro_SoftFill\n");
-    }
+
+    trace("Got to cro_SoftFill");
 
     psa = (CROddp *) gksc->ddp;
     points = (CROPoint *) (gksc->p).list;
