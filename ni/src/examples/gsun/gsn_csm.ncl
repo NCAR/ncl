@@ -2718,6 +2718,9 @@ begin
       end if
     end if
   end if
+  if(isatt(res2,"gsnXYFillOpacities")) then
+    fill_opacs = get_res_value(res2,"gsnXYFillOpacities",1.0)
+  end if
 
   nacol = dimsizes(above_fill_colors)
   nbcol = dimsizes(below_fill_colors)
@@ -2822,20 +2825,25 @@ begin
 ;
     do ab = 0,1
       if (rgbArrayA.eq.True) then
-        gsres@gsFillColor = above_fill_colors(iacol,:)
+        gsres@gsFillColor    = above_fill_colors(iacol,:)
+        gsres@gsFillOpacityF = fill_opacs(iacol,:)
       else
-        gsres@gsFillColor = above_fill_colors(iacol)
+        gsres@gsFillColor    = above_fill_colors(iacol)
+        gsres@gsFillOpacityF = fill_opacs(iacol)
       end if
       if(ab.eq.1)
         y1 = (/yi(n+1,:)/)
         y2 = (/yi(n,:)/)
 ; Color for when first curve is > second curve
         delete(gsres@gsFillColor)    ; just in case
+        delete(gsres@gsFillOpacityF)
         if (rgbArrayB.eq.True) then
-          gsres@gsFillColor = below_fill_colors(ibcol,:)
+          gsres@gsFillColor    = below_fill_colors(ibcol,:)
+          gsres@gsFillOpacityF = fill_opacs(ibcol,:)
         else
-          gsres@gsFillColor = below_fill_colors(ibcol)
-	end if
+          gsres@gsFillColor    = below_fill_colors(ibcol)
+          gsres@gsFillOpacityF = fill_opacs(ibcol)
+        end if
       end if
 ;
 ; Get areas where y1 > y2.
@@ -4409,7 +4417,7 @@ begin
 
       fill_atts = (/"gsnXYFillColors", "gsnXYAboveFillColors", \
                     "gsnXYBelowFillColors","gsnXYLeftFillColors", \
-                    "gsnXYRightFillColors"/)
+                    "gsnXYRightFillColors","gsnXYFillOpacities"/)
       if(any(isatt(res2,fill_atts))) then
 ;
 ; Make sure you collect the appropriate resources to pass
