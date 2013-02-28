@@ -45,7 +45,20 @@ EXTRA_CDEFINES	= $(OS_DEF) $(PNG_DEFINES) -DCTXT -DX11 -DPS -DPDF -DPIX
 PartialLibraryTarget(libbasegks.a,$(BASICOBJ))
 
 CAIROOBJ	=  cro_device.o cro.o cro_conv.o gks_device_cairo.o crotiff.o crodisplay.o
+
 OBJECTS_CAIRO	= $(BASICOBJ) $(CTXTOBJ) $(XOBJ) $(PSOBJ) $(PDFOBJ) $(PIXOBJ) $(CAIROOBJ)
+
+#ifdef JIRA1530
+CAIROOBJ_XQ_FIX	=  cro_device.o cro_xq_fix.o cro_conv.o gks_device_cairo.o crotiff.o crodisplay.o
+OBJECTS_CAIRO_XQ_FIX	= $(BASICOBJ) $(CTXTOBJ) $(XOBJ) $(PSOBJ) $(PDFOBJ) $(PIXOBJ) $(CAIROOBJ_XQ_FIX)
+
+cro_xq_fix.c: cro.c
+	$(LN) cro.c cro_xq_fix.c
+
+cro_xq_fix.o: cro_xq_fix.c
+	$(CC) -D__JIRA1530__ $(CCOPTIONS) $(ALLDEFINES) -c cro_xq_fix.c
+#endif
+
 
 gks_device_cairo.c: gks_device.c
 	$(LN) gks_device.c gks_device_cairo.c
@@ -54,6 +67,10 @@ gks_device_cairo.o: gks_device_cairo.c
 	$(CC) $(CCOPTIONS) $(ALLDEFINES) -c gks_device_cairo.c
 
 PartialLibraryTarget(libncarg_gks.a,$(OBJECTS_CAIRO))
+#ifdef JIRA1530
+PartialLibraryTarget(libncarg_gks_xq_fix.a,$(OBJECTS_CAIRO_XQ_FIX))
+CleanFilesTarget(cro_xq_fix.c cro_xq_fix.o)
+#endif
 CleanFilesTarget(gks_device_cairo.c gks_device_cairo.o)
 
 BuildSharedPartialLib(libNGgksCTXT,$(CTXTOBJ),1,0,NullArgument)

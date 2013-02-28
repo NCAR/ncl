@@ -5211,12 +5211,13 @@ end
 undef("gsn_create_legend_ndc")
 function gsn_create_legend_ndc(wks:graphic, nitems:integer, labels:string, \
                                x,y,resources:logical )
-local i, res2, lgres, wksname, lgres
+local i, res2, lgres, wksname, lgres, item_order
 begin
     res2 = get_resources(resources)
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
+    item_order = get_res_value(res2,"lgItemOrder",ispan(0,nitems-1,1))
 ;
 ; If x,y < 0, this is invalid, and hence don't use these values.
 ; This was a special way to allow gsn_create_legend to call this
@@ -5226,6 +5227,7 @@ begin
       legend = create wksname + "_legend" legendClass wks
         "lgItemCount"    : nitems
         "lgLabelStrings" : labels
+        "lgItemOrder"    : item_order
       end create
     else
       legend = create wksname + "_legend" legendClass wks
@@ -5233,6 +5235,7 @@ begin
         "vpYF"           : y
         "lgItemCount"    : nitems
         "lgLabelStrings" : labels
+        "lgItemOrder"    : item_order
       end create
     end if
     lgres = get_res_eq(res2,(/"lg","vp"/))

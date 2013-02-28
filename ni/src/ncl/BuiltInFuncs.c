@@ -3220,6 +3220,7 @@ NhlErrorTypes _NclIcbinread
 	}
 	return(NhlFATAL);
 }
+
 NhlErrorTypes _NclIfbinnumrec
 #if	NhlNeedProto
 (void)
@@ -3232,7 +3233,6 @@ NhlErrorTypes _NclIfbinnumrec
 	int 	has_missing = 0;
 	char 	control_word[8];
 	int fd = -1;
-	long long ind1,ind2;
 	off_t cur_off;
 	int i;
 	ssize_t n;
@@ -3287,26 +3287,53 @@ NhlErrorTypes _NclIfbinnumrec
 		if(n != marker_size) {
 			break;
 		}
-		if (! swap_bytes)
-			ind1 = marker_size == 4 ? *(int*)control_word : *(long long *) control_word;
-		else
-			_NclSwapBytes(&ind1,control_word,1,marker_size);
-		lseek(fd,cur_off + (off_t)(ind1 + marker_size),SEEK_SET);
-		n = read(fd,(control_word),marker_size);
-		if(n != marker_size) {
-			break;
-		}
-		if (! swap_bytes)
-			ind2 = marker_size == 4 ? *(int*)control_word : *(long long *) control_word;
-		else
-			_NclSwapBytes(&ind2,control_word,1,marker_size);
-		if(ind1 ==  ind2) {
+		if (marker_size == 4) {
+			int ind1, ind2;
+			if (! swap_bytes)
+				ind1 = *(int*)control_word;
+			else
+				_NclSwapBytes(&ind1,control_word,1,marker_size);
+			lseek(fd,cur_off + (off_t)(ind1 + marker_size),SEEK_SET);
+			n = read(fd,(control_word),marker_size);
+			if(n != marker_size) {
+				break;
+			}
+			if (! swap_bytes)
+				ind2 =  *(int*)control_word;
+			else
+				_NclSwapBytes(&ind2,control_word,1,marker_size);
+			if(ind1 ==  ind2) {
 				i++;
 				cur_off += (off_t)(ind1 + marker_size * 2);
-		} else {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinnumrec: an error occurred reading the record control words. Something is wrong with the FORTRAN binary file.");
-			close(fd);
-			return(NhlFATAL);
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinnumrec: an error occurred reading the record control words. Something is wrong with the FORTRAN binary file.");
+				close(fd);
+				return(NhlFATAL);
+			}
+		}
+		else {
+			long long ind1, ind2;
+			if (! swap_bytes)
+				ind1 = *(long long*)control_word;
+			else
+				_NclSwapBytes(&ind1,control_word,1,marker_size);
+			lseek(fd,cur_off + (off_t)(ind1 + marker_size),SEEK_SET);
+			n = read(fd,(control_word),marker_size);
+			if(n != marker_size) {
+				break;
+			}
+			if (! swap_bytes)
+				ind2 =  *(long long*)control_word;
+			else
+				_NclSwapBytes(&ind2,control_word,1,marker_size);
+			if(ind1 ==  ind2) {
+				i++;
+				cur_off += (off_t)(ind1 + marker_size * 2);
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinnumrec: an error occurred reading the record control words. Something is wrong with the FORTRAN binary file.");
+				close(fd);
+				return(NhlFATAL);
+			}
 		}
 	}
 	close(fd);
@@ -3446,7 +3473,12 @@ NhlErrorTypes _NclIfbinrecwrite
 			}
 			if (! swap_bytes)
 				ind1 = marker_size == 4 ? *(int*)control_word : *(long long *) control_word;
-			else
+			else if (marker_size == 4) {
+				int itmp;
+				_NclSwapBytes(&itmp,control_word,1,marker_size);
+				ind1 = itmp;
+			}
+			else 
 				_NclSwapBytes(&ind1,control_word,1,marker_size);
 			lseek(fd,cur_off + (off_t)(ind1 + 4),SEEK_SET);
 			n = read(fd,(control_word),marker_size);
@@ -3458,6 +3490,11 @@ NhlErrorTypes _NclIfbinrecwrite
 			}
 			if (! swap_bytes)
 				ind2 = marker_size == 4 ? *(int*)control_word : *(long long *) control_word;
+			else if (marker_size == 4) {
+				int itmp;
+				_NclSwapBytes(&itmp,control_word,1,marker_size);
+				ind2 = itmp;
+			}
 			else
 				_NclSwapBytes(&ind2,control_word,1,marker_size);
 			if(ind1 == ind2) {
@@ -3574,7 +3611,7 @@ NhlErrorTypes _NclIfbinrecread
 		marker_size = 8;
 	}
 
-	memset((void*) control_word,0,marker_size);
+	memset((void*) control_word,0,8);
 
 	fpath = (NclQuark*)NclGetArgValue(
 		0,
@@ -20702,6 +20739,7 @@ NhlErrorTypes _NclISetFileOption(void)
 	NclQuark filetype = NrmNULLQUARK;
 	NclQuark option;
 	NhlErrorTypes ret;
+	int n = 1;
 	int n_dims = 1;
 	int n = 0;
 
@@ -20859,6 +20897,16 @@ NhlErrorTypes _NclISetFileOption(void)
 			NCLadvancedFileStructure[_NclHDF5] = 1;
     	}
 
+#ifdef USE_NETCDF4_FEATURES
+	for(n = 0; n < _NclNumberOfFileFormats; ++n)
+	{
+		if(NCLadvancedFileStructure[n])
+		{
+			_NclInitClass(nclAdvancedFileClass);
+			break;
+		}
+	}
+#endif
 	ret = _NclFileSetOption(f,filetype,option,tmp_md1);
 
 	return ret;

@@ -1884,6 +1884,31 @@ Unneeded translations
 */
 				_NclPutIntInstr(nsubs,varatt->line,varatt->file);
 				break;	
+			case Ncl_REWRITEIT:
+				/*
+				 *fprintf(stderr, "\nfunc: %s, file: %s, line: %d\n",
+				 *		   __PRETTY_FUNCTION__, __FILE__, __LINE__);
+				 */
+
+				if(varatt->subscript_list != NULL) {
+					step = varatt->subscript_list;
+					off1 = _NclTranslate(step->node,fp);
+					step = step->next;
+					nsubs = 1;		
+					while(step != NULL) {
+						(void)_NclTranslate(step->node,fp);
+						step = step->next;
+						nsubs++;
+					}
+					_NclTranslate(varatt->attnamenode,fp);
+					_NclPutInstr(REASSIGN_VARATT_OP,varatt->line,varatt->file);
+				} else {
+					off1 = _NclTranslate(varatt->attnamenode,fp);
+					_NclPutInstr(REASSIGN_VARATT_OP,varatt->line,varatt->file);
+				}
+				_NclPutInstr((NclValue)varatt->sym,varatt->line,varatt->file);
+				_NclPutIntInstr(nsubs,varatt->line,varatt->file);
+				break;	
 			case Ncl_PARAMIT:
 				if(varatt->subscript_list != NULL) {
 					step = varatt->subscript_list;
@@ -2286,6 +2311,11 @@ Unneeded translations
 */
 				_NclPutIntInstr(nsubs,coord->line,coord->file);
 				break;
+			case Ncl_REWRITEIT:
+				/*fprintf(stderr, "\tcoord->ref_type: %d\n", coord->ref_type);*/
+				NhlPError(NhlWARNING,NhlEUNKNOWN, 
+					  "Reassignment of variable coordinate arrays is not yet supported; coordinate variable not reassigned\n");
+				return (NhlWARNING);
                         default:
                                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
                                 return (NhlFATAL);
@@ -2551,6 +2581,19 @@ Unneeded translations
 				_NclPutInstr(ASSIGN_FILE_GROUP_OP,filegroup->line,filegroup->file);
 				_NclPutInstr((NclValue)filegroup->dfile,filegroup->line,filegroup->file);
 				_NclPutIntInstr(nsubs,filegroup->line,filegroup->file);
+				break;
+			case Ncl_REWRITEIT:
+#if 1
+                                fprintf(stderr, "\nfunc: %s, file: %s, line: %d\n",
+                                                __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                                fprintf(stderr, "\tReassgin to group is not supported in NCL.\n");
+				exit (-1);
+#else
+				_NclTranslate(filegroup->filegroupnode,fp);
+				_NclPutInstr(ASSIGN_FILE_GROUP_OP,filegroup->line,filegroup->file);
+				_NclPutInstr((NclValue)filegroup->dfile,filegroup->line,filegroup->file);
+				_NclPutIntInstr(nsubs,filegroup->line,filegroup->file);
+#endif
 				break;
 			case Ncl_PARAMIT:
 				_NclTranslate(filegroup->filegroupnode,fp);

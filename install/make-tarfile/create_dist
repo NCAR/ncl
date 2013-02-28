@@ -325,7 +325,7 @@ set common_lib_dirs  = "ncarg/database ncarg/fontcaps ncarg/graphcaps ncarg/ngww
 # Set files specific to NCL.
 #
 if ($?NCLONLY || $?NCARGNCL) then
-  set ncl_bin_files = "ng4ex nhlcc nhlf77 nhlf90  ncl$exe_sfx wrapit77$exe_sfx WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc scrip_check_input MakeNcl ESMF_RegridWeightGen"
+  set ncl_bin_files = "ng4ex nhlcc nhlf77 nhlf90 ncl.xq.fix ncl$exe_sfx wrapit77$exe_sfx WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc scrip_check_input MakeNcl ESMF_RegridWeightGen"
 
   set ncl_inc_files = ""
 

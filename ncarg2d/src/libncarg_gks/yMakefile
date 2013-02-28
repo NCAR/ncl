@@ -11,6 +11,9 @@ SUBDIRS = awi bwi wiss cdrivers awiC
 INCLUDES    = gks.h
 
 PartialLibraryRoot(libncarg_gks.a,$(SUBDIRS))
+#ifdef JIRA1530
+PartialLibraryRoot(libncarg_gks_xq_fix.a,$(SUBDIRS))
+#endif
 PartialSourceLibraryRoot(srcncarg_gks.a,$(SUBDIRS))
 
 BuildIncludes($(INCLUDES),ncarg,..)

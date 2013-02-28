@@ -69,6 +69,7 @@
 #include <sys/stat.h>
 
 NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_advanced_file_structure);
+void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *varnode);
 
 NhlErrorTypes _NclBuildFileCoordRSelection
 #if	NhlNeedProto
@@ -889,12 +890,10 @@ NclQuark *_NclFileReadGrpNames(NclFile thefile, int *num_grps)
 			return((*advancedfile->advancedfile.format_funcs->get_grp_names)
 				(advancedfile->advancedfile.grpnode, num_grps));
 	}
-	else
-	{
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-			"_NclFileReadGrpNames: Unknown Class <%s>\n", class_name));
-		return (NULL);
-	}
+
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+		"_NclFileReadGrpNames: Unknown Class <%s>\n", class_name));
+	return (NULL);
 }
 
 struct _NclFileRec *_NclFileReadGroup
@@ -1816,6 +1815,29 @@ int is_unlimited;
 	return(NhlFATAL);
 }
 
+#ifdef USE_NETCDF4_FEATURES
+NhlErrorTypes _NclPrintAdvancedFileVarSummary(NclFile thefile, NclQuark varname)
+{
+	FILE *fp = _NclGetOutputStream();
+	NclFileVarNode *varnode = NULL;
+	NclAdvancedFile advfile = (NclAdvancedFile) thefile;
+
+	varnode = _getVarNodeFromNclFileGrpNode(advfile->advancedfile.grpnode, varname);
+
+	if(NULL == varnode)
+	{
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,"%s: (%s) is not a variable in the file (%s)",
+			__PRETTY_FUNCTION__, NrmQuarkToString(varname),
+			NrmQuarkToString(advfile->advancedfile.fname)));
+		return(NhlWARNING);	
+	}
+
+        _printNclFileVarNode(fp, advfile, varnode);
+
+	return(NhlNOERROR);	
+}
+#endif
+
 NhlErrorTypes _NclPrintFileVarSummary
 #if NhlNeedProto
 (NclFile  thefile , NclQuark  varname )
@@ -1833,6 +1855,14 @@ NclQuark  varname;
 	NclMultiDValData tmp_md;
 	NclVar tmp_var;
 	int vindex = -1;
+
+#ifdef USE_NETCDF4_FEATURES
+	if(thefile->file.advanced_file_structure)
+	{
+		_NclPrintAdvancedFileVarSummary(thefile, varname);
+		return(NhlNOERROR);
+	}
+#endif
 
 	vindex = _NclFileIsVar(thefile,varname);
 	if(vindex > -1) {
@@ -3188,13 +3218,16 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 	if(! is_http)
 	{
+#if 0
 		/* Check if want advanced file-strucuture */
 		if(NULL != fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value)
 		{
 			NrmQuark afs = NrmStringToQuark("advanced");
 			NrmQuark sfs = _NclGetLower(*(NrmQuark *)(fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value->multidval.val));
+			/*
 			NCLadvancedFileStructure[_NclNETCDF] = 0;
 			NCLadvancedFileStructure[_NclNETCDF4] = 0;
+			*/
 			if(afs == sfs)
 			{
 			      /*Only certain data format can use advanced file-structure. Wei 01/11/2013*/
@@ -3215,8 +3248,10 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		{
 			NrmQuark nc4 = NrmStringToQuark("netcdf4");
 			NrmQuark req = _NclGetLower(*(NrmQuark *)(fcp->options[Ncl_FORMAT].value->multidval.val));
+			/*
 			NCLadvancedFileStructure[_NclNETCDF] = 0;
 			NCLadvancedFileStructure[_NclNETCDF4] = 0;
+			*/
 			if(nc4 == req)
 			{
 			      /*if format is NetCDF4,  use advanced file-structure. Wei 01/21/2013*/
@@ -3231,6 +3266,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 				}
 			}
 		}
+#endif
 
 		if(0 > file_ext_q)
 		{

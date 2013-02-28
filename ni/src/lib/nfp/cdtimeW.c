@@ -84,6 +84,8 @@ NhlErrorTypes cd_calendar_W( void )
   ng_size_t index_date;
   extern float truncf(float);
 
+  /* initialize error flag */
+  cuErrorOccurred = 0;
 /*
  * Retrieve parameters
  *
@@ -639,6 +641,9 @@ NhlErrorTypes cd_inv_calendar_W( void )
   ng_size_t dsizes[1], return_missing;
   cdCalenType ctype;
   double fraction;
+
+  /* initialize error flag */
+  cuErrorOccurred = 0;
 
 /*
  * Retrieve parameters

@@ -1,9 +1,9 @@
 C NCLFORTSTART
-      subroutine gammacomplete (nx, xin, xout)
+      subroutine gammacomplete (nx, xin, xout, has_msg, xmsg)
       implicit none
 c                              INPUT
-      integer  nx
-      double precision xin(nx)
+      integer  nx, has_msg
+      double precision xin(nx), xmsg
 c                              OUTPUT
       double precision xout(nx)
 C NCLEND
@@ -13,9 +13,19 @@ c                              LOCAL
       integer n
       double precision dgammaslatec
 
-      do n=1,nx
-         xout(n) = dgammaslatec ( xin(n) )
-      end do
+      if(has_msg.eq.0) then
+        do n=1,nx
+          xout(n) = dgammaslatec ( xin(n) )
+        end do
+      else
+        do n=1,nx
+           if(xin(n) .ne. xmsg) then
+              xout(n) = dgammaslatec ( xin(n) )
+           else
+              xout(n) = xmsg
+           end if
+        end do
+      endif
 
       return
       end 

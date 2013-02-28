@@ -63,7 +63,7 @@ if ($?NCLONLY && $?NCARGONLY) then
 endif
 
 
-set nclversion = "6.1.0"
+set nclversion = "6.1.2"
 set pwddir  = `pwd`
 
 if ($?NCARGNCL) then
@@ -222,6 +222,7 @@ bin/ESMF_RegridWeightGen
 bin/MakeNcl
 bin/WRAPIT
 bin/ncl
+bin/ncl.xq.fix
 bin/ncl_convert2nc
 bin/ncl_filedump
 bin/ncl_grib2nc

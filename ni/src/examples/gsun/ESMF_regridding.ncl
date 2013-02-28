@@ -768,6 +768,7 @@ local latlon_dims, nlat, nlon, Extlon2d, Extlat2d, ExtGridCenter_lat, \
       ExtGridCenter_lon, tmp, ii, jj, DEBUG
 begin
     DEBUG = isatt_logical_true(opt,"Debug")
+    delta = get_att_value(opt,"GridCornerDelta",0.25)
 
     if ( any(dimsizes(lat2d).ne.dimsizes(lon2d) ) ) then
         print("calc_SCRIP_corners_noboundaries: lat and lon must have the same dimensions.")
@@ -864,10 +865,10 @@ begin
 ; would be the corner coordinates for the original grid.
 ;
     tmp = Extlat2d(:,1:nlonp1)+Extlat2d(:,0:nlon)
-    ExtGridCenter_lat       = ndtooned((tmp(1:nlatp1,:)+tmp(0:nlat,:))*0.25)
+    ExtGridCenter_lat       = ndtooned((tmp(1:nlatp1,:)+tmp(0:nlat,:))*delta)
 
     tmp = Extlon2d(:,1:nlonp1)+Extlon2d(:,0:nlon)
-    ExtGridCenter_lon       = ndtooned((tmp(1:nlatp1,:)+tmp(0:nlat,:))*0.25)
+    ExtGridCenter_lon       = ndtooned((tmp(1:nlatp1,:)+tmp(0:nlat,:))*delta)
     delete(tmp)
 
     if(DEBUG) then
@@ -1703,75 +1704,120 @@ end     ; of latlon_to_SCRIP(...)
 ; Checks if the required dimensions in the SCRIP file are present
 ;======================================================================
 undef("check_SCRIP_dims")
-function check_SCRIP_dims(fid[1]:file)
+function check_SCRIP_dims(fid[1]:file,verbose[1]:logical)
+local i, file_dims, scrip_dim_names
 begin
-    FileDims=getvardims(fid) 
-    
-    if ( .not.(any(FileDims.eq."grid_rank") ) ) then
-        print("check_SCRIP_dims: grid_rank not defined.")
-        return(False)
-    else if ( .not.(any(FileDims.eq."grid_size") ) ) then
-        print("check_SCRIP_dims: grid_size not defined.")
-        return(False)
-    else if ( .not.(any(FileDims.eq."grid_corners") ) ) then
-        print("check_SCRIP_dims: grid_corners not defined.")
-        return(False)
-    else
-        return(True)
+  file_dims       = getvardims(fid) 
+  scrip_dim_names = (/"grid_rank","grid_size","grid_corners"/)
+  do i=0,dimsizes(scrip_dim_names)-1
+    if (.not.(any(file_dims.eq.scrip_dim_names(i))))
+      if(verbose) then
+        print("check_SCRIP_dims: " + scrip_dim_names(i) + " not defined.")
+      end if
+      return(False)
     end if
-    end if
-    end if
+  end do
+  return(True)
 end     ; of check_SCRIP_dims(...)
 
 ;======================================================================
 ; Checks if the required variables in SCRIP file are present
 ;======================================================================
 undef("check_SCRIP_vars")
-function check_SCRIP_vars(fid[1]:file)
+function check_SCRIP_vars(fid[1]:file,verbose[1]:logical)
+local i, scrip_vars
 begin
-    if ( .not.(isfilevar(fid,"grid_dims")) ) then
-        print("check_SCRIP_vars: grid_dims not defined.")
-        return(False)
-    else if ( .not.(isfilevar(fid,"grid_center_lat")) ) then
-        print("check_SCRIP_vars: grid_center_lat not defined.")
-        return(False)
-    else if ( .not.(isfilevar(fid,"grid_center_lon")) ) then
-        print("check_SCRIP_vars: grid_center_lon not defined.")
-        return(False)
-    else if ( .not.(isfilevar(fid,"grid_imask")) ) then
-        print("check_SCRIP_vars: grid_imask not defined.")
-        return(False)
-    else if ( .not.(isfilevar(fid,"grid_corner_lat")) ) then
-        print("check_SCRIP_vars: grid_corner_lat not defined.")
-        return(False)
-    else if ( .not.(isfilevar(fid,"grid_corner_lon")) ) then
-        print("check_SCRIP_vars: grid_corner_lon not defined.")
-        return(False)
-    else
-        return(True)
+  scrip_vars = (/"grid_dims",  "grid_center_lat", "grid_center_lon",\
+                 "grid_imask", "grid_corner_lat", "grid_corner_lon"/)
+  do i=0,dimsizes(scrip_vars)-1
+    if(.not.(isfilevar(fid,scrip_vars(i))))
+      if(verbose) then
+        print("check_SCRIP_vars: " + scrip_vars(i) + " not defined.")
+      end if
+      return(False)
     end if
-    end if
-    end if  
-    end if
-    end if
-    end if
+  end do
+  return(True)
 end     ; check_SCRIP_vars(...)
 
 ;======================================================================
 ; Checks if the input filename is following SCRIP standard
 ;======================================================================
 undef("is_SCRIP")
-function is_SCRIP(FileName[1]:string)
+function is_SCRIP(FileName[1]:string,verbose[1]:logical)
 local fid
 begin
     if (.not.isfilepresent(FileName)) then
-      print("is_SCRIP: '" + FileName + "' doesn't exist.")
+      if(verbose) then
+        print("is_SCRIP: '" + FileName + "' doesn't exist.")
+      end if
       return(False)
     end if
     fid = addfile(FileName,"r")
-    return check_SCRIP_dims(fid).and.check_SCRIP_vars(fid)
+    return check_SCRIP_dims(fid,verbose).and.check_SCRIP_vars(fid,verbose)
 
 end     ; of is_SCRIP(...)
+
+;======================================================================
+; Checks if the required dimensions in the ESMF file are present
+;======================================================================
+undef("check_ESMF_dims")
+function check_ESMF_dims(fid[1]:file,verbose[1]:logical)
+local i, esmf_dim_names, file_dims
+begin
+  file_dims      = getvardims(fid) 
+  esmf_dim_names = (/"nodeCount", "elementCount", \
+                     "maxNodePElement","coordDim"/)
+   
+  do i=0,dimsizes(esmf_dim_names)-1
+    if (.not.(any(file_dims.eq.esmf_dim_names(i))))
+      if(verbose) then
+        print("check_ESMF_dims: " + esmf_dim_names(i) + " not defined.")
+      end if
+      return(False)
+    end if
+  end do
+  return(True)
+end     ; of check_ESMF_dims(...)
+
+;======================================================================
+; Checks if the required variables in ESMF file are present
+;======================================================================
+undef("check_ESMF_vars")
+function check_ESMF_vars(fid[1]:file,verbose[1]:logical)
+local i, esmf_vars
+begin
+  esmf_vars = (/"nodeCoords","elementConn","numElementConn",\
+                "centerCoords","elementArea","elementMask"/)
+
+  do i=0,dimsizes(esmf_vars)-1
+    if(.not.(isfilevar(fid,esmf_vars(i))))
+      if(verbose) then
+        print("check_ESMF_vars: " + esmf_vars(i) + " not defined.")
+      end if
+      return(False)
+    end if
+  end do
+  return(True)
+end     ; check_ESMF_vars(...)
+
+;======================================================================
+; Checks if the input filename is following ESMF standard
+;======================================================================
+undef("is_ESMF")
+function is_ESMF(FileName[1]:string,verbose[1]:logical)
+local fid
+begin
+    if (.not.isfilepresent(FileName)) then
+      if(verbose) then
+        print("is_ESMF: '" + FileName + "' doesn't exist.")
+      end if
+      return(False)
+    end if
+    fid = addfile(FileName,"r")
+    return check_ESMF_dims(fid,verbose).and.check_ESMF_vars(fid,verbose)
+
+end     ; of is_ESMF(...)
 
 ;======================================================================
 ; This function will retrieve the latitude coordinate of a grid
@@ -2162,15 +2208,29 @@ begin
 
 ;---Check if the source grid file is a SCRIP file.
   if (.not.(isatt_logical_true(opt2,"SrcESMF")).and. \
-      .not.(is_SCRIP(srcGridFile))) then
-    print("ESMF_regrid_gen_weights: invalid or missing source grid file.")
+      .not.(is_SCRIP(srcGridFile,True))) then
+    print("ESMF_regrid_gen_weights: invalid or missing SCRIP source grid file.")
+    exit
+  end if
+
+;---Check if the source grid file is an ESMF file.
+  if (isatt_logical_true(opt2,"SrcESMF").and. \
+      .not.(is_ESMF(srcGridFile,True))) then
+    print("ESMF_regrid_gen_weights: invalid or missing ESMF source grid file.")
     exit
   end if
 
 ;---Check if the destination grid file is a SCRIP file.
   if (.not.(isatt_logical_true(opt2,"DstESMF")).and. \
-      .not.(is_SCRIP(dstGridFile))) then
-    print("ESMF_regrid_gen_weights: invalid or missing destination grid file.")
+      .not.(is_SCRIP(dstGridFile,True))) then
+    print("ESMF_regrid_gen_weights: invalid or missing SCRIP destination grid file.")
+    exit
+  end if
+
+;---Check if the destination grid file is a ESMF file.
+  if (isatt_logical_true(opt2,"DstESMF").and. \
+      .not.(is_ESMF(dstGridFile,True))) then
+    print("ESMF_regrid_gen_weights: invalid or missing ESMF destination grid file.")
     exit
   end if
 
@@ -2411,6 +2471,15 @@ begin
     if(isatt(fid,"map_method")) then
       map_method = fid@map_method
     end if
+;---Error checking
+    ns = getfilevardimsizes(fid,"S")
+    if(all(ismissing(ns)).or.all(ns.eq.0)) then
+      print("ESMF_regrid_with_weights: error: there are no weights on this file.")
+      print("    This likely means there was a problem with the mapping")
+      print("    from the source grid to the destination grid.")
+      print("    Check that both grids are valid.")
+      return(fmsg)
+    end if
   end if
 
 ;
@@ -2435,13 +2504,15 @@ begin
   dstlon = fid->xc_b
 	
 ;---Check that the source grid "covers" the destination grid 
-  if ( .not.( \
+  if ( DEBUG.and..not.( \
        (min(dstlat).ge.min(srclat)).and.  \
        (max(dstlat).le.max(srclat)).and.  \
        (min(dstlon).ge.min(srclon)).and.  \
        (max(dstlon).le.max(srclon))   ) ) then
-      print("ESMF_regrid_with_weights: warning: destination grid is not completely")
-      print("                          covered by the source grid.")
+      print("ESMF_regrid_with_weights: warning: destination grid is not")
+      print("    completely covered by the source grid. This is not an error.")
+      print("    It just means your destination grid covers a larger area")
+      print("    than your source grid.")
   end if
 	
 ;---Get the dimensions and rank of the source grid and input grid.
@@ -2773,7 +2844,7 @@ begin
 ; Check for generic attributes to pass through; that is,
 ; attributes like "Debug".
 ;
-  gen_atts = (/"PrintTimings","Overwrite","ForceOverwrite","Debug"/)
+  gen_atts = (/"GridCornerDelta","PrintTimings","Overwrite","ForceOverwrite","Debug"/)
   do i=0,dimsizes(gen_atts)-1
     if(isatt(opt2,gen_atts(i))) then
       opt_new@$gen_atts(i)$ = opt2@$gen_atts(i)$
@@ -2965,6 +3036,28 @@ begin
   if(DEBUG) then
     print("write_grid_description: " + grid_long_string + \
            " grid type is '" + grid_type + "'")
+  end if
+
+
+;
+; Error checking added in V6.1.1 to make sure user doesn't 
+; accidentally specify SrcFileName or DstFileName to be
+; the original input file names.
+;
+  if(isatt(opt2,grid_file_name).and.isfilepresent(opt2@$grid_file_name$).and.\
+     .not.is_SCRIP(opt2@$grid_file_name$,False).and.\
+     .not.is_ESMF(opt2@$grid_file_name$,False)) then
+     print("ESMF_regrid: error: the file name given for the output " + grid_long_string)
+     print("    grid file (via the special option '" + grid_string + "FileName') already exists")
+     print("    ('" + opt2@$grid_file_name$ + "'), but doesn't appear to be a SCRIP")
+     print("    file. Make sure you are not overwriting any original data files!")
+     print("")
+     print("    Remember: '" + grid_string + "FileName' should be set to the name of the")
+     print("    *output* " + grid_long_string + " grid description file that will be")
+     print("    created, and not the name of the original input file that")
+     print("    contains your data or destination grid. Use '" + grid_string + "InputFileName'")
+     print("    for that purpose.")
+     exit
   end if
 
 ;---Check if user set a filename for the description file
