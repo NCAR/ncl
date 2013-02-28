@@ -20703,11 +20703,19 @@ NhlErrorTypes _NclISetFileOption(void)
 	NclQuark option;
 	NhlErrorTypes ret;
 	int n_dims = 1;
+	int n = 0;
 
-        NrmQuark filetype_lower;
-        NrmQuark option_lower;
+	NrmQuark filetype_lower;
+	NrmQuark option_lower;
 	NrmQuark fs_quark = NrmStringToQuark("filestructure");
 	NrmQuark ad_lower_quark = NrmStringToQuark("advanced");
+
+	NrmQuark all_quark = NrmStringToQuark("all");
+	NrmQuark  nc_quark = NrmStringToQuark("nc");
+	NrmQuark shp_quark = NrmStringToQuark("shp");
+	NrmQuark he5_quark = NrmStringToQuark("he5");
+
+	NrmQuark fso;
 
 	data = _NclGetArg(0,3,DONT_CARE);
 	switch(data.kind) {
@@ -20767,80 +20775,89 @@ NhlErrorTypes _NclISetFileOption(void)
         filetype_lower = _NclGetLower(filetype);
         option_lower = _NclGetLower(option);
 
-        if((NrmStringToQuark("nc") == filetype_lower) && (NrmStringToQuark("format") == option_lower))
-        {
-                if(NCL_string == tmp_md1->multidval.data_type)
-                {
-			NrmQuark *mode = (NrmQuark *) tmp_md1->multidval.val;
-			NrmQuark mode_lower = _NclGetLower(*mode);
-                        if(NrmStringToQuark("netcdf4") == mode_lower)
-                        {
-				logical lval = True;
-				ng_size_t ndims = 1;
-				NclMultiDValData tmp_md2 = NULL;
-				tmp_md2 = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)(&lval),
-								NULL,1,&ndims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
-                                ret = _NclFileSetOption(f, filetype_lower, fs_quark, tmp_md2);
-				NCLadvancedFileStructure[_NclNETCDF4] = 1;
-				/*Actually, _NclNETCDF4 should be alway 1, so we set NC3 to use new-fs.*/
-				NCLadvancedFileStructure[_NclNETCDF] = 1;
-                        }
-			else
-                        {
-				NCLadvancedFileStructure[_NclNETCDF4] = 0;
-				/*Actually, _NclNETCDF4 should be alway 1, so we set NC3 to use new-fs.*/
-				NCLadvancedFileStructure[_NclNETCDF] = 0;
-                        }
-                }
-        }
-	else if(fs_quark == option_lower)
-        {
-                if(NCL_string == tmp_md1->multidval.data_type)
-                {
-			NrmQuark fso = _NclGetLower(*(NrmQuark *)tmp_md1->multidval.val);
+	if(NCL_string == tmp_md1->multidval.data_type)
+	{
+		fso = _NclGetLower(*(NrmQuark *)tmp_md1->multidval.val);
 
-			if(NrmStringToQuark("all") == filetype_lower)
+	 	if(all_quark == filetype_lower)
+		{
+			if(fs_quark == option_lower)
 			{
-				if(ad_lower_quark == fso)
-					NCLadvancedFileStructure[0] = 1;
-				else
-					NCLadvancedFileStructure[0] = 0;
-			}
-			else if(NrmStringToQuark("nc") == filetype_lower)
-			{
+
 				if(ad_lower_quark == fso)
 				{
-					NCLadvancedFileStructure[_NclNETCDF] = 1;
-					NCLadvancedFileStructure[_NclNETCDF4] = 1;
+					for(n = 0; n < _NclNumberOfFileFormats; ++n)
+						NCLadvancedFileStructure[n] = 1;
 				}
 				else
 				{
+					for(n = 0; n < _NclNumberOfFileFormats; ++n)
+						NCLadvancedFileStructure[n] = 0;
+				}
+
+			}
+		}
+		else if(nc_quark == filetype_lower)
+		{
+       			if(NrmStringToQuark("format") == option_lower)
+			{
+                        	if(NrmStringToQuark("netcdf4") == fso)
+                        	{
+					logical lval = True;
+					ng_size_t ndims = 1;
+					NclMultiDValData tmp_md2 = NULL;
+					tmp_md2 = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)(&lval),
+									NULL,1,&ndims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+                                	ret = _NclFileSetOption(f, filetype_lower, fs_quark, tmp_md2);
+					NCLadvancedFileStructure[_NclNETCDF4] = 1;
+					/*Actually, _NclNETCDF4 should be alway 1, so we set NC3 to use new-fs.*/
+					NCLadvancedFileStructure[_NclNETCDF] = 1;
+                        	}
+				else
+                        	{
 					NCLadvancedFileStructure[_NclNETCDF] = 0;
 					NCLadvancedFileStructure[_NclNETCDF4] = 0;
-				}
+                        	}
 			}
-		      /*The following 6 lines are for 6.2.0. Wei 01/14/2013
-			else if(NrmStringToQuark("h5") == filetype_lower)
+
+			if(fs_quark == option_lower)
 			{
-				NCLadvancedFileStructure[_NclHDF5] = 1;
+				if(ad_lower_quark == fso)
+                        	{
+					NCLadvancedFileStructure[_NclNETCDF] = 1;
+					NCLadvancedFileStructure[_NclNETCDF4] = 1;
+                        	}
+				else
+                        	{
+					NCLadvancedFileStructure[_NclNETCDF] = 0;
+					NCLadvancedFileStructure[_NclNETCDF4] = 0;
+                        	}
 			}
-			else if(NrmStringToQuark("he5") == filetype_lower)
+		}
+		else if(he5_quark == filetype_lower)
+		{
+			if(fs_quark == option_lower)
 			{
 				if(ad_lower_quark == fso)
 					NCLadvancedFileStructure[_NclHDFEOS5] = 1;
 				else
 					NCLadvancedFileStructure[_NclHDFEOS5] = 0;
 			}
-			else if(NrmStringToQuark("shp") == filetype_lower)
+
+		}
+		else if(shp_quark == filetype_lower)
+		{
+			if(fs_quark == option_lower)
 			{
 				if(ad_lower_quark == fso)
 					NCLadvancedFileStructure[_NclAdvancedOGR] = 1;
 				else
 					NCLadvancedFileStructure[_NclAdvancedOGR] = 0;
 			}
-		       */
-                }
-        }
+    		}
+		else
+			NCLadvancedFileStructure[_NclHDF5] = 1;
+    	}
 
 	ret = _NclFileSetOption(f,filetype,option,tmp_md1);
 

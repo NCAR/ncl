@@ -21,12 +21,13 @@
 *     ..
 *     .. External Functions ..
 *     NOTE: On IBMs, you may have to change ETIME to ETIME_
-      REAL               ETIME_
-      EXTERNAL           ETIME_
+*     REAL               ETIME_
+*     EXTERNAL           ETIME_
+      EXTERNAL  REAL     ETIME
 *     ..
 *     .. Executable Statements ..
 *
-      T1 = ETIME_( TARRAY )
+      T1 = ETIME( TARRAY )
       DSECND = TARRAY( 1 )
       RETURN
 *

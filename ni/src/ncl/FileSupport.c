@@ -2945,12 +2945,18 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 #ifdef BuildGDAL
 	else if(0 == strncmp(fext, "shp", 3))
 	{
+		*use_advanced_file_structure = NCLadvancedFileStructure[_NclAdvancedOGR]
+					     + NCLadvancedFileStructure[0];
        		return file_ext_q;
 	}
 #endif
 	else if((0 == strcmp(fext, "cdf")) || (0 == strcmp(fext, "nc3")) ||
            (0 == strcmp(fext, "nc4")) || (0 == strcmp(fext, "netcdf")))
+	{
 		ori_file_ext_q = NrmStringToQuark("nc");
+		*use_advanced_file_structure = NCLadvancedFileStructure[_NclNETCDF]
+					     + NCLadvancedFileStructure[0];
+	}
 #ifdef BuildHDF4
 	else if((0 == strcmp(fext, "hd")) || (0 == strcmp(fext, "h4")))
 		ori_file_ext_q = NrmStringToQuark("hdf");
@@ -2968,7 +2974,11 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 #endif
 #ifdef BuildHDFEOS5
 	else if(0 == strcmp(fext, "hdfeos5"))
+	{
 		ori_file_ext_q = NrmStringToQuark("he5");
+		*use_advanced_file_structure = NCLadvancedFileStructure[_NclHDFEOS5]
+					     + NCLadvancedFileStructure[0];
+	}
 #endif
 
 	strcpy(filename, NrmQuarkToString(the_path));
@@ -3074,6 +3084,9 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 
 			/*HDFEOS5 file should be first a HDF5 file.*/
 			htri_t status = H5Fis_hdf5(filename);
+
+			*use_advanced_file_structure = NCLadvancedFileStructure[_NclHDFEOS5]
+						     + NCLadvancedFileStructure[0];
 
 			if(! status)
 			{

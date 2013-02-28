@@ -4,7 +4,7 @@
 
 MYNAME	= ezmap
 
-GENERIC_SRCS = hlumapeod.f hlumapusr.f \
+GENERIC_SRCS = \
 	idictl.f  mapbd.f mapdrw.f mapeod.f mapfst.f mapgci.f mapgrd.f \
 	mapgtc.f mapgtd.f mapgti.f mapgtl.f mapgtr.f mapint.f  mapio.f \
 	 mapiq.f mapiqd.f  mapit.f mapitd.f maplbl.f maplmb.f maplot.f \
@@ -28,7 +28,7 @@ GENERIC_SRCS = hlumapeod.f hlumapusr.f \
 	maqtri.f mdqtri.f maqtrn.f mdqtrn.f aiproj.f aiprin.f haproj.f \
 	haprin.f moproj.f moprin.f wtproj.f wtprin.f
 
-GENERIC_OBJS = hlumapeod.o hlumapusr.o \
+GENERIC_OBJS = \
 	idictl.o  mapbd.o mapdrw.o mapeod.o mapfst.o mapgci.o mapgrd.o \
 	mapgtc.o mapgtd.o mapgti.o mapgtl.o mapgtr.o mapint.o  mapio.o \
 	 mapiq.o mapiqd.o  mapit.o mapitd.o maplbl.o maplmb.o maplot.o \

@@ -169,6 +169,11 @@ char **guiGetNclFileAttNames(NclFile thefile, int *num_atts)
     return attnames;
 }
 
+NclMultiDValData guiGetVarAtt(NclVar the_var, char *attname)
+{
+    return _NclReadAtt(the_var, attname, NULL);
+}
+
 void getNclFileVarInfo(NclFile thefile, int *ndims, int **dimsizes, char ***dimnames, long *type)
 {
     int i,j;
@@ -516,6 +521,7 @@ double* guiGetDoubleArray(NclVar _nclvar)
     int i = 0;
     size_t n = 0;
     double* value = NULL;
+    float *fp = NULL;
     size_t nelm = 1;
     NclMultiDValData tmp_md;
     int _varndims;
@@ -536,6 +542,11 @@ double* guiGetDoubleArray(NclVar _nclvar)
     {
         case NCL_double:
              memcpy(value, tmp_md->multidval.val, nelm * sizeof(double));
+             return value;
+        case NCL_float:
+             fp = tmp_md->multidval.val;
+             for(n = 0; n < nelm; ++n)
+                 value[n] = (double) fp[n];
              return value;
         default:
              break;

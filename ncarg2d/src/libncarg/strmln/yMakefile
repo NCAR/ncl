@@ -7,7 +7,7 @@ GENERIC_SRCS    = stcycl.f stdraw.f ezstrm.f stdudv.f strmln.f \
 	 	  stinit.f stream.f stdata.f stsetc.f stgetc.f \
 		  stseti.f stsetr.f stgeti.f stgetr.f stutil.f \
 		  stmpxy.f stumxy.f strset.f stumsl.f stdrcv.f \
-		  stdrcm.f stthin.f sthluint.f hlustmpxy.f \
+		  stdrcm.f stthin.f sthluint.f \
 		  chkcyc.f drwstr.f gnewpt.f
 
 
@@ -15,7 +15,7 @@ GENERIC_OBJS    = stcycl.o stdraw.o ezstrm.o stdudv.o strmln.o \
 	 	  stinit.o stream.o stdata.o stsetc.o stgetc.o \
 		  stseti.o stsetr.o stgeti.o stgetr.o stutil.o \
 		  stmpxy.o stumxy.o strset.o stumsl.o stdrcv.o \
-		  stdrcm.o stthin.o sthluint.o hlustmpxy.o \
+		  stdrcm.o stthin.o sthluint.o \
 		  chkcyc.o drwstr.o gnewpt.o
 
 SOURCES = $(GENERIC_SRCS)

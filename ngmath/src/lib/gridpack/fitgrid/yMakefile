@@ -9,7 +9,7 @@ SOURCES =    ceez.f   curvi.f    curvpp.f   fcurv2.f    kurv2.f    \
 	intrvl.f   kurvd.f    snhcsh.f    curv2.f   curvp2.f   \
 	curvs.f  intrvp.f    kurvp1.f    surf1.f    curvd.f    \
 	curvpi.f  curvss.f     kurv1.f   kurvp2.f    surf2.f   \
-	curvs1.f curvs2.f    ftstore.f strhlp.f c_ftcurv.c  ftuser.c \
+	curvs1.f curvs2.f    ftstore.f strhlp.f c_ftcurv.c  \
     ceezdp.f   curvidp.f    curvppdp.f   fcurv2dp.f    kurv2dp.f    \
 	kurvpddp.f   termsdp.f     curv1dp.f   curvp1dp.f   curvpsdp.f   \
 	intrvldp.f   kurvddp.f    snhcshdp.f    curv2dp.f   curvp2dp.f   \
@@ -23,7 +23,7 @@ OBJECTS =    ceez.o   curvi.o    curvpp.o   fcurv2.o    kurv2.o    \
 	intrvl.o   kurvd.o    snhcsh.o    curv2.o   curvp2.o   \
 	curvs.o  intrvp.o    kurvp1.o    surf1.o    curvd.o    \
 	curvpi.o  curvss.o     kurv1.o   kurvp2.o    surf2.o   \
-	curvs1.o curvs2.o   ftstore.o strhlp.o c_ftcurv.o  ftuser.o \
+	curvs1.o curvs2.o   ftstore.o strhlp.o c_ftcurv.o \
     ceezdp.o   curvidp.o    curvppdp.o   fcurv2dp.o    kurv2dp.o    \
 	kurvpddp.o   termsdp.o     curv1dp.o   curvp1dp.o   curvpsdp.o   \
 	intrvldp.o   kurvddp.o    snhcshdp.o    curv2dp.o   curvp2dp.o   \
