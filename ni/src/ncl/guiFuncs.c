@@ -61,6 +61,12 @@ NclFile NclCreateFile(const char *path)
     return (_NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,qpath,0));
 }
 
+NclFile NclCreateAdvancedFile(const char *path)
+{
+    NclQuark qpath = NrmStringToQuark(path);
+    return (_NclCreateAdvancedFile(NULL,NULL,Ncl_File,0,TEMPORARY,qpath,0));
+}
+
 char **GetNclFileVarNames(NclFile thefile, int *num_vars)
 {
     int n = 0;

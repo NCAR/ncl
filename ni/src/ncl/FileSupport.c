@@ -3197,7 +3197,6 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 	return file_ext_q;
 }
 
-
 NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			unsigned int obj_type_mask, NclStatus status,
 			NclQuark path, int rw_status)
@@ -3218,56 +3217,6 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 	if(! is_http)
 	{
-#if 0
-		/* Check if want advanced file-strucuture */
-		if(NULL != fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value)
-		{
-			NrmQuark afs = NrmStringToQuark("advanced");
-			NrmQuark sfs = _NclGetLower(*(NrmQuark *)(fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value->multidval.val));
-			/*
-			NCLadvancedFileStructure[_NclNETCDF] = 0;
-			NCLadvancedFileStructure[_NclNETCDF4] = 0;
-			*/
-			if(afs == sfs)
-			{
-			      /*Only certain data format can use advanced file-structure. Wei 01/11/2013*/
-				if((NrmStringToQuark("nc") == file_ext_q) ||
-				   (NrmStringToQuark("nc4") == file_ext_q) ||
-				   (NrmStringToQuark("nc3") == file_ext_q) ||
-				   (NrmStringToQuark("cdf") == file_ext_q) ||
-				   (NrmStringToQuark("netcdf") == file_ext_q))
-				{
-					NCLadvancedFileStructure[_NclNETCDF] = 1;
-					NCLadvancedFileStructure[_NclNETCDF4] = 1;
-				}
-			}
-		}
-
-		/* Check if want NetCDF4 */
-		if(NULL != fcp->options[Ncl_FORMAT].value)
-		{
-			NrmQuark nc4 = NrmStringToQuark("netcdf4");
-			NrmQuark req = _NclGetLower(*(NrmQuark *)(fcp->options[Ncl_FORMAT].value->multidval.val));
-			/*
-			NCLadvancedFileStructure[_NclNETCDF] = 0;
-			NCLadvancedFileStructure[_NclNETCDF4] = 0;
-			*/
-			if(nc4 == req)
-			{
-			      /*if format is NetCDF4,  use advanced file-structure. Wei 01/21/2013*/
-				if((NrmStringToQuark("nc") == file_ext_q) ||
-				   (NrmStringToQuark("nc4") == file_ext_q) ||
-				   (NrmStringToQuark("nc3") == file_ext_q) ||
-				   (NrmStringToQuark("cdf") == file_ext_q) ||
-				   (NrmStringToQuark("netcdf") == file_ext_q))
-				{
-					NCLadvancedFileStructure[_NclNETCDF] = 0;
-					NCLadvancedFileStructure[_NclNETCDF4] = 1;
-				}
-			}
-		}
-#endif
-
 		if(0 > file_ext_q)
 		{
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"(%s) has no file extension, can't determine type of file to open",NrmQuarkToString(path)));
@@ -3323,11 +3272,6 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	if(NrmStringToQuark("h5") == file_ext_q)
 		use_advanced_file_structure = 1;
 
-/*We still want to keep old HE5 there.
-	if(NrmStringToQuark("he5") == file_ext_q)
-		use_advanced_file_structure = 1;
- */
-
 	/*Use Advanced File Strucuture, when:
 	*1. The local use_advanced_file_structure is true.
 	*2. If run with "ncl -f flnm", or setfileoption("nc", "FileStructure", "Advanced"),
@@ -3337,6 +3281,8 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	if(use_advanced_file_structure ||
 		((NCLadvancedFileStructure[0] ||
 		  NCLadvancedFileStructure[_NclNETCDF] ||
+		  NCLadvancedFileStructure[_NclOGR] ||
+		  NCLadvancedFileStructure[_NclAdvancedOGR] ||
 		  NCLadvancedFileStructure[_NclHDFEOS5] ||
 		  NCLadvancedFileStructure[_NclNewHE5] ||
 		  NCLadvancedFileStructure[_NclNETCDF4]) &&
@@ -3344,9 +3290,49 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		 (NrmStringToQuark("nc4") == file_ext_q) ||
 		 (NrmStringToQuark("nc3") == file_ext_q) ||
 		 (NrmStringToQuark("cdf") == file_ext_q) ||
+		 (NrmStringToQuark("shp") == file_ext_q) ||
 		 (NrmStringToQuark("he5") == file_ext_q) ||
 		 (NrmStringToQuark("hdfeos5") == file_ext_q) ||
 		 (NrmStringToQuark("netcdf") == file_ext_q))))
+	{
+		file_out = _NclAdvancedFileCreate(inst, theclass, obj_type, obj_type_mask, status,
+				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
+	}					
+	else
+	{
+		file_out = _NclFileCreate(inst, theclass, obj_type, obj_type_mask, status,
+				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
+	}					
+
+	return file_out;
+}
+
+NclFile _NclCreateAdvancedFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
+			unsigned int obj_type_mask, NclStatus status,
+			NclQuark path, int rw_status)
+{
+	NclFile file_out = NULL;
+	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+
+	NclQuark file_ext_q = -1;
+	NclQuark fname_q;
+	NhlBoolean is_http;
+	char *end_of_name = NULL;
+	int len_path;
+
+        struct stat file_stat;
+	short use_advanced_file_structure = 0;
+
+	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status, &use_advanced_file_structure);
+
+	if((NrmStringToQuark("nc") == file_ext_q) ||
+	   (NrmStringToQuark("nc4") == file_ext_q) ||
+	   (NrmStringToQuark("nc3") == file_ext_q) ||
+	   (NrmStringToQuark("cdf") == file_ext_q) ||
+	   (NrmStringToQuark("shp") == file_ext_q) ||
+	   (NrmStringToQuark("he5") == file_ext_q) ||
+	   (NrmStringToQuark("hdfeos5") == file_ext_q) ||
+	   (NrmStringToQuark("netcdf") == file_ext_q))
 	{
 		file_out = _NclAdvancedFileCreate(inst, theclass, obj_type, obj_type_mask, status,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);

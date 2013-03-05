@@ -20739,7 +20739,6 @@ NhlErrorTypes _NclISetFileOption(void)
 	NclQuark filetype = NrmNULLQUARK;
 	NclQuark option;
 	NhlErrorTypes ret;
-	int n = 1;
 	int n_dims = 1;
 	int n = 0;
 

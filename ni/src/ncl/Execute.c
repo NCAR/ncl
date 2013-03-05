@@ -26,8 +26,8 @@ extern "C" {
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Callbacks.h>
-#include <ncarg/nfp/nctime.h>
 
+#include "../lib/nfp/nctime.h"
 #include "defs.h"
 #include "Symbol.h"
 #include "NclVar.h"
