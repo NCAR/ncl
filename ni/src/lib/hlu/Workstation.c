@@ -2292,6 +2292,9 @@ WorkstationClassInitialize
 	(void)_NhlRegSymConv(NhlobjClass,
 		NhlTDoubleGenArray,NhlTColorIndex,
 		NhlTColorDefinitionGenArray,NhlTColorIndex);
+        (void)_NhlRegSymConv(NhlobjClass,
+		NhlTIntegerGenArray,NhlTColorIndex,
+		NhlTColorDefinitionGenArray,NhlTColorIndex);
 
 	/*
 	 * These converters are used to allow "named" colors to set
