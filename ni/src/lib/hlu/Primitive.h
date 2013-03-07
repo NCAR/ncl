@@ -32,11 +32,13 @@ typedef enum _NhlPolyType {
 
 #define NhlNprXArray		"prXArray"
 #define NhlNprYArray		"prYArray"
+#define NhlNprStartArray	"prStartArray"
 #define NhlNprPolyType		"prPolyType"
 #define NhlNprGraphicStyle	"prGraphicStyle"
 
 #define NhlCprXArray		"PrXArray"
 #define NhlCprYArray		"PrYArray"
+#define NhlCprStartArray	"PrStartArray"
 #define NhlCprPolyType		"PrPolyType"
 #define NhlCprGraphicStyle	"PrGraphicStyle"
 

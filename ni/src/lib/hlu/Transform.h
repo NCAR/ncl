@@ -43,6 +43,7 @@ typedef enum _NhlOverlayMode {
 #define NhlNtfLineInterpolationOn 	"tfLineInterpolationOn"
 #define NhlNtfPolyDrawList	 	"tfPolyDrawList"
 #define NhlNtfPolyDrawOrder		"tfPolyDrawOrder"
+#define NhlNtfPolyStartArray	        "tfPolyStartArray"
 
 /*
  * Public Transform class resources
@@ -54,6 +55,7 @@ typedef enum _NhlOverlayMode {
 #define NhlCtfLineInterpolationOn 	"TfLineInterpolationOn"
 #define NhlCtfPolyDrawList	 	"TfPolyDrawList"
 #define NhlCtfPolyDrawOrder		"TfPolyDrawOrder"
+#define NhlCtfPolyStartArray	        "TfPolyStartArray"
 
 /*
  * Public Functions defined by the Transform Class

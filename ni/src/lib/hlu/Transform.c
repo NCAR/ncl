@@ -62,6 +62,10 @@ static NhlResource resources[] = {
 	{NhlNtfPolyDrawOrder,NhlCtfPolyDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(poly_draw_order),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlPOSTDRAW),0,NULL},
+	{NhlNtfPolyStartArray,NhlCtfPolyStartArray,NhlTIntegerGenArray,
+         	sizeof(NhlPointer),Oset(poly_start_array),
+	        NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,
+         	(NhlFreeFunc)NhlFreeGenArray},
 
 /* End-documented-resources */
 
@@ -387,6 +391,8 @@ NhlTransformClassRec NhltransformClassRec = {
 NhlClass NhltransformClass = (NhlClass)&NhltransformClassRec;
 
 static NrmQuark Qpolydrawlist;
+static NrmQuark Qpolystartarray;
+
 
 /*
  * Function:	TransformClassPartInit
@@ -484,6 +490,7 @@ TransformClassPartInit
 			= sc->trans_class.ndc_polymarker;
 
 	Qpolydrawlist = NrmStringToQuark(NhlNtfPolyDrawList);
+	Qpolystartarray = NrmStringToQuark(NhlNtfPolyStartArray);
 
 	_NhlInitializeClass(NhltransObjClass);
         
@@ -606,6 +613,9 @@ TransformInitialize
 		tfp->poly_draw_list = 
 			_NhlCopyGenArray(tfp->poly_draw_list,True);
 
+	if (tfp->poly_start_array)
+		tfp->poly_start_array = 
+			_NhlCopyGenArray(tfp->poly_start_array,True);
 	tfp->poly_clip_on = True;
 	
         return NhlNOERROR;
@@ -736,6 +746,17 @@ static NhlErrorTypes TransformSetValues
 		}
 		NhlFreeGenArray(otfp->poly_draw_list);
 	}
+	if (tfp->poly_start_array != otfp->poly_start_array){
+		NhlGenArray gen = tfp->poly_start_array;
+		if (gen) {
+			tfp->poly_start_array = _NhlCopyGenArray(gen,True);
+			if(gen && ! tfp->poly_start_array){
+				NHLPERROR((NhlFATAL,ENOMEM,NULL));
+				return NhlFATAL;
+			}
+		}
+		NhlFreeGenArray(otfp->poly_start_array);
+	}
 
         return NhlNOERROR;
 }
@@ -785,6 +806,9 @@ static NhlErrorTypes    TransformGetValues
                 if(args[i].quark == Qpolydrawlist) {
                         ga = tfp->poly_draw_list;
                 }
+                if(args[i].quark == Qpolystartarray) {
+                        ga = tfp->poly_start_array;
+                }
                 if (ga != NULL) {
                         if ((ga = _NhlCopyGenArray(ga,True)) == NULL) {
                                 e_text = "%s: error copying %s GenArray";
@@ -827,6 +851,7 @@ NhlLayer inst;
         NhlTransformLayerPart *tfp = &(tfl->trans);
 
 	NhlFreeGenArray(tfp->poly_draw_list);
+	NhlFreeGenArray(tfp->poly_start_array);
 	return NhlNOERROR;
 }
 
@@ -1097,11 +1122,18 @@ static NhlErrorTypes TransformDataPolyline
 	int			i;
 	NhlBoolean		ismaptrans = False;
 	NhlBoolean		isirtrans = False;
+	int                     *start_array = NULL;
+	int                     start_ix;
+	int                     start_count = 0;
 
 	if (n < 2) {
 		e_text = "%s, not enough points for a line";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
 		return NhlWARNING;
+	}
+	if (tfp->poly_start_array != NULL) {
+		start_array = (int *) tfp->poly_start_array->data;
+		start_count = tfp->poly_start_array->num_elements;
 	}
 
 /* 
@@ -1167,13 +1199,27 @@ static NhlErrorTypes TransformDataPolyline
 		return ret;
 
 /* Pen down for the remaining lines */
-
-	for (i = 1; i < n; i++) { 
-		subret = _NhlDataLineTo((NhlLayer)top,*x++,*y++,0);
-
-		if ((ret = MIN(ret,subret)) < NhlWARNING) 
-			return ret;
-
+	if (start_count > 1) {
+		start_ix = 1;
+		for (i = 1; i < n; i++) { 
+			if (i == start_array[start_ix]) {
+				subret = _NhlDataLineTo((NhlLayer)top,*x++,*y++,1);
+				if (start_ix < start_count -1) start_ix++;
+			}
+			else {
+				subret = _NhlDataLineTo((NhlLayer)top,*x++,*y++,0);
+			}
+			if ((ret = MIN(ret,subret)) < NhlWARNING) 
+				return ret;
+		}
+	}
+	else {
+		for (i = 1; i < n; i++) { 
+			subret = _NhlDataLineTo((NhlLayer)top,*x++,*y++,0);
+			
+			if ((ret = MIN(ret,subret)) < NhlWARNING) 
+				return ret;
+		}
 	}
 
 /*
@@ -1238,11 +1284,17 @@ static NhlErrorTypes TransformNDCPolyline
 	NhlTransformLayerPart	*tfp = &(tl->trans);
 	NhlTransObjLayer		top;
 	int			i;
+	int                     *start_array = NULL;
+	int                     start_ix, start_count;
 
 	if (n < 2) {
 		e_text = "%s, not enough points for a line";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
 		return NhlWARNING;
+	}
+	if (tfp->poly_start_array != NULL) {
+		start_array = (int *) tfp->poly_start_array->data;
+		start_count = tfp->poly_start_array->num_elements;
 	}
 
 /* 
@@ -1294,14 +1346,30 @@ static NhlErrorTypes TransformNDCPolyline
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
-/* Pen down for the remaining lines */
+	/* If there is a start_array (indicating multiple polylines) -- do pen ups as required. */
 
-	for (i = 1; i < n; i++) { 
-		subret = _NhlNDCLineTo((NhlLayer)top,*x++,*y++,0);
-
-		if ((ret = MIN(ret,subret)) < NhlWARNING) 
-			return ret;
-
+	if (start_count > 1) {
+		start_ix = 1;
+		for (i = 1; i < n; i++) { 
+			if (i == start_array[start_ix]) {
+				subret = _NhlNDCLineTo((NhlLayer)top,*x++,*y++,1);
+				if (start_ix < start_count -1) start_ix++;
+			}
+			else {
+				subret = _NhlDataLineTo((NhlLayer)top,*x++,*y++,0);
+			}
+			if ((ret = MIN(ret,subret)) < NhlWARNING) 
+				return ret;
+		}
+	}
+	else {
+		/* Otherwise pen down for the remaining lines */
+		for (i = 1; i < n; i++) { 
+			subret = _NhlNDCLineTo((NhlLayer)top,*x++,*y++,0);
+			
+			if ((ret = MIN(ret,subret)) < NhlWARNING) 
+				return ret;
+		}
 	}
 
 /*
@@ -1368,11 +1436,22 @@ static NhlErrorTypes TransformDataPolygon
 	char			*entry_name = "TransformDataPolygon";
 	NhlBoolean		ismaptrans = False;
 	NhlBoolean		isirtrans = False;
+	int                     *start_array = NULL;
+	int                     start_count = 0;
+	int			gsid;
+	int			ldash,lcolor,edash,ecolor;
+	float			ldash_seglen,lthick,edash_seglen,ethick;
+	char			*lstring;
+	NhlBoolean		edges_on = False;
 
 	if (n < 3) {
 		e_text = "%s, not enough points for a polygon";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
 		return NhlWARNING;
+	}
+	if (tfp->poly_start_array != NULL) {
+		start_array = (int *) tfp->poly_start_array->data;
+		start_count = tfp->poly_start_array->num_elements;
 	}
 
 /* 
@@ -1403,15 +1482,59 @@ static NhlErrorTypes TransformDataPolygon
 		isirtrans = True;
 
 
+	if (ismaptrans) {
+/*
+ * For maps only: this used to be in the MapDataPolygon but now that we are 
+ * drawing multiple polygons at a time it needs to be at this higher level where
+ * the complete set of polygons is available.
+ * If edges are on it's necessary to turn them off for the polygon draw
+ * and then simulate the edges with a polyline. The reason is that 
+ * there is no way to tell Ezmap not to draw edges along the edges of
+ * the projection where the polygon disappears. This is sort of 
+ * complicated because we need to get the GS to find out if the edges
+ * are on, and, if so, temporarily reset a number of the attributes,
+ * and restore them after finishing.
+ */
+		NhlVAGetValues(tl->base.wkptr->base.id,
+			       _NhlNwkGraphicStyle,    &gsid,
+			       NULL);
+
+		NhlVAGetValues(gsid,
+			       NhlNgsLineDashPattern, &ldash,
+			       NhlNgsLineDashSegLenF, &ldash_seglen,
+			       NhlNgsLineColor,       &lcolor,
+			       NhlNgsLineThicknessF,  &lthick,
+			       NhlNgsLineLabelString, &lstring,
+			       NhlNgsEdgesOn,         &edges_on,
+			       NhlNgsEdgeDashPattern, &edash,
+			       NhlNgsEdgeThicknessF,  &ethick,
+			       NhlNgsEdgeDashSegLenF, &edash_seglen,
+			       NhlNgsEdgeColor,       &ecolor,
+			       NULL);
+
+		if (edges_on) {
+			NhlVASetValues(gsid,
+				       NhlNgsEdgesOn,         False,
+				       NhlNgsLineDashPattern, edash,
+				       NhlNgsLineDashSegLenF, edash_seglen,
+				       NhlNgsLineColor,       ecolor,
+				       NhlNgsLineThicknessF,  ethick,
+				       NhlNgsLineLabelString, "",
+				       NULL);
+			NhlVASetValues(tl->base.wkptr->base.id,
+				       _NhlNwkGraphicStyle,    gsid,
+				       NULL);
+		}
+
+		NGCALLF(setdashchar,SETDASHCHAR)();
+	}
+
 	subret = _NhlActivateWorkstation(tl->base.wkptr);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error activating workstation";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
-	}
-	if (ismaptrans) {
-		NGCALLF(setdashchar,SETDASHCHAR)();
 	}
 
 	_NhlSetFillInfo(tl->base.wkptr, plot);
@@ -1428,7 +1551,59 @@ static NhlErrorTypes TransformDataPolygon
 
 	if (tfp->poly_clip_on || ismaptrans || isirtrans)
 		gset_clip_ind(GIND_CLIP);
-	subret = _NhlDataPolygon((NhlLayer)top,x,y,n);
+	if (! start_count) {
+		subret = _NhlDataPolygon((NhlLayer)top,x,y,n);
+		if (edges_on) {
+			int i;
+			subret = _NhlDataLineTo((NhlLayer)top,x[0],y[0],1);
+			for (i = 1; i < n; i++) {
+				subret = _NhlDataLineTo((NhlLayer)top,x[i],y[i],0);
+				ret = MIN(subret,ret);
+			}
+			if ((x[0] != x[n-1]) || (y[0] != y[n-1])) {
+				subret = _NhlDataLineTo((NhlLayer)top,x[0],y[0],0);
+			}
+			ret = MIN(subret,ret);
+		}
+	}
+	else {
+		int bix, eix, ln,i,j;
+		float tmpx,tmpy;
+		int status;
+		for (i = 1; i < start_count; i++) {
+			int one_at_least = 0;
+			bix = start_array[i-1];
+			eix = start_array[i];
+			ln = eix - bix;
+			for (j = bix; j < eix; j++) {
+				subret = _NhlDataToWin((NhlLayer)top,&x[j],&y[j],1,&tmpx,&tmpy,&status,NULL,NULL);
+				if (! status)  {/* at least one point inside the domain */
+					one_at_least = 1;
+					break; 
+				}
+			}
+			if (! one_at_least) /* skip this polygon */
+				continue;
+			subret = _NhlDataPolygon((NhlLayer)top,&(x[bix]),&(y[bix]),ln);
+			if ((ret = MIN(ret,subret)) < NhlWARNING)
+				break;
+			if (edges_on) {
+				int i;
+				subret = _NhlDataLineTo((NhlLayer)top,x[bix],y[bix],1);
+				ret = MIN(subret,ret);
+				for (i = 1; i < ln; i++) {
+					int ix = bix + i;
+					subret = _NhlDataLineTo((NhlLayer)top,x[ix],y[ix],0);
+					ret = MIN(subret,ret);
+				}
+				if ((x[bix] != x[eix-1]) || (y[bix] != y[eix-1])) {
+					subret = _NhlDataLineTo((NhlLayer)top,x[bix],y[bix],0);
+				}
+				ret = MIN(subret,ret);
+
+			}
+		}
+	}
 	if (tfp->poly_clip_on || ismaptrans || isirtrans)
 		gset_clip_ind(GIND_NO_CLIP);
 	if (ismaptrans) {
@@ -1436,6 +1611,18 @@ static NhlErrorTypes TransformDataPolygon
 	}
 
         subret = _NhlDeactivateWorkstation(tl->base.wkptr);
+
+	if (edges_on) {
+		NhlVASetValues(gsid,
+			       NhlNgsLineDashPattern, ldash,
+			       NhlNgsLineDashSegLenF, ldash_seglen,
+			       NhlNgsLineColor,       lcolor,
+			       NhlNgsLineThicknessF,  lthick,
+			       NhlNgsLineLabelString, lstring,
+			       NhlNgsEdgesOn,         True,
+			       NULL);
+		NhlFree(lstring);
+	}			
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error deactivating workstation";
@@ -1826,7 +2013,7 @@ static NhlErrorTypes PolyDraw
 
 	for (i = 0; i < tfp->poly_draw_list->num_elements; i++) {
 		NhlLayer l = _NhlGetLayer(poly_ids[i]);
-		NhlGenArray x_arr = NULL,y_arr = NULL;
+		NhlGenArray x_arr = NULL,y_arr = NULL, start_arr = NULL;
 		float *x,*y;
 		int tmp_gs,count;
 
@@ -1840,9 +2027,14 @@ static NhlErrorTypes PolyDraw
 		NhlVAGetValues(l->base.id,
 			       NhlNprXArray,&x_arr,
 			       NhlNprYArray,&y_arr,
+			       NhlNprStartArray,&start_arr,
 			       NhlNprPolyType,&ptype,
 			       NhlNprGraphicStyle,&tmp_gs,
 			       NULL);
+		if (tfp->poly_start_array != NULL) {
+			NhlFreeGenArray(tfp->poly_start_array);
+		}
+		tfp->poly_start_array = start_arr;
 		if (_NhlGetLayer(tmp_gs))
 			gs = tmp_gs;
 		else if (gs == NhlNULLOBJID) {

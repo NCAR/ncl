@@ -2783,6 +2783,7 @@ int n;
 	int		nl;
 
 	Wkptr = mptrans->trobj.wkptr;
+#if 0
 /*
  * If edges are on it's necessary to turn them off for the polygon draw
  * and then simulate the edges with a polyline. The reason is that 
@@ -2822,7 +2823,7 @@ int n;
 			       _NhlNwkGraphicStyle,    gsid,
 			       NULL);
 	}
-			       
+#endif			       
 	closed = x[0] == x[n-1] && y[0] == y[n-1] ? True : False;
 
 	clockwise = Clockwise(x,y,n,closed,&out_of_range);
@@ -2988,6 +2989,7 @@ err_ret:
 	subret = _NhlIdleWorkspace(aws);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
+#if 0
 	if (edges_on) {
 /*
  * if not closed, the out_of_range flag must have been False and therefore
@@ -3018,7 +3020,8 @@ err_ret:
 		subret = _NhlActivateWorkstation(Wkptr);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 	}
-	if (out_of_range || (edges_on && ! closed)) {
+#endif
+	if (out_of_range) {
 		NhlFree(xl);
 		NhlFree(yl);
 	}

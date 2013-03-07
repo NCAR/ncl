@@ -35,6 +35,9 @@ static NhlResource resources[] = {
 	{NhlNprYArray,NhlCprYArray,NhlTFloatGenArray,sizeof(NhlGenArray),
 	 Oset(y_arr),NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 	 (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNprStartArray,NhlCprStartArray,NhlTIntegerGenArray,sizeof(NhlGenArray),
+	 Oset(start_arr),NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+	 (NhlFreeFunc)NhlFreeGenArray},
 	{NhlNprPolyType,NhlCprPolyType,NhlTPolyType,sizeof(NhlPolyType),
 	 Oset(poly_type),NhlTImmediate,
 	 _NhlUSET((NhlPointer)NhlPOLYLINE),0,NULL},
@@ -120,6 +123,7 @@ NhlClass NhlprimitiveClass =
 
 static NrmQuark Qxarray;
 static NrmQuark Qyarray;
+static NrmQuark Qstartarray;
 
 /*
  * Function:	nhlfprimitiveclass
@@ -192,6 +196,9 @@ PrimitiveInitialize
 	if (prp->y_arr != NULL)
 		prp->y_arr = _NhlCopyGenArray(prp->y_arr,True);
 
+	if (prp->start_arr != NULL)
+		prp->start_arr = _NhlCopyGenArray(prp->start_arr,True);
+
 	return ret;
 }
 
@@ -259,6 +266,18 @@ PrimitiveSetValues
 		}
 	}
 
+	if (prp->start_arr != oprp->start_arr){
+		gen = prp->start_arr;
+		prp->start_arr = _NhlCopyGenArray(gen,True);
+		if(gen && ! prp->start_arr){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+		else{
+			NhlFreeGenArray(oprp->start_arr);
+		}
+	}
+
 	return ret;
 }
 
@@ -294,6 +313,9 @@ PrimitiveDestroy
 
 	if (prp->y_arr) 
 		NhlFreeGenArray(prp->y_arr);
+
+	if (prp->start_arr) 
+		NhlFreeGenArray(prp->start_arr);
 
 	return ret;
 }
@@ -331,6 +353,7 @@ static NhlErrorTypes    PrimitiveClassInitialize
 
 	Qxarray = NrmStringToQuark(NhlNprXArray);
 	Qyarray = NrmStringToQuark(NhlNprYArray);
+	Qstartarray = NrmStringToQuark(NhlNprStartArray);
 
 	return(NhlNOERROR);	
 }
@@ -357,6 +380,7 @@ static NhlErrorTypes    PrimitiveClassInitialize
  *      Memory is allocated when any of the following resources are retrieved:
  *              NhlNprXArray
  *              NhlNprYArray
+ *              NhlNprStartArray
  *      The caller is responsible for freeing this memory.
  */
 
@@ -384,6 +408,9 @@ static NhlErrorTypes    PrimitiveGetValues
                 }
                 else if(args[i].quark == Qyarray) {
                         ga = prp->y_arr;
+                }
+                else if(args[i].quark == Qstartarray) {
+                        ga = prp->start_arr;
                 }
                 if (ga != NULL) {
                         if ((ga = _NhlCopyGenArray(ga,True)) == NULL) {
