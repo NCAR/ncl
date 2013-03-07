@@ -737,6 +737,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	 * JOIN and CAT types are handled separately.
          */
 	agg_coord_var = NULL; /* use to test for presence of coordinate variable */
+	agg_coord_var_md = NULL;
 	agg_dim_count = NclMalloc(sizeof(long) * newlist->list.nelem);
 	units = NclMalloc(sizeof(NrmQuark) * newlist->list.nelem);
 	calendar = NclMalloc(sizeof(NrmQuark) * newlist->list.nelem);
