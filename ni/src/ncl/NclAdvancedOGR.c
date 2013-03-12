@@ -61,6 +61,7 @@
 #include "NclData.h"
 #include "NclVar.h"
 #include "NclList.h"
+#include "ListSupport.h"
 #include "NclAdvancedFile.h"
 #include <ogr_api.h>
 #include <ogr_srs_api.h>
@@ -94,22 +95,6 @@ static int AdvancedOGRInitialized = 0;
 static int _is3DGeometry(OGRwkbGeometryType geom)
 {
         return (wkbFlatten(geom) != geom);
-}
-
-static NclList _CreateVlist4OGR(NclQuark name)
-{
-    NclList vlist = NULL;
-    ng_size_t one = 1;
-    int *id = (int *)NclMalloc(sizeof(int));
-
-    vlist = (NclList)_NclListCreate(NULL, NULL, 0, 0, NCL_FIFO);
-    assert(vlist);
-    _NclListSetType((NclObj)vlist, NCL_FIFO);
-    vlist->list.list_quark = name;
-    vlist->list.list_type = NrmStringToQuark("item");
-    vlist->obj.obj_type = Ncl_List;
-
-    return vlist;
 }
 
 /*
@@ -217,35 +202,34 @@ static void _setGroupAtts(NclFileGrpNode *grpnode, OGRFeatureDefnH layerDefn,
                           int numSegments,
                           int numPoints)
 {
-    int ret=0;
     int iv = 0;
     NclQuark qname = -1;
 
     /* the layer name */
     qname =  NrmStringToQuark(OGR_FD_GetName(layerDefn));
-    ret = _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("layer_name"),
-                         NCL_string, 1, (void *)&qname);
+    _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("layer_name"),
+                   NCL_string, 1, (void *)&qname);
 
     /* the geometry-type of the layer */
     qname = NrmStringToQuark(_mapOGRGeom2Ncl(OGR_FD_GetGeomType(layerDefn)));
-    ret = _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("geometry_type"),
-                         NCL_string, 1, (void *)&qname);
+    _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("geometry_type"),
+                   NCL_string, 1, (void *)&qname);
 
     /* The remaining global-atts are "convenience constants" intended to be used 
      * in scripting code to index into the geometry and segments variables.
      */
 
     iv = numGeometry;
-    ret = _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("numGeom"),
-                         NCL_int, 1, (void *) &iv);
+    _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("numGeom"),
+                   NCL_int, 1, (void *) &iv);
 
     iv = numSegments;
-    ret = _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("numSegs"),
-                         NCL_int, 1, (void *) &iv);
+    _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("numSegs"),
+                   NCL_int, 1, (void *) &iv);
 
     iv = numPoints;
-    ret = _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("numPnts"),
-                         NCL_int, 1, (void *) &iv);
+    _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("numPnts"),
+                   NCL_int, 1, (void *) &iv);
 }
 
 
@@ -275,9 +259,8 @@ static void _setGroupVars(NclFileGrpNode *grpnode,
                           int numSegments,
                           int numPoints)
 {
-    OGRwkbGeometryType geomType;
     OGRFieldDefnH fldDef;
-    int numVars, is3DGeometry;
+    int numVars;
     int i = 0;
     int j = 0;
 
@@ -431,7 +414,6 @@ static void _loadFeatureGeometry(OGRRecord *rec, OGRGeometryH geom,
     int i;
     char buffer[16];
     void *val = NULL;
-    int nsegs = 0;
     int ndims = 2;
     NclVar var;
     NclQuark  dimnames[2];
@@ -453,7 +435,7 @@ static void _loadFeatureGeometry(OGRRecord *rec, OGRGeometryH geom,
     {
         if(rec->xform)
         {
-            OGRErr err = OGR_G_Transform(geom, rec->xform);
+            OGR_G_Transform(geom, rec->xform);
         }
 
         sprintf(buffer, "xyz_%6.6d", *numSegments);
@@ -516,8 +498,10 @@ static int _loadGeometry(NclFileGrpNode *grpnode, NclList vlist)
 {
     OGRRecord *rec = (OGRRecord *) grpnode->other_src;
     OGRFeatureH feature;
-    OGRGeometryH geom;
-    int featureNum = 0;
+  /*
+   *OGRGeometryH geom;
+   *int featureNum = 0;
+   */
     int segmentNum = 0;
     int pointNum   = 0;
 
@@ -526,7 +510,7 @@ static int _loadGeometry(NclFileGrpNode *grpnode, NclList vlist)
    */
 
     feature = rec->feature;
-    geom = OGR_F_GetGeometryRef(feature);
+    rec->geom = OGR_F_GetGeometryRef(feature);
     _loadFeatureGeometry(rec, rec->geom, vlist, &segmentNum, &pointNum);
   
   /*
@@ -683,9 +667,6 @@ static void *_getGeometryVariable(NclFileGrpNode *grpnode, NclQuark thevar,
                                   long *start, long *finish,
                                   long *stride, void *storage)
 {
-    OGRRecord *rec = (OGRRecord *) grpnode->other_src;
-    int i, j;
-
     /* On first innvocation, we'll load and cache all of the geometry variables,
      * under the premise that its quite likely a request for any of them is part of
      * a broader request for the geometry as a whole.
@@ -749,7 +730,7 @@ static void *AdvancedOGRInitializeFileRec(NclFileFormat *format)
     assert(grpnode);
 
     grpnode->fid = -1;
-    grpnode->id = -1;
+    grpnode->gid = -1;
     grpnode->pid = -1;
     grpnode->name = NrmStringToQuark("/");
     grpnode->pname = -1;
@@ -829,7 +810,7 @@ static void *AdvancedOGROpenFile(void *therec, NclQuark path, int wr_status)
     grpnode->path = path;
     grpnode->status = wr_status;
     grpnode->fid = -1;
-    grpnode->id  = 0;
+    grpnode->gid = -1;
     grpnode->pid = -1;
 
     rec->dataSource = OGROpen(NrmQuarkToString(path), !wr_status, NULL);
@@ -883,8 +864,9 @@ static void *AdvancedOGROpenFile(void *therec, NclQuark path, int wr_status)
         subgrpnode = grpnode->grp_rec->grp_node[numGeometry];
 
         memset(subgrpnode, 0, sizeof(NclFileGrpNode));
-        subgrpnode->pid = grpnode->id;
-        subgrpnode->id  = 1000 + numGeometry + subgrpnode->pid;
+        subgrpnode->pid = grpnode->gid;
+        subgrpnode->fid  = 1000 + numGeometry + subgrpnode->pid;
+        subgrpnode->gid  = 1000 + numGeometry + subgrpnode->pid;
         subgrpnode->name = grpname;
         subgrpnode->path = path;
         subgrpnode->status = wr_status;
@@ -936,9 +918,6 @@ static void *AdvancedOGRReadVar(void* therec, NclQuark thevar,
     NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
     NclFileVarNode *varnode;
 
-    OGRRecord *rec = (OGRRecord *) grpnode->other_src;
-    int i;
-
   /*
    *fprintf(stderr, "\nHit AdvancedOGRReadVar, file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
@@ -969,61 +948,6 @@ static void *AdvancedOGRReadCoord(void *therec, NclQuark thevar,
     fprintf(stderr, "\nHit AdvancedOGRReadCoord, file: %s, line: %d\n", __FILE__, __LINE__);
     fprintf(stderr, "\tAdvancedOGRReadCoord...UNIMPLEMENTED\n");
     return(AdvancedOGRReadVar(therec,thevar,start,finish,stride,storage));
-}
-
-static NclQuark *OGRGetGrpNames(void *therec, int *num_grps)
-{
-    NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
-    NclQuark *out_quarks = NULL;
-    NclQuark *tmp_quarks = NULL;
-    int i, n, ng;
-
-    *num_grps = 0;
-    if(NULL != grpnode->grp_rec)
-    {
-        if(grpnode->grp_rec->n_grps)
-        {
-            out_quarks = (NclQuark*)NclCalloc(grpnode->grp_rec->n_grps,
-                                           sizeof(NclQuark));
-            assert(out_quarks);
-
-            for(i = 0; i < grpnode->grp_rec->n_grps; i++)
-            {
-                out_quarks[i] = grpnode->grp_rec->grp_node[i]->name;
-            }
-
-            *num_grps = grpnode->grp_rec->n_grps;
-        }
-    }
-
-#if 0
-    if(NULL != grpnode->grp_rec)
-    {
-        if(grpnode->grp_rec->n_grps)
-        {
-            for(n = 0; n < grpnode->grp_rec->n_grps; n++)
-            {
-                tmp_quarks = NC4GetGrpNames((void *)grpnode->grp_rec->grp_node[i], &ng);
-
-                if(ng)
-                {
-                    out_quarks = (NclQuark*)realloc(out_quarks,
-                                                (*num_grps + ng) * sizeof(NclQuark));
-                    assert(out_quarks);
-
-                    for(i = 0; i < ng; i++)
-                    {
-                        out_quarks[*num_grps + i] = tmp_quarks[i];
-                    }
-                    NclFree(tmp_quarks);
-                }
- 
-                *num_grps += ng;
-            }
-        }
-    }
-#endif
-    return(out_quarks);
 }
 
 NclFormatFunctionRec AdvancedOGRRec = {

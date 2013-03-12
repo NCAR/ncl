@@ -460,8 +460,9 @@ NhlErrorTypes AddNewGrp(void *rec, NclQuark grpname, size_t id)
         return (NhlFATAL);
     }
 
-    grpnode->id = id;
-    grpnode->pid = rootgrpnode->id;
+    grpnode->gid = id;
+    grpnode->fid = id;
+    grpnode->pid = rootgrpnode->gid;
     grpnode->pname = rootgrpnode->name;
     grpnode->path = rootgrpnode->path;
     grpnode->extension = rootgrpnode->extension;

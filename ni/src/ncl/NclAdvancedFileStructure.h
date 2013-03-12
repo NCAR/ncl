@@ -216,7 +216,7 @@ typedef struct _NclFileGrpNode      NclFileGrpNode;
 struct _NclFileGrpNode
 {
     ng_size_t            fid;
-    ng_size_t            id;
+    ng_size_t            gid;
     ng_size_t            pid;
     
     NclQuark             name;

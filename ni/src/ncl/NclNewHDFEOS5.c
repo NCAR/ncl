@@ -318,8 +318,6 @@ static void _synchHE5GrpVarDims(NclFileGrpNode *grpnode, NclFileVarNode *varnode
 {
     NclFileDimNode *gdimnode;
     NclFileDimNode *vdimnode;
-    long dg = 0;
-    long dv = 0;
     int i, m, n;
     int not_in_group = 1;
 
@@ -552,7 +550,8 @@ NclFileFormatType *format;
     grpnode = (NclFileGrpNode *)NclCalloc(1, sizeof(NclFileGrpNode));
     assert(grpnode);
 
-    grpnode->id = -1;
+    grpnode->fid = -1;
+    grpnode->gid = -1;
     grpnode->pid = -1;
     grpnode->name = NrmStringToQuark("/");
     grpnode->pname = NrmStringToQuark("-");
@@ -683,7 +682,8 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
     parentgrpnode->grp_rec = grprec;
     parentgrpnode->path = path;
-    parentgrpnode->id = HE5_SWfid;
+    parentgrpnode->gid = HE5_SWfid;
+    parentgrpnode->fid = HE5_SWfid;
     parentgrpnode->define_mode = SWATH;
 
     HE5ParseName(buffer,sw_hdf_names,sw_ncl_names,nsw);
@@ -769,7 +769,8 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
         grpnode->path = parentgrpnode->path;
         grpnode->parent = parentgrpnode;
         grpnode->pid = HE5_SWfid;
-        grpnode->id = HE5_SWid;
+        grpnode->gid = HE5_SWid;
+        grpnode->fid = HE5_SWid;
         grpnode->pname = -1;
         grpnode->name = sw_hdf_names[i];
         grpnode->define_mode = SWATH;
@@ -1450,7 +1451,8 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
     HE5_GDfid = HE5_GDopen(NrmQuarkToString(path),H5F_ACC_RDONLY);
 
-    parentgrpnode->id = HE5_GDfid;
+    parentgrpnode->gid = HE5_GDfid;
+    parentgrpnode->fid = HE5_GDfid;
     parentgrpnode->define_mode = GRID;
 
   /*
@@ -1581,7 +1583,8 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
         grpnode->path = parentgrpnode->path;
         grpnode->parent = parentgrpnode;
         grpnode->pid = HE5_GDfid;
-        grpnode->id = HE5_GDid;
+        grpnode->fid = HE5_GDfid;
+        grpnode->gid = HE5_GDid;
         grpnode->pname = -1;
         grpnode->name = gd_hdf_names[i];
         grpnode->define_mode = GRID;
@@ -2185,7 +2188,8 @@ typedef struct
 
     parentgrpnode->grp_rec = grprec;
     parentgrpnode->path = path;
-    parentgrpnode->id = HE5_PTfid;
+    parentgrpnode->fid = HE5_PTfid;
+    parentgrpnode->gid = HE5_PTfid;
     parentgrpnode->define_mode = POINT;
 
     for(pt = 0; pt < npt; pt++)
@@ -2206,7 +2210,8 @@ typedef struct
         grpnode->path = parentgrpnode->path;
         grpnode->parent = parentgrpnode;
         grpnode->pid = HE5_PTfid;
-        grpnode->id = HE5_PTid;
+        grpnode->fid = HE5_PTfid;
+        grpnode->gid = HE5_PTid;
         grpnode->pname = -1;
         grpnode->name = pt_hdf_names[pt];
         grpnode->define_mode = POINT;
@@ -2618,7 +2623,8 @@ void getHE5ZonalAverageData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
     parentgrpnode->grp_rec = grprec;
     parentgrpnode->path = path;
-    parentgrpnode->id = HE5_ZAfid;
+    parentgrpnode->fid = HE5_ZAfid;
+    parentgrpnode->gid = HE5_ZAfid;
     parentgrpnode->define_mode = ZA;
 
     for(za = 0; za < nza; ++za)
@@ -2639,7 +2645,8 @@ void getHE5ZonalAverageData(NclFileGrpNode *parentgrpnode, NclQuark path)
         grpnode->path = parentgrpnode->path;
         grpnode->parent = parentgrpnode;
         grpnode->pid = HE5_ZAfid;
-        grpnode->id = HE5_ZAid;
+        grpnode->fid = HE5_ZAfid;
+        grpnode->gid = HE5_ZAid;
         grpnode->pname = -1;
         grpnode->name = za_hdf_names[za];
         grpnode->define_mode = ZA;
