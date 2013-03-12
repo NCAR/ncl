@@ -167,6 +167,8 @@ c
 c Copy input data to wrap-around array (wrap half-way around globe 
 c at each end of x-direction)
 c
+
+c$omp parallel do default(shared) private(i,j,k,ii)
       do k = 1,plev
          do j = 1,plat
             ii = plonhalf
@@ -191,14 +193,17 @@ c
      &                             flon(i) = clon(ii)*pio180
       end do
 
+c$omp parallel do default(shared) private(j)
       do j = 1,plat
          flat (j) = clat (j)*pio180
       end do
 
+c$omp parallel do default(shared) private(i)
       do i = 1,plono
          flono(i) = clono(i)*pio180
       end do
 
+c$omp parallel do default(shared) private(j)
       do j = 1,plato
          flato(j) = clato(j)*pio180
       end do
@@ -223,11 +228,13 @@ c
 c
 c Copy grid interfaces to "edge" arrays
 c
+c$omp parallel do default(shared) private(i)
       do i = 1,plon*2
         edge_w(i) = floni(i  )
         edge_e(i) = floni(i+1)
       end do
 
+c$omp parallel do default(shared) private(j)
       do j = 1,plat
         edge_s(j) = flati(j  )
         edge_n(j) = flati(j+1)
@@ -239,11 +246,13 @@ c Expand/contract bin box area for each output grid box by "bin_factor"
 c
       factor = sqrt(bin_factor)
 
+c$omp parallel do default(shared) private(i)
       do i = 1,plono
         edgeo_w(i) = flono(i) - ( flono (i  ) - flonoi(i) )*factor
         edgeo_e(i) = flono(i) + ( flonoi(i+1) - flono (i) )*factor
       end do
 
+c$omp parallel do default(shared) private(j)
       do j = 1,plato
         tmps       = flato(j) - ( flato (j  ) - flatoi(j) )*factor
         tmpn       = flato(j) + ( flatoi(j+1) - flato (j) )*factor
@@ -319,6 +328,7 @@ c
 c
 c Begin weighted binning
 c
+c$omp parallel do default(shared) private(i,j,k)
       do k = 1,plev
          do j = 1,plato
             do i = 1,plono
@@ -327,6 +337,7 @@ c
          end do
       end do
 
+c$omp parallel do default(shared) private(i,j,k,ii,jj,nx,ny)
       do k = 1,plev
          do ny = 1,ny_max
             j  = j_out(ny)
@@ -341,12 +352,14 @@ c
 c
 c Normalize
 c
+c$omp parallel do default(shared) private(i,j)
       do j = 1,plato
          do i = 1,plono
             tmp(i,j) = (edgeo_e(i) - edgeo_w(i))*(sino_n(j) - sino_s(j))
          end do
       end do
 
+c$omp parallel do default(shared) private(i,j,k)
       do k = 1,plev
          do j = 1,plato
             do i = 1,plono
@@ -364,6 +377,7 @@ c CRUDE ....
 c .   At any level where the input "xx" has a missing value
 c .   set the corresponding "yy" level to missing.
 c
+c$omp parallel do default(shared) private(i,j,k,ii,jj)
       do k = 1,plev
          do j = 1,plat
             do i = 1,plon 
