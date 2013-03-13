@@ -3104,9 +3104,18 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                     }
                     else
                     {
-                        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                            "MyAdvancedFileReadVarValue: Invalid component in struct: <%s>",
-                             NrmQuarkToString(var_name)));
+                        val = (void*) (*thefile->advancedfile.format_funcs->read_var)
+                                      (thefile->advancedfile.grpnode,
+                                       var_name,
+                                       start, finish, stride, val);
+                      /*
+                       *NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                       *    "MyAdvancedFileReadVarValue: Invalid component in struct: <%s>",
+                       *     NrmQuarkToString(var_name)));
+                       */
+
+                        tmp_md = (NclMultiDValData) val;
+                        return (tmp_md);
                     }
                 }
                 else if(NCL_list == varnode->type)
@@ -4365,8 +4374,19 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
             }
             else
             {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                    "NclAdvancedFile: Could not get compound data type."));
+                ncl_type = NCL_list;
+
+                (dim_info)[0].dim_num = 0;
+                (dim_info)[0].dim_size = 1;
+                (dim_info)[0].dim_quark = NrmStringToQuark("CompoundAsList");
+
+                n_dims_output = 1;
+                output_dim_sizes[0] = 1;
+
+              /*
+               *NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+               *    "NclAdvancedFile: Could not get compound data type."));
+               */
             }
 	}
         else if(NCL_opaque == varnode->type)

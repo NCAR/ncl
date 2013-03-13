@@ -1463,7 +1463,7 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
         {
             status = H5Rget_obj_type2(attr_id, H5R_OBJECT, &rbuf[i], &obj_type);
 
-            if(0 == status)
+            if(0 != status)
             {
                 fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
             }
@@ -3355,7 +3355,7 @@ void _readH5dataset(hid_t dset, hid_t d_type,
     /* Read the data */
     status = H5Dread(dset, d_type, m_space, d_space, H5P_DEFAULT, value);
 
-    if(0 == status)
+    if(0 != status)
     {
         fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
     }
@@ -3489,10 +3489,14 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
 
     did = H5Dopen(fid, NrmQuarkToString(varnode->real_name), H5P_DEFAULT);
 
-    complist = (NclList)_NclListCreate(NULL, NULL, Ncl_List, 0, NCL_FIFO);
+  /*
+   *complist = (NclList)_NclListCreate(NULL, NULL, Ncl_List, 0, NCL_FIFO);
+   */
+    complist = (NclList)_NclListCreate(NULL, NULL, 0, 0, NCL_FIFO);
     assert(complist);
     _NclListSetType((NclObj)complist, NCL_FIFO);
-    complist->obj.obj_type = Ncl_List;
+    complist->list.list_quark = NrmStringToQuark("compound_components_list");
+    complist->list.list_type = Ncl_List;
 
     *id = complist->obj.id;
     comp_md = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,id,
@@ -3539,7 +3543,7 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
 
         status = H5Dread(did, datatype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, values);
 
-        if(0 == status)
+        if(0 != status)
         {
             fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
         }
@@ -3614,8 +3618,10 @@ static void *_getH5CompoundData(hid_t fid, NclFileVarNode *varnode,
     component_name = _getComponentName(NrmQuarkToString(varname), &struct_name);
     if(NULL == component_name)
     {
-        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tCan not found component from varname: <%s>\n", NrmQuarkToString(varname));
+      /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tCan not found component from varname: <%s>\n", NrmQuarkToString(varname));
+       */
         storage = (void *) _getH5compoundAsList(fid, varnode);
         return storage;
     }
@@ -3647,7 +3653,7 @@ static void *_getH5CompoundData(hid_t fid, NclFileVarNode *varnode,
 
         status = H5Dread(did, datatype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, storage);
 
-        if(0 == status)
+        if(0 != status)
         {
             fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
         }
@@ -3834,7 +3840,7 @@ void _readH5string(hid_t dset, hid_t d_type,
    */
     status = H5Dread(dset, d_type, m_space, d_space, H5P_DEFAULT, strdata);
 
-    if(0 == status)
+    if(0 != status)
     {
         fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
     }
@@ -4012,7 +4018,7 @@ void *_getH5vlen(hid_t fid, NclFileVarNode *varnode)
             /*Read the data*/
              status = H5Dread(did, d_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, h5vl);
 
-             if(0 == status)
+             if(0 != status)
              {
                  fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
              }
@@ -4160,7 +4166,7 @@ void *_getH5enum(hid_t fid, NclFileVarNode *varnode)
             /*Read the data*/
              status = H5Dread(did, d_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, enumrec->values);
 
-             if(0 == status)
+             if(0 != status)
              {
                  fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
              }
@@ -4298,7 +4304,7 @@ void *_getH5opaque(hid_t fid, NclFileVarNode *varnode)
             /*Read the data*/
              status = H5Dread(did, d_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, opaquerec->values);
 
-             if(0 == status)
+             if(0 != status)
              {
                  fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
              }
@@ -4543,10 +4549,13 @@ static void H5FreeFileRec(void* therec)
 
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
 
-    if(grpnode->open)
+    if((grpnode->open) && (0 < grpnode->fid))
     {
         H5Fclose(grpnode->fid);
         H5close();
+
+        grpnode->open = 0;
+        grpnode->fid = -1;
     }
 
     FileDestroyGrpNode(grpnode);
@@ -5450,7 +5459,7 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
 
         status = H5Dwrite(did, memtype, H5S_ALL, H5S_ALL, H5P_DEFAULT, vlendata);
 
-        if(0 == status)
+        if(0 != status)
         {
             fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
         }
@@ -6201,7 +6210,7 @@ NhlErrorTypes H5WriteCompound(void *rec, NclQuark compound_name, NclQuark var_na
 
             status = H5Dwrite(did, tid, H5S_ALL, H5S_ALL, H5P_DEFAULT, data_value);
 
-            if(0 == status)
+            if(0 != status)
             {
                 fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
             }
