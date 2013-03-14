@@ -32,7 +32,8 @@ NGCOMM########################################################################
 SYSTEM_INCLUDE		= SystemIncludesName
 DATE                    = $(shell date +%d%b%Y_%H%M)
 
-OS1_DEF		=	_OpSysDef -framework OpenCL
+#OS1_DEF		=	_OpSysDef -framework OpenCL
+OS1_DEF		=	_OpSysDef
 OS2_DEF		=	_OpSys2Def
 OS_DEF		=	$(OS1_DEF) $(OS2_DEF)
 ARCH_DEF	=	_ArchDef
@@ -674,7 +675,8 @@ CC		= CCompiler
 CC_LD		= CLoader
 CDYNAMIC	= Cdynamic
 CSTATIC		= Cstatic
-CCOPTIONS	= CcOptions $(EXTRA_CCOPTIONS) -framework OpenCL
+#CCOPTIONS	= CcOptions $(EXTRA_CCOPTIONS) -framework OpenCL
+CCOPTIONS	= CcOptions $(EXTRA_CCOPTIONS)
 
 BUILDINCDIR	= $(TOP)/include
 /*
