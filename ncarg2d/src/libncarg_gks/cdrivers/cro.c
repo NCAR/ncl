@@ -80,8 +80,8 @@ static int             cairoEnvIndices[NUM_CONTEXT];
 
 cairo_surface_t *qt_surface = NULL;
 cairo_t         *qt_context = NULL;
-int qt_painter_width  = 1000;
-int qt_painter_height = 1000;
+int qt_screen_width  = 1000;
+int qt_screen_height = 1000;
 
 static int getCairoEnvIndex(int wksId) {
     int i;
@@ -564,8 +564,8 @@ int cro_ClearWorkstation(GKSC *gksc) {
        *fprintf(stderr, "\tWrite image.\n\n");
        */
 
-        psa->image_width  = qt_painter_width;
-        psa->image_height = qt_painter_height;
+        psa->image_width  = qt_screen_width;
+        psa->image_height = qt_screen_height;
 
         ret = cairo_qt_surface_get_image(getSurface(psa->wks_id));
         if (ret != 0)
@@ -606,7 +606,7 @@ int cro_CloseWorkstation(GKSC *gksc) {
       /*
        *fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
        *                 __FILE__, __LINE__, __PRETTY_FUNCTION__);
-       *fprintf(stderr, "\tWrite image to qt-painter.\n\n");
+       *fprintf(stderr, "\tWrite image to qt-screen.\n\n");
        */
         cairo_destroy(getContext(psa->wks_id));
       /*Do not free surface, as this surface is not allocated (defined) in NCL.
@@ -912,8 +912,8 @@ cairo_t *getCairoQtContext()
 
 void setCairoQtWinSize(int width, int height)
 {
-    qt_painter_width = width;
-    qt_painter_height = height;
+    qt_screen_width = width;
+    qt_screen_height = height;
 }
 
 
@@ -1016,8 +1016,8 @@ int cro_OpenWorkstation(GKSC *gksc) {
 
     else if (psa->wks_type == CQT)
     {
-        double width  = (double) qt_painter_width;
-        double height = (double) qt_painter_height;
+        double width  = (double) qt_screen_width;
+        double height = (double) qt_screen_height;
 
       /*
        *fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
@@ -1045,8 +1045,8 @@ int cro_OpenWorkstation(GKSC *gksc) {
         cairo_paint(context);
         cairo_restore(context);
 
-        psa->image_height = qt_painter_height;
-        psa->image_width  = qt_painter_width;
+        psa->image_height = qt_screen_height;
+        psa->image_width  = qt_screen_width;
     }
 
     /*

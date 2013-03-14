@@ -408,8 +408,8 @@ void croActivateQt(CROddp *psa)
 
     CoordSpace square_screen;
 
-    double width  = (double) qt_painter_width;
-    double height = (double) qt_painter_height;
+    double width  = (double) qt_screen_width;
+    double height = (double) qt_screen_height;
 
 #if 0
     static int qtInitBack = 1;
@@ -428,8 +428,8 @@ void croActivateQt(CROddp *psa)
 
     cairo_scale(context, width, height);
 
-    psa->image_width  = qt_painter_width;
-    psa->image_height = qt_painter_height;
+    psa->image_width  = qt_screen_width;
+    psa->image_height = qt_screen_height;
 
     psa->dspace.llx = (double) 0.0;
     psa->dspace.lly = (double) 0.0;

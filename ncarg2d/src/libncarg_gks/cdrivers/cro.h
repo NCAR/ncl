@@ -251,8 +251,8 @@ typedef enum {MITER,ROUND, BEVEL} linejoin_type;
 
 extern cairo_surface_t *qt_surface;
 extern cairo_t         *qt_context;
-extern int qt_painter_width;
-extern int qt_painter_height;
+extern int qt_screen_width;
+extern int qt_screen_height;
 
 cairo_t* getContext(int wksId);
 
