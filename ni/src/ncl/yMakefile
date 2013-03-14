@@ -37,13 +37,15 @@ YACC		=	$(NYACC)
 LEX		= 	flex
 
 #if defined(Darwin)
-EXTRA_CCOPTIONS = -framework OpenCL \
-		  -F/Applications/Qt/Desktop/Qt/474/gcc/lib \
-		  -framework QtOpenGL -framework QtGui -framework QtCore -framework OpenGL -framework AGL
+ EXTRA_CCOPTIONS =
+#EXTRA_CCOPTIONS = -framework OpenCL \
+#		  -F/Applications/Qt/Desktop/Qt/474/gcc/lib \
+#		  -framework QtOpenGL -framework QtGui -framework QtCore -framework OpenGL -framework AGL
 #endif
 
 #if defined(linux)
-EXTRA_CCOPTIONS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -framework QtOpenGL -framework QtGui -framework QtCore -framework OpenGL -framework AGL
+ EXTRA_CCOPTIONS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+#EXTRA_CCOPTIONS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 #endif
 
 #ifdef EnableProfiling
