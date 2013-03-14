@@ -17,15 +17,15 @@ NhlErrorTypes tempnam_W(void)
             return_name[255];
     int fid;
 
-    string  *dname,
-            *pname,
-            *rname;
+    NrmQuark *dname,
+             *pname,
+             *rname;
     ng_size_t ret_size = 1;
 
     /*
      * Retrieve directory name.
      */
-    dname = (string *) NclGetArgValue(
+    dname = (NrmQuark *) NclGetArgValue(
         0,
         2,
         NULL,
@@ -38,7 +38,7 @@ NhlErrorTypes tempnam_W(void)
     /*
      * Retrieve prefix name.
      */
-    pname = (string *) NclGetArgValue(
+    pname = (NrmQuark *) NclGetArgValue(
         1,
         2,
         NULL,
@@ -63,7 +63,7 @@ NhlErrorTypes tempnam_W(void)
     (void) close(fid);
     (void) unlink(return_name);
 
-    rname  = (string *) calloc(1, sizeof(string));
+    rname  = (NrmQuark *) calloc(1, sizeof(NrmQuark));
     *rname = NrmStringToQuark(return_name);
 
     return NclReturnValue((void *) rname, 1, &ret_size,
@@ -79,7 +79,7 @@ NhlErrorTypes tempnam_W(void)
 NhlErrorTypes unique_string_W(void)
 {
   char  *prefix, *return_string, tmp_string[20];
-  string *pname, *rname;
+  NrmQuark *pname, *rname;
   int len, return_len, ret;
   ng_size_t ret_size = 1;
   static int counter = 0;
@@ -87,7 +87,7 @@ NhlErrorTypes unique_string_W(void)
 /*
  * Retrieve prefix name.
  */
-   pname = (string *) NclGetArgValue(
+   pname = (NrmQuark *) NclGetArgValue(
            0,
            1,
            NULL,
@@ -125,7 +125,7 @@ NhlErrorTypes unique_string_W(void)
 /*
  * Return.
  */
-  rname  = (string *) calloc(1,sizeof(string));
+  rname  = (NrmQuark *) calloc(1,sizeof(NrmQuark));
   *rname = NrmStringToQuark(return_string);
   ret = NclReturnValue( (void *) rname, 1, &ret_size, NULL, NCL_string, 0);
   free(return_string);

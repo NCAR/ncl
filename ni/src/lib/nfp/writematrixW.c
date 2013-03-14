@@ -52,7 +52,7 @@ NhlErrorTypes   write_matrix_W(void)
     NclBasicDataTypes   data_type;
 
     /* from NCL: data output format */
-    string  *fmtx;
+    NrmQuark *fmtx;
 
     /* from NCL: option to specify output filename, title, title spaces, row numbers */
     logical *options;
@@ -63,7 +63,7 @@ NhlErrorTypes   write_matrix_W(void)
     NclStackEntry   stack_entry;
 
     /* Filename, title */
-    string  *fname,
+    NrmQuark *fname,
             *t;
 
     /* title spaces option */
@@ -105,7 +105,7 @@ NhlErrorTypes   write_matrix_W(void)
     idsz1 = (int) dimsz[1];
 
     /* Parameter #2: data print format */
-    fmtx = (string *) NclGetArgValue(
+    fmtx = (NrmQuark *) NclGetArgValue(
         1,
         3,
         NULL,
@@ -166,12 +166,12 @@ NhlErrorTypes   write_matrix_W(void)
                     attr_list = attr_obj->att.att_list;
                     while (attr_list != NULL) {
                         if ((strcmp(attr_list->attname, "fout")) == 0) {
-                            fname = (string *) attr_list->attvalue->multidval.val;
+                            fname = (NrmQuark *) attr_list->attvalue->multidval.val;
                             filename = NrmQuarkToString(*fname);
                         }
 
                         if ((strcmp(attr_list->attname, "title")) == 0) {
-                            t = (string *) attr_list->attvalue->multidval.val;
+                            t = (NrmQuark *) attr_list->attvalue->multidval.val;
                             title = NrmQuarkToString(*t);
                         }
 

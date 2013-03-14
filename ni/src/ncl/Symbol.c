@@ -40,6 +40,7 @@ extern "C" {
 #ifdef USE_NETCDF4_FEATURES
 #include "NclAdvancedFile.h"
 #endif
+#include "FileSupport.h"
 #include "VarSupport.h"
 #include "NclFileInterfaces.h"
 #include "DataSupport.h"
@@ -106,6 +107,10 @@ extern void NclAddUserFuncs(
 void
 #endif
 );
+
+#ifdef BuildOpenCL
+extern void NclAddOpenCLBuiltInFuncs(void);
+#endif
 
 void _NclFreeProcFuncInfo
 #if	NhlNeedProto
@@ -371,6 +376,9 @@ int _NclInitSymbol
 	_NclAddBuiltIns();
 	NclAddUserBuiltInFuncs();
 	NclAddJavaBuiltInFuncs();
+#ifdef BuildOpenCL
+	NclAddOpenCLBuiltInFuncs();
+#endif
 	NclAddUserFuncs();
 	_NclAddHLUObjs();
 	NclAddUserHLUObjs();
@@ -384,6 +392,11 @@ int _NclInitSymbol
 	return(_NclNewScope());
 }
 
+int _NclFinalizeSymbol()
+{
+	_NclDeleteNewSymStack();
+	return 0;
+}
 
 void _NclRegisterFunc
 #if	NhlNeedProto
@@ -1361,6 +1374,7 @@ NclQuark file_var_name;
 			theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 			if(theid->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+
 				if(thefile != NULL)
 				{
 #ifdef USE_NETCDF4_FEATURES
@@ -1538,6 +1552,7 @@ NclQuark coordname;
 			theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 			if(theid->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+
 				if(NULL != thefile)
 				{
 #ifdef USE_NETCDF4_FEATURES
@@ -1546,6 +1561,7 @@ NclQuark coordname;
 					return (getAdvancedFileVarCoordInfo(thefile, coordname));
 				}
 #endif
+
 				if(_NclFileVarIsCoord(thefile,coordname) != -1)
 				{
 					for(i = 0; i < thefile->file.n_file_dims; i++) {
@@ -1625,6 +1641,7 @@ int *num_names;
 			theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 			if(theid->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+
 				if(thefile != NULL)
 				{
 #ifdef USE_NETCDF4_FEATURES
@@ -1845,6 +1862,7 @@ long    * stride;
 			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
 				theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+
 				if(thefile != NULL)
 				{
 #ifdef USE_NETCDF4_FEATURES
@@ -1936,6 +1954,7 @@ long* stride;
 			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
 				theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+
 				if(thefile != NULL)
 				{
 #ifdef USE_NETCDF4_FEATURES
@@ -2202,6 +2221,7 @@ NclQuark file_sym_name;
 			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
 				theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+
 				if(thefile != NULL)
 				{
 #ifdef USE_NETCDF4_FEATURES
@@ -2283,6 +2303,7 @@ NclApiDataList *_NclGetDefinedFileInfo
 						if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
 							theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 							thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+
 							if(thefile != NULL)
 							{
 #ifdef USE_NETCDF4_FEATURES
@@ -3304,6 +3325,11 @@ void _NclExit(int status) {
         NhlClose();
 
 	NCL_PROF_FINALIZE();
+
+#ifdef NCLDEBUG
+	if(NCLdebug_on)
+		_finalizeNclMemoryRecord();
+#endif
 
 	exit(status);
 }

@@ -269,7 +269,7 @@ typedef struct _NclDataClassPart {
 	NclOperatorFunction	mat[4];
 	NclOperatorFunction	sel_lt[4];
 	NclOperatorFunction	sel_gt[4];
-	NclSingleOperatorFunction	not[2];
+	NclSingleOperatorFunction	ncl_not[2];
 	NclSingleOperatorFunction	neg[2];
 	NclOperatorFunction	gt[4];
 	NclOperatorFunction	lt[4];
@@ -277,9 +277,9 @@ typedef struct _NclDataClassPart {
 	NclOperatorFunction	le[4];
 	NclOperatorFunction	ne[4];
 	NclOperatorFunction	eq[4];
-	NclOperatorFunction	and[4];
-	NclOperatorFunction	or[4];
-	NclOperatorFunction	xor[4];
+	NclOperatorFunction	ncl_and[4];
+	NclOperatorFunction	ncl_or[4];
+	NclOperatorFunction	ncl_xor[4];
 	NclIsMissingFunction	is_mis;
 } NclDataClassPart;
  

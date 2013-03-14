@@ -21,11 +21,6 @@
 #include <math.h>
 #include <time.h>
 
-#include <cairo/cairo.h>
-#include <cairo/cairo-ps.h>
-#include <cairo/cairo-pdf.h>
-#include <cairo/cairo-ft.h>
-
 #include <math.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -83,6 +78,11 @@ static cairo_surface_t *cairoSurfaces[NUM_CONTEXT];
 static cairo_t         *cairoContexts[NUM_CONTEXT];
 static int             cairoEnvIndices[NUM_CONTEXT];
 
+cairo_surface_t *qt_surface = NULL;
+cairo_t         *qt_context = NULL;
+int qt_painter_width  = 1000;
+int qt_painter_height = 1000;
+
 static int getCairoEnvIndex(int wksId) {
     int i;
     for (i = 0; i < NUM_CONTEXT; i++) {
@@ -92,7 +92,7 @@ static int getCairoEnvIndex(int wksId) {
     }
 }
 
-static cairo_t* getContext(int wksId) {
+cairo_t* getContext(int wksId) {
     return cairoContexts[getCairoEnvIndex(wksId)];
 }
 
@@ -160,7 +160,10 @@ void CROpict_init(GKSC *gksc) {
      *  Get the background color and set the source to the background color.
      */
     cval = unpack_argb(psa->ctable, 0);
-    cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, cval.alpha);
+    if(CQT == psa->wks_type)
+        cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, 0.0);
+    else
+        cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, cval.alpha);
 
     /* NOTE: This is likely not quite right, but I don't understand the use of the clipping rectangle below. In any case,
      * the code that does the Right Thing for PS/PDF does not result in a complete fill for image-based formats,
@@ -304,6 +307,14 @@ int cro_ActivateWorkstation(GKSC *gksc) {
 
     if (psa->wks_type == CX11) {
       croActivateX11(psa, getSurface(psa->wks_id));
+      setSurfaceTransform(psa);
+    }
+    else if (psa->wks_type == CQT) {
+    /*
+     *fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
+     *                 __FILE__, __LINE__, __PRETTY_FUNCTION__);
+     */
+      croActivateQt(psa);
       setSurfaceTransform(psa);
     }
 
@@ -490,6 +501,12 @@ int cro_Cellarray(GKSC *gksc) {
     /*
      *  Restore color.
      */
+  /*
+   *if(CQT == psa->wks_type)
+   *    cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, 0.0);
+   *else
+   *    cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, cval.alpha);
+   */
     cairo_set_source(context, pattern);
     cairo_pattern_destroy(pattern);
 
@@ -539,6 +556,26 @@ int cro_ClearWorkstation(GKSC *gksc) {
         free(outputFile);
     }
 
+    else if (psa->wks_type == CQT)
+    {
+      /*
+       *fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
+       *                 __FILE__, __LINE__, __PRETTY_FUNCTION__);
+       *fprintf(stderr, "\tWrite image.\n\n");
+       */
+
+        psa->image_width  = qt_painter_width;
+        psa->image_height = qt_painter_height;
+
+        ret = cairo_qt_surface_get_image(getSurface(psa->wks_id));
+        if (ret != 0)
+            ret = ERR_CRO_OPN;
+
+      /*
+       */
+        psa->frame_count++;
+    }
+
     psa->pict_empty = TRUE;
 
     return ret;
@@ -558,11 +595,26 @@ int cro_CloseWorkstation(GKSC *gksc) {
         free(psa->ctable);
 
     if (psa->wks_type == CX11)
+    {
         croFreeNativeSurface(getSurface(psa->wks_id));
-
-    cairo_destroy(getContext(psa->wks_id));
-    removeCairoEnv(psa->wks_id);
-    free(psa);
+        cairo_destroy(getContext(psa->wks_id));
+        removeCairoEnv(psa->wks_id);
+        free(psa);
+    }
+    else if (psa->wks_type == CQT)
+    {
+      /*
+       *fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
+       *                 __FILE__, __LINE__, __PRETTY_FUNCTION__);
+       *fprintf(stderr, "\tWrite image to qt-painter.\n\n");
+       */
+        cairo_destroy(getContext(psa->wks_id));
+      /*Do not free surface, as this surface is not allocated (defined) in NCL.
+       *croFreeNativeSurface(getSurface(psa->wks_id));
+       */
+        removeCairoEnv(psa->wks_id);
+        free(psa);
+    }
 
     return (0);
 }
@@ -848,6 +900,23 @@ int cro_GetColorRepresentation(GKSC *gksc) {
 }
 
 
+void setCairoQtSurface(cairo_surface_t *surface)
+{
+    qt_surface = surface;
+}
+
+cairo_t *getCairoQtContext()
+{
+    return qt_context;
+}
+
+void setCairoQtWinSize(int width, int height)
+{
+    qt_painter_width = width;
+    qt_painter_height = height;
+}
+
+
 int cro_OpenWorkstation(GKSC *gksc) {
 
     char *sptr = (char *) gksc->s.list;
@@ -945,6 +1014,41 @@ int cro_OpenWorkstation(GKSC *gksc) {
         psa->image_height = cairo_xlib_surface_get_height(surface);
     }
 
+    else if (psa->wks_type == CQT)
+    {
+        double width  = (double) qt_painter_width;
+        double height = (double) qt_painter_height;
+
+      /*
+       *fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
+       *                 __FILE__, __LINE__, __PRETTY_FUNCTION__);
+       *fprintf(stderr, "\tpsa->image_width = %d, psa->image_height = %d\n",
+       *                 (int) psa->image_width, (int) psa->image_height);
+       *fprintf(stderr, "\tWe should create surface with QPainter.\n");
+       *fprintf(stderr, "\tBut as link to Qt could be pain, we just use other function to create a surface.\n\n");
+       */
+
+        if(NULL != qt_surface)
+            surface = qt_surface;
+        else
+            surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, psa->image_width, psa->image_height);
+
+        context = cairo_create(surface);
+        cairo_scale(context, width, height);
+        saveCairoEnv(orig_wks_id, context, surface);
+
+        qt_context = context;
+
+        cairo_save(context);
+        cairo_set_source_rgba(context, 1.0, 1.0, 1.0, 1.0);
+        cairo_set_operator(context, CAIRO_OPERATOR_SOURCE);
+        cairo_paint(context);
+        cairo_restore(context);
+
+        psa->image_height = qt_painter_height;
+        psa->image_width  = qt_painter_width;
+    }
+
     /*
      *  Set fill rule to even/odd.
      */
@@ -955,7 +1059,9 @@ int cro_OpenWorkstation(GKSC *gksc) {
      */
     cairo_set_line_cap(context, CAIRO_LINE_CAP_ROUND);
     cairo_set_line_join(context, CAIRO_LINE_JOIN_ROUND);
-    cairo_surface_destroy(surface);
+
+    if(CQT != psa->wks_type)
+        cairo_surface_destroy(surface);
 
     /*
      *  Set the default linewidth.
@@ -986,13 +1092,22 @@ int cro_OpenWorkstation(GKSC *gksc) {
     /*
      *  Define the default foreground (black) and background (white)
      *  colors and draw the background.
+     *& Select the foreground color.
      */
-    (psa->ctable)[0] = 0xFFFFFFFF;
-    (psa->ctable)[1] = 0xFF000000;
-    /*
-     *  Select the foreground color.
-     */
-    cairo_set_source_rgba(context, 0., 0., 0., 1.);
+    if(CQT == psa->wks_type)
+    {
+       /*Qt & OpenGL*/
+        (psa->ctable)[0] = 0xFFFFFF00;
+        (psa->ctable)[1] = 0xFF000000;
+        cairo_set_source_rgba(context, 1., 1., 1., 0.);
+    }
+    else
+    {
+       /*Others*/
+        (psa->ctable)[0] = 0xFFFFFFFF;
+        (psa->ctable)[1] = 0xFF000000;
+        cairo_set_source_rgba(context, 0., 0., 0., 1.);
+    }
 
 #ifdef __JIRA1530__   
         /* Jira NCL-1530:  this is a work-around between a buggy interaction with XQuartz 2.7.x

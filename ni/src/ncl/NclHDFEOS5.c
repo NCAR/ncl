@@ -1513,6 +1513,7 @@ NclQuark path;
 
     char maxdimlist[HDFEOS5_BUF_SIZE];
     char tmp_name[HDFEOS5_BUF_SIZE];
+    char *pathname = NrmQuarkToString(path);
 
     NclQuark *gd_hdf_names;
     NclQuark *gd_ncl_names;
@@ -1708,6 +1709,10 @@ NclQuark path;
         /* global attributes from file */
         ngrp_atts = HE5_EHinqglbattrs(HE5_GDfid,NULL,&str_buf_size);
 
+	fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+	fprintf(stderr, "\tngrp_atts = %d\n", ngrp_atts);
+	fprintf(stderr, "\tpathname: <%s>\n", pathname);
+
         if(ngrp_atts > 0 )
         {
             if (str_buf_size >= cur_buf_size)
@@ -1728,6 +1733,9 @@ NclQuark path;
 
             buffer[str_buf_size] = '\0';
             HDFEOS5ParseName(buffer, att_hdf_names, att_ncl_names, ngrp_atts);
+
+            if(0 == strncmp(pathname, "OMI-Aura_L3-OMLER_", 18))
+		ngrp_atts -= 3;
 
             for(k = 0; k < ngrp_atts; k++)
             { 

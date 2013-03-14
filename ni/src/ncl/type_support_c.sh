@@ -88,19 +88,19 @@ sed \
 TypeSupportOpTemplate.c.sed >> .tmp.$$
 
 sed \
--e 's/TFUNC/and/g' \
+-e 's/TFUNC/ncl_and/g' \
 TypeSupportOpTemplate.c.sed >> .tmp.$$
 
 sed \
--e 's/TFUNC/or/g' \
+-e 's/TFUNC/ncl_or/g' \
 TypeSupportOpTemplate.c.sed >> .tmp.$$
 
 sed \
--e 's/TFUNC/xor/g' \
+-e 's/TFUNC/ncl_xor/g' \
 TypeSupportOpTemplate.c.sed >> .tmp.$$
 
 sed \
--e 's/TFUNC/not/g' \
+-e 's/TFUNC/ncl_not/g' \
 TypeSupportMonoOpTemplate.c.sed >> .tmp.$$
 
 sed \
@@ -120,9 +120,16 @@ fi
 sed \
 -e "/INSERTHERE/r .tmp.$$" \
 -e '/INSERTHERE/d' \
-TypeSupport.c.sed > TypeSupport.c
+TypeSupport.c.sed > .tmp2.$$
 
-rm .tmp.$$
+sed \
+-e 's/ncl_and_type/and_type/g' \
+-e 's/ncl_not_type/not_type/g' \
+-e 's/ncl_xor_type/xor_type/g' \
+-e 's/ncl_or_type/or_type/g' \
+.tmp2.$$ > TypeSupport.c
+
+rm .tmp.$$ .tmp2.$$
 
 echo "created TypeSupport.c"
 

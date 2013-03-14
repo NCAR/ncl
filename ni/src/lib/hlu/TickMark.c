@@ -5730,35 +5730,35 @@ static NhlErrorTypes CheckExplicit
 
 	if((tnew->tick.x_b_mode == NhlEXPLICIT) &&
 					(tnew->tick.x_b_values == NULL)){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		NHLPERROR((NhlINFO,NhlEUNKNOWN,
 			"%s:%s not set: setting %s to NhlAUTOMATIC",error_lead,
-			NhlNtmXBValues,NhlNtmXBMode);
+			NhlNtmXBValues,NhlNtmXBMode));
 		tnew->tick.x_b_mode = NhlAUTOMATIC;
-		ret = MIN(ret,NhlWARNING);
+		ret = MIN(ret,NhlINFO);
 	}
 	if((tnew->tick.x_t_mode == NhlEXPLICIT) &&
 					(tnew->tick.x_t_values == NULL)){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		NHLPERROR((NhlINFO,NhlEUNKNOWN,
 			"%s:%s not set: setting %s to NhlAUTOMATIC",error_lead,
-			NhlNtmXTValues,NhlNtmXTMode);
+			NhlNtmXTValues,NhlNtmXTMode));
 		tnew->tick.x_t_mode = NhlAUTOMATIC;
-		ret = MIN(ret,NhlWARNING);
+		ret = MIN(ret,NhlINFO);
 	}
 	if((tnew->tick.y_l_mode == NhlEXPLICIT) &&
 					(tnew->tick.y_l_values == NULL)){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		NHLPERROR((NhlINFO,NhlEUNKNOWN,
 			"%s:%s not set: setting %s to NhlAUTOMATIC",error_lead,
-			NhlNtmYLValues,NhlNtmYLMode);
+			NhlNtmYLValues,NhlNtmYLMode));
 		tnew->tick.y_l_mode = NhlAUTOMATIC;
-		ret = MIN(ret,NhlWARNING);
+		ret = MIN(ret,NhlINFO);
 	}
 	if((tnew->tick.y_r_mode == NhlEXPLICIT) &&
 					(tnew->tick.y_r_values == NULL)){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		NHLPERROR((NhlINFO,NhlEUNKNOWN,
 			"%s:%s not set: setting %s to NhlAUTOMATIC",error_lead,
-			NhlNtmYRValues,NhlNtmYRMode);
+			NhlNtmYRValues,NhlNtmYRMode));
 		tnew->tick.y_r_mode = NhlAUTOMATIC;
-		ret = MIN(ret,NhlWARNING);
+		ret = MIN(ret,NhlINFO);
 	}
 
 	/*
@@ -5766,26 +5766,26 @@ static NhlErrorTypes CheckExplicit
 	 */
 	if((tnew->tick.x_b_mode == NhlEXPLICIT) &&
 					(tnew->tick.x_b_labels == NULL)){
-		NhlPError(NhlINFO,NhlEUNKNOWN,"%s:%s is NhlEXPLICIT but %s not set",
-					error_lead,NhlNtmXBMode,NhlNtmXBLabels);
+		NHLPERROR((NhlINFO,NhlEUNKNOWN,"%s:%s is NhlEXPLICIT but %s not set",
+					error_lead,NhlNtmXBMode,NhlNtmXBLabels));
 		ret = MIN(ret,NhlINFO);
 	}
 	if((tnew->tick.x_t_mode == NhlEXPLICIT) &&
 					(tnew->tick.x_t_labels == NULL)){
-		NhlPError(NhlINFO,NhlEUNKNOWN,"%s:%s is NhlEXPLICIT but %s not set",
-					error_lead,NhlNtmXTMode,NhlNtmXTLabels);
+		NHLPERROR((NhlINFO,NhlEUNKNOWN,"%s:%s is NhlEXPLICIT but %s not set",
+					error_lead,NhlNtmXTMode,NhlNtmXTLabels));
 		ret = MIN(ret,NhlINFO);
 	}
 	if((tnew->tick.y_l_mode == NhlEXPLICIT) &&
 					(tnew->tick.y_l_labels == NULL)){
-		NhlPError(NhlINFO,NhlEUNKNOWN,"%s:%s is NhlEXPLICIT but %s not set",
-					error_lead,NhlNtmYLMode,NhlNtmYLLabels);
+		NHLPERROR((NhlINFO,NhlEUNKNOWN,"%s:%s is NhlEXPLICIT but %s not set",
+					error_lead,NhlNtmYLMode,NhlNtmYLLabels));
 		ret = MIN(ret,NhlINFO);
 	}
 	if((tnew->tick.y_r_mode == NhlEXPLICIT) &&
 					(tnew->tick.y_r_labels == NULL)){
-		NhlPError(NhlINFO,NhlEUNKNOWN,"%s:%s is NhlEXPLICIT but %s not set",
-					error_lead,NhlNtmYRMode,NhlNtmYRLabels);
+		NHLPERROR((NhlINFO,NhlEUNKNOWN,"%s:%s is NhlEXPLICIT but %s not set",
+					error_lead,NhlNtmYRMode,NhlNtmYRLabels));
 		ret = MIN(ret,NhlINFO);
 	}
 

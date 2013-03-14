@@ -36,8 +36,14 @@ MYLIB_API	=	libnclapi
 YACC		=	$(NYACC)
 LEX		= 	flex
 
+#if defined(Darwin)
+EXTRA_CCOPTIONS = -framework OpenCL \
+		  -F/Applications/Qt/Desktop/Qt/474/gcc/lib \
+		  -framework QtOpenGL -framework QtGui -framework QtCore -framework OpenGL -framework AGL
+#endif
+
 #if defined(linux)
-EXTRA_CCOPTIONS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+EXTRA_CCOPTIONS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -framework QtOpenGL -framework QtGui -framework QtCore -framework OpenGL -framework AGL
 #endif
 
 #ifdef EnableProfiling
@@ -52,17 +58,10 @@ MPI_DEFS = -DUSE_MPI
 #define MPI_DEFS
 #endif
 
-#ifdef BuildNetCDF4
-NETCDF4_DEFS = -DUSE_NETCDF4
-#else
-NETCDF4_DEFS =
-#define NETCDF4LIB
-#endif
-
 #ifdef UseNetCDF4Features
 NC4_FEATURES_DEFS = -DUSE_NETCDF4_FEATURES
-NC4_FEATURES_SRCS = NclAdvancedFile.c NclAdvancedGroup.c NclAdvancedList.c NclNetCDF4.c 
-NC4_FEATURES_OBJS = NclAdvancedFile.o NclAdvancedGroup.o NclAdvancedList.o NclNetCDF4.o
+NC4_FEATURES_SRCS = NclAdvancedFile.c NclAdvancedGroup.c NclNetCDF4.c 
+NC4_FEATURES_OBJS = NclAdvancedFile.o NclAdvancedGroup.o NclNetCDF4.o
 #else
 #define NC4_FEATURES_DEFS
 #define NC4_FEATURES_SRCS
@@ -91,8 +90,8 @@ HDFEOS_OBJS = NclHDFEOS.o
 
 #ifdef BuildHDFEOS5
 HDFEOS5_DEFS = -DBuildHDFEOS5 $(HDF4_NETCDF)
-HDFEOS5_SRCS = NclHDFEOS5.c
-HDFEOS5_OBJS = NclHDFEOS5.o
+HDFEOS5_SRCS = NclHDFEOS5.c NclNewHDFEOS5.c
+HDFEOS5_OBJS = NclHDFEOS5.o NclNewHDFEOS5.o
 #else
 #define HDFEOS5_SRCS
 #define HDFEOS5_OBJS
@@ -101,8 +100,8 @@ HDFEOS5_OBJS = NclHDFEOS5.o
 
 #ifdef BuildHDF5
 HDF5_DEFS = -DBuildHDF5
-HDF5_SRCS = NclHDF5.c h5reader.c h5writer.c
-HDF5_OBJS = NclHDF5.o h5reader.o h5writer.o
+HDF5_SRCS = NclNewHDF5.c
+HDF5_OBJS = NclNewHDF5.o
 #else
 #define HDF5_SRCS
 #define HDF5_OBJS
@@ -138,6 +137,17 @@ GDAL_OBJS = NclOGR.o
 #define GDALLIB
 #endif
 
+
+#ifdef BuildOpenCL
+OpenCL_DEFS = -DBuildOpenCL
+OpenCL_SRCS = openclAddProto.c openclAddFuncs.c
+OpenCL_OBJS = openclAddProto.o openclAddFuncs.o
+#else
+#define OpenCL_SRCS
+#define OpenCL_OBJS
+#define OpenCLLIB
+#endif
+
 #if !defined(BuildUdunits)
 #endif
 
@@ -171,11 +181,11 @@ DYNAMIC_LIBS	=	-ldl
 
 EXTRA_CDEFINES	=	$(OS1_DEF) $(MAJOR_DEF) \
 			$(PROFILE_DEFS) $(MPI_DEFS) \
-			$(NETCDF4_DEFS) \
-			$(NC4_FEATURES_DEFS) \
 			$(HDFEOS_DEFS) $(HDF4_DEFS) \
 			$(HDFEOS5_DEFS) $(HDF5_DEFS) \
 			$(GRIB2_DEFS) $(GDAL_DEFS) \
+			$(NC4_FEATURES_DEFS) \
+			$(OpenCL_DEFS) \
 			$(UDUNITS_DEFS) $(V5D_DEFS) 
 
 API_DEFS	=	-DMAKEAPI
@@ -195,13 +205,13 @@ EXTRA_CLDFLAGS = $(DEV_LIB_SEARCH) $(EXTRA_EXPORT_FLAGS)
 
 #if defined(SUN)
 # EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOS5LIB) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(HDF5LIB) $(GDALLIB) $(GRIDSPECLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(CAIROLIB) $(SPHERELIB) $(FFTPACK5LIB) -fast -xlic_lib=sunperf	-lnsl -lintl -lsocket -ldl -lw -lfui 
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOS5LIB) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(HDF5LIB) $(GDALLIB) $(GRIDSPECLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(CAIROLIB) $(EXTERNALLIBS) -lnsl -lintl -lsocket -ldl -lw
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOS5LIB) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(HDF5LIB) $(GDALLIB) $(GRIDSPECLIB) $(OpenCLLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(CAIROLIB) $(EXTERNALLIBS) -lnsl -lintl -lsocket -ldl -lw
 #elif defined(AIX)
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOS5LIB) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(HDF5LIB) $(GDALLIB) $(GRIDSPECLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(CAIROLIB) $(EXTERNALLIBS) -lxlf90 -lxlopt
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOS5LIB) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(HDF5LIB) $(GDALLIB) $(GRIDSPECLIB) $(OpenCLLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(CAIROLIB) $(EXTERNALLIBS) -lxlf90 -lxlopt
 #elif (defined(IRIX) || defined(IRIX64))
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOS5LIB) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(HDF5LIB) $(GDALLIB) $(GRIDSPECLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(CAIROLIB) $(EXTERNALLIBS)
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOS5LIB) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(HDF5LIB) $(GDALLIB) $(GRIDSPECLIB) $(OpenCLLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(CAIROLIB) $(EXTERNALLIBS)
 #else
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOS5LIB) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(HDF5LIB) $(GDALLIB) $(GRIDSPECLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(CAIROLIB) $(EXTERNALLIBS)
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOS5LIB) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(HDF5LIB) $(GDALLIB) $(GRIDSPECLIB) $(OpenCLLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(CAIROLIB) $(EXTERNALLIBS)
 #endif
 
 SYS_LIBS	=	$(XLIB) $(CTOFLIBS) -lm $(ARCH_LIBS) $(DYNAMIC_LIBS)
@@ -219,6 +229,7 @@ GEN_HDRS	=	NclTypeobj.h NclTypelogical.h \
 			MathFuncs.h 
 
 STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
+			AdvancedFileSupport.h \
 			Machine.h NclAtt.h NclData.h \
 			NclGroup.h NclFile.h NclFileInterfaces.h NclHLUObj.h NclMdInc.h \
 			NclAdvancedFile.h NclAdvancedGroup.h NclAdvancedFileStructure.h \
@@ -226,11 +237,11 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \
 			NclType.h \
-			NclExitCode.h \
+			NclDriver.h NclExitCode.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
 			NclOneDValCoordData.h HLUFunctions.h \
 			NclCallBacksI.h date.h NclCCM.h NclGRIB.h NclGRIB2.h date.h tables.h \
-			ccmhdr.h editline.h editline_unix.h ListSupport.h NclList.h NclAdvancedList.h \
+			ccmhdr.h editline.h editline_unix.h ListSupport.h NclList.h \
 			NclMultiDVallistData.h NclTypelist.h \
 			NclProf.h \
 			cptec_254_gtb.h dwd_002_gtb.h dwd_201_gtb.h dwd_202_gtb.h \
@@ -246,19 +257,29 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			ncep_131_gtb.h  ncep_133_gtb.h  ncep_140_gtb.h  ncep_141_gtb.h 	jma_3_gtb.h
 
 
-INSTALL_HDRS	= defs.h HluClasses.h NclApi.h ApiRecords.h NclVar.h \
-			NclBuiltIns.h NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h \
-			NclFileInterfaces.h 
+INSTALL_HDRS	= 	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h HluClasses.h \
+			AdvancedFileSupport.h \
+			NclApi.h NclAtt.h NclBuiltInSupport.h NclBuiltIns.h NclCallBacksI.h \
+			NclCoordVar.h NclData.h NclDataDefs.h NclDriver.h NclFile.h \
+			NclFileInterfaces.h NclGroup.h NclList.h NclMdInc.h NclMultiDValData.h \
+			NclMultiDValHLUObjData.h NclMultiDVallistData.h NclMultiDValnclfileData.h \
+			NclAdvancedFile.h NclAdvancedFileStructure.h NclOneDValCoordData.h NclOptions.h \
+			NclType.h NclTypebyte.h NclTypechar.h NclTypedouble.h NclTypefloat.h \
+			NclTypeint.h NclTypeint64.h NclTypelist.h NclTypelogical.h NclTypelong.h \
+			NclTypeobj.h NclTypeshort.h NclTypestring.h NclTypeubyte.h NclTypeuint.h \
+			NclTypeuint64.h NclTypeulong.h NclTypeushort.h NclVar.h Symbol.h \
+			TypeSupport.h VarSupport.h defs.h
 
 NIO_HDRS        =       nio.h 
 NIO_EXTRA_HDRS  =       nio_path.h
 
 NIO_NCL_HDR_FILES = ApiRecords.h AttSupport.h DataSupport.h		\
 		FileSupport.h HLUSupport.h ListSupport.h NclAtt.h NclCCM.h		\
+		AdvancedFileSupport.h \
 		NclCallBacksI.h NclCoordVar.h NclData.h NclDataDefs.h	\
 		NclGroup.h NclFile.h NclFileInterfaces.h NclFileVar.h NclGRIB.h	\
 		NclAdvancedGroup.h NclAdvancedFile.h NclAdvancedFileStructure.h NclOptions.h \
-		NclGRIB2.h NclHLUObj.h NclHLUVar.h NclList.h NclAdvancedList.h 	\
+		NclGRIB2.h NclHLUObj.h NclHLUVar.h NclList.h		\
 		NclMdInc.h NclMultiDValData.h NclMultiDValData.h.sed	\
 		NclMultiDValHLUObjData.h NclMultiDVallistData.h		\
 		NclMultiDValnclfileData.h NclOneDValCoordData.h		\
@@ -282,15 +303,16 @@ NIO_NCL_HDR_FILES = ApiRecords.h AttSupport.h DataSupport.h		\
 		jma_3_gtb.h ncep_128_gtb.h ncep_129_gtb.h		\
 		ncep_130_gtb.h ncep_131_gtb.h ncep_133_gtb.h		\
 		ncep_140_gtb.h ncep_141_gtb.h ncep_opn_gtb.h		\
-		ncep_reanal_gtb.h tables.h h5data_struct.h
+		ncep_reanal_gtb.h tables.h
 
 NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		FileSupport.c Formats.c GetGrids.c InitData.c		\
+		AdvancedFileSupport.c \
 		MatMulDValOp.c.sed Memory.c MultiDValOp.c.sed NclAtt.c	\
 		NclCCM.c NclCoordVar.c NclData.c NclGroup.c NclFile.c	\
-		NclAdvancedFile.c NclAdvancedGroup.c NclAdvancedList.c  \
-		NclFileVar.c NclGRIB.c NclGRIB2.c NclHDF.c \
-		NclHDFEOS.c NclHDFEOS5.c NclHDF5.c h5reader.c h5writer.c \
+		NclAdvancedFile.c NclAdvancedGroup.c			\
+		NclFileVar.c NclGRIB.c NclGRIB2.c NclHDF.c		\
+		NclHDFEOS.c NclHDFEOS5.c NclNewHDFEOS5.c NclNewHDF5.c	\
 		NclMultiDValData.c.sed NclMultiDValnclfileData.c	\
 		NclNetCdf.c NclOneDValCoordData.c NclType.c NclOGR.c	\
 		NclType.c.sed NclTypebyte.c.specific			\
@@ -328,7 +350,7 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 PYNIO_SRC_DIR   =	$(TOP)/pynio
 NIO_SRC_DIR 	=	$(TOP)/ni/src/lib/nio
 
-API_SRCS=	NclApi.c scanapi.c parseapi.c 
+API_SRCS=	NclApi.c scanapi.c parseapi.c guiFuncs.c NclDriver.c
 EXE_SRCS=	Ncl.c scanner.c parser.c io.c
 
 APISRCS		=	$(API_SRCS) $(SRCS)
@@ -338,6 +360,7 @@ COMMON_SRCS     =       $(GEN_TYPE_SRCS)
 SRCS		=	$(GEN_SRCS) $(STATIC_SRCS) $(STATIC_IO_SRCS) \
 			$(HDFEOS_SRCS) $(HDF4_SRCS) \
 			$(HDFEOS5_SRCS) $(HDF5_SRCS) \
+			$(OpenCL_SRCS) \
 			$(NC4_FEATURES_SRCS) \
 			$(GRIB2_SRCS) $(GDAL_SRCS)
 
@@ -362,6 +385,7 @@ GEN_MATH_SRCS   =       MathFuncs.c
 
 STATIC_IO_SRCS  =       AddFileFormats.c AttSupport.c DataSupport.c \
 			FileSupport.c Formats.c GetGrids.c \
+			AdvancedFileSupport.c \
 			InitData.c Memory.c NclAtt.c NclCCM.c \
 			NclCoordVar.c NclData.c NclGroup.c NclFile.c NclFileVar.c \
 			NclGRIB.c NclHDF.c NclMultiDValnclfileData.c \
@@ -379,8 +403,8 @@ STATIC_SRCS	=	AddBuiltIns.c AddHLUObjs.c \
 			HLUFunctions.c yywrap.c craybin.c \
 			complete.c editline.c sysunix.c ListSupport.c \
 			NclList.c NclMultiDVallistData.c \
-			NclProf.c NclTime.c
-
+			NclProf.c NclTime.c \
+			NclDriver.c
 
 
 FSRCS		=	qu2reg3.f rowina3.f scm0.f ncepcode.f
@@ -405,6 +429,7 @@ GEN_MATH_OBJS   =       MathFuncs.o
 
 STATIC_IO_OBJS  =       AddFileFormats.o AttSupport.o DataSupport.o \
 			FileSupport.o Formats.o GetGrids.o \
+			AdvancedFileSupport.o \
 			InitData.o Memory.o NclAtt.o NclCCM.o \
 			NclCoordVar.o NclData.o NclGroup.o NclFile.o NclFileVar.o \
 			NclGRIB.o NclMultiDValnclfileData.o \
@@ -412,9 +437,10 @@ STATIC_IO_OBJS  =       AddFileFormats.o AttSupport.o DataSupport.o \
 			NclTypelist.o NclVar.o VarSupport.o \
 			ctoiee.o date.o 
 
+#Printtoken.o
 STATIC_OBJS	=	AddBuiltIns.o AddHLUObjs.o \
 			AddIntrinsics.o Execute.o \
-			Machine.o OpsFuncs.o Printtoken.o SrcTree.o \
+			Machine.o OpsFuncs.o SrcTree.o \
 			Symbol.o Translate.o  \
 			NclHLUVar.o HLUSupport.o \
 			NclMultiDValHLUObjData.o \
@@ -434,21 +460,23 @@ FIO_OBJS        =       fortranio.o
 COMMON_OBJS	=	$(GEN_TYPE_OBJS) $(STATIC_IO_OBJS) $(FOBJS) \
 			$(HDFEOS_OBJS) $(HDF4_OBJS) \
 			$(HDFEOS5_OBJS) $(HDF5_OBJS) \
+			$(OpenCL_OBJS) \
 			$(NC4_FEATURES_OBJS) \
 			$(GRIB2_OBJS) $(GDAL_OBJS)
 
-API_OBJS	=	NclApi.o ioapi.o NclHLUObjapi.o $(GEN_API_OBJS) $(GEN_MATH_OBJS) $(COMMON_OBJS) $(STATIC_OBJS) $(FIO_OBJS)
-EXE_OBJS	=	Ncl.o io.o NclHLUObj.o $(GEN_EXE_OBJS) $(GEN_MATH_OBJS) $(COMMON_OBJS) $(STATIC_OBJS) $(FIO_OBJS)
+API_OBJS	=	NclApi.o ioapi.o NclHLUObjapi.o guiFuncs.o NclDriver.o \
+			$(GEN_API_OBJS) $(GEN_MATH_OBJS) $(COMMON_OBJS) $(STATIC_OBJS) $(FIO_OBJS)
+ARCH_OBJS	=	io.o NclHLUObj.o NclApi.o guiFuncs.o NclDriver.o \
+			$(GEN_EXE_OBJS) $(GEN_MATH_OBJS) $(COMMON_OBJS) $(STATIC_OBJS) $(FIO_OBJS)
 IO_OBJS         =       $(IO_EXTRA_OBJS) $(COMMON_OBJS) $(FMAP_OBJS)
 
-ALLOBJS		=	$(EXE_OBJS) 
 APIOBJS		=	$(API_OBJS) 
-EXEOBJS		=	$(EXE_OBJS) $(HACKOBJS)
+EXEOBJS		=	Ncl.o $(ARCH_OBJS) $(HACKOBJS)
 IOOBJS          =       $(IO_OBJS)
 
-LibraryTarget($(MYLIB),$(ALLOBJS))
+LibraryTarget($(MYLIB),$(ARCH_OBJS))
 LibraryTarget($(MYLIB_API),$(APIOBJS))
-BuildSharedLibTarget(libNGncl,$(APIOBJS),1,0,$(NCDFLIBS) $(NETCD4LIBS) $(HDFEOSLIB)  $(HDFEOS5LIB) $(HDFLIB) $(HDF5LIB) $(GRIB2LIB) $(GDALLIB) $(GRIDSPECLIB) $(PNGLIB) $(CAIROLIB) $(UDUNITSLIB) $(V5DLIB) $(CTOFLIBS) -lm -lc)
+BuildSharedLibTarget(libNGncl,$(APIOBJS),1,0,$(NCDFLIBS) $(NETCD4LIBS) $(HDFEOSLIB)  $(HDFEOS5LIB) $(HDFLIB) $(HDF5LIB) $(GRIB2LIB) $(GDALLIB) $(GRIDSPECLIB) $(OpenCLLIBS) $(PNGLIB) $(CAIROLIB) $(UDUNITSLIB) $(V5DLIB) $(CTOFLIBS) -lm -lc)
 CProgram($(MYBIN),$(EXEOBJS),$(DEPLIBS))
 #ifdef JIRA1530
 CProgramXQF($(MYXQFBIN),$(EXEOBJS),$(DEPXQFLIBS))
@@ -618,22 +646,6 @@ NclHDFEOS.o: NclHDFEOS.c
 	  @echo These can safely be ignored.
       $(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclHDFEOS.c
 	  @echo 
-
-NclHDFEOS5.o: NclHDFEOS5.c
-	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclHDFEOS5.c
-	@echo 
-
-NclHDF5.o: NclHDF5.c
-	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclHDF5.c
-	@echo 
-
-h5reader.o: h5reader.c
-	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) h5reader.c
-	@echo 
-
-h5writer.o: h5writer.c
-	$(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) h5writer.c
-	@echo 
 
 #
 # NIO dependencies

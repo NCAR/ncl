@@ -493,6 +493,32 @@ NhlErrorTypes _NclInitMachine
 	return(NhlNOERROR);
 }
 
+NhlErrorTypes _NclFinalizeMachine()
+{
+	_NclMachineRec* machrec;
+#if 0
+	int i;
+
+	for (i = 0; i < current_level_1_size; i++)
+	{
+		if(NULL != level_1_vars[i])
+			NclFree(level_1_vars[i]);
+	}
+#endif
+
+	NclFree(level_1_vars);
+
+	NclFree(mstk->the_rec->themachine);
+	NclFree(mstk->the_rec->thefiles);
+	NclFree(mstk->the_rec->thelines);
+	NclFree(mstk->the_rec);
+	NclFree(mstk);
+
+	NclFree(thestack);
+
+	return(NhlNOERROR);
+}
+
 NhlErrorTypes _NclPutLevel1Var
 #if	NhlNeedProto
 (int offset,NclStackEntry *therec) 
@@ -800,20 +826,18 @@ static int SetNextFramePtrNLevel
 {
 	struct _NclFrameList *tmp;
 	int tmp_level;
-	int tmp_fp;
 
 	tmp_level = current_scope_level;
 	tmp = flist.next;
 	if(tmp != NULL) {
 		flist.next = flist.next->next;
-		tmp_fp = framepntr;
 		framepntr = tmp->fp;
 		sb_off = tmp->sb + 5;
 		current_scope_level = tmp->level;
 		NclFree(tmp);
 	}
-	return(tmp_level);
 	
+	return(tmp_level);
 }
 
 void _NclPopFrame

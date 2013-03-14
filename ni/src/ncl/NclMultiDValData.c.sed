@@ -1880,7 +1880,7 @@ NclData result;
         } else {
                 themissing.has_missing = 0;
         }	
-	if((self_md->multidval.type != NULL)&&(((NclTypeClass)self_md->multidval.type)->type_class.not != NULL)) {
+	if((self_md->multidval.type != NULL)&&(((NclTypeClass)self_md->multidval.type)->type_class.ncl_not != NULL)) {
 
 /*
 * the_type is not null since requirement if not != NULL not_type != NULL
@@ -1895,7 +1895,7 @@ NclData result;
                         NhlPError(NhlFATAL,NhlEUNKNOWN,"Not: Could not allocate memory for result type, can't continue\n");
                         return(NULL);
                 }
-                if(_Nclnot(
+                if(_Nclncl_not(
                         self_md->multidval.type,
                         result_val,
                         self_md->multidval.val,

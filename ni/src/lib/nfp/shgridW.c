@@ -563,7 +563,7 @@ NhlErrorTypes shsetp_W(void)
 /*
  * Input array variables
  */
-  string *pname;
+  NrmQuark *pname;
   ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
   ng_size_t dsizes_pvalue[NCL_MAX_DIMENSIONS];
@@ -572,7 +572,7 @@ NhlErrorTypes shsetp_W(void)
 /*
  * Retrieve argument #1
  */
-  pname = (string *) NclGetArgValue(
+  pname = (NrmQuark *) NclGetArgValue(
           0,
           2,
           NULL,
@@ -648,7 +648,7 @@ NhlErrorTypes shgetp_W(void)
 /*
  * Input array variable
  */
-  string *pname;
+  NrmQuark *pname;
   ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pname;
   int *ival;
@@ -657,7 +657,7 @@ NhlErrorTypes shgetp_W(void)
 /*
  * Retrieve argument #1
  */
-  pname = (string *) NclGetArgValue(
+  pname = (NrmQuark *) NclGetArgValue(
           0,
           1,
           NULL,

@@ -90,7 +90,7 @@ int nargs;
                 }
         } else {
                 val = NclMalloc((unsigned)nclTypestringClassRec.type_class.size);
-                *(string*)(val) = nclTypestringClassRec.type_class.default_mis.stringval;
+                *(NclQuark *)(val) = nclTypestringClassRec.type_class.default_mis.stringval;
                 tmp_md = _NclCreateMultiDVal(
                         NULL,NULL, Ncl_MultiDValData,
                         0,val,&nclTypestringClassRec.type_class.default_mis,1,
@@ -155,11 +155,11 @@ static NhlErrorTypes Ncl_Type_string_InitClass
 /*
 static int my_strcmp
 #if	NhlNeedProto
-(string s1,string s2)
+(NclQuark s1,NclQuark s2)
 #else 
 (s1,s2)
-string s1;
-string s2;
+NclQuark s1;
+NclQuark s2;
 #endif
 {
 	if((s1 < 1)&&(s2 < 1)) {
@@ -172,22 +172,22 @@ string s2;
 }
 */
 
-static string combine_strings
+static NclQuark combine_strings
 #if	NhlNeedProto
-(string ls,string rs,string mis_ls, string mis_rs,string mis)
+(NclQuark ls,NclQuark rs,NclQuark mis_ls, NclQuark mis_rs,NclQuark mis)
 #else
 (ls,rs,mis_ls,mis_rs,mis)
-string ls;
-string rs;
-string mis_ls;
-string mis_rs;
-string mis;
+NclQuark ls;
+NclQuark rs;
+NclQuark mis_ls;
+NclQuark mis_rs;
+NclQuark mis;
 #endif
 {
 	char *tmp;
 	char * ls_ptr;
 	char * rs_ptr;
-	string ret_val;
+	NclQuark ret_val;
 
 #if 0
 	if(mis_ls == ls) {
@@ -211,16 +211,16 @@ string mis;
 	}
 }
 
-static string select_string_lt
+static NclQuark select_string_lt
 #if	NhlNeedProto
-(string ls,string rs,string mis_ls, string mis_rs,string mis)
+(NclQuark ls,NclQuark rs,NclQuark mis_ls, NclQuark mis_rs,NclQuark mis)
 #else
 (ls,rs,mis_ls,mis_rs,mis)
-string ls;
-string rs;
-string mis_ls;
-string mis_rs;
-string mis;
+NclQuark ls;
+NclQuark rs;
+NclQuark mis_ls;
+NclQuark mis_rs;
+NclQuark mis;
 #endif
 {
 	int len;
@@ -257,16 +257,16 @@ string mis;
 		return(rs);
 	}
 }
-static string select_string_gt
+static NclQuark select_string_gt
 #if	NhlNeedProto
-(string ls,string rs,string mis_ls, string mis_rs,string mis)
+(NclQuark ls,NclQuark rs,NclQuark mis_ls, NclQuark mis_rs,NclQuark mis)
 #else
 (ls,rs,mis_ls,mis_rs,mis)
-string ls;
-string rs;
-string mis_ls;
-string mis_rs;
-string mis;
+NclQuark ls;
+NclQuark rs;
+NclQuark mis_ls;
+NclQuark mis_rs;
+NclQuark mis;
 #endif
 {
 	int len;
@@ -303,11 +303,11 @@ string mis;
 }
 static int cmp_string_lt
 #if	NhlNeedProto
-(string ls,string rs)
+(NclQuark ls,NclQuark rs)
 #else
 (ls,rs)
-string ls;
-string rs;
+NclQuark ls;
+NclQuark rs;
 #endif
 {
 	int len;
@@ -345,11 +345,11 @@ string rs;
 
 static int cmp_string_gt
 #if	NhlNeedProto
-(string ls,string rs)
+(NclQuark ls,NclQuark rs)
 #else
 (ls,rs)
-string ls;
-string rs;
+NclQuark ls;
+NclQuark rs;
 #endif
 {
 	int len;
@@ -387,11 +387,11 @@ string rs;
 
 static int cmp_string_le
 #if	NhlNeedProto
-(string ls,string rs)
+(NclQuark ls,NclQuark rs)
 #else
 (ls,rs)
-string ls;
-string rs;
+NclQuark ls;
+NclQuark rs;
 #endif
 {
 	int len;
@@ -428,11 +428,11 @@ string rs;
 }
 static int cmp_string_ge
 #if	NhlNeedProto
-(string ls,string rs)
+(NclQuark ls,NclQuark rs)
 #else
 (ls,rs)
-string ls;
-string rs;
+NclQuark ls;
+NclQuark rs;
 #endif
 {
 	int len;
@@ -478,7 +478,7 @@ NclScalar* val_m;
 ng_size_t nval;
 #endif
 {
-	string *value = (string*)val;
+	NclQuark *value = (NclQuark*)val;
 	ng_size_t i = 0,j = 1;
 
 	if(nval == 1) 
@@ -594,16 +594,16 @@ ng_size_t nlhs;
 ng_size_t nrhs;
 #endif
 {
-        string *ls,*rs;
-	string *res;
+        NclQuark *ls,*rs;
+	NclQuark *res;
 	ng_size_t stopi = 1;
 	ng_size_t linc = 0;
 	ng_size_t rinc = 0;
 	ng_size_t i;
 
-	ls = (string*)lhs;
-	rs = (string*)rhs;
-	res = (string*)result;
+	ls = (NclQuark*)lhs;
+	rs = (NclQuark*)rhs;
+	res = (NclQuark*)result;
 
 	if(nlhs > nrhs) 
 		stopi = nlhs;
@@ -661,15 +661,15 @@ ng_size_t nlhs;
 ng_size_t nrhs;
 #endif
 {
-        string *ls,*rs;
+        NclQuark *ls,*rs;
 	logical *res;
 	ng_size_t stopi = 1;
 	ng_size_t linc = 0;
 	ng_size_t rinc = 0;
 	ng_size_t i;
 
-	ls = (string*)lhs;
-	rs = (string*)rhs;
+	ls = (NclQuark*)lhs;
+	rs = (NclQuark*)rhs;
 	res = (logical*)result;
 
 	if(nlhs > nrhs) 
@@ -727,15 +727,15 @@ ng_size_t nlhs;
 ng_size_t nrhs;
 #endif
 {
-        string *ls,*rs;
+        NclQuark *ls,*rs;
 	logical *res;
 	ng_size_t stopi = 1;
 	ng_size_t linc = 0;
 	ng_size_t rinc = 0;
 	ng_size_t i;
 
-	ls = (string*)lhs;
-	rs = (string*)rhs;
+	ls = (NclQuark*)lhs;
+	rs = (NclQuark*)rhs;
 	res = (logical*)result;
 
 	if(nlhs > nrhs) 
@@ -800,9 +800,9 @@ NclTypestringClassRec nclTypestringClassRec = {
 	{
 /* NclObjTypes type 			*/ Ncl_Typestring,
 /* NclBasicDataTypes data_type		*/ NCL_string,
-/* int size 				*/ sizeof(string),
+/* int size 				*/ sizeof(NclQuark),
 /* char *hlu_rep_type			*/ {NhlTQuark,NhlTQuarkGenArray},
-/* NclScalar 				*/ {(string)-1},
+/* NclScalar 				*/ {(NclQuark)-1},
 /* char *format ; 			*/ "%s",
 /* NclTypePrint print ; 		*/ Ncl_Type_string_print,
 /* NclTypeResetMissing reset_mis; 	*/ Ncl_Type_string_reset_mis,

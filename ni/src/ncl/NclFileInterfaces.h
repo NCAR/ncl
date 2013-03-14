@@ -1,7 +1,7 @@
 #ifndef NclFileInterfaces_h
 #define NclFileInterfaces_h
 
-#include "NclList.h"
+#include <ncarg/ncl/NclList.h>
 
 typedef struct _NclFormatFunctionRecord *NclFormatFunctionRecPtr;
 typedef struct _NclFormatFunctionRecord NclFormatFunctionRec;
@@ -77,6 +77,7 @@ typedef enum _NclFileFormat {
 	_NclGRIB2,
         _NclOGR,
         _NclAdvancedOGR,
+	_NclNewHE5,
 	_NclNETCDF4,
         _NclNumberOfFileFormats
 } NclFileFormat;

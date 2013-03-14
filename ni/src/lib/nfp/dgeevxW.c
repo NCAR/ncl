@@ -26,7 +26,7 @@ NhlErrorTypes dgeevx_lapack_W( void )
 /*
  * Arguments #1-5
  */
-  string *balanc, *jobvl, *jobvr, *sense;
+  NrmQuark *balanc, *jobvl, *jobvr, *sense;
   char   *sbalanc, *sjobvl, *sjobvr, *ssense;
   logical *opt;
 /*
@@ -113,7 +113,7 @@ NhlErrorTypes dgeevx_lapack_W( void )
 /*
  * Get string arguments #1-4
  */
-  balanc = (string*)NclGetArgValue(
+  balanc = (NrmQuark *)NclGetArgValue(
            1,
            6,
            NULL,
@@ -122,7 +122,7 @@ NhlErrorTypes dgeevx_lapack_W( void )
            NULL,
            NULL,
            DONT_CARE);
-  jobvl = (string*)NclGetArgValue(
+  jobvl = (NrmQuark *)NclGetArgValue(
            2,
            6,
            NULL,
@@ -131,7 +131,7 @@ NhlErrorTypes dgeevx_lapack_W( void )
            NULL,
            NULL,
            DONT_CARE);
-  jobvr = (string*)NclGetArgValue(
+  jobvr = (NrmQuark *)NclGetArgValue(
            3,
            6,
            NULL,
@@ -140,7 +140,7 @@ NhlErrorTypes dgeevx_lapack_W( void )
            NULL,
            NULL,
            DONT_CARE);
-  sense = (string*)NclGetArgValue(
+  sense = (NrmQuark *)NclGetArgValue(
            4,
            6,
            NULL,

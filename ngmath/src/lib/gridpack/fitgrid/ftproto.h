@@ -16,7 +16,7 @@
 /*
  * Prototypes for internal routines.
  */
-extern void *copy_dtof(void *dval, int size);
-extern void *copy_ftod(void *fval, int size);
-extern void convert_to_double(FTdata *z);
-extern void convert_to_float(FTdata *z);
+void *copy_dtof(void *dval, int size);
+void *copy_ftod(void *fval, int size);
+void convert_to_double(FTdata *z);
+void convert_to_float(FTdata *z);

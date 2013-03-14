@@ -772,7 +772,7 @@ NhlErrorTypes nnsetp_W(void)
 /*
  * Input array variables
  */
-  string *pname;
+  NrmQuark *pname;
   ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
   ng_size_t dsizes_pvalue[NCL_MAX_DIMENSIONS];
@@ -781,7 +781,7 @@ NhlErrorTypes nnsetp_W(void)
 /*
  * Retrieve argument #1
  */
-  pname = (string *) NclGetArgValue(
+  pname = (NrmQuark *) NclGetArgValue(
           0,
           2,
           NULL,
@@ -872,7 +872,7 @@ OK_NAME:  pvalue = (void *) NclGetArgValue(
  */
     for (i = 0; i < numpc; i++) {
       if (!strncmp(arg1, params_c[i], strlen(params_c[i]))) {
-        cval = NrmQuarkToString( *((string *) pvalue));
+        cval = NrmQuarkToString( *((NrmQuark *) pvalue));
         c_nnsetc(arg1, cval);
         return(NhlNOERROR);
       }
@@ -892,7 +892,7 @@ NhlErrorTypes nngetp_W(void)
 
   char  *arg1, *cval;
   int   numpi, numpf, numpc, i;
-  string qvalue;
+  NrmQuark qvalue;
 
 /*
  *  List the integer and float parameter names.  To add new ones,
@@ -910,7 +910,7 @@ NhlErrorTypes nngetp_W(void)
 /*
  * Input array variable
  */
-  string *pname;
+  NrmQuark *pname;
   ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   float *fval;
   int *ival;
@@ -919,7 +919,7 @@ NhlErrorTypes nngetp_W(void)
 /*
  * Retrieve argument #1
  */
-  pname = (string *) NclGetArgValue(
+  pname = (NrmQuark *) NclGetArgValue(
           0,
           1,
           NULL,

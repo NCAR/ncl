@@ -102,17 +102,17 @@ MultiDValOp.c.sed >> .tmp.$$
 
 sed \
 -e 's/FUNCNAME/And/g' \
--e 's/TFUNC/and/g' \
+-e 's/TFUNC/ncl_and/g' \
 MultiDValOp.c.sed >> .tmp.$$
 
 sed \
 -e 's/FUNCNAME/Or/g' \
--e 's/TFUNC/or/g' \
+-e 's/TFUNC/ncl_or/g' \
 MultiDValOp.c.sed >> .tmp.$$
 
 sed \
 -e 's/FUNCNAME/Xor/g' \
--e 's/TFUNC/xor/g' \
+-e 's/TFUNC/ncl_xor/g' \
 MultiDValOp.c.sed >> .tmp.$$
 
 sed \
@@ -127,9 +127,16 @@ fi
 sed \
 -e "/INSERTHERE/r .tmp.$$" \
 -e '/INSERTHERE/d' \
-NclMultiDValData.c.sed > NclMultiDValData.c
+NclMultiDValData.c.sed > .tmp2.$$
 
-rm .tmp.$$
+sed \
+-e 's/ncl_and_type/and_type/g' \
+-e 's/ncl_not_type/not_type/g' \
+-e 's/ncl_xor_type/xor_type/g' \
+-e 's/ncl_or_type/or_type/g' \
+.tmp2.$$ > NclMultiDValData.c
+
+rm .tmp.$$ .tmp2.$$
 
 echo "created NclMultiDValData.c"
 

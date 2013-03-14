@@ -32,17 +32,17 @@ C
 C We don't care about the errfil - the hlu library uses it's own
 C error logging scheme.
 C
-      subroutine gerhnd(errnr,fctid,errfil)
-        integer errnr,fctid,errfil
-        character*6 fname
-        character*90 mesg
+c     subroutine gerhnd(errnr,fctid,errfil)
+c       integer errnr,fctid,errfil
+c       character*6 fname
+c       character*90 mesg
 
-        call gzname(fctid,fname)
-        call gzgte2(errnr,mesg)
-        call nhlpfgerhnd(errnr,fctid,fname,len(fname),mesg,len(mesg))
+c       call gzname(fctid,fname)
+c       call gzgte2(errnr,mesg)
+c       call nhlpfgerhnd(errnr,fctid,fname,len(fname),mesg,len(mesg))
 
-        return
-      end
+c       return
+c     end
 C
 C       This function should always be called with 0 so the gerhnd
 C       subroutine is not actually called.  It is just necessary

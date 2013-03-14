@@ -300,7 +300,7 @@ NetCdfAttInqRec* att_inq
 		fprintf(stderr,"ncattget(%d,%d,\"%s\",value);\n",ncid,att_inq->varid,NrmQuarkToString(att_inq->name));
 #endif                
 		att_inq->value = NclMalloc(sizeof(NclQuark));
-		*(string *)att_inq->value = NrmStringToQuark(tmp);
+		*(NclQuark *)att_inq->value = NrmStringToQuark(tmp);
 		NclFree(tmp);
 	} 
 	else {
@@ -1394,24 +1394,21 @@ void* storage;
 
 			rec->open = 1;
 			if(no_stride) {	
-				ret = ncvargetg(cdfid,
+				ret = nc_get_vara(cdfid,
 					stepvl->var_inq->varid,
 					start,
 					count,
-					NULL,
-					NULL,
 					out_data);
 #if NETCDF_DEBUG
 				fprintf(stderr,"ncvargetg(%d,%d,start,count,NULL,NULL,outdata);\n",cdfid,stepvl->var_inq->varid);
 #endif                
 
 			} else {
-				ret = ncvargetg(cdfid,
+				ret = nc_get_vars(cdfid,
 					stepvl->var_inq->varid,
 					start,
 					count,
 					stride,
-					NULL,
 					out_data);
 #if NETCDF_DEBUG
 				fprintf(stderr,"ncvargetg(%d,%d,start,count,stride,NULL,outdata);\n",cdfid,stepvl->var_inq->varid);
@@ -1470,7 +1467,7 @@ void* storage;
 		if(stepal->att_inq->name == theatt) {
 			if (stepal->att_inq->value != NULL) {
 				if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {
-					*(string*)storage = *(string*)(stepal->att_inq->value);
+					*(NclQuark*)storage = *(NclQuark*)(stepal->att_inq->value);
 				} else {
 					memcpy(storage,stepal->att_inq->value,
 					       nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
@@ -1503,7 +1500,7 @@ void* storage;
 #if NETCDF_DEBUG
 				fprintf(stderr,"ncattget(%d,NC_GLOBAL,%s,buffer);\n",cdfid,NrmQuarkToString(theatt));
 #endif                
-				*(string*)storage = NrmStringToQuark(tmp);
+				*(NclQuark*)storage = NrmStringToQuark(tmp);
 				NclFree(tmp);
 			} else {
 				ret = ncattget(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),storage);
@@ -1559,7 +1556,7 @@ void* storage;
 				if(stepal->att_inq->name == theatt) {
 					if (stepal->att_inq->value != NULL) {
 						if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {
-							*(string*)storage = *(string*)(stepal->att_inq->value);
+							*(NclQuark*)storage = *(NclQuark*)(stepal->att_inq->value);
 						} else {
 							memcpy(storage,stepal->att_inq->value,
 							       nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
@@ -1601,7 +1598,7 @@ void* storage;
 						fprintf(stderr,"ncattget(%d,%d,\"%s\",buffer);\n",cdfid,stepvl->var_inq->varid,
 						       NrmQuarkToString(theatt));
 #endif                
-						*(string*)storage = NrmStringToQuark(tmp);
+						*(NclQuark*)storage = NrmStringToQuark(tmp);
 						NclFree(tmp);
 					} else {
 						ret = ncattget(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),storage);
@@ -3056,7 +3053,7 @@ static void NetCacheAttValue
 		strncpy(tmp,value,att_inq->len);
 		tmp[att_inq->len] = '\0';
 		att_inq->value = NclMalloc(sizeof(NclQuark));
-		*(string*)att_inq->value = NrmStringToQuark(tmp);
+		*(NclQuark*)att_inq->value = NrmStringToQuark(tmp);
 		NclFree(tmp);
 	}
 	else {

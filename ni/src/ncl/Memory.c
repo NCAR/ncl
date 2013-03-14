@@ -17,12 +17,19 @@
  *			PO 3000, Boulder, Colorado
  *
  *	Date:		Thu Jul 1 10:51:22 MDT 1993
- *
  *	Description:	
+ *
+ *	Modifier:	Wei Huang
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *	Date:		Thu Nov 8, 2012
+ *	Description:	Track memory when need to.
+ *
  */
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 #ifdef NIO_LIB_ONLY
 #include "niohlu.h"
 #include "nioNresDB.h"
@@ -30,7 +37,9 @@ extern "C" {
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #endif
+
 #include <errno.h>
+
 #include "defs.h"
 #include "Symbol.h"
 #include "NclData.h"
@@ -38,16 +47,309 @@ extern "C" {
 
 unsigned long total = 0;
 
-void
-*NclMalloc
-#if	NhlNeedProto
-(
-        ng_usize_t    size    /* size of memory requested     */
-)
+#ifdef NCLDEBUG
+void _addNclMemoryRecord(int linenumb, const char *filename, const char *funcname,
+                         ng_usize_t size, void *ptr)
+{
+    size_t memloc = ptr;
+
+    if(ncl_memory_record.used >= ncl_memory_record.max_allocated)
+    {
+        if(1 < NCLdebug_on)
+            fprintf(stderr, "\t\tThe old max_allocated = %ld, ", ncl_memory_record.max_allocated);
+
+        ncl_memory_record.max_allocated *= 2;
+
+        if(1 < NCLdebug_on)
+            fprintf(stderr, "The new max_allocated = %ld\n", ncl_memory_record.max_allocated);
+
+        ncl_memory_record.record = (NclMemoryStruct *)realloc(ncl_memory_record.record,
+                                    (ncl_memory_record.max_allocated * sizeof(NclMemoryStruct)));
+    }
+
+    if(1 < NCLdebug_on)
+    {
+        fprintf(stderr, "\tMem loc %ld: NCL allocate <%ld> bytes of memory in function <%s> at line <%d> of file <%s>\n",
+                         ncl_memory_record.used, size, funcname, linenumb, filename);
+
+        if(2 < NCLdebug_on)
+            fprintf(stderr, "\t\tThe memory address is: <0x%x>\n", (unsigned int) memloc);
+    }
+                     
+    ncl_memory_record.totalMemoryAllocated += size;
+    ncl_memory_record.record[ncl_memory_record.used].size = size;
+    ncl_memory_record.record[ncl_memory_record.used].memloc = memloc;
+    ncl_memory_record.record[ncl_memory_record.used].linenumb = linenumb;
+
+    if(NCL_MAX_NAME_LENGTH <= strlen(filename))
+        strncpy(ncl_memory_record.record[ncl_memory_record.used].filename, filename, NCL_MAX_NAME_LENGTH);
+    else
+        strcpy(ncl_memory_record.record[ncl_memory_record.used].filename, filename);
+
+    if(NCL_MAX_NAME_LENGTH <= strlen(funcname))
+        strncpy(ncl_memory_record.record[ncl_memory_record.used].funcname, funcname, NCL_MAX_NAME_LENGTH);
+    else
+        strcpy(ncl_memory_record.record[ncl_memory_record.used].funcname, funcname);
+
+    ++ncl_memory_record.used;
+    ++ncl_memory_record.num_allocated;
+}
+
+void _removeNclMemoryRecord(int linenumb, const char *filename, const char *funcname, void *ptr)
+{
+    size_t n;
+    size_t memloc = ptr;
+
+    n = ncl_memory_record.used;
+    while(n)
+    {
+        --n;
+        if(memloc == ncl_memory_record.record[n].memloc)
+        {
+            if(1 < NCLdebug_on)
+            {
+                fprintf(stderr, "\tMem loc %ld: NCL freed <%ld> bytes of memory in function <%s> at line <%d> of file <%s>\n",
+                                   n,  ncl_memory_record.record[n].size, funcname, linenumb, filename);
+                fprintf(stderr, "\t\tThis memory is allocated in function <%s> at line <%d> of file <%s>\n",
+                                 funcname, linenumb, filename);
+                if(2 < NCLdebug_on)
+                    fprintf(stderr, "\t\tThe memory address is: <0x%x>\n", (unsigned int)memloc);
+            }
+
+            ++ncl_memory_record.num_freed;
+            ncl_memory_record.totalMemoryFreed += ncl_memory_record.record[n].size;
+            --ncl_memory_record.used;
+            if(n != ncl_memory_record.used)
+            {
+                memcpy(&(ncl_memory_record.record[n]),
+                       &(ncl_memory_record.record[ncl_memory_record.used]),
+                       sizeof(NclMemoryStruct));
+            }
+            return;
+        }
+    }
+
+    fprintf(stderr, "\tTry to free un-allocated memory in function <%s> at line <%d> of file <%s>\n",
+                     funcname, linenumb, filename);
+}
+
+void _initializeNclMemoryRecord()
+{
+    ncl_memory_record.totalMemoryAllocated = 0;
+    ncl_memory_record.totalMemoryFreed = 0;
+
+    ncl_memory_record.used = 0;
+    ncl_memory_record.num_allocated = 0;
+    ncl_memory_record.max_allocated = NCL_MAX_MEMORY_RECORD;
+
+    ncl_memory_record.num_freed = 0;
+
+    ncl_memory_record.record = (NclMemoryStruct *)calloc(NCL_MAX_MEMORY_RECORD, sizeof(NclMemoryStruct));
+    if(NULL == ncl_memory_record.record)
+    {
+        fprintf(stderr, "\nFailed to malloc <%ld> bytes of memory in function <%s> at line <%d> of file <%s>\n",
+                         NCL_MAX_MEMORY_RECORD * sizeof(NclMemoryStruct),
+                         __FILE__, __LINE__, __PRETTY_FUNCTION__);
+        NhlPError(NhlFATAL,errno,"NclMalloc Failed");
+    }
+
+    if(NCLdebug_on)
+        _addNclMemoryRecord(__LINE__, __FILE__, __PRETTY_FUNCTION__,
+                            NCL_MAX_MEMORY_RECORD * sizeof(NclMemoryStruct),
+                            (void *)ncl_memory_record.record);
+}
+
+void _finalizeNclMemoryRecord()
+{
+    size_t n;
+
+    if(NCLdebug_on)
+    {
+        ++ncl_memory_record.num_freed;
+        ncl_memory_record.totalMemoryFreed += ncl_memory_record.record[0].size;
+    }
+    else
+        return;
+
+    fprintf(stderr, "\nNCL allocated <%ld> pieces of memory in total of <%ld> bytes.\n",
+                       ncl_memory_record.num_allocated, ncl_memory_record.totalMemoryAllocated);
+    fprintf(stderr, "NCL freed <%ld> pieces of memory in total of <%ld> bytes.\n",
+                     ncl_memory_record.num_freed, ncl_memory_record.totalMemoryFreed);
+
+    if(ncl_memory_record.num_freed == ncl_memory_record.num_allocated)
+    {
+        fprintf(stderr, "\nNCL has freed all memory it allocated.\n");
+    }
+    else
+    {
+        fprintf(stderr, "\nNCL has left <%ld> pieces in total of <%ld> bytes unfreed memory.\n",
+                         ncl_memory_record.num_allocated - ncl_memory_record.num_freed,
+                         ncl_memory_record.totalMemoryAllocated - ncl_memory_record.totalMemoryFreed);
+
+        if(2 < NCLdebug_on)
+        {
+            for(n = 1; n < ncl_memory_record.used; ++n)
+            {
+                fprintf(stderr, "\tMem loc %ld: <%ld> bytes of memory at location <0x%x> in function <%s> at line <%d> of file <%s> unfreed.\n",
+                                 n,  ncl_memory_record.record[n].size,
+                                 (unsigned int) ncl_memory_record.record[n].memloc,
+                                 ncl_memory_record.record[n].funcname,
+                                 ncl_memory_record.record[n].linenumb,
+                                 ncl_memory_record.record[n].filename);
+            }
+        }
+        else
+        {
+            for(n = 1; n < ncl_memory_record.used; ++n)
+            {
+                fprintf(stderr, "\tMem loc %ld: <%ld> bytes of memory in function <%s> at line <%d> of file <%s> unfreed.\n",
+                                 n,  ncl_memory_record.record[n].size,
+                                 ncl_memory_record.record[n].funcname,
+                                 ncl_memory_record.record[n].linenumb,
+                                 ncl_memory_record.record[n].filename);
+            }
+        }
+    }
+
+    fprintf(stderr, "\nNCL allocated <%ld> pieces of memory in total of <%ld> bytes.\n",
+                       ncl_memory_record.num_allocated, ncl_memory_record.totalMemoryAllocated);
+    fprintf(stderr, "NCL freed <%ld> pieces of memory in total of <%ld> bytes.\n",
+                     ncl_memory_record.num_freed, ncl_memory_record.totalMemoryFreed);
+    fprintf(stderr, "NCL left unfreed memory in total of <%ld> bytes.\n",
+                     ncl_memory_record.totalMemoryAllocated
+                     - ncl_memory_record.totalMemoryFreed);
+
+    free(ncl_memory_record.record);
+    ncl_memory_record.record = NULL;
+    NCLdebug_on = 0;
+}
+
+void *_underNclMalloc(int linenumb, const char *filename, const char *funcname,
+                      ng_usize_t size)
+{
+        void *ptr;
+
+        if(0 == size)
+                return NULL;
+
+        ptr = (void *)malloc(size);
+
+        if(NULL == ptr)
+	{
+		fprintf(stderr, "\nFailed to malloc <%ld> bytes of memory in function <%s> at line <%d> of file <%s>\n",
+				size, funcname, linenumb, filename);
+                NhlPError(NhlFATAL,errno,"NclMalloc Failed");
+	}
+
+	if(NCLdebug_on)
+		_addNclMemoryRecord(linenumb, filename, funcname, size, ptr);
+
+        return(ptr);
+}
+
+void _underNclFree(int linenumb, const char *filename, const char *funcname,
+                   void *ptr)
+{
+        if(NULL != ptr)
+	{
+		if(NCLdebug_on)
+			_removeNclMemoryRecord(linenumb, filename, funcname, ptr);
+
+               	free(ptr);
+                ptr = NULL;
+        }
+}
+
+/*
+ * Function:	NclCalloc
+ *
+ * Description:	This function is our interface to the regular calloc
+ *		system call.  We are using it so we can do error handleing
+ *		for memory allocation in one place and so we can impliment
+ *		our own memory management code if we need to.
+ *
+ * In Args:	ng_usize_t	num	number of elements
+ *		ng_usize_t	size	size of each element
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Public
+ * Returns:	pointer to memory of the size requested
+ * Side Effect:	
+ */
+void *_underNclCalloc(int linenumb, const char *filename, const char *funcname,
+	              ng_usize_t num,	/* number of elements		*/
+	              ng_usize_t size	/* size of each element		*/
+                     )
+{
+	void *ptr;
+
+	if(0 == (num * size))
+		return NULL;
+
+	ptr = (void *)calloc(num, size);
+
+	if(NULL == ptr)
+	{
+		fprintf(stderr, "\nFailed to calloc <%ld> bytes of memory in function <%s> at line <%d> of file <%s>\n",
+				num * size, funcname, linenumb, filename);
+		NhlPError(NhlFATAL,errno,"NhlCalloc Failed");
+	}
+
+	if(NCLdebug_on)
+		_addNclMemoryRecord(linenumb, filename, funcname, num * size, ptr);
+
+	return(ptr);
+}
+
+/*
+ * Function:	NclRealloc
+ *
+ * Description:	This function is our interface to the regular realloc
+ *		system call.  We are using it so we can do error handleing
+ *		for memory allocation in one place and so we can impliment
+ *		our own memory management code if we need to.
+ *
+ * In Args:	void		*ptr	pointer to old memory
+ *		ng_usize_t	size	size of memory requested
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Public
+ * Returns:	pointer to memory of the size requested
+ * Side Effect:	
+ */
+void *_underNclRealloc(int linenumb, const char *filename, const char *funcname,
+	               void		*ptr,	/* pointer to old memory	*/
+	               ng_usize_t	size	/* size of memory requested	*/
+                      )
+{
+	if(NULL == ptr)
+		ptr = _underNclMalloc(linenumb, filename, funcname, size);
+	else
+	{
+		if(NCLdebug_on)
+			_removeNclMemoryRecord(linenumb, filename, funcname, ptr);
+
+		ptr = (void *)realloc(ptr,size);
+
+		if(NULL == ptr)
+		{
+			fprintf(stderr, "\nFailed to realloc <%ld> bytes of memory in function <%s> at line <%d> of file <%s>\n",
+					size, funcname, linenumb, filename);
+			NhlPError(NhlFATAL,errno,"NhlRealloc Failed");
+		}
+
+	}
+
+	if(NCLdebug_on)
+		_addNclMemoryRecord(linenumb, filename, funcname, size, ptr);
+
+	return(ptr);
+}
 #else
-(size)
-        ng_usize_t    size;   /* size of memory requested     */
-#endif
+void *NclMalloc ( ng_usize_t    size    /* size of memory requested     */
+)
 {
         void *ptr;
 
@@ -62,32 +364,17 @@ void
         return(ptr);
 }
 
-NhlErrorTypes
-NclFree
-#if	NhlNeedProto
-(
+NhlErrorTypes NclFree (
         void            *ptr    /* pointer to memory to free    */
 )
-#else
-(ptr)
-        void            *ptr;   /* pointer to memory to free    */
-#endif
 {
-/*
-        register int ret;
-*/
-
         if(ptr == NULL)
                 return(NhlNOERROR);
 
         else{
-#ifdef  __sgi 
                 free(ptr);
+		ptr = NULL;
                 return NhlNOERROR;
-#else
-                free(ptr);
-                return NhlNOERROR;
-#endif
         }
 }
 
@@ -109,18 +396,9 @@ NclFree
  * Returns:	pointer to memory of the size requested
  * Side Effect:	
  */
-void
-*NclCalloc
-#if	NhlNeedProto
-(
-	ng_usize_t	num,	/* number of elements		*/
-	ng_usize_t	size	/* size of each element		*/
+void *NclCalloc(ng_usize_t	num,	/* number of elements		*/
+		ng_usize_t	size	/* size of each element		*/
 )
-#else
-(num,size)
-	ng_usize_t	num;	/* number of elements		*/
-	ng_usize_t	size;	/* size of each element		*/
-#endif
 {
 	void *ptr;
 
@@ -152,18 +430,9 @@ void
  * Returns:	pointer to memory of the size requested
  * Side Effect:	
  */
-void
-*NclRealloc
-#if	NhlNeedProto
-(
-	void		*ptr,	/* pointer to old memory	*/
-	ng_usize_t	size	/* size of memory requested	*/
+void *NclRealloc(void	*ptr,	/* pointer to old memory	*/
+		ng_usize_t	size	/* size of memory requested	*/
 )
-#else
-(ptr,size)
-	void		*ptr;	/* pointer to old memory	*/
-	ng_usize_t	size;	/* size of memory requested	*/
-#endif
 {
 	void *tptr;
 
@@ -178,7 +447,7 @@ void
 		return(tptr);
 	}
 }
-
+#endif
 
 void _NclFreeSubRec 
 #if	NhlNeedProto
@@ -220,7 +489,7 @@ struct _NclSubRec * sub_rec;
 	}
 }
 
-
 #ifdef __cplusplus
 }
 #endif
+

@@ -11,6 +11,10 @@
 
 #include "NclAdvancedFile.h"
 
+static char blank_space[MAX_BLANK_SPACE_LENGTH];
+static int indentation_level;
+static int indentation_length;
+
 NhlErrorTypes InitializeFileOptions(NclFileClassPart *fcp);
 
 static struct _NclMultiDValDataRec *AdvancedFileReadVarAtt(NclFile infile,
@@ -191,13 +195,11 @@ void _NclFileEnumRealloc(NclFileEnumRecord **enum_rec)
 
 char *_getComponentName(const char *fullname, char **structname)
 {
-    size_t nf = strlen(fullname);
     size_t ns = 1;
     size_t nc = 1;
     char *dot_ptr;
     char *cname = NULL;
     char *sname = NULL;
-    int i = 0;
 
   /*
    *fprintf(stderr, "\nEnter _getComponentName, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -891,7 +893,6 @@ void _printNclFileVarDimRecord(FILE *fp, NclFileDimRecord *dim_rec)
 void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *varnode)
 {
     char type_str[32];
-    int i;
     
     if(NULL == varnode)
         return;
@@ -938,7 +939,6 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
 void _printNclFileVarRecord(FILE *fp, NclAdvancedFile thefile, NclFileVarRecord *varrec)
 {
     NclFileVarNode *varnode;
-    char type_str[32];
     int i;
     
     if(NULL == varrec)
@@ -1343,7 +1343,8 @@ static void _NclInitNclFileGrpRecord(NclFileGrpRecord *grp_rec, int start)
             grpnode->pname = -1;
             grpnode->name  = -1;
             grpnode->pid   = -1;
-            grpnode->id    = -1;
+            grpnode->fid   = -1;
+            grpnode->gid   = -1;
 
             grpnode->unlimit_dim_rec = NULL;
             grpnode->chunk_dim_rec   = NULL;
@@ -3071,7 +3072,7 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                     char *struct_name = NULL;
                     char *component_name = NULL;
 
-                    component_name =  _getComponentName(NrmQuarkToString(var_name), &struct_name);
+                    component_name = _getComponentName(NrmQuarkToString(var_name), &struct_name);
 
                     if(NULL != component_name)
                     {
@@ -3103,12 +3104,22 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                     }
                     else
                     {
-                        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                            "MyAdvancedFileReadVarValue: Invalid component in struct: <%s>",
-                             NrmQuarkToString(var_name)));
+                        val = (void*) (*thefile->advancedfile.format_funcs->read_var)
+                                      (thefile->advancedfile.grpnode,
+                                       var_name,
+                                       start, finish, stride, val);
+
+                        tmp_md = (NclMultiDValData) val;
+                        return (tmp_md);
+
+                      /*
+                       *NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                       *    "MyAdvancedFileReadVarValue: Invalid component in struct: <%s>",
+                       *     NrmQuarkToString(var_name)));
+                       */
                     }
                 }
-                else if(NCL_list == varnode->type)
+                else if((NCL_vlen == varnode->type) || (NCL_list == varnode->type))
                 {
                   /*
                    *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -4355,20 +4366,50 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
             {
                 ncl_type = compnode->type;
 
-                if(compnode->nvals > 1)
+              /*
+               *i = 0;
+               *(dim_info)[i].dim_num = i;
+               *(dim_info)[i].dim_size = (ng_size_t)compnode->nvals;
+               *(dim_info)[i].dim_quark = compnode->name;
+               *n_dims_output = n_dims_input;
+               *output_dim_sizes[i] = compnode->nvals;
+               */
+
+                n_dims_output = varnode->dim_rec->n_dims;
+
+                for(i = 0; i < varnode->dim_rec->n_dims; ++i)
                 {
-                    i = n_dims_input;
+                    (dim_info)[i].dim_num = i;
+                    (dim_info)[i].dim_size = (ng_size_t)varnode->dim_rec->dim_node[i].size;
+                    (dim_info)[i].dim_quark = varnode->dim_rec->dim_node[i].name;
+                    output_dim_sizes[i] = (ng_size_t)varnode->dim_rec->dim_node[i].size;
+                }
+
+                if(1 < compnode->nvals)
+                {
+                    i = n_dims_output;
                     (dim_info)[i].dim_num = i;
                     (dim_info)[i].dim_size = (ng_size_t)compnode->nvals;
                     (dim_info)[i].dim_quark = compnode->name;
-                    n_dims_output = n_dims_input + 1;
                     output_dim_sizes[i] = compnode->nvals;
+                    ++n_dims_output;
                 }
             }
             else
             {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                    "NclAdvancedFile: Could not get compound data type."));
+                ncl_type = NCL_list;
+
+                (dim_info)[0].dim_num = 0;
+                (dim_info)[0].dim_size = 1;
+                (dim_info)[0].dim_quark = NrmStringToQuark("CompoundAsList");
+
+                n_dims_output = 1;
+                output_dim_sizes[0] = 1;
+
+              /*
+               *NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+               *    "NclAdvancedFile: Could not get compound data type."));
+               */
             }
 	}
         else if(NCL_opaque == varnode->type)
@@ -4429,9 +4470,25 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
             else
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                    "NclAdvancedFile: Could not get opaque data type."));
+                    "NclAdvancedFile: Could not get enum data type."));
             }
 	}
+#if 0
+        else if(NCL_vlen == varnode->type)
+        {
+              /*
+               *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr, "\ttotal_elements = %d\n", total_elements);
+               */
+	}
+        else
+        {
+              /*
+               *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr, "\ttotal_elements = %d\n", total_elements);
+               */
+	}
+#endif
 
         tmp_md = _NclCreateMultiDVal(
                  NULL,
@@ -4465,7 +4522,6 @@ static struct _NclVarRec *AdvancedFileReadVar(NclFile infile, NclQuark var_name,
     NclMultiDValData tmp_md = NULL;
     NclMultiDValData tmp_att_md = NULL;
     NclVar tmp_var = NULL;
-    int index;
     int i,j=0;
     int att_id = -1;
     NclSelectionRecord tmp_sel;
@@ -5260,7 +5316,7 @@ static NhlErrorTypes AdvancedFileSetFileOption(NclFile  infile,
                         lvalue[k] = _NclGetLower(*(NclQuark*)(((char *)tmp_md->multidval.val)+ k * sizeof(NclQuark)));
                         for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++)
                         {
-                            NclQuark valid_val = ((string *)fcp->options[i].valid_values->multidval.val)[j];
+                            NclQuark valid_val = ((NclQuark *)fcp->options[i].valid_values->multidval.val)[j];
                             if (lvalue[k] != valid_val)
                                 continue;
                             ok = 1;
@@ -5407,7 +5463,7 @@ static NhlErrorTypes AdvancedFileSetFileOption(NclFile  infile,
                         lvalue[k] = _NclGetLower(*(NclQuark*)(((char *)tmp_md->multidval.val)+ k * sizeof(NclQuark)));
                         for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++)
                         {
-                            NclQuark valid_val = ((string *)fcp->options[i].valid_values->multidval.val)[j];
+                            NclQuark valid_val = ((NclQuark *)fcp->options[i].valid_values->multidval.val)[j];
                             if(lvalue[k] != valid_val)
                                 continue;
                             ok = 1;
@@ -8258,9 +8314,9 @@ static int _getGroupIdFromGrpNode(NclFileGrpNode *grpnode, NclQuark group)
     if(NULL == grpnode)
         return(-1);
 
-    fprintf(stderr, "\nEnter _getGroupIndexFromGrpNode. file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tgroup name: <%s>\n", NrmQuarkToString(group));
   /*
+   *fprintf(stderr, "\nEnter _getGroupIndexFromGrpNode. file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tgroup name: <%s>\n", NrmQuarkToString(group));
    */
 
     if(NULL != grpnode->grp_rec)
@@ -8269,17 +8325,17 @@ static int _getGroupIdFromGrpNode(NclFileGrpNode *grpnode, NclQuark group)
         {
             tmpgrpnode = grpnode->grp_rec->grp_node[i];
           /*
+           *fprintf(stderr, "\tCheck %d: grpname <%s>\n", i, 
+           *                   NrmQuarkToString(tmpgrpnode->name));
            */
-            fprintf(stderr, "\tCheck %d: grpname <%s>\n", i, 
-                               NrmQuarkToString(tmpgrpnode->name));
 
             if(group == tmpgrpnode->name)
             {
               /*
+               *fprintf(stderr, "\tFind group <%s>\n\n", NrmQuarkToString(group));
+               *fprintf(stderr, "Leave _getGroupIndexFromGrpNode. file: %s, line: %d\n\n", __FILE__, __LINE__);
                */
-                fprintf(stderr, "\tFind group <%s>\n\n", NrmQuarkToString(group));
-                fprintf(stderr, "Leave _getGroupIndexFromGrpNode. file: %s, line: %d\n\n", __FILE__, __LINE__);
-                return (tmpgrpnode->id);
+                return (tmpgrpnode->gid);
             }
 
             id = _getGroupIdFromGrpNode(tmpgrpnode, group);
@@ -8288,9 +8344,9 @@ static int _getGroupIdFromGrpNode(NclFileGrpNode *grpnode, NclQuark group)
         }
     }
   /*
+   *fprintf(stderr, "\tCANNOT FIND group: <%s>\n", NrmQuarkToString(group));
+   *fprintf(stderr, "Leave AdvancedFileIsGroup. file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "\tCANNOT FIND group: <%s>\n", NrmQuarkToString(group));
-    fprintf(stderr, "Leave AdvancedFileIsGroup. file: %s, line: %d\n\n", __FILE__, __LINE__);
     return(-1);
 }
 

@@ -75,6 +75,52 @@
 ;            Renamed CornerLat and CornerLon to GridCornerLat and
 ;            GridCornerLon to make it more clear what these are.
 ;
+;       31 Jul 2012:
+;           Added a check_grid_type function to check for valid
+;              grid types ("rectilinear","5deg","G64", etc) and
+;              return necessary information.
+;       29 Jul 2012:
+;            Fixed the code for copying coordinates to use the
+;            values on the weights file instead of the description
+;            file. ESMF_copy_varcoords is the new procedure.
+;            This change pretty much renders all of the 
+;            retrieve_SCRIP_xxx, retrieve_ESMF_xxx, 
+;            retrieve_dstGrid_xxx, and retrieve_srcGrid_xxx
+;            obsolete.
+;
+;            ESMF_regrid_with_weights now copies attributes and
+;            coordinates by default.
+;            (CopyVarCoords and CopyVarAtts now default True.)
+;
+;            Added new CopyVarMeta attribute, which is True by default.
+;            Setting this to False overrides CopyVarCoords and CopyVarAtts. 
+;
+;       20 Jun 2012:
+;            Fix the section that calculates the corner grid cells
+;            so that the appropriate algorithm is used depending
+;            on whether the lat values go to -90/90.
+;            
+;       6 May 2012:
+;            Clean up error statements.
+;            Renamed RemoveDstGridFile, RemoveSrcGridFile, and
+;              RemoveGridFiles to RemoveDstFile, RemoveSrcFile,
+;              and RemoveFiles.
+;            Renamed ForceOverWrite and OverWrite to 
+;              ForceOverwrite and Overwrite (lowercase 'w').
+;            Added check for duplicate options being set 
+;                 (like SrcOverwrite and Overwrite).
+;            Renamed DstGridFileName / SrcGridFileName to
+;                just DstFileName / SrcFileName.
+;
+;       2 May 2012:
+;            Changed default names of description files to
+;               source_grid_file.nc and 
+;               destination_grid_file.nc 
+;
+;       27 April 2012:
+;            Renamed CornerLat and CornerLon to GridCornerLat and
+;            GridCornerLon to make it more clear what these are.
+;
 ;       26 April 2012:
 ;            For "conserve" method, be sure to divide results by
 ;            "frac_b". This also meant I had to modify "reshape"
@@ -561,28 +607,6 @@ begin
   print("check_grid_type: invalid grid type")
   return(bad_ret)
 end 
-
-;======================================================================
-; This procedure is just for writing data to a netcdf file. I
-; wrote it for debug purposes.
-;======================================================================
-undef("debug_write_file")
-procedure debug_write_file(opt,attname,var)
-local fout
-begin
-  if(isatt(opt,attname)) then
-    if(isfilepresent(opt@$attname$))
-      system("/bin/rm " + opt@$attname$)
-    end if
-    fout = addfile(opt@$attname$,"c")
-    print("----------------------------------------------------------------------")
-    print("...Writing data to '" +opt@$attname$+"' for")
-    print("...debug purposes.")
-    print("----------------------------------------------------------------------")
-    fout->var = var
-    delete(fout)   ; close data file
-  end if
-end
 
 ;======================================================================
 ; This procedure is meant as a replacement for 
@@ -2013,21 +2037,10 @@ begin
 
   lat = fwgt->yc_b(0::mlon)
   lon = fwgt->xc_b(0:mlon-1)
-
-;---Test for "rectilinear-ness". Do two cases just to be safe.
   if(.not.is_rectilinear) then
-    iln2 = mlon/2
-    ilt2 = nlat/2
-    iln3 = mlon/3
-    ilt3 = nlat/3
-    if (any(lat.ne.fwgt->yc_b(iln2::mlon)).or. \
-        any(lat.ne.fwgt->yc_b(iln3::mlon)).or. \
-        any(lon.ne.fwgt->xc_b(ilt2*mlon:(ilt2+1)*mlon-1)).or.\
-        any(lon.ne.fwgt->xc_b(ilt3*mlon:(ilt3+1)*mlon-1))) then
-       sd_regrid@lat2d = reshape(fwgt->yc_b,(/nlat,mlon/))
-       sd_regrid@lon2d = reshape(fwgt->xc_b,(/nlat,mlon/))
-       return
-    else
+;---Test for "rectilinear-ness"
+     if (all(lat.eq.fwgt->yc_b(nlat/2::mlon)).and. \
+         all(lon.eq.fwgt->xc_b(mlon:2*mlon-1))) then
        if(DEBUG) then
          print("ESMF_copy_varcoords: detected a rectilinear grid.")
          dq = str_get_dq()
@@ -2036,6 +2049,10 @@ begin
          print("      prevent this potentially slow test.")
        end if
        is_rectilinear = True
+     else
+       sd_regrid@lat2d = reshape(fwgt->yc_b,(/nlat,mlon/))
+       sd_regrid@lon2d = reshape(fwgt->xc_b,(/nlat,mlon/))
+       return
      end if
   end if
 
@@ -2317,7 +2334,7 @@ begin
     end if
 
 ;---This flag is necessary for writing vars > 2 GB
-    if (.not.isatt_logical_false(opt2,"LargeFile")) then
+    if (isatt_logical_true(opt2,"LargeFile")) then
         ESMFCMD = ESMFCMD + " --64bit_offset"
     end if
 
@@ -2705,6 +2722,18 @@ begin
     dstData@_FillValue = default_fillvalue(typeof(dstData))
   end if
 
+;---Apply frac_b only for conservative interpolation.
+  if(isatt(fid,"map_method").and.\
+     fid@map_method.eq."Conservative remapping") then
+    if(DEBUG)
+      print("ESMF_regrid_with_weights: dividing results by frac_b...")
+      print("                          (for conserve interpolation only)")
+    end if
+    frac_b            = reshape(fid->frac_b,dimsizes(dstData))
+    frac_b@_FillValue = default_fillvalue(typeof(frac_b))
+    dstData = dstData/where(frac_b.eq.0,frac_b@_FillValue,frac_b)
+  end if
+
 ;---Check if we need to remap the values onto a larger 2D grid.
   if(RemapIndexes) then
     if(DEBUG)
@@ -2733,27 +2762,6 @@ begin
   delete(fid)    ; close weight file before it gets opened again
   ESMF_copy_varmeta(srcData,dstData,wgtFile,opt)
 
-;----------------------------------------------------------------------
-; Clean up, add, and remove attributes.
-;
-; Note that due to standards for the weights file, the map_method
-; attribute will say "Bilinear remapping" for both bilinear and patch
-; methods. If this routine is called by ESMF_regrid, then that routine
-; will set FixMapMethodForPatch to True so this routine knows to fix
-; the "remap" attribute. Otherwise if ESMF_regrid_with_weights is
-; called directly, there's no way to tell if patch or bilinear was
-; used.
-;----------------------------------------------------------------------
-  if (.not.isatt(dstData,"remap")) then
-    if(isatt_logical_true(opt,"FixMapMethodForPatch")) then
-      dstData@remap = "remapped via ESMF_regrid_with_weights: " + \
-                       str_sub_str(map_method,"Bilinear","Patch")
-    else
-      dstData@remap = "remapped via ESMF_regrid_with_weights: " + \
-                      map_method
-    end if
-  end if
-
   if(.not.isatt(dstData,"missing_value")) then
     dstData@missing_value = dstData@_FillValue
   else
@@ -2763,16 +2771,6 @@ begin
       dstData@missing_value = tmp_msg
     end if
   end if
-
-  if(isatt(dstData,"_FillValue_original")) then
-    delete(dstData@_FillValue_original)
-  end if
-  if(isatt(dstData,"missing_value_original")) then
-    delete(dstData@missing_value_original)
-  end if
-
-;;;;;DEBUG CODE ONLY
-  debug_write_file(opt,"ESMFDebugFilename",dstData)
 
   if(PrintTimings) then
     print_elapsed_time(start_time,"ESMF_regrid_with_weights")
@@ -3242,6 +3240,9 @@ begin
 
 ;---Regrid the input variable
   srcData_regrid = ESMF_regrid_with_weights(srcData,wgt_file_name,opt2)
+
+;---Copy variable attributes and coordinate arrays if requested.
+  ESMF_copy_varmeta(srcData,srcData_regrid,wgt_file_name,opt2)
 
 ;---Clean up, if desired
   if (remove_src_file) then

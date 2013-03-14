@@ -150,7 +150,7 @@ HDFAttInqRec* att_inq
 		tmp[att_inq->len] = '\0';
 		ret = sd_ncattget(ncid,att_inq->varid,NrmQuarkToString(att_inq->name),tmp);
 		att_inq->value = NclMalloc(sizeof(NclQuark));
-		*(string *)att_inq->value = NrmStringToQuark(tmp);
+		*(NclQuark *)att_inq->value = NrmStringToQuark(tmp);
 		NclFree(tmp);
 	} 
 	else {
@@ -188,7 +188,7 @@ HDFAttInqRec* att_inq
 			tmp[strlen(tmp)] = ' ';
 		}
 		tmp[MIN(att_inq->len,llen+1)] = '\0';
-		*(string *)att_inq->value = NrmStringToQuark(tmp);
+		*(NclQuark *)att_inq->value = NrmStringToQuark(tmp);
 		NclFree(tmp);
 	} 
 	else {
@@ -216,7 +216,7 @@ static void HDFCacheAttValue
 		strncpy(tmp,value,att_inq->len);
 		tmp[att_inq->len] = '\0';
 		att_inq->value = NclMalloc(sizeof(NclQuark));
-		*(string*)att_inq->value = NrmStringToQuark(tmp);
+		*(NclQuark*)att_inq->value = NrmStringToQuark(tmp);
 		NclFree(tmp);
 	}
 	else {
@@ -1515,7 +1515,7 @@ void* storage;
 		if(stepal->att_inq->name == theatt) {
 			if (stepal->att_inq->value != NULL) {
 				if(stepal->att_inq->data_type == NC_CHAR && !(stepal->att_inq->name == Qfill_val || stepal->att_inq->name == Qmissing_val)) {
-					*(string*)storage = *(string*)(stepal->att_inq->value);
+					*(NclQuark*)storage = *(NclQuark*)(stepal->att_inq->value);
 				} else {
 					memcpy(storage,stepal->att_inq->value,
 					       sd_nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
@@ -1532,7 +1532,7 @@ void* storage;
 				tmp = (char*)NclMalloc(stepal->att_inq->len+1);
 				tmp[stepal->att_inq->len] = '\0';
 				ret = sd_ncattget(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),tmp);
-				*(string*)storage = NrmStringToQuark(tmp);
+				*(NclQuark*)storage = NrmStringToQuark(tmp);
 				NclFree(tmp);
 			} else {
 				ret = sd_ncattget(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),storage);
@@ -1569,11 +1569,11 @@ void* storage;
 	while(stepvl != NULL) {
 		if(stepvl->var_inq->name == thevar) {
 			if (theatt == NrmStringToQuark("hdf_name")) {
-				*(string*)storage = stepvl->var_inq->hdf_name;
+				*(NclQuark*)storage = stepvl->var_inq->hdf_name;
 				return storage;
 			}
 			else if (theatt == NrmStringToQuark("hdf_group")) {
-				*(string*)storage = stepvl->var_inq->var_path;
+				*(NclQuark*)storage = stepvl->var_inq->var_path;
 				return storage;
 			}
 			stepal = stepvl->var_inq->att_list;
@@ -1587,7 +1587,7 @@ void* storage;
 					}
 					if (stepal->att_inq->value != NULL) {
 						if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {
-							*(string*)storage = *(string*)(stepal->att_inq->value);
+							*(NclQuark*)storage = *(NclQuark*)(stepal->att_inq->value);
 						} else {
 							memcpy(storage,stepal->att_inq->value,
 							       sd_nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
@@ -1605,7 +1605,7 @@ void* storage;
 						tmp = (char*)NclMalloc(stepal->att_inq->len + 1);
 						tmp[stepal->att_inq->len] = '\0';
 						ret = sd_ncattget(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),tmp);
-						*(string*)storage = NrmStringToQuark(tmp);
+						*(NclQuark*)storage = NrmStringToQuark(tmp);
 						NclFree(tmp);
 					
 						

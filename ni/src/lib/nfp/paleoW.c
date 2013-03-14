@@ -14,7 +14,7 @@ NhlErrorTypes paleo_outline_W( void )
   double *tmp_oro, *tmp_lat, *tmp_lon;
   ng_size_t dsizes_oro[2], dsizes_lat[1], dsizes_lon[1];
   NclBasicDataTypes type_oro, type_lat, type_lon;
-  string *name;
+  NrmQuark *name;
 /*
  * Other variables
  */
@@ -65,7 +65,7 @@ NhlErrorTypes paleo_outline_W( void )
           NULL,
           DONT_CARE);
 
-  name = (string*)NclGetArgValue(
+  name = (NrmQuark *)NclGetArgValue(
           4,
           5,
           NULL,

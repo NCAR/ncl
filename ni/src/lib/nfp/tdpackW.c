@@ -210,7 +210,7 @@ NhlErrorTypes tdgetp_W(void)
 /*
  * Input array variable
  */
-  string *pname;
+  NrmQuark *pname;
   int ndims_pname;
   ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   float *fval;
@@ -220,7 +220,7 @@ NhlErrorTypes tdgetp_W(void)
 /*
  * Retrieve argument #1
  */
-  pname = (string *) NclGetArgValue(
+  pname = (NrmQuark *) NclGetArgValue(
           0,
           1,
           &ndims_pname,
@@ -337,7 +337,7 @@ NhlErrorTypes tdsetp_W(void)
 /*
  * Input array variables
  */
-  string *pname;
+  NrmQuark *pname;
   int ndims_pname;
   ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
@@ -348,7 +348,7 @@ NhlErrorTypes tdsetp_W(void)
 /*
  * Retrieve argument #1
  */
-  pname = (string *) NclGetArgValue(
+  pname = (NrmQuark *) NclGetArgValue(
           0,
           2,
           &ndims_pname,
@@ -452,7 +452,7 @@ NhlErrorTypes pcsetp_W(void)
 /*
  * Input array variables
  */
-  string *pname;
+  NrmQuark *pname;
   int ndims_pname;
   ng_size_t dsizes_pname[NCL_MAX_DIMENSIONS];
   void *pvalue;
@@ -463,7 +463,7 @@ NhlErrorTypes pcsetp_W(void)
 /*
  * Retrieve argument #1
  */
-  pname = (string *) NclGetArgValue(
+  pname = (NrmQuark *) NclGetArgValue(
           0,
           2,
           &ndims_pname,
@@ -886,7 +886,7 @@ NhlErrorTypes tdlbls_W( void )
 {
   int *nwid, *ipck;
   float *uvwmn, *uvwmx;
-  string *uvwn, *uvwi;
+  NrmQuark *uvwn, *uvwi;
   char *cuvwn0, *cuvwi0, *cuvwn1, *cuvwi1, *cuvwn2, *cuvwi2;
 /*
  * Variables for retrieving workstation information.
@@ -900,8 +900,8 @@ NhlErrorTypes tdlbls_W( void )
   nwid  =    (int*)NclGetArgValue(0,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
   uvwmn =  (float*)NclGetArgValue(1,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
   uvwmx =  (float*)NclGetArgValue(2,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
-  uvwn  = (string*)NclGetArgValue(3,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
-  uvwi  = (string*)NclGetArgValue(4,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvwn  = (NrmQuark*)NclGetArgValue(3,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvwi  = (NrmQuark*)NclGetArgValue(4,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
   ipck  =    (int*)NclGetArgValue(5,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   cuvwn0 = NrmQuarkToString(uvwn[0]);
@@ -941,7 +941,7 @@ NhlErrorTypes tdlbla_W( void )
 {
   int *nwid, *iaxs;
   float *xat, *yat, *angd;
-  string *ilbl, *nlbl;
+  NrmQuark *ilbl, *nlbl;
   char *cilbl, *cnlbl;
 /*
  * Variables for retrieving workstation information.
@@ -954,8 +954,8 @@ NhlErrorTypes tdlbla_W( void )
  */
   nwid =    (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
   iaxs =    (int*)NclGetArgValue(1,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
-  ilbl = (string*)NclGetArgValue(2,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
-  nlbl = (string*)NclGetArgValue(3,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ilbl = (NrmQuark*)NclGetArgValue(2,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  nlbl = (NrmQuark*)NclGetArgValue(3,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
   xat  =  (float*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
   yat  =  (float*)NclGetArgValue(5,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
   angd =  (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
@@ -993,7 +993,7 @@ NhlErrorTypes tdplch_W( void )
 {
   int *nwid;
   float *xpos, *ypos, *size, *angd, *cntr;
-  string *chrs;
+  NrmQuark *chrs;
   char *cchrs;
 /*
  * Variables for retrieving workstation information.
@@ -1004,13 +1004,13 @@ NhlErrorTypes tdplch_W( void )
 /*
  * Retrieve parameters.
  */
-  nwid =    (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
-  xpos =  (float*)NclGetArgValue(1,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
-  ypos =  (float*)NclGetArgValue(2,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
-  chrs = (string*)NclGetArgValue(3,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
-  size =  (float*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
-  angd =  (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
-  cntr =  (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  nwid =      (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  xpos =    (float*)NclGetArgValue(1,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ypos =    (float*)NclGetArgValue(2,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  chrs = (NrmQuark*)NclGetArgValue(3,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  size =    (float*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  angd =    (float*)NclGetArgValue(5,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  cntr =    (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   cchrs = NrmQuarkToString(*chrs);
 

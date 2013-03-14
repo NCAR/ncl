@@ -1592,7 +1592,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
-  string *description, *units;
+  NrmQuark *description, *units;
   char *cdesc = NULL;
   char *cunits = NULL;
   logical found_desc = False, found_units = False;
@@ -1717,12 +1717,12 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  */
       while (attr_list != NULL) {
         if ((strcmp(attr_list->attname, "description")) == 0) {
-          description = (string *) attr_list->attvalue->multidval.val;
+          description = (NrmQuark *) attr_list->attvalue->multidval.val;
           cdesc       = NrmQuarkToString(*description);
           found_desc  = True;
         }
         if ((strcmp(attr_list->attname, "units")) == 0) {
-          units  = (string *) attr_list->attvalue->multidval.val;
+          units  = (NrmQuark *) attr_list->attvalue->multidval.val;
           cunits = NrmQuarkToString(*units);
           found_units  = True;
         }
@@ -2039,7 +2039,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
-  string *description, *units;
+  NrmQuark *description, *units;
   char *cdesc = NULL;
   char *cunits = NULL;
   logical found_desc = False, found_units = False;
@@ -2191,12 +2191,12 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  */
       while (attr_list != NULL) {
         if ((strcmp(attr_list->attname, "description")) == 0) {
-          description = (string *) attr_list->attvalue->multidval.val;
+          description = (NrmQuark *) attr_list->attvalue->multidval.val;
           cdesc       = NrmQuarkToString(*description);
           found_desc  = True;
         }
         if ((strcmp(attr_list->attname, "units")) == 0) {
-          units  = (string *) attr_list->attvalue->multidval.val;
+          units  = (NrmQuark *) attr_list->attvalue->multidval.val;
           cunits = NrmQuarkToString(*units);
           found_units  = True;
         }
@@ -2450,7 +2450,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
-  string *description, *units;
+  NrmQuark *description, *units;
   char *cdesc = NULL;
   char *cunits = NULL;
   logical found_desc = False, found_units = False;
@@ -2584,12 +2584,12 @@ NhlErrorTypes wrf_interp_1d_W( void )
  */
       while (attr_list != NULL) {
         if ((strcmp(attr_list->attname, "description")) == 0) {
-          description = (string *) attr_list->attvalue->multidval.val;
+          description = (NrmQuark *) attr_list->attvalue->multidval.val;
           cdesc       = NrmQuarkToString(*description);
           found_desc  = True;
         }
         if ((strcmp(attr_list->attname, "units")) == 0) {
-          units  = (string *) attr_list->attvalue->multidval.val;
+          units  = (NrmQuark *) attr_list->attvalue->multidval.val;
           cunits = NrmQuarkToString(*units);
           found_units  = True;
         }
@@ -10552,7 +10552,7 @@ NhlErrorTypes wrf_wps_read_nml_W( void )
 /*
  * Argument # 0
  */
-  string *namelist;
+  NrmQuark *namelist;
   char *cnamelist;
 /*
  * Return variable
@@ -10570,7 +10570,7 @@ NhlErrorTypes wrf_wps_read_nml_W( void )
 /*
  * Get argument # 0
  */
-  namelist = (string*)NclGetArgValue(
+  namelist = (NrmQuark *)NclGetArgValue(
            0,
            1,
            NULL,

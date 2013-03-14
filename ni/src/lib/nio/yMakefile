@@ -129,7 +129,7 @@ GEN_HDRS	=	NclTypeobj.h NclTypelogical.h \
 STATIC_HDRS	=	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h  \
 			NclAtt.h NclCallBacksI.h NclData.h \
 			NclFile.h NclFileInterfaces.h NclMdInc.h NclHLUObj.h\
-			NclAdvancedFile.h NclAdvancedGroup.h NclAdvancedList.h NclAdvancedFileStructure.h \
+			NclAdvancedFile.h NclAdvancedGroup.h NclAdvancedFileStructure.h \
 			NclMultiDValData.h NclMultiDValHLUObjData.h \
 			OpsList.h Symbol.h VarSupport.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \

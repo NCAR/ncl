@@ -237,7 +237,7 @@ NhlErrorTypes _NclICrayBinNumRec
 ()
 #endif
 {
-        string *fpath;
+        NclQuark *fpath;
         NclScalar missing;
         int     has_missing = 0;
         FILE* fd = NULL;
@@ -251,7 +251,7 @@ NhlErrorTypes _NclICrayBinNumRec
 	unsigned char buffer[READ_SIZE];
 
 
-	fpath = (string*)NclGetArgValue(
+	fpath = (NclQuark*)NclGetArgValue(
                 0,
                 1,
                 NULL,
@@ -355,13 +355,13 @@ NhlErrorTypes _NclICrayBinRecRead
 ()
 #endif
 {
-	string *fpath;
+	NclQuark *fpath;
 	int	*recnum;
 	ng_size_t  *dimensions;
 	void  *tmp_dsz;
 	ng_size_t  dimsize;
         NclBasicDataTypes type_dsz;
-	string *type;
+	NclQuark *type;
 	NclScalar missing;
 	NclMultiDValData tmp_md;
 	NclStackEntry data;
@@ -384,7 +384,7 @@ NhlErrorTypes _NclICrayBinRecRead
 	int len;
 
 	
-	fpath = (string*)NclGetArgValue(
+	fpath = (NclQuark*)NclGetArgValue(
 		0,
 		4,
 		NULL,
@@ -435,7 +435,7 @@ NhlErrorTypes _NclICrayBinRecRead
 /*		size = -1;*/
 		tmp_size = -1;
 	}
-	type = (string*)NclGetArgValue(
+	type = (NclQuark*)NclGetArgValue(
 		3,
 		4,
 		NULL,

@@ -314,11 +314,11 @@ NclMultiDValData str_md;
 	char **buffer;
 	ng_size_t i;
 	int n_dims;
-	string *value;
+	NclQuark *value;
 	ng_size_t max_len,tmp_len,to;
 	char *val = NULL;
 	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
-	string missingQ = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+	NclQuark missingQ = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
 	NhlBoolean has_missing = False;
 	NclScalar tmp_missing;
 
@@ -330,7 +330,7 @@ NclMultiDValData str_md;
 	}
 
 	buffer = (char**)NclMalloc((unsigned)str_md->multidval.totalelements*sizeof(char*));
-	value = (string*)str_md->multidval.val;
+	value = (NclQuark*)str_md->multidval.val;
 	/* there has to at least be room for the end-of-string 0 byte */
 	max_len = 1;
 	for(i = 0; i < str_md->multidval.totalelements; i++) {
@@ -393,9 +393,9 @@ NclMultiDValData char_md;
 	char *buffer = NULL;
 	ng_size_t len =0;
 	ng_size_t from = 0;
-	string *value = NULL;
+	NclQuark *value = NULL;
 	unsigned char *val = NULL;
-	string missingQ = NrmNULLQUARK;
+	NclQuark missingQ = NrmNULLQUARK;
 	char missing = '\0';
 	char *cp;
 	NhlBoolean has_missing = False;
@@ -416,7 +416,7 @@ NclMultiDValData char_md;
 		missingQ = NrmStringToQuark(buffer);
 		tmp_missing.stringval = missingQ;
 	}
-	value = (string*) NclMalloc((unsigned)n_strings*sizeof(string));
+	value = (NclQuark*) NclMalloc((unsigned)n_strings*sizeof(NclQuark));
 	val = (unsigned char*)char_md->multidval.val;
 	if (has_missing) {
 		/*
@@ -710,9 +710,19 @@ NclObjTypes _NclBasicDataTypeToObjType
 	case NCL_compound:
 		return(Ncl_Typecompound);
 	case NCL_list:
+	case NCL_vlen:
 		return(Ncl_Typelist);
 	default:
-		return(Ncl_Obj);
+                if(NCL_ubyte == (dt ^ NCL_opaque))
+                    return (Ncl_Typeubyte);
+                else if(dt ^ NCL_enum)
+                    return _NclBasicDataTypeToObjType(dt ^ NCL_enum);
+                else if(dt ^ NCL_vlen)
+                    return(Ncl_Typelist);
+                else if(dt ^ NCL_list)
+                    return(Ncl_Typelist);
+                else
+		    return (Ncl_Obj);
 	}
 }
 
@@ -922,7 +932,7 @@ NclBasicDataTypes totype;
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%d",(int)*(short*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -958,7 +968,7 @@ NclBasicDataTypes totype;
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%d",*(int*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -988,7 +998,7 @@ NclBasicDataTypes totype;
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%ld",(long)*(long*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1018,7 +1028,7 @@ NclBasicDataTypes totype;
                         return(1);
                 case NCL_string:
                         sprintf(buffer,"%lld",(long long)*(long long*)from);
-                        *(string*)to = NrmStringToQuark(buffer);
+                        *(NclQuark*)to = NrmStringToQuark(buffer);
                         return(1);
                 default:
                         return(0);
@@ -1060,7 +1070,7 @@ NclBasicDataTypes totype;
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%d",(int)*(unsigned short*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1096,7 +1106,7 @@ NclBasicDataTypes totype;
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%d",*(unsigned int*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1126,7 +1136,7 @@ NclBasicDataTypes totype;
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%ld",(unsigned long)*(unsigned long*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1156,7 +1166,7 @@ NclBasicDataTypes totype;
                         return(1);
                 case NCL_string:
                         sprintf(buffer,"%lld",(unsigned long long)*(unsigned long long*)from);
-                        *(string*)to = NrmStringToQuark(buffer);
+                        *(NclQuark*)to = NrmStringToQuark(buffer);
                         return(1);
                 default:
                         return(0);
@@ -1174,7 +1184,7 @@ NclBasicDataTypes totype;
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%g",*(float*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1186,7 +1196,7 @@ NclBasicDataTypes totype;
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%lg",*(double*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		case NCL_logical:
 			*(logical*)to = (logical)(*(double*)from?1:0);
@@ -1226,7 +1236,7 @@ NclBasicDataTypes totype;
 		case NCL_string:
 			buffer[0] = *(char*)from;
 			buffer[1] = '\0';
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1275,7 +1285,7 @@ NclBasicDataTypes totype;
 		case NCL_string:
 			buffer[0] = *(byte*)from;
 			buffer[1] = '\0';
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1283,7 +1293,7 @@ NclBasicDataTypes totype;
 	case NCL_string:
 		switch(totype) {
 		case NCL_string:
-			*(string*)to = *(string*)from;
+			*(NclQuark*)to = *(NclQuark*)from;
 			return(1);
 		default:
 			return(0);
@@ -1358,7 +1368,7 @@ NclBasicDataTypes totype;
 		case NCL_string:
 			buffer[0] = *(char*)from;
 			buffer[1] = '\0';
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1407,7 +1417,7 @@ NclBasicDataTypes totype;
 		case NCL_string:
 			buffer[0] = *(byte*)from;
 			buffer[1] = '\0';
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1455,7 +1465,7 @@ NclBasicDataTypes totype;
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%d",(int)*(short*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1503,7 +1513,7 @@ NclBasicDataTypes totype;
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%d",*(int*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1551,7 +1561,7 @@ NclBasicDataTypes totype;
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%ld",(long)*(long*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1599,7 +1609,7 @@ NclBasicDataTypes totype;
                         return(1);
                 case NCL_string:
                         sprintf(buffer,"%lld",(long long)*(long long*)from);
-                        *(string*)to = NrmStringToQuark(buffer);
+                        *(NclQuark*)to = NrmStringToQuark(buffer);
                         return(1);
                 default:
                         return(0);
@@ -1647,7 +1657,7 @@ NclBasicDataTypes totype;
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%d",(int)*(unsigned short*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1695,7 +1705,7 @@ NclBasicDataTypes totype;
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%d",*(unsigned int*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1743,7 +1753,7 @@ NclBasicDataTypes totype;
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%ld",(unsigned long)*(unsigned long*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1791,7 +1801,7 @@ NclBasicDataTypes totype;
 			return(1);
                 case NCL_string:
                         sprintf(buffer,"%lld",(unsigned long long)*(unsigned long long*)from);
-                        *(string*)to = NrmStringToQuark(buffer);
+                        *(NclQuark*)to = NrmStringToQuark(buffer);
                         return(1);
                 default:
                         return(0);
@@ -1842,7 +1852,7 @@ NclBasicDataTypes totype;
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%g",*(float*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1893,7 +1903,7 @@ NclBasicDataTypes totype;
                         return(1);
 		case NCL_string:
 			sprintf(buffer,"%lg",*(double*)from);
-			*(string*)to = NrmStringToQuark(buffer);
+			*(NclQuark*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:
 			return(0);
@@ -1901,7 +1911,7 @@ NclBasicDataTypes totype;
 	case NCL_string:
 		switch(totype) {
 		case NCL_string:
-			*(string*)to = *(string*)from;
+			*(NclQuark*)to = *(NclQuark*)from;
 			return(1);
 		default:
 			return(0);
@@ -2001,18 +2011,18 @@ NclObj *result;
 		}
 		break;
 		case OR_OP:
-		if(data_part->data_class.or[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.or[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		if(data_part->data_class.ncl_or[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.ncl_or[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
 		}
 		break;
 		case AND_OP:
-		if(data_part->data_class.and[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.and[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		if(data_part->data_class.ncl_and[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.ncl_and[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
 		}
 		break;
 		case XOR_OP:
-		if(data_part->data_class.xor[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.xor[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		if(data_part->data_class.ncl_xor[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.ncl_xor[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
 		}
 		break;
 		case LTSEL_OP:
@@ -2121,8 +2131,8 @@ int operation;
 	while(((NclObjClass)data_part != nclObjClass)&&(*result == NULL)) { 
 		switch(operation) {
 		case NOT_OP:
-		if(data_part->data_class.not[f_selection] != NULL) {
-			*result = (NclObj)((*data_part->data_class.not[f_selection])((NclData)operand,NULL));
+		if(data_part->data_class.ncl_not[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.ncl_not[f_selection])((NclData)operand,NULL));
 		}
 		break;
 		case NEG_OP:
@@ -2538,7 +2548,7 @@ NclBasicDataTypes dt;
 #endif
 {
 	static int first = 1;
-	static NclQuark quarks[24];
+	static NclQuark quarks[25];
 
 	if(first) {
 		first = 0;
@@ -2565,7 +2575,8 @@ NclBasicDataTypes dt;
                 quarks[20] = NrmStringToQuark("ubyte");
                 quarks[21] = NrmStringToQuark("opaque");
                 quarks[22] = NrmStringToQuark("enum");
-                quarks[23] = NrmStringToQuark("none");
+                quarks[23] = NrmStringToQuark("vlen");
+                quarks[24] = NrmStringToQuark("none");
 	}	
 
 	switch(dt) {
@@ -2611,9 +2622,11 @@ NclBasicDataTypes dt;
 		return(NrmQuarkToString(quarks[21]));
 	case NCL_enum:
 		return(NrmQuarkToString(quarks[22]));
+	case NCL_vlen:
+		return(NrmQuarkToString(quarks[23]));
 	case NCL_none:
         default:
-		return(NrmQuarkToString(quarks[23]));
+		return(NrmQuarkToString(quarks[24]));
 	}
 }
 
