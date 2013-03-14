@@ -556,6 +556,7 @@ int cro_ClearWorkstation(GKSC *gksc) {
         free(outputFile);
     }
 
+#ifdef BuildQtEnabled
     else if (psa->wks_type == CQT)
     {
       /*
@@ -575,6 +576,7 @@ int cro_ClearWorkstation(GKSC *gksc) {
        */
         psa->frame_count++;
     }
+#endif
 
     psa->pict_empty = TRUE;
 

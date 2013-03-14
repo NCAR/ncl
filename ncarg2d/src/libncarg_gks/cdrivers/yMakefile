@@ -25,6 +25,12 @@ PNG_DEFINES  	=  -DBuildPNG
 #define PNGOBJ
 #endif
 
+#ifdef BuildQtEnabled
+Qt_DEFINES	= -DBuildQtEnabled
+#else
+#define Qt_DEFINES
+#endif
+
 BASICOBJ	= fort_c.o gksc.o transform.o gksP.o argb.o
 DEVOBJ		= gks_device.o
 CTXTOBJ		= ctxt_device.o ctxt.o ctxt_conv.o
@@ -40,7 +46,7 @@ PIXOBJ 		= pixcontrol.o     pixoutput.o pixdevice.o  \
 SOURCES		= $(BASICSRC) $(CTXTSRC) $(XSRC) $(PSSRC) $(PDFSRC) $(PIXSRC) $(PNGSRC)
 OBJECTS		= $(BASICOBJ) $(DEVOBJ) $(CTXTOBJ) $(XOBJ) $(PSOBJ) $(PDFOBJ) $(PIXOBJ) $(PNGOBJ)
 
-EXTRA_CDEFINES	= $(OS_DEF) $(PNG_DEFINES) -DCTXT -DX11 -DPS -DPDF -DPIX
+EXTRA_CDEFINES	= $(OS_DEF) $(PNG_DEFINES) $(Qt_DEFINES) -DCTXT -DX11 -DPS -DPDF -DPIX
 
 PartialLibraryTarget(libbasegks.a,$(BASICOBJ))
 
