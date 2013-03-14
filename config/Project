@@ -111,13 +111,9 @@
 #undef BuildV5D
 #endif /* BuildV5D */
 
-##ifndef BuildOpenCL
+#ifndef BuildOpenCL
 #define BuildOpenCL
-##else
-##if     !BuildOpenCL
-##undef  BuildOpenCL
-##endif
-##endif  /* BuildOpenCL */
+#endif  /* BuildOpenCL */
 
 /* No longer build the old PNG driver since we have the new cairo one. */
 #if !BuildPNG
@@ -276,13 +272,17 @@
 #define	UdUnitslib	-ludunits2 -lexpat
 #endif	/* UdUnitslib */
 
+#ifdef BuildV5D
 #ifndef    V5Dlib
 #define    V5Dlib  -lv5d
 #endif /* V5Dlib */
+#endif
 
-##ifndef	OpenCLlib
-##define	OpenCLlib -framework OpenCL
-##endif	/* OpenCLlib */
+#ifdef BuildOpenCL
+#ifndef	OpenCLlib
+#define	OpenCLlib -framework OpenCL
+#endif	/* OpenCLlib */
+#endif
 
 #ifndef	XdrLibrary
 #define	XdrLibrary	/**/
