@@ -171,8 +171,10 @@ void _NclAddFileFormats
 	_NclRegisterFormat(HDF5AddFileFormat,"h5");
 	_NclRegisterFormat(HDF5AddFileFormat,"hdf5");
 
+#ifdef BuildHDFEOS5
 	_NclRegisterFormat(NewHE5AddFileFormat,"he5");
 	_NclRegisterFormat(NewHE5AddFileFormat,"hdfeos5");
+#endif
 #ifdef  BuildGDAL
         /* file types supported by OGR in advanced file structure */
         _NclRegisterFormat(AdvancedOGRAddFileFormat, "shp");  /* shapefile */
