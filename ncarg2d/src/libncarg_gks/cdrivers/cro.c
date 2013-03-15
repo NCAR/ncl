@@ -54,6 +54,7 @@ static int ccompar(const void *p1, const void *p2);
 static void cascsrt(float xa[], int ip[], int n);
 static float *csort_array;
 static void reverse_chrs(char*);
+static int cro_CEsc(CROddp *psa, _NGCesc *cesc);
 
 extern crotiff_writeImage(const char* filename, cairo_surface_t* surface);
 
@@ -68,20 +69,22 @@ extern void croX11Pause(cairo_surface_t* surface);
 extern void croFreeNativeSurface(cairo_surface_t* surface);
 extern void croActivateX11(CROddp* psa, cairo_surface_t* surface);
 
+/* Globals for QT-based interactive view tool (to be named?) */
+cairo_surface_t *qt_surface = NULL;
+cairo_t         *qt_context = NULL;
+int qt_screen_width  = 1000;
+int qt_screen_height = 1000;
+
 /*
  *  Functions and globals for mapping workstation IDs into indices for the
  *  cairo context and surface arrays.
  */
+
 #define NUM_CONTEXT 20  /* number of allowable contexts */
 static int contextNum = 0;
 static cairo_surface_t *cairoSurfaces[NUM_CONTEXT];
 static cairo_t         *cairoContexts[NUM_CONTEXT];
 static int             cairoEnvIndices[NUM_CONTEXT];
-
-cairo_surface_t *qt_surface = NULL;
-cairo_t         *qt_context = NULL;
-int qt_screen_width  = 1000;
-int qt_screen_height = 1000;
 
 static int getCairoEnvIndex(int wksId) {
     int i;
@@ -160,11 +163,16 @@ void CROpict_init(GKSC *gksc) {
      *  Get the background color and set the source to the background color.
      */
     cval = unpack_argb(psa->ctable, 0);
+    cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, ALPHA_BLEND(cval.alpha, psa->background_alpha));
+    cairo_set_operator(context, CAIRO_OPERATOR_SOURCE);
+    
+#if 0    /* Save this for Wei; transparent background can now be had via wkBackgroundOpacityF resource */
     if(CQT == psa->wks_type)
         cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, 0.0);
     else
         cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, cval.alpha);
-
+#endif
+    
     /* NOTE: This is likely not quite right, but I don't understand the use of the clipping rectangle below. In any case,
      * the code that does the Right Thing for PS/PDF does not result in a complete fill for image-based formats,
      * so we proceed differently  --RLB
@@ -221,6 +229,7 @@ void CROpict_init(GKSC *gksc) {
         cairo_restore(context);
     }
 
+    cairo_set_operator(context, CAIRO_OPERATOR_OVER);
     psa->pict_empty = FALSE;
 
     return;
@@ -596,28 +605,24 @@ int cro_CloseWorkstation(GKSC *gksc) {
     if (psa->max_color > 0)
         free(psa->ctable);
 
-    if (psa->wks_type == CX11)
-    {
+    if (psa->wks_type == CX11) {
         croFreeNativeSurface(getSurface(psa->wks_id));
-        cairo_destroy(getContext(psa->wks_id));
-        removeCairoEnv(psa->wks_id);
-        free(psa);
     }
-    else if (psa->wks_type == CQT)
-    {
+    else if (psa->wks_type == CQT) {
       /*
        *fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
        *                 __FILE__, __LINE__, __PRETTY_FUNCTION__);
        *fprintf(stderr, "\tWrite image to qt-screen.\n\n");
        */
-        cairo_destroy(getContext(psa->wks_id));
       /*Do not free surface, as this surface is not allocated (defined) in NCL.
        *croFreeNativeSurface(getSurface(psa->wks_id));
        */
-        removeCairoEnv(psa->wks_id);
-        free(psa);
     }
 
+    cairo_destroy(getContext(psa->wks_id));
+    removeCairoEnv(psa->wks_id);
+    free(psa);
+    
     return (0);
 }
 
@@ -628,7 +633,6 @@ int cro_DeactivateWorkstation(GKSC *gksc) {
 
     return (0);
 }
-
 
 int cro_Esc(GKSC *gksc) {
 
@@ -647,110 +651,134 @@ int cro_Esc(GKSC *gksc) {
     trace("Got to cro_Esc");
 
     switch (escape_id) {
-    case -1521: /* Corner points for positioning plot on the page */
-        /** RLB - Not clear what this should be.  Its currently never set anywhere.
-         rscale = 1./psa->scaling;  **/
-        rscale = 1.0;
-        strng = strtok(sptr, " ");
-        psa->dspace.llx = (int) (rscale * (float) atoi(strng));
-        strng = strtok((char *) NULL, " ");
-        psa->dspace.lly = (int) (rscale * (float) atoi(strng));
-        strng = strtok((char *) NULL, " ");
-        psa->dspace.urx = (int) (rscale * (float) atoi(strng));
-        strng = strtok((char *) NULL, " ");
-        psa->dspace.ury = (int) (rscale * (float) atoi(strng));
+        case -1521: /* Corner points for positioning plot on the page */
+            /** RLB - Not clear what this should be.  Its currently never set anywhere.
+             rscale = 1./psa->scaling;  **/
+            rscale = 1.0;
+            strng = strtok(sptr, " ");
+            psa->dspace.llx = (int) (rscale * (float) atoi(strng));
+            strng = strtok((char *) NULL, " ");
+            psa->dspace.lly = (int) (rscale * (float) atoi(strng));
+            strng = strtok((char *) NULL, " ");
+            psa->dspace.urx = (int) (rscale * (float) atoi(strng));
+            strng = strtok((char *) NULL, " ");
+            psa->dspace.ury = (int) (rscale * (float) atoi(strng));
 
-        psa->dspace.xspan = ((psa->dspace.urx) - (psa->dspace.llx));
-        psa->dspace.yspan = ((psa->dspace.ury) - (psa->dspace.lly));
+            psa->dspace.xspan = ((psa->dspace.urx) - (psa->dspace.llx));
+            psa->dspace.yspan = ((psa->dspace.ury) - (psa->dspace.lly));
 
-        psa->cro_clip.llx = psa->dspace.llx;
-        psa->cro_clip.lly = psa->dspace.lly;
-        psa->cro_clip.urx = psa->dspace.urx;
-        psa->cro_clip.ury = psa->dspace.ury;
-        psa->cro_clip.null = FALSE;
+            psa->cro_clip.llx = psa->dspace.llx;
+            psa->cro_clip.lly = psa->dspace.lly;
+            psa->cro_clip.urx = psa->dspace.urx;
+            psa->cro_clip.ury = psa->dspace.ury;
+            psa->cro_clip.null = FALSE;
 
-        setSurfaceTransform(psa);
-        break;
-
-    case -1525: /* Specify portrait/landscape mode */
-        strng = strtok(sptr, " ");
-        strng = strtok((char *) NULL, " ");
-        plflag = (int) atoi(strng);
-        if (plflag == 0) {
-            psa->orientation = PORTRAIT;
-        } else {
-            psa->orientation = LANDSCAPE;
-        }
-
-        setSurfaceTransform(psa);
-        break;
-
-    case -1529:  /* paper width, in points */
-        strng = strtok(sptr, " ");
-        psa->paper_width = atoi(strng);
-        break;
-
-    case -1530:  /* paper height, in points */
-        strng = strtok(sptr, " ");
-        psa->paper_height = atoi(strng);
-        break;
-
-    case ESCAPE_PAUSE:
-        if (psa->wks_type == CX11) {
-#ifdef __JIRA1530__ 
-          cairo_pop_group_to_source(getContext(psa->wks_id));
-          cairo_paint(getContext(psa->wks_id));
-#endif
-          croX11Pause(getSurface(psa->wks_id));
-        }
-        break;
-        
-    case NGESC_CNATIVE: /* C-escape mechanism;  get resolution of image-based output formats */
-        switch (cesc->type) {
-        case NGC_PIXCONFIG:
-            pixconf = (_NGCPixConfig*) cesc;
-            psa->image_width = pixconf->width;
-            psa->image_height = pixconf->height;
+            setSurfaceTransform(psa);
             break;
-        case NGC_SETALPHA:
-        	alphaConfig = (_NGCAlpha*) cesc;
-        	switch (alphaConfig->graphicAttrib) {
-        	case NGC_LINEALPHA:
-        		psa->attributes.line_alpha = alphaConfig->alpha;
-        		break;
-        	case NGC_FILLALPHA:
-        		psa->attributes.fill_alpha = alphaConfig->alpha;
-        		break;
-        	case NGC_MARKERALPHA:
-        		psa->attributes.marker_alpha = alphaConfig->alpha;
-        		break;
-        	case NGC_TEXTALPHA:
-        		psa->attributes.text_alpha = alphaConfig->alpha;
-        		break;
-        	}
-        	break;
-        case NGC_GETALPHA:
-        	alphaConfig = (_NGCAlpha*) cesc;
-        	switch (alphaConfig->graphicAttrib) {
-        	case NGC_LINEALPHA:
-        		alphaConfig->alpha = psa->attributes.line_alpha;
-        		break;
-			case NGC_FILLALPHA:
-				alphaConfig->alpha = psa->attributes.fill_alpha;
-				break;
-			case NGC_MARKERALPHA:
-				alphaConfig->alpha = psa->attributes.marker_alpha;
-				break;
-            case NGC_TEXTALPHA:
-            	alphaConfig->alpha = psa->attributes.text_alpha;
-            	break;
+
+        case -1525: /* Specify portrait/landscape mode */
+            strng = strtok(sptr, " ");
+            strng = strtok((char *) NULL, " ");
+            plflag = (int) atoi(strng);
+            if (plflag == 0) {
+                psa->orientation = PORTRAIT;
+            } else {
+                psa->orientation = LANDSCAPE;
             }
-        	break;
-        }
+
+            setSurfaceTransform(psa);
+            break;
+
+        case -1529: /* paper width, in points */
+            strng = strtok(sptr, " ");
+            psa->paper_width = atoi(strng);
+            break;
+
+        case -1530: /* paper height, in points */
+            strng = strtok(sptr, " ");
+            psa->paper_height = atoi(strng);
+            break;
+
+        case ESCAPE_PAUSE:
+            if (psa->wks_type == CX11) {
+#ifdef __JIRA1530__ 
+                cairo_pop_group_to_source(getContext(psa->wks_id));
+                cairo_paint(getContext(psa->wks_id));
+#endif
+                croX11Pause(getSurface(psa->wks_id));
+            }
+            break;
+
+        case NGESC_CNATIVE: /* C-escape mechanism */
+            cro_CEsc(psa, cesc);
     }
 
     return (0);
 }
+
+/* Handles the so-called C-Escapes, or native-escape (escapes outside the defined GKS escapes) */
+static int cro_CEsc(CROddp *psa, _NGCesc *cesc) {
+    _NGCPixConfig *pixconf;
+    _NGCAlpha     *alphaConfig;
+    _NGCAntiAlias *aliasConfig;
+    
+    switch (cesc->type) {
+        case NGC_PIXCONFIG: /* get resolution of image-based output formats */
+            pixconf = (_NGCPixConfig*) cesc;
+            psa->image_width = pixconf->width;
+            psa->image_height = pixconf->height;
+            break;
+        case NGC_SETALPHA: /* set various alpha properties */
+            alphaConfig = (_NGCAlpha*) cesc;
+            switch (alphaConfig->graphicAttrib) {
+                case NGC_LINEALPHA:
+                    psa->attributes.line_alpha = alphaConfig->alpha;
+                    break;
+                case NGC_FILLALPHA:
+                    psa->attributes.fill_alpha = alphaConfig->alpha;
+                    break;
+                case NGC_MARKERALPHA:
+                    psa->attributes.marker_alpha = alphaConfig->alpha;
+                    break;
+                case NGC_TEXTALPHA:
+                    psa->attributes.text_alpha = alphaConfig->alpha;
+                    break;
+                case NGC_BACKGROUNDALPHA:
+                    psa->background_alpha = alphaConfig->alpha;
+                    break;
+            }
+            break;
+        case NGC_GETALPHA: /* get various alpha properties */
+            alphaConfig = (_NGCAlpha*) cesc;
+            switch (alphaConfig->graphicAttrib) {
+                case NGC_LINEALPHA:
+                    alphaConfig->alpha = psa->attributes.line_alpha;
+                    break;
+                case NGC_FILLALPHA:
+                    alphaConfig->alpha = psa->attributes.fill_alpha;
+                    break;
+                case NGC_MARKERALPHA:
+                    alphaConfig->alpha = psa->attributes.marker_alpha;
+                    break;
+                case NGC_TEXTALPHA:
+                    alphaConfig->alpha = psa->attributes.text_alpha;
+                    break;
+                case NGC_BACKGROUNDALPHA:
+                    alphaConfig->alpha = psa->background_alpha;
+                    break;
+            }
+            break;
+        case NGC_ANTIALIAS: /* settings for cairo's antialiasing */
+            aliasConfig = (_NGCAntiAlias*) cesc;
+            cairo_set_antialias(getContext(psa->wks_id), (aliasConfig->antialias_boolean) ?
+                CAIRO_ANTIALIAS_DEFAULT :
+                CAIRO_ANTIALIAS_NONE);
+            break;
+    }
+ 
+    return(0);
+}
+
 
 
 int cro_FillArea(GKSC *gksc) {
@@ -1737,7 +1765,7 @@ int cro_Text(GKSC *gksc) {
     cairo_t* context = getContext(psa->wks_id);
 
     trace("Got to cro_Text");
-
+    
     cairo_text_extents(context, sptr, &textents);
 
     cairo_get_font_matrix(context, &fmatrix);
@@ -2328,6 +2356,7 @@ static void CROinit(CROddp *psa, int *coords) {
 #endif
 
     psa->background = FALSE;
+    psa->background_alpha = 1.0;
     psa->pict_empty = TRUE;
     psa->page_number = 1;
 
