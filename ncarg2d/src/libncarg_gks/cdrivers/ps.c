@@ -3179,7 +3179,7 @@ int ps_SetColorRepresentation(gksc)
 
         unsigned        index   = (unsigned) xptr[0];
 
-        if (index & ALPHA_MASK)  /* argb color? */
+        if (index & ARGB_MASK)  /* argb color? */
             return 1;
 
         float           r =  rgbptr[0].r;
@@ -8811,7 +8811,7 @@ int ps_SetWindow(gksc)
 }
 
 void writePSColor(FILE *fp, int colorIndex) {
-    if (colorIndex & ALPHA_MASK) {
+    if (colorIndex & ARGB_MASK) {
         float r = ((RED_MASK   & colorIndex) >> 16) / 255.;
         float g = ((GREEN_MASK & colorIndex) >> 8) / 255.;
         float b = ((BLUE_MASK  & colorIndex)) / 255.;
