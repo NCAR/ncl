@@ -875,6 +875,8 @@ CairoWorkstationSetValues(NhlLayer old, NhlLayer ref, NhlLayer new, _NhlArgList 
     char func[] = "CairoWorkstationInitialize";
     NhlCairoWorkstationLayerPart *newLp = &((NhlCairoWorkstationLayer) new)->cairo;
     NhlCairoWorkstationLayerPart *oldLp = &((NhlCairoWorkstationLayer) old)->cairo;
+    NhlWorkstationLayerPart *newParent = &((NhlWorkstationLayer) new)->work;
+    NhlWorkstationLayerPart *oldParent = &((NhlWorkstationLayer) old)->work;
     NhlErrorTypes ret = NhlNOERROR;
 
 #if 0
@@ -906,7 +908,15 @@ CairoWorkstationSetValues(NhlLayer old, NhlLayer ref, NhlLayer new, _NhlArgList 
         newLp->lower_y = 126;
         newLp->upper_y = 666;
     }
-
+    
+    if (newParent->bkgnd_opacity != oldParent->bkgnd_opacity) {
+        _NhlSetBackgroundOpacity(new, newParent->bkgnd_opacity);
+    }
+    
+    if (newParent->antialias != oldParent->antialias) {
+        _NhlSetAntialiasingMode(new, NhlNON_TEXT_ANTIALIAS_MODE);
+    }
+    
     return ret;
 }
 

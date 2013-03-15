@@ -14,4 +14,6 @@ extern void _NhlSetFillOpacity(void* layer, float opacity);
 extern float _NhlGetFillOpacity(void* layer);
 extern void _NhlSetMarkerOpacity(void* layer, float opacity);
 extern float _NhlGetMarkerOpacity(void* layer);
+extern void _NhlSetBackgroundOpacity(void* layer, float opacity);
+extern float _NhlGetBackgroundOpacity(void* layer);
 extern int _NhlRGBAToColorIndex(float *rgba, int has_alpha);

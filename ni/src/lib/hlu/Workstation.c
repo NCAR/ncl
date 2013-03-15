@@ -195,11 +195,14 @@ static NhlResource resources[] = {
 	{NhlNwkColorMapLen,NhlCwkColorMapLen,NhlTInteger,sizeof(int),
 		Oset(color_map_len),NhlTImmediate,
 		_NhlUSET(0),_NhlRES_GONLY,NULL},
+        {NhlNwkBackgroundOpacityF,NhlCBackgroundOpacityF,NhlTFloat,
+                sizeof(float),Oset(bkgnd_opacity),NhlTString,
+                _NhlUSET("1.0"), _NhlRES_DEFAULT,NULL},	
 	{NhlNwkBackgroundColor,NhlCBackgroundColor,
 		NhlTColorDefinitionGenArray,
 		sizeof(NhlPointer),Oset(bkgnd_color),NhlTImmediate,
 		_NhlUSET(NULL),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNwkForegroundColor,NhlCForegroundColor,
+        {NhlNwkForegroundColor,NhlCForegroundColor,
 		NhlTColorDefinitionGenArray,
 		sizeof(NhlPointer),Oset(foregnd_color),NhlTImmediate,
 		_NhlUSET(NULL),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
@@ -229,7 +232,11 @@ static NhlResource resources[] = {
 		sizeof(NhlGenArray),Oset(top_level_views),
 		NhlTImmediate,_NhlUSET(NULL),_NhlRES_GONLY,
          	(NhlFreeFunc)NhlFreeGenArray},
-
+	{NhlNwkAntiAlias,NhlCwkAntiAlias,NhlTAntiAlias,
+		sizeof(NhlwkAntiAlias),Oset(antialias),
+		NhlTImmediate,_NhlUSET((NhlPointer)NhlANTIALIAS_ON),_NhlRES_DEFAULT,
+         	NULL},
+                                
 #define POset(field) Oset(public_lineinfo.field)
 	{NhlNwkDashPattern,NhlCwkDashPattern,NhlTDashIndex,
 		 sizeof(NhlDashIndex),POset(dash_pattern),
@@ -2121,11 +2128,20 @@ WorkstationClassInitialize
 		{NhlDOWN,	"Down"},
 		{NhlACROSS,	"Across"}
 	};
+        
+        _NhlEnumVals   antialiaslist[] = {
+                {NhlANTIALIAS_OFF,      "Off"},
+                {NhlANTIALIAS_ON,       "On"},
+                {NhlANTIALIAS_TEXTONLY, "TextOnly"}
+        };
+
 
 	_NhlRegisterEnumType(NhlbaseClass,NhlTFontQuality,fontqlist,
 			     NhlNumber(fontqlist));
 	_NhlRegisterEnumType(NhlbaseClass,NhlTTextDirection,textdirlist,
 			     NhlNumber(textdirlist));
+	_NhlRegisterEnumType(NhlbaseClass,NhlTAntiAlias,antialiaslist,
+			     NhlNumber(antialiaslist));
 
 	(void)_NhlRegisterEnumType(NhlobjClass,NhlTDashIndexFullEnum,
                                    dashvals,NhlNumber(dashvals));
@@ -2295,6 +2311,7 @@ WorkstationClassInitialize
         (void)_NhlRegSymConv(NhlobjClass,
 		NhlTIntegerGenArray,NhlTColorIndex,
 		NhlTColorDefinitionGenArray,NhlTColorIndex);
+
 
 	/*
 	 * These converters are used to allow "named" colors to set
@@ -2874,6 +2891,7 @@ static NhlErrorTypes WorkstationInitialize
 	wp->def_plot_id = NhlNULLOBJID;
 	wp->def_graphic_style_id = NhlNULLOBJID;
 	wp->def_gs_destroy_cb = NULL;
+        wp->curr_antialias_state = True;
 
 	/*
 	 * Initialize colormap with _NhlCOLUNSET, then call DoCmap to fill cmap
@@ -3906,6 +3924,9 @@ WorkstationOpen
 		return NhlFATAL;
 	}
 
+        _NhlSetBackgroundOpacity(l, wl->work.bkgnd_opacity);
+        _NhlSetAntialiasingMode(l, NhlNON_TEXT_ANTIALIAS_MODE);
+        
 	return _NhlAllocateColors(wl);
 }
 
@@ -4347,7 +4368,7 @@ WorkstationFill
 	Gint			err_ind;
 	Gint			fill_color;
 	Gint			fill_background;
-	Gfloat          fill_opacity;
+	Gfloat                  fill_opacity;
 	
 	/* 
  * Create or enlarge the workspace arrays as required
@@ -7159,6 +7180,35 @@ NhlIsWorkstation
 
 	return False;
 }
+
+        
+void _NhlSetAntialiasingMode(NhlLayer layer, NhlAntiAliasMode mode)
+{
+        NhlWorkstationLayer wLayer = (NhlWorkstationLayer) layer;
+        
+        int aaState = wLayer->work.antialias;
+        if (mode == NhlTEXT_ANTIALIAS_MODE) {
+            if (wLayer->work.antialias != NhlANTIALIAS_OFF)
+                aaState = True;
+        }
+        else if (mode == NhlNON_TEXT_ANTIALIAS_MODE) {
+            if (wLayer->work.antialias != NhlANTIALIAS_ON)
+                aaState = False;
+        }
+        
+        if (aaState != wLayer->work.curr_antialias_state) {
+           _NGCAntiAlias antiAliasRec;
+           Gescape_in_data gesc;
+           antiAliasRec.type = NGC_ANTIALIAS;
+           antiAliasRec.work_id = wLayer->work.gkswksid;
+           antiAliasRec.antialias_boolean = aaState;
+           gesc.escape_r1.data = &antiAliasRec;
+           gesc.escape_r1.size = sizeof(antiAliasRec);
+           gescape(NGESC_CNATIVE, &gesc, NULL, NULL);                    
+            
+            wLayer->work.curr_antialias_state = aaState;
+        }
+}       
 
 /*
  * Function:	nhlpfisworkstation

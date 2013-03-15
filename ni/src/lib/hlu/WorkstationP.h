@@ -27,6 +27,7 @@
 #include	<ncarg/hlu/TextItem.h>
 #include 	<ncarg/hlu/WorkstationI.h>
 #include	<ncarg/hlu/GraphicStyleP.h>
+#include        <ncarg/gksP.h>
 
 #define _NhlMAX_COLOR_MAP	256
 
@@ -189,6 +190,7 @@ typedef struct _NhlWorkstationLayerPart{
 	int		vswidth_dev_units;  /* width of the viewspace in
                                                device units */
 	NhlGenArray	bkgnd_color;
+        float           bkgnd_opacity;
 	NhlGenArray	foregnd_color;
 	int		dash_table_len;
 	int		fill_table_len;
@@ -196,6 +198,8 @@ typedef struct _NhlWorkstationLayerPart{
 	int		def_graphic_style_id;
 	int		*views;
 	int		*top_level_views;
+        NhlwkAntiAlias  antialias;
+        int             curr_antialias_state;
 
 	/* Private resource fields */
 

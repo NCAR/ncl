@@ -256,6 +256,11 @@ int     /* num_points */
 #endif
 );
 
+extern void _NhlSetAntialiasingMode(
+NhlLayer l, 
+NhlAntiAliasMode mode
+);
+
 extern NhlErrorTypes _NhlActivateWorkstation(
 #if	NhlNeedProto
         NhlLayer   /* layer*/

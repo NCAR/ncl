@@ -962,7 +962,8 @@ static NhlErrorTypes    TextItemDraw
 
 	_NhlSetFillOpacity(tlayer, tlayer->text.font_opacity);
 	_NhlSetLineOpacity(tlayer, tlayer->text.font_opacity);
-
+        _NhlSetAntialiasingMode(tlayer->base.wkptr, NhlTEXT_ANTIALIAS_MODE);
+        
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	c_plchhq(tlayer->text.real_x_pos,tlayer->text.real_y_pos,
 		 tlayer->text.real_string,tlayer->text.real_size,
@@ -974,6 +975,8 @@ static NhlErrorTypes    TextItemDraw
 	if (tlayer->view.use_segments) {
 		_NhlEndSegment(tlayer->text.trans_dat);
         }
+
+        _NhlSetAntialiasingMode(tlayer->base.wkptr, NhlNON_TEXT_ANTIALIAS_MODE);
         
 	_NhlDeactivateWorkstation(tlayer->base.wkptr);
 	return(ret);

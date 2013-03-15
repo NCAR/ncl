@@ -58,8 +58,7 @@ static float _NhlGetOpacity(void* layer, int attrib)
 }
 
 
-void _NhlSetLineOpacity(void* layer, float opacity)
-{
+void _NhlSetLineOpacity(void* layer, float opacity) {
 	_NhlSetOpacity(layer, opacity, NGC_LINEALPHA);
 }
 
@@ -68,8 +67,7 @@ float _NhlGetLineOpacity(void* layer) {
 }
 
 
-void _NhlSetFillOpacity(void* layer, float opacity)
-{
+void _NhlSetFillOpacity(void* layer, float opacity) {
 	_NhlSetOpacity(layer, opacity, NGC_FILLALPHA);
 }
 
@@ -78,13 +76,20 @@ float _NhlGetFillOpacity(void* layer) {
 }
 
 
-void _NhlSetMarkerOpacity(void* layer, float opacity)
-{
+void _NhlSetMarkerOpacity(void* layer, float opacity) {
 	_NhlSetOpacity(layer, opacity, NGC_MARKERALPHA);
 }
 
 float _NhlGetMarkerOpacity(void* layer) {
 	return _NhlGetOpacity(layer, NGC_MARKERALPHA);
+}
+
+void _NhlSetBackgroundOpacity(void* layer, float opacity) {
+	_NhlSetOpacity(layer, opacity, NGC_BACKGROUNDALPHA);
+}
+
+float _NhlGetBackgroundOpacity(void* layer) {
+	return _NhlGetOpacity(layer, NGC_BACKGROUNDALPHA);
 }
 
 int _NhlRGBAToColorIndex(float *rgba, int has_alpha)

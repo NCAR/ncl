@@ -40,6 +40,8 @@
 #define NhlCwkColorMap		"WkColorMap"
 #define NhlNwkColorMapLen	"wkColorMapLen"
 #define NhlCwkColorMapLen	"WkColorMapLen"
+#define NhlNwkBackgroundOpacityF "wkBackgroundOpacityF"
+#define NhlCBackgroundOpacityF	"BackgroundOpacityF"
 #define NhlNwkBackgroundColor	"wkBackgroundColor"
 #define NhlCBackgroundColor	"BackgroundColor"
 #define NhlNwkForegroundColor	"wkForegroundColor"
@@ -50,6 +52,8 @@
 #define NhlCwkViews		"WkViews"
 #define NhlNwkTopLevelViews	"wkTopLevelViews"
 #define NhlCwkTopLevelViews	"WkTopLevelViews"
+#define NhlNwkAntiAlias         "wkAntiAlias"
+#define NhlCwkAntiAlias 	"WkAntiAlias"
 
 /*
  * Public resources for setting Line and Marker attributes for
@@ -178,11 +182,25 @@ typedef enum _NhlMarkLineMode{
 } NhlMarkLineMode;
 
 
+/* font/text stuff */
 typedef enum {NhlHIGH,NhlMEDIUM,NhlLOW,NhlWORKSTATION} NhlFontQuality;
 typedef enum {NhlDOWN,NhlACROSS} NhlTextDirection;
 
 #define NhlTFontQuality		"FontQuality"
 #define NhlTTextDirection	"TextDirection"
+
+/* antialiasing control */
+#define NhlTAntiAlias         "AntiAlias"
+typedef enum {
+    NhlANTIALIAS_OFF, 
+    NhlANTIALIAS_ON,
+    NhlANTIALIAS_TEXTONLY
+} NhlwkAntiAlias;
+
+typedef enum {
+    NhlTEXT_ANTIALIAS_MODE,
+    NhlNON_TEXT_ANTIALIAS_MODE
+} NhlAntiAliasMode;
 
 /*
  * Common/shared resources for PostScript (PS) and Portable
