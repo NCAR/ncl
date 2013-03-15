@@ -50,6 +50,7 @@ typedef struct  CROddi_ {
   int           window_pos_x;      /* window-based formats only                        */
   int           window_pos_y;      /*                     "                            */
   int           background;
+  float         background_alpha;
   int           pict_empty;
   int           page_number;
   int           suppress_flag;

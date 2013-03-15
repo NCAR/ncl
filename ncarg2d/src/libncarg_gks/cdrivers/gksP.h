@@ -48,12 +48,14 @@
 #define NGC_PIXCONFIG	6
 #define NGC_SETALPHA    7
 #define NGC_GETALPHA    8
+#define NGC_ANTIALIAS   9
 
 /* opcodes for setting opacity attributes */
 #define NGC_LINEALPHA   0
 #define NGC_FILLALPHA   1
 #define NGC_MARKERALPHA 2
 #define NGC_TEXTALPHA   3
+#define NGC_BACKGROUNDALPHA 4
 
 typedef struct {
 	int		type;
@@ -127,6 +129,12 @@ typedef struct {
 } _NGCAlpha;
 
 typedef struct {
+    int                 type;
+    int                 work_id;
+    int                 antialias_boolean;
+} _NGCAntiAlias;
+
+typedef struct {
 	int		type;
 	int		work_id;
 } _NGCAny;
@@ -141,6 +149,7 @@ typedef union _NGCescapeRec_ {
 	_NGCXWinConfig	xwinconfig;
 	_NGCPixConfig   pixconfig;
 	_NGCAlpha       alphaconfig;
+        _NGCAntiAlias   antialias;
 } _NGCesc;
 
 /*
