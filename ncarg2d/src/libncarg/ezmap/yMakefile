@@ -4,7 +4,7 @@
 
 MYNAME	= ezmap
 
-GENERIC_SRCS = \
+GENERIC_SRCS = hlumapeod.f hlumapusr.f \
 	idictl.f  mapbd.f mapdrw.f mapeod.f mapfst.f mapgci.f mapgrd.f \
 	mapgtc.f mapgtd.f mapgti.f mapgtl.f mapgtr.f mapint.f  mapio.f \
 	 mapiq.f mapiqd.f  mapit.f mapitd.f maplbl.f maplmb.f maplot.f \
@@ -28,7 +28,7 @@ GENERIC_SRCS = \
 	maqtri.f mdqtri.f maqtrn.f mdqtrn.f aiproj.f aiprin.f haproj.f \
 	haprin.f moproj.f moprin.f wtproj.f wtprin.f
 
-GENERIC_OBJS = \
+GENERIC_OBJS = hlumapeod.o hlumapusr.o \
 	idictl.o  mapbd.o mapdrw.o mapeod.o mapfst.o mapgci.o mapgrd.o \
 	mapgtc.o mapgtd.o mapgti.o mapgtl.o mapgtr.o mapint.o  mapio.o \
 	 mapiq.o mapiqd.o  mapit.o mapitd.o maplbl.o maplmb.o maplot.o \
@@ -56,9 +56,14 @@ UNIX_SRCS = mpdbdi.f
 
 UNIX_OBJS = mpdbdi.o
 
+#if defined(BuildPNG) || defined(BuildCAIRO)
 PNG_SRCS        =  mapnga.c mapngb.c
 PNG_OBJS        =  mapnga.o mapngb.o
-EXTRA_CDEFINES   = -DBuildPNG
+EXTRA_CDEFINES   = -DBuildPNG -DBuildCAIRO
+#else
+#define PNG_SRCS
+#define PNG_OBJS
+#endif
 
 SOURCES = $(GENERIC_SRCS) $(UNIX_SRCS) $(PNG_SRCS)
 

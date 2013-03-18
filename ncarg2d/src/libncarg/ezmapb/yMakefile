@@ -4,7 +4,7 @@
 MYNAME  = ezmapb
 
 GENERIC_SRCS = \
-	mdchln.f mdfnme.f mdglty.f mdiaty.f mdifnb.f mdilnb.f \
+	hlumpchln.f mdchln.f mdfnme.f mdglty.f mdiaty.f mdifnb.f mdilnb.f \
 	mdiola.f mdiosa.f mdipai.f mdipan.f mdipar.f mdisci.f mdlnam.f \
 	mdlndm.f mdlndr.f mdlnri.f mdname.f mdrdcs.f mpchln.f mpfnme.f \
 	mpglty.f mpiaty.f mpifnb.f mpilnb.f mpiola.f mpiosa.f mpipai.f \
@@ -12,7 +12,7 @@ GENERIC_SRCS = \
 	mpname.f
 
 GENERIC_OBJS = \
-	mdchln.o mdfnme.o mdglty.o mdiaty.o mdifnb.o mdilnb.o \
+	hlumpchln.o mdchln.o mdfnme.o mdglty.o mdiaty.o mdifnb.o mdilnb.o \
 	mdiola.o mdiosa.o mdipai.o mdipan.o mdipar.o mdisci.o mdlnam.o \
 	mdlndm.o mdlndr.o mdlnri.o mdname.o mdrdcs.o mpchln.o mpfnme.o \
 	mpglty.o mpiaty.o mpifnb.o mpilnb.o mpiola.o mpiosa.o mpipai.o \
