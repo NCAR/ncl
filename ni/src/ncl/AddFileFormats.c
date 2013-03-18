@@ -168,9 +168,10 @@ void _NclAddFileFormats
 	_NclRegisterFormat(NC4AddFileFormat,"nc4");
 	_NclRegisterFormat(NC4AddFileFormat,"netcdf");
 
+#ifdef BuildHDF5
 	_NclRegisterFormat(HDF5AddFileFormat,"h5");
 	_NclRegisterFormat(HDF5AddFileFormat,"hdf5");
-
+#endif
 #ifdef BuildHDFEOS5
 	_NclRegisterFormat(NewHE5AddFileFormat,"he5");
 	_NclRegisterFormat(NewHE5AddFileFormat,"hdfeos5");
