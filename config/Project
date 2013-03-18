@@ -116,7 +116,7 @@
 #endif /* BuildV5D */
 
 #ifndef BuildOpenCL
-#define BuildOpenCL
+#undef BuildOpenCL
 #else
 #if     !BuildOpenCL
 #undef  BuildOpenCL
@@ -124,7 +124,7 @@
 #endif  /* BuildOpenCL */
 
 #ifndef BuildQtEnabled
-#define BuildQtEnabled
+#undef BuildQtEnabled
 #else
 #if     !BuildQtEnabled
 #undef  BuildQtEnabled
