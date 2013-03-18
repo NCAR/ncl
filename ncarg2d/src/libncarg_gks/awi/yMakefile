@@ -5,13 +5,13 @@
 MYNAME	= awi
 
 GENERIC_SRCS = \
-gactm.f   gaspar.f  gatelm.f  gca.f     gcelcd.f  \
-gceldc.f  gceldr.f  gclks.f   gclsg.f   \
-gcrsg.f   gcsgwk.f  gdsg.f    geclks.f  gelms.f   \
+gactm.f   gacwk.f   gaspar.f  gatelm.f  gca.f     gcelcd.f  \
+gceldc.f  gceldr.f  gclks.f   gclrwk.f  gclsg.f   gclwk.f   \
+gcrsg.f   gcsgwk.f  gdawk.f   gdsg.f    geclks.f  gelms.f   \
 genneg.f  gerhnd.f  gerlog.f  gesc.f    gescfn.f  gevtm.f   \
 gfa.f     gfilat.f  ggdp.f    ggtitm.f  giitm.f   ginst.f   \
 gksbd.f   gmarat.f  gninst.f  gnpart.f  gopdec.f  gopks.f   \
-gpl.f     gpm.f     gpolat.f  gprec.f   gputpt.f  \
+gopwk.f   gpl.f     gpm.f     gpolat.f  gprec.f   gputpt.f  \
 gqacwk.f  gqasf.f   gqcf.f    gqchb.f   gqchh.f   gqchsp.f  \
 gqchup.f  gqchw.f   gqchxp.f  gqclip.f  gqcntn.f  gqcr.f    \
 gqdsp.f   gqeci.f   gqegdp.f  gqentn.f  gqewk.f   gqfaci.f  \
@@ -39,13 +39,13 @@ gzw2ny.f  gzxid.f   gzacwk.f  gzclwk.f  gzclrwk.f gzdawk.f  \
 gzopwk.f
 
 GENERIC_OBJS = \
-gactm.o   gaspar.o  gatelm.o  gca.o     gcelcd.o  \
-gceldc.o  gceldr.o  gclks.o   gclsg.o   \
-gcrsg.o   gcsgwk.o  gdsg.o    geclks.o  gelms.o   \
+gactm.o   gacwk.o   gaspar.o  gatelm.o  gca.o     gcelcd.o  \
+gceldc.o  gceldr.o  gclks.o   gclrwk.o  gclsg.o   gclwk.o   \
+gcrsg.o   gcsgwk.o  gdawk.o   gdsg.o    geclks.o  gelms.o   \
 genneg.o  gerhnd.o  gerlog.o  gesc.o    gescfn.o  gevtm.o   \
 gfa.o     gfilat.o  ggdp.o    ggtitm.o  giitm.o   ginst.o   \
 gksbd.o   gmarat.o  gninst.o  gnpart.o  gopdec.o  gopks.o   \
-gpl.o     gpm.o     gpolat.o  gprec.o   gputpt.o  \
+gopwk.o   gpl.o     gpm.o     gpolat.o  gprec.o   gputpt.o  \
 gqacwk.o  gqasf.o   gqcf.o    gqchb.o   gqchh.o   gqchsp.o  \
 gqchup.o  gqchw.o   gqchxp.o  gqclip.o  gqcntn.o  gqcr.o    \
 gqdsp.o   gqeci.o   gqegdp.o  gqentn.o  gqewk.o   gqfaci.o  \
@@ -101,6 +101,7 @@ gztowk.o: gztowk.f
 	$(F77) -g $(FFLAGS) -c gztowk.f
 #endif
 
+gacwk.o : gkscom.h 
 gaspar.o : trstat.h trpars.h trinst.h 
 gatelm.o : trinst.h trcode.h 
 gca.o : gkscom.h 
@@ -108,9 +109,12 @@ gcelcd.o : trinst.h trpars.h trstat.h trcode.h gkscom.h
 gceldc.o : trinst.h 
 gceldr.o : trpars.h gkscom.h ../bwi/g01io.h 
 gclks.o : gkscom.h 
+gclrwk.o : gkscom.h 
 gclsg.o : gkscom.h 
+gclwk.o : gkscom.h 
 gcrsg.o : gkscom.h 
 gcsgwk.o : gkscom.h trstat.h
+gdawk.o : gkscom.h 
 gdsg.o : gkscom.h 
 geclks.o : gkscom.h 
 gelms.o : trinst.h trcode.h 
@@ -131,6 +135,7 @@ gninst.o : trpars.h trinst.h trbufr.h
 gnpart.o : trpars.h trinst.h trbufr.h 
 gopdec.o : trbufr.h 
 gopks.o : gkscom.h 
+gopwk.o : gkscom.h 
 gpl.o : gkscom.h 
 gpm.o : gkscom.h 
 gpolat.o : trcode.h trinst.h trstat.h trpars.h 
