@@ -2708,6 +2708,25 @@ begin
       dum               = get_res_value(res2,"gsnXYBelowFillColors",-1)
       dum               = get_res_value(res2,"gsnXYRightFillColors",-1)
       dum               = get_res_value(res2,"gsnXYLeftFillColors",-1)
+      if(isatt(res2,"gsnXYFillOpacityF")) then
+        fill_opacs = conform(above_fill_colors, \
+                             get_res_value(res2,"gsnXYFillOpacityF",1.0), \
+                             -1)
+      else if(isatt(res2,"gsnXYFillOpacities")) then
+        fill_opacs = get_res_value(res2,"gsnXYFillOpacities",1.0)
+      else
+        fill_opacs = conform(above_fill_colors,1.0,-1)
+      end if
+      end if
+      nfo = dimsizes(fill_opacs)
+      naf = dimsizes(above_fill_colors)
+      if(dimsizes(nfo).ne.dimsizes(naf).or..not.all(nfo.eq.naf)) then
+        print("fill_bw_xy: Warning: the opacity value(s) specified must")
+        print("     either be a scalar (gsnXYFillOpacityF) or the same")
+        print("     dimensionality as gsnXYFillColors (gsnXYFillOpacities).")
+        print("     Opacity will default to 1.0")
+        fill_opacs := conform(above_fill_colors,1.0,-1)
+      end if
     else
       if(fill_x) then
         above_fill_colors = get_res_value(res2,"gsnXYRightFillColors",-1)
@@ -2717,9 +2736,6 @@ begin
         below_fill_colors = get_res_value(res2,"gsnXYBelowFillColors",-1)
       end if
     end if
-  end if
-  if(isatt(res2,"gsnXYFillOpacities")) then
-    fill_opacs = get_res_value(res2,"gsnXYFillOpacities",1.0)
   end if
 
   nacol = dimsizes(above_fill_colors)
@@ -4417,7 +4433,8 @@ begin
 
       fill_atts = (/"gsnXYFillColors", "gsnXYAboveFillColors", \
                     "gsnXYBelowFillColors","gsnXYLeftFillColors", \
-                    "gsnXYRightFillColors","gsnXYFillOpacities"/)
+                    "gsnXYRightFillColors","gsnXYFillOpacities", \
+                    "gsnXYFillOpacityF"/)
       if(any(isatt(res2,fill_atts))) then
 ;
 ; Make sure you collect the appropriate resources to pass
