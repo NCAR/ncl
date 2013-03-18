@@ -14,8 +14,8 @@ SOURCES = \
 	cpinit.f cpinlb.f cpinrc.f cpnumb.f cpplar.f cpplps.f cpranf.f \
 	cpsbst.f cpsort.f cpstls.f cptrcl.f cptreg.f cptres.f cptrev.f \
 	cpcltr.f cpcica.f cphchm.f cphchr.f cpscae.f cptroe.f cptrve.f \
-	cpwlam.f hlucpchcf.f hlucpchil.f \
-	cphlso.f cphls2.f
+	cpwlam.f hlucpchcf.f hlucpchcl.f hlucpchhl.f hlucpchil.f hlucpchll.f \
+	hlucpmpxy.f hlucpscae.f cphlso.f cphls2.f
 
 
 OBJECTS = \
@@ -28,8 +28,8 @@ OBJECTS = \
 	cpinit.o cpinlb.o cpinrc.o cpnumb.o cpplar.o cpplps.o cpranf.o \
 	cpsbst.o cpsort.o cpstls.o cptrcl.o cptreg.o cptres.o cptrev.o \
 	cpcltr.o cpcica.o cphchm.o cphchr.o cpscae.o cptroe.o cptrve.o \
-	cpwlam.o hlucpchcf.o hlucpchil.o \
-	cphlso.o cphls2.o
+	cpwlam.o hlucpchcf.o hlucpchcl.o hlucpchhl.o hlucpchil.o hlucpchll.o \
+	hlucpmpxy.o hlucpscae.o cphlso.o cphls2.o
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 
